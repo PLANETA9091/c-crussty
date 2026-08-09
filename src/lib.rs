@@ -98,7 +98,7 @@ fn inject_surface() {
     };
 
     // Bundled native libs live in <plugin>/native/ (a subdir without
-    // cplugin.json so the agent's plugin scan skips them).
+    // module.json so the agent's plugin scan skips them).
     let native_dir = dir.join("native");
     let main_name = native_lib_name(MAIN_LIB);
     let chunk_name = native_lib_name(CHUNK_LIB);
