@@ -44,6 +44,7 @@ LATEST="$LOGS_DIR/latest.log"
 PID_FILE="$LOGS_DIR/crussty_e2e.pid"
 STATE_FILE="$LOGS_DIR/crussty_e2e.state"
 FIFO="$LOGS_DIR/crussty_e2e_stdin.$$"
+OFFS_FILE="$LOGS_DIR/crussty_e2e.offsets"
 RELOAD_WAIT="${RELOAD_WAIT:-60}"
 
 log()  { printf '%s\n' "[e2e] $*"; }
@@ -57,8 +58,30 @@ marker_files() {
     done
 }
 
-grep_markers() { # grep_markers <ERE>  -> first matching line across marker files
-    marker_files | xargs -r grep -h -m1 -E "$1" 2>/dev/null | head -1
+# Boot-time line offsets per candidate log: everything at/below the offset is a
+# PREVIOUS session (console.log/server.log survive across boots and would else
+# false-PASS the verify table with stale markers). E2E_LOG/latest.log are fresh
+# (truncated / moved away at boot) so their offsets are 0/absent.
+capture_offsets() {
+    : > "$OFFS_FILE"
+    local f
+    for f in "$E2E_LOG" "$LATEST" "$LOGS_DIR/console.log" "$LOGS_DIR/server.log"; do
+        if [ -f "$f" ]; then printf '%s:%s\n' "$f" "$(wc -l < "$f")" >> "$OFFS_FILE"
+        else printf '%s:0\n' "$f" >> "$OFFS_FILE"; fi
+    done
+}
+
+grep_markers() { # grep_markers <ERE>  -> first matching SESSION line across marker files
+    local pat="$1" f off m
+    if [ -f "$OFFS_FILE" ]; then
+        while IFS=: read -r f off; do
+            [ -n "$f" ] && [ -f "$f" ] || continue
+            m="$(tail -n +"$((off+1))" -- "$f" 2>/dev/null | grep -h -m1 -E "$pat" 2>/dev/null)"
+            [ -n "$m" ] && { printf '%s\n' "$m"; return 0; }
+        done < "$OFFS_FILE"
+    else
+        marker_files | xargs -r grep -h -m1 -E "$1" 2>/dev/null | head -1
+    fi
 }
 
 server_pid() { # child JVM = the one carrying the -agentpath runtime
@@ -79,8 +102,12 @@ do_boot() {
         fail "server already running ($(server_pid))"
     [ -p "$FIFO" ] || mkfifo "$FIFO" || fail "mkfifo $FIFO failed"
 
-    cp "$LATEST" "$LATEST.pre-e2e.$$" 2>/dev/null || log "no latest.log to backup"
+    # mv (not cp): latest.log must not carry the previous boot's "Done (" line,
+    # else the wait loop below returns instantly. Fresh latest.log is created by
+    # log4j on startup; the moved file is the backup.
+    mv "$LATEST" "$LATEST.pre-e2e.$$" 2>/dev/null || log "no latest.log to backup"
     : > "$E2E_LOG"
+    capture_offsets
 
     if [ -n "${CRUSSTY_BOOT_CMD:-}" ]; then
         log "booting via CRUSSTY_BOOT_CMD override"
@@ -199,7 +226,7 @@ do_shutdown() {
     log "server exited; final crussty/native lines:"
     grep -h -E 'crussty|Done|exited' "$LATEST" "$E2E_LOG" 2>/dev/null | tail -8
     exec 9>&- 2>/dev/null || true
-    rm -f "$PID_FILE" "$STATE_FILE" "$FIFO"
+    rm -f "$PID_FILE" "$STATE_FILE" "$FIFO" "$OFFS_FILE"
 }
 
 main() {
