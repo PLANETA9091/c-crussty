@@ -1,0 +1,22 @@
+# TASK-37 pinned regression fixture for `aggregate_p500.py --check` (CI hygiene gate).
+# 10 RESULT rows deliberately covering the TASK-34 derivation paths that must never drift:
+#   g1  plain old/alt pair (ratio 1.0, parity)
+#   g2  duplicate-collapse: repeated rows for both kernels -> min-of-medians primaries
+#       (119.8 / 120.2), repeats retained as oldSummary#variant2 (155.4) / newSummary#variant2 (151.4)
+#   g3  many-to-one MULTI-PAIR: one old claimed by two alts (newBeta 90.0, newGamma 110.0)
+#   g4  UNPAIRED: lone alt kernel with no OK old in the group
+# plus one CRASH note line -> NOTE line in the expected summary.
+# The pinned companion file p500_fixture_expected.tsv was generated with
+#   aggregate_p500.py <this file> --write-expected <companion>
+# and must be regenerated ONLY together with an intentional aggregator change.
+RESULT	1	PaperNativeFixturePair	(I)I	oldFixtureSummary	old	100.0	98.0	102.0	OK s0
+RESULT	1	PaperNativeFixturePair	(I)I	newFixtureSummary	alt	100.0	99.0	101.0	OK s0
+RESULT	2	PaperNativeFixtureDup	(III[J)I	oldSummary	old	155.4	155.4	155.4	OK s0
+RESULT	2	PaperNativeFixtureDup	(III[J)I	oldSummary	old	119.8	119.8	119.8	OK s0
+RESULT	2	PaperNativeFixtureDup	(III[J)I	newSummary	alt	151.4	151.4	151.4	OK s0
+RESULT	2	PaperNativeFixtureDup	(III[J)I	newSummary	alt	120.2	120.2	120.2	OK s0
+RESULT	3	PaperNativeFixtureMulti	(I)I	oldAlphaSummary	old	100.0	100.0	100.0	OK s0
+RESULT	3	PaperNativeFixtureMulti	(I)I	newBetaSummary	alt	90.0	90.0	90.0	OK s0
+RESULT	3	PaperNativeFixtureMulti	(I)I	newGammaSummary	alt	110.0	110.0	110.0	OK s0
+RESULT	4	PaperNativeFixtureLonely	(I)I	lonelyAltSummary	alt	42.0	42.0	42.0	OK s0
+CRASH	5	exit=1

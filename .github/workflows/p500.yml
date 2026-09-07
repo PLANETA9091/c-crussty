@@ -208,6 +208,25 @@ jobs:
           rm -f bench/p500/results/p500_raw.tsv
           bash bench/p500/run_p500.sh ${{ steps.resolve.outputs.gids }}
 
+      # TASK-37: aggregator guardrails (TASK-34 --check/--strict) wired into the
+      # smoke flow. Design: (1) --check runs ONLY on the pinned fixture in
+      # bench/p500/tests/ — the checked-in results/p500_expected_summary.tsv was
+      # derived from the FULL 49-group TSV and would false-fail on a 5-group
+      # smoke TSV; (2) --strict runs on the CI-produced smoke TSV — the 5
+      # baseline.json groups are exact 1:1 pairs (unpaired g38 is NOT among
+      # them), so exit 2 means a half-crashed/missing kernel in a smoke group.
+      - name: Aggregator hygiene — pinned fixture --check (TASK-34 derivation gate)
+        run: >-
+          python3 bench/p500/aggregate_p500.py
+          bench/p500/tests/p500_fixture_regression.tsv
+          --check bench/p500/tests/p500_fixture_expected.tsv
+
+      - name: Aggregator strict — fresh smoke TSV must be fully paired
+        run: |
+          test -s bench/p500/results/p500_raw.tsv \
+            || { echo "::error::smoke TSV missing — cannot run --strict"; exit 1; }
+          python3 bench/p500/aggregate_p500.py bench/p500/results/p500_raw.tsv --strict
+
       # Hard gate: exit 1 only on a >1.2x regression vs baseline.json (or
       # missing bench output / unreadable baseline). Skips are warnings.
       - name: Gate — fail if any kernel > 1.2x P500_REPORT_v2 baseline
