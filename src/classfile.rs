@@ -140,7 +140,9 @@ impl Pool {
     fn push(&mut self, tag: u8, payload: Vec<u8>, slots: u16) -> u16 {
         let idx = self.next;
         self.entries.push((idx, tag, payload));
-        self.next += slots;
+        // A4-F3: saturate instead of silently wrapping CP indices near 64K.
+        // patch_update guards on the saturated value and errors out loudly.
+        self.next = self.next.saturating_add(slots);
         idx
     }
 
@@ -222,6 +224,20 @@ struct Method {
     access: u16,
 }
 
+/// Bounds-checked big-endian readers (audit A4-F1 / A11-H-02: find_method and
+/// parse_layout run on bytes delivered by ClassFileLoadHook — a truncated or
+/// hostile class must yield None, never an index panic, because a panic on a
+/// class-load thread aborts the whole JVM).
+fn u16_at(bytes: &[u8], p: usize) -> Option<u16> {
+    let b = bytes.get(p..p.checked_add(2)?)?;
+    Some(u16::from_be_bytes([b[0], b[1]]))
+}
+
+fn u32_at(bytes: &[u8], p: usize) -> Option<u32> {
+    let b = bytes.get(p..p.checked_add(4)?)?;
+    Some(u32::from_be_bytes([b[0], b[1], b[2], b[3]]))
+}
+
 /// Locate the method with the given (name_idx, desc_idx) in the method table
 /// beginning at `methods_start` (offset of the methods_count field).
 fn find_method(
@@ -231,19 +247,19 @@ fn find_method(
     desc_idx: u16,
 ) -> Option<Method> {
     let mut p = methods_start;
-    let count = usize::from(u16::from_be_bytes([bytes[p], bytes[p + 1]]));
-    p += 2;
+    let count = usize::from(u16_at(bytes, p)?);
+    p = p.checked_add(2)?;
     for _ in 0..count {
         let start = p;
-        let access = u16::from_be_bytes([bytes[p], bytes[p + 1]]);
-        let n = u16::from_be_bytes([bytes[p + 2], bytes[p + 3]]);
-        let d = u16::from_be_bytes([bytes[p + 4], bytes[p + 5]]);
-        p += 6;
-        let attr_count = usize::from(u16::from_be_bytes([bytes[p], bytes[p + 1]]));
-        p += 2;
+        let access = u16_at(bytes, p)?;
+        let n = u16_at(bytes, p.checked_add(2)?)?;
+        let d = u16_at(bytes, p.checked_add(4)?)?;
+        p = p.checked_add(6)?;
+        let attr_count = usize::from(u16_at(bytes, p)?);
+        p = p.checked_add(2)?;
         for _ in 0..attr_count {
-            let len = u32::from_be_bytes([bytes[p + 2], bytes[p + 3], bytes[p + 4], bytes[p + 5]]);
-            p += 6 + len as usize;
+            let len = u32_at(bytes, p.checked_add(2)?)?;
+            p = p.checked_add(6)?.checked_add(len as usize)?;
         }
         if n == name_idx && d == desc_idx {
             return Some(Method {
@@ -269,21 +285,32 @@ struct ClassLayout {
 }
 
 fn parse_layout(bytes: &[u8]) -> Option<ClassLayout> {
+    // A4-F2: magic + version gate. StackMapTable requires major >= 51; a
+    // non-classfile blob (garbage hook input) must fail closed HERE.
+    if bytes.len() < 10 {
+        return None;
+    }
+    if u32::from_be_bytes([bytes[0], bytes[1], bytes[2], bytes[3]]) != 0xCA_FE_BA_BE {
+        return None;
+    }
+    if u16::from_be_bytes([bytes[6], bytes[7]]) < 51 {
+        return None;
+    }
     let cp_count = u16::from_be_bytes([bytes[8], bytes[9]]);
     let (pool, cp_end) = Pool::parse(bytes, 10, cp_count)?;
-    let this_class_idx = u16::from_be_bytes([bytes[cp_end + 2], bytes[cp_end + 3]]);
-    let mut p = cp_end + 6; // access_flags(2) this_class(2) super_class(2)
-    let iface_count = usize::from(u16::from_be_bytes([bytes[p], bytes[p + 1]]));
-    p += 2 + 2 * iface_count;
-    let fields_count = usize::from(u16::from_be_bytes([bytes[p], bytes[p + 1]]));
-    p += 2;
+    let this_class_idx = u16_at(bytes, cp_end.checked_add(2)?)?;
+    let mut p = cp_end.checked_add(6)?; // access_flags(2) this_class(2) super_class(2)
+    let iface_count = usize::from(u16_at(bytes, p)?);
+    p = p.checked_add(2)?.checked_add(2 * iface_count)?;
+    let fields_count = usize::from(u16_at(bytes, p)?);
+    p = p.checked_add(2)?;
     for _ in 0..fields_count {
-        p += 6;
-        let attr_count = usize::from(u16::from_be_bytes([bytes[p], bytes[p + 1]]));
-        p += 2;
+        p = p.checked_add(6)?;
+        let attr_count = usize::from(u16_at(bytes, p)?);
+        p = p.checked_add(2)?;
         for _ in 0..attr_count {
-            let len = u32::from_be_bytes([bytes[p + 2], bytes[p + 3], bytes[p + 4], bytes[p + 5]]);
-            p += 6 + len as usize;
+            let len = u32_at(bytes, p.checked_add(2)?)?;
+            p = p.checked_add(6)?.checked_add(len as usize)?;
         }
     }
     Some(ClassLayout {
@@ -336,6 +363,9 @@ pub fn patch_update(bytes: &[u8]) -> Result<Vec<u8>, String> {
     let min_int = pool.int_const(i32::MIN);
     let run_desc = format!("(L{this_name};IIIIIILjava/lang/Object;)V");
     let m_run = pool.method_ref(OPS_CLASS, "run", &run_desc);
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for patched refs".into());
+    }
 
     let mut code = Vec::with_capacity(82);
     let u2 = |out: &mut Vec<u8>, v: u16| out.extend_from_slice(&v.to_be_bytes());
@@ -558,8 +588,8 @@ mod tests {
         }
         assert!(found_update && found_code);
 
-        let out = std::path::Path::new("/tmp/opencode/patchcheck/patched.class");
-        std::fs::write(out, &patched).expect("dump patched class");
+        let out = std::env::temp_dir().join("ccrussty_patched_SingleUserAreaMap.class");
+        std::fs::write(&out, &patched).expect("dump patched class");
         eprintln!("wrote {} bytes to {}", patched.len(), out.display());
     }
 
