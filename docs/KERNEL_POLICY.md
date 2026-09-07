@@ -39,7 +39,7 @@ Strict policy (the default), evaluated in order:
 | anything else (unknown / unproven) | `KeepJava` — "not proven" (default-safe) |
 
 API surface (all allocation-free; mode cached in a `OnceLock`; registries are
-static slices scanned linearly — 4 + 11 entries):
+static slices scanned linearly — 4 + 23 entries):
 
 | Signature | Purpose |
 |---|---|
@@ -68,21 +68,43 @@ into a hot path. Scale-invariance: `bench/p500/results/P500_SCALING.md`.
 
 ### `PROVEN_WINS` — whitelisted (allowed for hot-path routing)
 
+Evidence synced to the canonical 2026-09-08 full rerun
+(`bench/p500/results/P500_REPORT.md`; 49 groups / 70 pairs / 0 CRASH) by
+TASK-31 — full before/after audit in
+[PROVEN_WINS_SYNC.md](PROVEN_WINS_SYNC.md).
+
 * **live** wirings (verified on Purpur 1.21.10, must keep working):
   `PaperNativeAreaMap.nativeUpdateOpsBatch` (area_map hook, 64-rect self-test
   == naive set difference) and
   `PaperNativeImprovedNoise.nativeNoise` / `nativeBuildHandle` /
   `nativeFreeHandle` (improved_noise hot-patch v2, self-test PASSED,
   worklog session 003).
-* **P500 WIN** verdicts (promotion candidates, wiring-eligible):
-  `NoiseChunkBlendCache.newEmptyBlenderSummary` (244×),
-  `NoiseInterpolatorSlice.flatSummary` (3.29×),
-  `PluginLoadingAllocation.newLazyValidateSummary` (1.55×),
-  `PluginLoadingAllocation.newLazyMissingSetSummary` (1.53×),
-  `ImprovedNoiseInline.switchGradientSummary` (1.22×),
-  `PalettedReencodeScratch.scratchThreadLocalSummary` (1.20×),
-  `AquiferSurfaceSampling.newBatchSummary` (1.15×) —
-  evidence: `bench/p500/results/P500_REPORT_v2.md`.
+* **P500 WIN** verdicts — promotion candidates, wiring-eligible (4 of the
+  previous 7 reproduce on the rerun):
+
+  | Kernel | 2026-09-07 v2 (old) | 2026-09-08 rerun | Verdict |
+  |---|---|---|---|
+  | `NoiseChunkBlendCache.newEmptyBlenderSummary` | 244× (67.0 µs → 274.5 ns) | **316×** (95.3 µs → 301.1 ns, ratio 0.003) | WIN (number refreshed) |
+  | `NoiseInterpolatorSlice.flatSummary` | 3.29× (6.2 ms → 1.9 ms) | 3.32× (6.3 ms → 1.9 ms, ratio 0.301) | WIN (reproduced) |
+  | `ImprovedNoiseInline.switchGradientSummary` | 1.22× (9.3 → 7.6 µs) | 1.22× (9.3 → 7.6 µs, ratio 0.819) | WIN (reproduced) |
+  | `PalettedReencodeScratch.scratchThreadLocalSummary` | 1.20× (483.9 → 403.2 µs) | 1.20× (493.6 → 411.9 µs, ratio 0.834) | WIN (reproduced) |
+* **P500 PARITY** reclassifications (were "P500 WIN" on v2; NOT reproducible
+  on the rerun — kept in `PROVEN_WINS` so the Allow set is unchanged, but
+  they are NOT hot-path swap/promotion candidates):
+
+  | Kernel | 2026-09-07 v2 (old) | 2026-09-08 rerun | Verdict |
+  |---|---|---|---|
+  | `PluginLoadingAllocation.newLazyValidateSummary` | "WIN 1.55×" (217.9 → 140.6 ns) | 0.993 (116.1 → 115.3 ns) | **PARITY** (reclassified) |
+  | `PluginLoadingAllocation.newLazyMissingSetSummary` | "WIN 1.53×" (218.3 → 142.5 ns) | 0.996 (115.1 → 114.6 ns) | **PARITY** (reclassified) |
+  | `AquiferSurfaceSampling.newBatchSummary` | "WIN 1.15×" (6.3 → 5.5 µs) | 0.906 (6.0 → 5.5 µs) | **PARITY** (reclassified) |
+* **P500 PARITY (batch surface)** — the 12 batch-dispatch table kernels
+  (`src/batch_table.rs` ids 0-11, `docs/BATCH_WIRING_PLAN.md` §A.4):
+  caller-initiated infrastructure, not hot-path routing. Pairs covered by
+  the rerun stay parity (AquiferIndexStride 1.07×, ChunkDependencies 1.03×,
+  DensitySplineContext 1.00×, EntityLookupStatus 1.00×); 5 entries
+  (`TicketSetSearch` ×2, `NoiseInterpolatorFractions.divisionSummary`,
+  `ClimateRTree` ×2) have **no pair in the canonical report** — see
+  PROVEN_WINS_SYNC.md §4 (open item, evidence predates the rerun).
 
 Note: whitelist keys are exact `(class, kernel)` pairs. A kernel *name* that
 collides across classes (`cachedSummary` is a regression on `MarkerCache`,
