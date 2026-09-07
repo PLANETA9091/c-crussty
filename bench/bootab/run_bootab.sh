@@ -161,6 +161,12 @@ for i in $(seq 1 "$RUNS"); do
     sleep 0.1
   done
 
+  # --- TASK-45: optional post-marker hold (stats windows need a live JVM) ---
+  if [ -n "${BOOTAB_POST_HOLD_S:-}" ] && [ "$BOOTAB_POST_HOLD_S" -gt 0 ] 2>/dev/null && kill -0 "$PID" 2>/dev/null; then
+    log "run $i: post-marker hold ${BOOTAB_POST_HOLD_S}s"
+    sleep "$BOOTAB_POST_HOLD_S"
+  fi
+
   # --- RSS snapshot + exact-PID kill ---
   rss_primary="-"; hwm="-"
   if kill -0 "$PID" 2>/dev/null; then
