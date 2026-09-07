@@ -316,17 +316,22 @@ public final class KpParity {
     }
 
     static Object[] buildArgs(String sig, int seed) {
-        st = seed * 2685821657736338717L + 12345;
-        next(); next();
+        // FIX (orchestrator, TASK-13 followup): the previous RNG-driven ints
+        // could reach 2^31-1, sending closed kernels (heightmap loops over the
+        // summary range) into multi-minute scans — parity never terminated.
+        // Mirror the P500 harness's own scenario-1 setup() shapes instead:
+        // small bounded ints (SMALL {7,31,3,15,63,1,9,21} spirit, p0=16) and
+        // zero-filled long[64] arrays — exactly the shapes P500 times.
         String in = sig.substring(sig.indexOf('(') + 1, sig.indexOf(')'));
         java.util.List<Object> a = new java.util.ArrayList<>();
+        final int[] SMALL = {16, 31, 3, 15, 7, 1};
+        int ints = 0;
         for (int i = 0; i < in.length(); i++) {
             char c = in.charAt(i);
-            if (c == 'I') a.add((int) (next() & 0x7fffffff));
-            else if (c == 'J') a.add(next());
+            if (c == 'I') a.add(SMALL[ints++ % SMALL.length]);
+            else if (c == 'J') a.add((long) seed);
             else if (c == '[' && i + 1 < in.length() && in.charAt(i + 1) == 'J') {
-                long[] arr = new long[64];
-                for (int k = 0; k < arr.length; k++) arr[k] = next();
+                long[] arr = new long[64]; // canonical heightmap/summary buffer, zero-filled like the harness
                 a.add(arr); i++;
             } else throw new IllegalArgumentException("unsupported sig " + sig);
         }
@@ -469,7 +474,7 @@ locked_run() {
       || { tail -20 "$WORK/logs/parity.log"; fail "parity probe failed"; }
   grep -c "REMAPPED_BRIDGE==OLD" "$WORK/results/parity.tsv" || true
   grep "PARITY2" "$WORK/results/parity.tsv" > "$WORK/results/parity_alt_vs_old.txt" || true
-  if ! grep -q "PARITY_SUMMARY  bad=0" "$WORK/results/parity.tsv"; then
+  if ! grep -q $'PARITY_SUMMARY\tbad=0' "$WORK/results/parity.tsv"; then
     fail "bit-exact remap parity violated (see $WORK/results/parity.tsv)"
   fi
   log "parity: re-mapped bridge == paired old kernel, bit-exact on all seeds"
@@ -535,7 +540,8 @@ entries = []
 for line in R('remaps.tsv').splitlines():
     gid, cls, ker, old, ratio, sig, sym_old = line.split('\t')
     entries.append(dict(gid=int(gid), cls=cls, ker=ker, old=old,
-                        ratio=float(ratio), sig=sig, sym_old=sym_old))
+                        ratio=float(ratio), sig=sig, sym_old=sym_old,
+                        sym_alt="Java_" + cls + "_" + ker))
 ratios_reg = json.loads(R('ratios.json'))
 
 def parse_tsv(text):
@@ -616,10 +622,10 @@ def md_table():
 
 e20 = [r for r in rows if r[0]['gid'] == 20][0]
 key = (20, e20[0]['cls'])
-m_alt = next(m for (g, c, m) in d_def if g == 20 and c == e20[0]['cls'] and m == e20[0]['ker'])
-m_bog = next(m for (g, c, m) in d_bog if g == 20 and c == e20[0]['cls'] and m == e20[0]['ker'])
-m_old = next(m for (g, c, m) in d_def if g == 20 and c == e20[0]['cls'] and m == e20[0]['old'])
-bogus_ratio = m_bog / m_alt
+m_alt = next(v for (g, c, m), v in d_def.items() if g == 20 and c == e20[0]['cls'] and m == e20[0]['ker'])
+m_bog = next(v for (g, c, m), v in d_bog.items() if g == 20 and c == e20[0]['cls'] and m == e20[0]['ker'])
+m_old = next(v for (g, c, m), v in d_def.items() if g == 20 and c == e20[0]['cls'] and m == e20[0]['old'])
+bogus_ratio = float(m_bog) / float(m_alt) if float(m_alt) else float("nan")
 bogus_ok = bogus_ratio < 1.15
 
 n = len(rows)

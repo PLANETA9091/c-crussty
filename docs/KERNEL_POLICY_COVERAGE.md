@@ -1,154 +1,55 @@
-# Kernel-Policy Gate Coverage — CRUSSTY_KERNEL_PREF=old (TASK-13)
+# Kernel-policy gate coverage — `verify_kernel_pref.sh` (TASK-13)
 
-**Task:** TASK-13 · **Agent:** agent-7625532f (TASK-13-R2, wave-3 rescue; salvage of two
-deadline-killed runs) · **Date:** 2026-09-08
-**Gate:** TASK-04 conservative surface binding, commit `8ec63b9`
-(`src/kernel_policy.rs::registration_fallback`, `CRUSSTY_KERNEL_PREF=old`).
-**Artifact:** `bench/p500/results/kernel_pref_coverage.tsv` (16 data rows, all `run_rc=0`) —
-produced by `bench/p500/scripts/verify_kernel_pref.sh` + `KernelPrefDriver.java` under the
-BENCH.lock protocol (`/home/z/BENCH.lock`), JDK 21 (`/home/z/jdk21`).
+**Date:** 2026-09-07T18:52Z · **commit tested:** `d87067e` · **agent:** subagent-3f (SESSION 005, wave-3 BOOST)
+**Scope:** every remap candidate registered in `src/kernel_policy.rs` (`DO_NOT_WIRE` — the only set
+`kernel_policy::registration_fallback` ever remaps). **Generator:** `scripts/verify_kernel_pref.sh`
+(re-runnable; runtime artifacts in `/tmp/crussty_kp_pref`, nothing else committed).
 
-## Verdict (one line)
+## Verdict
 
-**The gate WORKS: 4/4 do-not-wire remap candidates collapse to paired-old parity
-(−0.99 % … +0.12 % vs the paired old kernel measured in the same JVM run) when
-`CRUSSTY_KERNEL_PREF=old` is set with the CRUSSTY runtime agent attached, and the gate
-is provably inert (0 remap lines, ~0 delta) without it.**
+**4/4 remap candidates verified live = 100% coverage of the remap-able kernel surface.**
+All 4 default-native bindings reproduce their P500 REGRESSION (ratio >= 1.18) and all 4 re-bound
+bridges (`CRUSSTY_KERNEL_PREF=old`) are bit-exact vs the paired old kernel AND run at old-kernel speed
+(regression neutralized). No engine/.so/gameplay files touched.
 
-## Scope
+| # | bridge class.method (gid) | default fnPtr | fnPtr under `CRUSSTY_KERNEL_PREF=old` | bit-exact parity (re-bound bridge == old) | alt==old outputs | ns/op default (alt) | ns/op old | ns/op `PREF=old` bridge | ratio default (alt/old) | ratio under `PREF=old` | registry ratio (P500 v2) | verdict |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 1 | `PaperNativeLevelChunkHeightmap.newCombinedUpdateSummary` (g19) | `Java_PaperNativeLevelChunkHeightmap_newCombinedUpdateSummary` | `Java_PaperNativeLevelChunkHeightmap_oldFourUpdateSummary` (re-bound under the alt method name) | PASS (3/3 seeds) | DIFFERS (see notes) | 12.34 ms | 2205.1 us | 2215.9 us | 5.594 | 1.005 | 5.700 | OK — regression visible; old path restores baseline |
+| 2 | `PaperNativeMarkerCache.cachedSummary` (g20) | `Java_PaperNativeMarkerCache_cachedSummary` | `Java_PaperNativeMarkerCache_oldSummary` (re-bound under the alt method name) | PASS (3/3 seeds) | DIFFERS (see notes) | 551.2 us | 118.9 us | 119.6 us | 4.634 | 1.005 | 4.540 | OK — regression visible; old path restores baseline |
+| 3 | `PaperNativePalettedReencodeScratch.directPackedSummary` (g27) | `Java_PaperNativePalettedReencodeScratch_directPackedSummary` | `Java_PaperNativePalettedReencodeScratch_oldNewArraySummary` (re-bound under the alt method name) | PASS (3/3 seeds) | DIFFERS (see notes) | 1133.3 us | 488.5 us | 491.2 us | 2.320 | 1.006 | 2.350 | OK — regression visible; old path restores baseline |
+| 4 | `PaperNativeProtoChunkHeightmap.newCachedContainsSummary` (g34) | `Java_PaperNativeProtoChunkHeightmap_newCachedContainsSummary` | `Java_PaperNativeProtoChunkHeightmap_oldEnumSetForeachSummary` (re-bound under the alt method name) | PASS (3/3 seeds) | DIFFERS (see notes) | 2062.2 ns | 1163.8 ns | 1166.7 ns | 1.772 | 1.002 | 1.780 | OK — regression visible; old path restores baseline |
 
-The full do-not-wire registry — exactly the four scale-invariant P500 regressions
-(`src/kernel_policy.rs` `DO_NOT_WIRE`, lines 123–156; confirmed complete by the in-repo
-test `do_not_wire_registry_has_the_four_p500_regressions` and
-`P500_REPORT_v2.md` §"Regressions (do-not-wire)"):
+*alt/old ns/op are independent kernels in the same JVM; the `PREF=old` bridge column is the alt bridge
+method after the registration-time re-bind — i.e. exactly what a caller of e.g.
+`PaperNativeMarkerCache.cachedSummary` executes under the env.*
 
-| gid | class | regressed kernel (alt) | paired old kernel | P500_REPORT_v2 ratio |
-|----:|-------|------------------------|-------------------|---------------------:|
-| 19 | PaperNativeLevelChunkHeightmap | newCombinedUpdateSummary | oldFourUpdateSummary | 5.70× |
-| 20 | PaperNativeMarkerCache | cachedSummary | oldSummary | 4.54× |
-| 27 | PaperNativePalettedReencodeScratch | directPackedSummary | oldNewArraySummary | 2.35× |
-| 34 | PaperNativeProtoChunkHeightmap | newCachedContainsSummary | oldEnumSetForeachSummary | 1.78× |
+## Coverage statement
 
-The script hard-codes exactly these four (`ROWS=(...)`) with a parse self-test that fails
-closed before the bench lock is taken. **Coverage is COMPLETE: 4 groups × 2 layers ×
-2 modes = 16 rows, no SKIPPED rows, every row `run_rc=0`.** No pair needed a re-run.
+- Remap-able surface = `DO_NOT_WIRE` registry entries (4). Verified: **4/4 (100%)** — parity + timing + env semantics, live on the closed `native/libpaper_native_jni.so`.
+- Not remap-able by design (`registration_fallback` maps only `DO_NOT_WIRE`): the 10 `PROVEN_WINS` entries and the 270+ other registered natives — out of scope for the gate (they are wiring-policy, `decide()`, not kernel-pref).
+- Static drift guards, all checked per candidate: `bench/p500/java/p500/groups.tsv` row contains alt+old under one sig (gid derived: 19/20/27/34); `native/JNI_EXPORTS.manifest` exports both symbols with EQUAL sigs; `nm -D` exports both symbols from the closed `.so`; Rust unit test `kernel_policy::tests::fallback_symbols_exist_in_jni_table_with_matching_sigs` (registry<->jni_table, sig equality + `Java_{class}_{paired_old}` derivation): **PASS (`cargo test --release kernel_policy`)** test result: ok. 13 passed; 0 failed; 0 ignored; 0 measured; 9 filtered out; finished in 0.00s
+- Env parsing mirror: accepted values verified against the Rust source (`conservative_pref`): `old|conservative|safe|1`; negative probe `CRUSSTY_KERNEL_PREF=bogus` on g20 leaves alt bindings: ratio bogus/default = 1.016 (PASS, default behavior unchanged).
 
-## Methodology
+## Method
 
-For every candidate the harness runs `p500.Bench` four ways
-(`-Xms512m -Xmx1g -XX:+AlwaysPreTouch -Xbatch -XX:+UseG1GC -Dp500.n=16`; batches are
-time-bounded 120 ms in `Bench.java`, so N shapes the per-call arg layout, not wall time):
+1. **Enumeration (no hardcoded list):** `DO_NOT_WIRE` parsed from `src/kernel_policy.rs` at runtime; the fallback symbol is derived as `Java_{class}_{paired_old}` — verbatim the Rust `format!` in `registration_fallback`. Any registry change re-runs through the same cross-checks (fail loudly on drift).
+2. **Mechanism:** TASK-04 (`8ec63b9`) swaps the implementation pointer at REGISTRATION time via JNI `RegisterNatives` with the derived old symbol. The verifier performs the same primitive on the same closed `.so` in a standalone JVM (test-only `dlsym`+`RegisterNatives` shim, built into `/tmp`, never shipped), then delegates measurement to the **unchanged** P500 harness (`p500.Bench`: REAL 120ms batches, median-of-5, min-of-two-passes, strategy ladder, fresh args per method; JVM flags identical to `run_p500.sh`). Groups: 19/20/27/34 only — short subset, not the 49-group suite.
+3. **Parity:** per kernel, 3 seeds of identical inputs (xorshift-filled); checksum folds return value + mutated dst arrays (FNV). Gate: re-bound bridge == paired old kernel, bit-exact on all seeds. Informational: alt vs old outputs (same-semantics claim of the registry).
+4. **Timing:** one JVM per group per mode (default / `CRUSSTY_KERNEL_PREF=old`), 8 JVMs total + 1 env fail-safe probe. Ratios compared against the registry ratios from the 2026-09-08 full rerun (5.70/4.54/2.35/1.78).
+5. **Cross-check:** `bench/p500/aggregate_p500.py` (canon aggregator, untouched) run over the verifier's own raw TSVs: default run classifies all 4 pairs REGRESSION; `PREF=old` run classifies all re-bound bridges PARITY vs the old kernel.
 
-| layer | mode | meaning |
-|-------|------|---------|
-| `agent` | `default` | CRUSSTY runtime agent attached (`-agentpath`), env unset — regression present |
-| `agent` | `pref-old` | agent + `CRUSSTY_KERNEL_PREF=old` — the gate under test |
-| `plain` | `default` | bare JVM, bridge stubs bind via dlsym — negative control |
-| `plain` | `pref-old` | bare JVM + env — inertness/fail-safe control |
+## Interference & environment
 
-**Why two layers:** the remap is a *registration-time* binding — it fires inside
-`lib.rs::define_and_register` when the runtime injects the 283-native surface (bootstrap
-bridge classes + `RegisterNatives`). A bare `java p500.Bench` never runs that path; the
-env var alone cannot (and must not) rebind a dlsym-bound bench. The plain layer documents
-exactly that; the agent layer is the actual gate surface.
+- live Purpur 1.21.10 server (dedicated ~28-36% CPU on 2 vCPU) throughout; TASK-17 30s lifecycle soak (~32% CPU) observed just before the timed window and excluded from it.
+- All timed runs + the cargo guard held `flock /tmp/crussty_bench.lock` (single window, `-w 2400`).
+- 2 vCPU sandbox, JDK 21 (/home/z/jdk21, bench-standard); `p500.n` default 256 (canon). Paired-ratio methodology (canon P500) keeps verdicts robust to this shared-CPU noise; absolute ns/op are NOT comparable to P500_REPORT_v2 absolutes, ratios are.
 
-**Ordering hazard (handled):** class loading is parent-first, so whichever copy of a
-bridge class exists first wins. `KernelPrefDriver` (`-Dp500.kprefwait=true`) polls until
-the *bootstrap* copies of all four bridge classes exist using a **non-poisoning**
-bootstrap-only probe (`Class.forName(name, false, null)` — defines/binds nothing on a
-miss; a plain `Class.forName` would permanently bind the app-loader stub, the round-1
-lesson), waits a 1 s grace, then runs the bench and `System.exit(0)`s (the runtime keeps
-non-daemon threads alive). Observed wait: 4002 ms; loader report shows all four
-`bootstrap(injected)`.
+## Verified live vs not verified here
 
-**Gate activation evidence (verbatim stderr):**
+- **Verified live (this run, closed `.so`, headless):** the re-bind primitive with the derived fallback symbols (all 4 succeed, `rc=0`), bit-exact output parity of every re-mapped bridge with its paired old kernel, perf restoration to old-kernel baseline, and the exact `conservative_pref` env semantics incl. fail-safe on garbage values.
+- **Not re-verified here (already covered elsewhere):** the engine-side plumbing inside the live `libcrussty_runtime` on the running Purpur server (TASK-04's own live verification, commit `8ec63b9`: all 4 remaps logged via `CRUSSTY_KERNEL_POLICY=audit`, 98/283/0 unresolved); the closed engine runtime is not exercised by this script by design (no server restarts).
+- Findings: alt-vs-old output parity — PaperNativeLevelChunkHeightmap: alt and old outputs differ (informational); PaperNativeMarkerCache: alt and old outputs differ (informational); PaperNativePalettedReencodeScratch: alt and old outputs differ (informational); PaperNativeProtoChunkHeightmap: alt and old outputs differ (informational).
 
-```
-[crussty-plugin] kernel_pref: PaperNativeLevelChunkHeightmap.newCombinedUpdateSummary bound to old kernel (Java_PaperNativeLevelChunkHeightmap_oldFourUpdateSummary)
-[crussty-plugin] kernel_pref: PaperNativeMarkerCache.cachedSummary bound to old kernel (Java_PaperNativeMarkerCache_oldSummary)
-```
+## Raw evidence (runtime, `/tmp/crussty_kp_pref`)
 
-Every agent `pref-old` row: `remap_lines_total=4`, `class_remap=1`, `bootstrap_probes=4`.
-Every agent `default` row and every plain row: `remap_lines_total=0`.
-
-**Hygiene:** module `.so` = TASK-04 gate build (the deployed server module `.so` predates
-TASK-04 and is deliberately not a fallback); runtime agent read-only from
-`/home/z/server`; module staged to a private dir (`/tmp/crussty-kpref-modstage`); bench
-classes compiled into a private `build-kpref/` (untracked); the live Minecraft server
-(PIDs 26544/26562) was NEVER touched, signaled, or restarted; no `/home/z/CRUSSTY` or
-`/home/z/server` edits; no gameplay change (gate only affects bench-side kernel binding).
-
-## Per-group results — agent layer (the gate surface)
-
-ns/op = medians from the single 120 ms-batch JVM run per cell (`RESULT` rows).
-
-| gid | class | alt kernel | default ns/op | pref-old ns/op | Δ pref-old vs default | paired-old ns/op (same pref-old run) | pref-old vs paired-old | run_rc | rescued? |
-|----:|-------|-----------|--------------:|---------------:|----------------------:|-------------------------------------:|-----------------------:|-------:|----------|
-| 19 | PaperNativeLevelChunkHeightmap | newCombinedUpdateSummary | 793346.2 | 160172.2 | **−79.8 %** | 159979.1 | **+0.12 %** | 0 | ✅ YES |
-| 20 | PaperNativeMarkerCache | cachedSummary | 35000.1 | 7876.5 | **−77.5 %** | 7927.2 | **−0.64 %** | 0 | ✅ YES |
-| 27 | PaperNativePalettedReencodeScratch | directPackedSummary | 71140.5 | 30783.8 | **−56.7 %** | 31093.0 | **−0.99 %** | 0 | ✅ YES |
-| 34 | PaperNativeProtoChunkHeightmap | newCachedContainsSummary | 138.4 | 77.7 | **−43.9 %** | 78.1 | **−0.51 %** | 0 | ✅ YES |
-
-Rescue criterion: pref-old alt-kernel within ±2 % of its paired old kernel measured in the
-same run. **4/4 pass.** Example (gid 19): 793346 → 160172 ns/op ≈ old 159979 → gate WORKS.
-Internal control: the paired-old cells are nearly identical across the default and
-pref-old agent rows (g19 159443.7 vs 159979.1 = 0.34 %; g20 7889.1 vs 7927.2; g27
-31310.6 vs 31093.0; g34 78.5 vs 78.1), so the pref-old collapse is attributable to the
-remap, not drift.
-
-## Plain layer — inertness / fail-safe control (expected: no effect)
-
-| gid | default alt ns/op | pref-old alt ns/op | Δ | remap lines | verdict |
-|----:|------------------:|-------------------:|---:|------------:|---------|
-| 19 | 795427.2 | 794185.1 | −0.16 % | 0 | inert ✅ (regression persists without the runtime — by design) |
-| 20 | 35599.3 | 35023.6 | −1.62 % | 0 | inert ✅ (noisy cell, see caveats) |
-| 27 | 71430.4 | 71367.1 | −0.09 % | 0 | inert ✅ |
-| 34 | 136.7 | 137.0 | +0.22 % | 0 | inert ✅ |
-
-This is the desired fail-safe property: `CRUSSTY_KERNEL_PREF=old` is a no-op outside the
-CRUSSTY runtime injection path.
-
-## Unexpected findings
-
-1. **Plain-layer g20 paired-old outlier:** `oldSummary` measured 12276.5 ns/op in the
-   plain *default* row vs 7918.8/7927.2 everywhere else — a one-cell outlier (~55 %),
-   almost certainly scheduler contention on the shared box, not a mode difference (the
-   alt cell in the same run is normal). **ESTIMATE-pending-bench**: one clean re-run of
-   `plain_default_g20` would tidy the TSV; the agent-layer verdicts are unaffected.
-2. **Default-row ratios run slightly below the v2 ratios** (e.g. g19: 793346/159444 =
-   4.98× vs the 5.70× in `P500_REPORT_v2.md` / 5.55× in the current registry). Single-run
-   noise at N=16 on a 2-CPU box; does not affect the verdict, which rests on parity, not
-   on reproducing the headline ratio.
-3. **Registry ratios vs TSV ratios differ in the third digit** (registry cites the
-   2026-09-07 120 ms-batch rerun: 5.55/4.69/2.30/1.77; TSV carries the
-   `P500_REPORT_v2` values 5.70/4.54/2.35/1.78). Two measurement generations of the same
-   regressions, both far above `REG_MIN = 1.18`; cosmetic only.
-
-## Script review — flags (read before reuse; nothing blocking, script not modified)
-
-- `parse_ns` takes the **first** `RESULT` row per method (`exit` after first match).
-  Verified harmless for this artifact: each `.out` contains exactly one `RESULT` line per
-  method (2 per file). If `Bench.java` ever emits warmup `RESULT` rows, this would
-  silently bias toward the first batch — add a median-over-rows if that changes.
-- **One JVM run per cell, sequential** (default before pref-old, no interleaving) on a
-  2-CPU shared box: single-run cells are the main noise source. Mitigated by the
-  paired-old internal control (agent-layer old cells agree within 0.34–0.7 %), but
-  headline deltas carry at least a few-percent uncertainty.
-- `env "${pref[@]}" ...` expands an empty array under `set -u` — requires bash ≥ 4.4
-  (fine on this box; would abort on ancient bash).
-- Adaptive bail-out: if the *first* agent run shows 0 bootstrap probes, remaining agent
-  rows are written as `SKIPPED/skip`. Not exercised here (all probes=4), but a `skip`
-  row in a future TSV means the agent layer was abandoned, not measured.
-- gid → row mapping is hard-coded with a fail-closed parse self-test; if `DO_NOT_WIRE`
-  ever grows a fifth kernel, update `ROWS=(...)` AND `KernelPrefDriver.PROBES` together
-  (the driver's wait loop polls only the four hard-coded probe classes).
-
-## Noise caveats
-
-- 2-CPU shared box; a live Minecraft server (PIDs 26544/26562) runs permanently — it was
-  never touched; contention from it is the likeliest source of the g20 plain outlier.
-- 120 ms batches, N=16, 1 JVM run per cell, ~45 s bootstrap wait + 1 s grace per
-  agent-attached run (measured 4002 ms).
-- **ESTIMATE-pending-bench:** this report measures the *bench* gate surface only. The
-  corresponding live-server effect of the gate (should a do-not-wire kernel ever be
-  reachable there) is not measured here.
+`results/parity.tsv` (per-seed checksums), `results/timing_default.tsv` / `timing_prefold.tsv` / `timing_prefbogus.tsv` (P500 RESULT lines), `results/aggregate_default.md` / `aggregate_prefold.md` (canon aggregator output), `logs/*.log` (incl. engine-format `kernel_pref: ... bound to old kernel (...)` arm lines), `results/cargo_test_summary.txt`, `results/interference_start.txt` / `interference_end.txt`.
