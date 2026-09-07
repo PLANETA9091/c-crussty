@@ -7,6 +7,7 @@ cd "$(dirname "$0")"
 
 REPO_ROOT="$(cd ../.. && pwd)"
 MAIN_SO="$REPO_ROOT/native/libpaper_native_jni.so"
+# legacy name kept for older checkouts; current binary is libpaper_native_chunk_encode_jni.so (see native/)
 CHUNK_SO="$REPO_ROOT/native/libpaper_chunk_encode_jni.so"
 CHUNK_SO2="$REPO_ROOT/native/libpaper_native_chunk_encode_jni.so"
 
