@@ -409,8 +409,92 @@ pub fn activate() {
             eprintln!(
                 "[crussty-plugin] improved_noise: class predates hook, capturing current bytes via no-op retransform"
             );
-            let rc = cplug_sdk::retransform_class(NOISE_CLASS);
-            eprintln!("[crussty-plugin] improved_noise: capture retransform rc={rc}");
+            // S7-8 hardening (engine TASK-08 re-land companion): retransform
+            // byte delivery rides the engine's ClassFileLoadHook dispatch.
+            // Pre-TASK-08 engine builds intermittently mis-named that event
+            // off the VM's non-NUL-terminated name buffer and silently
+            // dropped it (rc=0, zero bytes — the 2026-09-08 20:47 boot).
+            // Retry a few times (each attempt re-rolls the dispatch dice),
+            // then fall back to the kernel loader's resource stream, which
+            // yields the original class file bytes with no JVMTI event
+            // delivery involved at all.
+            let mut captured = false;
+            for attempt in 1..=3 {
+                let rc = cplug_sdk::retransform_class(NOISE_CLASS);
+                eprintln!(
+                    "[crussty-plugin] improved_noise: capture retransform rc={rc} (attempt {attempt})"
+                );
+                captured = orig_lock()
+                    .lock()
+                    .unwrap_or_else(PoisonError::into_inner)
+                    .is_some();
+                if captured {
+                    break;
+                }
+                std::thread::sleep(std::time::Duration::from_millis(250));
+            }
+            if !captured {
+                eprintln!(
+                    "[crussty-plugin] improved_noise: retransform capture empty after 3 attempts, trying loader resource stream"
+                );
+                let stream_bytes = cplug_sdk::jni_util::with_attached(|env| {
+                    let loader = KERNEL_LOADER.load(Ordering::SeqCst);
+                    if loader == 0 {
+                        return None;
+                    }
+                    let loader_cls = env.find_class("java/lang/ClassLoader")?;
+                    let garm = env.get_method_id(
+                        loader_cls,
+                        "getResourceAsStream",
+                        "(Ljava/lang/String;)Ljava/io/InputStream;",
+                    )?;
+                    let res_name = env.new_string_utf(&format!("{NOISE_CLASS}.class"))?;
+                    let stream = env.call_object_method(
+                        loader as jni::jobject,
+                        garm,
+                        &[jni::jvalue { l: res_name }],
+                    );
+                    if stream.is_null() {
+                        crate::clear_exception(env);
+                        env.delete_local_ref(res_name);
+                        env.delete_local_ref(loader_cls);
+                        return None;
+                    }
+                    let in_cls = env.find_class("java/io/InputStream")?;
+                    let rab = env.get_method_id(in_cls, "readAllBytes", "()[B")?;
+                    let arr = env.call_object_method(stream, rab, &[]);
+                    let out = if arr.is_null() {
+                        crate::clear_exception(env);
+                        None
+                    } else {
+                        let jarr = arr as jni::jbyteArray;
+                        let len = env.get_array_length(jarr as jni::jarray);
+                        let mut signed = vec![0i8; len as usize];
+                        env.get_byte_array_region(jarr, 0, len, &mut signed);
+                        Some(signed.iter().map(|&b| b as u8).collect::<Vec<u8>>())
+                    };
+                    env.delete_local_ref(arr);
+                    env.delete_local_ref(stream);
+                    env.delete_local_ref(res_name);
+                    env.delete_local_ref(loader_cls);
+                    out
+                })
+                .flatten();
+                match stream_bytes {
+                    Some(bytes) if bytes.len() > 10 => {
+                        eprintln!(
+                            "[crussty-plugin] improved_noise: resource-stream capture {} bytes",
+                            bytes.len()
+                        );
+                        *orig_lock().lock().unwrap_or_else(PoisonError::into_inner) = Some(bytes);
+                    }
+                    _ => {
+                        eprintln!(
+                            "[crussty-plugin] improved_noise: resource-stream capture failed too, hook stays dormant"
+                        );
+                    }
+                }
+            }
         }
         let original = orig_lock().lock().unwrap_or_else(PoisonError::into_inner).clone();
         let Some(original) = original else {
