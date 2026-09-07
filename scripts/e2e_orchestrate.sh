@@ -84,6 +84,22 @@ grep_markers() { # grep_markers <ERE>  -> first matching SESSION line across mar
     fi
 }
 
+# Module .so marker capability: the plugin can only emit a log marker if the
+# marker's string constant is embedded in the deployed module binary. A build
+# predating a marker's code can NEVER produce the line, so its absence from the
+# logs is then EXPECTED — not a regression (S7-5 false alarm: "dormant-строка
+# ABSENT (маркер новее .so)"). Read-only probe: fixed substring via strings(1),
+# grep -aF fallback when binutils is absent.
+so_has_marker() { # so_has_marker <fixed substring> -> rc 0 when embedded in the module .so
+    local so="$SERVER_DIR/modules/crussty/libcrussty.so"
+    [ -f "$so" ] || return 1
+    if command -v strings >/dev/null 2>&1; then
+        strings "$so" 2>/dev/null | grep -qF -- "$1"
+    else
+        grep -aqF -- "$1" "$so" 2>/dev/null
+    fi
+}
+
 server_pid() { # child JVM = the one carrying the -agentpath runtime
     pgrep -f 'agentpath:[^ ]*libcrussty_runtime\.so' | head -1
 }
@@ -154,6 +170,25 @@ do_verify() {
         if [ -z "$v" ]; then printf '%-34s %-6s %s\n' "$1" "PASS" "(absent — healthy)"
         else printf '%-34s %-6s %s\n' "$1" "FAIL" "$v"; fails=$((fails+1)); fi
     }
+    ck_cap() { # ck_cap <name> <ERE> <so-substring> — capability-aware improved_noise row:
+        #   line found in logs                       -> INFO
+        #   .so lacks the marker constant            -> INFO "expected-absent (pre-marker .so)"
+        #   .so capable + other improved_noise lines -> INFO (hook alive; the row's line is
+        #        config-gated — armed/dormant are mutually exclusive — or not yet
+        #        emitted: armed lands post-Done on the activation worker)
+        #   .so capable + ZERO improved_noise lines  -> FAIL (dead byte-hook pipeline,
+        #        the S7-5 crash-boot signature — a real regression)
+        local v; v="$(grep_markers "$2")"
+        if [ -n "$v" ]; then
+            printf '%-34s %-6s %s\n' "$1" "INFO" "$v"
+        elif ! so_has_marker "$3"; then
+            printf '%-34s %-6s %s\n' "$1" "INFO" "(expected-absent — module .so predates marker)"
+        elif grep_markers 'improved_noise: (hook armed|hook serve|pristine sighting|forcing kernel load|Class\.forName|self-test|dormant)' | grep -q .; then
+            printf '%-34s %-6s %s\n' "$1" "INFO" "(absent — noise hook alive, line config-gated/not yet emitted)"
+        else
+            printf '%-34s %-6s %s\n' "$1" "FAIL" "(marker-capable .so, 0 improved_noise lines)"; fails=$((fails+1))
+        fi
+    }
     ck "runtime loaded"          'crussty-runtime\] v[0-9.]+ loaded \(options:'
     ck "cplugin_init injected"   'cplugin_init: injecting Crussty CE native surface'
     ck "module init rc=0"        'crussty-runtime\] module crussty -> init rc=0'
@@ -169,9 +204,13 @@ do_verify() {
     ck_bad "WIRE REFUSED"        'kernel-policy:.*REFUSED'
     ck_bad "policy BYPASSED"     'kernel-policy:.*BYPASSED'
     ck_bad "symbols unresolved>0" 'native surface live: [0-9]+ bridge classes, [0-9]+ natives registered \([1-9][0-9]* symbols unresolved\)'
-    ck_opt "improved_noise armed" 'improved_noise: hook armed, retransform rc=0'
-    ck_opt "improved_noise dormant" 'improved_noise: dormant \(set CRUSSTY_NATIVE_IMPROVED_NOISE=1\)'
-    ck_opt "improved_noise scans-avoided" 'improved_noise: sighting feed: [0-9]+ full class-heap scans avoided'
+    # NOTE dormant ERE: the real line is "...dormant (set CRUSSTY_NATIVE_IMPROVED_NOISE=1
+    # to enable)" — the old pattern ended with "1\)" and could NEVER match (actual
+    # root cause of the S7-5 "dormant-строка ABSENT" false alarm; the string is in
+    # the .so since 1ab0af4). The <so-substring> args are the capability probes.
+    ck_cap "improved_noise armed" 'improved_noise: hook armed, retransform rc=0' 'improved_noise: hook armed, retransform rc='
+    ck_cap "improved_noise dormant" 'improved_noise: dormant \(set CRUSSTY_NATIVE_IMPROVED_NOISE=1' 'improved_noise: dormant (set CRUSSTY_NATIVE_IMPROVED_NOISE=1'
+    ck_cap "improved_noise scans-avoided" 'improved_noise: sighting feed: [0-9]+ full class-heap scans avoided' 'improved_noise: sighting feed: '
     ck_opt "kernel_pref old-bind" 'kernel_pref: .* bound to old kernel'
     printf '%s\n' "--------------------------------------------------------------------------------"
     [ "$fails" -eq 0 ] && { log "verify: ALL PASS"; return 0; }
