@@ -242,6 +242,89 @@ pub static PROVEN_WINS: &[ProvenKernel] = &[
         verdict: "P500 WIN (1.15x)",
         evidence: "bench/p500/results/P500_REPORT_v2.md (6.3 us -> 5.5 us)",
     },
+    // --- batch-dispatch surface (src/batch_table.rs, caller-initiated) -------
+    // These 12 are the batch dispatcher's table: P500 PARITY-floor kernels
+    // (neither wins nor regressions) whose bridge classes are ALREADY part of
+    // the registered callable surface — any Java caller could invoke them
+    // directly today. Batch dispatch executes the SAME registered kernel
+    // function pointer, just with one Java->native transition for N ops; it
+    // is infrastructure, not hot-path routing. They are listed here because
+    // PROVEN_WINS is the SINGLE source of truth for what the batch gate may
+    // execute: batch-table membership alone never grants allowance (a future
+    // table edit adding a do-not-wire kernel is refused at dispatch time and
+    // caught by the drift-guard tests below / in batch_api).
+    ProvenKernel {
+        class: "PaperNativeTicketSetSearch",
+        kernel: "binarySummary",
+        verdict: "P500 PARITY (batch surface)",
+        evidence: "src/batch_table.rs id0 (jni_table.rs:15); registered surface, caller-initiated dispatch",
+    },
+    ProvenKernel {
+        class: "PaperNativeTicketSetSearch",
+        kernel: "uncheckedBinarySummary",
+        verdict: "P500 PARITY (batch surface)",
+        evidence: "src/batch_table.rs id1 (jni_table.rs:16)",
+    },
+    ProvenKernel {
+        class: "PaperNativeAquiferIndexStride",
+        kernel: "oldBatchSummary",
+        verdict: "P500 PARITY (batch surface)",
+        evidence: "src/batch_table.rs id2 (jni_table.rs:128)",
+    },
+    ProvenKernel {
+        class: "PaperNativeAquiferIndexStride",
+        kernel: "newBatchSummary",
+        verdict: "P500 PARITY (batch surface)",
+        evidence: "src/batch_table.rs id3 (jni_table.rs:129); 1.15x-win stem family",
+    },
+    ProvenKernel {
+        class: "PaperNativeChunkDependencies",
+        kernel: "oldImmutableListSummary",
+        verdict: "P500 PARITY (batch surface)",
+        evidence: "src/batch_table.rs id4 (jni_table.rs:175)",
+    },
+    ProvenKernel {
+        class: "PaperNativeChunkDependencies",
+        kernel: "arraySummary",
+        verdict: "P500 PARITY (batch surface)",
+        evidence: "src/batch_table.rs id5 (jni_table.rs:176)",
+    },
+    ProvenKernel {
+        class: "PaperNativeDensitySplineContext",
+        kernel: "oldWrapperSummary",
+        verdict: "P500 PARITY (batch surface)",
+        evidence: "src/batch_table.rs id6 (jni_table.rs:30)",
+    },
+    ProvenKernel {
+        class: "PaperNativeDensitySplineContext",
+        kernel: "newDirectSummary",
+        verdict: "P500 PARITY (batch surface)",
+        evidence: "src/batch_table.rs id7 (jni_table.rs:31); newDirect 3.29x stem (interpolator slice class differs)",
+    },
+    ProvenKernel {
+        class: "PaperNativeEntityLookupStatus",
+        kernel: "oldStatusSummary",
+        verdict: "P500 PARITY (batch surface)",
+        evidence: "src/batch_table.rs id8 (jni_table.rs:242)",
+    },
+    ProvenKernel {
+        class: "PaperNativeNoiseInterpolatorFractions",
+        kernel: "divisionSummary",
+        verdict: "P500 PARITY (batch surface)",
+        evidence: "src/batch_table.rs id9 (jni_table.rs:155)",
+    },
+    ProvenKernel {
+        class: "PaperNativeClimateRTree",
+        kernel: "buildTreeHandle",
+        verdict: "P500 PARITY (batch surface)",
+        evidence: "src/batch_table.rs id10 (jni_table.rs:89), shape B ([J[J)J",
+    },
+    ProvenKernel {
+        class: "net/minecraft/world/level/biome/PaperNativeClimateRTree",
+        kernel: "nativeBuildTreeHandle",
+        verdict: "P500 PARITY (batch surface)",
+        evidence: "src/batch_table.rs id11 (jni_table.rs:92), shape B ([J[J)J",
+    },
 ];
 
 /// The policy verdict for one kernel.
@@ -278,12 +361,15 @@ pub fn do_not_wire_entry(class: &str, kernel: &str) -> Option<&'static Regressed
         .find(|r| r.class == class && r.kernel == kernel)
 }
 
-/// Look a kernel up in the proven/whitelist registry.
+/// Look a kernel up in the proven/whitelist registry. Registry entries may
+/// be written in either short or full internal form — BOTH sides are
+/// normalized to the short form before comparing (the batch table carries a
+/// full `net/minecraft/...` entry).
 pub fn proven_entry(class: &str, kernel: &str) -> Option<&'static ProvenKernel> {
     let class = short_class(class);
     PROVEN_WINS
         .iter()
-        .find(|p| p.class == class && p.kernel == kernel)
+        .find(|p| short_class(p.class) == class && p.kernel == kernel)
 }
 
 /// The decision function under an explicit mode (pure; used by tests and by
@@ -528,6 +614,54 @@ mod tests {
             "ca/spottedleaf/moonrise/common/misc/PaperNativeAreaMap.nativeUpdateOpsBatch"
         )
         .is_allowed());
+    }
+
+    // --- batch-dispatch surface drift guards ----------------------------------
+
+    #[test]
+    fn every_batch_table_kernel_is_policy_allowed() {
+        // The shipped batch surface must be live: if this fails, every batch
+        // referencing the kernel returns ERR_KERNEL_REFUSED and the surface
+        // is dead. Add an honest PROVEN_WINS entry (with evidence) or remove
+        // the kernel from batch_table — never special-case the gate.
+        for k in crate::batch_table::BATCH_KERNELS {
+            let d = decide_in(PolicyMode::Strict, k.class, k.method);
+            assert!(
+                d.is_allowed(),
+                "batch kernel {}.{} refused by policy (batch surface dead)",
+                k.class,
+                k.method
+            );
+        }
+    }
+
+    #[test]
+    fn batch_table_never_carries_a_do_not_wire_kernel() {
+        for r in DO_NOT_WIRE {
+            for k in crate::batch_table::BATCH_KERNELS {
+                let same =
+                    k.class == r.class || short_class(k.class) == r.class;
+                assert!(
+                    !(same && k.method == r.kernel),
+                    "batch table id {} carries do-not-wire kernel {}.{}",
+                    k.id,
+                    r.class,
+                    r.kernel
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn proven_wins_has_no_duplicate_class_kernel_pairs() {
+        // The registry is scanned linearly; a duplicate would shadow evidence
+        // and make audits lie. Cheap O(n^2) guard over a ~30-entry list.
+        let mut pairs: Vec<(&str, &str)> =
+            PROVEN_WINS.iter().map(|p| (p.class, p.kernel)).collect();
+        let n = pairs.len();
+        pairs.sort_unstable();
+        pairs.dedup();
+        assert_eq!(pairs.len(), n, "duplicate (class, kernel) in PROVEN_WINS");
     }
 
     #[test]

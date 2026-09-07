@@ -16,6 +16,8 @@
 //! byte hooks on top of this surface — see the project docs.
 
 mod area_map;
+mod batch_api;
+mod batch_table;
 mod bridge_class;
 mod classfile;
 mod improved_noise;
@@ -35,62 +37,11 @@ use std::time::Duration;
 const MAIN_LIB: &str = "paper_native_jni";
 const CHUNK_LIB: &str = "paper_native_chunk_encode_jni";
 
-/// TASK-04 (kernel selection gate): P500 confirmed these alt kernels are
-/// SLOWER than their old* counterparts (scale-invariant regressions: 5.5x,
-/// 4.6x, 2.3x, 1.7x; WaypointDistanceGuard ~9%/element at N=4096 slope fit).
-/// They stay REGISTERED (surface completeness) but with `CRUSSTY_KERNEL_PREF
-/// = old|conservative|safe` the plugin binds the old* symbol under the alt
-/// method instead — same (class, method, sig), same semantics, no .so
-/// changes, no gameplay surface change: callers just never execute the slow
-/// implementation. Default (unset / any other value) = native alt bindings.
-const REGRESSED_KERNEL_FALLBACKS: &[(&str, &str, &str)] = &[
-    (
-        "PaperNativeLevelChunkHeightmap",
-        "newCombinedUpdateSummary",
-        "Java_PaperNativeLevelChunkHeightmap_oldFourUpdateSummary",
-    ),
-    (
-        "PaperNativeMarkerCache",
-        "cachedSummary",
-        "Java_PaperNativeMarkerCache_oldSummary",
-    ),
-    (
-        "PaperNativePalettedReencodeScratch",
-        "directPackedSummary",
-        "Java_PaperNativePalettedReencodeScratch_oldNewArraySummary",
-    ),
-    (
-        "PaperNativeProtoChunkHeightmap",
-        "newCachedContainsSummary",
-        "Java_PaperNativeProtoChunkHeightmap_oldEnumSetForeachSummary",
-    ),
-    (
-        "PaperNativeWaypointDistanceGuard",
-        "guardedReallyFarSummary",
-        "Java_PaperNativeWaypointDistanceGuard_oldReallyFarSummary",
-    ),
-];
-
-fn kernel_pref_conservative() -> bool {
-    static PREF: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
-    *PREF.get_or_init(|| {
-        matches!(
-            std::env::var("CRUSSTY_KERNEL_PREF").as_deref(),
-            Ok("old") | Ok("conservative") | Ok("safe") | Ok("1")
-        )
-    })
-}
-
-/// Fallback symbol for (class, method) in conservative mode, if any.
-fn kernel_pref_fallback(class: &str, method: &str) -> Option<&'static str> {
-    if !kernel_pref_conservative() {
-        return None;
-    }
-    REGRESSED_KERNEL_FALLBACKS
-        .iter()
-        .find(|(c, m, _)| *c == class && *m == method)
-        .map(|(_, _, sym)| *sym)
-}
+// TASK-27 (hygiene): the former lib.rs-local REGRESSED_KERNEL_FALLBACKS /
+// kernel_pref_conservative / kernel_pref_fallback duplicates are REMOVED —
+// `kernel_policy` (registration_fallback) is the single source of truth for
+// the conservative surface binding; two lists had already begun to drift
+// (lib.rs carried a 5th entry the policy registry never adopted).
 
 /// Bundled native library filename for this platform: Crussty CE ships
 /// `libpaper_native_jni.so` on Linux; Windows builds produce
@@ -250,6 +201,15 @@ fn inject_surface() {
             }
         }
         eprintln!("[crussty-plugin] injection loop done");
+
+        // Batch dispatcher (src/batch_api.rs): define the batch bridge class
+        // and register run/abiVersion on it. Failure is NON-fatal — the
+        // surface above stays live; the batch API just reports
+        // ERR_NO_NATIVE_LIB / stays unregistered.
+        if let Err(e) = batch_api::init(env, &main) {
+            eprintln!("[crussty-plugin] batch: init failed (non-fatal): {e}");
+            clear_exception(env);
+        }
         Some(())
     });
 

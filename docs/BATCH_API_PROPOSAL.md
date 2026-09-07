@@ -1,6 +1,14 @@
 # Proposal: Native Batch Dispatch API (`PaperNativeBatchDispatch`)
 
-Design for amortizing the ~115 ns JNI transition floor across many native
+> **Status 2026-09-08**: v1 is WIRED and policy-gated — see
+> [`BATCH_WIRING_PLAN.md`](BATCH_WIRING_PLAN.md) (as-built: modules in
+> `lib.rs`, `batch_api::init` call site, `kernel_policy` gate,
+> `ERR_KERNEL_REFUSED`, drift-guard tests). Floor numbers errata: this
+> document predates `P500_REPORT_v2.md` — the canon JNI transition floor is
+> **35–90 ns** (13 floor groups < 200 ns), not ~115 ns; batching math and
+> structure below are unchanged.
+
+Design for amortizing the JNI transition floor across many native
 kernel invocations in c-crussty. Companion context:
 [`OPTIMIZATION_ROADMAP.md`](OPTIMIZATION_ROADMAP.md) (§2 floor insight, §3
 Phase 2.2). Target repo state: `src/` (Rust plugin), `native/JNI_EXPORTS.manifest`
@@ -184,7 +192,9 @@ shapes; the hot ones are `(I[J)I` ×9, `(II[J)I` ×4, `(III[J)I` ×3, plus
 
 * **Structural errors** (batch-level, before any op runs): null arrays,
   stride mismatch, `kernelId` out of range, `count` > 256, unknown ABI
-  version → return negative code, throw `IllegalArgumentException` (one
+  version, **a kernel refused by `kernel_policy`** (as-built:
+  `ERR_KERNEL_REFUSED = -10`, see [`BATCH_WIRING_PLAN.md`](BATCH_WIRING_PLAN.md))
+  → return negative code, throw `IllegalArgumentException` (one
   exception per batch, never per op), **no partial execution**.
 * **Per-op kernel exceptions** (closed-source kernels may throw): after each
   direct call, `ExceptionCheck`; on pending exception:
