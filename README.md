@@ -64,6 +64,7 @@ Details, sequence diagrams and failure-mode analysis: [`docs/ARCHITECTURE.md`](d
 - `noise/` — Java sources of the noise bridge (`ImprovedNoiseNativeOps`), `build/` — compiled
 - `native/` — Crussty CE binaries + `JNI_EXPORTS.manifest` (single source of truth for the bridge table) + MIT license, see [`native/MANIFEST.md`](native/MANIFEST.md)
 - `bench/p500/` — the P500 JNI kernel benchmark, see [`bench/p500/README.md`](bench/p500/README.md)
+- `bench/lifecycle/` — P500-style A/B of the noise-handle lifecycle (old finalize+global-map vs phantom reaper+striped maps) over the real `libpaper_native_jni.so` kernels; report in `bench/lifecycle/results/LIFECYCLE_REPORT.md`
 - `docs/` — architecture deep dive ([`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md))
 - `scripts/build_noise.sh` — rebuilds the noise bridge classes with a pinned `--release` (class-version guard, see [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) §9)
 - `tests/fixtures/` — test fixtures

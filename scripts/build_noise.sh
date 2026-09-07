@@ -31,7 +31,9 @@ if [ -z "$JAVAC" ]; then
   else echo "no javac found (pass one as arg 1 or install a JDK)" >&2; exit 1; fi
 fi
 
-RELEASE="${NOISE_RELEASE:-11}"  # major 55: needs Cleaner (Java 9+); <= 65 on every supported kernel JVM (Java 21)
+RELEASE="${NOISE_RELEASE:-8}"   # major 52: phantom-reaper bridge needs nothing from Java 9+
+# (a Cleaner-based variant would require --release 11; the runtime guard in
+# src/improved_noise.rs would still keep it dormant on older kernels)
 SRC_DIR=noise/net
 OUT_DIR=noise/build
 
@@ -51,12 +53,14 @@ python3 - <<'EOF'
 import glob, struct, sys
 
 # The runtime embed contract: src/improved_noise.rs include_bytes!s and
-# defines EXACTLY these two classes into the kernel loader. Anything else
+# defines EXACTLY these three classes into the kernel loader. Anything else
 # left in noise/build would silently not ship -> NoClassDefFoundError on
-# first use inside the kernel (e.g. an extra ImprovedNoiseNativeOps$Releaser
-# nested class from a lifecycle refactor). Cleaner-based Handle avoids extra
-# class files via a capturing lambda spun by LambdaMetafactory at runtime.
-SHIP = {"ImprovedNoiseNativeOps.class", "ImprovedNoiseNativeOps$Handle.class"}
+# first use inside the kernel (e.g. a stray synthetic $1 from a private
+# nested ctor under pre-nestmates targets). The phantom-reaper design ships
+# an explicit named $Reaper class (lambda-with-state cannot drain a queue
+# across timeouts without capturing mutable state, which lambdas forbid).
+SHIP = {"ImprovedNoiseNativeOps.class", "ImprovedNoiseNativeOps$Handle.class",
+        "ImprovedNoiseNativeOps$Reaper.class"}
 
 bad = 0
 files = sorted(glob.glob('noise/build/net/minecraft/world/level/levelgen/synth/*.class'))
@@ -71,7 +75,7 @@ for f in files:
         bad = 1
     if not keep and name.startswith('ImprovedNoiseNativeOps'):
         print(f"  ERROR: {name} is an unembedded bridge class — src/improved_noise.rs defines only {sorted(SHIP)}; "
-              "keep the bridge at exactly 2 class files (use capturing lambdas, not helper classes)", file=sys.stderr)
+              "keep the bridge at exactly 3 class files (Ops, $Handle, $Reaper)", file=sys.stderr)
         bad = 1
 shipped = {f.rsplit('/', 1)[-1] for f in files if f.rsplit('/', 1)[-1] in SHIP}
 missing = SHIP - shipped
