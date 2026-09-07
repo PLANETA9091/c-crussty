@@ -66,3 +66,17 @@ Work Log:
 - (3) Physical limits: floor 35–90 ns ⇒ >100x per-call needs ≤0.9 ns/op ⇒ impossible plugin-side; batch caps 11.5–40x naive / 1.4–4.8x M-adj ⇒ 32 floor kernels / 13 groups BLOCKED-BY-.so; 33 body-dominated groups blocked by bodies. >100x CLASS = same-state/constant-fold guards + lifecycle hygiene + boot caching (all three shipped exemplars skip machinery with O(1) guards). Next >100x: blend-cache guard is the LAST identified candidate on a live surface (HOOK_BLEND_CACHE P1–P4, PATCHER_DESIGN C0/C1, C1 cache rejected on measured evidence); BLEND_CACHE_DESIGN evidence leans H2 (Paper already folds EMPTY) ⇒ TASK-32 honest outcome may be documented NO-GO; after it the >100x pipeline is empty without in-.so engine work (upstream batch API, ENGINE-TOUCH).
 - (4) User-facing ledger table for messagesFromUser.md: already-live >100x (①②), TASK-32-conditional >100x (③, with H1/H2 caveat), physics-capped (④⑤⑥ with exact numbers). (5) Doc errata (not edited): PROVEN_WINS_SYNC §4.4 wrong that P500_REPORT.md ≠ P500_REPORT_v2.md (diff -q: IDENTICAL @ d87067e); HOOK_BLEND_CACHE.md stale 244x/~115 ns; BLEND_CACHE_DESIGN quotes "WIN (244x)"; ROADMAP §1 stale area-map poll cadence (60 s/500 ms vs 180 s/2 s/10 s).
 - Signed: agent-7625532f (TASK-33-sub), 2026-09-07T18:55Z.
+
+---
+## SESSION cron 03:20+08 — TASK-24 (C3) закрыт: bench tail (BatchFloorBench before/after) — 2026-09-07T19:45Z — agent-7625532f
+
+Work Log:
+- Открытый хвост TASK-24 (C3): код 28ad646 на master (scratch reuse, prefix-sum pre-size, in_starts reuse), но doc batch_api.rs:90-92 ссылался на bench/batch/ — файл не был поставлен (subagent-3b SESSION 005 погиб без артефактов). Клейм CLAIMS f73ace8.
+- Доставлен bench/batch/: BatchFloorBench.java (standalone: System.load closed lib P500-real-mode + module cdylib; abiVersion gate 65548; P500 G0 shape-A ids 2/3, scalar=16, dst=64; parity gate direct-vs-batch 4 lanes PASS; settle ~1M ops; 11 rounds medians; direct per-op reference), run_batch_floor.sh (detach-worktree arm builds, полный BENCH.lock, TSV raw), classes/ в .gitignore.
+- Полный прогон 19:31-19:33Z под BENCH.lock, пары BEFORE=db7cf27 vs AFTER=master: k2 K=1 1096.6→997.2 (0.909), k3 K=1 1042.3→951.3 (0.913); K>=8 паритет в шуме (0.989-1.015); direct/op drift <=0.6% между руками (module-независимость).
+- Декомпозиция (AFTER): fixed preamble ~200ns/batch, per-op marginal +242-244ns @K=1 → +40-49ns @K=256. Report-only вывод: batch бьёт direct только у потолка 90ns-перехода при больших K (~2.2x асимптота для 0-body); для 35ns-floor и body-dominated ядер — никогда. Registry/kernel_policy НЕ менялись.
+- Отчёт: bench/batch/results/BATCH_FLOOR_REPORT.md (+RAW.tsv, per-arm logs). cargo test 22/22 + cplug-sdk 15/15, clippy 12 = baseline. Push 1449f7f (race attempt 1), CLAIMS done (re-pull verified).
+- Cleanup: /home/z/w-t24 удалён; live server не тронут; токен не экспонирован.
+
+Stage Summary:
+- TASK-24 (C3) полностью закрыт (код 28ad646 + измерение 1449f7f). Константы диспетчера теперь эмпирические — вход для wave-1 batch adoption. Open: TASK-32 (blend-cache impl, вероятный NO-GO по H2), TASK-13/17/20/22/23/25/28-36/w3/w4 done.
