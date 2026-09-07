@@ -24,6 +24,7 @@ mod improved_noise;
 mod jni_table;
 mod kernel_policy;
 mod loader;
+mod promote_wire;
 mod proto_blend_cache;
 
 use cplug_abi::{CPluginApi, JavaVmPtr};
@@ -167,6 +168,15 @@ fn inject_surface() {
 
     eprintln!("[crussty-plugin] native libs: {main_so:?} (+ {chunk_so:?})");
 
+    // TASK-53 promotion binding boot marker (grep-able, mirrors rollout).
+    if kernel_policy::promotion_armed() {
+        eprintln!(
+            "[crussty-plugin] kernel_promote: CRUSSTY_KERNEL_PROMOTE armed — {} promotion pair(s) re-bind at registration",
+            kernel_policy::PROMOTE_PAIRS.len()
+        );
+        kernel_policy::log_armed_pairs();
+    }
+
     let mut n_classes = 0usize;
     let mut n_natives = 0usize;
     let mut n_missing = 0usize;
@@ -226,6 +236,8 @@ fn inject_surface() {
 
     with_attached(|env| {
         live_proof(env);
+        // TASK-53: promotion self-test — armed-only, no-op when dormant.
+        promote_wire::selftest_if_armed(env);
         Some(())
     });
 
@@ -264,8 +276,21 @@ fn define_and_register(
         // implementation pointer of a confirmed-regressed method is swapped
         // to its paired old kernel (same sig, same semantics).
         let fallback = kernel_policy::registration_fallback(class, m);
-        let sym: &str = fallback.as_deref().unwrap_or(sym);
-        if fallback.is_some() {
+        // TASK-53 promotion binding: with CRUSSTY_KERNEL_PROMOTE armed, the
+        // ORIGINAL bridge method of a promotion pair is bound to its paired
+        // P500-WIN kernel (same sig, parity-gate-proven identical semantics;
+        // docs/PROVEN_WINS_SYNC.md §4.2). The safety fallback takes
+        // precedence if ever both registries matched (they cannot — the
+        // kernel_policy disjointness test enforces it).
+        let promotion = if fallback.is_some() {
+            None
+        } else {
+            kernel_policy::registration_promotion(class, m)
+        };
+        let sym: &str = promotion.as_deref().or(fallback.as_deref()).unwrap_or(sym);
+        if let Some(win_sym) = &promotion {
+            eprintln!("[crussty-plugin] kernel_promote: {class}.{m} bound to win kernel ({win_sym})");
+        } else if fallback.is_some() {
             eprintln!("[crussty-plugin] kernel_pref: {class}.{m} bound to old kernel ({sym})");
         }
         let Some(ptr) = lib.symbol(sym) else {

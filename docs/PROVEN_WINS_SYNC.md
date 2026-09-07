@@ -108,12 +108,20 @@ Remaining stale artifact fixed: the `DO_NOT_WIRE` doc comment still said "P500 2
    `P500 PARITY (batch surface)` (no pair ⇒ no ratio; no gate change); every
    registry entry now traces to a canonical-methodology measurement or the
    canonical report.
-2. **Two NEW rerun WINs are not in the registry (documented, deliberately NOT added):**
-   `NoiseChunkFlatCacheContext.newTrueContextSummary` (1.24×, ratio 0.805) and
-   `.newFalseContextSummary` (1.18×, ratio 0.846), both 0.0%-stable. Adding them would
-   WIDEN the gate (new `Allow` inputs) — that is a promotion decision, not an evidence
-   sync. They are recorded here as the top future promotion candidates, pending the
-   BATCH_WIRING_PLAN lifecycle (P500 WIN + live verification).
+2. **RESOLVED 2026-09-09+08 (TASK-53): two NEW rerun WINs were not in the registry.**
+   `NoiseChunkFlatCacheContext.newTrueContextSummary` (1.24×, ratio 0.805/0.804) and
+   `.newFalseContextSummary` (1.18×/1.17×, ratio 0.846/0.853 — both 0.0%-stable,
+   twice reproduced incl. the 2026-09-09 fresh full rerun) are now **promoted** through
+   the full §Lifecycle: (a) offline semantic-parity gate — old ≡ new byte-exact on 3648
+   inputs per pair (`bench/p500/parity/results/FLATCACHE_PARITY.md`); (b) promotion
+   binding infrastructure — `CRUSSTY_KERNEL_PROMOTE` (default OFF, fail-safe) re-binds
+   the original bridge method to the WIN symbol at registration
+   (`kernel_policy.rs` `PROMOTE_PAIRS`); (c) live-armed self-test through the real
+   bridge — fixtures 8/8 byte-exact vs offline old-impl expectations, bridge parity
+   8/8 post-rebind (`bench/p500/parity/results/PROMOTE_E2E_2026-09-09.md`); unarmed
+   boot shows zero `kernel_promote` lines (dormant-invisible). Both kernels added to
+   `PROVEN_WINS` ("P500 WIN + live-verified") — the deliberate gate-widening this
+   section previously deferred is now the documented promotion decision.
 3. **0.906 vs 0.917** for `AquiferSurfaceSampling` (rounded-median artifact, see §3.1
    note) — both parity; resolved in favor of the report's own 0.906.
 4. `P500_REPORT.md ≡ v2 byte-identical` claim from TASK-12's predecessor notes applies to
@@ -124,18 +132,25 @@ Remaining stale artifact fixed: the `DO_NOT_WIRE` doc comment still said "P500 2
 
 ## 5. Wiring-eligibility delta
 
-* **Hot-path swap / promotion candidates: 7 → 4.** `PluginLoadingAllocation`
-  (`newLazyValidateSummary`, `newLazyMissingSetSummary`) and
+* **Hot-path swap / promotion candidates: 7 → 4 → 2 (TASK-53).**
+  `PluginLoadingAllocation` (`newLazyValidateSummary`, `newLazyMissingSetSummary`) and
   `AquiferSurfaceSampling.newBatchSummary` lose "P500 WIN promotion candidate" status —
   a hot path must NOT be swapped to them on win-evidence grounds (they are parity).
   They remain **batch-dispatch-eligible**: BATCH_WIRING_PLAN §B.2.3 precondition (a)
   ("single-call verdict parity or better") now holds *honestly* — this matches
   BATCH_ADOPTION_MATRIX_wave2 §4 rows #4/#5/#7 ("wire for batching, not kernel swap").
-* **Batch dispatcher `Allow` set: unchanged (12 ids).** `decide()`/`decide_id()` return
-  the same `Decision` for every input; `ERR_KERNEL_REFUSED` behavior identical.
+  The remaining two candidates (the `NoiseChunkFlatCacheContext` pair) were **promoted
+  by TASK-53** through the full lifecycle — see §4 item 2.
+* **Policy `Allow` set: widened by the TASK-53 promotion (2 new inputs).**
+  `decide()` now returns `Allow` for `NoiseChunkFlatCacheContext.newTrueContextSummary`
+  and `.newFalseContextSummary` (pinned by
+  `promoted_win_kernels_are_policy_allowed_in_strict_mode`). The **batch dispatcher
+  table is unchanged** (14 ids — the promoted kernels are not batch-table members), and
+  DO_NOT_WIRE refusals are identical.
 * **DO_NOT_WIRE: unchanged (4 kernels).** All four regressions reproduce on the rerun;
   no promotion/demotion.
-* **Net gate-widening: zero.** Net gate-narrowing: zero (verdict labels only).
+* **Net gate-widening: +2 (the TASK-53 promotion, §4 item 2).** Net gate-narrowing:
+  zero (verdict labels only).
 
 ## 6. Risk note
 

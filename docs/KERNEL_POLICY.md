@@ -39,7 +39,7 @@ Strict policy (the default), evaluated in order:
 | anything else (unknown / unproven) | `KeepJava` — "not proven" (default-safe) |
 
 API surface (all allocation-free; mode cached in a `OnceLock`; registries are
-static slices scanned linearly — 4 + 23 entries):
+static slices scanned linearly — 4 + 25 entries; plus the TASK-53 `PROMOTE_PAIRS` slice for the env-gated WIN-direction registration binding):
 
 | Signature | Purpose |
 |---|---|
@@ -147,6 +147,14 @@ unproven elsewhere) does **not** leak between entries.
   stem pairing, min-of-medians, `aggregate_p500.py`) **plus** live-server
   verification of the actual wiring (self-test / profile evidence), then add
   a `ProvenKernel` entry with the evidence pointer.
+  First application — **TASK-53** (`NoiseChunkFlatCacheContext`
+  `newTrueContextSummary` / `newFalseContextSummary`, 2026-09-09): the full
+  chain was P500 WIN (twice reproduced) → offline semantic-parity gate
+  (`bench/p500/parity/`, 3648 inputs/pair byte-exact) → env-gated promotion
+  binding (`CRUSSTY_KERNEL_PROMOTE`, default OFF) → live-armed self-test
+  through the real bridge (fixtures 8/8, bridge parity 8/8). The operator
+  arms the swap via `CRUSSTY_KERNEL_PROMOTE=1`; the registry entries make
+  the pair policy-`Allow` either way.
 * **Demote to `DO_NOT_WIRE`**: a **REGRESSION** verdict (ratio ≥ 1.18)
   confirmed by a rerun and (for hot-path candidates) the scale-invariance
   probe; add a `RegressedKernel` entry with ratio, source tag and reason. The

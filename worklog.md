@@ -173,3 +173,19 @@ Work Log:
 
 Stage Summary:
 - G8/A.6 ЗАКРЫТ: refusal-поверхность диспетчера доказана end-to-end (реальный JNI + закрытый .so), unit-тесты остаются fast-регресс-слоем. G-борд runbook: все пункты RESOLVED/измерены, кроме G4 (site-arming, ждёт body-dominated ядро — закрыт по существу вердиктом batch-NO-GO). Открытых клеймов нет; кандидаты: новые hotspot'ы dump→analyze→optimize, §4.2 promotion (осознанно открыт), bootab-инфраструктура для будущих A/B.
+
+---
+## SESSION cron 06:40+08 — TASK-53 done: FlatCacheContext promotion (§4.2 RESOLVED, first full lifecycle application) — 2026-09-09T00:5xZ — agent-7625532f
+
+Work Log:
+- Старт: worklog+CLAIMS прочитаны, открытых клеймов нет; сосед S7-9 запушил FULL P500 rerun (4b7b7ef: 49/49, wins стабильны — FlatCacheContext 1.24x подтверждён дважды). Клейм TASK-53 (9ff8f99 после rebase на 625c4a2). Взят named-open §4.2 promotion-кандидат.
+- Jar-форензика: purpur/mojang jar-ы НЕ содержат FlatCacheContext (ни класса, ни caller-ов) — класс определяется плагином (define_and_register), patch-table движка закрыта → production call-path недоказуем статически. Дизайн учёл: промоушен-биндинг перепривязывает ИМЯ old* к win-символу — семантически прозрачен независимо от того, какое имя зовёт production.
+- Парity-gate (bench/p500/parity/, REAL closed .so, BENCH.lock 22:51Z): old ≡ new БАЙТ-В-БАЙТ на 3648 входах/пару (результат + полный dst; edges + 3000 рандом + cross-call-state детектор каждые 97) — 0 mismatches, 0 state-inconsistencies на ОБОИХ парах. Фикстуры (8 векторов) детерминированы кросс-JVM (двойной прогон, md5 идентичен). Семантика раскрыта: dst[0]=dst[1]=a0, dst[2]=hash (только true-вариант), res=3.
+- Код (master build 94bf1e13): kernel_policy.rs — PromotablePair + PROMOTE_PAIRS (2 записи, ratio 0.804/0.846) + CRUSSTY_KERNEL_PROMOTE (fail-safe: только 1|on) + registration_promotion/promotion_symbol_for + log_armed_pairs; lib.rs — биндинг в define_and_register (safety-fallback приоритет) + armed boot marker + selftest_if_armed; promote_wire.rs — live self-test: 8 фикстур vs offline old-impl ожидания + bridge parity (from-name == to-name post-rebind).
+- Тесты: crussty 39/39 (+5 promote-pin: jni_table drift-guard зеркала, DO_NOT_WIRE-дизъюнкция, Allow-widening pin, fail-safe parse, exact-name lookup), cplug-sdk 20/20, clippy Δ0 (lib 12 = baseline).
+- LIVE e2e (e2e_orchestrate boot/shutdown, оба арма в отдельных blocking-вызовах, BENCH.lock 90s-wait): ARM A (env unset) — Done 15.803s, 98/283/0, live proofs PASS, kernel_promote строк = 0 (dormant-невидимость). ARM B (CRUSSTY_KERNEL_PROMOTE=1) — Done 15.716s, armed marker + 2 pair-строки + 2 rebind-строки (oldTrue→newTrue, oldFalse→newFalse) + SELF-TEST PASS (fixtures 8/8 byte-exact, bridge parity 8/8), shutdown graceful 143. Отчёт bench/p500/parity/results/PROMOTE_E2E_2026-09-09.md.
+- Docs: PROVEN_WINS_SYNC §4.2 → RESOLVED + §5 (candidates 7→4→2, Allow-set widening +2, batch table unchanged 14 ids); KERNEL_POLICY.md (count 4+25, lifecycle first-application note); BATCH_ROLLOUT_RUNBOOK env-таблица + CRUSSTY_KERNEL_PROMOTE row; RESULTS_LEDGER §2 row 8. PROVEN_WINS += 2 записи ("P500 WIN + live-verified").
+- Module .so задеплоен в /home/z/server/modules/crussty/libcrussty.so (dormant-safe: armed только по env, прецедент TASK-41). Live server после e2e ОСТАНОВЛЕН (graceful, как найден — off). Токен не экспонирован.
+
+Stage Summary:
+- TASK-53 ЗАКРЫТ: lifecycle §Lifecycle применён впервые полностью (P500 WIN ×2 + parity gate + live self-test); §4.2 RESOLVED; Allow-set +2 задокументировано; dormant default не тронут. Открытых клеймов нет. Следующие кандидаты: G4 first call-site (второй контур ретраит с уменьшенным scope), новые hotspot'ы dump→analyze→optimize, P500 после будущих src-изменений (спокойное окно).
