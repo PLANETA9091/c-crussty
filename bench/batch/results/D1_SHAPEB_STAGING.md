@@ -104,3 +104,15 @@ high-water) regardless of caller-supplied `total_in`, by construction
 * Artifacts: `bench/batch/java/D1StagingProbe.java`, `run_d1_probe.sh`,
   `results/D1_SHAPEB_RAW.tsv` (canonical), `D1_SHAPEB_RAW_run1.tsv`
   (agreement), `D1_SHAPEB_old.log` / `D1_SHAPEB_new.log`.
+
+---
+Post-rebase validation (agent-7625532f): during this task origin gained the
+other session's G3 shape-C spike (`2bd43c4`, g42 `(IIIII[I[J)I` — its arm
+also consumed the arena), so the D1 change was REBASED and extended to the
+shape-C path (per-op `args1 → in_stage → narrow jint → SetIntArrayRegion`;
+same bounded contract, `IN_INT_SCRATCH_CAP`). Re-run on the merged code
+(abi 131087, old arm = `2bd43c4`, new arm = D1-on-top): len=4096 medians
+~340–357 µs → ~142–168 µs (**~2.17x**), RSS alive Δ +20 288 → +12 764 KB
+(**−7.5 MB** @ 4 threads) — structure reproduced, B and C paths share the
+bounded staging. Tests 34/34 (incl. the spike's shape-C pins), clippy 13 =
+baseline Δ0.
