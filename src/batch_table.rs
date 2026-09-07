@@ -23,13 +23,18 @@
 //! | 9  | A     | PaperNativeNoiseInterpolatorFractions              | divisionSummary         | (I[J)I     |
 //! | 10 | B     | PaperNativeClimateRTree                            | buildTreeHandle         | ([J[J)J    |
 //! | 11 | B     | net/minecraft/world/level/biome/PaperNativeClimateRTree | nativeBuildTreeHandle | ([J[J)J  |
+//! | 12 | A'    | PaperNativeDensityAp2MinMaxFill                    | oldSummary              | (III[J)I   |
+//! | 13 | A'    | PaperNativeDensityAp2MinMaxFill                    | newSummary              | (III[J)I   |
 //!
-//! All 12 are real symbols verified present in `libpaper_native_jni.so`
+//! All 14 are real symbols verified present in `libpaper_native_jni.so`
 //! (`JNI_EXPORTS.manifest` / live proof: id 0 is the same kernel the plugin's
 //! `live_proof` drives through the bridge). Ids 0-9 cover the dominant
 //! `(I[J)I` P500 shape ("scalar + long[] dst, returns count written"); ids
 //! 10-11 cover the second real shape `([J[J)J` ("long[] src + long[] dst,
-//! returns a jlong result"). No `(I[J)Z` symbols exist in the table today —
+//! returns a jlong result"); ids 12-13 (TASK-48 Phase 1, runbook §8 G3) cover
+//! the wave-1 three-scalar shape `(III[J)I` — the P500 g9 density
+//! min/max-fill pair (direct 119.8 ns, PROVEN_WINS WIN-grade, not in
+//! `DO_NOT_WIRE`). No `(I[J)Z` symbols exist in the table today —
 //! shape `Z` is reserved in [`Shape`] so such kernels can be added without an
 //! ABI break of the batch entry point.
 //!
@@ -89,6 +94,12 @@
 ///   Reads `argCounts[i]` longs from the packed `args1` input arena, writes
 ///   scratch output, and its `jlong` return value is stored as the single
 ///   result long for the op.
+/// - [`Shape::APrime`] (A′) — `(III[J)I`:
+///   `fn(JNIEnv*, jclass, jint, jint, jint, jlongArray) -> jint`. Three scalar
+///   arguments packed into the `args0` scalar plane (see [`Shape::scalar_width`]
+///   / `batch_api` packing rule); `argCounts[i]` stays the OUTPUT capacity of
+///   the `long[]` dst and the kernel returns the count written — same
+///   output contract as [`Shape::A`].
 /// - [`Shape::Z`] — reserved: `(I[J)Z` (`-> jboolean`). No such symbol exists
 ///   in `MAIN_JNI_TABLE` yet; listed so the dispatcher contract is complete.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -97,6 +108,9 @@ pub enum Shape {
     A,
     /// `([J[J)J` — `long[]` src in, `long[]` dst out, returns jlong result.
     B,
+    /// `(III[J)I` — three scalars in, `long[]` dst out, returns count written
+    /// (wave-1 shape, TASK-48: P500 g9 `DensityAp2MinMaxFill` pair).
+    APrime,
     /// `(I[J)Z` — reserved (no real symbols yet); boolean result stored as 0/1.
     /// Kept so kernels of this shape can be added without an ABI break.
     #[allow(dead_code)]
@@ -110,7 +124,22 @@ impl Shape {
         match self {
             Shape::A => "(I[J)I",
             Shape::B => "([J[J)J",
+            Shape::APrime => "(III[J)I",
             Shape::Z => "(I[J)Z",
+        }
+    }
+
+    /// Number of `args0` scalar-plane longs this shape consumes per op
+    /// (TASK-48 wire rule: the scalar plane is shape-packed by prefix sums —
+    /// op *i* owns `scalar_width(shape_i)` consecutive longs starting at
+    /// `scalar_starts[i]`; shape B consumes none). The Java caller derives
+    /// the identical layout from `kernelIds` before the call, so the packing
+    /// is deterministic and needs no extra control plane.
+    pub const fn scalar_width(self) -> usize {
+        match self {
+            Shape::A | Shape::Z => 1,
+            Shape::APrime => 3,
+            Shape::B => 0,
         }
     }
 }
@@ -138,10 +167,17 @@ pub struct BatchKernel {
 /// convention change; `abiVersion()` returns
 /// `(TABLE_VERSION << 16) | KERNEL_COUNT` and stale callers fall back to
 /// per-op calls on mismatch.
-pub const TABLE_VERSION: u32 = 1;
+///
+/// v2 (TASK-48): `args0` became the shape-packed scalar plane
+/// ([`Shape::scalar_width`]; v1 = one long per op, shape-A only). Ids 0-11
+/// wire behavior is byte-identical to v1 — the bump exists so a v1 caller
+/// that is unaware of the packing rule cannot accidentally feed a batch
+/// containing A′ ids (it would fail the id range check on v1 anyway), and so
+/// the version alone signals "read the packing docs".
+pub const TABLE_VERSION: u32 = 2;
 
-/// The compile-time kernel table (12 real symbols, `jni_table.rs` line noted).
-pub const KERNELS: [BatchKernel; 12] = [
+/// The compile-time kernel table (14 real symbols, `jni_table.rs` line noted).
+pub const KERNELS: [BatchKernel; 14] = [
     // jni_table.rs:15 — the live-proof kernel (ticketset binary search).
     BatchKernel {
         id: 0,
@@ -249,6 +285,25 @@ pub const KERNELS: [BatchKernel; 12] = [
         method: "nativeBuildTreeHandle",
         sig: "([J[J)J",
         symbol: "Java_net_minecraft_world_level_biome_PaperNativeClimateRTree_nativeBuildTreeHandle",
+    },
+    // jni_table.rs:173 — TASK-48 wave-1 shape A′ (P500 g9, direct 119.8 ns).
+    BatchKernel {
+        id: 12,
+        shape: Shape::APrime,
+        class: "PaperNativeDensityAp2MinMaxFill",
+        method: "oldSummary",
+        sig: "(III[J)I",
+        symbol: "Java_PaperNativeDensityAp2MinMaxFill_oldSummary",
+    },
+    // jni_table.rs:174 — the proven-WIN partner kernel (313.6x is g21; g9
+    // pair is WIN-grade at 119.8 ns — see PROVEN_WINS_SYNC / TASK-31 sync).
+    BatchKernel {
+        id: 13,
+        shape: Shape::APrime,
+        class: "PaperNativeDensityAp2MinMaxFill",
+        method: "newSummary",
+        sig: "(III[J)I",
+        symbol: "Java_PaperNativeDensityAp2MinMaxFill_newSummary",
     },
 ];
 
