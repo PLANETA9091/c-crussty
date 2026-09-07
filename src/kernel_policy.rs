@@ -367,6 +367,28 @@ pub static PROVEN_WINS: &[ProvenKernel] = &[
         verdict: "P500 PARITY (batch surface)",
         evidence: "src/batch_table.rs id14 (jni_table.rs:246), shape C (IIIII[I[J)I — G3 wave-1 spike (runbook §8); P500 floor anchor 34.6 ns (P500_REPORT_v2 §42), parity pair old/new 0.997 (wave2 §3)",
     },
+    // --- P500 WIN + live-verified promotions (TASK-53, PROVEN_WINS_SYNC §4.2)
+    // Lifecycle (docs/KERNEL_POLICY.md §Lifecycle): P500 WIN (twice
+    // reproduced: 2026-09-08 rerun + 2026-09-09 S7-9 fresh full rerun) +
+    // semantic parity gate (bench/p500/parity/, 3648 inputs/pair,
+    // byte-exact result+dst, cross-JVM deterministic fixtures) + live-armed
+    // self-test through the real bridge (src/promote_wire.rs). The from-
+    // side bridge names stay bound to their original symbols unless the
+    // operator arms CRUSSTY_KERNEL_PROMOTE (src/kernel_policy.rs
+    // PROMOTE_PAIRS); these entries WIDEN the policy Allow set — the
+    // documented promotion decision.
+    ProvenKernel {
+        class: "PaperNativeNoiseChunkFlatCacheContext",
+        kernel: "newTrueContextSummary",
+        verdict: "P500 WIN (1.24x) + live-verified (TASK-53)",
+        evidence: "bench/p500/results/P500_REPORT.md 2026-09-09 fresh rerun (23.5 us -> 18.9 us, ratio 0.804, stability 0.0%; 2026-09-08 rerun 0.805) + parity gate bench/p500/parity/results/FLATCACHE_PARITY_RAW.tsv (3648/3648 byte-exact) + live-armed e2e bench/p500/parity/results/PROMOTE_E2E_2026-09-09.md",
+    },
+    ProvenKernel {
+        class: "PaperNativeNoiseChunkFlatCacheContext",
+        kernel: "newFalseContextSummary",
+        verdict: "P500 WIN (1.17x) + live-verified (TASK-53)",
+        evidence: "bench/p500/results/P500_REPORT.md 2026-09-09 fresh rerun (21.8 us -> 18.6 us, ratio 0.853, stability 0.0%; 2026-09-08 rerun 0.846) + parity gate bench/p500/parity/results/FLATCACHE_PARITY_RAW.tsv (3648/3648 byte-exact) + live-armed e2e bench/p500/parity/results/PROMOTE_E2E_2026-09-09.md",
+    },
 ];
 
 /// The policy verdict for one kernel.
@@ -528,6 +550,113 @@ pub fn registration_fallback(class: &str, kernel: &str) -> Option<String> {
     }
     let r = do_not_wire_entry(class, kernel)?;
     Some(format!("Java_{}_{}", r.class, r.paired_old))
+}
+
+// --- TASK-53: promotion binding (P500 WIN direction, env-gated) ------------
+
+/// Env var for the operator opt-in to the WIN-direction surface binding.
+/// Mirror of `CRUSSTY_KERNEL_PREF` (which swaps known-REGRESSED bridge
+/// methods to their paired old kernel for safety): this one swaps the
+/// implementation pointer of the ORIGINAL bridge method of a promotion pair
+/// to its measured-faster P500-WIN kernel. Default OFF — promotion is an
+/// explicit operator decision per docs/KERNEL_POLICY.md §Lifecycle.
+const PROMOTE_ENV: &str = "CRUSSTY_KERNEL_PROMOTE";
+
+/// One promotion pair: the original (production-name) bridge method
+/// `from_kernel` and the P500-WIN kernel `to_kernel` it may be re-bound to.
+pub struct PromotablePair {
+    /// Short bridge class name.
+    pub class: &'static str,
+    /// The original bridge method (keeps its name; its impl pointer moves).
+    pub from_kernel: &'static str,
+    /// The measured-faster paired kernel (P500 WIN, ratio < 1).
+    pub to_kernel: &'static str,
+    /// old/new ns ratio from the canonical P500 rerun (<1 = new faster).
+    pub ratio: f64,
+    /// Where the measurement comes from.
+    pub source: &'static str,
+    /// Short human reason for the promotion.
+    pub reason: &'static str,
+}
+
+/// Promotion pairs (PROVEN_WINS_SYNC §4.2). Every entry needs ALL of:
+/// (1) the P500 WIN verdict, twice reproduced (2026-09-08 rerun + the
+/// 2026-09-09 fresh full rerun); (2) the offline semantic-parity gate
+/// (bench/p500/parity/ — byte-exact result + dst on 3648 inputs per pair,
+/// cross-JVM deterministic fixture vectors); (3) the live-armed self-test
+/// through the real bridge (src/promote_wire.rs) on a promote-armed boot.
+/// `from_kernel` names are NOT in DO_NOT_WIRE (enforced by a unit test);
+/// the conservative fallback (safety) takes precedence if ever both
+/// registries matched (they cannot — disjointness test).
+pub static PROMOTE_PAIRS: &[PromotablePair] = &[
+    PromotablePair {
+        class: "PaperNativeNoiseChunkFlatCacheContext",
+        from_kernel: "oldTrueContextSummary",
+        to_kernel: "newTrueContextSummary",
+        ratio: 0.804,
+        source: "P500 2026-09-09 fresh full rerun (49/49 groups, ratio-gate OK; S7-9)",
+        reason: "flat-cache true-context summary: 23.5 us -> 18.9 us, twice-reproduced WIN (0.805 / 0.804), parity-gate byte-exact",
+    },
+    PromotablePair {
+        class: "PaperNativeNoiseChunkFlatCacheContext",
+        from_kernel: "oldFalseContextSummary",
+        to_kernel: "newFalseContextSummary",
+        ratio: 0.846,
+        source: "P500 2026-09-09 fresh full rerun (49/49 groups, ratio-gate OK; S7-9)",
+        reason: "flat-cache false-context summary: 22.1 us -> 18.6 us, twice-reproduced WIN (0.846 / 0.853), parity-gate byte-exact",
+    },
+];
+
+/// Fail-safe parse: only `1` / `on` arm the promotion binding. Anything
+/// else (including unset) keeps every original binding.
+fn promote_enabled_from(v: Option<&str>) -> bool {
+    matches!(v, Some("1") | Some("on"))
+}
+
+fn promote_pref() -> bool {
+    static PREF: OnceLock<bool> = OnceLock::new();
+    *PREF.get_or_init(|| promote_enabled_from(std::env::var(PROMOTE_ENV).ok().as_deref()))
+}
+
+/// Pure lookup (no env): the WIN symbol the original bridge method of a
+/// promotion pair should be bound to. The symbol name is DERIVED from the
+/// pair and cross-checked against `jni_table` by a unit test, mirroring the
+/// conservative-fallback drift guard.
+pub fn promotion_symbol_for(class: &str, kernel: &str) -> Option<String> {
+    let p = PROMOTE_PAIRS
+        .iter()
+        .find(|p| p.class == class && p.from_kernel == kernel)?;
+    Some(format!("Java_{}_{}", p.class, p.to_kernel))
+}
+
+/// Registration chokepoint: when `CRUSSTY_KERNEL_PROMOTE` is armed, the
+/// original bridge method of a promotion pair is bound to its paired
+/// P500-WIN kernel symbol (same signature, parity-gate-proven identical
+/// semantics). `None` = keep the requested symbol. The conservative
+/// fallback (safety direction) takes precedence — enforced by the caller
+/// and by the registry-disjointness unit test.
+pub fn registration_promotion(class: &str, kernel: &str) -> Option<String> {
+    if !promote_pref() {
+        return None;
+    }
+    promotion_symbol_for(class, kernel)
+}
+
+/// Whether the promotion binding is armed (for the boot marker + self-test).
+pub fn promotion_armed() -> bool {
+    promote_pref()
+}
+
+/// Boot-time observability: log every promotion pair the armed surface will
+/// re-bind (direction, measured ratio, source, reason). Called from lib.rs
+/// init when the binding is armed; silent when dormant.
+pub fn log_armed_pairs() {
+    for p in PROMOTE_PAIRS {
+        eprintln!(
+            "[crussty-plugin] kernel_promote: pair {}.{} -> {} (ratio {:.3}, {}) — {}",
+            p.class, p.from_kernel, p.to_kernel, p.ratio, p.source, p.reason
+        );
+    }
 }
 
 #[cfg(test)]
@@ -729,6 +858,108 @@ mod tests {
                 r.class
             );
         }
+    }
+
+    // --- TASK-53: promotion pair drift guards ---------------------------------
+
+    #[test]
+    fn promote_pairs_symbols_exist_in_jni_table_with_matching_sigs() {
+        // Mirror of the fallback drift guard for the WIN direction: both
+        // sides of every promotion pair must exist in the injected surface
+        // with the SAME signature, and the derived `Java_{class}_{to_kernel}`
+        // promotion symbol must be the real symbol jni_table registers.
+        for p in PROMOTE_PAIRS {
+            let from = crate::jni_table::MAIN_JNI_TABLE
+                .iter()
+                .find(|e| e.class == p.class && e.method == p.from_kernel)
+                .unwrap_or_else(|| panic!("{}:{} missing from jni_table", p.class, p.from_kernel));
+            let to = crate::jni_table::MAIN_JNI_TABLE
+                .iter()
+                .find(|e| e.class == p.class && e.method == p.to_kernel)
+                .unwrap_or_else(|| panic!("{}:{} missing from jni_table", p.class, p.to_kernel));
+            assert_eq!(from.sig, to.sig, "{}: sig drift between promote pair sides", p.class);
+            assert_eq!(
+                to.symbol,
+                format!("Java_{}_{}", p.class, p.to_kernel),
+                "{}: promotion symbol derivation mismatch",
+                p.class
+            );
+            assert_eq!(
+                promotion_symbol_for(p.class, p.from_kernel).as_deref(),
+                Some(to.symbol),
+                "{}: promotion_symbol_for disagrees with jni_table",
+                p.class
+            );
+        }
+    }
+
+    #[test]
+    fn promote_pairs_disjoint_from_do_not_wire_and_self_consistent() {
+        for p in PROMOTE_PAIRS {
+            // The WIN kernel must not be a known regression...
+            assert!(
+                do_not_wire_entry(p.class, p.to_kernel).is_none(),
+                "{}:{} promoted kernel is in DO_NOT_WIRE",
+                p.class,
+                p.to_kernel
+            );
+            // ...and the safety fallback must never fight the promotion
+            // binding over the same bridge method.
+            assert!(
+                do_not_wire_entry(p.class, p.from_kernel).is_none(),
+                "{}:{} promote from-kernel is in DO_NOT_WIRE",
+                p.class,
+                p.from_kernel
+            );
+            assert!(
+                p.ratio < 1.0,
+                "{}: promotion ratio must be < 1 (new faster)",
+                p.class
+            );
+        }
+        // No duplicate from-side entries.
+        let mut seen = std::collections::BTreeSet::new();
+        for p in PROMOTE_PAIRS {
+            let key = (p.class, p.from_kernel);
+            assert!(seen.insert(key), "duplicate promote pair {:?}", key);
+        }
+    }
+
+    #[test]
+    fn promoted_win_kernels_are_policy_allowed_in_strict_mode() {
+        // The promotion WIDENS the Allow set: both new kernels must be
+        // Allow in strict mode (this is the documented §4.2 gate delta).
+        for p in PROMOTE_PAIRS {
+            let d = decide_in(PolicyMode::Strict, p.class, p.to_kernel);
+            assert!(
+                matches!(d, Decision::Allow),
+                "{}:{} must be Allow after promotion (got {:?})",
+                p.class,
+                p.to_kernel,
+                d
+            );
+        }
+    }
+
+    #[test]
+    fn promote_env_parse_is_fail_safe() {
+        assert!(!promote_enabled_from(None));
+        assert!(!promote_enabled_from(Some("")));
+        assert!(!promote_enabled_from(Some("0")));
+        assert!(!promote_enabled_from(Some("true"))); // keep the surface tiny: 1|on only
+        assert!(!promote_enabled_from(Some("yes")));
+        assert!(promote_enabled_from(Some("1")));
+        assert!(promote_enabled_from(Some("on")));
+    }
+
+    #[test]
+    fn promotion_lookup_is_name_exact() {
+        // Exact-name semantics: only the from-kernel of a pair resolves.
+        assert!(promotion_symbol_for("PaperNativeNoiseChunkFlatCacheContext", "oldTrueContextSummary").is_some());
+        assert!(promotion_symbol_for("PaperNativeNoiseChunkFlatCacheContext", "newTrueContextSummary").is_none());
+        assert!(promotion_symbol_for("PaperNativeNoiseChunkFlatCacheContext", "oldFalseContextSummary").is_some());
+        assert!(promotion_symbol_for("PaperNativeNoiseChunkFlatCacheContext", "unknownMethod").is_none());
+        assert!(promotion_symbol_for("PaperNativeSomeOtherClass", "oldTrueContextSummary").is_none());
     }
 
     // --- decision must not regress the live wiring contract -------------------
