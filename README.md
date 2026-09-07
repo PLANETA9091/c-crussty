@@ -102,6 +102,16 @@ modules/crussty/
 plugin scan skips it; the injector falls back to the module dir itself if
 `native/` is absent.)
 
+**Deploy requirements** (mirror the `cp` conventions in
+[`native/MANIFEST.md`](native/MANIFEST.md)): the CRUSSTY runtime
+(`libcrussty_runtime.so`) must include the TASK-08 ClassFileLoadHook name fix
+(engine commit `66ff504`, "derive class name from class bytes, not the VM
+buffer") — older runtimes intermittently drop hook events whose name is read
+off the VM's non-NUL-terminated buffer (`ImprovedNoisejaE`), so armed capture
+becomes non-deterministic. Module builds >= capture-hardening (`625c564`)
+additionally retry the retransform ×3 and fall back to the kernel-loader
+resource stream, which restores deterministic arming on residual races.
+
 ## Run
 
 Start the kernel through the CRUSSTY launcher (it loads the runtime, which
