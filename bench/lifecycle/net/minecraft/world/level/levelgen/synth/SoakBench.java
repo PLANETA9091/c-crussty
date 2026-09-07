@@ -156,9 +156,11 @@ public final class SoakBench {
 
                 if (pressure) {
                     // explicit GC pressure: System.gc() every ~500ms until the
-                    // reaper has freed the whole wave (cap RECLAIM_WAIT_MS)
+                    // reaper has freed the whole wave (cap RECLAIM_WAIT_MS;
+                    // also bounded by the run deadline for a clean finish)
                     final long tWait0 = System.nanoTime();
                     while (System.nanoTime() - tWait0 < RECLAIM_WAIT_MS * 1_000_000L
+                            && System.nanoTime() < deadline
                             && PENDING.contains(pend)) {
                         Thread.sleep(500);
                         System.gc();
@@ -172,7 +174,8 @@ public final class SoakBench {
                 } else {
                     // quiet window: NO explicit gc — hands off; natural GCs from
                     // the next wave's allocations drive the phantom notifications
-                    Thread.sleep(QUIET_PAUSE_MS);
+                    final long remainMs = (deadline - System.nanoTime()) / 1_000_000L;
+                    Thread.sleep(Math.max(0, Math.min(QUIET_PAUSE_MS, remainMs)));
                 }
                 junkOn.set(false);
                 wave++;
