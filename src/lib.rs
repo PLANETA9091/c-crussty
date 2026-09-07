@@ -20,6 +20,7 @@ mod bridge_class;
 mod classfile;
 mod improved_noise;
 mod jni_table;
+mod kernel_policy;
 mod loader;
 mod proto_blend_cache;
 
@@ -33,6 +34,63 @@ use std::time::Duration;
 
 const MAIN_LIB: &str = "paper_native_jni";
 const CHUNK_LIB: &str = "paper_native_chunk_encode_jni";
+
+/// TASK-04 (kernel selection gate): P500 confirmed these alt kernels are
+/// SLOWER than their old* counterparts (scale-invariant regressions: 5.5x,
+/// 4.6x, 2.3x, 1.7x; WaypointDistanceGuard ~9%/element at N=4096 slope fit).
+/// They stay REGISTERED (surface completeness) but with `CRUSSTY_KERNEL_PREF
+/// = old|conservative|safe` the plugin binds the old* symbol under the alt
+/// method instead — same (class, method, sig), same semantics, no .so
+/// changes, no gameplay surface change: callers just never execute the slow
+/// implementation. Default (unset / any other value) = native alt bindings.
+const REGRESSED_KERNEL_FALLBACKS: &[(&str, &str, &str)] = &[
+    (
+        "PaperNativeLevelChunkHeightmap",
+        "newCombinedUpdateSummary",
+        "Java_PaperNativeLevelChunkHeightmap_oldFourUpdateSummary",
+    ),
+    (
+        "PaperNativeMarkerCache",
+        "cachedSummary",
+        "Java_PaperNativeMarkerCache_oldSummary",
+    ),
+    (
+        "PaperNativePalettedReencodeScratch",
+        "directPackedSummary",
+        "Java_PaperNativePalettedReencodeScratch_oldNewArraySummary",
+    ),
+    (
+        "PaperNativeProtoChunkHeightmap",
+        "newCachedContainsSummary",
+        "Java_PaperNativeProtoChunkHeightmap_oldEnumSetForeachSummary",
+    ),
+    (
+        "PaperNativeWaypointDistanceGuard",
+        "guardedReallyFarSummary",
+        "Java_PaperNativeWaypointDistanceGuard_oldReallyFarSummary",
+    ),
+];
+
+fn kernel_pref_conservative() -> bool {
+    static PREF: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *PREF.get_or_init(|| {
+        matches!(
+            std::env::var("CRUSSTY_KERNEL_PREF").as_deref(),
+            Ok("old") | Ok("conservative") | Ok("safe") | Ok("1")
+        )
+    })
+}
+
+/// Fallback symbol for (class, method) in conservative mode, if any.
+fn kernel_pref_fallback(class: &str, method: &str) -> Option<&'static str> {
+    if !kernel_pref_conservative() {
+        return None;
+    }
+    REGRESSED_KERNEL_FALLBACKS
+        .iter()
+        .find(|(c, m, _)| *c == class && *m == method)
+        .map(|(_, _, sym)| *sym)
+}
 
 /// Bundled native library filename for this platform: Crussty CE ships
 /// `libpaper_native_jni.so` on Linux; Windows builds produce
@@ -236,6 +294,19 @@ fn define_and_register(
     let mut natives: Vec<jni::JNINativeMethod> = Vec::with_capacity(methods.len());
     let mut missing = 0usize;
     for (m, s, sym) in methods {
+        // Kernel selection policy chokepoint (src/kernel_policy.rs): every
+        // native the surface registers flows through here. Registration is
+        // NOT wiring — this is audit-only (logs in CRUSSTY_KERNEL_POLICY=audit
+        // mode, silent otherwise) and never changes behavior.
+        kernel_policy::audit_registered(class, m);
+        // TASK-04 conservative binding: with CRUSSTY_KERNEL_PREF=old, the
+        // implementation pointer of a confirmed-regressed method is swapped
+        // to its paired old kernel (same sig, same semantics).
+        let fallback = kernel_policy::registration_fallback(class, m);
+        let sym: &str = fallback.as_deref().unwrap_or(sym);
+        if fallback.is_some() {
+            eprintln!("[crussty-plugin] kernel_pref: {class}.{m} bound to old kernel ({sym})");
+        }
         let Some(ptr) = lib.symbol(sym) else {
             missing += 1;
             continue;

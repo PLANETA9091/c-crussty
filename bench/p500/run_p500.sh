@@ -7,9 +7,7 @@ cd "$(dirname "$0")"
 
 REPO_ROOT="$(cd ../.. && pwd)"
 MAIN_SO="$REPO_ROOT/native/libpaper_native_jni.so"
-# legacy name kept for older checkouts; current binary is libpaper_native_chunk_encode_jni.so (see native/)
-CHUNK_SO="$REPO_ROOT/native/libpaper_chunk_encode_jni.so"
-CHUNK_SO2="$REPO_ROOT/native/libpaper_native_chunk_encode_jni.so"
+CHUNK_SO="$REPO_ROOT/native/libpaper_native_chunk_encode_jni.so"
 
 # locate a JDK with javac (portable JDK preferred, then JAVA_HOME, then PATH)
 if [ -x /home/z/jdk21/bin/javac ]; then JAVAC=/home/z/jdk21/bin/javac; JAVA=/home/z/jdk21/bin/java
@@ -19,7 +17,7 @@ echo "using: $JAVAC"
 
 LIBS="$MAIN_SO"
 [ -f "$CHUNK_SO" ] && LIBS="$LIBS:$CHUNK_SO"
-[ -f "$CHUNK_SO2" ] && LIBS="$LIBS:$CHUNK_SO2"
+
 
 mkdir -p classes results logs
 $JAVAC -d classes $(find java -name '*.java') || exit 1
