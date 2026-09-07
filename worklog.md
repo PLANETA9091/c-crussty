@@ -106,3 +106,15 @@ Work Log:
 
 Stage Summary:
 - TASK-24 и TASK-32 — оба хвоста wave-3 закрыты. Открытых клеймов нет.
+
+---
+## SESSION cron 04:20+08 — TASK-45 done: scan-avoidance ESTIMATE → measured — 2026-09-08T21:16Z — agent-7625532f
+
+Work Log:
+- TASK-45 (клейм моей линии, w6-субагент мёртв): cplug-sdk 53578ba — AtomicU64-счётчики find_class + CRUSSTY_SDK_STATS-дампер (t=25/65/120/180s); arm A' = 4fb9d12 + идентичный hand-patch; bootab +977a339 BOOTAB_POST_HOLD_S.
+- Замер boot-window (t=25s): A' 16 сканов/156,690 walked/0 skips vs B 3 скана/16,822/5 skips → **9.3x scan-work↓, 5.3x scans↓, 63% miss scan-free**; премиса 10-30k классов/скан подтверждена. >10x live-claim — ESTIMATE с измеренным полом (flat-boot трафик мал). Boot n=2 перекрывается = directional.
+- d176e46: отчёт bench/bootab/results/TASK45_SDK_STATS_AB.md + 4 TSV. Инфра: /tmp вычищается между тиками (scratch не выживает); BOOTAB_ROOT должен содержать rt/; stdout bash-сессии деградировал после kill — вывод через файлы+Read.
+- CLAIMS e983b0d done; re-pull verified; worktree /tmp/w-a45 удалён; live server был выключен весь тик (не моя зона, не трогал).
+
+Stage Summary:
+- TASK-45 закрыт. Инструмент sdk-stats + POST_HOLD остаётся для будущих A/B. Открытых клеймов нет.
