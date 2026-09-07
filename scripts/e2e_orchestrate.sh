@@ -109,7 +109,18 @@ so_has_marker() { # so_has_marker <fixed substring> -> rc 0 when embedded in the
 #   area_map: arms on EVERY boot, but asynchronously — poller with negative
 #   backoff + forced Class.forName, so its lines can land well after Done;
 #   any life-sign means late arming, not a dead pipeline.
-NOISE_LIFESIGNS='improved_noise: (hook armed|hook serve|pristine sighting|forcing kernel load|Class\.forName|self-test|dormant)'
+# Capture-phase shapes (S7-8 hardening, module 625c564): when the kernel class
+# predates the hook, the activation worker logs "class predates hook, capturing
+# current bytes via no-op retransform" then per-attempt "capture retransform
+# rc=<n> (attempt k)" lines and, on the fallback path, "retransform capture
+# empty after 3 attempts…" / "resource-stream capture <n> bytes" — a boot in
+# that phase has NO armed/dormant/pristine line yet, so without these tokens
+# the capable-.so life-sign check would misread a live capture as a dead
+# pipeline. The trailing '|improved_noise: .*dormant' mirrors AMAP_LIFESIGNS:
+# several dormant verdicts carry the token mid-line ("{NOISE_CLASS} not loaded
+# within 180s, hook stays dormant", "no original bytes captured even after
+# retransform …, hook stays dormant"), so it can not sit in the anchored group.
+NOISE_LIFESIGNS='improved_noise: (hook armed|hook serve|pristine sighting|forcing kernel load|Class\.forName|self-test|dormant|class predates hook|capture retransform rc=|retransform capture empty|resource-stream capture)|improved_noise: .*dormant'
 # NOTE the trailing '|area_map: .*dormant' — the 180s-timeout line carries
 # "dormant" mid-line ("... not loaded within 180s, hook stays dormant"), so the
 # token can not sit in the prefix-anchored group; SELF-TEST FAIL is all-caps.
