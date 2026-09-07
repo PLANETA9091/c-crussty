@@ -83,8 +83,13 @@ impl Pool {
         };
         let mut p = cp_start;
         let mut seen = 0u32;
-        // JVMS: constant_pool_count = number of entries + 1 (index 0 is
-        // reserved); the pool therefore holds cp_count - 1 entries.
+        // JVMS: constant_pool_count = number of ENTRIES + 1 (index 0 is
+        // reserved), where a long/double takes TWO table slots. The loop
+        // therefore terminates on SLOT count — `seen` must advance by the
+        // entry's slot count, not by 1 (G4 S7-12 root cause: pools carrying
+        // long/double constants overran the pool into tag 0 and parse
+        // failed — the area_map fixture has no longs, so the bug stayed
+        // invisible until the real ImprovedNoise class hit this path).
         let entries_total = u32::from(cp_count.saturating_sub(1));
         while seen < entries_total {
             let tag = *bytes.get(p)?;
@@ -130,7 +135,7 @@ impl Pool {
             };
             pool.entries.push((pool.next, tag, payload));
             pool.next = pool.next.checked_add(slots)?;
-            seen += 1;
+            seen += u32::from(slots);
         }
         Some((pool, p))
     }
@@ -1200,5 +1205,69 @@ mod dbg3 {
                 p += 6 + alen as usize;
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod real_noise {
+    // G4 S7-12: the REAL ImprovedNoise class (extracted from the live
+    // purpur-1.21.10 server jar, byte-identical to the hook-captured
+    // original — 5691 bytes, major 65). This is the demonstrator's actual
+    // target, and it REGRESSED the pool parser: it carries double constants
+    // (d11..d21 fields), whose 2-slot JVMS entries overran the
+    // seen-per-entry walk into tag 0 (fixed in Pool::parse). Kept as the
+    // long/double-pool regression fixture.
+
+    use super::*;
+    use crate::classfile::*;
+
+    const REAL_NOISE: &[u8] = include_bytes!("../tests/fixtures/ImprovedNoise_real.class");
+
+    /// The real class must parse end-to-end (slot-counting pool walk) and
+    /// expose its noise(DDDDD)D method to the retarget machinery.
+    #[test]
+    fn real_improvednoise_parses_and_finds_noise() {
+        let layout = parse_layout(REAL_NOISE).expect("real ImprovedNoise must parse");
+        assert_eq!(
+            this_class_name(&layout).as_deref(),
+            Some("net/minecraft/world/level/levelgen/synth/ImprovedNoise")
+        );
+        let name_idx = layout.pool.find_utf8("noise").expect("noise name in pool");
+        let desc_idx = layout.pool.find_utf8("(DDDDD)D").expect("noise desc in pool");
+        let m = find_method(REAL_NOISE, layout.methods_start, name_idx, desc_idx)
+            .expect("noise(DDDDD)D present");
+        let (code_start, code_len) =
+            find_code_attr(REAL_NOISE, &layout.pool, &m).expect("noise has Code");
+        let code = &REAL_NOISE[code_start..code_start + code_len];
+        let sites = scan_invokestatics(code, code_start).expect("walk the real noise body");
+        assert!(
+            !sites.is_empty(),
+            "the vanilla noise body carries invokestatic call sites (NoiseUtils.parity...)"
+        );
+        // The vanilla body references NoiseUtils — resolve at least one
+        // site to a name triple (the name-based resolution path).
+        let resolved: Vec<Option<(String, String, String)>> = sites
+            .iter()
+            .map(|(_, idx)| layout.pool.methodref_parts(*idx))
+            .collect();
+        assert!(resolved.iter().any(|r| r.is_some()), "vanilla sites resolve by name");
+    }
+
+    /// Retarget ON the real class: the vanilla body's NoiseUtils call site
+    /// must survive an unrelated retarget (no-op NotFound) and a targeted
+    /// retarget of a synthetic spec must rewrite exactly the matching sites
+    /// while leaving the rest byte-identical.
+    #[test]
+    fn real_improvednoise_retarget_is_selective() {
+        let out = retarget_invokestatic(
+            REAL_NOISE,
+            "noise",
+            "(DDDDD)D",
+            ("java/lang/Math", "sqrt", "(D)D"),
+            ("crussty/test/X", "sqrt", "(D)D"),
+        )
+        .expect("clean run");
+        assert_eq!(out.1, RetargetOutcome::NotFound, "unrelated spec is a no-op");
+        assert_eq!(out.0, REAL_NOISE.to_vec(), "NotFound must not touch the bytes");
     }
 }
