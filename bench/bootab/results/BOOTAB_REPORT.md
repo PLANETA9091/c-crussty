@@ -170,3 +170,106 @@ Safety invariants honored: `/home/z/CRUSSTY` + `/home/z/server` untouched
 purpur jar — all OK; live PIDs alive 2h07m at finish), only self-spawned PIDs
 killed (verified dead, no strays), unique ports 261xx–263xx (live = 25565),
 no `.so` committed to any repo.
+
+## Phase-2: scan-avoidance A/B (TASK-45-R, 2026-09-08)
+
+Agent: agent-7625532f (TASK-45-R, rescue of TASK-45-w6 which died on deadline).
+Question: does the TASK-22 find_class sighting-gate actually avoid full JVMTI
+class-heap scans in a live-ish boot, measurable via the per-hook activation
+counters (`<hook>: sighting feed: N full class-heap scans avoided`)?
+
+### Counter semantics (read from CURRENT master source, incl. TASK-43 deltas)
+
+`cplug-sdk/src/classes.rs` (origin/master 587fd1b): on a find_class cache miss,
+`unsighted_scan_due()` gates the fallback scan — FIRST unsighted call scans,
+then `UNSIGHTED_SKIP_BUDGET = 7` calls are answered from the sighting feed
+(each bumps the per-name `avoided` counter), then every 8th scans again. The
+counter prints ONCE per hook at activation (poller exit), so for each hook:
+
+```
+scans_performed   = 1 + floor(avoided / 7)          (exact, from gate cadence)
+unsighted_calls   = avoided + scans_performed
+pct_calls_avoided = 100 * avoided / unsighted_calls
+```
+
+Old-module (arm A @ 4fb9d12) poller cadence: FIXED 2 s (`oldmod/src/area_map.rs:108`,
+`improved_noise.rs:234`), no gate — every one of those find_class misses IS a
+full GetLoadedClasses scan. Master (arm B) poller: 10 s negative backoff while
+unsighted (TASK-22), gated 1-in-8. So per hook per 180 s dormant poll:
+A = 90 scans (model, source-derived) vs B = 18 calls → 1 + floor(17/7) = 3 scans
+(model; the "~3-4" TASK-22 estimate). Neither side was measured over a dormant
+180 s window here — see window findings below.
+
+### Harness
+
+`bench/bootab/run_bootab.sh <marker> <maxwait> <runs> --phase2 <s>` (salvaged
+from w6 worktree /home/z/wT45, reviewed line-by-line, unchanged): after the
+PRIMARY marker (`native surface live`) hold the server <s> s, SIGTERM the exact
+PID, parse the log for armed/sighting/force-load-attempt lines, append phase2
+TSV. Same throwaway-boot methodology as §3, same runtime agent
+(md5 b57b309280aff628b743cb27c11099da both arms), `CRUSSTY_NATIVE_IMPROVED_NOISE=1`
+(armed profiles legit per S7-6 closure), ports 262xx/263xx.
+
+Arms: A = module @4fb9d12, md5 ea2eb1cc9fd084e00148487686c3fe75 (byte-verified
+against §1 table; salvaged /tmp/ab-boot/modules-A, not rebuilt — build reproducible
+from /tmp/oldmod worktree whose target .so had the identical md5). B = module
+rebuilt fresh from origin/master 587fd1b (md5 0c1291c11e05992bf6d4f44611c742f7;
+includes TASK-43 + P0-fix chain 28cdc09→4da13af→b002d9c).
+
+### Results
+
+Raw: `results/bootab_phase2.tsv`; per-run boot rows in /tmp/ab-boot/results-*.tsv
+(regenerable, not committed); logs /tmp/ab-boot/logs/ (not committed).
+
+| arm | commit | window | runs | hooks armed | sighting lines | avoided/hook | scans/hook (derived) | pct calls avoided |
+|---|---|---|---|---|---|---|---|---|
+| A-p2 | 4fb9d12 | 60 s | 2 | 2/2 | **0** (counter does not exist pre-TASK-22) | — | — | — |
+| A-p2w | 4fb9d12 | 120 s | 2 | 2/2 | **0** | — | — | — |
+| B-p2R | 587fd1b | 60 s | 2 | 0/2 (!) | 0/4 | — | — | — |
+| B-p2wR | 587fd1b | 120 s | 2 | 2/2 | 4/4 | **7** (deterministic) | **2** | **77.8 %** |
+
+- A-side evidence type: **NO COUNTERS (expected)** — the sighting feed / avoided
+  counter landed with TASK-22, after 4fb9d12. Salvaged w6 runs (module md5
+  verified) show both hooks ARM in 60 s and 120 s windows with zero counter
+  lines; A-side scan counts are therefore **MODELED from source cadence, not
+  measured**: fixed 2 s poll → every miss scans → ≈1 scan per 2 s of polling
+  (≈90 scans/hook over a dormant 180 s poll).
+- B-side (MEASURED, n=2 runs × 2 hooks, deterministic): activation log prints
+  `sighting feed: 7 full class-heap scans avoided` on every hook → per hook
+  9 unsighted calls = 2 scans + 7 feed-answered = 77.8 % of calls avoided,
+  scans reduced to 2 in the measured activation window.
+- Window finding (honest negative, measured): with the 60 s post-marker window
+  (w6's original plan) B hooks NEVER arm — the gate's own cadence pushes the
+  post-load scan-due call (#9) to ~70–90 s, past the window (observed: 6
+  force-load attempts, no pristine sighting, no activation, 0 counters). 120 s
+  windows arm 2/2. The gate trades activation latency (≤~80 s here) for the
+  scan reduction; dormant-poll savings (the 90→3 model) accrue only when the
+  class never loads within 180 s.
+
+### Verdict
+
+- MEASURED (B, master 587fd1b): **7 scans avoided per hook, 77.8 % of unsighted
+  find_class calls answered scan-free, scans/hook 2 vs modeled-A ~90 per dormant
+  180 s poll** — deterministic across 4/4 hook activations.
+- MODELED (A, 4fb9d12): no counters exist at that commit; ~90 scans/hook/180 s
+  from source-verified fixed 2 s cadence. A/B differential is therefore
+  measured-counter vs source-model, explicitly NOT a measured A-side count.
+- TASK-22's claim estimate (~90 → ~3-4 scans/hook/180 s) is CONSISTENT with the
+  measured per-8 gate cadence (180 s/10 s = 18 calls → 3 scans) and with the
+  S7-6 live-server armed boot (`sighting feed: 7 scans avoided`, area_map).
+- Discarded: w6's phase2-B-p2.tsv rows (module 5e396db2, commit stamp wrong,
+  hooks never armed — same 60 s-window artifact) and this rescue's B-p2R 60 s
+  rows (kept in TSV as the window finding, not used for the pct).
+
+### Caveats
+
+- n=2 per arm-window, sequential not interleaved, throwaway flat-world boots on
+  the shared 2 vCPU box (live server resident) — directional, same §6 caveats.
+- A-arm runs are salvaged from the dead w6 agent (2026-09-08 ~20:07–20:12Z);
+  provenance = md5-verified module + runtime + logs in /tmp/ab-boot/logs/A-p2*.
+- 60 s post-marker (the task's nominal window) is structurally too short to
+  observe B-arm activation counters; 120 s is the minimal honest window found.
+  A 180 s dormant-poll measurement (the full TASK-22 model window) was NOT run
+  (deadline) — the ~3 scans/180 s number remains model, not measurement.
+- No product code, no .so, no live-server artifacts touched; only
+  bench/bootab/* + these scratch dirs.
