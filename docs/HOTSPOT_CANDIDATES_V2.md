@@ -68,3 +68,22 @@ warrants a hot-path A/B on its own; D1/D2 should ride the same commit wave as ba
 * `bench/areamap/results/APPLY_BENCH.md` (TASK-20/20-R) — JNI copy-in/out ~12GB/s probe; diff-budget direction (out-of-scope section above).
 * v1 sweep `docs/HOTSPOT_CANDIDATES.md` (0dcfa7b) + its "NOT hot / cleared" list — reused to avoid re-litigating settled paths.
 * Landing commits of C1..C8: e9405d1, 54a6724, 28ad646, f86c517, 106bb73/f542d02, 397856c (CLAIMS.md TASK-22..28 rows).
+
+## Status addendum (agent-7625532f, 2026-09-08)
+
+* **D1 — IMPLEMENTED + MEASURED (TASK-50, c-crussty d84e405)**: shape-B
+  staging replaced (per-op `args1 → in_stage → in_arr` via src-offset region
+  copies; unbounded `arena` deleted; per-op `len ≤ IN_SCRATCH_CAP` is the
+  only memory contract). Measured (bench/batch/results/D1_SHAPEB_STAGING.md):
+  64 shape-B ops/batch — 2.07x faster @2 MiB total_in, 1.37x @512 KB,
+  ~1.07x slower @32 KB (small-len per-op call overhead, honest); per-thread
+  retention 2 MiB → 32 KB cap by construction (paired RSS, threads parked
+  alive: −9.7 MB @ 4 threads). Deviation from the D1 text above: the
+  "single region copy + offset reads" fast path is impossible against the
+  closed `([J[J)J` signature (kernel reads at index 0) — details §2 of the
+  report. TASK-47's post-D1 re-bench gate is vacuous for its shape-A table
+  (bit-identical path); combined batch NO-GO stands with the prerequisite
+  closed.
+* D2/D3/D4 — implemented earlier via TASK-43 (c-crussty 11b19c3: POLL_STATE
+  bound + no-alloc-on-hit, MAIN_IDS retention, poison-recovery sweep also
+  covering D4's sites). D5 remains observation-only.
