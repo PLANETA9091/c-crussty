@@ -24,7 +24,8 @@ mkdir -p classes results logs
 $JAVAC -d classes $(find java -name '*.java') || exit 1
 
 RAW=results/p500_raw.tsv
-: > "$RAW"
+# P500_APPEND=1: keep prior rows (chunked foreground runs); default: fresh run
+[ "${P500_APPEND:-0}" = "1" ] || : > "$RAW"
 
 GIDS="$*"
 if [ -z "$GIDS" ]; then
