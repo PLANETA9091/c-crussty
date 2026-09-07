@@ -23,14 +23,23 @@ package ca.spottedleaf.moonrise.common.misc;
  *
  * Compile with `--release 8` (major 52) against RuntimeStubs.java so the
  * class loads from the bootstrap loader via DefineClass. Generated artifact:
- * src/area_map_ops.class (rebuild with area-map/build.sh, keep in sync).
+ * area-map/build/.../SingleUserAreaMapOps*.class (rebuild with
+ * scripts/build_area_map.sh, keep in sync).
  */
 public final class SingleUserAreaMapOps {
     private SingleUserAreaMapOps() {}
 
+    /** Initial scratch capacity: covers d=8 for BOTH squares (2*17^2 = 578),
+     *  i.e. well past any real first use; grow-only beyond that. */
+    private static final int INITIAL_CAP = 2 * (2 * 8 + 1) * (2 * 8 + 1);
+
     private static final class Scratch {
-        byte[] ops;
-        long[] keys;
+        // Field initializers are load-bearing: run() reads s.ops.length
+        // directly, and a null Scratch.ops would NPE on the first patched
+        // update() of every thread (the apply loop is the patched hot path —
+        // there is no second chance to recover).
+        byte[] ops = new byte[INITIAL_CAP];
+        long[] keys = new long[INITIAL_CAP];
     }
 
     private static final ThreadLocal<Scratch> SCRATCH = new ThreadLocal<Scratch>() {
@@ -60,11 +69,28 @@ public final class SingleUserAreaMapOps {
         if (fromX == Integer.MIN_VALUE) {
             return; // never initialized: native enumerates nothing, no callbacks
         }
+        // Same-state fast path: identical squares -> the difference is empty
+        // by definition (naive set difference of S with S = ∅), so the native
+        // call would produce zero ops. Skipping it saves the full JNI
+        // transition (~115 ns) + buffer touch on the most frequent update
+        // shape (no movement, no distance change). Field writes are NOT
+        // skipped: the patched update() body already wrote toX/toZ/newD
+        // before invoking run().
+        if (fromX == toX && fromZ == toZ && oldD == newD) {
+            return;
+        }
         int cap = maxOps(oldD, newD);
         Scratch s = SCRATCH.get();
+        // Grow-only doubling: allocate what is needed, not the full worst-case
+        // cap up front (a huge d would otherwise jump straight to a cap-sized
+        // allocation even when the actual difference is a handful of ops).
         if (s.ops.length < cap) {
-            s.ops = new byte[cap];
-            s.keys = new long[cap];
+            int grown = s.ops.length;
+            while (grown < cap) {
+                grown = grown <= (Integer.MAX_VALUE - grown) / 2 ? grown * 2 : cap;
+            }
+            s.ops = new byte[grown];
+            s.keys = new long[grown];
         }
         byte[] ops = s.ops;
         long[] keys = s.keys;
