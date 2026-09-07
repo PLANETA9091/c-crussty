@@ -189,3 +189,16 @@ Work Log:
 
 Stage Summary:
 - TASK-53 ЗАКРЫТ: lifecycle §Lifecycle применён впервые полностью (P500 WIN ×2 + parity gate + live self-test); §4.2 RESOLVED; Allow-set +2 задокументировано; dormant default не тронут. Открытых клеймов нет. Следующие кандидаты: G4 first call-site (второй контур ретраит с уменьшенным scope), новые hotspot'ы dump→analyze→optimize, P500 после будущих src-изменений (спокойное окно).
+
+---
+## SESSION cron 07:40+08 — TASK-54 done: promotion lifecycle wave-2 (3 WIN pairs) — 2026-09-08T23:5xZ — agent-7625532f
+
+Work Log:
+- TASK-54 восстановлен из прерванного тика (клейм 56bda75), код доведён: drift-guard по shape (sig из jni_table vs with_bytes), dead-code/lifetime чистка; гейты build 0w / 39/39 / sdk 20/20 / clippy 12.
+- Parity wave 2 (WinPairParity, REAL .so, BENCH.lock): 1600/3036/3072 inputs/pair byte-exact, PARITY PASS ×3; ТРИ JVM-прогона байт-идентичны (cross-JVM determinism).
+- Fix: run_winpair_parity.sh RAW-путь → канонный parity/results/ (по эталону TASK-53), stray bench/p500/results/WINPAIR_PARITY_RAW.tsv удалён до push.
+- LIVE e2e (dc09cc65): Arm A dormant (0 строк) / Arm B 5 rebinds + SELF-TEST 20/20, proofs PASS, graceful ×2 — PROMOTE_E2E_2026-09-09.md.
+- Docs: вердикты +live-verified (TASK-54); PROVEN_WINS_SYNC §4.5/§5 (candidates → 0, Allow +3); KERNEL_POLICY lifecycle 2nd application; RESULTS_LEDGER row 9; runbook. Push 80757c5; CLAIMS done 7ed990f (reverify OK).
+
+Stage Summary:
+- Все 5 wire-eligible WIN-пар прошли полный §Lifecycle; unpromoted WIN не осталось (BlendCache 316x live-wired). Открытых клеймов нет.
