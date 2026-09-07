@@ -35,6 +35,19 @@ fn cache() -> &'static Mutex<HashMap<String, usize>> {
     CACHE.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
+// D4/TASK-43: BOTH CACHE lock sites (find_class hit path + insert path)
+// recover poisoning via `unwrap_or_else(|e| e.into_inner())` instead of the
+// historical `.unwrap()`. Recovery is safe here because the guard only ever
+// wraps plain HashMap get/insert — no user code runs under it — so a panic
+// while the lock is held can at worst drop one in-flight insert; the map is
+// structurally valid either way (a HashMap operation either completes or
+// leaves the map unchanged, never half-mutated). The old `.unwrap()` would
+// panic the NEXT find_class caller, and find_class is reachable from
+// ClassFileLoadHook callback threads (hooks::dispatch callbacks may call
+// find_class) — an unwind crossing the JNI boundary aborts the VM. This
+// matches the poison-recovery rule every other SDK lock has followed since
+// C1 (sighting shards, POLL_STATE, MAIN_IDS, QUEUE).
+
 // ---------------------------------------------------------------------------
 // ClassFileLoadHook sighting feed (TASK-22 / HOTSPOT_CANDIDATES C1).
 //
@@ -114,8 +127,11 @@ pub fn is_sighted(name: &str) -> bool {
 /// Per-name polling state for the sighting gate (cold path: touched only on
 /// cache misses from poller threads).
 struct PollState {
-    /// Unsighted calls since the last JVMTI scan; starts at the skip budget
-    /// so the FIRST unsighted call scans (covers pre-hook loads).
+    /// Unsighted calls answered without a scan since the last scan; the
+    /// next unsighted call at this budget scans again. (D2/TASK-43: entries
+    /// are created only AFTER a call already returned "scan due", so a fresh
+    /// entry starts at 0 — the historical starts-at-budget sentinel is
+    /// folded into the absent-path of `unsighted_scan_due`.)
     skips: u8,
     /// Unsighted calls answered WITHOUT a JVMTI heap scan (scans avoided).
     avoided: u64,
@@ -127,26 +143,62 @@ const UNSIGHTED_SKIP_BUDGET: u8 = 7;
 
 static POLL_STATE: OnceLock<Mutex<HashMap<String, PollState>>> = OnceLock::new();
 
+/// Hard cap on POLL_STATE entries (D2/TASK-43), sized to match the sightings
+/// bound (SIGHTING_SHARDS x SIGHTING_SHARD_CAP = 65,536): the map holds one
+/// entry per DISTINCT name that ever reached the gate unresolved. The SDK is
+/// exported to every module and on_kernel_ready/wait_class accept arbitrary
+/// names, so a module probing many never-loaded names would otherwise grow
+/// the map unbounded. Bounded insert-only-below-cap (no eviction, mirroring
+/// the sighting shards): at cap, NEW names are simply not recorded and their
+/// gate degrades to the pre-C1 shape — every call scans (correct, just less
+/// optimized; the JVMTI INITIALIZED-status guard in find_class still applies
+/// to every scan, so the C1-era SIGSEGV race stays closed). Already-recorded
+/// names keep their exact cadence. Dead entries (names that became
+/// sighted/cached) are deliberately NOT dropped: `scans_avoided` must stay
+/// readable for the one-line activation log, they are bounded by this cap,
+/// and they cost ~100B each.
+const POLL_STATE_CAP: usize = SIGHTING_SHARDS * SIGHTING_SHARD_CAP;
+
 fn poll_state() -> &'static Mutex<HashMap<String, PollState>> {
     POLL_STATE.get_or_init(|| Mutex::new(HashMap::new()))
 }
 
 /// Sighting gate for find_class: returns true when a JVMTI scan must run.
+///
+/// D2/TASK-43: `get()` first — the old `entry(internal.to_string())`
+/// allocated a key String on EVERY cache miss (every poll tick of every
+/// activation poller) even when the entry already existed. The allocation
+/// now happens only on the FIRST miss per name. Cadence and the `avoided`
+/// counter (consumed by `scans_avoided` -> area_map/improved_noise
+/// activation log lines) are identical to the previous behavior below cap.
 fn unsighted_scan_due(internal: &str) -> bool {
     let mut state = poll_state().lock().unwrap_or_else(|e| e.into_inner());
-    let s = state
-        .entry(internal.to_string())
-        .or_insert(PollState {
-            skips: UNSIGHTED_SKIP_BUDGET,
-            avoided: 0,
-        });
-    if s.skips >= UNSIGHTED_SKIP_BUDGET {
-        s.skips = 0;
-        true
+    if let Some(s) = state.get_mut(internal) {
+        if s.skips >= UNSIGHTED_SKIP_BUDGET {
+            s.skips = 0;
+            true
+        } else {
+            s.skips += 1;
+            s.avoided += 1;
+            false
+        }
     } else {
-        s.skips += 1;
-        s.avoided += 1;
-        false
+        // First miss for this name: this call IS the scan the cadence would
+        // have produced (fresh entries historically started at the budget
+        // and immediately reset), so the entry starts at 0. Inserted only
+        // below cap — at cap the name stays unrecorded and every future
+        // call returns true here (always-scan fallback, the documented
+        // degraded-but-correct mode).
+        if state.len() < POLL_STATE_CAP {
+            state.insert(
+                internal.to_string(),
+                PollState {
+                    skips: 0,
+                    avoided: 0,
+                },
+            );
+        }
+        true
     }
 }
 
@@ -166,7 +218,9 @@ pub fn scans_avoided(name: &str) -> u64 {
 /// it forever. Returns None if the class is not loaded yet.
 pub fn find_class(name: &str) -> Option<ClassRef> {
     let internal = crate::jni_util::to_internal(name);
-    if let Some(addr) = cache().lock().unwrap().get(&internal) {
+    // D4/TASK-43: poison recovery (rationale next to `cache()`) — was
+    // `.unwrap()`, a poisoned lock would unwind across JNI on hook threads.
+    if let Some(addr) = cache().lock().unwrap_or_else(|e| e.into_inner()).get(&internal) {
         return Some(ClassRef(*addr as jni::jclass));
     }
     // TASK-22/C1 sighting gate: while the hook pipeline has never sighted
@@ -213,9 +267,10 @@ pub fn find_class(name: &str) -> Option<ClassRef> {
         let gref = env.new_global_ref(cls);
         env.delete_local_ref(cls);
         let _ = clear_exception(env);
+        // D4/TASK-43: poison recovery (rationale next to `cache()`).
         cache()
             .lock()
-            .unwrap()
+            .unwrap_or_else(|e| e.into_inner())
             .insert(internal.clone(), gref as usize);
         Some(ClassRef(gref))
     })
@@ -311,8 +366,15 @@ pub fn retransform(name: &str) -> bool {
 mod tests {
     use super::*;
 
+    // POLL_STATE / CACHE are process-wide statics shared by every test in
+    // this file; cargo runs tests in parallel threads, so the gate tests
+    // serialize on this mutex (the cap test fills POLL_STATE, which would
+    // otherwise race the cadence tests' first-insert).
+    static TEST_SERIAL: Mutex<()> = Mutex::new(());
+
     #[test]
     fn unsighted_gate_scans_first_then_every_eighth() {
+        let _serial = TEST_SERIAL.lock().unwrap_or_else(|e| e.into_inner());
         let name = "test/gate/ScanDueProbe";
         // First unsighted call scans (covers pre-hook loads, G6 window).
         assert!(unsighted_scan_due(name));
@@ -333,5 +395,101 @@ mod tests {
         assert!(is_sighted(name));
         assert!(is_sighted("test.gate.NormalizeProbe"));
         assert!(!is_sighted("test/gate/NeverSightedProbe"));
+    }
+
+    /// D2/TASK-43: repeated misses take the get()-first path and must
+    /// advance the SAME counters as the old entry()-based code — identical
+    /// cadence across cycles. This is what keeps the scans-avoided number
+    /// in the area_map/improved_noise activation log lines meaningful
+    /// (scans_avoided is read once, after the poller exits).
+    #[test]
+    fn poll_state_cadence_identical_across_repeated_misses() {
+        let _serial = TEST_SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+        let name = "test/gate/HitPathProbe";
+        for cycle in 1..=3 {
+            assert!(unsighted_scan_due(name), "cycle {cycle}: scan due");
+            for _ in 0..7 {
+                assert!(!unsighted_scan_due(name), "cycle {cycle}: skip");
+            }
+        }
+        // Exactly the 7 skipped calls of each of the 3 cycles were avoided.
+        assert_eq!(scans_avoided(name), 21);
+    }
+
+    /// D2/TASK-43: at POLL_STATE_CAP the map refuses NEW entries (no panic,
+    /// insert-only-below-cap) and the gate degrades to the always-scan
+    /// fallback for unrecorded names — the same correct-but-less-optimized
+    /// semantics as the sightings cap.
+    #[test]
+    fn poll_state_cap_inserts_refused_fallback_always_scans() {
+        let _serial = TEST_SERIAL.lock().unwrap_or_else(|e| e.into_inner());
+        // Fill POLL_STATE to the cap.
+        {
+            let mut state = poll_state().lock().unwrap_or_else(|e| e.into_inner());
+            let mut i = 0u64;
+            while state.len() < POLL_STATE_CAP {
+                state.insert(
+                    format!("test/cap/Filler{i}"),
+                    PollState {
+                        skips: 0,
+                        avoided: 0,
+                    },
+                );
+                i += 1;
+            }
+        }
+        // Beyond the cap: a fresh name must not panic; its gate must take
+        // the fallback (scan due on EVERY call) and record nothing (the
+        // scans-avoided counter stays 0 — nothing to report in the log
+        // line for a never-recorded name).
+        let fresh = "test/cap/BeyondCapProbe";
+        assert!(unsighted_scan_due(fresh));
+        assert_eq!(scans_avoided(fresh), 0, "at cap: no entry recorded");
+        assert!(unsighted_scan_due(fresh), "at cap: every call scans");
+        // Trim the fillers so the shared static stays small for other tests.
+        poll_state()
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .retain(|k, _| !k.starts_with("test/cap/Filler"));
+        // Below cap again, the fresh name records normally: first call scans
+        // and inserts, the next call is answered from the feed.
+        assert!(unsighted_scan_due(fresh));
+        assert!(!unsighted_scan_due(fresh));
+        assert_eq!(scans_avoided(fresh), 1);
+    }
+
+    /// D4/TASK-43: a poisoned CACHE lock must be RECOVERED, not panicked
+    /// on: find_class is reachable from ClassFileLoadHook callback threads,
+    /// and a panic unwinding across the JNI boundary aborts the VM. Poison
+    /// deliberately by panicking in another thread while holding the lock,
+    /// then call the cache-hit path of find_class (a cache hit needs no
+    /// JVM, so this is testable in-process).
+    #[test]
+    fn poisoned_cache_lock_recovered_by_find_class() {
+        let probe = "test/poison/CacheProbe";
+        let addr = 0x0007_0000usize;
+        // Seed the cache so find_class takes the early hit path (no JVM).
+        cache()
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .insert(probe.to_string(), addr);
+        // Poison the lock: panic while the guard is held in another thread.
+        let poisoner = std::thread::spawn(|| {
+            let _guard = cache().lock().unwrap_or_else(|e| e.into_inner());
+            panic!("deliberate: poison the CACHE mutex");
+        });
+        let _ = poisoner.join(); // panic contained in the spawned thread
+        // find_class must recover the (structurally valid) map and return
+        // the cached ref — NOT panic on the poisoned lock.
+        let hit = find_class(probe);
+        assert!(hit.is_some(), "find_class must recover a poisoned CACHE");
+        assert_eq!(hit.unwrap().as_jclass() as usize, addr);
+        // The map content survived the poisoning intact.
+        assert!(
+            cache()
+                .lock()
+                .unwrap_or_else(|e| e.into_inner())
+                .contains_key(probe)
+        );
     }
 }

@@ -56,6 +56,33 @@ struct MainIds {
 
 static MAIN_IDS: Mutex<Option<MainIds>> = Mutex::new(None);
 
+// Invalidation contract (D3/TASK-43) — documented next to the cache it
+// governs, mirroring the jmethodID-validity invariant at the `unsafe impl
+// Send for MainIds` above:
+//
+// MAIN_IDS is dropped ONLY on real plumbing failures: kernel class missing,
+// runnable class define/register failed, method unresolved, runnable
+// construction failed, or thread attach failed (`deliver` maps each to
+// DeliverFail::Plumbing). A null `getServer()` return is NOT such an event:
+// it means "the server object does not exist YET" — the DOMINANT pre-boot
+// failure mode, retried every 200ms against the 120s flush deadline — and
+// the plumbing is unaffected by it, so invalidating here would reintroduce
+// the full pre-C6 resolve cost on every tick of the entire boot retry loop
+// and make the C6 cache useless precisely where it matters most.
+//
+// jmethodID/class-ref validity WITHOUT an explicit invalidation event: the
+// two classes behind the cached IDs — MinecraftServer (held by the
+// process-lifetime global ref in classes.rs CACHE) and SdkNativeRunnable
+// (held by RUNNABLE_CLS, also a leaked global ref) — can never be unloaded
+// while this code lives: a JVM unloads a class only when its defining
+// loader becomes collectable, and the global refs keep both loaders alive.
+// JVMTI retransform does not change jmethodIDs (IDs stay valid for the
+// lifetime of the class), so there is no unload/retransform event this
+// cache would need to subscribe to — the current code has no such events,
+// by design. Conservative spirit preserved: any failure that is not PROVEN
+// benign (server-not-up-yet) still invalidates — if a future failure mode
+// is ambiguous, map it to Plumbing (fail-safe).
+
 // Same contract as ClassRef (classes.rs): the jclass values are
 // process-lifetime global refs — usable from any thread by JNI contract —
 // and the jmethodIDs stay valid for the lifetime of those (globally
@@ -82,7 +109,13 @@ pub fn run_on_main_thread<F>(f: F)
 where
     F: FnOnce(&JniEnv) + Send + 'static,
 {
-    QUEUE.lock().unwrap().push_back(Box::new(f));
+    QUEUE
+        // Poison recovery (D4/TASK-43, same rationale as the QUEUE use in
+        // sdk_run_trampoline): run_on_main_thread is reachable from
+        // hook-callback threads — an unwind across JNI aborts the VM.
+        .lock()
+        .unwrap_or_else(|e| e.into_inner())
+        .push_back(Box::new(f));
     ensure_flush();
 }
 
@@ -98,7 +131,10 @@ fn ensure_flush() {
 fn flush_loop() {
     let deadline = std::time::Instant::now() + std::time::Duration::from_secs(120);
     loop {
-        if QUEUE.lock().unwrap().is_empty() {
+        // Poison recovery (D4/TASK-43): a panic while holding the QUEUE lock
+        // leaves the deque structurally valid; unwrapping would kill the
+        // flush loop on the next tick instead of recovering.
+        if QUEUE.lock().unwrap_or_else(|e| e.into_inner()).is_empty() {
             FLUSH_ACTIVE.store(false, Ordering::SeqCst);
             return;
         }
@@ -112,7 +148,7 @@ fn flush_loop() {
         if std::time::Instant::now() > deadline {
             eprintln!(
                 "[cplug-sdk] main-thread flush timed out ({} queued)",
-                QUEUE.lock().unwrap().len()
+                QUEUE.lock().unwrap_or_else(|e| e.into_inner()).len()
             );
             FLUSH_ACTIVE.store(false, Ordering::SeqCst);
             return;
@@ -167,46 +203,68 @@ fn resolve_main_ids(env: &JniEnv) -> Option<MainIds> {
     })
 }
 
+/// Why a delivery attempt failed. Only `Plumbing` failures invalidate
+/// MAIN_IDS — see the invalidation contract above MAIN_IDS. `ServerNotUp`
+/// (null `getServer()`) retains the cache so the boot retry loop keeps the
+/// C6-resolved plumbing.
+enum DeliverFail {
+    /// Plumbing genuinely broken: kernel class missing, runnable
+    /// define/register failed, method unresolved, runnable construction
+    /// failed, or attach failed. The next attempt re-resolves from scratch
+    /// (the pre-C6 cost profile — the conservative default).
+    Plumbing,
+    /// `MinecraftServer.getServer()` returned null: the server object does
+    /// not exist yet (pre-boot). The plumbing itself is valid.
+    ServerNotUp,
+}
+
+/// Apply the invalidation policy for a delivery failure to MAIN_IDS.
+/// D3/TASK-43: `ServerNotUp` retains the cache (dominant pre-boot failure);
+/// every other failure (`Plumbing`, including attach failure) drops it —
+/// the conservative default. `None` means the delivery succeeded.
+fn note_failure(failure: Option<&DeliverFail>) {
+    if matches!(failure, Some(DeliverFail::Plumbing)) {
+        *MAIN_IDS.lock().unwrap_or_else(|e| e.into_inner()) = None;
+    }
+}
+
 /// Hand queued jobs to the main thread via MinecraftServer.execute.
 /// Returns false while the kernel is unreachable (class not loaded / server
 /// object not created yet). The class refs + three method IDs are cached
 /// across deliveries (C6/TASK-27); the `getServer` OBJECT is still fetched
 /// fresh on every delivery (the server instance is the kernel's to create).
 fn deliver() -> bool {
-    let ok = with_attached(|env| {
+    let failure = with_attached(|env| {
         // Never enter JNI with a stale pending exception from a previous
         // iteration — that is UB and crashes the VM.
         let _ = crate::jni_util::clear_exception(env);
         let Some(ids) = main_ids(env) else {
-            return Some(false);
+            return Some(DeliverFail::Plumbing);
         };
         let server =
             env.call_static_object_method(ids.mc, ids.get_server as jni::jmethodID, &[]);
         if server.is_null() {
             let _ = crate::jni_util::clear_exception(env);
-            return Some(false);
+            // NOT a plumbing failure (see the invalidation contract above
+            // MAIN_IDS): the cache survives; the flush loop retries in 200ms
+            // and the next tick reuses the cached IDs.
+            return Some(DeliverFail::ServerNotUp);
         }
         let Some(obj) = env.new_object(ids.runnable_cls, ids.runnable_init as jni::jmethodID, &[])
         else {
-            return Some(false);
+            return Some(DeliverFail::Plumbing);
         };
         env.call_void_method(server, ids.execute as jni::jmethodID, &[jni::jvalue { l: obj }]);
         let _ = crate::jni_util::clear_exception(env);
         env.delete_local_ref(obj);
         env.delete_local_ref(server);
-        Some(true)
+        None
     })
-    .flatten()
-    .unwrap_or(false);
-    if !ok {
-        // Conservative invalidation: any failed delivery (kernel class
-        // missing, runnable define/register failed, method unresolved,
-        // server still null, attach failed) drops the cached plumbing so
-        // the next attempt re-resolves from scratch — the same cost profile
-        // as the pre-cache code, which re-resolved on EVERY job.
-        *MAIN_IDS.lock().unwrap_or_else(|e| e.into_inner()) = None;
-    }
-    ok
+    // Attach failure (VM gone / cannot attach) is not proven benign:
+    // conservative invalidation, unchanged from the pre-D3 behavior.
+    .unwrap_or(Some(DeliverFail::Plumbing));
+    note_failure(failure.as_ref());
+    failure.is_none()
 }
 
 /// Define + RegisterNatives the runnable skeleton once per process. Returns a
@@ -373,4 +431,56 @@ fn push_utf8(c: &mut Vec<u8>, s: &str) {
     let b = s.as_bytes();
     c.extend_from_slice(&(b.len() as u16).to_be_bytes());
     c.extend_from_slice(b);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// MainIds with unmistakable non-null scalars. Never dereferenced — the
+    /// invalidation policy tests do no JNI work.
+    fn dummy_ids() -> MainIds {
+        MainIds {
+            mc: 0x1000 as jni::jclass,
+            get_server: 0x2000,
+            execute: 0x3000,
+            runnable_cls: 0x4000 as jni::jclass,
+            runnable_init: 0x5000,
+        }
+    }
+
+    fn main_ids_is_some() -> bool {
+        MAIN_IDS
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .is_some()
+    }
+
+    /// D3/TASK-43: the dominant pre-boot failure (getServer() null —
+    /// every 200ms flush tick against the 120s deadline) must RETAIN the
+    /// C6 cache; real plumbing failures must still drop it (conservative
+    /// fail-safe preserved); a delivered tick must not touch it.
+    #[test]
+    fn null_server_retries_retain_main_ids() {
+        *MAIN_IDS.lock().unwrap_or_else(|e| e.into_inner()) = Some(dummy_ids());
+
+        // Simulated null-server tick (the boot retry loop's failure mode):
+        // the cache survives the dominant failure mode.
+        note_failure(Some(&DeliverFail::ServerNotUp));
+        assert!(main_ids_is_some(), "null-server must not reset MAIN_IDS");
+
+        // Delivered tick: no invalidation either.
+        note_failure(None);
+        assert!(
+            main_ids_is_some(),
+            "successful delivery must not reset MAIN_IDS"
+        );
+
+        // Plumbing failure: conservative invalidation preserved (fail-safe).
+        note_failure(Some(&DeliverFail::Plumbing));
+        assert!(
+            !main_ids_is_some(),
+            "plumbing failure must reset MAIN_IDS"
+        );
+    }
 }
