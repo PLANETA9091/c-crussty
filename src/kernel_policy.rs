@@ -361,6 +361,12 @@ pub static PROVEN_WINS: &[ProvenKernel] = &[
         verdict: "P500 PARITY (batch surface)",
         evidence: "src/batch_table.rs id13 (jni_table.rs:174), shape A' (III[J)I; parity pair 1.003x on the 2026-09-08 rerun, TASK-31 sync",
     },
+    ProvenKernel {
+        class: "PaperNativeStaticCacheGet",
+        kernel: "newBatchSummary",
+        verdict: "P500 PARITY (batch surface)",
+        evidence: "src/batch_table.rs id14 (jni_table.rs:246), shape C (IIIII[I[J)I — G3 wave-1 spike (runbook §8); P500 floor anchor 34.6 ns (P500_REPORT_v2 §42), parity pair old/new 0.997 (wave2 §3)",
+    },
 ];
 
 /// The policy verdict for one kernel.

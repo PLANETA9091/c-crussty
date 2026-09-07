@@ -40,22 +40,29 @@
 //!   `kernelIds`). Shape A narrows its scalar to `jint`; shape A′ consumes
 //!   three consecutive longs narrowed to `jint` in plane order (P500 kernels
 //!   use small ints). v1 (one long per op) is the special case of an
-//!   all-shape-A batch; ids 0-11 wire behavior is unchanged.
-//! - `args1` — packed INPUT arena for kernels that read a `long[]`
-//!   (shape B `([J[J)J`): op `i` consumes the `argCounts[i]` longs starting
-//!   at the prefix sum of `argCounts[0..i]`. Kernels never mutate the arena
+//!   all-shape-A batch; ids 0-11 wire behavior is unchanged. Shape C (G3
+//!   spike, id 14) packs its five jint scalars the same way (width 5).
+//! - `args1` — packed INPUT arena for kernels that read an array input
+//!   (shape B `([J[J)J` longs, shape C `(IIIII[I[J)I` int slots): op `i`
+//!   consumes the `argCounts[i]` slots starting at the prefix sum of
+//!   `argCounts[0..i]`. Kernels never mutate the arena
 //!   visible to the caller: each op's slice is copied into a per-thread
 //!   scratch array first (some closed kernels mutate their inputs — P500
-//!   "FRESH ARGS" fairness rule).
+//!   "FRESH ARGS" fairness rule). Shape C slots are longs on the wire,
+//!   narrowed one-per-slot to `jint` — a uniform mixed-shape packing (no
+//!   second arena on the fixed six-array wire).
 //! - `argCounts[i]` — dual meaning, per shape:
 //!   - shape A `(I[J)I` / shape A′ `(III[J)I`: OUTPUT capacity — op `i` may
 //!     write at most `argCounts[i]` longs (guarded; kernel returns the count
 //!     written).
-//!   - shape B `([J[J)J`: INPUT length (see `args1` above); the op writes
-//!     exactly one result long.
+//!   - shape B `([J[J)J` / shape C `(IIIII[I[J)I`: INPUT length (see `args1`
+//!     above); the op writes exactly one result long.
 //! - `outs` / `outOffsets` — shared OUTPUT arena: op `i` writes its results
-//!   at `outOffsets[i]` (shapes A/A′: `count` longs; shape B: 1 long).
-//!   `outOffsets[i] + written` must stay within `outs.length` (guarded).
+//!   at `outOffsets[i]` (shapes A/A′: `count` longs; shape B/C: 1 long —
+//!   shape C carries the kernel's jint return, sign-extended; its trailing
+//!   `[J` dst is the shared scratch, contents NOT propagated — probe-verified
+//!   g42 contract). `outOffsets[i] + written` must stay within `outs.length`
+//!   (guarded).
 //!
 //! Return value: number of ops executed (`kernelIds.length`) on success, or
 //! a negative error code (see the `ERR_*` constants; codes
@@ -204,11 +211,30 @@ pub type ShapeAPrimeFn = unsafe extern "system" fn(
     dst: jni::jlongArray,
 ) -> jni::jint;
 
+/// Shape C — `(IIIII[I[J)I` (wave-1 g42 `StaticCacheGet`, G3 spike):
+/// `jint Java_...(JNIEnv*, jclass, jint, jint, jint, jint, jint, jintArray,
+/// jlongArray)`. Five packed jint scalars from the scalar plane + per-thread
+/// `int[]` scratch + shared 64-long dst scratch; the jint return is the op's
+/// carried result (return-carried, like shape B).
+pub type ShapeCFn = unsafe extern "system" fn(
+    env: *mut jni::JNIEnv,
+    clazz: jni::jclass,
+    s0: jni::jint,
+    s1: jni::jint,
+    s2: jni::jint,
+    s3: jni::jint,
+    s4: jni::jint,
+    keys: jni::jintArray,
+    dst: jni::jlongArray,
+) -> jni::jint;
+
 /// Scratch capacity for kernel OUTPUT (longs). P500 stubs allocate
 /// `long[64]` as dst — the table only lists kernels with outputs within it.
 const OUT_SCRATCH_CAP: usize = 64;
 /// Scratch capacity for shape-B INPUT slices (longs, 32KB).
 const IN_SCRATCH_CAP: usize = 4096;
+/// Scratch capacity for shape-C INPUT int[] slices (ints, 16KB).
+const IN_INT_SCRATCH_CAP: usize = 4096;
 
 /// Resolved kernel entry: typed per shape (no per-call transmute).
 #[derive(Clone, Copy)]
@@ -216,6 +242,7 @@ enum KernelFn {
     A(ShapeAFn),
     B(ShapeBFn),
     APrime(ShapeAPrimeFn),
+    C(ShapeCFn),
 }
 
 /// Kernel symbols resolved ONCE (init or first-call self-init).
@@ -348,17 +375,19 @@ static BATCH_CLASS_GREF: AtomicUsize = AtomicUsize::new(0);
 /// the same thread than any previous one, making the steady-state path
 /// allocation-free.
 struct Scratch {
-    out_arr: jni::jlongArray, // OUT_SCRATCH_CAP longs — kernel dst
-    in_arr: jni::jlongArray,  // IN_SCRATCH_CAP longs — shape-B src
-    buf: Vec<jni::jlong>,     // GetLongArrayRegion readback target
+    out_arr: jni::jlongArray,   // OUT_SCRATCH_CAP longs — kernel dst
+    in_arr: jni::jlongArray,    // IN_SCRATCH_CAP longs — shape-B src
+    in_int_arr: jni::jintArray, // IN_INT_SCRATCH_CAP ints — shape-C src
+    buf: Vec<jni::jlong>,       // GetLongArrayRegion readback target
     // ---- control planes, refilled from the wire arrays every run() ----
     ids: Vec<jni::jint>,      // kernelIds
     counts: Vec<jni::jint>,   // argCounts (A/A': out capacity, B: input length)
     offs: Vec<jni::jint>,     // outOffsets
     scalars: Vec<jni::jlong>, // args0 scalar plane (shape-packed, v2)
     scalar_starts: Vec<usize>, // per-op scalar-plane offsets (TASK-48 layout)
-    in_starts: Vec<usize>,    // shape-B prefix sums over counts
-    arena: Vec<jni::jlong>,   // packed shape-B input copy (args1 prefix)
+    in_starts: Vec<usize>,    // shape-B/C prefix sums over counts
+    arena: Vec<jni::jlong>,   // packed shape-B/C input copy (args1 prefix)
+    in_int_stage: Vec<jni::jint>, // jint narrowing for shape-C payloads
     staging: Vec<jni::jlong>, // phase-1 results, scattered in phase 2
     ranges: Vec<(jni::jint, usize, jni::jint)>, // (out_off, staging_start, len)
 }
@@ -491,6 +520,7 @@ fn resolve_fns(lib: &loader::NativeLib) -> Result<[KernelFn; KERNEL_COUNT], Stri
             Shape::APrime => {
                 KernelFn::APrime(unsafe { std::mem::transmute::<*mut c_void, ShapeAPrimeFn>(addr) })
             }
+            Shape::C => KernelFn::C(unsafe { std::mem::transmute::<*mut c_void, ShapeCFn>(addr) }),
             Shape::Z => {
                 return Err(format!(
                     "batch: shape Z kernel {} not supported yet (reserved)",
@@ -556,20 +586,26 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_abiVer
 fn create_scratch(env: &JniEnv) -> Option<Scratch> {
     let out_local = env.new_long_array(OUT_SCRATCH_CAP as jni::jsize)?;
     let in_local = env.new_long_array(IN_SCRATCH_CAP as jni::jsize)?;
+    let in_int_local = env.new_int_array(IN_INT_SCRATCH_CAP as jni::jsize)?;
     let zeros_out = [0 as jni::jlong; OUT_SCRATCH_CAP];
     env.set_long_array_region(out_local, 0, OUT_SCRATCH_CAP as jni::jsize, &zeros_out);
     let zeros_in = vec![0 as jni::jlong; IN_SCRATCH_CAP];
     env.set_long_array_region(in_local, 0, IN_SCRATCH_CAP as jni::jsize, &zeros_in);
+    let zeros_int = vec![0 as jni::jint; IN_INT_SCRATCH_CAP];
+    env.set_int_array_region(in_int_local, 0, IN_INT_SCRATCH_CAP as jni::jsize, &zeros_int);
     let out_arr = env.new_global_ref(out_local);
     env.delete_local_ref(out_local);
     let in_arr = env.new_global_ref(in_local);
     env.delete_local_ref(in_local);
-    if out_arr.is_null() || in_arr.is_null() {
+    let in_int_arr = env.new_global_ref(in_int_local);
+    env.delete_local_ref(in_int_local);
+    if out_arr.is_null() || in_arr.is_null() || in_int_arr.is_null() {
         return None;
     }
     Some(Scratch {
         out_arr,
         in_arr,
+        in_int_arr,
         buf: zeros_out.to_vec(),
         // Control planes start empty and grow on first use (the high-water
         // capacity is then retained across calls — the TASK-24 allocation-
@@ -581,6 +617,7 @@ fn create_scratch(env: &JniEnv) -> Option<Scratch> {
         scalar_starts: Vec::new(),
         in_starts: Vec::new(),
         arena: Vec::new(),
+        in_int_stage: Vec::new(),
         staging: Vec::new(),
         ranges: Vec::new(),
     })
@@ -681,7 +718,7 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
         // deliberate soundness choice over `set_len` on uninitialized memory
         // (the JNI region copies overwrite every element anyway; the residual
         // memset is ~36 B/op — nanoseconds).
-        let Scratch { ids, counts, offs, scalars, scalar_starts, in_starts, arena, staging, ranges, .. } =
+        let Scratch { ids, counts, offs, scalars, scalar_starts, in_starts, arena, in_int_stage, staging, ranges, .. } =
             scratch;
 
         // ---- copy the control planes into Rust (O(n), no critical sections) ----
@@ -715,14 +752,15 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
             }
         }
 
-        // Shape-B input slices + shape-packed scalar plane (v2, TASK-48):
+        // Shape-B/C input slices + shape-packed scalar plane (v2, TASK-48):
         // one prefix pass over the (already validated) ids computes BOTH
-        // layouts. `in_starts` are prefix sums of argCounts over B ops;
-        // `scalar_starts` are prefix sums of `scalar_width(shape)` over ALL
-        // ops (A/Z = 1 long, A′ = 3 longs, B = 0). The same pass computes the
+        // layouts. `in_starts` are prefix sums of argCounts over B/C ops
+        // (both consume args1 slots); `scalar_starts` are prefix sums of
+        // `scalar_width(shape)` over ALL ops (A/Z = 1 long, A′ = 3 longs,
+        // C = 5 longs, B = 0). The same pass computes the
         // EXACT staging upper bound: shapes A/A′ may write at most
         // min(argCounts[i], OUT_SCRATCH_CAP) longs (both guarded before any
-        // staging push below), shape B exactly one. Pre-sizing from these
+        // staging push below), shape B/C exactly one. Pre-sizing from these
         // bounds replaces any `n * k` guess, so phase 1 cannot reallocate
         // mid-loop no matter what counts the kernels return.
         in_starts.clear();
@@ -734,7 +772,7 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
         let mut staging_cap = 0usize;
         for i in 0..n {
             let shape = BATCH_KERNELS[ids[i] as usize].shape;
-            if shape == Shape::B {
+            if shape == Shape::B || shape == Shape::C {
                 in_starts[i] = total_in;
                 total_in += counts[i] as usize;
                 staging_cap += 1;
@@ -865,6 +903,51 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
                     let res =
                         unsafe { f(env, kernel_class_for(id, clazz), scratch.in_arr, scratch.out_arr) };
                     staging.push(res);
+                    1
+                }
+                KernelFn::C(f) => {
+                    let start = in_starts[i];
+                    let len = cap; // argCounts[i] = packed input slot count for shape C
+                    if len > IN_INT_SCRATCH_CAP {
+                        ret = ERR_INPUT_CAPACITY;
+                        break;
+                    }
+                    if off < 0 || (off as usize) + 1 > outs_len {
+                        ret = ERR_OUTPUT_CAPACITY;
+                        break;
+                    }
+                    // Packed int payload: arena long slots narrowed one per
+                    // slot to jint, then one region copy into the int scratch
+                    // (uniform mixed-shape packing on the six-array wire).
+                    in_int_stage.clear();
+                    in_int_stage.extend(arena[start..start + len].iter().map(|&v| v as jni::jint));
+                    unsafe {
+                        (vt.SetIntArrayRegion)(
+                            env,
+                            scratch.in_int_arr,
+                            0,
+                            len as jni::jsize,
+                            in_int_stage.as_ptr(),
+                        );
+                    }
+                    let s = scalar_starts[i];
+                    let res = unsafe {
+                        f(
+                            env,
+                            kernel_class_for(id, clazz),
+                            scalars[s] as jni::jint,
+                            scalars[s + 1] as jni::jint,
+                            scalars[s + 2] as jni::jint,
+                            scalars[s + 3] as jni::jint,
+                            scalars[s + 4] as jni::jint,
+                            scratch.in_int_arr,
+                            scratch.out_arr,
+                        )
+                    };
+                    // Return-carried result (Shape::C contract): the closed
+                    // g42 kernel carries its summary in the jint return and
+                    // leaves the trailing long[] dst untouched.
+                    staging.push(res as jni::jlong);
                     1
                 }
             };
@@ -1062,11 +1145,13 @@ mod tests {
     /// version bump signals the shape-packed scalar plane. Pinned so an
     /// accidental revert of either is caught by CI (the Java bench gates on
     /// `abiVersion()` and would silently fall back to per-op calls otherwise).
+    /// (G3 spike: id 14 / shape C joins the table — count now 15, abi word
+    /// 131_087; the KERNEL_COUNT half of the word is the stale-caller guard.)
     #[test]
     fn task48_abi_pins() {
         assert_eq!(crate::batch_table::TABLE_VERSION, 2);
-        assert_eq!(KERNEL_COUNT, 14);
-        assert_eq!((2u32 << 16) | 14u32, 131_086, "abiVersion() contract");
+        assert_eq!(KERNEL_COUNT, 15);
+        assert_eq!((2u32 << 16) | 15u32, 131_087, "abiVersion() contract");
         let g9 = &BATCH_KERNELS[12];
         let g9n = &BATCH_KERNELS[13];
         assert_eq!(g9.shape, Shape::APrime);
@@ -1097,5 +1182,56 @@ mod tests {
         }
         assert_eq!(starts, [0, 1, 4, 4]);
         assert_eq!(total, 5);
+    }
+
+    // ---- G3 shape-C spike (wave-1 g42) --------------------------------
+
+    /// The G3 wave-1 kernel rides the new shape C: id 14, descriptor
+    /// `(IIIII[I[J)I`, and the policy gate must allow it in EVERY mode
+    /// (PROVEN_WINS carries the batch-surface entry — otherwise the shipped
+    /// surface is dead for the whole new shape).
+    #[test]
+    fn g42_wave1_kernel_allowed_with_shape_c() {
+        let k = crate::batch_table::kernel_by_id(14).expect("g42 kernel id 14");
+        assert_eq!(k.class, "PaperNativeStaticCacheGet");
+        assert_eq!(k.method, "newBatchSummary");
+        assert_eq!(k.shape, Shape::C);
+        assert_eq!(k.sig, k.shape.sig());
+        use crate::kernel_policy::PolicyMode;
+        for mode in [PolicyMode::Strict, PolicyMode::Audit, PolicyMode::Off] {
+            assert!(
+                mask_bit(mode, k.class, k.method),
+                "mode {mode:?} must allow the g42 wave-1 kernel"
+            );
+        }
+        let flags = policy_flags();
+        assert!(flags[14], "g42 kernel refused — G3 batch surface dead");
+    }
+
+    /// Shape-C scalar-plane layout: width 5 per op, so a pure-C batch packs
+    /// op i's five jint scalars at plane offset 5*i (the same arithmetic the
+    /// Java harness mirrors). Mixed with other shapes the shared v2 prefix
+    /// rule applies — worked example: [C, B, C] → starts [0, 5, 5], total 10.
+    #[test]
+    fn shape_c_scalar_plane_layout() {
+        assert_eq!(Shape::C.scalar_width(), 5);
+        let ids = [14usize, 10, 14]; // C, B, C
+        let mut starts = [0usize; 3];
+        let mut total = 0usize;
+        for i in 0..ids.len() {
+            starts[i] = total;
+            total += BATCH_KERNELS[ids[i]].shape.scalar_width();
+        }
+        assert_eq!(starts, [0, 5, 5]);
+        assert_eq!(total, 10);
+        // pure-C: starts = [0, 5, 10, ...] — the harness's args0 layout
+        let pure: Vec<usize> = (0..4)
+            .scan(0usize, |acc, _| {
+                let s = *acc;
+                *acc += 5;
+                Some(s)
+            })
+            .collect();
+        assert_eq!(pure, vec![0, 5, 10, 15]);
     }
 }

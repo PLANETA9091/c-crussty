@@ -25,8 +25,9 @@
 //! | 11 | B     | net/minecraft/world/level/biome/PaperNativeClimateRTree | nativeBuildTreeHandle | ([J[J)J  |
 //! | 12 | A'    | PaperNativeDensityAp2MinMaxFill                    | oldSummary              | (III[J)I   |
 //! | 13 | A'    | PaperNativeDensityAp2MinMaxFill                    | newSummary              | (III[J)I   |
+//! | 14 | C     | PaperNativeStaticCacheGet                          | newBatchSummary         | (IIIII[I[J)I |
 //!
-//! All 14 are real symbols verified present in `libpaper_native_jni.so`
+//! All 15 are real symbols verified present in `libpaper_native_jni.so`
 //! (`JNI_EXPORTS.manifest` / live proof: id 0 is the same kernel the plugin's
 //! `live_proof` drives through the bridge). Ids 0-9 cover the dominant
 //! `(I[J)I` P500 shape ("scalar + long[] dst, returns count written"); ids
@@ -34,7 +35,11 @@
 //! returns a jlong result"); ids 12-13 (TASK-48 Phase 1, runbook §8 G3) cover
 //! the wave-1 three-scalar shape `(III[J)I` — the P500 g9 density
 //! min/max-fill pair (direct 119.8 ns, PROVEN_WINS WIN-grade, not in
-//! `DO_NOT_WIRE`). No `(I[J)Z` symbols exist in the table today —
+//! `DO_NOT_WIRE`). Id 14 is the G3 wave-1 spike completion: the g42
+//! `StaticCacheGet` floor anchor (P500 global minimum, 34.6 ns —
+//! `P500_REPORT_v2.md` §42) in shape `C` `(IIIII[I[J)I` — five jint scalars,
+//! an `int[]` key slice in, `long[]` dst out, return-carried jint result.
+//! No `(I[J)Z` symbols exist in the table today —
 //! shape `Z` is reserved in [`Shape`] so such kernels can be added without an
 //! ABI break of the batch entry point.
 //!
@@ -100,6 +105,17 @@
 ///   / `batch_api` packing rule); `argCounts[i]` stays the OUTPUT capacity of
 ///   the `long[]` dst and the kernel returns the count written — same
 ///   output contract as [`Shape::A`].
+/// - [`Shape::C`] — `(IIIII[I[J)I` (wave-1 g42, G3 spike):
+///   `fn(JNIEnv*, jclass, jint, jint, jint, jint, jint, jintArray, jlongArray)
+///   -> jint`. Five packed jint scalars from the `args0` scalar plane (width
+///   [`Shape::scalar_width`] = 5, one long slot per scalar, narrowed to the
+///   low 32 bits — the BATCH_API_PROPOSAL §5 scalar encoding), `argCounts[i]`
+///   int slots from the SAME packed `args1` prefix-sum stream (one int per
+///   long slot, narrowed) copied into a per-thread `int[]` scratch, `long[]`
+///   dst = the shared 64-long scratch. The jint return value is stored as the
+///   single result long for the op (return-carried, like shape B; the closed
+///   g42 kernel carries its result in the return and leaves dst untouched —
+///   probe-verified 2026-09-09 — so dst contents are NOT propagated).
 /// - [`Shape::Z`] — reserved: `(I[J)Z` (`-> jboolean`). No such symbol exists
 ///   in `MAIN_JNI_TABLE` yet; listed so the dispatcher contract is complete.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -111,6 +127,9 @@ pub enum Shape {
     /// `(III[J)I` — three scalars in, `long[]` dst out, returns count written
     /// (wave-1 shape, TASK-48: P500 g9 `DensityAp2MinMaxFill` pair).
     APrime,
+    /// `(IIIII[I[J)I` — five packed scalars + `int[]` in, `long[]` dst out,
+    /// return-carried jint result (g42 wave-1 kernel, G3 spike).
+    C,
     /// `(I[J)Z` — reserved (no real symbols yet); boolean result stored as 0/1.
     /// Kept so kernels of this shape can be added without an ABI break.
     #[allow(dead_code)]
@@ -125,6 +144,7 @@ impl Shape {
             Shape::A => "(I[J)I",
             Shape::B => "([J[J)J",
             Shape::APrime => "(III[J)I",
+            Shape::C => "(IIIII[I[J)I",
             Shape::Z => "(I[J)Z",
         }
     }
@@ -139,6 +159,7 @@ impl Shape {
         match self {
             Shape::A | Shape::Z => 1,
             Shape::APrime => 3,
+            Shape::C => 5,
             Shape::B => 0,
         }
     }
@@ -167,17 +188,17 @@ pub struct BatchKernel {
 /// convention change; `abiVersion()` returns
 /// `(TABLE_VERSION << 16) | KERNEL_COUNT` and stale callers fall back to
 /// per-op calls on mismatch.
-///
 /// v2 (TASK-48): `args0` became the shape-packed scalar plane
 /// ([`Shape::scalar_width`]; v1 = one long per op, shape-A only). Ids 0-11
 /// wire behavior is byte-identical to v1 — the bump exists so a v1 caller
 /// that is unaware of the packing rule cannot accidentally feed a batch
 /// containing A′ ids (it would fail the id range check on v1 anyway), and so
-/// the version alone signals "read the packing docs".
+/// the version alone signals "read the packing docs". Id 14 (G3 shape C)
+/// rides the same v2 packing.
 pub const TABLE_VERSION: u32 = 2;
 
-/// The compile-time kernel table (14 real symbols, `jni_table.rs` line noted).
-pub const KERNELS: [BatchKernel; 14] = [
+/// The compile-time kernel table (15 real symbols, `jni_table.rs` line noted).
+pub const KERNELS: [BatchKernel; 15] = [
     // jni_table.rs:15 — the live-proof kernel (ticketset binary search).
     BatchKernel {
         id: 0,
@@ -305,6 +326,18 @@ pub const KERNELS: [BatchKernel; 14] = [
         sig: "(III[J)I",
         symbol: "Java_PaperNativeDensityAp2MinMaxFill_newSummary",
     },
+    // jni_table.rs:246 — G3 wave-1 spike completion: g42 StaticCacheGet floor
+    // anchor (P500 global minimum 34.6 ns, P500_REPORT_v2 §42), shape C
+    // (IIIII[I[J)I. newBatchSummary (the alt/optimized member of the parity
+    // pair, 0.997 vs old); oldBatchSummary stays unwired until a wave needs it.
+    BatchKernel {
+        id: 14,
+        shape: Shape::C,
+        class: "PaperNativeStaticCacheGet",
+        method: "newBatchSummary",
+        sig: "(IIIII[I[J)I",
+        symbol: "Java_PaperNativeStaticCacheGet_newBatchSummary",
+    },
 ];
 
 /// Slice view of the compile-time table (same shape as `MAIN_JNI_TABLE`).
@@ -354,4 +387,47 @@ const fn str_eq(a: &str, b: &str) -> bool {
         i += 1;
     }
     true
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// G3 spike completion: the g42 wave-1 kernel rides the new shape C,
+    /// declared exactly like every other entry (copied `JniEntry` tuple +
+    /// shape) at table id 14 (after TASK-48's A′ pair 12/13).
+    #[test]
+    fn g42_wave1_kernel_is_declared_as_shape_c() {
+        let k = kernel_by_id(14).expect("g42 kernel id 14 must exist");
+        assert_eq!(k.shape, Shape::C);
+        assert_eq!(k.class, "PaperNativeStaticCacheGet");
+        assert_eq!(k.method, "newBatchSummary");
+        assert_eq!(k.sig, "(IIIII[I[J)I");
+        assert_eq!(k.symbol, "Java_PaperNativeStaticCacheGet_newBatchSummary");
+        // Descriptor cross-check (the init-time resolve_fns rule, mirrored).
+        assert_eq!(k.sig, k.shape.sig());
+    }
+
+    /// Per-shape scalar-plane widths (the TASK-48 v2 packing rule): A/Z keep
+    /// the historical 1 long/op, B consumes none, A′ packs three, C packs the
+    /// five jint scalars of `(IIIII[I[J)I`.
+    #[test]
+    fn shape_scalar_widths() {
+        assert_eq!(Shape::A.scalar_width(), 1);
+        assert_eq!(Shape::B.scalar_width(), 0);
+        assert_eq!(Shape::APrime.scalar_width(), 3);
+        assert_eq!(Shape::C.scalar_width(), 5);
+        assert_eq!(Shape::Z.scalar_width(), 1);
+    }
+
+    /// Runtime mirror of the compile-time table asserts: ids stay dense and
+    /// every descriptor matches its declared shape (15 entries after G3).
+    #[test]
+    fn table_is_dense_with_matching_descriptors() {
+        assert_eq!(KERNEL_COUNT, 15);
+        for (i, k) in BATCH_KERNELS.iter().enumerate() {
+            assert_eq!(k.id as usize, i);
+            assert_eq!(k.sig, k.shape.sig());
+        }
+    }
 }
