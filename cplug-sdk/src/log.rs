@@ -5,7 +5,7 @@
 use crate::classes::{find_class, method, static_method, ClassRef};
 use crate::jni_util::with_attached;
 use jvmti_bindings::prelude::*;
-use std::sync::{Mutex, OnceLock};
+use std::sync::{Mutex, OnceLock, PoisonError};
 
 enum Level {
     Info,
@@ -67,7 +67,14 @@ fn emit(level: Level, msg: &str) {
     // the lock, then emit. (Cold-path resolve() stays under the lock exactly
     // as before — it runs once, before the kernel logger exists.)
     let snapshot = {
-        let mut cache = ids().lock().unwrap();
+        // Poison-recovery (TASK-46): emit() is reachable from hook-callback
+        // threads (ClassFileLoadHook) and any JNI-attached path; the guard
+        // only copies a plain-scalar snapshot / stores resolve()'s result —
+        // no user code under the lock, so the mutex stays structurally valid
+        // after a panic. A raw .unwrap() here would unwind across JNI = VM
+        // abort; with into_inner a poisoned cache degrades to the existing
+        // "log dropped" stderr fallback instead.
+        let mut cache = ids().lock().unwrap_or_else(PoisonError::into_inner);
         if cache.is_none() {
             *cache = resolve();
         }
@@ -120,4 +127,32 @@ pub fn warn(msg: &str) {
 
 pub fn log_info(msg: &str) {
     info(msg);
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// TASK-46 poison-recovery: a panic while IDS is locked (e.g. resolve()
+    /// blowing up on a JNI edge) must NOT turn the next emit() from a
+    /// hook-callback thread into an unwind-across-JNI VM abort. After the
+    /// deliberate poison, emit() must recover the (structurally valid)
+    /// Option<LoggerIds> and take its normal headless path.
+    #[test]
+    fn poisoned_ids_lock_recovered_by_emit() {
+        // Poison the lock: panic while the guard is held in another thread.
+        let poisoner = std::thread::spawn(|| {
+            let _guard = ids().lock().unwrap();
+            panic!("deliberate: poison the IDS mutex");
+        });
+        let _ = poisoner.join(); // panic contained in the spawned thread
+        // Pre-fix this call would panic on the poisoned lock (real-world
+        // analogue: a ClassFileLoadHook thread calling log::info).
+        emit(
+            Level::Info,
+            "poison probe: must recover, not unwind across JNI",
+        );
+        // The mutex must still be lockable and structurally valid.
+        assert!(ids().lock().unwrap_or_else(|e| e.into_inner()).is_none());
+    }
 }
