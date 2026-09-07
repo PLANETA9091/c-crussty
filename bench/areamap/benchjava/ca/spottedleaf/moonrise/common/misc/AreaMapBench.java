@@ -81,28 +81,21 @@ public final class AreaMapBench {
     /** Iteration count of the last timeRounds() invocation (warmup*rounds + measured). */
     static long totalIters = 0L;
 
-    /** Median-of-3 timed rounds; each round a >=150 ms window after warmup. */
-    static double timeRounds(int warmupIters, Runnable call) {
-        final double[] ns  = new double[3];
-        final long[]   its = new long[3];
-        long total = 0L;
+    /** Median-of-3 rounds of a FIXED iteration count (TASK-30 hygiene: fixed
+     *  iters make FAKE/REAL windows consume the IDENTICAL RNG stream, so
+     *  cross-mode ops/call is comparable; the radius walk is reset to d and
+     *  clamped to [d-8, d+8] so it cannot drift between modes). */
+    static double timeRoundsFixed(int warmupIters, int measIters, Runnable call) {
+        final double[] ns = new double[3];
         for (int r = 0; r < 3; r++) {
             for (int i = 0; i < warmupIters; i++) call.run();
-            total += warmupIters;
             final long t0 = System.nanoTime();
-            long iters = 0;
-            do { call.run(); iters++; }
-            while ((System.nanoTime() - t0) < 150_000_000L || iters < 32);
-            final long el = System.nanoTime() - t0;
-            ns[r]  = (double) el / iters;
-            its[r] = iters;
-            total += iters;
+            for (int i = 0; i < measIters; i++) call.run();
+            ns[r] = (double) (System.nanoTime() - t0) / measIters;
         }
-        totalIters = total;
-        // median round by ns
-        final Integer[] idx = {0, 1, 2};
-        java.util.Arrays.sort(idx, (a, b) -> Double.compare(ns[a], ns[b]));
-        return ns[idx[1]];
+        java.util.Arrays.sort(ns);
+        totalIters = 3L * (warmupIters + measIters);
+        return ns[1];
     }
 
     public static void main(String[] args) {
@@ -136,8 +129,13 @@ public final class AreaMapBench {
                 int nd = cd[0];
                 if (Long.remainderUnsigned(r >>> 16, 8L) == 0L) {
                     nd = cd[0] + (((r >>> 24) & 1L) == 0L ? 1 : -1);
-                    if (nd < 1) nd = 1;
                 }
+                // TASK-30 hygiene: clamp the radius walk BEFORE the same-state
+                // force check, else a clamped-back nd can silently produce a
+                // same-state call (native skipped -> verif off-by-N)
+                if (nd > d + 8) nd = d + 8;
+                final int lo = Math.max(1, d - 8);
+                if (nd < lo) nd = lo;
                 if (dx == 0 && dz == 0 && nd == cd[0]) {
                     dz = 1;   // guarantee a CHANGED state: every timed call must hit the apply loop
                 }
@@ -149,7 +147,11 @@ public final class AreaMapBench {
 
             final long callsBefore = realMode ? -1L : PaperNativeAreaMap.calls();
             final long opsBefore = m.ops;
-            final double nsChanged = timeRounds(warm, changed);
+            // reset the walk to the canonical state so FAKE and REAL consume identical streams
+            cx[0] = 3; cz[0] = -2; cd[0] = d; fx[0] = 0; fz[0] = 0; fd[0] = d;
+            rngState = SEED + 31L * d;   // deterministic per-size stream, identical across modes
+            final int measIters = d > 255 ? 600 : (d > 63 ? 2500 : 8000);
+            final double nsChanged = timeRoundsFixed(warm, measIters, changed);
             final long itersChanged = totalIters;
             final long opsTotal = m.ops - opsBefore;
             final long opsPerCall = Math.round((double) opsTotal / itersChanged);
@@ -174,7 +176,8 @@ public final class AreaMapBench {
             final long opsBefore2 = m.ops;
             final Runnable same = () ->
                 SingleUserAreaMapOps.run(m, tx, tz, td, tx, tz, td, null);
-            final double nsSame = timeRounds(1000, same);
+            rngState = SEED + 31L * d + 7L;   // irrelevant for SAME, kept deterministic
+            final double nsSame = timeRoundsFixed(1000, 40000, same);
             String verif2 = "opsAccum=" + (m.ops - opsBefore2);
             if (!realMode) {
                 final long dCalls = PaperNativeAreaMap.calls() - callsBefore2;
@@ -186,7 +189,7 @@ public final class AreaMapBench {
 
             // ---------------- NAIVE reference ----------------
             final Runnable naive = () -> { naiveScan(ex, ez, ed, tx, tz, td); };
-            final double nsNaive = timeRounds(warm, naive);
+            final double nsNaive = timeRoundsFixed(warm, measIters, naive);
             System.out.println("NAIVE\t" + d + "\t" + side + "\t" + fmt(nsNaive) + "\t"
                     + (naiveN > 0 ? fmt(nsNaive / naiveN) : "-") + "\t"
                     + fmt(nsNaive / pxScan) + "\t" + naiveN + "\tnaiveN=" + naiveN);
