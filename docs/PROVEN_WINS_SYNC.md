@@ -129,27 +129,50 @@ Remaining stale artifact fixed: the `DO_NOT_WIRE` doc comment still said "P500 2
    `P500_REPORT.md` (49 groups) differs from `P500_REPORT_v2.md` (v2-era absolutes quoted
    in old evidence strings, e.g. 217.9 ns vs 116.1 ns for PluginLoadingAllocation) — the
    rerun is a different dataset. No action.
+5. **RESOLVED 2026-09-09+08 (TASK-54): the three remaining wire-eligible WIN pairs are
+   now promoted (lifecycle wave 2).** `NoiseInterpolatorSlice.flatSummary` (3.32×,
+   ratio 0.301/0.301), `ImprovedNoiseInline.switchGradientSummary` (1.22×, 0.819/0.819)
+   and `PalettedReencodeScratch.scratchThreadLocalSummary` (1.20×, 0.834/0.838) — all
+   twice-reproduced on the 2026-09-08 rerun + 2026-09-09 fresh full rerun — went through
+   the full §Lifecycle: (a) offline semantic-parity gate wave 2 (`WinPairParity.java`,
+   REAL .so, exclusive BENCH.lock): old ≡ new byte-exact on 1600/3036/3072 inputs per
+   pair, result + full dst, two identical runs (cross-JVM fixture determinism);
+   (b) `PROMOTE_PAIRS` 2 → 5 + self-test generalized to multi-shape signatures
+   (`(II[J)I` / `(IIII[J)I` / `([BI[J)I` / `(I[J)I`, sig resolved from `jni_table`,
+   shape drift-guarded); (c) live e2e: unarmed boot 0 `kernel_promote` lines
+   (dormant-invisible), armed boot re-binds all 5 pairs and the generalized self-test
+   passes fixtures 20/20, bridge parity 20/20 (`PROMOTE_E2E_2026-09-09.md` TASK-54
+   section). Registry verdicts updated to "P500 WIN + live-verified (TASK-54)".
 
 ## 5. Wiring-eligibility delta
 
-* **Hot-path swap / promotion candidates: 7 → 4 → 2 (TASK-53).**
+* **Hot-path swap / promotion candidates: 7 → 4 → 2 (TASK-53) → 0 (TASK-54).**
   `PluginLoadingAllocation` (`newLazyValidateSummary`, `newLazyMissingSetSummary`) and
   `AquiferSurfaceSampling.newBatchSummary` lose "P500 WIN promotion candidate" status —
   a hot path must NOT be swapped to them on win-evidence grounds (they are parity).
   They remain **batch-dispatch-eligible**: BATCH_WIRING_PLAN §B.2.3 precondition (a)
   ("single-call verdict parity or better") now holds *honestly* — this matches
   BATCH_ADOPTION_MATRIX_wave2 §4 rows #4/#5/#7 ("wire for batching, not kernel swap").
-  The remaining two candidates (the `NoiseChunkFlatCacheContext` pair) were **promoted
-  by TASK-53** through the full lifecycle — see §4 item 2.
-* **Policy `Allow` set: widened by the TASK-53 promotion (2 new inputs).**
+  The two `NoiseChunkFlatCacheContext` candidates were **promoted by TASK-53**, and the
+  last three wire-eligible WIN pairs (`NoiseInterpolatorSlice.flatSummary`,
+  `ImprovedNoiseInline.switchGradientSummary`, `PalettedReencodeScratch.scratchThreadLocalSummary`)
+  were **promoted by TASK-54** (lifecycle wave 2, §4 item 5). No unpromoted WIN verdict
+  remains in the registry; the only non-promoted WIN (`BlendCache.newEmptyBlenderSummary`,
+  316×) is already **live-wired** through its own first-class hook.
+* **Policy `Allow` set: widened by the TASK-53 promotion (2 new inputs) and the TASK-54
+  promotion (3 new inputs).**
   `decide()` now returns `Allow` for `NoiseChunkFlatCacheContext.newTrueContextSummary`
   and `.newFalseContextSummary` (pinned by
-  `promoted_win_kernels_are_policy_allowed_in_strict_mode`). The **batch dispatcher
+  `promoted_win_kernels_are_policy_allowed_in_strict_mode`) plus — via the same generic
+  test over `PROMOTE_PAIRS` — `NoiseInterpolatorSlice.flatSummary`,
+  `ImprovedNoiseInline.switchGradientSummary` and
+  `PalettedReencodeScratch.scratchThreadLocalSummary`. The **batch dispatcher
   table is unchanged** (14 ids — the promoted kernels are not batch-table members), and
   DO_NOT_WIRE refusals are identical.
 * **DO_NOT_WIRE: unchanged (4 kernels).** All four regressions reproduce on the rerun;
   no promotion/demotion.
-* **Net gate-widening: +2 (the TASK-53 promotion, §4 item 2).** Net gate-narrowing:
+* **Net gate-widening: +5 (+2 the TASK-53 promotion §4 item 2, +3 the TASK-54 promotion
+  §4 item 5).** Net gate-narrowing:
   zero (verdict labels only).
 
 ## 6. Risk note

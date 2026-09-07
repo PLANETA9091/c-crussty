@@ -219,20 +219,20 @@ pub static PROVEN_WINS: &[ProvenKernel] = &[
     ProvenKernel {
         class: "PaperNativeNoiseInterpolatorSlice",
         kernel: "flatSummary",
-        verdict: "P500 WIN (3.32x)",
-        evidence: "bench/p500/results/P500_REPORT.md 2026-09-08 rerun (6.3 ms -> 1.9 ms, ratio 0.301, stability 0.0%); v2 said 3.29x (6.2 ms)",
+        verdict: "P500 WIN (3.32x) + live-verified (TASK-54)",
+        evidence: "bench/p500/results/P500_REPORT.md 2026-09-08 rerun (6.3 ms -> 1.9 ms, ratio 0.301, stability 0.0%); v2 said 3.29x (6.2 ms) + parity gate bench/p500/parity/results/WINPAIR_PARITY_RAW.tsv (1600/1600 byte-exact) + live-armed e2e bench/p500/parity/results/PROMOTE_E2E_2026-09-09.md (TASK-54 wave 2)",
     },
     ProvenKernel {
         class: "PaperNativeImprovedNoiseInline",
         kernel: "switchGradientSummary",
-        verdict: "P500 WIN (1.22x)",
-        evidence: "bench/p500/results/P500_REPORT.md 2026-09-08 rerun (9.3 us -> 7.6 us, ratio 0.819, stability 0.0%) — reproduced from v2",
+        verdict: "P500 WIN (1.22x) + live-verified (TASK-54)",
+        evidence: "bench/p500/results/P500_REPORT.md 2026-09-08 rerun (9.3 us -> 7.6 us, ratio 0.819, stability 0.0%) — reproduced from v2 + parity gate bench/p500/parity/results/WINPAIR_PARITY_RAW.tsv (3036/3036 byte-exact) + live-armed e2e bench/p500/parity/results/PROMOTE_E2E_2026-09-09.md (TASK-54 wave 2)",
     },
     ProvenKernel {
         class: "PaperNativePalettedReencodeScratch",
         kernel: "scratchThreadLocalSummary",
-        verdict: "P500 WIN (1.20x)",
-        evidence: "bench/p500/results/P500_REPORT.md 2026-09-08 rerun (493.6 us -> 411.9 us, ratio 0.834, stability 0.0%) — reproduced from v2",
+        verdict: "P500 WIN (1.20x) + live-verified (TASK-54)",
+        evidence: "bench/p500/results/P500_REPORT.md 2026-09-08 rerun (493.6 us -> 411.9 us, ratio 0.834, stability 0.0%) — reproduced from v2 + parity gate bench/p500/parity/results/WINPAIR_PARITY_RAW.tsv (3072/3072 byte-exact) + live-armed e2e bench/p500/parity/results/PROMOTE_E2E_2026-09-09.md (TASK-54 wave 2)",
     },
     // --- P500 PARITY reclassifications (TASK-31 evidence-sync) --------------
     // Previously listed as "P500 WIN" on the v2 report; NOT reproducible on
@@ -582,7 +582,8 @@ pub struct PromotablePair {
 /// Promotion pairs (PROVEN_WINS_SYNC §4.2). Every entry needs ALL of:
 /// (1) the P500 WIN verdict, twice reproduced (2026-09-08 rerun + the
 /// 2026-09-09 fresh full rerun); (2) the offline semantic-parity gate
-/// (bench/p500/parity/ — byte-exact result + dst on 3648 inputs per pair,
+/// (bench/p500/parity/ — byte-exact result + dst on 3648 inputs per pair
+/// wave 1 [TASK-53] and 1600/3036/3072 inputs per pair wave 2 [TASK-54],
 /// cross-JVM deterministic fixture vectors); (3) the live-armed self-test
 /// through the real bridge (src/promote_wire.rs) on a promote-armed boot.
 /// `from_kernel` names are NOT in DO_NOT_WIRE (enforced by a unit test);
@@ -604,6 +605,30 @@ pub static PROMOTE_PAIRS: &[PromotablePair] = &[
         ratio: 0.846,
         source: "P500 2026-09-09 fresh full rerun (49/49 groups, ratio-gate OK; S7-9)",
         reason: "flat-cache false-context summary: 22.1 us -> 18.6 us, twice-reproduced WIN (0.846 / 0.853), parity-gate byte-exact",
+    },
+    PromotablePair {
+        class: "PaperNativeNoiseInterpolatorSlice",
+        from_kernel: "oldJaggedSummary",
+        to_kernel: "flatSummary",
+        ratio: 0.301,
+        source: "P500 2026-09-09 fresh full rerun (49/49 groups, ratio-gate OK; S7-9)",
+        reason: "interpolator slice: 6.3 ms -> 1.9 ms, twice-reproduced WIN (0.301/0.301), parity-gate byte-exact (wave 2, TASK-54)",
+    },
+    PromotablePair {
+        class: "PaperNativeImprovedNoiseInline",
+        from_kernel: "oldPMethodSummary",
+        to_kernel: "switchGradientSummary",
+        ratio: 0.819,
+        source: "P500 2026-09-09 fresh full rerun (49/49 groups, ratio-gate OK; S7-9)",
+        reason: "inline gradient switch: 9.3 us -> 7.6 us, twice-reproduced WIN (0.819/0.819), parity-gate byte-exact (wave 2, TASK-54)",
+    },
+    PromotablePair {
+        class: "PaperNativePalettedReencodeScratch",
+        from_kernel: "oldNewArraySummary",
+        to_kernel: "scratchThreadLocalSummary",
+        ratio: 0.834,
+        source: "P500 2026-09-09 fresh full rerun (49/49 groups, ratio-gate OK; S7-9)",
+        reason: "paletted reencode scratch: 493.6 us -> 411.9 us, twice-reproduced WIN (0.834/0.838), parity-gate byte-exact (wave 2, TASK-54)",
     },
 ];
 

@@ -39,7 +39,7 @@ Strict policy (the default), evaluated in order:
 | anything else (unknown / unproven) | `KeepJava` — "not proven" (default-safe) |
 
 API surface (all allocation-free; mode cached in a `OnceLock`; registries are
-static slices scanned linearly — 4 + 25 entries; plus the TASK-53 `PROMOTE_PAIRS` slice for the env-gated WIN-direction registration binding):
+static slices scanned linearly — 4 + 25 entries; plus the TASK-53/54 `PROMOTE_PAIRS` slice (5 pairs, wave 2 = TASK-54) for the env-gated WIN-direction registration binding):
 
 | Signature | Purpose |
 |---|---|
@@ -155,6 +155,13 @@ unproven elsewhere) does **not** leak between entries.
   through the real bridge (fixtures 8/8, bridge parity 8/8). The operator
   arms the swap via `CRUSSTY_KERNEL_PROMOTE=1`; the registry entries make
   the pair policy-`Allow` either way.
+  Second application — **TASK-54 wave 2** (`NoiseInterpolatorSlice`
+  `flatSummary` 3.32×, `ImprovedNoiseInline` `switchGradientSummary` 1.22×,
+  `PalettedReencodeScratch` `scratchThreadLocalSummary` 1.20×): parity gate
+  1600/3036/3072 inputs per pair byte-exact (`WINPAIR_PARITY_RAW.tsv`, two
+  identical runs), self-test generalized to multi-shape signatures
+  (`(II[J)I` / `(IIII[J)I` / `([BI[J)I` / `(I[J)I`), live-armed e2e
+  fixtures 20/20, bridge parity 20/20 — `PROMOTE_PAIRS` 2 → 5 pairs.
 * **Demote to `DO_NOT_WIRE`**: a **REGRESSION** verdict (ratio ≥ 1.18)
   confirmed by a rerun and (for hot-path candidates) the scale-invariance
   probe; add a `RegressedKernel` entry with ratio, source tag and reason. The
