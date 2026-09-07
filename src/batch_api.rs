@@ -79,9 +79,16 @@
 //! GC). Therefore:
 //!
 //! - **Phase 1 (per op)**: kernel is called with a per-thread GLOBAL-REF
-//!   scratch array as dst (`argCounts[i]`-long input slices are copied into a
-//!   second scratch array first); the result longs are read out with
-//!   `GetLongArrayRegion` into a staging buffer. No critical section held.
+//!   scratch array as dst. Shape-B/C input slices are staged PER-OP straight
+//!   from `args1` (source offset = the op's prefix start) through the
+//!   bounded `in_stage` buffer into the scratch arrays (shape C narrows to
+//!   jint slots on the way) — since TASK-50/D1 there is NO bulk pre-copy of
+//!   the whole prefix and NO unbounded per-thread arena (the old
+//!   `args1 → arena → in_arr` path pinned `total_in` at the per-thread
+//!   high-water forever and paid a full `total_in` memcpy + memset every
+//!   batch). The result longs are
+//!   read out with `GetLongArrayRegion` into a staging buffer. No
+//!   critical section held on the input path.
 //! - **Phase 2 (once per batch)**: `GetPrimitiveArrayCritical(outs)` — pure
 //!   `memcpy` of every op's staged results into the arena (NO JNI calls
 //!   inside the critical window) — then `ReleasePrimitiveArrayCritical`.
@@ -385,9 +392,13 @@ struct Scratch {
     offs: Vec<jni::jint>,     // outOffsets
     scalars: Vec<jni::jlong>, // args0 scalar plane (shape-packed, v2)
     scalar_starts: Vec<usize>, // per-op scalar-plane offsets (TASK-48 layout)
-    in_starts: Vec<usize>,    // shape-B/C prefix sums over counts
-    arena: Vec<jni::jlong>,   // packed shape-B/C input copy (args1 prefix)
-    in_int_stage: Vec<jni::jint>, // jint narrowing for shape-C payloads
+    in_starts: Vec<usize>,    // shape-B/C prefix sums over counts (= src offsets)
+    // D1/TASK-50: bounded per-op shape-B/C staging slice. Lazy high-water,
+    // hard-capped by the per-op `len ≤ IN_SCRATCH_CAP` / `IN_INT_SCRATCH_CAP`
+    // contracts (the only bounds that exist now — the old unbounded `arena`
+    // is gone).
+    in_stage: Vec<jni::jlong>,
+    in_int_stage: Vec<jni::jint>, // jint narrowing for shape-C payloads (D1: fed from in_stage)
     staging: Vec<jni::jlong>, // phase-1 results, scattered in phase 2
     ranges: Vec<(jni::jint, usize, jni::jint)>, // (out_off, staging_start, len)
 }
@@ -616,7 +627,7 @@ fn create_scratch(env: &JniEnv) -> Option<Scratch> {
         scalars: Vec::new(),
         scalar_starts: Vec::new(),
         in_starts: Vec::new(),
-        arena: Vec::new(),
+        in_stage: Vec::new(),
         in_int_stage: Vec::new(),
         staging: Vec::new(),
         ranges: Vec::new(),
@@ -718,7 +729,7 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
         // deliberate soundness choice over `set_len` on uninitialized memory
         // (the JNI region copies overwrite every element anyway; the residual
         // memset is ~36 B/op — nanoseconds).
-        let Scratch { ids, counts, offs, scalars, scalar_starts, in_starts, arena, in_int_stage, staging, ranges, .. } =
+        let Scratch { ids, counts, offs, scalars, scalar_starts, in_starts, in_stage, in_int_stage, staging, ranges, .. } =
             scratch;
 
         // ---- copy the control planes into Rust (O(n), no critical sections) ----
@@ -785,11 +796,18 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
         if total_in > args1_len || total_scalars > args0_len {
             return ERR_LENGTH_MISMATCH;
         }
-        arena.clear();
-        arena.resize(total_in, 0);
-        if total_in > 0 {
-            unsafe { (vt.GetLongArrayRegion)(env, args1, 0, total_in as jni::jsize, arena.as_mut_ptr()) };
-        }
+        // D1 (TASK-50): NO bulk input staging here anymore. The old path
+        // copied the whole shape-B prefix `args1 → arena` up front (one full
+        // `total_in` memcpy + one full `total_in` memset from `resize()` on
+        // EVERY batch) and kept the arena at the per-thread high-water
+        // forever — a single large batch pinned tens of MB per thread for
+        // the process lifetime, and `total_in` was bounded only by the
+        // caller-controlled `args1_len`, not by the IN_SCRATCH_CAP scratch
+        // contract. Shape-B ops now stage their input slice per-op, lazily,
+        // bounded by `len ≤ IN_SCRATCH_CAP` (checked in the dispatch arm
+        // below); `total_in` remains only as the source-range soundness
+        // bound above. Shape-A/A′ batches (all traffic today) never enter
+        // that path at all.
         scalars.clear();
         scalars.resize(total_scalars, 0);
         if total_scalars > 0 {
@@ -891,13 +909,34 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
                         ret = ERR_OUTPUT_CAPACITY;
                         break;
                     }
+                    // D1 (TASK-50): per-op single-slice staging — read the
+                    // op's input straight from `args1` at its prefix offset
+                    // into the bounded `in_stage` buffer, then one region-
+                    // write into `in_arr[0..len]`. Replaces the old
+                    // arena[start..start+len] back-copy (which required the
+                    // up-front bulk args1→arena copy + its per-batch memset).
+                    // Steady state: `in_stage` is already long enough, so the
+                    // resize is a no-op and the whole path stays
+                    // allocation-free at the 32KB IN_SCRATCH_CAP bound.
+                    if in_stage.len() < len {
+                        in_stage.resize(len, 0);
+                    }
+                    unsafe {
+                        (vt.GetLongArrayRegion)(
+                            env,
+                            args1,
+                            start as jni::jsize,
+                            len as jni::jsize,
+                            in_stage.as_mut_ptr(),
+                        );
+                    }
                     unsafe {
                         (vt.SetLongArrayRegion)(
                             env,
                             scratch.in_arr,
                             0,
                             len as jni::jsize,
-                            arena[start..start + len].as_ptr(),
+                            in_stage.as_ptr(),
                         );
                     }
                     let res =
@@ -916,11 +955,31 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
                         ret = ERR_OUTPUT_CAPACITY;
                         break;
                     }
-                    // Packed int payload: arena long slots narrowed one per
-                    // slot to jint, then one region copy into the int scratch
+                    // Packed int payload: long slots read per-op from
+                    // args1 (D1), narrowed one per slot to jint, then one
+                    // region copy into the int scratch
                     // (uniform mixed-shape packing on the six-array wire).
+                    // D1 (TASK-50): per-op staging — read the op's packed
+                    // long-slot payload straight from `args1` at its prefix
+                    // offset into the bounded `in_stage` buffer (no bulk
+                    // pre-copy, no per-batch memset, no unbounded arena),
+                    // then narrow to jint slots and region-write into the
+                    // int scratch. Steady state allocation-free; the C-path
+                    // gets the same memory contract as the B-path.
+                    if in_stage.len() < len {
+                        in_stage.resize(len, 0);
+                    }
+                    unsafe {
+                        (vt.GetLongArrayRegion)(
+                            env,
+                            args1,
+                            start as jni::jsize,
+                            len as jni::jsize,
+                            in_stage.as_mut_ptr(),
+                        );
+                    }
                     in_int_stage.clear();
-                    in_int_stage.extend(arena[start..start + len].iter().map(|&v| v as jni::jint));
+                    in_int_stage.extend(in_stage[..len].iter().map(|&v| v as jni::jint));
                     unsafe {
                         (vt.SetIntArrayRegion)(
                             env,
