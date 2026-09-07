@@ -97,6 +97,34 @@ fn class_version(b: &[u8]) -> Option<(u16, u16)> {
     ))
 }
 
+/// Major class-file version the running JVM supports (Java N => 44 + N).
+/// Read from the `java.class.version` system property ("65.0" on Java 21)
+/// via the classloader-less bootstrap `System` class. None = unreadable.
+fn jvm_class_major(env: &JniEnv) -> Option<u16> {
+    let sys = env.find_class("java/lang/System")?;
+    let get_prop = env.get_static_method_id(
+        sys,
+        "getProperty",
+        "(Ljava/lang/String;)Ljava/lang/String;",
+    )?;
+    let key = env.new_string("java.class.version")?;
+    let val = env.call_static_object_method(
+        sys,
+        get_prop,
+        &[jni::jvalue { l: key }],
+    );
+    let _ = crate::clear_exception(env);
+    env.delete_local_ref(key);
+    env.delete_local_ref(sys);
+    if val.is_null() {
+        env.delete_local_ref(val);
+        return None;
+    }
+    let s = env.get_string_utf(val);
+    env.delete_local_ref(val);
+    s.and_then(|s| s.split('.').next()?.parse::<u16>().ok())
+}
+
 /// Register the byte hook (idempotent; call once from cplugin_init).
 ///
 /// The callback performs NO JNI/ASM work: classfile hooks run on the
@@ -117,6 +145,11 @@ pub fn register() {
         if !READY.load(Ordering::Relaxed) {
             // Pristine sighting (the original class load): stash the bytes
             // for the worker to patch; never rewrite here.
+            eprintln!(
+                "[crussty-plugin] improved_noise: pristine sighting {} bytes (major {})",
+                bytes.len(),
+                class_version(bytes).map(|(m, _)| m).unwrap_or(0)
+            );
             let mut orig = orig_lock().lock().unwrap();
             if orig.is_none() {
                 *orig = Some(bytes.to_vec());
@@ -132,6 +165,32 @@ pub fn register() {
         );
         cached
     });
+}
+
+/// JVM's supported class-file major version ("java.class.version",
+/// e.g. "65.0" on Java 21). define_class of embedded bridge bytes compiled
+/// by a newer javac dies with a raw UnsupportedClassVersionError that names
+/// no source — read the numbers ourselves and fail with a clear line.
+fn jvm_max_class_major(env: &JniEnv) -> Option<u16> {
+    let sys = env.find_class("java/lang/System")?;
+    let getprop = env.get_static_method_id(
+        sys,
+        "getProperty",
+        "(Ljava/lang/String;)Ljava/lang/String;",
+    )?;
+    let key = env.new_string_utf("java.class.version")?;
+    let val = env.call_static_object_method(sys, getprop, &[jni::jvalue { l: key }]);
+    crate::clear_exception(env);
+    env.delete_local_ref(key);
+    if val.is_null() {
+        env.delete_local_ref(sys);
+        return None;
+    }
+    let s = env.get_string_utf(val as jni::jstring);
+    env.delete_local_ref(val);
+    env.delete_local_ref(sys);
+    let s = s?;
+    s.split('.').next()?.parse::<u16>().ok()
 }
 
 /// Background activation: wait for the kernel class, define the bridge into
@@ -180,7 +239,43 @@ pub fn activate() {
             "[crussty-plugin] improved_noise: server booted, defining bridge into kernel loader"
         );
 
+        // Guard: the embedded bridge bytes must not be newer than the JVM
+        // (major-69 bytes from a Java 25 javac in a Java 21 kernel fail
+        // define_class with a bare UnsupportedClassVersionError). Read the
+        // JVM's real max and refuse early with actionable numbers.
+        let max_major = cplug_sdk::jni_util::with_attached(jvm_max_class_major).flatten();
+        if let Some(max) = max_major {
+            let bm = class_version(BRIDGE_BYTES).map(|(m, _)| m).unwrap_or(0);
+            if bm > max {
+                eprintln!(
+                    "[crussty-plugin] improved_noise: embedded bridge is class major {bm} but this JVM supports up to {max} — recompile noise/ with `--release 8` and rebuild; hook stays dormant"
+                );
+                return;
+            }
+        }
+
         let defined = cplug_sdk::jni_util::with_attached(|env| {
+            // Guard: the bundled bridge classes must not exceed the running
+            // JVM's class-file version (a Java-25-compiled noise bridge on a
+            // Java-21 kernel dies with a cryptic UnsupportedClassVersionError
+            // in the server log — this turned up in CI on 2026-09-07). If the
+            // artifacts are stale, disable the patch and say how to fix it.
+            let jvm_major = jvm_class_major(env).unwrap_or(u16::MAX);
+            for (name, bytes) in [
+                (BRIDGE_NAME, BRIDGE_BYTES),
+                (BRIDGE_HANDLE_NAME, BRIDGE_HANDLE_BYTES),
+            ] {
+                if let Some((major, _)) = class_version(bytes) {
+                    if major > jvm_major {
+                        eprintln!(
+                            "[crussty-plugin] improved_noise: {name} is class-file major {major} \
+                             but this JVM supports up to {jvm_major} — rebuild noise/ with \
+                             'scripts/build_noise.sh' (--release), patch stays dormant"
+                        );
+                        return false;
+                    }
+                }
+            }
             let Some(cls) = cplug_sdk::classes::find_class(NOISE_CLASS) else {
                 return false;
             };
@@ -201,7 +296,7 @@ pub fn activate() {
             };
             let gref = env.new_global_ref(loader);
             if gref.is_null() {
-                crate::clear_exception(env);
+                crate::describe_exception(env);
                 env.delete_local_ref(loader);
                 env.delete_local_ref(class_cls);
                 return false;
@@ -216,7 +311,7 @@ pub fn activate() {
                         eprintln!("[crussty-plugin] improved_noise: defined {name} in kernel loader");
                     }
                     None => {
-                        crate::clear_exception(env);
+                        crate::describe_exception(env);
                         eprintln!("[crussty-plugin] improved_noise: define_class({name}) failed");
                         ok = false;
                     }
@@ -227,6 +322,7 @@ pub fn activate() {
             // mid-retransformation (mirrors area_map: no class definition
             // inside the class-file hook callback).
             if cplug_sdk::asm::ensure_defined(env, gref).is_none() {
+                crate::describe_exception(env);
                 eprintln!("[crussty-plugin] improved_noise: asm helper define failed");
                 ok = false;
             }
