@@ -8,6 +8,7 @@
 use crate::jni_util::{clear_exception, with_attached};
 use jvmti_bindings::prelude::*;
 use std::collections::{HashMap, HashSet};
+use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Mutex, OnceLock};
 
 /// A jclass global ref to a loaded class, safe across threads.
@@ -143,6 +144,82 @@ const UNSIGHTED_SKIP_BUDGET: u8 = 7;
 
 static POLL_STATE: OnceLock<Mutex<HashMap<String, PollState>>> = OnceLock::new();
 
+// ---------------------------------------------------------------------------
+// TASK-45: always-on scan-avoidance counters.
+//
+// The increments are bare atomic adds on the find_class path (~1 ns each);
+// nothing READS them unless `CRUSSTY_SDK_STATS` is set (see
+// `spawn_stats_dumper`), so with the gate off the only cost is the counters
+// themselves. Schema is shared verbatim by the A' instrumentation on the
+// pre-TASK-22 module (bench/bootab TASK-45 A/B), so the two arms emit
+// identical lines and the deltas are apples-to-apples:
+//   find_calls     — every find_class entry
+//   cache_hits     — answered from the process-lifetime CACHE
+//   feed_skips     — sighting gate answered "not loaded" with NO scan
+//   scans          — full JVMTI GetLoadedClasses scans issued
+//   classes_walked — classes visited inside those scans
+// ---------------------------------------------------------------------------
+
+/// Cumulative counters (see schema above). Monotonic, never reset.
+pub struct SdkStats {
+    pub find_calls: AtomicU64,
+    pub cache_hits: AtomicU64,
+    pub feed_skips: AtomicU64,
+    pub scans: AtomicU64,
+    pub classes_walked: AtomicU64,
+}
+
+/// Process-lifetime stats singleton.
+pub static STATS: SdkStats = SdkStats {
+    find_calls: AtomicU64::new(0),
+    cache_hits: AtomicU64::new(0),
+    feed_skips: AtomicU64::new(0),
+    scans: AtomicU64::new(0),
+    classes_walked: AtomicU64::new(0),
+};
+
+/// Cumulative snapshot `[find_calls, cache_hits, feed_skips, scans, classes_walked]`.
+pub fn stats_snapshot() -> [u64; 5] {
+    [
+        STATS.find_calls.load(Ordering::Relaxed),
+        STATS.cache_hits.load(Ordering::Relaxed),
+        STATS.feed_skips.load(Ordering::Relaxed),
+        STATS.scans.load(Ordering::Relaxed),
+        STATS.classes_walked.load(Ordering::Relaxed),
+    ]
+}
+
+/// Background dumper (TASK-45): prints cumulative sdk_stats lines at fixed
+/// offsets from plugin init so an A/B reader can diff consecutive lines into
+/// windows (the post-marker 60 s window = delta between the t=65 s and
+/// t=120 s lines). Gated by `CRUSSTY_SDK_STATS` (default off = no thread,
+/// zero output); the dumper itself never calls find_class (no self-pollution
+/// of the counters).
+pub fn spawn_stats_dumper() {
+    let on = std::env::var("CRUSSTY_SDK_STATS")
+        .map(|v| {
+            let v = v.trim().to_ascii_lowercase();
+            v == "1" || v == "true" || v == "on" || v == "yes"
+        })
+        .unwrap_or(false);
+    if !on {
+        return;
+    }
+    let _ = std::thread::Builder::new().name("cplug-sdk-stats".into()).spawn(|| {
+        let mut last = 0u64;
+        for t in [25u64, 65, 120, 180] {
+            let wait = t - last;
+            std::thread::sleep(std::time::Duration::from_secs(wait));
+            last = t;
+            let s = stats_snapshot();
+            eprintln!(
+                "[crussty-plugin] sdk_stats: t={t}s find_calls={} cache_hits={} feed_skips={} scans={} classes_walked={} (cumulative)",
+                s[0], s[1], s[2], s[3], s[4]
+            );
+        }
+    });
+}
+
 /// Hard cap on POLL_STATE entries (D2/TASK-43), sized to match the sightings
 /// bound (SIGHTING_SHARDS x SIGHTING_SHARD_CAP = 65,536): the map holds one
 /// entry per DISTINCT name that ever reached the gate unresolved. The SDK is
@@ -217,10 +294,12 @@ pub fn scans_avoided(name: &str) -> u64 {
 /// Resolve a loaded class by name ("org/bukkit/Bukkit" or dotted) and cache
 /// it forever. Returns None if the class is not loaded yet.
 pub fn find_class(name: &str) -> Option<ClassRef> {
+    STATS.find_calls.fetch_add(1, Ordering::Relaxed);
     let internal = crate::jni_util::to_internal(name);
     // D4/TASK-43: poison recovery (rationale next to `cache()`) — was
     // `.unwrap()`, a poisoned lock would unwind across JNI on hook threads.
     if let Some(addr) = cache().lock().unwrap_or_else(|e| e.into_inner()).get(&internal) {
+        STATS.cache_hits.fetch_add(1, Ordering::Relaxed);
         return Some(ClassRef(*addr as jni::jclass));
     }
     // TASK-22/C1 sighting gate: while the hook pipeline has never sighted
@@ -228,12 +307,15 @@ pub fn find_class(name: &str) -> Option<ClassRef> {
     // the feed. Advisory — `unsighted_scan_due` forces the bounded fallback
     // scan (first call + every 8th) so pre-hook loads are still found.
     if !unsighted_scan_due(&internal) {
+        STATS.feed_skips.fetch_add(1, Ordering::Relaxed);
         return None;
     }
     let signature = format!("L{internal};");
     with_attached(|env| {
         let jvmti = Jvmti::new(crate::vm() as *mut jni::JavaVM).ok()?;
         let classes = jvmti.get_loaded_classes().ok()?;
+        STATS.scans.fetch_add(1, Ordering::Relaxed);
+        STATS.classes_walked.fetch_add(classes.len() as u64, Ordering::Relaxed);
         let mut found = None;
         for cls in &classes {
             // Only accept classes that have FINISHED definition: throughout

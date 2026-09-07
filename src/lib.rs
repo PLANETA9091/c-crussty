@@ -78,6 +78,7 @@ pub unsafe extern "C" fn cplugin_init(
 
 unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *const c_char) -> i32 {
     cplug_sdk::init(api, vm);
+    cplug_sdk::classes::spawn_stats_dumper(); // TASK-45: gated on CRUSSTY_SDK_STATS (off by default)
     eprintln!("[crussty-plugin] cplugin_init: injecting Crussty CE native surface in background");
     area_map::register();
     improved_noise::register();
