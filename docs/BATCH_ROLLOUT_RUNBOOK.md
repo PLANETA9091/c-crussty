@@ -101,9 +101,15 @@ PASS criteria (bench evidence recorded in BATCH_FLOOR_REPORT; rerun only in a fr
   on the measured lib, so **no measured T exists for g42** — site arming (Stage 1) must either
   wait for a real in-engine body or keep g42 single-call. Numbers, not models — recorded per the
   never-silently-relax rule.
-* `refused-id → -10` with `outs` untouched: refusal code + no-partial-execution covered by unit
-  tests (`batch_api::tests`); the end-to-end byte-compare fixture is pending (§7 G8) — no refused id
-  is reachable while all 15 table kernels are allowed.
+* `refused-id → -10` with `outs` untouched: **CLOSED e2e (TASK-52, 2026-09-08+08,
+  bench/batch/refused_e2e/)** — JVM+REAL-.so fixture, both arms PASS. Shipped arm: -3 rows
+  (out-of-range mixed/single, negative id; outs sentinel-identical = no partial execution) + valid
+  batch sanity + ABI gate; R3 SKIPs there by construction (drift-guard invariant: every table id
+  allowed). True -10 via rig arm: detached worktree + 1-entry hand-patch appending the DO_NOT_WIRE
+  `LevelChunkHeightmap.newCombinedUpdateSummary` (shape A, id 15, KERNELS 15→16) — refused single
+  AND mixed [2,15,2] both return -10 with `outs` sentinel-identical (valid ops did NOT run); rig
+  never lands, shipped code unchanged. Unit tests remain the fast regression layer; the fixture is
+  the permanent e2e proof. See bench/batch/refused_e2e/results/REFUSED_ID_E2E.md.
 
 ## 4. Stage 1 — wave-1a site-armed, `CRUSSTY_BATCH=auto` (status: **BLOCKED** — §7 G4/G5 + wave-1 shapes for g35/g40/g39; g42 arming decision now data-backed: no measured T on the current body, §3/G3)
 
@@ -179,7 +185,7 @@ compares against `baseline.json`.
 | G5 | Auto-threshold T (B.3: default 16, g42→32) implemented nowhere | **BLOCKER for Stage 1** — belongs to site-arming (G4); per-kernel T comes from BatchFloorBench at the chosen shape. |
 | G6 | Stage-0 acceptance "N=64 ≤ 8 ns/op" not met by phase-1 readback (43–52 ns/op measured) | **DOCUMENTED** — re-derived gate recorded in §3 per the B.7 never-silently-relax rule; shape-C per-shape re-derivation now recorded too (52.3 ns/op @K=64 vs direct, §3) — no further re-derivation pending for g42. |
 | G7 | Doc conflict: matrix §5.3 `CRUSSTY_BATCH=1` vs B.6 `off\|auto\|on` | **RESOLVED** — B.6 is canon; `1` → `Off` fail-safe (pinned by test). |
-| G8 | `refused-id → -10` outs-untouched byte-compare end-to-end (A.6) | **PENDING** — unit tests cover refusal semantics/no-partial-execution; e2e fixture needs a refused table id, unreachable while all 15 are allowed; fold into the A.7 JVM-level smoke. **NEXT candidate:** a one-row fixture can now be built WITHOUT touching the table — `ERR_BAD_KERNEL_ID` (-3) is reachable with id 15 today; a true `ERR_KERNEL_REFUSED` fixture still needs a refused-but-in-range id (e.g. a temporary audit-rig kernel) or the A.7 smoke. |
+| G8 | `refused-id → -10` outs-untouched byte-compare end-to-end (A.6) | **RESOLVED (TASK-52, bench/batch/refused_e2e/)** — both arms PASS: shipped -3 rows (mixed/single/negative, outs sentinel-identical, no partial execution) + true -10 via rig worktree (DO_NOT_WIRE LevelChunkHeightmap.newCombinedUpdateSummary appended as id 15; single AND mixed [2,15,2] refused pre-flight, valid ops did NOT run). Rig never lands, shipped code unchanged. See bench/batch/refused_e2e/results/REFUSED_ID_E2E.md. |
 | — | `bench/batch/bench/` untracked foreign WIP | **NOT TOUCHED** (out of scope, preserved). |
 
 ## Sources
