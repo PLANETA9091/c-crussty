@@ -30,9 +30,13 @@ See results/P500_REPORT.md. Highlights:
 * NoiseChunkBlendCache newEmptyBlenderSummary: **244x** vs old (67 us -> 275 ns)
 * NoiseInterpolatorSlice flatSummary: **3.29x** vs oldJaggedSummary
 * ImprovedNoiseInline switchGradientSummary: **1.22x**
-* REGRESSIONS (do not wire into hot paths as-is):
-  optimizedWaypointManagerValue 0.01x, LevelChunkHeightmap
-  newCombinedUpdateSummary 0.18x, MarkerCache cachedSummary 0.21x
+* pairings use the P500 stem rule (longest common suffix), see
+  results/P500_SCALING.md for the N-scaling validation
+* REGRESSIONS, genuine + scale-invariant (do not wire into hot paths):
+  LevelChunkHeightmap newCombinedUpdateSummary ~5.5x slower,
+  MarkerCache cachedSummary ~4.6x, PalettedReencodeScratch
+  directPackedSummary ~2.3x, ProtoChunkHeightmap newCachedContainsSummary ~1.7x
+* PluginLoadingAllocation lazy variants: 1.5x wins over eager olds
 * ~40 plugin/loading groups sit at the ~115 ns JNI-transition floor —
   batching more work per JNI call is the engine-level lever, per-kernel
   micro-optimization is not.
