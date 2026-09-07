@@ -205,36 +205,38 @@ the CRUSSTY engine repo) + the artifact that proves it.
 ## 4. IN FLIGHT — wave 2 (TASK-12…21)
 
 One-liners from `CLAIMS.md` (wave-2 queue, claimed 2026-09-07T17:12Z by
-agent-7625532f). **Statuses below are as of the last read of CLAIMS.md and are
-recorded without results** — no wave-2 numbers exist yet; do not cite this
-section as evidence. Methodology for the whole wave: dump → analysis →
-optimization, base = `P500_REPORT_v2.md`; no gameplay/.so/engine changes.
+agent-7625532f). **Statuses below are as of the last read of CLAIMS.md
+(2026-09-08, mid-wave) and are recorded without inventing results** — a done
+row cites only its commit/deliverable, never numbers; `CLAIMS.md` stays the
+single source of truth between roadmap refreshes. Methodology for the whole
+wave: dump → analysis → optimization, base = `P500_REPORT_v2.md`; no
+gameplay/.so/engine changes.
 
 | Task | One-liner | Deliverable | Status (as of read) |
 |---|---|---|---|
-| TASK-12 | JNI-floor adoption matrix over the floor-sitting groups: ns/op, batch-API applicability (H/M/L), estimated ms/tick savings | `docs/BATCH_ADOPTION_MATRIX.md` (analysis only) | claimed |
+| TASK-12 | JNI-floor adoption matrix over the floor-sitting groups: ns/op, batch-API applicability (H/M/L), estimated ms/tick savings | `docs/BATCH_ADOPTION_MATRIX.md` (analysis only) | in-progress |
 | TASK-13 | kernel-policy gate full coverage: `verify_kernel_pref.sh`, all remap candidates under `CRUSSTY_KERNEL_PREF=old` vs default, diff report; short runs, BENCH.lock | `docs/KERNEL_POLICY_COVERAGE.md` | claimed |
-| TASK-14 | CI ratio-gate: extend `p500.yml` — smoke subset + fail on >20% regression vs `bench/p500/baseline.json` (ratios from v2) | workflow + baseline.json | claimed |
+| TASK-14 | CI ratio-gate: extend `p500.yml` — smoke subset + fail on >20% regression vs `bench/p500/baseline.json` (ratios from v2) | workflow + baseline.json | done (`f04a170`: gate job + `bench/p500/baseline.json` + `bench/p500/scripts/ratio_gate.py`, per-kernel paired 1.2x gate) |
 | TASK-15 | area-map differential fuzz: seeded randomized grids, parity fast-path vs apply-loop, ≥10k cases, headless `cargo test` | fuzz in `area-map/` | claimed |
-| TASK-16 | FULL P500 rerun after TASK-01/04/09/11 (49 groups, REAL 120 ms), report update + addendum to v2; exclusive BENCH.lock, waits for bench window | `bench/p500/results/P500_REPORT.md` + v2 addendum | claimed (wave-2, awaiting BENCH) |
-| TASK-17 | lifecycle soak: 10-min churn for the phantom reaper under GC pressure (small heap) | `bench/lifecycle/results/SOAK_REPORT.md` | claimed (wave-2) |
-| TASK-18 | static hotspot sweep: clippy + manual scan of `src/`, `noise/`, `area-map/` (allocs/locks/syscalls on hot paths) → ranked wave-3 candidates | `docs/HOTSPOT_CANDIDATES.md` (analysis only) | claimed |
-| TASK-19 | this document — roadmap refresh from CLAIMS + P500 v2 numbers, placeholder for TASK-18 candidates | `docs/OPTIMIZATION_ROADMAP.md` | **in progress (this commit)** |
-| TASK-20 | area-map apply-loop micro-bench: ns/px at 128/512/1024, fast-path vs baseline; light, before the P500 window | `bench/areamap/results/APPLY_BENCH.md` | claimed |
-| TASK-21 | investigation-only npm `crussty` CLI pre-check (TASK-05 precursor): explicit bug with full repro, NO engine edits | `crussty-dev-logs/c-crussty/task05-npm-precheck.md` | claimed |
+| TASK-16 | FULL P500 rerun after TASK-01/04/09/11 (49 groups, REAL 120 ms), report update + addendum to v2; exclusive BENCH.lock | `bench/p500/results/P500_REPORT.md` + v2 addendum | done by the main session (dup-done for this queue, per CLAIMS): rerun completed 2026-09-08, 49 groups / 70 pairs, 0 missing / 0 CRASH; kernel-policy registry synced to it (`e5c4fad` — same 4 regressions reproduce run-to-run: 5.70 / 4.54 / 2.35 / 1.78) |
+| TASK-17 | lifecycle soak: 10-min churn for the phantom reaper under GC pressure (small heap) | `bench/lifecycle/results/SOAK_REPORT.md` | claimed (bench line after TASK-20) |
+| TASK-18 | static hotspot sweep: clippy + manual scan of `src/`, `noise/`, `area-map/` (allocs/locks/syscalls on hot paths) → ranked wave-3 candidates | `docs/HOTSPOT_CANDIDATES.md` (analysis only) | done (`0dcfa7b`) — see §5.1 |
+| TASK-19 | this document — roadmap refresh from CLAIMS + P500 v2 numbers, placeholder for TASK-18 candidates | `docs/OPTIMIZATION_ROADMAP.md` | done (`ed8ff1a` + this follow-up) |
+| TASK-20 | area-map apply-loop micro-bench: ns/px at 128/512/1024, fast-path vs baseline; light, before the P500 window | `bench/areamap/results/APPLY_BENCH.md` | in-progress (BENCH.lock) |
+| TASK-21 | investigation-only npm `crussty` CLI pre-check (TASK-05 precursor): explicit bug with full repro, NO engine edits | `crussty-dev-logs/c-crussty/task05-npm-precheck.md` | done (`02b0451` in crussty-dev-logs; verdict per CLAIMS: no live bug, e2e install→run verified; two minor non-ENGINE-TOUCH findings) |
 
 ---
 
 ## 5. Wave 3 candidates
 
-### 5.1 Hotspot candidates — placeholder
+### 5.1 Hotspot candidates — landed
 
-`docs/HOTSPOT_CANDIDATES.md` is being produced **in parallel by TASK-18**
-(static sweep: clippy + manual scan of `src/`, `noise/`, `area-map/` for
-allocs/locks/syscalls on hot paths). Its ranked list becomes the top of the
-wave-3 queue when it lands. This document intentionally does **not** preview
-or duplicate its contents — the file itself is the single source of truth
-once merged.
+`docs/HOTSPOT_CANDIDATES.md` was produced **in parallel by TASK-18** (static
+sweep: clippy + manual scan of `src/`, `noise/`, `area-map/` for
+allocs/locks/syscalls on hot paths) and landed as commit `0dcfa7b` while this
+roadmap was being refreshed. Its ranked list is the top of the wave-3 queue.
+This document intentionally does **not** preview or duplicate its contents —
+the file itself is the single source of truth.
 
 ### 5.2 Known open directions
 
@@ -324,7 +326,7 @@ once merged.
 |---|---|
 | 98 bridge classes / 283 natives / 0 unresolved (×3 live boots) | worklog sessions 001/002/004; `src/jni_table.rs` (283 rows); `native/JNI_EXPORTS.manifest` |
 | Lifecycle: phantom reaper + 16 stripes, releaseHandle+CAS | commits `e59201d`, `99dd17e` (adopted from `e2ec502`); `noise/.../ImprovedNoiseNativeOps.java`; [`bench/lifecycle/results/LIFECYCLE_REPORT.md`](../bench/lifecycle/results/LIFECYCLE_REPORT.md) |
-| Kernel-policy gate `CRUSSTY_KERNEL_PREF=old` | commit `8ec63b9`; `src/kernel_policy.rs` |
+| Kernel-policy gate `CRUSSTY_KERNEL_PREF=old` | commit `8ec63b9`; `src/kernel_policy.rs`; `docs/KERNEL_POLICY.md` (registry, synced to the 2026-09-08 rerun in `e5c4fad`) |
 | Runtime ClassFileLoadHook fix | CRUSSTY repo commit `66ff504` (name from class bytes; catch_unwind; bounded fallback) |
 | Area-map headless smoke (S1–S5 ALL PASS) | commit `532597b`; [`bench/areamap/README.md`](../bench/areamap/README.md) |
 | P500 methodology | [`bench/p500/README.md`](../bench/p500/README.md), `bench/p500/gen_p500_bench.py` header |
@@ -335,4 +337,6 @@ once merged.
 | Blend-cache prototype (observation-only) | [`docs/HOOK_BLEND_CACHE.md`](HOOK_BLEND_CACHE.md); `src/proto_blend_cache.rs` |
 | Wave-2 statuses (single source of truth) | `crussty-dev-logs/CLAIMS.md` |
 | Independent review + errata | `crussty-dev-logs/c-crussty/review-session003-agents2-commits.md` |
-| Hotspot candidates (wave 3) | `docs/HOTSPOT_CANDIDATES.md` — produced by TASK-18 (parallel; not yet merged at write time) |
+| Hotspot candidates (wave 3) | `docs/HOTSPOT_CANDIDATES.md` (TASK-18, commit `0dcfa7b`) |
+| CI ratio-gate (wave 2) | commit `f04a170`; `.github/workflows/p500.yml`, `bench/p500/baseline.json`, `bench/p500/scripts/ratio_gate.py` |
+| Byte-exact patcher mirror test | commit `86945b9`; `patch_tool.py` (complements `532597b`: proves the patched bytes themselves) |
