@@ -1,0 +1,142 @@
+# P500 benchmark CI (c-crussty)
+#
+# P500 is a standalone JNI benchmark: it needs ONLY a JDK (javac/java) and the
+# closed-source natives committed in native/. It does NOT need the Rust plugin
+# build — the plugin (cargo) pipeline is separate and is intentionally NOT run
+# here, to keep this workflow fast and cheap.
+#
+# Triggers are path-restricted so the bench does not run on every commit:
+#   bench/p500/**              — bench driver / report changes
+#   native/**                  — .so updates (the thing we want to re-benchmark)
+#   bench/lifecycle/**         — lifecycle A/B bench (activates lifecycle-smoke job)
+#   .github/workflows/p500.yml — validate workflow edits themselves
+name: P500 benchmark
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'bench/p500/**'
+      - 'native/**'
+      - 'bench/lifecycle/**'
+      - '.github/workflows/p500.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: p500-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  p500-bench:
+    name: P500 JNI bench (ubuntu-latest)
+    runs-on: ubuntu-latest
+    # Guard against stuck runs; run_p500.sh additionally applies a 600s timeout
+    # per group (one JVM per group, retry ladder on SIGABRT-kernels).
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # setup-java puts Temurin 21 on PATH and exports JAVA_HOME.
+      # run_p500.sh resolves javac via: /home/z/jdk21 (sandbox-only) -> $JAVA_HOME
+      # -> PATH, so on the runner it transparently uses the setup-java toolchain.
+      - name: Setup JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Verify committed natives
+        run: |
+          test -s native/libpaper_native_jni.so \
+            || { echo "::error::native/libpaper_native_jni.so missing or empty"; exit 1; }
+          test -s native/libpaper_native_chunk_encode_jni.so \
+            || { echo "::error::native/libpaper_native_chunk_encode_jni.so missing or empty"; exit 1; }
+          ls -l native/
+
+      # No Rust toolchain here on purpose: P500 = javac/java + committed .so only.
+      # The plugin itself (cargo build) is built/verified by a separate pipeline.
+      #
+      # continue-on-error: a misbehaving closed-source kernel can still take the
+      # whole step down even though run_p500.sh isolates one JVM per group. We
+      # want the partial TSV/report uploaded anyway — the gate step below turns
+      # a bad run (>3 CRASHed groups) into a hard failure, so the job cannot
+      # fail silently.
+      - name: Compile + run P500 bench
+        continue-on-error: true
+        run: bash bench/p500/run_p500.sh
+
+      - name: Add report to job summary
+        if: hashFiles('bench/p500/results/P500_REPORT.md') != ''
+        run: cat bench/p500/results/P500_REPORT.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload P500 results
+        uses: actions/upload-artifact@v4
+        with:
+          name: p500-results
+          path: |
+            bench/p500/results/p500_raw.tsv
+            bench/p500/results/P500_REPORT.md
+          retention-days: 14
+          if-no-files-found: error
+
+      - name: Gate — fail if more than 3 groups CRASHed
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          tsv = Path("bench/p500/results/p500_raw.tsv")
+          if not tsv.is_file():
+              print("::error::bench/p500/results/p500_raw.tsv not found (bench never produced output)")
+              raise SystemExit(1)
+
+          crashed = sorted({
+              line.split("\t")[1]
+              for line in tsv.read_text(encoding="utf-8").splitlines()
+              if line.startswith("CRASH\t") and len(line.split("\t")) > 1
+          })
+
+          print(f"CRASHed groups: {len(crashed)}" + (f" -> {', '.join(crashed)}" if crashed else ""))
+          if len(crashed) > 3:
+              print(f"::error::P500 bench: {len(crashed)} groups CRASHed (>3 allowed): {', '.join(crashed)}")
+              raise SystemExit(1)
+          print("gate OK: <=3 CRASHed groups")
+          PY
+
+  # Lifecycle A/B bench (ImprovedNoiseNativeOps finalize-vs-explicit-release).
+  # bench/lifecycle/run_lifecycle.sh does not exist yet; the hashFiles guards
+  # below activate the bench automatically once the script lands.
+  # NOTE: guards are step-level (after checkout) on purpose — job-level
+  # hashFiles is evaluated BEFORE checkout, when the workspace is still empty,
+  # so it would always return '' and the job would never run.
+  lifecycle-smoke:
+    name: Lifecycle A/B smoke (ubuntu-latest)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Run lifecycle A/B bench
+        if: hashFiles('bench/lifecycle/run_lifecycle.sh') != ''
+        run: bash bench/lifecycle/run_lifecycle.sh
+
+      - name: Upload lifecycle results
+        if: hashFiles('bench/lifecycle/run_lifecycle.sh') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: lifecycle-results
+          path: |
+            bench/lifecycle/results/**
+            bench/lifecycle/*.tsv
+            bench/lifecycle/*.md
+          retention-days: 14
+          if-no-files-found: warn
