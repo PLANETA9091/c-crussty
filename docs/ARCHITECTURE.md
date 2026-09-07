@@ -322,7 +322,7 @@ useful for orientation, not a formal taxonomy:
 | worldgen / noise (ImprovedNoise, Perlin, Blended, NoiseChunk, density, aquifer, surface rules, carvers, ore, climate, splines…) | 45 | 138 | the largest block; includes the P500 noise kernels |
 | tickets & waypoints (TicketSet, TicketPack, TicketCompare, Waypoint*) | 10 | 35 | O(N) hot-path kernels, P500 WaypointHotPath group |
 | chunks, heightmaps & palettes (PalettedReencode*, Remapper*, *Heightmap, Chunk*) | 10 | 23 | includes the 4 documented regressions |
-| plugin loading (Plugin*, MarkerCache) | 8 | 22 | ~40 groups sit on the ~115 ns JNI-transition floor |
+| plugin loading (Plugin*, MarkerCache) | 8 | 22 | 13 groups sit on the 35–90 ns JNI-transition floor (TASK-33 errata: the old "~40 groups / ~115 ns" was a pre-audit v1 artifact — see BATCH_ADOPTION_MATRIX.md) |
 | io / compression / nbt (LZ4 stream, Deflater, NBT, VarInt, Hash, Gzip) | 10 | 18 | |
 | entities & lookups (EntityBoundingBox, EntityLookupStatus, CraftPlayerCanSee, Position, ReferenceList, ServerEntityDeltaIdentity) | 6 | 25 | |
 | misc (biome lookup, static caches, obf-helper maps, alias removal, load order, NearbyPlayerMap) | 6 | 15 | |

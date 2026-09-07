@@ -458,7 +458,7 @@ ratio = alt/old ≤ 0.85 (≥ ~1.18x speedup), sorted best-first. Candidates for
 
 ## JNI floor groups
 
-Groups with at least one kernel median below 200 ns sit on the JNI-transition floor (~115 ns measured in the scaling study): per-kernel micro-optimization is pointless there — batch more work per JNI call instead (engine-level batch-API candidates).
+Groups with at least one kernel median below 200 ns sit on the JNI-transition floor (canon **35–90 ns**: global min `StaticCacheGet` 34.6 ns, floor-resident cluster 81.4–89.0 ns, `(I)D` N=1 19.9–31.2 ns — TASK-33 errata: an earlier revision of this line cited "~115 ns measured in the scaling study", a pre-BATCH_NS-audit artifact, commit `3baa0f7`; counts + batch applicability: `docs/BATCH_ADOPTION_MATRIX.md`): per-kernel micro-optimization is pointless there — batch more work per JNI call instead (engine-level batch-API candidates).
 
 | group | class | fastest median | kernels below 200 ns |
 |---|---|---:|---|

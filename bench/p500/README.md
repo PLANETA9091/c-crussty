@@ -37,6 +37,8 @@ See results/P500_REPORT.md. Highlights:
   MarkerCache cachedSummary ~4.6x, PalettedReencodeScratch
   directPackedSummary ~2.3x, ProtoChunkHeightmap newCachedContainsSummary ~1.7x
 * PluginLoadingAllocation lazy variants: 1.5x wins over eager olds
-* ~40 plugin/loading groups sit at the ~115 ns JNI-transition floor —
-  batching more work per JNI call is the engine-level lever, per-kernel
+* 13 plugin/loading groups sit on the canon **35–90 ns** JNI-transition floor
+  (TASK-33 errata: the earlier "~40 groups at the ~115 ns floor" was a
+  pre-audit v1 artifact — see docs/BATCH_ADOPTION_MATRIX.md) — batching more
+  work per JNI call is the engine-level lever for those, per-kernel
   micro-optimization is not.
