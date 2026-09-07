@@ -20,12 +20,47 @@ use std::sync::{Mutex, OnceLock};
 const RUNNABLE_NAME_PREFIX: &str = "dev/dist/SdkNativeRunnable";
 const KERNEL_CLASS: &str = "net/minecraft/server/MinecraftServer";
 
+/// C6 (TASK-27): max jobs popped per `SdkNativeRunnable.run()` dispatch —
+/// one MinecraftServer.execute round-trip amortizes over up to this many
+/// jobs. FIFO order is preserved regardless of the batch size: the main
+/// thread runs queued runnables sequentially, so a later runnable can never
+/// overtake an in-progress drain.
+const JOBS_PER_RUNNABLE: usize = 8;
+
 type Job = Box<dyn FnOnce(&JniEnv) + Send>;
 
 static QUEUE: Mutex<VecDeque<Job>> = Mutex::new(VecDeque::new());
 static RUNNABLE_CLS: OnceLock<ClassRef> = OnceLock::new();
 static RUNNABLE_NAME: OnceLock<Box<str>> = OnceLock::new();
 static FLUSH_ACTIVE: AtomicBool = AtomicBool::new(false);
+
+/// Plain-scalar snapshot of the main-thread delivery plumbing (C6/TASK-27),
+/// cached after the first fully-successful resolution instead of being
+/// re-resolved for every queued job. `mc`/`runnable_cls` are raw jclass
+/// values of process-lifetime global refs (the classes.rs CACHE and
+/// `RUNNABLE_CLS` both leak them by design; ClassRef is a non-owning view),
+/// so holding the copy outside the mutex is exactly as safe as the old
+/// per-job re-resolution. Any failed delivery drops the cache conservatively
+/// (see `deliver`), so the next attempt re-resolves from scratch.
+#[derive(Clone, Copy)]
+struct MainIds {
+    mc: jni::jclass,
+    /// MinecraftServer.getServer()Lnet/minecraft/server/MinecraftServer;
+    get_server: usize,
+    /// BlockableEventLoop.execute(Ljava/lang/Runnable;)V
+    execute: usize,
+    runnable_cls: jni::jclass,
+    /// SdkNativeRunnable.<init>()V
+    runnable_init: usize,
+}
+
+static MAIN_IDS: Mutex<Option<MainIds>> = Mutex::new(None);
+
+// Same contract as ClassRef (classes.rs): the jclass values are
+// process-lifetime global refs — usable from any thread by JNI contract —
+// and the jmethodIDs stay valid for the lifetime of those (globally
+// referenced) classes. Copying the scalars transfers no ownership.
+unsafe impl Send for MainIds {}
 
 /// The runnable class name for THIS SDK copy. Every module carries its own
 /// copy of the SDK (RTLD_LOCAL => private statics, private natives), so the
@@ -93,53 +128,85 @@ pub fn runnable_defined() -> bool {
     RUNNABLE_CLS.get().is_some()
 }
 
-/// Hand one queued job to the main thread via MinecraftServer.execute.
+/// Cached delivery plumbing (C6/TASK-27). Fast path copies the snapshot out
+/// under the lock — no JNI work happens while any lock is held. Cold path
+/// resolves OUTSIDE the lock and only then publishes (two flush attempts
+/// racing a cold resolve would both just do the same idempotent lookups).
+fn main_ids(env: &JniEnv) -> Option<MainIds> {
+    if let Some(ids) = *MAIN_IDS.lock().unwrap_or_else(|e| e.into_inner()) {
+        return Some(ids);
+    }
+    let ids = resolve_main_ids(env)?;
+    *MAIN_IDS.lock().unwrap_or_else(|e| e.into_inner()) = Some(ids);
+    Some(ids)
+}
+
+/// Resolve the delivery plumbing: kernel class reachable, runnable class
+/// defined + natives registered, and the three method IDs resolved. No
+/// caching here — see `main_ids`.
+fn resolve_main_ids(env: &JniEnv) -> Option<MainIds> {
+    let mc = find_class(KERNEL_CLASS)?;
+    let runnable_cls = RUNNABLE_CLS.get_or_init(|| ClassRef(define_runnable_class(env)));
+    if runnable_cls.0.is_null() {
+        return None;
+    }
+    let get_server = static_method(
+        env,
+        mc.as_jclass(),
+        "getServer",
+        "()Lnet/minecraft/server/MinecraftServer;",
+    )?;
+    let execute = method(env, mc.as_jclass(), "execute", "(Ljava/lang/Runnable;)V")?;
+    let runnable_init = method(env, runnable_cls.0, "<init>", "()V")?;
+    Some(MainIds {
+        mc: mc.as_jclass(),
+        get_server,
+        execute,
+        runnable_cls: runnable_cls.as_jclass(),
+        runnable_init,
+    })
+}
+
+/// Hand queued jobs to the main thread via MinecraftServer.execute.
 /// Returns false while the kernel is unreachable (class not loaded / server
-/// object not created yet).
+/// object not created yet). The class refs + three method IDs are cached
+/// across deliveries (C6/TASK-27); the `getServer` OBJECT is still fetched
+/// fresh on every delivery (the server instance is the kernel's to create).
 fn deliver() -> bool {
-    with_attached(|env| {
+    let ok = with_attached(|env| {
         // Never enter JNI with a stale pending exception from a previous
         // iteration — that is UB and crashes the VM.
         let _ = crate::jni_util::clear_exception(env);
-        let Some(mc) = find_class(KERNEL_CLASS) else {
-            return Some(false);
-        };
-        let runnable_cls = RUNNABLE_CLS.get_or_init(|| ClassRef(define_runnable_class(env)));
-        if runnable_cls.0.is_null() {
-            return Some(false);
-        }
-        let Some(get_server) = static_method(
-            env,
-            mc.as_jclass(),
-            "getServer",
-            "()Lnet/minecraft/server/MinecraftServer;",
-        ) else {
-            return Some(false);
-        };
-        let Some(execute) = method(env, mc.as_jclass(), "execute", "(Ljava/lang/Runnable;)V")
-        else {
+        let Some(ids) = main_ids(env) else {
             return Some(false);
         };
         let server =
-            env.call_static_object_method(mc.as_jclass(), get_server as jni::jmethodID, &[]);
+            env.call_static_object_method(ids.mc, ids.get_server as jni::jmethodID, &[]);
         if server.is_null() {
             let _ = crate::jni_util::clear_exception(env);
             return Some(false);
         }
-        let Some(init) = method(env, runnable_cls.0, "<init>", "()V") else {
+        let Some(obj) = env.new_object(ids.runnable_cls, ids.runnable_init as jni::jmethodID, &[])
+        else {
             return Some(false);
         };
-        let Some(obj) = env.new_object(runnable_cls.0, init as jni::jmethodID, &[]) else {
-            return Some(false);
-        };
-        env.call_void_method(server, execute as jni::jmethodID, &[jni::jvalue { l: obj }]);
+        env.call_void_method(server, ids.execute as jni::jmethodID, &[jni::jvalue { l: obj }]);
         let _ = crate::jni_util::clear_exception(env);
         env.delete_local_ref(obj);
         env.delete_local_ref(server);
         Some(true)
     })
     .flatten()
-    .unwrap_or(false)
+    .unwrap_or(false);
+    if !ok {
+        // Conservative invalidation: any failed delivery (kernel class
+        // missing, runnable define/register failed, method unresolved,
+        // server still null, attach failed) drops the cached plumbing so
+        // the next attempt re-resolves from scratch — the same cost profile
+        // as the pre-cache code, which re-resolved on EVERY job.
+        *MAIN_IDS.lock().unwrap_or_else(|e| e.into_inner()) = None;
+    }
+    ok
 }
 
 /// Define + RegisterNatives the runnable skeleton once per process. Returns a
@@ -173,18 +240,26 @@ fn define_runnable_class(env: &JniEnv) -> jni::jclass {
     gref
 }
 
-/// JNI native entry for `SdkNativeRunnable.run()`: pops one queued job and
-/// runs it with the caller's env (the main thread is already attached).
+/// JNI native entry for `SdkNativeRunnable.run()`: pops up to
+/// JOBS_PER_RUNNABLE queued jobs and runs them with the caller's env (the
+/// main thread is already attached). Draining in batches cuts the number of
+/// main-thread round-trips (C6/TASK-27); jobs still execute in FIFO order
+/// on the main thread.
 unsafe extern "system" fn sdk_run_trampoline(env_raw: *mut jni::JNIEnv, _obj: jni::jobject) {
     let env = JniEnv::from_raw(env_raw);
     // H-01: a panicking main-thread job must not unwind across JNI (= abort).
     // Mutex poisoning is recovered: a panic while holding the queue lock does
     // not invalidate the deque contents.
-    let job = QUEUE
-        .lock()
-        .unwrap_or_else(|e| e.into_inner())
-        .pop_front();
-    if let Some(job) = job {
+    for _ in 0..JOBS_PER_RUNNABLE {
+        let job = QUEUE
+            .lock()
+            .unwrap_or_else(|e| e.into_inner())
+            .pop_front();
+        let Some(job) = job else { break };
+        // A previous job (or the dispatch itself) may have left a pending
+        // exception; entering a job with one pending is UB — same rule the
+        // flush side follows in deliver().
+        let _ = crate::jni_util::clear_exception(&env);
         let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| job(&env)));
         if r.is_err() {
             eprintln!("[cplug-sdk] main-thread job panicked (recovered)");
