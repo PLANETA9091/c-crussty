@@ -526,7 +526,10 @@ def render_report(rows, variants, notes, pairs, unpaired, multis, source_name,
     w("## JNI floor groups")
     w("")
     w(f"Groups with at least one kernel median below {JNI_FLOOR_NS:.0f} ns sit on the "
-      "JNI-transition floor (~115 ns measured in the scaling study): per-kernel "
+      "JNI-transition floor (canon 35–90 ns; anchors: StaticCacheGet 34.6 ns, "
+      "RangeChoice 81.4 ns, (I)D @N=1 19.9–31.2 ns — TASK-33 canon; an earlier "
+      "revision of this line cited '~115 ns measured in the scaling study', a "
+      "pre-BATCH_NS-audit artifact, commit 3baa0f7): per-kernel "
       "micro-optimization is pointless there — batch more work per JNI call instead "
       "(engine-level batch-API candidates).")
     w("")
