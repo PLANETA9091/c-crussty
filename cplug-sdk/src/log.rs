@@ -19,6 +19,20 @@ struct LoggerIds {
     warning: usize,
 }
 
+/// Plain-scalar copy of the resolved logger plumbing (C7/TASK-27): lets
+/// `emit` release the `ids` mutex BEFORE any JNI work instead of holding it
+/// across `with_attached` + 3 calls. `bukkit` is the raw jclass value of a
+/// process-lifetime global ref (classes.rs leaks those refs on purpose and
+/// ClassRef is a non-owning view), so holding the copy past the lock is
+/// exactly as safe as the previous borrow-under-lock.
+#[derive(Clone, Copy)]
+struct LoggerSnapshot {
+    bukkit: jni::jclass,
+    get_logger: usize,
+    info: usize,
+    warning: usize,
+}
+
 static IDS: OnceLock<Mutex<Option<LoggerIds>>> = OnceLock::new();
 
 fn ids() -> &'static Mutex<Option<LoggerIds>> {
@@ -48,11 +62,25 @@ fn resolve() -> Option<LoggerIds> {
 }
 
 fn emit(level: Level, msg: &str) {
-    let mut cache = ids().lock().unwrap();
-    if cache.is_none() {
-        *cache = resolve();
-    }
-    let Some(ids) = cache.as_ref() else {
+    // C7 (TASK-27): the ids mutex must not span JNI work. Copy a plain
+    // scalar snapshot of the resolved plumbing out under the lock, release
+    // the lock, then emit. (Cold-path resolve() stays under the lock exactly
+    // as before — it runs once, before the kernel logger exists.)
+    let snapshot = {
+        let mut cache = ids().lock().unwrap();
+        if cache.is_none() {
+            *cache = resolve();
+        }
+        cache
+            .as_ref()
+            .map(|ids| LoggerSnapshot {
+                bukkit: ids.bukkit.as_jclass(),
+                get_logger: ids.get_logger,
+                info: ids.info,
+                warning: ids.warning,
+            })
+    }; // mutex released here
+    let Some(ids) = snapshot else {
         eprintln!("[cplug-sdk] log dropped (kernel not ready): {msg}");
         return;
     };
@@ -63,7 +91,7 @@ fn emit(level: Level, msg: &str) {
     let get_logger = ids.get_logger as jni::jmethodID;
     let ok = with_attached(|env| {
         let s = env.new_string_utf(msg)?;
-        let logger = env.call_static_object_method(ids.bukkit.as_jclass(), get_logger, &[]);
+        let logger = env.call_static_object_method(ids.bukkit, get_logger, &[]);
         if logger.is_null() {
             env.delete_local_ref(s);
             return None;
