@@ -209,15 +209,104 @@ static FNS: OnceLock<[KernelFn; KERNEL_COUNT]> = OnceLock::new();
 /// `kernel_policy` drift-guard test at CI time).
 static POLICY_ALLOWED: OnceLock<[bool; KERNEL_COUNT]> = OnceLock::new();
 
-/// The policy verdict per table id. Pure, allocation-free (decide() scans
+/// The policy verdict per table id. Pure, allocation-free (decide_in() scans
 /// static slices); called exactly once per process via `OnceLock`.
 fn policy_flags() -> [bool; KERNEL_COUNT] {
     let mut flags = [false; KERNEL_COUNT];
     for k in BATCH_KERNELS {
         flags[k.id as usize] =
-            crate::kernel_policy::decide(k.class, k.method).is_allowed();
+            mask_bit(crate::kernel_policy::mode(), k.class, k.method);
     }
     flags
+}
+
+/// One mask bit for one table kernel: `decide()` under `mode`, ANDed with a
+/// MODE-INDEPENDENT do-not-wire hard guard (docs/BATCH_WIRING_PLAN.md §B.5,
+/// "tightening recommended before Stage 1"). `decide_in(Off, ..)` is the
+/// documented A/B bypass and widens to ANY kernel; auto-executing a known
+/// regression (5.70× worst) through the dispatcher is never legitimate — so
+/// `CRUSSTY_KERNEL_POLICY=off` must keep the four DO_NOT_WIRE kernels refused
+/// even on an A/B rig, and a future table edit carrying one is then inert in
+/// every mode (the dispatch-time refusal of A.3 stays as the second layer).
+fn mask_bit(
+    mode: crate::kernel_policy::PolicyMode,
+    class: &str,
+    method: &str,
+) -> bool {
+    crate::kernel_policy::decide_in(mode, class, method).is_allowed()
+        && crate::kernel_policy::do_not_wire_entry(class, method).is_none()
+}
+
+// ---------------------------------------------------------------------------
+// Rollout gate (docs/BATCH_WIRING_PLAN.md §B.6): CRUSSTY_BATCH = off|auto|on
+// ---------------------------------------------------------------------------
+
+/// Rollout/kill-switch state of the batch surface. Orthogonal to
+/// `CRUSSTY_KERNEL_POLICY` (WHICH kernels may ever route): this gate decides
+/// WHETHER call sites arm the dispatcher.
+/// - `Off` (default for the first rollout): bridge class exists, zero site
+///   arms — today's steady state (B.6 row 1).
+/// - `Auto`: sites arm with the per-kernel auto-threshold T; below T the
+///   helper replays individual calls (B.6 row 2 — semantics activate when
+///   the first consumer lands, Stage 1).
+/// - `On`: force batch at any K ≥ 1 (A/B rig; makes the N=1 six-array marshal
+///   penalty measurable, B.6 row 3).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RolloutMode {
+    Off,
+    Auto,
+    On,
+}
+
+/// Env var consulted (once) for the rollout gate.
+const ROLLOUT_ENV: &str = "CRUSSTY_BATCH";
+
+/// Fail-safe parse (B.6 "anything else → off", the `kernel_policy::parse_mode`
+/// rule): only exact `auto`/`on` (trimmed, any case) widen; unset/empty/
+/// garbage/`off` → Off. Notably `1`/`0` are NOT valid values (the
+/// BATCH_ADOPTION_MATRIX §5.3 `CRUSSTY_BATCH=1` phrasing is superseded by
+/// B.6's off|auto|on canon) and must land on the conservative default.
+fn parse_rollout(raw: Option<&str>) -> RolloutMode {
+    match raw.map(|v| v.trim().to_ascii_lowercase()) {
+        Some(v) if v == "auto" => RolloutMode::Auto,
+        Some(v) if v == "on" => RolloutMode::On,
+        // unset, empty, "off", garbage -> Off (fail-safe)
+        _ => RolloutMode::Off,
+    }
+}
+
+/// The process-wide rollout mode, read from `CRUSSTY_BATCH` exactly once
+/// (OnceLock, the `kernel_policy::mode` pattern). Emits the grep-able boot
+/// marker `[crussty-plugin] batch: rollout gate ...` once per process.
+/// Kill-switch / rollback = flip the env + server restart; no rebuild, no
+/// `.so` swap (B.6). Advisory until site arming exists: with no consumers,
+/// `auto`/`on` change dispatch behavior only via future call-site checks of
+/// this mode.
+pub fn rollout_mode() -> RolloutMode {
+    static MODE: OnceLock<RolloutMode> = OnceLock::new();
+    *MODE.get_or_init(|| {
+        let raw = std::env::var(ROLLOUT_ENV).ok();
+        let m = parse_rollout(raw.as_deref());
+        let (name, note) = match m {
+            RolloutMode::Off => (
+                "off",
+                "site arming disabled (default; bridge exists, zero consumers)",
+            ),
+            RolloutMode::Auto => (
+                "auto",
+                "site arming enabled at per-kernel T (Stage 1 semantics)",
+            ),
+            RolloutMode::On => (
+                "on",
+                "batch forced at any K>=1 (A/B rig; N=1 marshal penalty measurable)",
+            ),
+        };
+        let shown = raw.as_deref().unwrap_or("unset");
+        eprintln!(
+            "[crussty-plugin] batch: rollout gate {ROLLOUT_ENV}={shown} -> mode={name} ({note})"
+        );
+        m
+    })
 }
 /// Per-kernel bridge-class global refs (A7 §4.4: hand each kernel the same
 /// `jclass` it was registered against). Index 0 = unresolved → fall back to
@@ -270,6 +359,10 @@ thread_local! {
 /// `env` must be a live JNI env of the CURRENT thread; `main_lib` must be the
 /// dlopen'd `libpaper_native_jni.so`.
 pub fn init(env: &JniEnv, main_lib: &loader::NativeLib) -> Result<(), String> {
+    // Emit the rollout-gate boot marker (grep-able verify line for the
+    // BATCH_ROLLOUT_RUNBOOK stages) exactly once per process, even on the
+    // idempotent early-return path below.
+    let _rollout = rollout_mode();
     if FNS.get().is_some() {
         return Ok(());
     }
@@ -820,5 +913,65 @@ mod tests {
             assert_ne!(ERR_KERNEL_REFUSED, c, "error code aliasing");
         }
         assert_ne!(ERR_KERNEL_REFUSED, ERR_KERNEL_THREW_BASE);
+    }
+
+    /// BATCH_WIRING_PLAN.md §B.5 tightening: the mask bit must be
+    /// MODE-INDEPENDENT w.r.t. the four DO_NOT_WIRE regressions. Under the
+    /// old formula (`decide()` alone) the `CRUSSTY_KERNEL_POLICY=off` A/B
+    /// bypass (`decide_in(Off, ..) == Allow` for ANYTHING) widened the mask —
+    /// a future table edit carrying a regressed pair would auto-execute under
+    /// `off`. The hard guard must refuse them in EVERY mode.
+    #[test]
+    fn mask_refuses_do_not_wire_even_in_off_mode() {
+        use crate::kernel_policy::PolicyMode;
+        for r in crate::kernel_policy::DO_NOT_WIRE {
+            for mode in [PolicyMode::Strict, PolicyMode::Audit, PolicyMode::Off] {
+                assert!(
+                    !mask_bit(mode, r.class, r.kernel),
+                    "mode {mode:?} must NOT allow do-not-wire kernel {}.{}",
+                    r.class,
+                    r.kernel
+                );
+            }
+        }
+    }
+
+    /// The hard guard must not OVER-refuse: every shipped table kernel stays
+    /// allowed in every mode (strict-by-default policy proves all 12; off
+    /// widens decide() but the do-not-wire conjunct changes nothing for them).
+    #[test]
+    fn mask_keeps_every_shipped_table_kernel_allowed_in_all_modes() {
+        use crate::kernel_policy::PolicyMode;
+        for k in BATCH_KERNELS {
+            for mode in [PolicyMode::Strict, PolicyMode::Audit, PolicyMode::Off] {
+                assert!(
+                    mask_bit(mode, k.class, k.method),
+                    "mode {mode:?} over-refused table kernel {}.{} — batch surface dead",
+                    k.class,
+                    k.method
+                );
+            }
+        }
+    }
+
+    /// B.6 fail-safe: only exact `auto`/`on` widen the rollout gate;
+    /// unset/empty/garbage/`off` (and the numeric `1`/`0` phrasing of the old
+    /// BATCH_ADOPTION_MATRIX §5.3) must land on the conservative Off default.
+    #[test]
+    fn rollout_parse_is_fail_safe() {
+        assert_eq!(parse_rollout(None), RolloutMode::Off);
+        assert_eq!(parse_rollout(Some("")), RolloutMode::Off);
+        assert_eq!(parse_rollout(Some("off")), RolloutMode::Off);
+        assert_eq!(parse_rollout(Some("  OFF ")), RolloutMode::Off);
+        assert_eq!(parse_rollout(Some("auto")), RolloutMode::Auto);
+        assert_eq!(parse_rollout(Some(" AUTO ")), RolloutMode::Auto);
+        assert_eq!(parse_rollout(Some("Auto")), RolloutMode::Auto);
+        assert_eq!(parse_rollout(Some("on")), RolloutMode::On);
+        assert_eq!(parse_rollout(Some(" ON ")), RolloutMode::On);
+        assert_eq!(parse_rollout(Some("On")), RolloutMode::On);
+        // garbage / numeric / near-miss values -> Off (never widen)
+        for garbage in ["1", "0", "bogus", "enabled", "true", "on\noff", "auto on"] {
+            assert_eq!(parse_rollout(Some(garbage.trim())), RolloutMode::Off, "{garbage}");
+        }
     }
 }
