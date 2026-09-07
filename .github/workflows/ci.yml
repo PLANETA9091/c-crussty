@@ -137,3 +137,26 @@ jobs:
           timeout 60 java -Xms256m -Xmx1g -XX:+UseG1GC \
             -Dp500.libs="$LIBS" -cp classes p500.Bench 0 \
             || echo "::notice::smoke exit $? — informational only (kernel libs may fail to load or abort on synthetic shapes)"
+
+  # Area-map headless smokes (informational, continue-on-error: closed native
+  # may fail on runner glibc; fake/stub modes carry the regression signal).
+  #   bench/areamap (TASK-11, agent-7625532f): Ops.run() parity grid vs naive
+  #     difference, MIN_VALUE guard, fake + real .so modes.
+  #   tests/area_map_smoke (dup delivery): the ACTUAL patched update() bytes —
+  #     patch_tool.py byte-mirror of classfile.rs::patch_update, full JVM
+  #     verification, same-state fast path + Scratch init + naive parity.
+  areamap-smoke:
+    name: area-map smokes (informational)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: bench/areamap smoke (parity grid, fake + real .so)
+        run: bash bench/areamap/run_smoke.sh "$(dirname "$(command -v javac)")"
+      - name: tests/area_map_smoke (patched-bytes suite)
+        run: bash tests/area_map_smoke/run.sh
