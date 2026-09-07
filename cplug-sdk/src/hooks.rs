@@ -39,6 +39,12 @@ pub fn register(pattern: &str, cb: impl Fn(&str) + Send + Sync + 'static) {
 
 /// Dispatch a class name to all matching hooks.
 pub fn dispatch(name: &str) {
+    // TASK-22/C1 sighting feed: record the name BEFORE running callbacks so
+    // every class load (including ones whose callbacks are not registered)
+    // feeds classes::find_class's negative gate. The shard lock inside
+    // note_loaded is taken and dropped here — callbacks below never run
+    // under any SDK lock (lock-order rule, see classes.rs).
+    crate::classes::note_loaded(name);
     let hooks = registry().lock().unwrap_or_else(|e| e.into_inner());
     for (pat, cb) in hooks.iter() {
         if sdk_glob::matches(pat, name) {
