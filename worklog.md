@@ -18,3 +18,19 @@ Stage Summary:
 - Топ-кандидат: PaperNativeDensityAp2MinMaxFill oldSummary→newSummary — 19.2x @K=256 (113.6ns/op, grade H), следующий RangeChoice 11.3x (74.2ns).
 - Грейды: H 4 / M 26 / L 2 кернела (13 групп / 17 пар ≤225ns).
 - Главный инконсистент-файндинг: PROVEN_WINS evidence stale (3 из 7 WIN-вердиктов не воспроизводятся на каноничном перегоне 2026-09-08) — нужен evidence-sync коммит (не делал: analysis only).
+
+---
+
+## SESSION wave-2 — 2026-09-07T17:47Z — TASK-20 done: area-map apply-loop micro-bench
+
+**Task ID: TASK-20**, Agent: agent-7625532f (proc-1)
+
+Work Log:
+- AreaMapBench.java (bench/areamap/benchjava/): тайминг-компаньон смока TASK-11 — те же фикстуры/конвенции RNG (xorshift64 0x9E3779B97F4A7C15), но no-log CountAreaMap (без аллокаций) и 3 фазы: CHANGED (move+resize, каждый вызов гарантированно меняет состояние — 1 натив на вызов, верифицировано), SAME (fast path), NAIVE (java diff-скан = нижняя граница). Размеры side 127/511/1023 px, median-of-3 раундов по >=150ms.
+- run_apply_bench.sh: собственные classes-bench-fake/real (не трогает смоковые), REAL-режим через realdecl .so-биндинг. FAKE+REAL прогоны: ВСЕ ВЕРИФИКАЦИИ PASS (native=1/changed-call, native=0 на fast path).
+- РЕЗУЛЬТАТЫ (results/APPLY_BENCH.md): fast path 24.7-25.3ns/вызов 0 нативных — в 2000x-170000x дешевле apply-цикла (48.6µs-4.25ms REAL); РЕАЛЬНЫЙ натив 6.18-6.44x МЕДЛЕННЕЕ java-скана per-px (2.0 vs 0.30-0.35 ns/px), per-op 435-851ns — 90%+ стоимости внутри .so (JNI-пол 35-90ns), wave-3 candidate: engine-side батчинг; small-grid overhead 2.31x (side 127) сходится к 1.08x (side 1023).
+- АНОМАЛИЯ -> TASK-22: REAL ops/call d=63 = 645 vs FAKE 374 на идентичном RNG-стриме (d=255/511 сходятся в 4.6%) — возможны дубли/стейл-ряды скретча в реальном кернеле на быстрых move+resize стримах. Нужен oracle-прогон до любых wave-3 кернел-работ.
+- BENCH.lock соблюдён (solo-окно), soak-сервер агента-2 работал фоном (раскрыто в отчёте).
+
+Stage Summary:
+- TASK-20 closed: fast-path прайсинг + первый per-px профиль реального apply-кернела + найдена корректностная аномалия (TASK-22). Артефакты: bench/areamap/{benchjava/,run_apply_bench.sh,results/APPLY_BENCH.md,results/apply_bench_raw.tsv}.
