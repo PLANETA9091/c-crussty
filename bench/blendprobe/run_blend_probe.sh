@@ -57,7 +57,6 @@ for ATTEMPT in $(seq 1 "$MAX_ATTEMPTS"); do
   "$JDK/bin/java" \
     -agentpath:"$RT_SO=modules=$RUNDIR/modules;versions=$RUNDIR/versions;kernel=purpur-1.21.10.jar" \
     -Xms320m -Xmx640m -XX:+UseSerialGC -XX:MaxMetaspaceSize=192m -Dfile.encoding=UTF-8 \
-    -XX:StartFlightRecording=filename="$RUNDIR/rec.jfr",duration=900s,settings=profile,dumponexit=true \
     -Ddist.root="$RUNDIR" \
     -jar "$RUNDIR/versions/purpur-1.21.10.jar" --nogui nogui \
     < "$FIFO" > "$LOG" 2>&1 &
@@ -78,6 +77,7 @@ for ATTEMPT in $(seq 1 "$MAX_ATTEMPTS"); do
     continue
   fi
   echo "BOOT-DONE attempt=$ATTEMPT $(date -u +%FT%TZ)" >> "$LOG"
+  "$JDK/bin/jcmd" "$PID" JFR.start name=blendprobe settings=profile duration=420s filename="$RUNDIR/rec.jfr" >> "$LOG" 2>&1 || echo "JFR-START-FAILED" >> "$LOG"
   break
 done
 [ -n "$done_at" ] || exit 1
