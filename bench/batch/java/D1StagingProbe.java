@@ -44,8 +44,10 @@ public class D1StagingProbe {
         System.load(lib);
 
         int abi = PaperNativeBatchDispatch.abiVersion();
-        if (abi != ((2 << 16) | 14)) {
-            System.out.println("# FAIL abi=" + abi + " expected=" + ((2 << 16) | 14));
+        // Sanity gate (post-spike the table grew: KERNEL_COUNT 15 -> abi
+        // 131087; the probe only needs the A'-era floor + identical arms).
+        if (abi < ((2 << 16) | 14)) {
+            System.out.println("# FAIL abi=" + abi + " expected>= " + ((2 << 16) | 14));
             System.exit(2);
         }
         System.out.println("# D1StagingProbe abi=" + abi
