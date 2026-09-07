@@ -38,29 +38,36 @@ SRC_DIR=noise/net
 OUT_DIR=noise/build
 
 mkdir -p "$OUT_DIR"
-# -d gives us the exact package layout; stubs (RuntimeStubs.java) provide the
-# kernel shapes at compile time only — stub classes are discarded, not shipped.
+# -d gives us the exact package layout; stubs (RuntimeStubs.java + the
+# crussty/batch bridge stub) provide the kernel shapes at compile time only
+# — stub classes are discarded, not shipped. ImprovedNoiseBatchOps.java is
+# the G4 demonstrator helper (docs/G4_SITE_PATCH_DESIGN.md §5.1): same-
+# descriptor retarget target, 4th embedded class in src/improved_noise.rs.
 "$JAVAC" --release "$RELEASE" -nowarn \
   -d "$OUT_DIR" \
   noise/net/minecraft/world/level/levelgen/synth/RuntimeStubs.java \
-  noise/net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps.java
+  noise/net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps.java \
+  noise/net/minecraft/world/level/levelgen/synth/ImprovedNoiseBatchOps.java \
+  noise/net/crussty/batch/PaperNativeBatchDispatch.java
 
-# Drop the compile-time stub class files; only the two real bridge classes ship.
+# Drop the compile-time stub class files; only the real bridge classes ship.
 rm -f "$OUT_DIR"/net/minecraft/world/level/levelgen/synth/ImprovedNoise.class \
-      "$OUT_DIR"/net/minecraft/world/level/levelgen/synth/PaperNativeImprovedNoise.class
+      "$OUT_DIR"/net/minecraft/world/level/levelgen/synth/PaperNativeImprovedNoise.class \
+      "$OUT_DIR"/crussty/batch/PaperNativeBatchDispatch.class
 
 python3 - <<'EOF'
 import glob, struct, sys
 
 # The runtime embed contract: src/improved_noise.rs include_bytes!s and
-# defines EXACTLY these three classes into the kernel loader. Anything else
+# defines EXACTLY these four classes into the kernel loader. Anything else
 # left in noise/build would silently not ship -> NoClassDefFoundError on
 # first use inside the kernel (e.g. a stray synthetic $1 from a private
 # nested ctor under pre-nestmates targets). The phantom-reaper design ships
 # an explicit named $Reaper class (lambda-with-state cannot drain a queue
 # across timeouts without capturing mutable state, which lambdas forbid).
+# ImprovedNoiseBatchOps is the G4 demonstrator helper (4th embed).
 SHIP = {"ImprovedNoiseNativeOps.class", "ImprovedNoiseNativeOps$Handle.class",
-        "ImprovedNoiseNativeOps$Reaper.class"}
+        "ImprovedNoiseNativeOps$Reaper.class", "ImprovedNoiseBatchOps.class"}
 
 bad = 0
 files = sorted(glob.glob('noise/build/net/minecraft/world/level/levelgen/synth/*.class'))
@@ -73,9 +80,11 @@ for f in files:
     if keep and major > 65:
         print(f"  ERROR: {name} major {major} exceeds kernel support (65 = Java 21)", file=sys.stderr)
         bad = 1
-    if not keep and name.startswith('ImprovedNoiseNativeOps'):
+    if not keep and (name.startswith('ImprovedNoiseNativeOps') or name.startswith('ImprovedNoiseBatchOps')):
         print(f"  ERROR: {name} is an unembedded bridge class — src/improved_noise.rs defines only {sorted(SHIP)}; "
-              "keep the bridge at exactly 3 class files (Ops, $Handle, $Reaper)", file=sys.stderr)
+              "keep the bridge at exactly 4 class files (Ops, $Handle, $Reaper, BatchOps); "
+              "anonymous inner classes / lambdas-that-capture would mint synthetics the define loop never defines",
+              file=sys.stderr)
         bad = 1
 shipped = {f.rsplit('/', 1)[-1] for f in files if f.rsplit('/', 1)[-1] in SHIP}
 missing = SHIP - shipped

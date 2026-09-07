@@ -50,6 +50,11 @@ const TAG_INTEGER: u8 = 3;
 const TAG_CLASS: u8 = 7;
 const TAG_FIELDREF: u8 = 9;
 const TAG_METHODREF: u8 = 10;
+/// CONSTANT_InterfaceMethodref (JVMS 4.4.2) — `invokestatic`/`invokeinterface`
+/// may legally reference it on class major >= 52; the retarget resolver must
+/// accept both ref tags or a hostile/edge case returns NotFound instead of
+/// patching.
+const TAG_INTERFACEMETHODREF: u8 = 11;
 const TAG_NAMEANDTYPE: u8 = 12;
 
 pub const OPS_CLASS: &str = "ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps";
@@ -202,6 +207,52 @@ impl Pool {
         }
         let len = usize::from(u16::from_be_bytes([payload[0], payload[1]]));
         String::from_utf8(payload[2..2 + len].to_vec()).ok()
+    }
+
+    /// Find-only UTF8 lookup (NO append). The retarget resolver uses this to
+    /// probe for the target method's name/descriptor entries before anything
+    /// is mutated: a method whose name/desc utf8 entries are absent cannot
+    /// exist, and NotFound must not grow the pool as a side effect.
+    fn find_utf8(&self, s: &str) -> Option<u16> {
+        let mut payload = Vec::with_capacity(2 + s.len());
+        payload.extend_from_slice(&(s.len() as u16).to_be_bytes());
+        payload.extend_from_slice(s.as_bytes());
+        self.find(TAG_UTF8, &payload)
+    }
+
+    /// Resolve a Methodref/InterfaceMethodref index to its
+    /// `(class_internal_name, method_name, descriptor)` triple (G4 §3:
+    /// call-site resolution is BY NAME, never by fixed bytecode offset —
+    /// ASM COMPUTE_FRAMES runs shift CP indexes between boots).
+    fn methodref_parts(&self, idx: u16) -> Option<(String, String, String)> {
+        let (_, tag, payload) = self.entries.iter().find(|(i, _, _)| *i == idx)?;
+        if *tag != TAG_METHODREF && *tag != TAG_INTERFACEMETHODREF {
+            return None;
+        }
+        // Payload layout: class_index(2) name_and_type_index(2). The parser
+        // guarantees 4 bytes, but this runs on hook-delivered bytes — stay
+        // bounds-checked end to end (A4 audit style).
+        if payload.len() < 4 {
+            return None;
+        }
+        let class_idx = u16::from_be_bytes([payload[0], payload[1]]);
+        let nat_idx = u16::from_be_bytes([payload[2], payload[3]]);
+        let (_, ctag, cpayload) = self.entries.iter().find(|(i, _, _)| *i == class_idx)?;
+        if *ctag != TAG_CLASS || cpayload.len() < 2 {
+            return None;
+        }
+        let class_utf8 = u16::from_be_bytes([cpayload[0], cpayload[1]]);
+        let (_, ntag, npayload) = self.entries.iter().find(|(i, _, _)| *i == nat_idx)?;
+        if *ntag != TAG_NAMEANDTYPE || npayload.len() < 4 {
+            return None;
+        }
+        let name_utf8 = u16::from_be_bytes([npayload[0], npayload[1]]);
+        let desc_utf8 = u16::from_be_bytes([npayload[2], npayload[3]]);
+        Some((
+            self.utf8_value(class_utf8)?,
+            self.utf8_value(name_utf8)?,
+            self.utf8_value(desc_utf8)?,
+        ))
     }
 
     fn serialize(&self) -> Vec<u8> {
@@ -486,6 +537,270 @@ pub fn patch_update(bytes: &[u8]) -> Result<Vec<u8>, String> {
     Ok(out)
 }
 
+// ---------------------------------------------------------------------------
+// G4: invokestatic call-site retarget (docs/G4_SITE_PATCH_DESIGN.md §3,
+// Variant R). Same-length CP-operand rewrite: scan a method's Code attribute
+// for `invokestatic` (0xb8) instructions, resolve each 2-byte CP operand to
+// its Methodref, and on a name match rewrite ONLY the operand to a new
+// (append-only) Methodref. The replacement keeps the ORIGINAL descriptor, so
+// the verifier-visible stack shape is unchanged: no branch fixups, no
+// exception-table edits, no StackMapTable deltas, no method-size growth.
+// ---------------------------------------------------------------------------
+
+/// What [`retarget_invokestatic`] found/did.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum RetargetOutcome {
+    /// `sites` call sites were rewritten from `from` to the (appended) `to`
+    /// Methodref.
+    Retargeted { sites: usize },
+    /// Every call site matching `to` already points there — the idempotent
+    /// re-sight path (engine `is_invokestatic_to` pattern; module PATCHED-swap
+    /// convention). Nothing was modified.
+    AlreadyPatched { sites: usize },
+    /// The method carries no invokestatic matching either spec (nothing to do;
+    /// for the demonstrator this means the ASM patch shape changed and the
+    /// caller must keep the unretargeted bytes).
+    NotFound,
+}
+
+/// Locate the target method's Code attribute; returns `(code_start,
+/// code_len)` — absolute offset/length of the bytecode array within `bytes`.
+fn find_code_attr(bytes: &[u8], pool: &Pool, m: &Method) -> Option<(usize, usize)> {
+    let mut p = m.start.checked_add(6)?; // access(2) name(2) desc(2) -> attrs_count
+    let count = usize::from(u16_at(bytes, p)?);
+    p = p.checked_add(2)?;
+    for _ in 0..count {
+        let name_idx = u16_at(bytes, p)?;
+        let len = u32_at(bytes, p.checked_add(2)?)? as usize;
+        let data = p.checked_add(6)?;
+        if pool.utf8_value(name_idx).as_deref() == Some("Code") {
+            // Code body: max_stack(2) max_locals(2) code_length(4) code[..]
+            let code_len = u32_at(bytes, data.checked_add(4)?)? as usize;
+            let code_start = data.checked_add(8)?;
+            return Some((code_start, code_len));
+        }
+        p = data.checked_add(len)?;
+    }
+    None
+}
+
+/// Operand-byte count AFTER the opcode byte for `op`. `code`/`pc` are needed
+/// only by the variable-length ops (tableswitch/lookupswitch/wide). Unknown
+/// opcodes are an ERROR (fail closed) — a walk that cannot be proven exact
+/// must never rewrite operands (a mis-stepped scan would corrupt instructions).
+fn opcode_extra(op: u8, code: &[u8], pc: usize) -> Result<usize, String> {
+    // `need(from, n)`: code[from..from+n] must exist.
+    let need = |from: usize, n: usize| -> Result<(), String> {
+        if from.checked_add(n).map(|e| e <= code.len()).unwrap_or(false) {
+            Ok(())
+        } else {
+            Err("truncated code (operand past end)".into())
+        }
+    };
+    let fixed: usize = match op {
+        // No-operand opcodes: const/load_n/store_n/array ops, pop..swap,
+        // arithmetic 0x60..0x83, conversions/comparisons, returns, misc.
+        0x00..=0x0f
+        | 0x1a..=0x35 // _n loads (1a..2d) + array loads (2e..35)
+        | 0x3b..=0x56 // _n stores (3b..4e) + array stores (4f..56)
+        | 0x57..=0x5f // pop, pop2, dup*, swap
+        | 0x60..=0x83 // iadd..lxor
+        | 0x85..=0x93 // i2l..i2s
+        | 0x94..=0x98 // lcmp..dcmpg
+        | 0xac..=0xb1 // ireturn..return
+        | 0xbe | 0xbf // arraylength, athrow
+        | 0xc2 | 0xc3 => 0, // monitorenter/exit
+        // One operand byte: bipush, ldc, generic loads/stores (0x15..0x19,
+        // 0x36..0x3a), ret, newarray.
+        0x10 | 0x12 | 0x15..=0x19 | 0x36..=0x3a | 0xa9 | 0xbc => 1,
+        // Two operand bytes: sipush, ldc_w/ldc2_w, branches + goto/jsr
+        // (0x99..0xa8), iinc, field ops, invoke* (non-w/interface), new,
+        // anewarray, checkcast, instanceof, ifnull/nonnull.
+        0x11 | 0x13 | 0x14 | 0x84 | 0x99..=0xa8 | 0xb2..=0xb8 | 0xbb | 0xbd | 0xc0 | 0xc1
+        | 0xc6 | 0xc7 => 2,
+        // Four operand bytes: invokeinterface/invokedynamic (count bytes
+        // included), goto_w/jsr_w.
+        0xb9 | 0xba | 0xc8 | 0xc9 => 4,
+        // multianewarray: index + dimensions.
+        0xc5 => 3,
+        0xaa => {
+            // tableswitch: pad to 4-alignment RELATIVE TO THE CODE START
+            // (JVMS: defaultbyte1 begins at an address that is a multiple of
+            // four bytes from the start of the code array), then default(4)
+            // low(4) high(4) + 4*(high-low+1).
+            let pad = (4 - ((pc + 1) & 3)) & 3;
+            let d = pc + 1 + pad;
+            need(d, 12)?;
+            let low = i32::from_be_bytes([code[d + 4], code[d + 5], code[d + 6], code[d + 7]]) as i64;
+            let high = i32::from_be_bytes([code[d + 8], code[d + 9], code[d + 10], code[d + 11]]) as i64;
+            if high < low {
+                return Err("tableswitch high < low".into());
+            }
+            let n = (high - low + 1) as usize;
+            // 4 * n with overflow discipline (a hostile code array must err,
+            // not wrap).
+            let table = n.checked_mul(4).ok_or("tableswitch table overflow")?;
+            let extra = (pad + 12).checked_add(table).ok_or("tableswitch overflow")?;
+            need(pc + 1, extra)?;
+            return Ok(extra);
+        }
+        0xab => {
+            // lookupswitch: pad, then default(4) npairs(4) + 8*npairs.
+            let pad = (4 - ((pc + 1) & 3)) & 3;
+            let d = pc + 1 + pad;
+            need(d, 8)?;
+            let npairs =
+                u32::from_be_bytes([code[d + 4], code[d + 5], code[d + 6], code[d + 7]]) as usize;
+            let pairs = npairs.checked_mul(8).ok_or("lookupswitch overflow")?;
+            let extra = (pad + 8).checked_add(pairs).ok_or("lookupswitch overflow")?;
+            need(pc + 1, extra)?;
+            return Ok(extra);
+        }
+        0xc4 => {
+            // wide: modded opcode next; iinc carries an extra const(2).
+            need(pc + 1, 1)?;
+            let modded = code[pc + 1];
+            let extra = if modded == 0x84 { 5 } else { 3 };
+            need(pc + 1, extra)?;
+            return Ok(extra);
+        }
+        _ => return Err(format!("unknown opcode 0x{op:02x} in code walk")),
+    };
+    need(pc + 1, fixed)?;
+    Ok(fixed)
+}
+
+/// Scan a bytecode array for `invokestatic` instructions. Returns
+/// `(absolute_offset_of_opcode, cp_operand)` pairs. Bounded and panic-free:
+/// every step is width-checked against the code array (audit A4 style — this
+/// runs on ClassFileLoadHook-delivered bytes).
+fn scan_invokestatics(code: &[u8], code_start: usize) -> Result<Vec<(usize, u16)>, String> {
+    let mut out = Vec::new();
+    let mut pc = 0usize;
+    while pc < code.len() {
+        let op = code[pc];
+        if op == 0xb8 {
+            let b = code
+                .get(pc + 1..pc + 3)
+                .ok_or_else(|| "invokestatic operand truncated".to_string())?;
+            out.push((code_start + pc, u16::from_be_bytes([b[0], b[1]])));
+            pc += 3;
+            continue;
+        }
+        let extra = opcode_extra(op, code, pc)?;
+        pc = pc
+            .checked_add(1 + extra)
+            .ok_or_else(|| "code walk overflow".to_string())?;
+        if pc > code.len() {
+            return Err("truncated code (walk past end)".into());
+        }
+    }
+    Ok(out)
+}
+
+/// Variant R retarget (G4 §3): rewrite every `invokestatic` call site in
+/// `method_name`/`method_desc` that currently resolves to `from`
+/// (class, method, descriptor) so it resolves to `to` (same descriptor —
+/// the caller's contract; a mismatching `to` descriptor would change the
+/// verifier-visible stack shape and is a caller bug).
+///
+/// Returns the (possibly new) class bytes plus the outcome. Idempotency
+/// (G4 §3): a site already resolving to `to` is counted and LEFT ALONE —
+/// re-sighting patched bytes yields [`RetargetOutcome::AlreadyPatched`] and
+/// the ORIGINAL bytes back, never a double patch. `NotFound` also returns
+/// the original bytes and must not grow the constant pool.
+///
+/// CP growth is append-only via [`Pool::method_ref`] (dedup); existing
+/// indices stay valid. The 64K saturation guard is honored loudly.
+///
+/// # Panic-free contract
+/// Runs on the quiet activation worker over hook-delivered bytes: every
+/// read is bounds-checked; a truncated/hostile class yields `Err`, never a
+/// panic (the panic-across-JNI discipline, G4 §6).
+pub fn retarget_invokestatic(
+    bytes: &[u8],
+    method_name: &str,
+    method_desc: &str,
+    from: (&str, &str, &str),
+    to: (&str, &str, &str),
+) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    if from.2 != to.2 {
+        return Err(format!(
+            "retarget would change descriptor {} -> {} (verifier-visible stack shape must stay identical)",
+            from.2, to.2
+        ));
+    }
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    let mut pool = layout.pool;
+    // Find-only probes: a method whose name/desc utf8 entries are absent
+    // cannot exist; NotFound must not mutate the pool.
+    let Some(name_idx) = pool.find_utf8(method_name) else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let Some(desc_idx) = pool.find_utf8(method_desc) else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)
+        .ok_or_else(|| format!("method {method_name}{method_desc} not found"))?;
+    let (code_start, code_len) = find_code_attr(bytes, &pool, &m)
+        .ok_or_else(|| format!("method {method_name}{method_desc} has no Code attribute"))?;
+    let code_end = code_start
+        .checked_add(code_len)
+        .ok_or_else(|| "code length overflow".to_string())?;
+    let code = bytes
+        .get(code_start..code_end)
+        .ok_or_else(|| "code region truncated".to_string())?;
+    let sites = scan_invokestatics(code, code_start)?;
+
+    // Classify every call site BY NAME (never by offset — CP indexes shift
+    // between ASM runs, G4 §9).
+    let to_triple = (to.0.to_string(), to.1.to_string(), to.2.to_string());
+    let from_triple = (from.0.to_string(), from.1.to_string(), from.2.to_string());
+    let mut rewrite: Vec<usize> = Vec::new(); // absolute offsets of the 2-byte operands
+    let mut already = 0usize;
+    for (op_pc, cp_idx) in sites {
+        match pool.methodref_parts(cp_idx) {
+            Some(parts) if parts == to_triple => already += 1,
+            Some(parts) if parts == from_triple => rewrite.push(op_pc + 1),
+            _ => {}
+        }
+    }
+    if rewrite.is_empty() {
+        return Ok((bytes.to_vec(), if already > 0 {
+            RetargetOutcome::AlreadyPatched { sites: already }
+        } else {
+            RetargetOutcome::NotFound
+        }));
+    }
+
+    // Append (or reuse) the Methodref for `to` — append-only, dedup.
+    let new_idx = pool.method_ref(to.0, to.1, to.2);
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for retarget ref".into());
+    }
+
+    // Splice: header + grown pool + tail (everything from cp_end on) with
+    // the matched operands rewritten. All operand offsets are >= cp_end
+    // (the Code attribute lives in the method table, after the pool), so
+    // the rewrite applies to the tail copy at (offset - cp_end).
+    let mut tail = bytes[layout.cp_end..].to_vec();
+    let want = new_idx.to_be_bytes();
+    for &op_off in &rewrite {
+        let rel = op_off - layout.cp_end;
+        if rel + 1 >= tail.len() {
+            return Err("retarget operand outside class tail (corrupt layout?)".into());
+        }
+        tail[rel] = want[0];
+        tail[rel + 1] = want[1];
+    }
+    let mut out = Vec::with_capacity(bytes.len() + 64);
+    out.extend_from_slice(&bytes[0..8]); // magic, minor, major
+    out.extend_from_slice(&pool.next.to_be_bytes()); // new cp_count
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(&tail);
+    Ok((out, RetargetOutcome::Retargeted { sites: rewrite.len() }))
+}
+
 #[test]
 fn dbg_parse() {
     let bytes = include_bytes!("../tests/fixtures/SingleUserAreaMap.class");
@@ -597,6 +912,236 @@ mod tests {
     fn rejects_garbage() {
         let result = patch_update(&[0xCA, 0xFE, 0xBA, 0xBE, 0, 0, 0, 52, 0, 5, 1, 2, 3, 4]);
         assert!(result.is_err());
+    }
+
+    // ---- G4: invokestatic retarget (Variant R, docs/G4_SITE_PATCH_DESIGN.md) ----
+
+    /// The run descriptor `patch_update` emits for `SingleUserAreaMapOps.run`
+    /// (computed in patch_update as `(L{MAP_CLASS};IIIIIILjava/lang/Object;)V`).
+    const RUN_DESC: &str =
+        "(Lca/spottedleaf/moonrise/common/misc/SingleUserAreaMap;IIIIIILjava/lang/Object;)V";
+    const HELPER: &str = "crussty/test/BatchOpsHelper";
+
+    /// Round-trip on the REAL fixture: patch_update's emitted body carries
+    /// exactly one `invokestatic SingleUserAreaMapOps.run`, the retarget
+    /// rewrites it to the helper, a second pass is a no-op (AlreadyPatched,
+    /// original bytes back), and the patched bytes re-verify: pool grew by
+    /// the appended Methodref, the Code attribute is unchanged in length
+    /// (same-descriptor operand rewrite — zero StackMapTable/exception-table
+    /// deltas by construction), and the operand now resolves to the helper.
+    #[test]
+    fn retarget_roundtrip_idempotent_and_verified() {
+        let patched = patch_update(REAL).expect("patch");
+        let to = (HELPER, "run", RUN_DESC);
+
+        let (out1_bytes, out1) =
+            retarget_invokestatic(&patched, "update", "(III)Z", (OPS_CLASS, "run", RUN_DESC), to)
+                .expect("retarget");
+        assert_eq!(out1, RetargetOutcome::Retargeted { sites: 1 });
+        assert_ne!(out1_bytes, patched, "a real retarget must change the bytes");
+
+        // Idempotency: re-sighting the retargeted bytes is a no-op and hands
+        // the input bytes back unchanged.
+        let (out2_bytes, out2) =
+            retarget_invokestatic(&out1_bytes, "update", "(III)Z", (OPS_CLASS, "run", RUN_DESC), to)
+                .expect("second pass");
+        assert_eq!(out2, RetargetOutcome::AlreadyPatched { sites: 1 });
+        assert_eq!(out2_bytes, out1_bytes, "AlreadyPatched must not touch the bytes");
+
+        // Byte-level verification of the retargeted class: parse it, walk to
+        // update's Code, and confirm the single invokestatic now resolves to
+        // the helper while the code array length is unchanged (82 bytes).
+        let layout = parse_layout(&out1_bytes).expect("re-parse retargeted class");
+        let name_idx = layout.pool.find_utf8("update").expect("update name kept");
+        let desc_idx = layout.pool.find_utf8("(III)Z").expect("desc kept");
+        let m = find_method(&out1_bytes, layout.methods_start, name_idx, desc_idx).expect("update found");
+        let (code_start, code_len) = find_code_attr(&out1_bytes, &layout.pool, &m).expect("code attr");
+        assert_eq!(code_len, 82, "same-descriptor retarget must not change code length");
+        let sites = scan_invokestatics(
+            &out1_bytes[code_start..code_start + code_len],
+            code_start,
+        )
+        .expect("scan");
+        assert_eq!(sites.len(), 2, "body carries toString + run call sites");
+        let targets: Vec<_> = sites
+            .iter()
+            .map(|(_, idx)| layout.pool.methodref_parts(*idx).expect("resolve"))
+            .collect();
+        assert!(targets.contains(&(
+            HELPER.to_string(),
+            "run".to_string(),
+            RUN_DESC.to_string()
+        )));
+        assert!(
+            !targets.iter().any(|t| t.0 == OPS_CLASS),
+            "no call site may still reference the original after a full retarget"
+        );
+        // The other invokestatic (Integer.toString) must be untouched.
+        assert!(targets
+            .iter()
+            .any(|t| t.0 == "java/lang/Integer" && t.1 == "toString"));
+    }
+
+    #[test]
+    fn retarget_wrong_site_not_found() {
+        let patched = patch_update(REAL).expect("patch");
+        // A from-triple that appears nowhere in the body -> NotFound (and the
+        // pool must NOT have grown: NotFound never mutates).
+        let before = parse_layout(&patched).unwrap().pool.next;
+        let (bytes_back, out) = retarget_invokestatic(
+            &patched,
+            "update",
+            "(III)Z",
+            ("java/lang/Math", "max", "(II)I"),
+            (HELPER, "max", "(II)I"),
+        )
+        .expect("clean NotFound");
+        assert_eq!(out, RetargetOutcome::NotFound);
+        assert_eq!(bytes_back, patched, "NotFound returns the original bytes");
+        let after = parse_layout(&patched).unwrap().pool.next;
+        assert_eq!(before, after, "NotFound must not append pool entries");
+    }
+
+    #[test]
+    fn retarget_descriptor_mismatch_refused() {
+        let patched = patch_update(REAL).expect("patch");
+        let err = retarget_invokestatic(
+            &patched,
+            "update",
+            "(III)Z",
+            (OPS_CLASS, "run", RUN_DESC),
+            (HELPER, "run", "(LI;IIIIIILjava/lang/Object;)V"),
+        )
+        .unwrap_err();
+        assert!(err.contains("descriptor"), "{err}");
+    }
+
+    #[test]
+    fn retarget_missing_method_errors_cleanly() {
+        let patched = patch_update(REAL).expect("patch");
+        // Name utf8 that exists NOWHERE -> NotFound (no mutation, no error).
+        let (bytes_back, out) = retarget_invokestatic(
+            &patched,
+            "nonexistent",
+            "(III)Z",
+            (OPS_CLASS, "run", RUN_DESC),
+            (HELPER, "run", RUN_DESC),
+        )
+        .expect("clean NotFound");
+        assert_eq!(out, RetargetOutcome::NotFound);
+        assert_eq!(bytes_back, patched);
+        // Name/desc utf8 entries that exist ("Code" attribute name, the
+        // update descriptor) but name NO method -> the loud Err path.
+        let err = retarget_invokestatic(
+            &patched,
+            "Code",
+            "(III)Z",
+            (OPS_CLASS, "run", RUN_DESC),
+            (HELPER, "run", RUN_DESC),
+        )
+        .unwrap_err();
+        assert!(err.contains("not found"), "{err}");
+    }
+
+    /// A Code attribute whose code_length lies (claims 0xFFFF, file is ~1KB)
+    /// must fail CLOSED with Err — never panic, never rewrite (panic-free
+    /// contract over hook-delivered bytes, G4 §6).
+    #[test]
+    fn retarget_corrupt_code_length_fails_closed() {
+        let patched = patch_update(REAL).expect("patch");
+        // Locate update's Code attribute in the patched bytes and inflate its
+        // code_length field.
+        let layout = parse_layout(&patched).unwrap();
+        let name_idx = layout.pool.find_utf8("update").unwrap();
+        let desc_idx = layout.pool.find_utf8("(III)Z").unwrap();
+        let m = find_method(&patched, layout.methods_start, name_idx, desc_idx).unwrap();
+        let mut p = m.start + 6;
+        let count = usize::from(u16::from_be_bytes([patched[p], patched[p + 1]]));
+        p += 2;
+        for _ in 0..count {
+            let name_idx = u16::from_be_bytes([patched[p], patched[p + 1]]);
+            let len = u32::from_be_bytes([
+                patched[p + 2],
+                patched[p + 3],
+                patched[p + 4],
+                patched[p + 5],
+            ]);
+            let data = p + 6;
+            if layout.pool.utf8_value(name_idx).as_deref() == Some("Code") {
+                let mut corrupt = patched.to_vec();
+                // code_length sits at data+4; claim the maximum.
+                corrupt[data + 4] = 0xFF;
+                corrupt[data + 5] = 0xFF;
+                corrupt[data + 6] = 0xFF;
+                corrupt[data + 7] = 0xFF;
+                let res = retarget_invokestatic(
+                    &corrupt,
+                    "update",
+                    "(III)Z",
+                    (OPS_CLASS, "run", RUN_DESC),
+                    (HELPER, "run", RUN_DESC),
+                )
+                .map(|_| ());
+                assert!(res.is_err(), "claimed 4GB code must fail closed");
+                return;
+            }
+            p = data + len as usize;
+        }
+        panic!("no Code attribute found in fixture");
+    }
+
+    /// The opcode-width table must step exactly: a tableswitch / lookupswitch
+    /// / wide sequence followed by an invokestatic must place the found call
+    /// site at the right pc (a mis-step would corrupt operands on rewrite).
+    #[test]
+    fn scan_steps_variable_length_ops_exactly() {
+        // tableswitch at 0 with default -> +20, low=-1, high=1 (3 targets).
+        // Layout: op(1) pad(3) default(4) low(4) high(4) offsets(3*4=12) = 29
+        // bytes, then invokestatic with operand 0x1234.
+        let mut code = vec![0xaa];
+        let pad = (4 - ((0 + 1) & 3)) & 3; // = 3
+        code.extend(std::iter::repeat(0u8).take(pad));
+        code.extend_from_slice(&20i32.to_be_bytes()); // default
+        code.extend_from_slice(&(-1i32).to_be_bytes());
+        code.extend_from_slice(&1i32.to_be_bytes());
+        for _ in 0..3 {
+            code.extend_from_slice(&4i32.to_be_bytes()); // targets
+        }
+        assert_eq!(code.len(), 1 + pad + 12 + 12);
+        code.extend_from_slice(&[0xb8, 0x12, 0x34]); // the invokestatic
+        let sites = scan_invokestatics(&code, 0).expect("tableswitch walk");
+        assert_eq!(sites, vec!((code.len() - 3, 0x1234)));
+
+        // lookupswitch: op(1) pad(3) default(4) npairs(4) pairs(2*8=16)
+        // then invokestatic.
+        let mut code2 = vec![0xab];
+        code2.extend(std::iter::repeat(0u8).take(pad));
+        code2.extend_from_slice(&24i32.to_be_bytes());
+        code2.extend_from_slice(&2i32.to_be_bytes()); // npairs
+        for _ in 0..2 {
+            code2.extend_from_slice(&1i32.to_be_bytes());
+            code2.extend_from_slice(&4i32.to_be_bytes());
+        }
+        code2.extend_from_slice(&[0xb8, 0x56, 0x78]);
+        let sites2 = scan_invokestatics(&code2, 0).expect("lookupswitch walk");
+        assert_eq!(sites2, vec!((code2.len() - 3, 0x5678)));
+
+        // wide iload (4 bytes total) + wide iinc (6 bytes total) + one
+        // 0-byte op + invokestatic at offset 11.
+        let code3 = [
+            0xc4, 0x15, 0x01, 0x02, // wide iload 0x0102 (indices 0-3)
+            0xc4, 0x84, 0x00, 0x05, 0x00, 0x64, // wide iinc 5 by 100 (4-9)
+            0x1b, // iload_1 (no operands, offset 10)
+            0xb8, 0xaa, 0xbb, // invokestatic at 11
+        ];
+        let sites3 = scan_invokestatics(&code3, 0).expect("wide walk");
+        assert_eq!(sites3, vec!((11, 0xaabb)));
+
+        // Unknown/reserved opcodes fail closed.
+        assert!(opcode_extra(0xfe, &[0xfe], 0).is_err());
+        assert!(opcode_extra(0xca, &[0xca], 0).is_err());
+        // Truncation: an invokestatic whose operand runs past the end.
+        assert!(scan_invokestatics(&[0xb8, 0x00], 0).is_err());
     }
 }
 
