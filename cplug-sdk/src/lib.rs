@@ -129,6 +129,29 @@ unsafe extern "C" fn sdk_dispatch_hook(
     out_data: *mut *mut u8,
     out_len: *mut usize,
 ) -> i32 {
+    // H-01 (hardening audit A11): this runs on EVERY JVM class-load thread.
+    // A panic here would unwind across `extern "C"` and abort() the whole
+    // server. Catch, log, serve the original bytes — a broken hook must
+    // degrade to "no patch", never take the kernel down.
+    let result = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        sdk_dispatch_hook_inner(name, class_data, class_data_len, out_data, out_len)
+    }));
+    match result {
+        Ok(rc) => rc,
+        Err(_) => {
+            eprintln!("[cplug-sdk] FATAL: dispatch hook panicked (class load continues with original bytes)");
+            1
+        }
+    }
+}
+
+unsafe extern "C" fn sdk_dispatch_hook_inner(
+    name: *const std::ffi::c_char,
+    class_data: *const u8,
+    class_data_len: usize,
+    out_data: *mut *mut u8,
+    out_len: *mut usize,
+) -> i32 {
     let nm = jni_util::cstr(name);
     if let Some(nm) = &nm {
         hooks::dispatch(nm);

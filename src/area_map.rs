@@ -222,7 +222,9 @@ fn bridge_selftest(env: &JniEnv) -> Option<()> {
             continue;
         }
 
-        let n = n.max(0) as usize;
+        // H-12 (hardening audit): never trust the closed native's count past
+        // the buffer capacity — a hostile/buggy n would OOB-index ops/keys.
+        let n = (n.max(0) as usize).min(cap as usize);
         let (expected_adds, expected_removes) = naive_set_difference(from_x, from_z, old_d, to_x, to_z, new_d);
         let mut actual_adds = HashSet::new();
         let mut actual_removes = HashSet::new();

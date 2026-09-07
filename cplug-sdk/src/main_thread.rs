@@ -177,9 +177,18 @@ fn define_runnable_class(env: &JniEnv) -> jni::jclass {
 /// runs it with the caller's env (the main thread is already attached).
 unsafe extern "system" fn sdk_run_trampoline(env_raw: *mut jni::JNIEnv, _obj: jni::jobject) {
     let env = JniEnv::from_raw(env_raw);
-    let job = QUEUE.lock().unwrap().pop_front();
+    // H-01: a panicking main-thread job must not unwind across JNI (= abort).
+    // Mutex poisoning is recovered: a panic while holding the queue lock does
+    // not invalidate the deque contents.
+    let job = QUEUE
+        .lock()
+        .unwrap_or_else(|e| e.into_inner())
+        .pop_front();
     if let Some(job) = job {
-        job(&env);
+        let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| job(&env)));
+        if r.is_err() {
+            eprintln!("[cplug-sdk] main-thread job panicked (recovered)");
+        }
     }
 }
 
