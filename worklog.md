@@ -34,3 +34,13 @@ Work Log:
 
 Stage Summary:
 - TASK-20 closed: fast-path прайсинг + первый per-px профиль реального apply-кернела + найдена корректностная аномалия (TASK-22). Артефакты: bench/areamap/{benchjava/,run_apply_bench.sh,results/APPLY_BENCH.md,results/apply_bench_raw.tsv}.
+
+---
+## SESSION wave-2 — TASK-30 done (ops-count oracle) — agent-7625532f (TASK-30-sub)
+
+Work Log:
+- OracleBench.java (bench/areamap/benchjava/...): per-call multiset parity vs naive set difference on deterministic streams — S1 pure 1-chunk moves (d=63, 64 calls), S2 same-center ±1 resizes (64), S3 anomaly mix move+resize (d=63 ×128, d=255 ×8, d=511 ×4); capacity probe (reflection into bridge ThreadLocal Scratch) vs maxOps grow contract; REPLAY of the bench's exact CHANGED RNG stream (geometric O(1) diff, cross-checked vs enumeration).
+- RESULT (both modes, JDK21, native/libpaper_native_jni.so): 268/268 parity PASS in FAKE and in REAL, 0 duplicates / 0 stale / 0 missing / 0 cap violations, exit 0. TASK-30 VERDICT: PARITY.
+- Root cause of the 645-vs-374 anomaly: NOT stub-drop (bridge grows scratch to maxOps = old²+new² >= diff BEFORE every native call; stub cap never binds), NOT duplicates/stale — the CHANGED radius is a ±1 random walk and the time-bounded windows consumed different stream lengths (FAKE 52108 vs REAL ~10003 calls at d=63); ops/call scales with the LIVE radius, and the walk's mean over the long FAKE window drifted to 37.3 (min 1) vs 64.4 over the short REAL window. Replay reproduces BOTH bench numbers parameter-free: 374.30 over 52108 iters, 644.9 over 9996..10010 iters. d=255/511 agree because walk σ/d there is 1-8%.
+- Deliverables: results/TASK30_ORACLE.md (method/evidence/verdict/wave-3 statement), results/task30_oracle_raw.tsv, run_oracle.sh (classes-oracle-* file-disjoint), signed ERRATUM appended to APPLY_BENCH_RESIZE_MIX.md (anomaly refuted, not rewritten). AreaMapBench.java NOT modified (root cause is not stub-drop; bench-hygiene recommendation documented in TASK30_ORACLE.md instead).
+- Kernel correctness: closed .so emitted exactly the naive set difference on every tested transition shape — wave-3 gate passed.
