@@ -1,10 +1,27 @@
 # c-crussty Optimization Roadmap
 
 Distilled project state and phased plan. Grounded in the source tree and the
-P500 artifacts; every non-trivial claim carries a file path + number so it can
-be re-verified. Companion design doc: [`BATCH_API_PROPOSAL.md`](BATCH_API_PROPOSAL.md).
+P500 artifacts; every non-trivial claim carries a file path + commit sha so it
+can be re-verified. Companion docs:
+[`ARCHITECTURE.md`](ARCHITECTURE.md) (deep dive),
+[`BATCH_API_PROPOSAL.md`](BATCH_API_PROPOSAL.md) (batch dispatch design),
+[`HOOK_BLEND_CACHE.md`](HOOK_BLEND_CACHE.md) (blend-cache prototype).
 
-Status snapshot: 2026-09-07, sessions 001–002 (see `crussty-dev-logs` worklog).
+**Status snapshot: 2026-09-08, after session 004** (see `crussty-dev-logs`
+worklog + `CLAIMS.md`).
+
+* **Wave 1 — SHIPPED**: lifecycle fix, kernel-policy gate, CRUSSTY runtime
+  classfile-hook fix, area-map headless smoke, P500 CI, P500 v2 full rerun.
+* **Wave 2 — IN FLIGHT**: TASK-12…21 claimed (analysis + verification queue;
+  statuses in `CLAIMS.md` are the only source of truth — this doc does not
+  invent results).
+* **Wave 3 — CANDIDATES**: `docs/HOTSPOT_CANDIDATES.md` (TASK-18, produced in
+  parallel) + open directions listed in §5.
+
+> **Rebuild note (honest history).** This is a full restructure of the
+> session-001/002 roadmap. Where the old text was accurate it was carried
+> over (§6); where its numbers were superseded by the v2 rerun they are kept
+> only as errata (§2.1). Nothing was silently deleted.
 
 ---
 
@@ -29,37 +46,43 @@ inside any Paper-family kernel **without forking the kernel**:
   (`PaperNativeNormalNoise.nativeCheck() == 1`,
   `PaperNativeTicketSetSearch.binarySummary(1000)` writes 1 long — `src/lib.rs::live_proof`).
   Verified live on Purpur 1.21.10 + CRUSSTY v2.2.6: **98 classes, 283 natives,
-  0 unresolved**.
+  0 unresolved** — re-verified twice more after the runtime fix (TASK-08).
 * **Hot-patch 1 — `SingleUserAreaMap.update()`.** Byte hook (`src/area_map.rs`)
   swaps the kernel method body for `invokestatic SingleUserAreaMapOps.run(...)`
   (observed 5075 → 3320 bytes). Helper classes are defined **into the map's own
-  loader**, not the bootstrap — a bootstrap copy would both fail to resolve the
-  kernel class and shadow it for the parent-first kernel loader
-  (`src/area_map.rs` module docs). Activation polls for the Moonrise-lazy class
+  loader**, not the bootstrap. Activation polls for the Moonrise-lazy class
   (60 s deadline, 500 ms interval), force-loads it via
-  `Class.forName(name, true, kernelLoader)` (`force_load_kernel_class`), then
-  retransforms once (rc=0). Correctness is enforced by a semantic self-test:
-  64 deterministic random rects through the **real** bridge
-  `PaperNativeAreaMap.nativeUpdateOpsBatch` compared against the naive
-  set-difference (adds = new∖old, removes = old∖new) — `bridge_selftest`.
+  `Class.forName(name, true, kernelLoader)`, then retransforms once (rc=0).
+  Correctness: live 64-rect semantic self-test through the **real** bridge
+  (`bridge_selftest`) **plus** the headless smoke (TASK-11, §3) which proves
+  the same-state fast path (0 native calls) and apply-loop parity, including
+  against the real `.so`.
 * **Hot-patch 2 — `ImprovedNoise.noise(DDDDD)D`.** ASM-woven body replacement
   (`src/improved_noise.rs`, gate `CRUSSTY_NATIVE_IMPROVED_NOISE=1`, **off by
-  default**). The rewritten body reads `this`'s private `p/xo/yo/zo` itself
-  (legal: it is ImprovedNoise's own method) and calls
-  `ImprovedNoiseNativeOps.noise(...)` (`noise/net/.../ImprovedNoiseNativeOps.java`),
-  which caches one native handle per instance in
-  `WeakHashMap<ImprovedNoise, Handle>` and samples through
-  `PaperNativeImprovedNoise.nativeNoise(handle, x, y, z, yScale, yMax)`.
-  Constraints encoded in the code: field access flags must stay byte-identical
-  in the retransformed class (`JVMTI_ERROR_UNSUPPORTED_REDEFINITION_SCHEMA_CHANGED`);
-  bridge class version must be ≤ JVM class version (`jvm_class_major()` guard;
-  bridge ships as major 52 via `scripts/build_noise.sh --release 8` after the
-  major-69/Java-25 incident). Verified live: pristine sighting major 65 →
-  patch 5691 → 5403 bytes → retransform rc=0 → self-test passed (native handle
-  round-trip).
+  default**). The rewritten body reads `this`'s private `p/xo/yo/zo` and calls
+  `ImprovedNoiseNativeOps.noise(...)`, which caches one native handle per
+  instance. Lifecycle was rebuilt in wave 1 (TASK-01/09, §3): **no more
+  `finalize()`** — a phantom-reference reaper thread plus **16 identity-striped
+  `WeakHashMap`s**, with explicit `releaseHandle()` + CAS at-most-once free
+  adopted from the parallel Cleaner variant. Constraints unchanged: field
+  access flags byte-identical in the retransformed class; bridge class version
+  ≤ JVM class version (major 52 via `scripts/build_noise.sh --release 8`).
+* **Kernel-policy gate.** `src/kernel_policy.rs` (TASK-04, §3):
+  `CRUSSTY_KERNEL_PREF=old` swaps the four confirmed-regressed kernels' fnPtrs
+  back to their `old*` pairs at registration time — an operator switch, not a
+  code change to the closed surface.
+* **Blend-cache prototype (observation-only).** `src/proto_blend_cache.rs` +
+  [`HOOK_BLEND_CACHE.md`](HOOK_BLEND_CACHE.md): gate
+  `CRUSSTY_NATIVE_BLEND_CACHE` default OFF; even ON it only captures pristine
+  bytes and runs a 10k-sample parity harness. It never serves patched
+  bytecode.
 * **Hard rule:** no gameplay-value changes anywhere; optimizations only.
+  Optimization ≠ fraud: numbers come from benches, estimates are marked
+  ESTIMATE-pending-bench, and nothing is claimed shipped without an artifact.
 
-## 2. What P500 is and its key results
+---
+
+## 2. Measurement canon — P500 v2
 
 **P500** is the original benchmark-project name ("ANDMC / P500 Project
 Contributors" in `native/LICENSE`). Its kernels live *inside*
@@ -76,227 +99,240 @@ methodology as a standalone driver in `bench/p500/`:
   (SIGSEGV/SIGABRT isolation + retry ladder N=16→1), 4 argument strategies
   (probe-and-fallback), **fresh args before every method** (kernels mutate
   inputs — proven), forward/reverse passes with min-of-medians (kills order
-  bias), time-bounded batches ~120 ms, median-of-5, SINK defeats DCE,
-  SLOW-lane >250 ms/call.
-* Baseline run: **49 groups, 129 kernels, 0 crashes** →
-  `bench/p500/results/P500_REPORT.md` (raw: `p500_raw.tsv`).
-  Hardware caveat: shared 2-CPU sandbox, deltas <±15% are parity.
+  bias), median-of-5, SINK defeats DCE, SLOW-lane >250 ms/call.
+* **Canonical run: `bench/p500/results/P500_REPORT_v2.md`** (commit `3baa0f7`,
+  "REAL 120 ms batches"): batches truly ~120 ms so **C2 is reached** before
+  sampling — this is what invalidated the v1 absolute numbers. 49 groups,
+  129 kernels, 0 crashes, 70 pairs (stem rule), baseline diff vs
+  `baseline.tsv` (drift flag |Δratio| > 20%).
+* Hardware caveat: shared 2-CPU sandbox; deltas <±15% are parity.
 
-### Wins (wire these)
+### 2.1 ERRATA — the old ~115 ns floor is OBSOLETE
 
-| Speedup | Class | old → optimized kernel | old | optimized |
-|---:|---|---|---:|---:|
-| **244x** | `PaperNativeNoiseChunkBlendCache` | `oldEmptyBlenderSummary` → `newEmptyBlenderSummary` | 67.0 µs | 274.5 ns |
-| **3.29x** | `PaperNativeNoiseInterpolatorSlice` | `oldJaggedSummary` → `flatSummary` | 6.2 ms | 1.9 ms |
-| **1.55x** | `PaperNativePluginLoadingAllocation` | `oldEagerValidateSummary` → `newLazyValidateSummary` | 217.9 ns | 140.6 ns |
-| **1.53x** | `PaperNativePluginLoadingAllocation` | `oldEagerMissingSetSummary` → `newLazyMissingSetSummary` | 218.3 ns | 142.5 ns |
-| 1.22x | `PaperNativeImprovedNoiseInline` | `oldPMethodSummary` → `switchGradientSummary` | 9.3 µs | 7.6 µs |
-| 1.20x | `PaperNativePalettedReencodeScratch` | `oldNewArraySummary` → `scratchThreadLocalSummary` | 483.9 µs | 403.2 µs |
-| 1.15x | `PaperNativeAquiferSurfaceSampling` | `oldBatchSummary` → `newBatchSummary` | 6.3 µs | 5.5 µs |
+The v1 report (`P500_REPORT.md`) and the first batch proposal measured with
+short batches (C2 never fully warmed): they showed the JNI transition floor at
+**~115 ns** and blend-cache wins of 67.0 µs → 274.5 ns ("244x"). The v2 rerun
+(`3baa0f7`) with REAL 120 ms batches moved the floor to **35–90 ns** and
+re-measured every pair. Wherever an older doc still says "~115 ns" (including
+[`BATCH_API_PROPOSAL.md`](BATCH_API_PROPOSAL.md) §1 and the v2 report's own
+floor-section intro, which retains the phrase from the scaling study), read it
+as the **superseded** estimate; ratios (old/alt) stayed consistent, absolutes
+did not. TASK-10's independent review accepted this errata
+(`crussty-dev-logs/c-crussty/review-session003-agents2-commits.md`).
 
-(`P500_REPORT.md` "Top wins"; `PluginLoadingAllocation` surfaced after the
-aggregator adopted the P500 stem rule.)
+### 2.2 Wins (v2, promotion candidates)
 
-### Confirmed regressions — do NOT wire into hot paths
+From `P500_REPORT_v2.md` "Wins" (ratio = alt/old ≤ 0.85):
 
-All four validated as **genuine, scale-invariant** by the N=16/256/4096 probe
-in `bench/p500/results/P500_SCALING.md` (ratios stable with N):
+| ratio | class | old kernel | alt kernel | old | alt | ≈ speedup |
+|---:|---|---|---|---:|---:|---:|
+| 0.003 | `PaperNativeNoiseChunkBlendCache` | `oldEmptyBlenderSummary` | `newEmptyBlenderSummary` | 95.3 µs | 301.1 ns | ~317x |
+| 0.301 | `PaperNativeNoiseInterpolatorSlice` | `oldJaggedSummary` | `flatSummary` | 6.3 ms | 1.9 ms | 3.3x |
+| 0.805 | `PaperNativeNoiseChunkFlatCacheContext` | `oldTrueContextSummary` | `newTrueContextSummary` | 23.5 µs | 19.0 µs | 1.24x |
+| 0.819 | `PaperNativeImprovedNoiseInline` | `oldPMethodSummary` | `switchGradientSummary` | 9.3 µs | 7.6 µs | 1.22x |
+| 0.834 | `PaperNativePalettedReencodeScratch` | `oldNewArraySummary` | `scratchThreadLocalSummary` | 493.6 µs | 411.9 µs | 1.20x |
+| 0.846 | `PaperNativeNoiseChunkFlatCacheContext` | `oldFalseContextSummary` | `newFalseContextSummary` | 22.1 µs | 18.7 µs | 1.18x |
 
-| Pair ratio | Class | old → optimized kernel | N=16 / 256 / 4096 |
-|---:|---|---|---|
-| **~5.5x slower** | `PaperNativeLevelChunkHeightmap` | `oldFourUpdateSummary` → `newCombinedUpdateSummary` | 0.20x / 0.18x / 0.18x |
-| **~4.6x slower** | `PaperNativeMarkerCache` | `oldSummary` → `cachedSummary` | 0.23x / 0.22x / 0.22x |
-| **~2.3x slower** | `PaperNativePalettedReencodeScratch` | `oldNewArraySummary` → `directPackedSummary` | 0.44x / 0.44x / 0.42x |
-| **~1.7x slower** | `PaperNativeProtoChunkHeightmap` | `oldEnumSetForeachSummary` → `newCachedContainsSummary` | 0.67x / 0.59x / 0.56x |
+(FlatCacheContext pairs are **new wins surfaced** by the v2 rerun. A long tail
+of 1.01–1.14x pairs sits in the parity band — see the v2 report's parity list.)
 
-Note: the early "WaypointHotPath optimizedWaypointManagerValue 0.01x" was a
-**cross-stem pairing artifact** (compared against `oldReallyFarValue`, which
-does different work). Same-stem pairs are parity→wins
-(`optimizedWaypointManagerValue` is 1.07–1.10x *faster* than
-`oldWaypointManagerValue`); the aggregator now pairs by longest common suffix
-(`aggregate_p500.py` stem rule, `P500_SCALING.md`).
+### 2.3 Confirmed regressions — do NOT wire into hot paths
 
-### The ~115 ns JNI floor insight
+All four validated as **genuine, scale-invariant** — N=16/256/4096 probe in
+`P500_SCALING.md` plus the 16k/64k/262k waypoint probe (`bfdbf87`,
+`P500_SCALING_WAYPOINT.md`). v2 re-confirms every ratio:
 
-~40 plugin/loading groups sit in a 112–220 ns band where old and optimized
-kernels differ ≤15%: `PluginNameLog` 112.7/117.8 ns,
-`RangeChoice` 111.9/114.6 ns, `SpigotLoadOrderDependency` 114.5/114.8 ns,
-`PluginClassLoaderGroup` 146.7/153.2 ns, `PluginStartupRollup` 143.1/145.7 ns,
-`StaticCacheGet` 138.2/139.5 ns, `PluginLoadingAllocation` 140.6–218.3 ns,
-`ObfHelperMaps` ~214 ns, `RemapperIndexCleanup` 196.7/205.9 ns (`P500_REPORT.md`).
-**The Java↔native transition (~115 ns) dominates; per-kernel micro-optimization
-is pointless for these. The engine-level lever is doing more work per JNI call
-— i.e. the batch dispatch API** (`BATCH_API_PROPOSAL.md`).
+| ratio (alt/old) | class | old → optimized kernel |
+|---:|---|---|
+| 5.70x slower | `PaperNativeLevelChunkHeightmap` | `oldFourUpdateSummary` → `newCombinedUpdateSummary` |
+| 4.54x slower | `PaperNativeMarkerCache` | `oldSummary` → `cachedSummary` |
+| 2.35x slower | `PaperNativePalettedReencodeScratch` | `oldNewArraySummary` → `directPackedSummary` |
+| 1.78x slower | `PaperNativeProtoChunkHeightmap` | `oldEnumSetForeachSummary` → `newCachedContainsSummary` |
 
-The closed surface already anticipates this: batch-shaped exports exist
-today (`PaperNativeAreaMap.updateSummaryBatch`,
+These four are exactly what the kernel-policy gate (TASK-04) can switch off at
+runtime with `CRUSSTY_KERNEL_PREF=old`.
+
+Note: the early "WaypointHotPath 0.01x" was a **cross-stem pairing artifact**;
+same-stem pairs are parity→small wins, and the aggregator pairs by longest
+common suffix (stem rule). The waypoint probe additionally proved **O(N) up to
+N=262 144** for the whole group with per-element costs of 5–15 ns/elem
+(manager kernel ~380–410 ns/elem) and stable same-stem ratios.
+
+### 2.4 The JNI floor — the engine-level lever
+
+`P500_REPORT_v2.md` "JNI floor groups": **13 groups** (g9, g18, g24, g28,
+g30–g33, g35, g36, g39, g40, g42) carry kernels below 200 ns, with fastest
+group medians spanning **34.6–119.8 ns** (canonical band quoted as
+**35–90 ns**). There old and optimized kernels differ ≤15%: the Java↔native
+transition dominates, per-kernel micro-optimization is pointless, and the
+lever is **doing more work per JNI call — the batch dispatch API**
+([`BATCH_API_PROPOSAL.md`](BATCH_API_PROPOSAL.md)).
+
+The closed surface already anticipates this: batch-shaped exports exist today
+(`PaperNativeAreaMap.updateSummaryBatch`,
 `ca/.../PaperNativeAreaMap.nativeUpdateOpsBatch`,
 `PaperNativeClimate.nodeBestMatchBatch`, `PaperNativePosition.*Batch`,
 `PaperNativeVarInt.writeBatch/readBatch`, `PaperNativeReferenceList.runOps` —
-`src/jni_table.rs:60-118`).
+`src/jni_table.rs`).
+
+> Counting caveat: `CLAIMS.md` shorthand says "44+ floor-sitting groups"
+> (inherited from the v1 112–220 ns band definition); the v2 strict <200 ns
+> table lists 13 groups / 32 kernels. TASK-12's adoption matrix (§4) is the
+> deliverable that pins the exact set — until then every "44+" is an
+> ESTIMATE-pending-bench.
 
 ---
 
-## 3. Phased roadmap
+## 3. SHIPPED — wave 1 (+ earlier foundation)
 
-### Phase 1 — DONE (injection + 2 hooks + P500 baseline)
+Every row: commit sha(s) verifiable with `git log` in this repo (TASK-08 in
+the CRUSSTY engine repo) + the artifact that proves it.
 
-| Item | Evidence / owner files | Acceptance (met) |
-|---|---|---|
-| Native surface injection | `src/lib.rs`, `src/jni_table.rs`, `src/bridge_class.rs`, `src/classfile.rs`, `src/loader.rs`, `native/JNI_EXPORTS.manifest` | 98 classes / 283 natives / 0 unresolved on live Purpur 1.21.10; live proof OK; `render --check` + `verify` CI invariants |
-| area_map hook | `src/area_map.rs`, `area-map/**` (sources + `build/*.class` embedded via `include_bytes!`) | patch 5075→3320 bytes, retransform rc=0, 64-rect self-test == naive set difference |
-| improved_noise hook | `src/improved_noise.rs`, `noise/**`, `scripts/build_noise.sh` | env-gated, major-52 bridge, class-version guard, 5691→5403 bytes, self-test passed on live server |
-| P500 revival + baseline | `bench/p500/{gen_p500_bench.py,run_p500.sh,aggregate_p500.py}`, `bench/p500/results/P500_REPORT.md` | 49 groups, 129 kernels, 0 crashes; wins/regressions tables published |
-| Regression validation | `bench/p500/results/P500_SCALING.md` | 4 regressions confirmed scale-invariant; WaypointHotPath artifact explained; stem rule in aggregator |
-| Bugfixes | `scripts/build_noise.sh` (major 69→52 rebuild), dormant-gate leak fix | commits `9d80ba1` (bench revive), `3a270ee` (dormant-gate), `b879702` (scaling) pushed to `origin/master` |
+| # | Task | What shipped | Evidence |
+|---|---|---|---|
+| 1 | **TASK-01 + TASK-09** — `ImprovedNoiseNativeOps` lifecycle | `finalize()` killed: phantom-reference reaper thread + **16 identity-striped** WeakHashMaps (`e59201d`); `releaseHandle()` + CAS at-most-once free adopted from the parallel Cleaner variant `e2ec502`, ship-set 3 classes, `--release 8` kept (`99dd17e`). A/B ([`bench/lifecycle/results/LIFECYCLE_REPORT.md`](../bench/lifecycle/results/LIFECYCLE_REPORT.md)): t2–t4 hot path ~2x faster under contention (150→80 ns, 137→70 ns, 125→79 ns), quiet reclaim **>12 s timeout → 21 ms**, GC collections under churn pressure 512 → 21 (~24x). Live E2E ×2. TASK-10 review accepted. | `e59201d`, `99dd17e`, `e2ec502` |
+| 2 | **TASK-04** — kernel-policy gate | `registration_fallback` in `src/kernel_policy.rs`: `CRUSSTY_KERNEL_PREF=old` swaps the 4 regressed kernels' fnPtrs to `old*` pairs (same class/method/sig) at registration; unit test cross-checks derived fallback symbols against `jni_table`. Live: 4 remaps logged, 98/283/0 unresolved, default behavior untouched. | `8ec63b9` |
+| 3 | **TASK-08** — CRUSSTY runtime fix (ENGINE-TOUCH) | Runtime `ClassFileLoadHook` derived the class name from the VM buffer, which is not NUL-terminated → garbage/overlong names. Fixed in the engine: name derived from the class bytes' constant pool + `catch_unwind` + bounded fallback. E2E ×2 on live Purpur: pristine sighting, 283 natives, 0 errors. | CRUSSTY repo `66ff504` |
+| 4 | **TASK-11** — area-map headless unit smoke | Java-half of the bridge (`SingleUserAreaMapOps.run()`) driven through stubs — no server, no patch, no player: **S1** apply-loop parity vs independent naive reference (~30 cases, grow-path at d=32), **S2** same-state fast path = **0 native calls / 0 callbacks** (moved → exactly 1), **S3** `MIN_VALUE` guard, **S4** 4 threads / ThreadLocal scratch isolation, **S5** real-native parity. **ALL PASS in both classpath modes** (fake + real `.so`). Closes the verification hole: the live boot could never test the fast path (hook dormant without a player). | `532597b`, [`bench/areamap/README.md`](../bench/areamap/README.md) |
+| 5 | **P500 CI** (earlier) | GitHub Actions workflow `p500.yml`: ubuntu-latest, javac/java only, path-restricted triggers (`bench/p500/**`, `native/**`, `bench/lifecycle/**`), artifacts, guards. Plus `p500-smoke.yml` weekly informational smoke (4-group subset; GH-runner numbers explicitly NOT baselines). | `6134cfb`, `514378b` |
+| 6 | **Batch-API proposal** (earlier) | Full dispatch design: one plugin-owned bridge class, Rust-side decode, direct calls through resolved fnPtrs — the dispatcher *is* the transition. Prototype unwired (`bench/p500/jni_floor/`). Independently duplicated during a claim race (`e0d6e06` in crussty-dev-logs); both valid, cross-checked by TASK-10. **Numbers inside still carry the obsolete ~115 ns floor — see §2.1 errata.** | `bcb71bf`, [`docs/BATCH_API_PROPOSAL.md`](BATCH_API_PROPOSAL.md) |
+| 7 | **WaypointHotPath O(N) waypoint** (earlier) | Large-N probe 16k/64k/262k: O(N) confirmed to 262 144, guarded regressions scale-invariant (third independent N-level), same-stem wins stable. | `bfdbf87`, [`bench/p500/results/P500_SCALING_WAYPOINT.md`](../bench/p500/results/P500_SCALING_WAYPOINT.md) |
+| 8 | **Full P500 v2 rerun** (earlier) | REAL 120 ms batches, C2 reached, floor 35–90 ns, new wins surfaced (FlatCacheContext), all 4 regressions re-confirmed. This is the measurement canon for wave 2. | `3baa0f7`, [`bench/p500/results/P500_REPORT_v2.md`](../bench/p500/results/P500_REPORT_v2.md) |
+| 9 | **TASK-10** — independent review (earlier) | Cross-check of commits `6134cfb..381412f` + the two batch proposals; errata adopted: floor ~115 ns → 35–90 ns, batch wins ~1.3–3x @K≥32. | `review-session003-agents2-commits.md` (crussty-dev-logs) |
 
-### Phase 2 — ACTIVE
+---
 
-**2.1 Lifecycle fix: `finalize()` → `java.lang.ref.Cleaner` (ImprovedNoiseNativeOps)**
-* Owner files: `noise/net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps.java`
-  (`Handle.finalize()` at line 35; `WeakHashMap<ImprovedNoise, Handle>`),
-  `scripts/build_noise.sh` (rebuild at `--release 8`, class-version check),
-  `src/improved_noise.rs` (re-embed + retransform + selftest).
-* Why: finalizers resurrect objects through the Finalizer queue — a known GC
-  drag under young-gen pressure; the worklog already flags it (session 002
-  next-steps #2). `Cleaner` (JDK 9+) avoids the resurrection path and
-  finalizer-thread singleton.
-* Acceptance: (a) `ImprovedNoiseNativeOps$Handle` no longer declares
-  `finalize()`; (b) `nativeFreeHandle` invoked exactly once per handle under a
-  drop-stress microbench (create/free 10^6 instances, watch RSS +
-  `nativeFreeHandle` count via a temp counter); (c) A/B via P500
-  `PaperNativeImprovedNoiseFloor` / `PaperNativeImprovedNoise` groups — parity
-  (±15%) required, no GC-cycle regression in a 5-min boot soak; (d) rebuilt
-  classes remain major 52.
-* Risks: `Cleaner` requires the *reachable* reference graph to be right (cleaner
-  must not be reachable from the cleaned object); closed native side cannot be
-  changed — double-free protection must stay on the Java side (handle==0 guard
-  exists today).
+## 4. IN FLIGHT — wave 2 (TASK-12…21)
 
-**2.2 Batch dispatch API (`PaperNativeBatchDispatch`)**
-* Full design: `docs/BATCH_API_PROPOSAL.md`.
-* Owner files (planned): `src/batch_dispatch.rs` (new: descriptor parser ported
+One-liners from `CLAIMS.md` (wave-2 queue, claimed 2026-09-07T17:12Z by
+agent-7625532f). **Statuses below are as of the last read of CLAIMS.md and are
+recorded without results** — no wave-2 numbers exist yet; do not cite this
+section as evidence. Methodology for the whole wave: dump → analysis →
+optimization, base = `P500_REPORT_v2.md`; no gameplay/.so/engine changes.
+
+| Task | One-liner | Deliverable | Status (as of read) |
+|---|---|---|---|
+| TASK-12 | JNI-floor adoption matrix over the floor-sitting groups: ns/op, batch-API applicability (H/M/L), estimated ms/tick savings | `docs/BATCH_ADOPTION_MATRIX.md` (analysis only) | claimed |
+| TASK-13 | kernel-policy gate full coverage: `verify_kernel_pref.sh`, all remap candidates under `CRUSSTY_KERNEL_PREF=old` vs default, diff report; short runs, BENCH.lock | `docs/KERNEL_POLICY_COVERAGE.md` | claimed |
+| TASK-14 | CI ratio-gate: extend `p500.yml` — smoke subset + fail on >20% regression vs `bench/p500/baseline.json` (ratios from v2) | workflow + baseline.json | claimed |
+| TASK-15 | area-map differential fuzz: seeded randomized grids, parity fast-path vs apply-loop, ≥10k cases, headless `cargo test` | fuzz in `area-map/` | claimed |
+| TASK-16 | FULL P500 rerun after TASK-01/04/09/11 (49 groups, REAL 120 ms), report update + addendum to v2; exclusive BENCH.lock, waits for bench window | `bench/p500/results/P500_REPORT.md` + v2 addendum | claimed (wave-2, awaiting BENCH) |
+| TASK-17 | lifecycle soak: 10-min churn for the phantom reaper under GC pressure (small heap) | `bench/lifecycle/results/SOAK_REPORT.md` | claimed (wave-2) |
+| TASK-18 | static hotspot sweep: clippy + manual scan of `src/`, `noise/`, `area-map/` (allocs/locks/syscalls on hot paths) → ranked wave-3 candidates | `docs/HOTSPOT_CANDIDATES.md` (analysis only) | claimed |
+| TASK-19 | this document — roadmap refresh from CLAIMS + P500 v2 numbers, placeholder for TASK-18 candidates | `docs/OPTIMIZATION_ROADMAP.md` | **in progress (this commit)** |
+| TASK-20 | area-map apply-loop micro-bench: ns/px at 128/512/1024, fast-path vs baseline; light, before the P500 window | `bench/areamap/results/APPLY_BENCH.md` | claimed |
+| TASK-21 | investigation-only npm `crussty` CLI pre-check (TASK-05 precursor): explicit bug with full repro, NO engine edits | `crussty-dev-logs/c-crussty/task05-npm-precheck.md` | claimed |
+
+---
+
+## 5. Wave 3 candidates
+
+### 5.1 Hotspot candidates — placeholder
+
+`docs/HOTSPOT_CANDIDATES.md` is being produced **in parallel by TASK-18**
+(static sweep: clippy + manual scan of `src/`, `noise/`, `area-map/` for
+allocs/locks/syscalls on hot paths). Its ranked list becomes the top of the
+wave-3 queue when it lands. This document intentionally does **not** preview
+or duplicate its contents — the file itself is the single source of truth
+once merged.
+
+### 5.2 Known open directions
+
+* **Batch-API adoption for the JNI-floor groups.** 13 floor groups
+  (35–90 ns floor, §2.4) gain nothing from kernel micro-optimization; the
+  gain is amortizing transitions. Input: TASK-12's `BATCH_ADOPTION_MATRIX.md`;
+  design: [`BATCH_API_PROPOSAL.md`](BATCH_API_PROPOSAL.md) (acceptance
+  criteria carried over in §6.1, with all absolute-ns expectations
+  **ESTIMATE-pending-bench** under the v2 floor). Re-estimate wins from the
+  35–90 ns floor, not the obsolete 115 ns.
+* **Full P500 regression rerun after each wave.** TASK-16 establishes the
+  post-wave-1 rerun; the cadence becomes standing policy: every wave that
+  touches kernel wiring, policy, or classpath closes with a 49-group
+  REAL-120 ms rerun diffed against `baseline.tsv` (and, after TASK-14, gated
+  in CI at >20% per-pair regression).
+* **Lifecycle soak.** TASK-17's 10-minute churn soak is the pilot; wave-3
+  extension: longer soaks + bigger heaps + live-server boot soak, so the
+  phantom-reaper path has runtime-length evidence, not just A/B benches.
+* **Event-driven activation redesign** (carried over from the old roadmap
+  §2.4): both hooks still poll (500 ms interval / boot-marker thread).
+  Replace with JVMTI ClassPrepare-driven activation via `cplug-sdk`; keep the
+  force-load fallback for Moonrise-lazy classes. Still open, nothing in wave
+  2 touches it.
+* **Game-impact wiring of proven kernels** (carried over from old §3.1):
+  only wire kernels where a live-server profile shows real cost
+  (NoiseInterpolatorSlice 3.3x worldgen bursts; NoiseChunkBlendCache ~317x
+  but frequency unknown; PluginLoadingAllocation startup-only). Acceptance is
+  a before/after server metric (chunk-gen ms/chunk, boot time), never
+  kernel-ns alone; the four confirmed regressions stay unwired.
+* **Upstream engine batch API** (carried over from old §3.3): promote the
+  plugin-local dispatcher into the CRUSSTY runtime (shared dispatch table, id
+  space, ABI version handshake) once the plugin-local design proves out;
+  c-crussty becomes a consumer. Engine-repo work — ENGINE-TOUCH rules apply.
+
+---
+
+## 6. Carried-over designs (still accurate from the session-001/002 roadmap)
+
+### 6.1 Batch dispatch — acceptance criteria (unchanged, absolute ns now ESTIMATE-pending-bench)
+
+* Owner files (planned): `src/batch_dispatch.rs` (descriptor parser ported
   from `bench/p500/gen_p500_bench.py::parse_params`, dispatch table over
   `loader::NativeLib` fn pointers, JNI impls of `dispatch`/`dispatchRepeat`),
   `src/lib.rs` (register the dispatcher bridge + freeze the id table after
-  `inject_surface`), `src/jni_table.rs`/manifest unchanged (dispatcher is
-  plugin-owned, registered separately), `bench/p500/` (BenchFloor group).
+  `inject_surface`); manifest/jni_table unchanged (dispatcher is
+  plugin-owned, registered separately); `bench/p500/` BenchFloor group.
 * Acceptance: (a) per-op overhead ≤ 8 ns at batch=64 on the reference sandbox
-  (BenchFloor: N individual calls vs one `dispatchRepeat(N)` over a
-  floor-bound kernel, e.g. `PluginNameLog.newArrayListSortSummary`); (b) result
-  SINK parity vs individual calls across all primitive-only groups; (c) B=1
-  dispatch ≤ 1.5x individual call; (d) unknown kernelId → negative batch
-  return, no partial execution.
-* Risks: closed .so ABI drift (mitigate: SHA-256 pin in `native/MANIFEST.md`,
-  ids re-derived per boot); `GetPrimitiveArrayCritical` pinning windows (cap
+  (ESTIMATE-pending-bench: derive the target from the v2 35–90 ns floor);
+  (b) result SINK parity vs individual calls across all primitive-only
+  groups; (c) B=1 dispatch ≤ 1.5x individual call; (d) unknown kernelId →
+  negative batch return, no partial execution.
+* Risks: closed .so ABI drift (SHA-256 pin in `native/MANIFEST.md`, ids
+  re-derived per boot); `GetPrimitiveArrayCritical` pinning windows (cap
   batch ≤ 256 ops); kernels that mutate shared inputs force strict sequential
   semantics (documented, is a feature — zero copies).
 
-**2.3 New hook candidates (hot-patch call sites whose kernels already win)**
-* `NoiseChunkBlendCache` — 244x win (`newEmptyBlenderSummary` 274.5 ns vs
-  `oldEmptyBlenderSummary` 67.0 µs). Candidate wiring: intercept the kernel's
-  blender-construction path (the old path pays 67 µs per empty-blender build —
-  allocation/reshape dominated) so it routes to the `new*` kernel the same way
-  `area_map` routes `update()` through `SingleUserAreaMapOps`.
-* `NoiseInterpolatorSlice` — 3.29x win (`flatSummary` 1.9 ms vs
-  `oldJaggedSummary` 6.2 ms per batch). Candidate wiring: flatten the jagged
-  per-column slice loop in the kernel's noise-interpolator fill to the flat
-  buffer shape the `flat*` kernel consumes (byte-hook on the enclosing fill
-  method, helper class in the kernel loader — same loader pattern as
+### 6.2 New hook candidates (kernels whose wins are already proven)
+
+* `NoiseChunkBlendCache` — ~317x (v2; was "244x" under v1 numbers). Wiring:
+  intercept the kernel's blender-construction path so it routes to `new*`
+  the same way `area_map` routes `update()`. Prototype + parity harness
+  already exist observation-only: [`HOOK_BLEND_CACHE.md`](HOOK_BLEND_CACHE.md).
+* `NoiseInterpolatorSlice` — 3.3x (v2). Wiring: flatten the jagged per-column
+  slice loop to the flat buffer shape `flat*` consumes (byte-hook on the
+  enclosing fill method, helper class in the kernel loader — same pattern as
   `src/area_map.rs`).
-* Acceptance per hook: (a) patch byte-diff reviewed (no field-modifier changes,
-  `src/classfile.rs` helpers); (b) self-test comparing hooked call path vs
-  direct kernel invocation on ≥64 deterministic cases (pattern:
-  `bridge_selftest`); (c) P500-style microbench of hooked-vs-unhooked call site
-  on a live server showing the expected speedup, ≥1.5x end-to-end on the
-  enclosing method; (d) feature-gated by env var, default off until (c) passes.
-* Risks: kernel class shapes vary across Paper/Moonrise versions (pin against
-  Purpur 1.21.10 fixtures like `tests/fixtures/SingleUserAreaMap.class`); these
-  paths fire during chunk generation — a bad patch corrupts worldgen, hence
-  the self-test + gate; benefit is bounded by how often the kernel actually
-  constructs empty blenders / runs jagged slices in real worlds (profile first,
-  see 3.1).
+* Acceptance per hook (unchanged): reviewed patch byte-diff (no
+  field-modifier changes); self-test vs direct kernel invocation on ≥64
+  deterministic cases; hooked-vs-unhooked live measurement ≥1.5x on the
+  enclosing method; env gate default OFF until then. Risks unchanged:
+  kernel class shapes vary across Paper/Moonrise versions; these paths fire
+  during chunk generation — a bad patch corrupts worldgen.
 
-**2.4 Activation-latency event-driven redesign**
-* Current state: both hooks poll. `area_map::activate()` sleeps 500 ms per
-  iteration up to a 60 s deadline (`src/area_map.rs`); `improved_noise`
-  waits on a boot-marker thread (`src/improved_noise.rs`). Worst case the hook
-  arms tens of seconds after the class was already hot; polling threads burn
-  scheduler slots for nothing on idle worlds.
-* Redesign: subscribe to JVMTI **ClassPrepare** (and, for retransform-driven
-  paths, keep the existing byte hook as the delivery vehicle) via
-  `cplug-sdk` (`cplug-sdk/src/hooks.rs`, `cplug-sdk/src/classes.rs`) instead of
-  `find_class` polling; activation becomes: event fires → define helpers into
-  the class's loader (the `getClassLoader` dance stays) → flip READY → single
-  retransform.
-* Acceptance: (a) zero polling threads/sleep loops in `src/area_map.rs` +
-  `src/improved_noise.rs`; (b) patch applied within one scheduler tick of the
-  target class's load event (log timestamp delta < 100 ms); (c) no regression
-  of the existing self-tests; (d) dormant-gate behavior preserved
-  (commit `3a270ee` semantics).
-* Risks: ClassPrepare for bootstrap classes can fire before the loader is
-  usable — keep the existing force-load (`Class.forName` through the kernel
-  loader) as fallback for Moonrise-lazy classes; event callbacks must not call
-  back into JVMTI from restricted states (follow
-  [JVMTI safe-point rules](https://docs.oracle.com/en/java/javase/21/docs/specs/jvmti.html)).
+### 6.3 Verification & measurement rules (unchanged)
 
-### Phase 3 — GAME-IMPACT + ENGINE LEVERAGE
-
-**3.1 Game-impact-driven integration of proven kernels**
-* Only wire kernels where a live-server profile shows real cost: candidate
-  order from the wins table — `NoiseInterpolatorSlice` (3.29x, worldgen
-  bursts), `NoiseChunkBlendCache` (244x, but frequency unknown),
-  `PluginLoadingAllocation` (1.53x, startup-only), `ImprovedNoiseInline`
-  (1.22x, already adjacent to the improved_noise hook surface).
-* Method: run the live Purpur server under async-profiler/JFR, attribute time
-  to the enclosing Java methods, then decide wire/no-wire. Acceptance: each
-  integration ships with a before/after server metric (e.g. chunk-gen
-  ms/chunk, boot time), not just kernel-ns; regression list
-  (`P500_SCALING.md`) stays untouched (never wire the 4 confirmed
-  regressions).
-* Risks: measurement noise on the shared 2-CPU sandbox (±15% parity band);
-  closed kernels can change under us → re-run P500 as a gate on every .so
-  update (see 3.2).
-
-**3.2 CI benchmarking (P500 as regression monitor)**
-* The loop already exists: `gen_p500_bench.py` → `run_p500.sh` →
-  `aggregate_p500.py` → `P500_REPORT.md`. Add a scheduled workflow
-  (self-hosted runner; sandbox is too noisy for shared CI) that: rebuilds the
-  bench, diffs new ns/op vs the checked-in `p500_raw.tsv` baseline, fails on
-  >15% regression in any same-binary pair, and re-validates the 4 known
-  regressions' ratios (a changed ratio = binary changed).
-* Acceptance: (a) workflow runs green on the pinned binary
-  (SHA-256s in `native/MANIFEST.md`); (b) artificial +20% fault injection is
-  caught; (c) `gen_crussty_table.py render --check` + `verify` run in the same
-  job.
-* Risks: self-hosted runner availability; thermal variance — mitigate with
-  min-of-medians + parity band already in the methodology.
-
-**3.3 Upstream engine batch API (CRUSSTY runtime)**
-* Promote the Phase-2 dispatcher from a plugin-private bridge into the CRUSSTY
-  runtime so every module (c-cells, c-collisions, c-dist, …) shares one
-  dispatch table, one id space, and one ABI version — see "Open questions"
-  in `BATCH_API_PROPOSAL.md` (§10.8) and the P1000 horizon (P250 → P500 →
-  P1000 version ladder, worklog project context).
-* Acceptance: engine-side spec + ABI version handshake (`capability()`),
-  c-crussty becomes a consumer; P500 BenchFloor re-run against the engine
-  implementation within 1.1x of the plugin-local one.
-* Risks: engine is a separate repo with its own release cadence; keep the
-  plugin-local fallback until the engine ships the feature.
+* BENCH-MUTEX on the shared 2-CPU sandbox (`/home/z/BENCH.lock`); ±15%
+  parity band; min-of-medians; SINK against DCE; fresh args (kernels mutate
+  inputs); one JVM per group with the SIGSEGV retry ladder.
+* Table regeneration CI invariants: `gen_crussty_table.py render --check` +
+  `verify` (`native/MANIFEST.md`).
 
 ---
 
-## 4. Evidence index (claim → file)
+## 7. Evidence index (claim → file / commit)
 
 | Claim | Where |
 |---|---|
-| 98 bridge classes / 283 natives / 0 unresolved | worklog session 001; `src/jni_table.rs` (283 rows); `awk`-verified counts over `native/JNI_EXPORTS.manifest` |
-| Live boot on Purpur 1.21.10 + CRUSSTY v2.2.6 | worklog sessions 001-cont, 002-cont (98/283/0, live proof, patch sizes, retransform rc) |
-| area_map patch + self-test | `src/area_map.rs` (`register`, `activate`, `bridge_selftest`, `force_load_kernel_class`) |
-| improved_noise gate + constraints | `src/improved_noise.rs` module docs; `noise/.../ImprovedNoiseNativeOps.java` (`finalize` at :35) |
-| P500 methodology | `bench/p500/README.md`, `bench/p500/gen_p500_bench.py` header |
-| 49 groups / 129 kernels / 0 crashes | `bench/p500/results/P500_REPORT.md` header |
-| Wins + regressions tables | `P500_REPORT.md` "Top wins" / "Regressions" |
-| Scale-invariant regression verdicts + stem rule | `P500_SCALING.md` |
-| ~115 ns JNI floor | `bench/p500/README.md` ("~40 plugin/loading groups…"); numbers cross-checked in `P500_REPORT.md` groups 18,24,28–33,35,39–40,42,44 |
-| Table regeneration + CI invariants | `native/MANIFEST.md` ("How the bridge table is regenerated") |
+| 98 bridge classes / 283 natives / 0 unresolved (×3 live boots) | worklog sessions 001/002/004; `src/jni_table.rs` (283 rows); `native/JNI_EXPORTS.manifest` |
+| Lifecycle: phantom reaper + 16 stripes, releaseHandle+CAS | commits `e59201d`, `99dd17e` (adopted from `e2ec502`); `noise/.../ImprovedNoiseNativeOps.java`; [`bench/lifecycle/results/LIFECYCLE_REPORT.md`](../bench/lifecycle/results/LIFECYCLE_REPORT.md) |
+| Kernel-policy gate `CRUSSTY_KERNEL_PREF=old` | commit `8ec63b9`; `src/kernel_policy.rs` |
+| Runtime ClassFileLoadHook fix | CRUSSTY repo commit `66ff504` (name from class bytes; catch_unwind; bounded fallback) |
+| Area-map headless smoke (S1–S5 ALL PASS) | commit `532597b`; [`bench/areamap/README.md`](../bench/areamap/README.md) |
+| P500 methodology | [`bench/p500/README.md`](../bench/p500/README.md), `bench/p500/gen_p500_bench.py` header |
+| Canonical numbers (49 groups / 129 kernels / 0 crashes; wins, regressions, floor) | [`bench/p500/results/P500_REPORT_v2.md`](../bench/p500/results/P500_REPORT_v2.md) (commit `3baa0f7`) |
+| Scale-invariant regressions + stem rule | [`bench/p500/results/P500_SCALING.md`](../bench/p500/results/P500_SCALING.md) |
+| O(N) waypoint to 262 144 | `bfdbf87`; [`bench/p500/results/P500_SCALING_WAYPOINT.md`](../bench/p500/results/P500_SCALING_WAYPOINT.md) |
+| Batch dispatch design + floor groups | [`docs/BATCH_API_PROPOSAL.md`](BATCH_API_PROPOSAL.md) (floor numbers there are pre-errata — §2.1) |
+| Blend-cache prototype (observation-only) | [`docs/HOOK_BLEND_CACHE.md`](HOOK_BLEND_CACHE.md); `src/proto_blend_cache.rs` |
+| Wave-2 statuses (single source of truth) | `crussty-dev-logs/CLAIMS.md` |
+| Independent review + errata | `crussty-dev-logs/c-crussty/review-session003-agents2-commits.md` |
+| Hotspot candidates (wave 3) | `docs/HOTSPOT_CANDIDATES.md` — produced by TASK-18 (parallel; not yet merged at write time) |
