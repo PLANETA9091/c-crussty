@@ -33,13 +33,13 @@ fn byte_registry() -> &'static Mutex<Vec<(String, ByteCb)>> {
 pub fn register(pattern: &str, cb: impl Fn(&str) + Send + Sync + 'static) {
     registry()
         .lock()
-        .unwrap()
+        .unwrap_or_else(|e| e.into_inner())
         .push((pattern.to_string(), Box::new(cb)));
 }
 
 /// Dispatch a class name to all matching hooks.
 pub fn dispatch(name: &str) {
-    let hooks = registry().lock().unwrap();
+    let hooks = registry().lock().unwrap_or_else(|e| e.into_inner());
     for (pat, cb) in hooks.iter() {
         if sdk_glob::matches(pat, name) {
             cb(name);
@@ -57,14 +57,14 @@ pub fn register_bytes(
 ) {
     byte_registry()
         .lock()
-        .unwrap()
+        .unwrap_or_else(|e| e.into_inner())
         .push((pattern.to_string(), Box::new(cb)));
 }
 
 /// Apply all byte hooks matching `name` to `data`; returns the final patched
 /// bytes, or None if no hook modified them.
 pub fn dispatch_bytes(name: &str, data: &[u8]) -> Option<Vec<u8>> {
-    let hooks = byte_registry().lock().unwrap();
+    let hooks = byte_registry().lock().unwrap_or_else(|e| e.into_inner());
     let mut current: Option<Vec<u8>> = None;
     for (pat, cb) in hooks.iter() {
         if sdk_glob::matches(pat, name) {
@@ -104,7 +104,7 @@ pub fn on_kernel_ready(class_name: &str, cb: impl FnOnce() + Send + 'static) {
         if !found {
             eprintln!("[cplug-sdk] kernel-ready wait timed out for {class_name}");
         }
-        let f = slot.lock().unwrap().take();
+        let f = slot.lock().unwrap_or_else(|e| e.into_inner()).take();
         if let Some(f) = f {
             f();
         }
