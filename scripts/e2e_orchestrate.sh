@@ -84,6 +84,24 @@ grep_markers() { # grep_markers <ERE>  -> first matching SESSION line across mar
     fi
 }
 
+# ALL SESSION-scoped matching lines (grep_markers returns only the first): the
+# attempt-frequency row must aggregate EVERY per-attempt capture line in the
+# boot's scope to derive the max attempt k, not merely the first one. Same
+# offset logic as grep_markers; dedupe is left to the caller (console.log and
+# server.log are teed copies of the same stream, so identical lines appear in
+# both and must not double-count).
+grep_markers_all() { # grep_markers_all <ERE> -> all matching SESSION lines across marker files
+    local pat="$1" f off
+    if [ -f "$OFFS_FILE" ]; then
+        while IFS=: read -r f off; do
+            [ -n "$f" ] && [ -f "$f" ] || continue
+            tail -n +"$((off+1))" -- "$f" 2>/dev/null | grep -h -E "$pat" 2>/dev/null
+        done < "$OFFS_FILE"
+    else
+        marker_files | xargs -r grep -h -E "$1" 2>/dev/null
+    fi
+}
+
 # Module .so marker capability: the plugin can only emit a log marker if the
 # marker's string constant is embedded in the deployed module binary. A build
 # predating a marker's code can NEVER produce the line, so its absence from the
@@ -187,6 +205,76 @@ do_verify() {
         if [ -n "$v" ]; then printf '%-34s %-6s %s\n' "$1" "PASS" "$v"
         else printf '%-34s %-6s %s\n' "$1" "FAIL" "(not found)"; fails=$((fails+1)); fi
     }
+    # Attempt-frequency monitor (Task 2-b, S7-10): implements the accepted-risk
+    # watch item from E2E_LIVE_2026-09-08.md ADDENDUM S7-9. The S7-8 hardening
+    # (module 625c564) retries the no-op-retransform capture up to 3 attempts
+    # ("capture retransform rc=<rc> (attempt k)", 250ms apart) and then falls
+    # back to the kernel-loader resource stream. SESSION 009 boot#3 showed the
+    # residual delivery race is real: attempt 1 dropped, attempt 2 delivered.
+    # This row makes k visible per boot so multiple boots accumulate a frequency
+    # baseline — a rising k>1 rate means the race is worsening and earns the
+    # JVMTI-level look the addendum reserved. FAIL only for real breakage.
+    ck_noise_attempts() { # ck_noise_attempts <name> — capture attempt>1 frequency row
+        local name="$1" dead attempts k nlines ev empty rs armed served
+        # Ultimate failure first (highest priority): bytes WERE captured but the
+        # kernel loader never registered — the hook stays dormant forever, the
+        # patch pipeline is dead regardless of how cleanly capture went.
+        dead="$(grep_markers 'improved_noise: no kernel loader captured')"
+        if [ -n "$dead" ]; then
+            printf '%-34s %-6s %s\n' "$name" "FAIL" "$dead (dead patch pipeline)"; fails=$((fails+1)); return
+        fi
+        # All capture-attempt lines in the session scope (deduped across the teed
+        # console.log/server.log copies). The full-line ERE is anchored on
+        # "capture retransform rc=" so the UNRELATED force-load kick lines
+        # ("forcing kernel load ... (attempt 1..4)") can never poison k.
+        attempts="$(grep_markers_all 'improved_noise: capture retransform rc=[0-9]+ \(attempt [0-9]+\)' | awk '!seen[$0]++')"
+        if [ -n "$attempts" ]; then
+            k="$(printf '%s\n' "$attempts" | sed -n 's/.*attempt \([0-9][0-9]*\)).*/\1/p' | sort -n | tail -1)"
+            nlines="$(printf '%s\n' "$attempts" | grep -c .)"
+            ev="$(printf '%s\n' "$attempts" | grep -E "attempt ${k}\)" | tail -1)"
+            empty="$(grep_markers 'improved_noise: retransform capture empty after 3 attempts')"
+            if [ "$k" -le 2 ] || [ -z "$empty" ]; then
+                # No "empty after 3" line => the last logged attempt DID deliver
+                # (the capture loop breaks on delivery), so "retry recovered" is
+                # literal for k<=3 here.
+                if [ "$k" -eq 1 ]; then
+                    printf '%-34s %-6s %s\n' "$name" "PASS" "capture attempt k=1 (clean first-attempt delivery; $nlines attempt line(s) | $ev)"
+                else
+                    printf '%-34s %-6s %s\n' "$name" "INFO" "capture attempt k=$k — delivery race hit, retry recovered (accepted-risk; monitor frequency; $nlines attempt line(s) | $ev)"
+                fi
+                return
+            fi
+            # k==3 AND "empty after 3 attempts" seen: retransform delivery never
+            # carried the bytes — recovery hinged on the resource-stream fallback.
+            rs="$(grep_markers 'improved_noise: resource-stream capture [0-9]+ bytes')"
+            if [ -n "$rs" ]; then
+                printf '%-34s %-6s %s\n' "$name" "INFO" "capture attempt k=3 — retransform delivery fully raced out, resource-stream fallback recovered (accepted-risk; monitor frequency | $rs)"
+            else
+                printf '%-34s %-6s %s\n' "$name" "INFO" "capture attempt k=3 — all retransform attempts raced out, resource-stream fallback absent/failed — hook stays dormant (fail-safe; see armed/dormant rows)"
+            fi
+            return
+        fi
+        rs="$(grep_markers 'improved_noise: resource-stream capture [0-9]+ bytes')"
+        if [ -n "$rs" ]; then
+            printf '%-34s %-6s %s\n' "$name" "INFO" "capture via resource-stream fallback (retransform delivery fully raced out) | $rs"
+            return
+        fi
+        # Pristine-load path: armed with no capture phase means the kernel class
+        # loaded AFTER hook registration, so the original bytes arrived through
+        # ClassFileLoadHook delivery at class-load time ("pristine sighting" at
+        # load, replayed later as "hook serve") — no retransform capture needed.
+        armed="$(grep_markers 'improved_noise: hook armed, retransform rc=[0-9]+')"
+        served="$(grep_markers 'improved_noise: (pristine sighting|hook serve)')"
+        if [ -n "$armed" ] && [ -n "$served" ]; then
+            printf '%-34s %-6s %s\n' "$name" "INFO" "pristine-load path (bytes via ClassFileLoadHook at class-load time, no capture phase needed) | $served"
+            return
+        fi
+        if ! so_has_marker 'improved_noise: capture retransform rc='; then
+            printf '%-34s %-6s %s\n' "$name" "INFO" "(expected-absent — module .so predates capture markers)"
+            return
+        fi
+        printf '%-34s %-6s %s\n' "$name" "INFO" "(no capture-phase evidence this session — dormant boot or armed line not yet emitted)"
+    }
     ck_opt() { # status-only marker (legitimately absent in some configs)
         local v; v="$(grep_markers "$2")"
         printf '%-34s %-6s %s\n' "$1" "$([ -n "$v" ] && echo INFO || echo ABSENT)" "$v"
@@ -259,6 +347,11 @@ do_verify() {
     ck_cap "improved_noise armed" 'improved_noise: hook armed, retransform rc=[0-9]+' 'improved_noise: hook armed, retransform rc=' "$NOISE_LIFESIGNS" rc
     ck_cap "improved_noise dormant" 'improved_noise: dormant \(set CRUSSTY_NATIVE_IMPROVED_NOISE=1' 'improved_noise: dormant (set CRUSSTY_NATIVE_IMPROVED_NOISE=1' "$NOISE_LIFESIGNS"
     ck_cap "improved_noise scans-avoided" 'improved_noise: sighting feed: [0-9]+ full class-heap scans avoided' 'improved_noise: sighting feed: ' "$NOISE_LIFESIGNS"
+    # Attempt>1 frequency monitor (Task 2-b, S7-10): per-boot max capture attempt k,
+    # so boots accumulate the accepted-race frequency baseline (SESSION 009 boot#3:
+    # attempt 1 dropped, attempt 2 delivered — that boot must read INFO k=2, not
+    # invisible). See E2E_LIVE_2026-09-08.md ADDENDUM S7-9/S7-10.
+    ck_noise_attempts "improved_noise capture attempts"
     ck_opt "kernel_pref old-bind" 'kernel_pref: .* bound to old kernel'
     printf '%s\n' "--------------------------------------------------------------------------------"
     [ "$fails" -eq 0 ] && { log "verify: ALL PASS"; return 0; }
