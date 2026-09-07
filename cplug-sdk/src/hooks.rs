@@ -313,3 +313,20 @@ mod tests {
         assert_eq!(out.as_deref(), Some(b"patched-3".as_slice()));
     }
 }
+
+/// TASK-22/C1 sighting-feed tests (the registry/chain order tests live in
+/// `mod tests` above; these cover the classes::find_class feed only).
+#[cfg(test)]
+mod sighting_tests {
+    use super::*;
+
+    #[test]
+    fn dispatch_records_sighting() {
+        let name = "test/only/SightingFeedProbe";
+        assert!(!crate::classes::is_sighted(name));
+        dispatch(name);
+        assert!(crate::classes::is_sighted(name));
+        // Dotted form normalizes to the internal (slashed) form.
+        assert!(crate::classes::is_sighted("test.only.SightingFeedProbe"));
+    }
+}

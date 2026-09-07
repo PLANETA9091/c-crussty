@@ -154,6 +154,10 @@ unsafe extern "C" fn sdk_dispatch_hook_inner(
 ) -> i32 {
     let nm = jni_util::cstr(name);
     if let Some(nm) = &nm {
+        // TASK-23/C2: dispatch/dispatch_bytes are lock-free READS (Arc
+        // snapshot clones) + the classes.rs sighting write; neither holds
+        // any SDK lock while running user callbacks or while acquiring
+        // another SDK lock (lock-order contract documented in hooks.rs).
         hooks::dispatch(nm);
         if !class_data.is_null() && !out_data.is_null() && !out_len.is_null() {
             let data = unsafe { std::slice::from_raw_parts(class_data, class_data_len) };
