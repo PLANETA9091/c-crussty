@@ -118,3 +118,17 @@ Work Log:
 
 Stage Summary:
 - TASK-45 закрыт. Инструмент sdk-stats + POST_HOLD остаётся для будущих A/B. Открытых клеймов нет.
+
+## SESSION cron 05:00+08 — TASK-48 Phase 1: wave-1 shape A' (III[J)I) implemented + measured — 2026-09-08T21:4xZ — agent-7625532f
+
+Work Log:
+- Взят открытый blocker runbook §8 G3 (wave-1 shapes, S7-5declared "not attempted"). Клейм TASK-48 в CLAIMS (863d7a6), re-pull verify ок.
+- Код (b4a5c9b): Shape::APrime (III[J)I) + scalar_width() в batch_table; kernels id 12/13 = PaperNativeDensityAp2MinMaxFill old/newSummary (jni_table.rs:173-174, P500 g9); TABLE_VERSION 1->2 (args0 = shape-packed scalar plane: A/Z=1, A'=3, B=0 longs/op, prefix-of-widths layout — v1 all-A batches wire-идентичны); batch_api: ShapeAPrimeFn/KernelFn::APrime, layout в том же prefix-проходе что in_starts (0 доп. проходов), args0 length validated post-layout; kernel_policy: PROVEN_WINS id12/13 вердикт "P500 PARITY (batch surface)" — честно: пара old-vs-new = 1.003x паритет (2026-09-08 rerun), "19.2x" wave-2 матрицы был BATCH-проекцией.
+- Тесты: crussty 29/29 (+2: ABI pins 131086, scalar-layout worked example), cplug-sdk 20/20, clippy Δ0.
+- Бенч (de81bcf runner, detached worktree @b4a5c9b, BENCH.lock 21:1x-21:22:58Z): kernels 2,3,12,13 same-process, K={1,8,16,64,256}, 11-round medians. Parity gates PASS (4 lanes, все 4 kernel). A' id12: K=1 361.3ns/op (3.07x worse than direct 117.7), K=256 156.5ns/op (1.35x worse). Декомпозиция: fixed ~205ns/batch (= TASK-24 ~200ns), dispatch-only overhead +40.5ns/op @K=256 == shape A +43.1ns/op → 3-long packed plane стоит ~0 доп.
+- ВЕРДИКТ: batch g9 НИКОГДА не бьёт direct (нужен direct >= ~160ns, g9 = 116ns); wave-2 матрица §6.6 (6.2ns/op, 19.2x) ОПРОВЕРГНУТА измерением. Обобщение по структуре: overhead shape-независим (~+40ns/op) → весь wave-1 список (g42 34.6 / g35 81.4 / g39 87.7 / g40 88.6ns) никогда не окупится → Phase 2 (shape D/refArgs) = NO-GO-by-measurement, G3 закрыт измеренно. Batch остаётся рациональным только для body-dominated (>=700ns) kernel на больших K (паритет 1.06x). Registry/site-arming НЕ менялись (G4 открыто, скоуп теперь честный).
+- Cross-validation: k2 K=1 998.8 vs 997.2 TASK-24 (0.2%), k2 direct 756.4 vs 757.1 — машина/JIT согласованы.
+- Отчёт bench/batch/results/A2_SHAPE_REPORT.md (6 секций) + A2_SHAPE_RAW.tsv (40 строк) + лог. Worktree /tmp/w-t48 удалён trap-ом; main WIP и live server не тронуты.
+
+Stage Summary:
+- G3 (wave-1 shapes) ЗАКРЫТ: A' machinery в master (инфраструктура Stage-1 готова для ЛЮБЫХ будущих shape-расширений), но весь wave-1 candidate list измеренно NO-GO для batch adoption. Открытый скоуп: G4 (site-arming) — теперь только shape-A body-dominated kernel; G5 auto-threshold получил эмпирические константы (fixed ~205ns, marginal ~+40ns/op независимо от shape). Ближайшие кандидаты: G8 (refused-id e2e fixture), либо новые hotspot'ы dump->analyze->optimize.
