@@ -173,6 +173,7 @@ Everything the module claims is checked *live, on the running kernel*:
 ## Docs
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — deep dive: component map, classfile patcher, byte-hook contract, both hot-patches end-to-end, native surface inventory, failure modes
+- [`docs/KERNEL_POLICY.md`](docs/KERNEL_POLICY.md) — enforced kernel-selection policy: do-not-wire registry (4 confirmed P500 regressions), proven-win whitelist, `CRUSSTY_KERNEL_POLICY` override
 - [`bench/p500/README.md`](bench/p500/README.md) — P500 methodology & fairness protocol
 - [`native/MANIFEST.md`](native/MANIFEST.md) — provenance, license (`native/LICENSE`, MIT © ANDMC / P500 Project Contributors) and SHA-256 of the bundled binaries
 

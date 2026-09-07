@@ -424,6 +424,17 @@ pub fn activate() {
         *patch_lock().lock().unwrap() = Some(patched);
 
         // Phase 3: a SINGLE retransform; the callback serves the cached patch.
+        // Kernel selection policy (src/kernel_policy.rs): from this moment
+        // the hot path routes ImprovedNoise.noise() through the
+        // PaperNativeImprovedNoise natives — assert (debug builds) and log
+        // (audit mode) that the policy still allows them. The natives are
+        // whitelisted as "live" in PROVEN_WINS, so this never fires unless a
+        // future edit accidentally demotes them.
+        debug_assert!(
+            crate::kernel_policy::decide(NATIVE_BRIDGE, "nativeNoise").is_allowed(),
+            "kernel policy refused the live improved_noise routing (nativeNoise no longer proven?)"
+        );
+        crate::kernel_policy::audit_wire(NATIVE_BRIDGE, "nativeNoise", "improved_noise hot-patch v2");
         READY.store(true, Ordering::Release);
         let rc = cplug_sdk::retransform_class(NOISE_CLASS);
         eprintln!("[crussty-plugin] improved_noise: hook armed, retransform rc={rc}");
