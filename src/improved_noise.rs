@@ -196,6 +196,13 @@ fn jvm_max_class_major(env: &JniEnv) -> Option<u16> {
 /// Background activation: wait for the kernel class, define the bridge into
 /// its loader, flip READY and retransform so the hook applies the patch.
 pub fn activate() {
+    if !enabled() {
+        // register() already logged the dormant notice; without it the byte
+        // hook is NOT registered, so defining bridges / retransforming here
+        // could only define classes nobody calls and confuse the log (this
+        // mismatch is what hid the stale-v69-bridge failure for so long).
+        return;
+    }
     std::thread::spawn(|| {
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(60);
         let mut forced_once = false;
@@ -336,12 +343,25 @@ pub fn activate() {
         }
 
         // The ORIGINAL bytes were captured by the byte hook during the
-        // class's own load (READY=false branch of register()). Compute the
-        // patch on this quiet thread — never inside the classfile hook
-        // callback — then a SINGLE retransform serves it back.
+        // class's own load (READY=false branch of register()). BUT the
+        // kernel loads ImprovedNoise during early worldgen (spawn prep),
+        // often BEFORE this plugin's hook even registers — in that case the
+        // hook never saw the load. A retransform makes the JVM deliver the
+        // class's CURRENT bytes through the hook; with READY still false the
+        // hook only stores them (returns None → no bytecode change). That
+        // gives us the baseline to patch, no JVMTI locks held here.
+        if orig_lock().lock().unwrap().is_none() {
+            eprintln!(
+                "[crussty-plugin] improved_noise: class predates hook, capturing current bytes via no-op retransform"
+            );
+            let rc = cplug_sdk::retransform_class(NOISE_CLASS);
+            eprintln!("[crussty-plugin] improved_noise: capture retransform rc={rc}");
+        }
         let original = orig_lock().lock().unwrap().clone();
         let Some(original) = original else {
-            eprintln!("[crussty-plugin] improved_noise: no original bytes captured (class loaded before hook?), hook stays dormant");
+            eprintln!(
+                "[crussty-plugin] improved_noise: no original bytes captured even after retransform (hook not firing?), hook stays dormant"
+            );
             return;
         };
 
