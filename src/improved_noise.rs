@@ -231,7 +231,18 @@ pub fn activate() {
                 }
                 force_load_kernel_class();
             }
-            std::thread::sleep(std::time::Duration::from_millis(2_000));
+            // TASK-22/C1 negative backoff: while the class name has never
+            // been sighted through the ClassFileLoadHook feed, find_class
+            // answers from the feed without any JVMTI scan, so a relaxed 10s
+            // cadence costs nothing; once sighted, keep the 2s cadence for
+            // activation latency. The 180s deadline handling above is
+            // unchanged.
+            let sighted = cplug_sdk::classes::is_sighted(NOISE_CLASS);
+            std::thread::sleep(std::time::Duration::from_millis(if sighted {
+                2_000
+            } else {
+                10_000
+            }));
         }
 
         // Defer the define/retransform until the server is fully booted.
@@ -438,6 +449,13 @@ pub fn activate() {
         READY.store(true, Ordering::Release);
         let rc = cplug_sdk::retransform_class(NOISE_CLASS);
         eprintln!("[crussty-plugin] improved_noise: hook armed, retransform rc={rc}");
+        // TASK-22/C1 acceptance: exactly one line per hook with the final
+        // scans-avoided count (the poller has exited the loop by now, so
+        // this is the final number for this hook's polling window).
+        eprintln!(
+            "[crussty-plugin] improved_noise: sighting feed: {} full class-heap scans avoided",
+            cplug_sdk::classes::scans_avoided(NOISE_CLASS)
+        );
 
         bridge_selftest();
     });
