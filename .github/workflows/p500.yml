@@ -200,7 +200,13 @@ jobs:
       # to p500_raw.tsv so the gate can warn-and-skip per group.
       - name: Run P500 smoke subset (JNI-floor parity groups from baseline.json)
         continue-on-error: true
-        run: bash bench/p500/run_p500.sh ${{ steps.resolve.outputs.gids }}
+        run: |
+          # Gate must measure THIS run only: results/p500_raw.tsv is committed
+          # (last full sandbox run), so remove it first — if the bench dies
+          # before run_p500.sh truncates it, the gate must see 'missing TSV'
+          # (hard fail), never the stale committed numbers.
+          rm -f bench/p500/results/p500_raw.tsv
+          bash bench/p500/run_p500.sh ${{ steps.resolve.outputs.gids }}
 
       # Hard gate: exit 1 only on a >1.2x regression vs baseline.json (or
       # missing bench output / unreadable baseline). Skips are warnings.
