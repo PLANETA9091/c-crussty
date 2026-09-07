@@ -140,3 +140,81 @@ jobs:
             bench/lifecycle/*.md
           retention-days: 14
           if-no-files-found: warn
+
+  # ---------------------------------------------------------------------
+  # TASK-14 ratio-gate: run a smoke subset of P500 groups (5 JNI-floor
+  # parity groups from P500_REPORT_v2.md — the fastest, most
+  # hardware-stable part of the suite) and FAIL when any kernel regresses
+  # >20% vs bench/p500/baseline.json (medians taken VERBATIM from
+  # P500_REPORT_v2.md @3baa0f7).
+  #
+  # Paired-ratio methodology (P500_REPORT_v2.md): absolute ns/op is noisy
+  # on shared runners — RATIOS are the signal. Each measured kernel median
+  # is compared to its OWN baseline median; the 1.2x threshold mirrors the
+  # v2 aggregator's 20% baseline-drift band (BASELINE_DRIFT = 0.20).
+  #
+  # Resilience contract: group failures / CRASHes / unknown groups are
+  # skip-with-warning (the >3-CRASH gate in p500-bench owns crash counts);
+  # only a >1.2x ratio, missing bench output, or a broken baseline.json is
+  # a hard failure. The threshold lives in bench/p500/scripts/ratio_gate.py
+  # and is deliberately not data-configurable (cannot be quietly weakened).
+  ratio-gate:
+    name: P500 ratio-gate (smoke subset vs v2 baseline, 1.2x)
+    runs-on: ubuntu-latest
+    # Smoke subset = 5 groups x (one JVM, ~120ms batches, median-of-5):
+    # seconds of bench per group — whole job stays well under 5 min.
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Verify committed natives
+        run: |
+          test -s native/libpaper_native_jni.so \
+            || { echo "::error::native/libpaper_native_jni.so missing or empty"; exit 1; }
+          test -s native/libpaper_native_chunk_encode_jni.so \
+            || { echo "::error::native/libpaper_native_chunk_encode_jni.so missing or empty"; exit 1; }
+
+      # Single source of truth: baseline.json decides both WHICH groups are
+      # gated and WHICH groups run. Resolving class+sig -> gid here (instead
+      # of hardcoding ids) catches class/sig drift between baseline.json and
+      # groups.tsv BEFORE benching (exit 2 = job fails fast).
+      - name: Resolve smoke group ids from baseline.json
+        id: resolve
+        run: |
+          GIDS=$(python3 bench/p500/scripts/ratio_gate.py --resolve-gids \
+            --baseline bench/p500/baseline.json \
+            --groups-tsv bench/p500/java/p500/groups.tsv)
+          echo "smoke groups (gid): $GIDS"
+          echo "gids=$GIDS" >> "$GITHUB_OUTPUT"
+
+      # continue-on-error: a dead JVM / runner hiccup must not hard-fail the
+      # job here — the gate step below decides. run_p500.sh isolates one JVM
+      # per group, applies its own retry ladder, and still writes CRASH rows
+      # to p500_raw.tsv so the gate can warn-and-skip per group.
+      - name: Run P500 smoke subset (JNI-floor parity groups from baseline.json)
+        continue-on-error: true
+        run: bash bench/p500/run_p500.sh ${{ steps.resolve.outputs.gids }}
+
+      # Hard gate: exit 1 only on a >1.2x regression vs baseline.json (or
+      # missing bench output / unreadable baseline). Skips are warnings.
+      - name: Gate — fail if any kernel > 1.2x P500_REPORT_v2 baseline
+        run: >-
+          python3 bench/p500/scripts/ratio_gate.py
+          --baseline bench/p500/baseline.json
+          --measured bench/p500/results/p500_raw.tsv
+
+      - name: Upload ratio-gate results
+        if: always() && hashFiles('bench/p500/results/p500_raw.tsv') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: p500-ratio-gate-results
+          path: bench/p500/results/p500_raw.tsv
+          retention-days: 14
+          if-no-files-found: ignore
