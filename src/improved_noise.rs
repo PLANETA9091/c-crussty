@@ -40,6 +40,7 @@
 
 use jvmti_bindings::prelude::*;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::Arc;
 
 pub const NOISE_CLASS: &str = "net/minecraft/world/level/levelgen/synth/ImprovedNoise";
 const BRIDGE_NAME: &str = "net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps";
@@ -80,13 +81,29 @@ static KERNEL_LOADER: AtomicUsize = AtomicUsize::new(0);
 /// for the final retransform's callback.
 static ORIG_BYTES: std::sync::OnceLock<std::sync::Mutex<Option<Vec<u8>>>> =
     std::sync::OnceLock::new();
-static PATCH_CACHE: std::sync::OnceLock<std::sync::Mutex<Option<Vec<u8>>>> =
+
+/// Patched bytecode cache (TASK-26/C5): the bytes live in an `Arc<[u8]>` so
+/// the serve path clones a REFCOUNT out of the mutex instead of the whole
+/// ~3-6KB class, and the class-file major is parsed once at patch-compute
+/// time — the serve path (class-load thread) does no header re-parsing.
+/// Clone is cheap: the Arc clone is a refcount bump (no class-byte memcpy).
+#[derive(Clone)]
+struct PatchCache {
+    bytes: Arc<[u8]>,
+    major: u16,
+}
+
+static PATCH_CACHE: std::sync::OnceLock<std::sync::Mutex<Option<PatchCache>>> =
     std::sync::OnceLock::new();
+/// One-shot flag for the per-serve log line (TASK-26/C5): log the FIRST
+/// serve, stay silent afterwards (the serve can fire more than once when a
+/// re-run retransform is requested).
+static SERVE_LOGGED: AtomicBool = AtomicBool::new(false);
 
 fn orig_lock() -> &'static std::sync::Mutex<Option<Vec<u8>>> {
     ORIG_BYTES.get_or_init(|| std::sync::Mutex::new(None))
 }
-fn patch_lock() -> &'static std::sync::Mutex<Option<Vec<u8>>> {
+fn patch_lock() -> &'static std::sync::Mutex<Option<PatchCache>> {
     PATCH_CACHE.get_or_init(|| std::sync::Mutex::new(None))
 }
 
@@ -160,14 +177,21 @@ pub fn register() {
             }
             return None;
         }
-        // Serve the precomputed patch; zero Java work on this thread.
+        // Serve the precomputed patch; zero Java work on this thread beyond
+        // the contract-required copy into the returned Vec (the ByteCb ABI
+        // is Option<Vec<u8>>). TASK-26/C5: taking the cache out is a
+        // refcount bump (no memcpy under the lock), the class version was
+        // parsed once at patch-compute time, and this log line fires only
+        // on the FIRST serve.
         let cached = patch_lock().lock().unwrap().clone();
-        eprintln!(
-            "[crussty-plugin] improved_noise: hook serve {} bytes (major {})",
-            cached.as_ref().map(|c| c.len()).unwrap_or(0),
-            cached.as_ref().and_then(|c| class_version(c)).map(|(m, _)| m).unwrap_or(0)
-        );
-        cached
+        if !SERVE_LOGGED.swap(true, Ordering::Relaxed) {
+            eprintln!(
+                "[crussty-plugin] improved_noise: hook serve {} bytes (major {})",
+                cached.as_ref().map(|c| c.bytes.len()).unwrap_or(0),
+                cached.as_ref().map(|c| c.major).unwrap_or(0)
+            );
+        }
+        cached.map(|c| c.bytes.to_vec())
     });
 }
 
@@ -425,14 +449,21 @@ pub fn activate() {
             eprintln!("[crussty-plugin] improved_noise: patch computation failed, hook stays dormant");
             return;
         };
+        // TASK-26/C5: parse the patched class's version ONCE here (quiet
+        // activation worker) and cache it alongside the bytes — the serve
+        // path never re-parses the header on the class-load thread.
+        let patch_major = class_version(&patched).map(|(m, _)| m).unwrap_or(0);
         eprintln!(
             "[crussty-plugin] improved_noise: computed patch for noise() ({} -> {} bytes), orig major {} patch major {}",
             original.len(),
             patched.len(),
             class_version(&original).map(|(m, _)| m).unwrap_or(0),
-            class_version(&patched).map(|(m, _)| m).unwrap_or(0)
+            patch_major
         );
-        *patch_lock().lock().unwrap() = Some(patched);
+        *patch_lock().lock().unwrap() = Some(PatchCache {
+            bytes: Arc::from(patched),
+            major: patch_major,
+        });
 
         // Phase 3: a SINGLE retransform; the callback serves the cached patch.
         // Kernel selection policy (src/kernel_policy.rs): from this moment
