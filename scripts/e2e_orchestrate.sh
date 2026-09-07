@@ -100,6 +100,21 @@ so_has_marker() { # so_has_marker <fixed substring> -> rc 0 when embedded in the
     fi
 }
 
+# Hook life-sign EREs for ck_cap(): every log line the hook's activation/serve
+# pipeline can emit (eprintln! sites in src/improved_noise.rs / src/area_map.rs).
+# ck_cap uses them to tell "hook alive, the row's own line is config-gated or
+# not yet emitted" (INFO) apart from "marker-capable .so but ZERO life-signs"
+# (FAIL = dead byte-hook pipeline).
+#   improved_noise: armed/dormant are env-gated (CRUSSTY_NATIVE_IMPROVED_NOISE).
+#   area_map: arms on EVERY boot, but asynchronously — poller with negative
+#   backoff + forced Class.forName, so its lines can land well after Done;
+#   any life-sign means late arming, not a dead pipeline.
+NOISE_LIFESIGNS='improved_noise: (hook armed|hook serve|pristine sighting|forcing kernel load|Class\.forName|self-test|dormant)'
+# NOTE the trailing '|area_map: .*dormant' — the 180s-timeout line carries
+# "dormant" mid-line ("... not loaded within 180s, hook stays dormant"), so the
+# token can not sit in the prefix-anchored group; SELF-TEST FAIL is all-caps.
+AMAP_LIFESIGNS='area_map: (hook armed|sighting feed|patched|patch failed|forcing kernel load|force load|Class\.forName|[Ss]elf-test|SELF-TEST|defined|define_class|helper definition aborted)|area_map: .*dormant'
+
 server_pid() { # child JVM = the one carrying the -agentpath runtime
     pgrep -f 'agentpath:[^ ]*libcrussty_runtime\.so' | head -1
 }
@@ -170,23 +185,36 @@ do_verify() {
         if [ -z "$v" ]; then printf '%-34s %-6s %s\n' "$1" "PASS" "(absent — healthy)"
         else printf '%-34s %-6s %s\n' "$1" "FAIL" "$v"; fails=$((fails+1)); fi
     }
-    ck_cap() { # ck_cap <name> <ERE> <so-substring> — capability-aware improved_noise row:
-        #   line found in logs                       -> INFO
-        #   .so lacks the marker constant            -> INFO "expected-absent (pre-marker .so)"
-        #   .so capable + other improved_noise lines -> INFO (hook alive; the row's line is
+    ck_cap() { # ck_cap <name> <ERE> <so-substring> <lifesigns-ERE> [mode] — capability-aware hook row:
+        #   line found in logs                        -> INFO
+        #     mode "pass":                            -> PASS (core row: hook arms on every boot)
+        #     mode "rc":   rc=0                       -> PASS (armed retransform succeeded)
+        #                  rc!=0                      -> FAIL (retransform itself failed — honest
+        #                       capture; the old rc=0-pinned ERE shoved a real failure into
+        #                       the generic INFO branch where the actual rc was invisible)
+        #   .so lacks the marker constant             -> INFO "expected-absent (pre-marker .so)"
+        #   .so capable + <hook> life-sign lines      -> INFO (hook alive; the row's line is
         #        config-gated — armed/dormant are mutually exclusive — or not yet
         #        emitted: armed lands post-Done on the activation worker)
-        #   .so capable + ZERO improved_noise lines  -> FAIL (dead byte-hook pipeline,
+        #   .so capable + ZERO <hook> life-sign lines -> FAIL (dead byte-hook pipeline,
         #        the S7-5 crash-boot signature — a real regression)
         local v; v="$(grep_markers "$2")"
         if [ -n "$v" ]; then
-            printf '%-34s %-6s %s\n' "$1" "INFO" "$v"
+            if [ "${5:-}" = "rc" ]; then
+                local rc="${v##*retransform rc=}"; rc="${rc%%[!0-9]*}"
+                if [ "$rc" = "0" ]; then printf '%-34s %-6s %s\n' "$1" "PASS" "$v"
+                else printf '%-34s %-6s %s\n' "$1" "FAIL" "$v (retransform rc!=0 — patch NOT applied)"; fails=$((fails+1)); fi
+            elif [ "${5:-}" = "pass" ]; then
+                printf '%-34s %-6s %s\n' "$1" "PASS" "$v"
+            else
+                printf '%-34s %-6s %s\n' "$1" "INFO" "$v"
+            fi
         elif ! so_has_marker "$3"; then
             printf '%-34s %-6s %s\n' "$1" "INFO" "(expected-absent — module .so predates marker)"
-        elif grep_markers 'improved_noise: (hook armed|hook serve|pristine sighting|forcing kernel load|Class\.forName|self-test|dormant)' | grep -q .; then
-            printf '%-34s %-6s %s\n' "$1" "INFO" "(absent — noise hook alive, line config-gated/not yet emitted)"
+        elif grep_markers "$4" | grep -q .; then
+            printf '%-34s %-6s %s\n' "$1" "INFO" "(absent — hook alive, line config-gated/not yet emitted)"
         else
-            printf '%-34s %-6s %s\n' "$1" "FAIL" "(marker-capable .so, 0 improved_noise lines)"; fails=$((fails+1))
+            printf '%-34s %-6s %s\n' "$1" "FAIL" "(marker-capable .so, 0 hook life-sign lines)"; fails=$((fails+1))
         fi
     }
     ck "runtime loaded"          'crussty-runtime\] v[0-9.]+ loaded \(options:'
@@ -196,8 +224,13 @@ do_verify() {
     ck "SIGUSR1 trigger armed"   'SIGUSR1 reload trigger armed'
     ck "native surface live"     'native surface live: [0-9]+ bridge classes'
     ck "batch kernels resolved"  'batch: [0-9]+ kernels resolved'
-    ck "area_map armed"          'area_map: hook armed, retransform rc=0'
-    ck "area_map scans-avoided"  'area_map: sighting feed: [0-9]+ full class-heap scans avoided'
+    # NOTE area_map rows: capability-aware like improved_noise (same ck_cap), but
+    # area_map arms on EVERY boot (no env gate) — hence found -> PASS. Armed is
+    # rc-aware: rc!=0 means the armed retransform itself failed (FAIL), rc=0 is
+    # the healthy PASS. Late arming (poller backoff) shows as INFO when any
+    # area_map life-sign exists, FAIL only on a truly silent capable .so.
+    ck_cap "area_map armed"          'area_map: hook armed, retransform rc=[0-9]+' 'area_map: hook armed, retransform rc=' "$AMAP_LIFESIGNS" rc
+    ck_cap "area_map scans-avoided"  'area_map: sighting feed: [0-9]+ full class-heap scans avoided' 'area_map: sighting feed: ' "$AMAP_LIFESIGNS" pass
     ck "live proof nativeCheck"  'live proof: normalNoise.nativeCheck\(\) = 1'
     ck "boot complete (Done)"    'Done \([0-9.]+s\)!'
     ck_bad "batch policy REFUSED" 'batch: kernel .* REFUSED by kernel-policy'
@@ -207,10 +240,14 @@ do_verify() {
     # NOTE dormant ERE: the real line is "...dormant (set CRUSSTY_NATIVE_IMPROVED_NOISE=1
     # to enable)" — the old pattern ended with "1\)" and could NEVER match (actual
     # root cause of the S7-5 "dormant-строка ABSENT" false alarm; the string is in
-    # the .so since 1ab0af4). The <so-substring> args are the capability probes.
-    ck_cap "improved_noise armed" 'improved_noise: hook armed, retransform rc=0' 'improved_noise: hook armed, retransform rc='
-    ck_cap "improved_noise dormant" 'improved_noise: dormant \(set CRUSSTY_NATIVE_IMPROVED_NOISE=1' 'improved_noise: dormant (set CRUSSTY_NATIVE_IMPROVED_NOISE=1'
-    ck_cap "improved_noise scans-avoided" 'improved_noise: sighting feed: [0-9]+ full class-heap scans avoided' 'improved_noise: sighting feed: '
+    # the .so since 1ab0af4). The <so-substring> args are the capability probes,
+    # the <lifesigns-ERE> args scope the alive-check to the row's own hook.
+    # Armed rows run in rc-mode: the ERE captures ANY rc and the row verdict is
+    # driven by the captured value (rc=0 PASS / rc!=0 FAIL) instead of pinning
+    # rc=0 in the ERE and letting a real rc!=0 vanish into the INFO branch.
+    ck_cap "improved_noise armed" 'improved_noise: hook armed, retransform rc=[0-9]+' 'improved_noise: hook armed, retransform rc=' "$NOISE_LIFESIGNS" rc
+    ck_cap "improved_noise dormant" 'improved_noise: dormant \(set CRUSSTY_NATIVE_IMPROVED_NOISE=1' 'improved_noise: dormant (set CRUSSTY_NATIVE_IMPROVED_NOISE=1' "$NOISE_LIFESIGNS"
+    ck_cap "improved_noise scans-avoided" 'improved_noise: sighting feed: [0-9]+ full class-heap scans avoided' 'improved_noise: sighting feed: ' "$NOISE_LIFESIGNS"
     ck_opt "kernel_pref old-bind" 'kernel_pref: .* bound to old kernel'
     printf '%s\n' "--------------------------------------------------------------------------------"
     [ "$fails" -eq 0 ] && { log "verify: ALL PASS"; return 0; }
