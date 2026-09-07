@@ -25,7 +25,7 @@ roadmap sync).
   (§4.1/§4.3).
 * **IN FLIGHT / wave-5 tail** (§5): TASK-32 in progress (other session);
   TASK-24/TASK-37/TASK-39 artifacts landed on master with CLAIMS rows
-  pending; TASK-38 claimed, nothing recorded; TASK-40 = this sync.
+  pending; TASK-38 landed (negative verdict); TASK-40 = this sync.
   One-liners only — no invented results.
 * **Candidates** (§6): hotspot queue C1–C8 fully landed/closed; v2 sweep
   queued; remaining open directions listed there.
@@ -298,8 +298,15 @@ a status claim.
 * **TASK-37** (wave-5): aggregator guardrail in CI — `--check` fixture +
   `--strict` smoke wired into `p500.yml`, aggregator arg plumbing + paired
   test fixtures — landed `278dcf0`; CLAIMS row pending at read time.
-* **TASK-38** (wave-5): claimed; nothing on master at read time — nothing
-  recorded here by design.
+* **TASK-38** (wave-5): area-map same-tick coalescing feasibility — landed
+  `94c4891` after this doc's first pass; verdict **NEGATIVE** (a valid
+  negative: impl not performed per the investigate-first gate),
+  `docs/AREAMAP_COALESCING_FEASIBILITY.md`. javap call-graph of the real
+  remapped purpur jar shows ≤1 native apply per map-instance per tick
+  (same-tick repeats hit the 0-native same-state fast path), so there is
+  nothing to coalesce; the semantically-impossible 6→1 cross-instance
+  merge would save ~4 µs/player-tick (~0.008% of a tick). No bench
+  claims, `.so`/live server untouched.
 * **TASK-39** (wave-5): static hotspot sweep v2 over the post-C1..C8 new code
   — [`docs/HOTSPOT_CANDIDATES_V2.md`](HOTSPOT_CANDIDATES_V2.md) landed
   `0939257` (ANALYSIS ONLY; re-uses v1's NOT-hot list verbatim; confirms
