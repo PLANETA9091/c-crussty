@@ -40,7 +40,7 @@
 
 use jvmti_bindings::prelude::*;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
-use std::sync::Arc;
+use std::sync::{Arc, PoisonError};
 
 pub const NOISE_CLASS: &str = "net/minecraft/world/level/levelgen/synth/ImprovedNoise";
 const BRIDGE_NAME: &str = "net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps";
@@ -106,6 +106,12 @@ fn orig_lock() -> &'static std::sync::Mutex<Option<Vec<u8>>> {
 fn patch_lock() -> &'static std::sync::Mutex<Option<PatchCache>> {
     PATCH_CACHE.get_or_init(|| std::sync::Mutex::new(None))
 }
+// Poison-recovery (TASK-46): every lock of ORIG_BYTES / PATCH_CACHE uses
+// `unwrap_or_else(PoisonError::into_inner)`. The guards only wrap plain
+// Vec/Arc-snapshot reads/writes (no user code runs under the lock), so a
+// poisoned mutex still holds structurally valid data. A raw .unwrap() here
+// would panic on a hook-callback thread (ClassFileLoadHook runs on the JVM's
+// class-load/redefinition threads) and unwind across JNI = VM abort.
 
 /// Class-file version of `b` as (major, minor), or None if not a class file.
 fn class_version(b: &[u8]) -> Option<(u16, u16)> {
@@ -171,7 +177,8 @@ pub fn register() {
                 bytes.len(),
                 class_version(bytes).map(|(m, _)| m).unwrap_or(0)
             );
-            let mut orig = orig_lock().lock().unwrap();
+            // poison-recovery: pristine-capture site on a hook-callback thread
+            let mut orig = orig_lock().lock().unwrap_or_else(PoisonError::into_inner);
             if orig.is_none() {
                 *orig = Some(bytes.to_vec());
             }
@@ -183,7 +190,9 @@ pub fn register() {
         // refcount bump (no memcpy under the lock), the class version was
         // parsed once at patch-compute time, and this log line fires only
         // on the FIRST serve.
-        let cached = patch_lock().lock().unwrap().clone();
+        // poison-recovery: serve site on a hook-callback thread (Arc clone
+        // under the recovered lock — data stays intact after poison)
+        let cached = patch_lock().lock().unwrap_or_else(PoisonError::into_inner).clone();
         if !SERVE_LOGGED.swap(true, Ordering::Relaxed) {
             eprintln!(
                 "[crussty-plugin] improved_noise: hook serve {} bytes (major {})",
@@ -396,14 +405,14 @@ pub fn activate() {
         // class's CURRENT bytes through the hook; with READY still false the
         // hook only stores them (returns None → no bytecode change). That
         // gives us the baseline to patch, no JVMTI locks held here.
-        if orig_lock().lock().unwrap().is_none() {
+        if orig_lock().lock().unwrap_or_else(PoisonError::into_inner).is_none() {
             eprintln!(
                 "[crussty-plugin] improved_noise: class predates hook, capturing current bytes via no-op retransform"
             );
             let rc = cplug_sdk::retransform_class(NOISE_CLASS);
             eprintln!("[crussty-plugin] improved_noise: capture retransform rc={rc}");
         }
-        let original = orig_lock().lock().unwrap().clone();
+        let original = orig_lock().lock().unwrap_or_else(PoisonError::into_inner).clone();
         let Some(original) = original else {
             eprintln!(
                 "[crussty-plugin] improved_noise: no original bytes captured even after retransform (hook not firing?), hook stays dormant"
@@ -460,7 +469,9 @@ pub fn activate() {
             class_version(&original).map(|(m, _)| m).unwrap_or(0),
             patch_major
         );
-        *patch_lock().lock().unwrap() = Some(PatchCache {
+        // poison-recovery: worker-side write (TASK-46) — a panic on the
+        // activation worker must not poison the hook-callback serve path
+        *patch_lock().lock().unwrap_or_else(PoisonError::into_inner) = Some(PatchCache {
             bytes: Arc::from(patched),
             major: patch_major,
         });
@@ -683,4 +694,77 @@ fn d(v: f64) -> jni::jvalue {
 
 fn jlong_val(v: i64) -> jni::jvalue {
     jni::jvalue { j: v }
+}
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// TASK-46 poison-recovery: ORIG_BYTES / PATCH_CACHE are locked from the
+    /// ClassFileLoadHook callback (pristine capture + patch serve) — a panic
+    /// while either is locked must not turn the next callback invocation
+    /// into an unwind-across-JNI VM abort. After deliberate poison, the
+    /// exact production access patterns must recover with data intact.
+    #[test]
+    fn poisoned_orig_and_patch_locks_recovered() {
+        // Seed PATCH_CACHE so the serve path has data that must survive the
+        // poison (Arc payload is immutable; poison never corrupts it).
+        *patch_lock().lock().unwrap() = Some(PatchCache {
+            bytes: Arc::from(&b"patched-class-bytes"[..]),
+            major: 65,
+        });
+        // Poison both mutexes: panic while each guard is held in a thread.
+        for lock in [0usize, 1] {
+            let _ = std::thread::spawn(move || match lock {
+                0 => {
+                    let _g = orig_lock().lock().unwrap();
+                    panic!("deliberate: poison ORIG_BYTES");
+                }
+                _ => {
+                    let _g = patch_lock().lock().unwrap();
+                    panic!("deliberate: poison PATCH_CACHE");
+                }
+            })
+            .join();
+        }
+        // 1) Pristine-capture site (hook callback): recover + write through.
+        let mut orig = orig_lock().lock().unwrap_or_else(PoisonError::into_inner);
+        if orig.is_none() {
+            *orig = Some(b"orig-class-bytes".to_vec());
+        }
+        drop(orig);
+        // 2) Serve site (hook callback): recovered Arc clone keeps the data.
+        let cached = patch_lock()
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .clone();
+        let cached = cached.expect("patch data must survive poison");
+        assert_eq!(&*cached.bytes, b"patched-class-bytes");
+        assert_eq!(cached.major, 65);
+        // 3) Worker write site: plain assignment through the recovered lock.
+        *patch_lock().lock().unwrap_or_else(PoisonError::into_inner) = Some(PatchCache {
+            bytes: Arc::from(&b"new-patch"[..]),
+            major: 66,
+        });
+        assert_eq!(
+            patch_lock()
+                .lock()
+                .unwrap_or_else(PoisonError::into_inner)
+                .as_ref()
+                .map(|c| c.major),
+            Some(66)
+        );
+        // 4) is_none() probe + clone (worker capture path) on recovered ORIG.
+        assert!(!orig_lock()
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner)
+            .is_none());
+        assert_eq!(
+            orig_lock()
+                .lock()
+                .unwrap_or_else(PoisonError::into_inner)
+                .clone()
+                .as_deref(),
+            Some(&b"orig-class-bytes"[..])
+        );
+    }
 }
