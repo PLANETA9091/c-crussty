@@ -33,8 +33,14 @@
 //! never grants allowance; `kernel_policy::PROVEN_WINS` is the single source
 //! of truth (see docs/BATCH_WIRING_PLAN.md).
 //!
-//! - `args0[i]` — scalar argument of op `i` (long on the wire; kernels of
-//!   shape A receive it narrowed to `jint`, P500 kernels use small ints).
+//! - `args0` — shape-packed SCALAR plane (v2, TASK-48): op `i` owns
+//!   `scalar_width(shape(kernelIds[i]))` consecutive longs starting at the
+//!   prefix sum of the widths of ops `0..i` (A/Z = 1 long, A′ = 3 longs,
+//!   B = 0 — identical arithmetic on the Java side, derived from
+//!   `kernelIds`). Shape A narrows its scalar to `jint`; shape A′ consumes
+//!   three consecutive longs narrowed to `jint` in plane order (P500 kernels
+//!   use small ints). v1 (one long per op) is the special case of an
+//!   all-shape-A batch; ids 0-11 wire behavior is unchanged.
 //! - `args1` — packed INPUT arena for kernels that read a `long[]`
 //!   (shape B `([J[J)J`): op `i` consumes the `argCounts[i]` longs starting
 //!   at the prefix sum of `argCounts[0..i]`. Kernels never mutate the arena
@@ -42,12 +48,13 @@
 //!   scratch array first (some closed kernels mutate their inputs — P500
 //!   "FRESH ARGS" fairness rule).
 //! - `argCounts[i]` — dual meaning, per shape:
-//!   - shape A `(I[J)I`: OUTPUT capacity — op `i` may write at most
-//!     `argCounts[i]` longs (guarded; kernel returns the count written).
+//!   - shape A `(I[J)I` / shape A′ `(III[J)I`: OUTPUT capacity — op `i` may
+//!     write at most `argCounts[i]` longs (guarded; kernel returns the count
+//!     written).
 //!   - shape B `([J[J)J`: INPUT length (see `args1` above); the op writes
 //!     exactly one result long.
 //! - `outs` / `outOffsets` — shared OUTPUT arena: op `i` writes its results
-//!   at `outOffsets[i]` (shape A: `count` longs; shape B: 1 long).
+//!   at `outOffsets[i]` (shapes A/A′: `count` longs; shape B: 1 long).
 //!   `outOffsets[i] + written` must stay within `outs.length` (guarded).
 //!
 //! Return value: number of ops executed (`kernelIds.length`) on success, or
@@ -186,6 +193,17 @@ pub type ShapeBFn = unsafe extern "system" fn(
     dst: jni::jlongArray,
 ) -> jni::jlong;
 
+/// Shape A′ — `(III[J)I`: `jint Java_...(JNIEnv*, jclass, jint, jint, jint, jlongArray)`
+/// (TASK-48 wave-1: P500 g9 `DensityAp2MinMaxFill` pair).
+pub type ShapeAPrimeFn = unsafe extern "system" fn(
+    env: *mut jni::JNIEnv,
+    clazz: jni::jclass,
+    scalar0: jni::jint,
+    scalar1: jni::jint,
+    scalar2: jni::jint,
+    dst: jni::jlongArray,
+) -> jni::jint;
+
 /// Scratch capacity for kernel OUTPUT (longs). P500 stubs allocate
 /// `long[64]` as dst — the table only lists kernels with outputs within it.
 const OUT_SCRATCH_CAP: usize = 64;
@@ -197,6 +215,7 @@ const IN_SCRATCH_CAP: usize = 4096;
 enum KernelFn {
     A(ShapeAFn),
     B(ShapeBFn),
+    APrime(ShapeAPrimeFn),
 }
 
 /// Kernel symbols resolved ONCE (init or first-call self-init).
@@ -334,9 +353,10 @@ struct Scratch {
     buf: Vec<jni::jlong>,     // GetLongArrayRegion readback target
     // ---- control planes, refilled from the wire arrays every run() ----
     ids: Vec<jni::jint>,      // kernelIds
-    counts: Vec<jni::jint>,   // argCounts (A: out capacity, B: input length)
+    counts: Vec<jni::jint>,   // argCounts (A/A': out capacity, B: input length)
     offs: Vec<jni::jint>,     // outOffsets
-    scalars: Vec<jni::jlong>, // args0
+    scalars: Vec<jni::jlong>, // args0 scalar plane (shape-packed, v2)
+    scalar_starts: Vec<usize>, // per-op scalar-plane offsets (TASK-48 layout)
     in_starts: Vec<usize>,    // shape-B prefix sums over counts
     arena: Vec<jni::jlong>,   // packed shape-B input copy (args1 prefix)
     staging: Vec<jni::jlong>, // phase-1 results, scattered in phase 2
@@ -468,6 +488,9 @@ fn resolve_fns(lib: &loader::NativeLib) -> Result<[KernelFn; KERNEL_COUNT], Stri
         let f = match k.shape {
             Shape::A => KernelFn::A(unsafe { std::mem::transmute::<*mut c_void, ShapeAFn>(addr) }),
             Shape::B => KernelFn::B(unsafe { std::mem::transmute::<*mut c_void, ShapeBFn>(addr) }),
+            Shape::APrime => {
+                KernelFn::APrime(unsafe { std::mem::transmute::<*mut c_void, ShapeAPrimeFn>(addr) })
+            }
             Shape::Z => {
                 return Err(format!(
                     "batch: shape Z kernel {} not supported yet (reserved)",
@@ -555,6 +578,7 @@ fn create_scratch(env: &JniEnv) -> Option<Scratch> {
         counts: Vec::new(),
         offs: Vec::new(),
         scalars: Vec::new(),
+        scalar_starts: Vec::new(),
         in_starts: Vec::new(),
         arena: Vec::new(),
         staging: Vec::new(),
@@ -619,18 +643,22 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
         return 0;
     }
     let ni = n as jni::jsize;
-    if unsafe { (vt.GetArrayLength)(env, args0) } < n as i32
-        || unsafe { (vt.GetArrayLength)(env, arg_counts) } < n as i32
+    if unsafe { (vt.GetArrayLength)(env, arg_counts) } < n as i32
         || unsafe { (vt.GetArrayLength)(env, out_offsets) } < n as i32
     {
         return ERR_LENGTH_MISMATCH;
     }
     let outs_len = unsafe { (vt.GetArrayLength)(env, outs) };
+    let args0_len = unsafe { (vt.GetArrayLength)(env, args0) };
     let args1_len = unsafe { (vt.GetArrayLength)(env, args1) };
-    if outs_len < 0 || args1_len < 0 {
+    if outs_len < 0 || args0_len < 0 || args1_len < 0 {
         return ERR_LENGTH_MISMATCH;
     }
-    let (outs_len, args1_len) = (outs_len as usize, args1_len as usize);
+    let (outs_len, args0_len, args1_len) =
+        (outs_len as usize, args0_len as usize, args1_len as usize);
+    // NOTE: `args0` is NOT length-checked here — the v2 scalar plane is
+    // shape-packed (`scalar_width` per op), so its required length depends on
+    // the id mix and is validated right after the layout pass below.
 
     SCRATCH.with(|cell| {
         let mut slot = cell.borrow_mut();
@@ -653,7 +681,7 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
         // deliberate soundness choice over `set_len` on uninitialized memory
         // (the JNI region copies overwrite every element anyway; the residual
         // memset is ~36 B/op — nanoseconds).
-        let Scratch { ids, counts, offs, scalars, in_starts, arena, staging, ranges, .. } =
+        let Scratch { ids, counts, offs, scalars, scalar_starts, in_starts, arena, staging, ranges, .. } =
             scratch;
 
         // ---- copy the control planes into Rust (O(n), no critical sections) ----
@@ -663,13 +691,10 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
         counts.resize(n, 0);
         offs.clear();
         offs.resize(n, 0);
-        scalars.clear();
-        scalars.resize(n, 0);
         unsafe {
             (vt.GetIntArrayRegion)(env, kernel_ids, 0, ni, ids.as_mut_ptr());
             (vt.GetIntArrayRegion)(env, arg_counts, 0, ni, counts.as_mut_ptr());
             (vt.GetIntArrayRegion)(env, out_offsets, 0, ni, offs.as_mut_ptr());
-            (vt.GetLongArrayRegion)(env, args0, 0, ni, scalars.as_mut_ptr());
         }
 
         let allowed = POLICY_ALLOWED.get_or_init(policy_flags);
@@ -690,33 +715,47 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
             }
         }
 
-        // Shape-B input slices: packed prefix sums over argCounts, then one
-        // region copy of exactly the used prefix of args1. The same pass
-        // computes the EXACT staging upper bound: shape A may write at most
+        // Shape-B input slices + shape-packed scalar plane (v2, TASK-48):
+        // one prefix pass over the (already validated) ids computes BOTH
+        // layouts. `in_starts` are prefix sums of argCounts over B ops;
+        // `scalar_starts` are prefix sums of `scalar_width(shape)` over ALL
+        // ops (A/Z = 1 long, A′ = 3 longs, B = 0). The same pass computes the
+        // EXACT staging upper bound: shapes A/A′ may write at most
         // min(argCounts[i], OUT_SCRATCH_CAP) longs (both guarded before any
-        // staging push below), shape B exactly one. Pre-sizing from this
-        // bound replaces the old `n * 8` guess, so phase 1 cannot reallocate
+        // staging push below), shape B exactly one. Pre-sizing from these
+        // bounds replaces any `n * k` guess, so phase 1 cannot reallocate
         // mid-loop no matter what counts the kernels return.
         in_starts.clear();
         in_starts.resize(n, 0);
+        scalar_starts.clear();
+        scalar_starts.resize(n, 0);
         let mut total_in = 0usize;
+        let mut total_scalars = 0usize;
         let mut staging_cap = 0usize;
         for i in 0..n {
-            if BATCH_KERNELS[ids[i] as usize].shape == Shape::B {
+            let shape = BATCH_KERNELS[ids[i] as usize].shape;
+            if shape == Shape::B {
                 in_starts[i] = total_in;
                 total_in += counts[i] as usize;
                 staging_cap += 1;
             } else {
                 staging_cap += (counts[i] as usize).min(OUT_SCRATCH_CAP);
             }
+            scalar_starts[i] = total_scalars;
+            total_scalars += shape.scalar_width();
         }
-        if total_in > args1_len {
+        if total_in > args1_len || total_scalars > args0_len {
             return ERR_LENGTH_MISMATCH;
         }
         arena.clear();
         arena.resize(total_in, 0);
         if total_in > 0 {
             unsafe { (vt.GetLongArrayRegion)(env, args1, 0, total_in as jni::jsize, arena.as_mut_ptr()) };
+        }
+        scalars.clear();
+        scalars.resize(total_scalars, 0);
+        if total_scalars > 0 {
+            unsafe { (vt.GetLongArrayRegion)(env, args0, 0, total_scalars as jni::jsize, scalars.as_mut_ptr()) };
         }
 
         // ---- phase 1: run the ops into staging (no critical sections) ----
@@ -738,7 +777,51 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
                         break;
                     }
                     let written = unsafe {
-                        f(env, kernel_class_for(id, clazz), scalars[i] as jni::jint, scratch.out_arr)
+                        f(
+                            env,
+                            kernel_class_for(id, clazz),
+                            scalars[scalar_starts[i]] as jni::jint,
+                            scratch.out_arr,
+                        )
+                    };
+                    // Kernels return the count written; clamp negatives to 0
+                    // defensively (they are C ints from closed code).
+                    let written = if written < 0 { 0 } else { written as usize };
+                    if written > OUT_SCRATCH_CAP || written > cap {
+                        ret = ERR_OUTPUT_CAPACITY;
+                        break;
+                    }
+                    unsafe {
+                        (vt.GetLongArrayRegion)(
+                            env,
+                            scratch.out_arr,
+                            0,
+                            written as jni::jsize,
+                            scratch.buf.as_mut_ptr(),
+                        );
+                    }
+                    staging.extend_from_slice(&scratch.buf[..written]);
+                    written
+                }
+                KernelFn::APrime(f) => {
+                    // Output contract identical to shape A (argCounts[i] =
+                    // OUTPUT capacity, kernel returns count written); the only
+                    // difference is the 3-wide scalar slice consumed from the
+                    // packed plane.
+                    if off < 0 || (off as usize) + cap > outs_len {
+                        ret = ERR_OUTPUT_CAPACITY;
+                        break;
+                    }
+                    let s = scalar_starts[i];
+                    let written = unsafe {
+                        f(
+                            env,
+                            kernel_class_for(id, clazz),
+                            scalars[s] as jni::jint,
+                            scalars[s + 1] as jni::jint,
+                            scalars[s + 2] as jni::jint,
+                            scratch.out_arr,
+                        )
                     };
                     // Kernels return the count written; clamp negatives to 0
                     // defensively (they are C ints from closed code).
@@ -973,5 +1056,46 @@ mod tests {
         for garbage in ["1", "0", "bogus", "enabled", "true", "on\noff", "auto on"] {
             assert_eq!(parse_rollout(Some(garbage.trim())), RolloutMode::Off, "{garbage}");
         }
+    }
+
+    /// TASK-48 v2 ABI pins: the wave-1 A′ kernels are table ids 12/13 and the
+    /// version bump signals the shape-packed scalar plane. Pinned so an
+    /// accidental revert of either is caught by CI (the Java bench gates on
+    /// `abiVersion()` and would silently fall back to per-op calls otherwise).
+    #[test]
+    fn task48_abi_pins() {
+        assert_eq!(crate::batch_table::TABLE_VERSION, 2);
+        assert_eq!(KERNEL_COUNT, 14);
+        assert_eq!((2u32 << 16) | 14u32, 131_086, "abiVersion() contract");
+        let g9 = &BATCH_KERNELS[12];
+        let g9n = &BATCH_KERNELS[13];
+        assert_eq!(g9.shape, Shape::APrime);
+        assert_eq!(g9n.shape, Shape::APrime);
+        assert_eq!(g9.sig, "(III[J)I");
+        assert_eq!(g9n.sig, "(III[J)I");
+        assert_eq!(g9.class, "PaperNativeDensityAp2MinMaxFill");
+        assert_eq!(g9n.class, "PaperNativeDensityAp2MinMaxFill");
+    }
+
+    /// The v2 scalar-plane packing rule (header docs): op i owns
+    /// `scalar_width(shape)` longs at the prefix of widths of ops 0..i.
+    /// Worked example on the shipped table — mixed batch
+    /// [id2 (A), id13 (A′), id10 (B), id3 (A)]:
+    /// starts = [0, 1, 4, 4], plane length 5. If this invariant ever drifts
+    /// from the Java-side mirror, the bench parity gate fails first.
+    #[test]
+    fn scalar_plane_layout_worked_example() {
+        assert_eq!(Shape::A.scalar_width(), 1);
+        assert_eq!(Shape::APrime.scalar_width(), 3);
+        assert_eq!(Shape::B.scalar_width(), 0);
+        let ids = [2usize, 13, 10, 3];
+        let mut starts = [0usize; 4];
+        let mut total = 0usize;
+        for i in 0..ids.len() {
+            starts[i] = total;
+            total += BATCH_KERNELS[ids[i]].shape.scalar_width();
+        }
+        assert_eq!(starts, [0, 1, 4, 4]);
+        assert_eq!(total, 5);
     }
 }

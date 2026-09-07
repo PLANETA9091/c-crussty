@@ -343,6 +343,24 @@ pub static PROVEN_WINS: &[ProvenKernel] = &[
         verdict: "P500 PARITY (batch surface)",
         evidence: "src/batch_table.rs id11 (jni_table.rs:92), shape B ([J[J)J",
     },
+    // TASK-48 wave-1 shape A' (III[J)I): the P500 g9 density min/max-fill
+    // pair. Honest framing mirrors ids 2/3: the pair's old-vs-new ratio is
+    // PARITY (1.003x, canonical 2026-09-08 rerun — the wave-2 matrix's
+    // "19.2x" was a BATCH-dispatch projection, not a kernel win); batch
+    // membership here is about amortizing the ~120ns direct JNI transition,
+    // gated per-site later (runbook G4/G5).
+    ProvenKernel {
+        class: "PaperNativeDensityAp2MinMaxFill",
+        kernel: "oldSummary",
+        verdict: "P500 PARITY (batch surface)",
+        evidence: "src/batch_table.rs id12 (jni_table.rs:173), shape A' (III[J)I; direct 119.8 ns (P500_REPORT.md §9)",
+    },
+    ProvenKernel {
+        class: "PaperNativeDensityAp2MinMaxFill",
+        kernel: "newSummary",
+        verdict: "P500 PARITY (batch surface)",
+        evidence: "src/batch_table.rs id13 (jni_table.rs:174), shape A' (III[J)I; parity pair 1.003x on the 2026-09-08 rerun, TASK-31 sync",
+    },
 ];
 
 /// The policy verdict for one kernel.
