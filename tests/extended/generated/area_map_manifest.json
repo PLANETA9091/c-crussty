@@ -1,0 +1,43 @@
+{
+  "bridge_target": "ca/spottedleaf/moonrise/common/misc/PaperNativeAreaMap.nativeUpdateOpsBatch(IIIIII[B[J)I",
+  "domains": {
+    "coords": "[-10,10] via (next()%21)-10",
+    "distance": "[0,6] via next()%7"
+  },
+  "draw_order": [
+    "from_x",
+    "from_z",
+    "to_x",
+    "to_z",
+    "old_d",
+    "new_d"
+  ],
+  "first_64_note": "rects 0..63 of this stream are EXACTLY the rects the live bridge_selftest replays in-server (same seed, same draw order); see area_map_ops_first64.jsonl",
+  "histogram_bucket_32": {
+    "0": 1310,
+    "1": 1527,
+    "2": 1460,
+    "3": 1327,
+    "4": 1197,
+    "5": 1508,
+    "6": 946,
+    "7": 425,
+    "8": 54,
+    "9": 169,
+    "10": 77
+  },
+  "max_ops_single_rect": 338,
+  "op_encoding": {
+    "add": 0,
+    "key": "x low 32 bits, z high 32 bits (chunk_as_long)",
+    "remove": "nonzero (1)"
+  },
+  "prng": "xorshift64 (seed^=seed<<13; seed^=seed>>7; seed^=seed<<17, u64 wrap)",
+  "rects": 10000,
+  "seed_hex": "0x9E3779B97F4A7C15",
+  "selftest_cap": 338,
+  "tool": "tests/extended/area_map_stress.py",
+  "total_expected_adds": 577112,
+  "total_expected_removes": 593240,
+  "zero_op_rects": 2
+}
