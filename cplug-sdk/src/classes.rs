@@ -306,3 +306,32 @@ pub fn retransform(name: &str) -> bool {
     .flatten()
     .unwrap_or(false)
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn unsighted_gate_scans_first_then_every_eighth() {
+        let name = "test/gate/ScanDueProbe";
+        // First unsighted call scans (covers pre-hook loads, G6 window).
+        assert!(unsighted_scan_due(name));
+        // The next 7 are answered from the sighting feed (scans avoided).
+        for _ in 0..7 {
+            assert!(!unsighted_scan_due(name));
+        }
+        // The 8th unsighted call falls back to a bounded scan.
+        assert!(unsighted_scan_due(name));
+        // Exactly the 7 skipped calls were counted as avoided.
+        assert_eq!(scans_avoided(name), 7);
+    }
+
+    #[test]
+    fn sightings_normalize_dotted_names() {
+        let name = "test/gate/NormalizeProbe";
+        note_loaded(name);
+        assert!(is_sighted(name));
+        assert!(is_sighted("test.gate.NormalizeProbe"));
+        assert!(!is_sighted("test/gate/NeverSightedProbe"));
+    }
+}
