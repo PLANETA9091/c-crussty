@@ -25,6 +25,14 @@
 //! `run` executes `kernelIds.length` ops, op `i` being kernel
 //! `kernelIds[i]` (see `batch_table::KERNELS` for the id table):
 //!
+//! **Kernel-policy gate** (kernel_policy::decide, enforced infra): before any
+//! op runs, every id is checked against the policy verdict computed once per
+//! process. A refused id (do-not-wire regression, or not explicitly proven)
+//! aborts the whole batch with [`ERR_KERNEL_REFUSED`] — no op executes, `outs`
+//! untouched (structural-error model, proposal §7). Table membership alone
+//! never grants allowance; `kernel_policy::PROVEN_WINS` is the single source
+//! of truth (see docs/BATCH_WIRING_PLAN.md).
+//!
 //! - `args0[i]` — scalar argument of op `i` (long on the wire; kernels of
 //!   shape A receive it narrowed to `jint`, P500 kernels use small ints).
 //! - `args1` — packed INPUT arena for kernels that read a `long[]`
@@ -115,11 +123,15 @@ pub const BATCH_CLASS: &str = "crussty/batch/PaperNativeBatchDispatch";
 pub const RUN_METHOD: &str = "run";
 /// `run(int[] kernelIds, long[] args0, long[] args1, int[] argCounts, long[] outs, int[] outOffsets) -> int`
 pub const RUN_SIG: &str = "([I[J[J[I[J[I)I";
-/// Our own cdylib export (NOT in libpaper_native_jni.so).
+/// Our own cdylib export (NOT in libpaper_native_jni.so). Contract
+/// documentation: the `#[unsafe(no_mangle)]` fn below must keep this name.
+#[allow(dead_code)]
 pub const RUN_SYMBOL: &str = "Java_crussty_batch_PaperNativeBatchDispatch_run";
 /// ABI guard (A7 §4.5): returns `(TABLE_VERSION << 16) | KERNEL_COUNT`.
 pub const ABI_METHOD: &str = "abiVersion";
 pub const ABI_SIG: &str = "()I";
+/// Contract documentation: the `#[unsafe(no_mangle)]` fn below must keep this name.
+#[allow(dead_code)]
 pub const ABI_SYMBOL: &str = "Java_crussty_batch_PaperNativeBatchDispatch_abiVersion";
 
 /// Fn-pointer table not resolved (and self-init failed) — call `init` first.
@@ -142,6 +154,11 @@ pub const ERR_PENDING_EXCEPTION: i32 = -7;
 pub const ERR_NO_NATIVE_LIB: i32 = -8;
 /// Per-thread scratch arrays could not be created (OOM in the VM).
 pub const ERR_NO_SCRATCH: i32 = -9;
+/// At least one `kernelIds[i]` references a kernel REFUSED by the
+/// kernel-selection policy (`kernel_policy::decide`: do-not-wire regression
+/// or not explicitly proven). NO ops were executed (structural-error model,
+/// proposal §7: no partial execution) and `outs` was not touched.
+pub const ERR_KERNEL_REFUSED: i32 = -10;
 /// Base for kernel-threw codes: ret = `ERR_KERNEL_THREW_BASE - op_index`,
 /// decode `op = -ret - 1_000_000`. The exception is left pending for the JVM.
 pub const ERR_KERNEL_THREW_BASE: i32 = -1_000_000;
@@ -181,6 +198,24 @@ enum KernelFn {
 
 /// Kernel symbols resolved ONCE (init or first-call self-init).
 static FNS: OnceLock<[KernelFn; KERNEL_COUNT]> = OnceLock::new();
+/// Per-kernel kernel-policy verdict (computed ONCE from
+/// `kernel_policy::decide(class, method)`; true = batch dispatch may execute
+/// the kernel). Table membership does NOT imply allowance: the policy
+/// registry is the single source of truth, so a future batch-table edit that
+/// adds a do-not-wire kernel is refused at dispatch time (and caught by the
+/// `kernel_policy` drift-guard test at CI time).
+static POLICY_ALLOWED: OnceLock<[bool; KERNEL_COUNT]> = OnceLock::new();
+
+/// The policy verdict per table id. Pure, allocation-free (decide() scans
+/// static slices); called exactly once per process via `OnceLock`.
+fn policy_flags() -> [bool; KERNEL_COUNT] {
+    let mut flags = [false; KERNEL_COUNT];
+    for k in BATCH_KERNELS {
+        flags[k.id as usize] =
+            crate::kernel_policy::decide(k.class, k.method).is_allowed();
+    }
+    flags
+}
 /// Per-kernel bridge-class global refs (A7 §4.4: hand each kernel the same
 /// `jclass` it was registered against). Index 0 = unresolved → fall back to
 /// the batch bridge class / invoking class.
@@ -288,6 +323,21 @@ pub fn init(env: &JniEnv, main_lib: &loader::NativeLib) -> Result<(), String> {
         "[crussty-plugin] batch: {} kernels resolved, run() + abiVersion() registered on {BATCH_CLASS}",
         KERNEL_COUNT
     );
+
+    // Diagnose policy refusals ONCE at init (regardless of mode): a refused
+    // id makes every batch referencing it return ERR_KERNEL_REFUSED without
+    // executing anything — the operator should see WHY at boot, not chase a
+    // negative return code at runtime.
+    let flags = POLICY_ALLOWED.get_or_init(policy_flags);
+    for k in BATCH_KERNELS {
+        if !flags[k.id as usize] {
+            eprintln!(
+                "[crussty-plugin] batch: kernel {}.{} REFUSED by kernel-policy — \
+                 run() will return ERR_KERNEL_REFUSED ({ERR_KERNEL_REFUSED}) for batches referencing it",
+                k.class, k.method
+            );
+        }
+    }
     Ok(())
 }
 
@@ -316,7 +366,7 @@ fn resolve_fns(lib: &loader::NativeLib) -> Result<[KernelFn; KERNEL_COUNT], Stri
     if slots.iter().any(|s| s.is_none()) {
         return Err("batch: kernel id table has holes".into());
     }
-    std::array::from_fn(|i| slots[i].expect("checked above"))
+    Ok(std::array::from_fn(|i| slots[i].expect("checked above")))
 }
 
 /// Standalone fallback (bench without the runtime / init race): dlopen the
@@ -469,9 +519,16 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
         (vt.GetLongArrayRegion)(env, args0, 0, ni, scalars.as_mut_ptr());
     }
 
+    let allowed = POLICY_ALLOWED.get_or_init(policy_flags);
     for &id in &ids {
         if id < 0 || id as usize >= KERNEL_COUNT {
             return ERR_BAD_KERNEL_ID;
+        }
+        // Kernel-policy gate: a refused id aborts the WHOLE batch before any
+        // op runs (structural error, no partial execution — proposal §7).
+        // Cost: one bool index per op; zero syscalls, zero allocation.
+        if !allowed[id as usize] {
+            return ERR_KERNEL_REFUSED;
         }
     }
     for &c in &counts {
@@ -501,7 +558,11 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
     SCRATCH.with(|cell| {
         let mut slot = cell.borrow_mut();
         if slot.is_none() {
-            match create_scratch(env) {
+            // The export receives a raw env; create_scratch wants the
+            // wrapper type (same as with_attached in lib.rs — the env is
+            // live for the duration of this call).
+            let jenv = JniEnv::from_raw(env);
+            match create_scratch(&jenv) {
                 Some(s) => *slot = Some(s),
                 None => return ERR_NO_SCRATCH,
             }
@@ -618,4 +679,88 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
         }
         ret
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::batch_table::BATCH_KERNELS;
+
+    /// Every kernel in the compile-time batch table must be ALLOWED by the
+    /// kernel-selection policy — otherwise the shipped batch surface is dead
+    /// (every batch returns ERR_KERNEL_REFUSED). This is the runtime mirror
+    /// of the `kernel_policy` drift-guard test; both must stay in sync.
+    #[test]
+    fn policy_allows_every_batch_table_kernel() {
+        let flags = policy_flags();
+        for k in BATCH_KERNELS {
+            assert!(
+                flags[k.id as usize],
+                "batch kernel {}.{} is REFUSED by kernel-policy — the batch surface is dead; \
+                 either add an honest PROVEN_WINS entry (with evidence) or remove it from the table",
+                k.class, k.method
+            );
+        }
+    }
+
+    /// The flags must be EXACTLY `decide(...)` for each id (no drift between
+    /// policy_flags() and the policy itself, e.g. a copy-pasted list).
+    #[test]
+    fn policy_flags_match_decide_for_every_id() {
+        let flags = policy_flags();
+        for k in BATCH_KERNELS {
+            let want = crate::kernel_policy::decide(k.class, k.method).is_allowed();
+            assert_eq!(
+                flags[k.id as usize], want,
+                "flag drift for id {} ({}.{})",
+                k.id, k.class, k.method
+            );
+        }
+    }
+
+    /// A hypothetical do-not-wire kernel must NOT be granted allowance by
+    /// table membership: simulate by checking the policy directly for every
+    /// DO_NOT_WIRE entry against every batch-table class (name-collision
+    /// guard: `cachedSummary` on another class stays unproven, but a table
+    /// row carrying the exact regressed pair must stay false).
+    #[test]
+    fn refused_registry_kernels_would_not_pass_the_gate() {
+        for r in crate::kernel_policy::DO_NOT_WIRE {
+            assert!(
+                !crate::kernel_policy::decide(r.class, r.kernel).is_allowed(),
+                "do-not-wire kernel {}.{} must stay refused",
+                r.class, r.kernel
+            );
+            // And no batch-table row may carry this exact (class, kernel).
+            assert!(
+                !BATCH_KERNELS
+                    .iter()
+                    .any(|k| k.class == r.class && k.method == r.kernel),
+                "batch table carries do-not-wire kernel {}.{}",
+                r.class, r.kernel
+            );
+        }
+    }
+
+    /// Error-code contract: the refusal sentinel is distinct from every other
+    /// structural code (callers branch on it — never alias).
+    #[test]
+    fn refusal_code_is_distinct_and_negative() {
+        let codes = [
+            ERR_NOT_INITIALIZED,
+            ERR_NULL_ARRAY,
+            ERR_BAD_KERNEL_ID,
+            ERR_LENGTH_MISMATCH,
+            ERR_OUTPUT_CAPACITY,
+            ERR_INPUT_CAPACITY,
+            ERR_PENDING_EXCEPTION,
+            ERR_NO_NATIVE_LIB,
+            ERR_NO_SCRATCH,
+        ];
+        assert!(ERR_KERNEL_REFUSED < 0);
+        for c in codes {
+            assert_ne!(ERR_KERNEL_REFUSED, c, "error code aliasing");
+        }
+        assert_ne!(ERR_KERNEL_REFUSED, ERR_KERNEL_THREW_BASE);
+    }
 }

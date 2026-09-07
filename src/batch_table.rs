@@ -98,6 +98,8 @@ pub enum Shape {
     /// `([J[J)J` — `long[]` src in, `long[]` dst out, returns jlong result.
     B,
     /// `(I[J)Z` — reserved (no real symbols yet); boolean result stored as 0/1.
+    /// Kept so kernels of this shape can be added without an ABI break.
+    #[allow(dead_code)]
     Z,
 }
 
@@ -258,6 +260,7 @@ pub const KERNEL_COUNT: usize = KERNELS.len();
 
 /// Compile-time lookup: `kernel_by_id(i) == Some(&KERNELS[i])` iff `i` is in
 /// range. Const so callers can embed id validity in `const` assertions.
+#[allow(dead_code)] // public table API; dispatcher indexes KERNELS directly
 pub const fn kernel_by_id(id: usize) -> Option<&'static BatchKernel> {
     if id < KERNEL_COUNT {
         Some(&KERNELS[id])
