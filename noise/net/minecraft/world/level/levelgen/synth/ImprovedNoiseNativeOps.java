@@ -4,6 +4,7 @@ import java.lang.ref.PhantomReference;
 import java.lang.ref.ReferenceQueue;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -62,19 +63,29 @@ public final class ImprovedNoiseNativeOps {
     /** Reaper-freed counter — bench/self-test observability. */
     private static final AtomicLong FREED = new AtomicLong();
 
-    /**
-     * One native handle; ALSO the death notification for its owner. When
-     * the owning noise instance becomes phantom-reachable, the queue
-     * delivers this Handle to the reaper, which frees the native memory.
-     * (No finalize(): objects with finalizers take the Finalizer-thread
-     * slow path and pin native memory until it runs — the exact cost this
-     * bridge used to pay per churned instance.)
-     */
+    /** Owns one native handle; ALSO the death notification for its owner.
+     *  The freed flag makes the native free AT-MOST-ONCE across BOTH paths
+     *  that can free: the reaper (owner became phantom-reachable) and an
+     *  explicit releaseHandle() call (adopted from the sibling-agent's
+     *  Cleaner variant) — without it, release-then-death would double-free
+     *  the same native handle (UB in the closed .so). */
     private static final class Handle extends PhantomReference<ImprovedNoise> {
         final long nativeHandle;
+        final AtomicBoolean freed = new AtomicBoolean(false);
         Handle(ImprovedNoise owner, long nativeHandle) {
             super(owner, QUEUE);
             this.nativeHandle = nativeHandle;
+        }
+        /** CAS-guarded native free; true if THIS caller won the free. */
+        boolean release() {
+            if (freed.compareAndSet(false, true)) {
+                if (nativeHandle != 0L) {
+                    PaperNativeImprovedNoise.nativeFreeHandle(nativeHandle);
+                    FREED.incrementAndGet();
+                }
+                return true;
+            }
+            return false;
         }
     }
 
@@ -109,10 +120,7 @@ public final class ImprovedNoiseNativeOps {
         }
 
         static void free(Handle h) {
-            if (h.nativeHandle != 0L) {
-                PaperNativeImprovedNoise.nativeFreeHandle(h.nativeHandle);
-                FREED.incrementAndGet();
-            }
+            h.release(); // CAS-guarded: at-most-once even vs explicit release
         }
     }
 
@@ -169,6 +177,22 @@ public final class ImprovedNoiseNativeOps {
             }
             stripe.put(self, new Handle(self, raw));
             return raw;
+        }
+    }
+
+    /**
+     * Deterministic release of the handle registered for {@code self}
+     * (adopted from the sibling-agent's Cleaner variant): idempotent,
+     * race-free against the reaper (shared CAS freed-flag), no-op safe.
+     * After this call, sampling {@code self} transparently rebuilds a
+     * fresh handle on the next noise() call.
+     */
+    public static void releaseHandle(ImprovedNoise self) {
+        final Map<ImprovedNoise, Handle> stripe = stripe(self);
+        Handle h;
+        synchronized (stripe) { h = stripe.remove(self); }
+        if (h != null) {
+            h.release();
         }
     }
 
