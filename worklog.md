@@ -160,3 +160,16 @@ Work Log:
 
 Stage Summary:
 - PROVEN_WINS_SYNC §4.1 ЗАКРЫТ: все registry-записи теперь трассируются в канон-методологию (отчёт или rerun). Hotspot-хазард TicketSetSearch переведён из worklog-памяти в измеренный факт (530µs steady / 6.85ms cold — кандидатам на bench-переиспользование теперь есть на что ссылаться). Открытых клеймов нет; из named-open остались §4.2 (promotion-кандидаты FlatCacheContext — осознанно не добавляются), G8 refused-id e2e fixture, новые hotspot'ы dump→analyze→optimize.
+
+---
+## SESSION cron 06:20+08 — TASK-52 done: refused-id e2e, runbook G8/A.6 RESOLVED — 2026-09-09T00:0xZ — agent-7625532f
+
+Work Log:
+- Старт: worklog+CLAIMS чисты (открытых клеймов нет). Взят named-open runbook G8/A.6 (refused-id → -10 outs-untouched byte-compare e2e, PENDING) → клейм TASK-52 (d63f6d2, push+verify).
+- Дизайн: SHIPPED arm (origin/master worktree build) покрывает всё достижимое (-3 rows, ABI gate, sanity); TRUE -10 через RIG arm — detached worktree + hand-patch (KERNELS [15]→[16] + 1 entry = DO_NOT_WIRE LevelChunkHeightmap.newCombinedUpdateSummary shape-A id 15). Rig = точный производственный сценарий отказа (не синтетика); refused pre-flight → regressed kernel не исполняется; rig never lands, drift-guard в rig не запускается (осознанное нарушение инварианта ради достижимости отказа — задокументировано). Отвергнутая альтернатива: env-gated rig в shipped коде (нестабильный abiVersion).
+- Прогон 1 (22:26Z): shipped arm -8 (ERR_NO_NATIVE_LIB) на всех строках — fixture не задал CRUSSTY_BATCH_NATIVE_LIB (standalone dispatch путь dlopen); rig build fail — KERNELS fixed-size [BatchKernel; 15], аппенд без роста типа = compile error (случайный guard сработал). Оба дефекта исправлены в runner (env перед java; decl bump 15→16). Всё записано в отчёт §5.
+- Прогон 2 (22:27Z): 14/14 PASS. Shipped 6/6 (R3 SKIP = инвариант drift-guard как evidence). Rig 8/8: R3 single -10 outs untouched; R3b mixed [2,15,2] → -10, валидные ops НЕ выполнились (sentinel intact) — no-partial-execution доказан e2e.
+- Артефакты: bench/batch/refused_e2e/{java/RefusedIdE2E.java, run_refused_e2e.sh, results/REFUSED_ID_E2E.md + RAW.tsv + logs}; runbook A.6 row + G8 board → RESOLVED (python-edit, mangle-safe). Shipped code 0 changes. Push b4a40d4 attempt 1; CLAIMS done (371e013). Worktree-и удалены (t52-rig/t52-shipped); BENCH.lock освобождён; live не тронут; токен не экспонирован.
+
+Stage Summary:
+- G8/A.6 ЗАКРЫТ: refusal-поверхность диспетчера доказана end-to-end (реальный JNI + закрытый .so), unit-тесты остаются fast-регресс-слоем. G-борд runbook: все пункты RESOLVED/измерены, кроме G4 (site-arming, ждёт body-dominated ядро — закрыт по существу вердиктом batch-NO-GO). Открытых клеймов нет; кандидаты: новые hotspot'ы dump→analyze→optimize, §4.2 promotion (осознанно открыт), bootab-инфраструктура для будущих A/B.
