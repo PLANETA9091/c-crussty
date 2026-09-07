@@ -114,7 +114,10 @@ pub struct RegressedKernel {
 }
 
 /// Registry of known-regressed kernels (the enforced do-not-wire list).
-/// Ratios from the P500 2026-09-07 120ms-batch rerun; scale-invariance was
+/// Ratios from the canonical P500 full rerun (report generated
+/// 2026-09-07T16:46Z, a.k.a. 2026-09-08 in UTC+8 logs; 49 groups / 70 pairs
+/// / 0 CRASH) — re-verified entry-by-entry by the TASK-31 evidence-sync
+/// (docs/PROVEN_WINS_SYNC.md); scale-invariance was
 /// proven separately (`bench/p500/results/P500_SCALING.md`, N=16/256/4096).
 /// All four are part of the REGISTERED native surface (callable through
 /// their bridge classes) and must STAY unwired: no hot path may route to
@@ -161,6 +164,9 @@ pub static DO_NOT_WIRE: &[RegressedKernel] = &[
 ///               wirings that exist today; must keep working).
 ///   * "P500 WIN" — genuine win verdict (ratio <= WIN_MAX = 0.85) from the
 ///               P500 report: wiring-eligible, promotion candidate.
+///   * "P500 PARITY (...)" — reclassified/parity entry (TASK-31 evidence
+///               sync): still Allow (batch-dispatch infrastructure), but
+///               NOT a hot-path swap/promotion candidate.
 #[allow(dead_code)] // registry metadata is self-documenting; fields read by tests/audit
 pub struct ProvenKernel {
     pub class: &'static str,
@@ -199,48 +205,60 @@ pub static PROVEN_WINS: &[ProvenKernel] = &[
         verdict: "live",
         evidence: "improved_noise bridge: handle free verified by self-test + Cleaner lifecycle",
     },
-    // --- P500 WIN verdicts (promotion candidates, wire-eligible) ---
+    // --- P500 WIN verdicts (promotion candidates, wire-eligible) ------------
+    // Evidence synced to the canonical 2026-09-08 full rerun
+    // (bench/p500/results/P500_REPORT.md) by TASK-31; see
+    // docs/PROVEN_WINS_SYNC.md. 4 of the 7 previous v2 WIN verdicts
+    // reproduce here; the 3 that did not are reclassified PARITY below.
     ProvenKernel {
         class: "PaperNativeNoiseChunkBlendCache",
         kernel: "newEmptyBlenderSummary",
-        verdict: "P500 WIN (244x)",
-        evidence: "bench/p500/results/P500_REPORT_v2.md (67.0 us -> 274.5 ns)",
+        verdict: "P500 WIN (316x)",
+        evidence: "bench/p500/results/P500_REPORT.md 2026-09-08 rerun (95.3 us -> 301.1 ns, ratio 0.003, stability 0.0%); v2 said 244x (67.0 us -> 274.5 ns) — direction unchanged, number refreshed",
     },
     ProvenKernel {
         class: "PaperNativeNoiseInterpolatorSlice",
         kernel: "flatSummary",
-        verdict: "P500 WIN (3.29x)",
-        evidence: "bench/p500/results/P500_REPORT_v2.md (6.2 ms -> 1.9 ms)",
-    },
-    ProvenKernel {
-        class: "PaperNativePluginLoadingAllocation",
-        kernel: "newLazyValidateSummary",
-        verdict: "P500 WIN (1.55x)",
-        evidence: "bench/p500/results/P500_REPORT_v2.md (217.9 ns -> 140.6 ns)",
-    },
-    ProvenKernel {
-        class: "PaperNativePluginLoadingAllocation",
-        kernel: "newLazyMissingSetSummary",
-        verdict: "P500 WIN (1.53x)",
-        evidence: "bench/p500/results/P500_REPORT_v2.md (218.3 ns -> 142.5 ns)",
+        verdict: "P500 WIN (3.32x)",
+        evidence: "bench/p500/results/P500_REPORT.md 2026-09-08 rerun (6.3 ms -> 1.9 ms, ratio 0.301, stability 0.0%); v2 said 3.29x (6.2 ms)",
     },
     ProvenKernel {
         class: "PaperNativeImprovedNoiseInline",
         kernel: "switchGradientSummary",
         verdict: "P500 WIN (1.22x)",
-        evidence: "bench/p500/results/P500_REPORT_v2.md (9.3 us -> 7.6 us)",
+        evidence: "bench/p500/results/P500_REPORT.md 2026-09-08 rerun (9.3 us -> 7.6 us, ratio 0.819, stability 0.0%) — reproduced from v2",
     },
     ProvenKernel {
         class: "PaperNativePalettedReencodeScratch",
         kernel: "scratchThreadLocalSummary",
         verdict: "P500 WIN (1.20x)",
-        evidence: "bench/p500/results/P500_REPORT_v2.md (483.9 us -> 403.2 us)",
+        evidence: "bench/p500/results/P500_REPORT.md 2026-09-08 rerun (493.6 us -> 411.9 us, ratio 0.834, stability 0.0%) — reproduced from v2",
+    },
+    // --- P500 PARITY reclassifications (TASK-31 evidence-sync) --------------
+    // Previously listed as "P500 WIN" on the v2 report; NOT reproducible on
+    // the canonical 2026-09-08 rerun (ratio in the 0.8-1.25 parity band).
+    // Kept inside PROVEN_WINS so the Allow set is UNCHANGED (no gate
+    // behavior change; batch-dispatch eligibility per
+    // docs/BATCH_WIRING_PLAN.md B.2.3 precondition (a) "parity or better"
+    // still holds) — but they are parity kernels, NOT hot-path swap or
+    // promotion candidates.
+    ProvenKernel {
+        class: "PaperNativePluginLoadingAllocation",
+        kernel: "newLazyValidateSummary",
+        verdict: "P500 PARITY (2026-09-08 rerun)",
+        evidence: "bench/p500/results/P500_REPORT.md 2026-09-08 rerun (116.1 ns -> 115.3 ns, ratio 0.993); v2 'WIN (1.55x) 217.9 ns -> 140.6 ns' did not reproduce",
+    },
+    ProvenKernel {
+        class: "PaperNativePluginLoadingAllocation",
+        kernel: "newLazyMissingSetSummary",
+        verdict: "P500 PARITY (2026-09-08 rerun)",
+        evidence: "bench/p500/results/P500_REPORT.md 2026-09-08 rerun (115.1 ns -> 114.6 ns, ratio 0.996); v2 'WIN (1.53x) 218.3 ns -> 142.5 ns' did not reproduce",
     },
     ProvenKernel {
         class: "PaperNativeAquiferSurfaceSampling",
         kernel: "newBatchSummary",
-        verdict: "P500 WIN (1.15x)",
-        evidence: "bench/p500/results/P500_REPORT_v2.md (6.3 us -> 5.5 us)",
+        verdict: "P500 PARITY (2026-09-08 rerun)",
+        evidence: "bench/p500/results/P500_REPORT.md 2026-09-08 rerun (6.0 us -> 5.5 us, ratio 0.906); v2 'WIN (1.15x) 6.3 us -> 5.5 us' did not reproduce",
     },
     // --- batch-dispatch surface (src/batch_table.rs, caller-initiated) -------
     // These 12 are the batch dispatcher's table: P500 PARITY-floor kernels
@@ -275,7 +293,7 @@ pub static PROVEN_WINS: &[ProvenKernel] = &[
         class: "PaperNativeAquiferIndexStride",
         kernel: "newBatchSummary",
         verdict: "P500 PARITY (batch surface)",
-        evidence: "src/batch_table.rs id3 (jni_table.rs:129); 1.15x-win stem family",
+        evidence: "src/batch_table.rs id3 (jni_table.rs:129); parity pair (1.07x on the 2026-09-08 rerun; the old '1.15x-win stem family' note was a stale v2 reference — TASK-31 sync)",
     },
     ProvenKernel {
         class: "PaperNativeChunkDependencies",
@@ -299,7 +317,7 @@ pub static PROVEN_WINS: &[ProvenKernel] = &[
         class: "PaperNativeDensitySplineContext",
         kernel: "newDirectSummary",
         verdict: "P500 PARITY (batch surface)",
-        evidence: "src/batch_table.rs id7 (jni_table.rs:31); newDirect 3.29x stem (interpolator slice class differs)",
+        evidence: "src/batch_table.rs id7 (jni_table.rs:31); parity (1.00x, 2026-09-08 rerun); the 3.29x win note belonged to NoiseInterpolatorSlice.flatSummary (3.32x on the rerun, different class) — TASK-31 sync",
     },
     ProvenKernel {
         class: "PaperNativeEntityLookupStatus",
