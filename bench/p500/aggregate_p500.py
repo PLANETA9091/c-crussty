@@ -71,11 +71,28 @@ def main(path):
         old = next((r for r in rs if r["kind"] == "old"), None)
         for r in rs:
             w(f"| `{r['method']}` | {r['kind']} | {fmt_ns(r['med'])} | {fmt_ns(r['mn'])} | {fmt_ns(r['mx'])} |")
-        if old and old["status"].startswith("OK"):
-            for r in rs:
-                if r["kind"] == "alt" and r["status"].startswith("OK") and r["med"] > 0:
-                    sp = old["med"] / r["med"]
-                    speedups.append((sp, fqcn, sig, old["method"], r["method"], old["med"], r["med"]))
+        # P500 pairing rule: an optimized kernel is compared against the old*
+        # kernel sharing the LONGEST COMMON SUFFIX of its name (e.g.
+        # optimizedWaypointManagerValue <-> oldWaypointManagerValue). Comparing
+        # across stems (oldReallyFarValue vs optimizedWaypointManagerValue)
+        # pits kernels that do different work against each other and produced
+        # bogus "0.01x regressions" in the first cut of this report.
+        olds = [r for r in rs if r["kind"] == "old" and r["status"].startswith("OK")]
+        for r in rs:
+            if r["kind"] != "alt" or not r["status"].startswith("OK") or r["med"] <= 0:
+                continue
+            if not olds:
+                continue
+
+            def common_suffix(a, b):
+                n = 0
+                while n < len(a) and n < len(b) and a[-1 - n] == b[-1 - n]:
+                    n += 1
+                return n
+
+            best = max(olds, key=lambda o: (common_suffix(r["method"], o["method"]), o["med"]))
+            sp = best["med"] / r["med"]
+            speedups.append((sp, fqcn, sig, best["method"], r["method"], best["med"], r["med"]))
         w("")
 
     speedups.sort(reverse=True)
