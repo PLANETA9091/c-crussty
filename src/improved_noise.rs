@@ -44,6 +44,7 @@ use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 pub const NOISE_CLASS: &str = "net/minecraft/world/level/levelgen/synth/ImprovedNoise";
 const BRIDGE_NAME: &str = "net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps";
 const BRIDGE_HANDLE_NAME: &str = "net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps$Handle";
+const BRIDGE_REAPER_NAME: &str = "net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps$Reaper";
 const NATIVE_BRIDGE: &str = "net/minecraft/world/level/levelgen/synth/PaperNativeImprovedNoise";
 
 const BRIDGE_BYTES: &[u8] = include_bytes!(
@@ -51,6 +52,9 @@ const BRIDGE_BYTES: &[u8] = include_bytes!(
 );
 const BRIDGE_HANDLE_BYTES: &[u8] = include_bytes!(
     "../noise/build/net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps$Handle.class"
+);
+const BRIDGE_REAPER_BYTES: &[u8] = include_bytes!(
+    "../noise/build/net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps$Reaper.class"
 );
 
 /// env-gate (off by default), read once at register time
@@ -271,6 +275,7 @@ pub fn activate() {
             for (name, bytes) in [
                 (BRIDGE_NAME, BRIDGE_BYTES),
                 (BRIDGE_HANDLE_NAME, BRIDGE_HANDLE_BYTES),
+                (BRIDGE_REAPER_NAME, BRIDGE_REAPER_BYTES),
             ] {
                 if let Some((major, _)) = class_version(bytes) {
                     if major > jvm_major {
@@ -310,7 +315,11 @@ pub fn activate() {
             }
             KERNEL_LOADER.store(gref as usize, Ordering::SeqCst);
             let mut ok = true;
-            for (name, bytes) in [(BRIDGE_NAME, BRIDGE_BYTES), (BRIDGE_HANDLE_NAME, BRIDGE_HANDLE_BYTES)]
+            for (name, bytes) in [
+                (BRIDGE_NAME, BRIDGE_BYTES),
+                (BRIDGE_HANDLE_NAME, BRIDGE_HANDLE_BYTES),
+                (BRIDGE_REAPER_NAME, BRIDGE_REAPER_BYTES),
+            ]
             {
                 match env.define_class(name, gref, bytes) {
                     Some(c) => {
