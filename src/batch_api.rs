@@ -638,8 +638,7 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
             let id = ids[i] as usize;
             let off = offs[i];
             let cap = counts[i] as usize;
-            let res_len: usize;
-            match fns[id] {
+            let res_len: usize = match fns[id] {
                 KernelFn::A(f) => {
                     if off < 0 || (off as usize) + cap > outs_len {
                         ret = ERR_OUTPUT_CAPACITY;
@@ -665,7 +664,7 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
                         );
                     }
                     staging.extend_from_slice(&scratch.buf[..written]);
-                    res_len = written;
+                    written
                 }
                 KernelFn::B(f) => {
                     let start = in_starts[i];
@@ -690,9 +689,9 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
                     let res =
                         unsafe { f(env, kernel_class_for(id, clazz), scratch.in_arr, scratch.out_arr) };
                     staging.push(res);
-                    res_len = 1;
+                    1
                 }
-            }
+            };
             ranges.push((off, staging.len() - res_len, res_len as jni::jint));
 
             // Per-op exception gate: a throwing kernel aborts the batch; the
