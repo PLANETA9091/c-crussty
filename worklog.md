@@ -132,3 +132,17 @@ Work Log:
 
 Stage Summary:
 - G3 (wave-1 shapes) ЗАКРЫТ: A' machinery в master (инфраструктура Stage-1 готова для ЛЮБЫХ будущих shape-расширений), но весь wave-1 candidate list измеренно NO-GO для batch adoption. Открытый скоуп: G4 (site-arming) — теперь только shape-A body-dominated kernel; G5 auto-threshold получил эмпирические константы (fixed ~205ns, marginal ~+40ns/op независимо от shape). Ближайшие кандидаты: G8 (refused-id e2e fixture), либо новые hotspot'ы dump->analyze->optimize.
+
+---
+## SESSION cron 05:20+08 — TASK-50 done: TASK-39 D1 closed (shape-B double-copy eliminated + measured) — 2026-09-08T22:1xZ — agent-7625532f
+
+Work Log:
+- Старт: worklog+CLAIMS прочитаны (открытых клеймов моей линии нет; второй контур: TASK-47 rollout A/B NO-GO + свежий G3 shape-C spike 2bd43c4). Взят named prerequisite батч-трека: TASK-39 D1 (HOTSPOT_CANDIDATES_V2 P2, dormant). Клейм: сначала TASK-49 → КОЛЛИЗИЯ с чужим клеймом TASK-49 (ledger) — перенумерован в TASK-50, push+verify.
+- Код d84e405: arena удалена; per-op staging args1→in_stage (src-offset GetLongArrayRegion)→in_arr; in_stage lazy high-water, единственный контракт = per-op len ≤ IN_SCRATCH_CAP (ERR_INPUT_CAPACITY без изменений); shape-A/A' путь bit-identical (total_in=0); wire не менялся (TABLE_VERSION 2). Найдено по ходу: старый путь делал ПОЛНЫЙ memset total_in КАЖДЫЙ батч (arena.clear+resize) + bulk copy, и bulk-копировал ВСЕ ops даже при break на op 0.
+- Проба bench/batch/{D1StagingProbe.java,run_d1_probe.sh}: paired old/new .so arms, 64 shape-B ops, len {64,1024,4096}, 4 threads, BENCH.lock. Инфра-уроки: System.load(closed→module) обязателен; CRUSSTY_BATCH_NATIVE_LIB = путь к ЗАКРЫТОЙ lib (dlopen ядер), не к модулю; RSS-измерение ПОСЛЕ join() маскирует retention (thread-local деструктурируется) — протокол переведён на alive-parked threads.
+- Результат: 2.07x faster @2 MiB (338→163 µs), 1.37x @512 KB, ~1.07x slower @32 KB (честно, per-op вызовы дороже снятого bulk на малых len; win от ~512 KB); RSS alive Δ: old +24 024 KB vs new +14 064 KB = −9.7 MB ≈ 4×2 MiB арены. run1-агreement: 2.27x/1.32x/parity.
+- РЕБЕЙЗ-КОЛЛИЗИЯ: push словал конфликт с 2bd43c4 (G3 shape-C spike: g42 (IIIII[I[J)I, их C-arm ТОЖЕ ел арену). Разрешено семантически: D1 расширен на C-путь (in_stage → narrow jint → SetIntArrayRegion), merged 43275e1+e06ab4d+0c86f10+5da5bf1. Post-rebase revalidation: abi 131087, 2.17x @2 MiB, RSS −7.5 MB, tests 34/34 (вкл. их C-pins), clippy 13 = baseline Δ0.
+- Вывод для трека: TASK-47 post-D1 re-bench gate VACUOUS для shape-A таблицы (bit-identical path — их ячейки никогда не исполняли удалённый код); объединённый batch NO-GO стоит С закрытым prerequisite. Addendum в BATCH_ROLLOUT_AB.md + статус-аддендум в HOTSPOT_CANDIDATES_V2.md (D2-D4 уже закрыты TASK-43, D5 observation-only). CLAIMS done + re-pull verify. Live server не тронут; токен не экспонирован; worktree /home/z/w-t50 (push, к следующему тику можно удалить).
+
+Stage Summary:
+- TASK-50 (D1) ЗАКРЫТ: двойное копирование shape-B/C устранено, неограниченная per-thread retention заменена конрактом 32KB, измерения приложены. Батч-трек: G1-G8 закрыты/измерены, D1 закрыт — диспетчер остаётся transition-амортизатором (не ускоритель floor-ядер), приговор TASK-47/48 теперь полный. Открытые направления: их G3 spike продолжение (второй контур), G4 site-arming (только shape-A body-dominated ≥700ns — но таких в таблице нет, кроме id 0 ~505µs где route невидим), новые hotspot'ы по dump→analyze→optimize, PROVEN_WINS_SYNC §4 (5 batch-surface записей вне канона).
