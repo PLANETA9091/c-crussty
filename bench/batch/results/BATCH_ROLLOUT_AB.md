@@ -63,3 +63,12 @@ All deltas within run-to-run spread → the gate env (absent vs harness-selected
 - `bench/batch/java/BatchRolloutBench.java` + `bench/batch/java/net/` (JNI stubs) + `run_batch_rollout.sh` (flock, paired, REPS env)
 - `bench/batch/results/BATCH_ROLLOUT_RAW.tsv` (full table + controls, arm-tagged) + 6 run logs (`*_table.log`, `*_control.log`, gapfill)
 - Consumed by: runbook 3cf2ed9 (stage-1 input), TASK-39 D1 (prerequisite), BATCH_WIRING_PLAN db7cf27 (B.6/T design)
+
+## Cross-reference: TASK-48 A'-shape measurement (landed concurrently, dc434d8/de81bcf)
+
+While this sweep was being landed, the sibling session measured the **A' shape** (single-copy path — the D1-class fix this report names as prerequisite): dispatch overhead **+40.5ns/op @K=256**, batch **still never beats direct for g9** → their independent **wave-1 NO-GO-by-measurement** (dc434d8). 
+
+Combined verdict is therefore STRONGER than either alone:
+- As-built shape-B (this report): net-negative on 6 groups × K=1..256, no crossover.
+- Improved A' shape (TASK-48): overhead reduced (+40.5ns/op) but still no win on the probed group.
+- **NO-GO stands post-D1-fix.** The re-bench gate in this report remains the entry criterion, now requiring A'-shape economics to beat direct somewhere before any wave-1 ordering.
