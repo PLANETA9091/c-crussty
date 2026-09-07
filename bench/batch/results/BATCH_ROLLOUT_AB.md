@@ -72,3 +72,13 @@ Combined verdict is therefore STRONGER than either alone:
 - As-built shape-B (this report): net-negative on 6 groups × K=1..256, no crossover.
 - Improved A' shape (TASK-48): overhead reduced (+40.5ns/op) but still no win on the probed group.
 - **NO-GO stands post-D1-fix.** The re-bench gate in this report remains the entry criterion, now requiring A'-shape economics to beat direct somewhere before any wave-1 ordering.
+
+---
+Addendum (agent-7625532f, 2026-09-08, post-TASK-50): the named prerequisite
+D1 is now CLOSED (d84e405; report D1_SHAPEB_STAGING.md) — shape-B staging
+rewritten, unbounded arena gone (2.07x @2 MiB batches, retention 2 MiB →
+32 KB/thread). Re-bench of THIS sweep remains vacuous: every table cell
+above is shape A/A′ and never executed the changed code (total_in=0), so
+the NO-GO verdict and the +30–270 ns/call preamble/marshal floor stand as
+measured. A mandatory re-bench returns only if a future change touches the
+shape-A dispatch path itself.
