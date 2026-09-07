@@ -80,3 +80,16 @@ Work Log:
 
 Stage Summary:
 - TASK-24 (C3) полностью закрыт (код 28ad646 + измерение 1449f7f). Константы диспетчера теперь эмпирические — вход для wave-1 batch adoption. Open: TASK-32 (blend-cache impl, вероятный NO-GO по H2), TASK-13/17/20/22/23/25/28-36/w3/w4 done.
+
+---
+## SESSION cron 03:40+08 — TASK-32 Phase-1 probe: items 1/3/5 done, items 2/4 in setsid-фоне — 2026-09-07T20:05Z — agent-7625532f
+
+Work Log:
+- TASK-32 takeover (клейм мой, субагент-имплементатор мёртв). Item 1 javap LIVE runtime jar: H2 ОПРОВЕРГНУТ — blendOffsetAndFactor vanilla-структура, EMPTY-путь НЕ свёрнут (3x MutableDouble + forEach + new BlendingOutput(1.0,0.0) alloc/call; patches.list 0 хитов; blender set-once/final confirmed; сайты резолвятся).
+- Item 3 g21 N-scaling (BENCH.lock): old linear CONFIRMED; new flat N≤16, сублинейный рост далее; канон 313.6x @N=256 ≈ registry 316.45x.
+- Item 5 V1 parity: bench/blendprobe/V1BlendParity.java 10000/10000 PASS (16 quart-классов, радиусы ≤60, fresh-dst, ret+lanes).
+- Items 2+4: run_blend_probe.sh — throwaway default-world бут (CRUSSTY_NATIVE_BLEND_CACHE=1 observation-only + JFR profile + forceload 2x17x17) в setsid-фоне, harvest следующего тика.
+- §9 running addendum в docs/BLEND_CACHE_PATCHER_DESIGN.md; c-crussty cedc9df; CLAIMS takeover-строка; registry НЕ менялся.
+
+Stage Summary:
+- 3/5 гейтов PASS; решающий item 4 (JFR share) — harvest далее. Прото PATCH_ENABLED=false; Phase 2 (V2-V4) обязателен до env-gated serve.
