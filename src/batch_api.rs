@@ -85,8 +85,11 @@
 //! GetLongArrayElements/Release. batch: 1 C call through a function pointer +
 //! 1 `GetLongArrayRegion` (VM memcpy) + amortized critical memcpy. No
 //! allocation, no local-ref churn (scratch arrays are per-thread global
-//! refs). `bench/p500/jni_floor/BatchFloorBench.java` measures the delta at
-//! batch sizes 1/8/64/256.
+//! refs; since TASK-24 the control planes live in the same per-thread
+//! scratch — clear()-and-reuse at the capacity high-water mark).
+//! `bench/batch/java/BatchFloorBench.java` (via
+//! `bench/batch/run_batch_floor.sh`) measures the dispatcher delta at
+//! batch sizes 1/8/16/64/256.
 //!
 //! # Errors and safety
 //!
@@ -224,13 +227,31 @@ static CLASSES: OnceLock<[usize; KERNEL_COUNT]> = OnceLock::new();
 /// the fallback for kernels whose own bridge class could not be resolved.
 static BATCH_CLASS_GREF: AtomicUsize = AtomicUsize::new(0);
 
-/// Per-thread scratch: two global-ref arrays + a readback buffer. Global refs
-/// survive across native frames (local refs would dangle); per-thread because
-/// the closed kernels keep per-call state in the dst array.
+/// Per-thread scratch: two global-ref arrays + a readback buffer + the
+/// reusable batch control planes (TASK-24). Global refs survive across
+/// native frames (local refs would dangle); per-thread because the closed
+/// kernels keep per-call state in the dst array.
+///
+/// Control-plane discipline: `run()` copies every plane fresh from the wire
+/// arrays on each call, so the `Vec`s carry NO state between batches (kernels
+/// keep per-call state only in the global-ref arrays, never here) — reuse
+/// cannot leak anything; it only keeps the allocation. Capacity follows a
+/// high-water mark: a buffer only (re)grows when a larger batch arrives on
+/// the same thread than any previous one, making the steady-state path
+/// allocation-free.
 struct Scratch {
     out_arr: jni::jlongArray, // OUT_SCRATCH_CAP longs — kernel dst
     in_arr: jni::jlongArray,  // IN_SCRATCH_CAP longs — shape-B src
     buf: Vec<jni::jlong>,     // GetLongArrayRegion readback target
+    // ---- control planes, refilled from the wire arrays every run() ----
+    ids: Vec<jni::jint>,      // kernelIds
+    counts: Vec<jni::jint>,   // argCounts (A: out capacity, B: input length)
+    offs: Vec<jni::jint>,     // outOffsets
+    scalars: Vec<jni::jlong>, // args0
+    in_starts: Vec<usize>,    // shape-B prefix sums over counts
+    arena: Vec<jni::jlong>,   // packed shape-B input copy (args1 prefix)
+    staging: Vec<jni::jlong>, // phase-1 results, scattered in phase 2
+    ranges: Vec<(jni::jint, usize, jni::jint)>, // (out_off, staging_start, len)
 }
 
 thread_local! {
@@ -434,6 +455,17 @@ fn create_scratch(env: &JniEnv) -> Option<Scratch> {
         out_arr,
         in_arr,
         buf: zeros_out.to_vec(),
+        // Control planes start empty and grow on first use (the high-water
+        // capacity is then retained across calls — the TASK-24 allocation-
+        // free steady state); `Vec::new()` allocates nothing here.
+        ids: Vec::new(),
+        counts: Vec::new(),
+        offs: Vec::new(),
+        scalars: Vec::new(),
+        in_starts: Vec::new(),
+        arena: Vec::new(),
+        staging: Vec::new(),
+        ranges: Vec::new(),
     })
 }
 
@@ -507,54 +539,6 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
     }
     let (outs_len, args1_len) = (outs_len as usize, args1_len as usize);
 
-    // ---- copy the control planes into Rust (O(n), no critical sections) ----
-    let mut ids = vec![0 as jni::jint; n];
-    let mut counts = vec![0 as jni::jint; n];
-    let mut offs = vec![0 as jni::jint; n];
-    let mut scalars = vec![0 as jni::jlong; n];
-    unsafe {
-        (vt.GetIntArrayRegion)(env, kernel_ids, 0, ni, ids.as_mut_ptr());
-        (vt.GetIntArrayRegion)(env, arg_counts, 0, ni, counts.as_mut_ptr());
-        (vt.GetIntArrayRegion)(env, out_offsets, 0, ni, offs.as_mut_ptr());
-        (vt.GetLongArrayRegion)(env, args0, 0, ni, scalars.as_mut_ptr());
-    }
-
-    let allowed = POLICY_ALLOWED.get_or_init(policy_flags);
-    for &id in &ids {
-        if id < 0 || id as usize >= KERNEL_COUNT {
-            return ERR_BAD_KERNEL_ID;
-        }
-        // Kernel-policy gate: a refused id aborts the WHOLE batch before any
-        // op runs (structural error, no partial execution — proposal §7).
-        // Cost: one bool index per op; zero syscalls, zero allocation.
-        if !allowed[id as usize] {
-            return ERR_KERNEL_REFUSED;
-        }
-    }
-    for &c in &counts {
-        if c < 0 {
-            return ERR_OUTPUT_CAPACITY;
-        }
-    }
-
-    // Shape-B input slices: packed prefix sums over argCounts, then one
-    // region copy of exactly the used prefix of args1.
-    let mut in_starts = vec![0usize; n];
-    let mut total_in = 0usize;
-    for i in 0..n {
-        if BATCH_KERNELS[ids[i] as usize].shape == Shape::B {
-            in_starts[i] = total_in;
-            total_in += counts[i] as usize;
-        }
-    }
-    if total_in > args1_len {
-        return ERR_LENGTH_MISMATCH;
-    }
-    let mut arena = vec![0 as jni::jlong; total_in];
-    if total_in > 0 {
-        unsafe { (vt.GetLongArrayRegion)(env, args1, 0, total_in as jni::jsize, arena.as_mut_ptr()) };
-    }
-
     SCRATCH.with(|cell| {
         let mut slot = cell.borrow_mut();
         if slot.is_none() {
@@ -568,11 +552,86 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
             }
         }
         let scratch = slot.as_mut().expect("just filled");
+        // TASK-24: every control plane below lives in the per-thread scratch
+        // (see `Scratch`) — clear() + resize()/reserve() reuse at the
+        // capacity high-water mark. Steady state (batch no larger than the
+        // largest this thread has run): ZERO heap allocations for the whole
+        // dispatcher. The `resize(n, 0)` zero-fill on a reused buffer is the
+        // deliberate soundness choice over `set_len` on uninitialized memory
+        // (the JNI region copies overwrite every element anyway; the residual
+        // memset is ~36 B/op — nanoseconds).
+        let Scratch { ids, counts, offs, scalars, in_starts, arena, staging, ranges, .. } =
+            scratch;
+
+        // ---- copy the control planes into Rust (O(n), no critical sections) ----
+        ids.clear();
+        ids.resize(n, 0);
+        counts.clear();
+        counts.resize(n, 0);
+        offs.clear();
+        offs.resize(n, 0);
+        scalars.clear();
+        scalars.resize(n, 0);
+        unsafe {
+            (vt.GetIntArrayRegion)(env, kernel_ids, 0, ni, ids.as_mut_ptr());
+            (vt.GetIntArrayRegion)(env, arg_counts, 0, ni, counts.as_mut_ptr());
+            (vt.GetIntArrayRegion)(env, out_offsets, 0, ni, offs.as_mut_ptr());
+            (vt.GetLongArrayRegion)(env, args0, 0, ni, scalars.as_mut_ptr());
+        }
+
+        let allowed = POLICY_ALLOWED.get_or_init(policy_flags);
+        for &id in ids.iter() {
+            if id < 0 || id as usize >= KERNEL_COUNT {
+                return ERR_BAD_KERNEL_ID;
+            }
+            // Kernel-policy gate: a refused id aborts the WHOLE batch before
+            // any op runs (structural error, no partial execution — proposal
+            // §7). Cost: one bool index per op; zero syscalls, zero allocation.
+            if !allowed[id as usize] {
+                return ERR_KERNEL_REFUSED;
+            }
+        }
+        for &c in counts.iter() {
+            if c < 0 {
+                return ERR_OUTPUT_CAPACITY;
+            }
+        }
+
+        // Shape-B input slices: packed prefix sums over argCounts, then one
+        // region copy of exactly the used prefix of args1. The same pass
+        // computes the EXACT staging upper bound: shape A may write at most
+        // min(argCounts[i], OUT_SCRATCH_CAP) longs (both guarded before any
+        // staging push below), shape B exactly one. Pre-sizing from this
+        // bound replaces the old `n * 8` guess, so phase 1 cannot reallocate
+        // mid-loop no matter what counts the kernels return.
+        in_starts.clear();
+        in_starts.resize(n, 0);
+        let mut total_in = 0usize;
+        let mut staging_cap = 0usize;
+        for i in 0..n {
+            if BATCH_KERNELS[ids[i] as usize].shape == Shape::B {
+                in_starts[i] = total_in;
+                total_in += counts[i] as usize;
+                staging_cap += 1;
+            } else {
+                staging_cap += (counts[i] as usize).min(OUT_SCRATCH_CAP);
+            }
+        }
+        if total_in > args1_len {
+            return ERR_LENGTH_MISMATCH;
+        }
+        arena.clear();
+        arena.resize(total_in, 0);
+        if total_in > 0 {
+            unsafe { (vt.GetLongArrayRegion)(env, args1, 0, total_in as jni::jsize, arena.as_mut_ptr()) };
+        }
 
         // ---- phase 1: run the ops into staging (no critical sections) ----
-        let mut staging: Vec<jni::jlong> = Vec::with_capacity(n * 8);
+        staging.clear();
+        staging.reserve(staging_cap);
         // (out_offset, staging_start, len) per op, for the phase-2 scatter.
-        let mut ranges: Vec<(jni::jint, usize, jni::jint)> = Vec::with_capacity(n);
+        ranges.clear();
+        ranges.reserve(n);
         let mut ret = n as jni::jint;
 
         for i in 0..n {
@@ -651,7 +710,7 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
                 unsafe { (vt.GetPrimitiveArrayCritical)(env, outs, &mut is_copy) };
             if crit.is_null() {
                 // Fallback: per-op region copies (documented trade-off).
-                for &(off, start, len) in &ranges {
+                for &(off, start, len) in ranges.iter() {
                     unsafe {
                         (vt.SetLongArrayRegion)(
                             env,
@@ -665,7 +724,7 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_run(
             } else {
                 let dst = crit as *mut jni::jlong;
                 // NO JNI calls below: critical sections must not call JNI.
-                for &(off, start, len) in &ranges {
+                for &(off, start, len) in ranges.iter() {
                     unsafe {
                         std::ptr::copy_nonoverlapping(
                             staging.as_ptr().add(start),
