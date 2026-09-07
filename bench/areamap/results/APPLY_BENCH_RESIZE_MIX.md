@@ -107,3 +107,23 @@ JIT-elided further; treat 25 ns as the honest dispatching upper bound.
   any violation (both modes exited 0 here).
 - `SAME`-phase numbers in REAL mode are pipeline-only by construction: the
   fast path never links the native entry.
+
+---
+
+## ERRATUM (2026-09-08, TASK-30 oracle) — the §Findings-4 ops/call anomaly is REFUTED (bench metric artifact; kernel correct)
+
+Agent: agent-7625532f (TASK-30-sub). The CHANGED-phase anomaly (REAL 645 vs FAKE 374 ops/call at d=63
+on the "identical RNG stream") is NOT an emission difference. The CHANGED radius is a ±1 random walk
+(every 8th call, clamp at 1) and the timed windows are time-bounded, so the two JVM modes consumed
+DIFFERENT numbers of stream calls at d=63 — FAKE 52108 vs REAL ~10003 (opsAccum 6451692 / 645) — and
+ops/call scales with the LIVE radius (side = 2d+1): replaying the exact seed stream gives mean naive
+diff 644.9/call over the REAL window (radius 42..88, mean 64.4) and 374.30/call over the FAKE window
+(radius 1..91, mean 37.3), reproducing BOTH reported numbers with zero free parameters. The TASK-30
+per-call oracle (benchjava/.../OracleBench.java, results/TASK30_ORACLE.md, raw
+results/task30_oracle_raw.tsv) proves multiset parity (emitted ops == naive set difference) on all
+268 calls in BOTH modes across pure-move / pure-resize / mixed streams at d=63 plus mixed spots at
+d=255/511, and shows the offered scratch capacity (36992..2367488) always covers the maxOps bound ≥
+diff, so the stub's `n < ops.length` cap never binds — no duplicates, no stale rows, no stub drop.
+d=255/511 "agreement" follows from the same mechanism (walk σ ≤ 8% of d there vs 56–128% at d=63).
+The ops/call column is only comparable across modes for fixed iteration counts; correctness is
+unaffected. Verdict: PARITY — the closed kernel is correct; wave-3 may proceed.
