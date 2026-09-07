@@ -1,0 +1,217 @@
+# RESULTS_LEDGER — executive summary of the CRUSSTY optimization campaign (TASK-49)
+
+* Author: agent-7625532f (TASK-49-w8), 2026-09-08. **DOCS ONLY — no code, no `.so`, no gameplay,
+  no live-server contact.** Single executive summary for the repo owner; every claim carries its
+  sha(s) and a doc pointer, labeled by evidence class.
+* Sources mined (read, not recalled): `docs/OPTIMIZATION_ROADMAP.md` (5c8e66b+839aefc),
+  `docs/BATCH_ADOPTION_MATRIX.md` (d02fbc2), `docs/BOOST_SWEEP.md` (f55f9c9),
+  `docs/HOTSPOT_CANDIDATES.md` (0dcfa7b) + `_V2` (0939257), `bench/p500/results/P500_REPORT_v2.md`,
+  `bench/areamap/results/APPLY_BENCH.md` + `docs/AREAMAP_COALESCING_FEASIBILITY.md` (94c4891) +
+  `TASK30_ORACLE.md` (125e648), `bench/lifecycle/results/LIFECYCLE_REPORT.md` + `SOAK_REPORT.md`
+  (0200e7b), `bench/bootab/results/BOOTAB_REPORT.md` (e6a030d) + `TASK45_SDK_STATS_AB.md`
+  (54c8638 → d176e46), `bench/batch/results/BATCH_ROLLOUT_AB.md` (c351b46+90829f4) +
+  `A2_SHAPE_REPORT.md` (dc434d8), `docs/BLEND_CACHE_PATCHER_DESIGN.md` (a7e3967, §9 NO-GO 1c5eefb),
+  `src/kernel_policy.rs` PROVEN_WINS/DO_NOT_WIRE (db820b1), `docs/KERNEL_POLICY_COVERAGE.md`
+  (66fbced), dev-logs `CLAIMS.md` + `worklog.md` sessions 003–008.
+
+**Evidence-class legend.** LIVE = runs on the live server path, verified there. MEASURED = an
+initial ESTIMATE converted to numbers by a dedicated A/B on the live-path mechanism. BENCH-ONLY =
+measured kernel pair, no live routing. MODELED = arithmetic over measured inputs (no direct run).
+ESTIMATE = order-of-magnitude, pending bench. Negative results are first-class: §3 exists because
+a measured "no" is a shipped fact (nothing regressed), not a failure.
+
+---
+
+## §1 Verdict
+
+After eight waves and the closure of every claimed task TASK-01…49 (§6), the campaign has taken
+the CRUSSTY plugin from an unmeasured JNI surface to an exhaustively classified one: all 70
+old/alt kernel pairs are timed and parity-classified against the canonical P500 rerun (49 groups /
+129 kernels / 0 crashes, `P500_REPORT_v2.md` @ 3baa0f7), the two live wirings (area-map,
+improved-noise) carry proven >100x-class and lifecycle wins backed by a parity oracle and a
+no-leak soak, and every hypothesis that did not survive measurement — batch dispatcher, blend-cache
+realization, same-tick coalescing, boot-latency A/B — is closed with an evidence-linked negative
+result rather than a shipped regression. The remaining distance to "15000x everywhere" is not an
+engineering shortfall but physics plus closed-source boundaries: the measured 35–90 ns JNI
+transition floor *is itself* the per-op cost for 32 floor kernels in 13 groups, and the aggregate
+plugin-side batch ceiling is ~0.047 ms/tick in the worldgen-burst scenario (≤0.13% of one tick,
+`BATCH_ADOPTION_MATRIX.md` §5.1). The project now sits at an honest steady state: shipped wins are
+live and verified, negatives are documented first-class results, dormant-but-correct assets (batch
+dispatcher, blend-cache designs) sit behind explicit re-bench gates, and the only remaining >100x
+levers require ENGINE-TOUCH (`.so`) work that is out of plugin scope by rule. Verification
+infrastructure — CI ratio-gate, differential-fuzz job, bootab, soak, aggregator `--check`/`--strict`,
+live E2E with hot-reload verification — is in place so that any future claim must arrive with this
+same evidence discipline or not at all.
+
+---
+
+## §2 PROVEN WINS
+
+| # | Win | Surface | Magnitude | Evidence class | sha(s) + pointer |
+|--:|---|---|---|---|---|
+| 1 | **Area-map same-state fast path** — O(1) field-compare skips the whole enumerate+JNI apply loop on unchanged maps; 0 native calls per idle update | `SingleUserAreaMap.update()` on the live server (USER-VISIBLE) | **1,945x–170,612x** per idle update (fast 24.7–25.3 ns vs REAL apply 48.6 µs @d=63 → 4.25 ms @d=511); full-bench headline reaches ~1.8e6x shape-dependent (APPLY_BENCH.md) | **LIVE** + parity oracle: TASK-30 `125e648` — 268/268 per-call multiset parity in both bench modes, "anomaly" replayed with 0 free parameters | hook live-verified (worklog 001–003); smoke `532597b`; benches `beaf374`+`2997d2f`; oracle `125e648` → `bench/areamap/results/TASK30_ORACLE.md` VERDICT: PARITY |
+| 2 | **Noise-handle lifecycle: phantom-reaper + 16 identity stripes** (`finalize()` killed; releaseHandle CAS at-most-once) | every `ImprovedNoise` handle in worldgen (USER-VISIBLE) | quiet reclaim **>12,000 ms (timeout) → 21 ms (>571x)**; GC collections under churn pressure 512→21 (**24.4x**), gc_time 523→51 ms (10.2x) | **LIVE** (live E2E x2) | `e59201d`+`99dd17e` (+ releaseHandle/CAS adopted from `e2ec502`) → `bench/lifecycle/results/LIFECYCLE_REPORT.md` |
+| 2b | **…plus soak proof (TASK-17)**: 10-min churn under GC pressure | same path | leak **NO** — built == freed == **26,450,000** exactly, `native_unfreed=0`, live=0 after settle; **0 guard trips** (no double-free/CAS violation) across 529 waves; reclaim p50 4 ms pressure / 1.6 s quiet, 0 timeouts, drift 1.09x/1.51x | **LIVE** (MEASURED, `SOAK_VERDICT: PASS`) | `0200e7b` → `bench/lifecycle/results/SOAK_REPORT.md` |
+| 3 | **improved_noise lifecycle A/B** — hot path under contention | `ImprovedNoiseNativeOps.noise()` (live wiring path) | **~2x** under contention: t2 150.2→79.6 ns, t4 136.8→70.4 ns (t8 1.57x; t1 parity 1.14x — honest) | **LIVE** (MEASURED A/B; live E2E x2) | same shas as #2 → `LIFECYCLE_REPORT.md` M1 table |
+| 4 | **TASK-22 find_class early-exit + ClassFileLoadHook sighting feed + poller backoff** | boot/class-load path (gates activation of both live wirings) | **MEASURED**: 7 scans avoided vs 2 scans per hook = **77.8% of hook calls scan-free**, deterministic (2×2 hooks @120 s window); boot-window counters: scan work **9.3x lower** (156,690→16,822 classes walked), scans **5.3x fewer** (16→3), **63% of misses scan-free** (5/8); ≈0.13–0.26 s scan work removed from the boot window. >100x upper end **NOT demonstrated** (workload too small) — honest floor only | **LIVE (MEASURED)** — converted from ESTIMATE by TASK-45 | `e9405d1` (+tests `584f94a`,`5e9cff6`); counters `53578ba`; report `54c8638`→`d176e46` → `bench/bootab/results/TASK45_SDK_STATS_AB.md` |
+| 5 | **Blend-cache kernel pair** (`oldEmptyBlenderSummary` → `newEmptyBlenderSummary`) | g21, both kernels in `libpaper_native_jni.so`; registered, **nothing routes to them** | **316.45x** (95.3 µs → 301.1 ns, ratio 0.003, stability 0.0%, baseline drift 0.0%; refreshed from v2-era 244x) | **BENCH-ONLY** — live realization measured **NO-GO** (see §3.2) | `P500_REPORT_v2.md` §21/§Wins; registry `PROVEN_WINS "P500 WIN (316x)"` @ `db820b1`; designs `4fb9d12`+`a7e3967` |
+| 6 | **Kernel-policy remap gate** (`registration_fallback`, `CRUSSTY_KERNEL_PREF=old`) — insurance wiring: the 4 measured regressions (1.78x–5.70x slower) are swap-remapped to their old kernels at registration | registration-time, live-verified on the closed `.so` | **4/4 remap candidates rescued to ≤1% parity** (16/16 measured pairs, 100% coverage of the remap-able surface); live-verified 4 remaps / 0 unresolved | **LIVE** (correctness/insurance win, not a speed win) | TASK-04 `8ec63b9`; TASK-13 `66fbced` → `docs/KERNEL_POLICY_COVERAGE.md`; TASK-28 gate `ERR_KERNEL_REFUSED=-10` in `397856c` |
+| 7 | **C1–C8 hot-path hygiene pack** — all landed or closed | cplug-sdk + src hot paths | deliberately sub-10x, bounded by sweep v1: COW readers remove the JVM-wide serialization point (0 alloc/read); serve branch `Arc<[u8]>` (~200–500 ns × 1–3 firings); method-ID cache 300–900 ns → 20–50 ns/hit; batch control-plane scratch 8 allocs→0 per `run()` (K=1 **−9%** measured, K≥8 parity) | **LIVE** (shipped; each item bounded, none >10x — per BOOST_SWEEP §1 "not counted" list) | C1 `e9405d1` · C2 `54a6724` · C3 `28ad646`(+`1449f7f`) · C4 leave-as-is (sub-noise, cleared) · C5 `f86c517` · C6 `106bb73` · C7 `f542d02` · C8 `397856c` |
+
+**Also landed (correctness-class wins, not perf claims).** TASK-43 `11b19c3` (D2 POLL_STATE bounded
+65,536 + no-alloc-on-hit; D3 MAIN_IDS survives the pre-boot null-server loop; D4 poison-recovery)
+and TASK-46 `ef2754e` (7 JNI-reachable lock-`.unwrap()` sites → `into_inner`, +3 headless tests)
+closed the "panic unwinding through JNI = VM abort" hazard class repo-wide — the exact mechanism
+root-caused for the live P0 (armed-SIGSEGV, `28cdc09` → closed `b002d9c`). Verification: cplug-sdk
+20/20 + crussty 24/24, clippy Δ0. LIVE-path correctness hardening.
+
+---
+
+## §3 MEASURED NEGATIVES (equally valuable — each closed by measurement, nothing shipped)
+
+| # | Negative | Evidence | Why it is the *right* answer | sha(s) + pointer |
+|--:|---|---|---|---|
+| 1 | **Batch dispatcher is net-negative for every tested cell** — 6 groups × K≤256 | best **+11%** overhead (g10, K=256), worst **+168%** (g14, K=1); overhead 30–270 ns/call = shape-B double-copy (TASK-39 D1 signature); **no K\* crossover ≤256**; threshold-T = OFF | **Parity is bit-exact everywhere** (batch == direct on every cell, every lane) and error paths work (`ret=-3` refused probe) — the dispatcher is CORRECT, just unprofitable at current marshalling economics. The BOOST-sweep "≤40x dormant" line is **REFUTED by measurement**, not pessimism | `c351b46`+`90829f4` → `bench/batch/results/BATCH_ROLLOUT_AB.md` |
+| 1b | **A' (single-copy) shape does not rescue it** — TASK-48 Phase 1 landed the A' machinery (TABLE_VERSION 2, KERNEL_COUNT 14) and measured it | dispatch overhead **+40.5 ns/op @K=256** (shape A was +43.1 → the 3-scalar plane is free); g9 batch **never** beats direct (116 ns < breakeven ~160 ns; K=1 3.07x worse → K=256 1.35x worse); the wave-2 matrix "19.2x" projection **REFUTED**; whole wave-1 list (g42 34.6 / g35 81.4 / g39 87.7 / g40 88.6 ns direct) **NO-GO-by-measurement** | **Combined verdict stands post-D1-fix** (stronger than either report alone); re-bench gate (`run_batch_rollout.sh`) is the only entry criterion for a revisit | `b4a5c9b`+`de81bcf`+`dc434d8` → `bench/batch/results/A2_SHAPE_REPORT.md`; cross-ref `90829f4` |
+| 2 | **Blend-cache impl is NO-GO** (TASK-32 Phase-1 probe, gate `CRUSSTY_BLEND_CACHE`-class env default OFF) | item 4 decisive: JFR post-boot attach, 252 samples over forceload+settle — per-column blend mechanics **0/180** worldgen-worker samples; single hit 0.40% = one-time `Blender.of` setup; NO-GO threshold <0.1% breached. H2 ("already folded") was refuted at bytecode level (javap: EMPTY path NOT folded, 3× MutableDouble + BlendingOutput alloc/call) — but the machinery is **irrelevant**: fresh worlds take `Blender.EMPTY` → cheap map-probe path; the 316x pair models the DENSE branch (upgrade worlds) which this server never walks | Honest negative with proof: proto stays `PATCH_ENABLED=false`, dormant; `kernel_policy` untouched; the pair remains BENCH-ONLY (§2.5). Item1/3/5 gates (probe safety, N-scaling, V1 parity 10,000/10,000) all PASS — the *probe* worked, the *premise* failed | probe `cedc9df`; verdict `1c5eefb` (§9 final in `docs/BLEND_CACHE_PATCHER_DESIGN.md`); session worklog `587fd1b` |
+| 3 | **Area-map same-tick coalescing is structurally moot** | javap call-graph of the REAL remapped purpur jar (paperclip patch+reobf on throwaway copies; `/home/z/server` never written): ≤1 **native** call per map-instance per tick — first non-same-state update pays, same-tick repeats hit the 0-native fast path (24.7–25.3 ns) | Nothing to coalesce at the Java/plugin layer; the rare multi-native tick is semantically non-coalescible (mid-tick readers would see deferred state — forbidden); the impossible 6→1 cross-instance merge would save ~4 µs/player-tick (**~0.008% of a tick**) and needs bridge+`.so`. No implementation shipped, per investigate-first gate | `94c4891` → `docs/AREAMAP_COALESCING_FEASIBILITY.md` |
+| 4 | **Boot-latency module A/B is directional, NOT proven** | A (pre-wave `4fb9d12`) 3.10 s ±0.04 vs B (master `217e3e8`) 3.02 s ±0.05 to "native surface live" = **−2.6%, n=3, ranges overlap**; secondary `Done(` indistinguishable (31.03 vs 31.21 s) | Recorded as DIRECTIONAL ONLY everywhere — the honesty guard (TASK-40 `5c8e66b`) found **0 overclaims** repo-wide; no regression exists either. Engine-agent `.so` A/B remains pending a runtime rebuild (recipe: BOOTAB_REPORT §7) | `e6a030d` → `bench/bootab/results/BOOTAB_REPORT.md` |
+| 5 | **Stale "wins" reclassified by evidence-sync** (TASK-31) | 27 registry entries rechecked against the canonical rerun: PluginLoadingAllocation 1.55x → **0.993/0.996 parity**; AquiferSurfaceSampling 1.15x → **0.906**; blend-cache 244x → 316x (number refresh); hot-path WIN set 7→4; gate behavior unchanged | The registry (`PROVEN_WINS`/`DO_NOT_WIRE`) is now synced to one canonical dataset — wiring decisions read only reproduced facts | `db820b1` → `docs/PROVEN_WINS_SYNC.md`; full-rerun basis `e5c4fad` |
+
+---
+
+## §4 PHYSICAL LIMITS — why "15000x everywhere" is not physics
+
+| # | Limit | Numbers | Class |
+|--:|---|---|---|
+| 1 | **The JNI transition floor IS the per-op cost for floor kernels.** Per-op cost = T = F(transition) + B(body); for floor kernels B ≈ 0, so the 35–90 ns transition is not overhead to remove — it is the operation | floor 35–90 ns measured (anchors: StaticCacheGet **34.6 ns** = global minimum, RangeChoice 81.4 ns, `(I)D` @N=1 19.9–31.2 ns — `P500_REPORT_v2.md` + `P500_SCALING.md`, canon via 3baa0f7/TASK-10 errata). A >100x per-call speedup would need ≤0.35–0.9 ns/op — below one L1 access, 25–100x below the cheapest observable transition | MEASURED |
+| 2 | **32 floor kernels / 13 groups are blocked-by-`.so`** for the >100x class: the only true fix is fewer transitions per op, i.e. batch entries *inside* the closed `libpaper_native_jni.so` — not editable. The 33 body-dominated groups are blocked by their own bodies (CaveCarverSkip 34.2–34.6 ms, BlendedNoise 50.9 µs) — only in-`.so` algorithmic replacement moves them | groups g9, g18, g24, g28, g30–g33, g35, g36, g39, g40, g42 (`BOOST_SWEEP.md` §3; `BATCH_ADOPTION_MATRIX.md` §1/§4) | MEASURED + MODELED |
+| 3 | **Remap-able surfaces are exhausted.** Of 70 pairs exactly 2 have alt ≥2x (g21 316x — live realization measured NO-GO, §3.2; g23 3.32x — needs a new byte-hook, unowned). The `DO_NOT_WIRE` remap surface is fully covered 4/4 at ≤1% parity (`66fbced`). After TASK-32's measured NO-GO, **the >100x pipeline is empty without ENGINE-TOUCH (`.so`) work** — measured, not assumed | `BOOST_SWEEP.md` §2.2/§3; `1c5eefb` | MEASURED |
+| 4 | **Aggregate plugin-side batch-API ceiling is ~0.047 ms/tick** in the S2 worldgen-burst scenario (envelope 0.028–0.066) = **≤0.13% of a 50 ms tick**; E boot wave ≈ 0.83 ms/event. The dispatcher's theoretical T(K)=m+C/K caps (11.5–40x naive, 1.4–4.8x ref-adjusted) are themselves **refuted for the as-built code** by the measured net-negative sweep (§3.1) — reaching even this ceiling requires in-`.so` marshalling economics that do not exist today | `BATCH_ADOPTION_MATRIX.md` §5.1 (`d02fbc2`); refutation `c351b46`+`dc434d8` | MODELED (ceiling) + MEASURED (refutation) |
+
+**The >100x class that DOES exist** — and all shipped exemplars of it: skip per-call machinery with
+an O(1) guard instead of making the machinery faster (same-state/constant-fold guards → area-map
+1,945x–170,612x, blend-cache 316x bench-only; lifecycle hygiene → >571x reclaim; boot-path caching →
+TASK-22). Every one of these three classes is now either shipped (LIVE) or measured-inapplicable
+(TASK-32 NO-GO).
+
+---
+
+## §5 WHAT REMAINS
+
+**Engine-domain (ENGINE-TOUCH rules apply; nothing actionable in-scope today):**
+- TASK-05/TASK-21 minor follow-ups: no live npm bug exists (e2e install→run verified, `02b0451`);
+  F1 stale-pins publish-trap + F2 wrapper exit-code/musl are documented minors
+  (`task05-npm-precheck.md`).
+- g38 `ServerEntityDeltaIdentity` has a single unpaired old kernel — needs an alt kernel to exist
+  first (`BATCH_ADOPTION_MATRIX.md` row 38).
+- Engine-agent `.so` rebuild A/B: recipe ready in `BOOTAB_REPORT.md` §7 (same harness; copy the new
+  runtime into the throwaway root). Boot-path wave is module-side measured (directional), engine-side
+  unmeasured.
+- Area-map diff-budget window (~8·d bytes vs cap=2·px, 64–256x fewer JNI bytes/call): the REAL apply
+  is JNI-copy-bound (slower than a pure-Java reference 1.38–4.56x, `APPLY_BENCH.md`) — the fix needs
+  a bridge+`.so` change (out of scope; pointer in `HOTSPOT_CANDIDATES_V2.md` D1-note).
+- Upstream engine batch-API promotion (roadmap §6.2) is the only lever that changes the §4.2 floor
+  arithmetic — and only after a marshalling redesign beats the measured D1-class overhead.
+
+**Dormant-but-correct assets (shipped, gated, zero traffic by design):**
+- Batch dispatcher: as-built, bit-exact parity, 12–14 kernels policy-gated (`ERR_KERNEL_REFUSED`),
+  zero consumers, env default off; revisit ONLY through the re-bench gate in
+  `BATCH_ROLLOUT_AB.md` (≥1 group beats direct at some K with parity, no >5% regression).
+- Blend-cache: two convergent design docs (`4fb9d12`, `a7e3967`), observation-only proto
+  (`PATCH_ENABLED=false`), NO-GO verdict recorded; poison-recovery for its 2 lock sites is
+  report-only (`ef2754e`) — apply before ever enabling.
+- PREF-inversion ("fast-by-default") spec: one paragraph in `BOOST_SWEEP.md` §2.3, useful only when
+  future callers exist.
+
+**Verification infrastructure now in place (every future claim must pass through it):**
+- CI: p500.yml ratio-gate (1.2x per-kernel paired vs checked-in `baseline.json`, `f04a170`+`61c9aad`),
+  aggregator fixture `--check` + fresh-TSV `--strict` (`278dcf0`), areamap-fuzz job (`6c751b7`,
+  crate `b6bb359`), smoke-gate PASS on the b1c22f5 stack (`7ba92c2`).
+- Benches: P500 canon aggregator (self-test 51, medians stable 0/129, `ed27eb0`), bootab
+  (`e6a030d`+`977a339`), lifecycle soak (`0200e7b`), batch floor/rollout/A'-shape harnesses
+  (`1449f7f`, `c351b46`, `de81bcf`), blend-probe (`cedc9df`).
+- Live: E2E orchestration scripts with hot-reload verification — first live hot-reload PASS,
+  dormant boot PASS 15/15 (`28cdc09`); P0 armed-SIGSEGV root-caused (pre-TASK-43 lock-`.unwrap()`
+  unwind through JNI) and closed (`b002d9c`); integration GREEN on post-wave master (TASK-31-w3).
+
+---
+
+## §6 TASK-12…49 closure table
+
+(One line each; shas are c-crussty unless noted. Source of truth: dev-logs `CLAIMS.md` @ eff6431.)
+
+| Task | Status | sha(s) | One-line outcome |
+|---|---|---|---|
+| TASK-12 | done | `d02fbc2` | BATCH_ADOPTION_MATRIX: all 49 groups rated (HIGH×5/MEDIUM×10/LOW×34); ceiling S1≈0.003 / S2≈0.047 ms/tick; 6 anomalies (floor anchor 34.6 ns) |
+| TASK-13 | done | `66fbced` | verify_kernel_pref.sh — 16/16 measured pairs; 4/4 remap candidates rescued to ≤1% parity (100% remap-surface coverage) |
+| TASK-14 | done | `f04a170`+`61c9aad` | CI ratio-gate in p500.yml + baseline.json (5 JNI-floor parity groups, verbatim medians) + self-testing gate script |
+| TASK-15 | done | `b6bb359` | area-map differential fuzz crate (seeded, deterministic, ≥10k-class parity; workspace-excluded) |
+| TASK-16 | dup-done | `e5c4fad` | full P500 rerun 49 groups / 70 pairs / 0 missing / 0 CRASH (repeat cancelled by precedent) |
+| TASK-17 | done | `0200e7b` | 10-min soak: leak NO (26.45M==26.45M), 0 guard trips, SOAK_VERDICT PASS |
+| TASK-18 | done | `0dcfa7b` | HOTSPOT_CANDIDATES.md — C1–C8 ranked + NOT-hot/cleared list |
+| TASK-19 | done | `ed8ff1a`+`d3b3ce4` | roadmap refresh to canon P500 v2 (floor 35–90 ns errata) |
+| TASK-20 | done | `beaf374`+`2997d2f` | APPLY_BENCH: fast 0.20–1.97 ns/update vs apply 21.8 µs–3.59 ms; REAL apply JNI-copy-bound (1.38–4.56x slower than pure-Java ref) → diff-budget candidate |
+| TASK-21 | done | `02b0451` | npm crussty pre-check: NO live bug; F1/F2 minor, non-ENGINE-TOUCH |
+| TASK-22 | done | `e9405d1` (+`584f94a`,`5e9cff6`) | C1: find_class break-on-first-match + sighting feed + 2s/10s poller backoff (leak fix included) |
+| TASK-23 | done | `54a6724` | C2: COW lock-free hook readers (Arc snapshot swap; order contract; rebased over TASK-22) |
+| TASK-24 | done | `28ad646`+`1449f7f` (+`29aa1c7`) | C3: batch control-plane → per-thread SCRATCH (8 allocs→0); K=1 −9%, K≥8 parity |
+| TASK-25 | done (dup) | — (verified @`125e648`) | C5–C8 pack already on master before R2 start; SKIP by already-fixed rule |
+| TASK-26 | done | `f86c517` | C5: serve branch Arc<[u8]> + one-shot version parse + one-shot serve log |
+| TASK-27 | done | `106bb73` (C6) + `f542d02` (C7) | method-ID cache + conservative invalidation + drain-8; log copy-out under lock |
+| TASK-28 | done | `397856c` (+`db7cf27`) | batch wiring as-built (mod declaration, gate `ERR_KERNEL_REFUSED=-10`, 12 PROVEN_WINS batch entries, drift-guards) + rollout design (auto-threshold T, CRUSSTY_BATCH off default, stage gates) |
+| TASK-29 | done | `4fb9d12`+`a7e3967` | two convergent blend-cache designs (cross-linked); per-column cache rejected on measured evidence (g3 0.980, MarkerCache 4.54x regression) |
+| TASK-30 | done | `125e648` | ops-count anomaly oracle: VERDICT PARITY (268/268 both modes; replay 0 free parameters; signed ERRATUM) |
+| TASK-31 | done | `db820b1` | PROVEN_WINS evidence-sync: 27 entries, 3 stale WIN→PARITY, blend-cache 316x, Allow-set unchanged. (TASK-31-w3 = integration GREEN, report-only) |
+| TASK-32 | done — **NO-GO** | probe `cedc9df`, verdict `1c5eefb` (worklog `587fd1b`) | Phase-1 probe: JFR 0/180 per-column samples on live worldgen → impl never started; proto stays OFF; pair BENCH-ONLY (§2.5) |
+| TASK-33 | done | `f55f9c9` | BOOST_SWEEP: >10x/>100x ledger, binding truth (283 registered ≠ wired; 2 live wirings), physical limits. (Its "≤40x dormant" batch row is refuted by §3.1 — read together) |
+| TASK-33-w4 | done | `217e3e8` | canon 35–90 ns errata across live docs (history not rewritten) |
+| TASK-34 | done | `ed27eb0` | aggregator dedup/unpaired/--strict/--check; medians stable 0/129 changed |
+| TASK-35 | done | `97afe20` | untrack 8 accidentally-committed bench .class files |
+| TASK-36 | done | `6c751b7` | areamap-fuzz CI job (loud parity gate, artifact on failure) |
+| TASK-37 | done | `278dcf0` | aggregator canon prose (future reports emit 35–90 ns) + CI fixture --check/--strict wiring |
+| TASK-38 | done — **NEGATIVE** | `94c4891` | coalescing moot: ≤1 native call/map/tick (javap-verified); no impl per investigate-first gate |
+| TASK-39 | done | `0939257` | HOTSPOT_CANDIDATES_V2: D1–D5 (D1 = batch double-copy = named prerequisite in §3.1; D2–D4 → TASK-43) |
+| TASK-40 | done | `5c8e66b`+`839aefc` | roadmap waves 2–4 sync with shas + honesty guard (0 overclaims found) |
+| TASK-41 | done | `28cdc09` (P0 closure `b002d9c`) | first live E2E: dormant boot PASS 15/15, first hot-reload PASS; armed-SIGSEGV P0 root-caused to lock-unwrap-unwind class, discriminatively closed |
+| TASK-42 | not assigned | — | suggested ID (D1/D2 pack) in HOTSPOT_CANDIDATES_V2; D2–D4 executed as TASK-43, D1 remains open (§5) |
+| TASK-43 | done | `11b19c3` | D2+D3+D4: POLL_STATE bounded 65,536 + no-alloc-on-hit; MAIN_IDS survives pre-boot loop; CACHE/QUEUE poison-recovery; +4 tests |
+| TASK-44 | not assigned | — | no CLAIMS row ever existed |
+| TASK-45 | done | `54c8638` → `53578ba`+`977a339`+`d176e46` | bootab phase-2: scan-avoidance ESTIMATE→measured (§2.4); 60s-window finding → 120s minimum |
+| TASK-46 | done | `ef2754e` | poison-recovery sweep: 7 JNI-reachable sites fixed + 3 tests; 2 report-only (blend proto, gated OFF) |
+| TASK-47 | done — **NO-GO** | `c351b46`+`90829f4` | rollout A/B: net-negative 6 groups × K≤256 (+11..+168%), parity bit-exact, T=OFF; "≤40x dormant" refuted |
+| TASK-48 | done — **NO-GO** | `b4a5c9b`+`de81bcf`+`dc434d8` | A' shape landed + measured: +40.5 ns/op, g9 never wins; wave-1 NO-GO-by-measurement; Phase 2 closed |
+| TASK-49 | done | this commit | RESULTS_LEDGER.md — this document |
+
+Pre-wave-1 closure (TASK-01…11, for completeness): phantom-reaper+stripes `e59201d`/`99dd17e` (01/09),
+P500 CI `6134cfb` (02), batch proposals `e0d6e06`/`bcb71bf` (03), remap gate `8ec63b9` (04), npm
+closed-no-bug via 21 (05), O(N)@262144 `bfdbf87` (06), full P500 v2 rerun `3baa0f7` (07), runtime
+class-name fix CRUSSTY `66ff504` (08), area-map smoke `532597b` (11), review/errata TASK-10.
+
+---
+
+## §7 Doc inconsistencies flagged during this consolidation (NOT edited — listed per task rules)
+
+1. **BOOST_SWEEP.md (`f55f9c9`) row 5 "batch ≤40x dormant" is refuted by later measurement**
+   (`c351b46`/`dc434d8`); the sweep predates the A/B and was intentionally not rewritten. Read
+   §2.2/§3 of BOOST_SWEEP together with `BATCH_ROLLOUT_AB.md` (which says this explicitly).
+2. **Area-map fast-path ratio has two canonical ranges**: 1,945x–170,612x (BOOST_SWEEP #1, resize-mix
+   basis) vs up to ~1.8e6x shape-dependent (APPLY_BENCH.md headline, 1-move mix). Same surface,
+   different mixes — not a contradiction, but a misquote hazard; this ledger quotes the conservative
+   range as canonical and labels the larger one shape-dependent.
+3. **CLAIMS.md TASK-45 row cites `54c8638` as done-sha** while the measured A/B artifacts are
+   `53578ba`+`977a339`+`d176e46` (counters landed after the first phase-2 report; the row text
+   contains both). Canonical evidence for the measured numbers = `TASK45_SDK_STATS_AB.md` @
+   `d176e46`.
+4. **Known open errata already registered in `BOOST_SWEEP.md` §5**: `PROVEN_WINS_SYNC.md` §4.4
+   (claims report files differ; they are byte-identical at HEAD), `HOOK_BLEND_CACHE.md` (stale 244x /
+   ~115 ns), `BLEND_CACHE_DESIGN.md` §4 (244x), `OPTIMIZATION_ROADMAP.md` §1 (area-map activation
+   cadence staleness). None affect verdicts; all are number/cadence staleness.
+5. **ID collision**: TASK-32 (blend-cache impl, NO-GO `1c5eefb`) vs TASK-32-w4 (bootab harness,
+   `e6a030d`) — different tasks sharing a numeric prefix; disambiguated throughout this ledger.
+
+---
+
+*TASK-49-w8 · agent-7625532f · 2026-09-08 · docs-only; /home/z/c-crussty working tree untouched
+(written in a detached worktree); no `.so`, no gameplay, no live-server contact; no invented numbers —
+every magnitude above traces to a committed report or registry line.*
