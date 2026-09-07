@@ -1,0 +1,35 @@
+RESULT	java_emptyStatic	java-baseline	FloorBench	()J	10.2	10.0	22.9	OK
+RESULT	java_emptyStaticBatched16	java-baseline	FloorBench	()J	10.2	10.2	14.6	OK
+RESULT	java_emptyStatic4args	java-baseline	FloorBench	(I[Ljava/lang/Object;[Ljava/lang/Object;[J)I	8.3	8.3	10.0	OK
+RESULT	java_sinkVolatileFold	java-baseline	FloorBench	(J)V	12.8	12.8	13.0	OK
+RESULT	java_nanoTimeCall	java-baseline	FloorBench	()J	33.0	33.0	33.2	OK
+RESULT	jni_g32_PluginNameLog_newArrayListSortSummary	jni-floor	PaperNativePluginNameLog	(I[Ljava/lang/Object;[Ljava/lang/Object;[J)I	112.0	111.3	129.1	OK
+RESULT	jni_g35_RangeChoice_oldFillArraySummary	jni-floor	PaperNativeRangeChoice	([D[I[I[II[J)I	80.6	80.3	81.3	OK
+RESULT	jni_g39_SpigotLoadOrderDependency_newLoadAfterBuildSummary	jni-floor	PaperNativeSpigotLoadOrderDependency	(I[Ljava/lang/Object;[J)I	112.1	111.9	114.0	OK
+RESULT	jni_g42_StaticCacheGet_oldBatchSummary	jni-floor	PaperNativeStaticCacheGet	(IIIII[I[J)I	35.2	33.8	43.2	OK
+RESULT	jni_g33_PluginStartupRollup_newSummary	jni-floor	PaperNativePluginStartupRollup	(I[Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;[Ljava/lang/Object;[J)I	115.8	115.5	116.7	OK
+RESULT	jni_g06_ClimateParameterDistance_subtractFirstDistanceSum	jni-tax-native	PaperNativeClimateParameterDistance	([J[J[J[J)I	578.8	574.2	1067.6	OK
+RESULT	javaApproxClimateDistanceSum_unpacked6x10	java-approx	FloorBench	([J[J[J[J)I	2066.6	2057.3	3098.5	OK
+RESULT	javaApproxSubtractFirst_raw	java-approx	FloorBench	([J[J[J[J)I	65.9	58.5	99.8	OK
+RESULT	javaApproxTouch3Arrays	java-approx	FloorBench	([J[J[J[J)I	40.2	40.0	54.8	OK
+# ---- SUMMARY (median ns/op; java-approx lanes are PLAUSIBLE reconstructions, NOT verified parity) ----
+SUMMARY	java_call_floor_emptyStatic	10.2
+SUMMARY	java_call_floor_emptyStatic_batched16_perCall	0.6
+SUMMARY	java_call_floor_sameShape4args	8.3
+SUMMARY	java_harness_sinkVolatileFold	12.8
+SUMMARY	java_nanoTimeCall	33.0
+SUMMARY	jni_floor_estimate_min_of_5_sub150ns_kernels	35.2
+SUMMARY	kernel_overhead_above_jni_floor_g32_PluginNameLog	76.8
+SUMMARY	kernel_overhead_above_jni_floor_g35_RangeChoice	45.4
+SUMMARY	kernel_overhead_above_jni_floor_g39_SpigotLoadOrderDependency	76.9
+SUMMARY	kernel_overhead_above_jni_floor_g42_StaticCacheGet	0.0
+SUMMARY	kernel_overhead_above_jni_floor_g33_PluginStartupRollup	80.6
+SUMMARY	jni_g06_ClimateParameterDistance_subtractFirstDistanceSum	578.8
+SUMMARY	javaApprox_unpacked6x10_distance	2066.6
+SUMMARY	javaApprox_rawAbsDiff	65.9
+SUMMARY	javaApprox_touch3Arrays	40.2
+SUMMARY	jni_tax_upper_bound_nativeClimate_minus_javaApproxRaw	512.8
+SUMMARY	jni_tax_upper_bound_nativeClimate_minus_javaApproxUnpacked	-1487.9
+# jni_tax estimates subtract a java-approx work proxy from the native climate kernel;
+# they bound (transition + unknown native kernel work), never claim exact parity.
+SINK	-6187364587542765357

@@ -1,0 +1,139 @@
+# c-crussty CI — Rust cdylib build + Java bridge compilation + P500 smoke.
+#
+# Permissions are minimal (contents: read). No secrets are used anywhere:
+# checkout uses the default read-only GITHUB_TOKEN.
+
+name: ci
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    name: rust build (libcrussty.so)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      # Registry + target cache, keyed on Cargo.lock / workspace layout.
+      - uses: Swatinem/rust-cache@v2
+
+      # Root package "crussty" (crate-type cdylib) + its path deps
+      # cplug-abi / cplug-sdk build together. Output:
+      #   target/release/libcrussty.so
+      - run: cargo build --release
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: libcrussty-linux-x64
+          path: target/release/libcrussty.so
+          if-no-files-found: error
+
+  java:
+    name: java bridge classes
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # noise/ bridge (ImprovedNoiseNativeOps + Handle) is compiled BY THE
+      # REPO'S OWN SCRIPT — CI does not pass javac flags itself, so it follows
+      # whatever --release the script pins at the checked-out commit.
+      #   * committed script pins --release 8 (major 52); a pending handle-
+      #     lifecycle refactor (java.lang.ref.Cleaner, Java 9+ API) may move
+      #     it to --release 11 (major 55) — both stay <= major 65 (kernel JVM
+      #     = Java 21) and the script itself hard-fails above 65.
+      #   * javac 21 supports --release 8..21, so both pins are buildable on
+      #     the temurin 21 toolchain installed here.
+      - name: build noise bridge (scripts/build_noise.sh)
+        run: bash scripts/build_noise.sh
+
+      # area-map/ bridge (SingleUserAreaMapOps -> include_bytes!'d as
+      # src/area_map_ops.class) has no build script in the repo, so CI compiles
+      # it directly into area-map/build.
+      # --release 8 (major 52) is the repo-documented pin — see the javadoc in
+      # SingleUserAreaMapOps.java: the class is define_class'd into the kernel
+      # JVM from the bootstrap loader, and the committed artifact is major 52.
+      # (The "--release 11" flag from the task applies to the noise bridge's
+      # Cleaner-based refactor; area-map keeps the stricter --release 8 pin.)
+      - name: compile area-map bridge sources
+        run: |
+          mkdir -p area-map/build
+          javac --release 8 -Xlint:-options \
+            -d area-map/build \
+            area-map/ca/spottedleaf/moonrise/common/misc/RuntimeStubs.java \
+            area-map/ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps.java
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: java-bridge-classes
+          path: |
+            noise/build/
+            area-map/build/
+          if-no-files-found: error
+
+  # Informational P500 smoke: the closed-source kernel .so files ARE committed
+  # under native/, so System.load()/dlopen works on the Linux runner — but the
+  # kernels may still abort() on synthetic shapes (the retry ladder documented
+  # in bench/p500/run_p500.sh exists for exactly that) or need a newer glibc
+  # than ubuntu-latest ships. Therefore: 60s cap, any exit code tolerated,
+  # continue-on-error — this job reports, it never blocks CI.
+  smoke:
+    name: smoke (informational)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # gen_p500_bench.py has NO group-filter CLI — it (re)generates the whole
+      # set (49 groups + stubs + Bench.java) from native/JNI_EXPORTS.manifest.
+      # Running it here validates the generator against the manifest; the
+      # output overwrites the identical committed sources on the runner only.
+      - name: generate P500 bench sources
+        run: python3 bench/p500/gen_p500_bench.py
+
+      # Compile ONE group: gid 0 (PaperNativeAquiferIndexStride (I[J)I); a gid
+      # N is line N+1 of bench/p500/java/p500/groups.tsv. Minimal compile set:
+      # Group interface + Bench driver + the group class + the group's fqcn
+      # stub class (group and stub classes live in the default package — see
+      # Class.forName("G<gid>") in Bench.java).
+      - name: compile one P500 group (gid 0) + driver
+        run: |
+          cd bench/p500
+          mkdir -p classes
+          javac -d classes \
+            java/p500/Group.java \
+            java/p500/Bench.java \
+            java/p500/G0.java \
+            java/PaperNativeAquiferIndexStride.java
+
+      # Hard 60s cap; JVM flags mirror bench/p500/run_p500.sh. Non-zero exit
+      # (timeout 124, UnsatisfiedLinkError, kernel abort) is tolerated and
+      # only surfaces as a workflow notice.
+      - name: run group 0 against committed natives
+        run: |
+          cd bench/p500
+          LIBS="$GITHUB_WORKSPACE/native/libpaper_native_jni.so:$GITHUB_WORKSPACE/native/libpaper_native_chunk_encode_jni.so"
+          timeout 60 java -Xms256m -Xmx1g -XX:+UseG1GC \
+            -Dp500.libs="$LIBS" -cp classes p500.Bench 0 \
+            || echo "::notice::smoke exit $? — informational only (kernel libs may fail to load or abort on synthetic shapes)"

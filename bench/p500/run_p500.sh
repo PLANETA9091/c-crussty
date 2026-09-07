@@ -34,7 +34,7 @@ fi
 for gid in $GIDS; do
   echo "=== group $gid ==="
   OUT="logs/g$gid.out"; : > "$OUT"
-  timeout 600 "$JAVA" -Xms256m -Xmx1g -XX:+UseG1GC \
+  timeout 600 "$JAVA" -Xms1g -Xmx1g -XX:+AlwaysPreTouch -Xbatch -XX:+UseG1GC \
     -Dp500.groups=java/p500/groups.tsv -Dp500.libs="$LIBS" \
     -cp classes p500.Bench "$gid" > "$OUT" 2> "logs/g$gid.log"
   rc=$?
@@ -45,7 +45,7 @@ for gid in $GIDS; do
     for NTRY in 16 1; do
       echo "retry group $gid with -Dp500.n=$NTRY (previous exit $rc)"
       : > "$OUT"
-      timeout 600 "$JAVA" -Xms256m -Xmx1g -XX:+UseG1GC \
+      timeout 600 "$JAVA" -Xms1g -Xmx1g -XX:+AlwaysPreTouch -Xbatch -XX:+UseG1GC \
         -Dp500.n=$NTRY -Dp500.groups=java/p500/groups.tsv -Dp500.libs="$LIBS" \
         -cp classes p500.Bench "$gid" > "$OUT" 2> "logs/g$gid.log"
       rc=$?
