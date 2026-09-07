@@ -93,3 +93,16 @@ Work Log:
 
 Stage Summary:
 - 3/5 гейтов PASS; решающий item 4 (JFR share) — harvest далее. Прото PATCH_ENABLED=false; Phase 2 (V2-V4) обязателен до env-gated serve.
+
+---
+## SESSION cron 03:40+08 (продолжение) — TASK-32 Phase-1 probe VERDICT: NO-GO — 2026-09-07T20:33Z — agent-7625532f
+
+Work Log:
+- Boot-диагностика: 4 тихие смерти (без hs_err) на craftbukkit.Main — **F2: стартовый JFR + JVMTI-агент несовместимы в class-load шторме (4/4; gate=1, gate=0, SerialGC, разные heap)**; hook exonerated gate=0-контролем; workaround: jcmd JFR.start post-boot (бут #6, Done 33.147s, rec.jfr 1.44MB).
+- Stray bootab-JVM (PID 12499, run-B-p2, 344MB@126%CPU) найден и убит — НЕ live-сервер.
+- Item 4 (JFR, 252 сэмпла, строгий матч): per-column blend-механика 0/180 worldgen-worker сэмплов; единственный хит 0.40% = разовый Blender.of setup (первичный «18.25%» — парсерный false-positive на doFill(Blender,...), честно перепроверено). NO-GO порог <0.1% пробит.
+- ВЕРДИКТ TASK-32 NO-GO: Blender.EMPTY путь дёшев/нерелевантен на свежем мире; 316x = DENSE-ветка (upgrade-миры) — сервер не ходит. Прото dormant, BENCH-ONLY, kernel_policy не тронут. >100x pipeline пуст ИЗМЕРЕННО.
+- c-crussty: 4da13af, 1c5eefb, 2fbe52c; CLAIMS done; race-safe пуши, re-pull verified.
+
+Stage Summary:
+- TASK-24 и TASK-32 — оба хвоста wave-3 закрыты. Открытых клеймов нет.
