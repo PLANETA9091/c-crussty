@@ -343,3 +343,89 @@ one-retransform pipeline; Pool/find_method/SMT machinery, A4 bounds guards); `sr
 TASK-10 errata (floor 35–90 ns); TASK-01/09 (phantom-reaper lifecycle pattern for C1);
 `tests/area_map_smoke/` (byte-mirror + JVM stub verification precedent); TASK-14 ratio-gate
 (baseline.json, 1.2x paired gate).
+
+---
+
+## 9. Phase-1 probe — running addendum (agent-7625532f, started 2026-09-07T19:55Z)
+
+Status: **PENDING-HARVEST** — items 1/3/5 complete below, items 2/4 ride a
+background throwaway boot (`bench/blendprobe/run_blend_probe.sh`, setsid,
+run dir `/tmp/ab-blend`, harvest next tick). Verdict recorded here when the
+JFR + sighting data land. Nothing in this section is a registry change.
+
+### Item 1 — javap static truth (DONE)
+
+Source: the LIVE runtime jar the server actually loads
+(`/home/z/server/versions/1.21.10/purpur-1.21.10.jar`, paperclip-extracted
+patched build; patches.list grep for NoiseChunk|Blender = **0 hits**).
+
+- `NoiseChunk.blender` — `private final Blender` ⇒ **set-once/final
+  CONFIRMED** (open question 2 answered).
+- Blend sites resolve with expected descriptors:
+  `NoiseChunk$BlendOffset.compute` / `NoiseChunk$BlendAlpha.compute` →
+  `NoiseChunk.getOrComputeBlendingOutput(II)` →
+  `Blender.blendOffsetAndFactor(II)`. All present in live bytecode.
+- **H2 ("Paper already folds EMPTY") REFUTED at bytecode level**: the live
+  `blendOffsetAndFactor` is vanilla-structured with NO constant-fold and NO
+  `isEmpty()` early-out before the expensive path. The EMPTY-blender call
+  (empty `Long2ObjectOpenHashMap`s) per invocation does: 2×
+  `QuartPos.fromBlock`, up to 4 neighborhood map probes (4-arg
+  `getBlendingDataValue` → 6-arg `Long2ObjectOpenHashMap.get`), then
+  **allocates 3× `MutableDouble` + `forEach` lambda setup + `new
+  BlendingOutput(1.0, 0.0)`** before returning. ~6 short-lived allocations
+  per call, allocation-dominated — NOT folded, but also NOT the 95.3 µs
+  dense path (that one requires non-empty blending data = old chunks
+  nearby). Live cost of the EMPTY path is bounded by the JFR share
+  measurement (item 4).
+
+### Item 3 — g21 N-scaling falsification (DONE)
+
+`p500.Bench 21` at `-Dp500.n=1/16/256/4096`, BENCH.lock, medians (ns/op):
+
+| N | oldEmptyBlenderSummary | newEmptyBlenderSummary | ratio |
+|---:|---:|---:|---:|
+| 1 | 365.7 | 117.5 | 3.1x |
+| 16 | 4,926.3 | 123.6 | 39.9x |
+| 256 | 72,803.2 | 232.1 | **313.6x** |
+| 4096 | 1,052,020.6 | 2,395.4 | 439x |
+
+- old* linear-with-N CONFIRMED (×16 N → ×13.5/14.8/14.5 — linear + memory
+  hierarchy at the top end).
+- new* flat only for N ≤ 16 (117.5→123.6), sub-linear growth beyond
+  (~N^0.55; 232.1 @ 256, 2395.4 @ 4096). The guard is O(1) but the summary
+  walk is not — kernel-model projection for the live win must use the
+  live-N measured in item 4, not an assumed flat 301 ns.
+- Canonical anchor reproduced: 313.6x @ N=256 ≈ registry 316.45x
+  (P500_REPORT_v2 §21) — the closed pair and the harness agree.
+
+### Item 5 — V1 kernel parity (DONE, mandatory regardless of verdict)
+
+`bench/blendprobe/V1BlendParity.java` (new): 10,000 calls of
+`oldEmptyBlenderSummary` vs `newEmptyBlenderSummary` on identical inputs —
+all 16 quart-alignment classes × realistic blending-radii distances × both
+signs, fresh dst arrays per call (FRESH-ARGS rule), compare int return +
+every written dst lane. **V1 PARITY: 10000/10000 PASS** (exit 0). The g21
+pair is semantically interchangeable.
+
+Method note (recorded honestly): a first sweep with city-block distances up
+to ~15k blocks ran the old kernel at O(N) ms/call (single invocation >1 s
+by the item-3 model) and blew the run budget — coordinates were bounded to
+the real blending window (≤ 60 blocks, all alignment classes preserved).
+The 10k coverage is per-alignment-class exhaustive within that window.
+
+### Items 2+4 — sighting + JFR share (PENDING-HARVEST)
+
+One throwaway default-world boot carries both: `CRUSSTY_NATIVE_BLEND_CACHE=1`
+(observation-only prototype) captures `blend_cache: probe:` RESOLVED/absent
+lines + the parity selftest line into `run.log`; JFR (settings=profile,
+dumponexit) covers boot spawn-gen + 2× forceload 17×17 + 120 s settle.
+Harvest plan: grep run.log for sightings; `jfr print --events
+jdk.ExecutionSample` → blend-frame sample share on worldgen threads
+(GO ≥ 0.5%, NO-GO < 0.1%).
+
+### Interim read (NOT a verdict)
+
+3 of 5 gates done, all three PASS (not-folded ∧ sites-resolve ∧ V1-parity).
+The remaining quantitative gate (item 4 share ≥ 0.5%) decides GO/NO-GO. Note
+that even a full GO does not flip anything by itself: the prototype stays
+`PATCH_ENABLED=false` and Phase 2 requires V2-V4 before any env-gated serve.
