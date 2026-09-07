@@ -21,6 +21,7 @@ mod classfile;
 mod improved_noise;
 mod jni_table;
 mod loader;
+mod proto_blend_cache;
 
 use cplug_abi::{CPluginApi, JavaVmPtr};
 use jvmti_bindings::prelude::*;
@@ -52,10 +53,26 @@ pub unsafe extern "C" fn cplugin_init(
     vm: JavaVmPtr,
     _options: *const c_char,
 ) -> i32 {
+    // H-01 (hardening audit A11): a panic unwinding across this C boundary
+    // aborts the whole JVM. Recover, report, and signal failure to the agent.
+    let r = std::panic::catch_unwind(std::panic::AssertUnwindSafe(|| {
+        cplugin_init_impl(api, vm, _options)
+    }));
+    match r {
+        Ok(rc) => rc,
+        Err(_) => {
+            eprintln!("[crussty-plugin] FATAL: cplugin_init panicked");
+            -1
+        }
+    }
+}
+
+unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *const c_char) -> i32 {
     cplug_sdk::init(api, vm);
     eprintln!("[crussty-plugin] cplugin_init: injecting Crussty CE native surface in background");
     area_map::register();
     improved_noise::register();
+    proto_blend_cache::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -195,6 +212,8 @@ fn inject_surface() {
 
     area_map::activate();
     improved_noise::activate();
+    // Dormant unless CRUSSTY_NATIVE_BLEND_CACHE is set (see docs/HOOK_BLEND_CACHE.md).
+    proto_blend_cache::activate();
 }
 
 /// Define one bridge class and register all its natives.
@@ -283,6 +302,7 @@ fn live_proof(env: &JniEnv) {
         return;
     };
     let Some(arr) = env.new_long_array(1) else {
+        let _ = clear_exception(env); // C-1: never detach with a pending exception
         eprintln!("[crussty-plugin] live proof: new_long_array failed");
         env.delete_local_ref(cls);
         return;
@@ -297,7 +317,26 @@ fn live_proof(env: &JniEnv) {
 
 /// Attach the current thread if needed, run `f` with a JNI env, detach only
 /// if we attached. Standard Oracle-JNI GetEnv-first idiom.
+///
+/// H-10 (hardening audit A11): the detach is a drop-guard, so a panic inside
+/// `f` still detaches instead of leaking the thread's attachment slot. The
+/// panic itself keeps propagating to the nearest catch_unwind boundary.
 fn with_attached<R>(f: impl FnOnce(&JniEnv) -> R) -> Option<R> {
+    struct DetachGuard(*mut jni::JavaVM);
+    impl DetachGuard {
+        fn disarm(&mut self) {
+            self.0 = std::ptr::null_mut();
+        }
+    }
+    impl Drop for DetachGuard {
+        fn drop(&mut self) {
+            if !self.0.is_null() {
+                unsafe {
+                    ((**self.0).DetachCurrentThread)(self.0);
+                }
+            }
+        }
+    }
     unsafe {
         let raw_vm = cplug_sdk::vm();
         let vm = raw_vm as *mut jni::JavaVM;
@@ -325,8 +364,10 @@ fn with_attached<R>(f: impl FnOnce(&JniEnv) -> R) -> Option<R> {
             return None;
         }
         let env = JniEnv::from_raw(env_ptr);
+        let mut guard = DetachGuard(vm);
         let out = f(&env);
-        ((**vm).DetachCurrentThread)(vm);
+        guard.disarm(); // normal path: detach here, in order
+        drop(guard);
         Some(out)
     }
 }
@@ -337,6 +378,20 @@ fn with_attached<R>(f: impl FnOnce(&JniEnv) -> R) -> Option<R> {
 /// server log for a condition we fully expect.
 fn clear_exception(env: &JniEnv) -> bool {
     if env.exception_check() {
+        env.exception_clear();
+        true
+    } else {
+        false
+    }
+}
+
+/// Report a pending exception loudly (describe + clear). For paths where an
+/// exception means REAL breakage (define_class of our own bridge, RegisterNatives
+/// setup, self-test callables) — the trace is exactly what an operator needs in
+/// the server log. Always safe to call: no-op when nothing is pending.
+fn describe_exception(env: &JniEnv) -> bool {
+    if env.exception_check() {
+        env.exception_describe();
         env.exception_clear();
         true
     } else {
