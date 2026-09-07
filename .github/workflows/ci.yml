@@ -160,3 +160,49 @@ jobs:
         run: bash bench/areamap/run_smoke.sh "$(dirname "$(command -v javac)")"
       - name: tests/area_map_smoke (patched-bytes suite)
         run: bash tests/area_map_smoke/run.sh
+
+  # TASK-36 / TASK-15: area-map-fuzz differential parity (crate b6bb359).
+  # area-map-fuzz/ is workspace-EXCLUDED on purpose (standalone, zero deps),
+  # so cargo must run INSIDE that directory — a root-level `cargo test
+  # --workspace` never sees it. All 3 suites (~13.9k cases: 10k+ randomized
+  # parity, adversarial same-state idempotency, edge-coordinate sweep) derive
+  # from the fixed BASE_SEED: fully deterministic and headless (no JVM, no
+  # JNI, no .so). continue-on-error is deliberately FALSE — unlike the
+  # informational smokes above, a failure here is a REAL parity bug in the
+  # shipped fast-path model and must fail CI loudly.
+  areamap-fuzz:
+    name: area-map-fuzz differential parity (seeded, loud)
+    runs-on: ubuntu-latest
+    continue-on-error: false
+    # ~15s test in --release on runners (crate README), cold build is seconds
+    # (zero dependencies); budget covers a cold toolchain + uncached build.
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      # Same toolchain setup as the `rust` job above.
+      - uses: dtolnay/rust-toolchain@stable
+
+      # Cache scoped to the standalone fuzz workspace (own Cargo.lock, own
+      # target/ inside area-map-fuzz/) — the default workspace cache here
+      # would not cover it.
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: area-map-fuzz
+
+      # tee + pipefail: the job still fails on a bad exit code, but the full
+      # test output is preserved for the failure-only artifact upload below.
+      - name: cargo test --release (inside workspace-excluded crate)
+        working-directory: area-map-fuzz
+        run: |
+          set -o pipefail
+          cargo test --release 2>&1 | tee fuzz-test.log
+
+      - name: Upload fuzz test log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: areamap-fuzz-test-log
+          path: area-map-fuzz/fuzz-test.log
+          retention-days: 14
+          if-no-files-found: ignore
