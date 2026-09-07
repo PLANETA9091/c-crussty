@@ -6,7 +6,10 @@
 > `ERR_KERNEL_REFUSED`, drift-guard tests). Floor numbers errata: this
 > document predates `P500_REPORT_v2.md` — the canon JNI transition floor is
 > **35–90 ns** (13 floor groups < 200 ns), not ~115 ns; batching math and
-> structure below are unchanged.
+> structure below are unchanged. Canonical counts + re-derived scenario wins:
+> [`BATCH_ADOPTION_MATRIX.md`](BATCH_ADOPTION_MATRIX.md); measured canon:
+> [`../bench/p500/results/P500_REPORT_v2.md`](../bench/p500/results/P500_REPORT_v2.md).
+> §1/§8 carry inline errata (TASK-33, 2026-09-08).
 
 Design for amortizing the JNI transition floor across many native
 kernel invocations in c-crussty. Companion context:
@@ -17,6 +20,19 @@ Phase 2.2). Target repo state: `src/` (Rust plugin), `native/JNI_EXPORTS.manifes
 ---
 
 ## 1. Motivation — 49 groups × 115 ns floor
+
+> **ERRATA (TASK-33, 2026-09-08) — the "~115 ns floor" framing below is
+> obsolete.** Canon JNI transition floor is **35–90 ns** (anchors:
+> `StaticCacheGet` 34.6 ns, floor-resident cluster 81.4–89.0 ns, `(I)D` N=1
+> 19.9–31.2 ns) — measured in
+> [`../bench/p500/results/P500_REPORT_v2.md`](../bench/p500/results/P500_REPORT_v2.md)
+> after the BATCH_NS audit (commit `3baa0f7`); the v1 112–220 ns band came
+> from a run that never reached stable C2. The "49 groups × floor" / "44+
+> groups on floor" counts were kernel-counting artifacts — real count:
+> Tier A 4 groups / ≤2× floor 13 groups / 32 kernels < 200 ns / ≤4× floor
+> 16 groups (49 rows total) — see [`BATCH_ADOPTION_MATRIX.md`](BATCH_ADOPTION_MATRIX.md)
+> §1/§3/§5. Measured v1 numbers below are kept as history; the original
+> section title is retained verbatim for cross-reference.
 
 P500 (`bench/p500/results/P500_REPORT.md`) shows ~40 of the 49 groups pinned
 in a 112–220 ns band where old and optimized kernels are within the ±15%
@@ -213,7 +229,15 @@ shapes; the hot ones are `(I[J)I` ×9, `(II[J)I` ×4, `(III[J)I` ×3, plus
 
 ## 8. Expected win math
 
-Model per individual call: `T = F + B` where `F ≈ 115 ns` (measured floor) and
+> **ERRATA (TASK-33, 2026-09-08) — win math below assumes `F ≈ 115 ns`.**
+> With the canon **35–90 ns** floor (P500_REPORT_v2.md) the savings shrink:
+> scenario batch wins for floor-band groups are **~1.3–3x @K≥32** (TASK-10
+> erratum), not 15–35x / ~4.5x / "~100 ns/op saved @K=64". Formulas and
+> structure are unchanged; re-derived economics live in
+> [`BATCH_ADOPTION_MATRIX.md`](BATCH_ADOPTION_MATRIX.md) (§2 method, §5
+> summary). Original text kept below, marked errata.
+
+Model per individual call: `T = F + B` where `F ≈ 115 ns` (measured floor — *errata: obsolete pre-audit figure, see block above; canon 35–90 ns*) and
 `B` = kernel body. Batch of `N` ops, one transition:
 
 ```

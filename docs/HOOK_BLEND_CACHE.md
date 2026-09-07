@@ -65,8 +65,12 @@ The P500 kernel pair models exactly this per-column cache/lookup path:
 * `newEmptyBlenderSummary(n, p, dst)` — the optimized path: **empty-blender
   short-circuit / native hash-bitmap fast path**. 274.5 ns **total** for the
   same 256 columns ≈ 1.07 ns/column — below the cost of even one
-  Java-side hash probe, and only ~2.4× the measured ~115 ns JNI transition
-  floor (P500_REPORT.md "JNI-floor insight"). An O(1) per-batch early-out
+  Java-side hash probe, and only ~2.4× the then-measured ~115 ns JNI transition
+  floor (P500_REPORT.md "JNI-floor insight"). **[ERRATA TASK-33 2026-09-08:
+  the ~115 ns floor is obsolete — canon 35–90 ns (`P500_REPORT_v2.md`), and
+  the v1 absolutes here (67 µs → 274.5 ns, "244x") are superseded by the v2
+  rerun (95.3 µs → 301.1 ns, ~317x); see `BOOST_SWEEP.md`. The O(1)
+  early-out conclusion is unchanged.]** An O(1) per-batch early-out
   is the only mechanism consistent with that flat number.
 
 **Falsification probe** (cheap, do it first): re-run G21 with

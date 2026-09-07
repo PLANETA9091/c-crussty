@@ -34,7 +34,7 @@
     FAKE MODE: AREAMAP SMOKE: ALL PASS   (S1×~30 кейсов, S2×4, S3×2, S4)
     REAL MODE: AREAMAP SMOKE: ALL PASS   (S1×~30, S4)
 
-Same-state fast path (~115ns JNI на каждый idle-update) — верифицирован.
+Same-state fast path (JNI-переход на каждый idle-update) — верифицирован. [ERRATA TASK-33: «~115ns» = устаревший пол до аудита BATCH_NS (3baa0f7); канон 35–90ns — `bench/p500/results/P500_REPORT_v2.md`, см. также results/APPLY_BENCH.md.]
 
 ## Fuzz parity (TASK-15)
 

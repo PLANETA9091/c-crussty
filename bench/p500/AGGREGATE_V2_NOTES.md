@@ -62,9 +62,10 @@ one old, several alt variants — expected for variant-sweep groups).
   ImprovedNoiseInline arithmetic 1.16x and AquiferSurfaceSampling 1.15x — fall
   inside the stricter ≤ 0.85 WIN boundary and are now PARITY.)
 * `## JNI floor groups` — any kernel median < 200 ns ⇒ batch-API candidate
-  (per-kernel micro-optimization is pointless at the ~115 ns JNI transition
-  floor). Current run: 11 groups (g18, g28, g30, g31, g32, g33, g35, g36,
-  g39, g40, g42).
+  (per-kernel micro-optimization is pointless at the JNI transition floor;
+  canon 35–90 ns per P500_REPORT_v2.md — the "~115 ns" phrasing here was
+  stale pre-audit prose, TASK-33 errata). Current run: 11 groups (g18, g28,
+  g30, g31, g32, g33, g35, g36, g39, g40, g42).
 
 ## 4. Baseline tracking
 
