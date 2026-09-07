@@ -157,6 +157,11 @@ pub const ABI_SIG: &str = "()I";
 /// Contract documentation: the `#[unsafe(no_mangle)]` fn below must keep this name.
 #[allow(dead_code)]
 pub const ABI_SYMBOL: &str = "Java_crussty_batch_PaperNativeBatchDispatch_abiVersion";
+/// The exact `abiVersion()` word: `(TABLE_VERSION << 16) | KERNEL_COUNT`
+/// (131_087 today). Single source for the export AND the G4 Java helper's
+/// expected value (src/improved_noise.rs batch self-test; the Java-side
+/// constant in ImprovedNoiseBatchOps is its compile-time mirror).
+pub const ABI_WORD: jni::jint = ((TABLE_VERSION as jni::jint) << 16) | KERNEL_COUNT as jni::jint;
 
 /// Fn-pointer table not resolved (and self-init failed) — call `init` first.
 pub const ERR_NOT_INITIALIZED: i32 = -1;
@@ -360,6 +365,117 @@ pub fn rollout_mode() -> RolloutMode {
         );
         m
     })
+}
+
+// ---------------------------------------------------------------------------
+// G4: site arming (docs/G4_SITE_PATCH_DESIGN.md §4) — the first-consumer
+// contract between the rollout gate and a real call site.
+// ---------------------------------------------------------------------------
+
+/// B.3 default auto-threshold T for sites without a measured per-kernel
+/// override (docs/BATCH_WIRING_PLAN.md §B.3: "Default T = 16").
+pub const DEFAULT_SITE_T: u32 = 16;
+/// B.3 clamp range for T (§B.3: "clamped to {8,16,32,64}") — values outside
+/// [8, 64] are pulled into it.
+pub const T_MIN: u32 = 8;
+pub const T_MAX: u32 = 64;
+
+/// Clamp T into the B.3 range (G4 §4.4: "clamp 8–64").
+pub fn clamp_t(t: u32) -> u32 {
+    t.clamp(T_MIN, T_MAX)
+}
+
+/// B.3 per-kernel T: measured overrides win; the g42 kernel (table id 14,
+/// the canonical Stage-1 kernel) is pre-set to 32 (§B.3 table); everything
+/// else takes the default. The result is ALWAYS clamped.
+pub fn threshold_for_kernel(kernel_id: Option<usize>) -> u32 {
+    let raw = match kernel_id {
+        Some(14) => 32,
+        _ => DEFAULT_SITE_T,
+    };
+    clamp_t(raw)
+}
+
+/// One batch call-site (G4 §4.3). A site is a byte-hook call site whose
+/// invokestatic is retargeted to a same-descriptor batching helper; arming
+/// is a one-time boot-phase decision made on the quiet activation worker
+/// (NEVER on a hook callback thread — the improved_noise deadlock
+/// discipline; this function performs no JNI work).
+pub struct SiteSpec {
+    /// Site identity (marker): the Java class+method whose call site is
+    /// retargeted (e.g. `ImprovedNoise.noise`).
+    pub site_class: &'static str,
+    pub site_method: &'static str,
+    /// The kernel bridge the site routes through — the audit_wire target;
+    /// the G2 mask is evaluated against this pair.
+    pub kernel_class: &'static str,
+    pub kernel_method: &'static str,
+    /// Batch-table id of the kernel the site flushes through, when one
+    /// exists. `None` = demonstrator site whose kernel is body-dominated
+    /// and not batchable (BATCH_ADOPTION_MATRIX LOW rows) — the marker
+    /// carries `id=none` and the flush leg stays in single-call ground
+    /// state (the zero-op dispatch only proves the machinery, G4 §5.1).
+    pub kernel_id: Option<usize>,
+    /// Site's preferred T (B.3 default 16; g42 sites pass 32) — clamped.
+    pub default_t: u32,
+    /// Short site tag for markers/e2e rows (e.g. "improved_noise").
+    pub tag: &'static str,
+}
+
+/// Outcome of [`site_arm`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SiteArm {
+    /// Gate chain passed; the site may retarget + route. `t` = clamped T.
+    Armed { t: u32 },
+    /// Dormant by default (G1 off) or G2 refusal — the site must NOT
+    /// retarget; served bytes stay untouched (the ABSENCE of the arm line
+    /// is the dormant signal the e2e verifies, G4 §7.3).
+    NotArmed,
+}
+
+/// The G4 gate chain (docs/G4_SITE_PATCH_DESIGN.md §4): G1 rollout gate →
+/// G2 do-not-wire hard guard + kernel-policy mask → audit_wire → the
+/// runbook-expected arm marker. One line per armed site, once per boot.
+pub fn site_arm(site: &SiteSpec) -> SiteArm {
+    // G1: the rollout gate decides WHETHER sites arm at all. Silent on Off:
+    // the absence of the arm line is the documented dormant signal.
+    if rollout_mode() == RolloutMode::Off {
+        return SiteArm::NotArmed;
+    }
+    // G2: the MODE-INDEPENDENT do-not-wire hard guard AND the kernel-policy
+    // verdict for the site's kernel pair. A refusal here is visible (one
+    // line) — it would mean a future edit demoted the kernel; the site
+    // stays unretargeted (fail-safe to the proven single-call path).
+    if !mask_bit(crate::kernel_policy::mode(), site.kernel_class, site.kernel_method) {
+        eprintln!(
+            "[crussty-plugin] batch: site {} not armed: kernel-policy refuses {}.{}",
+            site.tag, site.kernel_class, site.kernel_method
+        );
+        return SiteArm::NotArmed;
+    }
+    debug_assert!(
+        crate::kernel_policy::decide(site.kernel_class, site.kernel_method).is_allowed(),
+        "batch site {} kernel {}.{} lost its policy verdict",
+        site.tag,
+        site.kernel_class,
+        site.kernel_method
+    );
+    crate::kernel_policy::audit_wire(
+        site.kernel_class,
+        site.kernel_method,
+        &format!("batch site {}", site.tag),
+    );
+    let t = clamp_t(site.default_t);
+    // Runbook marker (docs/BATCH_ROLLOUT_RUNBOOK.md §4). id= is the
+    // batch-table kernel id for kernel-backed sites, `id=none` for
+    // demonstrator sites whose kernel has no batch-table body (G4 §5.1 —
+    // honestly framed; the regex was widened to id=(none|[0-9]+)).
+    let id = site.kernel_id.map(|i| i.to_string()).unwrap_or_else(|| "none".into());
+    eprintln!(
+        "[crussty-plugin] batch: arm {}.{} id={id} T={t} site={}",
+        site.site_class, site.site_method, site.tag
+    );
+    SiteArm::Armed { t }
 }
 /// Per-kernel bridge-class global refs (A7 §4.4: hand each kernel the same
 /// `jclass` it was registered against). Index 0 = unresolved → fall back to
@@ -590,7 +706,7 @@ pub unsafe extern "system" fn Java_crussty_batch_PaperNativeBatchDispatch_abiVer
     _env: *mut jni::JNIEnv,
     _clazz: jni::jclass,
 ) -> jni::jint {
-    ((TABLE_VERSION as jni::jint) << 16) | KERNEL_COUNT as jni::jint
+    ABI_WORD
 }
 
 /// Create the per-thread scratch arrays (global refs, zeroed).
@@ -1292,5 +1408,62 @@ mod tests {
             })
             .collect();
         assert_eq!(pure, vec![0, 5, 10, 15]);
+    }
+
+    // ---- G4 site arming (docs/G4_SITE_PATCH_DESIGN.md §4) ----------------
+
+    /// B.3 clamp rule: T stays inside [8, 64]; the canon values 16/32 pass
+    /// through unchanged.
+    #[test]
+    fn clamp_t_keeps_b3_range() {
+        assert_eq!(clamp_t(7), 8);
+        assert_eq!(clamp_t(8), 8);
+        assert_eq!(clamp_t(16), 16);
+        assert_eq!(clamp_t(32), 32);
+        assert_eq!(clamp_t(64), 64);
+        assert_eq!(clamp_t(65), 64);
+        assert_eq!(clamp_t(u32::MAX), 64);
+        assert_eq!(clamp_t(0), 8);
+    }
+
+    /// B.3 per-kernel T: the g42 kernel (id 14) preset 32, everything else
+    /// (and kernel-less demonstrator sites) the default 16 — always clamped.
+    #[test]
+    fn threshold_for_kernel_follows_b3() {
+        assert_eq!(threshold_for_kernel(Some(14)), 32, "g42 preset");
+        assert_eq!(threshold_for_kernel(Some(0)), 16);
+        assert_eq!(threshold_for_kernel(Some(9)), 16);
+        assert_eq!(threshold_for_kernel(Some(999)), 16, "out-of-range id = default");
+        assert_eq!(threshold_for_kernel(None), 16, "demonstrator site");
+    }
+
+    /// G1 dormant path: with the rollout gate Off (the cargo-test default —
+    /// CRUSSTY_BATCH unset), site_arm must refuse SILENTLY (no marker line —
+    /// absence of the line is the dormant signal the e2e verifies, §7.3).
+    /// The armed paths (auto/on) are exercised live by the e2e boots; the
+    /// parse-side widening is pinned by `rollout_parse_is_fail_safe`.
+    #[test]
+    fn site_arm_is_silent_not_armed_when_gate_off() {
+        assert_eq!(std::env::var("CRUSSTY_BATCH").ok(), None, "test rig must not set the gate");
+        let site = SiteSpec {
+            site_class: "net/minecraft/world/level/levelgen/synth/ImprovedNoise",
+            site_method: "noise",
+            kernel_class: "net/minecraft/world/level/levelgen/synth/PaperNativeImprovedNoise",
+            kernel_method: "nativeNoise",
+            kernel_id: None,
+            default_t: DEFAULT_SITE_T,
+            tag: "improved_noise",
+        };
+        assert_eq!(site_arm(&site), SiteArm::NotArmed);
+    }
+
+    /// The abiVersion word the G4 Java helper mirrors (ImprovedNoiseBatchOps
+    /// EXPECTED_ABI): a drift between the Rust table and the embedded Java
+    /// constant degrades the site at its FIRST flush — pinned here so the
+    /// bump is a conscious two-sided change.
+    #[test]
+    fn abi_word_is_the_helper_mirror() {
+        assert_eq!(ABI_WORD, 131_087);
+        assert_eq!((2i32 << 16) | 15, ABI_WORD);
     }
 }

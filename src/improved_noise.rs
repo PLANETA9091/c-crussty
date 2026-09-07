@@ -58,6 +58,21 @@ const BRIDGE_REAPER_BYTES: &[u8] = include_bytes!(
     "../noise/build/net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps$Reaper.class"
 );
 
+/// G4 demonstrator batching helper (docs/G4_SITE_PATCH_DESIGN.md §5.1): the
+/// same-descriptor retarget target for the bridge noise() call. Defined into
+/// the kernel loader alongside the other embedded classes (4th embed); only
+/// ever CALLED when the batch gate chain armed the site and the retarget
+/// landed — with the gate off it is an inert, never-initialized class.
+const BATCH_OPS_NAME: &str = "net/minecraft/world/level/levelgen/synth/ImprovedNoiseBatchOps";
+const BATCH_OPS_BYTES: &[u8] = include_bytes!(
+    "../noise/build/net/minecraft/world/level/levelgen/synth/ImprovedNoiseBatchOps.class"
+);
+/// Descriptor of the bridge noise() call the ASM patch emits — the retarget
+/// `from`/`to` descriptor (IDENTICAL on both sides: Variant R's same-stack-
+/// shape guarantee).
+const BRIDGE_NOISE_DESC: &str =
+    "(Lnet/minecraft/world/level/levelgen/synth/ImprovedNoise;[BDDDDDDDD)D";
+
 /// env-gate (off by default), read once at register time
 fn enabled() -> bool {
     std::env::var("CRUSSTY_NATIVE_IMPROVED_NOISE")
@@ -322,6 +337,7 @@ pub fn activate() {
                 (BRIDGE_NAME, BRIDGE_BYTES),
                 (BRIDGE_HANDLE_NAME, BRIDGE_HANDLE_BYTES),
                 (BRIDGE_REAPER_NAME, BRIDGE_REAPER_BYTES),
+                (BATCH_OPS_NAME, BATCH_OPS_BYTES),
             ] {
                 if let Some((major, _)) = class_version(bytes) {
                     if major > jvm_major {
@@ -365,6 +381,7 @@ pub fn activate() {
                 (BRIDGE_NAME, BRIDGE_BYTES),
                 (BRIDGE_HANDLE_NAME, BRIDGE_HANDLE_BYTES),
                 (BRIDGE_REAPER_NAME, BRIDGE_REAPER_BYTES),
+                (BATCH_OPS_NAME, BATCH_OPS_BYTES),
             ]
             {
                 match env.define_class(name, gref, bytes) {
@@ -542,6 +559,10 @@ pub fn activate() {
             eprintln!("[crussty-plugin] improved_noise: patch computation failed, hook stays dormant");
             return;
         };
+        let (patched, retarget_note) = maybe_batch_retarget(patched);
+        if let Some(note) = retarget_note {
+            eprintln!("{note}");
+        }
         // TASK-26/C5: parse the patched class's version ONCE here (quiet
         // activation worker) and cache it alongside the bytes — the serve
         // path never re-parses the header on the class-load thread.
@@ -585,6 +606,74 @@ pub fn activate() {
 
         bridge_selftest();
     });
+}
+
+/// G4 demonstrator (docs/G4_SITE_PATCH_DESIGN.md §4-§5.1): arm the batch
+/// site and — ONLY if the gate chain passes — retarget the bridge invokestatic
+/// in the freshly computed ASM patch to the same-descriptor batching helper
+/// (`ImprovedNoiseBatchOps.noise`). Runs on the quiet activation worker
+/// (never a hook callback thread). Dormant by default: with the rollout gate
+/// off, `site_arm` refuses silently and the served bytes are bit-identical
+/// to the pre-G4 patch. Any retarget error is fail-safe: the PROVEN
+/// unretargeted patch is kept (single-call ground state).
+///
+/// Returns the (possibly retargeted) bytes plus an optional marker line for
+/// the caller to log (kept out of the hot function for readability).
+fn maybe_batch_retarget(patched: Vec<u8>) -> (Vec<u8>, Option<String>) {
+    let site = crate::batch_api::SiteSpec {
+        site_class: NOISE_CLASS,
+        site_method: "noise",
+        // The kernel bridge the site routes through — G2 mask + audit_wire
+        // target (mirrors the improved_noise kernel wiring below).
+        kernel_class: NATIVE_BRIDGE,
+        kernel_method: "nativeNoise",
+        // No batch-table kernel exists for noise (BATCH_ADOPTION_MATRIX rows
+        // 15/16: body-dominated LOW) — demonstrator site, marker id=none,
+        // flush leg stays in the zero-op/single-call ground state.
+        kernel_id: None,
+        // B.3 T policy lane: no batch kernel → the default lane (16, clamped).
+        default_t: crate::batch_api::threshold_for_kernel(None),
+        tag: "improved_noise",
+    };
+    match crate::batch_api::site_arm(&site) {
+        crate::batch_api::SiteArm::NotArmed => (patched, None),
+        crate::batch_api::SiteArm::Armed { t } => {
+            match crate::classfile::retarget_invokestatic(
+                &patched,
+                "noise",
+                "(DDDDD)D",
+                (BRIDGE_NAME, "noise", BRIDGE_NOISE_DESC),
+                (BATCH_OPS_NAME, "noise", BRIDGE_NOISE_DESC),
+            ) {
+                Ok((new_bytes, crate::classfile::RetargetOutcome::Retargeted { sites })) => (
+                    new_bytes,
+                    Some(format!(
+                        "[crussty-plugin] batch: site improved_noise retargeted {sites} call site(s) \
+                         -> ImprovedNoiseBatchOps.noise (T={t}); flush leg = zero-op dispatcher round-trip, \
+                         sampling stays bit-exact single-call (no noise batch kernel — LOW tier, honest demonstrator)"
+                    )),
+                ),
+                Ok((_, other @ crate::classfile::RetargetOutcome::AlreadyPatched { sites })) => (
+                    patched,
+                    Some(format!(
+                        "[crussty-plugin] batch: site improved_noise retarget skipped: already patched ({sites} site(s), {other:?})"
+                    )),
+                ),
+                Ok((_, outcome @ crate::classfile::RetargetOutcome::NotFound)) => (
+                    patched,
+                    Some(format!(
+                        "[crussty-plugin] batch: site improved_noise retarget skipped: bridge call site not found in the computed patch ({outcome:?}) — keeping the proven unretargeted patch"
+                    )),
+                ),
+                Err(e) => (
+                    patched,
+                    Some(format!(
+                        "[crussty-plugin] batch: site improved_noise retarget FAILED ({e}) — keeping the proven unretargeted patch"
+                    )),
+                ),
+            }
+        }
+    }
 }
 
 /// Wait until the server has finished booting: `org/bukkit/Bukkit`'s static
@@ -769,6 +858,90 @@ fn bridge_selftest() {
             "[crussty-plugin] improved_noise: self-test passed (native handle round-trip through real bridge)"
         ),
         _ => eprintln!("[crussty-plugin] improved_noise: self-test failed/skipped"),
+    }
+    // G4 (design §6 risk 6): the batching helper must be proven live BEFORE
+    // real traffic — drive its flush leg once through the REAL batch bridge
+    // (abiVersion gate + zero-op run()) from the KERNEL loader.
+    batch_helper_selftest();
+}
+
+/// Drive `ImprovedNoiseBatchOps.selfTestFlush()` (the demonstrator's flush
+/// machinery: abiVersion() + zero-op run() through the live bridge) once and
+/// report. Resolves the helper through the KERNEL loader (it is defined
+/// there, not in the bootstrap — a plain find_class would miss it). A
+/// failure is OBSERVATIONAL here (one line): the helper's own degrade ladder
+/// is the runtime safety net, and the retarget itself never landed unless
+/// the gate chain armed the site.
+fn batch_helper_selftest() {
+    let loader = KERNEL_LOADER.load(Ordering::SeqCst);
+    if loader == 0 {
+        eprintln!(
+            "[crussty-plugin] improved_noise: batch helper self-test skipped (no kernel loader)"
+        );
+        return;
+    }
+    let rc = cplug_sdk::jni_util::with_attached(|env| {
+        let Some(class_cls) = env.find_class("java/lang/Class") else {
+            crate::clear_exception(env);
+            return None::<i32>;
+        };
+        let Some(forname) = env.get_static_method_id(
+            class_cls,
+            "forName",
+            "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;",
+        ) else {
+            crate::clear_exception(env);
+            env.delete_local_ref(class_cls);
+            return None;
+        };
+        let Some(name) = env.new_string_utf(BATCH_OPS_NAME) else {
+            crate::clear_exception(env);
+            env.delete_local_ref(class_cls);
+            return None;
+        };
+        // initialize=true: the helper's clinit is trivial (constant arrays);
+        // initializing also proves the class links (its referenced bridge
+        // signatures resolve).
+        let cls = env.call_static_object_method(
+            class_cls,
+            forname,
+            &[
+                jni::jvalue { l: name },
+                jni::jvalue { z: 1 },
+                jni::jvalue { l: loader as jni::jobject },
+            ],
+        );
+        let had_exc = crate::clear_exception(env);
+        env.delete_local_ref(name);
+        env.delete_local_ref(class_cls);
+        if cls.is_null() || had_exc {
+            env.delete_local_ref(cls);
+            return None;
+        }
+        let Some(selftest_mid) = env.get_static_method_id(
+            cls as jni::jclass,
+            "selfTestFlush",
+            "()I",
+        ) else {
+            crate::clear_exception(env);
+            env.delete_local_ref(cls);
+            return None;
+        };
+        let rc = env.call_static_int_method(cls as jni::jclass, selftest_mid, &[]);
+        let _ = crate::clear_exception(env);
+        env.delete_local_ref(cls);
+        Some(rc)
+    });
+    match rc.flatten() {
+        Some(r) if r == crate::batch_api::ABI_WORD => eprintln!(
+            "[crussty-plugin] batch: helper self-test passed (ImprovedNoiseBatchOps flush round-trip = abi {r})"
+        ),
+        Some(r) => eprintln!(
+            "[crussty-plugin] batch: helper self-test DIAGNOSTIC rc={r} (flush degraded or bridge unavailable — single-call ground state holds)"
+        ),
+        None => eprintln!(
+            "[crussty-plugin] batch: helper self-test skipped (class not resolvable in kernel loader)"
+        ),
     }
 }
 
