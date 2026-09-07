@@ -84,22 +84,28 @@ pub fn activate() {
         // it lazily (first area-map use), so on an idle world we also force
         // the load through the kernel loader via Class.forName after a grace
         // period; the hook then applies on the retransform below.
-        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(60);
-        let mut forced_once = false;
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(180);
+        let mut forced_attempts = 0usize;
         loop {
             if cplug_sdk::classes::find_class(MAP_CLASS).is_some() {
                 break;
             }
             if std::time::Instant::now() > deadline {
-                eprintln!("[crussty-plugin] area_map: {MAP_CLASS} not loaded within 60s, hook stays dormant");
+                eprintln!("[crussty-plugin] area_map: {MAP_CLASS} not loaded within 180s, hook stays dormant");
                 return;
             }
-            if !forced_once && std::time::Instant::now() > deadline - std::time::Duration::from_secs(50) {
-                forced_once = true;
-                eprintln!("[crussty-plugin] area_map: forcing kernel load of {MAP_CLASS}");
+            // Retry the force-load until it works: the single-shot attempt
+            // raced the kernel boot (org.bukkit.Bukkit is only resolvable
+            // once the plugin system is up) and a missed attempt left the
+            // hook dormant for the whole run on a fast boot.
+            if std::time::Instant::now() > deadline - std::time::Duration::from_secs(170) {
+                if forced_attempts < 12 || forced_attempts % 12 == 0 {
+                    forced_attempts += 1;
+                    eprintln!("[crussty-plugin] area_map: forcing kernel load of {MAP_CLASS} (attempt {forced_attempts})");
+                }
                 force_load_kernel_class();
             }
-            std::thread::sleep(std::time::Duration::from_millis(500));
+            std::thread::sleep(std::time::Duration::from_millis(2_000));
         }
 
         let defined = cplug_sdk::jni_util::with_attached(|env| {

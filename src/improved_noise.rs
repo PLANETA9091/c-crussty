@@ -208,28 +208,30 @@ pub fn activate() {
         return;
     }
     std::thread::spawn(|| {
-        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(60);
-        let mut forced_once = false;
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(180);
+        let mut forced_attempts = 0usize;
         loop {
             if cplug_sdk::classes::find_class(NOISE_CLASS).is_some() {
                 break;
             }
             if std::time::Instant::now() > deadline {
                 eprintln!(
-                    "[crussty-plugin] improved_noise: {NOISE_CLASS} not loaded within 60s, hook stays dormant"
+                    "[crussty-plugin] improved_noise: {NOISE_CLASS} not loaded within 180s, hook stays dormant"
                 );
                 return;
             }
-            if !forced_once
-                && std::time::Instant::now() > deadline - std::time::Duration::from_secs(50)
-            {
-                forced_once = true;
-                eprintln!(
-                    "[crussty-plugin] improved_noise: forcing kernel load of {NOISE_CLASS}"
-                );
+            // Retry the force-load like area_map: a single attempt races the
+            // boot (Bukkit unresolvable early) and loses the hook for the run.
+            if std::time::Instant::now() > deadline - std::time::Duration::from_secs(170) {
+                if forced_attempts < 12 || forced_attempts % 12 == 0 {
+                    forced_attempts += 1;
+                    eprintln!(
+                        "[crussty-plugin] improved_noise: forcing kernel load of {NOISE_CLASS} (attempt {forced_attempts})"
+                    );
+                }
                 force_load_kernel_class();
             }
-            std::thread::sleep(std::time::Duration::from_millis(500));
+            std::thread::sleep(std::time::Duration::from_millis(2_000));
         }
 
         // Defer the define/retransform until the server is fully booted.
