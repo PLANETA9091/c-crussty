@@ -1,0 +1,53 @@
+# Weekly P500 smoke bench (informational) + manual dispatch.
+#
+# Subset mechanics: bench/p500/run_p500.sh has NO SMOKE=1 env — its subset
+# interface is positional, `./run_p500.sh [gid ...]` (no args = all 49 groups
+# from java/p500/groups.tsv). Per project rules the script was NOT modified;
+# the 4-group subset below was hand-picked from the generator's group list
+# (gid = line number - 1 in bench/p500/java/p500/groups.tsv):
+#   0  PaperNativeAquiferIndexStride   — simplest (I[J)I JNI-floor group
+#   21 PaperNativeNoiseChunkBlendCache — biggest known win (244x in baseline)
+#   17 PaperNativeJigsawCanAttach      — historic abort() survivor (retry ladder)
+#   47 PaperNativeWaypointHotPath      — hot-path (I)D group, 10 methods
+#
+# The closed-source kernel .so files are committed under native/, so the
+# runner can dlopen them; numbers from shared GH runners are NOT baselines —
+# authoritative timing stays on the 2-CPU sandbox (bench/p500/README.md).
+
+name: p500-smoke
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '37 4 * * 1'   # weekly — Mondays 04:37 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  p500-smoke:
+    runs-on: ubuntu-latest
+    # Worst case per the script's own limits: 4 groups x 3 attempts x
+    # timeout 600s = 120 min; healthy runs finish in minutes.
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+
+      # run_p500.sh JDK lookup order: /home/z/jdk21 (absent on runners) ->
+      # $JAVA_HOME (set by setup-java) -> PATH javac/java. No script changes
+      # needed on CI.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # Uses the committed bench sources (java/) and committed native .so
+      # files; writes bench/p500/results/{p500_raw.tsv,P500_REPORT.md}.
+      - name: P500 smoke run (4-group subset)
+        run: bash bench/p500/run_p500.sh 0 21 17 47
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: P500_REPORT
+          path: bench/p500/results/P500_REPORT.md
+          if-no-files-found: warn

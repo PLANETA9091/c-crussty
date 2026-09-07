@@ -309,7 +309,14 @@ public final class Bench {
 
     static final int ROUNDS = 5;   // measured batches per pass
     static final int WARM = 2;     // discarded batches per pass
-    static final long BATCH_NS = 120_000;
+    // REAL 120 ms batches (120_000_000 ns), matching what every doc/report
+    // claims. The original 120_000 (120 µs) never let a method reach C2
+    // (~6k calls was bimodal across forks: 58/65/139 ns for the same kernel;
+    // with 120 ms batches the same kernel is 36.3-36.6 ns, CV 0.4%, and
+    // speedup-ratio spread collapses 6.6pp -> 0.8pp). Do not shrink this
+    // again: sub-300 ns kernels are garbage at µs-scale batches.
+    static final long BATCH_NS = 120_000_000;
+    static final long WARM_NS = 120_000_000;
 
     static void benchGroup(int gid, Group g) {
         String[] names = g.methods();
@@ -370,7 +377,7 @@ public final class Bench {
             if (single[i] > 250_000_000L) { med[i] = single[i]; continue; }
             try {
                 double[] s = new double[ROUNDS];
-                for (int w = 0; w < WARM; w++) runBatch(g, i, 40_000);
+                for (int w = 0; w < WARM; w++) runBatch(g, i, WARM_NS);
                 for (int r = 0; r < ROUNDS; r++) s[r] = runBatch(g, i, BATCH_NS);
                 Arrays.sort(s);
                 med[i] = s[s.length / 2];

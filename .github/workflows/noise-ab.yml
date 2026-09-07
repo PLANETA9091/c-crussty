@@ -1,0 +1,43 @@
+# Noise-bridge A/B on a REAL multi-core runner.
+#
+# The 2-vCPU sandbox cannot produce reproducible mt2x8/mt4x8 numbers
+# (three consecutive runs inverted the ranking — see bench/noise_ab/RESULTS.md).
+# GitHub ubuntu-latest runners provide 4 vCPU, which is enough to answer the
+# one open question left by session 003: does the direct-mapped fast path
+# beat the synchronized-map baseline under genuine (non-oversubscribed)
+# contention? rawMt2 controls for native-kernel scaling in the same run.
+#
+# Informational job: continue-on-error, numbers are not baselines.
+
+name: noise-ab
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '11 5 * * 1'   # weekly — Mondays 05:11 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  noise-ab:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      # run_noise_ab.sh JDK lookup: /home/z/jdk21 -> $JAVA_HOME -> PATH.
+      - name: noise bridge A/B (all profiles, 4 vCPU)
+        run: bash bench/noise_ab/run_noise_ab.sh single inter8 inter64 mt2x8 rawMt2 mt4x8
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: noise-ab-log
+          path: bench/noise_ab/logs/
+          if-no-files-found: warn
