@@ -35,3 +35,56 @@
     REAL MODE: AREAMAP SMOKE: ALL PASS   (S1×~30, S4)
 
 Same-state fast path (~115ns JNI на каждый idle-update) — верифицирован.
+
+## Fuzz parity (TASK-15)
+
+Дифференциальный фаззинг поверх смоука TASK-11: тот же контракт, но теперь
+seeded-randomized — сетки, координаты (включая MIN/MAX/zero) и потоки мутаций.
+Headless `cargo test`, БЕЗ JVM/JNI/.so — верифицируется in-repo семантика
+JAVA-половины бриджа (`SingleUserAreaMapOps.run()`), а не закрытый натив.
+
+### Метод
+
+- Крейт `area-map-fuzz/` (standalone, workspace-excluded, 0 зависимостей):
+  - **World F (fast path)** — точный Rust-порт `SingleUserAreaMapOps.run()`:
+    MIN_VALUE guard → same-state shortcut → grow-only scratch (INITIAL_CAP 578,
+    то же doubling с overflow-guard) → enumeration-стенд (контракт TASK-11:
+    adds = new∖old op0, removes = old∖new, keys = z<<32|x) → apply-цикл с
+    декодингом key; счётчики enumeration-calls / ops / fast-path-hits
+    (наблюдаемость S2).
+  - **World R (reference)** — независимый наивный per-cell set difference
+    (форма оракула TASK-11: removes старый квадрат, затем adds новый), без
+    fast path, без scratch, без keys.
+  - Один и тот же mutation-строк подаётся в оба мира; parity = element-wise
+    w×h grid (окно, row-major) + точное равенство tracked-множеств (покрывает
+    и клетки вне окна).
+- RNG: xorshift64* inline, per-case seeds через splitmix64 от фиксированного
+  `BASE_SEED = 0x5EED_5325_97B0_0015` — любой фейл воспроизводим из
+  (base_seed, case_index), panic печатает seed, dims и первый отличающийся
+  индекс (row, col) + чанк-координату.
+
+### Сьюты (`cargo test -p area-map-fuzz` из `area-map-fuzz/`)
+
+| Сьют | Кейсов | Что доказывает |
+|------|--------|----------------|
+| fuzz_parity_main | 12 000 (155 279 мутаций, 115 002 395 ops) | parity fast-path vs apply-loop на random dims (0x0 / 1xN / 8x8 ~55%, 64x64 ~42%, 256x256 ~4%), d 0..64, same-state давление 25%, d=0 20%, MIN/MAX/0 координаты, guard-инициализация |
+| fuzz_adversarial_idempotency | 1 500 | только no-op state writes → 0 enumeration-calls, 0 колбеков, сетка бит-в-бит (idempotency fast path, S2-подобный counter-guard) |
+| fuzz_edge_coordinates | 440 детерминированных | seam MIN/MAX: pack/decode round-trip, move/move-back/3×no-op/grow-shrink, точные счётчики fast-path |
+
+Найденная семантика (НЕ баг, задокументировано): MIN_VALUE guard СТАРШЕ
+fast path — update, чей FROM-state имеет x == Integer.MIN_VALUE, ловится
+guard'ом (0 ops) даже при равных квадратах; оба мира консистентны, parity
+не нарушается. Поведение закрытого натива на wrap-сшивке координат
+(|diff| ≥ 2^31) контрактом не покрыто — за пределами сетки TASK-11 S5.
+
+### Результат (2026-09-08, rustc 1.98.1, 2-CPU sandbox)
+
+    release: 3 passed; 0 failed — 12.3s   (12_000 + 1_500 + 440 = 13 940 кейсов)
+    debug (overflow-checks on): 3 passed — 222s, без паник
+    sensitivity-check: инъекция бага (fast path без oldD==newD) ловится
+    мгновенно (edge-сьют + main case=8325, seed 0xa93dd160616e8f37)
+
+Багов parity в shipped-логике НЕ НАЙДЕНО. Запуск:
+
+    cd area-map-fuzz && cargo test --release            # ~12s
+    cd area-map-fuzz && cargo test --release -- --nocapture   # + сводки
