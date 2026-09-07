@@ -99,7 +99,7 @@ JIT-elided further; treat 25 ns as the honest dispatching upper bound.
 
 ## Method notes
 
-- `run_apply_bench.sh` builds its own `classes-bench-fake` / `classes-bench-real`
+- `run_resize_bench.sh` (renamed from the original `run_apply_bench.sh` on 2026-09-08 to free the canonical TASK-20 script name for the apply-loop micro-bench; content unchanged) builds its own `classes-bench-fake` / `classes-bench-real`
   (never touches the smoke's `classes-fake`/`classes-real`); the REAL-mode
   classpath swaps in the `realdecl` native binding over the counting stub,
   exactly like `run_smoke.sh` variant B.
