@@ -429,3 +429,55 @@ jdk.ExecutionSample` → blend-frame sample share on worldgen threads
 The remaining quantitative gate (item 4 share ≥ 0.5%) decides GO/NO-GO. Note
 that even a full GO does not flip anything by itself: the prototype stays
 `PATCH_ENABLED=false` and Phase 2 requires V2-V4 before any env-gated serve.
+
+### §9 final — Phase-1 probe VERDICT: **NO-GO** (2026-09-07T20:25Z, agent-7625532f)
+
+Harvest of the throwaway default-world run (`bench/blendprobe/run_blend_probe.sh`,
+run dir `/tmp/ab-blend`, boot `Done (33.147s)`, JFR attached POST-boot via
+`jcmd JFR.start settings=profile`, window = forceload 2×(17×17) default-world
+chunks + 120 s settle, 252 execution samples):
+
+- **Item 4 FAILS the GO gate.** Strict blend-path matcher (frames in
+  `blending.Blender*` / `BlendingData` / methods `blendOffsetAndFactor`,
+  `blendDensity`, `blendBiome`, `getOrComputeBlendingOutput`):
+  **0 per-column blend samples out of 180 worldgen-worker samples**
+  (`Paper Common Worker #0`). The single match (1/252 = 0.56% of that
+  worker, 0.40% of all samples) is `Blender.of(WorldGenRegion)` — the
+  one-time setup call, not the per-column machinery. The design's own
+  thresholds: GO ≥ 0.5% (machinery), NO-GO < 0.1% ⇒ measured per-column
+  share = 0 ⇒ **NO-GO**. With n=1 the 0.56% point estimate is statistically
+  indistinguishable from 0.05% anyway; the honest number is "not observed".
+- Semantics close the case: fresh default world ⇒ no old chunks ⇒
+  `Blender.of` returns EMPTY ⇒ the per-column cost is the cheap
+  map-probe-INFINITY path (§9 item 1: unfixed but ~ns-scale, invisible next
+  to noise/aquifer/interpolator work — top observed worldgen frames:
+  NoiseChunk.getInterpolatedState, Aquifer.computeSubstance). The 316x
+  kernel pair models the DENSE path (non-empty blending data = upgrade
+  worlds), which this server never walks. Paper's moonrise chunk-system
+  frames dominate worldgen, consistent with BOOST_SWEEP.
+- Gate scoreboard (§7 item list): (1) not-already-folded ∧ sites resolve =
+  PASS; (2) sighting probe = SUBSTITUTED by item-1 static resolution (see
+  boot-safety ledger below); (3) N-scaling = PASS (old linear; new flat
+  N≤16 — live-N projection now moot); (4) JFR share = **FAIL (0 per-column
+  samples)**; (5) V1 parity = PASS (10k/10k). Any single miss ⇒ NO-GO;
+  item 4 missed decisively.
+- **Consequence**: Phase 2+ is NOT entered; the prototype stays
+  `PATCH_ENABLED=false` and dormant; blend-cache kernel pair stays
+  BENCH-ONLY (kernel_policy untouched; no wiring eligibility change). The
+  last identified >100x live-surface candidate is retired by measurement —
+  BOOST_SWEEP's "pipeline empty after TASK-32" now holds with evidence, not
+  conjecture. The NO-GO is also the projected H2 outcome, but with the
+  opposite mechanism to the doc's H2 ("Paper folds EMPTY" is FALSE per
+  item 1 — the machinery is merely IRRELEVANT on this workload).
+- Boot-safety ledger (findings for the engine/plugin book):
+  - F1 (superseded by F2): gate=1 boots died silently — hook exonerated by
+    the gate-OFF control death.
+  - **F2 (real)**: `-XX:StartFlightRecording` at JVM start + the CRUSSTY
+    JVMTI agent (transform engine, ClassFileLoadHook) = silent JVM death
+    (no hs_err) during the craftbukkit.Main class-load storm, reproduced
+    4/4 across GC settings/heap sizes with startup JFR, 0/1 without.
+    Workaround proven: attach JFR post-boot via `jcmd JFR.start`.
+    Recorded as report-only; no engine change made (per权限 rules).
+- Probe artifacts: `/tmp/ab-blend/{run.log,rec.jfr}` (transient dir; numbers
+  recorded here), `bench/blendprobe/{V1BlendParity.java,run_blend_probe.sh}`
+  (committed). No registry, kernel, or gameplay values touched.
