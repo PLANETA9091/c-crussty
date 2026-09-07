@@ -6,7 +6,10 @@
 #
 # Usage: bench/batch/run_batch_floor.sh [--before <path/to/libcrussty.so>]
 #                                       [--after  <path/to/libcrussty.so>]
+#                                       [--kernels <id[,id..]>]
 # Missing arms are built on the fly into /tmp worktrees (detached).
+# --kernels passes through to BatchFloorBench (default 2,3 = shape A;
+# G3 spike: 14 = shape C g42 StaticCacheGet newBatchSummary).
 # Output: bench/batch/results/BATCH_FLOOR_<arm>.log + BATCH_FLOOR_RAW.tsv
 # (aggregated medians land in BATCH_FLOOR_REPORT.md, committed next to this).
 #
@@ -19,11 +22,13 @@ JDK="${JDK:-/home/z/jdk21}"
 NATIVE_LIB="$ROOT/native/libpaper_native_jni.so"
 LOCK=/home/z/BENCH.lock
 ARMS=()
+KERNELS="2,3"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --before) ARMS+=("before"); BEFORE_LIB="$2"; shift 2;;
     --after)  ARMS+=("after");  AFTER_LIB="$2";  shift 2;;
+    --kernels) KERNELS="$2"; shift 2;;
     *) echo "unknown arg $1" >&2; exit 2;;
   esac
 done
@@ -37,6 +42,7 @@ rm -rf "$CLASSES"; mkdir -p "$CLASSES"
 "$JDK/bin/javac" -d "$CLASSES" \
   "$ROOT"/bench/batch/java/crussty/batch/PaperNativeBatchDispatch.java \
   "$ROOT"/bench/batch/java/PaperNativeAquiferIndexStride.java \
+  "$ROOT"/bench/batch/java/PaperNativeStaticCacheGet.java \
   "$ROOT"/bench/batch/java/BatchFloorBench.java
 
 # ---- resolve arm libs: use --before/--after if given, else build worktrees ----
@@ -85,7 +91,7 @@ for arm in "${ARMS[@]}"; do
   LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}:$JDK/lib/server" \
   CRUSSTY_BATCH_NATIVE_LIB="$NATIVE_LIB" \
   "$JDK/bin/java" -Xms256m -Xmx512m -cp "$CLASSES" BatchFloorBench \
-      --lib "$lib" --native "$NATIVE_LIB" --kernels 2,3 --sizes 1,8,16,64,256 \
+      --lib "$lib" --native "$NATIVE_LIB" --kernels "$KERNELS" --sizes 1,8,16,64,256 \
       --rounds 11 --ops 60000 2>&1 | tee "$log"
   grep '^RESULT' "$log" | sed "s/^RESULT/${arm}\t/" >> "$RAW" || true
 done

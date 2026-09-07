@@ -14,6 +14,16 @@ import java.util.List;
  * DIRECT stub references of the same shape. Everything else (protocol,
  * medians, parity gate) is unchanged.
  *
+ * G3 wave-1 spike (2026-09-09): --kernels 14 benches the NEW shape C
+ * `(IIIII[I[J)I` kernel PaperNativeStaticCacheGet.newBatchSummary (P500 g42,
+ * global floor anchor 34.6 ns). Shape-C wire encoding (batch_table/batch_api
+ * docs): the v2 scalar plane packs FIVE long slots per op (narrowed jint
+ * scalars, P500 G42 case-1 config p0..p4 = 16/31/3/15/63), args1 packs the
+ * int[] key slice one int per long slot (argCounts[i] = slot count = 16,
+ * P500 key-fill pattern), outs = ONE return-carried long per op (the closed
+ * kernel leaves its trailing long[] dst untouched — probe-verified
+ * 2026-09-09).
+ *
  * Measures {@code PaperNativeBatchDispatch.run} wall-clock at batch sizes
  * K={1,8,16,64,256} (batch_api.rs module doc: "measures the dispatcher delta
  * at batch sizes 1/8/16/64/256"), shape-A kernel only (id 2/3:
@@ -38,11 +48,17 @@ import java.util.List;
  * Exit codes: 0 ok, 2 harness/kernel error (bad abi, negative run() code,
  * parity mismatch).
  *
- * Signed: agent-7625532f (TASK-24 bench tail; TASK-48 A′ extension).
+ * Signed: agent-7625532f (TASK-24 bench tail; TASK-48 A′ extension); G3
+ * shape-C extension Task 2-b (S7-8, Job 366450).
  */
 public final class BatchFloorBench {
 
-    private static final long ABI_EXPECTED = (2L << 16) | 14; // TABLE_VERSION=2, KERNEL_COUNT=14 (TASK-48)
+    private static final long ABI_EXPECTED = (2L << 16) | 15; // TABLE_VERSION=2, KERNEL_COUNT=15 (TASK-48 + G3 shape C)
+
+    // P500 G42 case-1 config (setup(16, true)): the same arguments the
+    // direct stub gets, so batch == direct parity is apples-to-apples.
+    private static final int G42_P0 = 16, G42_P1 = 31, G42_P2 = 3, G42_P3 = 15, G42_P4 = 63;
+    private static final int G42_KEYS = 16;
 
     public static void main(String[] args) {
         String lib = arg(args, "--lib", null);
@@ -91,27 +107,70 @@ public final class BatchFloorBench {
         return kernelId == 12 || kernelId == 13;
     }
 
+    /** G3 shape C: id 14 = g42 StaticCacheGet newBatchSummary (IIIII[I[J)I. */
+    private static boolean isShapeC(int kernelId) {
+        return kernelId == 14;
+    }
+
+    /** P500 G42 key-fill pattern: {@code (j * 0x9E3779B1) & 0x3FF}. */
+    private static long keyPattern(int j) {
+        return (j * 0x9E3779B1L) & 0x3FF;
+    }
+
+    private static int[] g42Keys() {
+        int[] keys = new int[G42_KEYS];
+        for (int j = 0; j < keys.length; j++) keys[j] = (int) keyPattern(j);
+        return keys;
+    }
+
     private static void benchKernel(int kernelId, int k, int rounds, long opsPerRound) {
         int n = k;
-        int scalarW = isAPrime(kernelId) ? 3 : 1; // v2 scalar-plane width per op
         int[] ids = new int[n];
-        long[] args0 = new long[n * scalarW];
-        long[] args1 = new long[0];
-        int[] counts = new int[n];
-        long[] outs = new long[n * 64];
-        int[] offs = new int[n];
-        Arrays.fill(ids, kernelId);
-        for (int i = 0; i < n; i++) {
-            if (scalarW == 3) {
-                args0[3 * i] = 16L;   // P500 G9: p0 = 16
-                args0[3 * i + 1] = 31L; // SMALL[1]
-                args0[3 * i + 2] = 3L;  // SMALL[2]
-            } else {
-                args0[i] = 16L;       // P500 G0 small shape: p0 = 16
+        long[] args0;
+        long[] args1;
+        int[] counts;
+        long[] outs;
+        int[] offs;
+        if (isShapeC(kernelId)) {
+            // G3 shape-C wire: five packed scalar-plane slots per op in args0,
+            // the int[] key payload packed one int per long slot in args1,
+            // argCounts[i] = input slot count, ONE return-carried long per op.
+            args0 = new long[n * 5];
+            args1 = new long[n * G42_KEYS];
+            counts = new int[n];
+            outs = new long[n];
+            offs = new int[n];
+            for (int i = 0; i < n; i++) {
+                ids[i] = kernelId;
+                args0[i * 5] = G42_P0;
+                args0[i * 5 + 1] = G42_P1;
+                args0[i * 5 + 2] = G42_P2;
+                args0[i * 5 + 3] = G42_P3;
+                args0[i * 5 + 4] = G42_P4;
+                for (int j = 0; j < G42_KEYS; j++) args1[i * G42_KEYS + j] = keyPattern(j);
+                counts[i] = G42_KEYS;
+                offs[i] = i;
             }
+        } else {
+            int scalarW = isAPrime(kernelId) ? 3 : 1; // v2 scalar-plane width per op
+            args0 = new long[n * scalarW];
+            args1 = new long[0];
+            counts = new int[n];
+            outs = new long[n * 64];
+            offs = new int[n];
+            Arrays.fill(ids, kernelId);
+            for (int i = 0; i < n; i++) {
+                if (scalarW == 3) {
+                    args0[3 * i] = 16L;   // P500 G9: p0 = 16
+                    args0[3 * i + 1] = 31L; // SMALL[1]
+                    args0[3 * i + 2] = 3L;  // SMALL[2]
+                } else {
+                    args0[i] = 16L;       // P500 G0 small shape: p0 = 16
+                }
+            }
+            Arrays.fill(counts, 64);          // shape-A/A′ OUTPUT capacity = dst long[64]
+            for (int i = 0; i < n; i++) offs[i] = i * 64;
         }
-        Arrays.fill(counts, 64);          // shape-A/A′ OUTPUT capacity = dst long[64]
-        for (int i = 0; i < n; i++) offs[i] = i * 64;
 
         int ret = PaperNativeBatchDispatch.run(ids, args0, args1, counts, outs, offs);
         if (ret != n) {
@@ -183,6 +242,9 @@ public final class BatchFloorBench {
                     ? PaperNativeDensityAp2MinMaxFill.newSummary(16, 31, 3, dst)
                     : PaperNativeDensityAp2MinMaxFill.oldSummary(16, 31, 3, dst);
         }
+        if (isShapeC(kernelId)) {
+            return PaperNativeStaticCacheGet.newBatchSummary(G42_P0, G42_P1, G42_P2, G42_P3, G42_P4, g42Keys(), dst);
+        }
         return switch (kernelId) {
             case 3 -> PaperNativeAquiferIndexStride.newBatchSummary(16, dst);
             default -> PaperNativeAquiferIndexStride.oldBatchSummary(16, dst);
@@ -198,6 +260,35 @@ public final class BatchFloorBench {
      * (not the kernel) is miswired.
      */
     private static void parityCheck(int kernelId) {
+        if (isShapeC(kernelId)) {
+            // Shape-C parity: return-carried result — one K=1 batch with the
+            // P500 G42 case-1 wire shape must land the SAME jint the direct
+            // stub returns (fresh key array + fresh dst on both sides; the
+            // kernel's return value is NOT a count — probe: constant -5 —
+            // so the shape-A count-range guard does not apply).
+            int directRet = PaperNativeStaticCacheGet.newBatchSummary(
+                    G42_P0, G42_P1, G42_P2, G42_P3, G42_P4, g42Keys(), new long[64]);
+            int[] ids1 = {kernelId};
+            long[] args0_1 = {G42_P0, G42_P1, G42_P2, G42_P3, G42_P4};
+            long[] args1_1 = new long[G42_KEYS];
+            for (int j = 0; j < G42_KEYS; j++) args1_1[j] = keyPattern(j);
+            int[] counts1 = {G42_KEYS};
+            long[] outs1 = new long[1];
+            int[] offs1 = {0};
+            int ret = PaperNativeBatchDispatch.run(ids1, args0_1, args1_1, counts1, outs1, offs1);
+            if (ret != 1) {
+                System.err.printf("kernel %d: parity run()=%d%n", kernelId, ret);
+                System.exit(2);
+            }
+            if (outs1[0] != directRet) {
+                System.err.printf("PARITY FAIL kernel %d (shape C): direct=%d batch=%d (stub=newBatchSummary)%n",
+                        kernelId, directRet, outs1[0]);
+                System.exit(2);
+            }
+            System.out.printf("# parity OK kernel=%d shape=C ret=%d (stub=newBatchSummary: batch == direct, return-carried)%n",
+                    kernelId, directRet);
+            return;
+        }
         boolean aPrime = isAPrime(kernelId);
         String stubMethod = aPrime
                 ? ((kernelId == 13) ? "newSummary" : "oldSummary")

@@ -56,7 +56,9 @@ grep -E 'native surface live: .*[1-9][0-9]* symbols unresolved'
 
 B.7 Stage 0 checklist: TASK-24 scratch reuse ✅ (`28ad646` + BATCH_FLOOR_REPORT before/after);
 BatchFloorBench exists ✅ (`bench/batch/`, K∈{1,8,16,64,256}); §B.5 hard guard ✅ (this session);
-**wave-1 shapes ❌ — the only open Stage-0 item, blocker for Stage 1 (§7 G3).**
+**wave-1 shapes: g42 ✅ (G3 spike — shape C `(IIIII[I[J)I`, table id 14, batchable via
+`--kernels 14`) + g9 A′ ✅ (TASK-48, ids 12/13); g35/g39/g40 shapes ❌ still absent**
+(no longer the sole Stage-0 item — see §8 G3).
 
 ```bash
 # no CRUSSTY_BATCH export — unset == off (default)
@@ -71,7 +73,7 @@ Expected verify markers (PASS = all present, FAIL patterns absent):
 
 ```bash
 grep -E 'batch: rollout gate CRUSSTY_BATCH=unset -> mode=off' /home/z/server/logs/console.log
-grep -E 'batch: 12 kernels resolved, run\(\) \+ abiVersion\(\) registered on crussty/batch/PaperNativeBatchDispatch' /home/z/server/logs/console.log
+grep -E 'batch: 15 kernels resolved, run\(\) \+ abiVersion\(\) registered on crussty/batch/PaperNativeBatchDispatch' /home/z/server/logs/console.log
 grep -E 'native surface live: 98 bridge classes, 283 natives registered \(0 symbols unresolved\)' /home/z/server/logs/console.log
 # audit pass additionally: '[crussty-plugin] kernel-policy: audit mode: decisions are logged'
 grep -E 'kernel-policy:.*WIRE|kernel-policy:.*REGISTER' /home/z/server/logs/console.log
@@ -87,13 +89,23 @@ PASS criteria (bench evidence recorded in BATCH_FLOOR_REPORT; rerun only in a fr
 * **Re-derived N=64 overhead gate** (B.7 "if the phase-1 readback sets a higher measured floor,
   re-derive and record — never silently relax"): the proposal's ≤8 ns/op @K=64 target is NOT met by
   the phase-1 design (readback+staging+scatter ≈ 43–52 ns/op @K=64 measured). Recorded re-derived
-  acceptance: **per-op batch premium @K=64 ≤ 52 ns/op** on the 4-lane shape-A config; re-derive again
-  per shape when wave-1 shapes land. The B.7 "g42 = gate kernel" numbers specifically await G3.
+  acceptance: **per-op batch premium @K=64 ≤ 52 ns/op** on the 4-lane shape-A config. **Shape-C
+  re-derivation (G3 spike, 2026-09-09, `BATCH_FLOOR_g42_shape_c.log`)**: g42 id-14 premium
+  @K=64 = 80.7 − 56.9 ≈ **23.8 ns/op** vs this box's direct median (56.9; direct runs noisy
+  28.7–61.1 across K — vs the direct floor 28.7 the premium is ≈ 52.0 ns/op, in line with the
+  re-derived ≤ 52 acceptance; P500 canon anchor 34.6 ns); asymptotic dispatch overhead
+  d ≈ 80.2 − 28.8 ≈ **51 ns/op** (K=256; K=1 pays 294.8 vs 46.4 direct). HONEST VERDICT (mirrored by TASK-48's
+  g9 A′ measurement, `A2_SHAPE_REPORT.md`): with the current
+  closed g42 body (probe: constant `-5` return, dst untouched — zero body work) the batched path
+  never beats direct at ANY K (d > R): the B.2.3 `≤ 0.9×` promotion criterion is unsatisfiable
+  on the measured lib, so **no measured T exists for g42** — site arming (Stage 1) must either
+  wait for a real in-engine body or keep g42 single-call. Numbers, not models — recorded per the
+  never-silently-relax rule.
 * `refused-id → -10` with `outs` untouched: refusal code + no-partial-execution covered by unit
   tests (`batch_api::tests`); the end-to-end byte-compare fixture is pending (§7 G8) — no refused id
-  is reachable while all 12 table kernels are allowed.
+  is reachable while all 15 table kernels are allowed.
 
-## 4. Stage 1 — wave-1a site-armed, `CRUSSTY_BATCH=auto` (status: **BLOCKED** — §7 G3/G4/G5)
+## 4. Stage 1 — wave-1a site-armed, `CRUSSTY_BATCH=auto` (status: **BLOCKED** — §7 G4/G5 + wave-1 shapes for g35/g40/g39; g42 arming decision now data-backed: no measured T on the current body, §3/G3)
 
 Wave-1a = g42 `StaticCacheGet` → g35 `RangeChoice` → g40/g39 `SpigotLoadOrderDependency`
 (B.4 arm order; B.2.3 promotion verdict `"batch (site-armed at T)"` with evidence a-d required in
@@ -162,12 +174,12 @@ compares against `baseline.json`.
 |---|---|---|
 | G1 | `CRUSSTY_BATCH` gate named by B.6 but read NOWHERE (grep: docs-only hits; engine repo: 0) | **IMPLEMENTED this session** — `batch_api.rs`: `RolloutMode{Off,Auto,On}`, `ROLLOUT_ENV`, fail-safe `parse_rollout`, `rollout_mode()` OnceLock + grep-able boot marker, hooked into `init()`. Advisory until consumers exist (arming semantics land with G4). Tests: `rollout_parse_is_fail_safe`. |
 | G2 | §B.5 mode-independent DO_NOT_WIRE hard guard missing: mask was `decide()` alone, so `CRUSSTY_KERNEL_POLICY=off` widened it to ANY table kernel | **IMPLEMENTED this session** — `mask_bit(mode, class, method)` = `decide_in(..)` ∧ `do_not_wire_entry(..).is_none()`; `policy_flags()` uses it. Tests: `mask_refuses_do_not_wire_even_in_off_mode`, `mask_keeps_every_shipped_table_kernel_allowed_in_all_modes`. |
-| G3 | Wave-1 shapes: all 12 `batch_table::KERNELS` are shape A/B (µs-scale, zero floor kernels); g42/g35/g39/g40 signatures inexpressible (B.1/B.4, wave2 §6.6/§7.4) | **BLOCKER for Stage 1+** — pure c-crussty but not small: new `Shape` variants + per-kernel strides + descriptor parser port + compile-time asserts, per-shape BatchFloorBench configs, then `"batch (site-armed at T)"` promotion. Not attempted here (not a focused-test-sized change). |
+| G3 | Wave-1 shapes: all 12 `batch_table::KERNELS` are shape A/B (µs-scale, zero floor kernels); g42/g35/g39/g40 signatures inexpressible (B.1/B.4, wave2 §6.6/§7.4) | **CLOSED FOR g42 (2026-09-09) — shapes C + A′ now exist** (A′ ids 12/13 = TASK-48). Shape `C` `(IIIII[I[J)I` added as the dominant-pattern descriptor (`Shape::C` + `scalar_width()` = 5 + table id 14 `PaperNativeStaticCacheGet.newBatchSummary`, jni_table.rs:246, PROVEN_WINS batch-surface entry); `batch_api` wires `ShapeCFn` (5-wide scalar-plane slice via the shared v2 `scalar_starts` packing, packed int-slice input one-int-per-args1-slot, return-carried result, per-thread `int[]` scratch); BatchFloorBench `--kernels 14` benchable (run_batch_floor.sh passthrough); evidence `bench/batch/results/BATCH_FLOOR_g42_shape_c.log` (parity OK return-carried; shape-A rows unchanged ⇒ no regression on the pre-existing kernels); CI green. **STILL BLOCKED:** g35 `(IIIII[I[J)I`-class multi-prim-ref + g39/g40 ref shapes (and the proposal §4/§5 descriptor-parser port for the rest of wave-1); `oldBatchSummary` twin of g42 unwired (available follow-up); see §3 honest verdict — no measured T for g42 on the current closed body. |
 | G4 | Zero call sites / consumers — dispatcher is armed-inert infrastructure (B.1 row 1) | **BLOCKER for Stage 1+** — first consumers are byte-hook sites (matrix §5.3.3, area_map pattern, env-gated). `CRUSSTY_BATCH` auto/on are advisory until this lands. |
 | G5 | Auto-threshold T (B.3: default 16, g42→32) implemented nowhere | **BLOCKER for Stage 1** — belongs to site-arming (G4); per-kernel T comes from BatchFloorBench at the chosen shape. |
-| G6 | Stage-0 acceptance "N=64 ≤ 8 ns/op" not met by phase-1 readback (43–52 ns/op measured) | **DOCUMENTED** — re-derived gate recorded in §3 per the B.7 never-silently-relax rule; final re-derivation at shape landing (G3). |
+| G6 | Stage-0 acceptance "N=64 ≤ 8 ns/op" not met by phase-1 readback (43–52 ns/op measured) | **DOCUMENTED** — re-derived gate recorded in §3 per the B.7 never-silently-relax rule; shape-C per-shape re-derivation now recorded too (52.3 ns/op @K=64 vs direct, §3) — no further re-derivation pending for g42. |
 | G7 | Doc conflict: matrix §5.3 `CRUSSTY_BATCH=1` vs B.6 `off\|auto\|on` | **RESOLVED** — B.6 is canon; `1` → `Off` fail-safe (pinned by test). |
-| G8 | `refused-id → -10` outs-untouched byte-compare end-to-end (A.6) | **PENDING** — unit tests cover refusal semantics/no-partial-execution; e2e fixture needs a refused table id, unreachable while all 12 are allowed; fold into the A.7 JVM-level smoke. |
+| G8 | `refused-id → -10` outs-untouched byte-compare end-to-end (A.6) | **PENDING** — unit tests cover refusal semantics/no-partial-execution; e2e fixture needs a refused table id, unreachable while all 15 are allowed; fold into the A.7 JVM-level smoke. **NEXT candidate:** a one-row fixture can now be built WITHOUT touching the table — `ERR_BAD_KERNEL_ID` (-3) is reachable with id 15 today; a true `ERR_KERNEL_REFUSED` fixture still needs a refused-but-in-range id (e.g. a temporary audit-rig kernel) or the A.7 smoke. |
 | — | `bench/batch/bench/` untracked foreign WIP | **NOT TOUCHED** (out of scope, preserved). |
 
 ## Sources
