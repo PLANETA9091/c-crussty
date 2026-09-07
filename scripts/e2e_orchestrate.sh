@@ -89,8 +89,12 @@ server_pid() { # child JVM = the one carrying the -agentpath runtime
 }
 
 guard_bench_lock() {
-    [ -e /tmp/crussty_bench.lock ] && \
-        fail "/tmp/crussty_bench.lock present — timed benchmarks own the box; boot refused"
+    # The lock FILE is a permanent fixture (flock leaves it behind) — mere
+    # existence says nothing. Probe: non-blocking acquire fails => a timed
+    # benchmark holds the box right now.
+    if ! flock -n /tmp/crussty_bench.lock true 2>/dev/null; then
+        fail "/tmp/crussty_bench.lock HELD — timed benchmarks own the box; boot refused"
+    fi
 }
 
 do_boot() {
