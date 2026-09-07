@@ -1,0 +1,48 @@
+{
+  "meta": {
+    "source": "bench/p500/results/P500_REPORT_v2.md — 'Per-group results' median ns/op tables (VERBATIM, never tuned to make the gate pass)",
+    "source_commit": "3baa0f7 (REAL 120ms-batch rerun that produced P500_REPORT_v2.md; report introduced in 514378b)",
+    "generated": "2026-09-07T16:46:41+00:00",
+    "baseline_recorded_utc": "2026-09-08",
+    "methodology": "P500_REPORT_v2 paired-ratio methodology: absolute ns/op on a shared 2-CPU box is noisy - treat <±15% deltas as parity; RATIOS are the signal. The gate therefore compares each measured kernel median to its OWN verbatim baseline median (paired, per-kernel) inside a group, never group-vs-group absolutes. Repeated measurements of a kernel collapse via min-of-medians, mirroring the aggregator v2 rule.",
+    "gate": "fail (exit 1) when any included kernel's measured median > 1.2 x its baseline median (same 20% drift band the v2 aggregator uses for baseline.tsv: BASELINE_DRIFT = 0.20). Missing groups / CRASHed groups / groups absent from baseline => skip-with-warning (the >3-CRASH gate in the p500-bench job handles crashes). The 1.2 threshold is hardcoded in bench/p500/scripts/ratio_gate.py - deliberately NOT configurable from this file, so it cannot be quietly weakened.",
+    "selection_rationale": "Smoke subset = 5 JNI-floor parity groups from the v2 report's 'JNI floor groups' table: fastest groups in the suite (seconds per JVM), per-op cost dominated by the fixed JNI-transition floor (least hardware-dependent signal), exact old/alt 1:1 pairs with no multi-pair warnings, and all in the v2 PARITY band (no known wins/regressions that would trip the gate on every run). Regressed do-not-wire kernels (LevelChunkHeightmap, MarkerCache, PalettedReencodeScratch, ProtoChunkHeightmap) are deliberately excluded: they are known-bad alt kernels, not .so regressions."
+  },
+  "groups": {
+    "PaperNativeStaticCacheGet|(IIIII[I[J)I": {
+      "gid_v2": 42,
+      "kernels_ns_op": {
+        "newBatchSummary": 34.6,
+        "oldBatchSummary": 34.7
+      }
+    },
+    "PaperNativeRangeChoice|([D[I[I[II[J)I": {
+      "gid_v2": 35,
+      "kernels_ns_op": {
+        "oldFillArraySummary": 81.4,
+        "optimizedFillArraySummary": 81.6
+      }
+    },
+    "PaperNativeRemapperIndexCleanup|(I[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;[J)I": {
+      "gid_v2": 36,
+      "kernels_ns_op": {
+        "oldEagerCleanupSummary": 91.3,
+        "newLazyCleanupSummary": 91.6
+      }
+    },
+    "PaperNativePluginClassLoaderGroup|(I[Ljava/lang/Object;[IILjava/lang/String;[J)I": {
+      "gid_v2": 28,
+      "kernels_ns_op": {
+        "oldLookupSummary": 91.7,
+        "skipRequesterSummary": 92.4
+      }
+    },
+    "PaperNativePluginStartupRollup|(I[Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;[Ljava/lang/Object;[J)I": {
+      "gid_v2": 33,
+      "kernels_ns_op": {
+        "newSummary": 95.3,
+        "oldSummary": 96.1
+      }
+    }
+  }
+}
