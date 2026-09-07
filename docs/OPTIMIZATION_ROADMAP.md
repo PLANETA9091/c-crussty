@@ -5,23 +5,36 @@ P500 artifacts; every non-trivial claim carries a file path + commit sha so it
 can be re-verified. Companion docs:
 [`ARCHITECTURE.md`](ARCHITECTURE.md) (deep dive),
 [`BATCH_API_PROPOSAL.md`](BATCH_API_PROPOSAL.md) (batch dispatch design),
+[`BATCH_WIRING_PLAN.md`](BATCH_WIRING_PLAN.md) (wiring as-built + rollout),
+[`BLEND_CACHE_PATCHER_DESIGN.md`](BLEND_CACHE_PATCHER_DESIGN.md) (patcher design),
+[`BOOST_SWEEP.md`](BOOST_SWEEP.md) (>100x ledger),
 [`HOOK_BLEND_CACHE.md`](HOOK_BLEND_CACHE.md) (blend-cache prototype).
 
-**Status snapshot: 2026-09-08, after session 004** (see `crussty-dev-logs`
-worklog + `CLAIMS.md`).
+**Status snapshot: 2026-09-08, after wave 4 (+ wave-5 tail)** (see
+`crussty-dev-logs` worklog + `CLAIMS.md`; this revision = the TASK-40 wave-5
+roadmap sync).
 
-* **Wave 1 — SHIPPED**: lifecycle fix, kernel-policy gate, CRUSSTY runtime
-  classfile-hook fix, area-map headless smoke, P500 CI, P500 v2 full rerun.
-* **Wave 2 — IN FLIGHT**: TASK-12…21 claimed (analysis + verification queue;
-  statuses in `CLAIMS.md` are the only source of truth — this doc does not
-  invent results).
-* **Wave 3 — CANDIDATES**: `docs/HOTSPOT_CANDIDATES.md` (TASK-18, produced in
-  parallel) + open directions listed in §5.
+* **Wave 1 — SHIPPED** (§3): lifecycle fix, kernel-policy gate, CRUSSTY
+  runtime classfile-hook fix, area-map headless smoke, P500 CI, P500 v2 rerun.
+* **Waves 2–4 — SHIPPED** (§4): adoption matrix, gate coverage (4/4), CI
+  ratio-gate, area-map fuzz + fuzz CI, lifecycle soak (PASS, no leak),
+  hotspot sweep, C1–C8 module hygiene, batch dispatcher wired + rollout
+  design, blend-cache designs, anomaly oracle (PARITY), PROVEN_WINS
+  evidence-sync, boot-A/B baseline (directional), boost sweep, canon errata,
+  aggregator hygiene. Negative findings are recorded as negative findings
+  (§4.1/§4.3).
+* **IN FLIGHT / wave-5 tail** (§5): TASK-32 in progress (other session);
+  TASK-24/TASK-37/TASK-39 artifacts landed on master with CLAIMS rows
+  pending; TASK-38 claimed, nothing recorded; TASK-40 = this sync.
+  One-liners only — no invented results.
+* **Candidates** (§6): hotspot queue C1–C8 fully landed/closed; v2 sweep
+  queued; remaining open directions listed there.
 
 > **Rebuild note (honest history).** This is a full restructure of the
-> session-001/002 roadmap. Where the old text was accurate it was carried
-> over (§6); where its numbers were superseded by the v2 rerun they are kept
-> only as errata (§2.1). Nothing was silently deleted.
+> session-001/002 roadmap (carried through the wave-2 refresh `ed8ff1a` /
+> `d3b3ce4`; re-synced at wave 5). Where the old text was accurate it was
+> carried over (§7); where its numbers were superseded by the v2 rerun they
+> are kept only as errata (§2.1). Nothing was silently deleted.
 
 ---
 
@@ -105,6 +118,12 @@ methodology as a standalone driver in `bench/p500/`:
   sampling — this is what invalidated the v1 absolute numbers. 49 groups,
   129 kernels, 0 crashes, 70 pairs (stem rule), baseline diff vs
   `baseline.tsv` (drift flag |Δratio| > 20%).
+* Aggregator hygiene (TASK-34, `ed27eb0`, §4.3): explicit duplicate-row
+  collapse (bit-exact vs v2), unpaired/multi-pair warnings, and `--strict` /
+  `--write-expected` / `--check` against the checked-in
+  `results/p500_expected_summary.tsv` — TASK-12's data-hygiene findings are
+  now machine-checkable. **0/129 primary medians changed** (canon untouched):
+  [`AGGREGATOR_HYGIENE.md`](../bench/p500/results/AGGREGATOR_HYGIENE.md).
 * Hardware caveat: shared 2-CPU sandbox; deltas <±15% are parity.
 
 ### 2.1 ERRATA — the old ~115 ns floor is OBSOLETE
@@ -175,11 +194,13 @@ The closed surface already anticipates this: batch-shaped exports exist today
 `PaperNativeVarInt.writeBatch/readBatch`, `PaperNativeReferenceList.runOps` —
 `src/jni_table.rs`).
 
-> Counting caveat: `CLAIMS.md` shorthand says "44+ floor-sitting groups"
+> Counting caveat: `CLAIMS.md` shorthand said "44+ floor-sitting groups"
 > (inherited from the v1 112–220 ns band definition); the v2 strict <200 ns
-> table lists 13 groups / 32 kernels. TASK-12's adoption matrix (§4) is the
-> deliverable that pins the exact set — until then every "44+" is an
-> ESTIMATE-pending-bench.
+> table lists 13 groups / 32 kernels. TASK-12's adoption matrix (§4.1,
+> `d02fbc2`) pinned the exact set — 4/13/16 groups Tier A/B+C (HIGH×5,
+> MEDIUM×10, LOW×34) — so treat any remaining "44+" elsewhere as stale, and
+> weigh its sober aggregate numbers: S1 ≈ 0.003 / S2 ≈ 0.047 ms/tick,
+> E ≈ 0.83 ms/boot-event.
 
 ---
 
@@ -202,59 +223,130 @@ the CRUSSTY engine repo) + the artifact that proves it.
 
 ---
 
-## 4. IN FLIGHT — wave 2 (TASK-12…21)
+## 4. SHIPPED — waves 2–4 (TASK-12…36)
 
-One-liners from `CLAIMS.md` (wave-2 queue, claimed 2026-09-07T17:12Z by
-agent-7625532f). **Statuses below are as of the last read of CLAIMS.md
-(2026-09-08, mid-wave) and are recorded without inventing results** — a done
-row cites only its commit/deliverable, never numbers; `CLAIMS.md` stays the
-single source of truth between roadmap refreshes. Methodology for the whole
-wave: dump → analysis → optimization, base = `P500_REPORT_v2.md`; no
-gameplay/.so/engine changes.
+Statuses verbatim from `CLAIMS.md` at this refresh (wave-5 sync); every row
+carries its sha. **A shipped task is not automatically a speedup** — negative
+and sober findings are labeled as such, same as the wins.
 
-| Task | One-liner | Deliverable | Status (as of read) |
+### 4.1 Wave 2 — analysis, verification & CI
+
+| # | Task | What shipped | sha |
 |---|---|---|---|
-| TASK-12 | JNI-floor adoption matrix over the floor-sitting groups: ns/op, batch-API applicability (H/M/L), estimated ms/tick savings | `docs/BATCH_ADOPTION_MATRIX.md` (analysis only) | in-progress |
-| TASK-13 | kernel-policy gate full coverage: `verify_kernel_pref.sh`, all remap candidates under `CRUSSTY_KERNEL_PREF=old` vs default, diff report; short runs, BENCH.lock | `docs/KERNEL_POLICY_COVERAGE.md` | claimed |
-| TASK-14 | CI ratio-gate: extend `p500.yml` — smoke subset + fail on >20% regression vs `bench/p500/baseline.json` (ratios from v2) | workflow + baseline.json | done (`f04a170`: gate job + `bench/p500/baseline.json` + `bench/p500/scripts/ratio_gate.py`, per-kernel paired 1.2x gate) |
-| TASK-15 | area-map differential fuzz: seeded randomized grids, parity fast-path vs apply-loop, ≥10k cases, headless `cargo test` | fuzz in `area-map/` | claimed |
-| TASK-16 | FULL P500 rerun after TASK-01/04/09/11 (49 groups, REAL 120 ms), report update + addendum to v2; exclusive BENCH.lock | `bench/p500/results/P500_REPORT.md` + v2 addendum | done by the main session (dup-done for this queue, per CLAIMS): rerun completed 2026-09-08, 49 groups / 70 pairs, 0 missing / 0 CRASH; kernel-policy registry synced to it (`e5c4fad` — same 4 regressions reproduce run-to-run: 5.70 / 4.54 / 2.35 / 1.78) |
-| TASK-17 | lifecycle soak: 10-min churn for the phantom reaper under GC pressure (small heap) | `bench/lifecycle/results/SOAK_REPORT.md` | claimed (bench line after TASK-20) |
-| TASK-18 | static hotspot sweep: clippy + manual scan of `src/`, `noise/`, `area-map/` (allocs/locks/syscalls on hot paths) → ranked wave-3 candidates | `docs/HOTSPOT_CANDIDATES.md` (analysis only) | done (`0dcfa7b`) — see §5.1 |
-| TASK-19 | this document — roadmap refresh from CLAIMS + P500 v2 numbers, placeholder for TASK-18 candidates | `docs/OPTIMIZATION_ROADMAP.md` | done (`ed8ff1a` + this follow-up) |
-| TASK-20 | area-map apply-loop micro-bench: ns/px at 128/512/1024, fast-path vs baseline; light, before the P500 window | `bench/areamap/results/APPLY_BENCH.md` | in-progress (BENCH.lock) |
-| TASK-21 | investigation-only npm `crussty` CLI pre-check (TASK-05 precursor): explicit bug with full repro, NO engine edits | `crussty-dev-logs/c-crussty/task05-npm-precheck.md` | done (`02b0451` in crussty-dev-logs; verdict per CLAIMS: no live bug, e2e install→run verified; two minor non-ENGINE-TOUCH findings) |
+| 1 | **TASK-12** — JNI-floor adoption matrix | All 49 groups; floor re-count (35–90 ns): 4/13/16 groups Tier A/B+C — HIGH×5, MEDIUM×10, LOW×34; 6 anomalies flagged (incl. g42 = 34.6 ns < stated 35 ns). **Negative finding (honest):** aggregate savings are tiny — S1 ≈ 0.003 / S2 ≈ 0.047 ms/tick (env 0.028–0.066; ≤~0.13% of a 50 ms tick), E ≈ 0.83 ms/boot-event. The structural case for batch (marshal-heavy single-op groups) stands; the per-tick jackpot does not. | `d02fbc2` (+ companion `2935c05`), [`docs/BATCH_ADOPTION_MATRIX.md`](BATCH_ADOPTION_MATRIX.md) |
+| 2 | **TASK-13** — kernel-policy gate coverage | `scripts/verify_kernel_pref.sh` + [`docs/KERNEL_POLICY_COVERAGE.md`](KERNEL_POLICY_COVERAGE.md): all remap candidates `CRUSSTY_KERNEL_PREF=old` vs default — gate works **4/4** (16 measured pairs). | `66fbced` |
+| 3 | **TASK-14** — CI ratio-gate | `p500.yml` gate job + `bench/p500/baseline.json` (medians verbatim from v2) + `bench/p500/scripts/ratio_gate.py` (per-kernel paired 1.2x gate; self-test 7/7); `61c9aad` removed a stale committed TSV so the gate measures only the current run. | `f04a170`, `61c9aad` |
+| 4 | **TASK-15** — area-map differential fuzz | `area-map-fuzz` crate: seeded randomized grids, parity fast-path vs apply-loop, deterministic (3 tests). CI wiring = TASK-36 (§4.3). | `b6bb359` |
+| 5 | **TASK-16** — full P500 rerun (dup-done by the main session) | 49 groups / 70 pairs, 0 missing / 0 CRASH; kernel-policy registry synced — the same 4 regressions reproduce (5.70 / 4.54 / 2.35 / 1.78). | `e5c4fad` |
+| 6 | **TASK-17** — lifecycle soak | 10-min churn under GC pressure: **leak NO** — 26.45M built == freed, live = 0 after settle, guard trips 0; reclaim p50 4 ms (pressure) / 1.6 s (quiet natural GC); **SOAK_VERDICT PASS**. | `0200e7b`, [`bench/lifecycle/results/SOAK_REPORT.md`](../bench/lifecycle/results/SOAK_REPORT.md) |
+| 7 | **TASK-18** — static hotspot sweep | [`docs/HOTSPOT_CANDIDATES.md`](HOTSPOT_CANDIDATES.md): 8 ranked candidates C1–C8 + NOT-hot/cleared section → wave-3 queue. | `0dcfa7b` |
+| 8 | **TASK-19** — roadmap refresh (previous revision of this doc) | Canon P500 v2, shipped wave-1, wave-2 queue, wave-3 pointer, evidence index. | `ed8ff1a`, `d3b3ce4` |
+| 9 | **TASK-20** (+`-R` rescue) — area-map apply micro-bench | REAL prod path 1.35 / 3.32 / 3.43 ns/px @128/512/1024; fast path 0.20–1.97 ns/update; apply/fast 1.1e5–1.8e6x (shape-dependent) — fast path beats canon; JNI floor ≥18x the idle-update. **Negative finding (honest):** native apply is **JNI-copy-bound** — REAL apply is *slower* than the pure-Java reference (1.38 / 4.29 / 4.56x); probe: ~O(len) copy-in/out of ops+keys buffers (~12 GB/s). Candidate: diff-budget window ~8·d ops instead of cap = 2·px (§6.2). | `beaf374` (+ resize-mix companion `2997d2f`), [`bench/areamap/results/APPLY_BENCH.md`](../bench/areamap/results/APPLY_BENCH.md) |
+| 10 | **TASK-21** — npm `crussty` CLI pre-check (investigation-only) | No live bug (e2e install→run verified); F1 stale-pins publish-trap + F2 wrapper exit-code/musl = minor, non-ENGINE-TOUCH. | `02b0451` (crussty-dev-logs), `task05-npm-precheck.md` |
+
+### 4.2 Wave 3 — module hot-path hygiene (C1–C8)
+
+All module-side, no `.so`/engine changes; wins are **ESTIMATE-pending-bench**
+until the boot A/B (§4.3) and future E2E runs say otherwise.
+
+| # | Task | What shipped | sha |
+|---|---|---|---|
+| 1 | **TASK-22** (C1) — `find_class` early-exit + sighting feed + poller backoff | Break-on-first-match (was full-array rescan with a local-ref leak); sharded bounded name-set fed by `hooks::dispatch`; pollers 2 s sighted / 10 s unsighted, 180 s deadline unchanged. ~90 full heap-scans/hook → ~3–4 per 180 s window (≥95% scans avoided); wall-clock effect pending E2E / measured only directionally in the boot A/B. | `e9405d1` (+ tests `584f94a`, `5e9cff6`) |
+| 2 | **TASK-23** (C2) — COW lock-free hook readers | Registry Mutex → `RwLock<Arc<[(pattern,cb)]>>` snapshot swap; dispatch/dispatch_bytes = Arc-clone + glob-match, **0 alloc / 0 lock on the read path**; registration = cold rebuild+swap; ORDERING CONTRACT recorded (registration order, byte-chain N-1→N). JVM-wide serialization point removed; win ESTIMATE-pending-bench. | `54a6724` (+ `5e9cff6`) |
+| 3 | **TASK-26** (C5) — retransform serve branch | `PATCH_CACHE {bytes: Arc<[u8]>, major}` — serve = refcount bump, single contract-required Vec copy, 0 header re-parse on the hook thread, one-shot serve log. | `f86c517` |
+| 4 | **TASK-27** (C6+C7) — method-ID cache + log lock scope | MAIN_IDS cache + conservative invalidation + drain-8 (`106bb73`); `LoggerSnapshot` copy-out — lock never held across JNI (`f542d02`). C8 (dead `REGRESSED_KERNEL_FALLBACKS`) landed inside `397856c`. | `106bb73`, `f542d02` |
+| 5 | **TASK-25** — C5–C8 hygiene pack | dup-done, **0 new commits**: all four points already on master before the re-claim (C5 = `f86c517`, C6 = `106bb73`, C7 = `f542d02`, C8 = `397856c`); verified cargo test 22/22, clippy 0 new. | — (see above) |
+
+### 4.3 Waves 3–4 — batch surface, designs, evidence & infra
+
+| # | Task | What shipped | sha |
+|---|---|---|---|
+| 1 | **TASK-28** — batch dispatcher wired (as-built) + rollout design | `397856c`: batch_api/batch_table modules declared + init (previously orphaned dead code outside the build); dispatcher `run()` policy-gated (`ERR_KERNEL_REFUSED = -10` before any op); 12 batch kernels registered as "P500 PARITY (batch surface)"; 6 drift-guard tests. `db7cf27`: [`docs/BATCH_WIRING_PLAN.md`](BATCH_WIRING_PLAN.md) Part B rollout — auto-threshold T (default 16), wave-1 top-10 ordering, `CRUSSTY_BATCH=off|auto|on` (**default off**), stage gates 0–3; Part A preserves the as-built record verbatim. Armed, **0 consumers** until gates pass. | `397856c`, `db7cf27` |
+| 2 | **TASK-29** — blend-cache patcher designs (no code) | Dup-delivery, cross-linked: [`BLEND_CACHE_DESIGN.md`](BLEND_CACHE_DESIGN.md) + [`BLEND_CACHE_PATCHER_DESIGN.md`](BLEND_CACHE_PATCHER_DESIGN.md). "Blend cache is NOT a cache": the only bit-exact construct = EMPTY-blender constant-fold guard splice (~12–20 B, StackMapTable same_frame, 0 B/instance); per-column Java memo **NO-BUILD** on measured evidence (g3 parity 0.980, MarkerCache 4.54x DO_NOT_WIRE precedent); invalidation FSM (orig-serve / ours-idempotent / foreign-retire). Honest verdict: CONDITIONAL GO on probe, likely NO-BUILD patcher — a proven negative is a valid deliverable. | `4fb9d12`, `a7e3967` |
+| 3 | **TASK-30** — area-map ops-count anomaly oracle | Verdict **PARITY — the real kernel is correct**. The 645-vs-374 ops/call anomaly = bench-metric artifact (time-bounded windows × ±1 radius walk; RNG replay reproduces both numbers with 0 free parameters); per-call multiset parity 268/268 in both modes, d = 63/255/511; signed erratum in `APPLY_BENCH_RESIZE_MIX.md`. Negative finding recorded honestly: the anomaly was in the metric, not the kernel. | `125e648`, [`bench/areamap/results/TASK30_ORACLE.md`](../bench/areamap/results/TASK30_ORACLE.md) |
+| 4 | **TASK-31** — PROVEN_WINS evidence-sync | 27 registry entries rechecked against the canonical rerun: 3 stale wins reclassified → parity (PluginLoadingAllocation 1.55x → 0.99, AquiferSurfaceSampling 1.15x → 0.92), blend-cache 244x → 316x (WIN re-confirmed); hot-path WIN set 7 → 4; gate behavior unchanged. | `db820b1`, [`docs/PROVEN_WINS_SYNC.md`](PROVEN_WINS_SYNC.md) |
+| 5 | **TASK-31-w3** — post-wave-2 integration check (≠ the evidence-sync TASK-31) | Verdict **GREEN** (master moved twice mid-check; re-verified at the later sha): build PASS, tests 40/40, clippy 0 new; report-only finding → TASK-35. | `crussty-dev-logs/c-crussty/integration-check-2026-09-07-wave3.md` |
+| 6 | **TASK-32-w4** — boot-latency A/B harness + baseline | `bench/bootab/run_bootab.sh` + [`results/BOOTAB_REPORT.md`](../bench/bootab/results/BOOTAB_REPORT.md) + `bootab_baseline.tsv`; throwaway /tmp instances, live server never touched; ready-marker "native surface live: 98 bridge classes, 283 natives". **Honest label: module A/B −2.6% on the primary marker (3.10 s → 3.02 s median), ranges overlap, n=3 → DIRECTIONAL ONLY, NOT a proven win**; no regression; engine-runtime `.so` A/B pending its rebuild. | `e6a030d` |
+| 7 | **TASK-33** — BOOST >100x sweep | [`docs/BOOST_SWEEP.md`](BOOST_SWEEP.md): 5 shipped ≥10x mechanisms (2 >100x LIVE: area-map fast path ~1,945–170,612x; lifecycle quiet-reclaim >571x; blend-cache 316.45x BENCH-ONLY); live truth: 2 live wirings, batch dispatcher armed 0 consumers; physics: 32 floor kernels / 13 groups blocked-by-`.so` for per-call >100x, batch cap 11.5–40x. | `f55f9c9` |
+| 8 | **TASK-33-w4** — canon errata | 35–90 ns floor everywhere; stale ~115 ns claims annotated, history not rewritten. | `217e3e8` |
+| 9 | **TASK-34** — P500 aggregator hygiene | Explicit duplicate-row policy (min-of-median primary + earliest-row tie-break = bit-exact vs v2; repeats kept as `method#variantK`), UNPAIRED/MULTI-PAIR greppable + stderr warn, `--strict` / `--write-expected` / `--check` against the checked-in `p500_expected_summary.tsv`. **Medians stable: 0/129 primary medians changed**; TASK-12's data-hygiene findings now machine-checkable. | `ed27eb0`, [`bench/p500/results/AGGREGATOR_HYGIENE.md`](../bench/p500/results/AGGREGATOR_HYGIENE.md) |
+| 10 | **TASK-35** — untrack bench `.class` artifacts | 8 files untracked index-only (the `2997d2f` accident found by TASK-31-w3); `run_bench.sh` rebuilds on-the-fly; artifact scan otherwise clean. | `97afe20` |
+| 11 | **TASK-36** — area-map-fuzz in CI | `areamap-fuzz` job in `ci.yml`: deterministic → a failure is a real parity bug (loud); artifact uploaded on failure. | `6c751b7` |
 
 ---
 
-## 5. Wave 3 candidates
+## 5. IN FLIGHT / wave-5 tail (one-liners; no invented results)
 
-### 5.1 Hotspot candidates — landed
+Statuses here are as of this refresh; `CLAIMS.md` remains the single source
+of truth. Where an artifact already landed on master while the CLAIMS row has
+not been flipped yet, that is said explicitly — the sha is the evidence, not
+a status claim.
+
+* **TASK-24** (C3): code landed `28ad646` (control-plane Vecs → per-thread
+  SCRATCH, 8 allocs → 0 per `run()`; integration-verified); paired bench tail
+  landed `1449f7f` ([`bench/batch/results/BATCH_FLOOR_REPORT.md`](../bench/batch/results/BATCH_FLOOR_REPORT.md)):
+  K=1 ratio 0.909/0.913 (−9%, ~91–99 ns/batch = the 8 eliminated
+  malloc/free cycles), K≥8 parity within noise; dispatcher constants ~200 ns
+  preamble/batch + ~40 ns marginal/op @K=256 — batch beats direct only near
+  the 90 ns transition ceiling at large K, never for 35 ns-floor or
+  body-dominated kernels. `CLAIMS.md` still read "in-progress" at read time —
+  expect the owning session to flip it.
+* **TASK-32** (main impl): blend-cache classfile-patcher per the TASK-29
+  design — env-gated `CRUSSTY_BLEND_CACHE=1` (default OFF), byte-exact
+  guard-splice, parity selftest, kill-switch; target kernel 316x
+  **BENCH-ONLY** — **in progress, other session**. No results yet.
+* **TASK-37** (wave-5): aggregator guardrail in CI — `--check` fixture +
+  `--strict` smoke wired into `p500.yml`, aggregator arg plumbing + paired
+  test fixtures — landed `278dcf0`; CLAIMS row pending at read time.
+* **TASK-38** (wave-5): claimed; nothing on master at read time — nothing
+  recorded here by design.
+* **TASK-39** (wave-5): static hotspot sweep v2 over the post-C1..C8 new code
+  — [`docs/HOTSPOT_CANDIDATES_V2.md`](HOTSPOT_CANDIDATES_V2.md) landed
+  `0939257` (ANALYSIS ONLY; re-uses v1's NOT-hot list verbatim; confirms
+  C1–C8 all landed or closed). Feeds the next candidate queue (§6.1).
+* **TASK-40** (wave-5): this document's sync (waves 2–4 → SHIPPED with shas,
+  honesty guard on the boot A/B result).
+
+---
+
+## 6. Candidates & open directions
+
+### 6.1 Hotspot candidates — v1 landed, v2 queued
 
 `docs/HOTSPOT_CANDIDATES.md` was produced **in parallel by TASK-18** (static
 sweep: clippy + manual scan of `src/`, `noise/`, `area-map/` for
-allocs/locks/syscalls on hot paths) and landed as commit `0dcfa7b` while this
-roadmap was being refreshed. Its ranked list is the top of the wave-3 queue.
-This document intentionally does **not** preview or duplicate its contents —
-the file itself is the single source of truth.
+allocs/locks/syscalls on hot paths) and landed as commit `0dcfa7b`. Its
+C1–C8 queue is now **fully landed or closed** (C1 `e9405d1`, C2 `54a6724`,
+C3 `28ad646`, C4 leave-as-is verdict, C5 `f86c517`, C6+C7 `106bb73`/`f542d02`,
+C8 `397856c`). The successor sweep over the post-C1..C8 code is
+[`docs/HOTSPOT_CANDIDATES_V2.md`](HOTSPOT_CANDIDATES_V2.md) (TASK-39,
+`0939257`) — analysis-only, feeds the next wave. This document intentionally
+does **not** preview or duplicate their contents — the files themselves are
+the single source of truth.
 
-### 5.2 Known open directions
+### 6.2 Known open directions
 
 * **Batch-API adoption for the JNI-floor groups.** 13 floor groups
   (35–90 ns floor, §2.4) gain nothing from kernel micro-optimization; the
-  gain is amortizing transitions. Input: TASK-12's `BATCH_ADOPTION_MATRIX.md`;
-  design: [`BATCH_API_PROPOSAL.md`](BATCH_API_PROPOSAL.md) (acceptance
-  criteria carried over in §6.1, with all absolute-ns expectations
-  **ESTIMATE-pending-bench** under the v2 floor). Re-estimate wins from the
-  35–90 ns floor, not the obsolete 115 ns.
+  gain is amortizing transitions. Input: TASK-12's `BATCH_ADOPTION_MATRIX.md`
+  (`d02fbc2`) — with its sober aggregate finding: S2 ≈ 0.047 ms/tick, so
+  per-tick wins are micro unless call amplification is JFR-proven; the
+  structural case (marshal-heavy single-op groups) stands. The dispatcher is
+  already wired + policy-gated (`397856c`); rollout design in
+  [`BATCH_WIRING_PLAN.md`](BATCH_WIRING_PLAN.md) (`db7cf27`: auto-threshold
+  T, `CRUSSTY_BATCH=off|auto|on` default off, stage gates 0–3). Acceptance
+  criteria carried over in §7.1; TASK-24 artifacts on master (§5) — its
+  bench tail now gives the measured complement: batch beats direct only near
+  the 90 ns transition ceiling at large K.
 * **Full P500 regression rerun after each wave.** TASK-16 establishes the
   post-wave-1 rerun; the cadence becomes standing policy: every wave that
   touches kernel wiring, policy, or classpath closes with a 49-group
   REAL-120 ms rerun diffed against `baseline.tsv` (and, after TASK-14, gated
   in CI at >20% per-pair regression).
-* **Lifecycle soak.** TASK-17's 10-minute churn soak is the pilot; wave-3
-  extension: longer soaks + bigger heaps + live-server boot soak, so the
-  phantom-reaper path has runtime-length evidence, not just A/B benches.
+* **Lifecycle soak.** Pilot done and PASS (TASK-17, §4.1: 10-min churn, leak
+  NO). Extension still open: longer soaks + bigger heaps + live-server boot
+  soak, so the phantom-reaper path has runtime-length evidence, not just A/B
+  benches.
 * **Event-driven activation redesign** (carried over from the old roadmap
   §2.4): both hooks still poll (500 ms interval / boot-marker thread).
   Replace with JVMTI ClassPrepare-driven activation via `cplug-sdk`; keep the
@@ -265,7 +357,10 @@ the file itself is the single source of truth.
   (NoiseInterpolatorSlice 3.3x worldgen bursts; NoiseChunkBlendCache ~317x
   but frequency unknown; PluginLoadingAllocation startup-only). Acceptance is
   a before/after server metric (chunk-gen ms/chunk, boot time), never
-  kernel-ns alone; the four confirmed regressions stay unwired.
+  kernel-ns alone; the four confirmed regressions stay unwired. For
+  boot-time acceptance the `bench/bootab` harness now exists (TASK-32-w4,
+  §4.3) — its current baseline is directional only (n=3, ranges overlap);
+  scale n before any proven claim.
 * **Upstream engine batch API** (carried over from old §3.3): promote the
   plugin-local dispatcher into the CRUSSTY runtime (shared dispatch table, id
   space, ABI version handshake) once the plugin-local design proves out;
@@ -273,9 +368,14 @@ the file itself is the single source of truth.
 
 ---
 
-## 6. Carried-over designs (still accurate from the session-001/002 roadmap)
+## 7. Carried-over designs (still accurate from the session-001/002 roadmap)
 
-### 6.1 Batch dispatch — acceptance criteria (unchanged, absolute ns now ESTIMATE-pending-bench)
+### 7.1 Batch dispatch — acceptance criteria (unchanged, absolute ns now ESTIMATE-pending-bench)
+
+> Planning note (wave-5 sync): the dispatcher itself shipped earlier than
+> this section assumed — see TASK-28 (§4.3): as-built `397856c` + rollout
+> design `db7cf27` with stage gates. Criteria (a)–(d) below still govern
+> those gates.
 
 * Owner files (planned): `src/batch_dispatch.rs` (descriptor parser ported
   from `bench/p500/gen_p500_bench.py::parse_params`, dispatch table over
@@ -293,12 +393,16 @@ the file itself is the single source of truth.
   batch ≤ 256 ops); kernels that mutate shared inputs force strict sequential
   semantics (documented, is a feature — zero copies).
 
-### 6.2 New hook candidates (kernels whose wins are already proven)
+### 7.2 New hook candidates (kernels whose wins are already proven)
 
-* `NoiseChunkBlendCache` — ~317x (v2; was "244x" under v1 numbers). Wiring:
-  intercept the kernel's blender-construction path so it routes to `new*`
-  the same way `area_map` routes `update()`. Prototype + parity harness
-  already exist observation-only: [`HOOK_BLEND_CACHE.md`](HOOK_BLEND_CACHE.md).
+* `NoiseChunkBlendCache` — ~317x (v2; was "244x" under v1 numbers;
+  **BENCH-ONLY**, live frequency unknown). Wiring: intercept the kernel's
+  blender-construction path so it routes to `new*` the same way `area_map`
+  routes `update()`. Prototype + parity harness exist observation-only
+  ([`HOOK_BLEND_CACHE.md`](HOOK_BLEND_CACHE.md)); the concrete patcher design
+  landed (TASK-29, §4.3 — guard-splice constant-fold, per-column memo
+  NO-BUILD) and the implementation is in flight as TASK-32 (§5, env-gated,
+  default OFF).
 * `NoiseInterpolatorSlice` — 3.3x (v2). Wiring: flatten the jagged per-column
   slice loop to the flat buffer shape `flat*` consumes (byte-hook on the
   enclosing fill method, helper class in the kernel loader — same pattern as
@@ -310,7 +414,7 @@ the file itself is the single source of truth.
   kernel class shapes vary across Paper/Moonrise versions; these paths fire
   during chunk generation — a bad patch corrupts worldgen.
 
-### 6.3 Verification & measurement rules (unchanged)
+### 7.3 Verification & measurement rules (unchanged)
 
 * BENCH-MUTEX on the shared 2-CPU sandbox (`/home/z/BENCH.lock`); ±15%
   parity band; min-of-medians; SINK against DCE; fresh args (kernels mutate
@@ -320,7 +424,7 @@ the file itself is the single source of truth.
 
 ---
 
-## 7. Evidence index (claim → file / commit)
+## 8. Evidence index (claim → file / commit)
 
 | Claim | Where |
 |---|---|
@@ -335,7 +439,21 @@ the file itself is the single source of truth.
 | O(N) waypoint to 262 144 | `bfdbf87`; [`bench/p500/results/P500_SCALING_WAYPOINT.md`](../bench/p500/results/P500_SCALING_WAYPOINT.md) |
 | Batch dispatch design + floor groups | [`docs/BATCH_API_PROPOSAL.md`](BATCH_API_PROPOSAL.md) (floor numbers there are pre-errata — §2.1) |
 | Blend-cache prototype (observation-only) | [`docs/HOOK_BLEND_CACHE.md`](HOOK_BLEND_CACHE.md); `src/proto_blend_cache.rs` |
-| Wave-2 statuses (single source of truth) | `crussty-dev-logs/CLAIMS.md` |
+| Kernel-policy gate coverage 4/4 (16 pairs) | commit `66fbced`; `scripts/verify_kernel_pref.sh`; [`docs/KERNEL_POLICY_COVERAGE.md`](KERNEL_POLICY_COVERAGE.md) |
+| Lifecycle soak — PASS, no leak | commit `0200e7b`; [`bench/lifecycle/results/SOAK_REPORT.md`](../bench/lifecycle/results/SOAK_REPORT.md) |
+| Boot-latency A/B baseline (DIRECTIONAL, n=3, NOT proven) | commit `e6a030d`; [`bench/bootab/results/BOOTAB_REPORT.md`](../bench/bootab/results/BOOTAB_REPORT.md) |
+| P500 aggregator hygiene + expected-summary check | commit `ed27eb0`; [`bench/p500/results/AGGREGATOR_HYGIENE.md`](../bench/p500/results/AGGREGATOR_HYGIENE.md) |
+| Aggregator guardrail in CI (--check fixture, --strict smoke) | commit `278dcf0`; `.github/workflows/p500.yml` |
+| PROVEN_WINS / DO_NOT_WIRE evidence-sync audit | commit `db820b1`; [`docs/PROVEN_WINS_SYNC.md`](PROVEN_WINS_SYNC.md) |
+| Post-wave-2 integration check — GREEN | `crussty-dev-logs/c-crussty/integration-check-2026-09-07-wave3.md` |
+| Adoption matrix (49 groups; sober aggregate savings) | commit `d02fbc2`; [`docs/BATCH_ADOPTION_MATRIX.md`](BATCH_ADOPTION_MATRIX.md) |
+| Batch-floor bench (TASK-24 tail): K=1 −9%, K≥8 parity | commits `28ad646`, `1449f7f`; [`bench/batch/results/BATCH_FLOOR_REPORT.md`](../bench/batch/results/BATCH_FLOOR_REPORT.md) |
+| Apply-bench JNI-copy-bound finding + anomaly oracle (PARITY) | commits `beaf374`, `2997d2f`, `125e648`; [`bench/areamap/results/APPLY_BENCH.md`](../bench/areamap/results/APPLY_BENCH.md), `TASK30_ORACLE.md` |
+| Batch wiring as-built + rollout design | commits `397856c`, `db7cf27`; [`docs/BATCH_WIRING_PLAN.md`](BATCH_WIRING_PLAN.md) |
+| Blend-cache patcher designs (no code) | commits `4fb9d12`, `a7e3967`; [`docs/BLEND_CACHE_DESIGN.md`](BLEND_CACHE_DESIGN.md), [`docs/BLEND_CACHE_PATCHER_DESIGN.md`](BLEND_CACHE_PATCHER_DESIGN.md) |
+| >100x sweep ledger | commit `f55f9c9`; [`docs/BOOST_SWEEP.md`](BOOST_SWEEP.md) |
+| Hotspot sweep v2 (post-C1..C8 code) | commit `0939257`; [`docs/HOTSPOT_CANDIDATES_V2.md`](HOTSPOT_CANDIDATES_V2.md) |
+| Task statuses (single source of truth, all waves) | `crussty-dev-logs/CLAIMS.md` |
 | Independent review + errata | `crussty-dev-logs/c-crussty/review-session003-agents2-commits.md` |
 | Hotspot candidates (wave 3) | `docs/HOTSPOT_CANDIDATES.md` (TASK-18, commit `0dcfa7b`) |
 | CI ratio-gate (wave 2) | commit `f04a170`; `.github/workflows/p500.yml`, `bench/p500/baseline.json`, `bench/p500/scripts/ratio_gate.py` |
