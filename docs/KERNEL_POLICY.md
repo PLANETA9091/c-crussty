@@ -97,14 +97,16 @@ TASK-31 — full before/after audit in
   | `PluginLoadingAllocation.newLazyValidateSummary` | "WIN 1.55×" (217.9 → 140.6 ns) | 0.993 (116.1 → 115.3 ns) | **PARITY** (reclassified) |
   | `PluginLoadingAllocation.newLazyMissingSetSummary` | "WIN 1.53×" (218.3 → 142.5 ns) | 0.996 (115.1 → 114.6 ns) | **PARITY** (reclassified) |
   | `AquiferSurfaceSampling.newBatchSummary` | "WIN 1.15×" (6.3 → 5.5 µs) | 0.906 (6.0 → 5.5 µs) | **PARITY** (reclassified) |
-* **P500 PARITY (batch surface)** — the 12 batch-dispatch table kernels
-  (`src/batch_table.rs` ids 0-11, `docs/BATCH_WIRING_PLAN.md` §A.4):
+* **P500 PARITY (batch surface)** — the batch-dispatch table kernels
+  (`src/batch_table.rs` ids 0-13, `docs/BATCH_WIRING_PLAN.md` §A.4):
   caller-initiated infrastructure, not hot-path routing. Pairs covered by
   the rerun stay parity (AquiferIndexStride 1.07×, ChunkDependencies 1.03×,
-  DensitySplineContext 1.00×, EntityLookupStatus 1.00×); 5 entries
+  DensitySplineContext 1.00×, EntityLookupStatus 1.00×, DensityAp2MinMaxFill
+  1.003×); the 5 entries that had **no pair in the canonical report**
   (`TicketSetSearch` ×2, `NoiseInterpolatorFractions.divisionSummary`,
-  `ClimateRTree` ×2) have **no pair in the canonical report** — see
-  PROVEN_WINS_SYNC.md §4 (open item, evidence predates the rerun).
+  `ClimateRTree` ×2) are now **calibrated** under canonical methodology —
+  see `bench/p500/results/BATCH_SURFACE_CALIBRATION.md` (TASK-51;
+  PROVEN_WINS_SYNC §4.1 resolved).
 
 Note: whitelist keys are exact `(class, kernel)` pairs. A kernel *name* that
 collides across classes (`cachedSummary` is a regression on `MarkerCache`,

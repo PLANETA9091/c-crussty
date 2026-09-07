@@ -93,18 +93,21 @@ Remaining stale artifact fixed: the `DO_NOT_WIRE` doc comment still said "P500 2
 120ms-batch rerun" (UTC-named old label) — harmonized to the canonical report name
 (2026-09-07T16:46Z = 2026-09-08 UTC+8, 49 groups / 70 pairs).
 
-## 4. Registry-vs-report inconsistencies NOT resolved (documented, left as-is)
+## 4. Registry-vs-report inconsistencies (documented; item 1 resolved by TASK-51, items 2-4 left as-is)
 
-1. **5 batch-surface entries have no pair in the canonical rerun:**
+1. **RESOLVED 2026-09-08+08 (TASK-51): 5 batch-surface entries had no pair in the canonical rerun.**
    `TicketSetSearch.binarySummary` / `.uncheckedBinarySummary`,
    `NoiseInterpolatorFractions.divisionSummary`, `ClimateRTree.buildTreeHandle` /
-   `nativeBuildTreeHandle` — the 2026-09-08 rerun contains 0 mentions of these classes.
-   Their `P500 PARITY (batch surface)` verdicts rest on earlier evidence (pre-rerun
-   reports / batch calibration); they are infrastructure (caller-initiated dispatch of
-   already-registered pointers), so no gate behavior depends on a fresh number, but a
-   future calibration rerun should add them as groups so every registry entry traces to
-   the canonical report. NOT fixed here (would require a bench run — forbidden in this
-   task; CPU busy with sibling benches).
+   `nativeBuildTreeHandle` are now **calibrated** under canonical P500 methodology
+   (120 ms batches, median-of-5, REAL .so, exclusive BENCH.lock) via the
+   lifecycle-aware driver `bench/p500/calib/` — measured: divisionSummary 411.2 ns
+   steady (CV 0.18%); TicketSetSearch steady-state 530.4/554.4 µs with cross-call
+   state confirmed (cold 6.85 ms / 0.86 ms); rtree pair = transition-floor 56–79 ns
+   on opaque inputs (null-handle boundary documented; id10 ≡ id11 alias confirmed).
+   See `bench/p500/results/BATCH_SURFACE_CALIBRATION.md`. Verdicts remain
+   `P500 PARITY (batch surface)` (no pair ⇒ no ratio; no gate change); every
+   registry entry now traces to a canonical-methodology measurement or the
+   canonical report.
 2. **Two NEW rerun WINs are not in the registry (documented, deliberately NOT added):**
    `NoiseChunkFlatCacheContext.newTrueContextSummary` (1.24×, ratio 0.805) and
    `.newFalseContextSummary` (1.18×, ratio 0.846), both 0.0%-stable. Adding them would

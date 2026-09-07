@@ -275,13 +275,13 @@ pub static PROVEN_WINS: &[ProvenKernel] = &[
         class: "PaperNativeTicketSetSearch",
         kernel: "binarySummary",
         verdict: "P500 PARITY (batch surface)",
-        evidence: "src/batch_table.rs id0 (jni_table.rs:15); registered surface, caller-initiated dispatch",
+        evidence: "src/batch_table.rs id0 (jni_table.rs:15); registered surface, caller-initiated dispatch; calibrated steady-state 530.4us/call (CV 0.41%), cold 6.85ms, cross-call state confirmed — bench/p500/results/BATCH_SURFACE_CALIBRATION.md",
     },
     ProvenKernel {
         class: "PaperNativeTicketSetSearch",
         kernel: "uncheckedBinarySummary",
         verdict: "P500 PARITY (batch surface)",
-        evidence: "src/batch_table.rs id1 (jni_table.rs:16)",
+        evidence: "src/batch_table.rs id1 (jni_table.rs:16); calibrated steady-state 554.4us/call (CV 0.35%), cold 0.86ms — bench/p500/results/BATCH_SURFACE_CALIBRATION.md",
     },
     ProvenKernel {
         class: "PaperNativeAquiferIndexStride",
@@ -329,19 +329,19 @@ pub static PROVEN_WINS: &[ProvenKernel] = &[
         class: "PaperNativeNoiseInterpolatorFractions",
         kernel: "divisionSummary",
         verdict: "P500 PARITY (batch surface)",
-        evidence: "src/batch_table.rs id9 (jni_table.rs:155)",
+        evidence: "src/batch_table.rs id9 (jni_table.rs:155); calibrated 411.2ns/op steady-state (CV 0.18%) — bench/p500/results/BATCH_SURFACE_CALIBRATION.md",
     },
     ProvenKernel {
         class: "PaperNativeClimateRTree",
         kernel: "buildTreeHandle",
         verdict: "P500 PARITY (batch surface)",
-        evidence: "src/batch_table.rs id10 (jni_table.rs:89), shape B ([J[J)J",
+        evidence: "src/batch_table.rs id10 (jni_table.rs:89), shape B ([J[J)J; calibrated transition-floor 56-79ns/op on opaque inputs (null-handle boundary documented) — bench/p500/results/BATCH_SURFACE_CALIBRATION.md",
     },
     ProvenKernel {
         class: "net/minecraft/world/level/biome/PaperNativeClimateRTree",
         kernel: "nativeBuildTreeHandle",
         verdict: "P500 PARITY (batch surface)",
-        evidence: "src/batch_table.rs id11 (jni_table.rs:92), shape B ([J[J)J",
+        evidence: "src/batch_table.rs id11 (jni_table.rs:92), shape B ([J[J)J; calibrated == id10 within noise (alias confirmed) — bench/p500/results/BATCH_SURFACE_CALIBRATION.md",
     },
     // TASK-48 wave-1 shape A' (III[J)I): the P500 g9 density min/max-fill
     // pair. Honest framing mirrors ids 2/3: the pair's old-vs-new ratio is
