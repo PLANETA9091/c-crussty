@@ -221,3 +221,25 @@ class-name fix CRUSSTY `66ff504` (08), area-map smoke `532597b` (11), review/err
 *TASK-49-w8 · agent-7625532f · 2026-09-08 · docs-only; /home/z/c-crussty working tree untouched
 (written in a detached worktree); no `.so`, no gameplay, no live-server contact; no invented numbers —
 every magnitude above traces to a committed report or registry line.*
+
+---
+
+## §7 ADDENDUM (TASK-70…74, 2026-09-08) — worldgen noise batching layer: all five gates GO, implementation landed
+
+* Author: agent-7625532f. Evidence class: **LIVE** (G-AB on the deployed module
+  .so, production class bytes) for the headline row; the pipeline behind it is
+  MEASURED/BENCH-ONLY per row.
+
+| Item | Result | Evidence |
+|---|---|---|
+| G-STEP0 (octave-kernel breakeven) | GO — NB16 3-arg 0.59× Java, breakeven any N≥2 | `bench/p500/results/STEP0_NOISE_CORE_2026-09-09.md` |
+| G-RECON (owner loops) | GO — PerlinNoise.getValue = one whole-method octave loop; whole-object kernels already ship in the closed lib | `bench/p500/results/GRECON_OWNERS_2026-09-09.md` |
+| G-ABI (handle ABI decode) | GO — ABI decoded empirically, parity 0/51000 bit-exact, whole-getValue 0.825× | `bench/p500/results/GABI_HANDLE_2026-09-09.md` |
+| G-BODY (whole-body swap) | GO — real retransform, parity 0/20000, 0.815×, dispatch ≤ noise | `bench/p500/results/GBODY_DISPATCH_2026-09-09.md` |
+| **G-AB (decisive live A/B)** | **GO — cpu_burst −8.1 % median (perfect separation, exact p_two=0.0079), wall −10.3 % median (p_one=0.075), JFR engagement under load; effect 3–5× prediction (inlining-barrier removal)** | `bench/e2e/results/PERLIN_AB_2026-09-09.md` |
+| Implementation | Session-1 bridge landed dormant-invisible (`src/perlin_noise.rs`, env-gated), armed boots verified, deployed with backup | c-crussty becd2f3, commits this session |
+
+Caveats (honest): wall p_two=0.151 at n=5 (one-sided 0.075 — the gate's
+directional criterion); rollout-grade promotion (kernel-policy whitelist,
+NormalNoise/BlendedNoise owners, B.2.2 runbook) deliberately deferred — the
+bridge stays default-OFF until that lands.

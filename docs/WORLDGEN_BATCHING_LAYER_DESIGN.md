@@ -251,7 +251,7 @@ wall — so the channel stays open and the remaining gates are G-RECON and G-AB.
 | G-PARITY | bit-equal fixtures ×2 runs | piggybacks on G-STEP0 rig | partially covered (0/20000 per form at TASK-67; +0/51000 whole-object at TASK-70 — every production path incl. gapped octaves and the −yo flag); full batch-plane fixtures at implementation |
 | G-RECON | ≥2 worldgen owner loops register-local with N_o ≥ breakeven | javap session | **GO (2026-09-08, TASK-69): owners are single-loop whole-method bodies (PerlinNoise.getValue = one octave loop over noiseLevels[], NormalNoise = two trees); N_o=8 measured; whole-object native kernels ALREADY in closed lib (nativeGetValue/NativeGetValueNoYScale/NativeNormalNoise.nativeGetValue + fill family — ABI decode = new G-ABI sub-gate); in-loop context correction: Java octave sample is 53.4 ns in-loop (not 91.1 isolated) → honest native headroom 0.70-0.96×, recoverable refined to 1.6-2.7% burst wall — `bench/p500/results/GRECON_OWNERS_2026-09-09.md`** |
 | G-ABI | decode `nativeBuildHandle([B[B[D[D[D[DDD)J`, parity bit-exact vs real class, whole-getValue kernel measured | one /tmp probe session (ABI probing, no server) | **GO (2026-09-08, TASK-70): ABI fully decoded — a0 = slot-indexed concat p-tables byte[256×N] (zeros for absent octaves), a1 = presence mask byte[N] (length-validated, wrong length ⇒ handle=0), a2..a5 = per-slot xo/yo/zo/amplitudes, a6/a7 = lowestFreqInputFactor/lowestFreqValueFactor; parity 0/51000 bit-exact (both configs incl. gapped octaves, y0/y1, flag=-yo, NoYScale≡canonical); whole-getValue 0.825× Java (354.3 vs 429.3 ns/call, inside 0.70–0.96× predicted window); cost model crossing ≈54 ns + 37.3 ns/octave — `bench/p500/results/GABI_HANDLE_2026-09-09.md`. Consequence: NO new kernel needed (§3.3 id-21 plan superseded by the shipped whole-object kernels); patch form = whole-body swap + per-object handle lifecycle |
-| G-AB | paired A/B wall delta > 0 with p < 0.1 (Mann-Whitney, n=5/arm) | one bench session on the TASK-63 harness | pending — the only decision-grade production number |
+| G-AB | paired A/B wall delta > 0 with p < 0.1 (Mann-Whitney, n=5/arm) | one bench session on the TASK-63 harness | **GO (2026-09-08, TASK-74): n=5/arm ABBA, symmetric idle-gate protocol (post-Done tail probe: async work decays to floor only ~55 s — pilot exposed a pro-B confound, protocol v2 gates BOTH arms ≥60 s + CPU<0.12 sustained 5 s); cpu_burst PERFECT SEPARATION (max B 57.30 < min A 58.77, exact p_two=0.0079) −5.03 CPU-s median (−8.1%); wall −7.45 s median (−10.3%), p_one=0.075 (<0.1 directional, pre-registered), p_two=0.151; watchdog-covariate-robust; JFR mechanism proof: PerlinNoiseNativeOps.handle 24 samples under burst load, getValue frame 94→52, inlined noise→p chain vanished; effect 3–5× the 1.6–2.7% prediction — JIT inlining-barrier removal (1-instruction body inlines into worldgen caller loops, megamorphic DoubleList body did not): microbenchmarks are a LOWER BOUND for whole-method swaps — `bench/e2e/results/PERLIN_AB_2026-09-09.md` |
 | G-BODY | whole-body swap works through a REAL retransform: bit-parity + execution canary + dispatch overhead ≤ noise (standalone javaagent rig, no server) | one /tmp session, ASM from server libs | **GO (2026-09-08, TASK-71): parity 0/20000 pre-vs-post retransform (same JVM, hard execution canary); P 345.9 vs J 424.5 ns/call = 0.815× (window 0.70–0.96×); dispatch overhead = P − N_direct ≈ −6.6 ns ≤ noise; handle build warm 22–60 µs (cold 4–14 ms, one-time per instance); two bug classes caught HERE (descriptor off-by-one `(DDDDDZ)D`, ASM `mv` field shadowing) before they could cost server boots — `bench/p500/results/GBODY_DISPATCH_2026-09-09.md` |
 
 **NO-GO is a valid outcome at every gate** and is recorded as ops guidance. If
@@ -282,3 +282,18 @@ handle lifecycle (phantom-reaper TASK-01), G9 quiet-worker retransform disciplin
 env gate + B.2.2 ladder. The next gate is G-AB (live paired A/B); it requires
 server boots and the module .so, so it sequences with the neighbor's server lane
 per §6.
+
+**FINAL (2026-09-08, TASK-73+74): Sessions 1 and 2 are LANDED and the gate
+pipeline is CLOSED all-GO.** Session 1 (TASK-73): `src/perlin_noise.rs` bridge —
+byte-hook pristine capture, `PerlinNoiseNativeOps` trio (striped WeakHashMap +
+phantom-reaper) defined into the kernel loader, reflection handle build per the
+TASK-70 ABI, bit-exact Java octave-loop fallback in-bridge, whole-body patch via
+proven `cplug_sdk::asm::replace_body`, dormant-invisible (env
+`CRUSSTY_NATIVE_PERLIN_NOISE` off by default). Session 2 (TASK-74): armed boots
+verified (retransform rc=0, self-test passed every boot) and the decisive G-AB
+went **GO**: cpu_burst −8.1 % median with perfect rank separation (p_two=0.008),
+wall −10.3 % median (p_one=0.075), JFR engagement proof under load, effect
+3–5× the microbenchmark prediction (inlining-barrier removal — see §7 G-AB row).
+Deferred engineering (none blocking): kernel-policy whitelist entry for the new
+bridge pair, NormalNoise/BlendedNoise owners (same whole-body form; the JFR
+`p(int)` residue is their addressable share), rollout runbook B.2.2 promotion.
