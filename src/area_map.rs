@@ -58,8 +58,35 @@ const BUDGET_OPS_BYTES: &[u8] = include_bytes!(
     "../area-map/build-budget/ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps.class"
 );
 
+// TASK-68 call-level probe: a deterministic Java driver
+// (dev.crussty.areamapprobe.AreaMapProbe + nested RecMap, major 52, compiled
+// against the REAL kernel fixture by scripts/build_area_map_probe.sh) that
+// drives the PATCHED update() through the PUBLIC add()/update() entry in this
+// JVM and checks the recorded callback delta against the in-Java naive set
+// difference — the call-level twin of bridge_selftest below (which drives
+// the native directly). Both classfiles are defined into the map loader
+// (same runtime-package rules as the ops helpers; unique names, one-shot
+// per JVM like every define_class).
+const PROBE_NAME: &str = "dev/crussty/areamapprobe/AreaMapProbe";
+const PROBE_RECMAP_NAME: &str = "dev/crussty/areamapprobe/AreaMapProbe$RecMap";
+const PROBE_BYTES: &[u8] =
+    include_bytes!("../area-map/build-probe/dev/crussty/areamapprobe/AreaMapProbe.class");
+const PROBE_RECMAP_BYTES: &[u8] =
+    include_bytes!("../area-map/build-probe/dev/crussty/areamapprobe/AreaMapProbe$RecMap.class");
+/// Rect count of the driver matrix (must match AreaMapProbe.TOTAL_RECTS:
+/// 3 guard rows + retry + escalate + grow + 64 same-state + 7 spots + 64 sweep).
+const PROBE_TOTAL_RECTS: i32 = 141;
+/// Scratch.ops.length after the retry row (n0 = 17^2+19^2 = 650 > 578): the
+/// budget arm retries to exactly req=650; the legacy arm doubles 578->1156.
+const SCRATCH_LEN_BUDGET: i32 = 650;
+const SCRATCH_LEN_LEGACY: i32 = 1156;
+
 static READY: AtomicBool = AtomicBool::new(false);
 static PATCHED: AtomicBool = AtomicBool::new(false);
+/// TASK-68: the call-level probe is one-shot per JVM (its class names are
+/// define_class one-shots too); hot-reload re-init skips loudly instead of
+/// LinkageError-ing mid-boot.
+static CALL_LEVEL_RAN: AtomicBool = AtomicBool::new(false);
 
 /// Which helper byte set is defined into the map loader. Class NAMES are
 /// identical in both sets (the patched kernel invokestatic resolves
@@ -294,6 +321,11 @@ pub fn activate() {
         if cplug_sdk::jni_util::with_attached(bridge_selftest).is_none() {
             eprintln!("[crussty-plugin] area_map: self-test skipped (no env)");
         }
+
+        // TASK-68: call-level drive of the patched update() (whichever ops
+        // arm — legacy or budget — was defined above). Diagnostics-only:
+        // every outcome is a marker line, the boot continues regardless.
+        call_level_probe(budget_armed);
     });
 }
 
@@ -478,6 +510,139 @@ fn budget_contract_selftest(env: &JniEnv) -> Option<bool> {
         );
         Some(false)
     }
+}
+
+/// TASK-68: call-level drive of the PATCHED update() in this JVM. Defines the
+/// probe driver into the map loader, runs the deterministic 141-rect matrix
+/// through the PUBLIC add()/update() entry (whichever ops arm — legacy
+/// grow-to-cap or budget -n0 retry — was defined above), and checks the
+/// recorded callback delta against the in-Java naive set difference plus the
+/// arm-consistent Scratch length (650 budget / 1156 legacy after the retry
+/// row). Diagnostics-only: every failure is a marker line, never a boot
+/// abort; the one-shot flag makes hot-reload re-init skip loudly instead of
+/// re-defining one-shot class names.
+fn call_level_probe(budget_armed: bool) {
+    if CALL_LEVEL_RAN.swap(true, Ordering::SeqCst) {
+        eprintln!("[crussty-plugin] area_map: call-level self-test skipped (already ran)");
+        return;
+    }
+    match cplug_sdk::jni_util::with_attached(call_level_probe_impl) {
+        None => eprintln!("[crussty-plugin] area_map: call-level self-test skipped (no env)"),
+        Some(None) => {
+            eprintln!("[crussty-plugin] area_map: call-level self-test skipped (infra)")
+        }
+        Some(Some((bits, scratch, detail))) => {
+            let expected = if budget_armed {
+                SCRATCH_LEN_BUDGET
+            } else {
+                SCRATCH_LEN_LEGACY
+            };
+            if bits == 0 && scratch == expected {
+                eprintln!(
+                    "[crussty-plugin] area_map: call-level self-test OK ({} rects via patched update(), scratch={} {} arm)",
+                    PROBE_TOTAL_RECTS,
+                    scratch,
+                    if budget_armed { "budget" } else { "legacy" }
+                );
+            } else {
+                eprintln!(
+                    "[crussty-plugin] area_map: call-level self-test FAILED bits={bits:#x} scratch={scratch}/{expected} detail=\"{detail}\""
+                );
+            }
+        }
+    }
+}
+
+/// Attached half of the TASK-68 probe: define driver classes into the map
+/// loader, run the matrix, read back (bits, scratch, detail). `None` = infra
+/// failure (no map class / loader / define failure / probe() threw) — the
+/// caller reports a skip, which is fail-safe.
+fn call_level_probe_impl(env: &JniEnv) -> Option<(i32, i32, String)> {
+    let cls = cplug_sdk::classes::find_class(MAP_CLASS)?;
+    // Loader = MAP_CLASS.getClassLoader() — the same loader-local rule the
+    // ops helpers follow (a bootstrap copy could neither resolve the kernel
+    // class nor extend it).
+    let Some(class_cls) = env.find_class("java/lang/Class") else {
+        crate::clear_exception(env);
+        return None;
+    };
+    let loader = env
+        .get_method_id(class_cls, "getClassLoader", "()Ljava/lang/ClassLoader;")
+        .and_then(|mid| {
+            let l = env.call_object_method(cls.as_jclass(), mid, &[]);
+            (l as usize != 0).then_some(l)
+        });
+    env.delete_local_ref(class_cls);
+    let Some(loader) = loader else {
+        crate::clear_exception(env);
+        return None;
+    };
+
+    // RecMap first, then the driver (linking is lazy, but the order keeps any
+    // define failure trivially attributable). Duplicate names are impossible
+    // in-process (CALL_LEVEL_RAN one-shot flag).
+    let mut probe_cls: Option<jni::jclass> = None;
+    for (name, bytes) in [(PROBE_RECMAP_NAME, PROBE_RECMAP_BYTES), (PROBE_NAME, PROBE_BYTES)] {
+        match env.define_class(name, loader, bytes) {
+            Some(c) => {
+                if name == PROBE_NAME {
+                    probe_cls = Some(c);
+                } else {
+                    env.delete_local_ref(c);
+                }
+                eprintln!("[crussty-plugin] area_map: defined {name} in map loader");
+            }
+            None => {
+                crate::clear_exception(env);
+                eprintln!("[crussty-plugin] area_map: define_class({name}) failed");
+                env.delete_local_ref(loader);
+                return None;
+            }
+        }
+    }
+    env.delete_local_ref(loader);
+
+    let probe_cls = probe_cls?;
+    let Some(mid_probe) = env.get_static_method_id(probe_cls, "probe", "()I") else {
+        crate::clear_exception(env);
+        env.delete_local_ref(probe_cls);
+        return None;
+    };
+    let bits = env.call_static_int_method(probe_cls, mid_probe, &[]);
+    let had_exc = crate::clear_exception(env);
+    if had_exc {
+        eprintln!("[crussty-plugin] area_map: call-level probe probe() threw");
+        env.delete_local_ref(probe_cls);
+        return None;
+    }
+
+    // detail() only on failure: first (up to 3) row descriptions.
+    let mut detail = String::new();
+    if bits != 0 {
+        if let Some(mid_detail) =
+            env.get_static_method_id(probe_cls, "detail", "()Ljava/lang/String;")
+        {
+            let obj = env.call_static_object_method(probe_cls, mid_detail, &[]);
+            crate::clear_exception(env);
+            if obj as usize != 0 {
+                detail = env.get_string_utf(obj as jni::jstring).unwrap_or_default();
+                env.delete_local_ref(obj);
+            }
+        } else {
+            crate::clear_exception(env);
+        }
+    }
+
+    // Arm discriminator: Scratch.ops.length right after the retry row.
+    let scratch = match env.get_static_field_id(probe_cls, "scratchLenAfterRetry", "I") {
+        Some(fid) => env.get_static_int_field(probe_cls, fid),
+        None => {
+            crate::clear_exception(env);
+            -1
+        }
+    };
+    env.delete_local_ref(probe_cls);
+    Some((bits, scratch, detail))
 }
 
 /// Deterministic rect: (fromX, fromZ, oldD, toX, toZ, newD).

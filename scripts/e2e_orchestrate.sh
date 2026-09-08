@@ -371,6 +371,12 @@ do_verify() {
     # area_map life-sign exists, FAIL only on a truly silent capable .so.
     ck_cap "area_map armed"          'area_map: hook armed, retransform rc=[0-9]+' 'area_map: hook armed, retransform rc=' "$AMAP_LIFESIGNS" rc
     ck_cap "area_map scans-avoided"  'area_map: sighting feed: [0-9]+ full class-heap scans avoided' 'area_map: sighting feed: ' "$AMAP_LIFESIGNS" pass
+    # TASK-68: call-level probe (drives the patched update() via the embedded
+    # Java driver, both ops arms). Diagnostics-only in the module, but a green
+    # boot on a capable .so must emit the OK line — capability-aware row like
+    # scans-avoided; the FAILED variant is a hard bad-line below.
+    ck_cap "area_map call-level"     'area_map: call-level self-test OK' 'area_map: call-level self-test ' "$AMAP_LIFESIGNS" pass
+    ck_bad "area_map call-level FAILED" 'area_map: call-level self-test FAILED'
     ck "live proof nativeCheck"  'live proof: normalNoise.nativeCheck\(\) = 1'
     ck "boot complete (Done)"    'Done \([0-9.]+s\)!'
     ck_bad "batch policy REFUSED" 'batch: kernel .* REFUSED by kernel-policy'
