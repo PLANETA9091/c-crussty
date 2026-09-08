@@ -17,8 +17,8 @@ mkdir -p "$OUT"
 
 exec 200>/home/z/BENCH.lock
 flock -n 200 || { echo "BENCH-LOCK HELD"; exit 3; }
-echo "$(date -u +%FT%TZ) main-s7-43 microbatch-abba in-progress" > /home/z/BENCH.lock
-trap 'echo "$(date -u +%FT%TZ) done main-s7-43 microbatch-abba (trap rc=$?)" > /home/z/BENCH.lock' EXIT
+echo "$(date -u +%FT%TZ) main-s7-44 task102-confirm in-progress" > /home/z/BENCH.lock
+trap 'echo "$(date -u +%FT%TZ) done main-s7-44 task102-confirm (trap rc=$?)" > /home/z/BENCH.lock' EXIT
 HS0=$(ls "$SERVER"/hs_err_pid*.log 2>/dev/null | wc -l)
 BOOTIDX=0   # TASK-101 critic lesson: same-$$ across boots OVERWROTE boots 1-2 raw logs
 declare -A MBLOG
@@ -45,16 +45,19 @@ boot_mb() { # $1 = A|B
     JP=$!
     for i in $(seq 1 120); do grep -qE 'Done \([0-9]+\.[0-9]+s\)' "$SERVER/logs/latest.log" 2>/dev/null && break; sleep 1; done
     T=$(grep -h -m1 -oE 'Done \([0-9]+\.[0-9]+s\)' "$SERVER/logs/latest.log" "${MBLOG[$1]}" 2>/dev/null | grep -oE '[0-9]+\.[0-9]+' | head -1)
-    RG=$(grep -m1 -oE 'Mapped static region #0|regions: [0-9]+' "${MBLOG[$1]}" | head -1)
+    RG=$(grep -m1 -oE 'Mapped static[[:space:]]+region|regions: [0-9]+' "${MBLOG[$1]}" | head -1)
     RC=$(grep -m1 -oE '[0-9]+ recipes' "$SERVER/logs/latest.log" 2>/dev/null)
     AV=$(grep -m1 -oE '[0-9]+ advancements' "$SERVER/logs/latest.log" 2>/dev/null)
     CD=$(grep -m1 -c 'Opened archive /home/z/server/crussty_boot.jsa' "${MBLOG[$1]}" 2>/dev/null)
     echo "MB-ARM $1 (boot$BOOTIDX): ${T:-NO-DONE}s map[$RG] recipes=${RC:-?} advancements=${AV:-?} jsa_mapped=${CD:-0} log=${MBLOG[$1]}"
     stop_server
 }
-# ABBA: pair-1 A,B; pair-2 B,A
+# TASK-102 confirmation (S7-44): 3 within-session pairs, balanced A,B | B,A | A,B (6 boots,
+# per-boot log naming — the same-$$ overwrite fix from TASK-101 critic is what makes this valid).
 boot_mb A
 boot_mb B
 boot_mb B
 boot_mb A
+boot_mb A
+boot_mb B
 echo "hs_err after: $(ls "$SERVER"/hs_err_pid*.log 2>/dev/null | wc -l) (baseline $HS0)"

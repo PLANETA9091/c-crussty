@@ -48,7 +48,7 @@ boot_prewarm() { # $1 = A|B
     JP=$!
     for i in $(seq 1 120); do grep -qE 'Done \([0-9]+\.[0-9]+s\)' "$SERVER/logs/latest.log" 2>/dev/null && break; sleep 1; done
     T=$(grep -h -m1 -oE 'Done \([0-9]+\.[0-9]+s\)' "$SERVER/logs/latest.log" "$LF" 2>/dev/null | grep -oE '[0-9]+\.[0-9]+' | head -1)
-    RG=$(grep -m1 -oE 'Mapped static region #0|regions: [0-9]+' "$LF" | head -1)
+    RG=$(grep -m1 -oE 'Mapped static[[:space:]]+region|regions: [0-9]+' "$LF" | head -1)
     RC=$(grep -m1 -oE '[0-9]+ recipes' "$SERVER/logs/latest.log" 2>/dev/null)
     AV=$(grep -m1 -oE '[0-9]+ advancements' "$SERVER/logs/latest.log" 2>/dev/null)
     PW=$(grep -m1 -oE "(b1: DataFixers built on worker in [0-9]+ms|worker[0-9] done ok=[0-9]+ fail=[0-9]+)" "$LF")
