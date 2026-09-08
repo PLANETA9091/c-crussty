@@ -306,3 +306,16 @@ bridge stays default-OFF until that lands.
 | Ceiling vs GO gate | 10,000 due containers/tick × ~40 ns = 0.8% of a 50 ms tick (realistic ≤0.04%) vs pre-registered >3% gate — unreachable by 4-75×; stale-accumulation refuted (removeContainer on unload; loaded-non-ticking bounded and predicate-skipped) | docs/BETICK_STATIC_AUDIT_2026-09-08.md §2-§3 |
 | Upstream lever | "SparklyPaper mode" reduces a heavier vanilla check path; on this stack Moonrise already reduced it to a lock-free hash-get — lever architecturally superseded (upstream internals not audited; verdict rests on this jar's bytecode) | audit §4 |
 | Verdict | **NO-GO / DO-NOT-BUILD** — a guard replaces one hash-get with another cache lookup (TASK-80 economics shape); 10th statically/measured-refuted x1000 branch (slot freed by TASK-87's overturn of the S030 AppCDS refutation) | re-open criteria: audit §5 (JFR ≥3% tick share or engine change to the lookup) |
+
+## §12 ADDENDUM-7 (TASK-94, 2026-09-09, agent-7625532f) — D6 TPS-accounting: OUT at the static layer
+
+* Author: agent-7625532f. Evidence class: javap static anatomy of the remapped runtime classpath + arithmetic on the already-measured JFR profile (TASK-92 discipline, 0 boots, 0 src/).
+
+| Item | Result | Evidence |
+|---|---|---|
+| Mechanism | per-tick: `addTickTime` = 7×`addDataFrom` + `clearTickTimeStatistics()` (cache invalidation every tick) → `C()` → `getTPS()` → guaranteed miss → `computeTPS()` = **4 full deque walks** (5s/1m/5m/15m ≈ 25,300 entries @ 20 TPS; 15m window = 71%) | MinecraftServer + TickData bytecode, audit §2 |
+| Measured match | JFR 142+17+23 samples ≈ 0.13–0.17 ms/tick; model: 130 µs / 25,300 visits = 5.1 ns/visit — mechanism fully explains measurement | JFR_PROFILE_2026-09-09 §4, audit §3 |
+| Load-independence correction | window sizes are time-bounded → cost is a **constant** at 20 TPS idle or loaded; only relative share dilutes | audit §3 |
+| Verdict | **OUT / DO-NOT-BUILD** — 0.26–0.34% of tick budget vs ≥3% gate (fails 9–23×); perfect O(1) rolling-sum patch removes ≤0.34% = 2+ orders below >100x bar; no config knob exists | audit §4 |
+| Design retained | rolling-sum O(1) aggregate strictly correct (per-entry deltas now-independent except boundary); retransform vehicle same as area_map | audit §5 |
+| Status | 12th closed x1000 branch; D6 resolved (was open since first live JFR profile) | re-open: audit §6 |
