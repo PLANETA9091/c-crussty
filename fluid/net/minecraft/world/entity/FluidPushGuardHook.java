@@ -47,26 +47,51 @@ public final class FluidPushGuardHook {
 
     private FluidPushGuardHook() {}
 
-    /** Same-state guard entry. Only pure-negative outcomes are stored. */
+    // ---- falsifier counters (TASK-77 §7: "if hit-rate is low on the live
+    // profile, the candidate dies honestly"). Volatile longs, one increment
+    // per call (~1-2 ns), throttled stats line every 2^20 calls.
+    static volatile long HITS = 0, MISSES = 0;
+    // First stats line after 2^18 calls (~16 s at the census load: 400 items
+    // x2 tags x20 tps = 16k calls/s) so it lands INSIDE the measurement
+    // window; subsequent lines every 2^20.
+    static volatile long NEXT_LOG_AT = 1L << 18;
+
+    private static void bump(boolean hit) {
+        if (hit) {
+            HITS++;
+        } else {
+            MISSES++;
+        }
+        long total = HITS + MISSES;
+        if (total >= NEXT_LOG_AT) {
+            NEXT_LOG_AT = total + (1L << 20);
+            double rate = total == 0 ? 0.0 : HITS * 100.0 / total;
+            System.err.printf(
+                "[crussty-plugin] fluid_guard: stats calls=%d hits=%d misses=%d hit_rate=%.1f%%%n",
+                total, HITS, MISSES, rate);
+        }
+    }
+
+    /** Same-state guard entry. Only pure-negative outcomes are stored.
+     * Key semantics: INTEGER CELL BOUNDS of the deflated box (quantized AABB,
+     * X1000_V3 §3 row-2 "quantized AABB + per-cell FluidState identity"). The
+     * negative outcome is determined by the CELL SET alone (fluid states are
+     * per-cell), so sub-cell drift — e.g. item friction x0.98/tick shrinking
+     * motion asymptotically, rebuilding the AABB with new double bits every
+     * tick — must NOT invalidate the entry. Exact-bits keys never hit for
+     * ground items (measured: pilot_exactbits_key, B slower than A). */
     static final class GuardEntry {
         final Level level;
         final TagKey<Fluid> tag;
-        final long mx, my, mz, Mx, My, Mz; // raw getBoundingBox() double bits
-        final int minX, minY, minZ, maxX, maxY, maxZ; // deflated cell bounds
+        final int minX, minY, minZ, maxX, maxY, maxZ; // deflated CELL bounds
         final int cx0, cx1, cz0, cz1, spanX, offset; // flat fetch geometry
         final FluidState[] cells;  // FluidState refs in scan order
-        GuardEntry(Level level, TagKey<Fluid> tag, AABB box,
+        GuardEntry(Level level, TagKey<Fluid> tag,
                    int minX, int minY, int minZ, int maxX, int maxY, int maxZ,
                    int cx0, int cx1, int cz0, int cz1, int spanX, int offset,
                    FluidState[] cells) {
             this.level = level;
             this.tag = tag;
-            this.mx = Double.doubleToLongBits(box.minX);
-            this.my = Double.doubleToLongBits(box.minY);
-            this.mz = Double.doubleToLongBits(box.minZ);
-            this.Mx = Double.doubleToLongBits(box.maxX);
-            this.My = Double.doubleToLongBits(box.maxY);
-            this.Mz = Double.doubleToLongBits(box.maxZ);
             this.minX = minX; this.minY = minY; this.minZ = minZ;
             this.maxX = maxX; this.maxY = maxY; this.maxZ = maxZ;
             this.cx0 = cx0; this.cx1 = cx1; this.cz0 = cz0; this.cz1 = cz1;
@@ -77,11 +102,15 @@ public final class FluidPushGuardHook {
 
     public static boolean updateFluidHeightAndDoFluidPushing(Entity self, TagKey<Fluid> tag, double speed) {
         GuardEntry e = CACHE.get(self);
-        if (e != null && e.tag == tag && e.level == self.level() && boxBitsMatch(self, e)) {
+        if (e != null && e.tag == tag && e.level == self.level() && cellBoundsMatch(self, e)) {
             try {
                 if (cellsUnchanged(self, e)) {
+                    bump(true);
                     // Vanilla pure-negative tail: fluidHeight.put(tag, 0.0);
                     // flowAcc == Vec3.ZERO (identity) -> return inFluid=false.
+                    // Bit-exact for ANY box within the same cell bounds: the
+                    // negative path's observable state (fluidHeight entry 0.0,
+                    // return false, no movement mutation) is cell-set-determined.
                     self.fluidHeight.put(tag, 0.0);
                     return false;
                 }
@@ -91,17 +120,23 @@ public final class FluidPushGuardHook {
                 // exactly like vanilla.
             }
         }
+        bump(false);
         return slow(self, tag, speed);
     }
 
-    private static boolean boxBitsMatch(Entity self, GuardEntry e) {
+    /** Recomputes the deflated CELL bounds from the CURRENT box (no AABB
+     * allocation — AABB.deflate(0.001) = minX+0.001/maxX-0.001) and compares
+     * against the entry. Sub-cell drift within the same cells = match. */
+    private static boolean cellBoundsMatch(Entity self, GuardEntry e) {
         AABB b = self.getBoundingBox();
-        return Double.doubleToLongBits(b.minX) == e.mx
-            && Double.doubleToLongBits(b.minY) == e.my
-            && Double.doubleToLongBits(b.minZ) == e.mz
-            && Double.doubleToLongBits(b.maxX) == e.Mx
-            && Double.doubleToLongBits(b.maxY) == e.My
-            && Double.doubleToLongBits(b.maxZ) == e.Mz;
+        Level level = self.level();
+        int minSection = WorldUtil.getMinSection(level);
+        return Mth.floor(b.minX + 0.001) == e.minX
+            && Math.max(minSection << 4, Mth.floor(b.minY + 0.001)) == e.minY
+            && Mth.floor(b.minZ + 0.001) == e.minZ
+            && Mth.ceil(b.maxX - 0.001) - 1 == e.maxX
+            && Math.min((WorldUtil.getMaxSection(level) << 4) | 15, Mth.ceil(b.maxY - 0.001) - 1) == e.maxY
+            && Mth.ceil(b.maxZ - 0.001) - 1 == e.maxZ;
     }
 
     /** Identity re-read of every box cell. Needs no invalidation hooks:
@@ -209,7 +244,7 @@ public final class FluidPushGuardHook {
         }
         self.fluidHeight.put(tag, maxDepth);
         if (cacheable && CACHE.size() < (1 << 16)) {
-            CACHE.put(self, new GuardEntry(level, tag, box, minX, minY, minZ, maxX, maxY, maxZ,
+            CACHE.put(self, new GuardEntry(level, tag, minX, minY, minZ, maxX, maxY, maxZ,
                     cx0, cx1, cz0, cz1, spanX, offset, java.util.Arrays.copyOf(snapshot, snap)));
         }
         if (flowAcc == Vec3.ZERO) {
@@ -233,8 +268,7 @@ public final class FluidPushGuardHook {
     public static boolean selfTest() {
         if (CACHE == null) return false;
         Object probe = new Object();
-        AABB dummyBox = new AABB(0.0D, 0.0D, 0.0D, 1.0D, 1.0D, 1.0D);
-        GuardEntry dummy = new GuardEntry(null, FluidTags.WATER, dummyBox,
+        GuardEntry dummy = new GuardEntry(null, FluidTags.WATER,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, new FluidState[0]);
         CACHE.put(probe, dummy);
         boolean ok = CACHE.get(probe) == dummy;
