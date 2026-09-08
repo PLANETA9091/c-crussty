@@ -167,7 +167,14 @@ server_pid() { # child JVM = the one carrying the -agentpath runtime
 # --- write end open in a detached holder so the relay thread stays alive.
 start_stdin_holder() {
     # No final exec: the cmdline must keep the fifo path visible for kill_stdin_holders.
-    setsid bash -c "exec 9<> '$FIFO'; while :; do sleep 3600; done" </dev/null >/dev/null 2>&1 &
+    # TASK-95 S7-36 fd hygiene: the holder must NOT inherit the bench rig's
+    # flock fd (200) — inherited holders kept BENCH.lock locked after clean
+    # rig exits (leak class seen 4x this session). Close every fd >9.
+    local _hfd _hclose=""
+    for _hfd in /proc/self/fd/*; do
+        [ "$(basename "$_hfd")" -gt 9 ] 2>/dev/null && _hclose="$_hclose $(basename "$_hfd")>&-"
+    done
+    setsid bash -c "exec $_hclose 9<> '$FIFO'; while :; do sleep 3600; done" </dev/null >/dev/null 2>&1 &
     log "stdin holder started (write-end lifeline on $FIFO)"
 }
 
@@ -245,7 +252,15 @@ do_boot() {
 -jar '$SERVER_DIR/versions/purpur-1.21.10.jar' --nogui"
         log "booting default: direct purpur jar (bundler bypass) + AppCDS-v2-if-present + agent"
     fi
-    ( cd "$SERVER_DIR" && eval "$CRUSSTY_BOOT_CMD" < "$FIFO" >> "$E2E_LOG" 2>&1 ) &
+    # TASK-95 S7-36: the boot subshell (and thus the server JVM) must not
+    # inherit the rig's flock fd either — a live server holding BENCH.lock
+    # made holder-purges kill live boots (S7-32/37 incident class).
+    ( cd "$SERVER_DIR" && { _bfd=""; _bclose=""
+        for _bfd in /proc/self/fd/*; do
+            [ "$(basename "$_bfd")" -gt 9 ] 2>/dev/null && _bclose="$_bclose $(basename "$_bfd")>&-"
+        done
+        eval "exec $_bclose" 2>/dev/null
+        eval "$CRUSSTY_BOOT_CMD" < "$FIFO" >> "$E2E_LOG" 2>&1; } ) &
     local lpid=$!
     echo "$lpid" > "$PID_FILE"
     echo "$FIFO" > "$STATE_FILE"

@@ -29,6 +29,7 @@ stop_server() {
 }
 boot_direct() { # $1=arm
     anchor_restore
+    cd "$SERVER"   # TASK-90 lesson: boot cwd must be /home/z/server
     : > "$SERVER/logs/latest.log"
     cd "$SERVER" || exit 9   # cec5cd3 lesson: server MUST run with cwd=/home/z/server (logs+worlds are cwd-relative)
     if [ "$1" = D ]; then
