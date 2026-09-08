@@ -527,3 +527,27 @@ TASK-83's "JIT-эвристики (HugeMethodLimit=8000 → GO)" queue item clos
 * Decoded (all FIRST-HYPOTHESIS winners, 64/64 raw-bits parity on two objects, negative controls mismatch 64/64): nativeFillPositions(h1,h2,valueFactor,x[],y[],z[],out) = getValue(x,y,z) per element; nativeFillScaledPositions(...,bx[],by[],bz[],sxz,sy,out) = getValue(bx·sxz, by·sy, bz·sxz) — EXACTLY the DensityFunctions$Noise shape; nativeFillShiftA = 4·getValue(bx·0.25,0,bz·0.25) and nativeFillShiftB = 4·getValue(a2·0.25,a1·0.25,0) — ShiftNoise 0.25/4.0 scaling and ShiftB x↔z swap BAKED kernel-side. rc = count written. Composition semantics inherit G-NORMAL (IF baked, double = valueFactor, handles = TASK-70 pack).
 * CONSEQUENCE: the batch surface for the TASK-108 noise fillArray bridge ships in libpaper_native_jni.so and is ALREADY registered (jni_table.rs rows 282-291) — live-but-unwired on every boot. v1 wiring = Java-side only (bridge embed + NoiseFillOps stripe handles + fillArray body swaps on DensityFunctions$Noise/ShiftA/ShiftB + live bit-exact self-test gate). nativeFillCell/Vertical/ShiftPositions decode = v2.
 * Gates unchanged (TASK-108 claim): warm AND cold, n≥3 ABBA within-session, GO ≥3% warm burst CPU with full separation, else honest NULL closes the channel permanently.
+## §22 ADDENDUM-16 (TASK-104, 2026-09-09, S7-46) — COLLISION dirty-rate census MEASURED: branch REFUTED/CLOSED per §0 — TASK-84 phase-1 fully dispositioned
+
+* Live run `bench/dirtyrate/RAW_COLLISION_20260908_205456` (vanilla boot + 6-probe collision
+  agent, mobdense anchor, 80s idle + 300s active, 15 windows, BENCH-MUTEX, hs_err 4/0, world
+  restored). Full result doc: `bench/dirtyrate/results/COLLISION_CENSUS_2026-09-09.md`.
+* §0-exact bands (critic-recomputed, formula mD/(mD+qD)): **<1%: 0 · 1–10%: 5 · >10%: 5 ·
+  UNMEASURABLE: 5** → GO impossible under any reading; >10% closure clause fires; best
+  window 3.626% = 3.6× above the GO bar even discarding every >10% window. Amdahl-corrected
+  ceiling 26.2× surface-level on 1.8% CPU share ⇒ ≤1.73% tick CPU absolute — dead branch.
+* Design §2 structural prediction (self-AABB per-tick mutation ≈1:1) CONFIRMED directionally
+  — census still mandatory per campaign law (hopper estimate was wrong-direction).
+* DISCOVERY (banked): Paper hot-path block-collision resolution bypasses vanilla
+  `BlockCollisions#computeNext` (1 fire, chunk-load only) and `Shapes.collide` (0 fires)
+  despite clean weave of all 4 classes — `io.papermc.paper.util.Collisions` family carries
+  the hot path; **javap-on-jar fidelity ≠ hot-path fidelity**; primary verdict unaffected
+  (Q1↔Q4 cross-probe correlation ≈1, both alive). Future probes: per-probe hot-path rate gate.
+* Rig lessons (5 aborted runs): §3.4 units bug (blocks≠chunks), anchor entity-region map =
+  ground truth (r.31–32, blocks ~15872–16895; doc coords wrong twice), forceload 256-chunk
+  cap + console-load stall class, bg-run dies at tool boundary (re-proven), N-gate demotion
+  recorded as deviation (statistical gate stayed pre-registered §0 noise floor).
+* Analyzer C8 units bug (critic): ceiling/saving printout underestimated ~200× — patched
+  this commit (cap = mach/frac, saving = cpu·(1−frac/mach)); verdict rule untouched.
+* Critic (protocol v2, blind, independent re-analysis): agent-1dceec40 — verdict CONFIRMED
+  (CLOSED >10% band), caveats C1–C9 recorded in the result doc verbatim obligations.

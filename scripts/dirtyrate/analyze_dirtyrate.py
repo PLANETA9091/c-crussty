@@ -103,9 +103,14 @@ def main() -> int:
             continue
         best = min(ds)  # most guard-friendly window
         mach = 0.95  # assumed skip-machinery fraction; refine from leaf census
-        cap = cpu * mach / best if best > 0 else float("inf")
-        print(f"- {surf}: best dirty%={best:.3f} -> guard ceiling < {cap:.1f}x on "
-              f"{cpu}% CPU => whole-server saving < {cap * cpu / 100:.2f}% CPU")
+        # C8 FIX (critic, TASK-104): old form divided by the PERCENT number and then
+        # multiplied by cpu/100 again -> ~200x underestimate of ceiling & saving.
+        # Correct: cap = mach / dirty_fraction (surface-level), saving = cpu * (1 - frac/mach).
+        frac = best / 100.0
+        cap = mach / frac if frac > 0 else float("inf")
+        saving = cpu * (1.0 - frac / mach) if frac < mach else 0.0
+        print(f"- {surf}: best dirty%={best:.3f} -> guard ceiling < {cap:.1f}x surface-level "
+              f"on {cpu}% CPU => whole-server saving < {saving:.2f}% tick CPU")
     print("\nRule: >100x claims require dirty%<1 AND machinery>=90% AND a measured "
           "A/B (TASK-80 G-FLUID lesson: hit-rate alone is insufficient, p-value decides).")
     return 0
