@@ -224,8 +224,26 @@ do_boot() {
     if [ -n "${CRUSSTY_BOOT_CMD:-}" ]; then
         log "booting via CRUSSTY_BOOT_CMD override"
     else
-        CRUSSTY_BOOT_CMD="exec '$JAVA_BIN/java' -jar '$SERVER_DIR/launcher/launcher.jar'"
-        log "booting default: cd $SERVER_DIR && java -jar launcher/launcher.jar"
+        # TASK-88 (S7-32, owner directive: boot <1s, engine repo authorized): default boot
+        # = DIRECT purpur jar (bundler bypass; launcher only resolved java.home and spawned
+        # a child with exactly this cmdline — byte-verified against hs_err "Command Line")
+        # + AppCDS v2 archive when present (S7-31: -18.4% boot, p=0.0079, safe degradation
+        # proven both directions: missing archive -> baseline-speed boot, zero crash).
+        # NO server.properties / paper / gameplay config touched — JVM flags are CLI-only
+        # and replicate the launcher child's own production flags 1:1.
+        local CDS_FLAG=""
+        local JSA="$SERVER_DIR/crussty_boot.jsa"
+        if [ -s "$JSA" ]; then
+            CDS_FLAG="-XX:SharedArchiveFile=$JSA"
+            log "AppCDS v2 default: mapping $JSA ($(du -h "$JSA" | cut -f1))"
+        else
+            log "AppCDS archive absent -> baseline-speed boot (safe degradation)"
+        fi
+        CRUSSTY_BOOT_CMD="exec '$JAVA_BIN/java' $CDS_FLAG \
+'-agentpath:$SERVER_DIR/libcrussty_runtime.so=modules=$SERVER_DIR/modules;versions=$SERVER_DIR/versions;kernel=purpur-1.21.10.jar' \
+-Xms512M -Xmx2G -XX:+UseG1GC -Dfile.encoding=UTF-8 -Ddist.root=$SERVER_DIR \
+-jar '$SERVER_DIR/versions/purpur-1.21.10.jar' --nogui"
+        log "booting default: direct purpur jar (bundler bypass) + AppCDS-v2-if-present + agent"
     fi
     ( cd "$SERVER_DIR" && eval "$CRUSSTY_BOOT_CMD" < "$FIFO" >> "$E2E_LOG" 2>&1 ) &
     local lpid=$!
