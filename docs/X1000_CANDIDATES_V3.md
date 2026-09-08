@@ -1,0 +1,158 @@
+# X1000_CANDIDATES_V3 — same-state-guard hunt + blind-spot census (TASK-77)
+
+* Author: main-s7-23 (cron 16:43+08 Job 366450), 2026-09-08T09:0xZ. ANALYSIS ONLY — no src/
+  changes, no server boot, no benchmarks (server lane formally held by TASK-74; respected
+  via no-cross). Three parallel read-only recon streams: (A) Paper 1.21.10 hot-path javap
+  sweep for same-state-guard candidates, (B) full JNI-table coverage census (98 classes /
+  283 natives vs P500 + wirings), (C) sibling-module audit (c-collisions/c-cells/c-dist).
+* Trigger: user demand (messagesFromUser.md, re-asserted 2026-09-08): "всё, что меньше
+  100x — сделать больше 100x" (x1000 framing). This doc is the honest map of where the
+  next >100x-class mechanisms can and cannot come from.
+* Every ratio below is either a committed measurement (path given) or tagged **ESTIMATE**.
+
+---
+
+## 1. Physics recap — why the hunt is shaped this way
+
+Per-call plugin-side cost is `T = F(sig) + B`: a JNI transition `F` (measured floor
+**35–90 ns**, TASK-10 canon) plus the kernel body `B`. A >100x per-call win therefore
+requires skipping machinery, not making it faster: ≤0.35–0.9 ns/op is below a single L1
+access and 25–100x below the cheapest observable transition (BOOST_SWEEP §3). All three
+>100x mechanisms ever shipped in this project share one shape — **an O(1) guard at method
+entry that skips per-call machinery when state is unchanged**:
+
+1. Area-map same-state fast path — **1,945x–170,612x**, LIVE, parity-oracled (TASK-30
+   268/268; RESULTS_LEDGER §2 canonical).
+2. Noise-handle lifecycle (phantom reaper) — **>571x** quiet-reclaim, 24x GC churn, LIVE.
+3. Boot-scan sighting feed (TASK-22) — **>10x measured (77.8% scan-free), >100x class
+   ESTIMATE** on boot-window CPU.
+
+Closed doors (do not re-open without new evidence): blend-cache EMPTY 316x pair =
+**NO-GO** (TASK-32, 1c5eefb: JFR 0/180 worldgen samples — Paper does not pay the
+machinery); noise batching lane = G-AB pending (TASK-74, in flight); area_map lane =
+closed with measured triggers (TASK-64 variant C live: move 3.1–94x, native-leg 299.1x
+@d=511; DENSE DEFER with trigger 3 refuted by measurement, TASK-72); site-level batching
+= "structurally impossible", honest upside 0–3% (TASK-66).
+
+**Conclusion carried from BOOST_SWEEP §3 and still true after TASK-32:** the only
+in-repo route to a NEW >100x mechanism is a same-state/constant-fold guard on a live
+surface not yet instrumented. §3 is that hunt; §4 maps the unmeasured native surface;
+§5 audits the sibling modules as alternative hosts.
+
+## 2. The x1000 answer as of today (committed numbers only)
+
+| Mechanism | Ratio | Status | Evidence |
+|---|---:|---|---|
+| Area-map same-state fast path | **1,945x–170,612x** per idle update | LIVE (user-visible) | APPLY_BENCH_RESIZE_MIX.md + oracle 125e648 |
+| Area-map budget scratch (variant C) | move 3.1–94.1x; native-leg **299.1x** @d=511 | LIVE, env-gated default OFF | AREAMAP_BUDGET_RESULTS.md + armed boot S7-18 + call-level S7-19 |
+| Noise-handle lifecycle reclaim | **>571x** (12 s → 21 ms) + 24x GC churn | LIVE | LIFECYCLE_REPORT.md, soak 26.45M handles PASS |
+| Boot-scan sighting feed | >10x measured; >100x class ESTIMATE | LIVE | TASK-45 77.8% scan-free (d176e46) |
+| Blend-cache EMPTY pair | 316.45x | BENCH-ONLY, **NO-GO** for live (Paper doesn't pay it) | TASK-32 1c5eefb |
+| NoiseInterpolatorSlice flat | 3.32x | BENCH-Only WIN, registered, unrouted | P500_REPORT §Wins |
+
+Everything else measured: kernel-pair wins 1.18–3.32x; batching ceiling 1.4–40x
+(naive best, ref-adjusted lower); 4 regressions fenced in DO_NOT_WIRE; 32 floor kernels
+in 13 groups blocked-by-`.so` for the >100x class (physics, §1).
+
+## 3. NEW same-state-guard candidates (stream A — Paper 1.21.10 hot paths)
+
+Method: vanilla 1.21.10 Mojang-mapped bytecode disassembly (jar + NeoForged renamer +
+javap; Paper patches on top are not visible — caveat, candidate shapes are structural).
+Cross-checked against JNI_EXPORTS.manifest: **none of the candidates has an existing
+native pair** — all greenfield. Frequency/cost numbers are static-analysis ESTIMATES
+(no live load profile exists: idle-server JFR TASK-57 showed only TPS accounting).
+
+| # | Surface | Per-call machinery recomputed | Guard key (O(1)) | Freq × cost (ESTIMATE) | Risk |
+|--:|---|---|---|---|---|
+| 1 | `CollisionGetter#noCollision(Entity,AABB)` — runs full BlockCollisions Cursor3D iterator + getEntityCollisions grid query; **ItemEntity.tick calls it every tick per item** | swept-section state reads, Shapes.create per section/entity, ImmutableList build | exact AABB bits + overlapped-section state versions + entity-section generation → cached boolean | item-dense servers: 10^4–10^5 q/tick × 0.5–5 µs | low (pure read; same version-counter infra as area-map) |
+| 2 | `Entity#updateFluidHeightAndDoFluidPushing` (via baseTick) | per-cell getFluidState + getHeight + getFlow (Vec3 allocs) + Object2DoubleMap.put, even for motionless entities in still water / on land | quantized AABB + per-cell FluidState identity → cached {height, flow}; trivial "land" fast case | every entity every tick × 0.3–3 µs | low–medium (deltaMovement mutation stays outside cached region) |
+| 3 | `HopperBlockEntity#tryMoveItems` cycle | idle hoppers re-probe EVERY tick (cooldown only set on real move): 2× getContainerAt (BE lookup + entity grid query + list alloc), getSlots int[], inventoryFull scan | facing/above BlockState identity + "last cycle no-op" + container size/hash | every hopper every tick × 1–10 µs | medium (neighbor-content invalidation; guard only the probe, never a real transfer) |
+| 4 | `Entity#isInWall` (suffocation, LivingEntity.baseTick) | allocates Stream (betweenClosedStream) + anyMatch + shape iteration every tick per living entity | packed eye pos + cell state versions → cached boolean | every living entity every tick × 0.3–1.5 µs | low (pure read) |
+| 5 | `Entity#checkInsideBlocks` (per move) | forEachBlockIntersectedBetween visitor + lambda + collector even for sub-block motion | from/to Vec3 + AABB + cell versions → cached "empty" | per move per entity × 1–3 µs | medium-high (applies effects; cache ONLY the empty result) |
+| 6 | `NearestLivingEntitySensor#doTick` (every 20t) + NearestVisibleLivingEntities ctor | follow-range grid query + distance sort + per-candidate LOS tests | mob pos + nearby-entity id hash + state version along sight lines | periodic spike per mob × 10 µs–1 ms | medium-high (AI semantics; hit window ≤1 sensor cycle) |
+| 7 | `Brain#forgetOutdatedMemories` | full memories-map iteration per tick | min-expiry timestamp ≥ game time → single compare skip | every Brain mob every tick × 0.1–0.5 µs | low |
+
+Ruled out (checked): Sensing (vanilla per-tick cache exists), collectEquipmentChanges
+(equality early-out exists), SleepStatus (O(players)), Entity.collide zero-motion
+(vanilla early-out), tickThunder/precipitation (random-driven), chunk/ticket/light
+(closed or dormant per project history).
+
+**Honest framing for the user's x1000 bar:** each hit converts a 0.3 µs–1 ms per-call
+body into a ~20–50 ns guard — i.e. **per-call ratios of ~10x (tiny bodies) up to
+~1,000x+ (noCollision/iterator and sensor spikes) are physically available**, same class
+as the area-map win. Wall-clock server impact depends on the live load profile (entity
+counts, hopper counts), which this box's idle JFR cannot provide — bench-first plan in §6
+closes that gap before any patch lands.
+
+## 4. Blind-spot census (stream B — 98 classes / 283 natives)
+
+Census (cross-checked, sums reconcile: 47+2+1+1+4+43 = 98 classes; 130+8+4+10+18+113 =
+283 methods):
+
+* **P500-measured with verdicts: 47 classes / 130 methods** — 5 WIN pairs (incl. 316x
+  blend-cache NO-GO'd, 3.32x interpolator), 4 REGRESSIONs fenced in DO_NOT_WIRE,
+  ~61 parity, 1 unpaired old kernel.
+* **Wired: 2 live classes** (AreaMap, ImprovedNoise) + 2 env-gated (PerlinNoise,
+  NoiseChunkBlendCache proto) + 11-class batch dispatcher (dormant, no consumers) +
+  4 promotion rebinds + 2 boot proof-calls.
+* **Blind: 43 classes / 113 methods** — registered, never measured, never wired.
+
+Highest-value blind surfaces (next measurement candidates):
+
+| Surface | Why it matters | Est. exposure |
+|---|---|---|
+| **PaperNativeChunkPacketEncode (3 exports, own .so)** | **registered + live-injected, NEVER benchmarked** — chunk section/light packet encoding; Paper encodes on worker threads but large map/render proxies and high player throughput hit it | chunk-send-heavy servers; unknown until measured |
+| `WaypointManagerSkip` (8 kernels) | manager current-vs-skip paths — biggest single blind kernel set | unknown |
+| `CraftPlayerCanSee` (8 kernels) | visibility checks (perception/plugins) | per-call small; volume unknown |
+| `VarInt` (6 kernels) | protocol codec — runs per packet field | high volume, small body — batching-class, not guard-class |
+| LZ4/Deflate/NBT/GZip (9 classes) | region IO + packet compression + save/load | µs–ms bodies; kernel-swap class (physics-capped <10x likely) |
+
+(Discovery: the `libpaper_native_chunk_encode_jni.so` library has been live since
+injection but appears in NO bench artifact — measuring it is cheap and closes the last
+completely-dark domain.)
+
+## 5. Sibling modules (stream C)
+
+* **c-collisions** (Oraxen furniture → voxel collision bridge): NOT deployed — no
+  artifacts under /home/z/server/modules/, zero log lines, and the repo hardcodes
+  `/home/btw/...` dependency paths that do not exist on this box (cannot build as-is).
+  No quantitative perf evidence exists. Same-state candidates found in
+  `native.rs::voxel_collide_impl` (grid-empty/sector-overlap early-out + per-entity AABB
+  memo) — but porting (SDK de-fork + path fix + deploy + safety review of the
+  getBoundingBox hook) is a wave-sized task, and the module is feature-ware, not an
+  optimizer for stock gameplay. Verdict: **defer**; revisit only with an owner request
+  for Oraxen furniture servers.
+* **c-cells** (spiking-neuron CFLH weaving experiment) and **c-dist** (UDP lease
+  engine): research modules, not deployed, no stock-gameplay optimization surface.
+
+## 6. Recommended wave plan (next lanes, in order)
+
+1. **Bench-first counters (server lane, ~1 boot):** byte-hook call-counters on
+   candidates #1/#2/#4 (noCollision / fluid / isInWall) + chunk-encode microbench of
+   the 3 blind exports — validates the ESTIMATE column with a real load profile before
+   any patch design is trusted. Reuses the proven hook → oracle → A/B ladder
+   (G-STEP0/G-RECON/G-ABI/G-BODY methodology, TASK-67..71).
+2. **Guard implementation wave (top-1 = noCollision, then fluid):** design docs with
+   guard-key spec, invalidation rules, parity oracle (deterministic rect/entity sweeps,
+   the area-map 268-case template), env gate default OFF, kill-switch, dormant
+   byte-identity — the full variant-C discipline (S7-16..19 precedent).
+3. **Chunk-encode measurement** can ride any bench window (headless first: the encode
+   kernels take byte arrays — a child-loader rig like TASK-68's may close it without
+   the server lane at all).
+4. Hopper (#3) and sensors (#6) only after an invalidation/effects-safety design doc
+   each; AI-semantics surfaces gate on a dedicated review.
+
+## 7. Risks, falsifiers, and discipline
+
+* **Idle-only honesty:** guard wins are per-call on unchanged state; a server under
+  constant mutation pays guard overhead + invalidations. The bench-first counters are
+  the falsifier — if hit-rate is low on the live profile, the candidate dies honestly
+  (the TASK-32 precedent, not a fake win).
+* **Semantics:** candidates #1/#2/#4 are pure reads (safest); #3/#5/#6 touch
+  gameplay-adjacent behavior (item transfer, block effects, AI targeting) — each needs
+  its own parity oracle and a "cache only the negative/empty result" rule.
+* **Invariants carried:** no gameplay-value changes; env-gated default OFF; kill-switch;
+  dormant byte-identity verified; P500 FULL duty on any src/ change; BENCH-MUTEX +
+  no-cross on the 2-CPU box; every claim evidence-linked before "GO".
+* Stream-A bytecode was vanilla-mapped; Paper-specific patches may alter bodies — the
+  bench-first counters double as verification that the shape matches the live jar.
