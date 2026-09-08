@@ -252,6 +252,7 @@ wall — so the channel stays open and the remaining gates are G-RECON and G-AB.
 | G-RECON | ≥2 worldgen owner loops register-local with N_o ≥ breakeven | javap session | **GO (2026-09-08, TASK-69): owners are single-loop whole-method bodies (PerlinNoise.getValue = one octave loop over noiseLevels[], NormalNoise = two trees); N_o=8 measured; whole-object native kernels ALREADY in closed lib (nativeGetValue/NativeGetValueNoYScale/NativeNormalNoise.nativeGetValue + fill family — ABI decode = new G-ABI sub-gate); in-loop context correction: Java octave sample is 53.4 ns in-loop (not 91.1 isolated) → honest native headroom 0.70-0.96×, recoverable refined to 1.6-2.7% burst wall — `bench/p500/results/GRECON_OWNERS_2026-09-09.md`** |
 | G-ABI | decode `nativeBuildHandle([B[B[D[D[D[DDD)J`, parity bit-exact vs real class, whole-getValue kernel measured | one /tmp probe session (ABI probing, no server) | **GO (2026-09-08, TASK-70): ABI fully decoded — a0 = slot-indexed concat p-tables byte[256×N] (zeros for absent octaves), a1 = presence mask byte[N] (length-validated, wrong length ⇒ handle=0), a2..a5 = per-slot xo/yo/zo/amplitudes, a6/a7 = lowestFreqInputFactor/lowestFreqValueFactor; parity 0/51000 bit-exact (both configs incl. gapped octaves, y0/y1, flag=-yo, NoYScale≡canonical); whole-getValue 0.825× Java (354.3 vs 429.3 ns/call, inside 0.70–0.96× predicted window); cost model crossing ≈54 ns + 37.3 ns/octave — `bench/p500/results/GABI_HANDLE_2026-09-09.md`. Consequence: NO new kernel needed (§3.3 id-21 plan superseded by the shipped whole-object kernels); patch form = whole-body swap + per-object handle lifecycle |
 | G-AB | paired A/B wall delta > 0 with p < 0.1 (Mann-Whitney, n=5/arm) | one bench session on the TASK-63 harness | pending — the only decision-grade production number |
+| G-BODY | whole-body swap works through a REAL retransform: bit-parity + execution canary + dispatch overhead ≤ noise (standalone javaagent rig, no server) | one /tmp session, ASM from server libs | **GO (2026-09-08, TASK-71): parity 0/20000 pre-vs-post retransform (same JVM, hard execution canary); P 345.9 vs J 424.5 ns/call = 0.815× (window 0.70–0.96×); dispatch overhead = P − N_direct ≈ −6.6 ns ≤ noise; handle build warm 22–60 µs (cold 4–14 ms, one-time per instance); two bug classes caught HERE (descriptor off-by-one `(DDDDDZ)D`, ASM `mv` field shadowing) before they could cost server boots — `bench/p500/results/GBODY_DISPATCH_2026-09-09.md` |
 
 **NO-GO is a valid outcome at every gate** and is recorded as ops guidance. If
 G-STEP0 fails, the worldgen noise channel closes entirely (per-call refuted by
@@ -271,3 +272,13 @@ body template + patch owner #1 (largest-N_o site) behind the env gate → A/B pe
 → promote/keep-Dormant decision recorded in RESULTS_LEDGER + adoption matrix row
 update. Sessions 3+: additional owners strictly gated on session 2's measured wall
 delta.
+
+**Update after G-BODY GO (TASK-71, standalone javaagent prototype):** the
+whole-body swap of the octave-loop owner is PROVEN through a real retransform
+(bit-parity 0/20000, execution canary, dispatch overhead ≤ noise, 0.815×
+end-to-end). Session 2's remaining work is integration engineering only:
+module-loader bridge class (RuntimeStubs/include_bytes discipline), production
+handle lifecycle (phantom-reaper TASK-01), G9 quiet-worker retransform discipline,
+env gate + B.2.2 ladder. The next gate is G-AB (live paired A/B); it requires
+server boots and the module .so, so it sequences with the neighbor's server lane
+per §6.
