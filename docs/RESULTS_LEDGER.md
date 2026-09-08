@@ -357,3 +357,24 @@ bridge stays default-OFF until that lands.
 | e2e default | **stays v2** (v3 wiring reverted; v3 archive persisted at $SERVER/crussty_boot_v3.jsa for future re-tests) | git revert of wiring, fd-hygiene fixes retained |
 | fd-hygiene fixes (banked) | e2e stdin-holder + boot subshell no longer inherit rig flock fd → BENCH.lock leak class (4 incidents) closed | e2e_orchestrate.sh |
 | Status | TASK-95 resolved: CDS v3 = measured NULL as a boot-time lever beyond v2; classloading channel confirmed EXHAUSTED | re-open: Paper update changing library set / JDK upgrade |
+
+## §15 ADDENDUM-10 (TASK-98, 2026-09-09, S7-41) — boot-baseline bank-correction marks (S7-38 drift law)
+
+Per the S7-38 BASELINE DRIFT discovery (banked comparisons across sessions on this
+machine are invalid unless within-session with idle-verified co-tenant), all boot
+rows are now marked:
+
+- **13.351s mean (S7-32, e2e-default v2, −19.9%)** = measured UNDER NEIGHBOR CENSUS
+  LOAD (TASK-90 dirty-rate census running concurrently). Idle-equivalent ≈ 12.5-12.6s.
+- **16.668s launcher baseline (S7-31/32)** = same under-load condition; idle
+  equivalent ≈ 15.5-16.0s.
+- **−18.4% / p=0.0079 (S7-31 CDS v2 A/B)** = VALID (within-session ABBA, same
+  co-tenant conditions both arms).
+- **TASK-95 CDS v3 NULL, TASK-97 prewarm NULL, S7-40 matrix** = VALID (within-session
+  ABBA / paired arms).
+- **S7-40 v2 ABBA arms (13.279-13.9s)** = within-session, minutes-apart drift of
+  ±0.3-0.4s observed even idle → machine variance floor ~0.5s stands as the
+  measurable-effect gate for any future boot arm.
+- Rule (unchanged, now anchored): future boot claims MUST be within-session ABBA
+  with pgrep/co-tenant check logged per arm; cross-session deltas are context, not
+  evidence.
