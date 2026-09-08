@@ -112,6 +112,19 @@ while READY=false, exactly one retransform). The generated body per patched loop
 Fallback integrity: the pristine method bytes are retained exactly as every existing
 hook does; degraded sites are byte-indistinguishable from dormant.
 
+**G-ABI update (2026-09-08, TASK-70) — the whole-object kernels make this shape
+optional for PerlinNoise owners.** The closed lib already ships whole-object
+noise kernels (`nativeGetValue(JDDDDDZ)D` = the entire 6-arg octave loop in one
+crossing; ABI decoded and bit-exact, 0.825× Java — see §7 G-ABI row and
+`bench/p500/results/GABI_HANDLE_2026-09-09.md`). Where a whole-object kernel
+exists, the generated body degenerates to a handle dispatch (per-object handle
+built once from the live noise object's state, cached, phantom-reaped per the
+TASK-01 lifecycle precedent) and the scratch-plane machinery below becomes the
+FALLBACK shape for owners without a whole-object kernel (e.g. non-noise loops).
+The degradation ladder, parity argument and retransform discipline are
+unchanged — only the per-loop buffer/dispatch step is replaced by one
+`invokestatic nativeGetValue(handle, …)`.
+
 ### 3.3 Buffer geometry and flush economics
 
 * **Per-thread scratch, per-site**: coordinates plane `[J` (N_o × 6 raw doubles:
@@ -235,9 +248,9 @@ wall — so the channel stays open and the remaining gates are G-RECON and G-AB.
 | Gate | Condition | Cost | Result |
 |---|---|---|---|
 | G-STEP0 | batch core per-sample ≤ 1.0× JIT Java at breakeven N ≤ 16 | one /tmp micro-bench session, no server | **GO (2026-09-08, TASK-67): 0.59× at N=16 (54.1 vs 91.1 ns/sample, 3-arg path; 0.41× at N=1024); parity 0/40000 mismatches; per-call native ≈ Java re-confirms the crossing refutation — `bench/p500/results/STEP0_NOISE_CORE_2026-09-09.md`** |
-| G-PARITY | bit-equal fixtures ×2 runs | piggybacks on G-STEP0 rig | partially covered (0/20000 per form); full batch-plane fixtures at implementation |
+| G-PARITY | bit-equal fixtures ×2 runs | piggybacks on G-STEP0 rig | partially covered (0/20000 per form at TASK-67; +0/51000 whole-object at TASK-70 — every production path incl. gapped octaves and the −yo flag); full batch-plane fixtures at implementation |
 | G-RECON | ≥2 worldgen owner loops register-local with N_o ≥ breakeven | javap session | **GO (2026-09-08, TASK-69): owners are single-loop whole-method bodies (PerlinNoise.getValue = one octave loop over noiseLevels[], NormalNoise = two trees); N_o=8 measured; whole-object native kernels ALREADY in closed lib (nativeGetValue/NativeGetValueNoYScale/NativeNormalNoise.nativeGetValue + fill family — ABI decode = new G-ABI sub-gate); in-loop context correction: Java octave sample is 53.4 ns in-loop (not 91.1 isolated) → honest native headroom 0.70-0.96×, recoverable refined to 1.6-2.7% burst wall — `bench/p500/results/GRECON_OWNERS_2026-09-09.md`** |
-| G-ABI | decode `nativeBuildHandle([B[B[D[D[D[DDD)J`, parity bit-exact vs real class, whole-getValue kernel measured | one /tmp probe session (ABI probing, no server) | pending |
+| G-ABI | decode `nativeBuildHandle([B[B[D[D[D[DDD)J`, parity bit-exact vs real class, whole-getValue kernel measured | one /tmp probe session (ABI probing, no server) | **GO (2026-09-08, TASK-70): ABI fully decoded — a0 = slot-indexed concat p-tables byte[256×N] (zeros for absent octaves), a1 = presence mask byte[N] (length-validated, wrong length ⇒ handle=0), a2..a5 = per-slot xo/yo/zo/amplitudes, a6/a7 = lowestFreqInputFactor/lowestFreqValueFactor; parity 0/51000 bit-exact (both configs incl. gapped octaves, y0/y1, flag=-yo, NoYScale≡canonical); whole-getValue 0.825× Java (354.3 vs 429.3 ns/call, inside 0.70–0.96× predicted window); cost model crossing ≈54 ns + 37.3 ns/octave — `bench/p500/results/GABI_HANDLE_2026-09-09.md`. Consequence: NO new kernel needed (§3.3 id-21 plan superseded by the shipped whole-object kernels); patch form = whole-body swap + per-object handle lifecycle |
 | G-AB | paired A/B wall delta > 0 with p < 0.1 (Mann-Whitney, n=5/arm) | one bench session on the TASK-63 harness | pending — the only decision-grade production number |
 
 **NO-GO is a valid outcome at every gate** and is recorded as ops guidance. If
@@ -249,7 +262,11 @@ roadmap's remaining addressable surface is documented in RESULTS_LEDGER terms.
 ## 8. Implementation sequencing (if all gates pass)
 
 Session 1: kernel id 21 + ABI 5 + Rust batch core + fixtures + self-test extension
-(no byte patch) → landable independently, dormant-invisible. Session 2: recon +
+(no byte patch) → landable independently, dormant-invisible. **Update after G-ABI
+GO (TASK-70): Session 1 shrinks — no new kernel is needed for PerlinNoise/NormalNoise
+owners (the whole-object kernels already ship in the closed lib); Session 1 becomes
+the handle-lifecycle bridge (build/cache/free from live objects) + fixtures +
+self-test extension. Session 2: recon +
 body template + patch owner #1 (largest-N_o site) behind the env gate → A/B per §5.4
 → promote/keep-Dormant decision recorded in RESULTS_LEDGER + adoption matrix row
 update. Sessions 3+: additional owners strictly gated on session 2's measured wall
