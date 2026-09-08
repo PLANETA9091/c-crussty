@@ -342,3 +342,18 @@ bridge stays default-OFF until that lands.
 | Verdict | **NO-GO / DO-NOT-BUILD** — pre-registered GO band (<1% AND machinery≥90%) failed 2.4× on dirty%; Amdahl: >3%-of-tick gate needs surface >123% of tick budget (impossible); ratio density-invariant | report §4 |
 | Tooling archaeology | 6 invalid runs root-caused: boot jar, server CWD, session-teardown kills, **L1: CNFE StaticCounter under Paper remapped loader → silent probe no-ops (fixed -Xbootclasspath/a)**, L2 forceload-ticking hypothesis REFUTED by smoke | report §2, scripts/dirtyrate/smoke_ticking.sh |
 | Status | 13th closed x1000 branch; TASK-84 queue fully drained | re-open: report §5 (dirty%>10% on real-server census / JFR ≥3% / engine change) |
+
+## §14 ADDENDUM-9 (TASK-95, 2026-09-08, S7-36) — CDS v3 explicit-cp topology: v3-vs-v2 NULL, archive effect −4.5s, boot-comparison methodology law
+
+* Author: S7-36 main (interactive, owner directive «не делай мелочи — делай много»). Full evidence: docs/BOOT_CDS_V3_S7_36.md.
+
+| Item | Result | Evidence |
+|---|---|---|
+| v3 dump | 29,680 classes / 148MB (vs v2 15,184/129MB) — loader-consistent explicit-cp topology | cds_dump.txt, cl_dump.txt (29,680 class,load lines) |
+| Archive effect (within topology) | control 17.28s (n=2) → v3 12.75s (n=6) = **−4.5s** | anchor-restored boots, functional parity 1461/1574 |
+| v3 vs v2 (both archived) | **NULL**: within-session ABBA pairs ΔV−D = {+0.307, −0.701}, mean −0.20s, sign unstable | pair-1/pair-2 (S7-38) + idle-verification |
+| Cross-session confound | S7-38 BASELINE DRIFT: 13.351s banked default was measured under neighbor census load; idle v2-default = 12.5-12.6s | S7-38 finding + my MW p≈0.048 invalidated |
+| **METHODOLOGY LAW** | no cross-session boot comparison on this box; within-session ABBA + idle-verified co-tenant (CLAIMS journal + pgrep) per arm | 14.764s contaminated arm discarded |
+| e2e default | **stays v2** (v3 wiring reverted; v3 archive persisted at $SERVER/crussty_boot_v3.jsa for future re-tests) | git revert of wiring, fd-hygiene fixes retained |
+| fd-hygiene fixes (banked) | e2e stdin-holder + boot subshell no longer inherit rig flock fd → BENCH.lock leak class (4 incidents) closed | e2e_orchestrate.sh |
+| Status | TASK-95 resolved: CDS v3 = measured NULL as a boot-time lever beyond v2; classloading channel confirmed EXHAUSTED | re-open: Paper update changing library set / JDK upgrade |
