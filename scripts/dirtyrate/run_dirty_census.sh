@@ -40,13 +40,14 @@ rm -f "$CRUSSTY_DIRTY_OUT"
 # --- vanilla boot (no engine agent), stdin = FIFO console ---
 FIFO="$OUT/console.fifo"; mkfifo "$FIFO"
 # hold the FIFO write-end open for the whole run (read-end = java stdin only)
-sleep 3600 3>"$FIFO" &
+sleep 3600 3>"$FIFO" 9>&- &
 HOLDER=$!
 log "vanilla boot (purpur direct jar, dirty-census agent armed) ..."
 AGENT="$PWD/scripts/dirtyrate/agent/dirty_census.jar"
-( cd "$SERVER" && exec "$JDK/bin/java" -Xms512M -Xmx2G -XX:+UseG1GC \
+( cd "$SERVER" && exec "$JDK/bin/java" -Xms512M -Xmx2G -XX:+UseG1GC 9>&- \
+    -Xbootclasspath/a:"$AGENT" \
     -javaagent:"$AGENT" \
-    -jar "$JAR" --nogui <"$FIFO" >"$LOG" 2>&1 ) &   # direct redirect, no tee subshell (SIGPIPE 141 class — sibling+me concur)
+    -jar "$JAR" --nogui <"$FIFO" >"$LOG" 2>&1 ) &   # bootclasspath/a: StaticCounter must be visible to Paper remapped loaders (CNFE -> chunk-system crash run 173842)   # direct redirect, no tee subshell (SIGPIPE 141 class — sibling+me concur)
 SPID=$!   # server cwd = $SERVER (eula.txt/worlds live there; paperclip must not extract into the repo — TASK-90 2nd live-boot lesson)
 disown "$SPID" 2>/dev/null || true
 
