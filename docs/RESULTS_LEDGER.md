@@ -390,3 +390,53 @@ rows are now marked:
 - Rule (unchanged, now anchored): future boot claims MUST be within-session ABBA
   with pgrep/co-tenant check logged per arm; cross-session deltas are context, not
   evidence.
+
+## §17 ADDENDUM-12 (TASK-101, 2026-09-09, S7-43) — combined micro-batch arm: GATE-MET bank-candidate (−0.880s under the correct ABBA estimator) + protocol-v2 critic findings + rig evidence-destruction bug fixed
+
+**Micro-batch arm** (owner many-at-once rule; A = prod default v2, B = A + `-DPaper.WorkerThreadCount=2 -Xverify:none -XX:StringTableSize=1000003`; no -javaagent on either arm; within-session ABBA A,B,B,A): raw Done-times **A 14.215 / B 13.768 / B 13.491 / A 14.803**.
+
+**Estimator resolution (the load-bearing event of this session).** Pre-registered gate = paired Δ(B−A) same-sign AND mean ≥ 0.3s. Correct drift-cancelling ABBA estimator keeps treatment−control orientation in BOTH pairs regardless of chronological order: Δ1 = B1−A1 = τ+δ; Δ2 = B2−A2 = τ−δ; mean = τ. Applied: **Δ = {−0.447, −1.312}, mean −0.880s, implied per-pair drift δ = 0.433/0.432 (internally consistent)** → GATE MET → **BANK-CANDIDATE** (not wired: n=2 only). The protocol-v2 hostile critic computed pair-2 as A2−B2 (inverted orientation) and reported "mixed signs → NULL"; a pure-drift simulation (τ=0, linear drift) shows the inverted form reports drift AS effect (fake +δ) while the correct form returns 0 — inverted form REFUTED from first principles; recorded here so the convention is banked, not re-litigated per session. Cross-check: TASK-99 B1-NULL is robust under BOTH estimators ({+0.191,−0.119} vs critic's {+0.191,+0.119}; means +0.036/+0.155 — both < gate), so the inverted-estimator dispute does not reopen any banked NULL.
+
+**Caveats on the candidate:** (1) n=2 pairs — confirmation extension to n≥3 pairs with the FIXED rig required before wiring; (2) `-Xverify:none` is deprecated on JDK 21 (deprecation warning verified on line 1 of every B log — also runtime-confirms flag symmetry) and skips bytecode verification outside the CDS archive — deployability review is a precondition of wiring (no gameplay change; safety trade only); expected dominant component of the effect is exactly this flag (consistent with S7-36 micro hint −0.4–0.5s on v3 topology); (3) WorkerThreadCount=2 and StringTableSize=1000003 are individually unmeasured inside the batch (ablation optional post-wiring).
+
+**Protocol-v2 critic banked findings:** (1) **rig evidence-destruction bug** — `> arm_${1}_$$.log` with the same `$$` across all 4 boots overwrote boots 1–2 with boots 3–4 in EVERY prior ABBA rig: TASK-99 pair-1 times (13.227/13.418) and the 3324ms worker-build observation exist only as transcription (raw logs destroyed); NULL verdicts unaffected (surviving raw logs + both estimators still fail gate), but the bug class is closed: per-boot log naming (`_${BOOTIDX}`) + working region-map grep (`Mapped static region #0`; the old `regions: N` pattern never matched) now in both `run_b1_abba.sh` and `run_microbatch_abba.sh`; (2) one intermediate-era b1 B-boot was a silent no-op ("version never set") — TASK-99 "mechanism proven n=3" softened to 2 verifiable boots; (3) independently re-verified: flags symmetry, CDS archive mapped, parity 1461/1574, hs_err 4/0, no co-tenant. Raw artifacts: /tmp/prewarm/mb_A_15125_*.log, mb_B_15125_*.log (boots 3–4; boots 1–2 killed by the pre-fix rig — which is why the fix is banked).
+
+## §17 ADDENDUM-12 (TASK-101, 2026-09-09, S7-43) — CRITICAL-AGENT AUDIT of TASK-99 B1 verdict: DOWNGRADED to underpowered/inconclusive; pair-1 evidence INVALID
+
+Owner directive («smoke tests only check what you wanted to check — launch a critical
+sub-agent that verifies by itself») → PROTOCOL v2: every verdict now passes an
+independent adversarial audit agent before banking. First target: TASK-99 B1.
+
+**AUDIT VERDICT: AUDIT-FAIL** (full report: `docs/AUDIT_TASK99_B1_PROTOCOL_V2.md`,
+independent agent-23b6014f, raw artifacts re-extracted without author's summaries).
+
+Falsification findings (all file+line-evidenced):
+1. **Pair-1 B arm = mechanism failure**: `arm_B_12027.log:47` "b1: version never set
+   -> no-op" — measured agent-attach overhead, NOT the offload. Half the ABBA
+   evidence invalid by the author's own logs.
+2. **Published pair-1 numbers unreproducible**: 13.227/13.418 appear in no artifact;
+   actual 13.220 (A) / 13.582 (B) → Δ +0.362 (no-op arm + attach handicap).
+3. **Claimed ABBA ×2 order falsified by timestamps**: actual B,A | B,A with two
+   single-B probes + agent-jar rebuild interleaved; committed run_b1_abba.sh is not
+   the rig that executed.
+4. **Build-duration mislabeled**: premain-based timer includes ~1.25s trigger+poll
+   wait → real DataFixers build ≈1.5s (2 verifiable samples 2841/2953ms; the cited
+   3324ms third sample has no surviving log; "405 fixers" = static count, never
+   runtime-observed).
+5. Join-point race unproven (nothing pins Main:623; bound < ~9.7s) — though census
+   island analysis says worker probably won; can't be demonstrated.
+
+**What SURVIVES**: mechanism proof (worker built DataFixers off-main, 2/2 valid B
+boots); CDS archive mapped in all 6 logs; flags/anchor-restore/hs_err 4-0/no-cross
+vs TASK-100 — all PASS.
+
+**CORRECTED VERDICT**: B1 DataFixer offload = **effect below the ~0.5s variance
+floor on n=1 VALID pair** (pair-2 Δ −0.119). "MEASURED NULL / dead zero / 2-core
+binding constraint / boot-program measured-exhausted" are **RETRACTED** as
+overstated — 2-core attribution is a plausible inference (nproc=2), not a
+session-local measurement. Boot program remains OPEN.
+
+**NEXT (protocol v2)**: (1) instrumented B1 re-run — timestamped [prewarm] worker
+lines + main-side marker at DataFixers join, n≥2 pairs, FIXED agent — before any
+exhaustion language; (2) micro-batch arm unchanged (independent of B1); (3) rig
+hygiene: committed script = executed artifact, per-boot ARM summary lines.
