@@ -344,3 +344,34 @@ src/kernel_policy.rs). Part B: `docs/BATCH_ADOPTION_MATRIX.md` @ d02fbc2 (§2 mo
 `src/kernel_policy.rs`, `docs/HOTSPOT_CANDIDATES.md` §C3, `bench/p500/results/P500_REPORT_v2.md`
 §"JNI floor groups", `bench/p500/results/P500_SCALING.md`, TASK-10 errata
 (`review-session003-agents2-commits.md`), CLAIMS rows TASK-24 / TASK-14.
+
+## B.9 G5 verdict (measured-T registry) — TASK-56, 2026-09-09, agent-7625532f
+
+**Verdict: the measured-T registry is formally VACANT for every candidate —
+no site may batch-execute at any T until a row is filled by measurement.**
+This consolidates the already-measured facts into one policy statement:
+
+1. g42 `StaticCacheGet` (shape C, id 14): no measured T exists — with the
+   closed probe body the batched path never beats direct at ANY K (d > R;
+   runbook §3/G3 re-derivation), so the B.2.3 `<= 0.9x` criterion is
+   unsatisfiable on the measured lib.
+2. g9 `DensityAp2MinMaxFill` (shape A', ids 12/13): batch NEVER beats direct
+   (116 ns < breakeven ~160 ns; TASK-48 `A2_SHAPE_REPORT.md`) — T does not
+   exist; additionally its real call site is Variant-R-infeasible
+   (`reports/G4_JAVAP_RECON_g9_g42.md`: g9 = Ap2.fillArray,
+   g42 = StaticCache2D consumers).
+3. g35/g39/g40/g24 (plugin/config floor kernels): shapes absent from the
+   table (B.4 rows 6-10) — no T can be measured before a shape lands, and
+   their R-band (27-87 ns) sits below the measured batch premium anyway.
+4. The G4 demonstrator site (`ImprovedNoise.noise`) intentionally carries
+   **id=none**: its flush leg is the zero-op dispatcher round-trip +
+   B.2.2 degrade — it MUST NOT be read as a T=16 batch-execution verdict.
+
+Filling a registry row requires ALL of: (a) a real in-engine kernel body (or
+JFR-proven call amplification for a floor kernel), (b) BatchFloorBench
+batched-per-op `<= 0.9x` individual at the chosen K on the REAL body,
+(c) bit-exact parity incl. consecutive batches, (d) live-server self-test.
+Revisit triggers: in-engine body landing, JFR amplification evidence, or a
+dispatch-overhead regression (d < 15 ns would re-open the floor-band
+candidates). Until then, `threshold_for_kernel` returns None-equivalent for
+every id and site-arming stays demonstrator-only.
