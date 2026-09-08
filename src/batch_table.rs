@@ -289,10 +289,16 @@ pub struct BatchKernel {
 /// `Shape::refs` slots per D/E/F op) and 3 new kernels enter the table
 /// (ids 15/16/17, shapes D/E/F). History: v1 = per-op long scalar,
 /// v2 = shape-packed scalar plane, v3 = ref plane + 18 kernels.
-pub const TABLE_VERSION: u32 = 3;
+/// v4 (TASK-61, old-member wiring): the OLD members of the three wave-1
+/// parity pairs enter the table (ids 18/19/20, same shapes D/E/F, same
+/// descriptors) so the dispatcher can express BOTH legs of each pair —
+/// parity-through-dispatcher (OldMemberParityProbe) closes the evidence
+/// loop against the P500 anchors. Calling convention unchanged; the bump
+/// signals the kernel-count change to embeds (EXPECTED_ABI gate).
+pub const TABLE_VERSION: u32 = 4;
 
-/// The compile-time kernel table (18 real symbols, `jni_table.rs` line noted).
-pub const KERNELS: [BatchKernel; 18] = [
+/// The compile-time kernel table (21 real symbols, `jni_table.rs` line noted).
+pub const KERNELS: [BatchKernel; 21] = [
     // jni_table.rs:15 — the live-proof kernel (ticketset binary search).
     BatchKernel {
         id: 0,
@@ -466,6 +472,42 @@ pub const KERNELS: [BatchKernel; 18] = [
         sig: "(I[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;I[J)I",
         symbol: "Java_PaperNativeSpigotLoadOrderDependency_newRemovedCountSummary",
     },
+    // jni_table.rs:79 — TASK-61 old-member wiring: g35 OLD member (P500
+    // anchor 81.4 ns, baseline.json:22; pair old/optimized PARITY ratio
+    // 1.0025, baseline.tsv:55), shape D, same descriptor as id 15. Wired so
+    // the dispatcher can express BOTH legs of the pair (parity-through-
+    // dispatcher); NOT a promotion candidate (batch loses on D/E/F floors,
+    // S7-14 floor numbers).
+    BatchKernel {
+        id: 18,
+        shape: Shape::D,
+        class: "PaperNativeRangeChoice",
+        method: "oldFillArraySummary",
+        sig: "([D[I[I[II[J)I",
+        symbol: "Java_PaperNativeRangeChoice_oldFillArraySummary",
+    },
+    // jni_table.rs:211 — TASK-61 old-member wiring: g39 OLD member (pair
+    // old/new PARITY ratio 1.0034, baseline.tsv:58), shape E, same
+    // descriptor as id 16.
+    BatchKernel {
+        id: 19,
+        shape: Shape::E,
+        class: "PaperNativeSpigotLoadOrderDependency",
+        method: "oldLoadAfterBuildSummary",
+        sig: "(I[Ljava/lang/Object;[J)I",
+        symbol: "Java_PaperNativeSpigotLoadOrderDependency_oldLoadAfterBuildSummary",
+    },
+    // jni_table.rs:213 — TASK-61 old-member wiring: g40 OLD member (pair
+    // old/new PARITY ratio 0.9955, baseline.tsv:59), shape F, same
+    // descriptor as id 17.
+    BatchKernel {
+        id: 20,
+        shape: Shape::F,
+        class: "PaperNativeSpigotLoadOrderDependency",
+        method: "oldRemovedCountSummary",
+        sig: "(I[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;I[J)I",
+        symbol: "Java_PaperNativeSpigotLoadOrderDependency_oldRemovedCountSummary",
+    },
 ];
 
 /// Slice view of the compile-time table (same shape as `MAIN_JNI_TABLE`).
@@ -553,11 +595,11 @@ mod tests {
     }
 
     /// Runtime mirror of the compile-time table asserts: ids stay dense and
-    /// every descriptor matches its declared shape (18 entries after the
-    /// wire-v3 wave-1 D/E/F).
+    /// every descriptor matches its declared shape (21 entries after the
+    /// TASK-61 old-member wiring).
     #[test]
     fn table_is_dense_with_matching_descriptors() {
-        assert_eq!(KERNEL_COUNT, 18);
+        assert_eq!(KERNEL_COUNT, 21);
         for (i, k) in BATCH_KERNELS.iter().enumerate() {
             assert_eq!(k.id as usize, i);
             assert_eq!(k.sig, k.shape.sig());

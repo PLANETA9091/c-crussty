@@ -275,3 +275,17 @@ Work Log:
 Stage Summary:
 - TASK-60 ЗАКРЫТ: семья shutdown-крэшей полностью характеризована (11 файлов → 1 механизм: shutdown-клац loading re-entry в модуль при рваном JNI env), виновник = экспозиция дизайна (CFLH не гейтится VMDeath), не конкретный баг; движку оставлен готовый пропозал (атомарный vm_dying флаг). Семья из шума стала tracked+explained. Открытых клеймов нет; кандидаты: OLD-member wiring (g35/g39/g40 parity-through-dispatcher), ck_cap в verify-строках, D6 P3.
 - CORRECTION (same session, agent-7625532f): TASK-60 гейт-строка в записи выше: тесты 61/61 (S7-14 добавил +10 — я записал 51/51 по памяти прошлой сессии; фактический прогон этого тика = 61/61, clippy 12 = baseline Δ0 без изменений).
+
+---
+## SESSION cron 11:00+08 — TASK-61 done: wave-1 OLD-member wiring (ids 18/19/20, ABI v4=262165) + parity-through-dispatcher + g35 byte-delta DISCOVERY — 2026-09-09T04:3xZ — agent-7625532f
+
+Work Log:
+- Старт: TASK-60 закрыт, сосед молчит. Клейм TASK-61 cde33a0 attempt 1, reverify OK. Scope = S7-14 NEXT-3: old-ноги пар g35/g39/g40 в диспетчере.
+- WIRING: batch_table ids 18/19/20 (oldFillArraySummary/oldLoadAfterBuildSummary/oldRemovedCountSummary, shapes D/E/F, same-descriptor, символы из JNI_EXPORTS.manifest:80/211/213 в main_lib libpaper_native_jni.so); TABLE_VERSION 3→4, ABI_WORD=(4<<16)|21=262165; kernel_policy +3 строки 'P500 PARITY (batch surface, old member)' (Allow наследуется от PROVEN_WINS); EXPECTED_ABI embed 196626→262165 (scripts/build_noise.sh ПЕРЕД cargo — урок S7-14 сработал). Пины: pair-mirror тест (18↔15/19↔16/20↔20 same class+sig), density 21, Allow во всех режимах, abi_word mirror; doc-комменты batch_api/runbook/BatchRolloutBench синхронизированы.
+- PROBE: bench/batch/java/OldMemberParityProbe.java + run_oldmember_parity.sh (BENCH.lock, RAW tsv): lane A (id_old vs id_new через РЕАЛЬНЫЙ dispatcher wire-v3) + lane B (id_old-dispatcher vs old-direct P500-стаб) + refusal legs. Первые прогоны: 50→24→0 несовпадений — две честные коррекции зонда (dispatcher ret = op-count, потребляет count-written; direct = count-written — сравнивается dst; refusal-сигнатура на уровне диспетчера = dst untouched, ret равны).
+- ГЛАВНАЯ НАХОДКА: пара g35 НЕ байт-эквивалентна — dst[0] равен, dst[1]: old=8 (длина массива), optimized=0 (стабильно по всем 12 триалам, n∈{1,2}); g39/g40 пары байт-идентичны 24/24. P500 'PARITY' grade для wave-1 был perf-only — это ПЕРВОЕ байтовое сравнение этих пар. Дельта законтрактована (pinned, drift=loud fail). Lane B 36/36: диспетчер роутит старые символы байт-корректно (петля к P500-якорям замкнута).
+- LIVE ARMED BOOT (deploy с .bak_task61): Done 16.211s, 'batch: 21 kernels resolved', 'helper self-test passed (abi 262165)', retarget+rollout-gate, e2e verify ALL PASS, graceful stop через fifo-фикс TASK-59 = exit 0, holder убран, 0 остатков.
+- Гейты: tests 61/61, clippy 12 = baseline Δ0. BENCH.lock держан/освобождён. Push: c-crussty (report bench/batch/results/OLD_MEMBER_PARITY_2026-09-09.md + probe + runner + src), CLAIMS done + reverify. Токен чист.
+
+Stage Summary:
+- TASK-61 ЗАКРЫТ: обе ноги всех трёх wave-1 пар выразимы диспетчером; петля parity-through-dispatcher замкнута; НОВАЯ ЗНАНИЕ: g35 пара семантически различна (метадатная дорожка dst[1]) — документировано и законтрактовано, вердикты PARITY/perf не тронуты, промоушен не предложен. G5 vacancy подтверждена и для old-ног (B.9 note). Открытых клеймов нет; кандидаты: ck_cap verify-строки (S7-13 NEXT-5), D6 P3 design, нагрузочные профили (stdin ready).

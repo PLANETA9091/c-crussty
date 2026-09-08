@@ -185,7 +185,7 @@ pub const ABI_SIG: &str = "()I";
 #[allow(dead_code)]
 pub const ABI_SYMBOL: &str = "Java_crussty_batch_PaperNativeBatchDispatch_abiVersion";
 /// The exact `abiVersion()` word: `(TABLE_VERSION << 16) | KERNEL_COUNT`
-/// (196_626 today: v3 = (3<<16)|18 — wire v3 ref plane + 18 kernels).
+/// (262_165 today: v4 = (4<<16)|21 — TASK-61 old-member wiring, 21 kernels).
 /// Single source for the export AND the G4 Java helper's
 /// expected value (src/improved_noise.rs batch self-test; the Java-side
 /// constant in ImprovedNoiseBatchOps is its compile-time mirror).
@@ -1592,14 +1592,14 @@ mod tests {
     /// accidental revert of either is caught by CI (the Java bench gates on
     /// `abiVersion()` and would silently fall back to per-op calls otherwise).
     /// (G3 spike: id 14 / shape C joined the table at v2; wire v3 (S7-14)
-    /// adds the refArgs plane + ids 15/16/17, shapes D/E/F — count now 18,
-    /// abi word 196_626; the KERNEL_COUNT half of the word is the
-    /// stale-caller guard.)
+    /// adds the refArgs plane + ids 15/16/17, shapes D/E/F; TASK-61 (v4)
+    /// adds the old legs ids 18/19/20 — count now 21, abi word 262_165;
+    /// the KERNEL_COUNT half of the word is the stale-caller guard.)
     #[test]
     fn task48_abi_pins() {
-        assert_eq!(crate::batch_table::TABLE_VERSION, 3);
-        assert_eq!(KERNEL_COUNT, 18);
-        assert_eq!((3u32 << 16) | 18u32, 196_626, "abiVersion() contract");
+        assert_eq!(crate::batch_table::TABLE_VERSION, 4);
+        assert_eq!(KERNEL_COUNT, 21);
+        assert_eq!((4u32 << 16) | 21u32, 262_165, "abiVersion() contract");
         let g9 = &BATCH_KERNELS[12];
         let g9n = &BATCH_KERNELS[13];
         assert_eq!(g9.shape, Shape::APrime);
@@ -1622,6 +1622,23 @@ mod tests {
         assert_eq!(g39.method, "newLoadAfterBuildSummary");
         assert_eq!(g40.class, "PaperNativeSpigotLoadOrderDependency");
         assert_eq!(g40.method, "newRemovedCountSummary");
+        // TASK-61 old-member pins: ids 18/19/20 = the OLD legs, same class +
+        // descriptor as their optimized counterparts (parity-through-
+        // dispatcher requires both legs to be dispatcher-expressible).
+        let g35o = &BATCH_KERNELS[18];
+        let g39o = &BATCH_KERNELS[19];
+        let g40o = &BATCH_KERNELS[20];
+        assert_eq!((g35o.id, g39o.id, g40o.id), (18, 19, 20));
+        assert_eq!((g35o.shape, g39o.shape, g40o.shape), (Shape::D, Shape::E, Shape::F));
+        assert_eq!(g35o.class, g35.class);
+        assert_eq!(g35o.sig, g35.sig);
+        assert_eq!(g35o.method, "oldFillArraySummary");
+        assert_eq!(g39o.class, g39.class);
+        assert_eq!(g39o.sig, g39.sig);
+        assert_eq!(g39o.method, "oldLoadAfterBuildSummary");
+        assert_eq!(g40o.class, g40.class);
+        assert_eq!(g40o.sig, g40.sig);
+        assert_eq!(g40o.method, "oldRemovedCountSummary");
     }
 
     /// The v2 scalar-plane packing rule (header docs): op i owns
@@ -1747,11 +1764,12 @@ mod tests {
     /// The abiVersion word the G4 Java helper mirrors (ImprovedNoiseBatchOps
     /// EXPECTED_ABI): a drift between the Rust table and the embedded Java
     /// constant degrades the site at its FIRST flush — pinned here so the
-    /// bump is a conscious two-sided change. (v3: 196_626 = (3<<16)|18.)
+    /// bump is a conscious two-sided change. (v3: 196_626 = (3<<16)|18;
+    /// v4: 262_165 = (4<<16)|21 — TASK-61 old-member wiring.)
     #[test]
     fn abi_word_is_the_helper_mirror() {
-        assert_eq!(ABI_WORD, 196_626);
-        assert_eq!((3i32 << 16) | 18, ABI_WORD);
+        assert_eq!(ABI_WORD, 262_165);
+        assert_eq!((4i32 << 16) | 21, ABI_WORD);
     }
 
     // ---- wire v3 (S7-14): ref-plane shapes D/E/F -----------------------
@@ -1759,7 +1777,8 @@ mod tests {
     /// The v3 wave-1 kernels must be ALLOWED by the kernel-policy gate in
     /// EVERY mode (PROVEN_WINS carries the batch-surface PARITY entries —
     /// otherwise the shipped surface is dead for the whole new shape), and
-    /// their ref-plane ownership matches the shape widths.
+    /// their ref-plane ownership matches the shape widths. TASK-61: the old
+    /// legs (18/19/20) inherit the same guarantee.
     #[test]
     fn wave1_v3_kernels_allowed_with_ref_plane() {
         use crate::kernel_policy::PolicyMode;
@@ -1767,6 +1786,9 @@ mod tests {
             (15usize, Shape::D, 4usize),
             (16, Shape::E, 1),
             (17, Shape::F, 3),
+            (18, Shape::D, 4),
+            (19, Shape::E, 1),
+            (20, Shape::F, 3),
         ] {
             let k = crate::batch_table::kernel_by_id(idx).expect("wave-1 v3 kernel");
             assert_eq!(k.shape, shape);

@@ -67,7 +67,7 @@ B.7 Stage 0 checklist: TASK-24 scratch reuse ✅ (`28ad646` + BATCH_FLOOR_REPORT
 BatchFloorBench exists ✅ (`bench/batch/`, K∈{1,8,16,64,256}); §B.5 hard guard ✅ (this session);
 **wave-1 shapes: g42 ✅ (G3 spike — shape C `(IIIII[I[J)I`, table id 14, batchable via
 `--kernels 14`) + g9 A′ ✅ (TASK-48, ids 12/13) + g35/g39/g40 ✅ (S7-14 — wire v3 ref plane,
-shapes D/E/F, table ids 15/16/17, batchable via `--kernels 15,16,17`; contract probe-verified
+shapes D/E/F, table ids 15/16/17 (TASK-61 v4: old legs 18/19/20 — parity-through-dispatcher, ABI word 262165), batchable via `--kernels 15,16,17`; contract probe-verified
 count-written, `WAVE1_V3_SHAPES_REPORT.md`) — **G3 FULLY CLOSED; every wave-1 signature is now
 expressible** (see §8 G3).**
 
@@ -84,7 +84,7 @@ Expected verify markers (PASS = all present, FAIL patterns absent):
 
 ```bash
 grep -E 'batch: rollout gate CRUSSTY_BATCH=unset -> mode=off' /home/z/server/logs/console.log
-grep -E 'batch: 15 kernels resolved, run\(\) \+ abiVersion\(\) registered on crussty/batch/PaperNativeBatchDispatch' /home/z/server/logs/console.log
+grep -E 'batch: [0-9]+ kernels resolved, run\(\) \+ abiVersion\(\) registered on crussty/batch/PaperNativeBatchDispatch'  # count grows with the table (21 since TASK-61) /home/z/server/logs/console.log
 grep -E 'native surface live: 98 bridge classes, 283 natives registered \(0 symbols unresolved\)' /home/z/server/logs/console.log
 # audit pass additionally: '[crussty-plugin] kernel-policy: audit mode: decisions are logged'
 grep -E 'kernel-policy:.*WIRE|kernel-policy:.*REGISTER' /home/z/server/logs/console.log

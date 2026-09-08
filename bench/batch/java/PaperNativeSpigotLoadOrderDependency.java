@@ -8,8 +8,13 @@
  *  (I[Ljava/lang/Object;[J)I — P500 g39, PARITY pair 1.0034, baseline.tsv:58;
  *  newRemovedCountSummary (I[Ljava/lang/Object;[Ljava/lang/Object;
  *  [Ljava/lang/Object;I[J)I — P500 g40, PARITY pair 0.9955, baseline.tsv:59).
- *  Only the OPTIMIZED members are wired (g42 precedent). */
+ *  TASK-61 (2026-09-09): old members (oldLoadAfterBuildSummary /
+ *  oldRemovedCountSummary, native/JNI_EXPORTS.manifest:211/213) declared so
+ *  OldMemberParityProbe can close the dispatcher-vs-direct loop on BOTH legs
+ *  of each pair. Symbols live in libpaper_native_jni.so (unchanged lib). */
 public final class PaperNativeSpigotLoadOrderDependency {
     public static native int newLoadAfterBuildSummary(int a0, Object[] a1, long[] a2);
     public static native int newRemovedCountSummary(int a0, Object[] a1, Object[] a2, Object[] a3, int a4, long[] a5);
+    public static native int oldLoadAfterBuildSummary(int a0, Object[] a1, long[] a2);
+    public static native int oldRemovedCountSummary(int a0, Object[] a1, Object[] a2, Object[] a3, int a4, long[] a5);
 }

@@ -390,6 +390,30 @@ pub static PROVEN_WINS: &[ProvenKernel] = &[
         verdict: "P500 PARITY (batch surface)",
         evidence: "src/batch_table.rs id17 (jni_table.rs:212), shape F (I[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;I[J)I — wave-1 descriptor-parser port (BATCH_API_PROPOSAL §4/§5); P500 PARITY pair old/new 0.9955 (baseline.tsv:59), direct 88.6 ns (p500_expected_summary.tsv §40)",
     },
+    // --- TASK-61 old-member wiring (S7-14 NEXT-3): the OLD legs of the three
+    // wave-1 parity pairs enter the table (ids 18/19/20) so the dispatcher can
+    // express BOTH legs — parity-through-dispatcher (bench/batch/java/
+    // OldMemberParityProbe.java). Same PARITY grade as ids 15/16/17: still
+    // Allow (batch-dispatch infrastructure), NOT a hot-path swap/promotion
+    // candidate (batch loses on D/E/F floors, S7-14 floor numbers).
+    ProvenKernel {
+        class: "PaperNativeRangeChoice",
+        kernel: "oldFillArraySummary",
+        verdict: "P500 PARITY (batch surface, old member)",
+        evidence: "src/batch_table.rs id18 (jni_table.rs:79), shape D, same descriptor as id15; P500 anchor 81.4 ns (baseline.json:22), pair old/optimized 1.0025 (baseline.tsv:55); wired TASK-61 for parity-through-dispatcher (bench/batch/results/OLD_MEMBER_PARITY_2026-09-09.md)",
+    },
+    ProvenKernel {
+        class: "PaperNativeSpigotLoadOrderDependency",
+        kernel: "oldLoadAfterBuildSummary",
+        verdict: "P500 PARITY (batch surface, old member)",
+        evidence: "src/batch_table.rs id19 (jni_table.rs:211), shape E, same descriptor as id16; pair old/new 1.0034 (baseline.tsv:58); wired TASK-61 for parity-through-dispatcher",
+    },
+    ProvenKernel {
+        class: "PaperNativeSpigotLoadOrderDependency",
+        kernel: "oldRemovedCountSummary",
+        verdict: "P500 PARITY (batch surface, old member)",
+        evidence: "src/batch_table.rs id20 (jni_table.rs:213), shape F, same descriptor as id17; pair old/new 0.9955 (baseline.tsv:59); wired TASK-61 for parity-through-dispatcher",
+    },
     // --- P500 WIN + live-verified promotions (TASK-53, PROVEN_WINS_SYNC §4.2)
     // Lifecycle (docs/KERNEL_POLICY.md §Lifecycle): P500 WIN (twice
     // reproduced: 2026-09-08 rerun + 2026-09-09 S7-9 fresh full rerun) +

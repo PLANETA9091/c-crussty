@@ -27,7 +27,7 @@ import java.util.Arrays;
  * Coverage = the FULL batch table (closed table, batch_table.rs): ids 0-9
  * shape A (I[J)I, scalar + long[64] dst, counts[i] = OUTPUT capacity =
  * 64 = OUT_SCRATCH_CAP; ids 10-11 shape B ([J[J)J, counts[i] = INPUT length,
- * 1 result long/op). Wire v3 (S7-14): 18 kernels — this harness sweeps the
+ * 1 result long/op). Wire v3 (S7-14): 18 kernels; TASK-61 (v4): 21 (old legs 18/19/20) — this harness sweeps the
  * historical GROUP_IDS subset (shape A/B) with EMPTY refArgs; the wave-1
  * ref-plane shapes D/E/F are covered by BatchFloorBench --kernels 15,16,17.
  *
