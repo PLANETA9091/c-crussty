@@ -235,3 +235,20 @@ shouldTickBlocksAt guard (SparklyPaper evidence), CRaC whole-boot spike
 honest), dfc-on-Paper, Graal-JIT A/B (+23% geomean vs C2), JIT-heuristic
 formalization (HugeMethodLimit=8000 / TypeProfileWidth=2 → GO). OUT: Leyden
 (conflicts with weaving), Native Image, FFM-on-21 (preview), GPU worldgen.
+
+## §3.2 MEASURED ADDENDUM 2 (TASK-80, 2026-09-08) — fluid-push guard closed by live A/B
+
+The top-1 entity-path candidate (updateFluidHeightAndDoFluidPushing, 5.7%)
+was IMPLEMENTED (both agents converged: agent-7625532f built the whole-body
+hook; S7-25 redesigned the guard key to quantized cell bounds after their
+pilot proved exact-bits keys never hit for ground items) and MEASURED live:
+hit rate 96.4% (falsifier counters), server-window delta +4.8% toward the
+guard with p_two=0.6905 (n=5/arm) — indistinguishable from zero
+(bench/e2e/results/FLUID_AB_2026-09-08.md). **Fluid-push same-state guard =
+MEASURED NO-GO** — the 6th measured-refuted branch, closed with working-code
+evidence. The remaining same-state candidates (#2 checkInsideBlocks, #3
+noCollision) share the same physics: guard-key re-verification must re-read
+per-cell state, so without an O(1) engine version signal (engine-touch, per
+S7-25) their ceiling is the same sub-noise class. The x1000 hunt's
+entity-path same-state-guard family is now closed on measurement, not
+estimate.
