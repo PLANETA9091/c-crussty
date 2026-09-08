@@ -19,21 +19,6 @@ package net.minecraft.world.level.levelgen.synth;
  * member here would surface as a runtime NoSuchField/NoSuchMethodError in
  * the kernel loader, so the stubs must stay shape-accurate.
  */
-final class ImprovedNoise {
-    public final double xo = 0.0D;
-    public final double yo = 0.0D;
-    public final double zo = 0.0D;
-    public double noise(double x, double y, double z, double yScale, double yMax) {
-        return 0.0D;
-    }
-}
-
-final class PerlinNoise {
-    public static double wrap(double v) {
-        return 0.0D;
-    }
-}
-
 final class PaperNativeImprovedNoise {
     private PaperNativeImprovedNoise() {}
     static native long nativeBuildHandle(byte[] p, double xo, double yo, double zo);
@@ -44,10 +29,6 @@ final class PaperNativeImprovedNoise {
     static native int nativeFillNoYScale(long handle, double[] xs, double[] ys, double[] zs, double[] out);
 }
 
-final class PaperNativePerlinNoise {
-    private PaperNativePerlinNoise() {}
-    static native long nativeBuildHandle(byte[] a0, byte[] a1, double[] a2, double[] a3, double[] a4, double[] a5, double a6, double a7);
-    static native void nativeFreeHandle(long handle);
-    static native double nativeGetValue(long handle, double x, double y, double z, double y0, double y1, boolean flag);
-    static native double nativeGetValueNoYScale(long handle, double x, double y, double z);
-}
+// ImprovedNoise / PerlinNoise / PaperNativePerlinNoise moved to PUBLIC
+// own-file stubs (same package) — NormalNoiseBatchOps (levelgen package)
+// links them cross-package, which package-private stubs cannot serve.
