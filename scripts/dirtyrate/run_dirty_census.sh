@@ -7,7 +7,7 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."   # repo root
 JDK="${JDK21:-/home/z/jdk21}"
 SERVER=/home/z/server
-JAR="$SERVER/versions/1.21.10/purpur-1.21.10.jar"
+JAR="$SERVER/versions/purpur-1.21.10.jar"   # top-level paperclip jar (self-bootstraps libraries); the versioned 1.21.10/ jar is the raw craftbukkit Main -> NoClassDefFoundError joptsimple (TASK-90 first-run lesson)
 STAMP=$(date +%Y%m%d_%H%M%S)
 OUT="bench/dirtyrate/RAW_DIRTYRATE_$STAMP"
 mkdir -p "$OUT"
