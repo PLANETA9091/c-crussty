@@ -51,11 +51,11 @@ public final class ImprovedNoiseBatchOps {
 
     /**
      * The abiVersion() word this build expects — the compile-time mirror of
-     * batch_api.rs ABI_WORD = (TABLE_VERSION<<16)|KERNEL_COUNT = 196626, v3
+     * batch_api.rs ABI_WORD = (TABLE_VERSION<<16)|KERNEL_COUNT = 262165, v3
      * (wire v3: refArgs plane + 18 kernels, S7-14). A mismatch degrades the
      * site at the first flush (B.2.2 bucket).
      */
-    static final int EXPECTED_ABI = 196626;
+    static final int EXPECTED_ABI = 262165;
 
     /** Per-site degradation flag (B.2.2): once set, single-call for the boot. */
     private static volatile boolean degraded = false;

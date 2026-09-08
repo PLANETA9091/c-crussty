@@ -363,6 +363,10 @@ This consolidates the already-measured facts into one policy statement:
 3. g35/g39/g40/g24 (plugin/config floor kernels): shapes absent from the
    table (B.4 rows 6-10) — no T can be measured before a shape lands, and
    their R-band (27-87 ns) sits below the measured batch premium anyway.
+   TASK-61 update (2026-09-09): the g35/g39/g40 shapes HAVE landed (v3,
+   ids 15/16/17) and the old legs joined at v4 (ids 18/19/20), but the S7-14
+   floor numbers (batch 5.9-10.6x WORSE on g35, 1.18-1.21x on g39/g40 at
+   every K) mean no measured T exists for them either — the vacancy stands.
 4. The G4 demonstrator site (`ImprovedNoise.noise`) intentionally carries
    **id=none**: its flush leg is the zero-op dispatcher round-trip +
    B.2.2 degrade — it MUST NOT be read as a T=16 batch-execution verdict.

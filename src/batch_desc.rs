@@ -268,7 +268,7 @@ mod tests {
     ///     — scalars 2, refs 4 (3 inputs + dst), input refs 3 == wire refs().
     #[test]
     fn batch_table_signatures_cross_check_against_the_parser() {
-        assert_eq!(BATCH_KERNELS.len(), 18, "table grew without this test");
+        assert_eq!(BATCH_KERNELS.len(), 21, "table grew without this test");
         for k in BATCH_KERNELS {
             let d = parse_sig(k.sig)
                 .unwrap_or_else(|e| panic!("kernel id {} sig {:?}: {}", k.id, k.sig, e));
