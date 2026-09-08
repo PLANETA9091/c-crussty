@@ -27,6 +27,13 @@
 #   SERVER_DIR        (default /home/z/server)
 #   JAVA_BIN          (default /home/z/jdk21/bin — previous boot used system java)
 #   CRUSSTY_BOOT_CMD  full override of the boot command (default documented above)
+#
+# KNOWN BROKEN (TASK-57, 2026-09-09, agent-7625532f — bench/e2e/results/JFR_PROFILE_2026-09-09.md §6 I1):
+#   launcher stdin forwarding does NOT deliver console commands (forceload/tps/list/stop written
+#   to the fifo never reach the server; rcon disabled in server.properties). Consequence: the
+#   shutdown mode's primary "stop via fifo" path is dead; the SIGTERM fallback is the working
+#   path (exit 143; JVM shutdown hooks run; world save intact; JFR dumponexit fires).
+#   S7-13's "graceful stop 143" was this fallback, not fifo delivery.
 #   BOOT_TIMEOUT      (default 300 s)
 #   E2E_LOG           (default $SERVER_DIR/logs/crussty_e2e_boot.log)
 #   Improved-noise patch needs CRUSSTY_NATIVE_IMPROVED_NOISE=1 exported before boot.

@@ -87,3 +87,19 @@ warrants a hot-path A/B on its own; D1/D2 should ride the same commit wave as ba
 * D2/D3/D4 — implemented earlier via TASK-43 (c-crussty 11b19c3: POLL_STATE
   bound + no-alloc-on-hit, MAIN_IDS retention, poison-recovery sweep also
   covering D4's sites). D5 remains observation-only.
+
+## Status addendum 2 (agent-7625532f, 2026-09-09 — first live JFR profile, TASK-57)
+
+* **D6 (NEW, P3, idle-CPU hygiene — measured, not implemented):** Paper's every-tick TPS accounting
+  (`moonrise TickData.getTPSAverage` → `ArrayDeque.inc` leaf) is the top main-thread leaf cluster on an
+  idle server: 142+17+23 samples ≈ **~0.13–0.17 ms/tick** (927-sample profile, 10 ms period, 544 s;
+  `bench/e2e/results/JFR_PROFILE_2026-09-09.md` §4). Dominant only because an idle main thread has
+  nothing else to run (hosting-density relevance); noise under player load. Candidate fix = moonrise
+  `TickData` window/iteration patch via the existing retransform machinery, or config-side tick-window
+  review — design-first, zero gameplay-value surface.
+* **Boot-noise opportunity (measured, F2):** the 5 s structure-ring burst at boot burns ≈2.87 CPU-s
+  in exactly the stack the closed-.so native noise bridge replaces (`ImprovedNoise.noise` 230 frame-hits,
+  `Mth.lerp3` 165 leaf). Proposal **TASK-58** (unclaimed): BOOTAB-style paired boot dormant vs
+  `CRUSSTY_NATIVE_IMPROVED_NOISE=1`, n≥5, BENCH.lock; JFR recipe validated end-to-end (report §1/§6).
+* D1–D5 statuses above unchanged. The profile's g9 leg (fillArray 0 samples) is documented in
+  `G9_WHOLE_METHOD_HOOK_DESIGN.md` §9.

@@ -62,3 +62,17 @@ The target body carries **all four Ap2 arms in one tableswitch** on `TwoArgument
 2. **Scalar-mapping documentation** (recon §3.2): record the intended `(III[J)I` mapping (and g8 flat/nested variants) in a bench README so parity work never re-derives it from `.so` strings.
 3. **Does any g9 kernel-swap win exist in the closed `.so` at all?** No mirror notes anywhere (recon §0 sources list); without one, the hook has no measurable payoff even if JFR fires.
 4. **Doc-drift backlog (doc-only):** G4 §2/§4 cite `improved_noise.rs:155-163`/`:570-574` — current master has the pristine-sighting branch at `:192-206` and `audit_wire` at `:605-609` (post TASK-53/54 rebase); refresh on the next docs wave.
+
+## 9. Measured update (TASK-57, 2026-09-09, agent-7625532f) — both blockers now MEASURED
+
+First live JFR profile of this box (544 s: boot + ~8 min idle-tick + graceful stop; dormant env;
+`bench/e2e/results/JFR_PROFILE_2026-09-09.md`): **blocker (a) resolved NEGATIVELY — stronger than
+"amplification unmet": 0 of 927 ExecutionSamples contain `fillArray` anywhere in the stack.** All
+`Ap2` traffic flows through single-value `compute()` (400+ frame-hits; top caller `Climate$Sampler.sample`,
+117) inside one 5-second boot structure-ring burst (287 noise-stack samples 01:27:21–26, then zero per
+minute-bucket). The hook target method does not run on this server/version/workload, so the ≥18.5k/tick
+bar is unsatisfiable for `fillArray` — §7's "either alone is fatal" applies, and the §8 grain question
+(§8.1) is answered empirically: the live surface is object-context `compute()`, not expressible by any
+existing batch shape. **g9 remains closed as a paper design; revisit trigger = a player-driven worldgen
+profile actually showing `fillArray` frames.** Boot-window noise cost (2.87 CPU-s per boot) is recorded
+as the native-noise boot A/B opportunity (V2 addendum, TASK-58 proposal) — orthogonal to this hook.
