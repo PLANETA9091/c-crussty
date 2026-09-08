@@ -246,9 +246,12 @@ run_one() { # $1 = idx, $2 = A|B
     # must get identical entity sets), let physics settle (guard misses during
     # fall/cache population), then measure a FIXED 30 s steady-state window
     # (stationary items = negative-guard hit path every tick, x2 tags).
-    local i sx sz dx dy
-    fifo_send "forceload add -36 -23 -34 -21" || log "$tag forceload rc=$?"
+    local i sx sz
+    fifo_send "forceload add -576 -368 -528 -320" || log "$tag forceload rc=$?"
     sleep 6
+    # summon count = DELTA (the e2e boot log accumulates across runs)
+    local summon_base
+    summon_base=$(grep -c 'Summoned new' "$LATEST" 2>/dev/null)
     for ((i = 0; i < 400; i++)); do
         sx=$(awk -v i="$i" 'BEGIN{printf "%.2f", -547.2 + (i % 20) * 0.4}')
         sz=$(awk -v i="$i" 'BEGIN{printf "%.2f", -339.2 + int(i / 20) * 0.4}')
@@ -256,7 +259,7 @@ run_one() { # $1 = idx, $2 = A|B
             || log "$tag summon $i rc=$?"
     done
     local summoned
-    summoned=$(grep -c 'Summoned new item' "$LATEST" 2>/dev/null || true)
+    summoned=$(( $(grep -c 'Summoned new' "$LATEST" 2>/dev/null) - summon_base ))
     log "$tag summoned=${summoned:-0}/400"
     printf '%s\n' "$summoned" >"$RAW/${tag}_summoned.txt"
     sleep 12   # physics settle (both arms identical)
@@ -331,7 +334,7 @@ run_jfr_proof() { # non-timed arm-B run with JFR (mechanism proof, TASK-57 recip
     local fifo; fifo=$(cat "$LOGS_DIR/crussty_e2e.state" 2>/dev/null); FIFO=$fifo
     # entity-load profile (same shape as the timed runs)
     local i sx sz
-    fifo_send "forceload add -36 -23 -34 -21"
+    fifo_send "forceload add -576 -368 -528 -320"
     sleep 6
     for ((i = 0; i < 400; i++)); do
         sx=$(awk -v i="$i" 'BEGIN{printf "%.2f", -547.2 + (i % 20) * 0.4}')

@@ -55,6 +55,12 @@ static READY: AtomicBool = AtomicBool::new(false);
 /// Global ref to the kernel Entity classloader, captured at activation.
 /// 0 = not captured yet.
 static KERNEL_LOADER: AtomicUsize = AtomicUsize::new(0);
+/// Global ref to the defined bridge class (self-test driver). The JNI
+/// FindClass from a native attachment resolves via the SYSTEM loader and
+/// cannot see classes defined into the kernel loader's runtime package
+/// (TASK-80 lesson: find_class(FluidPushGuardHook) failed on the live
+/// armed boot even though define_class succeeded moments earlier).
+static HOOK_CLASS: AtomicUsize = AtomicUsize::new(0);
 
 /// Original class bytes captured from the FIRST sight of the class — its
 /// original load goes through the byte hook while READY=false, so the load
@@ -237,6 +243,13 @@ pub fn activate() {
             for (name, bytes) in HOOK_EMBEDS {
                 match env.define_class(name, gref, bytes) {
                     Some(c) => {
+                        if name == HOOK_NAME {
+                            // Promote to a GLOBAL ref BEFORE the local ref is
+                            // deleted — a stored local ref would dangle after
+                            // delete_local_ref (frame-local handle table).
+                            let g = env.new_global_ref(c);
+                            HOOK_CLASS.store(g as usize, Ordering::SeqCst);
+                        }
                         env.delete_local_ref(c);
                         eprintln!("[crussty-plugin] fluid_guard: defined {name} in kernel loader");
                     }
@@ -427,27 +440,30 @@ fn resource_stream_capture() -> Option<Vec<u8>> {
 /// contract is identity-based and needs no Entity typing.
 fn bridge_selftest() {
     let ok = cplug_sdk::jni_util::with_attached(|env| {
-        let Some(hook) = env.find_class(HOOK_NAME) else {
-            crate::clear_exception(env);
-            eprintln!("[crussty-plugin] fluid_guard: self-test: find_class({HOOK_NAME}) failed");
+        // Use the stored GLOBAL ref captured at define_class — JNI FindClass
+        // from a native attachment resolves via the system loader and cannot
+        // see runtime-package classes defined into the kernel loader (live
+        // armed-boot evidence: "self-test: find_class(...) failed" while the
+        // hook was armed and serving).
+        let stored = HOOK_CLASS.load(Ordering::SeqCst);
+        if stored == 0 {
+            eprintln!("[crussty-plugin] fluid_guard: self-test: no stored hook class ref");
             return false;
-        };
+        }
+        let hook = stored as jni::jclass;
         let Some(mid) = env.get_static_method_id(hook, "selfTest", "()Z") else {
             crate::clear_exception(env);
-            env.delete_local_ref(hook);
             return false;
         };
         // Static boolean call via the raw vtable (the SDK exposes no
         // static-boolean helper; same pattern as the CallStatic* calls in
         // perlin_noise's self-test).
         let raw = env.raw();
-        let ok = unsafe {
+        unsafe {
             let fn_table = &(**raw);
             let call_bool = fn_table.CallStaticBooleanMethodA;
             (call_bool)(raw, hook, mid, [].as_ptr()) != 0
-        };
-        env.delete_local_ref(hook);
-        ok
+        }
     });
     match ok {
         Some(true) => eprintln!(
