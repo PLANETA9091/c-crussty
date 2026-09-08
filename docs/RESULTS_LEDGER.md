@@ -498,3 +498,17 @@ TASK-83's "JIT-эвристики (HugeMethodLimit=8000 → GO)" queue item clos
 | Consequence 3 | New unbanked observation: `SimplexNoise.dot` = pure-Java leaf 5.4-6.2% in ALL FOUR arms (not bridged, survives armed). Future SimplexNoise kernel candidate MUST be batch-bridged from day one + warm-regime P500 (§21 protocol). |
 | Status | TASK-105 closed (mechanism confirmation banked). TASK-100 NEXT queue: cold-protocol reproduction arm, Graal soak, OPT_ARCH R3 regime-recheck remain open. | 
 * Author: agent-7625532f. Evidence class: MEASURED LIVE A/B + JFR profile attribution, 4 runs, re-runnable analyzer scripts/task105_jfr_analyze.sh. Report: bench/graal_ab/results/TASK105_JFR_MECH_2026-09-09.md. Raw: bench/graal_ab/RAW_TASK105/.
+
+## §23 ADDENDUM-17 (TASK-106, 2026-09-09, agent-7625532f) — cold-protocol reproduction: TASK-74 −11.1% does NOT replicate (INVERTED +14.0%); compile-avoidance premise refuted; PROMOTION FREEZE extends to ALL REGIMES
+
+| Field | Value |
+|---|---|
+| Question | TASK-100 NEXT#2: does TASK-74's banked −11.1% cold-burst win replicate under the modern harness (TASK-100/105 protocol family)? |
+| Protocol | 2 arms x n=2 position-balanced (CD/CA, CA/CD), Temurin C2, NO warm forceload (noise classes + JIT compile inside measured 128-chunk burst), post-hoc arming verification (both CA runs armed-posthoc-verified; loud-abort on absence), same jcmd-scoped JFR windows, per-run restore, BENCH-MUTEX + journal. Gates pre-registered in CLAIMS.md before any run. |
+| Headline | **Armed 39.55 mean CPU-s vs dormant 34.7 = +14.0% WORSE on cold, full separation (35.5 < 38.6), BOTH pairs → pre-registered REPLICATION gate FAILED, result INVERTED.** |
+| Mechanism refuted | ZERO ImprovedNoise/PerlinNoise compilations completed in ANY of the 4 cold bursts (method-name search across all jdk.Compilation events; format verified against sample) — C2 never reaches the giant methods within the window in EITHER arm → dormant pays no giant-method compile cost → nothing for the bridge to avoid. Armed compiles MORE: 54/44 events vs 43/42, C2 time 17.6/15.1s vs 13.0/12.4s (bridge wrapper = compile surcharge, not avoidance). Worker-in-native armed 34/19 vs dormant 0 (bridge active). |
+| Environment drift | TASK-74-era dormant cold = 62 CPU-s/128 chunks vs 35.5/33.9 today — dormant cold cost ~halved across environment generations; old headroom erased, bridge costs persisted. |
+| Verdict | Regime-correction of TASK-74: −11.1% superseded-by-environment (provenance kept, honestly measured on ITS rig; citing it in future designs = protocol violation — cite §22/§23). Armed kernels worse in BOTH regimes on current stack: warm +35%/+9.2%-JFR (§21/§22), cold +14.0% (§23). Kernel-level P500 micro-wins unaffected. |
+| Consequence | **PROMOTION FREEZE extends to ALL REGIMES.** Re-open = batch/array bridge + fresh warm-AND-cold A/B. New gate guidance: cheap cross-generation re-check before promoting multi-tick-old measurements. SimplexNoise.dot candidate line stands (batch-bridged day one, warm+cold P500). |
+| Status | TASK-106 closed. TASK-100 NEXT queue: Graal soak server-wide, OPT_ARCH R3 regime-recheck remain. |
+* Author: agent-7625532f. Evidence class: MEASURED LIVE A/B + JFR attribution, 4 runs. Report: bench/graal_ab/results/TASK106_COLD_REPRO_2026-09-09.md. Raw: bench/graal_ab/RAW_TASK106/.
