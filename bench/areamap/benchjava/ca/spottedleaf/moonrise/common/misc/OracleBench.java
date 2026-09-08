@@ -58,6 +58,14 @@ public final class OracleBench {
 
     static int failures = 0;
     static boolean realMode;
+    /** TASK-64 variant C: when `-Dcrussty.areamap.budget=true` the offered
+     *  scratch capacity is the BUDGETED policy (min(cap, 2·n) adaptive, see
+     *  area-map/budget-ca/.../SingleUserAreaMapOpsBudget.java), so the legacy
+     *  grow contract assert (cap >= maxOps) does not apply; the required
+     *  invariant collapses to roomOk (offered >= actual diff — a drop is a
+     *  real fault: a failed/rejected retry). Default (property absent):
+     *  byte-identical legacy behavior. */
+    static boolean budgetMode;
 
     // ---------------- classification flags ----------------
     static boolean anyStubDrop   = false;
@@ -179,7 +187,7 @@ public final class OracleBench {
         // 3) capacity actually offered for THIS call (post-run probe)
         final int  cap      = offeredCapacity();
         final long maxBound = maxOpsBound(fd, td);
-        final boolean capOk  = cap >= maxBound;   // bridge grow contract
+        final boolean capOk  = budgetMode || cap >= maxBound;   // legacy grow contract (not applicable budgeted)
         final boolean roomOk = cap >= naiveN;     // stub physically could not drop
 
         // 4) actual multiset + fault classification
@@ -191,7 +199,7 @@ public final class OracleBench {
         stale  |= hasZero(aA, eA) || hasZero(aR, eR);         // emitted rows naive does not contain
         missing |= exceeds(eA, aA) || exceeds(eR, aR);        // naive rows never emitted
 
-        if (!roomOk && !realMode) anyStubDrop = true;
+        if (!roomOk && !realMode) anyStubDrop = true;   // budgeted fake: a drop = broken retry; parity already counts the failure
         if (dup)    anyDuplicates = true;
         if (stale)  anyStale = true;
 
@@ -215,7 +223,8 @@ public final class OracleBench {
         }
         System.out.println(stream + "\t" + d + "\t" + call + "\t" + naiveN + "\t" + cap
                 + "\t" + mapSum(eA) + "/" + mapSum(eR) + "\t" + mapSum(aA) + "/" + mapSum(aR)
-                + "\t" + (capOk ? "capOK" : "CAP<MAXOPS") + "\t" + res);
+                + "\t" + (budgetMode ? (roomOk ? "budgetOK" : "BUDGET<NAIVEN") : (capOk ? "capOK" : "CAP<MAXOPS"))
+                + "\t" + res);
         if (!capOk) failures++;
     }
 
@@ -342,8 +351,10 @@ public final class OracleBench {
     // ---------------- main ----------------
     public static void main(final String[] args) throws Exception {
         realMode = System.getProperty("crussty.native") != null;
+        budgetMode = Boolean.parseBoolean(System.getProperty("crussty.areamap.budget", "false"));
         if (realMode) System.load(System.getProperty("crussty.native"));
-        System.out.println("mode\t" + (realMode ? "REAL native (.so)" : "FAKE native (counting stub)"));
+        System.out.println("mode\t" + (realMode ? "REAL native (.so)" : "FAKE native (counting stub)")
+                + " + " + (budgetMode ? "BUDGETED scratch (TASK-64 variant C)" : "legacy cap scratch"));
         System.out.println("stream\td\tcall\tnaiveOps\tcapOps\texpA/expR\tactA/actR\tcapCheck\tresult");
 
         initReflection();
