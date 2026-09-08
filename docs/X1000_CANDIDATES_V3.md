@@ -338,3 +338,16 @@ pooled n=5/arm **cpu −12.5% median, full sample separation (p≈0.008)**, boot
 **MEASURED GO as an operator-level lever** (JDK swap, no code, composes with all kernel channels);
 NOT an x1000 same-state win — ledger unaffected. Version-confound third arm queued —
 bench/graal_ab/results/GRAAL_LOADED_AB_2026-09-09.md.
+
+### §6.7 Graal follow-up + noise-wiring regime discovery (TASK-100, 2026-09-09, agent-7625532f)
+
+Version-confound third arm REFUTED (GraalVM-build C2 ≈ Temurin C2, +0.2% mean) — the
+−12.5% is the Graal JIT. Composability arm produced a bigger find: **armed noise
+kernels regress +35% (full separation, both JITs) on JIT-warm bursts**, contradicting
+the banked TASK-74 −11.1% which is now understood as a COLD-burst result (giant-method
+compilation avoided vs per-call bridge cost dominating once the Java path is
+compiled+inlined). PROMOTION FREEZE on live noise wiring for warm servers; kernel-level
+P500 wins unaffected. Full data/analysis: bench/graal_ab/results/TASK100_GRAAL_FOLLOWUP_2026-09-09.md,
+ledger §21 ADDENDUM-12. The x1000 lesson generalized: a kernel-level win plus a live
+A/B win measured in one regime does not transfer to the other regime — gates must
+pin the JIT warm-up state of the workload they certify.

@@ -466,3 +466,18 @@ TASK-83's "JIT-эвристики (HugeMethodLimit=8000 → GO)" queue item clos
 - Premise also invalid: `DontCompileHugeMethods` defaults to FALSE on product builds — the default configuration does NOT enforce an interpreter-only ceiling for huge methods (the flag family only creates a ceiling when DontCompileHugeMethods=true, which would be the wrong direction entirely).
 - VERDICT: channel OUT — no deployable flag lever exists on the deployment JVM; the GO label in TASK-83 was an architecture-paper artifact (R3 mining assumed product-flag availability; the same assumption killed FFM-on-21 there). Zero boots burned — the pre-registered flag-acceptance gate (claimed BEFORE any boot) did its job, consistent with the TASK-90 fail-fast tradition.
 - Re-open: only if the campaign ever ships a custom/debug JVM build (out of scope — operator-level JDK swap keeps C2/Graal product builds).
+
+## §21 ADDENDUM-12 (TASK-100, 2026-09-09, agent-7625532f) — Graal follow-up: version confound REFUTED; noise-wiring REGIME DISCOVERY (warm-burst regression) → promotion freeze
+
+* Author: agent-7625532f. Evidence class: MEASURED LIVE A/B, 25 runs, 9 arms, paired warm-protocol burst, full arming-evidence gates. Report: bench/graal_ab/results/TASK100_GRAAL_FOLLOWUP_2026-09-09.md. (ADDENDUM-11 number reserved for TASK-98/S7-41 bank-correction per keep-both convention.)
+
+| Item | Result | Evidence |
+|---|---|---|
+| Version confound (TASK-96 queued third arm) | **REFUTED** — GraalVM-build C2 vs Temurin C2: means 17.47 vs 17.43 CPU-s (+0.2%), full sample interleave, no separation → the banked −12.5% is the Graal JIT proper; TASK-96 GO stands without the build caveat | report §2 |
+| Graal win robustness | replicates within-session across all three agent states (−11.5…−13.9% means) — NOT a cold-compile artifact | report §2 |
+| Engine overhead (agent attached, kernels dormant) | free-to-slightly-negative under both JITs (n=3, inside noise) — dormant posture safe | report §3 |
+| **Noise-wiring regime discovery** | armed kernels on a WARM burst = **+35% CPU (full separation, both JITs, 6v6 p≈0.001)**; solo improved +22%, solo perlin +40% — contradicts banked TASK-74 −11.1% which was a COLD-burst measurement (no pre-burst JIT warm-up; dormant median 62 CPU-s/128 chunks vs warm 15.8/81) | report §3 |
+| Mechanism | JIT inlining-barrier cuts both ways: cold burst → bridge skips giant-method compilation and wins; warm burst → C2 has compiled+inlined the whole method, per-call bridge cost (JNI + striped identity map + Handle lifecycle) dominates and loses | report §3 |
+| Consequence | **PROMOTION FREEZE** on PerlinNoise/getValueWholeBody + ImprovedNoise/noiseWholeBody live wiring for warm servers; TASK-74 verdict gets a regime addendum (not retraction); re-open only via cheap-path design ≥3%-of-tick on warm regime or a production burst-cold workload census | report §4 |
+| Operator guidance | best measured state: Graal + dormant module (GAD 14.07 mean CPU-s, −19% vs Temurin no-agent); Graal × armed kernels = mechanical GO, performance NO under warm regime | report §4 |
+| Status | TASK-100 resolved: composability measured, regime boundary established; next: JFR warm-burst diff + cold-protocol reproduction arm | re-open: report §4 criteria |
