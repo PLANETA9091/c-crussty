@@ -229,3 +229,17 @@ Work Log:
 
 Stage Summary:
 - Первый живой профиль бокса: g9 закрыт ИЗМЕРЕНИЕМ (обе ноги), рецепт JFR-профилирования валидирован и переиспользуем (report §1/§6), два новых кандидата (TASK-58 boot-noise A/B, D6 TPS-deque P3), stdin-инфра находит следующий цикл. Открытых клеймов нет. Кандидаты дальше: TASK-58 (boot A/B noise-native), stdin/rcon починка (или собственная задача), новые профили под целевой нагрузкой (клиент-бот), D6 design.
+
+---
+## SESSION cron 09:40+08 — TASK-58 done: boot A/B noise-native REFUTED (mechanism + measurement) — 2026-09-09T02:2xZ — agent-7625532f
+
+Work Log:
+- Старт: worklog+CLAIMS чисты, TASK-58 свободен (TASK-57 F2 proposal) → клейм (07d8f55, attempt 1).
+- Гипотеза TASK-57 F2: structure-ring бёрст 2.87 CPU-s = стек native noise bridge → boot A/B может показать win. Проверка механики: armed-маркер-порядок в B-буте — 'forcing kernel load (1..7)' → 'server booted, defining bridge' → define → computed patch (5691→5403) → 'hook armed rc=0' → self-test — ВСЁ после Done-маркера → pre-Done бёрст обязан быть Java (boot-gated arming by design) → arm-invariance предсказана.
+- Измерение (live-dir paired protocol, т.к. throwaway stall — см. ниже): 10 бутов /home/z/server через e2e_orchestrate, interleaved A/B n=5/arm, BENCH.lock per-run, метрика Paper self-reported Done из latest.log. A dormant median 16.738s (16.038-16.938), B armed 16.542s (16.113-16.777): delta -0.196s (-1.2%), ranges overlap 100% → arm-invariant как предсказано. Arm-validation: armed+self-test 4/5 (B2 racy-kill); capture-строки 0 = pristine/resource-stream path.
+- THROWAWAY-НАХОДКА: canonical bootab не может хостить armed-эксперименты (B-1: worker не дошёл до 'server booted' за окно; kernel-side здоров — 283 natives/0 unresolved/nativeCheck=1); armed-throwaway = post-Done grace window и всё равно post-Done арминг. Производный bench/bootab/run_bootab_noise.sh (normal worldgen, FIXED seed 90919058, vd=2) закоммичен для будущих worldgen-прогонов, в вердикте не использовался.
+- КОРРЕКЦИЯ ЗАПИСИ I2 (TASK-57): e2e courtesy guard flock-based НЕ existence-based (:162 'flock -n file true'; flock(1) создаёт файл — side effect наблюдался, 10 бутов прошли с файлом на месте) — stale-файл не блокирует, удаление было необязательным.
+- Docs: bench/bootab/results/BOOTAB_NOISE_2026-09-09.md (6 секций) + HOTSPOT_CANDIDATES_V2 addendum (TASK-58 proposal → EXECUTED/REFUTED) + G9 §9 pointer. Src 0 изменений. Push 70597fb attempt 1; CLAIMS done 9cc2d0a + reverify OK.
+
+Stage Summary:
+- TASK-58 ЗАКРЫТ честным negative: boot-канал native-noise опровергнут дважды (механизм + n=5/arm). 2.87 CPU-s pre-Done бёрст остаётся реальной неадресуемой стоимостью (адресация = activation-gate redesign — НЕ предложена). Post-Done noise routes native (proven каждым armed boot). Открытых клеймов нет. Кандидаты: клавиатура новых профилей под целевой нагрузкой (клиент-бот/stdin-починка), D6 (P3), activation-gate redesign (только по явному запросу владельца).
