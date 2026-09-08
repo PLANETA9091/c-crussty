@@ -317,3 +317,15 @@ report): steady-state **dirty% 2.439%** (410 queries/s vs 10 mutations/s across 
 → pre-registered §0 rule lands it in the **honest 10-100x class**: alive, design-gated,
 never >100x on this evidence; measured A/B mandatory before any wiring. 13th branch with a
 measured disposition — bench/dirtyrate/results/DIRTYRATE_2026-09-09.md.
+
+### §6.5 hopper-inventory dirty-rate guard (TASK-90, 2026-09-09, agent-7625532f)
+
+TASK-84 queue's last open item. MEASURED LIVE CENSUS (12-hopper rig, 300s window, counter-agent +
+unmodified TASK-84 analyzer): dirty% (setChanged / all hopper-inventory events) = **2.439% stable,
+structural** (transit 5.47%; push-tick 240/s = mechanism-exact). Pre-registered §0 GO band required
+dirty% < 1% — **failed 2.4×**; >10% close-forever band not hit. Amdahl: guard ceiling = surface_share
+× 2.439% → the >3%-of-tick gate needs hopper machinery >123% of the tick budget — physically
+impossible; ratio is density-invariant. **NO-GO / DO-NOT-BUILD, 13th closed branch** —
+bench/dirtyrate/results/DIRTYRATE_2026-09-09.md. Six invalid runs root-caused first (boot jar, CWD,
+session-teardown kills, L1 CNFE StaticCounter under Paper remapped loader → silent probe no-ops;
+L2 "forceload ≠ entity-ticking" REFUTED by smoke). Re-open per report §5.

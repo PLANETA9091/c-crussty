@@ -330,3 +330,15 @@ bridge stays default-OFF until that lands.
 | Steady state | queries 12,300/30s vs mutations 300/30s = **dirty% 2.439%** (1-10% band of the pre-registered §0 rule) | analyzer output, run RAW_DIRTYRATE_20260908_175619 |
 | Verdict | **honest 10-100x class — design-gated**: not >100x (dirty not <1%), not refuted (not >10%); any build needs a measured live A/B (TASK-80 lesson); secondary Amdahl: hopper machinery CPU share itself small on vanilla profiles, scales with hosting density | DIRTYRATE_2026-09-09 §3, tooling doc §0 |
 | Status | 13th branch to a MEASURED disposition; TASK-90 closed (verdict recorded, candidate parked with re-open criteria) | re-open: dirty% <1% under player profile OR hopper machinery ≥3% of tick (hosting density) |
+
+## §13 ADDENDUM-8 (TASK-90, 2026-09-09, agent-7625532f) — hopper dirty-rate census: NO-GO at the measured layer
+
+* Author: agent-7625532f. Evidence class: MEASURED LIVE CENSUS (vanilla boot, ASM counter-agent, 300s hopper-active window, unmodified TASK-84 analyzer, sanity-gated instrumentation).
+
+| Item | Result | Evidence |
+|---|---|---|
+| dirty% (mutation share of hopper-inventory events) | **2.439% stable / structural** (12,300 query vs 300 mutation per 30s; transit 5.467%) | bench/dirtyrate/RAW_DIRTYRATE_20260908_175619/ + analyzer outputs |
+| Mechanism validity | push-tick 240/s = 12 hoppers × 20 tps exactly; counters event-stable across 10 windows; sanity gate passed pre-window | DIRTYRATE_2026-09-09.md §1 |
+| Verdict | **NO-GO / DO-NOT-BUILD** — pre-registered GO band (<1% AND machinery≥90%) failed 2.4× on dirty%; Amdahl: >3%-of-tick gate needs surface >123% of tick budget (impossible); ratio density-invariant | report §4 |
+| Tooling archaeology | 6 invalid runs root-caused: boot jar, server CWD, session-teardown kills, **L1: CNFE StaticCounter under Paper remapped loader → silent probe no-ops (fixed -Xbootclasspath/a)**, L2 forceload-ticking hypothesis REFUTED by smoke | report §2, scripts/dirtyrate/smoke_ticking.sh |
+| Status | 13th closed x1000 branch; TASK-84 queue fully drained | re-open: report §5 (dirty%>10% on real-server census / JFR ≥3% / engine change) |
