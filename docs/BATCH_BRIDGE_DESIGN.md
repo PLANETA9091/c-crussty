@@ -166,3 +166,18 @@ the P500 bar for the first time in the noise channel.
   with the full ladder (per-value TASK-105/106, leaf-fill v1, cell v2,
   array-interpreter v3) documented as measured/refuted.
 * Effort: ~15 node types + tree walker + selftest + A/B = 2-3 ticks.
+
+### 7.5 v3 node inventory (kernel jar 1.21.10, `DensityFunctions$*`)
+
+Concrete leaf/batchable first tier: Noise, ShiftA/B (ShiftNoise family),
+Constant, YClampedGradient, BlendAlpha, BlendOffset, Clamp.
+Combinator second tier: Ap2 / TwoArgumentSimpleFunction (add·mul·min·max),
+Mapped / MulOrAdd (abs·square·cube·half·negate + add/mul scalar),
+RangeChoice, HolderHolder (delegate), PureTransformer / TransformerWithContext
+(delegate + transform), Marker/MarkerOrMarked (Beardifier: per-point fallback
+tier 3), Spline (complex — last tier, per-point fallback until proven),
+WeirdScaledSampler, ShiftedNoise, EndIslandDensityFunction, FindTopSurface,
+BlendDensity, Shift (rare/none-overworld) — per-point fallback tier.
+Strategy: hybrid interpreter, unknown/rare nodes fall back to per-point
+compute() into their array slot; selftest prints the node census so the
+fallback share is visible per router.
