@@ -6,7 +6,7 @@ Stage-1 measurement input for the batch rollout runbook (`docs` runbook landed i
 
 ## Methodology
 
-- **Paired A/B inside every JVM run**: each cell measures the DIRECT route and the BATCH route back-to-back in the same process — arm-level env drift cancels. The as-built product code has NO `CRUSSTY_BATCH` env (B.6 in `docs/BATCH_WIRING_PLAN.md` is design-only); the harness (`BatchRolloutBench.java` + `run_batch_rollout.sh`) implements the B.6 call-site semantics directly, and the A1/B1 arm split proves **env-neutrality** of the measurement (controls below).
+- **Paired A/B inside every JVM run**: each cell measures the DIRECT route and the BATCH route back-to-back in the same process — arm-level env drift cancels. The as-built product code has NO `CRUSSTY_BATCH` env (B.6 in `docs/BATCH_WIRING_PLAN.md` is design-only); the harness (`BatchRolloutBench.java` + `run_batch_rollout.sh`) implements the B.6 call-site semantics directly, and the A1/B1 arm split proves **env-neutrality** of the measurement (controls below). NOTE (S7-12 backlog): the product code DOES read `CRUSSTY_BATCH` now (G1 landed; G4 site arming live) — the "NO env" phrasing was stale when written; the arm B env value is `on` (the `=1` phrasing parses to Off since the fail-safe gate).
 - Full `BENCH.lock` (flock) exclusivity; JDK 21 (`/home/z/jdk21`); module `libcrussty.so` @ abi=65548 (table=1, kernels=12); `route=DIRECT` sanity + `controls=false` header in TSV.
 - Negative path probed: synthetic id=9999 → `ret=-3` (ERR refused, negative=true) — error routing works.
 - Shape-B mechanical probe ids 10/11 K=8: `ret=8, outs0=0` — dispatch path executes; value is the kernel's own rejection for synthesized input (expected).

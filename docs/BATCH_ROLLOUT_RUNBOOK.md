@@ -20,7 +20,7 @@ Cross-refs: adoption candidates [`BATCH_ADOPTION_MATRIX.md`](BATCH_ADOPTION_MATR
 | `CRUSSTY_KERNEL_POLICY` | `src/kernel_policy.rs:51` `MODE_ENV` → `mode()` | `strict` (default) \| `audit` \| `off` | WHICH kernels may route. `audit` enforces + logs WIRE/REGISTER lines. `off` = A/B-rig-only bypass (`... BYPASSED` marker) — since the §B.5 hard guard (this session) the batch mask still refuses DO_NOT_WIRE even under `off`. |
 | `CRUSSTY_KERNEL_PREF` | `src/kernel_policy.rs:476` `PREF_ENV` | `old` \| `conservative` \| `safe` | Registration-time remap. The batch table **bypasses** this remap deliberately (calls resolved pointers; policy gate still refuses regressions regardless of PREF) — B.6/§A.5. |
 | `CRUSSTY_KERNEL_PROMOTE` | `src/kernel_policy.rs` `PROMOTE_ENV` → `registration_promotion` | `1` \| `on` (anything else = off, fail-safe) | **TASK-53/54 promotion binding** (WIN direction, mirror of PREF): re-binds each `PROMOTE_PAIRS` original bridge method (`from_kernel`) to its paired P500-WIN symbol at registration. Default OFF — dormant-invisible (0 marker lines unarmed). Armed boots log `kernel_promote:` markers + run the live self-test (`src/promote_wire.rs`, 5 pairs / fixtures 20/20 since wave 2 = TASK-54). The batch table bypasses this binding the same way as PREF (promoted kernels are not batch-table members anyway); lifecycle: docs/PROVEN_WINS_SYNC.md §4 items 2 and 5. |
-| `CRUSSTY_BATCH_NATIVE_LIB` | `src/batch_api.rs:401` `self_init()` | absolute path | Standalone bench fallback ONLY (BatchFloorBench without the engine; see `bench/batch/run_batch_floor.sh:86`). **Never set on a live boot.** |
+| `CRUSSTY_BATCH_NATIVE_LIB` | `src/batch_api.rs:558` `self_init()` (ref updated S7-12) | absolute path | Standalone bench fallback ONLY (BatchFloorBench without the engine; see `bench/batch/run_batch_floor.sh:86`). **Never set on a live boot.** |
 
 Orthogonal (not batch): `CRUSSTY_NATIVE_IMPROVED_NOISE`, `CRUSSTY_NATIVE_BLEND_CACHE` (hook gates).
 Engine runtime (`CRUSSTY/runtime`, agentpath `.so`) reads none of the above — engine is never
@@ -131,11 +131,15 @@ bash scripts/e2e_orchestrate.sh shutdown && bash scripts/e2e_orchestrate.sh boot
 grep -cE 'batch: (arm|negative return|fallback)' /home/z/server/logs/console.log
 ```
 
-Expected markers (arm-line format from B.6 — implemented with the first consumer):
+Expected markers (arm-line format from B.6 — implemented with the first consumer;
+S7-12: `id=` widens to `id=(none|[0-9]+)` — `id=none` marks a demonstrator site whose
+kernel is body-dominated and not batchable (G4 §5.1: the ImprovedNoise.noise
+retarget demonstrator flushes via a zero-op dispatcher round-trip; kernel-backed
+sites carry their batch-table id):
 
 ```bash
 grep -E 'batch: rollout gate CRUSSTY_BATCH=auto -> mode=auto' /home/z/server/logs/console.log
-grep -E 'batch: arm [A-Za-z0-9_/.]+ id=[0-9]+ T=[0-9]+ site=' /home/z/server/logs/console.log
+grep -E 'batch: arm [A-Za-z0-9_/.]+ id=(none|[0-9]+) T=[0-9]+ site=' /home/z/server/logs/console.log
 ```
 
 PASS criteria (B.7 Stage 1): per-kernel batched-vs-individual ≤ 1.0 at the chosen T

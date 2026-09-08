@@ -1,9 +1,11 @@
-//! Batch-dispatch bridge — amortize the ~115ns Java→JNI transition floor over
+//! Batch-dispatch bridge — amortize the measured 35-90 ns Java→JNI transition
+//! floor (TASK-33 errata canon; the original ~115 ns model figure is stale)
+//! over
 //! many kernel invocations (P500 NEXT item 3: "batch-API for the JNI floor").
 //!
 //! # Motivation
 //!
-//! P500 found ~40 plugin/loading groups pinned at the ~115ns JNI transition
+//! P500 found ~40 plugin/loading groups pinned at the floor-band JNI transition
 //! floor (`results/P500_REPORT.md`): the kernel work itself is nanoseconds,
 //! the transition dominates. Micro-optimizing the closed kernels is
 //! pointless; the lever is ONE transition covering N kernel calls.
@@ -102,7 +104,7 @@
 //!
 //! # Per-op cost budget (vs an individual JNI call)
 //!
-//! individual: 1 Java→native transition (~115ns) + kernel-internal
+//! individual: 1 Java→native transition (35-90 ns canon) + kernel-internal
 //! GetLongArrayElements/Release. batch: 1 C call through a function pointer +
 //! 1 `GetLongArrayRegion` (VM memcpy) + amortized critical memcpy. No
 //! allocation, no local-ref churn (scratch arrays are per-thread global

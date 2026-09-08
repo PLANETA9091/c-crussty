@@ -163,7 +163,7 @@ O(1) bool per op in the batch loop, refused ids invisible before any op executes
 
 1. **Site-level arming contract** (when real consumers land): a wired kernel path is a *call site*
    (byte-hook or Java helper), armed once in Rust — `debug_assert!(decide_id(..).is_allowed())` +
-   `audit_wire(class, kernel, "site")`, the `improved_noise.rs:427-437` pattern [M]. Per-call
+   `audit_wire(class, kernel, "site")`, the `improved_noise.rs:570-574` pattern [M] (ref updated S7-12). Per-call
    single-vs-batch is decided at the **site**, never per op: the Java helper accumulates ops into
    ThreadLocal buffers (`BATCH_API_PROPOSAL.md` §6); at flush, `pending ≥ T` → one `run()`,
    otherwise replay as individual static native calls. No policy string ever runs on a hot path —

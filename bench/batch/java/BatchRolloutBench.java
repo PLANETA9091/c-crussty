@@ -8,10 +8,13 @@ import java.util.Arrays;
  * the auto-threshold-T decision (BATCH_WIRING_PLAN §B.3) and the CRUSSTY_BATCH
  * default flip decision (§B.6).
  *
- * IMPORTANT (gate status, [M-code]): the as-built product code has NO
- * CRUSSTY_BATCH env gate — grep src/ proves the only CRUSSTY_BATCH* env is
- * CRUSSTY_BATCH_NATIVE_LIB (standalone bench loader). §B.6 is DESIGN ONLY.
- * This harness therefore implements the §B.6 semantics at the CALL-SITE level
+ * GATE STATUS UPDATE (S7-12, doc-vs-code backlog item 1): the product code
+ * DOES read CRUSSTY_BATCH now (src/batch_api.rs rollout gate, G1 — landed
+ * 3cf2ed9; G4 site arming landed this session), so the harness's call-site
+ * emulation is REDUNDANT but still the measurement vehicle (it measures both
+ * arms in one JVM deterministically; the env gate changes routing only).
+ * Only CRUSSTY_BATCH=on|auto|off are valid (§B.6 canon); 1/0/garbage parse
+ * to Off (test-pinned).
  * (exactly where a real consumer would route): CRUSSTY_BATCH=1 -> every op
  * routes through PaperNativeBatchDispatch.run (the §B.6 "on" mode: force
  * batch at any K, makes the N=1 penalty measurable); unset -> individual
