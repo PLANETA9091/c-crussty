@@ -49,6 +49,16 @@ mkdir -p "$OUT_DIR"
   noise/net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps.java \
   noise/net/minecraft/world/level/levelgen/synth/ImprovedNoiseBatchOps.java \
   noise/net/minecraft/world/level/levelgen/synth/PerlinNoiseNativeOps.java \
+  noise/net/minecraft/world/level/levelgen/synth/ImprovedNoise.java \
+  noise/net/minecraft/world/level/levelgen/synth/PerlinNoise.java \
+  noise/net/minecraft/world/level/levelgen/synth/PaperNativePerlinNoise.java \
+  noise/net/minecraft/world/level/levelgen/synth/NormalNoise.java \
+  noise/net/minecraft/world/level/levelgen/synth/PaperNativeNormalNoise.java \
+  noise/net/minecraft/world/level/levelgen/DensityStubs.java \
+  noise/net/minecraft/world/level/levelgen/NormalNoiseBatchOps.java \
+  noise/net/minecraft/util/RandomSource.java \
+  noise/net/minecraft/util/KeyDispatchDataCodec.java \
+  noise/net/minecraft/core/Holder.java \
   noise/net/it/unimi/dsi/fastutil/doubles/DoubleList.java \
   noise/net/crussty/batch/PaperNativeBatchDispatch.java
 
@@ -57,8 +67,23 @@ rm -f "$OUT_DIR"/net/minecraft/world/level/levelgen/synth/ImprovedNoise.class \
       "$OUT_DIR"/net/minecraft/world/level/levelgen/synth/PerlinNoise.class \
       "$OUT_DIR"/net/minecraft/world/level/levelgen/synth/PaperNativeImprovedNoise.class \
       "$OUT_DIR"/net/minecraft/world/level/levelgen/synth/PaperNativePerlinNoise.class \
+      "$OUT_DIR"/net/minecraft/world/level/levelgen/synth/NormalNoise.class \
+      "$OUT_DIR"/net/minecraft/world/level/levelgen/synth/PaperNativeNormalNoise.class \
+      "$OUT_DIR"/net/minecraft/world/level/levelgen/DensityFunction.class \
+      "$OUT_DIR"/net/minecraft/world/level/levelgen/DensityFunction\$*.class \
+      "$OUT_DIR"/net/minecraft/world/level/levelgen/DensityFunctions.class \
+      "$OUT_DIR"/net/minecraft/world/level/levelgen/DensityFunctions\$*.class \
+      "$OUT_DIR"/net/minecraft/util/RandomSource.class \
+      "$OUT_DIR"/net/minecraft/util/KeyDispatchDataCodec.class \
+      "$OUT_DIR"/net/minecraft/core/Holder.class \
       "$OUT_DIR"/it/unimi/dsi/fastutil/doubles/DoubleList.class \
       "$OUT_DIR"/crussty/batch/PaperNativeBatchDispatch.class
+rmdir "$OUT_DIR"/net/minecraft/util "$OUT_DIR"/net/minecraft/core 2>/dev/null || true
+# Stale synthetics from prior builds must not linger (javac never cleans;
+# the ship audit below treats any stray as fatal).
+rm -f "$OUT_DIR"/net/minecraft/world/level/levelgen/NormalNoiseBatchOps\$[0-9]*.class \
+      "$OUT_DIR"/net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps\$[0-9]*.class \
+      "$OUT_DIR"/net/minecraft/world/level/levelgen/synth/PerlinNoiseNativeOps\$[0-9]*.class
 
 python3 - <<'EOF'
 import glob, struct, sys
@@ -75,6 +100,11 @@ SHIP = {"ImprovedNoiseNativeOps.class", "ImprovedNoiseNativeOps$Handle.class",
         "ImprovedNoiseNativeOps$Reaper.class", "ImprovedNoiseBatchOps.class",
         "PerlinNoiseNativeOps.class", "PerlinNoiseNativeOps$Handle.class",
         "PerlinNoiseNativeOps$Reaper.class"}
+# TASK-108: src/noise_fill.rs embeds exactly these (levelgen package).
+SHIP_FILL = {"NormalNoiseBatchOps.class", "NormalNoiseBatchOps$Handle.class",
+             "NormalNoiseBatchOps$Reaper.class", "NormalNoiseBatchOps$Recorder.class",
+             "NormalNoiseBatchOps$RecorderTL.class", "NormalNoiseBatchOps$RecOutTL.class",
+             "NormalNoiseBatchOps$Census.class", "NormalNoiseBatchOps$TestProvider.class"}
 
 bad = 0
 files = sorted(glob.glob('noise/build/net/minecraft/world/level/levelgen/synth/*.class'))
@@ -93,10 +123,30 @@ for f in files:
               "anonymous inner classes / lambdas-that-capture would mint synthetics the define loop never defines",
               file=sys.stderr)
         bad = 1
+fill_files = sorted(glob.glob('noise/build/net/minecraft/world/level/levelgen/*.class'))
+for f in fill_files:
+    d = open(f, 'rb').read(8)
+    major = struct.unpack('>H', d[6:8])[0]
+    name = f.rsplit('/', 1)[-1]
+    keep = name in SHIP_FILL
+    print(f"{name}: major {major} {'(ship)' if keep else '(dropped stub)'}")
+    if keep and major > 65:
+        print(f"  ERROR: {name} major {major} exceeds kernel support (65 = Java 21)", file=sys.stderr)
+        bad = 1
+    if not keep:
+        print(f"  ERROR: {name} is an unembedded bridge class — src/noise_fill.rs defines only {sorted(SHIP_FILL)}; "
+              "anonymous inner classes / lambdas-that-capture would mint synthetics the define loop never defines",
+              file=sys.stderr)
+        bad = 1
 shipped = {f.rsplit('/', 1)[-1] for f in files if f.rsplit('/', 1)[-1] in SHIP}
 missing = SHIP - shipped
 if missing:
     print(f"  ERROR: expected bridge class(es) missing from build output: {sorted(missing)}", file=sys.stderr)
+    bad = 1
+shipped_fill = {f.rsplit('/', 1)[-1] for f in fill_files if f.rsplit('/', 1)[-1] in SHIP_FILL}
+missing_fill = SHIP_FILL - shipped_fill
+if missing_fill:
+    print(f"  ERROR: expected fill bridge class(es) missing from build output: {sorted(missing_fill)}", file=sys.stderr)
     bad = 1
 sys.exit(bad)
 EOF
