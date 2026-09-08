@@ -55,33 +55,33 @@ public class RefusedIdE2E {
         System.load(nativeLib);   // closed kernels first — JVM binder sees them
         System.load(lib);         // module lib; Rust dlopen resolves same handle
 
-        // R0 — ABI gate
+        // R0 — ABI gate (wire v3: TABLE_VERSION=3, S7-14)
         int abi = PaperNativeBatchDispatch.abiVersion();
-        int expAbi = (2 << 16) | kernels;
+        int expAbi = (3 << 16) | kernels;
         row("R0-abi-gate", expAbi, abi, true,
                 "table=" + (abi >>> 16) + " kernels=" + (abi & 0xFFFF));
 
         // R1 — functional sanity: valid shape-A batch executes
         long[] outs1 = sentinelOuts(3 * 64);
         int r1 = PaperNativeBatchDispatch.run(ids(2, 2, 2), args0A(3, 16),
-                new long[0], fill(3, 64), outs1, offs(3, 64));
+                new long[0], fill(3, 64), outs1, offs(3, 64), new Object[0]);
         boolean wrote = false;
         for (long v : outs1) if (v != SENTINEL) { wrote = true; break; }
         rowRaw("R1-valid-batch", "3", String.valueOf(r1),
                 r1 == 3 && wrote, "kernel id2 K=3, outs written=" + wrote);
 
-        // R2 — out-of-range id (15 on shipped, 16 on rig): whole batch refused -3
+        // R2 — out-of-range id (18 on shipped, 19 on rig): whole batch refused -3
         int badId = kernels; // == KERNEL_COUNT -> out of range on this arm
         long[] outs2 = sentinelOuts(2 * 64);
         int r2 = PaperNativeBatchDispatch.run(new int[]{2, badId}, args0A(2, 16),
-                new long[0], new int[]{64, 64}, outs2, offs(2, 64));
+                new long[0], new int[]{64, 64}, outs2, offs(2, 64), new Object[0]);
         boolean u2 = untouched(outs2);
         rowRaw("R2-out-of-range(-3)", String.valueOf(-3), String.valueOf(r2),
                 r2 == -3 && u2, "ids=[2," + badId + "] mixed; outs untouched=" + u2);
 
         long[] outs2b = sentinelOuts(64);
         int r2b = PaperNativeBatchDispatch.run(new int[]{badId}, args0A(1, 16),
-                new long[0], new int[]{64}, outs2b, offs(1, 64));
+                new long[0], new int[]{64}, outs2b, offs(1, 64), new Object[0]);
         boolean u2b = untouched(outs2b);
         rowRaw("R2b-out-of-range-single(-3)", String.valueOf(-3), String.valueOf(r2b),
                 r2b == -3 && u2b, "ids=[" + badId + "]; outs untouched=" + u2b);
@@ -90,7 +90,7 @@ public class RefusedIdE2E {
         if (rigRefusedId >= 0) {
             long[] outs3 = sentinelOuts(64);
             int r3 = PaperNativeBatchDispatch.run(new int[]{rigRefusedId}, args0A(1, 16),
-                    new long[0], new int[]{64}, outs3, offs(1, 64));
+                    new long[0], new int[]{64}, outs3, offs(1, 64), new Object[0]);
             boolean u3 = untouched(outs3);
             rowRaw("R3-refused-single(-10)", String.valueOf(-10), String.valueOf(r3),
                     r3 == -10 && u3, "rig id=" + rigRefusedId
@@ -98,7 +98,7 @@ public class RefusedIdE2E {
 
             long[] outs3b = sentinelOuts(3 * 64);
             int r3b = PaperNativeBatchDispatch.run(new int[]{2, rigRefusedId, 2}, args0A(3, 16),
-                    new long[0], fill(3, 64), outs3b, offs(3, 64));
+                    new long[0], fill(3, 64), outs3b, offs(3, 64), new Object[0]);
             boolean u3b = untouched(outs3b);
             rowRaw("R3b-refused-mixed-no-partial(-10)", String.valueOf(-10), String.valueOf(r3b),
                     r3b == -10 && u3b, "ids=[2," + rigRefusedId + ",2] - valid ops must NOT run; outs untouched=" + u3b);
@@ -110,7 +110,7 @@ public class RefusedIdE2E {
         // R4 — negative id
         long[] outs4 = sentinelOuts(64);
         int r4 = PaperNativeBatchDispatch.run(new int[]{-1}, args0A(1, 16),
-                new long[0], new int[]{64}, outs4, offs(1, 64));
+                new long[0], new int[]{64}, outs4, offs(1, 64), new Object[0]);
         boolean u4 = untouched(outs4);
         rowRaw("R4-negative-id(-3)", String.valueOf(-3), String.valueOf(r4),
                 r4 == -3 && u4, "ids=[-1]; outs untouched=" + u4);
