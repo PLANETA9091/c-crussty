@@ -39,7 +39,6 @@ import java.util.concurrent.atomic.AtomicLongArray;
  */
 public final class DirtyCensusAgent {
 
-    // Probe table: [internalClassName, methodName, descriptor, ordinal]
     static final String[][] PROBES = {
         {"net/minecraft/world/level/block/entity/BlockEntity",
          "setChanged", "()V", "0"},
@@ -149,15 +148,24 @@ public final class DirtyCensusAgent {
             if (out == null) return;
             try {
                 long ep = System.currentTimeMillis() / 1000L;
+                // TASK-84 analyzer contract (scripts/dirtyrate/analyze_dirtyrate.py):
+                // per-SURFACE rows with counter literally "query"/"mutation",
+                // APPEND mode (analyzer needs multi-timestamp history in one file).
+                long c0 = COUNTERS.get(0); // BlockEntity.setChanged (all BEs)
+                long c1 = COUNTERS.get(1); // tryMoveItems
+                long c2 = COUNTERS.get(2); // suckInItems
+                long c3 = COUNTERS.get(3); // pushItemsTick (spec-plus)
                 StringBuilder sb = new StringBuilder();
-                for (int i = 0; i < LABELS.length; i++) {
-                    sb.append(ep).append('\t').append(LABELS[i]).append('\t').append("events")
-                      .append('\t').append(COUNTERS.get(i)).append('\n');
-                }
-                sb.append(ep).append('\t').append("META").append('\t').append("phase")
-                  .append('\t').append(phase).append('\n');
+                // spec-exact surface pair (TASK-84 §2 hopper/inventory):
+                //   MUTATION = setChanged (all-BE, documented upper bound)
+                //   QUERY    = tryMoveItems + suckInItems
+                sb.append(ep).append("\thopper-inventory\tmutation\t").append(c0).append('\n');
+                sb.append(ep).append("\thopper-inventory\tquery\t").append(c1 + c2).append('\n');
+                // spec-plus extension surface (push-side scan attempts, separate row)
+                sb.append(ep).append("\thopper-push-tick\tquery\t").append(c3).append('\n');
+                sb.append(ep).append("\tMETA\tphase\t").append(phase).append('\n');
                 Files.write(out, sb.toString().getBytes(StandardCharsets.UTF_8),
-                    StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING);
+                    StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.APPEND);
             } catch (Throwable t) { /* census must never crash the server */ }
         }
     }
