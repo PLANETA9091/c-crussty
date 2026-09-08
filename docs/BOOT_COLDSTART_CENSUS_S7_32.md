@@ -113,3 +113,37 @@ measured this session: server lane handed to neighbor's TASK-90 hopper census (t
 NEVER run inside the flock'd section — the helper's kill-by-fd matches the script's OWN
 fd 200 (and any neighbor process legitimately booting). Out-of-lock reap only, self
 excluded; server-lane processes never killed by pattern heuristics.
+
+## ADDENDUM-3 (S7-34, TASK-91 cont.): armed-boot A/B — measured NULL with mechanism; boot-window native kernels structurally deferred
+
+### Deployed-artifact pair corrected (infra)
+The -agentpath runtime is built from **CRUSSTY/runtime** (exports Agent_OnLoad/OnAttach/OnUnload,
+1,847,800 bytes) while the plugin module is built from **c-crussty** (`modules/crussty/libcrussty.so`).
+An S7-34 deploy mistakenly copied the plugin .so into the agent path → instant
+"Could not find Agent_OnLoad" death on every boot (caught in the first A/B run, no silent state).
+Correct pair deployed + verified: agent rc=0 (transform engine armed, 4 hook classes), plugin
+module rc=0 (98 bridge classes, 283 natives, 0 unresolved). Backups: `libcrussty_runtime.so.backup-s7-34`,
+`modules/crussty/libcrussty.so.bak-0635`.
+
+### Armed A/B (ABBA n=3/arm, anchor restore each boot, hs_err 4/0)
+- dormant a: 14.068 / 12.848 / 14.016 (mean **13.644s**)
+- armed b: 13.863 / 13.727 / 13.319 (mean **13.636s**) → **NULL, full overlap**
+- Mechanism (this is why, measured): the whole-body arming chain is **deliberately deferred
+  past Done** — `activate()` waits for find_class (JVMTI scan cadence) → `wait_for_boot()`
+  (boot marker) → define bridges into the kernel loader → retransform → serve. This deferral
+  exists to avoid the S7-25 defineClass1 SIGSEGV race with the boot-time class-loading storm.
+  With an immediate post-Done shutdown the chain never completes (b-runs: force-load attempts
+  1-3, no patch). With a 45s post-Done settle the chain completes GREEN on the direct-jar
+  topology: "server booted, defining bridge" → "hook armed, retransform rc=0" → "self-test
+  passed" (improved_noise full chain + batch helper round-trip abi 262165).
+- PerlinNoise additionally requires the class to actually load — idle post-Done never loads
+  it (attempts 1-5 no sighting); it arms under real worldgen load (G-AB evidence −11.1% CPU
+  p=0.0079 stands).
+
+### Consequence for the cold-start program (S7-33 NEXT-2 closed)
+The in-boot noise-family CPU (11.6% of the boot window, S7-33 1ms census) **cannot be
+accelerated by the existing kernels**: arming is post-Done by design. Boot-window native
+noise would require serve-at-load (patched bytes returned by the ClassFileLoadHook at the
+FIRST load of ImprovedNoise/PerlinNoise), which re-opens the defineClass race for the bridge
+helpers (S7-25 constraint) — recorded as a design line, not attempted silently. The armed
+kernels' value remains post-Done worldgen (P500-relevant, proven).
