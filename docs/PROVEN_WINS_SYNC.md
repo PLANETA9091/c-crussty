@@ -63,6 +63,18 @@ is used everywhere in this sync.
 | `ImprovedNoise.nativeBuildHandle` | live-verified bridge | **live — unchanged** |
 | `ImprovedNoise.nativeFreeHandle` | live-verified bridge | **live — unchanged** |
 
+**Channel-scope note (2026-09-08+08, TASK-66 — executes TASK-63 F1's correction
+requirement):** the `live` verdicts above certify correctness (self-test PASSED on
+live Purpur 1.21.10, bridge round-trips) and the P500-proven value of the noise
+family applies to its BATCHED surface only. The production fresh-worldgen channel is
+**measured NOT addressable for the per-call bridge design**: paired real-load A/B,
+armed median 48.38 s vs 43.96 s dormant (+10.0% wall, +5.24 CPU-s, Java noise
+displaced 4.12→1.19 CPU-s) — `bench/e2e/results/WORLDGEN_AB_NOISE_BRIDGE_2026-09-09.md`
+F1. Ops guidance: keep `CRUSSTY_NATIVE_IMPROVED_NOISE=1` OFF for worldgen-heavy
+profiles. The only remaining unrefuted lever on this channel (loop-grain batching) is
+specified — with pre-registered NO-GO gates — in
+`docs/WORLDGEN_BATCHING_LAYER_DESIGN.md` (TASK-66); no win is claimed for it.
+
 ### 3.3 `PROVEN_WINS` — batch-dispatch surface (12 entries, `batch_table.rs` ids 0-11)
 
 | id | Kernel | Rerun evidence | After sync |
