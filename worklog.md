@@ -510,3 +510,18 @@ Work Log:
 Stage Summary:
 - TASK-86: КОД+ДОКИ ГОТОВЫ К ПУШУ (гейты зелёные на восстановленном дереве), вердикт не финализирован до пуша/бутов. Promotion-механика whole-body класса теперь двухключевая: env-флаг оператора + kernel-policy леджер — демоция записи в реестре мгновенно отключает живой мост на следующем буте.
 - Инфра-статус сандбокса: rust ✓ (stable), jdk21 ✓ (Temurin 21.0.12.1), c-crussty+CRUSSTY клонов ✓; НЕТ: токен (→ push + private dev-logs), Purpur jars, world anchor, BENCH.lock-канон |. Следующий тик: пуш TASK-86 при восстановленном токене, ребилд server-энва, доклейка бут-гейтов.
+---
+Task ID: cron-23:00+08-Job366516
+Agent: agent-7625532f
+Task: TASK-86 phase 2 — живые бут-гейты runbook §9 (dormant/armed/refusal) на восстановленном после ресета окружении.
+
+Work Log:
+- Ребилд server-энва с нуля: Purpur 1.21.10 build 2535 (md5 d48ae0c3 проверен против API; первый /latest/download дал битый хэш — качать по /2535/download), eula + crussty.toml (канонический минимум), launcher.jar + libcrussty_runtime.so из релиза v2.2.9 — ЗАМЕНА: релизный runtime (1848184B) ПРЕДШЕСТВУЕТ нашему NUL-фиксу → собран runtime из клона 4f5d5ea (1848488B, release 41s); module.json + libcrussty.so (TASK-86 build) + ЗАКРЫТЫЕ либы (libpaper_native_jni.so + chunk_encode) в modules/crussty/ — первый бут без них дал честный FAIL "native surface live" (verify различает marker-capable .so без life-signs = FAIL, что и сработало).
+- УРОК-КОРРЕКЦИЯ (F4): e2e boot/verify НЕ оборачивать в flock — скрипт имеет собственный guard, а обёртка протекает fd лока в долгоживущий stdin-holder (sleep 3600 наследует fd → BENCH.lock удержан весь аптайм сервера; обнаружено сканом /proc/*/fd, killed orphan). Бут/верифай — без обёртки; P500/duty — flock как раньше.
+- ГЕЙТ 1 dormant: verify ALL PASS rc=0 (16.3s Done), 0 hs_err, все dormant-маркеры 5 модулей.
+- ГЕЙТ 2 armed+audit (CRUSSTY_KERNEL_POLICY=audit + CRUSSTY_NATIVE_PERLIN_NOISE=1): полный маркерный след — bridge defined ×3 → patch 11030→10765B → hook serve → retransform rc=0 → self-test passed; НОВАЯ policy-строка в логе: "kernel-policy: WIRE PerlinNoise.getValueWholeBody at perlin_noise whole-body bridge arming: allowed (proven)" + 4 DO_NOT_WIRE регистрации помечены surface-only; v1 audit-line (nativeGetValue REFUSED) = пре-существующий audit-only сайт (ад7а343, не мой гейт) — задокументировано.
+- ГЕЙТ 3 refusal (detached-worktree риг по прецеденту refused_e2e): entry удалена → cargo release 6s → бут с env ON → "kernel-policy KeepJava (kernel is not in PROVEN_WINS ...) — staying dormant despite env gate", 0 arming-маркеров; вариант .so также ПАДАЕТ на drift-guard тесте (64/1) — тест ловит именно такой registry drift. Промоутед-сборка восстановлена (md5 == артефакт 6665300), финальный dormant бут ALL PASS.
+- runbook §9 дополнен таблицей live-валидации (operator-ready). 0 новых hs_err за все 5 бутов; мир fresh-gen (анкор потерян с ресетом — для A/B нужен новый анкор).
+
+Stage Summary:
+- TASK-86 ПОЛНОСТЬЮ ГОТОВ: код+доки+гейты (test 65/65, clippy Δ0, P500 70/70) + все 3 бут-гейта §9 живьём. Коммит 6665300 + evidence-апдейт локально. ЕДИНСТВЕННЫЙ блокер — токен: push 6665300 + CLAIMS done в dev-logs (private, недоступен) — на первый тик с восстановленным токеном.

@@ -263,3 +263,18 @@ CRUSSTY_KERNEL_POLICY=audit CRUSSTY_NATIVE_PERLIN_NOISE=1 \
 2. `CRUSSTY_KERNEL_POLICY` stays strict — remove the `ProvenKernel` entry →
    policy refuses at next boot (ledger switch, code-free);
 3. module `.so` revert to backup (deploy switch).
+
+### §9 live validation (TASK-86, 2026-09-08, agent-7625532f)
+
+All three gates executed live on the reconstructed post-reset environment
+(Purpur 1.21.10 build 2535 md5 d48ae0c3..., Temurin 21.0.12.1, runtime built
+from engine @ 4f5d5ea — release builds, fixed NUL-dispatch runtime):
+
+| Gate | Result | Evidence (console markers) |
+|---|---|---|
+| 1 dormant (no env, strict) | **ALL PASS** (verify rc=0), 0 hs_err | `perlin_noise: dormant (...)`, `improved_noise: dormant (...)`, no serve/arming lines |
+| 2 armed + audit (env ON, policy audit) | full marker trace, 0 Exception, 0 hs_err | bridge defined ×3 into kernel loader → `computed patch for getValue(DDDDDZ)D (11030 -> 10765 bytes)` → `hook serve 10765 bytes` → `hook armed, retransform rc=0` → `self-test passed`; **policy lines**: `kernel-policy: WIRE PerlinNoise.getValueWholeBody at perlin_noise whole-body bridge arming ...: allowed (proven)` + 4 DO_NOT_WIRE registrations flagged surface-only |
+| 3 refusal (env ON, entry absent — detached-worktree rig, refused_e2e TASK-52 precedent) | **KeepJava-dormant despite env gate**, 0 arming markers | `perlin_noise: kernel-policy KeepJava (kernel is not in PROVEN_WINS ...) — staying dormant despite env gate`; variant also FAILS the `whole_body_bridge_wirings_are_policy_gated` drift-guard (64/1) — the guard catches exactly this registry drift |
+
+Post-gate state: promoted build restored (md5-verified against commit 6665300
+artifact), final dormant boot ALL PASS. Runbook §9 is OPERATOR-READY.
