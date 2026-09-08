@@ -183,6 +183,13 @@ pub fn activate() {
             );
             return;
         }
+        // TASK-80 crash lesson (hs_err_pid3158, 12:55Z boot): define_class
+        // fired ~Done+4s and raced the POST-Done lazy class-load storm of the
+        // first ticking window (SIGSEGV inside defineClass1 on the Server
+        // thread). The perlin chain lands Done+15-80s (find_class retry
+        // cadence) and is empirically stable across 10+ runs — replicate that
+        // window explicitly: settle 20 s before any define/retransform.
+        std::thread::sleep(std::time::Duration::from_secs(20));
         eprintln!(
             "[crussty-plugin] fluid_guard: server booted, defining bridge into kernel loader"
         );
