@@ -258,3 +258,19 @@ Work Log:
 
 Stage Summary:
 - TASK-59 ЗАКРЫТ: I1 починен по root cause; целевые нагрузочные профили РАЗБЛОКИРОВАНЫ (forceload worldgen burst = revisit-триггер g9 достижим); graceful stop exit 0 работает; /proc-injection задокументирован как emergency fallback; DIST_JAVA_OPTS — канал child-JVM флагов. Открытых клеймов нет; кандидаты: worldgen-burst JFR профиль (теперь возможен), D6 P3, клиент-бот не нужен для базовых нагрузок.
+
+---
+## SESSION cron 10:40+08 — TASK-60 done: hs_err shutdown-crash family forensics (11 files, root chain proven, verdict non-critical, engine proposal) — 2026-09-09T03:5xZ — agent-7625532f
+
+Work Log:
+- Старт: TASK-59 закрыт (096fdaa), сосед S7-14 landed wire v3 + G9 amplification (MARGINAL, NO-GO стоит) — его NEXT-1 (hs_err семейство) не тронут. Клейм TASK-60 8e6b7df attempt 1, reverify OK.
+- КЕНЗУС: 11 hs_err (Sep 7 14:53 → Sep 8 00:58), 3 сигнатуры: Signal Dispatcher ×4, pool-9-thread-1 ×4 (3 с pc=0x0), Server thread/ServerMain/native ×3. ВСЕ non-null fault pc ВНУТРИ libcrussty.so = МОДУЛЬ c-crussty (не движок!) — разрешение через maps-section парсер + ELF p_vaddr bias (скрипт scripts/hs_err_extract.py сохранён).
+- СЛЕПАЯ ЗОНА ОБЪЯСНЕНА: error-reporter сам падает при unwind (reporter pc стабильно libc+0x136d5e) — потому в семье никогда не было читаемых стеков.
+- РАЗРЕШЕНИЕ (approx, только bak_task54 выжил; ≥5 билдов в кензусе): 0x64c50→JniEnv::new_string, 0x61da5→hashbrown RawTable<(&str,String)>::reserve_rehash (R10 = ASCII "crussty"+0xff SIMD — хэш ключа). Rust borrow-чекер исключает dangling keys → rehash-крэш = даунстрим heap corruption от более раннего UB.
+- SMOKING GUN: hs_err 26901 Java frames выжили — `jdk.internal.misc.Signal.dispatch(I)V+25` на Signal Dispatcher = SIGTERM-цепочка (Shutdown.exit → hooks) идёт НА ЭТОМ треде; классы грузятся при shutdown → engine CFLH → модуль (арming new_string/find_class, CP-строители) → JNI против рваного env → UB → SIGSEGV/pc=0/SIGILL. LIVE-корроборация: мой лог shutdown TASK-59 (02:31) словил 'area_map: forcing kernel load (attempt 2/3/4)' ВО ВРЕМЯ остановки.
+- ВЕРДИКТ: НЕ critical — все 11 shutdown-only, работа сессии завершена, мир цел, риск = только exit-код 134 у умирающей JVM. По правилу прав (движок = только critical) движок НЕ тронут.
+- ПРОПОЗАЛЫ (не имплементированы, причины в отчёте): (1) engine-side VMDeath/GetPhase gate — единственный полный фикс, владельцу движка; (2) module-side фаза LIVE при hooks → phase-gating не различает легитимные поздние загрузки — честных ворот нет, спекулятивный код против дисциплины измерений; (3) operational: fifo-stop > SIGTERM (уже норма post-TASK-59); (4) watch-policy: изменение микса тредов/внe-shutdown случай = переоткрыть задачу.
+- Гейты: tests 51/51, clippy 12 = baseline Δ0 (src не менялся). Push: c-crussty (отчёт docs/HS_ERR_FORENSICS_2026-09-09.md + worklog), CLAIMS done + reverify. Сервер не запускался (работа по существующим hs_err + source), BENCH.lock не требовался, токен чист.
+
+Stage Summary:
+- TASK-60 ЗАКРЫТ: семья shutdown-крэшей полностью характеризована (11 файлов → 1 механизм: shutdown-клац loading re-entry в модуль при рваном JNI env), виновник = экспозиция дизайна (CFLH не гейтится VMDeath), не конкретный баг; движку оставлен готовый пропозал (атомарный vm_dying флаг). Семья из шума стала tracked+explained. Открытых клеймов нет; кандидаты: OLD-member wiring (g35/g39/g40 parity-through-dispatcher), ck_cap в verify-строках, D6 P3.
