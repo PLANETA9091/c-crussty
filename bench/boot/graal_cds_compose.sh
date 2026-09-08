@@ -21,7 +21,7 @@ GRAAL=$(ls -d /home/z/graalvm-dl/graalvm-*/bin/java 2>/dev/null | head -1)
 [ -x "$GRAAL" ] || { echo "FATAL: GraalVM java not found"; exit 1; }
 GRAAL_BIN=$(dirname "$GRAAL")
 JAR="$SERVER/versions/purpur-1.21.10.jar"
-JSA=/tmp/graal_boot_compose.jsa
+JSA=${JSA:-/tmp/graal_boot_compose.jsa}   # overridable; persisted archive reusable via SKIP_DUMP=1
 REPO=/home/z/ccrussty/c-crussty
 STAMP=$(date +%Y%m%d_%H%M%S)
 OUT="$REPO/bench/boot/RAW_GRAALCDS_$STAMP"
@@ -42,6 +42,10 @@ stop_server() {
 }
 
 # ---------- phase 1: DUMP boot (Graal, NO agent, dump at graceful exit) ----------
+if [ "${SKIP_DUMP:-0}" = "1" ]; then
+    [ -s "$JSA" ] || { echo "SKIP_DUMP=1 but archive missing: $JSA"; exit 13; }
+    log "phase1 SKIPPED (SKIP_DUMP=1), using persisted archive $JSA ($(du -h "$JSA" | cut -f1))"
+else
 log "phase1: dump boot -> $JSA"
 rm -f "$JSA"
 tar xzf "$SERVER/world_census_seed.tar.gz" -C "$SERVER"
@@ -56,6 +60,7 @@ log "dump boot Done: $DT; graceful stop for dump write"
 sleep 5; stop_server
 if [ -s "$JSA" ]; then log "ARCHIVE OK: $(du -h "$JSA" | cut -f1)"; else log "DUMP FAILED (archive empty) — COMPOSE-NULL by flag-acceptance gate"; exit 12; fi
 grep -E 'Mapped' "$OUT/dump_boot.log" | tail -3 | tee -a "$OUT/run.log" || true
+fi
 
 # ---------- phase 2: 3 ABBA pairs, A=Graal+CDS, B=Graal ----------
 PAIRS=0
