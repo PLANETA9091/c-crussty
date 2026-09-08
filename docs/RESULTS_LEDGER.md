@@ -442,3 +442,19 @@ session-local measurement. Boot program remains OPEN.
 lines + main-side marker at DataFixers join, n≥2 pairs, FIXED agent — before any
 exhaustion language; (2) micro-batch arm unchanged (independent of B1); (3) rig
 hygiene: committed script = executed artifact, per-boot ARM summary lines.
+
+## §19 ADDENDUM-14 (TASK-102, 2026-09-09, S7-44) — micro-batch CONFIRMATION = NULL: §18 bank-candidate DEMOTED (does not replicate); boot program at fully-measured end-state
+
+**Confirmation design** (pre-registered in TASK-102 claim f006bde): 3 within-session pairs, 6 boots, order A,B,B,A,A,B, FIXED per-boot-log rig (fix verified live: 6 distinct log files, chronology proven from in-log timestamps 19:50:00→19:51:43Z, no overwrites).
+
+**Raw Done-times**: A 12.944 / B 13.902 / B 14.452 / A 13.180 / A 13.945 / B 12.994.
+**Gate math (banked §18 convention, Δ=B−A per pair)**: Δ = {+0.958, +1.272, −0.951} — signs MIXED, mean **+0.426s** (wrong direction) → pre-registered gate (same-sign AND ≤−0.3s) **FAILED** → **NULL. §18 bank-candidate (−0.880s, n=2) DEMOTED: it does not replicate.**
+**Pooled cross-session n=5 pairs** {−0.447, −1.312, +0.958, +1.272, −0.951} → mean −0.096s, sign-unstable across sessions → the −0.880s was an n=2 artifact of a noise-dominated session.
+
+**Variance-floor revision (methodology bank):** same-arm spreads this session: A 1.00s, B 1.46s — the ~0.5s floor assumption was OPTIMISTIC; session noise up to ~1.5s occurs. Drift-model stress test (protocol-v2 critic): the (+,+,−) delta pattern is mathematically impossible under constant-τ+linear-drift → drift-cancellation cannot rescue n=2 on this box. **New gate law for future boot arms: n≥3 pairs AND same-arm spread sanity-check; single-session n=2 results are provisional by definition** (retroactively explains the v3 INCONCLUSIVE, S7-38/39).
+
+**Treatment delivery PROVEN (this is a real treatment null, not a delivery failure):** "Paper is using 2 worker threads" marker 3/3 B vs "1 worker threads" 3/3 A (independent of Xverify warning); -Xverify:none deprecation warning line 1 of 3/3 B logs, absent 3/3 A; parity 1461 recipes / 1574 advancements ×6; AppCDS archive opened ×6; hs_err 4/0 through all 6 boots; no NO-DONE; no co-tenant evidence (steady ~20s cycle spacing, flock serialization).
+
+**Discipline fixes banked from this audit:** (1) lock-label contract — rig marker was stale "main-s7-43" during the TASK-102 run (siblings keying on the done-marker raced blind); updated to task-specific labels; (2) region-map grep: actual line is "Mapped static  region #0" (two spaces) — the §18 "working grep" claim was itself wrong (pattern with one space never matched, incl. mb regions=? ×4); fixed with [[:space:]]+ in both rigs; (3) rig edit committed with verdict (no mid-flight-only state).
+
+**VERDICT: micro-batch arm (WorkerThreadCount=2 + Xverify:none + StringTableSize=1000003) measured-NULL for boot on this box; NO wiring; prod e2e default v2 unchanged** (protocol-v2 critic verified zero premature wiring: e2e_orchestrate.sh untouched, no verify boots burned). Boot program end-state is now FULLY measured: v2 banked (−19.9%), every other boot channel NULL/NO-GO with proven mechanism or delivery. Re-open criteria: Paper version bump (re-dump+re-test), more cores, snapshot legalization, OR a mechanism-level explanation of cross-session sign flips (hardware state variable hunt). NEXT lines: runtime (TASK-84 impl, hopper census), P500 before any future wiring candidate. Raw: /tmp/prewarm/mb2_confirm_summary.txt + mb_{A,B}_17212_{1..6}.log.
