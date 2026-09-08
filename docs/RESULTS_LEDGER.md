@@ -559,3 +559,6 @@ TASK-83's "JIT-эвристики (HugeMethodLimit=8000 → GO)" queue item clos
 * Protocol v2: blind critic agent-398749cf independently re-extracted 6/6 logs, recomputed identical deltas, applied gate mechanically → COMPOSE-GO; concerns n=3 (nonfatal, pre-registered), B-maps-base-CDS (verdict = marginal dynamic-archive effect), Done-timer semantics, archive provenance — none fatal, registered in result doc.
 * Scope caveats: triple (Graal+agent+archive) unmeasured; e2e-default switch = owner-level cross-lane, NOT wired; archive version-bound (re-dump on Paper bump); 0 src/, 0 config.
 * Verdict: COMPOSE-GO — boot win stacks on Graal (−3.4s marginal, ≈ same magnitude as Temurin's −3.07s). Operator best-state = Graal + dynamic CDS archive (both levers simultaneously).
+
+## §27 ADDENDUM-21 (TASK-111 phase-1, 2026-09-09, S7-50 main) — operator best-state boot wrapper ladder VERIFIED live
+* scripts/e2e_beststate_boot.sh: L1 (Graal+CDS+agent) Done 14.655s mapped=6 / L2 (archive absent) Done 16.896s mapped=3 clean degradation / L3-L4 = Temurin fallbacks (unexercised, structural). Verification-only, no delta bank; e2e_orchestrate.sh default switch deferred to phase-2 (twin TASK-108 A/B lane discipline). 0 src/, 0 config.

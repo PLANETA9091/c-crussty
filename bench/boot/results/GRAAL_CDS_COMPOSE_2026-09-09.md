@@ -84,3 +84,13 @@ contamination per TASK-106 cross-generation law).
 Rig lesson: inline-script pgrep -f self-match (pattern literal recurs in script text via
 kernel= path) → false LANE-BUSY x2 aborted probes; fix = pgrep -x java; 2 aborted starts left
 dangling journal lines (documented, outside verdict window).
+
+## ADDENDUM-2 (TASK-111 phase-1, S7-50): OPERATOR BEST-STATE BOOT WRAPPER — ladder VERIFIED
+scripts/e2e_beststate_boot.sh (standalone, e2e_orchestrate.sh UNTOUCHED — twin TASK-108 lane
+pending; default switch = phase-2): 3-level safe-degradation ladder L1 Graal+CDS+agent /
+L2 Graal+agent / L3 Temurin+CDS / L4 Temurin, each level falls silently to the next.
+Live verification this session: L1 Done (14.655s) mapped=6 agent=29 lines; L2 (archive
+renamed) Done (16.896s) mapped=3 — clean no-crash degradation, TASK-87 pattern holds under
+Graal. Bonus directional (n=1, NOT banked): agent-attached marginal archive delta −2.24s,
+directionally consistent with the banked agent-free −3.415s. GraalVM canonicalized to
+/home/z/graalvm (rigs accept both paths). hs_err 4/0 through all boots.
