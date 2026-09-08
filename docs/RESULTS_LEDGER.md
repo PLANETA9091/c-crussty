@@ -391,7 +391,7 @@ rows are now marked:
   with pgrep/co-tenant check logged per arm; cross-session deltas are context, not
   evidence.
 
-## §17 ADDENDUM-12 (TASK-101, 2026-09-09, S7-43) — combined micro-batch arm: GATE-MET bank-candidate (−0.880s under the correct ABBA estimator) + protocol-v2 critic findings + rig evidence-destruction bug fixed
+## §18 ADDENDUM-13 (TASK-101, 2026-09-09, S7-43) — combined micro-batch arm: GATE-MET bank-candidate (−0.880s under the correct ABBA estimator) + protocol-v2 critic findings + rig evidence-destruction bug fixed
 
 **Micro-batch arm** (owner many-at-once rule; A = prod default v2, B = A + `-DPaper.WorkerThreadCount=2 -Xverify:none -XX:StringTableSize=1000003`; no -javaagent on either arm; within-session ABBA A,B,B,A): raw Done-times **A 14.215 / B 13.768 / B 13.491 / A 14.803**.
 
