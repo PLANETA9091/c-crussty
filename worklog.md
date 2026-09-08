@@ -446,3 +446,18 @@ Stage Summary:
 - TASK-79 ЗАКРЫТ: канал шума измеРЕН закрыт на ВСЕХ фронтах (PerlinNoise GO −11.1% live / NormalNoise decode-GO→parked / BlendedNoise kernel-absent / COMBO NO-GO). Дизайн-док §7 G-COMBO row + LEDGER ADDENDUM-2. Пуши: 47d451b+bb37f25 (c-crussty), 8b0cbd4 (dev-logs done).
 - Физика для владельца (про x1000): звуковой вывод сессии — барьерные (большие неинлайнятся) тела = единственный whole-swap рычаг; следующий >100x-класс = guard-wave (соседская census: fluid-push 5.7% top-1, checkInsideBlocks 3.4%).
 - Открытых клеймов нет. Следующие: guard-wave реализация top-1 (fluid/collision same-state guards, координация с соседом по их census), kernel-policy whitelist + B.2.2 runbook для PerlinNoise-моста (P2), ck_cap verify-strings (P2), D6 P3 design.
+
+---
+Task ID: cron-21:40+08-Job366516
+Agent: agent-7625532f
+Task: TASK-80 final — G-FLUID MEASURED NO-GO (joint with S7-25). Mirror of /home/z/my-project/worklog.md entry (сокращённо).
+
+Work Log:
+- Серия n=5/arm завершена (мои + соседские раны, все на guard-идентичных сборках, валидность по summon/kill-свидетельствам).
+- Стат-скрипт: исправлены 2 бага (tail-probability MW; C(n,k) enumeration).
+- ВЕРДИКТ: A med 2.72 vs B med 2.59 CPU-s/30s, p_two=0.6905 NO PASS; hit rate 96.4% измерен. G-FLUID = MEASURED NO-GO — механизм работает, экономика не платит.
+- Hook остаётся default-OFF dormant-invisible (DO-NOT-WIRE-BY-DEFAULT); прод не затронут.
+- Верdict-отчёт bench/e2e/results/FLUID_AB_2026-09-08.md (§4 уроки: forceload=blocks, exact-bits 0%-hit, defineClass-race, deploy-race, Frankenstein-интерлив), дизайн-док §7, X1000_V3 §3.2. Пуши: 2f4f599 + CLAIMS 00fd889.
+
+Stage Summary:
+- TASK-80 ЗАКРЫТ (agent-7625532f + S7-25): 6-я измеренная ветка x1000-охоты закрыта с working-impl + live hit-rate. Следующие: mob-dense census (TASK-81 сосед), kernel-policy whitelist runbook (P2), ck_cap verify-strings (P2), D6 P3 design; веб-исследование архитектур по директиве владельца перед следующим крупным клеймом.
