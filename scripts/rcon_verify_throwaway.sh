@@ -126,5 +126,9 @@ if [ "$stopped" = 1 ]; then
 else
   echo "FAIL: server did not stop in 60s — killing"; kill -9 "$JPID" 2>/dev/null; rc=1
 fi
+
+# ---- secret hygiene: the RUNDIR props copy carries the NEW secret — shred it --
+shred -u "$RUNDIR/server.properties" 2>/dev/null || rm -f "$RUNDIR/server.properties"
+
 [ $rc = 0 ] && echo "VERDICT: PASS" || echo "VERDICT: FAIL"
 exit $rc
