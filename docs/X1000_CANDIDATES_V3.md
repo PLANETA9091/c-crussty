@@ -285,3 +285,15 @@ SparklyPaper lever on this stack. **10th refuted branch, closed at the static
 layer (0 boots, 0 src/)** — docs/BETICK_STATIC_AUDIT_2026-09-08.md, ledger
 ADDENDUM-6 §11. Re-open only if JFR shows ≥3% tick share for the check or the
 lookup structurally changes.
+
+### §6.3 dfc-on-Paper — density-function compilation (TASK-92, 2026-09-09, agent-7625532f)
+
+TASK-83 research queue item; TASK-82's "honest CANDIDATE". Closed OUT by the pre-registered Amdahl
+gate: the ENTIRE dfc prize is the DF interpreter machinery = **6.5% of worker CPU** (TASK-82 burst
+JFR, `fillAllDirectly` wrapper iteration), below the claimed ≥10% GO threshold; leaf noise-math
+(~24%) is unreachable by dfc (already the native noise-kernel channel, TASK-74/79/86). Realistic
+net win ~1-3% of a worker thread during generation bursts only — 4+ orders below the >100x bar and
+below the ceilings that already killed TASK-80/TASK-89. **11th closed branch, cheapest close of the
+campaign: arithmetic on existing census, 0 new measurements, 0 boots, 0 src/** —
+docs/DFC_STATIC_AUDIT_2026-09-08.md. Re-open only if a census shows interpreter machinery ≥10% of
+worldgen payload (different version / different DF-graph shape).
