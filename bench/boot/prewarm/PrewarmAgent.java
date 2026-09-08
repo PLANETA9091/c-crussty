@@ -25,11 +25,16 @@ public class PrewarmAgent {
     static volatile boolean spawned = false;
 
     public static void premain(String options, java.lang.instrument.Instrumentation inst) {
-        final String listPath = (options == null || options.trim().isEmpty()) ? null : options.trim();
-        if (listPath == null) {
-            System.err.println("[prewarm] no list -> dormant no-op (arm A)");
+        final String opts = (options == null) ? null : options.trim();
+        if (opts == null || opts.isEmpty()) {
+            System.err.println("[prewarm] no options -> dormant no-op (arm A)");
             return;
         }
+        if (opts.equalsIgnoreCase("b1")) {
+            armB1(inst); // TASK-99: DataFixer build offload (TASK-98 audit B1 OFFLOADABLE-EARLY)
+            return;
+        }
+        final String listPath = opts;
         final List<String> classes = new ArrayList<>();
         final List<String> prefixes = new ArrayList<>();
         try (BufferedReader br = new BufferedReader(new FileReader(listPath))) {
@@ -70,6 +75,73 @@ public class PrewarmAgent {
         });
         System.err.println("[prewarm] ARM-B armed: " + classes.size()
                 + " classes, trigger on first target-family load");
+    }
+
+    /**
+     * TASK-99 B1 mode: trigger = first net.minecraft.* load (SharedConstants at
+     * Main:3); worker polls until version constants are set, then forces
+     * DataFixers.&lt;clinit&gt; (pure function of dataVersion int — TASK-98 audit:
+     * 406-class purity scan, zero registry/file/IO deps) on the worker thread
+     * while the main thread runs B2 registry bootstrap. Main joins the already
+     * built DATA_FIXER at Main:623 (LevelStorageSource.createDefault).
+     */
+    static void armB1(java.lang.instrument.Instrumentation inst) {
+        final long t0 = System.nanoTime();
+        inst.addTransformer(new ClassFileTransformer() {
+            @Override
+            public byte[] transform(ClassLoader loader, String className, Class<?> beingDefined,
+                                    ProtectionDomain pd, byte[] cb) {
+                if (!spawned && className != null && loader != null
+                        && className.startsWith("net/minecraft/")) {
+                    final ClassLoader cl = loader;
+                    spawned = true;
+                    Thread w = new Thread(() -> {
+                        // wait for SharedConstants.tryDetectVersion() on main (idempotent static)
+                        boolean ready = false;
+                        for (int i = 0; i < 6000; i++) {
+                            try {
+                                if (Class.forName("net.minecraft.SharedConstants", false, cl)
+                                        .getMethod("getCurrentVersion").invoke(null) != null) {
+                                    ready = true;
+                                    break;
+                                }
+                            } catch (ClassNotFoundException nf) {
+                                // not loaded yet — retry
+                            } catch (java.lang.reflect.InvocationTargetException ite) {
+                                // getCurrentVersion() throws IllegalStateException("Game version not set")
+                                // until Main:3 tryDetectVersion() lands — that IS the not-ready signal
+                                if (!(ite.getCause() instanceof IllegalStateException)) {
+                                    System.err.println("[prewarm] b1: poll aborted by " + ite.getCause());
+                                    break;
+                                }
+                            } catch (Throwable t2) {
+                                System.err.println("[prewarm] b1: poll aborted by " + t2);
+                                break; // unexpected reflection issue — give up quietly
+                            }
+                            try { Thread.sleep(10); } catch (InterruptedException ie) { return; }
+                        }
+                        if (!ready) {
+                            long ms = (System.nanoTime() - t0) / 1_000_000L;
+                            System.err.println("[prewarm] b1: version never set after " + ms + "ms -> no-op");
+                            return;
+                        }
+                        try {
+                            Class.forName("net.minecraft.util.datafix.DataFixers", true, cl);
+                            long ms = (System.nanoTime() - t0) / 1_000_000L;
+                            System.err.println("[prewarm] b1: DataFixers built on worker in " + ms + "ms");
+                        } catch (Throwable t3) {
+                            System.err.println("[prewarm] b1: DataFixers init failed (non-fatal): " + t3);
+                        }
+                    }, "crussty-prewarm-b1");
+                    w.setDaemon(true);
+                    w.setPriority(Thread.MIN_PRIORITY + 1);
+                    w.start();
+                    System.err.println("[prewarm] B1 armed via loader-capture on " + className);
+                }
+                return null; // observation only
+            }
+        });
+        System.err.println("[prewarm] ARM-B1 armed: DataFixer build offload pending first net.minecraft load");
     }
 
     static void spawn(final ClassLoader loader, final List<String> classes, final long t0) {
