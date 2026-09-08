@@ -236,8 +236,9 @@ wall — so the channel stays open and the remaining gates are G-RECON and G-AB.
 |---|---|---|---|
 | G-STEP0 | batch core per-sample ≤ 1.0× JIT Java at breakeven N ≤ 16 | one /tmp micro-bench session, no server | **GO (2026-09-08, TASK-67): 0.59× at N=16 (54.1 vs 91.1 ns/sample, 3-arg path; 0.41× at N=1024); parity 0/40000 mismatches; per-call native ≈ Java re-confirms the crossing refutation — `bench/p500/results/STEP0_NOISE_CORE_2026-09-09.md`** |
 | G-PARITY | bit-equal fixtures ×2 runs | piggybacks on G-STEP0 rig | partially covered (0/20000 per form); full batch-plane fixtures at implementation |
-| G-RECON | ≥2 worldgen owner loops register-local with N_o ≥ breakeven | javap session |
-| G-AB | paired A/B wall delta > 0 with p < 0.1 (Mann-Whitney, n=5/arm) | one bench session on the TASK-63 harness |
+| G-RECON | ≥2 worldgen owner loops register-local with N_o ≥ breakeven | javap session | **GO (2026-09-08, TASK-69): owners are single-loop whole-method bodies (PerlinNoise.getValue = one octave loop over noiseLevels[], NormalNoise = two trees); N_o=8 measured; whole-object native kernels ALREADY in closed lib (nativeGetValue/NativeGetValueNoYScale/NativeNormalNoise.nativeGetValue + fill family — ABI decode = new G-ABI sub-gate); in-loop context correction: Java octave sample is 53.4 ns in-loop (not 91.1 isolated) → honest native headroom 0.70-0.96×, recoverable refined to 1.6-2.7% burst wall — `bench/p500/results/GRECON_OWNERS_2026-09-09.md`** |
+| G-ABI | decode `nativeBuildHandle([B[B[D[D[D[DDD)J`, parity bit-exact vs real class, whole-getValue kernel measured | one /tmp probe session (ABI probing, no server) | pending |
+| G-AB | paired A/B wall delta > 0 with p < 0.1 (Mann-Whitney, n=5/arm) | one bench session on the TASK-63 harness | pending — the only decision-grade production number |
 
 **NO-GO is a valid outcome at every gate** and is recorded as ops guidance. If
 G-STEP0 fails, the worldgen noise channel closes entirely (per-call refuted by
