@@ -161,6 +161,13 @@ From TASK-63's measured decomposition (armed total +5.24 CPU-s; Java displaced
 4.12→1.19 i.e. 2.93 CPU-s moved; stub crossing ≥0.44 CPU-s; residue ≈4.8 CPU-s =
 per-call crossing + inlining loss + barrier effects across millions of calls):
 
+* **Measured (TASK-67 STEP-0, supersedes the scenario bands below):** the
+  batch core at N=16 runs at **0.59× Java** on the worldgen-dominant 3-arg
+  path (54.1 vs 91.1 ns/sample) and 0.41× at N=1024; per-call native ≈ Java
+  (the TASK-63 crossing refutation re-confirmed directly). Recoverable ≈
+  4.12 CPU-s × (1 − 0.59) ≈ 1.7 CPU-s → realistic **~1.4-1.6 CPU-s ≈ 3-4%
+  of burst wall** after fill/residual overheads. The pessimistic scenario
+  below is refuted by measurement; kept for the record.
 * **Batched optimistic scenario** (residue amortizes fully at N_o≈16, native core
   matches JIT Java per-sample): native leg ≈ 2.93 + 0.3 (residual crossing+fill) ≈
   3.2 CPU-s vs 2.93 Java displaced → net ≈ **−0.3..−0.9 CPU-s saved** per burst
@@ -175,13 +182,11 @@ per-call crossing + inlining loss + barrier effects across millions of calls):
   was reached from the 11.5 µs BULK op's body/transition ratio; this design's
   breakeven math is the quantitative version of that verdict at sample granularity.
 
-Stated plainly: **this design's expected upside is single-digit percent of the burst,
-and its most likely honest outcome is a bounded refutation.** It is written because
-(a) TASK-63's OPS named the batching layer as the only remaining lever, (b) the
-refutation band itself is decision-grade ops data (it closes the noise channel the
-way TASK-58 closed boot), and (c) the machinery it would reuse is already landed —
-the marginal cost of the decisive experiment is a STEP-0 micro-bench, not a session
-of byte surgery.
+Stated plainly (written before STEP-0, kept for the record): **this design's
+expected upside was single-digit percent of the burst, and its most likely honest
+outcome was a bounded refutation.** STEP-0 (TASK-67) then measured the batch core
+at 0.59× Java at N=16 — GO with margin, upside re-estimated at 3-4% of burst
+wall — so the channel stays open and the remaining gates are G-RECON and G-AB.
 
 ## 5. Validation protocol (if and when implemented)
 
@@ -227,10 +232,10 @@ of byte surgery.
 
 ## 7. Decision gates
 
-| Gate | Condition | Cost |
-|---|---|---|
-| G-STEP0 | batch core per-sample ≤ 1.0× JIT Java at breakeven N ≤ 16 | one /tmp micro-bench session, no server |
-| G-PARITY | bit-equal fixtures ×2 runs | piggybacks on G-STEP0 rig |
+| Gate | Condition | Cost | Result |
+|---|---|---|---|
+| G-STEP0 | batch core per-sample ≤ 1.0× JIT Java at breakeven N ≤ 16 | one /tmp micro-bench session, no server | **GO (2026-09-08, TASK-67): 0.59× at N=16 (54.1 vs 91.1 ns/sample, 3-arg path; 0.41× at N=1024); parity 0/40000 mismatches; per-call native ≈ Java re-confirms the crossing refutation — `bench/p500/results/STEP0_NOISE_CORE_2026-09-09.md`** |
+| G-PARITY | bit-equal fixtures ×2 runs | piggybacks on G-STEP0 rig | partially covered (0/20000 per form); full batch-plane fixtures at implementation |
 | G-RECON | ≥2 worldgen owner loops register-local with N_o ≥ breakeven | javap session |
 | G-AB | paired A/B wall delta > 0 with p < 0.1 (Mann-Whitney, n=5/arm) | one bench session on the TASK-63 harness |
 
