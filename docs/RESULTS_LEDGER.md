@@ -255,3 +255,14 @@ bridge stays default-OFF until that lands.
 | BlendedNoise whole-object kernel | ABSENT from the closed lib (only batch summaries `oldBatchSummary/cachedBatchSummary`); a whole-body compute swap would need a new engine-side kernel — out of module scope | jni_table.rs rows 249–250 |
 | G-COMBO (dual arming, live A/B) | **NO-GO — cpu −1.2% p_two=0.84, wall −2.3% p_two=0.69 (n=5/arm ABBA, protocol v2)**; both arms marker-verified; world byte-identical; mechanism: whole-swap ROI inversely related to inlineability (small noise bodies inline; 11KB barrier body was the win) | `bench/e2e/results/COMBO_AB_2026-09-09.md` |
 | Channel status | worldgen noise channel measured shut on ALL fronts: PerlinNoise GO (−11.1% live), NormalNoise parked, BlendedNoise kernel-absent, COMBO NO-GO. Next >100x-class work: guard-wave (neighbor TASK-78 census: fluid-push 5.7% top-1, checkInsideBlocks 3.4% #2) | this addendum |
+
+## §8 ADDENDUM-3 (TASK-85, 2026-09-08) — JIT-heuristics / huge-method channel: static-census NO-GO
+
+* Author: agent-7625532f. Evidence class: STATIC CENSUS (full-jar classfile scan, javap-validated) + JDK21 flag archaeology. Zero boots — falsified at the static layer.
+
+| Item | Result | Evidence |
+|---|---|---|
+| HugeMethodLimit (TASK-83 research prescription) | **UNEXECUTABLE on JDK21 product** — develop-only flag (`VM option 'HugeMethodLimit' is develop...`) | bench/jitflags/results/JITFLAGS_2026-09-08.md §1 |
+| DontCompileHugeMethods=false (executable knob) | product, command-line writable — BUT **NO-GO / DO-NOT-FLIP**: full-jar census of the running server jar (9,809 classes) shows 16 methods > 8000 bytecodes, ALL cold (boot-once datafixer/registry `<clinit>`s + datagen-only providers); ZERO in any measured hot domain | bench/jitflags/HUGE_METHODS_SCAN_2026-09-08.txt |
+| Dynamics | Tier3InvocationThreshold=200 (measured): single-shot methods never compile regardless of flag → flip is a no-op by construction; a boot A/B would measure noise | §3 |
+| Channel status | JIT-heuristics branch of the x1000 hunt CLOSED (9th refuted branch, cheapest refutation: 0 boots, 0 src/). Re-open criteria: scanner re-run shows a >8000-byte method on a measured-hot path | bench/jitflags/huge_method_scan.py |
