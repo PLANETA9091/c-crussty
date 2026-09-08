@@ -352,3 +352,21 @@ Stage Summary:
 - TASK-71 ЗАКРЫТ: G-BODY = GO — whole-body swap доказан через РЕАЛЬНЫЙ retransform с бит-точным паритетом; dispatch-механика бесплатна; 0.815× end-to-end. Все CPU-гейты пройдены: G-STEP0 → G-RECON → G-ABI → G-BODY.
 - Коорд-урок: false-GO через 'patch applied but never executed' — канар обязателен для любых байт-патчей (зафиксирован в отчёте как hard gate).
 - Открытых клеймов нет. Следующий кандидат: G-AB (решающий live A/B, TASK-63 harness) — теперь безопасно: сосед ушёл с server lane на CPU-only TASK-72; но G-AB требует имплементации Session-1/2 в module .so (bridge + lifecycle + patch) — это самая тяжёлая задача конвейера, возможно разбить на 2 тика (Session 1 dormant-invisible → Session 2 patch + A/B). Резерв: ck_cap verify-strings (P2), D6 P3 design.
+
+---
+Task ID: cron-15:00+08-Job366516
+Agent: agent-7625532f
+Task: Автономный тик cron 15:00+08 — TASK-73 Session-1 имплементация batching-layer (noise-handle lifecycle bridge, dormant-invisible).
+
+Work Log:
+- Sync + CLAIMS: клейм TASK-73 → push fc54c7c → reverify OK; сосед TASK-72 CPU-only (без deploy) → module .so src свободен.
+- Археология архитектуры: PaperNativePerlinNoise УЖЕ дефайнится generic manifest-поверхностью (jni_table MAIN_BRIDGE_CLASSES + 4 natives) — Session-1 сжалась до ops-trio + Rust-модуля; proven cplug_sdk::asm::replace_body закрывает whole-body patch (7 Local args, G-BODY shape) — новый classfile-код НЕ нужен.
+- JAVA PerlinNoiseNativeOps trio: striped WeakHashMap ×16 + phantom-reaper (verbatim TASK-01), lazy reflection-build по ABI TASK-70, NOVEL — bit-exact Java octave-loop fallback внутри моста (javap-декод; worldgen никогда не видит NaN; B.2.2 in-bridge — G-BODY прототип этого не имел); RuntimeStubs shape-accurate (public field refs линкуются против реального класса); build_noise.sh +SHIP (7 классов major 52, verifier OK, без synthetic $1).
+- RUST src/perlin_noise.rs: byte-hook capture → define trio в kernel loader → patch на quiet worker (replace_body) → один retransform → selftest (два handle, бит-идентичные сэмплы, free); gate CRUSSTY_NATIVE_PERLIN_NOISE off; шаред-хелперы improved_noise → pub(crate) (force_load parameterized); double-arrays в selftest через raw JNI vtable (SDK не имеет double-array хелперов).
+- Гейты: cargo test 64/64; clippy Δ0 (19→19 после is_multiple_of фикса); P500 FULL duty 49 групп 70/70 пар 0 регрессий; DORMANT BOOT: boot 29.7s, verify ALL PASS, ровно 1 dormant-линия, 0 Exception, graceful stop exit 0; .so deployed (backup .bak_task73).
+- Пуши: becd2f3 (c-crussty) + 006a592 (dev-logs done) — чисто.
+
+Stage Summary:
+- TASK-73 ЗАКРЫТ: Session-1 dormant-invisible приземлена — мост live-готов, gate off = байт-индistinguишable от pre-TASK-73.
+- Инфра-урок: e2e courtesy guard = flock -n probe → бут держать БЕЗ удержания /tmp/crussty_bench.lock (flock-владение блокирует guard).
+- Открытых клеймов нет. Следующий кандидат: Session-2 = armed boot (CRUSSTY_NATIVE_PERLIN_NOISE=1): armed selftest + live-verify патча на реальном worldgen + затем G-AB (paired A/B, TASK-63 harness, n=5/arm Mann-Whitney) — решающий вердикт конвейера. Сосед: TASK-72 CPU-only.
