@@ -110,7 +110,7 @@ public class D1StagingProbe {
 
             // warmup + sanity
             for (int r = 0; r < WARM; r++) {
-                int ret = PaperNativeBatchDispatch.run(ids, args0, args1, counts, outs, offs);
+                int ret = PaperNativeBatchDispatch.run(ids, args0, args1, counts, outs, offs, new Object[0]);
                 if (ret != OPS) throw new IllegalStateException(
                         "ret=" + ret + " expected=" + OPS + " tid=" + tid + " len=" + len);
             }
@@ -118,7 +118,7 @@ public class D1StagingProbe {
             long[] ns = new long[ROUNDS];
             for (int r = 0; r < ROUNDS; r++) {
                 long t0 = System.nanoTime();
-                PaperNativeBatchDispatch.run(ids, args0, args1, counts, outs, offs);
+                PaperNativeBatchDispatch.run(ids, args0, args1, counts, outs, offs, new Object[0]);
                 ns[r] = System.nanoTime() - t0;
             }
             java.util.Arrays.sort(ns);

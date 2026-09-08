@@ -51,19 +51,23 @@ public final class ImprovedNoiseBatchOps {
 
     /**
      * The abiVersion() word this build expects — the compile-time mirror of
-     * batch_api.rs ABI_WORD = (TABLE_VERSION<<16)|KERNEL_COUNT = 131087.
-     * A mismatch degrades the site at the first flush (B.2.2 bucket).
+     * batch_api.rs ABI_WORD = (TABLE_VERSION<<16)|KERNEL_COUNT = 196626, v3
+     * (wire v3: refArgs plane + 18 kernels, S7-14). A mismatch degrades the
+     * site at the first flush (B.2.2 bucket).
      */
-    static final int EXPECTED_ABI = 131087;
+    static final int EXPECTED_ABI = 196626;
 
     /** Per-site degradation flag (B.2.2): once set, single-call for the boot. */
     private static volatile boolean degraded = false;
 
     /** Zero-op dispatch planes (immutable, shared — run() reads lengths only
-     *  for an empty op list). */
+     *  for an empty op list). EMPTY_REFS is the wire-v3 reference plane:
+     *  a zero-op batch owns 0 ref slots, and length-0 (not null) is the
+     *  contract for old-style batches. */
     private static final int[] EMPTY_IDS = new int[0];
     private static final long[] EMPTY_LONGS = new long[0];
     private static final int[] EMPTY_INTS = new int[0];
+    private static final Object[] EMPTY_REFS = new Object[0];
 
     /** Pending-op counter per thread (B.2.1: accumulation lives at the
      *  site, per-thread — the design's ThreadLocal shape). withInitial (Java
@@ -120,7 +124,8 @@ public final class ImprovedNoiseBatchOps {
                 return false;
             }
             final int ret = crussty.batch.PaperNativeBatchDispatch.run(
-                EMPTY_IDS, EMPTY_LONGS, EMPTY_LONGS, EMPTY_INTS, EMPTY_LONGS, EMPTY_INTS);
+                EMPTY_IDS, EMPTY_LONGS, EMPTY_LONGS, EMPTY_INTS, EMPTY_LONGS, EMPTY_INTS,
+                EMPTY_REFS);
             flushes++;
             lastFlushStatus = ret;
             return ret == 0;

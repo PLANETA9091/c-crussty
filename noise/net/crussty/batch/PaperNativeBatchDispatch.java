@@ -16,7 +16,12 @@ package crussty.batch;
  */
 public final class PaperNativeBatchDispatch {
     private PaperNativeBatchDispatch() {}
+    /** Wire v3 (S7-14): the 7th argument is the refArgs reference plane —
+     *  per-op slots at the prefix sum of Shape::refs(kernelIds[i]) (D=4,
+     *  E=1, F=3, all older shapes 0); an EMPTY Object[] is valid and
+     *  required for old-style batches. */
     public static native int run(int[] kernelIds, long[] args0, long[] args1,
-                                 int[] argCounts, long[] outs, int[] outOffsets);
+                                 int[] argCounts, long[] outs, int[] outOffsets,
+                                 Object[] refArgs);
     public static native int abiVersion();
 }

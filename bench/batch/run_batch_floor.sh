@@ -42,7 +42,10 @@ rm -rf "$CLASSES"; mkdir -p "$CLASSES"
 "$JDK/bin/javac" -d "$CLASSES" \
   "$ROOT"/bench/batch/java/crussty/batch/PaperNativeBatchDispatch.java \
   "$ROOT"/bench/batch/java/PaperNativeAquiferIndexStride.java \
+  "$ROOT"/bench/batch/java/PaperNativeDensityAp2MinMaxFill.java \
   "$ROOT"/bench/batch/java/PaperNativeStaticCacheGet.java \
+  "$ROOT"/bench/batch/java/PaperNativeRangeChoice.java \
+  "$ROOT"/bench/batch/java/PaperNativeSpigotLoadOrderDependency.java \
   "$ROOT"/bench/batch/java/BatchFloorBench.java
 
 # ---- resolve arm libs: use --before/--after if given, else build worktrees ----
