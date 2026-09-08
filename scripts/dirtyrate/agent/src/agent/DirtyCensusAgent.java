@@ -76,11 +76,14 @@ public final class DirtyCensusAgent {
     }
 
     static final class ProbeTransformer implements ClassFileTransformer {
+        static final java.util.Set<String> SEEN = java.util.Collections.synchronizedSet(new java.util.HashSet<>());
         @Override
         public byte[] transform(ClassLoader loader, String cn, Class<?> being,
                                 ProtectionDomain pd, byte[] buf) {
             for (String[] p : PROBES) {
                 if (p[0].equals(cn)) {
+                    if (SEEN.add(cn)) System.out.println("[dirty-census] SAW target class: " + cn
+                        + " loader=" + loader);
                     try {
                         return weave(buf, cn);
                     } catch (Throwable t) {

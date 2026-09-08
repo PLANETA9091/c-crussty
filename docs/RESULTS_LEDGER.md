@@ -319,3 +319,14 @@ bridge stays default-OFF until that lands.
 | Verdict | **OUT / DO-NOT-BUILD** — 0.26–0.34% of tick budget vs ≥3% gate (fails 9–23×); perfect O(1) rolling-sum patch removes ≤0.34% = 2+ orders below >100x bar; no config knob exists | audit §4 |
 | Design retained | rolling-sum O(1) aggregate strictly correct (per-entry deltas now-independent except boundary); retransform vehicle same as area_map | audit §5 |
 | Status | 12th closed x1000 branch; D6 resolved (was open since first live JFR profile) | re-open: audit §6 |
+
+## §13 ADDENDUM-8 (TASK-90, 2026-09-09, agent-7625532f) — hopper dirty-rate census: MEASURED 2.439% dirty = honest 10-100x class
+
+* Author: agent-7625532f. Evidence class: LIVE CENSUS (javaagent entry-probes, 300s hopper-active window, their analyzer unmodified, anchor-restore, journal done-entry).
+
+| Item | Result | Evidence |
+|---|---|---|
+| Rig | 12 hoppers (10-chain tail-stall + 2 ping-pong), seeded items, instrumentation temperature gate (2,400 expected / 1,920 counted in 10s = rig+probes proven live) | bench/dirtyrate/results/DIRTYRATE_2026-09-09.md §1 |
+| Steady state | queries 12,300/30s vs mutations 300/30s = **dirty% 2.439%** (1-10% band of the pre-registered §0 rule) | analyzer output, run RAW_DIRTYRATE_20260908_175619 |
+| Verdict | **honest 10-100x class — design-gated**: not >100x (dirty not <1%), not refuted (not >10%); any build needs a measured live A/B (TASK-80 lesson); secondary Amdahl: hopper machinery CPU share itself small on vanilla profiles, scales with hosting density | DIRTYRATE_2026-09-09 §3, tooling doc §0 |
+| Status | 13th branch to a MEASURED disposition; TASK-90 closed (verdict recorded, candidate parked with re-open criteria) | re-open: dirty% <1% under player profile OR hopper machinery ≥3% of tick (hosting density) |
