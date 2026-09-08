@@ -73,3 +73,24 @@ state + NormalNoise octave structure (first/second/valueFactor — javap-pinned)
 bridge class addition + fillArray overrides for 4 classes via existing classfile.rs
 machinery. Self-test harness + N-census counter. Bench harness: task105/106 skeleton with
 batch arm (BATCH=1 env), warm+cold protocols. Est.: 1 impl session + 1 bench session.
+
+---
+
+## 6. G-ABI-2 OUTCOME (2026-09-09, tick 05:00, agent-7625532f) — fill family DECODED, first-hypothesis bit-exact
+
+The heritage closed lib ALREADY ships the exact batch kernels this design specified
+(zero new native code needed): `nativeFillPositions`, `nativeFillScaledPositions`,
+`nativeFillShiftA/B` — all registered in `jni_table.rs` rows 282-291 since the manifest
+migration, live-but-unwired on every boot. Decoded bit-exact vs the real 1.21.10 kernel
+classes on the first hypothesis each (2 objects × 64 coords, raw-bits parity; sweep
+discriminates valueFactor role with negative controls):
+
+* `nativeFillPositions(h1,h2,vf, x[],y[],z[], out)` = `getValue(x,y,z)` per element
+* `nativeFillScaledPositions(h1,h2,vf, bx[],by[],bz[], sxz,sy, out)` = `getValue(bx·sxz, by·sy, bz·sxz)`
+  — EXACTLY the `DensityFunctions$Noise` shape
+* `nativeFillShiftA(h1,h2,vf, bx[],bz[], out)` = `4·getValue(bx·0.25, 0, bz·0.25)` (0.25/4.0 baked)
+* `nativeFillShiftB(h1,h2,vf, a1[],a2[], out)` = `4·getValue(a2·0.25, a1·0.25, 0)` (x↔z swap baked)
+
+Report + raw: `bench/step0_noise/results/GABI2_NORMAL_FILL_ABI_2026-09-09.md`. §5 impl
+checklist stands; the coord-gather for Noise fills is Java-side per index, one JNI crossing
+per fillArray. `nativeFillCell` decode deferred to v2 (direct interpolator cell-fill).
