@@ -1,0 +1,23 @@
+VERIFY rows=22 all_ok=True
+---- family d=8 ----
+  direct        b=   4.170 ns/op  a=   1078.0 ns  R2=0.9994
+  empty         b=   5.954 ns/op  a=   1121.2 ns  R2=0.9983
+  count         b=   6.208 ns/op  a=   1135.3 ns  R2=0.9979
+  chunk_solo    b=  65.953 ns/op  a=   1223.5 ns  R2=0.9999
+  chunk_shared  b=  57.352 ns/op  a=    970.5 ns  R2=0.9993
+---- family d=16 ----
+  direct        b=   4.242 ns/op  a=   1049.2 ns  R2=0.9998
+  empty         b=   6.091 ns/op  a=   1089.7 ns  R2=1.0000
+  count         b=   6.513 ns/op  a=   1079.6 ns  R2=1.0000
+  chunk_solo    b=  68.053 ns/op  a=   1196.1 ns  R2=0.9999
+  chunk_shared  b=  61.345 ns/op  a=    569.6 ns  R2=0.9996
+---- decomposition (ns/op) ----
+  d=8: C_dispatch=1.78  C_count=0.25  C_shared=51.40  C_full_shared=53.18  C_solo=60.00  C_full_solo=61.78
+  d=16: C_dispatch=1.85  C_count=0.42  C_shared=55.25  C_full_shared=57.10  C_solo=61.96  C_full_solo=63.81
+---- trigger-3 verdict (threshold 40 ns) ----
+  d=8 C_dispatch=1.78 ns -> << 40 (credible)
+  d=8 C_full_shared=53.18 ns -> >= 40 (NOT credible)
+  d=8 C_full_solo=61.78 ns -> >= 40 (NOT credible)
+  d=16 C_dispatch=1.85 ns -> << 40 (credible)
+  d=16 C_full_shared=57.10 ns -> >= 40 (NOT credible)
+  d=16 C_full_solo=63.81 ns -> >= 40 (NOT credible)

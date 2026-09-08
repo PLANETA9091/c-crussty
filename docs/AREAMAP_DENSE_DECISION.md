@@ -48,8 +48,18 @@ moment a re-open trigger below fires.
    workloads (design §9 risk 1 frames this as a business decision).
 2. Player-load live JFR showing the apply path as a real tick-budget share
    (design falsifier 2).
-3. Measured callback cost C << 40 ns via the TASK-68 rig, making the §7.2
-   upper bands credible.
+3. ~~Measured callback cost C << 40 ns via the TASK-68 rig, making the §7.2
+   upper bands credible.~~ **RESOLVED (REFUTED) 2026-09-08, TASK-72 /
+   S7-20**: measured in-situ against the real closed .so + patched kernel
+   bytes (`bench/p500/results/CALLBACK_COST_2026-09-08.md`). The dispatch
+   floor IS tiny (C_dispatch = 1.8 ns/op, confirming the Ops-bridge minimal
+   apply loop), but the production-shaped callback body (real fastutil map +
+   real map-backed ReferenceList + faithful TrackedPlayer branch structure,
+   disassembly-verified) costs 49-62 ns/op on top, so C_full = 53-64 ns/op >
+   40 ns in BOTH production corners (shared-chunk 53.2-57.1, solo-chunk
+   61.8-63.8). The §7.2 upper bands are not credible; production dense win
+   collapses to ~1.5-2.5x (µs-scale) at d<=33. Trigger closed as refuted —
+   DEFER strengthened with measured data.
 
 ## Non-triggers (checked, do not re-open)
 
