@@ -142,6 +142,10 @@ fn enabled() -> bool {
 static READY: [AtomicBool; 2] = [AtomicBool::new(false), AtomicBool::new(false)];
 /// Global ref to the kernel classloader (captured at activation).
 static KERNEL_LOADER: AtomicUsize = AtomicUsize::new(0);
+/// Global ref to the JNI-defined ops bridge class (captured at define time;
+/// JNI-defined classes are not FindClass/loadClass-reachable and the JVMTI
+/// scan gate skips un-INITIALIZED classes — see define loop).
+static OPS_GREF: AtomicUsize = AtomicUsize::new(0);
 
 /// Original class bytes captured from the FIRST sight of each target.
 static ORIG_BYTES: [std::sync::OnceLock<std::sync::Mutex<Option<Vec<u8>>>>; 2] =
@@ -335,6 +339,15 @@ pub fn activate() {
             for (name, bytes) in OPS_EMBEDS {
                 match env.define_class(name, gref, bytes) {
                     Some(c) => {
+                        // Keep a global ref to the ops class: it is JNI-defined
+                        // and therefore NOT reachable via loadClass/FindClass
+                        // (jar lookups), and the JVMTI class scan skips classes
+                        // that are not yet INITIALIZED — the selftest would
+                        // never resolve it otherwise (smoke-1 CNFE evidence).
+                        if name == OPS_NAME {
+                            let gr = env.new_global_ref(c);
+                            OPS_GREF.store(gr as usize, Ordering::SeqCst);
+                        }
                         env.delete_local_ref(c);
                         eprintln!("[crussty-plugin] noise_fill: defined {name} in kernel loader");
                     }
@@ -541,11 +554,17 @@ fn resource_stream_capture(target: &str) -> Option<Vec<u8>> {
 /// anything else (design gate: bit-exact before any A/B).
 fn selftest() {
     let result = cplug_sdk::jni_util::with_attached(|env| -> Option<String> {
-        let cls = env.find_class(OPS_NAME)?;
-        let mid = env.get_static_method_id(cls, "selfTest", "()Ljava/lang/String;")?;
-        let val = env.call_static_object_method(cls, mid, &[]);
+        // Resolve via the define-time global ref: the bridge lives only in the
+        // JVM dictionary under the kernel loader — env.find_class throws CNFE
+        // (system loader) and the JVMTI scan skips non-INITIALIZED classes
+        // (smoke-1 evidence).
+        let gref = OPS_GREF.load(Ordering::SeqCst) as jni::jclass;
+        if gref.is_null() {
+            return None;
+        }
+        let mid = env.get_static_method_id(gref, "selfTest", "()Ljava/lang/String;")?;
+        let val = env.call_static_object_method(gref, mid, &[]);
         let _ = crate::clear_exception(env);
-        env.delete_local_ref(cls);
         if val.is_null() {
             return None;
         }
