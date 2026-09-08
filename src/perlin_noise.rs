@@ -80,6 +80,11 @@ fn enabled() -> bool {
         .unwrap_or(false)
 }
 
+/// Kernel-policy key for the arming decision (TASK-86): the registry entry
+/// `("PerlinNoise", "getValueWholeBody")` carries the G-AB live evidence.
+/// short_class() normalization makes the full internal PERLIN_CLASS match.
+const POLICY_KERNEL: &str = "getValueWholeBody";
+
 static READY: AtomicBool = AtomicBool::new(false);
 /// Global ref to the kernel PerlinNoise classloader, captured at activation.
 /// 0 = not captured yet.
@@ -130,6 +135,25 @@ pub fn register() {
         );
         return;
     }
+    // TASK-86 two-key promotion gate: env AND kernel-policy must both Allow.
+    // KeepJava (unknown / demoted / policy=strict-without-registry-entry)
+    // keeps the Java path for the boot — the policy is the promotion ledger,
+    // the env flag is the operator switch (B.2.2 ladder: either side refuses
+    // => dormant; either side can kill-switch by itself).
+    match crate::kernel_policy::decide(PERLIN_CLASS, POLICY_KERNEL) {
+        crate::kernel_policy::Decision::Allow => {}
+        crate::kernel_policy::Decision::KeepJava { reason } => {
+            eprintln!(
+                "[crussty-plugin] perlin_noise: kernel-policy KeepJava ({reason}) — staying dormant despite env gate"
+            );
+            return;
+        }
+    }
+    crate::kernel_policy::audit_wire(
+        PERLIN_CLASS,
+        POLICY_KERNEL,
+        "perlin_noise whole-body bridge arming (PerlinNoise.getValue -> PerlinNoiseNativeOps)",
+    );
     cplug_sdk::hooks::register_bytes(PERLIN_CLASS, |_name, bytes| {
         if !READY.load(Ordering::Relaxed) {
             // Pristine sighting (the original class load): stash the bytes

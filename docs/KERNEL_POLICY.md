@@ -175,3 +175,33 @@ unproven elsewhere) does **not** leak between entries.
 
 Everything stays uncommitted until the orchestrator decides; see
 `docs/OPTIMIZATION_ROADMAP.md` §2 for the sibling work items.
+
+## Whole-body bridge wiring (TASK-86)
+
+The whole-body class (`perlin_noise.rs`, `improved_noise.rs`) swaps an ENTIRE
+hot method body for a native bridge (byte-hook capture of the original bytes +
+`replace_body` retransform). Arming is **two-key** — both must Allow, either
+one alone is a kill-switch:
+
+1. **Env gate** — `CRUSSTY_NATIVE_PERLIN_NOISE` / `CRUSSTY_NATIVE_IMPROVED_NOISE`
+   (default OFF, read once at register time; the operator switch).
+2. **Kernel policy** — the module consults `decide(CLASS, KERNEL)` at arming;
+   `KeepJava` keeps the Java path for the boot and logs the reason. The
+   registry entries carry the evidence:
+
+| Class | Kernel (policy key) | Verdict | Evidence |
+|---|---|---|---|
+| `PerlinNoise` | `getValueWholeBody` | live | G-AB live A/B n=5/arm ABBA protocol v2: cpu_burst −11.1% median (exact p_two=0.0079, perfect separation), wall −12.3% (p_two=0.0952), parity 0/20000 bit-exact, JFR engagement (`bench/e2e/results/PERLIN_AB_2026-09-09.md`) |
+| `ImprovedNoise` | `noiseWholeBody` | live | hot-patch v2 self-test PASSED on live Purpur 1.21.10 (worklog session 003); kernels `nativeNoise`/`nativeBuildHandle`/`nativeFreeHandle` separately live-verified above |
+
+This makes the policy the single promotion ledger for BOTH wiring classes:
+kernel-routing (batch gate refuses `-10`, `decide()` at call sites) and
+whole-body bridges (`register()` refuses arming). A demotion edit to a
+registry entry instantly disables the corresponding live bridge at the next
+boot — the test suite (`whole_body_bridge_wirings_are_policy_gated`) fails
+fast on accidental key drift between module and registry.
+
+Promotion procedure for a NEW whole-body bridge: G-STEP0 → G-RECON → G-ABI →
+G-BODY (offline gates) → G-AB (live paired A/B, protocol v2) → add the
+`ProvenKernel` entry with the evidence pointer → THEN the env flag becomes
+meaningful (B.2.2 runbook below).

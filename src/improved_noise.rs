@@ -83,6 +83,12 @@ fn enabled() -> bool {
         .unwrap_or(false)
 }
 
+/// Kernel-policy key for the arming decision (TASK-86): the registry entry
+/// `("ImprovedNoise", "noiseWholeBody")` carries the v2 live-verification
+/// evidence. short_class() normalization makes the full internal
+/// NOISE_CLASS match.
+const POLICY_KERNEL: &str = "noiseWholeBody";
+
 static READY: AtomicBool = AtomicBool::new(false);
 /// Global ref to the kernel ImprovedNoise classloader, captured at
 /// activation; the patch worker reuses it to feed the ASM helper.
@@ -189,6 +195,22 @@ pub fn register() {
         );
         return;
     }
+    // TASK-86 two-key promotion gate: env AND kernel-policy must both Allow
+    // (same contract as perlin_noise.rs — see the B.2.2 whole-body runbook).
+    match crate::kernel_policy::decide(NOISE_CLASS, POLICY_KERNEL) {
+        crate::kernel_policy::Decision::Allow => {}
+        crate::kernel_policy::Decision::KeepJava { reason } => {
+            eprintln!(
+                "[crussty-plugin] improved_noise: kernel-policy KeepJava ({reason}) — staying dormant despite env gate"
+            );
+            return;
+        }
+    }
+    crate::kernel_policy::audit_wire(
+        NOISE_CLASS,
+        POLICY_KERNEL,
+        "improved_noise whole-body hook arming (ImprovedNoise.noise -> ImprovedNoiseNativeOps retarget)",
+    );
     cplug_sdk::hooks::register_bytes(NOISE_CLASS, |_name, bytes| {
         if !READY.load(Ordering::Relaxed) {
             // Pristine sighting (the original class load): stash the bytes

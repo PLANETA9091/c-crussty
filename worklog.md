@@ -494,3 +494,19 @@ Work Log:
 Stage Summary:
 - TASK-85 ЗАКРЫТ: JIT-heuristics канал = 9-я опровергнутая ветка x1000-охоты, закрыта на стат-слое. Verdict: NO-GO / DO-NOT-FLIP. TASK-83 GO скорректирован на двух основаниях (флаг неисполним на прод-JDK21; исполнимый рычаг имеет пустую горячую поверхность + пороговая динамика делает flip нулевым по конструкции).
 - Пул x1000-охоты после тика: TASK-84 (S7-28) = dirty-rate tooling + hopper census (top remaining same-state кандидат); затем BE-tick shouldTickBlocksAt (SparklyPaper), dfc-on-Paper, Graal JIT A/B (нужен GraalVM — отдельная тяжёлая сессия с ~1GB загрузкой + boot-серия), kernel-policy whitelist + B.2.2 runbook (P2, мой), ck_cap verify-strings (P2), D6 P3 design.
+---
+Task ID: cron-22:20+08-Job366516
+Agent: agent-7625532f
+Task: TASK-86 (kernel-policy whitelist + B.2.2 runbook для whole-body класса) — ИМПЛЕМЕНТАЦИЯ ЗЕЛЁНАЯ, ПУШ ЗАБЛОКИРОВАН (sandbox reset, токен погиб).
+
+Work Log:
+- Клейм TASK-86 улетел в dev-logs ДО ресета (ed2e1d3, 14:3xZ) — соседу виден. Mид-тик (~14:45Z) sandbox rootfs WIPED: /home/z/c-crussty, CRUSSTY, crussty-dev-logs, jdk21, server, ~/.git-credentials — всё удалено; my-project сброшен; локальный worklog потерян (пересоздан с incident-записью).
+- Восстановление: rustup (2-я попытка; сеть флапала) → клон c-crussty @ ad7a343 (публичный, история цела) + CRUSSTY @ 4f5d5ea → ПЕРЕ-ПРИМЕНЕНИЕ TASK-86 правок байт-в-байт из контекста сессии (git diff --stat: 96 insertions / 3 файла): PROVEN_WINS += ("PerlinNoise","getValueWholeBody") + ("ImprovedNoise","noiseWholeBody") с evidence-указателями; policy-гейт decide() в register() обоих модулей (KeepJava → dormant + лог-строка; audit_wire на arming); новый тест whole_body_bridge_wirings_are_policy_gated (drift-guard: переименование ключа с одной стороны = тест падает).
+- Гейты на восстановленном дереве: cargo test 65/65 ok (64 + новый); clippy Δ0 (12, те же категории); P500 FULL duty rc=0 70/70, 0 CRASH/SKIP, 4 известных регрессии на месте (5.561/4.641/2.317/1.773). JAVA_HOME для P500 — свежескачанный Temurin 21.0.12.1 (adoptium; apt-jdk недоступен без root).
+- Доки: KERNEL_POLICY.md §whole-body (two-key контракт + таблица записей + promotion procedure); BATCH_ROLLOUT_RUNBOOK.md §9 (B.2.2 ladder для whole-body: dormant/armed/refusal gates, PASS, abort-лестница env→registry→.so); RESULTS_LEDGER.md ADDENDUM-4.
+- БЛОКЕР: ~/.git-credentials погиб с ресетом; crussty-dev-logs = private (недоступен даже на чтение); push невозможен ДО перепровижининга токена владельцем. Секрет-гигиена: токен из кода/истории НЕ восстанавливается (никогда не коммитился — по правилам).
+- Живые буты (dormant zero-delta + armed smoke) отложены: Purpur 1.21.10 jars + world anchor погибли с ресетом; переменная среды восстановления — следующий тик с токеном.
+
+Stage Summary:
+- TASK-86: КОД+ДОКИ ГОТОВЫ К ПУШУ (гейты зелёные на восстановленном дереве), вердикт не финализирован до пуша/бутов. Promotion-механика whole-body класса теперь двухключевая: env-флаг оператора + kernel-policy леджер — демоция записи в реестре мгновенно отключает живой мост на следующем буте.
+- Инфра-статус сандбокса: rust ✓ (stable), jdk21 ✓ (Temurin 21.0.12.1), c-crussty+CRUSSTY клонов ✓; НЕТ: токен (→ push + private dev-logs), Purpur jars, world anchor, BENCH.lock-канон |. Следующий тик: пуш TASK-86 при восстановленном токене, ребилд server-энва, доклейка бут-гейтов.

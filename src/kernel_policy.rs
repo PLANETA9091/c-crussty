@@ -205,6 +205,24 @@ pub static PROVEN_WINS: &[ProvenKernel] = &[
         verdict: "live",
         evidence: "improved_noise bridge: handle free verified by self-test + Cleaner lifecycle",
     },
+    // --- whole-body bridge wirings (TASK-86 promotion policy) ---------------
+    // The whole-body class swaps an ENTIRE hot method body for a native
+    // bridge (byte-hook capture + replace_body retransform). Arming is
+    // two-key: env gate (CRUSSTY_NATIVE_PERLIN_NOISE /
+    // CRUSSTY_NATIVE_IMPROVED_NOISE, default OFF) AND this registry — the
+    // module consults decide() at arming and stays dormant on KeepJava.
+    ProvenKernel {
+        class: "PerlinNoise",
+        kernel: "getValueWholeBody",
+        verdict: "live",
+        evidence: "perlin_noise whole-body bridge (TASK-73/74): G-AB live A/B n=5/arm ABBA protocol v2 — cpu_burst -11.1% median perfect separation (exact p_two=0.0079), wall -12.3% median (p_two=0.0952), parity 0/20000 bit-exact, JFR engagement under load; bench/e2e/results/PERLIN_AB_2026-09-09.md; promotion policy + B.2.2 runbook = TASK-86",
+    },
+    ProvenKernel {
+        class: "ImprovedNoise",
+        kernel: "noiseWholeBody",
+        verdict: "live",
+        evidence: "improved_noise whole-body hook v2: self-test PASSED on live Purpur 1.21.10 (worklog session 003); kernels nativeNoise/nativeBuildHandle/nativeFreeHandle separately live-verified above; promotion policy + B.2.2 runbook = TASK-86",
+    },
     // --- P500 WIN verdicts (promotion candidates, wire-eligible) ------------
     // Evidence synced to the canonical 2026-09-08 full rerun
     // (bench/p500/results/P500_REPORT.md) by TASK-31; see
@@ -1011,6 +1029,38 @@ mod tests {
                 d
             );
         }
+    }
+
+    #[test]
+    fn whole_body_bridge_wirings_are_policy_gated() {
+        // TASK-86: the whole-body bridge class arms through the SAME gate as
+        // kernel routing. Both live whole-body wirings must be Allow in
+        // strict mode (via either short or full internal class form), and
+        // the arming sites in perlin_noise.rs / improved_noise.rs consult
+        // exactly these keys — renaming one side without the other must
+        // fail here, not silently ungate a live bridge.
+        assert!(decide_in(PolicyMode::Strict, "PerlinNoise", "getValueWholeBody").is_allowed());
+        assert!(decide_in(
+            PolicyMode::Strict,
+            "net/minecraft/world/level/levelgen/synth/PerlinNoise",
+            "getValueWholeBody"
+        )
+        .is_allowed());
+        assert!(decide_in(PolicyMode::Strict, "ImprovedNoise", "noiseWholeBody").is_allowed());
+        assert!(decide_in(
+            PolicyMode::Strict,
+            "net/minecraft/world/level/levelgen/synth/ImprovedNoise",
+            "noiseWholeBody"
+        )
+        .is_allowed());
+        // An unproven whole-body swap stays default-safe KeepJava — the
+        // two-key gate only opens through an honest PROVEN_WINS entry.
+        assert!(!decide_in(
+            PolicyMode::Strict,
+            "Entity",
+            "updateFluidHeightAndDoFluidPushingWholeBody"
+        )
+        .is_allowed());
     }
 
     #[test]
