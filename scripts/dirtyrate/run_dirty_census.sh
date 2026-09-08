@@ -9,7 +9,7 @@ JDK="${JDK21:-/home/z/jdk21}"
 SERVER=/home/z/server
 JAR="$SERVER/versions/purpur-1.21.10.jar"   # top-level paperclip jar (self-bootstraps libraries); the versioned 1.21.10/ jar is the raw craftbukkit Main -> NoClassDefFoundError joptsimple (TASK-90 first-run lesson)
 STAMP=$(date +%Y%m%d_%H%M%S)
-OUT="bench/dirtyrate/RAW_DIRTYRATE_$STAMP"
+OUT="$PWD/bench/dirtyrate/RAW_DIRTYRATE_$STAMP"   # ABSOLUTE: server runs with cwd=$SERVER (2nd live-boot lesson: relative paths + wrong CWD = eula/world lookups in the repo)
 mkdir -p "$OUT"
 LOG="$OUT/server.log"
 
@@ -34,7 +34,7 @@ log "anchored: $WORLDS"
 
 # --- census env ---
 export CRUSSTY_DIRTY_CENSUS=1
-export CRUSSTY_DIRTY_OUT="$PWD/$OUT/census.tsv"
+export CRUSSTY_DIRTY_OUT="$OUT/census.tsv"
 rm -f "$CRUSSTY_DIRTY_OUT"
 
 # --- vanilla boot (no engine agent), stdin = FIFO console ---
@@ -43,10 +43,11 @@ FIFO="$OUT/console.fifo"; mkfifo "$FIFO"
 sleep 3600 3>"$FIFO" &
 HOLDER=$!
 log "vanilla boot (purpur direct jar, dirty-census agent armed) ..."
-"$JDK/bin/java" -Xms512M -Xmx2G -XX:+UseG1GC \
-    -javaagent:scripts/dirtyrate/agent/dirty_census.jar \
-    -jar "$JAR" --nogui <"$FIFO" > >(tee -a "$LOG") 2>&1 &
-SPID=$!
+AGENT="$PWD/scripts/dirtyrate/agent/dirty_census.jar"
+( cd "$SERVER" && exec "$JDK/bin/java" -Xms512M -Xmx2G -XX:+UseG1GC \
+    -javaagent:"$AGENT" \
+    -jar "$JAR" --nogui <"$FIFO" > >(tee -a "$LOG") 2>&1 ) &
+SPID=$!   # server cwd = $SERVER (eula.txt/worlds live there; paperclip must not extract into the repo — TASK-90 2nd live-boot lesson)
 disown "$SPID" 2>/dev/null || true
 
 # --- wait for Done ---
