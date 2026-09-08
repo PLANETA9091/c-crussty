@@ -29,7 +29,9 @@ entry that skips per-call machinery when state is unchanged**:
 
 Closed doors (do not re-open without new evidence): blend-cache EMPTY 316x pair =
 **NO-GO** (TASK-32, 1c5eefb: JFR 0/180 worldgen samples — Paper does not pay the
-machinery); noise batching lane = G-AB pending (TASK-74, in flight); area_map lane =
+machinery); noise batching lane = **closed all-GO** (TASK-74, landed mid-session:
+cpu_burst −11.1% median p_two=0.0079 perfect separation, wall −12.3% p_two=0.0952
+two-sided clean — 5-gate pipeline G-STEP0→RECON→ABI→BODY→AB complete); area_map lane =
 closed with measured triggers (TASK-64 variant C live: move 3.1–94x, native-leg 299.1x
 @d=511; DENSE DEFER with trigger 3 refuted by measurement, TASK-72); site-level batching
 = "structurally impossible", honest upside 0–3% (TASK-66).
@@ -55,6 +57,16 @@ Everything else measured: kernel-pair wins 1.18–3.32x; batching ceiling 1.4–
 in 13 groups blocked-by-`.so` for the >100x class (physics, §1).
 
 ## 3. NEW same-state-guard candidates (stream A — Paper 1.21.10 hot paths)
+
+**Mid-session evidence upgrade (TASK-74, landed while this doc was being written):** the
+G-AB verdict exposed the **JIT inlining-barrier mechanism** — Paper's 11,000-byte noise
+body with a megamorphic `DoubleList` does not inline into worldgen caller loops, while a
+1-instruction `invokestatic` body does; measured live effect (−11.1% cpu) came out
+**5–8x larger than the kernel-pair microbench predicted (1.6–2.7%)**. Consequence for
+this hunt: whole-method guard bodies are even smaller than the noise bridge body, so
+§3's per-call ESTIMATE ratios are **lower bounds of the same kind that TASK-74 proved
+conservative** — the guard class inherits the strongest measured multiplier mechanism
+in the project's history (PERLIN_AB_2026-09-09.md §5, RESULTS_LEDGER §7 ADDENDUM).
 
 Method: vanilla 1.21.10 Mojang-mapped bytecode disassembly (jar + NeoForged renamer +
 javap; Paper patches on top are not visible — caveat, candidate shapes are structural).
