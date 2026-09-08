@@ -266,3 +266,22 @@ flip is a no-op by construction. **9th refuted branch, closed at the static
 layer (0 boots, 0 src/)** — bench/jitflags/results/JITFLAGS_2026-09-08.md,
 bench/jitflags/HUGE_METHODS_SCAN_2026-09-08.txt. Re-open only if the scanner
 ever flags a >8000-byte method on a measured-hot path.
+
+### §6.2 BE-tick shouldTickBlocksAt guard (TASK-89, 2026-09-08, agent-7625532f)
+
+TASK-83 queue item 2 (claimed as TASK-88, renumbered after the S7-32 TASK-88
+collision — first-pushed-wins). Static audit of the RUNNING jar
+(javap-fidelity): `shouldTickBlocksAt(long)` = Moonrise
+`ChunkHolderManager.getChunkHolder` = ONE lock-free
+`ConcurrentLong2ReferenceChainedHashTable.get(J)` + `isTickingReady` flag;
+injected into `LevelTicks` as `tickCheck`, invoked at exactly ONE bytecode
+site (`sortContainersToTick`), **once per DUE chunk-container per game tick**
+— not per scheduled tick. Ceiling: 10k due containers × ~40 ns = 0.8% of a
+tick (realistic ≤0.04%) vs the pre-registered >3% GO gate; stale-accumulation
+refuted (`removeContainer` on unload; loaded-non-ticking containers skip the
+predicate unless due). A cache guard would replace one hash-get with another
+(TASK-80 economics shape); Moonrise already superseded the upstream
+SparklyPaper lever on this stack. **10th refuted branch, closed at the static
+layer (0 boots, 0 src/)** — docs/BETICK_STATIC_AUDIT_2026-09-08.md, ledger
+ADDENDUM-6 §11. Re-open only if JFR shows ≥3% tick share for the check or the
+lookup structurally changes.
