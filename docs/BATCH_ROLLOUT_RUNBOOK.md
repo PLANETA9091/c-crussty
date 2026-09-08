@@ -211,3 +211,55 @@ compares against `baseline.json`.
 `src/batch_api.rs` / `src/batch_table.rs` / `src/kernel_policy.rs` (env sites above) ·
 `scripts/e2e_orchestrate.sh` (marker table) · worklog SESSION 005/006/007 (S7-2 boot-marker
 inventory, S7-5/S7-6 live E2E + hot-reload precedent).
+
+## 9. Whole-body bridge promotion runbook — B.2.2 ladder (TASK-86)
+
+Applies to the whole-body bridge class (`perlin_noise.rs`, `improved_noise.rs`
+— byte-hook capture + `replace_body` retransform). The B.2.2 semantics are
+reused verbatim: **any negative outcome degrades to the Java path for the
+boot — no retry storms, no partial state**; promotion aborts on any
+unexplained negative return.
+
+### Two-key arming (env AND policy — either side kills it)
+
+| Key | Allow value | Refusal behavior |
+|---|---|---|
+| `CRUSSTY_NATIVE_PERLIN_NOISE` / `CRUSSTY_NATIVE_IMPROVED_NOISE` | `1`/`true`/`on`/`yes` | module stays dormant (dormant byte-identity) |
+| kernel-policy registry (`("PerlinNoise","getValueWholeBody")`, `("ImprovedNoise","noiseWholeBody")`) | `Decision::Allow` | module logs `kernel-policy KeepJava (<reason>) — staying dormant despite env gate` and returns |
+
+Policy mode is `CRUSSTY_KERNEL_POLICY` (`strict` default / `audit` logs every
+wiring decision / `off` = dangerous A/B bypass). In `audit` mode the arming
+emits `kernel-policy: ...` decision lines for both whole-body keys.
+
+### Boot sequence (promotion validation)
+
+```bash
+# 1. dormant gate — no env, strict policy: byte-identity, zero delta
+bash scripts/e2e_orchestrate.sh boot && bash scripts/e2e_orchestrate.sh verify
+# expect: perlin_noise/improved_noise "dormant (set ...=1 to enable)", no hook serve lines
+
+# 2. armed gate — env ON, policy audit: full marker trace
+CRUSSTY_KERNEL_POLICY=audit CRUSSTY_NATIVE_PERLIN_NOISE=1 \
+  bash scripts/e2e_orchestrate.sh boot && bash scripts/e2e_orchestrate.sh verify
+# expect (console.log): pristine sighting -> hook serve -> retransform rc=0
+#   -> self-test passed -> kernel-policy: allow lines (audit) for the arming
+
+# 3. refusal gate — env ON, entry absent from registry (local revert check):
+#    expect the KeepJava line + dormant behavior (two-key defense-in-depth)
+```
+
+### PASS criteria
+
+* dormant boot zero-delta (legacy bytes, no serve lines, 0 exceptions);
+* armed boot: full marker trace (pristine sighting → hook serve → retransform
+  rc=0 → self-test passed), `kernel-policy` audit lines present, 0 exceptions
+  in scope, exit 0, 0 new hs_err;
+* soak (steady-state): 0 unexplained negative returns / hook Throwables over
+  the soak window (B.2.2 degrade ladder never engages).
+
+### Abort / rollback (cheapest first, B.8.7 ladder)
+
+1. unset the env flag + restart → dormant byte-identity (operator switch);
+2. `CRUSSTY_KERNEL_POLICY` stays strict — remove the `ProvenKernel` entry →
+   policy refuses at next boot (ledger switch, code-free);
+3. module `.so` revert to backup (deploy switch).

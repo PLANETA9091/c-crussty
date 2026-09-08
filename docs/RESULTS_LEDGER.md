@@ -280,3 +280,14 @@ bridge stays default-OFF until that lands.
 | Operator runbook | dump once (NO agent, bench/boot/cds_rebuild.sh) → append -XX:SharedArchiveFile to every boot; re-dump after Paper/engine updates; CLI-only flags, nothing committed to server.properties | docs/BOOT_SUBSECOND_FEASIBILITY.md ADDENDUM §runbook |
 | Honest floor | ~13.2-13.6s; residual = Paper-internal payload (ENGINE-TOUCH) + JVM/bundler startup; **<1s still unreachable without snapshot/restore (CRaC env-blocked)** | ADDENDUM |
 | Harness fixes | kill_stdin_holders sleep-child leak (orphaned fd-holders deadlocked BENCH-MUTEX ×3 today) patched to kill children first; cds_v2.sh literal case arms generalized | scripts/e2e_orchestrate.sh |
+
+## §10 ADDENDUM-5 (TASK-86, 2026-09-08, agent-7625532f) — whole-body promotion policy + B.2.2 runbook LANDED
+
+* Author: agent-7625532f. Evidence class: LANDED CODE + measured gates (numbering note: originally written as ADDENDUM-4; renumbered to ADDENDUM-5 on rebase over S7-31's AppCDS ADDENDUM-4. Claim-label collision: S7-30's boot-feasibility task also carried a "TASK-86" label — resolution recorded in dev-logs CLAIMS.md.)
+
+| Item | Result | Evidence |
+|---|---|---|
+| Kernel-policy whitelist for the whole-body class | LANDED — `("PerlinNoise","getValueWholeBody")` + `("ImprovedNoise","noiseWholeBody")` in `PROVEN_WINS` (evidence: G-AB live −11.1% cpu p=0.0079 / v2 self-test); arming in both modules consults `decide()` — two-key gate (env AND policy, either side = kill-switch) | src/kernel_policy.rs, src/perlin_noise.rs, src/improved_noise.rs |
+| B.2.2 whole-body runbook | LANDED — boot sequence (dormant/armed/refusal gates), markers, PASS criteria, abort ladder (env → registry entry → .so revert) | docs/BATCH_ROLLOUT_RUNBOOK.md §9, docs/KERNEL_POLICY.md §whole-body |
+| Gates (src/ touched) | cargo test 65/65 (was 64 + new `whole_body_bridge_wirings_are_policy_gated`), clippy Δ0 (12), P500 FULL 70/70 0 CRASH/SKIP, 4 known regressions unchanged | bench/p500/results/P500_REPORT.md (this session's rerun) |
+| Live boot validation (post-reset) | ALL THREE §9 runbook gates GREEN on reconstructed env: dormant ALL PASS; armed+audit full trace (policy line "WIRE PerlinNoise.getValueWholeBody: allowed (proven)" + 4 DO_NOT_WIRE surface-only); refusal rig keeps dormant despite env gate (drift-guard test 64/1); 0 hs_err across 5 boots; promoted build md5-verified | docs/BATCH_ROLLOUT_RUNBOOK.md §9 live-table (commit 2016ce8) |
