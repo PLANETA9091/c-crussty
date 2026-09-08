@@ -22,6 +22,7 @@ mod batch_desc;
 mod batch_table;
 mod bridge_class;
 mod classfile;
+mod fluid_guard;
 mod improved_noise;
 mod jni_table;
 mod kernel_policy;
@@ -86,6 +87,7 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     area_map::register();
     improved_noise::register();
     perlin_noise::register();
+    fluid_guard::register();
     proto_blend_cache::register();
     std::thread::spawn(inject_surface);
     0
@@ -247,6 +249,7 @@ fn inject_surface() {
     area_map::activate();
     improved_noise::activate();
     perlin_noise::activate();
+    fluid_guard::activate();
     // Dormant unless CRUSSTY_NATIVE_BLEND_CACHE is set (see docs/HOOK_BLEND_CACHE.md).
     proto_blend_cache::activate();
 }
