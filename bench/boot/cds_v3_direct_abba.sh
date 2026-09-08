@@ -30,6 +30,7 @@ stop_server() {
 boot_direct() { # $1=arm
     anchor_restore
     : > "$SERVER/logs/latest.log"
+    cd "$SERVER" || exit 9   # cec5cd3 lesson: server MUST run with cwd=/home/z/server (logs+worlds are cwd-relative)
     if [ "$1" = D ]; then
         CDSCMD="-XX:SharedArchiveFile=$V2"
         MAINCMD="-jar $SERVER/versions/purpur-1.21.10.jar --nogui"
@@ -37,10 +38,10 @@ boot_direct() { # $1=arm
         CDSCMD="-XX:SharedArchiveFile=$V3"
         MAINCMD="-cp '$CP' org.bukkit.craftbukkit.Main --nogui"
     fi
-    eval "exec '$JAVA' $CDSCMD $AGENTQ -Xms512M -Xmx2G -XX:+UseG1GC -Dfile.encoding=UTF-8 -Ddist.root=$SERVER $MANICMD" </dev/null >"$OUT/db_${1}_$$.log" 2>&1 &
+    eval "exec '$JAVA' $CDSCMD $AGENTQ -Xms512M -Xmx2G -XX:+UseG1GC -Dfile.encoding=UTF-8 -Ddist.root=$SERVER $MAINCMD" </dev/null >"$OUT/db_${1}_$$.log" 2>&1 &
     JP=$!
     for i in $(seq 1 90); do grep -qE 'Done \([0-9]+\.[0-9]+s\)' "$SERVER/logs/latest.log" 2>/dev/null && break; sleep 1; done
-    T=$(grep -h -m1 -oE 'Done \([0-9]+\.[0-9]+s\)' "$SERVER/logs/latest.log" 2>/dev/null | grep -oE '[0-9]+\.[0-9]+')
+    T=$(grep -h -m1 -oE 'Done \([0-9]+\.[0-9]+s\)' "$SERVER/logs/latest.log" "$OUT/db_${1}_$$.log" 2>/dev/null | grep -oE '[0-9]+\.[0-9]+' | head -1)
     echo "ARM $1: ${T:-NO-DONE}"
     stop_server
 }
