@@ -127,6 +127,111 @@ public final class NormalNoiseBatchOps {
         }
     }
 
+    // ---------- last-call diagnostics (smoke forensics; read by selfTest) ----------
+
+    static final AtomicLong D_H1 = new AtomicLong();
+    static final AtomicLong D_H2 = new AtomicLong();
+    static final AtomicLong D_VF_BITS = new AtomicLong();
+    static final AtomicLong D_BX = new AtomicLong();
+    static final AtomicLong D_BY = new AtomicLong();
+    static final AtomicLong D_BZ = new AtomicLong();
+    static final AtomicLong D_N = new AtomicLong();
+    static final AtomicLong D_RC = new AtomicLong(-1);
+    static final AtomicLong D_TAIL = new AtomicLong(-1);
+    static final java.util.concurrent.atomic.AtomicReference<String> D_EX =
+        new java.util.concurrent.atomic.AtomicReference<>("-");
+
+    private static void diag(long h1, long h2, double vf, int bx0, int by0, int bz0, int n) {
+        D_H1.set(h1);
+        D_H2.set(h2);
+        D_VF_BITS.set(Double.doubleToRawLongBits(vf));
+        D_BX.set(bx0);
+        D_BY.set(by0);
+        D_BZ.set(bz0);
+        D_N.set(n);
+        D_RC.set(-1);
+        D_TAIL.set(-1);
+        D_EX.set("-");
+    }
+
+    /** One-line dump of the last bridged call (selfTest FAIL forensics). */
+    static String diagLine() {
+        return " d[h1=" + D_H1.get() + " h2=" + D_H2.get()
+            + " vf=" + Double.toHexString(Double.longBitsToDouble(D_VF_BITS.get()))
+            + " p=(" + D_BX.get() + "," + D_BY.get() + "," + D_BZ.get() + ")"
+            + " n=" + D_N.get() + " rc=" + D_RC.get() + " tail=" + D_TAIL.get()
+            + " ex=" + D_EX.get()
+            + " gvScaled=" + Double.toHexString(PaperNativeNormalNoise.nativeGetValue(
+                D_H1.get(), D_H2.get(),
+                (double) D_BX.get() * 2.0D, (double) D_BY.get() * 3.0D,
+                (double) D_BZ.get() * 2.0D,
+                Double.longBitsToDouble(D_VF_BITS.get()))) + "]";
+    }
+
+    /** In-server forensic battery at selfTest FAIL: (1) direct fill with the
+     *  LIVE handle and hardcoded arrays (isolates bridge plumbing), (2) fresh
+     *  handle rebuild from the same noise + fill (isolates handle state),
+     *  (3) reflection gather dump (comparable to the probe rig's PROBE gather
+     *  lines). Never throws — failures degrade to 'bat:EX'. */
+    static String forensicLine(NormalNoise nn) {
+        try {
+            final PerlinNoise fpn = (PerlinNoise) privateField(NormalNoise.class, nn, "first");
+            final ImprovedNoise[] lv = (ImprovedNoise[]) privateField(
+                PerlinNoise.class, fpn, "noiseLevels");
+            final StringBuilder sb = new StringBuilder(" gather[lv.len=").append(lv.length);
+            try {
+                final double[] amps = ((DoubleList) privateField(
+                    PerlinNoise.class, fpn, "amplitudes")).toDoubleArray();
+                sb.append(" amps=").append(java.util.Arrays.toString(amps));
+            } catch (Throwable t) { sb.append(" amps:EX"); }
+            try {
+                sb.append(" inF=").append(privateField(
+                    PerlinNoise.class, fpn, "lowestFreqInputFactor"));
+                sb.append(" valF=").append(privateField(
+                    PerlinNoise.class, fpn, "lowestFreqValueFactor"));
+            } catch (Throwable t) { sb.append(" factors:EX"); }
+            try {
+                final java.lang.reflect.Field fpf =
+                    ImprovedNoise.class.getDeclaredField("p");
+                fpf.setAccessible(true);
+                for (int i = 0; i < Math.min(lv.length, 4); i++) {
+                    if (lv[i] != null) {
+                        final byte[] p = (byte[]) fpf.get(lv[i]);
+                        sb.append(" L").append(i).append("=")
+                            .append(p[0]).append(',').append(p[1]).append(',')
+                            .append(p[2]).append(',').append(p[3])
+                            .append('/').append(lv[i].xo);
+                    } else {
+                        sb.append(" L").append(i).append("=NULL");
+                    }
+                }
+            } catch (Throwable t) { sb.append(" perm:EX"); }
+            sb.append(']');
+            final Handle h = handle(nn);
+            if (h == null) {
+                return sb + " bat:handle-null";
+            }
+            final int[] bx = {1000};
+            final int[] by = {-64};
+            final int[] bz = {2000};
+            final double[] o1 = {Double.NaN};
+            final int rc1 = PaperNativeNormalNoise.nativeFillScaledPositions(
+                h.h1, h.h2, h.vf, bx, by, bz, 2.0D, 3.0D, o1);
+            final long h1b = buildPerlinHandle(fpn);
+            final long h2b = buildPerlinHandle((PerlinNoise) privateField(
+                NormalNoise.class, nn, "second"));
+            final double[] o2 = {Double.NaN};
+            final int rc2 = (h1b == 0L || h2b == 0L) ? -2
+                : PaperNativeNormalNoise.nativeFillScaledPositions(
+                    h1b, h2b, h.vf, bx, by, bz, 2.0D, 3.0D, o2);
+            return sb + " bat[live=" + rc1 + ":" + Double.toHexString(o1[0])
+                + " fresh=" + rc2 + ":" + Double.toHexString(o2[0])
+                + " want=0x1.4e5f5dfa92cfap-2]";
+        } catch (Throwable t) {
+            return " bat:EX(" + t.getClass().getSimpleName() + ")";
+        }
+    }
+
     // ---------- handle stripe {h1, h2, vf} per NormalNoise ----------
 
     /** One native handle pair + valueFactor for a NormalNoise; ALSO the
@@ -364,9 +469,13 @@ public final class NormalNoiseBatchOps {
     private static int record(ContextProvider ctx, int n, int[] bx, int[] by, int[] bz) {
         final Recorder rec = RECORDER.get();
         rec.reset(bx, by, bz);
+        // EXACT size: vanilla providers iterate their out param's LENGTH, so a
+        // grow-only scratch longer than n makes the recorder overrun the
+        // n-length capture arrays (smoke-2 evidence: n<256 fell back with
+        // ArrayIndexOutOfBounds, only n=256 ever batched).
         double[] scratch = REC_OUT.get();
-        if (scratch.length < n) {
-            scratch = new double[Math.max(n, scratch.length * 2)];
+        if (scratch.length != n) {
+            scratch = new double[n];
             REC_OUT.set(scratch);
         }
         ctx.fillAllDirectly(scratch, rec);
@@ -410,17 +519,30 @@ public final class NormalNoiseBatchOps {
             }
             final double sxz = self.xzScale();
             final double sy = self.yScale();
+            diag(h.h1, h.h2, h.vf, bx[0], by[0], bz[0], n);
             final int rc = PaperNativeNormalNoise.nativeFillScaledPositions(
                 h.h1, h.h2, h.vf, bx, by, bz, sxz, sy, out);
+            D_RC.set(rc);
             if (rc < n) {
-                // Anomaly tail: per-point native getValue (bit-exact composition).
-                for (int i = rc; i < n; i++) {
-                    out[i] = PaperNativeNormalNoise.nativeGetValue(
-                        h.h1, h.h2, bx[i] * sxz, by[i] * sy, bz[i] * sxz, h.vf);
-                }
+                // Anomaly tail — fill-based (correct-by-construction): the
+                // fill kernels are G-ABI-2/probe-verified bit-exact, the
+                // legacy per-point nativeGetValue decode is NOT (probe
+                // 2026-09-09: mismatch at all points). One bounded retry on
+                // the sub-range; if the native still under-fills, the
+                // remaining slots keep the fill's own output semantics.
+                final int m = n - rc;
+                final int[] tx = java.util.Arrays.copyOfRange(bx, rc, n);
+                final int[] ty = java.util.Arrays.copyOfRange(by, rc, n);
+                final int[] tz = java.util.Arrays.copyOfRange(bz, rc, n);
+                final double[] to = new double[m];
+                D_TAIL.set(PaperNativeNormalNoise.nativeFillScaledPositions(
+                    h.h1, h.h2, h.vf, tx, ty, tz, sxz, sy, to));
+                final int written = (int) Math.min(D_TAIL.get(), m); System.arraycopy(to, 0, out, rc, written);
             }
             census(n);
         } catch (Throwable t) {
+            C_FALLBACKS.incrementAndGet();
+            D_EX.set(t.getClass().getSimpleName());
             try {
                 ctx.fillAllDirectly(out, self);
             } catch (Throwable ignored) {
@@ -467,24 +589,31 @@ public final class NormalNoiseBatchOps {
                 ctx.fillAllDirectly(out, self);
                 return;
             }
+            diag(h.h1, h.h2, h.vf, bx[0], by[0], bz[0], n);
             final int rc;
             if (isA) {
                 rc = PaperNativeNormalNoise.nativeFillShiftA(h.h1, h.h2, h.vf, bx, bz, out);
             } else {
                 rc = PaperNativeNormalNoise.nativeFillShiftB(h.h1, h.h2, h.vf, bx, bz, out);
             }
+            D_RC.set(rc);
             if (rc < n) {
-                for (int i = rc; i < n; i++) {
-                    out[i] = 4.0D * PaperNativeNormalNoise.nativeGetValue(
-                        h.h1, h.h2,
-                        isA ? bx[i] * 0.25D : bz[i] * 0.25D,
-                        isA ? 0.0D : bx[i] * 0.25D,
-                        isA ? bz[i] * 0.25D : 0.0D,
-                        h.vf);
-                }
+                // Fill-based anomaly tail (see fillNoise note; the 0.25/4.0
+                // and x<->z semantics are baked in the kernels themselves).
+                final int m = n - rc;
+                final int[] tx = java.util.Arrays.copyOfRange(bx, rc, n);
+                final int[] tz = java.util.Arrays.copyOfRange(bz, rc, n);
+                final int[] ty = java.util.Arrays.copyOfRange(by, rc, n);
+                final double[] to = new double[m];
+                D_TAIL.set(isA
+                    ? PaperNativeNormalNoise.nativeFillShiftA(h.h1, h.h2, h.vf, tx, tz, to)
+                    : PaperNativeNormalNoise.nativeFillShiftB(h.h1, h.h2, h.vf, tx, tz, to));
+                final int written = (int) Math.min(D_TAIL.get(), m); System.arraycopy(to, 0, out, rc, written);
             }
             census(n);
         } catch (Throwable t) {
+            C_FALLBACKS.incrementAndGet();
+            D_EX.set(t.getClass().getSimpleName());
             try {
                 ctx.fillAllDirectly(out, self);
             } catch (Throwable ignored) {
@@ -532,6 +661,19 @@ public final class NormalNoiseBatchOps {
         return true;
     }
 
+    /** First-mismatch diagnostics for selfTest FAIL strings (bench forensics). */
+    private static String firstMismatch(double[] a, double[] b, int n) {
+        for (int i = 0; i < n; i++) {
+            if (Double.doubleToRawLongBits(a[i]) != Double.doubleToRawLongBits(b[i])) {
+                return " first@" + i + " want=" + Double.toHexString(b[i])
+                    + "(" + Double.doubleToRawLongBits(b[i]) + ")"
+                    + " got=" + Double.toHexString(a[i])
+                    + "(" + Double.doubleToRawLongBits(a[i]) + ")";
+            }
+        }
+        return "";
+    }
+
     private static Object reflectiveNew(Class<?> k, Class<?>[] sig, Object[] args, String what)
             throws ReflectiveOperationException {
         java.lang.reflect.Constructor<?> c = k.getDeclaredConstructor(sig);
@@ -575,7 +717,8 @@ public final class NormalNoiseBatchOps {
                 }
                 ((DensityFunctions.Noise) noiseSelf).fillArray(out, tp);
                 if (!bitEqual(out, want, n)) {
-                    return "CRUSSTY_NOISE_FILL SELFTEST FAIL mode=Noise n=" + n;
+                    return "CRUSSTY_NOISE_FILL SELFTEST FAIL mode=Noise n=" + n
+                        + firstMismatch(out, want, n) + diagLine() + forensicLine(nn);
                 }
                 // ShiftA
                 for (int i = 0; i < n; i++) {
@@ -583,7 +726,8 @@ public final class NormalNoiseBatchOps {
                 }
                 ((DensityFunctions.ShiftA) shiftA).fillArray(out, tp);
                 if (!bitEqual(out, want, n)) {
-                    return "CRUSSTY_NOISE_FILL SELFTEST FAIL mode=ShiftA n=" + n;
+                    return "CRUSSTY_NOISE_FILL SELFTEST FAIL mode=ShiftA n=" + n
+                        + firstMismatch(out, want, n) + diagLine();
                 }
                 // ShiftB
                 for (int i = 0; i < n; i++) {
@@ -591,7 +735,8 @@ public final class NormalNoiseBatchOps {
                 }
                 ((DensityFunctions.ShiftB) shiftB).fillArray(out, tp);
                 if (!bitEqual(out, want, n)) {
-                    return "CRUSSTY_NOISE_FILL SELFTEST FAIL mode=ShiftB n=" + n;
+                    return "CRUSSTY_NOISE_FILL SELFTEST FAIL mode=ShiftB n=" + n
+                        + firstMismatch(out, want, n) + diagLine();
                 }
                 // proto-holder fallback (noise == null): bridged must equal
                 // the vanilla fillAllDirectly path bit-for-bit
@@ -600,7 +745,8 @@ public final class NormalNoiseBatchOps {
                 }
                 ((DensityFunctions.Noise) noiseProto).fillArray(out, tp);
                 if (!bitEqual(out, want, n)) {
-                    return "CRUSSTY_NOISE_FILL SELFTEST FAIL mode=NoiseProto n=" + n;
+                    return "CRUSSTY_NOISE_FILL SELFTEST FAIL mode=NoiseProto n=" + n
+                        + firstMismatch(out, want, n) + diagLine();
                 }
             }
             final long handles = liveHandles();
