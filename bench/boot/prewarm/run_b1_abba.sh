@@ -20,8 +20,8 @@ mkdir -p "$OUT"
 
 exec 200>/home/z/BENCH.lock
 flock -n 200 || { echo "BENCH-LOCK HELD"; exit 3; }
-echo "$(date -u +%FT%TZ) main-s7-40 prewarm-abba in-progress" > /home/z/BENCH.lock
-trap 'echo "$(date -u +%FT%TZ) done main-s7-40 prewarm-abba (trap rc=$?)" > /home/z/BENCH.lock' EXIT
+echo "$(date -u +%FT%TZ) main-s7-42 b1-abba in-progress" > /home/z/BENCH.lock
+trap 'echo "$(date -u +%FT%TZ) done main-s7-42 b1-abba (trap rc=$?)" > /home/z/BENCH.lock' EXIT
 HS0=$(ls "$SERVER"/hs_err_pid*.log 2>/dev/null | wc -l)
 
 anchor_restore() {
