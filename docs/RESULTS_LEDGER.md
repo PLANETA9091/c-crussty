@@ -481,3 +481,20 @@ TASK-83's "JIT-эвристики (HugeMethodLimit=8000 → GO)" queue item clos
 | Consequence | **PROMOTION FREEZE** on PerlinNoise/getValueWholeBody + ImprovedNoise/noiseWholeBody live wiring for warm servers; TASK-74 verdict gets a regime addendum (not retraction); re-open only via cheap-path design ≥3%-of-tick on warm regime or a production burst-cold workload census | report §4 |
 | Operator guidance | best measured state: Graal + dormant module (GAD 14.07 mean CPU-s, −19% vs Temurin no-agent); Graal × armed kernels = mechanical GO, performance NO under warm regime | report §4 |
 | Status | TASK-100 resolved: composability measured, regime boundary established; next: JFR warm-burst diff + cold-protocol reproduction arm | re-open: report §4 criteria |
+
+## §22 ADDENDUM-16 (TASK-105, 2026-09-09, agent-7625532f) — JFR warm-burst mechanism diff: armed-vs-dormant regression profile-CONFIRMED (3 additive layers); batch-bridge is the only re-open path
+
+| Field | Value |
+|---|---|
+| Question | TASK-100 measured armed noise kernels +35% CPU on JIT-warm bursts (6v6 p≈0.001) but hypothesis-level mechanism (inlining barrier). Confirm with profile attribution. |
+| Protocol | 2 arms x n=2 position-balanced (rep2 reversed), exact TASK-100 arm states, uniform warm-forceload + 128-chunk measured burst, DYNAMIC jcmd JFR.start/dump/stop scoped to burst window (settings=profile both arms), per-run rm+untar restore, BENCH-MUTEX + journal, arming-evidence loud-abort gate (both armed runs armed-verified). Pre-registered gates in CLAIMS.md BEFORE any run. |
+| Headline | **MECH-CONFIRMED (2 of 3 pre-registered gates)**; G1 failed its absolute 5% floor (armed bridge exposure 2.2%/4.3%) while its causal frame was exclusive to armed (PerlinNoiseNativeOps 1.1-1.6% vs exactly 0) — floor miscalibrated for per-call overhead spread over thousands of small calls, documented honestly. |
+| Layer 1 | Per-call bridge overhead, Java-visible: non-inlined `PerlinNoiseNativeOps.handle/getValue` frames (armed-only); striped identity-map lookup surfaces as `Objects.hashCode` 2.1% vs 0.5-0.7% dormant; dormant inlines whole noise body into doFill callers (noise math = anonymous heat). |
+| Layer 2 | Native Rust occupancy: `jdk.NativeMethodSample` catches worldgen worker in-native 22-25x/burst in BOTH armed runs, NEVER in dormant; explains Java-sample inversion (armed 564-640 vs dormant 702-729 ExecutionSamples in equal/longer windows) — Rust time is invisible to Java sampling. |
+| Layer 3 | GC pressure: burst-window GC +1 pause and +281/+374ms in BOTH pairs (6/1549ms, 8/2169ms vs 5/1175ms, 7/1888ms) — double[] marshalling + handle lifecycle. Alloc-rate arm failed pre-registration (1.07-1.10x < 1.2x). |
+| CPU sanity | armed mean 22.0s vs dormant 20.15s = +9.2% under JFR, full separation (armed min 21.8 > dormant max 20.6); JFR overhead compresses the TASK-100 +35% relative gap as expected; direction unchanged. |
+| Consequence 1 | PROMOTION FREEZE now profile-grade (mechanism attribution, not just CPU separation). No further freeze-relevant A/B needed. |
+| Consequence 2 | Re-open path = **batch/array bridge** (one JNI call per fill-array op, amortising marshalling/map/handle over N values) — kills layer 1, shrinks layer 3, lets layer 2 compete on merits. Per-value JNI calls are dead for warm servers regardless of kernel speed. |
+| Consequence 3 | New unbanked observation: `SimplexNoise.dot` = pure-Java leaf 5.4-6.2% in ALL FOUR arms (not bridged, survives armed). Future SimplexNoise kernel candidate MUST be batch-bridged from day one + warm-regime P500 (§21 protocol). |
+| Status | TASK-105 closed (mechanism confirmation banked). TASK-100 NEXT queue: cold-protocol reproduction arm, Graal soak, OPT_ARCH R3 regime-recheck remain open. | 
+* Author: agent-7625532f. Evidence class: MEASURED LIVE A/B + JFR profile attribution, 4 runs, re-runnable analyzer scripts/task105_jfr_analyze.sh. Report: bench/graal_ab/results/TASK105_JFR_MECH_2026-09-09.md. Raw: bench/graal_ab/RAW_TASK105/.

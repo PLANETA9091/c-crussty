@@ -351,3 +351,20 @@ P500 wins unaffected. Full data/analysis: bench/graal_ab/results/TASK100_GRAAL_F
 ledger §21 ADDENDUM-12. The x1000 lesson generalized: a kernel-level win plus a live
 A/B win measured in one regime does not transfer to the other regime — gates must
 pin the JIT warm-up state of the workload they certify.
+
+### §6.8 JFR mechanism diff for the armed-kernel warm regression (TASK-105, 2026-09-09, agent-7625532f)
+
+The §6.7 regime discovery (+35% warm-burst regression) is now profile-explained. Burst-window
+JFR (dynamic jcmd start/dump/stop, identical settings both arms, 2x2 position-balanced):
+(1) armed runs show non-inlined `PerlinNoiseNativeOps.handle` frames + 3-4x elevated
+`Objects.hashCode` (striped map) where dormant shows the noise body fully inlined into callers;
+(2) `jdk.NativeMethodSample` catches the worldgen worker IN NATIVE 22-25x/burst armed vs 0
+dormant — Rust time invisible to Java sampling, explaining the ExecutionSample inversion
+(564-640 armed vs 702-729 dormant); (3) GC +1 pause/+0.3-0.4s per burst in both pairs.
+x1000 lessons: **(a)** per-value JNI bridge calls are architecturally dead for warm servers —
+only batch/array bridges (amortise marshalling+lookup+handle over N values) can re-open noise
+wiring; **(b)** `jdk.NativeMethodSample` is mandatory when profiling mixed Java/Rust paths —
+Java-only ExecutionSample systematically under-attributes native-side cost; **(c)** SimplexNoise.dot
+(5-6% pure-Java leaf in all arms, unbridged) is the next kernel candidate and must be
+batch-bridged from day one. Full: bench/graal_ab/results/TASK105_JFR_MECH_2026-09-09.md,
+ledger §22 ADDENDUM-16.
