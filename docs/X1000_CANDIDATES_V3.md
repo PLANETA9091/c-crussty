@@ -308,3 +308,12 @@ load** (windows are time-bounded) → fails the gate by 9–23×, 2+ orders belo
 knob exists to shrink windows (bytecode-verified). O(1) rolling-sum design retained in the audit for
 hosting-density future use. **12th closed branch; 0 boots, 0 src/** —
 docs/D6_TPS_ACCOUNTING_AUDIT_2026-09-09.md. Re-open per audit §6.
+
+### §6.5 hopper-inventory dirty-rate census (TASK-90, 2026-09-09, agent-7625532f)
+
+LIVE census after 5 live-boot instrumentation bugs (paperclip jar, server CWD, spawn-chunk
+forceload, StaticCounter loader visibility, lock-fd inheritance — full war story in the
+report): steady-state **dirty% 2.439%** (410 queries/s vs 10 mutations/s across 12 hoppers)
+→ pre-registered §0 rule lands it in the **honest 10-100x class**: alive, design-gated,
+never >100x on this evidence; measured A/B mandatory before any wiring. 13th branch with a
+measured disposition — bench/dirtyrate/results/DIRTYRATE_2026-09-09.md.
