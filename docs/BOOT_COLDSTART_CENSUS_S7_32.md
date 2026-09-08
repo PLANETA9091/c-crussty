@@ -82,3 +82,34 @@ twice over; re-open requires a kernel where fsmount(proc) works inside userns.
 | S7-31 AppCDS v2 (rig) | 13.597s | classloading −18.4% |
 | **S7-32 e2e default (banked)** | **13.351s** | direct jar + CDS v2 default |
 | next | R1-R4 queue | construction cores (5s+3s) |
+
+## ADDENDUM-3 (S7-33, TASK-91): 1ms-sampling deep census — in-boot noise-sampling discovered; engine-kernel arming queued
+
+Deep census (1ms ExecutionSample, boot 14.435s incl. ~1.1s JFR overhead, 2793 in-window
+samples, analyzer unchanged — boot-window filter by Done wall-clock):
+
+- **In-boot noise-sampling is REAL and significant** (10ms S7-32 census undersampled it):
+  `SimplexNoise.dot` 131 + `ImprovedNoise.gradDot/sampleAndLerp` 95 = **226 samples (~8.1%)**
+  + Climate RTree `search` 64 + `buildParameterSpace` 35 ≈ **11.6% of window CPU** —
+  spawn-area generation runs during boot ("Preparing level" phase), not only post-Done.
+- DFU Schema joins ~207 samples (~7.4%), hashCode leaf 99 (3.5%, intern/hash storms),
+  SHA2 44 (1.6%), zip getEntryPos 39.
+- Threads: ServerMain 1469 / Worker-Main-1 546 / Server thread 517 — the 5s registry
+  window remains single-thread-dominated.
+
+**Lever connection (engine, zero new code):** CRUSSTY ships proven native noise kernels —
+`improved_noise.rs` (dormant, env `CRUSSTY_NATIVE_IMPROVED_NOISE=1`) with measured G-AB
+cpu −11.1% p=0.0079, wall −12.3%, parity 0/20000 — and the PerlinNoise whole-body bridge
+(kernel-policy whitelisted "allowed (proven)", two-key arming). Deep census says these
+same kernels cut the BOOT window too (gradDot path is 95 in-window samples). Gap: the
+131-sample `SimplexNoise.dot` path has NO kernel — future engine-work candidate (census-first
+per pre-registered discipline).
+
+Armed-boot A/B (IMPROVED_NOISE+PERLIN_NOISE vs default 13.351s mean) was queued but NOT
+measured this session: server lane handed to neighbor's TASK-90 hopper census (their claim
+5a1d7b6 = 4×300s profiles). Coordination: armed A/B runs after their lane frees.
+
+**Harness bug found + fixed-in-notes (do not repeat):** reap-by-fd-holder helpers must
+NEVER run inside the flock'd section — the helper's kill-by-fd matches the script's OWN
+fd 200 (and any neighbor process legitimately booting). Out-of-lock reap only, self
+excluded; server-lane processes never killed by pattern heuristics.
