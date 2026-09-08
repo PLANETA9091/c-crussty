@@ -43,3 +43,17 @@ Machine-readable `VERDICT=` line on stdout; suitable as a phase-2 preflight insi
 1. Live re-dump via `cds_rebuild_graal.sh` (adopts the manifest for the real archive) + L1 boot re-verification + `cds_archive_check.sh` → CURRENT end-to-end.
 2. Phase-2 TASK-111 (e2e default switch + coord-note) — still blocked on twin TASK-108 smoke+A/B verdict; the checker from this task becomes its preflight.
 3. Wire `cds_archive_check.sh` into `e2e_beststate_boot.sh` L1 preflight (same session as phase-2).
+
+## LIVE ADOPTION (TASK-113, S7-52, 2026-09-09 — all pre-registered acceptance criteria met)
+
+1. **Real re-dump** via `cds_rebuild_graal.sh`: 123M archive + sidecar manifest written (`java_bin=/home/z/graalvm/bin/java`, jsa/jar sha256 + jar mtime recorded). First live run exposed a **false-WARN bug**: the non-Graal pairing check used `java -version | head -1`, but GraalVM CE's line 1 is identical to Temurin's — vendor lives on line 2. Dump itself was correct (manifest `java_bin` proves provenance); check fixed to full version output.
+2. **Checker end-to-end**: `cds_archive_check.sh` → exit 0 `VERDICT=CURRENT` (manifest jar sha == live purpur jar sha).
+3. **L1 ladder re-verification**: `e2e_beststate_boot.sh` → `LEVEL=L1`, `Done (13.444s)`, **mapped=6** (3 static + 3 dynamic — the new runbook's archive maps fully under GraalVM WITH the production agent), `agent_lines=27`. Directional time consistent with S7-50 L1 (14.655s) and TASK-109 A-arm (13.2s) — reported only, NOT banked (variance floor law).
+4. Hygiene: graceful stop, 0 java, hs_err 4/0, BENCH-MUTEX journal start/done pair.
+
+Kill-conditions: none fired. Contract fully adopted; the end-to-end operator path (re-dump → manifest → preflight → L1) is now live-verified. Bonus finding: Temurin drifted to 21.0.12.1 — the old Temurin L3 archive is stale by construction, exactly the failure class this contract detects.
+
+## NEXT (updated)
+
+1. Phase-2 TASK-111: e2e default switch + coord-note + wire `cds_archive_check.sh` as L1 preflight — still blocked on twin TASK-108 verdict.
+2. After any Paper bump: `cds_rebuild_graal.sh` + `cds_archive_check.sh` → CURRENT is now the re-dump runbook (replaces Temurin-only `cds_rebuild.sh` for the Graal path).

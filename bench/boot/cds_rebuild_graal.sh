@@ -44,7 +44,9 @@ resolve_java() {
 }
 
 JAVA_BIN_RESOLVED=$(resolve_java) || { echo "FATAL: no usable java found"; exit 4; }
-JVER=$("$JAVA_BIN_RESOLVED" -version 2>&1 | head -1)
+# full version output: vendor ("GraalVM CE ...") lives on line 2, line 1 is identical
+# to Temurin's ("openjdk version ...") — head -1 caused a false WARN on first live run
+JVER=$("$JAVA_BIN_RESOLVED" -version 2>&1 | tr '\n' ' ' | sed 's/  */ /g')
 
 if [ "${DRY_RUN:-0}" = "1" ]; then
     echo "DRY_RUN plan (nothing touched):"
