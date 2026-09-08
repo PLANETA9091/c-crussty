@@ -202,6 +202,7 @@ compares against `baseline.json`.
 | G7 | Doc conflict: matrix §5.3 `CRUSSTY_BATCH=1` vs B.6 `off\|auto\|on` | **RESOLVED** — B.6 is canon; `1` → `Off` fail-safe (pinned by test). |
 | G8 | `refused-id → -10` outs-untouched byte-compare end-to-end (A.6) | **RESOLVED (TASK-52, bench/batch/refused_e2e/)** — both arms PASS: shipped -3 rows (mixed/single/negative, outs sentinel-identical, no partial execution) + true -10 via rig worktree (DO_NOT_WIRE LevelChunkHeightmap.newCombinedUpdateSummary appended as id 15; single AND mixed [2,15,2] refused pre-flight, valid ops did NOT run). Rig never lands, shipped code unchanged. See bench/batch/refused_e2e/results/REFUSED_ID_E2E.md. |
 | — | `bench/batch/bench/` untracked foreign WIP | **NOT TOUCHED** (out of scope, preserved). |
+| — | RCON hygiene (S7-14 NEXT-6, carried through S7-15/19/20; unblocked by TASK-59 verdict) | **CLOSED (TASK-75, S7-21)** — burned secret rotated: new value only in `/home/z/.rcon_password` (chmod 600, вне репо), `server.properties` updated in place; `rcon.py` hardened fail-closed (password NEVER positional; `--password-file`/env/default-file); throwaway verify PASS (`scripts/rcon_verify_throwaway.sh`: new-secret round-trip OK, burned string rejected at auth, clean RCON stop); owner-decision doc `docs/RCON_HYGIENE_DECISION.md`; RCON stays enabled as the robust probe channel; git history NOT rewritten (rotation renders the old string inert). |
 
 ## Sources
 
