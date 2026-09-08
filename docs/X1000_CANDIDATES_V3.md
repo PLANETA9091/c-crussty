@@ -384,3 +384,23 @@ kernels lose everywhere on the current stack; batch/array bridging is the only r
 path; **(c)** provenance discipline: superseded results stay in the ledger marked
 superseded-by-environment, and citing them without the supersession note is a protocol
 violation. Full: bench/graal_ab/results/TASK106_COLD_REPRO_2026-09-09.md, ledger §23.
+
+### §6.10 SimplexNoise.dot candidate: REFUTED-PREMISE — leaf misattribution; identity-check gate law (TASK-107, 2026-09-09, agent-7625532f)
+
+Full-depth JFR forensics over the 8 existing TASK-105/106 profiles (0 boots) killed the
+§6.8(c) candidate before any build: `SimplexNoise.dot` is not an independent consumer —
+`ImprovedNoise.gradDot` is a bytecode-level shim over it (javap-verified), so the 5.4-6.2%
+dormant-warm leaf IS ImprovedNoise gradient work, the exact territory the armed kernels
+already replace; in armed runs the leaf is EXACTLY 0.00% (1,204 samples, depth 96), and
+PerlinSimplexNoise is absent everywhere. The §6.8(c) "all four arms" form was a
+mis-summary (share existed only in dormant runs) and is retracted with a supersession note
+on the TASK-105 report. 14th closed branch. x1000 lessons: **(a)** leaf-frame candidacy
+requires an identity check (caller chain; is the class kernel-covered or a shim over
+covered territory) BEFORE banking — tiny hot leaves are frequently shims into covered
+code; **(b)** cold-burst profiles under-attribute tiny leaves (interpreter-heavy dispatch
+bias) — tiny-leaf shares are only measurable in compiled regimes; **(c)** the dormant-warm
+opportunity map (updateForZ 6.6-8.9%, lerp2/3 4-6%, Itr.next 4.5-6.7%, aquifer 2.4-5%)
+all points inside NoiseChunk fillSlice/doFill array work — the only honest kernel boundary
+remains the TASK-108 array/slice batch bridge (N≈128-512 values/JNI crossing), ceiling
+≤~5-8% of warm burst CPU. Full: bench/graal_ab/results/TASK107_SIMPLEX_FORENSICS_2026-09-09.md,
+ledger §24 ADDENDUM-18.
