@@ -168,3 +168,16 @@ completely-dark domain.)
   no-cross on the 2-CPU box; every claim evidence-linked before "GO".
 * Stream-A bytecode was vanilla-mapped; Paper-specific patches may alter bodies — the
   bench-first counters double as verification that the shape matches the live jar.
+
+---
+
+## §3.1 MEASURED ADDENDUM (TASK-78 part A, 2026-09-08) — ESTIMATE column falsified by live load
+
+First entity-load profile on the box (bench/p500/results/BENCHFIRST_PROFILE_2026-09-08.md):
+400 items + ~50-avg husks + 9 hoppers, 300 s JFR (jcmd post-boot attach), 524
+Server-thread ExecutionSamples. Measured shares: **fluid-push 5.7%** (was EST #2 —
+promoted to guard-wave top-1), **checkInsideBlocks 3.4%** (was EST #5 — promoted to #2),
+noCollision + entity-grid ~4.2% (per-call cheaper than estimated), **hopper idle probe
+DEMOTED** (≪1 µs at empty containers, 0 samples), isInWall/sensors/memories below
+resolution at this profile (husk-decay confound) — stay ESTIMATE, no builds without a
+better profile (TASK-32 lesson).
