@@ -1,6 +1,6 @@
 # G4: First Batch Call-Site Consumer — Site-Patch Helper Design (dormant by default)
 
-Session: S7-11 (2026-09-08). Status: DESIGN (implementation not landed). Author: main orchestrator, based on READ-ONLY recon (Task 2-c, S7-10) with file:line cites against master `704cba4`.
+Session: S7-11 (2026-09-08) design; **S7-12 (2026-09-08): IMPLEMENTED + live-validated** (commits: scanner/retarget + site_arm + helper = G4 wave; Pool::parse slot-count fix). Status: LANDED, dormant by default; armed boot (`CRUSSTY_BATCH=on`) live-PASS. Author: main orchestrator, based on READ-ONLY recon (Task 2-c, S7-10) with file:line cites against master `704cba4`.
 
 ## 1. Purpose and scope
 
@@ -55,12 +55,14 @@ Arming is a one-time, boot-phase decision made on the quiet activation worker (n
 - **Panic-across-JNI:** all new scanning code must be panic-free/bounds-checked; hook-callback paths keep the poison-recovery + `catch_unwind` discipline (`src/improved_noise.rs:109-114`, `cplug-sdk/src/lib.rs:136-146`, engine 4f9998b).
 - **Verification cost:** the retargeted method re-verifies with unchanged frames; still, the e2e self-test pattern (functional round-trip through the real bridge, as improved_noise does) must extend to the batching helper before any `on`-mode boot.
 
-## 7. Validation plan (when implemented)
+## 7. Validation plan — EXECUTED S7-12 (results inline)
 
-1. Unit: scanner round-trips on existing fixtures (`tests/fixtures/SingleUserAreaMap.class`), retarget idempotency, CP-append safety, negative cases (truncated code, unknown CP tag).
-2. Offline: serve patched bytes to `javap -v` and assert the retargeted call site + unchanged StackMapTable.
-3. e2e: dormant boot → `batch: arm` line ABSENT (PASS-by-absence row); `CRUSSTY_BATCH=on` armed boot → `batch: arm ImprovedNoise.noise id=… T=… site=improved_noise` present, verify row captures it (new `ck_cap` row alongside `batch kernels resolved`), self-test PASS, graceful shutdown.
-4. P500 re-run after any `src/` landing (gate rule; even though dormant-by-default makes impact nil, the run is the drift tripwire).
+1. Unit ✅ 46/46 (`cargo test --release`): scanner round-trip + idempotency on the area_map fixture; **new regression fixture `tests/fixtures/ImprovedNoise_real.class`** (the REAL 5691-byte class extracted byte-identical from the purpur jar) — parse + find_method(noise) + scan + selective-retarget; negative cases: corrupt code_length fail-closed, unknown opcode, descriptor-mismatch refusal, NotFound-no-mutation; opcode-width exactness incl. tableswitch/lookupswitch/wide; B.3 clamp/threshold; site_arm silent-dormant; ABI_WORD Java-mirror pin.
+2. Offline: the live armed boot's retransform rc=0 IS the verifier's acceptance of the retargeted bytes (same-descriptor rewrite → unchanged StackMapTable by construction); the byte-level resolution of the new site is unit-pinned instead of javap-screened (the site is resolved BY NAME, §9).
+3. e2e ✅ LIVE: dormant boot → `batch site arm` row INFO PASS-by-absence (0 arm lines in the log, bytes bit-identical); `CRUSSTY_BATCH=on` armed boot → `batch: arm net/.../ImprovedNoise.noise id=none T=16 site=improved_noise` + `batch: site improved_noise retargeted 1 call site(s) -> ImprovedNoiseBatchOps.noise (T=16)` + helper self-test PASS (flush round-trip = abi 131087) + improved_noise armed rc=0 + verify **ALL PASS** with the new `batch site arm` row = PASS + graceful shutdown. **The gate→arm→retarget→execute ladder is live end-to-end.** (The execute leg is the zero-op dispatcher round-trip by honest design — §5.1; sampling stays bit-exact single-call.)
+4. P500 re-run after the `src/` landing: executed this session (drift tripwire; see results/P500_REPORT.md + worklog S7-12).
+
+**S7-12 live-boot incident (root-caused in flight):** the first armed boot aborted the retarget with `bad classfile layout` — **a REAL latent bug in `Pool::parse`** (the pool walk terminated on `cp_count-1` SLOT count but advanced per ENTRY; long/double entries take 2 slots, so any pool carrying them overran into tag 0). The area_map fixture has no longs/doubles → the bug was invisible since the parser landed; ImprovedNoise (d11..d21 double fields) tripped it. Fixed + regression-pinned on the real class bytes. Honesty note: the failed boot was fail-safe (proven unretargeted patch served, boot ALL PASS).
 
 ## 8. Doc-vs-code divergences found during recon (fix backlog, doc-only)
 
@@ -71,8 +73,15 @@ Arming is a one-time, boot-phase decision made on the quiet activation worker (n
 5. Runbook `:22` cites `batch_api.rs:401` for `CRUSSTY_BATCH_NATIVE_LIB` — actual read at `:558`.
 6. `docs/KERNEL_POLICY.md:101` says "ids 0-13" — table now has 15 ids (G3 added id 14).
 
-## 9. Open questions
+## 9. Open questions — S7-12 status
 
-- Exact bytecode offset stability of the emitted `invokestatic` across ASM COMPUTE_FRAMES runs (CP append shifts operand indexes — the scanner resolves by name lookup, not fixed offset, precisely because of this).
-- Whether op-3-in-SdkAsmHelper should shadow the Rust scanner long-term (one mechanism, two consumers) or stay a fallback — decide after the Rust scanner lands and is exercised on real bytes.
-- g9/g42 enclosing method identification (`javap -p -c` live recon) — prerequisite for candidates 2/3, not for the demonstrator.
+- Bytecode offset stability: RESOLVED BY DESIGN — the landed scanner resolves sites BY NAME (`methodref_parts`), never by fixed offset; live boot confirmed on real ASM output.
+- op-3-in-SdkAsmHelper: the Rust scanner landed first and is exercised on real bytes (live retarget PASS); the ASM op-3 stays a FALLBACK option — not built (YAGNI; revisit only if a same-descriptor retarget is needed in a context the Rust scanner cannot reach).
+- g9/g42 enclosing method identification: **ANSWERED by Task 2-a recon (S7-12), `reports/G4_JAVAP_RECON_g9_g42.md`** — g9: the site is `DensityFunctions$Ap2.fillArray([LDensityFunction$ContextProvider;)V` (MIN+MAX arms bytecode-verified, reachable from NoiseChunk.fillSlice); **Variant R infeasible there** (call chain is invokevirtual/interface, zero kernel-shaped invokestatic; viable path = area_map-pattern whole-method hook, dormant until JFR). g42: the pattern is `StaticCache2D.get(II)T` consumed as OBJECT refs (burst loop = `ChunkGenerationTask.scheduleLayer`); **retarget infeasible twice over** (not invokestatic; object-returning consumers incompatible with the long[]-dst kernel) — g42 stays a dispatcher-calibration kernel. Candidates 2/3 are therefore NOT unlocked for Variant R; the demonstrator remains the only same-descriptor retarget site.
+
+## 10. As-built appendix (S7-12)
+
+- Files: `src/classfile.rs` (Code-attribute scanner: full opcode-width table incl. tableswitch/lookupswitch/wide, fail-closed on unknown opcodes; `find_utf8`/`methodref_parts` name resolution; `retarget_invokestatic` → `(Vec<u8>, RetargetOutcome)`); `src/batch_api.rs` (`SiteSpec`, `SiteArm`, `site_arm`, `clamp_t`, `threshold_for_kernel`, `ABI_WORD`); `src/improved_noise.rs` (`maybe_batch_retarget` on the activation worker; `ImprovedNoiseBatchOps` as the 4th embedded class with define-time global-ref capture; `batch_helper_selftest`); `noise/.../ImprovedNoiseBatchOps.java` (+ `noise/net/crussty/batch/PaperNativeBatchDispatch.java` compile stub; `build_noise.sh` ships exactly 4 class files — `ThreadLocal.withInitial` lambda avoids a synthetic `$1`).
+- Marker lines (grep-able): `batch: arm <Class>.<method> id=(none|<n>) T=<t> site=<tag>`, `batch: site <tag> retargeted|retarget skipped|retarget FAILED`, `batch: helper self-test passed|DIAGNOSTIC|skipped|failed`. e2e row: `batch site arm` (FAIL only on kernel-policy refusal; PASS = arm + retarget evidence; INFO = absent/ambiguous).
+- Degrade ladder (B.2.2) live semantics: helper-side `volatile boolean degraded` — set on ANY negative `run()` return, ABI mismatch, or Throwable from the flush leg (bridge absent included); single-call for the boot, no retry storms; observable via `ImprovedNoiseBatchOps.isDegraded()/lastFlushStatus()`.
+- Observed anomaly (NOT G4-causal, monitor): two shutdown-time hs_err crashes during the S7-12 boot series, both in the JVM **Signal Dispatcher** thread during rapid shutdown→boot cycling (boots whose retarget had FAILED, i.e. serving unretargeted proven bytes); the third boot (retarget landed) shut down cleanly. Record for frequency monitoring alongside the attempt>1 watch item.

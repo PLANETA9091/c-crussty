@@ -239,7 +239,7 @@ only under the per-waypoint N=1 loop assumption for its value kernels — patter
 2. **First consumers = c-crussty-owned call sites:** none of the HIGH groups is currently called
    from plugin-owned Java helpers, so the first real consumers arrive with the byte-hooks below.
 3. **Byte-hook consumers** (area_map pattern: loader-local helpers, 64-case deterministic selftest,
-   env gate `CRUSSTY_BATCH=1` default-off): g32/g35/g39/g40/g42 loops fire inside kernel
+   env gate `CRUSSTY_BATCH=on` default-off — the `=1` phrasing is superseded by §B.6 off|auto|on canon, `parse_rollout("1")` → Off test-pinned; updated S7-12 backlog): g32/g35/g39/g40/g42 loops fire inside kernel
    plugin-loading classes — hook the enclosing loop method, batch through `dispatchRepeat`.
    g13/g9/g47 value-kernel paths fire in chunkgen/entity code — hook ONLY after JFR proves
    call amplification (≥12k-40k calls/tick for ≥1 ms/tick).

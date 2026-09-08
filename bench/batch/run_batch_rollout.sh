@@ -4,8 +4,10 @@
 #
 # Arms: CRUSSTY_BATCH unset (= dormant state: no consumer routes through the
 # dispatcher; harness measures both arms regardless, the env selects the
-# ROUTED arm) vs CRUSSTY_BATCH=1 (B.6 "on": force batch at any K).
-# The as-built product code has NO CRUSSTY_BATCH env (B.6 is design-only) —
+# ROUTED arm) vs CRUSSTY_BATCH=on (B.6 "on": force batch at any K; the old
+# `CRUSSTY_BATCH=1` phrasing is SUPERSEDED — parse_rollout("1") -> Off,
+# test-pinned in batch_api.rs).
+# The product code DOES read CRUSSTY_BATCH now (G1 gate, batch_api.rs) —
 # the harness implements the B.6 call-site semantics; this script proves
 # env-neutrality of the measurement by interleaving A/B/A/B per group.
 #
@@ -61,7 +63,7 @@ run_one() { # $1=arm(A|B) $2=rep $3=mode(control|table)
   local arm="$1" rep="$2" mode="$3"
   local log="$RES/BATCH_ROLLOUT_${arm}${rep}_${mode}.log"
   local env_mode=( )
-  if [[ "$arm" == "B" ]]; then env_mode=(CRUSSTY_BATCH=1); fi
+  if [[ "$arm" == "B" ]]; then env_mode=(CRUSSTY_BATCH=on); fi
   local extra=(); [[ "$mode" == "control" ]] && extra=(--controls)
   env -u CRUSSTY_BATCH "${env_mode[@]}" \
   LD_LIBRARY_PATH="${LD_LIBRARY_PATH:-}:$JDK/lib/server" \
