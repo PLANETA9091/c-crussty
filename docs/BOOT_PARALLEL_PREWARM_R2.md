@@ -109,3 +109,46 @@ safe).
   pre-registered suspicion: ordering coupling will make it a design NO-GO;
   measured tier-S NULL is the cheap evidence that construction work is
   serial-coupled, not conveniently deferrable.
+
+## 6. TASK-99 (S7-42): Tier-R B1 arm — DataFixer build offload MEASURED NULL (mechanism PROVEN)
+
+Audit-directed targeted offload of the ONE block certified pure (TASK-98 B1):
+agent mode `b1` — transformer trigger on first `net.minecraft.*` load → worker
+polls `SharedConstants.getCurrentVersion()` (note: it **throws
+IllegalStateException("Game version not set")** until `tryDetectVersion()` — the
+poll must treat that as the retry signal, first implementation aborted on it) →
+`Class.forName("net.minecraft.util.datafix.DataFixers", true, capturedLoader)`.
+Mechanism measured GREEN: `b1: DataFixers built on worker in 2841/3324/2953ms`
+— the entire 279-schema/405-fixer build ran off-main during the B2 registry
+bootstrap; main joins the completed static at Main:623; functional parity every
+boot (1461 recipes / 1574 advancements); hs_err 4/0 through all boots.
+
+ABBA ×2 pairs (within-session, identical flags/classpath/agent-jar, only options
+`""` vs `b1`): A 13.227/13.108, B 13.418/12.989 → paired Δ(B−A) = {+0.191,
+−0.119}, mean +0.036s — **mixed signs, dead zero, NULL** (pre-registered gate:
+same-sign AND ≥ +0.3s, not met).
+
+Reconciliation with the ~0.9-1.0s DFU census share: the main-thread DFU cost at
+Main:623 is NOT a serial 2-3s block (the worker's 2.8-3.3s includes classloading
++ MIN_PRIORITY contention); the real serial cost is smaller and the offload pays
+it back as 2-core contention during the B2 window. On this box **parallel
+construction arms are variance-bound (~0.5s floor) — the 2 cores are the binding
+constraint, not the code topology**.
+
+## 7. Boot program end-state (honest ledger of channels)
+
+| Channel | Verdict |
+|---|---|
+| AppCDS v2 (classloading) | **GO, banked** −19.9% (13.35s under-load mean; ~12.5-12.6s idle), e2e default |
+| CDS v3 explicit-cp | NULL (TASK-95) |
+| Generic library prewarm | NULL (TASK-97) |
+| B1 targeted DFU offload | NULL (TASK-99, mechanism proven) |
+| B2 registry parallel fill | design-NO-GO (TASK-98, 8 measured couplings) |
+| B3 datapack parse fan-out | deprioritized — contention-bound per B1/B4 evidence; split-probe optional |
+| B4 background pool starvation | only untested zero-code item: `-DPaper.WorkerThreadCount` — combined-batch micro arm only |
+| Snapshot/restore (<1s path) | env-NO-GO ×2 + owner-rejected |
+
+Cold-boot optimization on this 2-core sandbox is **measured-exhausted** beyond the
+banked v2 default; any further claim must come from a hardware change or the
+owner re-scoping. Re-open criteria: Paper version bump (re-dump + re-test v2),
+more cores, or snapshot legalization.
