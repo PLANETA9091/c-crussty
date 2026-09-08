@@ -135,7 +135,7 @@ fn patch_lock() -> &'static std::sync::Mutex<Option<PatchCache>> {
 // class-load/redefinition threads) and unwind across JNI = VM abort.
 
 /// Class-file version of `b` as (major, minor), or None if not a class file.
-fn class_version(b: &[u8]) -> Option<(u16, u16)> {
+pub(crate) fn class_version(b: &[u8]) -> Option<(u16, u16)> {
     if b.len() < 8 || u32::from_be_bytes(b[0..4].try_into().ok()?) != 0xCAFE_BABE {
         return None;
     }
@@ -148,7 +148,7 @@ fn class_version(b: &[u8]) -> Option<(u16, u16)> {
 /// Major class-file version the running JVM supports (Java N => 44 + N).
 /// Read from the `java.class.version` system property ("65.0" on Java 21)
 /// via the classloader-less bootstrap `System` class. None = unreadable.
-fn jvm_class_major(env: &JniEnv) -> Option<u16> {
+pub(crate) fn jvm_class_major(env: &JniEnv) -> Option<u16> {
     let sys = env.find_class("java/lang/System")?;
     let get_prop = env.get_static_method_id(
         sys,
@@ -229,7 +229,7 @@ pub fn register() {
 /// e.g. "65.0" on Java 21). define_class of embedded bridge bytes compiled
 /// by a newer javac dies with a raw UnsupportedClassVersionError that names
 /// no source — read the numbers ourselves and fail with a clear line.
-fn jvm_max_class_major(env: &JniEnv) -> Option<u16> {
+pub(crate) fn jvm_max_class_major(env: &JniEnv) -> Option<u16> {
     let sys = env.find_class("java/lang/System")?;
     let getprop = env.get_static_method_id(
         sys,
@@ -283,7 +283,7 @@ pub fn activate() {
                         "[crussty-plugin] improved_noise: forcing kernel load of {NOISE_CLASS} (attempt {forced_attempts})"
                     );
                 }
-                force_load_kernel_class();
+                crate::improved_noise::force_load_kernel_class(NOISE_CLASS);
             }
             // TASK-22/C1 negative backoff: while the class name has never
             // been sighted through the ClassFileLoadHook feed, find_class
@@ -706,7 +706,7 @@ fn maybe_batch_retarget(patched: Vec<u8>) -> (Vec<u8>, Option<String>) {
 /// `getServer()` returns a non-null CraftServer, with a short settling delay
 /// after that so the kernel loader's boot-time class-loading storm has
 /// fully quieted. Returns false on timeout (~120s).
-fn wait_for_boot() -> bool {
+pub(crate) fn wait_for_boot() -> bool {
     let deadline = std::time::Instant::now() + std::time::Duration::from_secs(120);
     loop {
         let booted = cplug_sdk::jni_util::with_attached(|env| {
@@ -741,7 +741,9 @@ fn wait_for_boot() -> bool {
     }
 }
 
-fn force_load_kernel_class() {
+/// Force-load a kernel class through Bukkit's loader (shared with
+/// perlin_noise: same seed class, parameterized target).
+pub(crate) fn force_load_kernel_class(target: &str) {
     let _ = cplug_sdk::jni_util::with_attached(|env| {
         let Some(seed) = cplug_sdk::classes::find_class("org/bukkit/Bukkit") else {
             eprintln!("[crussty-plugin] improved_noise: force load: Bukkit not found");
@@ -772,7 +774,7 @@ fn force_load_kernel_class() {
             env.delete_local_ref(loader);
             return None::<()>;
         };
-        let dot = NOISE_CLASS.replace('/', ".");
+        let dot = target.replace('/', ".");
         let Some(name) = env.new_string(&dot) else {
             crate::clear_exception(env);
             env.delete_local_ref(class_cls);
@@ -791,11 +793,11 @@ fn force_load_kernel_class() {
         let had_exc = crate::clear_exception(env);
         if loaded.is_null() {
             eprintln!(
-                "[crussty-plugin] improved_noise: Class.forName({NOISE_CLASS}) failed (exc={had_exc})"
+                "[crussty-plugin] improved_noise: Class.forName({target}) failed (exc={had_exc})"
             );
         } else {
             eprintln!(
-                "[crussty-plugin] improved_noise: Class.forName({NOISE_CLASS}) succeeded"
+                "[crussty-plugin] improved_noise: Class.forName({target}) succeeded"
             );
         }
         env.delete_local_ref(loaded);
