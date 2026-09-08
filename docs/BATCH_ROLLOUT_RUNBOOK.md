@@ -35,8 +35,11 @@ cargo build --release            # BUILD GATE: must stay clean
 cargo test --release             # batch_api::* + kernel_policy drift-guards must be green
 ```
 
-* Deploy (plugin only): `cp target/release/libcrussty.so /home/z/server/modules/crussty/libcrussty.so`
+* Deploy (plugin only): `cargo build --release` FIRST, then `cp target/release/libcrussty.so /home/z/server/modules/crussty/libcrussty.so`
   — back the previous one up first (precedent: `/tmp/libcrussty_pre_<tag>_$(date +%s).so`).
+  S7-12 lesson (cost one boot): `cargo test --release` does NOT refresh the cdylib —
+  always run the explicit `cargo build --release` between editing src/ and deploying,
+  or you boot a stale .so.
   Hot-reload variant: `mv` (inode swap) BEFORE `kill -USR1`, never `cp`.
 * Bench courtesy: `scripts/e2e_orchestrate.sh` refuses boot while `/tmp/crussty_bench.lock` is
   flock-held. Batch benches (`bench/batch/run_batch_floor.sh`) take `/home/z/BENCH.lock` internally —
@@ -112,7 +115,7 @@ PASS criteria (bench evidence recorded in BATCH_FLOOR_REPORT; rerun only in a fr
   never lands, shipped code unchanged. Unit tests remain the fast regression layer; the fixture is
   the permanent e2e proof. See bench/batch/refused_e2e/results/REFUSED_ID_E2E.md.
 
-## 4. Stage 1 — wave-1a site-armed, `CRUSSTY_BATCH=auto` (status: **BLOCKED** — §7 G4/G5 + wave-1 shapes for g35/g40/g39; g42 arming decision now data-backed: no measured T on the current body, §3/G3)
+## 4. Stage 1 — wave-1a site-armed, `CRUSSTY_BATCH=auto` (status: **BLOCKED (re-verified S7-13)** — G4 demonstrator LANDED + live-validated S7-12 (b06dead: arm marker / retarget / helper flush / e2e rows), but REAL arming stays blocked: G5 measured-T exists for NO candidate (g42 no-T on closed body §3/G3; g9/g42 Variant R infeasible per reports/G4_JAVAP_RECON_g9_g42.md; g35/g39/g40 shapes absent), so the demonstrator is the TERMINAL Stage-1 state until an in-engine kernel body exists or JFR proves amplification — see docs/G9_WHOLE_METHOD_HOOK_DESIGN.md verdict)
 
 Wave-1a = g42 `StaticCacheGet` → g35 `RangeChoice` → g40/g39 `SpigotLoadOrderDependency`
 (B.4 arm order; B.2.3 promotion verdict `"batch (site-armed at T)"` with evidence a-d required in
