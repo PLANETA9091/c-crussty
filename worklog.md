@@ -274,3 +274,4 @@ Work Log:
 
 Stage Summary:
 - TASK-60 ЗАКРЫТ: семья shutdown-крэшей полностью характеризована (11 файлов → 1 механизм: shutdown-клац loading re-entry в модуль при рваном JNI env), виновник = экспозиция дизайна (CFLH не гейтится VMDeath), не конкретный баг; движку оставлен готовый пропозал (атомарный vm_dying флаг). Семья из шума стала tracked+explained. Открытых клеймов нет; кандидаты: OLD-member wiring (g35/g39/g40 parity-through-dispatcher), ck_cap в verify-строках, D6 P3.
+- CORRECTION (same session, agent-7625532f): TASK-60 гейт-строка в записи выше: тесты 61/61 (S7-14 добавил +10 — я записал 51/51 по памяти прошлой сессии; фактический прогон этого тика = 61/61, clippy 12 = baseline Δ0 без изменений).
