@@ -67,7 +67,16 @@ IDLE_STAMP=$(date +%s)
 log "building hopper rig (platform y=200, chain x0-9 east, ring x11-12)"
 exec 3>"$FIFO"   # console writer
 send() { echo "$*" >&3; sleep 0.2; }
+# LIVE-BOOT LESSON (run 171330): world spawn is NOT guaranteed at 0,0 -> spawn chunks
+# don't cover the rig area, every setblock fails "That position is not loaded" and the
+# whole 300s window burns on an empty world. FORCELLOAD the rig area first.
+send "forceload add -48 -16 63 31"
+sleep 2
+# fail fast on unloaded chunks instead of silently burning the window
+rig_fail() { grep -c "That position is not loaded" "$LOG" 2>/dev/null || true; }
 send "setblock 0 199 0 minecraft:smooth_stone"   # sanity probe block
+sleep 1
+FAILS=$(rig_fail); [ "${FAILS:-0}" -gt 0 ] && { log "FATAL: rig area not loaded even after forceload ($FAILS failures) — aborting before window burn"; send "stop"; sleep 5; kill "$SPID" 2>/dev/null; exit 3; }
 for x in $(seq -2 13); do for z in -1 0 1; do
     send "setblock $x 200 $z minecraft:smooth_stone"
 done; done
@@ -76,6 +85,7 @@ send "setblock 9 201 0 minecraft:hopper[facing=east]"      # chain tail: stalls 
 send "setblock 11 201 0 minecraft:hopper[facing=east]"     # ring A
 send "setblock 12 201 0 minecraft:hopper[facing=west]"     # ring B -> ping-pong
 sleep 2
+FAILS=$(rig_fail); [ "${FAILS:-0}" -gt 0 ] && { log "FATAL: $FAILS rig setblocks failed — aborting before window burn"; send "stop"; sleep 5; kill "$SPID" 2>/dev/null; exit 3; }
 log "seeding items: 24 into chain mouth, 6 into ring"
 for i in $(seq 1 12); do
     send "summon minecraft:item 0.5 202 0 {Item:{id:\"minecraft:dirt\",count:1}}"
@@ -86,6 +96,17 @@ for i in 1 2 3; do
     send "summon minecraft:item 12.5 202 0 {Item:{id:\"minecraft:dirt\",count:1}}"
 done
 log "hopper-active window: 300s"
+# instrumentation sanity: after rig is ticking, pushItemsTick probe (hopper-push-tick
+# query) MUST be nonzero — 12 hoppers tick ~240 entries/s. If it is still 0 the probes
+# never landed in the runtime classes (mapping mismatch class) — abort BEFORE burning
+# the 300s window (run 171330 lesson: silent all-zero artifacts).
+sleep 10
+PUSHQ=$(awk -F'\t' '$2=="hopper-push-tick" && $3=="query" {s+=$4} END{print s+0}' "$CRUSSTY_DIRTY_OUT")
+if [ "${PUSHQ:-0}" -lt 100 ]; then
+    log "FATAL: hopper-push-tick probe cold after rig build (count=$PUSHQ) — instrumentation did not reach runtime classes; aborting before window burn"
+    send "stop"; sleep 8; kill "$SPID" 2>/dev/null; exit 4
+fi
+log "instrumentation verified: hopper-push-tick count=$PUSHQ after 10s"
 sleep 300
 cp "$CRUSSTY_DIRTY_OUT" "$OUT/snapshot_hopper_active.tsv"
 cp "$CRUSSTY_DIRTY_OUT" "$OUT/census_full.tsv"
