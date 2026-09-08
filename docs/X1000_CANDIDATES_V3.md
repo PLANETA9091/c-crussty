@@ -207,3 +207,31 @@ Moonrise TPS accounting (10.4%) — ENGINE-TOUCH class, out of scope. The
 >100x ledger is unchanged: area-map 1,945x–170,612x LIVE, lifecycle >571x
 LIVE, boot-scan >10x–100x LIVE. Entity-path guards remain the honest
 1.4–2x class; AI surfaces sub-3%-ceiling payload.
+
+## §3.4 WORLDGEN-BURST MEASURED ADDENDUM (TASK-82, 2026-09-08) — bench/p500/results/WORLDGEN_BURST_CENSUS_2026-09-08.md
+
+Fresh-chunk generation burst (256 chunks, 1,600 blocks off-spawn, JFR 240s,
+thread-aware): generation is **payload-dominant** — noise math ~24% of the
+worker thread IS the work; machinery pockets = 6.5% density-function
+interpreter (ArrayList$Itr + comodification checks in fillAllDirectly) +
+~2.8% biome climate search. SkyLight absent from top leaves. Server thread
+during burst: PalettedContainer.get 9.6% + random ticks 9.2% (forceload
+artifact) + Moonrise TPS accounting 4.6% (reproduces TASK-81 finding).
+**8th refuted branch — all four load dimensions now measured, physics
+universal.** One honest CANDIDATE discovered: dfc-style density-function
+bytecode compilation (weave-side, identical outputs, ~1.05-1.10x vanilla
+ceiling) — see docs/OPT_ARCHITECTURE_RESEARCH_2026-09-08.md.
+
+## §5 RESEARCH-MINING ADDENDUM (TASK-83, 2026-09-08) — docs/OPT_ARCHITECTURE_RESEARCH_2026-09-08.md
+
+Owner-directed deep internet research (3 parallel agents, puzzle-assembly):
+**meta-result = the dirty-rate law** (R2/arXiv 2411.10659v3: recompute-only-
+dirty ≥5.85x when <1% dirty, 10-100x outliers) — the theoretical backbone of
+our >100x guard class; principled candidate detector = mutation:query census
+per surface (TASK-84 shape, GO). Queue: hopper mod-count guard (Lithium gap,
+Paper-unfixed, top remaining same-state candidate — census first), BE-tick
+shouldTickBlocksAt guard (SparklyPaper evidence), CRaC whole-boot spike
+(only ~100x-class mechanism outside our guard regime; JVMTI+CRIU blockers
+honest), dfc-on-Paper, Graal-JIT A/B (+23% geomean vs C2), JIT-heuristic
+formalization (HugeMethodLimit=8000 / TypeProfileWidth=2 → GO). OUT: Leyden
+(conflicts with weaving), Native Image, FFM-on-21 (preview), GPU worldgen.
