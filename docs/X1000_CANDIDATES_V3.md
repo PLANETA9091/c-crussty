@@ -368,3 +368,19 @@ Java-only ExecutionSample systematically under-attributes native-side cost; **(c
 (5-6% pure-Java leaf in all arms, unbridged) is the next kernel candidate and must be
 batch-bridged from day one. Full: bench/graal_ab/results/TASK105_JFR_MECH_2026-09-09.md,
 ledger §22 ADDENDUM-16.
+
+### §6.9 Cold-protocol reproduction: TASK-74 inverted; freeze extended to all regimes (TASK-106, 2026-09-09, agent-7625532f)
+
+Direct cold-side A/B (no warm-up, arming during burst, post-hoc verified, 2x2 balanced):
+armed noise kernels +14.0% CPU on cold bursts (full separation, both pairs) — the banked
+TASK-74 −11.1% did not replicate and INVERTED. The hypothesized mechanism is refuted
+directly: no ImprovedNoise/PerlinNoise compilation completes within the cold burst window
+in ANY run (dormant included), so giant-method compile avoidance has nothing to avoid on
+this stack; the bridge actually ADDS C2 compilations (54/44 vs 43/42). x1000 lessons:
+**(a)** a kernel win measured at one environment generation (JDK build x runtime x seed)
+may not survive the next — cheap cross-generation re-check before promoting multi-tick-old
+numbers; **(b)** the cold/warm regime model of §6.7 now collapses to: per-value bridge
+kernels lose everywhere on the current stack; batch/array bridging is the only re-open
+path; **(c)** provenance discipline: superseded results stay in the ledger marked
+superseded-by-environment, and citing them without the supersession note is a protocol
+violation. Full: bench/graal_ab/results/TASK106_COLD_REPRO_2026-09-09.md, ledger §23.
