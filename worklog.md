@@ -333,3 +333,22 @@ Stage Summary:
 - TASK-70 ЗАКРЫТ: G-ABI = GO — closed lib содержит ГОТОВЫЙ whole-object kernel, ABI декодирован, бит-точен на всех production-путях, 0.825× по whole-getValue. Конвейер: G-STEP0 GO → G-RECON GO → G-ABI GO → G-AB (решающий live A/B, TASK-63 harness) — единственный оставшийся гейт.
 - Апдейт дизайна: §3.3 id-21/kernel-id-5/ABI-327702 резерв не нужен для noise-owners; работа сводится к handle-lifecycle мосту + whole-body swap + G-AB.
 - Открытых клеймов нет. Следующий кандидат: G-AB (live A/B парный по proven TASK-63 harness; МНОГО серверных бутов — координация с соседом TASK-68 server lane через BENCH-MUTEX/CLAIMS критична: серверная lane может быть занята). Резерв: ck_cap verify-strings (P2), D6 P3 design. Сосед: TASK-68 phase 3 возможен — не пересекаться с area-map src/.
+
+---
+Task ID: cron-14:40+08-Job366516
+Agent: agent-7625532f
+Task: Автономный тик cron 14:40+08 — G-BODY (standalone whole-body dispatch prototype, четвёртый CPU-гейт) в координационном окне пока сосед TASK-68 server lane.
+
+Work Log:
+- Sync + CLAIMS: TASK-71 свободен; сосед TASK-68 (server lane). Клейм TASK-71 → push 03e9926 → reverify OK.
+- РИГ bench/step0_noise/bodyagent: BodyAgent (javaagent, ASM 9.8 из bundled libs, trigger-based: capture-on-load 11030 bytes → patch-on-retransform), BodyDispatch (lazy per-instance handle по ABI TASK-70 P3/D1/F1, WeakHashMap, reflection-extraction), Step0BodyBench (два JVM-рана: java-pristine / patched с parity+canary+build-cost+P/N arms), run_body.sh (flock BENCH.lock).
+- НЕГАТИВНЫЕ ИТЕРАЦИИ (главная ценность прототипа): run1-4 FALSE-GO пойман канаром — descriptor off-by-one ('(DDDDDDZ)D' 6×D вместо '(DDDDDZ)D' 5×D → патч применился, ни один метод не совпал → байты идентичны оригиналу, тривиальный паритет; детект: cold build 4ms на fresh + пустая карта handle'ов; канар стал hard gate); run5 ASM field shadowing (унаследованное поле mv затеняет локальную → NPE; фикс differently-named final). Оба класса багов пойманы ДО серверных бутов.
+- ФИНАЛ (run6): PARITY 0/20000 pre-vs-post retransform в одном JVM + canary pass (патченное тело реально исполнялось); ТАЙМИНГ J 424.5 vs P 345.9 = 0.815× (окно 0.70-0.96×); N_direct 352.5 в том же JVM → dispatch overhead ≈ −6.6ns ≤ шума (WeakHashMap lookup бесплатен); handle build warm 22-60µs / cold 4-14ms один раз на инстанс; J кросс-ран согласован с TASK-70 (424.5 vs 429.3/402.4/403.2).
+- Дизайн-док: §7 G-BODY row = GO; §8 Session-2 update — осталась только integration engineering (module-loader bridge, phantom-reaper lifecycle, G9 quiet-worker discipline, env gate + B.2.2 ladder); G-AB требует module .so + буты → секвенируется с server lane соседа по §6.
+- Гейты: cargo test 64/64 (src не тронут). Отчёт bench/p500/results/GBODY_DISPATCH_2026-09-09.md + RAW (run5-6).
+- Пуши: 6951f3f (bench+docs). CLAIMS done: concurrent-append конфликт с соседом (их TASK-68 done + TASK-72 claim) → keeping-both + подчистка маркеров → ff4550e push → reverify OK (TASK-71 done мой). Сосед теперь TASK-72 (CPU-only callback-cost decomposition, file-disjoint с моим bench/step0_noise).
+
+Stage Summary:
+- TASK-71 ЗАКРЫТ: G-BODY = GO — whole-body swap доказан через РЕАЛЬНЫЙ retransform с бит-точным паритетом; dispatch-механика бесплатна; 0.815× end-to-end. Все CPU-гейты пройдены: G-STEP0 → G-RECON → G-ABI → G-BODY.
+- Коорд-урок: false-GO через 'patch applied but never executed' — канар обязателен для любых байт-патчей (зафиксирован в отчёте как hard gate).
+- Открытых клеймов нет. Следующий кандидат: G-AB (решающий live A/B, TASK-63 harness) — теперь безопасно: сосед ушёл с server lane на CPU-only TASK-72; но G-AB требует имплементации Session-1/2 в module .so (bridge + lifecycle + patch) — это самая тяжёлая задача конвейера, возможно разбить на 2 тика (Session 1 dormant-invisible → Session 2 patch + A/B). Резерв: ck_cap verify-strings (P2), D6 P3 design.
