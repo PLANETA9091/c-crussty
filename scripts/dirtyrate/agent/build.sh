@@ -14,6 +14,24 @@ rm -rf build/classes build/jar && mkdir -p build/classes build/jar
     src/agent/SelfTest.java src/agent/fake/BlockEntity.java
 "$JDK/bin/java" -cp "lib/asm-9.7.jar:build/classes:build/selftest" agent.SelfTest
 
+# Integration: agent TSV emission contract x THEIR analyzer (unmodified).
+python3 - <<'PYEOF'
+import subprocess, sys
+rows = []
+for ep, q, m, pt in [(100, 1000, 5, 1000), (130, 2000, 8, 1150)]:
+    rows += [f"{ep}\thopper-inventory\tmutation\t{m}",
+             f"{ep}\thopper-inventory\tquery\t{q}",
+             f"{ep}\thopper-push-tick\tquery\t{pt}",
+             f"{ep}\tMETA\tphase\ttick"]
+open("/tmp/dirty_fixture.tsv", "w").write("\n".join(rows) + "\n")
+out = subprocess.run([sys.executable, "../analyze_dirtyrate.py", "/tmp/dirty_fixture.tsv"],
+                     capture_output=True, text=True).stdout
+# window delta: query 1000, mutation 3 -> dirty 0.300% -> candidate band
+assert "| 0.300% |" in out and "GUARD-CANDIDATE->100x" in out, "analyzer contract mismatch:\n" + out
+assert "hopper-push-tick" in out, "push-tick extension row lost"
+print("[selftest] ANALYZER-CONTRACT-OK (fixture -> their analyzer, unmodified)")
+PYEOF
+
 # Shade ASM into the agent jar (single artifact for -javaagent).
 cd build/classes
 "$JDK/bin/jar" xf ../../lib/asm-9.7.jar
