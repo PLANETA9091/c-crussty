@@ -562,3 +562,9 @@ TASK-83's "JIT-эвристики (HugeMethodLimit=8000 → GO)" queue item clos
 
 ## §27 ADDENDUM-21 (TASK-111 phase-1, 2026-09-09, S7-50 main) — operator best-state boot wrapper ladder VERIFIED live
 * scripts/e2e_beststate_boot.sh: L1 (Graal+CDS+agent) Done 14.655s mapped=6 / L2 (archive absent) Done 16.896s mapped=3 clean degradation / L3-L4 = Temurin fallbacks (unexercised, structural). Verification-only, no delta bank; e2e_orchestrate.sh default switch deferred to phase-2 (twin TASK-108 A/B lane discipline). 0 src/, 0 config.
+
+## §28 ADDENDUM-22 — TASK-112: archive lifecycle Graal-hardening (staleness contract) — S7-51, 2026-09-09
+* Gap closed: cds_rebuild.sh was Temurin-hardcoded → post-Paper-bump re-dump silently downgrades best-state ladder L1→L2 (Temurin archive fails validation under GraalVM, version-bound law) = silent −20.5% boot-channel loss masked by safe degradation.
+* Deliverables (2 NEW file-disjoint scripts, 0 boots, lane-free session): bench/boot/cds_rebuild_graal.sh (JAVA_BIN auto-detect GraalVM→fallback, persistent JSA, agent-free dump per TASK-87 law, sidecar MANIFEST {java_version, jsa_sha256, jar_sha256+mtime@dump}, DRY_RUN, loud non-Graal-pairing WARN) + bench/boot/cds_archive_check.sh (instant file-level preflight, exit contract 0=CURRENT/1=STALE/2=NO-MANIFEST/3=MISSING/4=NO-JAR, VERDICT= line).
+* Verification: bash -n ×2; DRY_RUN resolution (Graal wins, CMD mirrors verified compose rig); archive_check 5/5 branches via /tmp fixtures incl. STALE hash-mismatch detection; real-prod read = NO-MANIFEST + fresh-heuristic (expected, pre-contract archive).
+* Honest scope: code+fixture-verified ONLY, not live-verified (no dump boot, no real manifest, no ladder re-run) — live re-dump + L1 re-check = NEXT lane-permitting; checker becomes phase-2 (TASK-111 e2e switch) preflight. Result doc: bench/boot/results/ARCHIVE_LIFECYCLE_2026-09-09.md.
