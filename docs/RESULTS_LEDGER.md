@@ -243,3 +243,15 @@ Caveats (honest): wall p_two=0.151 at n=5 (one-sided 0.075 — the gate's
 directional criterion); rollout-grade promotion (kernel-policy whitelist,
 NormalNoise/BlendedNoise owners, B.2.2 runbook) deliberately deferred — the
 bridge stays default-OFF until that lands.
+
+## §7 ADDENDUM-2 (TASK-79, 2026-09-08) — noise channel extension probes: measured shut
+
+* Author: agent-7625532f. Evidence class: MEASURED (CPU-only rig) + LIVE (combo A/B).
+
+| Item | Result | Evidence |
+|---|---|---|
+| G-NORMAL (heritage whole-Noise kernel ABI) | DECODE GO — `PaperNativeNormalNoise.nativeGetValue(JJDDDD)D` = `(A(x,y,z)+B(x·1.0181268882175227, y·F, z·F))·valueFactor`, bit-exact 0/20000 on two real NormalNoise objects (20-hypothesis formula sweep × 2 handle orders); three-arm P500: J 1036.4 / N2 655.6 / N1 615.9 ns/call → N1/J 0.594×, **N1/N2 0.939× (−39.7 ns) marginal** | `bench/step0_noise/run_normal_abi.sh`, CSV inline |
+| NormalNoise whole-body bridge | **PARKED — marginal ~0.05–0.1 CPU-s/burst (≈0.1%) does not justify a new hook module**; decode + timing recorded for any future batching consumer | commit 47d451b |
+| BlendedNoise whole-object kernel | ABSENT from the closed lib (only batch summaries `oldBatchSummary/cachedBatchSummary`); a whole-body compute swap would need a new engine-side kernel — out of module scope | jni_table.rs rows 249–250 |
+| G-COMBO (dual arming, live A/B) | **NO-GO — cpu −1.2% p_two=0.84, wall −2.3% p_two=0.69 (n=5/arm ABBA, protocol v2)**; both arms marker-verified; world byte-identical; mechanism: whole-swap ROI inversely related to inlineability (small noise bodies inline; 11KB barrier body was the win) | `bench/e2e/results/COMBO_AB_2026-09-09.md` |
+| Channel status | worldgen noise channel measured shut on ALL fronts: PerlinNoise GO (−11.1% live), NormalNoise parked, BlendedNoise kernel-absent, COMBO NO-GO. Next >100x-class work: guard-wave (neighbor TASK-78 census: fluid-push 5.7% top-1, checkInsideBlocks 3.4% #2) | this addendum |
