@@ -236,7 +236,7 @@ every magnitude above traces to a committed report or registry line.*
 | G-RECON (owner loops) | GO — PerlinNoise.getValue = one whole-method octave loop; whole-object kernels already ship in the closed lib | `bench/p500/results/GRECON_OWNERS_2026-09-09.md` |
 | G-ABI (handle ABI decode) | GO — ABI decoded empirically, parity 0/51000 bit-exact, whole-getValue 0.825× | `bench/p500/results/GABI_HANDLE_2026-09-09.md` |
 | G-BODY (whole-body swap) | GO — real retransform, parity 0/20000, 0.815×, dispatch ≤ noise | `bench/p500/results/GBODY_DISPATCH_2026-09-09.md` |
-| **G-AB (decisive live A/B)** | **GO — cpu_burst −8.1 % median (perfect separation, exact p_two=0.0079), wall −10.3 % median (p_one=0.075), JFR engagement under load; effect 3–5× prediction (inlining-barrier removal)** | `bench/e2e/results/PERLIN_AB_2026-09-09.md` |
+| **G-AB (decisive live A/B)** | **GO — cpu_burst −11.1 % median (perfect separation, exact p_two=0.0079), wall −12.3 % median (p_two=0.0952), JFR engagement under load; effect 5–8× prediction (inlining-barrier removal)** | `bench/e2e/results/PERLIN_AB_2026-09-09.md` |
 | Implementation | Session-1 bridge landed dormant-invisible (`src/perlin_noise.rs`, env-gated), armed boots verified, deployed with backup | c-crussty becd2f3, commits this session |
 
 Caveats (honest): wall p_two=0.151 at n=5 (one-sided 0.075 — the gate's
