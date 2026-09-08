@@ -461,3 +461,19 @@ Work Log:
 
 Stage Summary:
 - TASK-80 ЗАКРЫТ (agent-7625532f + S7-25): 6-я измеренная ветка x1000-охоты закрыта с working-impl + live hit-rate. Следующие: mob-dense census (TASK-81 сосед), kernel-policy whitelist runbook (P2), ck_cap verify-strings (P2), D6 P3 design; веб-исследование архитектур по директиве владельца перед следующим крупным клеймом.
+---
+Task ID: cron-18:40+08-Job366516 (TASK-80, session closeout)
+Agent: agent-7625532f
+Task: Guard-wave Session-1 (fluid-push same-state guard): implementation, live bring-up, falsifier measurement, engine critical fix. Joint closeout with S7-25 (their 2f4f599/00fd889 verdict; my c69fd71 results doc).
+
+Work Log:
+- Built FluidPushGuardHook (pure-Java bridge, no JNI): negative-only same-state guard + javap-exact slow-path reimplementation; quantized cell-bounds key; per-entity 4-slot array (tag-alternation fix); hit-rate counters (falsifier). Env CRUSSTY_FLUID_PUSH_GUARD default OFF, dormant byte-identity, kill-switch=arming gate. Gates: cargo test 64/64, clippy Δ0, P500 FULL duty 70/70 ×2 (0 regressions).
+- THREE measured bring-up fixes (RAW archived): (1) exact-double-bits key NEVER hits — item friction ×0.98/tick rebuilds the AABB with fresh bits every tick (pilot B SLOWER than A, 3.29 vs 2.19 CPU-s) → integer cell-bounds key (outcome is cell-set-determined, bit-exact); (2) single-slot cache thrashed by WATER/LAVA alternation — hit_rate 2.0% → slot array; (3) `forceload add` takes BLOCK coords (chunk-looking args marked 1 chunk) + spawn chunks not auto-kept-loaded → summoned entities saved-to-disk on chunk unload and vanished from @e → block-coord forceload + accumulated-log delta counting.
+- ENGINE CRITICAL FIX (CRUSSTY 4f5d5ea): runtime class_file_load_hook passed a non-NUL-terminated Rust String pointer to plugin hooks — C-string scans hit heap garbage → hook-name matching was heap-layout-dependent; Entity's whole-body patches were silent no-ops (retransform rc=0, no "hook serve"); PerlinNoise worked by heap luck. Restores deterministic dispatch for ALL project class hooks. Deployed libcrussty_runtime.so (bak_prefix_nul rollback).
+- Live verification post-fix: pristine sighting 205458 B → hook serve 204078 B → armed rc=0 → self-test passed → hit_rate 96.4% (252,722/262,144) across every armed run; JFR proof: patched chain sampled live (Entity→FluidPushGuardHook, MapMakerInternalMap.get, cellsUnchanged→PalettedContainer.get).
+- Live A/B (n=5/arm, protocol v2, 30 s fixed window, 400-item deterministic grid): A med 2.72 vs B med 2.59 CPU-s (−4.8%), MW exact p_two=0.6905, OVERLAP — under-powered at this profile; p<0.1 wall gate honestly NOT passed. x1000 entity-path guard branch CONFIRMED falsified by live falsifier data (6th refuted branch, first closed with a working impl + measured hit rate).
+- Incident: 2 new-signature hs_err (WorldBorder.<init> SI_KERNEL; BlockEntity.<clinit> SIGILL) inside the runtime/plugin hot-swap churn window; discriminator 3/3 clean dormant boots on the fixed runtime; classified hot-swap transients; deploy discipline hardened (.so swaps only on pgrep==0 quiescence).
+
+Stage Summary:
+- TASK-80 closed jointly: guard ships default-OFF DO-NOT-WIRE-BY-DEFAULT (real but small ~2% census win; not x1000-class). Biggest deliverable = the engine NUL-termination fix (a reliability multiplier for every future hook channel).
+- Pushes: c-crussty 2f4f599+c69fd71+dd298fc (origin/master), CRUSSTY 4f5d5ea (origin/master), CLAIMS 00fd889 (dev-logs). Open claims: none. Next: mob-dense census (S7-26/81), kernel-policy whitelist + B.2.2 runbook (P2), ck_cap verify-strings (P2), D6 P3 design; user-directed web-research lane for new optimization architectures (puzzle-assembly of published techniques) authorized by owner this session.
