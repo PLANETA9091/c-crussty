@@ -352,6 +352,28 @@ do_verify() {
     # attempt 1 dropped, attempt 2 delivered — that boot must read INFO k=2, not
     # invisible). See E2E_LIVE_2026-09-08.md ADDENDUM S7-9/S7-10.
     ck_noise_attempts "improved_noise capture attempts"
+    # G4 site-arming row (S7-12, docs/G4_SITE_PATCH_DESIGN.md §7.3): the
+    # dormant boot shows the arm line ABSENT (PASS-by-absence, INFO — the
+    # rollout gate off means silent refusal by design); a CRUSSTY_BATCH=auto|on
+    # boot shows the arm marker plus the retarget evidence line (retargeted /
+    # skipped / FAILED — all three are honest states, only the refusal is a
+    # hard FAIL because a kernel-policy refusal for the proven nativeNoise
+    # pair would mean a demoted kernel).
+    local site_arm_line retarget_line site_refusal
+    site_refusal="$(grep_markers 'batch: site .* not armed: kernel-policy refuses')"
+    if [ -n "$site_refusal" ]; then
+        printf '%-34s %-6s %s\n' "batch site arm" "FAIL" "$site_refusal"; fails=$((fails+1))
+    else
+        site_arm_line="$(grep_markers 'batch: arm [A-Za-z0-9_/.]+ id=(none|[0-9]+) T=[0-9]+ site=')"
+        retarget_line="$(grep_markers 'batch: site [a-z_]+ retarget')"
+        if [ -n "$site_arm_line" ] && [ -n "$retarget_line" ]; then
+            printf '%-34s %-6s %s\n' "batch site arm" "PASS" "$site_arm_line | $retarget_line"
+        elif [ -n "$site_arm_line" ]; then
+            printf '%-34s %-6s %s\n' "batch site arm" "INFO" "$site_arm_line (no retarget evidence line)"
+        else
+            printf '%-34s %-6s %s\n' "batch site arm" "INFO" "(absent — dormant PASS-by-absence: rollout gate off, site unretargeted)"
+        fi
+    fi
     ck_opt "kernel_pref old-bind" 'kernel_pref: .* bound to old kernel'
     printf '%s\n' "--------------------------------------------------------------------------------"
     [ "$fails" -eq 0 ] && { log "verify: ALL PASS"; return 0; }

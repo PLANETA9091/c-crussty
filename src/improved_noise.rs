@@ -88,6 +88,12 @@ static READY: AtomicBool = AtomicBool::new(false);
 /// activation; the patch worker reuses it to feed the ASM helper.
 /// 0 = not captured yet.
 static KERNEL_LOADER: AtomicUsize = AtomicUsize::new(0);
+/// Global ref to the DEFINED ImprovedNoiseBatchOps class (G4 demonstrator).
+/// Captured directly in the define loop — resolving it later via
+/// Class.forName(name, true, loader) proved unreliable live (S7-12 dormant
+/// boot: "helper self-test skipped" with the exception swallowed), while the
+/// define loop already HOLDS the jclass. 0 = not defined yet.
+static BATCH_OPS_GREF: AtomicUsize = AtomicUsize::new(0);
 
 /// Original class bytes captured from the FIRST sight of the class — its
 /// original load goes through the byte hook while READY=false, so the load
@@ -386,6 +392,14 @@ pub fn activate() {
             {
                 match env.define_class(name, gref, bytes) {
                     Some(c) => {
+                        // G4: keep the demonstrator helper's jclass as a
+                        // global ref — the self-test (and any future Rust-
+                        // side plumbing) resolves it from here instead of a
+                        // Class.forName round-trip through the loader.
+                        if name == BATCH_OPS_NAME {
+                            let g = env.new_global_ref(c);
+                            BATCH_OPS_GREF.store(g as usize, Ordering::SeqCst);
+                        }
                         env.delete_local_ref(c);
                         eprintln!("[crussty-plugin] improved_noise: defined {name} in kernel loader");
                     }
@@ -665,12 +679,24 @@ fn maybe_batch_retarget(patched: Vec<u8>) -> (Vec<u8>, Option<String>) {
                         "[crussty-plugin] batch: site improved_noise retarget skipped: bridge call site not found in the computed patch ({outcome:?}) — keeping the proven unretargeted patch"
                     )),
                 ),
-                Err(e) => (
-                    patched,
-                    Some(format!(
-                        "[crussty-plugin] batch: site improved_noise retarget FAILED ({e}) — keeping the proven unretargeted patch"
-                    )),
-                ),
+                Err(e) => {
+                    // G4 S7-12 diagnostic: dump the failing bytes so the
+                    // parse failure is analyzable offline (the dump is the
+                    // ASM-patched class the JVM itself accepted for the
+                    // serve path, so a parser gap — not corruption — is the
+                    // working hypothesis).
+                    let dump = "/tmp/crussty_g4_asm_patched.class";
+                    let dump_note = match std::fs::write(dump, &patched) {
+                        Ok(()) => format!(" (bytes dumped to {dump})"),
+                        Err(w) => format!(" (dump to {dump} failed: {w})"),
+                    };
+                    (
+                        patched,
+                        Some(format!(
+                            "[crussty-plugin] batch: site improved_noise retarget FAILED ({e}){dump_note} — keeping the proven unretargeted patch"
+                        )),
+                    )
+                }
             }
         }
     }
@@ -867,69 +893,39 @@ fn bridge_selftest() {
 
 /// Drive `ImprovedNoiseBatchOps.selfTestFlush()` (the demonstrator's flush
 /// machinery: abiVersion() + zero-op run() through the live bridge) once and
-/// report. Resolves the helper through the KERNEL loader (it is defined
-/// there, not in the bootstrap — a plain find_class would miss it). A
-/// failure is OBSERVATIONAL here (one line): the helper's own degrade ladder
-/// is the runtime safety net, and the retarget itself never landed unless
-/// the gate chain armed the site.
+/// report. Resolves the helper through its DEFINE-TIME global ref
+/// (BATCH_OPS_GREF) — a Class.forName round-trip through the loader proved
+/// unreliable live (S7-12 dormant boot) and is deliberately not used. Every
+/// failure path is LOUD (describe_exception): a silent skip here cost a
+/// debugging cycle already.
 fn batch_helper_selftest() {
-    let loader = KERNEL_LOADER.load(Ordering::SeqCst);
-    if loader == 0 {
+    let gref = BATCH_OPS_GREF.load(Ordering::SeqCst);
+    if gref == 0 {
         eprintln!(
-            "[crussty-plugin] improved_noise: batch helper self-test skipped (no kernel loader)"
+            "[crussty-plugin] batch: helper self-test skipped (ImprovedNoiseBatchOps not defined)"
         );
         return;
     }
     let rc = cplug_sdk::jni_util::with_attached(|env| {
-        let Some(class_cls) = env.find_class("java/lang/Class") else {
-            crate::clear_exception(env);
+        let cls = gref as jni::jclass;
+        let Some(selftest_mid) = env.get_static_method_id(cls, "selfTestFlush", "()I") else {
+            crate::describe_exception(env);
+            eprintln!(
+                "[crussty-plugin] batch: helper self-test: getStaticMethodID(selfTestFlush()I) failed"
+            );
             return None::<i32>;
         };
-        let Some(forname) = env.get_static_method_id(
-            class_cls,
-            "forName",
-            "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;",
-        ) else {
-            crate::clear_exception(env);
-            env.delete_local_ref(class_cls);
-            return None;
-        };
-        let Some(name) = env.new_string_utf(BATCH_OPS_NAME) else {
-            crate::clear_exception(env);
-            env.delete_local_ref(class_cls);
-            return None;
-        };
-        // initialize=true: the helper's clinit is trivial (constant arrays);
-        // initializing also proves the class links (its referenced bridge
-        // signatures resolve).
-        let cls = env.call_static_object_method(
-            class_cls,
-            forname,
-            &[
-                jni::jvalue { l: name },
-                jni::jvalue { z: 1 },
-                jni::jvalue { l: loader as jni::jobject },
-            ],
-        );
-        let had_exc = crate::clear_exception(env);
-        env.delete_local_ref(name);
-        env.delete_local_ref(class_cls);
-        if cls.is_null() || had_exc {
-            env.delete_local_ref(cls);
-            return None;
+        // A static call initializes the class on first use (JVM contract),
+        // which also proves the helper links (its referenced bridge
+        // signatures resolve inside the kernel loader).
+        let rc = env.call_static_int_method(cls, selftest_mid, &[]);
+        if crate::clear_exception(env) {
+            crate::describe_exception(env);
+            eprintln!(
+                "[crussty-plugin] batch: helper self-test: static call left a pending exception (cleared; see trace above)"
+            );
+            return None::<i32>;
         }
-        let Some(selftest_mid) = env.get_static_method_id(
-            cls as jni::jclass,
-            "selfTestFlush",
-            "()I",
-        ) else {
-            crate::clear_exception(env);
-            env.delete_local_ref(cls);
-            return None;
-        };
-        let rc = env.call_static_int_method(cls as jni::jclass, selftest_mid, &[]);
-        let _ = crate::clear_exception(env);
-        env.delete_local_ref(cls);
         Some(rc)
     });
     match rc.flatten() {
@@ -940,7 +936,7 @@ fn batch_helper_selftest() {
             "[crussty-plugin] batch: helper self-test DIAGNOSTIC rc={r} (flush degraded or bridge unavailable — single-call ground state holds)"
         ),
         None => eprintln!(
-            "[crussty-plugin] batch: helper self-test skipped (class not resolvable in kernel loader)"
+            "[crussty-plugin] batch: helper self-test failed (see exception trace above)"
         ),
     }
 }
