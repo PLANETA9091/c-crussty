@@ -390,3 +390,19 @@ Stage Summary:
 - TASK-74 ЗАКРЫТ: G-AB = GO — КОНВЕЙР BATCHING-LAYER ЗАВЕРШЁН ALL-GO (G-STEP0→G-RECON→G-ABI→G-BODY→G-AB). Whole-object PerlinNoise мост на проде: −11.1% CPU-burst (сепарация p=0.008), −12.3% wall (p=0.095), бит-точно, env-gated default-OFF, JFR engagement под нагрузкой.
 - Ответ пользователю (x1000): честная физика — worldgen noise = ~4-5 CPU-s из ~55-64 CPU-s бёрста (≤8%); даже бесконечное ускорение noise даёт ≤8%; измеренные реальные выигрыши: kernel-уровень 0.41-0.59× (batch), whole-body 0.815× изолированно → −11% CPU на живом бёрсте (лучше микробенча из-за инлайнинга). x1000 возможен только алгоритмически (не считать ненужное) — геймплейные изменения = фрод по ТЗ. Следующие крупные рычаги: NormalNoise/BlendedNoise owners (та же whole-body форма — p(int)-остаток 10.4% JFR), lighting/tick-системы (отдельный канал), parallelism (harness уже есть).
 - Открытых клеймов нет. Следующие кандидаты: (1) NormalNoise/BlendedNoise whole-body owners (decoding ABI уже есть, форма proven — самый крупный оставшийся noise-рычаг), (2) kernel-policy whitelist + rollout runbook для already-proven пары, (3) ck_cap verify-strings (P2), (4) D6 P3 design. Сосед: TASK-75 (rcon-hygiene) — CPU/file-only.
+
+---
+Task ID: cron-16:40+08-Job366516
+Agent: agent-7625532f
+Task: Автономный тик cron 16:40+08 — верификация завершённого TASK-74; разрешение инцидента двойного исполнения тика.
+
+Work Log:
+- Тик 16:40 стартовал при УЖЕ завершённом тике 15:40 (TASK-74): работа этого окна началась до того, как worklog-запись 15:40 появилась на диске (гонка сжатия-контекста vs зомби-доисполнение того же agent-loop) — окно 16:40 независимо переисполнило session-2+G-AB, обнаружив коллизии (см. репорт §5.5), и завершилось синхронно с зомби-финализацией.
+- Независимая репродукция этим окном (idempotent-верификация): armed verify boot — тот же зелёный маркерный след; раны 1-9 v2-протокола + чистый ретрай run-10 (61.59/55.10 = авторитетная строка отчёта); полные статы — ИДЕНТИЧНЫ зомби-финалу (cpu -11.1% perfect separation p_two=0.0079; wall -12.3% p_two=0.0952) — двойное вычисление, один вывод.
+- JFR-анализ дополнен NativeMethodSample-видом: smoking-gun стак NormalNoise.getValue → PerlinNoise.getValue (патченное тело) → PerlinNoiseNativeOps.getValue:218 → PaperNativePerlinNoise.nativeGetValue — 47 сэмплов под реальным бёрстом; Java octave-loop исчез из ExecutionSample (ImprovedNoise-остаток 285 = непатченные владельцы NormalNoise/BlendedNoise — будущий рычаг).
+- Верификация финального состояния: cargo test 64/64; CLAIMS TASK-74 done = agent-7625532f (reverify post-pull OK); дизайн-док §7 G-AB=GO (line 254); REPORT PERLIN_AB_2026-09-09.md §5.5 инцидент задокументирован; оба репо in-sync с origin (пуши ed879c6/76ebdee/92018e4 + 95be0b5 приземлились); мир байт-идентичен сиду; 0 новых hs_err.
+- УРОК СЕССИИ (double-execution hazard): сжатие контекста посреди тика + немедленная доставка следующего тика = два исполнения одного Task ID. Смягчение: worklog-first уже работает (при чтении — проверять свежий хвост ПЕРЕД стартом серверной сессии); дубликаты оказались безопасны (idempotent + одна авторитетная строка), но будущие сессии должны проверять `git log origin..HEAD` + worklog-хвост непосредственно перед клеймом.
+
+Stage Summary:
+- TASK-74 ПОДТВЕРЖДЁН ЗАКРЫТЫМ (двойная независимая верификация): G-AB = GO, конвейер batching-layer ALL-GO (5/5 гейтов). Прод-эффект: −11.1% CPU-burst (p=0.0079, perfect separation), −12.3% wall (p=0.0952), boot flat, бит-точность, env-gated default-OFF, JFR engagement под нагрузкой.
+- Открытых клеймов нет. Следующие кандидаты (приоритет): (1) NormalNoise/BlendedNoise whole-body owners — ABI decode есть, форма proven, JFR p(int)-остаток 10.4% сэмплов; (2) kernel-policy whitelist + rollout runbook proven-пары; (3) ck_cap verify-strings (P2); (4) D6 P3 design. Сосед: TASK-76 done (RCON drill PASS).
