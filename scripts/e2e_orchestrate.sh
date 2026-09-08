@@ -460,7 +460,11 @@ do_hotreload() {
 
 do_shutdown() {
     local pid; pid="$(server_pid)"
-    [ -n "$pid" ] || { log "no server running — nothing to stop"; return 0; }
+    # S7-31 fix #2: early-return used to skip kill_stdin_holders entirely —
+    # after an RCON-side stop (server already dead) the session's stdin holders
+    # survived holding inherited flock'd fds -> next session deadlocked on
+    # BENCH-MUTEX. Holders MUST be reaped on every shutdown path.
+    [ -n "$pid" ] || { kill_stdin_holders; log "no server running — nothing to stop"; return 0; }
     log "stopping server pid $pid"
     local stop_fifo=""
     [ -n "${STOP_FIFO_FD9:-}" ] && stop_fifo="fd9"   # set by `all` (fd 9 open)
