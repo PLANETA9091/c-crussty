@@ -24,10 +24,12 @@ import java.util.Arrays;
  * proves env-neutrality of measurement (route flip changes only which cost
  * a real site would pay, not the dispatcher itself).
  *
- * Coverage = the FULL batch table (all 12 kernel ids, closed table,
- * batch_table.rs): ids 0-9 shape A (I[J)I, scalar + long[64] dst,
- * counts[i] = OUTPUT capacity = 64 = OUT_SCRATCH_CAP; ids 10-11 shape B
- * ([J[J)J, counts[i] = INPUT length, 1 result long/op).
+ * Coverage = the FULL batch table (closed table, batch_table.rs): ids 0-9
+ * shape A (I[J)I, scalar + long[64] dst, counts[i] = OUTPUT capacity =
+ * 64 = OUT_SCRATCH_CAP; ids 10-11 shape B ([J[J)J, counts[i] = INPUT length,
+ * 1 result long/op). Wire v3 (S7-14): 18 kernels — this harness sweeps the
+ * historical GROUP_IDS subset (shape A/B) with EMPTY refArgs; the wave-1
+ * ref-plane shapes D/E/F are covered by BatchFloorBench --kernels 15,16,17.
  *
  * Wiring-eligible/floor CONTROL groups that the as-built table CANNOT
  * express (g30 PluginLoadingAllocation, g2 AquiferSurfaceSampling-not-in-
@@ -50,7 +52,7 @@ import java.util.Arrays;
  */
 public final class BatchRolloutBench {
 
-    private static final long ABI_EXPECTED = (1L << 16) | 12; // TABLE_VERSION=1, KERNEL_COUNT=12
+    private static final long ABI_EXPECTED = (3L << 16) | 18; // TABLE_VERSION=3, KERNEL_COUNT=18 (wire v3, S7-14)
     private static final int DST_CAP = 64;                    // = OUT_SCRATCH_CAP
     private static final int SHAPE_B_IN = 8;                  // longs per shape-B op input
 
@@ -90,7 +92,7 @@ public final class BatchRolloutBench {
         // policy-allowed; drift-guard tests hold) — the reachable live
         // refusal is ERR_BAD_KERNEL_ID for ids >= KERNEL_COUNT.
         int probeRet = PaperNativeBatchDispatch.run(new int[]{9999}, new long[]{1}, new long[0],
-                new int[]{64}, new long[64], new int[]{0});
+                new int[]{64}, new long[64], new int[]{0}, new Object[0]);
         System.out.printf("# refused_probe id=9999 ret=%d (negative=%b)%n", probeRet, probeRet < 0);
         if (probeRet >= 0) {
             System.err.println("refused probe: expected negative return for out-of-table id");
@@ -163,7 +165,7 @@ public final class BatchRolloutBench {
             long[] outs = new long[n];
             int[] counts = new int[n]; Arrays.fill(counts, SHAPE_B_IN);
             int[] offs = new int[n]; for (int i = 0; i < n; i++) offs[i] = i;
-            int ret = PaperNativeBatchDispatch.run(ids, new long[n], args1, counts, outs, offs);
+            int ret = PaperNativeBatchDispatch.run(ids, new long[n], args1, counts, outs, offs, new Object[0]);
             if (ret != n) {
                 System.err.printf("shape-B mechanical check id=%d: run()=%d expected %d%n", id, ret, n);
                 System.exit(2);
@@ -317,7 +319,7 @@ public final class BatchRolloutBench {
         long t0 = System.nanoTime();
         long acc = 0;
         for (long b = 0; b < batches; b++) {
-            acc += PaperNativeBatchDispatch.run(ids, args0, args1, counts, outs, offs);
+            acc += PaperNativeBatchDispatch.run(ids, args0, args1, counts, outs, offs, new Object[0]);
         }
         long t1 = System.nanoTime();
         if (acc != batches * n) {
@@ -383,7 +385,7 @@ public final class BatchRolloutBench {
             long[] args1 = src.clone();
             long[] outs1 = new long[1];
             int ret = PaperNativeBatchDispatch.run(ids1, new long[]{0}, args1,
-                    new int[]{SHAPE_B_IN}, outs1, new int[]{0});
+                    new int[]{SHAPE_B_IN}, outs1, new int[]{0}, new Object[0]);
             if (ret != 1) {
                 System.err.printf("parity kernel %d: shape-B run()=%d%n", id, ret);
                 System.exit(2);
@@ -404,7 +406,7 @@ public final class BatchRolloutBench {
         }
         long[] outs1 = new long[DST_CAP];
         int ret = PaperNativeBatchDispatch.run(new int[]{id}, new long[]{16}, new long[0],
-                new int[]{DST_CAP}, outs1, new int[]{0});
+                new int[]{DST_CAP}, outs1, new int[]{0}, new Object[0]);
         if (ret != 1) {
             System.err.printf("parity kernel %d: run()=%d%n", id, ret);
             System.exit(2);

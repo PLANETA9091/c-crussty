@@ -24,24 +24,45 @@ import java.util.List;
  * kernel leaves its trailing long[] dst untouched — probe-verified
  * 2026-09-09).
  *
+ * WIRE v3 (S7-14, descriptor-parser port BATCH_API_PROPOSAL §4/§5):
+ * --kernels 15,16,17 drive the wave-1 REF-PLANE shapes D/E/F — the P500
+ * g35/g39/g40 OPTIMIZED members (PaperNativeRangeChoice
+ * .optimizedFillArraySummary ([D[I[I[II[J)I, direct 81.6 ns;
+ * PaperNativeSpigotLoadOrderDependency.newLoadAfterBuildSummary
+ * (I[Ljava/lang/Object;[J)I, direct 88.0 ns; .newRemovedCountSummary
+ * (I[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;I[J)I, direct
+ * 88.6 ns — all PARITY-grade, baseline.tsv:55/58/59). Wire rules: the v3
+ * scalar plane packs 1/1/2 jint long-slots per op (D/E/F), the 7th refArgs
+ * argument packs the INPUT refs per op at the prefix sum of
+ * Shape::refs(kernelIds[i]) (D=4: [D,[I,[I,[I in descriptor order; E=1:
+ * Object[]; F=3: Object[]×3), argCounts[i] = OUTPUT capacity 64 (A-style:
+ * the kernel returns the count written into dst), outs = n*64. Element
+ * values follow the P500 setup(16, true) patterns (double[] (i%97)*0.5-24;
+ * int[] (i*0x9E3779B1)&0x3FF; Object[] "plugin-"+i; int scalars n then
+ * SMALL[0]=7) so batch == direct parity is apples-to-apples.
+ *
+ * v3 parity lanes (per wave-1 kernel): one DIRECT stub call vs one K=1
+ * batch with the same fresh inputs — the kernel RETURN must match AND the
+ * dst arrays must be BYTE-IDENTICAL over the FULL 64 lanes (both sides
+ * sentinel-prefilled; the dispatcher propagates only the reported prefix,
+ * so any kernel writing beyond its reported count into dst is exposed).
+ *
+ * v3 mutation probe: the §5 zero-copy contract hands the caller's arrays to
+ * the kernels — inputs are checksummed (raw-bit/content) before and after a
+ * K=1 batch and one honest
+ * {@code MUTATION\tkernel=%d\tinput=NONE|DETECTED} line is printed per
+ * kernel (P500's fresh-args rule documents mutating kernels: NONE is the
+ * observed evidence for THESE probed inputs, not a contract guarantee).
+ *
  * Measures {@code PaperNativeBatchDispatch.run} wall-clock at batch sizes
  * K={1,8,16,64,256} (batch_api.rs module doc: "measures the dispatcher delta
- * at batch sizes 1/8/16/64/256"), shape-A kernel only (id 2/3:
- * PaperNativeAquiferIndexStride old/newBatchSummary — the P500 G0 shape
- * (I[J)I, scalar=n, dst=long[64]; the batch table's argCounts[i] is the
- * OUTPUT capacity so it is 64 here, matching the P500 stub dst).
- *
- * BEFORE (db7cf27) allocates the control-plane Vecs on every run(); AFTER
- * (28ad646) reuses them from the per-thread scratch at the capacity
- * high-water mark — steady state is allocation-free. The delta therefore
- * shows up as per-BATCH overhead shrinking to ~0 (largest per-op signal at
- * K=1, amortizing towards 1.0x as K grows).
+ * at batch sizes 1/8/16/64/256").
  *
  * Protocol per (kernel, K):
  *   1. settle loop  ~1M kernel ops at THIS K (grows the high-water
  *      capacities to n once; afterwards both arms are in steady state),
  *   2. one verification batch: batch-dispatched outs must equal a DIRECT
- *      stub call result (kernel-by-kernel long parity, P500 G0 args),
+ *      stub call result (kernel-by-kernel long parity, P500 args),
  *   3. R=11 measured rounds of M batches (M scaled so every round covers
  *      ~--ops kernel ops), System.nanoTime per round, medians reported.
  *
@@ -49,16 +70,23 @@ import java.util.List;
  * parity mismatch).
  *
  * Signed: agent-7625532f (TASK-24 bench tail; TASK-48 A′ extension); G3
- * shape-C extension Task 2-b (S7-8, Job 366450).
+ * shape-C extension Task 2-b (S7-8, Job 366450); wire-v3 D/E/F extension
+ * S7-14 (Task S7-14-A).
  */
 public final class BatchFloorBench {
 
-    private static final long ABI_EXPECTED = (2L << 16) | 15; // TABLE_VERSION=2, KERNEL_COUNT=15 (TASK-48 + G3 shape C)
+    private static final long ABI_EXPECTED = (3L << 16) | 18; // TABLE_VERSION=3, KERNEL_COUNT=18 (S7-14 wire v3 + wave-1 D/E/F)
 
     // P500 G42 case-1 config (setup(16, true)): the same arguments the
     // direct stub gets, so batch == direct parity is apples-to-apples.
     private static final int G42_P0 = 16, G42_P1 = 31, G42_P2 = 3, G42_P3 = 15, G42_P4 = 63;
     private static final int G42_KEYS = 16;
+
+    // P500 setup(16, true) wave-1 scalars: the FIRST int scalar of a
+    // descriptor is n (16); the SECOND takes SMALL[0] = 7 (gen_p500_bench.py
+    // setup rule — g40's leading + mid-list jints).
+    private static final int W1_N = 16;
+    private static final int W1_SMALL0 = 7;
 
     public static void main(String[] args) {
         String lib = arg(args, "--lib", null);
@@ -112,6 +140,41 @@ public final class BatchFloorBench {
         return kernelId == 14;
     }
 
+    // Wire v3 (S7-14): ids 15/16/17 = wave-1 ref-plane shapes D/E/F.
+    private static boolean isShapeD(int kernelId) { return kernelId == 15; }
+    private static boolean isShapeE(int kernelId) { return kernelId == 16; }
+    private static boolean isShapeF(int kernelId) { return kernelId == 17; }
+    private static boolean isWave1V3(int kernelId) {
+        return isShapeD(kernelId) || isShapeE(kernelId) || isShapeF(kernelId);
+    }
+
+    /** Ref-plane slots per op (Shape::refs mirror; D=4, E=1, F=3, else 0). */
+    private static int refsPerOp(int kernelId) {
+        if (isShapeD(kernelId)) return 4;
+        if (isShapeE(kernelId)) return 1;
+        if (isShapeF(kernelId)) return 3;
+        return 0;
+    }
+
+    // P500 setup(16, true) input builders (gen_p500_bench.py setup rules).
+    private static double[] g35Fills() {
+        double[] a = new double[W1_N];
+        for (int i = 0; i < a.length; i++) a[i] = (i % 97) * 0.5 - 24.0;
+        return a;
+    }
+
+    private static int[] g35Hashed() {
+        int[] a = new int[W1_N];
+        for (int i = 0; i < a.length; i++) a[i] = (int) ((i * 0x9E3779B1L) & 0x3FF);
+        return a;
+    }
+
+    private static Object[] g39Objs() {
+        Object[] a = new Object[W1_N];
+        for (int i = 0; i < a.length; i++) a[i] = "plugin-" + i;
+        return a;
+    }
+
     /** P500 G42 key-fill pattern: {@code (j * 0x9E3779B1) & 0x3FF}. */
     private static long keyPattern(int j) {
         return (j * 0x9E3779B1L) & 0x3FF;
@@ -123,6 +186,29 @@ public final class BatchFloorBench {
         return keys;
     }
 
+    // Shared wave-1 DIRECT-arm inputs (single-threaded bench, built once per
+    // kernel case — P500 G0 dst-reuse style: the DIRECT arm reuses inputs so
+    // its number isolates kernel+transition, not allocation; the PARITY lane
+    // builds fresh inputs per side below).
+    private static double[] dFills;
+    private static int[] dHA, dHB, dHC;
+    private static Object[] eObjs, fOA, fOB, fOC;
+
+    private static void buildSharedWave1Inputs(int kernelId) {
+        if (isShapeD(kernelId)) {
+            dFills = g35Fills();
+            dHA = g35Hashed();
+            dHB = g35Hashed();
+            dHC = g35Hashed();
+        } else if (isShapeE(kernelId)) {
+            eObjs = g39Objs();
+        } else if (isShapeF(kernelId)) {
+            fOA = g39Objs();
+            fOB = g39Objs();
+            fOC = g39Objs();
+        }
+    }
+
     private static void benchKernel(int kernelId, int k, int rounds, long opsPerRound) {
         int n = k;
         int[] ids = new int[n];
@@ -131,6 +217,7 @@ public final class BatchFloorBench {
         int[] counts;
         long[] outs;
         int[] offs;
+        Object[] refArgs;
         if (isShapeC(kernelId)) {
             // G3 shape-C wire: five packed scalar-plane slots per op in args0,
             // the int[] key payload packed one int per long slot in args1,
@@ -151,8 +238,9 @@ public final class BatchFloorBench {
                 counts[i] = G42_KEYS;
                 offs[i] = i;
             }
+            refArgs = new Object[0];
         } else {
-            int scalarW = isAPrime(kernelId) ? 3 : 1; // v2 scalar-plane width per op
+            int scalarW = isAPrime(kernelId) ? 3 : (isShapeF(kernelId) ? 2 : 1); // v2/v3 scalar-plane width per op
             args0 = new long[n * scalarW];
             args1 = new long[0];
             counts = new int[n];
@@ -164,15 +252,38 @@ public final class BatchFloorBench {
                     args0[3 * i] = 16L;   // P500 G9: p0 = 16
                     args0[3 * i + 1] = 31L; // SMALL[1]
                     args0[3 * i + 2] = 3L;  // SMALL[2]
+                } else if (scalarW == 2) {
+                    args0[2 * i] = W1_N;      // G40: p0 = n = 16
+                    args0[2 * i + 1] = W1_SMALL0; // G40: p4 = SMALL[0] = 7
                 } else {
                     args0[i] = 16L;       // P500 G0 small shape: p0 = 16
                 }
             }
-            Arrays.fill(counts, 64);          // shape-A/A′ OUTPUT capacity = dst long[64]
+            Arrays.fill(counts, 64);          // shape-A/A′/D/E/F OUTPUT capacity = dst long[64]
             for (int i = 0; i < n; i++) offs[i] = i * 64;
+            // Wire v3 ref plane: per-op INPUT refs at the prefix sum of
+            // refsPerOp (single-shape batch ⇒ slot base = i * refsPerOp).
+            buildSharedWave1Inputs(kernelId);
+            int rp = refsPerOp(kernelId);
+            refArgs = new Object[n * rp];
+            for (int i = 0; i < n; i++) {
+                int base = i * rp;
+                if (isShapeD(kernelId)) {
+                    refArgs[base] = dFills;
+                    refArgs[base + 1] = dHA;
+                    refArgs[base + 2] = dHB;
+                    refArgs[base + 3] = dHC;
+                } else if (isShapeE(kernelId)) {
+                    refArgs[base] = eObjs;
+                } else if (isShapeF(kernelId)) {
+                    refArgs[base] = fOA;
+                    refArgs[base + 1] = fOB;
+                    refArgs[base + 2] = fOC;
+                }
+            }
         }
 
-        int ret = PaperNativeBatchDispatch.run(ids, args0, args1, counts, outs, offs);
+        int ret = PaperNativeBatchDispatch.run(ids, args0, args1, counts, outs, offs, refArgs);
         if (ret != n) {
             System.err.printf("kernel %d K=%d: run()=%d (expected %d) — harness error%n",
                     kernelId, n, ret, n);
@@ -183,7 +294,7 @@ public final class BatchFloorBench {
         long settleBatches = Math.max(2000, 1_000_000L / n);
         long acc = 0;
         for (long b = 0; b < settleBatches; b++) {
-            acc += PaperNativeBatchDispatch.run(ids, args0, args1, counts, outs, offs);
+            acc += PaperNativeBatchDispatch.run(ids, args0, args1, counts, outs, offs, refArgs);
         }
         if (acc != settleBatches * n) {
             System.err.printf("kernel %d K=%d: settle returned inconsistent counts%n", kernelId, n);
@@ -199,7 +310,7 @@ public final class BatchFloorBench {
         for (int r = 0; r < rounds; r++) {
             long t0 = System.nanoTime();
             for (long b = 0; b < batches; b++) {
-                PaperNativeBatchDispatch.run(ids, args0, args1, counts, outs, offs);
+                PaperNativeBatchDispatch.run(ids, args0, args1, counts, outs, offs, refArgs);
             }
             long t1 = System.nanoTime();
             perBatchNs[r] = (double) (t1 - t0) / batches;
@@ -245,10 +356,70 @@ public final class BatchFloorBench {
         if (isShapeC(kernelId)) {
             return PaperNativeStaticCacheGet.newBatchSummary(G42_P0, G42_P1, G42_P2, G42_P3, G42_P4, g42Keys(), dst);
         }
+        if (isShapeD(kernelId)) {
+            return PaperNativeRangeChoice.optimizedFillArraySummary(dFills, dHA, dHB, dHC, W1_N, dst);
+        }
+        if (isShapeE(kernelId)) {
+            return PaperNativeSpigotLoadOrderDependency.newLoadAfterBuildSummary(W1_N, eObjs, dst);
+        }
+        if (isShapeF(kernelId)) {
+            return PaperNativeSpigotLoadOrderDependency.newRemovedCountSummary(W1_N, fOA, fOB, fOC, W1_SMALL0, dst);
+        }
         return switch (kernelId) {
             case 3 -> PaperNativeAquiferIndexStride.newBatchSummary(16, dst);
             default -> PaperNativeAquiferIndexStride.oldBatchSummary(16, dst);
         };
+    }
+
+    // ---- wire v3 input checksums (mutation probe) ------------------------
+
+    private static long checksum(double[] a) {
+        long h = 1;
+        for (double v : a) h = h * 31 + Double.doubleToRawLongBits(v);
+        return h;
+    }
+
+    private static long checksum(int[] a) {
+        long h = 1;
+        for (int v : a) h = h * 31 + v;
+        return h;
+    }
+
+    private static long checksum(long[] a) {
+        long h = 1;
+        for (long v : a) h = h * 31 + v;
+        return h;
+    }
+
+    /** Object[]: content hash for typed arrays/strings, identity for opaque
+     *  objects (identityHashCode detects element REPLACEMENT; in-place
+     *  mutation of an opaque object is NOT visible — documented probe
+     *  limitation; the probed wave-1 elements are Strings). */
+    private static long checksum(Object[] a) {
+        long h = 1;
+        for (Object o : a) {
+            h = h * 31 + objectChecksum(o);
+        }
+        return h;
+    }
+
+    private static long objectChecksum(Object o) {
+        if (o == null) return 0;
+        if (o instanceof double[] d) return checksum(d);
+        if (o instanceof int[] i) return checksum(i);
+        if (o instanceof long[] l) return checksum(l);
+        if (o instanceof Object[] oa) return checksum(oa);
+        if (o instanceof String s) return s.hashCode();
+        return System.identityHashCode(o);
+    }
+
+    /** One checksum over a wave-1 op's ref-plane inputs (descriptor order). */
+    private static long wave1InputChecksum(int kernelId, Object[] refArgs) {
+        long h = 1;
+        for (Object o : refArgs) {
+            h = h * 31 + objectChecksum(o);
+        }
+        return h;
     }
 
     /**
@@ -275,7 +446,7 @@ public final class BatchFloorBench {
             int[] counts1 = {G42_KEYS};
             long[] outs1 = new long[1];
             int[] offs1 = {0};
-            int ret = PaperNativeBatchDispatch.run(ids1, args0_1, args1_1, counts1, outs1, offs1);
+            int ret = PaperNativeBatchDispatch.run(ids1, args0_1, args1_1, counts1, outs1, offs1, new Object[0]);
             if (ret != 1) {
                 System.err.printf("kernel %d: parity run()=%d%n", kernelId, ret);
                 System.exit(2);
@@ -287,6 +458,65 @@ public final class BatchFloorBench {
             }
             System.out.printf("# parity OK kernel=%d shape=C ret=%d (stub=newBatchSummary: batch == direct, return-carried)%n",
                     kernelId, directRet);
+            return;
+        }
+        if (isWave1V3(kernelId)) {
+            // Wire-v3 wave-1 parity: fresh P500 setup(16,true) inputs on BOTH
+            // sides; the kernel RETURN must match AND the dst arrays must be
+            // byte-identical over the FULL 64 lanes (both sentinel-prefilled:
+            // the dispatcher propagates only the reported prefix, so any
+            // write beyond the reported count into dst is exposed here).
+            int[] ids1 = {kernelId};
+            long[] args0_1 = isShapeF(kernelId) ? new long[]{W1_N, W1_SMALL0} : new long[]{W1_N};
+            int[] counts1 = {64};
+            long[] outs1 = new long[64];
+            Arrays.fill(outs1, 0x5A5A5A5A5A5A5A5AL);
+            int[] offs1 = {0};
+            long[] directDst = new long[64];
+            Arrays.fill(directDst, 0x5A5A5A5A5A5A5A5AL);
+
+            Object[] refArgs1;
+            int directRet;
+            if (isShapeD(kernelId)) {
+                double[] fills = g35Fills();
+                int[] hA = g35Hashed(), hB = g35Hashed(), hC = g35Hashed();
+                refArgs1 = new Object[]{fills, hA, hB, hC};
+                directRet = PaperNativeRangeChoice.optimizedFillArraySummary(g35Fills(), g35Hashed(), g35Hashed(), g35Hashed(), W1_N, directDst);
+            } else if (isShapeE(kernelId)) {
+                Object[] objs = g39Objs();
+                refArgs1 = new Object[]{objs};
+                directRet = PaperNativeSpigotLoadOrderDependency.newLoadAfterBuildSummary(W1_N, g39Objs(), directDst);
+            } else {
+                Object[] oa = g39Objs(), ob = g39Objs(), oc = g39Objs();
+                refArgs1 = new Object[]{oa, ob, oc};
+                directRet = PaperNativeSpigotLoadOrderDependency.newRemovedCountSummary(W1_N, g39Objs(), g39Objs(), g39Objs(), W1_SMALL0, directDst);
+            }
+
+            long before = wave1InputChecksum(kernelId, refArgs1);
+            int ret = PaperNativeBatchDispatch.run(ids1, args0_1, new long[0], counts1, outs1, offs1, refArgs1);
+            long after = wave1InputChecksum(kernelId, refArgs1);
+            System.out.printf("MUTATION\tkernel=%d\tinput=%s%n", kernelId, before == after ? "NONE" : "DETECTED");
+            if (ret != 1) {
+                System.err.printf("kernel %d: parity run()=%d%n", kernelId, ret);
+                System.exit(2);
+            }
+            if (outs1[0] != directRet) {
+                System.err.printf("PARITY FAIL kernel %d (wave-1 v3): direct ret=%d batch ret=%d%n",
+                        kernelId, directRet, outs1[0]);
+                System.exit(2);
+            }
+            if (!Arrays.equals(directDst, outs1)) {
+                for (int j = 0; j < 64; j++) {
+                    if (directDst[j] != outs1[j]) {
+                        System.err.printf("PARITY FAIL kernel %d (wave-1 v3) lane %d: direct=%d batch=%d (full-dst byte compare)%n",
+                                kernelId, j, directDst[j], outs1[j]);
+                        break;
+                    }
+                }
+                System.exit(2);
+            }
+            System.out.printf("# parity OK kernel=%d shape=%s ret=%d (batch == direct: return + full dst[64] byte-identical, sentinel-prefilled)%n",
+                    kernelId, isShapeD(kernelId) ? "D" : isShapeE(kernelId) ? "E" : "F", directRet);
             return;
         }
         boolean aPrime = isAPrime(kernelId);
@@ -306,7 +536,7 @@ public final class BatchFloorBench {
         int[] counts1 = {64};
         long[] outs1 = new long[64];
         int[] offs1 = {0};
-        int ret = PaperNativeBatchDispatch.run(ids1, args0_1, new long[0], counts1, outs1, offs1);
+        int ret = PaperNativeBatchDispatch.run(ids1, args0_1, new long[0], counts1, outs1, offs1, new Object[0]);
         if (ret != 1) {
             System.err.printf("kernel %d: parity run()=%d%n", kernelId, ret);
             System.exit(2);

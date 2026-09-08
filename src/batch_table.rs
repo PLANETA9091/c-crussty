@@ -26,8 +26,11 @@
 //! | 12 | A'    | PaperNativeDensityAp2MinMaxFill                    | oldSummary              | (III[J)I   |
 //! | 13 | A'    | PaperNativeDensityAp2MinMaxFill                    | newSummary              | (III[J)I   |
 //! | 14 | C     | PaperNativeStaticCacheGet                          | newBatchSummary         | (IIIII[I[J)I |
+//! | 15 | D     | PaperNativeRangeChoice                             | optimizedFillArraySummary | ([D[I[I[II[J)I |
+//! | 16 | E     | PaperNativeSpigotLoadOrderDependency               | newLoadAfterBuildSummary | (I[Ljava/lang/Object;[J)I |
+//! | 17 | F     | PaperNativeSpigotLoadOrderDependency               | newRemovedCountSummary  | (I[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;I[J)I |
 //!
-//! All 15 are real symbols verified present in `libpaper_native_jni.so`
+//! All 18 are real symbols verified present in `libpaper_native_jni.so`
 //! (`JNI_EXPORTS.manifest` / live proof: id 0 is the same kernel the plugin's
 //! `live_proof` drives through the bridge). Ids 0-9 cover the dominant
 //! `(I[J)I` P500 shape ("scalar + long[] dst, returns count written"); ids
@@ -39,6 +42,13 @@
 //! `StaticCacheGet` floor anchor (P500 global minimum, 34.6 ns —
 //! `P500_REPORT_v2.md` §42) in shape `C` `(IIIII[I[J)I` — five jint scalars,
 //! an `int[]` key slice in, `long[]` dst out, return-carried jint result.
+//! Ids 15-17 (wire v3, S7-14) complete the wave-1 structural path: the
+//! P500 g35/g39/g40 PARITY pairs (direct 81.4-89.0 ns, `baseline.tsv`
+//! lines 55/58/59) in the NEW ref-plane shapes `D`/`E`/`F` — their inputs
+//! are heterogeneous arrays (`[D`/`[I`/`Object[]`) that cannot ride the
+//! long arena, so the batch bridge gained a 7th `refArgs` plane and the
+//! descriptor-parser port (`crate::batch_desc`, BATCH_API_PROPOSAL §4/§5)
+//! precomputes the per-shape widths.
 //! No `(I[J)Z` symbols exist in the table today —
 //! shape `Z` is reserved in [`Shape`] so such kernels can be added without an
 //! ABI break of the batch entry point.
@@ -116,6 +126,22 @@
 ///   single result long for the op (return-carried, like shape B; the closed
 ///   g42 kernel carries its result in the return and leaves dst untouched —
 ///   probe-verified 2026-09-09 — so dst contents are NOT propagated).
+/// - [`Shape::D`] — `([D[I[I[II[J)I` (wire v3, P500 g35):
+///   `fn(JNIEnv*, jclass, jdoubleArray, jintArray, jintArray, jintArray, jint,
+///   jlongArray) -> jint`. Four INPUT refs (one `double[]` + three `int[]`)
+///   ride the NEW `refArgs` plane (heterogeneous arrays cannot ride the long
+///   arena); the single packed jint scalar narrows from the `args0` scalar
+///   plane; `argCounts[i]` stays the OUTPUT capacity and the kernel returns
+///   the count written — same output contract as [`Shape::A`].
+/// - [`Shape::E`] — `(I[Ljava/lang/Object;[J)I` (wire v3, P500 g39):
+///   `fn(JNIEnv*, jclass, jint, jobjectArray, jlongArray) -> jint`. One jint
+///   scalar + one `Object[]` input ref on the ref plane; A-style output
+///   contract (count written).
+/// - [`Shape::F`] — `(I[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;I[J)I`
+///   (wire v3, P500 g40):
+///   `fn(JNIEnv*, jclass, jint, jobjectArray, jobjectArray, jobjectArray,
+///   jint, jlongArray) -> jint`. Two jint scalars + three `Object[]` input
+///   refs on the ref plane; A-style output contract (count written).
 /// - [`Shape::Z`] — reserved: `(I[J)Z` (`-> jboolean`). No such symbol exists
 ///   in `MAIN_JNI_TABLE` yet; listed so the dispatcher contract is complete.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -130,6 +156,19 @@ pub enum Shape {
     /// `(IIIII[I[J)I` — five packed scalars + `int[]` in, `long[]` dst out,
     /// return-carried jint result (g42 wave-1 kernel, G3 spike).
     C,
+    /// `([D[I[I[II[J)I` — four ref-plane inputs (double[] + int[]×3) + one
+    /// jint scalar, `long[]` dst out, returns count written (wire v3: P500
+    /// g35 `RangeChoice.optimizedFillArraySummary`, 81.6 ns direct).
+    D,
+    /// `(I[Ljava/lang/Object;[J)I` — one jint scalar + one Object[] ref-plane
+    /// input, `long[]` dst out, returns count written (wire v3: P500 g39
+    /// `SpigotLoadOrderDependency.newLoadAfterBuildSummary`, 88.0 ns direct).
+    E,
+    /// `(I[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;I[J)I` —
+    /// two jint scalars + three Object[] ref-plane inputs, `long[]` dst out,
+    /// returns count written (wire v3: P500 g40
+    /// `SpigotLoadOrderDependency.newRemovedCountSummary`, 88.6 ns direct).
+    F,
     /// `(I[J)Z` — reserved (no real symbols yet); boolean result stored as 0/1.
     /// Kept so kernels of this shape can be added without an ABI break.
     #[allow(dead_code)]
@@ -145,6 +184,9 @@ impl Shape {
             Shape::B => "([J[J)J",
             Shape::APrime => "(III[J)I",
             Shape::C => "(IIIII[I[J)I",
+            Shape::D => "([D[I[I[II[J)I",
+            Shape::E => "(I[Ljava/lang/Object;[J)I",
+            Shape::F => "(I[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;I[J)I",
             Shape::Z => "(I[J)Z",
         }
     }
@@ -160,7 +202,54 @@ impl Shape {
             Shape::A | Shape::Z => 1,
             Shape::APrime => 3,
             Shape::C => 5,
+            Shape::D | Shape::E => 1,
+            Shape::F => 2,
             Shape::B => 0,
+        }
+    }
+
+    /// INPUT ref-plane slots this shape consumes per op, EXCLUDING the dst
+    /// (wire v3 rule): op *i* owns `refs(shape_i)` consecutive `refArgs`
+    /// slots starting at the prefix sum `ref_starts[i]` — the same
+    /// shape-packed arithmetic as the scalar plane, derived identically on
+    /// the Java side from `kernelIds`.
+    ///
+    /// ONLY the new D/E/F shapes carry input refs on the ref plane (D = 4:
+    /// one `double[]` + three `int[]`; E = 1: one `Object[]`; F = 3: three
+    /// `Object[]`) — their inputs are heterogeneous arrays that CANNOT ride
+    /// the packed long arena. Shapes A/Z/A′ take no input refs (their only
+    /// ref parameter is the trailing `[J` dst = the dispatcher's shared
+    /// scratch), so they own 0 ref slots. Shapes B/C keep their packed
+    /// inputs on the `args1` arena (v2 back-compat of their layout — B's
+    /// `long[]` src and C's `int[]` keys ride `args1` exactly as wire v2;
+    /// `crate::batch_desc::input_refs` reports 1 each, matching the
+    /// descriptor's input-ref count minus the trailing dst) and therefore
+    /// own 0 ref-plane slots. Elements are handed to kernels ZERO-COPY
+    /// (BATCH_API_PROPOSAL §5) via `GetObjectArrayElement` local refs,
+    /// deleted after the call.
+    pub const fn refs(self) -> usize {
+        match self {
+            Shape::D => 4,
+            Shape::E => 1,
+            Shape::F => 3,
+            Shape::A | Shape::Z | Shape::APrime | Shape::B | Shape::C => 0,
+        }
+    }
+
+    /// The descriptor-truth INPUT-ref count the fail-closed cross-check
+    /// (`batch_api::resolve_fns` + the table tests) expects
+    /// `crate::batch_desc::input_refs(parse_sig(sig))` to produce. This is
+    /// [`Shape::refs`] for the ref-plane-native shapes; for the args1/dst
+    /// shapes it is the descriptor-derived count (B/C: 1 packed input ref;
+    /// A/Z/A′: 0 — trailing `[J` dst only). Split from [`Shape::refs`]
+    /// because the WIRE ref-plane width (0 for B/C) and the DESCRIPTOR
+    /// input-ref count (1 for B/C) intentionally differ — the wire rule is
+    /// documented on [`Shape::refs`].
+    pub const fn expected_input_refs(self) -> usize {
+        match self {
+            Shape::D | Shape::E | Shape::F => self.refs(),
+            Shape::B | Shape::C => 1,
+            Shape::A | Shape::Z | Shape::APrime => 0,
         }
     }
 }
@@ -195,10 +284,15 @@ pub struct BatchKernel {
 /// containing A′ ids (it would fail the id range check on v1 anyway), and so
 /// the version alone signals "read the packing docs". Id 14 (G3 shape C)
 /// rides the same v2 packing.
-pub const TABLE_VERSION: u32 = 2;
+/// v3 (S7-14, wave-1 descriptor-parser port — BATCH_API_PROPOSAL §4/§5):
+/// the batch bridge gains a 7th `refArgs` argument (the reference plane,
+/// `Shape::refs` slots per D/E/F op) and 3 new kernels enter the table
+/// (ids 15/16/17, shapes D/E/F). History: v1 = per-op long scalar,
+/// v2 = shape-packed scalar plane, v3 = ref plane + 18 kernels.
+pub const TABLE_VERSION: u32 = 3;
 
-/// The compile-time kernel table (15 real symbols, `jni_table.rs` line noted).
-pub const KERNELS: [BatchKernel; 15] = [
+/// The compile-time kernel table (18 real symbols, `jni_table.rs` line noted).
+pub const KERNELS: [BatchKernel; 18] = [
     // jni_table.rs:15 — the live-proof kernel (ticketset binary search).
     BatchKernel {
         id: 0,
@@ -338,6 +432,40 @@ pub const KERNELS: [BatchKernel; 15] = [
         sig: "(IIIII[I[J)I",
         symbol: "Java_PaperNativeStaticCacheGet_newBatchSummary",
     },
+    // jni_table.rs:79 — wire v3 wave-1 (S7-14): g35 optimized/alt member of
+    // the parity pair (old/optimized ratio 1.0025, baseline.tsv:55 — PARITY
+    // grade; direct 81.4-81.6 ns, p500_expected_summary.tsv §35), shape D.
+    // Symbol verified in the .so exports manifest + nm.
+    BatchKernel {
+        id: 15,
+        shape: Shape::D,
+        class: "PaperNativeRangeChoice",
+        method: "optimizedFillArraySummary",
+        sig: "([D[I[I[II[J)I",
+        symbol: "Java_PaperNativeRangeChoice_optimizedFillArraySummary",
+    },
+    // jni_table.rs:210 — wire v3 wave-1 (S7-14): g39 alt member of the parity
+    // pair (old/new ratio 1.0034, baseline.tsv:58 — PARITY grade; direct
+    // 87.7-88.0 ns, p500_expected_summary.tsv §39), shape E.
+    BatchKernel {
+        id: 16,
+        shape: Shape::E,
+        class: "PaperNativeSpigotLoadOrderDependency",
+        method: "newLoadAfterBuildSummary",
+        sig: "(I[Ljava/lang/Object;[J)I",
+        symbol: "Java_PaperNativeSpigotLoadOrderDependency_newLoadAfterBuildSummary",
+    },
+    // jni_table.rs:212 — wire v3 wave-1 (S7-14): g40 alt member of the parity
+    // pair (old/new ratio 0.9955, baseline.tsv:59 — PARITY grade; direct
+    // 88.6-89.0 ns, p500_expected_summary.tsv §40), shape F.
+    BatchKernel {
+        id: 17,
+        shape: Shape::F,
+        class: "PaperNativeSpigotLoadOrderDependency",
+        method: "newRemovedCountSummary",
+        sig: "(I[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;I[J)I",
+        symbol: "Java_PaperNativeSpigotLoadOrderDependency_newRemovedCountSummary",
+    },
 ];
 
 /// Slice view of the compile-time table (same shape as `MAIN_JNI_TABLE`).
@@ -410,24 +538,115 @@ mod tests {
 
     /// Per-shape scalar-plane widths (the TASK-48 v2 packing rule): A/Z keep
     /// the historical 1 long/op, B consumes none, A′ packs three, C packs the
-    /// five jint scalars of `(IIIII[I[J)I`.
+    /// five jint scalars of `(IIIII[I[J)I`; wire v3 adds D/E (1 jint each)
+    /// and F (2 jints).
     #[test]
     fn shape_scalar_widths() {
         assert_eq!(Shape::A.scalar_width(), 1);
         assert_eq!(Shape::B.scalar_width(), 0);
         assert_eq!(Shape::APrime.scalar_width(), 3);
         assert_eq!(Shape::C.scalar_width(), 5);
+        assert_eq!(Shape::D.scalar_width(), 1);
+        assert_eq!(Shape::E.scalar_width(), 1);
+        assert_eq!(Shape::F.scalar_width(), 2);
         assert_eq!(Shape::Z.scalar_width(), 1);
     }
 
     /// Runtime mirror of the compile-time table asserts: ids stay dense and
-    /// every descriptor matches its declared shape (15 entries after G3).
+    /// every descriptor matches its declared shape (18 entries after the
+    /// wire-v3 wave-1 D/E/F).
     #[test]
     fn table_is_dense_with_matching_descriptors() {
-        assert_eq!(KERNEL_COUNT, 15);
+        assert_eq!(KERNEL_COUNT, 18);
         for (i, k) in BATCH_KERNELS.iter().enumerate() {
             assert_eq!(k.id as usize, i);
             assert_eq!(k.sig, k.shape.sig());
         }
+    }
+
+    /// Wire-v3 ref-plane rule ([`Shape::refs`]): only the new D/E/F shapes
+    /// own input-ref slots (D = 4, E = 1, F = 3); every args1/dst shape owns
+    /// zero (B's `[J` src and C's `int[]` keys stay on the packed args1
+    /// arena for v2 back-compat of their layout).
+    #[test]
+    fn shape_ref_plane_widths() {
+        assert_eq!(Shape::A.refs(), 0);
+        assert_eq!(Shape::B.refs(), 0);
+        assert_eq!(Shape::APrime.refs(), 0);
+        assert_eq!(Shape::C.refs(), 0);
+        assert_eq!(Shape::D.refs(), 4);
+        assert_eq!(Shape::E.refs(), 1);
+        assert_eq!(Shape::F.refs(), 3);
+        assert_eq!(Shape::Z.refs(), 0);
+    }
+
+    /// Wire-v3 descriptor-parser cross-check (BATCH_API_PROPOSAL §4: the
+    /// widths are "precomputed by porting the descriptor parser ... unit-
+    /// tested against all 49 group signatures"): every table sig must parse
+    /// to exactly its shape's declared widths. Mirrors the fail-closed
+    /// check wired into `batch_api::resolve_fns` — the parser is
+    /// load-bearing, not decorative. The 49-sig parser coverage lives in
+    /// `batch_desc::tests`.
+    #[test]
+    fn every_kernel_sig_cross_checks_against_batch_desc() {
+        for k in BATCH_KERNELS {
+            let d = crate::batch_desc::parse_sig(k.sig)
+                .unwrap_or_else(|e| panic!("kernel {} sig {:?}: {}", k.id, k.sig, e));
+            let s = crate::batch_desc::slots(&d);
+            assert_eq!(
+                s.scalars,
+                k.shape.scalar_width(),
+                "scalar width drift for kernel {} ({})",
+                k.id,
+                k.sig
+            );
+            assert_eq!(
+                crate::batch_desc::input_refs(&d),
+                k.shape.expected_input_refs(),
+                "input-ref drift for kernel {} ({})",
+                k.id,
+                k.sig
+            );
+        }
+    }
+
+    /// Wire-v3 wave-1 pins: ids 15/16/17 carry the g35/g39/g40 OPTIMIZED
+    /// members (g42 precedent: only the alt/optimized member is wired),
+    /// declared exactly like every other entry (copied `JniEntry` tuple +
+    /// shape).
+    #[test]
+    fn wave1_kernels_are_declared_as_shapes_d_e_f() {
+        let g35 = kernel_by_id(15).expect("g35 kernel id 15 must exist");
+        assert_eq!(g35.shape, Shape::D);
+        assert_eq!(g35.class, "PaperNativeRangeChoice");
+        assert_eq!(g35.method, "optimizedFillArraySummary");
+        assert_eq!(g35.sig, "([D[I[I[II[J)I");
+        assert_eq!(g35.symbol, "Java_PaperNativeRangeChoice_optimizedFillArraySummary");
+        assert_eq!(g35.sig, g35.shape.sig());
+
+        let g39 = kernel_by_id(16).expect("g39 kernel id 16 must exist");
+        assert_eq!(g39.shape, Shape::E);
+        assert_eq!(g39.class, "PaperNativeSpigotLoadOrderDependency");
+        assert_eq!(g39.method, "newLoadAfterBuildSummary");
+        assert_eq!(g39.sig, "(I[Ljava/lang/Object;[J)I");
+        assert_eq!(
+            g39.symbol,
+            "Java_PaperNativeSpigotLoadOrderDependency_newLoadAfterBuildSummary"
+        );
+        assert_eq!(g39.sig, g39.shape.sig());
+
+        let g40 = kernel_by_id(17).expect("g40 kernel id 17 must exist");
+        assert_eq!(g40.shape, Shape::F);
+        assert_eq!(g40.class, "PaperNativeSpigotLoadOrderDependency");
+        assert_eq!(g40.method, "newRemovedCountSummary");
+        assert_eq!(
+            g40.sig,
+            "(I[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;I[J)I"
+        );
+        assert_eq!(
+            g40.symbol,
+            "Java_PaperNativeSpigotLoadOrderDependency_newRemovedCountSummary"
+        );
+        assert_eq!(g40.sig, g40.shape.sig());
     }
 }

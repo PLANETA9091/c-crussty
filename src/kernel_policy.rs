@@ -367,6 +367,29 @@ pub static PROVEN_WINS: &[ProvenKernel] = &[
         verdict: "P500 PARITY (batch surface)",
         evidence: "src/batch_table.rs id14 (jni_table.rs:246), shape C (IIIII[I[J)I — G3 wave-1 spike (runbook §8); P500 floor anchor 34.6 ns (P500_REPORT_v2 §42), parity pair old/new 0.997 (wave2 §3)",
     },
+    // --- wire v3 wave-1 (S7-14): ref-plane shapes D/E/F, descriptor-parser
+    // port (BATCH_API_PROPOSAL §4/§5). The g35/g39/g40 OPTIMIZED members
+    // (g42 precedent: only the alt/optimized member of each parity pair is
+    // wired). All three PARITY-grade: batch membership amortizes the ~82-89 ns
+    // direct JNI transition (floor-resident cluster), never swaps a hot kernel.
+    ProvenKernel {
+        class: "PaperNativeRangeChoice",
+        kernel: "optimizedFillArraySummary",
+        verdict: "P500 PARITY (batch surface)",
+        evidence: "src/batch_table.rs id15 (jni_table.rs:79), shape D ([D[I[I[II[J)I — wave-1 descriptor-parser port (BATCH_API_PROPOSAL §4/§5); P500 PARITY pair old/optimized 1.0025 (baseline.tsv:55), direct 81.4 ns (p500_expected_summary.tsv §35)",
+    },
+    ProvenKernel {
+        class: "PaperNativeSpigotLoadOrderDependency",
+        kernel: "newLoadAfterBuildSummary",
+        verdict: "P500 PARITY (batch surface)",
+        evidence: "src/batch_table.rs id16 (jni_table.rs:210), shape E (I[Ljava/lang/Object;[J)I — wave-1 descriptor-parser port (BATCH_API_PROPOSAL §4/§5); P500 PARITY pair old/new 1.0034 (baseline.tsv:58), direct 88.0 ns (p500_expected_summary.tsv §39)",
+    },
+    ProvenKernel {
+        class: "PaperNativeSpigotLoadOrderDependency",
+        kernel: "newRemovedCountSummary",
+        verdict: "P500 PARITY (batch surface)",
+        evidence: "src/batch_table.rs id17 (jni_table.rs:212), shape F (I[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;I[J)I — wave-1 descriptor-parser port (BATCH_API_PROPOSAL §4/§5); P500 PARITY pair old/new 0.9955 (baseline.tsv:59), direct 88.6 ns (p500_expected_summary.tsv §40)",
+    },
     // --- P500 WIN + live-verified promotions (TASK-53, PROVEN_WINS_SYNC §4.2)
     // Lifecycle (docs/KERNEL_POLICY.md §Lifecycle): P500 WIN (twice
     // reproduced: 2026-09-08 rerun + 2026-09-09 S7-9 fresh full rerun) +

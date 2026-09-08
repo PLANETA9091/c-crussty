@@ -17,6 +17,7 @@
 
 mod area_map;
 mod batch_api;
+mod batch_desc;
 mod batch_table;
 mod bridge_class;
 mod classfile;
