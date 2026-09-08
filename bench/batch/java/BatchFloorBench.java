@@ -83,9 +83,18 @@ public final class BatchFloorBench {
     private static final int G42_KEYS = 16;
 
     // P500 setup(16, true) wave-1 scalars: the FIRST int scalar of a
-    // descriptor is n (16); the SECOND takes SMALL[0] = 7 (gen_p500_bench.py
-    // setup rule — g40's leading + mid-list jints).
+    // descriptor is n (16). CONTRACT PROBE (S7-14, Wave1ContractProbe + W1P2
+    // runs): the closed kernels VALIDATE their scalar domain and refuse
+    // out-of-domain inputs with a negative return + untouched dst — g35
+    // accepts only n ∈ {1,2} (-6 for n ≥ 4), g40's second jint is a MODE FLAG
+    // accepted only as 1 (-3 otherwise), g39 accepts any n. Probe-verified
+    // contract for all three: return = count of longs written into dst
+    // (g35→2 lanes, g39/g40→4 lanes; 0 on refusal) — the shape-A readback
+    // contract, NOT return-carried like shape C. Determinism verified
+    // (same inputs → byte-identical dst, three runs).
     private static final int W1_N = 16;
+    private static final int W1_G35_N = 2;  // g35 max accepted n (probe)
+    private static final int W1_G40_P4 = 1; // g40 mode flag (probe)
     private static final int W1_SMALL0 = 7;
 
     public static void main(String[] args) {
@@ -253,8 +262,10 @@ public final class BatchFloorBench {
                     args0[3 * i + 1] = 31L; // SMALL[1]
                     args0[3 * i + 2] = 3L;  // SMALL[2]
                 } else if (scalarW == 2) {
-                    args0[2 * i] = W1_N;      // G40: p0 = n = 16
-                    args0[2 * i + 1] = W1_SMALL0; // G40: p4 = SMALL[0] = 7
+                    args0[2 * i] = W1_N;          // G40: p0 = n = 16
+                    args0[2 * i + 1] = W1_G40_P4; // G40: p4 = 1 (probe: mode flag, only 1 accepted)
+                } else if (isShapeD(kernelId)) {
+                    args0[i] = W1_G35_N;  // g35 n = 2 (probe: n ≥ 4 refused -6)
                 } else {
                     args0[i] = 16L;       // P500 G0 small shape: p0 = 16
                 }
@@ -467,7 +478,12 @@ public final class BatchFloorBench {
             // the dispatcher propagates only the reported prefix, so any
             // write beyond the reported count into dst is exposed here).
             int[] ids1 = {kernelId};
-            long[] args0_1 = isShapeF(kernelId) ? new long[]{W1_N, W1_SMALL0} : new long[]{W1_N};
+            long[] args0_1;
+            switch (kernelId) {
+                case 16 -> args0_1 = new long[]{W1_N};      // g39 n = 16 (accepted)
+                case 17 -> args0_1 = new long[]{W1_N, W1_G40_P4}; // g40 p4 = 1 (probe)
+                default -> args0_1 = new long[]{W1_G35_N};  // g35 n = 2 (probe)
+            }
             int[] counts1 = {64};
             long[] outs1 = new long[64];
             Arrays.fill(outs1, 0x5A5A5A5A5A5A5A5AL);
@@ -481,7 +497,12 @@ public final class BatchFloorBench {
                 double[] fills = g35Fills();
                 int[] hA = g35Hashed(), hB = g35Hashed(), hC = g35Hashed();
                 refArgs1 = new Object[]{fills, hA, hB, hC};
-                directRet = PaperNativeRangeChoice.optimizedFillArraySummary(g35Fills(), g35Hashed(), g35Hashed(), g35Hashed(), W1_N, directDst);
+                directRet = PaperNativeRangeChoice.optimizedFillArraySummary(g35Fills(), g35Hashed(), g35Hashed(), g35Hashed(), W1_G35_N, directDst);
+                if (directRet < 0) {
+                    System.err.printf("kernel %d: probe-input regression — direct ret=%d (g35 must accept n=%d)" +
+                            " — harness inputs drifted from the Wave1ContractProbe domain%n", kernelId, directRet, W1_G35_N);
+                    System.exit(2);
+                }
             } else if (isShapeE(kernelId)) {
                 Object[] objs = g39Objs();
                 refArgs1 = new Object[]{objs};
@@ -489,7 +510,7 @@ public final class BatchFloorBench {
             } else {
                 Object[] oa = g39Objs(), ob = g39Objs(), oc = g39Objs();
                 refArgs1 = new Object[]{oa, ob, oc};
-                directRet = PaperNativeSpigotLoadOrderDependency.newRemovedCountSummary(W1_N, g39Objs(), g39Objs(), g39Objs(), W1_SMALL0, directDst);
+                directRet = PaperNativeSpigotLoadOrderDependency.newRemovedCountSummary(W1_N, g39Objs(), g39Objs(), g39Objs(), W1_G40_P4, directDst);
             }
 
             long before = wave1InputChecksum(kernelId, refArgs1);
@@ -500,11 +521,11 @@ public final class BatchFloorBench {
                 System.err.printf("kernel %d: parity run()=%d%n", kernelId, ret);
                 System.exit(2);
             }
-            if (outs1[0] != directRet) {
-                System.err.printf("PARITY FAIL kernel %d (wave-1 v3): direct ret=%d batch ret=%d%n",
-                        kernelId, directRet, outs1[0]);
-                System.exit(2);
-            }
+            // A-style contract: results flow through dst (return = count
+            // written, consumed by the dispatcher) — run() returns the op
+            // count, so there is NO return-value parity lane here (that is
+            // the shape-C return-carried assertion); the FULL-dst byte compare
+            // below IS the parity (probe-verified contract, S7-14).
             if (!Arrays.equals(directDst, outs1)) {
                 for (int j = 0; j < 64; j++) {
                     if (directDst[j] != outs1[j]) {
@@ -515,7 +536,7 @@ public final class BatchFloorBench {
                 }
                 System.exit(2);
             }
-            System.out.printf("# parity OK kernel=%d shape=%s ret=%d (batch == direct: return + full dst[64] byte-identical, sentinel-prefilled)%n",
+            System.out.printf("# parity OK kernel=%d shape=%s ret=%d (batch == direct: count-written dst readback, full dst[64] byte-identical, sentinel-prefilled)%n",
                     kernelId, isShapeD(kernelId) ? "D" : isShapeE(kernelId) ? "E" : "F", directRet);
             return;
         }
