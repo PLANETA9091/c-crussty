@@ -406,3 +406,43 @@ Work Log:
 Stage Summary:
 - TASK-74 ПОДТВЕРЖДЁН ЗАКРЫТЫМ (двойная независимая верификация): G-AB = GO, конвейер batching-layer ALL-GO (5/5 гейтов). Прод-эффект: −11.1% CPU-burst (p=0.0079, perfect separation), −12.3% wall (p=0.0952), boot flat, бит-точность, env-gated default-OFF, JFR engagement под нагрузкой.
 - Открытых клеймов нет. Следующие кандидаты (приоритет): (1) NormalNoise/BlendedNoise whole-body owners — ABI decode есть, форма proven, JFR p(int)-остаток 10.4% сэмплов; (2) kernel-policy whitelist + rollout runbook proven-пары; (3) ck_cap verify-strings (P2); (4) D6 P3 design. Сосед: TASK-76 done (RCON drill PASS).
+- Инцидент: зомби-реисполнение 'one 10 B' ×2 потеряло run-10 строку → ран перезапущен чисто, мир byte-identical, задокументировано (§5.5 отчёта).
+- Гейты: cargo test 64/64, clippy Δ0, world-verify IDENTICAL. Пуши: ed879c6 + 76ebdee (c-crussty), 95be0b5 (dev-logs CLAIMS done + reverify).
+
+Stage Summary:
+- TASK-74 ЗАКРЫТ: G-AB = GO — КОНВЕЙЕР BATCHING-LAYER ALL-GO (5/5 гейтов). Мост на проде: −11.1% CPU-burst, −12.3% wall, бит-точно, default-OFF.
+- Физика для владельца (про x1000): noise ≤8% бёрста — предел канала; реальные рычаги дальше: NormalNoise/BlendedNoise (та же форма, p(int) 10.4% JFR), kernel-policy whitelist + rollout, другие системы (lighting/tick).
+- Открытых клеймов нет. Следующие: NormalNoise/BlendedNoise whole-body owners, kernel-policy whitelist + B.2.2 runbook, ck_cap verify-strings (P2), D6 P3 design. Сосед TASK-75 rcon-hygiene.
+
+---
+Task ID: cron-16:40+08-Job366516
+Agent: agent-7625532f
+Task: Тик 16:40+08 — верификация завершённого TASK-74 (G-AB GO), разрешение double-execution инцидента.
+
+Work Log:
+- Обнаружено и разрешено двойное исполнение тика (сжатие контекста + зомби-доисполнение 15:40 параллельно с исполнением 16:40) — оба исполнения пришли к идентичным результатам; инцидент задокументирован в отчёте §5.5 и worklog c-crussty.
+- Независимая репродукция: armed verify boot ✓, серия v2 (ранны 1-10), статы идентичны (cpu −11.1% p=0.0079 perfect separation; wall −12.3% p=0.0952), JFR smoking-gun: NormalNoise → patched PerlinNoise.getValue → NativeOps:218 → closed-lib nativeGetValue (47 сэмплов в бёрсте).
+- Гейты: cargo test 64/64; CLAIMS reverify (TASK-74 done = мой); дизайн-док §7 G-AB=GO; мир байт-идентичен сиду; hs_err 0 новых.
+- Пуши: b73f79a (c-crussty worklog 16:40), предшественники ed879c6/76ebdee/92018e4 + 95be0b5 — все в origin.
+
+Stage Summary:
+- TASK-74 ЗАКРЫТ+ПОДТВЕРЖДЁН: G-AB = GO — batching-layer конвейер ALL-GO (G-STEP0→G-RECON→G-ABI→G-BODY→G-AB). Whole-object PerlinNoise мост: −11.1% CPU, −12.3% wall на живом проде, бит-точно, default-OFF.
+- Следующие: NormalNoise/BlendedNoise whole-body owners (p(int) 10.4% JFR), kernel-policy whitelist + rollout runbook, ck_cap verify-strings (P2), D6 P3 design.
+---
+Task ID: cron-17:20+08-Job366516
+Agent: agent-7625532f
+Task: Автономный тик cron 17:20+08 — TASK-79 (NormalNoise/BlendedNoise Session-1) + комбо-поворот.
+
+Work Log:
+- Коорд: обнаружена клейм-коллизия TASK-78 (сосед S7-24 заклеймил 0bcd711 09:29:50Z раньше моего незапушенного черновика) — по протоколу первенства мой черновик отменён, взят непересекающийся TASK-79 (мой NEXT-список). Клейм 999a2a6, reverify OK.
+- G-NORMAL ABI decode GO: heritage nativeGetValue(JJDDDD)D = (A(x,y,z)+B(x·F,y·F,z·F))·valueFactor bit-exact 0/20000 ×2 объекта; three-arm P500 J 1036.4 / N2 655.6 / N1 615.9 ns → N1/N2 0.939× маржа → мост NormalNoise PARKED (0.1% бёрста не оправдывает модуль).
+- BlendedNoise: whole-object kernel отсутствует в закрытом .so → whole-body = engine-scope, зафиксировано.
+- Канал-поворот: armed JFR (task74_b_midburst) — p(int) 10.43% + noise 2.05% всё ещё Java (improved_noise env-gated OFF в армах TASK-74) → собран run_combo_ab.sh (деривация proven TASK-74 харнеса, dual-env, canary 40s) → полная серия G-COMBO 10/10 ABBA.
+- G-COMBO VERDICT NO-GO (честно): cpu −0.70 CPU-s медиана (−1.2%) p_two=0.8413; wall −1.58s (−2.3%) p_two=0.6905 — уровень шума; оба маркера armed каждый ран; мир byte-identical; 0 новых hs_err.
+- Механизм (согласован везде): ROI whole-swap ∝ 1/инлайн-способности — 11KB-барьер = −11.1% live; малые тела инлайнятся → wash. JFR p-остаток = инлайненная атрибуция, не адресуемая стоимость.
+- Гейты: cargo test 64/64, clippy Δ0 (12), src/ не тронут, P500 duty не триггерился. BENCH.lock журнал, коллизий с TASK-78 part A (67ad659, сосед) нет — серия после их части.
+
+Stage Summary:
+- TASK-79 ЗАКРЫТ: канал шума измеРЕН закрыт на ВСЕХ фронтах (PerlinNoise GO −11.1% live / NormalNoise decode-GO→parked / BlendedNoise kernel-absent / COMBO NO-GO). Дизайн-док §7 G-COMBO row + LEDGER ADDENDUM-2. Пуши: 47d451b+bb37f25 (c-crussty), 8b0cbd4 (dev-logs done).
+- Физика для владельца (про x1000): звуковой вывод сессии — барьерные (большие неинлайнятся) тела = единственный whole-swap рычаг; следующий >100x-класс = guard-wave (соседская census: fluid-push 5.7% top-1, checkInsideBlocks 3.4%).
+- Открытых клеймов нет. Следующие: guard-wave реализация top-1 (fluid/collision same-state guards, координация с соседом по их census), kernel-policy whitelist + B.2.2 runbook для PerlinNoise-моста (P2), ck_cap verify-strings (P2), D6 P3 design.
