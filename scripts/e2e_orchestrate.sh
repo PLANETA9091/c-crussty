@@ -172,8 +172,15 @@ start_stdin_holder() {
 }
 
 kill_stdin_holders() { # kill every holder of any crussty_e2e_stdin fifo (session is single-tenant)
-    local hp
+    local hp cp
     pgrep -f 'crussty_e2e_stdin.*sleep 3600' 2>/dev/null | while read -r hp; do
+        # S7-31 fix: the holder's `sleep 3600` child has no fifo path in its own cmdline,
+        # survives the parent kill, and stays orphaned while HOLDING INHERITED FDS
+        # (incl. any flock'd BENCH-MUTEX fd) -> next session deadlocks on the mutex.
+        # Kill children FIRST, then the holder (observed: 6 orphaned sleeps in one day).
+        for cp in $(pgrep -P "$hp" 2>/dev/null); do
+            kill "$cp" 2>/dev/null || true
+        done
         kill "$hp" 2>/dev/null && log "killed stdin holder pid $hp" || true
     done
 }

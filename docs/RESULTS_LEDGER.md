@@ -266,3 +266,17 @@ bridge stays default-OFF until that lands.
 | DontCompileHugeMethods=false (executable knob) | product, command-line writable — BUT **NO-GO / DO-NOT-FLIP**: full-jar census of the running server jar (9,809 classes) shows 16 methods > 8000 bytecodes, ALL cold (boot-once datafixer/registry `<clinit>`s + datagen-only providers); ZERO in any measured hot domain | bench/jitflags/HUGE_METHODS_SCAN_2026-09-08.txt |
 | Dynamics | Tier3InvocationThreshold=200 (measured): single-shot methods never compile regardless of flag → flip is a no-op by construction; a boot A/B would measure noise | §3 |
 | Channel status | JIT-heuristics branch of the x1000 hunt CLOSED (9th refuted branch, cheapest refutation: 0 boots, 0 src/). Re-open criteria: scanner re-run shows a >8000-byte method on a measured-hot path | bench/jitflags/huge_method_scan.py |
+
+## §9 ADDENDUM-4 (TASK-87, S7-31, 2026-09-08) — AppCDS v2: S030 refutation OVERTURNED, first boot-channel measured GO
+
+* Author: S7-31 main. Evidence class: MEASURED LIVE A/B (n=5/4 arms, byte-identical seed anchor restored before EVERY boot, BENCH-MUTEX, hs_err 4/0 across 9 boots, dynamic-archive mapping verified per-run).
+
+| Item | Result | Evidence |
+|---|---|---|
+| S030 "AppCDS REFUTED by own weaving" | **OVERTURNED — experiment-design artifact**: JDK only forbids ArchiveClassesAtExit WITH an agent (that is all R2 proved); vanilla-dump → agent-use never tested until now; agent's woven set is tiny, all other class bytes match the archive | docs/BOOT_SUBSECOND_FEASIBILITY.md ADDENDUM; bench/boot/cds_v2.sh |
+| Census corrections to S030 composition | noise-kernel CONSTRUCTORS = 0 samples (S030's ctor lever dead by its own ≥1.5s gate); Climate RTree.build = 0.06s (dead); SHA2 jar-verify = 0.05s (S030 pre-log attribution corrected); worldgen-family in-boot = 1.0-1.25s level prep only (321/322 noise-family samples POST-Done lazy) | /tmp/boot_census JFR 585 samples, analyzer docs |
+| AppCDS v2 (vanilla-dump 124MB → agent + SharedArchiveFile) | **GO: mean 16.668s → 13.597s = −3.07s (−18.4%), full sample separation, Mann-Whitney exact p ≈ 0.0079**; baselines 16.038/16.882/16.627/16.501/17.291; CDS 13.838/13.347/14.013/13.190; `Mapped dynamic region` ×3 every use-run | bench/boot/cds_v2.sh + /tmp/boot_cds_v2/*.log |
+| Safe degradation | missing/stale archive → baseline-speed boot, no crash (16.520s with nonexistent path) | d9_missing run |
+| Operator runbook | dump once (NO agent, bench/boot/cds_rebuild.sh) → append -XX:SharedArchiveFile to every boot; re-dump after Paper/engine updates; CLI-only flags, nothing committed to server.properties | docs/BOOT_SUBSECOND_FEASIBILITY.md ADDENDUM §runbook |
+| Honest floor | ~13.2-13.6s; residual = Paper-internal payload (ENGINE-TOUCH) + JVM/bundler startup; **<1s still unreachable without snapshot/restore (CRaC env-blocked)** | ADDENDUM |
+| Harness fixes | kill_stdin_holders sleep-child leak (orphaned fd-holders deadlocked BENCH-MUTEX ×3 today) patched to kill children first; cds_v2.sh literal case arms generalized | scripts/e2e_orchestrate.sh |
