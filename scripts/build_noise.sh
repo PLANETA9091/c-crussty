@@ -48,11 +48,16 @@ mkdir -p "$OUT_DIR"
   noise/net/minecraft/world/level/levelgen/synth/RuntimeStubs.java \
   noise/net/minecraft/world/level/levelgen/synth/ImprovedNoiseNativeOps.java \
   noise/net/minecraft/world/level/levelgen/synth/ImprovedNoiseBatchOps.java \
+  noise/net/minecraft/world/level/levelgen/synth/PerlinNoiseNativeOps.java \
+  noise/net/it/unimi/dsi/fastutil/doubles/DoubleList.java \
   noise/net/crussty/batch/PaperNativeBatchDispatch.java
 
 # Drop the compile-time stub class files; only the real bridge classes ship.
 rm -f "$OUT_DIR"/net/minecraft/world/level/levelgen/synth/ImprovedNoise.class \
+      "$OUT_DIR"/net/minecraft/world/level/levelgen/synth/PerlinNoise.class \
       "$OUT_DIR"/net/minecraft/world/level/levelgen/synth/PaperNativeImprovedNoise.class \
+      "$OUT_DIR"/net/minecraft/world/level/levelgen/synth/PaperNativePerlinNoise.class \
+      "$OUT_DIR"/it/unimi/dsi/fastutil/doubles/DoubleList.class \
       "$OUT_DIR"/crussty/batch/PaperNativeBatchDispatch.class
 
 python3 - <<'EOF'
@@ -67,7 +72,9 @@ import glob, struct, sys
 # across timeouts without capturing mutable state, which lambdas forbid).
 # ImprovedNoiseBatchOps is the G4 demonstrator helper (4th embed).
 SHIP = {"ImprovedNoiseNativeOps.class", "ImprovedNoiseNativeOps$Handle.class",
-        "ImprovedNoiseNativeOps$Reaper.class", "ImprovedNoiseBatchOps.class"}
+        "ImprovedNoiseNativeOps$Reaper.class", "ImprovedNoiseBatchOps.class",
+        "PerlinNoiseNativeOps.class", "PerlinNoiseNativeOps$Handle.class",
+        "PerlinNoiseNativeOps$Reaper.class"}
 
 bad = 0
 files = sorted(glob.glob('noise/build/net/minecraft/world/level/levelgen/synth/*.class'))

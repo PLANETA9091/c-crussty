@@ -16,6 +16,7 @@
 //! byte hooks on top of this surface — see the project docs.
 
 mod area_map;
+mod perlin_noise;
 mod batch_api;
 mod batch_desc;
 mod batch_table;
@@ -84,6 +85,7 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     eprintln!("[crussty-plugin] cplugin_init: injecting Crussty CE native surface in background");
     area_map::register();
     improved_noise::register();
+    perlin_noise::register();
     proto_blend_cache::register();
     std::thread::spawn(inject_surface);
     0
@@ -244,6 +246,7 @@ fn inject_surface() {
 
     area_map::activate();
     improved_noise::activate();
+    perlin_noise::activate();
     // Dormant unless CRUSSTY_NATIVE_BLEND_CACHE is set (see docs/HOOK_BLEND_CACHE.md).
     proto_blend_cache::activate();
 }
