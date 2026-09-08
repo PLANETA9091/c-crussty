@@ -71,3 +71,37 @@ profile — a production farm/perf server runs 10–100× this, which scales all
 changes, zero P500 duty, deployed module untouched (dormant), world byte-identical
 after restore, hs_err 4/0. Fully repeatable: see §1 — the tar anchor + RCON summon
 loop is the reusable load harness (first entity-load harness in the repo).
+
+## 5. Part B — chunk-encode .so light kernel measured (first benchmark of the last dark domain)
+
+Rig: bench/chunkencode/ (ChunkEncodeParity.java + run_chunk_encode_parity.sh; headless,
+no server; BENCH-MUTEX; RAW = results/CHUNKENCODE_LIGHT_RAW.tsv). Parity WITHOUT Unsafe:
+the vanilla decoder constructor (FriendlyByteBuf,int,int) decodes the native output, then
+(1) decoded fields == native inputs, (2) write(decode(dst)) == dst byte-identical.
+
+* **PARITY light: 5/5 cases PASS** (realistic/all-empty/all-set/single-section/2-long
+  masks × 26 sections; n=106,622 B) — nativeEncodeLightData emits vanilla
+  ClientboundLightUpdatePacketData wire format byte-identically.
+* **TIMING: native 10,678 ns/call vs vanilla write() 2,665 ns/call → native 4.0x
+  SLOWER** (vanilla/native = 0.25). Physics: per call the JNI path copies ~213 KB
+  (2×26×2048 B nibble arrays in + ~106 KB dst out) — copy-bound, same class as the
+  area-map apply finding (TASK-20-R); vanilla does the identical logical work in-JVM.
+* **VERDICT: DO-NOT-WIRE class (honest negative).** The kernel is registered since
+  boot but nothing routes to it — production behavior unchanged; this measurement
+  closes the last dark domain with a measured negative instead of an assumption
+  (TASK-32 discipline). nativeEncodeSectionData/Sized remain unmeasured (blob
+  semantics need n=1 identification rows — documented follow-up); given section
+  payloads are ~10x larger per chunk, copy-bound physics likely dominates them too.
+* Rig lesson (caught in-session): the plain variant does NOT bound-check dst capacity
+  (that is what *Sized is for) — a non-physical sec=128 probe with a 128 KiB dst
+  aborted the driver JVM via Rust panic (no hs_err residue, server census stayed 4/0).
+  Physical 26-section inputs only for the plain variant.
+
+## 6. Session net effect
+
+* Entity-path candidates: MEASURED ranking (fluid-push 5.7% / checkInsideBlocks 3.4% /
+  noCollision ~4.2% incl. grid machinery; hopper idle-probe demoted; 3 paths below
+  resolution pending a mob-dense profile).
+* Chunk-encode domain: dark → measured (1 parity-verified regression-class kernel,
+  2 follow-ups). The x1000 hunt's evidence base is now fully empirical on every
+  identified surface.
