@@ -913,7 +913,7 @@ fn batch_helper_selftest() {
             eprintln!(
                 "[crussty-plugin] batch: helper self-test: getStaticMethodID(selfTestFlush()I) failed"
             );
-            return None::<i32>;
+            return None::<(i32, i64)>;
         };
         // A static call initializes the class on first use (JVM contract),
         // which also proves the helper links (its referenced bridge
@@ -924,16 +924,36 @@ fn batch_helper_selftest() {
             eprintln!(
                 "[crussty-plugin] batch: helper self-test: static call left a pending exception (cleared; see trace above)"
             );
-            return None::<i32>;
+            return None::<(i32, i64)>;
         }
-        Some(rc)
+        // S7-13 NEXT-5 / S7-15: flush-frequency observability (ck_cap pattern
+        // — the helper counts every flush() dispatch round-trip; surface the
+        // counter in the same marker line so an armed boot's verify row
+        // carries the frequency evidence without extra JNI traffic). The
+        // wrapper has no call_static_long_method — one raw CallStaticLong-
+        // MethodA through the vtable (the jvalue arg list is empty).
+        let flushes: Option<i64> = env
+            .get_static_method_id(cls, "flushes", "()J")
+            .map(|mid| {
+                let raw = env.raw();
+                let vtable = unsafe { &**raw };
+                unsafe { (vtable.CallStaticLongMethodA)(raw, cls, mid, [].as_ptr()) }
+            });
+        if crate::clear_exception(env) {
+            crate::describe_exception(env);
+            eprintln!(
+                "[crussty-plugin] batch: helper self-test: flushes() probe left a pending exception (cleared)"
+            );
+            return Some((rc, -1i64));
+        }
+        Some((rc, flushes.unwrap_or(-1)))
     });
     match rc.flatten() {
-        Some(r) if r == crate::batch_api::ABI_WORD => eprintln!(
-            "[crussty-plugin] batch: helper self-test passed (ImprovedNoiseBatchOps flush round-trip = abi {r})"
+        Some((r, f)) if r == crate::batch_api::ABI_WORD => eprintln!(
+            "[crussty-plugin] batch: helper self-test passed (ImprovedNoiseBatchOps flush round-trip = abi {r}, flushes={f})"
         ),
-        Some(r) => eprintln!(
-            "[crussty-plugin] batch: helper self-test DIAGNOSTIC rc={r} (flush degraded or bridge unavailable — single-call ground state holds)"
+        Some((r, f)) => eprintln!(
+            "[crussty-plugin] batch: helper self-test DIAGNOSTIC rc={r} flushes={f} (flush degraded or bridge unavailable — single-call ground state holds)"
         ),
         None => eprintln!(
             "[crussty-plugin] batch: helper self-test failed (see exception trace above)"
