@@ -214,3 +214,18 @@ Work Log:
 
 Stage Summary:
 - G4 landed (2-a), мой дубль списан; G5 = vacant-registry policy зафиксирован; Stage-1 terminal-until-body/JFR. Открытых клеймов нет. Кандидаты: g35/g39/g40 shapes, audit-boot WIRE evidence, hotspot цикл.
+
+---
+## SESSION cron 09:20+08 — TASK-57 done: first live JFR profile — g9 fillArray dead by measurement + TASK-58 proposal + D6 + stdin infra finding — 2026-09-09T01:5xZ — agent-7625532f
+
+Work Log:
+- Старт: worklog+CLAIMS чисты; оба репо в sync (c-crussty cb8cc06). Из NEXT-списка S7-13 выбран верхний разблокирующий пункт: g9 "ждать JFR-профиль" + hotspot-цикл dump→analyze→optimize (static-поверхность исчерпана V2 D1-D5) → клейм TASK-57 (e7de456, push+verify attempt 1).
+- Метод: e2e_orchestrate boot (dormant env, deployed module HEAD, Done 17.075s), JFR на CHILD JVM через JAVA_TOOL_OPTIONS (settings=profile, dumponexit=true, maxsize 128M, filename %p — плейсхолдер проверен заранее), период 10ms self-validated (927 samples ≈ 9.3s Java-CPU ≈ наблюдаемые 14.4% JVM CPU). Страховка: mid-session jcmd JFR.dump (5.1MB) + dumponexit при stop (6.0MB). Стоп = SIGTERM fallback (exit 143), сервер остановлен как найден.
+- Инфра-находки по ходу: (I1) launcher stdin forwarding СЛОМАН — forceload/tps/list/stop из fifo не доставляются (rcon off) → консольная worldgen-нагрузка невозможна, graceful-stop primary path мёртв, работает только kill -TERM (прецедент S7-13 "graceful stop 143" объяснён) — комментарий в e2e_orchestrate.sh; (I2) stale /tmp/crussty_bench.lock (00:35Z, 0 держателей, courtesy-guard existence-based) удалён перед бутом с документированием.
+- ГЛАВНЫЙ РЕЗУЛЬТАТ (F1): Ap2.fillArray DEAD BY MEASUREMENT — 0/927 ExecutionSample содержат fillArray; весь Ap2-трафик = single-value compute() (400+ frame-hits; top-caller Climate$Sampler.sample 117) в 5-секундном boot structure-ring бёрсте (287 noise-сэмплов 01:27:21-26; по минутам дальше — 0). g9 NO-GO теперь измерен по ОБОИМ блокерам (§9 в G9-доке); §8.1 grain-вопрос закрыт эмпирически (живая поверхность = object-context compute(), существующими shape не выражается).
+- F2: boot noise burst = 2.87 CPU-s (ImprovedNoise 230 frame-hits, lerp3 165 leaf, PerlinNoise 310, RTree.search 58) — sample-backed гипотеза для TASK-58 (boot A/B dormant vs CRUSSTY_NATIVE_IMPROVED_NOISE=1, n≥5, BENCH.lock; proposal НЕ заклеймлен — граница задачи честная).
+- F3/D6 (P3): idle main-thread топ-листья = Paper TPS-учёт (TickData.getTPSAverage → ArrayDeque.inc 142 + nonNullElementAt 17 + differenceFromLastTick 23) ≈ 0.13-0.17 ms/tick — idle-CPU hygiene (hosting-density), под нагрузкой шум; HOTSPOT_CANDIDATES_V2 addendum-2. F4: minecraft.ServerTickTime 0.64-2.24ms — тики здоровы. F5: area_map-patched path 0 сэмплов (idle), overhead модуля невидим.
+- Gates: cargo test 51/51, clippy 12 = baseline Δ0 (Rust не менялся — docs/report/скрипт-комментарий). Push 6510853 attempt 1; CLAIMS done 544724a + reverify OK. Мир не тронут (forceload не доставлен), BENCH.lock освобождён, токен не экспонирован.
+
+Stage Summary:
+- Первый живой профиль бокса: g9 закрыт ИЗМЕРЕНИЕМ (обе ноги), рецепт JFR-профилирования валидирован и переиспользуем (report §1/§6), два новых кандидата (TASK-58 boot-noise A/B, D6 TPS-deque P3), stdin-инфра находит следующий цикл. Открытых клеймов нет. Кандидаты дальше: TASK-58 (boot A/B noise-native), stdin/rcon починка (или собственная задача), новые профили под целевой нагрузкой (клиент-бот), D6 design.
