@@ -28,12 +28,20 @@
 #   JAVA_BIN          (default /home/z/jdk21/bin — previous boot used system java)
 #   CRUSSTY_BOOT_CMD  full override of the boot command (default documented above)
 #
-# KNOWN BROKEN (TASK-57, 2026-09-09, agent-7625532f — bench/e2e/results/JFR_PROFILE_2026-09-09.md §6 I1):
-#   launcher stdin forwarding does NOT deliver console commands (forceload/tps/list/stop written
-#   to the fifo never reach the server; rcon disabled in server.properties). Consequence: the
-#   shutdown mode's primary "stop via fifo" path is dead; the SIGTERM fallback is the working
-#   path (exit 143; JVM shutdown hooks run; world save intact; JFR dumponexit fires).
-#   S7-13's "graceful stop 143" was this fallback, not fifo delivery.
+# STDIN FORWARDING — FIXED (TASK-59, 2026-09-09, agent-7625532f; finding bench/e2e/results/JFR_PROFILE_2026-09-09.md §6 I1):
+#   Root cause (forensics STDIN_FORENSICS_2026-09-09.md): the launcher.jar relay thread
+#   ("launcher-stdin") is correct code (read→write→flush per chunk) but exits on fifo EOF —
+#   and the boot invocation's `exec 9<> $FIFO` write-end hold DIES with the boot bash process
+#   (boot returns right after "Done ("). From that moment every writer is gone, the relay's
+#   read() returns 0, the thread exits silently, and commands written later to the fifo are
+#   never read by anyone. Live proof (2026-09-09 boot): launcher thread dump has NO
+#   launcher-stdin thread; injecting "list" straight into the child stdin pipe
+#   (echo list > /proc/<launcher>/fd/<child-stdin-write-end>) executed instantly — child
+#   console leg 100% healthy, only the relay lifeline was missing.
+#   Fix: do_boot spawns a detached holder (setsid bash, fd9 <> fifo, sleep loop) that keeps
+#   a write end open for the launcher's lifetime; do_shutdown/do_boot kill holders (stale
+#   cleanup) and scrub old fifo files. S7-13's "graceful stop 143" was the SIGTERM fallback
+#   firing because this lifeline was dead, not the fifo write itself.
 #   BOOT_TIMEOUT      (default 300 s)
 #   E2E_LOG           (default $SERVER_DIR/logs/crussty_e2e_boot.log)
 #   Improved-noise patch needs CRUSSTY_NATIVE_IMPROVED_NOISE=1 exported before boot.
@@ -155,6 +163,30 @@ server_pid() { # child JVM = the one carrying the -agentpath runtime
     pgrep -f 'agentpath:[^ ]*libcrussty_runtime\.so' | head -1
 }
 
+# --- stdin lifeline (TASK-59): the launcher relay dies on fifo EOF; keep one
+# --- write end open in a detached holder so the relay thread stays alive.
+start_stdin_holder() {
+    # No final exec: the cmdline must keep the fifo path visible for kill_stdin_holders.
+    setsid bash -c "exec 9<> '$FIFO'; while :; do sleep 3600; done" </dev/null >/dev/null 2>&1 &
+    log "stdin holder started (write-end lifeline on $FIFO)"
+}
+
+kill_stdin_holders() { # kill every holder of any crussty_e2e_stdin fifo (session is single-tenant)
+    local hp
+    pgrep -f 'crussty_e2e_stdin.*sleep 3600' 2>/dev/null | while read -r hp; do
+        kill "$hp" 2>/dev/null && log "killed stdin holder pid $hp" || true
+    done
+}
+
+scrub_stale_stdin() { # holders first, then their fifo leftovers (22 accumulated pre-TASK-59)
+    kill_stdin_holders
+    local f
+    for f in "$LOGS_DIR"/crussty_e2e_stdin.*; do
+        [ -e "$f" ] || return 0
+        rm -f "$f" && log "scrubbed stale fifo $f"
+    done
+}
+
 guard_bench_lock() {
     # The lock FILE is a permanent fixture (flock leaves it behind) — mere
     # existence says nothing. Probe: non-blocking acquire fails => a timed
@@ -171,7 +203,9 @@ do_boot() {
     [ -f "$SERVER_DIR/libcrussty_runtime.so" ] || fail "libcrussty_runtime.so missing"
     pgrep -f 'agentpath:[^ ]*libcrussty_runtime\.so' >/dev/null && \
         fail "server already running ($(server_pid))"
+    scrub_stale_stdin            # dead sessions' holders + fifo leftovers (TASK-59)
     [ -p "$FIFO" ] || mkfifo "$FIFO" || fail "mkfifo $FIFO failed"
+    start_stdin_holder           # relay lifeline: must outlive THIS invocation (TASK-59)
 
     # mv (not cp): latest.log must not carry the previous boot's "Done (" line,
     # else the wait loop below returns instantly. Fresh latest.log is created by
@@ -439,7 +473,9 @@ do_shutdown() {
     log "server exited; final crussty/native lines:"
     grep -h -E 'crussty|Done|exited' "$LATEST" "$E2E_LOG" 2>/dev/null | tail -8
     exec 9>&- 2>/dev/null || true
-    rm -f "$PID_FILE" "$STATE_FILE" "$FIFO" "$OFFS_FILE"
+    kill_stdin_holders           # session over — relay lifeline down (TASK-59)
+    rm -f "$PID_FILE" "$STATE_FILE" "$OFFS_FILE"
+    rm -f "$LOGS_DIR"/crussty_e2e_stdin.* 2>/dev/null || true
 }
 
 main() {

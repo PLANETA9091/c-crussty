@@ -243,3 +243,18 @@ Work Log:
 
 Stage Summary:
 - TASK-58 ЗАКРЫТ честным negative: boot-канал native-noise опровергнут дважды (механизм + n=5/arm). 2.87 CPU-s pre-Done бёрст остаётся реальной неадресуемой стоимостью (адресация = activation-gate redesign — НЕ предложена). Post-Done noise routes native (proven каждым armed boot). Открытых клеймов нет. Кандидаты: клавиатура новых профилей под целевой нагрузкой (клиент-бот/stdin-починка), D6 (P3), activation-gate redesign (только по явному запросу владельца).
+
+---
+## SESSION cron 10:20+08 — TASK-59 done: I1 stdin-chain forensics → root-caused & FIXED (fifo relay EOF), graceful stop exit 0 restored — 2026-09-09T02:5xZ — agent-7625532f
+
+Work Log:
+- Старт: worklog+CLAIMS; TASK-58 уже закрыт тиком 09:40 (refuted), открытых клеймов нет, сосед молчит. Из кандидатов взят разблокирующий I1: stdin-форензика → клейм TASK-59 (554b597, attempt 1, reverify OK).
+- Статика (до бута): e2e_orchestrate boot-wiring корректен (subshell exec java < FIFO, fd9 <>, STATE_FILE roundtrip); launcher.jar разобран javap — forward() relay КОРРЕКТЕН (read 4096 → write → flush per chunk, IOException → тихий выход), javaOpts = DIST_JAVA_OPTS passthrough, ничего консоль-disabling.
+- ЖИВАЯ ФОРЕНЗИКА (dormant boot, jcmd+/proc): физическая цепь цела (launcher fd0→fifo, fd6→pipe 831123 → child fd0); В ДАМПЕ ЛАУНЧЕРА НЕТ треда launcher-stdin (запускается по байткоду — умер тихо); child JLine здоров (non-blocking reader thread заблокирован в read0 на pipe — консоль ГОЛОДАЕТ). Probe: echo list > /proc/<launcher>/fd/6 → 'There are 0 of a max of 20 players online' за 2s — детская нога 100%, вина = мёртвый relay.
+- КОРЕНЬ: единственный write-end фифо держал fd9 BOOT-инвокации скрипта; boot выходит сразу после Done → writer count 0 → relay read() = EOF → тред тихо выходит → фифо мёртв на ВСЮ сессию; поздние записи (stop из shutdown-инвокации) succeed как записи, но читателя нет. S7-13 «graceful 143» = этот механизм.
+- FIX (script-level, launcher.jar не тронут): start_stdin_holder (setsid bash, fd9<>FIFO, sleep-цикл, cmdline содержит путь фифо) в do_boot после mkfifo; kill_stdin_holders (pgrep по cmdline) в do_shutdown и do_boot (stale cleanup); scrub_stale_stdin — 22 накопленных фифо вычищены; header KNOWN BROKEN → FIXED с root cause. bash -n OK.
+- ВАЛИДАЦИЯ (post-fix boot 16.483s): holder пережил выход boot-инвокации; launcher-stdin ЖИВ (RUNNABLE в fifo-read); 'list' через канонный фифо → ответ в latest.log за 3s; shutdown-mode primary path 'stop' через фифо → '[launcher] server exited with code 0' (graceful, не 143); holder убран, 0 фифо-остатков; сервер остановлен как найден, мир сохранён.
+- Гейты: cargo test 51/51, clippy crussty 12 = baseline Δ0 (pre-existing unused-import в lib test target из HEAD задокументирован, не мой diff). BENCH.lock держан/освобождён, токен чист.
+
+Stage Summary:
+- TASK-59 ЗАКРЫТ: I1 починен по root cause; целевые нагрузочные профили РАЗБЛОКИРОВАНЫ (forceload worldgen burst = revisit-триггер g9 достижим); graceful stop exit 0 работает; /proc-injection задокументирован как emergency fallback; DIST_JAVA_OPTS — канал child-JVM флагов. Открытых клеймов нет; кандидаты: worldgen-burst JFR профиль (теперь возможен), D6 P3, клиент-бот не нужен для базовых нагрузок.
