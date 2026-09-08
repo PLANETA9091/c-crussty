@@ -120,3 +120,48 @@ docs/CRAC_LEGALITY_SANDBOX.md) — stated as plainly as in S030.
   observed today). Patched to kill children first (scripts/e2e_orchestrate.sh).
 - bench/boot/cds_v2.sh case arms were literal (`b1|b2)`) — RUNS lists outside
   the default silently no-op'ed; generalized to `b*)` / `d[2-9]*)`.
+
+## ADDENDUM-2 (S7-32, TASK-88): e2e default wiring + JFR classload census — cold-start channel state
+
+### Banked this session
+- **e2e default boot switched**: launcher.jar → direct purpur jar (bundler bypass; child
+  cmdline byte-verified against hs_err "Command Line") + AppCDS v2 archive auto-mapping
+  with safe degradation (`$SERVER_DIR/crussty_boot.jsa` present → map, absent →
+  baseline-speed boot; both directions proven). **Measured: 13.929/13.111/13.014s
+  (mean 13.35s, −19.9% vs 16.668s launcher-path baseline), hs_err 4/0, CDS marker in
+  every run.** Zero config/gameplay changes — CLI flags replicate launcher child 1:1.
+- **JFR census of the new cold boot** (profile, 344 samples, 292 in-boot): composition is
+  Amdahl-hostile diffuse construction — hashmap/misc 13.7%, sha/zip/jar-verify 8.2%,
+  dataconverter-DFU 7.2%, Moonrise collision-table build 6.5% + ZeroCollidingReferenceStateTable
+  4.1% + VoxelShape 1.4% (= blockstate/collision global tables ~12%), classload-def 3.8%,
+  json/snbt 3.4%, Climate RTree build 3.1%, regex 3.1%, in-boot worldgen-noise 2.7%,
+  snakeyaml-configs 1.4%, ASM-weave (ours) 1.0%. **No single method family ≥14%** —
+  the remaining boot is dozens of sequential Paper-internal construction tasks.
+
+### Classload sharing census (one boot, -Xlog:class+load, CDS on)
+- 27,826 classes loaded; **15,184 (54.6%) map from the archive** (incl. 236/254 lambda
+  proxies — JDK21 lambda archiving works where its counters match).
+- Non-shared remainder (~12.6k): **~11.5k are `$$Lambda` registry bootstrap proxies**
+  (Blocks 1051 / Items 414 / EntityType 159 / DataFixers 138 / DataComponentAdapters 120 /
+  `__JVM_LookupDefineClass__` LambdaForm-DMH 811) — defined fresh per boot by design
+  (dynamic-dump lambda counters don't match across agent/no-agent runs or loader phases);
+  **~1.3k real classes load from library jars** (configurate-yaml/core ~330, jline 155, …)
+  that the dynamic dump missed; 60 direct jar loads.
+- Estimated residual classloading tax ≈ 1.0-1.6s (matches sha/zip 8.2% + classload 3.8%).
+
+### Channels ledger (cold start, engine-authority only)
+| channel | state | ceiling |
+|---|---|---|
+| AppCDS v2 (vanilla-dump→agent-use) | **GO, banked, default** | done |
+| bundler bypass (direct jar) | **GO, banked, default** | done |
+| CDS v3: library classes archived | open, next session (probe why configurate/jline missed the dump) | ~0.3-0.5s |
+| CDS v3b: no-weave dump (agent w/o CFLH capability) | open — engine env-gate, then dump-with-agent | ~0.1-0.2s |
+| registry-lambda elimination | JDK21-inherent (11.5k fresh defines); JDK24 Leyden-class fix, out of reach here | ~0.7-0.9s |
+| data-level persistence of deterministic boot artifacts (DFU schemas, collision/blockstate tables, registry objects) | **design line for >100x-class cold-start** — same philosophy as CDS but for constructed data; engine-weaving delivery path; multi-session | 2-4s of the 13.3s |
+| parallel boot phases (2 cores) | Amdahl ceiling = 2x on this box; only worth it AFTER data-level persistence | ≤0.5x |
+| snapshot/restore (CRIU) | MEASURED closed on this kernel: Alibaba 5.10.134 denies procfs-in-userns (old mount(2) EPERM + new fsopen/fsmount EPERM both proven), init-ns caps absent → criu 4.1.1 kerndat init fails; owner directive: restore-path rejected on principle — cold start only | — |
+
+**Cold-start floor after all banked+planned CDS-family channels: ~11.5-12.5s.** Every
+further multiple requires the data-level persistence line (census table above) — that is
+the only cold-start mechanism whose ceiling is measured in seconds-tens, and it is
+engine-buildable (weaving + custom serialization of deterministic boot artifacts).
