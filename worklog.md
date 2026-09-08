@@ -202,3 +202,15 @@ Work Log:
 
 Stage Summary:
 - Все 5 wire-eligible WIN-пар прошли полный §Lifecycle; unpromoted WIN не осталось (BlendCache 316x live-wired). Открытых клеймов нет.
+
+---
+## SESSION cron 08:00+08 — TASK-55 duplicate-delivery collision reconciled + TASK-56 G5 verdict — 2026-09-09T02:1xZ — agent-7625532f
+
+Work Log:
+- Контекст-ловушка (8-е сжатие съело тики 07:02+): собрал параллельную G4 в shared-дереве — Variant R retarget + SiteSpec/site_arm + NoiseBatchSiteHelper + reflection self-test; 47/47 тестов, clippy Δ0, 4 e2e boots (dormant PASS-by-absence ×2; armed → BATCH-SITE SELF-TEST PASS: bit-exact round-trip, ladder exactly-once calls=18/flushes=1/negatives=1/lastRc=-3).
+- Независимо найден+исправлен тот же латентный Pool::parse баг (long/double = 2 слота) — кросс-валидация фикса 2-a.
+- Push конфликт → push-first: дубликат DISCARDED, reset на 910f2fd, их дерево 51/51 + clippy чисто, модуль 6d442e18 задеплоен. TASK-56 (G5 B.9 verdict, registry formally VACANT) = 1a3b694. CLAIMS reconcile 16e30a6.
+- hs_err 134-shutdown forensics: Signal Dispatcher daemon — прешествующая флейкапость бокса (8 hs_err от Sep 7), не G4.
+
+Stage Summary:
+- G4 landed (2-a), мой дубль списан; G5 = vacant-registry policy зафиксирован; Stage-1 terminal-until-body/JFR. Открытых клеймов нет. Кандидаты: g35/g39/g40 shapes, audit-boot WIRE evidence, hotspot цикл.
