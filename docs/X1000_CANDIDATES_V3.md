@@ -297,3 +297,14 @@ below the ceilings that already killed TASK-80/TASK-89. **11th closed branch, ch
 campaign: arithmetic on existing census, 0 new measurements, 0 boots, 0 src/** —
 docs/DFC_STATIC_AUDIT_2026-09-08.md. Re-open only if a census shows interpreter machinery ≥10% of
 worldgen payload (different version / different DF-graph shape).
+
+### §6.4 D6 — moonrise TPS-accounting per-tick cost (TASK-94, 2026-09-09, agent-7625532f)
+
+HOTSPOT_CANDIDATES_V2 addendum D6 (P3, idle-CPU hygiene). Closed OUT by the pre-registered ≥3%-of-tick
+gate: `addTickTime` invalidates the TPS cache every tick, then `computeTPS()` re-walks the **4 report
+windows** (5s+1m+5m+15m ≈ 25,300 deque entries at 20 TPS) — mechanism-verified against the measured JFR
+profile (0.13–0.17 ms/tick ≈ 5.1 ns/visit). Ceiling **0.26–0.34% of the tick budget, constant under
+load** (windows are time-bounded) → fails the gate by 9–23×, 2+ orders below the >100x bar. No config
+knob exists to shrink windows (bytecode-verified). O(1) rolling-sum design retained in the audit for
+hosting-density future use. **12th closed branch; 0 boots, 0 src/** —
+docs/D6_TPS_ACCOUNTING_AUDIT_2026-09-09.md. Re-open per audit §6.
