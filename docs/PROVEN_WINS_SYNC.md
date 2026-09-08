@@ -196,3 +196,19 @@ normal lifecycle (§Lifecycle in docs/KERNEL_POLICY.md), not a registry edit.
 * `docs/KERNEL_POLICY.md` — PROVEN_WINS registry section replaced with the synced
   tables; entry count note 4+11 → 4+23.
 * `docs/PROVEN_WINS_SYNC.md` — this document.
+
+## 8. S7-14 batch-surface additions (wire v3 wave-1: ids 15/16/17)
+
+The descriptor-parser port (BATCH_API_PROPOSAL §4/§5) + wire-v3 ref plane
+landed three more batch-surface PARITY entries (g42 precedent, §4.1 pattern):
+
+| id | kernel pair member | ratio (baseline.tsv) | evidence |
+|---|---|---|---|
+| 15 | `PaperNativeRangeChoice.optimizedFillArraySummary` (shape D `([D[I[I[II[J)I`) | 1.002457 / 0.0% (line 55) | direct 81.4 ns, `p500_expected_summary.tsv` §35; contract probe-verified count-written, `bench/batch/results/WAVE1_V3_SHAPES_REPORT.md` |
+| 16 | `PaperNativeSpigotLoadOrderDependency.newLoadAfterBuildSummary` (shape E `(I[Ljava/lang/Object;[J)I`) | 1.003421 / 0.0% (line 58) | direct 87.7 ns §39 |
+| 17 | `PaperNativeSpigotLoadOrderDependency.newRemovedCountSummary` (shape F `(I[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;I[J)I`) | 0.995506 / 0.0% (line 59) | direct 88.6 ns §40 |
+
+Measured consequence (S7-14 floor bench): batch never wins on these probe
+bodies (g35 5.9-10.6x worse at every K ≤ 256) — the entries mark the kernels
+BATCHABLE, not batch-profitable; the Stage-1 verdict (no measured T) is
+unchanged. `docs/KERNEL_POLICY.md` count note: 4+23 → 4+26 with this wave.

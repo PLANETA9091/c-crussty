@@ -98,7 +98,8 @@ TASK-31 — full before/after audit in
   | `PluginLoadingAllocation.newLazyMissingSetSummary` | "WIN 1.53×" (218.3 → 142.5 ns) | 0.996 (115.1 → 114.6 ns) | **PARITY** (reclassified) |
   | `AquiferSurfaceSampling.newBatchSummary` | "WIN 1.15×" (6.3 → 5.5 µs) | 0.906 (6.0 → 5.5 µs) | **PARITY** (reclassified) |
 * **P500 PARITY (batch surface)** — the batch-dispatch table kernels
-  (`src/batch_table.rs` ids 0-14, `docs/BATCH_WIRING_PLAN.md` §A.4; ref updated S7-12):
+  (`src/batch_table.rs` ids 0-17, `docs/BATCH_WIRING_PLAN.md` §A.4; ref updated
+  S7-12/S7-14):
   caller-initiated infrastructure, not hot-path routing. Pairs covered by
   the rerun stay parity (AquiferIndexStride 1.07×, ChunkDependencies 1.03×,
   DensitySplineContext 1.00×, EntityLookupStatus 1.00×, DensityAp2MinMaxFill
@@ -106,7 +107,11 @@ TASK-31 — full before/after audit in
   (`TicketSetSearch` ×2, `NoiseInterpolatorFractions.divisionSummary`,
   `ClimateRTree` ×2) are now **calibrated** under canonical methodology —
   see `bench/p500/results/BATCH_SURFACE_CALIBRATION.md` (TASK-51;
-  PROVEN_WINS_SYNC §4.1 resolved).
+  PROVEN_WINS_SYNC §4.1 resolved). Wire-v3 wave-1 additions (S7-14):
+  `RangeChoice.optimizedFillArraySummary` (id 15, 1.0025),
+  `SpigotLoadOrderDependency.newLoadAfterBuildSummary` (id 16, 1.0034),
+  `SpigotLoadOrderDependency.newRemovedCountSummary` (id 17, 0.9955) —
+  shapes D/E/F, contract probe-verified, PROVEN_WINS_SYNC §8.
 
 Note: whitelist keys are exact `(class, kernel)` pairs. A kernel *name* that
 collides across classes (`cachedSummary` is a regression on `MarkerCache`,
