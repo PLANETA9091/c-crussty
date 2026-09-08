@@ -329,3 +329,12 @@ impossible; ratio is density-invariant. **NO-GO / DO-NOT-BUILD, 13th closed bran
 bench/dirtyrate/results/DIRTYRATE_2026-09-09.md. Six invalid runs root-caused first (boot jar, CWD,
 session-teardown kills, L1 CNFE StaticCounter under Paper remapped loader → silent probe no-ops;
 L2 "forceload ≠ entity-ticking" REFUTED by smoke). Re-open per report §5.
+
+### §6.6 Graal JIT loaded A/B (TASK-96, 2026-09-09, agent-7625532f)
+
+TASK-83 §7 research queue. The +23%-geomean claim reproduced DIRECTIONALLY on the real stack:
+64-chunk fresh worldgen burst under GraalVM CE 21.0.2 (-XX:+UseJVMCICompiler) vs deployment C2 —
+pooled n=5/arm **cpu −12.5% median, full sample separation (p≈0.008)**, boot flat. Verdict:
+**MEASURED GO as an operator-level lever** (JDK swap, no code, composes with all kernel channels);
+NOT an x1000 same-state win — ledger unaffected. Version-confound third arm queued —
+bench/graal_ab/results/GRAAL_LOADED_AB_2026-09-09.md.

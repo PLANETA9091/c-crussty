@@ -320,7 +320,7 @@ bridge stays default-OFF until that lands.
 | Design retained | rolling-sum O(1) aggregate strictly correct (per-entry deltas now-independent except boundary); retransform vehicle same as area_map | audit §5 |
 | Status | 12th closed x1000 branch; D6 resolved (was open since first live JFR profile) | re-open: audit §6 |
 
-## §13 ADDENDUM-8 (TASK-90, 2026-09-09, agent-7625532f) — hopper dirty-rate census: MEASURED 2.439% dirty = honest 10-100x class
+## §13 ADDENDUM-8 (TASK-90, 2026-09-09, agent-7625532f) — hopper dirty-rate census: interim analyzer-band read (SUPERSEDED same-day by §13-bis final verdict below)
 
 * Author: agent-7625532f. Evidence class: LIVE CENSUS (javaagent entry-probes, 300s hopper-active window, their analyzer unmodified, anchor-restore, journal done-entry).
 
@@ -331,7 +331,7 @@ bridge stays default-OFF until that lands.
 | Verdict | **honest 10-100x class — design-gated**: not >100x (dirty not <1%), not refuted (not >10%); any build needs a measured live A/B (TASK-80 lesson); secondary Amdahl: hopper machinery CPU share itself small on vanilla profiles, scales with hosting density | DIRTYRATE_2026-09-09 §3, tooling doc §0 |
 | Status | 13th branch to a MEASURED disposition; TASK-90 closed (verdict recorded, candidate parked with re-open criteria) | re-open: dirty% <1% under player profile OR hopper machinery ≥3% of tick (hosting density) |
 
-## §13 ADDENDUM-8 (TASK-90, 2026-09-09, agent-7625532f) — hopper dirty-rate census: NO-GO at the measured layer
+## §13-bis ADDENDUM-8b (TASK-90 final verdict, 2026-09-09, agent-7625532f) — hopper dirty-rate census: NO-GO at the measured layer
 
 * Author: agent-7625532f. Evidence class: MEASURED LIVE CENSUS (vanilla boot, ASM counter-agent, 300s hopper-active window, unmodified TASK-84 analyzer, sanity-gated instrumentation).
 
@@ -357,3 +357,15 @@ bridge stays default-OFF until that lands.
 | e2e default | **stays v2** (v3 wiring reverted; v3 archive persisted at $SERVER/crussty_boot_v3.jsa for future re-tests) | git revert of wiring, fd-hygiene fixes retained |
 | fd-hygiene fixes (banked) | e2e stdin-holder + boot subshell no longer inherit rig flock fd → BENCH.lock leak class (4 incidents) closed | e2e_orchestrate.sh |
 | Status | TASK-95 resolved: CDS v3 = measured NULL as a boot-time lever beyond v2; classloading channel confirmed EXHAUSTED | re-open: Paper update changing library set / JDK upgrade |
+
+## §15 ADDENDUM-10 (TASK-96, 2026-09-09, agent-7625532f) — Graal JIT loaded A/B: MEASURED GO as an operator-level lever
+
+* Author: agent-7625532f. Evidence class: MEASURED LIVE A/B (paired boots, 64-chunk fresh worldgen forceload burst, ABBA, rm+untar byte-identical restore, dormant module both arms).
+
+| Item | Result | Evidence |
+|---|---|---|
+| Pooled n=5/arm | **cpu_burst −12.5% median / −16.3% mean; wall −13.2%; FULL sample separation (C2 min 31.4 > Graal max 28.6 CPU-s), exact p≈0.008** | bench/graal_ab/results/GRAAL_LOADED_AB_2026-09-09.md §2 |
+| Boot cost of JVMCI | flat (±5%, inside boot drift band) — JVMCI warmup does not tax boot | report §2 |
+| Verdict | **MEASURED GO as an operator-level lever** (swap JDK + `-XX:+UseJVMCICompiler`, no code, reversible, composes with kernel channels) — NOT an x1000 kernel win; ledger unaffected. Magnitude tier: AppCDS v2 (−18.4% boot) | report §3 |
+| Limitations | version confound (21.0.2 vs 21.0.12 — third arm queued); worldgen-only workload; Graal compile CPU included (conservative); two-session pooling (within-session clean) | report §3 |
+| Harness lessons | rolling CPU-delta completion detector; rm+untar restore (tar = overlay!); FIFO open-order | report §4 |
