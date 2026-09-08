@@ -152,3 +152,20 @@ guard reproduces vanilla values bit-exactly — it only skips recomputation of
 identical results); BENCH-MUTEX on the 2-CPU box; world tar anchors before
 mutation; hs_err census before/after; P500 FULL duty on src/ changes; honest
 NO-GO is a valid outcome and closes the fluid-push branch with a measurement.
+
+---
+
+## 7. MEASURED VERDICT (TASK-80, 2026-09-08) — NO-GO
+
+Live A/B (n=5/arm, protocol v2, FLUID_AB_2026-09-08.md): A median 2.72 vs B
+median 2.59 CPU-s/30s window, delta +4.8% toward the guard, **Mann-Whitney
+exact two-sided p = 0.6905** — indistinguishable from zero. The falsifier
+counters measured a **96.4% hit rate** inside the armed windows: the
+cell-quantized key engages, the economics do not pay (hit-path saving
+~100-200 ns/call vs the 3.6% miss-path penalty of the slow-path
+reimplementation, at 16k calls/s). This converts S7-25's static refutation
+(§4/B: skippable machinery 23-40% → 1.4-1.6x/call ceiling) into a measured
+closure. The hook ships default-OFF dormant-invisible (DO-NOT-WIRE-BY-DEFAULT
+class); no gameplay-value changes ever shipped. §5's falsifiers resolved
+exactly as written: hit-rate high, live delta null — the candidate dies
+honestly.

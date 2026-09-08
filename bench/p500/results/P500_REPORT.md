@@ -1,12 +1,12 @@
 # P500 benchmark report — Crussty CE native kernels (old vs optimized)
 
-* Generated: 2026-09-08T07:29:08+00:00 (aggregator v2 — stem pairing, noise-model classification, baseline tracking)
+* Generated: 2026-09-08T12:20:57+00:00 (aggregator v2 — stem pairing, noise-model classification, baseline tracking)
 * Raw data: `p500_raw.tsv` — one JVM fork per group, time-bounded batches (~120 ms), median of 5, identical synthesized args per group.
 * Hardware note: shared 2-CPU sandbox; treat <±15% deltas as parity.
 * Noise model: ratio = alt/old — **WIN** ≤ 0.85, **REGRESSION** ≥ 1.18, PARITY in between; repeated measurements of a kernel collapse to one primary row via min-of-medians (ties keep the earliest row); every collapsed repeat is retained as `method#variantK` — see 'Duplicate collapse (variant policy)'.
 * stability = relative spread (max−min)/median of the underlying batch samples; for a pair the worse (larger) of the two kernels is shown; `n/a` when unavailable.
 
-* Groups measured: 49, skipped: 0, crashed: 0, kernels measured: 129 (raw RESULT rows: 387, collapsed variant rows: 258 — duplicate policy: min-of-medians primary, repeats retained as #variantK)
+* Groups measured: 49, skipped: 0, crashed: 0, kernels measured: 129 (raw RESULT rows: 129, collapsed variant rows: 0 — duplicate policy: min-of-medians primary, repeats retained as #variantK)
 * Pairs formed (P500 stem rule): 70 — unpaired kernels: 1, multi-pair warnings: 9
 * Baseline diff vs: `baseline.tsv` (drift flagged when |Δratio| > 20%)
 
@@ -16,896 +16,381 @@
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `newBatchSummary` | alt | 10.0 µs | 10.0 µs | 10.0 µs | 0.0% |
-| `newBatchSummary#variant2` | alt | 10.0 µs | 10.0 µs | 10.0 µs | 0.0% |
-| `oldBatchSummary` | old | 10.7 µs | 10.7 µs | 10.7 µs | 0.0% |
-| `oldBatchSummary#variant2` | old | 10.7 µs | 10.7 µs | 10.7 µs | 0.0% |
-| `newBatchSummary#variant3` | alt | 13.0 µs | 13.0 µs | 13.0 µs | 0.0% |
-| `oldBatchSummary#variant3` | old | 13.8 µs | 13.8 µs | 13.8 µs | 0.0% |
+| `newBatchSummary` | alt | 13.1 µs | 13.1 µs | 13.1 µs | 0.0% |
+| `oldBatchSummary` | old | 14.1 µs | 14.1 µs | 14.1 µs | 0.0% |
 
 ### 1. `PaperNativeAquiferPositionalLocation` `(I[I[I[IJJ[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `directBatchSummary` | alt | 2.2 µs | 2.2 µs | 2.2 µs | 0.0% |
-| `oldBatchSummary` | old | 2.2 µs | 2.2 µs | 2.2 µs | 0.0% |
-| `directBatchSummary#variant2` | alt | 2.2 µs | 2.2 µs | 2.2 µs | 0.0% |
-| `oldBatchSummary#variant2` | old | 2.2 µs | 2.2 µs | 2.2 µs | 0.0% |
-| `oldBatchSummary#variant3` | old | 2.9 µs | 2.9 µs | 2.9 µs | 0.0% |
-| `directBatchSummary#variant3` | alt | 2.9 µs | 2.9 µs | 2.9 µs | 0.0% |
+| `directBatchSummary` | alt | 2.7 µs | 2.7 µs | 2.7 µs | 0.0% |
+| `oldBatchSummary` | old | 2.9 µs | 2.9 µs | 2.9 µs | 0.0% |
 
 ### 2. `PaperNativeAquiferSurfaceSampling` `(I[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `newBatchSummary` | alt | 5.5 µs | 5.5 µs | 5.5 µs | 0.0% |
-| `newBatchSummary#variant2` | alt | 5.5 µs | 5.5 µs | 5.5 µs | 0.0% |
-| `oldBatchSummary` | old | 6.1 µs | 6.1 µs | 6.1 µs | 0.0% |
-| `oldBatchSummary#variant2` | old | 6.1 µs | 6.1 µs | 6.1 µs | 0.0% |
-| `newBatchSummary#variant3` | alt | 7.2 µs | 7.2 µs | 7.2 µs | 0.0% |
-| `oldBatchSummary#variant3` | old | 7.6 µs | 7.6 µs | 7.6 µs | 0.0% |
+| `newBatchSummary` | alt | 7.1 µs | 7.1 µs | 7.1 µs | 0.0% |
+| `oldBatchSummary` | old | 7.9 µs | 7.9 µs | 7.9 µs | 0.0% |
 
 ### 3. `PaperNativeBlendedNoise` `(I[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `cachedBatchSummary` | alt | 50.5 µs | 50.5 µs | 50.5 µs | 0.0% |
-| `cachedBatchSummary#variant2` | alt | 50.8 µs | 50.8 µs | 50.8 µs | 0.0% |
-| `oldBatchSummary` | old | 51.4 µs | 51.4 µs | 51.4 µs | 0.0% |
-| `oldBatchSummary#variant2` | old | 51.5 µs | 51.5 µs | 51.5 µs | 0.0% |
-| `cachedBatchSummary#variant3` | alt | 66.5 µs | 66.5 µs | 66.5 µs | 0.0% |
-| `oldBatchSummary#variant3` | old | 66.8 µs | 66.8 µs | 66.8 µs | 0.0% |
+| `cachedBatchSummary` | alt | 63.3 µs | 63.3 µs | 63.3 µs | 0.0% |
+| `oldBatchSummary` | old | 67.1 µs | 67.1 µs | 67.1 µs | 0.0% |
 
 ### 4. `PaperNativeCaveCarverSkip` `(I[D[D[D[D[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `reusedCheckerSummary` | alt | 34.2 ms | 34.2 ms | 34.2 ms | 0.0% |
-| `oldLambdaSummary` | old | 34.2 ms | 34.2 ms | 34.2 ms | 0.0% |
-| `directHelperSummary` | alt | 34.3 ms | 34.3 ms | 34.3 ms | 0.0% |
-| `reusedCheckerSummary#variant2` | alt | 34.4 ms | 34.4 ms | 34.4 ms | 0.0% |
-| `directHelperSummary#variant2` | alt | 34.4 ms | 34.4 ms | 34.4 ms | 0.0% |
-| `oldLambdaSummary#variant2` | old | 34.5 ms | 34.5 ms | 34.5 ms | 0.0% |
-| `directHelperSummary#variant3` | alt | 46.2 ms | 46.2 ms | 46.2 ms | 0.0% |
-| `reusedCheckerSummary#variant3` | alt | 46.5 ms | 46.5 ms | 46.5 ms | 0.0% |
-| `oldLambdaSummary#variant3` | old | 46.8 ms | 46.8 ms | 46.8 ms | 0.0% |
+| `oldLambdaSummary` | old | 45.5 ms | 45.5 ms | 45.5 ms | 0.0% |
+| `directHelperSummary` | alt | 45.8 ms | 45.8 ms | 45.8 ms | 0.0% |
+| `reusedCheckerSummary` | alt | 45.8 ms | 45.8 ms | 45.8 ms | 0.0% |
 
 ### 5. `PaperNativeChunkDependencies` `(I[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `arraySummary` | alt | 1.1 µs | 1.1 µs | 1.1 µs | 0.0% |
-| `arraySummary#variant2` | alt | 1.1 µs | 1.1 µs | 1.1 µs | 0.0% |
-| `oldImmutableListSummary` | old | 1.1 µs | 1.1 µs | 1.1 µs | 0.0% |
-| `oldImmutableListSummary#variant2` | old | 1.1 µs | 1.1 µs | 1.1 µs | 0.0% |
-| `arraySummary#variant3` | alt | 1.4 µs | 1.4 µs | 1.4 µs | 0.0% |
-| `oldImmutableListSummary#variant3` | old | 1.4 µs | 1.4 µs | 1.4 µs | 0.0% |
+| `arraySummary` | alt | 1.4 µs | 1.4 µs | 1.4 µs | 0.0% |
+| `oldImmutableListSummary` | old | 1.5 µs | 1.5 µs | 1.5 µs | 0.0% |
 
 ### 6. `PaperNativeClimateParameterDistance` `([J[J[J[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `subtractFirstDistanceSum` | alt | 524.2 ns | 524.2 ns | 524.2 ns | 0.0% |
-| `oldDistanceSum` | old | 524.4 ns | 524.4 ns | 524.4 ns | 0.0% |
-| `branchDistanceSum` | alt | 525.4 ns | 525.4 ns | 525.4 ns | 0.0% |
-| `branchDistanceSum#variant2` | alt | 534.0 ns | 534.0 ns | 534.0 ns | 0.0% |
-| `oldDistanceSum#variant2` | old | 534.3 ns | 534.3 ns | 534.3 ns | 0.0% |
-| `subtractFirstDistanceSum#variant2` | alt | 536.4 ns | 536.4 ns | 536.4 ns | 0.0% |
-| `subtractFirstDistanceSum#variant3` | alt | 612.1 ns | 612.1 ns | 612.1 ns | 0.0% |
-| `branchDistanceSum#variant3` | alt | 614.2 ns | 614.2 ns | 614.2 ns | 0.0% |
-| `oldDistanceSum#variant3` | old | 614.6 ns | 614.6 ns | 614.6 ns | 0.0% |
+| `branchDistanceSum` | alt | 671.8 ns | 671.8 ns | 671.8 ns | 0.0% |
+| `oldDistanceSum` | old | 680.1 ns | 680.1 ns | 680.1 ns | 0.0% |
+| `subtractFirstDistanceSum` | alt | 681.3 ns | 681.3 ns | 681.3 ns | 0.0% |
 
 ### 7. `PaperNativeCubicSplineCreate` `(I[F[F[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `oldIteratorSummary` | old | 152.8 µs | 152.8 µs | 152.8 µs | 0.0% |
-| `indexSummary` | alt | 153.2 µs | 153.2 µs | 153.2 µs | 0.0% |
-| `oldIteratorSummary#variant2` | old | 153.4 µs | 153.4 µs | 153.4 µs | 0.0% |
-| `indexSummary#variant2` | alt | 153.6 µs | 153.6 µs | 153.6 µs | 0.0% |
-| `oldIteratorSummary#variant3` | old | 189.2 µs | 189.2 µs | 189.2 µs | 0.0% |
-| `indexSummary#variant3` | alt | 200.3 µs | 200.3 µs | 200.3 µs | 0.0% |
+| `oldIteratorSummary` | old | 189.9 µs | 189.9 µs | 189.9 µs | 0.0% |
+| `indexSummary` | alt | 198.7 µs | 198.7 µs | 198.7 µs | 0.0% |
 
 ### 8. `PaperNativeDensityAp2Fill` `(II[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `scratchFlatSummary` | alt | 11.3 µs | 11.3 µs | 11.3 µs | 0.0% |
-| `scratchFlatSummary#variant2` | alt | 11.3 µs | 11.3 µs | 11.3 µs | 0.0% |
-| `oldFlatSummary` | old | 13.0 µs | 13.0 µs | 13.0 µs | 0.0% |
-| `oldFlatSummary#variant2` | old | 13.0 µs | 13.0 µs | 13.0 µs | 0.0% |
-| `scratchFlatSummary#variant3` | alt | 14.6 µs | 14.6 µs | 14.6 µs | 0.0% |
-| `oldFlatSummary#variant3` | old | 17.3 µs | 17.3 µs | 17.3 µs | 0.0% |
-| `scratchNestedSummary` | alt | 19.7 µs | 19.7 µs | 19.7 µs | 0.0% |
-| `scratchNestedSummary#variant2` | alt | 19.7 µs | 19.7 µs | 19.7 µs | 0.0% |
-| `oldNestedSummary` | old | 21.9 µs | 21.9 µs | 21.9 µs | 0.0% |
-| `oldNestedSummary#variant2` | old | 22.2 µs | 22.2 µs | 22.2 µs | 0.0% |
-| `scratchNestedSummary#variant3` | alt | 24.3 µs | 24.3 µs | 24.3 µs | 0.0% |
-| `oldNestedSummary#variant3` | old | 26.2 µs | 26.2 µs | 26.2 µs | 0.0% |
+| `scratchFlatSummary` | alt | 13.9 µs | 13.9 µs | 13.9 µs | 0.0% |
+| `oldFlatSummary` | old | 16.0 µs | 16.0 µs | 16.0 µs | 0.0% |
+| `scratchNestedSummary` | alt | 24.4 µs | 24.4 µs | 24.4 µs | 0.0% |
+| `oldNestedSummary` | old | 25.9 µs | 25.9 µs | 25.9 µs | 0.0% |
 
 ### 9. `PaperNativeDensityAp2MinMaxFill` `(III[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `oldSummary` | old | 118.7 ns | 118.7 ns | 118.7 ns | 0.0% |
-| `newSummary` | alt | 118.9 ns | 118.9 ns | 118.9 ns | 0.0% |
-| `oldSummary#variant2` | old | 118.9 ns | 118.9 ns | 118.9 ns | 0.0% |
-| `newSummary#variant2` | alt | 119.3 ns | 119.3 ns | 119.3 ns | 0.0% |
-| `oldSummary#variant3` | old | 148.2 ns | 148.2 ns | 148.2 ns | 0.0% |
-| `newSummary#variant3` | alt | 152.5 ns | 152.5 ns | 152.5 ns | 0.0% |
+| `newSummary` | alt | 147.5 ns | 147.5 ns | 147.5 ns | 0.0% |
+| `oldSummary` | old | 154.5 ns | 154.5 ns | 154.5 ns | 0.0% |
 
 ### 10. `PaperNativeDensitySplineContext` `(I[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `oldWrapperSummary` | old | 1.9 µs | 1.9 µs | 1.9 µs | 0.0% |
-| `oldWrapperSummary#variant2` | old | 1.9 µs | 1.9 µs | 1.9 µs | 0.0% |
-| `newDirectSummary` | alt | 1.9 µs | 1.9 µs | 1.9 µs | 0.0% |
-| `newDirectSummary#variant2` | alt | 1.9 µs | 1.9 µs | 1.9 µs | 0.0% |
-| `oldWrapperSummary#variant3` | old | 2.3 µs | 2.3 µs | 2.3 µs | 0.0% |
-| `newDirectSummary#variant3` | alt | 2.3 µs | 2.3 µs | 2.3 µs | 0.0% |
+| `oldWrapperSummary` | old | 2.3 µs | 2.3 µs | 2.3 µs | 0.0% |
+| `newDirectSummary` | alt | 2.4 µs | 2.4 µs | 2.4 µs | 0.0% |
 
 ### 11. `PaperNativeDensityVisitorHook` `(III[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `oldUnwrappingSummary` | old | 672.4 ns | 672.4 ns | 672.4 ns | 0.0% |
-| `hookedUnwrappingSummary` | alt | 676.2 ns | 676.2 ns | 676.2 ns | 0.0% |
-| `oldUnwrappingSummary#variant2` | old | 676.8 ns | 676.8 ns | 676.8 ns | 0.0% |
-| `hookedUnwrappingSummary#variant2` | alt | 677.5 ns | 677.5 ns | 677.5 ns | 0.0% |
-| `oldUnwrappingSummary#variant3` | old | 849.8 ns | 849.8 ns | 849.8 ns | 0.0% |
-| `hookedUnwrappingSummary#variant3` | alt | 904.9 ns | 904.9 ns | 904.9 ns | 0.0% |
+| `oldUnwrappingSummary` | old | 887.2 ns | 887.2 ns | 887.2 ns | 0.0% |
+| `hookedUnwrappingSummary` | alt | 891.1 ns | 891.1 ns | 891.1 ns | 0.0% |
 
 ### 12. `PaperNativeEntityBoundingBox` `(I[F[F[D[D[D[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `oldMakeThenSetSummary` | old | 5.7 µs | 5.7 µs | 5.7 µs | 0.0% |
-| `oldMakeThenSetSummary#variant2` | old | 5.7 µs | 5.7 µs | 5.7 µs | 0.0% |
-| `directDimensionsSetSummary` | alt | 5.8 µs | 5.8 µs | 5.8 µs | 0.0% |
-| `directDimensionsSetSummary#variant2` | alt | 5.8 µs | 5.8 µs | 5.8 µs | 0.0% |
-| `oldMakeThenSetSummary#variant3` | old | 7.5 µs | 7.5 µs | 7.5 µs | 0.0% |
-| `directDimensionsSetSummary#variant3` | alt | 7.7 µs | 7.7 µs | 7.7 µs | 0.0% |
+| `oldMakeThenSetSummary` | old | 7.6 µs | 7.6 µs | 7.6 µs | 0.0% |
+| `directDimensionsSetSummary` | alt | 7.7 µs | 7.7 µs | 7.7 µs | 0.0% |
 
 ### 13. `PaperNativeEntityChunkTransient` `(IIJ[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `newMixedSummary` | alt | 291.1 ns | 291.1 ns | 291.1 ns | 0.0% |
-| `newMixedSummary#variant2` | alt | 291.2 ns | 291.2 ns | 291.2 ns | 0.0% |
-| `oldMixedSummary` | old | 292.9 ns | 292.9 ns | 292.9 ns | 0.0% |
-| `oldMixedSummary#variant2` | old | 293.4 ns | 293.4 ns | 293.4 ns | 0.0% |
-| `newMixedSummary#variant3` | alt | 381.3 ns | 381.3 ns | 381.3 ns | 0.0% |
-| `oldMixedSummary#variant3` | old | 383.7 ns | 383.7 ns | 383.7 ns | 0.0% |
+| `newMixedSummary` | alt | 363.0 ns | 363.0 ns | 363.0 ns | 0.0% |
+| `oldMixedSummary` | old | 370.0 ns | 370.0 ns | 370.0 ns | 0.0% |
 
 ### 14. `PaperNativeEntityLookupStatus` `(I[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `directAccessibleSummary` | alt | 1.1 µs | 1.1 µs | 1.1 µs | 0.0% |
-| `directAccessibleSummary#variant2` | alt | 1.1 µs | 1.1 µs | 1.1 µs | 0.0% |
-| `oldAccessibleSummary` | old | 1.1 µs | 1.1 µs | 1.1 µs | 0.0% |
-| `oldStatusSummary` | old | 1.1 µs | 1.1 µs | 1.1 µs | 0.0% |
-| `oldStatusSummary#variant2` | old | 1.1 µs | 1.1 µs | 1.1 µs | 0.0% |
-| `oldAccessibleSummary#variant2` | old | 1.1 µs | 1.1 µs | 1.1 µs | 0.0% |
-| `directStatusSummary` | alt | 1.1 µs | 1.1 µs | 1.1 µs | 0.0% |
-| `directStatusSummary#variant2` | alt | 1.1 µs | 1.1 µs | 1.1 µs | 0.0% |
-| `oldAccessibleSummary#variant3` | old | 1.4 µs | 1.4 µs | 1.4 µs | 0.0% |
-| `oldStatusSummary#variant3` | old | 1.4 µs | 1.4 µs | 1.4 µs | 0.0% |
-| `directAccessibleSummary#variant3` | alt | 1.4 µs | 1.4 µs | 1.4 µs | 0.0% |
-| `directStatusSummary#variant3` | alt | 1.4 µs | 1.4 µs | 1.4 µs | 0.0% |
+| `oldAccessibleSummary` | old | 1.4 µs | 1.4 µs | 1.4 µs | 0.0% |
+| `directAccessibleSummary` | alt | 1.4 µs | 1.4 µs | 1.4 µs | 0.0% |
+| `oldStatusSummary` | old | 1.5 µs | 1.5 µs | 1.5 µs | 0.0% |
+| `directStatusSummary` | alt | 1.5 µs | 1.5 µs | 1.5 µs | 0.0% |
 
 ### 15. `PaperNativeImprovedNoiseDerivative` `([B[I[I[I[D[D[DI[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `flatGradientDerivativeSummary` | alt | 11.5 µs | 11.5 µs | 11.5 µs | 0.0% |
-| `flatGradientDerivativeSummary#variant2` | alt | 11.6 µs | 11.6 µs | 11.6 µs | 0.0% |
-| `inlineDerivativeSummary` | alt | 11.7 µs | 11.7 µs | 11.7 µs | 0.0% |
-| `oldDerivativeSummary` | old | 11.7 µs | 11.7 µs | 11.7 µs | 0.0% |
-| `intTableDerivativeSummary` | alt | 11.7 µs | 11.7 µs | 11.7 µs | 0.0% |
-| `oldDerivativeSummary#variant2` | old | 11.7 µs | 11.7 µs | 11.7 µs | 0.0% |
-| `intTableDerivativeSummary#variant2` | alt | 11.7 µs | 11.7 µs | 11.7 µs | 0.0% |
-| `inlineDerivativeSummary#variant2` | alt | 11.7 µs | 11.7 µs | 11.7 µs | 0.0% |
-| `flatGradientDerivativeSummary#variant3` | alt | 14.4 µs | 14.4 µs | 14.4 µs | 0.0% |
-| `inlineDerivativeSummary#variant3` | alt | 15.3 µs | 15.3 µs | 15.3 µs | 0.0% |
-| `intTableDerivativeSummary#variant3` | alt | 15.4 µs | 15.4 µs | 15.4 µs | 0.0% |
-| `oldDerivativeSummary#variant3` | old | 15.4 µs | 15.4 µs | 15.4 µs | 0.0% |
+| `flatGradientDerivativeSummary` | alt | 15.2 µs | 15.2 µs | 15.2 µs | 0.0% |
+| `oldDerivativeSummary` | old | 15.3 µs | 15.3 µs | 15.3 µs | 0.0% |
+| `intTableDerivativeSummary` | alt | 15.4 µs | 15.4 µs | 15.4 µs | 0.0% |
+| `inlineDerivativeSummary` | alt | 15.5 µs | 15.5 µs | 15.5 µs | 0.0% |
 
 ### 16. `PaperNativeImprovedNoiseInline` `([BI[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `switchGradientSummary` | alt | 7.6 µs | 7.6 µs | 7.6 µs | 0.0% |
-| `switchGradientSummary#variant2` | alt | 7.7 µs | 7.7 µs | 7.7 µs | 0.0% |
-| `arithmeticSummary` | alt | 8.0 µs | 8.0 µs | 8.0 µs | 0.0% |
-| `arithmeticSummary#variant2` | alt | 8.0 µs | 8.0 µs | 8.0 µs | 0.0% |
-| `flatGradientSummary` | alt | 8.1 µs | 8.1 µs | 8.1 µs | 0.0% |
-| `flatGradientSummary#variant2` | alt | 8.1 µs | 8.1 µs | 8.1 µs | 0.0% |
-| `inlineByteAccessSummary` | alt | 9.3 µs | 9.3 µs | 9.3 µs | 0.0% |
-| `oldPMethodSummary` | old | 9.3 µs | 9.3 µs | 9.3 µs | 0.0% |
-| `oldPMethodSummary#variant2` | old | 9.3 µs | 9.3 µs | 9.3 µs | 0.0% |
-| `inlineByteAccessSummary#variant2` | alt | 9.3 µs | 9.3 µs | 9.3 µs | 0.0% |
-| `switchGradientSummary#variant3` | alt | 9.4 µs | 9.4 µs | 9.4 µs | 0.0% |
-| `arithmeticSummary#variant3` | alt | 9.9 µs | 9.9 µs | 9.9 µs | 0.0% |
-| `flatGradientSummary#variant3` | alt | 10.1 µs | 10.1 µs | 10.1 µs | 0.0% |
-| `oldPMethodSummary#variant3` | old | 11.5 µs | 11.5 µs | 11.5 µs | 0.0% |
-| `inlineByteAccessSummary#variant3` | alt | 11.7 µs | 11.7 µs | 11.7 µs | 0.0% |
+| `switchGradientSummary` | alt | 10.1 µs | 10.1 µs | 10.1 µs | 0.0% |
+| `arithmeticSummary` | alt | 10.6 µs | 10.6 µs | 10.6 µs | 0.0% |
+| `flatGradientSummary` | alt | 10.7 µs | 10.7 µs | 10.7 µs | 0.0% |
+| `oldPMethodSummary` | old | 12.2 µs | 12.2 µs | 12.2 µs | 0.0% |
+| `inlineByteAccessSummary` | alt | 12.3 µs | 12.3 µs | 12.3 µs | 0.0% |
 
 ### 17. `PaperNativeJigsawCanAttach` `(I[I[I[I[I[Z[I[I[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `oldBatchSummary` | old | 625.6 ns | 625.6 ns | 625.6 ns | 0.0% |
-| `targetFirstBatchSummary` | alt | 626.3 ns | 626.3 ns | 626.3 ns | 0.0% |
-| `optimizedBatchSummary` | alt | 626.8 ns | 626.8 ns | 626.8 ns | 0.0% |
-| `targetFirstBatchSummary#variant2` | alt | 627.3 ns | 627.3 ns | 627.3 ns | 0.0% |
-| `oldBatchSummary#variant2` | old | 627.4 ns | 627.4 ns | 627.4 ns | 0.0% |
-| `optimizedBatchSummary#variant2` | alt | 628.1 ns | 628.1 ns | 628.1 ns | 0.0% |
-| `optimizedBatchSummary#variant3` | alt | 778.4 ns | 778.4 ns | 778.4 ns | 0.0% |
-| `oldBatchSummary#variant3` | old | 782.2 ns | 782.2 ns | 782.2 ns | 0.0% |
-| `targetFirstBatchSummary#variant3` | alt | 801.1 ns | 801.1 ns | 801.1 ns | 0.0% |
+| `oldBatchSummary` | old | 777.8 ns | 777.8 ns | 777.8 ns | 0.0% |
+| `optimizedBatchSummary` | alt | 798.9 ns | 798.9 ns | 798.9 ns | 0.0% |
+| `targetFirstBatchSummary` | alt | 821.3 ns | 821.3 ns | 821.3 ns | 0.0% |
 
 ### 18. `PaperNativeLegacyProvidedAliasRemoval` `(I[Ljava/lang/Object;[Ljava/lang/Object;I[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `newReverseAliasRemoveSummary` | alt | 88.1 ns | 88.1 ns | 88.1 ns | 0.0% |
-| `oldValuesRemoveIfSummary` | old | 88.2 ns | 88.2 ns | 88.2 ns | 0.0% |
-| `oldValuesRemoveIfSummary#variant2` | old | 88.3 ns | 88.3 ns | 88.3 ns | 0.0% |
-| `newReverseAliasRemoveSummary#variant2` | alt | 88.8 ns | 88.8 ns | 88.8 ns | 0.0% |
-| `oldValuesRemoveIfSummary#variant3` | old | 114.0 ns | 114.0 ns | 114.0 ns | 0.0% |
-| `newReverseAliasRemoveSummary#variant3` | alt | 117.9 ns | 117.9 ns | 117.9 ns | 0.0% |
+| `newReverseAliasRemoveSummary` | alt | 116.5 ns | 116.5 ns | 116.5 ns | 0.0% |
+| `oldValuesRemoveIfSummary` | old | 117.8 ns | 117.8 ns | 117.8 ns | 0.0% |
 
 ### 19. `PaperNativeLevelChunkHeightmap` `(I[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `oldFourUpdateSummary` | old | 2.2 ms | 2.2 ms | 2.2 ms | 0.0% |
-| `oldFourUpdateSummary#variant2` | old | 2.2 ms | 2.2 ms | 2.2 ms | 0.0% |
-| `oldFourUpdateSummary#variant3` | old | 2.8 ms | 2.8 ms | 2.8 ms | 0.0% |
-| `newCombinedUpdateSummary` | alt | 12.4 ms | 12.4 ms | 12.4 ms | 0.0% |
-| `newCombinedUpdateSummary#variant2` | alt | 12.4 ms | 12.4 ms | 12.4 ms | 0.0% |
-| `newCombinedUpdateSummary#variant3` | alt | 15.2 ms | 15.2 ms | 15.2 ms | 0.0% |
+| `oldFourUpdateSummary` | old | 2.8 ms | 2.8 ms | 2.8 ms | 0.0% |
+| `newCombinedUpdateSummary` | alt | 15.9 ms | 15.9 ms | 15.9 ms | 0.0% |
 
 ### 20. `PaperNativeMarkerCache` `(III[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `oldSummary` | old | 118.7 µs | 118.7 µs | 118.7 µs | 0.0% |
-| `oldSummary#variant2` | old | 119.9 µs | 119.9 µs | 119.9 µs | 0.0% |
-| `oldSummary#variant3` | old | 155.6 µs | 155.6 µs | 155.6 µs | 0.0% |
-| `cachedSummary` | alt | 552.3 µs | 552.3 µs | 552.3 µs | 0.0% |
-| `cachedSummary#variant2` | alt | 553.8 µs | 553.8 µs | 553.8 µs | 0.0% |
-| `cachedSummary#variant3` | alt | 716.6 µs | 716.6 µs | 716.6 µs | 0.0% |
+| `oldSummary` | old | 150.2 µs | 150.2 µs | 150.2 µs | 0.0% |
+| `cachedSummary` | alt | 725.1 µs | 725.1 µs | 725.1 µs | 0.0% |
 
 ### 21. `PaperNativeNoiseChunkBlendCache` `(II[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `newEmptyBlenderSummary` | alt | 232.4 ns | 232.4 ns | 232.4 ns | 0.0% |
-| `newEmptyBlenderSummary#variant2` | alt | 232.5 ns | 232.5 ns | 232.5 ns | 0.0% |
-| `newEmptyBlenderSummary#variant3` | alt | 303.5 ns | 303.5 ns | 303.5 ns | 0.0% |
-| `oldEmptyBlenderSummary` | old | 73.1 µs | 73.1 µs | 73.1 µs | 0.0% |
-| `oldEmptyBlenderSummary#variant2` | old | 74.2 µs | 74.2 µs | 74.2 µs | 0.0% |
-| `oldEmptyBlenderSummary#variant3` | old | 92.2 µs | 92.2 µs | 92.2 µs | 0.0% |
+| `newEmptyBlenderSummary` | alt | 312.2 ns | 312.2 ns | 312.2 ns | 0.0% |
+| `oldEmptyBlenderSummary` | old | 90.2 µs | 90.2 µs | 90.2 µs | 0.0% |
 
 ### 22. `PaperNativeNoiseChunkFlatCacheContext` `(II[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `newFalseContextSummary` | alt | 18.7 µs | 18.7 µs | 18.7 µs | 0.0% |
-| `newFalseContextSummary#variant2` | alt | 18.8 µs | 18.8 µs | 18.8 µs | 0.0% |
-| `newTrueContextSummary` | alt | 18.8 µs | 18.8 µs | 18.8 µs | 0.0% |
-| `newTrueContextSummary#variant2` | alt | 19.1 µs | 19.1 µs | 19.1 µs | 0.0% |
-| `oldFalseContextSummary` | old | 21.8 µs | 21.8 µs | 21.8 µs | 0.0% |
-| `oldFalseContextSummary#variant2` | old | 21.9 µs | 21.9 µs | 21.9 µs | 0.0% |
-| `newFalseContextSummary#variant3` | alt | 23.6 µs | 23.6 µs | 23.6 µs | 0.0% |
-| `oldTrueContextSummary` | old | 23.6 µs | 23.6 µs | 23.6 µs | 0.0% |
-| `oldTrueContextSummary#variant2` | old | 23.6 µs | 23.6 µs | 23.6 µs | 0.0% |
-| `newTrueContextSummary#variant3` | alt | 25.0 µs | 25.0 µs | 25.0 µs | 0.0% |
-| `oldFalseContextSummary#variant3` | old | 26.9 µs | 26.9 µs | 26.9 µs | 0.0% |
-| `oldTrueContextSummary#variant3` | old | 30.9 µs | 30.9 µs | 30.9 µs | 0.0% |
+| `newFalseContextSummary` | alt | 24.4 µs | 24.4 µs | 24.4 µs | 0.0% |
+| `newTrueContextSummary` | alt | 24.5 µs | 24.5 µs | 24.5 µs | 0.0% |
+| `oldFalseContextSummary` | old | 28.5 µs | 28.5 µs | 28.5 µs | 0.0% |
+| `oldTrueContextSummary` | old | 29.5 µs | 29.5 µs | 29.5 µs | 0.0% |
 
 ### 23. `PaperNativeNoiseInterpolatorSlice` `(IIII[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `flatSummary` | alt | 1.8 ms | 1.8 ms | 1.8 ms | 0.0% |
-| `flatSummary#variant2` | alt | 1.9 ms | 1.9 ms | 1.9 ms | 0.0% |
-| `flatSummary#variant3` | alt | 2.3 ms | 2.3 ms | 2.3 ms | 0.0% |
-| `oldJaggedSummary` | old | 6.1 ms | 6.1 ms | 6.1 ms | 0.0% |
-| `oldJaggedSummary#variant2` | old | 6.2 ms | 6.2 ms | 6.2 ms | 0.0% |
-| `oldJaggedSummary#variant3` | old | 7.7 ms | 7.7 ms | 7.7 ms | 0.0% |
+| `flatSummary` | alt | 2.4 ms | 2.4 ms | 2.4 ms | 0.0% |
+| `oldJaggedSummary` | old | 7.8 ms | 7.8 ms | 7.8 ms | 0.0% |
 
 ### 24. `PaperNativeObfHelperMaps` `([Ljava/lang/Object;[Ljava/lang/Object;[I[I[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `directMapsSummary` | alt | 93.3 ns | 93.3 ns | 93.3 ns | 0.0% |
-| `oldStreamDefaultSummary` | old | 93.5 ns | 93.5 ns | 93.5 ns | 0.0% |
-| `presizedStringPoolSummary` | alt | 93.5 ns | 93.5 ns | 93.5 ns | 0.0% |
-| `oldStreamDefaultSummary#variant2` | old | 93.5 ns | 93.5 ns | 93.5 ns | 0.0% |
-| `directMapsSummary#variant2` | alt | 93.6 ns | 93.6 ns | 93.6 ns | 0.0% |
-| `presizedStringPoolSummary#variant2` | alt | 94.4 ns | 94.4 ns | 94.4 ns | 0.0% |
-| `directMapsSummary#variant3` | alt | 117.6 ns | 117.6 ns | 117.6 ns | 0.0% |
-| `oldStreamDefaultSummary#variant3` | old | 121.8 ns | 121.8 ns | 121.8 ns | 0.0% |
-| `presizedStringPoolSummary#variant3` | alt | 122.6 ns | 122.6 ns | 122.6 ns | 0.0% |
+| `presizedStringPoolSummary` | alt | 116.3 ns | 116.3 ns | 116.3 ns | 0.0% |
+| `oldStreamDefaultSummary` | old | 118.6 ns | 118.6 ns | 118.6 ns | 0.0% |
+| `directMapsSummary` | alt | 123.4 ns | 123.4 ns | 123.4 ns | 0.0% |
 
 ### 25. `PaperNativeOreFeatureLoop` `([D[D[D[D[I[I[I[I[I[IIIIII[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `optimizedLoopSummary` | alt | 1.9 µs | 1.9 µs | 1.9 µs | 0.0% |
-| `oldLoopSummary` | old | 1.9 µs | 1.9 µs | 1.9 µs | 0.0% |
-| `optimizedLoopSummary#variant2` | alt | 1.9 µs | 1.9 µs | 1.9 µs | 0.0% |
-| `oldLoopSummary#variant2` | old | 1.9 µs | 1.9 µs | 1.9 µs | 0.0% |
-| `optimizedLoopSummary#variant3` | alt | 2.5 µs | 2.5 µs | 2.5 µs | 0.0% |
-| `oldLoopSummary#variant3` | old | 2.5 µs | 2.5 µs | 2.5 µs | 0.0% |
+| `oldLoopSummary` | old | 2.5 µs | 2.5 µs | 2.5 µs | 0.0% |
+| `optimizedLoopSummary` | alt | 2.6 µs | 2.6 µs | 2.6 µs | 0.0% |
 
 ### 26. `PaperNativeOwnableRule` `(I[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `newLoopSummary` | alt | 3.7 µs | 3.7 µs | 3.7 µs | 0.0% |
-| `newLoopSummary#variant2` | alt | 3.7 µs | 3.7 µs | 3.7 µs | 0.0% |
-| `oldStreamSummary` | old | 4.2 µs | 4.2 µs | 4.2 µs | 0.0% |
-| `oldStreamSummary#variant2` | old | 4.2 µs | 4.2 µs | 4.2 µs | 0.0% |
-| `newLoopSummary#variant3` | alt | 4.8 µs | 4.8 µs | 4.8 µs | 0.0% |
-| `oldStreamSummary#variant3` | old | 5.2 µs | 5.2 µs | 5.2 µs | 0.0% |
+| `newLoopSummary` | alt | 4.9 µs | 4.9 µs | 4.9 µs | 0.0% |
+| `oldStreamSummary` | old | 5.4 µs | 5.4 µs | 5.4 µs | 0.0% |
 
 ### 27. `PaperNativePalettedReencodeScratch` `(I[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `scratchThreadLocalSummary` | alt | 411.6 µs | 411.6 µs | 411.6 µs | 0.0% |
-| `scratchThreadLocalSummary#variant2` | alt | 412.9 µs | 412.9 µs | 412.9 µs | 0.0% |
-| `oldNewArraySummary` | old | 489.5 µs | 489.5 µs | 489.5 µs | 0.0% |
-| `oldNewArraySummary#variant2` | old | 492.2 µs | 492.2 µs | 492.2 µs | 0.0% |
-| `scratchThreadLocalSummary#variant3` | alt | 542.5 µs | 542.5 µs | 542.5 µs | 0.0% |
-| `oldNewArraySummary#variant3` | old | 641.3 µs | 641.3 µs | 641.3 µs | 0.0% |
-| `directPackedSummary` | alt | 1.1 ms | 1.1 ms | 1.1 ms | 0.0% |
-| `directPackedSummary#variant2` | alt | 1.1 ms | 1.1 ms | 1.1 ms | 0.0% |
-| `directPackedSummary#variant3` | alt | 1.4 ms | 1.4 ms | 1.4 ms | 0.0% |
+| `scratchThreadLocalSummary` | alt | 539.7 µs | 539.7 µs | 539.7 µs | 0.0% |
+| `oldNewArraySummary` | old | 609.4 µs | 609.4 µs | 609.4 µs | 0.0% |
+| `directPackedSummary` | alt | 1.4 ms | 1.4 ms | 1.4 ms | 0.0% |
 
 ### 28. `PaperNativePluginClassLoaderGroup` `(I[Ljava/lang/Object;[IILjava/lang/String;[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `oldLookupSummary` | old | 91.3 ns | 91.3 ns | 91.3 ns | 0.0% |
-| `skipRequesterSummary` | alt | 91.9 ns | 91.9 ns | 91.9 ns | 0.0% |
-| `oldLookupSummary#variant2` | old | 92.0 ns | 92.0 ns | 92.0 ns | 0.0% |
-| `skipRequesterSummary#variant2` | alt | 92.4 ns | 92.4 ns | 92.4 ns | 0.0% |
-| `oldLookupSummary#variant3` | old | 120.1 ns | 120.1 ns | 120.1 ns | 0.0% |
-| `skipRequesterSummary#variant3` | alt | 121.4 ns | 121.4 ns | 121.4 ns | 0.0% |
+| `skipRequesterSummary` | alt | 115.0 ns | 115.0 ns | 115.0 ns | 0.0% |
+| `oldLookupSummary` | old | 120.4 ns | 120.4 ns | 120.4 ns | 0.0% |
 
 ### 29. `PaperNativePluginDirectoryScan` `(ILjava/lang/String;[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `newListSummary` | alt | 1.3 ms | 1.3 ms | 1.3 ms | 0.0% |
-| `directoryStreamSummary` | alt | 1.3 ms | 1.3 ms | 1.3 ms | 0.0% |
-| `newListSummary#variant2` | alt | 1.3 ms | 1.3 ms | 1.3 ms | 0.0% |
-| `directoryStreamSummary#variant2` | alt | 1.3 ms | 1.3 ms | 1.3 ms | 0.0% |
-| `oldWalkDepth1Summary` | old | 1.5 ms | 1.5 ms | 1.5 ms | 0.0% |
-| `oldWalkDepth1Summary#variant2` | old | 1.5 ms | 1.5 ms | 1.5 ms | 0.0% |
-| `newListSummary#variant3` | alt | 1.8 ms | 1.8 ms | 1.8 ms | 0.0% |
-| `directoryStreamSummary#variant3` | alt | 1.9 ms | 1.9 ms | 1.9 ms | 0.0% |
-| `oldWalkDepth1Summary#variant3` | old | 2.0 ms | 2.0 ms | 2.0 ms | 0.0% |
+| `newListSummary` | alt | 1.8 ms | 1.8 ms | 1.8 ms | 0.0% |
+| `directoryStreamSummary` | alt | 1.8 ms | 1.8 ms | 1.8 ms | 0.0% |
+| `oldWalkDepth1Summary` | old | 1.9 ms | 1.9 ms | 1.9 ms | 0.0% |
 
 ### 30. `PaperNativePluginLoadingAllocation` `(I[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;I[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `newLazyMissingSetSummary` | alt | 88.0 ns | 88.0 ns | 88.0 ns | 0.0% |
-| `newLazyMissingSetSummary#variant2` | alt | 88.5 ns | 88.5 ns | 88.5 ns | 0.0% |
-| `newLazyValidateSummary` | alt | 88.6 ns | 88.6 ns | 88.6 ns | 0.0% |
-| `newLazyValidateSummary#variant2` | alt | 88.6 ns | 88.6 ns | 88.6 ns | 0.0% |
-| `newPresizedSetupSummary` | alt | 88.9 ns | 88.9 ns | 88.9 ns | 0.0% |
-| `oldDefaultCapacitySetupSummary` | old | 89.0 ns | 89.0 ns | 89.0 ns | 0.0% |
-| `oldEagerMissingSetSummary` | old | 89.1 ns | 89.1 ns | 89.1 ns | 0.0% |
-| `newPresizedSetupSummary#variant2` | alt | 89.4 ns | 89.4 ns | 89.4 ns | 0.0% |
-| `oldDefaultCapacitySetupSummary#variant2` | old | 89.4 ns | 89.4 ns | 89.4 ns | 0.0% |
-| `oldEagerValidateSummary` | old | 89.7 ns | 89.7 ns | 89.7 ns | 0.0% |
-| `oldEagerMissingSetSummary#variant2` | old | 89.9 ns | 89.9 ns | 89.9 ns | 0.0% |
-| `oldEagerValidateSummary#variant2` | old | 91.3 ns | 91.3 ns | 91.3 ns | 0.0% |
-| `newLazyMissingSetSummary#variant3` | alt | 109.5 ns | 109.5 ns | 109.5 ns | 0.0% |
-| `newLazyValidateSummary#variant3` | alt | 115.3 ns | 115.3 ns | 115.3 ns | 0.0% |
-| `newPresizedSetupSummary#variant3` | alt | 115.5 ns | 115.5 ns | 115.5 ns | 0.0% |
-| `oldDefaultCapacitySetupSummary#variant3` | old | 115.5 ns | 115.5 ns | 115.5 ns | 0.0% |
-| `oldEagerValidateSummary#variant3` | old | 115.9 ns | 115.9 ns | 115.9 ns | 0.0% |
-| `oldEagerMissingSetSummary#variant3` | old | 116.1 ns | 116.1 ns | 116.1 ns | 0.0% |
+| `oldEagerMissingSetSummary` | old | 110.2 ns | 110.2 ns | 110.2 ns | 0.0% |
+| `newLazyMissingSetSummary` | alt | 114.6 ns | 114.6 ns | 114.6 ns | 0.0% |
+| `newPresizedSetupSummary` | alt | 115.8 ns | 115.8 ns | 115.8 ns | 0.0% |
+| `newLazyValidateSummary` | alt | 116.4 ns | 116.4 ns | 116.4 ns | 0.0% |
+| `oldDefaultCapacitySetupSummary` | old | 116.4 ns | 116.4 ns | 116.4 ns | 0.0% |
+| `oldEagerValidateSummary` | old | 117.5 ns | 117.5 ns | 117.5 ns | 0.0% |
 
 ### 31. `PaperNativePluginMetaDependency` `(I[Ljava/lang/Object;[Z[Z[I[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `cachedSummary` | alt | 91.7 ns | 91.7 ns | 91.7 ns | 0.0% |
-| `oldStreamSummary` | old | 92.0 ns | 92.0 ns | 92.0 ns | 0.0% |
-| `newLoopSummary` | alt | 92.2 ns | 92.2 ns | 92.2 ns | 0.0% |
-| `cachedSummary#variant2` | alt | 92.3 ns | 92.3 ns | 92.3 ns | 0.0% |
-| `newLoopSummary#variant2` | alt | 92.3 ns | 92.3 ns | 92.3 ns | 0.0% |
-| `oldStreamSummary#variant2` | old | 92.6 ns | 92.6 ns | 92.6 ns | 0.0% |
-| `newLoopSummary#variant3` | alt | 113.5 ns | 113.5 ns | 113.5 ns | 0.0% |
-| `cachedSummary#variant3` | alt | 120.2 ns | 120.2 ns | 120.2 ns | 0.0% |
-| `oldStreamSummary#variant3` | old | 120.8 ns | 120.8 ns | 120.8 ns | 0.0% |
+| `cachedSummary` | alt | 114.2 ns | 114.2 ns | 114.2 ns | 0.0% |
+| `newLoopSummary` | alt | 114.3 ns | 114.3 ns | 114.3 ns | 0.0% |
+| `oldStreamSummary` | old | 121.3 ns | 121.3 ns | 121.3 ns | 0.0% |
 
 ### 32. `PaperNativePluginNameLog` `(I[Ljava/lang/Object;[Ljava/lang/Object;[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `newArrayListSortSummary` | alt | 87.7 ns | 87.7 ns | 87.7 ns | 0.0% |
-| `oldTreesetSummary` | old | 88.3 ns | 88.3 ns | 88.3 ns | 0.0% |
-| `newArrayListSortSummary#variant2` | alt | 88.4 ns | 88.4 ns | 88.4 ns | 0.0% |
-| `oldTreesetSummary#variant2` | old | 88.6 ns | 88.6 ns | 88.6 ns | 0.0% |
-| `oldTreesetSummary#variant3` | old | 108.6 ns | 108.6 ns | 108.6 ns | 0.0% |
-| `newArrayListSortSummary#variant3` | alt | 114.3 ns | 114.3 ns | 114.3 ns | 0.0% |
+| `newArrayListSortSummary` | alt | 109.7 ns | 109.7 ns | 109.7 ns | 0.0% |
+| `oldTreesetSummary` | old | 110.9 ns | 110.9 ns | 110.9 ns | 0.0% |
 
 ### 33. `PaperNativePluginStartupRollup` `(I[Ljava/lang/Object;Ljava/lang/String;[Ljava/lang/Object;[Ljava/lang/Object;[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `oldSummary` | old | 95.3 ns | 95.3 ns | 95.3 ns | 0.0% |
-| `newSummary` | alt | 95.5 ns | 95.5 ns | 95.5 ns | 0.0% |
-| `oldSummary#variant2` | old | 95.8 ns | 95.8 ns | 95.8 ns | 0.0% |
-| `newSummary#variant2` | alt | 95.9 ns | 95.9 ns | 95.9 ns | 0.0% |
-| `oldSummary#variant3` | old | 114.4 ns | 114.4 ns | 114.4 ns | 0.0% |
-| `newSummary#variant3` | alt | 119.8 ns | 119.8 ns | 119.8 ns | 0.0% |
+| `oldSummary` | old | 116.1 ns | 116.1 ns | 116.1 ns | 0.0% |
+| `newSummary` | alt | 119.9 ns | 119.9 ns | 119.9 ns | 0.0% |
 
 ### 34. `PaperNativeProtoChunkHeightmap` `(I)J`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `oldEnumSetForeachSummary` | old | 1.2 µs | 1.2 µs | 1.2 µs | 0.0% |
-| `oldEnumSetForeachSummary#variant2` | old | 1.2 µs | 1.2 µs | 1.2 µs | 0.0% |
-| `oldEnumSetForeachSummary#variant3` | old | 1.5 µs | 1.5 µs | 1.5 µs | 0.0% |
-| `newCachedContainsSummary` | alt | 2.0 µs | 2.0 µs | 2.0 µs | 0.0% |
-| `newCachedContainsSummary#variant2` | alt | 2.1 µs | 2.1 µs | 2.1 µs | 0.0% |
-| `newCachedContainsSummary#variant3` | alt | 2.6 µs | 2.6 µs | 2.6 µs | 0.0% |
+| `oldEnumSetForeachSummary` | old | 1.4 µs | 1.4 µs | 1.4 µs | 0.0% |
+| `newCachedContainsSummary` | alt | 2.5 µs | 2.5 µs | 2.5 µs | 0.0% |
 
 ### 35. `PaperNativeRangeChoice` `([D[I[I[II[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `oldFillArraySummary` | old | 81.4 ns | 81.4 ns | 81.4 ns | 0.0% |
-| `optimizedFillArraySummary` | alt | 81.6 ns | 81.6 ns | 81.6 ns | 0.0% |
-| `oldFillArraySummary#variant2` | old | 81.6 ns | 81.6 ns | 81.6 ns | 0.0% |
-| `optimizedFillArraySummary#variant2` | alt | 81.6 ns | 81.6 ns | 81.6 ns | 0.0% |
-| `optimizedFillArraySummary#variant3` | alt | 101.0 ns | 101.0 ns | 101.0 ns | 0.0% |
-| `oldFillArraySummary#variant3` | old | 102.3 ns | 102.3 ns | 102.3 ns | 0.0% |
+| `optimizedFillArraySummary` | alt | 101.4 ns | 101.4 ns | 101.4 ns | 0.0% |
+| `oldFillArraySummary` | old | 102.0 ns | 102.0 ns | 102.0 ns | 0.0% |
 
 ### 36. `PaperNativeRemapperIndexCleanup` `(I[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `oldEagerCleanupSummary` | old | 91.2 ns | 91.2 ns | 91.2 ns | 0.0% |
-| `newLazyCleanupSummary` | alt | 91.3 ns | 91.3 ns | 91.3 ns | 0.0% |
-| `newLazyCleanupSummary#variant2` | alt | 91.4 ns | 91.4 ns | 91.4 ns | 0.0% |
-| `oldEagerCleanupSummary#variant2` | old | 91.5 ns | 91.5 ns | 91.5 ns | 0.0% |
-| `newLazyCleanupSummary#variant3` | alt | 113.4 ns | 113.4 ns | 113.4 ns | 0.0% |
-| `oldEagerCleanupSummary#variant3` | old | 119.8 ns | 119.8 ns | 119.8 ns | 0.0% |
+| `newLazyCleanupSummary` | alt | 115.2 ns | 115.2 ns | 115.2 ns | 0.0% |
+| `oldEagerCleanupSummary` | old | 119.6 ns | 119.6 ns | 119.6 ns | 0.0% |
 
 ### 37. `PaperNativeRemapperSkipHashes` `(ILjava/lang/String;[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `newLoopSummary` | alt | 32.8 µs | 32.8 µs | 32.8 µs | 0.0% |
-| `newLoopSummary#variant2` | alt | 33.2 µs | 33.2 µs | 33.2 µs | 0.0% |
-| `oldStreamSummary` | old | 34.7 µs | 34.7 µs | 34.7 µs | 0.0% |
-| `oldStreamSummary#variant2` | old | 35.0 µs | 35.0 µs | 35.0 µs | 0.0% |
-| `newLoopSummary#variant3` | alt | 40.9 µs | 40.9 µs | 40.9 µs | 0.0% |
-| `oldStreamSummary#variant3` | old | 43.4 µs | 43.4 µs | 43.4 µs | 0.0% |
+| `oldStreamSummary` | old | 44.4 µs | 44.4 µs | 44.4 µs | 0.0% |
+| `newLoopSummary` | alt | 45.2 µs | 45.2 µs | 45.2 µs | 0.0% |
 
 ### 38. `PaperNativeServerEntityDeltaIdentity` `(I[D[D[D[D[D[D[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `oldDistanceSummary` | old | 2.2 µs | 2.2 µs | 2.2 µs | 0.0% |
-| `oldDistanceSummary#variant2` | old | 2.2 µs | 2.2 µs | 2.2 µs | 0.0% |
-| `oldDistanceSummary#variant3` | old | 2.8 µs | 2.8 µs | 2.8 µs | 0.0% |
+| `oldDistanceSummary` | old | 2.9 µs | 2.9 µs | 2.9 µs | 0.0% |
 
 ### 39. `PaperNativeSpigotLoadOrderDependency` `(I[Ljava/lang/Object;[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `newLoadAfterBuildSummary` | alt | 87.5 ns | 87.5 ns | 87.5 ns | 0.0% |
-| `oldLoadAfterBuildSummary` | old | 87.6 ns | 87.6 ns | 87.6 ns | 0.0% |
-| `oldLoadAfterBuildSummary#variant2` | old | 87.8 ns | 87.8 ns | 87.8 ns | 0.0% |
-| `newLoadAfterBuildSummary#variant2` | alt | 87.9 ns | 87.9 ns | 87.9 ns | 0.0% |
-| `oldLoadAfterBuildSummary#variant3` | old | 109.3 ns | 109.3 ns | 109.3 ns | 0.0% |
-| `newLoadAfterBuildSummary#variant3` | alt | 114.0 ns | 114.0 ns | 114.0 ns | 0.0% |
+| `oldLoadAfterBuildSummary` | old | 113.8 ns | 113.8 ns | 113.8 ns | 0.0% |
+| `newLoadAfterBuildSummary` | alt | 115.1 ns | 115.1 ns | 115.1 ns | 0.0% |
 
 ### 40. `PaperNativeSpigotLoadOrderDependency` `(I[Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;I[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `newRemovedCountSummary` | alt | 87.8 ns | 87.8 ns | 87.8 ns | 0.0% |
-| `newRemovedCountSummary#variant2` | alt | 88.1 ns | 88.1 ns | 88.1 ns | 0.0% |
-| `oldRemovedCountSummary` | old | 88.3 ns | 88.3 ns | 88.3 ns | 0.0% |
-| `oldRemovedCountSummary#variant2` | old | 88.5 ns | 88.5 ns | 88.5 ns | 0.0% |
-| `newRemovedCountSummary#variant3` | alt | 111.8 ns | 111.8 ns | 111.8 ns | 0.0% |
-| `oldRemovedCountSummary#variant3` | old | 115.2 ns | 115.2 ns | 115.2 ns | 0.0% |
+| `newRemovedCountSummary` | alt | 111.5 ns | 111.5 ns | 111.5 ns | 0.0% |
+| `oldRemovedCountSummary` | old | 114.1 ns | 114.1 ns | 114.1 ns | 0.0% |
 
 ### 41. `PaperNativeSpringFeatureMutablePos` `(I[I[I[I[Z[I[I[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `oldBatchSummary` | old | 2.9 µs | 2.9 µs | 2.9 µs | 0.0% |
-| `oldBatchSummary#variant2` | old | 2.9 µs | 2.9 µs | 2.9 µs | 0.0% |
-| `mutableBatchSummary` | alt | 2.9 µs | 2.9 µs | 2.9 µs | 0.0% |
-| `mutableBatchSummary#variant2` | alt | 2.9 µs | 2.9 µs | 2.9 µs | 0.0% |
-| `mutableBatchSummary#variant3` | alt | 3.8 µs | 3.8 µs | 3.8 µs | 0.0% |
-| `oldBatchSummary#variant3` | old | 3.8 µs | 3.8 µs | 3.8 µs | 0.0% |
+| `mutableBatchSummary` | alt | 3.6 µs | 3.6 µs | 3.6 µs | 0.0% |
+| `oldBatchSummary` | old | 3.8 µs | 3.8 µs | 3.8 µs | 0.0% |
 
 ### 42. `PaperNativeStaticCacheGet` `(IIIII[I[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `oldBatchSummary` | old | 34.4 ns | 34.4 ns | 34.4 ns | 0.0% |
-| `newBatchSummary` | alt | 34.5 ns | 34.5 ns | 34.5 ns | 0.0% |
-| `newBatchSummary#variant2` | alt | 34.6 ns | 34.6 ns | 34.6 ns | 0.0% |
-| `oldBatchSummary#variant2` | old | 34.6 ns | 34.6 ns | 34.6 ns | 0.0% |
-| `newBatchSummary#variant3` | alt | 42.7 ns | 42.7 ns | 42.7 ns | 0.0% |
-| `oldBatchSummary#variant3` | old | 42.8 ns | 42.8 ns | 42.8 ns | 0.0% |
+| `newBatchSummary` | alt | 42.9 ns | 42.9 ns | 42.9 ns | 0.0% |
+| `oldBatchSummary` | old | 44.9 ns | 44.9 ns | 44.9 ns | 0.0% |
 
 ### 43. `PaperNativeSurfaceRulesTestRuleState` `(II[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `oldStateRuleSummary` | old | 1.1 µs | 1.1 µs | 1.1 µs | 0.0% |
-| `oldStateRuleSummary#variant2` | old | 1.1 µs | 1.1 µs | 1.1 µs | 0.0% |
-| `newStateRuleSummary` | alt | 1.2 µs | 1.2 µs | 1.2 µs | 0.0% |
-| `newStateRuleSummary#variant2` | alt | 1.2 µs | 1.2 µs | 1.2 µs | 0.0% |
-| `oldStateRuleSummary#variant3` | old | 1.4 µs | 1.4 µs | 1.4 µs | 0.0% |
-| `newStateRuleSummary#variant3` | alt | 1.5 µs | 1.5 µs | 1.5 µs | 0.0% |
+| `newStateRuleSummary` | alt | 1.4 µs | 1.4 µs | 1.4 µs | 0.0% |
+| `oldStateRuleSummary` | old | 1.4 µs | 1.4 µs | 1.4 µs | 0.0% |
 
 ### 44. `PaperNativeTopographicGraphSortCapacity` `(I[I[I[I[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `oldDefaultCapacitySummary` | old | 349.2 ns | 349.2 ns | 349.2 ns | 0.0% |
-| `newPresizedSummary` | alt | 349.3 ns | 349.3 ns | 349.3 ns | 0.0% |
-| `newPresizedSummary#variant2` | alt | 349.5 ns | 349.5 ns | 349.5 ns | 0.0% |
-| `oldDefaultCapacitySummary#variant2` | old | 350.1 ns | 350.1 ns | 350.1 ns | 0.0% |
-| `newPresizedSummary#variant3` | alt | 432.4 ns | 432.4 ns | 432.4 ns | 0.0% |
-| `oldDefaultCapacitySummary#variant3` | old | 433.6 ns | 433.6 ns | 433.6 ns | 0.0% |
+| `newPresizedSummary` | alt | 435.9 ns | 435.9 ns | 435.9 ns | 0.0% |
+| `oldDefaultCapacitySummary` | old | 449.4 ns | 449.4 ns | 449.4 ns | 0.0% |
 
 ### 45. `PaperNativeWaypointDistanceGuard` `(I[D[D[D[D[D[D[D[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `guardedAtOrBeyondRangeSummary` | alt | 9.5 µs | 9.5 µs | 9.5 µs | 0.0% |
-| `guardedAtOrBeyondRangeSummary#variant2` | alt | 9.5 µs | 9.5 µs | 9.5 µs | 0.0% |
-| `oldAtOrBeyondRangeSummary` | old | 9.6 µs | 9.6 µs | 9.6 µs | 0.0% |
-| `oldAtOrBeyondRangeSummary#variant2` | old | 9.6 µs | 9.6 µs | 9.6 µs | 0.0% |
-| `oldAtOrBeyondRangeSummary#variant3` | old | 12.0 µs | 12.0 µs | 12.0 µs | 0.0% |
-| `guardedAtOrBeyondRangeSummary#variant3` | alt | 12.6 µs | 12.6 µs | 12.6 µs | 0.0% |
+| `guardedAtOrBeyondRangeSummary` | alt | 12.4 µs | 12.4 µs | 12.4 µs | 0.0% |
+| `oldAtOrBeyondRangeSummary` | old | 12.5 µs | 12.5 µs | 12.5 µs | 0.0% |
 
 ### 46. `PaperNativeWaypointDistanceGuard` `(I[D[D[D[D[D[D[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `oldReallyFarSummary` | old | 8.3 µs | 8.3 µs | 8.3 µs | 0.0% |
-| `oldReallyFarSummary#variant2` | old | 8.3 µs | 8.3 µs | 8.3 µs | 0.0% |
-| `guardedReallyFarSummary` | alt | 8.4 µs | 8.4 µs | 8.4 µs | 0.0% |
-| `guardedReallyFarSummary#variant2` | alt | 8.4 µs | 8.4 µs | 8.4 µs | 0.0% |
-| `oldReallyFarSummary#variant3` | old | 10.4 µs | 10.4 µs | 10.4 µs | 0.0% |
-| `guardedReallyFarSummary#variant3` | alt | 10.5 µs | 10.5 µs | 10.5 µs | 0.0% |
+| `guardedReallyFarSummary` | alt | 10.5 µs | 10.5 µs | 10.5 µs | 0.0% |
+| `oldReallyFarSummary` | old | 10.7 µs | 10.7 µs | 10.7 µs | 0.0% |
 
 ### 47. `PaperNativeWaypointHotPath` `(I)D`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `oldReallyFarValue` | old | 944.2 ns | 944.2 ns | 944.2 ns | 0.0% |
-| `oldReallyFarValue#variant2` | old | 947.1 ns | 947.1 ns | 947.1 ns | 0.0% |
-| `guardedReallyFarValue` | alt | 1.0 µs | 1.0 µs | 1.0 µs | 0.0% |
-| `guardedReallyFarValue#variant2` | alt | 1.0 µs | 1.0 µs | 1.0 µs | 0.0% |
-| `oldAtOrBeyondRangeValue` | old | 1.2 µs | 1.2 µs | 1.2 µs | 0.0% |
-| `guardedAtOrBeyondRangeValue` | alt | 1.2 µs | 1.2 µs | 1.2 µs | 0.0% |
-| `oldAtOrBeyondRangeValue#variant2` | old | 1.2 µs | 1.2 µs | 1.2 µs | 0.0% |
-| `guardedAtOrBeyondRangeValue#variant2` | alt | 1.2 µs | 1.2 µs | 1.2 µs | 0.0% |
-| `oldReallyFarValue#variant3` | old | 1.2 µs | 1.2 µs | 1.2 µs | 0.0% |
-| `guardedReallyFarValue#variant3` | alt | 1.2 µs | 1.2 µs | 1.2 µs | 0.0% |
-| `oldAtOrBeyondRangeValue#variant3` | old | 1.4 µs | 1.4 µs | 1.4 µs | 0.0% |
-| `guardedAtOrBeyondRangeValue#variant3` | alt | 1.5 µs | 1.5 µs | 1.5 µs | 0.0% |
-| `directAzimuthValue` | alt | 2.1 µs | 2.1 µs | 2.1 µs | 0.0% |
-| `directAzimuthValue#variant2` | alt | 2.1 µs | 2.1 µs | 2.1 µs | 0.0% |
-| `oldAzimuthValue` | old | 2.1 µs | 2.1 µs | 2.1 µs | 0.0% |
-| `oldAzimuthValue#variant2` | old | 2.1 µs | 2.1 µs | 2.1 µs | 0.0% |
-| `oldAzimuthValue#variant3` | old | 2.6 µs | 2.6 µs | 2.6 µs | 0.0% |
-| `directAzimuthValue#variant3` | alt | 2.6 µs | 2.6 µs | 2.6 µs | 0.0% |
-| `cachedChunkVisibleValue` | alt | 3.0 µs | 3.0 µs | 3.0 µs | 0.0% |
-| `cachedChunkVisibleValue#variant2` | alt | 3.1 µs | 3.1 µs | 3.1 µs | 0.0% |
-| `oldChunkVisibleValue` | old | 3.4 µs | 3.4 µs | 3.4 µs | 0.0% |
-| `oldChunkVisibleValue#variant2` | old | 3.4 µs | 3.4 µs | 3.4 µs | 0.0% |
-| `cachedChunkVisibleValue#variant3` | alt | 3.7 µs | 3.7 µs | 3.7 µs | 0.0% |
-| `oldChunkVisibleValue#variant3` | old | 4.2 µs | 4.2 µs | 4.2 µs | 0.0% |
-| `optimizedWaypointManagerValue` | alt | 92.4 µs | 92.4 µs | 92.4 µs | 0.0% |
-| `optimizedWaypointManagerValue#variant2` | alt | 93.7 µs | 93.7 µs | 93.7 µs | 0.0% |
-| `oldWaypointManagerValue` | old | 98.9 µs | 98.9 µs | 98.9 µs | 0.0% |
-| `oldWaypointManagerValue#variant2` | old | 99.9 µs | 99.9 µs | 99.9 µs | 0.0% |
-| `optimizedWaypointManagerValue#variant3` | alt | 120.7 µs | 120.7 µs | 120.7 µs | 0.0% |
-| `oldWaypointManagerValue#variant3` | old | 127.5 µs | 127.5 µs | 127.5 µs | 0.0% |
+| `oldReallyFarValue` | old | 1.3 µs | 1.3 µs | 1.3 µs | 0.0% |
+| `guardedReallyFarValue` | alt | 1.3 µs | 1.3 µs | 1.3 µs | 0.0% |
+| `oldAtOrBeyondRangeValue` | old | 1.5 µs | 1.5 µs | 1.5 µs | 0.0% |
+| `guardedAtOrBeyondRangeValue` | alt | 1.6 µs | 1.6 µs | 1.6 µs | 0.0% |
+| `directAzimuthValue` | alt | 2.7 µs | 2.7 µs | 2.7 µs | 0.0% |
+| `oldAzimuthValue` | old | 2.8 µs | 2.8 µs | 2.8 µs | 0.0% |
+| `cachedChunkVisibleValue` | alt | 3.9 µs | 3.9 µs | 3.9 µs | 0.0% |
+| `oldChunkVisibleValue` | old | 4.4 µs | 4.4 µs | 4.4 µs | 0.0% |
+| `optimizedWaypointManagerValue` | alt | 123.0 µs | 123.0 µs | 123.0 µs | 0.0% |
+| `oldWaypointManagerValue` | old | 132.8 µs | 132.8 µs | 132.8 µs | 0.0% |
 
 ### 48. `PaperNativeXoroshiroPositionalDirect` `(I[I[I[IJJ[J)I`
 
 | kernel | kind | median ns/op | min | max | stability |
 |---|---|---:|---:|---:|---:|
-| `directDoubleBatchSummary` | alt | 1.5 µs | 1.5 µs | 1.5 µs | 0.0% |
-| `directFloatBatchSummary` | alt | 1.6 µs | 1.6 µs | 1.6 µs | 0.0% |
-| `oldDoubleBatchSummary` | old | 1.6 µs | 1.6 µs | 1.6 µs | 0.0% |
-| `directDoubleBatchSummary#variant2` | alt | 1.6 µs | 1.6 µs | 1.6 µs | 0.0% |
-| `oldDoubleBatchSummary#variant2` | old | 1.6 µs | 1.6 µs | 1.6 µs | 0.0% |
-| `oldFloatBatchSummary` | old | 1.6 µs | 1.6 µs | 1.6 µs | 0.0% |
-| `directFloatBatchSummary#variant2` | alt | 1.6 µs | 1.6 µs | 1.6 µs | 0.0% |
-| `oldFloatBatchSummary#variant2` | old | 1.6 µs | 1.6 µs | 1.6 µs | 0.0% |
-| `directDoubleBatchSummary#variant3` | alt | 1.9 µs | 1.9 µs | 1.9 µs | 0.0% |
-| `directFloatBatchSummary#variant3` | alt | 1.9 µs | 1.9 µs | 1.9 µs | 0.0% |
-| `oldFloatBatchSummary#variant3` | old | 1.9 µs | 1.9 µs | 1.9 µs | 0.0% |
-| `oldDoubleBatchSummary#variant3` | old | 2.0 µs | 2.0 µs | 2.0 µs | 0.0% |
+| `directDoubleBatchSummary` | alt | 2.0 µs | 2.0 µs | 2.0 µs | 0.0% |
+| `directFloatBatchSummary` | alt | 2.0 µs | 2.0 µs | 2.0 µs | 0.0% |
+| `oldFloatBatchSummary` | old | 2.0 µs | 2.0 µs | 2.0 µs | 0.0% |
+| `oldDoubleBatchSummary` | old | 2.0 µs | 2.0 µs | 2.0 µs | 0.0% |
 
 ## Duplicate collapse (variant policy)
 
 Raw RESULT rows repeating a (group, method) kernel collapse to one primary row via min-of-medians (ties keep the earliest row — unchanged v2 semantics, so no previously reported median can change). Every collapsed repeat is retained below as `method#variantK`; variants are repeat measurements of the same kernel and never form pairs.
 
-* DUP-VARIANT g0 PaperNativeAquiferIndexStride newBatchSummary#variant2 kind=alt med=10.0 µs kept-primary=10.0 µs policy=min-of-medians
-* DUP-VARIANT g0 PaperNativeAquiferIndexStride newBatchSummary#variant3 kind=alt med=13.0 µs kept-primary=10.0 µs policy=min-of-medians
-* DUP-VARIANT g0 PaperNativeAquiferIndexStride oldBatchSummary#variant2 kind=old med=10.7 µs kept-primary=10.7 µs policy=min-of-medians
-* DUP-VARIANT g0 PaperNativeAquiferIndexStride oldBatchSummary#variant3 kind=old med=13.8 µs kept-primary=10.7 µs policy=min-of-medians
-* DUP-VARIANT g1 PaperNativeAquiferPositionalLocation directBatchSummary#variant2 kind=alt med=2.2 µs kept-primary=2.2 µs policy=min-of-medians
-* DUP-VARIANT g1 PaperNativeAquiferPositionalLocation directBatchSummary#variant3 kind=alt med=2.9 µs kept-primary=2.2 µs policy=min-of-medians
-* DUP-VARIANT g1 PaperNativeAquiferPositionalLocation oldBatchSummary#variant2 kind=old med=2.2 µs kept-primary=2.2 µs policy=min-of-medians
-* DUP-VARIANT g1 PaperNativeAquiferPositionalLocation oldBatchSummary#variant3 kind=old med=2.9 µs kept-primary=2.2 µs policy=min-of-medians
-* DUP-VARIANT g2 PaperNativeAquiferSurfaceSampling newBatchSummary#variant2 kind=alt med=5.5 µs kept-primary=5.5 µs policy=min-of-medians
-* DUP-VARIANT g2 PaperNativeAquiferSurfaceSampling newBatchSummary#variant3 kind=alt med=7.2 µs kept-primary=5.5 µs policy=min-of-medians
-* DUP-VARIANT g2 PaperNativeAquiferSurfaceSampling oldBatchSummary#variant2 kind=old med=6.1 µs kept-primary=6.1 µs policy=min-of-medians
-* DUP-VARIANT g2 PaperNativeAquiferSurfaceSampling oldBatchSummary#variant3 kind=old med=7.6 µs kept-primary=6.1 µs policy=min-of-medians
-* DUP-VARIANT g3 PaperNativeBlendedNoise cachedBatchSummary#variant2 kind=alt med=50.8 µs kept-primary=50.5 µs policy=min-of-medians
-* DUP-VARIANT g3 PaperNativeBlendedNoise cachedBatchSummary#variant3 kind=alt med=66.5 µs kept-primary=50.5 µs policy=min-of-medians
-* DUP-VARIANT g3 PaperNativeBlendedNoise oldBatchSummary#variant2 kind=old med=51.5 µs kept-primary=51.4 µs policy=min-of-medians
-* DUP-VARIANT g3 PaperNativeBlendedNoise oldBatchSummary#variant3 kind=old med=66.8 µs kept-primary=51.4 µs policy=min-of-medians
-* DUP-VARIANT g4 PaperNativeCaveCarverSkip directHelperSummary#variant2 kind=alt med=34.4 ms kept-primary=34.3 ms policy=min-of-medians
-* DUP-VARIANT g4 PaperNativeCaveCarverSkip directHelperSummary#variant3 kind=alt med=46.2 ms kept-primary=34.3 ms policy=min-of-medians
-* DUP-VARIANT g4 PaperNativeCaveCarverSkip oldLambdaSummary#variant2 kind=old med=34.5 ms kept-primary=34.2 ms policy=min-of-medians
-* DUP-VARIANT g4 PaperNativeCaveCarverSkip oldLambdaSummary#variant3 kind=old med=46.8 ms kept-primary=34.2 ms policy=min-of-medians
-* DUP-VARIANT g4 PaperNativeCaveCarverSkip reusedCheckerSummary#variant2 kind=alt med=34.4 ms kept-primary=34.2 ms policy=min-of-medians
-* DUP-VARIANT g4 PaperNativeCaveCarverSkip reusedCheckerSummary#variant3 kind=alt med=46.5 ms kept-primary=34.2 ms policy=min-of-medians
-* DUP-VARIANT g5 PaperNativeChunkDependencies arraySummary#variant2 kind=alt med=1.1 µs kept-primary=1.1 µs policy=min-of-medians
-* DUP-VARIANT g5 PaperNativeChunkDependencies arraySummary#variant3 kind=alt med=1.4 µs kept-primary=1.1 µs policy=min-of-medians
-* DUP-VARIANT g5 PaperNativeChunkDependencies oldImmutableListSummary#variant2 kind=old med=1.1 µs kept-primary=1.1 µs policy=min-of-medians
-* DUP-VARIANT g5 PaperNativeChunkDependencies oldImmutableListSummary#variant3 kind=old med=1.4 µs kept-primary=1.1 µs policy=min-of-medians
-* DUP-VARIANT g6 PaperNativeClimateParameterDistance branchDistanceSum#variant2 kind=alt med=534.0 ns kept-primary=525.4 ns policy=min-of-medians
-* DUP-VARIANT g6 PaperNativeClimateParameterDistance branchDistanceSum#variant3 kind=alt med=614.2 ns kept-primary=525.4 ns policy=min-of-medians
-* DUP-VARIANT g6 PaperNativeClimateParameterDistance oldDistanceSum#variant2 kind=old med=534.3 ns kept-primary=524.4 ns policy=min-of-medians
-* DUP-VARIANT g6 PaperNativeClimateParameterDistance oldDistanceSum#variant3 kind=old med=614.6 ns kept-primary=524.4 ns policy=min-of-medians
-* DUP-VARIANT g6 PaperNativeClimateParameterDistance subtractFirstDistanceSum#variant2 kind=alt med=536.4 ns kept-primary=524.2 ns policy=min-of-medians
-* DUP-VARIANT g6 PaperNativeClimateParameterDistance subtractFirstDistanceSum#variant3 kind=alt med=612.1 ns kept-primary=524.2 ns policy=min-of-medians
-* DUP-VARIANT g7 PaperNativeCubicSplineCreate indexSummary#variant2 kind=alt med=153.6 µs kept-primary=153.2 µs policy=min-of-medians
-* DUP-VARIANT g7 PaperNativeCubicSplineCreate indexSummary#variant3 kind=alt med=200.3 µs kept-primary=153.2 µs policy=min-of-medians
-* DUP-VARIANT g7 PaperNativeCubicSplineCreate oldIteratorSummary#variant2 kind=old med=153.4 µs kept-primary=152.8 µs policy=min-of-medians
-* DUP-VARIANT g7 PaperNativeCubicSplineCreate oldIteratorSummary#variant3 kind=old med=189.2 µs kept-primary=152.8 µs policy=min-of-medians
-* DUP-VARIANT g8 PaperNativeDensityAp2Fill oldFlatSummary#variant2 kind=old med=13.0 µs kept-primary=13.0 µs policy=min-of-medians
-* DUP-VARIANT g8 PaperNativeDensityAp2Fill oldFlatSummary#variant3 kind=old med=17.3 µs kept-primary=13.0 µs policy=min-of-medians
-* DUP-VARIANT g8 PaperNativeDensityAp2Fill oldNestedSummary#variant2 kind=old med=22.2 µs kept-primary=21.9 µs policy=min-of-medians
-* DUP-VARIANT g8 PaperNativeDensityAp2Fill oldNestedSummary#variant3 kind=old med=26.2 µs kept-primary=21.9 µs policy=min-of-medians
-* DUP-VARIANT g8 PaperNativeDensityAp2Fill scratchFlatSummary#variant2 kind=alt med=11.3 µs kept-primary=11.3 µs policy=min-of-medians
-* DUP-VARIANT g8 PaperNativeDensityAp2Fill scratchFlatSummary#variant3 kind=alt med=14.6 µs kept-primary=11.3 µs policy=min-of-medians
-* DUP-VARIANT g8 PaperNativeDensityAp2Fill scratchNestedSummary#variant2 kind=alt med=19.7 µs kept-primary=19.7 µs policy=min-of-medians
-* DUP-VARIANT g8 PaperNativeDensityAp2Fill scratchNestedSummary#variant3 kind=alt med=24.3 µs kept-primary=19.7 µs policy=min-of-medians
-* DUP-VARIANT g9 PaperNativeDensityAp2MinMaxFill newSummary#variant2 kind=alt med=119.3 ns kept-primary=118.9 ns policy=min-of-medians
-* DUP-VARIANT g9 PaperNativeDensityAp2MinMaxFill newSummary#variant3 kind=alt med=152.5 ns kept-primary=118.9 ns policy=min-of-medians
-* DUP-VARIANT g9 PaperNativeDensityAp2MinMaxFill oldSummary#variant2 kind=old med=118.9 ns kept-primary=118.7 ns policy=min-of-medians
-* DUP-VARIANT g9 PaperNativeDensityAp2MinMaxFill oldSummary#variant3 kind=old med=148.2 ns kept-primary=118.7 ns policy=min-of-medians
-* DUP-VARIANT g10 PaperNativeDensitySplineContext newDirectSummary#variant2 kind=alt med=1.9 µs kept-primary=1.9 µs policy=min-of-medians
-* DUP-VARIANT g10 PaperNativeDensitySplineContext newDirectSummary#variant3 kind=alt med=2.3 µs kept-primary=1.9 µs policy=min-of-medians
-* DUP-VARIANT g10 PaperNativeDensitySplineContext oldWrapperSummary#variant2 kind=old med=1.9 µs kept-primary=1.9 µs policy=min-of-medians
-* DUP-VARIANT g10 PaperNativeDensitySplineContext oldWrapperSummary#variant3 kind=old med=2.3 µs kept-primary=1.9 µs policy=min-of-medians
-* DUP-VARIANT g11 PaperNativeDensityVisitorHook hookedUnwrappingSummary#variant2 kind=alt med=677.5 ns kept-primary=676.2 ns policy=min-of-medians
-* DUP-VARIANT g11 PaperNativeDensityVisitorHook hookedUnwrappingSummary#variant3 kind=alt med=904.9 ns kept-primary=676.2 ns policy=min-of-medians
-* DUP-VARIANT g11 PaperNativeDensityVisitorHook oldUnwrappingSummary#variant2 kind=old med=676.8 ns kept-primary=672.4 ns policy=min-of-medians
-* DUP-VARIANT g11 PaperNativeDensityVisitorHook oldUnwrappingSummary#variant3 kind=old med=849.8 ns kept-primary=672.4 ns policy=min-of-medians
-* DUP-VARIANT g12 PaperNativeEntityBoundingBox directDimensionsSetSummary#variant2 kind=alt med=5.8 µs kept-primary=5.8 µs policy=min-of-medians
-* DUP-VARIANT g12 PaperNativeEntityBoundingBox directDimensionsSetSummary#variant3 kind=alt med=7.7 µs kept-primary=5.8 µs policy=min-of-medians
-* DUP-VARIANT g12 PaperNativeEntityBoundingBox oldMakeThenSetSummary#variant2 kind=old med=5.7 µs kept-primary=5.7 µs policy=min-of-medians
-* DUP-VARIANT g12 PaperNativeEntityBoundingBox oldMakeThenSetSummary#variant3 kind=old med=7.5 µs kept-primary=5.7 µs policy=min-of-medians
-* DUP-VARIANT g13 PaperNativeEntityChunkTransient newMixedSummary#variant2 kind=alt med=291.2 ns kept-primary=291.1 ns policy=min-of-medians
-* DUP-VARIANT g13 PaperNativeEntityChunkTransient newMixedSummary#variant3 kind=alt med=381.3 ns kept-primary=291.1 ns policy=min-of-medians
-* DUP-VARIANT g13 PaperNativeEntityChunkTransient oldMixedSummary#variant2 kind=old med=293.4 ns kept-primary=292.9 ns policy=min-of-medians
-* DUP-VARIANT g13 PaperNativeEntityChunkTransient oldMixedSummary#variant3 kind=old med=383.7 ns kept-primary=292.9 ns policy=min-of-medians
-* DUP-VARIANT g14 PaperNativeEntityLookupStatus directAccessibleSummary#variant2 kind=alt med=1.1 µs kept-primary=1.1 µs policy=min-of-medians
-* DUP-VARIANT g14 PaperNativeEntityLookupStatus directAccessibleSummary#variant3 kind=alt med=1.4 µs kept-primary=1.1 µs policy=min-of-medians
-* DUP-VARIANT g14 PaperNativeEntityLookupStatus directStatusSummary#variant2 kind=alt med=1.1 µs kept-primary=1.1 µs policy=min-of-medians
-* DUP-VARIANT g14 PaperNativeEntityLookupStatus directStatusSummary#variant3 kind=alt med=1.4 µs kept-primary=1.1 µs policy=min-of-medians
-* DUP-VARIANT g14 PaperNativeEntityLookupStatus oldAccessibleSummary#variant2 kind=old med=1.1 µs kept-primary=1.1 µs policy=min-of-medians
-* DUP-VARIANT g14 PaperNativeEntityLookupStatus oldAccessibleSummary#variant3 kind=old med=1.4 µs kept-primary=1.1 µs policy=min-of-medians
-* DUP-VARIANT g14 PaperNativeEntityLookupStatus oldStatusSummary#variant2 kind=old med=1.1 µs kept-primary=1.1 µs policy=min-of-medians
-* DUP-VARIANT g14 PaperNativeEntityLookupStatus oldStatusSummary#variant3 kind=old med=1.4 µs kept-primary=1.1 µs policy=min-of-medians
-* DUP-VARIANT g15 PaperNativeImprovedNoiseDerivative flatGradientDerivativeSummary#variant2 kind=alt med=11.6 µs kept-primary=11.5 µs policy=min-of-medians
-* DUP-VARIANT g15 PaperNativeImprovedNoiseDerivative flatGradientDerivativeSummary#variant3 kind=alt med=14.4 µs kept-primary=11.5 µs policy=min-of-medians
-* DUP-VARIANT g15 PaperNativeImprovedNoiseDerivative inlineDerivativeSummary#variant2 kind=alt med=11.7 µs kept-primary=11.7 µs policy=min-of-medians
-* DUP-VARIANT g15 PaperNativeImprovedNoiseDerivative inlineDerivativeSummary#variant3 kind=alt med=15.3 µs kept-primary=11.7 µs policy=min-of-medians
-* DUP-VARIANT g15 PaperNativeImprovedNoiseDerivative intTableDerivativeSummary#variant2 kind=alt med=11.7 µs kept-primary=11.7 µs policy=min-of-medians
-* DUP-VARIANT g15 PaperNativeImprovedNoiseDerivative intTableDerivativeSummary#variant3 kind=alt med=15.4 µs kept-primary=11.7 µs policy=min-of-medians
-* DUP-VARIANT g15 PaperNativeImprovedNoiseDerivative oldDerivativeSummary#variant2 kind=old med=11.7 µs kept-primary=11.7 µs policy=min-of-medians
-* DUP-VARIANT g15 PaperNativeImprovedNoiseDerivative oldDerivativeSummary#variant3 kind=old med=15.4 µs kept-primary=11.7 µs policy=min-of-medians
-* DUP-VARIANT g16 PaperNativeImprovedNoiseInline arithmeticSummary#variant2 kind=alt med=8.0 µs kept-primary=8.0 µs policy=min-of-medians
-* DUP-VARIANT g16 PaperNativeImprovedNoiseInline arithmeticSummary#variant3 kind=alt med=9.9 µs kept-primary=8.0 µs policy=min-of-medians
-* DUP-VARIANT g16 PaperNativeImprovedNoiseInline flatGradientSummary#variant2 kind=alt med=8.1 µs kept-primary=8.1 µs policy=min-of-medians
-* DUP-VARIANT g16 PaperNativeImprovedNoiseInline flatGradientSummary#variant3 kind=alt med=10.1 µs kept-primary=8.1 µs policy=min-of-medians
-* DUP-VARIANT g16 PaperNativeImprovedNoiseInline inlineByteAccessSummary#variant2 kind=alt med=9.3 µs kept-primary=9.3 µs policy=min-of-medians
-* DUP-VARIANT g16 PaperNativeImprovedNoiseInline inlineByteAccessSummary#variant3 kind=alt med=11.7 µs kept-primary=9.3 µs policy=min-of-medians
-* DUP-VARIANT g16 PaperNativeImprovedNoiseInline oldPMethodSummary#variant2 kind=old med=9.3 µs kept-primary=9.3 µs policy=min-of-medians
-* DUP-VARIANT g16 PaperNativeImprovedNoiseInline oldPMethodSummary#variant3 kind=old med=11.5 µs kept-primary=9.3 µs policy=min-of-medians
-* DUP-VARIANT g16 PaperNativeImprovedNoiseInline switchGradientSummary#variant2 kind=alt med=7.7 µs kept-primary=7.6 µs policy=min-of-medians
-* DUP-VARIANT g16 PaperNativeImprovedNoiseInline switchGradientSummary#variant3 kind=alt med=9.4 µs kept-primary=7.6 µs policy=min-of-medians
-* DUP-VARIANT g17 PaperNativeJigsawCanAttach oldBatchSummary#variant2 kind=old med=627.4 ns kept-primary=625.6 ns policy=min-of-medians
-* DUP-VARIANT g17 PaperNativeJigsawCanAttach oldBatchSummary#variant3 kind=old med=782.2 ns kept-primary=625.6 ns policy=min-of-medians
-* DUP-VARIANT g17 PaperNativeJigsawCanAttach optimizedBatchSummary#variant2 kind=alt med=628.1 ns kept-primary=626.8 ns policy=min-of-medians
-* DUP-VARIANT g17 PaperNativeJigsawCanAttach optimizedBatchSummary#variant3 kind=alt med=778.4 ns kept-primary=626.8 ns policy=min-of-medians
-* DUP-VARIANT g17 PaperNativeJigsawCanAttach targetFirstBatchSummary#variant2 kind=alt med=627.3 ns kept-primary=626.3 ns policy=min-of-medians
-* DUP-VARIANT g17 PaperNativeJigsawCanAttach targetFirstBatchSummary#variant3 kind=alt med=801.1 ns kept-primary=626.3 ns policy=min-of-medians
-* DUP-VARIANT g18 PaperNativeLegacyProvidedAliasRemoval newReverseAliasRemoveSummary#variant2 kind=alt med=88.8 ns kept-primary=88.1 ns policy=min-of-medians
-* DUP-VARIANT g18 PaperNativeLegacyProvidedAliasRemoval newReverseAliasRemoveSummary#variant3 kind=alt med=117.9 ns kept-primary=88.1 ns policy=min-of-medians
-* DUP-VARIANT g18 PaperNativeLegacyProvidedAliasRemoval oldValuesRemoveIfSummary#variant2 kind=old med=88.3 ns kept-primary=88.2 ns policy=min-of-medians
-* DUP-VARIANT g18 PaperNativeLegacyProvidedAliasRemoval oldValuesRemoveIfSummary#variant3 kind=old med=114.0 ns kept-primary=88.2 ns policy=min-of-medians
-* DUP-VARIANT g19 PaperNativeLevelChunkHeightmap newCombinedUpdateSummary#variant2 kind=alt med=12.4 ms kept-primary=12.4 ms policy=min-of-medians
-* DUP-VARIANT g19 PaperNativeLevelChunkHeightmap newCombinedUpdateSummary#variant3 kind=alt med=15.2 ms kept-primary=12.4 ms policy=min-of-medians
-* DUP-VARIANT g19 PaperNativeLevelChunkHeightmap oldFourUpdateSummary#variant2 kind=old med=2.2 ms kept-primary=2.2 ms policy=min-of-medians
-* DUP-VARIANT g19 PaperNativeLevelChunkHeightmap oldFourUpdateSummary#variant3 kind=old med=2.8 ms kept-primary=2.2 ms policy=min-of-medians
-* DUP-VARIANT g20 PaperNativeMarkerCache cachedSummary#variant2 kind=alt med=553.8 µs kept-primary=552.3 µs policy=min-of-medians
-* DUP-VARIANT g20 PaperNativeMarkerCache cachedSummary#variant3 kind=alt med=716.6 µs kept-primary=552.3 µs policy=min-of-medians
-* DUP-VARIANT g20 PaperNativeMarkerCache oldSummary#variant2 kind=old med=119.9 µs kept-primary=118.7 µs policy=min-of-medians
-* DUP-VARIANT g20 PaperNativeMarkerCache oldSummary#variant3 kind=old med=155.6 µs kept-primary=118.7 µs policy=min-of-medians
-* DUP-VARIANT g21 PaperNativeNoiseChunkBlendCache newEmptyBlenderSummary#variant2 kind=alt med=232.5 ns kept-primary=232.4 ns policy=min-of-medians
-* DUP-VARIANT g21 PaperNativeNoiseChunkBlendCache newEmptyBlenderSummary#variant3 kind=alt med=303.5 ns kept-primary=232.4 ns policy=min-of-medians
-* DUP-VARIANT g21 PaperNativeNoiseChunkBlendCache oldEmptyBlenderSummary#variant2 kind=old med=74.2 µs kept-primary=73.1 µs policy=min-of-medians
-* DUP-VARIANT g21 PaperNativeNoiseChunkBlendCache oldEmptyBlenderSummary#variant3 kind=old med=92.2 µs kept-primary=73.1 µs policy=min-of-medians
-* DUP-VARIANT g22 PaperNativeNoiseChunkFlatCacheContext newFalseContextSummary#variant2 kind=alt med=18.8 µs kept-primary=18.7 µs policy=min-of-medians
-* DUP-VARIANT g22 PaperNativeNoiseChunkFlatCacheContext newFalseContextSummary#variant3 kind=alt med=23.6 µs kept-primary=18.7 µs policy=min-of-medians
-* DUP-VARIANT g22 PaperNativeNoiseChunkFlatCacheContext newTrueContextSummary#variant2 kind=alt med=19.1 µs kept-primary=18.8 µs policy=min-of-medians
-* DUP-VARIANT g22 PaperNativeNoiseChunkFlatCacheContext newTrueContextSummary#variant3 kind=alt med=25.0 µs kept-primary=18.8 µs policy=min-of-medians
-* DUP-VARIANT g22 PaperNativeNoiseChunkFlatCacheContext oldFalseContextSummary#variant2 kind=old med=21.9 µs kept-primary=21.8 µs policy=min-of-medians
-* DUP-VARIANT g22 PaperNativeNoiseChunkFlatCacheContext oldFalseContextSummary#variant3 kind=old med=26.9 µs kept-primary=21.8 µs policy=min-of-medians
-* DUP-VARIANT g22 PaperNativeNoiseChunkFlatCacheContext oldTrueContextSummary#variant2 kind=old med=23.6 µs kept-primary=23.6 µs policy=min-of-medians
-* DUP-VARIANT g22 PaperNativeNoiseChunkFlatCacheContext oldTrueContextSummary#variant3 kind=old med=30.9 µs kept-primary=23.6 µs policy=min-of-medians
-* DUP-VARIANT g23 PaperNativeNoiseInterpolatorSlice flatSummary#variant2 kind=alt med=1.9 ms kept-primary=1.8 ms policy=min-of-medians
-* DUP-VARIANT g23 PaperNativeNoiseInterpolatorSlice flatSummary#variant3 kind=alt med=2.3 ms kept-primary=1.8 ms policy=min-of-medians
-* DUP-VARIANT g23 PaperNativeNoiseInterpolatorSlice oldJaggedSummary#variant2 kind=old med=6.2 ms kept-primary=6.1 ms policy=min-of-medians
-* DUP-VARIANT g23 PaperNativeNoiseInterpolatorSlice oldJaggedSummary#variant3 kind=old med=7.7 ms kept-primary=6.1 ms policy=min-of-medians
-* DUP-VARIANT g24 PaperNativeObfHelperMaps directMapsSummary#variant2 kind=alt med=93.6 ns kept-primary=93.3 ns policy=min-of-medians
-* DUP-VARIANT g24 PaperNativeObfHelperMaps directMapsSummary#variant3 kind=alt med=117.6 ns kept-primary=93.3 ns policy=min-of-medians
-* DUP-VARIANT g24 PaperNativeObfHelperMaps oldStreamDefaultSummary#variant2 kind=old med=93.5 ns kept-primary=93.5 ns policy=min-of-medians
-* DUP-VARIANT g24 PaperNativeObfHelperMaps oldStreamDefaultSummary#variant3 kind=old med=121.8 ns kept-primary=93.5 ns policy=min-of-medians
-* DUP-VARIANT g24 PaperNativeObfHelperMaps presizedStringPoolSummary#variant2 kind=alt med=94.4 ns kept-primary=93.5 ns policy=min-of-medians
-* DUP-VARIANT g24 PaperNativeObfHelperMaps presizedStringPoolSummary#variant3 kind=alt med=122.6 ns kept-primary=93.5 ns policy=min-of-medians
-* DUP-VARIANT g25 PaperNativeOreFeatureLoop oldLoopSummary#variant2 kind=old med=1.9 µs kept-primary=1.9 µs policy=min-of-medians
-* DUP-VARIANT g25 PaperNativeOreFeatureLoop oldLoopSummary#variant3 kind=old med=2.5 µs kept-primary=1.9 µs policy=min-of-medians
-* DUP-VARIANT g25 PaperNativeOreFeatureLoop optimizedLoopSummary#variant2 kind=alt med=1.9 µs kept-primary=1.9 µs policy=min-of-medians
-* DUP-VARIANT g25 PaperNativeOreFeatureLoop optimizedLoopSummary#variant3 kind=alt med=2.5 µs kept-primary=1.9 µs policy=min-of-medians
-* DUP-VARIANT g26 PaperNativeOwnableRule newLoopSummary#variant2 kind=alt med=3.7 µs kept-primary=3.7 µs policy=min-of-medians
-* DUP-VARIANT g26 PaperNativeOwnableRule newLoopSummary#variant3 kind=alt med=4.8 µs kept-primary=3.7 µs policy=min-of-medians
-* DUP-VARIANT g26 PaperNativeOwnableRule oldStreamSummary#variant2 kind=old med=4.2 µs kept-primary=4.2 µs policy=min-of-medians
-* DUP-VARIANT g26 PaperNativeOwnableRule oldStreamSummary#variant3 kind=old med=5.2 µs kept-primary=4.2 µs policy=min-of-medians
-* DUP-VARIANT g27 PaperNativePalettedReencodeScratch directPackedSummary#variant2 kind=alt med=1.1 ms kept-primary=1.1 ms policy=min-of-medians
-* DUP-VARIANT g27 PaperNativePalettedReencodeScratch directPackedSummary#variant3 kind=alt med=1.4 ms kept-primary=1.1 ms policy=min-of-medians
-* DUP-VARIANT g27 PaperNativePalettedReencodeScratch oldNewArraySummary#variant2 kind=old med=492.2 µs kept-primary=489.5 µs policy=min-of-medians
-* DUP-VARIANT g27 PaperNativePalettedReencodeScratch oldNewArraySummary#variant3 kind=old med=641.3 µs kept-primary=489.5 µs policy=min-of-medians
-* DUP-VARIANT g27 PaperNativePalettedReencodeScratch scratchThreadLocalSummary#variant2 kind=alt med=412.9 µs kept-primary=411.6 µs policy=min-of-medians
-* DUP-VARIANT g27 PaperNativePalettedReencodeScratch scratchThreadLocalSummary#variant3 kind=alt med=542.5 µs kept-primary=411.6 µs policy=min-of-medians
-* DUP-VARIANT g28 PaperNativePluginClassLoaderGroup oldLookupSummary#variant2 kind=old med=92.0 ns kept-primary=91.3 ns policy=min-of-medians
-* DUP-VARIANT g28 PaperNativePluginClassLoaderGroup oldLookupSummary#variant3 kind=old med=120.1 ns kept-primary=91.3 ns policy=min-of-medians
-* DUP-VARIANT g28 PaperNativePluginClassLoaderGroup skipRequesterSummary#variant2 kind=alt med=92.4 ns kept-primary=91.9 ns policy=min-of-medians
-* DUP-VARIANT g28 PaperNativePluginClassLoaderGroup skipRequesterSummary#variant3 kind=alt med=121.4 ns kept-primary=91.9 ns policy=min-of-medians
-* DUP-VARIANT g29 PaperNativePluginDirectoryScan directoryStreamSummary#variant2 kind=alt med=1.3 ms kept-primary=1.3 ms policy=min-of-medians
-* DUP-VARIANT g29 PaperNativePluginDirectoryScan directoryStreamSummary#variant3 kind=alt med=1.9 ms kept-primary=1.3 ms policy=min-of-medians
-* DUP-VARIANT g29 PaperNativePluginDirectoryScan newListSummary#variant2 kind=alt med=1.3 ms kept-primary=1.3 ms policy=min-of-medians
-* DUP-VARIANT g29 PaperNativePluginDirectoryScan newListSummary#variant3 kind=alt med=1.8 ms kept-primary=1.3 ms policy=min-of-medians
-* DUP-VARIANT g29 PaperNativePluginDirectoryScan oldWalkDepth1Summary#variant2 kind=old med=1.5 ms kept-primary=1.5 ms policy=min-of-medians
-* DUP-VARIANT g29 PaperNativePluginDirectoryScan oldWalkDepth1Summary#variant3 kind=old med=2.0 ms kept-primary=1.5 ms policy=min-of-medians
-* DUP-VARIANT g30 PaperNativePluginLoadingAllocation newLazyMissingSetSummary#variant2 kind=alt med=88.5 ns kept-primary=88.0 ns policy=min-of-medians
-* DUP-VARIANT g30 PaperNativePluginLoadingAllocation newLazyMissingSetSummary#variant3 kind=alt med=109.5 ns kept-primary=88.0 ns policy=min-of-medians
-* DUP-VARIANT g30 PaperNativePluginLoadingAllocation newLazyValidateSummary#variant2 kind=alt med=88.6 ns kept-primary=88.6 ns policy=min-of-medians
-* DUP-VARIANT g30 PaperNativePluginLoadingAllocation newLazyValidateSummary#variant3 kind=alt med=115.3 ns kept-primary=88.6 ns policy=min-of-medians
-* DUP-VARIANT g30 PaperNativePluginLoadingAllocation newPresizedSetupSummary#variant2 kind=alt med=89.4 ns kept-primary=88.9 ns policy=min-of-medians
-* DUP-VARIANT g30 PaperNativePluginLoadingAllocation newPresizedSetupSummary#variant3 kind=alt med=115.5 ns kept-primary=88.9 ns policy=min-of-medians
-* DUP-VARIANT g30 PaperNativePluginLoadingAllocation oldDefaultCapacitySetupSummary#variant2 kind=old med=89.4 ns kept-primary=89.0 ns policy=min-of-medians
-* DUP-VARIANT g30 PaperNativePluginLoadingAllocation oldDefaultCapacitySetupSummary#variant3 kind=old med=115.5 ns kept-primary=89.0 ns policy=min-of-medians
-* DUP-VARIANT g30 PaperNativePluginLoadingAllocation oldEagerMissingSetSummary#variant2 kind=old med=89.9 ns kept-primary=89.1 ns policy=min-of-medians
-* DUP-VARIANT g30 PaperNativePluginLoadingAllocation oldEagerMissingSetSummary#variant3 kind=old med=116.1 ns kept-primary=89.1 ns policy=min-of-medians
-* DUP-VARIANT g30 PaperNativePluginLoadingAllocation oldEagerValidateSummary#variant2 kind=old med=91.3 ns kept-primary=89.7 ns policy=min-of-medians
-* DUP-VARIANT g30 PaperNativePluginLoadingAllocation oldEagerValidateSummary#variant3 kind=old med=115.9 ns kept-primary=89.7 ns policy=min-of-medians
-* DUP-VARIANT g31 PaperNativePluginMetaDependency cachedSummary#variant2 kind=alt med=92.3 ns kept-primary=91.7 ns policy=min-of-medians
-* DUP-VARIANT g31 PaperNativePluginMetaDependency cachedSummary#variant3 kind=alt med=120.2 ns kept-primary=91.7 ns policy=min-of-medians
-* DUP-VARIANT g31 PaperNativePluginMetaDependency newLoopSummary#variant2 kind=alt med=92.3 ns kept-primary=92.2 ns policy=min-of-medians
-* DUP-VARIANT g31 PaperNativePluginMetaDependency newLoopSummary#variant3 kind=alt med=113.5 ns kept-primary=92.2 ns policy=min-of-medians
-* DUP-VARIANT g31 PaperNativePluginMetaDependency oldStreamSummary#variant2 kind=old med=92.6 ns kept-primary=92.0 ns policy=min-of-medians
-* DUP-VARIANT g31 PaperNativePluginMetaDependency oldStreamSummary#variant3 kind=old med=120.8 ns kept-primary=92.0 ns policy=min-of-medians
-* DUP-VARIANT g32 PaperNativePluginNameLog newArrayListSortSummary#variant2 kind=alt med=88.4 ns kept-primary=87.7 ns policy=min-of-medians
-* DUP-VARIANT g32 PaperNativePluginNameLog newArrayListSortSummary#variant3 kind=alt med=114.3 ns kept-primary=87.7 ns policy=min-of-medians
-* DUP-VARIANT g32 PaperNativePluginNameLog oldTreesetSummary#variant2 kind=old med=88.6 ns kept-primary=88.3 ns policy=min-of-medians
-* DUP-VARIANT g32 PaperNativePluginNameLog oldTreesetSummary#variant3 kind=old med=108.6 ns kept-primary=88.3 ns policy=min-of-medians
-* DUP-VARIANT g33 PaperNativePluginStartupRollup newSummary#variant2 kind=alt med=95.9 ns kept-primary=95.5 ns policy=min-of-medians
-* DUP-VARIANT g33 PaperNativePluginStartupRollup newSummary#variant3 kind=alt med=119.8 ns kept-primary=95.5 ns policy=min-of-medians
-* DUP-VARIANT g33 PaperNativePluginStartupRollup oldSummary#variant2 kind=old med=95.8 ns kept-primary=95.3 ns policy=min-of-medians
-* DUP-VARIANT g33 PaperNativePluginStartupRollup oldSummary#variant3 kind=old med=114.4 ns kept-primary=95.3 ns policy=min-of-medians
-* DUP-VARIANT g34 PaperNativeProtoChunkHeightmap newCachedContainsSummary#variant2 kind=alt med=2.1 µs kept-primary=2.0 µs policy=min-of-medians
-* DUP-VARIANT g34 PaperNativeProtoChunkHeightmap newCachedContainsSummary#variant3 kind=alt med=2.6 µs kept-primary=2.0 µs policy=min-of-medians
-* DUP-VARIANT g34 PaperNativeProtoChunkHeightmap oldEnumSetForeachSummary#variant2 kind=old med=1.2 µs kept-primary=1.2 µs policy=min-of-medians
-* DUP-VARIANT g34 PaperNativeProtoChunkHeightmap oldEnumSetForeachSummary#variant3 kind=old med=1.5 µs kept-primary=1.2 µs policy=min-of-medians
-* DUP-VARIANT g35 PaperNativeRangeChoice oldFillArraySummary#variant2 kind=old med=81.6 ns kept-primary=81.4 ns policy=min-of-medians
-* DUP-VARIANT g35 PaperNativeRangeChoice oldFillArraySummary#variant3 kind=old med=102.3 ns kept-primary=81.4 ns policy=min-of-medians
-* DUP-VARIANT g35 PaperNativeRangeChoice optimizedFillArraySummary#variant2 kind=alt med=81.6 ns kept-primary=81.6 ns policy=min-of-medians
-* DUP-VARIANT g35 PaperNativeRangeChoice optimizedFillArraySummary#variant3 kind=alt med=101.0 ns kept-primary=81.6 ns policy=min-of-medians
-* DUP-VARIANT g36 PaperNativeRemapperIndexCleanup newLazyCleanupSummary#variant2 kind=alt med=91.4 ns kept-primary=91.3 ns policy=min-of-medians
-* DUP-VARIANT g36 PaperNativeRemapperIndexCleanup newLazyCleanupSummary#variant3 kind=alt med=113.4 ns kept-primary=91.3 ns policy=min-of-medians
-* DUP-VARIANT g36 PaperNativeRemapperIndexCleanup oldEagerCleanupSummary#variant2 kind=old med=91.5 ns kept-primary=91.2 ns policy=min-of-medians
-* DUP-VARIANT g36 PaperNativeRemapperIndexCleanup oldEagerCleanupSummary#variant3 kind=old med=119.8 ns kept-primary=91.2 ns policy=min-of-medians
-* DUP-VARIANT g37 PaperNativeRemapperSkipHashes newLoopSummary#variant2 kind=alt med=33.2 µs kept-primary=32.8 µs policy=min-of-medians
-* DUP-VARIANT g37 PaperNativeRemapperSkipHashes newLoopSummary#variant3 kind=alt med=40.9 µs kept-primary=32.8 µs policy=min-of-medians
-* DUP-VARIANT g37 PaperNativeRemapperSkipHashes oldStreamSummary#variant2 kind=old med=35.0 µs kept-primary=34.7 µs policy=min-of-medians
-* DUP-VARIANT g37 PaperNativeRemapperSkipHashes oldStreamSummary#variant3 kind=old med=43.4 µs kept-primary=34.7 µs policy=min-of-medians
-* DUP-VARIANT g38 PaperNativeServerEntityDeltaIdentity oldDistanceSummary#variant2 kind=old med=2.2 µs kept-primary=2.2 µs policy=min-of-medians
-* DUP-VARIANT g38 PaperNativeServerEntityDeltaIdentity oldDistanceSummary#variant3 kind=old med=2.8 µs kept-primary=2.2 µs policy=min-of-medians
-* DUP-VARIANT g39 PaperNativeSpigotLoadOrderDependency newLoadAfterBuildSummary#variant2 kind=alt med=87.9 ns kept-primary=87.5 ns policy=min-of-medians
-* DUP-VARIANT g39 PaperNativeSpigotLoadOrderDependency newLoadAfterBuildSummary#variant3 kind=alt med=114.0 ns kept-primary=87.5 ns policy=min-of-medians
-* DUP-VARIANT g39 PaperNativeSpigotLoadOrderDependency oldLoadAfterBuildSummary#variant2 kind=old med=87.8 ns kept-primary=87.6 ns policy=min-of-medians
-* DUP-VARIANT g39 PaperNativeSpigotLoadOrderDependency oldLoadAfterBuildSummary#variant3 kind=old med=109.3 ns kept-primary=87.6 ns policy=min-of-medians
-* DUP-VARIANT g40 PaperNativeSpigotLoadOrderDependency newRemovedCountSummary#variant2 kind=alt med=88.1 ns kept-primary=87.8 ns policy=min-of-medians
-* DUP-VARIANT g40 PaperNativeSpigotLoadOrderDependency newRemovedCountSummary#variant3 kind=alt med=111.8 ns kept-primary=87.8 ns policy=min-of-medians
-* DUP-VARIANT g40 PaperNativeSpigotLoadOrderDependency oldRemovedCountSummary#variant2 kind=old med=88.5 ns kept-primary=88.3 ns policy=min-of-medians
-* DUP-VARIANT g40 PaperNativeSpigotLoadOrderDependency oldRemovedCountSummary#variant3 kind=old med=115.2 ns kept-primary=88.3 ns policy=min-of-medians
-* DUP-VARIANT g41 PaperNativeSpringFeatureMutablePos mutableBatchSummary#variant2 kind=alt med=2.9 µs kept-primary=2.9 µs policy=min-of-medians
-* DUP-VARIANT g41 PaperNativeSpringFeatureMutablePos mutableBatchSummary#variant3 kind=alt med=3.8 µs kept-primary=2.9 µs policy=min-of-medians
-* DUP-VARIANT g41 PaperNativeSpringFeatureMutablePos oldBatchSummary#variant2 kind=old med=2.9 µs kept-primary=2.9 µs policy=min-of-medians
-* DUP-VARIANT g41 PaperNativeSpringFeatureMutablePos oldBatchSummary#variant3 kind=old med=3.8 µs kept-primary=2.9 µs policy=min-of-medians
-* DUP-VARIANT g42 PaperNativeStaticCacheGet newBatchSummary#variant2 kind=alt med=34.6 ns kept-primary=34.5 ns policy=min-of-medians
-* DUP-VARIANT g42 PaperNativeStaticCacheGet newBatchSummary#variant3 kind=alt med=42.7 ns kept-primary=34.5 ns policy=min-of-medians
-* DUP-VARIANT g42 PaperNativeStaticCacheGet oldBatchSummary#variant2 kind=old med=34.6 ns kept-primary=34.4 ns policy=min-of-medians
-* DUP-VARIANT g42 PaperNativeStaticCacheGet oldBatchSummary#variant3 kind=old med=42.8 ns kept-primary=34.4 ns policy=min-of-medians
-* DUP-VARIANT g43 PaperNativeSurfaceRulesTestRuleState newStateRuleSummary#variant2 kind=alt med=1.2 µs kept-primary=1.2 µs policy=min-of-medians
-* DUP-VARIANT g43 PaperNativeSurfaceRulesTestRuleState newStateRuleSummary#variant3 kind=alt med=1.5 µs kept-primary=1.2 µs policy=min-of-medians
-* DUP-VARIANT g43 PaperNativeSurfaceRulesTestRuleState oldStateRuleSummary#variant2 kind=old med=1.1 µs kept-primary=1.1 µs policy=min-of-medians
-* DUP-VARIANT g43 PaperNativeSurfaceRulesTestRuleState oldStateRuleSummary#variant3 kind=old med=1.4 µs kept-primary=1.1 µs policy=min-of-medians
-* DUP-VARIANT g44 PaperNativeTopographicGraphSortCapacity newPresizedSummary#variant2 kind=alt med=349.5 ns kept-primary=349.3 ns policy=min-of-medians
-* DUP-VARIANT g44 PaperNativeTopographicGraphSortCapacity newPresizedSummary#variant3 kind=alt med=432.4 ns kept-primary=349.3 ns policy=min-of-medians
-* DUP-VARIANT g44 PaperNativeTopographicGraphSortCapacity oldDefaultCapacitySummary#variant2 kind=old med=350.1 ns kept-primary=349.2 ns policy=min-of-medians
-* DUP-VARIANT g44 PaperNativeTopographicGraphSortCapacity oldDefaultCapacitySummary#variant3 kind=old med=433.6 ns kept-primary=349.2 ns policy=min-of-medians
-* DUP-VARIANT g45 PaperNativeWaypointDistanceGuard guardedAtOrBeyondRangeSummary#variant2 kind=alt med=9.5 µs kept-primary=9.5 µs policy=min-of-medians
-* DUP-VARIANT g45 PaperNativeWaypointDistanceGuard guardedAtOrBeyondRangeSummary#variant3 kind=alt med=12.6 µs kept-primary=9.5 µs policy=min-of-medians
-* DUP-VARIANT g45 PaperNativeWaypointDistanceGuard oldAtOrBeyondRangeSummary#variant2 kind=old med=9.6 µs kept-primary=9.6 µs policy=min-of-medians
-* DUP-VARIANT g45 PaperNativeWaypointDistanceGuard oldAtOrBeyondRangeSummary#variant3 kind=old med=12.0 µs kept-primary=9.6 µs policy=min-of-medians
-* DUP-VARIANT g46 PaperNativeWaypointDistanceGuard guardedReallyFarSummary#variant2 kind=alt med=8.4 µs kept-primary=8.4 µs policy=min-of-medians
-* DUP-VARIANT g46 PaperNativeWaypointDistanceGuard guardedReallyFarSummary#variant3 kind=alt med=10.5 µs kept-primary=8.4 µs policy=min-of-medians
-* DUP-VARIANT g46 PaperNativeWaypointDistanceGuard oldReallyFarSummary#variant2 kind=old med=8.3 µs kept-primary=8.3 µs policy=min-of-medians
-* DUP-VARIANT g46 PaperNativeWaypointDistanceGuard oldReallyFarSummary#variant3 kind=old med=10.4 µs kept-primary=8.3 µs policy=min-of-medians
-* DUP-VARIANT g47 PaperNativeWaypointHotPath cachedChunkVisibleValue#variant2 kind=alt med=3.1 µs kept-primary=3.0 µs policy=min-of-medians
-* DUP-VARIANT g47 PaperNativeWaypointHotPath cachedChunkVisibleValue#variant3 kind=alt med=3.7 µs kept-primary=3.0 µs policy=min-of-medians
-* DUP-VARIANT g47 PaperNativeWaypointHotPath directAzimuthValue#variant2 kind=alt med=2.1 µs kept-primary=2.1 µs policy=min-of-medians
-* DUP-VARIANT g47 PaperNativeWaypointHotPath directAzimuthValue#variant3 kind=alt med=2.6 µs kept-primary=2.1 µs policy=min-of-medians
-* DUP-VARIANT g47 PaperNativeWaypointHotPath guardedAtOrBeyondRangeValue#variant2 kind=alt med=1.2 µs kept-primary=1.2 µs policy=min-of-medians
-* DUP-VARIANT g47 PaperNativeWaypointHotPath guardedAtOrBeyondRangeValue#variant3 kind=alt med=1.5 µs kept-primary=1.2 µs policy=min-of-medians
-* DUP-VARIANT g47 PaperNativeWaypointHotPath guardedReallyFarValue#variant2 kind=alt med=1.0 µs kept-primary=1.0 µs policy=min-of-medians
-* DUP-VARIANT g47 PaperNativeWaypointHotPath guardedReallyFarValue#variant3 kind=alt med=1.2 µs kept-primary=1.0 µs policy=min-of-medians
-* DUP-VARIANT g47 PaperNativeWaypointHotPath oldAtOrBeyondRangeValue#variant2 kind=old med=1.2 µs kept-primary=1.2 µs policy=min-of-medians
-* DUP-VARIANT g47 PaperNativeWaypointHotPath oldAtOrBeyondRangeValue#variant3 kind=old med=1.4 µs kept-primary=1.2 µs policy=min-of-medians
-* DUP-VARIANT g47 PaperNativeWaypointHotPath oldAzimuthValue#variant2 kind=old med=2.1 µs kept-primary=2.1 µs policy=min-of-medians
-* DUP-VARIANT g47 PaperNativeWaypointHotPath oldAzimuthValue#variant3 kind=old med=2.6 µs kept-primary=2.1 µs policy=min-of-medians
-* DUP-VARIANT g47 PaperNativeWaypointHotPath oldChunkVisibleValue#variant2 kind=old med=3.4 µs kept-primary=3.4 µs policy=min-of-medians
-* DUP-VARIANT g47 PaperNativeWaypointHotPath oldChunkVisibleValue#variant3 kind=old med=4.2 µs kept-primary=3.4 µs policy=min-of-medians
-* DUP-VARIANT g47 PaperNativeWaypointHotPath oldReallyFarValue#variant2 kind=old med=947.1 ns kept-primary=944.2 ns policy=min-of-medians
-* DUP-VARIANT g47 PaperNativeWaypointHotPath oldReallyFarValue#variant3 kind=old med=1.2 µs kept-primary=944.2 ns policy=min-of-medians
-* DUP-VARIANT g47 PaperNativeWaypointHotPath oldWaypointManagerValue#variant2 kind=old med=99.9 µs kept-primary=98.9 µs policy=min-of-medians
-* DUP-VARIANT g47 PaperNativeWaypointHotPath oldWaypointManagerValue#variant3 kind=old med=127.5 µs kept-primary=98.9 µs policy=min-of-medians
-* DUP-VARIANT g47 PaperNativeWaypointHotPath optimizedWaypointManagerValue#variant2 kind=alt med=93.7 µs kept-primary=92.4 µs policy=min-of-medians
-* DUP-VARIANT g47 PaperNativeWaypointHotPath optimizedWaypointManagerValue#variant3 kind=alt med=120.7 µs kept-primary=92.4 µs policy=min-of-medians
-* DUP-VARIANT g48 PaperNativeXoroshiroPositionalDirect directDoubleBatchSummary#variant2 kind=alt med=1.6 µs kept-primary=1.5 µs policy=min-of-medians
-* DUP-VARIANT g48 PaperNativeXoroshiroPositionalDirect directDoubleBatchSummary#variant3 kind=alt med=1.9 µs kept-primary=1.5 µs policy=min-of-medians
-* DUP-VARIANT g48 PaperNativeXoroshiroPositionalDirect directFloatBatchSummary#variant2 kind=alt med=1.6 µs kept-primary=1.6 µs policy=min-of-medians
-* DUP-VARIANT g48 PaperNativeXoroshiroPositionalDirect directFloatBatchSummary#variant3 kind=alt med=1.9 µs kept-primary=1.6 µs policy=min-of-medians
-* DUP-VARIANT g48 PaperNativeXoroshiroPositionalDirect oldDoubleBatchSummary#variant2 kind=old med=1.6 µs kept-primary=1.6 µs policy=min-of-medians
-* DUP-VARIANT g48 PaperNativeXoroshiroPositionalDirect oldDoubleBatchSummary#variant3 kind=old med=2.0 µs kept-primary=1.6 µs policy=min-of-medians
-* DUP-VARIANT g48 PaperNativeXoroshiroPositionalDirect oldFloatBatchSummary#variant2 kind=old med=1.6 µs kept-primary=1.6 µs policy=min-of-medians
-* DUP-VARIANT g48 PaperNativeXoroshiroPositionalDirect oldFloatBatchSummary#variant3 kind=old med=1.9 µs kept-primary=1.6 µs policy=min-of-medians
+* DUP-VARIANT: none — every kernel measured exactly once.
 
 ## Pairing diagnostics (P500 stem rule)
 
@@ -931,27 +416,26 @@ An alt kernel pairs with the old kernel whose stem (name after stripping one lea
 
 | speedup | class | old kernel | optimized kernel | old | optimized |
 |---|---:|---|---|---:|---:|
-| 314.45x | `PaperNativeNoiseChunkBlendCache` | `oldEmptyBlenderSummary` | `newEmptyBlenderSummary` | 73.1 µs | 232.4 ns |
-| 3.34x | `PaperNativeNoiseInterpolatorSlice` | `oldJaggedSummary` | `flatSummary` | 6.1 ms | 1.8 ms |
-| 1.25x | `PaperNativeNoiseChunkFlatCacheContext` | `oldTrueContextSummary` | `newTrueContextSummary` | 23.6 µs | 18.8 µs |
-| 1.22x | `PaperNativeImprovedNoiseInline` | `oldPMethodSummary` | `switchGradientSummary` | 9.3 µs | 7.6 µs |
-| 1.19x | `PaperNativePalettedReencodeScratch` | `oldNewArraySummary` | `scratchThreadLocalSummary` | 489.5 µs | 411.6 µs |
-| 1.17x | `PaperNativeNoiseChunkFlatCacheContext` | `oldFalseContextSummary` | `newFalseContextSummary` | 21.8 µs | 18.7 µs |
-| 1.16x | `PaperNativeImprovedNoiseInline` | `oldPMethodSummary` | `arithmeticSummary` | 9.3 µs | 8.0 µs |
-| 1.15x | `PaperNativeDensityAp2Fill` | `oldFlatSummary` | `scratchFlatSummary` | 13.0 µs | 11.3 µs |
+| 288.87x | `PaperNativeNoiseChunkBlendCache` | `oldEmptyBlenderSummary` | `newEmptyBlenderSummary` | 90.2 µs | 312.2 ns |
+| 3.31x | `PaperNativeNoiseInterpolatorSlice` | `oldJaggedSummary` | `flatSummary` | 7.8 ms | 2.4 ms |
+| 1.21x | `PaperNativeImprovedNoiseInline` | `oldPMethodSummary` | `switchGradientSummary` | 12.2 µs | 10.1 µs |
+| 1.20x | `PaperNativeNoiseChunkFlatCacheContext` | `oldTrueContextSummary` | `newTrueContextSummary` | 29.5 µs | 24.5 µs |
+| 1.17x | `PaperNativeNoiseChunkFlatCacheContext` | `oldFalseContextSummary` | `newFalseContextSummary` | 28.5 µs | 24.4 µs |
+| 1.16x | `PaperNativeImprovedNoiseInline` | `oldPMethodSummary` | `arithmeticSummary` | 12.2 µs | 10.6 µs |
+| 1.15x | `PaperNativeDensityAp2Fill` | `oldFlatSummary` | `scratchFlatSummary` | 16.0 µs | 13.9 µs |
 
 ## Regressions (optimized SLOWER than old) — optimization targets
 
 | speedup | class | old kernel | optimized kernel | old | optimized |
 |---|---:|---|---|---:|---:|
-| 0.57x | `PaperNativeProtoChunkHeightmap` | `oldEnumSetForeachSummary` | `newCachedContainsSummary` | 1.2 µs | 2.0 µs |
-| 0.44x | `PaperNativePalettedReencodeScratch` | `oldNewArraySummary` | `directPackedSummary` | 489.5 µs | 1.1 ms |
-| 0.21x | `PaperNativeMarkerCache` | `oldSummary` | `cachedSummary` | 118.7 µs | 552.3 µs |
-| 0.18x | `PaperNativeLevelChunkHeightmap` | `oldFourUpdateSummary` | `newCombinedUpdateSummary` | 2.2 ms | 12.4 ms |
+| 0.57x | `PaperNativeProtoChunkHeightmap` | `oldEnumSetForeachSummary` | `newCachedContainsSummary` | 1.4 µs | 2.5 µs |
+| 0.44x | `PaperNativePalettedReencodeScratch` | `oldNewArraySummary` | `directPackedSummary` | 609.4 µs | 1.4 ms |
+| 0.21x | `PaperNativeMarkerCache` | `oldSummary` | `cachedSummary` | 150.2 µs | 725.1 µs |
+| 0.18x | `PaperNativeLevelChunkHeightmap` | `oldFourUpdateSummary` | `newCombinedUpdateSummary` | 2.8 ms | 15.9 ms |
 
 ## Parity (within ±15%)
 
-`PaperNativeImprovedNoiseInline.flatGradientSummary` (1.14x), `PaperNativeOwnableRule.newLoopSummary` (1.13x), `PaperNativeWaypointHotPath.cachedChunkVisibleValue` (1.12x), `PaperNativeDensityAp2Fill.scratchNestedSummary` (1.11x), `PaperNativeAquiferSurfaceSampling.newBatchSummary` (1.11x), `PaperNativePluginDirectoryScan.newListSummary` (1.10x), `PaperNativePluginDirectoryScan.directoryStreamSummary` (1.10x), `PaperNativeAquiferIndexStride.newBatchSummary` (1.07x), `PaperNativeWaypointHotPath.optimizedWaypointManagerValue` (1.07x), `PaperNativeRemapperSkipHashes.newLoopSummary` (1.06x), `PaperNativeChunkDependencies.arraySummary` (1.03x), `PaperNativeBlendedNoise.cachedBatchSummary` (1.02x), `PaperNativeImprovedNoiseDerivative.flatGradientDerivativeSummary` (1.01x), `PaperNativePluginLoadingAllocation.newLazyMissingSetSummary` (1.01x), `PaperNativePluginLoadingAllocation.newLazyValidateSummary` (1.01x), `PaperNativeWaypointDistanceGuard.guardedAtOrBeyondRangeSummary` (1.01x), `PaperNativePluginNameLog.newArrayListSortSummary` (1.01x), `PaperNativeEntityChunkTransient.newMixedSummary` (1.01x), `PaperNativeAquiferPositionalLocation.directBatchSummary` (1.01x), `PaperNativeSpigotLoadOrderDependency.newRemovedCountSummary` (1.01x), `PaperNativeXoroshiroPositionalDirect.directDoubleBatchSummary` (1.00x), `PaperNativePluginMetaDependency.cachedSummary` (1.00x), `PaperNativeEntityLookupStatus.directAccessibleSummary` (1.00x), `PaperNativeOreFeatureLoop.optimizedLoopSummary` (1.00x), `PaperNativeWaypointHotPath.directAzimuthValue` (1.00x), `PaperNativeObfHelperMaps.directMapsSummary` (1.00x), `PaperNativeCaveCarverSkip.reusedCheckerSummary` (1.00x), `PaperNativeXoroshiroPositionalDirect.directFloatBatchSummary` (1.00x), `PaperNativeSpigotLoadOrderDependency.newLoadAfterBuildSummary` (1.00x), `PaperNativeLegacyProvidedAliasRemoval.newReverseAliasRemoveSummary` (1.00x), `PaperNativePluginLoadingAllocation.newPresizedSetupSummary` (1.00x), `PaperNativeImprovedNoiseInline.inlineByteAccessSummary` (1.00x), `PaperNativeClimateParameterDistance.subtractFirstDistanceSum` (1.00x), `PaperNativeImprovedNoiseDerivative.inlineDerivativeSummary` (1.00x), `PaperNativeObfHelperMaps.presizedStringPoolSummary` (1.00x), `PaperNativeTopographicGraphSortCapacity.newPresizedSummary` (1.00x), `PaperNativeImprovedNoiseDerivative.intTableDerivativeSummary` (1.00x), `PaperNativeCaveCarverSkip.directHelperSummary` (1.00x), `PaperNativeRemapperIndexCleanup.newLazyCleanupSummary` (1.00x), `PaperNativeJigsawCanAttach.targetFirstBatchSummary` (1.00x), `PaperNativeDensityAp2MinMaxFill.newSummary` (1.00x), `PaperNativeEntityLookupStatus.directStatusSummary` (1.00x), `PaperNativeClimateParameterDistance.branchDistanceSum` (1.00x), `PaperNativeJigsawCanAttach.optimizedBatchSummary` (1.00x), `PaperNativePluginStartupRollup.newSummary` (1.00x), `PaperNativePluginMetaDependency.newLoopSummary` (1.00x), `PaperNativeRangeChoice.optimizedFillArraySummary` (1.00x), `PaperNativeCubicSplineCreate.indexSummary` (1.00x), `PaperNativeStaticCacheGet.newBatchSummary` (1.00x), `PaperNativeSpringFeatureMutablePos.mutableBatchSummary` (1.00x), `PaperNativeDensityVisitorHook.hookedUnwrappingSummary` (0.99x), `PaperNativeWaypointDistanceGuard.guardedReallyFarSummary` (0.99x), `PaperNativePluginClassLoaderGroup.skipRequesterSummary` (0.99x), `PaperNativeDensitySplineContext.newDirectSummary` (0.99x), `PaperNativeWaypointHotPath.guardedAtOrBeyondRangeValue` (0.98x), `PaperNativeEntityBoundingBox.directDimensionsSetSummary` (0.97x), `PaperNativeSurfaceRulesTestRuleState.newStateRuleSummary` (0.95x), `PaperNativeWaypointHotPath.guardedReallyFarValue` (0.94x)
+`PaperNativeImprovedNoiseInline.flatGradientSummary` (1.14x), `PaperNativeWaypointHotPath.cachedChunkVisibleValue` (1.14x), `PaperNativePalettedReencodeScratch.scratchThreadLocalSummary` (1.13x), `PaperNativeOwnableRule.newLoopSummary` (1.12x), `PaperNativeAquiferSurfaceSampling.newBatchSummary` (1.11x), `PaperNativePluginDirectoryScan.newListSummary` (1.10x), `PaperNativePluginDirectoryScan.directoryStreamSummary` (1.10x), `PaperNativeChunkDependencies.arraySummary` (1.08x), `PaperNativeWaypointHotPath.optimizedWaypointManagerValue` (1.08x), `PaperNativeAquiferIndexStride.newBatchSummary` (1.07x), `PaperNativePluginMetaDependency.cachedSummary` (1.06x), `PaperNativePluginMetaDependency.newLoopSummary` (1.06x), `PaperNativeDensityAp2Fill.scratchNestedSummary` (1.06x), `PaperNativeBlendedNoise.cachedBatchSummary` (1.06x), `PaperNativeAquiferPositionalLocation.directBatchSummary` (1.06x), `PaperNativeWaypointHotPath.directAzimuthValue` (1.05x), `PaperNativeDensityAp2MinMaxFill.newSummary` (1.05x), `PaperNativePluginClassLoaderGroup.skipRequesterSummary` (1.05x), `PaperNativeStaticCacheGet.newBatchSummary` (1.05x), `PaperNativeSpringFeatureMutablePos.mutableBatchSummary` (1.04x), `PaperNativeRemapperIndexCleanup.newLazyCleanupSummary` (1.04x), `PaperNativeTopographicGraphSortCapacity.newPresizedSummary` (1.03x), `PaperNativeSpigotLoadOrderDependency.newRemovedCountSummary` (1.02x), `PaperNativeWaypointDistanceGuard.guardedReallyFarSummary` (1.02x), `PaperNativeObfHelperMaps.presizedStringPoolSummary` (1.02x), `PaperNativeEntityChunkTransient.newMixedSummary` (1.02x), `PaperNativeWaypointDistanceGuard.guardedAtOrBeyondRangeSummary` (1.01x), `PaperNativeClimateParameterDistance.branchDistanceSum` (1.01x), `PaperNativeLegacyProvidedAliasRemoval.newReverseAliasRemoveSummary` (1.01x), `PaperNativePluginNameLog.newArrayListSortSummary` (1.01x), `PaperNativePluginLoadingAllocation.newLazyValidateSummary` (1.01x), `PaperNativeImprovedNoiseDerivative.flatGradientDerivativeSummary` (1.01x), `PaperNativeRangeChoice.optimizedFillArraySummary` (1.01x), `PaperNativePluginLoadingAllocation.newPresizedSetupSummary` (1.01x), `PaperNativeXoroshiroPositionalDirect.directDoubleBatchSummary` (1.00x), `PaperNativeSurfaceRulesTestRuleState.newStateRuleSummary` (1.00x), `PaperNativeXoroshiroPositionalDirect.directFloatBatchSummary` (1.00x), `PaperNativeClimateParameterDistance.subtractFirstDistanceSum` (1.00x), `PaperNativeEntityLookupStatus.directStatusSummary` (1.00x), `PaperNativeImprovedNoiseInline.inlineByteAccessSummary` (1.00x), `PaperNativeImprovedNoiseDerivative.intTableDerivativeSummary` (1.00x), `PaperNativeDensityVisitorHook.hookedUnwrappingSummary` (1.00x), `PaperNativeWaypointHotPath.guardedReallyFarValue` (0.99x), `PaperNativeCaveCarverSkip.directHelperSummary` (0.99x), `PaperNativeCaveCarverSkip.reusedCheckerSummary` (0.99x), `PaperNativeSpigotLoadOrderDependency.newLoadAfterBuildSummary` (0.99x), `PaperNativeEntityBoundingBox.directDimensionsSetSummary` (0.99x), `PaperNativeImprovedNoiseDerivative.inlineDerivativeSummary` (0.99x), `PaperNativeEntityLookupStatus.directAccessibleSummary` (0.98x), `PaperNativeRemapperSkipHashes.newLoopSummary` (0.98x), `PaperNativeJigsawCanAttach.optimizedBatchSummary` (0.97x), `PaperNativeOreFeatureLoop.optimizedLoopSummary` (0.97x), `PaperNativePluginStartupRollup.newSummary` (0.97x), `PaperNativePluginLoadingAllocation.newLazyMissingSetSummary` (0.96x), `PaperNativeObfHelperMaps.directMapsSummary` (0.96x), `PaperNativeDensitySplineContext.newDirectSummary` (0.96x), `PaperNativeCubicSplineCreate.indexSummary` (0.96x), `PaperNativeWaypointHotPath.guardedAtOrBeyondRangeValue` (0.95x), `PaperNativeJigsawCanAttach.targetFirstBatchSummary` (0.95x)
 
 ## Regressions (do-not-wire)
 
@@ -959,10 +443,10 @@ ratio = alt/old ≥ 1.18 — beyond the ±15% noise floor. Do NOT wire these opt
 
 | kernel (alt / paired old) | group | ratio | stability | verdict |
 |---|---|---:|---:|---|
-| `newCombinedUpdateSummary` / `oldFourUpdateSummary` | PaperNativeLevelChunkHeightmap (g19) | 5.621 | 0.0% | REGRESSION |
-| `cachedSummary` / `oldSummary` | PaperNativeMarkerCache (g20) | 4.655 | 0.0% | REGRESSION |
-| `directPackedSummary` / `oldNewArraySummary` | PaperNativePalettedReencodeScratch (g27) | 2.294 | 0.0% | REGRESSION |
-| `newCachedContainsSummary` / `oldEnumSetForeachSummary` | PaperNativeProtoChunkHeightmap (g34) | 1.760 | 0.0% | REGRESSION |
+| `newCombinedUpdateSummary` / `oldFourUpdateSummary` | PaperNativeLevelChunkHeightmap (g19) | 5.640 | 0.0% | REGRESSION |
+| `cachedSummary` / `oldSummary` | PaperNativeMarkerCache (g20) | 4.829 | 0.0% | REGRESSION |
+| `directPackedSummary` / `oldNewArraySummary` | PaperNativePalettedReencodeScratch (g27) | 2.271 | 0.0% | REGRESSION |
+| `newCachedContainsSummary` / `oldEnumSetForeachSummary` | PaperNativeProtoChunkHeightmap (g34) | 1.739 | 0.0% | REGRESSION |
 
 ## Wins (promotion candidates)
 
@@ -970,11 +454,10 @@ ratio = alt/old ≤ 0.85 (≥ ~1.18x speedup), sorted best-first. Candidates for
 
 | ratio | class | old kernel | alt kernel | old | alt | stability | verdict |
 |---:|---|---|---|---:|---:|---:|---|
-| 0.003 | `PaperNativeNoiseChunkBlendCache` | `oldEmptyBlenderSummary` | `newEmptyBlenderSummary` | 73.1 µs | 232.4 ns | 0.0% | WIN |
-| 0.300 | `PaperNativeNoiseInterpolatorSlice` | `oldJaggedSummary` | `flatSummary` | 6.1 ms | 1.8 ms | 0.0% | WIN |
-| 0.799 | `PaperNativeNoiseChunkFlatCacheContext` | `oldTrueContextSummary` | `newTrueContextSummary` | 23.6 µs | 18.8 µs | 0.0% | WIN |
-| 0.821 | `PaperNativeImprovedNoiseInline` | `oldPMethodSummary` | `switchGradientSummary` | 9.3 µs | 7.6 µs | 0.0% | WIN |
-| 0.841 | `PaperNativePalettedReencodeScratch` | `oldNewArraySummary` | `scratchThreadLocalSummary` | 489.5 µs | 411.6 µs | 0.0% | WIN |
+| 0.003 | `PaperNativeNoiseChunkBlendCache` | `oldEmptyBlenderSummary` | `newEmptyBlenderSummary` | 90.2 µs | 312.2 ns | 0.0% | WIN |
+| 0.302 | `PaperNativeNoiseInterpolatorSlice` | `oldJaggedSummary` | `flatSummary` | 7.8 ms | 2.4 ms | 0.0% | WIN |
+| 0.824 | `PaperNativeImprovedNoiseInline` | `oldPMethodSummary` | `switchGradientSummary` | 12.2 µs | 10.1 µs | 0.0% | WIN |
+| 0.831 | `PaperNativeNoiseChunkFlatCacheContext` | `oldTrueContextSummary` | `newTrueContextSummary` | 29.5 µs | 24.5 µs | 0.0% | WIN |
 
 ## JNI floor groups
 
@@ -982,19 +465,19 @@ Groups with at least one kernel median below 200 ns sit on the JNI-transition fl
 
 | group | class | fastest median | kernels below 200 ns |
 |---|---|---:|---|
-| g9 | `PaperNativeDensityAp2MinMaxFill` | 118.7 ns | `oldSummary` (118.7 ns), `newSummary` (118.9 ns) |
-| g18 | `PaperNativeLegacyProvidedAliasRemoval` | 88.1 ns | `newReverseAliasRemoveSummary` (88.1 ns), `oldValuesRemoveIfSummary` (88.2 ns) |
-| g24 | `PaperNativeObfHelperMaps` | 93.3 ns | `directMapsSummary` (93.3 ns), `oldStreamDefaultSummary` (93.5 ns), `presizedStringPoolSummary` (93.5 ns) |
-| g28 | `PaperNativePluginClassLoaderGroup` | 91.3 ns | `oldLookupSummary` (91.3 ns), `skipRequesterSummary` (91.9 ns) |
-| g30 | `PaperNativePluginLoadingAllocation` | 88.0 ns | `newLazyMissingSetSummary` (88.0 ns), `newLazyValidateSummary` (88.6 ns), `newPresizedSetupSummary` (88.9 ns), `oldDefaultCapacitySetupSummary` (89.0 ns), `oldEagerMissingSetSummary` (89.1 ns), `oldEagerValidateSummary` (89.7 ns) |
-| g31 | `PaperNativePluginMetaDependency` | 91.7 ns | `cachedSummary` (91.7 ns), `oldStreamSummary` (92.0 ns), `newLoopSummary` (92.2 ns) |
-| g32 | `PaperNativePluginNameLog` | 87.7 ns | `newArrayListSortSummary` (87.7 ns), `oldTreesetSummary` (88.3 ns) |
-| g33 | `PaperNativePluginStartupRollup` | 95.3 ns | `oldSummary` (95.3 ns), `newSummary` (95.5 ns) |
-| g35 | `PaperNativeRangeChoice` | 81.4 ns | `oldFillArraySummary` (81.4 ns), `optimizedFillArraySummary` (81.6 ns) |
-| g36 | `PaperNativeRemapperIndexCleanup` | 91.2 ns | `oldEagerCleanupSummary` (91.2 ns), `newLazyCleanupSummary` (91.3 ns) |
-| g39 | `PaperNativeSpigotLoadOrderDependency` | 87.5 ns | `newLoadAfterBuildSummary` (87.5 ns), `oldLoadAfterBuildSummary` (87.6 ns) |
-| g40 | `PaperNativeSpigotLoadOrderDependency` | 87.8 ns | `newRemovedCountSummary` (87.8 ns), `oldRemovedCountSummary` (88.3 ns) |
-| g42 | `PaperNativeStaticCacheGet` | 34.4 ns | `oldBatchSummary` (34.4 ns), `newBatchSummary` (34.5 ns) |
+| g9 | `PaperNativeDensityAp2MinMaxFill` | 147.5 ns | `newSummary` (147.5 ns), `oldSummary` (154.5 ns) |
+| g18 | `PaperNativeLegacyProvidedAliasRemoval` | 116.5 ns | `newReverseAliasRemoveSummary` (116.5 ns), `oldValuesRemoveIfSummary` (117.8 ns) |
+| g24 | `PaperNativeObfHelperMaps` | 116.3 ns | `presizedStringPoolSummary` (116.3 ns), `oldStreamDefaultSummary` (118.6 ns), `directMapsSummary` (123.4 ns) |
+| g28 | `PaperNativePluginClassLoaderGroup` | 115.0 ns | `skipRequesterSummary` (115.0 ns), `oldLookupSummary` (120.4 ns) |
+| g30 | `PaperNativePluginLoadingAllocation` | 110.2 ns | `oldEagerMissingSetSummary` (110.2 ns), `newLazyMissingSetSummary` (114.6 ns), `newPresizedSetupSummary` (115.8 ns), `newLazyValidateSummary` (116.4 ns), `oldDefaultCapacitySetupSummary` (116.4 ns), `oldEagerValidateSummary` (117.5 ns) |
+| g31 | `PaperNativePluginMetaDependency` | 114.2 ns | `cachedSummary` (114.2 ns), `newLoopSummary` (114.3 ns), `oldStreamSummary` (121.3 ns) |
+| g32 | `PaperNativePluginNameLog` | 109.7 ns | `newArrayListSortSummary` (109.7 ns), `oldTreesetSummary` (110.9 ns) |
+| g33 | `PaperNativePluginStartupRollup` | 116.1 ns | `oldSummary` (116.1 ns), `newSummary` (119.9 ns) |
+| g35 | `PaperNativeRangeChoice` | 101.4 ns | `optimizedFillArraySummary` (101.4 ns), `oldFillArraySummary` (102.0 ns) |
+| g36 | `PaperNativeRemapperIndexCleanup` | 115.2 ns | `newLazyCleanupSummary` (115.2 ns), `oldEagerCleanupSummary` (119.6 ns) |
+| g39 | `PaperNativeSpigotLoadOrderDependency` | 113.8 ns | `oldLoadAfterBuildSummary` (113.8 ns), `newLoadAfterBuildSummary` (115.1 ns) |
+| g40 | `PaperNativeSpigotLoadOrderDependency` | 111.5 ns | `newRemovedCountSummary` (111.5 ns), `oldRemovedCountSummary` (114.1 ns) |
+| g42 | `PaperNativeStaticCacheGet` | 42.9 ns | `newBatchSummary` (42.9 ns), `oldBatchSummary` (44.9 ns) |
 
 ## Baseline diff vs `baseline.tsv`
 
@@ -1002,76 +485,76 @@ Per-pair ratio change: drift = (current ratio − baseline ratio) / baseline rat
 
 | class | pair (old / alt) | baseline ratio | current ratio | drift | flag |
 |---|---|---:|---:|---:|---|
-| `PaperNativeAquiferIndexStride` | `oldBatchSummary` / `newBatchSummary` | 0.933 | 0.935 | +0.2% | ok |
-| `PaperNativeAquiferPositionalLocation` | `oldBatchSummary` / `directBatchSummary` | 0.993 | 0.994 | +0.1% | ok |
-| `PaperNativeAquiferSurfaceSampling` | `oldBatchSummary` / `newBatchSummary` | 0.906 | 0.902 | -0.5% | ok |
-| `PaperNativeBlendedNoise` | `oldBatchSummary` / `cachedBatchSummary` | 0.980 | 0.983 | +0.3% | ok |
-| `PaperNativeCaveCarverSkip` | `oldLambdaSummary` / `directHelperSummary` | 0.987 | 1.001 | +1.4% | ok |
-| `PaperNativeCaveCarverSkip` | `oldLambdaSummary` / `reusedCheckerSummary` | 0.997 | 0.998 | +0.1% | ok |
-| `PaperNativeChunkDependencies` | `oldImmutableListSummary` / `arraySummary` | 0.972 | 0.968 | -0.4% | ok |
-| `PaperNativeClimateParameterDistance` | `oldDistanceSum` / `branchDistanceSum` | 1.008 | 1.002 | -0.6% | ok |
-| `PaperNativeClimateParameterDistance` | `oldDistanceSum` / `subtractFirstDistanceSum` | 1.005 | 1.000 | -0.5% | ok |
-| `PaperNativeCubicSplineCreate` | `oldIteratorSummary` / `indexSummary` | 1.001 | 1.003 | +0.2% | ok |
-| `PaperNativeDensityAp2Fill` | `oldFlatSummary` / `scratchFlatSummary` | 0.869 | 0.868 | -0.1% | ok |
-| `PaperNativeDensityAp2Fill` | `oldNestedSummary` / `scratchNestedSummary` | 0.888 | 0.898 | +1.2% | ok |
-| `PaperNativeDensityAp2MinMaxFill` | `oldSummary` / `newSummary` | 1.003 | 1.002 | -0.2% | ok |
-| `PaperNativeDensitySplineContext` | `oldWrapperSummary` / `newDirectSummary` | 1.004 | 1.007 | +0.4% | ok |
-| `PaperNativeDensityVisitorHook` | `oldUnwrappingSummary` / `hookedUnwrappingSummary` | 1.009 | 1.006 | -0.4% | ok |
-| `PaperNativeEntityBoundingBox` | `oldMakeThenSetSummary` / `directDimensionsSetSummary` | 1.029 | 1.029 | -0.1% | ok |
-| `PaperNativeEntityChunkTransient` | `oldMixedSummary` / `newMixedSummary` | 0.993 | 0.994 | +0.1% | ok |
-| `PaperNativeEntityLookupStatus` | `oldAccessibleSummary` / `directAccessibleSummary` | 0.999 | 0.997 | -0.1% | ok |
-| `PaperNativeEntityLookupStatus` | `oldStatusSummary` / `directStatusSummary` | 0.999 | 1.002 | +0.3% | ok |
-| `PaperNativeImprovedNoiseDerivative` | `oldDerivativeSummary` / `flatGradientDerivativeSummary` | 0.985 | 0.988 | +0.2% | ok |
-| `PaperNativeImprovedNoiseDerivative` | `oldDerivativeSummary` / `inlineDerivativeSummary` | 1.000 | 1.000 | -0.1% | ok |
-| `PaperNativeImprovedNoiseDerivative` | `oldDerivativeSummary` / `intTableDerivativeSummary` | 0.996 | 1.001 | +0.5% | ok |
-| `PaperNativeImprovedNoiseInline` | `oldPMethodSummary` / `arithmeticSummary` | 0.864 | 0.859 | -0.6% | ok |
-| `PaperNativeImprovedNoiseInline` | `oldPMethodSummary` / `flatGradientSummary` | 0.878 | 0.874 | -0.4% | ok |
-| `PaperNativeImprovedNoiseInline` | `oldPMethodSummary` / `inlineByteAccessSummary` | 1.001 | 0.999 | -0.2% | ok |
-| `PaperNativeImprovedNoiseInline` | `oldPMethodSummary` / `switchGradientSummary` | 0.819 | 0.821 | +0.2% | ok |
-| `PaperNativeJigsawCanAttach` | `oldBatchSummary` / `optimizedBatchSummary` | 0.999 | 1.002 | +0.3% | ok |
-| `PaperNativeJigsawCanAttach` | `oldBatchSummary` / `targetFirstBatchSummary` | 0.997 | 1.001 | +0.4% | ok |
-| `PaperNativeLegacyProvidedAliasRemoval` | `oldValuesRemoveIfSummary` / `newReverseAliasRemoveSummary` | 1.048 | 0.999 | -4.7% | ok |
-| `PaperNativeLevelChunkHeightmap` | `oldFourUpdateSummary` / `newCombinedUpdateSummary` | 5.700 | 5.621 | -1.4% | ok |
-| `PaperNativeMarkerCache` | `oldSummary` / `cachedSummary` | 4.540 | 4.655 | +2.5% | ok |
-| `PaperNativeNoiseChunkBlendCache` | `oldEmptyBlenderSummary` / `newEmptyBlenderSummary` | 0.003 | 0.003 | +0.6% | ok |
-| `PaperNativeNoiseChunkFlatCacheContext` | `oldFalseContextSummary` / `newFalseContextSummary` | 0.846 | 0.856 | +1.2% | ok |
-| `PaperNativeNoiseChunkFlatCacheContext` | `oldTrueContextSummary` / `newTrueContextSummary` | 0.805 | 0.799 | -0.8% | ok |
-| `PaperNativeNoiseInterpolatorSlice` | `oldJaggedSummary` / `flatSummary` | 0.301 | 0.300 | -0.4% | ok |
-| `PaperNativeObfHelperMaps` | `oldStreamDefaultSummary` / `directMapsSummary` | 0.998 | 0.998 | -0.0% | ok |
-| `PaperNativeObfHelperMaps` | `oldStreamDefaultSummary` / `presizedStringPoolSummary` | 1.001 | 1.000 | -0.1% | ok |
-| `PaperNativeOreFeatureLoop` | `oldLoopSummary` / `optimizedLoopSummary` | 0.996 | 0.998 | +0.2% | ok |
-| `PaperNativeOwnableRule` | `oldStreamSummary` / `newLoopSummary` | 0.894 | 0.883 | -1.1% | ok |
-| `PaperNativePalettedReencodeScratch` | `oldNewArraySummary` / `directPackedSummary` | 2.346 | 2.294 | -2.2% | ok |
-| `PaperNativePalettedReencodeScratch` | `oldNewArraySummary` / `scratchThreadLocalSummary` | 0.834 | 0.841 | +0.8% | ok |
-| `PaperNativePluginClassLoaderGroup` | `oldLookupSummary` / `skipRequesterSummary` | 1.008 | 1.007 | -0.1% | ok |
-| `PaperNativePluginDirectoryScan` | `oldWalkDepth1Summary` / `directoryStreamSummary` | 0.921 | 0.906 | -1.6% | ok |
-| `PaperNativePluginDirectoryScan` | `oldWalkDepth1Summary` / `newListSummary` | 0.939 | 0.906 | -3.6% | ok |
-| `PaperNativePluginLoadingAllocation` | `oldDefaultCapacitySetupSummary` / `newPresizedSetupSummary` | 0.970 | 0.999 | +3.0% | ok |
-| `PaperNativePluginLoadingAllocation` | `oldEagerMissingSetSummary` / `newLazyMissingSetSummary` | 0.996 | 0.988 | -0.8% | ok |
-| `PaperNativePluginLoadingAllocation` | `oldEagerValidateSummary` / `newLazyValidateSummary` | 0.993 | 0.988 | -0.5% | ok |
-| `PaperNativePluginMetaDependency` | `oldStreamSummary` / `cachedSummary` | 0.974 | 0.997 | +2.4% | ok |
-| `PaperNativePluginMetaDependency` | `oldStreamSummary` / `newLoopSummary` | 0.998 | 1.002 | +0.5% | ok |
-| `PaperNativePluginNameLog` | `oldTreesetSummary` / `newArrayListSortSummary` | 0.944 | 0.993 | +5.2% | ok |
-| `PaperNativePluginStartupRollup` | `oldSummary` / `newSummary` | 0.992 | 1.002 | +1.1% | ok |
-| `PaperNativeProtoChunkHeightmap` | `oldEnumSetForeachSummary` / `newCachedContainsSummary` | 1.775 | 1.760 | -0.9% | ok |
-| `PaperNativeRangeChoice` | `oldFillArraySummary` / `optimizedFillArraySummary` | 1.002 | 1.002 | +0.0% | ok |
-| `PaperNativeRemapperIndexCleanup` | `oldEagerCleanupSummary` / `newLazyCleanupSummary` | 1.003 | 1.001 | -0.2% | ok |
-| `PaperNativeRemapperSkipHashes` | `oldStreamSummary` / `newLoopSummary` | 0.956 | 0.946 | -1.1% | ok |
-| `PaperNativeSpigotLoadOrderDependency` | `oldLoadAfterBuildSummary` / `newLoadAfterBuildSummary` | 1.003 | 0.999 | -0.5% | ok |
-| `PaperNativeSpigotLoadOrderDependency` | `oldRemovedCountSummary` / `newRemovedCountSummary` | 0.996 | 0.994 | -0.1% | ok |
-| `PaperNativeSpringFeatureMutablePos` | `oldBatchSummary` / `mutableBatchSummary` | 1.001 | 1.004 | +0.2% | ok |
-| `PaperNativeStaticCacheGet` | `oldBatchSummary` / `newBatchSummary` | 0.997 | 1.003 | +0.6% | ok |
-| `PaperNativeSurfaceRulesTestRuleState` | `oldStateRuleSummary` / `newStateRuleSummary` | 1.046 | 1.047 | +0.1% | ok |
-| `PaperNativeTopographicGraphSortCapacity` | `oldDefaultCapacitySummary` / `newPresizedSummary` | 1.003 | 1.000 | -0.2% | ok |
-| `PaperNativeWaypointDistanceGuard` | `oldAtOrBeyondRangeSummary` / `guardedAtOrBeyondRangeSummary` | 0.985 | 0.990 | +0.5% | ok |
-| `PaperNativeWaypointDistanceGuard` | `oldReallyFarSummary` / `guardedReallyFarSummary` | 1.011 | 1.006 | -0.5% | ok |
-| `PaperNativeWaypointHotPath` | `oldAtOrBeyondRangeValue` / `guardedAtOrBeyondRangeValue` | 1.018 | 1.024 | +0.5% | ok |
-| `PaperNativeWaypointHotPath` | `oldAzimuthValue` / `directAzimuthValue` | 0.995 | 0.998 | +0.3% | ok |
-| `PaperNativeWaypointHotPath` | `oldChunkVisibleValue` / `cachedChunkVisibleValue` | 0.896 | 0.894 | -0.2% | ok |
-| `PaperNativeWaypointHotPath` | `oldReallyFarValue` / `guardedReallyFarValue` | 1.071 | 1.065 | -0.5% | ok |
-| `PaperNativeWaypointHotPath` | `oldWaypointManagerValue` / `optimizedWaypointManagerValue` | 0.933 | 0.935 | +0.3% | ok |
-| `PaperNativeXoroshiroPositionalDirect` | `oldDoubleBatchSummary` / `directDoubleBatchSummary` | 1.001 | 0.997 | -0.4% | ok |
-| `PaperNativeXoroshiroPositionalDirect` | `oldFloatBatchSummary` / `directFloatBatchSummary` | 1.000 | 0.998 | -0.1% | ok |
+| `PaperNativeAquiferIndexStride` | `oldBatchSummary` / `newBatchSummary` | 0.933 | 0.931 | -0.3% | ok |
+| `PaperNativeAquiferPositionalLocation` | `oldBatchSummary` / `directBatchSummary` | 0.993 | 0.947 | -4.6% | ok |
+| `PaperNativeAquiferSurfaceSampling` | `oldBatchSummary` / `newBatchSummary` | 0.906 | 0.904 | -0.2% | ok |
+| `PaperNativeBlendedNoise` | `oldBatchSummary` / `cachedBatchSummary` | 0.980 | 0.943 | -3.8% | ok |
+| `PaperNativeCaveCarverSkip` | `oldLambdaSummary` / `directHelperSummary` | 0.987 | 1.007 | +1.9% | ok |
+| `PaperNativeCaveCarverSkip` | `oldLambdaSummary` / `reusedCheckerSummary` | 0.997 | 1.007 | +1.1% | ok |
+| `PaperNativeChunkDependencies` | `oldImmutableListSummary` / `arraySummary` | 0.972 | 0.923 | -5.0% | ok |
+| `PaperNativeClimateParameterDistance` | `oldDistanceSum` / `branchDistanceSum` | 1.008 | 0.988 | -2.0% | ok |
+| `PaperNativeClimateParameterDistance` | `oldDistanceSum` / `subtractFirstDistanceSum` | 1.005 | 1.002 | -0.3% | ok |
+| `PaperNativeCubicSplineCreate` | `oldIteratorSummary` / `indexSummary` | 1.001 | 1.046 | +4.5% | ok |
+| `PaperNativeDensityAp2Fill` | `oldFlatSummary` / `scratchFlatSummary` | 0.869 | 0.866 | -0.3% | ok |
+| `PaperNativeDensityAp2Fill` | `oldNestedSummary` / `scratchNestedSummary` | 0.888 | 0.943 | +6.2% | ok |
+| `PaperNativeDensityAp2MinMaxFill` | `oldSummary` / `newSummary` | 1.003 | 0.955 | -4.8% | ok |
+| `PaperNativeDensitySplineContext` | `oldWrapperSummary` / `newDirectSummary` | 1.004 | 1.045 | +4.1% | ok |
+| `PaperNativeDensityVisitorHook` | `oldUnwrappingSummary` / `hookedUnwrappingSummary` | 1.009 | 1.004 | -0.5% | ok |
+| `PaperNativeEntityBoundingBox` | `oldMakeThenSetSummary` / `directDimensionsSetSummary` | 1.029 | 1.013 | -1.6% | ok |
+| `PaperNativeEntityChunkTransient` | `oldMixedSummary` / `newMixedSummary` | 0.993 | 0.981 | -1.2% | ok |
+| `PaperNativeEntityLookupStatus` | `oldAccessibleSummary` / `directAccessibleSummary` | 0.999 | 1.018 | +1.9% | ok |
+| `PaperNativeEntityLookupStatus` | `oldStatusSummary` / `directStatusSummary` | 0.999 | 1.002 | +0.4% | ok |
+| `PaperNativeImprovedNoiseDerivative` | `oldDerivativeSummary` / `flatGradientDerivativeSummary` | 0.985 | 0.991 | +0.6% | ok |
+| `PaperNativeImprovedNoiseDerivative` | `oldDerivativeSummary` / `inlineDerivativeSummary` | 1.000 | 1.013 | +1.3% | ok |
+| `PaperNativeImprovedNoiseDerivative` | `oldDerivativeSummary` / `intTableDerivativeSummary` | 0.996 | 1.004 | +0.8% | ok |
+| `PaperNativeImprovedNoiseInline` | `oldPMethodSummary` / `arithmeticSummary` | 0.864 | 0.865 | +0.1% | ok |
+| `PaperNativeImprovedNoiseInline` | `oldPMethodSummary` / `flatGradientSummary` | 0.878 | 0.875 | -0.3% | ok |
+| `PaperNativeImprovedNoiseInline` | `oldPMethodSummary` / `inlineByteAccessSummary` | 1.001 | 1.003 | +0.2% | ok |
+| `PaperNativeImprovedNoiseInline` | `oldPMethodSummary` / `switchGradientSummary` | 0.819 | 0.824 | +0.6% | ok |
+| `PaperNativeJigsawCanAttach` | `oldBatchSummary` / `optimizedBatchSummary` | 0.999 | 1.027 | +2.8% | ok |
+| `PaperNativeJigsawCanAttach` | `oldBatchSummary` / `targetFirstBatchSummary` | 0.997 | 1.056 | +5.9% | ok |
+| `PaperNativeLegacyProvidedAliasRemoval` | `oldValuesRemoveIfSummary` / `newReverseAliasRemoveSummary` | 1.048 | 0.989 | -5.7% | ok |
+| `PaperNativeLevelChunkHeightmap` | `oldFourUpdateSummary` / `newCombinedUpdateSummary` | 5.700 | 5.640 | -1.1% | ok |
+| `PaperNativeMarkerCache` | `oldSummary` / `cachedSummary` | 4.540 | 4.829 | +6.4% | ok |
+| `PaperNativeNoiseChunkBlendCache` | `oldEmptyBlenderSummary` / `newEmptyBlenderSummary` | 0.003 | 0.003 | +9.6% | ok |
+| `PaperNativeNoiseChunkFlatCacheContext` | `oldFalseContextSummary` / `newFalseContextSummary` | 0.846 | 0.858 | +1.4% | ok |
+| `PaperNativeNoiseChunkFlatCacheContext` | `oldTrueContextSummary` / `newTrueContextSummary` | 0.805 | 0.831 | +3.2% | ok |
+| `PaperNativeNoiseInterpolatorSlice` | `oldJaggedSummary` / `flatSummary` | 0.301 | 0.302 | +0.5% | ok |
+| `PaperNativeObfHelperMaps` | `oldStreamDefaultSummary` / `directMapsSummary` | 0.998 | 1.040 | +4.3% | ok |
+| `PaperNativeObfHelperMaps` | `oldStreamDefaultSummary` / `presizedStringPoolSummary` | 1.001 | 0.981 | -2.0% | ok |
+| `PaperNativeOreFeatureLoop` | `oldLoopSummary` / `optimizedLoopSummary` | 0.996 | 1.028 | +3.2% | ok |
+| `PaperNativeOwnableRule` | `oldStreamSummary` / `newLoopSummary` | 0.894 | 0.893 | -0.1% | ok |
+| `PaperNativePalettedReencodeScratch` | `oldNewArraySummary` / `directPackedSummary` | 2.346 | 2.271 | -3.2% | ok |
+| `PaperNativePalettedReencodeScratch` | `oldNewArraySummary` / `scratchThreadLocalSummary` | 0.834 | 0.886 | +6.1% | ok |
+| `PaperNativePluginClassLoaderGroup` | `oldLookupSummary` / `skipRequesterSummary` | 1.008 | 0.955 | -5.2% | ok |
+| `PaperNativePluginDirectoryScan` | `oldWalkDepth1Summary` / `directoryStreamSummary` | 0.921 | 0.910 | -1.2% | ok |
+| `PaperNativePluginDirectoryScan` | `oldWalkDepth1Summary` / `newListSummary` | 0.939 | 0.909 | -3.3% | ok |
+| `PaperNativePluginLoadingAllocation` | `oldDefaultCapacitySetupSummary` / `newPresizedSetupSummary` | 0.970 | 0.995 | +2.6% | ok |
+| `PaperNativePluginLoadingAllocation` | `oldEagerMissingSetSummary` / `newLazyMissingSetSummary` | 0.996 | 1.040 | +4.4% | ok |
+| `PaperNativePluginLoadingAllocation` | `oldEagerValidateSummary` / `newLazyValidateSummary` | 0.993 | 0.991 | -0.2% | ok |
+| `PaperNativePluginMetaDependency` | `oldStreamSummary` / `cachedSummary` | 0.974 | 0.941 | -3.3% | ok |
+| `PaperNativePluginMetaDependency` | `oldStreamSummary` / `newLoopSummary` | 0.998 | 0.942 | -5.5% | ok |
+| `PaperNativePluginNameLog` | `oldTreesetSummary` / `newArrayListSortSummary` | 0.944 | 0.989 | +4.8% | ok |
+| `PaperNativePluginStartupRollup` | `oldSummary` / `newSummary` | 0.992 | 1.033 | +4.1% | ok |
+| `PaperNativeProtoChunkHeightmap` | `oldEnumSetForeachSummary` / `newCachedContainsSummary` | 1.775 | 1.739 | -2.0% | ok |
+| `PaperNativeRangeChoice` | `oldFillArraySummary` / `optimizedFillArraySummary` | 1.002 | 0.994 | -0.8% | ok |
+| `PaperNativeRemapperIndexCleanup` | `oldEagerCleanupSummary` / `newLazyCleanupSummary` | 1.003 | 0.963 | -4.0% | ok |
+| `PaperNativeRemapperSkipHashes` | `oldStreamSummary` / `newLoopSummary` | 0.956 | 1.019 | +6.5% | ok |
+| `PaperNativeSpigotLoadOrderDependency` | `oldLoadAfterBuildSummary` / `newLoadAfterBuildSummary` | 1.003 | 1.011 | +0.8% | ok |
+| `PaperNativeSpigotLoadOrderDependency` | `oldRemovedCountSummary` / `newRemovedCountSummary` | 0.996 | 0.977 | -1.8% | ok |
+| `PaperNativeSpringFeatureMutablePos` | `oldBatchSummary` / `mutableBatchSummary` | 1.001 | 0.957 | -4.4% | ok |
+| `PaperNativeStaticCacheGet` | `oldBatchSummary` / `newBatchSummary` | 0.997 | 0.955 | -4.2% | ok |
+| `PaperNativeSurfaceRulesTestRuleState` | `oldStateRuleSummary` / `newStateRuleSummary` | 1.046 | 0.997 | -4.7% | ok |
+| `PaperNativeTopographicGraphSortCapacity` | `oldDefaultCapacitySummary` / `newPresizedSummary` | 1.003 | 0.970 | -3.3% | ok |
+| `PaperNativeWaypointDistanceGuard` | `oldAtOrBeyondRangeSummary` / `guardedAtOrBeyondRangeSummary` | 0.985 | 0.987 | +0.2% | ok |
+| `PaperNativeWaypointDistanceGuard` | `oldReallyFarSummary` / `guardedReallyFarSummary` | 1.011 | 0.978 | -3.3% | ok |
+| `PaperNativeWaypointHotPath` | `oldAtOrBeyondRangeValue` / `guardedAtOrBeyondRangeValue` | 1.018 | 1.052 | +3.3% | ok |
+| `PaperNativeWaypointHotPath` | `oldAzimuthValue` / `directAzimuthValue` | 0.995 | 0.948 | -4.7% | ok |
+| `PaperNativeWaypointHotPath` | `oldChunkVisibleValue` / `cachedChunkVisibleValue` | 0.896 | 0.880 | -1.8% | ok |
+| `PaperNativeWaypointHotPath` | `oldReallyFarValue` / `guardedReallyFarValue` | 1.071 | 1.005 | -6.1% | ok |
+| `PaperNativeWaypointHotPath` | `oldWaypointManagerValue` / `optimizedWaypointManagerValue` | 0.933 | 0.926 | -0.7% | ok |
+| `PaperNativeXoroshiroPositionalDirect` | `oldDoubleBatchSummary` / `directDoubleBatchSummary` | 1.001 | 0.995 | -0.6% | ok |
+| `PaperNativeXoroshiroPositionalDirect` | `oldFloatBatchSummary` / `directFloatBatchSummary` | 1.000 | 0.999 | -0.1% | ok |
 
 * compared: 70, new pairs: 0, missing: 0
 

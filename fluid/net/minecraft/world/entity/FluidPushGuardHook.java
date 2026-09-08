@@ -41,9 +41,16 @@ public final class FluidPushGuardHook {
     /** Weak identity keys (MapMaker.weakKeys uses ==): entries die with the
      * entity, hold no strong refs, and are concurrent-safe under regionized
      * ticking. Values hold only singletons + primitives. Key type is Object:
-     * identity comparison needs no Entity typing (and no entity casts). */
-    private static final java.util.concurrent.ConcurrentMap<Object, GuardEntry> CACHE =
+     * identity comparison needs no Entity typing (and no entity casts).
+     *
+     * VALUE = a small slot ARRAY (up to 4 tags): every entity runs TWO scans
+     * per baseTick (WATER then LAVA) — a single-entry cache thrashes
+     * alternating tags and never hits (measured: hit_rate 2.0% before the
+     * slot fix). Slots are found by TagKey identity comparison. */
+    private static final java.util.concurrent.ConcurrentMap<Object, GuardEntry[]> CACHE =
             new MapMaker().weakKeys().concurrencyLevel(2).makeMap();
+
+    private static final int MAX_SLOTS = 4;
 
     private FluidPushGuardHook() {}
 
@@ -101,8 +108,17 @@ public final class FluidPushGuardHook {
     }
 
     public static boolean updateFluidHeightAndDoFluidPushing(Entity self, TagKey<Fluid> tag, double speed) {
-        GuardEntry e = CACHE.get(self);
-        if (e != null && e.tag == tag && e.level == self.level() && cellBoundsMatch(self, e)) {
+        GuardEntry[] slots = CACHE.get(self);
+        GuardEntry e = null;
+        if (slots != null) {
+            for (GuardEntry slot : slots) {
+                if (slot != null && slot.tag == tag) {
+                    e = slot;
+                    break;
+                }
+            }
+        }
+        if (e != null && e.level == self.level() && cellBoundsMatch(self, e)) {
             try {
                 if (cellsUnchanged(self, e)) {
                     bump(true);
@@ -244,8 +260,28 @@ public final class FluidPushGuardHook {
         }
         self.fluidHeight.put(tag, maxDepth);
         if (cacheable && CACHE.size() < (1 << 16)) {
-            CACHE.put(self, new GuardEntry(level, tag, minX, minY, minZ, maxX, maxY, maxZ,
-                    cx0, cx1, cz0, cz1, spanX, offset, java.util.Arrays.copyOf(snapshot, snap)));
+            GuardEntry fresh = new GuardEntry(level, tag, minX, minY, minZ, maxX, maxY, maxZ,
+                    cx0, cx1, cz0, cz1, spanX, offset, java.util.Arrays.copyOf(snapshot, snap));
+            GuardEntry[] slots = CACHE.get(self);
+            if (slots == null) {
+                slots = new GuardEntry[MAX_SLOTS];
+            }
+            int free = -1;
+            for (int i = 0; i < MAX_SLOTS; i++) {
+                if (slots[i] == null) {
+                    free = i;
+                    break;
+                }
+                if (slots[i].tag == tag) {
+                    free = i;
+                    break;
+                }
+            }
+            if (free < 0) {
+                free = (int) ((HITS + MISSES) & (MAX_SLOTS - 1)); // rare: round-robin over tags
+            }
+            slots[free] = fresh;
+            CACHE.put(self, slots); // refresh (also updates on first insert)
         }
         if (flowAcc == Vec3.ZERO) {
             return inFluid;
@@ -270,8 +306,10 @@ public final class FluidPushGuardHook {
         Object probe = new Object();
         GuardEntry dummy = new GuardEntry(null, FluidTags.WATER,
                 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, new FluidState[0]);
-        CACHE.put(probe, dummy);
-        boolean ok = CACHE.get(probe) == dummy;
+        GuardEntry[] slots = new GuardEntry[MAX_SLOTS];
+        slots[0] = dummy;
+        CACHE.put(probe, slots);
+        boolean ok = CACHE.get(probe) == slots && CACHE.get(probe)[0] == dummy;
         CACHE.remove(probe);
         return ok && CACHE.isEmpty();
     }

@@ -9,21 +9,29 @@ import sys
 from itertools import combinations
 
 def mann_whitney_two_sided_exact(xs, ys):
-    """Exact MW two-sided p via full permutation enumeration (n small)."""
-    from itertools import permutations
+    """Exact MW two-sided p: 2 x min(one-sided tail) over the permutation
+    distribution (TASK-80 stats-bug fix: the first draft used P(U==U_obs),
+    which understates p for overlapping spreads). Enumeration = combinations
+    of A-positions (C(n,|xs|) labelings), not permutations — 39.9M -> 462."""
+    from itertools import combinations
     pooled = [v for v in xs] + [v for v in ys]
-    labels = [0] * len(xs) + [1] * len(ys)
+    n, k = len(pooled), len(xs)
     U_obs = sum(1 for x in xs for y in ys if x > y) + 0.5 * sum(1 for x in xs for y in ys if x == y)
-    count = 0
+    ge = 0
+    le = 0
     total = 0
-    for perm in set(permutations(labels)):
-        xs_p = [v for v, l in zip(pooled, perm) if l == 0]
-        ys_p = [v for v, l in zip(pooled, perm) if l == 1]
+    for idxs in combinations(range(n), k):
+        s = set(idxs)
+        xs_p = [pooled[i] for i in range(n) if i in s]
+        ys_p = [pooled[i] for i in range(n) if i not in s]
         U = sum(1 for a in xs_p for b in ys_p if a > b) + 0.5 * sum(1 for a in xs_p for b in ys_p if a == b)
         total += 1
-        if abs(U - U_obs) < 1e-12:
-            count += 1
-    return count / total
+        if U >= U_obs - 1e-12:
+            ge += 1
+        if U <= U_obs + 1e-12:
+            le += 1
+    p = 2.0 * min(ge, le) / total
+    return min(1.0, p)
 
 def median(v):
     s = sorted(v)
