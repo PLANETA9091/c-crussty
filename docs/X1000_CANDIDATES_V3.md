@@ -181,3 +181,15 @@ noCollision + entity-grid ~4.2% (per-call cheaper than estimated), **hopper idle
 DEMOTED** (≪1 µs at empty containers, 0 samples), isInWall/sensors/memories below
 resolution at this profile (husk-decay confound) — stay ESTIMATE, no builds without a
 better profile (TASK-32 lesson).
+
+---
+
+## §3.2 SOUNDNESS+REFUTATION ADDENDUM (TASK-80, 2026-09-08) — docs/FLUID_GUARD_DESIGN.md
+
+Top-1 (fluid-push) soundness-mapped fully (empty-path = 1 map-put + return false; no
+overrides; stale-entry trap identified and solved) and the leaf distribution measured:
+skippable machinery 23–40% → guard = 1.4–1.6x per call (~2% census CPU), **NOT the
+>100x class — the entity-path same-state-guard branch is FALSIFIED by measurement**
+(6th refuted branch). Full implementation spec + duty chain included in the design doc;
+full-skip variant = ENGINE-TOUCH (block-version counter). checkInsideBlocks (44%
+applier machinery) sits in the same 1.5–2x class.
