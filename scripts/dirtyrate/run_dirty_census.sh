@@ -24,7 +24,7 @@ echo "start-TASK90-census-$STAMP" >> /home/z/BENCH.lock.journal
 cleanup() { echo "done-TASK90-census-$STAMP" >> /home/z/BENCH.lock.journal; }
 trap cleanup EXIT
 
-log() { echo "[$(date +%H:%M:%S)] $*" | tee -a "$LOG"; }
+log() { local L="[$(date +%H:%M:%S)] $*"; echo "$L"; echo "$L" >> "$LOG"; }   # no pipes: SIGPIPE-proof (run 171330-vs-sibling janitor lesson: tee subshells die, pipe-writers get SIGPIPE 141)
 
 # --- world anchor BEFORE any mutation (their incident lesson: backup FIRST) ---
 log "world anchor (tar) ..."
@@ -46,7 +46,7 @@ log "vanilla boot (purpur direct jar, dirty-census agent armed) ..."
 AGENT="$PWD/scripts/dirtyrate/agent/dirty_census.jar"
 ( cd "$SERVER" && exec "$JDK/bin/java" -Xms512M -Xmx2G -XX:+UseG1GC \
     -javaagent:"$AGENT" \
-    -jar "$JAR" --nogui <"$FIFO" > >(tee -a "$LOG") 2>&1 ) &
+    -jar "$JAR" --nogui <"$FIFO" >"$LOG" 2>&1 ) &   # direct redirect, no tee subshell (SIGPIPE 141 class — sibling+me concur)
 SPID=$!   # server cwd = $SERVER (eula.txt/worlds live there; paperclip must not extract into the repo — TASK-90 2nd live-boot lesson)
 disown "$SPID" 2>/dev/null || true
 
