@@ -193,3 +193,17 @@ skippable machinery 23–40% → guard = 1.4–1.6x per call (~2% census CPU), *
 (6th refuted branch). Full implementation spec + duty chain included in the design doc;
 full-skip variant = ENGINE-TOUCH (block-version counter). checkInsideBlocks (44%
 applier machinery) sits in the same 1.5–2x class.
+
+## §3.3 MOB-DENSE MEASURED ADDENDUM (TASK-81, 2026-09-08) — bench/p500/results/MOBDENSE_CENSUS_2026-09-08.md
+
+The last unmeasured load dimension (dense living entities: 150 villagers + 250
+persistent husks + items, 300 s, population exact-stable) closes the entity/AI
+branch of the hunt. **7th refuted branch.** Measured: `isInWall` 0.3%
+(NON-TARGET, ESTIMATE band refuted), all sensors 2.2% (NearestLivingEntity
+0.7%), `forgetOutdatedMemories` 1.4%, fluid-push 2.2%, Brain.tick umbrella
+8.7% + GoalSelector 8.5% — **AI domain is payload-dominant** (behaviors/goals
+ARE the work; no ≥95%-machinery pocket). Profile's top leaf is platform
+Moonrise TPS accounting (10.4%) — ENGINE-TOUCH class, out of scope. The
+>100x ledger is unchanged: area-map 1,945x–170,612x LIVE, lifecycle >571x
+LIVE, boot-scan >10x–100x LIVE. Entity-path guards remain the honest
+1.4–2x class; AI surfaces sub-3%-ceiling payload.
