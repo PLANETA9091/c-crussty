@@ -5,6 +5,8 @@
 | `profile_server.sh` | one-shot JFR profiling harness for the live Purpur+CRUSSTY server |
 | `flame_diff.py` | self-time delta (regressions / improvements) between two JFR runs |
 | `build_noise.sh` | rebuild the noise bridge classes (see header of that file) |
+| `rcon.py` | minimal vanilla-protocol RCON client (TASK-75: password is NEVER positional — `--password-file` / env `CRUSSTY_RCON_PASSWORD` / default `/home/z/.rcon_password`, chmod 600, вне репо; see docs/RCON_HYGIENE_DECISION.md) |
+| `rcon_verify_throwaway.sh` | end-to-end rotation verification on a dormant flat-world throwaway (new-secret round-trip + burned-secret rejection + clean stop; polite to a concurrent timing lane, takes no BENCH.lock) |
 
 No sudo is required anywhere: JFR attach works for same-user JVMs.
 
@@ -78,12 +80,14 @@ Exit codes: `0` ok, `1` usage, `2` no jcmd/jfr (install the JDK above),
 Anything a shell can run. It executes **while the recording is open**, gets its
 output captured to `.workload.log`, and is TERM'd right after the window.
 
-Chunk-load burst (if rcon is enabled on the server — set `rcon.port/password` in
-`server.properties` and use any rcon client, e.g. `mcrcon`):
+Chunk-load burst (if rcon is enabled on the server — TASK-75 hygiene: the secret is
+NOT passed on the command line; keep it in `/home/z/.rcon_password` (chmod 600) or
+pass `--password-file`, see `docs/RCON_HYGIENE_DECISION.md`; the example uses the
+hardened `rcon.py` instead of `mcrcon -w <pw>` to avoid ps-exposure):
 
 ```bash
 scripts/profile_server.sh --duration 60 --output profiles/chunkburst \
-  --workload 'mcrcon -H 127.0.0.1 -p 25575 -w <pw> "forceload add -512 -512 512 512"'
+  --workload 'scripts/rcon.py 127.0.0.1 25575 "forceload add -512 -512 512 512"'
 ```
 
 No-rcon fallbacks: a headless client/bot walking new terrain, `forceload` via a
