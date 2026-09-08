@@ -74,5 +74,7 @@ minute-bucket). The hook target method does not run on this server/version/workl
 bar is unsatisfiable for `fillArray` — §7's "either alone is fatal" applies, and the §8 grain question
 (§8.1) is answered empirically: the live surface is object-context `compute()`, not expressible by any
 existing batch shape. **g9 remains closed as a paper design; revisit trigger = a player-driven worldgen
-profile actually showing `fillArray` frames.** Boot-window noise cost (2.87 CPU-s per boot) is recorded
-as the native-noise boot A/B opportunity (V2 addendum, TASK-58 proposal) — orthogonal to this hook.
+profile actually showing `fillArray` frames.** Boot-window noise cost (2.87 CPU-s per boot) was probed by
+the TASK-58 boot A/B and REFUTED as a lever: the noise arm chain is server-boot-gated (arming lands
+after `Done (`), so the pre-Done burst cannot route native (`bench/bootab/results/BOOTAB_NOISE_2026-09-09.md`;
+paired n=5/arm medians 16.738 vs 16.542 s, ranges overlap) — orthogonal to this hook, and now measured closed.

@@ -99,7 +99,11 @@ warrants a hot-path A/B on its own; D1/D2 should ride the same commit wave as ba
   review — design-first, zero gameplay-value surface.
 * **Boot-noise opportunity (measured, F2):** the 5 s structure-ring burst at boot burns ≈2.87 CPU-s
   in exactly the stack the closed-.so native noise bridge replaces (`ImprovedNoise.noise` 230 frame-hits,
-  `Mth.lerp3` 165 leaf). Proposal **TASK-58** (unclaimed): BOOTAB-style paired boot dormant vs
-  `CRUSSTY_NATIVE_IMPROVED_NOISE=1`, n≥5, BENCH.lock; JFR recipe validated end-to-end (report §1/§6).
+  `Mth.lerp3` 165 leaf). **TASK-58 EXECUTED (2026-09-09) — boot-time channel REFUTED by mechanism +
+  measurement** (`bench/bootab/results/BOOTAB_NOISE_2026-09-09.md`): the noise arm chain is
+  server-boot-gated (arming lands AFTER the `Done (` marker by design), so the pre-Done burst cannot
+  route native; paired live-dir boots n=5/arm — medians 16.738 s (dormant) vs 16.542 s (armed),
+  −0.196 s / −1.2 %, ranges overlap → arm-invariant as predicted. Addressing the burst = activation-gate
+  redesign (not proposed). Post-Done noise execution routes native as proven (self-test each armed boot).
 * D1–D5 statuses above unchanged. The profile's g9 leg (fillArray 0 samples) is documented in
   `G9_WHOLE_METHOD_HOOK_DESIGN.md` §9.
