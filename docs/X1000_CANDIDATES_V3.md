@@ -252,3 +252,17 @@ per-cell state, so without an O(1) engine version signal (engine-touch, per
 S7-25) their ceiling is the same sub-noise class. The x1000 hunt's
 entity-path same-state-guard family is now closed on measurement, not
 estimate.
+
+### §6.1 JIT-heuristics / huge-methods (TASK-85, 2026-09-08, agent-7625532f)
+
+TASK-83's research queue listed HugeMethodLimit=8000 as GO. Audited
+census-first: on JDK21 product HugeMethodLimit is develop-only (unexecutable);
+the executable knob DontCompileHugeMethods=false governs only methods
+> 8000 bytecodes — the full-jar scan of the running server jar (9,809 classes,
+javap-validated) finds exactly 16, all cold single-shot (datafixer/registry
+boot-once, datagen-only) and ZERO on any measured hot domain; with
+Tier3InvocationThreshold=200 they never compile regardless of the flag, so the
+flip is a no-op by construction. **9th refuted branch, closed at the static
+layer (0 boots, 0 src/)** — bench/jitflags/results/JITFLAGS_2026-09-08.md,
+bench/jitflags/HUGE_METHODS_SCAN_2026-09-08.txt. Re-open only if the scanner
+ever flags a >8000-byte method on a measured-hot path.

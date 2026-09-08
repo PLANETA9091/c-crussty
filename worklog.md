@@ -477,3 +477,20 @@ Work Log:
 Stage Summary:
 - TASK-80 closed jointly: guard ships default-OFF DO-NOT-WIRE-BY-DEFAULT (real but small ~2% census win; not x1000-class). Biggest deliverable = the engine NUL-termination fix (a reliability multiplier for every future hook channel).
 - Pushes: c-crussty 2f4f599+c69fd71+dd298fc (origin/master), CRUSSTY 4f5d5ea (origin/master), CLAIMS 00fd889 (dev-logs). Open claims: none. Next: mob-dense census (S7-26/81), kernel-policy whitelist + B.2.2 runbook (P2), ck_cap verify-strings (P2), D6 P3 design; user-directed web-research lane for new optimization architectures (puzzle-assembly of published techniques) authorized by owner this session.
+---
+Task ID: cron-22:00+08-Job366516
+Agent: agent-7625532f
+Task: Автономный тик cron 22:00+08 — TASK-85 (JIT-heuristics / huge-method channel, census-first audit TASK-83 GO-штриха).
+
+Work Log:
+- Коорд: unstaged-хвост прошлой сессии разрешён (stale-дубликат TASK-30 клампа в AreaMapBench отброшен — HEAD уже содержит правильный фикс; classes_normal/ в .gitignore, c3d3887). Оба репо pull --rebase перед работой.
+- Клейм TASK-85 (a7a19b5) — file-disjoint от TASK-84 соседа S7-28 (dirty-rate tooling + hopper census). TASK-83 очередь отдала "JIT-heuristics HugeMethodLimit=8000 → GO" — я аудитировал ДО какого-либо wiring'а.
+- Флаг-археология на нашем JDK21 (прод-VM): HugeMethodLimit = DEVELOP-ONLY ("VM option 'HugeMethodLimit' is develop and is available only in debug version of VM") — prescription из TASK-83 неисполним как записан. Исполнимый рычаг: DontCompileHugeMethods {product, default true, command-line writable} — -XX:-DontCompileHugeMethods допускает методы > 8000 байткодов (внутренний HugeMethodLimit default) в C2.
+- Стат-цензус полного running-jar (versions/1.21.10/purpur-1.21.10.jar, 9,809 классов — НЕ 259-классовый launcher-glue): минимальный classfile-сканер (CP walk + Code-заголовки, без дизасма). Валидация: 0 bail'ов на 9,809 классов + байт-точное совпадение с javap (Items.<clinit> last pc 23525 → code_len 23526 == сканер).
+- РЕЗУЛЬТАТ ЦЕНЗУСА: ровно 16 методов > 8000 байткодов, ВСЕ холодные: datafixer-bootstrap'ы (BlockStateData.bootstrap* 8.4-58.8KB), registry <clinit> (Blocks 40.2KB, Items 23.5KB, SoundEvents 15.5KB, HelperBlockFlatteningV1450 57.4KB), datagen-only провайдеры (recipes/loot/tags — никогда не исполняются на проде). Пересечение с измеренными горячими доменами (TASK-57/78/81/82: worldgen/density, light, AI, entity, chunk-pipeline, netty) = НОЛЬ.
+- Динамика: Tier3InvocationThreshold=200 (замерено на нашем JDK21) — single-shot методы никогда не компилируются независимо от флага → flip = no-op по конструкции; boot A/B мерил бы шум. Закрыто на стат-слое: 0 бутов, 0 bench-инфраструктуры, 0 src/ — самая дешёвая рефертация в леджере.
+- Деливераблы: bench/jitflags/{huge_method_scan.py, HUGE_METHODS_SCAN_2026-09-08.txt, results/JITFLAGS_2026-09-08.md}; docs/RESULTS_LEDGER.md ADDENDUM-3; docs/X1000_CANDIDATES_V3.md §6.1. Re-open критерий: сканер (секунды работы) находит >8000-байтовый метод на измеренно-горячем пути.
+
+Stage Summary:
+- TASK-85 ЗАКРЫТ: JIT-heuristics канал = 9-я опровергнутая ветка x1000-охоты, закрыта на стат-слое. Verdict: NO-GO / DO-NOT-FLIP. TASK-83 GO скорректирован на двух основаниях (флаг неисполним на прод-JDK21; исполнимый рычаг имеет пустую горячую поверхность + пороговая динамика делает flip нулевым по конструкции).
+- Пул x1000-охоты после тика: TASK-84 (S7-28) = dirty-rate tooling + hopper census (top remaining same-state кандидат); затем BE-tick shouldTickBlocksAt (SparklyPaper), dfc-on-Paper, Graal JIT A/B (нужен GraalVM — отдельная тяжёлая сессия с ~1GB загрузкой + boot-серия), kernel-policy whitelist + B.2.2 runbook (P2, мой), ck_cap verify-strings (P2), D6 P3 design.
