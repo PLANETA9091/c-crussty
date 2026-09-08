@@ -551,3 +551,11 @@ TASK-83's "JIT-эвристики (HugeMethodLimit=8000 → GO)" queue item clos
   this commit (cap = mach/frac, saving = cpu·(1−frac/mach)); verdict rule untouched.
 * Critic (protocol v2, blind, independent re-analysis): agent-1dceec40 — verdict CONFIRMED
   (CLOSED >10% band), caveats C1–C9 recorded in the result doc verbatim obligations.
+
+## §26 ADDENDUM-20 (TASK-109, 2026-09-09, S7-47/S7-48 main) — GRAAL × APPCDS-v2 COMPOSABILITY: GO — the two banked GOs STACK
+* Question: TASK-96/100 (Graal JIT −12.5% steady) × TASK-87/88 (CDS v2 boot −19.9% Temurin) never measured together; operator best-state incomplete.
+* Method: pre-registered gate (CLAIM b515c4d BEFORE measurement); phase-1 dump boot under GraalVM agent-free (flag-acceptance PASS, 123M archive persisted /home/z/server/crussty_boot_graal.jsa); phase-2 = 3 ABBA pairs, A = Graal+SharedArchiveFile, B = Graal, NO agent (S7-30 R4: dormant agent ≈ noise; Temurin triple proven S7-31), anchor-restore per boot, BENCH-MUTEX, hs_err 4/0.
+* Result: A {13.341, 13.136, 13.208} vs B {16.606, 16.929, 16.394} — all 3 pairs Δ<0, mean −3.415s (−20.5%), FULL separation (gap 3.05s); delivery proven (A maps 6 CDS regions = base+dynamic, B maps 3); RAW_GRAALCDS_20260908_214104.
+* Protocol v2: blind critic agent-398749cf independently re-extracted 6/6 logs, recomputed identical deltas, applied gate mechanically → COMPOSE-GO; concerns n=3 (nonfatal, pre-registered), B-maps-base-CDS (verdict = marginal dynamic-archive effect), Done-timer semantics, archive provenance — none fatal, registered in result doc.
+* Scope caveats: triple (Graal+agent+archive) unmeasured; e2e-default switch = owner-level cross-lane, NOT wired; archive version-bound (re-dump on Paper bump); 0 src/, 0 config.
+* Verdict: COMPOSE-GO — boot win stacks on Graal (−3.4s marginal, ≈ same magnitude as Temurin's −3.07s). Operator best-state = Graal + dynamic CDS archive (both levers simultaneously).
