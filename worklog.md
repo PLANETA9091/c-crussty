@@ -370,3 +370,23 @@ Stage Summary:
 - TASK-73 ЗАКРЫТ: Session-1 dormant-invisible приземлена — мост live-готов, gate off = байт-индistinguишable от pre-TASK-73.
 - Инфра-урок: e2e courtesy guard = flock -n probe → бут держать БЕЗ удержания /tmp/crussty_bench.lock (flock-владение блокирует guard).
 - Открытых клеймов нет. Следующий кандидат: Session-2 = armed boot (CRUSSTY_NATIVE_PERLIN_NOISE=1): armed selftest + live-verify патча на реальном worldgen + затем G-AB (paired A/B, TASK-63 harness, n=5/arm Mann-Whitney) — решающий вердикт конвейера. Сосед: TASK-72 CPU-only.
+
+---
+Task ID: cron-15:40+08-Job366516
+Agent: agent-7625532f
+Task: Автономный тик cron 15:40+08 — TASK-74 Session-2 armed boots + G-AB (решающий live A/B batching-layer) + ответ пользователю по физике x1000.
+
+Work Log:
+- Клейм TASK-74 → push dac4022 → reverify OK (серверная lane свободна, сосед TASK-68/72 done; в середине сессии сосед запушил TASK-75 rcon-hygiene — file-disjoint, конфликтов нет).
+- Session-2 live-verify: armed boot CRUSSTY_NATIVE_PERLIN_NOISE=1 — полный маркерный след зелёный (pristine sighting 11000B major 65 → computed patch getValue(DDDDDZ)D 11000→10735B → hook serve → hook armed retransform rc=0 → self-test passed), 0 Exception, graceful stop.
+- Recогносцировка протокола (три находки до тайминговой серии): (1) tail-probe — post-Done async-работа затухает 1.0→0.15 cores только на ~28s (floor 0.090 на ~55s); (2) пилот (4 рана) вскрыл pro-B конфаунд асимметричных ожиданий арминга (A: 10s vs B: 15-64s post-Done) → protocol v2: симметричный idle-gate (обе arms ≥60s dwell + CPU<0.12 cores sustained 5s), burst-детектор streak 3→6, пилот заархивирован в RAW/pilot_asymmetric_protocol/; (3) canary 22→32s (boot-дрейф 25-26s с .so от TASK-73; мир идентичность доказана region-mtimes с Sep 7 + финальный diff-vs-seed IDENTICAL).
+- G-AB серия: 10 ранов ABBA (A B B A A B B A A B), JFR mechanism-proof (первая попытка честно поймала dormant-профиль — бёрст стартовал до арминга 15-80s; фикс: armed-gate перед бёрстом; вторая: armed=yes, engagement доказан).
+- РЕЗУЛЬТАТ: cpu_burst ИДЕАЛЬНАЯ СЕПАРАЦИЯ (max B 57.30 < min A 58.77, exact MW p_two=0.0079) −6.90 CPU-s median (−11.1%); wall −8.95s (−12.3%) p_one=0.0476/p_two=0.0952 — гейт (wall>0, p<0.1, n=5) выполнен ДВУСТОРОННЕ; watchdog-робастно; boot Done flat. Эффект 5-8× предсказания — JIT inlining-barrier removal (мегаморфное тело 11000B не инлайнится в caller-циклы; 1-instruction патч-тело инлайнится): микробенч = LOWER BOUND для whole-method swaps.
+- ИНФРА-ИНЦИДЕНТ: зомби-реисполнение 'one 10 B' ×2 потеряло run-10 строку до первого коммита → ран перезапущен чисто (61.59/55.10, тот же протокол), мир верифицирован байт-в-байт, инцидент задокументирован в отчёте §5.5 (lesson: session-unique run-id).
+- Гейты: cargo test 64/64; clippy Δ0 (базлайн 12 pre-existing, src/ не тронут); world-verify IDENTICAL; hs_err — новых нет.
+- Пуши: c-crussty ed879c6 (harness+отчёт+RAW+доки) + 76ebdee (ремонт+финальные числа); dev-logs 95be0b5 (CLAIMS done + reverify OK, обе записи мои).
+
+Stage Summary:
+- TASK-74 ЗАКРЫТ: G-AB = GO — КОНВЕЙР BATCHING-LAYER ЗАВЕРШЁН ALL-GO (G-STEP0→G-RECON→G-ABI→G-BODY→G-AB). Whole-object PerlinNoise мост на проде: −11.1% CPU-burst (сепарация p=0.008), −12.3% wall (p=0.095), бит-точно, env-gated default-OFF, JFR engagement под нагрузкой.
+- Ответ пользователю (x1000): честная физика — worldgen noise = ~4-5 CPU-s из ~55-64 CPU-s бёрста (≤8%); даже бесконечное ускорение noise даёт ≤8%; измеренные реальные выигрыши: kernel-уровень 0.41-0.59× (batch), whole-body 0.815× изолированно → −11% CPU на живом бёрсте (лучше микробенча из-за инлайнинга). x1000 возможен только алгоритмически (не считать ненужное) — геймплейные изменения = фрод по ТЗ. Следующие крупные рычаги: NormalNoise/BlendedNoise owners (та же whole-body форма — p(int)-остаток 10.4% JFR), lighting/tick-системы (отдельный канал), parallelism (harness уже есть).
+- Открытых клеймов нет. Следующие кандидаты: (1) NormalNoise/BlendedNoise whole-body owners (decoding ABI уже есть, форма proven — самый крупный оставшийся noise-рычаг), (2) kernel-policy whitelist + rollout runbook для already-proven пары, (3) ck_cap verify-strings (P2), (4) D6 P3 design. Сосед: TASK-75 (rcon-hygiene) — CPU/file-only.
