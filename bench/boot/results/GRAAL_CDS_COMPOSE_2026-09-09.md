@@ -67,3 +67,20 @@ as STACKED: Graal JIT (steady −12.5%) + dynamic CDS archive (boot −20.5% mar
   GRAAL java; `ArchiveClassesAtExit` agent-free law unchanged).
 - Rig lesson banked: relative OUT path inside `(cd $SERVER && exec ... >$OUT/...)` subshell =
   silent redirect-fail (probe-1 aborted); absolute paths mandatory.
+
+## ADDENDUM (TASK-110, S7-49): TRIPLE-STATE VERIFICATION — caveat CLOSED
+2 verification boots, Graal + EXACT production agentpath (libcrussty_runtime.so JVMTI, dormant)
++ SharedArchiveFile archive (RAW_GRAAL_TRIPLE/): t1 Done (14.214s), t2 Done (14.211s), BOTH
+mapped=6 (3 static base + 3 dynamic) + "Opened archive" x2 + agent logging live (29 crussty
+lines) — the dynamic archive MAPS WITH ClassFileLoadHook attached under GraalVM (JDK restriction
+covers DUMP-with-agent only; use-with-agent coexistence now proven for BOTH Temurin S7-31 and
+Graal). Pre-registered kill condition did NOT fire. hs_err 4/0, BENCH-MUTEX pair clean.
+Directional note (NOT a delta bank, n=2, variance floor ~1.5s): triple 14.21s vs agent-free
+A-arm 13.23s — plausible small agent cost, within noise; honest statement only.
+Operator guidance: full production state (Graal + dormant agent + archive) is COHERENT — all
+three components verified simultaneously live. e2e-default switch remains owner-level
+coordination (twin TASK-108 A/B pending on shared e2e; changing default JVM mid-flight = lane
+contamination per TASK-106 cross-generation law).
+Rig lesson: inline-script pgrep -f self-match (pattern literal recurs in script text via
+kernel= path) → false LANE-BUSY x2 aborted probes; fix = pgrep -x java; 2 aborted starts left
+dangling journal lines (documented, outside verdict window).
