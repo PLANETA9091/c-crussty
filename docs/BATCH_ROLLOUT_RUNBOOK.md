@@ -40,6 +40,11 @@ cargo test --release             # batch_api::* + kernel_policy drift-guards mus
   S7-12 lesson (cost one boot): `cargo test --release` does NOT refresh the cdylib —
   always run the explicit `cargo build --release` between editing src/ and deploying,
   or you boot a stale .so.
+  S7-14 lesson (cost one boot): if ANY `noise/**.java` changed, run `scripts/build_noise.sh`
+  BEFORE the cargo build — the helper classes are include_bytes!'d at compile time; a stale
+  embed ships the old ABI word and the G4 helper self-test honestly degrades (S7-14 live
+  evidence: rc=-101 with EXPECTED_ABI 131087 embedded vs 196626 live dispatcher — the
+  fail-safe gate worked as designed, only the boot was wasted).
   Hot-reload variant: `mv` (inode swap) BEFORE `kill -USR1`, never `cp`.
 * Bench courtesy: `scripts/e2e_orchestrate.sh` refuses boot while `/tmp/crussty_bench.lock` is
   flock-held. Batch benches (`bench/batch/run_batch_floor.sh`) take `/home/z/BENCH.lock` internally —
@@ -61,8 +66,10 @@ grep -E 'native surface live: .*[1-9][0-9]* symbols unresolved'
 B.7 Stage 0 checklist: TASK-24 scratch reuse ✅ (`28ad646` + BATCH_FLOOR_REPORT before/after);
 BatchFloorBench exists ✅ (`bench/batch/`, K∈{1,8,16,64,256}); §B.5 hard guard ✅ (this session);
 **wave-1 shapes: g42 ✅ (G3 spike — shape C `(IIIII[I[J)I`, table id 14, batchable via
-`--kernels 14`) + g9 A′ ✅ (TASK-48, ids 12/13); g35/g39/g40 shapes ❌ still absent**
-(no longer the sole Stage-0 item — see §8 G3).
+`--kernels 14`) + g9 A′ ✅ (TASK-48, ids 12/13) + g35/g39/g40 ✅ (S7-14 — wire v3 ref plane,
+shapes D/E/F, table ids 15/16/17, batchable via `--kernels 15,16,17`; contract probe-verified
+count-written, `WAVE1_V3_SHAPES_REPORT.md`) — **G3 FULLY CLOSED; every wave-1 signature is now
+expressible** (see §8 G3).**
 
 ```bash
 # no CRUSSTY_BATCH export — unset == off (default)
@@ -115,7 +122,7 @@ PASS criteria (bench evidence recorded in BATCH_FLOOR_REPORT; rerun only in a fr
   never lands, shipped code unchanged. Unit tests remain the fast regression layer; the fixture is
   the permanent e2e proof. See bench/batch/refused_e2e/results/REFUSED_ID_E2E.md.
 
-## 4. Stage 1 — wave-1a site-armed, `CRUSSTY_BATCH=auto` (status: **BLOCKED (re-verified S7-13)** — G4 demonstrator LANDED + live-validated S7-12 (b06dead: arm marker / retarget / helper flush / e2e rows), but REAL arming stays blocked: G5 measured-T exists for NO candidate (g42 no-T on closed body §3/G3; g9/g42 Variant R infeasible per reports/G4_JAVAP_RECON_g9_g42.md; g35/g39/g40 shapes absent), so the demonstrator is the TERMINAL Stage-1 state until an in-engine kernel body exists or JFR proves amplification — see docs/G9_WHOLE_METHOD_HOOK_DESIGN.md verdict)
+## 4. Stage 1 — wave-1a site-armed, `CRUSSTY_BATCH=auto` (status: **BLOCKED (re-verified S7-14)** — G4 demonstrator LANDED + live-validated S7-12 (b06dead: arm marker / retarget / helper flush / e2e rows), but REAL arming stays blocked: G5 measured-T exists for NO candidate (g42 no-T on closed body §3/G3; g9/g42 Variant R infeasible per reports/G4_JAVAP_RECON_g9_g42.md; **g35/g39/g40 shapes now EXIST (S7-14, wire v3) and are MEASURED: batch never wins on the probe bodies at any K ≤ 256 — WAVE1_V3_SHAPES_REPORT.md — so still no T**), so the demonstrator is the TERMINAL Stage-1 state until an in-engine kernel body exists (the only remaining unlock: a real batch-shaped kernel wired through the now-complete shape surface) — see docs/G9_WHOLE_METHOD_HOOK_DESIGN.md verdict + reports/G9_JFR_AMPLIFICATION_PROBE.md (G9 blocker (a) measured MARGINAL: gen-burst-only amplification, steady-state 0)
 
 Wave-1a = g42 `StaticCacheGet` → g35 `RangeChoice` → g40/g39 `SpigotLoadOrderDependency`
 (B.4 arm order; B.2.3 promotion verdict `"batch (site-armed at T)"` with evidence a-d required in

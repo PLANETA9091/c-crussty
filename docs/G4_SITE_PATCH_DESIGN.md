@@ -85,3 +85,35 @@ Arming is a one-time, boot-phase decision made on the quiet activation worker (n
 - Marker lines (grep-able): `batch: arm <Class>.<method> id=(none|<n>) T=<t> site=<tag>`, `batch: site <tag> retargeted|retarget skipped|retarget FAILED`, `batch: helper self-test passed|DIAGNOSTIC|skipped|failed`. e2e row: `batch site arm` (FAIL only on kernel-policy refusal; PASS = arm + retarget evidence; INFO = absent/ambiguous).
 - Degrade ladder (B.2.2) live semantics: helper-side `volatile boolean degraded` — set on ANY negative `run()` return, ABI mismatch, or Throwable from the flush leg (bridge absent included); single-call for the boot, no retry storms; observable via `ImprovedNoiseBatchOps.isDegraded()/lastFlushStatus()`.
 - Observed anomaly (NOT G4-causal, monitor): two shutdown-time hs_err crashes during the S7-12 boot series, both in the JVM **Signal Dispatcher** thread during rapid shutdown→boot cycling (boots whose retarget had FAILED, i.e. serving unretargeted proven bytes); the third boot (retarget landed) shut down cleanly. Record for frequency monitoring alongside the attempt>1 watch item.
+
+## 11. Hot-reload re-arm semantics — DECISION (S7-14, closes S7-13 NEXT-1)
+
+S7-13 measured the armed hot-reload behavior live: gen-2 re-init aborts at
+define_class (all 4 embedded classes duplicate-define in the kernel loader →
+LinkageError → "bridge definition aborted"); the gen-1 redefinition stays
+persistent (class remains patched + retargeted), the gen-2 hook serves pristine
+capture (inert, READY=false). Safe degradation by construction.
+
+**DECISION: do NOT add the already-defined guard.** Rationale: (1) operational
+need — none today: the only armed site (improved_noise demonstrator) keeps
+serving gen-1 patched bytes correctly across reloads, and re-arm buys nothing
+until a real batch kernel consumer exists; (2) blast radius — relaxing the
+duplicate-define abort touches the define-time global-ref capture path that
+two live wirings depend on (ImprovedNoiseNativeOps + ImprovedNoiseBatchOps),
+for a state the e2e suite would need a THIRD boot arm to cover; (3) the abort
+is fail-safe and VISIBLE (diagnostic line + helper self-test DIAGNOSTIC), which
+is exactly the G4 degrade-ladder contract. Revisit ONLY if an operational
+requirement for hot-re-arm lands (e.g. a future in-engine kernel body whose
+retarget must survive a `.so` swap without restart). Worklog SESSION 013
+carries the full live evidence.
+
+## 12. As-built appendix — S7-14 wire-v3 addendum
+
+`ImprovedNoiseBatchOps` (still 4 embedded classes, build_noise.sh unchanged)
+now compiles against wire v3: `EXPECTED_ABI = 196626` (= (3<<16)|18, the
+compile-time mirror of `batch_api::ABI_WORD` after the descriptor-parser port
++ wave-1 shapes D/E/F, table ids 15/16/17), and its zero-op flush passes
+`EMPTY_REFS = new Object[0]` as the 7th `refArgs` plane. Live-verified S7-14:
+armed boot with the stale embed shipped rc=-101 (EXPECTED_ABI 131087 vs live
+196626 — the fail-safe gate held; RUNBOOK §2 deploy note updated), rebuilt
+embed → `batch: helper self-test passed ... abi 196626`, verify ALL PASS.

@@ -78,3 +78,47 @@ profile actually showing `fillArray` frames.** Boot-window noise cost (2.87 CPU-
 the TASK-58 boot A/B and REFUTED as a lever: the noise arm chain is server-boot-gated (arming lands
 after `Done (`), so the pre-Done burst cannot route native (`bench/bootab/results/BOOTAB_NOISE_2026-09-09.md`;
 paired n=5/arm medians 16.738 vs 16.542 s, ranges overlap) — orthogonal to this hook, and now measured closed.
+## 10. S7-14 addendum — the gen-burst leg measured (reports/G9_JFR_AMPLIFICATION_PROBE.md)
+
+Reconciliation with §9: the two profiles sampled DIFFERENT workloads and the
+results COMPOSE rather than contradict. TASK-57 profiled steady state (idle
+ticks + boot) and measured `fillArray` DEAD there (0/927). This probe drove
+1049 chunks of FIRST-TIME generation (RCON forceload — the player-driven
+worldgen revisit trigger §9 names, fired) and measured `fillArray` ALIVE in
+exactly that window:
+
+First live JFR measurement (boot 02:00:33Z 2026-09-08, dormant hooks, JFR
+settings=profile, 1049 fresh chunks via RCON-driven forceload, 9906 execution
+samples): `Ap2.fillArray` runs ENTIRELY on Paper's async gen worker (307/307
+inclusive samples, 0 on the Server thread) and ONLY during generation bursts
+(≈ 200 s sustained gen; steady-state rate ≈ 0). fillArray = 5.12% of worker
+samples during bursts ≈ 1.0-1.5 ms/tick during bursts ≈ **19-29k calls/tick at
+R_mid 54 ns — marginally AT the §4.2 bar (18.5k, band 12k-40k), bursts only**.
+Verdict §7 stands: blocker (a) is measured MARGINAL (gen-burst-only, no
+steady-state presence — the hook can never pay in normal ticks), blocker (b)
+remains fatal. Recommendation upgraded to: close as **never-hook at steady
+state**; gen-burst potential stays permanently parked behind blocker (b) — do
+not invest parity-gate work without an operator-level gen-latency requirement.
+Any future re-derivation must also account for the async-worker execution
+surface (S2's per-tick model assumed server-thread work).
+
+**Reconciled verdict (TASK-57 + S7-14): g9 stays NO-GO.** `fillArray` is dead
+in steady state (§9) and alive ONLY during first-time-generation bursts, where
+it holds 5.12% of async-worker samples (peaks 10-23%) ≈ 1.0-1.5 ms/tick ≈
+19-29k calls/tick at R_mid 54 ns — marginally AT the §4.2 bar, bursts only,
+and the execution surface is the Paper async worker (307/307 samples, 0 on
+Server thread — any hook body runs off-thread; S2's per-tick framing needs
+re-derivation). Blocker (b) (undocumented `(III[J)I` semantics) remains fatal
+(§7 either-alone rule). Recommendation: **never-hook**; the gen-burst leg is
+measured, bounded (~1-1.5 ms/tick ceiling), and permanently parked behind
+blocker (b) — do not invest parity-gate work without an operator-level
+gen-latency requirement.
+
+Verdict §7 stands: blocker (a) is measured MARGINAL (gen-burst-only, no
+steady-state presence — the hook can never pay in normal ticks), blocker (b)
+remains fatal. Recommendation upgraded to: close as **never-hook at steady
+state**; gen-burst potential stays permanently parked behind blocker (b) — do
+not invest parity-gate work without an operator-level gen-latency requirement.
+Any future re-derivation must also account for the async-worker execution
+surface (S2's per-tick model assumed server-thread work).
+
