@@ -35,17 +35,42 @@ mkdir -p "$W"; cd "$W"; rm -rf "$IMG"; rm -f "$W/agent.log"; mkdir -p "$IMG"
 
 # ---- 0. Policies file (P6B-12 layer A lever, S7-69 design) ----
 cat > policies.txt << 'PEOF'
-type=file,action=close,path=logs/latest.log
-type=file,action=close,path=/home/z/server/logs/latest.log
-type=file,action=close,path=world/session.lock
-type=file,action=close,path=./world/session.lock
-type=file,action=close,path=world_nether/session.lock
-type=file,action=close,path=./world_nether/session.lock
-type=file,action=close,path=world_the_end/session.lock
-type=file,action=close,path=./world_the_end/session.lock
-type=file,action=reopen,path=/home/z/server/versions/**
-type=file,action=reopen,path=versions/**
-type=socket,action=close,localPort=25575
+# TASK-115 phase-6c attempt 9b — decoded syntax (key: value, --- separators)
+type: file
+action: close
+path: logs/latest.log
+---
+type: file
+action: close
+path: world/session.lock
+---
+type: file
+action: close
+path: ./world/session.lock
+---
+type: file
+action: close
+path: world_nether/session.lock
+---
+type: file
+action: close
+path: ./world_nether/session.lock
+---
+type: file
+action: close
+path: world_the_end/session.lock
+---
+type: file
+action: close
+path: ./world_the_end/session.lock
+---
+type: file
+action: reopen
+path: /home/z/server/versions/**
+---
+type: socket
+action: close
+localPort: 25575
 PEOF
 echo "POLICIES-LINES=$(wc -l < policies.txt)"
 
@@ -160,15 +185,18 @@ public class CrusstyCracHookV2 implements Resource {
     return 0;
   }
 
-  static void anonInodeSweep() { // P6B-12 layer B: unclaimed netty JNI fds — visible to native scan only
+  static void anonInodeSweep() { // v8 two-pass: snapshot+resolve first, close after iteration (P6B-12 layer B)
     try {
       File[] fds = new File("/proc/self/fd").listFiles();
+      if (fds == null) { marker("ANON-SWEEP no-list"); return; }
       int n = 0;
-      if (fds != null) for (File f : fds) {
+      StringBuilder hits = new StringBuilder();
+      for (File f : fds) {
         String t; try { t = Files.readSymbolicLink(f.toPath()).toString(); } catch (Exception e) { continue; }
-        if (t.startsWith("anon_inode:")) { int rc = closeFd(Integer.parseInt(f.getName())); n++; marker("ANON-CLOSE fd=" + f.getName() + " " + t + " rc=" + rc); }
+        boolean kill = t.startsWith("anon_inode:") || t.contains("/spark/") || t.startsWith("/proc/");
+        if (kill) { int rc = closeFd(Integer.parseInt(f.getName())); n++; hits.append(f.getName()).append('=').append(t).append(":rc").append(rc).append(';'); }
       }
-      marker("ANON-SWEEP closed=" + n);
+      marker("ANON-SWEEP closed=" + n + " " + hits);
     } catch (Throwable t) { marker("ANON-SWEEP-ERR " + t); }
   }
 
