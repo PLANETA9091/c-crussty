@@ -472,12 +472,23 @@ kill -0 "$SPID" 2>/dev/null || { echo "BOOT-FAIL pid-dead t=${BOOT_S}s"; tail -5
 echo "BOOT-DONE pid=$SPID t=${BOOT_S}s"
 
 sleep 2
-"$JCMD" "$SPID" JDK.checkpoint > "$W/jcmd.out" 2>&1; JRC=$?
-DEAD=""
-for i in $(seq 1 16); do kill -0 "$SPID" 2>/dev/null || { DEAD=1; break; }; sleep 0.5; done
+# v11.3 (S7-81/a19): bounded checkpoint retry per LAW P6B-20 — cgroup fd is a periodic
+# short-lived re-opener (µs per tick); refusal is transient per-attempt; REFUSED-SURVIVED
+# semantics allow re-issuing on the SAME boot (no boot-count increase). Agent hooks are
+# re-entry safe (SURGERY-SKIP-DUP dup-guard, S7-79). Every refusal cause logged per attempt.
+JRC=""; DEAD=""
+for CKATT in 1 2 3; do
+  "$JCMD" "$SPID" JDK.checkpoint > "$W/jcmd.out" 2>&1; JRC=$?
+  DEAD=""
+  for i in $(seq 1 16); do kill -0 "$SPID" 2>/dev/null || { DEAD=1; break; }; sleep 0.5; done
+  echo "CK-ATT$CKATT jcmd_rc=$JRC process_died=$([ -n "$DEAD" ] && echo yes || echo no)"
+  [ -n "$DEAD" ] && break
+  cp "$W/jcmd.out" "$W/jcmd_att$CKATT.out" 2>/dev/null
+  [ "$CKATT" -lt 3 ] && sleep 2
+done
 if [ -z "$DEAD" ]; then
-  echo "REFUSED-SURVIVED jcmd_rc=$JRC"; kill -9 "$SPID" 2>/dev/null; wait "$SPID" 2>/dev/null
-  echo "=== DELTA-INVENTORY vs phase-2 ==="; grep -E 'Suppressed|Caused' "$W/jcmd.out" | head -12
+  echo "REFUSED-SURVIVED attempts=3 jcmd_rc=$JRC"; kill -9 "$SPID" 2>/dev/null; wait "$SPID" 2>/dev/null
+  echo "=== DELTA-INVENTORY vs phase-2 ==="; cat "$W"/jcmd_att*.out "$W/jcmd.out" 2>/dev/null | grep -E 'Suppressed|Caused' | sort -u | head -12
   echo "=== AGENT-JOURNAL ==="; cat "$W/agent.log" 2>/dev/null | tail -12
   exit 20
 fi
