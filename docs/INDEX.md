@@ -115,3 +115,4 @@ commit/date-locked evidence, expected drift, do not refresh.
 | TASK121_C3_HEALTH_2026-09-09.md | 121 | CLOSED | periodic C3 health re-probe (first cadence run) |
 | TASK125_C3_HEALTH_CADENCE2_2026-09-09.md | 125 | CLOSED | C3 health cadence #2: MIXED — G1 committed-heap variance identified |
 | C3_GATE_V2_PROTOCOL_2026-09-09.md | 130 | LIVE | C3 reclaim gate v2 pre-registration: max(R0x1.10, R0+100MB), crossover R0=1000, 10-run calibration, binds next cadence |
+| TASK132_C3_CADENCE3_V2_2026-09-09.md | 132 | LIVE | C3 cadence #3: first v2-gated run — PASS x both gates (+61MB residue, plateau, used-heap flat) |

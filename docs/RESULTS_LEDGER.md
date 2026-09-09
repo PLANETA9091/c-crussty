@@ -721,3 +721,15 @@ Numbering note: author drafted §66/ADDENDUM-59 in-doc, but twin took §66/59 (a
 - Boot 16.2s canonical; surgery clean (late sweep closed=0, dispatch-order flip BCP-RAW-first handled by dup-guard). Checkpoint HUNG (not clean refusal): jcmd.out frozen at pid-prefix, no image, no exception — unwind path fired (P6B-9) and the v11 rebind's sync bind.invoke **deadlocked**: netty syncUninterruptibly waits for an eventloop that cannot run during unwind/freeze => **LAW P6B-19: sync re-bind inside afterRestore/unwind = deadlock; rebind must be image-gated + async**.
 - Refusal CAUSE swallowed by the hang (unknown; re-instrumented — a18's jcmd.out will carry it). Fix v11.1 banked + compile-verified: image-gate via -javaagent arg (img dir non-empty = restore context, else AR-REBIND-SKIP) + async daemon bind thread (hang can no longer block restore/rig).
 - 1 boot 16.2s consumed (run killed at 300s tool timeout, disclosed; journal orphan = kill artifact); hs_err 4/0, 0 config. Results: bench/boot/results/CRAC_P6B_ATTEMPT17_2026-09-09.md.
+
+## §70 ADDENDUM-63 — TASK-132 (agent-7625532f, 2026-09-09): C3 CADENCE #3 — FIRST V2-GATED RUN — PASS ×BOTH GATES (+61MB residue, plateau shape, used-heap flat)
+
+Numbering note: drafted as §69/ADDENDUM-62 pre-push; twin landed their §69/ADDENDUM-62 (attempt-17) on origin mid-flight — renumbered §70/63 per the §63→§64 precedent (no new duplicate class).
+
+**Run.** Canonical run_task129_pure_inject.sh, N=1, RAW TASK132_C3V2_20260909_080614. Boot 16.636s (pure-inject parity band, 3rd boot: 16.27/15.96/16.64). R0=916MB (used 482.5M / committed 580.6M), R1=965MB, R2=977MB (used 490.4M / committed 582.7M). Residue +61MB.
+
+**Gates.** v1 (977 ≤ 1007.6) PASS — GC.run not needed; v2 (max(1007.6, 1016)=1016) PASS — the TASK-130 §5 binding pre-registration expectation met (residue ≤+100MB absolute). Both verdicts reported; rig internal tree left at v1 semantics (proven rigs not rewritten; v2 applied at reporting — "no new instruments" clause), rig flip to v2 deferred as explicit open tail, not done silently.
+
+**Mandatory commentary.** Trajectory PLATEAU: 13 samples/120s, 965→977 monotone saturating (+12MB total, deltas shrinking +5,0,+4,0×4,+2,+2,+1) — no creep. Used-heap discriminator: 482.5→490.4M (+1.6% flat), committed +2.1M → no live-object growth; +61MB residue = native structural class (C2 code-cache + metaspace, TASK-126 attribution ~57MB on lean config — agrees within 4MB); no agent-arena signature, no escalation, benign class re-confirmed under v2.
+
+**Notes.** R0=916 sits +27..39MB above TASK-129 pair (877-889) — within per-boot committed variance law; same-boot pairing used. hs_err=0. Config-of-record verified pre-run (runtime.so/jar mtimes Sep 8, engine 4f5d5ea). Fifo stub removed at banking. Twin lane S7-79 untouched (flock serialization). 1 boot, ~3min under flock.
