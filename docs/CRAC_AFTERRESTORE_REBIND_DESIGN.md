@@ -39,3 +39,18 @@ Same pattern for rcon ServerSocket (new ServerSocket bind 25575 in afterRestore)
 
 1. Run v9.1 (AR-LISTEN at AR-ORG site) => measure kernel-listener verdicts (expect absent ×4 — confirms C1/C4).
 2. If AR-LISTEN plumbing verified: implement R1 step 1-6 as agent v10 behind `crussty.rebind=1` flag, one boot, SLP verdict = the acceptance.
+
+## a22 ADDENDUM (S7-83): EVENTLOOP FD RESURRECTION — javap-verified facts (netty 4.1.118.Final)
+`javap -p io.netty.channel.epoll.EpollEventLoop` (from netty-transport-native-epoll + classes-epoll):
+- `private unix.FileDescriptor epollFd;` `private unix.FileDescriptor eventFd;` `private unix.FileDescriptor timerFd;`
+- `private final EpollEventArray events;` (native malloc'd buffer — fd-independent, survives)
+Fds are WRAPPER OBJECTS (not raw ints) => resurrection = reflectively read each wrapper's
+internal int (unix.FileDescriptor holds `int fd` + native methods), create fresh fds via
+Rust JNI lib (epoll_create1 / eventfd / timerfd_create — add externs to fd_surgery.rs),
+then SET the wrapper's int field to the new fd (setAccessible; cleaner than dup2-to-number,
+no fd-table lottery). Repair order: epollFd -> eventFd -> timerFd per loop, loops discovered
+via `Netty Epoll Server IO #N` thread -> or register a probe channel to force group.next().
+After repair => rebind (startTcpServerListener + acceptConnections) — the PendingRegistrationPromise
+from LAW P6B-23 will then be serviced. Risk register: EpollEventLoop may cache native state
+beyond the three fds (IovArray/datagram arrays are buffers, fd-free — verified above); wakeup()
+writes eventFd directly (works after swap); timer for scheduled tasks uses timerFd (same).
