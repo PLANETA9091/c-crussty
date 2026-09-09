@@ -22,6 +22,7 @@ at runtime: for every `Java_*` export in the JNI manifest it defines a
 | Native surface injection — 98 bridge classes / 283 natives | ✅ working | live boot on Purpur 1.21.10 + CRUSSTY launcher: `98 bridge classes, 283 natives registered, 0 unresolved` |
 | `SingleUserAreaMap.update()` hot-patch | ✅ working, verified live | patched `5075 → 3320` bytes, retransform rc=0, 64-rect self-test OK (native == naive set difference) |
 | `ImprovedNoise.noise(DDDDD)D` hot-patch | ✅ working, **off by default** (env gate) | pristine sighting major 65 → patched `5691 → 5403` bytes → retransform rc=0 → native handle round-trip self-test passed |
+| `PerlinNoise.getValue` whole-body native bridge | ✅ working, **on by default** (TASK-148 promotion; opt-out env `CRUSSTY_NATIVE_PERLIN_NOISE=0`) | TASK-74 G-AB live A/B n=5/arm ABBA: wall −12.3%, cpu_burst −11.1% median (p=0.0079), parity 0/20000 bit-exact — [`bench/e2e/results/PERLIN_AB_2026-09-09.md`](bench/e2e/results/PERLIN_AB_2026-09-09.md) |
 | Injection live-proof (self-check at boot) | ✅ working | `nativeCheck() = 1`; `binarySummary(1000)` wrote 1 long through a real kernel |
 | P500 benchmark baseline | ✅ recorded | 49 groups, 129 kernels, 0 crashes — see [`bench/p500/`](bench/p500/README.md) |
 
