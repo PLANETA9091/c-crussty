@@ -14,6 +14,14 @@
 #   PARTIAL = refusal with delta-inventory vs phase-2 (extends/refutes P6A-2 to Netty NIO class).
 # Kills: boot fail, >1 boot, hs_err increment, any config/gameplay touch.
 # BENCH coordination: flock -n, LOCK-BUSY -> exit 42 (bank pre-work only).
+# v10 (S7-78): AR-LISTEN live at AR-ORG (PRE) + R1 rebind (reflective ServerConnectionListener.bind
+#   at afterRestore; acceptance = SLP DEAD->SERVING) + AR-LISTEN (POST) bracketing.
+#   INJECTS-ONLY LAW (owner 14:45, docs/OWNER_DIRECTIVE_INJECTS_ONLY_2026-09-09.md):
+#   perf flags (CDS/TieredStopAtLevel/Xms/Xmx) REMOVED — canonical launch; agent + CRaC
+#   operational flags only. Boot regress to ~17.3s band EXPECTED + honest.
+# v10.1 (S7-78 post-a16): rebind v11 targets real mojmap API startTcpServerListener+acceptConnections
+#   (a16 measured: no bind* anywhere on ServerConnectionListener); cgroup determinism: /sys/fs/cgroup/**
+#   close policy (layer A open-time claim) + LATE second sweep (race window shrink).
 set -u
 JAVA=/home/z/crac-jdk/bin/java
 JCMD=/home/z/crac-jdk/bin/jcmd
@@ -75,6 +83,10 @@ localPort: 25575
 type: socket
 action: close
 remotePort: 443
+---
+type: file
+action: close
+path: /sys/fs/cgroup/**
 PEOF
 echo "POLICIES-LINES=$(wc -l < policies.txt)"
 
@@ -236,6 +248,7 @@ public class CrusstyCracHookV2 implements Resource {
     fdSweep(Integer.toHexString(25565), ""); // 25565 netty JNI socket: unclaimed layer-B, sweep keeps it
     fdInv("AFTER");
     portClear();
+    anonInodeSweep(); // v10.1 LATE-SWEEP (a16 law): cgroup fd opened after first sweep -> second pass shrinks the race window; layer-A /sys/fs/cgroup/** policy = deterministic primary
     marker("SURGERY-V8 netty=" + nc + " ms=" + (System.currentTimeMillis() - t0));
   }
   public void afterRestore(org.crac.Context<? extends Resource> ctx) { marker("HOOK-AFTER-RESTORE");
@@ -252,7 +265,8 @@ public class CrusstyCracHookV2 implements Resource {
       }
     } catch (Throwable t) { marker("AR-LISTEN-ERR " + t); }
   }
-  void listenState() { // AR-LISTEN (attempt-15): kernel listener state inside restored process
+  void listenState() { listenStateT(""); } // back-compat no-tag form
+  void listenStateT(String tag) { // AR-LISTEN (a15) + PRE/POST rebind bracketing (a16)
     try {
       for (int port : new int[]{25565, 25575}) {
         String hex = Integer.toHexString(port).toUpperCase(); String st = "absent";
@@ -262,9 +276,69 @@ public class CrusstyCracHookV2 implements Resource {
             if (c.length > 3 && c[1].endsWith(":" + hex) && c[3].equals("0A")) st = "listening";
           }
         }
-        marker("AR-LISTEN " + port + "=" + st);
+        marker("AR-LISTEN" + (tag.isEmpty() ? "" : "[" + tag + "]") + " " + port + "=" + st);
       }
     } catch (Throwable t) { marker("AR-LISTEN-ERR " + t); }
+  }
+
+  static void rebindNetty() { // R1 re-bind v10 (S7-78, design CRAC_AFTERRESTORE_REBIND_DESIGN):
+    try { // afterRestore resurrection path within P6B-17 (C4: kernel port free post-restore)
+      Class<?> ms = findLoaded("net.minecraft.server.MinecraftServer", "MS2");
+      if (ms == null) { marker("AR-REBIND-ERR no-ms"); return; }
+      Object server = null;
+      for (Method m : ms.getMethods())
+        if (Modifier.isStatic(m.getModifiers()) && m.getParameterCount() == 0 && m.getReturnType() == ms) { server = m.invoke(null); break; }
+      if (server == null) { marker("AR-REBIND-ERR no-instance"); return; }
+      Field cf = null;
+      for (Field f : ms.getDeclaredFields())
+        if (f.getName().equals("connection") && f.getType().getSimpleName().equals("ServerConnectionListener")) { cf = f; break; }
+      if (cf == null) { marker("AR-REBIND-ERR no-connection-field"); return; }
+      cf.setAccessible(true);
+      Object conn = cf.get(server);
+      Class<?> scl = conn.getClass();
+      Field lf = null;
+      for (Field f : scl.getDeclaredFields())
+        if (f.getName().equals("channels") && List.class.isAssignableFrom(f.getType())) { lf = f; break; }
+      int sizeBefore = -1;
+      if (lf != null) { lf.setAccessible(true); sizeBefore = ((List<?>) lf.get(conn)).size(); }
+      Method bind = null; Class<?> c = scl;
+      while (c != null && bind == null) {
+        for (Method m : c.getDeclaredMethods()) // v11 (S7-78 a16 javap): real API = startTcpServerListener(SocketAddress), NOT bind
+          if (m.getName().equals("startTcpServerListener") && m.getParameterCount() == 1 && m.getParameterTypes()[0] == java.net.SocketAddress.class) { bind = m; break; }
+        if (bind == null) c = c.getSuperclass();
+      }
+      if (bind == null) {
+        StringBuilder cand = new StringBuilder(); c = scl;
+        while (c != null && c != Object.class) {
+          for (Method m : c.getDeclaredMethods()) // full dump (bounded): v10 candidates= was EMPTY — no bind* anywhere
+            if (cand.length() < 400) cand.append(m.getName()).append('(').append(m.getParameterCount()).append(");");
+          c = c.getSuperclass();
+        }
+        marker("AR-REBIND-ERR no-startTcp candidates=" + cand);
+        return;
+      }
+      bind.setAccessible(true);
+      marker("AR-REBIND-TRY " + bind);
+      long t0 = System.currentTimeMillis();
+      Object res = bind.invoke(conn, new java.net.InetSocketAddress(25565)); // startTcpServerListener: void, appends to channels
+      String local = "void-ret";
+      List<?> fut = lf != null ? (List<?>) lf.get(conn) : null;
+      if (res != null) {
+        Object ch = res.getClass().getMethod("channel").invoke(res);
+        local = ch.getClass().getSimpleName() + "@" + ch.getClass().getMethod("localAddress").invoke(ch);
+      } else if (fut != null && fut.size() > sizeBefore) {
+        Object ch = fut.get(fut.size() - 1).getClass().getMethod("channel").invoke(fut.get(fut.size() - 1));
+        local = ch.getClass().getSimpleName() + "@" + ch.getClass().getMethod("localAddress").invoke(ch);
+      }
+      // v11: re-arm accept gate (acceptConnections() sets running=true; idempotent if already true)
+      String acc = "skipped";
+      for (Method m : scl.getMethods())
+        if (m.getName().equals("acceptConnections")) { m.invoke(conn); acc = "rearmed"; break; }
+      marker("AR-REBIND rc=0 size=" + sizeBefore + "->" + (fut != null ? fut.size() : -1) + " local=" + local + " accept=" + acc + " ms=" + (System.currentTimeMillis() - t0));
+    } catch (Throwable t) {
+      Throwable cc = t.getCause() != null ? t.getCause() : t;
+      marker("AR-REBIND-ERR " + t + " cause=" + cc);
+    }
   }
 
   public static void premain(String args, Instrumentation inst) throws Exception {
@@ -277,7 +351,7 @@ public class CrusstyCracHookV2 implements Resource {
         public void beforeCheckpoint(org.crac.Context<? extends org.crac.Resource> c) {
           marker("BCP-ORG"); super.beforeCheckpoint(c);
         }
-        public void afterRestore(org.crac.Context<? extends org.crac.Resource> c) { marker("AR-ORG"); listenState(); }
+        public void afterRestore(org.crac.Context<? extends org.crac.Resource> c) { marker("AR-ORG"); listenStateT("PRE"); rebindNetty(); listenStateT("POST"); }
       };
       ORG_PIN = orgHook; // P6B-8 pin
       Core.getGlobalContext().register(orgHook);
@@ -365,8 +439,8 @@ echo "BUILD-OK"
 rm -rf "$SRV/logs" 2>/dev/null; mkdir -p "$SRV/logs"  # boot floor log hygiene only, no config touch
 T0=$(date +%s.%N)
 cd "$SRV"
+# v10 boot line: INJECTS-ONLY canonical (perf flags owner-cancelled; see header note)
 "$JAVA" -Djava.library.path="$W" -Djdk.crac.resource-policies="$W/policies.txt" \
-  -XX:+UnlockDiagnosticVMOptions -XX:+AllowArchivingWithJavaAgent -XX:SharedArchiveFile=$SRV/crussty_boot_v3.jsa -Xlog:cds=info:file=$W/cds.log -XX:TieredStopAtLevel=1 -Xms1g -Xmx1g \
   -javaagent:"$W/hookv2.jar" -XX:CRaCCheckpointTo="$IMG" \
   -cp "$W/hookv2.jar:$PJAR" io.papermc.paperclip.Main --nogui > "$W/boot.log" 2>&1 < /dev/null 9>&- &
 SPID=$!
@@ -464,4 +538,6 @@ for R in 1 2; do
   kill -9 "$RPID" 2>/dev/null; wait "$RPID" 2>/dev/null
 done
 grep -E 'HOOK-AFTER-RESTORE' "$W/agent.log" | head -2
+echo "=== AR-JOURNAL ==="
+grep -E 'AR-ORG|AR-RAW|AR-LISTEN|AR-REBIND' "$W/agent.log"
 echo "VERDICT-DONE boot=${BOOT_S}s"
