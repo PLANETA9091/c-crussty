@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
-# TASK-115 phase-6b (S7-60): REAL-SERVER CHECKPOINT ATTEMPT with agent v2.
+# TASK-115 phase-6b (S7-68, attempt 8): REAL-SERVER CHECKPOINT with agent v7.
+# v7 = v6 + LAW P6B-10 fix: classloader-robust object-close via Instrumentation
+#   (static INSTR from premain; inst.getAllLoadedClasses() finds MinecraftServer /
+#   LogManager regardless of paperclip child-loader) + per-fd accounting
+#   (FD-INV-BEFORE/AFTER hot-target delta + PORT-CLEAR re-scan after surgery).
 # Pre-registered: CLAIM + docs/CRAC_P3_AGENT_DESIGN.md + LAW P6A-1/P6A-2 (S7-59).
 # Agent v2 = object-level close via VERIFIED javap reflection chain:
 #   MinecraftServer.getServer() -> .connection (net.minecraft.server.network.ServerConnectionListener)
@@ -59,10 +63,54 @@ public class CrusstyCracHookV2 implements Resource {
   }
   public native static int closeFd(int fd);
 
+  static Instrumentation INSTR; // P6B-10 (S7-67): app-loader CNFE on paperclip child-loader classes
+
+  static Class<?> findLoaded(String name, String tag) {
+    if (INSTR == null) { marker("LOADER-" + tag + " NO-INSTR"); return null; }
+    for (Class<?> c : INSTR.getAllLoadedClasses())
+      if (c.getName().equals(name)) {
+        ClassLoader cl = c.getClassLoader();
+        marker("LOADER-" + tag + " " + (cl == null ? "bootstrap" : cl.getClass().getName() + "@" + Integer.toHexString(System.identityHashCode(cl))));
+        return c;
+      }
+    marker("LOADER-" + tag + " NOT-LOADED");
+    return null;
+  }
+
+  static String fdInv(String tag) {
+    try {
+      File[] fds = new File("/proc/self/fd").listFiles();
+      int n = fds == null ? 0 : fds.length;
+      StringBuilder hits = new StringBuilder();
+      if (fds != null) for (File f : fds) {
+        String t; try { t = Files.readSymbolicLink(f.toPath()).toString(); } catch (Exception e) { continue; }
+        if (t.startsWith("socket:[") || t.contains("latest.log") || t.contains("session.lock") || t.startsWith("anon_inode"))
+          hits.append(t.length() > 44 ? t.substring(0, 44) : t).append(';');
+      }
+      marker("FD-INV-" + tag + " total=" + n + " hot=" + hits);
+      return hits.toString();
+    } catch (Throwable e) { marker("FD-INV-" + tag + "-ERR " + e); return ""; }
+  }
+
+  static void portClear() {
+    try {
+      for (int p : new int[]{25565, 25575}) {
+        boolean listening = false;
+        for (String f : new String[]{"/proc/net/tcp", "/proc/net/tcp6"})
+          for (String line : Files.readAllLines(Path.of(f))) {
+            String[] c = line.trim().split("\\s+");
+            if (c.length >= 4 && c[3].equals("0A") && c[1].substring(c[1].indexOf(':') + 1).equals(Integer.toHexString(p))) listening = true;
+          }
+        marker("PORT-CLEAR " + p + " listening=" + listening);
+      }
+    } catch (Throwable t) { marker("PORT-CLEAR-ERR " + t); }
+  }
+
   static int closeNettyListeners() {
     int closed = 0;
     try {
-      Class<?> ms = Class.forName("net.minecraft.server.MinecraftServer");
+      Class<?> ms = findLoaded("net.minecraft.server.MinecraftServer", "MS");
+      if (ms == null) return -1;
       Object server = null;
       for (Method m : ms.getMethods()) {
         if (Modifier.isStatic(m.getModifiers()) && m.getParameterCount() == 0 &&
@@ -95,7 +143,8 @@ public class CrusstyCracHookV2 implements Resource {
   static int stopFileAppenders() {
     int stopped = 0;
     try {
-      Class<?> lmm = Class.forName("org.apache.logging.log4j.LogManager");
+      Class<?> lmm = findLoaded("org.apache.logging.log4j.LogManager", "L4J");
+      if (lmm == null) return -1;
       Object ctx = lmm.getMethod("getContext", boolean.class).invoke(null, false);
       Object cfg = ctx.getClass().getMethod("getConfiguration").invoke(ctx);
       Map<?, ?> apps = (Map<?, ?>) cfg.getClass().getMethod("getAppenders").invoke(cfg);
@@ -138,17 +187,22 @@ public class CrusstyCracHookV2 implements Resource {
     if (SURGERY_DONE) { marker("SURGERY-SKIP-DUP"); return; }
     SURGERY_DONE = true;
     long t0 = System.currentTimeMillis();
+    fdInv("BEFORE");
     int nc = closeNettyListeners();
     int na = stopFileAppenders();
     fdSweep(Integer.toHexString(25565), "");
     fdSweep(Integer.toHexString(25575), "");
     fdSweep("", "/home/z/server/logs/latest.log");
+    fdInv("AFTER");
+    portClear();
     marker("SURGERY-V2 netty=" + nc + " appenders=" + na + " ms=" + (System.currentTimeMillis() - t0));
   }
   public void afterRestore(org.crac.Context<? extends Resource> ctx) { marker("HOOK-AFTER-RESTORE"); }
 
   public static void premain(String args, Instrumentation inst) throws Exception {
     System.loadLibrary("fdsurgery");
+    INSTR = inst; // P6B-10 capture (S7-68)
+    marker("INSTR-CAPTURED " + (inst != null));
     boolean orgOk = false, rawOk = false;
     try {
       CrusstyCracHookV2 orgHook = new CrusstyCracHookV2() {
@@ -194,7 +248,7 @@ public class CrusstyCracHookV2 implements Resource {
       Class.forName("jdk.crac.Context").getMethod("register", jres).invoke(gctx, proxy);
       rawOk = true;
     } catch (Throwable t) { marker("RAW-REG-ERR " + t + " cause=" + t.getCause()); }
-    marker("PREMAIN-V6 org=" + orgOk + " raw=" + rawOk + " pinned=" + (ORG_PIN != null && RAW_PIN != null));
+    marker("PREMAIN-V7 org=" + orgOk + " raw=" + rawOk + " pinned=" + (ORG_PIN != null && RAW_PIN != null) + " instr=" + (INSTR != null));
     // S7-65 compat discriminator (NEXT(2) piggyback): WHY server compat=null vs plain-JVM bind
     try {
       Object g2 = Class.forName("jdk.crac.Core").getMethod("getGlobalContext").invoke(null);
@@ -273,7 +327,7 @@ wait "$SPID" 2>/dev/null; WRC=$?
 sleep 1
 IMGF=$(ls "$IMG" 2>/dev/null | wc -l); IMGB=$(du -sb "$IMG" 2>/dev/null | cut -f1)
 echo "CK jcmd_rc=$JRC wait_rc=$WRC img_files=$IMGF img_bytes=$IMGB"
-echo "=== AGENT-JOURNAL ==="; grep -E 'SURGERY-V2|NETTY-CLOSE |LOG4J-STOP |SWEEP ' "$W/agent.log" | tail -15
+echo "=== AGENT-JOURNAL ==="; grep -E 'SURGERY-V2|NETTY-CLOSE |LOG4J-STOP |SWEEP |FD-INV|PORT-CLEAR|LOADER-|INSTR-CAPTURED' "$W/agent.log" | tail -22
 [ "$IMGF" -eq 0 ] && { echo "VERDICT=FAIL no-image"; exit 23; }
 
 # ---- 4. Restore x2 + prize metric (restore wall-clock to first output) ----
