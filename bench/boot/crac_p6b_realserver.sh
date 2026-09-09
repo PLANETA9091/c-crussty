@@ -35,7 +35,7 @@ mkdir -p "$W"; cd "$W"; rm -rf "$IMG"; rm -f "$W/agent.log"; mkdir -p "$IMG"
 
 # ---- 0. Policies file (P6B-12 layer A lever, S7-69 design) ----
 cat > policies.txt << 'PEOF'
-# TASK-115 phase-6c attempt 10 — decoded syntax (key: value, --- separators)
+# TASK-115 phase-6c attempt 11 — decoded syntax (purpur ignore: fd stays open, lazy classload post-restore)
 type: file
 action: close
 path: logs/latest.log
@@ -65,7 +65,7 @@ action: close
 path: ./world_the_end/session.lock
 ---
 type: file
-action: close
+action: ignore
 path: /home/z/server/versions/**
 ---
 type: socket
@@ -365,9 +365,11 @@ IMGF=$(ls "$IMG" 2>/dev/null | wc -l); IMGB=$(du -sb "$IMG" 2>/dev/null | cut -f
 echo "CK jcmd_rc=$JRC wait_rc=$WRC img_files=$IMGF img_bytes=$IMGB"
 echo "=== AGENT-JOURNAL ==="; grep -E 'SURGERY-V8|NETTY-CLOSE |ANON-|SWEEP |FD-INV|PORT-CLEAR|LOADER-|INSTR-CAPTURED' "$W/agent.log" | tail -24
 [ "$IMGF" -eq 0 ] && { echo "VERDICT=FAIL no-image"; exit 23; }
+[ -d "$SRV/plugins/spark/tmp" ] && { cp -a "$SRV/plugins/spark/tmp" "$W/sparktmp.bak"; echo "SPARKTMP-BAK $(ls "$W/sparktmp.bak" 2>/dev/null | wc -l)"; }
 
 # ---- 4. Restore x2 + prize metric (restore wall-clock to first output) ----
 for R in 1 2; do
+  [ "$R" = "2" ] && { rm -rf "$SRV/plugins/spark/tmp"; cp -a "$W/sparktmp.bak" "$SRV/plugins/spark/tmp" 2>/dev/null; echo "SPARKTMP-RESTORED"; }
   T2=$(date +%s.%N)
   "$JAVA" -XX:CRaCRestoreFrom="$IMG" > "$W/restore$R.log" 2>&1 < /dev/null 9>&- &
   RPID=$!
@@ -379,7 +381,7 @@ for R in 1 2; do
   done
   T3=$(date +%s.%N)
   PRIZE=$(echo "$T3 $T2" | awk '{printf "%.2f", $1-$2}')
-  sleep 2
+  sleep 5
   RA=""; kill -0 "$RPID" 2>/dev/null && RA=yes
   echo "RESTORE[$R] alive=$RA first_output=${PRIZE}s"
   kill -9 "$RPID" 2>/dev/null; wait "$RPID" 2>/dev/null
