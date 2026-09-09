@@ -51,6 +51,11 @@ ss -ltn 2>/dev/null | grep -qE ':25565|:25575' && { echo "LANE-BUSY-PORTS"; exit
 
 mkdir -p "$W"; cd "$W"; rm -rf "$IMG"; rm -f "$W/agent.log"; mkdir -p "$IMG"
 
+# v12.2 (S7-85 a23, pre-registered in CLAIM): disk pre-flight — P6B-24 storm class needs >=1.2G free
+FREEKB=$(df -k / | tail -1 | awk '{print $4}')
+[ "$FREEKB" -lt 1228800 ] && { echo "DISK-GUARD free=${FREEKB}KB < 1.2G — abort 43 (rig v12.2)"; exit 43; }
+echo "DISK-GUARD-OK free=${FREEKB}KB"
+
 # ---- 0. Policies file (P6B-12 layer A lever, S7-69 design) ----
 cat > policies.txt << 'PEOF'
 # TASK-115 phase-6c attempt 11 — decoded syntax (purpur ignore: fd stays open, lazy classload post-restore)
@@ -248,19 +253,30 @@ public class CrusstyCracHookV2 implements Resource {
     }
     return n;
   }
-  // v12.1 (S7-84 a22b root-cause, javap-verified): mojmap 1.21.10 holds server groups in STATIC
-  // suppliers ServerConnectionListener.SERVER_EPOLL_EVENT_GROUP / SERVER_EVENT_GROUP (single .group()
-  // call = boss+workers) => instance-field scan finds nothing (a22b measured loops=0). Read the
-  // supplier .get() => the SAME parked group our rebind blocks on.
+  // v12.3 (S7-85 a23 root-cause, harness-proven offline): mojmap stores Suppliers.memoize(lambda) —
+  // runtime value = guava Suppliers$NonSerializableMemoizingSupplier (PACKAGE-PRIVATE class) =>
+  // getMethod("get").invoke() = IllegalAccessException (a23 measured loops=0). guava 33.3.1 Supplier
+  // EXTENDS j.u.f.Supplier => cast to the public interface accessor = legal + accessible.
+  // Every step now emits evidence (no silent catch — a23 blind spot).
   static java.util.LinkedHashSet<Object> findLoopsStatic(Class<?> scl) {
     java.util.LinkedHashSet<Object> out = new java.util.LinkedHashSet<>();
-    for (String fn : new String[]{"SERVER_EPOLL_EVENT_GROUP", "SERVER_EVENT_GROUP"}) {
-      try {
-        Field f = scl.getDeclaredField(fn); f.setAccessible(true);
-        Object sup = f.get(null);
-        Object grp = sup.getClass().getMethod("get").invoke(sup);
-        if (grp != null) { out.add(grp); collectChildren(grp, out); }
-      } catch (Throwable ig) { }
+    for (Class<?> c = scl; c != null && c != Object.class; c = c.getSuperclass()) {
+      for (String fn : new String[]{"SERVER_EPOLL_EVENT_GROUP", "SERVER_EVENT_GROUP"}) {
+        try {
+          Field f;
+          try { f = c.getDeclaredField(fn); } catch (NoSuchFieldException nf) { marker("AR-REPAIR-STAT " + fn + "=field-miss@" + c.getSimpleName()); continue; }
+          f.setAccessible(true);
+          Object sup = f.get(null);
+          if (sup == null) { marker("AR-REPAIR-STAT " + fn + "=null"); continue; }
+          Object grp;
+          try { grp = ((java.util.function.Supplier<?>) sup).get(); } catch (Throwable tg) { Throwable cc = tg.getCause() != null ? tg.getCause() : tg; marker("AR-REPAIR-STAT " + fn + "=get-fail " + sup.getClass().getName() + " " + cc); continue; }
+          if (grp != null) {
+            int before = out.size(); out.add(grp); collectChildren(grp, out);
+            marker("AR-REPAIR-STAT " + fn + "=ok grp=" + grp.getClass().getSimpleName() + " loops+=" + (out.size() - before));
+          } else marker("AR-REPAIR-STAT " + fn + "=grp-null");
+        } catch (Throwable t) { marker("AR-REPAIR-STAT " + fn + "=err " + t); }
+      }
+      break; // top-level class only (fields are declared there — javap-verified)
     }
     return out;
   }
@@ -752,6 +768,14 @@ for R in 1 2; do
   T2=$(date +%s.%N)
   "$JAVA" -XX:CRaCRestoreFrom="$IMG" > "$W/restore$R.log" 2>&1 < /dev/null 9>&- &
   RPID=$!
+  # v12.2 (S7-85 a23): inline restore-log trimmer — P6B-24 storm floods ~390MB/9s (disk-DoS);
+  # cap at 50MB, keep 2MB tail (evidence samples preserved)
+  ( while kill -0 "$RPID" 2>/dev/null; do
+      SZ=$(stat -c%s "$W/restore$R.log" 2>/dev/null || echo 0)
+      if [ "$SZ" -gt 50000000 ]; then tail -c 2000000 "$W/restore$R.log" > "$W/restore$R.log.t" && mv "$W/restore$R.log.t" "$W/restore$R.log"; fi
+      sleep 1
+    done ) &
+  TRIMPID=$!
   FIRST=""
   for i in $(seq 1 40); do
     [ -s "$W/restore$R.log" ] && { FIRST=1; break; }
