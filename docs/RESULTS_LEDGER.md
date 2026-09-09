@@ -781,3 +781,11 @@ Numbering note: drafted as §71/ADDENDUM-64 pre-push; twin landed their §71/ADD
 **Open evidence.** Rebind daemon hung inside Method.invoke (TRY logged, no completion in 11s window) — hook-phase vs eventloop-resume scheduling unresolved; a21 discriminator = mid-R1 jcmd Thread.print stack of crussty-rebind.
 
 **a21 pre-registered:** bak snapshot moved to boot-Done (pre-att1, evidence pair kept) + mid-R1 thread-dump; expect BAK>=1 => R2 alive + rebind stack; SERVING honest either way.
+
+## §76 — ADDENDUM-69: TASK-115 attempt-21 (S7-83) — DOUBLE-ALIVE ON DEMAND (P6B-22 fix proven); LAW P6B-23 (SWEEP IS NETTY-HOSTILE) VIA LIVE THREAD DUMP
+
+**Run.** Rig v11.4. Boot 17.3s. SPARKTMP-BAK-PRE 3 files => CK-ATT1 cleared FIRST TRY (img 2 files, 508,710,916B) => RESTORE[1] alive 0.26s + RESTORE[2] alive 0.26s (bak-restore clean; R2 refusal ELIMINATED — previously luck-dependent). TDUMP-R1 ok (jcmd attach WORKS post-restore). Probes 4/4 DEAD. AR-REBIND-TRY x2, no completion. 1 boot, hs_err 4/0, 0 config. Results: bench/boot/results/CRAC_P6B_ATTEMPT21_2026-09-09.md.
+
+**LAW P6B-23.** The beforeCheckpoint anon_inode sweep (required for checkpoint: native layer-B rejects unclaimed anon_inodes) closes netty eventloops' wakeup eventfds/timerfds/epolls. Netty holds fd NUMBERS as int fields; post-restore all loop I/O + wakeup writes hit EBADF => loops park forever => rebind registration (PendingRegistrationPromise) never serviced => syncUninterruptibly in startTcpServerListener(:184) hangs. Evidence: crussty-rebind WAITING in awaitUninterruptibly chain; Netty Epoll Server IO #0 (original) + #1 (new, rebind-era) both parked epoll_wait with ~zero cpu. Trade-off fully mapped: sweep => checkpoint OK + rebind starves; no-sweep => checkpoint refuses. Way out = fd RESURRECTION (a22: reflective eventFd/timerFd ints + JNI eventfd/timerfd create + dup2-to-held-number), not avoidance.
+
+**Rig capability milestone.** Deterministic chain now proven: boot (canonical) → pre-CK bak → checkpoint (retry-safe) → restore ×2 ALIVE deterministically. Remaining single blocker to SLP verdict = eventloop fd resurrection + rebind.
