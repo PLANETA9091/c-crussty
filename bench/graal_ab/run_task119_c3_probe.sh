@@ -103,7 +103,7 @@ run_one() { # $1=idx
     else
         VERDICT="PASS"
     fi
-    printf '%s\tR0=%sMB\tR1=%sMB\tR2=%sMB\tR3=%sMB\tverdict=%s\theap@add=%s\theap@remove_end=%s\theap@final=%s\n' \
+    printf '%s\tR0=%sMB\tR1=%sMB\tR2=%sMB\tR3=%s\tverdict=%s\theap@add=%s\theap@remove_end=%s\theap@final=%s\n' \
         "$RID" "$R0" "$R1" "$R2" "$R3" "$VERDICT" "$H1" "$H2" "$H3" | tee -a "$OUT/results.tsv"
     echo "stop" >&3
     for i in $(seq 1 20); do kill -0 "$SP" 2>/dev/null || break; sleep 1; done
@@ -124,7 +124,10 @@ import sys
 rows=[l.split('\t') for l in open(sys.argv[1]) if l.strip()]
 def f(row,tag,suf='MB'):
     for x in row[1:]:
-        if x.startswith(tag): return float(x.split('=')[1].rstrip(suf))
+        if x.startswith(tag):
+            v=x.split('=',1)[1].rstrip(suf)
+            if v.startswith('NA') or v=='': return float('nan')
+            return float(v)
     return float('nan')
 ok=True
 for r in rows:
