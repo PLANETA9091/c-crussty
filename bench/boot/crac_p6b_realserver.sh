@@ -153,6 +153,13 @@ JEOF
   || { echo "JAVAC-FAIL"; cat javac.err; exit 11; }
 printf 'Manifest-Version: 1.0\nPremain-Class: CrusstyCracHookV2\n' > mf.txt
 /home/z/jdk21/bin/jar cfm hookv2.jar mf.txt CrusstyCracHookV2.class
+# LAW P6B-2: agent jar must be SELF-CONTAINED (org.crac bundled, rig-internal, app-classpath)
+rm -rf stage; mkdir stage
+( cd stage && /home/z/jdk21/bin/jar xf "$CRACJAR" && cp ../CrusstyCracHookV2.class . && \
+  /home/z/jdk21/bin/jar cfm ../hookv2.jar ../mf.txt org CrusstyCracHookV2.class )
+BUNDLED=$(unzip -l hookv2.jar 2>/dev/null | grep -cE 'org/crac/.+\.class')
+echo "BUNDLED-org.crac-classes=$BUNDLED"
+[ "$BUNDLED" -lt 5 ] && { echo "BUNDLE-FAIL"; exit 11; }
 echo "BUILD-OK"
 
 # ---- 3. ONE boot on Zulu CRaC + checkpoint ----
