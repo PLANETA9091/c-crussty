@@ -121,6 +121,7 @@ public class CrusstyCracHookV2 implements Resource {
   public native static int closeFd(int fd);
 
   static Instrumentation INSTR; // P6B-10 (S7-67): app-loader CNFE on paperclip child-loader classes
+  static java.nio.file.Path IMG_DIR; // v11.1 (S7-79): image-gate discriminator — unwind (P6B-9) vs real restore
 
   static Class<?> findLoaded(String name, String tag) {
     if (INSTR == null) { marker("LOADER-" + tag + " NO-INSTR"); return null; }
@@ -317,24 +318,36 @@ public class CrusstyCracHookV2 implements Resource {
         marker("AR-REBIND-ERR no-startTcp candidates=" + cand);
         return;
       }
+      // v11.1: (1) image-gate — afterRestore fires ALSO on checkpoint-failure unwind (P6B-9);
+      // a sync bind there deadlocks (a17 measured: syncUninterruptibly waits for eventloop that cannot run) => SKIP unless image exists;
+      // (2) async daemon bind — even on real restore the eventloop may not be schedulable while hooks run.
+      boolean imgOk = false;
+      try { File[] imf = IMG_DIR == null ? null : IMG_DIR.toFile().listFiles(); imgOk = imf != null && imf.length > 0; } catch (Throwable it) { imgOk = false; }
+      if (!imgOk) { marker("AR-REBIND-SKIP no-image (unwind P6B-9)"); return; }
       bind.setAccessible(true);
-      marker("AR-REBIND-TRY " + bind);
-      long t0 = System.currentTimeMillis();
-      Object res = bind.invoke(conn, new java.net.InetSocketAddress(25565)); // startTcpServerListener: void, appends to channels
-      String local = "void-ret";
-      List<?> fut = lf != null ? (List<?>) lf.get(conn) : null;
-      if (res != null) {
-        Object ch = res.getClass().getMethod("channel").invoke(res);
-        local = ch.getClass().getSimpleName() + "@" + ch.getClass().getMethod("localAddress").invoke(ch);
-      } else if (fut != null && fut.size() > sizeBefore) {
-        Object ch = fut.get(fut.size() - 1).getClass().getMethod("channel").invoke(fut.get(fut.size() - 1));
-        local = ch.getClass().getSimpleName() + "@" + ch.getClass().getMethod("localAddress").invoke(ch);
-      }
-      // v11: re-arm accept gate (acceptConnections() sets running=true; idempotent if already true)
-      String acc = "skipped";
-      for (Method m : scl.getMethods())
-        if (m.getName().equals("acceptConnections")) { m.invoke(conn); acc = "rearmed"; break; }
-      marker("AR-REBIND rc=0 size=" + sizeBefore + "->" + (fut != null ? fut.size() : -1) + " local=" + local + " accept=" + acc + " ms=" + (System.currentTimeMillis() - t0));
+      final Method fbind = bind; final Object fconn = conn; final Field flf = lf; final int fsize = sizeBefore;
+      Thread rt = new Thread(() -> {
+        try {
+          marker("AR-REBIND-TRY " + fbind);
+          long t0 = System.currentTimeMillis();
+          Object res = fbind.invoke(fconn, new java.net.InetSocketAddress(25565)); // startTcpServerListener: void, appends to channels
+          String local = "void-ret";
+          List<?> fut = flf != null ? (List<?>) flf.get(fconn) : null;
+          if (res != null) {
+            Object ch = res.getClass().getMethod("channel").invoke(res);
+            local = ch.getClass().getSimpleName() + "@" + ch.getClass().getMethod("localAddress").invoke(ch);
+          } else if (fut != null && fut.size() > fsize) {
+            Object ch = fut.get(fut.size() - 1).getClass().getMethod("channel").invoke(fut.get(fut.size() - 1));
+            local = ch.getClass().getSimpleName() + "@" + ch.getClass().getMethod("localAddress").invoke(ch);
+          }
+          String acc = "skipped";
+          for (Method m : fconn.getClass().getMethods())
+            if (m.getName().equals("acceptConnections")) { m.invoke(fconn); acc = "rearmed"; break; }
+          marker("AR-REBIND rc=0 size=" + fsize + "->" + (fut != null ? fut.size() : -1) + " local=" + local + " accept=" + acc + " ms=" + (System.currentTimeMillis() - t0));
+        } catch (Throwable tt) { Throwable cc = tt.getCause() != null ? tt.getCause() : tt; marker("AR-REBIND-ERR " + tt + " cause=" + cc); }
+      }, "crussty-rebind");
+      rt.setDaemon(true);
+      rt.start();
     } catch (Throwable t) {
       Throwable cc = t.getCause() != null ? t.getCause() : t;
       marker("AR-REBIND-ERR " + t + " cause=" + cc);
@@ -344,6 +357,8 @@ public class CrusstyCracHookV2 implements Resource {
   public static void premain(String args, Instrumentation inst) throws Exception {
     System.loadLibrary("fdsurgery");
     INSTR = inst; // P6B-10 capture (S7-68)
+    IMG_DIR = (args == null || args.trim().isEmpty()) ? null : java.nio.file.Path.of(args.trim()); // v11.1 image-gate arg
+    marker("PREMAIN-IMGDIR " + IMG_DIR);
     marker("INSTR-CAPTURED " + (inst != null));
     boolean orgOk = false, rawOk = false;
     try {
@@ -441,7 +456,7 @@ T0=$(date +%s.%N)
 cd "$SRV"
 # v10 boot line: INJECTS-ONLY canonical (perf flags owner-cancelled; see header note)
 "$JAVA" -Djava.library.path="$W" -Djdk.crac.resource-policies="$W/policies.txt" \
-  -javaagent:"$W/hookv2.jar" -XX:CRaCCheckpointTo="$IMG" \
+  -javaagent:"$W/hookv2.jar=$IMG" -XX:CRaCCheckpointTo="$IMG" \
   -cp "$W/hookv2.jar:$PJAR" io.papermc.paperclip.Main --nogui > "$W/boot.log" 2>&1 < /dev/null 9>&- &
 SPID=$!
 DONE=""
