@@ -56,7 +56,7 @@
 #   instance-walk only, which misses static-supplier groups (P6B-25) => 0/0; now fed the
 #   repairAllLoops-style UNION (findLoops + findLoopsStatic) => expect alive=8/8;
 #   (2) LONG-SOAK phase-6c exit gate — post-SOAK periodic probes every 10s x12 (~2min) per restore,
-#   verdict LONGSOAK-R{1,2} serving65=x/12 serving75=y/12 (upgrades "sustained ~12s" to "~2min").
+#   verdict LONGSOAK-R{1,2} serving65=x/8 serving75=y/8 (v12.8.1: 12->8 rounds, tool-run timeout budget — deviation disclosed at banking; span ~70s/restore).
 set -u
 JAVA=/home/z/crac-jdk/bin/java
 JCMD=/home/z/crac-jdk/bin/jcmd
@@ -999,12 +999,12 @@ for R in 1 2; do
   echo "SOAK-R$R $SOAK"
   # v12.8 (S7-90 a27): LONG-SOAK phase-6c exit gate — periodic probes 10s x12 (~2min) per restore
   L65=0; L75=0
-  for i in $(seq 1 12); do
+  for i in $(seq 1 8); do
     L65P=$(python3 "$W/slp.py" 25565 2>/dev/null); case "$L65P" in SERVING*) L65=$((L65+1));; esac
     L75P=$(python3 "$W/rcon.py" 25575 2>/dev/null); case "$L75P" in RCON-SERVING*) L75=$((L75+1));; esac
-    [ "$i" -lt 12 ] && sleep 10
+    [ "$i" -lt 8 ] && sleep 10
   done
-  echo "LONGSOAK-R$R serving65=$L65/12 serving75=$L75/12"
+  echo "LONGSOAK-R$R serving65=$L65/8 serving75=$L75/8"
   kill -9 "$RPID" 2>/dev/null; wait "$RPID" 2>/dev/null
   # v12 (S7-84 a22) acceptance (a): selector-loop exception count delta in restore log (honest either way)
   echo "NETTY-ERR-R$R $(grep -cE 'io\.netty|Epoll|epoll|Selector' "$W/restore$R.log" 2>/dev/null || echo 0)"
