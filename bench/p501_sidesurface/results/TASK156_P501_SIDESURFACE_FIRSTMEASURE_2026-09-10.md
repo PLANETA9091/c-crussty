@@ -116,4 +116,7 @@ No census verdict changes; bucket bookkeeping normalized by this doc.
 - `bench/p501_sidesurface/results/P501_SIDESURFACE_RAW_2026-09-10.tsv` — raw
 - `bench/p501_sidesurface/results/P501_SIDESURFACE_REPORT_2026-09-10.md` — report
 - `bench/p501_sidesurface/results/P501_ENV.txt` — env provenance
-- `bench/p501_sidesurface/logs/g<gid>.{out,log}` — per-group logs (banked)
+- `bench/p501_sidesurface/logs/g<gid>.{out,log}` — per-group logs (on disk,
+  gitignored — same practice as canonical `bench/p500/{classes,logs}/`; the
+  commit accidentally carried them once and a follow-up cleanup commit
+  untracked them, append-only)
