@@ -367,6 +367,48 @@ echo "=== AGENT-JOURNAL ==="; grep -E 'SURGERY-V8|NETTY-CLOSE |ANON-|SWEEP |FD-I
 [ "$IMGF" -eq 0 ] && { echo "VERDICT=FAIL no-image"; exit 23; }
 [ -d "$SRV/plugins/spark/tmp" ] && { cp -a "$SRV/plugins/spark/tmp" "$W/sparktmp.bak"; echo "SPARKTMP-BAK $(ls "$W/sparktmp.bak" 2>/dev/null | wc -l)"; }
 
+# ---- 3b. SLP serving probe (attempt-12: liveness->serving measurement) ----
+cat > "$W/slp.py" << 'SLEOF'
+import socket, struct, sys, json
+def varint(n):
+    out=b''
+    while True:
+        b=n&0x7F; n>>=7
+        if n: out+=bytes([b|0x80])
+        else: return out+bytes([b])
+def pack(pid,payload): return varint(len(payload)+1)+bytes([pid])+payload
+host='127.0.0.1'; port=int(sys.argv[1])
+try: s=socket.create_connection((host,port),timeout=2)
+except Exception: print("DEAD connect-refused"); sys.exit(0)
+s.settimeout(2)
+try:
+    hs=pack(0x00,varint(769)+varint(len(host))+host.encode()+struct.pack('>H',port)+varint(1))
+    s.sendall(hs+pack(0x00,b''))
+    def rvar():
+        n=0;sh=0
+        while True:
+            d=s.recv(1)
+            if not d: raise EOFError
+            n|=(d[0]&0x7F)<<sh; sh+=7
+            if not d[0]&0x80: return n
+    ln=rvar(); data=b''
+    while len(data)<ln:
+        c=s.recv(ln-len(data))
+        if not c: break
+        data+=c
+    i=1; jl=0; sh=0
+    while True:
+        b=data[i]; i+=1; jl|=(b&0x7F)<<sh; sh+=7
+        if not b&0x80: break
+    js=json.loads(data[i:i+jl])
+    print("SERVING ver="+str(js.get("version",{}).get("name","?")))
+except Exception as e: print("LISTENING proto-fail "+type(e).__name__)
+finally:
+    try: s.close()
+    except Exception: pass
+SLEOF
+echo "SLP-PROBE-READY"
+
 # ---- 4. Restore x2 + prize metric (restore wall-clock to first output) ----
 for R in 1 2; do
   [ "$R" = "2" ] && { rm -rf "$SRV/plugins/spark/tmp"; cp -a "$W/sparktmp.bak" "$SRV/plugins/spark/tmp" 2>/dev/null; echo "SPARKTMP-RESTORED"; }
@@ -384,6 +426,8 @@ for R in 1 2; do
   sleep 5
   RA=""; kill -0 "$RPID" 2>/dev/null && RA=yes
   echo "RESTORE[$R] alive=$RA first_output=${PRIZE}s"
+  python3 "$W/slp.py" 25565 | sed "s/^/PROBE-R$R-25565 /"
+  python3 "$W/slp.py" 25575 | sed "s/^/PROBE-R$R-25575 /"
   kill -9 "$RPID" 2>/dev/null; wait "$RPID" 2>/dev/null
 done
 grep -E 'HOOK-AFTER-RESTORE' "$W/agent.log" | head -2
