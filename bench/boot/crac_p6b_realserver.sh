@@ -71,6 +71,10 @@ path: /home/z/server/versions/**
 type: socket
 action: close
 localPort: 25575
+---
+type: socket
+action: ignore
+localPort: 25565
 PEOF
 echo "POLICIES-LINES=$(wc -l < policies.txt)"
 
@@ -173,6 +177,7 @@ public class CrusstyCracHookV2 implements Resource {
       List<?> futures = (List<?>) lf.get(conn);
       for (Object fut : futures) {
         try { Object ch = fut.getClass().getMethod("channel").invoke(fut);
+              if (System.getProperty("crussty.nettySkip", "1").equals("1")) { marker("NETTY-SKIP " + ch.getClass().getSimpleName() + " (attempt-13 socket-ignore lever)"); continue; }
               ch.getClass().getMethod("close").invoke(ch); closed++;
               marker("NETTY-CLOSE " + ch.getClass().getSimpleName() + " rc=0"); }
         catch (Throwable t) { marker("NETTY-CLOSE-ERR " + t); }
@@ -334,6 +339,7 @@ rm -rf "$SRV/logs" 2>/dev/null; mkdir -p "$SRV/logs"  # boot floor log hygiene o
 T0=$(date +%s.%N)
 cd "$SRV"
 "$JAVA" -Djava.library.path="$W" -Djdk.crac.resource-policies="$W/policies.txt" \
+  -XX:+AutoCreateSharedArchive -XX:SharedArchiveFile=$SRV/crussty_boot_v4.jsa -XX:TieredStopAtLevel=1 -Xms1g -Xmx1g \
   -javaagent:"$W/hookv2.jar" -XX:CRaCCheckpointTo="$IMG" \
   -cp "$W/hookv2.jar:$PJAR" io.papermc.paperclip.Main --nogui > "$W/boot.log" 2>&1 < /dev/null 9>&- &
 SPID=$!
