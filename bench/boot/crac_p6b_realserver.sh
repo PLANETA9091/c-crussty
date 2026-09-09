@@ -32,6 +32,19 @@
 #   promise serviced); if number was REUSED post-restore (target != anon_inode) => reflective int-swap
 #   fallback (in-flight wait unrecoverable — honest evidence). binder+repairer split: pass-1 repair in
 #   hook, binder daemon, repairer daemon 1.2s later (kick-only cycles 1/s x7, stops on rc=0/listening).
+# v12.6 (S7-88 a25, LAW P6B-29 chain decoded 0 boots): RCON remedy — jdk.crac core closes unclaimed
+#   java.net sockets JAVA-LEVEL at CK (boot.log "Socket ...localport=25575 was not closed by the
+#   application") => image carries NioSocketImpl state=CLOSED => post-restore accept() throws
+#   "Socket closed" in ensureOpen BEFORE syscall => fd dup2 resurrection STRUCTURALLY inapplicable
+#   (branch pre-registered, honestly refuted for rcon). RconThread.run() bytecode (javap):
+#   catch(IOException)->if(running)log->goto-0 = NO exit path; accept() re-reads field this.socket
+#   EVERY iteration => reflective OBJECT field-swap RconThread.socket <- fresh bound ServerSocket
+#   (reuseaddr, backlog 50) heals storm + serving in one step. repairRcon() idempotent (listenNow
+#   skip) at pass-1 + repairer cycle-1. Plus: rcon.py honest RCON-protocol probe (SERVERDATA_AUTH
+#   wrong-pwd => type=2 rid=-1 = protocol alive, no secret read) replaces misleading SLP-on-25575;
+#   SOAK-R{1,2} sustained probes (25565 SLP + 25575 RCON x3/~12s); portClear() hex-case bugfix
+#   (Integer.toHexString lowercase => false negative on /proc/net/tcp UPPERCASE); stale-evidence
+#   cleanup (jcmd_att*/tdump/rebind_stack from prior runs — a24b hygiene note).
 set -u
 JAVA=/home/z/crac-jdk/bin/java
 JCMD=/home/z/crac-jdk/bin/jcmd
@@ -50,6 +63,10 @@ trap 'echo "done-task115-p6b-$STAMP" >> /home/z/BENCH.lock.journal' EXIT
 ss -ltn 2>/dev/null | grep -qE ':25565|:25575' && { echo "LANE-BUSY-PORTS"; exit 42; }
 
 mkdir -p "$W"; cd "$W"; rm -rf "$IMG"; rm -f "$W/agent.log"; mkdir -p "$IMG"
+# v12.6 stale-evidence cleanup (a24b hygiene: rig does not clean $W between runs => jcmd_att*.out
+# from twin's run was misread as this run's; now removed before boot, jcmd.out overwritten fresh)
+rm -f jcmd_att1.out jcmd_att2.out jcmd_att3.out jcmd_att4.out tdump_r1.txt rebind_stack_r1.txt \
+      restore1.log restore2.log boot.log 2>/dev/null
 
 # v12.2 (S7-85 a23, pre-registered in CLAIM): disk pre-flight — P6B-24 storm class needs >=1.2G free
 # v12.4 (S7-87 a24b): cgroup /sys/fs/cgroup/** policy close->ignore — P6B-26 deterministic remedy
@@ -318,6 +335,74 @@ public class CrusstyCracHookV2 implements Resource {
     return false;
   }
 
+  // v12.6 (S7-88 a25): P6B-24 remedy. LAW P6B-29 chain (javap + boot.log/restore.log decode, 0 boots):
+  //   jdk.crac closes unclaimed java.net sockets JAVA-LEVEL at CK => NioSocketImpl state=CLOSED travels
+  //   in the image => post-restore accept() throws "Socket closed" from ensureOpen BEFORE syscall =>
+  //   dup2 fd-resurrection inapplicable (pre-registered branch honestly refuted for rcon).
+  //   RconThread.run() bytecode: catch(IOException)->if(running)log->goto-0, NO exit path; accept()
+  //   re-reads this.socket EVERY iteration => OBJECT field-swap heals storm + serving in one step.
+  static Object rconThreadInstance() {
+    try {
+      Class<?> ms = findLoaded("net.minecraft.server.MinecraftServer", "MS3");
+      if (ms == null) { marker("RCON-DISC no-ms"); return null; }
+      Object server = null;
+      for (Method m : ms.getMethods())
+        if (Modifier.isStatic(m.getModifiers()) && m.getParameterCount() == 0 && m.getReturnType() == ms) { server = m.invoke(null); break; }
+      if (server == null) { marker("RCON-DISC no-instance"); return null; }
+      for (Class<?> c = server.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
+        try { Field f = c.getDeclaredField("rconThread"); f.setAccessible(true); return f.get(server); } catch (NoSuchFieldException ig) {}
+      }
+      marker("RCON-DISC no-rconThread-field");
+      return null;
+    } catch (Throwable t) { marker("RCON-DISC-ERR " + t); return null; }
+  }
+  static java.net.ServerSocket rconSocket(Object rt) {
+    for (Class<?> c = rt.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
+      try {
+        Field f = c.getDeclaredField("socket");
+        if (f.getType() != java.net.ServerSocket.class) continue;
+        f.setAccessible(true);
+        return (java.net.ServerSocket) f.get(rt);
+      } catch (NoSuchFieldException ig) {} catch (Throwable t) { marker("RCON-SOCK-ERR " + t); return null; }
+    }
+    return null;
+  }
+  static void rconPreCapture() { // BCP evidence: rcon listener state BEFORE checkpoint (P6B-29 baseline)
+    try {
+      Object rt = rconThreadInstance();
+      if (rt == null) { marker("RCON-PRE no-instance"); return; }
+      java.net.ServerSocket s = rconSocket(rt);
+      if (s == null) { marker("RCON-PRE no-socket-field"); return; }
+      marker("RCON-PRE port=" + s.getLocalPort() + " closed=" + s.isClosed() + " bound=" + s.isBound());
+    } catch (Throwable t) { marker("RCON-PRE-ERR " + t); }
+  }
+  static void repairRcon() { // idempotent: skips when 25575 already listening
+    try {
+      boolean listening = listenNow(25575);
+      Object rt = rconThreadInstance();
+      if (rt == null) { marker("RCON-REPAIR-SKIP no-instance listen=" + listening); return; }
+      Object runv = null;
+      for (Class<?> c = rt.getClass(); c != null && c != Object.class && runv == null; c = c.getSuperclass()) {
+        try { Field f = c.getDeclaredField("running"); f.setAccessible(true); runv = f.get(rt); } catch (NoSuchFieldException ig) {}
+      }
+      java.net.ServerSocket old = rconSocket(rt);
+      String olds = old == null ? "null" : "port=" + old.getLocalPort() + " closed=" + old.isClosed();
+      marker("RCON-REPAIR-STAT listen25575=" + listening + " running=" + runv + " old{" + olds + "}");
+      if (listening) { marker("RCON-REPAIR-SKIP already-listening"); return; }
+      Field sf = null;
+      for (Class<?> c = rt.getClass(); c != null && c != Object.class && sf == null; c = c.getSuperclass()) {
+        try { Field f = c.getDeclaredField("socket"); if (f.getType() == java.net.ServerSocket.class) sf = f; } catch (NoSuchFieldException ig) {}
+      }
+      if (sf == null) { marker("RCON-REPAIR-ERR no-socket-field"); return; }
+      sf.setAccessible(true);
+      java.net.ServerSocket fresh = new java.net.ServerSocket();
+      try { fresh.setReuseAddress(true); } catch (Throwable ig) {}
+      fresh.bind(new java.net.InetSocketAddress(25575), 50);
+      sf.set(rt, fresh); // final instance field, non-record => settable via setAccessible(true)
+      marker("RCON-REPAIR-SWAPPED old{" + olds + "} -> fresh port=" + fresh.getLocalPort() + " bound=" + fresh.isBound());
+    } catch (Throwable t) { marker("RCON-REPAIR-ERR " + t); }
+  }
+
   static Instrumentation INSTR; // P6B-10 (S7-67): app-loader CNFE on paperclip child-loader classes
   static java.nio.file.Path IMG_DIR; // v11.1 (S7-79): image-gate discriminator — unwind (P6B-9) vs real restore
 
@@ -355,7 +440,7 @@ public class CrusstyCracHookV2 implements Resource {
         for (String f : new String[]{"/proc/net/tcp", "/proc/net/tcp6"})
           for (String line : Files.readAllLines(Path.of(f))) {
             String[] c = line.trim().split("\\s+");
-            if (c.length >= 4 && c[3].equals("0A") && c[1].substring(c[1].indexOf(':') + 1).equals(Integer.toHexString(p))) listening = true;
+            if (c.length >= 4 && c[3].equals("0A") && c[1].substring(c[1].indexOf(':') + 1).equals(Integer.toHexString(p).toUpperCase())) listening = true; // v12.6 hex-case fix (lowercase => false negative)
           }
         marker("PORT-CLEAR " + p + " listening=" + listening);
       }
@@ -524,6 +609,8 @@ public class CrusstyCracHookV2 implements Resource {
       if (!imgOk) { marker("AR-REBIND-SKIP no-image (unwind P6B-9)"); return; }
       bind.setAccessible(true);
       final Method fbind = bind; final Object fconn = conn; final Field flf = lf; final int fsize = sizeBefore;
+      // v12.6 a25: rcon listener repair — independent of netty path, BEFORE storm gains ground
+      try { repairRcon(); } catch (Throwable rr1) { marker("RCON-REPAIR-P1-ERR " + rr1); }
       // v12 a22 pass-1: resurrect fds BEFORE binder queues its registration (evidence-first)
       try { repairAllLoops(conn); kickLoops(findLoops(conn)); } catch (Throwable rt1) { marker("AR-REPAIR-P1-ERR " + rt1); }
       Thread rt = new Thread(() -> {
@@ -557,6 +644,7 @@ public class CrusstyCracHookV2 implements Resource {
             Thread.sleep(i == 0 ? 1200 : 1000);
             if (REBIND_DONE || listenNow(25565)) break;
             if (i == 0) {
+              try { repairRcon(); } catch (Throwable rr2) { marker("RCON-REPAIR-CYCLE-ERR " + rr2); } // v12.6: re-attempt if pass-1 swap did not land
               int f = repairAllLoops(fconn); int k = kickLoops(findLoops(fconn));
               marker("AR-REPAIR-CYCLE " + (i + 1) + " fds=" + f + " kick=" + k);
             } else {
@@ -584,7 +672,7 @@ public class CrusstyCracHookV2 implements Resource {
     try {
       CrusstyCracHookV2 orgHook = new CrusstyCracHookV2() {
         public void beforeCheckpoint(org.crac.Context<? extends org.crac.Resource> c) {
-          marker("BCP-ORG"); super.beforeCheckpoint(c);
+          marker("BCP-ORG"); rconPreCapture(); super.beforeCheckpoint(c); // v12.6: P6B-29 baseline evidence
         }
         public void afterRestore(org.crac.Context<? extends org.crac.Resource> c) { marker("AR-ORG"); listenStateT("PRE"); rebindNetty(); listenStateT("POST"); }
       };
@@ -774,6 +862,35 @@ finally:
 SLEOF
 echo "SLP-PROBE-READY"
 
+# ---- 3c. RCON protocol probe (v12.6 a25): SERVERDATA_AUTH with WRONG password ----
+# Packet: [len:i32][rid:i32][type:i32(3=AUTH)][payload][00 00]; server replies type=2 rid=-1 on
+# auth failure => proves rcon protocol stack ALIVE (accept + read + dispatch + reply) WITHOUT
+# reading the password/config (no config-touch law honored); replaces misleading SLP-on-25575
+# (SLP would always be proto-fail on rcon — liveness only).
+cat > "$W/rcon.py" << 'RCEOF'
+import socket, struct, sys
+port=int(sys.argv[1])
+def pkt(rid, typ, payload):
+    body=struct.pack('<ii',rid,typ)+payload+b'\x00\x00'
+    return struct.pack('<i',len(body))+body
+try: s=socket.create_connection(('127.0.0.1',port),timeout=2)
+except Exception: print("DEAD connect-refused"); sys.exit(0)
+s.settimeout(2)
+try:
+    s.sendall(pkt(1,3,b'crussty-probe-wrong-password'))
+    d=s.recv(4096)
+    if len(d)>=12:
+        rid,typ=struct.unpack('<ii',d[4:12])
+        print("RCON-SERVING type=%d rid=%d"%(typ,rid))
+    else:
+        print("LISTENING short-reply")
+except Exception as e: print("LISTENING proto-fail "+type(e).__name__)
+finally:
+    try: s.close()
+    except Exception: pass
+RCEOF
+echo "RCON-PROBE-READY"
+
 # ---- 4. Restore x2 + prize metric (restore wall-clock to first output) ----
 for R in 1 2; do
   [ "$R" = "2" ] && { rm -rf "$SRV/plugins/spark/tmp"; cp -a "$W/sparktmp.bak" "$SRV/plugins/spark/tmp" 2>/dev/null; echo "SPARKTMP-RESTORED"; }
@@ -808,14 +925,23 @@ for R in 1 2; do
   fi
   # v11.2 (S7-80): bounded probe retry — async rebind may land seconds after alive-check;
   # single-shot could false-DEAD. Verdict = first non-DEAD + attempt count (honest instrumentation).
+  # v12.6: honest per-port probes — 25565 = SLP (game protocol), 25575 = RCON protocol
   for PORT in 25565 25575; do
     V=""; A=1
     for A in 1 2 3; do
-      V=$(python3 "$W/slp.py" $PORT 2>/dev/null)
+      if [ "$PORT" = "25565" ]; then V=$(python3 "$W/slp.py" $PORT 2>/dev/null); else V=$(python3 "$W/rcon.py" $PORT 2>/dev/null); fi
       case "$V" in DEAD*) sleep 2;; *) break;; esac
     done
     echo "PROBE-R$R-$PORT $V attempt=$A/3"
   done
+  # v12.6 soak (a24b pre-registration item 2): SERVING sustained — 3 rounds x4s, both ports
+  SOAK=""
+  for i in 1 2 3; do
+    S65=$(python3 "$W/slp.py" 25565 2>/dev/null); S75=$(python3 "$W/rcon.py" 25575 2>/dev/null)
+    SOAK="$SOAK t$i{25565=$S65;25575=$S75}"
+    [ "$i" -lt 3 ] && sleep 4
+  done
+  echo "SOAK-R$R $SOAK"
   kill -9 "$RPID" 2>/dev/null; wait "$RPID" 2>/dev/null
   # v12 (S7-84 a22) acceptance (a): selector-loop exception count delta in restore log (honest either way)
   echo "NETTY-ERR-R$R $(grep -cE 'io\.netty|Epoll|epoll|Selector' "$W/restore$R.log" 2>/dev/null || echo 0)"
