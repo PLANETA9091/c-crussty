@@ -548,8 +548,16 @@ for R in 1 2; do
   sleep 5
   RA=""; kill -0 "$RPID" 2>/dev/null && RA=yes
   echo "RESTORE[$R] alive=$RA first_output=${PRIZE}s"
-  python3 "$W/slp.py" 25565 | sed "s/^/PROBE-R$R-25565 /"
-  python3 "$W/slp.py" 25575 | sed "s/^/PROBE-R$R-25575 /"
+  # v11.2 (S7-80): bounded probe retry — async rebind may land seconds after alive-check;
+  # single-shot could false-DEAD. Verdict = first non-DEAD + attempt count (honest instrumentation).
+  for PORT in 25565 25575; do
+    V=""; A=1
+    for A in 1 2 3; do
+      V=$(python3 "$W/slp.py" $PORT 2>/dev/null)
+      case "$V" in DEAD*) sleep 2;; *) break;; esac
+    done
+    echo "PROBE-R$R-$PORT $V attempt=$A/3"
+  done
   kill -9 "$RPID" 2>/dev/null; wait "$RPID" 2>/dev/null
 done
 grep -E 'HOOK-AFTER-RESTORE' "$W/agent.log" | head -2
