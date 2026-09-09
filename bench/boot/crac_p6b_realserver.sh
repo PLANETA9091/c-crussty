@@ -471,6 +471,10 @@ kill -0 "$SPID" 2>/dev/null || { echo "BOOT-FAIL pid-dead t=${BOOT_S}s"; tail -5
 [ -z "$DONE" ] && { echo "BOOT-TIMEOUT no-Done t=${BOOT_S}s"; tail -5 "$W/boot.log"; kill -9 "$SPID"; exit 22; }
 echo "BOOT-DONE pid=$SPID t=${BOOT_S}s"
 
+# v11.4 (S7-83/a21): bak snapshot at boot-Done (PRE-checkpoint) per LAW P6B-22 —
+# post-success snapshot is too late (spark hygiene deletes tmp during attempt windows)
+if [ -d "$SRV/plugins/spark/tmp" ]; then rm -rf "$W/sparktmp.bak"; cp -a "$SRV/plugins/spark/tmp" "$W/sparktmp.bak"; echo "SPARKTMP-BAK-PRE $(ls "$W/sparktmp.bak" | wc -l)"; fi
+
 sleep 2
 # v11.3 (S7-81/a19): bounded checkpoint retry per LAW P6B-20 — cgroup fd is a periodic
 # short-lived re-opener (µs per tick); refusal is transient per-attempt; REFUSED-SURVIVED
@@ -498,7 +502,7 @@ IMGF=$(ls "$IMG" 2>/dev/null | wc -l); IMGB=$(du -sb "$IMG" 2>/dev/null | cut -f
 echo "CK jcmd_rc=$JRC wait_rc=$WRC img_files=$IMGF img_bytes=$IMGB"
 echo "=== AGENT-JOURNAL ==="; grep -E 'SURGERY-V8|NETTY-CLOSE |ANON-|SWEEP |FD-INV|PORT-CLEAR|LOADER-|INSTR-CAPTURED' "$W/agent.log" | tail -24
 [ "$IMGF" -eq 0 ] && { echo "VERDICT=FAIL no-image"; exit 23; }
-[ -d "$SRV/plugins/spark/tmp" ] && { rm -rf "$W/sparktmp.bak"; cp -a "$SRV/plugins/spark/tmp" "$W/sparktmp.bak"; echo "SPARKTMP-BAK $(ls "$W/sparktmp.bak" 2>/dev/null | wc -l)"; }
+[ -d "$SRV/plugins/spark/tmp" ] && { rm -rf "$W/sparktmp.bak.postck"; cp -a "$SRV/plugins/spark/tmp" "$W/sparktmp.bak.postck"; echo "SPARKTMP-BAK-POSTCK $(ls "$W/sparktmp.bak.postck" 2>/dev/null | wc -l)"; }
 
 # ---- 3b. SLP serving probe (attempt-12: liveness->serving measurement) ----
 cat > "$W/slp.py" << 'SLEOF'
@@ -559,6 +563,13 @@ for R in 1 2; do
   sleep 5
   RA=""; kill -0 "$RPID" 2>/dev/null && RA=yes
   echo "RESTORE[$R] alive=$RA first_output=${PRIZE}s"
+  # v11.4 (S7-83/a21): rebind-hang discriminator — thread stack of crussty-rebind daemon;
+  # jcmd attach may be dead post-restore => failure itself is evidence (honest)
+  if [ "$R" = "1" ] && [ "$RA" = "yes" ]; then
+    if "$JCMD" "$RPID" Thread.print > "$W/tdump_r1.txt" 2>&1; then
+      echo "TDUMP-R1 ok"; grep -A14 'crussty-rebind' "$W/tdump_r1.txt" > "$W/rebind_stack_r1.txt" 2>/dev/null
+    else echo "TDUMP-R1 fail attach-dead?"; fi
+  fi
   # v11.2 (S7-80): bounded probe retry — async rebind may land seconds after alive-check;
   # single-shot could false-DEAD. Verdict = first non-DEAD + attempt count (honest instrumentation).
   for PORT in 25565 25575; do
