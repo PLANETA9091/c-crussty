@@ -52,6 +52,10 @@ ss -ltn 2>/dev/null | grep -qE ':25565|:25575' && { echo "LANE-BUSY-PORTS"; exit
 mkdir -p "$W"; cd "$W"; rm -rf "$IMG"; rm -f "$W/agent.log"; mkdir -p "$IMG"
 
 # v12.2 (S7-85 a23, pre-registered in CLAIM): disk pre-flight — P6B-24 storm class needs >=1.2G free
+# v12.4 (S7-87 a24b): cgroup /sys/fs/cgroup/** policy close->ignore — P6B-26 deterministic remedy
+#   (a20 latest.log precedent: ignore skips fd at CK entirely => no sweep-close => no spark
+#   per-tick re-open race; P6B-20 = spark re-opens per tick post-restore, self-healing; P6B-27
+#   matcher verified glob matches; fd is type:file => JDKFileResource class consults policy)
 FREEKB=$(df -k / | tail -1 | awk '{print $4}')
 [ "$FREEKB" -lt 1228800 ] && { echo "DISK-GUARD free=${FREEKB}KB < 1.2G — abort 43 (rig v12.2)"; exit 43; }
 echo "DISK-GUARD-OK free=${FREEKB}KB"
@@ -100,7 +104,7 @@ action: close
 remotePort: 443
 ---
 type: file
-action: close
+action: ignore
 path: /sys/fs/cgroup/**
 PEOF
 echo "POLICIES-LINES=$(wc -l < policies.txt)"
@@ -671,7 +675,15 @@ rm -rf "$SRV/logs" 2>/dev/null; mkdir -p "$SRV/logs"  # boot floor log hygiene o
 T0=$(date +%s.%N)
 cd "$SRV"
 # v10 boot line: INJECTS-ONLY canonical (perf flags owner-cancelled; see header note)
+# v12.5 (S7-87): -XX:CRaCAllowedOpenFilePrefixes native-layer whitelist — LAW P6B-28:
+#   policies file consults JAVA-registered resources only (JDKFileResource.findPolicy);
+#   unclaimed fds processed natively by FdsInfo scan which refuses unclaimed regular
+#   files unless path matches this prefix list (strings-verified "OK: allowed in
+#   -XX:CRaCAllowedOpenFilePrefixes" in libjvm). /sys/fs/cgroup/ = spark per-tick fd.
+#   ccstrlist: two occurrences append; default /var/lib/sss/mc/ restated explicitly.
 "$JAVA" -Djava.library.path="$W" -Djdk.crac.resource-policies="$W/policies.txt" \
+  -XX:CRaCAllowedOpenFilePrefixes=/var/lib/sss/mc/ \
+  -XX:CRaCAllowedOpenFilePrefixes=/sys/fs/cgroup/ \
   -javaagent:"$W/hookv2.jar=$IMG" -XX:CRaCCheckpointTo="$IMG" \
   -cp "$W/hookv2.jar:$PJAR" io.papermc.paperclip.Main --nogui > "$W/boot.log" 2>&1 < /dev/null 9>&- &
 SPID=$!
