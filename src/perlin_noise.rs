@@ -17,11 +17,16 @@
 //! worldgen never sees a NaN from this wiring (B.2.2 ladder inside the
 //! bridge; see PerlinNoiseNativeOps.java).
 //!
-//! Gate: env `CRUSSTY_NATIVE_PERLIN_NOISE` (1/true/on/yes -> on). Off by
-//! default — dormant-invisible discipline (same as improved_noise): with
-//! the gate off, register() logs a dormant notice and NO hook is installed,
-//! activate() returns immediately, and the module is byte-indistinguishable
-//! from the pre-TASK-73 plugin.
+//! Gate: env `CRUSSTY_NATIVE_PERLIN_NOISE` — ON BY DEFAULT as of TASK-148
+//! (owner optimization directive "оптимизируй"): the TASK-74 G-AB live A/B
+//! win (wall −12.3%, cpu_burst −11.1% median with perfect separation, parity
+//! 0/20000 bit-exact, bench/e2e/results/PERLIN_AB_2026-09-09.md) is the
+//! product default now. The kernel-policy key (PROVEN_WINS entry, TASK-86)
+//! still guards arming — the two-key contract is UNCHANGED and either key
+//! alone remains a kill-switch. Explicit opt-out: `0/false/off/no`. Opt-out
+//! (or policy KeepJava) keeps the dormant-invisible discipline: register()
+//! logs a notice and NO hook is installed, activate() returns immediately,
+//! and the module is byte-indistinguishable from the pre-TASK-73 plugin.
 //!
 //! The Java bridge references `PerlinNoise` directly, so it must live in
 //! the kernel's loader (same pattern as improved_noise's
@@ -70,14 +75,16 @@ const OPS_REAPER_BYTES: &[u8] =
 const BRIDGE_GETVALUE_DESC: &str =
     "(Lnet/minecraft/world/level/levelgen/synth/PerlinNoise;DDDDDZ)D";
 
-/// env-gate (off by default), read once at register time
+/// env-gate (TASK-148: ON BY DEFAULT — the measured TASK-74 G-AB win is the
+/// product default; explicit opt-out 0/false/off/no), read once at register
+/// time. The kernel-policy two-key gate is unchanged and still guards arming.
 fn enabled() -> bool {
     std::env::var("CRUSSTY_NATIVE_PERLIN_NOISE")
         .map(|v| {
             let v = v.trim().to_ascii_lowercase();
-            v == "1" || v == "true" || v == "on" || v == "yes"
+            !(v == "0" || v == "false" || v == "off" || v == "no")
         })
-        .unwrap_or(false)
+        .unwrap_or(true)
 }
 
 /// Kernel-policy key for the arming decision (TASK-86): the registry entry
@@ -131,7 +138,7 @@ fn patch_lock() -> &'static std::sync::Mutex<Option<PatchCache>> {
 pub fn register() {
     if !enabled() {
         eprintln!(
-            "[crussty-plugin] perlin_noise: dormant (set CRUSSTY_NATIVE_PERLIN_NOISE=1 to enable)"
+            "[crussty-plugin] perlin_noise: dormant (CRUSSTY_NATIVE_PERLIN_NOISE opt-out)"
         );
         return;
     }

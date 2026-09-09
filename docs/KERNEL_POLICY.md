@@ -186,8 +186,10 @@ hot method body for a native bridge (byte-hook capture of the original bytes +
 `replace_body` retransform). Arming is **two-key** — both must Allow, either
 one alone is a kill-switch:
 
-1. **Env gate** — `CRUSSTY_NATIVE_PERLIN_NOISE` / `CRUSSTY_NATIVE_IMPROVED_NOISE`
-   (default OFF, read once at register time; the operator switch).
+1. **Env gate** — `CRUSSTY_NATIVE_PERLIN_NOISE` (TASK-148: **default ON** — the
+   measured TASK-74 G-AB win is the product default; explicit opt-out
+   `0/false/off/no`) / `CRUSSTY_NATIVE_IMPROVED_NOISE` (default OFF, opt-in
+   `1/true/on/yes`). Read once at register time; the operator switch.
 2. **Kernel policy** — the module consults `decide(CLASS, KERNEL)` at arming;
    `KeepJava` keeps the Java path for the boot and logs the reason. The
    registry entries carry the evidence:
