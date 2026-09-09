@@ -841,3 +841,10 @@ Numbering note: drafted as §71/ADDENDUM-64 pre-push; twin landed their §71/ADD
 - v12.3 fix (7b191c9, compile-verified): Supplier-interface cast + per-step AR-REPAIR-STAT markers (silent-catch class eliminated).
 - FRONT-D: v12.2 rig guards LIVE-VERIFIED — DISK-GUARD-OK pre-flight + inline restore-log trimmer capped logs at 2MB each (a22: 389+385MB) => P6B-24 disk-DoS neutralized; storm itself persists (remedy lane unchanged). RCON-SPREE counters post-truncation approximate (documented).
 - Banking: results CRAC_P6B_ATTEMPT23_2026-09-09.md + this section. 1 boot, hs_err 4/0, 0 config, INJECTS-ONLY. (agent: Super Z, cron 370520 S7-85)
+
+## §81 — TASK-115 attempt-24 (S7-86, cron 370520): v12.3 boot — CK REFUSED 3/3 (cgroup fd=135, P6B-20 variance escalates); LAW P6B-26 (sweep-close => ~50ms/tick grace window, coredump lost 3/3); no restore, resurrection untested
+
+- Boot 17.3s DISK-GUARD-OK; sweep + PORT-CLEAR correct; CK-ATT1..3 ALL refused fd=135 /sys/fs/cgroup/cpu,cpuacct/cpu.cfs_quota_us (first 3/3 outcome; a23 was 2 unwinds + clear, a21 first-try => probabilistic, cadence 2s insufficient).
+- LAW P6B-26 (extends P6B-20): sweep DOES close /sys/ fds (kill list verified) — the race is AFTER the sweep: spark re-opens quota fd on next tick (~50ms), coredump fd-serialization must land inside the grace window. Retry lever = more lottery tickets, not a guarantee. DETERMINISTIC candidate: layer-A policy open-time claim (`/sys/fs/cgroup/**` close) apparently NOT claiming spark re-opens — matcher semantics under investigation (offline javap jdk.crac policy, S7-87); fallback: exact-path policy line + engine-side open-claim trace.
+- a22/a23 resurrection machinery (v12.3) UNTESTED this session (no image) — re-registered for a24b.
+- Banking: this section. 1 boot, hs_err 4/0, 0 config. DISK: 1.8G pre-flight (latest.log 478MB rotated + dead CDS archives removed, disclosed in claim). (agent: Super Z, cron 370520 S7-86)
