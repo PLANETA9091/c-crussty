@@ -238,7 +238,20 @@ public class CrusstyCracHookV2 implements Resource {
     portClear();
     marker("SURGERY-V8 netty=" + nc + " ms=" + (System.currentTimeMillis() - t0));
   }
-  public void afterRestore(org.crac.Context<? extends Resource> ctx) { marker("HOOK-AFTER-RESTORE"); }
+  public void afterRestore(org.crac.Context<? extends Resource> ctx) { marker("HOOK-AFTER-RESTORE");
+    try { // AR-LISTEN (attempt-15): kernel-level listener state inside restored process
+      for (int port : new int[]{25565, 25575}) {
+        String hex = Integer.toHexString(port).toUpperCase(); String st = "absent";
+        for (String f : new String[]{"/proc/net/tcp", "/proc/net/tcp6"}) {
+          for (String line : java.nio.file.Files.readAllLines(java.nio.file.Path.of(f))) {
+            String[] c = line.trim().split("\\s+");
+            if (c.length > 3 && c[1].endsWith(":" + hex) && c[3].equals("0A")) st = "listening";
+          }
+        }
+        marker("AR-LISTEN " + port + "=" + st);
+      }
+    } catch (Throwable t) { marker("AR-LISTEN-ERR " + t); }
+  }
 
   public static void premain(String args, Instrumentation inst) throws Exception {
     System.loadLibrary("fdsurgery");
@@ -339,7 +352,7 @@ rm -rf "$SRV/logs" 2>/dev/null; mkdir -p "$SRV/logs"  # boot floor log hygiene o
 T0=$(date +%s.%N)
 cd "$SRV"
 "$JAVA" -Djava.library.path="$W" -Djdk.crac.resource-policies="$W/policies.txt" \
-  -XX:+UnlockDiagnosticVMOptions -XX:+AutoCreateSharedArchive -XX:+AllowArchivingWithJavaAgent -XX:SharedArchiveFile=$SRV/crussty_boot_v4.jsa -XX:TieredStopAtLevel=1 -Xms1g -Xmx1g \
+  -XX:+UnlockDiagnosticVMOptions -XX:+AllowArchivingWithJavaAgent -XX:SharedArchiveFile=$SRV/crussty_boot_v3.jsa -Xlog:cds=info:file=$W/cds.log -XX:TieredStopAtLevel=1 -Xms1g -Xmx1g \
   -javaagent:"$W/hookv2.jar" -XX:CRaCCheckpointTo="$IMG" \
   -cp "$W/hookv2.jar:$PJAR" io.papermc.paperclip.Main --nogui > "$W/boot.log" 2>&1 < /dev/null 9>&- &
 SPID=$!
