@@ -45,5 +45,6 @@
   owner-approved before implementation. Candidate parked for owner review: agent-side
   periodic full-GC after load-drop (inject-only by construction; CPU-cost trade-off
   unmeasured; NOT scheduled).
-- Bookkeeping of record: ledger §63 ADDENDUM-56; CLAIMS.md TASK-127 RESOLVED +
-  TASK-128; TASK-125 doc closing note.
+- Bookkeeping of record: ledger §64 ADDENDUM-57 (renumbered from §63 after a mid-flight
+  numbering collision — twin took §63 for S7-76; grep-after-pull law); CLAIMS.md TASK-127
+  RESOLVED + TASK-128; TASK-125 doc closing note.

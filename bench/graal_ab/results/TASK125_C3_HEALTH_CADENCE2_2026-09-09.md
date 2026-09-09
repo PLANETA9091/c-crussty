@@ -93,4 +93,5 @@ closed by instrumentation.
 - Cadence: C3 probe continues N=1 flag-free (rig unchanged). Future RAM levers must be
   agent-side (inject-only) AND explicitly owner-approved (parked candidate: agent-side
   periodic full-GC after load-drop; unscheduled).
-- Law of record: docs/OWNER_DIRECTIVE_INJECTS_ONLY_2026-09-09.md; ledger §63 ADDENDUM-56.
+- Law of record: docs/OWNER_DIRECTIVE_INJECTS_ONLY_2026-09-09.md; ledger §64 ADDENDUM-57
+  (renumbered from §63 — twin took §63 mid-flight; grep-after-pull law).
