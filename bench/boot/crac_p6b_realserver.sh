@@ -78,7 +78,11 @@ mkdir -p "$W"; cd "$W"; rm -rf "$IMG"; rm -f "$W/agent.log"; mkdir -p "$IMG"
 # v12.6 stale-evidence cleanup (a24b hygiene: rig does not clean $W between runs => jcmd_att*.out
 # from twin's run was misread as this run's; now removed before boot, jcmd.out overwritten fresh)
 rm -f jcmd_att1.out jcmd_att2.out jcmd_att3.out jcmd_att4.out tdump_r1.txt rebind_stack_r1.txt \
-      restore1.log restore2.log boot.log 2>/dev/null
+      restore1.log restore2.log boot.log run.log 2>/dev/null
+# v12.9 (S7-90 a27 lesson): a27 verdict lines were lost — stdout piped through a narrow tail window;
+# ALL future runs tee the full output here (a27 recovered 25575 12/12+12/12 from server-side logs
+# instead — 25565 unmeasured, honestly disclosed in ATTEMPT27)
+exec > >(tee run.log) 2>&1
 
 # v12.2 (S7-85 a23, pre-registered in CLAIM): disk pre-flight — P6B-24 storm class needs >=1.2G free
 # v12.4 (S7-87 a24b): cgroup /sys/fs/cgroup/** policy close->ignore — P6B-26 deterministic remedy
