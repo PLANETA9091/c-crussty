@@ -252,6 +252,20 @@ public class CrusstyCracHookV2 implements Resource {
       }
     } catch (Throwable t) { marker("AR-LISTEN-ERR " + t); }
   }
+  void listenState() { // AR-LISTEN (attempt-15): kernel listener state inside restored process
+    try {
+      for (int port : new int[]{25565, 25575}) {
+        String hex = Integer.toHexString(port).toUpperCase(); String st = "absent";
+        for (String f : new String[]{"/proc/net/tcp", "/proc/net/tcp6"}) {
+          for (String line : java.nio.file.Files.readAllLines(java.nio.file.Path.of(f))) {
+            String[] c = line.trim().split("\\s+");
+            if (c.length > 3 && c[1].endsWith(":" + hex) && c[3].equals("0A")) st = "listening";
+          }
+        }
+        marker("AR-LISTEN " + port + "=" + st);
+      }
+    } catch (Throwable t) { marker("AR-LISTEN-ERR " + t); }
+  }
 
   public static void premain(String args, Instrumentation inst) throws Exception {
     System.loadLibrary("fdsurgery");
@@ -263,7 +277,7 @@ public class CrusstyCracHookV2 implements Resource {
         public void beforeCheckpoint(org.crac.Context<? extends org.crac.Resource> c) {
           marker("BCP-ORG"); super.beforeCheckpoint(c);
         }
-        public void afterRestore(org.crac.Context<? extends org.crac.Resource> c) { marker("AR-ORG"); }
+        public void afterRestore(org.crac.Context<? extends org.crac.Resource> c) { marker("AR-ORG"); listenState(); }
       };
       ORG_PIN = orgHook; // P6B-8 pin
       Core.getGlobalContext().register(orgHook);
