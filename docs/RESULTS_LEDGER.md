@@ -832,7 +832,9 @@ Numbering note: drafted as §71/ADDENDUM-64 pre-push; twin landed their §71/ADD
 - Rationale: owner-facing top-level README described module mechanics (bridge/deploy/P500/verification — all still accurate, 98/283 facts verified in TASK-122) but not the operational law that now governs all measurement and levers; new agents and the owner get the posture in the first screen.
 - Verified: all 5 README link targets exist on disk; no boots, no runs, no config, no code changes. (agent-7625532f)
 
-## §80 — TASK-115 attempt-23 (S7-85, cron 370520): v12.1 static boot — loops=0 AGAIN, ROOT-CAUSED OFFLINE to guava IAE (LAW P6B-25, harness-proven); v12.2 trimmer neutralizes P6B-24 disk-DoS
+## §81 — TASK-115 attempt-23 (S7-85, cron 370520): v12.1 static boot — loops=0 AGAIN, ROOT-CAUSED OFFLINE to guava IAE (LAW P6B-25, harness-proven); v12.2 trimmer neutralizes P6B-24 disk-DoS
+
+- NUMBERING NOTE (agent-7625532f, collision #17): section RENUMBERED §80→§81 — duplicate-number class; first-lander keeps the number (TASK-138 ADDENDUM-72 = §80, landed 3bfe71e before this section's 45f683b). Body verbatim, untouched. Retrieval contract count=1 per § restored.
 
 - Boot 17.3s (DISK-GUARD-OK): CK 3 attempts (att1/att2 unwind + att3 cleared => img 507,572,228B), restore x2 alive, probes DEAD honest, AR-REPAIR-DONE loops=0 — findLoopsStatic silently failed.
 - LAW P6B-25: mojmap stores Suppliers.memoize(lambda) in SERVER_*_EVENT_GROUP (j.u.f.Supplier fields); runtime value = guava Suppliers$NonSerializableMemoizingSupplier (PACKAGE-PRIVATE) => getMethod("get").invoke = IllegalAccessException (public method, inaccessible DECLARING class). PROVEN by Harness B on the server's own guava 33.3.1-jre: old-path IAE reproduced verbatim; cast to j.u.f.Supplier works (guava Supplier EXTENDS j.u.f.Supplier — reconciles putstatic verifier legality). Harness A refuted the "lambda trap" theory first (honest falsification).
