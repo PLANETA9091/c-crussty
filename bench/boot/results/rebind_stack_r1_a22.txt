@@ -1,0 +1,15 @@
+"crussty-rebind" #348 [6019] daemon prio=9 os_prio=0 cpu=3.97ms elapsed=5.04s tid=0x00007f91680622b0 nid=6019 in Object.wait()  [0x00007f91184f7000]
+   java.lang.Thread.State: WAITING (on object monitor)
+	at java.lang.Object.wait0(java.base@21.0.12.1/Native Method)
+	- waiting on <no object reference available>
+	at java.lang.Object.wait(java.base@21.0.12.1/Unknown Source)
+	at java.lang.Object.wait(java.base@21.0.12.1/Unknown Source)
+	at io.netty.util.concurrent.DefaultPromise.awaitUninterruptibly(DefaultPromise.java:276)
+	- locked <0x00000000d1300308> (a io.netty.bootstrap.AbstractBootstrap$PendingRegistrationPromise)
+	at io.netty.channel.DefaultChannelPromise.awaitUninterruptibly(DefaultChannelPromise.java:137)
+	at io.netty.channel.DefaultChannelPromise.awaitUninterruptibly(DefaultChannelPromise.java:30)
+	at io.netty.util.concurrent.DefaultPromise.syncUninterruptibly(DefaultPromise.java:412)
+	at io.netty.channel.DefaultChannelPromise.syncUninterruptibly(DefaultChannelPromise.java:125)
+	at io.netty.channel.DefaultChannelPromise.syncUninterruptibly(DefaultChannelPromise.java:30)
+	at net.minecraft.server.network.ServerConnectionListener.startTcpServerListener(ServerConnectionListener.java:184)
+	- locked <0x00000000d78f0e40> (a java.util.Collections$SynchronizedRandomAccessList)
