@@ -42,6 +42,7 @@ use std::sync::{Arc, PoisonError};
 
 const FILL_CLASS: &str = "net/minecraft/world/level/levelgen/DensityFunctions$Noise";
 const SHIFT_CLASS: &str = "net/minecraft/world/level/levelgen/DensityFunctions$ShiftNoise";
+const INTERP_CLASS: &str = "net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator";
 const OPS_NAME: &str = "net/minecraft/world/level/levelgen/NormalNoiseBatchOps";
 
 const FILLARRAY_DESC: &str = "([DLnet/minecraft/world/level/levelgen/DensityFunction$ContextProvider;)V";
@@ -72,8 +73,11 @@ const OPS_CENSUS_BYTES: &[u8] = include_bytes!(concat!(
 const OPS_TEST_PROVIDER_BYTES: &[u8] = include_bytes!(concat!(
     "../noise/build/net/minecraft/world/level/levelgen/NormalNoiseBatchOps$TestProvider.class"
 ));
+const OPS_INTERP_BYTES: &[u8] = include_bytes!(concat!(
+    "../noise/build/net/minecraft/world/level/levelgen/DensityArrayInterpreter.class"
+));
 
-const OPS_EMBEDS: [(&str, &[u8]); 8] = [
+const OPS_EMBEDS: [(&str, &[u8]); 9] = [
     (OPS_NAME, OPS_BYTES),
     (
         "net/minecraft/world/level/levelgen/NormalNoiseBatchOps$Handle",
@@ -103,6 +107,10 @@ const OPS_EMBEDS: [(&str, &[u8]); 8] = [
         "net/minecraft/world/level/levelgen/NormalNoiseBatchOps$TestProvider",
         OPS_TEST_PROVIDER_BYTES,
     ),
+    (
+        "net/minecraft/world/level/levelgen/DensityArrayInterpreter",
+        OPS_INTERP_BYTES,
+    ),
 ];
 
 /// One whole-body swap target: the class to patch and the same-package
@@ -114,7 +122,7 @@ struct Target {
     label: &'static str,
 }
 
-const TARGETS: [Target; 2] = [
+const TARGETS: [Target; 3] = [
     Target {
         class: FILL_CLASS,
         bridge_name: "fillNoise",
@@ -126,6 +134,16 @@ const TARGETS: [Target; 2] = [
         bridge_name: "fillShift",
         bridge_desc: "(Lnet/minecraft/world/level/levelgen/DensityFunctions$ShiftNoise;[DLnet/minecraft/world/level/levelgen/DensityFunction$ContextProvider;)V",
         label: "ShiftNoise",
+    },
+    // TASK-108 v3 (PROGRESS-7): the real production opener — column fills of
+    // the slice interpolator go through the array-form tree interpreter
+    // (DensityArrayInterpreter via the NormalNoiseBatchOps.interpFillArray
+    // forwarder; bridge_owner law). fillingCell branch = vanilla pass-through.
+    Target {
+        class: INTERP_CLASS,
+        bridge_name: "interpFillArray",
+        bridge_desc: "(Lnet/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator;[DLnet/minecraft/world/level/levelgen/DensityFunction$ContextProvider;)V",
+        label: "NoiseInterpolator",
     },
 ];
 
@@ -139,7 +157,7 @@ fn enabled() -> bool {
         .unwrap_or(false)
 }
 
-static READY: [AtomicBool; 2] = [AtomicBool::new(false), AtomicBool::new(false)];
+static READY: [AtomicBool; 3] = [AtomicBool::new(false), AtomicBool::new(false), AtomicBool::new(false)];
 /// Global ref to the kernel classloader (captured at activation).
 static KERNEL_LOADER: AtomicUsize = AtomicUsize::new(0);
 /// Global ref to the JNI-defined ops bridge class (captured at define time;
@@ -148,8 +166,8 @@ static KERNEL_LOADER: AtomicUsize = AtomicUsize::new(0);
 static OPS_GREF: AtomicUsize = AtomicUsize::new(0);
 
 /// Original class bytes captured from the FIRST sight of each target.
-static ORIG_BYTES: [std::sync::OnceLock<std::sync::Mutex<Option<Vec<u8>>>>; 2] =
-    [std::sync::OnceLock::new(), std::sync::OnceLock::new()];
+static ORIG_BYTES: [std::sync::OnceLock<std::sync::Mutex<Option<Vec<u8>>>>; 3] =
+    [const { std::sync::OnceLock::new() }, const { std::sync::OnceLock::new() }, const { std::sync::OnceLock::new() }];
 
 /// Patched bytecode cache per target (TASK-26/C5 pattern: Arc + major).
 #[derive(Clone)]
@@ -158,10 +176,10 @@ struct PatchCache {
     major: u16,
 }
 
-static PATCH_CACHE: [std::sync::OnceLock<std::sync::Mutex<Option<PatchCache>>>; 2] =
-    [std::sync::OnceLock::new(), std::sync::OnceLock::new()];
+static PATCH_CACHE: [std::sync::OnceLock<std::sync::Mutex<Option<PatchCache>>>; 3] =
+    [const { std::sync::OnceLock::new() }, const { std::sync::OnceLock::new() }, const { std::sync::OnceLock::new() }];
 /// One-shot flag per target for the per-serve log line.
-static SERVE_LOGGED: [AtomicBool; 2] = [AtomicBool::new(false), AtomicBool::new(false)];
+static SERVE_LOGGED: [AtomicBool; 3] = [AtomicBool::new(false), AtomicBool::new(false), AtomicBool::new(false)];
 
 fn orig_lock(i: usize) -> &'static std::sync::Mutex<Option<Vec<u8>>> {
     ORIG_BYTES[i].get_or_init(|| std::sync::Mutex::new(None))

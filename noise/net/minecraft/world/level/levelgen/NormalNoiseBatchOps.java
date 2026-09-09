@@ -689,6 +689,21 @@ public final class NormalNoiseBatchOps {
      *
      * Returns a parse-friendly result line; never throws.
      */
+
+    /**
+     * TASK-108 v3 (PROGRESS-7): static forwarder — the whole-body
+     * replacement of NoiseChunk$NoiseInterpolator.fillArray. The Rust bridge
+     * (src/noise_fill.rs) emits invokestatic NormalNoiseBatchOps
+     * (bridge_owner law, same as fillNoise/fillShift), so the entry point
+     * must live here; the logic is DensityArrayInterpreter (embedded
+     * alongside). FillingCell pass-through + array-form eval + optional
+     * env-gated shadow verification — see the interpreter's contract.
+     */
+    public static void interpFillArray(final NoiseChunk.NoiseInterpolator self, final double[] out,
+                                       final ContextProvider ctx) {
+        DensityArrayInterpreter.interpFillArray(self, out, ctx);
+    }
+
     public static String selfTest() {
         final TestProvider tp = new TestProvider();
         try {
