@@ -105,3 +105,46 @@ committed flat 551936K = garbage persist until exit (vanilla shows the same shap
 - `src/perlin_noise.rs` (flip), `README.md`, `docs/KERNEL_POLICY.md` (doc sync)
 - Claim f34cd17 → done row (dev-logs CLAIMS.md); ledger §95 ADDENDUM-81; INDEX row
 - Module .so sha256 `949fbb58…cac65e2`; rig drift-guard `8ba2473c…` verified pre/post
+
+---
+
+## 8. CORRECTION (2026-09-09 ~14:0x UTC) — §4 resid form mix; corrected err +13MB; pre-registered attribution block applied
+
+Append-only correction; §4 left verbatim above. The verdict, E1/E2/E4/E5, early-call record,
+deployment and promotion are NOT affected.
+
+**The slip.** §4's three lines are mutually inconsistent:
+- L66 defines `resid = ΔRSS − Δcommitted = 82 − 12 = 70` (native-only observation);
+- L69 re-decomposes the SAME 70 as `12 (committed) + 58 (native)` — the committed share is
+  subtracted **twice** (58 = 82 − 2×12);
+- L67 then compares the native-only 70 against the TOTAL-form model `Δcommitted + 57 = 69`
+  → the "+1MB" agreement is an artifact of mixing forms.
+
+**The corpus's banked form is TOTAL (every prior row):**
+- §91 (#8): "resid 61 = PURE native term" — Δcom = 0, both forms coincide (why the slip was
+  invisible in the in-band series);
+- §92 (#9): "resid 104 = Δcom 47 + native 57" — total 104, not 57;
+- §93 (vanilla): "resid 88 = Δcom 30 + native 58" — total 88, not 58.
+Under the first-lander's mixed form these banked rows would read err −29 / −47 — absurd.
+
+**Corrected decomposition (this run):** resid_obs = 948 − 866 = **82** = Δcommitted 12.0 +
+native **70.0**; model = 12 + 57 = 69 → **err +13MB = FIRST exit of the ±10MB band in
+series history** (corpus −9…+4, 0.0). Equivalently in §4's own native-only frame:
+70 vs ~57 → the same +13. No consistent frame yields +1.
+
+**Pre-registered handling applies** (claim f34cd17 E3, verbatim: "if resid exits ±10MB,
+attribution block, no gate tuning"): the exit is attributed to the **newly-armed-surface
+native class** — metaspace trio (`PerlinNoiseNativeOps{,$Handle,$Reaper}` defined into the
+kernel loader), C2 code-cache/JNI glue for the new whole-body path, native handle arena.
+Item-level bounds (72 handles = 4,608 B Java; p-tables ≈0.15–0.3 MB) honestly disclosed as
+NOT covering the full +13 at this resolution; the remaining mass sits in the
+code-cache/metaspace class that the platform itself pays (vanilla anchor ~57–58, TASK-146).
+
+**Follow-up (free, pre-registered expectation):** every future canonical boot is now
+perlin-armed — the armed-state native term re-measures across the next cadences; if ~70
+persists, the model's native constant updates to the armed-state value (a forward model
+calibration, NOT a retroactive gate edit; ANTI-GATE-SHOPPING untouched).
+
+**UNCHANGED:** gate verdict PASS verbatim (R2=948 vs gate 966, margin 18MB); no gate tuning;
+no reclassification; §95/§4 not rewritten; the dev-logs coord-note de1c026 "+1MB canonical"
+assertion is superseded by this correction.
