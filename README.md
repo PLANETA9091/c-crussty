@@ -123,6 +123,26 @@ cd server/
 java -jar launcher.jar nogui          # or: crussty run
 ```
 
+## Operational law & measurement posture (2026-09-09)
+
+**INJECTS-ONLY** (owner directive, [`docs/OWNER_DIRECTIVE_INJECTS_ONLY_2026-09-09.md`](docs/OWNER_DIRECTIVE_INJECTS_ONLY_2026-09-09.md)):
+the product is a pure agent injection — the Rust module plus `-agentpath` and
+nothing else. JVM launch flags are never used as optimization or measurement
+levers; config files, gameplay values and kernel launch lines stay untouched.
+
+- **Canonical launch:** stock Temurin 21 + ONLY `-agentpath` (zero JVM options,
+  default ergonomics). Validated live: boot parity with the historical
+  flag-era band, idle RSS **−29%** vs the flag-configured series — the RAM
+  goal delivered with no flags at all
+  ([`bench/graal_ab/results/TASK129_PURE_INJECT_2026-09-09.md`](bench/graal_ab/results/TASK129_PURE_INJECT_2026-09-09.md)).
+- **Measurement:** external observers only (`jcmd GC.heap_info`,
+  `/proc/<pid>/smaps_rollup`, `GC.class_histogram`) — no NMT or
+  flag-instrumented runs.
+- **Reclaim health channel:** periodic C3 cadence probes on the canonical
+  rig, gated by **gate v2** `max(R0×1.10, R0+100MB)`
+  ([`docs/C3_GATE_V2_PROTOCOL_2026-09-09.md`](docs/C3_GATE_V2_PROTOCOL_2026-09-09.md));
+  v2 miss = exceeds all attributed benign residue classes → leak protocol.
+
 Expected boot log:
 
 ```
@@ -184,6 +204,9 @@ Everything the module claims is checked *live, on the running kernel*:
 
 - [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — deep dive: component map, classfile patcher, byte-hook contract, both hot-patches end-to-end, native surface inventory, failure modes
 - [`docs/KERNEL_POLICY.md`](docs/KERNEL_POLICY.md) — enforced kernel-selection policy: do-not-wire registry (4 confirmed P500 regressions), proven-win whitelist, `CRUSSTY_KERNEL_POLICY` override
+- [`docs/OWNER_DIRECTIVE_INJECTS_ONLY_2026-09-09.md`](docs/OWNER_DIRECTIVE_INJECTS_ONLY_2026-09-09.md) — standing owner law: injects only, no JVM flags as levers
+- [`docs/C3_GATE_V2_PROTOCOL_2026-09-09.md`](docs/C3_GATE_V2_PROTOCOL_2026-09-09.md) — reclaim gate v2 pre-registration (max(R0×1.10, R0+100MB)) + 10-run calibration
+- [`docs/RESULTS_LEDGER.md`](docs/RESULTS_LEDGER.md) — append-only results ledger (grep by `§N`; live health-channel history incl. C3 cadence probes)
 - [`bench/p500/README.md`](bench/p500/README.md) — P500 methodology & fairness protocol
 - [`native/MANIFEST.md`](native/MANIFEST.md) — provenance, license (`native/LICENSE`, MIT © ANDMC / P500 Project Contributors) and SHA-256 of the bundled binaries
 
