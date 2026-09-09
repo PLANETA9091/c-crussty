@@ -248,8 +248,25 @@ public class CrusstyCracHookV2 implements Resource {
     }
     return n;
   }
+  // v12.1 (S7-84 a22b root-cause, javap-verified): mojmap 1.21.10 holds server groups in STATIC
+  // suppliers ServerConnectionListener.SERVER_EPOLL_EVENT_GROUP / SERVER_EVENT_GROUP (single .group()
+  // call = boss+workers) => instance-field scan finds nothing (a22b measured loops=0). Read the
+  // supplier .get() => the SAME parked group our rebind blocks on.
+  static java.util.LinkedHashSet<Object> findLoopsStatic(Class<?> scl) {
+    java.util.LinkedHashSet<Object> out = new java.util.LinkedHashSet<>();
+    for (String fn : new String[]{"SERVER_EPOLL_EVENT_GROUP", "SERVER_EVENT_GROUP"}) {
+      try {
+        Field f = scl.getDeclaredField(fn); f.setAccessible(true);
+        Object sup = f.get(null);
+        Object grp = sup.getClass().getMethod("get").invoke(sup);
+        if (grp != null) { out.add(grp); collectChildren(grp, out); }
+      } catch (Throwable ig) { }
+    }
+    return out;
+  }
   static int repairAllLoops(Object conn) {
     java.util.LinkedHashSet<Object> loops = findLoops(conn);
+    try { loops.addAll(findLoopsStatic(conn.getClass())); } catch (Throwable ig) {}
     int fds = 0, el = 0;
     for (Object loop : loops) {
       java.util.List<String> ev = new java.util.ArrayList<>();
@@ -766,6 +783,8 @@ for R in 1 2; do
   kill -9 "$RPID" 2>/dev/null; wait "$RPID" 2>/dev/null
   # v12 (S7-84 a22) acceptance (a): selector-loop exception count delta in restore log (honest either way)
   echo "NETTY-ERR-R$R $(grep -cE 'io\.netty|Epoll|epoll|Selector' "$W/restore$R.log" 2>/dev/null || echo 0)"
+  # v12.1: rcon accept-loop spree counter (P6B-24 candidate — SocketException spin floods disk)
+  echo "RCON-SPREE-R$R $(grep -c 'IO exception' "$W/restore$R.log" 2>/dev/null || echo 0)"
 done
 grep -E 'HOOK-AFTER-RESTORE' "$W/agent.log" | head -2
 echo "=== AR-JOURNAL ==="
