@@ -541,3 +541,19 @@ Work Log:
 
 Stage Summary:
 - RCON 25575 SERVING AFTER RESTORE achieved (protocol-level evidence, sustained) — second port alive post-restore, INJECTS-ONLY, zero config. 25565 durability = final serving blocker with precise mechanism (swap-branch wakeup gap) and 3 pre-registered a26 levers. P6B-29 law banked. S7-89 = a26
+
+---
+Task ID: S7-89
+Agent: Super Z (main, cron job 370520, 19:15+08)
+Task: c-crussty attempt-26 — 25565 soak repair (wakeup-gap fix)
+
+Work Log:
+- Push race #19 at claim: twin TASK-142 registry sweep landed mid-push => rebase + union-resolve keep-both + re-append claim (2a011f5); their sweep consumed no §
+- Rig v12.7 (bee6331): lever-1 swap-branch ctlAdd eventfd re-arm; lever-2 repairRcon after repairAllLoops; lever-3 verifyLoops liveness census at repairer +1.2s; javac precheck before boot
+- 1 boot 17.4s (canonical): CK first-try deterministic => restore x2 alive => ctlAdd x6 rc=0 in-vivo => AR-REBIND rc=0 ms=22/22 => SOAK 25565 3/3+3/3 SERVING (a25: 2/3, 0/3!) + 25575 3/3+3/3 maintained => serving matrix COMPLETE both ports
+- Confound disproven: 25565 recovered despite more swap-branches than a25 => causal = ctlAdd re-arm, not fd-layout lottery
+- Honest: verifyLoops census 0/0 (instance-walk discovery misses static groups — a27 union-fix); NETTY-ERR = 1x EINVAL/restore now cosmetic (a25 same line = death, a26 = benign)
+- Banked c-crussty (results ATTEMPT26 + ledger §88) + dev-logs (CLAIMS done + SESSION 089)
+
+Stage Summary:
+- Phase-6c serving matrix COMPLETE: 25565 SLP + 25575 RCON sustained 3/3 both restores, INJECTS-ONLY, 0 config. Residuals: census discovery bug (a27), 1x EINVAL cosmetic. S7-90 = a27 census fix + LONG-SOAK exit gate (2min periodic probes), then phase-6d production-integration planning
