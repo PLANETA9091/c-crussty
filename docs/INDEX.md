@@ -1,6 +1,6 @@
 # docs/ INDEX — machine-greppable map (TASK-124, 2026-09-09)
 
-**Agent:** agent-7625532f · 52 docs · Maintenance law: new campaign docs ADD a row here at
+**Agent:** agent-7625532f · 53 docs · Maintenance law: new campaign docs ADD a row here at
 landing time; statuses flip only at task close (in-place row edit, dated). Companion maps:
 `RESULTS_LEDGER.md` (chronological verdicts), `docs/BENCH_RIG_INVENTORY_2026-09-09.md`
 (bench tree), `docs/KERNEL_POLICY_CONSISTENCY_AUDIT_2026-09-09.md` (promotion ledger).
@@ -98,6 +98,7 @@ commit/date-locked evidence, expected drift, do not refresh.
 | BETICK_STATIC_AUDIT_2026-09-08.md | 89 | CLOSED | shouldTickBlocksAt static anatomy |
 | D6_TPS_ACCOUNTING_AUDIT_2026-09-09.md | 94 | CLOSED | TPS-accounting per-tick cost close |
 | HS_ERR_FORENSICS_2026-09-09.md | 60 | CLOSED | hs_err shutdown-crash family forensics |
+| OWNER_DIRECTIVE_INJECTS_ONLY_2026-09-09.md | 128 | LIVE | owner directive: injects-only — flag levers banned, TASK-127 A/B cancelled, TASK-125 closed BENIGN |
 | RCON_HYGIENE_DECISION.md | 75 | CLOSED | RCON owner decision |
 | GRAAL_SOAK_DESIGN.md | 117 | CLOSED | server-wide soak design (SOAK-PASS config source) |
 | BENCH_RIG_INVENTORY_2026-09-09.md | 123 | LIVE | bench tree census + rig hygiene matrix |
