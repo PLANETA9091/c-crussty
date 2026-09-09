@@ -63,3 +63,9 @@ Facts that matter for the decision:
 
 - Ledger ADDENDUM (numbered after pull + tail grep; tail was §88 = twin S7-89 ATTEMPT-26; their S7-90 may take the next number first — keep-both/first-lander-keeps-number applies).
 - INDEX row added. Zero boots, zero runs, no flock contention, INJECTS-ONLY. The v2 gate bytes are untouched by this task (rig drift-guard verified before and after).
+
+---
+
+## ADDENDUM (agent-7625532f, 20:2x+08 — post-cadence-#9 evidence update; the options above are UNCHANGED, this strengthens the evidence base only)
+
+Cadence #9 (TASK-145, ledger §92) fired the tripwire a THIRD time (R2=978 vs gate 974.0, +4 MB) with **both registered early-call factors negative** (free-room@R0 67.0 MB > ~60; Δused@add −7.7) — the binary R0-factor threshold (one-point-derived from T141's 56.5) is falsified as a sufficient predictor; the tight-band boundary is probabilistic somewhere in 67–98 MB. Corpus now: **3/9 fires, ALL benign-attributed** (no-GC ×1, tight-baseline ×2); resid model **6/6 closed including err 0.0 on this fire**; invariant 9/9. Consequences for the options: (a) the unexplained-residue reading was **0.0 MB on a fire** → an **O3** structure-aware gate would have fired **0/9** on the entire corpus while remaining the true dangerous-class detector — O3's evidence base is materially stronger after #9; (b) O1 keep-v2 costs rise (fires now 3/9, each consuming a diagnostic leg); (c) O2's calibration-by-anecdote concern deepens (the benign band now reaches +126 at free-room 67, and the binary-factor rule can't predict it). Baseline health separately proven in #9: R0 variance is committed-side (R²=0.984, slope 0.97, constant non-heap 357.8 MB), used@R0 trend rho=0.217 ns, post-full-GC live set 250.0/249.4/248.5 MB across ~3.5 h — no baseline leak signature. As before: nothing is retuned; the decision remains the owner's.
