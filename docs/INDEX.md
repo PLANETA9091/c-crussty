@@ -119,3 +119,4 @@ commit/date-locked evidence, expected drift, do not refresh.
 | TASK132_C3_CADENCE3_V2_2026-09-09.md | 132 | LIVE | C3 cadence #3: first v2-gated run — PASS x both gates (+61MB residue, plateau, used-heap flat) |
 | TASK134_C3_CADENCE4_FLIPPED_2026-09-09.md | 134 | LIVE | C3 cadence #4: first in-vivo run under flipped rig — PASS x both gates, lean-zone floor binds (R0=900, +61MB, committed constant) |
 | TASK135_C3_CADENCE5_DEFLAG_2026-09-09.md | 135 | LIVE | C3 cadence #5: first live (v1,v2] de-flag band capture — PASS v2/989 floor, v1_class=exceeds-v1 honestly reported (+90MB top-of-band, used-heap clean) |
+| RESEARCH_CRAC_SERVING_2026-09-09.md | 115 | DESIGN-ONLY | CRaC restore-serving web research: CRIU TCP_REPAIR / Spring Resource pattern / agent-conflict synthesized vs P6B-17/19 (FRONT-E, S7-79) [backfill TASK-136] |
