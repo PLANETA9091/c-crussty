@@ -45,6 +45,13 @@
 #   SOAK-R{1,2} sustained probes (25565 SLP + 25575 RCON x3/~12s); portClear() hex-case bugfix
 #   (Integer.toHexString lowercase => false negative on /proc/net/tcp UPPERCASE); stale-evidence
 #   cleanup (jcmd_att*/tdump/rebind_stack from prior runs — a24b hygiene note).
+# v12.7 (S7-89 a26, three pre-registered levers for 25565 soak): (1) swap-branch ctlAdd — repairLoop
+#   epollFd swap branch now re-arms the wakeup eventfd onto the fresh epoll (a25 mechanism: empty
+#   fresh epoll = lost wakeups = parked-forever loop = SLP timeout with TCP-accept-ok);
+#   (2) repairRcon moved AFTER repairAllLoops pass-1 (a25 fd-layout confound eliminated);
+#   (3) verifyLoops() per-loop liveness census (execute(AtomicBoolean) poll <=500ms per loop,
+#   endsWith(EventLoop) filter skips groups) at repairer +1.2s: census -> kick -> re-census —
+#   honest dead-loop census (AR-LOOP-VERIFY markers), independent of REBIND_DONE.
 set -u
 JAVA=/home/z/crac-jdk/bin/java
 JCMD=/home/z/crac-jdk/bin/jcmd
@@ -267,6 +274,10 @@ public class CrusstyCracHookV2 implements Resource {
           ev.add(fn + " " + old + "=dup2");
         } else {
           fdF.setInt(wrapper, fresh); closeFd(old); // number reused post-restore => int-swap fallback
+          if (fn.equals("epollFd")) { // v12.7 (a26 lever 1): fresh epoll must carry the wakeup eventfd
+            int evn = fdNumber(loop, "eventFd"); int rc = evn >= 0 ? epollCtlAdd(fresh, evn) : -99;
+            ev.add("ctlAdd(" + fresh + "," + evn + ")=" + rc);
+          }
           ev.add(fn + " " + old + "(" + tgt + ")->swap" + fresh);
         }
         n++;
@@ -322,6 +333,31 @@ public class CrusstyCracHookV2 implements Resource {
       } catch (Throwable t) { Throwable cc = t.getCause() != null ? t.getCause() : t; marker("AR-KICK-ERR " + loop.getClass().getSimpleName() + " " + cc); }
     }
     return k;
+  }
+  // v12.7 (S7-89 a26 lever 3): per-loop task-execution liveness census — execute(AtomicBoolean flip)
+  // then poll <=500ms; alive=flip-in-time. Only real eventloops (endsWith "EventLoop"), groups skipped
+  // (group-execute delegates to an arbitrary child — not per-loop evidence). Honest dead-loop census.
+  static int verifyLoops(java.util.LinkedHashSet<Object> loops, String tag) {
+    int alive = 0, total = 0;
+    for (Object loop : loops) {
+      String cn = loop.getClass().getSimpleName();
+      if (!cn.endsWith("EventLoop")) continue;
+      total++;
+      try {
+        java.util.concurrent.atomic.AtomicBoolean done = new java.util.concurrent.atomic.AtomicBoolean(false);
+        boolean kicked = false;
+        for (Method m : loop.getClass().getMethods())
+          if (m.getName().equals("execute") && m.getParameterCount() == 1 && m.getParameterTypes()[0] == Runnable.class) { m.invoke(loop, (Runnable) () -> done.set(true)); kicked = true; break; }
+        if (!kicked) { marker("AR-LOOP-VERIFY " + tag + " " + cn + "@" + System.identityHashCode(loop) + " no-executor"); continue; }
+        long dl = System.currentTimeMillis() + 500;
+        while (System.currentTimeMillis() < dl && !done.get()) Thread.sleep(10);
+        boolean a = done.get();
+        if (a) alive++;
+        marker("AR-LOOP-VERIFY " + tag + " " + cn + "@" + System.identityHashCode(loop) + " alive=" + a);
+      } catch (Throwable t) { marker("AR-LOOP-VERIFY-ERR " + cn + " " + t); }
+    }
+    marker("AR-LOOP-VERIFY-" + tag + " alive=" + alive + "/" + total);
+    return alive;
   }
   static boolean listenNow(int port) {
     try {
@@ -609,10 +645,11 @@ public class CrusstyCracHookV2 implements Resource {
       if (!imgOk) { marker("AR-REBIND-SKIP no-image (unwind P6B-9)"); return; }
       bind.setAccessible(true);
       final Method fbind = bind; final Object fconn = conn; final Field flf = lf; final int fsize = sizeBefore;
-      // v12.6 a25: rcon listener repair — independent of netty path, BEFORE storm gains ground
-      try { repairRcon(); } catch (Throwable rr1) { marker("RCON-REPAIR-P1-ERR " + rr1); }
       // v12 a22 pass-1: resurrect fds BEFORE binder queues its registration (evidence-first)
       try { repairAllLoops(conn); kickLoops(findLoops(conn)); } catch (Throwable rt1) { marker("AR-REPAIR-P1-ERR " + rt1); }
+      // v12.7 (a26 lever 2): rcon repair AFTER loop-repair — a25 confound (fresh-socket fd allocation
+      // before loop-repair perturbed fd-number layout / dup2-vs-swap branch selection) eliminated
+      try { repairRcon(); } catch (Throwable rr1) { marker("RCON-REPAIR-P1-ERR " + rr1); }
       Thread rt = new Thread(() -> {
         try {
           marker("AR-REBIND-TRY " + fbind);
@@ -640,6 +677,13 @@ public class CrusstyCracHookV2 implements Resource {
       // cycles 2+ = kick-only (dup2 re-run would clobber a live registered epoll interest list — P6B-23 guard)
       Thread rp = new Thread(() -> {
         try {
+          // v12.7 (a26 lever 3): unconditional liveness census at +1.2s — independent of REBIND_DONE;
+          // dead loops get an extra kick + re-census at +2s (evidence: did wakeup-gap fix close the gap?)
+          Thread.sleep(1200);
+          try {
+            int al1 = verifyLoops(findLoops(fconn), "C1");
+            if (al1 < 8) { int k = kickLoops(findLoops(fconn)); marker("AR-VERIFY-KICK " + k); Thread.sleep(800); verifyLoops(findLoops(fconn), "C1B"); }
+          } catch (Throwable vt) { marker("AR-VERIFY-ERR " + vt); }
           for (int i = 0; i < 8 && !REBIND_DONE; i++) {
             Thread.sleep(i == 0 ? 1200 : 1000);
             if (REBIND_DONE || listenNow(25565)) break;
