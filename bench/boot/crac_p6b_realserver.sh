@@ -168,7 +168,7 @@ T0=$(date +%s.%N)
 cd "$SRV"
 "$JAVA" -Djava.library.path="$W" \
   -javaagent:"$W/hookv2.jar" -XX:CRaCCheckpointTo="$IMG" \
-  -jar "$PJAR" --nogui > "$W/boot.log" 2>&1 < /dev/null 9>&- &
+  -cp "$W/hookv2.jar:$PJAR" io.papermc.paperclip.Main --nogui > "$W/boot.log" 2>&1 < /dev/null 9>&- &
 SPID=$!
 DONE=""
 for i in $(seq 1 90); do
