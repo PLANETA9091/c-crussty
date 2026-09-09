@@ -18,8 +18,8 @@ JAR="$SERVER/versions/purpur-1.21.10.jar"
 RUNTIME="$SERVER/libcrussty_runtime.so"
 STAMP=$(date +%Y%m%d_%H%M%S)
 OUT_ROOT="$PWD/bench/graal_ab/RAW_SOAK"; mkdir -p "$OUT_ROOT"
-WAVES="${WAVES:-12}"
-LOAD_SECONDS="${LOAD_SECONDS:-420}"
+WAVES="${WAVES:-40}"
+LOAD_SECONDS="${LOAD_SECONDS:-480}"
 
 if pgrep -f 'purpur-1.21.10\.jar' >/dev/null 2>&1; then echo "LANE-BUSY"; exit 42; fi
 exec 9>/home/z/BENCH.lock
