@@ -181,3 +181,32 @@ BlendDensity, Shift (rare/none-overworld) — per-point fallback tier.
 Strategy: hybrid interpreter, unknown/rare nodes fall back to per-point
 compute() into their array slot; selftest prints the node census so the
 fallback share is visible per router.
+
+### 7.6 v3 VERDICT — CHANNEL CLOSED (2026-09-09, tick 08:40, agent-7625532f; ledger §36 ADDENDUM-29)
+
+Full-distribution census (big-budget shadow report, 20000 production column
+fills, band 3200 + spawn-prep): **t3.FALLBACK.RangeChoice=17500 (87.5%),
+t3.FALLBACK.BlendDensity=2500 (12.5%), tier-1/tier-2 = ZERO.** The production
+router root is ALWAYS a tier-3 type and its children never reach interpreter
+eval — the array-form interpreter never batch-evaluates anything in
+production; the bridge is exact vanilla work plus dispatch overhead.
+
+A/B per the pre-registered law (n=3/arm ABBA, warm+cold, rig
+`run_task108_v3_ab.sh`, RAW_TASK108_V3_AB/): warm cpu_burst medians dormant
+13.9s vs armed 15.6s = **+12.2%** (gate <= -3% FAIL); cold 31.1s vs 35.7s =
+**+14.8%** (gate <= 0% FAIL; full separation, all 3 cold pairs armed worse).
+hs_err 0. VERDICT: honest NULL — **the noise-kernel channel is CLOSED
+PERMANENTLY** (v3 was the last opener; v1 dispatch-dead, v2 refuted
+pre-impl, v3 measured NULL — the full ladder is documented in this file and
+the ledger).
+
+Why the roots kill batching (v3b premises refuted with the same census):
+RangeChoice batch form must evaluate BOTH branches then select = 2x the
+expensive terrain subtree; BlendDensity blends per point against external
+old-chunk state. There is no JNI pressure to relieve — the batch never
+engages. The interpreter/wiring stay in-tree dormant (env-gated,
+selftest-armed, 20000/20000 raw-bits shadow + PROBE PASS-ALL = correct for
+any future re-opener with a genuinely batchable root). Dispatch-overhead
+law for future batch bridges: work-equivalent whole-body routing costs
+~+12-15% burst CPU at column granularity on this box — kernel savings must
+exceed that by a wide margin before wiring is worth a boot.
