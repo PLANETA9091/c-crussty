@@ -1,0 +1,6 @@
+BatchFloorBench: segments=5 segment.ms=120 warm.ops=200000 window.ops=8192 k=[1, 8, 16, 64, 256] dstcap=64 scalar=1000 natives=LOADED
+  java_sameShapeControl -> 7.1 ns/op (min 7.0, max 7.1)
+  abiVersion=65548 ((TABLE_VERSION<<16)|KERNEL_COUNT)
+  individual_binarySummary -> 462118.6 ns/op (min 459902.7, max 485851.5)
+  batch_k1 -> 459120.0 ns/op (min 450938.3, max 478085.9) [parity-ok]
+  batch_k8 -> 445048.5 ns/op (min 444230.3, max 454567.7) [parity-ok]
