@@ -1,0 +1,10 @@
+[12:45:32] V1 boot done: Done (16.327s) (VANILLA CONTROL — stock kernel, no inject)
+[12:45:32] confirm: no crussty-runtime marker (clean old-kernel launch)
+[12:45:39] V1 baseline: R0=854MB used=285696K committed=539648K, smapRss=858MB Pss=856MB
+[12:46:04] V1 post-add: R1=909MB used=483829K committed=542720K,
+[12:48:15] V1 R2=942MB (control — informational v2 ref 954.0MB, non-binding) -> UNCONDITIONAL diagnostic jcmd GC.run (pre-registered)
+[12:48:32] run V1 done: CONTROL (R0=854 R1=909 R2=942 R3=947)
+[12:48:32] hs_err delta: 0 (must be 0)
+[12:48:32] === SUMMARY ===
+V1	R0=854MB	R1=909MB	R2=942MB	R3=947	verdict=CONTROL	heap@base=used=285696K committed=539648K,	heap@add=used=483829K committed=542720K,	heap@remove_end=used=465952K committed=570368K,	heap@final=used=249827K committed=570368K,	v2_gate_ref=954.0MB	note=vanilla-no-inject
+[12:48:32] TASK-146 vanilla control complete (old-kernel A/B side; canonical rig 8ba2473c untouched; product lane law INJECTS-ONLY untouched)
