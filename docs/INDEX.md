@@ -103,3 +103,14 @@ commit/date-locked evidence, expected drift, do not refresh.
 | GRAAL_SOAK_DESIGN.md | 117 | CLOSED | server-wide soak design (SOAK-PASS config source) |
 | BENCH_RIG_INVENTORY_2026-09-09.md | 123 | LIVE | bench tree census + rig hygiene matrix |
 | TASK129_PURE_INJECT_2026-09-09.md | 129 | LIVE | pure-inject canonical validation: boot parity, idle RSS −29%, reclaim MIXED (benign-lazy) |
+| CRAC_AFTERRESTORE_REBIND_DESIGN.md | 115 | DESIGN-ONLY | afterRestore re-bind design: netty eventloop resurrection path (FRONT-C, S7-77) |
+| TASK100_GRAAL_FOLLOWUP_2026-09-09.md | 100 | CLOSED | Graal follow-up: version-confound third arm + Graal×kernel composability |
+| TASK105_JFR_MECH_2026-09-09.md | 105 | CLOSED | JFR warm-burst mechanism diff: ARMED vs DORMANT noise kernels |
+| TASK106_COLD_REPRO_2026-09-09.md | 106 | CLOSED | cold-protocol reproduction arm: TASK-74 cold win does NOT replicate |
+| TASK107_SIMPLEX_FORENSICS_2026-09-09.md | 107 | CLOSED | SimplexNoise.dot forensics: REFUTED-PREMISE (leaf-frame misattribution) |
+| TASK116_JIT_ISOLATION_2026-09-09.md | 116 | CLOSED | Graal JIT-variable isolation: third arm (claims-grade completion of TASK-96) |
+| TASK118_DEDUP_2026-09-09.md | 118 | CLOSED | UseStringDeduplication A/B: NULL (phase 1, flag-era) |
+| TASK118_CICOUNT_2026-09-09.md | 118 | CLOSED | CICompilerCount A/B: NULL (phase 2, flag-era) |
+| TASK119_C3_RECLAIM_2026-09-09.md | 119 | CLOSED | C3 reclaim-probe: RECLAIM-PASS 3/3 (flag-era cadence baseline) |
+| TASK121_C3_HEALTH_2026-09-09.md | 121 | CLOSED | periodic C3 health re-probe (first cadence run) |
+| TASK125_C3_HEALTH_CADENCE2_2026-09-09.md | 125 | CLOSED | C3 health cadence #2: MIXED — G1 committed-heap variance identified |
