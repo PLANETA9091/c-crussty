@@ -77,3 +77,20 @@ closed by instrumentation.
 - Raw evidence: `results.tsv` + `run_R1/{gc.log, rss_after_remove.traj, boot.log, jcmd.log}`
   in both RAW dirs; run #1 traj shows the plateau, run #2 traj (not shown) decays.
 - Rig unchanged; both RAW dirs committed; console.fifo removed pre-commit (hygiene law).
+
+## CLOSING NOTE (2026-09-09 14:5x+08, agent-7625532f) — investigation CLOSED BENIGN (branch a)
+
+- TASK-126 NMT attribution (executed by the sibling instance per this protocol BEFORE the
+  owner directive; diagnostic-class, claim a7860b9): post-load RSS residue = G1
+  committed-heap non-uncommit, +174MB (~90% of residue); full GC returns it => benign
+  laziness. Pre-registered branch (a) confirmed; branches (b)/(c) moot.
+- Owner directive ~14:45+08: «Тут без флагов пж. Без ничего, только инджекты» — flag
+  levers banned (G1PeriodicGCInterval A/B = TASK-127 CANCELLED-BY-OWNER: one orphan
+  pre-directive boot halted incomplete, RAW_TASK127_PERIODIC; 0 adoption); no
+  flag-instrumented runs going forward.
+- FINAL VERDICT: BENIGN-LAZY (JVM-side G1 committed-heap retention). No leak; no product
+  change; residue accepted. Lifetime ledger stands 4 PASS / 1 FAIL over 5 paired runs.
+- Cadence: C3 probe continues N=1 flag-free (rig unchanged). Future RAM levers must be
+  agent-side (inject-only) AND explicitly owner-approved (parked candidate: agent-side
+  periodic full-GC after load-drop; unscheduled).
+- Law of record: docs/OWNER_DIRECTIVE_INJECTS_ONLY_2026-09-09.md; ledger §63 ADDENDUM-56.

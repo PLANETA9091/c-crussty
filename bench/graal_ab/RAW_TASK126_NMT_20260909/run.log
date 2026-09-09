@@ -1,0 +1,24 @@
+[06:23:35] R1 boot done: Done (15.859s)
+[06:23:42] R1 baseline: R0=1114MB heap_last=610M->296M(738M) nmt_baseline=ok
+[06:24:06] R1 post-add: R1=1175MB heap_last=659M->336M(738M)
+[06:26:17] R1 R2=1334MB > R0*1.10 -> diagnostic jcmd GC.run
+[06:26:35] run R1 done: PASS-LAZY (R0=1114 R1=1175 R2=1334 R3=1178)
+[06:26:35] hs_err delta: 0 (must be 0)
+[06:26:35] === SUMMARY ===
+R1	R0=1114MB	R1=1175MB	R2=1334MB	R3=1178	verdict=PASS-LAZY	heap@add=659M->336M(738M)	heap@remove_end=396M->396M(912M)	heap@final=238M->237M(797M)
+[06:26:35] TASK-126 NMT attribution probe complete (diagnostic-class; gate owned by task119 rig)
+[06:28:40] skip R1 (already done — reentrant)
+[06:28:40] hs_err delta: 0 (must be 0)
+[06:28:40] === SUMMARY ===
+R1	R0=1114MB	R1=1175MB	R2=1334MB	R3=1178	verdict=PASS-LAZY	heap@add=659M->336M(738M)	heap@remove_end=396M->396M(912M)	heap@final=238M->237M(797M)
+[06:28:40] TASK-126 NMT attribution probe complete (diagnostic-class; gate owned by task119 rig)
+[06:28:55] skip R1 (already done — reentrant)
+[06:29:12] R2 boot done: Done (15.755s)
+[06:29:20] R2 baseline: R0=1261MB heap_last=329M->329M(855M) nmt_baseline=ok
+[06:29:43] R2 post-add: R1=1312MB heap_last=763M->346M(855M)
+[06:31:55] run R2 done: PASS (R0=1261 R1=1312 R2=1310 R3=NA)
+[06:31:55] hs_err delta: 0 (must be 0)
+[06:31:55] === SUMMARY ===
+R1	R0=1114MB	R1=1175MB	R2=1334MB	R3=1178	verdict=PASS-LAZY	heap@add=659M->336M(738M)	heap@remove_end=396M->396M(912M)	heap@final=238M->237M(797M)
+R2	R0=1261MB	R1=1312MB	R2=1310MB	R3=NA	verdict=PASS	heap@add=763M->346M(855M)	heap@remove_end=407M->407M(855M)	heap@final=NA
+[06:31:55] TASK-126 NMT attribution probe complete (diagnostic-class; gate owned by task119 rig)
