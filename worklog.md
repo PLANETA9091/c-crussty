@@ -525,3 +525,19 @@ Work Log:
 
 Stage Summary:
 - TASK-86 ПОЛНОСТЬЮ ГОТОВ: код+доки+гейты (test 65/65, clippy Δ0, P500 70/70) + все 3 бут-гейта §9 живьём. Коммит 6665300 + evidence-апдейт локально. ЕДИНСТВЕННЫЙ блокер — токен: push 6665300 + CLAIMS done в dev-logs (private, недоступен) — на первый тик с восстановленным токеном.
+
+---
+Task ID: S7-88
+Agent: Super Z (main, cron job 370520, 19:20+08)
+Task: c-crussty attempt-25 — P6B-24 rcon remedy + SERVING soak
+
+Work Log:
+- Pulled repos (twin TASK-141 done = §86 tail, no S7-88 claim => lane mine); claim-first pushed 5d72db4; restored accidental dev-logs/worklog.md clobber via git checkout (uncommitted twin damage, canonical log is here)
+- OFFLINE DECODE 0 boots: javap RconThread/GenericThread/DedicatedServer (real purpur jar) => run() bytecode NO exit path (catch IOException -> log -> goto 0), field `socket` re-read per iteration; boot.log smoking gun "[jdk.crac] Socket ...localport=25575 was not closed by the application" => LAW P6B-29: CRaC closes unclaimed java.net sockets JAVA-LEVEL at CK; restore1.log "Socket closed" from NioSocketImpl.ensureOpen => dup2 branch structurally inapplicable (honest refutation)
+- Rig v12.6 (6799691): repairRcon() reflective field-swap RconThread.socket <- fresh ServerSocket(:25575, reuseaddr, backlog 50); rconPreCapture() at BCP; rcon.py honest RCON-protocol probe (SERVERDATA_AUTH wrong-pwd, no secret read); SOAK-R1/R2 sustained x3; portClear() hex-case fix; stale-evidence cleanup; javac pre-check before boot (0 burned boots)
+- 1 boot 18.4s: CK first-try deterministic -> restore x2 alive -> RCON-REPAIR-SWAPPED both -> PROBE-25575 RCON-SERVING R1+R2, SOAK-25575 3/3+3/3, storm ZERO after swap (spree 674/813 vs 2436 = pre-swap window only) => P6B-24 CLOSED
+- Honest regression banked: 25565 SOAK R1 2/3, R2 0/3 (TCP ok, SLP timeout); NETTY-ERR = 1x epoll_wait EINVAL per restore; mechanism = swap-branch fresh epoll created EMPTY (ctlAdd only in dup2 branch) => parked loop loses wakeup; confound = repairRcon fd allocation before repairAllLoops; both flagged with a26 levers
+- Banked c-crussty (results ATTEMPT25 + ledger §87, tail re-grepped) + dev-logs (CLAIMS done + SESSION 088)
+
+Stage Summary:
+- RCON 25575 SERVING AFTER RESTORE achieved (protocol-level evidence, sustained) — second port alive post-restore, INJECTS-ONLY, zero config. 25565 durability = final serving blocker with precise mechanism (swap-branch wakeup gap) and 3 pre-registered a26 levers. P6B-29 law banked. S7-89 = a26
