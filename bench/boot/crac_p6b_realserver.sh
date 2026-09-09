@@ -27,7 +27,7 @@ echo "start-task115-p6b-$STAMP" >> /home/z/BENCH.lock.journal
 trap 'echo "done-task115-p6b-$STAMP" >> /home/z/BENCH.lock.journal' EXIT
 ss -ltn 2>/dev/null | grep -qE ':25565|:25575' && { echo "LANE-BUSY-PORTS"; exit 42; }
 
-mkdir -p "$W"; cd "$W"; rm -rf "$IMG"; mkdir -p "$IMG"
+mkdir -p "$W"; cd "$W"; rm -rf "$IMG"; rm -f "$W/agent.log"; mkdir -p "$IMG"
 
 # ---- 1. Rust no-dep cdylib (same as p6a) ----
 cat > fd_surgery.rs << 'REOF'
@@ -153,7 +153,7 @@ public class CrusstyCracHookV2 implements Resource {
         public void afterRestore(org.crac.Context<? extends org.crac.Resource> c) { marker("AR-ORG"); }
       });
       orgOk = true;
-    } catch (Throwable t) { marker("ORG-REG-ERR " + t); }
+    } catch (Throwable t) { marker("ORG-REG-ERR " + t + " cause=" + t.getCause()); }
     try {
       Class<?> jres = Class.forName("jdk.crac.Resource");
       Class<?> jc = Class.forName("jdk.crac.Core");
@@ -168,12 +168,50 @@ public class CrusstyCracHookV2 implements Resource {
             return null;
           }
           if (n.equals("afterRestore")) { marker("AR-RAW"); return null; }
-          return null;
+          // P6B-6 fix (S7-65): jdk.crac register invokes primitive/object methods on proxies
+          if (n.equals("toString")) return "CrusstyRawProxy";
+          if (n.equals("hashCode")) return 42;
+          if (n.equals("equals")) return Boolean.valueOf(p == a[0]);
+          Class<?> rt = m.getReturnType();
+          if (rt == boolean.class) return Boolean.FALSE;
+          if (rt == void.class) return null;
+          if (rt == long.class) return Long.valueOf(0);
+          if (rt == double.class) return Double.valueOf(0);
+          if (rt == float.class) return Float.valueOf(0);
+          if (rt == char.class) return Character.valueOf((char) 0);
+          if (rt == short.class) return Short.valueOf((short) 0);
+          if (rt == byte.class) return Byte.valueOf((byte) 0);
+          return Integer.valueOf(0);
         });
       Class.forName("jdk.crac.Context").getMethod("register", jres).invoke(gctx, proxy);
       rawOk = true;
-    } catch (Throwable t) { marker("RAW-REG-ERR " + t); }
-    marker("PREMAIN-V3 org=" + orgOk + " raw=" + rawOk);
+    } catch (Throwable t) { marker("RAW-REG-ERR " + t + " cause=" + t.getCause()); }
+    marker("PREMAIN-V5 org=" + orgOk + " raw=" + rawOk);
+    // S7-65 compat discriminator (NEXT(2) piggyback): WHY server compat=null vs plain-JVM bind
+    try {
+      Object g2 = Class.forName("jdk.crac.Core").getMethod("getGlobalContext").invoke(null);
+      marker("RAW-GCTX " + g2.getClass().getName());
+    } catch (Throwable t) { marker("RAW-GCTX-ERR " + t); }
+    try {
+      Class<?> oc = Class.forName("org.crac.Core");
+      for (String fn : new String[]{"compat", "globalContextWrapper"}) {
+        try {
+          Field f = oc.getDeclaredField(fn); f.setAccessible(true);
+          Object v = f.get(null);
+          marker("ORG-DUMP " + fn + "=" + (v == null ? "null" : v.getClass().getName()));
+        } catch (Throwable t) { marker("ORG-DUMP " + fn + "-ERR " + t); }
+      }
+      try {
+        Method lm = oc.getDeclaredMethod("loadCompat", String.class); lm.setAccessible(true);
+        Object c = lm.invoke(null, "jdk.crac");
+        marker("ORG-WHY loadCompat(jdk.crac)=OK " + c.getClass().getName());
+      } catch (Throwable t) {
+        Throwable cc = t.getCause() != null ? t.getCause() : t;
+        marker("ORG-WHY loadCompat-FAIL " + cc);
+        StackTraceElement[] st = cc.getStackTrace();
+        if (st.length > 0) marker("ORG-WHY at " + st[0]);
+      }
+    } catch (Throwable t) { marker("ORG-DUMP-FATAL " + t); }
   }
 }
 JEOF
@@ -183,11 +221,14 @@ printf 'Manifest-Version: 1.0\nPremain-Class: CrusstyCracHookV2\n' > mf.txt
 /home/z/jdk21/bin/jar cfm hookv2.jar mf.txt CrusstyCracHookV2.class
 # LAW P6B-2: agent jar must be SELF-CONTAINED (org.crac bundled, rig-internal, app-classpath)
 rm -rf stage; mkdir stage
-( cd stage && /home/z/jdk21/bin/jar xf "$CRACJAR" && cp ../CrusstyCracHookV2.class . && \
+( cd stage && /home/z/jdk21/bin/jar xf "$CRACJAR" && cp ../CrusstyCracHookV2*.class . && \
   /home/z/jdk21/bin/jar cfm ../hookv2.jar ../mf.txt org CrusstyCracHookV2*.class )
 BUNDLED=$(unzip -l hookv2.jar 2>/dev/null | grep -cE 'org/crac/.+\.class')
 echo "BUNDLED-org.crac-classes=$BUNDLED"
+AGENTN=$(unzip -l hookv2.jar 2>/dev/null | grep -cE 'CrusstyCracHookV2.*\.class')
+echo "BUNDLED-agent-classes=$AGENTN"
 [ "$BUNDLED" -lt 5 ] && { echo "BUNDLE-FAIL"; exit 11; }
+[ "$AGENTN" -lt 2 ] && { echo "BUNDLE-FAIL-agent-class-missing"; exit 11; }
 echo "BUILD-OK"
 
 # ---- 3. ONE boot on Zulu CRaC + checkpoint ----
