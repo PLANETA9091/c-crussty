@@ -1,0 +1,145 @@
+[crussty-runtime] v2.0.0 loaded (options: modules=/home/z/server/modules;versions=/home/z/server/versions;kernel=purpur-1.21.10.jar)
+[crussty-plugin] cplugin_init: injecting Crussty CE native surface in background
+[crussty-plugin] improved_noise: dormant (set CRUSSTY_NATIVE_IMPROVED_NOISE=1 to enable)
+[crussty-plugin] perlin_noise: dormant (set CRUSSTY_NATIVE_PERLIN_NOISE=1 to enable)
+[crussty-plugin] noise_fill: dormant (set CRUSSTY_NATIVE_NOISE_FILL=1 to enable)
+[crussty-plugin] fluid_guard: dormant (set CRUSSTY_FLUID_PUSH_GUARD=1 to enable)
+[crussty-plugin] blend_cache: dormant (prototype; set CRUSSTY_NATIVE_BLEND_CACHE=1 to run the read-only parity harness — no patch ships)
+[crussty-runtime] module crussty -> init rc=0
+[crussty-runtime] pipeline ready: 1 module hook(s)
+[crussty-runtime] transform engine: 23 rule(s) registered
+[crussty:hot-reload] SIGUSR1 reload trigger armed (1 module(s) reloadable)
+Starting org.bukkit.craftbukkit.Main
+[00:57:19 INFO]: [bootstrap] Running Java 21 (OpenJDK 64-Bit Server VM 21.0.12.1+1-LTS; Eclipse Adoptium Temurin-21.0.12.1+1) on Linux 5.10.134-013.8.3.kangaroo.al8.x86_64 (amd64)
+[00:57:19 INFO]: [bootstrap] Loading Purpur 1.21.10-2535-HEAD@0a2dc04 (1970-01-01T00:00:00Z) for Minecraft 1.21.10
+[00:57:20 INFO]: [PluginInitializerManager] Initializing plugins...
+[crussty-runtime] hook class in visible table: JNIStr { internal: "dev/crussty/hooks/SchedulerHooks" }
+[crussty-runtime] hook class in visible table: JNIStr { internal: "dev/crussty/hooks/StorageHooks" }
+[crussty-runtime] hook class in visible table: JNIStr { internal: "dev/crussty/hooks/NetHooks" }
+[crussty-runtime] hook class in visible table: JNIStr { internal: "dev/crussty/hooks/TickHook" }
+[crussty-runtime] transform hook classes installed (4); transform engine armed
+[00:57:20 INFO]: [PluginInitializerManager] Initialized 0 plugins
+[crussty-plugin] native libs: "/home/z/server/modules/crussty/libpaper_native_jni.so" (+ "/home/z/server/modules/crussty/libpaper_native_chunk_encode_jni.so")
+[crussty-plugin] attached: injecting bridge classes
+[crussty-plugin] injection loop done
+[crussty-plugin] batch: rollout gate CRUSSTY_BATCH=unset -> mode=off (site arming disabled (default; bridge exists, zero consumers))
+[crussty-plugin] batch: 21 kernels resolved, run() + abiVersion() registered on crussty/batch/PaperNativeBatchDispatch
+[crussty-plugin] native surface live: 98 bridge classes, 283 natives registered (0 symbols unresolved)
+[crussty-plugin] live proof: normalNoise.nativeCheck() = 1
+[crussty-plugin] live proof: ticketset binarySummary(1000) wrote 1 long(s)
+[00:57:27 INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[00:57:29 INFO]: Loaded 1461 recipes
+[00:57:29 INFO]: Loaded 1574 advancements
+[00:57:29 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Initialising converters for DataConverter...
+[00:57:30 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Finished initialising converters for DataConverter in 491.0ms
+[00:57:30 INFO]: Starting minecraft server version 1.21.10
+[00:57:30 INFO]: Loading properties
+[00:57:30 INFO]: This server is running Purpur version 1.21.10-2535-HEAD@0a2dc04 (1970-01-01T00:00:00Z) (Implementing API version 1.21.10-R0.1-SNAPSHOT)
+[00:57:30 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[00:57:30 INFO]: Server Ping Player Sample Count: 12
+[00:57:30 INFO]: Using 4 threads for Netty based IO
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 1)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[00:57:32 INFO]: [MoonriseCommon] Paper is using 1 worker threads, 1 I/O threads
+>   [00:57:33 INFO]: Default game type: SURVIVAL
+>   [00:57:33 INFO]: Generating keypair
+> [crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 2)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+  [00:57:33 INFO]: Starting Minecraft server on *:25565
+>   [00:57:33 INFO]: Using epoll channel type
+>   [00:57:33 INFO]: Paper: Using libdeflate (Linux x86_64) compression from Velocity.
+>   [00:57:33 INFO]: Paper: Using OpenSSL 3.x.x (Linux x86_64) cipher from Velocity.
+>   [00:57:33 INFO]: Server permissions file permissions.yml is empty, ignoring it
+>   [00:57:33 INFO]: Preparing level "world"
+>   [00:57:34 INFO]: Loading 0 persistent chunks for world 'minecraft:overworld'...
+>   [00:57:34 INFO]: Preparing spawn area: 100%
+>   [00:57:34 INFO]: Prepared spawn area in 1 ms
+>   [00:57:34 INFO]: Loading 0 persistent chunks for world 'minecraft:the_nether'...
+>   [00:57:34 INFO]: Prepared spawn area in 3 ms
+>   [00:57:34 INFO]: Loading 0 persistent chunks for world 'minecraft:the_end'...
+>   [00:57:34 INFO]: Prepared spawn area in 0 ms
+>   [00:57:34 INFO]: Done preparing level "world" (1.028s)
+>   [00:57:34 INFO]: [spark] Starting background profiler...
+>   [00:57:34 INFO]: Running delayed init tasks
+>   [00:57:34 INFO]: Done (16.423s)! For help, type "help"
+> [crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 3)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 4)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 5)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 6)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 7)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] area_map: budget gate CRUSSTY_AREAMAP_BUDGET=unset -> mode=off (legacy grow-to-cap scratch (default; fail-safe))
+[crussty-plugin] area_map: budget path OFF (gate off; legacy grow-to-cap scratch)
+[crussty-plugin] area_map: defined ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps$Scratch in map loader
+[crussty-plugin] area_map: defined ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps$1 in map loader
+[crussty-plugin] area_map: defined ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps in map loader
+[crussty-runtime] retransform ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap: is_modifiable_class=true
+[crussty-runtime] retransform ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap: class_status=0x7
+[crussty-plugin] area_map: patched ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap update() (5075 -> 3320 bytes)
+[crussty-plugin] area_map: hook armed, retransform rc=0
+[crussty-plugin] area_map: sighting feed: 7 full class-heap scans avoided
+[crussty-plugin] area_map: self-test OK (64 rects, native == naive set difference)
+[crussty-plugin] area_map: defined dev/crussty/areamapprobe/AreaMapProbe$RecMap in map loader
+[crussty-plugin] area_map: defined dev/crussty/areamapprobe/AreaMapProbe in map loader
+[crussty-plugin] area_map: call-level self-test OK (141 rects via patched update(), scratch=1156 legacy arm)
+>   [31;1m[00:57:56 ERROR]: --- DO NOT REPORT THIS TO PURPUR - THIS IS NOT A BUG OR A CRASH  - 1.21.10-2535-0a2dc04 (MC: 1.21.10) ---
+[m>   [31;1m[00:57:56 ERROR]: The server has not responded for 10 seconds! Creating thread dump
+[m>   [31;1m[00:57:56 ERROR]: ------------------------------
+[m>   [31;1m[00:57:56 ERROR]: Server thread dump (Look for plugins here before reporting to Purpur!):
+[m>   [31;1m[00:57:56 ERROR]: ------------------------------
+[m>   [31;1m[00:57:56 ERROR]: Current Thread: Server thread
+[m>   [31;1m[00:57:56 ERROR]: 	PID: 40 | Suspended: false | Native: false | State: RUNNABLE
+[m>   [31;1m[00:57:56 ERROR]: 	Stack:
+[m>   [31;1m[00:57:56 ERROR]: 		java.base@21.0.12.1/java.lang.ClassLoader.defineClass0(Native Method)
+[m>   [31;1m[00:57:56 ERROR]: 		java.base@21.0.12.1/java.lang.System$2.defineClass(System.java:2395)
+[m>   [31;1m[00:57:56 ERROR]: 		java.base@21.0.12.1/java.lang.invoke.MethodHandles$Lookup$ClassDefiner.defineClass(MethodHandles.java:2505)
+[m>   [31;1m[00:57:56 ERROR]: 		java.base@21.0.12.1/java.lang.invoke.InnerClassLambdaMetafactory.generateInnerClass(InnerClassLambdaMetafactory.java:361)
+[m>   [31;1m[00:57:56 ERROR]: 		java.base@21.0.12.1/java.lang.invoke.InnerClassLambdaMetafactory.spinInnerClass(InnerClassLambdaMetafactory.java:286)
+[m>   [31;1m[00:57:56 ERROR]: 		java.base@21.0.12.1/java.lang.invoke.InnerClassLambdaMetafactory.buildCallSite(InnerClassLambdaMetafactory.java:221)
+[m>   [31;1m[00:57:56 ERROR]: 		java.base@21.0.12.1/java.lang.invoke.LambdaMetafactory.metafactory(LambdaMetafactory.java:341)
+[m>   [31;1m[00:57:56 ERROR]: 		java.base@21.0.12.1/java.lang.invoke.LambdaForm$DMH/0x00007efbac139c00.invokeStatic(LambdaForm$DMH)
+[m>   [31;1m[00:57:56 ERROR]: 		java.base@21.0.12.1/java.lang.invoke.Invokers$Holder.invokeExact_MT(Invokers$Holder)
+[m>   [31;1m[00:57:56 ERROR]: 		java.base@21.0.12.1/java.lang.invoke.BootstrapMethodInvoker.invoke(BootstrapMethodInvoker.java:134)
+[m>   [31;1m[00:57:56 ERROR]: 		java.base@21.0.12.1/java.lang.invoke.CallSite.makeSite(CallSite.java:310)
+[m>   [31;1m[00:57:56 ERROR]: 		java.base@21.0.12.1/java.lang.invoke.MethodHandleNatives.linkCallSiteImpl(MethodHandleNatives.java:249)
+[m>   [31;1m[00:57:56 ERROR]: 		java.base@21.0.12.1/java.lang.invoke.MethodHandleNatives.linkCallSite(MethodHandleNatives.java:239)
+[m>   [31;1m[00:57:56 ERROR]: 		io.papermc.paper.adventure.AdventureCodecs.<clinit>(AdventureCodecs.java:285)
+[m>   [31;1m[00:57:56 ERROR]: 		io.papermc.paper.adventure.WrapperAwareSerializer.deserialize(WrapperAwareSerializer.java:29)
+[m>   [31;1m[00:57:56 ERROR]: 		io.papermc.paper.adventure.WrapperAwareSerializer.deserialize(WrapperAwareSerializer.java:13)
+[m>   [31;1m[00:57:56 ERROR]: 		io.papermc.paper.adventure.PaperAdventure.asAdventure(PaperAdventure.java:184)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.server.MinecraftServer.sendSystemMessage(MinecraftServer.java:2011)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.commands.CommandSourceStack.sendSuccess(CommandSourceStack.java:578)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand.changeForceLoad(ForceLoadCommand.java:198)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand.lambda$register$3(ForceLoadCommand.java:53)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand$$Lambda/0x00007efbace1b780.run(Unknown Source)
+[m>   [31;1m[00:57:56 ERROR]: 		com.mojang.brigadier.context.ContextChain.runExecutable(ContextChain.java:73)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.commands.execution.tasks.ExecuteCommand.execute(ExecuteCommand.java:30)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.commands.execution.tasks.ExecuteCommand.execute(ExecuteCommand.java:13)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.commands.execution.UnboundEntryAction.lambda$bind$0(UnboundEntryAction.java:8)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.commands.execution.UnboundEntryAction$$Lambda/0x00007efbad274490.execute(Unknown Source)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.commands.execution.CommandQueueEntry.execute(CommandQueueEntry.java:5)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.commands.execution.ExecutionContext.runCommandQueue(ExecutionContext.java:105)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.commands.Commands.executeCommandInContext(Commands.java:466)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.commands.Commands.performCommand(Commands.java:372)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.commands.Commands.performCommand(Commands.java:360)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.commands.Commands.performPrefixedCommand(Commands.java:351)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer.handleConsoleInputs(DedicatedServer.java:634)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer.tickConnection(DedicatedServer.java:590)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.server.MinecraftServer.tickChildren(MinecraftServer.java:1849)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.server.MinecraftServer.tickServer(MinecraftServer.java:1645)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer.tickServer(DedicatedServer.java:467)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.server.MinecraftServer.runServer(MinecraftServer.java:1365)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.server.MinecraftServer.lambda$spin$2(MinecraftServer.java:388)
+[m>   [31;1m[00:57:56 ERROR]: 		net.minecraft.server.MinecraftServer$$Lambda/0x00007efbacf59218.run(Unknown Source)
+[m>   [31;1m[00:57:56 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.runWith(Thread.java:1596)
+[m>   [31;1m[00:57:56 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.run(Thread.java:1583)
+[m>   [31;1m[00:57:56 ERROR]: ------------------------------
+[m>   [31;1m[00:57:56 ERROR]: --- DO NOT REPORT THIS TO PURPUR - THIS IS NOT A BUG OR A CRASH ---
+[m>   [31;1m[00:57:56 ERROR]: ------------------------------
+[m>   [00:57:56 INFO]: Marked 25 chunks in minecraft:overworld from [212, 212] to [216, 216] to be force loaded
+> >   [00:58:19 INFO]: Marked 64 chunks in minecraft:overworld from [200, 200] to [207, 207] to be force loaded
+> 

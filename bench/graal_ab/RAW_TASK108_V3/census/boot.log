@@ -1,0 +1,300 @@
+[crussty-runtime] v2.0.0 loaded (options: modules=/home/z/server/modules;versions=/home/z/server/versions;kernel=purpur-1.21.10.jar)
+[crussty-plugin] cplugin_init: injecting Crussty CE native surface in background
+[crussty-plugin] improved_noise: dormant (set CRUSSTY_NATIVE_IMPROVED_NOISE=1 to enable)
+[crussty-plugin] perlin_noise: dormant (set CRUSSTY_NATIVE_PERLIN_NOISE=1 to enable)
+[crussty-plugin] kernel-policy: CRUSSTY_KERNEL_POLICY=off — do-not-wire gate BYPASSED (dangerous: A/B benchmarking only, never run live)
+[crussty-plugin] fluid_guard: dormant (set CRUSSTY_FLUID_PUSH_GUARD=1 to enable)
+[crussty-plugin] blend_cache: dormant (prototype; set CRUSSTY_NATIVE_BLEND_CACHE=1 to run the read-only parity harness — no patch ships)
+[crussty-runtime] module crussty -> init rc=0
+[crussty-runtime] pipeline ready: 1 module hook(s)
+[crussty-runtime] transform engine: 23 rule(s) registered
+[crussty:hot-reload] SIGUSR1 reload trigger armed (1 module(s) reloadable)
+Starting org.bukkit.craftbukkit.Main
+[00:47:24 INFO]: [bootstrap] Running Java 21 (OpenJDK 64-Bit Server VM 21.0.12.1+1-LTS; Eclipse Adoptium Temurin-21.0.12.1+1) on Linux 5.10.134-013.8.3.kangaroo.al8.x86_64 (amd64)
+[00:47:24 INFO]: [bootstrap] Loading Purpur 1.21.10-2535-HEAD@0a2dc04 (1970-01-01T00:00:00Z) for Minecraft 1.21.10
+[crussty-runtime] hook class in visible table: JNIStr { internal: "dev/crussty/hooks/SchedulerHooks" }
+[crussty-runtime] hook class in visible table: JNIStr { internal: "dev/crussty/hooks/StorageHooks" }
+[crussty-runtime] hook class in visible table: JNIStr { internal: "dev/crussty/hooks/NetHooks" }
+[crussty-runtime] hook class in visible table: JNIStr { internal: "dev/crussty/hooks/TickHook" }
+[crussty-runtime] transform hook classes installed (4); transform engine armed
+[00:47:25 INFO]: [PluginInitializerManager] Initializing plugins...
+[00:47:25 INFO]: [PluginInitializerManager] Initialized 0 plugins
+[crussty-plugin] native libs: "/home/z/server/modules/crussty/libpaper_native_jni.so" (+ "/home/z/server/modules/crussty/libpaper_native_chunk_encode_jni.so")
+[crussty-plugin] attached: injecting bridge classes
+[crussty-plugin] injection loop done
+[crussty-plugin] batch: rollout gate CRUSSTY_BATCH=unset -> mode=off (site arming disabled (default; bridge exists, zero consumers))
+[crussty-plugin] batch: 21 kernels resolved, run() + abiVersion() registered on crussty/batch/PaperNativeBatchDispatch
+[crussty-plugin] native surface live: 98 bridge classes, 283 natives registered (0 symbols unresolved)
+[crussty-plugin] live proof: normalNoise.nativeCheck() = 1
+[crussty-plugin] live proof: ticketset binarySummary(1000) wrote 1 long(s)
+[crussty-plugin] noise_fill: pristine sighting Noise (7343 bytes, major 65)
+[crussty-plugin] noise_fill: pristine sighting ShiftNoise (1480 bytes, major 65)
+[00:47:32 INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[00:47:35 INFO]: Loaded 1461 recipes
+[00:47:35 INFO]: Loaded 1574 advancements
+[00:47:35 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Initialising converters for DataConverter...
+[crussty-plugin] noise_fill: forcing kernel load of net/minecraft/world/level/levelgen/DensityFunctions$Noise (attempt 1)
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 1)
+[crussty-plugin] area_map: force load: Bukkit not found
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/DensityFunctions$Noise) succeeded
+[crussty-plugin] noise_fill: forcing kernel load of net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator (attempt 1)
+[crussty-plugin] noise_fill: pristine sighting NoiseInterpolator (4865 bytes, major 65)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator) succeeded
+[00:47:36 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Finished initialising converters for DataConverter in 608.1ms
+[00:47:36 INFO]: Starting minecraft server version 1.21.10
+[00:47:36 INFO]: Loading properties
+[00:47:36 INFO]: This server is running Purpur version 1.21.10-2535-HEAD@0a2dc04 (1970-01-01T00:00:00Z) (Implementing API version 1.21.10-R0.1-SNAPSHOT)
+[00:47:36 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[00:47:36 INFO]: Server Ping Player Sample Count: 12
+[00:47:36 INFO]: Using 4 threads for Netty based IO
+[crussty-plugin] noise_fill: forcing kernel load of net/minecraft/world/level/levelgen/DensityFunctions$Noise (attempt 2)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/DensityFunctions$Noise) succeeded
+[crussty-plugin] noise_fill: forcing kernel load of net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator (attempt 2)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator) succeeded
+[00:47:38 INFO]: [MoonriseCommon] Paper is using 1 worker threads, 1 I/O threads
+>   [00:47:39 INFO]: Default game type: SURVIVAL
+>   [00:47:39 INFO]: Generating keypair
+>   [00:47:39 INFO]: Starting Minecraft server on *:25565
+>   [00:47:39 INFO]: Using epoll channel type
+>   [00:47:39 INFO]: Paper: Using libdeflate (Linux x86_64) compression from Velocity.
+>   [00:47:39 INFO]: Paper: Using OpenSSL 3.x.x (Linux x86_64) cipher from Velocity.
+>   [00:47:39 INFO]: Server permissions file permissions.yml is empty, ignoring it
+>   [00:47:39 INFO]: Preparing level "world"
+> [crussty-plugin] noise_fill: forcing kernel load of net/minecraft/world/level/levelgen/DensityFunctions$Noise (attempt 3)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/DensityFunctions$Noise) succeeded
+[crussty-plugin] noise_fill: forcing kernel load of net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator (attempt 3)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator) succeeded
+  [00:47:40 INFO]: Loading 0 persistent chunks for world 'minecraft:overworld'...
+>   [00:47:40 INFO]: Preparing spawn area: 100%
+>   [00:47:40 INFO]: Prepared spawn area in 11 ms
+>   [00:47:40 INFO]: Loading 0 persistent chunks for world 'minecraft:the_nether'...
+>   [00:47:40 INFO]: Preparing spawn area: 100%
+>   [00:47:40 INFO]: Prepared spawn area in 27 ms
+>   [00:47:40 INFO]: Loading 0 persistent chunks for world 'minecraft:the_end'...
+>   [00:47:40 INFO]: Preparing spawn area: 100%
+>   [00:47:40 INFO]: Prepared spawn area in 8 ms
+>   [00:47:40 INFO]: Done preparing level "world" (1.151s)
+>   [00:47:41 INFO]: [spark] Starting background profiler...
+>   [00:47:41 INFO]: Running delayed init tasks
+>   [00:47:41 INFO]: Done (17.685s)! For help, type "help"
+> [crussty-plugin] noise_fill: forcing kernel load of net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator (attempt 4)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator) succeeded
+[crussty-plugin] noise_fill: forcing kernel load of net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator (attempt 5)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator) succeeded
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 2)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] noise_fill: forcing kernel load of net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator (attempt 6)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator) succeeded
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 3)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 4)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 5)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+> [crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 6)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 7)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] area_map: budget gate CRUSSTY_AREAMAP_BUDGET=unset -> mode=off (legacy grow-to-cap scratch (default; fail-safe))
+[crussty-plugin] area_map: budget path OFF (gate off; legacy grow-to-cap scratch)
+[crussty-plugin] area_map: defined ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps$Scratch in map loader
+[crussty-plugin] area_map: defined ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps$1 in map loader
+[crussty-plugin] area_map: defined ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps in map loader
+[crussty-runtime] retransform ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap: is_modifiable_class=true
+[crussty-runtime] retransform ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap: class_status=0x7
+[crussty-plugin] area_map: patched ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap update() (5075 -> 3320 bytes)
+[crussty-plugin] noise_fill: server booted, defining NormalNoiseBatchOps into kernel loader
+[crussty-plugin] noise_fill: defined net/minecraft/world/level/levelgen/NormalNoiseBatchOps in kernel loader
+[crussty-plugin] noise_fill: defined net/minecraft/world/level/levelgen/NormalNoiseBatchOps$Handle in kernel loader
+[crussty-plugin] noise_fill: defined net/minecraft/world/level/levelgen/NormalNoiseBatchOps$Reaper in kernel loader
+[crussty-plugin] noise_fill: defined net/minecraft/world/level/levelgen/NormalNoiseBatchOps$Recorder in kernel loader
+[crussty-plugin] noise_fill: defined net/minecraft/world/level/levelgen/NormalNoiseBatchOps$RecorderTL in kernel loader
+[crussty-plugin] noise_fill: defined net/minecraft/world/level/levelgen/NormalNoiseBatchOps$RecOutTL in kernel loader
+[crussty-plugin] noise_fill: defined net/minecraft/world/level/levelgen/NormalNoiseBatchOps$Census in kernel loader
+[crussty-plugin] noise_fill: defined net/minecraft/world/level/levelgen/NormalNoiseBatchOps$TestProvider in kernel loader
+[crussty-plugin] noise_fill: defined net/minecraft/world/level/levelgen/DensityArrayInterpreter in kernel loader
+[crussty-plugin] area_map: hook armed, retransform rc=0
+[crussty-plugin] area_map: sighting feed: 7 full class-heap scans avoided
+[crussty-plugin] area_map: self-test OK (64 rects, native == naive set difference)
+[crussty-plugin] area_map: defined dev/crussty/areamapprobe/AreaMapProbe$RecMap in map loader
+[crussty-plugin] area_map: defined dev/crussty/areamapprobe/AreaMapProbe in map loader
+[crussty-plugin] area_map: call-level self-test OK (141 rects via patched update(), scratch=1156 legacy arm)
+[crussty-plugin] noise_fill: computed patch for Noise fillArray (7343 -> 7504 bytes), orig major 65 patch major 65
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/DensityFunctions$Noise: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/DensityFunctions$Noise: class_status=0x7
+[crussty-plugin] noise_fill: hook serve Noise (7504 bytes, major 65)
+[crussty-plugin] noise_fill: Noise hook armed, retransform rc=0
+[crussty-plugin] noise_fill: computed patch for ShiftNoise fillArray (1480 -> 1646 bytes), orig major 65 patch major 65
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/DensityFunctions$ShiftNoise: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/DensityFunctions$ShiftNoise: class_status=0x7
+[crussty-plugin] noise_fill: hook serve ShiftNoise (1646 bytes, major 65)
+[crussty-plugin] noise_fill: ShiftNoise hook armed, retransform rc=0
+[crussty-plugin] noise_fill: computed patch for NoiseInterpolator fillArray (4865 -> 4996 bytes), orig major 65 patch major 65
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator: is_modifiable_class=true
+[crussty-runtime] retransform net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator: class_status=0x7
+[crussty-plugin] noise_fill: hook serve NoiseInterpolator (4996 bytes, major 65)
+[crussty-plugin] noise_fill: NoiseInterpolator hook armed, retransform rc=0
+[crussty-plugin] noise_fill: CRUSSTY_NOISE_FILL SELFTEST PASS handles=1 freed=0 CRUSSTY_NOISE_FILL_CENSUS calls=9 sumN=822 minN=1 maxN=256 avgN=91.33333333333333 fallbacks=3
+  [31;1m[00:48:02 ERROR]: --- DO NOT REPORT THIS TO PURPUR - THIS IS NOT A BUG OR A CRASH  - 1.21.10-2535-0a2dc04 (MC: 1.21.10) ---
+[m>   [31;1m[00:48:02 ERROR]: The server has not responded for 10 seconds! Creating thread dump
+[m>   [31;1m[00:48:02 ERROR]: ------------------------------
+[m>   [31;1m[00:48:02 ERROR]: Server thread dump (Look for plugins here before reporting to Purpur!):
+[m>   [31;1m[00:48:02 ERROR]: [ChunkTaskScheduler] Chunk wait task info below: 
+[m>   [31;1m[00:48:02 ERROR]: [ChunkTaskScheduler] Chunk wait: [( 201,204) in 'world']
+[m>   [31;1m[00:48:02 ERROR]: [ChunkTaskScheduler] Chunk holder: NewChunkHolder{world=world, chunkX=201, chunkZ=204, entityChunkFromDisk=false, lastChunkCompletion={chunk_class=net.minecraft.world.level.chunk.ProtoChunk,status=minecraft:initialize_light}, currentGenStatus=minecraft:initialize_light, requestedGenStatus=minecraft:full, generationTask=null, generationTaskStatus=null, priority=BLOCKING, priorityLocked=false, neighbourRequestedPriority=null, effective_priority=BLOCKING, oldTicketLevel=31, currentTicketLevel=31, totalNeighboursUsingThisChunk=41, fullNeighbourChunksLoadedBitset=2164934, currentChunkStatus=INACCESSIBLE, pendingChunkStatus=INACCESSIBLE, is_unload_safe=ticket_level, killed=false}
+[m>   [31;1m[00:48:02 ERROR]: ------------------------------
+[m>   [31;1m[00:48:02 ERROR]: Current Thread: Server thread
+[m>   [31;1m[00:48:02 ERROR]: 	PID: 46 | Suspended: false | Native: false | State: TIMED_WAITING
+[m>   [31;1m[00:48:02 ERROR]: 	Stack:
+[m>   [31;1m[00:48:02 ERROR]: 		java.base@21.0.12.1/jdk.internal.misc.Unsafe.park(Native Method)
+[m>   [31;1m[00:48:02 ERROR]: 		java.base@21.0.12.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:269)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.waitForTasks(BlockableEventLoop.java:171)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.managedBlock(BlockableEventLoop.java:161)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.server.level.ServerChunkCache$MainThreadExecutor.managedBlock(ServerChunkCache.java:802)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.server.level.ServerChunkCache.syncLoad(ServerChunkCache.java:122)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.server.level.ServerChunkCache.getChunkFallback(ServerChunkCache.java:156)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.server.level.ServerChunkCache.getChunk(ServerChunkCache.java:321)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.world.level.Level.getChunk(Level.java:1006)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.server.level.ServerLevel.setChunkForced(ServerLevel.java:2367)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand.changeForceLoad(ForceLoadCommand.java:171)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand.lambda$register$3(ForceLoadCommand.java:53)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand$$Lambda/0x00007f2218e1c888.run(Unknown Source)
+[m>   [31;1m[00:48:02 ERROR]: 		com.mojang.brigadier.context.ContextChain.runExecutable(ContextChain.java:73)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.commands.execution.tasks.ExecuteCommand.execute(ExecuteCommand.java:30)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.commands.execution.tasks.ExecuteCommand.execute(ExecuteCommand.java:13)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.commands.execution.UnboundEntryAction.lambda$bind$0(UnboundEntryAction.java:8)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.commands.execution.UnboundEntryAction$$Lambda/0x00007f2219272000.execute(Unknown Source)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.commands.execution.CommandQueueEntry.execute(CommandQueueEntry.java:5)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.commands.execution.ExecutionContext.runCommandQueue(ExecutionContext.java:105)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.commands.Commands.executeCommandInContext(Commands.java:466)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.commands.Commands.performCommand(Commands.java:372)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.commands.Commands.performCommand(Commands.java:360)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.commands.Commands.performPrefixedCommand(Commands.java:351)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer.handleConsoleInputs(DedicatedServer.java:634)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer.tickConnection(DedicatedServer.java:590)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.server.MinecraftServer.tickChildren(MinecraftServer.java:1849)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.server.MinecraftServer.tickServer(MinecraftServer.java:1645)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer.tickServer(DedicatedServer.java:467)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.server.MinecraftServer.runServer(MinecraftServer.java:1365)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.server.MinecraftServer.lambda$spin$2(MinecraftServer.java:388)
+[m>   [31;1m[00:48:02 ERROR]: 		net.minecraft.server.MinecraftServer$$Lambda/0x00007f2218f5c400.run(Unknown Source)
+[m>   [31;1m[00:48:02 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.runWith(Thread.java:1596)
+[m>   [31;1m[00:48:02 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.run(Thread.java:1583)
+[m>   [31;1m[00:48:02 ERROR]: ------------------------------
+[m>   [31;1m[00:48:02 ERROR]: --- DO NOT REPORT THIS TO PURPUR - THIS IS NOT A BUG OR A CRASH ---
+[m>   [31;1m[00:48:02 ERROR]: ------------------------------
+[m>   [31;1m[00:48:07 ERROR]: --- DO NOT REPORT THIS TO PURPUR - THIS IS NOT A BUG OR A CRASH  - 1.21.10-2535-0a2dc04 (MC: 1.21.10) ---
+[m>   [31;1m[00:48:07 ERROR]: The server has not responded for 15 seconds! Creating thread dump
+[m>   [31;1m[00:48:07 ERROR]: ------------------------------
+[m>   [31;1m[00:48:07 ERROR]: Server thread dump (Look for plugins here before reporting to Purpur!):
+[m>   [31;1m[00:48:07 ERROR]: [ChunkTaskScheduler] Chunk wait task info below: 
+[m>   [31;1m[00:48:07 ERROR]: [ChunkTaskScheduler] Chunk wait: [( 205,205) in 'world']
+[m>   [31;1m[00:48:07 ERROR]: [ChunkTaskScheduler] Chunk holder: NewChunkHolder{world=world, chunkX=205, chunkZ=205, entityChunkFromDisk=true, lastChunkCompletion={chunk_class=net.minecraft.world.level.chunk.LevelChunk,status=minecraft:full}, currentGenStatus=minecraft:full, requestedGenStatus=null, generationTask=null, generationTaskStatus=null, priority=null, priorityLocked=true, neighbourRequestedPriority=null, effective_priority=null, oldTicketLevel=31, currentTicketLevel=31, totalNeighboursUsingThisChunk=23, fullNeighbourChunksLoadedBitset=3251431, currentChunkStatus=FULL, pendingChunkStatus=FULL, is_unload_safe=ticket_level, killed=false}
+[m>   [31;1m[00:48:07 ERROR]: ------------------------------
+[m>   [31;1m[00:48:07 ERROR]: Current Thread: Server thread
+[m>   [31;1m[00:48:07 ERROR]: 	PID: 46 | Suspended: false | Native: false | State: RUNNABLE
+[m>   [31;1m[00:48:07 ERROR]: 	Stack:
+[m>   [31;1m[00:48:07 ERROR]: 		java.base@21.0.12.1/java.util.Spliterator.getExactSizeIfKnown(Spliterator.java:414)
+[m>   [31;1m[00:48:07 ERROR]: 		java.base@21.0.12.1/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:508)
+[m>   [31;1m[00:48:07 ERROR]: 		java.base@21.0.12.1/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+[m>   [31;1m[00:48:07 ERROR]: 		java.base@21.0.12.1/java.util.stream.ReduceOps$ReduceOp.evaluateSequential(ReduceOps.java:921)
+[m>   [31;1m[00:48:07 ERROR]: 		java.base@21.0.12.1/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:234)
+[m>   [31;1m[00:48:07 ERROR]: 		java.base@21.0.12.1/java.util.stream.ReferencePipeline.collect(ReferencePipeline.java:682)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.world.level.block.state.StateHolder.toString(StateHolder.java:76)
+[m>   [31;1m[00:48:07 ERROR]: 		org.bukkit.craftbukkit.block.data.CraftBlockData.lambda$reloadCache$0(CraftBlockData.java:572)
+[m>   [31;1m[00:48:07 ERROR]: 		org.bukkit.craftbukkit.block.data.CraftBlockData$$Lambda/0x00007f221978fdc0.accept(Unknown Source)
+[m>   [31;1m[00:48:07 ERROR]: 		java.base@21.0.12.1/java.lang.Iterable.forEach(Iterable.java:75)
+[m>   [31;1m[00:48:07 ERROR]: 		org.bukkit.craftbukkit.block.data.CraftBlockData.reloadCache(CraftBlockData.java:572)
+[m>   [31;1m[00:48:07 ERROR]: 		org.bukkit.craftbukkit.block.data.CraftBlockData.<clinit>(CraftBlockData.java:567)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.world.level.redstone.NeighborUpdater.executeUpdate(NeighborUpdater.java:53)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.world.level.redstone.CollectingNeighborUpdater$MultiNeighborUpdate.runNext(CollectingNeighborUpdater.java:151)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.world.level.redstone.CollectingNeighborUpdater.runUpdates(CollectingNeighborUpdater.java:89)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.world.level.redstone.CollectingNeighborUpdater.addAndRun(CollectingNeighborUpdater.java:71)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.world.level.redstone.CollectingNeighborUpdater.updateNeighborsAtExceptFromFacing(CollectingNeighborUpdater.java:53)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.server.level.ServerLevel.updateNeighborsAt(ServerLevel.java:1926)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.server.level.ServerLevel.updateNeighborsAt(ServerLevel.java:1920)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.world.level.Level.notifyAndUpdatePhysics(Level.java:1197)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.world.level.Level.setBlock(Level.java:1169)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.world.level.Level.setBlock(Level.java:1081)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.world.level.material.FlowingFluid.spreadTo(FlowingFluid.java:338)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.world.level.material.FlowingFluid.spreadToSides(FlowingFluid.java:212)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.world.level.material.FlowingFluid.spread(FlowingFluid.java:183)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.world.level.material.FlowingFluid.tick(FlowingFluid.java:515)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.world.level.material.FluidState.tick(FluidState.java:100)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.world.level.chunk.LevelChunk.postProcessGeneration(LevelChunk.java:782)
+[m>   [31;1m[00:48:07 ERROR]: 		ca.spottedleaf.moonrise.paper.util.BaseChunkSystemHooks.onChunkTicking(BaseChunkSystemHooks.java:114)
+[m>   [31;1m[00:48:07 ERROR]: 		ca.spottedleaf.moonrise.patches.chunk_system.scheduling.NewChunkHolder.handleFullStatusChange(NewChunkHolder.java:1261)
+[m>   [31;1m[00:48:07 ERROR]: 		ca.spottedleaf.moonrise.patches.chunk_system.scheduling.ChunkHolderManager.processPendingFullUpdate(ChunkHolderManager.java:1489)
+[m>   [31;1m[00:48:07 ERROR]: 		ca.spottedleaf.moonrise.patches.chunk_system.scheduling.ChunkHolderManager.processTicketUpdates(ChunkHolderManager.java:1449)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.server.level.ServerChunkCache.runDistanceManagerUpdates(ServerChunkCache.java:439)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.server.level.ServerChunkCache$MainThreadExecutor.pollTask(ServerChunkCache.java:835)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.managedBlock(BlockableEventLoop.java:160)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.server.level.ServerChunkCache$MainThreadExecutor.managedBlock(ServerChunkCache.java:802)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.server.level.ServerChunkCache.syncLoad(ServerChunkCache.java:122)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.server.level.ServerChunkCache.getChunkFallback(ServerChunkCache.java:156)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.server.level.ServerChunkCache.getChunk(ServerChunkCache.java:321)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.world.level.Level.getChunk(Level.java:1006)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.server.level.ServerLevel.setChunkForced(ServerLevel.java:2367)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand.changeForceLoad(ForceLoadCommand.java:171)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand.lambda$register$3(ForceLoadCommand.java:53)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand$$Lambda/0x00007f2218e1c888.run(Unknown Source)
+[m>   [31;1m[00:48:07 ERROR]: 		com.mojang.brigadier.context.ContextChain.runExecutable(ContextChain.java:73)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.commands.execution.tasks.ExecuteCommand.execute(ExecuteCommand.java:30)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.commands.execution.tasks.ExecuteCommand.execute(ExecuteCommand.java:13)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.commands.execution.UnboundEntryAction.lambda$bind$0(UnboundEntryAction.java:8)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.commands.execution.UnboundEntryAction$$Lambda/0x00007f2219272000.execute(Unknown Source)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.commands.execution.CommandQueueEntry.execute(CommandQueueEntry.java:5)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.commands.execution.ExecutionContext.runCommandQueue(ExecutionContext.java:105)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.commands.Commands.executeCommandInContext(Commands.java:466)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.commands.Commands.performCommand(Commands.java:372)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.commands.Commands.performCommand(Commands.java:360)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.commands.Commands.performPrefixedCommand(Commands.java:351)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer.handleConsoleInputs(DedicatedServer.java:634)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer.tickConnection(DedicatedServer.java:590)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.server.MinecraftServer.tickChildren(MinecraftServer.java:1849)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.server.MinecraftServer.tickServer(MinecraftServer.java:1645)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer.tickServer(DedicatedServer.java:467)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.server.MinecraftServer.runServer(MinecraftServer.java:1365)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.server.MinecraftServer.lambda$spin$2(MinecraftServer.java:388)
+[m>   [31;1m[00:48:07 ERROR]: 		net.minecraft.server.MinecraftServer$$Lambda/0x00007f2218f5c400.run(Unknown Source)
+[m>   [31;1m[00:48:07 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.runWith(Thread.java:1596)
+[m>   [31;1m[00:48:07 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.run(Thread.java:1583)
+[m>   [31;1m[00:48:07 ERROR]: ------------------------------
+[m>   [31;1m[00:48:07 ERROR]: --- DO NOT REPORT THIS TO PURPUR - THIS IS NOT A BUG OR A CRASH ---
+[m>   [31;1m[00:48:07 ERROR]: ------------------------------
+[m>   [00:48:08 INFO]: [STDOUT] [net.minecraft.world.level.levelgen.DensityArrayInterpreter] [crussty] CRUSSTY_V3_SHADOW PASS checks=20000 CENSUS t3.FALLBACK.BlendDensity=2500 t3.FALLBACK.RangeChoice=17500
+> >   [00:48:09 INFO]: Marked 64 chunks in minecraft:overworld from [200, 200] to [207, 207] to be force loaded
+>   [00:48:09 INFO]: Stopping the server
+>   [00:48:09 INFO]: Stopping server
+>   [00:48:09 INFO]: Saving players
+>   [00:48:10 INFO]: Saving worlds
+>   [00:48:10 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+>   [00:48:10 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world'
+>   [00:48:10 INFO]: [ChunkHolderManager] Halted chunk system for world 'world'
+>   [00:48:10 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world'
+>   [00:48:11 INFO]: [ChunkHolderManager] Saved 1024 block chunks, 64 entity chunks, 0 poi chunks in world 'world' in 1.68s
+>   [00:48:11 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'world'
+>   [00:48:11 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'world'
+>   [00:48:11 INFO]: Saving chunks for level 'ServerLevel[world_nether]'/minecraft:the_nether
+>   [00:48:11 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_nether'
+>   [00:48:11 INFO]: [ChunkHolderManager] Halted chunk system for world 'world_nether'
+>   [00:48:11 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world_nether'
+>   [00:48:11 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'world_nether' in 0.00s
+>   [00:48:11 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'world_nether'
+>   [00:48:11 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'world_nether'
+>   [00:48:11 INFO]: Saving chunks for level 'ServerLevel[world_the_end]'/minecraft:the_end
+>   [00:48:11 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_the_end'
+>   [00:48:11 INFO]: [ChunkHolderManager] Halted chunk system for world 'world_the_end'
+>   [00:48:11 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world_the_end'
+>   [00:48:11 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'world_the_end' in 0.00s
+>   [00:48:11 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'world_the_end'
+>   [00:48:11 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'world_the_end'
+>   [00:48:11 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+>   [00:48:11 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+>   [00:48:11 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+>   [00:48:11 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+>   [00:48:11 INFO]: Waiting for all RegionFile I/O tasks to complete...
+>   [00:48:11 INFO]: All RegionFile I/O tasks to complete
+>   [00:48:11 INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+>   [00:48:11 INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...
+> 
