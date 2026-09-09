@@ -42,7 +42,7 @@ AGENT_ARGS="-agentpath:$RUNTIME=modules=$SERVER/modules;versions=$SERVER/version
 
 run_one() { # $1=arm(A|B) $2=idx
     local ARM="$1" IDX="$2" RID="${1}${2}" i j
-    if [ -f "$OUT/results.tsv" ] && grep -q "^$RID      " "$OUT/results.tsv"; then
+    if [ -f "$OUT/results.tsv" ] && awk -F'\t' -v r="$RID" '$1==r{f=1} END{exit !f}' "$OUT/results.tsv"; then
         log "skip $RID (already done — reentrant)"; return 0
     fi
     local EXTRA=""
@@ -87,7 +87,7 @@ run_one() { # $1=arm(A|B) $2=idx
     local CPU_BURST=$(echo "$JEND $J0" | awk '{printf "%.1f", ($1-$2)/100.0}')
     local RSS=$(awk '/VmRSS/ {printf "%.0f", $2/1024}' "/proc/$SP/status" 2>/dev/null || echo NA)
     local MAXPAUSE=$(grep 'Pause' "$RDIR/gc.log" 2>/dev/null | grep -o '[0-9.]*ms' | sed 's/ms//' | sort -n | tail -1)
-    echo -e "$RID       $ARM    boot_wall=${BW}s        t_burst=${T_BURST}s     cpu_burst=${CPU_BURST}s rss=${RSS}MB    maxpause=${MAXPAUSE}ms" | tee -a "$OUT/results.tsv"
+    printf '%s\t%s\tboot_wall=%ss\tt_burst=%ss\tcpu_burst=%ss\trss=%sMB\tmaxpause=%sms\n' "$RID" "$ARM" "$BW" "$T_BURST" "$CPU_BURST" "$RSS" "$MAXPAUSE" | tee -a "$OUT/results.tsv"
     echo "stop" >&3
     for i in $(seq 1 20); do kill -0 "$SP" 2>/dev/null || break; sleep 1; done
     kill -9 "$SP" 2>/dev/null || true
@@ -108,7 +108,7 @@ log "hs_err delta: $((HS1 - HS0)) (must be 0)"
 log "=== SUMMARY ==="
 python3 - "$OUT/results.tsv" <<'PYEOF'
 import sys
-rows=[l.strip().split('\t') for l in open(sys.argv[1]) if l.strip()]
+rows=[l.split() for l in open(sys.argv[1]) if l.strip()]  # whitespace-tolerant (tab or expanded)
 def med(v): v=sorted(v); return v[len(v)//2] if v else float('nan')
 def col(rs,tag,suf):
     out=[]
