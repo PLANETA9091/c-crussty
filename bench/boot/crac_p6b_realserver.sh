@@ -52,6 +52,11 @@
 #   (3) verifyLoops() per-loop liveness census (execute(AtomicBoolean) poll <=500ms per loop,
 #   endsWith(EventLoop) filter skips groups) at repairer +1.2s: census -> kick -> re-census —
 #   honest dead-loop census (AR-LOOP-VERIFY markers), independent of REBIND_DONE.
+# v12.8 (S7-90 a27): (1) census union-discovery fix — a26 honest miss: verifyLoops fed findLoops()
+#   instance-walk only, which misses static-supplier groups (P6B-25) => 0/0; now fed the
+#   repairAllLoops-style UNION (findLoops + findLoopsStatic) => expect alive=8/8;
+#   (2) LONG-SOAK phase-6c exit gate — post-SOAK periodic probes every 10s x12 (~2min) per restore,
+#   verdict LONGSOAK-R{1,2} serving65=x/12 serving75=y/12 (upgrades "sustained ~12s" to "~2min").
 set -u
 JAVA=/home/z/crac-jdk/bin/java
 JCMD=/home/z/crac-jdk/bin/jcmd
@@ -679,10 +684,16 @@ public class CrusstyCracHookV2 implements Resource {
         try {
           // v12.7 (a26 lever 3): unconditional liveness census at +1.2s — independent of REBIND_DONE;
           // dead loops get an extra kick + re-census at +2s (evidence: did wakeup-gap fix close the gap?)
+          // v12.8 (a27): census discovery = UNION (instance walk + static suppliers) — a26 miss fixed
           Thread.sleep(1200);
           try {
-            int al1 = verifyLoops(findLoops(fconn), "C1");
-            if (al1 < 8) { int k = kickLoops(findLoops(fconn)); marker("AR-VERIFY-KICK " + k); Thread.sleep(800); verifyLoops(findLoops(fconn), "C1B"); }
+            java.util.LinkedHashSet<Object> ul = findLoops(fconn);
+            try { ul.addAll(findLoopsStatic(fconn.getClass())); } catch (Throwable us) { marker("AR-VERIFY-US-ERR " + us); }
+            int al1 = verifyLoops(ul, "C1");
+            if (al1 < 8) { int k = kickLoops(findLoops(fconn)); marker("AR-VERIFY-KICK " + k); Thread.sleep(800);
+              java.util.LinkedHashSet<Object> ul2 = findLoops(fconn);
+              try { ul2.addAll(findLoopsStatic(fconn.getClass())); } catch (Throwable us2) {}
+              verifyLoops(ul2, "C1B"); }
           } catch (Throwable vt) { marker("AR-VERIFY-ERR " + vt); }
           for (int i = 0; i < 8 && !REBIND_DONE; i++) {
             Thread.sleep(i == 0 ? 1200 : 1000);
@@ -986,6 +997,14 @@ for R in 1 2; do
     [ "$i" -lt 3 ] && sleep 4
   done
   echo "SOAK-R$R $SOAK"
+  # v12.8 (S7-90 a27): LONG-SOAK phase-6c exit gate — periodic probes 10s x12 (~2min) per restore
+  L65=0; L75=0
+  for i in $(seq 1 12); do
+    L65P=$(python3 "$W/slp.py" 25565 2>/dev/null); case "$L65P" in SERVING*) L65=$((L65+1));; esac
+    L75P=$(python3 "$W/rcon.py" 25575 2>/dev/null); case "$L75P" in RCON-SERVING*) L75=$((L75+1));; esac
+    [ "$i" -lt 12 ] && sleep 10
+  done
+  echo "LONGSOAK-R$R serving65=$L65/12 serving75=$L75/12"
   kill -9 "$RPID" 2>/dev/null; wait "$RPID" 2>/dev/null
   # v12 (S7-84 a22) acceptance (a): selector-loop exception count delta in restore log (honest either way)
   echo "NETTY-ERR-R$R $(grep -cE 'io\.netty|Epoll|epoll|Selector' "$W/restore$R.log" 2>/dev/null || echo 0)"
