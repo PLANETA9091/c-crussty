@@ -39,7 +39,10 @@ Strict policy (the default), evaluated in order:
 | anything else (unknown / unproven) | `KeepJava` — "not proven" (default-safe) |
 
 API surface (all allocation-free; mode cached in a `OnceLock`; registries are
-static slices scanned linearly — 4 + 25 entries; plus the TASK-53/54 `PROMOTE_PAIRS` slice (5 pairs, wave 2 = TASK-54) for the env-gated WIN-direction registration binding):
+static slices scanned linearly — 4 + 36 entries [4 `DO_NOT_WIRE` + 36 `PROVEN_WINS`, count
+re-audited 2026-09-09 TASK-122; 25 at wave-2 time, grew by 11 through the adoption waves];
+plus the TASK-53/54 `PROMOTE_PAIRS` slice (5 pairs, wave 2 = TASK-54) for the env-gated
+WIN-direction registration binding):
 
 | Signature | Purpose |
 |---|---|
