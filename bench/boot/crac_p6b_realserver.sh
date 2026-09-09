@@ -35,7 +35,7 @@ mkdir -p "$W"; cd "$W"; rm -rf "$IMG"; rm -f "$W/agent.log"; mkdir -p "$IMG"
 
 # ---- 0. Policies file (P6B-12 layer A lever, S7-69 design) ----
 cat > policies.txt << 'PEOF'
-# TASK-115 phase-6c attempt 9b — decoded syntax (key: value, --- separators)
+# TASK-115 phase-6c attempt 10 — decoded syntax (key: value, --- separators)
 type: file
 action: close
 path: logs/latest.log
@@ -65,7 +65,7 @@ action: close
 path: ./world_the_end/session.lock
 ---
 type: file
-action: reopen
+action: close
 path: /home/z/server/versions/**
 ---
 type: socket
@@ -185,7 +185,7 @@ public class CrusstyCracHookV2 implements Resource {
     return 0;
   }
 
-  static void anonInodeSweep() { // v8 two-pass: snapshot+resolve first, close after iteration (P6B-12 layer B)
+  static void anonInodeSweep() { // v3 two-pass: snapshot+resolve first, close after iteration (P6B-12 layer B)
     try {
       File[] fds = new File("/proc/self/fd").listFiles();
       if (fds == null) { marker("ANON-SWEEP no-list"); return; }
@@ -193,7 +193,7 @@ public class CrusstyCracHookV2 implements Resource {
       StringBuilder hits = new StringBuilder();
       for (File f : fds) {
         String t; try { t = Files.readSymbolicLink(f.toPath()).toString(); } catch (Exception e) { continue; }
-        boolean kill = t.startsWith("anon_inode:") || t.contains("/spark/") || t.startsWith("/proc/");
+        boolean kill = t.startsWith("anon_inode:") || t.contains("/spark/") || t.startsWith("/proc/") || t.startsWith("/sys/");
         if (kill) { int rc = closeFd(Integer.parseInt(f.getName())); n++; hits.append(f.getName()).append('=').append(t).append(":rc").append(rc).append(';'); }
       }
       marker("ANON-SWEEP closed=" + n + " " + hits);
