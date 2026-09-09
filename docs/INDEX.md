@@ -102,3 +102,4 @@ commit/date-locked evidence, expected drift, do not refresh.
 | RCON_HYGIENE_DECISION.md | 75 | CLOSED | RCON owner decision |
 | GRAAL_SOAK_DESIGN.md | 117 | CLOSED | server-wide soak design (SOAK-PASS config source) |
 | BENCH_RIG_INVENTORY_2026-09-09.md | 123 | LIVE | bench tree census + rig hygiene matrix |
+| TASK129_PURE_INJECT_2026-09-09.md | 129 | LIVE | pure-inject canonical validation: boot parity, idle RSS −29%, reclaim MIXED (benign-lazy) |
