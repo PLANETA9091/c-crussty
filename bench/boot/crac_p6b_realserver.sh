@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# TASK-115 phase-6b (S7-68, attempt 8): REAL-SERVER CHECKPOINT with agent v7.
-# v7 = v6 + LAW P6B-10 fix: classloader-robust object-close via Instrumentation
-#   (static INSTR from premain; inst.getAllLoadedClasses() finds MinecraftServer /
-#   LogManager regardless of paperclip child-loader) + per-fd accounting
-#   (FD-INV-BEFORE/AFTER hot-target delta + PORT-CLEAR re-scan after surgery).
+# TASK-115 phase-6c (S7-70, attempt 9): agent v8 = P6B-12/P6B-13 attempt.
+# v8 = v7 MINUS log4j-stop MINUS latest.log-sweep MINUS 25575-sweep (policy ownership
+#   exclusive, LAW P6B-13) PLUS anon_inode JNI sweep (native layer B) PLUS rig-flag
+#   -Djdk.crac.resource-policies=$W/policies.txt (glob paths, close/reopen actions).
+# Design: docs/CRAC_P6C_REGISTRY_ANALYSIS.md (S7-69, ledger §51).
 # Pre-registered: CLAIM + docs/CRAC_P3_AGENT_DESIGN.md + LAW P6A-1/P6A-2 (S7-59).
 # Agent v2 = object-level close via VERIFIED javap reflection chain:
 #   MinecraftServer.getServer() -> .connection (net.minecraft.server.network.ServerConnectionListener)
@@ -32,6 +32,22 @@ trap 'echo "done-task115-p6b-$STAMP" >> /home/z/BENCH.lock.journal' EXIT
 ss -ltn 2>/dev/null | grep -qE ':25565|:25575' && { echo "LANE-BUSY-PORTS"; exit 42; }
 
 mkdir -p "$W"; cd "$W"; rm -rf "$IMG"; rm -f "$W/agent.log"; mkdir -p "$IMG"
+
+# ---- 0. Policies file (P6B-12 layer A lever, S7-69 design) ----
+cat > policies.txt << 'PEOF'
+type=file,action=close,path=logs/latest.log
+type=file,action=close,path=/home/z/server/logs/latest.log
+type=file,action=close,path=world/session.lock
+type=file,action=close,path=./world/session.lock
+type=file,action=close,path=world_nether/session.lock
+type=file,action=close,path=./world_nether/session.lock
+type=file,action=close,path=world_the_end/session.lock
+type=file,action=close,path=./world_the_end/session.lock
+type=file,action=reopen,path=/home/z/server/versions/**
+type=file,action=reopen,path=versions/**
+type=socket,action=close,localPort=25575
+PEOF
+echo "POLICIES-LINES=$(wc -l < policies.txt)"
 
 # ---- 1. Rust no-dep cdylib (same as p6a) ----
 cat > fd_surgery.rs << 'REOF'
@@ -140,26 +156,20 @@ public class CrusstyCracHookV2 implements Resource {
     return closed;
   }
 
-  static int stopFileAppenders() {
-    int stopped = 0;
+  static int stopFileAppenders() { // REMOVED from flow in v8 (P6B-13: policy owns latest.log) — kept for reference
+    return 0;
+  }
+
+  static void anonInodeSweep() { // P6B-12 layer B: unclaimed netty JNI fds — visible to native scan only
     try {
-      Class<?> lmm = findLoaded("org.apache.logging.log4j.LogManager", "L4J");
-      if (lmm == null) return -1;
-      Object ctx = lmm.getMethod("getContext", boolean.class).invoke(null, false);
-      Object cfg = ctx.getClass().getMethod("getConfiguration").invoke(ctx);
-      Map<?, ?> apps = (Map<?, ?>) cfg.getClass().getMethod("getAppenders").invoke(cfg);
-      for (Object ap : apps.values()) {
-        String cn = ap.getClass().getName();
-        if (cn.contains("File") || cn.contains("Rolling")) {
-          try {
-            Method stop = ap.getClass().getMethod("stop");
-            stop.setAccessible(true); stop.invoke(ap); stopped++;
-            marker("LOG4J-STOP " + cn.substring(cn.lastIndexOf('.') + 1) + " rc=0");
-          } catch (Throwable t) { marker("LOG4J-STOP-ERR " + cn + " " + t); }
-        }
+      File[] fds = new File("/proc/self/fd").listFiles();
+      int n = 0;
+      if (fds != null) for (File f : fds) {
+        String t; try { t = Files.readSymbolicLink(f.toPath()).toString(); } catch (Exception e) { continue; }
+        if (t.startsWith("anon_inode:")) { int rc = closeFd(Integer.parseInt(f.getName())); n++; marker("ANON-CLOSE fd=" + f.getName() + " " + t + " rc=" + rc); }
       }
-    } catch (Throwable t) { marker("LOG4J-CTX-ERR " + t); return -1; }
-    return stopped;
+      marker("ANON-SWEEP closed=" + n);
+    } catch (Throwable t) { marker("ANON-SWEEP-ERR " + t); }
   }
 
   static void fdSweep(String portHex, String filePath) {
@@ -189,13 +199,11 @@ public class CrusstyCracHookV2 implements Resource {
     long t0 = System.currentTimeMillis();
     fdInv("BEFORE");
     int nc = closeNettyListeners();
-    int na = stopFileAppenders();
-    fdSweep(Integer.toHexString(25565), "");
-    fdSweep(Integer.toHexString(25575), "");
-    fdSweep("", "/home/z/server/logs/latest.log");
+    anonInodeSweep();
+    fdSweep(Integer.toHexString(25565), ""); // 25565 netty JNI socket: unclaimed layer-B, sweep keeps it
     fdInv("AFTER");
     portClear();
-    marker("SURGERY-V2 netty=" + nc + " appenders=" + na + " ms=" + (System.currentTimeMillis() - t0));
+    marker("SURGERY-V8 netty=" + nc + " ms=" + (System.currentTimeMillis() - t0));
   }
   public void afterRestore(org.crac.Context<? extends Resource> ctx) { marker("HOOK-AFTER-RESTORE"); }
 
@@ -248,7 +256,7 @@ public class CrusstyCracHookV2 implements Resource {
       Class.forName("jdk.crac.Context").getMethod("register", jres).invoke(gctx, proxy);
       rawOk = true;
     } catch (Throwable t) { marker("RAW-REG-ERR " + t + " cause=" + t.getCause()); }
-    marker("PREMAIN-V7 org=" + orgOk + " raw=" + rawOk + " pinned=" + (ORG_PIN != null && RAW_PIN != null) + " instr=" + (INSTR != null));
+    marker("PREMAIN-V8 org=" + orgOk + " raw=" + rawOk + " pinned=" + (ORG_PIN != null && RAW_PIN != null) + " instr=" + (INSTR != null));
     // S7-65 compat discriminator (NEXT(2) piggyback): WHY server compat=null vs plain-JVM bind
     try {
       Object g2 = Class.forName("jdk.crac.Core").getMethod("getGlobalContext").invoke(null);
@@ -297,7 +305,7 @@ echo "BUILD-OK"
 rm -rf "$SRV/logs" 2>/dev/null; mkdir -p "$SRV/logs"  # boot floor log hygiene only, no config touch
 T0=$(date +%s.%N)
 cd "$SRV"
-"$JAVA" -Djava.library.path="$W" \
+"$JAVA" -Djava.library.path="$W" -Djdk.crac.resource-policies="$W/policies.txt" \
   -javaagent:"$W/hookv2.jar" -XX:CRaCCheckpointTo="$IMG" \
   -cp "$W/hookv2.jar:$PJAR" io.papermc.paperclip.Main --nogui > "$W/boot.log" 2>&1 < /dev/null 9>&- &
 SPID=$!
@@ -327,7 +335,7 @@ wait "$SPID" 2>/dev/null; WRC=$?
 sleep 1
 IMGF=$(ls "$IMG" 2>/dev/null | wc -l); IMGB=$(du -sb "$IMG" 2>/dev/null | cut -f1)
 echo "CK jcmd_rc=$JRC wait_rc=$WRC img_files=$IMGF img_bytes=$IMGB"
-echo "=== AGENT-JOURNAL ==="; grep -E 'SURGERY-V2|NETTY-CLOSE |LOG4J-STOP |SWEEP |FD-INV|PORT-CLEAR|LOADER-|INSTR-CAPTURED' "$W/agent.log" | tail -22
+echo "=== AGENT-JOURNAL ==="; grep -E 'SURGERY-V8|NETTY-CLOSE |ANON-|SWEEP |FD-INV|PORT-CLEAR|LOADER-|INSTR-CAPTURED' "$W/agent.log" | tail -24
 [ "$IMGF" -eq 0 ] && { echo "VERDICT=FAIL no-image"; exit 23; }
 
 # ---- 4. Restore x2 + prize metric (restore wall-clock to first output) ----
