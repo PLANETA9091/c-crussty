@@ -104,6 +104,7 @@ commit/date-locked evidence, expected drift, do not refresh.
 | BENCH_RIG_INVENTORY_2026-09-09.md | 123 | LIVE | bench tree census + rig hygiene matrix |
 | TASK129_PURE_INJECT_2026-09-09.md | 129 | LIVE | pure-inject canonical validation: boot parity, idle RSS −29%, reclaim MIXED (benign-lazy) |
 | CRAC_AFTERRESTORE_REBIND_DESIGN.md | 115 | DESIGN-ONLY | afterRestore re-bind design: netty eventloop resurrection path (FRONT-C, S7-77) |
+| RESEARCH_CRAC_SERVING_2026-09-09.md | 115 | DESIGN-ONLY | CRaC restore-serving web research: CRIU TCP_REPAIR / Spring Resource pattern / agent-conflict synthesized vs P6B-17/19 (FRONT-E, S7-79) [backfill TASK-136] |
 | TASK100_GRAAL_FOLLOWUP_2026-09-09.md | 100 | CLOSED | Graal follow-up: version-confound third arm + Graal×kernel composability |
 | TASK105_JFR_MECH_2026-09-09.md | 105 | CLOSED | JFR warm-burst mechanism diff: ARMED vs DORMANT noise kernels |
 | TASK106_COLD_REPRO_2026-09-09.md | 106 | CLOSED | cold-protocol reproduction arm: TASK-74 cold win does NOT replicate |
