@@ -22,6 +22,16 @@
 # v10.1 (S7-78 post-a16): rebind v11 targets real mojmap API startTcpServerListener+acceptConnections
 #   (a16 measured: no bind* anywhere on ServerConnectionListener); cgroup determinism: /sys/fs/cgroup/**
 #   close policy (layer A open-time claim) + LATE second sweep (race window shrink).
+# v12 (S7-84 a22, LAW P6B-23): EVENTLOOP FD RESURRECTION — sweep closed netty wakeup fds => loops
+#   parked in in-flight epoll_wait forever => PendingRegistrationPromise never serviced => rebind hangs
+#   (startTcpServerListener:184). Fix: repairAllLoops = per-loop (EpollEventLoop.epollFd/eventFd/timerFd
+#   unix.FileDescriptor wrappers, javap-verified S7-83 FRONT-B): readlink /proc/self/fd/<old> evidence;
+#   if target is the expected anon_inode => fresh fd via Rust JNI (epoll_create1/eventfd/timerfd_create)
+#   then dup2 ONTO HELD NUMBER (repairs the in-flight epoll_wait in-place) + epoll_ctl ADD eventFd on
+#   fresh epoll + kick loop (execute no-op => wakeup eventFdWrite => wait returns => queue drains =>
+#   promise serviced); if number was REUSED post-restore (target != anon_inode) => reflective int-swap
+#   fallback (in-flight wait unrecoverable — honest evidence). binder+repairer split: pass-1 repair in
+#   hook, binder daemon, repairer daemon 1.2s later (kick-only cycles 1/s x7, stops on rc=0/listening).
 set -u
 JAVA=/home/z/crac-jdk/bin/java
 JCMD=/home/z/crac-jdk/bin/jcmd
@@ -92,11 +102,43 @@ echo "POLICIES-LINES=$(wc -l < policies.txt)"
 
 # ---- 1. Rust no-dep cdylib (same as p6a) ----
 cat > fd_surgery.rs << 'REOF'
-use std::os::raw::{c_int, c_void};
-extern "C" { fn close(fd: c_int) -> c_int; }
+use std::os::raw::{c_int, c_uint, c_void};
+extern "C" {
+    fn close(fd: c_int) -> c_int;
+    fn eventfd(init: c_uint, flags: c_int) -> c_int;
+    fn timerfd_create(clock: c_int, flags: c_int) -> c_int;
+    fn epoll_create1(flags: c_int) -> c_int;
+    fn dup2(old: c_int, new: c_int) -> c_int;
+    fn epoll_ctl(epfd: c_int, op: c_int, fd: c_int, event: *mut c_void) -> c_int;
+}
+#[repr(C, packed)]
+struct EpollEvent { events: u32, data: u64 }
 #[no_mangle]
 pub extern "system" fn Java_CrusstyCracHookV2_closeFd(_e: *mut c_void, _c: *mut c_void, fd: c_int) -> c_int {
     unsafe { close(fd) }
+}
+// v12 (S7-84 a22): LAW P6B-23 — eventloop fd resurrection support (EFD_CLOEXEC|EFD_NONBLOCK etc.)
+#[no_mangle]
+pub extern "system" fn Java_CrusstyCracHookV2_newEventFd(_e: *mut c_void, _c: *mut c_void) -> c_int {
+    unsafe { eventfd(0, 0o2000000 | 0o4000) }
+}
+#[no_mangle]
+pub extern "system" fn Java_CrusstyCracHookV2_newTimerFd(_e: *mut c_void, _c: *mut c_void) -> c_int {
+    unsafe { timerfd_create(1, 0o2000000 | 0o4000) } // CLOCK_MONOTONIC=1, TFD_CLOEXEC|TFD_NONBLOCK
+}
+#[no_mangle]
+pub extern "system" fn Java_CrusstyCracHookV2_newEpollFd(_e: *mut c_void, _c: *mut c_void) -> c_int {
+    unsafe { epoll_create1(0o2000000) }
+}
+#[no_mangle]
+pub extern "system" fn Java_CrusstyCracHookV2_dup2Fd(_e: *mut c_void, _c: *mut c_void, from: c_int, to: c_int) -> c_int {
+    unsafe { dup2(from, to) }
+}
+// v12 (S7-84 a22): EPOLL_CTL_ADD(=1) of the wakeup eventFd onto the resurrected epoll instance
+#[no_mangle]
+pub extern "system" fn Java_CrusstyCracHookV2_epollCtlAdd(_e: *mut c_void, _c: *mut c_void, epfd: c_int, fd: c_int) -> c_int {
+    let mut ev = EpollEvent { events: 0x1, data: 0 }; // EPOLLIN
+    unsafe { epoll_ctl(epfd, 1, fd, &mut ev as *mut EpollEvent as *mut c_void) }
 }
 REOF
 export PATH="$HOME/.cargo/bin:$PATH"
@@ -119,6 +161,125 @@ public class CrusstyCracHookV2 implements Resource {
         StandardOpenOption.CREATE, StandardOpenOption.APPEND); } catch (Exception e) {}
   }
   public native static int closeFd(int fd);
+  public native static int newEventFd();
+  public native static int newTimerFd();
+  public native static int newEpollFd();
+  public native static int dup2Fd(int from, int to);
+  public native static int epollCtlAdd(int epfd, int fd);
+
+  // v12 (S7-84 a22): LAW P6B-23 — eventloop fd resurrection. See script header.
+  static volatile boolean REBIND_DONE = false; // repairer stop-flag (set on binder rc=0)
+  static java.util.LinkedHashSet<Object> findLoops(Object conn) {
+    java.util.LinkedHashSet<Object> out = new java.util.LinkedHashSet<>();
+    try {
+      for (Field f : conn.getClass().getDeclaredFields()) {
+        f.setAccessible(true);
+        Object v; try { v = f.get(conn); } catch (Throwable ig) { continue; }
+        if (v == null) continue;
+        if (v instanceof Iterable) {
+          for (Object o : (Iterable<?>) v) {
+            if (o == null) continue;
+            String oc = o.getClass().getName();
+            if (oc.contains("EventLoopGroup")) collectChildren(o, out);
+            else if (oc.contains("Channel")) { try { Object el = o.getClass().getMethod("eventLoop").invoke(o); if (el != null) out.add(el); } catch (Throwable ig) {} }
+          }
+        } else if (v.getClass().getName().contains("EventLoopGroup")) collectChildren(v, out);
+      }
+    } catch (Throwable t) { marker("AR-REPAIR-DISC-ERR " + t); }
+    return out;
+  }
+  static void collectChildren(Object group, java.util.LinkedHashSet<Object> out) {
+    out.add(group);
+    for (Class<?> c = group.getClass(); c != null && c != Object.class; c = c.getSuperclass()) {
+      try {
+        Field ch = c.getDeclaredField("children"); ch.setAccessible(true); // MultithreadEventExecutorGroup
+        Object[] arr = (Object[]) ch.get(group);
+        if (arr != null) for (Object e : arr) if (e != null) out.add(e);
+        return;
+      } catch (Throwable ig) { }
+    }
+  }
+  static String readLinkT(int fd) {
+    try { return java.nio.file.Files.readSymbolicLink(java.nio.file.Path.of("/proc/self/fd/" + fd)).toString(); }
+    catch (Throwable t) { return "-"; }
+  }
+  static String expectT(String which) { return which.equals("epollFd") ? "anon_inode:[eventpoll]" : which.equals("eventFd") ? "anon_inode:[eventfd]" : "anon_inode:[timerfd]"; }
+  static int freshFd(String which) { return which.equals("epollFd") ? newEpollFd() : which.equals("eventFd") ? newEventFd() : newTimerFd(); }
+  static int fdNumber(Object loop, String fn) throws Exception {
+    for (Class<?> c = loop.getClass(); c != null; c = c.getSuperclass()) {
+      try { Field wf = c.getDeclaredField(fn); wf.setAccessible(true); Object w = wf.get(loop); if (w == null) return -1;
+        for (Class<?> c2 = w.getClass(); c2 != null; c2 = c2.getSuperclass()) { try { Field f = c2.getDeclaredField("fd"); f.setAccessible(true); return f.getInt(w); } catch (NoSuchFieldException ig) {} }
+      } catch (NoSuchFieldException ig) { }
+    }
+    return -1;
+  }
+  static int repairLoop(Object loop, java.util.List<String> ev) { // returns fds repaired
+    String cn = loop.getClass().getSimpleName();
+    if (!cn.contains("Epoll")) return 0; // a22 scope: EpollEventLoop (NioEventLoop = separate design)
+    int n = 0;
+    for (String fn : new String[]{"eventFd", "timerFd", "epollFd"}) { // eventFd first (ctl-add needs its final number)
+      try {
+        Field wf = null;
+        for (Class<?> c = loop.getClass(); c != null && wf == null; c = c.getSuperclass()) {
+          try { Field t = c.getDeclaredField(fn); t.setAccessible(true); wf = t; break; } catch (NoSuchFieldException ig) {}
+        }
+        if (wf == null) { ev.add(fn + "=no-field"); continue; }
+        Object wrapper = wf.get(loop);
+        if (wrapper == null) { ev.add(fn + "=null-wrapper"); continue; }
+        Field fdF = null;
+        for (Class<?> c = wrapper.getClass(); c != null && fdF == null; c = c.getSuperclass()) {
+          try { Field t = c.getDeclaredField("fd"); t.setAccessible(true); fdF = t; break; } catch (NoSuchFieldException ig) {}
+        }
+        if (fdF == null) { ev.add(fn + "=no-int"); continue; }
+        int old = fdF.getInt(wrapper);
+        String tgt = readLinkT(old);
+        int fresh = freshFd(fn);
+        if (fresh < 0) { ev.add(fn + "=create-fail"); continue; }
+        if (tgt.equals(expectT(fn))) {
+          dup2Fd(fresh, old); closeFd(fresh); // fresh instance now AT the held number; wrapper unchanged
+          if (fn.equals("epollFd")) { int evn = fdNumber(loop, "eventFd"); int rc = evn >= 0 ? epollCtlAdd(old, evn) : -99; ev.add("ctlAdd(" + old + "," + evn + ")=" + rc); }
+          ev.add(fn + " " + old + "=dup2");
+        } else {
+          fdF.setInt(wrapper, fresh); closeFd(old); // number reused post-restore => int-swap fallback
+          ev.add(fn + " " + old + "(" + tgt + ")->swap" + fresh);
+        }
+        n++;
+      } catch (Throwable t) { ev.add(fn + "-ERR " + t); }
+    }
+    return n;
+  }
+  static int repairAllLoops(Object conn) {
+    java.util.LinkedHashSet<Object> loops = findLoops(conn);
+    int fds = 0, el = 0;
+    for (Object loop : loops) {
+      java.util.List<String> ev = new java.util.ArrayList<>();
+      int n = repairLoop(loop, ev);
+      if (n > 0 || !ev.isEmpty()) { el++; fds += n; marker("AR-REPAIR " + loop.getClass().getSimpleName() + "@" + System.identityHashCode(loop) + " fds=" + n + " " + ev); }
+    }
+    marker("AR-REPAIR-DONE loops=" + loops.size() + " eploops=" + el + " fds=" + fds);
+    return fds;
+  }
+  static int kickLoops(java.util.LinkedHashSet<Object> loops) { // execute no-op => wakeup => parked wait returns
+    int k = 0;
+    for (Object loop : loops) {
+      try {
+        for (Method m : loop.getClass().getMethods())
+          if (m.getName().equals("execute") && m.getParameterCount() == 1 && m.getParameterTypes()[0] == Runnable.class) { m.invoke(loop, (Runnable) () -> {}); k++; break; }
+      } catch (Throwable t) { Throwable cc = t.getCause() != null ? t.getCause() : t; marker("AR-KICK-ERR " + loop.getClass().getSimpleName() + " " + cc); }
+    }
+    return k;
+  }
+  static boolean listenNow(int port) {
+    try {
+      String hex = Integer.toHexString(port).toUpperCase();
+      for (String f : new String[]{"/proc/net/tcp", "/proc/net/tcp6"})
+        for (String line : java.nio.file.Files.readAllLines(java.nio.file.Path.of(f))) {
+          String[] c = line.trim().split("\\s+");
+          if (c.length > 3 && c[1].endsWith(":" + hex) && c[3].equals("0A")) return true;
+        }
+    } catch (Throwable ig) {}
+    return false;
+  }
 
   static Instrumentation INSTR; // P6B-10 (S7-67): app-loader CNFE on paperclip child-loader classes
   static java.nio.file.Path IMG_DIR; // v11.1 (S7-79): image-gate discriminator — unwind (P6B-9) vs real restore
@@ -326,11 +487,14 @@ public class CrusstyCracHookV2 implements Resource {
       if (!imgOk) { marker("AR-REBIND-SKIP no-image (unwind P6B-9)"); return; }
       bind.setAccessible(true);
       final Method fbind = bind; final Object fconn = conn; final Field flf = lf; final int fsize = sizeBefore;
+      // v12 a22 pass-1: resurrect fds BEFORE binder queues its registration (evidence-first)
+      try { repairAllLoops(conn); kickLoops(findLoops(conn)); } catch (Throwable rt1) { marker("AR-REPAIR-P1-ERR " + rt1); }
       Thread rt = new Thread(() -> {
         try {
           marker("AR-REBIND-TRY " + fbind);
           long t0 = System.currentTimeMillis();
           Object res = fbind.invoke(fconn, new java.net.InetSocketAddress(25565)); // startTcpServerListener: void, appends to channels
+          REBIND_DONE = true; // invoke returned => pending promise serviced (a22 repairer stop)
           String local = "void-ret";
           List<?> fut = flf != null ? (List<?>) flf.get(fconn) : null;
           if (res != null) {
@@ -348,6 +512,25 @@ public class CrusstyCracHookV2 implements Resource {
       }, "crussty-rebind");
       rt.setDaemon(true);
       rt.start();
+      // v12 a22 repairer (claim: 1.2s after binder starts; heals pending promise): cycle-1 = full repair,
+      // cycles 2+ = kick-only (dup2 re-run would clobber a live registered epoll interest list — P6B-23 guard)
+      Thread rp = new Thread(() -> {
+        try {
+          for (int i = 0; i < 8 && !REBIND_DONE; i++) {
+            Thread.sleep(i == 0 ? 1200 : 1000);
+            if (REBIND_DONE || listenNow(25565)) break;
+            if (i == 0) {
+              int f = repairAllLoops(fconn); int k = kickLoops(findLoops(fconn));
+              marker("AR-REPAIR-CYCLE " + (i + 1) + " fds=" + f + " kick=" + k);
+            } else {
+              int k = kickLoops(findLoops(fconn));
+              marker("AR-REPAIR-CYCLE " + (i + 1) + " kick=" + k);
+            }
+          }
+        } catch (Throwable t) { marker("AR-REPAIRER-ERR " + t); }
+      }, "crussty-repairer");
+      rp.setDaemon(true);
+      rp.start();
     } catch (Throwable t) {
       Throwable cc = t.getCause() != null ? t.getCause() : t;
       marker("AR-REBIND-ERR " + t + " cause=" + cc);
@@ -581,8 +764,10 @@ for R in 1 2; do
     echo "PROBE-R$R-$PORT $V attempt=$A/3"
   done
   kill -9 "$RPID" 2>/dev/null; wait "$RPID" 2>/dev/null
+  # v12 (S7-84 a22) acceptance (a): selector-loop exception count delta in restore log (honest either way)
+  echo "NETTY-ERR-R$R $(grep -cE 'io\.netty|Epoll|epoll|Selector' "$W/restore$R.log" 2>/dev/null || echo 0)"
 done
 grep -E 'HOOK-AFTER-RESTORE' "$W/agent.log" | head -2
 echo "=== AR-JOURNAL ==="
-grep -E 'AR-ORG|AR-RAW|AR-LISTEN|AR-REBIND' "$W/agent.log"
+grep -E 'AR-ORG|AR-RAW|AR-LISTEN|AR-REBIND|AR-REPAIR|AR-KICK' "$W/agent.log"
 echo "VERDICT-DONE boot=${BOOT_S}s"
