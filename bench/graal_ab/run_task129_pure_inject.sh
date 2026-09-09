@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 # TASK-129 — PURE-INJECT canonical config validation probe
 # agent-7625532f, 2026-09-09.
+# TASK-133 (2026-09-09): verdict tree flipped to gate v2 (TASK-130 §5 pre-registration,
+#   binding since TASK-132 first v2-gated run). Legacy v1 kept as dual-report class only
+#   (v1_class/v1_final columns). Measurement (R0/R1/R2/R3 sampling, settle, traj) untouched.
+#   v2_thresh >= v1_thresh always => GC.run branch still executes on any v2-miss;
 # Owner law 14:45+08 (docs/OWNER_DIRECTIVE_INJECTS_ONLY_2026-09-09.md):
 #   launch = stock JDK + ONLY -agentpath. ZERO other JVM options.
 # Derivative of run_task119_c3_probe.sh skeleton (flock/journal/seed/settle/traj/tree UNCHANGED).
@@ -44,7 +48,13 @@ heap_info() { # $1=pid -> flag-free jcmd GC.heap_info used/committed of the G1 h
       || echo "used=NA committed=NA"
 }
 smap_rss() { awk '/^Rss:/ {r+=$2} /^Pss:/ {p+=$2} END{printf "smapRss=%.0fMB Pss=%.0fMB", r/1024, p/1024}' "/proc/$1/smaps_rollup" 2>/dev/null || echo "smapRss=NA"; }
+# legacy v1 class (dual-report only, non-binding since TASK-133):
 over_threshold() { awk -v a="$1" -v b="$2" 'BEGIN{exit !(a > b*1.10)}'; }
+# gate v2 (pre-registered docs/C3_GATE_V2_PROTOCOL_2026-09-09.md §5): R2 <= max(R0*1.10, R0+100MB)
+#   crossover R0=1000MB: fat baselines bit-identical to v1, lean baselines get 100MB absolute floor
+#   = upper edge of NMT-attributed benign residue band (~50-90MB structural C2+metaspace).
+over_threshold_v2() { awk -v a="$1" -v b="$2" 'BEGIN{t=b*1.10; f=b+100; exit !(a > ((t>f)?t:f))}'; }
+v2_threshold_of() { awk -v b="$1" 'BEGIN{t=b*1.10; f=b+100; printf "%.1f", (t>f)?t:f}'; }
 
 wait_settle() { # $1=pid -> waits until rolling cpu delta idle, cap $2s
     local P="$1" CAP="$2" i S=0 J1 J2 D
@@ -98,18 +108,21 @@ run_one() { # $1=idx
     done
     local R2=$(rss_of "$SP") H2=$(heap_info "$SP") S2=$(smap_rss "$SP")
     "$JDK_STOCK/bin/jcmd" "$SP" GC.class_histogram > "$RDIR/hist_R2.txt" 2>&1 || true
-    local VERDICT R3=NA H3=NA
-    if over_threshold "$R2" "$R0"; then
-        log "$RID R2=${R2}MB > R0*1.10 -> diagnostic jcmd GC.run"
+    local VERDICT R3=NA H3=NA V2T V1_CLASS V1_FINAL="NA"
+    V2T=$(v2_threshold_of "$R0")
+    if [ "$R2" -gt "$(awk -v b="$R0" 'BEGIN{printf "%.0f", b*1.10}')" ]; then V1_CLASS="exceeds-v1"; else V1_CLASS="within-v1"; fi
+    if over_threshold_v2 "$R2" "$R0"; then
+        log "$RID R2=${R2}MB > v2 gate ${V2T}MB (max(R0*1.10,R0+100)) -> diagnostic jcmd GC.run"
         "$JDK_STOCK/bin/jcmd" "$SP" GC.run >> "$RDIR/jcmd.log" 2>&1 || true
         sleep 15
         R3=$(rss_of "$SP"); H3=$(heap_info "$SP")
-        if over_threshold "$R3" "$R0"; then VERDICT="FAIL-leak-signature"; else VERDICT="PASS-LAZY"; fi
+        if over_threshold_v2 "$R3" "$R0"; then VERDICT="FAIL-leak-signature"; else VERDICT="PASS-LAZY"; fi
+        if over_threshold "$R3" "$R0"; then V1_FINAL="FAIL"; else V1_FINAL="PASS-LAZY"; fi
     else
         VERDICT="PASS"
     fi
-    printf '%s\tR0=%sMB\tR1=%sMB\tR2=%sMB\tR3=%s\tverdict=%s\theap@base=%s\theap@add=%s\theap@remove_end=%s\theap@final=%s\n' \
-        "$RID" "$R0" "$R1" "$R2" "$R3" "$VERDICT" "$H0" "$H1" "$H2" "$H3" | tee -a "$OUT/results.tsv"
+    printf '%s\tR0=%sMB\tR1=%sMB\tR2=%sMB\tR3=%s\tverdict=%s\theap@base=%s\theap@add=%s\theap@remove_end=%s\theap@final=%s\tv2_gate=%sMB\tv1_class=%s\tv1_final=%s\n' \
+        "$RID" "$R0" "$R1" "$R2" "$R3" "$VERDICT" "$H0" "$H1" "$H2" "$H3" "$V2T" "$V1_CLASS" "$V1_FINAL" | tee -a "$OUT/results.tsv"
     echo "stop" >&3
     for i in $(seq 1 20); do kill -0 "$SP" 2>/dev/null || break; sleep 1; done
     kill -9 "$SP" 2>/dev/null || true
@@ -125,4 +138,4 @@ HSC=$(ls "$SERVER"/hs_err_pid*.log 2>/dev/null | wc -l)
 log "hs_err delta: $((HSC - HS0)) (must be 0)"
 log "=== SUMMARY ==="
 awk -F'\t' 'NR>0 {print}' "$OUT/results.tsv" 2>/dev/null | tee -a "$OUT/run.log"
-log "TASK-129 pure-inject canonical validation complete (owner law 14:45+08)"
+log "TASK-129 pure-inject canonical validation complete (owner law 14:45+08; gate v2 binding per TASK-130 §5 — TASK-133 rig flip)"
