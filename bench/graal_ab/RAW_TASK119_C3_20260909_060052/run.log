@@ -1,0 +1,8 @@
+[06:01:09] R1 boot done: Done (15.420s)
+[06:01:16] R1 baseline: R0=1092MB heap_last=320M->320M(804M)
+[06:01:41] R1 post-add: R1=1230MB heap_last=456M->456M(804M)
+[06:03:51] R1 R2=1210MB > R0*1.10 -> diagnostic jcmd GC.run
+[06:04:08] run R1 done: FAIL-leak-signature (R0=1092 R1=1230 R2=1210 R3=1224)
+[06:04:08] hs_err delta: 0 (must be 0)
+[06:04:08] === SUMMARY ===
+[06:04:08] TASK-119 C3 reclaim-probe complete
