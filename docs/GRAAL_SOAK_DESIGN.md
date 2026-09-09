@@ -93,3 +93,15 @@ committed per tick. Cumulative totals derived from state.tsv.
 - No flags beyond the operator config (UseStringDeduplication / CICompilerCount
   cheap A/Bs are a separate queue item, OPT_ARCH §7).
 - No gameplay/config touch; 0 src/ changes.
+
+## Parameter corrections (gates UNCHANGED)
+
+- C1 (before any valid chunk): band arithmetic 8x8 blocks -> 128x128 blocks
+  (chunk 20260909_021049 INVALID, rows #-marked with root cause).
+- C2 (before chunk 2): WAVES default 12 -> 40, LOAD_SECONDS 420 -> 480.
+  Rationale: valid waves collapse to ~6-16s wall once JIT-warm (chunk 1:
+  12 waves = 161s load vs 420s budget) — the budget, not the wave count, is
+  the real control. More waves per chunk = fuller budget use + stronger
+  within-chunk half-vs-half statistics. Band schedule extends mechanically
+  (X1 = 4000+128(i-1), fresh regions to x~9120; no overlap, z fixed).
+  Acceptance quota, INVESTIGATE triggers and verdict rules are untouched.
