@@ -56,7 +56,9 @@ mkdir -p "$OUT_DIR"
   noise/net/minecraft/world/level/levelgen/synth/PaperNativeNormalNoise.java \
   noise/net/minecraft/world/level/levelgen/DensityStubs.java \
   noise/net/minecraft/world/level/levelgen/NormalNoiseBatchOps.java \
+  noise/net/minecraft/world/level/levelgen/DensityArrayInterpreter.java \
   noise/net/minecraft/util/RandomSource.java \
+  noise/net/minecraft/util/Mth.java \
   noise/net/minecraft/util/KeyDispatchDataCodec.java \
   noise/net/minecraft/core/Holder.java \
   noise/net/it/unimi/dsi/fastutil/doubles/DoubleList.java \
@@ -75,6 +77,9 @@ rm -f "$OUT_DIR"/net/minecraft/world/level/levelgen/synth/ImprovedNoise.class \
       "$OUT_DIR"/net/minecraft/world/level/levelgen/DensityFunctions\$*.class \
       "$OUT_DIR"/net/minecraft/util/RandomSource.class \
       "$OUT_DIR"/net/minecraft/util/KeyDispatchDataCodec.class \
+      "$OUT_DIR"/net/minecraft/util/Mth.class \
+      "$OUT_DIR"/net/minecraft/world/level/levelgen/NoiseChunk.class \
+      "$OUT_DIR"/net/minecraft/world/level/levelgen/NoiseChunk\$*.class \
       "$OUT_DIR"/net/minecraft/core/Holder.class \
       "$OUT_DIR"/it/unimi/dsi/fastutil/doubles/DoubleList.class \
       "$OUT_DIR"/crussty/batch/PaperNativeBatchDispatch.class
@@ -104,7 +109,8 @@ SHIP = {"ImprovedNoiseNativeOps.class", "ImprovedNoiseNativeOps$Handle.class",
 SHIP_FILL = {"NormalNoiseBatchOps.class", "NormalNoiseBatchOps$Handle.class",
              "NormalNoiseBatchOps$Reaper.class", "NormalNoiseBatchOps$Recorder.class",
              "NormalNoiseBatchOps$RecorderTL.class", "NormalNoiseBatchOps$RecOutTL.class",
-             "NormalNoiseBatchOps$Census.class", "NormalNoiseBatchOps$TestProvider.class"}
+             "NormalNoiseBatchOps$Census.class", "NormalNoiseBatchOps$TestProvider.class",
+             "DensityArrayInterpreter.class"}
 
 bad = 0
 files = sorted(glob.glob('noise/build/net/minecraft/world/level/levelgen/synth/*.class'))
