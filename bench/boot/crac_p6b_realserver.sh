@@ -45,7 +45,7 @@ mkdir -p "$W"; cd "$W"; rm -rf "$IMG"; rm -f "$W/agent.log"; mkdir -p "$IMG"
 cat > policies.txt << 'PEOF'
 # TASK-115 phase-6c attempt 11 — decoded syntax (purpur ignore: fd stays open, lazy classload post-restore)
 type: file
-action: close
+action: ignore
 path: logs/latest.log
 ---
 type: file
