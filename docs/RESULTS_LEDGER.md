@@ -758,4 +758,14 @@ Numbering note: drafted as §71/ADDENDUM-64 pre-push; twin landed their §71/ADD
 
 **Scope.** Zero boots, zero runs, no config-of-record touch, no docs rewritten, no INDEX change (no new doc). Twin lane untouched: their s7-80 chain landed mid-tick (443f259 rig v11.2 + ea528c7 attempt-18 [§71/ADDENDUM-64 above] + c362e40 untrack correction) — disjoint files, union-clean rebase. hs_err untouched. INJECTS-ONLY: no flags introduced anywhere (measurement layer unchanged).
 
-**Inventory note (marker sweep during union-resolution).** One HISTORICAL literal `=======` line exists between §38 and §39 (baked in during the phase-6a/6b §38/39 numbering-collision resolution, present in ac0ca08 and c362e40 alike) — left verbatim per append-only law; retrieval contract stays grep-by-§; flagging here so a future marker-grep does not misread it as an open conflict. Current resolution itself leaves ZERO new markers.
+**Inventory note (marker sweep during union-resolution).** One HISTORICAL literal ` line exists between §38 and §39 (baked in during the phase-6a/6b §38/39 numbering-collision resolution, present in ac0ca08 and c362e40 alike) — left verbatim per append-only law; retrieval contract stays grep-by-§; flagging here so a future marker-grep does not misread it as an open conflict. Current resolution itself leaves ZERO new markers.
+=======
+## §73 — ADDENDUM-66: TASK-115 attempt-19 (S7-81) — RETRY LEVER MECHANICALLY PROVEN; LAW P6B-21 (POLICY-CLOSE NOT IDEMPOTENT ACROSS ATTEMPTS); P6B-20 CONFIRMED
+
+**Run.** Rig v11.3 (bounded checkpoint retry x3 @2s, same-boot pre-registered). Boot 17.3s canonical. CK-ATT1 refused fd=134 cgroup; CK-ATT2/3 refused `Cannot close logs/latest.log` (IOException Stream Closed). fd=134 ABSENT in att2/3 (0 hits) => cgroup fd transient, P6B-20 µs-window model CONFIRMED; retry lever works for layer-B. Results: bench/boot/results/CRAC_P6B_ATTEMPT19_2026-09-09.md.
+
+**LAW P6B-21.** Policy-close not idempotent across checkpoint attempts: att1 executed layer-A close on logs/latest.log; unwind left it closed; att2 engine pass re-evaluated same policy on already-closed stream => CheckpointOpenResourceException => refuse. Policy layer assumes single-shot checkpoint lifecycle. Distinct from P6B-15 (restore-lane FS poisoning) — this is checkpoint-side, same process, between attempts.
+
+**Re-entry safety verified.** Hooks re-fired per attempt (BCP-RAW+BCP-ORG x2, SURGERY-SKIP-DUP x2, no deadlock, no double-close); image-gate still correct (AR-REBIND-SKIP no-image). Sweeps identical to a18 (closed=14 / closed=0). 1 boot (cap; retries same-boot), hs_err 4/0, 0 config, 0 crash-reports.
+
+**a20 pre-registered:** latest.log policy close→ignore (engine-native regular-fd restore, proven class versions/** jar a11+; removes P6B-21 surface + close/reopen asymmetry). Expected: att1/att2 clears => img>0 => async AR-REBIND => SLP verdict.
