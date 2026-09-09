@@ -131,7 +131,12 @@ public class CrusstyCracHookV2 implements Resource {
     } catch (Throwable t) { marker("SWEEP-ERR " + t); }
   }
 
+  static Object ORG_PIN, RAW_PIN; // P6B-8 (S7-66): jdk.crac wrappers hold resources WEAKLY (strongRef=null) — pin registrations or GC sweeps them during boot
+  static boolean SURGERY_DONE = false; // both paths registered => beforeCheckpoint fires twice
+
   public void beforeCheckpoint(org.crac.Context<? extends Resource> ctx) {
+    if (SURGERY_DONE) { marker("SURGERY-SKIP-DUP"); return; }
+    SURGERY_DONE = true;
     long t0 = System.currentTimeMillis();
     int nc = closeNettyListeners();
     int na = stopFileAppenders();
@@ -146,12 +151,14 @@ public class CrusstyCracHookV2 implements Resource {
     System.loadLibrary("fdsurgery");
     boolean orgOk = false, rawOk = false;
     try {
-      Core.getGlobalContext().register(new CrusstyCracHookV2() {
+      CrusstyCracHookV2 orgHook = new CrusstyCracHookV2() {
         public void beforeCheckpoint(org.crac.Context<? extends org.crac.Resource> c) {
           marker("BCP-ORG"); super.beforeCheckpoint(c);
         }
         public void afterRestore(org.crac.Context<? extends org.crac.Resource> c) { marker("AR-ORG"); }
-      });
+      };
+      ORG_PIN = orgHook; // P6B-8 pin
+      Core.getGlobalContext().register(orgHook);
       orgOk = true;
     } catch (Throwable t) { marker("ORG-REG-ERR " + t + " cause=" + t.getCause()); }
     try {
@@ -183,10 +190,11 @@ public class CrusstyCracHookV2 implements Resource {
           if (rt == byte.class) return Byte.valueOf((byte) 0);
           return Integer.valueOf(0);
         });
+      RAW_PIN = proxy; // P6B-8 pin
       Class.forName("jdk.crac.Context").getMethod("register", jres).invoke(gctx, proxy);
       rawOk = true;
     } catch (Throwable t) { marker("RAW-REG-ERR " + t + " cause=" + t.getCause()); }
-    marker("PREMAIN-V5 org=" + orgOk + " raw=" + rawOk);
+    marker("PREMAIN-V6 org=" + orgOk + " raw=" + rawOk + " pinned=" + (ORG_PIN != null && RAW_PIN != null));
     // S7-65 compat discriminator (NEXT(2) piggyback): WHY server compat=null vs plain-JVM bind
     try {
       Object g2 = Class.forName("jdk.crac.Core").getMethod("getGlobalContext").invoke(null);
