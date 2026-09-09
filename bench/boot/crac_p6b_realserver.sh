@@ -365,7 +365,7 @@ IMGF=$(ls "$IMG" 2>/dev/null | wc -l); IMGB=$(du -sb "$IMG" 2>/dev/null | cut -f
 echo "CK jcmd_rc=$JRC wait_rc=$WRC img_files=$IMGF img_bytes=$IMGB"
 echo "=== AGENT-JOURNAL ==="; grep -E 'SURGERY-V8|NETTY-CLOSE |ANON-|SWEEP |FD-INV|PORT-CLEAR|LOADER-|INSTR-CAPTURED' "$W/agent.log" | tail -24
 [ "$IMGF" -eq 0 ] && { echo "VERDICT=FAIL no-image"; exit 23; }
-[ -d "$SRV/plugins/spark/tmp" ] && { cp -a "$SRV/plugins/spark/tmp" "$W/sparktmp.bak"; echo "SPARKTMP-BAK $(ls "$W/sparktmp.bak" 2>/dev/null | wc -l)"; }
+[ -d "$SRV/plugins/spark/tmp" ] && { rm -rf "$W/sparktmp.bak"; cp -a "$SRV/plugins/spark/tmp" "$W/sparktmp.bak"; echo "SPARKTMP-BAK $(ls "$W/sparktmp.bak" 2>/dev/null | wc -l)"; }
 
 # ---- 3b. SLP serving probe (attempt-12: liveness->serving measurement) ----
 cat > "$W/slp.py" << 'SLEOF'
