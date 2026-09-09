@@ -117,3 +117,4 @@ commit/date-locked evidence, expected drift, do not refresh.
 | C3_GATE_V2_PROTOCOL_2026-09-09.md | 130 | LIVE | C3 reclaim gate v2 pre-registration: max(R0x1.10, R0+100MB), crossover R0=1000, 10-run calibration, binds next cadence |
 | TASK132_C3_CADENCE3_V2_2026-09-09.md | 132 | LIVE | C3 cadence #3: first v2-gated run — PASS x both gates (+61MB residue, plateau, used-heap flat) |
 | TASK134_C3_CADENCE4_FLIPPED_2026-09-09.md | 134 | LIVE | C3 cadence #4: first in-vivo run under flipped rig — PASS x both gates, lean-zone floor binds (R0=900, +61MB, committed constant) |
+| TASK135_C3_CADENCE5_DEFLAG_2026-09-09.md | 135 | LIVE | C3 cadence #5: first live (v1,v2] de-flag band capture — PASS v2/989 floor, v1_class=exceeds-v1 honestly reported (+90MB top-of-band, used-heap clean) |
