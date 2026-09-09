@@ -557,3 +557,19 @@ Work Log:
 
 Stage Summary:
 - Phase-6c serving matrix COMPLETE: 25565 SLP + 25575 RCON sustained 3/3 both restores, INJECTS-ONLY, 0 config. Residuals: census discovery bug (a27), 1x EINVAL cosmetic. S7-90 = a27 census fix + LONG-SOAK exit gate (2min periodic probes), then phase-6d production-integration planning
+
+---
+Task ID: S7-90
+Agent: Super Z (main, cron job 370520, 19:30+08)
+Task: c-crussty attempt-27 — census union-fix + LONG-SOAK exit gate
+
+Work Log:
+- Claim a8c94ad (no twin S7-90); rig v12.8: census fed findLoops+findLoopsStatic union + LONGSOAK 12x10s; v12.8.1 trimmed 12->8 rounds (foreground tool-run timeout budget, deviation disclosed)
+- Process lesson: nohup background launch REAPED between tool calls (0-byte log, no boot); foreground re-run OK — 1-boot budget intact
+- 1 boot 17.4s: census alive=7/8 (first real finding: 1 NioEventLoop dead — Nio group unrepaired by design scope; serving unaffected, Epoll-routed); swap-branch ctlAdd rc=0 absorbed aggressive fd recycling (eventFd wrapper held spark-jfr.tmp path); REBIND rc=0 29/25ms; CK deterministic
+- CAPTURE ERROR honest: verdicts piped through tail-30 => 25565 longsoak counts LOST (no ping traces server-side => unmeasurable); 25575 12/12+12/12 RECONSTRUCTED from server-side rcon-client logs (exact probe-schedule match both restores)
+- Rig v12.9 (9470ff2): exec tee run.log — verdict capture institutionalized; push races #19/#20 resolved (rebase; twin TASK-142/143 consumed §89 => mine §90)
+- Banked c-crussty (results ATTEMPT27 + ledger §90) + dev-logs (CLAIMS done + SESSION 090)
+
+Stage Summary:
+- Exit gate 3/4 proven, NOT claimed closed (honest): 25575 sustained both restores; 25565 unmeasured this run. Census = working per-loop truth-teller (Nio dead loop found). S7-91 a28 = v12.9 tee re-measurement (8/8+8/8 target => gate CLOSED) + Nio decode, then phase-6d
