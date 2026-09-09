@@ -144,8 +144,36 @@ public class CrusstyCracHookV2 implements Resource {
 
   public static void premain(String args, Instrumentation inst) throws Exception {
     System.loadLibrary("fdsurgery");
-    Core.getGlobalContext().register(new CrusstyCracHookV2());
-    marker("PREMAIN-V2-REGISTERED");
+    boolean orgOk = false, rawOk = false;
+    try {
+      Core.getGlobalContext().register(new CrusstyCracHookV2() {
+        public void beforeCheckpoint(org.crac.Context<? extends org.crac.Resource> c) {
+          marker("BCP-ORG"); super.beforeCheckpoint(c);
+        }
+        public void afterRestore(org.crac.Context<? extends org.crac.Resource> c) { marker("AR-ORG"); }
+      });
+      orgOk = true;
+    } catch (Throwable t) { marker("ORG-REG-ERR " + t); }
+    try {
+      Class<?> jres = Class.forName("jdk.crac.Resource");
+      Class<?> jc = Class.forName("jdk.crac.Core");
+      Object gctx = jc.getMethod("getGlobalContext").invoke(null);
+      Object proxy = java.lang.reflect.Proxy.newProxyInstance(jres.getClassLoader(), new Class[]{jres},
+        (p, m, a) -> {
+          String n = m.getName();
+          if (n.equals("beforeCheckpoint")) {
+            marker("BCP-RAW");
+            CrusstyCracHookV2 h = new CrusstyCracHookV2();
+            h.beforeCheckpoint(null);
+            return null;
+          }
+          if (n.equals("afterRestore")) { marker("AR-RAW"); return null; }
+          return null;
+        });
+      Class.forName("jdk.crac.Context").getMethod("register", jres).invoke(gctx, proxy);
+      rawOk = true;
+    } catch (Throwable t) { marker("RAW-REG-ERR " + t); }
+    marker("PREMAIN-V3 org=" + orgOk + " raw=" + rawOk);
   }
 }
 JEOF
@@ -156,7 +184,7 @@ printf 'Manifest-Version: 1.0\nPremain-Class: CrusstyCracHookV2\n' > mf.txt
 # LAW P6B-2: agent jar must be SELF-CONTAINED (org.crac bundled, rig-internal, app-classpath)
 rm -rf stage; mkdir stage
 ( cd stage && /home/z/jdk21/bin/jar xf "$CRACJAR" && cp ../CrusstyCracHookV2.class . && \
-  /home/z/jdk21/bin/jar cfm ../hookv2.jar ../mf.txt org CrusstyCracHookV2.class )
+  /home/z/jdk21/bin/jar cfm ../hookv2.jar ../mf.txt org CrusstyCracHookV2*.class )
 BUNDLED=$(unzip -l hookv2.jar 2>/dev/null | grep -cE 'org/crac/.+\.class')
 echo "BUNDLED-org.crac-classes=$BUNDLED"
 [ "$BUNDLED" -lt 5 ] && { echo "BUNDLE-FAIL"; exit 11; }
