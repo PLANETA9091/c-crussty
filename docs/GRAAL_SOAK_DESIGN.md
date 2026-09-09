@@ -47,10 +47,16 @@ One chunk per rig invocation (foreground, ~7 min wall — tool-call law):
 3. Sustained phase: up to 12 waves, each = forceload add of a 8x8=64-fresh-chunk
    band, completion detected by rolling-delta idle (same as TASK-96 burst loop).
    Band schedule is DETERMINISTIC and FIXED per wave index i (1..12):
-   `x = 4000+64(i-1) .. 4000+64(i-1)+7, z = 3200..3207` — far from spawn and
+   `x = 4000+128(i-1) .. 4000+128(i-1)+127, z = 3200..3327` (BLOCK coords;
+   128x128 blocks = 64 chunks, TASK-96 arithmetic) — far from spawn and
    from all prior rig bands (3200-3600); world restored at chunk start =>
    every wave is 64 fresh chunks and every chunk-tick performs the SAME 12
    band jobs => waves are comparable across chunks.
+   CORRECTION C1 (recorded before any valid chunk): the first rig revision
+   used `+64(i-1) .. +7` = 8x8 BLOCKS = 1 chunk per wave (chunk
+   20260909_021049 — INVALID, excluded from quota, rows #-marked in
+   state.tsv/waves.tsv with full root-cause note). No valid chunk existed at
+   correction time, so the pre-registered acceptance gates are UNCHANGED.
 4. Per wave: cpu_burst (jiffies/100 s, from wave start — TASK-116 J0 law),
    wall s, RSS (VmRSS kB -> MB) sampled at wave end.
 5. Graceful stop; hs_err count delta vs chunk start; append

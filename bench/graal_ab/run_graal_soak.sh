@@ -72,13 +72,15 @@ exec 3>"$FIFO"
 T_LOAD0=$(date +%s.%N)
 NW=0
 i=0
+# BAND LAW (learned on invalid chunk_20260909_021049): forceload takes BLOCK
+# coords — 64 chunks = 128x128 blocks (TASK-96: 3200..3327), NOT 8x8 blocks.
 while [ "$i" -lt "$WAVES" ]; do
     i=$((i+1))
-    X1=$((4000 + 64*(i-1) ))
+    X1=$((4000 + 128*(i-1) ))
     NOW=$(date +%s)
     ELAPSED=$(echo "$NOW $T_LOAD0" | awk '{printf "%d", $1-$2}')
     [ "$ELAPSED" -ge "$LOAD_SECONDS" ] && { log "load budget reached (${ELAPSED}s) after $NW waves"; break; }
-    echo "forceload add $X1 3200 $((X1+7)) 3207" >&3
+    echo "forceload add $X1 3200 $((X1+127)) 3327" >&3
     T0=$(date +%s.%N); J0=$(awk '{print $14+$15}' "/proc/$SP/stat"); JPREV=$J0; FIN=0
     for j in $(seq 1 240); do     # 120s hard cap per wave (hung-wave guard)
         sleep 0.5
@@ -93,7 +95,7 @@ while [ "$i" -lt "$WAVES" ]; do
     W_CPU=$(echo "$JEND $J0" | awk '{printf "%.1f", ($1-$2)/100.0}')
     W_RSS=$(rss_mb "$SP")
     NW=$((NW+1))
-    echo -e "chunk_$STAMP\t$NW\tx=${X1}..$((X1+7)),z=3200\t${W_WALL}s\t${W_CPU}s\t${W_RSS}" | tee -a "$OUT_ROOT/waves.tsv"
+    echo -e "chunk_$STAMP\t$NW\tx=${X1}..$((X1+127)),z=3200..3327\t${W_WALL}s\t${W_CPU}s\t${W_RSS}" | tee -a "$OUT_ROOT/waves.tsv"
     log "wave $NW done: wall=${W_WALL}s cpu=${W_CPU}s rss=${W_RSS}MB"
 done
 T_LOAD1=$(date +%s.%N)
@@ -137,7 +139,7 @@ open(root + "/state.tsv", "a").write(row)
 # cumulative soak status (pre-registered quota: >=40 min load across >=5 chunks)
 tot_load = 0.0; nch = 0
 for l in open(root + "/state.tsv"):
-    if not l.strip(): continue
+    if not l.strip() or l.startswith("#"): continue
     kv = dict(f.split("=", 1) for f in l.strip().split("\t")[1:])
     tot_load += float(kv["load_wall"].rstrip("s")); nch += 1
 print(f"CHUNK SUMMARY: {row.strip()}")
