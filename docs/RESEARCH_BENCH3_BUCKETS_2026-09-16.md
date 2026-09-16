@@ -188,4 +188,11 @@ BOTTLENECKS_3.md rows `c-crussty module (Rust)` + `engine runtime (Rust)` + `CE 
 
 ## Addenda (append-only; fill after each CI run)
 
-- (empty — first BENCH 3.0 run #1 in flight at write time; §0 re-rank lands in ledger §108)
+- 2026-09-16T16:0xZ — FIRST REAL CI DATA (runs #5/#7/#9, heads 79c9fb1/c8c1048...; harness shakedown consumed runs #1-#4/#6/#8-#9, every failure root-caused and institutionalized in the harness header — zip=bare-world, eula-vs-CWD, grep-BRE boot detector, asprof glob/executable/CLI-v4, ptrace insurance):
+  * Boot wall on 6.68GB pregenerated world: 12.6-19.0s (n=3) on 4vCPU ubuntu-latest, module FULLY ARMED each leg (area_map 5075->3320 retransform rc=0 + self-tests; perlin whole-body 11030->10765 armed rc=0 + self-test PASS; natives full-bridge).
+  * Forceload: 36 cmds = 9216 chunks force-loaded, ZERO players, full 15-min window every successful leg.
+  * Steady-state no-player load: TPS ~13 (11.9-14.6 across legs; spark/paper accounting), spark tick-monitor MSPT avg 56.2-78.6ms / min 39.3-57.4 / max 105.9-135.9. TWO INDEPENDENT LEGS (#5, #9) agree within ~1 TPS / ~0.5ms on the average — the MineShield-3 world under full-forceload is a HEAVY tick workload even with zero players (block entities + entities + random ticks across 9216 chunks).
+  * Spark viewer links (deep data): YC2wXkVzuh (#5), Ob5lEfNTvB (#7), gQzCr8EPrU (#9).
+  * Collapsed CPU stacks: pending run #10 (asprof v4.x dump CLI fixed at 507f3f5).
+  * RE-RANK IMPACT (pending stacks for exact shares): at ~78ms MSPT the tick loop is SATURATED — every kernel bucket matters; the zero-player profile kills network noise (§7 confirmed); JVM/GC share visible in gc.log (552KB logs banked).
+  * Run #7 vs #5/#9 TPS band (17-20 vs 13): leg-level variance is real (JIT/eden lottery + forceload pacing) — min-of-2 legs remains the gate discipline for any CI A/B claim.
