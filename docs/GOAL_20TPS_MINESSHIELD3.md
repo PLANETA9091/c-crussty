@@ -27,11 +27,18 @@
 
 ## база и цель
 
-| метрика | run#10 | run#11 | run#15 (sweeps=1) | цель |
-|---|---|---|---|---|
-| MSPT avg | 80.86ms | 84.47ms (разброс ~4% => A/B paired обязателен) | **49.6ms steady (tickmonitor, 8 окон)** | **<= 50ms** |
-| TPS | ~13.5 | ~13.3 | **20.0 стабильных ~13 мин** | **20.0** |
-| нужно срезать | | | **стало: подтвердить min-of-2** | |
+| метрика | run#10 | run#11 | run#15 (sweeps=1) | run#16 (paired) | цель |
+|---|---|---|---|---|---|
+| MSPT avg | 80.86ms | 84.47ms (разброс ~4% => A/B paired обязателен) | **49.6ms steady (tickmonitor, 8 окон)** | **74-80ms steady** | **<= 50ms** |
+| TPS | ~13.5 | ~13.3 | **20.0 стабильных ~13 мин** | **12.5-13.5** | **20.0** |
+| нужно срезать | | | | **базовая линия после run#16: ~-40% CPU** | |
+
+> **RUNNER-VARIANCE LAW (run#16, S7-96d)**: 20 TPS run#15 REFUTED min-of-2 —
+> идентичный снапшот (item_frame 2714(160)), идентичные входы, но 12.5-13.5 TPS /
+> 74-80ms => shared-runner CPU variance доминирует кросс-рановые базовые линии
+> (±30-35% MSPT). Все будущие A/B — только same-boot или paired по
+> (world_sha256, runner_cpu_index) — run-env.txt пишется в каждый прогон.
+> North star 20 TPS остаётся ОТКРЫТ; базовая линия = 12.5-13.5 TPS / 74-80ms.
 
 > **run#15 (S7-96c, дубль-агент)**: первый прогон канонического условия владельца
 > (summon_sweeps=1: 75 summons, F4 churn ACTIVE — дельта 629 сущностей, drowned
@@ -51,10 +58,10 @@
 | лейн / кластер | presence | replaceable-ядро (верифицировано) | статус |
 |---|---|---|---|
 | entity/mobs всего | 43.3% | — | главный резерв |
-| Brain.tick кластер | 6.85% | machinery ~2.3% (itables 0.49+0.35, iterators 1.03, getNode 0.23, sequencedKeySet 0.11, getRunningBehaviors 0.11) + alloc 11.3% тика | **GC-SHAPE-1 ядро (task166)** |
-| GC (STW + barriers) | 9.5% | аллокационный rate — F2; verified sites: BlockPos в optimiseRandomTick (new на пик), Brain iterator/views, streams в сенсорах | **рычаг task166** |
-| random-tick lane | 5.46% | advanceSeed 1.57% + BlockPos-alloc + хвост SELF; batch-RNG REFUTED соло | REFUTED соло (task165); входит в GC-SHAPE-1 |
-| redstone sub-lane | ~3.8% | STEP-0 не сделан | queued (task167?) |
+| Brain.tick кластер | 6.85% | machinery ~2.3% (itables 0.49+0.35, iterators 1.03, getNode 0.23, sequencedKeySet 0.11, getRunningBehaviors 0.11) + alloc 11.3% тика | **BRAIN-LENS ядро (task168, единственный >=3% GO-кандидат ~3.0%)** |
+| GC (STW + barriers) | 9.5% | **CLOSED (S7-97 GC-FAMILY LAW)**: 9.5% = concurrent worker CPU (G1CM/RebuildRemSet), НЕ MSPT; STW duty 0.50-0.56% wall (gc.log run#12/15: eden 2.4GB, 412-598 MB/s, young-GC каждые 4-6s); relief = alloc_share x 0.5% => BlockPos 2-3% alloc => <=0.015% MSPT; Brain-LHM 0.4-0.69% => <=0.005% | **REFUTED (task166) — alloc-shape семейство закрыто** |
+| random-tick lane | 5.46% | advanceSeed 1.57% + BlockPos-alloc (hit-only, 2-3% alloc => <=0.015% MSPT) + хвост SELF; batch-RNG REFUTED соло | REFUTED соло (task165); BlockPos-слайс закрыт GC-law (task166) |
+| scheduled-tick drain (LevelTicks.tick) | 8.28/11.55% | STEP-0 сделан (S7-97): tickBlock контракт верифицирован; decompose: reads 2.65/3.77 + signal 1.18/1.43 + queue 0.5-0.76 + glue 0.29/0.62 + mid-tick 1.57/1.83 + tail — ВСЕ <3% соло | REFUTED-solo (task167); family-bank parked |
 | minecarts | ~5.3% | STEP-0 не сделан | queued |
 | Villager | 3.47% | пересекается с Brain | через Brain |
 | chunk lane | 9.8% | per-get lens REFUTED; batch-lens REFUTED (3.3% потолок) | closed |
@@ -66,12 +73,21 @@
 
 Сумма всех ЗАКРЫТЫХ честных соло-рычагов сегодня ~5-7% MSPT — мало.
 Путь к 40%: только **агрегатные семейства** (каждый патч проходит свой гейт):
-- GC-SHAPE (task166+): verified alloc sites серией -> GC 9.5% + correlated CPU
-- ENTITY-LENS семейство (Brain machinery, сенсоры-стримы, minecarts STEP-0)
-- REDSTONE-LENS (STEP-0 первым раундом)
+- ~~GC-SHAPE~~ **CLOSED (S7-97)**: GC-family law — alloc-shape relief = alloc_share x STW-duty 0.5%; верхний потолок всего семейства < 0.5% MSPT
+- ~~REDSTONE-LENS~~ **REFUTED-solo (S7-97)**: drain-lane 8.28/11.55% decompose => все слайсы <3%; family-bank parked
+- **BRAIN-LENS (task168, СЛЕДУЮЩИЙ)**: research-verified ~3.0% потолок (Object[]+bitmap, insertion-order parity) — единственный оставшийся >=3% GO-кандидат
+- ENTITY-LENS семейство (minecarts STEP-0 = task169, ~5.3% presence)
 - entity_mirror infrastructure A/B (vehicle-dense, ENT-BP infra)
 - bench-4: fake players (спавн как при игроках) — честная база для всех A/B
 Каждый шаг — паритет-банкованный; сводные A/B после каждого семейства.
+
+> **СТАТУС 20 TPS (S7-97)**: честная арифметика стала жёстче — GC-семейство
+> закрыто физикой (<=0.5% потолок), REDSTONE соло закрыт. Верифицированные
+> соло-рычаги >=3%: только BRAIN-LENS (~3.0%). Для 40% среза нужен либо
+> псевдо-семейный агрегат (несколько <3% патчей с общей A/B — под вопросом
+> правила гейта), либо инфраструктурный сдвиг (dedicated/pinned runner для
+> честной базы + bench-4 fake-players для канонического условия владельца),
+> либо новая анатомия (minecarts STEP-0 может открыть >=3% слайс).
 
 ## калибровка профилировщика (banked, task165)
 
