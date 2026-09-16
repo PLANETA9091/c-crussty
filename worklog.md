@@ -743,3 +743,20 @@ Work Log:
 
 Stage Summary:
 - The north star is set and binding: 20 TPS = MSPT <=50ms = -40% CPU — honest arithmetic says solo levers are exhausted (~5-7% banked); the path is verified aggregate families. BATCH-RNG refuted by bytecode (third STEP-0 kill in a row: ENT-BP, BOAT, BATCH-RNG — presence-mirage pattern keeps dying to exact anatomy, each refutation saves an implementation round). Two infra wins: recon bug #2 fixed (content-test find), offline kernel materialization tooling (no boot). Allocator-profile semantics calibrated — no more false alloc levers. GC-SHAPE-1 armed with the first javap-verified site (new BlockPos per pick). INJECTS-ONLY: 0 sandbox boots (paperclip killed pre-main; CI-sanctioned boots only)
+
+---
+Task ID: S7-96b (task165-доп, дубль-агент) — research leg + независимая репликация + харнесс-фиксы
+Agent: agent-7625532f (session web-f7888d46, trace 1a0ab4bc476caced-cron-agent-loop-202609170243 + live owner directives: «никаких фоллбеков, всё должно быть ускорено а не просто менять конфиги», «20 TPS, минимальный MSPT, мобы спавнятся/деспавнятся как будто игроки есть»)
+Task: комплементарная линия к TASK-233 (близнец закрыл BATCH-RNG javap-контрактом и GOAL-доком; моя линия = HUGE LLM+web research миссии, независимая репликация рефутации, F4 spawn-churn, харнесс-обсервабилити)
+
+Work Log:
+- adopted uncommitted WIP предшественника (task165_rng_brain_anatomy.py + recon fix#2 content-test) -> commit b8850b2; расширил recon RNG-классами (RandomSource/Legacy/Bit/Worldgen/Xoroshiro/RandomSupport/LevelChunkSection/LevelChunk) для контракта BATCH-RNG
+- run#13 (мой деспатч, sweeps=1) CANCELLED конкарренси-группой: близнец деспатчнул run#14 (18:53Z) поверх — по протоколу adopt-don't-clobber усыновлён run#14; наблюдение за завершением
+- НЕЗАВИСИМАЯ РЕПЛИКАЦИЯ рефутации BATCH-RNG (task165_rng_brain_anatomy.py на raw run#11+run#12): RNG-only replaceable 1.57%/1.40% FAIL vs 3% gate; upper (RNG+SELF) 3.93%/3.13% недостижим — per-position getBlockState upcalls (~660k/тик) доказанно дороже выигрыша (PALETTE per-get закон); Brain-кластер стабилен cross-run: 6.85%/6.28%, startEachNonRunning 4.66%/4.28%, machinery ~1.6-1.7%; согласовано с javap-вердиктом близнеца 1.6-1.9%
+- RESEARCH LEG (owner «рисёрчи огромные»): 4 LLM (q1 Brain-LENS дизайн; q2 RNG-closeout + jump-ahead банк; q3 20TPS портфель thinking ON; q4 MoE→AI-dispatch) + 6 web (Lithium AI, ECS-батчинг, LCG jump-ahead, мегаморфный диспатч, Paper randomtick, Brain perf); raw -> research/brainlens-2026-09-17/ (INDEX.md), дистиллят -> docs/RESEARCH_AI_DISPATCH_2026-09-16.md
+- КЛЮЧЕВЫЕ ВЕРДИКТЫ RESEARCH: Brain hot-patch (Object[]+bitmap, insertion-order parity) РЕКОМЕНДОВАН ~3.0% потолок — следующий большой рычаг после GC-SHAPE-1; Rust-зеркало Brain batch-JNI ОТКЛОНЕН (cache-coherence); MTP-спекуляция стартов поведений ОТКЛОНЕНА (side effects canStart); q3-роадмап red-teamed («Boats -3.5ms» опровергнут presence/owned-путаницей — верифицированные числа ledger не тронуты)
+- ХАРНЕСС-БАГИ НАЙДЕНЫ+ПОЧИНЕНЫ (молчали с run#10!): (1) `paper mspt` НЕ существует на Purpur 1.21.10 — каждый полл Usage-error, MSPT всё это время шёл от spark tickmonitor [⚡] -> полл заменён на `paper mobcaps world` (спавн-обсервабилити владельца); (2) `paper entity list` требует фильтр+мир — 0 данных по сущностям с run#10 -> `paper entity list * world`; (3) parse_mspt_windows fallback на [⚡]-строки (валидировано на run#12: Min 57.06/Max 145.36/Avg 75.62); (4) F4 entity spawn/despawn churn метрика в report_world3.py (polls/delta/churn%/top movers/summons + вердикт ACTIVE|STAGNANT — owner-условие мобов станет измеримым с run#15)
+- 0 sandbox boots; CI: run#14 наблюдается (recon-валидация близнеца); run#15 (sweeps=1, каноническое условие владельца) — на диспатч после завершения run#14
+
+Stage Summary:
+- Раунд S7-96 закрыт с двух сторон: близнец (javap-контракт, GOAL-док, GC-SHAPE-1 пререгистрация) + дубль-агент (независимая репликация, research leg, F4, харнесс-фиксы). BATCH-RNG REFUTED окончательно (2 линии). Следующие рычаги: GC-SHAPE-1 (task166, близнец) -> BRAIN-LENS (~3.0%, research-вердикт) -> bench-4 fake-players (owner-условие). INJECTS-ONLY: 0 boots
