@@ -32,6 +32,11 @@ WORLD_URL="${WORLD_URL:-https://storage.shield.land/public.php/dav/files/twzsxN3
 RUN_SECONDS="${RUN_SECONDS:-900}"
 FORCELOAD_RADIUS="${FORCELOAD_RADIUS:-640}"
 SUMMON_SWEEPS="${SUMMON_SWEEPS:-0}"
+# BENCH-4 fake players (task170, S7-99): N>0 injects N real ServerPlayers via
+# the BenchFakePlayers bench-only plugin (research/bench4-recon-2026-09-17 is
+# the STEP-0 contract; docs/BENCH4_FAKE_PLAYERS_DESIGN.md the preregistration).
+# 0 => bench-3 mode, byte-identical behavior to the no-player runs.
+FAKE_PLAYERS="${FAKE_PLAYERS:-0}"
 NATIVES_TGZ="${NATIVES_TGZ:-https://github.com/PLANETA9091/c-crussty/releases/download/v0.1.0/crussty-v0.1.0-linux-x64.tar.gz}"
 PURPUR_URL="${PURPUR_URL:-https://api.purpurmc.org/v2/purpur/1.21.10/latest/download}"
 WORK="${WORK:-$PWD/world3-run}"
@@ -93,8 +98,9 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "runner_cpu_index: $RUNNER_CPU_IDX (iters/s fixed 6M-step LCG loop; higher = faster/less contended runner)"
   echo "nproc: $(nproc 2>/dev/null || echo unknown)"
   echo "summon_sweeps: $SUMMON_SWEEPS"
+  echo "fake_players: $FAKE_PLAYERS (BENCH-4 fixture: N real ServerPlayers, task170)"
 } > "$WORK/run-env.txt"
-log "run-env: world_sha256=$WORLD_SHA runner_cpu_index=$RUNNER_CPU_IDX"
+log "run-env: world_sha256=$WORLD_SHA runner_cpu_index=$RUNNER_CPU_IDX fake_players=$FAKE_PLAYERS"
 log "extracting world"
 # Run #1 lesson (world-bench-3 run 35106393250): the MineShield-3 zip IS the world
 # directory itself (level.dat/region//DIM-1//DIM1/ at zip ROOT, no wrapper folder) —
@@ -191,6 +197,38 @@ fi
 RUNTIME_SO="${RUNTIME_SO:-$WORK/libcrussty_runtime.so}"
 test -s "$RUNTIME_SO" || die "libcrussty_runtime.so not staged at $RUNTIME_SO"
 
+# --- 3b. BENCH-4 fake-player fixture (task170) -----------------------------
+# eula-less paperclip pass materializes the mojang-mapped kernel the plugin
+# compiles against; the server main exits BEFORE boot on the missing eula
+# (sanctioned precedent: paperclip materialization killed pre-main is NOT a
+# boot). Then javac the bench plugin and stage it into plugins/.
+MAX_PLAYERS=0
+if [ "$FAKE_PLAYERS" -gt 0 ]; then
+  MAX_PLAYERS=$((FAKE_PLAYERS + 8))
+  log "bench-4: materializing kernel (eula-less paperclip pass, exits pre-main — NOT a boot)"
+  rm -f "$SERVER/eula.txt"
+  ( cd "$SERVER" && timeout 300 java -jar "versions/purpur-1.21.10.jar" --nogui \
+      > "$WORK/pclip-materialize.log" 2>&1 || true )
+  KERNEL_JAR="$SERVER/versions/1.21.10/purpur-1.21.10.jar"
+  [ -s "$KERNEL_JAR" ] || die "bench-4 kernel materialization failed (no $KERNEL_JAR; see $WORK/pclip-materialize.log)"
+  log "bench-4: kernel materialized ($(stat -c%s "$KERNEL_JAR") B)"
+  log "bench-4: compiling BenchFakePlayers plugin (javac only — compile is not a boot)"
+  FP_SRC="$SCRIPT_DIR/fakeplayers"
+  [ -f "$FP_SRC/BenchFakePlayersPlugin.java" ] || die "bench-4 plugin source missing at $FP_SRC"
+  command -v javac >/dev/null || die "javac not found (setup-java must expose JDK 21)"
+  command -v jar >/dev/null || die "jar tool not found"
+  FP_CLASSES="$WORK/fpclasses"
+  rm -rf "$FP_CLASSES" && mkdir -p "$FP_CLASSES"
+  FP_CP="$KERNEL_JAR"
+  while IFS= read -r j; do FP_CP="$FP_CP:$j"; done < <(find "$SERVER/libraries" -name '*.jar' 2>/dev/null)
+  javac --release 21 -proc:none -cp "$FP_CP" -d "$FP_CLASSES" \
+    "$FP_SRC/BenchFakePlayersPlugin.java" || die "bench-4 plugin compile failed"
+  cp "$FP_SRC/plugin.yml" "$FP_CLASSES/"
+  mkdir -p "$SERVER/plugins"
+  ( cd "$FP_CLASSES" && jar cf "$SERVER/plugins/BenchFakePlayers.jar" . ) || die "bench-4 plugin packaging failed"
+  log "bench-4: plugin staged ($(stat -c%s "$SERVER/plugins/BenchFakePlayers.jar") B); N=$FAKE_PLAYERS"
+fi
+
 # --- 3. server config ------------------------------------------------------
 echo "eula=true" > "$SERVER/eula.txt"
 cat > "$SERVER/server.properties" <<EOF
@@ -201,7 +239,7 @@ view-distance=10
 simulation-distance=10
 spawn-monsters=true
 spawn-animals=true
-max-players=0
+max-players=$MAX_PLAYERS
 enable-command-block=false
 white-list=false
 EOF
@@ -220,6 +258,9 @@ sudo sysctl -w kernel.yama.ptrace_scope=0 >/dev/null 2>&1 \
   && log "ptrace_scope set to 0" \
   || log "WARN: could not set ptrace_scope (attach may fail)"
 mkfifo "$WORK/console.in" 2>/dev/null || true
+# BENCH-4 fixture env read by BenchFakePlayersPlugin (0 = no-op)
+export BENCH_FAKE_PLAYERS="$FAKE_PLAYERS"
+export BENCH_FORCELOAD_RADIUS="$FORCELOAD_RADIUS"
 tail -f "$WORK/console.in" | java \
   "-agentpath:$RUNTIME_SO=modules=$SERVER/modules;versions=$SERVER/versions;kernel=purpur-1.21.10.jar" \
   -Xms4G -Xmx6G -XX:+UseG1GC -Dfile.encoding=UTF-8 \

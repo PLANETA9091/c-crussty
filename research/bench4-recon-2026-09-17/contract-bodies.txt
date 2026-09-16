@@ -1,0 +1,604 @@
+
+==== net.minecraft.server.players.PlayerList.placeNewPlayer (bytecode) ====
+  public void placeNewPlayer(net.minecraft.network.Connection, net.minecraft.server.level.ServerPlayer, net.minecraft.server.network.CommonListenerCookie);
+    Code:
+       0: aload_2
+       1: iconst_1
+       2: putfield      #260                // Field net/minecraft/server/level/ServerPlayer.isRealPlayer:Z
+       5: aload_2
+       6: invokestatic  #266                // Method java/lang/System.currentTimeMillis:()J
+       9: putfield      #270                // Field net/minecraft/server/level/ServerPlayer.loginTime:J
+      12: aload_2
+      13: invokevirtual #274                // Method net/minecraft/server/level/ServerPlayer.nameAndId:()Lnet/minecraft/server/players/NameAndId;
+      16: astore        4
+      18: aload_0
+      19: getfield      #216                // Field server:Lnet/minecraft/server/MinecraftServer;
+      22: invokevirtual #278                // Method net/minecraft/server/MinecraftServer.services:()Lnet/minecraft/server/Services;
+      25: invokevirtual #284                // Method net/minecraft/server/Services.nameToIdCache:()Lnet/minecraft/server/players/UserNameToIdResolver;
+      28: astore        5
+      30: aload         5
+      32: aload         4
+      34: invokevirtual #290                // Method net/minecraft/server/players/NameAndId.id:()Ljava/util/UUID;
+      37: invokeinterface #296,  2          // InterfaceMethod net/minecraft/server/players/UserNameToIdResolver.get:(Ljava/util/UUID;)Ljava/util/Optional;
+      42: astore        6
+      44: aload         6
+      46: invokedynamic #316,  0            // InvokeDynamic #0:apply:()Ljava/util/function/Function;
+      51: invokevirtual #322                // Method java/util/Optional.map:(Ljava/util/function/Function;)Ljava/util/Optional;
+      54: aload         4
+      56: invokevirtual #302                // Method net/minecraft/server/players/NameAndId.name:()Ljava/lang/String;
+      59: invokevirtual #325                // Method java/util/Optional.orElse:(Ljava/lang/Object;)Ljava/lang/Object;
+      62: checkcast     #327                // class java/lang/String
+      65: astore        7
+      67: aload_2
+      68: getfield      #330                // Field net/minecraft/server/level/ServerPlayer.lastKnownName:Ljava/lang/String;
+      71: ifnull        85
+      74: aload_2
+      75: getfield      #330                // Field net/minecraft/server/level/ServerPlayer.lastKnownName:Ljava/lang/String;
+      78: astore        7
+      80: aload_2
+      81: aconst_null
+      82: putfield      #330                // Field net/minecraft/server/level/ServerPlayer.lastKnownName:Ljava/lang/String;
+      85: aload         5
+      87: aload         4
+      89: invokeinterface #338,  2          // InterfaceMethod net/minecraft/server/players/UserNameToIdResolver.add:(Lnet/minecraft/server/players/NameAndId;)V
+      94: aload_2
+      95: invokevirtual #342                // Method net/minecraft/server/level/ServerPlayer.level:()Lnet/minecraft/server/level/ServerLevel;
+      98: astore        8
+     100: aload_1
+     101: aload_0
+     102: getfield      #216                // Field server:Lnet/minecraft/server/MinecraftServer;
+     105: invokevirtual #346                // Method net/minecraft/server/MinecraftServer.logIPs:()Z
+     108: invokevirtual #350                // Method net/minecraft/network/Connection.getLoggableAddress:(Z)Ljava/lang/String;
+     111: astore        9
+     113: aload         8
+     115: invokevirtual #356                // Method net/minecraft/server/level/ServerLevel.getLevelData:()Lnet/minecraft/world/level/storage/LevelData;
+     118: astore        10
+     120: new           #358                // class net/minecraft/server/network/ServerGamePacketListenerImpl
+     123: dup
+     124: aload_0
+     125: getfield      #216                // Field server:Lnet/minecraft/server/MinecraftServer;
+     128: aload_1
+     129: aload_2
+     130: aload_3
+     131: invokespecial #361                // Method net/minecraft/server/network/ServerGamePacketListenerImpl."<init>":(Lnet/minecraft/server/MinecraftServer;Lnet/minecraft/network/Connection;Lnet/minecraft/server/level/ServerPlayer;Lnet/minecraft/server/network/CommonListenerCookie;)V
+     134: astore        11
+     136: aload_1
+     137: getstatic     #367                // Field net/minecraft/network/protocol/game/GameProtocols.SERVERBOUND_TEMPLATE:Lnet/minecraft/network/protocol/UnboundProtocol;
+     140: aload_0
+     141: getfield      #216                // Field server:Lnet/minecraft/server/MinecraftServer;
+     144: invokevirtual #371                // Method net/minecraft/server/MinecraftServer.registryAccess:()Lnet/minecraft/core/RegistryAccess$Frozen;
+     147: invokestatic  #377                // Method net/minecraft/network/RegistryFriendlyByteBuf.decorator:(Lnet/minecraft/core/RegistryAccess;)Ljava/util/function/Function;
+     150: aload         11
+     152: invokeinterface #383,  3          // InterfaceMethod net/minecraft/network/protocol/UnboundProtocol.bind:(Ljava/util/function/Function;Ljava/lang/Object;)Lnet/minecraft/network/ProtocolInfo;
+     157: aload         11
+     159: invokevirtual #387                // Method net/minecraft/network/Connection.setupInboundProtocol:(Lnet/minecraft/network/ProtocolInfo;Lnet/minecraft/network/PacketListener;)V
+     162: aload         8
+     164: invokevirtual #391                // Method net/minecraft/server/level/ServerLevel.getGameRules:()Lnet/minecraft/world/level/GameRules;
+     167: astore        12
+     169: aload         12
+     171: getstatic     #395                // Field net/minecraft/world/level/GameRules.RULE_DO_IMMEDIATE_RESPAWN:Lnet/minecraft/world/level/GameRules$Key;
+     174: invokevirtual #399                // Method net/minecraft/world/level/GameRules.getBoolean:(Lnet/minecraft/world/level/GameRules$Key;)Z
+     177: istore        13
+     179: aload         12
+     181: getstatic     #402                // Field net/minecraft/world/level/GameRules.RULE_REDUCEDDEBUGINFO:Lnet/minecraft/world/level/GameRules$Key;
+     184: invokevirtual #399                // Method net/minecraft/world/level/GameRules.getBoolean:(Lnet/minecraft/world/level/GameRules$Key;)Z
+     187: istore        14
+     189: aload         12
+     191: getstatic     #405                // Field net/minecraft/world/level/GameRules.RULE_LIMITED_CRAFTING:Lnet/minecraft/world/level/GameRules$Key;
+     194: invokevirtual #399                // Method net/minecraft/world/level/GameRules.getBoolean:(Lnet/minecraft/world/level/GameRules$Key;)Z
+     197: istore        15
+     199: aload         11
+     201: new           #407                // class net/minecraft/network/protocol/game/ClientboundLoginPacket
+     204: dup
+     205: aload_2
+     206: invokevirtual #411                // Method net/minecraft/server/level/ServerPlayer.getId:()I
+     209: aload         10
+     211: invokeinterface #414,  1          // InterfaceMethod net/minecraft/world/level/storage/LevelData.isHardcore:()Z
+     216: aload_0
+     217: getfield      #216                // Field server:Lnet/minecraft/server/MinecraftServer;
+     220: invokevirtual #418                // Method net/minecraft/server/MinecraftServer.levelKeys:()Ljava/util/Set;
+     223: aload_0
+     224: invokevirtual #421                // Method getMaxPlayers:()I
+     227: aload         8
+     229: getfield      #427                // Field net/minecraft/world/level/Level.spigotConfig:Lorg/spigotmc/SpigotWorldConfig;
+     232: getfield      #431                // Field org/spigotmc/SpigotWorldConfig.viewDistance:I
+     235: aload         8
+     237: getfield      #427                // Field net/minecraft/world/level/Level.spigotConfig:Lorg/spigotmc/SpigotWorldConfig;
+     240: getfield      #433                // Field org/spigotmc/SpigotWorldConfig.simulationDistance:I
+     243: iload         14
+     245: iload         13
+     247: ifne          254
+     250: iconst_1
+     251: goto          255
+     254: iconst_0
+     255: iload         15
+     257: aload_2
+     258: aload         8
+     260: invokevirtual #439                // Method net/minecraft/server/level/ServerPlayer.createCommonSpawnInfo:(Lnet/minecraft/server/level/ServerLevel;)Lnet/minecraft/network/protocol/game/CommonPlayerSpawnInfo;
+     263: aload_0
+     264: getfield      #216                // Field server:Lnet/minecraft/server/MinecraftServer;
+     267: invokevirtual #442                // Method net/minecraft/server/MinecraftServer.enforceSecureProfile:()Z
+     270: invokespecial #445                // Method net/minecraft/network/protocol/game/ClientboundLoginPacket."<init>":(IZLjava/util/Set;IIIZZZLnet/minecraft/network/protocol/game/CommonPlayerSpawnInfo;Z)V
+     273: invokevirtual #449                // Method net/minecraft/server/network/ServerGamePacketListenerImpl.send:(Lnet/minecraft/network/protocol/Packet;)V
+     276: aload_2
+     277: invokevirtual #453                // Method net/minecraft/server/level/ServerPlayer.getBukkitEntity:()Lorg/bukkit/craftbukkit/entity/CraftPlayer;
+     280: invokevirtual #458                // Method org/bukkit/craftbukkit/entity/CraftPlayer.sendSupportedChannels:()V
+     283: aload         11
+     285: new           #460                // class net/minecraft/network/protocol/game/ClientboundChangeDifficultyPacket
+     288: dup
+     289: aload         10
+     291: invokeinterface #464,  1          // InterfaceMethod net/minecraft/world/level/storage/LevelData.getDifficulty:()Lnet/minecraft/world/Difficulty;
+     296: aload         10
+     298: invokeinterface #467,  1          // InterfaceMethod net/minecraft/world/level/storage/LevelData.isDifficultyLocked:()Z
+     303: invokespecial #470                // Method net/minecraft/network/protocol/game/ClientboundChangeDifficultyPacket."<init>":(Lnet/minecraft/world/Difficulty;Z)V
+     306: invokevirtual #449                // Method net/minecraft/server/network/ServerGamePacketListenerImpl.send:(Lnet/minecraft/network/protocol/Packet;)V
+     309: aload         11
+     311: new           #472                // class net/minecraft/network/protocol/game/ClientboundPlayerAbilitiesPacket
+     314: dup
+     315: aload_2
+     316: invokevirtual #476                // Method net/minecraft/server/level/ServerPlayer.getAbilities:()Lnet/minecraft/world/entity/player/Abilities;
+     319: invokespecial #479                // Method net/minecraft/network/protocol/game/ClientboundPlayerAbilitiesPacket."<init>":(Lnet/minecraft/world/entity/player/Abilities;)V
+     322: invokevirtual #449                // Method net/minecraft/server/network/ServerGamePacketListenerImpl.send:(Lnet/minecraft/network/protocol/Packet;)V
+     325: aload         11
+
+==== net.minecraft.server.players.PlayerList.canPlayerLogin (bytecode) ====
+  public net.minecraft.server.players.PlayerList$LoginResult canPlayerLogin(java.net.SocketAddress, net.minecraft.server.players.NameAndId);
+    Code:
+       0: aload_0
+       1: getfield      #243                // Field bans:Lnet/minecraft/server/players/UserBanList;
+       4: aload_2
+       5: invokevirtual #1357               // Method net/minecraft/server/players/UserBanList.isBanned:(Lnet/minecraft/server/players/NameAndId;)Z
+       8: ifeq          99
+      11: aload_0
+      12: getfield      #243                // Field bans:Lnet/minecraft/server/players/UserBanList;
+      15: aload_2
+      16: invokevirtual #1360               // Method net/minecraft/server/players/UserBanList.get:(Ljava/lang/Object;)Lnet/minecraft/server/players/StoredUserEntry;
+      19: checkcast     #1362               // class net/minecraft/server/players/UserBanListEntry
+      22: dup
+      23: astore        4
+      25: ifnull        99
+      28: ldc_w         #1364               // String multiplayer.disconnect.banned.reason
+      31: iconst_1
+      32: anewarray     #4                  // class java/lang/Object
+      35: dup
+      36: iconst_0
+      37: aload         4
+      39: invokevirtual #1367               // Method net/minecraft/server/players/UserBanListEntry.getReasonMessage:()Lnet/minecraft/network/chat/Component;
+      42: aastore
+      43: invokestatic  #568                // InterfaceMethod net/minecraft/network/chat/Component.translatable:(Ljava/lang/String;[Ljava/lang/Object;)Lnet/minecraft/network/chat/MutableComponent;
+      46: astore        5
+      48: aload         4
+      50: invokevirtual #1371               // Method net/minecraft/server/players/UserBanListEntry.getExpires:()Ljava/util/Date;
+      53: ifnull        86
+      56: aload         5
+      58: ldc_w         #1373               // String multiplayer.disconnect.banned.expiration
+      61: iconst_1
+      62: anewarray     #4                  // class java/lang/Object
+      65: dup
+      66: iconst_0
+      67: getstatic     #1375               // Field BAN_DATE_FORMAT:Ljava/text/SimpleDateFormat;
+      70: aload         4
+      72: invokevirtual #1371               // Method net/minecraft/server/players/UserBanListEntry.getExpires:()Ljava/util/Date;
+      75: invokevirtual #1381               // Method java/text/SimpleDateFormat.format:(Ljava/util/Date;)Ljava/lang/String;
+      78: aastore
+      79: invokestatic  #568                // InterfaceMethod net/minecraft/network/chat/Component.translatable:(Ljava/lang/String;[Ljava/lang/Object;)Lnet/minecraft/network/chat/MutableComponent;
+      82: invokevirtual #1385               // Method net/minecraft/network/chat/MutableComponent.append:(Lnet/minecraft/network/chat/Component;)Lnet/minecraft/network/chat/MutableComponent;
+      85: pop
+      86: new           #7                  // class net/minecraft/server/players/PlayerList$LoginResult
+      89: dup
+      90: aload         5
+      92: getstatic     #1389               // Field org/bukkit/event/player/PlayerLoginEvent$Result.KICK_BANNED:Lorg/bukkit/event/player/PlayerLoginEvent$Result;
+      95: invokespecial #1392               // Method net/minecraft/server/players/PlayerList$LoginResult."<init>":(Lnet/minecraft/network/chat/Component;Lorg/bukkit/event/player/PlayerLoginEvent$Result;)V
+      98: areturn
+      99: aload_0
+     100: aload_2
+     101: invokevirtual #1396               // Method isWhiteListedLogin:(Lnet/minecraft/server/players/NameAndId;)Lnet/minecraft/server/players/PlayerList$LoginResult;
+     104: dup
+     105: astore_3
+     106: getfield      #1399               // Field net/minecraft/server/players/PlayerList$LoginResult.result:Lorg/bukkit/event/player/PlayerLoginEvent$Result;
+     109: getstatic     #1402               // Field org/bukkit/event/player/PlayerLoginEvent$Result.KICK_WHITELIST:Lorg/bukkit/event/player/PlayerLoginEvent$Result;
+     112: if_acmpne     117
+     115: aload_3
+     116: areturn
+     117: aload_0
+     118: getfield      #250                // Field ipBans:Lnet/minecraft/server/players/IpBanList;
+     121: aload_1
+     122: invokevirtual #1405               // Method net/minecraft/server/players/IpBanList.isBanned:(Ljava/net/SocketAddress;)Z
+     125: ifeq          209
+     128: aload_0
+     129: getfield      #250                // Field ipBans:Lnet/minecraft/server/players/IpBanList;
+     132: aload_1
+     133: invokevirtual #1408               // Method net/minecraft/server/players/IpBanList.get:(Ljava/net/SocketAddress;)Lnet/minecraft/server/players/IpBanListEntry;
+     136: astore        5
+     138: ldc_w         #1410               // String multiplayer.disconnect.banned_ip.reason
+     141: iconst_1
+     142: anewarray     #4                  // class java/lang/Object
+     145: dup
+     146: iconst_0
+     147: aload         5
+     149: invokevirtual #1413               // Method net/minecraft/server/players/IpBanListEntry.getReasonMessage:()Lnet/minecraft/network/chat/Component;
+     152: aastore
+     153: invokestatic  #568                // InterfaceMethod net/minecraft/network/chat/Component.translatable:(Ljava/lang/String;[Ljava/lang/Object;)Lnet/minecraft/network/chat/MutableComponent;
+     156: astore        6
+     158: aload         5
+     160: invokevirtual #1414               // Method net/minecraft/server/players/IpBanListEntry.getExpires:()Ljava/util/Date;
+     163: ifnull        196
+     166: aload         6
+     168: ldc_w         #1416               // String multiplayer.disconnect.banned_ip.expiration
+     171: iconst_1
+     172: anewarray     #4                  // class java/lang/Object
+     175: dup
+     176: iconst_0
+     177: getstatic     #1375               // Field BAN_DATE_FORMAT:Ljava/text/SimpleDateFormat;
+     180: aload         5
+     182: invokevirtual #1414               // Method net/minecraft/server/players/IpBanListEntry.getExpires:()Ljava/util/Date;
+     185: invokevirtual #1381               // Method java/text/SimpleDateFormat.format:(Ljava/util/Date;)Ljava/lang/String;
+     188: aastore
+     189: invokestatic  #568                // InterfaceMethod net/minecraft/network/chat/Component.translatable:(Ljava/lang/String;[Ljava/lang/Object;)Lnet/minecraft/network/chat/MutableComponent;
+     192: invokevirtual #1385               // Method net/minecraft/network/chat/MutableComponent.append:(Lnet/minecraft/network/chat/Component;)Lnet/minecraft/network/chat/MutableComponent;
+     195: pop
+     196: new           #7                  // class net/minecraft/server/players/PlayerList$LoginResult
+     199: dup
+     200: aload         6
+     202: getstatic     #1389               // Field org/bukkit/event/player/PlayerLoginEvent$Result.KICK_BANNED:Lorg/bukkit/event/player/PlayerLoginEvent$Result;
+     205: invokespecial #1392               // Method net/minecraft/server/players/PlayerList$LoginResult."<init>":(Lnet/minecraft/network/chat/Component;Lorg/bukkit/event/player/PlayerLoginEvent$Result;)V
+     208: areturn
+     209: aload_0
+     210: aload_2
+     211: new           #7                  // class net/minecraft/server/players/PlayerList$LoginResult
+     214: dup
+     215: ldc_w         #1418               // String multiplayer.disconnect.server_full
+     218: invokestatic  #1421               // InterfaceMethod net/minecraft/network/chat/Component.translatable:(Ljava/lang/String;)Lnet/minecraft/network/chat/MutableComponent;
+     221: getstatic     #1424               // Field org/bukkit/event/player/PlayerLoginEvent$Result.KICK_FULL:Lorg/bukkit/event/player/PlayerLoginEvent$Result;
+     224: invokespecial #1392               // Method net/minecraft/server/players/PlayerList$LoginResult."<init>":(Lnet/minecraft/network/chat/Component;Lorg/bukkit/event/player/PlayerLoginEvent$Result;)V
+     227: invokevirtual #1428               // Method canBypassFullServerLogin:(Lnet/minecraft/server/players/NameAndId;Lnet/minecraft/server/players/PlayerList$LoginResult;)Lnet/minecraft/server/players/PlayerList$LoginResult;
+     230: areturn
+
+
+==== net.minecraft.network.Connection.send (bytecode) ====
+  public void send(net.minecraft.network.protocol.Packet<?>);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: aconst_null
+       3: invokevirtual #474                // Method send:(Lnet/minecraft/network/protocol/Packet;Lio/netty/channel/ChannelFutureListener;)V
+       6: return
+
+  public void send(net.minecraft.network.protocol.Packet<?>, io.netty.channel.ChannelFutureListener);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: aload_2
+       3: iconst_1
+       4: invokevirtual #891                // Method send:(Lnet/minecraft/network/protocol/Packet;Lio/netty/channel/ChannelFutureListener;Z)V
+       7: return
+
+  public void send(net.minecraft.network.protocol.Packet<?>, io.netty.channel.ChannelFutureListener, boolean);
+    Code:
+       0: aload_0
+       1: invokevirtual #897                // Method isConnected:()Z
+       4: istore        4
+       6: iload         4
+       8: ifne          19
+      11: aload_0
+      12: getfield      #257                // Field preparing:Z
+      15: ifne          19
+      18: return
+      19: aload_1
+      20: aload_0
+      21: invokevirtual #386                // Method getPlayer:()Lnet/minecraft/server/level/ServerPlayer;
+      24: invokeinterface #901,  2          // InterfaceMethod net/minecraft/network/protocol/Packet.onPacketDispatch:(Lnet/minecraft/server/level/ServerPlayer;)V
+      29: iload         4
+      31: ifeq          102
+      34: aload_0
+      35: aload_1
+      36: invokestatic  #905                // Method net/minecraft/network/Connection$InnerUtil.canSendImmediate:(Lnet/minecraft/network/Connection;Lnet/minecraft/network/protocol/Packet;)Z
+      39: ifne          92
+      42: invokestatic  #910                // Method io/papermc/paper/util/MCUtil.isMainThread:()Z
+      45: ifeq          102
+      48: aload_1
+      49: invokeinterface #913,  1          // InterfaceMethod net/minecraft/network/protocol/Packet.isReady:()Z
+      54: ifeq          102
+      57: aload_0
+      58: getfield      #255                // Field pendingActions:Ljava/util/Queue;
+      61: invokeinterface #918,  1          // InterfaceMethod java/util/Queue.isEmpty:()Z
+      66: ifeq          102
+      69: aload_1
+      70: invokeinterface #922,  1          // InterfaceMethod net/minecraft/network/protocol/Packet.getExtraPackets:()Ljava/util/List;
+      75: ifnull        92
+      78: aload_1
+      79: invokeinterface #922,  1          // InterfaceMethod net/minecraft/network/protocol/Packet.getExtraPackets:()Ljava/util/List;
+      84: invokeinterface #925,  1          // InterfaceMethod java/util/List.isEmpty:()Z
+      89: ifeq          102
+      92: aload_0
+      93: aload_1
+      94: aload_2
+      95: iload_3
+      96: invokevirtual #237                // Method sendPacket:(Lnet/minecraft/network/protocol/Packet;Lio/netty/channel/ChannelFutureListener;Z)V
+      99: goto          293
+     102: aload_1
+     103: invokestatic  #929                // Method net/minecraft/network/Connection$InnerUtil.buildExtraPackets:(Lnet/minecraft/network/protocol/Packet;)Ljava/util/List;
+     106: astore        5
+     108: aload         5
+     110: ifnull        127
+     113: aload         5
+     115: invokeinterface #925,  1          // InterfaceMethod java/util/List.isEmpty:()Z
+     120: ifne          127
+     123: iconst_1
+     124: goto          128
+     127: iconst_0
+     128: istore        6
+     130: iload         6
+     132: ifne          158
+     135: aload_0
+     136: getfield      #255                // Field pendingActions:Ljava/util/Queue;
+     139: new           #10                 // class net/minecraft/network/Connection$PacketSendAction
+     142: dup
+     143: aload_1
+     144: aload_2
+     145: iload_3
+     146: invokespecial #931                // Method net/minecraft/network/Connection$PacketSendAction."<init>":(Lnet/minecraft/network/protocol/Packet;Lio/netty/channel/ChannelFutureListener;Z)V
+     149: invokeinterface #934,  2          // InterfaceMethod java/util/Queue.add:(Ljava/lang/Object;)Z
+     154: pop
+     155: goto          288
+     158: new           #936                // class java/util/ArrayList
+     161: dup
+     162: iconst_1
+     163: aload         5
+     165: invokeinterface #939,  1          // InterfaceMethod java/util/List.size:()I
+     170: iadd
+     171: invokespecial #942                // Method java/util/ArrayList."<init>":(I)V
+     174: astore        7
+     176: aload         7
+     178: new           #10                 // class net/minecraft/network/Connection$PacketSendAction
+     181: dup
+     182: aload_1
+     183: aconst_null
+     184: iconst_0
+     185: invokespecial #931                // Method net/minecraft/network/Connection$PacketSendAction."<init>":(Lnet/minecraft/network/protocol/Packet;Lio/netty/channel/ChannelFutureListener;Z)V
+     188: invokeinterface #943,  2          // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+     193: pop
+     194: iconst_0
+     195: istore        8
+     197: aload         5
+     199: invokeinterface #939,  1          // InterfaceMethod java/util/List.size:()I
+     204: istore        9
+     206: iload         8
+     208: iload         9
+     210: if_icmpge     276
+     213: aload         5
+     215: iload         8
+     217: invokeinterface #946,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+     222: checkcast     #354                // class net/minecraft/network/protocol/Packet
+     225: astore        10
+     227: iinc          8, 1
+     230: iload         8
+     232: iload         9
+     234: if_icmpne     241
+     237: iconst_1
+     238: goto          242
+     241: iconst_0
+     242: istore        11
+     244: aload         7
+     246: new           #10                 // class net/minecraft/network/Connection$PacketSendAction
+     249: dup
+     250: aload         10
+     252: iload         11
+     254: ifeq          261
+     257: aload_2
+     258: goto          262
+     261: aconst_null
+     262: iload         11
+     264: invokespecial #931                // Method net/minecraft/network/Connection$PacketSendAction."<init>":(Lnet/minecraft/network/protocol/Packet;Lio/netty/channel/ChannelFutureListener;Z)V
+     267: invokeinterface #943,  2          // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+     272: pop
+     273: goto          206
+     276: aload_0
+     277: getfield      #255                // Field pendingActions:Ljava/util/Queue;
+     280: aload         7
+
+==== net.minecraft.network.Connection.isConnected (bytecode) ====
+  public boolean isConnected();
+    Code:
+       0: aload_0
+       1: getfield      #311                // Field channel:Lio/netty/channel/Channel;
+       4: ifnull        23
+       7: aload_0
+       8: getfield      #311                // Field channel:Lio/netty/channel/Channel;
+      11: invokeinterface #384,  1          // InterfaceMethod io/netty/channel/Channel.isOpen:()Z
+      16: ifeq          23
+      19: iconst_1
+      20: goto          24
+      23: iconst_0
+      24: ireturn
+
+
+==== net.minecraft.network.Connection.flushQueue (bytecode) ====
+  private boolean flushQueue();
+    Code:
+       0: aload_0
+       1: invokevirtual #897                // Method isConnected:()Z
+       4: ifne          9
+       7: iconst_1
+       8: ireturn
+       9: invokestatic  #910                // Method io/papermc/paper/util/MCUtil.isMainThread:()Z
+      12: ifeq          20
+      15: aload_0
+      16: invokevirtual #1060               // Method processQueue:()Z
+      19: ireturn
+      20: aload_0
+      21: getfield      #296                // Field isPending:Z
+      24: ifeq          46
+      27: aload_0
+      28: getfield      #255                // Field pendingActions:Ljava/util/Queue;
+      31: dup
+      32: astore_1
+      33: monitorenter
+      34: aload_0
+      35: invokevirtual #1060               // Method processQueue:()Z
+      38: aload_1
+      39: monitorexit
+      40: ireturn
+      41: astore_2
+      42: aload_1
+      43: monitorexit
+      44: aload_2
+      45: athrow
+      46: iconst_0
+      47: ireturn
+    Exception table:
+       from    to  target type
+          34    40    41   any
+          41    44    41   any
+
+
+==== net.minecraft.server.network.CommonListenerCookie.createInitial (bytecode) ====
+  public static net.minecraft.server.network.CommonListenerCookie createInitial(com.mojang.authlib.GameProfile, boolean);
+    Code:
+       0: new           #2                  // class net/minecraft/server/network/CommonListenerCookie
+       3: dup
+       4: aload_0
+       5: iconst_0
+       6: invokestatic  #56                 // Method net/minecraft/server/level/ClientInformation.createDefault:()Lnet/minecraft/server/level/ClientInformation;
+       9: iload_1
+      10: aconst_null
+      11: new           #58                 // class java/util/HashSet
+      14: dup
+      15: invokespecial #59                 // Method java/util/HashSet."<init>":()V
+      18: new           #61                 // class io/papermc/paper/util/KeepAlive
+      21: dup
+      22: invokespecial #62                 // Method io/papermc/paper/util/KeepAlive."<init>":()V
+      25: invokespecial #64                 // Method "<init>":(Lcom/mojang/authlib/GameProfile;ILnet/minecraft/server/level/ClientInformation;ZLjava/lang/String;Ljava/util/Set;Lio/papermc/paper/util/KeepAlive;)V
+      28: areturn
+
+
+==== net.minecraft.world.entity.Mob.checkDespawn (bytecode) ====
+  public void checkDespawn();
+    Code:
+       0: aload_0
+       1: invokevirtual #515                // Method level:()Lnet/minecraft/world/level/Level;
+       4: invokevirtual #1347               // Method net/minecraft/world/level/Level.getDifficulty:()Lnet/minecraft/world/Difficulty;
+       7: getstatic     #1353               // Field net/minecraft/world/Difficulty.PEACEFUL:Lnet/minecraft/world/Difficulty;
+      10: if_acmpne     30
+      13: aload_0
+      14: invokevirtual #1355               // Method shouldDespawnInPeaceful:()Z
+      17: ifeq          30
+      20: aload_0
+      21: getstatic     #1358               // Field org/bukkit/event/entity/EntityRemoveEvent$Cause.DESPAWN:Lorg/bukkit/event/entity/EntityRemoveEvent$Cause;
+      24: invokevirtual #698                // Method discard:(Lorg/bukkit/event/entity/EntityRemoveEvent$Cause;)V
+      27: goto          282
+      30: aload_0
+      31: invokevirtual #684                // Method isPersistenceRequired:()Z
+      34: ifne          277
+      37: aload_0
+      38: invokevirtual #687                // Method requiresCustomPersistence:()Z
+      41: ifne          277
+      44: aload_0
+      45: invokevirtual #515                // Method level:()Lnet/minecraft/world/level/Level;
+      48: aload_0
+      49: ldc2_w        #1359               // double -1.0d
+      52: getstatic     #1366               // Field net/minecraft/world/entity/EntitySelector.PLAYER_AFFECTS_SPAWNING:Ljava/util/function/Predicate;
+      55: invokevirtual #1370               // Method net/minecraft/world/level/Level.findNearbyPlayer:(Lnet/minecraft/world/entity/Entity;DLjava/util/function/Predicate;)Lnet/minecraft/world/entity/player/Player;
+      58: astore_1
+      59: aload_1
+      60: ifnull        274
+      63: aload_0
+      64: invokevirtual #515                // Method level:()Lnet/minecraft/world/level/Level;
+      67: invokevirtual #1374               // Method net/minecraft/world/level/Level.paperConfig:()Lio/papermc/paper/configuration/WorldConfiguration;
+      70: getfield      #1378               // Field io/papermc/paper/configuration/WorldConfiguration.entities:Lio/papermc/paper/configuration/WorldConfiguration$Entities;
+      73: getfield      #1382               // Field io/papermc/paper/configuration/WorldConfiguration$Entities.spawning:Lio/papermc/paper/configuration/WorldConfiguration$Entities$Spawning;
+      76: getfield      #1385               // Field io/papermc/paper/configuration/WorldConfiguration$Entities$Spawning.despawnRanges:Ljava/util/Map;
+      79: aload_0
+      80: invokevirtual #1335               // Method getType:()Lnet/minecraft/world/entity/EntityType;
+      83: invokevirtual #1389               // Method net/minecraft/world/entity/EntityType.getCategory:()Lnet/minecraft/world/entity/MobCategory;
+      86: invokeinterface #397,  2          // InterfaceMethod java/util/Map.get:(Ljava/lang/Object;)Ljava/lang/Object;
+      91: checkcast     #62                 // class io/papermc/paper/configuration/WorldConfiguration$Entities$Spawning$DespawnRangePair
+      94: astore_2
+      95: aload_0
+      96: invokevirtual #515                // Method level:()Lnet/minecraft/world/level/Level;
+      99: invokevirtual #1374               // Method net/minecraft/world/level/Level.paperConfig:()Lio/papermc/paper/configuration/WorldConfiguration;
+     102: getfield      #1378               // Field io/papermc/paper/configuration/WorldConfiguration.entities:Lio/papermc/paper/configuration/WorldConfiguration$Entities;
+     105: getfield      #1382               // Field io/papermc/paper/configuration/WorldConfiguration$Entities.spawning:Lio/papermc/paper/configuration/WorldConfiguration$Entities$Spawning;
+     108: getfield      #1393               // Field io/papermc/paper/configuration/WorldConfiguration$Entities$Spawning.despawnRangeShape:Lio/papermc/paper/configuration/type/DespawnRange$Shape;
+     111: astore_3
+     112: aload_1
+     113: invokevirtual #1396               // Method net/minecraft/world/entity/Entity.getY:()D
+     116: aload_0
+     117: invokevirtual #1397               // Method getY:()D
+     120: dsub
+     121: invokestatic  #1401               // Method java/lang/Math.abs:(D)D
+     124: dstore        4
+     126: dload         4
+     128: invokestatic  #1406               // Method net/minecraft/util/Mth.square:(D)D
+     131: dstore        6
+     133: aload_1
+     134: invokevirtual #1408               // Method net/minecraft/world/entity/Entity.getX:()D
+     137: aload_0
+     138: invokevirtual #1409               // Method getX:()D
+     141: dsub
+     142: invokestatic  #1406               // Method net/minecraft/util/Mth.square:(D)D
+     145: dstore        8
+     147: aload_1
+     148: invokevirtual #1411               // Method net/minecraft/world/entity/Entity.getZ:()D
+     151: aload_0
+     152: invokevirtual #1412               // Method getZ:()D
+     155: dsub
+     156: invokestatic  #1406               // Method net/minecraft/util/Mth.square:(D)D
+     159: dstore        10
+     161: dload         8
+     163: dload         10
+     165: dadd
+     166: dload         6
+     168: dadd
+     169: dstore        12
+     171: aload_2
+     172: invokevirtual #1416               // Method io/papermc/paper/configuration/WorldConfiguration$Entities$Spawning$DespawnRangePair.hard:()Lio/papermc/paper/configuration/type/DespawnRange;
+     175: aload_3
+     176: dload         8
+     178: dload         6
+     180: dload         10
+     182: dload         4
+     184: invokevirtual #1420               // Method io/papermc/paper/configuration/type/DespawnRange.shouldDespawn:(Lio/papermc/paper/configuration/type/DespawnRange$Shape;DDDD)Z
+     187: ifeq          206
+     190: aload_0
+     191: dload         12
+     193: invokevirtual #681                // Method removeWhenFarAway:(D)Z
+     196: ifeq          206
+     199: aload_0
+     200: getstatic     #1358               // Field org/bukkit/event/entity/EntityRemoveEvent$Cause.DESPAWN:Lorg/bukkit/event/entity/EntityRemoveEvent$Cause;
+     203: invokevirtual #698                // Method discard:(Lorg/bukkit/event/entity/EntityRemoveEvent$Cause;)V
+     206: aload_2
+     207: invokevirtual #1423               // Method io/papermc/paper/configuration/WorldConfiguration$Entities$Spawning$DespawnRangePair.soft:()Lio/papermc/paper/configuration/type/DespawnRange;
+     210: aload_3
+     211: dload         8
+     213: dload         6
+     215: dload         10
+     217: dload         4
+     219: invokevirtual #1420               // Method io/papermc/paper/configuration/type/DespawnRange.shouldDespawn:(Lio/papermc/paper/configuration/type/DespawnRange$Shape;DDDD)Z
+     222: ifeq          269
+     225: aload_0
+     226: getfield      #1426               // Field net/minecraft/world/entity/LivingEntity.noActionTime:I
+     229: sipush        600
+     232: if_icmple     274
+     235: aload_0
+     236: getfield      #643                // Field net/minecraft/world/entity/Entity.random:Lnet/minecraft/util/RandomSource;
+     239: sipush        800
+     242: invokeinterface #649,  2          // InterfaceMethod net/minecraft/util/RandomSource.nextInt:(I)I
+     247: ifne          274
+     250: aload_0
+     251: dload         12
+     253: invokevirtual #681                // Method removeWhenFarAway:(D)Z
+     256: ifeq          274
+     259: aload_0
+     260: getstatic     #1358               // Field org/bukkit/event/entity/EntityRemoveEvent$Cause.DESPAWN:Lorg/bukkit/event/entity/EntityRemoveEvent$Cause;
+     263: invokevirtual #698                // Method discard:(Lorg/bukkit/event/entity/EntityRemoveEvent$Cause;)V
+     266: goto          274
+     269: aload_0
+     270: iconst_0
+     271: putfield      #1426               // Field net/minecraft/world/entity/LivingEntity.noActionTime:I
+     274: goto          282
+     277: aload_0
+     278: iconst_0
+     279: putfield      #1426               // Field net/minecraft/world/entity/LivingEntity.noActionTime:I
+     282: return
+

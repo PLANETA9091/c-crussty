@@ -25,6 +25,18 @@ work = sys.argv[1] if len(sys.argv) > 1 else "."
 natives_mode = sys.argv[2] if len(sys.argv) > 2 else "unknown"
 seen_done = sys.argv[3] if len(sys.argv) > 3 else "0"
 
+# BENCH-4 fixture mode (task170, S7-99): run-env.txt carries fake_players=N.
+# N>0 => fake players were injected => fixture-validity gate applies
+# (spawnable chunks > 0 + churn ACTIVE with summon_sweeps=0 + alive-check
+# steady). bench-3 runs (N=0) skip the gate entirely (back-compat).
+fake_players = 0
+_run_env = os.path.join(work, "run-env.txt")
+if os.path.isfile(_run_env):
+    with open(_run_env, encoding="utf-8", errors="replace") as _f:
+        _m = re.search(r"fake_players:\s*(\d+)", _f.read())
+    if _m:
+        fake_players = int(_m.group(1))
+
 # frame-prefix -> research bucket
 BUCKETS = [
     # run#10 lesson: HotSpot C++ self-time frames arrive WITHOUT the libjvm.so
@@ -312,6 +324,40 @@ def parse_entity_churn(path):
     return blocks, summon
 
 
+def parse_spawnable_series(path):
+    """BENCH-4 fixture evidence (task170): `paper mobcaps world` header lines.
+    The header is composed with SpawnState.getSpawnableChunkCount() (javap
+    bench4-recon C7) — parse the first integer after the marker as the
+    spawnable-chunk count for that poll. None when the line carried no digits.
+    """
+    out = []
+    if not os.path.exists(path):
+        return out
+    with open(path, encoding="utf-8", errors="replace") as f:
+        for line in f:
+            if "Mobcaps for world" in line:
+                nums = re.findall(r"\d+", line)
+                out.append(int(nums[-1]) if nums else None)
+    return out
+
+
+def parse_alive_series(path):
+    """BENCH-4 fixture evidence: '[BenchFakePlayers] alive-check:' heartbeat
+    lines -> (level.players() count, injected count) per poll. A drop proves
+    the stub lost players (keepalive timeout / disconnect) => fixture INVALID.
+    """
+    out = []
+    if not os.path.exists(path):
+        return out
+    rx = re.compile(r"\[BenchFakePlayers\] alive-check: level\.players\(\)=(\d+) injected=(\d+)")
+    with open(path, encoding="utf-8", errors="replace") as f:
+        for line in f:
+            m = rx.search(line)
+            if m:
+                out.append((int(m.group(1)), int(m.group(2))))
+    return out
+
+
 # --- parse everything -------------------------------------------------------
 cpu = parse_collapsed(os.path.join(work, "cpu-collapsed.txt"))
 wall = parse_collapsed(os.path.join(work, "wall-collapsed.txt"))
@@ -523,6 +569,48 @@ if ent_totals and len(ent_totals) >= 2:
                      "idle (0 players). bench-4 fake-player leg required for the owner's as-if-players condition")
 else:
     lines[-1] = f4_line + " insufficient polls (need >=2 `paper entity list` outputs)"
+
+# BENCH-4 fixture-validity gate (task170, S7-99; preregistered in
+# docs/BENCH4_FAKE_PLAYERS_DESIGN.md §4):
+#   gate 1 fixture-validity: spawnable chunks > 0 AND churn ACTIVE
+#     (with summon_sweeps=0 — churn must be NATURAL) AND alive-check steady;
+#   gate 2 baseline: bench-4 baseline (N=4) measured min-of-2 paired; the
+#     delta to bench-3 is a SCENARIO delta, not a module win (enforced by
+#     research discipline, documented here).
+if fake_players > 0:
+    lines.append("")
+    lines.append("## BENCH-4 fixture validity (fake_players=%d)" % fake_players)
+    lines.append("")
+    spawnable = parse_spawnable_series(os.path.join(work, "server-stdout.log"))
+    alive = parse_alive_series(os.path.join(work, "server-stdout.log"))
+    spawnable_ok = any(v is not None and v > 0 for v in spawnable)
+    alive_ok = bool(alive) and all(p >= fake_players for p, _ in alive) \
+        and all(i == fake_players for _, i in alive)
+    natural_churn_ok = (summon_count == 0 and ent_totals and len(ent_totals) >= 2
+                        and max(ent_totals) > min(ent_totals))
+    if spawnable:
+        vals = [v for v in spawnable if v is not None]
+        lines.append("- spawnable-chunk polls (mobcaps header): %s" % vals)
+    else:
+        lines.append("- spawnable-chunk polls: NONE parsed from `paper mobcaps world` output")
+    if alive:
+        lines.append("- alive-check heartbeat series: %s" % [f"{p}/{i}" for p, i in alive])
+    else:
+        lines.append("- alive-check heartbeat: NONE parsed (plugin heartbeat missing — check plugin log)")
+    lines.append(f"- gate 1a spawnable chunks > 0: {'PASS' if spawnable_ok else 'FAIL'}")
+    lines.append(f"- gate 1b churn ACTIVE with summons=0 (natural spawn/despawn): "
+                 f"{'PASS' if natural_churn_ok else 'FAIL'} (summons={summon_count}, "
+                 f"polls={len(ent_totals)}, delta={(max(ent_totals) - min(ent_totals)) if ent_totals and len(ent_totals) >= 2 else 'n/a'})")
+    lines.append(f"- gate 1c alive-check steady at N={fake_players}: {'PASS' if alive_ok else 'FAIL'}")
+    fixture_valid = spawnable_ok and natural_churn_ok and alive_ok and seen_done == "1"
+    lines.append("")
+    lines.append("- **FIXTURE-VALIDITY: %s**" % ("VALID" if fixture_valid else "INVALID"))
+    if not fixture_valid:
+        lines.append("  - bench-4 run INVALID as owner-scenario evidence: do NOT use its "
+                     "MSPT as the canonical-scenario baseline; fix the fixture first.")
+else:
+    lines.append("")
+    lines.append("- BENCH-4 fixture gate: N/A (fake_players=0, bench-3 mode)")
 
 if not cpu and seen_done == "1":
     lines.append("")
