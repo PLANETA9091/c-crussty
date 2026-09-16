@@ -604,3 +604,19 @@ Work Log:
 
 Stage Summary:
 - Boot ladder closed one loop at a time: zip structure → eula/cwd → grep BRE → report path → asprof. Each fix is a run#N lesson in the harness header (institutionalized). The module's CI-armed evidence (run#4 log) is the first REAL-kernel confirmation that both hotpatches engage end-to-end outside the sandbox. Run#5 should produce the FIRST real BOTTLENECKS_3 data.
+
+---
+Task ID: S7-91 (task160) — closeout
+Agent: Super Z (main session, tick 22:08+08 Job 390126, shared lane with parallel instance)
+Task: TASK-228 final — BENCH 3.0 run#10 COMPLETE (collapsed stacks) + full banking
+
+Work Log:
+- run#7 (my dispatch, 4a120f2 exact-name find + chmod/-x guard) cancelled by twin's concurrent dispatch — shared-goal protocol, adopted twin's run#8 35119562399
+- run#9 evidence: attach WORKED (asprof bin found, ptrace_scope 1→0, "Profiling started") but 4.x single-session ("Profiler already started" on alloc) + removed --format ⇒ 0-byte dumps; root-causes pushed by twin (507f3f5: cpu-only, dump -o collapsed -f)
+- run#10 35122692415 COMPLETE: boot 18.12s, 36 cmds = 9216 chunks force-loaded, zero-player soak ~13.5 TPS steady, MSPT avg 80.86 / max 199.45ms, 224,660 CPU samples collapsed (154MB) + 1.5MB flamegraph, spark xCLQqUSJao
+- BUCKET TABLE banked (first on a real world): entities/mobs 12.6% TOP (AABB.intersects 1.2% + collision 0.8% + SynchedEntityData ~2.2%) → ENT-BP; chunk system 9.8% (PalettedContainer.get 3.7% largest kernel leaf + getBlockStateFinal 1.7% + SimpleBitStorage.get 1.6% + readPalette 1.5%) → PALETTE bridge; random-tick lane ~4.5% DISCOVERED (optimiseRandomTick 2.2% + advanceSeed 1.7% + snowy dirt 0.6%); worldgen/noise 0.0% (85 samples) — sandbox noise-dominance assumption REFUTED by real world, NOISE-COLS demoted; GC/JVM ~39% native bucket = §6 no-meddle holds; module self-audit <2% PASS (own frames absent from top-40)
+- module armed EVERY leg (10/10 dispatches): area_map retransform rc=0 self-test 64+141 rects OK; perlin whole-body 11030→10765 armed rc=0 self-test PASS
+- Banking: bench/world3/results/BENCH3_RUNS_2026-09-16.md (lifecycle + tables) + ledger §108 + INDEX row (c8e8940, pushed, origin==local); CLAIMS TASK-228 done row (dev-logs 27bf349, pushed)
+
+Stage Summary:
+- TASK-228 CLOSED with the owner's core deliverable: a data-driven ranked bottleneck table from a REAL world under forceload with the module armed — the research ladder now has real targets (ENT-BP 12.6% / PALETTE 9.8% / random-tick 4.5%) and one honest refutation (noise 0.0%). NEXT: task161 = ENT-BP huge research + pre-registered gates; task162 = PALETTE/chunk-state bridge design (zero-copy lens); a28 boot lane stays parked (sandbox env); Full-world 43.4GB + summon_sweeps legs = owner dispatch choices
