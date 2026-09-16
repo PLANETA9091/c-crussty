@@ -37,8 +37,14 @@ PURPUR_URL="${PURPUR_URL:-https://api.purpurmc.org/v2/purpur/1.21.10/latest/down
 WORK="${WORK:-$PWD/world3-run}"
 SERVER="$WORK/server"
 BOOT_TIMEOUT="${BOOT_TIMEOUT:-420}"
+NATIVES_MODE="unknown"
 
 log() { echo "[world3 $(date -u +%H:%M:%SZ)] $*"; }
+die() { # die <msg> — still emit a diagnostic report so artifacts ship (evidence >= silence)
+  log "FATAL: $*"
+  python3 "$(dirname "$0")/report_world3.py" "$WORK" "$NATIVES_MODE" "0" || true
+  exit 1
+}
 mkdir -p "$WORK" "$SERVER"
 
 # --- 0. disk reclaim (standard GH-runner trick, ~25 GB back) ---------------
@@ -58,11 +64,11 @@ fetch() { # fetch <url> <dest>
 }
 
 log "downloading purpur kernel"
-fetch "$PURPUR_URL" "$WORK/purpur.jar" || { log "FATAL: purpur download"; exit 1; }
+fetch "$PURPUR_URL" "$WORK/purpur.jar" || die "purpur download failed from $PURPUR_URL"
 mkdir -p "$SERVER/versions" && cp "$WORK/purpur.jar" "$SERVER/versions/purpur-1.21.10.jar"
 
 log "downloading world"
-fetch "$WORLD_URL" "$WORK/world.zip" || { log "FATAL: world download"; exit 1; }
+fetch "$WORLD_URL" "$WORK/world.zip" || die "world download failed from $WORLD_URL"
 log "extracting world"
 # Run #1 lesson (world-bench-3 run 35106393250): the MineShield-3 zip IS the world
 # directory itself (level.dat/region//DIM-1//DIM1/ at zip ROOT, no wrapper folder) —
@@ -73,12 +79,10 @@ log "extracting world"
 unzip -q -o "$WORK/world.zip" -d "$WORK/worldx" && rm -f "$WORK/world.zip"
 LEVELDAT="$(find "$WORK/worldx" -maxdepth 3 -type f -name level.dat | sort | head -1)"
 if [ -z "$LEVELDAT" ]; then
-  log "FATAL: no level.dat in zip — top-level listing for diagnosis:"
-  find "$WORK/worldx" -maxdepth 2 -type d | head -40 >&2
-  exit 1
+  die "no level.dat in zip — staging top-level: $(find "$WORK/worldx" -maxdepth 2 -type d 2>/dev/null | head -40 | tr '\n' ' ')"
 fi
 WORLD_SRC="$(dirname "$LEVELDAT")"
-[ -d "$WORLD_SRC/region" ] || { log "FATAL: level.dat parent has no region/: $WORLD_SRC"; exit 1; }
+[ -d "$WORLD_SRC/region" ] || die "level.dat parent has no region/: $WORLD_SRC"
 rm -rf "$SERVER/world"; mkdir -p "$SERVER"
 if [ "$WORLD_SRC" = "$WORK/worldx" ]; then
   # bare-world zip: level.dat at staging root — move the staging dir itself
@@ -118,13 +122,13 @@ if [ -f "$SERVER/modules/crussty/.built" ]; then
   log "module prebuilt by CI"
 else
   log "building libcrussty.so from source"
-  (cd "$(dirname "$0")/../.." && cargo build --release) || { log "FATAL: cargo build"; exit 1; }
+  (cd "$(dirname "$0")/../.." && cargo build --release) || die "cargo build failed"
   cp "$(dirname "$0")/../../target/release/libcrussty.so" "$MODULE_DIR/"
 fi
 cp "$(dirname "$0")/../../module.json" "$MODULE_DIR/" 2>/dev/null || true
 
 RUNTIME_SO="${RUNTIME_SO:-$WORK/libcrussty_runtime.so}"
-test -s "$RUNTIME_SO" || { log "FATAL: libcrussty_runtime.so not staged at $RUNTIME_SO"; exit 1; }
+test -s "$RUNTIME_SO" || die "libcrussty_runtime.so not staged at $RUNTIME_SO"
 
 # --- 3. server config ------------------------------------------------------
 echo "eula=true" > "$SERVER/eula.txt"
@@ -146,6 +150,7 @@ mkfifo "$WORK/console.in" 2>/dev/null || true
 tail -f "$WORK/console.in" | java \
   "-agentpath:$RUNTIME_SO=modules=$SERVER/modules;versions=$SERVER/versions;kernel=purpur-1.21.10.jar" \
   -Xms4G -Xmx6G -XX:+UseG1GC -Dfile.encoding=UTF-8 \
+  -Xlog:gc*:file="$WORK/gc.log":time,uptime,level,tags \
   -jar "$SERVER/versions/purpur-1.21.10.jar" --nogui \
   > "$WORK/server-stdout.log" 2>&1 &
 SERVER_PID=$!
@@ -174,6 +179,7 @@ if [ "$SEEN_DONE" = "1" ]; then
     done
   done
   cmd "tps"
+  cmd "paper debug chunks"
   sleep 10
 
   # --- 6. profilers --------------------------------------------------------
@@ -197,12 +203,18 @@ if [ "$SEEN_DONE" = "1" ]; then
   done
 
   # --- 7. final captures + shutdown ---------------------------------------
+  cmd "paper debug chunks"
+  cmd "spark gc"
   if [ -n "$ASPROF" ]; then
     "$ASPROF" dump --format collapsed "$SERVER_PID" > "$WORK/cpu-collapsed.txt" 2>>"$WORK/ap.log" || true
     "$ASPROF" dump --format html "$SERVER_PID" > "$WORK/cpu-flamegraph.html" 2>>"$WORK/ap.log" || true
   fi
   cmd "spark profiler --stop"
   sleep 15
+  # spark writes its own HTML report at stop — collect for artifacts
+  mkdir -p "$WORK/spark-report"
+  find "$SERVER/plugins/spark" -name '*.html' 2>/dev/null -exec cp {} "$WORK/spark-report/" \; || true
+  log "spark reports collected: $(ls "$WORK/spark-report" 2>/dev/null | wc -l)"
 fi
 cmd "stop"
 sleep 30
