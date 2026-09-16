@@ -812,3 +812,18 @@ Work Log:
 
 Stage Summary:
 - Восьмой STEP-0-килл за два раунда; соло-портфель исчерпан честной арифметикой. Раунд переводит стратегию на канонический сценарий владельца: bench-4 fake-players (task170) = следующий исполняемый шаг, его fresh recon решит, откуда брать следующие >=3% ядра
+---
+Task ID: S7-99 (task170 / TASK-236) — BENCH-4 FAKE-PLAYERS IMPLEMENTED; validation run 35156292165 dispatched
+Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609170543, Job 390768)
+Task: task170 bench-4 implementation per S7-98 queue (WIPE recovery first: sandbox recycled to pre-c-crussty snapshot; /tmp/my-project survived)
+
+Work Log:
+- WIPE RECOVERY: bootstrap_tick.sh + repos + c-crussty-era scripts restored from /tmp/my-project; 3x pull (c-crussty 8c14735 = S7-98 already pushed by prior tick; dev-logs main cloned via baked creds; CRUSSTY pristine 1f4c06a untouched)
+- STEP-0 offline javap vs materialized mojang-mapped kernel (paperclip remap, killed pre-main = NOT a boot; e2992d63abd2c254): 10 contracts verified — placeNewPlayer public + internal SGPL 4-arg; doSendPacket isConnected-safe; Connection.tick never runs for hand-made Connection (no auto-disconnect); ServerPlayer 4-arg ctor + public connection field; CommonListenerCookie.createInitial; max-players gate NOT in placeNewPlayer path; mobcaps header = getSpawnableChunkCount (PaperCommand path moved to io.papermc); Dec-2025 kernel REMOVED PlayerMobDistanceMap → LocalMobCapCalculator.playersNearChunk (same fixture requirement); checkDespawn → findNearbyPlayer; KEEPALIVE TRAP (15s timeout → disconnect) closed via public handleKeepAlive response in channel stub
+- BenchFakePlayersPlugin: real ServerPlayer + EmbeddedChannel discard-handler + keepalive auto-response; deterministic UUIDs (nameUUIDFromBytes) = parity law; N=4 ring (±320) over forceload zone; heightmap ground-snap + noPhysics/noGravity/invulnerable; alive-check heartbeat 60s; javac --release 21 vs real kernel + 125 libs = CLEAN (0 boots)
+- harness: run_world3.sh FAKE_PLAYERS param — eula-less materialize (NOT a boot) → javac vs kernel → plugins/BenchFakePlayers.jar; max-players=N+8; run-env fake_players; report_world3.py BENCH-4 fixture-validity gate (spawnable>0 + churn ACTIVE with summons=0 + alive-check steady → FIXTURE-VALIDITY VALID/INVALID; bench-3 N/A); world-bench.yml fake_players input + fail-on-INVALID; smoke-tested VALID/INVALID/N-A paths
+- DISPATCH: run 35156292165 (8a6988d, fake_players=4, summon_sweeps=0, 900s) in_progress — fixture-validation leg; F1/F2/F3 + MSPT + gate verdict absorb next tick
+- ledger §116 + INDEX row + GOAL re-rank (bench-4 = IMPLEMENTED, fresh recon next); CRUSSTY pristine untouched
+
+Stage Summary:
+- bench-4 (task170) = РЕАЛИЗОВАН полностью по пререгистрации S7-98: STEP-0 контракт, плагин, harness, gate. Валидационный прогон 35156292165 в работе; после absorb — fresh recon нового профиля (spawn/AI лейны) и выбор следующего рычага. INJECTS-ONLY: 0 sandbox boots

@@ -77,18 +77,18 @@
 - ~~REDSTONE-LENS~~ **REFUTED-solo (S7-97)**: drain-lane 8.28/11.55% decompose => все слайсы <3%; family-bank parked
 - ~~BRAIN-LENS~~ **REFUTED (S7-98)**: replaceable ядро 0.9-1.5% (dispatch + canStart-тела незаменимы)
 - ~~minecarts~~ **REFUTED (S7-98)**: весь лейн 2.15/2.58% < гейта (mirage ~5.3% исправлен)
-- **BENCH-4 FAKE-PLAYERS (task170, СЛЕДУЮЩИЙ)**: каноническое условие владельца (спавн/деспавн как при игроках) + честная база для всех будущих A/B; docs/BENCH4_FAKE_PLAYERS_DESIGN.md (контракт NaturalSpawner верифицирован, инъекция ServerPlayer+Connection-стаб, gates пререгистрированы)
+- **BENCH-4 FAKE-PLAYERS (task170, S7-99 = IMPLEMENTED)**: каноническое условие владельца (спавн/деспавн как при игроках) + честная база для всех будущих A/B. STEP-0 контракт оффлайн-верифицирован (research/bench4-recon-2026-09-17: placeNewPlayer public + внутренний SGPL 4-arg; doSendPacket isConnected-safe; Connection.tick не тикается для самодельного Connection; keepalive 15s timeout закрыт публичным handleKeepAlive через EmbeddedChannel-стаб; Dec-2025 kernel: PlayerMobDistanceMap заменён на LocalMobCapCalculator.playersNearChunk — то же требование к фикстуре). BenchFakePlayersPlugin (real ServerPlayer, детерминированные UUID, N=4 кольцо, alive-check heartbeat) + harness FAKE_PLAYERS + report FIXTURE-VALIDITY gate. VALIDATION RUN 35156292165 dispatched — absorb next tick
 - entity_mirror infrastructure A/B (vehicle-dense, ENT-BP infra)
 Каждый шаг — паритет-банкованный; сводные A/B после каждого семейства.
 
-> **СТАТУС 20 TPS (S7-98)**: СОЛО-ЭРА ЗАВЕРШЕНА — семь STEP-0 киллов подряд
+> **СТАТУС 20 TPS (S7-99)**: СОЛО-ЭРА ЗАВЕРШЕНА — восемь STEP-0 киллов подряд
 > (ENT-BP, BOAT, BATCH-RNG, GC-SHAPE-1, REDSTONE, BRAIN-LENS, MINECARTS);
-> верифицированных соло-рычагов >=3% НЕ ОСТАЛОСЬ. Единственный честный путь:
-> (1) bench-4 fake-players = канонический сценарий владельца (спавн/деспавн
-> как при игроках) — смена профиля откроет НОВУЮ анатомию (spawn-лейн +
-> выросший AI-лейн), из которой могут появиться новые >=3% ядра;
-> (2) семейные агрегаты <3% патчей (требуют пересмотра правила гейта владельцем);
-> (3) инфраструктура: pinned/dedicated runner для честных A/B.
+> верифицированных соло-рычагов >=3% НЕ ОСТАЛОСЬ. РАУНД S7-99: bench-4
+> fake-players РЕАЛИЗОВАН (task170) — validation run 35156292165 dispatched;
+> после absorb — fresh recon НОВОГО профиля (spawn-лейн + выросший AI-лейн),
+> из которого выбирается следующий рычаг (если появится >=3% replaceable-ядро).
+> Остальные пути: (2) семейные агрегаты <3% патчей (требуют пересмотра правила
+> гейта владельцем); (3) инфраструктура: pinned/dedicated runner для честных A/B.
 > НЕДОСТИЖИМО из текущего профиля без смены сценария — смена сценария = bench-4.
 
 ## калибровка профилировщика (banked, task165)
