@@ -795,3 +795,20 @@ Work Log:
 
 Stage Summary:
 - Шестой и седьмой consecutive STEP-0 kills (GC-SHAPE-1, REDSTONE-LENS); GC-семейство закрыто ФИЗИКОЙ (потолок семейства <0.5% MSPT); очередь перестроена: BRAIN-LENS (task168, ~3.0%, единственный >=3% GO-кандидат) -> minecarts STEP-0 (task169) -> bench-4 fake-players. Честная арифметика 20 TPS задокументирована в GOAL: соло-рычагов >=3% почти не осталось — нужен либо семейный агрегат с пересмотром правила гейта, либо инфраструктурный сдвиг (pinned runner + bench-4), либо новая анатомия minecarts
+
+---
+Task ID: S7-98 (task168/169/170) — BRAIN-LENS + MINECARTS REFUTED; SOLO-ERA OVER; bench-4 pre-registered
+Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609170508, Job 390768)
+Task: task168 BRAIN-LENS STEP-0 (stale-tick 390768 re-executed per latest state) -> kill-gate -> lever switch
+
+Work Log:
+- bootstrap + pulls (c-crussty 5c32472, dev-logs a9c6821; no remote changes — no twin activity; tick charter = stale task166 mission, already done in S7-97 => executed next queue lever task168)
+- BRAIN-LENS STEP-0: exact anatomy Brain.tick subtree (run#12/15 cpu-collapsed, deepest-Brain-frame attribution): startEachNonRunningBehavior 4.13/4.41%, tickEachRunningBehavior 0.79/0.82, getRunningBehaviors 0.57/0.46, tickSensors 0.45/0.41, forgetOutdatedMemories 0.16/0.19
+- decompose: REPLACEABLE = LHM/HashMap iterators 0.80/0.47 + getNode 0.18/0.16 + sequencedKeySet/views 0.20/0.08 + half SELF ~0.15-0.25 = 0.9-1.5% total; IRREDUCIBLE = itable-stub dispatch 0.45/0.48 (same call sites post-patch) + canStart predicate bodies (PalettedContainer/PathTypeCache/Long2Object/ReferenceOpenHashSet) — behavior logic untouched by Object[]+bitmap patch => 0.9-1.5% << 3% gate => REFUTED pre-code (seventh kill; research ~3.0% потолок оптимистично считал dispatch — pre-registered criteria сработали)
+- lever switch: MINECARTS STEP-0 (task169): lane 2.15/2.58% (run#12/15; ledger "~5.3%" = mirage corrected): move 0.55/0.73 + applyEffectsFromBlocks 0.40/0.46 + hopper-suck 0.18/0.21 + pushAndPickup 0.12/0.17 + fluid-push 0.12/0.14 => whole-lane < gate => REFUTED (eighth kill)
+- SOLO-ERA VERDICT: 7 kills подряд, verified >=3% solos исчерпаны на 0-player профиле; honest path: bench-4 fake-players (owner scenario) => fresh recon => новые ядра; семейные агрегаты (нужно решение владельца по гейту); pinned runner infra
+- BENCH-4 PREREGISTERED: docs/BENCH4_FAKE_PLAYERS_DESIGN.md — NaturalSpawner контракт верифицирован javap (spawnForChunk + isRightDistanceToPlayerAndSpawnPoint + createState + moonrise PlayerMobDistanceMap 0-player=0-chunks); инъекция = bench-only plugin, real ServerPlayer + Connection-stub, PlayerList registration, N=4 grid; fixture-validity gate (spawnable>0 + F4 ACTIVE else INVALID) + baseline gate (min-of-2 paired, scenario-delta не модульная победа)
+- 0 sandbox boots; artifacts: docs/BENCH4_FAKE_PLAYERS_DESIGN.md, ledger §115, GOAL re-rank (Brain/minecarts REFUTED, queue: bench-4 = task170)
+
+Stage Summary:
+- Восьмой STEP-0-килл за два раунда; соло-портфель исчерпан честной арифметикой. Раунд переводит стратегию на канонический сценарий владельца: bench-4 fake-players (task170) = следующий исполняемый шаг, его fresh recon решит, откуда брать следующие >=3% ядра

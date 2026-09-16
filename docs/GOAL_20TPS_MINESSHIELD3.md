@@ -58,11 +58,11 @@
 | лейн / кластер | presence | replaceable-ядро (верифицировано) | статус |
 |---|---|---|---|
 | entity/mobs всего | 43.3% | — | главный резерв |
-| Brain.tick кластер | 6.85% | machinery ~2.3% (itables 0.49+0.35, iterators 1.03, getNode 0.23, sequencedKeySet 0.11, getRunningBehaviors 0.11) + alloc 11.3% тика | **BRAIN-LENS ядро (task168, единственный >=3% GO-кандидат ~3.0%)** |
+| Brain.tick кластер | 6.85% | STEP-0 сделан (S7-98): replaceable ядро = iterators 0.47-0.80 + getNode 0.16-0.18 + views 0.08-0.20 + половина SELF ~0.15-0.25 = **0.9-1.5%**; itable-диспатч 0.45-0.48 и canStart-тела (PalettedContainer/PathTypeCache/Long2Object) НЕЗАМЕНЯЕМЫ | **REFUTED (task168) — 0.9-1.5% << 3%** |
 | GC (STW + barriers) | 9.5% | **CLOSED (S7-97 GC-FAMILY LAW)**: 9.5% = concurrent worker CPU (G1CM/RebuildRemSet), НЕ MSPT; STW duty 0.50-0.56% wall (gc.log run#12/15: eden 2.4GB, 412-598 MB/s, young-GC каждые 4-6s); relief = alloc_share x 0.5% => BlockPos 2-3% alloc => <=0.015% MSPT; Brain-LHM 0.4-0.69% => <=0.005% | **REFUTED (task166) — alloc-shape семейство закрыто** |
 | random-tick lane | 5.46% | advanceSeed 1.57% + BlockPos-alloc (hit-only, 2-3% alloc => <=0.015% MSPT) + хвост SELF; batch-RNG REFUTED соло | REFUTED соло (task165); BlockPos-слайс закрыт GC-law (task166) |
 | scheduled-tick drain (LevelTicks.tick) | 8.28/11.55% | STEP-0 сделан (S7-97): tickBlock контракт верифицирован; decompose: reads 2.65/3.77 + signal 1.18/1.43 + queue 0.5-0.76 + glue 0.29/0.62 + mid-tick 1.57/1.83 + tail — ВСЕ <3% соло | REFUTED-solo (task167); family-bank parked |
-| minecarts | ~5.3% | STEP-0 не сделан | queued |
+| minecarts | **2.15/2.58%** (measure run#12/15; старые ~5.3% = bucket mirage) | STEP-0 сделан (S7-98): весь лейн под гейтом — move 0.55/0.73 + applyEffectsFromBlocks 0.40/0.46 + hopper 0.18/0.21 + push/pickup 0.12/0.17 + fluid-push 0.12/0.14; perfect-lens bound < 3% | **REFUTED (task169) — whole-lane < gate** |
 | Villager | 3.47% | пересекается с Brain | через Brain |
 | chunk lane | 9.8% | per-get lens REFUTED; batch-lens REFUTED (3.3% потолок) | closed |
 | worldgen | 0.0% | — | closed (измерено) |
@@ -75,19 +75,21 @@
 Путь к 40%: только **агрегатные семейства** (каждый патч проходит свой гейт):
 - ~~GC-SHAPE~~ **CLOSED (S7-97)**: GC-family law — alloc-shape relief = alloc_share x STW-duty 0.5%; верхний потолок всего семейства < 0.5% MSPT
 - ~~REDSTONE-LENS~~ **REFUTED-solo (S7-97)**: drain-lane 8.28/11.55% decompose => все слайсы <3%; family-bank parked
-- **BRAIN-LENS (task168, СЛЕДУЮЩИЙ)**: research-verified ~3.0% потолок (Object[]+bitmap, insertion-order parity) — единственный оставшийся >=3% GO-кандидат
-- ENTITY-LENS семейство (minecarts STEP-0 = task169, ~5.3% presence)
+- ~~BRAIN-LENS~~ **REFUTED (S7-98)**: replaceable ядро 0.9-1.5% (dispatch + canStart-тела незаменимы)
+- ~~minecarts~~ **REFUTED (S7-98)**: весь лейн 2.15/2.58% < гейта (mirage ~5.3% исправлен)
+- **BENCH-4 FAKE-PLAYERS (task170, СЛЕДУЮЩИЙ)**: каноническое условие владельца (спавн/деспавн как при игроках) + честная база для всех будущих A/B; docs/BENCH4_FAKE_PLAYERS_DESIGN.md (контракт NaturalSpawner верифицирован, инъекция ServerPlayer+Connection-стаб, gates пререгистрированы)
 - entity_mirror infrastructure A/B (vehicle-dense, ENT-BP infra)
-- bench-4: fake players (спавн как при игроках) — честная база для всех A/B
 Каждый шаг — паритет-банкованный; сводные A/B после каждого семейства.
 
-> **СТАТУС 20 TPS (S7-97)**: честная арифметика стала жёстче — GC-семейство
-> закрыто физикой (<=0.5% потолок), REDSTONE соло закрыт. Верифицированные
-> соло-рычаги >=3%: только BRAIN-LENS (~3.0%). Для 40% среза нужен либо
-> псевдо-семейный агрегат (несколько <3% патчей с общей A/B — под вопросом
-> правила гейта), либо инфраструктурный сдвиг (dedicated/pinned runner для
-> честной базы + bench-4 fake-players для канонического условия владельца),
-> либо новая анатомия (minecarts STEP-0 может открыть >=3% слайс).
+> **СТАТУС 20 TPS (S7-98)**: СОЛО-ЭРА ЗАВЕРШЕНА — семь STEP-0 киллов подряд
+> (ENT-BP, BOAT, BATCH-RNG, GC-SHAPE-1, REDSTONE, BRAIN-LENS, MINECARTS);
+> верифицированных соло-рычагов >=3% НЕ ОСТАЛОСЬ. Единственный честный путь:
+> (1) bench-4 fake-players = канонический сценарий владельца (спавн/деспавн
+> как при игроках) — смена профиля откроет НОВУЮ анатомию (spawn-лейн +
+> выросший AI-лейн), из которой могут появиться новые >=3% ядра;
+> (2) семейные агрегаты <3% патчей (требуют пересмотра правила гейта владельцем);
+> (3) инфраструктура: pinned/dedicated runner для честных A/B.
+> НЕДОСТИЖИМО из текущего профиля без смены сценария — смена сценария = bench-4.
 
 ## калибровка профилировщика (banked, task165)
 
