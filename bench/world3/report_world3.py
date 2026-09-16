@@ -264,15 +264,17 @@ def parse_entity_totals(path):
     types = collections.Counter()
     if not os.path.exists(path):
         return totals, types
-    tpat = re.compile(r"Total (?:ticking |loaded |spawnable )?entities[^:]*:\s*(\d+)", re.I)
-    upat = re.compile(r"([a-z_]+:[a-z0-9_/]+)\s+(\d+)\s+\[")
+    # run#15 format: "Total Ticking: 9201, Total Non-Ticking: 707" (Paper 1.21.10);
+    # older guesses ("Total entities: N") never matched any real output
+    tpat = re.compile(r"Total Ticking:\s*(\d+),\s*Total Non-Ticking:\s*(\d+)", re.I)
+    upat = re.compile(r"(\d+)\s+\((\d+)\)\s+:\s+([a-z_]+:[a-z0-9_/]+)")
     with open(path, encoding="utf-8", errors="replace") as f:
         for line in f:
             m = tpat.search(line)
             if m:
                 totals.append(int(m.group(1)))
             for m in upat.finditer(line):
-                types[m.group(1)] = max(types[m.group(1)], int(m.group(2)))
+                types[m.group(3)] = max(types[m.group(3)], int(m.group(1)))
     return totals, types
 
 
@@ -289,8 +291,10 @@ def parse_entity_churn(path):
     summon = 0
     if not os.path.exists(path):
         return blocks, summon
-    tpat = re.compile(r"Total (?:ticking |loaded |spawnable )?entities[^:]*:\s*(\d+)", re.I)
-    upat = re.compile(r"([a-z_]+:[a-z0-9_/]+)\s+(\d+)\s+\[")
+    # run#15 format: "Total Ticking: 9201, Total Non-Ticking: 707" (Paper 1.21.10);
+    # older guesses ("Total entities: N") never matched any real output
+    tpat = re.compile(r"Total Ticking:\s*(\d+),\s*Total Non-Ticking:\s*(\d+)", re.I)
+    upat = re.compile(r"(\d+)\s+\((\d+)\)\s+:\s+([a-z_]+:[a-z0-9_/]+)")
     spat = re.compile(r"Summoned new \w+", re.I)
     cur = None
     with open(path, encoding="utf-8", errors="replace") as f:
@@ -304,7 +308,7 @@ def parse_entity_churn(path):
                 continue
             if cur is not None:
                 for m in upat.finditer(line):
-                    cur[m.group(1)] = int(m.group(2))
+                    cur[m.group(3)] = int(m.group(1))
     return blocks, summon
 
 
