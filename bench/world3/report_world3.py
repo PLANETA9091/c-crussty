@@ -371,6 +371,19 @@ lines.append(f"- forceload commands issued: {forceloads} ({chunks_marked} chunks
 lines.append(f"- TPS polls captured: {tps_polls}" + (f", first-of-window values: {tps_values}" if tps_values else ""))
 if mspt_avg or mspt_max:
     lines.append(f"- spark tick-monitor MSPT: avg **{mspt_avg}ms** / min {mspt_min}ms / max **{mspt_max}ms** (>50ms = TPS<20)")
+# S7-96d: run-environment pairing (world snapshot + runner CPU speed)
+env_path = os.path.join(work, "run-env.txt")
+if os.path.exists(env_path):
+    lines.append("### Run environment (pairing discipline, S7-96d)")
+    lines.append("")
+    for ln in open(env_path, encoding="utf-8", errors="replace"):
+        lines.append(f"- {ln.rstrip()}")
+    lines.append("")
+    lines.append("> Pairing law (run#15/#16 lesson): identical snapshot+inputs still gave")
+    lines.append("> 20.0 vs 12.5 TPS on different shared runners — cross-run MSPT deltas are")
+    lines.append("> noise-dominated; pair runs by (world_sha256, runner_cpu_index) or use")
+    lines.append("> same-boot A/B only.")
+    lines.append("")
 if mspt_windows:
     lines.append("")
     lines.append("### MSPT percentile windows (`paper mspt`)")
