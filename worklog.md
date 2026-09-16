@@ -620,3 +620,17 @@ Work Log:
 
 Stage Summary:
 - TASK-228 CLOSED with the owner's core deliverable: a data-driven ranked bottleneck table from a REAL world under forceload with the module armed — the research ladder now has real targets (ENT-BP 12.6% / PALETTE 9.8% / random-tick 4.5%) and one honest refutation (noise 0.0%). NEXT: task161 = ENT-BP huge research + pre-registered gates; task162 = PALETTE/chunk-state bridge design (zero-copy lens); a28 boot lane stays parked (sandbox env); Full-world 43.4GB + summon_sweeps legs = owner dispatch choices
+
+---
+Task ID: S7-91 (task160) — FINAL closeout (main session)
+Agent: Super Z
+Task: BENCH 3.0 run#10 COMPLETE + JVM re-bucketing + lane handoff
+
+Work Log:
+- RUN#10 (507f3f5): asprof v4 dump -o collapsed -f fix => cpu-collapsed.txt 154MB (224,660 samples), flamegraph 1.5MB, FIRST REAL BOTTLENECK RANKING. Boot 18.12s, 9216 chunks, window ~13.5 TPS, MSPT avg 80.86/max 199.45ms, spark xCLQqUSJao.
+- Ladder (twin's results doc + my JVM addendum): ENT-BP 12.6% (1st), PALETTE/chunk-state 9.8% (2nd, PalettedContainer.get 3.7% top leaf), RANDOM-TICK ~4.5% (3rd, discovered), GC 9.5% total (JVM re-bucket: 'other' 39.3% -> 13.9% residual; barriers 4.7 + G1 4.0 + 0.8), NOISE-COLS demoted 0.0% (pregenerated world — sandbox intuition refuted), module/engine/natives 0.0% self-time (§8 law PASSES).
+- report_world3.py institutionalized: JVM content-buckets (no libjvm.so prefix in HotSpot C++ frames), Marked/TPS/MSPT/spark-link parsers, INVALID-rank note.
+- Coordinated with twin via keep-both (runs #3/#6/#8 cancelled by concurrency, no lost work; fixes landed disjoint; §108 + results doc + INDEX already banked by twin, my addenda appended on top).
+
+Stage Summary:
+- TASK-228 COMPLETE: Benchmark 3.0 executed END-TO-END autonomously (dispatch, monitor, root-cause x8, fix, re-dispatch, artifact analysis, ledger, research ladder). The pipeline now produces a ranked bottleneck table EVERY dispatch. NEXT lanes pre-ranked: (1) ENT-BP broadphase/entity mirror (12.6%), (2) PALETTE zero-copy lens bridge (9.8%), (3) RANDOM-TICK speculative lane (~4.5%), GC structural. a28 (LONG-SOAK v12.9) remains parked for a provisioned sandbox tick.
