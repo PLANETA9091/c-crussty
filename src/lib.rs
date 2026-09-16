@@ -22,6 +22,7 @@ mod batch_desc;
 mod batch_table;
 mod bridge_class;
 mod classfile;
+mod entity_mirror;
 mod fluid_guard;
 mod improved_noise;
 mod jni_table;

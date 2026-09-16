@@ -634,3 +634,38 @@ Work Log:
 
 Stage Summary:
 - TASK-228 COMPLETE: Benchmark 3.0 executed END-TO-END autonomously (dispatch, monitor, root-cause x8, fix, re-dispatch, artifact analysis, ledger, research ladder). The pipeline now produces a ranked bottleneck table EVERY dispatch. NEXT lanes pre-ranked: (1) ENT-BP broadphase/entity mirror (12.6%), (2) PALETTE zero-copy lens bridge (9.8%), (3) RANDOM-TICK speculative lane (~4.5%), GC structural. a28 (LONG-SOAK v12.9) remains parked for a provisioned sandbox tick.
+
+---
+Task ID: S7-92 (task161) — ENT-BP research round CLAIM
+Agent: agent-7625532f (session web-f7888d46, cron tick 2026-09-17 01:08+08, Job 390126)
+Task: task161 = ENT-BP huge research + design round (top bucket: entities/mobs 12.6% per run#10)
+
+Work Log:
+- creds FIRST -> worklog tails (my-project/c-crussty/CLAIMS) -> 3x pull --rebase (all up to date, twin silent since b08f1ab/0951123)
+- RUN#10 artifact RE-DOWNLOADED from CI (world3-bench, 9.4MB zip; 154MB collapsed intact, 100,915 stacks, 224,660 samples verified)
+- EXACT-FRAME re-mining of the entity bucket (entbp_mine.py): hot loop owner = MOONRISE ca.spottedleaf.moonrise...ChunkEntitySlices$EntityCollectionBySection.getEntities (NOT vanilla EntitySectionStorage — pre-registered §2 target REFRAMED, addendum follows)
+- Numbers: EntityLookup.getEntities lane 4.76% presence; EntityCollectionBySection.getEntities 3.79% presence (loop machinery replaceable ~2.27% absolute: loop self 0.68 + AABB.intersects 1.13 + getBoundingBox 0.14 + fastutil section-map 0.32); predicate retention ~1.3% (EntitySelector pushable lambdas + Scoreboard.getPlayersTeam 0.99% — runs on TRUE candidates, does NOT shrink under a correct mirror); top driver AbstractBoat.tick 9.66% presence (move->collide->hard-collision+pushable queries per boat per tick)
+- Lesson banked: grep-substring aggregation polluted EntityLookup.get as "5.04%" — exact-frame match = 0.06% (HangingEntity.canCoexist chain). Frame discipline = exact match + caller chains, never substring
+- HUGE RESEARCH (web): CUDA GPU Gems 3 Ch.32 broad-phase (uniform grid wins for chunk-stationary objects; SAP wins for high-velocity); gameprogrammingpatterns Data Locality (SoA); box2d "SIMD for Collision" + Barczak 4-wide box tests (AVX2 batching); Shipilev quark 17 + IBM JNI docs + JEP 423 (critical-region discipline: copy-out-then-compute, no JNI inside); Leaf async target-search (propose-verify precedent); moonrise entity architecture (do-not-duplicate list)
+- STALENESS HAZARD analyzed: query-side re-verify fixes false POSITIVES only; stale mirror = false NEGATIVES = lost entities. Airtight design = full write-path coverage (EntityLookup.add/remove + AABB mutation sites) + CI SHADOW-DIFF leg (mirror candidates vs kernel scan, full soak) before any G2 claim
+- Rust core entity_mirror.rs IMPLEMENTED this tick: loose 16^3 grid + SoA slot store + generation-stamp dedup + AVX2 4-wide batch box tests w/ scalar fallback (0 new deps) + no-alloc fast path + property tests vs linear oracle
+
+Stage Summary:
+- task161 CLAIMED and research round DELIVERED: docs/RESEARCH_ENTBP_2026-09-17.md (measured anatomy + literature + staleness matrix + lever spec ENT-BP v2 + pre-registered gates G1-G4 + follow-up levers). Rust core landed with parity tests. JNI surface + hot-patch wiring = next tick after CI recon leg (javap dump of moonrise entity classes). INJECTS-ONLY: 0 sandbox boots, cargo test only
+
+---
+Task ID: S7-92 (task161) — round closeout
+Agent: agent-7625532f (same tick)
+Task: ENT-BP v2 research + Rust core — DONE (lever production claim PENDING CI legs)
+
+Work Log:
+- run#10 artifact re-mined with exact-frame discipline: hot loop owner = moonrise ChunkEntitySlices$EntityCollectionBySection.getEntities (vanilla EntitySectionStorage ABSENT from hot path — §2 target REFRAMED, gates unchanged); replaceable core 2.27% absolute; predicate retention 1.3%; AbstractBoat.tick 9.66% = top driver
+- docs/RESEARCH_ENTBP_2026-09-17.md: measured anatomy (9-row table), literature (CUDA Ch.32 uniform-grid verdict, gameprogrammingpatterns SoA, box2d/Barczak SIMD, Shipilev quark17+JEP423 critical discipline, Leaf async precedent, moonrise do-not-duplicate list), staleness decision matrix (per-tick reconcile REJECTED half-tick-stale; inflated-epsilon REJECTED unbounded displacement; full write-path coverage SELECTED; async PARKED), lever spec + verification ladder (core -> recon leg -> shadow-diff -> A/B x2 -> TASK-148 promotion flow), kill-criteria, follow-up levers (PUSH-MEMO 0.99%, ENT-DATA 0.79%, CollisionUtil->PALETTE overlap)
+- src/entity_mirror.rs IMPLEMENTED (production Rust, 0 new deps): loose 16^3 grid + SoA slot store + generation-stamp dedup (no clearing) + wildcard conservative list (giant/NaN/inverted boxes) + AVX2 4-wide batch box tests with scalar fallback + caller-owned output buffer + checksum handle (ClimateRTree precedent)
+- TESTS 72/72 PASS (incl. 7 new): property parity vs linear oracle x64 trials x3000 ops (candidate-set EQUALITY), scalar==SIMD exact, dedup, wildcard, churn/free-list, gen-wrap, checksum stability
+- G3 core evidence (counting global allocator, single-threaded): 10,000 queries -> 0 allocs; 3,000 same-span moves -> 0 allocs; boundary-crossing moves = designed slow path, 442 allocs/3000 banked
+- CORE bench (NOT a CI claim): 30k entities farm shape (70% in 12 clusters), 20k queries avg 315.8 candidates: mirror 34.2us/query vs full linear scan 150.5us (4.4x); honest caveat banked: kernel scans sections, not full — mirror-vs-kernel = CI A/B (G2) only
+- TEST-BUG lesson: first zero-alloc failure was the test's own bug (buf allocated after counter reset); diag-batch harness isolated query path clean; no mirror change involved
+
+Stage Summary:
+- task161 round DELIVERED: research doc + Rust core + parity tests. Lever NOT claimed vs G1/G2 — ladder: (1) CI recon leg (javap artifact entity-recon from booted jar: EntityLookup/ChunkEntitySlices/Entity AABB mutation sites), (2) shadow-diff diagnostic leg (zero mismatches required), (3) A/B x2 env CRUSSTY_NATIVE_ENT_BP, (4) TASK-148-style promotion. PUSH-MEMO (scoreboard 0.99%) pre-ranked as next lever same bucket. INJECTS-ONLY: 0 sandbox boots. Push: c-crussty + dev-logs (CLAIMS TASK-229); CRUSSTY untouched (pristine)
