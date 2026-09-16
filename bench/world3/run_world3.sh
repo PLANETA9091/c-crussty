@@ -250,10 +250,12 @@ if [ "$SEEN_DONE" = "1" ]; then
   fi
   cmd "spark profiler --stop"
   sleep 15
-  # spark writes its own HTML report at stop — collect for artifacts
-  mkdir -p "$WORK/spark-report"
-  find "$SERVER/plugins/spark" -name '*.html' 2>/dev/null -exec cp {} "$WORK/spark-report/" \; || true
-  log "spark reports collected: $(ls "$WORK/spark-report" 2>/dev/null | wc -l)"
+  # spark stores raw .sparkprofile blobs under plugins/spark; /paper debug
+  # chunks dumps tables under debug/ — collect BOTH trees (both small)
+  mkdir -p "$WORK/spark-report" "$WORK/debug-dumps"
+  [ -d "$SERVER/plugins/spark" ] && cp -r "$SERVER/plugins/spark/." "$WORK/spark-report/" 2>/dev/null || true
+  [ -d "$SERVER/debug" ] && cp -r "$SERVER/debug/." "$WORK/debug-dumps/" 2>/dev/null || true
+  log "spark/debug artifacts: $(find "$WORK/spark-report" "$WORK/debug-dumps" -type f 2>/dev/null | wc -l)"
 fi
 cmd "stop"
 sleep 30
