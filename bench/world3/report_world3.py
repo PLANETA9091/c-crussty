@@ -18,6 +18,15 @@ seen_done = sys.argv[3] if len(sys.argv) > 3 else "0"
 
 # frame-prefix -> research bucket
 BUCKETS = [
+    # run#10 lesson: HotSpot C++ self-time frames arrive WITHOUT the libjvm.so
+    # module prefix — G1 barriers/stubs/vdso were drowning 39% of self-time in
+    # "other". Recognize them by frame CONTENT (checked before the prefixes).
+    ("OopOopIterateDispatch", "JVM internals (GC oop barriers)"),
+    ("G1", "JVM internals (G1 GC)"),
+    ("longest_match", "JVM internals (GC)"),
+    (" stub", "JIT stubs (vtable/itable)"),
+    ("[vdso]", "vdso (clock)"),
+    ("[kernel]", "kernel syscalls"),
     ("net/minecraft/world/level/levelgen", "worldgen/noise (kernel)"),
     ("net/minecraft/world/entity", "entities/mobs (kernel)"),
     ("net/minecraft/world/level/chunk", "chunk system (kernel)"),
@@ -27,6 +36,7 @@ BUCKETS = [
     ("net/minecraft/world/ticks", "tick scheduling (kernel)"),
     ("net/minecraft/network", "network (kernel)"),
     ("net/minecraft", "kernel: other"),
+    ("ca/spottedleaf/moonrise", "moonrise/paper patches"),
     ("org/bukkit/craftbukkit", "craftbukkit glue"),
     ("org/bukkit", "bukkit api"),
     ("libcrussty.so", "c-crussty module (Rust)"),
@@ -34,6 +44,8 @@ BUCKETS = [
     ("libpaper_native", "Crussty CE natives (JNI)"),
     ("libjvm.so", "JVM internals (GC/JIT)"),
     ("java/util", "JDK collections"),
+    ("it/unimi/dsi/fastutil", "fastutil collections"),
+    ("java/lang/invoke", "JDK invokes/VarHandle"),
     ("java/", "JDK other"),
     ("jdk/", "JDK other"),
 ]
@@ -41,7 +53,7 @@ BUCKETS = [
 
 def bucket_of(frame: str) -> str:
     for prefix, name in BUCKETS:
-        if frame.startswith(prefix):
+        if prefix in frame:  # content match (JVM C++ frames carry no path)
             return name
     return "other"
 
