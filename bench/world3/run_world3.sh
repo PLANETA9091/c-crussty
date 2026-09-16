@@ -191,6 +191,13 @@ EOF
 # ("Failed to load eula.txt") and would have re-created a fresh world outside
 # $SERVER. cd into the server dir first.
 cd "$SERVER"
+# run#7 pre-registration: asprof attach needs ptrace; some runner images ship
+# yama restricted-ptrace (scope=1) — lift it while sudo is passwordless here.
+# Cheap insurance: a refused attach = another profile-less run.
+log "ptrace_scope(pre)=$(cat /proc/sys/kernel/yama/ptrace_scope 2>/dev/null || echo unknown)"
+sudo sysctl -w kernel.yama.ptrace_scope=0 >/dev/null 2>&1 \
+  && log "ptrace_scope set to 0" \
+  || log "WARN: could not set ptrace_scope (attach may fail)"
 mkfifo "$WORK/console.in" 2>/dev/null || true
 tail -f "$WORK/console.in" | java \
   "-agentpath:$RUNTIME_SO=modules=$SERVER/modules;versions=$SERVER/versions;kernel=purpur-1.21.10.jar" \
