@@ -29,6 +29,7 @@ mod jni_table;
 mod kernel_policy;
 mod loader;
 mod noise_fill;
+mod palette_gather;
 mod promote_wire;
 mod proto_blend_cache;
 

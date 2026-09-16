@@ -814,19 +814,27 @@ mod tests {
     }
 }
 
-/// Minimal counting allocator used ONLY by the zero-alloc test (G3 core
+/// Minimal counting allocator used ONLY by the zero-alloc tests (G3 core
 /// evidence). No dependencies; swap-in via #[global_allocator] below.
+///
+/// PER-THREAD counting (const-init thread_local — no lazy allocation, hence
+/// no recursion into the allocator): parallel cargo-test threads each count
+/// only THEIR OWN allocations, so the zero-assert is deterministic under any
+/// parallel test schedule (the global-counter version raced with sibling
+/// tests' allocations — S7-93 lesson).
 #[cfg(test)]
-mod alloc_counter {
+pub(crate) mod alloc_counter {
     use std::alloc::{GlobalAlloc, Layout, System};
-    use std::sync::atomic::{AtomicU64, Ordering};
+    use std::cell::Cell;
 
-    static COUNT: AtomicU64 = AtomicU64::new(0);
+    thread_local! {
+        static COUNT: Cell<u64> = const { Cell::new(0) };
+    }
 
     pub struct Counting;
     unsafe impl GlobalAlloc for Counting {
         unsafe fn alloc(&self, l: Layout) -> *mut u8 {
-            COUNT.fetch_add(1, Ordering::Relaxed);
+            COUNT.with(|c| c.set(c.get().wrapping_add(1)));
             unsafe { System.alloc(l) }
         }
         unsafe fn dealloc(&self, p: *mut u8, l: Layout) {
@@ -834,11 +842,13 @@ mod alloc_counter {
         }
     }
 
+    /// Resets the CURRENT thread's counter only.
     pub fn reset() {
-        COUNT.store(0, Ordering::Relaxed);
+        COUNT.with(|c| c.set(0));
     }
+    /// Reads the CURRENT thread's counter only.
     pub fn count() -> u64 {
-        COUNT.load(Ordering::Relaxed)
+        COUNT.with(|c| c.get())
     }
 }
 
