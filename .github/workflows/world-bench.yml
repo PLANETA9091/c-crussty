@@ -112,9 +112,51 @@ jobs:
           path: |
             world3-run/BOTTLENECKS_3.md
             world3-run/cpu-collapsed.txt
+            world3-run/wall-collapsed.txt
+            world3-run/alloc-collapsed.txt
             world3-run/cpu-flamegraph.html
             world3-run/server-stdout.log
             world3-run/gc.log
             world3-run/ap.log
             world3-run/spark-report/
+
+  # task161 ENT-BP ladder STEP 1 — CI recon leg: javap dump of the entity
+  # classes FROM the exact kernel jar the benchmark boots (not from memory).
+  # Enumerates EntityLookup/ChunkEntitySlices/Entity AABB mutation sites so the
+  # full write-path coverage design (staleness matrix, module worklog S7-92)
+  # is grounded in real bytecode. Cheap: no world, no boot.
+  entity-recon:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Fetch kernel jar + dump entity classes via javap
+        run: |
+          set -euo pipefail
+          mkdir -p recon/jar recon/classes
+          curl -sSfL --retry 3 -o recon/purpur.jar \
+            "https://api.purpurmc.org/v2/purpur/1.21.10/latest/download"
+          cd recon/classes
+          unzip -q -o ../purpur.jar \
+            'net/minecraft/world/entity/Entity*.class' \
+            'net/minecraft/server/level/ServerLevel*.class' \
+            'ca/spottedleaf/moonrise/patches/chunk_system/level/entity/*.class' \
+            'ca/spottedleaf/moonrise/common/util/*.class' \
+            || true
+          cd ..
+          JAVAPClasses=$(find classes -name '*.class' | sed 's|classes/||; s|\.class$||; s|/|.|g' | sort)
+          echo "classes found: $(echo "$JAVAPClasses" | wc -l)"
+          { echo "# entity-recon (task161 ladder step 1) — $(date -u +%FT%TZ)";
+            echo "kernel: purpur 1.21.10 latest, javap -p -c -classpath classes";
+            for c in $JAVAPClasses; do
+              echo; echo "==== $c ====";
+              javap -p -c -classpath classes "$c" 2>/dev/null || echo "(javap failed for $c)";
+            done; } > entity-recon.txt
+          test -s entity-recon.txt
+          wc -l entity-recon.txt
+      - name: Upload entity-recon artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: entity-recon
+          path: entity-recon.txt
           retention-days: 30
