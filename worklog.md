@@ -776,3 +776,22 @@ Work Log:
 
 Stage Summary:
 - Observability раунда восстановлена полностью: recon booted-ядра, F4 churn, mobcaps, MSPT-окна. Первое измерение канонического условия владельца: 20 TPS / 49.6ms — под min-of-2 проверкой (run#16). Ключевой риск базовой линии выявлен: снапшот-вариативность мира
+
+---
+Task ID: S7-97 (task166/167) — GC-SHAPE-1 REFUTED by GC physics + REDSTONE/LEVELTICKS-LENS STEP-0 (fifth/sixth STEP-0 kills)
+Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911, Job 390768)
+Task: task166 GC-SHAPE-1 STEP-0 (javap new-scan verified alloc sites) -> gate -> lever switch
+
+Work Log:
+- run#16 (2ebb854) absorbed: 20 TPS run#15 REFUTED (runner-variance law), baseline re-anchored 12.5-13.5 TPS / 74-80ms; GOAL doc re-anchored (run#16 column + law note)
+- GC-SHAPE-1 STEP-0: javap new-scan optimiseRandomTick = EXACTLY ONE new (BlockPos @180, GUARDED rand<tickingList.size() => hit-only alloc); retention consumers (scheduleTick stores pos) make reuse unsound anyway
+- GC REALITY measured (scripts/gc_steady_scan.py, banked): run#12/15 gc.log steady-state — eden ~2.4GB/GC, interval 4.1-5.9s => alloc 412-598 MB/s; young-GC STW duty 0.50-0.56% wall (avg 13.2-17.1ms pause); hit-path CPU bounds BlockPos <=30-50K hits/tick = 2-3% of alloc => relief <=0.015% MSPT; Brain-LHM churn 0.40-0.69% alloc => <=0.005% MSPT. Both 200-600x < 3% gate => REFUTED
+- GC-FAMILY LAW (portfolio-level): ledger "GC 9.5%" = concurrent worker CPU (G1CM/RebuildRemSet oop_iterate leaves), NOT MSPT (spare cores); garbage-shape relief = alloc_share x STW-duty 0.5%; pause size ∝ LIVE set => ALLOC-SHAPE FAMILY DEAD as MSPT lever, future alloc-shape STEP-0s cancelled
+- Lever switch per mission: REDSTONE-LENS STEP-0 (task167). Lane re-measured: bucket 8.28/11.55% (run#12/15), entry-census = LevelTicks.tick 8.08/11.35% (старый "~3.8% redstone" = bucket mirage; реальный лейн = scheduled-tick DRAIN)
+- VERIFIED CONTRACT (javap /tmp/pp kernel purpur-1.21.10.jar): LevelTicks.runCollectedTicks = poll + toRunThisTickSet.remove + alreadyRunThisTick.add + BiConsumer.accept(pos, type); ServerLevel.tickBlock = getBlockState -> state.is -> state.tick -> (tickedBlocksOrFluids & 7) != 0 => moonrise$executeMidTickTasks every 7/8 scheduled ticks
+- Decomposition: reads 2.65/3.77% (irreducible per-query; batch-resolve saves <=0.5%), signal-eval 1.18/1.43%, queue 0.76/0.50%, Bukkit glue 0.29/0.62%, mid-tick-yield 1.57/1.83% (whole-server), tail = JIT-inlined heterogeneous bodies (no block class >0.02%) => ALL slices <3% solo => REFUTED-as-solo (pre-code), family-bank parked
+- NO new CI runs (STEP-0 refutations don't need A/B); artifacts banked: research/levelticks-recon-2026-09-17/ (ANALYSIS.md + tickBlock.javap + LevelTicks.javap + LevelChunkTicks.javap), scripts/gc_steady_scan.py
+- 0 sandbox boots; INJECTS-ONLY intact (javap on offline materialized kernel = not a boot)
+
+Stage Summary:
+- Шестой и седьмой consecutive STEP-0 kills (GC-SHAPE-1, REDSTONE-LENS); GC-семейство закрыто ФИЗИКОЙ (потолок семейства <0.5% MSPT); очередь перестроена: BRAIN-LENS (task168, ~3.0%, единственный >=3% GO-кандидат) -> minecarts STEP-0 (task169) -> bench-4 fake-players. Честная арифметика 20 TPS задокументирована в GOAL: соло-рычагов >=3% почти не осталось — нужен либо семейный агрегат с пересмотром правила гейта, либо инфраструктурный сдвиг (pinned runner + bench-4), либо новая анатомия minecarts
