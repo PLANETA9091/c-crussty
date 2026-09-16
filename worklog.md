@@ -669,3 +669,20 @@ Work Log:
 
 Stage Summary:
 - task161 round DELIVERED: research doc + Rust core + parity tests. Lever NOT claimed vs G1/G2 — ladder: (1) CI recon leg (javap artifact entity-recon from booted jar: EntityLookup/ChunkEntitySlices/Entity AABB mutation sites), (2) shadow-diff diagnostic leg (zero mismatches required), (3) A/B x2 env CRUSSTY_NATIVE_ENT_BP, (4) TASK-148-style promotion. PUSH-MEMO (scoreboard 0.99%) pre-ranked as next lever same bucket. INJECTS-ONLY: 0 sandbox boots. Push: c-crussty + dev-logs (CLAIMS TASK-229); CRUSSTY untouched (pristine)
+
+---
+Task ID: S7-93 (TASK-230) — LLM-ARCH mega-research round («архитектуры от дипсика», CPU-only)
+Agent: agent-7625532f (session web-f7888d46, live owner window 2026-09-17 2026-09-16T17:51Z)
+Task: owner directives «рисерч делай от дипсика например архитектуры :)» + «без гпу тоже надо мега ускорение» + «крон с гитхаб токеном чтобы не потерять вообще всё»
+
+Work Log:
+- protocol: creds FIRST -> tails (my-project/c-crussty/CLAIMS) -> 3x pull --rebase (c-crussty 30487bb, dev-logs 7568922, CRUSSTY pristine 1f4c06a untouched)
+- 3 LLM passes (z-ai-web-dev-sdk backend; q3 thinking ON): (q1) перенос 7 DeepSeek/LLM-паттернов (MLA/DeepSeekMoE/MTP/PagedAttention/FlashAttention/DualPipe/FP8) -> Paper tick-loop; (q2) полный CPU-only survey (SoA/SIMD/GC off-heap/арена/амортизация/параллелизм/palette-lens/boat/JNI-порог); (q3) красная команда по 5 кандидатам + выбор победителя. Raw: research/llm-arch-2026-09-17/ (q1 14.4KB, q2, q3, w1-w4; 2 веб-поиска упали 429, перепрогнаны CLI)
+- ЧЕСТНЫЕ ФИЛЬТРЫ над выдачей: MLA->palette вырожден (палитра УЖЕ латентное сжатие); MoE->boat-эксперты = метафора без routing-механики; DualPipe->chunk preload = гонка с moonrise (чанки уже пайплайнятся вне тик-потока); FP8-квантование = парити-запрет; MTP -> трансформирован в BATCH-RNG (бит-точный 48-bit LCG батч за один JNI-вызов — амортизация входа вместо невозможной SIMD-параллелизации зависимого потока)
+- КРАСНАЯ КОМАНДА вердикты: ENT-BP wiring NO-GO СОЛО (потолок 1.5-1.8% < гейта 3%; entity_mirror.rs = инфраструктура, production-клейм припаркован; future-банда ENT-BP+PUSH-MEMO+ENT-DATA ~4% потолок, реалистично sub-3); PALETTE per-get lens NO-GO (JNI-вход 30-50нс x 10k+ вызовов/тик >= выигрыш от 3.7% leaf); BOAT whole-body hot-patch GO = ПОБЕДИТЕЛЬ (AbstractBoat.tick 9.66% presence, потолок 4.5-6.2%); RANDOM-TICK BATCH-RNG GO резерв (3.2%); GC allocation-shape условный GO (2.8-4.7%, ждёт allocation-профиль F2)
+- ПРЕДРЕГИСТРАЦИЯ ПОБЕДИТЕЛЯ (task162, S7-93): BOAT whole-body hot-patch, мишень AbstractBoat.tick; ШАГ 0 kill-gate = exact-frame анатомия из raw collapsed run#10 (self + SIMD-able callees против JNI-upcalls в мир): заменяемая база < 4% MSPT => рычаг опровергнут ДО реализации, следующий = BATCH-RNG; гейт >=3% CI A/B min-of-2 (CRUSSTY_NATIVE_BOAT); parity = bit-exact pos/vel/флаги 20,000 тиков (вода/лава/лёд/сухопутье/падение/пассажир); лестница (0)анатомия -> (1)Rust core+parity cargo -> (2)shadow-diff CI -> (3)A/B x2 -> (4)TASK-148 promotion; клиентский lerp = сетевой слой, сервер authoritative
+- 3 новые CI-метрики пререгистрированы: F1 JNI/module self-time share (контроль §8), F2 allocation rate/тик (питает GC-лейн), F3 per-class tick split top-N
+- Доставлено: docs/RESEARCH_ARCH_LLM_2026-09-17.md (дистиллят с фильтрами и арифметикой) + research/llm-arch-2026-09-17/ raw; ledger §109; INDEX row; CLAIMS TASK-230
+
+Stage Summary:
+- Раунд дал ОДНОГО нового победителя (BOAT, 4.5-6.2%) и два измеримых закрытия до реализации (ENT-BP соло, PALETTE per-get) — экономия минимум двух раундов; реалистичный потенциал связки [BOAT + BATCH-RNG + ENT-BP-инфра + GC-shape] ~6-10% MSPT без GPU; один рычаг за раунд: следующий тик = ШАГ 0 анатомия BOAT (килл-гейт) -> Rust core либо BATCH-RNG. INJECTS-ONLY: 0 sandbox boots
