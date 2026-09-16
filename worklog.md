@@ -872,3 +872,18 @@ Work Log:
 
 Stage Summary:
 - S7-102 absorb ready: absorb_run18.sh → bench4_baseline.py run17 run18 → paired verdict + min-of-2 conservative baseline; затем recon_lanes --diff run18 vs run17 (пары leg1/leg2) → выбор следующего рычага из min-of-2 профиля
+---
+Task ID: S7-102 (absorb tick, 07:43+08, Job 390768) — SANDBOX RESET recovered; BENCH-4 BASELINE MIN-OF-2 established; run#19 N=16 probe dispatched
+Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609170743)
+Task: absorb run#18 leg2 + min-of-2 verdict + next-lever probe dispatch
+
+Work Log:
+- ENVIRONMENT EVENT: sandbox reset (workspace = stale snapshot; repos/creds/bootstrap отсутствовали). RECOVERY: /tmp/my-project teardown snapshot 23:10Z (bootstrap_tick.sh с токеном + bench4_recon + bench3_research 1.8GB + worklog через S7-101); bootstrap восстановил ~/.git-credentials + re-cloned все 3 репо; верифицированы pushed states (c-crussty 7747a8f, dev-logs 563bf18, CRUSSTY 1f4c06a pristine). Нулевая потеря канонического состояния
+- run#18 35159240368 COMPLETED SUCCESS (23:10:26Z) → absorbed via absorb_run18.sh → run18/, ВСЕ 3 GATES PASS (FIXTURE-VALIDITY VALID: churn дельта 816/9.4% summons=0)
+- MIN-OF-2 VERDICT (bench4_baseline.py run17 run18): world MATCH, fp 4/4 MATCH, runners РАЗНЫЕ (9080657 vs 6746569) spread 10.7% => baseline = run#17 76.98ms / TPS 12.8-14.6 — консервативная планка будущих A/B
+- MIN-OF-2 PROFILE: recon_lanes run18 --diff run17 → research/bench4-recon-2026-09-17/run18/lanes_vs_run17.txt; структурно стабилен (PalettedContainer.get 3.42/3.62 closed, optimiseRandomTick 1.96/2.56 refuted, spawn-лейн 0.73/0.6); заменимых соло >=3% НЕТ
+- DISPATCH run#19 35163894978 (master 7747a8f, fake_players=16, 900s, 23:48Z) = N=16 SCALING PROBE — pre-registered кандидат: network/visibility + spawn-proximity рост с N; absorb next tick
+- ledger: GOAL (run#18 колонка + min-of-2 блок + СТАТУС S7-102) + RESULTS_LEDGER §118 + INDEX 238; INJECTS-ONLY: 0 sandbox boots
+
+Stage Summary:
+- BENCH-4 база min-of-2 = run#17 76.98ms: каноническое условие владельца теперь имеет чётную планку. Sоло-эра подтверждена дважды. Следующий рычаг решит N=16 probe (если лейн >=3% replaceable) — иначе только owner-пути (семейные агрегаты / pinned runner)

@@ -27,11 +27,11 @@
 
 ## база и цель
 
-| метрика | run#10 | run#11 | run#15 (sweeps=1) | run#16 (paired) | run#17 (BENCH-4 fp=4) | цель |
-|---|---|---|---|---|---|---|
-| MSPT avg | 80.86ms | 84.47ms (разброс ~4% => A/B paired обязателен) | **49.6ms steady (tickmonitor, 8 окон)** | **74-80ms steady** | **76.98ms headline / 72.1ms [⚡]-окна** | **<= 50ms** |
-| TPS | ~13.5 | ~13.3 | **20.0 стабильных ~13 мин** | **12.5-13.5** | **12.8-14.6 steady** | **20.0** |
-| нужно срезать | | | | | **базовая линия после run#17: ~-40% CPU** | |
+| метрика | run#10 | run#11 | run#15 (sweeps=1) | run#16 (paired) | run#17 (BENCH-4 fp=4, leg1) | run#18 (BENCH-4 fp=4, leg2) | цель |
+|---|---|---|---|---|---|---|---|
+| MSPT avg | 80.86ms | 84.47ms (разброс ~4% => A/B paired обязателен) | **49.6ms steady (tickmonitor, 8 окон)** | **74-80ms steady** | **76.98ms headline / 72.1ms [⚡]-окна** | **85.24ms headline / 81.7ms [⚡]-окна** | **<= 50ms** |
+| TPS | ~13.5 | ~13.3 | **20.0 стабильных ~13 мин** | **12.5-13.5** | **12.8-14.6 steady** | **11.6-12.7 steady** | **20.0** |
+| нужно срезать | | | | | **BENCH-4 база min-of-2 = run17: ~-40% CPU** | |
 
 > **RUNNER-VARIANCE LAW (run#16, S7-96d)**: 20 TPS run#15 REFUTED min-of-2 —
 > идентичный снапшот (item_frame 2714(160)), идентичные входы, но 12.5-13.5 TPS /
@@ -72,6 +72,21 @@
 > => run#18 35159240368 (leg 2, fp=4, master f3c82b3) деспатчен 22:45Z —
 > bench-4 база min-of-2 paired; выбор следующего рычага — после absorb run#18.
 
+> **run#18 (S7-102, leg 2, id 35159240368, sha 7747a8f-era master)**: SUCCESS
+> 23:10:26Z; FIXTURE-VALIDITY VALID (churn дельта 816 / 9.4%, summons=0;
+> alive-check стабилен). MSPT 85.24ms headline / 81.7ms окна, TPS 11.6-12.7,
+> cpu_idx 6746569 (run#17: 9080657) — ДРУГОЙ runner, leg spread 10.7%.
+> => **BENCH-4 BASELINE MIN-OF-2 = run#17: 76.98ms / TPS 12.8-14.6** (консервативная
+> планка для всех будущих A/B; спред подтверждает runner-variance law).
+> Профиль leg1/leg2 структурно стабилен (research/bench4-recon-2026-09-17/run18):
+> PalettedContainer.get 3.42/3.62 (closed lane), optimiseRandomTick 1.96/2.56
+> (refuted), advanceSeed 1.53/1.29 (refuted solo), spawn-лейн 0.73/0.6%;
+> заменимых соло >=3% в min-of-2 профиле НЕТ.
+> => run#19 35163894978 деспатчен 23:48Z = N=16 SCALING PROBE (сценарий, не
+> модульный вин): метрики роста network/visibility (sendChanges 0.77% при N=4) +
+> spawn-proximity (LocalMobCapCalculator) с N; absorb next tick — если lane
+> >=3% replaceable при реалистичном N => следующий рычаг.
+
 ## MSPT budget ledger (run#11, % от CPU тика, обновляется каждый раунд)
 
 | лейн / кластер | presence | replaceable-ядро (верифицировано) | статус |
@@ -110,8 +125,12 @@
 > (35159240368) in flight => min-of-2 paired. Остальные пути: (2) семейные
 > агрегаты <3% патчей (требуют пересмотра правила гейта владельцем); (3)
 > инфраструктура: pinned/dedicated runner для честных A/B; (4) выбор следующего
-> рычага — из min-of-2 профиля после absorb run#18 (кандидаты: entity-лейн
-> агрегаты, network/visibility lane рост с N).
+> рычага — из min-of-2 профиля. РАУНД S7-102: база min-of-2 = run#17 76.98ms
+> (leg2 85.24ms, spread 10.7%, оба VALID); заменимых соло >=3% нет; run#19
+> 35163894978 (N=16 scaling probe) in flight — определит, растут ли
+> network/visibility/spawn-proximity лейны до >=3% replaceable при большем N;
+> если нет — остаются пути (2) семейные агрегаты (нужна owner-санкция на
+> пересмотр гейта) и (3) pinned-runner (owner-инфраструктура).
 
 ## калибровка профилировщика (banked, task165)
 
