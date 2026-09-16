@@ -104,8 +104,19 @@ jobs:
           # paperclip applies patches at boot into cache/versions — the TRUE
           # kernel classes live there, NOT in the paperclip jar (run#11
           # root-cause: standalone recon job unzip'd the paperclip, matched
-          # nothing, shipped a header-only artifact)
-          PATCHED_JAR="$(find world3-run/server/cache world3-run/server/versions -name '*.jar' -size +20M 2>/dev/null | head -1 || true)"
+          # nothing, shipped a header-only artifact).
+          # run#12 root-cause (recon bug #2): find picked cache/mojang_1.21.10.jar
+          # (VANILLA bundler, cache sorts before versions) — the patched kernel
+          # is versions/<v>/purpur-<v>.jar. Fix: content-test every >20M jar
+          # for net/minecraft/server/level/ServerLevel.class (definitive).
+          # run#13: + RNG contract classes (task165 BATCH-RNG: advanceSeed
+          # LCG semantics + LevelChunkSection.randomTick pick loop).
+          PATCHED_JAR=""
+          for cand in $(find world3-run/server/cache world3-run/server/versions -name '*.jar' -size +20M 2>/dev/null); do
+            if unzip -l "$cand" 2>/dev/null | grep -q 'net/minecraft/server/level/ServerLevel.class'; then
+              PATCHED_JAR="$cand"; break
+            fi
+          done
           if [ -z "$PATCHED_JAR" ]; then
             echo "::warning::no patched kernel jar found — recon skipped"; mkdir -p world3-run; echo "no patched jar found" > world3-run/entity-recon.txt
           else
@@ -118,6 +129,15 @@ jobs:
               'ca/spottedleaf/moonrise/patches/chunk_system/level/entity/*.class' \
               'ca/spottedleaf/moonrise/common/util/*.class' \
               'ca/spottedleaf/moonrise/patches/chunk_system/level/ServerLevel*.class' \
+              'net/minecraft/world/level/levelgen/RandomSource*.class' \
+              'net/minecraft/world/level/levelgen/BitRandomSource*.class' \
+              'net/minecraft/world/level/levelgen/LegacyRandomSource*.class' \
+              'net/minecraft/world/level/levelgen/WorldgenRandom*.class' \
+              'net/minecraft/world/level/levelgen/ThreadSafeLegacyRandomSource*.class' \
+              'net/minecraft/world/level/levelgen/XoroshiroRandomSource*.class' \
+              'net/minecraft/world/level/levelgen/RandomSupport*.class' \
+              'net/minecraft/world/level/chunk/LevelChunkSection*.class' \
+              'net/minecraft/world/level/chunk/LevelChunk.class' \
               -d recon/classes || true
             JAVAP_BIN="$(command -v javap || true)"
             [ -z "$JAVAP_BIN" ] && [ -n "${JAVA_HOME:-}" ] && JAVAP_BIN="$JAVA_HOME/bin/javap"
