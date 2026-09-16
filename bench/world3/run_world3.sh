@@ -131,7 +131,13 @@ for APURL in \
   "https://github.com/async-profiler/async-profiler/releases/latest/download/async-profiler-linux-x64.tar.gz"; do
   if fetch "$APURL" "$WORK/ap.tgz"; then
     mkdir -p "$WORK/ap" && tar xzf "$WORK/ap.tgz" -C "$WORK/ap" --strip-components=1
-    ASPROF="$(find "$WORK/ap" -type f -name 'asprof*' 2>/dev/null | head -1)"
+    ASPROF="$(find "$WORK/ap" -type f -name asprof 2>/dev/null | head -1)"
+    # run#6 lesson: the 'asprof*' prefix glob matched include/asprof.h and the
+    # harness tried to EXECUTE the C header (Permission denied => zero profiles
+    # with a green run). Exact name + executability check.
+    if [ -n "$ASPROF" ] && [ ! -x "$ASPROF" ]; then
+      chmod +x "$ASPROF" 2>/dev/null || ASPROF=""
+    fi
   if [ -z "$ASPROF" ]; then
     log "asprof not found; tar top entries: $(tar tzf "$WORK/ap.tgz" 2>/dev/null | head -8 | tr '\n' ' ')"
   fi
