@@ -36,7 +36,7 @@ NATIVES_TGZ="${NATIVES_TGZ:-https://github.com/PLANETA9091/c-crussty/releases/do
 PURPUR_URL="${PURPUR_URL:-https://api.purpurmc.org/v2/purpur/1.21.10/latest/download}"
 WORK="${WORK:-$PWD/world3-run}"
 SERVER="$WORK/server"
-BOOT_TIMEOUT="${BOOT_TIMEOUT:-420}"
+BOOT_TIMEOUT="${BOOT_TIMEOUT:-600}"
 NATIVES_MODE="unknown"
 
 log() { echo "[world3 $(date -u +%H:%M:%SZ)] $*"; }
@@ -126,6 +126,14 @@ else
   cp "$(dirname "$0")/../../target/release/libcrussty.so" "$MODULE_DIR/"
 fi
 cp "$(dirname "$0")/../../module.json" "$MODULE_DIR/" 2>/dev/null || true
+# closed-source natives live INSIDE the module dir (run #2 + TASK-86 lesson:
+# the loader expects libpaper_native_jni.so in modules/crussty/, not in a
+# server-level native/ dir — module logged "missing libpaper_native_jni.so"
+# when they were staged to $SERVER/native only)
+if compgen -G "$SERVER/native/libpaper_native*.so" > /dev/null; then
+  cp "$SERVER/native"/libpaper_native*.so "$MODULE_DIR/"
+  log "natives staged into module dir: $(ls "$MODULE_DIR" | tr '\n' ' ')"
+fi
 
 RUNTIME_SO="${RUNTIME_SO:-$WORK/libcrussty_runtime.so}"
 test -s "$RUNTIME_SO" || die "libcrussty_runtime.so not staged at $RUNTIME_SO"
@@ -146,6 +154,11 @@ white-list=false
 EOF
 
 # --- 4. launch with console fifo ------------------------------------------
+# Run #2 lesson (run 35107535812): Paper resolves eula.txt/server.properties/
+# world/ against CWD — launching from the repo root made eula.txt invisible
+# ("Failed to load eula.txt") and would have re-created a fresh world outside
+# $SERVER. cd into the server dir first.
+cd "$SERVER"
 mkfifo "$WORK/console.in" 2>/dev/null || true
 tail -f "$WORK/console.in" | java \
   "-agentpath:$RUNTIME_SO=modules=$SERVER/modules;versions=$SERVER/versions;kernel=purpur-1.21.10.jar" \
