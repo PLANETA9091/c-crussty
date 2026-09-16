@@ -98,6 +98,41 @@ jobs:
           cp "$RUNNER_TEMP/.built" world3-run/server/modules/crussty/
           bash bench/world3/run_world3.sh
 
+      - name: Entity/state recon (task161/task164 ladder step 1 — javap FROM the booted patched jar)
+        run: |
+          set -euo pipefail
+          # paperclip applies patches at boot into cache/versions — the TRUE
+          # kernel classes live there, NOT in the paperclip jar (run#11
+          # root-cause: standalone recon job unzip'd the paperclip, matched
+          # nothing, shipped a header-only artifact)
+          PATCHED_JAR="$(find world3-run/server/cache world3-run/server/versions -name '*.jar' -size +20M 2>/dev/null | head -1 || true)"
+          if [ -z "$PATCHED_JAR" ]; then
+            echo "::warning::no patched kernel jar found — recon skipped"; mkdir -p world3-run; echo "no patched jar found" > world3-run/entity-recon.txt
+          else
+            echo "patched kernel: $PATCHED_JAR"
+            mkdir -p recon/classes
+            unzip -q -o "$PATCHED_JAR" \
+              'net/minecraft/world/entity/Entity*.class' \
+              'net/minecraft/world/entity/vehicle/*.class' \
+              'net/minecraft/server/level/ServerLevel*.class' \
+              'ca/spottedleaf/moonrise/patches/chunk_system/level/entity/*.class' \
+              'ca/spottedleaf/moonrise/common/util/*.class' \
+              'ca/spottedleaf/moonrise/patches/chunk_system/level/ServerLevel*.class' \
+              -d recon/classes || true
+            JAVAP_BIN="$(command -v javap || true)"
+            [ -z "$JAVAP_BIN" ] && [ -n "${JAVA_HOME:-}" ] && JAVAP_BIN="$JAVA_HOME/bin/javap"
+            CLASSES=$(find recon/classes -name '*.class' | sed 's|recon/classes/||; s|\.class$||; s|/|.|g' | sort)
+            echo "classes: $(echo "$CLASSES" | wc -l)"
+            { echo "# entity-recon (booted patched kernel) — $(date -u +%FT%TZ)";
+              echo "kernel jar: $PATCHED_JAR";
+              for c in $CLASSES; do
+                echo; echo "==== $c ====";
+                "$JAVAP_BIN" -p -c -classpath recon/classes "$c" 2>/dev/null || echo "(javap failed for $c)";
+              done; } > world3-run/entity-recon.txt
+            wc -l world3-run/entity-recon.txt
+            cp "$PATCHED_JAR" world3-run/patched-kernel.jar
+          fi
+
       - name: Bottleneck report gate
         run: |
           test -s world3-run/BOTTLENECKS_3.md \
@@ -118,45 +153,6 @@ jobs:
             world3-run/server-stdout.log
             world3-run/gc.log
             world3-run/ap.log
+            world3-run/entity-recon.txt
+            world3-run/patched-kernel.jar
             world3-run/spark-report/
-
-  # task161 ENT-BP ladder STEP 1 — CI recon leg: javap dump of the entity
-  # classes FROM the exact kernel jar the benchmark boots (not from memory).
-  # Enumerates EntityLookup/ChunkEntitySlices/Entity AABB mutation sites so the
-  # full write-path coverage design (staleness matrix, module worklog S7-92)
-  # is grounded in real bytecode. Cheap: no world, no boot.
-  entity-recon:
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Fetch kernel jar + dump entity classes via javap
-        run: |
-          set -euo pipefail
-          mkdir -p recon/jar recon/classes
-          curl -sSfL --retry 3 -o recon/purpur.jar \
-            "https://api.purpurmc.org/v2/purpur/1.21.10/latest/download"
-          cd recon/classes
-          unzip -q -o ../purpur.jar \
-            'net/minecraft/world/entity/Entity*.class' \
-            'net/minecraft/server/level/ServerLevel*.class' \
-            'ca/spottedleaf/moonrise/patches/chunk_system/level/entity/*.class' \
-            'ca/spottedleaf/moonrise/common/util/*.class' \
-            || true
-          cd ..
-          JAVAPClasses=$(find classes -name '*.class' | sed 's|classes/||; s|\.class$||; s|/|.|g' | sort)
-          echo "classes found: $(echo "$JAVAPClasses" | wc -l)"
-          { echo "# entity-recon (task161 ladder step 1) — $(date -u +%FT%TZ)";
-            echo "kernel: purpur 1.21.10 latest, javap -p -c -classpath classes";
-            for c in $JAVAPClasses; do
-              echo; echo "==== $c ====";
-              javap -p -c -classpath classes "$c" 2>/dev/null || echo "(javap failed for $c)";
-            done; } > entity-recon.txt
-          test -s entity-recon.txt
-          wc -l entity-recon.txt
-      - name: Upload entity-recon artifact
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: entity-recon
-          path: entity-recon.txt
-          retention-days: 30

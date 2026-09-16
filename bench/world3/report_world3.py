@@ -130,6 +130,7 @@ def parse_collapsed(path, limit_top=40):
     bucket_self = collections.Counter()
     phase_self = collections.Counter()
     kind_self = collections.Counter()
+    presence_by_frame = collections.Counter()
     if not os.path.exists(path):
         return None
     with open(path, encoding="utf-8", errors="replace") as f:
@@ -152,6 +153,8 @@ def parse_collapsed(path, limit_top=40):
             bucket_self[bucket_of(leaf)] += n
             phase_self[phase_of(frames)] += n
             kind_self[kind_of_leaf(leaf)] += n
+            for fr in frames:
+                presence_by_frame[fr.split("(")[0]] += n
     return {
         "total": total,
         "top_self": top_self,
@@ -159,6 +162,7 @@ def parse_collapsed(path, limit_top=40):
         "bucket_self": bucket_self,
         "phase_self": phase_self,
         "kind_self": kind_self,
+        "presence_by_frame": presence_by_frame,
     }
 
 
@@ -376,6 +380,45 @@ for label, prof, topn in (("CPU", cpu, 40), ("WALL", wall, 20), ("ALLOC", alloc,
     for frame, n in prof["top_self"].most_common(topn):
         share = (100.0 * n / total) if total else 0.0
         lines.append(f"| `{frame}` | {kind_of_leaf(frame)} | {n} | {share:.1f}% |")
+
+# --- preregistered CI metrics (task164/S7-95: F1, F2, F3) -------------------
+lines.append("")
+lines.append("## Preregistered CI metrics (TASK-230 F1/F2/F3)")
+lines.append("")
+# F1 — JNI/module self-time share (kernel §8 law: < 2%)
+if cpu:
+    tot = cpu["total"]
+    f1 = sum(n for name, n in cpu["bucket_self"].items()
+             if name in ("c-crussty module (Rust)", "CRUSSTY engine runtime (Rust)",
+                         "Crussty CE natives (JNI)"))
+    verdict = "PASS (< 2%)" if f1 / tot < 0.02 else "FAIL (>= 2% — investigate)"
+    lines.append(f"- **F1 module/JNI self-time share:** {f1} / {tot} = **{100.0*f1/tot:.2f}%** — §8 {verdict}")
+# F3 — per-class entity tick split (presence over CPU stacks)
+if cpu:
+    ent = re.compile(r"net/minecraft/world/entity/[a-z]+/[A-Za-z0-9_$]+\.tick")
+    per = collections.Counter()
+    for frame, n in cpu["presence_by_frame"].items():
+        if ent.match(frame):
+            per[frame] = n
+    if per:
+        lines.append("- **F3 per-class entity tick split (top-12 by stack presence):**")
+        lines.append("")
+        lines.append("| entity class tick | presence samples | share of CPU |")
+        lines.append("|---|---|---|")
+        for frame, n in per.most_common(12):
+            lines.append(f"| `{frame}` | {n} | {100.0*n/cpu['total']:.2f}% |")
+# F2 — allocation profile top sites + GC-based MB/s estimate
+if alloc:
+    lines.append("- **F2 allocation profile (top-10 sites by alloc-event samples; "
+                 "interval-relative shares):**")
+    lines.append("")
+    lines.append("| alloc site | samples | share |")
+    lines.append("|---|---|---|")
+    for frame, n in alloc["top_self"].most_common(10):
+        lines.append(f"| `{frame}` | {n} | {100.0*n/alloc['total']:.1f}% |")
+if gc and gc["events"]:
+    lines.append(f"- **F2 GC-churn estimate:** {gc['events']} pauses / total {gc['total_ms']:.0f} ms STW "
+                 f"(see GC section above; MB/s needs region-size constants — wired next tick)")
 
 if not cpu and seen_done == "1":
     lines.append("")

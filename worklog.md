@@ -705,3 +705,20 @@ Work Log:
 
 Stage Summary:
 - task163 DELIVERED: bench3 v2 (GC/phase/JVM-native/mspt/entity coverage, 3-window profiling) + entity-recon CI leg (task161 step 1) + DeepSeek research doc + palette_gather.rs core (79/79) + caller-census verdict (batch-lens refuted at 3.3% ceiling) + REDSTONE-LENS queued. One lever per round held; refutations banked with numbers. Push: c-crussty + dev-logs (CLAIMS TASK-231); CRUSSTY untouched pristine. INJECTS-ONLY: 0 sandbox boots all tick (CI boots sanctioned)
+
+---
+Task ID: S7-95 (task164) — BOAT STEP-0 kill-gate + F1/F2/F3 + recon-fix
+Agent: agent-7625532f (cron tick 2026-09-17 02:08 +08, Job 390639, trace 1a0ab4bc476caced-cron-agent-loop-202609170213)
+Task: DEFAULT MISSION per cron v2 — BOAT STEP-0 exact-frame anatomy from raw run#10 collapsed; if <4% => refutation row + BATCH-RNG switch (same round); F1/F2/F3 metrics; run#11 absorption
+
+Work Log:
+- FIRST STEP via persistent bootstrap_tick.sh (token baked — owner anti-loss directive works: wiped-$HOME tick restored in 3s) -> tails -> 3x pull --rebase (c-crussty e26c63c, dev-logs 5253b06, CRUSSTY pristine 1f4c06a)
+- run#11 world-bench-3 COMPLETED SUCCESS (35131335160): first FULL v2 coverage — wall-collapsed 85MB + alloc-collapsed 109MB + GC (216 pauses/4.77s STW/0 Full) + MSPT avg 84.47ms (variance vs run#10 80.86 = ~4%, paired A/B discipline confirmed necessary); artifact fetched and folded to bench3_research/run11
+- BOAT STEP-0 (task164, bench/world3/task164_boat_anatomy.py): presence 9.66% CONFIRMED but ownership model refutes the lever — leaf split: MISC 3.32 / JVM-BOUND 2.54 / MOONRISE-COLLISION 0.97 (do-not-duplicate law) / KERNEL-WORLD-READS 0.96 (move-not-save) / MIRROR-ENTBP 0.88 (boats = TOP consumer of entity_mirror: 2.31 of 3.79 broadphase lane presence) / BOAT-OWNED 0.76 / PREDICATE 0.22 => **BOAT REFUTED at 0.76% vs 4% kill-gate** (generous ceiling <2%); preregistered fallback armed
+- BATCH-RNG claimed as next lever per preregistration: random-tick lane 3.9% cluster (optimiseRandomTick 2.2% self + advanceSeed 1.7%; alloc sites #2/#4); bit-exact contract NEEDS advanceSeed/optimiseRandomTick bytecode => core lands NEXT tick from recon artifact (no guessing — "from the booted jar" law)
+- RECON ROOT-CAUSED + FIXED: standalone entity-recon job unzipped the PAPERCLIP jar (classes live in the PATCHED kernel materialized at boot into cache/) -> produced header-only artifact (still green — test -s passed on header; artifact upload then deduped/absent in list). Fix shipped: entity-recon is now a POST-BOOT step inside world-bench job (javap from the real booted jar, JDK from setup-java) + patched-kernel.jar uploaded as artifact (60MB, retention) -> future recon can run offline locally too
+- F1/F2/F3 WIRED into report_world3.py and validated on run#11 real data: F1 module/JNI self-time 0.00% (§8 PASS), F3 per-class entity tick split top-12 (AbstractBoat 9.70% top, NEW: Brain.tick 6.85% mob-AI cluster, minecarts ~5.3% combined, Villager 3.47%), F2 alloc top-10 sites + GC-churn line (MB/s estimate needs region constants — next)
+- Deliverables: docs/RESEARCH_BOAT_STEP0_2026-09-17.md (verdict + ownership model + positive yield), bench/world3/task164_boat_anatomy.py, report v2.1 (F1/F2/F3), workflow recon fix
+
+Stage Summary:
+- STEP-0 discipline saved an entire implementation round: 9.66%-presence mirage -> 0.76% replaceable. Positive yield: boats identified as entity_mirror's top consumer (vehicle-dense A/B planned), Brain.tick 6.85% discovered as next big AI cluster, recon leg unblocked for BATCH-RNG. Round closes with BATCH-RNG claimed + recon artifact pipeline fixed. INJECTS-ONLY: 0 sandbox boots
