@@ -27,11 +27,11 @@
 
 ## база и цель
 
-| метрика | run#10 | run#11 | run#15 (sweeps=1) | run#16 (paired) | цель |
-|---|---|---|---|---|---|
-| MSPT avg | 80.86ms | 84.47ms (разброс ~4% => A/B paired обязателен) | **49.6ms steady (tickmonitor, 8 окон)** | **74-80ms steady** | **<= 50ms** |
-| TPS | ~13.5 | ~13.3 | **20.0 стабильных ~13 мин** | **12.5-13.5** | **20.0** |
-| нужно срезать | | | | **базовая линия после run#16: ~-40% CPU** | |
+| метрика | run#10 | run#11 | run#15 (sweeps=1) | run#16 (paired) | run#17 (BENCH-4 fp=4) | цель |
+|---|---|---|---|---|---|---|
+| MSPT avg | 80.86ms | 84.47ms (разброс ~4% => A/B paired обязателен) | **49.6ms steady (tickmonitor, 8 окон)** | **74-80ms steady** | **76.98ms headline / 72.1ms [⚡]-окна** | **<= 50ms** |
+| TPS | ~13.5 | ~13.3 | **20.0 стабильных ~13 мин** | **12.5-13.5** | **12.8-14.6 steady** | **20.0** |
+| нужно срезать | | | | | **базовая линия после run#17: ~-40% CPU** | |
 
 > **RUNNER-VARIANCE LAW (run#16, S7-96d)**: 20 TPS run#15 REFUTED min-of-2 —
 > идентичный снапшот (item_frame 2714(160)), идентичные входы, но 12.5-13.5 TPS /
@@ -52,6 +52,25 @@
 > деспатчен 19:53Z. Если run#16 ~50ms — снапшот-вариативность подтверждена как
 > ДОМИНИРУЮЩИЙ фактор базовой линии, и все будущие A/B обязаны качать мир один раз
 > на пару прогонов (paired download discipline) либо использовать pinned-снапшот.
+
+> **run#17 (S7-100, BENCH-4 fp=4, id 35156292165, sha 8a6988d)**: первый
+> ФИКСТУР-ВАЛИДНЫЙ прогон канонического условия владельца — fake_players=4
+> (BenchFake-0..3, детерминированные UUID, кольцо ±320), gates 1a/1b/1c PASS:
+> spawnable 289 чанков; churn ACTIVE с summons=0 (polls=15, дельта 774 сущностей:
+> item 163->814, ocelot 4->100, zombie 67->96, creeper 80->105, bee 2->19) —
+> спавн/деспавн «как будто игроки есть» УПРАЖНЯЕТСЯ. База: 76.98ms headline /
+> 72.1ms steady, TPS 12.8-14.6. GC: duty 0.70% wall (321 паузы, avg 19.6ms) —
+> GC-FAMILY law сохраняется. Кросс-ран с run#16 НЕ парится (cpu_idx 9080657,
+> у world3_art run-env нет) — структурное сравнение профилей только.
+> Fresh recon (research/bench4-recon-2026-09-17/run17): профиль структурно
+> стабилен vs run#16 (kernel:other 21.5/22.0, entities 12.7/12.5, chunk 10.4/9.8);
+> spawn-лейн суммарно ~0.6% (NaturalSpawner 0.31 + createState 0.17 +
+> checkDespawn 0.05) — owner-сценарий НЕ взрывает спавн-лейн; новинки top-leaves:
+> ServerEntity.sendChanges 0.77% (visibility фейк-игроков), Entity.setDeltaMovement
+> 1.10% (топ entity-лейна), frem+fmod ~1.13%. ЗАМЕНЯЕМЫХ СОЛО >= 3% В НОВОМ
+> ПРОФИЛЕ НЕ ОБНАРУЖЕНО (PalettedContainer.get 3.62% — closed chunk lane).
+> => run#18 35159240368 (leg 2, fp=4, master f3c82b3) деспатчен 22:45Z —
+> bench-4 база min-of-2 paired; выбор следующего рычага — после absorb run#18.
 
 ## MSPT budget ledger (run#11, % от CPU тика, обновляется каждый раунд)
 
@@ -77,19 +96,22 @@
 - ~~REDSTONE-LENS~~ **REFUTED-solo (S7-97)**: drain-lane 8.28/11.55% decompose => все слайсы <3%; family-bank parked
 - ~~BRAIN-LENS~~ **REFUTED (S7-98)**: replaceable ядро 0.9-1.5% (dispatch + canStart-тела незаменимы)
 - ~~minecarts~~ **REFUTED (S7-98)**: весь лейн 2.15/2.58% < гейта (mirage ~5.3% исправлен)
-- **BENCH-4 FAKE-PLAYERS (task170, S7-99 = IMPLEMENTED)**: каноническое условие владельца (спавн/деспавн как при игроках) + честная база для всех будущих A/B. STEP-0 контракт оффлайн-верифицирован (research/bench4-recon-2026-09-17: placeNewPlayer public + внутренний SGPL 4-arg; doSendPacket isConnected-safe; Connection.tick не тикается для самодельного Connection; keepalive 15s timeout закрыт публичным handleKeepAlive через EmbeddedChannel-стаб; Dec-2025 kernel: PlayerMobDistanceMap заменён на LocalMobCapCalculator.playersNearChunk — то же требование к фикстуре). BenchFakePlayersPlugin (real ServerPlayer, детерминированные UUID, N=4 кольцо, alive-check heartbeat) + harness FAKE_PLAYERS + report FIXTURE-VALIDITY gate. VALIDATION RUN 35156292165 dispatched — absorb next tick
+- **BENCH-4 FAKE-PLAYERS (task170, S7-99 = IMPLEMENTED, S7-100 = VALIDATED)**: каноническое условие владельца (спавн/деспавн как при игроках) + честная база для всех будущих A/B. STEP-0 контракт оффлайн-верифицирован (research/bench4-recon-2026-09-17: placeNewPlayer public + внутренний SGPL 4-arg; doSendPacket isConnected-safe; Connection.tick не тикается для самодельного Connection; keepalive 15s timeout закрыт публичным handleKeepAlive через EmbeddedChannel-стаб; Dec-2025 kernel: PlayerMobDistanceMap заменён на LocalMobCapCalculator.playersNearChunk — то же требование к фикстуре). BenchFakePlayersPlugin (real ServerPlayer, детерминированные UUID, N=4 кольцо, alive-check heartbeat) + harness FAKE_PLAYERS + report FIXTURE-VALIDITY gate. VALIDATION: run#17 35156292165 absorbed — FIXTURE-VALIDITY VALID (gates 1a/1b/1c PASS, churn дельта 774 при summons=0); база leg 1 = 76.98ms / TPS 12.8-14.6; run#18 35159240368 (leg 2, fp=4) in flight — min-of-2 paired база bench-4 эры
 - entity_mirror infrastructure A/B (vehicle-dense, ENT-BP infra)
 Каждый шаг — паритет-банкованный; сводные A/B после каждого семейства.
 
-> **СТАТУС 20 TPS (S7-99)**: СОЛО-ЭРА ЗАВЕРШЕНА — восемь STEP-0 киллов подряд
+> **СТАТУС 20 TPS (S7-100)**: СОЛО-ЭРА ЗАВЕРШЕНА — восемь STEP-0 киллов подряд
 > (ENT-BP, BOAT, BATCH-RNG, GC-SHAPE-1, REDSTONE, BRAIN-LENS, MINECARTS);
-> верифицированных соло-рычагов >=3% НЕ ОСТАЛОСЬ. РАУНД S7-99: bench-4
-> fake-players РЕАЛИЗОВАН (task170) — validation run 35156292165 dispatched;
-> после absorb — fresh recon НОВОГО профиля (spawn-лейн + выросший AI-лейн),
-> из которого выбирается следующий рычаг (если появится >=3% replaceable-ядро).
-> Остальные пути: (2) семейные агрегаты <3% патчей (требуют пересмотра правила
-> гейта владельцем); (3) инфраструктура: pinned/dedicated runner для честных A/B.
-> НЕДОСТИЖИМО из текущего профиля без смены сценария — смена сценария = bench-4.
+> верифицированных соло-рычагов >=3% НЕ ОСТАЛОСЬ. BENCH-4 (task170) ВАЛИДИРОВАН:
+> run#17 — первый фикстур-валидный прогон owner-сценария (fake_players=4, churn
+> ACTIVE 774, spawn-лейн ~0.6% — сценарий НЕ взрывает профиль); fresh recon:
+> структура профиля стабильна vs run#16, заменимых соло >=3% в новом профиле нет
+> (PalettedContainer.get 3.62% — closed chunk lane). БАЗА BENCH-4: run#18 leg 2
+> (35159240368) in flight => min-of-2 paired. Остальные пути: (2) семейные
+> агрегаты <3% патчей (требуют пересмотра правила гейта владельцем); (3)
+> инфраструктура: pinned/dedicated runner для честных A/B; (4) выбор следующего
+> рычага — из min-of-2 профиля после absorb run#18 (кандидаты: entity-лейн
+> агрегаты, network/visibility lane рост с N).
 
 ## калибровка профилировщика (banked, task165)
 

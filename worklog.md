@@ -841,3 +841,19 @@ Work Log:
 
 Stage Summary:
 - S7-100 absorb ready: absorb_run17.sh -> recon_lanes.py --diff vs run16 baseline -> next lever STEP-0 from the NEW profile's re-ranked lanes
+---
+Task ID: S7-100 (absorb tick, 06:43+08, Job 390768) — BENCH-4 VALIDATED; run#18 leg-2 dispatched
+Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609170643)
+Task: stale-charter tick (Job 390768 dup) re-executed per latest state — S7-99b prepped absorb; this tick = absorb run#17 + fresh recon + dispatch leg 2
+
+Work Log:
+- bootstrap + 3x pull: no remote movement (c-crussty f3c82b3 = own S7-99b push; CRUSSTY pristine 1f4c06a untouched)
+- run 35156292165 COMPLETED SUCCESS (22:34:33Z, 9 min after tick start) → absorbed via bench4_recon/absorb_run17.sh → /home/z/my-project/scripts/bench3_research/run17 (patched-kernel.jar + cpu/wall/alloc-collapsed + entity-recon + gc.log + spark-report)
+- ABSORB GATES ALL PASS: FIXTURE-VALIDITY VALID (1a spawnable=289 const; 1b churn ACTIVE summons=0: polls=15, дельта 774 — item 163→814, ocelot 4→100, zombie 67→96, creeper 80→105, bee 2→19; 1c alive-check 4/4 ×10 — keepalive-стаб держит фикстуру живой; контракты C8/C10 подтверждены живьём)
+- БАЗА leg 1: MSPT headline 76.98ms / [⚡]-окна 72.1ms, TPS 12.8-14.6 steady; GC 321 паузы avg 19.6ms duty 0.70% wall — GC-FAMILY law сохраняется
+- FRESH RECON: bench/world3/recon_lanes.py run17 --diff world3_art(run#16) → research/bench4-recon-2026-09-17/run17/lanes_vs_run16.txt. Профиль структурно стабилен (kernel:other 21.46/22.01, entities 12.74/12.47, chunk 10.37/9.75); spawn-лейн ~0.6% — owner-сценарий НЕ взрывает профиль; новинки: ServerEntity.sendChanges 0.77%, setDeltaMovement 1.10%, frem+fmod 1.13%; ЗАМЕНЯЕМЫХ СОЛО >=3% НЕТ (PalettedContainer.get 3.62% = closed chunk lane). Кросс-ран с run#16 не парится (cpu_idx 9080657, у world3_art нет run-env) — S7-96d law соблюдена
+- DISPATCH run#18 35159240368 (master f3c82b3, fake_players=4, sweeps=0, 900s, 22:45Z, HTTP 204 → in_progress) = bench-4 база leg 2 → min-of-2 paired
+- ledger: GOAL (run#17 колонка + run#17 блок + BENCH-4=VALIDATED + СТАТУС S7-100) + RESULTS_LEDGER §117 + INDEX 237 + CLAIMS TASK-237; INJECTS-ONLY: 0 sandbox boots
+
+Stage Summary:
+- BENCH-4 era открыт: каноническое условие владельца (спавн/деспавн as-if-players) теперь измеряется фикстур-валидно; min-of-2 база завершается run#18 (absorb next tick). Следующий рычаг выбирается из min-of-2 профиля: entity-кластеры / network-visibility lane / семейные агрегаты (последние требуют owner-санкции пересмотра >=3% гейта). c-crussty push: worklog+ledger+recon

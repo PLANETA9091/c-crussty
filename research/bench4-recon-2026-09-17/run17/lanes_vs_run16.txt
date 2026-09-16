@@ -1,0 +1,174 @@
+
+=== run17 (cpu=138613 samples; fake_players=4; cpu_idx=9080657; world=afb3a0b3ba78) ===
+| lane (self-time) | samples | share |
+|---|---|---|
+| kernel: other | 29747 | 21.46% |
+| other | 20664 | 14.91% |
+| entities/mobs (kernel) | 17662 | 12.74% |
+| chunk system (kernel) | 14381 | 10.37% |
+| moonrise/paper patches | 10641 | 7.68% |
+| JDK collections | 8975 | 6.47% |
+| JVM internals (GC oop barriers) | 6233 | 4.50% |
+| JVM internals (G1 GC) | 6214 | 4.48% |
+| fastutil collections | 6113 | 4.41% |
+| JIT stubs (vtable/itable) | 3611 | 2.61% |
+| JDK invokes/VarHandle | 2623 | 1.89% |
+| JDK other | 2475 | 1.79% |
+| network (kernel) | 2036 | 1.47% |
+| block entities/hoppers (kernel) | 1748 | 1.26% |
+| (other/unbucketed tail) | 5490 | 3.96% |
+
+  spawn/despawn lane (bench-4 signature):
+    - spawn: NaturalSpawner: 433 samples = 0.31%
+    - spawn: createState: 242 samples = 0.17%
+    - spawn: spawnForChunk: 137 samples = 0.10%
+    - despawn: checkDespawn: 73 samples = 0.05%
+    - spawn: cap check: 8 samples = 0.01%
+    - spawn: tickSpawning: 5 samples = 0.00%
+    - spawn: category filter: 1 samples = 0.00%
+
+  top leaves per lane (STEP-0 input):
+    [kernel: other] (21.46%)
+           3554  net/minecraft/server/level/ServerLevel.optimiseRandomTick
+           2259  net/minecraft/util/SimpleBitStorage.get
+           1321  net/minecraft/world/phys/AABB.intersects
+           1169  net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase.getBlock
+           1067  net/minecraft/server/level/ServerEntity.sendChanges
+    [other] (14.91%)
+            938  SharedRuntime::frem
+            720  ca/spottedleaf/concurrentutil/map/ConcurrentLong2ReferenceChainedHashTable.getNode
+            628  libmFmod
+            580  /usr/lib/x86_64-linux-gnu/libc.so.6
+            472  deflate_slow
+    [entities/mobs (kernel)] (12.74%)
+           1527  net/minecraft/world/entity/Entity.setDeltaMovement
+            786  net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector.flushStep
+            672  net/minecraft/world/entity/Entity.getRootVehicle
+            626  net/minecraft/world/entity/Entity.updateFluidHeightAndDoFluidPushing
+            564  net/minecraft/world/entity/Entity.setOldPos
+    [chunk system (kernel)] (10.37%)
+           5013  net/minecraft/world/level/chunk/PalettedContainer.get
+           2517  net/minecraft/world/level/chunk/LevelChunk.getBlockStateFinal
+           2068  net/minecraft/world/level/chunk/PalettedContainer.readPalette
+            469  net/minecraft/world/level/chunk/ChunkAccess.getSections
+            456  net/minecraft/server/level/ServerChunkCache.getChunk
+    [moonrise/paper patches] (7.68%)
+           1794  ca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom.advanceSeed
+           1147  ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices$EntityCollectionBySection.getEntities
+           1067  ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.getCollisionsForBlocksOrWorldBorder
+            690  ca/spottedleaf/moonrise/patches/blockstate_propertyaccess/util/ZeroCollidingReferenceStateTable.get
+            482  ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices.getEntities
+    [JDK collections] (6.47%)
+           1219  java/util/HashMap.getNode
+            680  java/util/LinkedHashMap$LinkedHashIterator.nextNode
+            598  java/util/ArrayList.add
+            594  java/util/HashMap$HashIterator.nextNode
+            570  java/util/Arrays.copyOf
+    [JVM internals (GC oop barriers)] (4.50%)
+           3270  void OopOopIterateDispatch<G1CMOopClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>
+           1287  void OopOopIterateDispatch<G1RebuildRemSetClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>
+           1008  void OopOopIterateDispatch<G1CMOopClosure>::Table::oop_oop_iterate<ObjArrayKlass, narrowOop>
+            408  void OopOopIterateDispatch<G1RebuildRemSetClosure>::Table::oop_oop_iterate<ObjArrayKlass, narrowOop>
+             99  void OopOopIterateDispatch<G1ScanCardClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>
+    [JVM internals (G1 GC)] (4.48%)
+            908  G1RebuildRSAndScrubTask::G1RebuildRSAndScrubRegionClosure::do_heap_region
+            856  G1ParScanThreadState::trim_queue_to_threshold
+            745  G1CardSet::add_card
+            453  G1CardSet::add_to_howl
+            409  void G1CMTask::process_grey_task_entry<true>
+
+=== world3_art (cpu=224568 samples; fake_players=?; cpu_idx=?; world=?) ===
+| lane (self-time) | samples | share |
+|---|---|---|
+| kernel: other | 49419 | 22.01% |
+| other | 31051 | 13.83% |
+| entities/mobs (kernel) | 27998 | 12.47% |
+| chunk system (kernel) | 21906 | 9.75% |
+| moonrise/paper patches | 17548 | 7.81% |
+| JDK collections | 17472 | 7.78% |
+| JVM internals (GC oop barriers) | 10460 | 4.66% |
+| fastutil collections | 10113 | 4.50% |
+| JVM internals (G1 GC) | 9006 | 4.01% |
+| JIT stubs (vtable/itable) | 5436 | 2.42% |
+| JDK invokes/VarHandle | 4060 | 1.81% |
+| JDK other | 3989 | 1.78% |
+| network (kernel) | 3952 | 1.76% |
+| block entities/hoppers (kernel) | 3281 | 1.46% |
+| (other/unbucketed tail) | 8877 | 3.95% |
+
+  spawn/despawn lane (bench-4 signature):
+    - spawn: NaturalSpawner: 555 samples = 0.25%
+    - spawn: createState: 530 samples = 0.24%
+    - despawn: checkDespawn: 258 samples = 0.11%
+    - spawn: cap check: 22 samples = 0.01%
+
+  top leaves per lane (STEP-0 input):
+    [kernel: other] (22.01%)
+           4912  net/minecraft/server/level/ServerLevel.optimiseRandomTick
+           3618  net/minecraft/util/SimpleBitStorage.get
+           2790  net/minecraft/world/phys/AABB.intersects
+           2473  net/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase.getBlock
+           2220  net/minecraft/world/level/Level.tickBlockEntities
+    [other] (13.83%)
+           2362  read
+           1104  ca/spottedleaf/concurrentutil/map/ConcurrentLong2ReferenceChainedHashTable.getNode
+            837  /usr/lib/x86_64-linux-gnu/libc.so.6
+            634  vframeStreamForte::forte_next
+            622  deflate_slow
+    [entities/mobs (kernel)] (12.47%)
+           1430  net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector.flushStep
+           1359  net/minecraft/world/entity/Entity.updateFluidHeightAndDoFluidPushing
+           1293  net/minecraft/world/entity/Entity.setDeltaMovement
+           1123  net/minecraft/world/entity/Entity.setOldPos
+           1022  net/minecraft/world/entity/Entity.push
+    [chunk system (kernel)] (9.75%)
+           8357  net/minecraft/world/level/chunk/PalettedContainer.get
+           3775  net/minecraft/world/level/chunk/LevelChunk.getBlockStateFinal
+           3378  net/minecraft/world/level/chunk/PalettedContainer.readPalette
+            762  net/minecraft/world/level/chunk/ChunkAccess.getPos
+            714  net/minecraft/world/level/chunk/LevelChunk.getFluidState
+    [moonrise/paper patches] (7.81%)
+           3773  ca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom.advanceSeed
+           1806  ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.getCollisionsForBlocksOrWorldBorder
+           1527  ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices$EntityCollectionBySection.getEntities
+           1412  ca/spottedleaf/moonrise/patches/blockstate_propertyaccess/util/ZeroCollidingReferenceStateTable.get
+            854  ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices.getEntities
+    [JDK collections] (7.78%)
+           2249  java/util/concurrent/atomic/AtomicInteger.get
+           1621  java/util/HashMap.getNode
+           1379  java/util/Arrays.copyOf
+           1087  java/util/LinkedHashMap$LinkedHashIterator.nextNode
+           1047  java/util/HashMap$HashIterator.nextNode
+    [JVM internals (GC oop barriers)] (4.66%)
+           4978  void OopOopIterateDispatch<G1CMOopClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>
+           2391  void OopOopIterateDispatch<G1RebuildRemSetClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>
+           1686  void OopOopIterateDispatch<G1CMOopClosure>::Table::oop_oop_iterate<ObjArrayKlass, narrowOop>
+            856  void OopOopIterateDispatch<G1RebuildRemSetClosure>::Table::oop_oop_iterate<ObjArrayKlass, narrowOop>
+            222  void OopOopIterateDispatch<G1ScanCardClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>
+    [fastutil collections] (4.50%)
+           2051  it/unimi/dsi/fastutil/objects/Object2ObjectOpenHashMap.get
+           1250  it/unimi/dsi/fastutil/objects/ReferenceOpenHashSet.contains
+           1198  it/unimi/dsi/fastutil/longs/LongOpenHashSet.add
+           1113  it/unimi/dsi/fastutil/objects/ObjectLinkedOpenHashSet$SetIterator.next
+            788  it/unimi/dsi/fastutil/ints/Int2ObjectOpenHashMap.get
+
+=== PAIRING DISCLOSURE (runner-variance law S7-96d) ===
+  world_sha256:  afb3a0b3ba78397b vs ? (DIFFERENT snapshot — cross-run deltas confounded by live-world drift)
+  runner_cpu:    9080657 vs ?
+  fake_players:  4 vs ?
+
+=== LANE DELTA (share % of B minus A; scenario deltas NOT module wins) ===
+  JDK collections                                6.47% ->   7.78%  (+1.31pp)
+  kernel: other                                 21.46% ->  22.01%  (+0.55pp)
+  network (kernel)                               1.47% ->   1.76%  (+0.29pp)
+  block entities/hoppers (kernel)                1.26% ->   1.46%  (+0.20pp)
+  JVM internals (GC oop barriers)                4.50% ->   4.66%  (+0.16pp)
+  moonrise/paper patches                         7.68% ->   7.81%  (+0.14pp)
+  fastutil collections                           4.41% ->   4.50%  (+0.09pp)
+  JDK other                                      1.79% ->   1.78%  (-0.01pp)
+  JDK invokes/VarHandle                          1.89% ->   1.81%  (-0.08pp)
+  JIT stubs (vtable/itable)                      2.61% ->   2.42%  (-0.18pp)
+  entities/mobs (kernel)                        12.74% ->  12.47%  (-0.27pp)
+  JVM internals (G1 GC)                          4.48% ->   4.01%  (-0.47pp)
+  chunk system (kernel)                         10.37% ->   9.75%  (-0.62pp)
+  other                                         14.91% ->  13.83%  (-1.08pp)
