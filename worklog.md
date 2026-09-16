@@ -589,3 +589,18 @@ Work Log:
 
 Stage Summary:
 - First REAL CI benchmark executed autonomously end-to-end (owner's GitHub-key directive): run#1 fail root-caused with a novel remote-zip-introspection trick (no 6.68GB re-download), fixed, re-dispatched. a28 parked honestly. Research ladder pre-registered for the data-driven rounds. NEXT: run#2 artifacts => BOTTLENECKS_3 real numbers => ledger §108 => top-bucket round per RESEARCH doc
+
+---
+Task ID: S7-91 (task160) — continuation
+Agent: Super Z (main session)
+Task: runs #2-#5 lifecycle — root-cause ladder on the road to first REAL BOTTLENECKS data
+
+Work Log:
+- RUN#2 (c659d43): workflow "success" but HONEST ZERO (my pre-registration (iv)): boot Done=0, all metrics 0. Root-cause from 2.5KB server log: eula.txt failed — java launched with cwd=repo root; Paper resolves eula/world vs CWD. (Twin fixed in parallel: df8ff78 cd $SERVER + natives INTO modules/crussty + die() hardening + BOOT_TIMEOUT 600.)
+- RUN#3 (35107179017) CANCELLED by concurrency group (my dispatch raced twin's).
+- RUN#4 (df8ff78): gate FAILED. Artifact archaeology: server reached Done (19.025s)! — world loaded, DIM-1/DIM1 auto-migrated, module FULLY ARMED on real purpur: area_map 5075->3320 retransform rc=0 self-test 64+141 rects OK, perlin whole-body 11030->10765 armed rc=0 self-test PASS, natives staged in module dir. BUT harness declared SEEN_DONE=0: my c659d43 grep -q "Done \(" in BRE = unmatched-group ERROR every iteration (silenced). Window skipped, stop issued at 600s. Plus: report never ran (relative dirname $0 after cd) + asprof fetch failed silently (empty var).
+- FIX 79c9fb1: grep -qF "Done (" (literal); SCRIPT_DIR absolute-once; asprof pinned v4.1 fallback + loud WARN; SEEN_DONE=0 dumps last 40 server lines to job log.
+- RUN#5 (79c9fb1) dispatched — in flight.
+
+Stage Summary:
+- Boot ladder closed one loop at a time: zip structure → eula/cwd → grep BRE → report path → asprof. Each fix is a run#N lesson in the harness header (institutionalized). The module's CI-armed evidence (run#4 log) is the first REAL-kernel confirmation that both hotpatches engage end-to-end outside the sandbox. Run#5 should produce the FIRST real BOTTLENECKS_3 data.
