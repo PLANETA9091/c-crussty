@@ -234,19 +234,28 @@ if [ "$SEEN_DONE" = "1" ]; then
   cmd "paper debug chunks"
   sleep 10
 
-  # --- 6. profilers --------------------------------------------------------
-  # run#9 lesson: asprof v4.x allows ONE active session per target — the second
-  # `start -e alloc` failed with "Profiler already started" (harmless). CPU is
-  # the event the report consumes; alloc leg parked.
+  # --- 6. profilers (v2: three sequential single-event windows) ------------
+  # run#9 lesson: asprof v4.x allows ONE active session per target — so the
+  # soak is split into three windows; each dump STOPS the session, then the
+  # next event starts. cpu (0..55%) ranks hotspots; wall (55..80%) exposes
+  # JNI/lock/IO waits cpu hides; alloc (80..100%) names the allocation
+  # offenders feeding G1 (PagedAttention lesson: fast paths must be
+  # allocation-free — the alloc profile is the evidence of who is not).
+  END=$(( SECONDS + RUN_SECONDS ))
+  CPU_END=$(( SECONDS + RUN_SECONDS * 55 / 100 ))
+  WALL_END=$(( SECONDS + RUN_SECONDS * 80 / 100 ))
+  PROF_PHASE=cpu
+
   if [ -n "$ASPROF" ]; then
     "$ASPROF" start -e cpu,interval=5ms "$SERVER_PID" 2>>"$WORK/ap.log" || log "asprof start failed"
   fi
   cmd "spark profiler start --timeout $RUN_SECONDS"
 
-  END=$(( SECONDS + RUN_SECONDS ))
   while [ $SECONDS -lt $END ]; do
     sleep 60
     cmd "tps"
+    cmd "paper mspt"
+    cmd "paper entity list"
     cmd "spark tickmonitor --threshold 50"
     if [ "$SUMMON_SWEEPS" = "1" ]; then
       for k in 1 2 3 4 5; do
@@ -254,18 +263,34 @@ if [ "$SEEN_DONE" = "1" ]; then
         cmd "execute in minecraft:overworld run summon minecraft:zombie $X 100 $Z"
       done
     fi
+    if [ "$PROF_PHASE" = "cpu" ] && [ $SECONDS -ge $CPU_END ]; then
+      PROF_PHASE=wall
+      if [ -n "$ASPROF" ]; then
+        "$ASPROF" dump -o collapsed -f "$WORK/cpu-collapsed.txt" "$SERVER_PID" 2>>"$WORK/ap.log" || log "asprof cpu dump failed"
+        [ -s "$WORK/cpu-collapsed.txt" ] && log "cpu-collapsed: $(wc -l < "$WORK/cpu-collapsed.txt") stacks" || log "WARN: cpu-collapsed.txt EMPTY"
+        "$ASPROF" start -e wall "$SERVER_PID" 2>>"$WORK/ap.log" || log "asprof wall start failed"
+      fi
+    fi
+    if [ "$PROF_PHASE" = "wall" ] && [ $SECONDS -ge $WALL_END ]; then
+      PROF_PHASE=alloc
+      if [ -n "$ASPROF" ]; then
+        "$ASPROF" dump -o collapsed -f "$WORK/wall-collapsed.txt" "$SERVER_PID" 2>>"$WORK/ap.log" || log "asprof wall dump failed"
+        [ -s "$WORK/wall-collapsed.txt" ] && log "wall-collapsed: $(wc -l < "$WORK/wall-collapsed.txt") stacks" || log "WARN: wall-collapsed.txt EMPTY"
+        "$ASPROF" start -e alloc "$SERVER_PID" 2>>"$WORK/ap.log" || log "asprof alloc start failed"
+      fi
+    fi
   done
 
   # --- 7. final captures + shutdown ---------------------------------------
   cmd "paper debug chunks"
   cmd "spark gc"
   if [ -n "$ASPROF" ]; then
-    # run#9 lesson: asprof v4.x removed `dump --format` — output spec is -o and
-    # the file is -f; dump stops the session. CPU collapsed stacks are the
-    # canonical BOTTLENECKS input; a second start/dump produces the flamegraph.
-    "$ASPROF" dump -o collapsed -f "$WORK/cpu-collapsed.txt" "$SERVER_PID" 2>>"$WORK/ap.log" || log "asprof cpu dump failed"
-    [ -s "$WORK/cpu-collapsed.txt" ] && log "cpu-collapsed: $(wc -l < "$WORK/cpu-collapsed.txt") stacks" \
-      || log "WARN: cpu-collapsed.txt EMPTY"
+    # v2: the session active at soak end is ALLOC (windows above) — dumping it
+    # into cpu-collapsed.txt would mislabel the artifact (run#10 near-miss:
+    # the final dump assumed cpu was still running). Alloc -> alloc-collapsed,
+    # then a short cpu session produces the flamegraph for humans.
+    "$ASPROF" dump -o collapsed -f "$WORK/alloc-collapsed.txt" "$SERVER_PID" 2>>"$WORK/ap.log" || log "asprof alloc dump failed"
+    [ -s "$WORK/alloc-collapsed.txt" ] && log "alloc-collapsed: $(wc -l < "$WORK/alloc-collapsed.txt") stacks" || log "WARN: alloc-collapsed.txt EMPTY"
     "$ASPROF" start "$SERVER_PID" 2>>"$WORK/ap.log" || true
     "$ASPROF" dump -o flamegraph -f "$WORK/cpu-flamegraph.html" "$SERVER_PID" 2>>"$WORK/ap.log" || true
   fi
