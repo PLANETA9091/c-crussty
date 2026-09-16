@@ -1,0 +1,58 @@
+  public void tickChunk(net.minecraft.world.level.chunk.LevelChunk, int);
+    Code:
+       0: aload_0
+       1: getfield      #869                // Field simpleRandom:Lca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom;
+       4: astore_3
+       5: aload_1
+       6: invokevirtual #687                // Method net/minecraft/world/level/chunk/LevelChunk.getPos:()Lnet/minecraft/world/level/ChunkPos;
+       9: astore        4
+      11: aload         4
+      13: invokevirtual #1814               // Method net/minecraft/world/level/ChunkPos.getMinBlockX:()I
+      16: istore        5
+      18: aload         4
+      20: invokevirtual #1817               // Method net/minecraft/world/level/ChunkPos.getMinBlockZ:()I
+      23: istore        6
+      25: invokestatic  #1354               // Method net/minecraft/util/profiling/Profiler.get:()Lnet/minecraft/util/profiling/ProfilerFiller;
+      28: astore        7
+      30: aload         7
+      32: ldc_w         #1819               // String iceandsnow
+      35: invokeinterface #1372,  2         // InterfaceMethod net/minecraft/util/profiling/ProfilerFiller.push:(Ljava/lang/String;)V
+      40: aload_0
+      41: invokevirtual #1475               // Method paperConfig:()Lio/papermc/paper/configuration/WorldConfiguration;
+      44: getfield      #1479               // Field io/papermc/paper/configuration/WorldConfiguration.environment:Lio/papermc/paper/configuration/WorldConfiguration$Environment;
+      47: getfield      #1822               // Field io/papermc/paper/configuration/WorldConfiguration$Environment.disableIceAndSnow:Z
+      50: ifne          92
+      53: iconst_0
+      54: istore        8
+      56: iload         8
+      58: iload_2
+      59: if_icmpge     92
+      62: aload_3
+      63: bipush        48
+      65: invokevirtual #1825               // Method ca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom.nextInt:(I)I
+      68: ifne          86
+      71: aload_0
+      72: aload_0
+      73: iload         5
+      75: iconst_0
+      76: iload         6
+      78: bipush        15
+      80: invokevirtual #1829               // Method getBlockRandomPos:(IIII)Lnet/minecraft/core/BlockPos;
+      83: invokevirtual #1832               // Method tickPrecipitation:(Lnet/minecraft/core/BlockPos;)V
+      86: iinc          8, 1
+      89: goto          56
+      92: aload         7
+      94: ldc_w         #1834               // String tickBlocks
+      97: invokeinterface #1385,  2         // InterfaceMethod net/minecraft/util/profiling/ProfilerFiller.popPush:(Ljava/lang/String;)V
+     102: iload_2
+     103: ifle          112
+     106: aload_0
+     107: aload_1
+     108: iload_2
+     109: invokevirtual #1836               // Method optimiseRandomTick:(Lnet/minecraft/world/level/chunk/LevelChunk;I)V
+     112: aload         7
+     114: invokeinterface #1391,  1         // InterfaceMethod net/minecraft/util/profiling/ProfilerFiller.pop:()V
+     119: return
+
+  public void tickThunder(net.minecraft.world.level.chunk.LevelChunk);
+    Code:
