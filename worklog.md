@@ -760,3 +760,19 @@ Work Log:
 
 Stage Summary:
 - Раунд S7-96 закрыт с двух сторон: близнец (javap-контракт, GOAL-док, GC-SHAPE-1 пререгистрация) + дубль-агент (независимая репликация, research leg, F4, харнесс-фиксы). BATCH-RNG REFUTED окончательно (2 линии). Следующие рычаги: GC-SHAPE-1 (task166, близнец) -> BRAIN-LENS (~3.0%, research-вердикт) -> bench-4 fake-players (owner-условие). INJECTS-ONLY: 0 boots
+
+---
+Task ID: S7-96c (task165-доп2, дубль-агент) — run#14 recon SUCCESS + run#15 north-star condition FIRST MEASUREMENT + min-of-2
+Agent: agent-7625532f (session web-f7888d46, trace 1a0ab4bc476caced, Job 390639)
+Task: абсорбция run#14/run#15, валидность-проверка 20 TPS, min-of-2 подтверждение
+
+Work Log:
+- run#14 ABSORBED: entity-recon 54,210 строк из НАСТОЯЩЕГО booted purpur-1.21.10.jar (content-test сработал; saga recon-багов закрыта: #1 paperclip -> #2 vanilla jar -> FIXED); advanceSeed контракт из booted ядра: value=(value*25214903917+11)&(2^48-1) — корроборирует офлайн-javap близнеца; НЮАНС: ядро уже тикает на moonrise SimpleThreadUnsafeRandom (unsync) — малость RNG-лейна объяснена; полный dump -> research/rng-recon-2026-09-16/booted-run14/
+- run#15 ABSORBED (первый с моими харнесс-фиксами c81f12a + sweeps=1): 75 summons; F4 ЖИВАЯ ДАННАЯ: polls=15, total 8572..9201 (churn 7.2%), top movers item 148->772, drowned 11->47, bee 1->20, zombie 62->71 — вердикт churn ACTIVE (условие владельца ИЗМЕРИМО и выполнено); mobcaps: 0 spawnable chunks при 0 игроках = natural spawning СТРУКТУРНО выключен без игроков => fake-players (bench-4) обязательны для настоящего as-if-players спавна
+- ПАРСЕР-ФИКС: реальный формат entity list run#15 = "Total Ticking: N, Total Non-Ticking: M" + "count (tick) : type" — parse_entity_totals/parse_entity_churn переписаны (старые регексы не матчили НИКОГДА)
+- ВАЛИДНОСТЬ: run#15 = 20.0 TPS / ~49.6ms MSPT steady (8 окон tickmonitor) — НО модульных оптимизаций не шипилось; run#14 на том же мире/forceload/модуле = 13-14 TPS / 68-75ms; профили структурно схожи (тик быстрее целиком). Гипотеза: вариативность живого снапшота мира (world URL = живой экспорт; run#15 boot item 148->772 = свежий снапшот). North star НЕ объявляется достигнутым до min-of-2
+- run#16 деспатчен (19:53Z, те же входы sweeps=1) для paired confirmation; если ~50ms — снапшот-вариативность = доминирующий фактор базовой линии => paired download discipline обязательна для всех будущих A/B
+- push: 544b014 (booted recon), GOAL-док обновлён (run#15 строка + вывод)
+
+Stage Summary:
+- Observability раунда восстановлена полностью: recon booted-ядра, F4 churn, mobcaps, MSPT-окна. Первое измерение канонического условия владельца: 20 TPS / 49.6ms — под min-of-2 проверкой (run#16). Ключевой риск базовой линии выявлен: снапшот-вариативность мира
