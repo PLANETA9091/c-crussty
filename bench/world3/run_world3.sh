@@ -254,8 +254,14 @@ if [ "$SEEN_DONE" = "1" ]; then
   while [ $SECONDS -lt $END ]; do
     sleep 60
     cmd "tps"
-    cmd "paper mspt"
-    cmd "paper entity list"
+    # run#12 root-cause (S7-96b): `paper mspt` does NOT exist on Purpur 1.21.10
+    # (every poll answered Usage-error since run#10) — replaced with mobcaps,
+    # which IS in the command set and gives the spawn-lane observability the
+    # owner's as-if-players condition needs. MSPT comes from tickmonitor [⚡].
+    cmd "paper mobcaps world"
+    # run#12 root-cause (S7-96b): `paper entity list` needs filter+worldName,
+    # bare call returned Usage-error every poll since run#10 (0 entity data)
+    cmd "paper entity list * world"
     cmd "spark tickmonitor --threshold 50"
     if [ "$SUMMON_SWEEPS" = "1" ]; then
       for k in 1 2 3 4 5; do

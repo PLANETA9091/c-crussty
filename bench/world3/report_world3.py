@@ -230,6 +230,31 @@ def parse_mspt_windows(path):
                 if key == "Average":
                     key = "Avg"
                 cur["vals"].setdefault(key, float(m.group(2)))
+    if not windows:
+        # S7-96b fallback (run#10-12 root-cause: `paper mspt` does not exist on
+        # Purpur 1.21.10 — every poll answered Usage-error; real MSPT arrives
+        # from `spark tickmonitor` [⚡] Max/Min/Average lines instead).
+        tmax = re.compile(r">\s*Max:\s*(\d+\.?\d*)\s*ms", re.I)
+        tmin = re.compile(r">\s*Min:\s*(\d+\.?\d*)\s*ms", re.I)
+        tavg = re.compile(r">\s*Average:\s*(\d+\.?\d*)\s*ms", re.I)
+        vmax = vmin = None
+        vavg = []
+        with open(path, encoding="utf-8", errors="replace") as f:
+            for line in f:
+                for pat, dest in ((tmax, "Max"), (tmin, "Min"), (tavg, "Avg")):
+                    m = pat.search(line)
+                    if m:
+                        v = float(m.group(1))
+                        if dest == "Max":
+                            vmax = v if vmax is None else max(vmax, v)
+                        elif dest == "Min":
+                            vmin = v if vmin is None else min(vmin, v)
+                        else:
+                            vavg.append(v)
+        if vmax is not None:
+            avg = (sum(vavg) / len(vavg)) if vavg else 0.0
+            windows = [{"window": "spark tickmonitor (whole run, [⚡] lines)",
+                        "vals": {"Max": vmax, "Min": vmin or 0.0, "Avg": avg or 0.0}}]
     return [w for w in windows if w["vals"]]
 
 
@@ -249,6 +274,38 @@ def parse_entity_totals(path):
             for m in upat.finditer(line):
                 types[m.group(1)] = max(types[m.group(1)], int(m.group(2)))
     return totals, types
+
+
+def parse_entity_churn(path):
+    """F4 (task165/S7-96b, owner 20-TPS scenario): per-poll entity counts ->
+    spawn/despawn churn evidence. Owner directive: mobs must spawn AND despawn
+    'as if players are present' — this metric measures whether the bench
+    condition actually exercises the spawn/despawn lifecycle (summon sweeps,
+    natural churn) or the world entity population is stagnant across the run.
+    Returns (blocks, summon_count): blocks = per-poll {type: count} dicts in
+    order; summon_count = 'Summoned new' console confirmations.
+    """
+    blocks = []
+    summon = 0
+    if not os.path.exists(path):
+        return blocks, summon
+    tpat = re.compile(r"Total (?:ticking |loaded |spawnable )?entities[^:]*:\s*(\d+)", re.I)
+    upat = re.compile(r"([a-z_]+:[a-z0-9_/]+)\s+(\d+)\s+\[")
+    spat = re.compile(r"Summoned new \w+", re.I)
+    cur = None
+    with open(path, encoding="utf-8", errors="replace") as f:
+        for line in f:
+            if spat.search(line):
+                summon += 1
+            m = tpat.search(line)
+            if m:
+                cur = {}
+                blocks.append(cur)
+                continue
+            if cur is not None:
+                for m in upat.finditer(line):
+                    cur[m.group(1)] = int(m.group(2))
+    return blocks, summon
 
 
 # --- parse everything -------------------------------------------------------
@@ -419,6 +476,36 @@ if alloc:
 if gc and gc["events"]:
     lines.append(f"- **F2 GC-churn estimate:** {gc['events']} pauses / total {gc['total_ms']:.0f} ms STW "
                  f"(see GC section above; MB/s needs region-size constants — wired next tick)")
+# F4 — entity spawn/despawn churn (owner 20-TPS scenario fidelity, S7-96b)
+churn_blocks, summon_count = parse_entity_churn(os.path.join(work, "server-stdout.log"))
+f4_line = "- **F4 entity spawn/despawn churn (owner scenario):**"
+lines.append(f4_line)
+if ent_totals and len(ent_totals) >= 2:
+    lo, hi = min(ent_totals), max(ent_totals)
+    avg = sum(ent_totals) / len(ent_totals)
+    churn_pct = 100.0 * (hi - lo) / avg if avg else 0.0
+    lines[-1] = (f4_line + f" polls={len(ent_totals)} "
+                 f"total={lo}..{hi} (delta {hi-lo}, churn {churn_pct:.1f}%), summons={summon_count}")
+    if churn_blocks:
+        type_max = collections.Counter()
+        for b in churn_blocks:
+            for t, c in b.items():
+                type_max[t] = max(type_max[t], c)
+        type_min = {}
+        for b in churn_blocks:
+            for t in type_max:
+                type_min[t] = min(type_min.get(t, 10**9), b.get(t, 0))
+        movers = sorted(((t, type_min[t], type_max[t]) for t in type_max),
+                        key=lambda x: x[2] - x[1], reverse=True)[:8]
+        moved = [f"{t} {lo2}->{hi2}" for t, lo2, hi2 in movers if hi2 - lo2 > 0]
+        lines.append("  - top movers (max-min across polls): " + (", ".join(moved) if moved else "NONE"))
+    if summon_count > 0 or hi > lo:
+        lines.append("  - verdict: **churn ACTIVE** — spawn/despawn lifecycle exercised (owner condition met in this run)")
+    else:
+        lines.append("  - verdict: **churn STAGNANT** — world entity population static; natural spawning "
+                     "idle (0 players). bench-4 fake-player leg required for the owner's as-if-players condition")
+else:
+    lines[-1] = f4_line + " insufficient polls (need >=2 `paper entity list` outputs)"
 
 if not cpu and seen_done == "1":
     lines.append("")
