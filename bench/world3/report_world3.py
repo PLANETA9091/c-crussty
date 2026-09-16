@@ -76,7 +76,10 @@ if os.path.exists(collapsed):
 
 log_path = os.path.join(work, "server-stdout.log")
 boot_s = tps_polls = forceloads = warns = 0
+chunks_marked = 0
 tps_values = []
+mspt_max = mspt_min = mspt_avg = 0.0
+spark_links = []
 if os.path.exists(log_path):
     with open(log_path, encoding="utf-8", errors="replace") as f:
         for line in f:
@@ -84,24 +87,51 @@ if os.path.exists(log_path):
                 m = re.search(r"Done \(([\d.]+)s\)", line)
                 if m:
                     boot_s = float(m.group(1))
-            if line.startswith("forceload"):
+            # run#5 lesson: console output is "Marked 256 chunks in minecraft:overworld
+            # from [x, z] to [x, z] to be force loaded" — the old line-start prefix
+            # never matched the echoed command
+            m = re.search(r"Marked (\d+) chunks .* to be force loaded", line)
+            if m:
                 forceloads += 1
+                chunks_marked += int(m.group(1))
             if "Can't keep up" in line or "Running .*ms behind" in line:
                 warns += 1
-            m = re.search(r"TPS from last 1m.*?([\d.]+)", line)
+            # run#5 lesson: paper 1.21.10 prints "TPS from last 5s, 1m, 5m, 15m: ..."
+            m = re.search(r"TPS from last[^:]*:\s*([\d.]+)", line)
             if m:
                 tps_values.append(float(m.group(1)))
                 tps_polls += 1
+            # spark tick-monitor analysis lines — REAL MSPT evidence
+            m = re.search(r">\s*Max:\s*([\d.]+)ms", line)
+            if m:
+                mspt_max = max(mspt_max, float(m.group(1)))
+            m = re.search(r">\s*Min:\s*([\d.]+)ms", line)
+            if m:
+                mspt_min = float(m.group(1)) if not mspt_min else min(mspt_min, float(m.group(1)))
+            m = re.search(r">\s*Average:\s*([\d.]+)ms", line)
+            if m:
+                mspt_avg = max(mspt_avg, float(m.group(1)))
+            m = re.search(r"https://spark\.lucko\.me/(\w+)", line)
+            if m and m.group(1) not in spark_links:
+                spark_links.append(m.group(1))
 
 lines = []
 lines.append("# Benchmark 3.0 — BOTTLENECKS_3 (real world, no players)")
 lines.append("")
 lines.append(f"- natives mode: **{natives_mode}**")
 lines.append(f"- boot reached Done: **{seen_done}** (boot time {boot_s or 'n/a'} s)")
-lines.append(f"- forceload commands issued: {forceloads}")
-lines.append(f"- TPS polls captured: {tps_polls}" + (f", values: {tps_values}" if tps_values else ""))
+lines.append(f"- forceload commands issued: {forceloads} ({chunks_marked} chunks force-loaded)")
+lines.append(f"- TPS polls captured: {tps_polls}" + (f", first-of-window values: {tps_values}" if tps_values else ""))
+if mspt_avg or mspt_max:
+    lines.append(f"- spark tick-monitor MSPT: avg **{mspt_avg}ms** / min {mspt_min}ms / max **{mspt_max}ms** (>50ms = TPS<20)")
+for code in spark_links:
+    lines.append(f"- spark viewer report: https://spark.lucko.me/{code}")
 lines.append(f"- tick-behind warnings in log: {warns}")
 lines.append(f"- CPU samples total: {total}")
+if not total and seen_done == "1":
+    lines.append("")
+    lines.append("> NOTE: boot reached Done but no CPU collapsed stacks were produced —")
+    lines.append("> profiler attach failed; report ranks are INVALID for this run (log stats only).")
 lines.append("")
 lines.append("## Self-time by research bucket (what to replace with Rust next)")
 lines.append("")

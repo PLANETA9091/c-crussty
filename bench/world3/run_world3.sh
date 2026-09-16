@@ -60,7 +60,9 @@ df -h / | tail -1
 fetch() { # fetch <url> <dest>
   local url="$1" dest="$2" i
   for i in 1 2 3; do
-    curl -sSL --retry 2 -o "$dest" "$url" && return 0
+    # Run#5 lesson: NO --fail meant a GitHub-404 BODY (9 bytes "Not Found") was
+    # saved as a "successful" fetch — asprof then "not found" in a non-tar file.
+    curl -sSfL --retry 2 -o "$dest" "$url" && return 0
     log "retry $i for $url"; sleep 5
   done
   return 1
@@ -120,9 +122,13 @@ SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 # produced a profile-less run — the bottleneck report NEEDS collapsed stacks,
 # so a pinned-version fallback is tried before giving up (loudly).
 ASPROF=""
+# Run#5 lesson: the "latest/download/async-profiler-linux-x64.tgz" asset name
+# does NOT exist (v4.5 ships async-profiler-4.5-linux-x64.tar.gz) — pinned
+# correct names first, latest/download last resort.
 for APURL in \
-  "https://github.com/async-profiler/async-profiler/releases/latest/download/async-profiler-linux-x64.tgz" \
-  "https://github.com/async-profiler/async-profiler/releases/download/v4.1/async-profiler-linux-x64.tgz"; do
+  "https://github.com/async-profiler/async-profiler/releases/download/v4.5/async-profiler-4.5-linux-x64.tar.gz" \
+  "https://github.com/async-profiler/async-profiler/releases/download/v4.1/async-profiler-4.1-linux-x64.tar.gz" \
+  "https://github.com/async-profiler/async-profiler/releases/latest/download/async-profiler-linux-x64.tar.gz"; do
   if fetch "$APURL" "$WORK/ap.tgz"; then
     mkdir -p "$WORK/ap" && tar xzf "$WORK/ap.tgz" -C "$WORK/ap" --strip-components=1
     ASPROF="$(find "$WORK/ap" -type f -name 'asprof*' 2>/dev/null | head -1)"
@@ -220,7 +226,7 @@ if [ "$SEEN_DONE" = "1" ]; then
     "$ASPROF" start -e cpu,interval=5ms "$SERVER_PID" 2>>"$WORK/ap.log" || log "asprof start failed"
     "$ASPROF" start -e alloc,interval=2MiB "$SERVER_PID" 2>>"$WORK/ap.log" || true
   fi
-  cmd "spark profiler start --timeout $(( RUN_SECONDS / 60 + 1 ))"
+  cmd "spark profiler start --timeout $RUN_SECONDS"
 
   END=$(( SECONDS + RUN_SECONDS ))
   while [ $SECONDS -lt $END ]; do
