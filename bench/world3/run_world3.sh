@@ -235,9 +235,11 @@ if [ "$SEEN_DONE" = "1" ]; then
   sleep 10
 
   # --- 6. profilers --------------------------------------------------------
+  # run#9 lesson: asprof v4.x allows ONE active session per target — the second
+  # `start -e alloc` failed with "Profiler already started" (harmless). CPU is
+  # the event the report consumes; alloc leg parked.
   if [ -n "$ASPROF" ]; then
     "$ASPROF" start -e cpu,interval=5ms "$SERVER_PID" 2>>"$WORK/ap.log" || log "asprof start failed"
-    "$ASPROF" start -e alloc,interval=2MiB "$SERVER_PID" 2>>"$WORK/ap.log" || true
   fi
   cmd "spark profiler start --timeout $RUN_SECONDS"
 
@@ -258,8 +260,14 @@ if [ "$SEEN_DONE" = "1" ]; then
   cmd "paper debug chunks"
   cmd "spark gc"
   if [ -n "$ASPROF" ]; then
-    "$ASPROF" dump --format collapsed "$SERVER_PID" > "$WORK/cpu-collapsed.txt" 2>>"$WORK/ap.log" || true
-    "$ASPROF" dump --format html "$SERVER_PID" > "$WORK/cpu-flamegraph.html" 2>>"$WORK/ap.log" || true
+    # run#9 lesson: asprof v4.x removed `dump --format` — output spec is -o and
+    # the file is -f; dump stops the session. CPU collapsed stacks are the
+    # canonical BOTTLENECKS input; a second start/dump produces the flamegraph.
+    "$ASPROF" dump -o collapsed -f "$WORK/cpu-collapsed.txt" "$SERVER_PID" 2>>"$WORK/ap.log" || log "asprof cpu dump failed"
+    [ -s "$WORK/cpu-collapsed.txt" ] && log "cpu-collapsed: $(wc -l < "$WORK/cpu-collapsed.txt") stacks" \
+      || log "WARN: cpu-collapsed.txt EMPTY"
+    "$ASPROF" start "$SERVER_PID" 2>>"$WORK/ap.log" || true
+    "$ASPROF" dump -o flamegraph -f "$WORK/cpu-flamegraph.html" "$SERVER_PID" 2>>"$WORK/ap.log" || true
   fi
   cmd "spark profiler --stop"
   sleep 15
