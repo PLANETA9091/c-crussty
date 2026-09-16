@@ -64,11 +64,31 @@ mkdir -p "$SERVER/versions" && cp "$WORK/purpur.jar" "$SERVER/versions/purpur-1.
 log "downloading world"
 fetch "$WORLD_URL" "$WORK/world.zip" || { log "FATAL: world download"; exit 1; }
 log "extracting world"
-unzip -q -o "$WORK/world.zip" -d "$SERVER" && rm -f "$WORK/world.zip"
-WORLD_DIR="$(find "$SERVER" -maxdepth 1 -type d \( -name world -o -name 'MineShield*' \) | head -1)"
-[ -n "$WORLD_DIR" ] || { log "FATAL: no world dir in zip"; exit 1; }
-LEVEL_NAME="$(basename "$WORLD_DIR")"
-log "world dir: $LEVEL_NAME"
+# Run #1 lesson (world-bench-3 run 35106393250): the MineShield-3 zip IS the world
+# directory itself (level.dat/region//DIM-1//DIM1/ at zip ROOT, no wrapper folder) —
+# the old maxdepth-1 name heuristic found nothing. Robust protocol: extract to a
+# staging dir, locate level.dat (any depth), pick the dir that also has region/,
+# normalize it to $SERVER/world so level-name is deterministic. Handles BOTH
+# wrapped (server-root-style zips) and bare-world zips.
+unzip -q -o "$WORK/world.zip" -d "$WORK/worldx" && rm -f "$WORK/world.zip"
+LEVELDAT="$(find "$WORK/worldx" -maxdepth 3 -type f -name level.dat | sort | head -1)"
+if [ -z "$LEVELDAT" ]; then
+  log "FATAL: no level.dat in zip — top-level listing for diagnosis:"
+  find "$WORK/worldx" -maxdepth 2 -type d | head -40 >&2
+  exit 1
+fi
+WORLD_SRC="$(dirname "$LEVELDAT")"
+[ -d "$WORLD_SRC/region" ] || { log "FATAL: level.dat parent has no region/: $WORLD_SRC"; exit 1; }
+rm -rf "$SERVER/world"; mkdir -p "$SERVER"
+if [ "$WORLD_SRC" = "$WORK/worldx" ]; then
+  # bare-world zip: level.dat at staging root — move the staging dir itself
+  mv "$WORK/worldx" "$SERVER/world"
+else
+  mv "$WORLD_SRC" "$SERVER/world"
+fi
+rm -rf "$WORK/worldx"
+LEVEL_NAME="world"
+log "world dir: $LEVEL_NAME (from $WORLD_SRC)"
 
 NATIVES_MODE="module-hotpatch-only"
 if [ -n "$NATIVES_TGZ" ] && fetch "$NATIVES_TGZ" "$WORK/natives.tar.gz"; then
@@ -133,8 +153,8 @@ log "server pid $SERVER_PID — waiting for Done (<=${BOOT_TIMEOUT}s)"
 
 SEEN_DONE=0
 for i in $(seq 1 "$BOOT_TIMEOUT"); do
-  if rg -q "Done \(" "$WORK/server-stdout.log" 2>/dev/null; then SEEN_DONE=1; break; fi
-  if rg -qi "Failed to start|Exception in thread .main." "$WORK/server-stdout.log" 2>/dev/null; then break; fi
+  if grep -q "Done \(" "$WORK/server-stdout.log" 2>/dev/null; then SEEN_DONE=1; break; fi
+  if grep -qiE "Failed to start|Exception in thread .main." "$WORK/server-stdout.log" 2>/dev/null; then break; fi
   sleep 1
 done
 log "SEEN_DONE=$SEEN_DONE"
