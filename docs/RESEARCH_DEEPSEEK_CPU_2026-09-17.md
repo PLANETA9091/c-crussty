@@ -143,7 +143,51 @@ counting — exact-zero assert is now schedule-deterministic for BOTH cores.
    banked as bundle candidates.
 4. **DualPipe-style phase overlap** — parked; requires shadow-diff farm first.
 
-## 7. Honesty ledger
+## 7. Round closeout — caller-census verdict (task163, same tick)
+
+TASK-230 (twin agent, S7-93) red-teamed this lens concurrently and closed the
+PER-GET form ("per-get JNI crossing x 10k calls/tick >= the win; viable ONLY as
+a batch lens") and pre-registered BOAT as the round's winner. Reconciled here
+with exact data instead of opinion — the batch-lens branch was measured:
+`bench/world3/task163_caller_census.py` over the byte-same run#10 collapsed
+stacks, classifying every lane sample (21,668 = 9.6% of CPU) by its nearest
+meaningful caller:
+
+| caller class | samples | share of lane | batchable? |
+|---|---|---|---|
+| caller-unmatched (drilled below) | 13,317 | 61.5% | mixed |
+| block entity tick loop | 2,978 | 13.7% | YES |
+| collision: moonrise block scan | 1,675 | 7.7% | YES |
+| entity movement/collision (+boat) | 2,049 | 9.5% | YES |
+| random tick sampling | 878 | 4.1% | no |
+| pathfinding | 599 | 2.8% | YES |
+
+Unmatched drill-down (nearest non-plumbing ancestor) — the lane HIDES redstone:
+`SignalGetter.getDirectSignal` 15.3% + `SignalGetter.getSignal` 9.1% +
+`RedstoneWireEvaluator.getIncomingWireSignal` 7.9% +
+`CollectingNeighborUpdater` 4.9% + `RedStoneWireBlock` 2.6% = **~39.8% of the
+lane (~3.8% of total CPU) is redstone signal propagation reading blockstates**,
+plus fluids ~8.8% and per-entity inside-block/support checks ~5.6%.
+
+**VERDICT (honest, pre-registered gate applied):**
+- Batchable share = 7,473 samples = **3.3% of total tick CPU** — AT the 3%
+  gate, below a realistic win after per-batch amortization losses. PALETTE-
+  GATHER as a solo GO is **REFUTED** (same verdict shape as the twin's per-get
+  refutation; both forms now carry numbers). The core stays BANKED
+  infrastructure (like `entity_mirror.rs`): landed, 79/79 tests, zero-alloc,
+  bit-exact — activatable ONLY if a future A/B shows a batch-dense workload.
+- **NEW discovery banked for the queue:** the redstone signal sub-lane
+  (~3.8% total CPU) masquerades as chunk-state reads. Candidate lever
+  REDSTONE-LENS (whole-body hot-patch of the wire evaluator's neighbor reads,
+  area_map precedent) — requires its own exact-frame anatomy round (STEP 0
+  kill-criterion, BOAT pattern) before any code.
+- ENT-BP stays parked per TASK-230 (solo ceiling 2.27% < gate; bundle option
+  sub-3% — secondary).
+- Round's ONE lever = PALETTE-GATHER batch-lens; outcome = refuted-with-
+  numbers; next lever in the same round per charter = handed to the queue as
+  REDSTONE-LENS (anatomy round, not code).
+
+## 8. Honesty ledger
 
 - All numbers above are run#10 CI artifacts (diagnostic boot — they RANK
   hotspots; they are NOT parity evidence).
