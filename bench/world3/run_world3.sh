@@ -74,6 +74,27 @@ mkdir -p "$SERVER/versions" && cp "$WORK/purpur.jar" "$SERVER/versions/purpur-1.
 
 log "downloading world"
 fetch "$WORLD_URL" "$WORK/world.zip" || die "world download failed from $WORLD_URL"
+# S7-96d pairing hardening (run#15/#16 lesson): IDENTICAL world snapshot
+# (item_frame 2714 in both) + identical inputs still produced 20.0 vs 12.5 TPS
+# => shared-runner CPU variance DOMINATES cross-run baselines. Every run must
+# publish its world hash + a fixed-work CPU index so research rounds can pair
+# runs by (snapshot, runner-speed) before trusting any cross-run delta.
+WORLD_SHA="$(sha256sum "$WORK/world.zip" 2>/dev/null | cut -d' ' -f1 || echo unknown)"
+RUNNER_CPU_IDX="$(python3 -c '
+import time
+t=time.time(); x=1
+for _ in range(6000000):
+    x=(x*1103515245+12345)&0x7fffffff
+print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
+{
+  echo "date_utc: $(date -u +%FT%TZ)"
+  echo "world_url: $WORLD_URL"
+  echo "world_sha256: $WORLD_SHA"
+  echo "runner_cpu_index: $RUNNER_CPU_IDX (iters/s fixed 6M-step LCG loop; higher = faster/less contended runner)"
+  echo "nproc: $(nproc 2>/dev/null || echo unknown)"
+  echo "summon_sweeps: $SUMMON_SWEEPS"
+} > "$WORK/run-env.txt"
+log "run-env: world_sha256=$WORLD_SHA runner_cpu_index=$RUNNER_CPU_IDX"
 log "extracting world"
 # Run #1 lesson (world-bench-3 run 35106393250): the MineShield-3 zip IS the world
 # directory itself (level.dat/region//DIM-1//DIM1/ at zip ROOT, no wrapper folder) —
