@@ -1,0 +1,118 @@
+# Benchmark 3.0 — real-world no-player load benchmark (owner directive 2026-09-16).
+#
+# Downloads a REAL server world (MineShield-3), force-loads chunks, runs the
+# kernel with the c-crussty module injected and ZERO players for a fixed
+# window, then produces a machine-ranked bottleneck report (BOTTLENECKS_3.md,
+# flamegraphs, collapsed stacks) that feeds the next Rust-replacement
+# research rounds.
+#
+# DIAGNOSTIC boot: spark + async-profiler instruments are attached. Per
+# INJECTS-ONLY rules the numbers are NOT parity evidence — they rank hotspots.
+#
+# World sizes (verified 2026-09-16): Min 6.68 GB (fits ubuntu-latest after
+# toolchain reclaim), Full 43.4 GB (requires a larger / self-hosted runner —
+# dispatch with the Full URL and a matching runs-on label).
+#
+# This workflow builds BOTH Rust artifacts from source:
+#   - c-crussty module  -> libcrussty.so      (this repo)
+#   - CRUSSTY engine    -> libcrussty_runtime.so (PLANETA9091/CRUSSTY)
+# and fetches the closed-source natives from the v0.1.0 release asset
+# (graceful hotpatch-only mode when absent — labelled in the report).
+name: world-bench-3
+
+on:
+  workflow_dispatch:
+    inputs:
+      world_url:
+        description: 'World zip URL (default MineShield-3 Min 6.68 GB)'
+        required: false
+        default: 'https://storage.shield.land/public.php/dav/files/twzsxN3HkBQtyED/Season%203/MineShield-3__Min--Normal.zip'
+      radius:
+        description: 'Forceload radius in blocks (640 = ~9.2k chunks)'
+        required: false
+        default: '640'
+      seconds:
+        description: 'No-player run window in seconds'
+        required: false
+        default: '900'
+      summon_sweeps:
+        description: 'Console summon sweeps to exercise spawn pipeline (0/1)'
+        required: false
+        default: '0'
+      natives_url:
+        description: 'Closed-source natives tar.gz (empty = hotpatch-only mode)'
+        required: false
+        default: 'https://github.com/PLANETA9091/c-crussty/releases/download/v0.1.0/crussty-v0.1.0-linux-x64.tar.gz'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: world-bench-3
+  cancel-in-progress: true
+
+jobs:
+  world-bench:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - name: Checkout c-crussty (module)
+        uses: actions/checkout@v4
+
+      - name: Checkout CRUSSTY (engine runtime)
+        uses: actions/checkout@v4
+        with:
+          repository: PLANETA9091/CRUSSTY
+          path: CRUSSTY
+
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Setup JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Build engine runtime + module (Rust only)
+        run: |
+          set -euo pipefail
+          (cd CRUSSTY/runtime && cargo build --release)
+          cargo build --release
+          cp CRUSSTY/runtime/target/release/libcrussty_runtime.so "$RUNNER_TEMP/"
+          cp target/release/libcrussty.so "$RUNNER_TEMP/"
+          touch "$RUNNER_TEMP/.built"
+
+      - name: Run Benchmark 3.0 (world + forceload + no players + profile)
+        env:
+          WORLD_URL: ${{ inputs.world_url || 'https://storage.shield.land/public.php/dav/files/twzsxN3HkBQtyED/Season%203/MineShield-3__Min--Normal.zip' }}
+          FORCELOAD_RADIUS: ${{ inputs.radius || '640' }}
+          RUN_SECONDS: ${{ inputs.seconds || '900' }}
+          SUMMON_SWEEPS: ${{ inputs.summon_sweeps || '0' }}
+          NATIVES_TGZ: ${{ inputs.natives_url || 'https://github.com/PLANETA9091/c-crussty/releases/download/v0.1.0/crussty-v0.1.0-linux-x64.tar.gz' }}
+          RUNTIME_SO: ${{ runner.temp }}/libcrussty_runtime.so
+        run: |
+          set -euo pipefail
+          mkdir -p world3-run/server/modules/crussty
+          cp "$RUNNER_TEMP/libcrussty.so" world3-run/server/modules/crussty/
+          cp "$RUNNER_TEMP/.built" world3-run/server/modules/crussty/
+          bash bench/world3/run_world3.sh
+
+      - name: Bottleneck report gate
+        run: |
+          test -s world3-run/BOTTLENECKS_3.md \
+            || { echo "::error::BOTTLENECKS_3.md missing — report generation failed"; exit 1; }
+          cat world3-run/BOTTLENECKS_3.md
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: world3-bench
+          path: |
+            world3-run/BOTTLENECKS_3.md
+            world3-run/cpu-collapsed.txt
+            world3-run/cpu-flamegraph.html
+            world3-run/server-stdout.log
+            world3-run/ap.log
+          retention-days: 30
