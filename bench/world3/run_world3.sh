@@ -38,11 +38,14 @@ WORK="${WORK:-$PWD/world3-run}"
 SERVER="$WORK/server"
 BOOT_TIMEOUT="${BOOT_TIMEOUT:-600}"
 NATIVES_MODE="unknown"
+# Resolve script dir BEFORE any cd (run #3 lesson: cd $SERVER broke
+# relative "$(dirname "$0")" lookups for report_world3.py / module.json)
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 log() { echo "[world3 $(date -u +%H:%M:%SZ)] $*"; }
 die() { # die <msg> — still emit a diagnostic report so artifacts ship (evidence >= silence)
   log "FATAL: $*"
-  python3 "$(dirname "$0")/report_world3.py" "$WORK" "$NATIVES_MODE" "0" || true
+  python3 "${SCRIPT_DIR:-$(cd "$(dirname "$0")" && pwd)}/report_world3.py" "$WORK" "$NATIVES_MODE" "0" || true
   exit 1
 }
 mkdir -p "$WORK" "$SERVER"
@@ -107,13 +110,30 @@ if [ -n "$NATIVES_TGZ" ] && fetch "$NATIVES_TGZ" "$WORK/natives.tar.gz"; then
 fi
 log "NATIVES_MODE=$NATIVES_MODE"
 
-# async-profiler (native + Rust frames via asprof attach — no JVM flag)
+# Run#1 lesson: resolve the script dir ABSOLUTELY once — the harness cd's into
+# $SERVER before launch, and "$(dirname "$0")" stays relative after that (run#4:
+# report never ran, gate failed on a missing BOTTLENECKS_3.md).
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
+# async-profiler (native + Rust frames via asprof attach — no JVM flag).
+# Run#4 lesson: a failed fetch was logged as an EMPTY string and silently
+# produced a profile-less run — the bottleneck report NEEDS collapsed stacks,
+# so a pinned-version fallback is tried before giving up (loudly).
 ASPROF=""
-if fetch "https://github.com/async-profiler/async-profiler/releases/latest/download/async-profiler-linux-x64.tgz" "$WORK/ap.tgz"; then
-  mkdir -p "$WORK/ap" && tar xzf "$WORK/ap.tgz" -C "$WORK/ap" --strip-components=1
-  ASPROF="$(find "$WORK/ap" -name asprof -type f | head -1)"
-  log "async-profiler: $ASPROF"
-fi
+for APURL in \
+  "https://github.com/async-profiler/async-profiler/releases/latest/download/async-profiler-linux-x64.tgz" \
+  "https://github.com/async-profiler/async-profiler/releases/download/v4.1/async-profiler-linux-x64.tgz"; do
+  if fetch "$APURL" "$WORK/ap.tgz"; then
+    mkdir -p "$WORK/ap" && tar xzf "$WORK/ap.tgz" -C "$WORK/ap" --strip-components=1
+    ASPROF="$(find "$WORK/ap" -type f -name 'asprof*' 2>/dev/null | head -1)"
+  if [ -z "$ASPROF" ]; then
+    log "asprof not found; tar top entries: $(tar tzf "$WORK/ap.tgz" 2>/dev/null | head -8 | tr '\n' ' ')"
+  fi
+    [ -n "$ASPROF" ] && { log "async-profiler: $ASPROF (from ${APURL##*/download/})"; break; }
+  fi
+  log "async-profiler source failed: $APURL — trying fallback"
+ done
+[ -n "$ASPROF" ] || log "WARN: async-profiler UNAVAILABLE — cpu-collapsed.txt will be absent (spark still runs)"
 
 # --- 2. module assembly (CI prebuilds; fall back to build here) ------------
 MODULE_DIR="$SERVER/modules/crussty"
@@ -122,10 +142,10 @@ if [ -f "$SERVER/modules/crussty/.built" ]; then
   log "module prebuilt by CI"
 else
   log "building libcrussty.so from source"
-  (cd "$(dirname "$0")/../.." && cargo build --release) || die "cargo build failed"
-  cp "$(dirname "$0")/../../target/release/libcrussty.so" "$MODULE_DIR/"
+  (cd "${SCRIPT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../.." && cargo build --release) || die "cargo build failed"
+  cp "${SCRIPT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../target/release/libcrussty.so" "$MODULE_DIR/"
 fi
-cp "$(dirname "$0")/../../module.json" "$MODULE_DIR/" 2>/dev/null || true
+cp "${SCRIPT_DIR:-$(cd "$(dirname "$0")" && pwd)}/../../module.json" "$MODULE_DIR/" 2>/dev/null || true
 # closed-source natives live INSIDE the module dir (run #2 + TASK-86 lesson:
 # the loader expects libpaper_native_jni.so in modules/crussty/, not in a
 # server-level native/ dir — module logged "missing libpaper_native_jni.so"
@@ -171,7 +191,7 @@ log "server pid $SERVER_PID — waiting for Done (<=${BOOT_TIMEOUT}s)"
 
 SEEN_DONE=0
 for i in $(seq 1 "$BOOT_TIMEOUT"); do
-  if grep -q "Done \(" "$WORK/server-stdout.log" 2>/dev/null; then SEEN_DONE=1; break; fi
+  if grep -qF "Done (" "$WORK/server-stdout.log" 2>/dev/null; then SEEN_DONE=1; break; fi
   if grep -qiE "Failed to start|Exception in thread .main." "$WORK/server-stdout.log" 2>/dev/null; then break; fi
   sleep 1
 done
@@ -234,6 +254,10 @@ sleep 30
 kill "$SERVER_PID" 2>/dev/null || true
 
 # --- 8. bottleneck report ---------------------------------------------------
-python3 "$(dirname "$0")/report_world3.py" "$WORK" "$NATIVES_MODE" "$SEEN_DONE" || true
+if [ "$SEEN_DONE" != "1" ]; then
+  log "WARN: SEEN_DONE=0 — last 40 server lines for in-log diagnosis (no artifact archaeology):"
+  tail -40 "$WORK/server-stdout.log" 2>/dev/null | sed 's/^/[srv] /'
+fi
+python3 "$SCRIPT_DIR/report_world3.py" "$WORK" "$NATIVES_MODE" "$SEEN_DONE" || true
 log "harness complete; artifacts in $WORK"
 exit 0
