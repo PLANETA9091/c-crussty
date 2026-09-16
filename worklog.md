@@ -857,3 +857,18 @@ Work Log:
 
 Stage Summary:
 - BENCH-4 era открыт: каноническое условие владельца (спавн/деспавн as-if-players) теперь измеряется фикстур-валидно; min-of-2 база завершается run#18 (absorb next tick). Следующий рычаг выбирается из min-of-2 профиля: entity-кластеры / network-visibility lane / семейные агрегаты (последние требуют owner-санкции пересмотра >=3% гейта). c-crussty push: worklog+ledger+recon
+---
+Task ID: S7-101 (watch/prep tick, 07:08+08, Job 390768) — run#18 in flight; min-of-2 verdict tooling prepped
+Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609170708)
+Task: stale-charter tick re-executed per latest state — S7-100 absorbed run#17 + dispatched run#18; this tick = watch + absorb-prep
+
+Work Log:
+- bootstrap + 3x pull: no remote movement (c-crussty 09676cb = S7-100 own push; CRUSSTY pristine 1f4c06a untouched)
+- run#18 35159240368 in_progress (23-27 min elapsed; run#17 took 24 min + artifact upload — absorb next tick)
+- prep: my-project scripts/bench4_recon/absorb_run18.sh (default id 35159240368, dest run18/, same 3 honest-absorb gates as run17 variant)
+- prep: bench/world3/bench4_baseline.py — min-of-2 paired baseline verdict tool: parses both legs' BOTTLENECKS_3.md + run-env.txt (MSPT headline + [⚡] windows + TPS steady + GC + churn + fixture), pairing verdict per S7-96d law (world_sha256 + cpu_idx + fp MATCH/MISMATCH), conservative min-of-2 baseline + A/B gate law reminder; smoke-tested run17 vs world3_art (UNKNOWN-pairing path + regex fix: [⚡] avg captured correctly 72.1175 after 4-cell skip)
+- run17 entity-recon.txt re-verified: real booted-kernel javap dump (4193 bodies, kernel jar world3-run/server/versions/1.21.10/purpur-1.21.10.jar)
+- INJECTS-ONLY: 0 sandbox boots
+
+Stage Summary:
+- S7-102 absorb ready: absorb_run18.sh → bench4_baseline.py run17 run18 → paired verdict + min-of-2 conservative baseline; затем recon_lanes --diff run18 vs run17 (пары leg1/leg2) → выбор следующего рычага из min-of-2 профиля
