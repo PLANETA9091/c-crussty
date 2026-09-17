@@ -200,6 +200,24 @@
 > по area_map-образцу) + runtime self-test, затем F2 Brain-итераторы. Пара #2:
 > 3 band-reject (один в 0.2% от band'а), 4-я нога in flight. INJECTS-ONLY цел.
 
+> **СТАТУС 20 TPS (S7-113)**: F2 BRAIN-ИТЕРАТОРЫ BUILT — `randomtick/src/BrainOps.java`:
+> flat-snapshot lens поверх setup-stable структуры Brain
+> (availableBehaviorsByPriority: OUTER=TreeMap/INNER=LinkedHashMap/SET=LinkedHashSet —
+> CP-факты; мутации ТОЛЬКО {ctor, computeIfAbsent+Set.add, clear} — все 5 getfield'ов
+> просвечены). groupStart[] воспроизводит LIVE-contains РОВНО в местах vanilla
+> (раз на группу; одинаковая activity в двух приоритетах = две проверки);
+> getStatus/tryStart — не тронутые LIVE-вызовы; gameTime — один раз. FINGERPRINT:
+> 5 семейств O(1)-проб (2 identity + 3 size), 0 итераторных аллокаций на hot path;
+> cache = WeakHashMap+IdKey (AbstractMap.equals TRAP закрыт S7-тестом).
+> PARITY BANK на РЕАЛЬНОМ production entry (ServerLevel через Unsafe.allocateInstance +
+> WritableLevelData-прокси; SharedConstants+Bootstrap.bootStrap = статические данные,
+> НЕ бут): **PASS — 4828 вызовов / 3083 order-exact событий / 1740 мутаций / 8 сценариев**
+> (S7 EQUALS-TRAP + S9 fuzz 60×40 kernel-размера). Byte hook = 14-байтовая прямая
+> строка (следующий тик, getfield СВОИХ private-полей = verifier-легален, helper без
+> Unsafe). Пара #2: нога#6/7 band-reject (~30s, без трат), нога#8 SUCCESS но harness
+> +4.8% вне окна => честный discard, нога#9 35187305900 in flight. Ничего не landится —
+> вердикт у агрегатного A/B (§125/§128). INJECTS-ONLY цел (0 sandbox boots).
+
 > **СТАТУС 20 TPS (S7-112)**: F1 BYTE HOOK ГОТОВ — Rust-хук `randomtick.rs`
 > + `classfile.rs::patch_optimise_random_tick` (образец patch_update): тело
 > optimiseRandomTick заменено на 11-байтовую прямую строку
