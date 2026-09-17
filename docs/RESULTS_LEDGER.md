@@ -1278,3 +1278,32 @@ VERDICT (bytecode grade — contract from the materialized booted kernel, NOT fr
 **ПАРА #2 (все дискреты честные)**: нога#10 35189275270 gate-reject (8869954 >> band, ~30s); нога#11 35191122341 gate-reject (6852134 у нижней кромки 6870000, ~30s) — 7-й подряд честный reject (band×5+window×2), ни одной ложной пары, bench не тратится; **нога#12 35193865177 dispatched in flight**
 
 **NEXT TICK**: F3-reads byte hooks (2 body-swap по patch_optimise_random_tick образцу + VerifyF3 HotSpot gate + активация в brainhook.rs/отдельном модуле) + poll ноги#12 35193865177. INJECTS-ONLY: 0 sandbox boots
+
+## §131 ADDENDUM-116 — TASK-252 (agent-7625532f, 2026-09-17): F3 BYTE HOOKS WIRED (S7-116) — 6B runCollectedTicks + 7B tickBlock body swaps; tickhook.rs compose-with-F1 (retransform-original-bytes seam closed); VerifyF3 VERIFY-OK on COMPOSED ServerLevel; cargo 89 passed; pair hunt: 8th honest reject, leg#13 in flight
+
+**STEP-0 CONTRACTS (javap -s, run21 kernel, research/f3-levelticks-2026-09-17/cfdumps/)**:
+- `LevelTicks.runCollectedTicks` private `(Ljava/util/function/BiConsumer;)V`, vanilla @0-76 (drain loop + set-removal QUIRK под guard'ом isEmpty)
+- `ServerLevel.tickBlock` private `(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/Block;)V`, vanilla @0-53: getBlockState → is(block) → tick(level,pos,level.random) → ++tickedBlocksOrFluids (long) → (c&7)==0 → moonrise$executeMidTickTasks()
+- `TickBlockOps.runCollectedTicks` public static `(Lnet/minecraft/world/ticks/LevelTicks;Ljava/util/function/BiConsumer;)V`; `TickBlockOps.tickBlock` public static `(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/Block;)V`
+- КОРРЕКЦИЯ числа: GOAL S7-115 писал «patch_tick_block 11 байтов» — арифметическая опечатка; фактически 3 loads + 3B invokestatic + return = **7 байтов** (запечатано debug_assert + тестом)
+
+**BYTE HOOKS** (`src/classfile.rs`, patch_optimise_random_tick/patch_brain_start_each машина):
+- `patch_run_collected_ticks`: body `2a 2b b8 <TickBlockOps.runCollectedTicks> b1` — 6B, max_stack 2 / max_locals 2, ПУСТОЙ StackMapTable
+- `patch_tick_block`: body `2a 2b 2c b8 <TickBlockOps.tickBlock> b1` — 7B, max_stack 3 / max_locals 3, ПУСТОЙ StackMapTable
+- append-only CP + дедуп => идемпотентность (patch(patch(x))==patch(x) тестом ×2); fail-closed: чужие классы + garbage-pool + 14 prefix-срезов без паники
+
+**F1+F3 COHABITATION (новый шов, закрыт архитектурно и тестом)**: оба F1- и F3-хука сидят на ServerLevel (cplug-sdk dispatch_bytes = chain по порядку регистрации). JVMTI retransform подаёт в hook-цепочку **ORIGINAL class bytes**, а one-shot PATCHED-guard F1-колбэка на повторных dispatch возвращает None ⇒ tickBlock-only образ молча УНИЧТОЖИЛ бы optimiseRandomTick swap. Решение: F3 ServerLevel-колбэк КОМПОЗИЦИОННЫЙ — ре-apply patch_optimise_random_tick (idempotent) перед patch_tick_block; итоговый образ order-independent и cycle-stable. ТЕСТ `f3_serverlevel_composes_with_f1`: F1-then-F3 => ОБА тела живы (11B optimiseRandomTick + 7B tickBlock); compose deterministic (повтор из ORIGINAL == то же) и idempotent on composed input (покрыты ОБЕ byte-модели retransform). tickhook::activate() в lib.rs СТРОГО после randomtick::activate()
+
+**ТЕСТЫ**: REAL fixtures — tests/fixtures/LevelTicks.class 18923B (sha ba7dce5e…, run21 ext, = cfdump-источник) + существующий ServerLevel.class; cargo **89 passed** (85+4: roundtrip-verified ×2 метода с операндами по ИМЕНАМ и access 0x0002, idempotency ×2, rejects, composition)
+
+**RUNTIME** (`src/tickhook.rs` — новый модуль; lib.rs: mod+register+activate):
+- hook#1 LevelTicks.runCollectedTicks (READY + PATCHED_LT guard); hook#2 ServerLevel.tickBlock с compose (READY + PATCHED_SL)
+- activate: poll BOTH {ServerLevel, LevelTicks} (180s deadline; ServerLevel грузится при создании мира, LevelTicks — при конструировании первого ServerLevel) + force-load акселератор via Bukkit forName (class LOAD only) => define **TickBlockOps ОДИН класс, БЕЗ nested-трио** (в отличие от BrainOps; все ссылки — LevelTicks/ServerLevel/BlockPos/Block/moonrise/CraftBlockState — резолвятся через kernel parent) в kernel loader => READY => retransform LevelTicks → ServerLevel => маркеры F3 ARMED/NOT APPLIED ×2 (TASK-22/C1 конвенция)
+
+**HotSpot ВЕРИФИКАТОР-ГЕЙТ**: `randomtick/src-verify/VerifyF3.java` + `verify_f3_patched.sh` — child-first loader {patched LevelTicks 18848B + **COMPOSED ServerLevel F1F3 142243B** (точный байт-образ рантайма) + TickBlockOps 5325B}, kernel-jar (run21) parent-first; порядок load: helper → LevelTicks → ServerLevel (зеркало define-порядка рантайма); resolveClass = link-time verify БЕЗ <clinit> (INJECTS-ONLY: 0 sandbox boots) => **VERIFY-OK major=65** (linked=TickBlockOps,LevelTicks,ServerLevel)
+
+**CI**: run 35194056054 @ 46aa80b (S7-115 head) SUCCESS. Маркер-grep (F1/F2 ARMED в smoke-логах, очередь с S7-114): token имеет actions:read на runs/jobs, но job-log download => 401 — отложено; bench-нога#13 runner-лог несёт маркеры бесплатно (те же буты)
+
+**ПАКЕТ (§125 протокол)**: F1 hook ✓ (S7-112) + F2 hook ✓ (S7-114) + **F3-reads hooks ✓ (S7-116)** — все три wired/armed-on-boot/dormant-until-aggregate/zero-landed. СЛЕДУЮЩИЙ ТИК: F3-queue build (LevelTicks queue-drain ≤0.5%, task167 slice — последний Tier-B член) и/или ОДИН агрегатный A/B против банка пары 76.01/76.98 (если F3-queue сочтён необязательным по preregistration — Tier B floor 3.3% достигается и без него)
+
+**ПАРА #2 (все дискреты честные)**: нога#12 35193865177 gate-reject (8875106 >> band [6870000,7030000], ~30s fast-fail) — **8-й подряд честный reject** (band×6+window×2), ни одной ложной пары; нога#13 35196354695 dispatched in flight. INJECTS-ONLY цел

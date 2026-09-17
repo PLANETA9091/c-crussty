@@ -814,6 +814,191 @@ pub fn patch_brain_start_each(bytes: &[u8]) -> Result<Vec<u8>, String> {
 }
 
 // ---------------------------------------------------------------------------
+// F3 LEVELTICKS-READS body swaps (family-agg pack member F3, TASK-251/S7-115
+// -> S7-116; protocol: docs/FAMILY_AGG_PREREGISTRATION.md §5). The F2 machine
+// applied twice on the scheduled-tick drain pair:
+//
+//   1. `LevelTicks.runCollectedTicks(BiConsumer)` (private, vanilla body
+//      @0-76) -> 6-byte straight line
+//      `aload_0; aload_1; invokestatic TickBlockOps.runCollectedTicks:
+//      (Lnet/minecraft/world/ticks/LevelTicks;Ljava/util/function/BiConsumer;)V;
+//      return` — the helper replicates the vanilla drain bytecode-exactly
+//      (incl. the set.remove-under-isEmpty-guard QUIRK) and opens the per-drain
+//      section-cache window (parity PASS: research/f3-levelticks-2026-09-17/
+//      parity_output.txt, S1-S9). max_stack 2, max_locals 2.
+//
+//   2. `ServerLevel.tickBlock(BlockPos, Block)` (private, vanilla body @0-53)
+//      -> 7-byte straight line
+//      `aload_0; aload_1; aload_2; invokestatic TickBlockOps.tickBlock:
+//      (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;
+//      Lnet/minecraft/world/level/block/Block;)V; return` — the helper
+//      replicates is->tick->counter&7->mid-tick with the getChunk hop routed
+//      through the section cache. (The S7-115 GOAL note said "11 bytes":
+//      arithmetic slip — 3 loads + 3B invokestatic + return = 7 bytes.
+//      max_stack 3, max_locals 3.)
+//
+// No branches in either body => EMPTY StackMapTable (0 frames). Both helpers
+// take the receiver as an explicit argument (public static, defined into the
+// kernel loader by tickhook.rs — no nested classes), so NO getfields are
+// needed and the bodies never touch foreign privates.
+//
+// COHABITATION WITH F1 (both hooks target ServerLevel): JVMTI retransformation
+// re-runs the hook chain over the ORIGINAL class bytes, so a tickBlock-only
+// patch returned during the F3 retransform would silently UNDO the F1
+// optimiseRandomTick swap. tickhook.rs therefore composes: its ServerLevel
+// callback re-applies [`patch_optimise_random_tick`] (idempotent — dedup CP
+// appends make patch(patch(x)) == patch(x)) before [`patch_tick_block`].
+// Both functions only touch their OWN method entry, so any application order
+// converges.
+//
+// Idempotency per function: patch(patch(x)) == patch(x). Fail-closed: any
+// other class / missing method => Err before any mutation.
+pub const LEVELTICKS_CLASS: &str = "net/minecraft/world/ticks/LevelTicks";
+pub const TICKBLOCK_OPS_CLASS: &str = "net/minecraft/server/level/TickBlockOps";
+const RUN_COLLECTED_DESC: &str = "(Ljava/util/function/BiConsumer;)V";
+const RUN_COLLECTED_OPS_DESC: &str =
+    "(Lnet/minecraft/world/ticks/LevelTicks;Ljava/util/function/BiConsumer;)V";
+const TICK_BLOCK_DESC: &str =
+    "(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/Block;)V";
+const TICK_BLOCK_OPS_DESC: &str = "(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/Block;)V";
+
+pub fn patch_run_collected_ticks(bytes: &[u8]) -> Result<Vec<u8>, String> {
+    let layout = parse_layout(bytes).ok_or("bad classfile layout")?;
+    let this_name = this_class_name(&layout).ok_or("cannot resolve this_class name")?;
+    if this_name != LEVELTICKS_CLASS {
+        return Err(format!("unexpected class {this_name}"));
+    }
+    let mut pool = layout.pool;
+
+    // Find-only probes first (fail closed BEFORE any pool mutation).
+    let Some(name_idx) = pool.find_utf8("runCollectedTicks") else {
+        return Err("runCollectedTicks not found".into());
+    };
+    let Some(desc_idx) = pool.find_utf8(RUN_COLLECTED_DESC) else {
+        return Err("runCollectedTicks descriptor not found".into());
+    };
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)
+        .ok_or("runCollectedTicks(Ljava/util/function/BiConsumer;)V not found")?;
+
+    // Constant ref needed by the new body (appended when absent).
+    let m_ops = pool.method_ref(TICKBLOCK_OPS_CLASS, "runCollectedTicks", RUN_COLLECTED_OPS_DESC);
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for F3 refs".into());
+    }
+
+    let mut code = Vec::with_capacity(6);
+    let u2 = |out: &mut Vec<u8>, v: u16| out.extend_from_slice(&v.to_be_bytes());
+    code.push(0x2a); // aload_0 (LevelTicks receiver)
+    code.push(0x2b); // aload_1 (BiConsumer)
+    code.push(0xb8); // invokestatic TickBlockOps.runCollectedTicks
+    u2(&mut code, m_ops);
+    code.push(0xb1); // return
+    debug_assert_eq!(code.len(), 6, "emitted code is {}", code.len());
+
+    // Code attribute: empty exception table + EMPTY StackMapTable.
+    let mut code_attr = Vec::new();
+    u2(&mut code_attr, pool.utf8("Code"));
+    let mut body = Vec::new();
+    u2(&mut body, 2); // max_stack: receiver + consumer
+    u2(&mut body, 2); // max_locals: this, BiConsumer
+    body.extend_from_slice(&(code.len() as u32).to_be_bytes());
+    body.extend_from_slice(&code);
+    body.extend_from_slice(&[0, 0]); // exception_table_length
+    body.extend_from_slice(&(1u16).to_be_bytes()); // attributes_count
+    u2(&mut body, pool.utf8("StackMapTable"));
+    body.extend_from_slice(&2u32.to_be_bytes()); // attribute_length
+    body.extend_from_slice(&0u16.to_be_bytes()); // number_of_entries = 0
+    code_attr.extend_from_slice(&(body.len() as u32).to_be_bytes());
+    code_attr.extend_from_slice(&body);
+
+    // Replacement method entry + splice (F2 machine verbatim).
+    let mut method = Vec::new();
+    u2(&mut method, m.access);
+    u2(&mut method, m.name_idx);
+    u2(&mut method, m.desc_idx);
+    u2(&mut method, 1); // attributes_count
+    method.extend_from_slice(&code_attr);
+
+    let mut out = Vec::with_capacity(bytes.len() + 64);
+    out.extend_from_slice(&bytes[0..8]); // magic, minor, major
+    u2(&mut out, pool.next); // new cp_count
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(&bytes[layout.cp_end..m.start]);
+    out.extend_from_slice(&method);
+    out.extend_from_slice(&bytes[m.end..]);
+    Ok(out)
+}
+
+pub fn patch_tick_block(bytes: &[u8]) -> Result<Vec<u8>, String> {
+    let layout = parse_layout(bytes).ok_or("bad classfile layout")?;
+    let this_name = this_class_name(&layout).ok_or("cannot resolve this_class name")?;
+    if this_name != SERVER_LEVEL_CLASS {
+        return Err(format!("unexpected class {this_name}"));
+    }
+    let mut pool = layout.pool;
+
+    // Find-only probes first (fail closed BEFORE any pool mutation).
+    let Some(name_idx) = pool.find_utf8("tickBlock") else {
+        return Err("tickBlock not found".into());
+    };
+    let Some(desc_idx) = pool.find_utf8(TICK_BLOCK_DESC) else {
+        return Err("tickBlock descriptor not found".into());
+    };
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx).ok_or(
+        "tickBlock(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/Block;)V not found",
+    )?;
+
+    // Constant ref needed by the new body (appended when absent).
+    let m_ops = pool.method_ref(TICKBLOCK_OPS_CLASS, "tickBlock", TICK_BLOCK_OPS_DESC);
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for F3 refs".into());
+    }
+
+    let mut code = Vec::with_capacity(7);
+    let u2 = |out: &mut Vec<u8>, v: u16| out.extend_from_slice(&v.to_be_bytes());
+    code.push(0x2a); // aload_0 (ServerLevel receiver)
+    code.push(0x2b); // aload_1 (BlockPos)
+    code.push(0x2c); // aload_2 (Block)
+    code.push(0xb8); // invokestatic TickBlockOps.tickBlock
+    u2(&mut code, m_ops);
+    code.push(0xb1); // return
+    debug_assert_eq!(code.len(), 7, "emitted code is {}", code.len());
+
+    // Code attribute: empty exception table + EMPTY StackMapTable.
+    let mut code_attr = Vec::new();
+    u2(&mut code_attr, pool.utf8("Code"));
+    let mut body = Vec::new();
+    u2(&mut body, 3); // max_stack: level, pos, block
+    u2(&mut body, 3); // max_locals: this, BlockPos, Block
+    body.extend_from_slice(&(code.len() as u32).to_be_bytes());
+    body.extend_from_slice(&code);
+    body.extend_from_slice(&[0, 0]); // exception_table_length
+    body.extend_from_slice(&(1u16).to_be_bytes()); // attributes_count
+    u2(&mut body, pool.utf8("StackMapTable"));
+    body.extend_from_slice(&2u32.to_be_bytes()); // attribute_length
+    body.extend_from_slice(&0u16.to_be_bytes()); // number_of_entries = 0
+    code_attr.extend_from_slice(&(body.len() as u32).to_be_bytes());
+    code_attr.extend_from_slice(&body);
+
+    // Replacement method entry + splice (F2 machine verbatim).
+    let mut method = Vec::new();
+    u2(&mut method, m.access);
+    u2(&mut method, m.name_idx);
+    u2(&mut method, m.desc_idx);
+    u2(&mut method, 1); // attributes_count
+    method.extend_from_slice(&code_attr);
+
+    let mut out = Vec::with_capacity(bytes.len() + 64);
+    out.extend_from_slice(&bytes[0..8]); // magic, minor, major
+    u2(&mut out, pool.next); // new cp_count
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(&bytes[layout.cp_end..m.start]);
+    out.extend_from_slice(&method);
+    out.extend_from_slice(&bytes[m.end..]);
+    Ok(out)
+}
+
+// ---------------------------------------------------------------------------
 // G4: invokestatic call-site retarget (docs/G4_SITE_PATCH_DESIGN.md §3,
 // Variant R). Same-length CP-operand rewrite: scan a method's Code attribute
 // for `invokestatic` (0xb8) instructions, resolve each 2-byte CP operand to
@@ -1815,5 +2000,196 @@ mod real_noise {
         for cut in [10usize, 100, 1000, 10000, BRAIN.len() - 1] {
             let _ = patch_brain_start_each(&BRAIN[..cut]);
         }
+    }
+
+    // ---- F3 LEVELTICKS-READS body swaps (runCollectedTicks + tickBlock) ----
+
+    const LEVELTICKS: &[u8] = include_bytes!("../tests/fixtures/LevelTicks.class");
+
+    /// Shared verification walker for the F3 tests: locate `name`/`desc` in
+    /// the classfile and return (max_stack, max_locals, bytecode). Same
+    /// contract as [`f1_code_of`] — find_code_attr points at the bytecode,
+    /// max_stack/max_locals sit 8/6 bytes before it.
+    fn f3_code_of(bytes: &[u8], name: &str, desc: &str) -> (u16, u16, Vec<u8>) {
+        let layout = parse_layout(bytes).expect("parse");
+        let name_idx = layout.pool.find_utf8(name).expect("name utf8 present");
+        let desc_idx = layout.pool.find_utf8(desc).expect("desc utf8 present");
+        let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)
+            .expect("target method present");
+        let (start, len) = find_code_attr(bytes, &layout.pool, &m).expect("Code attr");
+        let code = bytes[start..start + len].to_vec();
+        let ms = u16::from_be_bytes([bytes[start - 8], bytes[start - 7]]);
+        let ml = u16::from_be_bytes([bytes[start - 6], bytes[start - 5]]);
+        (ms, ml, code)
+    }
+
+    /// Round-trip on the REAL fixtures: runCollectedTicks -> exact 6-byte
+    /// straight line (max_stack 2 / max_locals 2), tickBlock -> exact 7-byte
+    /// straight line (max_stack 3 / max_locals 3); operands resolve BY NAME
+    /// to TickBlockOps with the ECJ-compiled descriptors; private access
+    /// preserved. Dumps both for the HotSpot verifier gate
+    /// (randomtick/verify_f3_patched.sh).
+    #[test]
+    fn f3_patch_roundtrip_verified() {
+        // --- LevelTicks.runCollectedTicks (6 bytes) ---
+        let patched = patch_run_collected_ticks(LEVELTICKS).expect("patch");
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        assert_eq!(patched[..8], LEVELTICKS[..8], "version preserved");
+
+        let (ms, ml, code) = f3_code_of(&patched, "runCollectedTicks", RUN_COLLECTED_DESC);
+        assert_eq!(code.len(), 6, "straight-line body is 6 bytes");
+        assert_eq!(ms, 2, "max_stack = receiver,consumer");
+        assert_eq!(ml, 2, "max_locals = this,BiConsumer");
+        let skel = [code[0], code[1], code[2], code[5]];
+        assert_eq!(skel, [0x2a, 0x2b, 0xb8, 0xb1], "opcode skeleton exact");
+
+        let layout = parse_layout(&patched).expect("re-parse patched");
+        let r = layout
+            .pool
+            .methodref_parts(u16::from_be_bytes([code[3], code[4]]))
+            .expect("invokestatic operand resolves");
+        assert_eq!(
+            r,
+            (
+                TICKBLOCK_OPS_CLASS.to_string(),
+                "runCollectedTicks".to_string(),
+                RUN_COLLECTED_OPS_DESC.to_string()
+            )
+        );
+        let name_idx = layout.pool.find_utf8("runCollectedTicks").expect("name kept");
+        let desc_idx = layout.pool.find_utf8(RUN_COLLECTED_DESC).expect("desc kept");
+        let m = find_method(&patched, layout.methods_start, name_idx, desc_idx).expect("method");
+        assert_eq!(m.access, 0x0002, "access flags preserved (private instance)");
+
+        let out = std::env::temp_dir().join("ccrussty_patched_LevelTicks.class");
+        std::fs::write(&out, &patched).expect("dump patched LevelTicks");
+        eprintln!("wrote {} bytes to {}", patched.len(), out.display());
+
+        // --- ServerLevel.tickBlock (7 bytes) ---
+        let patched = patch_tick_block(SERVER).expect("patch");
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        assert_eq!(patched[..8], SERVER[..8], "version preserved");
+
+        let (ms, ml, code) = f3_code_of(&patched, "tickBlock", TICK_BLOCK_DESC);
+        assert_eq!(code.len(), 7, "straight-line body is 7 bytes (3 loads + 3B invokestatic + return)");
+        assert_eq!(ms, 3, "max_stack = level,pos,block");
+        assert_eq!(ml, 3, "max_locals = this,BlockPos,Block");
+        let skel = [code[0], code[1], code[2], code[3], code[6]];
+        assert_eq!(skel, [0x2a, 0x2b, 0x2c, 0xb8, 0xb1], "opcode skeleton exact");
+
+        let layout = parse_layout(&patched).expect("re-parse patched");
+        let r = layout
+            .pool
+            .methodref_parts(u16::from_be_bytes([code[4], code[5]]))
+            .expect("invokestatic operand resolves");
+        assert_eq!(
+            r,
+            (
+                TICKBLOCK_OPS_CLASS.to_string(),
+                "tickBlock".to_string(),
+                TICK_BLOCK_OPS_DESC.to_string()
+            )
+        );
+        let name_idx = layout.pool.find_utf8("tickBlock").expect("name kept");
+        let desc_idx = layout.pool.find_utf8(TICK_BLOCK_DESC).expect("desc kept");
+        let m = find_method(&patched, layout.methods_start, name_idx, desc_idx).expect("method");
+        assert_eq!(m.access, 0x0002, "access flags preserved (private instance)");
+
+        let out = std::env::temp_dir().join("ccrussty_patched_ServerLevel_F3.class");
+        std::fs::write(&out, &patched).expect("dump patched ServerLevel (F3-only)");
+        eprintln!("wrote {} bytes to {}", patched.len(), out.display());
+    }
+
+    /// Idempotency: patch(patch(x)) == patch(x), both F3 functions.
+    #[test]
+    fn f3_patch_is_idempotent() {
+        let once = patch_run_collected_ticks(LEVELTICKS).expect("first");
+        let twice = patch_run_collected_ticks(&once).expect("second");
+        assert_eq!(once, twice, "double runCollectedTicks patch is byte-identical");
+
+        let once = patch_tick_block(SERVER).expect("first");
+        let twice = patch_tick_block(&once).expect("second");
+        assert_eq!(once, twice, "double tickBlock patch is byte-identical");
+    }
+
+    /// Fail-closed discipline: wrong class rejected before any mutation;
+    /// truncated/hostile bytes rejected without panic.
+    #[test]
+    fn f3_patch_rejects_wrong_class_and_garbage() {
+        // Cross-class: runCollectedTicks patch refuses everything but LevelTicks.
+        let e = patch_run_collected_ticks(SERVER).expect_err("ServerLevel is not LevelTicks");
+        assert!(e.starts_with("unexpected class"));
+        let e = patch_run_collected_ticks(BRAIN).expect_err("Brain is not LevelTicks");
+        assert!(e.starts_with("unexpected class"));
+        // Cross-class: tickBlock patch refuses everything but ServerLevel.
+        let e = patch_tick_block(LEVELTICKS).expect_err("LevelTicks is not ServerLevel");
+        assert!(e.starts_with("unexpected class"));
+        let e = patch_tick_block(include_bytes!(
+            "../tests/fixtures/SingleUserAreaMap.class"
+        ))
+        .expect_err("area_map is not ServerLevel");
+        assert!(e.starts_with("unexpected class"));
+
+        // Missing method: LevelTicks without runCollectedTicks is not the
+        // kernel build we verified — probe fails closed (garbage-pool path).
+        let e = patch_run_collected_ticks(&LEVELTICKS[..64]).expect_err("truncated header");
+        assert!(!e.is_empty());
+        let e = patch_tick_block(&[0xCA, 0xFE, 0xBA, 0xBE, 0, 0, 0, 65, 0, 3, 1, 2])
+            .expect_err("garbage pool");
+        assert!(!e.is_empty());
+        // Whole-pool truncation at every prefix must never panic.
+        for cut in [10usize, 100, 1000, 10000, LEVELTICKS.len() - 1] {
+            let _ = patch_run_collected_ticks(&LEVELTICKS[..cut]);
+        }
+        for cut in [10usize, 100, 1000, 10000, SERVER.len() - 1] {
+            let _ = patch_tick_block(&SERVER[..cut]);
+        }
+    }
+
+    /// F1+F3 COHABITATION (the ServerLevel seam): both hooks target
+    /// ServerLevel, and the F3 retransform re-runs the chain over the
+    /// ORIGINAL bytes — so tickhook's ServerLevel callback re-applies the F1
+    /// patch (idempotent) before the F3 patch. These assertions pin the
+    /// property the runtime relies on:
+    ///   1. composing F1 then F3 leaves BOTH bodies swapped correctly;
+    ///   2. the composed result re-applied through the same chain (the
+    ///      retransform cycle) is byte-identical — no patch is lost or
+    ///      duplicated by repeated dispatch.
+    #[test]
+    fn f3_serverlevel_composes_with_f1() {
+        // The composed chain tickhook.rs runs during the F3 retransform:
+        // optimise (re-apply, idempotent) then tick_block, over the ORIGINAL
+        // fixture bytes.
+        let compose = |bytes: &[u8]| -> Vec<u8> {
+            let b = patch_optimise_random_tick(bytes).expect("F1 compose");
+            patch_tick_block(&b).expect("F3 compose")
+        };
+        let composed = compose(SERVER);
+
+        // Both bodies present and exact.
+        let (ms, ml, code) = f3_code_of(&composed, "tickBlock", TICK_BLOCK_DESC);
+        assert_eq!(code.len(), 7, "F3 tickBlock body present in composition");
+        assert_eq!((ms, ml), (3, 3));
+        let (_, _, code) = f3_code_of(
+            &composed,
+            "optimiseRandomTick",
+            "(Lnet/minecraft/world/level/chunk/LevelChunk;I)V",
+        );
+        assert_eq!(code.len(), 11, "F1 optimiseRandomTick body ALIVE in composition");
+
+        // Retransform cycle: re-running the composed chain over the ORIGINAL
+        // bytes again yields the identical image (dedup CP + idempotent
+        // bodies) — repeated dispatch neither loses nor duplicates patches.
+        let recomposed = compose(SERVER);
+        assert_eq!(composed, recomposed, "compose chain is deterministic");
+        let c2 = compose(&composed); // input = already-composed bytes (model where retransform passes current bytes)
+        assert_eq!(composed, c2, "compose is idempotent on composed input");
+
+        // Dump the COMPOSED image for the runtime verifier gate
+        // (randomtick/verify_f3_patched.sh: a real HotSpot resolveClass()
+        // pass over exactly the bytes the runtime will carry).
+        let out = std::env::temp_dir().join("ccrussty_patched_ServerLevel_F1F3.class");
+        std::fs::write(&out, &composed).expect("dump composed ServerLevel");
+        eprintln!("wrote {} bytes to {}", composed.len(), out.display());
     }
 }

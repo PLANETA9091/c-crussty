@@ -1118,3 +1118,23 @@ Work Log:
 Stage Summary:
 - c-crussty master <push>: ПАКЕТ F1 ✓ + F2 ✓ + F3-reads built — следующий тик: F3-reads byte hooks (patch_run_collected_ticks 6B + patch_tick_block 11B, оба straight-line/пустой StackMapTable, VerifyF3 HotSpot gate + активация) + poll ноги#12 35193865177; затем F3-queue (≤0.5%) и ОДИН агрегатный A/B
 - INJECTS-ONLY: 0 sandbox boots
+
+---
+
+## S7-116 (tick 2026-09-17 15:43 UTC+8, agent-7625532f) — F3 BYTE HOOKS WIRED (family-agg pack member F3 complete, TASK-252; ничего не landится до агрегатного A/B §125)
+
+Work Log:
+- bootstrap/pull: c-crussty 46aa80b, dev-logs 7c9fbf8, CRUSSTY 1f4c06a нетронут; stale-чартер игнорирован по прецеденту
+- Пара #2: нога#12 35193865177 gate-reject (8875106 >> band [6870000,7030000], ~30s) — 8-й подряд честный reject; нога#13 = 35196354695 dispatched in flight; runs_index +2
+- STEP-0 контракты (javap -s, run21): runCollectedTicks private `(Ljava/util/function/BiConsumer;)V` @0-76; tickBlock private `(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/Block;)V` @0-53; TickBlockOps public static пары дескрипторов — всё сверено; GOAL-опечатка «11 байтов» исправлена: tickBlock hook = **7 байтов** (3 loads + 3B invokestatic + return)
+- Byte hooks (classfile.rs): `patch_run_collected_ticks` (6B `2a 2b b8 … b1`, max_stack 2/max_locals 2) + `patch_tick_block` (7B `2a 2b 2c b8 … b1`, max_stack 3/max_locals 3) — оба прямые, ПУСТОЙ StackMapTable, идемпотентные, fail-closed
+- **F1+F3 COHABITATION шов закрыт**: JVMTI retransform подаёт ORIGINAL bytes; F1 one-shot PATCHED guard молчит на повторных dispatch ⇒ tickBlock-only образ уничтожил бы optimiseRandomTick swap. Решение: F3 ServerLevel-колбэк в tickhook.rs КОМПОЗИЦИОННЫЙ — ре-apply idempotent patch_optimise_random_tick перед patch_tick_block; образ order-independent, cycle-stable; тест f3_serverlevel_composes_with_f1 (оба тела живы 11B+7B, compose deterministic + idempotent на composed input — обе byte-модели retransform покрыты)
+- Тесты: REAL LevelTicks fixture (tests/fixtures/LevelTicks.class 18923B, sha ba7dce5e…, run21 ext = cfdump-источник); roundtrip ×2 (skeleton [2a 2b b8 b1]/[2a 2b 2c b8 b1], операнды по именам, access 0x0002), idempotency ×2, rejects, composition; **cargo: 89 passed** (85+4)
+- Runtime: **src/tickhook.rs** (новый; lib.rs mod+register+activate после randomtick) — hook#1 LevelTicks, hook#2 ServerLevel (compose); activate: poll BOTH + force-load (Bukkit forName, class LOAD only) => define TickBlockOps ОДИН класс (БЕЗ nested — все ссылки через kernel parent) => READY => retransform LevelTicks→ServerLevel => маркеры F3 ARMED/NOT APPLIED ×2
+- HotSpot verifier gate: **VerifyF3.java + verify_f3_patched.sh** — child-first {patched LevelTicks 18848B + COMPOSED ServerLevel F1F3 142243B + TickBlockOps 5325B}, kernel-jar parent-first, load-порядок helper→LevelTicks→ServerLevel (зеркало рантайма), resolveClass link-time БЕЗ <clinit> => **VERIFY-OK major=65**
+- CI: run 35194056054 @ 46aa80b SUCCESS; маркер-grep job-логов отложен (token 401 на job-log download; bench runner-лог ноги#13 несёт маркеры бесплатно); scripts/ci_marker_check.py сохранён
+- Ledger §131, INDEX 252, GOAL СТАТУС S7-116
+
+Stage Summary:
+- c-crussty master <push>: ПАКЕТ F1 hook ✓ + F2 hook ✓ + F3-reads hooks ✓ — все три wired, armed-по-буту, CI-exercised, dormant-до-aggregate, ноль лендинга; следующий тик: F3-queue build (LevelTicks queue-drain ≤0.5%, task167 — последний Tier-B член) ИЛИ сразу ОДИН агрегатный A/B против банка пары 76.01/76.98 (Tier B floor 3.3% достигается и без queue — решение по §125 протоколу) + poll ноги#13 35196354695
+- INJECTS-ONLY: 0 sandbox boots (verify = link-time resolveClass без инициализации; define = класс-загрузка без init; force-load = LOAD без instantiation)

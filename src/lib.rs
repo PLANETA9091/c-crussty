@@ -34,6 +34,7 @@ mod palette_gather;
 mod promote_wire;
 mod proto_blend_cache;
 mod randomtick;
+mod tickhook;
 
 use cplug_abi::{CPluginApi, JavaVmPtr};
 use jvmti_bindings::prelude::*;
@@ -99,6 +100,9 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     randomtick::register();
     // F2 BRAIN-ITERATORS (family-agg pack member, S7-114): Brain body-swap hook.
     brainhook::register();
+    // F3 LEVELTICKS-READS (family-agg pack member, S7-116): LevelTicks +
+    // ServerLevel body-swap hooks (the ServerLevel one composes with F1).
+    tickhook::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -269,6 +273,11 @@ fn inject_surface() {
     // F2 BRAIN-ITERATORS (S7-114): define BrainOps (+ nested) into the Brain
     // loader, then retransform for the startEachNonRunningBehavior body swap.
     brainhook::activate();
+    // F3 LEVELTICKS-READS (S7-116): define TickBlockOps into the kernel
+    // loader, then retransform LevelTicks + ServerLevel (tickBlock hook
+    // re-composes the F1 optimiseRandomTick swap; MUST run after
+    // randomtick::activate — see src/tickhook.rs module docs).
+    tickhook::activate();
 }
 
 /// Define one bridge class and register all its natives.
