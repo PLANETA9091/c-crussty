@@ -51,6 +51,10 @@ on:
         description: 'PALETTED-DEMUX S7-131 ARCH-ATTACK lever #1 (1 = ARMED: PalettedContainer field-inject + fast-path get + guarded mutators; 0 = vanilla-palette A/B leg)'
         required: false
         default: '0'
+      alloc_diet:
+        description: 'ALLOC-DIET S7-133/TASK-269 ARCH-ATTACK lever #2 (1 = ARMED: zero-alloc push/collision queries via EntityQueryOps rotating pools; 0 = vanilla-alloc A/B leg)'
+        required: false
+        default: '0'
       population_target:
         description: 'BENCH-X150K living-scene population injection (0 = off; 10000 = smoke; 150000 = prime scale, S7-129)'
         required: false
@@ -140,6 +144,7 @@ jobs:
           FAKE_PLAYERS: ${{ inputs.fake_players || '0' }}
           FLUID_GUARD: ${{ inputs.fluid_guard || '1' }}
           PALETTED_DEMUX: ${{ inputs.paletted_demux || '0' }}
+          ALLOC_DIET: ${{ inputs.alloc_diet || '0' }}
           POPULATION_TARGET: ${{ inputs.population_target || '0' }}
           POPULATION_SEED: ${{ inputs.population_seed || '42' }}
           SERVER_XMX: ${{ inputs.server_xmx || '6G' }}

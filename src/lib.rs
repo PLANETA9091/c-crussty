@@ -15,6 +15,7 @@
 //! The kernel hot-path wirings (area_map update batching etc.) are separate
 //! byte hooks on top of this surface — see the project docs.
 
+mod alloc_diet;
 mod area_map;
 mod perlin_noise;
 mod batch_api;
@@ -100,6 +101,12 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // first-load demux patch (field injection + fast-path get + guarded
     // mutators). MUST register before any kernel class loads (onstart).
     paletted::register();
+    // ALLOC-DIET (S7-133, TASK-269, ARCH-ATTACK lever #2): zero-alloc
+    // tick-thread entity queries (push wrapper + collision temps). Byte
+    // hooks capture pristine bytes at first load; patches served via
+    // retransform after the EntityQueryOps bridge lands. Dormant unless
+    // CRUSSTY_ALLOC_DIET=1.
+    alloc_diet::register();
     proto_blend_cache::register();
     // F1 BATCH-RNG (family-agg pack member, S7-112): ServerLevel body-swap hook.
     randomtick::register();
@@ -274,6 +281,10 @@ fn inject_surface() {
     // loader EARLY (the patch serves at PalettedContainer's first load —
     // field injection forbids retransform), then READY.
     paletted::activate();
+    // ALLOC-DIET (S7-133): define EntityQueryOps into the kernel loader,
+    // compute both length-preserving patches, retransform (dormant unless
+    // CRUSSTY_ALLOC_DIET=1).
+    alloc_diet::activate();
     // Dormant unless CRUSSTY_NATIVE_BLEND_CACHE is set (see docs/HOOK_BLEND_CACHE.md).
     proto_blend_cache::activate();
     // F1 BATCH-RNG (S7-112): define RandomTickOps into the ServerLevel loader,

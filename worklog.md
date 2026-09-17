@@ -1466,3 +1466,24 @@ Work Log:
 
 Stage Summary:
 - Реленс дал −0.9pp guard-лейна и −768MB heap — банкуется; демукс в комбо нейтрален; S7-133 = аллокационная диета entity-лэйна (GC+барьеры 27.1% — крупнейшая адресуемая производная); MSPT-пэйринг межрановый — по закону S7-96d для будущих гейтов нужны пары по cpu
+---
+## S7-133 (TASK-269) — 2026-09-18 05:0x +08 — ARCH-ATTACK рычаг #2 ALLOC-DIET: zero-alloc entity-запросы, офлайн ALL PASS, диспатч leg #1
+
+**Task ID: S7-133 (Job 393012)**, Agent: agent-7625532f (session web-f7888d46)
+
+Work Log:
+- bootstrap + 3x pull (все up-to-date) → GOAL хвост (S7-132b: реленс −27% лейна, high-water −768MB; S7-133 = аллокационная диета entity-лэйна) → worklog/CLAIMS хвосты (TASK-268 → следующий TASK-269) → спека BENCH_X150K_SCENARIO.md (§1-§5)
+- STEP-0 javap-контракт (материализованное ядро /tmp/pdec/matsrv, офлайн): push-обёртка = 2 ArrayList/вызов (один dead-guava, результат не читается) × ~45k+ живых/тик; ItemEntity.mergeWithNeighbours гейтится isMergable() — bench-предметы (pickupDelay=32767) выходят ДО запроса ⇒ merge-запрос на сцене НЕ идёт (снят с очереди); CollisionUtil.getCollisionsForBlocksOrWorldBorder = безусловный new MutableBlockPos + new LazyEntityCollisionContext × ~250k+/тик (148k move + 100k item noPhysics)
+- Имплементация: entityquery/net/minecraft/world/entity/EntityQueryOps.java (rotating pools ×8/поток: pushables = тот же deep-fill EntityLookup.getEntities + PlatformHooks.addToGetEntities + Profiler "getEntities" ⇒ бит-в-бит ванильная последовательность; mutablePos = set(0,0,0) re-init ≡ свежий ctor); javac21 против kernel = COMPILE OK (4091B)
+- classfile.rs: retarget_virtual_to_static (virtual→static с приёмником-первым-аргументом, скан 0xb6+0xb8 для идемпотентности) + patch_push_entities + patch_collision_temps (7B→7B ctor-сплайс на 4 nop); оба сохраняют длину ⇒ ноль сдвигов веток/SMT; патчеры по имени, fail-closed, append-only CP
+- Тесты на РЕАЛЬНЫХ байтах (фикстуры из ядра): 9 новых, suite 101 ✓ (Retargeted{1}, идемпотентный repatch byte-identical, fail-closed на чужих классах)
+- Офлайн-харнесс allocdiet/harness/AllocDietHarness.java: defineClass пропатченных LivingEntity (186759B) + CollisionUtil (45546B) = верификатор JVM ✓; 0xb8 pc=75 → EntityQueryOps#pushables подтверждён с JVM-стороны; кольцо mutablePos 8 ротируемых zeroed экземпляров (identity-семантика); ванильный ctor-якорь = **ALLOC-DIET OFFLINE PASS** → research/alloc-diet-2026-09-18/ (классы + sha256 + лог)
+- src/alloc_diet.rs (gate CRUSSTY_ALLOC_DIET, default 0 dormant-invisible; pristine capture на первом load обоих классов; EntityQueryOps в kernel loader; вычисление патчей на тихом worker; retransform после wait_for_boot+20s — дисциплина fluid_guard); lib.rs wiring; cargo build release ✓
+- Проведка env: run_world3.sh ALLOC_DIET (self-doc) + export CRUSSTY_ALLOC_DIET; workflow world-bench input alloc_diet (default 0); bash -n OK, YAML OK
+- Учёт: GOAL S7-133 + §152 + INDEX 273 + CLAIMS TASK-269 + этот worklog; runs_index row после диспатча
+- CRUSSTY pristine не тронут; INJECTS-ONLY цел (0 sandbox boots)
+
+Stage Summary:
+- Аллокационная диета leg #1 ГОТОВА: два call-site ретаргета (push-обёртка + MutableBlockPos) на вращающиеся пулы — ожидание ~10-17MB young-gen/тик минус; офлайн-верификация полная (rust + верификатор JVM + поведенческие гейты CI); NEXT: commit+push → диспатч leg #1 (X150K, diet=1 vs база 35245032701) → absorb → leg #2 min-of-2 → вердикт по лейн-абсолютам (гейт GC-лейн ↓ ≥10%, иначе REFUTED-BY-ECONOMICS)
+
+RUN_ID_DISPATCHED: pending (после пуша)
