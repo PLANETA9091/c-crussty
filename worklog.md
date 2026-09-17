@@ -1240,3 +1240,21 @@ Work Log:
 
 Stage Summary:
 - §125-A1 LIVE with both baseline arms banked (83.40/83.51ms, window [6916007,7136333], threshold 80.95ms); pack arm#1 in flight (boot, no echo yet at tick end); next tick: poll 35213299343 — in-window => leg#1 banked + arm#2 auto-dispatch => 2 in-window legs => verdict_a1 => LANDS (pack lands on master) / REFUTED (zero landing); F2/F3 markers on first completed leg; INJECTS-ONLY intact (0 sandbox boots)
+
+---
+## S7-123 — 2026-09-17 19:08 tick — pack arm#1 discard #1 + bug#6/bug#7 v4.3 + attempt#3 in flight
+
+**Task ID: S7-123**, Agent: agent-7625532f (session web-f7888d46, Job 390768)
+
+Work Log:
+- bootstrap + 3x pull: repos at S7-122 end (fb7d8cb), no interim sessions; GOAL read first
+- Poll pack arm#1 35213299343 through boot+bench (~30 min of polls): SUCCESS/VALID/world OK but RECON BUG#6 fired — logs undownloadable at completion instant => log_text "" => reject branch wiped state (exit 1)
+- Post-mortem from logs: MSPT avg 94.14, final cpu 6832640 OUT of pack window [6916007,7136333] (below arm2-lo too) => honest DISCARD (unpairable with both arms); 94.14 @ lower-cpu confirms cpu-index<->MSPT coupling
+- RECON BUG#7 found post-mortem: all pack-phase discard/cancel/reject paths called clear_state() => phase/window/baseline lost => next dispatch would fall to fresh-baseline (bug#5 family); FIX v4.3: restore_pack_or_clear() + empty-logs-on-success retry (bug#6); state restored manually from leg_b_v4.json
+- Attempt#2 dispatch: run 35215890688 gate cpu 10054256 (10M fast class) => ~30s fast-fail reject; dispatch-verify correctly refused completed-run state (false-MISMATCH note for v4.4: own fast-fail within 25s window)
+- Attempt#3 dispatched manually (POST 204): run 35216066889 in flight on master fb7d8cb, band [6688594,7551675], exact window final check; state saved
+- runs_index +3; GOAL S7-123 + §138 + INDEX 259; CLAIMS TASK-259; v4.3 repo copy synced
+- Commits: c-crussty d89dea5 (pushed), dev-logs 7ac2f73 TASK-259 (pushed), CRUSSTY pristine untouched
+
+Stage Summary:
+- §125-A1 hunt continues: both baseline arms banked (83.40/83.51, window [6916007,7136333], threshold 80.95ms); pack arm#1 attempt#3 35216066889 in flight; next tick: poll — in-window => leg#1 banked + F2/F3 markers + arm#2 auto-dispatch => 2 legs => verdict_a1 => §125-A1 VERDICT; state machine hardened against log-race and phase-loss; INJECTS-ONLY intact (0 sandbox boots)
