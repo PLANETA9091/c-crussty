@@ -901,3 +901,18 @@ Work Log:
 
 Stage Summary:
 - S7-104 absorb ready: absorb_run19.sh -> n_scaling_verdict.py (N=4 pair legs vs N=16 probe) -> если network/visibility/spawn-proximity lane >=3% replaceable при N=16 => следующий рычаг STEP-0; иначе owner-gated пути (семейные агрегаты / pinned runner)
+---
+Task ID: S7-103/104 (probe absorb tick, 08:08+08, Job 390768) — N=16 SCALING PROBE REFUTED; solo-era confirmed thrice; owner-gated paths documented
+Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609170808)
+Task: watch run#19 -> absorbed within tick -> N-scaling verdict -> honest end-state documentation
+
+Work Log:
+- run#19 35163894978 COMPLETED SUCCESS 00:13:11Z (absorbed this tick, ~2.5h dispatch-to-absorb latency avoided)
+- absorb_run19.sh gates: FIXTURE-VALIDITY VALID + plugin registered PASS; fp=4 gate честно отклонил N=16 (probe — не база leg); run-env подтверждён fake_players=16, cpu_idx 10088241 (самый быстрый runner серии)
+- fixture at N=16: VALID (churn 747/8.4%, alive-check стабилен); MSPT 57.01ms, TPS 16.9-20.3 (абсолют невалиден кросс-ран — вердикт по долям)
+- N-SCALING VERDICT (n_scaling_verdict.py, smoke-fixed kernel:other lane scan): REFUTED — network 1.47->0.85 SHRINK, sendChanges total 2180->1258 (1.57->0.89%), spawn-лейн 0.7% суб-линейно, рост только GC-лейны +2.6pp (closed law); профиль N-инвариантен; заменимых соло >=3% НЕТ и при N=16
+- RUNNER-КОНТЕНШН ГИПОТЕЗА (1 нога, не вердикт): ~19-20 TPS на быстром runner — зафиксирована в GOAL для владельца; проверка = pinned runner
+- ledger: GOAL (run#19 блок + СТАТУС S7-104) + RESULTS_LEDGER §119 + INDEX 239 + CLAIMS TASK-240; INJECTS-ONLY: 0 sandbox boots
+
+Stage Summary:
+- ИНЖЕНЕРНОЕ СОСТОЯНИЕ ЧЕСТНОЕ: в рамках текущих правил модульных рычагов >=3% на профиле НЕТ (подтверждено на N=4 min-of-2 и N=16). Пути вперёд owner-gated: семейные агрегаты (санкция на пересмотр гейта), pinned runner (проверка контеншн-гипотезы), смена сценария. Модуль = полный стек bench-4 фикстуры + min-of-2 база + трижды подтверждённая соло-карта профиля

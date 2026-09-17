@@ -87,6 +87,23 @@
 > spawn-proximity (LocalMobCapCalculator) с N; absorb next tick — если lane
 > >=3% replaceable при реалистичном N => следующий рычаг.
 
+> **run#19 (S7-103/104, N=16 SCALING PROBE, id 35163894978)**: SUCCESS 00:13:11Z,
+> FIXTURE-VALIDITY VALID (churn 747/8.4%, summons=0, alive-check стабилен), MSPT
+> 57.01ms, TPS steady 16.9-20.3, cpu_idx 10088241 = САМЫЙ быстрый runner серии
+> (абсолютный MSPT кросс-ран невалиден — variance law; вердикт по долям профиля).
+> **N-SCALING VERDICT: REFUTED как источник рычага** — профиль N-инвариантен:
+> network lane 1.47->0.85% (SHRINK при 4x игроков; sendChanges total
+> 2180->1258 = 1.57->0.89%; outbound дешёв при discard-handler), spawn-лейн
+> 0.6->0.7% (суб-линейный рост, NaturalSpawner 0.25->0.38%), единственный рост
+> = GC-лейны +2.6pp (G1 4.48->5.99, barriers 4.50->5.61) — но alloc-shape
+> закрыт GC-FAMILY LAW (STW duty 0.80% wall). ЗАМЕНЯЕМЫХ СОЛО >=3% ПРИ N=16 НЕТ.
+> **НАБЛЮДЕНИЕ для владельца (не вердикт, 1 нога)**: на самом быстром runner
+> серии текущий kernel держит ~19-20 TPS steady при N=16 — гипотеза «20 TPS
+> блокирует контеншн shared-runner, а не kernel» требует min-of-2/pinned-runner
+> для проверки. Оставшиеся пути к 20 TPS: (2) семейные агрегаты <3% патчей
+> (owner-санкция на пересмотр гейта), (3) pinned/dedicated runner (owner-инфра),
+> (4) N-scaling REFUTED — профиль N-инвариантен.
+
 ## MSPT budget ledger (run#11, % от CPU тика, обновляется каждый раунд)
 
 | лейн / кластер | presence | replaceable-ядро (верифицировано) | статус |
@@ -115,22 +132,18 @@
 - entity_mirror infrastructure A/B (vehicle-dense, ENT-BP infra)
 Каждый шаг — паритет-банкованный; сводные A/B после каждого семейства.
 
-> **СТАТУС 20 TPS (S7-100)**: СОЛО-ЭРА ЗАВЕРШЕНА — восемь STEP-0 киллов подряд
-> (ENT-BP, BOAT, BATCH-RNG, GC-SHAPE-1, REDSTONE, BRAIN-LENS, MINECARTS);
-> верифицированных соло-рычагов >=3% НЕ ОСТАЛОСЬ. BENCH-4 (task170) ВАЛИДИРОВАН:
-> run#17 — первый фикстур-валидный прогон owner-сценария (fake_players=4, churn
-> ACTIVE 774, spawn-лейн ~0.6% — сценарий НЕ взрывает профиль); fresh recon:
-> структура профиля стабильна vs run#16, заменимых соло >=3% в новом профиле нет
-> (PalettedContainer.get 3.62% — closed chunk lane). БАЗА BENCH-4: run#18 leg 2
-> (35159240368) in flight => min-of-2 paired. Остальные пути: (2) семейные
-> агрегаты <3% патчей (требуют пересмотра правила гейта владельцем); (3)
-> инфраструктура: pinned/dedicated runner для честных A/B; (4) выбор следующего
-> рычага — из min-of-2 профиля. РАУНД S7-102: база min-of-2 = run#17 76.98ms
-> (leg2 85.24ms, spread 10.7%, оба VALID); заменимых соло >=3% нет; run#19
-> 35163894978 (N=16 scaling probe) in flight — определит, растут ли
-> network/visibility/spawn-proximity лейны до >=3% replaceable при большем N;
-> если нет — остаются пути (2) семейные агрегаты (нужна owner-санкция на
-> пересмотр гейта) и (3) pinned-runner (owner-инфраструктура).
+> **СТАТУС 20 TPS (S7-104)**: СОЛО-ЭРА ЗАВЕРШЕНА И ПОДТВЕРЖДЕНА ДВАЖДЫ —
+> восемь STEP-0 киллов + min-of-2 профиль без заменимых соло >=3% + N-SCALING
+> REFUTED (N=16 probe: профиль N-инвариантен, network/spawn лейны НЕ растут,
+> sendChanges 1.57->0.89% при 4x N; единственный рост GC-лейны — закрыты
+> GC-FAMILY LAW). BENCH-4 база min-of-2 = run#17 76.98ms (обе ноги VALID).
+> НАБЛЮДЕНИЕ (1 нога, не вердикт): на самом быстром runner серии (cpu_idx
+> 10088241) kernel держит ~19-20 TPS steady при N=16 — проверка «контеншн
+> vs kernel» = pinned-runner, owner-инфраструктура. ПУТИ ВПЕРЁД (все owner-gated):
+> (2) семейные агрегаты <3% патчей с индивидуальными гейтами (нужна санкция на
+> пересмотр >=3% правила); (3) pinned/dedicated runner (устраняет spread 10.7%
+> и проверит гипотезу контеншна); (4) смена сценария. МОДУЛЬНЫХ РЫЧАГОВ >=3%
+> В ТЕКУЩЕМ ПРОФИЛЕ НЕТ — инженерно честное состояние задокументировано.
 
 ## калибровка профилировщика (banked, task165)
 
