@@ -887,3 +887,17 @@ Work Log:
 
 Stage Summary:
 - BENCH-4 база min-of-2 = run#17 76.98ms: каноническое условие владельца теперь имеет чётную планку. Sоло-эра подтверждена дважды. Следующий рычаг решит N=16 probe (если лейн >=3% replaceable) — иначе только owner-пути (семейные агрегаты / pinned runner)
+---
+Task ID: S7-103 (watch/prep tick, 08:08+08, Job 390768) — run#19 N=16 in flight; N-scaling verdict tooling prepped
+Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609170808)
+Task: stale-charter tick per latest state — S7-102 established min-of-2 baseline; this tick = watch + probe-absorb prep
+
+Work Log:
+- bootstrap + pulls: no remote movement (c-crussty 8eadd69 = S7-102 own push; CRUSSTY pristine untouched)
+- run#19 35163894978 in_progress (20-26 min elapsed; absorb this tick if finishes)
+- prep: my-project scripts/bench4_recon/absorb_run19.sh (default id 35163894978, dest run19/, same 3 gates)
+- prep: bench/world3/n_scaling_verdict.py (also in my-project bench4_recon/) — N-scaling lane verdict: parses two recon_lanes outputs + churn/MSPT/cpu_idx, per-lane pp-delta + abs/1000t scaling (share alone lies at different totals), spawn signature table, visibility leaves (sendChanges etc. incl kernel:other lane after fix); smoke-tested on run17/run18 pair
+- INJECTS-ONLY: 0 sandbox boots
+
+Stage Summary:
+- S7-104 absorb ready: absorb_run19.sh -> n_scaling_verdict.py (N=4 pair legs vs N=16 probe) -> если network/visibility/spawn-proximity lane >=3% replaceable при N=16 => следующий рычаг STEP-0; иначе owner-gated пути (семейные агрегаты / pinned runner)
