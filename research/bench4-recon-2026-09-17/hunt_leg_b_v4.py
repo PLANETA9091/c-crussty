@@ -1,26 +1,32 @@
 #!/usr/bin/env python3
-"""hunt_leg_b.py v4 — §125-AMENDMENT-1: slow-track baseline+pack hunt.
+"""hunt_leg_b.py v4.1 — §125-AMENDMENT-1: slow-track baseline+pack hunt.
+
+v4.1 FIX (recon bug#4, S7-121): the band gate samples harness cpu at ~30s,
+but the pairing law pairs on the FINAL run-env cpu — measured drift between
+the two (same-log gate line vs final echo): run#24 -5.5%, leg#8 -2.0%,
+leg#9 +0.3%, run#23 +1.5%, run#21(bank) +1.9%, B1#6 +3.4%. Non-constant,
+up to ±5.5%. Consequence: tight bands reject legs whose FINALS would land
+in-window (run#21 itself would have been killed by the v3 band), and
+in-gate legs can finish out-of-window (B1#6 under v4.0). Fix: the dispatch
+band is DRIFT-COMPENSATED — [win_lo/(1+DRIFT_HI), win_hi/(1+DRIFT_LO)] —
+admitting every gate value that can still finish in-window; the FINAL echo
+check stays exact-window (honest discards for the rest, ~3 boots/leg).
 
 AMENDMENT CAUSE (measured, S7-119): the §125 bank pair (run#17 9080657,
 run#21 8914646, MID class) can no longer be sampled — census of 43 legs: the
-mid window [8899044,9092939] was hit only by the two bank legs themselves
-(22:10Z/01:13Z era); since then 0/14 in-window (two mid legs 8869954/8875106
-missed by ~0.3%); slow class 6.57-6.87M dominates (~30% of draws). Reusing the
-banked MID baseline against fresh legs is unwinnable in practice — NOT by
-machinery (v3 fixed that) but by runner-population shift.
+mid window [8899044,9092939] was hit only by the two bank legs themselves;
+since then 0/14 in-window; slow class dominates. Reusing the banked MID
+baseline against fresh legs is unwinnable in practice — population shift.
 
 AMENDMENT (all owner gates intact: >=3% MSPT, CI A/B min-of-2, median-exact
-parity, world pin, +/-2% harness-cpu pairing):
-  - Baseline arm #1 (FREE, already banked): run#18 35159240368, cpu 6746569,
-    MSPT 85.24, FIXTURE-VALID (S7-102), pre-pack kernel (f3c82b3-era, S7-102,
-    predates F1 impl S7-111 and F1 hook S7-112), world afb3a0b3 (confirmed).
-  - Baseline arm #2 (B1): FRESH dispatch on PRE-PACK ref 962fc9f (S7-111,
-    RandomTickOps.java banked but NOT hooked => zero pack behavior), band =
-    run#18's +/-2% window [6611637,6881501] so the pair can intersect.
-  - PACK WINDOW = [max(cpu18,B1)*0.98, min(cpu18,B1)*1.02] (pairs legally with
-    BOTH arms; if empty => B1 honest discard, redispatch).
-  - Pack arms: master ref, band = window padded 0.5%, exact-window final check.
-  - VERDICT: pack median MSPT <= median(85.24, B1_mspt)*0.97 at 2 in-window
+parity, world pin, +/-2% harness-cpu pairing on FINAL values):
+  - Baseline arm #1 (RECYCLED, S7-121): run 35205343087 (B1#6) on audit tag
+    pre-pack-962fc9f: SUCCESS, FIXTURE-VALIDITY VALID, world afb3a0b3,
+    MSPT avg 83.40, final cpu 7057150 (gate 6828367, drift +3.4%).
+  - Baseline arm #2 (B2): fresh pre-pack dispatch, drift-compensated band.
+  - PACK WINDOW = [max(cpu1,B2)*0.98, min(cpu1,B2)*1.02] (empty => B2 discard).
+  - Pack arms: master ref, drift-compensated band, exact-window final check.
+  - VERDICT: pack median MSPT <= median(83.40, B2_mspt)*0.97 at 2 in-window
     pack legs => pack lands; else REFUTED row, zero landing.
 
 One transition per --once call (resumable; background dies with bash call):
@@ -41,14 +47,25 @@ API = "https://api.github.com"
 REPO = "PLANETA9091/c-crussty"
 TOKEN_ERROR = "token"
 
-# ---- v4 constants (see docstring) ----
+# ---- v4.1 constants (bug#4: gate-vs-final cpu DRIFT, measured S7-121) ----
+# The band gate samples cpu at ~30s; the PAIRING-LAW value is the FINAL
+# run-env echo. Measured drift (same-log pairs): run#24 -5.5%, leg#8 -2.0%,
+# run#23 +1.5%, run#21(bank) +1.9%, leg#9 +0.3%, B1#6 +3.4%  => [-5.5%, +3.4%].
+# Smoking gun: run#21 gate 8745625 would be KILLED by v3 band [8850000,9120000]
+# while its final 8914646 IS in the v3 window => the gate was rejecting
+# legally-pairable finals. Fix: band = [win_lo/(1+DRIFT_HI), win_hi/(1+DRIFT_LO)].
+DRIFT_LO = 0.945   # final can sit 5.5% BELOW gate value
+DRIFT_HI = 1.034   # final can sit 3.4% ABOVE gate value
 # NOTE: workflow_dispatch API accepts only branch/tag refs (SHA => HTTP 422,
 # caught live S7-119) => audit tag at 962fc9f pushed to origin.
 PRE_PACK_REF = "pre-pack-962fc9f"  # S7-111: impl banked, hook NOT wired
 WORLD_SHA = "afb3a0b3ba78397b833032574ed2a1af8c4279dc7cfa31d9cffa0f217a6112d5"
-ARM1 = {"run_id": 35159240368, "cpu": 6746569, "mspt": 85.24}  # run#18, banked VALID
+# Baseline arm #1 = B1#6 RECYCLED (S7-121): run 35205343087 on pre-pack tag,
+# SUCCESS, FIXTURE-VALIDITY VALID, world afb3a0b3, MSPT avg 83.40, final cpu
+# 7057150 (gate 6828367, drift +3.4%). Fresh window anchored on TODAY's class.
+# (run#18 arm mothballed: its 6.75M class is stale in the current pool.)
+ARM1 = {"run_id": 35205343087, "cpu": 7057150, "mspt": 83.40}
 ARM1_WIN_LO, ARM1_WIN_HI = int(ARM1["cpu"] * 0.98), int(ARM1["cpu"] * 1.02)
-SLACK = 1.005  # gate band padding around final window (skew slack, v3 pattern)
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 STATE = os.path.join(HERE, "leg_b_v4_state.json")
@@ -110,6 +127,12 @@ def pack_window(cpu2):
     lo = max(ARM1["cpu"], cpu2) * 0.98
     hi = min(ARM1["cpu"], cpu2) * 1.02
     return int(lo), int(hi)
+
+
+def band_for(win_lo, win_hi):
+    """Drift-compensated gate band: admit every gate value whose FINAL cpu
+    can possibly land inside [win_lo, win_hi] given measured drift bounds."""
+    return int(win_lo / DRIFT_HI), int(win_hi / DRIFT_LO)
 
 
 def dispatch(tok, ref, band_lo, band_hi):
@@ -237,17 +260,19 @@ def main():
 
     # no state -> dispatch next leg (phase-dependent)
     if st and st.get("phase") == "pack" and st.get("pack_legs"):
-        # pack arm #2 dispatch with stored window
+        # pack arm #2 dispatch with stored window (drift-compensated band)
         lo, hi = st["win_lo"], st["win_hi"]
-        rid = dispatch(tok, "master", int(lo * 0.995), int(hi * SLACK))
+        b_lo, b_hi = band_for(lo, hi)
+        rid = dispatch(tok, "master", b_lo, b_hi)
         if rid is None:
             return 3
         write_state({"phase": "pack", "run_id": rid, "win_lo": lo, "win_hi": hi,
                      "baseline": st["baseline"], "pack_legs": st["pack_legs"],
                      "t": time.time()})
         return 0
-    # fresh baseline arm #2 (arm1 = banked run#18)
-    rid = dispatch(tok, PRE_PACK_REF, ARM1_WIN_LO, ARM1_WIN_HI)
+    # fresh baseline arm #2 (arm1 = recycled B1#6 on pre-pack tag)
+    b_lo, b_hi = band_for(ARM1_WIN_LO, ARM1_WIN_HI)
+    rid = dispatch(tok, PRE_PACK_REF, b_lo, b_hi)
     if rid is None:
         return 3
     write_state({"phase": "baseline", "run_id": rid, "t": time.time()})
