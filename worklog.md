@@ -1416,3 +1416,23 @@ Work Log:
 
 Stage Summary:
 - Сцена прайма «все 9216 форс-чанков + 150k живых» ИЗМЕРЕНА и СТАБИЛЬНА (fixture-инфраструктура дозрела за 3 диспатча); очередь ARCH-ATTACK из свежих данных: (a) палитро-лейн STEP-0 → (b) relens guard → (c) аллокационная диета entity-лэйна → (d) flushStep wave-2; NEXT S7-131: база A/B X150K + первый ARCH-ATTACK рычаг; INJECTS-ONLY цел (0 sandbox boots, 3 CI-бута)
+---
+## S7-131 (TASK-267) — 2026-09-18 02:1x +08 — ARCH-ATTACK рычаг #1 PALETTED-DEMUX: топ-1 PalettedContainer.get — реализация + офлайн-верификация + диспатч A/B leg #1
+
+**Task ID: S7-131 (Job 393012)**, Agent: agent-7625532f (session web-f7888d46)
+
+Work Log:
+- bootstrap + 3x pull (все up-to-date) → GOAL хвост (S7-130b: первый prime-scale 150k SUCCESS, топ-1 PalettedContainer.get 3.3%, очередь ARCH-ATTACK) → worklog/CLAIMS хвосты (TASK-266 → следующий TASK-267) → спека BENCH_X150K_SCENARIO.md (§1-§5) прочитана полностью
+- STEP-0 census палитро-лейна по collapsed stacks 150k (рефетч артефакта 35245032701 — evidence S7-130 не был закоммичен): fluid ~56% / коллизии ~17% / прямые ~15% — один states-контейнер ⇒ демукс кроет все лейны; локальная материализация kernel (eula-less paperclip, НЕ бут) для javap-контрактов: data = public volatile, Data.storage()/palette() public, acquire()/release() = no-op, getAndSetUnchecked = unsync-писатель (легален по region-lock)
+- Дизайн PALETTED-DEMUX: field-inject ×4 + get(int) fast-path + Ops fallback + guarded mutators; РУЧНОЙ SMT-фрейм ОТВЕРГНУТ верификатором (bad offset) — эмпирика: first-frame offset_delta = целевой bci;_branch-scan по сырым байтам ловил cp-операнды (0xbe в getfield #190) ⇒ инструкционный walker (таблица длин JVMS)
+- Переход на ASM COMPUTE_FRAMES build-time патчер (PalettedPatchTool.java, офлайн): баг ISTORE-vs-ASTORE найден; фантомный декремент refcount (начальный snapGen=0 = «освобождён») ⇒ протокол v2: валидность snapGen==gen+1, uncounted=0, release в прологе (Ops.onMutateStart), epilogue без Ops
+- Парити-харнесс (двойной classloader vanilla-vs-patched на реальном ядре): 20000 ops локстеп = полный 4096-контент паритет, старые значения getAndSet 4883/4883, resize-лестница, lifecycle refcount 1→0→re-materialize, конкурентный смоук 3R+1W 500ms — ALL PASS (research/paletted-demux-2026-09-18/)
+- Runtime: src/paletted.rs (fingerprint-gate serve + ранний define Ops через PluginInitializerManager/Bukkit-пробы + READY); lib.rs wiring; rust-патчер в classfile.rs понижен до офлайн-диагностики (92 теста зелёные, в т.ч. paletted_patch_roundtrip + идемпотентность)
+- CI: workflow input paletted_demux (default 1) + run_world3.sh env/self-doc/export; dispatch_s7131.py (concurrency-guard S7-108)
+- Коммит+пуш c-crussty e3833ef + 1bfb3f2; диспатч run 35256298212 (master 1bfb3f2, X150K: 150000/seed42/xmx10G/fp4/guard1/demux1/300s); учёт: GOAL S7-131 + §148 + INDEX 269 + CLAIMS TASK-267 + оба worklog; runs_index +1
+- CRUSSTY pristine не тронут
+
+Stage Summary:
+- Топ-1 функция владельца получила архитектурный рычаг: O(1) demux-чтение (минуя бит-декод и палитру), охраняемые мутаторы, fail-closed рантайм; офлайн-контракт = парити ALL PASS на реальном ядре; NEXT S7-132: absorb 35256298212 (ARMED-маркер «paletted: PATCHED», гейты fixture, свежий профиль — исчезает ли get, MSPT-дельта vs база 35245032701) → leg #2 min-of-2 → очередь: relens guard → аллокационная диета → flushStep wave-2; INJECTS-ONLY цел (0 sandbox boots)
+
+RUN_ID_DISPATCHED: **35256298212** (master 1bfb3f2, paletted_demux=1, X150K-база; runs_index S7-131 row)
