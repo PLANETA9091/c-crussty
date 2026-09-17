@@ -56,15 +56,21 @@ public final class PalettedContainerOps {
     static volatile long NEXT_LOG_AT = 1L << 24;
 
     /** Adaptive materialize-probe stride over the per-container slow-read
-     * counter: the FIRST probe fires after 64 slow reads (crusstyEpoch == 0
-     * — never materialized), re-materialization after a write-release waits
-     * for 16384 more (write-heavy sections stabilize as vanilla; read-heavy
-     * static sections keep their snapshot). X150K lesson (S7-131 leg #1):
-     * a fixed 16384 threshold NEVER fired — ~5-15 reads/container/tick over
-     * tens of thousands of containers stays far below any single-container
-     * window, so the fast path never engaged and the lever regressed. */
-    static final int FIRST_STRIDE_MASK = 0x3F;      // 64 slow reads
+     * counter, tuned by the AMORTIZATION ECONOMICS (S7-131 leg #1 + #1'
+     * lessons): a snapshot costs ~4096 vanilla-path reads to build and
+     * saves ~25ns per future fast read, so it only pays off when the
+     * container still has >~6k future reads. Marginal sections (64-4095
+     * total reads) are a net LOSS — leg #1' proved it (64-miss threshold
+     * inflated the lane from 2573 to ~3400 equivalent samples).
+     *
+     *   first materialize: after 4096 slow reads (dense sections engage
+     *     mid-window and save for the remainder);
+     *   re-materialize after a write-release: after 16384 more slow reads;
+     *   blacklist: after 2 releases (crusstyEpoch counter) the container
+     *     is write-heavy — vanilla forever, zero build waste. */
+    static final int FIRST_STRIDE_MASK = 0xFFF;     // 4096 slow reads
     static final int REARM_STRIDE_MASK = 0x3FFF;    // 16384 slow reads
+    static final int MAX_BUILDS_PER_CONTAINER = 2;  // release black-list
 
     private PalettedContainerOps() {}
 
@@ -94,9 +100,12 @@ public final class PalettedContainerOps {
             v = data.palette().valueFor(raw);
         }
         int m = ++self.crusstyMiss; // plain field, benign races
-        int stride = self.crusstyEpoch != 0 ? REARM_STRIDE_MASK : FIRST_STRIDE_MASK;
-        if ((m & stride) == 0) {
-            tryMaterialize(self);
+        int epoch = self.crusstyEpoch;
+        if (epoch < MAX_BUILDS_PER_CONTAINER) {
+            int stride = epoch == 0 ? FIRST_STRIDE_MASK : REARM_STRIDE_MASK;
+            if ((m & stride) == 0) {
+                tryMaterialize(self);
+            }
         }
         return v;
     }
@@ -169,7 +178,7 @@ public final class PalettedContainerOps {
         Object[] holder = {demux, vals};
         self.crusstySnap = holder;        // volatile store 1 (snap)
         self.crusstySnapGen = gen + 1;    // volatile store 2 (LAST): gate = snapGen == gen + 1
-        self.crusstyEpoch = 1;            // plain store: re-materialize uses the patient stride
+        self.crusstyEpoch++;              // plain store: build counter + re-arm stride select
         BUILDS++;
         logThrottled();
     }
