@@ -163,6 +163,24 @@
 > (4) смена сценария. МОДУЛЬНЫХ РЫЧАГОВ >=3% НЕТ; инфра честных A/B
 > самодостаточна и строга (2% вердикт, harness-cpu паринг, sequential).
 
+> **СТАТУС 20 TPS (S7-110)**: FAMILY-AGG PREREGISTRATION — путь (2)
+> КВАНТИФИЦИРОВАН как агрегатный рычаг (docs/FAMILY_AGG_PREREGISTRATION.md,
+> STEP-0 бумажно, ДО кода). Разрез по НЕПЕРЕСЕКАЮЩИМСЯ лейнам парного профиля
+> (sum ~96%), все числа из banked STEP-0: Tier A (только строго верифицированные
+> ядра с bit-exact/median-exact паритетом: BATCH-RNG 1.6-1.9 + BRAIN 0.9-1.5) =
+> 2.5-3.4%; Tier B (+ LevelTicks parity-safe слайсы reads 0.3-0.5 + queue <=0.5;
+> signal lens 1.5-2.5 ТОЛЬКО при bit-exact доказательстве) = **3.3-6.9% >= 3%
+> гейта** — первый GO-кандидат эры. Tier C (+ minecarts-assumption 0.6-1.3 +
+> ENT-BP parked 1.5-1.8) = 5.4-10.0% (не пререгистрировано). План без пересмотра
+> гейта: pack = ОДИН рычаг {F1 batch-RNG, F2 Brain, F3-safe}; билд по чану с
+> паритет-банкингом (F1 -> F2 -> F3-reads -> F3-queue; signal — условно); ОДИН
+> агрегатный A/B min-of-2 (baseline-нога = банк легальной пары 76.01/76.98,
+> pack-ноги = hunt_leg_b машинерией); если pack < 3% — НИЧЕГО не landится,
+> агрегат REFUTED, модульная повестка пуста. Исключены по паритет-риску:
+> neighbor-glue skip, mid-tick reshape. Гипотеза «один рычаг = агрегат-пак»
+> помечена для owner (одно слово = отмена, нулевой риск). Pair-машинария тёплая:
+> формальная пара #2 leg dispatched (35179585066, fp=4, band-gated).
+
 ## калибровка профилировщика (banked, task165)
 
 - **alloc-collapsed leaves НЕ равны new-сайтам**: `AABB.intersects` (чистая
