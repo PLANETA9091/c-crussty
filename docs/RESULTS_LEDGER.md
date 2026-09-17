@@ -1562,3 +1562,37 @@ leg#1 ⇒ автодиспатч arm#2 ⇒ 2 in-window ноги ⇒ verdict_a1 �
 ВЕРДИКТ. Порог неизменен: median(83.40, 83.51)×0.97 = **80.95ms**. F2/F3
 маркеры — на первой завершённой in-window ноге (grep_markers.py). runs_index
 +3. INJECTS-ONLY цел (0 sandbox boots; fast-fail gate reject не boot).
+
+## §139 — S7-124 (TASK-260): pack discard #2, v4.4 own-fast-fail fix (live-proven), attempt#5 in flight
+
+**Poll 35216066889** (master fb7d8cb, FULL F1+F2+F3 pack kernel): SUCCESS,
+мир afb3a0b3, FIXTURE-VALID — но финал cpu **6691832** на 3.2% НИЖЕ pack
+window [6916007,7136333] ⇒ честный discard. Второй pack discard
+(attempt#1: 6832640 при 94.14ms; attempt#3: 6691832). Наблюдаемый разброс
+gate значений пула: **6.69M / 6.83M / 8.09M / 10.05M** при окне 3.1% и
+drift band [6688594,7551675] — окно сидит в slow-хвосте; каждый
+out-of-window бранч — санкционированная стоимость протокола (exact-window
+final check не размывается). **v4.3 restore_pack_or_clear подтверждён
+боем**: state восстановлен (phase=pack, run_id=None, окно цело).
+
+**ФИКС v4.4 — dispatch-verify own-fast-fail** (нота S7-123 → код S7-124):
+dispatch() верифицирует top run через 25s; свой gate fast-fail завершается
+за ~13-30s ⇒ читался как completed MISMATCH без сохранения state
+(attempt#2 = 35215890688 повис руками). Фикс: ref совпадает + status=
+completed + conclusion ∈ {failure, cancelled} + created_at ≥ t0−5s ⇒
+СОХРАНЯТЬ state (это наш ран) — следующий poll() классифицирует reject
+через штатную ветку (exit 1). **Боевое применение немедленно**:
+attempt#4 = 35218775640, gate cpu **8094573** (8.09M mid класс) выше band
+hi 7551675 ⇒ ~13s fast-fail; v4.4 сохранил state, reject классифицирован
+нормально, автопередиспатч без ручного вмешательства — слепое пятно
+закрыто. (15-й честный reject суммарно.)
+
+**ATTEMPT#5 = 35218943354 IN FLIGHT** (master 7bf98fc; dispatch-verify
+увидел in-flight на +25s — past gate, boot/download идёт), band
+[6688594,7551675], финал = точное окно [6916007,7136333]. In-window ⇒
+leg#1 banked ⇒ v4.3 автодиспатчит arm#2 ⇒ 2 in-window ноги ⇒ verdict_a1 ⇒
+**§125-A1 ВЕРДИКТ**: pack median ≤ **80.95ms** (median(83.40, 83.51)×0.97)
+⇒ LANDS (pack F1+F2+F3-reads+F3-queue единой агрегатной посадкой на
+master), иначе REFUTED (ноль посадок). F2/F3 smoke-маркеры (grep_markers.py)
+— на первой завершённой in-window ноге. runs_index +3. INJECTS-ONLY цел
+(0 sandbox boots; gate fast-fail — не boot).

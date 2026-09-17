@@ -1258,3 +1258,20 @@ Work Log:
 
 Stage Summary:
 - §125-A1 hunt continues: both baseline arms banked (83.40/83.51, window [6916007,7136333], threshold 80.95ms); pack arm#1 attempt#3 35216066889 in flight; next tick: poll — in-window => leg#1 banked + F2/F3 markers + arm#2 auto-dispatch => 2 legs => verdict_a1 => §125-A1 VERDICT; state machine hardened against log-race and phase-loss; INJECTS-ONLY intact (0 sandbox boots)
+
+---
+## S7-124 — 2026-09-17 19:43 tick — pack discard #2 + v4.4 own-fast-fail fix (live-proven) + attempt#5 in flight
+
+**Task ID: S7-124**, Agent: agent-7625532f (session web-f7888d46, Job 390768)
+
+Work Log:
+- bootstrap + 3x pull: repos at S7-123 end (7bf98fc/7ac2f73), no interim sessions; GOAL read first
+- Poll pack attempt#3 35216066889: still in-flight at tick start (exit 4 x2), then SUCCESS — final cpu 6691832 BELOW pack window [6916007,7136333] by 3.2% => honest DISCARD (2nd; pool gate spread 6.69M-10.05M vs 3.1% window — slow-tail lottery, sanctioned exact-window protocol); v4.3 restore_pack_or_clear verified live: state restored (pack, run_id=None, window intact)
+- RECON FIX v4.4 (S7-123 note => code): dispatch() 25s verify window catches own gate fast-fail (~13-30s) as completed run => read as false MISMATCH, state unsaved; fix = ref match + completed + failure/cancelled + created_at >= t0-5 => OWN fast-fail, state saved, next poll classifies reject normally
+- LIVE EXERCISE same tick: attempt#4 35218775640 gate cpu 8094573 (8.09M) above band hi => ~13s fast-fail; v4.4 saved state, reject classified exit 1, auto re-dispatch (zero manual steps)
+- Attempt#5 = 35218943354 dispatched on master (verify: in-flight at +25s => past gate, boot/download), band [6688594,7551675], final = exact window
+- runs_index +3; GOAL S7-124 + §139 + INDEX 260; hunt v4.4 repo copy synced to research/bench4-recon-2026-09-17/
+- Commits: c-crussty (this), dev-logs TASK-260, CRUSSTY pristine untouched
+
+Stage Summary:
+- §125-A1 hunt: both baseline arms banked (83.40/83.51ms, window [6916007,7136333], threshold 80.95ms); 2 pack discards so far (6832640, 6691832 — both below window), 15 honest rejects total; attempt#5 35218943354 in flight — next tick: poll; in-window => leg#1 banked + F2/F3 markers + arm#2 auto-dispatch => 2 legs => verdict_a1 => §125-A1 VERDICT (LANDS => pack lands master; REFUTED => zero landing); state machine fully hardened (v4.2 bug#5, v4.3 bug#6/7, v4.4 fast-fail); INJECTS-ONLY intact (0 sandbox boots; gate fast-fail not a boot)
