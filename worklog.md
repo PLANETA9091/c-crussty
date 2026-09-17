@@ -1223,3 +1223,20 @@ Work Log:
 Stage Summary:
 - c-crussty master <push>: баг#4 закрыт, охота снова выигрышная: arm1 = B1#6 (83.40 @ 7057150) + B2 in flight; вердиктный порог pack median ≤ median(83.40, B2_mspt)×0.97 ≈ 80.9ms при 2 in-window pack-ногах; следующий тик: poll B2 → in-window ⇒ BASELINE COMPLETE ⇒ pack arm#1 (master, drift-band, точное окно) ⇒ 2 pack-ноги ⇒ verdict_a1 ⇒ **§125-A1 ВЕРДИКТ**; F2/F3 маркеры на первой завершённой pack-ноге
 - INJECTS-ONLY цел (0 sandbox boots; экстракции = download логов завершённых ранов)
+
+---
+## S7-122 — 2026-09-17 18:43 tick — BASELINE COMPLETE + RECON BUG#5 + pack arm#1 in flight
+
+**Task ID: S7-122**, Agent: agent-7625532f (session web-f7888d46, Job 390768)
+
+Work Log:
+- ENVIRONMENT WIPED: $HOME, 3 repos, scripts/, creds ALL missing at tick start — recovered from /tmp/my-project snapshot (bootstrap_tick.sh token-baking directive saved the tick): creds + 3 clones (c-crussty f97c84d, dev-logs TASK-257, CRUSSTY 1f4c06a untouched), bench4_recon restored
+- Poll B2 35209341660: SUCCESS, FIXTURE-VALIDITY VALID, world afb3a0b3, MSPT avg 83.51, final cpu 6996405 ∈ [6916007,7198293] => §125-A1 BASELINE COMPLETE; pack window [6916007,7136333] (~3.1%); verdict threshold = median(83.40,83.51)×0.97 = 80.95ms
+- RECON BUG#5: v4.1 pack-arm#1 dispatch branch needed pack_legs truthy ([]) => fell through to fresh-baseline => dispatched PRE-PACK leg 35213099261 on wrong ref, clobbered pack state; caught on state inspection, cancelled pre-bench (~3 min, 0 bench cost), state restored from leg_b_v4.json; fix v4.2: pack dispatch keyed on (phase=pack AND run_id is None)
+- verdict_a1.py extractor fix: CI script literal `echo "::error::...INVALID"` in EVERY log tripped the negative check (valid=False on healthy runs); fix = positive marker `**FIXTURE-VALIDITY: VALID**` (grep-q gate semantics); --check green: both arms mspt/window/world/valid ✓
+- PACK ARM#1 = 35213299343 dispatched on master (FULL F1+F2+F3 pack kernel, drift band [6688594,7551675], final = exact window); in-window => leg#1 => v4.2 auto-dispatch arm#2 => 2 legs => verdict_a1 => §125-A1 VERDICT
+- runs_index +3; GOAL STATUS S7-122 + §137 + INDEX 258; CLAIMS TASK-258; repo copies v4.2 synced
+- Commits: c-crussty 60f8e44 (pushed), dev-logs 9a7c985 TASK-258 (pushed), CRUSSTY pristine untouched
+
+Stage Summary:
+- §125-A1 LIVE with both baseline arms banked (83.40/83.51ms, window [6916007,7136333], threshold 80.95ms); pack arm#1 in flight (boot, no echo yet at tick end); next tick: poll 35213299343 — in-window => leg#1 banked + arm#2 auto-dispatch => 2 in-window legs => verdict_a1 => LANDS (pack lands on master) / REFUTED (zero landing); F2/F3 markers on first completed leg; INJECTS-ONLY intact (0 sandbox boots)
