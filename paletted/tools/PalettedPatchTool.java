@@ -47,6 +47,7 @@ public final class PalettedPatchTool implements Opcodes {
                 super.visitField(ACC_PUBLIC | ACC_VOLATILE, "crusstySnapGen", "I", null, null);
                 super.visitField(ACC_PUBLIC | ACC_VOLATILE, "crusstyGen", "I", null, null);
                 super.visitField(ACC_PUBLIC, "crusstyMiss", "I", null, null);
+                super.visitField(ACC_PUBLIC, "crusstyEpoch", "I", null, null);
                 super.visitEnd();
             }
 
