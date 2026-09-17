@@ -1436,3 +1436,19 @@ Stage Summary:
 - Топ-1 функция владельца получила архитектурный рычаг: O(1) demux-чтение (минуя бит-декод и палитру), охраняемые мутаторы, fail-closed рантайм; офлайн-контракт = парити ALL PASS на реальном ядре; NEXT S7-132: absorb 35256298212 (ARMED-маркер «paletted: PATCHED», гейты fixture, свежий профиль — исчезает ли get, MSPT-дельта vs база 35245032701) → leg #2 min-of-2 → очередь: relens guard → аллокационная диета → flushStep wave-2; INJECTS-ONLY цел (0 sandbox boots)
 
 RUN_ID_DISPATCHED: **35256298212** (master 1bfb3f2, paletted_demux=1, X150K-база; runs_index S7-131 row)
+---
+## S7-131b (TASK-267 addendum) — 2026-09-18 03:5x +08 — ABSORB 3 ног PALETTED-DEMUX: вердикт REFUTED-BY-ECONOMICS; дефолт дизарм; субстрат банкуется
+
+**Task ID: S7-131b (Job 393012)**, Agent: agent-7625532f (session web-f7888d46)
+
+Work Log:
+- Leg #1 (35256298212, SUCCESS): ARMED+PATCHED живьём (PluginInitializerManager-проба → Ops defined → патч на первой загрузке 30967→31340B); порог 16384 чтений/контейнер недостижим (~5-15/тик) — fast path ни разу, get 5.7% = регресс
+- Leg #1' (35258976251, SUCCESS): порог 64 — билды маргинальных секций в минусе (окупаемость >6k будущих чтений/контейнер), лейн 2707 vs 2573
+- Leg #1'' (35261386323, SUCCESS): экономика v3 (4096/16384/блэклист×2) — лейн 5.3% vs 4.9% базовых
+- СТРУКТУРНЫЙ ВЫВОД: X150K-чтения (100k items × 1-2/тик) размазаны по десяткам тысяч контейнеров — per-container demux неправильный грануляр для сцены; честный вердикт REFUTED-BY-ECONOMICS (дисциплина TASK-77/S7-128), дефолт дизарм (workflow+run_world3 → 0)
+- БАНКУЕТСЯ: 5-field gen-протокол, парити-харнесс, ASM-пайплайн, fingerprint-serve — субстрат combo (guard-v2 region-gen валидация убьёт cellsUnchanged перечтения без снапшотов)
+- Учёт: GOAL S7-131b + §148/§149 + INDEX 269/270 + CLAIMS TASK-267 + addendum + оба worklog; диск почищен (bench3_research/run17-25 удалены, kernel jar → scripts/kernel-cache-purpur-1.21.10.jar); 5 CI-бутов за раунд, все SUCCESS по fixture-гейтам
+- CRUSSTY pristine не тронут; INJECTS-ONLY цел (0 sandbox boots)
+
+Stage Summary:
+- Первый ARCH-ATTACK рычаг прошёл полный цикл: STEP-0 census → дизайн → офлайн-парити (ALL PASS) → 3 CI-калибровки → честный вердикт по экономике; инфраструктура верифицирована и банкуется; S7-132 = relens guard-хуков (bump-инструментация + slow-path аллокации) как следующий рычаг очереди
