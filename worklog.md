@@ -1174,3 +1174,20 @@ Stage Summary:
 - c-crussty master <push>: машинерия агрегатного A/B исправлена (баг#3) + первая FULL-PACK нога#16 35202368357 in flight; следующий тик: poll нога#16 — in-window ⇒ PACK ARM #1 (absorb BOTTLENECKS/tickmonitor MSPT + grep F2/F3 маркеров) ⇒ dispatch arm#2; 2 in-window ноги ⇒ **§125 ВЕРДИКТ**: pack median ≤ 74.20ms (76.495×0.97) ⇒ pack lands; иначе REFUTED row, ноль лендинга, модульная повестка пуста (owner-gated: pinned runner/сценарий)
 - Вердиктный порог: gate ≥3.0% MSPT, min-of-2, world_sha pin, mid-класс [8899044,9092939]
 - INJECTS-ONLY цел (0 sandbox boots; marker-grep = download лога завершённого ранa, не бут)
+
+---
+
+## S7-119 (tick 2026-09-17 17:08 UTC+8, agent-7625532f) — §125 ПОПРАВКА-1: slow-трек базы (run#18 + свежая pre-pack B1); перепись популяции раннеров; hunt v4 (TASK-255; ноль лендинга до вердикта)
+
+Work Log:
+- bootstrap/pull: c-crussty 3e9cca0 (S7-118), dev-logs 6a9a73b, CRUSSTY 1f4c06a нетронут; stale-чартер (S7-96/TASK-233/run#13) проигнорирован по прецеденту «по свежему состоянию»
+- Poll ноги#18 35202981212 (hunt v3 --once): gate-reject (6593031 < band floor, slow класс, ~30s) — 14-й подряд честный reject; ноги#16 (6604889) и #17 (7094750) уже отклонены между-тиковыми циклами — индекс +2 строки
+- **ПЕРЕПИСЬ ПОПУЛЯЦИИ (43 ноги, runs_index.jsonl)**: mid-окно §125 [8899044,9092939] hit 2/43 = ТОЛЬКО банк-ноги run#17/run#21 (эра 22:10Z/01:13Z); с банкировки **0/14 in-window**; slow класс 6.57-6.87M = 13/43 (~30%); ротация пула живьём: 6.6-6.9M в 08:33-08:44Z (ноги#16-18) → через 40 мин 8.74/8.78/8.82M + 10.16M. ВЫВОД: банк MID-класса невозобновляем — v3-охота снова невыигрываемая на практике, но по НОВОЙ причине (популяционный сдвиг, не машинерия)
+- **§125 ПОПРАВКА-1 (owner-гейты целы: ≥3% MSPT, min-of-2, ±2% паринг, world pin, median-exact parity)**: baseline arm#1 = run#18 35159240368 (cpu 6746569, MSPT 85.24, FIXTURE-VALID S7-102, PRE-PACK kernel f3c82b3 — до F1-impl/hook, world afb3a0b3 подтверждён индексом) — бесплатная arm; baseline arm#2 (B1) = fresh диспатч на аудит-тег **pre-pack-962fc9f** (запушен; S7-111 = RandomTickOps.java banked, hook НЕ wired ⇒ нулевое pack-поведение), band = окно run#18 [6611637,6881500]; PACK WINDOW = ∩ ±2% обеих arms (пусто ⇒ честный discard B1); pack-ноги на master, вердикт: pack median ≤ median(85.24, B1_mspt)×0.97 при 2 in-window ногах ⇒ pack lands, иначе REFUTED, ноль лендинга; трек v3 mothballed (не удалён)
+- ДЕФЕКТЫ пойманы живьём (до урона): (1) workflow-dispatch НЕ принимает SHA-ref → HTTP 422 ⇒ решение: аудит-тег pre-pack-962fc9f; (2) слепой захват свежайшего run id после неудавшегося диспатча записал бы **pack-ногу#18 (FULL PACK kernel) как baseline state** — отравление базы; поймано новой dispatch-verify (head_branch+status match), state очищен; обе защиты встроены в v4
+- hunt_leg_b_v4.py (scripts/bench4_recon/, копия в research/bench4-recon-2026-09-17/): one-transition/call, фазы baseline→pack, world pin + early-cancel по echo, dispatch-verify; B1 попытки#1-5 gate-reject (10165007/8820009/8744984/7137698/8780971, каждая ~30s); **попытка#6 = 35205343087 IN FLIGHT** (gate пройден на теге pre-pack-962fc9f, full bench ~30 мин) — poll следующего тика: in-window ⇒ BASELINE COMPLETE (окно из ∩) ⇒ автодиспатч pack arm#1
+- Индекс: runs_index.jsonl +8 (ноги#16/17/18 + B1 попытки#1-5 + B1#6 in flight); Ledger §134, INDEX 255, GOAL СТАТУС S7-119
+
+Stage Summary:
+- c-crussty master <push>: §125-A1 протокол + hunt v4 + аудит-тег;Pack-состав не менялся (F1+F2+F3-reads+F3-queue, все wired/dormant); следующий тик: poll 35205343087 — SUCCESS in-window ⇒ BASELINE COMPLETE ⇒ pack arm#1 автодиспатч (v4 сам сеет фазу pack); 2 in-window pack-ноги ⇒ ВЕРДИКТ §125-A1 (pack median ≤ median(85.24,B1)×0.97); F2/F3 маркер-чек (grep_markers.py) на первой завершённой pack-ноге
+- INJECTS-ONLY цел (0 sandbox boots; tag push = git ref; dispatch-verify/poll = API reads завершённых/летящих CI-ранов)
