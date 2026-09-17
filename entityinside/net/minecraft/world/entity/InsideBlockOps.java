@@ -141,6 +141,12 @@ public final class InsideBlockOps {
      * Ретаргет-точка первого invokevirtual checkInsideBlocks(List,Collector).
      * return false => ванильное тело пропущено (мост уже обслужил тик);
      * return e.isAffectedByBlocks() => ванильное тело как обычно.
+     *
+     * СТАТИК-ДЕТЕКТОР (leg #2, урок leg #1 35282003292): xo==x,yo==y,zo==z
+     * (позиция начала тика == текущей ⇒ movement from==to==pos; deltaMovement
+     * НЕ годится — покоящиеся предметы несут ненулевой гравитационный
+     * остаток). Пустой слот + статик ⇒ MIRROR (bootstrap capture) — в leg #1
+     * capture был недостижим (mirror только на инвалидации).
      */
     public static boolean gate(Entity e) {
         if (!ARMED) {
@@ -148,26 +154,30 @@ public final class InsideBlockOps {
         }
         long eid = e.getId();
         int slot = (int) (eid & (NSLOTS - 1));
-        if (SLOT_EID[slot] != eid) {
-            return e.isAffectedByBlocks(); // нет кэша — ваниль (в т.ч. движущиеся)
-        }
-        Vec3 delta = e.getDeltaMovement();
-        if (delta.x != 0.0D || delta.y != 0.0D || delta.z != 0.0D) {
-            return e.isAffectedByBlocks(); // движение тика — ваниль
-        }
+        // статик-детектор: движение тика отсутствует (from==to==текущая позиция)
+        boolean staticTick = e.xo == e.getX() && e.yo == e.getY() && e.zo == e.getZ();
         double px = e.getX(), py = e.getY(), pz = e.getZ();
-        if (SLOT_FX[slot] != Double.doubleToRawLongBits(px)
+        InsideBlockEffectApplier.StepBasedCollector col = ARMED ? col(e) : null;
+        if (col == null) {
+            return e.isAffectedByBlocks(); // неожиданный тип collector'а — ваниль
+        }
+        if (SLOT_EID[slot] != eid) {
+            // пустой слот: bootstrap capture для статики, ваниль для движущихся
+            if (staticTick && e.isAlive() && e.isAffectedByBlocks()) {
+                mirror(e, e.level(), col, px, py, pz, slot, eid);
+                return false;
+            }
+            return e.isAffectedByBlocks();
+        }
+        if (!staticTick
+                || SLOT_FX[slot] != Double.doubleToRawLongBits(px)
                 || SLOT_FY[slot] != Double.doubleToRawLongBits(py)
                 || SLOT_FZ[slot] != Double.doubleToRawLongBits(pz)) {
-            SLOT_EID[slot] = 0; // позиция изменилась — сброс
+            SLOT_EID[slot] = 0; // движение/позиция изменились — сброс, ваниль
             return e.isAffectedByBlocks();
         }
         if (!e.isAlive() || !e.isAffectedByBlocks()) {
             return e.isAffectedByBlocks();
-        }
-        InsideBlockEffectApplier.StepBasedCollector col = col(e);
-        if (col == null) {
-            return e.isAffectedByBlocks(); // неожиданный тип collector'а — ваниль
         }
         Level level = e.level();
         // HIT-верификация всех visited-позиций
