@@ -1583,3 +1583,21 @@ Stage Summary:
 - Два рана, два честных вердикта: leg1 вскрыл дефекты реализации (capture-Bootstrap + статик-детектор) — исправлены; leg2 вскрыл инфра-аномалию (сцена/раннер/артефакт) — признан невалидным до выяснения; принцип мемоизации жив; S7-136 = hardening (пустой-слот-only bootstrap) + чистый re-run по preregistered гейтам §156
 
 RUN_ID_ABSORBED: **35282003292 (leg1, inert) + 35284069355 (leg2, invalid run)** (masters 1bd7f52/d8453b3)
+---
+## S7-136 (TASK-271/272-continuation) — 2026-09-18 08:4x +08 — ping-pong hardening INSIDE-CACHE готов и офлайн-верифицирован на восстановленном окружении; ДИСПАТЧ ЗАБЛОКИРОВАН (creds утеряны при WIPE песочницы)
+
+**Task ID: S7-136 (Job 393012, tick 07:43+08)**, Agent: agent-7625532f (session web-f7888d46)
+
+Work Log:
+- Тик начался в ПУСТОЙ песочнице: bootstrap_tick.sh / c-crussty / crussty-dev-logs / CRUSSTY / ~/.git-credentials — все отсутствуют (WIPE между 05:08 и 07:43 +08). Репо восстановлены АНОНИМНЫМ клоном (публичные); хвосты GOAL/worklog прочитаны (голова 04ef8d5 = S7-135b; моё резюме тика с якорями d59ed2d/S7-126 — устарело, истина в GOAL)
+- Харденинг моста (урок leg #2 35284069355): gate() — capture только при SLOT_EID[slot]==0; чужой/мёртвый штамп ⇒ ваниль без перехвата. Ping-pong ~19k пар устранён по построению; ~13% сущностей ванильны (принято S7-135b). Риск затухания HIT-доли от мёртвых eid задокументирован (LRU сознательно не вносился)
+- Окружение пересобрано офлайн: purpur paperclip 55MB (purpurmc API) → eula-less materialize kernel 29.4MB + libraries/joml (материализация НЕ бут — санкционированный прецедент); temurin JDK21 → /tmp/jdk21 (javac); rustup stable
+- Rebuild: build_entity_query_ops + build_inside_block_ops (javac --release 21, deprecated-note несущественен) → cargo rebuild (include_bytes подхватил hardened-классы) → suite 107: 106 ✓ + 1 ignored
+- JVM-харнесс на реальном ядре: structural 205522B (== прежнему: ядро/патчер не менялись), retarget verified, ARMED=true, массивы 131072×12 ⇒ INSIDE-CACHE OFFLINE PASS; hardened-классы забанкованы (InsideBlockOps_s7136.class + sha256, append-only)
+- Учёт локально: GOAL S7-136 (CREDS-BLOCKED частичный), этот worklog, патч в /home/z/my-project/download/, worklog my-project. CLAIMS/INDEX/RESULTS_LEDGER (приватный crussty-dev-logs) НЕ обновлены — нет доступа; долг фиксируется
+- CRUSSTY pristine не тронут; INJECTS-ONLY цел (0 sandbox boots; 0 CI-бутов — диспатч заблокирован)
+
+Stage Summary:
+- Hardening leg #2' ГОТОВ: rust 106 ✓ + OFFLINE PASS; следующий тик при восстановленном creds = push (этот коммит) → диспатч leg #2' (X150K, inside_cache=1, база 35275967738) → absorb по preregistered гейтам §156 ⇒ вердикт INSIDE-CACHE. БЛОКЕР: владельцу восстановить bootstrap_tick.sh (baked token) — без него push/dispatch невозможны, инженерия продолжает копиться локально
+
+RUN_ID_DISPATCHED: **NONE (creds-blocked)** — leg #2' диспатч отложен до восстановления bootstrap_tick.sh
