@@ -32,6 +32,7 @@ mod noise_fill;
 mod palette_gather;
 mod promote_wire;
 mod proto_blend_cache;
+mod randomtick;
 
 use cplug_abi::{CPluginApi, JavaVmPtr};
 use jvmti_bindings::prelude::*;
@@ -93,6 +94,8 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     noise_fill::register();
     fluid_guard::register();
     proto_blend_cache::register();
+    // F1 BATCH-RNG (family-agg pack member, S7-112): ServerLevel body-swap hook.
+    randomtick::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -257,6 +260,9 @@ fn inject_surface() {
     fluid_guard::activate();
     // Dormant unless CRUSSTY_NATIVE_BLEND_CACHE is set (see docs/HOOK_BLEND_CACHE.md).
     proto_blend_cache::activate();
+    // F1 BATCH-RNG (S7-112): define RandomTickOps into the ServerLevel loader,
+    // then retransform for the optimiseRandomTick body swap (area_map pattern).
+    randomtick::activate();
 }
 
 /// Define one bridge class and register all its natives.

@@ -260,6 +260,38 @@ impl Pool {
         ))
     }
 
+    /// Resolve a Fieldref index to its `(class_internal_name, field_name,
+    /// descriptor)` triple — the F1 roundtrip test uses this to verify the
+    /// patched body's getfield operand resolves to ServerLevel.simpleRandom
+    /// by NAME (never by index assumption). Layout mirrors methodref_parts.
+    fn fieldref_parts(&self, idx: u16) -> Option<(String, String, String)> {
+        let (_, tag, payload) = self.entries.iter().find(|(i, _, _)| *i == idx)?;
+        if *tag != TAG_FIELDREF {
+            return None;
+        }
+        if payload.len() < 4 {
+            return None;
+        }
+        let class_idx = u16::from_be_bytes([payload[0], payload[1]]);
+        let nat_idx = u16::from_be_bytes([payload[2], payload[3]]);
+        let (_, ctag, cpayload) = self.entries.iter().find(|(i, _, _)| *i == class_idx)?;
+        if *ctag != TAG_CLASS || cpayload.len() < 2 {
+            return None;
+        }
+        let class_utf8 = u16::from_be_bytes([cpayload[0], cpayload[1]]);
+        let (_, ntag, npayload) = self.entries.iter().find(|(i, _, _)| *i == nat_idx)?;
+        if *ntag != TAG_NAMEANDTYPE || npayload.len() < 4 {
+            return None;
+        }
+        let name_utf8 = u16::from_be_bytes([npayload[0], npayload[1]]);
+        let desc_utf8 = u16::from_be_bytes([npayload[2], npayload[3]]);
+        Some((
+            self.utf8_value(class_utf8)?,
+            self.utf8_value(name_utf8)?,
+            self.utf8_value(desc_utf8)?,
+        ))
+    }
+
     fn serialize(&self) -> Vec<u8> {
         let mut out = Vec::new();
         for (_, tag, payload) in &self.entries {
@@ -533,6 +565,134 @@ pub fn patch_update(bytes: &[u8]) -> Result<Vec<u8>, String> {
 
     // ---- splice: header + new cp + tail with the update method replaced ----
     let mut out = Vec::with_capacity(bytes.len() + 256);
+    out.extend_from_slice(&bytes[0..8]); // magic, minor, major
+    u2(&mut out, pool.next); // new cp_count
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(&bytes[layout.cp_end..m.start]);
+    out.extend_from_slice(&method);
+    out.extend_from_slice(&bytes[m.end..]);
+    Ok(out)
+}
+
+// ---------------------------------------------------------------------------
+// F1 BATCH-RNG body swap (family-agg pack member F1, TASK-247/S7-111 ->
+// S7-112): replaces the body of `ServerLevel.optimiseRandomTick(LevelChunk;I)V`
+// with a straight-line `invokestatic RandomTickOps.run(...)` delegation. The
+// helper (randomtick/src/RandomTickOps.java, ECJ-compiled, include_bytes! in
+// src/randomtick.rs) carries the inlined bit-exact LCG pick loop; parity bank:
+// research/f1-batchrng-2026-09-17/parity_output.txt (320K attempts, 8 seeds,
+// 160K hit interleaves incl. nextGaussian — ALL PASS).
+//
+// Contract (cfdump-verified on the run21 patched-kernel bytes, build
+// 2025-12-11, fixture = tests/fixtures/ServerLevel.class):
+//   this_class   net/minecraft/server/level/ServerLevel
+//   simpleRandom 0x0012 (private final)
+//                Lca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom;
+//   optimiseRandomTick 0x0002 (private instance) (Lnet/minecraft/world/level/
+//                chunk/LevelChunk;I)V — sole call site is an invokevirtual in
+//                the same class, untouched by a body swap.
+//
+// New body — NO branches, so the only verifier frame is the implicit initial
+// one: an EMPTY StackMapTable (0 entries) is emitted explicitly (javac
+// convention; HotSpot's type-checking verifier requires frames only at branch
+// targets). Locals: 0=this, 1=chunk, 2=ticks. max_stack=4 (this, chunk, ticks,
+// random at the invokestatic).
+// ```text
+//    0: aload_0
+//    1: aload_1
+//    2: iload_2
+//    3: aload_0
+//    4: getfield simpleRandom
+//    7: invokestatic RandomTickOps.run
+//       (Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/
+//        chunk/LevelChunk;ILca/spottedleaf/moonrise/common/util/
+//        SimpleThreadUnsafeRandom;)V
+//   10: return
+// ```
+// CP growth is append-only (dedup via the shared Pool); existing indices stay
+// valid; the 64K saturation guard errors out loudly. Panic-free on
+// hook-delivered bytes (same audit discipline as patch_update): every read is
+// bounds-checked through parse_layout/find_method; malformed input yields Err.
+//
+// Idempotency: patch(patch(x)) == patch(x) — the second pass re-finds the
+// method, re-emits the identical 11-byte body, and the dedup Pool appends
+// nothing, so the output is byte-identical. The hook layer ALSO guards with
+// the PATCHED-swap convention (src/randomtick.rs), making re-sights free.
+pub const SERVER_LEVEL_CLASS: &str = "net/minecraft/server/level/ServerLevel";
+pub const RANDOMTICK_OPS_CLASS: &str = "net/minecraft/server/level/RandomTickOps";
+const SIMPLE_RANDOM_DESC: &str =
+    "Lca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom;";
+
+pub fn patch_optimise_random_tick(bytes: &[u8]) -> Result<Vec<u8>, String> {
+    let layout = parse_layout(bytes).ok_or("bad classfile layout")?;
+    let this_name = this_class_name(&layout).ok_or("cannot resolve this_class name")?;
+    if this_name != SERVER_LEVEL_CLASS {
+        return Err(format!("unexpected class {this_name}"));
+    }
+    let mut pool = layout.pool;
+
+    // Find-only probes first: a ServerLevel without the target method's
+    // name/descriptor entries is not the kernel build we verified — fail
+    // closed BEFORE any pool mutation.
+    let opt_desc = "(Lnet/minecraft/world/level/chunk/LevelChunk;I)V";
+    let Some(name_idx) = pool.find_utf8("optimiseRandomTick") else {
+        return Err("optimiseRandomTick not found".into());
+    };
+    let Some(desc_idx) = pool.find_utf8(opt_desc) else {
+        return Err("optimiseRandomTick descriptor not found".into());
+    };
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)
+        .ok_or("optimiseRandomTick(Lnet/minecraft/world/level/chunk/LevelChunk;I)V not found")?;
+
+    // ---- constant refs needed by the new body (appended when absent) ----
+    let f_rand = pool.field_ref(&this_name, "simpleRandom", SIMPLE_RANDOM_DESC);
+    let run_desc = format!(
+        "(L{this_name};Lnet/minecraft/world/level/chunk/LevelChunk;I{SIMPLE_RANDOM_DESC})V"
+    );
+    let m_run = pool.method_ref(RANDOMTICK_OPS_CLASS, "run", &run_desc);
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for F1 refs".into());
+    }
+
+    let mut code = Vec::with_capacity(11);
+    let u2 = |out: &mut Vec<u8>, v: u16| out.extend_from_slice(&v.to_be_bytes());
+    code.push(0x2a); // aload_0
+    code.push(0x2b); // aload_1
+    code.push(0x1c); // iload_2
+    code.push(0x2a); // aload_0
+    code.push(0xb4); // getfield simpleRandom
+    u2(&mut code, f_rand);
+    code.push(0xb8); // invokestatic RandomTickOps.run
+    u2(&mut code, m_run);
+    code.push(0xb1); // return
+    debug_assert_eq!(code.len(), 11, "emitted code is {}", code.len());
+
+    // ---- Code attribute: empty exception table + EMPTY StackMapTable ----
+    let mut code_attr = Vec::new();
+    u2(&mut code_attr, pool.utf8("Code"));
+    let mut body = Vec::new();
+    u2(&mut body, 4); // max_stack: this, chunk, ticks, random
+    u2(&mut body, 3); // max_locals: this, chunk, ticks
+    body.extend_from_slice(&(code.len() as u32).to_be_bytes());
+    body.extend_from_slice(&code);
+    body.extend_from_slice(&[0, 0]); // exception_table_length
+    body.extend_from_slice(&(1u16).to_be_bytes()); // attributes_count
+    u2(&mut body, pool.utf8("StackMapTable"));
+    body.extend_from_slice(&2u32.to_be_bytes()); // attribute_length
+    body.extend_from_slice(&0u16.to_be_bytes()); // number_of_entries = 0
+    code_attr.extend_from_slice(&(body.len() as u32).to_be_bytes());
+    code_attr.extend_from_slice(&body);
+
+    // ---- replacement method entry ----
+    let mut method = Vec::new();
+    u2(&mut method, m.access);
+    u2(&mut method, m.name_idx);
+    u2(&mut method, m.desc_idx);
+    u2(&mut method, 1); // attributes_count
+    method.extend_from_slice(&code_attr);
+
+    // ---- splice: header + new cp + tail with the method replaced ----
+    let mut out = Vec::with_capacity(bytes.len() + 128);
     out.extend_from_slice(&bytes[0..8]); // magic, minor, major
     u2(&mut out, pool.next); // new cp_count
     out.extend_from_slice(&pool.serialize());
@@ -1269,5 +1429,139 @@ mod real_noise {
         .expect("clean run");
         assert_eq!(out.1, RetargetOutcome::NotFound, "unrelated spec is a no-op");
         assert_eq!(out.0, REAL_NOISE.to_vec(), "NotFound must not touch the bytes");
+    }
+
+    // ---- F1 BATCH-RNG body swap (ServerLevel.optimiseRandomTick) ----
+
+    const SERVER: &[u8] = include_bytes!("../tests/fixtures/ServerLevel.class");
+
+    /// The `run` descriptor `patch_optimise_random_tick` emits, computed the
+    /// same way as in the patch fn (from this_name + the constant desc).
+    const F1_RUN_DESC: &str = "(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/LevelChunk;ILca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom;)V";
+
+    /// Locate optimiseRandomTick in a classfile and return its max_stack,
+    /// max_locals, and bytecode — the shared verification walker for the F1
+    /// tests below. NOTE: find_code_attr returns the BYTECODE start/length
+    /// (data+8 per its contract); max_stack/max_locals live in the 4 bytes
+    /// immediately before it.
+    fn f1_code_of(bytes: &[u8]) -> (u16, u16, Vec<u8>) {
+        let layout = parse_layout(bytes).expect("parse");
+        let name_idx = layout
+            .pool
+            .find_utf8("optimiseRandomTick")
+            .expect("name utf8 present");
+        let desc_idx = layout
+            .pool
+            .find_utf8("(Lnet/minecraft/world/level/chunk/LevelChunk;I)V")
+            .expect("desc utf8 present");
+        let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)
+            .expect("optimiseRandomTick present");
+        let (start, len) = find_code_attr(bytes, &layout.pool, &m).expect("Code attr");
+        let code = bytes[start..start + len].to_vec();
+        let ms = u16::from_be_bytes([bytes[start - 8], bytes[start - 7]]);
+        let ml = u16::from_be_bytes([bytes[start - 6], bytes[start - 5]]);
+        (ms, ml, code)
+    }
+
+    /// Round-trip on the REAL ServerLevel fixture: the swapped body is the
+    /// exact 11-byte straight-line delegation; max_stack 4 / max_locals 3;
+    /// the getfield operand resolves to ServerLevel.simpleRandom with the
+    /// cfdump-verified descriptor; the invokestatic operand resolves to
+    /// RandomTickOps.run with the helper's ECJ-compiled descriptor.
+    #[test]
+    fn f1_patch_roundtrip_verified() {
+        let patched = patch_optimise_random_tick(SERVER).expect("patch");
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        assert_eq!(patched[..8], SERVER[..8], "version preserved");
+
+        let (ms, ml, code) = f1_code_of(&patched);
+        assert_eq!(code.len(), 11, "straight-line body is 11 bytes");
+        assert_eq!(ms, 4, "max_stack = this,chunk,ticks,random");
+        assert_eq!(ml, 3, "max_locals = this,chunk,ticks");
+        // Opcode skeleton (operands at 5-6 and 8-9 are CP indices — resolved
+        // by name below, never hard-coded).
+        let skel = [
+            code[0], code[1], code[2], code[3], code[4], code[7], code[10],
+        ];
+        let want = [0x2a, 0x2b, 0x1c, 0x2a, 0xb4, 0xb8, 0xb1];
+        assert_eq!(skel, want, "opcode skeleton exact");
+
+        // Operand resolution by NAME (never by index assumption).
+        let layout = parse_layout(&patched).expect("re-parse patched");
+        let f = layout
+            .pool
+            .fieldref_parts(u16::from_be_bytes([code[5], code[6]]))
+            .expect("getfield operand resolves");
+        assert_eq!(
+            f,
+            (
+                SERVER_LEVEL_CLASS.to_string(),
+                "simpleRandom".to_string(),
+                "Lca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom;".to_string()
+            )
+        );
+        let r = layout
+            .pool
+            .methodref_parts(u16::from_be_bytes([code[8], code[9]]))
+            .expect("invokestatic operand resolves");
+        assert_eq!(
+            r,
+            (
+                RANDOMTICK_OPS_CLASS.to_string(),
+                "run".to_string(),
+                F1_RUN_DESC.to_string()
+            )
+        );
+
+        // The patched class carries an EMPTY StackMapTable on the method (no
+        // branch targets -> 0 frames) and keeps a private-instance access.
+        let name_idx = layout
+            .pool
+            .find_utf8("optimiseRandomTick")
+            .expect("name kept");
+        let desc_idx = layout
+            .pool
+            .find_utf8("(Lnet/minecraft/world/level/chunk/LevelChunk;I)V")
+            .expect("desc kept");
+        let m = find_method(&patched, layout.methods_start, name_idx, desc_idx).expect("method");
+        assert_eq!(m.access, 0x0002, "access flags preserved (private instance)");
+
+        // Dump for the runtime verifier gate (randomtick/verify_patched.sh:
+        // a real HotSpot resolveClass() pass over these bytes — the byte-level
+        // checks above cannot prove verifier legality, a JVM can).
+        let out = std::env::temp_dir().join("ccrussty_patched_ServerLevel.class");
+        std::fs::write(&out, &patched).expect("dump patched ServerLevel");
+        eprintln!("wrote {} bytes to {}", patched.len(), out.display());
+    }
+
+    /// Idempotency: patch(patch(x)) == patch(x) — the second pass appends
+    /// nothing (dedup Pool) and re-emits the identical body.
+    #[test]
+    fn f1_patch_is_idempotent() {
+        let once = patch_optimise_random_tick(SERVER).expect("first");
+        let twice = patch_optimise_random_tick(&once).expect("second");
+        assert_eq!(once, twice, "double patch is byte-identical");
+    }
+
+    /// Fail-closed discipline: wrong class rejected before any mutation;
+    /// truncated/hostile bytes rejected without panic (hook-delivery audit
+    /// discipline — a panic on a class-load thread would abort the JVM).
+    #[test]
+    fn f1_patch_rejects_wrong_class_and_garbage() {
+        let e = patch_optimise_random_tick(include_bytes!(
+            "../tests/fixtures/SingleUserAreaMap.class"
+        ))
+        .expect_err("area_map is not ServerLevel");
+        assert!(e.starts_with("unexpected class"));
+
+        let e = patch_optimise_random_tick(&SERVER[..64]).expect_err("truncated header");
+        assert!(!e.is_empty());
+        let e = patch_optimise_random_tick(&[0xCA, 0xFE, 0xBA, 0xBE, 0, 0, 0, 65, 0, 3, 1, 2])
+            .expect_err("garbage pool");
+        assert!(!e.is_empty());
+        // Whole-pool truncation at every prefix must never panic.
+        for cut in [10usize, 100, 1000, 10000, SERVER.len() - 1] {
+            let _ = patch_optimise_random_tick(&SERVER[..cut]);
+        }
     }
 }
