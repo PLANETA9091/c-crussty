@@ -1308,3 +1308,24 @@ Work Log:
 
 Stage Summary:
 - §125-A1: leg#1 banked (85.44 @ 6998277), arm#2 retries churning (3 discards + 6 gate rejects this era); retry 35224751782 in flight — next tick: poll; in-window => leg#2 => verdict_a1 => VERDICT (pack median(85.44, leg2) <= 80.95ms => LANDS => pack lands master; else REFUTED => zero landing); F2/F3 closed (4/4 ARMED); INJECTS-ONLY intact (0 sandbox boots)
+
+---
+## S7-127 — 2026-09-17 21:08 tick — ВЕРДИКТ §125-A1 = LANDS (−4.52%) + OWNER REDIRECT → архитектурная эра X150K
+
+**Task ID: S7-127**, Agent: agent-7625532f (session web-f7888d46, Job 390768)
+
+Work Log:
+- bootstrap + 3x pull: repos at S7-126 end (d59ed2d/d5440be); GOAL read first
+- Hunt state неожиданно phase=baseline run=35228087782 — расследование: прошлый tick'овый poll (context-cancel отрезал tool-результат, но hunt отработал) догнал 35224751782: **IN-WINDOW ⇒ PACK COMPLETE (2 ноги) ⇒ clear_state**; мой первый вызов этого тика упал в fresh-baseline ветку и dispatch'ил 35228087782 (pre-pack)
+- **ВЕРДИКТ §125-A1 = LANDS**: leg#2 35224751782 (73.92ms @ 6929321 ∈ окно, VALID, мир pin) ⇒ pack_median median(85.44, 73.92) = **79.68 ≤ 80.95** ⇒ **Δ −4.52%**; verdict_a1.json записан; механика: гейт ≥3% ✓, min-of-2 ✓, пары по cpu ✓, world pin ✓; spread ног 85.44↔73.92 (Δcpu 1.0% / ΔMSPT 15.6%) — варнинг дисперсии, механика вердикта не нарратив
+- Пак ОСТАЁТСЯ на master (уже там); pre-pack тег — базовая ссылка; эра §125 закрыта честно
+- **OWNER REDIRECT (прямой эфир, русский)**: «все форс чанки и всё жило (прайм x150000), тпс 20 / мспт минимальный, все боттленки ебнуть, что за микро фиксы, архитектуры и реальные бусты, по русски» ⇒ микро-рычаги СТОП; охота заморожена: baseline-ран 35228087782 отменён (202), hunt state очищен, банк §125 — историческая запись
+- Спека новой эры: **docs/BENCH_X150K_SCENARIO.md** (DRAFT v1): population-injection fixture (~150k живых сущностей на буте, детерминированный сид, смесь items/хостилы/пассивы), все 9216 чанков, фейк-игроки на спавн-линиях; перебаза A/B pre-pack vs master на X150K; свежий профиль ⇒ ARCH-ATTACK очередь; ЗАПРОСЫ ВЛАДЕЛЬЦУ: (1) юнит x150000 = сущности? (2) сколько игроков на прайме?
+- runs_index +2; GOAL S7-127 + §142 + INDEX 263 + BENCH_X150K_SCENARIO.md
+- Commits: c-crussty (this), dev-logs TASK-263, CRUSSTY pristine untouched
+
+Stage Summary:
+- §125-A1 закрыт LANDS (−4.52%): пак на master, эра micro-lever завершена ЧЕСТНО (верdict механический, ноль посадок сверху — пак уже был кодом master)
+- Эра X150K открыта: сцена-прайм (все чанки + 150k живых сущностей), архитектурные бусты по ВСЕМ бутылочным горлышкам, русский язык коммуникации
+- Next tick: population fixture MVP (инъекция 10k smoke) → 150k масштаб → перебаза → ARCH-ATTACK; ответ владельцу по-русски с вопросами юнита x150000 и числа игроков
+- INJECTS-ONLY цел (0 sandbox boots; cancel 202 — не boot)
