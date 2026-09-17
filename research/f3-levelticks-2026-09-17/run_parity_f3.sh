@@ -9,9 +9,9 @@ KERNEL_JAR="${KERNEL_JAR:-/home/z/my-project/scripts/bench3_research/run21/patch
 ML=$(ls "$F"/mojang-libs/*.jar | tr '\n' ':')
 CP="$KERNEL_JAR:/home/z/c-crussty/randomtick/build:$HERE/pbuild:$ML$F/slf4j-api.jar:$F/slf4j-jdk.jar:$(find $F/clip -name '*.jar' | tr '\n' ':')"
 
-# 1. compile the helper (kernel classpath only — same machine as production)
+# 1. compile the helper (kernel classpath + fastutil — same machine as production)
 java -jar /home/z/c-crussty/randomtick/ecj.jar -source 21 -target 21 -nowarn \
-  -cp "$KERNEL_JAR" -d /home/z/c-crussty/randomtick/build \
+  -cp "$KERNEL_JAR:$F/mojang-libs/fastutil-8.5.15.jar" -d /home/z/c-crussty/randomtick/build \
   /home/z/c-crussty/randomtick/src/TickBlockOps.java
 
 # 2. compile + run the bank (same-package test: net.minecraft.server.level)

@@ -929,6 +929,88 @@ pub fn patch_run_collected_ticks(bytes: &[u8]) -> Result<Vec<u8>, String> {
     Ok(out)
 }
 
+/// F3-queue hook (S7-117): `LevelTicks.collectTicks(JILProfilerFiller;)V`
+/// (private, vanilla body @0-34 — the fused sort+counter+drain+reschedule
+/// pipeline) -> 9-byte straight line
+/// `aload_0; lload_1; iload_3; aload 4; invokestatic
+/// TickBlockOps.collectTicks:(Lnet/minecraft/world/ticks/LevelTicks;
+/// JILnet/minecraft/util/profiling/ProfilerFiller;)V; return`.
+/// No branches => EMPTY StackMapTable. max_stack 5 (1+2+1+1 operand slots),
+/// max_locals 5 (this, long, int, filler). Parity: REAL-vanilla REF bank PASS
+/// (research/f3-levelticks-2026-09-17/parity_output.txt SQ1-SQ5).
+pub fn patch_collect_ticks(bytes: &[u8]) -> Result<Vec<u8>, String> {
+    let layout = parse_layout(bytes).ok_or("bad classfile layout")?;
+    let this_name = this_class_name(&layout).ok_or("cannot resolve this_class name")?;
+    if this_name != LEVELTICKS_CLASS {
+        return Err(format!("unexpected class {this_name}"));
+    }
+    let mut pool = layout.pool;
+
+    // Find-only probes first (fail closed BEFORE any pool mutation).
+    const COLLECT_DESC: &str = "(JILnet/minecraft/util/profiling/ProfilerFiller;)V";
+    const COLLECT_OPS_DESC: &str =
+        "(Lnet/minecraft/world/ticks/LevelTicks;JILnet/minecraft/util/profiling/ProfilerFiller;)V";
+    let Some(name_idx) = pool.find_utf8("collectTicks") else {
+        return Err("collectTicks not found".into());
+    };
+    let Some(desc_idx) = pool.find_utf8(COLLECT_DESC) else {
+        return Err("collectTicks descriptor not found".into());
+    };
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)
+        .ok_or("collectTicks(JILnet/minecraft/util/profiling/ProfilerFiller;)V not found")?;
+
+    // Constant ref needed by the new body (appended when absent).
+    let m_ops = pool.method_ref(TICKBLOCK_OPS_CLASS, "collectTicks", COLLECT_OPS_DESC);
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for F3 refs".into());
+    }
+
+    let mut code = Vec::with_capacity(9);
+    let u2 = |out: &mut Vec<u8>, v: u16| out.extend_from_slice(&v.to_be_bytes());
+    code.push(0x2a); // aload_0 (LevelTicks receiver)
+    code.push(0x1f); // lload_1 (gameTime)
+    code.push(0x1d); // iload_3 (maxTicks)
+    code.push(0x19); // aload 4 (ProfilerFiller; wide local index)
+    code.push(0x04);
+    code.push(0xb8); // invokestatic TickBlockOps.collectTicks
+    u2(&mut code, m_ops);
+    code.push(0xb1); // return
+    debug_assert_eq!(code.len(), 9, "emitted code is {}", code.len());
+
+    // Code attribute: empty exception table + EMPTY StackMapTable.
+    let mut code_attr = Vec::new();
+    u2(&mut code_attr, pool.utf8("Code"));
+    let mut body = Vec::new();
+    u2(&mut body, 5); // max_stack: receiver(1)+long(2)+int(1)+filler(1)
+    u2(&mut body, 5); // max_locals: this, long(2 slots), int, filler
+    body.extend_from_slice(&(code.len() as u32).to_be_bytes());
+    body.extend_from_slice(&code);
+    body.extend_from_slice(&[0, 0]); // exception_table_length
+    body.extend_from_slice(&(1u16).to_be_bytes()); // attributes_count
+    u2(&mut body, pool.utf8("StackMapTable"));
+    body.extend_from_slice(&2u32.to_be_bytes()); // attribute_length
+    body.extend_from_slice(&0u16.to_be_bytes()); // number_of_entries = 0
+    code_attr.extend_from_slice(&(body.len() as u32).to_be_bytes());
+    code_attr.extend_from_slice(&body);
+
+    // Replacement method entry + splice (F2 machine verbatim).
+    let mut method = Vec::new();
+    u2(&mut method, m.access);
+    u2(&mut method, m.name_idx);
+    u2(&mut method, m.desc_idx);
+    u2(&mut method, 1); // attributes_count
+    method.extend_from_slice(&code_attr);
+
+    let mut out = Vec::with_capacity(bytes.len() + 64);
+    out.extend_from_slice(&bytes[0..8]); // magic, minor, major
+    u2(&mut out, pool.next); // new cp_count
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(&bytes[layout.cp_end..m.start]);
+    out.extend_from_slice(&method);
+    out.extend_from_slice(&bytes[m.end..]);
+    Ok(out)
+}
+
 pub fn patch_tick_block(bytes: &[u8]) -> Result<Vec<u8>, String> {
     let layout = parse_layout(bytes).ok_or("bad classfile layout")?;
     let this_name = this_class_name(&layout).ok_or("cannot resolve this_class name")?;
@@ -2110,6 +2192,92 @@ mod real_noise {
         let once = patch_tick_block(SERVER).expect("first");
         let twice = patch_tick_block(&once).expect("second");
         assert_eq!(once, twice, "double tickBlock patch is byte-identical");
+
+        let once = patch_collect_ticks(LEVELTICKS).expect("first");
+        let twice = patch_collect_ticks(&once).expect("second");
+        assert_eq!(once, twice, "double collectTicks patch is byte-identical");
+    }
+
+    /// F3-queue roundtrip (S7-117): collectTicks -> exact 9-byte straight line
+    /// (max_stack 5 / max_locals 5), operand resolves BY NAME to
+    /// TickBlockOps.collectTicks with the wide aload 4; private access kept.
+    #[test]
+    fn f3_collect_roundtrip_verified() {
+        let patched = patch_collect_ticks(LEVELTICKS).expect("patch");
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        assert_eq!(patched[..8], LEVELTICKS[..8], "version preserved");
+
+        let (ms, ml, code) = f3_code_of(
+            &patched,
+            "collectTicks",
+            "(JILnet/minecraft/util/profiling/ProfilerFiller;)V",
+        );
+        assert_eq!(code.len(), 9, "straight-line body is 9 bytes");
+        assert_eq!(ms, 5, "max_stack = receiver+long(2)+int+filler");
+        assert_eq!(ml, 5, "max_locals = this,long(2),int,filler");
+        let skel = [code[0], code[1], code[2], code[3], code[4], code[5], code[8]];
+        assert_eq!(
+            skel,
+            [0x2a, 0x1f, 0x1d, 0x19, 0x04, 0xb8, 0xb1],
+            "opcode skeleton exact (wide aload 4)"
+        );
+
+        let layout = parse_layout(&patched).expect("re-parse patched");
+        let r = layout
+            .pool
+            .methodref_parts(u16::from_be_bytes([code[6], code[7]]))
+            .expect("invokestatic operand resolves");
+        assert_eq!(
+            r,
+            (
+                TICKBLOCK_OPS_CLASS.to_string(),
+                "collectTicks".to_string(),
+                "(Lnet/minecraft/world/ticks/LevelTicks;JILnet/minecraft/util/profiling/ProfilerFiller;)V"
+                    .to_string()
+            )
+        );
+        let name_idx = layout.pool.find_utf8("collectTicks").expect("name kept");
+        let desc_idx = layout
+            .pool
+            .find_utf8("(JILnet/minecraft/util/profiling/ProfilerFiller;)V")
+            .expect("desc kept");
+        let m = find_method(&patched, layout.methods_start, name_idx, desc_idx).expect("method");
+        assert_eq!(m.access, 0x0002, "access flags preserved (private instance)");
+    }
+
+    /// LevelTicks composition (S7-117): BOTH F3 LevelTicks bodies alive after
+    /// the tickhook compose chain (runCollectedTicks then collectTicks);
+    /// deterministic + idempotent — same property f3_serverlevel_composes_with_f1
+    /// pins for ServerLevel.
+    #[test]
+    fn f3_levelticks_composes_drain_and_queue() {
+        let compose = |bytes: &[u8]| -> Vec<u8> {
+            let b = patch_run_collected_ticks(bytes).expect("drain compose");
+            patch_collect_ticks(&b).expect("queue compose")
+        };
+        let composed = compose(LEVELTICKS);
+
+        let (_, _, drain) = f3_code_of(
+            &composed,
+            "runCollectedTicks",
+            "(Ljava/util/function/BiConsumer;)V",
+        );
+        assert_eq!(drain.len(), 6, "F3 drain body alive in composition");
+        let (_, _, queue) = f3_code_of(
+            &composed,
+            "collectTicks",
+            "(JILnet/minecraft/util/profiling/ProfilerFiller;)V",
+        );
+        assert_eq!(queue.len(), 9, "F3 queue body alive in composition");
+
+        assert_eq!(composed, compose(LEVELTICKS), "compose deterministic");
+        assert_eq!(composed, compose(&composed), "compose idempotent on composed input");
+
+        // Dump the COMPOSED image for the runtime verifier gate
+        // (randomtick/verify_f3_patched.sh prefers this over the drain-only dump).
+        let out = std::env::temp_dir().join("ccrussty_patched_LevelTicks_F3full.class");
+        std::fs::write(&out, &composed).expect("dump composed LevelTicks");
+        eprintln!("wrote {} bytes to {}", composed.len(), out.display());
     }
 
     /// Fail-closed discipline: wrong class rejected before any mutation;

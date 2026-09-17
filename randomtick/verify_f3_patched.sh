@@ -28,7 +28,7 @@
 set -euo pipefail
 HERE="$(cd "$(dirname "$0")" && pwd)"
 KERNEL_JAR="${KERNEL_JAR:-/home/z/my-project/scripts/bench3_research/run21/patched-kernel.jar}"
-PATCHED_LT="${PATCHED_LT:-$(ls /tmp/ccrussty_patched_LevelTicks.class 2>/dev/null || true)}"
+PATCHED_LT="${PATCHED_LT:-$(ls /tmp/ccrussty_patched_LevelTicks_F3full.class 2>/dev/null || ls /tmp/ccrussty_patched_LevelTicks.class 2>/dev/null || true)}"
 PATCHED_SL="${PATCHED_SL:-$(ls /tmp/ccrussty_patched_ServerLevel_F1F3.class 2>/dev/null || true)}"
 OPS_CLASS="${OPS_CLASS:-$HERE/build/net/minecraft/server/level/TickBlockOps.class}"
 

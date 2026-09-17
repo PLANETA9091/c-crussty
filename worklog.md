@@ -1138,3 +1138,21 @@ Work Log:
 Stage Summary:
 - c-crussty master <push>: ПАКЕТ F1 hook ✓ + F2 hook ✓ + F3-reads hooks ✓ — все три wired, armed-по-буту, CI-exercised, dormant-до-aggregate, ноль лендинга; следующий тик: F3-queue build (LevelTicks queue-drain ≤0.5%, task167 — последний Tier-B член) ИЛИ сразу ОДИН агрегатный A/B против банка пары 76.01/76.98 (Tier B floor 3.3% достигается и без queue — решение по §125 протоколу) + poll ноги#13 35196354695
 - INJECTS-ONLY: 0 sandbox boots (verify = link-time resolveClass без инициализации; define = класс-загрузка без init; force-load = LOAD без instantiation)
+
+---
+
+## S7-117 (tick 2026-09-17 16:08 UTC+8, agent-7625532f) — F3-QUEUE BUILT+HOOKED (TIER B PACK COMPLETE, TASK-253; ничего не landится до агрегатного A/B §125)
+
+Work Log:
+- bootstrap/pull: c-crussty 3853f4a, dev-logs deebf02, CRUSSTY 1f4c06a нетронут; stale-чартер игнорирован по прецеденту
+- Пара #2: нога#13 35196354695 gate-reject (6786413 < band floor 6870000, ~30s) — 9-й подряд честный reject; нога#14 = 35198344256 dispatched in flight; runs_index +2
+- STEP-0: полная анатомия queue-машинерии (tick @0-76, collectTicks @0-34, sortContainersToTick @0-165, drainContainers @0-105, rescheduleLeftover @0-40, drainFromCurrentContainer @0-103 с ЗАМОРОЖЕННЫМ innerHead); comparators cfdump: INTRA_TICK_DRAIN_ORDER = priority→subTickOrder; найдены инварианты: LevelChunkTicks.schedule дедуп по (pos,type); updateContainerScheduling re-keying по позиции тика
+- Helper: TickBlockOps.collectTicks — байт-точное зеркало 4 фаз + инлайн gate-машинерии (3 virtual calls/тик → field compare и т.д.); ECJ compile (fastutil в CP — run_parity_f3.sh обновлён)
+- Банк (самый сильный REF эры): РЕАЛЬНЫЙ vanilla приватный collectTicks через reflection; SQ1 sort-ветки + 5 checks / SQ2 gate / SQ3 frozen-innerHead [A5,B1,A7] подтверждён / SQ4 re-keying lifecycle / SQ5 fuzz 30/30 — **F3 QUEUE PARITY: PASS** (36 ok); ловушки: schedule-dedup, re-keying, fastutil order
+- Hook: classfile.rs::patch_collect_ticks — 9B `2a 1f 1d 19 04 b8 <idx> b1` (wide aload 4), max_stack 5/max_locals 5, пустой StackMapTable; tickhook.rs hook#1 = LevelTicks COMPOSE {drain + queue} в одном колбэке
+- Тесты: cargo **91 passed** (89+2: collect roundtrip + LevelTicks composition); VerifyF3 **VERIFY-OK major=65** (composed LevelTicks 18837B + ServerLevel F1F3 142243B + TickBlockOps 8389B)
+- Ledger §132, INDEX 253, GOAL СТАТУС S7-117
+
+Stage Summary:
+- c-crussty master <push>: **ПАКЕТ TIER B СОБРАН** — F1 hook ✓ + F2 hook ✓ + F3-reads ✓ + F3-queue ✓ (signal dropped по §5.3, floor 3.3%); следующий тик = ОДИН агрегатный A/B против банка пары 76.01/76.98 (hunt_leg_b машинерия, min-of-2, gate ≥3.0% MSPT) + poll ноги#14 35198344256; при <3% — REFUTED row, НИЧЕГО не landится
+- INJECTS-ONLY: 0 sandbox boots (reflection REF = plain classpath JVM; verify = link-time resolveClass)

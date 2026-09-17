@@ -57,7 +57,9 @@ static PATCHED_SL: AtomicBool = AtomicBool::new(false);
 /// runs first (lib.rs), so on the one dispatch where both F1 and F3 patch
 /// fresh, F1 logs first — the composed image is order-independent.
 pub fn register() {
-    // Hook 1: LevelTicks.runCollectedTicks (F3-private class, no cohabitants).
+    // Hook 1: LevelTicks — BOTH F3 LevelTicks bodies (runCollectedTicks drain
+    // swap + collectTicks queue swap) composed in ONE callback: the retransform
+    // feeds ORIGINAL bytes, so each dispatch re-applies both (idempotent).
     cplug_sdk::hooks::register_bytes(LEVELTICKS_CLASS, |name, bytes| {
         if !READY.load(Ordering::Relaxed) {
             return None;
@@ -65,10 +67,13 @@ pub fn register() {
         if PATCHED_LT.swap(true, Ordering::SeqCst) {
             return None;
         }
-        match classfile::patch_run_collected_ticks(bytes) {
+        match (|| -> Result<Vec<u8>, String> {
+            let b = classfile::patch_run_collected_ticks(bytes)?;
+            classfile::patch_collect_ticks(&b)
+        })() {
             Ok(b) => {
                 eprintln!(
-                    "[crussty-plugin] tickhook: patched {name} runCollectedTicks() ({} -> {} bytes)",
+                    "[crussty-plugin] tickhook: patched {name} runCollectedTicks()+collectTicks() ({} -> {} bytes)",
                     bytes.len(),
                     b.len()
                 );
@@ -76,7 +81,7 @@ pub fn register() {
             }
             Err(e) => {
                 PATCHED_LT.store(false, Ordering::SeqCst);
-                eprintln!("[crussty-plugin] tickhook: runCollectedTicks patch failed: {e}");
+                eprintln!("[crussty-plugin] tickhook: LevelTicks patch failed: {e}");
                 None
             }
         }

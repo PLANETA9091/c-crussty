@@ -24,6 +24,7 @@ import net.minecraft.world.level.chunk.LevelChunkSection;
 import net.minecraft.world.level.chunk.PalettedContainer;
 import net.minecraft.world.level.chunk.Strategy;
 import net.minecraft.world.level.storage.WritableLevelData;
+import net.minecraft.world.ticks.LevelChunkTicks;
 import net.minecraft.world.ticks.LevelTicks;
 import net.minecraft.world.ticks.ScheduledTick;
 import net.minecraft.world.ticks.TickPriority;
@@ -173,6 +174,10 @@ public class ParityTest {
 
     static ScheduledTick<Block> t(Block block, BlockPos pos, long order) {
         return new ScheduledTick<>(block, pos, order, TickPriority.NORMAL, 0L);
+    }
+
+    static ScheduledTick<Block> t(Block block, BlockPos pos, long order, long sub) {
+        return new ScheduledTick<>(block, pos, order, TickPriority.NORMAL, sub);
     }
 
     // ================================================================ REF mirrors
@@ -464,6 +469,263 @@ public class ParityTest {
         System.out.println("  ok: 40/40 scenarios identical");
     }
 
+    // ================================================================ queue (F3-queue, S7-117)
+
+    static long OFF_ALL_CONT, OFF_NEXT_TICK, OFF_TO_TICK, OFF_TICK_CHECK;
+
+    /** Minimal real ProfilerFiller; records incrementCounter(String,int) calls. */
+    static final class RecProfiler implements net.minecraft.util.profiling.ProfilerFiller {
+        final ArrayList<String> counters = new ArrayList<>();
+        @Override public void startTick() {}
+        @Override public void endTick() {}
+        @Override public void push(String s) {}
+        @Override public void push(java.util.function.Supplier<String> s) {}
+        @Override public void pop() {}
+        @Override public void popPush(String s) {}
+        @Override public void popPush(java.util.function.Supplier<String> s) {}
+        @Override public void markForCharting(net.minecraft.util.profiling.metrics.MetricCategory c) {}
+        @Override public void incrementCounter(String s, int n) { counters.add(s + ":" + n); }
+        @Override public void incrementCounter(java.util.function.Supplier<String> s, int n) { counters.add(s.get() + ":" + n); }
+    }
+
+    static LevelChunkTicks<Block> containerOf(java.util.List<ScheduledTick<Block>> ticks) {
+        LevelChunkTicks<Block> c = new LevelChunkTicks<>();
+        for (ScheduledTick<Block> tk : ticks) c.schedule(tk);
+        return c;
+    }
+
+    /** Collect-pipeline fixture: all six private fields preseeded with real
+     *  structures (fastutil maps, ArrayDeque, lambda predicate). */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    static LevelTicks newCollect(java.util.Map<Long, LevelChunkTicks> containers,
+            java.util.Map<Long, Long> nextTicks, java.util.Queue toTick,
+            java.util.function.LongPredicate check) throws Exception {
+        LevelTicks ticks = (LevelTicks) U.allocateInstance(LevelTicks.class);
+        U.putObject(ticks, OFF_QUEUE, new java.util.ArrayDeque<ScheduledTick<?>>());
+        U.putObject(ticks, OFF_SET, new HashSet<ScheduledTick<?>>());
+        U.putObject(ticks, OFF_LIST, new ArrayList<ScheduledTick<?>>());
+        it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap all =
+                new it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap();
+        for (var e : containers.entrySet()) all.put(e.getKey(), e.getValue());
+        U.putObject(ticks, OFF_ALL_CONT, all);
+        it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap next =
+                new it.unimi.dsi.fastutil.longs.Long2LongOpenHashMap();
+        for (var e : nextTicks.entrySet()) next.put(e.getKey(), e.getValue());
+        U.putObject(ticks, OFF_NEXT_TICK, next);
+        U.putObject(ticks, OFF_TO_TICK, toTick);
+        U.putObject(ticks, OFF_TICK_CHECK, check);
+        return ticks;
+    }
+
+    /** REF: the REAL vanilla private pipeline, invoked reflectively (plain
+     *  classpath JVM — unnamed module, setAccessible is legal; strongest
+     *  possible reference — zero mirror-copy risk on the REF side). */
+    static void refCollect(LevelTicks ticks, long gameTime, int maxTicks,
+            net.minecraft.util.profiling.ProfilerFiller p) throws Exception {
+        var m = LevelTicks.class.getDeclaredMethod("collectTicks",
+                long.class, int.class, net.minecraft.util.profiling.ProfilerFiller.class);
+        m.setAccessible(true);
+        m.invoke(ticks, gameTime, maxTicks, p);
+    }
+
+    /** Full observable state snapshot for REF/NEW comparison. */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    static String stateOf(LevelTicks ticks) {
+        var toRun = (java.util.Queue) U.getObject(ticks, OFF_QUEUE);
+        var next = (it.unimi.dsi.fastutil.longs.Long2LongMap) U.getObject(ticks, OFF_NEXT_TICK);
+        var toTick = (java.util.Queue) U.getObject(ticks, OFF_TO_TICK);
+        StringBuilder sb = new StringBuilder();
+        sb.append("run=[");
+        for (Object o : toRun) {
+            ScheduledTick t = (ScheduledTick) o;
+            sb.append(t.pos().asLong()).append(':').append(t.triggerTick())
+              .append(':').append(t.subTickOrder()).append(';');
+        }
+        sb.append("] next={");
+        for (it.unimi.dsi.fastutil.objects.ObjectIterator<it.unimi.dsi.fastutil.longs.Long2LongMap.Entry> e =
+                it.unimi.dsi.fastutil.longs.Long2LongMaps.fastIterator(next); e.hasNext(); ) {
+            it.unimi.dsi.fastutil.longs.Long2LongMap.Entry en = e.next();
+            sb.append(en.getLongKey()).append('=').append(en.getLongValue()).append(',');
+        }
+        sb.append("} toTick=[");
+        for (Object o : toTick) {
+            LevelChunkTicks c = (LevelChunkTicks) o;
+            ScheduledTick p = c.peek();
+            sb.append(p == null ? "null" : Long.toString(p.pos().asLong())).append(',');
+        }
+        sb.append(']');
+        return sb.toString();
+    }
+
+    static void compareCollect(LevelTicks tRef, LevelTicks tNew,
+            RecProfiler pRef, RecProfiler pNew, String tag) {
+        String a = stateOf(tRef), b = stateOf(tNew);
+        if (!a.equals(b))
+            throw new AssertionError("FAIL " + tag + ": state diverged\n  ref : " + a + "\n  new : " + b);
+        if (!pRef.counters.equals(pNew.counters))
+            throw new AssertionError("FAIL " + tag + ": profiler counters diverged\n  ref : "
+                    + pRef.counters + "\n  new : " + pNew.counters);
+        System.out.println("  ok: " + tag + " identical");
+    }
+
+    static void runSQ1() throws Exception {
+        System.out.println("SQ1 sort branches (due/not-due/missing/null-peek/late-peek/tickCheck-false)");
+        long game = 100L;
+        java.util.Map<Long, LevelChunkTicks> contRef = new HashMap<>(), contNew = new HashMap<>();
+        java.util.Map<Long, Long> nextRef = new HashMap<>(), nextNew = new HashMap<>();
+        // 0: due -> queue; 1: not-due (entry value > game, stays);
+        // 2: entry without container (removed); 3: empty container (null peek, removed);
+        // 4: late peek (entry rescheduled via setValue); 5: tickCheck-false (entry stays)
+        java.util.List<ScheduledTick<Block>> due = java.util.List.of(t(Blocks.STONE, new BlockPos(1, 64, 1), 90));
+        java.util.List<ScheduledTick<Block>> late = java.util.List.of(t(Blocks.STONE, new BlockPos(3, 64, 3), 150));
+        java.util.List<ScheduledTick<Block>> reject = java.util.List.of(t(Blocks.STONE, new BlockPos(4, 64, 4), 80));
+        java.util.List<ScheduledTick<Block>> far = java.util.List.of(t(Blocks.STONE, new BlockPos(2, 64, 2), 200));
+        long[] keys = {0L, 1L, 3L, 4L, 5L};
+        java.util.List<java.util.List<ScheduledTick<Block>>> defs =
+                java.util.List.of(due, far, java.util.List.of(), late, reject);
+        for (int i = 0; i < keys.length; i++) {
+            contRef.put(keys[i], containerOf(defs.get(i)));
+            contNew.put(keys[i], containerOf(defs.get(i)));
+            nextRef.put(keys[i], 50L);
+            nextNew.put(keys[i], 50L);
+        }
+        nextRef.put(2L, 50L);   // orphan entry (no container)
+        nextNew.put(2L, 50L);
+        LevelTicks tRef = newCollect(contRef, nextRef, new java.util.ArrayDeque<>(), k -> k != 5L);
+        LevelTicks tNew = newCollect(contNew, nextNew, new java.util.ArrayDeque<>(), k -> k != 5L);
+        RecProfiler pRef = new RecProfiler(), pNew = new RecProfiler();
+        refCollect(tRef, game, 1000, pRef);
+        TickBlockOps.collectTicks(tNew, game, 1000, pNew);
+        compareCollect(tRef, tNew, pRef, pNew, "SQ1");
+        String st = stateOf(tNew);
+        check(st.contains("run=[" + new BlockPos(1, 64, 1).asLong() + ":90"), "SQ1 due tick ran");
+        check(!st.contains("4,64,4") && st.contains("5=50,"), "SQ1 tickCheck-false entry stayed (value untouched)");
+        check(st.contains("4=150,"), "SQ1 late peek rescheduled via setValue");
+        check(!st.contains("2=50,"), "SQ1 orphan entry removed");
+        check(!st.contains("3=50,"), "SQ1 null-peek entry removed");
+    }
+
+    static void runSQ2() throws Exception {
+        System.out.println("SQ2 drain boundary (maxTicks gate) + requeue/reschedule branches");
+        long game = 10L;
+        // A: 5 due ticks, maxTicks=3 -> gate stops mid-container, reschedule head
+        java.util.List<ScheduledTick<Block>> five = new ArrayList<>();
+        for (int i = 0; i < 5; i++) five.add(t(Blocks.STONE, new BlockPos(10 + i, 64, 10), 10, i + 1)); // unique pos: schedule() dedups by (pos,type)
+        // C: 2 due + 1 late -> drained then rescheduled via updateContainerScheduling
+        java.util.List<ScheduledTick<Block>> cTicks = java.util.List.of(
+                t(Blocks.STONE, new BlockPos(0, 64, 4), 10, 1),
+                t(Blocks.STONE, new BlockPos(1, 64, 4), 10, 2),
+                t(Blocks.STONE, new BlockPos(2, 64, 4), 300, 3));
+        java.util.Map<Long, LevelChunkTicks> contRef = new HashMap<>(), contNew = new HashMap<>();
+        java.util.Map<Long, Long> nextRef = new HashMap<>(), nextNew = new HashMap<>();
+        contRef.put(0L, containerOf(five));  contNew.put(0L, containerOf(new ArrayList<>(five)));
+        contRef.put(4L, containerOf(cTicks)); contNew.put(4L, containerOf(cTicks));
+        nextRef.put(0L, 10L); nextNew.put(0L, 10L);
+        nextRef.put(4L, 10L); nextNew.put(4L, 10L);
+        LevelTicks tRef = newCollect(contRef, nextRef, new java.util.ArrayDeque<>(), k -> true);
+        LevelTicks tNew = newCollect(contNew, nextNew, new java.util.ArrayDeque<>(), k -> true);
+        RecProfiler pRef = new RecProfiler(), pNew = new RecProfiler();
+        refCollect(tRef, game, 3, pRef);
+        TickBlockOps.collectTicks(tNew, game, 3, pNew);
+        compareCollect(tRef, tNew, pRef, pNew, "SQ2");
+        System.out.println("    SQ2 state=" + stateOf(tNew) + " (observation; REF==NEW is the contract)");
+    }
+
+    static void runSQ3() throws Exception {
+        System.out.println("SQ3 frozen-innerHead INTRA_TICK_DRAIN_ORDER (cross-container fairness)");
+        long game = 10L;
+        // A (key 0): due ticks subTick 5 then 7; B (key 1): due tick subTick 1.
+        // Sort enqueues [A, B] (same layout both sides). Draining A: innerHead =
+        // B's head (subTick 1, FROZEN); A.next subTick 7 > 1 -> drain stops ->
+        // A requeues BEHIND B; B drains fully; A drains its 7.
+        // Expected order: A5, B1, A7 — vanilla's cross-container fairness quirk.
+        java.util.List<ScheduledTick<Block>> aTicks = java.util.List.of(
+                t(Blocks.STONE, new BlockPos(20, 64, 20), 10, 5),
+                t(Blocks.STONE, new BlockPos(21, 64, 20), 10, 7));
+        java.util.List<ScheduledTick<Block>> bTicks = java.util.List.of(
+                t(Blocks.STONE, new BlockPos(21, 64, 21), 10, 1));
+        java.util.Map<Long, LevelChunkTicks> contRef = new HashMap<>(), contNew = new HashMap<>();
+        java.util.Map<Long, Long> nextRef = new HashMap<>(), nextNew = new HashMap<>();
+        contRef.put(0L, containerOf(aTicks)); contNew.put(0L, containerOf(aTicks));
+        contRef.put(1L, containerOf(bTicks)); contNew.put(1L, containerOf(bTicks));
+        nextRef.put(0L, 10L); nextNew.put(0L, 10L);
+        nextRef.put(1L, 10L); nextNew.put(1L, 10L);
+        LevelTicks tRef = newCollect(contRef, nextRef, new java.util.ArrayDeque<>(), k -> true);
+        LevelTicks tNew = newCollect(contNew, nextNew, new java.util.ArrayDeque<>(), k -> true);
+        RecProfiler pRef = new RecProfiler(), pNew = new RecProfiler();
+        refCollect(tRef, game, 100, pRef);
+        TickBlockOps.collectTicks(tNew, game, 100, pNew);
+        compareCollect(tRef, tNew, pRef, pNew, "SQ3");
+        System.out.println("    SQ3 state=" + stateOf(tNew) + " (observation; frozen-innerHead parity carried by REF==NEW + fuzz)");
+    }
+
+    static void runSQ4() throws Exception {
+        System.out.println("SQ4 rescheduleLeftover (queue-preserved container re-registered)");
+        long game = 10L;
+        // A: 2 due ticks; maxTicks=1 -> gate blocks mid-drain; A NOT re-added
+        // (canScheduleMore false at the requeue branch) -> updateContainerScheduling
+        // -> reschedule pass sees empty queue. Then a second tick() call with
+        // maxTicks=100 drains the rest — exercises the full collect lifecycle.
+        java.util.List<ScheduledTick<Block>> aTicks = java.util.List.of(
+                t(Blocks.STONE, new BlockPos(1, 64, 1), 10, 1),
+                t(Blocks.STONE, new BlockPos(2, 64, 1), 10, 2)); // both chunk (0,0) = container key
+        java.util.Map<Long, LevelChunkTicks> contRef = new HashMap<>(), contNew = new HashMap<>();
+        java.util.Map<Long, Long> nextRef = new HashMap<>(), nextNew = new HashMap<>();
+        contRef.put(0L, containerOf(aTicks)); contNew.put(0L, containerOf(aTicks));
+        nextRef.put(0L, 10L); nextNew.put(0L, 10L);
+        LevelTicks tRef = newCollect(contRef, nextRef, new java.util.ArrayDeque<>(), k -> true);
+        LevelTicks tNew = newCollect(contNew, nextNew, new java.util.ArrayDeque<>(), k -> true);
+        RecProfiler pRef = new RecProfiler(), pNew = new RecProfiler();
+        refCollect(tRef, game, 1, pRef);
+        TickBlockOps.collectTicks(tNew, game, 1, pNew);
+        compareCollect(tRef, tNew, pRef, pNew, "SQ4a (gate at 1)");
+        refCollect(tRef, game, 100, pRef);
+        TickBlockOps.collectTicks(tNew, game, 100, pNew);
+        compareCollect(tRef, tNew, pRef, pNew, "SQ4b (second tick drains rest)");
+        check(stateOf(tNew).contains(":10:1;") && stateOf(tNew).contains(":10:2;"), "SQ4 both ticks ran across two collects");
+    }
+
+    static void runSQ5() throws Exception {
+        System.out.println("SQ5 fuzz (random containers/ticks/gates vs REAL vanilla pipeline)");
+        Block[] blocks = {Blocks.STONE, Blocks.DIRT, Blocks.DEEPSLATE};
+        java.util.Random rnd = new java.util.Random(20260917L);
+        for (int it2 = 0; it2 < 30; it2++) {
+            long game = 50L + rnd.nextInt(50);
+            int maxTicks = 1 + rnd.nextInt(12);
+            int nContainers = 2 + rnd.nextInt(6);
+            java.util.Map<Long, LevelChunkTicks> contRef = new HashMap<>(), contNew = new HashMap<>();
+            java.util.Map<Long, Long> nextRef = new HashMap<>(), nextNew = new HashMap<>();
+            long rejectKey = rnd.nextBoolean() ? -1L : (long) rnd.nextInt(nContainers);
+            for (int c = 0; c < nContainers; c++) {
+                long key = c;
+                java.util.List<ScheduledTick<Block>> tks = new ArrayList<>();
+                int n = rnd.nextInt(4);
+                for (int i = 0; i < n; i++) {
+                    BlockPos pos = new BlockPos(rnd.nextInt(16), 64, rnd.nextInt(16));
+                    long trigger = game - 5 + rnd.nextInt(60);   // mix of due/late
+                    long sub = rnd.nextInt(1000);
+                    tks.add(t(blocks[rnd.nextInt(blocks.length)], pos, trigger, sub));
+                }
+                contRef.put(key, containerOf(tks));
+                contNew.put(key, containerOf(new ArrayList<>(tks)));
+                long entryVal = game - 10 + rnd.nextInt(80);
+                nextRef.put(key, entryVal);
+                nextNew.put(key, entryVal);
+            }
+            LevelTicks tRef = newCollect(contRef, nextRef, new java.util.ArrayDeque<>(), k -> k != rejectKey);
+            LevelTicks tNew = newCollect(contNew, nextNew, new java.util.ArrayDeque<>(), k -> k != rejectKey);
+            RecProfiler pRef = new RecProfiler(), pNew = new RecProfiler();
+            refCollect(tRef, game, maxTicks, pRef);
+            TickBlockOps.collectTicks(tNew, game, maxTicks, pNew);
+            String a = stateOf(tRef), b = stateOf(tNew);
+            if (!a.equals(b))
+                throw new AssertionError("FAIL fuzz #" + it2 + " (maxTicks=" + maxTicks + " reject=" + rejectKey + "): state diverged\n  ref : " + a + "\n  new : " + b);
+            if (!pRef.counters.equals(pNew.counters))
+                throw new AssertionError("FAIL fuzz #" + it2 + ": counters diverged");
+        }
+        System.out.println("  ok: 30/30 fuzz scenarios identical (state + counters)");
+    }
+
     // ================================================================ main
 
     public static void main(String[] args) throws Exception {
@@ -489,6 +751,10 @@ public class ParityTest {
         OFF_HA = U.objectFieldOffset(ChunkAccess.class.getDeclaredField("levelHeightAccessor"));
         OFF_FULLCHUNKS = U.objectFieldOffset(ServerChunkCache.class.getDeclaredField("fullChunks"));
         OFF_CBS_DATA = U.objectFieldOffset(org.bukkit.craftbukkit.block.CraftBlockState.class.getDeclaredField("data"));
+        OFF_ALL_CONT = U.objectFieldOffset(LevelTicks.class.getDeclaredField("allContainers"));
+        OFF_NEXT_TICK = U.objectFieldOffset(LevelTicks.class.getDeclaredField("nextTickForContainer"));
+        OFF_TO_TICK = U.objectFieldOffset(LevelTicks.class.getDeclaredField("containersToTick"));
+        OFF_TICK_CHECK = U.objectFieldOffset(LevelTicks.class.getDeclaredField("tickCheck"));
 
         // static-data init only (INJECTS-ONLY, f2 precedent)
         SharedConstants.tryDetectVersion();
@@ -509,5 +775,12 @@ public class ParityTest {
         runS6();
         runS9();
         System.out.println("F3 READS PARITY: PASS");
+
+        runSQ1();
+        runSQ2();
+        runSQ3();
+        runSQ4();
+        runSQ5();
+        System.out.println("F3 QUEUE PARITY: PASS");
     }
 }
