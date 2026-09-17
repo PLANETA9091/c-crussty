@@ -1506,3 +1506,23 @@ Stage Summary:
 - ALLOC-DIET закрыт честно: механический успех доставки (ARMED живьём, парити, память −20%) при провале первичного гейта (GC-лейн вверх) — рычаг не окупается как GC-буст; следующий раунд S7-134 СНАЧАЛА измеряет истинное ранжирование чёрна (alloc-mode профилировщик в харнесе), затем бьёт old-gen мутацию (section-движения/churn) архитектурно; INJECTS-ONLY цел
 
 RUN_ID_ABSORBED: **35271475494** (master f44d9ce, diet=1; runs_index S7-133 rows)
+
+---
+## S7-134 (TASK-270) — 2026-09-18 06:2x +08 — ИНФРАСТРУКТУРА ИЗМЕРЕНИЙ: ROOT-CAUSE профилировщика v2 (dump ≠ stop — alloc-профиль не собирался НИ РАЗУ) → v3 stop-based; ценз-ран 35275967738 в полёте
+
+**Task ID: S7-134 (Job 393012)**, Agent: agent-7625532f (session web-f7888d46)
+
+Work Log:
+- bootstrap + 3x pull (up-to-date; хвост репо: S7-133b absorb 7535f93) → GOAL хвост (S7-133b: diet REFUTED как GC-рычаг, GC-лейн = old-gen МУТАЦИЯ; S7-134 = alloc-профиль + old-gen рычаг) → worklog/CLAIMS хвосты (след. TASK-270) → спека BENCH_X150K_SCENARIO.md §1-§5
+- СТЕП-0 археология артефактов: alloc-collapsed.txt УЖЕ собирался харнесом (33.9MB в run-diet-leg1), НО ap.log всех ранов = «Profiling started» + 3×«[ERROR] Profiler already started» ⇒ wall/alloc-сессии никогда не стартовали; разбор семантики CLI asprof v4.x: `dump` = выгрузка БЕЗ stop, останавливает только `stop` — v2-цепочка dump→start держала первую cpu-сессию весь соак; cpu/wall/alloc-collapsed = кумулятивные CPU-редампы; маркер стоял в BOTTLENECKS_3 всё время: «alloc»-листья = G1 oop-closures/C2 (невозможные листья alloc-события), веса = 1 вместо TLAB-байтов
+- Валидность прежних вердиктов размечена честно: S7-131..133 лейн-анализы валидны (cpu+gc ланы); WALL/ALLOC секции BOTTLENECKS_3 — CPU-загрязнены, помечены
+- v3-фикс run_world3.sh: окна закрываются `stop` (stop == stop+dump); cpu 0-55% / wall 55-80% / alloc 80-100% (веса = БАЙТЫ); asprof_guard_start с orphan-rescue (застрявшая сессия → orphan-collapsed.txt → retry); flamegraph = свежая cpu-сессия 20s; run-env.txt + seconds:; bash -n OK
+- report_world3.py: ALLOC-единицы = BYTES (bucket/phase/leaf) + F2 alloc bytes + F2 alloc-churn rate (MB/s по окну 20%×seconds); оффлайн-валидация: синтетический WORK (1.8GB/60s → ~30MB/s корректно) + реальный артефакт run-diet-leg1 без краша; артефакт-отчёт, тронутый смоуком, восстановлен git checkout
+- Диспатч ценза: run 35275967738 (master 662738e) — базовая сцена X150K (demux=0, diet=0, guard=1, 150000/42/xmx10G/fp4/300s), НЕ A/B, а ценз: первый истинный alloc/wall-профили + свежий cpu мастера; preregistered гейты абсорба в dispatch_s7134.py
+- Учёт: §154, INDEX 275, GOAL S7-134, CLAIMS TASK-270, этот worklog; runs_index row (my-project)
+- CRUSSTY pristine не тронут; INJECTS-ONLY цел (0 sandbox boots; 1 CI-бут ценза санкционирован)
+
+Stage Summary:
+- ГЛАВНОЕ: найден и исправлен системный баг измерительной инфраструктуры — alloc-профиль не работал ни в одном ране проекта (wall тоже); все прошлые вердикты по cpu/gc-ланам остаются валидными, wall/alloc-таблицы перевзводятся; ценз-ран 35275967738 даст первое истинное ранжирование чёрна по байтам — субстрат для рычага old-gen мутации (S7-135); NEXT: absorb ценза → выбор рычага по байтам → имплементация
+
+RUN_ID_DISPATCHED: **35275967738** (master 662738e, база X150K, profiler v3; runs_index S7-134 row)
