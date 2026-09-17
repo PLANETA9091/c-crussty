@@ -298,3 +298,26 @@
 > (8869954, ~30s), нога#11 gate-reject (6852134 у нижней кромки, ~30s) — 7-й
 > подряд честный reject; нога#12 35193865177 dispatched in flight.
 > INJECTS-ONLY цел (0 sandbox boots).
+
+> **СТАТУС 20 TPS (S7-116)**: F3 BYTE HOOKS ГОТОВЫ — `classfile.rs::patch_run_collected_ticks` (6 байтов:
+> aload_0/aload_1/invokestatic TickBlockOps.runCollectedTicks/return, max_stack 2/max_locals 2) +
+> `patch_tick_block` (7 байтов: aload_0×3/invokestatic/return, max_stack 3/max_locals 3 — GOAL-заметка
+> S7-115 «11 байтов» была арифметической опечаткой, запечатано debug_assert + тестом). Оба тела
+> без ветвлений => ПУСТОЙ StackMapTable; append-only CP + дедуп => идемпотентность; fail-closed.
+> **F1+F3 COHABITATION (новый шов закрыт)**: оба хука на ServerLevel; JVMTI retransform подаёт
+> ORIGINAL bytes, F1 one-shot guard молчит на повторных dispatch => tickBlock-only образ УНИЧТОЖИЛ
+> бы optimiseRandomTick swap; решение — F3 ServerLevel-колбэк КОМПОЗИЦИОННЫЙ (ре-apply idempotent F1
+> перед tickBlock), итоговый образ order-independent + cycle-stable (тест
+> f3_serverlevel_composes_with_f1: оба тела живы, compose deterministic и idempotent на composed
+> input — обе byte-модели retransform покрыты). Runtime `src/tickhook.rs`: poll BOTH {ServerLevel,
+> LevelTicks} + force-load => define TickBlockOps ОДИН класс (без nested) => READY => retransform ×2
+> => маркеры F3 ARMED ×2. Тесты: cargo **89 passed** (85+4; REAL LevelTicks fixture 18923B sha
+> ba7dce5e…). ВЕРИФИКАТОР-ГЕЙТ: VerifyF3 на реальном HotSpot — child-first {patched LevelTicks
+> 18848B + COMPOSED ServerLevel F1F3 142243B + TickBlockOps 5325B}, kernel parent-first,
+> link-time без <clinit> => **VERIFY-OK major=65**. CI 46aa80b SUCCESS (маркер-grep job-логов —
+> token 401, отложено; bench runner-лог ноги#13 несёт маркеры бесплатно). ПАКЕТ: F1 hook ✓ + F2
+> hook ✓ + F3-reads hooks ✓ — следующий блок билда: F3-queue (≤0.5%, task167) или сразу ОДИН
+> агрегатный A/B против банка пары 76.01/76.98 (Tier B floor 3.3% достигается без queue — решение
+> по §125 протоколу на следующем тике). Пара #2: нога#12 gate-reject (8875106 >> band, ~30s) —
+> 8-й подряд честный reject; нога#13 35196354695 dispatched in flight. INJECTS-ONLY цел
+> (0 sandbox boots).
