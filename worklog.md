@@ -1401,3 +1401,18 @@ Stage Summary:
 - Prime-масштаб 150k ЗАПУЩЕН: баг-фикс topup-удвоения + replay-якорь T0 + Xmx-проводка ушли в master до диспатча (фикс в измеряемом ране — absorb покажет deficit=0 на первом topup как верификацию); NEXT S7-131: absorb 35238931413 → гейты + topup-верификация + GC high-water калибровка + свежий профиль leaf 150k ⇒ топ-1 ARCH-ATTACK (PalettedContainer.get vs entity-лейны); планка x150000 = исчезновение топ-1 из профиля; INJECTS-ONLY цел (0 sandbox boots)
 
 RUN_ID_DISPATCHED: **35238931413** (master 7956a2e, population_target=150000, server_xmx=10G, 300s; runs_index S7-130 row)
+---
+## S7-130b (TASK-266 addendum) — 2026-09-18 00:4x +08 — ПЕРВЫЙ PRIME-SCALE 150k ЗАМЕР УСПЕШЕН (35245032701): 2 fixture-бага закрыты, свежий профиль → очередь ARCH-ATTACK
+
+**Task ID: S7-130b (Job 393012)**, Agent: agent-7625532f (session web-f7888d46)
+
+Work Log:
+- Absorb диспатча #1 (35238931413): FAILED — root-caused ПО КОДУ + артефакту: uniform-лейн one-pass (9948 чанков < 87k размещений 150k-плана) ⇒ молчаливый фриз на ~11k; сервер здоров (heap 2.2/10G, 20 мин живой сцены); 10k-смоук не стрелял (5800 < 9948). FIX a88d204: modulo-wrap + STALL-warn; javac21 COMPILE OK
+- Диспатч #2 (35242595837, a88d204): инъекция 150k DONE за 86.5s + population-гейты ПРОЙДЕНЫ, FAILED только BENCH-4 gate-1c — heartbeat 1200 тиков (60s@20TPS) при TPS 0.7-1.0 = 20+ мин wall ⇒ ноль попаданий в 300s окно. FIX 6c3c20c: heartbeat 100 тиков (изменение литерала; CI javac против материализованного kernel = контракт-гейт; локальная материализация kernel неоправданна — purpur download = patch-бандл)
+- Диспатч #3 (35245032701, 6c3c20c) = **SUCCESS ВСЕ ГЕЙТЫ**: INJECT DONE 150000/150000 за 100.4s, t0FullTime=225986013 (якорь S7-130 в бою), VALID, alive-check 4/4 ×3
+- **Замер**: сцена ~148.5k живых (натуральный churn ACTIVE), TPS 0.6-0.9 ⇒ MSPT ~1405ms; GC 0 Full GC, high-water 6914MB@10G
+- **Свежий профиль 150k** (52552 сэмплов): entity tick 54.2%; палитро-лейн ~4.9% kernel-топ-1 (PalettedContainer.get 3.3% стабилен); guard-lens 3.2% (fluid-push исчез — guard VERIFIED, lens дорога); G1 GC ~25.4%; flushStep 1.0%
+- runs_index до 100 строк (6 записей S7-130 серии); учёт: GOAL S7-130b, §146+§147, INDEX 267+268, CLAIMS TASK-266 + addendum, оба worklog; commits 7956a2e→775a2f2→a88d204→6c3c20c→1030354 (c-crussty), dev-logs fe60d5b→891ea06; CRUSSTY pristine 1f4c06a не тронут
+
+Stage Summary:
+- Сцена прайма «все 9216 форс-чанков + 150k живых» ИЗМЕРЕНА и СТАБИЛЬНА (fixture-инфраструктура дозрела за 3 диспатча); очередь ARCH-ATTACK из свежих данных: (a) палитро-лейн STEP-0 → (b) relens guard → (c) аллокационная диета entity-лэйна → (d) flushStep wave-2; NEXT S7-131: база A/B X150K + первый ARCH-ATTACK рычаг; INJECTS-ONLY цел (0 sandbox boots, 3 CI-бута)
