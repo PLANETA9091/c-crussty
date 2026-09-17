@@ -1452,3 +1452,17 @@ Work Log:
 
 Stage Summary:
 - Первый ARCH-ATTACK рычаг прошёл полный цикл: STEP-0 census → дизайн → офлайн-парити (ALL PASS) → 3 CI-калибровки → честный вердикт по экономике; инфраструктура верифицирована и банкуется; S7-132 = relens guard-хуков (bump-инструментация + slow-path аллокации) как следующий рычаг очереди
+---
+## S7-132b (TASK-268 addendum) — 2026-09-18 04:2x +08 — ABSORB combo-leg 35264319982: реленс подтверждён живьём
+
+**Task ID: S7-132b (Job 393012)**, Agent: agent-7625532f (session web-f7888d46)
+
+Work Log:
+- Run 35264319982 (e7aa990, guard=1, demux=1 combo) SUCCESS: PATCHED живьём, stats живьём (2.36M calls, hit_rate 73.3% plain-счётчики), fixture-гейты зелёные, сцена 148.5k живых
+- Профиль: bump ИСЧЕЗ (был 0.9-1.4% self), slow 1.9% (было 2.4%), guard-лейн 2.5% vs 3.4% = −27%; high-water 6146 vs 6914MB = −768MB (zero-alloc сработал); get+Ops 4.7% (демукс в комбо нейтрален)
+- Preregistered: bump ✓, лейн ✓, hit_rate ✗ (73.3 vs 78±3 — честная фиксация)
+- Учёт: §151, GOAL S7-132b, INDEX 272, CLAIMS TASK-268 addendum, оба worklog; commit 966252d + dev-logs 7df21ad
+- CRUSSTY pristine не тронут; INJECTS-ONLY цел
+
+Stage Summary:
+- Реленс дал −0.9pp guard-лейна и −768MB heap — банкуется; демукс в комбо нейтрален; S7-133 = аллокационная диета entity-лэйна (GC+барьеры 27.1% — крупнейшая адресуемая производная); MSPT-пэйринг межрановый — по закону S7-96d для будущих гейтов нужны пары по cpu
