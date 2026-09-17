@@ -1048,3 +1048,39 @@ Work Log:
 
 Stage Summary:
 - c-crussty master <push>: F1 = implementation + parity + byte-hook + verifier-gate + activation wiring — ПОЛНОСТЬЮ инъекционен, всё ещё dormant-до-aggregate (ничего не landится по §125; вердикт только у агрегатного A/B против банка пары 76.01/76.98). Следующий тик: F2 Brain-итераторы (второй член pack; анатомия banked task168), poll ноги#6 35183885492. INJECTS-ONLY: 0 sandbox boots
+
+## S7-113 (tick 2026-09-17 13:08 UTC+8, agent-7625532f) — F2 BRAIN-ITERATORS BANKED (family-agg pack member F2, TASK-249; ничего не landится до агрегатного A/B §125)
+
+State: родился из S7-112 (master e326ab3). Creds/pulls OK; GOAL read FIRST (канонический леджер). Ноги пары #2 разClassифицированы, F2 построен + parity PASS.
+
+Poll ноги:
+- нога#6 35183885492: BAND-REJECT (gate cpu 6654650 < [6870000,7030000]), ~30s fast-fail, бенч не потрачен
+- нога#7 35184317133: BAND-REJECT (6617751, ~30s) — была dispatched последним действием прошлого тика; index-строка скорректирована (in-flight→BAND-GATE-REJECT, hygiene)
+- нога#8 35184734695: SUCCESS+VALID, но harness cpu 6835916 ВНЕ окна run22 [6273484,6529544] на +4.8% => ЧЕСТНЫЙ discard (2% правило); записан в runs_index
+- нога#9 35187305900 dispatched in flight (band [6870000,7030000], fp=4; state leg_b_state.json цел — cwd-баг прошлых вызовов устранён: HERE-резолв в hunt_leg_b.py абсолютный, записи велись из правильного cwd)
+
+F2 STEP-0 НА ЖИВЫХ БАЙТАХ (не догадки из q1-дока):
+- Brain.class cfdump (run21, 32185B, sha c08105a9fb486091): startEachNonRunningBehavior 0x0002 (len=178): ТРОЙНОЕ вложение итераторов (values→entrySet→Set), live-contains @91-102 РАЗ на (priority,activity)-группу, getStatus @144-154 per behavior, tryStart @157-167, gameTime @0-4 один раз
+- СТРУКТУРНАЯ ПРАВДА из CP (уточнение против q1-описания!): OUTER = TreeMap (newTreeMap @22 — итерация ВОЗРАСТАЕТ по priority), INNER = Maps.newLinkedHashMap (supplier @693), SET = Sets.newLinkedHashSet (@693), activeActivities = HashSet
+- Поверхность мутаций просвечена: 5 getfield'ов поля в классе; мутации ТОЛЬКО {<init>, computeIfAbsent+Set.add @693, clear @714}; НЕТ remove/put/replace ни в одном vanilla-методе => fingerprint-доказательство возможно
+
+F2 ЛИНЗА (randomtick/src/BrainOps.java, package net.minecraft.world.entity.ai):
+- flat snapshot {acts[], behs[], groupStart[]}; groupStart = граница vanilla-группы => contains вычисляется LIVE РОВНО в vanilla-местах (в т.ч. одинаковая activity в двух приоритетах = 2 live-проверки; пустые группы = 0 слотов, elision чистого чтения — не наблюдаемо)
+- getStatus/tryStart — LIVE-вызовы без изменений (task168: itable не заменяем); gameTime читается один раз
+- FINGERPRINT: 5 семейств O(1)-проб (outer.size; outer.get(key)==inner identity; inner.size; inner.get(actKey)==set identity; set.size) — 0 итераторов/аллокаций на hot path (IdKey-аллокация ~16B — честно задокументирована против 3 итераторов vanilla)
+- CACHE: WeakHashMap<IdKey,Snapshot> — IdKey (identityHashCode+==) закрывает AbstractMap.equals TRAP (глубокое equals LinkedHashMap крест-снапшотило бы мозги); weak keys => нет утечки
+- RESIDUAL документирован: vanilla-поверхность закрыта доказательством; remove+put single-entry (вне поверхности) между вызовами не ловится
+- Byte hook СЛЕДУЮЩИМ тиком: 14 байтов прямой строки (2×getfield СВОИХ private-полей = verifier-легально => helper БЕЗ Unsafe; max_stack 5/max_locals 3/пустой StackMapTable)
+
+PARITY BANK (research/f2-brainiter-2026-09-17/, сильнее F1-паттерна: тестируется РЕАЛЬНЫЙ production entry):
+- ServerLevel seam: Unsafe.allocateInstance (ServerLevel БЕЗ <clinit> — cfdump) + WritableLevelData-прокси в Level.levelData (offset 128; Level.getGameTime = levelData.getGameTime() — cfdump Level @3955); SharedConstants.tryDetectVersion + Bootstrap.bootStrap = статические данные (реестры/кодеки), БЕЗ Main/миров/tick loop => INJECTS-ONLY цел (некбутный класс инициализации, прецедент materialization-killed-pre-main)
+- HARNESS FIX: mojang-libs 44 jar из официального server-1.21.10 bundler (piston sha 95495a7f…); класспас kernel-FIRST (kernel шейдит LogUtils.getClassLogger; vanilla-1.5.10 без метода валил Bootstrap)
+- 8 сценариев: S1 порядок/статусы; S2 gameTime один/свежий; S3 неактивные; S4 LIVE-contains (stub мутирует activeActivities mid-call); S5 пустые группы; S6 все классы мутаций → rebuild; S7 EQUALS-TRAP; S9 fuzz 60 seeds × 40 rounds c preseed 3-5×2-4×2-6 (kernel-размер)
+- ИСПРАВЛЕН БАГ БАНКА: assertSameFlow очищал EVENTS до захвата ref-событий => сравнение было пустым (S1/S3-S6/S9 вакуумны); после захвата ref-состояния ДО сброса — сравнение реальное
+- => **F2 PARITY: PASS (4828 вызовов, 3083 order-exact старт-события, 1740 мутаций)**
+
+Ledger: GOAL СТАТУС S7-113 (новый блок) + RESULTS_LEDGER §128 + INDEX 249 + runs_index.jsonl (+3 строки: нога#7 fix, нога#8 discard, нога#9 in flight). Claim: TASK-249 (dev-logs). c-crussty master: BrainOps.java + build классы + research/f2-brainiter (cfdump'ы Brain/BehaviorControl/Behavior$Status/Activity/Level/ServerLevel + ParityTest + run_parity.sh + parity_output.txt)
+
+Stage Summary:
+- c-crussty master <push>: F2 = STEP-0 на живых байтах + lens + fingerprint + parity PASS — полностью инъекционно, dormant-до-aggregate; следующий тик: F2 byte hook (patch_brain_start_each по patch_optimise_random_tick образцу + VerifyPatched + активация) + poll ноги#9 35187305900; затем F3-reads (task167 slices)
+- INJECTS-ONLY: 0 sandbox boots (Bootstrap.bootStrap = статические данные, не бут; AllocateInstance+прокси = без конструктора и без сети)
