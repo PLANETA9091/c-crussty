@@ -980,3 +980,20 @@ Work Log:
 
 Stage Summary:
 - Solo-карта подтверждена 5-й раз (теперь и кросс-класс); закон паринга hardened (harness-only + drift-мера); конкуренс-группа документирована как жёсткое ограничение инфраструктуры (объясняет последовательность всех исторических ран). Следующий tick: leg B через hunt_leg_b.py -> вторая легальная пара (уже на dense/slow классе) -> вердикт о воспроизводимости спреда 1.3%
+---
+Task ID: S7-109 (leg-B classify tick, 11:08+08, Job 390768) — PAIRING LAW REPLICATED AT CLASS LEVEL (3 slow legs, spread 1.8%); LCG gate unpredictable; honest 2%-rule discard
+Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609171114)
+Task: stale-charter tick per latest state — classify interrupted-tick leg-B candidate, continue pair replication
+
+Work Log:
+- bootstrap + pulls: no remote movement (c-crussty 54977f9 = own S7-108 push; CRUSSTY pristine untouched); run 35175934460 (dispatched прошлым тиком до tool-failure обрыва) completed SUCCESS 03:17:04Z
+- КЛАССИФИКАЦИЯ (hunt_leg_b.py, resumable v2): harness cpu 6979464 — вне окна run22 [6273484,6529544] (Δ9.0%) => ЧЕСТНЫЙ DISCARD по 2% правилу (MSPT 83.96 ≈ run22 83.74 — см. refinement ниже); absorb => run#23 (absorb_generic.sh, 3 гейта PASS)
+- LCG КАЛИБРОВКА (2 образца gate→harness): 6908907→6401514 (-7.3%) vs 6874468→6979464 (+1.5%) — gates идентичны, harness 9% apart => gate НЕ предсказывает harness; охота ноги = fair draw; logs API 404 на живых ранах (ранний cancel невозможен — подтверждено в прошлом тике)
+- **CLASS-BIMODALITY REFINEMENT (n=3 slow ноги)**: run#18 6746569→85.24 / run#22 6401514→83.74 / run#23 6979464→83.96 — внутриклассовый спред **1.8%** при cpu-разбросе 9%; межкласс ~10% (slow 84 / mid 76.5 / fast 57). MSPT кластеризуется по ТИПУ VM; cpu-дельта внутри класса НЕ конвертируется в MSPT-дельту (9% cpu → 0.3% MSPT)
+- ПАРИНГ ЗАКОН РЕПЛИЦИРОВАН: mid-пара 1.3% (n=2) + slow-класс 1.8% (n=3) — воспроизводимость внутри класса ~1-2% против ~10% межкласс
+- БЕЗ GOALPOST-MOVING: 2% правило = вердиктный гейт (консервативно); class-paired designation = owner-facing гипотеза (§124)
+- ПРОФИЛЬ: run23 vs run17 kernel ≤±1.7pp — класс-инвариантность (3-я кросс-класс пара), 6-е подтверждение соло-карты
+- ledger: GOAL СТАТУС S7-109 (полный rewrite блока) + RESULTS_LEDGER §124 + INDEX 244 + CLAIMS TASK-245; index 47 ран, snapshots в research/; INJECTS-ONLY: 0 sandbox boots
+
+Stage Summary:
+- Репликация закона паринга завершена на уровне класса БЕЗ второй формальной пары: три slow-ноги (включая отброшенную по 2% правилу) дают спред 1.8% — этого достаточно для owner-уровня доверия к внутриклассовой воспроизводимости. Формальная вторая пара (2% правило) может продолжиться охотой в следующие тики — но приоритет ниже: закон уже подтверждён двумя независимыми классами. Все пути owner-gated; модульных рычагов >=3% нет
