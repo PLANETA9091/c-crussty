@@ -188,3 +188,14 @@
   Интерпретация: alloc-профиль = давление корреляции (TLAB-refill окна),
   НЕ карты сайтов. Verifed-site метод: javap `new`-скан по телу метода.
 - CPU leaf после JIT-инлайна = нижний физический фрейм (nextInt -> advanceSeed).
+
+> **СТАТУС 20 TPS (S7-111)**: FAMILY-AGG билд стартовал — F1 BATCH-RNG реализован
+> с parity-банкингом (первый инкремент по §125 пререгистрации; ничего не
+> landится до агрегатного A/B). RandomTickOps.java: helper с инлайн-LCG (локальный
+> seed, регистр-резидент; reject-pick = ноль dispatch/field-трафик), синхронизация
+> Unsafe get/put на private `value` только на границах body-вызовов, setSeed
+> bypass (gaussian-reset side-effect найден cfdump'ом и обойдён корректно).
+> Бит-точный паритет: PASS (320K attempts, 8 сидов, 160K hit-интерливов вкл.
+> nextGaussian). Следующий tick: Rust byte hook (classfile.rs surgery + retransform
+> по area_map-образцу) + runtime self-test, затем F2 Brain-итераторы. Пара #2:
+> 3 band-reject (один в 0.2% от band'а), 4-я нога in flight. INJECTS-ONLY цел.

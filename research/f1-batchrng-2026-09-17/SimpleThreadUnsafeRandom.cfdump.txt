@@ -1,0 +1,117 @@
+class ca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom extends java/lang/Object  flags=0x0031  major=65
+--- fields (6) ---
+  0x001a MULTIPLIER : J
+      ConstantValue = long 25214903917
+  0x001a ADDEND : J
+      ConstantValue = long 11
+  0x001a BITS : I
+      ConstantValue = int 48
+  0x001a MASK : J
+      ConstantValue = long 281474976710655
+  0x0002 value : J
+  0x0012 gaussianSource : Lnet/minecraft/world/level/levelgen/MarsagliaPolarGaussian;
+--- methods (9) ---
+  0x0001 <init>(J)V
+      Code: stack=4 locals=3 len=22
+          0: aload_0
+          1: invokespecial java/lang/Object.<init>:()V
+          4: aload_0
+          5: new net/minecraft/world/level/levelgen/MarsagliaPolarGaussian
+          8: dup
+          9: aload_0
+         10: invokespecial net/minecraft/world/level/levelgen/MarsagliaPolarGaussian.<init>:(Lnet/minecraft/util/RandomSource;)V
+         13: putfield ca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom.gaussianSource:Lnet/minecraft/world/level/levelgen/MarsagliaPolarGaussian;
+         16: aload_0
+         17: lload_1
+         18: invokevirtual ca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom.setSeed:(J)V
+         21: return
+  0x0001 setSeed(J)V
+      Code: stack=5 locals=3 len=21
+          0: aload_0
+          1: lload_1
+          2: ldc2_w long 25214903917
+          5: lxor
+          6: ldc2_w long 281474976710655
+          9: land
+         10: putfield ca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom.value:J
+         13: aload_0
+         14: getfield ca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom.gaussianSource:Lnet/minecraft/world/level/levelgen/MarsagliaPolarGaussian;
+         17: invokevirtual net/minecraft/world/level/levelgen/MarsagliaPolarGaussian.reset:()V
+         20: return
+  0x0002 advanceSeed()J
+      Code: stack=5 locals=1 len=22
+          0: aload_0
+          1: aload_0
+          2: getfield ca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom.value:J
+          5: ldc2_w long 25214903917
+          8: lmul
+          9: ldc2_w long 11
+         12: ladd
+         13: ldc2_w long 281474976710655
+         16: land
+         17: dup2_x1
+         18: putfield ca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom.value:J
+         21: lreturn
+  0x0001 next(I)I
+      Code: stack=4 locals=2 len=11
+          0: aload_0
+          1: invokevirtual ca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom.advanceSeed:()J
+          4: bipush 48
+          6: iload_1
+          7: isub
+          8: lushr
+          9: l2i
+         10: ireturn
+  0x0001 nextInt()I
+      Code: stack=3 locals=3 len=11
+          0: aload_0
+          1: invokevirtual ca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom.advanceSeed:()J
+          4: lstore_1
+          5: lload_1
+          6: bipush 16
+          8: lushr
+          9: l2i
+         10: ireturn
+  0x0001 nextInt(I)I
+      Code: stack=4 locals=4 len=29
+          0: iload_1
+          1: ifgt -> 12
+          4: new java/lang/IllegalArgumentException
+          7: dup
+          8: invokespecial java/lang/IllegalArgumentException.<init>:()V
+         11: athrow
+         12: aload_0
+         13: invokevirtual ca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom.advanceSeed:()J
+         16: bipush 16
+         18: lushr
+         19: lstore_2
+         20: lload_2
+         21: iload_1
+         22: i2l
+         23: lmul
+         24: bipush 32
+         26: lushr
+         27: l2i
+         28: ireturn
+  0x0001 nextGaussian()D
+      Code: stack=2 locals=1 len=8
+          0: aload_0
+          1: getfield ca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom.gaussianSource:Lnet/minecraft/world/level/levelgen/MarsagliaPolarGaussian;
+          4: invokevirtual net/minecraft/world/level/levelgen/MarsagliaPolarGaussian.nextGaussian:()D
+          7: dreturn
+  0x0001 fork()Lnet/minecraft/util/RandomSource;
+      Code: stack=4 locals=1 len=12
+          0: new ca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom
+          3: dup
+          4: aload_0
+          5: invokevirtual ca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom.nextLong:()J
+          8: invokespecial ca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom.<init>:(J)V
+         11: areturn
+  0x0001 forkPositional()Lnet/minecraft/world/level/levelgen/PositionalRandomFactory;
+      Code: stack=4 locals=1 len=12
+          0: new ca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom$SimpleRandomPositionalFactory
+          3: dup
+          4: aload_0
+          5: invokevirtual ca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom.nextLong:()J
+          8: invokespecial ca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom$SimpleRandomPositionalFactory.<init>:(J)V
+         11: areturn
