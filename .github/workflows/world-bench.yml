@@ -55,6 +55,10 @@ on:
         description: 'ALLOC-DIET S7-133/TASK-269 ARCH-ATTACK lever #2 (1 = ARMED: zero-alloc push/collision queries via EntityQueryOps rotating pools; 0 = vanilla-alloc A/B leg)'
         required: false
         default: '0'
+      inside_cache:
+        description: 'INSIDE-CACHE S7-135/TASK-271 ARCH-ATTACK lever #3 (1 = ARMED: inside-blocks/fluid discovery memoization via InsideBlockOps gate for static entities; 0 = vanilla-discovery A/B leg)'
+        required: false
+        default: '0'
       population_target:
         description: 'BENCH-X150K living-scene population injection (0 = off; 10000 = smoke; 150000 = prime scale, S7-129)'
         required: false
@@ -145,6 +149,7 @@ jobs:
           FLUID_GUARD: ${{ inputs.fluid_guard || '1' }}
           PALETTED_DEMUX: ${{ inputs.paletted_demux || '0' }}
           ALLOC_DIET: ${{ inputs.alloc_diet || '0' }}
+          INSIDE_CACHE: ${{ inputs.inside_cache || '0' }}
           POPULATION_TARGET: ${{ inputs.population_target || '0' }}
           POPULATION_SEED: ${{ inputs.population_seed || '42' }}
           SERVER_XMX: ${{ inputs.server_xmx || '6G' }}

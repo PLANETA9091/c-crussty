@@ -27,6 +27,7 @@ mod classfile;
 mod entity_mirror;
 mod fluid_guard;
 mod improved_noise;
+mod inside_cache;
 mod jni_table;
 mod kernel_policy;
 mod loader;
@@ -107,6 +108,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // retransform after the EntityQueryOps bridge lands. Dormant unless
     // CRUSSTY_ALLOC_DIET=1.
     alloc_diet::register();
+    // INSIDE-CACHE (S7-135): byte hook on Entity (pristine capture at first
+    // load; patch served via retransform after the InsideBlockOps bridge
+    // lands). Dormant unless CRUSSTY_INSIDE_CACHE=1.
+    inside_cache::register();
     proto_blend_cache::register();
     // F1 BATCH-RNG (family-agg pack member, S7-112): ServerLevel body-swap hook.
     randomtick::register();
@@ -285,6 +290,10 @@ fn inject_surface() {
     // compute both length-preserving patches, retransform (dormant unless
     // CRUSSTY_ALLOC_DIET=1).
     alloc_diet::activate();
+    // INSIDE-CACHE (S7-135): define InsideBlockOps into the kernel loader,
+    // compute the length-preserving patch, retransform (dormant unless
+    // CRUSSTY_INSIDE_CACHE=1).
+    inside_cache::activate();
     // Dormant unless CRUSSTY_NATIVE_BLEND_CACHE is set (see docs/HOOK_BLEND_CACHE.md).
     proto_blend_cache::activate();
     // F1 BATCH-RNG (S7-112): define RandomTickOps into the ServerLevel loader,
