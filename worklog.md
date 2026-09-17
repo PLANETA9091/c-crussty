@@ -1084,3 +1084,20 @@ Ledger: GOAL СТАТУС S7-113 (новый блок) + RESULTS_LEDGER §128 + 
 Stage Summary:
 - c-crussty master <push>: F2 = STEP-0 на живых байтах + lens + fingerprint + parity PASS — полностью инъекционно, dormant-до-aggregate; следующий тик: F2 byte hook (patch_brain_start_each по patch_optimise_random_tick образцу + VerifyPatched + активация) + poll ноги#9 35187305900; затем F3-reads (task167 slices)
 - INJECTS-ONLY: 0 sandbox boots (Bootstrap.bootStrap = статические данные, не бут; AllocateInstance+прокси = без конструктора и без сети)
+
+---
+
+## S7-114 (tick 2026-09-17 14:08 UTC+8, agent-7625532f) — F2 BYTE HOOK WIRED (family-agg pack member F2, TASK-250; ничего не landится до агрегатного A/B §125)
+
+Work Log:
+- Честная поправка состояния: 12:08/12:43/13:08 тики ушли в summary-only (0 engineering, ~85 мин) — но между 13:08 и 14:08 серия S7-111/112/113 уже исполнена (обнаружено по pull: c-crussty 962fc9f→e326ab3→0393073, dev-logs 9358ef9/bd6cd19/6e459cc); текущее состояние прочитано с живых репо, stale-чартер проигнорирован по прецеденту
+- Poll ноги#9 35187305900 (hunt_leg_b.py --once): SUCCESS+VALID, но harness cpu 6966037 ВНЕ окна [6273484,6529544] на +6.7% => ЧЕСТНЫЙ discard по 2% правилу (5-й подряд честный reject — ворота строгие, ни одной ложной пары); redispatch нога#10 = **35189275270** in flight (band [6870000,7030000], fp=4); runs_index.jsonl +2 строки (leg#9 discard + leg#10 dispatch)
+- F2 BYTE HOOK — classfile.rs::patch_brain_start_each (образец patch_optimise_random_tick): тело startEachNonRunningBehavior (0x0002, vanilla len=178) => **14-байтовая прямая строка** `aload_0/getfield availableBehaviorsByPriority/aload_0/getfield activeActivities/aload_1/aload_2/invokestatic BrainOps.startEachNonRunning:(Map;Set;ServerLevel;LivingEntity;)V/return`; ПУСТОЙ StackMapTable (без ветвлений), max_stack 5/max_locals 3; оба getfield — СВОИ private-поля внутри Brain.class => verifier-легально, helper БЕЗ Unsafe; append-only CP + дедуп => идемпотентность; fail-closed (чужие классы + prefix-срезы без паники)
+- Тесты: REAL Brain fixture (sha c08105a9… = cfdump-источник §128) — roundtrip verified (skeleton [2a b4 2a b4 2b 2c b8 b1], операнды по именам, access 0x0002 сохранён, dump /tmp/ccrussty_patched_Brain.class) + idempotency + rejects; **cargo: 85 passed** (82+3)
+- Runtime wiring: **src/brainhook.rs** (новый модуль; lib.rs: mod+register+activate) — poll Brain (180s deadline + Bukkit-forName force-load акселератор) => define в loader kernel'а В ПОРЯДКЕ {BrainOps$IdKey, BrainOps$Snapshot, BrainOps} — nested-FIRST, т.к. IdKey/Snapshot резолвятся лениво через defining loader BrainOps и kernel-classpath их не содержит (NoClassDefFoundError на первом snapshot(); parity-банк этот шов не exercising) => READY => retransform => маркер F2 ARMED/NOT APPLIED
+- HotSpot verifier gate: **VerifyBrain.java** (новый VerifyPatched-вариант) — воспроизводит рантайм-топологию: child-first loader {patched Brain 31966B + helper trio 661/1458/5469B}, kernel-jar parent-first (все kernel-ссылки — один класс-спейс, без dual-class); resolveClass = link-time verify БЕЗ <clinit> => **VERIFY-OK major=65** (randomtick/verify_brain_patched.sh)
+- runs_index.jsonl: см. выше; ledger §129, INDEX 250, GOAL СТАТУС S7-114
+
+Stage Summary:
+- c-crussty master <push>: ПАКЕТ F1 hook ✓ (S7-112) + F2 hook ✓ (S7-114) — оба wired, armed-по-буту, CI-exercised, dormant-до-aggregate; следующий тик: F3-reads build (LevelTicks reads batch 0.3-0.5%, parity-banking по §125) + poll ноги#10 35189275270 + CI-маркеры F1/F2 в smoke-логах; потом ОДИН агрегатный A/B против банка пары 76.01/76.98 решает всё
+- INJECTS-ONLY: 0 sandbox boots (verify = link-time resolveClass без инициализации; define = класс-загрузка без init; force-load = LOAD без instantiation)

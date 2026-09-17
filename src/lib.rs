@@ -20,6 +20,7 @@ mod perlin_noise;
 mod batch_api;
 mod batch_desc;
 mod batch_table;
+mod brainhook;
 mod bridge_class;
 mod classfile;
 mod entity_mirror;
@@ -96,6 +97,8 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     proto_blend_cache::register();
     // F1 BATCH-RNG (family-agg pack member, S7-112): ServerLevel body-swap hook.
     randomtick::register();
+    // F2 BRAIN-ITERATORS (family-agg pack member, S7-114): Brain body-swap hook.
+    brainhook::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -263,6 +266,9 @@ fn inject_surface() {
     // F1 BATCH-RNG (S7-112): define RandomTickOps into the ServerLevel loader,
     // then retransform for the optimiseRandomTick body swap (area_map pattern).
     randomtick::activate();
+    // F2 BRAIN-ITERATORS (S7-114): define BrainOps (+ nested) into the Brain
+    // loader, then retransform for the startEachNonRunningBehavior body swap.
+    brainhook::activate();
 }
 
 /// Define one bridge class and register all its natives.
