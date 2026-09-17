@@ -79,8 +79,28 @@ Brain.tick 6.75%) станут ЛИБО шумом, ЛИБО вырастут к
 
 ## 5. План работ (порядок)
 
-- [ ] S7-128: population fixture MVP (инъекция N сущностей, сид,
-      распределение; сборка в bench-world3 артефакт) + CI smoke на 10k
-- [ ] S7-129: масштаб до 150k (память/время бута), soak-стабильность
-- [ ] S7-130: X150K база A/B (pre-pack vs master) + свежий профиль
-- [ ] S7-131+: ARCH-ATTACK по очереди (первый кандидат решит профиль)
+- [x] S7-129: **population fixture MVP РЕАЛИЗОВАН** (S7-129, этот тик):
+      `bench/world3/population/BenchPopulationPlugin.java` + `plugin.yml`
+      (BENCH-ONLY, vanilla addEntity-путь — World.spawnEntity/World.dropItem;
+      детерминизм = Random(seed) + сортировка чанков (x,z)); раннер
+      `run_world3.sh`: POPULATION_TARGET/POPULATION_SEED (envs + run-env
+      self-doc), компиляция против materialized kernel (общий путь с
+      task170), консоль `benchpop inject <target> [seed]` ПОСЛЕ forceload
+      и ОЖИДАНИЕ `POPULATION INJECT DONE` ДО старта профилировщиков
+      (спека §2 «инъекция до старта окна замера»); workflow world-bench:
+      inputs population_target/population_seed + env pass-through + гейт
+      «POPULATION INJECT DONE + POPULATION FIXTURE-VALIDITY: VALID»
+      (injected ≥ 90% target). Модель популяции: 70% items (pickup-delay
+      max; кластеры «ферм» 5% чанков, ≥16) / 20% hostiles / 10% passives
+      (setPersistent=true — ферм-сток; НАТУРАЛЬНЫЙ деспавн остаётся
+      ванильным на нестойких спавнах у фейк-игроков); TOPUP каждые 600
+      тиков добивает ванильно-деспавннутые items (deque-оценка age<6000)
+      — item-лейны (тик/мердж/деспавн) горячие непрерывно; маркеры:
+      POPULATION INJECT START/PROGRESS/DONE, POPULATION FIXTURE-VALIDITY,
+      POPULATION TOPUP. Локальная проверка контракта: javac --release 21
+      против paper-api 1.21.10-R0.1-SNAPSHOT + patched-kernel.jar = OK.
+- [ ] S7-129b: CI smoke 10k (fp=4, population_target=10000, 300s) —
+      валидность fixture + маркеры + первый профиль живой сцены
+- [ ] S7-130: масштаб до 150k (память/время бута/инъекции), soak-стабильность
+- [ ] S7-131: X150K база A/B (pre-pack vs master) + свежий профиль
+- [ ] S7-132+: ARCH-ATTACK по очереди (первый кандидат решит профиль)

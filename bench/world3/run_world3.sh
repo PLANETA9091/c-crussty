@@ -46,6 +46,13 @@ FAKE_PLAYERS="${FAKE_PLAYERS:-0}"
 # Эра ARCH (S7-128): на bench ARMED по умолчанию (архитектурный буст в паке);
 # pre-guard A/B нога = CRUSSTY_FLUID_PUSH_GUARD=0 в inputs workflow.
 FLUID_GUARD="${FLUID_GUARD:-1}"
+# BENCH-X150K population fixture (S7-129, docs/BENCH_X150K_SCENARIO.md §2):
+# deterministic living-scene injection AFTER forceload, BEFORE the profiler
+# window (harness waits for the POPULATION INJECT DONE marker). 0 = off.
+# The mix is 70% items / 20% hostiles / 10% passives; a topup task re-injects
+# vanilla-despawned items every 600 ticks so item lanes stay continuously hot.
+POPULATION_TARGET="${POPULATION_TARGET:-0}"
+POPULATION_SEED="${POPULATION_SEED:-42}"
 NATIVES_TGZ="${NATIVES_TGZ:-https://github.com/PLANETA9091/c-crussty/releases/download/v0.1.0/crussty-v0.1.0-linux-x64.tar.gz}"
 PURPUR_URL="${PURPUR_URL:-https://api.purpurmc.org/v2/purpur/1.21.10/latest/download}"
 WORK="${WORK:-$PWD/world3-run}"
@@ -109,6 +116,8 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "summon_sweeps: $SUMMON_SWEEPS"
   echo "fake_players: $FAKE_PLAYERS (BENCH-4 fixture: N real ServerPlayers, task170)"
   echo "fluid_guard: $FLUID_GUARD (CRUSSTY_FLUID_PUSH_GUARD; 1 = same-state fluid-push guard ARMED, TASK-80/S7-128)"
+  echo "population_target: $POPULATION_TARGET (BENCH-X150K living-scene injection, S7-129; 0 = off)"
+  echo "population_seed: $POPULATION_SEED (deterministic injection replay seed)"
 } > "$WORK/run-env.txt"
 log "run-env: world_sha256=$WORLD_SHA runner_cpu_index=$RUNNER_CPU_IDX fake_players=$FAKE_PLAYERS"
 log "extracting world"
@@ -213,30 +222,51 @@ test -s "$RUNTIME_SO" || die "libcrussty_runtime.so not staged at $RUNTIME_SO"
 # (sanctioned precedent: paperclip materialization killed pre-main is NOT a
 # boot). Then javac the bench plugin and stage it into plugins/.
 MAX_PLAYERS=0
-if [ "$FAKE_PLAYERS" -gt 0 ]; then
-  MAX_PLAYERS=$((FAKE_PLAYERS + 8))
-  log "bench-4: materializing kernel (eula-less paperclip pass, exits pre-main — NOT a boot)"
+# S7-129: EITHER bench fixture needs the materialized mojang-mapped kernel
+# (fake players always; population fixture only when target > 0).
+if [ "$FAKE_PLAYERS" -gt 0 ] || [ "$POPULATION_TARGET" -gt 0 ]; then
+  if [ "$FAKE_PLAYERS" -gt 0 ]; then
+    MAX_PLAYERS=$((FAKE_PLAYERS + 8))
+  else
+    MAX_PLAYERS=8
+  fi
+  log "bench fixture: materializing kernel (eula-less paperclip pass, exits pre-main — NOT a boot)"
   rm -f "$SERVER/eula.txt"
   ( cd "$SERVER" && timeout 300 java -jar "versions/purpur-1.21.10.jar" --nogui \
       > "$WORK/pclip-materialize.log" 2>&1 || true )
   KERNEL_JAR="$SERVER/versions/1.21.10/purpur-1.21.10.jar"
-  [ -s "$KERNEL_JAR" ] || die "bench-4 kernel materialization failed (no $KERNEL_JAR; see $WORK/pclip-materialize.log)"
-  log "bench-4: kernel materialized ($(stat -c%s "$KERNEL_JAR") B)"
+  [ -s "$KERNEL_JAR" ] || die "bench fixture kernel materialization failed (no $KERNEL_JAR; see $WORK/pclip-materialize.log)"
+  log "bench fixture: kernel materialized ($(stat -c%s "$KERNEL_JAR") B)"
+  command -v javac >/dev/null || die "javac not found (setup-java must expose JDK 21)"
+  command -v jar >/dev/null || die "jar tool not found"
+  FIX_CP="$KERNEL_JAR"
+  while IFS= read -r j; do FIX_CP="$FIX_CP:$j"; done < <(find "$SERVER/libraries" -name '*.jar' 2>/dev/null)
+  mkdir -p "$SERVER/plugins"
+fi
+if [ "$FAKE_PLAYERS" -gt 0 ]; then
   log "bench-4: compiling BenchFakePlayers plugin (javac only — compile is not a boot)"
   FP_SRC="$SCRIPT_DIR/fakeplayers"
   [ -f "$FP_SRC/BenchFakePlayersPlugin.java" ] || die "bench-4 plugin source missing at $FP_SRC"
-  command -v javac >/dev/null || die "javac not found (setup-java must expose JDK 21)"
-  command -v jar >/dev/null || die "jar tool not found"
   FP_CLASSES="$WORK/fpclasses"
   rm -rf "$FP_CLASSES" && mkdir -p "$FP_CLASSES"
-  FP_CP="$KERNEL_JAR"
-  while IFS= read -r j; do FP_CP="$FP_CP:$j"; done < <(find "$SERVER/libraries" -name '*.jar' 2>/dev/null)
-  javac --release 21 -proc:none -cp "$FP_CP" -d "$FP_CLASSES" \
+  javac --release 21 -proc:none -cp "$FIX_CP" -d "$FP_CLASSES" \
     "$FP_SRC/BenchFakePlayersPlugin.java" || die "bench-4 plugin compile failed"
   cp "$FP_SRC/plugin.yml" "$FP_CLASSES/"
-  mkdir -p "$SERVER/plugins"
   ( cd "$FP_CLASSES" && jar cf "$SERVER/plugins/BenchFakePlayers.jar" . ) || die "bench-4 plugin packaging failed"
   log "bench-4: plugin staged ($(stat -c%s "$SERVER/plugins/BenchFakePlayers.jar") B); N=$FAKE_PLAYERS"
+fi
+# --- 3b-bis. BENCH-X150K population fixture (S7-129) ------------------------
+if [ "$POPULATION_TARGET" -gt 0 ]; then
+  log "x150k: compiling BenchPopulation plugin (javac only — compile is not a boot)"
+  POP_SRC="$SCRIPT_DIR/population"
+  [ -f "$POP_SRC/BenchPopulationPlugin.java" ] || die "x150k plugin source missing at $POP_SRC"
+  POP_CLASSES="$WORK/popclasses"
+  rm -rf "$POP_CLASSES" && mkdir -p "$POP_CLASSES"
+  javac --release 21 -proc:none -cp "$FIX_CP" -d "$POP_CLASSES" \
+    "$POP_SRC/BenchPopulationPlugin.java" || die "x150k plugin compile failed"
+  cp "$POP_SRC/plugin.yml" "$POP_CLASSES/"
+  ( cd "$POP_CLASSES" && jar cf "$SERVER/plugins/BenchPopulation.jar" . ) || die "x150k plugin packaging failed"
+  log "x150k: plugin staged ($(stat -c%s "$SERVER/plugins/BenchPopulation.jar") B); target=$POPULATION_TARGET seed=$POPULATION_SEED"
 fi
 
 # --- 3. server config ------------------------------------------------------
@@ -273,6 +303,9 @@ export BENCH_FAKE_PLAYERS="$FAKE_PLAYERS"
 export BENCH_FORCELOAD_RADIUS="$FORCELOAD_RADIUS"
 # GUARD-WAVE wave-1 gate (fluid_guard.rs reads it at register time)
 export CRUSSTY_FLUID_PUSH_GUARD="$FLUID_GUARD"
+# BENCH-X150K population fixture env (0 = no-op; S7-129)
+export BENCH_POPULATION_TARGET="$POPULATION_TARGET"
+export BENCH_POPULATION_SEED="$POPULATION_SEED"
 tail -f "$WORK/console.in" | java \
   "-agentpath:$RUNTIME_SO=modules=$SERVER/modules;versions=$SERVER/versions;kernel=purpur-1.21.10.jar" \
   -Xms4G -Xmx6G -XX:+UseG1GC -Dfile.encoding=UTF-8 \
@@ -307,6 +340,33 @@ if [ "$SEEN_DONE" = "1" ]; then
   cmd "tps"
   cmd "paper debug chunks"
   sleep 10
+
+  # --- 5b. BENCH-X150K population injection (S7-129) -------------------------
+  # The living-scene fixture injects BEFORE any profiler starts: the harness
+  # triggers the plugin via console and waits for the DONE marker, so the
+  # measured window always sees the full injected population (spec §2:
+  # «инъекция до старта окна замера»). Item topups DURING the window are
+  # part of the scene model (continuous item lanes), not window pollution.
+  if [ "$POPULATION_TARGET" -gt 0 ]; then
+    POP_TIMEOUT="${POP_INJECT_TIMEOUT:-900}"
+    log "x150k: benchpop inject target=$POPULATION_TARGET seed=$POPULATION_SEED (waiting <= ${POP_TIMEOUT}s for DONE marker)"
+    cmd "benchpop inject $POPULATION_TARGET $POPULATION_SEED"
+    POP_WAITED=0
+    while ! grep -q "POPULATION INJECT DONE" "$WORK/server-stdout.log" 2>/dev/null; do
+      if [ "$POP_WAITED" -ge "$POP_TIMEOUT" ]; then
+        log "WARN: x150k injection DONE marker NOT seen in ${POP_TIMEOUT}s — continuing (fixture gate will fail the run)"
+        break
+      fi
+      sleep 10
+      POP_WAITED=$((POP_WAITED + 10))
+      if [ $((POP_WAITED % 60)) -eq 0 ]; then
+        log "x150k: still injecting... waited=${POP_WAITED}s"
+      fi
+    done
+    grep "POPULATION INJECT DONE" "$WORK/server-stdout.log" | tail -1 || true
+    grep "POPULATION FIXTURE-VALIDITY" "$WORK/server-stdout.log" | tail -1 || true
+    sleep 5  # settle injection tail before profilers attach
+  fi
 
   # --- 6. profilers (v2: three sequential single-event windows) ------------
   # run#9 lesson: asprof v4.x allows ONE active session per target — so the
