@@ -37,6 +37,15 @@ SUMMON_SWEEPS="${SUMMON_SWEEPS:-0}"
 # the STEP-0 contract; docs/BENCH4_FAKE_PLAYERS_DESIGN.md the preregistration).
 # 0 => bench-3 mode, byte-identical behavior to the no-player runs.
 FAKE_PLAYERS="${FAKE_PLAYERS:-0}"
+# GUARD-WAVE wave-1 (TASK-80; S7-128 ARCH-ATTACK, owner directive 2026-09-17:
+# «смотри на боттлнеки и сделай чтобы они не нагружали») — same-state
+# fluid-push guard на Entity.updateFluidHeightAndDoFluidPushing: negative-only
+# skip при неизменном жидкостном окружении (identity re-read канонических
+# FluidState-синглтонов), медленный путь = точная реимплементация ванильного
+# тела. Live-verified era TASK-80: hit-rate 96.4%, JFR-proof цепочки.
+# Эра ARCH (S7-128): на bench ARMED по умолчанию (архитектурный буст в паке);
+# pre-guard A/B нога = CRUSSTY_FLUID_PUSH_GUARD=0 в inputs workflow.
+FLUID_GUARD="${FLUID_GUARD:-1}"
 NATIVES_TGZ="${NATIVES_TGZ:-https://github.com/PLANETA9091/c-crussty/releases/download/v0.1.0/crussty-v0.1.0-linux-x64.tar.gz}"
 PURPUR_URL="${PURPUR_URL:-https://api.purpurmc.org/v2/purpur/1.21.10/latest/download}"
 WORK="${WORK:-$PWD/world3-run}"
@@ -99,6 +108,7 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "nproc: $(nproc 2>/dev/null || echo unknown)"
   echo "summon_sweeps: $SUMMON_SWEEPS"
   echo "fake_players: $FAKE_PLAYERS (BENCH-4 fixture: N real ServerPlayers, task170)"
+  echo "fluid_guard: $FLUID_GUARD (CRUSSTY_FLUID_PUSH_GUARD; 1 = same-state fluid-push guard ARMED, TASK-80/S7-128)"
 } > "$WORK/run-env.txt"
 log "run-env: world_sha256=$WORLD_SHA runner_cpu_index=$RUNNER_CPU_IDX fake_players=$FAKE_PLAYERS"
 log "extracting world"
@@ -261,6 +271,8 @@ mkfifo "$WORK/console.in" 2>/dev/null || true
 # BENCH-4 fixture env read by BenchFakePlayersPlugin (0 = no-op)
 export BENCH_FAKE_PLAYERS="$FAKE_PLAYERS"
 export BENCH_FORCELOAD_RADIUS="$FORCELOAD_RADIUS"
+# GUARD-WAVE wave-1 gate (fluid_guard.rs reads it at register time)
+export CRUSSTY_FLUID_PUSH_GUARD="$FLUID_GUARD"
 tail -f "$WORK/console.in" | java \
   "-agentpath:$RUNTIME_SO=modules=$SERVER/modules;versions=$SERVER/versions;kernel=purpur-1.21.10.jar" \
   -Xms4G -Xmx6G -XX:+UseG1GC -Dfile.encoding=UTF-8 \
