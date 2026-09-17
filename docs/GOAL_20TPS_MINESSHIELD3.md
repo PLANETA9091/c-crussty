@@ -345,3 +345,27 @@
 > runner, сценарий). Пара #2: нога#13 gate-reject (6786413 < floor, ~30s) — 9-й
 > подряд честный reject; нога#14 35198344256 dispatched in flight. INJECTS-ONLY
 > цел (0 sandbox boots).
+
+> **СТАТУС 20 TPS (S7-118)**: РЕКОН БАГ#3 ИСПРАВЛЕН — охота была невыигрываемой
+> по конструкции. v2-окно hunt_leg_b было заякорено на run22 (cpu 6401514, SLOW
+> класс, MSPT 83.74), тогда как baseline-нога §125 = банк MID-класс пары
+> run#17×run#21 (9080657/8914646, 76.98/76.01) — кросс-класс сравнение нелегально
+> по S7-96d (class-bimodality ~10%); хуже: gate band [6870000,7030000] НЕ
+> ПЕРЕСЕКАЕТСЯ с окном [6273484,6529544] — band-проходные ноги (~6.9M, leg#9
+> +6.7%) всегда мимо окна, оконные ноги gate-убиты (leg#13 6786413 < floor).
+> 11 подряд честных reject объяснены. v3: WINDOW = [8899044, 9092939] — точное
+> пересечение ±2% терпимости вокруг ОБЕИХ banked ног (легальная пара с обоими
+> baseline-arms), BAND = [8850000,9120000] (+skew slack), WORLD_SHA pin
+> afb3a0b3… (7/7 ног консистентны; drift → discard + re-baseline flag).
+> **F1 ARMATION НА BENCH ДОКАЗАНА** (профиль-грейп leg#9 35187305900, kernel
+> e326ab3-эры): BOTTLENECKS CPU + WALL таблицы — `RandomTickOps.run` leaf
+> **3.0% (4175 samples) / 3.2% (5799)** — swapped body ИСПОЛНЯЕТСЯ на bench
+> runner; random-tick phase 4.4-4.8%. Кавет: helper self-leaf 3.0-3.3% vs
+> vanilla optimiseRandomTick 1.96-2.56% — подозрение на attribution skew
+> (inlining-коллапс callees за invokestatic границей); НЕ вердикт — решает
+> только агрегатный A/B. Пара-охота: нога#14 gate-reject (11482771, ~30s) —
+> 10-й честный; нога#15 gate-reject (9764130, ~30s) — 11-й честный; нога#16 =
+> 35202368357 dispatched на 2c5c40e (FULL PACK kernel F1+F2+F3) с v3-машинерией.
+> Вердиктный порог §125: pack median ≤ **74.20ms** (= 76.495 × 0.97) при 2
+> in-window ногах. INJECTS-ONLY цел (0 sandbox boots; marker-grep = download
+> лога, не бут).
