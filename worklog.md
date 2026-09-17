@@ -1526,3 +1526,22 @@ Stage Summary:
 - ГЛАВНОЕ: найден и исправлен системный баг измерительной инфраструктуры — alloc-профиль не работал ни в одном ране проекта (wall тоже); все прошлые вердикты по cpu/gc-ланам остаются валидными, wall/alloc-таблицы перевзводятся; ценз-ран 35275967738 даст первое истинное ранжирование чёрна по байтам — субстрат для рычага old-gen мутации (S7-135); NEXT: absorb ценза → выбор рычага по байтам → имплементация
 
 RUN_ID_DISPATCHED: **35275967738** (master 662738e, база X150K, profiler v3; runs_index S7-134 row)
+
+---
+## S7-134b (TASK-270 absorb) — 2026-09-18 06:5x +08 — ABSORB ценза 35275967738: ПЕРВЫЙ ИСТИННЫЙ ALLOC-ЦЕНЗ — чёрн 25.6GB/60s = 21.4MB/тик, 66% = movement-геометрия + inside-blocks, топ-1 CPU-функция питается теми же путями; S7-135 = мемоизация inside-blocks/fluid
+
+**Task ID: S7-134b (Job 393012)**, Agent: agent-7625532f (session web-f7888d46)
+
+Work Log:
+- Run 35275967738 (master 662738e) SUCCESS за ~16 мин; артефакт скачан (fetch_artifact 10521196492) → research/alloc-census-2026-09-18/run-s7134-census/
+- Гейты preregistered: (1) ap.log чист 4×«Profiling started» — v3 stop-based подтверждён живьём (впервые 4 сессии сменились); (2) alloc-листья = чистые сайты, 0 G1/C2; (3) оценка S7-133b refuted честно — истинный чёрн 25.6GB/60s = 21.4MB/тик (14 young GC × ~245 eden × 8MB), интервал 3.56MB/сэмпл согласован; (4) wall ≠ cpu (wall-only waiters); (5) fixture VALID 150000/150000/105s
+- Ценз: movement/collision-геометрия 43.9% (Vec3.add 9.5% топ-сайт через collidedWithFluid→AABB.collidedAlongVector); inside-blocks 22.1% (LongOpenHashSet 6.1% per-entity-per-tick dedup, BlockPos$6 lambda 5.2%, flushStep copyOf 4.6%); JVM/other 17.3% (CgroupUtil 6.3% — не-цель); fluid 5.5%
+- Кросс-связка: топ-1 kernel CPU PalettedContainer.get 3.1% питается теми же getBlockState-путями — один рычаг на оба лейна
+- Анализ скриптом /home/z/my-project/scripts/s7134_alloc_census.py (декорации asprof 4.5 `_[i]`/`_[k]` зачищены, агрегация по сайтам/подсистемам); ANALYSIS.md + raw_census_top25.txt забанковаы в research
+- Учёт: §155, GOAL S7-134b, INDEX 276, CLAIMS TASK-270 addendum, этот worklog; runs_index row RESULT (my-project)
+- CRUSSTY pristine не тронут; INJECTS-ONLY цел (0 sandbox boots; 1 CI-бут ценза)
+
+Stage Summary:
+- Ценз закрыт: впервые в истории проекта есть истинная карта чёрна по байтам; 66% (movement-геометрия + inside-blocks) концентрируется на per-entity-per-tick путях checkInsideBlocks/updateFluidHeight/collidedWithFluid — тех же, что гонят топ-1 CPU-функцию PalettedContainer.get; S7-135 = STEP-0 javap-контракт → мемоизация с event-driven dirty-флагом (Δpos=0 + ревизия секции) → офлайн-харнесс → диспатч leg #1
+
+RUN_ID_ABSORBED: **35275967738** (master 662738e; runs_index S7-134 rows)
