@@ -631,3 +631,29 @@
 > EffectApplier.flushStep 786 сэмплов run17) + X150K population fixture MVP;
 > следом — повторный профиль X150K ⇒ очередь ARCH-ATTACK по свежим данным.
 > INJECTS-ONLY цел (CI-буты санкционированы).
+
+> **СТАТУС 20 TPS (S7-129) — X150K POPULATION FIXTURE MVP РЕАЛИЗОВАН (плагин +
+> раннер + workflow + локальная javac21-проверка контракта), сцену «всё живое»
+> можно теперь ИЗМЕРЯТЬ.** (1) Абсорбция прерванного sibling-раунда S7-128:
+> TASK-264 докоммичен verbatim; hunt-state leg_b_v4_state.json нейтрализован
+> (FROZEN-BY-OWNER-REDIRECT-X150K — возобновлять ЗАПРЕЩЕНО); runs_index
+> дополнен. (2) **BenchPopulationPlugin** (bench/world3/population/, BENCH-ONLY,
+> ванильный addEntity-путь — прецедент task170): инъекция живой сцены
+> 70% items / 20% hostiles / 10% passives; детерминизм Random(seed) +
+> сортировка чанков (x,z) + бюджет 1500/тик; items = фермы (pickup-delay max,
+> кластеры 5% чанков), hostiles/passives setPersistent (ферм-сток), НАТУРАЛЬНЫЙ
+> спавн/деспавн остаётся ванильным; TOPUP каждые 600 тиков восполняет
+> ванильно-деспавннутые items ⇒ item-лейны (тик/мердж/деспавн) горячие всё окно.
+> (3) **Харнес**: benchpop inject ПОСЛЕ forceload, ожидание «POPULATION INJECT
+> DONE» ДО старта профилировщиков (спека §2 «инъекция до старта окна замера»);
+> run-env self-doc population_target/seed; workflow inputs + гейт FIXTURE-VALIDITY
+> ≥90%. (4) **Контракт проверен ДО CI**: javac --release 21 против
+> paper-api 1.21.10-R0.1-SNAPSHOT + patched-kernel.jar = COMPILE OK (риск
+> roundtrip-провала снят). (5) Профиль leg#2 разобран функционально
+> (profile_rank.py): entity-лейн 43.8% inclusive (aiStep 18.3%, Mob.tick 22.5%,
+> Brain.tick 6.14%), block/redstone 8.9%, leaf top-1 PalettedContainer.get
+> 3.37% (вердикт S7-128 неизменен) — на X150K сцена сместит топы, решит свежий
+> профиль. (6) NEXT: S7-129b CI smoke 10k (после завершения вериф-рана
+> 35231195756 — concurrency cancel-in-progress, не мешать) ⇒ S7-130 масштаб
+> 150k + soak ⇒ S7-131 X150K база A/B + свежий профиль ⇒ топ-1 ARCH-ATTACK
+> (планка x150000 = скорость выполнения топ-1 функции). INJECTS-ONLY цел.
