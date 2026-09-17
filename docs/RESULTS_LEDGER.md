@@ -1414,3 +1414,32 @@ full bench ~30 мин). runs_index +8 строк. F2/F3 маркер-чек пе
 
 INJECTS-ONLY цел: 0 sandbox boots (tag = git ref; dispatch-verify = API
 reads; hunt = poll/dispatch завершённых/летящих CI-ранов — санкционировано).
+
+## §135 (S7-120, TASK-256) — verdict_a1.py (механизированный вердикт §125-A1) + наблюдательная пара leg#9↔run#23: F1-only −2.76%
+
+**ВЕРДИКТНЫЙ КАЛЬКУЛЯТОР** (scripts/bench4_recon/verdict_a1.py, копия в
+research/bench4-recon-2026-09-17/): экстракция headline `MSPT: avg **X**ms`
+из zip-логов CI-рана (проверено на leg#9 — zip = 2 .txt, метрика присутствует;
+ТО ЖЕ поле, что у банка 85.24/76.98/76.01); per-leg проверки (cpu в окне,
+world pin afb3a0b3, FIXTURE-VALIDITY VALID); threshold = median(arms)×0.97,
+pack_median = median(2 in-window ног); LANDS/REFUTED + verdict_a1.json.
+Вердиктный тик = poll → absorb → verdict_a1 → ledger row: механика без
+ручного грепанья.
+
+**НАБЛЮДЕНИЕ (1 пара, не вердикт)**: leg#9 35187305900 (F1-only kernel
+e326ab3-эры) — MSPT avg **81.64ms**, cpu 6966037, world afb3a0b3, VALID,
+fp=4 ↔ run#23 35175934460 (pre-pack) — MSPT avg **83.96ms**, cpu 6979464,
+тот же мир, VALID, fp=4. Оба из первоисточников (лог-греп). Паринг: |Δcpu| =
+0.19% << ±2% (S7-96d). ΔMSPT = **−2.76% для F1 ОДНОГО**. Согласуется с
+направлением preregistered F1-оценки (1.6-1.9% solo, refuted против 3% гейта
+как СОЛО) и с Tier-B floor 3.3% пакета (F2+F3-reads+F3-queue добавят);
+атtribution-skew кавет S7-118 остаётся (helper self-leaf 3.0-3.3% vs vanilla
+1.96-2.56% — распределение по кадрам иное, суммарная работа та же).
+ОГОВОРКИ: одиночная пара; slow-класс MSPT спред n=4 = 3.5% ⇒ шум; min-of-2
+не выполнен; решает только §125-A1 агрегатный A/B. В вердикт НЕ идёт.
+
+**ОХОТА**: B1 35205343087 (pre-pack тег) — boot >20 мин, echo ещё нет (полный
+bench 25-40 мин; poll-циклы продолжатся следующим тиком; если echo покажет
+cpu вне окна run#18 [6611637,6881500] — v4 отменит рано, bench-время
+сэкономлено). INJECTS-ONLY цел (0 sandbox boots; экстракции = download логов
+завершённого рана, не бут).

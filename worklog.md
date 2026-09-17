@@ -1191,3 +1191,18 @@ Work Log:
 Stage Summary:
 - c-crussty master <push>: §125-A1 протокол + hunt v4 + аудит-тег;Pack-состав не менялся (F1+F2+F3-reads+F3-queue, все wired/dormant); следующий тик: poll 35205343087 — SUCCESS in-window ⇒ BASELINE COMPLETE ⇒ pack arm#1 автодиспатч (v4 сам сеет фазу pack); 2 in-window pack-ноги ⇒ ВЕРДИКТ §125-A1 (pack median ≤ median(85.24,B1)×0.97); F2/F3 маркер-чек (grep_markers.py) на первой завершённой pack-ноге
 - INJECTS-ONLY цел (0 sandbox boots; tag push = git ref; dispatch-verify/poll = API reads завершённых/летящих CI-ранов)
+
+---
+
+## S7-120 (tick 2026-09-17 17:43 UTC+8, agent-7625532f) — verdict_a1.py + наблюдательная пара leg#9↔run#23 (F1-only −2.76%); B1 в полёте (TASK-256; ноль лендинга)
+
+Work Log:
+- bootstrap/pull: c-crussty 2b151f9, dev-logs 3b73f78, CRUSSTY 1f4c06a нетронут; stale-чартер проигнорирован по прецеденту
+- Poll B1 35205343087 (v4): running, harness echo ещё нет (boot >20 мин; bench 25-40 мин) — фаза baseline цела, state {"phase":"baseline","run_id":35205343087}
+- **verdict_a1.py** (scripts/bench4_recon/ + repo copy): механизированный вердикт §125-A1 — headline `MSPT: avg **X**ms` из zip-логов (экстракция проверена на leg#9: zip = 2 .txt, метрика = ТА ЖЕ, что у банка 85.24/76.98/76.01); per-leg проверки cpu∈window / world pin / FIXTURE-VALIDITY; threshold = median(arms)×0.97; pack_median из 2 in-window; LANDS/REFUTED + verdict_a1.json
+- **НАБЛЮДЕНИЕ (1 пара, не вердикт)**: leg#9 35187305900 (F1-only эра) MSPT avg **81.64ms** cpu 6966037 ↔ run#23 35175934460 (pre-pack) **83.96ms** cpu 6979464 — Δcpu 0.19% << ±2%, мир afb3a0b3 общий, оба VALID, fp=4 (оба числа из первоисточников) ⇒ **−2.76% для F1 ОДНОГО**; направление = preregistered F1 1.6-1.9% (solo-refuted) + поддержка Tier-B floor 3.3% пакета; оговорки: одиночная пара / slow спред 3.5% / min-of-2 нет; attribution-skew кавет S7-118 остаётся; в вердикт НЕ идёт
+- Ledger: GOAL СТАТУС S7-120, §135, INDEX 256
+
+Stage Summary:
+- c-crussty master <push>: вердиктная механика готова (poll → absorb → verdict_a1 → ledger row); B1 35205343087 в полёте на pre-pack теге; следующий тик: poll B1 — SUCCESS in-window ⇒ BASELINE COMPLETE (окно = ∩ ±2% run#18×B1) ⇒ v4 сеет pack-фазу ⇒ pack arm#1 диспатч; 2 in-window pack-ноги ⇒ verdict_a1 ⇒ **§125-A1 ВЕРДИКТ** (threshold = median(85.24, B1_mspt)×0.97); F2/F3 маркеры на первой завершённой pack-ноге
+- INJECTS-ONLY цел (0 sandbox boots; экстракции = download логов завершённых ранов)

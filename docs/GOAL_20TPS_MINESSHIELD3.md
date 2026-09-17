@@ -395,3 +395,18 @@
 > (gate пройден, full bench). v4 = scripts/bench4_recon/hunt_leg_b_v4.py
 > (one-transition/call, resumable, world pin, early-cancel). INJECTS-ONLY цел
 > (0 sandbox boots).
+
+> **СТАТУС 20 TPS (S7-120)**: §125-A1 охота продолжается — B1 35205343087
+> (pre-pack тег) в полёте, boot >20 мин (echo ещё нет; полный bench 25-40 мин).
+> Инженерия тика: **verdict_a1.py** — калькулятор вердикта §125-A1 (экстрактор
+> `MSPT: avg **X**ms` из zip-логов = ТА ЖЕ headline-метрика, что у банка
+> 85.24/76.98/76.01; проверка window/world/VALID на каждой ноге; threshold =
+> median(arms)×0.97, pack median из 2 in-window ног ⇒ LANDS/REFUTED + запись
+> verdict_a1.json) — вердиктный тик становится механическим. **НАБЛЮДЕНИЕ
+> (не вердикт, 1 пара)**: leg#9 (F1-only эра e326ab3) 81.64ms cpu 6966037
+> ↔ run#23 (pre-pack) 83.96ms cpu 6979464 — дистанция cpu 0.19%, тот же мир
+> afb3a0b3, оба VALID, fp=4 (первоисточники перегреплены) ⇒ **−2.76% для F1
+> ОДНОГО**. Направление совпадает с preregistered F1-оценкой 1.6-1.9% (solo,
+> refuted против 3% гейта) и поддерживает Tier-B floor 3.3% пакета (F2+F3
+> добавят); НО: одиночная пара, slow-класс спред n=4 = 3.5% ⇒ шумовые бары
+> широкие — решает только агрегатный A/B §125-A1. INJECTS-ONLY цел (0 boots).
