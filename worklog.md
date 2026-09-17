@@ -1101,3 +1101,20 @@ Work Log:
 Stage Summary:
 - c-crussty master <push>: ПАКЕТ F1 hook ✓ (S7-112) + F2 hook ✓ (S7-114) — оба wired, armed-по-буту, CI-exercised, dormant-до-aggregate; следующий тик: F3-reads build (LevelTicks reads batch 0.3-0.5%, parity-banking по §125) + poll ноги#10 35189275270 + CI-маркеры F1/F2 в smoke-логах; потом ОДИН агрегатный A/B против банка пары 76.01/76.98 решает всё
 - INJECTS-ONLY: 0 sandbox boots (verify = link-time resolveClass без инициализации; define = класс-загрузка без init; force-load = LOAD без instantiation)
+
+---
+
+## S7-115 (tick 2026-09-17 14:43 UTC+8, agent-7625532f) — F3-READS BUILT (family-agg pack member F3, TASK-251; ничего не landится до агрегатного A/B §125)
+
+Work Log:
+- bootstrap/pull: c-crussty 5b508df, dev-logs 59a0676, CRUSSTY 1f4c06a нетронут; stale-чартер игнорирован по прецеденту
+- Пара #2: нога#10 35189275270 gate-reject (8869954 >> band, ~30s); нога#11 35191122341 gate-reject (6852134 у нижней кромки, ~30s) — 7-й подряд честный reject; нога#12 = 35193865177 dispatched in flight; runs_index +2
+- F3-READS анатомия добита cfdump'ами run21 (ensure_javap.sh → /tmp/jdk21): Level.getBlockState @0-71 (capture-ветка ПЕРВАЯ, VOID_AIR не AIR), LevelChunk.getBlockStateFinal (nonEmptyBlockCount==0 → AIR-шорткат), LevelTicks.runCollectedTicks @0-76 (QUIRK: set.remove под guard'ом isEmpty), ServerLevel.tickBlock @0-53 (counter&7 → moonrise$executeMidTickTasks; тело абстрактно на интерфейсе, реальный имплементации требует планировщика — в банке не исполняется)
+- TickBlockOps.java (package net.minecraft.server.level): дрен-зеркало (Unsafe-read 3 final-полей) + ThreadLocal кэш-окно + readBlockState-линза (кэш-хоп ТОЛЬКО на getChunk; вне окна точная ваниль) + tickBlock (is→tick→counter→mid-tick идентичный вызов); ленивое построение кэша в tickBlock — ноль chunkGetter-хирургии
+- Паритет-банк (research/f3-levelticks-2026-09-17/): фикстуры allocateInstance+preseed реальных структур (PalettedContainer реальным ctor через Strategy.createForBlockStates + set; counting fullChunks-стаб; CraftBlockState.getHandle реальным диспатчем) => **F3 READS PARITY: PASS** (S1 дрен, S2 quirk, S3 10/10 чтений, S4 30/30 счётчик+ветка, S5 capture, S6 идентичность + resolutions REF=6→NEW=2, S9 fuzz 40/40)
+- Швы, пойманные банком (все устранены): chunkSource на ServerLevel НЕ Level (grep-ловушка Resource/RandomSource→source); section-резолюция через ChunkAccess.levelHeightAccessor НЕ minSection; -20>>4=-2; Blocks-клinit требует bootStrap до статик-констант; javap через ensure_javap.sh (JRE без javap)
+- Ledger §130, INDEX 251, GOAL СТАТУС S7-115
+
+Stage Summary:
+- c-crussty master <push>: ПАКЕТ F1 ✓ + F2 ✓ + F3-reads built — следующий тик: F3-reads byte hooks (patch_run_collected_ticks 6B + patch_tick_block 11B, оба straight-line/пустой StackMapTable, VerifyF3 HotSpot gate + активация) + poll ноги#12 35193865177; затем F3-queue (≤0.5%) и ОДИН агрегатный A/B
+- INJECTS-ONLY: 0 sandbox boots

@@ -1252,3 +1252,29 @@ VERDICT (bytecode grade — contract from the materialized booted kernel, NOT fr
 **ПАРА #2 (все дискреты честные)**: нога#9 35187305900 SUCCESS+VALID но harness 6966037 ВНЕ окна [6273484,6529544] на **+6.7%** => честный discard по 2% правилу (5-й подряд честный reject: band×3 + window×2 — ворота строгие, ни одной ложной пары; bench не тратится: нога завершена и классифицирована); **нога#10 35189275270 dispatched in flight** (band [6870000,7030000], fp=4, state leg_b_state.json)
 
 **NEXT TICK**: F3-reads build (LevelTicks reads batch, parity-banking по §125) + poll ноги#10 35189275270 + F2/F1 CI-артефакты (маркер-цепочки в smoke-логах). INJECTS-ONLY: 0 sandbox boots (verify = link-time, define = класс-загрузка без init)
+
+## §130 ADDENDUM-115 — TASK-251 (agent-7625532f, 2026-09-17): F3-READS BUILT (S7-115) — TickBlockOps helper + drain mirror + section cache lens; parity bank PASS on REAL production entries (resolutions REF=6 -> NEW=2); byte hooks next tick; pair hunt: 7th honest reject
+
+**F3-READS ANATOMY (cfdump'ы run21, research/f3-levelticks-2026-09-17/cfdumps/)**:
+- `Level.getBlockState` @0-71: captureTreeGeneration-ветка ПЕРВАЯ (public-поля, map.get → getHandle) → isOutsideBuildHeight → **VOID_AIR** (не AIR!) → getChunk(x>>4, z>>4, FULL, true) → ChunkAccess.getBlockState
+- `LevelChunk.getBlockStateFinal` @0-60: sectionIndex вне [0, sections.length) ИЛИ sections[si].nonEmptyBlockCount==0 → **AIR-шорткат** (PalettedContainer не трогается); иначе sections[si].states.get(x&15, y&15, z&15)
+- `LevelTicks.runCollectedTicks` @0-76: `while (!toRunThisTick.isEmpty()) { t=poll(); if (!toRunThisTickSet.isEmpty()) toRunThisTickSet.remove(t); alreadyRunThisTick.add(t); accept(t.pos(), t.type()); }` — **QUIRK: set-removal под guard'ом isEmpty()**
+- `ServerLevel.tickBlock` @0-53: getBlockState → is(block) → state.tick(level, pos, level.random) → ++tickedBlocksOrFluids → (counter&7)==0 → server.moonrise$executeMidTickTasks()
+- Срез reads (task167): getChunk/hash — единственная батч-способная часть (0.3-0.5% тика); PalettedContainer.get — per-query irreducible
+
+**HELPER** (`randomtick/src/TickBlockOps.java`, package net.minecraft.server.level):
+- `runCollectedTicks(LevelTicks, BiConsumer<BlockPos,Object>)` — байт-точное зеркало дрен-цикла (Unsafe-read 3 приватных final-полей: одна выборка = getfield каждой итерации, refs иммутабельны); окно `ThreadLocal<HashMap<Long,ChunkAccess>> DRAIN_CACHE` (set → try → finally remove)
+- `readBlockState(Level, BlockPos)` (package-private для банка) — vanilla-контракт verbatim: capture-ветка → outside → VOID_AIR → **кэш-хоп**: вне окна точный ванильный getChunk(FULL,true); в окне — первый тик секции платит точный getChunk, последующие — cache-hit (ВЫИГРЫШ: (N_pos − N_sections) getChunk-вызовов за дрен); ChunkAccess.getBlockState(pos) — реальный вызов на резолвнутом чанке
+- `tickBlock(ServerLevel, BlockPos, Block)` — vanilla-тело: state.is → state.tick(level, pos, level.random — public final) → counter Unsafe get/put → (c&7)==0 → ChunkSystemMinecraftServer.moonrise$executeMidTickTasks() на Unsafe-read server — **вызов байт-идентичен по построению** (тот же invokeinterface на том же поле); tickBlock достижим только из дрен-лямбды ⇒ null-cache-ветка — семантическая зеркало, не альтернативный production-путь
+- РЕШЕНИЕ против chunkGetter-хирургии: кэш строится ЛЕНИВО в tickBlock (есть ServerLevel-приёмник → точный ванильный getChunk), дрен-хелпер только открывает/закрывает окно — ноль Unsafe на chunkGetter/Level
+
+**PARITY BANK** (`research/f3-levelticks-2026-09-17/ParityTest.java` + `run_parity_f3.sh` → `parity_output.txt`; f2-harness machine, kernel-first classpath, INJECTS-ONLY):
+- Фикстуры: LevelTicks/LevelChunk/LevelChunkSection/ServerChunkCache/PalettedContainer(реальный ctor: `new PalettedContainer<>(AIR, Strategy.createForBlockStates(BuiltInRegistries.BLOCK))` + set())/ScheduledTick(реальный record) — allocateInstance+preseed реальных структур; counting ConcurrentLong2ReferenceChainedHashTable-стаб на ServerChunkCache.fullChunks (поле на ServerChunkCache!); CraftBlockState.getHandle — реальный диспатч (allocateInstance+data)
+- => **F3 READS PARITY: PASS**: S1 дрен порядок/списки/set (order-exact); S2 vanilla-quirk (пустой set → removal skipped, list аккумулируется); S3 10/10 identity чтений (палитра STONE/DIRT/DEEPSLATE, AIR-шорткат пустых секций, VOID_AIR вне высот, отрицательные координаты, далёкий пустой чанк); S4 30/30 счётчик+индекс ветки (вызов не исполняется, счётчики под кратными 8); S5 capture-ветка (empty-map fall-through + getHandle-hit → DIRT); S6 интеграция: стрим чтений идентичен + **РЕЗОЛЮЦИИ REF=6 → NEW=2** (6 позиций/2 секции — механика выигрыша доказана счётно); S9 fuzz 40/40
+- Рантайм-швы, найденные банком: chunkSource на ServerLevel (НЕ Level — grep-ловушка "Resource/RandomSource→source"); section-резолюция через ChunkAccess.levelHeightAccessor (НЕ minSection — getSectionIndex→getMinSectionY→getMinY); floor-деление -20>>4=-2; Blocks-клinit требует bootStrap ДО статик-констант банка
+
+**ПАКЕТ (§125 протокол)**: F1 hook ✓ (S7-112) + F2 hook ✓ (S7-114) + F3-reads built (S7-115, hooks next: patch_run_collected_ticks 6 байтов + patch_tick_block 11 байтов — оба без ветвлений, пустой StackMapTable) — затем F3-queue (≤0.5%) и ОДИН агрегатный A/B против банка пары 76.01/76.98 решает всё
+
+**ПАРА #2 (все дискреты честные)**: нога#10 35189275270 gate-reject (8869954 >> band, ~30s); нога#11 35191122341 gate-reject (6852134 у нижней кромки 6870000, ~30s) — 7-й подряд честный reject (band×5+window×2), ни одной ложной пары, bench не тратится; **нога#12 35193865177 dispatched in flight**
+
+**NEXT TICK**: F3-reads byte hooks (2 body-swap по patch_optimise_random_tick образцу + VerifyF3 HotSpot gate + активация в brainhook.rs/отдельном модуле) + poll ноги#12 35193865177. INJECTS-ONLY: 0 sandbox boots
