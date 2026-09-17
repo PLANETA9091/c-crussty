@@ -89,9 +89,14 @@ public final class BenchFakePlayersPlugin extends JavaPlugin {
         // Alive-check heartbeat: lets the report prove players stayed
         // registered the whole window (keepalive/disconnect failures show up
         // as a drop in this series).
+        // S7-130b: period 1200 ticks (= 60s at 20 TPS) missed the report window
+        // entirely on prime-scale scenes (150k live entities => TPS 0.7-1.0 =>
+        // heartbeat due at 20+ min wall time, run 35242595837 gate-1c FAIL with
+        // an otherwise-healthy fixture). 100 ticks = 5s at 20 TPS, ~2 hits even
+        // at TPS 0.7; the log line is trivially cheap.
         Bukkit.getScheduler().runTaskTimer(this, () -> getLogger().info(
                 "[BenchFakePlayers] alive-check: level.players()=" + playersInOverworld()
-                        + " injected=" + injected.size()), 20L * 60, 20L * 60);
+                        + " injected=" + injected.size()), 20L * 5, 20L * 5);
     }
 
     private int playersInOverworld() {
