@@ -1013,3 +1013,38 @@ Work Log:
 
 Stage Summary:
 - Путь (2) переведён из «неопределённо owner-gated» в «квантифицированный GO-кандидат с owner-veto»: Tier B floor 3.3% — первый случай за всю эру, когда пререгистрированная математика допускает гейт-проход модульного рычага. Следующий тик: poll 35180007098 (classify/absorb если LEG B) -> начало билда F1 batch-RNG (бит-точный 48-bit LCG батч в optimiseRandomTick — ASM/algorithm, parity unit-bank). Если owner отменит трактовку — билд останавливается до агрегатного A/B, ничего не landится
+
+---
+Task ID: S7-111 (BACKFILL — section was omitted from this file by the 12:08 tick itself; reconstructed verbatim from that tick's commit 962fc9f + /home/z/my-project/worklog.md; integrity fix done by S7-112, 12:43+08)
+Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609171208)
+Task: cron tick Job 390768 (12:08+08, stale charter) — per-latest-state: F1 batch-RNG build increment (first member of the §125 family-agg pack) + pair #2 hunt
+
+Work Log:
+- bootstrap; heads: c-crussty aa616c8 (S7-110), dev-logs d57a3d3; no owner movement
+- Pair #2 hunt: 3 band-rejects this tick (11563189 / 6855867 — missed band by 0.2% / 7112618); 4th leg 35181833283 dispatched, resumable state, poll next tick
+- F1 STEP-0 anatomy: wrote minimal Python classfile parser (cfdump.py — no javap/javac in sandbox JRE) on patched-kernel run21: SimpleThreadUnsafeRandom FINAL, value PRIVATE, LCG = (value*25214903917+11)&(2^48-1), nextInt=(int)(seed>>>16), setSeed HAS gaussianSource.reset() side effect; ServerLevel.simpleRandom 0x0012 private-final, optimiseRandomTick 0x0002 private; LevelChunkSection.states 0x0011 PUBLIC
+- F1 implementation: randomtick/src/RandomTickOps.java — body-swap helper (new body = getfield simpleRandom + invokestatic), inlined bit-exact LCG in register-resident local, reject-pick = zero dispatch/zero field traffic, Unsafe get/put on value ONLY at body-call boundaries + final put, setSeed bypassed deliberately (gaussian cached-spare safety)
+- Toolchain: ECJ 3.36 via Maven Central (javac absent); build_randomtick.sh reproducible; RandomTickOps.class 3570B
+- Parity bank: ParityTest.java on REAL kernel classes (plain JVM, no boot — INJECTS-ONLY intact): 320,000 attempts / 8 seeds (boundary: 0, 2^48-1, LCG multiplier) / 160,379 hit interleaves incl. nextGaussian — picksMatch/drawsMatch/finalSeedMatch ALL TRUE
+- Bookkeeping: ledger §126 + INDEX 246 + GOAL STATUS S7-111 + CLAIMS TASK-247 + worklogs; push c-crussty 962fc9f + dev-logs 9358ef9
+
+Stage Summary:
+- c-crussty master 962fc9f; F1 = implementation + parity banked, dormant until Rust byte hook; next tick: classfile.rs surgery (patch_update pattern) + hook registration + define/retransform wiring + runtime self-test, then F2 Brain iterators; pair #2 hunt continues (fair-draw, serial)
+
+---
+Task ID: S7-112 (F1 byte-hook tick, 12:43+08, Job 390768) — F1 FULLY INJECTABLE: Rust surgery + activation wiring + HotSpot verifier gate VERIFY-OK; pair#2 5th discard, 4th slow leg (spread n=4 = 3.5%, honest correction)
+Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609171243)
+Task: stale-charter tick per latest state — F1 next increment per §125/S7-111 (byte hook + runtime self-test), pair #2 poll
+
+Work Log:
+- bootstrap + pulls: c-crussty 962fc9f (S7-111) уже в remote; CRUSSTY pristine не тронут
+- ПАРА #2: poll 35181833283 => SUCCESS+VALID (world_sha256=fixture, fp=4) но harness 6574725 вне окна run22 [6273484,6529544] на +0.7% => ЧЕСТНЫЙ discard по 2% правилу; absorb => run#25 (3 гейта PASS): Analysis-Average 86.65ms => 4-я slow-нога; КЛАСС-СПРЕД n=4 = 3.5% (83.74/83.96/85.24/86.65) — честная коррекция owner-числа (было 1.8% n=3); межкласс 10-25% не меняется; hunt_leg_b.py авто-redispatch: нога#6 35183885492 in flight (band [6870000,7030000])
+- F1 CONTRACT (cfdump run21 jar, fixture tests/fixtures/ServerLevel.class 142747B sha256 3db954e8): ServerLevel / simpleRandom 0x0012 SimpleThreadUnsafeRandom / optimiseRandomTick 0x0002 (LevelChunk;I)V — единственный call-site invokevirtual в том же классе
+- RUST SURGERY: classfile.rs::patch_optimise_random_tick (patch_update-образец): 11-байтовый прямой body (aload_0,aload_1,iload_2,aload_0,getfield simpleRandom,invokestatic run,return), max_stack 4/max_locals 3, БЕЗ ветвлений => пустой StackMapTable (0 кадров); find-only пробы ДО мутаций; CP append-only+дедуп => ИДЕМПОТЕНТЕН; Pool::fieldref_parts добавлен (резолв Fieldref по имени)
+- ТЕСТЫ: 3 новых (roundtrip_verified по NAME-резолву операндов + скелет кода; idempotent patch(patch(x))==patch(x); rejects_wrong_class_and_garbage — 14 prefix-срезов без паники); cargo 82 passed / 0 failed
+- ВЕРИФИКАТОР-ГЕЙТ: randomtick/src-verify/VerifyPatched.java + verify_patched.sh (ECJ-компиляция): реальный HotSpot, resolveClass() = link-time verification БЕЗ инициализации (не бут, INJECTS-ONLY цел): child-first PATCHED-ServerLevel, parent = kernel jar => **VERIFY-OK major=65** — легальность байтов доказана верификатором JVM, не только байт-тестами
+- АКТИВАЦИЯ: src/randomtick.rs (area_map-образец): register_bytes(ServerLevel, READY/PATCHED-swap, fail-closed Err=>None) + activate(): poll 180s + Bukkit-forName ускоритель => define RandomTickOps (include_bytes 3570B) в loader kernel'а => READY => retransform => маркер-цепочка defined/armed/rc/ARMED|NOT-APPLIED; in-process семантики НЕТ (нужен тикающий мир — честно документировано), замена = CI-буты (санкционированы); lib.rs: register+activate подключены
+- ledger: GOAL СТАТУС S7-112 (новый блок) + RESULTS_LEDGER §127 + INDEX 247 + CLAIMS TASK-248; runs_index.jsonl +2 строки (run25 + нога#6 in-flight); worklog-integrity: BACKFILL S7-111 секции (прошлый тик её пропустил — реконструкция verbatim по 962fc9f + my-project/worklog)
+
+Stage Summary:
+- c-crussty master <push>: F1 = implementation + parity + byte-hook + verifier-gate + activation wiring — ПОЛНОСТЬЮ инъекционен, всё ещё dormant-до-aggregate (ничего не landится по §125; вердикт только у агрегатного A/B против банка пары 76.01/76.98). Следующий тик: F2 Brain-итераторы (второй член pack; анатомия banked task168), poll ноги#6 35183885492. INJECTS-ONLY: 0 sandbox boots

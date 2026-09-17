@@ -199,3 +199,24 @@
 > nextGaussian). Следующий tick: Rust byte hook (classfile.rs surgery + retransform
 > по area_map-образцу) + runtime self-test, затем F2 Brain-итераторы. Пара #2:
 > 3 band-reject (один в 0.2% от band'а), 4-я нога in flight. INJECTS-ONLY цел.
+
+> **СТАТУС 20 TPS (S7-112)**: F1 BYTE HOOK ГОТОВ — Rust-хук `randomtick.rs`
+> + `classfile.rs::patch_optimise_random_tick` (образец patch_update): тело
+> optimiseRandomTick заменено на 11-байтовую прямую строку
+> `aload/aload/iload/aload/getfield simpleRandom/invokestatic
+> RandomTickOps.run/return` (без ветвлений => ПУСТОЙ StackMapTable, 0 кадров).
+> Append-only CP, дедуп => patch(patch(x))==patch(x) (идемпотентность
+> доказана тестом); fail-closed: чужой класс/обрезанные байты => Err без
+> паники (14 prefix-срезов fixture). ВЕРИФИКАТОР-ГЕЙТ на РЕАЛЬНОМ HotSpot:
+> VerifyPatched (resolveClass = link-time verification, major 65) —
+> **VERIFY-OK** (research-скрипт randomtick/verify_patched.sh; байт-тесты
+> cargo: 82 passed). Активация по area_map-образцу: poll ServerLevel ->
+> define RandomTickOps в loader kernel'а -> READY -> retransform; маркер-цепочка
+> defined/armed/rc/PATCHED; семантический self-test = CI-буты (санкционированы,
+> каждый smoke с миром гоняет patched body). Ничего не landится — следующий
+> шаг билда: F2 Brain-итераторы, затем F3-reads; агрегатный A/B против банка
+> пары 76.01/76.98 решает ВСЁ (§125 протокол). Пара #2: нога#5 35181833283
+> OUT-of-window (+0.7%) — честный discard, absorb run#25: 86.65ms при
+> harness 6574725 => 4-я slow-нога, класс-спред n=4 = **3.5%** (83.74-86.65;
+> было 1.8% n=3 — честная коррекция owner-числа; межкласс по-прежнему ~10-25%).
+> Нога#6 35183885492 in flight. INJECTS-ONLY цел (0 sandbox boots).
