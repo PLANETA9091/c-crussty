@@ -99,8 +99,21 @@ Brain.tick 6.75%) станут ЛИБО шумом, ЛИБО вырастут к
       POPULATION INJECT START/PROGRESS/DONE, POPULATION FIXTURE-VALIDITY,
       POPULATION TOPUP. Локальная проверка контракта: javac --release 21
       против paper-api 1.21.10-R0.1-SNAPSHOT + patched-kernel.jar = OK.
-- [ ] S7-129b: CI smoke 10k (fp=4, population_target=10000, 300s) —
-      валидность fixture + маркеры + первый профиль живой сцены
+- [x] S7-129b: **CI smoke 10k = SUCCESS (run 35234643616, оба гейта)**:
+      INJECT DONE 10000/10000 (7000 items / 2000 hostiles / 1000 passives)
+      за **2572 мс**, FIXTURE-VALIDITY: VALID, loadedChunks=10000,
+      farmClusters=500; TOPUP активен; живая сцена ~24.9k сущностей
+      (натуральный спавн/деспавн АКТИВЕН: skeleton 584 / drowned 468 /
+      chicken 465 / sheep 442 / creeper 403 / zombie 313 / cow 311);
+      MSPT avg 125.63ms (TPS ~7.6, окно 300s, первый poll 20.0 до инъекции);
+      GC 0 Full GC, high-water 3951MB; профиль (leaf): **топ-1
+      PalettedContainer.get 4.20%** (цель x150000 владельца), RandomTickOps
+      2.27%, guard-хуки bump 1.03% + slow 0.92% (оверхед инструментации
+      виден — net-эффект guard'а мерить A/B на X150K-базе), flushStep
+      1.16% (кандидат wave-2 подтверждён). ИЗВЕСТНЫЙ БАГ (фикс S7-130):
+      стартовая инъекция не пишется в itemSpawnLog ⇒ первый topup удвоил
+      items (~14k; self-correcting); topup-seed зависит от ft-момента
+      инъекции — для строгой replay-детерминизма сидеть от Δt = ft−T0.
 - [ ] S7-130: масштаб до 150k (память/время бута/инъекции), soak-стабильность
 - [ ] S7-131: X150K база A/B (pre-pack vs master) + свежий профиль
 - [ ] S7-132+: ARCH-ATTACK по очереди (первый кандидат решит профиль)
