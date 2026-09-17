@@ -96,6 +96,7 @@ public final class BenchPopulationPlugin extends JavaPlugin {
     private int cursor = 0;         // uniform lane index into chunkOrder
     private int clusterCursor = 0;  // round-robin over farmClusters
     private int lastProgress = 0;
+    private int stallWarn = 0;
     private long startNanos = 0;
     private long t0FullTime = 0;    // fullTime at injection finish (topup replay anchor, S7-130)
     private int itemsThisSlice = 0; // items spawned by the current injection tick (spawn-log entry per tick)
@@ -243,9 +244,14 @@ public final class BenchPopulationPlugin extends JavaPlugin {
         // injection replay is deterministic given (target, seed, chunk set)
         Random rng = new Random(seed ^ (injectedTotal * 1_000_003L));
         int placed = 0;
+        int missStreak = 0; // S7-130b: loud diagnostics instead of a silent freeze
         while (placed < budget && injectedTotal < target) {
             Chunk ch = nextChunk(rng);
             if (ch == null) {
+                if (++missStreak == 1) {
+                    getLogger().warning(MARK + " nextChunk=null — chunkOrder empty; injection cannot progress"
+                            + " (injected=" + injectedTotal + "/" + target + ")");
+                }
                 break;
             }
             Location base = centerOf(ch);
@@ -304,11 +310,25 @@ public final class BenchPopulationPlugin extends JavaPlugin {
         if (injectedTotal - lastProgress >= 5000) {
             getLogger().info(MARK + " POPULATION INJECT PROGRESS " + injectedTotal + "/" + target);
             lastProgress = injectedTotal;
+        } else if (placed <= 0 && injectedTotal < target && ++stallWarn % 20 == 1) {
+            // S7-130b: placed=0 with the plan incomplete must NEVER be silent —
+            // this exact silence cost run 35238931413 its whole window
+            getLogger().warning(MARK + " INJECT STALL placed=0 injected=" + injectedTotal
+                    + "/" + target + " (cursor=" + cursor + " clusterCursor=" + clusterCursor
+                    + " items=" + injectedItems + "/" + planItems
+                    + " hostiles=" + injectedHostiles + "/" + planHostiles
+                    + " passives=" + injectedPassives + "/" + planPassives + ")");
         }
         return placed;
     }
 
-    /** Uniform lane vs farm-cluster lane: cluster lane feeds the item plan. */
+    /** Uniform lane vs farm-cluster lane: cluster lane feeds the item plan.
+     *  S7-130b fix: the uniform lane WRAPS (modulo) — at 150k scale it needs
+     *  ~87k placements over 9948 chunks, so a one-pass cursor that returns
+     *  null after exhaustion silently froze the whole injection at ~11k
+     *  (run 35238931413: PROGRESS 6000 was the last marker, no DONE/INVALID,
+     *  harness stop at POP_INJECT_TIMEOUT). Cluster lane was already wrap- 
+     *  around; uniform now matches it. */
     private Chunk nextChunk(Random rng) {
         boolean useCluster = farmClusters != null && !farmClusters.isEmpty()
                 && injectedItems < planItems
@@ -318,10 +338,10 @@ public final class BenchPopulationPlugin extends JavaPlugin {
         if (useCluster) {
             return farmClusters.get(clusterCursor++ % farmClusters.size());
         }
-        if (cursor >= chunkOrder.size()) {
+        if (chunkOrder.isEmpty()) {
             return null;
         }
-        return chunkOrder.get(cursor++);
+        return chunkOrder.get(cursor++ % chunkOrder.size());
     }
 
     private Location centerOf(Chunk ch) {
