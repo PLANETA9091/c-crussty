@@ -49,7 +49,7 @@ FLUID_GUARD="${FLUID_GUARD:-1}"
 # PALETTED-DEMUX (S7-131, ARCH-ATTACK lever #1 — the owner's top-1 function):
 # 1 = demux patch served at PalettedContainer first load (field-inject +
 # fast-path get + guarded mutators); 0 = vanilla-palette A/B leg.
-PALETTED_DEMUX="${PALETTED_DEMUX:-1}"
+PALETTED_DEMUX="${PALETTED_DEMUX:-0}"
 # BENCH-X150K population fixture (S7-129, docs/BENCH_X150K_SCENARIO.md §2):
 # deterministic living-scene injection AFTER forceload, BEFORE the profiler
 # window (harness waits for the POPULATION INJECT DONE marker). 0 = off.
