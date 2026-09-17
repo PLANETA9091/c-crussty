@@ -55,28 +55,29 @@ public final class FluidPushGuardHook {
     private FluidPushGuardHook() {}
 
     // ---- falsifier counters (TASK-77 §7: "if hit-rate is low on the live
-    // profile, the candidate dies honestly"). Volatile longs, one increment
-    // per call (~1-2 ns), throttled stats line every 2^20 calls.
-    static volatile long HITS = 0, MISSES = 0;
+    // profile, the candidate dies honestly"). S7-132 RELENS: the bump()
+    // METHOD cost ~1% of the tick as a non-inlined call with two volatile
+    // RMWs on the hottest bridge in the server (~400k calls/tick at 150k
+    // live) — the counters are now PLAIN longs incremented INLINE at the
+    // two call sites (races only lose diagnostic counts; hit-rate accuracy
+    // is preserved at the observed volumes), and the throttled stats check
+    // rides on the plain loads. The falsification contract is unchanged:
+    // the stats line still prints call volume + hit_rate every 2^20.
+    static long HITS = 0, MISSES = 0;
     // First stats line after 2^18 calls (~16 s at the census load: 400 items
     // x2 tags x20 tps = 16k calls/s) so it lands INSIDE the measurement
     // window; subsequent lines every 2^20.
     static volatile long NEXT_LOG_AT = 1L << 18;
 
-    private static void bump(boolean hit) {
-        if (hit) {
-            HITS++;
-        } else {
-            MISSES++;
-        }
+    /** Cold: throttled falsifier stats (S7-132 relens — split from the hot
+     * increment so the printf/branch block never sits on the call path). */
+    private static void logStats() {
         long total = HITS + MISSES;
-        if (total >= NEXT_LOG_AT) {
-            NEXT_LOG_AT = total + (1L << 20);
-            double rate = total == 0 ? 0.0 : HITS * 100.0 / total;
-            System.err.printf(
-                "[crussty-plugin] fluid_guard: stats calls=%d hits=%d misses=%d hit_rate=%.1f%%%n",
-                total, HITS, MISSES, rate);
-        }
+        NEXT_LOG_AT = total + (1L << 20);
+        double rate = total == 0 ? 0.0 : HITS * 100.0 / total;
+        System.err.printf(
+            "[crussty-plugin] fluid_guard: stats calls=%d hits=%d misses=%d hit_rate=%.1f%%%n",
+            total, HITS, MISSES, rate);
     }
 
     /** Same-state guard entry. Only pure-negative outcomes are stored.
@@ -121,7 +122,10 @@ public final class FluidPushGuardHook {
         if (e != null && e.level == self.level() && cellBoundsMatch(self, e)) {
             try {
                 if (cellsUnchanged(self, e)) {
-                    bump(true);
+                    HITS++;
+                    if (HITS + MISSES >= NEXT_LOG_AT) {
+                        logStats();
+                    }
                     // Vanilla pure-negative tail: fluidHeight.put(tag, 0.0);
                     // flowAcc == Vec3.ZERO (identity) -> return inFluid=false.
                     // Bit-exact for ANY box within the same cell bounds: the
@@ -136,7 +140,10 @@ public final class FluidPushGuardHook {
                 // exactly like vanilla.
             }
         }
-        bump(false);
+        MISSES++;
+        if (MISSES + HITS >= NEXT_LOG_AT) {
+            logStats();
+        }
         return slow(self, tag, speed);
     }
 
@@ -155,12 +162,42 @@ public final class FluidPushGuardHook {
             && Mth.ceil(b.maxZ - 0.001) - 1 == e.maxZ;
     }
 
+    // S7-132 RELENS: thread-confined grow-only scratch buffers. Entity
+    // ticking is one-thread-per-region and never re-enters here, so a
+    // ThreadLocal is safe and steady-state allocation-free; growth re-sets
+    // the TL only when a bigger box arrives. Replaces the per-call
+    // `new LevelChunkSection[rows][]` (~150k+/tick at 150k live) and the
+    // per-miss snapshot arrays.
+    private static final ThreadLocal<LevelChunkSection[][]> FLAT_TL =
+            ThreadLocal.withInitial(() -> new LevelChunkSection[4][]);
+    private static final ThreadLocal<FluidState[]> SCRATCH_TL =
+            ThreadLocal.withInitial(() -> new FluidState[8]);
+
+    private static LevelChunkSection[][] tlFlat(int rows) {
+        LevelChunkSection[][] f = FLAT_TL.get();
+        if (f.length < rows) {
+            f = new LevelChunkSection[Math.max(rows, f.length * 2)][];
+            FLAT_TL.set(f);
+        }
+        return f;
+    }
+
+    private static FluidState[] tlScratch(int cells) {
+        FluidState[] sc = SCRATCH_TL.get();
+        if (sc.length < cells) {
+            sc = new FluidState[Math.max(cells, sc.length * 2)];
+            SCRATCH_TL.set(sc);
+        }
+        return sc;
+    }
+
     /** Identity re-read of every box cell. Needs no invalidation hooks:
      * FluidState singletons change iff the world changed. Chunk fetch uses
-     * load=false — any unloaded column -> miss -> slow path. */
+     * load=false — any unloaded column -> miss -> slow path.
+     * S7-132 relens: per-call flat array -> thread-confined buffer. */
     private static boolean cellsUnchanged(Entity self, GuardEntry e) {
         ChunkSource source = e.level.getChunkSource();
-        LevelChunkSection[][] flat = new LevelChunkSection[e.spanX * (e.cz1 - e.cz0 + 1)][];
+        LevelChunkSection[][] flat = tlFlat(e.spanX * (e.cz1 - e.cz0 + 1));
         for (int cz = e.cz0; cz <= e.cz1; cz++) {
             for (int cx = e.cx0; cx <= e.cx1; cx++) {
                 ChunkAccess chunk = source.getChunk(cx, cz, ChunkStatus.FULL, false);
@@ -204,7 +241,7 @@ public final class FluidPushGuardHook {
         int cx0 = minX >> 4, cx1 = maxX >> 4, cz0 = minZ >> 4, cz1 = maxZ >> 4;
         int spanX = cx1 - cx0 + 1;
         int offset = -(cx0 + spanX * cz0);
-        LevelChunkSection[][] flat = new LevelChunkSection[spanX * (cz1 - cz0 + 1)][];
+        LevelChunkSection[][] flat = tlFlat(spanX * (cz1 - cz0 + 1));
         ChunkSource source = level.getChunkSource();
         for (int cz = cz0; cz <= cz1; cz++) {
             for (int cx = cx0; cx <= cx1; cx++) {
@@ -219,8 +256,12 @@ public final class FluidPushGuardHook {
         boolean inFluid = false;
         int flowCount = 0;
         boolean cacheable = true;
-        FluidState[] snapshot = new FluidState[Math.max(0,
-                (maxX - minX + 1) * Math.max(0, maxY - minY + 1) * Math.max(0, maxZ - minZ + 1))];
+        // S7-132 relens: the sweep writes into a thread-confined scratch; the
+        // per-miss copy now happens ONLY when the outcome is cacheable (an
+        // in-fluid box — never cached — previously allocated + copied the
+        // snapshot array for nothing, ~46k/tick of young-gen garbage).
+        FluidState[] snapshot = tlScratch(Math.max(0,
+                (maxX - minX + 1) * Math.max(0, maxY - minY + 1) * Math.max(0, maxZ - minZ + 1)));
         int snap = 0;
         BlockPos.MutableBlockPos mpos = new BlockPos.MutableBlockPos();
         for (int x = minX; x <= maxX; x++) {
