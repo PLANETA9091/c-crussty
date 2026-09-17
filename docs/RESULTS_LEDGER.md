@@ -1635,3 +1635,29 @@ world3-bench artifact (49.5MB; GitHub 302 → подписанный Azure blob,
 возвратится к preregistered очереди: REDSTONE-LENS STEP-0 / minecarts
 STEP-0 / GC-SHAPE-1; owner-gated: pinned runner/сценарий). runs_index +2.
 INJECTS-ONLY цел (0 sandbox boots; artifact download — не boot).
+
+## §141 — S7-126 (TASK-262): pack discard #3 (6731204), gate fast-fail churn (bimodal pool), retry in flight
+
+**ARM#2 attempt#1 = 35221359818**: SUCCESS, мир afb3a0b3, финал cpu
+**6731204** — ниже pack window [6916007,7136333] на 2.7% ⇒ честный
+discard #3. Три pack discard'а суммарно: 6832640 (94.14ms) / 6691832 /
+6731204 — все НИЖЕ окна; pool медленно дрейфует вниз с утренних 7.05M
+(B1#6) через 6.99M (leg#1) к ~6.7M и ниже.
+
+**Gate fast-fail churn** (6 подряд, каждый ~13-30s, v4.4 ноль-ручных):
+gate значения **6372300 / 6372622 / 9864892 / 8261589 / 6645024** — пул
+сейчас БИМОДАЛЬНЫЙ (slow ~6.37M / fast ~9.86M) и скачет ЧЕРЕЗ band
+[6688594,7551675]. 21-й..26-й честные reject суммарно. Каждая попытка
+дешёвая (pre-download, sanction protocol); окно НЕ переносится —
+preregistered база §125-A1 неприкосновенна (перенос = owner-amendment,
+как AMENDMENT-1).
+
+**Последний dispatch = 35224751782 past-gate in flight** (master, band
+[6688594,7551675], финал = точное окно [6916007,7136333]). Poll
+следующего тика: in-window ⇒ leg#2 banked ⇒ `verdict_a1.py` ⇒
+**§125-A1 ВЕРДИКТ**: pack median(85.44, leg2) ≤ **80.95ms** ⇒ LANDS
+(pack F1+F2+F3-reads+F3-queue единой посадкой на master); иначе REFUTED
+row (ноль посадок; модульная повестка — preregistered очередь
+REDSTONE-LENS / minecarts / GC-SHAPE-1, owner-gated пункты отдельно).
+F2/F3 маркеры закрыты (S7-125: 4/4 ARMED). runs_index +7 (90 строк).
+INJECTS-ONLY цел (0 sandbox boots; fast-fail не boot).
