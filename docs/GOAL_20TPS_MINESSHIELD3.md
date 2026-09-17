@@ -460,3 +460,29 @@
 > Пайплайн --check зелёный: обе arms mspt/window/world/valid ✓. F2/F3
 > маркеры — на первой завершённой pack-ноге. INJECTS-ONLY цел (0 sandbox
 > boots; cancel не boot).
+
+> **СТАТУС 20 TPS (S7-123)**: **pack arm#1 попытка#1 = honest DISCARD; bug#6+
+> bug#7 пойманы и закрыты (v4.3); попытка#3 = 35216066889 в полёте.** (1)
+> 35213299343 (master f97c84d, FULL pack kernel): SUCCESS, VALID, мир
+> afb3a0b3, MSPT 94.14 — НО финал cpu **6832640** НИЖЕ pack window
+> [6916007,7136333] (и ниже arm2-lo 6856477 ⇒ не парируется НИ с одной
+> armой) ⇒ честный discard; MSPT 94.14 не пригоден для вердикта (другой
+> класс раннера — подтверждение закона парирования). (2) **БАГ#6**: логи
+> CI-рана НЕДОСТУПНЫ короткое окно сразу после завершения (zip не
+> финализирован) — log_text возвращал "", run падал в reject-ветку и
+> state СТИРАЛСЯ (пойман live на этой ноге; исход совпал с discard'ом, но
+> классификация была неверной). Фикс v4.3: пустые логи при concl=success ⇒
+> retry (exit 4), state цел. (3) **БАГ#7 (семья bug#5)**: все pack-фазные
+> discard/cancel/reject пути звали clear_state() — терялись phase/window/
+> baseline, следующий dispatch падал в fresh-baseline ветку (не тот kernel
+> на не том ref). Фикс v4.3: restore_pack_or_clear() — pack-фаза
+> ВОССТАНАВЛИВАЕТСЯ (run_id=None), baseline чистится как раньше. (4)
+> Попытка#2: gate cpu **10054256** (10M быстрый класс) далеко вне band
+> [6688594,7551675] ⇒ ~30s fast-fail reject — dispatch-verify корректно
+> отказался сохранять state завершённого рана (нота для v4.4: отличать
+> свой fast-fail от чужого рана в окне 25s). (5) **Попытка#3 = 35216066889
+> IN FLIGHT** (master fb7d8cb, POST 204, band [6688594,7551675], финал =
+> точное окно [6916007,7136333]) — poll следующего тика: in-window ⇒
+> leg#1 banked ⇒ v4.3 автодиспатчит arm#2 ⇒ 2 ноги ⇒ verdict_a1 ⇒
+> **§125-A1 ВЕРДИКТ** (порог median(83.40,83.51)×0.97 = **80.95ms**
+> неизменен). INJECTS-ONLY цел (0 sandbox boots).

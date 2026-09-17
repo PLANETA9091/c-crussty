@@ -1,5 +1,16 @@
 #!/usr/bin/env python3
-"""hunt_leg_b.py v4.2 — §125-AMENDMENT-1: slow-track baseline+pack hunt.
+"""hunt_leg_b.py v4.3 — §125-AMENDMENT-1: slow-track baseline+pack hunt.
+
+v4.3 FIX (recon bug#6+#7, S7-123): (bug#6) logs can be undownloadable for a
+short window right after run completion — log_text returns "", the completed
+run fell to the reject branch and state was WIPED (caught live on pack arm#1
+35213299343; outcome coincided with an honest discard there, classification
+was still wrong). Fix: empty logs on a successful run => retry next call.
+(bug#7, bug#5 family) every pack-phase discard/cancel/reject path called
+clear_state(), losing phase/window/baseline — the next dispatch then fell to
+the fresh-baseline branch (wrong kernel on wrong ref). Fix:
+restore_pack_or_clear() — pack phase is restored with run_id=None, baseline
+clears as before.
 
 v4.2 FIX (recon bug#5, S7-122): v4.1 main() dispatch branch required
 `st.get("pack_legs")` truthy — the PACK ARM#1 case (phase=pack, run_id=None,
@@ -131,6 +142,22 @@ def clear_state():
         os.remove(STATE)
 
 
+def restore_pack_or_clear(st):
+    """bug#7 (S7-123): a pack-phase discard/cancel/reject must NOT wipe the
+    phase — clear_state() sent the next dispatch to the fresh-baseline branch
+    (wrong kernel on wrong ref — bug#5 family). Pack phase is RESTORED with
+    run_id=None so the hunt continues with the next pack arm; baseline phase
+    clears (fresh-baseline branch re-derives from ARM1 constants)."""
+    if st.get("phase") == "pack":
+        write_state({"phase": "pack", "run_id": None,
+                     "win_lo": st["win_lo"], "win_hi": st["win_hi"],
+                     "baseline": st.get("baseline", []),
+                     "pack_legs": st.get("pack_legs", []),
+                     "t": time.time()})
+    else:
+        clear_state()
+
+
 def pack_window(cpu2):
     lo = max(ARM1["cpu"], cpu2) * 0.98
     hi = min(ARM1["cpu"], cpu2) * 1.02
@@ -185,7 +212,7 @@ def poll(tok, st):
                 print(f"  run {rid}: WORLD DRIFT sha={wsha[:12]} -> cancel early")
                 api(tok, f"{API}/repos/{REPO}/actions/runs/{rid}/cancel", method="POST")
                 time.sleep(15)
-                clear_state()
+                restore_pack_or_clear(st)
                 return None, 2
             lo, hi = (ARM1_WIN_LO, ARM1_WIN_HI) if st["phase"] == "baseline" \
                 else (st["win_lo"], st["win_hi"])
@@ -195,12 +222,21 @@ def poll(tok, st):
             print(f"  run {rid}: harness cpu={cpu} OUT of {st['phase']} window -> cancel")
             api(tok, f"{API}/repos/{REPO}/actions/runs/{rid}/cancel", method="POST")
             time.sleep(15)
-            clear_state()
+            restore_pack_or_clear(st)
             return None, 2
         print(f"  run {rid}: running, no harness echo yet — keep polling")
         return None, 4
     # completed
     txt = log_text(tok, rid)
+    # v4.3 (bug#6): logs can be UNDOWNLOADABLE for a short window right after
+    # completion (zip not yet finalized) — log_text returns "" and the run
+    # used to fall to the reject branch, wiping state (caught live S7-123 on
+    # pack arm#1 35213299343; outcome coincided with an honest discard there,
+    # but the classification was wrong). Treat empty logs on a successful run
+    # as retry-later, keeping state.
+    if concl == "success" and not txt.strip():
+        print(f"  run {rid}: success but logs not yet downloadable — retry next call")
+        return None, 4
     mh = re.search(r"run-env: world_sha256=([0-9a-f]+) runner_cpu_index=(\d+) fake_players=4", txt)
     if concl == "success" and mh:
         wsha, cpu = mh.group(1), int(mh.group(2))
@@ -208,7 +244,7 @@ def poll(tok, st):
             print(f"  run {rid}: WORLD DRIFT sha={wsha[:12]} != pin -> discard, re-baseline required")
             json.dump({"run_id": rid, "cpu": cpu, "world_sha": wsha,
                        "verdict": "WORLD-DRIFT"}, open(RESULT, "w"))
-            clear_state()
+            restore_pack_or_clear(st)
             return None, 2
         if st["phase"] == "baseline":
             if ARM1_WIN_LO <= cpu <= ARM1_WIN_HI:
@@ -250,11 +286,11 @@ def poll(tok, st):
             write_state(st)
             return "found_pack_leg1", 0
         print(f"  run {rid}: success cpu={cpu} OUT pack window {lo}-{hi} -> discard")
-        clear_state()
+        restore_pack_or_clear(st)
         return None, 2
     m = re.search(r"runner_cpu_index=(\d+) band=\[", txt)
     print(f"  run {rid}: {concl} (gate cpu={m.group(1) if m else 'n/a'}) -> reject")
-    clear_state()
+    restore_pack_or_clear(st)
     return None, 1
 
 
