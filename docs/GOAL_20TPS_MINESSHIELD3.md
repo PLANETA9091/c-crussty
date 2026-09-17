@@ -264,3 +264,37 @@
 > => честный discard (5-й подряд честный reject — ворота строгие, ни одной
 > ложной пары); нога#10 35189275270 dispatched in flight. INJECTS-ONLY цел
 > (0 sandbox boots; verify = link-time только, без <clinit>).
+
+> **СТАТУС 20 TPS (S7-115)**: F3-READS BUILT — `randomtick/src/TickBlockOps.java`
+> (package net.minecraft.server.level): ЧЕТЫРЁХСЛОЙНАЯ анатомия cfdump'ами
+> run21 (Level.getBlockState @0-71: capture-ветка ПЕРВАЯ + isOutsideBuildHeight
+> → VOID_AIR + getChunk(FULL,true) + ChunkAccess.getBlockState;
+> LevelChunk.getBlockStateFinal: nonEmptyBlockCount==0 → AIR-шорткат; дрен
+> LevelTicks.runCollectedTicks @0-76 С QUIRКОМ: set.remove под guard'ом
+> !toRunThisTickSet.isEmpty(); tickBlock @0-53: is→tick→counter&7→mid-tick).
+> Дизайн: дрен-хелпер = байт-точное зеркало ванили (Unsafe-read приватных
+> final-полей — одна выборка эквивалентна getfield на каждой итерации) + окно
+> ThreadLocal section→chunk кэша; readBlockState-линза: ТОЛЬКО getChunk-хоп
+> заменён (первый тик секции платит точный ванильный getChunk, остальные секции
+> — кэш-хит; ChunkAccess.getBlockState остаётся реальным вызовом); ВНЕ окна —
+> точный ванильный путь (tickBlock достижим только из дрен-лямбды — семантика
+> идентична, просто не батчится). Mid-tick ВЫЗОВ байт-идентичен по построению
+> (тот же invokeinterface на том же поле), в банке не исполняется — счётчик
+> держится под кратными 8, арифметика ветки сверяется точно. PARITY BANK на
+> РЕАЛЬНЫХ production entry (LevelTicks/LevelChunk/ServerChunkCache/
+> PalettedContainer — все allocateInstance+preseed реальных структур; counting
+> ConcurrentLong2ReferenceChainedHashTable-стаб; CraftBlockState.getHandle
+> реальным диспатчем): **PASS — S1 дрен порядок/книгучёт, S2 quirk, S3 10/10
+> чтений (палитра/AIR-шорткат/VOID_AIR/отрицательные координаты), S4 30/30
+> счётчик+ветка, S5 capture-ветка, S6 идентичность стрима чтений + ВЫИГРЫШ
+> RESOLUTIONS REF=6 → NEW=2 (per-pos → per-section), S9 fuzz 40/40**.
+> Рантайм-швы устранены в банке: chunkSource на ServerLevel (НЕ Level!),
+> section-резолюция через ChunkAccess.levelHeightAccessor (НЕ minSection),
+> -20>>4=-2 floor-деление. Byte hooks СЛЕДУЮЩИЙ тик: patch_run_collected_ticks
+> (6 байтов: aload_0/aload_1/invokestatic/return) + patch_tick_block (11
+> байтов: aload_0×3/invokestatic/return) — оба без ветвлений => пустой
+> StackMapTable. ПАКЕТ: F1 ✓ + F2 ✓ + F3-reads built (hooks next) — затем
+> F3-queue (≤0.5%) и ОДИН агрегатный A/B (§125). Пара #2: нога#10 gate-reject
+> (8869954, ~30s), нога#11 gate-reject (6852134 у нижней кромки, ~30s) — 7-й
+> подряд честный reject; нога#12 35193865177 dispatched in flight.
+> INJECTS-ONLY цел (0 sandbox boots).
