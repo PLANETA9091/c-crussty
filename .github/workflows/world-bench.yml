@@ -55,6 +55,10 @@ on:
         description: 'Deterministic injection replay seed (BenchPopulationPlugin)'
         required: false
         default: '42'
+      server_xmx:
+        description: 'Server JVM max heap (S7-130; 6G = historical default, 150k-scale prime runs use 10G)'
+        required: false
+        default: '6G'
       cpu_band_min:
         description: 'Pair-hunter fast-fail: min runner_cpu_index band (empty = no gate; S7-96d law pairing infra)'
         required: false
@@ -133,6 +137,7 @@ jobs:
           FLUID_GUARD: ${{ inputs.fluid_guard || '1' }}
           POPULATION_TARGET: ${{ inputs.population_target || '0' }}
           POPULATION_SEED: ${{ inputs.population_seed || '42' }}
+          SERVER_XMX: ${{ inputs.server_xmx || '6G' }}
           NATIVES_TGZ: ${{ inputs.natives_url || 'https://github.com/PLANETA9091/c-crussty/releases/download/v0.1.0/crussty-v0.1.0-linux-x64.tar.gz' }}
           RUNTIME_SO: ${{ runner.temp }}/libcrussty_runtime.so
         run: |
