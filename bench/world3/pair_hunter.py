@@ -66,11 +66,20 @@ def scrape_run_env(logtxt):
     m = re.search(r"run-env: world_sha256=([0-9a-f]{8,64}) runner_cpu_index=(\d+) fake_players=(\d+)", logtxt)
     if m:
         out["world_sha"] = m.group(1); out["cpu_idx"] = int(m.group(2)); out["fake_players"] = int(m.group(3))
+    else:
+        # gate-rejects die BEFORE the harness run-env echo; the band-gate step
+        # echoes its own line — capture cpu_idx so the pool histogram stays complete
+        m = re.search(r"runner_cpu_index=(\d+) band=\[", logtxt)
+        if m:
+            out["cpu_idx"] = int(m.group(1))
     m = re.search(r"spark tick-monitor MSPT: avg \*\*([\d.]+)ms\*\*", logtxt)
     if m:
         out["mspt"] = float(m.group(1))
     m = re.search(r"FIXTURE-VALIDITY: (VALID|INVALID)", logtxt)
-    out["fixture"] = m.group(1) if m else "N/A"
+    if m:
+        out["fixture"] = m.group(1)
+    elif "OUTSIDE band" in logtxt or "BAND-GATE-REJECT" in logtxt or re.search(r"runner_cpu_index=\d+ band=\[", logtxt):
+        out["fixture"] = "BAND-GATE-REJECT"
     return out
 
 def main():

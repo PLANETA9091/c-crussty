@@ -1115,3 +1115,15 @@ VERDICT (bytecode grade — contract from the materialized booted kernel, NOT fr
 **RUNNER-КОНТЕНШН ГИПОТЕЗА — апдейт**: внутри класса runner'ов (Δcpu 1.86%) MSPT воспроизводится с 1.3% спредом => разрыв 76ms (mid-band класс) vs 57ms (быстрейший класс 10088241, N=16) = РАЗНИЦА КЛАССА ЖЕЛЕЗА, не рандомный контеншн. Оценка железного рычага ~25% MSPT. Проверка/эксплуатация = pinned/dedicated runner (owner-инфра).
 
 **ИНДЕКС**: runs_index.jsonl 24 рана (снапшот committed в research/ для sandbox-reset устойчивости); dispatch_band.py + absorb_run21.sh в bench4_recon. INJECTS-ONLY: 0 sandbox boots.
+
+## §122 ADDENDUM-107 — TASK-243 (agent-7625532f, 2026-09-17): PAIR REPLICATION 0/18 THIS TICK + POOL-CLASS DISTRIBUTION LAW (S7-107) — scraper patch, index backfill, dense-cluster hunt economics
+
+**РЕПЛИКАЦИЯ ПАРЫ (цель тика)**: 18 band-gated диспатчей (3 раунда dispatch_band.py, budget 6) — 0 in-band ног; все fast-fail ~30-45s (24 gate-reject суммарно за кампанию). Пара run#17 × run#21 (spread 1.3%) остаётся единственной — вердикт S7-106 не изменён; репликация продолжена next tick (index копится).
+
+**POOL-CLASS DISTRIBUTION LAW (новое измерение, 20 full-log draws)**: GitHub runner pool не однороден — slow класс (<8.6M) = 15/20 = 75% (кластер 6.86-7.09M плотный: 8 draws), mid класс (band 8.6-9.5M) = 2/20 = 10%, fast класс (>9.5M) = 3/20 = 15% (9958944, 10088241, 11833447 — внутренний спред 18%, класс не тугой). **Yield mid-band ≈ 10% => ~10 диспатчей на in-band ногу** (оценка S7-106 «каждый ~3-й» исправлена: она опиралась на 2/5 ранней выборки). Наблюдение: распределение классов меняется во времени (сегодня утром pool целиком в slow классе) — yield охоты зависит от времени суток.
+
+**DENSE-CLUSTER HUNT ECONOMICS (действие для будущих A/B)**: пара может якориться на ЛЮБОЙ тугой кластер cpu_idx, не только на класс run#17. Самый плотный кластер = 6.86-7.09M (8 draws в пределах 3.2%) => band [6850000,7050000] даёт yield ~35-40% (~3 диспатча на ногу против ~10 для mid-band). Рекомендация: будущие lever A/B = 2 свежие ноги в dense band (базовая + патченная), а не пара к редкому mid-band классу; пара run#17 × run#21 остаётся mid-band якорем базы 76.01ms.
+
+**АТРИБУЦИЯ — ИСПРАВЛЕНИЕ S7-106**: backfill по логам показал 35169547594 = cpu **11833447** (самый быстрый draw в истории наблюдений, +18% к run#19) — в CLAIMS TASK-242/worklog S7-106 он был ошибочно указан как 7086411 (это cpu 35169620123); 9958944 = 35169668823. На вердикты не влияет (все трое — gate-rejects), но хронология классов пула теперь точна.
+
+**ИНФРА ПАТЧ**: pair_hunter.scrape_run_env теперь ловит cpu_idx gate-reject'ов (band-gate echo `runner_cpu_index=N band=[...]` — раньше грепалась только полная run-env строка, которую reject'ы не достигают) + fixture=BAND-GATE-REJECT; scripts/bench4_recon/backfill_gate_rejects.py (my-project) дотягивает cpu_idx для исторических reject'ов ИЗ ИСТОЧНИКА (логов), runs_index.jsonl: 36 ран, все 17 gate-rejects с cpu_idx. INJECTS-ONLY: 0 sandbox boots.
