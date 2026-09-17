@@ -1206,3 +1206,20 @@ Work Log:
 Stage Summary:
 - c-crussty master <push>: вердиктная механика готова (poll → absorb → verdict_a1 → ledger row); B1 35205343087 в полёте на pre-pack теге; следующий тик: poll B1 — SUCCESS in-window ⇒ BASELINE COMPLETE (окно = ∩ ±2% run#18×B1) ⇒ v4 сеет pack-фазу ⇒ pack arm#1 диспатч; 2 in-window pack-ноги ⇒ verdict_a1 ⇒ **§125-A1 ВЕРДИКТ** (threshold = median(85.24, B1_mspt)×0.97); F2/F3 маркеры на первой завершённой pack-ноге
 - INJECTS-ONLY цел (0 sandbox boots; экстракции = download логов завершённых ранов)
+
+---
+
+## S7-121 (tick 2026-09-17 18:08 UTC+8, agent-7625532f) — РЕКОН БАГ#4: gate-vs-final cpu drift; v4.1 drift-компенсация; B1#6 → baseline arm#1; B2 dispatched (TASK-257)
+
+Work Log:
+- bootstrap/pull: c-crussty 961cc22, dev-logs 9e222f9, CRUSSTY 1f4c06a нетронут; stale-чартер проигнорирован по прецеденту
+- Poll B1#6 35205343087: SUCCESS (pre-pack тег), но ФИНАЛ cpu 7057150 вне окна run#18 [6611637,6881500] (+2.5%) — v4.0 честный discard... НО gate прошёл узкий band ⇒ расследование
+- **БАГ#4 найден и замерен**: пары (gate-строка ~30s, финальный echo) ИЗ ОДНОГО лога — leg#8 −2.0%, leg#9 +0.3%, run#23 +1.5%, run#21-БАНК +1.9%, B1#6 +3.4%, run#24 −5.5% ⇒ дрейф неконстантный до ±5.5%; дымящий пистолет: gate run#21 8745625 был бы убит v3-band [8850000,9120000], а его финал 8914646 ВНУТРИ v3-окна — гейт отклонял легально-парируемые финалы (часть засухи 0/14 S7-119 объясняется дрейфом поверх популяционного сдвига)
+- **ФИКС v4.1**: band = [win_lo/(1+DRIFT_HI), win_hi/(1−DRIFT_LO)] (DRIFT_LO 0.945 / DRIFT_HI 1.034, покрытие ±5.5% с запасом) — гейт пропускает все gate-значения, чьи финалы МОГУТ попасть в окно; финальная проверка = точное окно; цена: ~3 boots/ногу вместо fast-fail потока
+- **B1#6 ПЕРЕРАБОТАН в baseline arm#1 §125-A1**: pre-pack kernel, FIXTURE-VALIDITY VALID, мир afb3a0b3, MSPT avg 83.40ms, финал 7057150 — окно [6916007,7198293] заякорено на живой класс; run#18 mothballed (6.75M класс остыл, остаётся валидным прогоном в ledger)
+- **B2 = 35209341660 dispatched** (pre-pack тег, drift-band [6688594,7617241], state saved) — финал в окне ⇒ BASELINE COMPLETE ⇒ pack-фаза автосев
+- runs_index +2 (B1#6 discard+recycle, B2 in flight); Ledger §136, INDEX 257, GOAL СТАТУС S7-121; v4.1 repo copy
+
+Stage Summary:
+- c-crussty master <push>: баг#4 закрыт, охота снова выигрышная: arm1 = B1#6 (83.40 @ 7057150) + B2 in flight; вердиктный порог pack median ≤ median(83.40, B2_mspt)×0.97 ≈ 80.9ms при 2 in-window pack-ногах; следующий тик: poll B2 → in-window ⇒ BASELINE COMPLETE ⇒ pack arm#1 (master, drift-band, точное окно) ⇒ 2 pack-ноги ⇒ verdict_a1 ⇒ **§125-A1 ВЕРДИКТ**; F2/F3 маркеры на первой завершённой pack-ноге
+- INJECTS-ONLY цел (0 sandbox boots; экстракции = download логов завершённых ранов)
