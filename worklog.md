@@ -931,3 +931,19 @@ Work Log:
 
 Stage Summary:
 - Инфраструктура честных A/B теперь самодостаточна: band-gated fast-fail + log-scrape индекс + 2% pairing rule. Следующий модульный рычаг (когда появится) получит легальный min-of-2 без owner-hardware. Pairing probe run20 in flight
+---
+Task ID: S7-106 (pair-landing tick, 09:08+08, Job 390768) — FIRST LEGAL PAIR LANDED (run#17 × run#21, spread 1.3%)
+Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609170908)
+Task: stale-charter tick per latest state — S7-105 built pair-hunter + dispatched band-gated probe (fast-fail'd out-of-band); this tick = continue hunt, land in-band leg, pair verdict
+
+Work Log:
+- bootstrap + pulls: remote moved to S7-105 (b94a728) — pair-hunter infra + band gate on master; no runs in flight (run20 35168042596 fast-fail уже известен)
+- HUNT: dispatch 35169547594 fast-fail cpu 7086411 (~30s) → 35169620123 fast-fail 9958944 (~30s) → 35169715709 IN-BAND (пережил gate, SUCCESS 01:37:36Z за 22.5 мин); новый инструмент dispatch_band.py (my-project bench4_recon): dispatch -> 120s grace -> failure=retry (budget 6) / running=in-band
+- ABSORB run#21 35169715709 (absorb_run21.sh): 3 гейта PASS (FIXTURE-VALIDITY VALID, fp=4, plugin registered); полный сет (collapsed×3, entity-recon, patched-kernel.jar, spark-report, gc.log) -> bench3_research/run21/; run-env cpu_idx 8914646, world afb3a0b3ba78
+- **PAIR VERDICT (pair_hunter.py --no-dispatch)**: ПЕРВАЯ ЛЕГАЛЬНАЯ ПАРА — runA 35169715709 cpu 8914646 MSPT 76.01 × runB 35156292165 (run#17) cpu 9080657 MSPT 76.98; world MATCH + fp 4/4 + cpu Δ1.86%<=2% => **SPREAD 1.3%** (кросс-ран был 10.7% — pairing схлопывает шум на порядок; S7-96d law количественно)
+- PAIRED PROFILE (recon_lanes run21 --diff run17 -> research/bench4-recon-2026-09-17/run21/): kernel-лейны ±1.6pp, шевелятся только GC (+1.3/+0.4pp, закрытая семья) и "other" +2.06pp; заменимых соло >=3% НЕТ — соло-карта подтверждена 4-й раз
+- КОНТЕНШН-ГИПОТЕЗА апдейт (GOAL): внутри класса воспроизводимость 1.3% => 76ms (mid-band) vs 57ms (fastest 10088241, N=16) = разница КЛАССА ЖЕЛЕЗА ~25% MSPT, не рандомный контеншн; эксплуатация = pinned runner (owner-gated)
+- ledger: GOAL (run#21 блок + СТАТУС S7-106) + RESULTS_LEDGER §121 + INDEX 241 + CLAIMS TASK-242; runs_index.jsonl (24 рана) снапшот committed в research/ для sandbox-устойчивости; INJECTS-ONLY: 0 sandbox boots
+
+Stage Summary:
+- task171 pair-hunter доставлен END-TO-END: первая легальная min-of-2 пара посажена без owner-hardware (охота = 2×30s fast-fail + 1 нога; pool выдаёт in-band каждый ~3-й диспатч). База будущих A/B = 76.01ms на паре; спред внутри класса 1.3%. Все пути вперёд owner-gated (агрегаты/санкция гейта, pinned runner ~25% железа, смена сценария); модульных рычагов >=3% нет — состояние честное

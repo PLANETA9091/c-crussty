@@ -1095,3 +1095,23 @@ VERDICT (bytecode grade — contract from the materialized booted kernel, NOT fr
 **END-TO-END VALIDATION**: band-gated probe run 35168042596 (band [8636000,9525000] вокруг run#17 cpu_idx 9080657): pool выдал runner с cpu_idx 6981619 -> fast-fail за ~30с (log: "runner_cpu_index=6981619 OUTSIDE band — fast-fail pre-download (pairing discard)"). Loop: dispatch -> gate -> index -> pair detection работоспособен. Smoke: --no-dispatch проиндексировал 19 исторических ран (0 пар — все cpu_idx различаются; преран#17 логи без run-env echo — ожидаемо, echo добавлен в S7-99).
 
 **ИСПОЛЬЗОВАНИЕ (когда появится модульный рычаг)**: pair_hunter.py --band-min X --band-max Y --want-pairs 1 --max-dispatch K — деспатчит до появления парной ноги; A/B = legA (baseline, уже в банде) vs legB (patched) с той же банкой; гейт >=3% MSPT CI на паре. INJECTS-ONLY: 0 sandbox boots.
+
+## §121 ADDENDUM-106 — TASK-242 (agent-7625532f, 2026-09-17): FIRST LEGAL PAIR LANDED (task171, S7-106) — run#17 × run#21 spread 1.3%, runner-variance law quantified, paired baseline 76.01ms
+
+**MOTIVE**: S7-105 построил pair-hunter инфраструктуру, но пар ещё не было (все cpu_idx исторических ран различались). Тик = продолжение охоты: band-gated dispatch-цикл до посадки in-band ноги.
+
+**ОХОТА (5 dispatches, самодостаточно)**: run 35169547594 fast-fail cpu 7086411 (~30s) → 35169620123 fast-fail 9958944 (~30s) → **35169715709 IN-BAND** (пережил gate, полный bench 22.5 мин, SUCCESS 01:37:36Z). Инструмент scripts/bench4_recon/dispatch_band.py (my-project): dispatch -> 120s grace -> completed=failure = band-reject (retry, budget 6) / still running = in-band (report + absorb). Стоимость охоты: 2×~30s + 1 полная нога — pool выдаёт in-band runner примерно каждый 3-й диспатч при банде ±5%.
+
+**ABSORB run#21 (35169715709, absorb_run21.sh)**: все 3 гейта PASS (FIXTURE-VALIDITY VALID, fake_players=4, plugin registered); полный артефакт-сет (cpu/wall/alloc collapsed, entity-recon, patched-kernel.jar, spark-report, gc.log) в bench3_research/run21/. run-env: world_sha afb3a0b3ba78, cpu_idx 8914646.
+
+**ПЕРВАЯ ЛЕГАЛЬНАЯ ПАРА (pair_hunter.py --no-dispatch, rule: world MATCH + fp MATCH + fixture VALID + |cpu Δ|<=2%)**:
+- runA 35169715709 cpu 8914646 MSPT **76.01ms**
+- runB 35156292165 (run#17) cpu 9080657 MSPT 76.98ms
+- world_sha MATCH (afb3a0b3ba78), fp 4/4, cpu Δ 1.86% <= 2% tol
+- **SPREAD 1.3%** — против кросс-ран 10.7% (run#17 vs #18): pairing схлопывает шум на порядок, runner-variance law (S7-96d) подтверждена количественно.
+
+**ПАРНЫЙ ПРОФИЛЬ (recon_lanes.py run21 --diff run17, research/bench4-recon-2026-09-17/run21/)**: структурно стабилен — kernel-лейны в ±1.6pp (kernel:other -1.61, entities -0.76, network -0.37, chunk -0.18, moonrise -0.34), шевелятся только GC-лейны (G1 +1.31pp, barriers +0.43pp — закрытая семья) и unpooled "other" +2.06pp. ЗАМЕНИМЫХ СОЛО >=3% НЕТ и на легальной паре — соло-карта подтверждена четвёртый раз (run#11, N=4 min-of-2, N=16, пара).
+
+**RUNNER-КОНТЕНШН ГИПОТЕЗА — апдейт**: внутри класса runner'ов (Δcpu 1.86%) MSPT воспроизводится с 1.3% спредом => разрыв 76ms (mid-band класс) vs 57ms (быстрейший класс 10088241, N=16) = РАЗНИЦА КЛАССА ЖЕЛЕЗА, не рандомный контеншн. Оценка железного рычага ~25% MSPT. Проверка/эксплуатация = pinned/dedicated runner (owner-инфра).
+
+**ИНДЕКС**: runs_index.jsonl 24 рана (снапшот committed в research/ для sandbox-reset устойчивости); dispatch_band.py + absorb_run21.sh в bench4_recon. INJECTS-ONLY: 0 sandbox boots.
