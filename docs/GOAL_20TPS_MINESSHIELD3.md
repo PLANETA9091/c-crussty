@@ -657,3 +657,26 @@
 > 35231195756 — concurrency cancel-in-progress, не мешать) ⇒ S7-130 масштаб
 > 150k + soak ⇒ S7-131 X150K база A/B + свежий профиль ⇒ топ-1 ARCH-ATTACK
 > (планка x150000 = скорость выполнения топ-1 функции). INJECTS-ONLY цел.
+
+> **СТАТУС 20 TPS (S7-129b) — X150K SMOKE 10k = SUCCESS (run 35234643616,
+> оба гейта зелёные) — ЖИВАЯ СЦЕНА ИЗМЕРЕНА ПЕРВОЙ В ИСТОРИИ ПРОЕКТА.**
+> (1) Fixture: INJECT DONE **10000/10000** (7000 items / 2000 hostiles /
+> 1000 passives) за **2572 мс**, FIXTURE-VALIDITY: VALID, farmClusters=500;
+> TOPUP активен (deficit=0 steady). (2) Сцена живая: ~**24.9k сущностей**
+> (натуральные спавны у 4 фейк-игроков АКТИВНЫ: skeleton 584 / drowned 468 /
+> chicken 465 / sheep 442 / creeper 403 / zombie 313 / cow 311) на 9216
+> форс-чанках. (3) Нагрузка: MSPT avg **125.63ms** (TPS ~7.6; первый poll
+> 20.0 — до инъекции), GC 0 Full GC / high-water 3951MB — прайм-масштаб
+> ДАЛЕКО от 20 TPS ⇒ ARCH-ATTACK имеет реальную работу. (4) Профиль leaf:
+> **топ-1 PalettedContainer.get 4.20%** (та же цель, что вердикт S7-128),
+> RandomTickOps 2.27%, guard-хуки bump 1.03% + slow 0.92% (оверхед
+> инструментации виден; net-эффект guard'а — мерить A/B на X150K-базе),
+> InsideBlockEffectApplier.flushStep 1.16% (кандидат wave-2 подтверждён).
+> (5) Известный баг (фикс S7-130): стартовая инъекция не пишется в
+> itemSpawnLog ⇒ первый topup удвоил items (~14k, self-correcting);
+> topup-seed привязать к Δt = ft−T0 для строгого replay. (6) NEXT S7-130:
+> фикс topup-логирования → масштаб 150k (оценка: инъекция ~39s при 1500/тик,
+> heap ~+3-4GB ⇒ возможно Xmx tuning в харнесе) → soak → S7-131 база A/B
+> pre-pack vs master на X150K + свежий профиль ⇒ топ-1 ARCH-ATTACK
+> (планка владельца x150000 = скорость выполнения топ-1 функции).
+> INJECTS-ONLY цел (0 sandbox boots; CI-буты санкционированы).
