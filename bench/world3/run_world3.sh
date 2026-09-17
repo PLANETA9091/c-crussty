@@ -50,6 +50,12 @@ FLUID_GUARD="${FLUID_GUARD:-1}"
 # 1 = demux patch served at PalettedContainer first load (field-inject +
 # fast-path get + guarded mutators); 0 = vanilla-palette A/B leg.
 PALETTED_DEMUX="${PALETTED_DEMUX:-0}"
+# ALLOC-DIET (S7-133, TASK-269, ARCH-ATTACK lever #2 — the allocation lane):
+# 1 = zero-alloc entity-query diet ARMED (LivingEntity.pushEntities wrapper
+# -> EntityQueryOps.pushables rotating pool; CollisionUtil MutableBlockPos
+# ctor -> EntityQueryOps.mutablePos ring); 0 = vanilla-alloc A/B leg.
+# Targets G1 GC + oop barriers ~27% CPU (allocation-rate derivative).
+ALLOC_DIET="${ALLOC_DIET:-0}"
 # BENCH-X150K population fixture (S7-129, docs/BENCH_X150K_SCENARIO.md §2):
 # deterministic living-scene injection AFTER forceload, BEFORE the profiler
 # window (harness waits for the POPULATION INJECT DONE marker). 0 = off.
@@ -122,6 +128,7 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "fake_players: $FAKE_PLAYERS (BENCH-4 fixture: N real ServerPlayers, task170)"
   echo "fluid_guard: $FLUID_GUARD (CRUSSTY_FLUID_PUSH_GUARD; 1 = same-state fluid-push guard ARMED, TASK-80/S7-128)"
   echo "paletted_demux: $PALETTED_DEMUX (CRUSSTY_PALETTED_DEMUX; 1 = PALETTED-DEMUX ARCH-ATTACK lever #1, S7-131)"
+  echo "alloc_diet: $ALLOC_DIET (CRUSSTY_ALLOC_DIET; 1 = ALLOC-DIET ARCH-ATTACK lever #2: zero-alloc push/collision queries, S7-133/TASK-269)"
   echo "population_target: $POPULATION_TARGET (BENCH-X150K living-scene injection, S7-129; 0 = off)"
   echo "population_seed: $POPULATION_SEED (deterministic injection replay seed; topup seeded from deltaT=ft-T0, S7-130)"
   echo "server_xmx: $SERVER_XMX (S7-130; 150k-scale runs use 10G)"
@@ -312,6 +319,8 @@ export BENCH_FORCELOAD_RADIUS="$FORCELOAD_RADIUS"
 export CRUSSTY_FLUID_PUSH_GUARD="$FLUID_GUARD"
 # PALETTED-DEMUX gate (paletted.rs reads it at register time; S7-131)
 export CRUSSTY_PALETTED_DEMUX="$PALETTED_DEMUX"
+# ALLOC-DIET gate (alloc_diet.rs reads it at register time; S7-133/TASK-269)
+export CRUSSTY_ALLOC_DIET="$ALLOC_DIET"
 # BENCH-X150K population fixture env (0 = no-op; S7-129)
 export BENCH_POPULATION_TARGET="$POPULATION_TARGET"
 export BENCH_POPULATION_SEED="$POPULATION_SEED"

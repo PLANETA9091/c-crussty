@@ -2257,6 +2257,367 @@ mod dbg3 {
     }
 }
 
+// ---------------------------------------------------------------------------
+// ALLOC-DIET (S7-133, TASK-269 — ARCH-ATTACK lever #2, the allocation lane).
+//
+// Target: G1 GC + oop write-barriers ≈ 27% of Server-thread CPU on the
+// X150K prime scene — an ADDRESSABLE DERIVATIVE of entity-lane allocation
+// churn. javap contracts (STEP-0 census, materialized kernel
+// purpur-1.21.10.jar) identified two per-tick allocation nodes:
+//
+//   1. LivingEntity.pushEntities()V — one site
+//      `invokevirtual Level.getPushableEntities(Entity,AABB)List`
+//      whose vanilla wrapper body allocates TWO ArrayLists per call (one
+//      dead guava list whose result is never read + the fill list) and
+//      then fills via the fill-into deep method
+//      EntityLookup.getEntities(Entity,AABB,List,Predicate). ~45k+ living
+//      entities tick per tick on the prime scene.
+//   2. CollisionUtil.getCollisionsForBlocksOrWorldBorder — ONE
+//      unconditional `new BlockPos.MutableBlockPos; dup; <init>:()V`
+//      before any branch (~250k+ collision queries per tick: 148k moves +
+//      100k item noPhysics noCollision checks). LazyEntityCollisionContext
+//      pooling is deferred to wave-2 (private final base-class fields —
+//      safe re-init requires Unsafe/MH; rejected for hot-path cost).
+//
+// Fix: both call sites are retargeted to `EntityQueryOps`
+// (net/minecraft/world/entity/EntityQueryOps, defined into the kernel
+// loader by alloc_diet.rs), which fills a ROTATING grow-only pool (8
+// slots/thread — nested queries from event callbacks up to depth 7 are
+// safe; beyond that, a loud CME, never silent corruption) and returns it.
+// The deep fill method, its argument order, PlatformHooks.addToGetEntities
+// and the Profiler counter are the SAME as vanilla → the returned entity
+// SEQUENCE is bit-identical (median-exact parity). mutablePos() re-inits a
+// pooled MutableBlockPos via set(0,0,0) — the exact state the vanilla
+// no-arg constructor produces.
+//
+// Both edits are LENGTH-PRESERVING (no branch-offset or StackMapTable
+// churn): the virtual→static retarget swaps the opcode byte + CP operand
+// (3B→3B; stack shape identical because the receiver becomes the first
+// static argument); the ctor splice swaps
+// [new;dup;invokespecial] (7B) for [invokestatic;nop×4] (7B).
+//
+// Audit discipline (same as retarget_invokestatic / patch_update): call
+// sites resolved BY NAME (never by offset, G4 §9), CP growth append-only
+// with the 64K saturation guard, every read bounds-checked, fail-closed
+// Err on any shape mismatch (alloc_diet.rs then stays vanilla).
+// ---------------------------------------------------------------------------
+
+/// Bridge class defined into the kernel loader by alloc_diet.rs.
+pub const ALLOC_OPS_CLASS: &str = "net/minecraft/world/entity/EntityQueryOps";
+
+const GET_PUSHABLES_DESC: &str =
+    "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;)Ljava/util/List;";
+const OPS_PUSHABLES_DESC: &str =
+    "(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;\
+     Lnet/minecraft/world/phys/AABB;)Ljava/util/List;";
+
+const MUTABLE_POS_CLASS: &str = "net/minecraft/core/BlockPos$MutableBlockPos";
+
+/// Scan a bytecode array for `invokevirtual` (0xb6) AND `invokestatic`
+/// (0xb8) instructions. The static opcode is required for IDEMPOTENCY: a
+/// site already retargeted by this patcher is now 0xb8 and must still be
+/// visible so it can be classified as `AlreadyPatched` (classification is
+/// by the resolved triple — the virtual `from` triple cannot collide with
+/// the static `to` triple because their descriptors differ). Same
+/// bounded-walk contract as [`scan_invokestatics`].
+fn scan_invoke_sites(code: &[u8], code_start: usize) -> Result<Vec<(usize, u16)>, String> {
+    let mut out = Vec::new();
+    let mut pc = 0usize;
+    while pc < code.len() {
+        let op = code[pc];
+        if op == 0xb6 || op == 0xb8 {
+            let b = code
+                .get(pc + 1..pc + 3)
+                .ok_or_else(|| "invoke operand truncated".to_string())?;
+            out.push((code_start + pc, u16::from_be_bytes([b[0], b[1]])));
+            pc += 3;
+            continue;
+        }
+        let extra = opcode_extra(op, code, pc)?;
+        pc = pc
+            .checked_add(1 + extra)
+            .ok_or_else(|| "code walk overflow".to_string())?;
+        if pc > code.len() {
+            return Err("truncated code (walk past end)".into());
+        }
+    }
+    Ok(out)
+}
+
+/// Variant S retarget (alloc-diet): rewrite every `invokevirtual` call site
+/// in `method_name`/`method_desc` that resolves to `from` (class, method,
+/// descriptor) so it invokes `to` STATICALLY. The receiver of the virtual
+/// call becomes the first static argument, so the verifier-visible stack
+/// shape is unchanged; the `to` descriptor must therefore be the `from`
+/// descriptor with the receiver class PREPENDED (asserted — a mismatch is
+/// a caller bug that would corrupt the operand stack).
+///
+/// Idempotency: sites already resolving to `to` are counted and left alone
+/// ([`RetargetOutcome::AlreadyPatched`]). NotFound returns the original
+/// bytes without pool growth.
+pub fn retarget_virtual_to_static(
+    bytes: &[u8],
+    method_name: &str,
+    method_desc: &str,
+    from: (&str, &str, &str),
+    to: (&str, &str, &str),
+) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    // Receiver-prepended form: "(LReceiver;" + from.2 without its "(".
+    let expect_static = format!("(L{};{}", from.0, &from.2[1..]);
+    if to.2 != expect_static {
+        return Err(format!(
+            "static desc {} is not the virtual desc {} with receiver {} prepended \
+             (stack shape would change)",
+            to.2, from.2, from.0
+        ));
+    }
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    let mut pool = layout.pool;
+    // Find-only probes (audit A4): a method whose name/desc utf8 entries
+    // are absent cannot exist; NotFound must not mutate the pool.
+    let Some(name_idx) = pool.find_utf8(method_name) else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let Some(desc_idx) = pool.find_utf8(method_desc) else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)
+        .ok_or_else(|| format!("method {method_name}{method_desc} not found"))?;
+    let (code_start, code_len) = find_code_attr(bytes, &pool, &m)
+        .ok_or_else(|| format!("method {method_name}{method_desc} has no Code attribute"))?;
+    let code_end = code_start
+        .checked_add(code_len)
+        .ok_or_else(|| "code length overflow".to_string())?;
+    let code = bytes
+        .get(code_start..code_end)
+        .ok_or_else(|| "code region truncated".to_string())?;
+    let sites = scan_invoke_sites(code, code_start)?;
+
+    let to_triple = (to.0.to_string(), to.1.to_string(), to.2.to_string());
+    let from_triple = (from.0.to_string(), from.1.to_string(), from.2.to_string());
+    let mut rewrite: Vec<usize> = Vec::new(); // absolute offsets of the opcode byte
+    let mut already = 0usize;
+    for (op_pc, cp_idx) in sites {
+        match pool.methodref_parts(cp_idx) {
+            Some(parts) if parts == to_triple => already += 1,
+            Some(parts) if parts == from_triple => rewrite.push(op_pc),
+            _ => {}
+        }
+    }
+    if rewrite.is_empty() {
+        return Ok((bytes.to_vec(), if already > 0 {
+            RetargetOutcome::AlreadyPatched { sites: already }
+        } else {
+            RetargetOutcome::NotFound
+        }));
+    }
+
+    // Append (or reuse) the Methodref for `to` — append-only, dedup.
+    let new_idx = pool.method_ref(to.0, to.1, to.2);
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for retarget ref".into());
+    }
+
+    // Splice: header + grown pool + tail; rewrite opcode byte AND operands
+    // for each matched site. All sites are >= cp_end (method table follows
+    // the pool), so the rewrite applies to the tail copy.
+    let mut tail = bytes[layout.cp_end..].to_vec();
+    let want = new_idx.to_be_bytes();
+    for &op_off in &rewrite {
+        let rel = op_off - layout.cp_end;
+        if rel + 2 >= tail.len() {
+            return Err("retarget opcode outside class tail (corrupt layout?)".into());
+        }
+        tail[rel] = 0xb8; // invokestatic
+        tail[rel + 1] = want[0];
+        tail[rel + 2] = want[1];
+    }
+    let mut out = Vec::with_capacity(bytes.len() + 64);
+    out.extend_from_slice(&bytes[0..8]); // magic, minor, major
+    out.extend_from_slice(&pool.next.to_be_bytes()); // new cp_count
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(&tail);
+    Ok((out, RetargetOutcome::Retargeted { sites: rewrite.len() }))
+}
+
+/// Whole-bridge patch for `LivingEntity.pushEntities()V`: retarget the
+/// single `Level.getPushableEntities` call site to the static
+/// `EntityQueryOps.pushables` bridge. Strict: anything other than exactly
+/// one retargeted site on first sight is a shape mismatch → Err (fail
+/// closed; alloc_diet stays vanilla).
+pub fn patch_push_entities(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    retarget_virtual_to_static(
+        bytes,
+        "pushEntities",
+        "()V",
+        ("net/minecraft/world/level/Level", "getPushableEntities", GET_PUSHABLES_DESC),
+        (ALLOC_OPS_CLASS, "pushables", OPS_PUSHABLES_DESC),
+    )
+}
+
+/// Find a method by NAME only (desc resolved by the caller from the found
+/// entry). Returns all matches — the collision patcher requires exactly one
+/// (fail-closed on overloads).
+fn find_methods_by_name(
+    bytes: &[u8],
+    methods_start: usize,
+    name_idx: u16,
+) -> Option<Vec<Method>> {
+    let mut p = methods_start;
+    let count = usize::from(u16_at(bytes, p)?);
+    p = p.checked_add(2)?;
+    let mut out = Vec::new();
+    for _ in 0..count {
+        let start = p;
+        let access = u16_at(bytes, p)?;
+        let n = u16_at(bytes, p.checked_add(2)?)?;
+        let d = u16_at(bytes, p.checked_add(4)?)?;
+        p = p.checked_add(6)?;
+        let attr_count = usize::from(u16_at(bytes, p)?);
+        p = p.checked_add(2)?;
+        for _ in 0..attr_count {
+            let len = u32_at(bytes, p.checked_add(2)?)?;
+            p = p.checked_add(6)?.checked_add(len as usize)?;
+        }
+        if n == name_idx {
+            out.push(Method {
+                start,
+                end: p,
+                name_idx: n,
+                desc_idx: d,
+                access,
+            });
+        }
+    }
+    Some(out)
+}
+
+/// Resolve a CONSTANT_Class index to its internal name.
+fn class_name_of(pool: &Pool, idx: u16) -> Option<String> {
+    let (_, tag, payload) = pool.entries.iter().find(|(i, _, _)| *i == idx)?;
+    if *tag != TAG_CLASS || payload.len() < 2 {
+        return None;
+    }
+    let utf8_idx = u16::from_be_bytes([payload[0], payload[1]]);
+    pool.utf8_value(utf8_idx)
+}
+
+/// Whole-bridge patch for
+/// `CollisionUtil.getCollisionsForBlocksOrWorldBorder` — replace the
+/// unconditional `new BlockPos.MutableBlockPos; dup; <init>:()V` sequence
+/// (7 bytes: [0xbb #X][0x59][0xb7 #Y]) with
+/// [0xb8 #M][0x00 0x00 0x00 0x00] = `invokestatic
+/// EntityQueryOps.mutablePos ()Lnet/minecraft/core/BlockPos$MutableBlockPos;`
+/// + 4×nop. Length-preserving: no branch offsets or StackMapTable frames
+/// move; the operand stack after the sequence is [ref] in both forms.
+///
+/// Strict: exactly ONE matching site expected (javap census on the real
+/// kernel: a single unconditional MutableBlockPos allocation in the
+/// method); zero sites = already patched (idempotent no-op), >1 = shape
+/// mismatch → Err (fail closed).
+pub fn patch_collision_temps(bytes: &[u8]) -> Result<Vec<u8>, String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    let mut pool = layout.pool;
+    let Some(name_idx) = pool.find_utf8("getCollisionsForBlocksOrWorldBorder") else {
+        return Err("collision method name absent from pool".into());
+    };
+    let matches = find_methods_by_name(bytes, layout.methods_start, name_idx)
+        .ok_or_else(|| "method table walk failed".to_string())?;
+    if matches.len() != 1 {
+        return Err(format!(
+            "expected exactly one getCollisionsForBlocksOrWorldBorder, found {}",
+            matches.len()
+        ));
+    }
+    let (code_start, code_len) = find_code_attr(bytes, &pool, &matches[0])
+        .ok_or_else(|| "collision method has no Code attribute".to_string())?;
+    let code_end = code_start
+        .checked_add(code_len)
+        .ok_or_else(|| "code length overflow".to_string())?;
+    let code = bytes
+        .get(code_start..code_end)
+        .ok_or_else(|| "code region truncated".to_string())?;
+
+    // Walk the code, pattern-match [new #X][dup][invokespecial #Y] with
+    // X → MutableBlockPos class, Y → (MutableBlockPos, <init>, ()V).
+    let mut sites: Vec<usize> = Vec::new(); // absolute offsets of the `new` opcode
+    let mut pc = 0usize;
+    while pc < code.len() {
+        let op = code[pc];
+        if op == 0xbb && pc + 7 <= code.len() {
+            let class_idx = u16::from_be_bytes([code[pc + 1], code[pc + 2]]);
+            let class_ok = class_name_of(&pool, class_idx)
+                .map(|n| n == MUTABLE_POS_CLASS)
+                .unwrap_or(false);
+            if class_ok
+                && code[pc + 3] == 0x59 // dup
+                && code[pc + 4] == 0xb7
+            {
+                let init_idx = u16::from_be_bytes([code[pc + 5], code[pc + 6]]);
+                let init_ok = pool
+                    .methodref_parts(init_idx)
+                    .map(|(c, n, d)| c == MUTABLE_POS_CLASS && n == "<init>" && d == "()V")
+                    .unwrap_or(false);
+                if init_ok {
+                    sites.push(code_start + pc);
+                    pc += 7;
+                    continue;
+                }
+            }
+        }
+        let extra = opcode_extra(op, code, pc)?;
+        pc = pc
+            .checked_add(1 + extra)
+            .ok_or_else(|| "code walk overflow".to_string())?;
+        if pc > code.len() {
+            return Err("truncated code (walk past end)".into());
+        }
+    }
+
+    if sites.is_empty() {
+        // Already patched (idempotent re-sight) — return original bytes.
+        return Ok(bytes.to_vec());
+    }
+    if sites.len() > 1 {
+        return Err(format!(
+            "expected exactly one MutableBlockPos ctor site, found {}",
+            sites.len()
+        ));
+    }
+
+    // Append (or reuse) the Methodref for the static factory.
+    let new_idx = pool.method_ref(
+        ALLOC_OPS_CLASS,
+        "mutablePos",
+        "()Lnet/minecraft/core/BlockPos$MutableBlockPos;",
+    );
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for ops ref".into());
+    }
+
+    let mut tail = bytes[layout.cp_end..].to_vec();
+    let want = new_idx.to_be_bytes();
+    for &op_off in &sites {
+        let rel = op_off - layout.cp_end;
+        if rel + 6 >= tail.len() {
+            return Err("ctor splice outside class tail (corrupt layout?)".into());
+        }
+        tail[rel] = 0xb8; // invokestatic
+        tail[rel + 1] = want[0];
+        tail[rel + 2] = want[1];
+        tail[rel + 3] = 0x00; // nop (former dup)
+        tail[rel + 4] = 0x00; // nop (former invokespecial)
+        tail[rel + 5] = 0x00; // nop
+        tail[rel + 6] = 0x00; // nop
+    }
+    let mut out = Vec::with_capacity(bytes.len() + 64);
+    out.extend_from_slice(&bytes[0..8]);
+    out.extend_from_slice(&pool.next.to_be_bytes());
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(&tail);
+    Ok(out)
+}
+
 #[cfg(test)]
 mod real_noise {
     // G4 S7-12: the REAL ImprovedNoise class (extracted from the live
@@ -2912,3 +3273,123 @@ mod real_noise {
         }
     }
 }
+
+#[cfg(test)]
+mod alloc_diet {
+    // S7-133 / TASK-269: REAL kernel classes (purpur-1.21.10.jar, hook-byte
+    // identical), extracted 2026-09-18 for the alloc-diet patchers.
+    const LIVING: &[u8] = include_bytes!("../tests/fixtures/LivingEntity.class");
+    const COLLISION: &[u8] = include_bytes!("../tests/fixtures/CollisionUtil.class");
+
+    use crate::classfile::*;
+
+    #[test]
+    fn push_entities_retargets_exactly_one_site() {
+        let (patched, outcome) = patch_push_entities(LIVING).expect("patch");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "exactly one getPushableEntities site in pushEntities"
+        );
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        // The CODE attribute length is preserved (no branch/StackMapTable
+        // churn); the FILE grows by the appended CP entries (Methodref +
+        // utf8s) — both expected.
+        assert!(patched.len() >= LIVING.len());
+    }
+
+    #[test]
+    fn push_entities_site_resolves_to_ops_bridge() {
+        let (patched, _) = patch_push_entities(LIVING).expect("patch");
+        let cp_count = u16::from_be_bytes([patched[8], patched[9]]);
+        let (pool, _end) = Pool::parse(&patched, 10, cp_count).expect("cp parse");
+        // The bridge Methodref must exist and resolve by name.
+        let triples: Vec<_> = (1..pool.next)
+            .filter_map(|i| pool.methodref_parts(i))
+            .collect();
+        assert!(
+            triples.iter().any(|t| t.0 == "net/minecraft/world/entity/EntityQueryOps"
+                && t.1 == "pushables"
+                && t.2 == "(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;)Ljava/util/List;"),
+            "bridge Methodref appended"
+        );
+    }
+
+    #[test]
+    fn push_entities_idempotent() {
+        let (patched, _) = patch_push_entities(LIVING).expect("patch");
+        let (again, outcome) = patch_push_entities(&patched).expect("repatch");
+        assert_eq!(outcome, RetargetOutcome::AlreadyPatched { sites: 1 });
+        assert_eq!(again, patched, "repatch must be byte-identical");
+    }
+
+    #[test]
+    fn push_entities_wrong_class_fails_closed() {
+        // A class without pushEntities must NOT be patched.
+        // A class without pushEntities: NotFound outcome, ORIGINAL bytes,
+        // no pool growth (fail-closed to vanilla).
+        let (out, outcome) = patch_push_entities(include_bytes!(
+            "../tests/fixtures/PalettedContainer.class"
+        ))
+        .expect("notfound path must not error");
+        assert_eq!(outcome, RetargetOutcome::NotFound);
+        assert_eq!(out, include_bytes!("../tests/fixtures/PalettedContainer.class").to_vec());
+    }
+
+    #[test]
+    fn collision_temps_splices_exactly_one_site() {
+        let patched = patch_collision_temps(COLLISION).expect("patch");
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        // CODE length preserved; file grows by appended CP entries.
+        assert!(patched.len() >= COLLISION.len());
+    }
+
+    #[test]
+    fn collision_temps_site_resolves_to_ops_bridge() {
+        let patched = patch_collision_temps(COLLISION).expect("patch");
+        let cp_count = u16::from_be_bytes([patched[8], patched[9]]);
+        let (pool, _end) = Pool::parse(&patched, 10, cp_count).expect("cp parse");
+        let triples: Vec<_> = (1..pool.next)
+            .filter_map(|i| pool.methodref_parts(i))
+            .collect();
+        assert!(
+            triples.iter().any(|t| t.0 == "net/minecraft/world/entity/EntityQueryOps"
+                && t.1 == "mutablePos"
+                && t.2 == "()Lnet/minecraft/core/BlockPos$MutableBlockPos;"),
+            "mutablePos Methodref appended"
+        );
+    }
+
+    #[test]
+    fn collision_temps_idempotent() {
+        let patched = patch_collision_temps(COLLISION).expect("patch");
+        let again = patch_collision_temps(&patched).expect("repatch");
+        assert_eq!(again, patched, "repatch must be byte-identical (no sites left)");
+    }
+
+    #[test]
+    fn collision_temps_wrong_class_fails_closed() {
+        let e = patch_collision_temps(include_bytes!(
+            "../tests/fixtures/Brain.class"
+        ))
+        .err()
+        .expect("no method/no site => Err (fail closed)");
+        assert!(
+            e.contains("absent from pool")
+                || e.contains("expected exactly one"),
+            "{e}"
+        );
+    }
+
+    /// Dump artifacts for the offline JVM-verifier harness (define-only
+    /// smoke runs on the patched bytes; see scripts/verify_alloc_diet.sh).
+    #[test]
+    fn dump_patched_for_verifier() {
+        let (living, _) = patch_push_entities(LIVING).expect("patch");
+        let collision = patch_collision_temps(COLLISION).expect("patch");
+        std::fs::create_dir_all("tests/out").unwrap();
+        std::fs::write("tests/out/LivingEntity.patched.class", &living).unwrap();
+        std::fs::write("tests/out/CollisionUtil.patched.class", &collision).unwrap();
+    }
+}
+
