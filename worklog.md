@@ -1565,3 +1565,21 @@ Stage Summary:
 - Рычаг #3 готов и верифицирован офлайн: единственный length-preserving ретаргет + мост с replay ванильных вызовов (кэшируются вызовы, не результаты) + capture в примитивные слоты; диспатч leg #1 в полёте; абсорб в этом же тике по preregistered гейтам (аллок-семьи ↓30/25%, PalettedContainer.get ↓15%, young GC ↓)
 
 RUN_ID_DISPATCHED: **35282003292** (master 1bd7f52, X150K inside_cache=1; runs_index S7-135 row)
+
+---
+## S7-135b (TASK-271 absorb) — 2026-09-18 08:1x +08 — legs #1/#2 INSIDE-CACHE: leg1 ИНЕРТЕН (дефекты моста) → bridge v2; leg2 РАН НЕВАЛИДЕН (сцена коллапс + crawl + нет stdout); lever BANKED; S7-136 = hardening + re-run
+
+**Task ID: S7-135b (Job 393012)**, Agent: agent-7625532f (session web-f7888d46)
+
+Work Log:
+- Run 35282003292 (leg #1) SUCCESS: ARMED живьём (pristine/defined/Retargeted{1}/serve/rc=0), fixture VALID — НО лейны = база в шуме; forensics: gate вызывался (15 CPU-сэмплов), НО capture недостижим (пустой слот → ваниль; mirror только на инвалидации) + delta-чек не проходил (гравитационный остаток deltaMovement покоящихся предметов) ⇒ рычаг ИНЕРТЕН по построению
+- Bridge v2: статик-детектор xo==x,yo==y,zo==z (javap: public поля ✓; from==to==pos) + bootstrap capture на пустом слоте; rebuild + OFFLINE PASS повторён + rust 106 ✓; cargo rebuild; commit d8453b3 push; диспатч leg #2 35284069355
+- Run 35284069355 (leg #2) SUCCESS-ран, но РАН НЕВАЛИДЕН: сцена коллапсировала (F4 67-74k живых vs 148k база; item 49k vs 100k) при VALID-маркере инъекции; TPS 1.5-3.3 / MSPT 430 с инъекции; артефакт БЕЗ server-stdout.log (маркеры неверифицируемы); bridge 0.4% CPU (самовзрыв нет); per-entity entity-фаза ~9× — не изолировано; подозреваемые: ping-pong слотов (19k пар id/2^17) + runner-контеншн (wall 84.5% idle)
+- Вердикт: принцип НЕ опровергнут; код BANKED default 0; сравнение leg2 нечестно
+- Учёт: §157, INDEX 278, GOAL S7-135b, CLAIMS TASK-271 addendum, этот worklog; runs_index rows leg1/leg2 (my-project); ANALYSIS_LEGS.md в research
+- CRUSSTY pristine не тронут; INJECTS-ONLY цел (0 sandbox boots; 2 CI-бута санкционированы)
+
+Stage Summary:
+- Два рана, два честных вердикта: leg1 вскрыл дефекты реализации (capture-Bootstrap + статик-детектор) — исправлены; leg2 вскрыл инфра-аномалию (сцена/раннер/артефакт) — признан невалидным до выяснения; принцип мемоизации жив; S7-136 = hardening (пустой-слот-only bootstrap) + чистый re-run по preregistered гейтам §156
+
+RUN_ID_ABSORBED: **35282003292 (leg1, inert) + 35284069355 (leg2, invalid run)** (masters 1bd7f52/d8453b3)
