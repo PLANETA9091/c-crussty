@@ -3,7 +3,7 @@
 
 Config mirrors the SUCCESS baseline run 35245032701 (S7-130b: 150000 live,
 seed 42, xmx 10G, fp 4, guard 1, 300s) with paletted_demux=1 — the A/B delta
-isolates the demux lever on the same scene. Concurrency guard checked before
+isolates the lever leg on the same scene (paletted_demux per-leg). Concurrency guard checked before
 dispatch (law S7-108).
 """
 import json, re, sys, time, urllib.request
@@ -49,7 +49,7 @@ def main():
         "summon_sweeps": "0",
         "fake_players": "4",
         "fluid_guard": "1",
-        "paletted_demux": "1",
+        "paletted_demux": "0",
         "population_target": "150000",
         "population_seed": "42",
         "server_xmx": "10G",
