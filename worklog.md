@@ -1487,3 +1487,22 @@ Stage Summary:
 - Аллокационная диета leg #1 ГОТОВА: два call-site ретаргета (push-обёртка + MutableBlockPos) на вращающиеся пулы — ожидание ~10-17MB young-gen/тик минус; офлайн-верификация полная (rust + верификатор JVM + поведенческие гейты CI); NEXT: commit+push → диспатч leg #1 (X150K, diet=1 vs база 35245032701) → absorb → leg #2 min-of-2 → вердикт по лейн-абсолютам (гейт GC-лейн ↓ ≥10%, иначе REFUTED-BY-ECONOMICS)
 
 RUN_ID_DISPATCHED: **35271475494** (master f44d9ce, alloc_diet=1, X150K-база 35245032701; runs_index S7-133 row)
+---
+## S7-133b (TASK-269 absorb) — 2026-09-18 05:5x +08 — ABSORB diet leg #1 35271475494: ARMED живьём, high-water −20%, гейт обратный ⇒ REFUTED (первичный), S7-134 = alloc-профиль + old-gen мутация
+
+**Task ID: S7-133b (Job 393012)**, Agent: agent-7625532f (session web-f7888d46)
+
+Work Log:
+- Run 35271475494 (master f44d9ce, diet=1) SUCCESS за ~18 мин; артефакт скачан (fetch_artifact 10519548373) → research/alloc-diet-2026-09-18/run-diet-leg1/
+- ARMED маркеры живьём: pristine sighting обоих классов (186570/45439 = фикстурам), defined EntityQueryOps, computed patch Retargeted{1} ×2 (186759/45546 = офлайн-харнессу бит-в-бит), hook serve ×2, retransform rc=0 ×2
+- Fixture: INJECT DONE 150000/150000 (103.8s), VALID, alive 4/4 ×N, сцена 148.5k (эквивалент баз), 0 tick-behind, 0 Full GC — поведенческая парити полная на пропатченных путях
+- Лейн-счёт (300s-окна, runner_cpu 6924600 vs 6679335): GC-лейн 14479→17524 сэмплов (27.1→30.6%, +21% абсолют; add_card +58%, Refine +38%, RemSet +31%, CM +16%); entity-фаза −0.4% плоско; high-water 6914→5540MB (−20%); pause-avg 78.9→75.6ms; pause-max 210→172ms
+- Вердикт preregistered: гейт «GC-лейн ↓≥10%» провален с обратным знаком ⇒ REFUTED как GC-CPU рычаг; leg #2 избыточен (согласованный знак всех GC-суб-лейнов — структурная причина); дефолт 0 (ALLOC_DIET:-0 fail-closed); код банкуется (субстрат: EntityQueryOps кольца + length-preserving сплайсы + харнесс-пайплайн)
+- Структурный урок: срезанные ~10-17MB/тик ≪ истинного чёрна (сотни MB/тик); GC-лейн = old-gen МУТАЦИЯ (card-table/remset/refine): section-движения ChunkEntitySlices, спавн/деспавн churn ~24k мобов, entity-data записи
+- Учёт: §153, GOAL S7-133b, INDEX 274, CLAIMS TASK-269 addendum, оба worklog; runs_index +1 (row 275); commits b574883 → dispatch-script → 2cb544d (RUN_ID) → этот absorb
+- CRUSSTY pristine не тронут; INJECTS-ONLY цел (0 sandbox boots; 1 CI-бут leg #1)
+
+Stage Summary:
+- ALLOC-DIET закрыт честно: механический успех доставки (ARMED живьём, парити, память −20%) при провале первичного гейта (GC-лейн вверх) — рычаг не окупается как GC-буст; следующий раунд S7-134 СНАЧАЛА измеряет истинное ранжирование чёрна (alloc-mode профилировщик в харнесе), затем бьёт old-gen мутацию (section-движения/churn) архитектурно; INJECTS-ONLY цел
+
+RUN_ID_ABSORBED: **35271475494** (master f44d9ce, diet=1; runs_index S7-133 rows)
