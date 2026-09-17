@@ -1,0 +1,68 @@
+TOTAL samples: 7369  |  window churn (gc.log): 25.6 GB/60s -> implied interval ~3.56 MB/sample
+
+=== TOP-25 ALLOC SITES (leaf <- parent) ===
+   510 ( 6.9% | ~ 1.77 GB/win) | net.minecraft.world.phys.Vec3  <-  net/minecraft/world/phys/Vec3.add
+   478 ( 6.5% | ~ 1.66 GB/win) | long[]  <-  it/unimi/dsi/fastutil/longs/LongOpenHashSet.<init>
+   463 ( 6.3% | ~ 1.61 GB/win) | char[]  <-  java/io/BufferedReader.<init>
+   426 ( 5.8% | ~ 1.48 GB/win) | net.minecraft.world.phys.AABB  <-  net/minecraft/world/entity/EntityDimensions.makeBoundingBox
+   372 ( 5.0% | ~ 1.29 GB/win) | net.minecraft.core.BlockPos$6  <-  net/minecraft/core/BlockPos.lambda$betweenCornersInDirection$8
+   358 ( 4.9% | ~ 1.24 GB/win) | java.lang.Object[]  <-  java/util/Arrays.copyOf
+   312 ( 4.2% | ~ 1.08 GB/win) | net.minecraft.world.phys.AABB  <-  net/minecraft/world/phys/AABB.inflate
+   299 ( 4.1% | ~ 1.04 GB/win) | byte[]  <-  java/nio/HeapByteBuffer.<init>
+   243 ( 3.3% | ~ 0.84 GB/win) | net.minecraft.world.phys.AABB  <-  net/minecraft/world/level/material/Fluid.getAABB
+   208 ( 2.8% | ~ 0.72 GB/win) | net.minecraft.world.phys.Vec3  <-  net/minecraft/world/phys/Vec3.multiply
+   148 ( 2.0% | ~ 0.51 GB/win) | net.minecraft.world.phys.Vec3  <-  net/minecraft/world/phys/AABB.getCenter
+   133 ( 1.8% | ~ 0.46 GB/win) | net.minecraft.world.phys.Vec3  <-  net/minecraft/world/level/material/FlowingFluid.getFlow
+   120 ( 1.6% | ~ 0.42 GB/win) | java.util.ImmutableCollections$ListItr  <-  java/util/ImmutableCollections$AbstractImmutableList.iterator
+   114 ( 1.5% | ~ 0.40 GB/win) | net.minecraft.world.entity.Entity$$Lambda+0x00007f6df1a29490  <-  java/lang/invoke/DirectMethodHandle.allocateInstance
+    92 ( 1.2% | ~ 0.32 GB/win) | net.minecraft.world.phys.AABB  <-  net/minecraft/world/phys/AABB.move
+    92 ( 1.2% | ~ 0.32 GB/win) | it.unimi.dsi.fastutil.longs.LongOpenHashSet  <-  net/minecraft/world/level/BlockGetter.forEachBlockIntersectedBetween
+    91 ( 1.2% | ~ 0.32 GB/win) | com.google.common.collect.Iterators$ArrayItr  <-  com/google/common/collect/Iterators.forArrayWithPosition
+    90 ( 1.2% | ~ 0.31 GB/win) | java.util.ImmutableCollections$List12  <-  java/util/List.of
+    89 ( 1.2% | ~ 0.31 GB/win) | net.minecraft.world.level.chunk.LevelChunkSection[][]  <-  net/minecraft/world/entity/Entity.updateFluidHeightAndDoFluidPushing
+    86 ( 1.2% | ~ 0.30 GB/win) | java.util.ArrayList  <-  net/minecraft/world/entity/Entity.collide
+    84 ( 1.1% | ~ 0.29 GB/win) | net.minecraft.core.BlockPos$MutableBlockPos  <-  net/minecraft/world/entity/Entity.updateFluidHeightAndDoFluidPushing
+    81 ( 1.1% | ~ 0.28 GB/win) | net.minecraft.core.BlockPos$MutableBlockPos  <-  net/minecraft/core/BlockPos$6.<init>
+    80 ( 1.1% | ~ 0.28 GB/win) | net.minecraft.core.BlockPos$MutableBlockPos  <-  net/minecraft/world/level/material/FlowingFluid.getFlow
+    79 ( 1.1% | ~ 0.27 GB/win) | net.minecraft.world.phys.Vec3  <-  net/minecraft/world/phys/Vec3.relative
+    65 ( 0.9% | ~ 0.23 GB/win) | net.minecraft.core.BlockPos  <-  net/minecraft/core/BlockPos$MutableBlockPos.immutable
+
+=== TOP-25 example chains (last 6 frames) ===
+   510 | net/minecraft/world/entity/Entity.collidedWithFluid;net/minecraft/world/entity/Entity.collidedWithShapeMovingFrom;net/minecraft/world/phys/AABB.collidedAlongVector;net/minecraft/world/phys/Vec3.add;net/minecraft/world/phys/Vec3.add;net.minecraft.world.phys.Vec3
+   478 | net/minecraft/world/entity/Entity.checkInsideBlocks;net/minecraft/world/entity/Entity.checkInsideBlocks;net/minecraft/world/level/BlockGetter.forEachBlockIntersectedBetween;it/unimi/dsi/fastutil/longs/LongOpenHashSet.<init>;it/unimi/dsi/fastutil/longs/LongOpenHashSet.<init>;long[]
+   463 | jdk/internal/platform/CgroupUtil.lambda$readStringValue$1;java/nio/file/Files.newBufferedReader;java/nio/file/Files.newBufferedReader;java/io/BufferedReader.<init>;java/io/BufferedReader.<init>;char[]
+   426 | net/minecraft/world/entity/Entity.setPosRaw;net/minecraft/world/entity/Entity.makeBoundingBox;net/minecraft/world/entity/Entity.makeBoundingBox;net/minecraft/world/entity/EntityDimensions.makeBoundingBox;net/minecraft/world/entity/EntityDimensions.makeBoundingBox;net.minecraft.world.phys.AABB
+   372 | net/minecraft/world/entity/Entity.checkInsideBlocks;net/minecraft/world/entity/Entity.checkInsideBlocks;net/minecraft/world/level/BlockGetter.forEachBlockIntersectedBetween;net/minecraft/core/BlockPos$$Lambda.0x00007f6df19e8000.iterator;net/minecraft/core/BlockPos.lambda$betweenCornersInDirection$8;net.minecraft.core.BlockPos$6
+   358 | net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector.applyAndClear;net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector.flushStep;java/util/ArrayList.addAll;java/util/ArrayList.toArray;java/util/Arrays.copyOf;java.lang.Object[]
+   312 | net/minecraft/world/entity/ai/goal/WrappedGoal.canUse;net/minecraft/world/entity/ai/goal/target/NearestAttackableTargetGoal.canUse;net/minecraft/world/entity/ai/goal/target/NearestAttackableTargetGoal.findTarget;net/minecraft/world/entity/ai/goal/target/NearestAttackableTargetGoal.getTargetSearchArea;net/minecraft/world/phys/AABB.inflate;net.minecraft.world.phys.AABB
+   299 | java/io/InputStreamReader.<init>;sun/nio/cs/StreamDecoder.forInputStreamReader;sun/nio/cs/StreamDecoder.<init>;java/nio/ByteBuffer.allocate;java/nio/HeapByteBuffer.<init>;byte[]
+   243 | net/minecraft/world/entity/Entity$$Lambda.0x00007f6df1a29490.visit;net/minecraft/world/entity/Entity.lambda$checkInsideBlocks$2;net/minecraft/world/entity/Entity.collidedWithFluid;net/minecraft/world/level/material/FluidState.getAABB;net/minecraft/world/level/material/Fluid.getAABB;net.minecraft.world.phys.AABB
+   208 | net/minecraft/server/level/ServerLevel.tickNonPassenger;net/minecraft/world/entity/Mob.tick;net/minecraft/world/entity/LivingEntity.tick;net/minecraft/world/entity/animal/Chicken.aiStep;net/minecraft/world/phys/Vec3.multiply;net.minecraft.world.phys.Vec3
+   148 | net/minecraft/world/entity/Entity.lambda$checkInsideBlocks$2;net/minecraft/world/entity/Entity.collidedWithFluid;net/minecraft/world/entity/Entity.collidedWithShapeMovingFrom;net/minecraft/world/phys/AABB.collidedAlongVector;net/minecraft/world/phys/AABB.getCenter;net.minecraft.world.phys.Vec3
+   133 | net/minecraft/world/entity/Entity.updateInWaterStateAndDoFluidPushing;net/minecraft/world/entity/Entity.updateInWaterStateAndDoWaterCurrentPushing;net/minecraft/world/entity/Entity.updateFluidHeightAndDoFluidPushing;net/minecraft/world/level/material/FluidState.getFlow;net/minecraft/world/level/material/FlowingFluid.getFlow;net.minecraft.world.phys.Vec3
+   120 | net/minecraft/world/entity/Entity.lambda$checkInsideBlocks$2;net/minecraft/world/entity/Entity.collidedWithFluid;net/minecraft/world/entity/Entity.collidedWithShapeMovingFrom;net/minecraft/world/phys/AABB.collidedAlongVector;java/util/ImmutableCollections$AbstractImmutableList.iterator;java.util.ImmutableCollections$ListItr
+   114 | net/minecraft/world/entity/Entity.checkInsideBlocks;net/minecraft/world/entity/Entity.checkInsideBlocks;java/lang/invoke/LambdaForm$MH.0x00007f6df19e0800.linkToTargetMethod;java/lang/invoke/LambdaForm$DMH.0x00007f6df19e0000.newInvokeSpecial;java/lang/invoke/DirectMethodHandle.allocateInstance;net.minecraft.world.entity.Entity$$Lambda+0x00007f6df1a29490
+    92 | net/minecraft/world/entity/Entity.move;net/minecraft/world/entity/Entity.setOnGroundWithMovement;net/minecraft/world/entity/Entity.checkSupportingBlock;net/minecraft/world/level/Level.findSupportingBlock;net/minecraft/world/phys/AABB.move;net.minecraft.world.phys.AABB
+    92 | net/minecraft/world/entity/Entity.applyEffectsFromBlocks;net/minecraft/world/entity/Entity.applyEffectsFromBlocks;net/minecraft/world/entity/Entity.checkInsideBlocks;net/minecraft/world/entity/Entity.checkInsideBlocks;net/minecraft/world/level/BlockGetter.forEachBlockIntersectedBetween;it.unimi.dsi.fastutil.longs.LongOpenHashSet
+    91 | net/minecraft/world/level/material/FluidState.getFlow;net/minecraft/world/level/material/FlowingFluid.getFlow;net/minecraft/core/Direction$Plane.iterator;com/google/common/collect/Iterators.forArray;com/google/common/collect/Iterators.forArrayWithPosition;com.google.common.collect.Iterators$ArrayItr
+    90 | net/minecraft/world/level/BlockGetter.forEachBlockIntersectedBetween;net/minecraft/world/entity/Entity$$Lambda.0x00007f6df1a29490.visit;net/minecraft/world/entity/Entity.lambda$checkInsideBlocks$2;net/minecraft/world/entity/Entity.collidedWithFluid;java/util/List.of;java.util.ImmutableCollections$List12
+    89 | net/minecraft/world/entity/LivingEntity.handleRelativeFrictionAndCalculateMovement;net/minecraft/world/entity/Entity.move;net/minecraft/world/entity/LivingEntity.checkFallDamage;net/minecraft/world/entity/Entity.updateInWaterStateAndDoWaterCurrentPushing;net/minecraft/world/entity/Entity.updateFluidHeightAndDoFluidPushing;net.minecraft.world.level.chunk.LevelChunkSection[][]
+    86 | net/minecraft/world/entity/monster/Drowned.travel;net/minecraft/world/entity/LivingEntity.travel;net/minecraft/world/entity/LivingEntity.travelInFluid;net/minecraft/world/entity/Entity.move;net/minecraft/world/entity/Entity.collide;java.util.ArrayList
+    84 | net/minecraft/world/entity/LivingEntity.baseTick;net/minecraft/world/entity/Entity.baseTick;net/minecraft/world/entity/Entity.updateInWaterStateAndDoFluidPushing;net/minecraft/world/entity/Entity.updateInWaterStateAndDoWaterCurrentPushing;net/minecraft/world/entity/Entity.updateFluidHeightAndDoFluidPushing;net.minecraft.core.BlockPos$MutableBlockPos
+    81 | net/minecraft/world/entity/Entity.checkInsideBlocks;net/minecraft/world/level/BlockGetter.forEachBlockIntersectedBetween;net/minecraft/core/BlockPos$$Lambda.0x00007f6df19e8000.iterator;net/minecraft/core/BlockPos.lambda$betweenCornersInDirection$8;net/minecraft/core/BlockPos$6.<init>;net.minecraft.core.BlockPos$MutableBlockPos
+    80 | net/minecraft/world/entity/Entity.updateInWaterStateAndDoFluidPushing;net/minecraft/world/entity/Entity.updateInWaterStateAndDoWaterCurrentPushing;net/minecraft/world/entity/Entity.updateFluidHeightAndDoFluidPushing;net/minecraft/world/level/material/FluidState.getFlow;net/minecraft/world/level/material/FlowingFluid.getFlow;net.minecraft.core.BlockPos$MutableBlockPos
+    79 | net/minecraft/world/entity/LivingEntity.aiStep;net/minecraft/world/entity/Entity.applyEffectsFromBlocks;net/minecraft/world/entity/Entity.applyEffectsFromBlocks;net/minecraft/world/entity/Entity.checkInsideBlocks;net/minecraft/world/phys/Vec3.relative;net.minecraft.world.phys.Vec3
+    65 | net/minecraft/world/entity/Entity.move;net/minecraft/world/entity/Entity.setOnGroundWithMovement;net/minecraft/world/entity/Entity.checkSupportingBlock;net/minecraft/world/level/Level.findSupportingBlock;net/minecraft/core/BlockPos$MutableBlockPos.immutable;net.minecraft.core.BlockPos
+
+=== SUBSYSTEM SPLIT ===
+  3156 (42.8% | ~10.96 GB/win) | movement/collision-geometry
+  1633 (22.2% | ~ 5.67 GB/win) | inside-blocks
+  1194 (16.2% | ~ 4.15 GB/win) | JVM/other
+   434 ( 5.9% | ~ 1.51 GB/win) | fluid
+   404 ( 5.5% | ~ 1.40 GB/win) | entity-tick
+   334 ( 4.5% | ~ 1.16 GB/win) | chunk/palette
+   181 ( 2.5% | ~ 0.63 GB/win) | AI/Brain
+    13 ( 0.2% | ~ 0.05 GB/win) | kernel-other
+    11 ( 0.1% | ~ 0.04 GB/win) | block-entities
+     5 ( 0.1% | ~ 0.02 GB/win) | network
+     2 ( 0.0% | ~ 0.01 GB/win) | random-tick
