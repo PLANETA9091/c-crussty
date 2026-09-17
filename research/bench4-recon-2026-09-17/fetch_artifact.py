@@ -51,7 +51,10 @@ def main():
     names = zf.namelist()
     print("entries:", len(names))
     for n in names:
-        if re.search(r"(log|console|latest|run-env|entity-recon|tickmonitor)", n, re.I):
+        # S7-128: + collapsed stacks + bottleneck report — profile ranking
+        # for the ARCH-ATTACK queue needs cpu/wall/alloc collapsed stacks
+        # and BOTTLENECKS_3.md, not only log-ish marker carriers.
+        if re.search(r"(log|console|latest|run-env|entity-recon|tickmonitor|collapsed|BOTTLENECKS)", n, re.I):
             try:
                 content = zf.read(n)
                 if len(content) < 40_000_000:
