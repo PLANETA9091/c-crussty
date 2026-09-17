@@ -486,3 +486,31 @@
 > leg#1 banked ⇒ v4.3 автодиспатчит arm#2 ⇒ 2 ноги ⇒ verdict_a1 ⇒
 > **§125-A1 ВЕРДИКТ** (порог median(83.40,83.51)×0.97 = **80.95ms**
 > неизменен). INJECTS-ONLY цел (0 sandbox boots).
+
+> **СТАТУС 20 TPS (S7-124)**: **pack arm#1 attempt#3 = honest DISCARD
+> (cpu 6691832 ниже окна); v4.4 dispatch-verify own-fast-fail fix
+> (боевое применение); attempt#5 = 35218943354 in flight.** (1) Poll
+> 35216066889 (master fb7d8cb, FULL pack kernel): SUCCESS, мир afb3a0b3,
+> финал cpu **6691832** — НИЖЕ pack window [6916007,7136333] на 3.2% ⇒
+> честный discard (второй: попытка#1 6832640, попытка#3 6691832). Пул
+> раннеров дрейфует: наблюдаемые gate значения 6.69M..10.05M при окне
+> 3.1% — терпеливая лотерея с drift band [6688594,7551675] + точный
+> финальный чек (санкционированный протокол). v4.3
+> restore_pack_or_clear сработал: state восстановлен (pack, run_id=None,
+> окно цело). (2) **ФИКС v4.4 (диспатч-верифай слепое пятно, нота
+> S7-123)**: dispatch() спит 25s перед верификацией — свой gate
+> fast-fail (~13-30s) завершается ВНУТРИ окна и читался как false
+> MISMATCH без сохранения state (попытка#2 повисла руками). Фикс: top
+> run с ref=наш, status=completed, conclusion=failure/cancelled,
+> created_at >= t0-5 ⇒ ЭТО НАШ fast-fail — state сохраняется, следующий
+> poll классифицирует reject штатно. **Боевое применение в этом же
+> тике**: attempt#4 35218775640 — gate cpu 8094573 (8.09M mid класс)
+> выше band hi ⇒ ~13s fast-fail, v4.4 сохранил state, reject
+> классифицирован штатно (exit 1), автопередиспатч. (3) **ATTEMPT#5 =
+> 35218943354 IN FLIGHT** (master 7bf98fc, verify увидел in-flight на
+> +25s = past gate, boot/download), band [6688594,7551675], финал =
+> точное окно [6916007,7136333] — poll следующего тика: in-window ⇒
+> leg#1 banked ⇒ v4.3 автодиспатчит arm#2 ⇒ 2 ноги ⇒ verdict_a1 ⇒
+> **§125-A1 ВЕРДИКТ** (порог median(83.40,83.51)×0.97 = **80.95ms**
+> неизменен). F2/F3 маркеры — на первой in-window ноге. INJECTS-ONLY
+> цел (0 sandbox boots; gate fast-fail не boot).

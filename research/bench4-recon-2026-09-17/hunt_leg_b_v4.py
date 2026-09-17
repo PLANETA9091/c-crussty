@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
-"""hunt_leg_b.py v4.3 — §125-AMENDMENT-1: slow-track baseline+pack hunt.
+"""hunt_leg_b.py v4.4 — §125-AMENDMENT-1: slow-track baseline+pack hunt.
+
+v4.4 FIX (dispatch-verify blind spot, S7-123 note): dispatch() sleeps 25s
+before verifying the top run — a ~30s gate fast-fail COMPLETES inside that
+window and reads as a completed run, so the verifier refused to save state
+("false MISMATCH") and the honestly-rejected leg was left dangling (manual
+re-dispatch needed, attempt#2 = 35215890688). Fix: a top run matching ref
+with status=completed, conclusion in (failure, cancelled) and created_at
+after dispatch start IS our own fast-fail — state is saved so the next
+poll() classifies it through the normal reject path (exit 1).
 
 v4.3 FIX (recon bug#6+#7, S7-123): (bug#6) logs can be undownloadable for a
 short window right after run completion — log_text returns "", the completed
@@ -171,6 +180,7 @@ def band_for(win_lo, win_hi):
 
 
 def dispatch(tok, ref, band_lo, band_hi):
+    t0 = time.time()
     d = api(tok, f"{API}/repos/{REPO}/actions/workflows/world-bench.yml/runs?per_page=3")
     act = [r["id"] for r in d.get("workflow_runs", [])
            if r.get("status") in ("in_progress", "queued", "waiting")]
@@ -187,14 +197,33 @@ def dispatch(tok, ref, band_lo, band_hi):
     d = api(tok, f"{API}/repos/{REPO}/actions/workflows/world-bench.yml/runs?per_page=1")
     top = d.get("workflow_runs", [{}])[0]
     rid = top.get("id")
+    # v4.4: own fast-fail detection — the band gate can reject within ~30s,
+    # i.e. INSIDE the 25s verify window, so the top run may already be
+    # completed. It is OUR run iff ref matches AND created_at >= dispatch
+    # start (a stale foreign run predates t0; the in-flight guard above
+    # already excludes concurrent runs). Save state in that case so the
+    # next poll() classifies it via the normal reject path (S7-123 note).
+    fresh = False
+    try:
+        import calendar
+        ca = time.strptime(top.get("created_at", ""), "%Y-%m-%dT%H:%M:%SZ")
+        fresh = calendar.timegm(ca) >= t0 - 5
+    except Exception:
+        pass
+    own_fastfail = (top.get("head_branch") == ref
+                    and top.get("status") == "completed"
+                    and top.get("conclusion") in ("failure", "cancelled")
+                    and fresh)
     # VERIFY the run actually matches this dispatch (ref + fresh status):
     # a 422/failed dispatch must NOT capture a stale run as state (S7-119 lesson).
     if (top.get("head_branch") != ref
-            or top.get("status") not in ("queued", "in_progress", "waiting")):
+            or (top.get("status") not in ("queued", "in_progress", "waiting")
+                and not own_fastfail)):
         print(f"  DISPATCH MISMATCH: top run {rid} head_branch={top.get('head_branch')} "
               f"status={top.get('status')} != ref={ref} in-flight -> NO state saved")
         return None
-    print(f"  dispatched run {rid} (ref={ref}, state saved)")
+    print(f"  dispatched run {rid} (ref={ref}, state saved"
+          f"{'; OWN FAST-FAIL noted' if own_fastfail else ''})")
     return rid
 
 
