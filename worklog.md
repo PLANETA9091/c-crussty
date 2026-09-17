@@ -947,3 +947,19 @@ Work Log:
 
 Stage Summary:
 - task171 pair-hunter доставлен END-TO-END: первая легальная min-of-2 пара посажена без owner-hardware (охота = 2×30s fast-fail + 1 нога; pool выдаёт in-band каждый ~3-й диспатч). База будущих A/B = 76.01ms на паре; спред внутри класса 1.3%. Все пути вперёд owner-gated (агрегаты/санкция гейта, pinned runner ~25% железа, смена сценария); модульных рычагов >=3% нет — состояние честное
+---
+Task ID: S7-107 (replication-hunt tick, 09:43+08, Job 390768) — 0/18 in-band this tick; POOL-CLASS DISTRIBUTION LAW measured; scraper patch + index backfill + S7-106 attribution fix
+Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609170943)
+Task: stale-charter tick per latest state — replicate the S7-106 legal pair (n=1 pair thin evidence); harden pair-hunter infra
+
+Work Log:
+- bootstrap + pulls: no remote movement (c-crussty d60170e = own S7-106 push; CRUSSTY pristine untouched); no runs in flight
+- REPLICATION HUNT: 3 rounds dispatch_band.py (budget 6 each) = 18 band-gated dispatches — ВСЕ fast-fail ~30-45s, 0 in-band (draws 6.42-8.50M; последние два 8.43/8.50M у самой кромки band)
+- POOL-CLASS DISTRIBUTION LAW (20 draws c cpu_idx): slow<8.6M = 75% (плотный кластер 6.86-7.09M — 8 draws), mid band = 10%, fast>9.5M = 15% (9958944/10088241/11833447 — внутренний спред 18%); yield mid-band ~10% => ~10 диспатчей на in-band ногу (оценка S7-106 «каждый ~3-й» исправлена)
+- DENSE-CLUSTER ECONOMICS: band [6850000,7050000] yield ~35-40% (~3 диспатча/ногу) — рекомендация в §122: будущие lever A/B = 2 свежие ноги в dense band; существующая пара = mid-band якорь 76.01ms
+- ИНФРА ПАТЧ: pair_hunter.scrape_run_env + fallback regex band-gate echo (`runner_cpu_index=N band=[`) + fixture=BAND-GATE-REJECT — reject'ы умирают ДО harness run-env echo и раньше выпадали из индекса; backfill_gate_rejects.py дотянул 15/15 cpu_idx ИЗ ЛОГОВ-ИСТОЧНИКА; runs_index.jsonl = 36 ран (17 rejects с cpu)
+- АТРИБУЦИЯ S7-106 ИСПРАВЛЕНА по логам: 35169547594 = 11833447 (fastest draw в истории, +18% к run#19), а НЕ 7086411 (это 35169620123); 9958944 = 35169668823; на вердикты не влияет (все — gate-rejects), зафиксировано в §122 + CLAIMS
+- ledger: RESULTS_LEDGER §122 + INDEX 242 + CLAIMS TASK-243; index snapshot refreshed в research/; GOAL не менялся (вердиктов нет); INJECTS-ONLY: 0 sandbox boots
+
+Stage Summary:
+- Пара (spread 1.3%) пока n=1 — репликация отложена на следующий tick (index копится, hunt дешёвый: 18 rejects = ~12 CI-минут суммарно). Главный результат тика — измеренный закон пула: yield охоты зависит от класса-якоря; dense band даёт 4x экономию диспатчей. Инфра самодиагностируема: scraper больше не теряет reject'ы, хронология классов точна
