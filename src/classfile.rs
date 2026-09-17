@@ -2313,6 +2313,16 @@ const OPS_PUSHABLES_DESC: &str =
 
 const MUTABLE_POS_CLASS: &str = "net/minecraft/core/BlockPos$MutableBlockPos";
 
+/// Bridge class defined into the kernel loader by inside_cache.rs
+/// (S7-135 / TASK-271 INSIDE-CACHE lever).
+pub const INSIDE_OPS_CLASS: &str = "net/minecraft/world/entity/InsideBlockOps";
+
+/// javap-контракт: единственный `isAffectedByBlocks` сайт внутри
+/// `Entity.checkInsideBlocks(List, StepBasedCollector)` (offset 1).
+const CHECK_INSIDE_DESC: &str =
+    "(Ljava/util/List;Lnet/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector;)V";
+const GATE_DESC: &str = "(Lnet/minecraft/world/entity/Entity;)Z";
+
 /// Scan a bytecode array for `invokevirtual` (0xb6) AND `invokestatic`
 /// (0xb8) instructions. The static opcode is required for IDEMPOTENCY: a
 /// site already retargeted by this patcher is now 0xb8 and must still be
@@ -2616,6 +2626,42 @@ pub fn patch_collision_temps(bytes: &[u8]) -> Result<Vec<u8>, String> {
     out.extend_from_slice(&pool.serialize());
     out.extend_from_slice(&tail);
     Ok(out)
+}
+
+/// Whole-bridge patch for S7-135/TASK-271 INSIDE-CACHE: retarget the single
+/// `Entity.isAffectedByBlocks` site INSIDE
+/// `Entity.checkInsideBlocks(List, StepBasedCollector)` (javap offset 1 —
+/// the method-entry gate) to the static `InsideBlockOps.gate(Entity)Z`.
+/// Receiver-first, 3B→3B, stack shape [this]→[boolean] preserved.
+///
+/// Extra fail-closed guard: the bridge resolves the private
+/// `insideEffectCollector` field via Unsafe by NAME — if the kernel renamed
+/// it, the lever must not arm (pool utf8 probe here, before any rewrite).
+/// Strict: exactly one retargeted site expected on first sight.
+pub fn patch_inside_cache(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    if layout.pool.find_utf8("insideEffectCollector").is_none() {
+        return Err("insideEffectCollector field absent from pool (kernel rename?)".into());
+    }
+    let (out, outcome) = retarget_virtual_to_static(
+        bytes,
+        "checkInsideBlocks",
+        CHECK_INSIDE_DESC,
+        (
+            "net/minecraft/world/entity/Entity",
+            "isAffectedByBlocks",
+            "()Z",
+        ),
+        (INSIDE_OPS_CLASS, "gate", GATE_DESC),
+    )?;
+    if let RetargetOutcome::Retargeted { sites } = &outcome {
+        if *sites != 1 {
+            return Err(format!(
+                "expected exactly one isAffectedByBlocks site in checkInsideBlocks, got {sites}"
+            ));
+        }
+    }
+    Ok((out, outcome))
 }
 
 #[cfg(test)]
@@ -3393,3 +3439,78 @@ mod alloc_diet {
     }
 }
 
+
+#[cfg(test)]
+mod inside_cache {
+    // S7-135 / TASK-271: REAL kernel Entity.class (purpur-1.21.10.jar,
+    // hook-byte identical), extracted 2026-09-18 for the inside-cache patcher.
+    const ENTITY: &[u8] = include_bytes!("../tests/fixtures/Entity_real.class");
+
+    use crate::classfile::*;
+
+    #[test]
+    fn inside_cache_retargets_exactly_one_site() {
+        let (patched, outcome) = patch_inside_cache(ENTITY).expect("patch");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "exactly one isAffectedByBlocks site in checkInsideBlocks(List,Collector)"
+        );
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        // CODE length preserved; the file grows by the appended CP entries.
+        assert!(patched.len() >= ENTITY.len());
+    }
+
+    #[test]
+    fn inside_cache_site_resolves_to_ops_bridge() {
+        let (patched, _) = patch_inside_cache(ENTITY).expect("patch");
+        let cp_count = u16::from_be_bytes([patched[8], patched[9]]);
+        let (pool, _end) = Pool::parse(&patched, 10, cp_count).expect("cp parse");
+        let triples: Vec<_> = (1..pool.next)
+            .filter_map(|i| pool.methodref_parts(i))
+            .collect();
+        assert!(
+            triples.iter().any(|t| t.0 == "net/minecraft/world/entity/InsideBlockOps"
+                && t.1 == "gate"
+                && t.2 == "(Lnet/minecraft/world/entity/Entity;)Z"),
+            "gate Methodref appended"
+        );
+        // The collector-field guard precondition (bridge Unsafe resolution).
+        assert!(pool.find_utf8("insideEffectCollector").is_some());
+    }
+
+    #[test]
+    fn inside_cache_idempotent() {
+        let (patched, _) = patch_inside_cache(ENTITY).expect("patch");
+        let (again, outcome) = patch_inside_cache(&patched).expect("repatch");
+        assert_eq!(outcome, RetargetOutcome::AlreadyPatched { sites: 1 });
+        assert_eq!(again, patched, "repatch must be byte-identical");
+    }
+
+    #[test]
+    fn inside_cache_wrong_class_fails_closed() {
+        // A class without the collector field fails the pool guard (Err);
+        // a class with the field but no checkInsideBlocks(List,Collector)
+        // hits the NotFound path (original bytes, no pool growth).
+        match patch_inside_cache(include_bytes!(
+            "../tests/fixtures/PalettedContainer.class"
+        )) {
+            Err(e) => assert!(e.contains("insideEffectCollector"), "{e}"),
+            Ok((out, outcome)) => {
+                assert_eq!(outcome, RetargetOutcome::NotFound);
+                assert_eq!(
+                    out,
+                    include_bytes!("../tests/fixtures/PalettedContainer.class").to_vec()
+                );
+            }
+        }
+    }
+
+    /// Dump artifacts for the offline JVM-verifier harness.
+    #[test]
+    fn dump_patched_for_verifier() {
+        let (entity, _) = patch_inside_cache(ENTITY).expect("patch");
+        std::fs::create_dir_all("tests/out").unwrap();
+        std::fs::write("tests/out/Entity.patched.class", &entity).unwrap();
+    }
+}
