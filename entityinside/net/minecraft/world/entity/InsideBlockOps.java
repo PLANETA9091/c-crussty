@@ -162,8 +162,16 @@ public final class InsideBlockOps {
             return e.isAffectedByBlocks(); // неожиданный тип collector'а — ваниль
         }
         if (SLOT_EID[slot] != eid) {
-            // пустой слот: bootstrap capture для статики, ваниль для движущихся
-            if (staticTick && e.isAlive() && e.isAffectedByBlocks()) {
+            // ПИНГ-ПОНГ ХАРДЕНИНГ (S7-136, урок leg #2 35284069355): capture
+            // ТОЛЬКО из ПУСТОГО слота. При 150k живых > 2^17 слотов ~19k пар
+            // eid делят слот; прежний перехват занятого слота mirror'ом делал
+            // вечный ping-pong пары (A capture ⇒ B перехват ⇒ A перехват ...:
+            // полная traversal + Recorder + 6 arraycopy card-marks КАЖДЫЙ ТИК
+            // у обеих, ноль HIT) — главный подозреваемый коллапса leg2.
+            // Слот, занятый чужим eid (в т.ч. мёртвым), НЕ трогаем: чистая
+            // ваниль без инвалидации; ~13% сущностей остаются ванильными
+            // (150000>131072) — допустимо по preregistered плану S7-135b.
+            if (SLOT_EID[slot] == 0 && staticTick && e.isAlive() && e.isAffectedByBlocks()) {
                 mirror(e, e.level(), col, px, py, pz, slot, eid);
                 return false;
             }
