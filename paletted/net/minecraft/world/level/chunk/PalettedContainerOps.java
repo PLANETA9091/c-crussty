@@ -55,10 +55,16 @@ public final class PalettedContainerOps {
     public static volatile long BUILDS = 0, ABORTS = 0, CAPPED = 0;
     static volatile long NEXT_LOG_AT = 1L << 24;
 
-    /** Materialize-probe stride over the per-container slow-read counter:
-     * (miss & STRIDE_MASK) == 0. 16383 slow reads between probes keeps the
-     * probe cost <0.02% even for fully-vanilla (cold) containers. */
-    static final int STRIDE_MASK = 0x3FFF;
+    /** Adaptive materialize-probe stride over the per-container slow-read
+     * counter: the FIRST probe fires after 64 slow reads (crusstyEpoch == 0
+     * — never materialized), re-materialization after a write-release waits
+     * for 16384 more (write-heavy sections stabilize as vanilla; read-heavy
+     * static sections keep their snapshot). X150K lesson (S7-131 leg #1):
+     * a fixed 16384 threshold NEVER fired — ~5-15 reads/container/tick over
+     * tens of thousands of containers stays far below any single-container
+     * window, so the fast path never engaged and the lever regressed. */
+    static final int FIRST_STRIDE_MASK = 0x3F;      // 64 slow reads
+    static final int REARM_STRIDE_MASK = 0x3FFF;    // 16384 slow reads
 
     private PalettedContainerOps() {}
 
@@ -88,7 +94,8 @@ public final class PalettedContainerOps {
             v = data.palette().valueFor(raw);
         }
         int m = ++self.crusstyMiss; // plain field, benign races
-        if ((m & STRIDE_MASK) == 0) {
+        int stride = self.crusstyEpoch != 0 ? REARM_STRIDE_MASK : FIRST_STRIDE_MASK;
+        if ((m & stride) == 0) {
             tryMaterialize(self);
         }
         return v;
@@ -162,6 +169,7 @@ public final class PalettedContainerOps {
         Object[] holder = {demux, vals};
         self.crusstySnap = holder;        // volatile store 1 (snap)
         self.crusstySnapGen = gen + 1;    // volatile store 2 (LAST): gate = snapGen == gen + 1
+        self.crusstyEpoch = 1;            // plain store: re-materialize uses the patient stride
         BUILDS++;
         logThrottled();
     }
@@ -178,6 +186,7 @@ public final class PalettedContainerOps {
 
     /** Reflective smoke: machinery is loadable and the cap math is sane. */
     public static boolean selfTest() {
-        return LIVE.get() == 0 && CAP > 0 && STRIDE_MASK > 0;
+        return LIVE.get() == 0 && CAP > 0
+            && FIRST_STRIDE_MASK > 0 && REARM_STRIDE_MASK > FIRST_STRIDE_MASK;
     }
 }
