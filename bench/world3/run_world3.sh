@@ -132,6 +132,7 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "population_target: $POPULATION_TARGET (BENCH-X150K living-scene injection, S7-129; 0 = off)"
   echo "population_seed: $POPULATION_SEED (deterministic injection replay seed; topup seeded from deltaT=ft-T0, S7-130)"
   echo "server_xmx: $SERVER_XMX (S7-130; 150k-scale runs use 10G)"
+  echo "seconds: $RUN_SECONDS (soak window; profiler windows cpu 0-55% / wall 55-80% / alloc 80-100%, S7-134)"
 } > "$WORK/run-env.txt"
 log "run-env: world_sha256=$WORLD_SHA runner_cpu_index=$RUNNER_CPU_IDX fake_players=$FAKE_PLAYERS"
 log "extracting world"
@@ -386,20 +387,45 @@ if [ "$SEEN_DONE" = "1" ]; then
     sleep 5  # settle injection tail before profilers attach
   fi
 
-  # --- 6. profilers (v2: three sequential single-event windows) ------------
+  # --- 6. profilers (v3: stop-based sequential windows) --------------------
   # run#9 lesson: asprof v4.x allows ONE active session per target — so the
-  # soak is split into three windows; each dump STOPS the session, then the
-  # next event starts. cpu (0..55%) ranks hotspots; wall (55..80%) exposes
-  # JNI/lock/IO waits cpu hides; alloc (80..100%) names the allocation
-  # offenders feeding G1 (PagedAttention lesson: fast paths must be
-  # allocation-free — the alloc profile is the evidence of who is not).
+  # soak is split into three windows. cpu (0..55%) ranks hotspots; wall
+  # (55..80%) exposes JNI/lock/IO waits cpu hides; alloc (80..100%) names the
+  # allocation offenders feeding G1 (alloc weights = BYTES — the churn
+  # ranking the S7-134 old-gen census needs).
+  # S7-134 ROOT-CAUSE FIX (v2 bug): asprof v4.x `dump` does NOT stop the
+  # session — only `stop` does. v2 chained dump->start, so the FIRST cpu
+  # session stayed alive for the whole soak (ap.log: 3x "[ERROR] Profiler
+  # already started"), wall/alloc never started, and cpu-/wall-/alloc-
+  # collapsed.txt were cumulative CPU re-dumps. Consequence: the alloc
+  # profile was NEVER collected in any past run (S7-131..133 lane analyses
+  # remain valid — cpu+gc lanes only; wall/alloc BOTTLENECKS_3 sections were
+  # CPU-contaminated). v3: `stop` ends each window (stop == stop+dump), and
+  # every start is guarded by an orphan rescue so a stuck session can never
+  # silently swallow a window again.
   END=$(( SECONDS + RUN_SECONDS ))
   CPU_END=$(( SECONDS + RUN_SECONDS * 55 / 100 ))
   WALL_END=$(( SECONDS + RUN_SECONDS * 80 / 100 ))
   PROF_PHASE=cpu
 
+  asprof_guard_start() { # asprof_guard_start [event args...] — orphan-safe start
+    local out rc
+    out="$("$ASPROF" start "$@" "$SERVER_PID" 2>&1)"; rc=$?
+    if [ $rc -ne 0 ] || echo "$out" | grep -qi "already started"; then
+      log "asprof: orphan session before start($*) — rescuing into orphan-collapsed.txt"
+      "$ASPROF" stop -o collapsed -f "$WORK/orphan-collapsed.txt" "$SERVER_PID" >>"$WORK/ap.log" 2>&1 || true
+      out="$("$ASPROF" start "$@" "$SERVER_PID" 2>&1)"
+    fi
+    if echo "$out" | grep -qi "error"; then log "asprof start($*) FAILED: $out"; else echo "$out" >>"$WORK/ap.log"; fi
+  }
+  asprof_stop_dump() { # asprof_stop_dump <file> <format> <label> — stop == stop+dump in asprof 4.x
+    local file="$1" fmt="$2" label="$3"
+    "$ASPROF" stop -o "$fmt" -f "$file" "$SERVER_PID" >>"$WORK/ap.log" 2>&1 || log "asprof $label stop failed"
+    [ -s "$file" ] && log "$label: $(wc -l < "$file") stacks" || log "WARN: $file EMPTY"
+  }
+
   if [ -n "$ASPROF" ]; then
-    "$ASPROF" start -e cpu,interval=5ms "$SERVER_PID" 2>>"$WORK/ap.log" || log "asprof start failed"
+    asprof_guard_start -e cpu,interval=5ms
   fi
   cmd "spark profiler start --timeout $RUN_SECONDS"
 
@@ -424,17 +450,15 @@ if [ "$SEEN_DONE" = "1" ]; then
     if [ "$PROF_PHASE" = "cpu" ] && [ $SECONDS -ge $CPU_END ]; then
       PROF_PHASE=wall
       if [ -n "$ASPROF" ]; then
-        "$ASPROF" dump -o collapsed -f "$WORK/cpu-collapsed.txt" "$SERVER_PID" 2>>"$WORK/ap.log" || log "asprof cpu dump failed"
-        [ -s "$WORK/cpu-collapsed.txt" ] && log "cpu-collapsed: $(wc -l < "$WORK/cpu-collapsed.txt") stacks" || log "WARN: cpu-collapsed.txt EMPTY"
-        "$ASPROF" start -e wall "$SERVER_PID" 2>>"$WORK/ap.log" || log "asprof wall start failed"
+        asprof_stop_dump "$WORK/cpu-collapsed.txt" collapsed "cpu-collapsed"
+        asprof_guard_start -e wall
       fi
     fi
     if [ "$PROF_PHASE" = "wall" ] && [ $SECONDS -ge $WALL_END ]; then
       PROF_PHASE=alloc
       if [ -n "$ASPROF" ]; then
-        "$ASPROF" dump -o collapsed -f "$WORK/wall-collapsed.txt" "$SERVER_PID" 2>>"$WORK/ap.log" || log "asprof wall dump failed"
-        [ -s "$WORK/wall-collapsed.txt" ] && log "wall-collapsed: $(wc -l < "$WORK/wall-collapsed.txt") stacks" || log "WARN: wall-collapsed.txt EMPTY"
-        "$ASPROF" start -e alloc "$SERVER_PID" 2>>"$WORK/ap.log" || log "asprof alloc start failed"
+        asprof_stop_dump "$WORK/wall-collapsed.txt" collapsed "wall-collapsed"
+        asprof_guard_start -e alloc
       fi
     fi
   done
@@ -443,14 +467,13 @@ if [ "$SEEN_DONE" = "1" ]; then
   cmd "paper debug chunks"
   cmd "spark gc"
   if [ -n "$ASPROF" ]; then
-    # v2: the session active at soak end is ALLOC (windows above) — dumping it
-    # into cpu-collapsed.txt would mislabel the artifact (run#10 near-miss:
-    # the final dump assumed cpu was still running). Alloc -> alloc-collapsed,
-    # then a short cpu session produces the flamegraph for humans.
-    "$ASPROF" dump -o collapsed -f "$WORK/alloc-collapsed.txt" "$SERVER_PID" 2>>"$WORK/ap.log" || log "asprof alloc dump failed"
-    [ -s "$WORK/alloc-collapsed.txt" ] && log "alloc-collapsed: $(wc -l < "$WORK/alloc-collapsed.txt") stacks" || log "WARN: alloc-collapsed.txt EMPTY"
-    "$ASPROF" start "$SERVER_PID" 2>>"$WORK/ap.log" || true
-    "$ASPROF" dump -o flamegraph -f "$WORK/cpu-flamegraph.html" "$SERVER_PID" 2>>"$WORK/ap.log" || true
+    # v3: the session active at soak end is ALLOC (windows above) — stopping
+    # it into alloc-collapsed.txt (weights = BYTES). Then a SHORT fresh cpu
+    # session produces the flamegraph for humans (20s sampling tail).
+    asprof_stop_dump "$WORK/alloc-collapsed.txt" collapsed "alloc-collapsed"
+    asprof_guard_start -e cpu,interval=5ms
+    sleep 20   # give the flamegraph window real samples (v2 got an orphan re-dump here)
+    "$ASPROF" stop -o flamegraph -f "$WORK/cpu-flamegraph.html" "$SERVER_PID" >>"$WORK/ap.log" 2>&1 || true
   fi
   cmd "spark profiler --stop"
   sleep 15
