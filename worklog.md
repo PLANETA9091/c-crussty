@@ -1380,3 +1380,24 @@ Work Log:
 
 Stage Summary:
 - Сцена X150K РАБОТАЕТ В CI от 10k до (след. раунды) 150k; первый профиль живой сцены получен; NEXT S7-130: topup-фикс → масштаб 150k (инъекция ~39s @1500/тик; heap +3-4GB) → soak → S7-131 база A/B → топ-1 ARCH-ATTACK; INJECTS-ONLY цел
+---
+## S7-130 (TASK-266) — 2026-09-17 23:4x +08 — X150K масштаб 150k: topup-фикс + SERVER_XMX; prime-ран 35238931413 in-flight
+
+**Task ID: S7-130 (Job 393012)**, Agent: agent-7625532f (session web-f7888d46)
+
+Work Log:
+- bootstrap + 3x pull (все up-to-date) → GOAL хвост (S7-129b: smoke 10k SUCCESS, топ-1 PalettedContainer.get 4.20%, баг topup-удвоения) → worklog/CLAIMS хвосты (TASK-265 → следующий TASK-266) → спека BENCH_X150K_SCENARIO.md прочитана полностью (§1-§5, план S7-130 unchecked)
+- Root-caused topup-баг по коду плагина: itemSpawnLog заполнялся ТОЛЬКО в topup-таске (строка addLast только там) — стартовая инъекция не логировалась ⇒ первый topup видел aliveEst=0 → deficit=planItems → items ×2 (подтверждено наблюдением ~14k в смоуке)
+- **ФИКС 1 (корректность модели)**: itemsThisSlice на каждом инжекционном тике → itemSpawnLog.addLast([fullTime, count]) после слайса; purge-горизонт (rec[0]<ft−6000) теперь точно совпадает с ванильным age-6000 деспавном стартовых items — deque-модель end-to-end консистентна
+- **ФИКС 2 (replay-детерминизм)**: topup-seed = seed ^ (ft − t0FullTime), t0FullTime фиксируется в finishInjection (маркер INJECT DONE расширен полем) — топап-поток воспроизводим при (target, seed) независимо от дрейфа бута
+- **SERVER_XMX проводка** (подготовка prime; оценка +3-4GB против 6G-потолка, high-water 10k = 3951MB): run_world3.sh env default 6G + java -Xmx"$SERVER_XMX" + run-env self-doc; workflow input server_xmx default 6G + env pass-through; классификация: инфраструктура bench-харнеса, НЕ config-win (запрет владельца — про серверный код/поведение)
+- Контракт ДО CI: javac21 (Adoptium) против paper-api+adventure classpath = COMPILE OK; bash -n OK; YAML OK
+- Commit+push **7956a2e**; диспатч run **35238931413** (fp=4, target=150000, seed=42, xmx=10G, sweeps=0, 300s, guard=1) с concurrency-guard (свободно, in-flight проверен) — runs_index +1 (95 строк)
+- 3 poll'а по ~9 мин (шаблон ≤600s): статус in_progress всё окно тика (ожидаемо: бут 9216 чанков + инъекция 150k ~100 тиков + окно 300s) — финал = absorb S7-131
+- Учёт: GOAL S7-130; §146; INDEX 267; CLAIMS TASK-266; этот worklog; локальный worklog atomic
+- CRUSSTY pristine не тронут
+
+Stage Summary:
+- Prime-масштаб 150k ЗАПУЩЕН: баг-фикс topup-удвоения + replay-якорь T0 + Xmx-проводка ушли в master до диспатча (фикс в измеряемом ране — absorb покажет deficit=0 на первом topup как верификацию); NEXT S7-131: absorb 35238931413 → гейты + topup-верификация + GC high-water калибровка + свежий профиль leaf 150k ⇒ топ-1 ARCH-ATTACK (PalettedContainer.get vs entity-лейны); планка x150000 = исчезновение топ-1 из профиля; INJECTS-ONLY цел (0 sandbox boots)
+
+RUN_ID_DISPATCHED: **35238931413** (master 7956a2e, population_target=150000, server_xmx=10G, 300s; runs_index S7-130 row)
