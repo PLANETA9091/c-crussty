@@ -1345,3 +1345,21 @@ Stage Summary:
 - INJECTS-ONLY: 0 sandbox boots (CI-буты санкционированы).
 
 RUN_ID_DISPATCHED: **35231195756** (master 5764c09, fp=4, summon_sweeps=1, fluid_guard=1, 900s; runs_index S7-128 row)
+
+---
+## S7-129 — 2026-09-17 22:1x tick — X150K population fixture MVP: сцену «всё живое» теперь можно измерять
+
+**Task ID: S7-129**, Agent: agent-7625532f (session web-f7888d46, Job 393012 arch-attack charter)
+
+Work Log:
+- bootstrap + 3x pull; ГОЛОВНОЕ: обнаружен ПАРАЛЛЕЛЬНЫЙ sibling-раунд S7-128 (5764c09+172dc47, Job 393012 тот же чартер) — поглощён: TASK-264 докоммичен verbatim (dev-logs), их вериф-ран 35231195756 (fp=4 sweeps=1 guard=1 900s) in_progress — НЕ ТРОНУТ (concurrency cancel-in-progress: мой диспатч отложен до его финала)
+- leg_b_v4_state.json НЕ был очищен sibling'ом (phase=pack остался!) — риск возобновления замороженной лотереи следующим тиком; нейтрализовано: {"phase":"FROZEN-BY-OWNER-REDIRECT-X150K"} + note «НЕ ВОЗОБНОВЛЯТЬ»
+- Профиль leg#2 (35224751782) скачан (run-packleg2/, fetch_artifact.py расширен collapsed/BOTTLENECKS) и разобран НОВЫМ инструментом profile_rank.py (функциональный рейтинг collapsed): inclusive entity-лейн 43.8% (LivingEntity.aiStep 18.3% / Mob.tick 22.5% / Brain.tick 6.14% / Entity.move 8.2%), block+redstone 8.9% (DiodeBlock.onPlace 7.9%), leaf top-1 PalettedContainer.get 3.37% (вердикт S7-128 подтверждён независимо)
+- **X150K population fixture MVP**: bench/world3/population/BenchPopulationPlugin.java + plugin.yml — ванильный addEntity-путь (spawnEntity/dropItem), консоль `benchpop inject <target> [seed]`; 70% items (pickup-delay 32767, фермы-кластеры 5% чанков min 16) / 20% hostiles / 10% passives; setPersistent+setRemoveWhenFarAway(false) = ферм-сток, натуральный спавн/деспавн ванильный; TOPUP 600t (deque-оценка age<6000t) — item-лейны горячие непрерывно; детерминизм: Random(seed), чанки сортированы (x,z), бюджет 1500/тик
+- Харнес run_world3.sh: POPULATION_TARGET/SEED (envs + run-env self-doc), kernel-materialization общий путь, benchpop inject ПОСЛЕ forceload + ОЖИДАНИЕ «POPULATION INJECT DONE» ДО профилировщиков (спека §2); workflow world-bench.yml: inputs population_target/seed + env + гейт FIXTURE-VALIDITY ≥90% (иначе FAILURE)
+- Локальная проверка контракта ДО CI: JDK21 (Adoptium) + paper-api 1.21.10-R0.1-SNAPSHOT + adventure 4.24 + bungeecord-chat + patched-kernel.jar ⇒ **COMPILE OK** (API: getLoadedChunks/getHighestBlockYAt/dropItem/spawnEntity/setPersistent/setPickupDelay/getFullTime); риск CI-провала компиляции снят
+- runs_index +2 (35231195756 dispatch-row sibling + FROZEN note); GOAL S7-129 + §144 + INDEX 265 + спека §5 (S7-129 done)
+- Commits: c-crussty 0218623 + accounting, dev-logs TASK-264 (verbatim) + TASK-265; CRUSSTY pristine не тронут
+
+Stage Summary:
+- Сцена X150K ИЗМЕРЯЕМА: fixture MVP готов и компилируется против реального kernel; следующая нога S7-129b = CI smoke 10k (после финала 35231195756) ⇒ S7-130 масштаб 150k + soak ⇒ S7-131 база A/B + свежий профиль ⇒ топ-1 ARCH-ATTACK (планка x150000 = скорость топ-1 функции); INJECTS-ONLY цел (0 sandbox boots)
