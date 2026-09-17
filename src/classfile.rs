@@ -66,7 +66,7 @@ const INTEGER: &str = "java/lang/Integer";
 /// One parsed constant-pool entry: (apparent index, tag, payload).
 type Entry = (u16, u8, Vec<u8>);
 
-struct Pool {
+pub struct Pool {
     entries: Vec<Entry>,
     /// 1-based index the next appended entry will get; after a parse this
     /// equals cp_count (index space = 1 + sum of apparent slots).
@@ -76,7 +76,7 @@ struct Pool {
 impl Pool {
     /// Parse the constant pool of `bytes` starting at `cp_start`; returns the
     /// pool and the offset just past it (where access_flags begins).
-    fn parse(bytes: &[u8], cp_start: usize, cp_count: u16) -> Option<(Pool, usize)> {
+    pub fn parse(bytes: &[u8], cp_start: usize, cp_count: u16) -> Option<(Pool, usize)> {
         let mut pool = Pool {
             entries: Vec::with_capacity(cp_count as usize),
             next: 1,
@@ -218,7 +218,7 @@ impl Pool {
     /// probe for the target method's name/descriptor entries before anything
     /// is mutated: a method whose name/desc utf8 entries are absent cannot
     /// exist, and NotFound must not grow the pool as a side effect.
-    fn find_utf8(&self, s: &str) -> Option<u16> {
+    pub fn find_utf8(&self, s: &str) -> Option<u16> {
         let mut payload = Vec::with_capacity(2 + s.len());
         payload.extend_from_slice(&(s.len() as u16).to_be_bytes());
         payload.extend_from_slice(s.as_bytes());
@@ -362,7 +362,7 @@ fn find_method(
     None
 }
 
-struct ClassLayout {
+pub struct ClassLayout {
     pool: Pool,
     /// Offset of access_flags (end of the constant pool region).
     cp_end: usize,
@@ -370,6 +370,8 @@ struct ClassLayout {
     this_class_idx: u16,
     /// Offset of the methods_count field (start of the method table).
     methods_start: usize,
+    /// Offset of the fields_count field (start of the field table).
+    fields_start: usize,
 }
 
 fn parse_layout(bytes: &[u8]) -> Option<ClassLayout> {
@@ -390,6 +392,7 @@ fn parse_layout(bytes: &[u8]) -> Option<ClassLayout> {
     let mut p = cp_end.checked_add(6)?; // access_flags(2) this_class(2) super_class(2)
     let iface_count = usize::from(u16_at(bytes, p)?);
     p = p.checked_add(2)?.checked_add(2 * iface_count)?;
+    let fields_start = p;
     let fields_count = usize::from(u16_at(bytes, p)?);
     p = p.checked_add(2)?;
     for _ in 0..fields_count {
@@ -405,6 +408,7 @@ fn parse_layout(bytes: &[u8]) -> Option<ClassLayout> {
         pool,
         cp_end,
         this_class_idx,
+        fields_start,
         methods_start: p,
     })
 }
@@ -1358,6 +1362,513 @@ fn dbg_parse() {
     eprintln!("after iface p={p}");
     let fields = u16::from_be_bytes([bytes[p], bytes[p+1]]);
     eprintln!("fields={fields}");
+}
+
+// ---------------------------------------------------------------------------
+// PALETTED-DEMUX (S7-131, ARCH-ATTACK lever #1 — the owner's top-1 function).
+//
+// Target: `net/minecraft/world/level/chunk/PalettedContainer.get(int)` — the
+// top-1 kernel JVM-Java leaf across all X150K profiles (4.20% @10k smoke,
+// 3.62% @fp4, 3.3% @150k prime; + readPalette 0.8% + SimpleBitStorage.get
+// 0.8% = the ~4.9% "palette lane"). Operationalization of the owner's
+// x150000 bar: the function must DISAPPEAR from the profile.
+//
+// Shape: three bytecode edits applied at FIRST CLASS LOAD (field injection
+// changes the class shape, so the retransform path is unavailable — the byte
+// hook serves the patched bytes at define time; if the hook is not READY
+// before the class loads, the module fails closed to vanilla):
+//
+//   1. FIELD INJECTION — 4 public instance fields appended to the field
+//      table (zero-init by the JVM; no <init> changes needed):
+//        crusstySnap    : [Ljava/lang/Object;  PUBLIC VOLATILE TRANSIENT
+//        crusstySnapGen : I                    PUBLIC VOLATILE
+//        crusstyGen     : I                    PUBLIC VOLATILE
+//        crusstyMiss    : I                    PUBLIC (plain; benign races)
+//      crusstySnap holds { int[] demux, Object[] vals } (a 2-slot holder so
+//      the pair is consistent); crusstyGen is the write-epoch counter
+//      (odd = mutation in flight); crusstySnapGen is the published
+//      snapshot's build epoch; crusstyMiss is the per-container slow-read
+//      heat counter driving lazy materialization.
+//
+//   2. get(int) BODY SWAP — straight-line fast path (gen/snap checks +
+//      vals[demux[index]]) with a fallback invokestatic into
+//      PalettedContainerOps.get(self, index) which reproduces the vanilla
+//      body EXACTLY (public API: data/storage()/palette()/moonrise
+//      fast-palette) and lazily materializes the snapshot. ONE hand-built
+//      full_frame StackMapTable entry at the branch target (locals: this,
+//      int, int, Object[]).
+//
+//   3. MUTATOR GUARDS — getAndSet(int,T) and set(int,T) (the two private
+//      bit-level write entry points; every public write path funnels into
+//      them) gain a PROLOGUE (snap = null; gen++ → odd) and an EPILOGUE
+//      (gen++ → even; Ops.onWrite(self) → refcount release). Both bodies
+//      are branch-free with no exception table (verified fail-closed in the
+//      patcher), so the original code is copied VERBATIM (cp indices and
+//      relative offsets unchanged) and the epilogue lands before the single
+//      return opcode. onResize/updateData/read stay UNPATCHED: they either
+//      run inside the guarded odd-epoch window (resize during idFor) or are
+//      server-never (read(FriendlyByteBuf) is the client chunk-receive
+//      path; a dedicated server never executes it).
+//
+// RACE PROTOCOL (single-writer-per-container is guaranteed by the kernel's
+// own moonrise region-lock discipline — the same invariant that licenses
+// the unsynchronized getAndSetUnchecked):
+//   - writer: snap=null, gen++ (odd), ...mutate..., gen++ (even) — a reader
+//     or materializer seeing odd gen or a snapGen mismatch takes the
+//     vanilla path (never a torn snapshot).
+//   - materializer probes only at stable EVEN gen, re-checks gen+data
+//     after the probe, publishes snap BEFORE snapGen (snapGen last, both
+//     volatile) — readers validate snapGen == gen at read time, so a
+//     snapshot is used iff no write epoch started since its build.
+//   - a fast read passing the gen check while a write is in flight would
+//     have raced in vanilla too (unsynchronized get on in-place bit
+//     writes) — parity of observable windows, not stronger.
+// Refcount: LIVE counts published snapshots; prologue nulls snap on first
+// write, the epilogue's Ops.onWrite releases the count (snapGen = -1 marks
+// the uncounted state). gen wraps at 2^31 writes per container —
+// unreachable in any bench window (documented).
+//
+// Fail-closed matrix: hook not READY at class load → vanilla; kernel shape
+// mismatch (any expected method/field absent) → Err → vanilla; Ops class
+// missing at first get execution → impossible (READY requires Ops defined).
+// patch(patch(x)) == patch(x) via the crusstySnapGen pool probe.
+//
+// RUNTIME PATH NOTE (S7-131): the JVM verifier rejected the hand-built
+// first-frame offset convention (StackMapTable bad offset), so the RUNTIME
+// serves the ASM COMPUTE_FRAMES image produced by
+// paletted/tools/PalettedPatchTool.java at BUILD time
+// (paletted/build/PalettedContainer.patched.class, embedded in src/paletted.rs
+// behind a fingerprint gate). THIS rust patcher remains as the offline
+// diagnostic: it re-validates the cp/field-splice mechanics and the
+// mutator-body contracts on the real fixture (paletted_patch_roundtrip).
+// Its get/mutator bodies encode protocol v1 (snap=null prologue + snapGen=gen
+// gate); the ASM runtime image is protocol v2 (onMutateStart release +
+// snapGen==gen+1 gate, initial-state-safe refcount).
+// ---------------------------------------------------------------------------
+
+pub const PALETTED_CLASS: &str = "net/minecraft/world/level/chunk/PalettedContainer";
+pub const PALETTED_OPS_CLASS: &str = "net/minecraft/world/level/chunk/PalettedContainerOps";
+
+const F_SNAP: &str = "crusstySnap";
+const F_SNAPGEN: &str = "crusstySnapGen";
+const F_GEN: &str = "crusstyGen";
+const F_MISS: &str = "crusstyMiss";
+const DESC_OBJ_ARRAY: &str = "[Ljava/lang/Object;";
+const DESC_INT_ARRAY: &str = "[I";
+
+const ACC_PUBLIC: u16 = 0x0001;
+const ACC_VOLATILE: u16 = 0x0040;
+const ACC_TRANSIENT: u16 = 0x0080;
+
+/// The four injected (name, descriptor, access) tuples.
+const INJECTED_FIELDS: [(&str, &str, u16); 4] = [
+    (F_SNAP, DESC_OBJ_ARRAY, ACC_PUBLIC | ACC_VOLATILE | ACC_TRANSIENT),
+    (F_SNAPGEN, "I", ACC_PUBLIC | ACC_VOLATILE),
+    (F_GEN, "I", ACC_PUBLIC | ACC_VOLATILE),
+    (F_MISS, "I", ACC_PUBLIC),
+];
+
+/// Whole-container patch: inject fields + swap get(int) + guard both
+/// mutators, in a single append-only pass. Idempotent.
+pub fn patch_paletted_container(bytes: &[u8]) -> Result<Vec<u8>, String> {
+    let layout = parse_layout(bytes).ok_or("bad classfile layout")?;
+    let this_name = this_class_name(&layout).ok_or("cannot resolve this_class name")?;
+    if this_name != PALETTED_CLASS {
+        return Err(format!("unexpected class {this_name}"));
+    }
+    let mut pool = layout.pool;
+
+    // Idempotency probe: a pool that already carries the injected-field
+    // names is already patched — return the bytes unchanged.
+    if pool.find_utf8(F_SNAPGEN).is_some() {
+        return Ok(bytes.to_vec());
+    }
+
+    // Fail-closed probes BEFORE any mutation: every expected method must
+    // exist with the exact kernel descriptor.
+    let get_name = pool.find_utf8("get").ok_or("get name utf8 not found")?;
+    let get_desc = pool
+        .find_utf8("(I)Ljava/lang/Object;")
+        .ok_or("get(I) desc utf8 not found")?;
+    let gas_name = pool.find_utf8("getAndSet").ok_or("getAndSet name utf8 not found")?;
+    let gas_desc = pool
+        .find_utf8("(ILjava/lang/Object;)Ljava/lang/Object;")
+        .ok_or("getAndSet(I,T) desc utf8 not found")?;
+    let set_name = pool.find_utf8("set").ok_or("set name utf8 not found")?;
+    let set_desc = pool
+        .find_utf8("(ILjava/lang/Object;)V")
+        .ok_or("set(I,T) desc utf8 not found")?;
+    let m_get = find_method(bytes, layout.methods_start, get_name, get_desc)
+        .ok_or("get(I)Ljava/lang/Object; not found")?;
+    let m_gas = find_method(bytes, layout.methods_start, gas_name, gas_desc)
+        .ok_or("getAndSet(ILjava/lang/Object;)Ljava/lang/Object; not found")?;
+    let m_set = find_method(bytes, layout.methods_start, set_name, set_desc)
+        .ok_or("set(ILjava/lang/Object;)V not found")?;
+
+    // ---- constant pool additions (append-only) ----
+    let mut f_refs = [0u16; 4];
+    for (i, (name, desc, _)) in INJECTED_FIELDS.iter().enumerate() {
+        f_refs[i] = pool.field_ref(PALETTED_CLASS, name, desc);
+    }
+    let ops_get = pool.method_ref(
+        PALETTED_OPS_CLASS,
+        "get",
+        &format!("(L{PALETTED_CLASS};I)Ljava/lang/Object;"),
+    );
+    let ops_onwrite = pool.method_ref(
+        PALETTED_OPS_CLASS,
+        "onWrite",
+        &format!("(L{PALETTED_CLASS};)V"),
+    );
+    let u8_int_array = pool.utf8(DESC_INT_ARRAY);
+    let cls_int_array = pool.class_of(u8_int_array);
+    let u8_obj_array = pool.utf8(DESC_OBJ_ARRAY);
+    let cls_obj_array = pool.class_of(u8_obj_array);
+    if pool.next > u16::MAX - 32 {
+        return Err("constant pool overflow: no index space left for PALETTED refs".into());
+    }
+
+    // ---- get(int): fast path + Ops fallback ----
+    let this_class_utf8 = pool.utf8(PALETTED_CLASS);
+    let this_class_cp = pool.class_of(this_class_utf8);
+    let attr_code = pool.utf8("Code");
+    let attr_smt = pool.utf8("StackMapTable");
+    let get_code = build_paletted_get_body(&pool, f_refs[1], f_refs[2], f_refs[0], ops_get, cls_int_array, cls_obj_array, this_class_cp, attr_code, attr_smt);
+    let get_method = build_method_entry(&m_get, &get_code);
+
+    // ---- mutators: prologue + verbatim + epilogue ----
+    // getAndSet returns T (areturn 0xb0); set returns void (return 0xb1).
+    let gas_code = guard_mutator_body(bytes, &pool, attr_code, &m_gas, f_refs[0], f_refs[2], ops_onwrite, 0xb0)?;
+    let gas_method = build_method_entry(&m_gas, &gas_code);
+    let set_code = guard_mutator_body(bytes, &pool, attr_code, &m_set, f_refs[0], f_refs[2], ops_onwrite, 0xb1)?;
+    let set_method = build_method_entry(&m_set, &set_code);
+
+    // ---- field table: original entries + 4 injected field_info blocks ----
+    let mut fields_out = Vec::with_capacity(64);
+    let orig_fields_count = u16_at(bytes, layout.fields_start).ok_or("fields_count oob")?;
+    fields_out.extend_from_slice(&(orig_fields_count.saturating_add(4)).to_be_bytes());
+    fields_out.extend_from_slice(&bytes[layout.fields_start + 2..layout.methods_start]);
+    for (i, (name, desc, access)) in INJECTED_FIELDS.iter().enumerate() {
+        let _ = i;
+        let n = pool.find_utf8(name).ok_or("field name utf8 missing")?;
+        let d = pool.find_utf8(desc).ok_or("field desc utf8 missing")?;
+        fields_out.extend_from_slice(&access.to_be_bytes());
+        fields_out.extend_from_slice(&n.to_be_bytes());
+        fields_out.extend_from_slice(&d.to_be_bytes());
+        fields_out.extend_from_slice(&0u16.to_be_bytes()); // attributes_count
+    }
+
+    // ---- assemble: header + new cp + tail with fields & methods spliced ----
+    let mut out = Vec::with_capacity(bytes.len() + 512);
+    out.extend_from_slice(&bytes[0..8]); // magic, minor, major
+    out.extend_from_slice(&pool.next.to_be_bytes()); // new cp_count
+    out.extend_from_slice(&pool.serialize());
+    // this_class/super_class/interfaces + field table (rewritten count)
+    out.extend_from_slice(&bytes[layout.cp_end..layout.fields_start]);
+    out.extend_from_slice(&fields_out);
+    // method table with the three bodies replaced (order-agnostic splice)
+    let mut edits: [(usize, usize, &[u8]); 3] = [
+        (m_get.start, m_get.end, &get_method),
+        (m_gas.start, m_gas.end, &gas_method),
+        (m_set.start, m_set.end, &set_method),
+    ];
+    edits.sort_by_key(|e| e.0);
+    if edits[0].1 > edits[1].0 || edits[1].1 > edits[2].0 {
+        return Err("method ranges overlap".into());
+    }
+    let mut cursor = layout.methods_start;
+    for (s, e, repl) in edits.iter() {
+        out.extend_from_slice(&bytes[cursor..*s]);
+        out.extend_from_slice(repl);
+        cursor = *e;
+    }
+    out.extend_from_slice(&bytes[cursor..]);
+    Ok(out)
+}
+
+/// Rebuild a method_info block: original access/name/desc + a fresh Code
+/// attribute (the only attribute kept — these methods carry no others that
+/// the verifier needs; the patcher fails closed when they do).
+fn build_method_entry(m: &Method, full_code_attr: &[u8]) -> Vec<u8> {
+    let mut method = Vec::with_capacity(full_code_attr.len() + 8);
+    method.extend_from_slice(&m.access.to_be_bytes());
+    method.extend_from_slice(&m.name_idx.to_be_bytes());
+    method.extend_from_slice(&m.desc_idx.to_be_bytes());
+    method.extend_from_slice(&1u16.to_be_bytes()); // attributes_count = Code only
+    method.extend_from_slice(full_code_attr);
+    method
+}
+
+/// JVM instruction-length walk: true if the body contains any control-flow
+/// opcode (branches, switches, athrow, wide, jsr). Lengths per JVMS 6.5 —
+/// operand bytes are never misread as opcodes.
+fn code_has_branches(code: &[u8]) -> bool {
+    let mut p = 0usize;
+    while p < code.len() {
+        let op = code[p];
+        let len = match op {
+            0x10 | 0x12 => 2,                       // bipush, ldc
+            0x11 => 3,                              // sipush
+            0x13..=0x14 => 3,                       // ldc_w, ldc2_w
+            0x84 => 3,                              // iinc
+            0x99..=0xc7 => 3,                       // if*, goto, jsr, null-branch
+            0xb2..=0xb8 => 3,                       // get/putstatic, get/putfield, invokes
+            0xba => 5,                              // invokedynamic
+            0xb9 => 5,                              // invokeinterface
+            0xbb..=0xc1 => 3,                       // new, anewarray, checkcast, instanceof
+            0xc5 => 4,                              // multianewarray
+            0xc8..=0xc9 => 5,                       // goto_w, jsr_w
+            0xaa | 0xab => return true,             // tableswitch, lookupswitch
+            0xc4 => return true,                    // wide
+            0xbf => return true,                    // athrow
+            _ => 1,                                 // everything else: 1 byte
+        };
+        p += len;
+    }
+    false
+}
+
+/// Build the guarded mutator Code attribute: prologue + verbatim original
+/// code (minus its final return) + epilogue + return. Fail-closed: the
+/// original body must be branch-free, exception-table-free and end with the
+/// expected single return opcode.
+fn guard_mutator_body(
+    bytes: &[u8],
+    pool: &Pool,
+    attr_code: u16,
+    m: &Method,
+    f_snap: u16,
+    f_gen: u16,
+    ops_onwrite: u16,
+    ret_opcode: u8,
+) -> Result<Vec<u8>, String> {
+    let (orig_max_stack, orig_max_locals, orig_code) = parse_code_attr(bytes, pool, m.start, m.end)?;
+    if code_has_exception_table(bytes, pool, m.start, m.end)? {
+        return Err("mutator has exception table".into());
+    }
+    // NOTE: debug attributes (LineNumberTable etc.) inside Code are DROPPED
+    // (the replacement body carries none) — the verifier does not need them;
+    // their line offsets would be stale under the prologue anyway.
+    // Branch scan: walk the INSTRUCTION stream (opcode-true lengths — a raw
+    // byte scan would false-positive on cp operand bytes) and fail closed on
+    // any jump/switch/athrow/wide (branch-free bodies need no stackmap and
+    // no offset fixups; the prologue/epilogue insert stays trivial).
+    if code_has_branches(orig_code) {
+        return Err("mutator body has branch/throw opcodes".into());
+    }
+    let last = *orig_code.last().ok_or("mutator body empty")?;
+    if last != ret_opcode {
+        return Err(format!(
+            "mutator body does not end with expected return 0x{ret_opcode:02x} (got 0x{last:02x})"
+        ));
+    }
+    let body = &orig_code[..orig_code.len() - 1];
+
+    let mut code = Vec::with_capacity(orig_code.len() + 40);
+    // PROLOGUE: snap = null; gen++ (even -> odd).
+    code.push(0x2a); // aload_0
+    code.push(0x01); // aconst_null
+    code.push(0xb5); // putfield crusstySnap
+    code.extend_from_slice(&f_snap.to_be_bytes());
+    code.push(0x2a); // aload_0
+    code.push(0x59); // dup
+    code.push(0xb4); // getfield crusstyGen
+    code.extend_from_slice(&f_gen.to_be_bytes());
+    code.push(0x04); // iconst_1
+    code.push(0x60); // iadd
+    code.push(0xb5); // putfield crusstyGen
+    code.extend_from_slice(&f_gen.to_be_bytes());
+    // ORIGINAL body (verbatim, minus the final return).
+    code.extend_from_slice(body);
+    // EPILOGUE: gen++ (odd -> even); Ops.onWrite(self).
+    code.push(0x2a); // aload_0
+    code.push(0x59); // dup
+    code.push(0xb4); // getfield crusstyGen
+    code.extend_from_slice(&f_gen.to_be_bytes());
+    code.push(0x04); // iconst_1
+    code.push(0x60); // iadd
+    code.push(0xb5); // putfield crusstyGen
+    code.extend_from_slice(&f_gen.to_be_bytes());
+    code.push(0x2a); // aload_0
+    code.push(0xb8); // invokestatic PalettedContainerOps.onWrite
+    code.extend_from_slice(&ops_onwrite.to_be_bytes());
+    code.push(ret_opcode);
+
+    Ok(assemble_code_attr(attr_code, &code, orig_max_stack.saturating_add(2), orig_max_locals, None))
+}
+
+/// Build the get(int) full Code attribute: fast demux path + Ops fallback
+/// with a single full_frame stackmap entry at the fallback target.
+fn build_paletted_get_body(
+    pool: &Pool,
+    f_snapgen: u16,
+    f_gen: u16,
+    f_snap: u16,
+    ops_get: u16,
+    cls_int_array: u16,
+    cls_obj_array: u16,
+    this_class_cp: u16,
+    attr_code: u16,
+    attr_smt: u16,
+) -> Vec<u8> {
+    const OPS_TARGET: i32 = 39; // byte offset of the fallback inside the new body
+    let u2 = |out: &mut Vec<u8>, v: u16| out.extend_from_slice(&v.to_be_bytes());
+    let mut code = Vec::with_capacity(48);
+    // locals: 0=this, 1=index, 2=snapGen, 3=snap
+    code.push(0x2a); // aload_0
+    code.push(0xb4); // getfield crusstySnapGen
+    u2(&mut code, f_snapgen);
+    code.push(0x3d); // istore_2
+    code.push(0x2a); // aload_0
+    code.push(0xb4); // getfield crusstySnap
+    u2(&mut code, f_snap);
+    code.push(0x4e); // astore_3
+    code.push(0x1c); // iload_2
+    code.push(0x2a); // aload_0
+    code.push(0xb4); // getfield crusstyGen
+    u2(&mut code, f_gen);
+    code.push(0xa0); // if_icmpne -> OPS (3B at 15..17)
+    u2(&mut code, (OPS_TARGET - 15) as u16);
+    code.push(0x2d); // aload_3
+    code.push(0xc6); // ifnull -> OPS (3B at 19..21)
+    u2(&mut code, (OPS_TARGET - 19) as u16);
+    // fast: vals[demux[index]]
+    code.push(0x2d); // aload_3
+    code.push(0x03); // iconst_0
+    code.push(0x32); // aaload
+    code.push(0xc0); // checkcast [I
+    u2(&mut code, cls_int_array);
+    code.push(0x1b); // iload_1
+    code.push(0x2e); // iaload
+    code.push(0x2d); // aload_3
+    code.push(0x04); // iconst_1
+    code.push(0x32); // aaload
+    code.push(0xc0); // checkcast [Ljava/lang/Object;
+    u2(&mut code, cls_obj_array);
+    code.push(0x5f); // swap
+    code.push(0x32); // aaload
+    code.push(0xb0); // areturn
+    debug_assert_eq!(code.len(), OPS_TARGET as usize, "fast path must end at the fallback target");
+    // OPS: fallback -> PalettedContainerOps.get(self, index)
+    code.push(0x2a); // aload_0
+    code.push(0x1b); // iload_1
+    code.push(0xb8); // invokestatic PalettedContainerOps.get
+    u2(&mut code, ops_get);
+    code.push(0xb0); // areturn
+
+    // StackMapTable: one full_frame at offset 39 (offset_delta = 39 - (-1) = 40):
+    //   locals: [PalettedContainer, int, int, Object[]], stack: []
+    let this_class = this_class_cp;
+    let mut frames = Vec::with_capacity(24);
+    frames.push(0xff); // full_frame
+    // First-frame offset convention (empirical, matches the kernel's own
+    // updateData frame: branch target 26 <-> same_frame type 26):
+    // offset(0) = offset_delta(0), i.e. the virtual initial frame sits at
+    // offset 0, not -1.
+    u2(&mut frames, OPS_TARGET as u16);
+    u2(&mut frames, 4); // number_of_locals
+    frames.push(0x07); // OBJECT
+    u2(&mut frames, this_class);
+    frames.push(0x01); // INTEGER (index)
+    frames.push(0x01); // INTEGER (snapGen local)
+    frames.push(0x07); // OBJECT
+    u2(&mut frames, cls_obj_array);
+    u2(&mut frames, 0); // number_of_stack_items
+
+    assemble_code_attr(attr_code, &code, 3, 4, Some((attr_smt, &frames)))
+}
+
+/// Emit a FULL Code attribute: u2("Code" name idx) + u32 len + body
+/// [max_stack, max_locals, code_len, code, exception_table_length=0,
+///  attributes_count (0 or 1 = StackMapTable)].
+fn assemble_code_attr(
+    attr_code: u16,
+    code: &[u8],
+    max_stack: u16,
+    max_locals: u16,
+    stackmap: Option<(u16, &[u8])>,
+) -> Vec<u8> {
+    let smt_payload_len = stackmap.as_ref().map(|(_, f)| 2 + 4 + f.len()).unwrap_or(0);
+    let body_len = 2 + 2 + 4 + code.len() + 2 + 2 + smt_payload_len;
+    let mut out = Vec::with_capacity(6 + body_len);
+    out.extend_from_slice(&attr_code.to_be_bytes());
+    out.extend_from_slice(&(body_len as u32).to_be_bytes());
+    out.extend_from_slice(&max_stack.to_be_bytes());
+    out.extend_from_slice(&max_locals.to_be_bytes());
+    out.extend_from_slice(&(code.len() as u32).to_be_bytes());
+    out.extend_from_slice(code);
+    out.extend_from_slice(&0u16.to_be_bytes()); // exception_table_length = 0
+    match stackmap {
+        None => out.extend_from_slice(&0u16.to_be_bytes()),
+        Some((name_idx, frames)) => {
+            out.extend_from_slice(&1u16.to_be_bytes()); // attributes_count
+            out.extend_from_slice(&name_idx.to_be_bytes());
+            out.extend_from_slice(&(frames.len() as u32).to_be_bytes());
+            out.extend_from_slice(frames);
+        }
+    }
+    out
+}
+
+/// Walk a method_info block and extract its Code attribute body:
+/// (max_stack, max_locals, code bytes). Resolves the attribute by NAME via
+/// the pool (strict — no positional guessing).
+fn parse_code_attr<'a>(
+    bytes: &'a [u8],
+    pool: &Pool,
+    start: usize,
+    _end: usize,
+) -> Result<(u16, u16, &'a [u8]), String> {
+    let mut p = start + 6; // access(2) name(2) desc(2)
+    let attr_count = usize::from(u16_at(bytes, p).ok_or("method attr_count oob")?);
+    p += 2;
+    for _ in 0..attr_count {
+        let name_idx = u16_at(bytes, p).ok_or("attr name oob")?;
+        let len = u32_at(bytes, p + 2).ok_or("attr len oob")? as usize;
+        let body = bytes.get(p + 6..p + 6 + len).ok_or("attr body oob")?;
+        if pool.utf8_value(name_idx).as_deref() == Some("Code") {
+            if body.len() < 8 {
+                return Err("Code attribute truncated".into());
+            }
+            let max_stack = u16::from_be_bytes([body[0], body[1]]);
+            let max_locals = u16::from_be_bytes([body[2], body[3]]);
+            let code_len = u32::from_be_bytes([body[4], body[5], body[6], body[7]]) as usize;
+            let code = body.get(8..8 + code_len).ok_or("Code code_len oob")?;
+            return Ok((max_stack, max_locals, code));
+        }
+        p += 6 + len;
+    }
+    Err("no Code attribute found".into())
+}
+
+/// Strict mutator precondition: exception_table_length == 0 (debug attrs
+/// inside Code are dropped by the rebuilt attribute).
+fn code_has_exception_table(bytes: &[u8], pool: &Pool, start: usize, _end: usize) -> Result<bool, String> {
+    let mut p = start + 6;
+    let attr_count = usize::from(u16_at(bytes, p).ok_or("method attr_count oob")?);
+    p += 2;
+    for _ in 0..attr_count {
+        let name_idx = u16_at(bytes, p).ok_or("attr name oob")?;
+        let len = u32_at(bytes, p + 2).ok_or("attr len oob")? as usize;
+        let body = bytes.get(p + 6..p + 6 + len).ok_or("attr body oob")?;
+        if pool.utf8_value(name_idx).as_deref() == Some("Code") {
+            if body.len() < 8 {
+                return Err("Code attribute truncated".into());
+            }
+            let code_len = u32::from_be_bytes([body[4], body[5], body[6], body[7]]) as usize;
+            let et = u16::from_be_bytes([body[8 + code_len], body[9 + code_len]]);
+            let attrs_pos = 10 + code_len + 2 * et as usize;
+            let extra = if attrs_pos + 2 <= body.len() {
+                u16::from_be_bytes([body[attrs_pos], body[attrs_pos + 1]])
+            } else {
+                0
+            };
+            let _ = extra; // inner debug attrs (LNT/LVTT) are legal — dropped by the rebuilt body
+            return Ok(et != 0);
+        }
+        p += 6 + len;
+    }
+    Err("no Code attribute found".into())
 }
 
 #[cfg(test)]
@@ -2359,5 +2870,45 @@ mod real_noise {
         let out = std::env::temp_dir().join("ccrussty_patched_ServerLevel_F1F3.class");
         std::fs::write(&out, &composed).expect("dump composed ServerLevel");
         eprintln!("wrote {} bytes to {}", composed.len(), out.display());
+    }
+
+    // ---- PALETTED-DEMUX (S7-131) ----
+    const PALETTED_REAL: &[u8] = include_bytes!("../tests/fixtures/PalettedContainer.class");
+
+    #[test]
+    fn paletted_patch_roundtrip() {
+        let patched = patch_paletted_container(PALETTED_REAL).expect("patch");
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        assert_eq!(patched[..8], PALETTED_REAL[..8]);
+
+        // structural re-parse: valid classfile, grew fields and cp
+        let cp_count = u16::from_be_bytes([patched[8], patched[9]]);
+        let (pool, cp_end) = Pool::parse(&patched, 10, cp_count).expect("cp parse");
+        let mut p = cp_end + 6;
+        let iface_count = usize::from(u16::from_be_bytes([patched[p], patched[p + 1]]));
+        p += 2 + 2 * iface_count;
+        let fields_count = usize::from(u16::from_be_bytes([patched[p], patched[p + 1]]));
+        // original fields count from the fixture layout
+        let (opool, ocp_end) = Pool::parse(PALETTED_REAL, 10, u16::from_be_bytes([PALETTED_REAL[8], PALETTED_REAL[9]])).unwrap();
+        let mut q = ocp_end + 6;
+        let oif = usize::from(u16::from_be_bytes([PALETTED_REAL[q], PALETTED_REAL[q + 1]]));
+        q += 2 + 2 * oif;
+        let ofields = usize::from(u16::from_be_bytes([PALETTED_REAL[q], PALETTED_REAL[q + 1]]));
+        assert_eq!(fields_count, ofields + 4, "4 fields injected");
+
+        // injected field names present in the new pool
+        for n in ["crusstySnap", "crusstySnapGen", "crusstyGen", "crusstyMiss"] {
+            assert!(pool.find_utf8(n).is_some(), "{n} utf8 present");
+        }
+
+        // idempotency: second pass is a no-op
+        let twice = patch_paletted_container(&patched).expect("patch twice");
+        assert_eq!(twice, patched, "patch(patch(x)) == patch(x)");
+
+        // artifact for the Ops build (stub jar) + JVM harness
+        if std::env::var("CRUSSTY_PALETTE_ARTIFACTS").is_ok() {
+            std::fs::create_dir_all("tests/out").unwrap();
+            std::fs::write("tests/out/PalettedContainer.patched.class", &patched).unwrap();
+        }
     }
 }

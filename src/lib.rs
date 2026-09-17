@@ -31,6 +31,7 @@ mod kernel_policy;
 mod loader;
 mod noise_fill;
 mod palette_gather;
+mod paletted;
 mod promote_wire;
 mod proto_blend_cache;
 mod randomtick;
@@ -95,6 +96,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     perlin_noise::register();
     noise_fill::register();
     fluid_guard::register();
+    // PALETTED-DEMUX (S7-131, ARCH-ATTACK lever #1): PalettedContainer
+    // first-load demux patch (field injection + fast-path get + guarded
+    // mutators). MUST register before any kernel class loads (onstart).
+    paletted::register();
     proto_blend_cache::register();
     // F1 BATCH-RNG (family-agg pack member, S7-112): ServerLevel body-swap hook.
     randomtick::register();
@@ -265,6 +270,10 @@ fn inject_surface() {
     perlin_noise::activate();
     noise_fill::activate();
     fluid_guard::activate();
+    // PALETTED-DEMUX (S7-131): define PalettedContainerOps into the launch
+    // loader EARLY (the patch serves at PalettedContainer's first load —
+    // field injection forbids retransform), then READY.
+    paletted::activate();
     // Dormant unless CRUSSTY_NATIVE_BLEND_CACHE is set (see docs/HOOK_BLEND_CACHE.md).
     proto_blend_cache::activate();
     // F1 BATCH-RNG (S7-112): define RandomTickOps into the ServerLevel loader,

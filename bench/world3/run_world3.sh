@@ -46,6 +46,10 @@ FAKE_PLAYERS="${FAKE_PLAYERS:-0}"
 # Эра ARCH (S7-128): на bench ARMED по умолчанию (архитектурный буст в паке);
 # pre-guard A/B нога = CRUSSTY_FLUID_PUSH_GUARD=0 в inputs workflow.
 FLUID_GUARD="${FLUID_GUARD:-1}"
+# PALETTED-DEMUX (S7-131, ARCH-ATTACK lever #1 — the owner's top-1 function):
+# 1 = demux patch served at PalettedContainer first load (field-inject +
+# fast-path get + guarded mutators); 0 = vanilla-palette A/B leg.
+PALETTED_DEMUX="${PALETTED_DEMUX:-1}"
 # BENCH-X150K population fixture (S7-129, docs/BENCH_X150K_SCENARIO.md §2):
 # deterministic living-scene injection AFTER forceload, BEFORE the profiler
 # window (harness waits for the POPULATION INJECT DONE marker). 0 = off.
@@ -117,6 +121,7 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "summon_sweeps: $SUMMON_SWEEPS"
   echo "fake_players: $FAKE_PLAYERS (BENCH-4 fixture: N real ServerPlayers, task170)"
   echo "fluid_guard: $FLUID_GUARD (CRUSSTY_FLUID_PUSH_GUARD; 1 = same-state fluid-push guard ARMED, TASK-80/S7-128)"
+  echo "paletted_demux: $PALETTED_DEMUX (CRUSSTY_PALETTED_DEMUX; 1 = PALETTED-DEMUX ARCH-ATTACK lever #1, S7-131)"
   echo "population_target: $POPULATION_TARGET (BENCH-X150K living-scene injection, S7-129; 0 = off)"
   echo "population_seed: $POPULATION_SEED (deterministic injection replay seed; topup seeded from deltaT=ft-T0, S7-130)"
   echo "server_xmx: $SERVER_XMX (S7-130; 150k-scale runs use 10G)"
@@ -305,6 +310,8 @@ export BENCH_FAKE_PLAYERS="$FAKE_PLAYERS"
 export BENCH_FORCELOAD_RADIUS="$FORCELOAD_RADIUS"
 # GUARD-WAVE wave-1 gate (fluid_guard.rs reads it at register time)
 export CRUSSTY_FLUID_PUSH_GUARD="$FLUID_GUARD"
+# PALETTED-DEMUX gate (paletted.rs reads it at register time; S7-131)
+export CRUSSTY_PALETTED_DEMUX="$PALETTED_DEMUX"
 # BENCH-X150K population fixture env (0 = no-op; S7-129)
 export BENCH_POPULATION_TARGET="$POPULATION_TARGET"
 export BENCH_POPULATION_SEED="$POPULATION_SEED"
