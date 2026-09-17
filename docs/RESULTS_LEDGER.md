@@ -1518,3 +1518,47 @@ In-window финал ⇒ pack leg#1 banked ⇒ v4.2 автодиспатчит a
 verdict_a1 ⇒ §125-A1 ВЕРДИКТ. F2/F3 smoke-маркеры (grep_markers.py) — на
 первой завершённой pack-ноге. runs_index +3 (B2 success, баг#5 cancel, pack
 arm#1 dispatch). INJECTS-ONLY цел (0 sandbox boots; cancel pre-bench не boot).
+
+## §138 — S7-123 (TASK-259): pack arm#1 discard #1, bug#6+bug#7 (v4.3), attempt#3 in flight
+
+**Pack arm#1 attempt#1 — 35213299343**: SUCCESS / VALID / мир afb3a0b3 /
+MSPT avg 94.14 / финал cpu **6832640** — вне окна [6916007,7136333] на
+−1.21% ниже win_lo; также ниже arm2±2% lo (6856477) ⇒ не парируется ни с
+одной armой ⇒ **честный discard** (не reject — run был успешен, нога не
+годна). MSPT 94.14 при более «медленном» (низком) cpu — подтверждение
+связки cpu-index↔MSPT, ради которой существует ±2% окно парирования.
+
+**РЕКОН БАГ#6 (log-race)**: GitHub Actions делает zip логов доступным не
+мгновенно после завершения рана — log_text() вернул "" на завершённом
+success-ране, mh=None, ветка reject (exit 1) вызвала clear_state(). Пойман
+live S7-123 (35213299343). Исход совпал с честным discard'ом, но
+классификация и стирание state были неверными. Фикс v4.3: `concl == success
+and not txt.strip()` ⇒ retry (exit 4), state сохраняется.
+
+**РЕКОН БАГ#7 (bug#5-семья, phase loss)**: ВСЕ pack-фазные
+discard/cancel/reject пути в poll() звали clear_state() — файл стейт-машины
+удалялся целиком, и следующий dispatch() уходил в fresh-baseline ветку
+(PRE_PACK_REF, baseline band) вместо повторного pack-arm. Фикс v4.3:
+restore_pack_or_clear(st) — pack-фаза восстанавливает {phase, window,
+baseline, pack_legs, run_id=None}; baseline-фаза чистится (ARM1 константы
+пере-выводимы). После баг#6 state был восстановлен вручную из
+leg_b_v4.json (окно цело).
+
+**Мелкая нота (v4.4 candidate)**: dispatch() спит 25s перед verify —
+fast-fail reject (~30s lifetime) успевает завершиться, и verify видит
+status=completed ⇒ false MISMATCH (state не сохранён, нужен ручной
+re-dispatch). Различать: head_branch==ref AND concl=failure AND свежий
+created_at ⇒ свой fast-fail (exit 1 без state) vs чужой ран. Не критично —
+машина ресьюмабельна, attempt#3 сохранён вручную (POST 204, run
+35216066889).
+
+**Pack arm#1 attempt#2 — 35215890688**: gate cpu **10054256** (10M класс)
+вне band [6688594,7551675] ⇒ fast-fail ~30s. Честный reject, ноль
+bench-стоимости.
+
+**Pack arm#1 attempt#3 — 35216066889 IN FLIGHT** (master fb7d8cb, band
+[6688594,7551675], финал = точное окно): poll следующего тика. In-window ⇒
+leg#1 ⇒ автодиспатч arm#2 ⇒ 2 in-window ноги ⇒ verdict_a1 ⇒ §125-A1
+ВЕРДИКТ. Порог неизменен: median(83.40, 83.51)×0.97 = **80.95ms**. F2/F3
+маркеры — на первой завершённой in-window ноге (grep_markers.py). runs_index
++3. INJECTS-ONLY цел (0 sandbox boots; fast-fail gate reject не boot).
