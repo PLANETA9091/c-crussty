@@ -1275,3 +1275,20 @@ Work Log:
 
 Stage Summary:
 - §125-A1 hunt: both baseline arms banked (83.40/83.51ms, window [6916007,7136333], threshold 80.95ms); 2 pack discards so far (6832640, 6691832 — both below window), 15 honest rejects total; attempt#5 35218943354 in flight — next tick: poll; in-window => leg#1 banked + F2/F3 markers + arm#2 auto-dispatch => 2 legs => verdict_a1 => §125-A1 VERDICT (LANDS => pack lands master; REFUTED => zero landing); state machine fully hardened (v4.2 bug#5, v4.3 bug#6/7, v4.4 fast-fail); INJECTS-ONLY intact (0 sandbox boots; gate fast-fail not a boot)
+
+---
+## S7-125 — 2026-09-17 20:08 tick — PACK LEG#1 BANKED + F2/F3 smoke CLOSED (4/4 ARMED) + arm#2 in flight
+
+**Task ID: S7-125**, Agent: agent-7625532f (session web-f7888d46, Job 390768)
+
+Work Log:
+- bootstrap + 3x pull: repos at S7-124 end (f4f0636/38533c1), no interim sessions; GOAL read first
+- Poll pack attempt#5 35218943354: in-flight x2 (exit 4), then **PACK LEG#1 BANKED** — SUCCESS, world afb3a0b3, final cpu 6998277 ∈ [6916007,7136333]; headline MSPT 85.44ms; first in-window pack leg after 2 discards (3rd attempt)
+- F2/F3 SMOKE TEST (deferred S7-116): workflow logs carry NO console markers (they live in the artifact) => downloaded world3-bench artifact 49.5MB — GitHub 302 -> signed Azure blob, auth header must NOT be forwarded (urllib auto-follow => 401); new scripts/bench4_recon/fetch_artifact.py (no-redirect opener) => server-stdout.log: F1 ARMED (bit-exact LCG batch) + F2 ARMED (startEachNonRunning flat-snapshot lens) + F3 ARMED x2 (drain mirror + readBlockState lens) = FULL pack kernel ACTIVE on bench leg; profile frames agree (RandomTickOps.run 3.5-3.6%, Brain.tick 6.75%)
+- Pair observation (NOT a verdict): leg#1 cpu 6998277 vs arm2 B2 6996405 = Δ 0.27% legal pair; 85.44 vs 83.51 = pack +2.3% on this pair (vs F1-alone −2.76% on leg#9 => hypothesis: F2/F3 lens hooks cost more than F1 saves; verdict is mechanical)
+- Next call auto-dispatched PACK ARM#2 = 35221359818 (master, band [6688594,7551675], final = exact window) — state: pack_legs=[leg#1], run_id=arm#2
+- runs_index +2 (83 rows); GOAL S7-125 + §140 + INDEX 261; fetch_artifact.py + marker evidence + run-env synced to research/bench4-recon-2026-09-17/run-packleg1/
+- Commits: c-crussty (this), dev-logs TASK-261, CRUSSTY pristine untouched
+
+Stage Summary:
+- §125-A1: leg#1 banked (85.44ms @ 6998277), arm#2 in flight; F2/F3 smoke CLOSED — all 4 hooks ARMED proven on real bench leg; next tick: poll 35221359818 — in-window => 2 legs => verdict_a1 => §125-A1 VERDICT (pack median ≤ 80.95ms => LANDS => pack lands master; else REFUTED => zero landing, back to preregistered queue); pair note suggests pack may be net-negative (lens cost) — mechanical verdict decides; INJECTS-ONLY intact (0 sandbox boots)
