@@ -1323,3 +1323,45 @@ VERDICT (bytecode grade — contract from the materialized booted kernel, NOT fr
 **ПАКЕТ (§125): TIER B COMPLETE** — F1 hook ✓ (S7-112) + F2 hook ✓ (S7-114) + F3-reads hooks ✓ (S7-116) + F3-queue hook ✓ (S7-117); signal lens dropped по preregistration §5.3 (floor 3.3% = 1.6+0.9+0.3+0.5 держится). СЛЕДУЮЩИЙ ТИК = **ОДИН агрегатный A/B** (baseline-нога = банк пары 76.01/76.98, pack-ноги = hunt_leg_b, min-of-2, gate ≥3.0% MSPT) — решает ВСЁ
 
 **ПАРА #2**: нога#13 gate-reject (6786413 < floor, ~30s) — 9-й подряд честный reject; нога#14 35198344256 in flight. INJECTS-ONLY цел
+
+## §133 ADDENDUM-118 — TASK-254 (agent-7625532f, 2026-09-17): RECON BUG#3 FIXED — hunt_leg_b was UNWINNABLE by construction (window anchored SLOW-class run22 vs MID-class baseline bank + gate band disjoint from window); v3 re-anchor to MID + WORLD_SHA pin; F1 ON-BENCH ARMATION PROVEN (RandomTickOps.run leaf 3.0-3.3% in leg#9 CPU/WALL profiles); legs#14/15 honest rejects (#10/#11); leg#16 dispatched on FULL-PACK kernel
+
+**BUG#3 АНАТОМИЯ**: v2 WINDOW [6273484,6529544] = run22 ±2% (cpu 6401514 = SLOW
+класс, MSPT 83.74), но §125 baseline-нога = банк MID-класс пары run#17×run#21
+(9080657/8914646 → 76.98/76.01) — найденная "пара #2" была бы кросс-классовой к
+банку (нелегально по S7-96d class-bimodality, сепарация ~10%). Второй дефект:
+gate band [6870000,7030000] ∩ WINDOW = ∅ ⇒ band-проходные ноги (~6.9M класс
+leg#9) гарантированно мимо окна, а оконные классы (≤6.79M, leg#13 6786413)
+гибнут на gate за ~30s ⇒ 11 подряд reject БЕЗ шанса на успех. Оба дефекта —
+наследие переконфигураций окна без синхронизации band.
+
+**v3 МАШИНЕРИЯ (hunt_leg_b.py)**: WINDOW = [8899044, 9092939] — точное
+пересечение ±2% терпимости вокруг run#17 (8899044 = 9080657×0.98) и run#21
+(9092939 = 8914646×1.02): любая in-window нога легально парится с ОБОИМИ
+baseline-ногами. BAND = [8850000, 9120000] (gate fast-fail + skew slack).
+WORLD_SHA pin = afb3a0b3… (7/7 зафиксированных ног консистентны); drift в
+финальном ИЛИ раннем echo → cancel/discard + "re-baseline required" (банк
+непарен к новому миру; свежий baseline = dispatch на pre-pack ref).
+
+**F1 ARMATION НА BENCH** (grep_markers.py по логам leg#9 35187305900, kernel
+e326ab3-эры = F1 armed/F2 not-hooked): BOTTLENECKS CPU top-40 —
+`RandomTickOps.run` leaf 3.0% (4175 samples, #2 после PalettedContainer.get
+3.6%); WALL top-20 — 3.2% (5799, #2); третий срез 3.3% (7343). Random-tick
+phase 4.4-4.8%. ⇒ swapped body ИСПОЛНЯЕТСЯ в production-условиях bench (сильнее
+console-маркера; S7-116 deferral закрыт для F1). КАВЕТ: self-leaf 3.0-3.3% vs
+vanilla optimiseRandomTick 1.96-2.56% (run#17/18) — attribution-skew гипотеза
+(callee-inlining коллапс за invokestatic границей: vanilla распределял работу по
+inlined callees, helper собирает всё в один кадр); НЕ вердикт — §125 A/B
+решает. BrainOps/TickBlockOps фреймов в leg#9 нет — консистентно с эрой kernel
+(F2/F3 hooks появились позже); перенос проверки на leg#16 (2c5c40e = FULL PACK).
+
+**ПАРА-ОХОТА**: нога#14 35198344256 gate-reject (11482771 >> band, ~30s) — 10-й
+честный reject; нога#15 35201576657 gate-reject (9764130, ~30s) — 11-й честный;
+нога#16 = 35202368357 dispatched (ref master 2c5c40e, FULL PACK kernel, v3 band
+[8850000,9120000]). ВЕРДИКТНЫЙ ПОРОГ §125: pack median ≤ **74.20ms** (76.495 ×
+0.97) при 2 in-window ногах (min-of-2); иначе REFUTED row, ноль лендинга.
+
+**АРТЕФАКТЫ**: scripts/bench4_recon/hunt_leg_b.py v3; scripts/bench4_recon/
+grep_markers.py (run-лог zip → grep ARMED/PATCHED/helper-классов по всем
+файлам); runs_index.jsonl +2 (ноги#14/15) + dispatch нога#16. INJECTS-ONLY цел
+(0 sandbox boots; marker-grep = download лога завершённого ранa, не бут).

@@ -1156,3 +1156,21 @@ Work Log:
 Stage Summary:
 - c-crussty master <push>: **ПАКЕТ TIER B СОБРАН** — F1 hook ✓ + F2 hook ✓ + F3-reads ✓ + F3-queue ✓ (signal dropped по §5.3, floor 3.3%); следующий тик = ОДИН агрегатный A/B против банка пары 76.01/76.98 (hunt_leg_b машинерия, min-of-2, gate ≥3.0% MSPT) + poll ноги#14 35198344256; при <3% — REFUTED row, НИЧЕГО не landится
 - INJECTS-ONLY: 0 sandbox boots (reflection REF = plain classpath JVM; verify = link-time resolveClass)
+
+---
+
+## S7-118 (tick 2026-09-17 16:43 UTC+8, agent-7625532f) — RECON BUG#3 FIXED: hunt was UNWINNABLE by construction; v3 mid-class re-anchor; F1 ON-BENCH ARMATION PROVEN (TASK-254; pack legs = §125 aggregate A/B arms)
+
+Work Log:
+- bootstrap/pull: c-crussty 2c5c40e, dev-logs актуальный, CRUSSTY 1f4c06a нетронут; stale-чартер (S7-96/TASK-233/run#13) игнорирован по прецеденту «по свежему состоянию»
+- Пара-охота: нога#14 35198344256 gate-reject (11482771 >> band, ~30s) — 10-й подряд честный reject; нога#15 35201576657 gate-reject (9764130, ~30s) — 11-й; runs_index +2
+- **РЕКОН БАГ#3 найден и исправлен**: v2 WINDOW заякорен на run22 (6401514 = SLOW класс, MSPT 83.74), а §125 baseline = банк MID-класс пары run#17×run#21 (9080657/8914646, 76.98/76.01) — найденная «пара #2» была бы кросс-классовой к банку (нелегально, S7-96d class-bimodality ~10%); ВТОРОЙ дефект — gate band [6870000,7030000] ∩ WINDOW [6273484,6529544] = ∅: band-проходные ноги всегда мимо окна (leg#9 +6.7%), оконные классы gate-убиты (leg#13 6786413 < floor 6870000) ⇒ охота не могла succeed НИКОГДА; 11 честных reject объяснены полностью
+- hunt_leg_b.py **v3**: WINDOW = [8899044, 9092939] = точное пересечение ±2% вокруг run#17 (×0.98) И run#21 (×1.02) — любая in-window нога легально парится с ОБОИМИ baseline-arms; BAND = [8850000, 9120000] (skew slack); WORLD_SHA pin afb3a0b3… (7/7 ног консистентны) с cancel/discard на drift в финальном И раннем echo (re-baseline flag); синтаксис+математика окна проверены
+- **F1 ARMATION НА BENCH ДОКАЗАНА** (новый scripts/bench4_recon/grep_markers.py — zip логов run'а → grep по ВСЕМ файлам): leg#9 35187305900 (kernel e326ab3-эры, F1 armed) — BOTTLENECKS CPU top-40: `RandomTickOps.run` leaf **3.0%** (4175 samples, #2 после PalettedContainer.get 3.6%), WALL top-20: **3.2%** (5799), третий срез 3.3%; random-tick phase 4.4-4.8% ⇒ swapped body исполняется на bench runner — S7-116 deferral маркер-чека закрыт для F1 (профиль-кадры сильнее console-маркера); КАВЕТ: self-leaf 3.0-3.3% vs vanilla optimiseRandomTick 1.96-2.56% — attribution-skew гипотеза (inlining-коллапс callees за invokestatic границей), НЕ вердикт; BrainOps/TickBlockOps кадров нет — консистентно эре kernel, чек переносится на ногу#16
+- Нога#16 = **35202368357 dispatched** (ref master 2c5c40e = FULL PACK kernel F1+F2+F3-reads+F3-queue, v3 band [8850000,9120000]) — первая нога агрегатного A/B на исправленной машинерии
+- Ledger §133, INDEX 254, GOAL СТАТУС S7-118
+
+Stage Summary:
+- c-crussty master <push>: машинерия агрегатного A/B исправлена (баг#3) + первая FULL-PACK нога#16 35202368357 in flight; следующий тик: poll нога#16 — in-window ⇒ PACK ARM #1 (absorb BOTTLENECKS/tickmonitor MSPT + grep F2/F3 маркеров) ⇒ dispatch arm#2; 2 in-window ноги ⇒ **§125 ВЕРДИКТ**: pack median ≤ 74.20ms (76.495×0.97) ⇒ pack lands; иначе REFUTED row, ноль лендинга, модульная повестка пуста (owner-gated: pinned runner/сценарий)
+- Вердиктный порог: gate ≥3.0% MSPT, min-of-2, world_sha pin, mid-класс [8899044,9092939]
+- INJECTS-ONLY цел (0 sandbox boots; marker-grep = download лога завершённого ранa, не бут)
