@@ -1363,3 +1363,20 @@ Work Log:
 
 Stage Summary:
 - Сцена X150K ИЗМЕРЯЕМА: fixture MVP готов и компилируется против реального kernel; следующая нога S7-129b = CI smoke 10k (после финала 35231195756) ⇒ S7-130 масштаб 150k + soak ⇒ S7-131 база A/B + свежий профиль ⇒ топ-1 ARCH-ATTACK (планка x150000 = скорость топ-1 функции); INJECTS-ONLY цел (0 sandbox boots)
+
+---
+## S7-129b (end-of-round) — 2026-09-17 23:0x +08 — X150K smoke 10k SUCCESS: живая сцена измерена впервые
+
+**Task ID: S7-129b**, Agent: agent-7625532f (session web-f7888d46, Job 393012)
+
+Work Log:
+- Диспатч смоука ПОСЛЕ финала sibling-вериф-рана 35231195756 (concurrency cancel-in-progress соблюдён): run **35234643616** (master 06dc3e8, fp=4, population_target=10000, seed=42, sweeps=0, 300s, guard=1)
+- **SUCCESS, оба гейта**: INJECT DONE 10000/10000 (7000/2000/1000) за 2572ms; FIXTURE-VALIDITY: VALID; TOPUP активен
+- Живая сцена: ~24.9k сущностей, натуральные спавны активны (skeleton 584/drowned 468/…), MSPT avg 125.63ms (TPS ~7.6), GC 0 Full GC
+- Профиль leaf: топ-1 PalettedContainer.get 4.20% (цель x150000 подтверждена), RandomTickOps 2.27%, guard-хуки ~2% оверхед, flushStep 1.16% (wave-2)
+- Баг зафиксирован (фикс S7-130): itemSpawnLog без стартовой инъекции → topup удвоил items (~14k, self-correcting); topup-seed → Δt
+- Поглощён sibling-факап конфига: 35231195756 failed ТОЛЬКО по gate-1b (sweeps=1), guard VERIFIED (armed, 63.2M calls, hit-rate 77.9%, всё окно) — evidence run-guardverify/
+- runs_index +2 (94); GOAL S7-129b + §145 + INDEX 266 + спека done; CLAIMS TASK-265 addendum
+
+Stage Summary:
+- Сцена X150K РАБОТАЕТ В CI от 10k до (след. раунды) 150k; первый профиль живой сцены получен; NEXT S7-130: topup-фикс → масштаб 150k (инъекция ~39s @1500/тик; heap +3-4GB) → soak → S7-131 база A/B → топ-1 ARCH-ATTACK; INJECTS-ONLY цел
