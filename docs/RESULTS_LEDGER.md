@@ -1365,3 +1365,52 @@ inlined callees, helper собирает всё в один кадр); НЕ ве
 grep_markers.py (run-лог zip → grep ARMED/PATCHED/helper-классов по всем
 файлам); runs_index.jsonl +2 (ноги#14/15) + dispatch нога#16. INJECTS-ONLY цел
 (0 sandbox boots; marker-grep = download лога завершённого ранa, не бут).
+
+## §134 (S7-119, TASK-255) — §125 ПОПРАВКА-1: baseline bank переехал на SLOW-трек (run#18 + свежая pre-pack нога); перепись популяции раннеров; hunt v4
+
+**ПРИЧИНА ПОПРАВКИ (измерено, не гипотеза)**: перепись 43 ног с cpu_idx
+(runs_index.jsonl) — mid-окно §125 [8899044,9092939] hit 2/43 = ТОЛЬКО сами
+банк-ноги run#17 (9080657, 22:10Z) и run#21 (8914646, 01:13Z); с момента
+банкировки 0/14 in-window; две mid-ноги (8869954 leg#10, 8875106 leg#12)
+промахнулись мимо окна на ~0.3% (v2-эра); медленный класс 6.57-6.87M = ~30%
+выдач (13/43). Runner-пул ротируется по часам (S7-119 живьём: 6.6-6.9M в
+08:33-08:44Z — ноги#16/17/18; через 40 мин — 8.74/8.78/8.82M и 10.16M).
+⇒ банк MID-класса невозобновляем, reuse банка = охота мертва по популяции
+(не по машинерии — v3-баг#3 уже починен). Owner-гейты НЕ тронуты: ≥3% MSPT,
+CI A/B min-of-2, ±2% harness-cpu паринг, world pin, median-exact parity.
+
+**ПРОТОКОЛ v4 (§125-A1)**: baseline arm#1 = run#18 35159240368 (cpu 6746569,
+MSPT 85.24, FIXTURE-VALID — S7-102 банковал как leg2 BENCH-4 базы; PRE-PACK
+kernel f3c82b3-эры: до F1-impl S7-111 и F1-hook S7-112; world afb3a0b3 в
+индексе) — бесплатная arm. Baseline arm#2 (B1): свежий диспатч на аудит-тег
+**pre-pack-962fc9f** (запушен в origin; S7-111 = RandomTickOps.java banked,
+hook НЕ wired ⇒ нулевое pack-поведение), band = окно run#18 [6611637,6881500]
+(±2%). PACK WINDOW = [max(cpu18,B1)×0.98, min(cpu18,B1)×1.02] — легальный
+паринг с ОБОИМИ arms; пусто ⇒ discard B1 + редиспатч. Pack-ноги: master,
+band = окно ±0.5% slack, финальная проверка точного окна, world pin
+afb3a0b3, early-cancel по echo. ВЕРДИКТ: pack median MSPT ≤
+median(85.24, B1_mspt)×0.97 при 2 in-window pack-ногах ⇒ pack lands
+(F1+F2+F3-reads+F3-queue единым агрегатом), иначе REFUTED row, ноль
+лендинга. Трек v3 (MID банк) — mothballed, не удалён: если mid-нога
+случайно пройдёт старое окно, оригинальный §125 путь остаётся валидным.
+
+**ДЕФЕКТЫ S7-119 (пойманы живьём, до урона)**: (1) workflow-dispatch API
+НЕ принимает SHA-ref → HTTP 422 «No ref found» — рефлекс v3 (ref: master)
+не работал для pre-pack; решение: аудит-тег pre-pack-962fc9f запушен.
+(2) Слепой захват «свежайшего run id» после неудавшегося диспатча записал
+ бы pack-ногу#18 (FULL PACK kernel 2c5c40e!) как baseline state — отравление
+ базы; поймано verify-логикой (head_branch+status), state очищен, в v4
+ добавлена проверка соответствия диспатча (ref match + in-flight status).
+(3) Мелочь: SHA в логе печатался как ref[:7] («pre-pac») — косметика.
+
+**ОХОТА (tick)**: нога#16 35202368357 gate-reject (6604889, slow, ~30s) —
+12-й честный reject; нога#17 35202756701 (7094750) — 13-й; нога#18
+35202981212 (6593031) — 14-й (обработан poll'ом S7-119). B1 попытки#1-5
+gate-reject: 10165007 (35204815895), 8820009 (35204943730), 8744984
+(35205015998), 7137698 (35205089817), 8780971 (35205161884) — каждая ~30s,
+zero bench-времени; **попытка#6 = 35205343087 IN FLIGHT** (gate пройден,
+full bench ~30 мин). runs_index +8 строк. F2/F3 маркер-чек переносится на
+первую завершённую pack-ногу (grep_markers.py), F1 закрыт S7-118.
+
+INJECTS-ONLY цел: 0 sandbox boots (tag = git ref; dispatch-verify = API
+reads; hunt = poll/dispatch завершённых/летящих CI-ранов — санкционировано).

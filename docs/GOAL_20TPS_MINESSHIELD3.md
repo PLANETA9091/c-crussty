@@ -369,3 +369,29 @@
 > Вердиктный порог §125: pack median ≤ **74.20ms** (= 76.495 × 0.97) при 2
 > in-window ногах. INJECTS-ONLY цел (0 sandbox boots; marker-grep = download
 > лога, не бут).
+
+> **СТАТУС 20 TPS (S7-119)**: §125 ПОПРАВКА-1 — SLOW-ТРЕК БАЗЫ; охота v3 снова
+> невыигрываемая на практике, но по НОВОЙ причине: сдвиг популяции раннеров.
+> Перепись 43 ног с cpu_idx: mid-окно [8899044,9092939] hit только самими банками
+> (run#17/run#21, эра 22:10Z/01:13Z); с тех пор **0/14 in-window** (две mid-ноги
+> 8869954/8875106 промахнулись на ~0.3%); медленный класс 6.57-6.87M доминирует
+> (~30% выдач). Банк MID-класса невозобновляем → reuse банка против свежих ног
+> мёртв. ПОПРАВКА (все owner-гейты целы: ≥3% MSPT, min-of-2, ±2% паринг, world
+> pin): baseline arm#1 = **run#18 35159240368** (cpu 6746569, MSPT 85.24,
+> FIXTURE-VALID S7-102, PRE-PACK kernel f3c82b3-эры — до S7-111/112, world
+> afb3a0b3 подтверждён) — бесплатный банк; arm#2 (B1) = свежий диспатч на
+> **pre-pack тег `pre-pack-962fc9f`** (S7-111: RandomTickOps.java в банке, но
+> НЕ hooked ⇒ нулевое pack-поведение); PACK WINDOW = пересечение ±2% вокруг
+> обеих arms (пусто ⇒ честный discard B1, редиспатч); pack-ноги на master в
+> окне; ВЕРДИКТ: pack median ≤ median(85.24, B1_mspt)×0.97 при 2 in-window
+> ногах ⇒ pack lands, иначе REFUTED row, ноль лендинга. Уроки S7-119 (пойманы
+> живьём): workflow-dispatch API НЕ принимает SHA-ref (HTTP 422) ⇒ аудит-тег
+> запушен; v4 добавила dispatch-verify (head_branch+status) — слепой захват
+> свежайшего run id чуть не записал pack-ногу#18 как baseline state. ОХОТА:
+> нога#16 gate-reject (6604889) — 12-й честный; нога#17 (7094750) — 13-й;
+> нога#18 (6593031) — 14-й; B1 попытки#1-5 gate-reject (10165007, 8820009,
+> 8744984, 7137698, 8780971 — пул ротируется: 8.7-8.8M всплыли, 6.6-6.9M были
+> 40 мин назад); **B1 попытка#6 = 35205343087 IN FLIGHT** на pre-pack теге
+> (gate пройден, full bench). v4 = scripts/bench4_recon/hunt_leg_b_v4.py
+> (one-transition/call, resumable, world pin, early-cancel). INJECTS-ONLY цел
+> (0 sandbox boots).
