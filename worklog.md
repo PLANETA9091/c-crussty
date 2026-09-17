@@ -1486,4 +1486,4 @@ Work Log:
 Stage Summary:
 - Аллокационная диета leg #1 ГОТОВА: два call-site ретаргета (push-обёртка + MutableBlockPos) на вращающиеся пулы — ожидание ~10-17MB young-gen/тик минус; офлайн-верификация полная (rust + верификатор JVM + поведенческие гейты CI); NEXT: commit+push → диспатч leg #1 (X150K, diet=1 vs база 35245032701) → absorb → leg #2 min-of-2 → вердикт по лейн-абсолютам (гейт GC-лейн ↓ ≥10%, иначе REFUTED-BY-ECONOMICS)
 
-RUN_ID_DISPATCHED: pending (после пуша)
+RUN_ID_DISPATCHED: **35271475494** (master f44d9ce, alloc_diet=1, X150K-база 35245032701; runs_index S7-133 row)
