@@ -49,8 +49,13 @@ def extract(txt, run_id):
     m = re.search(r"run-env: world_sha256=([0-9a-f]+) runner_cpu_index=(\d+)", txt)
     if m:
         out["world_sha"], out["cpu"] = m.group(1), int(m.group(2))
-    out["fixture_valid"] = bool(re.search(r"FIXTURE-VALIDITY[^\n]*VALID", txt)) and \
-        not bool(re.search(r"FIXTURE-VALIDITY[^\n]*INVALID", txt))
+    # S7-122 fix: BOTH the report marker AND the script-source literal
+    # `echo "::error::BENCH-4 FIXTURE-VALIDITY: INVALID (...)"` live in every
+    # log (the latter is the failure branch SOURCE, always dumped) — so a
+    # negative check can never work. Gate semantics make the positive marker
+    # sufficient: `grep -q "FIXTURE-VALIDITY: VALID" report || exit 1` means a
+    # SUCCESSFUL run that shows the report line passed the fixture gate.
+    out["fixture_valid"] = bool(re.search(r"\*\*FIXTURE-VALIDITY: VALID\*\*", txt))
     return out
 
 
