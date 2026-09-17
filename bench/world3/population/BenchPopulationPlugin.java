@@ -97,9 +97,14 @@ public final class BenchPopulationPlugin extends JavaPlugin {
     private int clusterCursor = 0;  // round-robin over farmClusters
     private int lastProgress = 0;
     private long startNanos = 0;
+    private long t0FullTime = 0;    // fullTime at injection finish (topup replay anchor, S7-130)
+    private int itemsThisSlice = 0; // items spawned by the current injection tick (spawn-log entry per tick)
 
     // topup bookkeeping: items spawned in the last ITEM_LIFETIME_TICKS are the
-    // alive-item estimate (vanilla despawn removes everything older)
+    // alive-item estimate (vanilla despawn removes everything older).
+    // S7-130 fix: the INITIAL injection is logged here too (one entry per
+    // injection tick) — previously only topup spawns were logged, so the first
+    // topup saw aliveEst=0 and doubled the item population for ~6600 ticks.
     private final Deque<long[]> itemSpawnLog = new ArrayDeque<>(); // [fullTime, count]
 
     @Override
@@ -167,6 +172,7 @@ public final class BenchPopulationPlugin extends JavaPlugin {
         cursor = clusterCursor = 0;
         lastProgress = 0;
         startNanos = System.nanoTime();
+        t0FullTime = 0;
         itemSpawnLog.clear();
 
         World w = Bukkit.getWorlds().get(0);
@@ -203,6 +209,7 @@ public final class BenchPopulationPlugin extends JavaPlugin {
         Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
             @Override
             public void run() {
+                itemsThisSlice = 0;
                 int budget = TICK_BUDGET;
                 while (budget > 0 && injectedTotal < target) {
                     int placed = injectSlice(budget);
@@ -210,6 +217,14 @@ public final class BenchPopulationPlugin extends JavaPlugin {
                         break;
                     }
                     budget -= placed;
+                }
+                // S7-130: log this tick's item spawns with their own fullTime so the
+                // topup alive-estimate covers the initial injection exactly (vanilla
+                // despawn removes these items at fullTime + 6000, same as the purge
+                // horizon in startTopupTask)
+                if (itemsThisSlice > 0) {
+                    long now = Bukkit.getWorlds().get(0).getFullTime();
+                    itemSpawnLog.addLast(new long[]{now, itemsThisSlice});
                 }
                 if (injectedTotal >= target) {
                     finishInjection();
@@ -243,6 +258,7 @@ public final class BenchPopulationPlugin extends JavaPlugin {
                     injectedItems++;
                     injectedTotal++;
                     placed++;
+                    itemsThisSlice++;
                 }
             } else if (roll < SHARE_ITEMS + SHARE_HOSTILES && injectedHostiles < planHostiles) {
                 if (spawnMob(w, jitter(base, rng), HOSTILE_POOL[rng.nextInt(HOSTILE_POOL.length)])) {
@@ -264,6 +280,7 @@ public final class BenchPopulationPlugin extends JavaPlugin {
                     ok = spawnItem(w, jitter(base, rng), ITEM_POOL[rng.nextInt(ITEM_POOL.length)]);
                     if (ok) {
                         injectedItems++;
+                        itemsThisSlice++;
                     }
                 } else if (injectedHostiles < planHostiles) {
                     ok = spawnMob(w, jitter(base, rng), HOSTILE_POOL[rng.nextInt(HOSTILE_POOL.length)]);
@@ -349,12 +366,14 @@ public final class BenchPopulationPlugin extends JavaPlugin {
 
     private void finishInjection() {
         long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000L;
+        t0FullTime = Bukkit.getWorlds().get(0).getFullTime(); // topup replay anchor (S7-130)
         boolean valid = injectedTotal >= Math.round(target * 0.9);
         getLogger().info(MARK + " POPULATION INJECT DONE target=" + target
                 + " injected=" + injectedTotal
                 + " items=" + injectedItems + " hostiles=" + injectedHostiles
                 + " passives=" + injectedPassives
-                + " elapsedMs=" + elapsedMs);
+                + " elapsedMs=" + elapsedMs
+                + " t0FullTime=" + t0FullTime);
         getLogger().info(MARK + " POPULATION FIXTURE-VALIDITY: " + (valid ? "VALID" : "INVALID")
                 + " (injected=" + injectedTotal + " target=" + target + ")");
     }
@@ -378,7 +397,10 @@ public final class BenchPopulationPlugin extends JavaPlugin {
                         + " deficit=0 aliveEst=" + aliveEst);
                 return;
             }
-            Random rng = new Random(seed ^ ft);
+            // S7-130: seed from the scene-relative clock delta = ft - T0 (injection
+            // finish anchor), NOT the absolute world time — replaying (target, seed)
+            // yields the same topup stream regardless of boot timing drift
+            Random rng = new Random(seed ^ (ft - t0FullTime));
             int spawned = 0;
             for (int i = 0; i < deficit; i++) {
                 if (chunkOrder.isEmpty()) {

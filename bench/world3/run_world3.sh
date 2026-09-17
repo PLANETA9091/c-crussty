@@ -53,6 +53,7 @@ FLUID_GUARD="${FLUID_GUARD:-1}"
 # vanilla-despawned items every 600 ticks so item lanes stay continuously hot.
 POPULATION_TARGET="${POPULATION_TARGET:-0}"
 POPULATION_SEED="${POPULATION_SEED:-42}"
+SERVER_XMX="${SERVER_XMX:-6G}" # S7-130: prime-scale (150k entities) needs ~10G; 6G = historical default
 NATIVES_TGZ="${NATIVES_TGZ:-https://github.com/PLANETA9091/c-crussty/releases/download/v0.1.0/crussty-v0.1.0-linux-x64.tar.gz}"
 PURPUR_URL="${PURPUR_URL:-https://api.purpurmc.org/v2/purpur/1.21.10/latest/download}"
 WORK="${WORK:-$PWD/world3-run}"
@@ -117,7 +118,8 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "fake_players: $FAKE_PLAYERS (BENCH-4 fixture: N real ServerPlayers, task170)"
   echo "fluid_guard: $FLUID_GUARD (CRUSSTY_FLUID_PUSH_GUARD; 1 = same-state fluid-push guard ARMED, TASK-80/S7-128)"
   echo "population_target: $POPULATION_TARGET (BENCH-X150K living-scene injection, S7-129; 0 = off)"
-  echo "population_seed: $POPULATION_SEED (deterministic injection replay seed)"
+  echo "population_seed: $POPULATION_SEED (deterministic injection replay seed; topup seeded from deltaT=ft-T0, S7-130)"
+  echo "server_xmx: $SERVER_XMX (S7-130; 150k-scale runs use 10G)"
 } > "$WORK/run-env.txt"
 log "run-env: world_sha256=$WORLD_SHA runner_cpu_index=$RUNNER_CPU_IDX fake_players=$FAKE_PLAYERS"
 log "extracting world"
@@ -308,7 +310,7 @@ export BENCH_POPULATION_TARGET="$POPULATION_TARGET"
 export BENCH_POPULATION_SEED="$POPULATION_SEED"
 tail -f "$WORK/console.in" | java \
   "-agentpath:$RUNTIME_SO=modules=$SERVER/modules;versions=$SERVER/versions;kernel=purpur-1.21.10.jar" \
-  -Xms4G -Xmx6G -XX:+UseG1GC -Dfile.encoding=UTF-8 \
+  -Xms4G -Xmx"$SERVER_XMX" -XX:+UseG1GC -Dfile.encoding=UTF-8 \
   -Xlog:gc*:file="$WORK/gc.log":time,uptime,level,tags \
   -jar "$SERVER/versions/purpur-1.21.10.jar" --nogui \
   > "$WORK/server-stdout.log" 2>&1 &
