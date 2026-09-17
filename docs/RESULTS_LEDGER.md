@@ -1596,3 +1596,42 @@ leg#1 banked ⇒ v4.3 автодиспатчит arm#2 ⇒ 2 in-window ноги 
 master), иначе REFUTED (ноль посадок). F2/F3 smoke-маркеры (grep_markers.py)
 — на первой завершённой in-window ноге. runs_index +3. INJECTS-ONLY цел
 (0 sandbox boots; gate fast-fail — не boot).
+
+## §140 — S7-125 (TASK-261): PACK LEG#1 BANKED (6998277 in-window), F2/F3 smoke CLOSED (4/4 ARMED), arm#2 in flight
+
+**PACK LEG#1 = 35218943354** (master f4f0636-эры, FULL F1+F2+F3 pack kernel):
+SUCCESS, мир afb3a0b3 (pin ✓), финал cpu **6998277** ∈ pack window
+[6916007,7136333] — **первая in-window pack нога** после discard'ов
+6832640 (94.14ms) и 6691832. Headline MSPT **85.44ms** (spark
+tick-monitor; min 62.56 / max 154.0).
+
+**F2/F3 SMOKE-ТЕСТ ЗАКРЫТ** (дефер S7-116; S7-118 закрыл F1):
+workflow-логи маркеров не содержат (маркеры живут в artifact) — скачан
+world3-bench artifact (49.5MB; GitHub 302 → подписанный Azure blob, auth
+заголовок туда пересылать НЕЛЬЗЯ — urllib auto-follow давал 401; новый
+`scripts/bench4_recon/fetch_artifact.py` с no-redirect opener) →
+`server-stdout.log` (boot 16.481s):
+- `[crussty-plugin] randomtick: F1 ARMED (optimiseRandomTick -> RandomTickOps.run, bit-exact LCG batch)`
+- `[crussty-plugin] brainhook: F2 ARMED (startEachNonRunningBehavior -> BrainOps.startEachNonRunning, flat-snapshot lens)`
+- `[crussty-plugin] tickhook: F3 ARMED (runCollectedTicks -> TickBlockOps.runCollectedTicks, byte-exact drain mirror + section-cache window)`
+- `[crussty-plugin] tickhook: F3 ARMED (tickBlock -> TickBlockOps.tickBlock, readBlockState lens, F1 composed)`
+⇒ **все 4 хука ARMED на реальной bench-ноге** — FULL pack kernel активен;
+  profile-кадры согласны (RandomTickOps.run 3.5-3.6% leaf, Brain.tick 6.75%,
+  Brain.tickEachRunningBehavior 1.47%). Evidence:
+  research/bench4-recon-2026-09-17/run-packleg1/ (run-env.txt +
+  markers evidence).
+
+**Пара-наблюдение (НЕ вердикт)**: leg#1 cpu 6998277 ≈ arm#2 B2 6996405
+(Δ 0.27% — легальная пара); 85.44 vs 83.51 = pack **+2.3%** на этой паре.
+Против: F1-одиночка на leg#9 давала −2.76% (81.64 @ 6966037 vs run#23
+83.96 @ 6979464) ⇒ гипотеза: lens-хуки F2/F3 стоят больше, чем даёт F1.
+Вердикт механический, не нарративный.
+
+**ARM#2 = 35221359818 auto-dispatched** (v4.4, master, band
+[6688594,7551675], финал = точное окно [6916007,7136333]). In-window ⇒
+2 in-window ноги ⇒ `verdict_a1.py` ⇒ **§125-A1 ВЕРДИКТ**: pack median ≤
+**80.95ms** (median(83.40, 83.51)×0.97) ⇒ LANDS (pack единой агрегатной
+посадкой на master); иначе REFUTED row (ноль посадок, модульная повестка
+возвратится к preregistered очереди: REDSTONE-LENS STEP-0 / minecarts
+STEP-0 / GC-SHAPE-1; owner-gated: pinned runner/сценарий). runs_index +2.
+INJECTS-ONLY цел (0 sandbox boots; artifact download — не boot).

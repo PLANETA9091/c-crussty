@@ -514,3 +514,28 @@
 > **§125-A1 ВЕРДИКТ** (порог median(83.40,83.51)×0.97 = **80.95ms**
 > неизменен). F2/F3 маркеры — на первой in-window ноге. INJECTS-ONLY
 > цел (0 sandbox boots; gate fast-fail не boot).
+
+> **СТАТУС 20 TPS (S7-125)**: **PACK LEG#1 BANKED (первая in-window нога) +
+> F2/F3 SMOKE-ТЕСТ ЗАКРЫТ — ВСЕ 4 ХУКА ARMED на bench; arm#2 = 35221359818
+> в полёте.** (1) Poll 35218943354 (master, FULL pack kernel): SUCCESS,
+> мир afb3a0b3, финал cpu **6998277** ∈ [6916007,7136333] ⇒ **PACK LEG#1
+> BANKED** (третья попытка — после discard'ов 6832640/6691832).
+> Headline MSPT **85.44ms** (spark tick-monitor). (2) **F2/F3 SMOKE
+> TEST ЗАКРЫТ** (дефер S7-116→S7-118): workflow-логи НЕ содержат
+> console-маркеров (они в artifact) — скачан world3-bench artifact
+> (49.5MB; 302→Azure требует no-redirect opener — новый
+> scripts/bench4_recon/fetch_artifact.py) → server-stdout.log: `randomtick:
+> F1 ARMED (optimiseRandomTick -> RandomTickOps.run, bit-exact LCG batch)`,
+> `brainhook: F2 ARMED (startEachNonRunningBehavior -> BrainOps.
+> startEachNonRunning, flat-snapshot lens)`, `tickhook: F3 ARMED ×2
+> (runCollectedTicks drain mirror + tickBlock readBlockState lens, F1
+> composed)` — **FULL PACK KERNEL АКТИВЕН на bench-ноге**; profile-кадры
+> согласны (RandomTickOps.run 3.5-3.6%, Brain.tick 6.75%). (3) Пара-нота:
+> leg#1 cpu 6998277 ≈ arm#2 6996405 (Δ 0.27%) — легальная A/B пара;
+> leg#1 MSPT 85.44 vs B2 83.51 = pack +2.3% на этой паре (single-pair
+> наблюдение, НЕ вердикт; F1-одиночка давала −2.76% на leg#9 — lens-хуки
+> F2/F3 могут съедать выигрыш F1; вердикт механический). (4) **ARM#2 =
+> 35221359818 auto-dispatched** (master, band [6688594,7551675], финал =
+> точное окно) — in-window ⇒ 2 ноги ⇒ verdict_a1 ⇒ **§125-A1 ВЕРДИКТ**:
+> pack median ≤ **80.95ms** ⇒ LANDS, иначе REFUTED (ноль посадок). Порог
+> неизменен. INJECTS-ONLY цел (0 sandbox boots).
