@@ -1344,4 +1344,4 @@ Stage Summary:
 - NEXT S7-129: absorb рана; wave-2 STEP-0 (checkInsideBlocks/flushStep); X150K population fixture MVP (10k smoke); свежий профиль ⇒ ARCH-ATTACK очередь.
 - INJECTS-ONLY: 0 sandbox boots (CI-буты санкционированы).
 
-RUN_ID_DISPATCHED: (записан в runs_index.jsonl — /home/z/my-project/scripts/bench4_recon/)
+RUN_ID_DISPATCHED: **35231195756** (master 5764c09, fp=4, summon_sweeps=1, fluid_guard=1, 900s; runs_index S7-128 row)
