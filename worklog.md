@@ -963,3 +963,20 @@ Work Log:
 
 Stage Summary:
 - Пара (spread 1.3%) пока n=1 — репликация отложена на следующий tick (index копится, hunt дешёвый: 18 rejects = ~12 CI-минут суммарно). Главный результат тика — измеренный закон пула: yield охоты зависит от класса-якоря; dense band даёт 4x экономию диспатчей. Инфра самодиагностируема: scraper больше не теряет reject'ы, хронология классов точна
+---
+Task ID: S7-108 (dense-band hunt tick, 10:08+08, Job 390768) — CONCURRENCY CONSTRAINT discovered + LCG DRIFT LAW + slow-class leg A collected (run#22, 83.74ms)
+Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609171008)
+Task: stale-charter tick per latest state — replicate pairing law on dense-cluster band per S7-107 §122 economics
+
+Work Log:
+- bootstrap + pulls: no remote movement (c-crussty ba14330 = own S7-107 push; CRUSSTY pristine untouched); no runs in flight
+- **КОНКАРРЕНСИ-ОТКРЫТИЕ**: world-bench.yml = concurrency group world-bench-3 + cancel-in-progress: true. dispatch_collect.py (параллельный сбор двух ног) ОПАСЕН: нога 35173362013 (gate pass, cpu 6922352) отменена вторым dispatch через ~3 мин. Параллельные A/B невозможны — протокол строго последовательный; все dispatch-инструменты получили in-flight guard (exit 3)
+- **LCG DRIFT LAW**: leg A 35173558011 — gate LCG 6908907 @02:13:28Z vs harness LCG 6401514 @02:18:27Z = дрейф 7.3% за 5 мин на ТОЙ ЖЕ машине; индекс меряет контеншн, не железо; паринг только по harness cpu (закон S7-96d уточнён)
+- LEG A run#22 = 35173558011 absorbed (absorb_generic.sh, параметризованный; 3 гейта PASS): harness cpu 6401514 (slowest class с bench-данными), fp=4, fixture VALID, MSPT **83.74ms**
+- MSPT-vs-класс кривая (наблюдение): slow 83.7-85.2 (2 ноги) / mid 76.0-77.0 (2) / fast 57.0 (N=16) — монотонна по классам
+- ПРОФИЛЬ КЛАСС-ИНВАРИАНТЕН (recon_lanes run22 vs run17 при cpu Δ42%): kernel-лейны <=±1.3pp — вся кривая MSPT скейлится железом равномерно, скрытого хотспота нет; заменимых соло >=3% нет (5-е подтверждение соло-карты)
+- hunt_leg_b.py готов к следующему tick: последовательная охота ноги B к run22 (окно harness 6401514±2%), ранний cancel при промахе по run-env echo (~5 мин) — экономит ~17 мин на ложной ноге; gate band [6870000,7030000] (gate читает ~7% высоко)
+- ledger: RESULTS_LEDGER §123 + INDEX 243 + CLAIMS TASK-244; lanes_vs_run17.txt + runs_index.jsonl (44 рана) в research/; INJECTS-ONLY: 0 sandbox boots
+
+Stage Summary:
+- Solo-карта подтверждена 5-й раз (теперь и кросс-класс); закон паринга hardened (harness-only + drift-мера); конкуренс-группа документирована как жёсткое ограничение инфраструктуры (объясняет последовательность всех исторических ран). Следующий tick: leg B через hunt_leg_b.py -> вторая легальная пара (уже на dense/slow классе) -> вердикт о воспроизводимости спреда 1.3%
