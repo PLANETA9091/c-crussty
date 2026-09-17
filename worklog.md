@@ -1292,3 +1292,19 @@ Work Log:
 
 Stage Summary:
 - §125-A1: leg#1 banked (85.44ms @ 6998277), arm#2 in flight; F2/F3 smoke CLOSED — all 4 hooks ARMED proven on real bench leg; next tick: poll 35221359818 — in-window => 2 legs => verdict_a1 => §125-A1 VERDICT (pack median ≤ 80.95ms => LANDS => pack lands master; else REFUTED => zero landing, back to preregistered queue); pair note suggests pack may be net-negative (lens cost) — mechanical verdict decides; INJECTS-ONLY intact (0 sandbox boots)
+
+---
+## S7-126 — 2026-09-17 20:43 tick — pack discard #3 + bimodal gate churn + retry in flight
+
+**Task ID: S7-126**, Agent: agent-7625532f (session web-f7888d46, Job 390768)
+
+Work Log:
+- bootstrap + 3x pull: repos at S7-125 end (b9231fa/f4794a2), no interim sessions; GOAL read first
+- Poll pack arm#2 35221359818: in-flight x2 (exit 4), then SUCCESS — final cpu 6731204 BELOW pack window [6916007,7136333] by 2.7% => honest DISCARD #3 (6832640/6691832/6731204 — all below; pool drifting down since morning 7.05M -> 6.99M -> ~6.7M); v4.3 restore kept pack_legs=[leg#1 6998277]
+- Gate fast-fail churn x6 (~13-30s each, v4.4 zero-manual): gate values 6372300/6372622/9864892/8261589/6645024/8239827 — pool BIMODAL (slow ~6.37M / fast ~9.86M) jumping OVER the band [6688594,7551675]; honest rejects 21-26 total; window NOT moved (preregistered §125-A1 base untouchable; move = owner-amendment)
+- Final dispatch 35224751782 PAST-GATE in flight (no fast-fail tag at +25s verify) — band [6688594,7551675], exact-window final
+- runs_index +7 (90 rows); GOAL S7-126 + §141 + INDEX 262
+- Commits: c-crussty (this), dev-logs TASK-262, CRUSSTY pristine untouched
+
+Stage Summary:
+- §125-A1: leg#1 banked (85.44 @ 6998277), arm#2 retries churning (3 discards + 6 gate rejects this era); retry 35224751782 in flight — next tick: poll; in-window => leg#2 => verdict_a1 => VERDICT (pack median(85.44, leg2) <= 80.95ms => LANDS => pack lands master; else REFUTED => zero landing); F2/F3 closed (4/4 ARMED); INJECTS-ONLY intact (0 sandbox boots)
