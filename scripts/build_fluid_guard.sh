@@ -21,7 +21,7 @@ if [ -z "$JAVAC" ]; then
   else echo "no javac found (pass one as arg 1 or install a JDK)" >&2; exit 1; fi
 fi
 
-SERVER_JAR=/home/z/server/versions/1.21.10/purpur-1.21.10.jar
+SERVER_JAR="${SERVER_JAR:-/tmp/pdec/matsrv/versions/1.21.10/purpur-1.21.10.jar}"
 if [ ! -f "$SERVER_JAR" ]; then echo "runtime jar not found: $SERVER_JAR" >&2; exit 1; fi
 
 GUAVA=$(ls /home/z/server/libraries/com/google/guava/guava/*/guava-*.jar 2>/dev/null | head -1)
