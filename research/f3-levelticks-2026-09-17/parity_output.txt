@@ -1,34 +1,54 @@
-[07:17:59 INFO]: [STDOUT]: SharedConstants + Bootstrap.bootStrap OK (registries+codecs, no server)
-[07:17:59 INFO]: [STDOUT]: S1 drain order/bookkeeping (set non-empty)
-[07:17:59 INFO]: [STDOUT]:   ok: S1 event stream order-exact
-[07:17:59 INFO]: [STDOUT]:   ok: S1 alreadyRunThisTick final
-[07:17:59 INFO]: [STDOUT]:   ok: S1 toRunThisTickSet final
-[07:17:59 INFO]: [STDOUT]:   ok: S1 queue drained
-[07:17:59 INFO]: [STDOUT]: S2 vanilla quirk: set removal guarded by !isEmpty()
-[07:17:59 INFO]: [STDOUT]:   ok: S2 event stream
-[07:17:59 INFO]: [STDOUT]:   ok: S2 list accumulated (removal skipped)
-[07:17:59 INFO]: [STDOUT]:   ok: S2 set stayed empty
-[07:17:59 INFO]: [STDOUT]: S3 read parity (cache==null, real getChunk path)
-[07:17:59 INFO]: [STDOUT]:   ok: S3 identity @ 5, 64, 7 -> STONE
-[07:17:59 INFO]: [STDOUT]:   ok: S3 identity @ 5, 65, 7 -> DIRT
-[07:17:59 INFO]: [STDOUT]:   ok: S3 identity @ 5, 66, 7 -> AIR
-[07:17:59 INFO]: [STDOUT]:   ok: S3 identity @ 6, 70, 8 -> DEEPSLATE
-[07:17:59 INFO]: [STDOUT]:   ok: S3 identity @ 6, 71, 8 -> AIR
-[07:17:59 INFO]: [STDOUT]:   ok: S3 identity @ -20, 100, -20 -> STONE
-[07:17:59 INFO]: [STDOUT]:   ok: S3 identity @ -20, 101, -20 -> AIR
-[07:17:59 INFO]: [STDOUT]:   ok: S3 identity @ 500, 64, 7 -> AIR
-[07:17:59 INFO]: [STDOUT]:   ok: S3 identity @ 5, 321, 7 -> VOID_AIR
-[07:17:59 INFO]: [STDOUT]:   ok: S3 identity @ 5, -65, 7 -> VOID_AIR
-[07:17:59 INFO]: [STDOUT]:   chunkLookups=16 (real ServerChunkCache.fullChunks path)
-[07:17:59 INFO]: [STDOUT]: S4 tickBlock counter + branch arithmetic
-[07:18:00 INFO]: [STDOUT]:   ok: 30/30 counter+branch exact (call itself byte-identical by construction)
-[07:18:00 INFO]: [STDOUT]: S5 captureTreeGeneration branch
-[07:18:00 INFO]: [STDOUT]:   ok: S5a empty capture map falls through
-[07:18:00 INFO]: [STDOUT]:   ok: S5b capture hit -> getHandle dispatch
-[07:18:00 INFO]: [STDOUT]:   ok: S5b REF agrees
-[07:18:00 INFO]: [STDOUT]: S6 integration drain: read identity + resolution count
-[07:18:00 INFO]: [STDOUT]:   ok: S6 read stream identity (order + state objects)
-[07:18:00 INFO]: [STDOUT]:   ok: chunk resolutions REF=6 NEW=2 (per-pos -> per-section)
-[07:18:00 INFO]: [STDOUT]: S9 fuzz 40 scenarios
-[07:18:00 INFO]: [STDOUT]:   ok: 40/40 scenarios identical
-[07:18:00 INFO]: [STDOUT]: F3 READS PARITY: PASS
+[08:38:36 INFO]: [STDOUT]: SharedConstants + Bootstrap.bootStrap OK (registries+codecs, no server)
+[08:38:36 INFO]: [STDOUT]: S1 drain order/bookkeeping (set non-empty)
+[08:38:36 INFO]: [STDOUT]:   ok: S1 event stream order-exact
+[08:38:36 INFO]: [STDOUT]:   ok: S1 alreadyRunThisTick final
+[08:38:36 INFO]: [STDOUT]:   ok: S1 toRunThisTickSet final
+[08:38:36 INFO]: [STDOUT]:   ok: S1 queue drained
+[08:38:36 INFO]: [STDOUT]: S2 vanilla quirk: set removal guarded by !isEmpty()
+[08:38:36 INFO]: [STDOUT]:   ok: S2 event stream
+[08:38:36 INFO]: [STDOUT]:   ok: S2 list accumulated (removal skipped)
+[08:38:36 INFO]: [STDOUT]:   ok: S2 set stayed empty
+[08:38:36 INFO]: [STDOUT]: S3 read parity (cache==null, real getChunk path)
+[08:38:36 INFO]: [STDOUT]:   ok: S3 identity @ 5, 64, 7 -> STONE
+[08:38:36 INFO]: [STDOUT]:   ok: S3 identity @ 5, 65, 7 -> DIRT
+[08:38:36 INFO]: [STDOUT]:   ok: S3 identity @ 5, 66, 7 -> AIR
+[08:38:36 INFO]: [STDOUT]:   ok: S3 identity @ 6, 70, 8 -> DEEPSLATE
+[08:38:36 INFO]: [STDOUT]:   ok: S3 identity @ 6, 71, 8 -> AIR
+[08:38:36 INFO]: [STDOUT]:   ok: S3 identity @ -20, 100, -20 -> STONE
+[08:38:36 INFO]: [STDOUT]:   ok: S3 identity @ -20, 101, -20 -> AIR
+[08:38:36 INFO]: [STDOUT]:   ok: S3 identity @ 500, 64, 7 -> AIR
+[08:38:36 INFO]: [STDOUT]:   ok: S3 identity @ 5, 321, 7 -> VOID_AIR
+[08:38:36 INFO]: [STDOUT]:   ok: S3 identity @ 5, -65, 7 -> VOID_AIR
+[08:38:36 INFO]: [STDOUT]:   chunkLookups=16 (real ServerChunkCache.fullChunks path)
+[08:38:36 INFO]: [STDOUT]: S4 tickBlock counter + branch arithmetic
+[08:38:36 INFO]: [STDOUT]:   ok: 30/30 counter+branch exact (call itself byte-identical by construction)
+[08:38:36 INFO]: [STDOUT]: S5 captureTreeGeneration branch
+[08:38:36 INFO]: [STDOUT]:   ok: S5a empty capture map falls through
+[08:38:36 INFO]: [STDOUT]:   ok: S5b capture hit -> getHandle dispatch
+[08:38:36 INFO]: [STDOUT]:   ok: S5b REF agrees
+[08:38:36 INFO]: [STDOUT]: S6 integration drain: read identity + resolution count
+[08:38:36 INFO]: [STDOUT]:   ok: S6 read stream identity (order + state objects)
+[08:38:36 INFO]: [STDOUT]:   ok: chunk resolutions REF=6 NEW=2 (per-pos -> per-section)
+[08:38:36 INFO]: [STDOUT]: S9 fuzz 40 scenarios
+[08:38:36 INFO]: [STDOUT]:   ok: 40/40 scenarios identical
+[08:38:36 INFO]: [STDOUT]: F3 READS PARITY: PASS
+[08:38:36 INFO]: [STDOUT]: SQ1 sort branches (due/not-due/missing/null-peek/late-peek/tickCheck-false)
+[08:38:36 INFO]: [STDOUT]:   ok: SQ1 identical
+[08:38:36 INFO]: [STDOUT]:   ok: SQ1 due tick ran
+[08:38:36 INFO]: [STDOUT]:   ok: SQ1 tickCheck-false entry stayed (value untouched)
+[08:38:36 INFO]: [STDOUT]:   ok: SQ1 late peek rescheduled via setValue
+[08:38:36 INFO]: [STDOUT]:   ok: SQ1 orphan entry removed
+[08:38:36 INFO]: [STDOUT]:   ok: SQ1 null-peek entry removed
+[08:38:36 INFO]: [STDOUT]: SQ2 drain boundary (maxTicks gate) + requeue/reschedule branches
+[08:38:36 INFO]: [STDOUT]:   ok: SQ2 identical
+[08:38:36 INFO]: [STDOUT]:     SQ2 state=run=[2748779110464:10:1;16448:10:1;274877923392:10:2;] next={0=10,} toTick=[3023657017408,] (observation; REF==NEW is the contract)
+[08:38:36 INFO]: [STDOUT]: SQ3 frozen-innerHead INTRA_TICK_DRAIN_ORDER (cross-container fairness)
+[08:38:36 INFO]: [STDOUT]:   ok: SQ3 identical
+[08:38:36 INFO]: [STDOUT]:     SQ3 state=run=[5497558220864:10:5;5772436131904:10:1;5772436127808:10:7;] next={} toTick=[] (observation; frozen-innerHead parity carried by REF==NEW + fuzz)
+[08:38:36 INFO]: [STDOUT]: SQ4 rescheduleLeftover (queue-preserved container re-registered)
+[08:38:36 INFO]: [STDOUT]:   ok: SQ4a (gate at 1) identical
+[08:38:36 INFO]: [STDOUT]:   ok: SQ4b (second tick drains rest) identical
+[08:38:36 INFO]: [STDOUT]:   ok: SQ4 both ticks ran across two collects
+[08:38:36 INFO]: [STDOUT]: SQ5 fuzz (random containers/ticks/gates vs REAL vanilla pipeline)
+[08:38:36 INFO]: [STDOUT]:   ok: 30/30 fuzz scenarios identical (state + counters)
+[08:38:36 INFO]: [STDOUT]: F3 QUEUE PARITY: PASS

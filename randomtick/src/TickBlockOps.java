@@ -1,14 +1,21 @@
 package net.minecraft.server.level;
 
 import ca.spottedleaf.moonrise.patches.chunk_system.server.ChunkSystemMinecraftServer;
+import it.unimi.dsi.fastutil.longs.Long2LongMap;
+import it.unimi.dsi.fastutil.longs.Long2LongMaps;
+import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
+import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.profiling.ProfilerFiller;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.status.ChunkStatus;
+import net.minecraft.world.ticks.LevelChunkTicks;
 import net.minecraft.world.ticks.LevelTicks;
 import net.minecraft.world.ticks.ScheduledTick;
 import org.bukkit.craftbukkit.block.CraftBlockState;
@@ -20,6 +27,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.BiConsumer;
+import java.util.function.LongPredicate;
 
 /**
  * F3 LEVELTICKS-READS helper (family-agg pack member F3, TASK-251/S7-115;
@@ -93,6 +101,10 @@ public final class TickBlockOps {
     private static final long OFF_QUEUE;        // LevelTicks.toRunThisTick (private final Queue)
     private static final long OFF_SET;          // LevelTicks.toRunThisTickSet (private final Set)
     private static final long OFF_LIST;         // LevelTicks.alreadyRunThisTick (private final List)
+    private static final long OFF_ALL_CONT;     // LevelTicks.allContainers (private final Long2ObjectMap)
+    private static final long OFF_NEXT_TICK;    // LevelTicks.nextTickForContainer (private final Long2LongMap)
+    private static final long OFF_TO_TICK;      // LevelTicks.containersToTick (private final Queue)
+    private static final long OFF_TICK_CHECK;   // LevelTicks.tickCheck (private final LongPredicate)
 
     static {
         try {
@@ -106,6 +118,10 @@ public final class TickBlockOps {
             OFF_QUEUE = U.objectFieldOffset(LevelTicks.class.getDeclaredField("toRunThisTick"));
             OFF_SET = U.objectFieldOffset(LevelTicks.class.getDeclaredField("toRunThisTickSet"));
             OFF_LIST = U.objectFieldOffset(LevelTicks.class.getDeclaredField("alreadyRunThisTick"));
+            OFF_ALL_CONT = U.objectFieldOffset(LevelTicks.class.getDeclaredField("allContainers"));
+            OFF_NEXT_TICK = U.objectFieldOffset(LevelTicks.class.getDeclaredField("nextTickForContainer"));
+            OFF_TO_TICK = U.objectFieldOffset(LevelTicks.class.getDeclaredField("containersToTick"));
+            OFF_TICK_CHECK = U.objectFieldOffset(LevelTicks.class.getDeclaredField("tickCheck"));
         } catch (ReflectiveOperationException e) {
             throw new ExceptionInInitializerError(e);
         }
@@ -203,5 +219,134 @@ public final class TickBlockOps {
             }
         }
         return chunk.getBlockState(pos);                        // vanilla @66-71 (real call)
+    }
+
+    // ------------------------------------------------- collect (hook 3, F3-queue)
+
+    /**
+     * Bytecode-exact replacement of LevelTicks.collectTicks (javap @0-34, run21
+     * kernel) — the FUSED sort+counter+drain+reschedule pipeline:
+     *
+     *   sortContainersToTick        (vanilla @0-165, walk replicated exactly)
+     *   incrementCounter            (vanilla @5-24, same call on the passed filler)
+     *   drainContainers             (vanilla @0-105, gate machinery inlined)
+     *   rescheduleLeftoverContainers (vanilla @0-40, walk replicated exactly)
+     *
+     * WIN MECHANICS (preregistered ≤0.5% queue slice, "primitive open-addressing
+     * drain" line of the F3 family): canScheduleMoreTicks — a virtual call +
+     * Queue.size() at 3 sites per drained tick in vanilla — becomes a direct
+     * field compare on the Unsafe-fetched toRunThisTick; scheduleForThisTick —
+     * a virtual dispatch per scheduled tick — becomes a direct add; the four
+     * private fields are fetched ONCE per pipeline instead of per getfield.
+     * Everything else is the vanilla loop structure byte-for-byte, including:
+     * the sort-walk quirks (remove only on missing container / null peek,
+     * setValue reschedule on late peek, tickCheck-false leaves the entry
+     * in place), the frozen-innerHead INTRA_TICK_DRAIN_ORDER check (computed
+     * ONCE per container from the main-queue head — vanilla never refreshes it
+     * inside the inner loop), and the requeue-vs-reschedule branch order.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    public static void collectTicks(LevelTicks<?> ticks, long gameTime, int maxTicks,
+                                    ProfilerFiller profiler) {
+        final Long2ObjectMap<LevelChunkTicks<?>> allContainers =
+                (Long2ObjectMap) U.getObject(ticks, OFF_ALL_CONT);
+        final Long2LongMap nextTickForContainer =
+                (Long2LongMap) U.getObject(ticks, OFF_NEXT_TICK);
+        final Queue<LevelChunkTicks<?>> containersToTick =
+                (Queue) U.getObject(ticks, OFF_TO_TICK);
+        final LongPredicate tickCheck = (LongPredicate) U.getObject(ticks, OFF_TICK_CHECK);
+        final Queue<ScheduledTick<?>> toRunThisTick = (Queue) U.getObject(ticks, OFF_QUEUE);
+
+        // ---- sortContainersToTick (vanilla @0-165) ----
+        final ObjectIterator<Long2LongMap.Entry> it = Long2LongMaps.fastIterator(nextTickForContainer);
+        while (it.hasNext()) {                                   // @8-14
+            final Long2LongMap.Entry e = it.next();              // @17-23
+            final long key = e.getLongKey();                     // @28-35
+            final long at = e.getLongValue();                    // @37-44
+            if (at > gameTime) {                                 // @46-50 ifgt 162
+                continue;
+            }
+            final LevelChunkTicks<?> container =
+                    (LevelChunkTicks<?>) allContainers.get(key); // @53-64
+            if (container == null) {                             // @69-80
+                it.remove();
+                continue;
+            }
+            final ScheduledTick<?> peek = container.peek();      // @83-88
+            if (peek == null) {                                  // @90-101
+                it.remove();
+                continue;
+            }
+            if (peek.triggerTick() > gameTime) {                 // @104-113
+                e.setValue(peek.triggerTick());                  // @114-125 (reschedule, keep entry)
+                continue;
+            }
+            if (tickCheck.test(key)) {                           // @130-141 (false: entry STAYS)
+                it.remove();                                     // @144-150
+                containersToTick.add(container);                 // @150-156
+            }
+        }
+
+        // ---- collectTicks counter (vanilla @5-24) ----
+        profiler.incrementCounter("containersToTick", containersToTick.size());
+
+        // ---- drainContainers (vanilla @0-105, gates inlined) ----
+        while (toRunThisTick.size() < maxTicks) {                // @0-5 canScheduleMoreTicks
+            final LevelChunkTicks<?> container = containersToTick.poll();   // @8-20
+            if (container == null) {                             // @21-23 ifnull 105
+                break;
+            }
+            toRunThisTick.add(container.poll());                 // @26-38 (poll + scheduleForThisTick inlined)
+            drainFromCurrentContainer(containersToTick, container,
+                    gameTime, maxTicks, toRunThisTick);          // @39-50
+            final ScheduledTick<?> peek = container.peek();      // @51-56
+            if (peek != null) {                                  // @58-60 ifnull 102
+                if (peek.triggerTick() <= gameTime                       // @63-70
+                        && toRunThisTick.size() < maxTicks) {            // @73-78 canScheduleMoreTicks
+                    containersToTick.add(container);             // @81-92 (requeue)
+                } else {
+                    nextTickForContainer.put(ChunkPos.asLong(peek.pos()), peek.triggerTick());   // @96-99 updateContainerScheduling
+                }
+            }
+        }
+
+        // ---- rescheduleLeftoverContainers (vanilla @0-40) ----
+        for (final LevelChunkTicks<?> c : containersToTick) {    // @0-28
+            final ScheduledTick<?> peek = c.peek();              // @31-34 (NPE on null — same as vanilla)
+            nextTickForContainer.put(ChunkPos.asLong(peek.pos()), peek.triggerTick());
+        }
+    }
+
+    /**
+     * Vanilla drainFromCurrentContainer (@0-103) byte-for-byte. The
+     * INTRA_TICK_DRAIN_ORDER check compares against the FROZEN innerHead
+     * (the next container's head tick, captured ONCE before the loop) —
+     * vanilla never refreshes it, the mirror must not either.
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static void drainFromCurrentContainer(final Queue containersToTick,
+            final LevelChunkTicks<?> container, final long gameTime, final int maxTicks,
+            final Queue toRunThisTick) {
+        if (toRunThisTick.size() >= maxTicks) {                  // @0-6
+            return;
+        }
+        final LevelChunkTicks<?> nextContainer = (LevelChunkTicks<?>) containersToTick.peek();   // @9-18
+        final ScheduledTick<?> innerHead = (nextContainer != null)       // @20-34 (frozen)
+                ? nextContainer.peek() : null;
+        while (toRunThisTick.size() < maxTicks) {                // @36-42
+            final ScheduledTick<?> next = container.peek();      // @45-49
+            if (next == null) {                                  // @51-53
+                return;
+            }
+            if (next.triggerTick() > gameTime) {                 // @56-63
+                return;
+            }
+            if (innerHead != null                                // @66-86
+                    && ScheduledTick.INTRA_TICK_DRAIN_ORDER.compare(next, innerHead) > 0) {
+                return;
+            }
+            container.poll();                                    // @89-93
+            toRunThisTick.add(next);                             // @94-97 (scheduleForThisTick)
+        }
     }
 }

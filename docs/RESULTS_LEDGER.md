@@ -1307,3 +1307,19 @@ VERDICT (bytecode grade — contract from the materialized booted kernel, NOT fr
 **ПАКЕТ (§125 протокол)**: F1 hook ✓ (S7-112) + F2 hook ✓ (S7-114) + **F3-reads hooks ✓ (S7-116)** — все три wired/armed-on-boot/dormant-until-aggregate/zero-landed. СЛЕДУЮЩИЙ ТИК: F3-queue build (LevelTicks queue-drain ≤0.5%, task167 slice — последний Tier-B член) и/или ОДИН агрегатный A/B против банка пары 76.01/76.98 (если F3-queue сочтён необязательным по preregistration — Tier B floor 3.3% достигается и без него)
 
 **ПАРА #2 (все дискреты честные)**: нога#12 35193865177 gate-reject (8875106 >> band [6870000,7030000], ~30s fast-fail) — **8-й подряд честный reject** (band×6+window×2), ни одной ложной пары; нога#13 35196354695 dispatched in flight. INJECTS-ONLY цел
+
+## §132 ADDENDUM-117 — TASK-253 (agent-7625532f, 2026-09-17): F3-QUEUE BUILT+HOOKED (S7-117) — collectTicks fused mirror, REAL-vanilla REF parity bank PASS (SQ1-SQ5), 9B hook, tickhook LevelTicks compose, cargo 91 passed, VerifyF3 VERIFY-OK; TIER B PACK COMPLETE
+
+**STEP-0 (LevelTicks cfdump run21)**: full queue-machinery anatomy banked — tick @0-76 (collect/run/cleanup profiler sections); collectTicks @0-34 = sortContainersToTick @0-165 + incrementCounter + drainContainers @0-105 + rescheduleLeftoverContainers @0-40; drainFromCurrentContainer @0-103 (**innerHead ЗАМОРОЖЕН до цикла**); updateContainerScheduling = put(**ChunkPos.asLong(ПОЗИЦИИ тика)**, trigger) — re-keying; **LevelChunkTicks.schedule дедуп по (pos,type) через ticksPerPosition Set**; comparators: DRAIN_ORDER = trigger→priority→sub, INTRA_TICK_DRAIN_ORDER = **priority→sub** (lambda$static$1 cfdump)
+
+**HELPER** (TickBlockOps.collectTicks + drainFromCurrentContainer): байт-точная реплика 4 фаз; win = инлайн canScheduleMoreTicks (3 virtual calls/tick → field compare) + scheduleForThisTick (virtual/tick → direct add) + 4 Unsafe field-fetches per pipeline; ≤0.5% preregistered
+
+**PARITY BANK — САМЫЙ СИЛЬНЫЙ REF В ЭРЕ**: REF = **реальный vanilla приватный collectTicks через reflection** (setAccessible на plain classpath JVM — нулевой mirror-copy риск), NEW = TickBlockOps. Фикстуры: real LevelChunkTicks + fastutil maps + RecProfiler. **PASS: SQ1 sort-ветки (6 веток + 5 semantic checks) / SQ2 gate boundary / SQ3 frozen-innerHead (наблюдаемый [A5,B1,A7] подтвердил fairness quirk) / SQ4a-b two-collect lifecycle + re-keying orphan / SQ5 fuzz 30/30 (state+counters)** — 36 ok. Ловушки банка: schedule()-dedup по (pos,type), updateContainerScheduling re-keying, fastutil iteration order
+
+**HOOK**: patch_collect_ticks — 9B `2a 1f 1d 19 04 b8 <idx> b1` (wide aload 4!), max_stack 5/max_locals 5, пустой StackMapTable, идемпотентен, fail-closed. tickhook.rs hook#1 = LevelTicks COMPOSE {runCollected_ticks + collectTicks} в одном колбэке
+
+**ТЕСТЫ**: cargo **91 passed** (89+2); VerifyF3 **VERIFY-OK major=65**: COMPOSED LevelTicks 18837B (drain 6B + queue 9B живы) + COMPOSED ServerLevel F1F3 142243B + TickBlockOps 8389B
+
+**ПАКЕТ (§125): TIER B COMPLETE** — F1 hook ✓ (S7-112) + F2 hook ✓ (S7-114) + F3-reads hooks ✓ (S7-116) + F3-queue hook ✓ (S7-117); signal lens dropped по preregistration §5.3 (floor 3.3% = 1.6+0.9+0.3+0.5 держится). СЛЕДУЮЩИЙ ТИК = **ОДИН агрегатный A/B** (baseline-нога = банк пары 76.01/76.98, pack-ноги = hunt_leg_b, min-of-2, gate ≥3.0% MSPT) — решает ВСЁ
+
+**ПАРА #2**: нога#13 gate-reject (6786413 < floor, ~30s) — 9-й подряд честный reject; нога#14 35198344256 in flight. INJECTS-ONLY цел
