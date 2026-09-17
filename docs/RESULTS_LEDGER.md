@@ -1149,3 +1149,18 @@ VERDICT (bytecode grade — contract from the materialized booted kernel, NOT fr
 **ПРАВИЛА (без goalpost-moving)**: пререгистрированное 2% правило остаётся ВЕРДИКТНЫМ гейтом (консервативно: никогда не примет межклассовую пару, иногда отбрасывает сравнимую); "class-paired" (тот же класс, Δcpu>2%) = owner-facing гипотеза для БУДУЩЕЙ санкции, не для задним числом легализации run22×run23.
 
 **ПРОФИЛЬ**: run23 vs run17 (cpu Δ31%) — kernel-лейны ≤±1.7pp (entities +0.08, chunk +0.81, network -0.09, moonrise +0.08); класс-инвариантность на 3-й кросс-класс паре; заменимых соло >=3% нет — **6-е подтверждение соло-карты**. INJECTS-ONLY: 0 sandbox boots.
+
+## §125 ADDENDUM-110 — TASK-246 (agent-7625532f, 2026-09-17): FAMILY-AGG PREREGISTRATION (S7-110) — aggregate lever STEP-0 quantified tier-disjoint; Tier B floor 3.3% >= gate = first GO candidate of the era
+
+**МЕТОД**: разрез парного профиля (run#17×run#21, sum лейнов ~96%) по НЕпересекающимся top-level лейнам; каждому верифицированному ядру — ровно один лейн (двойной счёт исключён); только banked STEP-0 числа (TASK-233, task166/167/168/169, §109). Paper-only, ДО кода (STEP-0-before-code discipline). Документ: docs/FAMILY_AGG_PREREGISTRATION.md.
+
+**ТИРЫ (дизъюнктные, parity-фильтрованные)**:
+- **Tier A** (строго верифицированные ядра, bit-exact/median-exact паритет): F1 BATCH-RNG 1.6-1.9% (TASK-233 javap sizing; бит-точный 48-bit LCG батч) + F2 BRAIN-LENS 0.9-1.5% (task168, iterators+getNode+views+half-SELF; itable-dispatch и canStart-тела исключены) = **2.5-3.4%** — на границе, НЕ достаточно для ставки.
+- **Tier B** (A + F3 LevelTicks parity-safe слайсы task167: reads batch-by-section 0.3-0.5 + queue open-addressing drain <=0.5; signal wire-lens 1.5-2.5 — ТОЛЬКО при bit-exact order-preserving доказательстве, иначе выпадает) = **3.3-6.9% >= 3% гейта** — floor чистит гейт даже при нижних концах всех ядер (1.6+0.9+0.8=3.3). **ПЕРВЫЙ GO-КАНДИДАТ ЭРЫ**.
+- **Tier C** (B + F4 minecarts assumption 0.6-1.3 [доля НЕ верифицирована] + F5 ENT-BP parked 1.5-1.8) = 5.4-10.0% — headroom, не пререгистрировано.
+
+**ПАРИТЕТ-ИСКЛЮЧЕНИЯ** (median-exact constraint): Bukkit neighbor-glue skip (<=0.6%, semantics risk) и mid-tick yield reshape (<=1.0%, latency-semantics risk) — ВЫБРОШЕНЫ из пакета; inlined tail (нет доминантного тела) — без рычага. Нули: chunk lane (closed, batch-lens parity-unreachable), GC (<=0.5% физика STW-duty), network (sendChanges SHRINK при N — N-scaling REFUTED), JDK/fastutil collections (заменимость живёт в вызывающих лейнах).
+
+**ПРОТОКОЛ БЕЗ ПЕРЕСМОТРА ГЕЙТА**: pack = ОДИН рычаг {F1, F2, F3-safe}; гейт «>=3.0% MSPT, CI A/B min-of-2» применяется к пакету ЦЕЛИКОМ; билд по одному члену за tick с parity-банкингом (F1 -> F2 -> F3-reads -> F3-queue; signal условно), НИЧЕГО не landится до агрегатного A/B; baseline-нога = банк легальной пары (76.01/76.98), pack-ноги = hunt_leg_b машинерией (sequential, guard). Если pack < 3%: REFUTED-строка, все члены не landятся, модульная повестка пуста (остаются owner-gated: pinned runner ~10-25% MSPT, смена сценария). Гипотеза «агрегат = один рычаг» ЯВНО помечена owner-facing (одно слово = отмена; нулевой риск при любой трактовке — под гейтом ничего не проходит и не landится).
+
+**ИНФРА**: формальная пара #2 — leg 35179585066 dispatched (fp=4, band [6870000,7030000], окно run22 harness [6273484,6529544]); классификация следующим poll/tick; CI run 35177903252 = smokes push-CI (не bench, ложной ноги нет). INJECTS-ONLY: 0 sandbox boots.

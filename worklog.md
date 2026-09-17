@@ -997,3 +997,19 @@ Work Log:
 
 Stage Summary:
 - Репликация закона паринга завершена на уровне класса БЕЗ второй формальной пары: три slow-ноги (включая отброшенную по 2% правилу) дают спред 1.8% — этого достаточно для owner-уровня доверия к внутриклассовой воспроизводимости. Формальная вторая пара (2% правило) может продолжиться охотой в следующие тики — но приоритет ниже: закон уже подтверждён двумя независимыми классами. Все пути owner-gated; модульных рычагов >=3% нет
+---
+Task ID: S7-110 (family-agg preregistration tick, 11:43+08, Job 390768) — AGGREGATE LEVER STEP-0: Tier B floor 3.3% >= gate, first GO candidate; owner-facing zero-risk protocol
+Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609171143)
+Task: stale-charter tick per latest state — quantify path (2) family aggregation from banked STEP-0 numbers; keep pair machinery warm
+
+Work Log:
+- bootstrap + pulls: S7-109 (6eb147b) уже в remote — классификация уровня класса завершена прошлым тиком; in-flight проверки: bench-ранов нет, run 35177903252 = push-CI smokes (НЕ bench, ложной ноги нет)
+- **FAMILY-AGG PREREGISTRATION (docs/FAMILY_AGG_PREREGISTRATION.md)**: путь (2) квантифицирован как агрегатный рычаг STEP-0 (paper-only, до кода). Дизъюнктный разрез парного профиля (14 лейнов, sum ~96%), двойной счёт исключён (collections -> вызывающие лейны; Villager -> Brain; advanceSeed -> batch-RNG)
+- **ТИРЫ**: Tier A (строго верифицированные ядра + паритет) = F1 batch-RNG 1.6-1.9 (TASK-233, бит-точный LCG батч) + F2 Brain 0.9-1.5 (task168) = **2.5-3.4%** — на границе, ставки недостаточно; Tier B (+F3 LevelTicks parity-safe: reads-batch 0.3-0.5 + queue drain <=0.5 по task167 декомпозиции; signal wire-lens 1.5-2.5 УСЛОВНО при bit-exact order-preserving доказательстве) = **3.3-6.9% >= 3% гейта** — floor чистит гейт даже на нижних концах (1.6+0.9+0.8=3.3): ПЕРВЫЙ GO-КАНДИДАТ ЭРЫ; Tier C (+minecarts-assumption 0.6-1.3 + ENT-BP parked 1.5-1.8) = 5.4-10.0% headroom
+- ПАРИТЕТ-ФИЛЬТР: neighbor-glue skip (semantics risk) и mid-tick reshape (latency risk) ВЫБРОШЕНЫ; нули подтверждены (chunk closed, GC <=0.5% физика, network SHRINK-with-N, spawn <gate, itable незаменим)
+- **ПРОТОКОЛ БЕЗ ПЕРЕСМОТРА ГЕЙТА**: pack = ОДИН рычаг {F1,F2,F3-safe}; билд по одному члену за tick с parity-банкингом (F1 -> F2 -> F3-reads -> F3-queue; signal условно); ОДИН агрегатный A/B min-of-2 — baseline-нога = БАНК легальной пары 76.01/76.98 (переиспользование, 2 dispatch вместо 4); если pack < 3% => REFUTED, НИЧЕГО не landится, модульная повестка пуста (owner-gated: pinned runner ~10-25%, сценарий). Гипотеза «агрегат = один рычаг» ЯВНО owner-facing: одно слово = отмена; нулевой риск при любой трактовке правила
+- ПАРА #2: leg 35179585066 band-reject (gate 11563189, ~30s, guard сработал); redispatch 35180007098 in flight (state saved, resumable — следующий тик начинает с poll)
+- ledger: GOAL СТАТУС S7-110 (новый блок) + RESULTS_LEDGER §125 + INDEX 245 + CLAIMS TASK-246; INJECTS-ONLY: 0 sandbox boots, implementation code 0 строк (STEP-0-before-code)
+
+Stage Summary:
+- Путь (2) переведён из «неопределённо owner-gated» в «квантифицированный GO-кандидат с owner-veto»: Tier B floor 3.3% — первый случай за всю эру, когда пререгистрированная математика допускает гейт-проход модульного рычага. Следующий тик: poll 35180007098 (classify/absorb если LEG B) -> начало билда F1 batch-RNG (бит-точный 48-bit LCG батч в optimiseRandomTick — ASM/algorithm, parity unit-bank). Если owner отменит трактовку — билд останавливается до агрегатного A/B, ничего не landится
