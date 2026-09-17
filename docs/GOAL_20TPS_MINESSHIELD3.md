@@ -238,3 +238,29 @@
 > harness 6574725 => 4-я slow-нога, класс-спред n=4 = **3.5%** (83.74-86.65;
 > было 1.8% n=3 — честная коррекция owner-числа; межкласс по-прежнему ~10-25%).
 > Нога#6 35183885492 in flight. INJECTS-ONLY цел (0 sandbox boots).
+
+> **СТАТУС 20 TPS (S7-114)**: F2 BYTE HOOK ГОТОВ — `classfile.rs::patch_brain_start_each`
+> (образец patch_optimise_random_tick): тело startEachNonRunningBehavior
+> (0x0002, vanilla len=178) заменено на 14-байтовую прямую строку
+> `aload_0/getfield availableBehaviorsByPriority/aload_0/getfield
+> activeActivities/aload_1/aload_2/invokestatic
+> BrainOps.startEachNonRunning:(Map;Set;ServerLevel;LivingEntity;)V/return`
+> (без ветвлений => ПУСТОЙ StackMapTable; max_stack 5 / max_locals 3; оба
+> getfield — СВОИ private-поля внутри Brain.class => verifier-легально,
+> helper БЕЗ Unsafe). Append-only CP + дедуп => идемпотентность тестом;
+> fail-closed (14 prefix-срезов + чужие классы). Runtime wiring `brainhook.rs`:
+> poll Brain -> define ВЕРНОМ порядке {BrainOps$IdKey, BrainOps$Snapshot,
+> BrainOps} в loader kernel'а (nested-first: ленивое разрешение через defining
+> loader иначе промахнулось бы по classpath kernel'а) -> READY -> retransform;
+> маркер-цепочка defined/armed/rc/PATCHED. ВЕРИФИКАТОР-ГЕЙТ: VerifyBrain на
+> реальном HotSpot — child-first loader {patched Brain + helper trio},
+> kernel-jar parent-first => **VERIFY-OK** (brain 31966B major 65 + ops 5469B
+> слинкованы; randomtick/verify_brain_patched.sh; cargo: 85 passed). Семантический
+> self-test = CI-буты (каждый smoke с мобами гоняет patched body; parity-контракт
+> уже banked §128: 4828 вызовов PASS). ПАКЕТ: F1 hook ✓ + F2 hook ✓ — следующая
+> единица билда: F3-reads (task167 slices, parity-banking), затем ОДИН
+> агрегатный A/B против банка пары 76.01/76.98 (§125 протокол) решает всё.
+> Пара #2: нога#9 35187305900 SUCCESS но harness 6966037 (+6.7% вне окна)
+> => честный discard (5-й подряд честный reject — ворота строгие, ни одной
+> ложной пары); нога#10 35189275270 dispatched in flight. INJECTS-ONLY цел
+> (0 sandbox boots; verify = link-time только, без <clinit>).

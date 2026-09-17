@@ -1228,3 +1228,27 @@ VERDICT (bytecode grade — contract from the materialized booted kernel, NOT fr
 **ПАРА #2 (все дискреты честные, бенч не тратится)**: нога#6 35183885492 band-reject (gate 6654650 < [6870000,7030000], ~30s); нога#7 35184317133 band-reject (6617751, ~30s); нога#8 35184734692/34695 SUCCESS+VALID но harness 6835916 ВНЕ окна [6273484,6529544] на +4.8% => discard; **нога#9 35187305900 in flight** (band-gated fp=4). P(2 подряд band-miss) ≈ 0.36-0.40 по POOL-CLASS — нормальная дисперсия
 
 **NEXT TICK**: F2 byte hook (`patch_brain_start_each` в classfile.rs по образцу patch_optimise_random_tick + verifier-гейт VerifyPatched + активация в randomtick.rs: define BrainOps в loader kernel'а => READY => retransform) + poll ноги#9 35187305900; затем F3-reads. INJECTS-ONLY: 0 sandbox boots
+
+## §129 ADDENDUM-114 — TASK-250 (agent-7625532f, 2026-09-17): F2 BYTE HOOK WIRED (S7-114) — Brain surgery + nested-first activation + HotSpot verifier gate VERIFY-OK (patched Brain + BrainOps trio co-linked); pair hunt: 5th honest reject, leg#10 in flight
+
+**F2 BYTE HOOK** (`classfile.rs::patch_brain_start_each`, образец patch_optimise_random_tick):
+- Тело `Brain.startEachNonRunningBehavior` (0x0002, vanilla len=178, stack=5 locals=12) заменено на **14-байтовую прямую строку**: `aload_0; getfield availableBehaviorsByPriority:Ljava/util/Map; aload_0; getfield activeActivities:Ljava/util/Set; aload_1 (ServerLevel); aload_2 (LivingEntity); invokestatic BrainOps.startEachNonRunning:(Ljava/util/Map;Ljava/util/Set;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)V; return` (1+3+1+3+1+1+3+1=14)
+- Без ветвлений => **ПУСТОЙ StackMapTable** (0 кадров); max_stack 5 (vanilla, >= 4 нужных слотов), max_locals 3 (this, level, entity); оба getfield — СВОИ private-поля внутри Brain.class => verifier-легально (JVMS access = class-identity), **helper БЕЗ Unsafe** (снимает весь Unsafe-шов F2-линзы на hot path)
+- Append-only CP + дедуп => patch(patch(x))==patch(x) (идемпотентность тестом); fail-closed: чужой класс/обрезанные байты => Err без паники (prefix-срезы 10/100/1000/10000/len-1 + garbage pool + оба не-Brain fixture)
+- Тесты: `f2_patch_roundtrip_verified` (REAL Brain fixture sha c08105a9… — совпадает с cfdump-источником §128; skeleton [2a b4 2a b4 2b 2c b8 b1]; операнды резолвятся ПО ИМЕНАМ: 2 Fieldref = Brain.availableBehaviorsByPriority/activeActivities, Methodref = BrainOps.startEachNonRunning; access 0x0002 сохранён; dump /tmp/ccrussty_patched_Brain.class) + idempotency + rejects; **cargo: 85 passed** (82 + 3 F2)
+
+**RUNTIME WIRING** (`src/brainhook.rs`, новый модуль; lib.rs: mod + register + activate):
+- register: register_bytes(BRAIN_CLASS) — READY/PATCHED-swap guard, patch fail-closed, маркер-цепочка
+- activate: poll find_class(Brain) (deadline 180s, force-load через Bukkit forName по area_map-образцу — Brain грузится при первом spawn моба на каждом буте; force = акселератор, не liveness) => define **В ТОЧНОМ порядке {BrainOps$IdKey, BrainOps$Snapshot, BrainOps}** в loader kernel'а — nested-FIRST: BrainOps$IdKey/Snapshot резолвятся лениво через defining loader BrainOps при первом snapshot(), kernel-classpath их не содержит => NoClassDefFoundError, если не определить заранее (parity-банк этот шов не exercising — plain classpath) => READY => retransform_class(Brain) => финальный маркер F2 ARMED/NOT APPLIED
+- Семантический self-test = CI-буты (санкционированы: каждый smoke с мобами гоняет patched body на живом AI; parity-контракт уже banked §128 — 4828 вызовов PASS на РЕАЛЬНОМ production entry)
+
+**HOTSPOT VERIFIER GATE** (`randomtick/verify_brain_patched.sh` + `randomtick/src-verify/VerifyBrain.java`):
+- Новый VerifyPatched-вариант воспроизводит РАНТАЙМ-топологию brainhook.rs: child-first loader = {patched Brain (31966B) + helper trio (IdKey 661B, Snapshot 1458B, BrainOps 5469B) — nested-first порядок, kernel-jar parent-first для всего остального (LivingEntity/ServerLevel/BehaviorControl резолвятся в те же kernel-классы — без dual-class hazards для assignability-проверок)}
+- resolveClass = link-time verification + preparation БЕЗ инициализации (нет <clinit>, нет мира, нет сущностей) => INJECTS-ONLY цел
+- => **VERIFY-OK linked=net.minecraft.world.entity.ai.Brain brain=31966B ops=5469B major=65** — только JVM-верификатор типов может доказать легальность байтов для major 65; байт-тесты форму не доказывают
+
+**ПАКЕТ-СТАТУС (§125 протокол, ничего не landится)**: F1 hook ✓ (S7-112) + F2 hook ✓ (S7-114) — оба wired, armed-по-буту, CI-exercised; следующая единица билда: **F3-reads** (task167 slices: reads batch 0.3-0.5% parity-banking), затем queue-drain (<=0.5%); signal-lens (1.5-2.5%) — ТОЛЬКО при bit-exact order-preserving доказательстве; потом ОДИН агрегатный A/B min-of-2 против банка пары 76.01/76.98 решает всё (pack <3% => всё REFUTED, ноль landed)
+
+**ПАРА #2 (все дискреты честные)**: нога#9 35187305900 SUCCESS+VALID но harness 6966037 ВНЕ окна [6273484,6529544] на **+6.7%** => честный discard по 2% правилу (5-й подряд честный reject: band×3 + window×2 — ворота строгие, ни одной ложной пары; bench не тратится: нога завершена и классифицирована); **нога#10 35189275270 dispatched in flight** (band [6870000,7030000], fp=4, state leg_b_state.json)
+
+**NEXT TICK**: F3-reads build (LevelTicks reads batch, parity-banking по §125) + poll ноги#10 35189275270 + F2/F1 CI-артефакты (маркер-цепочки в smoke-логах). INJECTS-ONLY: 0 sandbox boots (verify = link-time, define = класс-загрузка без init)
