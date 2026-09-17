@@ -1475,3 +1475,46 @@ in flight): финал в [6916007,7198293] ⇒ BASELINE COMPLETE ⇒ pack-фа�
 ВЕРДИКТНЫЙ ПОРОГ: pack median ≤ median(83.40, B2_mspt)×0.97 ≈ **80.9ms**
 (при B2≈83.4). runs_index +2. verdict_a1.py совместим (читает
 leg_b_v4.json). INJECTS-ONLY цел (0 sandbox boots).
+
+## §137 — S7-122 (TASK-258): BASELINE COMPLETE, РЕКОН БАГ#5, pack arm#1
+
+**Событие среды**: песочница стёрта полностью между тиками ($HOME, 3 repo,
+scripts/, creds) — восстановление из /tmp/my-project снапшота: bootstrap_tick.sh
+(токен запечён по директиве владельца 2026-09-17) + 3 клона; канонический
+стейт прочитан из репо (f97c84d). Урок подтверждён: token-baking спасает тик.
+
+**§125-A1 BASELINE COMPLETE**:
+- arm#1 = B1#6 35205343087 (pre-pack тег): FIXTURE-VALIDITY VALID, мир
+  afb3a0b3, MSPT avg 83.40, финал cpu 7057150 (S7-121 recycled).
+- arm#2 = B2 35209341660 (pre-pack тег): FIXTURE-VALIDITY VALID, мир
+  afb3a0b3, MSPT avg **83.51**, финал cpu **6996405** ∈ [6916007,7198293] —
+  первая нога, прошедшая drift-компенсированный band v4.1 с чистым финалом.
+- PACK WINDOW = [max(7057150,6996405)×0.98, min(...)×1.02] = **[6916007,
+  7136333]** (ширина 220k ≈ 3.1% — реальная, не вырожденная).
+- **ВЕРДИКТНЫЙ ПОРОГ** = median(83.40, 83.51)×0.97 = **80.95ms**.
+
+**РЕКОН БАГ#5 (v4.1 state machine, пойман live)**: main() pack-ветка
+требовала `pack_legs` truthy — на pack arm#1 (pack_legs=[]) упал в
+fresh-baseline ветку: пере-dispatch PRE-PACK ноги 35213099261 на тег,
+clobber pack state. Инспекция state после диспатча поймала (ref=pre-pac в
+логе диспатча — неверный ref для pack-фазы). Cancel 35213099261 pre-bench
+(~3 мин, 0 bench-стоимости). Фикс **v4.2**: pack-dispatch ветка =
+`(phase == "pack" AND run_id is None)` — arm#1 и arm#2 оба покрыты; ветка
+fresh-baseline недостижима из pack-фазы. leg_b_v4.json не пострадал.
+
+**verdict_a1.py extractor fix**: отрицательная проверка `FIXTURE-VALIDITY`
+[`not INVALID`] матчит CI-скрипт-литерал
+`echo "::error::BENCH-4 FIXTURE-VALIDITY: INVALID (...)"` — он присутствует
+в КАЖДОМ логе (failure-branch SOURCE всегда дампится) ⇒ valid=False на
+здоровых прогонах (замечено в --check на обеих baseline arms). Фикс:
+`valid = bool(re.search(r"\*\*FIXTURE-VALIDITY: VALID\*\*", txt))` —
+gate-семантика (`grep -q ... || exit 1`) делает позитивный маркер
+достаточным на успешном прогоне. --check зелёный: обе arms
+mspt/window/world/valid ✓.
+
+**PACK ARM#1 = 35213299343 in flight** (master f97c84d = FULL F1+F2+F3 pack
+kernel, drift band [6688594,7551675], финал = точное окно [6916007,7136333]).
+In-window финал ⇒ pack leg#1 banked ⇒ v4.2 автодиспатчит arm#2 ⇒ 2 ноги ⇒
+verdict_a1 ⇒ §125-A1 ВЕРДИКТ. F2/F3 smoke-маркеры (grep_markers.py) — на
+первой завершённой pack-ноге. runs_index +3 (B2 success, баг#5 cancel, pack
+arm#1 dispatch). INJECTS-ONLY цел (0 sandbox boots; cancel pre-bench не boot).

@@ -431,3 +431,32 @@
 > финал в окне ⇒ BASELINE COMPLETE ⇒ pack-фаза (master, тот же band-метод,
 > точное окно) ⇒ 2 in-window pack-ноги ⇒ **ВЕРДИКТ**: pack median ≤
 > median(83.40, B2_mspt)×0.97. Все owner-гейты целы. INJECTS-ONLY цел.
+
+> **СТАТУС 20 TPS (S7-122)**: **BASELINE COMPLETE + РЕКОН БАГ#5 + pack arm#1
+> в полёте.** Среда песочницы ПОЛНОСТЬЮ стёрта между тиками (3 repo,
+> scripts/, creds — всё отсутствовало) — восстановлено из /tmp-снапшота
+> (bootstrap_tick.sh с запечённым токеном спас: creds + 3 клона за один
+> прогон; c-crussty f97c84d, dev-logs TASK-257, CRUSSTY 1f4c06a нетронут).
+> (1) **B2 = 35209341660 IN-WINDOW SUCCESS**: pre-pack тег, FIXTURE-VALIDITY
+> VALID, мир afb3a0b3, MSPT avg **83.51**, финал cpu **6996405** ∈ окно
+> arm#1 [6916007,7198293] ⇒ §125-A1 BASELINE COMPLETE: arm#1 = B1#6
+> (35205343087, 83.40 @ 7057150), arm#2 = B2 (83.51 @ 6996405) ⇒ pack
+> window = [max×0.98, min×1.02] = **[6916007, 7136333]**; ВЕРДИКТНЫЙ ПОРОГ
+> = median(83.40, 83.51)×0.97 = **80.95ms** — pack median 2 in-window ног
+> ≤ 80.95 ⇒ LANDS, иначе REFUTED. (2) **БАГ#5 (state machine)**: v4.1
+> ветка pack-диспатча требовала pack_legs truthy ([]) ⇒ pack arm#1 упал
+> в fresh-baseline ветку и переdispатчил PRE-PACK ногу 35213099261 на
+> неверный ref, clobbered pack state — поймано инспекцией state, cancel
+> pre-bench (~3 мин, ноль bench-стоимости), state восстановлен из
+> leg_b_v4.json; фикс **v4.2**: pack-диспатч = (phase=pack AND run_id is
+> None) — покрывает arm#1 и arm#2. (3) **PACK ARM#1 = 35213299343
+> dispatched на master** (f97c84d, FULL F1+F2+F3 pack kernel, drift band
+> [6688594,7551675], финал = точное окно [6916007,7136333]) — poll
+> следующего тика: in-window ⇒ leg#1 banked ⇒ автодиспатч arm#2 ⇒ 2 ноги
+> ⇒ verdict_a1 ⇒ **§125-A1 ВЕРДИКТ**. (4) verdict_a1.py extracts fix:
+> CI-скрипт-литерал `echo "::error::... INVALID"` в КАЖДОМ логе ронял
+> valid-флаг (False на здоровых прогонах) — фикс: позитивный маркер
+> `- **FIXTURE-VALIDITY: VALID**` достаточен (grep-q gate семантика).
+> Пайплайн --check зелёный: обе arms mspt/window/world/valid ✓. F2/F3
+> маркеры — на первой завершённой pack-ноге. INJECTS-ONLY цел (0 sandbox
+> boots; cancel не boot).

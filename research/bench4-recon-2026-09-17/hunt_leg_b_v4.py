@@ -1,5 +1,13 @@
 #!/usr/bin/env python3
-"""hunt_leg_b.py v4.1 — §125-AMENDMENT-1: slow-track baseline+pack hunt.
+"""hunt_leg_b.py v4.2 — §125-AMENDMENT-1: slow-track baseline+pack hunt.
+
+v4.2 FIX (recon bug#5, S7-122): v4.1 main() dispatch branch required
+`st.get("pack_legs")` truthy — the PACK ARM#1 case (phase=pack, run_id=None,
+pack_legs=[]) fell through to the fresh-baseline branch and re-dispatched a
+pre-pack leg, CLOBBERING the pack state (caught live S7-122: run
+35213099261 dispatched on the wrong ref, cancelled, state restored from
+leg_b_v4.json). Fix: pack dispatch keyed on (phase=pack AND run_id is None),
+covering both arm#1 (pack_legs=[]) and arm#2 (pack_legs=[leg1]).
 
 v4.1 FIX (recon bug#4, S7-121): the band gate samples harness cpu at ~30s,
 but the pairing law pairs on the FINAL run-env cpu — measured drift between
@@ -259,8 +267,9 @@ def main():
         return code
 
     # no state -> dispatch next leg (phase-dependent)
-    if st and st.get("phase") == "pack" and st.get("pack_legs"):
-        # pack arm #2 dispatch with stored window (drift-compensated band)
+    # v4.2: keyed on run_id is None so pack ARM#1 (pack_legs=[]) also lands here
+    if st and st.get("phase") == "pack" and st.get("run_id") is None:
+        # pack arm #1/#2 dispatch with stored window (drift-compensated band)
         lo, hi = st["win_lo"], st["win_hi"]
         b_lo, b_hi = band_for(lo, hi)
         rid = dispatch(tok, "master", b_lo, b_hi)
