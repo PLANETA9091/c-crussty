@@ -1545,3 +1545,23 @@ Stage Summary:
 - Ценз закрыт: впервые в истории проекта есть истинная карта чёрна по байтам; 66% (movement-геометрия + inside-blocks) концентрируется на per-entity-per-tick путях checkInsideBlocks/updateFluidHeight/collidedWithFluid — тех же, что гонят топ-1 CPU-функцию PalettedContainer.get; S7-135 = STEP-0 javap-контракт → мемоизация с event-driven dirty-флагом (Δpos=0 + ревизия секции) → офлайн-харнесс → диспатч leg #1
 
 RUN_ID_ABSORBED: **35275967738** (master 662738e; runs_index S7-134 rows)
+
+---
+## S7-135 (TASK-271) — 2026-09-18 07:3x +08 — ARCH-ATTACK рычаг #3 INSIDE-CACHE: мемоизация inside-blocks/fluid discovery, офлайн ALL PASS, диспатч leg #1 35282003292
+
+**Task ID: S7-135 (Job 393012)**, Agent: agent-7625532f (session web-f7888d46)
+
+Work Log:
+- bootstrap + 3x pull (up-to-date; хвост S7-134b cb64a9b) → GOAL хвост (S7-134b: ценз 66% чёрна на inside-blocks+movement, очередь рычагов) → worklog/CLAIMS (след. TASK-271) → STEP-0
+- STEP-0 javap-контракт (материализованное ядро /tmp/pdec/matsrv): checkInsideBlocks(List,Collector) — гейт isAffectedByBlocks offset 1 единственный; визитор lambda$checkInsideBlocks$2 декодирован до ветвей (hitShape/inFluid/effectful/intersected, block+fluid ветви, budgets); applyEffectsFromBlocks: collector = ПОЛЕ insideEffectCollector (не per-tick); ванила делает 2 traversal/тик на статике (вторая = visitedBlocks-дюпы); isAffectedByBlocks публичный; visitedBlocks — только семейство checkInsideBlocks
+- Дизайн: ЕДИНСТВЕННЫЙ 3B→3B ретаргет isAffectedByBlocks→InsideBlockOps.gate(Entity)Z (обход приватного тела: нестатика → return e.isAffectedByBlocks()); bridge gate/HIT/REPLAY/MIRROR + capture в плоские примитивные слоты 131072×12; collector через Unsafe.objectFieldOffset (ARMED fail-closed); лов identity-форка загрузчика в харнессе обойдён (define-only дисциплина S7-133)
+- Имплементация: entityinside/InsideBlockOps.java (+$Recorder), scripts/build_inside_block_ops.sh (javac --release 21 против ядра+joml), classfile.rs patch_inside_cache (+utf8-guard), src/inside_cache.rs (ONE target, TWO ops classes), lib.rs wiring; env CRUSSTY_INSIDE_CACHE + run_world3.sh + workflow inside_cache
+- Офлайн-верификация: rust 106 ✓ (5 новых на Entity_real.class); JVM-харнесс INSIDE-CACHE OFFLINE PASS (structural 205522B, wiring, ARMED=true, Recorder, массивы) → research/inside-cache-2026-09-18/
+- Диспатч leg #1: run 35282003292 (master 1bd7f52; inside_cache=1 vs база-ценз 35275967738); preregistered гейты в dispatch_s7135.py
+- Учёт: §156, INDEX 277, GOAL S7-135, CLAIMS TASK-271, этот worklog; runs_index row (my-project)
+- CRUSSTY pristine не тронут; INJECTS-ONLY цел (0 sandbox boots; 1 CI-бут leg #1)
+
+Stage Summary:
+- Рычаг #3 готов и верифицирован офлайн: единственный length-preserving ретаргет + мост с replay ванильных вызовов (кэшируются вызовы, не результаты) + capture в примитивные слоты; диспатч leg #1 в полёте; абсорб в этом же тике по preregistered гейтам (аллок-семьи ↓30/25%, PalettedContainer.get ↓15%, young GC ↓)
+
+RUN_ID_DISPATCHED: **35282003292** (master 1bd7f52, X150K inside_cache=1; runs_index S7-135 row)
