@@ -24,3 +24,9 @@ bench/dirtyrate/RAW_*/
 bench/dirtyrate/SMOKE_*/
 bench/p501_sidesurface/classes/
 bench/p501_sidesurface/logs/
+
+# S7-128: raw async-profiler collapsed stacks / flamegraphs are 100-152MB —
+# GitHub hard-limit; they live on local disk only, distilled evidence goes to
+# BOTTLENECKS_3.md / ledger.
+research/**/run-*/**-collapsed.txt
+research/**/run-*/**flamegraph*.html

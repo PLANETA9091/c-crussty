@@ -1329,3 +1329,19 @@ Stage Summary:
 - Эра X150K открыта: сцена-прайм (все чанки + 150k живых сущностей), архитектурные бусты по ВСЕМ бутылочным горлышкам, русский язык коммуникации
 - Next tick: population fixture MVP (инъекция 10k smoke) → 150k масштаб → перебаза → ARCH-ATTACK; ответ владельцу по-русски с вопросами юнита x150000 и числа игроков
 - INJECTS-ONLY цел (0 sandbox boots; cancel 202 — не boot)
+
+---
+## S7-128 (TASK-264) — 2026-09-17 ~21:5x tick — Крон изменён (владелец) + юнит x150000 уточнён владельцем + ARCH-ATTACK #1: guard-wave wave-1 ARMED в bench-паке
+
+- Старт: creds → 3x pull (все up-to-date) → GOAL хвост (S7-127: вердикт §125-A1 LANDS −4.52%, owner redirect зафиксирован).
+- **Owner live (рус)**: «смотри на боттлнеки и сделай чтобы они не нагружали; 20 тпс и минимальный мспт, всё как в ваниле (измени крон)»; «x150000 = к скорости выполнения какой-то функции из боттлнеков топ-1 по использованию»; «всем похуй на набор и вердикт уже твой» ⇒ DRAFT v1 «150k сущностей» refuted; вердикт делегирован агенту; крон сменить.
+- **КРОН**: Job 390768 удалён (чартер застрял в S7-96 — 30+ тиков stale); создан **Job 393012 c-crussty-module-loop-v4-arch-attack** (0 8/35 * * * ?, Asia/Shanghai, priority 10) — архитектурный чартер по-русски, состояние НЕ вшито (истина = GOAL+worklog).
+- **Топ-1 вердикт (мой)**: PalettedContainer.get 3.62% (топ-1 leaf, min-of-2 стабильна); декод-кэш секций refuted by economics (~7GB / микро-win класс) ⇒ атака = устранение избыточной перекопутации (guard/dirty-флаги).
+- **ARCH-ATTACK #1 внедрён**: guard-wave wave-1 (TASK-80 same-state fluid-push guard, hit-rate 96.4% live-verified, до сих пор gate-off) — ARMED на bench default: run_world3.sh (FLUID_GUARD=1 default → export CRUSSTY_FLUID_PUSH_GUARD + run-env self-doc + оверрайд 0), world-bench.yml (input fluid_guard default '1' + env). Гард стал частью измеряемого пака; банк §125 — историческая запись.
+- **Верификационный ран диспатчен**: master, fp=4, summon_sweeps=1, fluid_guard=1, 900s — id ниже (absorb S7-129: маркер armed + профиль-коллапс updateFluidHeightAndDoFluidPushing).
+- Спека: BENCH_X150K_SCENARIO.md DRAFT v2 (юнит исправлен по владельцу; ЗАПРОС-пункты сняты вердиктом агента).
+- Артефакты: GOAL S7-128; §143; INDEX 264; CLAIMS TASK-264; этот worklog; локальный worklog.
+- NEXT S7-129: absorb рана; wave-2 STEP-0 (checkInsideBlocks/flushStep); X150K population fixture MVP (10k smoke); свежий профиль ⇒ ARCH-ATTACK очередь.
+- INJECTS-ONLY: 0 sandbox boots (CI-буты санкционированы).
+
+RUN_ID_DISPATCHED: (записан в runs_index.jsonl — /home/z/my-project/scripts/bench4_recon/)
