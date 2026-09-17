@@ -916,3 +916,18 @@ Work Log:
 
 Stage Summary:
 - ИНЖЕНЕРНОЕ СОСТОЯНИЕ ЧЕСТНОЕ: в рамках текущих правил модульных рычагов >=3% на профиле НЕТ (подтверждено на N=4 min-of-2 и N=16). Пути вперёд owner-gated: семейные агрегаты (санкция на пересмотр гейта), pinned runner (проверка контеншн-гипотезы), смена сценария. Модуль = полный стек bench-4 фикстуры + min-of-2 база + трижды подтверждённая соло-карта профиля
+---
+Task ID: S7-105 (infra tick, 08:43+08, Job 390768) — PAIR-HUNTER infrastructure (task171): legal min-of-2 pairing without owner hardware
+Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609170843)
+Task: stale-charter tick per latest state — solo-map closed (thrice-confirmed); this tick = infra lever from pre-registered path (3)
+
+Work Log:
+- bootstrap + pulls: no remote movement (c-crussty 3f46505 = own S7-103/104 push; CRUSSTY pristine untouched); no runs in flight
+- task171 PAIR-HUNTER (self-served pairing per S7-96d law, pre-registered path 3): bench/world3/pair_hunter.py — dispatch->poll->scrape run-env из workflow log (cpu_idx уже эхо-печатаются harness'ом с S7-99) -> index cache (runs_index.jsonl, копится меж тиками) -> pair rule (world_sha MATCH + fp MATCH + fixture VALID + |cpu_idx delta|<=2%); smoke-tested --no-dispatch: 19 исторических ран indexed, 0 пар (все cpu_idx различаются — ожидаемо; преран#17 логи не содержат run-env echo — добавлено в S7-99)
+- world-bench.yml: + inputs cpu_band_min/cpu_band_max + FAIL-FAST calibration step (тот же LCG-loop 6M, проверка банды ДО чекаута CRUSSTY/world-download — out-of-band ран умирает за ~30с вместо 25мин); YAML validated; честная семантика: банда = coarse pre-filter, КЛЮЧ ПАРИНГА = harness cpu_idx (run-env.txt) ±2%
+- pair_hunter.py: --band-min/--band-max передаются в dispatch inputs
+- DISPATCH attempt: 422 (inputs ещё не на master) — после push деспатчен band-gated probe run20 (band 8636000-9525000 вокруг run#17 cpu_idx 9080657 ±5%, fp=4) — absorb next tick
+- INJECTS-ONLY: 0 sandbox boots
+
+Stage Summary:
+- Инфраструктура честных A/B теперь самодостаточна: band-gated fast-fail + log-scrape индекс + 2% pairing rule. Следующий модульный рычаг (когда появится) получит легальный min-of-2 без owner-hardware. Pairing probe run20 in flight

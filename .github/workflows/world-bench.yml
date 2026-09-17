@@ -43,6 +43,14 @@ on:
         description: 'BENCH-4 fake players N (0 = bench-3 no-player mode; 4 = owner-scenario fixture)'
         required: false
         default: '0'
+      cpu_band_min:
+        description: 'Pair-hunter fast-fail: min runner_cpu_index band (empty = no gate; S7-96d law pairing infra)'
+        required: false
+        default: ''
+      cpu_band_max:
+        description: 'Pair-hunter fast-fail: max runner_cpu_index band (empty = no gate)'
+        required: false
+        default: ''
       natives_url:
         description: 'Closed-source natives tar.gz (empty = hotpatch-only mode)'
         required: false
@@ -62,6 +70,22 @@ jobs:
     steps:
       - name: Checkout c-crussty (module)
         uses: actions/checkout@v4
+
+      - name: Runner calibration band gate (pair-hunter fast-fail, S7-96d pairing law)
+        if: inputs.cpu_band_min != '' && inputs.cpu_band_max != ''
+        run: |
+          set -euo pipefail
+          IDX=$(python3 -c '
+          import time
+          t=time.time(); x=1
+          for _ in range(6000000):
+              x=(x*1103515245+12345)&0x7fffffff
+          print(f"{6000000/(time.time()-t):.0f}")')
+          echo "runner_cpu_index=$IDX band=[${{ inputs.cpu_band_min }},${{ inputs.cpu_band_max }}]"
+          if [ "$IDX" -lt "${{ inputs.cpu_band_min }}" ] || [ "$IDX" -gt "${{ inputs.cpu_band_max }}" ]; then
+            echo "::notice::runner_cpu_index=$IDX OUTSIDE band — fast-fail pre-download (pairing discard, not a bench failure)"
+            exit 1
+          fi
 
       - name: Checkout CRUSSTY (engine runtime)
         uses: actions/checkout@v4
