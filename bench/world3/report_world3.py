@@ -465,14 +465,20 @@ elif seen_done == "1":
     lines.append("")
     lines.append("- GC: gc.log missing or no pause lines parsed")
 
+ALLOC_UNIT_NOTE = "alloc-event weights = ALLOCATED BYTES (async-profiler alloc event); samples are byte-weighted"
 for label, prof, topn in (("CPU", cpu, 40), ("WALL", wall, 20), ("ALLOC", alloc, 20)):
     if not prof:
         continue
     total = prof["total"]
+    is_alloc = label == "ALLOC"
+    unit_hdr = "alloc bytes" if is_alloc else "self-time samples"
     lines.append("")
-    lines.append(f"### {label} profile — self-time by research bucket (total samples {total})")
+    lines.append(f"### {label} profile — self-time by research bucket (total {unit_hdr}: {total})")
+    if is_alloc:
+        lines.append("")
+        lines.append(f"- {ALLOC_UNIT_NOTE}")
     lines.append("")
-    lines.append("| bucket | self-time samples | share |")
+    lines.append(f"| bucket | {unit_hdr} | share |")
     lines.append("|---|---|---|")
     for name, n in prof["bucket_self"].most_common(20):
         share = (100.0 * n / total) if total else 0.0
@@ -480,7 +486,7 @@ for label, prof, topn in (("CPU", cpu, 40), ("WALL", wall, 20), ("ALLOC", alloc,
     lines.append("")
     lines.append(f"### {label} profile — tick-phase split (stack ancestry, leaf-first)")
     lines.append("")
-    lines.append("| phase | self-time samples | share |")
+    lines.append(f"| phase | {unit_hdr} | share |")
     lines.append("|---|---|---|")
     for name, n in prof["phase_self"].most_common(14):
         share = (100.0 * n / total) if total else 0.0
@@ -493,9 +499,9 @@ for label, prof, topn in (("CPU", cpu, 40), ("WALL", wall, 20), ("ALLOC", alloc,
     lines.append(f"**JVM-vs-native split (leaf self-time):** JVM-Java **{j}** ({100.0*j/total:.1f}%) · "
                  f"native/JVM-internal **{nn}** ({100.0*nn/total:.1f}%) · other **{o}** ({100.0*o/total:.1f}%)")
     lines.append("")
-    lines.append(f"### {label} profile — top-{topn} leaf frames by self-time")
+    lines.append(f"### {label} profile — top-{topn} leaf frames by {'alloc bytes' if is_alloc else 'self-time'}")
     lines.append("")
-    lines.append("| leaf frame | kind | samples | share |")
+    lines.append(f"| leaf frame | kind | {'bytes' if is_alloc else 'samples'} | share |")
     lines.append("|---|---|---|---|")
     for frame, n in prof["top_self"].most_common(topn):
         share = (100.0 * n / total) if total else 0.0
@@ -529,13 +535,24 @@ if cpu:
             lines.append(f"| `{frame}` | {n} | {100.0*n/cpu['total']:.2f}% |")
 # F2 — allocation profile top sites + GC-based MB/s estimate
 if alloc:
-    lines.append("- **F2 allocation profile (top-10 sites by alloc-event samples; "
-                 "interval-relative shares):**")
+    lines.append("- **F2 allocation profile (top-10 sites by alloc bytes; alloc-event weights = allocated bytes):**")
     lines.append("")
-    lines.append("| alloc site | samples | share |")
+    lines.append("| alloc site | bytes | share |")
     lines.append("|---|---|---|")
     for frame, n in alloc["top_self"].most_common(10):
         lines.append(f"| `{frame}` | {n} | {100.0*n/alloc['total']:.1f}% |")
+    # S7-134: alloc-churn rate needs the alloc window length (run-env.txt `seconds:`,
+    # written since S7-134; window = last 20% of the soak). Absent in old artifacts -> skip.
+    _env_path = os.path.join(work, "run-env.txt")
+    _m_sec = None
+    if os.path.exists(_env_path):
+        _m_sec = re.search(r"^seconds: (\d+)", open(_env_path, encoding="utf-8", errors="replace").read(), re.M)
+    if _m_sec:
+        _win_s = max(int(_m_sec.group(1)) * 20 // 100, 1)
+        _mbs = alloc["total"] / _win_s / (1024.0 * 1024.0)
+        _gb = alloc["total"] / (1024.0 ** 3)
+        lines.append(f"- **F2 alloc-churn rate:** ~{_mbs:.0f} MB/s over the {_win_s}s alloc window "
+                     f"(total {_gb:.1f} GB allocated in window; ap alloc default interval)")
 if gc and gc["events"]:
     lines.append(f"- **F2 GC-churn estimate:** {gc['events']} pauses / total {gc['total_ms']:.0f} ms STW "
                  f"(see GC section above; MB/s needs region-size constants — wired next tick)")
