@@ -85,6 +85,12 @@ fn enabled() -> bool {
     workers_from_env().is_some()
 }
 
+/// S7-160 (batch_collector): composition probe — the only swap site lives
+/// in RegionTickOps.tickBucket, so the lever requires region_threads >= 2.
+pub fn workers_from_env_pub() -> Option<i64> {
+    workers_from_env()
+}
+
 static READY: AtomicBool = AtomicBool::new(false);
 static BRIDGE_READY: AtomicBool = AtomicBool::new(false);
 static KERNEL_LOADER: AtomicUsize = AtomicUsize::new(0);
