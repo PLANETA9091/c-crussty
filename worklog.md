@@ -1871,3 +1871,24 @@ Stage Summary:
 RUN_ID_DISPATCHED: ALLOC-DIET 35328228929 (head 59b6bbb, in_progress 09:11:24 UTC); поглощён FLUID-FREE 35326295881
 
 ---
+---
+## S7-149 (ARCH-ATTACK) — 2026-09-18 17:2x-17:4x +08 — ALLOC-DIET leg ABSORB (35328228929): REFUTED (повтор S7-133b на валидной базе, дефолт 0 подтверждён); ИТОГ КОНВЕЙЕРА: GREEN=INSIDE-CACHE+FLUSH-DIET, REFUTED=FLUID-FREE+DEMUX/ALLOC-DIET; НАКОПИТЕЛЬНЫЙ РАН диспатчен (35330129145)
+
+**Task ID: S7-149 (Job 394666, тик 17:08, докрутка)**, Agent: agent-7625532f
+
+Work Log:
+- ALLOC-DIET leg (35328228929, head 59b6bbb, alloc_diet=1, остальные 0, fp4/300s) SUCCESS 09:11:24→09:27:04 UTC; артефакт 28MB скачан (run-s7149-allocdiet)
+- Валидность: INJECT VALID; популяция 148321/148314/148103 стабильна; 0 NCDFE; ARMED полна живьём (defined EntityQueryOps → LivingEntity 186570→186759 Retargeted{1} + CollisionUtil 45439→45546 Retargeted{1} → serve оба); kernel e2992d63
+- Гейты FAIL: alloc-семьи +3..14% (movement-geom +13.7%, Vec3 +5.8% — диета не видна в листьях), total alloc +4.2%, young GC +13.6% (гейт S7-133 ↓≥10% провален), TPS 0.6–0.7 (−12%) — invokestatic-оверхед мостов на push/collision горячих путях без компенсации
+- Вердикт: ALLOC-DIET REFUTED (повторное подтверждение S7-133b на валидной базе base-b + чистый протокол S7-148); дефолт 0 подтверждён; код банкуется (OFFLINE PASS/101 тест в силе); wave-2 (LazyEntityCollisionContext) НЕ продолжается — экономика закрыта дважды
+- ИТОГ КОНВЕЙЕРА РЫЧАГОВ ЭРЫ: INSIDE-CACHE GREEN-BY-SAFETY (alloc −32.5%/−35.9%, TPS нейтрально) + FLUSH-DIET GREEN (flushStep −100%) — зелёные; FLUID-FREE+DEMUX REFUTED-BY-ECONOMICS (лейн 1.8% CPU, TPS −20%); ALLOC-DIET REFUTED
+- ДИСПАТЧ НАКОПИТЕЛЬНОГО РАНА: 35330129145 (head dbb5e8e, inside_cache=1+flush_diet=1, demux=0, fluid_free=0, alloc_diet=0, fp4/300s, 09:33:13 UTC; ожидание: alloc-эффекты складываются, 0 NCDFE, популяция стабильна, TPS ≥ базы); dispatch_s7149b.py забанкован
+- Артефакты: ABSORB_S7149.md + run-s7149-allocdiet/{BOTTLENECKS_3, alloc-collapsed(f), gc.log, run-env, sha256_allocdiet_extras}; runs_index row 296; CLAIMS TASK-287; INJECTS-ONLY цел
+
+Stage Summary:
+- Конвейер 4 рычагов эры полностью абсорблен на валидной измерительной базе: 2 зелёных (в накопительный ран), 2 refuted (экономика закрыта с повторами)
+- Накопительный ран в полёте → итоговый вердикт эры по комбинации зелёных рычагов
+
+RUN_ID_DISPATCHED: CUMULATIVE 35330129145 (head dbb5e8e, in_progress 09:33:13 UTC); поглощён ALLOC-DIET 35328228929
+
+---
