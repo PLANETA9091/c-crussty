@@ -59,7 +59,7 @@ const SERVER_LEVEL: &str = "net/minecraft/server/level/ServerLevel";
 const CALLBACKS_CLASS: &str = "net/minecraft/server/level/ServerLevel$EntityCallbacks";
 const LEVEL_CLASS: &str = "net/minecraft/world/level/Level";
 const CHUNKMAP_CLASS: &str = "net/minecraft/server/level/ChunkMap";
-const MTH_CLASS: &str = "net/minecraft/util/Mth";
+const ENTITY_CLASS: &str = "net/minecraft/world/entity/Entity";
 const OPS_CLASS: &str = "net/minecraft/world/entity/RegionTickOps";
 const OPS_INNER_CLASS: &str = "net/minecraft/world/entity/RegionTickOps$Mut";
 const TRACKER_OPS_CLASS: &str = "net/minecraft/server/level/TrackerTickOps";
@@ -145,7 +145,7 @@ static TARGET_SL: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
 static TARGET_CB: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
 static TARGET_LV: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
 static TARGET_CM: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
-static TARGET_MTH: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
+static TARGET_ENTITY: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
 
 fn sl_target() -> &'static Target {
     TARGET_SL.get_or_init(|| Target::new(SERVER_LEVEL))
@@ -159,8 +159,8 @@ fn lv_target() -> &'static Target {
 fn cm_target() -> &'static Target {
     TARGET_CM.get_or_init(|| Target::new(CHUNKMAP_CLASS))
 }
-fn mth_target() -> &'static Target {
-    TARGET_MTH.get_or_init(|| Target::new(MTH_CLASS))
+fn entity_target() -> &'static Target {
+    TARGET_ENTITY.get_or_init(|| Target::new(ENTITY_CLASS))
 }
 
 pub fn bridge_ready() -> bool {
@@ -274,8 +274,8 @@ pub fn register() {
         cached.map(|c| c.to_vec())
     });
     // Hook 5: Mth (S7-158d serialized UUID seeding site in the Entity ctor).
-    cplug_sdk::hooks::register_bytes(MTH_CLASS, |_name, bytes| {
-        let t = mth_target();
+    cplug_sdk::hooks::register_bytes(ENTITY_CLASS, |_name, bytes| {
+        let t = entity_target();
         if !READY.load(Ordering::Relaxed) {
             eprintln!(
                 "[crussty-plugin] region_threads: pristine sighting {} {} bytes",
@@ -309,7 +309,7 @@ pub fn activate() {
         let cb = cb_target();
         let lv = lv_target();
         let cm = cm_target();
-        let mth = mth_target();
+        let ent = entity_target();
 
         // ServerLevel loads during server bootstrap (before the first level).
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(180);
@@ -438,7 +438,7 @@ pub fn activate() {
 
         // Pristine bytes for all five targets (hook stash or no-op
         // retransform).
-        for t in [sl, cb, lv, cm, mth] {
+        for t in [sl, cb, lv, cm, ent] {
             if !t.orig_is_some() {
                 eprintln!(
                     "[crussty-plugin] region_threads: {} predates hook, capturing via no-op retransform",
@@ -592,8 +592,8 @@ pub fn activate() {
         });
 
         // S7-158d: serialized UUID seeding (Entity ctor call site).
-        let Some(mth_orig) = mth.take_orig() else { return };
-        let (mth_patched, mth_outcome) = match crate::classfile::patch_region_rng_entity(&mth_orig)
+        let Some(ent_orig) = ent.take_orig() else { return };
+        let (ent_patched, ent_outcome) = match crate::classfile::patch_region_rng_entity(&ent_orig)
         {
             Ok(pair) => pair,
             Err(e) => {
@@ -604,25 +604,25 @@ pub fn activate() {
             }
         };
         if !matches!(
-            mth_outcome,
+            ent_outcome,
             crate::classfile::RetargetOutcome::Retargeted { sites: 1 }
         ) {
             eprintln!(
-                "[crussty-plugin] region_threads: Entity strict site-count violated ({mth_outcome:?}), hook stays dormant"
+                "[crussty-plugin] region_threads: Entity strict site-count violated ({ent_outcome:?}), hook stays dormant"
             );
             return;
         }
-        let mth_major = crate::improved_noise::class_version(&mth_orig)
+        let ent_major = crate::improved_noise::class_version(&ent_orig)
             .map(|(m, _)| m)
             .unwrap_or(0);
-        let (mth_len, mth_len_patched) = (mth_orig.len(), mth_patched.len());
-        mth.set_patch(PatchCache {
-            bytes: Arc::from(mth_patched),
-            major: mth_major,
+        let (ent_len, ent_len_patched) = (ent_orig.len(), ent_patched.len());
+        ent.set_patch(PatchCache {
+            bytes: Arc::from(ent_patched),
+            major: ent_major,
         });
 
         eprintln!(
-            "[crussty-plugin] region_threads: computed patches (ServerLevel {sl_len} -> {sl_len_patched} bytes {sl_outcome:?}; EntityCallbacks {cb_len} -> {cb_len_patched} bytes add={cb_out_add:?} remove={cb_out_rem:?}; Level {lv_len} -> {lv_len_patched} bytes {lv_outcome:?}; ChunkMap {cm_len} -> {cm_len_patched} bytes {cm_outcome:?}; Entity {mth_len} -> {mth_len_patched} bytes {mth_outcome:?})"
+            "[crussty-plugin] region_threads: computed patches (ServerLevel {sl_len} -> {sl_len_patched} bytes {sl_outcome:?}; EntityCallbacks {cb_len} -> {cb_len_patched} bytes add={cb_out_add:?} remove={cb_out_rem:?}; Level {lv_len} -> {lv_len_patched} bytes {lv_outcome:?}; ChunkMap {cm_len} -> {cm_len_patched} bytes {cm_outcome:?}; Entity {ent_len} -> {ent_len_patched} bytes {ent_outcome:?})"
         );
 
         // Single READY flip, then retransform all five classes once.
@@ -636,9 +636,9 @@ pub fn activate() {
         let rc_cb = cplug_sdk::retransform_class(cb.name);
         let rc_lv = cplug_sdk::retransform_class(lv.name);
         let rc_cm = cplug_sdk::retransform_class(cm.name);
-        let rc_mth = cplug_sdk::retransform_class(mth.name);
+        let rc_ent = cplug_sdk::retransform_class(ent.name);
         eprintln!(
-            "[crussty-plugin] region_threads: ARMED, retransform rc ServerLevel={rc_sl} EntityCallbacks={rc_cb} Level={rc_lv} ChunkMap={rc_cm} Entity={rc_mth}"
+            "[crussty-plugin] region_threads: ARMED, retransform rc ServerLevel={rc_sl} EntityCallbacks={rc_cb} Level={rc_lv} ChunkMap={rc_cm} Entity={rc_ent}"
         );
     });
 }
