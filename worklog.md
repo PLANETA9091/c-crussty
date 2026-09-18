@@ -1660,3 +1660,39 @@ Stage Summary:
 - БЛОКЕР (6-й тик): creds/bootstrap_tick.sh нет — push 4 коммитов + 4 диспатча мгновенны по восстановлении; владельцу: восстановить bootstrap_tick.sh (baked token)
 
 RUN_ID_DISPATCHED: NONE (CREDS-BLOCKED 6-й тик; runs_index row 283 local)
+---
+## S7-141 (ARCH-ATTACK) — 2026-09-18 11:1x +08 — ДИСПАТЧ-РЕПЕТИЦИЯ: wiring/inputs/гейты/банки/rust-регресс ВСЕ ЗЕЛЁНЫЕ — READY-TO-DISPATCH; CREDS-BLOCKED 7-й тик
+
+**Task ID: S7-141 (Job 393012, тик 11:08)**, Agent: agent-7625532f (session web-f7888d46)
+
+Work Log:
+- bootstrap_tick.sh ОТСУТСТВУЕТ (7-й тик CREDS-BLOCKED); 3x pull --rebase: c-crussty/c-dist/CRUSSTY up-to-date (head 655a95b, 5 коммитов ждут push); канон: GOAL-хвост S7-140 — накопительная инженерия 6-го рычага по вердикту ВРЕДНА, поэтому тик = аудит готовности критического пути (диспатч-репетиция)
+- Wiring-аудит: bench/world3/run_world3.sh — 6 env-флагов wired (GUARD/DEMUX/ALLOC_DIET/INSIDE_CACHE/FLUSH_DIET/FLUID_FREE), default 0 fail-closed, FLUID_FREE WARN требует DEMUX=1; .github/workflows/world-bench.yml — 13 inputs wired (вкл. pairing cpu_band_min/max, server_xmx, natives_url, concurrency world-bench-3)
+- Гейт-аудит: preregistered-комплекты 4 legs в каноне — §156 INSIDE-CACHE, §S7-138 FLUSH-DIET, §S7-139 FLUID-FREE, ALLOC-DIET (dispatch_s7134)
+- sha256-аудит банков: inside-cache 4/4 ✓, flush-diet 3/3 ✓, fluid-free 5/5 ✓, alloc-diet 2/2 ✓; paletted-demux 3/5 — два «расхождения» = исторические записи pre-S7-131-FIX (классы пересобраны eec4b6e «ре-эмбед», актуальные записи совпадают) — НЕ порча; пробел дисциплины зафиксирован: PalettedContainerOps.class пересобран без новой append-only записи
+- Rust-регресс на head: cargo test --release = 121 passed, 0 failed, 1 ignored — консистентность rust-образа и классов подтверждена
+- Учёт: GOAL СТАТУС S7-141, worklog этот, runs_index row 284 (локально), коммит локальный; CRUSSTY pristine не тронут; INJECTS-ONLY цел (0 boots)
+
+Stage Summary:
+- Конвейер диспатча ПРОВЕРЕН ПО ВСЕМ ШВАМ и READY-TO-DISPATCH: при восстановлении creds мгновенно — push 5 коммитов (b98915a/e5cff9a/f16b215/91fcd70/655a95b) → leg #2' INSIDE-CACHE (X150K, inside_cache=1, base 35275967738, §156) → FLUSH-DIET leg → FLUID-FREE leg (demux=1) → ALLOC-DIET leg → absorb-вердикты
+- БЛОКЕР (7-й тик): creds нет; владельцу — восстановить bootstrap_tick.sh (baked token)
+
+RUN_ID_DISPATCHED: NONE (CREDS-BLOCKED 7-й тик; runs_index row 284 local)
+---
+## S7-141 (ARCH-ATTACK) — 2026-09-18 11:1x +08 — ДИСПАТЧ-РЕПЕТИЦИЯ: wiring/inputs/гейты/банки/rust-регресс ВСЕ ЗЕЛЁНЫЕ — READY-TO-DISPATCH; CREDS-BLOCKED 7-й тик
+
+**Task ID: S7-141 (Job 393012, тик 11:08)**, Agent: agent-7625532f (session web-f7888d46)
+
+Work Log:
+- bootstrap_tick.sh ОТСУТСТВУЕТ (7-й тик CREDS-BLOCKED); 3x pull --rebase: c-crussty/c-dist/CRUSSTY up-to-date (head 655a95b, 5 коммитов ждут push); канон: GOAL-хвост S7-140 — накопительная инженерия 6-го рычага по вердикту ВРЕДНА, поэтому тик = аудит готовности критического пути (диспатч-репетиция)
+- Wiring-аудит: bench/world3/run_world3.sh — 6 env-флагов wired (GUARD/DEMUX/ALLOC_DIET/INSIDE_CACHE/FLUSH_DIET/FLUID_FREE), default 0 fail-closed, FLUID_FREE WARN требует DEMUX=1; .github/workflows/world-bench.yml — 13 inputs wired (вкл. pairing cpu_band_min/max, server_xmx, natives_url, concurrency world-bench-3)
+- Гейт-аудит: preregistered-комплекты 4 legs в каноне — §156 INSIDE-CACHE, §S7-138 FLUSH-DIET, §S7-139 FLUID-FREE, ALLOC-DIET (dispatch_s7134)
+- sha256-аудит банков: inside-cache 4/4 ✓, flush-diet 3/3 ✓, fluid-free 5/5 ✓, alloc-diet 2/2 ✓; paletted-demux 3/5 — два «расхождения» = исторические записи pre-S7-131-FIX (классы пересобраны eec4b6e «ре-эмбед», актуальные записи совпадают) — НЕ порча; пробел дисциплины зафиксирован: PalettedContainerOps.class пересобран без новой append-only записи
+- Rust-регресс на head: cargo test --release = 121 passed, 0 failed, 1 ignored — консистентность rust-образа и классов подтверждена
+- Учёт: GOAL СТАТУС S7-141, worklog этот, runs_index row 284 (локально), коммит локальный; CRUSSTY pristine не тронут; INJECTS-ONLY цел (0 boots)
+
+Stage Summary:
+- Конвейер диспатча ПРОВЕРЕН ПО ВСЕМ ШВАМ и READY-TO-DISPATCH: при восстановлении creds мгновенно — push 5 коммитов (b98915a/e5cff9a/f16b215/91fcd70/655a95b) → leg #2' INSIDE-CACHE (X150K, inside_cache=1, base 35275967738, §156) → FLUSH-DIET leg → FLUID-FREE leg (demux=1) → ALLOC-DIET leg → absorb-вердикты
+- БЛОКЕР (7-й тик): creds нет; владельцу — восстановить bootstrap_tick.sh (baked token)
+
+RUN_ID_DISPATCHED: NONE (CREDS-BLOCKED 7-й тик; runs_index row 284 local)
