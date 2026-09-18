@@ -59,6 +59,10 @@ on:
         description: 'INSIDE-CACHE S7-135/TASK-271 ARCH-ATTACK lever #3 (1 = ARMED: inside-blocks/fluid discovery memoization via InsideBlockOps gate for static entities; 0 = vanilla-discovery A/B leg)'
         required: false
         default: '0'
+      flush_diet:
+        description: 'FLUSH-DIET S7-137 ARCH-ATTACK lever #4 (1 = ARMED: StepBasedCollector.flushStep zero-waste addAll via FlushOps.fladd — kills new Object[0] garbage per empty effect step; 0 = vanilla-flush A/B leg)'
+        required: false
+        default: '0'
       population_target:
         description: 'BENCH-X150K living-scene population injection (0 = off; 10000 = smoke; 150000 = prime scale, S7-129)'
         required: false
@@ -150,6 +154,7 @@ jobs:
           PALETTED_DEMUX: ${{ inputs.paletted_demux || '0' }}
           ALLOC_DIET: ${{ inputs.alloc_diet || '0' }}
           INSIDE_CACHE: ${{ inputs.inside_cache || '0' }}
+          FLUSH_DIET: ${{ inputs.flush_diet || '0' }}
           POPULATION_TARGET: ${{ inputs.population_target || '0' }}
           POPULATION_SEED: ${{ inputs.population_seed || '42' }}
           SERVER_XMX: ${{ inputs.server_xmx || '6G' }}

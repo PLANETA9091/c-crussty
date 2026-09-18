@@ -1601,3 +1601,24 @@ Stage Summary:
 - Hardening leg #2' ГОТОВ: rust 106 ✓ + OFFLINE PASS; следующий тик при восстановленном creds = push (этот коммит) → диспатч leg #2' (X150K, inside_cache=1, база 35275967738) → absorb по preregistered гейтам §156 ⇒ вердикт INSIDE-CACHE. БЛОКЕР: владельцу восстановить bootstrap_tick.sh (baked token) — без него push/dispatch невозможны, инженерия продолжает копиться локально
 
 RUN_ID_DISPATCHED: **NONE (creds-blocked)** — leg #2' диспатч отложен до восстановления bootstrap_tick.sh
+
+---
+## S7-137 (ARCH-ATTACK) — 2026-09-18 09:0x +08 — рычаг #4 FLUSH-DIET: офлайн ALL PASS (rust 112 + JVM-харнесс на реальном ядре); collidedWithFluid-рычаг отменён (dup INSIDE-CACHE); CREDS-BLOCKED без изменений
+
+**Task ID: S7-137 (Job 393012, тик 08:43)**, Agent: agent-7625532f (session web-f7888d46)
+
+Work Log:
+- bootstrap_tick.sh ОТСУТСТВУЕТ (не восстановлен) + ~/.git-credentials пуст ⇒ CREDS-BLOCKED 3-й тик; 3x pull --rebase (up-to-date 04ef8d5, локальный b98915a поверх); канон: хвост GOAL S7-136; работа продолжена офлайн-инженерией по очереди §5 S7-134b
+- STEP-0 collidedWithFluid (кандидат #1): javap из research entity-recon — сигнатура (FluidState,BlockPos,Vec3,Vec3)Z, тело = getAABB + List.of + collidedWithShapeMovingFrom(makeBoundingBox+subtract+collidedAlongVector); ЕДИНСТВЕННЫЙ caller = визитор lambda$checkInsideBlocks$2 (offset 135, fluid-ветка) ⇒ ВЕСЬ лейн ПОД гейтом isAffectedByBlocks INSIDE-CACHE — дублирующий рычаг ОТМЕНЁН; потенциал leg #2' ≈ 45% чёрна под одним гейтом
+- STEP-0 FLUSH-DIET (кандидат #2, независимый — applyAndClear крутится и на HIT-пути): javap StepBasedCollector (ядро рематериализовано /tmp/kmat 29386794B байт-в-бит, eula-less прецедент); flushStep: 2× addAll (invokeinterface, offsets 41/114); ArrayList.addAll резолвит toArray ДО проверки пустоты ⇒ new Object[0] на каждый пустой; ценз: 336 сэмплов = 4.6% чёрна ровно на этом пути; ~300k advanceStep/тик при 150k
+- Имплементация: FlushOps.java (fladd: src.isEmpty()?false:dst.addAll — raw-типы, erasure-дескриптор (Ljava/util/List;Ljava/util/Collection;)Z); classfile.rs patch_flush_step (iface-walk 0xb9/0xb8, классификация BY NAME, строгий ровно-2-сайта, AlreadyPatched, 5B-rewrite [0xb8 idx1 idx2 00 00] — length-preserving, SMT не двигается); flush_diet.rs (env CRUSSTY_FLUSH_DIET, dormant-invisible, fail-closed: beforeEffectsInStep-rename guard, no-op-retransform pristine capture, define FlushOps в kernel loader, единственный retransform); lib.rs wiring; scripts/build_flush_ops.sh; run_world3.sh + world-bench.yml (env+input flush_diet)
+- Офлайн-верификация: rust 112 = 111✓+1 ignored (5 новых flush-тестов на реальной фикстуре 5695B: sites=2, pool-resolve, invokestatic+2nop byte-shape, idempotent byte-identical, fail-closed); FLUSH-DIET OFFLINE PASS (FlushDietHarness на реальном ядре: structural 5798B, wiring, fladd-семантика, behavioral smoke ПАРА patched/vanilla — 2000 пустых степов + 5 typed effects + fresh applyAndClear)
+- Уроки харнесса: nest-парнёр RecordedEffect в том же loader'е (IllegalAccessError cross-loader); InsideBlockEffectType.<clinit> → BuiltInRegistries ⇒ офлайн tryDetectVersion+bootStrap (реестры в памяти, НЕ бут); BlockPos.containing(double,double,double)
+- Банкование: research/flush-diet-2026-09-18/ (FlushOps.class + StepBasedCollector.patched.class + harness-output + artifact_hashes.txt append-only); коммит локальный (push blocked)
+- CRUSSTY pristine не тронут; INJECTS-ONLY цел (0 sandbox boots; 0 CI-бутов — creds)
+
+Stage Summary:
+- Рычаг #4 FLUSH-DIET готов и верифицирован офлайн: 2× length-preserving ретаргет + isEmpty-гейт бриджа убирают доминантный мусор toArray (4.6% чёрна, топ-4 сайт ценза) без изменения ванильной семантики; collidedWithFluid закрыт как dup — вся приоритетность на диспатче leg #2' INSIDE-CACHE (≈45% чёрна под гейтом); очередь после INSIDE-CACHE: fluid-push corners / inflate (Zombie.aiStep 3.9%) / wave-2 диеты
+- БЛОКЕР (3-й тик): creds нет — push b98915a + S7-137, диспатчи leg #2' и FLUSH-DIET leg невозможны; владельцу: восстановить bootstrap_tick.sh (baked token)
+
+RUN_ID_DISPATCHED: NONE (CREDS-BLOCKED 3-й тик; runs_index row 280 local)
