@@ -71,6 +71,10 @@ on:
         description: 'FLUID-DIRTY S7-151/TASK-290 ARCH-ATTACK lever #6 (1 = ARMED: fluid-scan memoization via FluidPushOps.scan + event-driven dirty-stamp ledger on LevelChunk.setBlockState; composes through inside_cache chain; 0 = vanilla-scan A/B leg)'
         required: false
         default: '0'
+      region_threads:
+        description: 'REGION-THREADS S7-156/TASK-295 ARCH-ATTACK lever #7 (integer >= 2 = ARMED: region-threaded entity ticking via RegionTickOps — W spatial buckets, W-1 TickThread helpers + main, deferred EntityCallbacks FIFO; 1/0 = vanilla passthrough leg)'
+        required: false
+        default: '0'
       population_target:
         description: 'BENCH-X150K living-scene population injection (0 = off; 10000 = smoke; 150000 = prime scale, S7-129)'
         required: false
@@ -165,6 +169,7 @@ jobs:
           FLUSH_DIET: ${{ inputs.flush_diet || '0' }}
           FLUID_FREE: ${{ inputs.fluid_free || '0' }}
           FLUID_DIRTY: ${{ inputs.fluid_dirty || '0' }}
+          REGION_THREADS: ${{ inputs.region_threads || '0' }}
           POPULATION_TARGET: ${{ inputs.population_target || '0' }}
           POPULATION_SEED: ${{ inputs.population_seed || '42' }}
           SERVER_XMX: ${{ inputs.server_xmx || '6G' }}

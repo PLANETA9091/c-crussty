@@ -2040,3 +2040,25 @@ Stage Summary:
 - NEXT (S7-156): прототип RegionTickOps — ретаргет ServerLevel.tick-сегмента, W воркеров + барьер; PG1 OFFLINE lockstep → preregister dispatch (PG3 TPS ≥ +25% vs CUMULATIVE)
 
 RUN_ID_DISPATCHED: NONE (RECON-3 тик, CI-бутов 0)
+
+---
+## S7-156 (ARCH-ATTACK) — 2026-09-18 21:08-21:5x +08 — REGION-THREADS ИМПЛЕМЕНТИРОВАН: RegionTickOps + двойной ретаргет + rust-wiring + harness OFFLINE PASS; NEXT S7-157 preregister dispatch (PG1-гейты живьём)
+
+**Task ID: S7-156 (Job 394666, тик 21:08)**, Agent: agent-7625532f
+
+Work Log:
+- creds (1b) + СТАТУС S7-155 (NEXT = S7-156 прототип) + pull --rebase ×2 up to date
+- Census поверхности ретаргета (javap + бинарный CP-скан): EntityTickList.add/remove = ровно 1 сайт в kernel (ServerLevel$EntityCallbacks.onTickingStart/onTickingEnd); forEach = 1 сайт в ServerLevel.tick(BooleanSupplier); contains = pure read; TickThread(String) public; IteratorSafeOrderedReferenceSet.add НЕ synchronized (mid-phase мутации обязаны быть отложены — дизайн FIFO)
+- RegionTickOps.java: снапшот ванильной итерацией → W пространственных бакетов (8-чанковые регионы; W=4 квадранты / W=2 x-полосы / общий хэш) → W-1 персистентных TickThread-воркеров + main, CyclicBarrier GO/DONE, deferred FIFO Mut-очередь для EntityCallbacks мутаций, workerError → rethrow на main (крэш-семантика ванили), WORKERS из CRUSSTY_REGION_THREADS (1 = ванильный passthrough внутри моста)
+- classfile.rs: patch_region_tick_serverlevel (строго Retargeted{1}) + patch_region_tick_callbacks (строго Retargeted{1}+{1}) на retarget_virtual_to_static (receiver-prepended 1:1); 8 roundtrip-тестов (сайты, резолв в мост, idempotent, fail-closed на мусоре/чужих классах, композ с F1/F3)
+- region_threads.rs: 2 byte-hook таргета + define RegionTickOps/$Mut в kernel loader (BRIDGE_READY) + строгие site-count проверки + двойной retransform + audit_wire; регистрация ПОСЛЕ tickhook (хвост цепочки ServerLevel-шва), WARN при F1/F3 вместе
+- Инцидент OFFLINE: двойной DONE-барьер → deadlock (jstack: main на DONE, worker в GO) → дублирующий awaitDone удалён; воркеры персистентны
+- harness RegionThreadsHarness: structural (верификатор принимает патченные ServerLevel/EntityCallbacks над реальным kernel) + wiring (Methodref-мост) + dormant (passthrough exactly-once, insertion-порядок, гвард-сайты прямые) + parallel child (CRUSSTY_REGION_THREADS=2: 200 entities, exactly-once, без дедлока) — exit 0
+- Пломбинг: world-bench.yml region_threads input + REGION_THREADS env; run_world3.sh var + config-echo + export CRUSSTY_REGION_THREADS
+- Учёт: artifact_hashes_s7156.txt + GOAL СТАТУС S7-156 + worklog c-crussty + CLAIMS TASK-295
+
+Stage Summary:
+- Lever #7 REGION-THREADS инженерно готов: suite 140/0/1, harness OFFLINE PASS, пломбинг в bench-конвейер; per-entity логика остаётся ванилью (меняется только контейнер цикла)
+- NEXT (S7-157): preregister dispatch region_threads=4 (A/B min-of-2 vs CUMULATIVE 35330129145; inside_cache=1+flush_diet=1 база), живые гейты PG2/PG3/PG4 (0 NCDFE/ARMED/популяция; TPS ≥ +25%; young GC ≤ +15%)
+
+RUN_ID_DISPATCHED: NONE (импл-тик, CI-бутов 0)

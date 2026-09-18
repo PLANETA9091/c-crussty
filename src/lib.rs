@@ -40,6 +40,7 @@ mod paletted;
 mod promote_wire;
 mod proto_blend_cache;
 mod randomtick;
+mod region_threads;
 mod tickhook;
 
 use cplug_abi::{CPluginApi, JavaVmPtr};
@@ -135,6 +136,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // F3 LEVELTICKS-READS (family-agg pack member, S7-116): LevelTicks +
     // ServerLevel body-swap hooks (the ServerLevel one composes with F1).
     tickhook::register();
+    // REGION-THREADS (S7-156): ServerLevel tick-segment splice +
+    // EntityCallbacks guard sites, composed on top of F1/F3 bytes (LAST in
+    // the byte-hook chain). Dormant unless CRUSSTY_REGION_THREADS>=2.
+    region_threads::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -321,6 +326,11 @@ fn inject_surface() {
     // compute the secWrite retarget for LevelChunk, arm the inside_chain
     // bridge (dormant unless CRUSSTY_FLUID_DIRTY=1).
     fluid_dirty::activate();
+    // REGION-THREADS (S7-156): define RegionTickOps into the kernel loader,
+    // compute the tick-segment + guard retargets for ServerLevel and
+    // EntityCallbacks, retransform both (dormant unless
+    // CRUSSTY_REGION_THREADS>=2).
+    region_threads::activate();
     // Dormant unless CRUSSTY_NATIVE_BLEND_CACHE is set (see docs/HOOK_BLEND_CACHE.md).
     proto_blend_cache::activate();
     // F1 BATCH-RNG (S7-112): define RandomTickOps into the ServerLevel loader,
