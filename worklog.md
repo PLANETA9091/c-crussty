@@ -1975,3 +1975,26 @@ Stage Summary:
 RUN_ID_DISPATCHED: NONE (верификационный тик, CI-бутов 0)
 
 ---
+---
+## S7-153 (ARCH-ATTACK) — 2026-09-18 19:43-20:0x +08 — FLUID-DIRTY ЖИВАЯ НОГА: диспатч run 35341241628 (head 38afaa3, SUCCESS) → absorb тем же тиком: REFUTED-BY-ECONOMICS (hit-rate ≈ 0%), fluid_dirty = 0
+
+**Task ID: S7-153 (Job 394666, тик 19:43)**, Agent: agent-7625532f
+
+Work Log:
+- creds (1b: bootstrap_tick.sh отсутствует, remote URL активен) + СТАТУС S7-152 → NEXT = S7-153 диспатч; 3× pull --rebase (c-crussty, dev-logs up to date; CRUSSTY pristine в среде отсутствует — не критично)
+- Пломбинг рычага в bench-конвейер (S7-151 rust-wiring был готов, пломбинга не было): world-bench.yml input `fluid_dirty` + env FLUID_DIRTY; run_world3.sh FLUID_DIRTY var + config-echo + `export CRUSSTY_FLUID_DIRTY` (compose-цепочка требует inside_cache=1 — задокументировано); dispatch_s7153.py (A/B min-of-2 vs CUMULATIVE 35330129145)
+- Инцидент: push отклонён GitHub push protection (токен в dispatch_s7153.py:26) → фикс: токен читается из `git remote get-url origin` (правило 1b), amend + push OK (eccf3d3..38afaa3). Урок: секреты в скриптах диспатча запрещены
+- Диспатч run 35341241628 (11:46:00 UTC) → ожидание 17.5 мин → SUCCESS 12:03:29 UTC; фетч артефакта (10545730462, 28MB) в research/fluid-dirty-2026-09-18/run-s7153-fluid-dirty/ (gitignored)
+- Анализатор absorb_s7153.py (fluid-family по взвешенным стекам, ItemEntity/Zombie под-лейны, GC, TPS, ARMED, популяция); санити на базе бит-в-бит: 9.91% / young_gc 118 / 0 NCDFE — совпадает с S7150_RECON
+- ABSORB: конфиг точен (fluid_dirty=1 в run-env), INJECT 150000 VALID, 0 NCDFE, ARMED полна (FluidPushOps defined → LevelChunk Retargeted{1} → entity composed Retargeted{2} → serve → rc=0); НО: scan 1592 ≈ vanilla 1590 сэмплов = hit-rate ≈ 0%; fluid-family 9.91%→10.40% (+9.8%), ItemEntity lane 29.9%→33.0%, young GC 118→140 (+18.6%), TPS паритет
+- Вердикт по preregistered §S7-150: G1 FAIL (hit-rate ≥80% недостижим) + G6 FAIL ⇒ **REFUTED-BY-ECONOMICS, fluid_dirty забанкован 0**; оффлайн G5 lockstep в силе
+- Корневая причина: популяция fluid-скана движется каждый тик (items: topup-цикл + вода — плавающие предметы не покоятся; zombies: AI-блуждание) — третья сигнатура после FLUID-FREE; гипотеза «100k items покоится» опровергнута
+- Учёт: ABSORB_S7153.md + artifact_hashes_s7153.txt + RUNBOOK дополнен + GOAL СТАТУС S7-153 + CLAIMS TASK-292
+
+Stage Summary:
+- Lever #6 FLUID-DIRTY: инженерно корректен (lockstep бит-в-бит, ARMED, 0 исключений на живой сцене), экономически нулевой (0% хитов) — закрыт как fluid_free/alloc_diet/demux до него. Лейн fluid-push ~10% CPU резистентен к кэш-архитектурам: движение = vanilla-поведение
+- NEXT (S7-154): RECON-2 unclassified-фазы (33-39% entity-цикла) до классов поведения; остаточные ранжированные лейны (5.4%/5.1%/2%) — микро-класс
+
+RUN_ID_DISPATCHED: 35341241628 (SUCCESS, поглощён: REFUTED-BY-ECONOMICS); CI-бутов 1 (санкционирован preregister A/B leg)
+
+---
