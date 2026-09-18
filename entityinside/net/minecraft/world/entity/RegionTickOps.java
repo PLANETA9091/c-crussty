@@ -149,6 +149,11 @@ public final class RegionTickOps {
         if (arr0.length < w) {
             arr = new Entity[w][];
             len = new int[w];
+            // S7-158c fix: freshly allocated slot arrays start EMPTY (a bare
+            // `new Entity[w][]` leaves null slots — the fill loop dereferences
+            // b.length on the first element and would NPE; caught by the
+            // RegionThreadsHarness parallel child).
+            for (int i = 0; i < w; i++) arr[i] = new Entity[0];
         } else {
             arr = arr0;
             len = len0;

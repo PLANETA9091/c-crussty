@@ -158,15 +158,29 @@ public final class RegionThreadsHarness {
                 ? args[3] : "entityinside/build/net/minecraft/world/entity/RegionTickOps$Mut.class");
         Path lvPatched = Path.of(args.length > 4
                 ? args[4] : "tests/out/Level.regionthreads.patched.class");
+        Path cmPatchedPath = Path.of(args.length > 5
+                ? args[5] : "tests/out/ChunkMap.regionthreads.patched.class");
+        Path enPatchedPath = Path.of(args.length > 6
+                ? args[6] : "tests/out/Entity.regionthreads.patched.class");
+        Path trackerClass = Path.of(args.length > 7
+                ? args[7] : "entityinside/build/net/minecraft/server/level/TrackerTickOps.class");
+        Path rngClass = Path.of(args.length > 8
+                ? args[8] : "entityinside/build/net/minecraft/util/RngOps.class");
 
         byte[] slBytes = Files.readAllBytes(slPatched);
         byte[] cbBytes = Files.readAllBytes(cbPatched);
         byte[] opsBytes = Files.readAllBytes(opsClass);
         byte[] mutBytes = Files.readAllBytes(opsMut);
         byte[] lvBytes = Files.readAllBytes(lvPatched);
+        byte[] cmBytes = Files.readAllBytes(cmPatchedPath);
+        byte[] enBytes = Files.readAllBytes(enPatchedPath);
+        byte[] trackerBytes = Files.readAllBytes(trackerClass);
+        byte[] rngBytes = Files.readAllBytes(rngClass);
         check(slBytes[0] == (byte) 0xCA && slBytes[1] == (byte) 0xFE, "ServerLevel patched magic");
         check(cbBytes[0] == (byte) 0xCA && cbBytes[1] == (byte) 0xFE, "EntityCallbacks patched magic");
         check(lvBytes[0] == (byte) 0xCA && lvBytes[1] == (byte) 0xFE, "Level patched magic");
+        check(cmBytes[0] == (byte) 0xCA && cmBytes[1] == (byte) 0xFE, "ChunkMap patched magic (S7-158b)");
+        check(enBytes[0] == (byte) 0xCA && enBytes[1] == (byte) 0xFE, "Entity patched magic (S7-158d)");
 
         // ---- 2. WIRING: Methodrefs to the bridge in all three patched classes ----
         check(countMethodrefsTo(slBytes, "net/minecraft/world/entity/RegionTickOps") >= 1,
@@ -175,6 +189,10 @@ public final class RegionThreadsHarness {
                 "EntityCallbacks carries 2 RegionTickOps Methodrefs (add+remove guards)");
         check(countMethodrefsTo(lvBytes, "net/minecraft/world/entity/RegionTickOps") >= 1,
                 "Level carries RegionTickOps Methodref (S7-157b mid-tick gate)");
+        check(countMethodrefsTo(cmBytes, "net/minecraft/server/level/TrackerTickOps") >= 1,
+                "ChunkMap carries TrackerTickOps Methodref (S7-158b removal-safe sweep)");
+        check(countMethodrefsTo(enBytes, "net/minecraft/util/RngOps") >= 1,
+                "Entity carries RngOps Methodref (S7-158d serialized UUID seeding)");
 
         // ---- 1+3. STRUCTURAL + BRIDGE: define patched classes over the real
         // kernel, RegionTickOps (+Mut) in the SAME loader (kernel-loader
@@ -187,6 +205,18 @@ public final class RegionThreadsHarness {
                         "net.minecraft.world.entity.RegionTickOps", opsBytes,
                         "net.minecraft.world.entity.RegionTickOps$Mut", mutBytes,
                         "net.minecraft.world.level.Level", lvBytes));
+        // S7-158b: verifier acceptance of the hardened ChunkMap in a FRESH
+        // loader. NB: the patched ENTITY cannot be offline-defined in a child
+        // loader — parent-loader ItemEntity extends the PARENT Entity, so a
+        // second Entity identity breaks assignability during full linkage
+        // (VerifyError in spawnAtLocation — a loader-identity artifact that
+        // does NOT exist at runtime, where the patch is served to the SAME
+        // loader that loads ItemEntity). Entity acceptance = the RngOps
+        // Methodref wiring check above + the cargo roundtrip (Retargeted{1},
+        // idempotent) + the live retransform rc/ARMED gate.
+        PatchLoader hardeningLoader = new PatchLoader(
+                RegionThreadsHarness.class.getClassLoader(),
+                Map.of("net.minecraft.server.level.ChunkMap", cmBytes));
 
         Class<?> ops = Class.forName("net.minecraft.world.entity.RegionTickOps", false, loader);
         Class<?> callbacks = Class.forName(
@@ -200,6 +230,11 @@ public final class RegionThreadsHarness {
                 "ServerLevel patched (JVM verifier accepted)");
         check(lv.getClassLoader() == loader,
                 "Level patched (JVM verifier accepted — S7-157b mid-tick gate)");
+        Class<?> cmPatchedCls = Class.forName("net.minecraft.server.level.ChunkMap", false, hardeningLoader);
+        check(cmPatchedCls.getClassLoader() == hardeningLoader,
+                "ChunkMap patched (JVM verifier accepted — S7-158b tracker sweep)");
+        check(cmPatchedCls.getDeclaredMethods().length > 0,
+                "patched ChunkMap linked (method table resolvable)");
 
         Method forEach = ops.getDeclaredMethod("forEach", EntityTickList.class, Consumer.class);
         Method onAdd = ops.getDeclaredMethod("onTickingStart", EntityTickList.class, Entity.class);
@@ -260,6 +295,81 @@ public final class RegionThreadsHarness {
         check(list.contains(extra), "onTickingStart dormant path adds directly");
         onRem.invoke(null, list, extra);
         check(!list.contains(extra), "onTickingEnd dormant path removes directly");
+
+        // ---- 4b. S7-158b SWEEP REGRESSION: the removal-safe tracker sweep
+        // survives a nulled slot under the captured length (the live crash
+        // shape of 35363758352: ReferenceList swap-remove nulls the tail of
+        // getRawDataUnchecked() while main holds a stale len — vanilla NPEs
+        // at ChunkMap.java:1017, the bridge skips). Real kernel classes, the
+        // bridge defined in a byte-map loader (kernel-loader protocol).
+        PatchLoader bridgeLoader = new PatchLoader(
+                RegionThreadsHarness.class.getClassLoader(),
+                Map.of(
+                        "net.minecraft.server.level.TrackerTickOps", trackerBytes,
+                        "net.minecraft.util.RngOps", rngBytes));
+        Class<?> trackerOps = Class.forName(
+                "net.minecraft.server.level.TrackerTickOps", true, bridgeLoader);
+        Class<?> selClass = Class.forName(
+                "ca.spottedleaf.moonrise.patches.chunk_system.level.entity.server.ServerEntityLookup");
+        Class<?> rlClass = Class.forName("ca.spottedleaf.moonrise.common.list.ReferenceList");
+        sun.misc.Unsafe un = unsafe();
+        Object lookup = un.allocateInstance(selClass); // no ServerLevel needed: sweep reads ONLY trackerEntities
+        Object rl = un.allocateInstance(rlClass);
+        Field refsF = rlClass.getDeclaredField("references");
+        Field countF = rlClass.getDeclaredField("count");
+        refsF.setAccessible(true);
+        countF.setAccessible(true);
+        Entity e1 = (Entity) un.allocateInstance(ItemEntity.class);
+        Entity e2 = (Entity) un.allocateInstance(ItemEntity.class);
+        setIdentity(un, e1, new UUID(0L, 9001));
+        setIdentity(un, e2, new UUID(0L, 9002));
+        // moonrise$getTrackedEntity() on a fresh entity returns null -> the
+        // vanilla skip path; the middle slot is the crash shape.
+        refsF.set(rl, (Object) new Entity[] { e1, null, e2 });
+        countF.setInt(rl, 3);
+        Field trackerF = selClass.getDeclaredField("trackerEntities");
+        trackerF.setAccessible(true);
+        trackerF.set(lookup, rl);
+        java.lang.reflect.Method sweep = trackerOps.getDeclaredMethod("sweep", selClass);
+        sweep.invoke(null, lookup);
+        check(true, "S7-158b: sweep survives [e1, null, e2] under captured len=3 (vanilla NPE shape)");
+        // clean list (no nulls) — same bridge, no regression on the happy path
+        refsF.set(rl, (Object) new Entity[] { e1, e2 });
+        countF.setInt(rl, 2);
+        sweep.invoke(null, lookup);
+        check(true, "S7-158b: sweep on a clean list is a no-op passthrough (null trackers)");
+
+        // ---- 4c. S7-158d RNG REGRESSION: RngOps.createInsecureUUID is (a)
+        // bit-identical to vanilla Mth math for the same seed and (b) dups
+        // -free under parallel construction over ONE shared ThreadUnsafeRandom
+        // (the purpur entity-shared-random=true default = the live UUID-dup).
+        Class<?> rngOps = Class.forName("net.minecraft.util.RngOps", true, bridgeLoader);
+        java.lang.reflect.Method rngCreate = rngOps.getDeclaredMethod("createInsecureUUID",
+                Class.forName("net.minecraft.util.RandomSource"));
+        java.util.UUID v1 = (java.util.UUID) net.minecraft.util.Mth.createInsecureUUID(
+                net.minecraft.util.RandomSource.create(42L));
+        java.util.UUID v2 = (java.util.UUID) rngCreate.invoke(null,
+                net.minecraft.util.RandomSource.create(42L));
+        check(v1.equals(v2), "S7-158d: RngOps UUID math bit-identical to vanilla Mth (same seed)");
+        Class<?> turClass = Class.forName("ca.spottedleaf.moonrise.common.util.ThreadUnsafeRandom");
+        Object shared = turClass.getDeclaredConstructor(long.class).newInstance(123456789L);
+        java.util.Set<java.util.UUID> seen_uuids = java.util.concurrent.ConcurrentHashMap.newKeySet();
+        java.util.concurrent.atomic.AtomicInteger dupCount = new java.util.concurrent.atomic.AtomicInteger();
+        Runnable generator = () -> {
+            for (int i = 0; i < 2000; i++) {
+                try {
+                    java.util.UUID u = (java.util.UUID) rngCreate.invoke(null, shared);
+                    if (!seen_uuids.add(u)) dupCount.incrementAndGet();
+                } catch (ReflectiveOperationException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
+        };
+        Thread tA = new Thread(generator, "uuid-worker-A");
+        Thread tB = new Thread(generator, "uuid-worker-B");
+        tA.start(); tB.start(); tA.join(); tB.join();
+        check(seen_uuids.size() == 4000 && dupCount.get() == 0,
+                "S7-158d: 2x2000 parallel UUID constructions over ONE shared source, 0 duplicates (" + seen_uuids.size() + " unique)");
 
         // ---- 5. PARALLEL CHILD: W=2 on the real container ----
         java.util.List<String> cmd = new ArrayList<>(java.util.List.of(

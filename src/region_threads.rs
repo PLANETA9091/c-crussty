@@ -20,10 +20,19 @@
 //!     NoSuchElementException and killed the server 40s into the first leg).
 //!     Retargeted to `RegionTickOps.midTickTasks(Level)`: workers suppress,
 //!     main thread reproduces the exact vanilla virtual dispatch.
+//!  4. `ChunkMap.tick()V -> newTrackerTick()` (S7-158b, live crash 35363758352:
+//!     the unchecked trackerEntities sweep NPE'd on a slot nulled by a
+//!     parallel worker's entity removal) -> `TrackerTickOps.newTrackerTick(
+//!     ChunkMap)` — vanilla sweep byte-for-byte + removal-safe null guard.
+//!  5. `Entity.<init>` Mth.createInsecureUUID site (S7-158d, live UUID-dup
+//!     WARN in 35363758352: purpur entity-shared-random=true routes EVERY
+//!     entity through ONE ThreadUnsafeRandom; parallel constructors aliased
+//!     state) -> `RngOps.createInsecureUUID` — vanilla two-draw UUIDv4
+//!     serialized per-source (static->static, same descriptor).
 //!
-//! Bridge: `RegionTickOps` (+ inner `Mut`) defined into the KERNEL loader
-//! before any patched bytes are served (BRIDGE_READY protocol, the S7-143
-//! LinkageError lesson).
+//! Bridge: `RegionTickOps` (+ inner `Mut`), `TrackerTickOps`, `RngOps`
+//! defined into the KERNEL loader before any patched bytes are served
+//! (BRIDGE_READY protocol, the S7-143 LinkageError lesson).
 //!
 //! Gate: env `CRUSSTY_REGION_THREADS` (integer >= 2 -> on; absent/1 = dormant
 //! vanilla passthrough — the Ops also re-parses the same env independently
@@ -49,13 +58,21 @@ use std::sync::{Arc, PoisonError};
 const SERVER_LEVEL: &str = "net/minecraft/server/level/ServerLevel";
 const CALLBACKS_CLASS: &str = "net/minecraft/server/level/ServerLevel$EntityCallbacks";
 const LEVEL_CLASS: &str = "net/minecraft/world/level/Level";
+const CHUNKMAP_CLASS: &str = "net/minecraft/server/level/ChunkMap";
+const MTH_CLASS: &str = "net/minecraft/util/Mth";
 const OPS_CLASS: &str = "net/minecraft/world/entity/RegionTickOps";
 const OPS_INNER_CLASS: &str = "net/minecraft/world/entity/RegionTickOps$Mut";
+const TRACKER_OPS_CLASS: &str = "net/minecraft/server/level/TrackerTickOps";
+const RNG_OPS_CLASS: &str = "net/minecraft/util/RngOps";
 
 const OPS_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/world/entity/RegionTickOps.class");
 const OPS_INNER_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/world/entity/RegionTickOps$Mut.class");
+const TRACKER_BYTES: &[u8] =
+    include_bytes!("../entityinside/build/net/minecraft/server/level/TrackerTickOps.class");
+const RNG_BYTES: &[u8] =
+    include_bytes!("../entityinside/build/net/minecraft/util/RngOps.class");
 
 fn workers_from_env() -> Option<i64> {
     std::env::var("CRUSSTY_REGION_THREADS")
@@ -127,6 +144,8 @@ impl Target {
 static TARGET_SL: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
 static TARGET_CB: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
 static TARGET_LV: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
+static TARGET_CM: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
+static TARGET_MTH: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
 
 fn sl_target() -> &'static Target {
     TARGET_SL.get_or_init(|| Target::new(SERVER_LEVEL))
@@ -136,6 +155,12 @@ fn cb_target() -> &'static Target {
 }
 fn lv_target() -> &'static Target {
     TARGET_LV.get_or_init(|| Target::new(LEVEL_CLASS))
+}
+fn cm_target() -> &'static Target {
+    TARGET_CM.get_or_init(|| Target::new(CHUNKMAP_CLASS))
+}
+fn mth_target() -> &'static Target {
+    TARGET_MTH.get_or_init(|| Target::new(MTH_CLASS))
 }
 
 pub fn bridge_ready() -> bool {
@@ -226,6 +251,50 @@ pub fn register() {
         }
         cached.map(|c| c.to_vec())
     });
+    // Hook 4: ChunkMap (S7-158b removal-safe tracker sweep site in tick()V).
+    cplug_sdk::hooks::register_bytes(CHUNKMAP_CLASS, |_name, bytes| {
+        let t = cm_target();
+        if !READY.load(Ordering::Relaxed) {
+            eprintln!(
+                "[crussty-plugin] region_threads: pristine sighting {} {} bytes",
+                t.name,
+                bytes.len()
+            );
+            t.stash_orig(bytes);
+            return None;
+        }
+        let cached = t.patch_bytes();
+        if !t.served.swap(true, Ordering::Relaxed) {
+            eprintln!(
+                "[crussty-plugin] region_threads: hook serve {} {} bytes",
+                t.name,
+                cached.as_ref().map(|c| c.len()).unwrap_or(0)
+            );
+        }
+        cached.map(|c| c.to_vec())
+    });
+    // Hook 5: Mth (S7-158d serialized UUID seeding site in the Entity ctor).
+    cplug_sdk::hooks::register_bytes(MTH_CLASS, |_name, bytes| {
+        let t = mth_target();
+        if !READY.load(Ordering::Relaxed) {
+            eprintln!(
+                "[crussty-plugin] region_threads: pristine sighting {} {} bytes",
+                t.name,
+                bytes.len()
+            );
+            t.stash_orig(bytes);
+            return None;
+        }
+        let cached = t.patch_bytes();
+        if !t.served.swap(true, Ordering::Relaxed) {
+            eprintln!(
+                "[crussty-plugin] region_threads: hook serve {} {} bytes",
+                t.name,
+                cached.as_ref().map(|c| c.len()).unwrap_or(0)
+            );
+        }
+        cached.map(|c| c.to_vec())
+    });
 }
 
 /// Background activation: wait for ServerLevel, define the RegionTickOps
@@ -239,6 +308,8 @@ pub fn activate() {
         let sl = sl_target();
         let cb = cb_target();
         let lv = lv_target();
+        let cm = cm_target();
+        let mth = mth_target();
 
         // ServerLevel loads during server bootstrap (before the first level).
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(180);
@@ -286,7 +357,12 @@ pub fn activate() {
         })
         .flatten()
         .unwrap_or(u16::MAX);
-        for (name, bytes) in [(OPS_CLASS, OPS_BYTES), (OPS_INNER_CLASS, OPS_INNER_BYTES)] {
+        for (name, bytes) in [
+            (OPS_CLASS, OPS_BYTES),
+            (OPS_INNER_CLASS, OPS_INNER_BYTES),
+            (TRACKER_OPS_CLASS, TRACKER_BYTES),
+            (RNG_OPS_CLASS, RNG_BYTES),
+        ] {
             let major = crate::improved_noise::class_version(bytes)
                 .map(|(m, _)| m)
                 .unwrap_or(0);
@@ -327,7 +403,12 @@ pub fn activate() {
             }
             KERNEL_LOADER.store(gref as usize, Ordering::SeqCst);
             let mut ok = true;
-            for (name, bytes) in [(OPS_CLASS, OPS_BYTES), (OPS_INNER_CLASS, OPS_INNER_BYTES)] {
+            for (name, bytes) in [
+                (OPS_CLASS, OPS_BYTES),
+                (OPS_INNER_CLASS, OPS_INNER_BYTES),
+                (TRACKER_OPS_CLASS, TRACKER_BYTES),
+                (RNG_OPS_CLASS, RNG_BYTES),
+            ] {
                 match env.define_class(name, gref, bytes) {
                     Some(c) => {
                         env.delete_local_ref(c);
@@ -355,9 +436,9 @@ pub fn activate() {
         }
         BRIDGE_READY.store(true, Ordering::Release);
 
-        // Pristine bytes for all three targets (hook stash or no-op
+        // Pristine bytes for all five targets (hook stash or no-op
         // retransform).
-        for t in [sl, cb, lv] {
+        for t in [sl, cb, lv, cm, mth] {
             if !t.orig_is_some() {
                 eprintln!(
                     "[crussty-plugin] region_threads: {} predates hook, capturing via no-op retransform",
@@ -461,14 +542,17 @@ pub fn activate() {
             lv_orig.len(),
             lv_patched.len()
         );
+        let (sl_len, sl_len_patched) = (sl_orig.len(), sl_patched.len());
         sl.set_patch(PatchCache {
             bytes: Arc::from(sl_patched),
             major: sl_major,
         });
+        let (cb_len, cb_len_patched) = (cb_orig.len(), cb_patched.len());
         cb.set_patch(PatchCache {
             bytes: Arc::from(cb_patched),
             major: cb_major,
         });
+        let (lv_len, lv_len_patched) = (lv_orig.len(), lv_patched.len());
         let lv_major = crate::improved_noise::class_version(&lv_orig)
             .map(|(m, _)| m)
             .unwrap_or(0);
@@ -477,18 +561,84 @@ pub fn activate() {
             major: lv_major,
         });
 
-        // Single READY flip, then retransform all three classes once.
+        // S7-158b: removal-safe tracker sweep (ChunkMap.tick()V call site).
+        let Some(cm_orig) = cm.take_orig() else { return };
+        let (cm_patched, cm_outcome) =
+            match crate::classfile::patch_region_tracker_chunkmap(&cm_orig) {
+                Ok(pair) => pair,
+                Err(e) => {
+                    eprintln!(
+                        "[crussty-plugin] region_threads: ChunkMap patch rejected ({e}), hook stays dormant"
+                    );
+                    return;
+                }
+            };
+        if !matches!(
+            cm_outcome,
+            crate::classfile::RetargetOutcome::Retargeted { sites: 1 }
+        ) {
+            eprintln!(
+                "[crussty-plugin] region_threads: ChunkMap strict site-count violated ({cm_outcome:?}), hook stays dormant"
+            );
+            return;
+        }
+        let cm_major = crate::improved_noise::class_version(&cm_orig)
+            .map(|(m, _)| m)
+            .unwrap_or(0);
+        let (cm_len, cm_len_patched) = (cm_orig.len(), cm_patched.len());
+        cm.set_patch(PatchCache {
+            bytes: Arc::from(cm_patched),
+            major: cm_major,
+        });
+
+        // S7-158d: serialized UUID seeding (Entity ctor call site).
+        let Some(mth_orig) = mth.take_orig() else { return };
+        let (mth_patched, mth_outcome) = match crate::classfile::patch_region_rng_entity(&mth_orig)
+        {
+            Ok(pair) => pair,
+            Err(e) => {
+                eprintln!(
+                    "[crussty-plugin] region_threads: Entity patch rejected ({e}), hook stays dormant"
+                );
+                return;
+            }
+        };
+        if !matches!(
+            mth_outcome,
+            crate::classfile::RetargetOutcome::Retargeted { sites: 1 }
+        ) {
+            eprintln!(
+                "[crussty-plugin] region_threads: Entity strict site-count violated ({mth_outcome:?}), hook stays dormant"
+            );
+            return;
+        }
+        let mth_major = crate::improved_noise::class_version(&mth_orig)
+            .map(|(m, _)| m)
+            .unwrap_or(0);
+        let (mth_len, mth_len_patched) = (mth_orig.len(), mth_patched.len());
+        mth.set_patch(PatchCache {
+            bytes: Arc::from(mth_patched),
+            major: mth_major,
+        });
+
+        eprintln!(
+            "[crussty-plugin] region_threads: computed patches (ServerLevel {sl_len} -> {sl_len_patched} bytes {sl_outcome:?}; EntityCallbacks {cb_len} -> {cb_len_patched} bytes add={cb_out_add:?} remove={cb_out_rem:?}; Level {lv_len} -> {lv_len_patched} bytes {lv_outcome:?}; ChunkMap {cm_len} -> {cm_len_patched} bytes {cm_outcome:?}; Entity {mth_len} -> {mth_len_patched} bytes {mth_outcome:?})"
+        );
+
+        // Single READY flip, then retransform all five classes once.
         crate::kernel_policy::audit_wire(
             OPS_CLASS,
-            "forEach/onTickingStart/onTickingEnd/midTickTasks",
-            "region_threads v2",
+            "forEach/onTickingStart/onTickingEnd/midTickTasks/trackerTick/rngUUID",
+            "region_threads v3",
         );
         READY.store(true, Ordering::Release);
         let rc_sl = cplug_sdk::retransform_class(sl.name);
         let rc_cb = cplug_sdk::retransform_class(cb.name);
         let rc_lv = cplug_sdk::retransform_class(lv.name);
+        let rc_cm = cplug_sdk::retransform_class(cm.name);
+        let rc_mth = cplug_sdk::retransform_class(mth.name);
         eprintln!(
-            "[crussty-plugin] region_threads: ARMED, retransform rc ServerLevel={rc_sl} EntityCallbacks={rc_cb} Level={rc_lv}"
+            "[crussty-plugin] region_threads: ARMED, retransform rc ServerLevel={rc_sl} EntityCallbacks={rc_cb} Level={rc_lv} ChunkMap={rc_cm} Entity={rc_mth}"
         );
     });
 }

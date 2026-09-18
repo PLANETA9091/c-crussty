@@ -2910,6 +2910,91 @@ const ETL_REMOVE_FROM: (&str, &str, &str) = (
 const ETL_GUARD_TO_DESC: &str =
     "(Lnet/minecraft/world/level/entity/EntityTickList;Lnet/minecraft/world/entity/Entity;)V";
 
+// S7-158b/d (TASK-298) hardening targets: removal-safe tracker sweep +
+// serialized UUID seeding. Both races are live-leg-2 evidence (35363758352):
+// the fatal newTrackerTick NPE and the UUID-duplicate spawn WARN.
+const TRACKER_TICK_OPS_CLASS: &str = "net/minecraft/server/level/TrackerTickOps";
+const RNG_OPS_CLASS: &str = "net/minecraft/util/RngOps";
+const CHUNKMAP_TICK_DESC: &str = "()V";
+const CHUNKMAP_TRACKER_FROM: (&str, &str, &str) = (
+    "net/minecraft/server/level/ChunkMap",
+    "newTrackerTick",
+    "()V",
+);
+const ENTITY_CTOR_DESC: &str =
+    "(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/level/Level;)V";
+const MTH_INSECURE_UUID_FROM: (&str, &str, &str) = (
+    "net/minecraft/util/Mth",
+    "createInsecureUUID",
+    "(Lnet/minecraft/util/RandomSource;)Ljava/util/UUID;",
+);
+const RNG_INSECURE_UUID_TO: (&str, &str, &str) = (
+    "net/minecraft/util/RngOps",
+    "createInsecureUUID",
+    "(Lnet/minecraft/util/RandomSource;)Ljava/util/UUID;",
+);
+
+/// S7-158b: the ONLY `newTrackerTick` call site in the kernel —
+/// `ChunkMap.tick()V`, whose whole body is exactly that single call (javap:
+/// bytecode 0-4) — retargeted to `TrackerTickOps.newTrackerTick(ChunkMap)`:
+/// the vanilla sweep BYTE-FOR-BYTE plus the removal-safe null guard (live
+/// crash 35363758352: the unchecked `trackerEntities.getRawDataUnchecked()`
+/// walk NPE'd on a slot nulled by a parallel worker's entity removal).
+/// Strict: caller asserts Retargeted{1}.
+pub fn patch_region_tracker_chunkmap(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    for probe in [
+        "newTrackerTick",
+        "net/minecraft/server/level/ChunkMap",
+        "ca/spottedleaf/moonrise/patches/entity_tracker/EntityTrackerEntity",
+    ] {
+        if layout.pool.find_utf8(probe).is_none() {
+            return Err(format!("{probe} absent from pool (kernel rename?)"));
+        }
+    }
+    retarget_virtual_to_static(
+        bytes,
+        "tick",
+        CHUNKMAP_TICK_DESC,
+        CHUNKMAP_TRACKER_FROM,
+        (
+            TRACKER_TICK_OPS_CLASS,
+            "newTrackerTick",
+            "(Lnet/minecraft/server/level/ChunkMap;)V",
+        ),
+    )
+}
+
+/// S7-158d: the ONLY `Mth.createInsecureUUID(RandomSource)` call site in the
+/// kernel (Entity ctor; census: ServerBossEvent uses the no-arg Mth.RANDOM
+/// variant which is already thread-safe) -> `RngOps.createInsecureUUID`
+/// — static->static, SAME descriptor (retarget_invokestatic enforces the
+/// stack shape), body = vanilla two-draw UUIDv4 serialized per-source
+/// (purpur entity-shared-random=true routes EVERY entity random through one
+/// ThreadUnsafeRandom; two parallel workers constructing spawned entities
+/// drew identical state -> duplicate UUID -> EntityLookup "can't add" WARN
+/// and the spawned entity lost). Strict: caller asserts Retargeted{1}.
+pub fn patch_region_rng_entity(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    for probe in [
+        "createInsecureUUID",
+        "net/minecraft/util/Mth",
+        "net/minecraft/util/RandomSource",
+    ] {
+        if layout.pool.find_utf8(probe).is_none() {
+            return Err(format!("{probe} absent from pool (kernel rename?)"));
+        }
+    }
+    retarget_invokestatic(
+        bytes,
+        "<init>",
+        ENTITY_CTOR_DESC,
+        MTH_INSECURE_UUID_FROM,
+        RNG_INSECURE_UUID_TO,
+    )
+}
+
+
 /// S7-156: the single `EntityTickList.forEach(Consumer)` call site inside
 /// `ServerLevel.tick(BooleanSupplier)` -> `RegionTickOps.forEach` (1:1
 /// receiver-prepended stack shape). Strict: caller asserts Retargeted{1}.
@@ -4552,8 +4637,80 @@ mod region_threads {
     const CALLBACKS: &[u8] =
         include_bytes!("../tests/fixtures/ServerLevel$EntityCallbacks_real.class");
     const LEVEL: &[u8] = include_bytes!("../tests/fixtures/Level_real.class");
+    // S7-158b/d: same source jar (patched-kernel e2992d63).
+    const CHUNKMAP: &[u8] = include_bytes!("../tests/fixtures/ChunkMap_real.class");
+    const ENTITY: &[u8] = include_bytes!("../tests/fixtures/Entity_real.class");
 
     use crate::classfile::*;
+
+    #[test]
+    fn region_tracker_chunkmap_retargets_exactly_one_sweep_call() {
+        let (patched, outcome) = patch_region_tracker_chunkmap(CHUNKMAP).expect("patch");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "ChunkMap.tick()V body is EXACTLY the single newTrackerTick call (javap 0-4)"
+        );
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        let cp_count = u16::from_be_bytes([patched[8], patched[9]]);
+        let (pool, _end) = Pool::parse(&patched, 10, cp_count).expect("cp parse");
+        let triples: Vec<_> = (1..pool.next)
+            .filter_map(|i| pool.methodref_parts(i))
+            .collect();
+        assert!(
+            triples.iter().any(|t| t.0 == "net/minecraft/server/level/TrackerTickOps"
+                && t.1 == "newTrackerTick"),
+            "TrackerTickOps.newTrackerTick Methodref appended"
+        );
+        let (again, outcome2) = patch_region_tracker_chunkmap(&patched).expect("repatch");
+        assert_eq!(outcome2, RetargetOutcome::AlreadyPatched { sites: 1 });
+        assert_eq!(again, patched, "repatch must be byte-identical");
+    }
+
+    #[test]
+    fn region_rng_entity_retargets_exactly_one_uuid_call() {
+        let (patched, outcome) = patch_region_rng_entity(ENTITY).expect("patch");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "the ONLY Mth.createInsecureUUID(RandomSource) call site in the kernel (Entity ctor)"
+        );
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        let cp_count = u16::from_be_bytes([patched[8], patched[9]]);
+        let (pool, _end) = Pool::parse(&patched, 10, cp_count).expect("cp parse");
+        let triples: Vec<_> = (1..pool.next)
+            .filter_map(|i| pool.methodref_parts(i))
+            .collect();
+        assert!(
+            triples.iter().any(|t| t.0 == "net/minecraft/util/RngOps"
+                && t.1 == "createInsecureUUID"),
+            "RngOps.createInsecureUUID Methodref appended"
+        );
+        let (again, outcome2) = patch_region_rng_entity(&patched).expect("repatch");
+        assert_eq!(outcome2, RetargetOutcome::AlreadyPatched { sites: 1 });
+        assert_eq!(again, patched, "repatch must be byte-identical");
+    }
+
+    #[test]
+    fn region_hardening_wrong_class_fails_closed() {
+        // tracker patcher on Entity: no newTrackerTick -> Err/NotFound
+        match patch_region_tracker_chunkmap(ENTITY) {
+            Err(e) => assert!(!e.is_empty(), "{e}"),
+            Ok((_, outcome)) => assert!(matches!(outcome, RetargetOutcome::NotFound)),
+        }
+        // rng patcher on ChunkMap: createInsecureUUID absent -> Err/NotFound
+        match patch_region_rng_entity(CHUNKMAP) {
+            Err(e) => assert!(!e.is_empty(), "{e}"),
+            Ok((_, outcome)) => assert!(matches!(outcome, RetargetOutcome::NotFound)),
+        }
+        // truncated / garbage never panics
+        for cut in [10usize, 100, 1000, 10000, CHUNKMAP.len() - 1] {
+            let _ = patch_region_tracker_chunkmap(&CHUNKMAP[..cut]);
+        }
+        for cut in [10usize, 100, 1000, 10000, ENTITY.len() - 1] {
+            let _ = patch_region_rng_entity(&ENTITY[..cut]);
+        }
+    }
 
     #[test]
     fn region_tick_guardentity_retargets_exactly_one_pump() {
@@ -4747,5 +4904,10 @@ mod region_threads {
         // S7-157b: the mid-tick gate dump (Level.guardEntityTick retarget).
         let (lv, _) = patch_region_tick_guardentity(LEVEL).expect("guard");
         std::fs::write("tests/out/Level.regionthreads.patched.class", &lv).unwrap();
+        // S7-158b/d: removal-safe tracker sweep + serialized UUID seeding.
+        let (cm, _) = patch_region_tracker_chunkmap(CHUNKMAP).expect("tracker");
+        std::fs::write("tests/out/ChunkMap.regionthreads.patched.class", &cm).unwrap();
+        let (en, _) = patch_region_rng_entity(ENTITY).expect("rng");
+        std::fs::write("tests/out/Entity.regionthreads.patched.class", &en).unwrap();
     }
 }
