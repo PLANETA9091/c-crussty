@@ -1892,3 +1892,22 @@ Stage Summary:
 RUN_ID_DISPATCHED: CUMULATIVE 35330129145 (head dbb5e8e, in_progress 09:33:13 UTC); поглощён ALLOC-DIET 35328228929
 
 ---
+---
+## S7-149b (ARCH-ATTACK) — 2026-09-18 17:5x-18:0x +08 — НАКОПИТЕЛЬНЫЙ РАН ABSORB (35330129145): ЗЕЛЁНЫЙ ФИНАЛ ЭРЫ — INSIDE-CACHE+FLUSH-DIET кросс-помех нет, young GC впервые ниже базы (−5.6%), TPS-паритет; ИТОГОВЫЙ ВЕРДИКТ ЭРЫ зафиксирован в GOAL
+
+**Task ID: S7-149b (Job 394666, тик 17:08, докрутка)**, Agent: agent-7625532f
+
+Work Log:
+- CUMULATIVE (35330129145, head dbb5e8e, inside_cache=1+flush_diet=1, fp4/300s) SUCCESS 09:33:13→09:48:15 UTC; артефакт 28MB скачан (run-s7149b-cumulative)
+- Валидность: INJECT VALID; популяция 148392/148234/148164 (близнец base-b); 0 NCDFE (stdout 259KB); ARMED-маркеры обоих мостов (3+3); kernel e2992d63; TOPUP-SCAN ×2 живой
+- Вердикт комбинации: flushStep −100% воспроизведён; inside-blocks доля 40.44→32.81% (−18.9% отн.); young GC 125→118 (−5.6% — ВПЕРВЫЕ ниже базы, диета перевесила топап-спавны); TPS 0.8–0.9 паритет; entity-фаза −1.8pp; кросс-помех нет
+- ИТОГ ЭРЫ: GREEN = INSIDE-CACHE + FLUSH-DIET (default-кандидаты inside_cache=1+flush_diet=1); REFUTED = FLUID-FREE+DEMUX (лейн 1.8% CPU) + ALLOC-DIET (×2); честная граница: TPS X150K 0.8–0.9 упирается в entity tick (58%) + unclassified (33–39%) — следующий фронт
+- Учёт: GOAL итоговый СТАТУС S7-149b; runs_index row 297; CLAIMS TASK-288; патч-банк 0017; ABSORB_S7149b.md + run-s7149b-cumulative/{...}; INJECTS-ONLY цел (7 CI-бутов за эру санкционированы, 0 sandbox boots)
+
+Stage Summary:
+- ЭРА ЗАВЕРШЕНА ПОЛНЫМ ЦИКЛОМ: base-b → фикс измерителя (NCDFE + топап) → 4 изолированные ноги (2 GREEN/2 REFUTED) → накопительный ран (кросс-помех нет) → вердикт зафиксирован
+- Следующий фронт (пост-эра): entity tick (58%) + unclassified (33–39%) — крупнейшие непокрытые лейны живой сцены
+
+RUN_ID_DISPATCHED: NONE (эра закрыта); поглощён CUMULATIVE 35330129145
+
+---
