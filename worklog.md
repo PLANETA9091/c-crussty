@@ -1696,3 +1696,23 @@ Stage Summary:
 - БЛОКЕР (7-й тик): creds нет; владельцу — восстановить bootstrap_tick.sh (baked token)
 
 RUN_ID_DISPATCHED: NONE (CREDS-BLOCKED 7-й тик; runs_index row 284 local)
+
+---
+## S7-144 (ARCH-ATTACK) — 2026-09-18 12:4x +08 — DISPATCH-READINESS AUDIT v2: FLUID-FREE OFFLINE PASS воспроизведён из ЧИСТОГО состояния (exit 0); classpath-конвейер восстановления забанкован; CREDS-BLOCKED 10-й тик
+
+**Task ID: S7-144 (Job 393012, тик 12:43)**, Agent: agent-7625532f (session web-f7888d46)
+
+Work Log:
+- bootstrap_tick.sh ОТСУТСТВУЕТ (10-й тик CREDS-BLOCKED; push не выполнялся); 3x pull --rebase: c-crussty up-to-date (ahead 8), c-dist/CRUSSTY up-to-date (pristine не тронут); crussty-dev-logs не восстановлен после WIPE (CLAIMS-долг в CLAIMS_DEBT_S7136-142.md)
+- Целостность: git fsck чист, дерево чистое; rust-сьют на head 9564838 = 121 ok / 0 failed / 1 ignored; патч-банк 5/5 sha256 OK; artifact_hashes_s7143 2/2 OK
+- Материализация ядра заново (materialize_kernel_v2.sh — paperclip сам скачивает mojang jar при пустом cache; kill-before-main): 29386794B байт-в-бит с цензом, sha256 e2992d63…; INJECTS-ONLY цел (pgrep после каждого шага — процессов нет; eula.txt не создан)
+- FluidFreeHarness воспроизведён из чистого состояния (run_fluid_free_harness.sh, чистая javac-пересборка): STRUCTURAL+INJECTED SURFACE / SECTION MATERIALIZED / ARMED=true / FREE-HIT ff=1 ffGen=0 gen=0 / EVENT-DRIVEN INVALIDATION gen 0→2 ff=2 / RESTORE gen=4 ff=1 verdict=true / SCATTERED-WATER PARITY ⇒ **FLUID-FREE OFFLINE PASS exit 0** — байт-в-бит с записью S7-143/91fcd70
+- Диагностика и уроки (RUNBOOK_S7144.md забанкован): (a) порядок classpath shadow→KERNEL→libraries обязателен — paper-shaded LogUtils.getClassLogger живёт в пропатченном kernel jar и затеняется чистым mojang-logging-1.5.10 из libraries (NoSuchMethodError при неверном порядке); (b) финальные libraries = <work>/server/libraries от paperclip (в контейнерах — base+patch, slf4j-api-2.0.16.jar.patch); (c) unzip не создаёт вложенные -d пути; (d) перезапись LIBCP через ls *.jar на вложенной структуре молча даёт пусто
+- Скрипты забанкованы: research/fluid-free-2026-09-18/scripts_s7144/{materialize_kernel_v2,finish_libraries,run_fluid_free_harness}.sh + RUNBOOK_S7144.md, sha256 в artifact_hashes_s7144.txt
+- Учёт: GOAL СТАТУС S7-144; runs_index row 287 (локально); CLAIMS_DEBT дополнен (S7-144); CRUSSTY pristine не тронут; INJECTS-ONLY цел (0 boots; 0 CI-бутов)
+
+Stage Summary:
+- READY-TO-DISPATCH подтверждён аудитом v2: конвейер leg #2' INSIDE-CACHE (X150K, base 35275967738, гейты §156) → FLUSH-DIET → FLUID-FREE (demux=1) → ALLOC-DIET — все 4 рычага офлайн-верифицированы и воспроизводимы из чистого состояния; критический путь = push 8 коммитов (f67ae10..9564838) + 4 диспатча + absorb-вердикты
+- БЛОКЕР (10-й тик): bootstrap_tick.sh/creds не восстановлены владельцем — без push офлайн-прогресс остаётся под wipe-риском (прецедент S7-139)
+
+RUN_ID_DISPATCHED: NONE (CREDS-BLOCKED 10-й тик; runs_index row 287 local)
