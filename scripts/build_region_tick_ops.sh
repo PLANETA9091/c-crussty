@@ -36,7 +36,9 @@ mkdir -p "$OUT_DIR"
 "$JAVAC" --release 21 \
   -cp "$SERVER_JAR:$JOML_JAR${FASTUTIL_JAR:+:$FASTUTIL_JAR}" \
   -d "$OUT_DIR" \
-  entityinside/net/minecraft/world/entity/RegionTickOps.java
+  entityinside/net/minecraft/world/entity/RegionTickOps.java \
+  entityinside/net/minecraft/server/level/TrackerTickOps.java \
+  entityinside/net/minecraft/util/RngOps.java
 
 echo "built: $OUT_DIR/net/minecraft/world/entity/RegionTickOps.class"
 echo "built: $OUT_DIR/net/minecraft/world/entity/RegionTickOps\$Mut.class"
