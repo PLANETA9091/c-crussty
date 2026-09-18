@@ -1955,3 +1955,23 @@ Stage Summary:
 RUN_ID_DISPATCHED: NONE; поглощено: census kernel + имплементация
 
 ---
+---
+## S7-152 (ARCH-ATTACK) — 2026-09-18 19:0x-19:4x +08 — FLUID-DIRTY LOCKSTEP PASS (G5 core): бит-в-бит дифференциал vanilla-скан vs мост на Unsafe scan-contract фикстурах, 44 кейса × 4 сцены, 0 расхождений; диспатч S7-153
+
+**Task ID: S7-152 (Job 394666, тик 19:08)**, Agent: agent-7625532f
+
+Work Log:
+- creds (1b) + 3× pull --rebase (сначала разблокирован untrack logs/latest.log — runtime-шум блокировал rebase; коммит S7-152a)
+- Стены офлайн-конструирования зафиксированы javap-дизасмом: Level ctor кастует this к ServerLevel (CraftWorld/SpigotWorldConfig в ctor, offsets 209-297), прямой ctor LevelChunk кастует к ServerLevel + зовёт MinecraftServer.getServer().registryAccess() → PalettedContainerFactory
+- Решение: Unsafe.allocateInstance scan-contract фикстуры — Entity{level,bb,id,deltaMovement+posLock,fluidHeight,lastLavaContact,firstTick; isPushedByFluid=константа true}, Level{minY/maxY/minSectionY/maxSectionY/sectionsCount finals, isClientSide=false, levelData=proxy; MiniLevel реализует 20 абстракций + getChunkSource}, LevelChunk{chunkPos,sections,levelHeightAccessor,level}
+- FluidDirtyLockHarness: 4 сцены — A: 24 позиции (вода/кромка 0.888/сухой камень/границы чанков x|z/дробные) × 4 dm-профиля × WATER+LAVA, бит-в-бит (return/fluidHeight-биты/dm-биты) + HIT bookkeeping на каждом кейсе; B: lava+water столб, lastLavaContact parity; C: flowing 1-3 + шторм (источник→течение8/течение→воздух/вода→камень/камень→вода = MISS+свежая ваниль бит-в-бит; воздух→камень не бампит); D: unloaded-guard (оба false без записи)
+- Итог: FLUID-DIRTY LOCKSTEP PASS — hit=49 miss=94 vanilla=0; WorldBuild через реальные LevelChunkSection.setBlockState; getX-фиксы (Bootstrap-до-статиков, assert-логика шторма)
+- Учёт: RUNBOOK дополнен, artifact_hashes_s7152.txt, GOAL СТАТУС S7-152, CLAIMS TASK-291
+
+Stage Summary:
+- Гейт G5 (OFFLINE lockstep 20000-ops-класс) доказан ядром: мемоизация скана бит-в-бит эквивалентна ванили на всех сценах, включая шторм мутаций и unloaded-guard
+- NEXT (S7-153): preregister dispatch fluid_dirty=1 (цепочка inside_cache=1+flush_diet=1), A/B min-of-2 vs CUMULATIVE 35330129145, живые гейты G1-G4+G6
+
+RUN_ID_DISPATCHED: NONE (верификационный тик, CI-бутов 0)
+
+---

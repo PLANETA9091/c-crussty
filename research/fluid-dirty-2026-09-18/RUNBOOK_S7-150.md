@@ -178,3 +178,34 @@ INJECTS-ONLY: 0 sandbox boots; CI-буты санкционированы.
   (return, fluidHeight-биты, dm-биты, lastLavaContact) на позиционных свипах (границы чанков/секций,
   дробные координаты, вода/лава/высоты течений, dm-ветка 0.003/0.0045) + шторм мутаций (G5-гейт) →
   затем preregister dispatch (inside_cache=1+flush_diet=1+fluid_dirty=1, A/B min-of-2 vs CUMULATIVE).
+
+---
+## ДОПОЛНЕНИЕ S7-152 (2026-09-18 19:0x-19:4x +08) — ПОВЕДЕНЧЕСКИЙ LOCKSTEP PASS (G5 core)
+
+- **Стена офлайн-конструирования**: vanilla Level ctor кастует `this` к ServerLevel
+  (CraftWorld в ctor, disasm 1222-1297) + SpigotWorldConfig/PurpurWorldConfig — подкласс Level
+  через ctor невозможен; прямой ctor LevelChunk кастует level к ServerLevel (disasm 99-43) +
+  зовёт MinecraftServer.getServer().registryAccess() → PalettedContainerFactory. РЕШЕНИЕ:
+  Unsafe.allocateInstance фикстуры ("scan-contract fixture") — ровно поля javap-контракта скана:
+  Entity {level, bb, id, deltaMovement+posLock, fluidHeight, lastLavaContact, firstTick=false;
+  isPushedByFluid=константа true (базовая импл)}, Level {minY/maxY/minSectionY/maxSectionY/
+  sectionsCount (finals через Unsafe), isClientSide=false, captureTreeGeneration=false,
+  levelData=proxy; 20 абстракций + getChunkSource() реализованы подклассом MiniLevel},
+  LevelChunk {chunkPos, sections, levelHeightAccessor, level}.
+- **FluidDirtyLockHarness** (entityinside/harness/, scripts/run_fluid_dirty_lock.sh): реальный
+  vanilla-скан (kernel bytecode) vs FluidPushOps.scan на близнецах-ItemEntity; всё, что зовёт
+  скан — реальный kernel-код (touchingUnloadedChunk → hasChunksAt → moonrise$areChunksLoaded →
+  chunkSource.hasChunk; тройной цикл; PalettedContainer.get; getHeight/getFlow с соседними
+  чтениями через level.getFluidState → реальные секции). Заполнение мира — реальные
+  LevelChunkSection.setBlockState (тот же делегат, что у secWrite, без bukkit-периферии).
+- **Результат — FLUID-DIRTY LOCKSTEP PASS**: Сцена A (24 позиции: внутри воды/кромка
+  0.888…/сухой камень/границы чанков x и z/дробные × 4 dm-профиля × WATER 0.014 + LAVA 0.007 —
+  бит-в-бит паритет return/fluidHeight-биты/dm-биты + HIT bookkeeping) · Сцена B (лава+вода
+  столбами, кромка лавы, граница секций — lastLavaContact parity) · Сцена C (flowing уровни 1-3 +
+  ШТОРМ: источник→течение 8 / течение→воздух / вода→камень / камень→вода — каждая мутация = MISS
+  + бит-в-бит со свежей ванилью; воздух→камень НЕ бампит) · Сцена D (unloaded-guard: оба пути
+  false без записи). Статистика: hit=49 miss=94 vanilla=0.
+- **Гейты S7-151/S7-152 статус**: G5 (OFFLINE lockstep) = PASS core; G1-G4/G6 — на живой ноге
+  (живой A/B). Признак диспатча: next tick S7-153 — preregister dispatch (inside_cache=1+
+  flush_diet=1+fluid_dirty=1, fp4/300s/150k/seed42/xmx10G, A/B min-of-2 vs CUMULATIVE 35330129145).
+- Артефакты: artifact_hashes_s7152.txt; RUNBOOK дополнен (этот блок).
