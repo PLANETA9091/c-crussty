@@ -22,13 +22,17 @@
 //!
 //! This module: (1) defines BatchCollector into the KERNEL loader at
 //! boot; (2) publishes BRIDGE_READY; (3) `wait_bridge_ready` is polled
-//! by region_threads BEFORE composing the Entity bytes (the class must
+//! by entity_compose BEFORE composing the Entity bytes (the class must
 //! be resolvable the moment the patched ctor runs — otherwise the first
 //! entity construction dies with NoClassDefFoundError; the population
 //! inject runs AFTER arm-time, so the ordering is a hard gate).
-//! Fail-closed: define failure -> dormant (region composes without the
-//! batch patch); strict NEW-site mismatch -> region keeps rng-only and
-//! logs the rejection.
+//! S7-162: the ctor retarget itself moved to entity_compose stage 5
+//! (single compose-chain owner); the per-tick ensure swap is RETIRED
+//! (run 35391679176: ctor 801 + ensure 737 samples = the whole infra
+//! tail; ctor frames all under ensure).
+//! Fail-closed: define failure -> dormant (entity_compose continues
+//! without the batch stage); strict NEW-site mismatch -> compose keeps
+//! the chain without batch and logs the rejection.
 
 use std::sync::atomic::{AtomicBool, Ordering};
 
@@ -52,9 +56,10 @@ pub fn enabled_pub() -> bool {
 
 static BRIDGE_READY: AtomicBool = AtomicBool::new(false);
 
-/// S7-161: pollable gate for the region_threads Entity composition — the
-/// patched ctor resolves `BatchCollector` the instant an entity spawns,
-/// so the class MUST be defined before the Entity retransform is served.
+/// S7-161/S7-162: pollable gate for the entity_compose stage pipeline —
+/// the patched ctor resolves `BatchCollector` the instant an entity
+/// spawns, so the class MUST be defined before the Entity retransform is
+/// served.
 pub fn wait_bridge_ready(timeout_ms: u64) -> bool {
     if !enabled() {
         return false;
@@ -78,7 +83,7 @@ pub fn activate() {
     }
     if crate::region_threads::workers_from_env_pub().is_none() {
         eprintln!(
-            "[crussty-plugin] batch_collector: requires CRUSSTY_REGION_THREADS>=2 (the ctor retarget composes through the region_threads Entity chain), hook stays dormant"
+            "[crussty-plugin] batch_collector: requires CRUSSTY_REGION_THREADS>=2 (the ctor retarget composes through the entity_compose chain), hook stays dormant"
         );
         return;
     }

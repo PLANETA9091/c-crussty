@@ -4898,6 +4898,49 @@ mod region_threads {
     }
 
     #[test]
+    fn entity_compose_chain_inside_rng_batch_composes_strictly() {
+        // S7-162: the LIVE entity_compose stage order is inside -> rng ->
+        // batch (stage 1 is length-preserving, stages 4-5 grow the CP).
+        // The full chain must compose strictly on the real Entity fixture:
+        // every stage finds EXACTLY its own site, none of the later scans
+        // is confused by the earlier rewrites, and the final bytes are a
+        // well-formed classfile (parseable constant pool + layout).
+        let (b1, out1) = patch_inside_cache(ENTITY).expect("inside patch");
+        assert_eq!(
+            out1,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "stage 1: the ONLY isAffectedByBlocks gate site in checkInsideBlocks"
+        );
+        let (b2, out2) = patch_region_rng_entity(&b1).expect("rng patch");
+        assert_eq!(
+            out2,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "stage 4: the ONLY Mth.createInsecureUUID site after the inside rewrite"
+        );
+        let (b3, out3) = patch_entity_collector_ctor(&b2).expect("batch patch");
+        assert_eq!(
+            out3,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "stage 5: the ONLY new StepBasedCollector site after inside+rng"
+        );
+        assert!(b3.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        // The composed bytes must survive a full structural parse (the
+        // runtime serves them to the JVM verifier).
+        let cp_count = u16::from_be_bytes([b3[8], b3[9]]);
+        let (pool, _end) = Pool::parse(&b3, 10, cp_count).expect("composed cp parse");
+        let layout = parse_layout(&b3).expect("composed layout parse");
+        assert!(layout.methods_start > 0);
+        // The inside gate is idempotent on top of the composed chain too
+        // (re-registration safety).
+        let (again, out_again) = patch_inside_cache(&b3).expect("inside repatch");
+        assert!(matches!(
+            out_again,
+            RetargetOutcome::AlreadyPatched { .. } | RetargetOutcome::Retargeted { .. }
+        ));
+        let _ = again;
+    }
+
+    #[test]
     fn region_hardening_wrong_class_fails_closed() {
         // tracker patcher on Entity: no newTrackerTick -> Err/NotFound
         match patch_region_tracker_chunkmap(ENTITY) {

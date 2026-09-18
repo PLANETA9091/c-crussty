@@ -26,6 +26,7 @@ mod brainhook;
 mod bridge_class;
 mod classfile;
 mod entity_mirror;
+mod entity_compose;
 mod fluid_guard;
 mod fluid_dirty;
 mod fluid_free;
@@ -129,6 +130,11 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // dirty-stamp ledger) + FluidPushOps bridge composed by the inside_chain
     // (scan retarget). Dormant unless CRUSSTY_FLUID_DIRTY=1.
     fluid_dirty::register();
+    // ENTITY-COMPOSE (S7-162): the SINGLE owner of the Entity byte pipeline
+    // (inside → fluid_free → fluid_dirty → rng → batch, one hook, one
+    // retransform — hooks on one class supersede each other: leg #5 886/895).
+    // Dormant unless at least one Entity-stage lever is enabled.
+    entity_compose::register();
     proto_blend_cache::register();
     // F1 BATCH-RNG (family-agg pack member, S7-112): ServerLevel body-swap hook.
     randomtick::register();
@@ -337,6 +343,10 @@ fn inject_surface() {
     // RegionTickOps.tickBucket; dormant unless CRUSSTY_BATCH_COLLECTOR=1
     // AND region_threads>=2).
     batch_collector::activate();
+    // ENTITY-COMPOSE (S7-162): apply the single compose chain on Entity
+    // (inside → fluid_free → fluid_dirty → rng → batch), publish the rng
+    // verdict for region_threads, retransform Entity exactly once.
+    entity_compose::activate();
     // Dormant unless CRUSSTY_NATIVE_BLEND_CACHE is set (see docs/HOOK_BLEND_CACHE.md).
     proto_blend_cache::activate();
     // F1 BATCH-RNG (S7-112): define RandomTickOps into the ServerLevel loader,

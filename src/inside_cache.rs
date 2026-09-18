@@ -12,25 +12,27 @@
 //! anything else falls through to `e.isAffectedByBlocks()` — the vanilla
 //! body runs untouched.
 //!
-//! The patch is computed from the pristine bytes captured at first class
-//! load; served via a single retransform after both bridge classes
-//! (`InsideBlockOps`, `InsideBlockOps$Recorder`) are defined into the
-//! kernel loader.
+//! S7-162 (single compose-chain): this module now only OWNS THE BRIDGE —
+//! it defines `InsideBlockOps` + `InsideBlockOps$Recorder` into the
+//! kernel loader and publishes BRIDGE_READY for the compose worker. The
+//! Entity byte patch itself moved to entity_compose (stage 1): two hooks
+//! on one class serve whole-class caches and SUPERSEDE each other (leg #5
+//! 35381522360 evidence lines 886/895 — the inside bytes 205522 were
+//! overwritten by the region serve 205494, the inside_cache gate was
+//! silently dead in the v2 bank).
 //!
 //! Gate: env `CRUSSTY_INSIDE_CACHE` (1/true/on/yes -> on). Off by default —
 //! dormant-invisible discipline (same as fluid_guard/alloc_diet): with the
-//! gate off, register() logs a dormant notice and NO byte hook is
-//! installed, activate() returns immediately, the module is
+//! gate off, register() logs a dormant notice and NO byte hook exists,
+//! activate() returns immediately, the module is
 //! byte-indistinguishable from the pre-S7-135 plugin.
 //!
-//! Fail-closed matrix: patcher Err (kernel shape mismatch / collector
-//! field renamed) → no patch, hook stays dormant; bridge define failure →
-//! dormant; no pristine capture → dormant; bridge Unsafe resolution
-//! failure (ARMED=false) → gate always returns the vanilla verdict.
+//! Fail-closed matrix: bridge define failure → BRIDGE_READY never set →
+//! the compose chain continues WITHOUT inside (fail-dominant, loud WARN);
+//! Entity patch-level failures are handled by the entity_compose stage
+//! (strict Retargeted/AlreadyPatched check, patcher Err → stage skipped).
 
-use jvmti_bindings::prelude::*;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
-use std::sync::{Arc, PoisonError};
 
 const ENTITY_CLASS: &str = "net/minecraft/world/entity/Entity";
 const OPS_CLASS: &str = "net/minecraft/world/entity/InsideBlockOps";
@@ -50,81 +52,35 @@ fn enabled() -> bool {
         .unwrap_or(false)
 }
 
-/// Gate visibility for the fluid_dirty chain WARN (S7-151: fluid_dirty
-/// requires the inside_cache chain for the Entity scan retarget).
+/// Gate visibility for the fluid_dirty chain WARN (S7-151) and the
+/// entity_compose stage enablement (S7-162).
 pub fn enabled_pub() -> bool {
     enabled()
 }
 
-static READY: AtomicBool = AtomicBool::new(false);
+static BRIDGE_READY: AtomicBool = AtomicBool::new(false);
 /// Global ref to the kernel classloader, captured at activation (0 = none).
 static KERNEL_LOADER: AtomicUsize = AtomicUsize::new(0);
 
-struct PatchCache {
-    bytes: Arc<[u8]>,
-    major: u16,
-}
-
-/// Poison recovery (TASK-46): every lock uses
-/// `unwrap_or_else(PoisonError::into_inner)` — locks only wrap plain
-/// Vec/Arc stores (no user code under the lock).
-struct Target {
-    name: &'static str,
-    orig: std::sync::Mutex<Option<Vec<u8>>>,
-    patch: std::sync::Mutex<Option<PatchCache>>,
-    served: AtomicBool,
-}
-
-impl Target {
-    fn new(name: &'static str) -> Self {
-        Self {
-            name,
-            orig: std::sync::Mutex::new(None),
-            patch: std::sync::Mutex::new(None),
-            served: AtomicBool::new(false),
+/// S7-162: pollable gate for the entity_compose stage pipeline — the
+/// compose worker needs the bridge classes DEFINED before the composed
+/// Entity bytes resolve InsideBlockOps on the first gated call.
+pub fn wait_bridge_ready(timeout_ms: u64) -> bool {
+    if !enabled() {
+        return false;
+    }
+    let deadline = std::time::Instant::now() + std::time::Duration::from_millis(timeout_ms);
+    while std::time::Instant::now() < deadline {
+        if BRIDGE_READY.load(Ordering::Acquire) {
+            return true;
         }
+        std::thread::sleep(std::time::Duration::from_millis(250));
     }
-    fn stash_orig(&self, bytes: &[u8]) {
-        let mut orig = self.orig.lock().unwrap_or_else(PoisonError::into_inner);
-        if orig.is_none() {
-            *orig = Some(bytes.to_vec());
-        }
-    }
-    fn orig_is_some(&self) -> bool {
-        self.orig
-            .lock()
-            .unwrap_or_else(PoisonError::into_inner)
-            .is_some()
-    }
-    fn take_orig(&self) -> Option<Vec<u8>> {
-        self.orig
-            .lock()
-            .unwrap_or_else(PoisonError::into_inner)
-            .clone()
-    }
-    fn set_patch(&self, cache: PatchCache) {
-        *self.patch.lock().unwrap_or_else(PoisonError::into_inner) = Some(cache);
-    }
-    fn patch_bytes(&self) -> Option<Arc<[u8]>> {
-        self.patch
-            .lock()
-            .unwrap_or_else(PoisonError::into_inner)
-            .as_ref()
-            .map(|c| Arc::clone(&c.bytes))
-    }
+    BRIDGE_READY.load(Ordering::Acquire)
 }
 
-static TARGET: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
-
-fn target() -> &'static Target {
-    TARGET.get_or_init(|| Target::new(ENTITY_CLASS))
-}
-
-/// Register the byte hook (idempotent; call once from cplugin_init).
-///
-/// The callback performs NO JNI/class-file work (loader-lock discipline —
-/// see improved_noise): pristine capture at the class's own load, patch
-/// served from the cache computed on the quiet activation worker.
+/// Register (idempotent; call once from cplugin_init). S7-162: NO byte hook
+/// is installed here — the Entity patch composes through entity_compose.
 pub fn register() {
     if !enabled() {
         eprintln!(
@@ -132,64 +88,41 @@ pub fn register() {
         );
         return;
     }
-    let t = target();
-    cplug_sdk::hooks::register_bytes(t.name, move |_name, bytes| {
-        let t = target();
-        if !READY.load(Ordering::Relaxed) {
-            // Pristine sighting (the original class load): stash the
-            // bytes for the worker; never rewrite here.
-            eprintln!(
-                "[crussty-plugin] inside_cache: pristine sighting {} {} bytes (major {})",
-                t.name,
-                bytes.len(),
-                crate::improved_noise::class_version(bytes).map(|(m, _)| m).unwrap_or(0)
-            );
-            t.stash_orig(bytes);
-            return None;
-        }
-        // Serve the precomputed patch; the clone is an Arc refcount bump.
-        let cached = t.patch_bytes();
-        if !t.served.swap(true, Ordering::Relaxed) {
-            eprintln!(
-                "[crussty-plugin] inside_cache: hook serve {} {} bytes",
-                t.name,
-                cached.as_ref().map(|c| c.len()).unwrap_or(0)
-            );
-        }
-        cached.map(|c| c.to_vec())
-    });
+    eprintln!(
+        "[crussty-plugin] inside_cache: bridge owner armed, Entity stage delegated to entity_compose (S7-162 single compose-chain)"
+    );
 }
 
-/// Background activation: wait for the kernel class, define both bridge
-/// classes into the kernel loader, compute the length-preserving patch
-/// from the pristine bytes, flip READY and retransform once.
+/// Background activation: wait for the kernel Entity class (the kernel
+/// loader capture point), define both bridge classes into the kernel
+/// loader, publish BRIDGE_READY. The Entity patch is computed and applied
+/// by entity_compose (stage 1).
 pub fn activate() {
     if !enabled() {
         return;
     }
     std::thread::spawn(|| {
-        let t = target();
         // Wait for the kernel Entity class (loads at boot).
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(180);
         loop {
-            if cplug_sdk::classes::find_class(t.name).is_some() {
+            if cplug_sdk::classes::find_class(ENTITY_CLASS).is_some() {
                 break;
             }
             if std::time::Instant::now() > deadline {
                 eprintln!(
-                    "[crussty-plugin] inside_cache: {} not loaded within 180s, hook stays dormant",
-                    t.name
+                    "[crussty-plugin] inside_cache: {} not loaded within 180s, bridge stays undefined",
+                    ENTITY_CLASS
                 );
                 return;
             }
             if std::time::Instant::now() > deadline - std::time::Duration::from_secs(170) {
                 eprintln!(
                     "[crussty-plugin] inside_cache: forcing kernel load of {}",
-                    t.name
+                    ENTITY_CLASS
                 );
-                crate::improved_noise::force_load_kernel_class(t.name);
+                crate::improved_noise::force_load_kernel_class(ENTITY_CLASS);
             }
-            let sighted = cplug_sdk::classes::is_sighted(t.name);
+            let sighted = cplug_sdk::classes::is_sighted(ENTITY_CLASS);
             std::thread::sleep(std::time::Duration::from_millis(if sighted {
                 2_000
             } else {
@@ -276,119 +209,10 @@ pub fn activate() {
             eprintln!("[crussty-plugin] inside_cache: bridge definition aborted, hook stays dormant");
             return;
         }
-
-        // Pristine bytes: if the class predates the hook (fast boot), capture
-        // via no-op retransform (READY=false → stash-only), fluid_guard
-        // pattern.
-        if !t.orig_is_some() {
-            eprintln!(
-                "[crussty-plugin] inside_cache: {} predates hook, capturing via no-op retransform",
-                t.name
-            );
-            for attempt in 1..=3 {
-                let _ = cplug_sdk::retransform_class(t.name);
-                if t.orig_is_some() {
-                    break;
-                }
-                std::thread::sleep(std::time::Duration::from_millis(250));
-                let _ = attempt;
-            }
-            if !t.orig_is_some() {
-                eprintln!(
-                    "[crussty-plugin] inside_cache: no pristine bytes for {}, hook stays dormant",
-                    t.name
-                );
-                return;
-            }
-        }
-
-        // Compute the patch from the pristine bytes (pure rust,
-        // length-preserving). Any Err = kernel shape mismatch → fail closed.
-        let Some(original) = t.take_orig() else {
-            return;
-        };
-        let major = crate::improved_noise::class_version(&original)
-            .map(|(m, _)| m)
-            .unwrap_or(0);
-        let (patched, outcome) = match crate::classfile::patch_inside_cache(&original) {
-            Ok(pair) => pair,
-            Err(e) => {
-                eprintln!(
-                    "[crussty-plugin] inside_cache: patch rejected ({e}), hook stays dormant"
-                );
-                return;
-            }
-        };
-        let retargeted = matches!(
-            outcome,
-            crate::classfile::RetargetOutcome::Retargeted { .. }
-                | crate::classfile::RetargetOutcome::AlreadyPatched { .. }
-        );
-        if !retargeted {
-            eprintln!(
-                "[crussty-plugin] inside_cache: unexpected patch outcome ({outcome:?}), hook stays dormant"
-            );
-            return;
-        }
-        eprintln!(
-            "[crussty-plugin] inside_cache: computed patch for {} ({} -> {} bytes, {outcome:?})",
-            t.name,
-            original.len(),
-            patched.len()
-        );
-        // FLUID-FREE chain (S7-143): when the fluid lever is enabled, the
-        // Entity bytes must ALSO carry the fluid-gate retarget (both
-        // updateFluidHeightAndDoFluidPushing wrapper sites -> FluidOps.fgate).
-        // The bridge (FluidOps) is defined by fluid_free::activate BEFORE
-        // this compose runs (wait_bridge_ready) — otherwise degrade
-        // inside-only (fail-dominant, loud WARN): serving fgate bytes
-        // without the bridge class would die with LinkageError.
-        let patched = if crate::fluid_free::enabled_pub() {
-            if crate::fluid_free::wait_bridge_ready(60_000) {
-                match crate::fluid_free::compose_entity(&patched) {
-                    Some(p) => p,
-                    None => patched,
-                }
-            } else {
-                eprintln!(
-                    "[crussty-plugin] inside_cache: fluid bridge missed its window, entity chain degrades INSIDE-ONLY (fail-dominant)"
-                );
-                patched
-            }
-        } else {
-            patched
-        };
-        // FLUID-DIRTY chain (S7-151): when the fluid_dirty lever is enabled,
-        // the Entity bytes must ALSO carry the scan retarget (both
-        // updateFluidHeightAndDoFluidPushing wrapper sites -> FluidPushOps.scan).
-        // The bridge (FluidPushOps) is defined by fluid_dirty::activate BEFORE
-        // this compose runs (wait_bridge_ready) — otherwise degrade
-        // chain-only (fail-dominant, loud WARN): serving scan bytes without
-        // the bridge class would die with LinkageError (S7-148 lesson).
-        let patched = if crate::fluid_dirty::enabled_pub() {
-            if crate::fluid_dirty::wait_bridge_ready(60_000) {
-                match crate::fluid_dirty::compose_entity(&patched) {
-                    Some(p) => p,
-                    None => patched,
-                }
-            } else {
-                eprintln!(
-                    "[crussty-plugin] inside_cache: fluid_dirty bridge missed its window, entity chain degrades WITHOUT-FLUID-DIRTY (fail-dominant)"
-                );
-                patched
-            }
-        } else {
-            patched
-        };
-        t.set_patch(PatchCache {
-            bytes: Arc::from(patched),
-            major,
-        });
-
-        // Single retransform; the callback serves the cached patch.
+        BRIDGE_READY.store(true, Ordering::Release);
         crate::kernel_policy::audit_wire(OPS_CLASS, "gate", "inside_cache v1");
-        READY.store(true, Ordering::Release);
-        let rc = cplug_sdk::retransform_class(t.name);
-        eprintln!("[crussty-plugin] inside_cache: {} armed, retransform rc={rc}", t.name);
+        eprintln!(
+            "[crussty-plugin] inside_cache: bridge defined, BRIDGE_READY (Entity stage composes via entity_compose)"
+        );
     });
 }
