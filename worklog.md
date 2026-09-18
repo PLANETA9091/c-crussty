@@ -2062,3 +2062,24 @@ Stage Summary:
 - NEXT (S7-157): preregister dispatch region_threads=4 (A/B min-of-2 vs CUMULATIVE 35330129145; inside_cache=1+flush_diet=1 база), живые гейты PG2/PG3/PG4 (0 NCDFE/ARMED/популяция; TPS ≥ +25%; young GC ≤ +15%)
 
 RUN_ID_DISPATCHED: NONE (импл-тик, CI-бутов 0)
+
+---
+## S7-157 + S7-157b (ARCH-ATTACK) — 2026-09-18 22:02-23:4x +08 — PG1 LOCKSTEP PASS + preregister dispatch leg #1 (35353820223) = LIVE CRASH → корень найден (worker пампит Paper mid-tick очередь) → MID-TICK GATE фикс + CI-гигиена (FIFO + watchdog'и); leg #2 (35363758352) диспатчен на фикс-билде
+
+**Task ID: S7-157/S7-157b (Job 394666, тики 22:08/23:08, делегация книжки — предыдущий агент исчерпал контекст до книжки; секция дозаписана тиком 00:48)**, Agent: agent-7625532f
+
+Work Log:
+- creds (1b) + СТАТУС S7-156 (NEXT = S7-157 preregister dispatch) + pull --rebase ×2
+- PG1 LOCKSTEP PASS (RegionLockstepHarness, plain JVM над реальным kernel, NO server boot): дайджест `61e3c374…941d5` бит-в-бит при W=1 == W=2 == W=4 (60 тиков, 400 сущностей + шторм мутаций, финал 413); отложенные добавления начинаются со следующего тика во всех W (javap-доказательство vanilla-эквивалентности: maxIndex пиннится при создании итератора); mid-tick самоудаления наблюдаемо идентичны с T+1; дайджест иммунен к порядку drain между бакетами, чувствителен к любому отклонению per-entity семантики. Коммиты cfcc384 + a8ce1b9 (dispatch_s7157.py, token из remote URL — урок S7-153)
+- Диспатч leg #1: run 35353820223 (14:02:49 UTC, region_threads=4 на базе inside_cache=1+flush_diet=1, fp4/300s/150k/seed42/xmx10G) → КРЭШ 40-я секунда: `java.util.NoSuchElementException` @ `ServerChunkCache$MainThreadExecutor.pollTask(ServerChunkCache.java:838)` — воркер-поток протолкнул Paper mid-tick очередь через `Level.guardEntityTick` → `moonrise$midTickTasks` → MainThreadExecutor в отсутствие main-насоса; server cleanly shutdown (чанки сохранены), job сгорел 68 мин на `tail -f` сироте (CI-бут санкционирован, leg CANCELLED — валидного A/B-сэмпла нет)
+- Census насосных сайтов: 7 сайтов pumpTasks/managedBlock/pollTask в kernel, воркер-достижим ровно 1 (цепочка guardEntityTick → moonrise$midTickTasks → MainThreadExecutor.pollTask) — main-путь в ваниле безопасен (self-насос)
+- Фикс S7-157b (880e406): RegionTickOps.midTickTasks gate — ThreadLocal worker-флаг; воркер = пропуск mid-tick pump (side-эффект Paper-дедликации, не ванильная семантика тика сущности), main = точная ванильная делегация; 3-й строгий byte-hook `Level.guardEntityTick` Retargeted{1}; +4 roundtrip-теста (suite 144/0/1); region_threads.rs v2 (3 таргета); harness OFFLINE PASS (structural/wiring + per-visit флаг-чек: isWorker() true ТОЛЬКО на helper-потоках, 0 нарушений на 200 сущностях); PG1 дайджест НЕ изменился
+- CI-гигиена run_world3.sh: FIFO-паттерн (`mkfifo console.pipe`; tail -f > pipe; TAIL_PID убивается при shutdown TERM+KILL) + liveness-watchdog во всех трёх ожиданиях (boot/pop-inject/soak: `kill -0 $SERVER_PID` → FATAL + ранняя остановка, артефакты сохраняются) — сироты пайпов более не жгут раннер
+- Диспатч leg #2: run 35363758352 (15:39:30 UTC, 9 сек после пуша фикса; тот же preregister протокол region_threads=4 vs CUMULATIVE 35330129145, гейты PG2/PG3/PG4)
+- Учёт: MIDTICK_GATE_S7157b.md + PG1_LOCKSTEP_S7157.md + absorb_s7157.py + artifact_hashes_s7157b.txt (research/region-threads-2026-09-18/)
+
+Stage Summary:
+- Lever #7 прошёл офлайн-эшелон полностью (PG1 бит-в-бит) и живой крэш leg #1 root-caused/зафикшен за один тик; вывод: Paper мид-тик инфраструктура несовместима с параллельным тиком сущностей без гейта — worker обязан быть «чище» main (не пампить chunk-очереди)
+- Leg #2 (35363758352) в полёте на момент записи; absorb гейтов PG2/PG3/PG4 — тик 00:48
+
+RUN_ID_DISPATCHED: 35363758352 (leg #2, в полёте; CI-бутов: leg #1 35353820223 санкционированный крэш-лег)
