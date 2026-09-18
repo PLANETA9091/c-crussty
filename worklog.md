@@ -2183,3 +2183,25 @@ Stage Summary:
 - NEXT (S7-160, следующий тик): RECON-3 residual-подлейна по свежему профилю v2 → preregister атаки (НЕ-кэш: батчинг SynchedEntityData-чтений, O(1)-индексы sensing, layout); круг «ТОП-ПОЖИРАТЕЛЬ → ∞» продолжается
 
 RUN_ID_DISPATCHED: NONE (absorb-тик: leg #4 35379431410 + leg #5 35381522360 поглощены; оба = санкционированные preregister A/B; CI-бутов 0)
+
+---
+## S7-160 (ARCH-ATTACK) — 2026-09-19 03:0x-04:1x +08 — RECON-3: inside-pipeline = крупнейший residual-подлейн (6% CPU/27% alloc); рычаг #8 BATCH-COLLECTOR: прямой выигрыш живьём, но свап не удерживается → REFUTED-BY-ECONOMICS; rollback
+
+**Task ID: S7-160 (Job 396026, тик 03:08)**, Agent: agent-7625532f
+
+Work Log:
+- creds (1b) + pull ×2 up to date; next TASK id = 302; last = TASK-301 (REGION-THREADS banked, CUMULATIVE v2)
+- RECON-3 (recon3_s7160.py, двойной артефакт v1+leg#5): residual 27319 сэмплов decomposed по deepest-MC-фрейму → крупнейший связный под-лейн = checkInsideBlocks/inside-effects пайплайн ~7.8k сэмплов (6% CPU, 11.2% фазы, 28% residual) + alloc-ось 27.38% young-gen (LongOpenHashSet per-check 3.37%, FluidState.getAABB 2.87%, BlockPos$6 2.53%); он ПОЗИЦИОННО-НЕЗАВИСИМ (не кэш-класс) и не покрыт inside_cache (статик-онли)
+- Рычаг #8 BATCH-COLLECTOR: zero-map flat StepBasedCollector (5 типов × плоские слоты, ORDER-цикл, long-packed позиции) вместо 3 EnumMap-оп × APPLY_ORDER на каждый step-переход (~60 map-оп/сущность/тик ≈ 9M/тек); swap = ленивый Unsafe putObjectVolatile в RegionTickOps.tickBucket ДО ванильного consumer'а; DEFINE-ONLY wiring (batch_collector.rs, lib.rs, env CRUSSTY_BATCH_COLLECTOR; requires region_threads>=2)
+- javap-контракты сняты (StepBasedCollector/RecordedEffect.accept=applier.affect/APPLY_ORDER=values(); apply-NPE без advanceStep учтён); plumbing: run_world3.sh + world-bench.yml input batch_collector; dispatch_s7160.py (token_from_remote, zero secrets)
+- Верификация: cargo suite 147/0/1; BatchCollectorHarness OFFLINE PASS (6000 рандом-сценариев, flushStep-очереди бит-в-бит: EFFECT type/pos + CONS порядок); PG1-дайджест не затронут (define-only)
+- Диспатч leg: run 35387310239 (head 72a7f55, SUCCESS ~20 мин); артефакт fetched 29MB (fetch_artifact.py новый: NoRedirect-паттерн 302→blob без auth — урок из s7147)
+- ABSORB: PG2 PASS / PG3 формально PASS / **PG4'' FAIL** / CRASH-FREE PASS → REFUTED-BY-ECONOMICS; разложение по листам: РЫЧАГ РАБОТАЕТ (flushStep 1657→1035 = −34% per-work, advanceStep 491→85, apply 97→13, RecordedEffect 33→0 — zero-alloc живьём, young GC 161 < 180), НО BatchCollector.<init> 728 + ensure 713 = свап-инфра: свап НЕ УДЕРЖИВАЕТСЯ между тиками (ротация ≈ 0: Entity.<init> 4 сэмпла; поле private final, писатель ядра единственный = ctor) → per-work +26% (варианс ±0.4% на v2 leg4/leg5)
+- Учёт: ABSORB_S7160.md + ABSORB_S7160.out + GOAL СТАТУС ×2 (preregister ДО диспатча + absorb); CLAIMS TASK-302; rollback batch_collector=0 (код dormant-invisible в master — ALLOC-DIET-прецедент); пуши c-crussty 72a7f55 + финал
+
+Stage Summary:
+- RECON-3 закрыл главный вопрос residual: largest attackable = inside-pipeline (не fluid/broadphase — они 2×/3×REFUTED кэш-классы); внутри него collector-подлейн доказанно ускоряем, свап-механика ленивого Unsafe в final-поле — НЕЖИЗНЕСПОСОБНА (4-й урок эры: оффлайн-гейты проверяют семантику, не JIT-жизнь свапа; телеметрии свап-счётчика не хватило)
+- Вердикт честен по preregister: банк v2 не тронут, TPS-база эры 1.6-2.4 (×2-2.7) цела; 1 CI-лег = санкционированный preregister A/B
+- NEXT (S7-161): стойкий свап = rust-ретаргет NEW-сайта Entity.<init> → BatchCollector (RngOps-прецедент, probe-гейт, rc=0); инфра 1441 → ~0, ожидание −40..−50% collector-семьи (~−1.2% total CPU) + alloc-плюс; после — residual-хвост (<5% под-лейны) и возврат к ТОП-1 по кругу
+
+RUN_ID_DISPATCHED: 35387310239 (REFUTED-BY-ECONOMICS; CI-бутов за тик 1 — санкционированный preregister A/B)
