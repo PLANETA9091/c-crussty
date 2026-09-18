@@ -2120,3 +2120,25 @@ Work Log:
 
 Stage Summary:
 -REGION-THREADS = первый рычаг эры с материальным TPS-сдвигом (+66.7%, оффлоад 75.6%); до банка осталось S7-158b (tracker/lookup ретаргет) + leg #3; контур CI более не сгорает на пост-краш фазе (bounded ops); GC-регресс устранён дизайн-фиксом с сохранением бит-в-бит parity. INJECTS-ONLY цел: 0 CI-бутов за тик.
+
+---
+## S7-158b/d (ARCH-ATTACK) — 2026-09-19 01:08-01:5x +08 — TRACKER-RACE И UUID-СИДИРОВАНИЕ ЗАФИКСЕНЫ КОДОВО (removal-safe sweep + serialized seeding); PG1 дайджест БИТ-В-БИТ неизменён; leg #3 диспатчен (35376530777)
+
+**Task ID: S7-158b/d (Job 396026, тик 01:08; фаза S7-158a/c закрыта этой же сессией ранее — коммиты 3fc9443/494c88a/9e52d37)**, Agent: agent-7625532f
+
+Work Log:
+- creds (1b) + pull --rebase ×2 up to date; наследована незакоммиченная S7-158a/c работа предыдущей фазы (bounded-console-ops + GC-diet) — проверена и принята
+- javap-разведка корней (scripts/s7158_javap_recon.sh + /tmp-дампы): (a) newTrackerTick = unchecked-обход raw-массива без null-гварда элемента (line 1017); (b) PurpurWorldConfig.entitySharedRandom ДЕФОЛТ TRUE + SHARED_RANDOM = ThreadUnsafeRandom + createInsecureUUID = 2 nextLong без синка; census CP-сканом jar: боевой сайт UUID = только Entity ctor
+- S7-158b: TrackerTickOps (removal-safe sweep, тело ванили байт-в-байт + SKIP нулевого слота) + ретаргет ChunkMap.tick()V → strict Retargeted{1}; отклонён deferral EntityLookup-удалений (меняет same-tick broadphase-видимость)
+- S7-158d: RngOps (UUIDv4 бит-в-бит под synchronized(random)) + retarget_invokestatic в Entity.<init> (same descriptor) → strict Retargeted{1}; config-wins не используется (запрещён)
+- S7-158c доделана: null-слоты new Entity[w][] → new Entity[0] (NPE пойман харнессом в parallel child)
+- region_threads.rs v3: 5 таргетов (+ChunkMap, +Entity), 4 bridge-класса в kernel loader, audit_wire trackerTick/rngUUID; classfile.rs: 2 патчера + 3 теста на фикстурах ChunkMap_real/Entity_real; .gitignore run-*/ region-threads
+- Верификация: cargo suite 147/0/1; RegionThreadsHarness OFFLINE PASS (wiring + ChunkMap structural + sweep-регресс [e1,null,e2] + UUID-регресс 2×2000=0 дуп); PG1 LOCKSTEP PASS дайджест 61e3c374…941d5 БИТ-В-БИТ; урок: патченный Entity не дефайнится оффлайн в child-лоадере (сплит идентичности с parent-ItemEntity)
+- Диспатч leg #3: run 35376530777 (17:48:46 UTC, head fae2233, queued) — preregister A/B min-of-2 vs CUMULATIVE 35330129145, гейты PG2/PG3/PG4 + 0 tracker-NPE + 0 uuid-dup
+- Учёт: S7158_HARDENING.md + artifact_hashes_s7158.txt + GOAL СТАТУС S7-158b/d + CLAIMS TASK-299; пуши c-crussty fae2233, dev-logs 8fa1ac1
+
+Stage Summary:
+- Lever #7 очищен для banking: обе инженерные гонки leg #2 устранены кодово (removal-safe sweep сохраняет ванильные тайминги воркеров; UUID-монитор сериализует только конструирование), GC-диета цела и долечена; остался watchlist navigatingMobs (не-фатальный, 1/15 мин)
+- NEXT (S7-158 absorb, тик 02:08): absorb leg #3 (35376530777) — PG2/PG3/PG4 + 0 инцидентов → leg #4 (второй сэмпл min-of-2) → banking REGION-THREADS при полном PASS; после банка — очередь микро-лейнов по директиве «ТРОГАЕМ ВСЁ» (move/collision 5.4%, inside-blocks 5.1%, tracker 2%, пассажиры 1.17%)
+
+RUN_ID_DISPATCHED: 35376530777 (leg #3, queued; CI-бутов за тик 1 — санкционированный preregister A/B)
