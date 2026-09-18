@@ -1716,3 +1716,22 @@ Stage Summary:
 - БЛОКЕР (10-й тик): bootstrap_tick.sh/creds не восстановлены владельцем — без push офлайн-прогресс остаётся под wipe-риском (прецедент S7-139)
 
 RUN_ID_DISPATCHED: NONE (CREDS-BLOCKED 10-й тик; runs_index row 287 local)
+
+---
+## S7-145 (ARCH-ATTACK) — 2026-09-18 13:0x +08 — REPRO-аудит v3: ВСЕ 5 харнессов воспроизведены из ЧИСТОГО состояния (exit 0); диспатч-конвейер восстанавливаем одной командой; CREDS-BLOCKED 11-й тик
+
+**Task ID: S7-145 (Job 393012, тик 13:08)**, Agent: agent-7625532f (session web-f7888d46)
+
+Work Log:
+- bootstrap_tick.sh ОТСУТСТВУЕТ (11-й тик CREDS-BLOCKED); 3x pull --rebase up-to-date (ahead 9 на входе тика, CRUSSTY pristine не тронут); crussty-dev-logs не восстановлен (CLAIMS-долг в CLAIMS_DEBT)
+- REPRO-аудит v3 (дополнение к S7-144): из чистого состояния (пост-WIPE) воспроизведены харнессы: INSIDE-CACHE PASS (InsideBlockOps ARMED=true, Recorder, cache 131072×12), FLUSH-DIET PASS (fladd semantics, patched+vanilla smoke, RecordedEffect nest-partner из kernel), ALLOC-DIET PASS (CollisionUtil retarget, mutablePos ring 8 zeroed), PALETTED-DEMUX Parity ALL PASS (20000 random ops lockstep 4883/4883, snapshot snapGen=30009, fast-path, re-materialization, concurrency 3R+1W)
+- Диагностика и уроки (RUNBOOK_S7145): харнессы в default package (запуск по простому имени; FluidFreeHarness — FQN-исключение); Parity stub jar = PalettedContainer* + Strategy* + Configuration* (same-runtime-package closure; lone patched class → LinkageError itable; Strategy в parent → IllegalAccessError protected-abstract); libRoot = 5-й аргумент
+- Банк: research/dispatch-readiness-2026-09-18/{RUNBOOK_S7145.md, scripts_s7145/repro_dispatch_harnesses.sh, scripts_s7145/repro_parity.sh}, sha256 artifact_hashes_s7145.txt
+- Учёт: GOAL СТАТУС S7-145; runs_index row 288 (279–288 непрерывно); CLAIMS_DEBT дополнен; коммит тика (ahead 10); INJECTS-ONLY цел (0 boots; 0 CI-бутов)
+
+Stage Summary:
+- Полная REPRO-восстанавливаемость диспатч-цепочки доказана: любой из 5 офлайн-верификаторов (4 рычага + демукс) поднимается из чистого окружения за минуты одной командой; READY-TO-DISPATCH усилен
+- Критический путь не изменился = creds: push 10 коммитов → leg #2' INSIDE-CACHE (X150K, base 35275967738, гейты §156) → FLUSH-DIET → FLUID-FREE (demux=1) → ALLOC-DIET → absorb-вердикты
+- БЛОКЕР (11-й тик): bootstrap_tick.sh/creds не восстановлены владельцем
+
+RUN_ID_DISPATCHED: NONE (CREDS-BLOCKED 11-й тик; runs_index row 288 local)
