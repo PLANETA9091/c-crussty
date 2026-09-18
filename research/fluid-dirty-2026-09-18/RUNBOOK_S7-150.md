@@ -139,3 +139,42 @@ updateInWaterStateAndDoFluidPushing():Z   // вход в fluid-конвейер 
 5. Compile-OK CI-эквивалент + rust 122 ok + harness PASS → preregister dispatch (A/B min-of-2)
 
 INJECTS-ONLY: 0 sandbox boots; CI-буты санкционированы.
+
+---
+## ДОПОЛНЕНИЕ S7-151 (2026-09-18 18:4x-19:1x +08) — ИМПЛЕМЕНТАЦИЯ FLUID-DIRTY ЗАБАНЧЕНА
+
+- **FluidPushOps.java** (пакет net.minecraft.world.entity, self-contained — S7-148-урок,
+  ни одного cross-bridge dep): scanArmed = guard touchingUnloadedChunk → span (клэмп-математика
+  ванили) → сбор секций span + текущих штампов (детерминированный cz→cx→sy) → HIT-проверка
+  (span бит-в-бит + pushedByFluid + nsec + refs секций + штампы) → MISS: mirrorScan (полная
+  реимплементация шагов 2-7 javap-контракта: пред-фетч rows-матрицы, обход x→y→z, i2f/fadd/f2d
+  высоты, dcmpg/ifge NaN-семантика, ref-identity Vec3.ZERO, dcmpg-форма sc-ветки) + capture →
+  postprocess (шаги 8-10 всегда: fluidHeight.put, lastLavaContact, pushTail бит-в-бит).
+  ДВА набора слотов (WATER/LAVA, NSLOTS 2^17) — иначе теги вымывали бы друг друга каждый тик;
+  модифицированные теги → чистая ванилла. Capture в свой слот (ping-pong hardening S7-136).
+  НОЛЬ Unsafe (все члены доступны same-package). ThreadLocal ring (ScanOut/секции/штампы/mpos) —
+  ноль аллокаций на HIT.
+- **Ретаргеты (classfile.rs)**: patch_fluid_dirty_entity (оба wrapper-сайта → FluidPushOps.scan,
+  строгая 1+1) + patch_fluid_dirty_levelchunk (единственный сайт LevelChunkSection.setBlockState
+  в LevelChunk.setBlockState → FluidPushOps.secWrite, строго 1). CENSUS v2 (S7151_CENSUS.md):
+  во всём kernel ровно 2 вызова скана (оба в Entity-обёртках) и ровно 1 сайт section-write —
+  покрытие полное, рекурсии нет (тело ванильного метода не тронуто, miss → обычный invokevirtual).
+- **Rust wiring**: src/fluid_dirty.rs (env CRUSSTY_FLUID_DIRTY, hook LevelChunk, define
+  FluidPushOps+$ScanOut в kernel loader, BRIDGE_READY-протокол) + inside_cache.rs compose-цепочка
+  (Entity байты = inside + [fluid_free] + fluid_dirty, wait_bridge_ready 60s — S7-143/S7-148
+  LinkageError-уроки) + lib.rs (mod/register/activate). enabled_pub в inside_cache для WARN.
+- **Тесты**: 9 новых roundtrip-тестов classfile.rs (retarget 2/1 строгие, methodref-триплы в пуле,
+  idempotent байт-в-байт, fail-closed на чужом классе, compose with inside) — **полный suite
+  132/0/1** (было 121/0/1). Release-сборка OK.
+- **Harness OFFLINE PASS exit 0** (structural/wiring/armed/ledger tier): патченные Entity+LevelChunk
+  линкуются над реальным kernel (verifier pass); ссылки на FluidPushOps + invokestatic на месте;
+  ARMED; ledger на РЕАЛЬНОЙ секции kernel: air→water bump 0→1 + old-state возврат + делегация
+  записи; water→water (синглтон) НЕ бампит (нет ложной инвалидации); water→air bump 1→2;
+  air→stone НЕ бампит (обычные блоки не дёргают).
+- **Артефакты**: artifact_hashes_s7151.txt (14 файлов, sha256); tests/fixtures/LevelChunk_real.class
+  (bac0a84d…); tests/out/{Entity,LevelChunk}.fluiddirty.patched.class (dump из rust-тестов).
+- **S7-152 (следующий тик)**: поведенческий lockstep на мини-Level (реальные ItemEntity/ArmorStand +
+  Level-стаб с реальными LevelChunk/Section): FluidPushOps.scan vs ванильный скан бит-в-бит
+  (return, fluidHeight-биты, dm-биты, lastLavaContact) на позиционных свипах (границы чанков/секций,
+  дробные координаты, вода/лава/высоты течений, dm-ветка 0.003/0.0045) + шторм мутаций (G5-гейт) →
+  затем preregister dispatch (inside_cache=1+flush_diet=1+fluid_dirty=1, A/B min-of-2 vs CUMULATIVE).

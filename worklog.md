@@ -1933,3 +1933,25 @@ Stage Summary:
 RUN_ID_DISPATCHED: NONE (STEP-0/RECON тик); поглощено: RECON CUMULATIVE 35330129145
 
 ---
+---
+## S7-151 (ARCH-ATTACK) — 2026-09-18 18:4x-19:1x +08 — FLUID-DIRTY ИМПЛЕМЕНТИРОВАН: FluidPushOps (memo+ledger) + двойной ретаргет (census: ровно 2 сайта скана/1 сайт secWrite во всём kernel) + rust-wiring compose-цепочки; rust suite 132/0/1; harness OFFLINE PASS (structural/wiring/armed/ledger)
+
+**Task ID: S7-151 (Job 394666, тик 18:43)**, Agent: agent-7625532f
+
+Work Log:
+- creds: bootstrap_tick.sh отсутствует → правило (1b); 3× pull --rebase = up to date; канон: TASK-289 → NEXT S7-151 имплементация
+- Census v2 (s7151_census2.py → S7151_CENSUS.md): во всём kernel 7309 net/minecraft классов — ровно 2 вызова Entity.updateFluidHeightAndDoFluidPushing (оба в обёртках: вода 39 / лава 41, javap), ровно 1 сайт LevelChunkSection.setBlockState(IIIL…)BlockState в LevelChunk.setBlockState(BlockPos,BlockState,I)BlockState (offset 73; прочие попадания = BlockEntity.setBlockState, другой methodref) ⇒ 3B→3B receiver-first ретаргеты покрывают 100% вызовов, рекурсии нет
+- FluidPushOps.java (self-contained, НОЛЬ Unsafe, S7-148-урок): scanArmed = touchingUnloadedChunk-guard → span-клэмп (математика ванили) → сбор секций+штампов (cz→cx→sy детерминировано) → HIT (span+push+nsec+refs+stamps) → MISS mirrorScan (шаги 2-7 javap бит-в-бит: rows-матрица, x→y→z, i2f/fadd/f2d, dcmpg/ifge NaN, ref-identity Vec3.ZERO) + capture → postprocess (шаги 8-10 всегда); 2 слот-набора WATER/LAVA (2^17); модифицированные теги → ванилла; capture в свой слот (ping-pong hardening); ThreadLocal ring — ноль аллокаций на HIT; secWrite-делегат (old-state возврат + ref-compare FluidState bump)
+- classfile.rs: patch_fluid_dirty_entity (1+1 строго) + patch_fluid_dirty_levelchunk (строго 1) + 9 roundtrip-тестов (методреф-триплы, idempotent, fail-closed, compose with inside) — suite 132/0/1 (было 121/0/1); release build OK
+- fluid_dirty.rs (env CRUSSTY_FLUID_DIRTY; hook LevelChunk; define FluidPushOps+$ScanOut в kernel loader; BRIDGE_READY) + inside_cache.rs compose-цепочка (Entity = inside+[fluid_free]+fluid_dirty, wait_bridge_ready — S7-143/148 LinkageError-уроки) + lib.rs включение
+- FluidDirtyHarness + run_fluid_dirty_harness.sh: OFFLINE PASS exit 0 — патченные Entity+LevelChunk линкуются над kernel (verifier), FluidPushOps-референсы+invokestatic на месте, ARMED, ledger на реальной секции: air→water 0→1 (+old-state+делегация), water→water не бампит (ref-compare), water→air 1→2, air→stone не бампит
+- sha256-манифест 14 артефактов (artifact_hashes_s7151.txt); RUNBOOK дополнен; GOAL СТАТУС S7-151
+- Учёт: RUN_ID_DISPATCHED: NONE (имплементационный тик, CI-бутов 0); CLAIMS TASK-290
+
+Stage Summary:
+- FLUID-DIRTY забанчен целиком (код+патчеры+wiring+тесты+структурный/ledger-харнесс) в прайд-форме конвейера эры
+- Следующий тик (S7-152): поведенческий lockstep мини-Level (G5: scan vs ваниль бит-в-бит + шторм мутаций) → preregister dispatch (inside_cache=1+flush_diet=1+fluid_dirty=1)
+
+RUN_ID_DISPATCHED: NONE; поглощено: census kernel + имплементация
+
+---
