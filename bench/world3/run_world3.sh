@@ -133,6 +133,7 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "alloc_diet: $ALLOC_DIET (CRUSSTY_ALLOC_DIET; 1 = ALLOC-DIET ARCH-ATTACK lever #2: zero-alloc push/collision queries, S7-133/TASK-269)"
   echo "inside_cache: $INSIDE_CACHE (CRUSSTY_INSIDE_CACHE; 1 = INSIDE-CACHE ARCH-ATTACK lever #3: static-entity inside-blocks discovery memoization, S7-135/TASK-271)"
   echo "flush_diet: $FLUSH_DIET (CRUSSTY_FLUSH_DIET; 1 = FLUSH-DIET ARCH-ATTACK lever #4: StepBasedCollector.flushStep zero-waste addAll via FlushOps, S7-137)"
+  echo "fluid_free: $FLUID_FREE (CRUSSTY_FLUID_FREE; 1 = FLUID-FREE-SECTION ARCH-ATTACK lever #5: fluid-ff verdict cache via FluidOps.fgate, requires paletted_demux=1, S7-143)"
   echo "population_target: $POPULATION_TARGET (BENCH-X150K living-scene injection, S7-129; 0 = off)"
   echo "population_seed: $POPULATION_SEED (deterministic injection replay seed; topup seeded from deltaT=ft-T0, S7-130)"
   echo "server_xmx: $SERVER_XMX (S7-130; 150k-scale runs use 10G)"
@@ -330,6 +331,9 @@ export CRUSSTY_ALLOC_DIET="$ALLOC_DIET"
 export CRUSSTY_INSIDE_CACHE="$INSIDE_CACHE"
 # FLUSH-DIET gate (flush_diet.rs reads it at register time; S7-137)
 export CRUSSTY_FLUSH_DIET="$FLUSH_DIET"
+# FLUID-FREE-SECTION gate (fluid_free.rs reads it at register time; S7-143;
+# requires CRUSSTY_PALETTED_DEMUX=1 — the verdict epoch is the demux counter)
+export CRUSSTY_FLUID_FREE="$FLUID_FREE"
 # BENCH-X150K population fixture env (0 = no-op; S7-129)
 export BENCH_POPULATION_TARGET="$POPULATION_TARGET"
 export BENCH_POPULATION_SEED="$POPULATION_SEED"

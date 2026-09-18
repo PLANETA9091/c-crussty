@@ -2926,6 +2926,95 @@ pub fn patch_flush_step(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), Stri
     ))
 }
 
+// ---------------------------------------------------------------------------
+// SECTION-FF FIELD INJECTION (S7-143, FLUID-FREE-SECTION lever) — append-only
+// 2-field splice into LevelChunkSection:
+//   crusstyFf    : B  PUBLIC VOLATILE — verdict byte, 0=unknown / 1=fluid-free
+//                       / 2=has-fluids. Zero-init is NEVER served as a verdict
+//                       (unknown forces the lazy scan; fail-dominant = false
+//                       miss, never a false HIT).
+//   crusstyFfGen : I  PUBLIC VOLATILE — the demux MUTATION-epoch (crusstyGen,
+//                       ±2 per mutation: prologue+epilogue) the verdict was
+//                       computed against. NOT crusstySnapGen.
+// Verdict protocol lives in FluidOps: ff==1 && ffGen==states.crusstyGen ->
+// free-HIT; ff==2 -> miss; else lazy 4096-cell scan publishing (ffGen, ff)
+// in that write order. This patcher is pure field-splice: bodies untouched,
+// no Code edits, idempotent, fail-closed on any shape mismatch.
+// ---------------------------------------------------------------------------
+pub const SECTION_CLASS: &str = "net/minecraft/world/level/chunk/LevelChunkSection";
+pub const F_FF: &str = "crusstyFf";
+pub const F_FFGEN: &str = "crusstyFfGen";
+
+pub fn patch_section_ff(bytes: &[u8]) -> Result<Vec<u8>, String> {
+    let layout = parse_layout(bytes).ok_or("bad classfile layout".to_string())?;
+    let this_name = this_class_name(&layout)
+        .ok_or_else(|| "cannot resolve this_class name".to_string())?;
+    if this_name != SECTION_CLASS {
+        return Err(format!("unexpected class {this_name}"));
+    }
+    let mut pool = layout.pool;
+
+    // Idempotency: a pool carrying the injected names is already patched.
+    if pool.find_utf8(F_FFGEN).is_some() {
+        return Ok(bytes.to_vec());
+    }
+
+    // Fail-closed probes before any mutation: the states container field
+    // must exist (kernel-rename guard; FluidOps pairs ff with states.gen).
+    pool.find_utf8("states")
+        .ok_or("states absent from pool (kernel rename?)".to_string())?;
+
+    // ---- constant pool additions (append-only; utf8 ONLY — field_info
+    // references name_idx/desc_idx, and no code in this class touches the
+    // new fields (FluidOps reaches them via Unsafe offsets), so no
+    // Fieldref/NameAndType entries are needed) ----
+    pool.utf8(F_FF);
+    pool.utf8("B");
+    pool.utf8(F_FFGEN);
+    pool.utf8("I");
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for SECTION-FF refs".into());
+    }
+    let n_ff = pool
+        .find_utf8(F_FF)
+        .ok_or("ff name utf8 missing".to_string())?;
+    let d_ff = pool
+        .find_utf8("B")
+        .ok_or("B descriptor utf8 missing".to_string())?;
+    let n_gen = pool
+        .find_utf8(F_FFGEN)
+        .ok_or("ffGen name utf8 missing".to_string())?;
+    let d_gen = pool
+        .find_utf8("I")
+        .ok_or("I descriptor utf8 missing".to_string())?;
+
+    // ---- field table: original entries + 2 injected field_info blocks ----
+    let acc_ff = ACC_PUBLIC | ACC_VOLATILE;
+    let mut fields_out = Vec::with_capacity(64);
+    let orig_fields_count = u16_at(bytes, layout.fields_start).ok_or("fields_count oob")?;
+    fields_out.extend_from_slice(&(orig_fields_count.saturating_add(2)).to_be_bytes());
+    fields_out.extend_from_slice(&bytes[layout.fields_start + 2..layout.methods_start]);
+    for (access, n, d) in [(acc_ff, n_ff, d_ff), (acc_ff, n_gen, d_gen)] {
+        fields_out.extend_from_slice(&access.to_be_bytes());
+        fields_out.extend_from_slice(&n.to_be_bytes());
+        fields_out.extend_from_slice(&d.to_be_bytes());
+        fields_out.extend_from_slice(&0u16.to_be_bytes()); // attributes_count
+    }
+
+    // ---- assemble: header + new cp + [cp_end..fields_start] + fields + tail ----
+    let mut out = Vec::with_capacity(bytes.len() + 128);
+    out.extend_from_slice(&bytes[0..8]); // magic, minor, major
+    out.extend_from_slice(&pool.next.to_be_bytes()); // new cp_count
+    out.extend_from_slice(&pool.serialize());
+    // this_class/super_class/interfaces stay verbatim
+    out.extend_from_slice(&bytes[layout.cp_end..layout.fields_start]);
+    out.extend_from_slice(&fields_out);
+    // methods + class attributes: NO method edits, verbatim tail
+    out.extend_from_slice(&bytes[layout.methods_start..]);
+    Ok(out)
+}
+
+
 #[cfg(test)]
 mod real_noise {
     // G4 S7-12: the REAL ImprovedNoise class (extracted from the live
@@ -3984,5 +4073,92 @@ mod fluid_gate {
         let (entity, _) = patch_fluid_gate(ENTITY).expect("patch");
         std::fs::create_dir_all("tests/out").unwrap();
         std::fs::write("tests/out/Entity.fluidpatched.class", &entity).unwrap();
+    }
+}
+
+#[cfg(test)]
+mod section_ff {
+    use super::*;
+
+    const SECTION: &[u8] = include_bytes!("../tests/fixtures/LevelChunkSection_real.class");
+
+    /// The patch applies to the real kernel section, grows the file, and
+    /// carries both injected names in the appended pool.
+    #[test]
+    fn section_ff_applies_and_grows() {
+        let out = patch_section_ff(SECTION).expect("patch");
+        assert!(out.len() > SECTION.len(), "append-only must grow");
+        let latin = String::from_utf8_lossy(&out).into_owned();
+        assert!(latin.contains("crusstyFfGen"), "gen name must be appended");
+        assert!(latin.contains("crusstyFf"), "ff name must be appended");
+        // Recorded S7-143 fixture identity: 15041 -> 15088 bytes.
+        assert_eq!(SECTION.len(), 15041, "pristine fixture identity");
+        assert_eq!(out.len(), 15088, "patched size must match 91fcd70 record");
+    }
+
+    /// patch(patch(x)) == patch(x) — the pool-probe idempotency contract.
+    #[test]
+    fn section_ff_idempotent() {
+        let patched = patch_section_ff(SECTION).expect("patch");
+        let again = patch_section_ff(&patched).expect("repatch");
+        assert_eq!(again, patched, "repatch must be byte-identical");
+    }
+
+    /// Non-section class => hard Err (no partial mutation).
+    #[test]
+    fn section_ff_wrong_class_fails_closed() {
+        match patch_section_ff(include_bytes!("../tests/fixtures/PalettedContainer.class")) {
+            Err(e) => assert!(e.contains("unexpected class"), "{e}"),
+            Ok(_) => panic!("must fail closed on foreign class"),
+        }
+    }
+
+    /// Byte-shape audit: both injected field_info blocks carry
+    /// PUBLIC|VOLATILE (0x0041) access, the right descriptors, and no
+    /// attributes; original field entries are copied verbatim before them.
+    #[test]
+    fn section_ff_field_shape() {
+        let out = patch_section_ff(SECTION).expect("patch");
+        let layout = parse_layout(&out).expect("reparse patched bytes");
+        let pool = &layout.pool;
+        let n_ff = pool.find_utf8("crusstyFf").expect("ff name idx");
+        let d_ff = pool.find_utf8("B").expect("B desc idx");
+        let n_gen = pool.find_utf8("crusstyFfGen").expect("gen name idx");
+        let d_gen = pool.find_utf8("I").expect("I desc idx");
+        let count = u16_at(&out, layout.fields_start).expect("fields count");
+        let mut p = layout.fields_start + 2;
+        let mut found = 0;
+        for _ in 0..count {
+            let access = u16_at(&out, p).expect("access");
+            let name_idx = u16_at(&out, p + 2).expect("name idx");
+            let desc_idx = u16_at(&out, p + 4).expect("desc idx");
+            let attrs = u16_at(&out, p + 6).expect("attrs");
+            if name_idx == n_ff || name_idx == n_gen {
+                assert_eq!(access, 0x0041, "injected field must be PUBLIC|VOLATILE");
+                assert_eq!(attrs, 0, "injected field must carry no attributes");
+                if name_idx == n_ff {
+                    assert_eq!(desc_idx, d_ff, "ff must be B");
+                } else {
+                    assert_eq!(desc_idx, d_gen, "ffGen must be I");
+                }
+                found += 1;
+            }
+            // skip this field's attribute blocks
+            p += 8;
+            for _ in 0..attrs {
+                let alen =
+                    u32::from_be_bytes([out[p + 2], out[p + 3], out[p + 4], out[p + 5]]) as usize;
+                p += 6 + alen;
+            }
+        }
+        assert_eq!(found, 2, "exactly two injected fields expected");
+    }
+
+    /// Dump artifacts for the offline FluidFreeHarness (S7-143 protocol).
+    #[test]
+    fn dump_section_ff_for_verifier() {
+        let out = patch_section_ff(SECTION).expect("patch");
+        std::fs::create_dir_all("tests/out").unwrap();
+        std::fs::write("tests/out/LevelChunkSection.patched.class", &out).unwrap();
     }
 }
