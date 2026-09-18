@@ -1622,3 +1622,41 @@ Stage Summary:
 - БЛОКЕР (3-й тик): creds нет — push b98915a + S7-137, диспатчи leg #2' и FLUSH-DIET leg невозможны; владельцу: восстановить bootstrap_tick.sh (baked token)
 
 RUN_ID_DISPATCHED: NONE (CREDS-BLOCKED 3-й тик; runs_index row 280 local)
+---
+## S7-140 (ARCH-ATTACK) — 2026-09-18 10:5x +08 — STEP-0-разведка завершена: entity-query = ПАРИТИ-СТЕНА (рычага с median-exact parity нет), SynchedEntityData/блок-коллизии закрыты; офлайн-фаза конвейера исчерпана; CREDS-BLOCKED 6-й тик
+
+**Task ID: S7-140 (Job 393012, тик 10:43)**, Agent: agent-7625532f (session web-f7888d46)
+
+Work Log:
+- bootstrap_tick.sh ОТСУТСТВУЕТ (6-й тик CREDS-BLOCKED; честный git push: "could not read Username" — подтверждено); 3x pull --rebase: c-crussty up-to-date (4 коммита ahead: b98915a/e5cff9a/f16b215/91fcd70), c-dist/CRUSSTY восстановлены анонимным клоном (up-to-date); канон: GOAL-хвост S7-139; хвосты worklog/CLAIMS сверены
+- Приоритизация по цензу 35275967738: крупнейший непокрытый CPU-лейн = entity-query (ChunkEntitySlices.getEntities 784+599=2.5% + AABB.intersects 847=1.5% + CollisionUtil 510=0.9%)
+- STEP-0 javap-ценз на живом ядре /tmp/kmat (29386794B байт-в-бит): LivingEntity.pushEntities (гварды isPushable/team/cramming → getPushableEntities → одноразовый List; 50k/тик); ItemEntity.mergeWithNeighbours (герды tickCount%(moved?2:40) — синхронные спавн-волны ⇒ ~100k сканов в один тик каждые 40 тиков = MSPT-пики каждые 2с); Mob.aiStep looting-скан (canPickUpLoot ⇒ inflate+query каждый тик пикапера, 3.9% churn)
+- ПАРИТИ-СТЕНА доказана (5 пунктов): порядок кандидатов значим (push/cramming), pushableBy — ПАРНЫЙ предикат (Team rules), event-driven кэш соседей мёртв (движение/тик), порядок-сохраняющий прескрин = нетто <1% микро, размазывание гердов меняет тайминг. ВЕРДИКТ: ×150000-рычага с median-exact parity на этом ядре НЕ СУЩЕСТВУЕТ
+- Закрытия: SynchedEntityData (itemsById УЖЕ массив O(1)); блок-коллизии (moonrise hasOnlyAir + specialColliding + emptyContextShape; COLLISION-FREE-SECTION ≤0.6% микро); CgroupUtil — JVM-внутренний не-цель
+- Банкование: research/entity-query-2026-09-18/DESIGN.md (полное ТЗ + парити-разборка + следствия для конвейера); GOAL СТАТУС S7-140; runs_index row 283 (локально); worklog этот
+- CRUSSTY pristine не тронут; INJECTS-ONLY цел (0 boots; 0 CI-бутов — creds)
+
+Stage Summary:
+- ОФЛАЙН-ФАЗА КОНВЕЙЕРА ИСЧЕРПАНА: 5 рычагов офлайн-верифицированы (INSIDE-CACHE hardened / ALLOC-DIET / FLUSH-DIET / FLUID-FREE / PALETTED-DEMUX), оставшиеся лейны закрыты документированными вердиктами (парити-стена/микро/JVM). Критический путь = ДИСПАТЧИ: leg #2' INSIDE-CACHE (≈45% чёрна под гейтом, база 35275967738, гейты §156) → FLUSH-DIET → FLUID-FREE → ALLOC-DIET; каждый следующий рычаг обязан впитывать уроки живых A/B — накопительная инженерия 6-го ВРЕДНА
+- БЛОКЕР (6-й тик): creds/bootstrap_tick.sh нет — push 4 коммитов + 4 диспатча мгновенны по восстановлении; владельцу: восстановить bootstrap_tick.sh (baked token)
+
+RUN_ID_DISPATCHED: NONE (CREDS-BLOCKED 6-й тик; runs_index row 283 local)
+---
+## S7-140 (ARCH-ATTACK) — 2026-09-18 10:5x +08 — STEP-0-разведка завершена: entity-query = ПАРИТИ-СТЕНА (рычага с median-exact parity нет), SynchedEntityData/блок-коллизии закрыты; офлайн-фаза конвейера исчерпана; CREDS-BLOCKED 6-й тик
+
+**Task ID: S7-140 (Job 393012, тик 10:43)**, Agent: agent-7625532f (session web-f7888d46)
+
+Work Log:
+- bootstrap_tick.sh ОТСУТСТВУЕТ (6-й тик CREDS-BLOCKED; честный git push: "could not read Username" — подтверждено); 3x pull --rebase: c-crussty up-to-date (4 коммита ahead: b98915a/e5cff9a/f16b215/91fcd70), c-dist/CRUSSTY восстановлены анонимным клоном (up-to-date); канон: GOAL-хвост S7-139; хвосты worklog/CLAIMS сверены
+- Приоритизация по цензу 35275967738: крупнейший непокрытый CPU-лейн = entity-query (ChunkEntitySlices.getEntities 784+599=2.5% + AABB.intersects 847=1.5% + CollisionUtil 510=0.9%)
+- STEP-0 javap-ценз на живом ядре /tmp/kmat (29386794B байт-в-бит): LivingEntity.pushEntities (гварды isPushable/team/cramming → getPushableEntities → одноразовый List; 50k/тик); ItemEntity.mergeWithNeighbours (герды tickCount%(moved?2:40) — синхронные спавн-волны ⇒ ~100k сканов в один тик каждые 40 тиков = MSPT-пики каждые 2с); Mob.aiStep looting-скан (canPickUpLoot ⇒ inflate+query каждый тик пикапера, 3.9% churn)
+- ПАРИТИ-СТЕНА доказана (5 пунктов): порядок кандидатов значим (push/cramming), pushableBy — ПАРНЫЙ предикат (Team rules), event-driven кэш соседей мёртв (движение/тик), порядок-сохраняющий прескрин = нетто <1% микро, размазывание гердов меняет тайминг. ВЕРДИКТ: ×150000-рычага с median-exact parity на этом ядре НЕ СУЩЕСТВУЕТ
+- Закрытия: SynchedEntityData (itemsById УЖЕ массив O(1)); блок-коллизии (moonrise hasOnlyAir + specialColliding + emptyContextShape; COLLISION-FREE-SECTION ≤0.6% микро); CgroupUtil — JVM-внутренний не-цель
+- Банкование: research/entity-query-2026-09-18/DESIGN.md (полное ТЗ + парити-разборка + следствия для конвейера); GOAL СТАТУС S7-140; runs_index row 283 (локально); worklog этот
+- CRUSSTY pristine не тронут; INJECTS-ONLY цел (0 boots; 0 CI-бутов — creds)
+
+Stage Summary:
+- ОФЛАЙН-ФАЗА КОНВЕЙЕРА ИСЧЕРПАНА: 5 рычагов офлайн-верифицированы (INSIDE-CACHE hardened / ALLOC-DIET / FLUSH-DIET / FLUID-FREE / PALETTED-DEMUX), оставшиеся лейны закрыты документированными вердиктами (парити-стена/микро/JVM). Критический путь = ДИСПАТЧИ: leg #2' INSIDE-CACHE (≈45% чёрна под гейтом, база 35275967738, гейты §156) → FLUSH-DIET → FLUID-FREE → ALLOC-DIET; каждый следующий рычаг обязан впитывать уроки живых A/B — накопительная инженерия 6-го ВРЕДНА
+- БЛОКЕР (6-й тик): creds/bootstrap_tick.sh нет — push 4 коммитов + 4 диспатча мгновенны по восстановлении; владельцу: восстановить bootstrap_tick.sh (baked token)
+
+RUN_ID_DISPATCHED: NONE (CREDS-BLOCKED 6-й тик; runs_index row 283 local)
