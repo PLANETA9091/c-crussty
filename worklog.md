@@ -2105,3 +2105,18 @@ Stage Summary:
 - NEXT (S7-158): фикс tracker-race (гейт/отложенный drain EntityLookup-удалений или removal-safe итерация), фикс UUID-сидирования, GC-диета, харнесс-регресс на конкурентный discard, leg #3 min-of-2 (banking при PG2+PG3+PG4 PASS без крэшей); CI: liveness-watchdog на post-soak shutdown-фазу
 
 RUN_ID_DISPATCHED: NONE (absorb-тик leg #2 35363758352 — поглощён; CI-бутов 0 за тик; leg #2 = санкционированный preregister A/B, завершён wall-cancel после сбора данных)
+---
+Task ID: TASK-298 (S7-158a/c)
+Agent: agent-7625532f (session web-f7888d46, live owner directive «ТРОГАЕМ ВСЁ», 16:55-17:4x UTC Sep 18)
+Task: Absorb leg #2 continuation (обнаружен уже-скачанный артефакт предыдущей сессии + её fc77dcc absorb): root-cause обоих инцидентов leg #2 (59-min burn + tracker NPE), реализация S7-158a (bounded console ops) и S7-158c (GC-diet), javap-доказательство трекер-гонки, preregister S7-158b.
+
+Work Log:
+- Стандартный вход: bootstrap_tick.sh отсутствует → правило 1b (токен в remote URL); pulls: c-crussty rebase на 554e529+fc77dcc (абсорб leg #2 предыдущей сессии — выводы совпали: PARTIAL/экономика доказана), dev-logs up-to-date (TASK-297 занят её абсорбом)
+- Leg #2 (35363758352) absorb-надстройка над fc77dcc: (1) HANG-МЕХАНИЗМ вскрыт по job log + stdout: java умер 15:55:21 → tail получил SIGPIPE на записи (console-listener закрыл stdin рано в shutdown) → `cmd "stop"` = `echo > console.in` блокился навсегда на open() FIFO без читателя → orphan bash 3426 до 75-мин timeout; артефакты спасены if:always() 16:54:56 (2) JAVAP-доказательство трекер-гонки: newTrackerTick итерирует RAW backing array (trackerEntities.getRawDataUnchecked(), size-снимок одноразовый, null-гварда на элемент нет; гвардится только te==null) — swap-remove посреди итерации = null-дыра → NPE; воркеры делают Entity.discard/spawn (item-merge, лава, скелет-Arrow UUID-алиас) напрямую в ServerEntityLookup во время фазы
+- S7-158a РЕАЛИЗОВАН (3fc9443): run_world3.sh cmd() = timeout(5) sh -c printf>FIFO (мёртвый канал = 5с/вызов) + timeout 180 на report_world3.py; pre-kill tail до фазы команд отвергнут (убил бы консольный канал) — bash -n OK
+- S7-158c РЕАЛИЗОВАН (3fc9443): RegionTickOps GC-diet — персистентные Entity[][] (grow-on-overflow) + int[] len, одна forEach-фаза fill (вместо snapshot-ArrayList+W списков+consumer-массива каждый тик), post-join tail-nulling против retention мёртвых сущностей; volatile-публикация + GO-барьер happens-before сохранены
+- Верификация: PG1 lockstep дайджест БИТ-В-БИТ не изменился (61e3c374…941d5, W=1==W=2==W=4); RegionThreads harness OFFLINE PASS (structural/wiring/флаг-чек 0 нарушений); suite 144/0/1 без регрессов; build_region_tick_ops.sh пересобран (include_bytes! классы закоммичены: 0a462c9b/34bd7c24)
+- Бухгалтерия: GOAL СТАТУС S7-158a/c + NEXT S7-158b (ретаргет ServerEntityLookup.addEntity/removeEntity → deferred-FIFO при phaseActive, дрейн на join; гейты: PG1 digest + discard/spawn-шторм в harness + leg #3 min-of-2 с PG2/PG3/PG4 + 0 NPE + 0 uuid-dup); absorb-merge (fc77dcc сохранён, аппенд моих секций); s7158_javap_recon.sh предыдущей сессии забанчен; директива владельца «ТРОГАЕМ ВСЁ» вплетена в GOAL: очередь микро-лейнов (move/collision 5.4%, inside-blocks 5.1%, tracker 2%, пассажиры 1.17%) после банка REGION-THREADS, рычаги НЕ-кэш-класса
+
+Stage Summary:
+-REGION-THREADS = первый рычаг эры с материальным TPS-сдвигом (+66.7%, оффлоад 75.6%); до банка осталось S7-158b (tracker/lookup ретаргет) + leg #3; контур CI более не сгорает на пост-краш фазе (bounded ops); GC-регресс устранён дизайн-фиксом с сохранением бит-в-бит parity. INJECTS-ONLY цел: 0 CI-бутов за тик.
