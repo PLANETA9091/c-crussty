@@ -67,6 +67,10 @@ on:
         description: 'FLUID-FREE-SECTION S7-143 ARCH-ATTACK lever #5 (1 = ARMED: fluid-ff verdict cache via FluidOps.fgate — requires paletted_demux=1; 0 = vanilla-fluid A/B leg)'
         required: false
         default: '0'
+      fluid_dirty:
+        description: 'FLUID-DIRTY S7-151/TASK-290 ARCH-ATTACK lever #6 (1 = ARMED: fluid-scan memoization via FluidPushOps.scan + event-driven dirty-stamp ledger on LevelChunk.setBlockState; composes through inside_cache chain; 0 = vanilla-scan A/B leg)'
+        required: false
+        default: '0'
       population_target:
         description: 'BENCH-X150K living-scene population injection (0 = off; 10000 = smoke; 150000 = prime scale, S7-129)'
         required: false
@@ -160,6 +164,7 @@ jobs:
           INSIDE_CACHE: ${{ inputs.inside_cache || '0' }}
           FLUSH_DIET: ${{ inputs.flush_diet || '0' }}
           FLUID_FREE: ${{ inputs.fluid_free || '0' }}
+          FLUID_DIRTY: ${{ inputs.fluid_dirty || '0' }}
           POPULATION_TARGET: ${{ inputs.population_target || '0' }}
           POPULATION_SEED: ${{ inputs.population_seed || '42' }}
           SERVER_XMX: ${{ inputs.server_xmx || '6G' }}
