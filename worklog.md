@@ -2227,3 +2227,25 @@ Stage Summary:
 - Свежий ТОП рана: entity-фаза 56.6% (traversal inside-pipeline 20.4% фазы — крупнейший ≥5% attackable под-лейн: плоский обход вместо guava-итератора, нужен javap DirectionalIterator + lockstep; broadphase/fluid REFUTED-классы; AI 8.3%, movement 8.2%) → GC/JIT 36.6% → tracker ~2%
 
 RUN_ID_DISPATCHED: 35391679176 (REFUTED-BY-ECONOMICS; CI-бутов за тик 1 — санкционированный preregister A/B)
+
+---
+## S7-162 (ARCH-ATTACK) — 2026-09-19 05:0x-06:1x +08 — ЕДИНАЯ COMPOSE-ЦЕПОЧКА ENTITY + RETIREMENT ENSURE (стек-доказательство: все 801 ctor-сэмплов = ensure-цикл) + INSTANCES-телеметрия; suite 150/0/1 + 2 харнесса PASS; leg v3-кандидата диспатчен (35395826385)
+
+**Task ID: TASK-304 (S7-162, Job 396026, тик 04:51)**, Agent: agent-7625532f
+
+Work Log:
+- creds (1b, bootstrap отсутствует) + pull ×2 (c-crussty: докоммичен хвост worklog S7-161 → a5223b8); next TASK id = 304; last = TASK-303 (S7-161 REFUTED #2)
+- СТЕК-ДОКАЗАТЕЛЬСТВО по артефакту 35391679176: все 801 BatchCollector.<init> сэмплов имеют caller BatchCollector.ensure из RegionTickOps.tickBucket (естественный спавн-поток = 0 ctor-сэмплов) — свап в final-поле не удерживается и ПОВТОРНО конструирует BatchCollector тем же pre-arm сущностям каждый тик; ensure-гейт = ещё 737; весь инфра-хвост (1538) — наша инфраструктура
+- entity_compose.rs (новый, единый владелец Entity-байтов): 5 strict-стадий inside → fluid_free → fluid_dirty → rng → batch на одном буфере; fail-dominant по стадии; rng-вердикт гейтит region_threads (семантика «rng-провал убивает region» без дедлока); Entity retransform РОВНО один; supersede-механика leg#5 (886/895) устранена архитектурно — хуков на Entity больше двух не существует
+- inside_cache.rs: оставлен только владелец бриджа (InsideBlockOps+Recorder define + BRIDGE_READY + wait_bridge_ready); Entity-хук/патч/retransform сняты; region_threads.rs: Entity-хук снят, rng/batch-компоуз перенесён в entity_compose, ARMED после wait_rng_verdict(180s)
+- RegionTickOps.java: ensure-вызов удалён из tickBucket (hot path снова ваниль-идентичен) + телеметрия INSTANCES каждые 600 тиков под BATCH_COLLECTOR-константой (lazy CP-resolve дисциплина); BatchCollector.java: swap-машинерия (Unsafe/reflection/ensure/swaps) удалена полностью, добавлен INSTANCES AtomicLong в ctor
+- Побочный эффект (задекларирован): compose-цепь ВОСКРЕШАЕТ inside-гейт inside_cache, мёртвый в v2-банке из-за supersede — лег измеряет бандл revived-inside + batch-noensure
+- Верификация: build_region_tick_ops.sh (RegionTickOps 544cd2bd, BatchCollector 04ce702f); cargo suite 150/0/1 (+entity_compose_chain_inside_rng_batch_composes_strictly — полная цепочка на реальной фикстуре Entity, все стадии strict sites=1, композит парсится); RegionThreadsHarness OFFLINE PASS; BatchCollectorHarness PASS 4000 сценариев бит-в-бит; InsideBlockOps-совместимость с BatchCollector проверена (instanceof StepBasedCollector + виртуальная диспетчеризация)
+- GOAL СТАТУС preregister (гейты PG2/PG3/PG4'''/CRASH-FREE + банкинг v3) ДО диспатча; диспатч dispatch_s7162.py (token_from_remote, concurrency guard) → RUN 35395826385 (head 2080aa7, in_progress); absorb — следующий тик
+
+Stage Summary:
+- Инфра-хвост BATCH-COLLECTOR устранён кодово (обе статьи стек-доказаны как ensure-цикл); условие реванша S7-161 (инфра <10% семьи) выполнимо — решит leg
+- Единая compose-цепочка = постоянная инфраструктура эры: все будущие Entity-рычаги ездят стадиями через entity_compose, порядковой удачи больше нет
+- PG4''' : collector-family per-work ≤ 1290 И инфра ≤ 10% семьи; PASS → CUMULATIVE v3
+
+RUN_ID_DISPATCHED: 35395826385 (preregister A/B; CI-бутов за тик 1 — санкционированный)
