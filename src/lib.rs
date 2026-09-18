@@ -19,6 +19,7 @@ mod alloc_diet;
 mod area_map;
 mod perlin_noise;
 mod batch_api;
+mod batch_collector;
 mod batch_desc;
 mod batch_table;
 mod brainhook;
@@ -331,6 +332,11 @@ fn inject_surface() {
     // EntityCallbacks, retransform both (dormant unless
     // CRUSSTY_REGION_THREADS>=2).
     region_threads::activate();
+    // BATCH-COLLECTOR (S7-160): define BatchCollector into the kernel
+    // loader (define-only; the per-entity lazy swap happens in
+    // RegionTickOps.tickBucket; dormant unless CRUSSTY_BATCH_COLLECTOR=1
+    // AND region_threads>=2).
+    batch_collector::activate();
     // Dormant unless CRUSSTY_NATIVE_BLEND_CACHE is set (see docs/HOOK_BLEND_CACHE.md).
     proto_blend_cache::activate();
     // F1 BATCH-RNG (S7-112): define RandomTickOps into the ServerLevel loader,

@@ -75,6 +75,10 @@ on:
         description: 'REGION-THREADS S7-156/TASK-295 ARCH-ATTACK lever #7 (integer >= 2 = ARMED: region-threaded entity ticking via RegionTickOps — W spatial buckets, W-1 TickThread helpers + main, deferred EntityCallbacks FIFO; 1/0 = vanilla passthrough leg)'
         required: false
         default: '0'
+      batch_collector:
+        description: 'BATCH-COLLECTOR S7-160 ARCH-ATTACK lever #8 (1 = ARMED: zero-map flat StepBasedCollector replacement via BatchCollector.ensure lazy swap in RegionTickOps.tickBucket — requires region_threads>=2; 0 = vanilla collector A/B leg)'
+        required: false
+        default: '0'
       population_target:
         description: 'BENCH-X150K living-scene population injection (0 = off; 10000 = smoke; 150000 = prime scale, S7-129)'
         required: false
@@ -170,6 +174,7 @@ jobs:
           FLUID_FREE: ${{ inputs.fluid_free || '0' }}
           FLUID_DIRTY: ${{ inputs.fluid_dirty || '0' }}
           REGION_THREADS: ${{ inputs.region_threads || '0' }}
+          BATCH_COLLECTOR: ${{ inputs.batch_collector || '0' }}
           POPULATION_TARGET: ${{ inputs.population_target || '0' }}
           POPULATION_SEED: ${{ inputs.population_seed || '42' }}
           SERVER_XMX: ${{ inputs.server_xmx || '6G' }}

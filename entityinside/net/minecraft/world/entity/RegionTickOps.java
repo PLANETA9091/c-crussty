@@ -58,6 +58,31 @@ public final class RegionTickOps {
     private static final int WORKERS = parseWorkers();
     private static final int REGION_CHUNKS = 8;
 
+    /**
+     * S7-160 BATCH-COLLECTOR: when armed (CRUSSTY_BATCH_COLLECTOR=1), the
+     * vanilla StepBasedCollector instance inside Entity.insideEffectCollector
+     * is swapped for the zero-map BatchCollector ONCE per entity, BEFORE the
+     * vanilla consumer of that entity runs in tickBucket (the single entry
+     * point of every entity tick under region-threads). The swap is invisible
+     * to the vanilla logic: applyEffectsFromBlocks reads the field AFTER the
+     * swap, so the whole tick episode observes exactly one collector.
+     * Gating the call through this static flag keeps the BatchCollector class
+     * resolve lazy: with the gate off the constant-pool entry is never
+     * executed and the (possibly undefined) bridge class is never touched.
+     */
+    private static final boolean BATCH_COLLECTOR = parseBatchCollector();
+
+    private static boolean parseBatchCollector() {
+        try {
+            String v = System.getenv("CRUSSTY_BATCH_COLLECTOR");
+            if (v == null) return false;
+            v = v.trim().toLowerCase();
+            return v.equals("1") || v.equals("true") || v.equals("on") || v.equals("yes");
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
     private static final class Mut {
         final boolean add;
         final Entity entity;
@@ -214,6 +239,9 @@ public final class RegionTickOps {
             Entity[] bucket = bucketArr[slot];
             Consumer<Entity> c = consumer;
             for (int i = 0, n = bucketLen[slot]; i < n; i++) {
+                if (BATCH_COLLECTOR) {
+                    BatchCollector.ensure(bucket[i]); // S7-160: lazy one-time swap
+                }
                 c.accept(bucket[i]); // vanilla per-entity logic, bit-for-bit
             }
         } catch (Throwable t) {
