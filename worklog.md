@@ -1998,3 +1998,23 @@ Stage Summary:
 RUN_ID_DISPATCHED: 35341241628 (SUCCESS, поглощён: REFUTED-BY-ECONOMICS); CI-бутов 1 (санкционирован preregister A/B leg)
 
 ---
+---
+## S7-154 (ARCH-ATTACK) — 2026-09-18 20:08-20:2x +08 — RECON-2: пул attackable ≥5% исчерпан; broadphase 10.43% раздроблен; ядерная карта = 2-2.5 ядра простаивают; NEXT S7-155 region-threaded entity ticking (proposal)
+
+**Task ID: S7-154 (Job 394666, тик 20:08)**, Agent: agent-7625532f
+
+Work Log:
+- creds (1b) + СТАТУС S7-153 (NEXT = S7-154 RECON-2) + pull --rebase ×2 up to date
+- s7154_recon2.py: раскладка non-entity main-tick (4304 = 8.22% CPU) до якорей/листьев + broadphase-drill (вызывающие/якоря) + распределение по потокам + кросс-чек на леге 35341241628
+- Результат: non-entity доминанты НЕТ (пассажиры 1.17%, block entities 0.06%, поршни 0.06%, команды 0.08%); broadphase-семейство 5461 = 10.43% CPU — вызыватели: итерация индекса 30.9% fam / Entity.collide 19.2% / Level.noCollision 16.7% / aiStep-push 8.4% / hard-colliding 6.6%; якоря: Zombie 31.8%, ItemEntity 28.1%, Mob 15.6% — размазано
+- Вердикт: ванильная семантика требует каждый запрос каждый тик; популяция нестабильна (урок FLUID-DIRTY); амортизация = смена логики; индекс уже O(log); JNI per-call дороже экономии (урок ALLOC-DIET) ⇒ одиночных attackable ≥5% не осталось
+- Ядерная карта: main 66.9% (насыщает ~1 ядро), GC+JIT native 32.7% (параллельны), chunk workers 0.1% (простой), 2-2.5 ядра свободны ⇒ единственный ×N-рычаг = region-threaded entity ticking (Folia-модель, класс «планировщики») — proposal S7-155
+- Учёт: S7154_RECON2.md (таблицы + вердикт), GOAL СТАТУС S7-154, CLAIMS TASK-293
+
+Stage Summary:
+- Очередь одиночных кэш-рычагов исчерпана: финальная карта эры — GREEN INSIDE-CACHE+FLUSH-DIET; REFUTED DEMUX/FLUID-FREE/ALLOC-DIET×2/FLUID-DIRTY; TPS 0.8-0.9 = семантический минимум 150k сущностей на ванильной логике
+- NEXT (S7-155): feasibility-гейт region-threaded entity ticking (мега-проект: границы регионов, изоляция взаимодействий, РНГ-паритет, прототип планировщика)
+
+RUN_ID_DISPATCHED: NONE (RECON-2 тик, CI-бутов 0)
+
+---
