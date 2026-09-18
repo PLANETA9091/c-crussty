@@ -22,6 +22,7 @@
 //!   3. fluid_dirty    `fluid_dirty::compose_entity`            (Option)
 //!   4. region rng     `classfile::patch_region_rng_entity`     (strict sites==1)
 //!   5. batch ctor     `classfile::patch_entity_collector_ctor` (strict sites==1)
+//!   6. traversal      `classfile::patch_entity_traversal`      (strict sites==1)
 //!
 //! Cross-module contract (region_threads): the region lever must NOT arm
 //! its parallel ticking unless the rng stage composed successfully
@@ -118,6 +119,7 @@ fn stage_enabled() -> bool {
         || crate::fluid_dirty::enabled_pub()
         || crate::region_threads::workers_from_env_pub().is_some()
         || crate::batch_collector::enabled_pub()
+        || crate::traversal::enabled_pub()
 }
 
 /// Register the single Entity byte hook (idempotent; call once from
@@ -414,6 +416,38 @@ pub fn activate() {
             }
         }
 
+        // ---- STAGE 6: flat traversal retarget (S7-163 lever #9) ----
+        if crate::traversal::enabled_pub() {
+            if crate::traversal::wait_bridge_ready(120_000) {
+                match crate::classfile::patch_entity_traversal(&bytes) {
+                    Ok((p, outcome)) if matches!(
+                        outcome,
+                        crate::classfile::RetargetOutcome::Retargeted { sites: 1 }
+                    ) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage traversal composed ({outcome:?})"
+                        );
+                        bytes = p;
+                        chain.push("traversal");
+                    }
+                    Ok((_p, outcome)) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage traversal strict site-count violated ({outcome:?}), chain continues WITHOUT traversal (fail-dominant)"
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage traversal patch rejected ({e}), chain continues WITHOUT traversal (fail-dominant)"
+                        );
+                    }
+                }
+            } else {
+                eprintln!(
+                    "[crussty-plugin] entity_compose: traversal bridge missed its window, chain continues WITHOUT traversal (fail-dominant)"
+                );
+            }
+        }
+
         let composed_len = bytes.len();
         t.set_patch(PatchCache {
             bytes: Arc::from(bytes),
@@ -422,8 +456,8 @@ pub fn activate() {
 
         crate::kernel_policy::audit_wire(
             ENTITY_CLASS,
-            "inside-gate/fgate/scan/rngUUID/collector-ctor",
-            "entity_compose v1",
+            "inside-gate/fgate/scan/rngUUID/collector-ctor/traversal",
+            "entity_compose v2",
         );
         READY.store(true, Ordering::Release);
         let rc = cplug_sdk::retransform_class(t.name);

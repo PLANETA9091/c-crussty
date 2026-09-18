@@ -44,6 +44,7 @@ mod proto_blend_cache;
 mod randomtick;
 mod region_threads;
 mod tickhook;
+mod traversal;
 
 use cplug_abi::{CPluginApi, JavaVmPtr};
 use jvmti_bindings::prelude::*;
@@ -343,9 +344,15 @@ fn inject_surface() {
     // RegionTickOps.tickBucket; dormant unless CRUSSTY_BATCH_COLLECTOR=1
     // AND region_threads>=2).
     batch_collector::activate();
+    // FLAT-TRAVERSAL (S7-163): define TraverseOps into the kernel loader
+    // (define-only; the checkInsideBlocks retarget composes through the
+    // entity_compose chain stage 6; dormant unless CRUSSTY_FLAT_TRAVERSAL=1
+    // AND region_threads>=2).
+    traversal::activate();
     // ENTITY-COMPOSE (S7-162): apply the single compose chain on Entity
-    // (inside → fluid_free → fluid_dirty → rng → batch), publish the rng
-    // verdict for region_threads, retransform Entity exactly once.
+    // (inside → fluid_free → fluid_dirty → rng → batch → traversal),
+    // publish the rng verdict for region_threads, retransform Entity
+    // exactly once.
     entity_compose::activate();
     // Dormant unless CRUSSTY_NATIVE_BLEND_CACHE is set (see docs/HOOK_BLEND_CACHE.md).
     proto_blend_cache::activate();

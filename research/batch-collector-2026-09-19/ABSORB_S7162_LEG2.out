@@ -1,0 +1,80 @@
+### base v2 leg#5 (35381522360): /home/z/c-crussty/research/region-threads-2026-09-18/run-s7159-leg5-artifact
+  total=129734
+     entity-tick (tickBucket lane incl. workers)               68750   52.99%
+     GC/JIT-native (G1/JIT symbols)                            53036   40.88%
+     tracker (ChunkMap/ServerEntity)                            2885    2.22%
+     other/uncategorized                                        1610    1.24%
+     main-server-tick-other                                      999    0.77%
+     chunk-system workers                                        983    0.76%
+     region-threads-infra (fill/barriers, no tickBucket)         911    0.70%
+     navigation/pathfinding                                      357    0.28%
+     broadphase/collision/push                                   110    0.08%
+     AI/goal-selector/brain/sensing                               92    0.07%
+     inside-pipeline (traversal+collector)                         1    0.00%
+  -- entity-phase breakdown (69917 = 53.89% CPU):
+     main-server-tick-other                                    14141  10.90% CPU ( 20.2% phase)
+     inside-pipeline (traversal+collector)                     13904  10.72% CPU ( 19.9% phase)
+     fluid-scan                                                11895   9.17% CPU ( 17.0% phase)
+     broadphase/collision/push                                 11872   9.15% CPU ( 17.0% phase)
+     AI/goal-selector/brain/sensing                             7623   5.88% CPU ( 10.9% phase)
+     movement-integration                                       5680   4.38% CPU (  8.1% phase)
+     navigation/pathfinding                                     3424   2.64% CPU (  4.9% phase)
+     entity-residual                                            1010   0.78% CPU (  1.4% phase)
+     chunk-system workers                                        368   0.28% CPU (  0.5% phase)
+  collector-family=2345 (1.81%)  infra: <init>=0 ensure=0
+     . flushStep                        1657
+     . advanceStep                       491
+     . apply/applyAndClear              1311
+     . RecordedEffect                     34
+     . BatchCollector.<init>               0
+     . ensure (retired)                    1
+  young_gc=180 total=21457ms worst=170.1ms full=0
+  TPS median=2.40 (crawl n=6)
+  NCDFE=0 NPE=0 uuid=0 navmob=0 pop=150000 VALID=True
+  compose ARMED=False region ARMED=True defined=False telemetry=False (rows=0) first-swap(seen)=False
+### leg v3-candidate (S7-162): research/batch-collector-2026-09-19/run-s7162-leg2-artifact
+  total=128124
+     entity-tick (tickBucket lane incl. workers)               74825   58.40%
+     GC/JIT-native (G1/JIT symbols)                            45470   35.49%
+     tracker (ChunkMap/ServerEntity)                            2660    2.08%
+     other/uncategorized                                        1606    1.25%
+     main-server-tick-other                                     1142    0.89%
+     chunk-system workers                                        965    0.75%
+     region-threads-infra (fill/barriers, no tickBucket)         923    0.72%
+     navigation/pathfinding                                      380    0.30%
+     broadphase/collision/push                                   101    0.08%
+     AI/goal-selector/brain/sensing                               48    0.04%
+     fluid-scan                                                    3    0.00%
+     movement-integration                                          1    0.00%
+  -- entity-phase breakdown (75667 = 59.06% CPU):
+     main-server-tick-other                                    15813  12.34% CPU ( 20.9% phase)
+     broadphase/collision/push                                 14256  11.13% CPU ( 18.8% phase)
+     fluid-scan                                                13520  10.55% CPU ( 17.9% phase)
+     inside-pipeline (traversal+collector)                     12923  10.09% CPU ( 17.1% phase)
+     movement-integration                                       6334   4.94% CPU (  8.4% phase)
+     AI/goal-selector/brain/sensing                             6279   4.90% CPU (  8.3% phase)
+     navigation/pathfinding                                     3728   2.91% CPU (  4.9% phase)
+     inside-blocks                                              1307   1.02% CPU (  1.7% phase)
+     entity-residual                                            1089   0.85% CPU (  1.4% phase)
+     chunk-system workers                                        418   0.33% CPU (  0.6% phase)
+  collector-family=1251 (0.98%)  infra: <init>=0 ensure=0
+     . flushStep                         857
+     . advanceStep                       110
+     . apply/applyAndClear              1165
+     . RecordedEffect                      1
+     . BatchCollector.<init>               0
+     . ensure (retired)                    0
+  young_gc=154 total=21127ms worst=190.4ms full=0
+  TPS median=1.90 (crawl n=6)
+  NCDFE=0 NPE=0 uuid=0 navmob=0 pop=150000 VALID=True
+  compose ARMED=True region ARMED=True defined=True telemetry=True (rows=3) first-swap(seen)=False
+  telemetry sample: tick=600 instances=153298 workers=4 ... last: tick=1800 instances=161310 workers=4
+
+=== GATES (preregistered S7-162) ===
+PG2: PASS (NCDFE=0, pop=150000, VALID=True, compose=True, region=True, defined=True, telemetry=True, first-swap-absent=True)
+PG3 non-regression: median=1.90 (cap >= 1.60) => PASS
+PG4''': young GC=154 (cap 180) OK; collector-family 2345->1251 raw, per-work 658 (cap <= 1290; base ref 1379 = 2345/1.7) OK; infra 0/1251 = 0.0% (cap 10%) OK => PASS
+CRASH-FREE: PASS (navmob watchlist=0)
+
+=== VERDICT S7-162 ===
+ALL GATES PASS -> CUMULATIVE v3 = v2 + batch_collector=1 BANKED (entity_compose = era infrastructure)

@@ -2323,6 +2323,53 @@ const CHECK_INSIDE_DESC: &str =
     "(Ljava/util/List;Lnet/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector;)V";
 const GATE_DESC: &str = "(Lnet/minecraft/world/entity/Entity;)Z";
 
+// ---------------------------------------------------------------------------
+// FLAT-TRAVERSAL (S7-163, ARCH-ATTACK lever #9 — the inside-pipeline
+// traversal lane). The private int-overload
+//   Entity.checkInsideBlocks(Vec3, Vec3, StepBasedCollector, LongSet, int)I
+// carries the SINGLE invokestatic call site of
+//   BlockGetter.forEachBlockIntersectedBetween(Vec3, Vec3, AABB,
+//   BlockGetter$BlockStepVisitor)Z
+// (javap census on kernel 1.21.10: strict sites=1; the other two
+// checkInsideBlocks overloads do not call it). The traversal stage
+// retargets that site to the flat TraverseOps.forEachFlat with the
+// IDENTICAL descriptor (same stack shape; TraverseOps is defined into
+// the kernel loader by traversal.rs before the Entity retransform).
+// Bit-exactness oracle: TraverseLockstepHarness (60k+ scenarios,
+// sequence+return bit-in-bit vs the vanilla implementation).
+pub const TRAVERSE_OPS_CLASS: &str = "net/minecraft/world/level/TraverseOps";
+const TRAVERSAL_FROM: (&str, &str, &str) = (
+    "net/minecraft/world/level/BlockGetter",
+    "forEachBlockIntersectedBetween",
+    "(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/AABB;Lnet/minecraft/world/level/BlockGetter$BlockStepVisitor;)Z",
+);
+const TRAVERSAL_SITE_DESC: &str =
+    "(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector;Lit/unimi/dsi/fastutil/longs/LongSet;I)I";
+
+/// Strict (sites==1) retarget of the forEachBlockIntersectedBetween call
+/// site inside Entity.checkInsideBlocks(Vec3,Vec3,StepBasedCollector,
+/// LongSet,int)I to TraverseOps.forEachFlat (same descriptor). Idempotent
+/// via [`retarget_invokestatic`] classification; NotFound returns the
+/// original bytes without pool growth.
+pub fn patch_entity_traversal(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let (out, outcome) = retarget_invokestatic(
+        bytes,
+        "checkInsideBlocks",
+        TRAVERSAL_SITE_DESC,
+        TRAVERSAL_FROM,
+        (TRAVERSE_OPS_CLASS, "forEachFlat", TRAVERSAL_FROM.2),
+    )?;
+    if let RetargetOutcome::Retargeted { sites } = &outcome {
+        if *sites != 1 {
+            return Err(format!(
+                "expected exactly one forEachBlockIntersectedBetween site in checkInsideBlocks, got {sites}"
+            ));
+        }
+    }
+    Ok((out, outcome))
+}
+
+
 /// Scan a bytecode array for `invokevirtual` (0xb6) AND `invokestatic`
 /// (0xb8) instructions. The static opcode is required for IDEMPOTENCY: a
 /// site already retargeted by this patcher is now 0xb8 and must still be
@@ -5158,5 +5205,133 @@ mod region_threads {
         std::fs::write("tests/out/ChunkMap.regionthreads.patched.class", &cm).unwrap();
         let (en, _) = patch_region_rng_entity(ENTITY).expect("rng");
         std::fs::write("tests/out/Entity.regionthreads.patched.class", &en).unwrap();
+    }
+}
+
+// ---------------------------------------------------------------------------
+// S7-163 FLAT-TRAVERSAL patch tests (real kernel Entity fixture).
+// ---------------------------------------------------------------------------
+#[cfg(test)]
+mod entity_traversal {
+    const ENTITY: &[u8] = include_bytes!("../tests/fixtures/Entity_real.class");
+
+    use crate::classfile::*;
+
+    #[test]
+    fn traversal_retargets_exactly_one_site() {
+        let (patched, outcome) = patch_entity_traversal(ENTITY).expect("patch");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "exactly one forEachBlockIntersectedBetween site (javap census)"
+        );
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        assert!(patched.len() >= ENTITY.len(), "CP growth only");
+    }
+
+    #[test]
+    fn traversal_site_resolves_to_traverse_ops() {
+        let (patched, _) = patch_entity_traversal(ENTITY).expect("patch");
+        // Byte-level verification: walk checkInsideBlocks's Code and confirm
+        // the invokestatic operand now resolves to TraverseOps.forEachFlat.
+        // (The OLD Methodref entry legitimately remains in the pool —
+        // CP-growth is append-only; nothing in the code references it.)
+        let layout = parse_layout(&patched).expect("re-parse retargeted class");
+        let name_idx = layout
+            .pool
+            .find_utf8("checkInsideBlocks")
+            .expect("name kept");
+        let desc_idx = layout
+            .pool
+            .find_utf8(TRAVERSAL_SITE_DESC)
+            .expect("desc kept");
+        let m = find_method(&patched, layout.methods_start, name_idx, desc_idx)
+            .expect("int-overload found");
+        let (code_start, code_len) =
+            find_code_attr(&patched, &layout.pool, &m).expect("code attr");
+        let sites = scan_invokestatics(
+            &patched[code_start..code_start + code_len],
+            code_start,
+        )
+        .expect("scan");
+        let targets: Vec<_> = sites
+            .iter()
+            .map(|(_, idx)| layout.pool.methodref_parts(*idx).expect("resolve"))
+            .collect();
+        assert!(
+            targets.iter().any(|t| {
+                t.0 == TRAVERSE_OPS_CLASS
+                    && t.1 == "forEachFlat"
+                    && t.2 == TRAVERSAL_FROM.2
+            }),
+            "the single traversal site must resolve to TraverseOps.forEachFlat: {targets:?}"
+        );
+        assert!(
+            !targets
+                .iter()
+                .any(|t| t.0 == TRAVERSAL_FROM.0 && t.1 == TRAVERSAL_FROM.1),
+            "no CODE site may still reference the vanilla traversal: {targets:?}"
+        );
+    }
+
+    #[test]
+    fn traversal_idempotent() {
+        let (patched, _) = patch_entity_traversal(ENTITY).expect("patch");
+        let (again, outcome) = patch_entity_traversal(&patched).expect("repatch");
+        assert_eq!(outcome, RetargetOutcome::AlreadyPatched { sites: 1 });
+        assert_eq!(again, patched, "repatch must be byte-identical");
+    }
+
+    #[test]
+    fn traversal_wrong_class_fails_clean() {
+        match patch_entity_traversal(include_bytes!(
+            "../tests/fixtures/PalettedContainer.class"
+        )) {
+            Err(e) => {
+                assert!(e.contains("not found") || e.contains("absent"), "{e}");
+            }
+            Ok((_, outcome)) => assert!(matches!(
+                outcome,
+                RetargetOutcome::NotFound | RetargetOutcome::AlreadyPatched { .. }
+            )),
+        }
+    }
+
+    #[test]
+    fn traversal_composes_over_full_v2_chain() {
+        // The traversal stage rides the entity_compose chain LAST (stage 6):
+        // the full v2 chain (inside -> rng -> batch) followed by the
+        // traversal retarget must stay idempotent on re-composition (the
+        // retransform cycle) and preserve every earlier stage's outcome.
+        let chain = |bytes: &[u8]| -> Vec<u8> {
+            let (b, _) = patch_inside_cache(bytes).expect("inside");
+            let (b, _) = patch_region_rng_entity(&b).expect("rng");
+            let (b, _) = patch_entity_collector_ctor(&b).expect("batch");
+            let (b, _) = patch_entity_traversal(&b).expect("traversal");
+            b
+        };
+        let composed = chain(ENTITY);
+        assert_eq!(composed, chain(&composed), "compose idempotent on composed input");
+        // Idempotency of each individual stage over the composed image.
+        let (b, out) = patch_inside_cache(&composed).expect("inside re");
+        assert!(matches!(
+            out,
+            RetargetOutcome::AlreadyPatched { .. } | RetargetOutcome::Retargeted { .. }
+        ));
+        let (b, out) = patch_region_rng_entity(&b).expect("rng re");
+        assert!(matches!(
+            out,
+            RetargetOutcome::AlreadyPatched { .. } | RetargetOutcome::Retargeted { .. }
+        ));
+        let (b, out) = patch_entity_collector_ctor(&b).expect("batch re");
+        assert!(matches!(
+            out,
+            RetargetOutcome::AlreadyPatched { .. } | RetargetOutcome::Retargeted { .. }
+        ));
+        let (_, out) = patch_entity_traversal(&b).expect("traversal re");
+        assert_eq!(out, RetargetOutcome::AlreadyPatched { sites: 1 });
+        // Dump for the offline structural gate.
+        std::fs::create_dir_all("tests/out").unwrap();
+        std::fs::write("tests/out/Entity.traversal.patched.class", &composed).unwrap();
     }
 }
