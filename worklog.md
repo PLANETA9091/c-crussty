@@ -2249,3 +2249,26 @@ Stage Summary:
 - PG4''' : collector-family per-work ≤ 1290 И инфра ≤ 10% семьи; PASS → CUMULATIVE v3
 
 RUN_ID_DISPATCHED: 35395826385 (preregister A/B; CI-бутов за тик 1 — санкционированный)
+
+---
+## S7-162 absorb leg#1 (ARCH-ATTACK) — 2026-09-19 06:0x-07:0x +08 — ЛЕГА #1 = БРАК (DUD): watchdog убил сервер на инжекте (медленный раннер, средовой фактор); харденинг харнесса; редиспатч леги #2 (35399980345)
+
+**Task ID: TASK-305 (S7-162, Job 396026, тик 05:43)**, Agent: agent-7625532f
+
+Work Log:
+- creds (1b, bootstrap отсутствует) + ре-клон обоих репо (песочница сброшена между тиками); next TASK id = 305; last = TASK-304 (лега диспатчена)
+- Ран 35395826385 = FAILURE: сервер умер на фазе инжекта популяции ДО профайл-окна; сценарий ждал INJECT DONE 900с → fixture-гейты FAIL (1a/1b/1c) → exit 1
+- Таймлайн: 21:25:00 UTC watchdog-дампы на форслоад-тике (синхзагрузка 9216 чанков >60с; фаза ЧИСТО ванильная, компоуз ещё не заармлен — дамп = строка 267, ARMED = 984/999) → 21:25:21 INJECT START (loadedChunks=9954/10000, farmClusters=497/500 — форслоад неполный) → 21:26:26 watchdog hard-stop
+- Профиль гибнущего сервера (96604 сэмплов): 95.4% = Reference2IntOpenHashMap.{find/shiftKeys} на путях moonrise-регистрации (ReferenceList.add←spawnItem ~48k + ReferenceList.remove←stopServer ~43k); в базе leg#5 семья = 0.02%, НО базовый профайл никогда не покрывал фазу инжекта (56-69с, ~374µs/регистрацию в здоровых легах) — стоимость того же порядка, концентрация НЕ атрибутируется рычагу; записано как открытое наблюдение (moonrise identity-map доминирует инжект — материал отдельного рекона, вне ТОП)
+- Инженерные маркеры PG2 живы до гибели: entity_compose ARMED chain [inside->rng->batch] 205458->205610 rc=0 + region_threads ARMED ChunkMap=0 + batch_collector defined + 0 NCDFE/0 NPE/0 uuid-dup; телеметрия INSTANCES не успела (единицы тиков)
+- Харденинг харнесса (bench-only): run_world3.sh пишет spigot.yml settings.timeout-time=86400 перед бутом (monitor-only; тики измеримого окна 0.4-1.2с); watchdog-килл = ковариата харнесса, не ванильное поведение; bash -n OK
+- absorb_s7162.py (гейты PG2/PG3/PG4'''/CRASH-FREE, per-work = family/TPS, base ref 1379) + fetch_job_logs.py (NoRedirect-паттерн для job-логов); ABSORB_S7162_LEG1_DUD.md; GOAL СТАТУС ×1 (DUD)
+- Редиспатч леги #2: run 35399980345 (head db8d7a0, in_progress), те же пререг-входы; absorb — следующий тик
+
+Stage Summary:
+- Прецедент S7-158 leg#3 применён честно: брак ≠ вердикт рычага — из выборки исключён, GREEN/REFUTED не выставлялся; банкинг-правило прежнее (PASS → CUMULATIVE v3; FAIL → REFUTED финально + rollback batch_collector=0)
+- Ключевой урок эры (5-й о среде): медленный GitHub-раннер + spigot watchdog (timeout 60s) = потеря CI-леги на инжекте; харнесс-ковариаты (watchdog, дамп-стиль) отделены от ванильного поведения и теперь дезактивированы как килл-фактор
+- compose-цепочка подтверждена живо ВТОРОЙ независимой попыткой компоновки на реальном сервере (после cargo-теста полной цепочки)
+- NEXT (S7-162 leg#2 absorb, следующий тик): гейты без изменений; при PASS банкинг CUMULATIVE v3 → свежий ТОП → S7-163 FLAT-TRAVERSAL (RECON-4: traversal-подлейн 7.27% CPU, orchestration-хвост ~2.3-2.7%, рычаг #9 — плоский long-packed обход вместо guava-итератора)
+
+RUN_ID_DISPATCHED: 35399980345 (preregister A/B leg#2; CI-бутов за тик 1 — санкционированный)
