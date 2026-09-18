@@ -1,48 +1,44 @@
-//! Runtime wiring for the INSIDE-CACHE lever (S7-135, TASK-271 — ARCH-ATTACK
-//! lever #3, the inside-blocks/fluid discovery lane).
+//! Runtime wiring for the FLUID-DIRTY lever (S7-151, TASK-290 — ARCH-ATTACK
+//! lever #6, the fluid-scan lane ~10% total CPU on live X150K).
 //!
-//! Patches ONE kernel call site (see src/classfile.rs INSIDE-CACHE section
-//! for the javap contract): the method-entry gate
-//! `Entity.isAffectedByBlocks` INSIDE
-//! `Entity.checkInsideBlocks(List, StepBasedCollector)` retargeted to the
-//! static `InsideBlockOps.gate(Entity)Z` (receiver-first, 3B→3B,
-//! length-preserving). For static entities (deltaMovement==0, position
-//! bit-equal to the cached tick) the bridge serves the whole discovery
-//! from flat primitive slot arrays (replay of the vanilla effect calls);
-//! anything else falls through to `e.isAffectedByBlocks()` — the vanilla
-//! body runs untouched.
+//! Own byte hook: `LevelChunk.setBlockState(BlockPos,BlockState,I)` — its
+//! single `LevelChunkSection.setBlockState(IIILBlockState)BlockState` call
+//! site retargeted to `FluidPushOps.secWrite(...)` (delegate + dirty-stamp
+//! bump on real fluid-state changes). The ENTITY side (both fluid-scan
+//! wrapper sites → `FluidPushOps.scan`) is COMPOSED by the inside_cache
+//! chain (inside_cache::activate), exactly like fluid_free's fgate — the
+//! Entity bytes therefore carry inside + fluid_dirty (and fluid_free when
+//! enabled) retargets from one hook serve.
 //!
-//! The patch is computed from the pristine bytes captured at first class
-//! load; served via a single retransform after both bridge classes
-//! (`InsideBlockOps`, `InsideBlockOps$Recorder`) are defined into the
-//! kernel loader.
+//! Bridge: `FluidPushOps` (+ inner `ScanOut`) defined into the KERNEL loader
+//! before any patched bytes are served (BRIDGE_READY protocol, the S7-143
+//! LinkageError lesson: the chain waits on wait_bridge_ready).
 //!
-//! Gate: env `CRUSSTY_INSIDE_CACHE` (1/true/on/yes -> on). Off by default —
-//! dormant-invisible discipline (same as fluid_guard/alloc_diet): with the
-//! gate off, register() logs a dormant notice and NO byte hook is
-//! installed, activate() returns immediately, the module is
-//! byte-indistinguishable from the pre-S7-135 plugin.
+//! Gate: env `CRUSSTY_FLUID_DIRTY` (1/true/on/yes -> on). Off by default —
+//! dormant-invisible discipline. Requires the inside_cache chain for the
+//! entity retarget (LOUD WARN without it: LevelChunk hook still arms —
+//! ledger is maintained — but no scan memoization happens; parity intact,
+//! benefit zero).
 //!
-//! Fail-closed matrix: patcher Err (kernel shape mismatch / collector
-//! field renamed) → no patch, hook stays dormant; bridge define failure →
-//! dormant; no pristine capture → dormant; bridge Unsafe resolution
-//! failure (ARMED=false) → gate always returns the vanilla verdict.
+//! Fail-closed matrix: patcher Err (kernel shape mismatch) → no patch, hook
+//! dormant; bridge define failure → dormant; compose rejection → inside-only
+//! bytes (fail-dominant, loud WARN).
 
 use jvmti_bindings::prelude::*;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, PoisonError};
 
-const ENTITY_CLASS: &str = "net/minecraft/world/entity/Entity";
-const OPS_CLASS: &str = "net/minecraft/world/entity/InsideBlockOps";
-const RECORDER_CLASS: &str = "net/minecraft/world/entity/InsideBlockOps$Recorder";
+const LEVELCHUNK_CLASS: &str = "net/minecraft/world/level/chunk/LevelChunk";
+const OPS_CLASS: &str = "net/minecraft/world/entity/FluidPushOps";
+const OPS_INNER_CLASS: &str = "net/minecraft/world/entity/FluidPushOps$ScanOut";
 
 const OPS_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideBlockOps.class");
-const RECORDER_BYTES: &[u8] =
-    include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideBlockOps$Recorder.class");
+    include_bytes!("../entityinside/build/net/minecraft/world/entity/FluidPushOps.class");
+const OPS_INNER_BYTES: &[u8] =
+    include_bytes!("../entityinside/build/net/minecraft/world/entity/FluidPushOps$ScanOut.class");
 
 fn enabled() -> bool {
-    std::env::var("CRUSSTY_INSIDE_CACHE")
+    std::env::var("CRUSSTY_FLUID_DIRTY")
         .map(|v| {
             let v = v.trim().to_ascii_lowercase();
             v == "1" || v == "true" || v == "on" || v == "yes"
@@ -50,13 +46,8 @@ fn enabled() -> bool {
         .unwrap_or(false)
 }
 
-/// Gate visibility for the fluid_dirty chain WARN (S7-151: fluid_dirty
-/// requires the inside_cache chain for the Entity scan retarget).
-pub fn enabled_pub() -> bool {
-    enabled()
-}
-
 static READY: AtomicBool = AtomicBool::new(false);
+static BRIDGE_READY: AtomicBool = AtomicBool::new(false);
 /// Global ref to the kernel classloader, captured at activation (0 = none).
 static KERNEL_LOADER: AtomicUsize = AtomicUsize::new(0);
 
@@ -117,29 +108,75 @@ impl Target {
 static TARGET: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
 
 fn target() -> &'static Target {
-    TARGET.get_or_init(|| Target::new(ENTITY_CLASS))
+    TARGET.get_or_init(|| Target::new(LEVELCHUNK_CLASS))
 }
 
-/// Register the byte hook (idempotent; call once from cplugin_init).
-///
-/// The callback performs NO JNI/class-file work (loader-lock discipline —
-/// see improved_noise): pristine capture at the class's own load, patch
-/// served from the cache computed on the quiet activation worker.
+/// Whether the inside_chain may compose the scan retarget on top of the
+/// inside patch (gate on AND the bridge already defined).
+pub fn bridge_ready() -> bool {
+    BRIDGE_READY.load(Ordering::Relaxed)
+}
+
+/// Gate visibility for the inside_chain (does NOT check the bridge — the
+/// chain itself waits on wait_bridge_ready).
+pub fn enabled_pub() -> bool {
+    enabled()
+}
+
+/// Bounded wait for the bridge definition (inside_chain protocol).
+pub fn wait_bridge_ready(timeout_ms: u64) -> bool {
+    let deadline = std::time::Instant::now() + std::time::Duration::from_millis(timeout_ms);
+    while !bridge_ready() {
+        if std::time::Instant::now() > deadline {
+            return false;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(50));
+    }
+    true
+}
+
+/// Entity-chain composer: apply the fluid-scan retarget on top of already
+/// inside(+fluid_free)-patched Entity bytes. Called by inside_cache BEFORE
+/// serving — only when bridge_ready() holds, so invokestatic
+/// FluidPushOps.scan can never link against an undefined class (the
+/// S7-148 NCDFE lesson, closed by construction).
+pub fn compose_entity(patched_chain: &[u8]) -> Option<Vec<u8>> {
+    match crate::classfile::patch_fluid_dirty_entity(patched_chain) {
+        Ok((bytes, outcome)) => {
+            eprintln!(
+                "[crussty-plugin] fluid_dirty: entity chain composed ({outcome:?})"
+            );
+            Some(bytes)
+        }
+        Err(e) => {
+            eprintln!(
+                "[crussty-plugin] fluid_dirty: entity chain rejected ({e}), serving chain-only"
+            );
+            None
+        }
+    }
+}
+
+/// Register the LevelChunk byte hook (idempotent; call once from
+/// cplugin_init).
 pub fn register() {
     if !enabled() {
         eprintln!(
-            "[crussty-plugin] inside_cache: dormant (set CRUSSTY_INSIDE_CACHE=1 to enable)"
+            "[crussty-plugin] fluid_dirty: dormant (set CRUSSTY_FLUID_DIRTY=1 to enable)"
         );
         return;
+    }
+    if !crate::inside_cache::enabled_pub() {
+        eprintln!(
+            "[crussty-plugin] fluid_dirty: WARN CRUSSTY_FLUID_DIRTY requires the inside_cache chain (CRUSSTY_INSIDE_CACHE=1) for the Entity scan retarget; without it the LevelChunk ledger still arms but NO memoization happens — proceed only for isolation runs"
+        );
     }
     let t = target();
     cplug_sdk::hooks::register_bytes(t.name, move |_name, bytes| {
         let t = target();
         if !READY.load(Ordering::Relaxed) {
-            // Pristine sighting (the original class load): stash the
-            // bytes for the worker; never rewrite here.
             eprintln!(
-                "[crussty-plugin] inside_cache: pristine sighting {} {} bytes (major {})",
+                "[crussty-plugin] fluid_dirty: pristine sighting {} {} bytes (major {})",
                 t.name,
                 bytes.len(),
                 crate::improved_noise::class_version(bytes).map(|(m, _)| m).unwrap_or(0)
@@ -147,11 +184,10 @@ pub fn register() {
             t.stash_orig(bytes);
             return None;
         }
-        // Serve the precomputed patch; the clone is an Arc refcount bump.
         let cached = t.patch_bytes();
         if !t.served.swap(true, Ordering::Relaxed) {
             eprintln!(
-                "[crussty-plugin] inside_cache: hook serve {} {} bytes",
+                "[crussty-plugin] fluid_dirty: hook serve {} {} bytes",
                 t.name,
                 cached.as_ref().map(|c| c.len()).unwrap_or(0)
             );
@@ -160,16 +196,16 @@ pub fn register() {
     });
 }
 
-/// Background activation: wait for the kernel class, define both bridge
-/// classes into the kernel loader, compute the length-preserving patch
-/// from the pristine bytes, flip READY and retransform once.
+/// Background activation: wait for the LevelChunk class, define the
+/// FluidPushOps bridge into the kernel loader, compute the secWrite
+/// retarget from pristine bytes, flip READY and retransform once.
 pub fn activate() {
     if !enabled() {
         return;
     }
     std::thread::spawn(|| {
         let t = target();
-        // Wait for the kernel Entity class (loads at boot).
+        // LevelChunk loads with the first chunk (boot).
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(180);
         loop {
             if cplug_sdk::classes::find_class(t.name).is_some() {
@@ -177,14 +213,14 @@ pub fn activate() {
             }
             if std::time::Instant::now() > deadline {
                 eprintln!(
-                    "[crussty-plugin] inside_cache: {} not loaded within 180s, hook stays dormant",
+                    "[crussty-plugin] fluid_dirty: {} not loaded within 180s, hook stays dormant",
                     t.name
                 );
                 return;
             }
             if std::time::Instant::now() > deadline - std::time::Duration::from_secs(170) {
                 eprintln!(
-                    "[crussty-plugin] inside_cache: forcing kernel load of {}",
+                    "[crussty-plugin] fluid_dirty: forcing kernel load of {}",
                     t.name
                 );
                 crate::improved_noise::force_load_kernel_class(t.name);
@@ -200,12 +236,12 @@ pub fn activate() {
         // Kernel loader must be quiet before define/retransform (boot-time
         // class-loading storm discipline; fluid_guard TASK-80 lesson).
         if !crate::improved_noise::wait_for_boot() {
-            eprintln!("[crussty-plugin] inside_cache: boot marker not seen, hook stays dormant");
+            eprintln!("[crussty-plugin] fluid_dirty: boot marker not seen, hook stays dormant");
             return;
         }
         std::thread::sleep(std::time::Duration::from_secs(20));
         eprintln!(
-            "[crussty-plugin] inside_cache: server booted, defining bridge into kernel loader"
+            "[crussty-plugin] fluid_dirty: server booted, defining bridge into kernel loader"
         );
 
         // Guard: embedded bridge bytes must not be newer than the JVM.
@@ -215,21 +251,21 @@ pub fn activate() {
         })
         .flatten()
         .unwrap_or(u16::MAX);
-        for (name, bytes) in [(OPS_CLASS, OPS_BYTES), (RECORDER_CLASS, RECORDER_BYTES)] {
+        for (name, bytes) in [(OPS_CLASS, OPS_BYTES), (OPS_INNER_CLASS, OPS_INNER_BYTES)] {
             let major = crate::improved_noise::class_version(bytes)
                 .map(|(m, _)| m)
                 .unwrap_or(0);
             if major > jvm_major {
                 eprintln!(
-                    "[crussty-plugin] inside_cache: {name} is class major {major} but JVM supports up to {jvm_major} — rebuild entityinside/ via scripts/build_inside_block_ops.sh; hook stays dormant"
+                    "[crussty-plugin] fluid_dirty: {name} is class major {major} but JVM supports up to {jvm_major} — rebuild entityinside/ via scripts/build_fluid_push_ops.sh; hook stays dormant"
                 );
                 return;
             }
         }
 
-        // Capture the kernel loader global ref from Entity.
+        // Capture the kernel loader global ref from LevelChunk.
         let defined = cplug_sdk::jni_util::with_attached(|env| {
-            let Some(cls) = cplug_sdk::classes::find_class(ENTITY_CLASS) else {
+            let Some(cls) = cplug_sdk::classes::find_class(t.name) else {
                 return false;
             };
             let Some(class_cls) = env.find_class("java/lang/Class") else {
@@ -256,15 +292,15 @@ pub fn activate() {
             }
             KERNEL_LOADER.store(gref as usize, Ordering::SeqCst);
             let mut ok = true;
-            for (name, bytes) in [(OPS_CLASS, OPS_BYTES), (RECORDER_CLASS, RECORDER_BYTES)] {
+            for (name, bytes) in [(OPS_CLASS, OPS_BYTES), (OPS_INNER_CLASS, OPS_INNER_BYTES)] {
                 match env.define_class(name, gref, bytes) {
                     Some(c) => {
                         env.delete_local_ref(c);
-                        eprintln!("[crussty-plugin] inside_cache: defined {name} in kernel loader");
+                        eprintln!("[crussty-plugin] fluid_dirty: defined {name} in kernel loader");
                     }
                     None => {
                         crate::describe_exception(env);
-                        eprintln!("[crussty-plugin] inside_cache: define_class({name}) failed");
+                        eprintln!("[crussty-plugin] fluid_dirty: define_class({name}) failed");
                         ok = false;
                         break;
                     }
@@ -273,16 +309,17 @@ pub fn activate() {
             ok
         });
         if !defined.unwrap_or(false) {
-            eprintln!("[crussty-plugin] inside_cache: bridge definition aborted, hook stays dormant");
+            eprintln!("[crussty-plugin] fluid_dirty: bridge definition aborted, hook stays dormant");
             return;
         }
+        BRIDGE_READY.store(true, Ordering::Release);
 
         // Pristine bytes: if the class predates the hook (fast boot), capture
         // via no-op retransform (READY=false → stash-only), fluid_guard
         // pattern.
         if !t.orig_is_some() {
             eprintln!(
-                "[crussty-plugin] inside_cache: {} predates hook, capturing via no-op retransform",
+                "[crussty-plugin] fluid_dirty: {} predates hook, capturing via no-op retransform",
                 t.name
             );
             for attempt in 1..=3 {
@@ -295,7 +332,7 @@ pub fn activate() {
             }
             if !t.orig_is_some() {
                 eprintln!(
-                    "[crussty-plugin] inside_cache: no pristine bytes for {}, hook stays dormant",
+                    "[crussty-plugin] fluid_dirty: no pristine bytes for {}, hook stays dormant",
                     t.name
                 );
                 return;
@@ -310,11 +347,11 @@ pub fn activate() {
         let major = crate::improved_noise::class_version(&original)
             .map(|(m, _)| m)
             .unwrap_or(0);
-        let (patched, outcome) = match crate::classfile::patch_inside_cache(&original) {
+        let (patched, outcome) = match crate::classfile::patch_fluid_dirty_levelchunk(&original) {
             Ok(pair) => pair,
             Err(e) => {
                 eprintln!(
-                    "[crussty-plugin] inside_cache: patch rejected ({e}), hook stays dormant"
+                    "[crussty-plugin] fluid_dirty: patch rejected ({e}), hook stays dormant"
                 );
                 return;
             }
@@ -326,69 +363,25 @@ pub fn activate() {
         );
         if !retargeted {
             eprintln!(
-                "[crussty-plugin] inside_cache: unexpected patch outcome ({outcome:?}), hook stays dormant"
+                "[crussty-plugin] fluid_dirty: unexpected patch outcome ({outcome:?}), hook stays dormant"
             );
             return;
         }
         eprintln!(
-            "[crussty-plugin] inside_cache: computed patch for {} ({} -> {} bytes, {outcome:?})",
+            "[crussty-plugin] fluid_dirty: computed patch for {} ({} -> {} bytes, {outcome:?})",
             t.name,
             original.len(),
             patched.len()
         );
-        // FLUID-FREE chain (S7-143): when the fluid lever is enabled, the
-        // Entity bytes must ALSO carry the fluid-gate retarget (both
-        // updateFluidHeightAndDoFluidPushing wrapper sites -> FluidOps.fgate).
-        // The bridge (FluidOps) is defined by fluid_free::activate BEFORE
-        // this compose runs (wait_bridge_ready) — otherwise degrade
-        // inside-only (fail-dominant, loud WARN): serving fgate bytes
-        // without the bridge class would die with LinkageError.
-        let patched = if crate::fluid_free::enabled_pub() {
-            if crate::fluid_free::wait_bridge_ready(60_000) {
-                match crate::fluid_free::compose_entity(&patched) {
-                    Some(p) => p,
-                    None => patched,
-                }
-            } else {
-                eprintln!(
-                    "[crussty-plugin] inside_cache: fluid bridge missed its window, entity chain degrades INSIDE-ONLY (fail-dominant)"
-                );
-                patched
-            }
-        } else {
-            patched
-        };
-        // FLUID-DIRTY chain (S7-151): when the fluid_dirty lever is enabled,
-        // the Entity bytes must ALSO carry the scan retarget (both
-        // updateFluidHeightAndDoFluidPushing wrapper sites -> FluidPushOps.scan).
-        // The bridge (FluidPushOps) is defined by fluid_dirty::activate BEFORE
-        // this compose runs (wait_bridge_ready) — otherwise degrade
-        // chain-only (fail-dominant, loud WARN): serving scan bytes without
-        // the bridge class would die with LinkageError (S7-148 lesson).
-        let patched = if crate::fluid_dirty::enabled_pub() {
-            if crate::fluid_dirty::wait_bridge_ready(60_000) {
-                match crate::fluid_dirty::compose_entity(&patched) {
-                    Some(p) => p,
-                    None => patched,
-                }
-            } else {
-                eprintln!(
-                    "[crussty-plugin] inside_cache: fluid_dirty bridge missed its window, entity chain degrades WITHOUT-FLUID-DIRTY (fail-dominant)"
-                );
-                patched
-            }
-        } else {
-            patched
-        };
         t.set_patch(PatchCache {
             bytes: Arc::from(patched),
             major,
         });
 
         // Single retransform; the callback serves the cached patch.
-        crate::kernel_policy::audit_wire(OPS_CLASS, "gate", "inside_cache v1");
+        crate::kernel_policy::audit_wire(OPS_CLASS, "secWrite", "fluid_dirty v1");
         READY.store(true, Ordering::Release);
         let rc = cplug_sdk::retransform_class(t.name);
-        eprintln!("[crussty-plugin] inside_cache: {} armed, retransform rc={rc}", t.name);
+        eprintln!("[crussty-plugin] fluid_dirty: {} armed, retransform rc={rc}", t.name);
     });
 }

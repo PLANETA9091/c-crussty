@@ -26,6 +26,7 @@ mod bridge_class;
 mod classfile;
 mod entity_mirror;
 mod fluid_guard;
+mod fluid_dirty;
 mod fluid_free;
 mod flush_diet;
 mod improved_noise;
@@ -122,6 +123,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // crusstyFf/crusstyFfGen splice) + FluidOps bridge for the Entity chain.
     // Dormant unless CRUSSTY_FLUID_FREE=1 (WARN without CRUSSTY_PALETTED_DEMUX=1).
     fluid_free::register();
+    // FLUID-DIRTY (S7-151): byte hook on LevelChunk (secWrite delegate +
+    // dirty-stamp ledger) + FluidPushOps bridge composed by the inside_chain
+    // (scan retarget). Dormant unless CRUSSTY_FLUID_DIRTY=1.
+    fluid_dirty::register();
     proto_blend_cache::register();
     // F1 BATCH-RNG (family-agg pack member, S7-112): ServerLevel body-swap hook.
     randomtick::register();
@@ -312,6 +317,10 @@ fn inject_surface() {
     // compute the section field-splice, arm the inside_chain bridge (dormant
     // unless CRUSSTY_FLUID_FREE=1).
     fluid_free::activate();
+    // FLUID-DIRTY (S7-151): define FluidPushOps into the kernel loader,
+    // compute the secWrite retarget for LevelChunk, arm the inside_chain
+    // bridge (dormant unless CRUSSTY_FLUID_DIRTY=1).
+    fluid_dirty::activate();
     // Dormant unless CRUSSTY_NATIVE_BLEND_CACHE is set (see docs/HOOK_BLEND_CACHE.md).
     proto_blend_cache::activate();
     // F1 BATCH-RNG (S7-112): define RandomTickOps into the ServerLevel loader,

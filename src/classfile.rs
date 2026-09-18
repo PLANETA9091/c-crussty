@@ -2785,6 +2785,107 @@ pub fn patch_fluid_gate(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), Stri
     }
 }
 
+// ---------------------------------------------------------------------------
+// FLUID-DIRTY (S7-151 / TASK-290, ARCH-ATTACK lever #6): per-entity
+// memoization of the fluid-scan portion. Two retargets:
+//   1) BOTH Entity wrapper call-sites of updateFluidHeightAndDoFluidPushing
+//      (the ONLY two call sites in the whole kernel — census
+//      research/fluid-dirty-2026-09-18/S7151_CENSUS.md) →
+//      FluidPushOps.scan(Entity,TagKey,double)Z (receiver-first, 3B→3B).
+//   2) The single LevelChunkSection.setBlockState(IIILBlockState)BlockState
+//      call site inside LevelChunk.setBlockState(BlockPos,BlockState,I) →
+//      FluidPushOps.secWrite(...) (delegate returning the old state; bumps
+//      the section dirty-stamp on a real fluid-state change).
+
+const FLUID_PUSH_OPS_CLASS: &str = "net/minecraft/world/entity/FluidPushOps";
+const FLUID_SCAN_DESC: &str = "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/tags/TagKey;D)Z";
+const SEC_WRITE_DESC: &str = "(Lnet/minecraft/world/level/chunk/LevelChunkSection;IIILnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/level/block/state/BlockState;";
+const SEC_WRITE_FROM: (&str, &str, &str) = (
+    "net/minecraft/world/level/chunk/LevelChunkSection",
+    "setBlockState",
+    "(IIILnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/level/block/state/BlockState;",
+);
+const LEVELCHUNK_SETBLOCK_DESC: &str = "(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;I)Lnet/minecraft/world/level/block/state/BlockState;";
+
+/// Entity bytes: retarget both fluid-scan wrapper sites to FluidPushOps.scan.
+/// Strict: exactly ONE site per wrapper (water + lava), like patch_fluid_gate.
+pub fn patch_fluid_dirty_entity(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    for probe in [
+        "updateInWaterStateAndDoWaterCurrentPushing",
+        "updateInWaterStateAndDoFluidPushing",
+        "fluidHeight",
+        "touchingUnloadedChunk",
+    ] {
+        if layout.pool.find_utf8(probe).is_none() {
+            return Err(format!("{probe} absent from pool (kernel rename?)"));
+        }
+    }
+    let expect_static = format!("(L{};{}", FLUID_TARGET.0, &FLUID_TARGET.2[1..]);
+    if FLUID_SCAN_DESC != expect_static {
+        return Err("scan descriptor is not the receiver-prepended target form".into());
+    }
+
+    let (out1, outcome1) = retarget_virtual_to_static(
+        bytes,
+        "updateInWaterStateAndDoWaterCurrentPushing",
+        "()V",
+        FLUID_TARGET,
+        (FLUID_PUSH_OPS_CLASS, "scan", FLUID_SCAN_DESC),
+    )?;
+    let (out2, outcome2) = retarget_virtual_to_static(
+        &out1,
+        "updateInWaterStateAndDoFluidPushing",
+        "()Z",
+        FLUID_TARGET,
+        (FLUID_PUSH_OPS_CLASS, "scan", FLUID_SCAN_DESC),
+    )?;
+
+    let sites1 = match &outcome1 {
+        RetargetOutcome::Retargeted { sites } => *sites,
+        RetargetOutcome::AlreadyPatched { sites } => *sites,
+        RetargetOutcome::NotFound => 0,
+    };
+    let sites2 = match &outcome2 {
+        RetargetOutcome::Retargeted { sites } => *sites,
+        RetargetOutcome::AlreadyPatched { sites } => *sites,
+        RetargetOutcome::NotFound => 0,
+    };
+    match (sites1, sites2) {
+        (1, 1) => match (&outcome1, &outcome2) {
+            (RetargetOutcome::AlreadyPatched { .. }, RetargetOutcome::AlreadyPatched { .. }) => {
+                Ok((out2, RetargetOutcome::AlreadyPatched { sites: 2 }))
+            }
+            _ => Ok((out2, RetargetOutcome::Retargeted { sites: 2 })),
+        },
+        _ => Err(format!(
+            "expected exactly one scan site per wrapper (water={sites1}, lava={sites2})"
+        )),
+    }
+}
+
+/// LevelChunk bytes: retarget the single LevelChunkSection.setBlockState
+/// site to FluidPushOps.secWrite (delegate + dirty-stamp bump).
+pub fn patch_fluid_dirty_levelchunk(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    for probe in ["setBlockState", "net/minecraft/world/level/chunk/LevelChunkSection"] {
+        if layout.pool.find_utf8(probe).is_none() {
+            return Err(format!("{probe} absent from pool (kernel rename?)"));
+        }
+    }
+    let expect_static = format!("(L{};{}", SEC_WRITE_FROM.0, &SEC_WRITE_FROM.2[1..]);
+    if SEC_WRITE_DESC != expect_static {
+        return Err("secWrite descriptor is not the receiver-prepended target form".into());
+    }
+    retarget_virtual_to_static(
+        bytes,
+        "setBlockState",
+        LEVELCHUNK_SETBLOCK_DESC,
+        SEC_WRITE_FROM,
+        (FLUID_PUSH_OPS_CLASS, "secWrite", SEC_WRITE_DESC),
+    )
+}
+
 pub fn patch_flush_step(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
     let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
     // Kernel-rename guard: the collector's own fields must be present.
@@ -4160,5 +4261,162 @@ mod section_ff {
         let out = patch_section_ff(SECTION).expect("patch");
         std::fs::create_dir_all("tests/out").unwrap();
         std::fs::write("tests/out/LevelChunkSection.patched.class", &out).unwrap();
+    }
+}
+
+#[cfg(test)]
+mod fluid_dirty {
+    // S7-151 / ARCH-ATTACK lever #6: REAL kernel fixtures (same source jar
+    // as every other fixture — patched-kernel e2992d63).
+    const ENTITY: &[u8] = include_bytes!("../tests/fixtures/Entity_real.class");
+    const LEVEL_CHUNK: &[u8] = include_bytes!("../tests/fixtures/LevelChunk_real.class");
+
+    use crate::classfile::*;
+
+    #[test]
+    fn fluid_dirty_entity_retargets_exactly_two_wrappers() {
+        let (patched, outcome) = patch_fluid_dirty_entity(ENTITY).expect("patch");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 2 },
+            "exactly one scan site per wrapper (water + lava)"
+        );
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        assert!(patched.len() >= ENTITY.len());
+    }
+
+    #[test]
+    fn fluid_dirty_entity_sites_resolve_to_bridge() {
+        let (patched, _) = patch_fluid_dirty_entity(ENTITY).expect("patch");
+        let cp_count = u16::from_be_bytes([patched[8], patched[9]]);
+        let (pool, _end) = Pool::parse(&patched, 10, cp_count).expect("cp parse");
+        let triples: Vec<_> = (1..pool.next)
+            .filter_map(|i| pool.methodref_parts(i))
+            .collect();
+        assert!(
+            triples
+                .iter()
+                .any(|t| t.0 == "net/minecraft/world/entity/FluidPushOps"
+                    && t.1 == "scan"
+                    && t.2
+                        == "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/tags/TagKey;D)Z"),
+            "scan Methodref appended"
+        );
+        assert!(pool.find_utf8("touchingUnloadedChunk").is_some());
+    }
+
+    #[test]
+    fn fluid_dirty_entity_idempotent() {
+        let (patched, _) = patch_fluid_dirty_entity(ENTITY).expect("patch");
+        let (again, outcome) = patch_fluid_dirty_entity(&patched).expect("repatch");
+        assert_eq!(outcome, RetargetOutcome::AlreadyPatched { sites: 2 });
+        assert_eq!(again, patched, "repatch must be byte-identical");
+    }
+
+    #[test]
+    fn fluid_dirty_entity_wrong_class_fails_closed() {
+        match patch_fluid_dirty_entity(include_bytes!(
+            "../tests/fixtures/PalettedContainer.class"
+        )) {
+            Err(e) => {
+                assert!(
+                    e.contains("absent from pool")
+                        || e.contains("not found")
+                        || e.contains("per wrapper"),
+                    "{e}"
+                );
+            }
+            Ok((_, outcome)) => assert!(matches!(
+                outcome,
+                RetargetOutcome::NotFound | RetargetOutcome::AlreadyPatched { .. }
+            )),
+        }
+    }
+
+    #[test]
+    fn fluid_dirty_levelchunk_retargets_exactly_one_site() {
+        let (patched, outcome) = patch_fluid_dirty_levelchunk(LEVEL_CHUNK).expect("patch");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "exactly one LevelChunkSection.setBlockState site in LevelChunk.setBlockState"
+        );
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        assert!(patched.len() >= LEVEL_CHUNK.len());
+    }
+
+    #[test]
+    fn fluid_dirty_levelchunk_sites_resolve_to_bridge() {
+        let (patched, _) = patch_fluid_dirty_levelchunk(LEVEL_CHUNK).expect("patch");
+        let cp_count = u16::from_be_bytes([patched[8], patched[9]]);
+        let (pool, _end) = Pool::parse(&patched, 10, cp_count).expect("cp parse");
+        let triples: Vec<_> = (1..pool.next)
+            .filter_map(|i| pool.methodref_parts(i))
+            .collect();
+        assert!(
+            triples.iter().any(|t| t.0 == "net/minecraft/world/entity/FluidPushOps"
+                && t.1 == "secWrite"
+                && t.2 == "(Lnet/minecraft/world/level/chunk/LevelChunkSection;IIILnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/level/block/state/BlockState;"),
+            "secWrite Methodref appended"
+        );
+    }
+
+    #[test]
+    fn fluid_dirty_levelchunk_idempotent() {
+        let (patched, _) = patch_fluid_dirty_levelchunk(LEVEL_CHUNK).expect("patch");
+        let (again, outcome) = patch_fluid_dirty_levelchunk(&patched).expect("repatch");
+        assert_eq!(outcome, RetargetOutcome::AlreadyPatched { sites: 1 });
+        assert_eq!(again, patched, "repatch must be byte-identical");
+    }
+
+    #[test]
+    fn fluid_dirty_levelchunk_wrong_class_fails_closed() {
+        match patch_fluid_dirty_levelchunk(include_bytes!(
+            "../tests/fixtures/PalettedContainer.class"
+        )) {
+            Err(e) => {
+                assert!(
+                    e.contains("absent from pool")
+                        || e.contains("not found")
+                        || e.contains("bad classfile layout"),
+                    "{e}"
+                );
+            }
+            Ok((_, outcome)) => assert!(matches!(
+                outcome,
+                RetargetOutcome::NotFound | RetargetOutcome::AlreadyPatched { .. }
+            )),
+        }
+    }
+
+    /// Compose sanity: inside + fluid_dirty retargets coexist on ONE Entity
+    /// classfile (non-overlapping sites — the runtime chain serves all three
+    /// levers from the same bytes: inside + fluid_free + fluid_dirty).
+    #[test]
+    fn fluid_dirty_composes_with_inside() {
+        let (inside, _) = patch_inside_cache(ENTITY).expect("inside patch");
+        let (both, outcome) = patch_fluid_dirty_entity(&inside).expect("fluid_dirty compose");
+        assert_eq!(outcome, RetargetOutcome::Retargeted { sites: 2 });
+        let cp_count = u16::from_be_bytes([both[8], both[9]]);
+        let (pool, _end) = Pool::parse(&both, 10, cp_count).expect("cp parse");
+        let triples: Vec<_> = (1..pool.next)
+            .filter_map(|i| pool.methodref_parts(i))
+            .collect();
+        assert!(triples
+            .iter()
+            .any(|t| t.0 == "net/minecraft/world/entity/InsideBlockOps" && t.1 == "gate"));
+        assert!(triples
+            .iter()
+            .any(|t| t.0 == "net/minecraft/world/entity/FluidPushOps" && t.1 == "scan"));
+    }
+
+    /// Dump artifacts for the offline JVM-verifier harness.
+    #[test]
+    fn dump_patched_for_verifier() {
+        let (entity, _) = patch_fluid_dirty_entity(ENTITY).expect("patch");
+        let (lc, _) = patch_fluid_dirty_levelchunk(LEVEL_CHUNK).expect("patch");
+        std::fs::create_dir_all("tests/out").unwrap();
+        std::fs::write("tests/out/Entity.fluiddirty.patched.class", &entity).unwrap();
+        std::fs::write("tests/out/LevelChunk.fluiddirty.patched.class", &lc).unwrap();
     }
 }
