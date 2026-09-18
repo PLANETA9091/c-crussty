@@ -119,3 +119,34 @@ S7-158: добавить watchdog/таймауты на shutdown-фазу + non-
 
 INJECTS-ONLY цел: leg #2 — санкционированный preregister A/B leg (job
 завершён wall-cancel ПОСЛЕ сбора данных; CI-бут не тратился на пустой прогон).
+# ABSORB S7-157c — REGION-THREADS leg #2 (run 35363758352) + инциденты
+
+Дата: 2026-09-18 17:2x UTC. Артефакт: `run-s7157b-leg2-artifact/` (скачан до отмены, sha256 cpu-collapsed 22f63593…).
+Конфиг (run-env.txt): inside_cache=1 + flush_diet=1 + **region_threads=4**, demux/diet/ff/fluid_dirty=0, fp4/300s/150k/seed42/xmx10G — точная preregister A/B против CUMULATIVE 35330129145.
+
+## Вердикт: ЭКОНОМИКА GREEN (TPS +66.7%), БАНК ОТОЖДЁН до S7-158b — leg #2 умер на live tracker-race после конца soak-окна
+
+- **PG2 PASS**: 0 NoClassDefFoundError; ARMED-цепочка полна: RegionTickOps defined + BRIDGE, ServerLevel Retargeted{1} (142812→142952), EntityCallbacks Retargeted (add/remove), Level guardEntityTick Retargeted{1} (S7-157b), serve ×3, retransform rc=0; INJECT 150000/150000 VALID (items=105000, hostiles=30000, passives=15000).
+- **PG3 PASS**: TPS crawl медиана **0.90 → 1.50 = +66.7%** (гейт ≥ +25% по потолку Амдала ×2.31; REFUTED < +10%). raw: base [18.5, 0.7, 0.7, 0.8, 0.9, 0.9] → leg [20.4, 1.1, 1.3, 1.4, 1.5, 1.7]. Регион-воркеры реально работают: RegionTickOps lane 72780 сэмплов (56.6% CPU) — main-splice 71700 + worker-buckets 1080 в cpu-collapsed.
+- **PG4 FAIL**: young GC 118 → **155 (+31.4%)** при кэпе ≤ 135 (+15%). Root cause (S7-158c, исправлено в 3fc9443): v1 выделял свежий snapshot-ArrayList (150k refs) + W bucket-ArrayLists (~150k refs) + consumer-массив КАЖДЫЙ тик ≈ MB/s churn. GC-DIET: persistent Entity[][] + grow-on-overflow + single-pass fill + post-join tail-nulling → zero-alloc steady state. PG1 дайджест бит-в-бит не изменился.
+- **Live-инцидент (не фиксируемый гейтами, но блокирующий банк): крэш 15:54:54 — ПОСЛЕ конца soak-окна (END≈15:54:40), все профайлеры успели**:
+  `NullPointerException: Cannot invoke "EntityTrackerEntity.moonrise$getTrackedEntity()" because "entity" is null` @ `ChunkMap.newTrackerTick:1017` ← ChunkMap.tick:1033 ← ServerChunkCache.tick:495 ← ServerLevel.tick:815.
+- **Root cause трекер-гонки (javap-разбор)**: `newTrackerTick` итерирует **raw backing array** `ServerEntityLookup.trackerEntities.getRawDataUnchecked()` с одноразовым size-снимком и БЕЗ null-гварда на элемент (гвардится только `te == null`). `ReferenceList` НЕ потокобезопасен: swap-remove в момент итерации = null-дыра в [0,size) → NPE. В ваниле все мутации trackerEntities — main-only. В REGION-THREADS воркеры во время фазы делают `Entity.discard()` (item-merge, лава/огонь, деспавн) и spawn (merged ItemEntity) НАПРЯМУЮ в ServerEntityLookup → гонка remove-пути с трекером следующего тика НЕ нужна — null-дыра уже в raw-массиве, а size() воркером меняется Concurrentно с любым main-чтением.
+- **Подтверждение add-path гонки**: `Entity uuid already exists: … ItemEntity Rotten Flesh 166659` @ 15:54:24 (в CUMULATIVE базе таких WARN 0) — ItemEntity.merge спавнит на воркере concurrently с main/chunk-system add-путём → uuid-map race.
+- **S7-158b (preregister, следующий тик)**: ретаргет `ServerEntityLookup.addEntity/removeEntity` (2 сайта, census перед патчем) в deferred-FIFO при phaseActive (тот же паттерн, что EntityTickList onTickingStart/onTickingEnd), дрейн на join в порядке колбэков; spawn-сущности становятся видимы со следующего тика (статистически эквивалентно при баре owner = median-exact parity; издержка = задержка ≤1 тик для merged/drop-сущностей). Гейты: PG1 дайджест НЕ меняется (шторм мутаций уже в харнессе), live 0 NCDFE + 0 tracker-NPE + 0 uuid-dup, PG3 TPS ≥ +25%, PG4 young GC ≤ 135 (с GC-DIET должен пройти), затем leg #3 = подтверждение min-of-2.
+
+## Инцидент гигиены #2: 59-минутное сгорание job после крэша (S7-158a, исправлено в 3fc9443)
+
+Хронология (job log + stdout): java умер orderly 15:55:21-22 (после крэша в 15:54:54 — Paper штатно до-сохранил чанки); DedicatedServer ОСТАНОВИЛ console-listener рано в shutdown → `tail` (FIFO-читатель console.in → писатель console.pipe) получил SIGPIPE на записи «spark profiler --stop» (~15:55:07, java ещё жив, но stdin уже закрыт) и умер; харнесс дошёл до `cmd "stop"` (после «spark/debug artifacts: 5» @ 15:55:22) → `echo > console.in` = open(O_WRONLY) на FIFO БЕЗ читателя → блокировка навсегда → bash-скрипт осиротел (runner cleanup: «Terminate orphan process: pid (3426) (bash)») → job сгорел до 75-мин timeout (16:54:59). Артефакт upload (`if: always()`) успел 16:54:56 — данные полные.
+Фикс S7-158a: `cmd()` = `timeout 5 sh -c 'printf … > console.in'` (мёртвый консольный канал стоит 5с на вызов, не job) + `timeout 180` на report_world3.py. FIFO-структура и порядок kill'ов не тронуты (pre-kill tail до фазы команд был отвергнут — убил бы консольный канал forceload/inject/soak).
+
+## Фиксtures-заметка
+
+`uuid-dup` (1 шт) — артефакт детерминированного инжектора: UUID-последовательность topup при другой тиковой pacing (TPS ×1.67) коллидировала с ещё-живой сущностью. Не рычаг, не парити-риск для вердикта TPS, но фиксировать в absorb-leg-#3.
+
+## След (очередь S7-158+)
+
+- S7-158a ✅ (3fc9443) — bounded console ops.
+- S7-158c ✅ (3fc9443) — GC-diet RegionTickOps.
+- S7-158b — СЛЕДУЮЩИЙ ТИК: census + ретаргет add/remove ServerEntityLookup + harness-тесты (шторм discard/spawn) + leg #3 (min-of-2, preregister PG2/PG3/PG4 повторно).
+- После банка REGION-THREADS: директива владельца «ТРОГАЕМ ВСЁ» — микро-лейны в очередь без дисквалификации по размеру: move/collision 5.4%, inside-blocks residual 5.1%, tracker ~2% (+ пассажиры 1.17%) — рычаги НЕ-кэш-класса (branch elimination, батчинг, layout), каждый со своим preregister.
