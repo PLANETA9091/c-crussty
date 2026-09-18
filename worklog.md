@@ -1764,3 +1764,25 @@ Work Log:
 Stage Summary:
 - Конвейер 4 рычагов снова ПОЛЕН, ЗАПУШЕН и офлайн-верифицирован (INSIDE-CACHE hardened / FLUSH-DIET / FLUID-FREE re-re / ALLOC-DIET + PALETTED-DEMUX); push-блокер 12 тиков закрыт токеном владельца
 - КРИТИЧЕСКИЙ ПУТЬ: 4 диспатча leg #2' INSIDE-CACHE (X150K, base 35275967738, гейты §156) → FLUSH-DIET → FLUID-FREE (demux=1) → ALLOC-DIET → absorb-вердикты
+
+---
+## S7-147 (ARCH-ATTACK) — 2026-09-18 14:1x-15:0x +08 — leg #2' ABSORB (A/B-невалиден, ARMED-эвиденс забанкован) + НАЙДЕН И УСТРАНЁН главный измерительный дефект эры (паритет популяции фикстуры) + base-b диспатчен
+
+**Task ID: S7-147 (Job 394666, тик 14:13)**, Agent: agent-7625532f (session web-f7888d46)
+
+Work Log:
+- Состояние на входе тика: S7-146 (реставрация №3 + FLUID-FREE re-re) запушен докруткой 13:43-тика; leg #2' уже диспатчен (35314220731, in_progress); CLAIMS-долг перенесён (TASK-272..282, a43e705); блокер CREDS снят (push-URL владельца, правило 1b)
+- 3x pull --rebase: c-crussty up-to-date (0/0), crussty-dev-logs склонирован по токену, CRUSSTY pristine ОТСУТСТВУЕТ (уничтожен WIPE №3, не восстанавливался — учесть при следующем restore)
+- leg #2' absorb (ран 35314220731, head 53d14d1): артефакт world3-bench 32.3MB скачан полностью (включая server-stdout 175MB, которого не хватало leg2). Конфиг-девиация: fp=0/900s вместо preregistered fp4/300s (дефолты workflow) + неравные окна (S7-96d) ⇒ A/B-НЕВАЛИДЕН
+- Позитив: ARMED-цепочка ПОЛНА живьём (pristine 205458 major65 → defined InsideBlockOps+$Recorder → Retargeted{1} 205522 → serve → retransform rc=0); INJECT VALID; 900s soak 0 crash/0 tick-behind; TPS 1.2→3.3 (база 0.6-0.8)
+- ГЛАВНАЯ НАХОДКА: «коллапс» 148k→71k = паритет-артефакт фикстуры: 2970 тиков vs 210 в базе = 14× ванильного распада (item-merge, горение, cramming) на стенку; topup-модель слепа (deficit=0 aliveEst=const; только age-despawn; в базе не стрелял вовсе). Парадокс: чем лучше рычаг, тем «невалиднее» ран. Пинг-понг (S7-136) был вторичной гипотезой
+- Фикс: BenchPopulationPlugin topup REAL-COUNT (Item/Monster/Animals, TOPUP-SCAN каждые 600т, drain 20/тик ~14ms, largest-lane-first, miss-guard 64) — коммит 4c8f029 запушен; Compile-OK javac21 (kernel 29386794B + purpur-api + 125 libs, CI-эквивалент; материализация purpur-paperclip в /tmp/s7147mat)
+- Протокол: все будущие A/B против base-b (ран 35317176927, head 4c8f029, все рычаги 0, fp4/300s, диспатчен 06:57:34 UTC, S7-108 гвард)
+- Учёт: GOAL СТАТУС S7-147; runs_index row 290; патч-банк 0009-S7-147 + sha256; CLAIMS TASK-283; atomic worklog; INJECTS-ONLY цел (0 sandbox boots; CI-буты: leg2' поглощён + base-b санкционирован)
+
+Stage Summary:
+- Диспетчеризация эры скорректирована: обнаруженный паритет-артефакт фикстуры делал ЛЮБОЙ успешный рычаг «невалидным» — фикс восстанавливает честность всех будущих A/B (INSIDE-CACHE leg #2'', FLUSH-DIET, FLUID-FREE, ALLOC-DIET)
+- INSIDE-CACHE: ARMED-эвиденс максимален для офлайн-фазы+сока; §156-вердикт переносится на leg #2'' vs base-b
+- Критический путь: absorb base-b → leg #2'' → FLUSH-DIET → FLUID-FREE (demux=1) → ALLOC-DIET → absorb-вердикты
+
+RUN_ID_DISPATCHED: base-b 35317176927 (все рычаги 0, фикстура-фикс); поглощён: 35314220731 (leg #2', A/B-invalid)
