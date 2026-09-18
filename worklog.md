@@ -2142,3 +2142,24 @@ Stage Summary:
 - NEXT (S7-158 absorb, тик 02:08): absorb leg #3 (35376530777) — PG2/PG3/PG4 + 0 инцидентов → leg #4 (второй сэмпл min-of-2) → banking REGION-THREADS при полном PASS; после банка — очередь микро-лейнов по директиве «ТРОГАЕМ ВСЁ» (move/collision 5.4%, inside-blocks 5.1%, tracker 2%, пассажиры 1.17%)
 
 RUN_ID_DISPATCHED: 35376530777 (leg #3, queued; CI-бутов за тик 1 — санкционированный preregister A/B)
+
+---
+## S7-159 (ARCH-ATTACK) — 2026-09-19 02:0x-02:5x +08 — LEG #3 (35376530777) = БРАК: RegionTickOps DORMANT (fail-closed штатно); корень = S7-158d-хук наблюдал Mth вместо Entity; фикс bc77141; leg #4 (35379431410) диспатчен
+
+**Task ID: S7-159 (Job 396026, тик 01:43)**, Agent: agent-7625532f
+
+Work Log:
+- creds (1b, bootstrap_tick.sh отсутствует) + pull --rebase ×2 up to date; next TASK id = 300
+- Проверка leg #3 in-flight (старт 17:48:46 UTC) — пока шёл, подготовлен absorb_s7158_leg3.py: гейты §S7-158 (PG2/PG3/PG4 + CRASH-FREE) + НОВАЯ методика владельца «ТОП-ПОЖИРАТЕЛЬ → ∞» — взаимоисключающий ТОП пожирателей 2 уровня (лейны CPU → декомпозиция entity-фазы first-match) + оси GC (паузы total/worst) и TPS/MSPT; регресс-тест на leg #2 артефакте воспроизвёл все известные числа (оффлоад 54057/74.3% от лейна, NPE=1, uuid=1, GC=155, TPS 1.50 +66.7%)
+- Leg #3 SUCCESS 18:10 UTC; фетч 28MB (BOTTLENECKS_3.md на месте — фиксы S7-158a сработали, job завершился сам за ~22 мин); ABSORB: **RegionTickOps lane = 0 сэмплов, offload 0%, TPS медиана 0.80 плоская** — мост defined (RegionTickOps/Mut/TrackerTickOps/RngOps в kernel loader), но «Entity strict site-count violated (NotFound), hook stays dormant» → весь хук спал, тик ванильный. Вердикт: leg БРАК (не A/B-сэмпл), fail-closed защитил parity (0 NCDFE, 0 инцидентов)
+- Root-cause: константа MTH_CLASS = "net/minecraft/util/Mth" вместо "net/minecraft/world/entity/Entity" (копипаст имени переменной mth); Mth проходит probe-патчера (createInsecureUUID объявлен в его пуле), но не имеет ctor-дескриптора Entity → NotFound. Оффлайн-харнесс проверял патчер-функцию на Entity_real, но не константу регистрации
+- Фикс S7-159 (bc77141): ENTITY_CLASS + честные переименования mth→ent (хук/Target/activate/ретрансформ-список/логи); патчер не менялся; композиция с inside_cache сохранена (dispatch_bytes подаёт хуку Entity байты после inside_cache-ретаргета; скан по имени). Suite 147/0/1; harness OFFLINE PASS (structural/wiring/dormant+parallel, sweep/UUID-регрессы целы)
+- Диспатч leg #4: run 35379431410 (18:18:41 UTC, head bc77141) — preregister: min-of-2 сэмпл №1 (leg #3 из протокола исключён как брак), гейты PG2 (ARMED полный с Entity rc=0)/PG3 (≥ +25%)/PG4 (≤135)/0 инцидентов
+- Учёт: ABSORB_S7158_LEG3_DUD.md + ABSORB_S7158_LEG3.out + GOAL СТАТУС S7-159; push c-crussty bc77141
+
+Stage Summary:
+- Третий урок эры о живой верификации: оффлайн-гейты проверяют патчер, но не РЕГИСТРАЦИЮ (наблюдаемый класс); добавлен watchlist leg #4 — живые маркеры «pristine sighting …/Entity» + ARMED rc Entity=0
+- Методика «ТОП-ПОЖИРАТЕЛЬ → ∞» владельца формализована в absorb-инструментарий (оси CPU/GC/MSPT, строго сверху вниз, 2-3% середины не трогаются); ТОП leg #3: entity-фаза 51.98% → GC/JIT 39.25% → tracker 2.57% — REGION-THREADS остаётся атакой ТОП-1 (экономика leg #2 +66.7% в силе)
+- NEXT (S7-159 absorb, тик 02:5x/03:0x): absorb leg #4 → PASS → leg #5 (сэмпл №2) → банкование CUMULATIVE v2 (inside_cache+flush_diet+region_threads=4); watchlist navigatingMobs
+
+RUN_ID_DISPATCHED: 35379431410 (leg #4, min-of-2 №1, head bc77141; CI-бутов за тик 0 — leg #3 артефакт-лег завершился штатно SUCCESS)
