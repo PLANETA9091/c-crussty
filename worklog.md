@@ -1911,3 +1911,25 @@ Stage Summary:
 RUN_ID_DISPATCHED: NONE (эра закрыта); поглощён CUMULATIVE 35330129145
 
 ---
+---
+## S7-150 (ARCH-ATTACK, пост-эра) — 2026-09-18 18:0x-18:3x +08 — RECON-ранжирование CUMULATIVE 35330129145 + STEP-0 javap-контракт: топ-1 attackable-лейн = fluid-push family ~10% CPU; рычаг FLUID-DIRTY (memo + event-driven dirty-stamp ledger) выбран и preregistered
+
+**Task ID: S7-150 (Job 394666, тик 18:08)**, Agent: agent-7625532f
+
+Work Log:
+- creds: bootstrap_tick.sh отсутствует → правило (1b) PUSH-URL владельца (remote set-url обоих репо, токен из директивы 14:11); fetch: оба репо синхронны (цепочка S7-146…S7-149b уже запушена прошлым тиком); 3× pull --rebase c-crussty + crussty-dev-logs = Already up to date; CRUSSTY pristine в среде отсутствует (не критично — без critical bug не трогаем)
+- RECON: s7150_recon.py по cpu-collapsed.txt CUMULATIVE (52341 сэмплов) → research/inside-cache-2026-09-18/S7150_RECON.md; исправлен баг классификатора (кадры entity-цикла по подстроке); фазы: entity tick 58.5% / не-entity 41.5% (native 28.8%, ServerChunkCache+трекер ~3.7%, Level.setBlock 2.8%)
+- Ранжирование лейнов: fluid-push family ~10% (ранг 1: ItemEntity 4466/52341=8.5% лейна 36.4% + Zombie 674=9.8% лейна) → move/collision ~5.4% → inside-blocks residual ~5.1% → tracker ~2%; merge-search items 2.2% = МИКРО-КЛАСС (O(n²)-гипотеза опровергнута); GC 28.8% закрыт (REFUTED ×2)
+- STEP-0 javap (kernel e2992d63, toolchain /tmp/toolchain/jdk-21.0.12.1+1): полный контракт updateInWaterStateAndDoFluidPushing + updateFluidHeightAndDoFluidPushing + baseTick-гейт сохранён в research/fluid-dirty-2026-09-18/step0_*.txt (3 файла, 541 строк); ключевой факт: скан = ЧИСТАЯ ФУНКЦИЯ(span, fluid-состояния, pushedByFluid), постобработка dm-зависима — мемоизируется только скан
+- RUNBOOK_S7-150.md: дизайн FluidPushOps (self-contained по паттерну InsideBlockOps), dirty-stamp ledger через LevelChunk.setBlockState (old/new FluidState ref-compare — bump только при мутации воды), хит-условие span+stamps, анти-урок FLUID-FREE учтён (per-ENTITY кэш вместо per-section вердикта, демукс не нужен)
+- Preregistered гейты §S7-150 (G1-G6) зафиксированы: честный A/B min-of-2 против базы CUMULATIVE-конфига, NOT лотерея
+- Учёт: GOAL СТАТУС S7-150 (5 пунктов); CLAIMS TASK-289; RUN_ID_DISPATCHED: NONE (имплементация — S7-151)
+
+Stage Summary:
+- Пост-эра открыта: первая нога S7-150 FLUID-DIRTY спроектирована на свежем профиле валидного зелёного рана (владелец-миссия: топ-1 bottleneck по использованию + архитектурный буст классов кэш/dirty-флаги)
+- Ожидаемый эффект: снятие ~10% total CPU скана + alloc-диета скана (new MutableBlockPos/Vec3-цепочки) → young GC relief; консервативно TPS +5-10% на X150K
+- Следующие тики: FluidOps.java (javac21) → двойной section-splice (тело скана + setBlockState-хук) → rust-хук + wiring → FluidDirtyHarness OFFLINE (lockstep 20000 ops) → preregister dispatch
+
+RUN_ID_DISPATCHED: NONE (STEP-0/RECON тик); поглощено: RECON CUMULATIVE 35330129145
+
+---
