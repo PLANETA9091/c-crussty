@@ -1786,3 +1786,5 @@ Stage Summary:
 - Критический путь: absorb base-b → leg #2'' → FLUSH-DIET → FLUID-FREE (demux=1) → ALLOC-DIET → absorb-вердикты
 
 RUN_ID_DISPATCHED: base-b 35317176927 (все рычаги 0, фикстура-фикс); поглощён: 35314220731 (leg #2', A/B-invalid)
+
+ДОПОЛНЕНИЕ S7-147b (тот же тик, 15:1x): base-b (35317176927) SUCCESS 07:14:44 — санити: fp4/300s/inside_cache=0, INJECT VALID, популяция 148391/148193/148027 стабильна (близнец ценза 148402), TPS 0.8-0.9, topup-скан не стрелял (240т<600т — консистентно; фикс дремлет до высоких TPS) ⇒ валидная база. leg #2'' ДИСПАТЧЕН: 35318755582 (head 135cb89, inside_cache=1, fp4/300s, 07:17:58 UTC). Артефакт base-b: research/inside-cache-2026-09-18/run-s7147-baseb/ (sha256 в artifact_hashes_s7147.txt доп. строками); диспатч-скрипт dispatch_s7147b.py забанкован. runs_index row 291; CLAIMS TASK-283 addendum.
