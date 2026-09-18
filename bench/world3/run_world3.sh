@@ -316,6 +316,18 @@ max-players=$MAX_PLAYERS
 enable-command-block=false
 white-list=false
 EOF
+# S7-162 leg#1 DUD lesson (run 35395826385): a slow GitHub runner pushed the
+# forceload sync-load tick past the spigot watchdog timeout (default 60s) —
+# the watchdog dump-storm then hard-stopped the server mid-inject, fixture
+# gates failed and the leg was lost (profile of the dying server = 95%
+# identity-map probing on the registration path). The watchdog is a HARNESS
+# covariate, not engine behavior: keep the monitor, remove the kill
+# (measured-window ticks are 0.4-1.2s — two orders below any of these caps).
+cat > "$SERVER/spigot.yml" <<EOF
+settings:
+  timeout-time: 86400
+EOF
+log "bench harness: spigot watchdog timeout-time=86400 monitor-only (S7-162 leg#1 DUD hardening)"
 
 # --- 4. launch with console fifo ------------------------------------------
 # Run #2 lesson (run 35107535812): Paper resolves eula.txt/server.properties/
