@@ -2969,6 +2969,45 @@ pub fn patch_region_tick_callbacks(
     Ok((b2, (o_add, o_rem)))
 }
 
+/// S7-157b: the ONLY worker-reachable mid-tick pump site —
+/// `Level.guardEntityTick`'s trailing `invokevirtual moonrise$midTickTasks()V`
+/// (census S7-157b: 7 `executeMidTickTasks` callers kernel-wide, but exactly
+/// one is reachable from entity-tick worker threads; tickBlockEntities /
+/// tickFluid / tickBlock / runAllTasksAtTickStart / pollTaskInternal /
+/// iterateTickingChunksFaster are all main-loop). Retargeted to
+/// `RegionTickOps.midTickTasks(Level)` which suppresses the pump on region
+/// workers (live crash 35353820223: concurrent main-thread-queue poll from a
+/// worker -> NoSuchElementException) and reproduces the exact vanilla
+/// virtual dispatch on the main thread. Strict: caller asserts Retargeted{1}.
+pub fn patch_region_tick_guardentity(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    for probe in [
+        "guardEntityTick",
+        "moonrise$midTickTasks",
+        "net/minecraft/world/entity/Entity",
+        "java/util/function/Consumer",
+    ] {
+        if layout.pool.find_utf8(probe).is_none() {
+            return Err(format!("{probe} absent from pool (kernel rename?)"));
+        }
+    }
+    retarget_virtual_to_static(
+        bytes,
+        "guardEntityTick",
+        "(Ljava/util/function/Consumer;Lnet/minecraft/world/entity/Entity;)V",
+        (
+            "net/minecraft/world/level/Level",
+            "moonrise$midTickTasks",
+            "()V",
+        ),
+        (
+            REGION_TICK_OPS_CLASS,
+            "midTickTasks",
+            "(Lnet/minecraft/world/level/Level;)V",
+        ),
+    )
+}
+
 
 pub fn patch_flush_step(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
     let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
@@ -4512,8 +4551,59 @@ mod region_threads {
     const SERVER: &[u8] = include_bytes!("../tests/fixtures/ServerLevel.class");
     const CALLBACKS: &[u8] =
         include_bytes!("../tests/fixtures/ServerLevel$EntityCallbacks_real.class");
+    const LEVEL: &[u8] = include_bytes!("../tests/fixtures/Level_real.class");
 
     use crate::classfile::*;
+
+    #[test]
+    fn region_tick_guardentity_retargets_exactly_one_pump() {
+        let (patched, outcome) = patch_region_tick_guardentity(LEVEL).expect("patch");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "exactly one moonrise$midTickTasks site in Level.guardEntityTick \
+             (the ONLY worker-reachable mid-tick pump — census S7-157b)"
+        );
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        assert!(patched.len() >= LEVEL.len());
+    }
+
+    #[test]
+    fn region_tick_guardentity_site_resolves_to_bridge() {
+        let (patched, _) = patch_region_tick_guardentity(LEVEL).expect("patch");
+        let cp_count = u16::from_be_bytes([patched[8], patched[9]]);
+        let (pool, _end) = Pool::parse(&patched, 10, cp_count).expect("cp parse");
+        let triples: Vec<_> = (1..pool.next)
+            .filter_map(|i| pool.methodref_parts(i))
+            .collect();
+        assert!(
+            triples.iter().any(|t| t.0 == "net/minecraft/world/entity/RegionTickOps"
+                && t.1 == "midTickTasks"
+                && t.2 == "(Lnet/minecraft/world/level/Level;)V"),
+            "midTickTasks Methodref appended with the receiver-prepended desc"
+        );
+    }
+
+    #[test]
+    fn region_tick_guardentity_idempotent() {
+        let (patched, _) = patch_region_tick_guardentity(LEVEL).expect("patch");
+        let (again, outcome) = patch_region_tick_guardentity(&patched).expect("repatch");
+        assert_eq!(outcome, RetargetOutcome::AlreadyPatched { sites: 1 });
+        assert_eq!(again, patched, "repatch must be byte-identical");
+    }
+
+    #[test]
+    fn region_tick_guardentity_wrong_class_fails_closed() {
+        // guardEntityTick absent from EntityCallbacks -> Err or NotFound
+        match patch_region_tick_guardentity(CALLBACKS) {
+            Err(e) => assert!(!e.is_empty(), "{e}"),
+            Ok((_, outcome)) => assert_eq!(
+                outcome,
+                RetargetOutcome::NotFound,
+                "no midTickTasks call site in EntityCallbacks"
+            ),
+        }
+    }
 
     #[test]
     fn region_tick_serverlevel_retargets_exactly_one_foreach() {
@@ -4654,5 +4744,8 @@ mod region_threads {
         std::fs::write("tests/out/ServerLevel.regionthreads.patched.class", &composed).unwrap();
         let (cb, _) = patch_region_tick_callbacks(CALLBACKS).expect("callbacks");
         std::fs::write("tests/out/EntityCallbacks.regionthreads.patched.class", &cb).unwrap();
+        // S7-157b: the mid-tick gate dump (Level.guardEntityTick retarget).
+        let (lv, _) = patch_region_tick_guardentity(LEVEL).expect("guard");
+        std::fs::write("tests/out/Level.regionthreads.patched.class", &lv).unwrap();
     }
 }

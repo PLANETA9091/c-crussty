@@ -156,19 +156,25 @@ public final class RegionThreadsHarness {
                 ? args[2] : "entityinside/build/net/minecraft/world/entity/RegionTickOps.class");
         Path opsMut = Path.of(args.length > 3
                 ? args[3] : "entityinside/build/net/minecraft/world/entity/RegionTickOps$Mut.class");
+        Path lvPatched = Path.of(args.length > 4
+                ? args[4] : "tests/out/Level.regionthreads.patched.class");
 
         byte[] slBytes = Files.readAllBytes(slPatched);
         byte[] cbBytes = Files.readAllBytes(cbPatched);
         byte[] opsBytes = Files.readAllBytes(opsClass);
         byte[] mutBytes = Files.readAllBytes(opsMut);
+        byte[] lvBytes = Files.readAllBytes(lvPatched);
         check(slBytes[0] == (byte) 0xCA && slBytes[1] == (byte) 0xFE, "ServerLevel patched magic");
         check(cbBytes[0] == (byte) 0xCA && cbBytes[1] == (byte) 0xFE, "EntityCallbacks patched magic");
+        check(lvBytes[0] == (byte) 0xCA && lvBytes[1] == (byte) 0xFE, "Level patched magic");
 
-        // ---- 2. WIRING: Methodrefs to the bridge in both patched classes ----
+        // ---- 2. WIRING: Methodrefs to the bridge in all three patched classes ----
         check(countMethodrefsTo(slBytes, "net/minecraft/world/entity/RegionTickOps") >= 1,
                 "ServerLevel carries RegionTickOps Methodref (forEach splice)");
         check(countMethodrefsTo(cbBytes, "net/minecraft/world/entity/RegionTickOps") >= 2,
                 "EntityCallbacks carries 2 RegionTickOps Methodrefs (add+remove guards)");
+        check(countMethodrefsTo(lvBytes, "net/minecraft/world/entity/RegionTickOps") >= 1,
+                "Level carries RegionTickOps Methodref (S7-157b mid-tick gate)");
 
         // ---- 1+3. STRUCTURAL + BRIDGE: define patched classes over the real
         // kernel, RegionTickOps (+Mut) in the SAME loader (kernel-loader
@@ -179,17 +185,21 @@ public final class RegionThreadsHarness {
                         "net.minecraft.server.level.ServerLevel", slBytes,
                         "net.minecraft.server.level.ServerLevel$EntityCallbacks", cbBytes,
                         "net.minecraft.world.entity.RegionTickOps", opsBytes,
-                        "net.minecraft.world.entity.RegionTickOps$Mut", mutBytes));
+                        "net.minecraft.world.entity.RegionTickOps$Mut", mutBytes,
+                        "net.minecraft.world.level.Level", lvBytes));
 
         Class<?> ops = Class.forName("net.minecraft.world.entity.RegionTickOps", false, loader);
         Class<?> callbacks = Class.forName(
                 "net.minecraft.server.level.ServerLevel$EntityCallbacks", false, loader);
         Class<?> sl = Class.forName("net.minecraft.server.level.ServerLevel", false, loader);
+        Class<?> lv = Class.forName("net.minecraft.world.level.Level", false, loader);
         check(ops.getClassLoader() == loader, "RegionTickOps defined in the patch loader");
         check(callbacks.getClassLoader() == loader,
                 "EntityCallbacks patched (JVM verifier accepted)");
         check(sl.getClassLoader() == loader,
                 "ServerLevel patched (JVM verifier accepted)");
+        check(lv.getClassLoader() == loader,
+                "Level patched (JVM verifier accepted — S7-157b mid-tick gate)");
 
         Method forEach = ops.getDeclaredMethod("forEach", EntityTickList.class, Consumer.class);
         Method onAdd = ops.getDeclaredMethod("onTickingStart", EntityTickList.class, Entity.class);
@@ -198,6 +208,29 @@ public final class RegionThreadsHarness {
                 "forEach is static (1:1 receiver-prepended splice target)");
         check(Modifier.isStatic(onAdd.getModifiers()) && Modifier.isStatic(onRem.getModifiers()),
                 "guard sites are static");
+        // NB: resolve the param type through the PATCH loader — the bridge's
+        // Level is the patched class defined in `loader`, not the app one.
+        Method midTick = ops.getDeclaredMethod("midTickTasks", lv);
+        check(Modifier.isStatic(midTick.getModifiers()),
+                "S7-157b midTickTasks gate is static (guardEntityTick retarget)");
+        // Main-side delegation is NOT invoked offline: Level is abstract and
+        // the concrete ServerLevel override is the REAL vanilla pump (null
+        // internals on an Unsafe instance would NPE — and it is untouched
+        // vanilla code by construction: the bridge calls the most-derived
+        // override via its normal virtual dispatch). Worker/main flag
+        // consistency (the actual S7-157b regression surface) is verified in
+        // the parallel child below + the main-thread check here.
+        sun.misc.Unsafe unsafe0 = unsafe();
+        Method isWorker = null;
+        try {
+            isWorker = ops.getDeclaredMethod("isWorker");
+        } catch (NoSuchMethodException e) {
+            // older bridge build — flag checks skipped (structural only)
+        }
+        if (isWorker != null) {
+            check(!((Boolean) isWorker.invoke(null)),
+                    "isWorker()==false on the main thread (dormant flag)");
+        }
         int w = (int) ops.getDeclaredMethod("workers").invoke(null);
         check(w == 1, "workers()==1 with env absent (dormant vanilla passthrough)");
 
@@ -254,7 +287,33 @@ public final class RegionThreadsHarness {
         for (Entity e : entities) list.add(e);
 
         ConcurrentHashMap<String, Integer> seen = new ConcurrentHashMap<>();
-        Consumer<Entity> consumer = e -> seen.merge(e.getStringUUID(), 1, Integer::sum);
+        // S7-157b: per-visit ThreadLocal consistency — the worker flag must
+        // be TRUE exactly on helper threads (slot > 0) and FALSE on main
+        // (slot 0). Any mismatch = the mid-tick gate would leak either way.
+        Thread mainThread = Thread.currentThread();
+        Method isWorkerM;
+        try {
+            isWorkerM = Class.forName("net.minecraft.world.entity.RegionTickOps")
+                    .getDeclaredMethod("isWorker");
+            isWorkerM.setAccessible(true);
+        } catch (NoSuchMethodException e) {
+            isWorkerM = null;
+        }
+        final Method isWorker = isWorkerM;
+        java.util.concurrent.atomic.AtomicInteger flagViolations =
+                new java.util.concurrent.atomic.AtomicInteger();
+        Consumer<Entity> consumer = e -> {
+            seen.merge(e.getStringUUID(), 1, Integer::sum);
+            if (isWorker != null) {
+                try {
+                    boolean flag = ((Boolean) isWorker.invoke(null));
+                    boolean onHelper = Thread.currentThread() != mainThread;
+                    if (flag != onHelper) flagViolations.incrementAndGet();
+                } catch (ReflectiveOperationException ex) {
+                    flagViolations.incrementAndGet();
+                }
+            }
+        };
 
         Class<?> ops = Class.forName("net.minecraft.world.entity.RegionTickOps");
         int w = (int) ops.getDeclaredMethod("workers").invoke(null);
@@ -267,6 +326,11 @@ public final class RegionThreadsHarness {
         check(seen.size() == n, "parallel phase: every entity ticked (visited all)");
         boolean exactlyOnce = seen.values().stream().allMatch(v -> v == 1);
         check(exactlyOnce, "parallel phase: every entity ticked EXACTLY ONCE (disjoint buckets)");
+        if (isWorker != null) {
+            check(flagViolations.get() == 0,
+                    "S7-157b worker-flag consistency: isWorker() true ONLY on helper threads ("
+                            + flagViolations.get() + " violations)");
+        }
         System.out.println("[harness] parallel phase done in " + ms + " ms, " + seen.size()
                 + " entities, W=2");
     }

@@ -7,7 +7,9 @@ import java.util.concurrent.CyclicBarrier;
 import java.util.function.Consumer;
 
 import ca.spottedleaf.moonrise.common.util.TickThread;
+import ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemLevel;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.entity.EntityTickList;
 
 /**
@@ -67,6 +69,22 @@ public final class RegionTickOps {
     /** FIFO of EntityCallbacks mutations observed during the parallel phase. */
     private static final ConcurrentLinkedQueue<Mut> PENDING = new ConcurrentLinkedQueue<>();
     private static volatile boolean phaseActive = false;
+
+    /**
+     * S7-157b (run 35353820223 crash lesson): Paper pumps MAIN-thread
+     * mid-tick tasks per entity tick from Level.guardEntityTick ->
+     * moonrise$midTickTasks -> ServerChunkCache$MainThreadExecutor.pollTask —
+     * that queue is main-thread-only and its pollTask is not thread-safe
+     * against concurrent empties (NoSuchElementException race, live crash at
+     * 14:10:20). Region workers therefore NEVER pump: the gate below
+     * suppresses the call on worker threads; the main thread keeps its exact
+     * vanilla pump (bucket 0 + per-tick loops + tickBlockEntities pump).
+     * Liveness: mid-tick tasks still drain every tick via
+     * MinecraftServer.tickMidTickTasks + the main thread's own
+     * guardEntityTick pumps (bucket 0) + the tickBlockEntities pump.
+     */
+    private static final ThreadLocal<Boolean> WORKER_FLAG =
+            ThreadLocal.withInitial(() -> Boolean.FALSE);
 
     /** Per-phase state, published before GO, read by helpers after GO
      *  (CyclicBarrier arrival = happens-before edge). */
@@ -183,6 +201,7 @@ public final class RegionTickOps {
             for (int i = 1; i < w; i++) {
                 final int slot = i;
                 Thread t = new TickThread(() -> {
+                    WORKER_FLAG.set(Boolean.TRUE); // S7-157b: never pump mid-tick
                     while (true) {
                         try {
                             GO.await();
@@ -243,5 +262,29 @@ public final class RegionTickOps {
     /** Census probe for the OFFLINE harness (must equal env at boot). */
     public static int workers() {
         return WORKERS;
+    }
+
+    /**
+     * S7-157b mid-tick gate — retarget of the ONLY worker-reachable pump
+     * site (Level.guardEntityTick: invokevirtual moonrise$midTickTasks, the
+     * per-entity call that crashed the live leg through
+     * ServerChunkCache$MainThreadExecutor.pollTask). Workers suppress; the
+     * main thread reproduces the exact vanilla virtual dispatch (the
+     * most-derived override — ServerLevel.moonrise$midTickTasks on the
+     * dedicated server, the Level stub elsewhere).
+     */
+    public static void midTickTasks(Level level) {
+        if (WORKER_FLAG.get()) {
+            return; // region worker: main-thread queue is off-limits
+        }
+        if (level instanceof ChunkSystemLevel patched) {
+            patched.moonrise$midTickTasks(); // vanilla dispatch, bit-identical
+        }
+        // non-patched Level: the vanilla Level stub body was `return` — same
+    }
+
+    /** Harness/census probe: is the CURRENT thread a region worker? */
+    public static boolean isWorker() {
+        return WORKER_FLAG.get();
     }
 }
