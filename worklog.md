@@ -2083,3 +2083,25 @@ Stage Summary:
 - Leg #2 (35363758352) в полёте на момент записи; absorb гейтов PG2/PG3/PG4 — тик 00:48
 
 RUN_ID_DISPATCHED: 35363758352 (leg #2, в полёте; CI-бутов: leg #1 35353820223 санкционированный крэш-лег)
+
+---
+## S7-157c (ARCH-ATTACK) — 2026-09-19 00:48-01:1x +08 — ABSORB leg #2 (35363758352): REGION-THREADS ЭКОНОМИКА ДОКАЗАНА (TPS +66.7%, оффлоад 75.6%), банкование отложено (tracker-race NPE + PG4 GC +31.4%); NEXT S7-158 фиксы + leg #3
+
+**Task ID: S7-157c (Job 394666, тик 00:48)**, Agent: agent-7625532f
+
+Work Log:
+- creds (1b) + pull --rebase ×2 up to date; обнаружен in-flight leg #2 (35363758352, диспатчен предыдущим тиком в 15:39:30 UTC на фикс-билде 880e406)
+- Дозапись книжки за S7-157/S7-157b (предыдущий агент исчерпал контекст до книжки): worklog-секция + GOAL СТАТУС + CLAIMS TASK-296 (пуши cb3e906/554e529)
+- Мониторинг: job висел на 75-мин wall (bench сам завершился чисто в 15:55:21 UTC; подвис post-soak фаза) → wall-cancel 16:54:35 → артефакт world3-bench (10558153304) спасён if:always() → фетч 2.77MB zip → run-s7157b-leg2-artifact/ (cpu-collapsed 41MB, stdout 261KB, gc.log, run-env)
+- Валидация: конфиг бит-в-бит preregister (region_threads=4 + inside_cache + flush_diet); INJECT 150000 VALID; 0 NCDFE; ARMED полная (region_threads ×3 rc=0 + inside_cache{1} + flush_diet{2}); kernel e2992d63
+- absorb_s7157.py + ручная раскладка RegionTickOps-стеков: tickBucket lane 71547 = 55.64% CPU; воркеры 54057 = **75.6% оффлоад** (дизайн W=4 точен); midTickTasks 159 сэмплов ВСЕ на main (фикс S7-157b живьём, NoSuchElement не воспроизвёлся)
+- Гейты: PG2 PASS (формально); PG3 **PASS +66.7%** (медиана crawl 0.90→1.50, crawl растёт 1.1→1.7 против плоской базы 0.7→0.9); PG4 FAIL (young GC 118→155, +31.4% > кап +15%)
+- Инциденты: (a) NPE ChunkMap.newTrackerTick «entity is null» в хвосте soak 15:54:54 (ПОСЛЕ spark upload — данные валидны) — воркер-удаление гоняет main-итерацию tracker-карты; (b) UUID-dup WARN 1× (база 0×): worker-спавн Arrow алиасил UUID с Rotten Flesh в другом регионе
+- Вердикт §S7-155: НЕ REFUTED (прирост ≫10%, инциденты — фиксируемые гонки, не семантика), НЕ GREEN-к-банкованию (крэш-лег не банкуют) ⇒ PARTIAL/экономика-ДОКАЗАНА
+- Учёт: ABSORB_S7157C.md + artifact_hashes_s7157c.txt + GOAL СТАТУС S7-157c + worklog + CLAIMS TASK-297
+
+Stage Summary:
+- Lever #7 — первый рычаг эры с материальным TPS-сдвигом (+66.7% медиана, потолок ×2.31 не пробит); остались 2 инженерные гонки (tracker-сериализация, UUID-сидирование) + GC-диета снапшот/бакетов
+- NEXT (S7-158): фикс tracker-race (гейт/отложенный drain EntityLookup-удалений или removal-safe итерация), фикс UUID-сидирования, GC-диета, харнесс-регресс на конкурентный discard, leg #3 min-of-2 (banking при PG2+PG3+PG4 PASS без крэшей); CI: liveness-watchdog на post-soak shutdown-фазу
+
+RUN_ID_DISPATCHED: NONE (absorb-тик leg #2 35363758352 — поглощён; CI-бутов 0 за тик; leg #2 = санкционированный preregister A/B, завершён wall-cancel после сбора данных)
