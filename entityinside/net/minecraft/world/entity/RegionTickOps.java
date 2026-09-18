@@ -1,7 +1,5 @@
 package net.minecraft.world.entity;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CyclicBarrier;
 import java.util.function.Consumer;
@@ -86,10 +84,21 @@ public final class RegionTickOps {
     private static final ThreadLocal<Boolean> WORKER_FLAG =
             ThreadLocal.withInitial(() -> Boolean.FALSE);
 
-    /** Per-phase state, published before GO, read by helpers after GO
-     *  (CyclicBarrier arrival = happens-before edge). */
-    private static volatile List<Entity>[] tasks = new List[0];
-    private static volatile Consumer<Entity>[] consumers = new Consumer[0];
+    /**
+     * Per-phase state, published before GO, read by helpers after GO
+     *  (CyclicBarrier arrival = happens-before edge).
+     *
+     * S7-158c GC-DIET: the per-tick snapshot+partition is now ZERO-ALLOC in
+     * the steady state (live leg 35363758352: young GC 118 -> 155 = +31.4%
+     * vs gate <= +15% — the v1 design allocated a fresh ArrayList snapshot
+     * (150k refs) + W bucket ArrayLists (~150k refs) + a consumer array
+     * EVERY tick ≈ MBs/s of churn on top of vanilla). Persistent arrays are
+     * grown only on demand and reused; publication to workers keeps the
+     * barrier happens-before edge. Consumer array is a constant (single
+     * shared consumer for every slot).*/
+    private static volatile Entity[][] bucketArr = new Entity[0][];
+    private static volatile int[] bucketLen = new int[0];
+    private static volatile Consumer<Entity> consumer;
     private static volatile Throwable workerError;
 
     private static final CyclicBarrier GO = new CyclicBarrier(WORKERS);
@@ -126,26 +135,37 @@ public final class RegionTickOps {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private static void parallelTick(EntityTickList list, Consumer<Entity> consumer, int w) {
-        // Phase 1 (serial): snapshot via the VANILLA iteration protocol.
-        List<Entity> all = new ArrayList<>();
-        list.forEach(all::add);
-
-        // Phase 2 (serial): spatial partition.
-        List<Entity>[] buckets = new List[w];
-        for (int i = 0; i < w; i++) {
-            buckets[i] = new ArrayList<>(Math.max(16, all.size() / w + 16));
+    private static void parallelTick(EntityTickList list, Consumer<Entity> c, int w) {
+        // Phase 1+2 (serial, S7-158c ZERO-ALLOC steady state): ONE vanilla-
+        // protocol forEach pass fills persistent per-slot arrays in place
+        // (grow-on-overflow, rare); the old design allocated a 150k-ref
+        // snapshot list + W bucket lists + a consumer array EVERY tick.
+        // Publication = volatile writes + the GO barrier happens-before
+        // edge (same guarantees as v1's tasks[]/consumers[] publication).
+        int[] len0 = bucketLen;
+        Entity[][] arr0 = bucketArr;
+        final int[] len;
+        final Entity[][] arr;
+        if (arr0.length < w) {
+            arr = new Entity[w][];
+            len = new int[w];
+        } else {
+            arr = arr0;
+            len = len0;
         }
-        for (int i = 0, n = all.size(); i < n; i++) {
-            Entity e = all.get(i);
-            buckets[bucketOf(e, w)].add(e);
-        }
-        Consumer<Entity>[] cs = new Consumer[w];
-        for (int i = 0; i < w; i++) cs[i] = consumer;
-        tasks = buckets;
-        consumers = cs;
-        workerError = null;
+        for (int i = 0; i < w; i++) len[i] = 0;
+        list.forEach(e -> {
+            int s = bucketOf(e, w);
+            Entity[] b = arr[s];
+            if (len[s] == b.length) {
+                b = java.util.Arrays.copyOf(b, Math.max(16, len[s] * 2));
+                arr[s] = b;
+            }
+            b[len[s]++] = e;
+        });
+        consumer = c;
+        bucketArr = arr;
+        bucketLen = len;
 
         // Phase 3 (parallel): main = slot 0, helpers = 1..w-1.
         // tickBucket(0) joins DONE in its own finally — the ONLY join point
@@ -161,6 +181,14 @@ public final class RegionTickOps {
             phaseActive = false;
         }
         phaseActive = false;
+
+        // Post-join retention hygiene: null the stale tail refs beyond each
+        // slot's used length so discarded entities are not kept alive by the
+        // reused arrays (zero-alloc pass, main-only, workers parked).
+        for (int i = 0; i < w; i++) {
+            Entity[] b = arr[i];
+            for (int j = len[i], n2 = b.length; j < n2; j++) b[j] = null;
+        }
 
         // Phase 4 (serial): drain deferred EntityCallbacks mutations in FIFO order.
         Mut m;
@@ -178,10 +206,10 @@ public final class RegionTickOps {
 
     private static void tickBucket(int slot) {
         try {
-            List<Entity> bucket = tasks[slot];
-            Consumer<Entity> consumer = consumers[slot];
-            for (int i = 0, n = bucket.size(); i < n; i++) {
-                consumer.accept(bucket.get(i)); // vanilla per-entity logic, bit-for-bit
+            Entity[] bucket = bucketArr[slot];
+            Consumer<Entity> c = consumer;
+            for (int i = 0, n = bucketLen[slot]; i < n; i++) {
+                c.accept(bucket[i]); // vanilla per-entity logic, bit-for-bit
             }
         } catch (Throwable t) {
             if (workerError == null) workerError = t; // crash surfaces on main at join

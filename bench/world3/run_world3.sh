@@ -382,7 +382,13 @@ for i in $(seq 1 "$BOOT_TIMEOUT"); do
 done
 log "SEEN_DONE=$SEEN_DONE"
 
-cmd() { echo "$*" > "$WORK/console.in" 2>/dev/null || true; }
+# S7-158a (leg #2 35363758352 incident, 59-min post-artifact burn): `echo >
+# console.in` OPENS a FIFO — if the reader (tail) is gone (it SIGPIPEs on the
+# first write into console.pipe once java died) the open() blocks FOREVER and
+# the job sits until the 75-min timeout. Every console write is now bounded
+# by timeout(1): a dead console channel costs 5s per call, never the job.
+# Same bound applies to report_world3.py (last unbounded op before exit).
+cmd() { timeout 5 sh -c 'printf "%s\n" "$1" > "$2"' _ "$*" "$WORK/console.in" 2>/dev/null || true; }
 
 if [ "$SEEN_DONE" = "1" ]; then
   # --- 5. forceload sweep (overworld tiles of 16x16 chunks <= 256/command) --
@@ -535,12 +541,11 @@ kill "$TAIL_PID" 2>/dev/null || true
 sleep 2
 kill -9 "$TAIL_PID" 2>/dev/null || true
 rm -f "$WORK/console.pipe"
-
 # --- 8. bottleneck report ---------------------------------------------------
 if [ "$SEEN_DONE" != "1" ]; then
   log "WARN: SEEN_DONE=0 — last 40 server lines for in-log diagnosis (no artifact archaeology):"
   tail -40 "$WORK/server-stdout.log" 2>/dev/null | sed 's/^/[srv] /'
 fi
-python3 "$SCRIPT_DIR/report_world3.py" "$WORK" "$NATIVES_MODE" "$SEEN_DONE" || true
+timeout 180 python3 "$SCRIPT_DIR/report_world3.py" "$WORK" "$NATIVES_MODE" "$SEEN_DONE" || true
 log "harness complete; artifacts in $WORK"
 exit 0
