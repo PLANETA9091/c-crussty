@@ -2697,6 +2697,94 @@ const FLUSH_SBC_CLASS: &str = "net/minecraft/world/entity/InsideBlockEffectAppli
 const FLUSH_OPS_CLASS: &str = "net/minecraft/world/entity/FlushOps";
 const FLUSH_FLADD_DESC: &str = "(Ljava/util/List;Ljava/util/Collection;)Z";
 
+// ---------------------------------------------------------------------------
+// FLUID-FREE (S7-138, ARCH-ATTACK lever #5 — the fluid-scan lane).
+//
+// STEP-0 javap contract (DESIGN.md, research/fluid-free-2026-09-18): the
+// moonrise-shaped updateFluidHeightAndDoFluidPushing(TagKey,double) runs a
+// triple AABB loop with a DIRECT PalettedContainer.get per cell for EVERY
+// entity per tick (2 call sites: WATER 0.014 + LAVA ultraWarm — baseTick
+// lane); the dominant cell verdict is isEmpty (land entities scan in
+// vain). Fluid reads are 56% of the top-1 CPU function's clients.
+//
+// Shape: retarget BOTH invokevirtual call sites of
+// updateFluidHeightAndDoFluidPushing (inside the two wrappers:
+// updateInWaterStateAndDoWaterCurrentPushing offset 39 (WATER) and
+// updateInWaterStateAndDoFluidPushing offset 41 (LAVA)) to the static
+// FluidOps.fgate(Entity,TagKey,double)Z (receiver-first, 3B->3B,
+// length-preserving). The vanilla body itself stays UNTOUCHED: a bridge
+// miss delegates back via a plain (un-retargeted) invokevirtual — no
+// recursion. HIT (all sections fluid-free, event-driven gen validation)
+// reproduces the exact vanilla empty outcome: fluidHeight.put(tag, 0.0)
+// + return false.
+//
+// Strict: exactly ONE matching site per wrapper (javap census), total TWO;
+// zero both = AlreadyPatched only when both already static; anything else
+// = fail closed.
+
+const FLUID_OPS_CLASS: &str = "net/minecraft/world/entity/FluidOps";
+const FLUID_FGATE_DESC: &str = "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/tags/TagKey;D)Z";
+const FLUID_TARGET: (&str, &str, &str) = (
+    "net/minecraft/world/entity/Entity",
+    "updateFluidHeightAndDoFluidPushing",
+    "(Lnet/minecraft/tags/TagKey;D)Z",
+);
+
+pub fn patch_fluid_gate(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    // Kernel-rename guards: both wrappers and the fluidHeight field must be
+    // present before anything mutates.
+    for probe in ["updateInWaterStateAndDoWaterCurrentPushing", "fluidHeight"] {
+        if layout.pool.find_utf8(probe).is_none() {
+            return Err(format!("{probe} absent from pool (kernel rename?)"));
+        }
+    }
+    let expect_static = format!("(L{};{}", FLUID_TARGET.0, &FLUID_TARGET.2[1..]);
+    if FLUID_FGATE_DESC != expect_static {
+        return Err("fgate descriptor is not the receiver-prepended target form".into());
+    }
+
+    // Retarget site #1: the WATER wrapper's call.
+    let (out1, outcome1) = retarget_virtual_to_static(
+        bytes,
+        "updateInWaterStateAndDoWaterCurrentPushing",
+        "()V",
+        FLUID_TARGET,
+        (FLUID_OPS_CLASS, "fgate", FLUID_FGATE_DESC),
+    )?;
+    // Retarget site #2: the LAVA wrapper's call (on top of #1's output).
+    let (out2, outcome2) = retarget_virtual_to_static(
+        &out1,
+        "updateInWaterStateAndDoFluidPushing",
+        "()Z",
+        FLUID_TARGET,
+        (FLUID_OPS_CLASS, "fgate", FLUID_FGATE_DESC),
+    )?;
+
+    // Classify the combined outcome (strict: 1+1 on first sight).
+    let sites1 = match &outcome1 {
+        RetargetOutcome::Retargeted { sites } => *sites,
+        RetargetOutcome::AlreadyPatched { sites } => *sites,
+        RetargetOutcome::NotFound => 0,
+    };
+    let sites2 = match &outcome2 {
+        RetargetOutcome::Retargeted { sites } => *sites,
+        RetargetOutcome::AlreadyPatched { sites } => *sites,
+        RetargetOutcome::NotFound => 0,
+    };
+    match (sites1, sites2) {
+        (1, 1) => match (&outcome1, &outcome2) {
+            (RetargetOutcome::AlreadyPatched { .. }, RetargetOutcome::AlreadyPatched { .. }) => {
+                Ok((out2, RetargetOutcome::AlreadyPatched { sites: 2 }))
+            }
+            _ => Ok((out2, RetargetOutcome::Retargeted { sites: 2 })),
+        },
+        _ => Err(format!(
+            "expected exactly one fgate site per wrapper (water={sites1}, lava={sites2})"
+        )),
+    }
+}
+
 pub fn patch_flush_step(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
     let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
     // Kernel-rename guard: the collector's own fields must be present.
@@ -3819,5 +3907,82 @@ mod flush_diet {
         let (sbc, _) = patch_flush_step(SBC).expect("patch");
         std::fs::create_dir_all("tests/out").unwrap();
         std::fs::write("tests/out/StepBasedCollector.patched.class", &sbc).unwrap();
+    }
+}
+
+#[cfg(test)]
+mod fluid_gate {
+    // S7-138 / ARCH-ATTACK lever #5: the REAL kernel Entity.class fixture
+    // (same bytes as the inside_cache fixture — one entity, two levers).
+    const ENTITY: &[u8] = include_bytes!("../tests/fixtures/Entity_real.class");
+
+    use crate::classfile::*;
+
+    #[test]
+    fn fluid_gate_retargets_exactly_two_wrappers() {
+        let (patched, outcome) = patch_fluid_gate(ENTITY).expect("patch");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 2 },
+            "exactly one fgate site per wrapper (water + lava)"
+        );
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        assert!(patched.len() >= ENTITY.len());
+    }
+
+    #[test]
+    fn fluid_gate_sites_resolve_to_ops_bridge() {
+        let (patched, _) = patch_fluid_gate(ENTITY).expect("patch");
+        let cp_count = u16::from_be_bytes([patched[8], patched[9]]);
+        let (pool, _end) = Pool::parse(&patched, 10, cp_count).expect("cp parse");
+        let triples: Vec<_> = (1..pool.next)
+            .filter_map(|i| pool.methodref_parts(i))
+            .collect();
+        assert!(
+            triples.iter().any(|t| t.0 == "net/minecraft/world/entity/FluidOps"
+                && t.1 == "fgate"
+                && t.2 == "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/tags/TagKey;D)Z"),
+            "fgate Methodref appended"
+        );
+        assert!(pool.find_utf8("fluidHeight").is_some());
+    }
+
+    /// Idempotency: on already-patched bytes the wrapper bodies contain
+    /// invokestatic fgate (NotFound per retarget_virtual_to_static) — the
+    /// combined classifier must yield AlreadyPatched{2} byte-identically.
+    #[test]
+    fn fluid_gate_idempotent() {
+        let (patched, _) = patch_fluid_gate(ENTITY).expect("patch");
+        let (again, outcome) = patch_fluid_gate(&patched).expect("repatch");
+        assert_eq!(outcome, RetargetOutcome::AlreadyPatched { sites: 2 });
+        assert_eq!(again, patched, "repatch must be byte-identical");
+    }
+
+    #[test]
+    fn fluid_gate_wrong_class_fails_closed() {
+        match patch_fluid_gate(include_bytes!(
+            "../tests/fixtures/PalettedContainer.class"
+        )) {
+            Err(e) => {
+                assert!(
+                    e.contains("absent from pool")
+                        || e.contains("not found")
+                        || e.contains("per wrapper"),
+                    "{e}"
+                );
+            }
+            Ok((_, outcome)) => assert!(matches!(
+                outcome,
+                RetargetOutcome::NotFound | RetargetOutcome::AlreadyPatched { .. }
+            )),
+        }
+    }
+
+    /// Dump artifacts for the offline JVM-verifier harness.
+    #[test]
+    fn dump_patched_for_verifier() {
+        let (entity, _) = patch_fluid_gate(ENTITY).expect("patch");
+        std::fs::create_dir_all("tests/out").unwrap();
+        std::fs::write("tests/out/Entity.fluidpatched.class", &entity).unwrap();
     }
 }
