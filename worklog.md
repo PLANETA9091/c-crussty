@@ -1851,3 +1851,23 @@ Stage Summary:
 RUN_ID_DISPATCHED: FLUID-FREE 35326295881 (head d2f063e, in_progress 08:48:58 UTC); поглощён FLUSH-DIET 35324517090
 
 ---
+---
+## S7-148d (ARCH-ATTACK) — 2026-09-18 17:0x-17:1x +08 — FLUID-FREE leg ABSORB (35326295881): §S7-139 FAIL ⇒ REFUTED-BY-ECONOMICS (fluid-лейн 1.8% CPU = микро-класс; TPS −20% от демукса); демукс default 0 на живой сцене; ALLOC-DIET leg диспатчен (35328228929)
+
+**Task ID: S7-148d (Job 394666, тик 17:08, докрутка)**, Agent: agent-7625532f
+
+Work Log:
+- FLUID-FREE leg (35326295881, head d2f063e, fluid_free=1+paletted_demux=1+inside_cache=1, fp4/300s) SUCCESS 08:48:58→09:06:37 UTC; артефакт 28MB скачан (run-s7148-fluidfree)
+- Валидность: INJECT VALID; популяция 148445/148395/148267 стабильна; 0 NCDFE (stdout 248KB); ВСЕ цепочки ARMED живьём впервые end-to-end: DEMUX ARMED + PalettedContainerOps defined (launch loader) + fluid_free defined FluidOps (kernel loader) → section splice 15041→15088 байт-в-бит 91fcd70 → entity chain composed Retargeted{sites:2} → serve LevelChunkSection 15088; kernel e2992d63
+- Гейт §S7-139 FAIL: fluid-доля get 53.8%→60.1% ( fluid-get 916→934 — ff-кэш без хитов на живой сцене); readPalette 428→0 (демукс снял свой лейн); TPS 0.6–0.7 = −20% регресс (демукс-оверхед; leg2''' без демукса 0.7–0.8); inside-blocks −32.5% из leg2''' не воспроизвёлся (демукс сместил профиль)
+- ЭКОНОМИЧЕСКИЙ ВЕРДИКТ: fluid-get = 1.8% total CPU → даже идеальный гейт = МИКРО-КЛАСС (запрещено владельцем); FLUID-FREE+DEMUX = REFUTED-BY-ECONOMICS; paletted_demux default 0; fluid_free забанкован off (OFFLINE PASS в силе — код корректен, экономика не та); §S7-139 калиброван; гипотезы промахов ff (has-fluids секции / демукс-мутации / движение) — офлайн-диагностика не блокер
+- ДИСПАТЧ ALLOC-DIET leg: 35328228929 (head 59b6bbb, alloc_diet=1, остальные 0, fp4/300s, 09:11:24 UTC; гейты dispatch_s7134 + S7-148-протокол); dispatch_s7149.py забанкован
+- Артефакты: ABSORB_S7148d.md + run-s7148-fluidfree/{BOTTLENECKS_3, alloc-collapsed(f), gc.log, run-env, sha256_fluidfree_extras}; runs_index row 295; CLAIMS addendum; INJECTS-ONLY цел
+
+Stage Summary:
+- Слагаемое эры: INSIDE-CACHE GREEN-BY-SAFETY + FLUSH-DIET GREEN (зелёные), FLUID-FREE+DEMUX REFUTED-BY-ECONOMICS (лейн 1.8% CPU, демукс анти-оптимизация на живой сцене)
+- Осталась ALLOC-DIET leg → накопительный ран (inside_cache=1+flush_diet=1+alloc_diet по вердикту, demux=0) → итоговый вердикт эры
+
+RUN_ID_DISPATCHED: ALLOC-DIET 35328228929 (head 59b6bbb, in_progress 09:11:24 UTC); поглощён FLUID-FREE 35326295881
+
+---
