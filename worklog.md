@@ -1810,3 +1810,24 @@ Stage Summary:
 RUN_ID_DISPATCHED: leg #2''' (см. runs_index row 292)
 
 ---
+---
+## S7-148b (ARCH-ATTACK) — 2026-09-18 16:2x +08 — leg #2''' ABSORB: ПЕРВЫЙ ВАЛИДНЫЙ A/B ЭРЫ — §156 5/7 PASS (PARTIAL-PASS); INSIDE-CACHE GREEN-BY-SAFETY; ложный оптимизм leg2'' списан на контаминацию; FLUSH-DIET leg диспатчен (35324517090)
+
+**Task ID: S7-148b (Job 394666, тот же тик, докрутка)**, Agent: agent-7625532f
+
+Work Log:
+- leg #2''' (35322530537, head 45687c4, inside_cache=1, fp4/300s) SUCCESS 08:04:34→08:22:49 UTC; артефакт 27.99MB скачан (run-s7148-leg2ppp)
+- Валидность A/B — все предпосылки впервые выполнены: популяция 148546/148383/148197 стабильна (TOPUP-SCAN ×2 живой: aliveReal 153600/153557 — дренаж держит план); 0 NCDFE / 0 Entity-threw-exception (stdout 241KB vs 177MB leg2''); ARMED-цепочка полна (defined Ops+Recorder → Retargeted{1} 205458→205522 → serve → rc=0); kernel e2992d63 байт-в-бит
+- §156-вердикт 5/7 PASS: inside-blocks alloc −32.5% отн. ✅, movement-geom −35.9% ✅, entity-фаза −5pp ✅, 0 NCDFE ✅, fixture ✅; PalettedContainer.get −8.6% при гейте ≥15% ❌ (кэш снимает дублирующую traversal, не первую — гейт был оптимистичен); young GC +14% ❌ (topup-спавны: Object[] +67.6% спавн-путь + шум)
+- TPS 0.7-0.8 = нейтрально: «ускорение» leg2'' (TPS 3.0) на 100% артефакт (контаминация-прерывания + полупустая сцена 79k) — контаминированный ран ПЕРЕОЦЕНИВАЕТ рычаг
+- Вердикт: INSIDE-CACHE GREEN-BY-SAFETY (парити-чист, alloc-диета существенна, TPS не регрессирует); КАК TPS-ДРАЙВЕР НЕ ПОДТВЕРЖДЁН; остаётся кандидатом конвейера; калибровка: young-GC-гейт → трактовка по alloc-долям с поправкой на топап; get-гейт INSIDE-CACHE-специфичный
+- ДИСПАТЧ FLUSH-DIET leg: 35324517090 (head 1864e3d, flush_diet=1, остальные 0, fp4/300s, 08:28:05 UTC, §S7-138 + S7-148-протокол); dispatch_s7148b.py забанкован
+- Артефакты: ABSORB_S7148b.md + run-s7148-leg2ppp/{BOTTLENECKS_3, alloc-collapsed(f), gc.log, run-env, sha256_leg2ppp_extras}; runs_index row 293; CLAIMS TASK-284 addendum; INJECTS-ONLY цел (CI-буты санкционированы)
+
+Stage Summary:
+- Первый чистый §156-вердикт эры: измерительный конвейер (фикстура-паритет + self-contained мосты + NCDFE-чек) работает end-to-end; INSIDE-CACHE закрыт как GREEN-BY-SAFETY
+- Конвейер: FLUSH-DIET в полёте → FLUID-FREE (demux=1) → ALLOC-DIET → накопительный ран
+
+RUN_ID_DISPATCHED: FLUSH-DIET 35324517090 (head 1864e3d, in_progress 08:28:05 UTC); поглощён leg #2''' 35322530537
+
+---
