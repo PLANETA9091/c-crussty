@@ -209,3 +209,19 @@ INJECTS-ONLY: 0 sandbox boots; CI-буты санкционированы.
   (живой A/B). Признак диспатча: next tick S7-153 — preregister dispatch (inside_cache=1+
   flush_diet=1+fluid_dirty=1, fp4/300s/150k/seed42/xmx10G, A/B min-of-2 vs CUMULATIVE 35330129145).
 - Артефакты: artifact_hashes_s7152.txt; RUNBOOK дополнен (этот блок).
+
+---
+
+## S7-153 ABSORB (тик 19:43+08) — нога диспатчена и поглощена тем же тиком
+
+- Диспатч: run 35341241628, head 38afaa3 (пломбинг: world-bench.yml input fluid_dirty +
+  run_world3.sh export CRUSSTY_FLUID_DIRTY + dispatch_s7153.py), SUCCESS 11:46:00→12:03:29 UTC.
+- Инцидент пуша: GitHub push protection заблокировал токен в dispatch_s7153.py:26 —
+  исправлено (токен из remote URL по правилу 1b; урок: секреты в скриптах диспатча запрещены).
+- Вердикт: **REFUTED-BY-ECONOMICS** — hit-rate ≈ 0% на живой сцене (scan 1592 ≈ vanilla 1590
+  сэмплов в стеках), fluid-family 9.91%→10.40%, young GC 118→140, TPS паритет, 0 NCDFE,
+  ARMED полна живьём. fluid_dirty = 0 (забанкован).
+- Корневая причина + уроки: research/fluid-dirty-2026-09-18/ABSORB_S7153.md.
+- NEXT (S7-154): RECON-2 unclassified-фазы (33-39% entity-цикла) до классов поведения —
+  последний крупный непокрытый фронт; ранжированные остаточные лейны (move/collision 5.4%,
+  inside-blocks residual 5.1%, tracker ~2%) — микро-класс по отдельности.
