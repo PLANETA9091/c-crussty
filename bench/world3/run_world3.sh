@@ -63,6 +63,7 @@ FLUSH_DIET="${FLUSH_DIET:-0}"
 # LevelChunk.setBlockState — kills the ~10% CPU fluid-push family on static
 # entities; 0 = vanilla-scan A/B leg).
 FLUID_DIRTY="${FLUID_DIRTY:-0}"
+REGION_THREADS="${REGION_THREADS:-0}"
 # BENCH-X150K population fixture (S7-129, docs/BENCH_X150K_SCENARIO.md §2):
 # deterministic living-scene injection AFTER forceload, BEFORE the profiler
 # window (harness waits for the POPULATION INJECT DONE marker). 0 = off.
@@ -140,6 +141,7 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "flush_diet: $FLUSH_DIET (CRUSSTY_FLUSH_DIET; 1 = FLUSH-DIET ARCH-ATTACK lever #4: StepBasedCollector.flushStep zero-waste addAll via FlushOps, S7-137)"
   echo "fluid_free: $FLUID_FREE (CRUSSTY_FLUID_FREE; 1 = FLUID-FREE-SECTION ARCH-ATTACK lever #5: fluid-ff verdict cache via FluidOps.fgate, requires paletted_demux=1, S7-143)"
   echo "fluid_dirty: $FLUID_DIRTY (CRUSSTY_FLUID_DIRTY; 1 = FLUID-DIRTY ARCH-ATTACK lever #6: fluid-scan memoization via FluidPushOps.scan + event-driven dirty-stamp ledger, S7-151/TASK-290)"
+  echo "region_threads: $REGION_THREADS (CRUSSTY_REGION_THREADS; >=2 = REGION-THREADS ARCH-ATTACK lever #7: region-threaded entity ticking via RegionTickOps, S7-156/TASK-295)"
   echo "population_target: $POPULATION_TARGET (BENCH-X150K living-scene injection, S7-129; 0 = off)"
   echo "population_seed: $POPULATION_SEED (deterministic injection replay seed; topup seeded from deltaT=ft-T0, S7-130)"
   echo "server_xmx: $SERVER_XMX (S7-130; 150k-scale runs use 10G)"
@@ -344,6 +346,11 @@ export CRUSSTY_FLUID_FREE="$FLUID_FREE"
 # the entity retarget composes through the inside_cache chain — requires
 # CRUSSTY_INSIDE_CACHE=1 for scan memoization to arm)
 export CRUSSTY_FLUID_DIRTY="$FLUID_DIRTY"
+# REGION-THREADS gate (region_threads.rs reads it at register time; S7-156/
+# TASK-295; integer >= 2 arms the tick-segment splice + guard retargets;
+# the Ops re-parses the same env at class-init — 1 degrades to vanilla
+# forEach INSIDE the bridge, parity intact)
+export CRUSSTY_REGION_THREADS="$REGION_THREADS"
 # BENCH-X150K population fixture env (0 = no-op; S7-129)
 export BENCH_POPULATION_TARGET="$POPULATION_TARGET"
 export BENCH_POPULATION_SEED="$POPULATION_SEED"

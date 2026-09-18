@@ -2886,6 +2886,90 @@ pub fn patch_fluid_dirty_levelchunk(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOu
     )
 }
 
+// --- REGION-THREADS (S7-156, TASK-295) -------------------------------------
+
+const REGION_TICK_OPS_CLASS: &str = "net/minecraft/world/entity/RegionTickOps";
+const SL_TICK_DESC: &str = "(Ljava/util/function/BooleanSupplier;)V";
+const SL_FOREACH_FROM: (&str, &str, &str) = (
+    "net/minecraft/world/level/entity/EntityTickList",
+    "forEach",
+    "(Ljava/util/function/Consumer;)V",
+);
+const SL_FOREACH_TO_DESC: &str =
+    "(Lnet/minecraft/world/level/entity/EntityTickList;Ljava/util/function/Consumer;)V";
+const ETL_ADD_FROM: (&str, &str, &str) = (
+    "net/minecraft/world/level/entity/EntityTickList",
+    "add",
+    "(Lnet/minecraft/world/entity/Entity;)V",
+);
+const ETL_REMOVE_FROM: (&str, &str, &str) = (
+    "net/minecraft/world/level/entity/EntityTickList",
+    "remove",
+    "(Lnet/minecraft/world/entity/Entity;)V",
+);
+const ETL_GUARD_TO_DESC: &str =
+    "(Lnet/minecraft/world/level/entity/EntityTickList;Lnet/minecraft/world/entity/Entity;)V";
+
+/// S7-156: the single `EntityTickList.forEach(Consumer)` call site inside
+/// `ServerLevel.tick(BooleanSupplier)` -> `RegionTickOps.forEach` (1:1
+/// receiver-prepended stack shape). Strict: caller asserts Retargeted{1}.
+pub fn patch_region_tick_serverlevel(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    for probe in [
+        "tick",
+        SL_TICK_DESC,
+        "net/minecraft/world/level/entity/EntityTickList",
+        "java/util/function/Consumer",
+    ] {
+        if layout.pool.find_utf8(probe).is_none() {
+            return Err(format!("{probe} absent from pool (kernel rename?)"));
+        }
+    }
+    retarget_virtual_to_static(
+        bytes,
+        "tick",
+        SL_TICK_DESC,
+        SL_FOREACH_FROM,
+        (REGION_TICK_OPS_CLASS, "forEach", SL_FOREACH_TO_DESC),
+    )
+}
+
+/// S7-156: the ONLY `EntityTickList.add/remove` call sites in the whole
+/// kernel (`ServerLevel$EntityCallbacks.onTickingStart/onTickingEnd`) ->
+/// `RegionTickOps.onTickingStart/onTickingEnd` (deferred FIFO during a
+/// parallel phase). Strict: caller asserts Retargeted{1} on BOTH.
+pub fn patch_region_tick_callbacks(
+    bytes: &[u8],
+) -> Result<(Vec<u8>, (RetargetOutcome, RetargetOutcome)), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    for probe in [
+        "onTickingStart",
+        "onTickingEnd",
+        "net/minecraft/world/entity/Entity",
+        "net/minecraft/world/level/entity/EntityTickList",
+    ] {
+        if layout.pool.find_utf8(probe).is_none() {
+            return Err(format!("{probe} absent from pool (kernel rename?)"));
+        }
+    }
+    let (b1, o_add) = retarget_virtual_to_static(
+        bytes,
+        "onTickingStart",
+        "(Lnet/minecraft/world/entity/Entity;)V",
+        ETL_ADD_FROM,
+        (REGION_TICK_OPS_CLASS, "onTickingStart", ETL_GUARD_TO_DESC),
+    )?;
+    let (b2, o_rem) = retarget_virtual_to_static(
+        &b1,
+        "onTickingEnd",
+        "(Lnet/minecraft/world/entity/Entity;)V",
+        ETL_REMOVE_FROM,
+        (REGION_TICK_OPS_CLASS, "onTickingEnd", ETL_GUARD_TO_DESC),
+    )?;
+    Ok((b2, (o_add, o_rem)))
+}
+
+
 pub fn patch_flush_step(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
     let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
     // Kernel-rename guard: the collector's own fields must be present.
@@ -4418,5 +4502,157 @@ mod fluid_dirty {
         std::fs::create_dir_all("tests/out").unwrap();
         std::fs::write("tests/out/Entity.fluiddirty.patched.class", &entity).unwrap();
         std::fs::write("tests/out/LevelChunk.fluiddirty.patched.class", &lc).unwrap();
+    }
+}
+
+#[cfg(test)]
+mod region_threads {
+    // S7-156 / ARCH-ATTACK lever #7: REAL kernel fixtures (same source jar
+    // as every other fixture — patched-kernel e2992d63).
+    const SERVER: &[u8] = include_bytes!("../tests/fixtures/ServerLevel.class");
+    const CALLBACKS: &[u8] =
+        include_bytes!("../tests/fixtures/ServerLevel$EntityCallbacks_real.class");
+
+    use crate::classfile::*;
+
+    #[test]
+    fn region_tick_serverlevel_retargets_exactly_one_foreach() {
+        let (patched, outcome) = patch_region_tick_serverlevel(SERVER).expect("patch");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "exactly one EntityTickList.forEach site in ServerLevel.tick(BooleanSupplier)"
+        );
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        assert!(patched.len() >= SERVER.len());
+    }
+
+    #[test]
+    fn region_tick_serverlevel_site_resolves_to_bridge() {
+        let (patched, _) = patch_region_tick_serverlevel(SERVER).expect("patch");
+        let cp_count = u16::from_be_bytes([patched[8], patched[9]]);
+        let (pool, _end) = Pool::parse(&patched, 10, cp_count).expect("cp parse");
+        let triples: Vec<_> = (1..pool.next)
+            .filter_map(|i| pool.methodref_parts(i))
+            .collect();
+        assert!(
+            triples
+                .iter()
+                .any(|t| t.0 == "net/minecraft/world/entity/RegionTickOps"
+                    && t.1 == "forEach"
+                    && t.2
+                        == "(Lnet/minecraft/world/level/entity/EntityTickList;Ljava/util/function/Consumer;)V"),
+            "forEach Methodref appended with the receiver-prepended desc"
+        );
+    }
+
+    #[test]
+    fn region_tick_serverlevel_idempotent() {
+        let (patched, _) = patch_region_tick_serverlevel(SERVER).expect("patch");
+        let (again, outcome) = patch_region_tick_serverlevel(&patched).expect("repatch");
+        assert_eq!(outcome, RetargetOutcome::AlreadyPatched { sites: 1 });
+        assert_eq!(again, patched, "repatch must be byte-identical");
+    }
+
+    #[test]
+    fn region_tick_callbacks_retargets_exactly_one_add_and_one_remove() {
+        let (patched, (o_add, o_rem)) = patch_region_tick_callbacks(CALLBACKS).expect("patch");
+        assert_eq!(
+            o_add,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "the ONLY EntityTickList.add site in the kernel (onTickingStart)"
+        );
+        assert_eq!(
+            o_rem,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "the ONLY EntityTickList.remove site in the kernel (onTickingEnd)"
+        );
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        // both retargets appended distinct pool entries
+        assert!(patched.len() >= CALLBACKS.len());
+    }
+
+    #[test]
+    fn region_tick_callbacks_sites_resolve_to_bridge() {
+        let (patched, _) = patch_region_tick_callbacks(CALLBACKS).expect("patch");
+        let cp_count = u16::from_be_bytes([patched[8], patched[9]]);
+        let (pool, _end) = Pool::parse(&patched, 10, cp_count).expect("cp parse");
+        let triples: Vec<_> = (1..pool.next)
+            .filter_map(|i| pool.methodref_parts(i))
+            .collect();
+        assert!(
+            triples.iter().any(|t| t.0 == "net/minecraft/world/entity/RegionTickOps"
+                && t.1 == "onTickingStart"),
+            "onTickingStart Methodref appended"
+        );
+        assert!(
+            triples.iter().any(|t| t.0 == "net/minecraft/world/entity/RegionTickOps"
+                && t.1 == "onTickingEnd"),
+            "onTickingEnd Methodref appended"
+        );
+    }
+
+    #[test]
+    fn region_tick_callbacks_idempotent() {
+        let (patched, _) = patch_region_tick_callbacks(CALLBACKS).expect("patch");
+        let (again, (o_add, o_rem)) = patch_region_tick_callbacks(&patched).expect("repatch");
+        assert_eq!(
+            o_add,
+            RetargetOutcome::AlreadyPatched { sites: 1 },
+            "second pass sees only the bridge onTickingStart"
+        );
+        assert_eq!(
+            o_rem,
+            RetargetOutcome::AlreadyPatched { sites: 1 },
+            "second pass sees only the bridge onTickingEnd"
+        );
+        assert_eq!(again, patched, "repatch must be byte-identical");
+    }
+
+    #[test]
+    fn region_tick_wrong_class_fails_closed() {
+        // ServerLevel patcher on EntityCallbacks: tick absent -> Err or NotFound
+        match patch_region_tick_serverlevel(CALLBACKS) {
+            Err(e) => assert!(!e.is_empty(), "{e}"),
+            Ok((_, outcome)) => {
+                assert!(matches!(outcome, RetargetOutcome::NotFound))
+            }
+        }
+        // Callbacks patcher on ServerLevel: onTickingStart absent -> Err/NotFound
+        match patch_region_tick_callbacks(SERVER) {
+            Err(e) => assert!(!e.is_empty(), "{e}"),
+            Ok(_) => unreachable!("ServerLevel must not carry onTickingStart"),
+        }
+        // truncated / garbage never panics
+        for cut in [10usize, 100, 1000, 10000, SERVER.len() - 1] {
+            let _ = patch_region_tick_serverlevel(&SERVER[..cut]);
+        }
+        for cut in [10usize, 100, 1000, 10000, CALLBACKS.len() - 1] {
+            let _ = patch_region_tick_callbacks(&CALLBACKS[..cut]);
+        }
+    }
+
+    /// Cohabitation pin (the ServerLevel seam): F1 (optimiseRandomTick) + F3
+    /// (tickBlock) then region-threads — the tick splice composes on top of
+    /// the F1/F3 bytes; re-running the whole chain over the composed image
+    /// (the retransform cycle) must be byte-identical.
+    #[test]
+    fn region_tick_composes_with_f1_f3() {
+        let compose = |bytes: &[u8]| -> Vec<u8> {
+            let b = patch_optimise_random_tick(bytes).expect("F1");
+            let b = patch_tick_block(&b).expect("F3");
+            // Retargeted on first sight, AlreadyPatched on re-runs — both
+            // outcomes preserve the bytes (idempotent chain, like F1/F3).
+            let (b, _) = patch_region_tick_serverlevel(&b).expect("region-threads");
+            b
+        };
+        let composed = compose(SERVER);
+        assert_eq!(composed, compose(&composed), "compose idempotent on composed input");
+
+        // Dump for the offline RegionThreadsHarness structural gate.
+        std::fs::create_dir_all("tests/out").unwrap();
+        std::fs::write("tests/out/ServerLevel.regionthreads.patched.class", &composed).unwrap();
+        let (cb, _) = patch_region_tick_callbacks(CALLBACKS).expect("callbacks");
+        std::fs::write("tests/out/EntityCallbacks.regionthreads.patched.class", &cb).unwrap();
     }
 }
