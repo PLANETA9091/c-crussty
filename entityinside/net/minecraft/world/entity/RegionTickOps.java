@@ -59,18 +59,33 @@ public final class RegionTickOps {
     private static final int REGION_CHUNKS = 8;
 
     /**
-     * S7-160 BATCH-COLLECTOR: when armed (CRUSSTY_BATCH_COLLECTOR=1), the
-     * vanilla StepBasedCollector instance inside Entity.insideEffectCollector
-     * is swapped for the zero-map BatchCollector ONCE per entity, BEFORE the
-     * vanilla consumer of that entity runs in tickBucket (the single entry
-     * point of every entity tick under region-threads). The swap is invisible
-     * to the vanilla logic: applyEffectsFromBlocks reads the field AFTER the
-     * swap, so the whole tick episode observes exactly one collector.
-     * Gating the call through this static flag keeps the BatchCollector class
-     * resolve lazy: with the gate off the constant-pool entry is never
+     * S7-160 BATCH-COLLECTOR / S7-162 no-ensure: with CRUSSTY_BATCH_COLLECTOR=1
+     * the vanilla StepBasedCollector instance inside Entity.insideEffectCollector
+     * is replaced AT CONSTRUCTION TIME — the single NEW site in Entity.<init>
+     * is retargeted to BatchCollector by the entity_compose compose chain
+     * (persistent by construction; the S7-160/161 lazy ensure-swap was RETIRED:
+     * run 35391679176 proved all 801 BatchCollector.<init> samples came from
+     * the per-tick ensure loop re-constructing for pre-arm entities — the
+     * swap never stuck — and the gate itself burned 737 samples).
+     *
+     * This flag now gates (a) the periodic INSTANCES telemetry print below
+     * and (b) nothing else: the tickBucket hot path is vanilla-identical.
+     * Gating through this compile-time constant keeps the BatchCollector
+     * class resolve lazy: with the gate off the constant-pool entry is never
      * executed and the (possibly undefined) bridge class is never touched.
      */
     private static final boolean BATCH_COLLECTOR = parseBatchCollector();
+
+    /**
+     * S7-162 INSTANCES telemetry: BatchCollector construction count, printed
+     * every TELEMETRY_INTERVAL forEach invocations (main-thread only —
+     * ServerLevel.tick is the sole caller). Answers the S7-161 open question
+     * (a): is the ctor called per-spawn (live-scene natural spawn flow) or
+     * repeatedly per-tick (the retired ensure loop). Never executed with the
+     * gate off (lazy CP resolution — the bridge class stays undefined).
+     */
+    private static final long TELEMETRY_INTERVAL = 600;
+    private static long telemetryTicks = 0;
 
     private static boolean parseBatchCollector() {
         try {
@@ -147,6 +162,12 @@ public final class RegionTickOps {
 
     /** Retarget of the single ServerLevel.tick forEach call site (1:1 stack). */
     public static void forEach(EntityTickList list, Consumer<Entity> consumer) {
+        if (BATCH_COLLECTOR && (++telemetryTicks % TELEMETRY_INTERVAL) == 0L) {
+            System.err.println(
+                    "[crussty-plugin] batch_collector: telemetry tick=" + telemetryTicks
+                    + " instances=" + BatchCollector.instances()
+                    + " workers=" + WORKERS);
+        }
         int w = WORKERS;
         if (w <= 1) {
             list.forEach(consumer); // vanilla bit-identical
@@ -239,9 +260,6 @@ public final class RegionTickOps {
             Entity[] bucket = bucketArr[slot];
             Consumer<Entity> c = consumer;
             for (int i = 0, n = bucketLen[slot]; i < n; i++) {
-                if (BATCH_COLLECTOR) {
-                    BatchCollector.ensure(bucket[i]); // S7-160: lazy one-time swap
-                }
                 c.accept(bucket[i]); // vanilla per-entity logic, bit-for-bit
             }
         } catch (Throwable t) {

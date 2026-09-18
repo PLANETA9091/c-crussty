@@ -61,70 +61,41 @@ import net.minecraft.core.BlockPos;
  *    methods flushStep/recorded are never invoked: every public entry
  *    point is overridden).
  *
- * SWAP PROTOCOL: BatchCollector.ensure(Entity) — called from
- * RegionTickOps.tickBucket BEFORE the entity's vanilla consumer runs
- * (RegionTickOps is the single entry point of every entity tick under
- * region-threads). The swap is a one-time per-entity Unsafe
- * putObjectVolatile of the insideEffectCollector field; the entity is
- * ticked by exactly one worker per tick and the swap happens before any
- * collector use in that tick, so every getfield in
- * applyEffectsFromBlocks observes exactly one instance per episode.
- * Fail-closed: ARMED=false (Unsafe/field resolution failure) -> ensure
- * is a no-op and the vanilla collector stays.
+ * CONSTRUCTION PROTOCOL (S7-162, supersedes the retired SWAP PROTOCOL):
+ * BatchCollector instances are created by the RETARGETED CTOR — the single
+ * `new StepBasedCollector; dup; invokespecial <init>` site in
+ * Entity.<init>(EntityType, Level) is rewritten to BatchCollector by the
+ * entity_compose compose chain (classfile::patch_entity_collector_ctor;
+ * RngOps precedent class). Persistent by construction: the field is
+ * written once via the vanilla putfield, before `this` escapes, so no
+ * JIT constant-folding can resurrect the old instance.
  *
- * ARMED marker: "[crussty-plugin] batch_collector: ARMED first-swap" on
- * the first swap; cumulative swap count via swaps() (absorb probe).
+ * RETIRED (S7-160/161 evidence, run 35391679176): the per-tick
+ * BatchCollector.ensure swap from RegionTickOps.tickBucket. All 801
+ * BatchCollector.<init> CPU samples in that run came from ensure
+ * re-constructing for the same pre-arm entities every tick (the Unsafe
+ * swap into the final field never stuck), and the per-entity gate itself
+ * burned 737 samples — the whole loop is gone; the tickBucket hot path
+ * is vanilla-identical again.
+ *
+ * TELEMETRY (S7-162): INSTANCES counts every construction (incremented
+ * in the ctor); RegionTickOps prints it every 600 forEach invocations
+ * ("batch_collector: telemetry tick=N instances=M workers=W") — it
+ * answers whether ctors come from live-scene spawn flow or from a
+ * hidden per-tick loop.
  */
 public final class BatchCollector extends InsideBlockEffectApplier.StepBasedCollector {
 
     private static final InsideBlockEffectType[] ORDER = InsideBlockEffectType.values();
     private static final int NT = ORDER.length;
 
-    // ---- swap machinery (static, fail-closed) ----
-    private static final sun.misc.Unsafe UNSAFE;
-    private static final long COL_OFFSET;
-    private static final boolean ARMED;
-    private static final java.util.concurrent.atomic.AtomicLong SWAPS =
+    // ---- telemetry (static, no Unsafe, no reflection) ----
+    private static final java.util.concurrent.atomic.AtomicLong INSTANCES =
             new java.util.concurrent.atomic.AtomicLong();
 
-    static {
-        sun.misc.Unsafe u = null;
-        long off = 0L;
-        try {
-            java.lang.reflect.Field uf = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
-            uf.setAccessible(true);
-            u = (sun.misc.Unsafe) uf.get(null);
-            java.lang.reflect.Field cf = Entity.class.getDeclaredField("insideEffectCollector");
-            off = u.objectFieldOffset(cf);
-        } catch (Throwable t) {
-            u = null;
-        }
-        UNSAFE = u;
-        COL_OFFSET = off;
-        ARMED = u != null;
-    }
-
-    /** One-time per-entity swap; called from RegionTickOps.tickBucket. */
-    public static void ensure(Entity e) {
-        if (!ARMED) {
-            return;
-        }
-        Object o = UNSAFE.getObject(e, COL_OFFSET);
-        if (o instanceof BatchCollector
-                || !(o instanceof InsideBlockEffectApplier.StepBasedCollector)) {
-            return;
-        }
-        UNSAFE.putObjectVolatile(e, COL_OFFSET, new BatchCollector());
-        long n = SWAPS.incrementAndGet();
-        if (n == 1) {
-            System.err.println(
-                    "[crussty-plugin] batch_collector: ARMED first-swap (eid=" + e.getId() + ")");
-        }
-    }
-
-    /** Absorb probe: total swaps performed. */
-    public static long swaps() {
-        return SWAPS.get();
+    /** S7-162 telemetry: total BatchCollector constructions since class init. */
+    public static long instances() {
+        return INSTANCES.get();
     }
 
     // ---- step state (last-wins per type == EnumMap.put contract) ----
@@ -148,6 +119,7 @@ public final class BatchCollector extends InsideBlockEffectApplier.StepBasedColl
     private int nOps;
 
     public BatchCollector() {
+        INSTANCES.incrementAndGet(); // S7-162 telemetry
         for (int i = 0; i < NT; i++) {
             this.before[i] = new ArrayList<>();
             this.after[i] = new ArrayList<>();
