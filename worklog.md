@@ -1831,3 +1831,23 @@ Stage Summary:
 RUN_ID_DISPATCHED: FLUSH-DIET 35324517090 (head 1864e3d, in_progress 08:28:05 UTC); поглощён leg #2''' 35322530537
 
 ---
+---
+## S7-148c (ARCH-ATTACK) — 2026-09-18 16:4x-16:5x +08 — FLUSH-DIET leg ABSORB (35324517090): §S7-138 PASS (flushStep −100%, Object[] −51.2%); FLUSH-DIET = GREEN; FLUID-FREE leg диспатчен (35326295881)
+
+**Task ID: S7-148c (Job 394666, тот же тик, докрутка)**, Agent: agent-7625532f
+
+Work Log:
+- FLUSH-DIET leg (35324517090, head 1864e3d, flush_diet=1, остальные 0, fp4/300s) SUCCESS 08:28:05→08:43:50 UTC; артефакт 28MB скачан (run-s7148-flushdiet)
+- Валидность: конфиг точен; INJECT VALID; популяция 148483/148328/148178 стабильна (топап живой); 0 NCDFE / 0 исключений (stdout 257KB); мост ARMED живьём (pristine StepBasedCollector 5695B major65); inside_cache dormant (изолированная нога); kernel e2992d63 байт-в-бит
+- §S7-138-вердикт PASS: flushStep-семья 4.15%→0.00% (−100% — ВСЯ семья снята), Object[] leaf 426→208 (−51.2%), entity-фаза 59.7→54.1% (−5.6pp), fixture зелёная; young GC 125→141 — топап-спавны (калибровка S7-148b); TPS 0.7-0.8 нейтрально (аллокационный рычаг)
+- FLUSH-DIET = GREEN, остаётся в накопительном конфигурационном ране
+- ДИСПАТЧ FLUID-FREE leg: 35326295881 (head d2f063e, fluid_free=1 + paletted_demux=1 + inside_cache=1 — владелец Entity-цепочки compose_entity, alloc_diet=0, flush_diet=0, fp4/300s, 08:48:58 UTC, §S7-139 + S7-148-протокол); dispatch_s7148c.py забанкован
+- Артефакты: ABSORB_S7148c.md + run-s7148-flushdiet/{BOTTLENECKS_3, alloc-collapsed(f), gc.log, run-env, sha256_flushdiet_extras}; runs_index row 294; CLAIMS addendum; INJECTS-ONLY цел
+
+Stage Summary:
+- Второй зелёный §-вердикт подряд на чистом измерительном конвейере: FLUSH-DIET снимает ровно то, что спроектировано (flushStep −100%), без парити-цены
+- Конвейер: FLUID-FREE в полёте → ALLOC-DIET → накопительный ран
+
+RUN_ID_DISPATCHED: FLUID-FREE 35326295881 (head d2f063e, in_progress 08:48:58 UTC); поглощён FLUSH-DIET 35324517090
+
+---
