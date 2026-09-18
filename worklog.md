@@ -2205,3 +2205,25 @@ Stage Summary:
 - NEXT (S7-161): стойкий свап = rust-ретаргет NEW-сайта Entity.<init> → BatchCollector (RngOps-прецедент, probe-гейт, rc=0); инфра 1441 → ~0, ожидание −40..−50% collector-семьи (~−1.2% total CPU) + alloc-плюс; после — residual-хвост (<5% под-лейны) и возврат к ТОП-1 по кругу
 
 RUN_ID_DISPATCHED: 35387310239 (REFUTED-BY-ECONOMICS; CI-бутов за тик 1 — санкционированный preregister A/B)
+
+---
+## S7-161 (ARCH-ATTACK) — 2026-09-19 04:0x-05:0x +08 — BATCH-COLLECTOR v2 (ctor-ретаргет): compose подтверждён живьём, методы быстрее ванили, инфра-хвост снова перевешивает → REFUTED-BY-ECONOMICS; rollback; S7-162 = единая compose-цепочка + телеметрия
+
+**Task ID: S7-161 (Job 396026, тик 04:08)**, Agent: agent-7625532f
+
+Work Log:
+- creds (1b) + pull ×2 up to date; next TASK id = 303; last = TASK-302 (S7-160 REFUTED)
+- classfile.rs изучен: CP-growth механизм (pool.method_ref append + serialize + splice) — на нём собран patch_entity_collector_ctor: единственный NEW+dup+invokespecial-сайт StepBasedCollector в Entity.<init>(EntityType,Level) → Class/Methodref(BatchCollector), strict sites=1, idempotent, wrong-class fail-closed
+- КЛЮЧЕВАЯ НАХОДКА (leg#5 лог 886/895): два Entity-хука (inside_cache и region_threads) СУПЕРСЕДЯТ друг друга — region-патч строится от СВОЕГО pristine (205458→205494 rng-only), inside-байты 205522 superseded → inside-гейт в v2 вероятно мёртв (банкование v2 честно; помечено). batch-патч посажен в region-цепь (после rng, последний писатель)
+- batch_collector.rs v2: define в kernel loader + BRIDGE_READY + wait_bridge_ready(120s) — hard-gate против NoClassDefFoundError (patched ctor резолвит BatchCollector на первом спавне; инжект после армирования)
+- Suite 149/0/1 (+2 теста: точный сайт + by-name NEW-операнд + репатч); харнесс 6000 бит-в-бит (не менялся)
+- Диспатч leg 35391679176 (head b732b86, SUCCESS): PG2 PASS (compose живьём Entity 205458→205546; defined; 0 NCDFE; pop VALID); PG3 FAIL (1.50<1.60); PG4'' FAIL (2836>1290, per-work ×1.37); CRASH-FREE PASS → REFUTED-BY-ECONOMICS → rollback batch_collector=0
+- Разложение: МЕТОДЫ per-work −37..−41% (flushStep 1657→983, advanceStep 491→61, RecordedEffect→0), инфра: <init> 801 (природа требует телеметрии INSTANCES — инжект вне окна, ваниль-ротация 0) + ensure 737 (фоновый гейт — удалить)
+- Учёт: ABSORB_S7161.md/.out + GOAL СТАТУС ×2 + CLAIMS TASK-303; пуши c-crussty b732b86+d7ba1ce, dev-logs bab6df7
+
+Stage Summary:
+- BATCH-COLLECTOR закрыт с вердиктом: ОБЕ доставки (ленивый Unsafe-свап, ctor-ретаргет) REFUTED по экономике профиля при бит-в-бит семантике — повторная атака только после инфра-хвоста <10% семьи
+- S7-162 план: единая compose-цепочка Entity в одном hook'е (inside→fluid_free→fluid_dirty→rng→batch) + INSTANCES-телеметрия + ensure-удаление из tickBucket
+- Свежий ТОП рана: entity-фаза 56.6% (traversal inside-pipeline 20.4% фазы — крупнейший ≥5% attackable под-лейн: плоский обход вместо guava-итератора, нужен javap DirectionalIterator + lockstep; broadphase/fluid REFUTED-классы; AI 8.3%, movement 8.2%) → GC/JIT 36.6% → tracker ~2%
+
+RUN_ID_DISPATCHED: 35391679176 (REFUTED-BY-ECONOMICS; CI-бутов за тик 1 — санкционированный preregister A/B)
