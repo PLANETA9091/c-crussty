@@ -68,6 +68,11 @@ REGION_THREADS="${REGION_THREADS:-0}"
 # StepBasedCollector replacement, lazy per-entity swap in RegionTickOps
 # .tickBucket — requires region_threads>=2; 0 = vanilla collector A/B leg).
 BATCH_COLLECTOR="${BATCH_COLLECTOR:-0}"
+# FLAT-TRAVERSAL S7-163 ARCH-ATTACK lever #9 (1 = ARMED: flat bit-exact
+# TraverseOps.forEachFlat replacing the guava-iterator orchestration of
+# BlockGetter.forEachBlockIntersectedBetween via the entity_compose stage 6
+# retarget — requires region_threads>=2; 0 = vanilla traversal A/B leg).
+FLAT_TRAVERSAL="${FLAT_TRAVERSAL:-0}"
 # BENCH-X150K population fixture (S7-129, docs/BENCH_X150K_SCENARIO.md §2):
 # deterministic living-scene injection AFTER forceload, BEFORE the profiler
 # window (harness waits for the POPULATION INJECT DONE marker). 0 = off.
@@ -147,6 +152,7 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "fluid_dirty: $FLUID_DIRTY (CRUSSTY_FLUID_DIRTY; 1 = FLUID-DIRTY ARCH-ATTACK lever #6: fluid-scan memoization via FluidPushOps.scan + event-driven dirty-stamp ledger, S7-151/TASK-290)"
   echo "region_threads: $REGION_THREADS (CRUSSTY_REGION_THREADS; >=2 = REGION-THREADS ARCH-ATTACK lever #7: region-threaded entity ticking via RegionTickOps, S7-156/TASK-295)"
   echo "batch_collector: $BATCH_COLLECTOR (CRUSSTY_BATCH_COLLECTOR; 1 = BATCH-COLLECTOR ARCH-ATTACK lever #8: zero-map flat StepBasedCollector via BatchCollector.ensure swap, requires region_threads>=2, S7-160)"
+  echo "flat_traversal: $FLAT_TRAVERSAL (CRUSSTY_FLAT_TRAVERSAL; 1 = FLAT-TRAVERSAL ARCH-ATTACK lever #9: flat bit-exact TraverseOps.forEachFlat via entity_compose stage-6 retarget, requires region_threads>=2, S7-163)"
   echo "population_target: $POPULATION_TARGET (BENCH-X150K living-scene injection, S7-129; 0 = off)"
   echo "population_seed: $POPULATION_SEED (deterministic injection replay seed; topup seeded from deltaT=ft-T0, S7-130)"
   echo "server_xmx: $SERVER_XMX (S7-130; 150k-scale runs use 10G)"
@@ -372,6 +378,10 @@ export CRUSSTY_REGION_THREADS="$REGION_THREADS"
 # RegionTickOps re-parses it at class-init; S7-160; requires region_threads
 # >= 2 — the swap site lives in RegionTickOps.tickBucket)
 export CRUSSTY_BATCH_COLLECTOR="$BATCH_COLLECTOR"
+# FLAT-TRAVERSAL gate (traversal.rs reads it at define time; S7-163;
+# requires region_threads >= 2 — the retarget composes through the
+# entity_compose chain)
+export CRUSSTY_FLAT_TRAVERSAL="$FLAT_TRAVERSAL"
 # BENCH-X150K population fixture env (0 = no-op; S7-129)
 export BENCH_POPULATION_TARGET="$POPULATION_TARGET"
 export BENCH_POPULATION_SEED="$POPULATION_SEED"
