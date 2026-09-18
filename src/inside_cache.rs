@@ -330,6 +330,28 @@ pub fn activate() {
             original.len(),
             patched.len()
         );
+        // FLUID-FREE chain (S7-143): when the fluid lever is enabled, the
+        // Entity bytes must ALSO carry the fluid-gate retarget (both
+        // updateFluidHeightAndDoFluidPushing wrapper sites -> FluidOps.fgate).
+        // The bridge (FluidOps) is defined by fluid_free::activate BEFORE
+        // this compose runs (wait_bridge_ready) — otherwise degrade
+        // inside-only (fail-dominant, loud WARN): serving fgate bytes
+        // without the bridge class would die with LinkageError.
+        let patched = if crate::fluid_free::enabled_pub() {
+            if crate::fluid_free::wait_bridge_ready(60_000) {
+                match crate::fluid_free::compose_entity(&patched) {
+                    Some(p) => p,
+                    None => patched,
+                }
+            } else {
+                eprintln!(
+                    "[crussty-plugin] inside_cache: fluid bridge missed its window, entity chain degrades INSIDE-ONLY (fail-dominant)"
+                );
+                patched
+            }
+        } else {
+            patched
+        };
         t.set_patch(PatchCache {
             bytes: Arc::from(patched),
             major,

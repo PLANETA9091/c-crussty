@@ -1745,3 +1745,22 @@ Work Log:
 - Чистка реставрации: удалены 10 однобайтовых binary-заглушек harness-build/*.class (format-patch binary payload невосстановим текстом — реальные классы компилируются по RUNBOOK_S7144/45); Subject-фикс "[PATCH N/5]"-префиксов filter-branch
 - Настоящие fixtures tests/out/*.patched.class целы (из git am коммитов): Entity/Entity.fluidpatched/LivingEntity/CollisionUtil/StepBasedCollector/PalettedContainer/LevelChunkSection.patched
 - НЕ восстановлено: коммиты S7-142/S7-143 (не экспортировались до WIPE): учётные тексты append'нуты здесь, КОД S7-143 (fluid_free.rs + patch_section_ff + FluidOps.java + chain + wiring) требует ре-реимплементации по DESIGN.md — головная офлайн-задача
+
+---
+## S7-146 (ARCH-ATTACK) — 2026-09-18 13:4x-14:1x +08 — WIPE №3 + РЕСТАВРАЦИЯ №3 + FLUID-FREE RE-RE-ИМПЛЕМЕНТАЦИЯ (OFFLINE PASS) + creds ВОССТАНОВЛЕНЫ: push 9 коммитов реставрации; конвейер полон, диспатчи стартуют
+
+**Task ID: S7-146 (Job 393012, тик 13:43 + докрутка 14:11)**, Agent: agent-7625532f (session web-f7888d46)
+
+Work Log:
+- WIPE №3 (13:43): уничтожены c-crussty (ahead 10), c-dist, CRUSSTY, /tmp-тулчейн (cargo/.rustup/JDK21/purpur/материализация), my-project уцелел
+- Реставрация №3: клон 04ef8d5 → git am 136/137/138 → restore_commits_v2.py (140/141/144/145 append-реставрация) → чистка 1Б binary-заглушек → Subject-фикс → append S7-142/143 учётных блоков → **push 04ef8d5..b0aac42 (9 коммитов)**
+- Тулчейн восстановлен: rustup (cargo 1.98.1 та же версия), temurin JDK 21.0.12.1+1, purpur paperclip 57353083B (байт-в-бит), materialize 29386794B sha256 e2992d63 байт-в-бит с цензом
+- cargo test на реставрации: 117=116ok+1ignored (без S7-143 кода — ожидаемо)
+- FLUID-FREE RE-RE-ИМПЛЕМЕНТАЦИЯ: patch_section_ff (5 rust-тестов; 15041→15088 байт-в-бит с 91fcd70; УРОК: utf8-only CP для field_info — field_ref дал бы +20B мусора) + FluidOps.java (Unsafe; ff 0/1/2; publish (ffGen,ff) на секции — баг «ffGen в контейнер» пойман харнессом и исправлен) + fluid_free.rs (section hook + bridge define + WARN без DEMUX) + inside_cache chain (wait_bridge_ready, fail-dominant) + wiring lib.rs/run_world3.sh/world-bench.yml/build_fluid_ops.sh
+- Верификация: rust **122=121ok+1ignored** (5 section_ff, incl. dump); FluidFreeHarness: STRUCTURAL+INJECTED/ARMED=true/FREE-HIT/EVENT gen 0→2 ff=2/RESTORE/SCATTERED-WATER ⇒ **FLUID-FREE OFFLINE PASS exit 0**; FluidOps.class e031d8cd; artifact_hashes_s7146.txt
+- creds: владелец дал push-URL 14:11; крон пересоздан (Job 394666, правило 1b); push 9 коммитов прошёл; crussty-dev-logs: клон + CLAIMS-долг (отдельный шаг)
+- Учёт: GOAL СТАТУС S7-146; runs_index row 289; патч-банк 0008-S7-146; INJECTS-ONLY цел (0 sandbox boots; CI-буты санкционированы)
+
+Stage Summary:
+- Конвейер 4 рычагов снова ПОЛЕН, ЗАПУШЕН и офлайн-верифицирован (INSIDE-CACHE hardened / FLUSH-DIET / FLUID-FREE re-re / ALLOC-DIET + PALETTED-DEMUX); push-блокер 12 тиков закрыт токеном владельца
+- КРИТИЧЕСКИЙ ПУТЬ: 4 диспатча leg #2' INSIDE-CACHE (X150K, base 35275967738, гейты §156) → FLUSH-DIET → FLUID-FREE (demux=1) → ALLOC-DIET → absorb-вердикты
