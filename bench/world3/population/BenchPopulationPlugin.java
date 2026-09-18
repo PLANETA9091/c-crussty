@@ -45,10 +45,12 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Animals;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Monster;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -64,6 +66,7 @@ public final class BenchPopulationPlugin extends JavaPlugin {
     private static final String MARK = "[BenchPopulation]";
     private static final int ITEM_PICKUP_DELAY = 32767;  // short-max: never picked up
     private static final int TOPUP_PERIOD_TICKS = 600;   // 30 s
+    private static final int TOPUP_PER_TICK = 20;        // S7-147: per-tick refill budget (~14ms/tick, profile-invisible)
     private static final int ITEM_LIFETIME_TICKS = 6000; // vanilla ItemEntity age
     private static final int TICK_BUDGET = 1500;         // entities injected per tick
     private static final double SHARE_ITEMS = 0.70;
@@ -107,6 +110,17 @@ public final class BenchPopulationPlugin extends JavaPlugin {
     // injection tick) — previously only topup spawns were logged, so the first
     // topup saw aliveEst=0 and doubled the item population for ~6600 ticks.
     private final Deque<long[]> itemSpawnLog = new ArrayDeque<>(); // [fullTime, count]
+
+    // S7-147 real-count topup state: deficits computed from ACTUAL alive counts
+    // every TOPUP_PERIOD_TICKS, drained continuously at TOPUP_PER_TICK/tick.
+    // The despawn-schedule model (itemSpawnLog) is blind to merge/lava/explosion/
+    // cramming/daylight-burning losses — any lever that raises TPS multiplies
+    // ticks-per-wall-second and the scene drains under wall-time parity
+    // (evidence: runs 35284069355 / 35314220731 — 148k -> ~71k alive while the
+    // model reported deficit=0; topup never fired in the 300s base at TPS 0.7).
+    private int pendingItems = 0, pendingHostiles = 0, pendingPassives = 0;
+    private long topupSpawnedTotal = 0;
+    private boolean topupDrainTaskRunning = false;
 
     @Override
     public void onEnable() {
@@ -398,11 +412,29 @@ public final class BenchPopulationPlugin extends JavaPlugin {
                 + " (injected=" + injectedTotal + " target=" + target + ")");
     }
 
-    // --- topup: keep the item population at plan while vanilla despawn runs ---
+    // --- topup: keep the POPULATION at plan while vanilla decay lanes run ---
+    // S7-147: real-count driven (items + hostiles + passives). Scan every
+    // TOPUP_PERIOD_TICKS, drain deficits continuously at TOPUP_PER_TICK/tick
+    // so no single-tick spawn spike pollutes the profiled window.
     private void startTopupTask() {
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             World w = Bukkit.getWorlds().get(0);
             long ft = w.getFullTime();
+
+            // real alive counts over all loaded chunks (the 9216 forceloaded
+            // chunks hold the whole scene)
+            int aliveItems = 0, aliveHostiles = 0, alivePassives = 0;
+            for (Entity e : w.getEntities()) {
+                if (e instanceof Item) {
+                    aliveItems++;
+                } else if (e instanceof Monster) {
+                    aliveHostiles++;
+                } else if (e instanceof Animals) {
+                    alivePassives++;
+                }
+            }
+
+            // model estimate retained for telemetry continuity (age-despawn only)
             long horizon = ft - ITEM_LIFETIME_TICKS;
             while (!itemSpawnLog.isEmpty() && itemSpawnLog.peekFirst()[0] < horizon) {
                 itemSpawnLog.removeFirst();
@@ -411,36 +443,88 @@ public final class BenchPopulationPlugin extends JavaPlugin {
             for (long[] rec : itemSpawnLog) {
                 aliveEst += rec[1];
             }
-            long deficit = planItems - aliveEst;
-            if (deficit <= 0) {
-                getLogger().info(MARK + " POPULATION TOPUP tick=" + ft
-                        + " deficit=0 aliveEst=" + aliveEst);
+
+            int deficitItems = Math.max(0, planItems - aliveItems);
+            int deficitHostiles = Math.max(0, planHostiles - aliveHostiles);
+            int deficitPassives = Math.max(0, planPassives - alivePassives);
+            pendingItems = deficitItems;
+            pendingHostiles = deficitHostiles;
+            pendingPassives = deficitPassives;
+
+            getLogger().info(MARK + " POPULATION TOPUP-SCAN tick=" + ft
+                    + " aliveReal(items=" + aliveItems + ",hostiles=" + aliveHostiles
+                    + ",passives=" + alivePassives + ")"
+                    + " deficit(items=" + deficitItems + ",hostiles=" + deficitHostiles
+                    + ",passives=" + deficitPassives + ")"
+                    + " aliveEst(items-model)=" + aliveEst
+                    + " topupSpawnedTotal=" + topupSpawnedTotal);
+
+            startTopupDrainTask();
+        }, TOPUP_PERIOD_TICKS, TOPUP_PERIOD_TICKS);
+    }
+
+    /** S7-147: continuous deficit drain — at most TOPUP_PER_TICK spawns per tick. */
+    private void startTopupDrainTask() {
+        if (topupDrainTaskRunning) {
+            return;
+        }
+        topupDrainTaskRunning = true;
+        Bukkit.getScheduler().runTaskTimer(this, () -> {
+            if (pendingItems <= 0 && pendingHostiles <= 0 && pendingPassives <= 0) {
                 return;
             }
-            // S7-130: seed from the scene-relative clock delta = ft - T0 (injection
-            // finish anchor), NOT the absolute world time — replaying (target, seed)
-            // yields the same topup stream regardless of boot timing drift
-            Random rng = new Random(seed ^ (ft - t0FullTime));
-            int spawned = 0;
-            for (int i = 0; i < deficit; i++) {
-                if (chunkOrder.isEmpty()) {
+            World w = Bukkit.getWorlds().get(0);
+            long ft = w.getFullTime();
+            Random rng = new Random(seed ^ (ft * 1_000_003L) ^ topupSpawnedTotal);
+            int budget = TOPUP_PER_TICK;
+            int missStreak = 0;
+            while (budget > 0) {
+                // drain the largest pending lane first (deterministic tie-break:
+                // items -> hostiles -> passives)
+                int lane;
+                if (pendingItems >= pendingHostiles && pendingItems >= pendingPassives && pendingItems > 0) {
+                    lane = 0;
+                } else if (pendingHostiles >= pendingPassives && pendingHostiles > 0) {
+                    lane = 1;
+                } else if (pendingPassives > 0) {
+                    lane = 2;
+                } else {
                     break;
                 }
-                Chunk ch = chunkOrder.get(rng.nextInt(chunkOrder.size()));
+                Chunk ch = chunkOrder.isEmpty() ? null : chunkOrder.get(rng.nextInt(chunkOrder.size()));
+                if (ch == null) {
+                    break;
+                }
                 Location base = centerOf(ch);
                 if (base == null) {
+                    if (++missStreak > 64) {
+                        break; // chunk set degraded mid-run — retry next tick
+                    }
                     continue;
                 }
-                if (spawnItem(w, jitter(base, rng), ITEM_POOL[rng.nextInt(ITEM_POOL.length)])) {
-                    spawned++;
+                missStreak = 0;
+                boolean ok;
+                if (lane == 0) {
+                    ok = spawnItem(w, jitter(base, rng), ITEM_POOL[rng.nextInt(ITEM_POOL.length)]);
+                    if (ok) {
+                        pendingItems--;
+                    }
+                } else if (lane == 1) {
+                    ok = spawnMob(w, jitter(base, rng), HOSTILE_POOL[rng.nextInt(HOSTILE_POOL.length)]);
+                    if (ok) {
+                        pendingHostiles--;
+                    }
+                } else {
+                    ok = spawnMob(w, jitter(base, rng), PASSIVE_POOL[rng.nextInt(PASSIVE_POOL.length)]);
+                    if (ok) {
+                        pendingPassives--;
+                    }
+                }
+                if (ok) {
+                    topupSpawnedTotal++;
+                    budget--;
                 }
             }
-            if (spawned > 0) {
-                itemSpawnLog.addLast(new long[]{ft, spawned});
-            }
-            getLogger().info(MARK + " POPULATION TOPUP tick=" + ft
-                    + " spawned=" + spawned + " deficit=" + deficit
-                    + " aliveEst=" + aliveEst);
-        }, TOPUP_PERIOD_TICKS, TOPUP_PERIOD_TICKS);
+        }, 1L, 1L);
     }
 }
