@@ -1735,3 +1735,13 @@ Stage Summary:
 - БЛОКЕР (11-й тик): bootstrap_tick.sh/creds не восстановлены владельцем
 
 RUN_ID_DISPATCHED: NONE (CREDS-BLOCKED 11-й тик; runs_index row 288 local)
+
+---
+## S7-146 ВОССТАНОВЛЕНИЕ УЧЁТА (WIPE №3) — 2026-09-18 13:4x +08 — блоки S7-142/S7-143 (GOAL+worklog) восстановлены append'ом из atomic-архива; самих коммитов в патч-банке не было
+
+Work Log:
+- WIPE №3 (13:43 +08) уничтожил /home/z/c-crussty (ahead 10: f67ae10..1f87bf6), c-dist, CRUSSTY, /tmp-инструментарий; my-project уцелел (патч-банк 0001..0007 11/11 sha256 OK, runs_index 279..288, restore_commits.py, repro-скрипты, CLAIMS_DEBT)
+- Реставрация №3: анонимный клон (origin 04ef8d5 S7-135b) → git am 0001-S7-136/0002-S7-137/0003-S7-138 (идентичные деревья, новые SHA 643fdf5/1e04bfb/d25b105) → append-реставрация restore_commits_v2.py: S7-140, S7-141, S7-144 учёт, S7-145 учёт (оригинальные author/date/messages + RESTORED-note)
+- Чистка реставрации: удалены 10 однобайтовых binary-заглушек harness-build/*.class (format-patch binary payload невосстановим текстом — реальные классы компилируются по RUNBOOK_S7144/45); Subject-фикс "[PATCH N/5]"-префиксов filter-branch
+- Настоящие fixtures tests/out/*.patched.class целы (из git am коммитов): Entity/Entity.fluidpatched/LivingEntity/CollisionUtil/StepBasedCollector/PalettedContainer/LevelChunkSection.patched
+- НЕ восстановлено: коммиты S7-142/S7-143 (не экспортировались до WIPE): учётные тексты append'нуты здесь, КОД S7-143 (fluid_free.rs + patch_section_ff + FluidOps.java + chain + wiring) требует ре-реимплементации по DESIGN.md — головная офлайн-задача
