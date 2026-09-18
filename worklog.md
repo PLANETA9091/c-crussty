@@ -2018,3 +2018,25 @@ Stage Summary:
 RUN_ID_DISPATCHED: NONE (RECON-2 тик, CI-бутов 0)
 
 ---
+
+---
+## S7-155 (ARCH-ATTACK) — 2026-09-18 20:43-21:1x +08 — RECON-3: FEASIBILITY-ГЕЙТ region-threaded entity ticking = GREEN; hot per-tick путь чист от общего RNG; Amdahl ×2.31; NEXT S7-156 прототип RegionTickOps
+
+**Task ID: S7-155 (Job 394666, тик 20:43)**, Agent: agent-7625532f
+
+Work Log:
+- creds (1b: bootstrap_tick.sh отсутствует, remote URL активен) + СТАТУС S7-154 (NEXT = S7-155 feasibility-гейт) + pull --rebase ×2 up to date (CRUSSTY pristine в среде отсутствует)
+- ensure_javap.sh → javap Temurin JDK 21 готов (собственный python-парсер class-файлов дал 3 бага выравнивания — отброшен, javap = авторитетный)
+- s7155_kernel_census.py: структурный census ВСЕГО jar (9809 классов) — RNG-census (Field-refs 'random') + cross-entity invokes по entity-классам + дизасм ServerLevel.tick/tickNonPassenger/tickPassenger/EntityTickList
+- s7155_profile_split.py: раскладка entity-фазы CUMULATIVE (30625 = 58.5% CPU) + хазард-RNG пути в профиле + Amdahl-сценарии S1/S2/S3
+- Результаты: AI 29.3% фазы + other-local 24.6% + cross-entity 24.2% (сверка S7-154 10.43% strict) + fluid 18.6% (полная локальность) + movement 3.2%; общий Level.random — 132 класса, но горячий путь чист (ItemEntity/Mob 0, Zombie hurtServer/LivingEntity breakItem/Entity bubbleColumn — редкие; 100 сэмплов = 0.19%); per-tick RNG = per-entity Entity.random
+- Структура: единый forEach-контейнер в ServerLevel.tick (сегмент для ретаргета); EntityTickList = IteratorSafeOrderedReferenceSet; tickNonPassenger уже TickThread-aware; moonrise EntityLookup уже concurrent — disjoint-запись по регионам без новых локов
+- Amdahl: S1 ×1.17 / S2 ×2.31 / S3 ×2.41; геометрия кросс-регионных взаимодействий 4·r/L ≈ 3-6% при регионе 8×8 чанков
+- Учёт: S7155_FEASIBILITY.md (вердикт) + S7155_KERNEL_CENSUS.md + 2 скрипта + gitignore структурных дампов + GOAL СТАТУС S7-155 + CLAIMS TASK-294
+
+Stage Summary:
+- Гейт GREEN: (a) RNG-чистота горячего пути, (b) пространственная локальность взаимодействий, (c) injection-поверхность есть (единый forEach-сегмент), (d) потолок ×2.31 ≥ барьера ×N-класса
+- Дизайн S7-156: регион 8×8, планировщик = замена контейнера (per-entity байт-в-байт ваниль), synchronized Level.random, кросс-регионное отставание ≤1 тик = статистический паритет
+- NEXT (S7-156): прототип RegionTickOps — ретаргет ServerLevel.tick-сегмента, W воркеров + барьер; PG1 OFFLINE lockstep → preregister dispatch (PG3 TPS ≥ +25% vs CUMULATIVE)
+
+RUN_ID_DISPATCHED: NONE (RECON-3 тик, CI-бутов 0)
