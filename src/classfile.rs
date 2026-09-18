@@ -2664,6 +2664,180 @@ pub fn patch_inside_cache(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), St
     Ok((out, outcome))
 }
 
+// ---------------------------------------------------------------------------
+// FLUSH-DIET (S7-137, ARCH-ATTACK lever #4 — the StepBasedCollector.flushStep
+// allocation lane).
+//
+// STEP-0 javap contract (purpur-1.21.10 kernel, byte-identical to the CI
+// booted kernel): vanilla flushStep() transfers the per-type before/after
+// effect lists into finalEffects via List.addAll. ArrayList.addAll resolves
+// its argument through c.toArray() BEFORE the emptiness check, so every
+// empty-list call still allocates a throwaway new Object[0] through
+// Arrays.copyOf. The alloc census (run 35275967738, X150K, 25.6GB/60s) pinned
+// 336 samples (4.6% of the true churn) to exactly
+//   advanceStep -> flushStep -> ArrayList.addAll -> ArrayList.toArray
+//     -> Arrays.copyOf -> Object[].
+//
+// Shape: BOTH addAll call sites inside flushStep()V are invokeinterface
+// (5 bytes: 0xb9 idx1 idx2 count 0) to
+//   java/util/List.addAll:(Ljava/util/Collection;)Z.
+// Retarget form: invokestatic FlushOps.fladd
+//   (Ljava/util/List;Ljava/util/Collection;)Z (3 bytes) + 2 nop (0x00 0x00)
+// filling the former count/zero operand slots — length-preserving, no branch
+// or StackMapTable offsets move; the operand stack ([List, Collection] ->
+// [int]) is identical for both forms. Receiver-first descriptor equals the
+// virtual descriptor with the receiver class prepended (asserted below).
+//
+// Strict: exactly TWO matching sites (javap census on the real kernel —
+// offsets 41 and 114); zero matching invokeinterface sites while BOTH
+// existing invokestatics resolve to the bridge = AlreadyPatched (idempotent
+// no-op); anything else = shape mismatch -> Err (fail closed, vanilla stays).
+
+const FLUSH_SBC_CLASS: &str = "net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector";
+const FLUSH_OPS_CLASS: &str = "net/minecraft/world/entity/FlushOps";
+const FLUSH_FLADD_DESC: &str = "(Ljava/util/List;Ljava/util/Collection;)Z";
+
+pub fn patch_flush_step(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    // Kernel-rename guard: the collector's own fields must be present.
+    if layout.pool.find_utf8("beforeEffectsInStep").is_none() {
+        return Err("beforeEffectsInStep field absent from pool (kernel rename?)".into());
+    }
+    let expect_static = "(Ljava/util/List;Ljava/util/Collection;)Z";
+    if FLUSH_FLADD_DESC != expect_static {
+        return Err("fladd descriptor is not the receiver-prepended List.addAll form".into());
+    }
+    let Some(name_idx) = layout.pool.find_utf8("flushStep") else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let Some(desc_idx) = layout.pool.find_utf8("()V") else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)
+        .ok_or_else(|| "method flushStep()V not found".to_string())?;
+    let (code_start, code_len) = find_code_attr(bytes, &layout.pool, &m)
+        .ok_or_else(|| "flushStep has no Code attribute".to_string())?;
+    let code_end = code_start
+        .checked_add(code_len)
+        .ok_or_else(|| "code length overflow".to_string())?;
+    let code = bytes
+        .get(code_start..code_end)
+        .ok_or_else(|| "code region truncated".to_string())?;
+
+    // Walk the bytecode, collecting BOTH invokeinterface (0xb9, 5 bytes) and
+    // invokestatic (0xb8, 3 bytes) sites; every other opcode through the
+    // shared length table.
+    let mut iface: Vec<(usize, u16)> = Vec::new();
+    let mut statics: Vec<(usize, u16)> = Vec::new();
+    let mut pc = 0usize;
+    while pc < code.len() {
+        let op = code[pc];
+        if op == 0xb9 {
+            let b = code
+                .get(pc + 1..pc + 3)
+                .ok_or_else(|| "invokeinterface operand truncated".to_string())?;
+            iface.push((code_start + pc, u16::from_be_bytes([b[0], b[1]])));
+            pc += 5;
+            continue;
+        }
+        if op == 0xb8 {
+            let b = code
+                .get(pc + 1..pc + 3)
+                .ok_or_else(|| "invokestatic operand truncated".to_string())?;
+            statics.push((code_start + pc, u16::from_be_bytes([b[0], b[1]])));
+            pc += 3;
+            continue;
+        }
+        let extra = opcode_extra(op, code, pc)?;
+        pc = pc
+            .checked_add(1 + extra)
+            .ok_or_else(|| "code walk overflow".to_string())?;
+        if pc > code.len() {
+            return Err("truncated code (walk past end)".into());
+        }
+    }
+
+    // Classify BY NAME (never by offset — CP indexes shift between ASM runs).
+    let list_addall = (
+        "java/util/List".to_string(),
+        "addAll".to_string(),
+        "(Ljava/util/Collection;)Z".to_string(),
+    );
+    let to_triple = (
+        FLUSH_OPS_CLASS.to_string(),
+        "fladd".to_string(),
+        FLUSH_FLADD_DESC.to_string(),
+    );
+    let mut rewrite: Vec<usize> = Vec::new(); // absolute offsets of opcode bytes
+    let mut already = 0usize;
+    let mut addall_iface_left = 0usize;
+    for (op_pc, cp_idx) in &iface {
+        match layout.pool.methodref_parts(*cp_idx) {
+            Some(parts) if parts == list_addall => {
+                rewrite.push(*op_pc);
+                addall_iface_left += 1;
+            }
+            _ => {}
+        }
+    }
+    for (op_pc, cp_idx) in &statics {
+        match layout.pool.methodref_parts(*cp_idx) {
+            Some(parts) if parts == to_triple => already += 1,
+            _ => {}
+        }
+    }
+    if rewrite.is_empty() {
+        // Idempotent no-op only when BOTH sites already resolve to the
+        // bridge (2 static fladd, no List.addAll invokeinterface left).
+        if already == statics.len() && already == 2 && addall_iface_left == 0 {
+            return Ok((
+                bytes.to_vec(),
+                RetargetOutcome::AlreadyPatched { sites: already },
+            ));
+        }
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    }
+    if rewrite.len() != 2 {
+        return Err(format!(
+            "expected exactly two List.addAll sites in flushStep, got {}",
+            rewrite.len()
+        ));
+    }
+
+    // Append (or reuse) the Methodref for the bridge — append-only, dedup.
+    let mut pool = layout.pool;
+    let new_idx = pool.method_ref(FLUSH_OPS_CLASS, "fladd", FLUSH_FLADD_DESC);
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for fladd ref".into());
+    }
+
+    // Splice: header + grown pool + tail; rewrite 5 bytes per site:
+    // [0xb8][idx1][idx2][0x00][0x00] — invokestatic + 2 nop replacing the
+    // former count/zero operand slots of invokeinterface.
+    let mut tail = bytes[layout.cp_end..].to_vec();
+    let want = new_idx.to_be_bytes();
+    for &op_off in &rewrite {
+        let rel = op_off - layout.cp_end;
+        if rel + 4 >= tail.len() {
+            return Err("retarget opcode outside class tail (corrupt layout?)".into());
+        }
+        tail[rel] = 0xb8; // invokestatic
+        tail[rel + 1] = want[0];
+        tail[rel + 2] = want[1];
+        tail[rel + 3] = 0x00; // nop (former count operand)
+        tail[rel + 4] = 0x00; // nop (former zero operand)
+    }
+    let mut out = Vec::with_capacity(bytes.len() + 64);
+    out.extend_from_slice(&bytes[0..8]); // magic, minor, major
+    out.extend_from_slice(&pool.next.to_be_bytes()); // new cp_count
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(&tail);
+    Ok((
+        out,
+        RetargetOutcome::Retargeted { sites: rewrite.len() },
+    ))
+}
+
 #[cfg(test)]
 mod real_noise {
     // G4 S7-12: the REAL ImprovedNoise class (extracted from the live
@@ -3512,5 +3686,138 @@ mod inside_cache {
         let (entity, _) = patch_inside_cache(ENTITY).expect("patch");
         std::fs::create_dir_all("tests/out").unwrap();
         std::fs::write("tests/out/Entity.patched.class", &entity).unwrap();
+    }
+}
+
+#[cfg(test)]
+mod flush_diet {
+    // S7-137 / ARCH-ATTACK lever #4: REAL kernel
+    // InsideBlockEffectApplier$StepBasedCollector.class (purpur-1.21.10.jar,
+    // byte-identical to the hook-captured original — 5695 bytes), extracted
+    // 2026-09-18 for the flush-diet patcher.
+    const SBC: &[u8] = include_bytes!(
+        "../tests/fixtures/InsideBlockEffectApplier$StepBasedCollector.class"
+    );
+
+    use crate::classfile::*;
+
+    #[test]
+    fn flush_diet_retargets_exactly_two_sites() {
+        let (patched, outcome) = patch_flush_step(SBC).expect("patch");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 2 },
+            "exactly two List.addAll sites in flushStep (javap offsets 41 and 114)"
+        );
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        // CODE length preserved; the file grows by the appended CP entries.
+        assert!(patched.len() >= SBC.len());
+    }
+
+    #[test]
+    fn flush_diet_sites_resolve_to_ops_bridge() {
+        let (patched, _) = patch_flush_step(SBC).expect("patch");
+        let cp_count = u16::from_be_bytes([patched[8], patched[9]]);
+        let (pool, _end) = Pool::parse(&patched, 10, cp_count).expect("cp parse");
+        let triples: Vec<_> = (1..pool.next)
+            .filter_map(|i| pool.methodref_parts(i))
+            .collect();
+        assert!(
+            triples.iter().any(|t| t.0 == "net/minecraft/world/entity/FlushOps"
+                && t.1 == "fladd"
+                && t.2 == "(Ljava/util/List;Ljava/util/Collection;)Z"),
+            "fladd Methodref appended"
+        );
+        // Kernel-rename guard precondition.
+        assert!(pool.find_utf8("beforeEffectsInStep").is_some());
+    }
+
+    /// Bytecode shape of the patched flushStep: exactly two invokestatic
+    /// sites resolving to the bridge, each immediately followed by 2 nop
+    /// (former count/zero operand slots); no List.addAll invokeinterface
+    /// remains. All other interface sites (Map.get/remove, List.add/clear)
+    /// stay untouched.
+    #[test]
+    fn flush_diet_bytecode_shape() {
+        let (patched, _) = patch_flush_step(SBC).expect("patch");
+        let layout = parse_layout(&patched).expect("parse");
+        let name_idx = layout.pool.find_utf8("flushStep").expect("name");
+        let desc_idx = layout.pool.find_utf8("()V").expect("desc");
+        let m = find_method(&patched, layout.methods_start, name_idx, desc_idx)
+            .expect("flushStep present");
+        let (code_start, code_len) =
+            find_code_attr(&patched, &layout.pool, &m).expect("Code attr");
+        let code = &patched[code_start..code_start + code_len];
+
+        let mut fladd_sites = 0usize;
+        let mut list_addall_left = 0usize;
+        let mut pc = 0usize;
+        while pc < code.len() {
+            let op = code[pc];
+            if op == 0xb8 {
+                let idx = u16::from_be_bytes([code[pc + 1], code[pc + 2]]);
+                if let Some(t) = layout.pool.methodref_parts(idx) {
+                    if t.0 == "net/minecraft/world/entity/FlushOps" && t.1 == "fladd" {
+                        fladd_sites += 1;
+                        assert_eq!(
+                            (&code[pc + 3], &code[pc + 4]),
+                            (&0x00, &0x00),
+                            "former count/zero slots must be nop"
+                        );
+                    }
+                }
+                pc += 3;
+                continue;
+            }
+            if op == 0xb9 {
+                let idx = u16::from_be_bytes([code[pc + 1], code[pc + 2]]);
+                if let Some(t) = layout.pool.methodref_parts(idx) {
+                    if t.0 == "java/util/List" && t.1 == "addAll" {
+                        list_addall_left += 1;
+                    }
+                }
+                pc += 5;
+                continue;
+            }
+            let extra = opcode_extra(op, code, pc).expect("walk");
+            pc += 1 + extra;
+        }
+        assert_eq!(fladd_sites, 2, "both addAll sites retargeted");
+        assert_eq!(list_addall_left, 0, "no vanilla List.addAll site remains");
+    }
+
+    #[test]
+    fn flush_diet_idempotent() {
+        let (patched, _) = patch_flush_step(SBC).expect("patch");
+        let (again, outcome) = patch_flush_step(&patched).expect("repatch");
+        assert_eq!(outcome, RetargetOutcome::AlreadyPatched { sites: 2 });
+        assert_eq!(again, patched, "repatch must be byte-identical");
+    }
+
+    #[test]
+    fn flush_diet_wrong_class_fails_closed() {
+        // A class without the collector fields fails the pool guard (Err);
+        // a class with the field name but no flushStep()V hits NotFound
+        // (original bytes, no pool growth).
+        match patch_flush_step(include_bytes!(
+            "../tests/fixtures/PalettedContainer.class"
+        )) {
+            Err(e) => assert!(e.contains("beforeEffectsInStep"), "{e}"),
+            Ok((out, outcome)) => {
+                assert_eq!(outcome, RetargetOutcome::NotFound);
+                assert_eq!(
+                    out,
+                    include_bytes!("../tests/fixtures/PalettedContainer.class").to_vec()
+                );
+            }
+        }
+    }
+
+    /// Dump artifacts for the offline JVM-verifier harness.
+    #[test]
+    fn dump_patched_for_verifier() {
+        let (sbc, _) = patch_flush_step(SBC).expect("patch");
+        std::fs::create_dir_all("tests/out").unwrap();
+        std::fs::write("tests/out/StepBasedCollector.patched.class", &sbc).unwrap();
     }
 }

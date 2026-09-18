@@ -57,6 +57,7 @@ PALETTED_DEMUX="${PALETTED_DEMUX:-0}"
 # Targets G1 GC + oop barriers ~27% CPU (allocation-rate derivative).
 ALLOC_DIET="${ALLOC_DIET:-0}"
 INSIDE_CACHE="${INSIDE_CACHE:-0}"
+FLUSH_DIET="${FLUSH_DIET:-0}"
 # BENCH-X150K population fixture (S7-129, docs/BENCH_X150K_SCENARIO.md §2):
 # deterministic living-scene injection AFTER forceload, BEFORE the profiler
 # window (harness waits for the POPULATION INJECT DONE marker). 0 = off.
@@ -131,6 +132,7 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "paletted_demux: $PALETTED_DEMUX (CRUSSTY_PALETTED_DEMUX; 1 = PALETTED-DEMUX ARCH-ATTACK lever #1, S7-131)"
   echo "alloc_diet: $ALLOC_DIET (CRUSSTY_ALLOC_DIET; 1 = ALLOC-DIET ARCH-ATTACK lever #2: zero-alloc push/collision queries, S7-133/TASK-269)"
   echo "inside_cache: $INSIDE_CACHE (CRUSSTY_INSIDE_CACHE; 1 = INSIDE-CACHE ARCH-ATTACK lever #3: static-entity inside-blocks discovery memoization, S7-135/TASK-271)"
+  echo "flush_diet: $FLUSH_DIET (CRUSSTY_FLUSH_DIET; 1 = FLUSH-DIET ARCH-ATTACK lever #4: StepBasedCollector.flushStep zero-waste addAll via FlushOps, S7-137)"
   echo "population_target: $POPULATION_TARGET (BENCH-X150K living-scene injection, S7-129; 0 = off)"
   echo "population_seed: $POPULATION_SEED (deterministic injection replay seed; topup seeded from deltaT=ft-T0, S7-130)"
   echo "server_xmx: $SERVER_XMX (S7-130; 150k-scale runs use 10G)"
@@ -326,6 +328,8 @@ export CRUSSTY_PALETTED_DEMUX="$PALETTED_DEMUX"
 export CRUSSTY_ALLOC_DIET="$ALLOC_DIET"
 # INSIDE-CACHE gate (inside_cache.rs reads it at register time; S7-135/TASK-271)
 export CRUSSTY_INSIDE_CACHE="$INSIDE_CACHE"
+# FLUSH-DIET gate (flush_diet.rs reads it at register time; S7-137)
+export CRUSSTY_FLUSH_DIET="$FLUSH_DIET"
 # BENCH-X150K population fixture env (0 = no-op; S7-129)
 export BENCH_POPULATION_TARGET="$POPULATION_TARGET"
 export BENCH_POPULATION_SEED="$POPULATION_SEED"

@@ -26,6 +26,7 @@ mod bridge_class;
 mod classfile;
 mod entity_mirror;
 mod fluid_guard;
+mod flush_diet;
 mod improved_noise;
 mod inside_cache;
 mod jni_table;
@@ -112,6 +113,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // load; patch served via retransform after the InsideBlockOps bridge
     // lands). Dormant unless CRUSSTY_INSIDE_CACHE=1.
     inside_cache::register();
+    // FLUSH-DIET (S7-137): byte hook on the StepBasedCollector (pristine
+    // capture; patch served via retransform after the FlushOps bridge lands).
+    // Dormant unless CRUSSTY_FLUSH_DIET=1.
+    flush_diet::register();
     proto_blend_cache::register();
     // F1 BATCH-RNG (family-agg pack member, S7-112): ServerLevel body-swap hook.
     randomtick::register();
@@ -294,6 +299,10 @@ fn inject_surface() {
     // compute the length-preserving patch, retransform (dormant unless
     // CRUSSTY_INSIDE_CACHE=1).
     inside_cache::activate();
+    // FLUSH-DIET (S7-137): define FlushOps into the kernel loader, compute
+    // the length-preserving patch, retransform (dormant unless
+    // CRUSSTY_FLUSH_DIET=1).
+    flush_diet::activate();
     // Dormant unless CRUSSTY_NATIVE_BLEND_CACHE is set (see docs/HOOK_BLEND_CACHE.md).
     proto_blend_cache::activate();
     // F1 BATCH-RNG (S7-112): define RandomTickOps into the ServerLevel loader,
