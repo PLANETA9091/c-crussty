@@ -13,6 +13,13 @@
 //!     field + forEach + contains, callbacks have add/remove), retargeted to
 //!     `RegionTickOps.onTickingStart/onTickingEnd` (deferred FIFO during a
 //!     parallel phase, drained at the barrier).
+//!  3. `Level.guardEntityTick` — the ONLY worker-reachable mid-tick pump
+//!     site (S7-157b, live crash 35353820223: Paper pumps main-thread
+//!     mid-tick tasks per entity tick; a worker's concurrent poll of the
+//!     main-thread-only ServerChunkCache$MainThreadExecutor queue raced a
+//!     NoSuchElementException and killed the server 40s into the first leg).
+//!     Retargeted to `RegionTickOps.midTickTasks(Level)`: workers suppress,
+//!     main thread reproduces the exact vanilla virtual dispatch.
 //!
 //! Bridge: `RegionTickOps` (+ inner `Mut`) defined into the KERNEL loader
 //! before any patched bytes are served (BRIDGE_READY protocol, the S7-143
@@ -41,6 +48,7 @@ use std::sync::{Arc, PoisonError};
 
 const SERVER_LEVEL: &str = "net/minecraft/server/level/ServerLevel";
 const CALLBACKS_CLASS: &str = "net/minecraft/server/level/ServerLevel$EntityCallbacks";
+const LEVEL_CLASS: &str = "net/minecraft/world/level/Level";
 const OPS_CLASS: &str = "net/minecraft/world/entity/RegionTickOps";
 const OPS_INNER_CLASS: &str = "net/minecraft/world/entity/RegionTickOps$Mut";
 
@@ -118,12 +126,16 @@ impl Target {
 
 static TARGET_SL: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
 static TARGET_CB: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
+static TARGET_LV: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
 
 fn sl_target() -> &'static Target {
     TARGET_SL.get_or_init(|| Target::new(SERVER_LEVEL))
 }
 fn cb_target() -> &'static Target {
     TARGET_CB.get_or_init(|| Target::new(CALLBACKS_CLASS))
+}
+fn lv_target() -> &'static Target {
+    TARGET_LV.get_or_init(|| Target::new(LEVEL_CLASS))
 }
 
 pub fn bridge_ready() -> bool {
@@ -192,6 +204,28 @@ pub fn register() {
         }
         cached.map(|c| c.to_vec())
     });
+    // Hook 3: Level (S7-157b mid-tick gate site in guardEntityTick).
+    cplug_sdk::hooks::register_bytes(LEVEL_CLASS, |_name, bytes| {
+        let t = lv_target();
+        if !READY.load(Ordering::Relaxed) {
+            eprintln!(
+                "[crussty-plugin] region_threads: pristine sighting {} {} bytes",
+                t.name,
+                bytes.len()
+            );
+            t.stash_orig(bytes);
+            return None;
+        }
+        let cached = t.patch_bytes();
+        if !t.served.swap(true, Ordering::Relaxed) {
+            eprintln!(
+                "[crussty-plugin] region_threads: hook serve {} {} bytes",
+                t.name,
+                cached.as_ref().map(|c| c.len()).unwrap_or(0)
+            );
+        }
+        cached.map(|c| c.to_vec())
+    });
 }
 
 /// Background activation: wait for ServerLevel, define the RegionTickOps
@@ -204,6 +238,7 @@ pub fn activate() {
     std::thread::spawn(move || {
         let sl = sl_target();
         let cb = cb_target();
+        let lv = lv_target();
 
         // ServerLevel loads during server bootstrap (before the first level).
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(180);
@@ -320,8 +355,9 @@ pub fn activate() {
         }
         BRIDGE_READY.store(true, Ordering::Release);
 
-        // Pristine bytes for both targets (hook stash or no-op retransform).
-        for t in [sl, cb] {
+        // Pristine bytes for all three targets (hook stash or no-op
+        // retransform).
+        for t in [sl, cb, lv] {
             if !t.orig_is_some() {
                 eprintln!(
                     "[crussty-plugin] region_threads: {} predates hook, capturing via no-op retransform",
@@ -396,12 +432,34 @@ pub fn activate() {
             );
             return;
         }
+        let Some(lv_orig) = lv.take_orig() else { return };
+        let (lv_patched, lv_outcome) =
+            match crate::classfile::patch_region_tick_guardentity(&lv_orig) {
+                Ok(pair) => pair,
+                Err(e) => {
+                    eprintln!(
+                        "[crussty-plugin] region_threads: Level patch rejected ({e}), hook stays dormant"
+                    );
+                    return;
+                }
+            };
+        if !matches!(
+            lv_outcome,
+            crate::classfile::RetargetOutcome::Retargeted { sites: 1 }
+        ) {
+            eprintln!(
+                "[crussty-plugin] region_threads: Level strict site-count violated ({lv_outcome:?}), hook stays dormant"
+            );
+            return;
+        }
         eprintln!(
-            "[crussty-plugin] region_threads: computed patches (ServerLevel {} -> {} bytes {sl_outcome:?}; EntityCallbacks {} -> {} bytes add={cb_out_add:?} remove={cb_out_rem:?})",
+            "[crussty-plugin] region_threads: computed patches (ServerLevel {} -> {} bytes {sl_outcome:?}; EntityCallbacks {} -> {} bytes add={cb_out_add:?} remove={cb_out_rem:?}; Level {} -> {} bytes {lv_outcome:?})",
             sl_orig.len(),
             sl_patched.len(),
             cb_orig.len(),
-            cb_patched.len()
+            cb_patched.len(),
+            lv_orig.len(),
+            lv_patched.len()
         );
         sl.set_patch(PatchCache {
             bytes: Arc::from(sl_patched),
@@ -411,18 +469,26 @@ pub fn activate() {
             bytes: Arc::from(cb_patched),
             major: cb_major,
         });
+        let lv_major = crate::improved_noise::class_version(&lv_orig)
+            .map(|(m, _)| m)
+            .unwrap_or(0);
+        lv.set_patch(PatchCache {
+            bytes: Arc::from(lv_patched),
+            major: lv_major,
+        });
 
-        // Single READY flip, then retransform both classes once.
+        // Single READY flip, then retransform all three classes once.
         crate::kernel_policy::audit_wire(
             OPS_CLASS,
-            "forEach/onTickingStart/onTickingEnd",
-            "region_threads v1",
+            "forEach/onTickingStart/onTickingEnd/midTickTasks",
+            "region_threads v2",
         );
         READY.store(true, Ordering::Release);
         let rc_sl = cplug_sdk::retransform_class(sl.name);
         let rc_cb = cplug_sdk::retransform_class(cb.name);
+        let rc_lv = cplug_sdk::retransform_class(lv.name);
         eprintln!(
-            "[crussty-plugin] region_threads: ARMED, retransform rc ServerLevel={rc_sl} EntityCallbacks={rc_cb}"
+            "[crussty-plugin] region_threads: ARMED, retransform rc ServerLevel={rc_sl} EntityCallbacks={rc_cb} Level={rc_lv}"
         );
     });
 }

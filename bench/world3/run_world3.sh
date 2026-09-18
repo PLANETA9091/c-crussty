@@ -354,19 +354,30 @@ export CRUSSTY_REGION_THREADS="$REGION_THREADS"
 # BENCH-X150K population fixture env (0 = no-op; S7-129)
 export BENCH_POPULATION_TARGET="$POPULATION_TARGET"
 export BENCH_POPULATION_SEED="$POPULATION_SEED"
-tail -f "$WORK/console.in" | java \
+# S7-157 incident fix: `tail -f console.in | java` leaves an ORPHANED tail -f
+# holding the CI step's stderr pipe open when the JVM dies — the runner then
+# waits on the open pipe until the 75-min job timeout (run 35353820223 burned
+# 68 min post-crash). FIFO pattern: tail's lifetime is bounded and killed at
+# shutdown.
+rm -f "$WORK/console.pipe"; mkfifo "$WORK/console.pipe"
+( tail -f "$WORK/console.in" > "$WORK/console.pipe" 2>/dev/null ) &
+TAIL_PID=$!
+java \
   "-agentpath:$RUNTIME_SO=modules=$SERVER/modules;versions=$SERVER/versions;kernel=purpur-1.21.10.jar" \
   -Xms4G -Xmx"$SERVER_XMX" -XX:+UseG1GC -Dfile.encoding=UTF-8 \
   -Xlog:gc*:file="$WORK/gc.log":time,uptime,level,tags \
   -jar "$SERVER/versions/purpur-1.21.10.jar" --nogui \
+  < "$WORK/console.pipe" \
   > "$WORK/server-stdout.log" 2>&1 &
 SERVER_PID=$!
-log "server pid $SERVER_PID — waiting for Done (<=${BOOT_TIMEOUT}s)"
+server_died() { ! kill -0 "$SERVER_PID" 2>/dev/null; }
+log "server pid $SERVER_PID (console tail pid $TAIL_PID) — waiting for Done (<=${BOOT_TIMEOUT}s)"
 
 SEEN_DONE=0
 for i in $(seq 1 "$BOOT_TIMEOUT"); do
   if grep -qF "Done (" "$WORK/server-stdout.log" 2>/dev/null; then SEEN_DONE=1; break; fi
   if grep -qiE "Failed to start|Exception in thread .main." "$WORK/server-stdout.log" 2>/dev/null; then break; fi
+  if server_died; then log "FATAL: server process died during boot — aborting waits (crash artifacts preserved)"; break; fi
   sleep 1
 done
 log "SEEN_DONE=$SEEN_DONE"
@@ -405,6 +416,7 @@ if [ "$SEEN_DONE" = "1" ]; then
         log "WARN: x150k injection DONE marker NOT seen in ${POP_TIMEOUT}s — continuing (fixture gate will fail the run)"
         break
       fi
+      if server_died; then log "FATAL: server process died during population injection — aborting waits (crash artifacts preserved)"; SEEN_DONE=0; break; fi
       sleep 10
       POP_WAITED=$((POP_WAITED + 10))
       if [ $((POP_WAITED % 60)) -eq 0 ]; then
@@ -459,6 +471,7 @@ if [ "$SEEN_DONE" = "1" ]; then
   cmd "spark profiler start --timeout $RUN_SECONDS"
 
   while [ $SECONDS -lt $END ]; do
+    if server_died; then log "FATAL: server process died mid-soak — ending soak early (crash artifacts preserved)"; break; fi
     sleep 60
     cmd "tps"
     # run#12 root-cause (S7-96b): `paper mspt` does NOT exist on Purpur 1.21.10
@@ -516,6 +529,12 @@ fi
 cmd "stop"
 sleep 30
 kill "$SERVER_PID" 2>/dev/null || true
+sleep 10
+kill -9 "$SERVER_PID" 2>/dev/null || true
+kill "$TAIL_PID" 2>/dev/null || true
+sleep 2
+kill -9 "$TAIL_PID" 2>/dev/null || true
+rm -f "$WORK/console.pipe"
 
 # --- 8. bottleneck report ---------------------------------------------------
 if [ "$SEEN_DONE" != "1" ]; then
