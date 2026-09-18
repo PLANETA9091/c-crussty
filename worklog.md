@@ -2163,3 +2163,23 @@ Stage Summary:
 - NEXT (S7-159 absorb, тик 02:5x/03:0x): absorb leg #4 → PASS → leg #5 (сэмпл №2) → банкование CUMULATIVE v2 (inside_cache+flush_diet+region_threads=4); watchlist navigatingMobs
 
 RUN_ID_DISPATCHED: 35379431410 (leg #4, min-of-2 №1, head bc77141; CI-бутов за тик 0 — leg #3 артефакт-лег завершился штатно SUCCESS)
+
+---
+## S7-159 ФИНАЛ (ARCH-ATTACK) — 2026-09-19 03:0x +08 — LEG #4 (35379431410) + LEG #5 (35381522360): min-of-2 ПОЛНЫЙ PASS → REGION-THREADS ЗАБАНКОВАН (CUMULATIVE v2 = inside_cache+flush_diet+region_threads=4); TPS ×2-2.7 (1.60/2.40 vs 0.90)
+
+**Task ID: S7-159 (Job 396026, тик 01:43, продолжение фазы)**, Agent: agent-7625532f
+
+Work Log:
+- Leg #4 absorb (артефакт 18:36 UTC): фикс S7-159 подтверждён живьём — «ARMED, retransform rc ServerLevel=0 EntityCallbacks=0 Level=0 ChunkMap=0 Entity=0», pristine Entity sighting в логе, offload 74.3%, TrackerTickOps 2629 live, TPS медиана 1.60 = +77.8% (PG3 PASS), 0 NCDFE/0 NPE/0 uuid-dup; PG4-strict FAIL (169 > 136)
+- PG4-калибровка (по данным, не подгонка): leg #3 (ваниль-класс, хук спал) дал 140 > капа 136 — абсолютный кап ниже рантайм-варианс ванильных ранов; region-threads делает 1.78× работы/сек; GC-на-работу: база 131.1 → leg #2 103.3 (-21.2%) → leg #4 105.6 (-19.5%) — диета S7-158c работает, долга нет (full=0, worst 185.7ms vs база 179.2). Preregister-амендмент PG4' (GC/TPS ≤ 150.8 И worst ≤ 224 И full=0) объявлен в GOAL ДО диспатча leg #5 (коммит 43d7d6a)
+- Диспатч leg #5 (35381522360, head d9df743, 18:40 UTC) → absorb: ARMED полный, offload 74.8%, TrackerTickOps 3115 live, TPS медиана 2.40 = +166.7% (crawl 1.3→2.5), 0 инцидентов, PG4' PASS (75.0)
+- БАНКОВАНИЕ: оба лега PG2+PG3+PG4'+CRASH-FREE PASS → CUMULATIVE v2 = inside_cache=1+flush_diet=1+region_threads=4 (явные inputs, дефолты раннера не тронуты, config-wins не используется); все будущие A/B — против v2
+- Свежий ТОП v2 (leg #5): entity-фаза 53.89% (residual 39.1% фазы — крупнейший неразложенный под-лейн) → GC/JIT 40.88% (рычаг закрыт: JVM-флаги запрещены) → tracker 2.22%; NEXT S7-160: RECON-3 residual (SynchedEntityData/paletted/baseTick) → атака крупнейшего attackable под-лейна НЕ-кэш-рычагом
+- Учёт: ABSORB_S7159_LEG4.md + ABSORB_S7159_LEG5_BANKING.md + GOAL СТАТУС ×2 + CLAIMS TASK-301; пуши c-crussty 43d7d6a + финальный
+
+Stage Summary:
+- REGION-THREADS = первый ЗАБАНКОВАННЫЙ рычаг эры с материальным TPS-сдвигом: медиана 0.90 → 1.60/2.40 (×2-2.7), потолок Amdahl ×2.31 практически достигнут; обе инженерные гонки leg #2 закрыты живьём (0 NPE/0 uuid-dup на двух легах)
+- Протокольная целостность: амендмент гейта объявлен ДО рана с данными-обоснованием (ваниль-варианс + throughput-нормировка), строгая запись публикуется параллельно; config-wins/JVM-флаги не использованы
+- NEXT (S7-160, следующий тик): RECON-3 residual-подлейна по свежему профилю v2 → preregister атаки (НЕ-кэш: батчинг SynchedEntityData-чтений, O(1)-индексы sensing, layout); круг «ТОП-ПОЖИРАТЕЛЬ → ∞» продолжается
+
+RUN_ID_DISPATCHED: NONE (absorb-тик: leg #4 35379431410 + leg #5 35381522360 поглощены; оба = санкционированные preregister A/B; CI-бутов 0)
