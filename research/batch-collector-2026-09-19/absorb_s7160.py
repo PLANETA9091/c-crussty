@@ -1,15 +1,23 @@
 #!/usr/bin/env python3
-"""absorb_s7160.py — S7-160 absorb: BATCH-COLLECTOR leg (v2 + batch_collector=1)
-vs the BANKED CUMULATIVE v2 (leg #5 = 35381522360).
+"""absorb_s7161.py — S7-161 absorb: BATCH-COLLECTOR ctor-retarget leg
+(v2 + batch_collector=1) vs the BANKED CUMULATIVE v2 (leg #5 = 35381522360).
 
-Preregistered gates (GOAL СТАТУС S7-160, declared BEFORE dispatch):
-  PG2   0 NCDFE + pop 150000 VALID + ARMED: v2 chain (inside_cache +
-        region_threads retransform rc=0) + "batch_collector: defined" +
-        "batch_collector: ARMED first-swap";
-  PG3   NON-REGRESSION: TPS median >= 1.60 (worst banked v2 leg);
-  PG4'' young GC <= 180 (leg #5 level) AND collector-family CPU
-        (flushStep/advanceStep/applyAndClear leaf samples) <= 55% of
-        leg #5 (2143 samples -> <= ~1180);
+S7-161 change vs S7-160: the collector retarget is CONSTRUCTOR-LEVEL
+(classfile::patch_entity_collector_ctor riding the region_threads Entity
+chain after the rng retarget) — persistent by construction; the lazy
+Unsafe ensure() swap is retired from the hot path (S7-160 REFUTED:
+BatchCollector.<init>+ensure = 1441 samples with zero rotation).
+
+Preregistered gates (GOAL СТАТУС S7-161, declared BEFORE dispatch):
+  PG2   0 NCDFE + pop 150000 VALID + ARMED: "batch_collector: defined" +
+        "Entity collector-ctor retarget composed (Retargeted { sites: 1 })"
+        + v2 chain retransform rc=0; NOTE: "ARMED first-swap" is NOT
+        expected (entities are born with BatchCollector — ensure stays
+        instance-checked but rarely swaps; its absence is a POSITIVE
+        signal);
+  PG3   NON-REGRESSION: TPS last-5 median >= 1.60 (worst banked v2 leg);
+  PG4'' young GC <= 180 AND collector-family CPU <= 55% of leg #5
+        (2345 -> <= 1290; expectation -40..-50% with infra gone);
   CRASH-FREE  0 tracker-NPE, 0 uuid-dup, navigatingMobs watchlist.
 Banking: full PASS -> CUMULATIVE v3 = v2 + batch_collector=1;
 gate FAIL -> REFUTED-BY-ECONOMICS + rollback batch_collector=0.
@@ -218,30 +226,32 @@ def report(tag, d):
                       txt)
         res["pop"] = int(m.group(2)) if m else -1
         res["bc_defined"] = "batch_collector: defined" in txt
-        res["bc_armed"] = "batch_collector: ARMED first-swap" in txt
+        res["bc_composed"] = "Entity collector-ctor retarget composed" in txt
+        res["bc_firstswap"] = "batch_collector: ARMED first-swap" in txt
         print(f"  TPS median={med:.2f} (crawl n={len(vals)})")
         print(f"  NCDFE={res['ncdfe']} NPE={res['tracker_npe']} "
               f"uuid={res['uuid_dup']} navmob={res['navmob']} "
               f"pop={res['pop']} VALID={res['valid']}")
-        print(f"  BC defined={res['bc_defined']} armed={res['bc_armed']}")
+        print(f"  BC defined={res['bc_defined']} composed={res['bc_composed']} "
+              f"first-swap(seen)={res['bc_firstswap']}")
     return res
 
 
 def main():
     leg = sys.argv[1] if len(sys.argv) > 1 else (
         "/home/z/c-crussty/research/batch-collector-2026-09-19/"
-        "run-s7160-batch-collector-artifact")
+        "run-s7161-batch-collector-artifact")
     b = report("base v2 leg#5 (35381522360)", LEG5)
-    l = report("leg v2+bc (S7-160)", leg)
+    l = report("leg v2+bc-ctor (S7-161)", leg)
     if not (b and l):
         return 2
     print("\n=== GATES (preregistered S7-160) ===")
     pg2 = (l.get("ncdfe", 99) == 0 and l.get("valid", False)
            and l.get("pop", -1) == 150000 and l.get("bc_defined", False)
-           and l.get("bc_armed", False))
+           and l.get("bc_composed", False))
     print(f"PG2: {'PASS' if pg2 else 'FAIL'} (NCDFE={l.get('ncdfe')}, "
           f"pop={l.get('pop')}, VALID={l.get('valid')}, "
-          f"defined={l.get('bc_defined')}, armed={l.get('bc_armed')})")
+          f"defined={l.get('bc_defined')}, composed={l.get('bc_composed')})")
     med = l.get("tps_median", 0.0)
     pg3 = med >= 1.60
     print(f"PG3 non-regression: median={med:.2f} (cap >= 1.60) => "

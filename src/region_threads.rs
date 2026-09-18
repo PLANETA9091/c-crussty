@@ -618,6 +618,48 @@ pub fn activate() {
             );
             return;
         }
+        // S7-161 BATCH-COLLECTOR: the ctor-level collector retarget rides
+        // THIS Entity chain (the region retransform is the LAST Entity
+        // writer — S7-160 log evidence lines 886/895: hooks on one class
+        // supersede each other, so the batch patch must live in the bytes
+        // served HERE). Bridge must be defined before the retransform:
+        // the patched ctor resolves BatchCollector at the FIRST entity
+        // spawn (population inject runs after arm-time).
+        let ent_patched = if crate::batch_collector::enabled_pub() {
+            if crate::batch_collector::wait_bridge_ready(120_000) {
+                match crate::classfile::patch_entity_collector_ctor(&ent_patched) {
+                    Ok((p, outcome)) => {
+                        if matches!(
+                            outcome,
+                            crate::classfile::RetargetOutcome::Retargeted { sites: 1 }
+                        ) {
+                            eprintln!(
+                                "[crussty-plugin] region_threads: Entity collector-ctor retarget composed ({outcome:?})"
+                            );
+                            p
+                        } else {
+                            eprintln!(
+                                "[crussty-plugin] region_threads: Entity collector-ctor strict site-count violated ({outcome:?}), Entity stays rng-only (fail-dominant)"
+                            );
+                            ent_patched
+                        }
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "[crussty-plugin] region_threads: Entity collector-ctor patch rejected ({e}), Entity stays rng-only (fail-dominant)"
+                        );
+                        ent_patched
+                    }
+                }
+            } else {
+                eprintln!(
+                    "[crussty-plugin] region_threads: batch bridge missed its window, Entity stays rng-only (fail-dominant)"
+                );
+                ent_patched
+            }
+        } else {
+            ent_patched
+        };
         let ent_major = crate::improved_noise::class_version(&ent_orig)
             .map(|(m, _)| m)
             .unwrap_or(0);

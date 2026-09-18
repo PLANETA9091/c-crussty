@@ -2994,6 +2994,126 @@ pub fn patch_region_rng_entity(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome
     )
 }
 
+/// S7-161 BATCH-COLLECTOR (lever #8 v2): retarget the single
+/// `new StepBasedCollector; dup; invokespecial <init>()V` site inside
+/// `Entity.<init>(EntityType, Level)` so EVERY entity is born owning the
+/// zero-map BatchCollector. The ctor is the ONLY kernel writer of the
+/// final `insideEffectCollector` field (javap census — single NEW site at
+/// pristine offsets 193-200), so a constructor-level substitution is
+/// persistent by construction; the S7-160 lazy Unsafe swap into the final
+/// field did not survive across ticks and is retired from the hot path.
+/// The population fixture injects AFTER arm-time, so ~100% of the measured
+/// window's population is covered.
+///
+/// Bytecode contract (javap pristine 1.21.10):
+///   193: new  #48   // class …StepBasedCollector
+///   196: dup
+///   197: invokespecial #923 // …StepBasedCollector."<init>":()V
+///   200: putfield #925     // Field insideEffectCollector
+/// Rewrite: NEW class operand -> Class(BatchCollector), invokespecial
+/// operand -> Methodref(BatchCollector."<init>":()V) (same ()V shape;
+/// BatchCollector extends StepBasedCollector so the putfield subsumption
+/// passes). dup is untouched. Strict: exactly 1 site on first sight;
+/// idempotent (AlreadyPatched when the site already resolves to
+/// BatchCollector).
+pub fn patch_entity_collector_ctor(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    const VANILLA: &str =
+        "net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector";
+    const BATCH: &str = "net/minecraft/world/entity/BatchCollector";
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    let mut pool = layout.pool;
+    // Probe-only utf8 lookups first: a ctor whose name/desc utf8 entries
+    // are absent cannot exist; NotFound must not mutate the pool.
+    let Some(name_idx) = pool.find_utf8("<init>") else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let Some(desc_idx) = pool.find_utf8(
+        "(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/level/Level;)V",
+    ) else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)
+        .ok_or_else(|| "Entity.<init>(EntityType, Level) not found".to_string())?;
+    let (code_start, code_len) = find_code_attr(bytes, &pool, &m)
+        .ok_or_else(|| "Entity ctor has no Code attribute".to_string())?;
+    let code_end = code_start
+        .checked_add(code_len)
+        .ok_or_else(|| "code length overflow".to_string())?;
+    let code = bytes
+        .get(code_start..code_end)
+        .ok_or_else(|| "code region truncated".to_string())?;
+
+    // Scan for the dup+invokespecial-anchored NEW site: [0xBB i1 i2]
+    // [0x59] [0xB7 j1 j2] with j resolving to the vanilla collector ctor.
+    let mut new_site: Option<(usize, u16)> = None; // (abs offset of 0xBB, cp idx)
+    let mut inv_site: Option<usize> = None; // abs offset of 0xB7
+    let mut already = 0usize;
+    let mut pc = 0usize;
+    while pc + 6 <= code.len() {
+        if code[pc] == 0xBB
+            && code[pc + 3] == 0x59
+            && code[pc + 4] == 0xB7
+        {
+            let inv_idx = u16::from_be_bytes([code[pc + 5], code[pc + 6]]);
+            match pool.methodref_parts(inv_idx) {
+                Some((cls, name, desc))
+                    if cls == BATCH && name == "<init>" && desc == "()V" =>
+                {
+                    already += 1;
+                }
+                Some((cls, name, desc)) if cls == VANILLA && name == "<init>" && desc == "()V" => {
+                    if new_site.is_some() {
+                        return Err("multiple collector NEW sites in Entity ctor".into());
+                    }
+                    new_site = Some((code_start + pc, u16::from_be_bytes([code[pc + 1], code[pc + 2]])));
+                    inv_site = Some(code_start + pc + 4);
+                }
+                _ => {}
+            }
+            pc += 7;
+            continue;
+        }
+        pc += 1;
+    }
+    if new_site.is_none() {
+        return Ok((
+            bytes.to_vec(),
+            if already > 0 {
+                RetargetOutcome::AlreadyPatched { sites: already }
+            } else {
+                RetargetOutcome::NotFound
+            },
+        ));
+    }
+    let (new_abs, _vanilla_new_idx) = new_site.unwrap();
+    let inv_abs = inv_site.unwrap();
+    // Pool growth: Class(BatchCollector) + Methodref(BatchCollector."<init>":()V).
+    let batch_utf8 = pool.utf8(BATCH);
+    let class_idx = pool.class_of(batch_utf8);
+    let ctor_ref = pool.method_ref(BATCH, "<init>", "()V");
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for collector retarget".into());
+    }
+    let mut tail = bytes[layout.cp_end..].to_vec();
+    let rel_new = new_abs - layout.cp_end;
+    let rel_inv = inv_abs - layout.cp_end;
+    if rel_new + 2 >= tail.len() || rel_inv + 2 >= tail.len() {
+        return Err("collector site outside class tail (corrupt layout?)".into());
+    }
+    tail[rel_new] = 0xBB; // new (opcode unchanged, operand swapped)
+    tail[rel_new + 1] = class_idx.to_be_bytes()[0];
+    tail[rel_new + 2] = class_idx.to_be_bytes()[1];
+    tail[rel_inv] = 0xB7; // invokespecial (opcode unchanged, operand swapped)
+    tail[rel_inv + 1] = ctor_ref.to_be_bytes()[0];
+    tail[rel_inv + 2] = ctor_ref.to_be_bytes()[1];
+    let mut out = Vec::with_capacity(bytes.len() + 64);
+    out.extend_from_slice(&bytes[0..8]);
+    out.extend_from_slice(&pool.next.to_be_bytes());
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(&tail);
+    Ok((out, RetargetOutcome::Retargeted { sites: 1 }))
+}
+
 
 /// S7-156: the single `EntityTickList.forEach(Consumer)` call site inside
 /// `ServerLevel.tick(BooleanSupplier)` -> `RegionTickOps.forEach` (1:1
@@ -4689,6 +4809,92 @@ mod region_threads {
         let (again, outcome2) = patch_region_rng_entity(&patched).expect("repatch");
         assert_eq!(outcome2, RetargetOutcome::AlreadyPatched { sites: 1 });
         assert_eq!(again, patched, "repatch must be byte-identical");
+    }
+
+    #[test]
+    fn batch_collector_ctor_retargets_exactly_one_new_site() {
+        // S7-161: compose order matches the live region chain — rng first
+        // (CP growth shifts indexes), then the collector ctor retarget.
+        let (rng_patched, rng_outcome) = patch_region_rng_entity(ENTITY).expect("rng patch");
+        assert_eq!(rng_outcome, RetargetOutcome::Retargeted { sites: 1 });
+        let (patched, outcome) = patch_entity_collector_ctor(&rng_patched).expect("patch");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "the ONLY new StepBasedCollector;dup;invokespecial site in Entity.<init>(EntityType, Level)"
+        );
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        // The rewritten NEW operand must resolve to BatchCollector BY NAME
+        // (index assumptions are forbidden — G4 §3).
+        let cp_count = u16::from_be_bytes([patched[8], patched[9]]);
+        let (pool, _end) = Pool::parse(&patched, 10, cp_count).expect("cp parse");
+        let mut new_batch_sites = 0;
+        let mut vanilla_new_left = 0;
+        // Re-locate the ctor and walk its code for the NEW+dup+invokespecial
+        // pattern.
+        let layout = parse_layout(&patched).expect("layout");
+        let name_idx = pool.find_utf8("<init>").expect("<init> utf8");
+        let desc_idx = pool
+            .find_utf8("(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/level/Level;)V")
+            .expect("ctor desc utf8");
+        let m = find_method(&patched, layout.methods_start, name_idx, desc_idx)
+            .expect("ctor found");
+        let (code_start, code_len) =
+            find_code_attr(&patched, &pool, &m).expect("code attr");
+        let code = &patched[code_start..code_start + code_len];
+        let mut pc = 0usize;
+        while pc + 6 <= code.len() {
+            if code[pc] == 0xBB && code[pc + 3] == 0x59 && code[pc + 4] == 0xB7 {
+                let new_idx = u16::from_be_bytes([code[pc + 1], code[pc + 2]]);
+                // class entry: TAG_CLASS -> name utf8
+                let (_, tag, payload) = pool
+                    .entries
+                    .iter()
+                    .find(|(i, _, _)| *i == new_idx)
+                    .expect("new operand resolves");
+                assert_eq!(*tag, 7u8, "NEW operand is a CONSTANT_Class");
+                let name_u = u16::from_be_bytes([payload[0], payload[1]]);
+                let cls = pool.utf8_value(name_u).expect("class name");
+                if cls != "net/minecraft/world/entity/BatchCollector"
+                    && cls != "net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector"
+                {
+                    pc += 1;
+                    continue; // unrelated NEW site (HashSet etc.)
+                }
+                if cls == "net/minecraft/world/entity/BatchCollector" {
+                    new_batch_sites += 1;
+                } else {
+                    vanilla_new_left += 1;
+                }
+                let inv_idx = u16::from_be_bytes([code[pc + 5], code[pc + 6]]);
+                let triple = pool.methodref_parts(inv_idx).expect("invokespecial resolves");
+                assert_eq!(
+                    triple.0, "net/minecraft/world/entity/BatchCollector",
+                    "invokespecial rewritten to BatchCollector.<init>"
+                );
+                assert_eq!(triple.1, "<init>");
+                assert_eq!(triple.2, "()V");
+            }
+            pc += 1;
+        }
+        assert_eq!(new_batch_sites, 1, "exactly one BatchCollector NEW site");
+        assert_eq!(vanilla_new_left, 0, "no vanilla collector NEW site left");
+        let (again, outcome2) = patch_entity_collector_ctor(&patched).expect("repatch");
+        assert_eq!(outcome2, RetargetOutcome::AlreadyPatched { sites: 1 });
+        assert_eq!(again, patched, "repatch must be byte-identical");
+    }
+
+    #[test]
+    fn batch_collector_ctor_wrong_class_fails_closed() {
+        // ChunkMap has no Entity ctor -> NotFound, bytes untouched.
+        match patch_entity_collector_ctor(CHUNKMAP) {
+            Err(e) => assert!(!e.is_empty(), "{e}"),
+            Ok((_, outcome)) => assert!(matches!(outcome, RetargetOutcome::NotFound)),
+        }
+        // truncated / garbage never panics
+        for cut in [10usize, 100, 1000, 10000, ENTITY.len() - 1] {
+            let _ = patch_entity_collector_ctor(&ENTITY[..cut]);
+        }
     }
 
     #[test]
