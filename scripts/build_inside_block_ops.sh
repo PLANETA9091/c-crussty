@@ -25,21 +25,18 @@ SERVER_JAR="${SERVER_JAR:-/tmp/pdec/matsrv/versions/1.21.10/purpur-1.21.10.jar}"
 if [ ! -f "$SERVER_JAR" ]; then echo "runtime jar not found: $SERVER_JAR" >&2; exit 1; fi
 
 # joml needed on the compile classpath (AABB/VoxelShape signatures pull org.joml)
-JOML_JAR="$(find /tmp/pdec/matsrv/libraries/org/joml -name 'joml-*.jar' 2>/dev/null | head -1 || true)"
+JOML_JAR="${JOML_JAR:-$(find /tmp/pdec/matsrv/libraries/org/joml /tmp/s7147mat/server/libraries/org/joml -name 'joml-*.jar' 2>/dev/null | head -1 || true)}"
 
 OUT_DIR=entityinside/build
 rm -rf "$OUT_DIR"
 mkdir -p "$OUT_DIR"
 
-# EntityQueryOps classes are referenced by InsideBlockOps (mutablePos ring)
-EQ_DIR=entityquery/build
-if [ ! -f "$EQ_DIR/net/minecraft/world/entity/EntityQueryOps.class" ]; then
-  echo "EntityQueryOps classes missing — build entityquery/ first (scripts/build_entity_query_ops.sh)" >&2
-  exit 1
-fi
-
+# S7-148: InsideBlockOps SELF-CONTAINED (урок leg #2'' 35318755582: мост звал
+# EntityQueryOps.mutablePos() — ALLOC-DIET-субстрат не определён при alloc_diet=0
+# ⇒ 74 941 NoClassDefFoundError, тики сущностей прерывались). Ring перенесён
+# внутрь моста, compile-dep на entityquery/build УДАЛЁН.
 "$JAVAC" --release 21 \
-  -cp "$SERVER_JAR:$EQ_DIR:$JOML_JAR" \
+  -cp "$SERVER_JAR:$JOML_JAR" \
   -d "$OUT_DIR" \
   entityinside/net/minecraft/world/entity/InsideBlockOps.java
 

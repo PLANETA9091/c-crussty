@@ -65,8 +65,10 @@ public final class BenchPopulationPlugin extends JavaPlugin {
 
     private static final String MARK = "[BenchPopulation]";
     private static final int ITEM_PICKUP_DELAY = 32767;  // short-max: never picked up
-    private static final int TOPUP_PERIOD_TICKS = 600;   // 30 s
-    private static final int TOPUP_PER_TICK = 20;        // S7-147: per-tick refill budget (~14ms/tick, profile-invisible)
+    private static final int TOPUP_PERIOD_TICKS = 120;   // S7-148: 6 s @20TPS (было 600 — урок leg #2'': при 900+ тиках leg-ранов один скан не успевал)
+    private static final int TOPUP_PER_TICK = 20;        // S7-147: min per-tick refill budget (~14ms/tick, profile-invisible)
+    private static final int TOPUP_PER_TICK_MAX = 100;   // S7-148: cap дефицит-драйвена (~70ms/тик worst-case при TPS 3+)
+    private static final int TOPUP_DRAIN_HORIZON = 50;   // S7-148: тиков на добор дефицита (deficit/HORIZON база бюджета)
     private static final int ITEM_LIFETIME_TICKS = 6000; // vanilla ItemEntity age
     private static final int TICK_BUDGET = 1500;         // entities injected per tick
     private static final double SHARE_ITEMS = 0.70;
@@ -463,6 +465,30 @@ public final class BenchPopulationPlugin extends JavaPlugin {
         }, TOPUP_PERIOD_TICKS, TOPUP_PERIOD_TICKS);
     }
 
+    /**
+     * S7-148: deficit-driven drain budget — не отстаёт от ванильного распада
+     * при повышенных ticks-per-wall-second. Урок leg #2'' (35318755582):
+     * фиксированные 20/тик < ~42/тик валового распада (item-merge герды,
+     * горение, cramming при 900+ тиках) ⇒ сцена дренировала 148k→79k,
+     * A/B несопоставимы. Бюджет = deficit/TOPUP_DRAIN_HORIZON (догнать за
+     * 50 тиков), зажатый в [TOPUP_PER_TICK, TOPUP_PER_TICK_MAX]; при
+     * нулевом дефиците задача выходит рано и в базе дренаж дремлет
+     * (240 тиков < старого 600-периода — bit-for-bit совместимо).
+     */
+    private static int drainBudget(int deficitTotal) {
+        if (deficitTotal <= 0) {
+            return TOPUP_PER_TICK; // early-exit не сработает только если pending>0; безопасный минимум
+        }
+        int budget = deficitTotal / TOPUP_DRAIN_HORIZON;
+        if (budget < TOPUP_PER_TICK) {
+            budget = TOPUP_PER_TICK;
+        }
+        if (budget > TOPUP_PER_TICK_MAX) {
+            budget = TOPUP_PER_TICK_MAX;
+        }
+        return budget;
+    }
+
     /** S7-147: continuous deficit drain — at most TOPUP_PER_TICK spawns per tick. */
     private void startTopupDrainTask() {
         if (topupDrainTaskRunning) {
@@ -476,7 +502,7 @@ public final class BenchPopulationPlugin extends JavaPlugin {
             World w = Bukkit.getWorlds().get(0);
             long ft = w.getFullTime();
             Random rng = new Random(seed ^ (ft * 1_000_003L) ^ topupSpawnedTotal);
-            int budget = TOPUP_PER_TICK;
+            int budget = drainBudget(pendingItems + pendingHostiles + pendingPassives);
             int missStreak = 0;
             while (budget > 0) {
                 // drain the largest pending lane first (deterministic tie-break:

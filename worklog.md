@@ -1788,3 +1788,25 @@ Stage Summary:
 RUN_ID_DISPATCHED: base-b 35317176927 (все рычаги 0, фикстура-фикс); поглощён: 35314220731 (leg #2', A/B-invalid)
 
 ДОПОЛНЕНИЕ S7-147b (тот же тик, 15:1x): base-b (35317176927) SUCCESS 07:14:44 — санити: fp4/300s/inside_cache=0, INJECT VALID, популяция 148391/148193/148027 стабильна (близнец ценза 148402), TPS 0.8-0.9, topup-скан не стрелял (240т<600т — консистентно; фикс дремлет до высоких TPS) ⇒ валидная база. leg #2'' ДИСПАТЧЕН: 35318755582 (head 135cb89, inside_cache=1, fp4/300s, 07:17:58 UTC). Артефакт base-b: research/inside-cache-2026-09-18/run-s7147-baseb/ (sha256 в artifact_hashes_s7147.txt доп. строками); диспатч-скрипт dispatch_s7147b.py забанкован. runs_index row 291; CLAIMS TASK-283 addendum.
+---
+## S7-148 (ARCH-ATTACK) — 2026-09-18 15:4x-16:1x +08 — leg #2'' ABSORB: A/B-invalid ×2 (74 941 NCDFE-контаминация моста + дрейф популяции); InsideBlockOps SELF-CONTAINED fix + drain-budget fix; leg #2''' диспатчен
+
+**Task ID: S7-148 (Job 394666, тик 15:43)**, Agent: agent-7625532f (session web-f7888d46)
+
+Work Log:
+- creds: bootstrap_tick.sh отсутствует → правило 1b PUSH-URL владельца (токен живой, ls-remote OK); 3x pull --rebase (c-crussty/dev-logs up-to-date; CRUSSTY pristine отсутствует после WIPE №3)
+- absorb leg #2'' (35318755582, SUCCESS 07:17:58→07:32:36 UTC, артефакт 30.4MB скачан в run-s7147-leg2pp): конфиг точен (fp4/300s/inside_cache=1), INJECT VALID, ARMED-цепочка полна живьём (pristine 205458→defined Ops+Recorder→Retargeted{1} 205522→serve→rc=0), TPS 0.8→3.0, 0 tick-behind
+- НАХОДКА №1 (парити-контаминация): 74 941 NoClassDefFoundError EntityQueryOps в stdout 177MB: InsideBlockOps.gate:195 звал EntityQueryOps.mutablePos() — ALLOC-DIET-субстрат не определён при alloc_diet=0; Paper per-entity catch прерывал тики сущностей (~0.06% entity-tick-вызовов) — НЕ-ВАНИЛЬНОЕ поведение; офлайн-харнесс не ловил (EQ в CP одной loader-пространства); leg #2' (175MB stdout, sha256 only) ретроспективно та же сигнатура
+- НАХОДКА №2 (дрейф популяции): 79209/77474/75826 vs base-b 148391/148193/148027; TOPUP-SCAN выстрелил 1 раз (deficit 66976; дренаж 20/тик < валового распада ~42/тик: items 100357→62468 за 600т = 63/тик merge-герды)
+- §156-гейты не выполнены по долям (inside-blocks −6.6% отн. при гейте ≥30%, movement-geom ↑, PalettedContainer.get −10.6% при гейте ≥15%, young GC ↑); на-тик ↓65–75% неинтерпретируем (NCDFE + дрейф) — вердикт невозможен (ABSORB_S7148.md)
+- ФИКС 1: InsideBlockOps SELF-CONTAINED — ThreadLocal mutable-pos ring (8 слотов, zeroed) внутрь моста, compile-dep entityquery удалён (build_inside_block_ops.sh); javac21 против kernel e2992d63; 0 EQ-ссылок (javap); rust 122=121ok+1ignored; харнессы INSIDE-CACHE/FLUSH-DIET/ALLOC-DIET OFFLINE PASS; FluidOps/FlushOps.class восстановлены git checkout после rm -rf build (урок: скрипт чистит общий OUT_DIR)
+- ФИКС 2: BenchPopulationPlugin drain-budget = clamp(deficit/50, 20, 100)/тик + TOPUP-SCAN 600→120т; Compile-OK javac21 CI-эквивалент (scripts/compile_population_s7148.sh); в базе дремлет bit-for-bit (base-b остаётся базой)
+- Учёт: GOAL СТАТУС S7-148; runs_index row 292 (my-project); патч-банк 0010-S7-148 + PATCH_BANK_S7-148.sha256; CLAIMS TASK-284; INJECTS-ONLY цел (CI-буты санкционированы: leg2'' поглощён, leg2''' диспатчен)
+
+Stage Summary:
+- INSIDE-CACHE мост самодостаточен (скрытая зависимость от ALLOC-DIET устранена); фиксатор популяции дефицит-драйвен; в §156-протокол добавлен обязательный чек «0 NoClassDefFoundError в stdout» (server-stdout MUST быть сканён на стек-трейсы перед любым вердиктом — 175MB leg2' был пропущен)
+- leg #2''' диспатчен (head=фикс): §156-вердикт vs base-b валиден только при популяции ≈148k весь soak и 0 NCDFE
+
+RUN_ID_DISPATCHED: leg #2''' (см. runs_index row 292)
+
+---

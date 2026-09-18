@@ -110,6 +110,36 @@ public final class InsideBlockOps {
     private static final int FLAG_FLUID = 2;
     private static final int FLAG_INTERSECTED = 4;
 
+    // SELF-CONTAINED mutable-pos ring (урок leg #2'' 35318755582): HIT-верификация
+    // звала EntityQueryOps.mutablePos() — класс ALLOC-DIET-субстрата, НЕ
+    // определяемый в kernel loader при alloc_diet=0 ⇒ 74 941 NoClassDefFoundError
+    // («Entity threw exception», тики сущностей прерывались — парити-контаминация
+    // leg #2''). Ring перенесён внутрь моста (семантика 1:1 с EntityQueryOps:
+    // ThreadLocal, 8 слотов, zeroed перед выдачей); INSIDE-CACHE больше не тянет
+    // ALLOC-DIET как обязательную зависимость.
+    private static final int MP_SLOTS = 8;
+    private static final ThreadLocal<BlockPos.MutableBlockPos[]> MP_RING =
+            ThreadLocal.withInitial(InsideBlockOps::newMpRing);
+    private static final ThreadLocal<int[]> MP_CURSOR =
+            ThreadLocal.withInitial(() -> new int[1]);
+
+    private static BlockPos.MutableBlockPos[] newMpRing() {
+        BlockPos.MutableBlockPos[] ring = new BlockPos.MutableBlockPos[MP_SLOTS];
+        for (int i = 0; i < MP_SLOTS; i++) {
+            ring[i] = new BlockPos.MutableBlockPos();
+        }
+        return ring;
+    }
+
+    private static BlockPos.MutableBlockPos mp() {
+        BlockPos.MutableBlockPos[] ring = MP_RING.get();
+        int slot = MP_CURSOR.get()[0];
+        MP_CURSOR.get()[0] = (slot + 1) % MP_SLOTS;
+        BlockPos.MutableBlockPos pos = ring[slot];
+        pos.set(0, 0, 0);
+        return pos;
+    }
+
     private static final sun.misc.Unsafe UNSAFE;
     private static final long COL_OFFSET;
     private static final boolean ARMED;
@@ -192,9 +222,9 @@ public final class InsideBlockOps {
         int nv = SLOT_NVIS[slot];
         int base = slot * MAXVIS;
         for (int i = 0; i < nv; i++) {
-            BlockPos.MutableBlockPos mp = EntityQueryOps.mutablePos();
-            mp.set(BlockPos.getX(VIS_POS[base + i]), BlockPos.getY(VIS_POS[base + i]), BlockPos.getZ(VIS_POS[base + i]));
-            BlockState st = level.getBlockState(mp);
+            BlockPos.MutableBlockPos mpos = mp();
+            mpos.set(BlockPos.getX(VIS_POS[base + i]), BlockPos.getY(VIS_POS[base + i]), BlockPos.getZ(VIS_POS[base + i]));
+            BlockState st = level.getBlockState(mpos);
             if (Block.getId(st) != VIS_STATE[base + i]) {
                 SLOT_EID[slot] = 0; // инвалидация
                 mirror(e, level, col, px, py, pz, slot, eid); // re-discover + apply + capture
