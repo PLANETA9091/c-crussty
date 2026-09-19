@@ -256,17 +256,19 @@ public final class RegionLockstepHarness {
         check((Integer) mWorkers.invoke(null) == 1, "parent runs W=1 (dormant)");
         String d1 = runScenario(mForEach, mAdd, mRem, mWorkers);
 
-        String d2 = runChild(2);
-        String d4 = runChild(4);
+        String d2 = runChild(2, false);
+        String d4 = runChild(4, false);
+        String d4s = runChild(4, true); // S7-167 steal-mode child
 
         check(d2.equals(d1), "W=2 digest bit-identical to W=1 (per-entity lockstep)");
         check(d4.equals(d1), "W=4 digest bit-identical to W=1 (per-entity lockstep)");
+        check(d4s.equals(d1), "W=4 STEAL digest bit-identical to W=1 (S7-167 chunked queue)");
         System.out.println("REGION-LOCKSTEP PG1 PASS (W=1 == W=2 == W=4, "
                 + TICKS + " ticks, 20 deferred adds next-tick-start, "
                 + "7 mid-tick removals, no deadlock)");
     }
 
-    private static String runChild(int w) throws Exception {
+    private static String runChild(int w, boolean steal) throws Exception {
         java.util.List<String> cmd = new ArrayList<>(java.util.List.of(
                 System.getProperty("java.home") + java.io.File.separator + "bin"
                         + java.io.File.separator + "java",
@@ -274,6 +276,7 @@ public final class RegionLockstepHarness {
                 "net.minecraft.world.entity.RegionLockstepHarness", "--child"));
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.environment().put("CRUSSTY_REGION_THREADS", String.valueOf(w));
+        if (steal) pb.environment().put("CRUSSTY_REGION_STEAL", "1");
         pb.redirectErrorStream(true);
         Process p = pb.start();
         String digest = null;
