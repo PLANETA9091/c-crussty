@@ -1,0 +1,534 @@
+Compiled from "ServerLevel.java"
+final class net.minecraft.server.level.ServerLevel$EntityCallbacks implements net.minecraft.world.level.entity.LevelCallback<net.minecraft.world.entity.Entity> {
+  final net.minecraft.server.level.ServerLevel this$0;
+
+  net.minecraft.server.level.ServerLevel$EntityCallbacks(net.minecraft.server.level.ServerLevel);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: putfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+       5: aload_0
+       6: invokespecial #54                 // Method java/lang/Object."<init>":()V
+       9: return
+
+  public void onCreated(net.minecraft.world.entity.Entity);
+    Code:
+       0: aload_1
+       1: instanceof    #60                 // class net/minecraft/world/waypoints/WaypointTransmitter
+       4: ifeq          32
+       7: aload_1
+       8: checkcast     #60                 // class net/minecraft/world/waypoints/WaypointTransmitter
+      11: astore_2
+      12: aload_2
+      13: invokeinterface #64,  1           // InterfaceMethod net/minecraft/world/waypoints/WaypointTransmitter.isTransmittingWaypoint:()Z
+      18: ifeq          32
+      21: aload_0
+      22: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+      25: invokevirtual #68                 // Method net/minecraft/server/level/ServerLevel.getWaypointManager:()Lnet/minecraft/server/waypoints/ServerWaypointManager;
+      28: aload_2
+      29: invokevirtual #74                 // Method net/minecraft/server/waypoints/ServerWaypointManager.trackWaypoint:(Lnet/minecraft/world/waypoints/WaypointTransmitter;)V
+      32: aload_1
+      33: invokevirtual #77                 // Method net/minecraft/world/entity/Entity.setOldPosAndRot:()V
+      36: return
+
+  public void onDestroyed(net.minecraft.world.entity.Entity);
+    Code:
+       0: aload_1
+       1: instanceof    #60                 // class net/minecraft/world/waypoints/WaypointTransmitter
+       4: ifeq          23
+       7: aload_1
+       8: checkcast     #60                 // class net/minecraft/world/waypoints/WaypointTransmitter
+      11: astore_2
+      12: aload_0
+      13: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+      16: invokevirtual #68                 // Method net/minecraft/server/level/ServerLevel.getWaypointManager:()Lnet/minecraft/server/waypoints/ServerWaypointManager;
+      19: aload_2
+      20: invokevirtual #85                 // Method net/minecraft/server/waypoints/ServerWaypointManager.untrackWaypoint:(Lnet/minecraft/world/waypoints/WaypointTransmitter;)V
+      23: aload_0
+      24: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+      27: invokevirtual #89                 // Method net/minecraft/server/level/ServerLevel.getScoreboard:()Lnet/minecraft/server/ServerScoreboard;
+      30: aload_1
+      31: invokevirtual #94                 // Method net/minecraft/server/ServerScoreboard.entityRemoved:(Lnet/minecraft/world/entity/Entity;)V
+      34: return
+
+  public void onTickingStart(net.minecraft.world.entity.Entity);
+    Code:
+       0: aload_1
+       1: instanceof    #97                 // class net/minecraft/world/entity/Marker
+       4: ifeq          27
+       7: aload_0
+       8: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+      11: invokevirtual #101                // Method net/minecraft/server/level/ServerLevel.paperConfig:()Lio/papermc/paper/configuration/WorldConfiguration;
+      14: getfield      #105                // Field io/papermc/paper/configuration/WorldConfiguration.entities:Lio/papermc/paper/configuration/WorldConfiguration$Entities;
+      17: getfield      #109                // Field io/papermc/paper/configuration/WorldConfiguration$Entities.markers:Lio/papermc/paper/configuration/WorldConfiguration$Entities$Markers;
+      20: getfield      #113                // Field io/papermc/paper/configuration/WorldConfiguration$Entities$Markers.tick:Z
+      23: ifne          27
+      26: return
+      27: aload_0
+      28: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+      31: getfield      #117                // Field net/minecraft/server/level/ServerLevel.entityTickList:Lnet/minecraft/world/level/entity/EntityTickList;
+      34: aload_1
+      35: invokevirtual #122                // Method net/minecraft/world/level/entity/EntityTickList.add:(Lnet/minecraft/world/entity/Entity;)V
+      38: return
+
+  public void onTickingEnd(net.minecraft.world.entity.Entity);
+    Code:
+       0: aload_0
+       1: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+       4: getfield      #117                // Field net/minecraft/server/level/ServerLevel.entityTickList:Lnet/minecraft/world/level/entity/EntityTickList;
+       7: aload_1
+       8: invokevirtual #126                // Method net/minecraft/world/level/entity/EntityTickList.remove:(Lnet/minecraft/world/entity/Entity;)V
+      11: aload_0
+      12: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+      15: invokevirtual #101                // Method net/minecraft/server/level/ServerLevel.paperConfig:()Lio/papermc/paper/configuration/WorldConfiguration;
+      18: getfield      #130                // Field io/papermc/paper/configuration/WorldConfiguration.fixes:Lio/papermc/paper/configuration/WorldConfiguration$Fixes;
+      21: getfield      #133                // Field io/papermc/paper/configuration/WorldConfiguration$Fixes.disableUnloadedChunkEnderpearlExploit:Z
+      24: ifeq          60
+      27: aload_0
+      28: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+      31: invokevirtual #101                // Method net/minecraft/server/level/ServerLevel.paperConfig:()Lio/papermc/paper/configuration/WorldConfiguration;
+      34: getfield      #137                // Field io/papermc/paper/configuration/WorldConfiguration.misc:Lio/papermc/paper/configuration/WorldConfiguration$Misc;
+      37: getfield      #140                // Field io/papermc/paper/configuration/WorldConfiguration$Misc.legacyEnderPearlBehavior:Z
+      40: ifeq          60
+      43: aload_1
+      44: instanceof    #142                // class net/minecraft/world/entity/projectile/ThrownEnderpearl
+      47: ifeq          60
+      50: aload_1
+      51: checkcast     #142                // class net/minecraft/world/entity/projectile/ThrownEnderpearl
+      54: astore_2
+      55: aload_2
+      56: aconst_null
+      57: invokevirtual #145                // Method net/minecraft/world/entity/projectile/ThrownEnderpearl.setOwner:(Lnet/minecraft/world/entity/Entity;)V
+      60: return
+
+  public void onTrackingStart(net.minecraft.world.entity.Entity);
+    Code:
+       0: ldc           #150                // String entity register
+       2: invokestatic  #156                // Method org/spigotmc/AsyncCatcher.catchOp:(Ljava/lang/String;)V
+       5: aload_1
+       6: instanceof    #158                // class net/minecraft/server/level/ServerPlayer
+       9: ifeq          56
+      12: aload_1
+      13: checkcast     #158                // class net/minecraft/server/level/ServerPlayer
+      16: astore_2
+      17: aload_0
+      18: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+      21: getfield      #162                // Field net/minecraft/server/level/ServerLevel.players:Ljava/util/List;
+      24: aload_2
+      25: invokeinterface #167,  2          // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+      30: pop
+      31: aload_2
+      32: invokevirtual #170                // Method net/minecraft/server/level/ServerPlayer.isReceivingWaypoints:()Z
+      35: ifeq          49
+      38: aload_0
+      39: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+      42: invokevirtual #68                 // Method net/minecraft/server/level/ServerLevel.getWaypointManager:()Lnet/minecraft/server/waypoints/ServerWaypointManager;
+      45: aload_2
+      46: invokevirtual #174                // Method net/minecraft/server/waypoints/ServerWaypointManager.addPlayer:(Lnet/minecraft/server/level/ServerPlayer;)V
+      49: aload_0
+      50: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+      53: invokevirtual #177                // Method net/minecraft/server/level/ServerLevel.updateSleepingPlayerList:()V
+      56: aload_1
+      57: instanceof    #60                 // class net/minecraft/world/waypoints/WaypointTransmitter
+      60: ifeq          88
+      63: aload_1
+      64: checkcast     #60                 // class net/minecraft/world/waypoints/WaypointTransmitter
+      67: astore_2
+      68: aload_2
+      69: invokeinterface #64,  1           // InterfaceMethod net/minecraft/world/waypoints/WaypointTransmitter.isTransmittingWaypoint:()Z
+      74: ifeq          88
+      77: aload_0
+      78: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+      81: invokevirtual #68                 // Method net/minecraft/server/level/ServerLevel.getWaypointManager:()Lnet/minecraft/server/waypoints/ServerWaypointManager;
+      84: aload_2
+      85: invokevirtual #74                 // Method net/minecraft/server/waypoints/ServerWaypointManager.trackWaypoint:(Lnet/minecraft/world/waypoints/WaypointTransmitter;)V
+      88: aload_1
+      89: instanceof    #179                // class net/minecraft/world/entity/Mob
+      92: ifeq          114
+      95: aload_1
+      96: checkcast     #179                // class net/minecraft/world/entity/Mob
+      99: astore_2
+     100: aload_0
+     101: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+     104: getfield      #183                // Field net/minecraft/server/level/ServerLevel.navigatingMobs:Ljava/util/Set;
+     107: aload_2
+     108: invokeinterface #186,  2          // InterfaceMethod java/util/Set.add:(Ljava/lang/Object;)Z
+     113: pop
+     114: aload_1
+     115: instanceof    #188                // class net/minecraft/world/entity/boss/enderdragon/EnderDragon
+     118: ifeq          177
+     121: aload_1
+     122: checkcast     #188                // class net/minecraft/world/entity/boss/enderdragon/EnderDragon
+     125: astore_2
+     126: aload_2
+     127: invokevirtual #192                // Method net/minecraft/world/entity/boss/enderdragon/EnderDragon.getSubEntities:()[Lnet/minecraft/world/entity/boss/EnderDragonPart;
+     130: astore_3
+     131: aload_3
+     132: arraylength
+     133: istore        4
+     135: iconst_0
+     136: istore        5
+     138: iload         5
+     140: iload         4
+     142: if_icmpge     177
+     145: aload_3
+     146: iload         5
+     148: aaload
+     149: astore        6
+     151: aload_0
+     152: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+     155: getfield      #198                // Field net/minecraft/server/level/ServerLevel.dragonParts:Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
+     158: aload         6
+     160: invokevirtual #204                // Method net/minecraft/world/entity/boss/EnderDragonPart.getId:()I
+     163: aload         6
+     165: invokeinterface #210,  3          // InterfaceMethod it/unimi/dsi/fastutil/ints/Int2ObjectMap.put:(ILjava/lang/Object;)Ljava/lang/Object;
+     170: pop
+     171: iinc          5, 1
+     174: goto          138
+     177: aload_1
+     178: invokedynamic #230,  0            // InvokeDynamic #0:accept:()Ljava/util/function/BiConsumer;
+     183: invokevirtual #234                // Method net/minecraft/world/entity/Entity.updateDynamicGameEventListener:(Ljava/util/function/BiConsumer;)V
+     186: aload_1
+     187: iconst_1
+     188: putfield      #237                // Field net/minecraft/world/entity/Entity.inWorld:Z
+     191: aload_1
+     192: iconst_1
+     193: putfield      #240                // Field net/minecraft/world/entity/Entity.valid:Z
+     196: aload_0
+     197: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+     200: invokevirtual #244                // Method net/minecraft/server/level/ServerLevel.getChunkSource:()Lnet/minecraft/server/level/ServerChunkCache;
+     203: aload_1
+     204: invokevirtual #249                // Method net/minecraft/server/level/ServerChunkCache.addEntity:(Lnet/minecraft/world/entity/Entity;)V
+     207: aload_1
+     208: getfield      #253                // Field net/minecraft/world/entity/Entity.origin:Lnet/minecraft/world/phys/Vec3;
+     211: ifnonnull     222
+     214: aload_1
+     215: aload_1
+     216: invokevirtual #257                // Method net/minecraft/world/entity/Entity.position:()Lnet/minecraft/world/phys/Vec3;
+     219: putfield      #253                // Field net/minecraft/world/entity/Entity.origin:Lnet/minecraft/world/phys/Vec3;
+     222: aload_1
+     223: getfield      #261                // Field net/minecraft/world/entity/Entity.originWorld:Ljava/util/UUID;
+     226: ifnonnull     243
+     229: aload_1
+     230: aload_0
+     231: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+     234: invokevirtual #265                // Method net/minecraft/server/level/ServerLevel.getWorld:()Lorg/bukkit/craftbukkit/CraftWorld;
+     237: invokevirtual #271                // Method org/bukkit/craftbukkit/CraftWorld.getUID:()Ljava/util/UUID;
+     240: putfield      #261                // Field net/minecraft/world/entity/Entity.originWorld:Ljava/util/UUID;
+     243: new           #273                // class com/destroystokyo/paper/event/entity/EntityAddToWorldEvent
+     246: dup
+     247: aload_1
+     248: invokevirtual #277                // Method net/minecraft/world/entity/Entity.getBukkitEntity:()Lorg/bukkit/craftbukkit/entity/CraftEntity;
+     251: aload_0
+     252: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+     255: invokevirtual #265                // Method net/minecraft/server/level/ServerLevel.getWorld:()Lorg/bukkit/craftbukkit/CraftWorld;
+     258: invokespecial #280                // Method com/destroystokyo/paper/event/entity/EntityAddToWorldEvent."<init>":(Lorg/bukkit/entity/Entity;Lorg/bukkit/World;)V
+     261: invokevirtual #283                // Method com/destroystokyo/paper/event/entity/EntityAddToWorldEvent.callEvent:()Z
+     264: pop
+     265: return
+
+  public void onTrackingEnd(net.minecraft.world.entity.Entity);
+    Code:
+       0: ldc_w         #294                // String entity unregister
+       3: invokestatic  #156                // Method org/spigotmc/AsyncCatcher.catchOp:(Ljava/lang/String;)V
+       6: aload_1
+       7: instanceof    #296                // class net/minecraft/world/entity/player/Player
+      10: ifeq          183
+      13: aload_1
+      14: checkcast     #296                // class net/minecraft/world/entity/player/Player
+      17: astore_2
+      18: aload_0
+      19: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+      22: invokevirtual #300                // Method net/minecraft/server/level/ServerLevel.getServer:()Lnet/minecraft/server/MinecraftServer;
+      25: invokevirtual #306                // Method net/minecraft/server/MinecraftServer.getAllLevels:()Ljava/lang/Iterable;
+      28: invokeinterface #312,  1          // InterfaceMethod java/lang/Iterable.iterator:()Ljava/util/Iterator;
+      33: astore_3
+      34: aload_3
+      35: invokeinterface #317,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      40: ifeq          183
+      43: aload_3
+      44: invokeinterface #321,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      49: checkcast     #10                 // class net/minecraft/server/level/ServerLevel
+      52: astore        4
+      54: aload         4
+      56: invokevirtual #325                // Method net/minecraft/server/level/ServerLevel.getDataStorage:()Lnet/minecraft/world/level/storage/DimensionDataStorage;
+      59: getfield      #331                // Field net/minecraft/world/level/storage/DimensionDataStorage.cache:Ljava/util/Map;
+      62: invokeinterface #337,  1          // InterfaceMethod java/util/Map.values:()Ljava/util/Collection;
+      67: invokeinterface #340,  1          // InterfaceMethod java/util/Collection.iterator:()Ljava/util/Iterator;
+      72: astore        5
+      74: aload         5
+      76: invokeinterface #317,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      81: ifeq          180
+      84: aload         5
+      86: invokeinterface #321,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      91: checkcast     #342                // class java/util/Optional
+      94: astore        6
+      96: aload         6
+      98: invokevirtual #345                // Method java/util/Optional.isEmpty:()Z
+     101: ifne          74
+     104: aload         6
+     106: invokevirtual #348                // Method java/util/Optional.get:()Ljava/lang/Object;
+     109: astore        8
+     111: aload         8
+     113: instanceof    #39                 // class net/minecraft/world/level/saveddata/maps/MapItemSavedData
+     116: ifeq          74
+     119: aload         8
+     121: checkcast     #39                 // class net/minecraft/world/level/saveddata/maps/MapItemSavedData
+     124: astore        7
+     126: aload         7
+     128: getfield      #351                // Field net/minecraft/world/level/saveddata/maps/MapItemSavedData.carriedByPlayers:Ljava/util/Map;
+     131: aload_2
+     132: invokeinterface #354,  2          // InterfaceMethod java/util/Map.remove:(Ljava/lang/Object;)Ljava/lang/Object;
+     137: pop
+     138: aload         7
+     140: getfield      #357                // Field net/minecraft/world/level/saveddata/maps/MapItemSavedData.carriedBy:Ljava/util/List;
+     143: aload_2
+     144: invokedynamic #369,  0            // InvokeDynamic #1:test:(Lnet/minecraft/world/entity/player/Player;)Ljava/util/function/Predicate;
+     149: invokeinterface #373,  2          // InterfaceMethod java/util/List.removeIf:(Ljava/util/function/Predicate;)Z
+     154: ifeq          177
+     157: aload         7
+     159: getfield      #376                // Field net/minecraft/world/level/saveddata/maps/MapItemSavedData.decorations:Ljava/util/Map;
+     162: aload_2
+     163: invokevirtual #380                // Method net/minecraft/world/entity/player/Player.getName:()Lnet/minecraft/network/chat/Component;
+     166: invokeinterface #386,  1          // InterfaceMethod net/minecraft/network/chat/Component.getString:()Ljava/lang/String;
+     171: invokeinterface #354,  2          // InterfaceMethod java/util/Map.remove:(Ljava/lang/Object;)Ljava/lang/Object;
+     176: pop
+     177: goto          74
+     180: goto          34
+     183: aload_1
+     184: invokevirtual #277                // Method net/minecraft/world/entity/Entity.getBukkitEntity:()Lorg/bukkit/craftbukkit/entity/CraftEntity;
+     187: instanceof    #388                // class org/bukkit/inventory/InventoryHolder
+     190: ifeq          318
+     193: aload_1
+     194: instanceof    #158                // class net/minecraft/server/level/ServerPlayer
+     197: ifeq          210
+     200: aload_1
+     201: invokevirtual #392                // Method net/minecraft/world/entity/Entity.getRemovalReason:()Lnet/minecraft/world/entity/Entity$RemovalReason;
+     204: getstatic     #396                // Field net/minecraft/world/entity/Entity$RemovalReason.KILLED:Lnet/minecraft/world/entity/Entity$RemovalReason;
+     207: if_acmpeq     318
+     210: aload_1
+     211: invokevirtual #400                // Method net/minecraft/world/entity/Entity.level:()Lnet/minecraft/world/level/Level;
+     214: getfield      #406                // Field net/minecraft/world/level/Level.purpurConfig:Lorg/purpurmc/purpur/PurpurWorldConfig;
+     217: getfield      #411                // Field org/purpurmc/purpur/PurpurWorldConfig.playerVoidTrading:Z
+     220: ifne          263
+     223: aload_1
+     224: invokevirtual #277                // Method net/minecraft/world/entity/Entity.getBukkitEntity:()Lorg/bukkit/craftbukkit/entity/CraftEntity;
+     227: astore_3
+     228: aload_3
+     229: instanceof    #413                // class org/bukkit/inventory/Merchant
+     232: ifeq          263
+     235: aload_3
+     236: checkcast     #413                // class org/bukkit/inventory/Merchant
+     239: astore_2
+     240: aload_2
+     241: invokeinterface #417,  1          // InterfaceMethod org/bukkit/inventory/Merchant.getTrader:()Lorg/bukkit/entity/HumanEntity;
+     246: ifnull        263
+     249: aload_2
+     250: invokeinterface #417,  1          // InterfaceMethod org/bukkit/inventory/Merchant.getTrader:()Lorg/bukkit/entity/HumanEntity;
+     255: getstatic     #421                // Field org/bukkit/event/inventory/InventoryCloseEvent$Reason.UNLOADED:Lorg/bukkit/event/inventory/InventoryCloseEvent$Reason;
+     258: invokeinterface #427,  2          // InterfaceMethod org/bukkit/entity/HumanEntity.closeInventory:(Lorg/bukkit/event/inventory/InventoryCloseEvent$Reason;)V
+     263: aload_1
+     264: invokevirtual #277                // Method net/minecraft/world/entity/Entity.getBukkitEntity:()Lorg/bukkit/craftbukkit/entity/CraftEntity;
+     267: checkcast     #388                // class org/bukkit/inventory/InventoryHolder
+     270: invokeinterface #431,  1          // InterfaceMethod org/bukkit/inventory/InventoryHolder.getInventory:()Lorg/bukkit/inventory/Inventory;
+     275: invokeinterface #437,  1          // InterfaceMethod org/bukkit/inventory/Inventory.getViewers:()Ljava/util/List;
+     280: invokestatic  #443                // Method com/google/common/collect/Lists.newArrayList:(Ljava/lang/Iterable;)Ljava/util/ArrayList;
+     283: invokevirtual #446                // Method java/util/ArrayList.iterator:()Ljava/util/Iterator;
+     286: astore_2
+     287: aload_2
+     288: invokeinterface #317,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+     293: ifeq          318
+     296: aload_2
+     297: invokeinterface #321,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     302: checkcast     #423                // class org/bukkit/entity/HumanEntity
+     305: astore_3
+     306: aload_3
+     307: getstatic     #421                // Field org/bukkit/event/inventory/InventoryCloseEvent$Reason.UNLOADED:Lorg/bukkit/event/inventory/InventoryCloseEvent$Reason;
+     310: invokeinterface #427,  2          // InterfaceMethod org/bukkit/entity/HumanEntity.closeInventory:(Lorg/bukkit/event/inventory/InventoryCloseEvent$Reason;)V
+     315: goto          287
+     318: aload_0
+     319: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+     322: invokevirtual #244                // Method net/minecraft/server/level/ServerLevel.getChunkSource:()Lnet/minecraft/server/level/ServerChunkCache;
+     325: aload_1
+     326: invokevirtual #449                // Method net/minecraft/server/level/ServerChunkCache.removeEntity:(Lnet/minecraft/world/entity/Entity;)V
+     329: aload_1
+     330: instanceof    #158                // class net/minecraft/server/level/ServerPlayer
+     333: ifeq          373
+     336: aload_1
+     337: checkcast     #158                // class net/minecraft/server/level/ServerPlayer
+     340: astore_2
+     341: aload_0
+     342: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+     345: getfield      #162                // Field net/minecraft/server/level/ServerLevel.players:Ljava/util/List;
+     348: aload_2
+     349: invokeinterface #451,  2          // InterfaceMethod java/util/List.remove:(Ljava/lang/Object;)Z
+     354: pop
+     355: aload_0
+     356: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+     359: invokevirtual #68                 // Method net/minecraft/server/level/ServerLevel.getWaypointManager:()Lnet/minecraft/server/waypoints/ServerWaypointManager;
+     362: aload_2
+     363: invokevirtual #454                // Method net/minecraft/server/waypoints/ServerWaypointManager.removePlayer:(Lnet/minecraft/server/level/ServerPlayer;)V
+     366: aload_0
+     367: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+     370: invokevirtual #177                // Method net/minecraft/server/level/ServerLevel.updateSleepingPlayerList:()V
+     373: aload_1
+     374: instanceof    #179                // class net/minecraft/world/entity/Mob
+     377: ifeq          399
+     380: aload_1
+     381: checkcast     #179                // class net/minecraft/world/entity/Mob
+     384: astore_2
+     385: aload_0
+     386: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+     389: getfield      #183                // Field net/minecraft/server/level/ServerLevel.navigatingMobs:Ljava/util/Set;
+     392: aload_2
+     393: invokeinterface #455,  2          // InterfaceMethod java/util/Set.remove:(Ljava/lang/Object;)Z
+     398: pop
+     399: aload_1
+     400: instanceof    #188                // class net/minecraft/world/entity/boss/enderdragon/EnderDragon
+     403: ifeq          460
+     406: aload_1
+     407: checkcast     #188                // class net/minecraft/world/entity/boss/enderdragon/EnderDragon
+     410: astore_2
+     411: aload_2
+     412: invokevirtual #192                // Method net/minecraft/world/entity/boss/enderdragon/EnderDragon.getSubEntities:()[Lnet/minecraft/world/entity/boss/EnderDragonPart;
+     415: astore_3
+     416: aload_3
+     417: arraylength
+     418: istore        4
+     420: iconst_0
+     421: istore        5
+     423: iload         5
+     425: iload         4
+     427: if_icmpge     460
+     430: aload_3
+     431: iload         5
+     433: aaload
+     434: astore        6
+     436: aload_0
+     437: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+     440: getfield      #198                // Field net/minecraft/server/level/ServerLevel.dragonParts:Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
+     443: aload         6
+     445: invokevirtual #204                // Method net/minecraft/world/entity/boss/EnderDragonPart.getId:()I
+     448: invokeinterface #458,  2          // InterfaceMethod it/unimi/dsi/fastutil/ints/Int2ObjectMap.remove:(I)Ljava/lang/Object;
+     453: pop
+     454: iinc          5, 1
+     457: goto          423
+     460: aload_1
+     461: invokedynamic #462,  0            // InvokeDynamic #2:accept:()Ljava/util/function/BiConsumer;
+     466: invokevirtual #234                // Method net/minecraft/world/entity/Entity.updateDynamicGameEventListener:(Ljava/util/function/BiConsumer;)V
+     469: aload_0
+     470: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+     473: getfield      #466                // Field net/minecraft/server/level/ServerLevel.debugSynchronizers:Lnet/minecraft/util/debug/LevelDebugSynchronizers;
+     476: aload_1
+     477: invokevirtual #471                // Method net/minecraft/util/debug/LevelDebugSynchronizers.dropEntity:(Lnet/minecraft/world/entity/Entity;)V
+     480: aload_1
+     481: iconst_0
+     482: putfield      #240                // Field net/minecraft/world/entity/Entity.valid:Z
+     485: aload_1
+     486: instanceof    #158                // class net/minecraft/server/level/ServerPlayer
+     489: ifne          541
+     492: aload_0
+     493: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+     496: getfield      #475                // Field net/minecraft/server/level/ServerLevel.server:Lnet/minecraft/server/MinecraftServer;
+     499: invokevirtual #479                // Method net/minecraft/server/MinecraftServer.getPlayerList:()Lnet/minecraft/server/players/PlayerList;
+     502: getfield      #482                // Field net/minecraft/server/players/PlayerList.players:Ljava/util/List;
+     505: invokeinterface #483,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+     510: astore_2
+     511: aload_2
+     512: invokeinterface #317,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+     517: ifeq          541
+     520: aload_2
+     521: invokeinterface #321,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     526: checkcast     #158                // class net/minecraft/server/level/ServerPlayer
+     529: astore_3
+     530: aload_3
+     531: invokevirtual #486                // Method net/minecraft/server/level/ServerPlayer.getBukkitEntity:()Lorg/bukkit/craftbukkit/entity/CraftPlayer;
+     534: aload_1
+     535: invokevirtual #491                // Method org/bukkit/craftbukkit/entity/CraftPlayer.onEntityRemove:(Lnet/minecraft/world/entity/Entity;)V
+     538: goto          511
+     541: new           #493                // class com/destroystokyo/paper/event/entity/EntityRemoveFromWorldEvent
+     544: dup
+     545: aload_1
+     546: invokevirtual #277                // Method net/minecraft/world/entity/Entity.getBukkitEntity:()Lorg/bukkit/craftbukkit/entity/CraftEntity;
+     549: aload_0
+     550: getfield      #51                 // Field this$0:Lnet/minecraft/server/level/ServerLevel;
+     553: invokevirtual #265                // Method net/minecraft/server/level/ServerLevel.getWorld:()Lorg/bukkit/craftbukkit/CraftWorld;
+     556: invokespecial #494                // Method com/destroystokyo/paper/event/entity/EntityRemoveFromWorldEvent."<init>":(Lorg/bukkit/entity/Entity;Lorg/bukkit/World;)V
+     559: invokevirtual #495                // Method com/destroystokyo/paper/event/entity/EntityRemoveFromWorldEvent.callEvent:()Z
+     562: pop
+     563: return
+
+  public void onSectionChange(net.minecraft.world.entity.Entity);
+    Code:
+       0: aload_1
+       1: invokedynamic #512,  0            // InvokeDynamic #3:accept:()Ljava/util/function/BiConsumer;
+       6: invokevirtual #234                // Method net/minecraft/world/entity/Entity.updateDynamicGameEventListener:(Ljava/util/function/BiConsumer;)V
+       9: return
+
+  public void onSectionChange(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #29                 // class net/minecraft/world/entity/Entity
+       5: invokevirtual #515                // Method onSectionChange:(Lnet/minecraft/world/entity/Entity;)V
+       8: return
+
+  public void onTrackingEnd(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #29                 // class net/minecraft/world/entity/Entity
+       5: invokevirtual #517                // Method onTrackingEnd:(Lnet/minecraft/world/entity/Entity;)V
+       8: return
+
+  public void onTrackingStart(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #29                 // class net/minecraft/world/entity/Entity
+       5: invokevirtual #519                // Method onTrackingStart:(Lnet/minecraft/world/entity/Entity;)V
+       8: return
+
+  public void onTickingEnd(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #29                 // class net/minecraft/world/entity/Entity
+       5: invokevirtual #521                // Method onTickingEnd:(Lnet/minecraft/world/entity/Entity;)V
+       8: return
+
+  public void onTickingStart(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #29                 // class net/minecraft/world/entity/Entity
+       5: invokevirtual #523                // Method onTickingStart:(Lnet/minecraft/world/entity/Entity;)V
+       8: return
+
+  public void onDestroyed(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #29                 // class net/minecraft/world/entity/Entity
+       5: invokevirtual #525                // Method onDestroyed:(Lnet/minecraft/world/entity/Entity;)V
+       8: return
+
+  public void onCreated(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #29                 // class net/minecraft/world/entity/Entity
+       5: invokevirtual #527                // Method onCreated:(Lnet/minecraft/world/entity/Entity;)V
+       8: return
+
+  private static boolean lambda$onTrackingEnd$0(net.minecraft.world.entity.player.Player, net.minecraft.world.level.saveddata.maps.MapItemSavedData$HoldingPlayer);
+    Code:
+       0: aload_1
+       1: getfield      #529                // Field net/minecraft/world/level/saveddata/maps/MapItemSavedData$HoldingPlayer.player:Lnet/minecraft/world/entity/player/Player;
+       4: aload_0
+       5: if_acmpne     12
+       8: iconst_1
+       9: goto          13
+      12: iconst_0
+      13: ireturn
+}

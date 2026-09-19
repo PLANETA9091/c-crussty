@@ -4,6 +4,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.CyclicBarrier;
 import java.util.function.Consumer;
 
+import it.unimi.dsi.fastutil.objects.ObjectOpenHashSet;
+
 import ca.spottedleaf.moonrise.common.util.TickThread;
 import ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemLevel;
 import net.minecraft.world.level.ChunkPos;
@@ -524,6 +526,7 @@ public final class RegionTickOps {
      * (ServerLevel$EntityCallbacks.onTickingStart) — deferred during a phase.
      */
     public static void onTickingStart(EntityTickList list, Entity entity) {
+        ensureNavMobsGuarded(entity); // S7-170: swap long before any worker phase races
         if (phaseActive) {
             PENDING.add(new Mut(true, entity));
         } else {
@@ -536,6 +539,7 @@ public final class RegionTickOps {
      * (ServerLevel$EntityCallbacks.onTickingEnd) — deferred during a phase.
      */
     public static void onTickingEnd(EntityTickList list, Entity entity) {
+        ensureNavMobsGuarded(entity); // S7-170: idempotent, covers late-first-tick levels
         if (phaseActive) {
             PENDING.add(new Mut(false, entity));
         } else {
@@ -580,5 +584,153 @@ public final class RegionTickOps {
     /** Harness/census probe: is the CURRENT thread a region worker? */
     public static boolean isWorker() {
         return WORKER_FLAG.get();
+    }
+
+    // ==================================================================
+    // S7-170 NAV-MOBS-GUARD (RECON-22, TASK-348) — fastutil navigatingMobs
+    // cross-thread structural race, LATENT in bank v3 (region_threads>=2,
+    // bu_defer=0: workers reach the VANILLA sendBlockUpdated body which
+    // iterates ServerLevel.navigatingMobs unprotected).
+    //
+    // javap inventory (contract-s7170-serverlevel.txt / -entitycallbacks.txt,
+    // kernel jar s7178-recal): the ONLY sites touching the field are
+    //   (1) ServerLevel.<init>        : putfield new ObjectOpenHashSet
+    //   (2) ServerLevel.sendBlockUpdated : getfield + iterate (Paper wraps the
+    //       collection loop in a ConcurrentModificationException catch and
+    //       retries — but the fastutil "wrapped is null" NPE is NOT a CME, it
+    //       escapes: s7186 class-A crash; s7176/s7180 class-B fatal path)
+    //   (3) ServerLevel$EntityCallbacks.onTrackingStart : Set.add(Mob)
+    //   (4) ServerLevel$EntityCallbacks.onTrackingEnd    : Set.remove(Mob)
+    // All four go through the java.util.Set INTERFACE (invokeinterface), so a
+    // single-point substitution of the FIELD VALUE routes every reader and
+    // every writer through the guard — zero retargets, zero classfile.rs /
+    // cargo changes, one delivered class (RegionTickOps already is one).
+    //
+    // Guard design (bit-identical iteration order): the wrapper clones the
+    // vanilla ObjectOpenHashSet (fastutil clone() copies the internal hash
+    // table -> iteration order EXACTLY matches the unguarded vanilla set);
+    // mutations serialize on the wrapper monitor; iterator() takes the
+    // snapshot under the same monitor and iterates the frozen copy (a
+    // consistent view — the vanilla concurrent iteration was undefined
+    // behaviour; Paper's CME-retry becomes a dead path, preregistered).
+    //
+    // Parity boundary (preregistered, RECON-22 §4): recomputePath invocation
+    // order is preserved for identical set contents (clone order); the
+    // accepted interleave class is the window between the snapshot and the
+    // recomputePath loop — the same cross-thread observation class the owner
+    // bar already accepts for region ticks (S7-155). recomputePath touches
+    // no navigatingMobs state (javap), so the loop cannot corrupt the set.
+    //
+    // Activation: idempotent, MAIN-thread-only, from the already-delivered
+    // onTickingStart/onTickingEnd retargets (fire on the first entity add /
+    // remove flow, long before the first worker phase can race; workers never
+    // run the swap). WORKERS<=1 compiles to a no-op (javac folds the static
+    // final constant) — vanilla passthrough bit-identical.
+    // ==================================================================
+
+    private static final sun.misc.Unsafe S7170_UNSAFE;
+    private static final long NAVIGATING_MOBS_OFFSET;
+    static {
+        try {
+            java.lang.reflect.Field uf = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
+            uf.setAccessible(true);
+            S7170_UNSAFE = (sun.misc.Unsafe) uf.get(null);
+            java.lang.reflect.Field f = Class.forName("net.minecraft.server.level.ServerLevel")
+                    .getDeclaredField("navigatingMobs");
+            NAVIGATING_MOBS_OFFSET = S7170_UNSAFE.objectFieldOffset(f);
+        } catch (Throwable t) {
+            throw new ExceptionInInitializerError(t);
+        }
+    }
+
+    /**
+     * S7-170: swap level.navigatingMobs to the guarded set, once per level.
+     * Main-thread-only call sites (onTickingStart/onTickingEnd retargets run
+     * main-direct outside a phase, main-drain at the barrier inside one).
+     * Fail-closed: a non-ServerLevel level (harness stubs) is skipped.
+     */
+    public static void ensureNavMobsGuarded(Entity entity) {
+        if (WORKERS <= 1) return; // vanilla passthrough, javac-folded when off
+        if (!(entity.level() instanceof net.minecraft.server.level.ServerLevel level)) return;
+        Object cur = S7170_UNSAFE.getObject(level, NAVIGATING_MOBS_OFFSET);
+        if (cur instanceof GuardedNavigatingMobs) return; // fast path
+        synchronized (RegionTickOps.class) {
+            cur = S7170_UNSAFE.getObject(level, NAVIGATING_MOBS_OFFSET);
+            if (cur instanceof GuardedNavigatingMobs) return;
+            S7170_UNSAFE.putObject(level, NAVIGATING_MOBS_OFFSET,
+                    new GuardedNavigatingMobs(cur));
+            System.out.println("[S7-170] nav-mobs guarded: level=" + level.dimension().location()
+                    + " seeded=" + ((GuardedNavigatingMobs) S7170_UNSAFE.getObject(level,
+                        NAVIGATING_MOBS_OFFSET)).size());
+        }
+    }
+
+    /**
+     * S7-170 guarded view of ServerLevel.navigatingMobs. Every mutation and
+     * every iteration serializes on the monitor; iteration order of the
+     * snapshot is BIT-IDENTICAL to the vanilla fastutil set (table clone).
+     */
+    public static final class GuardedNavigatingMobs implements java.util.Set<Mob> {
+        private final ObjectOpenHashSet<Mob> inner;
+
+        GuardedNavigatingMobs(Object existing) {
+            if (existing instanceof ObjectOpenHashSet<?> ff) {
+                @SuppressWarnings("unchecked")
+                ObjectOpenHashSet<Mob> src = (ObjectOpenHashSet<Mob>) ff;
+                this.inner = src.clone(); // exact table copy -> exact vanilla order
+            } else {
+                // non-vanilla backing set: rehash copy (order = that set's iteration)
+                @SuppressWarnings("unchecked")
+                java.util.Collection<Mob> src = (java.util.Collection<Mob>) existing;
+                this.inner = new ObjectOpenHashSet<>(src);
+            }
+        }
+
+        /** Harness probe: elements visible through a frozen snapshot. */
+        public int innerSize() { synchronized (this) { return inner.size(); } }
+
+        @Override public boolean add(Mob m) { synchronized (this) { return inner.add(m); } }
+        @Override public boolean remove(Object o) { synchronized (this) { return inner.remove(o); } }
+        @Override public boolean contains(Object o) { synchronized (this) { return inner.contains(o); } }
+        @Override public int size() { synchronized (this) { return inner.size(); } }
+        @Override public boolean isEmpty() { synchronized (this) { return inner.isEmpty(); } }
+        @Override public void clear() { synchronized (this) { inner.clear(); } }
+
+        @Override public java.util.Iterator<Mob> iterator() {
+            final ObjectOpenHashSet<Mob> snap;
+            synchronized (this) { snap = inner.clone(); } // frozen, thread-private
+            return snap.iterator();
+        }
+
+        @Override public Object[] toArray() { synchronized (this) { return inner.toArray(); } }
+        @Override public <T> T[] toArray(T[] a) { synchronized (this) { return inner.toArray(a); } }
+        @Override public boolean containsAll(java.util.Collection<?> c) {
+            synchronized (this) { return inner.containsAll(c); }
+        }
+        @Override public boolean addAll(java.util.Collection<? extends Mob> c) {
+            synchronized (this) { return inner.addAll(c); }
+        }
+        @Override public boolean removeAll(java.util.Collection<?> c) {
+            synchronized (this) { return inner.removeAll(c); }
+        }
+        @Override public boolean retainAll(java.util.Collection<?> c) {
+            synchronized (this) { return inner.retainAll(c); }
+        }
+        @Override public boolean equals(Object o) { synchronized (this) { return inner.equals(o); } }
+        @Override public int hashCode() { synchronized (this) { return inner.hashCode(); } }
+        @Override public String toString() { synchronized (this) { return inner.toString(); } }
+        @Override public void forEach(java.util.function.Consumer<? super Mob> action) {
+            final ObjectOpenHashSet<Mob> snap;
+            synchronized (this) { snap = inner.clone(); }
+            snap.forEach(action);
+        }
+        @Override public boolean removeIf(java.util.function.Predicate<? super Mob> filter) {
+            synchronized (this) { return inner.removeIf(filter); }
+        }
+        @Override public java.util.Spliterator<Mob> spliterator() {
+            final ObjectOpenHashSet<Mob> snap;
+            synchronized (this) { snap = inner.clone(); }
+            return snap.spliterator();
+        }
     }
 }

@@ -194,10 +194,17 @@ def main():
         pop_ok = "POPULATION FIXTURE-VALIDITY: VALID" in stdout_txt
         arm = "stage traveldiet composed" in stdout_txt
         strict = "strict check violated" in stdout_txt
+        # S7-170 NAV-MOBS-GUARD marker (heads >= 40a... after RECON-22 fix):
+        # "[S7-170] nav-mobs guarded: level=... seeded=N" printed once per level
+        # at the Unsafe swap; heads WITHOUT the S7-170 commit report N/A.
+        s7170 = stdout_txt.count("[S7-170] nav-mobs guarded")
+        s7170_note = ("guarded-marker=" + ("OK" if s7170 > 0 else "MISSING")) \
+            if "nav-mobs" in stdout_txt or "[S7-170]" in stdout_txt else "guarded-marker=N/A (pre-S7-170 head)"
         t1_ok = all("OK" in x for x in t1) and ncde == 0 and pop_ok and arm and not strict
         rep.append("- PG-T1: " + ", ".join(t1) + f", NCDFE={ncde}, "
                    f"pop={'VALID' if pop_ok else 'BAD'}, "
                    f"arm={'COMPOSED' if arm else 'MISSING'}, "
+                   f"{s7170_note}, "
                    f"strict-violated={strict} -> **{'PASS' if t1_ok else 'FAIL'}**")
 
         # ---- PG-T2 crash-free (incl. s7180 incident class + RECON-22 catches)
