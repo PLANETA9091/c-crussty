@@ -2027,6 +2027,50 @@ mod tests {
         }
     }
 
+    /// S7-166 harness bridge: emit the Entity.class with the #13-SBB
+    /// setBoundingBox body-redirect applied (stage-8 shape, sites==1) for
+    /// the SkipStoreLockstepHarness HotSpot verifier pass. Silent no-op in
+    /// the default suite.
+    #[test]
+    fn skipstore_emit_patched_entity_for_harness() {
+        if let Ok(path) = std::env::var("CRUSSTY_EMIT_PATCHED_ENTITY_SSB") {
+            if path.trim().is_empty() {
+                return;
+            }
+            let (out, outcome) = patch_entity_skip_store_bb(REAL_ENTITY).expect("patch");
+            assert_eq!(outcome, RetargetOutcome::Retargeted { sites: 1 });
+            std::fs::write(&path, out).expect("write patched entity");
+        }
+    }
+
+    /// S7-166 strict-shape: the redirect MUST target EXACTLY one site (the
+    /// single (AABB)V setter body) and the generated invokestatic must
+    /// carry the receiver-prepended descriptor. Re-patching the SAME bytes
+    /// yields AlreadyPatched (idempotent), NotFound returns originals.
+    #[test]
+    fn skipstore_redirect_shape_single_site() {
+        let (out, outcome) = patch_entity_skip_store_bb(REAL_ENTITY).expect("patch");
+        assert_eq!(outcome, RetargetOutcome::Retargeted { sites: 1 });
+        assert_ne!(out.len(), REAL_ENTITY.len(), "pool grew with bridge entries");
+        let (out2, outcome2) = patch_entity_skip_store_bb(&out).expect("repatch");
+        assert_eq!(outcome2, RetargetOutcome::AlreadyPatched { sites: 1 });
+        assert_eq!(out2, out, "idempotent re-patch is byte-stable");
+    }
+
+    /// S7-166 delivery closure mirrored in the test suite: the built
+    /// SkipStoreOps classfile must declare the receiver-prepended
+    /// setBoundingBox static.
+    #[test]
+    fn skipstore_embedded_declares_redirect_target() {
+        if let Err(e) =
+            crate::classfile::skipstore_resolution_closure(crate::skip_store::SKIP_STORE_BYTES)
+        {
+            panic!(
+                "RESOLUTION CLOSURE FAILED: {e} — rebuild entityinside/ via build_skipstore_ops.sh"
+            );
+        }
+    }
+
     /// Slot accounting: double/long parameters occupy two slots (the
     /// fluid-push descriptor has a trailing double).
     #[test]
@@ -3063,6 +3107,16 @@ pub const ZA_REDIRECT_TARGETS: [(&str, &str, &str, &str); 3] = [
 /// the defineClass verifier (verification does not resolve) and to the
 /// lockstep oracle (which calls the bridge from source, compile-time).
 pub fn zeroalloc_resolution_closure(bridge: &[u8]) -> Result<(), String> {
+    redirect_targets_resolution_closure(bridge, &ZA_REDIRECT_TARGETS)
+}
+
+/// Shared core of the resolution-closure guard (S7-166: reused by the
+/// #13-SBB skip-store redirect so the two delivery graphs can never drift
+/// into different enforcement semantics).
+fn redirect_targets_resolution_closure(
+    bridge: &[u8],
+    targets: &[(&str, &str, &str, &str)],
+) -> Result<(), String> {
     let Some(layout) = parse_layout(bridge) else {
         return Err("bridge classfile unparseable".into());
     };
@@ -3085,15 +3139,70 @@ pub fn zeroalloc_resolution_closure(bridge: &[u8]) -> Result<(), String> {
         let desc = layout.pool.utf8_value(d_idx).ok_or("bad desc idx")?;
         have.push((name, desc));
     }
-    for (_, _, tname, tdesc) in ZA_REDIRECT_TARGETS {
+    for (_, _, tname, tdesc) in targets {
         if !have.iter().any(|(n, d)| n == tname && d == tdesc) {
             return Err(format!(
-                "ZeroAllocOps misses redirect target {tname}{tdesc} — \
-                 entity_compose stage 7 would detonate NoSuchMethodError on the first tick"
+                "bridge misses redirect target {tname}{tdesc} — \
+                 the entity_compose redirect would detonate NoSuchMethodError on the first tick"
             ));
         }
     }
     Ok(())
+}
+
+/// SKIP-STORE-BB bridge target (kernel loader, same package as
+/// BlockGetter/ZeroAllocOps).
+pub const SKIP_STORE_OPS_CLASS: &str = "net/minecraft/world/level/SkipStoreOps";
+
+pub const SSB_BB_DESC: &str = "(Lnet/minecraft/world/phys/AABB;)V";
+
+/// Single source of truth for the #13-SBB redirect graph (S7-166):
+/// (site name, site descriptor, bridge target name, bridge target
+/// descriptor). EXACTLY ONE target — the javap contract RECON-12a proved
+/// setDeltaMovement parity-risky (5 identity sites, the move() guard
+/// window) and sync/chunk-lists are out of #13-SBB scope. Consumed by (a)
+/// `patch_entity_skip_store_bb` (bytecode surgery) and (b)
+/// `skipstore_resolution_closure` (delivery guard).
+pub const SSB_REDIRECT_TARGETS: [(&str, &str, &str, &str); 1] = [(
+    "setBoundingBox",
+    SSB_BB_DESC,
+    "setBoundingBox",
+    "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;)V",
+)];
+
+/// #13-SBB delivery guard: the SkipStoreOps classfile being DELIVERED to
+/// the kernel loader must declare setBoundingBox with the receiver-
+/// prepended static descriptor (same TECH-DUD discipline as stage 7).
+pub fn skipstore_resolution_closure(bridge: &[u8]) -> Result<(), String> {
+    redirect_targets_resolution_closure(bridge, &SSB_REDIRECT_TARGETS)
+}
+
+/// S7-166 lever #13-SBB: redirect the Entity.setBoundingBox(AABB) body to
+/// the SkipStoreOps value-equal skip bridge. The vanilla body always
+/// allocates a fresh AABB + putfields into the old-gen Entity (one young
+/// alloc + one old->young remembered card PER CALL); the bridge repeats
+/// the javap-verbatim normalization ladder and skips the store when the
+/// current field already bit-matches (RECON-12a: 0 identity sites on bb,
+/// AABB immutable — parity-safe). Strict: exactly ONE site (single
+/// non-overloaded setter body), fail-dominant like stage 7.
+pub fn patch_entity_skip_store_bb(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let (name, desc, tname, tdesc) = SSB_REDIRECT_TARGETS[0];
+    let (p, outcome) = redirect_method_body_to_static(
+        bytes,
+        name,
+        desc,
+        "net/minecraft/world/entity/Entity",
+        SKIP_STORE_OPS_CLASS,
+        tname,
+        tdesc,
+    )?;
+    match outcome {
+        RetargetOutcome::Retargeted { .. } => Ok((p, RetargetOutcome::Retargeted { sites: 1 })),
+        RetargetOutcome::AlreadyPatched { .. } => {
+            Ok((p, RetargetOutcome::AlreadyPatched { sites: 1 }))
+        }
+        RetargetOutcome::NotFound => Ok((bytes.to_vec(), RetargetOutcome::NotFound)),
+    }
 }
 
 /// S7-164 lever #10: redirect the THREE hottest Entity inside/fluid bodies

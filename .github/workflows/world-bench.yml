@@ -87,6 +87,10 @@ on:
         description: 'ZERO-ALLOC-INSIDE S7-164 ARCH-ATTACK lever #10 (1 = ARMED: scalar allocation-free ZeroAllocOps bodies replacing Entity.collidedWithFluid/collidedWithShapeMovingFrom/updateFluidHeightAndDoFluidPushing via the entity_compose stage-7 body-redirect — requires region_threads>=2; 0 = vanilla A/B leg)'
         required: false
         default: '0'
+      skip_store_bb:
+        description: 'SKIP-STORE-BB #13-SBB S7-166 ARCH-ATTACK (1 = ARMED: value-equal store-skip for Entity.setBoundingBox via the SkipStoreOps body-redirect, entity_compose stage-8 — requires region_threads>=2; 0 = vanilla A/B leg)'
+        required: false
+        default: '0'
       population_target:
         description: 'BENCH-X150K living-scene population injection (0 = off; 10000 = smoke; 150000 = prime scale, S7-129)'
         required: false
@@ -189,6 +193,7 @@ jobs:
           BATCH_COLLECTOR: ${{ inputs.batch_collector || '0' }}
           FLAT_TRAVERSAL: ${{ inputs.flat_traversal || '0' }}
           ZERO_ALLOC: ${{ inputs.zero_alloc || '0' }}
+          SKIP_STORE_BB: ${{ inputs.skip_store_bb || '0' }}
           POPULATION_TARGET: ${{ inputs.population_target || '0' }}
           POPULATION_SEED: ${{ inputs.population_seed || '42' }}
           SERVER_XMX: ${{ inputs.server_xmx || '6G' }}

@@ -2541,3 +2541,26 @@ Stage Summary:
 - NEXT (тик 14:43): реализация #13-SBB (SkipStoreOps.java, redirect 173 юнита, entity_compose stage 8, оракул ≥1M) → preregister уже зафиксирован → диспатч v5-кандидата; RECON-13 = other-entity 28.04% декомпозиция
 
 RUN_ID_DISPATCHED: нет (лег 35425246662 поглощён; S7-108 чист)
+
+---
+## TASK-319 (#13-SBB SKIP-STORE-BB реализация + оракул 1.1M PASS; диспатч v5-кандидата; директива владельца: free-hosting 2.5GB) — 2026-09-19 ~14:5x +08 — Job 396026 (тик 14:43)
+
+Task: по CLAIMS TASK-318 NEXT — реализация #13-SBB (SkipStoreOps.java 1 classfile no-nested, redirect Entity.setBoundingBox(AABB) sites==1, entity_compose stage 8, resolution-closure гварды, локстеп-оракул ≥1M бит-в-бит) → верификация (cargo + оракул) → диспатч v5-кандидата (v3-банк + skip_store_bb=1 + recon_diag=1). Плюс: новая директива владельца (free-hosting профиль 2.5GB).
+
+Work Log:
+- creds (1b); pull ×2 (c-crussty 6c0078d + догcommit worklog-секции TASK-318 → 40a85bd; dev-logs e49ee18); next id = 319; S7-108 чист
+- SkipStoreOps.java: Unsafe offset поля bb (resolved once), вербатим RECON-12a (дельты ПОВТОРНЫМ чтением полей аргумента, dcmpg/dcmpl лестницы, кламп 64.0, NaN вербатимом), skip при doubleToLongBits-равенстве 6 компонент (строже dcmp-preregister: ±0.0 не скипается, NaN канонизируется), putfield/new AABB в non-skip ветке; javap-дифф скомпилированного бриджа против дампа Entity: юниты 0-138 идентичны
+- classfile.rs: SSB_REDIRECT_TARGETS (1 цель) + skipstore_resolution_closure (общий корень с ZA) + patch_entity_skip_store_bb (strict sites==1, AlreadyPatched идемпотент, NotFound pristine) + emit-тест SSB; skip_store.rs: env CRUSSTY_SKIP_STORE_BB, region_threads>=2 guard, major-guard, closure-guard, define в kernel loader («skip_store_ops: defined» — PG2-маркер); entity_compose.rs STAGE 8 (fail-dominant «WITHOUT sbb», ARMED-член «sbb», audit_wire v5); lib.rs проводка
+- cargo test --release: 175 passed / 0 failed / 1 ignored — 8 новых гвардов (no-nested source, 1-classfile build-dir, embed-fresh, resolution closure, таблица = ровно setBoundingBox [setDeltaMovement locked-out], shape/idempotence repatch, emit-harness)
+- Оракул: entityinside/harness/SkipStoreLockstepHarness.java + scripts/run_skipstore_lockstep_harness.sh; дефекты пойманы и исправлены в тике: (а) net.minecraft.Bootstrap → net.minecraft.server.Bootstrap (Mojang mappings), (б) Unsafe.allocateInstance отказывает на abstract Entity → твины = конкретный EvokerFangs (setBoundingBox final → ванильное тело; offset bb общий префикс лейаута), (в) static-final offset патченого класса → lane C переформулирован в byte-audit (SkipStoreOps-ref + receiver-prepended desc в пуле патченого Entity) + HotSpot defineClass 205210 B
+- ОРАКУЛ PASS: 1,100,000 сценариев (skipped=40000/40000 ровно skip-форсинг, nonSkipped=1060000, 0 mismatches): бит-паритет 6 компонент vanilla-vs-бридж, identity-инвариант, zero-sign strictness (±0.0 лейн 20000/20000 без скипа), non-skip честность (fresh ref), лейны NaN/subnormal/±0.0/huge/clamp-границы 64.0±ulp/inverted/null-pre
+- Workflow + run_world3.sh: input skip_store_bb → env SKIP_STORE_BB → export CRUSSTY_SKIP_STORE_BB (bash -n + YAML-парс PASS); dispatch_s7166.py (S7-108 guard + remote-head==local-head, точный v3-банк + skip_store_bb=1 + recon_diag=1, xmx10G для валидности A/B)
+- ДИСПАТЧ v5-кандидата (см. RUN_ID_DISPATCHED)
+- Директива владельца (тик 14:43): тесты/ускорения под free-hosting 2.5 GB shared RAM (FalixNodes free: shared CPU Ryzen 9 9950X-класс, ~10GB диск; подтверждено web-поиском) — зафиксирована в GOAL §5 как отдельная трек-линия FREE-HOST профиль-лег (xmx≈2G, та же сцена) после absorb v5; низкая куча → young-GC чаще → эффект #13-SBB ожидаемо крупнее; ≠ гейт-лег v5
+
+Stage Summary:
+- #13-SBB полностью реализован и офлайн-верифицирован (175 cargo + 1.1M оракул) — ТОП-1 card-set firehose (16.39%) атакован parity-safe рычагом с прямым измерением эффекта (remset A/B)
+- v5-кандидат в полёте: гейты preregister TASK-318 НЕИЗМЕННЫ; PASS → CUMULATIVE v5 = v3 + skip_store_bb=1; FAIL → REFUTED + rollback
+- Новая целевая линия: 2.5GB free-hosting профиль (директива владельца) — RECON-лег xmx≈2G следующим шагом после вердикта v5
+
+RUN_ID_DISPATCHED: да (v5-кандидат #13-SBB, dispatch_s7166.py; S7-108 — единственный в полёте)
