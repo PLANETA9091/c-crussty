@@ -25,6 +25,7 @@ mod batch_table;
 mod brainhook;
 mod bridge_class;
 mod classfile;
+#[cfg(test)]
 mod entity_mirror;
 mod entity_compose;
 mod fluid_guard;

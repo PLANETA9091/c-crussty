@@ -3368,6 +3368,16 @@ pub fn redirect_static_method_body_to_static(
     let Some(slot_kinds) = desc_slot_kinds(method_desc) else {
         return Err(format!("unparseable descriptor {method_desc}"));
     };
+    // s7172 root cause (locally reproduced via Instrumentation.retransformClasses:
+    // VerifyError on an aload_1-first load chain): desc_slot_kinds numbers params
+    // from slot 1 (instance-method convention, receiver at 0) while THIS helper
+    // redirects a STATIC method whose params start at slot 0. Remap down by one
+    // or the verifier rejects the served bytes (JVMTI 62 FAILS_VERIFICATION)
+    // and the hook stays dormant.
+    let slot_kinds: Vec<(usize, SlotKind)> = slot_kinds
+        .into_iter()
+        .map(|(slot, kind)| (slot - 1, kind))
+        .collect();
     let Some(ret_op) = return_opcode(method_desc) else {
         return Err(format!("unparseable return type {method_desc}"));
     };
@@ -6570,6 +6580,77 @@ mod blockpos_zerocursor {
         let n_orig = u16::from_be_bytes([BLOCKPOS[8], BLOCKPOS[9]]);
         let n_new = u16::from_be_bytes([patched[8], patched[9]]);
         assert!(n_new >= n_orig, "pool may only grow");
+    }
+
+    /// s7172 regression guard (locally reproduced via
+    /// Instrumentation.retransformClasses → VerifyError): the redirected
+    /// STATIC method's load chain must read the REAL param slots (0-based,
+    /// no receiver). The original helper reused the instance-method slot
+    /// map (1-based) → aload_1 first → JVM verification rejected the served
+    /// bytes (JVMTI 62 FAILS_VERIFICATION) and the lever never measured.
+    #[test]
+    fn zerocursor_static_load_chain_is_zero_based() {
+        let (patched, _) = redirect_static_method_body_to_static(
+            BLOCKPOS, LAMBDA_NAME, LAMBDA_DESC, TARGET_CLASS, TARGET_NAME, LAMBDA_DESC,
+        )
+        .expect("redirect");
+
+        // Walk the classfile to the redirected method's Code attribute.
+        let layout = parse_layout(&patched).expect("parse");
+        let name_idx = layout
+            .pool
+            .find_utf8(LAMBDA_NAME)
+            .expect("lambda name utf8");
+        let desc_idx = layout.pool.find_utf8(LAMBDA_DESC).expect("lambda desc utf8");
+        let m = find_method(&patched, layout.methods_start, name_idx, desc_idx)
+            .expect("redirected method");
+        let mut p = m.start + 6;
+        let attrs = usize::from(u16_at(&patched, p).expect("attr count"));
+        p += 2;
+        let mut code: Option<&[u8]> = None;
+        for _ in 0..attrs {
+            let an = u16_at(&patched, p).expect("attr name");
+            let len = u32_at(&patched, p + 2).expect("attr len") as usize;
+            if layout.pool.utf8_value(an).as_deref() == Some("Code") {
+                let start = p + 14; // name(2)+len(4)+max_stack(2)+max_locals(2)+code_len(4)
+                let clen =
+                    u32_at(&patched, p + 10).expect("code len") as usize;
+                code = Some(&patched[start..start + clen]);
+            }
+            p += 6 + len;
+        }
+        let code = code.expect("Code attribute");
+        // Static params: 3 refs (slots 0..2) then 6 ints (slots 3..8).
+        let expected: Vec<u8> = {
+            let mut e = vec![0x2a, 0x2b, 0x2c]; // aload_0, aload_1, aload_2
+            e.push(0x1d); // iload_3
+            e.push(0x15); e.push(4); // iload 4
+            e.push(0x15); e.push(5); // iload 5
+            e.push(0x15); e.push(6); // iload 6
+            e.push(0x15); e.push(7); // iload 7
+            e.push(0x15); e.push(8); // iload 8
+            e
+        };
+        assert_eq!(
+            &code[..expected.len()],
+            &expected[..],
+            "load chain must read static params from slot 0 (was 1-based → VerifyError s7172)"
+        );
+        assert_eq!(code[code.len() - 1], 0xb0, "must end with areturn");
+    }
+
+    /// Dump the patched bytes for the offline JVM-verifier probe
+    /// (entityinside/harness/RetransformProbe.java): defineClass verification
+    /// is NOT enough — retransform-time verification caught the s7172 slot
+    /// bug only via the real JVMTI RetransformClasses path.
+    #[test]
+    fn dump_patched_blockpos_for_verifier_probe() {
+        let (patched, _) = redirect_static_method_body_to_static(
+            BLOCKPOS, LAMBDA_NAME, LAMBDA_DESC, TARGET_CLASS, TARGET_NAME, LAMBDA_DESC,
+        )
+        .expect("redirect");
+        std::fs::create_dir_all("tests/out").unwrap();
+        std::fs::write("tests/out/BlockPos.zerocursor.patched.class", &patched).unwrap();
     }
 }
 
