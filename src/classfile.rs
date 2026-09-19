@@ -2107,6 +2107,10 @@ mod tests {
     // -------------------------------------------------------------------
     const REAL_ENTITY: &[u8] = include_bytes!("../tests/fixtures/Entity_real.class");
 
+    // TRAVEL-DIET v2b: pristine LivingEntity fixture for the travelInFluid
+    // body-redirect test (same capture pipeline as Entity_real.class).
+    const REAL_LIVING: &[u8] = include_bytes!("../tests/fixtures/LivingEntity.class");
+
     const ZA_FLUID_V: &str =
         "(Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;)Z";
     const ZA_SHAPE_V: &str =
@@ -2205,7 +2209,7 @@ mod tests {
     #[test]
     fn traveldiet_redirect_collide_and_verify() {
         let (out, outcome) = patch_entity_traveldiet(REAL_ENTITY).expect("patch");
-        assert_eq!(outcome, RetargetOutcome::Retargeted { sites: 1 });
+        assert_eq!(outcome, RetargetOutcome::Retargeted { sites: 2 });
         assert_ne!(out.as_slice(), REAL_ENTITY, "redirect must change bytes");
 
         let vdesc = TD_COLLIDE_DESC;
@@ -2249,10 +2253,86 @@ mod tests {
     #[test]
     fn traveldiet_redirect_idempotent() {
         let (first, out1) = patch_entity_traveldiet(REAL_ENTITY).expect("first");
-        assert_eq!(out1, RetargetOutcome::Retargeted { sites: 1 });
+        assert_eq!(out1, RetargetOutcome::Retargeted { sites: 2 });
         let (second, out2) = patch_entity_traveldiet(&first).expect("second");
-        assert_eq!(out2, RetargetOutcome::AlreadyPatched { sites: 1 });
+        assert_eq!(out2, RetargetOutcome::AlreadyPatched { sites: 2 });
         assert_eq!(first, second, "AlreadyPatched must not touch bytes");
+    }
+
+    /// TRAVEL-DIET v2b (RECON-21 section 4): the STATIC getInputVector body
+    /// redirects to the TravelDietOps static with an IDENTICAL descriptor
+    /// (no receiver); the redirected Code is aload_0/fload_1/fload_2 +
+    /// invokestatic + areturn, static slot numbering from 0.
+    #[test]
+    fn traveldiet_redirect_getinputvector_and_verify() {
+        let (out, outcome) = patch_entity_traveldiet(REAL_ENTITY).expect("patch");
+        assert_eq!(outcome, RetargetOutcome::Retargeted { sites: 2 });
+        let layout = parse_layout(&out).expect("re-parse redirected Entity");
+        let name_idx = layout.pool.find_utf8("getInputVector").expect("name kept");
+        let desc_idx = layout
+            .pool
+            .find_utf8(TD_INPUTVEC_DESC)
+            .expect("desc kept");
+        let m = find_method(&out, layout.methods_start, name_idx, desc_idx)
+            .expect("redirected static method found");
+        let (code_start, code_len) =
+            find_code_attr(&out, &layout.pool, &m).expect("code attr");
+        let code = &out[code_start..code_start + code_len];
+        // static shape: aload_0 (slot 0 = Vec3 arg) + fload_1 + fload_2 +
+        // invokestatic + areturn
+        assert_eq!(code[0], 0x2a, "getInputVector: aload_0 = Vec3 arg (static slot 0)");
+        assert_eq!(code[1], 0x23, "getInputVector: fload_1 = friction");
+        assert_eq!(code[2], 0x24, "getInputVector: fload_2 = yaw");
+        let ret_pos = code.len() - 1;
+        assert_eq!(code[ret_pos], 0xb0, "getInputVector: ends with areturn");
+        assert_eq!(code[ret_pos - 3], 0xb8, "getInputVector: invokestatic");
+        let cp_idx = u16::from_be_bytes([code[ret_pos - 2], code[ret_pos - 1]]);
+        let parts = layout.pool.methodref_parts(cp_idx).expect("resolve target");
+        assert_eq!(parts.0, TRAVEL_DIET_OPS_CLASS, "getInputVector: target owner");
+        assert_eq!(parts.1, "getInputVector", "getInputVector: target name");
+        assert_eq!(
+            parts.2, TD_INPUTVEC_DESC,
+            "getInputVector: static-to-static, IDENTICAL descriptor"
+        );
+        assert_eq!(usize::from(code_len), 3 + 4, "getInputVector: 3 loads + invokestatic + areturn");
+    }
+
+    /// TRAVEL-DIET v2b: the LivingEntity travelInFluid body redirects to the
+    /// receiver-prepended static; idempotent; bytes change.
+    #[test]
+    fn traveldiet_redirect_travelinfluid_and_verify() {
+        let (out, outcome) = patch_livingentity_traveldiet(REAL_LIVING).expect("patch");
+        assert_eq!(outcome, RetargetOutcome::Retargeted { sites: 1 });
+        assert_ne!(out.as_slice(), REAL_LIVING, "redirect must change bytes");
+        let layout = parse_layout(&out).expect("re-parse redirected LivingEntity");
+        let name_idx = layout.pool.find_utf8("travelInFluid").expect("name kept");
+        let desc_idx = layout
+            .pool
+            .find_utf8("(Lnet/minecraft/world/phys/Vec3;)V")
+            .expect("desc kept");
+        let m = find_method(&out, layout.methods_start, name_idx, desc_idx)
+            .expect("redirected method found");
+        let (code_start, code_len) =
+            find_code_attr(&out, &layout.pool, &m).expect("code attr");
+        let code = &out[code_start..code_start + code_len];
+        // shape: aload_0 (receiver) + aload_1 (Vec3) + invokestatic + vreturn
+        assert_eq!(code[0], 0x2a, "travelInFluid: aload_0 receiver");
+        let ret_pos = code.len() - 1;
+        assert_eq!(code[ret_pos], 0xb1, "travelInFluid: void method -> vreturn");
+        assert_eq!(code[ret_pos - 3], 0xb8, "travelInFluid: invokestatic");
+        let cp_idx = u16::from_be_bytes([code[ret_pos - 2], code[ret_pos - 1]]);
+        let parts = layout.pool.methodref_parts(cp_idx).expect("resolve target");
+        assert_eq!(parts.0, TRAVEL_DIET_OPS_CLASS, "travelInFluid: target owner");
+        assert_eq!(parts.1, "travelInFluid", "travelInFluid: target name");
+        assert_eq!(
+            parts.2,
+            "(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/phys/Vec3;)V",
+            "travelInFluid: receiver-prepended desc"
+        );
+        // idempotency
+        let (again, outcome2) = patch_livingentity_traveldiet(&out).expect("second");
+        assert_eq!(outcome2, RetargetOutcome::AlreadyPatched { sites: 1 });
+        assert_eq!(out, again, "AlreadyPatched must not touch bytes");
     }
 
     /// NotFound: a body-redirect on a class without the target method must
@@ -3813,40 +3893,120 @@ pub fn patch_entity_inside_diet(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcom
     )
 }
 
-/// TRAVEL-DIET v2a COLLIDE-DIET (RECON-21, lever #14): single-site body
-/// redirect of the private instance method Entity.collide(Vec3)Vec3 to the
-/// TravelDietOps bridge (receiver prepended). Fail-closed: NotFound ->
-/// error up to the compose stage.
+/// TRAVEL-DIET v2a+v2b (RECON-21, lever #14): body redirects of the
+/// travel-lane allocation sites to the TravelDietOps bridge. Fail-closed:
+/// NotFound -> error up to the compose stage.
 pub const TRAVEL_DIET_OPS_CLASS: &str = "net/minecraft/world/entity/TravelDietOps";
 
 pub const TD_COLLIDE_DESC: &str =
     "(Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;";
+pub const TD_INPUTVEC_DESC: &str =
+    "(Lnet/minecraft/world/phys/Vec3;FF)Lnet/minecraft/world/phys/Vec3;";
 
-/// Single source of truth for the #14-v2a redirect graph: (site name, site
-/// descriptor, bridge target name, bridge target descriptor). EXACTLY ONE
-/// target. Consumed by (a) `patch_entity_traveldiet` (bytecode surgery)
-/// and (b) `traveldiet_resolution_closure` (delivery guard).
-pub const TD_REDIRECT_TARGETS: [(&str, &str, &str, &str); 1] = [(
-    "collide",
-    TD_COLLIDE_DESC,
-    "collide",
-    "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;",
+/// Single source of truth for the #14 ENTITY redirect graph: (site name,
+/// site descriptor, bridge target name, bridge target descriptor).
+/// v2a: collide (instance -> receiver-prepended static).
+/// v2b: getInputVector (PROTECTED STATIC -> static-to-static, identical
+/// descriptor, `redirect_static_method_body_to_static`).
+pub const TD_ENTITY_TARGETS: [(&str, &str, &str, &str); 2] = [
+    (
+        "collide",
+        TD_COLLIDE_DESC,
+        "collide",
+        "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;",
+    ),
+    (
+        "getInputVector",
+        TD_INPUTVEC_DESC,
+        "getInputVector",
+        TD_INPUTVEC_DESC,
+    ),
+];
+
+/// Single source of truth for the #14-v2b LIVINGENTITY redirect graph:
+/// travelInFluid (private instance -> receiver-prepended static).
+pub const TD_LIVING_TARGETS: [(&str, &str, &str, &str); 1] = [(
+    "travelInFluid",
+    "(Lnet/minecraft/world/phys/Vec3;)V",
+    "travelInFluid",
+    "(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/phys/Vec3;)V",
 )];
 
+/// Every TD target the ONE bridge classfile must declare (resolution
+/// closure over the delivered bytes).
+pub const TD_ALL_TARGETS: [(&str, &str, &str, &str); 3] = [
+    TD_ENTITY_TARGETS[0],
+    TD_ENTITY_TARGETS[1],
+    TD_LIVING_TARGETS[0],
+];
+
+/// Composite Entity patch (fail-dominant: both sites or none, zeroalloc
+/// precedent). Site 0 = collide (instance redirect), site 1 = getInputVector
+/// (static redirect). Served by entity_compose STAGE 10 (sites:2).
 pub fn patch_entity_traveldiet(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
-    redirect_method_body_to_static(
+    let (p0, o0) = redirect_method_body_to_static(
         bytes,
-        TD_REDIRECT_TARGETS[0].0,
-        TD_REDIRECT_TARGETS[0].1,
+        TD_ENTITY_TARGETS[0].0,
+        TD_ENTITY_TARGETS[0].1,
         "net/minecraft/world/entity/Entity",
         TRAVEL_DIET_OPS_CLASS,
-        TD_REDIRECT_TARGETS[0].2,
-        TD_REDIRECT_TARGETS[0].3,
-    )
+        TD_ENTITY_TARGETS[0].2,
+        TD_ENTITY_TARGETS[0].3,
+    )?;
+    let o0_ok = matches!(
+        o0,
+        RetargetOutcome::Retargeted { .. } | RetargetOutcome::AlreadyPatched { .. }
+    );
+    if !o0_ok {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    }
+    let (p1, o1) = redirect_static_method_body_to_static(
+        &p0,
+        TD_ENTITY_TARGETS[1].0,
+        TD_ENTITY_TARGETS[1].1,
+        TRAVEL_DIET_OPS_CLASS,
+        TD_ENTITY_TARGETS[1].2,
+        TD_ENTITY_TARGETS[1].3,
+    )?;
+    let o1_ok = matches!(
+        o1,
+        RetargetOutcome::Retargeted { .. } | RetargetOutcome::AlreadyPatched { .. }
+    );
+    if !o1_ok {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    }
+    let ret = matches!(o0, RetargetOutcome::Retargeted { .. }) as usize
+        + matches!(o1, RetargetOutcome::Retargeted { .. }) as usize;
+    if ret == 2 {
+        Ok((p1, RetargetOutcome::Retargeted { sites: 2 }))
+    } else {
+        Ok((p1, RetargetOutcome::AlreadyPatched { sites: 2 }))
+    }
+}
+
+/// LivingEntity patch (v2b): single-site travelInFluid body redirect,
+/// receiver-prepended static. Served by the travel_diet LivingEntity hook.
+pub fn patch_livingentity_traveldiet(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let (p, outcome) = redirect_method_body_to_static(
+        bytes,
+        TD_LIVING_TARGETS[0].0,
+        TD_LIVING_TARGETS[0].1,
+        "net/minecraft/world/entity/LivingEntity",
+        TRAVEL_DIET_OPS_CLASS,
+        TD_LIVING_TARGETS[0].2,
+        TD_LIVING_TARGETS[0].3,
+    )?;
+    match outcome {
+        RetargetOutcome::Retargeted { .. } => Ok((p, RetargetOutcome::Retargeted { sites: 1 })),
+        RetargetOutcome::AlreadyPatched { .. } => {
+            Ok((p, RetargetOutcome::AlreadyPatched { sites: 1 }))
+        }
+        RetargetOutcome::NotFound => Ok((bytes.to_vec(), RetargetOutcome::NotFound)),
+    }
 }
 
 pub fn traveldiet_resolution_closure(bridge: &[u8]) -> Result<(), String> {
-    redirect_targets_resolution_closure(bridge, &TD_REDIRECT_TARGETS)
+    redirect_targets_resolution_closure(bridge, &TD_ALL_TARGETS)
 }
 
 /// Find a method by NAME only (desc resolved by the caller from the found

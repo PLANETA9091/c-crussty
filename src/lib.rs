@@ -122,6 +122,11 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // retransform after the EntityQueryOps bridge lands. Dormant unless
     // CRUSSTY_ALLOC_DIET=1.
     alloc_diet::register();
+    // TRAVEL-DIET v2b (RECON-21, lever #14): LivingEntity byte hook for the
+    // travelInFluid body redirect — pristine capture at first load, patch
+    // served after the TravelDietOps bridge lands in the kernel loader
+    // (travel_diet::activate worker). Dormant unless CRUSSTY_TRAVEL_DIET=1.
+    travel_diet::register_living();
     // INSIDE-CACHE (S7-135): byte hook on Entity (pristine capture at first
     // load; patch served via retransform after the InsideBlockOps bridge
     // lands). Dormant unless CRUSSTY_INSIDE_CACHE=1.

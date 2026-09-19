@@ -603,7 +603,7 @@ pub fn activate() {
                 match crate::classfile::patch_entity_traveldiet(&bytes) {
                     Ok((p, outcome)) if matches!(
                         outcome,
-                        crate::classfile::RetargetOutcome::Retargeted { sites: 1 }
+                        crate::classfile::RetargetOutcome::Retargeted { sites: 2 }
                     ) => {
                         eprintln!(
                             "[crussty-plugin] entity_compose: stage traveldiet composed ({outcome:?})"
@@ -613,7 +613,7 @@ pub fn activate() {
                     }
                     Ok((p, outcome)) if matches!(
                         outcome,
-                        crate::classfile::RetargetOutcome::AlreadyPatched { sites: 1 }
+                        crate::classfile::RetargetOutcome::AlreadyPatched { sites: 2 }
                     ) => {
                         // Idempotent re-sight (stale retransform replay).
                         eprintln!(
@@ -648,7 +648,7 @@ pub fn activate() {
 
         crate::kernel_policy::audit_wire(
             ENTITY_CLASS,
-            "inside-gate/fgate/scan/rngUUID/collector-ctor/traversal/zeroin/skip-store-bb",
+            "inside-gate/fgate/scan/rngUUID/collector-ctor/traversal/zeroin/skip-store-bb/travel-diet",
             "entity_compose v5",
         );
         READY.store(true, Ordering::Release);
