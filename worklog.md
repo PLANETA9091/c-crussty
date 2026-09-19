@@ -2609,3 +2609,10 @@ RUN_ID_DISPATCHED: да (v5-кандидат #13-SBB, dispatch_s7166.py; S7-108 
 - Тест на РЕАЛЬНОМ классе kernel (fixture из артефактов s7165): Retargeted{sites:1} → AlreadyPatched; pool-consistency; 176/176 PASS; release PASS.
 - Workflow: +input parse_diag; лимит 25 inputs достигнут → legacy summon_sweeps дропнут (26→25); первый POST 422, фикс, повтор → **run 35435848509 in_progress @ 1fc46c3**. dispatch_s7168.py закоммичен.
 - NEXT (13): absorb s7168 → PG-D0..D3 → выбор lever #12 (decode-cache) ИЛИ REFUTED → ТОП-2 (entity-tick-core 21.39%). c-crussty 1fc46c3. S7-108 чист.
+
+## TASK-328 (absorb s7168: PG-D0 FAIL — перепись не доставлена; руут-кауз+фикс armDumpTask; лег s7169 в полёте run 35437243128) — 2026-09-19 ~18:2x +08 — Job 397536 (тик 18:08)
+**Статус: absorb s7168 честен — patch ARMED (Retargeted{sites:1}, retransform rc=0), но chunk-parse-diag.txt в артефакте НЕТ: арм dump-таска шёл через find_class(OPS_CLASS) из новой аттачмент-секции, kernel-loader-класс системным FindClass не виден, тихий clear_exception → dump-таск не вставал, census умер с процессом. ФИКС: арм ВНУТРЬ define-closure (глобальный реф в руках) + громкие stdout-маркеры ARMED/FAILED.**
+- absorb_s7168.py: самотест PASS (парсер SUMMARY+rows, бакеты, консистентность row_sum-vs-SUMMARY, вердикт-ветки <10/10-30/>=30 с границами 9.99/10.0/29.99/30.0); PG-D3 N/A-толерантен. Вердикт-док RECON13_PARSE_DIAG_ABSORB.md; run-дир run-s7168-parse-diag закоммичена (collapsed в ignore).
+- PG-D2 s7168: TPS median5=1.4 (база 2.0) — контекст; PG-D3 N/A (recon_diag=0 в диспатче s7168 — дефект пегистера TASK-327). GC-фон здоров (155/0/19.5s/179ms).
+- Фикс verified: cargo 176/176 PASS, release PASS. dispatch_s7169.py (recon_diag=1 = точный s7165-класс базы; гварды S7-108 + remote-head==local-head PASS) → **ЛЕГ s7169 В ПОЛЁТЕ: run 35437243128 @ a93324a (18:22:55 +08)**.
+- NEXT (id 329): absorb s7169 одной командой → PG-D0 (census присутствует + маркер "dump task ARMED") → lever #12: >=30% GO decode-cache (реализация до конца в том же тике) / <10% REFUTED → ТОП-2 entity-tick-core 21.39% CPU. c-crussty a0ff51b. Диспатчей 1; S7-108 чист; CI-бутов 1 (санкционирован).
