@@ -191,6 +191,14 @@ pub fn activate() {
             return;
         }
 
+        // Census artifact destination. s7168 lesson (TASK-328): the dump task
+        // MUST be armed in the SAME attachment where the freshly-defined
+        // kernel-loader class is still in hand — a later find_class from the
+        // native context resolves through the system loader and silently
+        // misses kernel-loader definitions.
+        let diag_file = std::env::var("CRUSSTY_PARSE_DIAG_FILE")
+            .unwrap_or_else(|_| "chunk-parse-diag.txt".to_string());
+
         // Define the bridge into the kernel loader (FlushOps pattern).
         let defined = cplug_sdk::jni_util::with_attached(|env| {
             let Some(cls) = cplug_sdk::classes::find_class("net/minecraft/world/entity/Entity")
@@ -221,7 +229,45 @@ pub fn activate() {
             }
             match env.define_class(OPS_CLASS, gref, OPS_BYTES) {
                 Some(c) => {
+                    // TASK-328 (s7168 root-cause fix): arm the census dump
+                    // HERE. The local ref `c` is the ONLY reliable handle to
+                    // the kernel-loader-defined class; find_class(OPS_CLASS)
+                    // from a later native attachment silently fails, which is
+                    // exactly how s7168 (run 35435848509) soaked 300s with the
+                    // census counting in memory but no dump task and no file
+                    // in the artifact (PG-D0 FAIL).
+                    let gcls = env.new_global_ref(c);
                     env.delete_local_ref(c);
+                    let mut armed = false;
+                    if !gcls.is_null() {
+                        if let Some(method) = env.get_static_method_id(
+                            gcls as jni::jclass,
+                            "armDumpTask",
+                            "(Ljava/lang/String;)V",
+                        ) {
+                            if let Some(path) = env.new_string(&diag_file) {
+                                env.call_static_void_method(
+                                    gcls as jni::jclass,
+                                    method,
+                                    &[jni::jvalue { l: path }],
+                                );
+                                armed = !crate::clear_exception(env);
+                            } else {
+                                crate::clear_exception(env);
+                            }
+                        } else {
+                            crate::clear_exception(env);
+                        }
+                    }
+                    if armed {
+                        eprintln!(
+                            "[crussty-plugin] parse_diag: dump task ARMED -> {diag_file}"
+                        );
+                    } else {
+                        eprintln!(
+                            "[crussty-plugin] parse_diag: dump task arm FAILED — census file will be missing"
+                        );
+                    }
                     eprintln!(
                         "[crussty-plugin] parse_diag: defined {OPS_CLASS} in kernel loader"
                     );
@@ -242,32 +288,6 @@ pub fn activate() {
             );
             return;
         }
-
-        // Arm the periodic dump + shutdown hook (census artifact writer).
-        let diag_file = std::env::var("CRUSSTY_PARSE_DIAG_FILE")
-            .unwrap_or_else(|_| "chunk-parse-diag.txt".to_string());
-        let _ = cplug_sdk::jni_util::with_attached(|env| {
-            let Some(cls) = cplug_sdk::classes::find_class(OPS_CLASS) else {
-                crate::clear_exception(env);
-                return;
-            };
-            let Some(method) =
-                env.get_static_method_id(cls.as_jclass(), "armDumpTask", "(Ljava/lang/String;)V")
-            else {
-                crate::clear_exception(env);
-                return;
-            };
-            let Some(path) = env.new_string(&diag_file) else {
-                crate::clear_exception(env);
-                return;
-            };
-            env.call_static_void_method(
-                cls.as_jclass(),
-                method,
-                &[jni::jvalue { l: path }],
-            );
-            let _ = crate::clear_exception(env);
-        });
 
         // Pristine bytes for a class that predates the hook: no-op
         // retransform capture, fluid_guard pattern.
