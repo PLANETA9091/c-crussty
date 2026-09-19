@@ -1,0 +1,165 @@
+==============================================================================
+RECON-8: movement/AI surface -> behavior classes (deep-match)
+==============================================================================
+
+===== LEG#2 35410873485 (fresh bank-base profile) (/home/z/c-crussty/research/flat-traversal-2026-09-19/run-s7163-leg2-artifact) =====
+total CPU samples: 125610; entity phase: 75974 (60.48%)
+--- behavior classes (share of TOTAL CPU) ---
+  fluid-push               12964  10.32% CPU   ( 17.1% of entity phase)
+  inside-pipeline          12156   9.68% CPU   ( 16.0% of entity phase)
+  travel-physics           11494   9.15% CPU   ( 15.1% of entity phase)
+  broadphase                8186   6.52% CPU   ( 10.8% of entity phase)
+  aiStep/entity-other       8035   6.40% CPU   ( 10.6% of entity phase)
+  baseTick-other            6147   4.89% CPU   (  8.1% of entity phase)
+  item-entity               5061   4.03% CPU   (  6.7% of entity phase)
+  goal-selector             4383   3.49% CPU   (  5.8% of entity phase)
+  navigation                4134   3.29% CPU   (  5.4% of entity phase)
+  sensing                   1689   1.34% CPU   (  2.2% of entity phase)
+  controls                   706   0.56% CPU   (  0.9% of entity phase)
+  brain                      608   0.48% CPU   (  0.8% of entity phase)
+  targeting                  411   0.33% CPU   (  0.5% of entity phase)
+--- alloc axis: class shares of total alloc samples ---
+  inside-pipeline           3017  18.41%
+  travel-physics            2274  13.87%
+  fluid-push                1074   6.55%
+  item-entity                389   2.37%
+  baseTick-other             377   2.30%
+  navigation                 337   2.06%
+  broadphase                 146   0.89%
+  goal-selector               75   0.46%
+  brain                       20   0.12%
+  targeting                    9   0.05%
+--- subsplit navigation ---
+  createPath                3363  ( 81.3% of class)
+  nav-tick/recompute         500  ( 12.1% of class)
+  done-navigation            141  (  3.4% of class)
+  node-evaluator             130  (  3.1% of class)
+--- subsplit goal-selector ---
+  selector-tick             2663  ( 60.8% of class)
+  canUse                    1540  ( 35.1% of class)
+  goal-tick                  107  (  2.4% of class)
+  canContinueToUse            48  (  1.1% of class)
+  done-goalsel                25  (  0.6% of class)
+--- subsplit targeting ---
+  nearest-attackable         289  ( 70.3% of class)
+  targeting-cond              57  ( 13.9% of class)
+  done-targeting              44  ( 10.7% of class)
+  hurt-by                     21  (  5.1% of class)
+--- subsplit travel-physics ---
+  travel                    6510  ( 56.6% of class)
+  Entity.move               4404  ( 38.3% of class)
+  Entity.collide             580  (  5.0% of class)
+--- subsplit broadphase ---
+  pushEntities              4043  ( 49.4% of class)
+  getEntities               3530  ( 43.1% of class)
+  done-broadphase            545  (  6.7% of class)
+  AABB.intersects             68  (  0.8% of class)
+--- top leafs navigation ---
+     235   5.7%  net/minecraft/world/level/pathfinder/PathTypeCache.get
+     192   4.6%  net/minecraft/world/level/chunk/PalettedContainer.get
+     141   3.4%  it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap.find
+     141   3.4%  it/unimi/dsi/fastutil/ints/Int2ObjectOpenHashMap.find
+     126   3.0%  it/unimi/dsi/fastutil/objects/ReferenceOpenHashSet.contains
+     125   3.0%  net/minecraft/world/level/chunk/LevelChunk.getBlockStateFinal
+--- top leafs goal-selector ---
+     690  15.7%  it/unimi/dsi/fastutil/objects/ObjectLinkedOpenHashSet$SetIterator.next
+     488  11.1%  net/minecraft/world/entity/ai/goal/GoalSelector.tick
+     375   8.6%  net/minecraft/world/entity/ai/goal/GoalSelector.tickRunningGoals
+     338   7.7%  vtable stub
+     250   5.7%  net/minecraft/util/profiling/Profiler.get
+     158   3.6%  net/minecraft/world/level/chunk/PalettedContainer.get
+--- top leafs targeting ---
+      64  15.6%  net/minecraft/world/entity/ai/attributes/AttributeMap.getValue
+      44  10.7%  net/minecraft/world/entity/ai/goal/target/NearestAttackableTargetGoal.canUse
+      32   7.8%  it/unimi/dsi/fastutil/objects/Object2ObjectOpenHashMap.get
+      20   4.9%  net/minecraft/world/entity/ai/goal/target/HurtByTargetGoal.canUse
+      16   3.9%  itable stub
+      16   3.9%  vtable stub
+--- top leafs travel-physics ---
+     725   6.3%  ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.getCollisionsForBlocksOrWorldBorder
+     584   5.1%  net/minecraft/world/level/chunk/PalettedContainer.get
+     407   3.5%  net/minecraft/world/level/Level.findSupportingBlock
+     379   3.3%  net/minecraft/world/entity/Entity.setPosRaw
+     377   3.3%  java/util/ArrayDeque.size
+     332   2.9%  net/minecraft/world/entity/Entity.move
+
+===== V3 35399980345 (cross-check) (/home/z/c-crussty/research/batch-collector-2026-09-19/run-s7162-leg2-artifact) =====
+total CPU samples: 128124; entity phase: 75667 (59.06%)
+--- behavior classes (share of TOTAL CPU) ---
+  fluid-push               14099  11.00% CPU   ( 18.6% of entity phase)
+  inside-pipeline          13587  10.60% CPU   ( 18.0% of entity phase)
+  travel-physics           10968   8.56% CPU   ( 14.5% of entity phase)
+  aiStep/entity-other       7792   6.08% CPU   ( 10.3% of entity phase)
+  broadphase                7521   5.87% CPU   (  9.9% of entity phase)
+  baseTick-other            5649   4.41% CPU   (  7.5% of entity phase)
+  item-entity               4675   3.65% CPU   (  6.2% of entity phase)
+  navigation                4200   3.28% CPU   (  5.6% of entity phase)
+  goal-selector             4162   3.25% CPU   (  5.5% of entity phase)
+  sensing                   1435   1.12% CPU   (  1.9% of entity phase)
+  controls                   657   0.51% CPU   (  0.9% of entity phase)
+  brain                      527   0.41% CPU   (  0.7% of entity phase)
+  targeting                  395   0.31% CPU   (  0.5% of entity phase)
+--- alloc axis: class shares of total alloc samples ---
+  inside-pipeline           2931  28.56%
+  travel-physics            2303  22.44%
+  fluid-push                1102  10.74%
+  baseTick-other             447   4.36%
+  item-entity                383   3.73%
+  navigation                 292   2.85%
+  broadphase                 164   1.60%
+  goal-selector               94   0.92%
+  brain                       34   0.33%
+  controls                    11   0.11%
+--- subsplit navigation ---
+  createPath                3502  ( 83.4% of class)
+  nav-tick/recompute         419  ( 10.0% of class)
+  done-navigation            153  (  3.6% of class)
+  node-evaluator             126  (  3.0% of class)
+--- subsplit goal-selector ---
+  selector-tick             2547  ( 61.2% of class)
+  canUse                    1492  ( 35.8% of class)
+  goal-tick                   78  (  1.9% of class)
+  canContinueToUse            36  (  0.9% of class)
+  done-goalsel                 9  (  0.2% of class)
+--- subsplit targeting ---
+  nearest-attackable         263  ( 66.6% of class)
+  targeting-cond              79  ( 20.0% of class)
+  done-targeting              37  (  9.4% of class)
+  hurt-by                     16  (  4.1% of class)
+--- subsplit travel-physics ---
+  travel                    6130  ( 55.9% of class)
+  Entity.move               4432  ( 40.4% of class)
+  Entity.collide             406  (  3.7% of class)
+--- subsplit broadphase ---
+  pushEntities              3605  ( 47.9% of class)
+  getEntities               3264  ( 43.4% of class)
+  done-broadphase            588  (  7.8% of class)
+  AABB.intersects             64  (  0.9% of class)
+--- top leafs navigation ---
+     200   4.8%  net/minecraft/world/level/pathfinder/PathTypeCache.get
+     187   4.5%  net/minecraft/world/level/chunk/PalettedContainer.get
+     160   3.8%  net/minecraft/world/level/pathfinder/PathTypeCache.compute
+     130   3.1%  net/minecraft/world/level/chunk/LevelChunk.getBlockStateFinal
+     118   2.8%  net/minecraft/world/level/pathfinder/WalkNodeEvaluator.checkNeighbourBlocks
+     113   2.7%  it/unimi/dsi/fastutil/ints/Int2ObjectOpenHashMap.find
+--- top leafs goal-selector ---
+     580  13.9%  it/unimi/dsi/fastutil/objects/ObjectLinkedOpenHashSet$SetIterator.next
+     420  10.1%  net/minecraft/world/entity/ai/goal/GoalSelector.tick
+     315   7.6%  net/minecraft/world/entity/ai/goal/GoalSelector.tickRunningGoals
+     297   7.1%  vtable stub
+     247   5.9%  net/minecraft/util/profiling/Profiler.get
+     192   4.6%  net/minecraft/world/level/chunk/PalettedContainer.get
+--- top leafs targeting ---
+      55  13.9%  net/minecraft/world/entity/ai/attributes/AttributeMap.getValue
+      43  10.9%  it/unimi/dsi/fastutil/objects/Object2ObjectOpenHashMap.get
+      25   6.3%  net/minecraft/world/entity/ai/goal/target/NearestAttackableTargetGoal.canUse
+      19   4.8%  vtable stub
+      18   4.6%  net/minecraft/world/entity/ai/goal/target/NearestAttackableTargetGoal.findTarget
+      16   4.1%  itable stub
+--- top leafs travel-physics ---
+     774   7.1%  ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.getCollisionsForBlocksOrWorldBorder
+     582   5.3%  net/minecraft/world/level/chunk/PalettedContainer.get
+     476   4.3%  net/minecraft/world/phys/AABB.<init>
+     370   3.4%  net/minecraft/world/entity/Entity.setPosRaw
+     351   3.2%  net/minecraft/world/entity/Entity.move
+     344   3.1%  net/minecraft/world/level/Level.findSupportingBlock

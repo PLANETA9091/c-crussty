@@ -215,6 +215,40 @@ public final class ZeroAllocOps {
     }
 
     // ==================================================================
+    // 1b. Entity.collidedWithShapeMovingFrom(Vec3, Vec3, List<AABB>)Z
+    //     RESOLUTION TARGET of the entity_compose stage-7 redirect
+    //     (same-name rule). Vanilla body verbatim (CONTRACT_ZEROALLOC
+    //     _S7164 javap 0-22): box = makeBoundingBox(from);
+    //     delta = to.subtract(from); return box.collidedAlongVector(delta,
+    //     boxes). Scalar form: entityBox-equivalents via live e.getBbWidth
+    //     /getBbHeight (already oracle-proven 50k) + collidedAlongVector
+    //     Scalars over the generic list (oracle-proven 300k). The static
+    //     MUST exist with EXACTLY (Entity;Vec3;Vec3;List)Z — a missing
+    //     target detonates as NoSuchMethodError on the first entity tick
+    //     (S7-164 leg#1 TECH-DUD, 66 thrown).
+    // ==================================================================
+    public static boolean collidedWithShapeMovingFrom(Entity e, Vec3 from, Vec3 to, List<AABB> boxes) {
+        // Entity.makeBoundingBox(from) -> EntityDimensions.makeBoundingBox verbatim:
+        float halfW = e.getBbWidth() / 2.0f;      // FLOAT division (javap 1-6)
+        float bbH = e.getBbHeight();
+        double xmin = from.x - (double) halfW;
+        double ymin = from.y;
+        double zmin = from.z - (double) halfW;
+        double xmax = from.x + (double) halfW;
+        double ymax = from.y + (double) bbH;
+        double zmax = from.z + (double) halfW;
+
+        // Vec3.subtract verbatim:
+        double dx = to.x - from.x;
+        double dy = to.y - from.y;
+        double dz = to.z - from.z;
+
+        // AABB.collidedAlongVector(delta, boxes) verbatim over the generic list:
+        return collidedAlongVectorScalars(xmin, ymin, zmin, xmax, ymax, zmax,
+            dx, dy, dz, boxes);
+    }
+
+    // ==================================================================
     // 3. Entity.updateFluidHeightAndDoFluidPushing(TagKey<Fluid>, D)Z
     //    verbatim body; scalars replace the deflated AABB, the Vec3
     //    accumulate chain and their ZERO-identity compares. FlowingFluid

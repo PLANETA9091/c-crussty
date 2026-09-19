@@ -3028,32 +3028,81 @@ const ZA_SHAPE_DESC: &str =
     "(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Ljava/util/List;)Z";
 const ZA_FLUID_PUSH_DESC: &str = "(Lnet/minecraft/tags/TagKey;D)Z";
 
+/// Single source of truth for the S7-164 redirect graph: (site name,
+/// site descriptor, bridge target name, bridge target descriptor).
+/// Consumed by (a) `patch_entity_zeroalloc` (bytecode surgery) and
+/// (b) `zeroalloc_resolution_closure` (delivery guard) so the generated
+/// `invokestatic` operands and the delivered ZeroAllocOps classfile can
+/// never drift apart.
+pub const ZA_REDIRECT_TARGETS: [(&str, &str, &str, &str); 3] = [
+    (
+        "collidedWithFluid",
+        ZA_FLUID_DESC,
+        "collidedWithFluid",
+        "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;)Z",
+    ),
+    (
+        "collidedWithShapeMovingFrom",
+        ZA_SHAPE_DESC,
+        "collidedWithShapeMovingFrom",
+        "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Ljava/util/List;)Z",
+    ),
+    (
+        "updateFluidHeightAndDoFluidPushing",
+        ZA_FLUID_PUSH_DESC,
+        "updateFluidHeightAndDoFluidPushing",
+        "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/tags/TagKey;D)Z",
+    ),
+];
+
+/// S7-164 leg#1 TECH-DUD guard (resolution closure): the bridge classfile
+/// actually being DELIVERED to the kernel loader must declare a static with
+/// EXACTLY the (name, descriptor) of every redirect target. A missing
+/// target resolves lazily on the FIRST entity tick and detonates as a
+/// NoSuchMethodError storm (66 throws in leg#1, 2026-09-19) — invisible to
+/// the defineClass verifier (verification does not resolve) and to the
+/// lockstep oracle (which calls the bridge from source, compile-time).
+pub fn zeroalloc_resolution_closure(bridge: &[u8]) -> Result<(), String> {
+    let Some(layout) = parse_layout(bridge) else {
+        return Err("bridge classfile unparseable".into());
+    };
+    let mut p = layout.methods_start;
+    let count = usize::from(u16_at(bridge, p).ok_or("truncated method count")?);
+    p = p.checked_add(2).ok_or("truncated method table")?;
+    let mut have: Vec<(String, String)> = Vec::with_capacity(count);
+    for _ in 0..count {
+        let n_idx = u16_at(bridge, p.checked_add(2).ok_or("truncated method")?).ok_or("truncated method name")?;
+        let d_idx = u16_at(bridge, p.checked_add(4).ok_or("truncated method")?).ok_or("truncated method desc")?;
+        let attr_count = usize::from(
+            u16_at(bridge, p.checked_add(6).ok_or("truncated method")?).ok_or("truncated method attrs")?,
+        );
+        p = p.checked_add(8).ok_or("truncated method table")?;
+        for _ in 0..attr_count {
+            let len = u32_at(bridge, p.checked_add(2).ok_or("truncated attr")?).ok_or("truncated attr")? as usize;
+            p = p.checked_add(6).ok_or("truncated attr")?.checked_add(len).ok_or("truncated attr")?;
+        }
+        let name = layout.pool.utf8_value(n_idx).ok_or("bad name idx")?;
+        let desc = layout.pool.utf8_value(d_idx).ok_or("bad desc idx")?;
+        have.push((name, desc));
+    }
+    for (_, _, tname, tdesc) in ZA_REDIRECT_TARGETS {
+        if !have.iter().any(|(n, d)| n == tname && d == tdesc) {
+            return Err(format!(
+                "ZeroAllocOps misses redirect target {tname}{tdesc} — \
+                 entity_compose stage 7 would detonate NoSuchMethodError on the first tick"
+            ));
+        }
+    }
+    Ok(())
+}
+
 /// S7-164 lever #10: redirect the THREE hottest Entity inside/fluid bodies
 /// (census: collidedWithFluid ← lambda$checkInsideBlocks$2; collidedAlongVector ←
 /// collidedWithShapeMovingFrom only; both from Entity) to the scalar
 /// ZeroAllocOps implementations. Composite: all three must succeed or the
 /// stage is skipped as a whole (fail-dominant, no half-composed stage).
 pub fn patch_entity_zeroalloc(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
-    let targets: [(&str, &str, &str, &str); 3] = [
-        (
-            "collidedWithFluid",
-            ZA_FLUID_DESC,
-            "collidedWithFluid",
-            "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;)Z",
-        ),
-        (
-            "collidedWithShapeMovingFrom",
-            ZA_SHAPE_DESC,
-            "collidedWithShapeMovingFrom",
-            "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Ljava/util/List;)Z",
-        ),
-        (
-            "updateFluidHeightAndDoFluidPushing",
-            ZA_FLUID_PUSH_DESC,
-            "updateFluidHeightAndDoFluidPushing",
-            "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/tags/TagKey;D)Z",
-        ),
-    ];
+    let targets = ZA_REDIRECT_TARGETS;
     let mut cur = bytes.to_vec();
     let mut ret = 0usize;
     let mut already = 0usize;

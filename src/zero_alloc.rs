@@ -105,6 +105,17 @@ pub fn activate() {
             return;
         }
 
+        // RESOLUTION CLOSURE GUARD (S7-164 leg#1 TECH-DUD): the embedded
+        // bridge bytes MUST declare every (name, descriptor) the stage-7
+        // redirect will emit; otherwise the first entity tick detonates a
+        // NoSuchMethodError storm. Fail-closed here -> dormant + loud log.
+        if let Err(e) = crate::classfile::zeroalloc_resolution_closure(ZERO_ALLOC_BYTES) {
+            eprintln!(
+                "[crussty-plugin] zero_alloc_inside: RESOLUTION CLOSURE FAILED: {e} — hook stays dormant"
+            );
+            return;
+        }
+
         let defined = cplug_sdk::jni_util::with_attached(|env| {
             let Some(cls) = cplug_sdk::classes::find_class("net/minecraft/world/entity/Entity")
             else {
@@ -225,5 +236,19 @@ mod zeroalloc_delivery_tests {
             super::ZERO_ALLOC_BYTES,
             "embedded ZeroAllocOps.class is stale — rerun scripts/build_zeroalloc_ops.sh"
         );
+    }
+
+    /// S7-164 leg#1 resolution-closure guard: the embedded bridge classfile
+    /// must declare EVERY (name, descriptor) the entity_compose stage-7
+    /// redirect emits. Would have FAILED before the leg#1 fix (ZeroAllocOps
+    /// lacked collidedWithShapeMovingFrom(Entity;Vec3;Vec3;List)Z — 66 ×
+    /// NoSuchMethodError on the live scene).
+    #[test]
+    fn zeroalloc_embedded_declares_all_redirect_targets() {
+        if let Err(e) = crate::classfile::zeroalloc_resolution_closure(super::ZERO_ALLOC_BYTES) {
+            panic!(
+                "RESOLUTION CLOSURE FAILED: {e} — rebuild entityinside/ via build_zeroalloc_ops.sh"
+            );
+        }
     }
 }
