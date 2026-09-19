@@ -2642,3 +2642,23 @@ RUN_ID_DISPATCHED: да (v5-кандидат #13-SBB, dispatch_s7166.py; S7-108 
 - Lever #13 v1 CRUSSTY_REGION_STEAL (fd91c51): общий снапшот-массив (ванильный порядок) + AtomicInteger-курсор чанков 512; все тянут до исчерпания → DONE-park→~0, крит-путь→~608; consumer бит-в-бит; interleave=S7-155 класс; rollback=env.
 - Гейты: RegionLockstepHarness + STEAL-ребёнок — PG1 PASS W1==W2==W4==W4+STEAL; cargo 189/189; release PASS. Компил-база мостов = CI patched-kernel.jar (новый воспроизводимый путь). yml: inside_diet→region_steal (25-лимит); run_world3.sh CRUSSTY_REGION_STEAL.
 - ДИСПАТЧ s7176: run 35452002378 in_progress @ fd91c51 (банк v3 + region_steal=1). Прегистер PG-S2..S5 (DONE-park ≤40, баланс ≤0.20, TPS ≥1.98, young ≤174, CRASH-FREE); честная оценка +4-6% — REFUTED→rollback+RECON-16. NEXT 334: absorb s7176; PASS→v4= v3+region_steal; REFUTED→remset-аттрибуция+planner-декомпозиция. S7-108 чист; CI-бутов 1 (санкционирован).
+
+---
+Task ID: TASK-348
+Agent: cron tick (Job 398847, продолжение сессии)
+Task: absorb s7189-хвост параллельной сессии; ре-ролл v2b-ноги после BAND-DISCARD ×2; S7-170 NAV-MOBS-GUARD реализация+гейт+диспатч
+
+Work Log:
+- git pull обоих репо; s7189 уже абсорбирован параллельной сессией (LANE-OPEN, обе оси отрицательные)
+- s7190 (35465880091) = BAND-DISCARD @ 9857408; ре-ролл s7191 (35466607225) = BAND-DISCARD @ 11694672 (пул в fast-дрейфе)
+- javap-инвентарь navigatingMobs (ServerLevel + EntityCallbacks): 4 сайта, все через Set интерфейс → дизайн одно-точечной подмены поля
+- S7-170 NAV-MOBS-GUARD в RegionTickOps.java: GuardedNavigatingMobs (lock + table-clone снапшот, порядок бит-в-бит), Unsafe swap idempotent main-only, маркер [S7-170]
+- NavMobsLockstepHarness: PASS 6/6 (240k порядок-паритет; стресс 0 исключений; сырой контроль взорвался точной продакшн NPE "wrapped is null")
+- absorb_s7189.py: PG-T1 дополнен guarded-marker чеком; s7170_javap_scan.py (канонические длины опкодов)
+- commit a5c353d push master ДО POST; диспатч s7192 = run 35467929550 @ a5c353d (v2b + S7-170)
+- GOAL ×33, CLAIMS TASK-348, push обоих репо
+
+Stage Summary:
+- c-crussty master a5c353d: S7-170 реализован+загейтован (инфраструктура правильности, не перф-рычаг)
+- в полёте: s7192 (35467929550 @ a5c353d), гейт: маркер + PG-T2 threw=0 + DUAL BAR vs ANCHOR-SLOW 1.60 @ 6680195
+- NEXT id 349: absorb 35467929550; DUAL BAR GREEN → min-of-2 → banking v4; < +10% → лейн #14 REFUTED-вердикт + RECON по CPU-оси; CRASH класса гонки → откат точки подмены
