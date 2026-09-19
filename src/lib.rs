@@ -37,6 +37,7 @@ mod jni_table;
 mod kernel_policy;
 mod loader;
 mod noise_fill;
+mod parse_diag;
 mod palette_gather;
 mod paletted;
 mod promote_wire;
@@ -125,6 +126,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // capture; patch served via retransform after the FlushOps bridge lands).
     // Dormant unless CRUSSTY_FLUSH_DIET=1.
     flush_diet::register();
+    // CHUNK-PARSE-DIAG (RECON-13d): byte hook on SerializableChunkData
+    // (pristine capture; patch served via retransform after the
+    // ChunkParseDiagOps bridge lands). Dormant unless CRUSSTY_PARSE_DIAG=1.
+    parse_diag::register();
     // FLUID-FREE-SECTION (S7-143): byte hook on LevelChunkSection (append-only
     // crusstyFf/crusstyFfGen splice) + FluidOps bridge for the Entity chain.
     // Dormant unless CRUSSTY_FLUID_FREE=1 (WARN without CRUSSTY_PALETTED_DEMUX=1).
@@ -328,6 +333,10 @@ fn inject_surface() {
     // the length-preserving patch, retransform (dormant unless
     // CRUSSTY_FLUSH_DIET=1).
     flush_diet::activate();
+    // CHUNK-PARSE-DIAG (RECON-13d): define ChunkParseDiagOps into the kernel
+    // loader, compute the ldc-anchored retarget of parse, retransform
+    // (dormant unless CRUSSTY_PARSE_DIAG=1).
+    parse_diag::activate();
     // FLUID-FREE-SECTION (S7-143): define FluidOps into the kernel loader,
     // compute the section field-splice, arm the inside_chain bridge (dormant
     // unless CRUSSTY_FLUID_FREE=1).
