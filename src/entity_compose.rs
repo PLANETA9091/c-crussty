@@ -546,6 +546,52 @@ pub fn activate() {
             }
         }
 
+        // ---- STAGE 9: inside-diet body redirect (TASK-332 lever #12 v1) ----
+        // Single-site body redirect of the private 5-arg checkInsideBlocks to
+        // the InsideDietOps bridge (glue-free per-call allocations, vanilla
+        // static walk). Fail-dominant like every other stage.
+        if crate::inside_diet::enabled_pub() {
+            if crate::inside_diet::wait_bridge_ready(120_000) {
+                match crate::classfile::patch_entity_inside_diet(&bytes) {
+                    Ok((p, outcome)) if matches!(
+                        outcome,
+                        crate::classfile::RetargetOutcome::Retargeted { sites: 1 }
+                    ) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_diet composed ({outcome:?})"
+                        );
+                        bytes = p;
+                        chain.push("inside_diet");
+                    }
+                    Ok((p, outcome)) if matches!(
+                        outcome,
+                        crate::classfile::RetargetOutcome::AlreadyPatched { sites: 1 }
+                    ) => {
+                        // Idempotent re-sight (stale retransform replay).
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_diet composed ({outcome:?})"
+                        );
+                        bytes = p;
+                        chain.push("inside_diet");
+                    }
+                    Ok((_p, outcome)) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_diet strict check violated ({outcome:?}), chain continues WITHOUT inside_diet (fail-dominant)"
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_diet patch rejected ({e}), chain continues WITHOUT inside_diet (fail-dominant)"
+                        );
+                    }
+                }
+            } else {
+                eprintln!(
+                    "[crussty-plugin] entity_compose: inside_diet bridge missed its window, chain continues WITHOUT inside_diet (fail-dominant)"
+                );
+            }
+        }
+
         let composed_len = bytes.len();
         t.set_patch(PatchCache {
             bytes: Arc::from(bytes),

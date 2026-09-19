@@ -3533,6 +3533,32 @@ pub fn redirect_static_method_body_to_static(
     Ok((out, RetargetOutcome::Retargeted { sites: 1 }))
 }
 
+/// INSIDE-DIET resolution closure (TASK-332 lever #12 v1): the redirected
+/// Entity.checkInsideBlocks body invokes InsideDietOps.checkInsideBlocks with
+/// the receiver-prepended descriptor; InsideDietOps constructs an
+/// InsideDietVisitor and calls the vanilla static walk. Both bridges must
+/// declare those members or the first entity tick detonates NoSuchMethodError.
+pub fn insidediet_resolution_closure(ops: &[u8], visitor: &[u8]) -> Result<(), String> {
+    const OPS_DESC: &str = "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector;Lit/unimi/dsi/fastutil/longs/LongSet;I)I";
+    const VISIT_DESC: &str = "(Lnet/minecraft/core/BlockPos;I)Z";
+    let targets: &[(&str, &str, &str, &str)] = &[
+        (
+            "class",
+            "net/minecraft/world/entity/InsideDietOps",
+            "checkInsideBlocks",
+            OPS_DESC,
+        ),
+        (
+            "class",
+            "net/minecraft/world/entity/InsideDietVisitor",
+            "visit",
+            VISIT_DESC,
+        ),
+    ];
+    check_members(ops, &targets[..1])?;
+    check_members(visitor, &targets[1..])
+}
+
 /// ZERO-ALLOC-INSIDE bridge target (kernel loader, same package as
 /// BlockGetter/TraverseOps).
 pub fn zeroalloc_resolution_closure(bridge: &[u8]) -> Result<(), String> {
@@ -3668,6 +3694,22 @@ pub fn patch_entity_zeroalloc(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome)
     } else {
         Ok((cur, RetargetOutcome::AlreadyPatched { sites: 3 }))
     }
+}
+
+/// INSIDE-DIET (TASK-332 lever #12 v1): single-site body redirect of the
+/// private instance method Entity.checkInsideBlocks(Vec3,Vec3,
+/// StepBasedCollector,LongSet,I)I to the InsideDietOps bridge (receiver
+/// prepended). Fail-closed: NotFound -> error up to the compose stage.
+pub fn patch_entity_inside_diet(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    redirect_method_body_to_static(
+        bytes,
+        "checkInsideBlocks",
+        "(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector;Lit/unimi/dsi/fastutil/longs/LongSet;I)I",
+        "net/minecraft/world/entity/Entity",
+        "net/minecraft/world/entity/InsideDietOps",
+        "checkInsideBlocks",
+        "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector;Lit/unimi/dsi/fastutil/longs/LongSet;I)I",
+    )
 }
 
 /// Find a method by NAME only (desc resolved by the caller from the found
@@ -6643,6 +6685,34 @@ mod blockpos_zerocursor {
     /// (entityinside/harness/RetransformProbe.java): defineClass verification
     /// is NOT enough — retransform-time verification caught the s7172 slot
     /// bug only via the real JVMTI RetransformClasses path.
+    /// TASK-332 lever #12 v1: the 5-arg checkInsideBlocks body-redirect on
+    /// the REAL Entity fixture must retarget exactly one site and be
+    /// idempotent (re-patch byte-identical).
+    #[test]
+    fn insidediet_redirects_exactly_one_site_and_is_idempotent() {
+        const REAL_ENTITY: &[u8] = include_bytes!("../tests/fixtures/Entity_real.class");
+        const CHECK_DESC: &str = "(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector;Lit/unimi/dsi/fastutil/longs/LongSet;I)I";
+        let (patched, outcome) = patch_entity_inside_diet(REAL_ENTITY).expect("redirect");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "exactly one 5-arg checkInsideBlocks body"
+        );
+        let (again, outcome2) = patch_entity_inside_diet(&patched).expect("re-redirect");
+        assert_eq!(outcome2, RetargetOutcome::AlreadyPatched { sites: 1 });
+        assert_eq!(again, patched, "repatch must be byte-identical");
+        // shape guards: same major, pool may only grow
+        assert_eq!(
+            u16::from_be_bytes([patched[6], patched[7]]),
+            u16::from_be_bytes([REAL_ENTITY[6], REAL_ENTITY[7]]),
+            "class major must stay pinned"
+        );
+        let n_orig = u16::from_be_bytes([REAL_ENTITY[8], REAL_ENTITY[9]]);
+        let n_new = u16::from_be_bytes([patched[8], patched[9]]);
+        assert!(n_new >= n_orig, "pool may only grow");
+        let _ = CHECK_DESC;
+    }
+
     #[test]
     fn dump_patched_blockpos_for_verifier_probe() {
         let (patched, _) = redirect_static_method_body_to_static(
