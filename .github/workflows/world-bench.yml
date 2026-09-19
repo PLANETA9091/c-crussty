@@ -59,10 +59,6 @@ on:
         description: 'FLUSH-DIET S7-137 ARCH-ATTACK lever #4 (1 = ARMED: StepBasedCollector.flushStep zero-waste addAll via FlushOps.fladd — kills new Object[0] garbage per empty effect step; 0 = vanilla-flush A/B leg)'
         required: false
         default: '0'
-      fluid_free:
-        description: 'FLUID-FREE-SECTION S7-143 ARCH-ATTACK lever #5 (1 = ARMED: fluid-ff verdict cache via FluidOps.fgate — requires paletted_demux=1; 0 = vanilla-fluid A/B leg)'
-        required: false
-        default: '0'
       fluid_dirty:
         description: 'FLUID-DIRTY S7-151/TASK-290 ARCH-ATTACK lever #6 (1 = ARMED: fluid-scan memoization via FluidPushOps.scan + event-driven dirty-stamp ledger on LevelChunk.setBlockState; composes through inside_cache chain; 0 = vanilla-scan A/B leg)'
         required: false
@@ -81,6 +77,10 @@ on:
         default: '0'
       zero_alloc:
         description: 'ZERO-ALLOC-INSIDE S7-164 ARCH-ATTACK lever #10 (1 = ARMED: scalar allocation-free ZeroAllocOps bodies replacing Entity.collidedWithFluid/collidedWithShapeMovingFrom/updateFluidHeightAndDoFluidPushing via the entity_compose stage-7 body-redirect — requires region_threads>=2; 0 = vanilla A/B leg)'
+        required: false
+        default: '0'
+      zero_cursor:
+        description: 'ZERO-CURSOR lever #11 v1 (TASK-330): pooled bit-exact betweenCornersInDirection iterator (ZeroCursorIter+Ops), kills BlockPos$6+MutableBlockPos churn per travel step; 0 = vanilla A/B leg'
         required: false
         default: '0'
       skip_store_bb:
@@ -191,12 +191,13 @@ jobs:
           ALLOC_DIET: ${{ inputs.alloc_diet || '0' }}
           INSIDE_CACHE: ${{ inputs.inside_cache || '0' }}
           FLUSH_DIET: ${{ inputs.flush_diet || '0' }}
-          FLUID_FREE: ${{ inputs.fluid_free || '0' }}
+          FLUID_FREE: '0' # input dropped TASK-330 (requires paletted_demux=1; lever dormant)
           FLUID_DIRTY: ${{ inputs.fluid_dirty || '0' }}
           REGION_THREADS: ${{ inputs.region_threads || '0' }}
           BATCH_COLLECTOR: ${{ inputs.batch_collector || '0' }}
           FLAT_TRAVERSAL: ${{ inputs.flat_traversal || '0' }}
           ZERO_ALLOC: ${{ inputs.zero_alloc || '0' }}
+          ZERO_CURSOR: ${{ inputs.zero_cursor || '0' }}
           SKIP_STORE_BB: ${{ inputs.skip_store_bb || '0' }}
           PARSE_DIAG: ${{ inputs.parse_diag || '0' }}
           POPULATION_TARGET: ${{ inputs.population_target || '0' }}

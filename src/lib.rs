@@ -38,6 +38,7 @@ mod kernel_policy;
 mod loader;
 mod noise_fill;
 mod parse_diag;
+mod zero_cursor;
 mod palette_gather;
 mod paletted;
 mod promote_wire;
@@ -130,6 +131,11 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // (pristine capture; patch served via retransform after the
     // ChunkParseDiagOps bridge lands). Dormant unless CRUSSTY_PARSE_DIAG=1.
     parse_diag::register();
+    // ZERO-CURSOR (lever #11 v1, TASK-330): byte hook on BlockPos (pristine
+    // capture; pooled-iterator redirect served via retransform after the
+    // ZeroCursorIter/ZeroCursorOps bridges land). Dormant unless
+    // CRUSSTY_ZERO_CURSOR=1.
+    zero_cursor::register();
     // FLUID-FREE-SECTION (S7-143): byte hook on LevelChunkSection (append-only
     // crusstyFf/crusstyFfGen splice) + FluidOps bridge for the Entity chain.
     // Dormant unless CRUSSTY_FLUID_FREE=1 (WARN without CRUSSTY_PALETTED_DEMUX=1).
@@ -337,6 +343,11 @@ fn inject_surface() {
     // loader, compute the ldc-anchored retarget of parse, retransform
     // (dormant unless CRUSSTY_PARSE_DIAG=1).
     parse_diag::activate();
+    // ZERO-CURSOR (lever #11 v1, TASK-330): define ZeroCursorIter+Ops into
+    // the kernel loader, static body-redirect of
+    // lambda$betweenCornersInDirection$8, retransform (dormant unless
+    // CRUSSTY_ZERO_CURSOR=1).
+    zero_cursor::activate();
     // FLUID-FREE-SECTION (S7-143): define FluidOps into the kernel loader,
     // compute the section field-splice, arm the inside_chain bridge (dormant
     // unless CRUSSTY_FLUID_FREE=1).
