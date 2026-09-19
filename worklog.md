@@ -2365,3 +2365,26 @@ Stage Summary:
 
 RUN_ID_DISPATCHED: нет (absorb-тик; S7-108 чист)
 - [TASK-310 доп.] RECON-7 (в тике после absorb): unclassified 52736 = 55%+ GC/JIT-фреймы (маркер-расхождение классификаторов), реальный MC-хвост ≤3% (bucketOf/setOldPos/sendChanges/clearPlayers); ТОП-1 entity-фаза подтверждена: movement 20.33% > broadphase 11.26% (2×REFUTED) > fluid-push 9.76% > inside-pipeline 8.00% > item-entity 7.19%; рычаг #10 ZERO-ALLOC-INSIDE прицелен (fluid-push + inside-pipeline + collidedWithShapeMovingFrom-сайты в movement); javap-контракт 12 методов снят verbatim: research/flat-traversal-2026-09-19/{RECON7_SUMMARY.md, RECON7_unclassified_leafs.txt, CONTRACT_ZEROALLOC_S7164.txt}; диспатч — следующий тик после фиксации гейтов от СВЕЖЕГО профиля (урок №6)
+
+---
+## TASK-311 (S7-164 preregister + диспатч ZERO-ALLOC-INSIDE) — 2026-09-19 ~11:0x +08 — Job 396026, тик 09:43
+
+Task: по CLAIMS TASK-310 (RECON-7 NEXT) — фиксация прereg-гейтов рычага #10 от СВЕЖЕГО профиля лега-базы (урок №6), реализация ZERO-ALLOC-INSIDE, оракул, диспатч.
+
+Work Log:
+- creds (1b: bootstrap_tick.sh отсутствует → PUSH-URL remote set-url обоим репо); pull ×3 (up to date; CRUSSTY pristine в песочнице отсутствует — не трогался); next TASK id = 311; CI чист (S7-108)
+- Census зоны по cpu-collapsed v3 (128124): collidedWithFluid 1749 ← только lambda$checkInsideBlocks$2/Recorder.visit; collidedWithShapeMovingFrom 687 ← только collidedWithFluid; collidedAlongVector 406 ← только shape ⇒ 3 Entity body-redirect захватывают весь лейн, AABB не ретрансформируется; updateFluid 13523 (10.55% CPU) — крупнейший под-лейн; getAABB 987 под collidedWithFluid
+- javap-дозапись контрактов: EntityDimensions.makeBoundingBox (FLOAT width/2f, height), AABB.deflate(D)=inflate(−d), Fluid.getAABB (FLOAT-сложение maxY), Vec3.normalize (порог 9.999999747378752E-6)/length/scale/add, getDirection WEST-ветка ПЕРЕпроверена свежим javap (контракт ТИКА 09:08 содержал опечатку порядка: (minX,minY,maxY,minZ,maxZ), оракул/локстеп подтвердили верную)
+- ZeroAllocOps.java: скалярные не-кэширующие тела 3 Entity-методов + collideAlongVectorScalars + clipPresent/getDirection/clipPoint-копии; Unsafe-офсеты fluidHeight/lastLavaContact; NO nested (гварды ×3); build_zeroalloc_ops.sh (delivery-set guard 1 classfile)
+- classfile.rs: НОВЫЙ механизм redirect_method_body_to_static (замещение Code: typed load-опкоды по дескриптору (dload для double!), receiver-prepended invokestatic, Exceptions keep / debug-tables drop, attr_len=12+code); patch_entity_zeroalloc (составная sites==3, fail-dominant); 5 cargo-тестов на REAL Entity.class
+- entity_compose stage 7 (zeroin, строгая составная); lib.rs активация zero_alloc; run_world3.sh + world-bench.yml: env-passthrough CRUSSTY_ZERO_ALLOC
+- Два бага пойманы до диспатча: (1) attr_len=+4 → срыв ходьбы методов (найден диаг-дампом стыка, чинен по JVMS 4.7.3); (2) clipPoint-инверсия t (урок №9-повтор: оракул дал расхождения в обе стороны, dcmpg-семантика → фикс) → ZeroAllocLockstepHarness 350k (50k makeBox + 300k collidedAlongVector, 0–6 боксов degenerate-классы) PASS бит-в-бит; Entity_patched (204141 байт) верифицирован HotSpot defineClass; сьют 166/0/1
+- Прereg-гейты от свежего v3-профиля (урок №6): PG2 (ARMED [inside->rng->batch->zeroin] rc=0, «stage zeroin composed (Retargeted{3})», «zero_alloc_ops: defined», поп 150k VALID, 0 NCDFE); PG3 TPS ≥ 1.60; PG4a collided-лейн (3829) ≥ −50% (ожидание −70..−80%); PG4b fluid-push (13523) ≥ −5% (ожидание −5..−10% прямых); PG4c young GC ≤ 154 И AABB+Vec3-аллок ≤ 36.1% total (v3 40.08%); CRASH-FREE (0 crash/0 Full, исключения ≤ 0–5/ран шум-бенд)
+- GOAL СТАТУС ×1; диспатч dispatch_s7164.py → RUN_ID 35417195790 (head eb89b7d, in_progress); учёт: CLAIMS TASK-311, worklog, атомарный append; пуш обоих репо
+
+Stage Summary:
+- Рычаг #10 ZERO-ALLOC-INSIDE готов и в полёте: новый механизм эры METHOD-BODY REDIRECT (кроме site-retarget) — замещение тел через entity_compose stage 7; двойная цель = CPU collided/fluid-лейнов + alloc-давление (AABB/Vec3-новы) → young-GC → GC/JIT-фаза 33%
+- Формализованы гварды новой механики: delivery-graph (1 classfile), HotSpot-верификация через defineClass-гейт, бит-в-бит оракул 350k — трёхслойный барьер классов дефектов
+- NEXT: absorb 35417195790 по прereg-гейтам → CUMULATIVE v4 или REFUTED+rollback; затем свежий ТОП → следующий круг «ТОП-ПОЖИРАТЕЛЬ → ∞» (movement/AI 20.33% RECON / getFlow v2 / residual)
+
+RUN_ID_DISPATCHED: 35417195790 (preregister A/B leg#1; CI-бутов за тик 1 — санкционированный)
