@@ -93,7 +93,6 @@ def main():
         "seconds": "300",
         "fake_players": "4",
         "fluid_guard": "1",
-        "paletted_demux": "0",
         "alloc_diet": "0",
         "inside_cache": "1",
         "flush_diet": "1",
