@@ -52,6 +52,24 @@ import net.minecraft.world.level.entity.EntityTickList;
  * Dormant-invisible: env CRUSSTY_REGION_THREADS (parsed once; 1/absent =
  * vanilla passthrough). Region span: 8 chunks (quadrant buckets at W=4,
  * x-stripes otherwise).
+ *
+ * S7-167 STEAL MODE (lever #13, RECON-15/TASK-333): env CRUSSTY_REGION_STEAL.
+ * RECON-15 (fresh s7169 wall profile) measured the static-bucket phase 3:
+ * main bucket-0 wall 478 samples vs 651 per helper (total work 2432, critical
+ * path 651 => mean parallelism 3.74/4 = 93% efficiency) and the main thread
+ * PARKED on the DONE barrier 121/900 = 13.4% of its wall — static quadrant
+ * partitioning is workload-UNAWARE (bucket imbalance + jitter is suffered,
+ * not shared). The steal mode replaces per-slot buckets with ONE shared
+ * snapshot array in exact vanilla iteration order + an AtomicInteger chunk
+ * cursor (STEAL_CHUNK=512): every participant (main + W-1 helpers) pulls
+ * chunks until the queue is exhausted. Per-entity logic is untouched
+ * (vanilla consumer bit-for-bit); intra-chunk order = snapshot order;
+ * cross-chunk interleaving is the SAME parity class the owner bar already
+ * accepts for region ticks (median-exact, documented S7-155 boundary).
+ * Expected effect: DONE-park -> ~0 (the main finishes last, not first),
+ * critical path 651 -> ~608 samples (total/4), GC/worker jitter absorbed by
+ * the queue instead of idling the main thread. Rollback = env (bank v3
+ * keeps the static path bit-identical when CRUSSTY_REGION_STEAL is absent).
  */
 public final class RegionTickOps {
 
@@ -160,6 +178,46 @@ public final class RegionTickOps {
         }
     }
 
+    /**
+     * S7-167 STEAL MODE (lever #13): chunked shared queue instead of static
+     * per-slot buckets. Dormant-invisible: absent env = static path
+     * bit-identical to the shipped bank v3 behaviour.
+     */
+    private static final boolean STEAL = parseSteal();
+
+    /** Entities per stolen chunk: tail imbalance <= STEAL_CHUNK (~0.34% of 150k). */
+    private static final int STEAL_CHUNK = 512;
+
+    private static boolean parseSteal() {
+        try {
+            String v = System.getenv("CRUSSTY_REGION_STEAL");
+            if (v == null) return false;
+            v = v.trim().toLowerCase();
+            return v.equals("1") || v.equals("true") || v.equals("on") || v.equals("yes");
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    /**
+     * Shared snapshot for the steal mode: ONE array in exact vanilla
+     * iteration order (reused, grown on demand — zero-alloc steady state).
+     * Publication to helpers = volatile write + the GO barrier
+     * happens-before edge (same guarantee as the static mode).
+     */
+    private static volatile Entity[] stealArr = new Entity[0];
+    private static volatile int stealLen = 0;
+
+    /**
+     * Chunk cursor: main resets to 0 BEFORE GO (happens-before edge);
+     * participants pull index windows with getAndAdd(STEAL_CHUNK).
+     */
+    private static final java.util.concurrent.atomic.AtomicInteger STEAL_CURSOR =
+            new java.util.concurrent.atomic.AtomicInteger();
+
+    /** Main-thread-only snapshot length scratch (no per-tick alloc). */
+    private static int snapLen;
+
     /** Retarget of the single ServerLevel.tick forEach call site (1:1 stack). */
     public static void forEach(EntityTickList list, Consumer<Entity> consumer) {
         if (BATCH_COLLECTOR && (++telemetryTicks % TELEMETRY_INTERVAL) == 0L) {
@@ -174,10 +232,106 @@ public final class RegionTickOps {
             return;
         }
         try {
-            parallelTick(list, consumer, w);
+            if (STEAL) {
+                stealTick(list, consumer, w);
+            } else {
+                parallelTick(list, consumer, w);
+            }
         } finally {
             // belt and suspenders: the phase must never outlive this frame
             phaseActive = false;
+        }
+    }
+
+    /**
+     * S7-167 steal-mode tick: ONE shared snapshot array in exact vanilla
+     * iteration order + chunk cursor; main and helpers all pull chunks until
+     * the queue is exhausted, so nobody idles on DONE while work remains.
+     */
+    private static void stealTick(EntityTickList list, Consumer<Entity> c, int w) {
+        // Phase 1+2 (serial, zero-alloc steady state): vanilla-protocol
+        // forEach pass fills the shared array in place (grow-on-overflow,
+        // rare); publication = volatile writes + GO barrier happens-before.
+        Entity[] arr = stealArr;
+        if (arr.length == 0) {
+            arr = new Entity[8192];
+            stealArr = arr;
+        }
+        snapLen = 0;
+        list.forEach(e -> {
+            Entity[] b = stealArr;
+            int i = snapLen;
+            if (i == b.length) {
+                b = java.util.Arrays.copyOf(b, i * 2);
+                stealArr = b;
+            }
+            b[i] = e;
+            snapLen = i + 1;
+        });
+        arr = stealArr;
+        final int total = snapLen;
+        consumer = c;
+        stealLen = total;
+
+        // Phase 3 (parallel): main = one of the pullers, helpers 1..w-1.
+        // stealChunks() joins DONE in its own finally — the ONLY join point.
+        ensureHelpers(w);
+        phaseActive = true;
+        STEAL_CURSOR.set(0);
+        try {
+            GO.await(); // releases helpers (they park here between ticks)
+            stealChunks();
+        } catch (Throwable t) {
+            if (workerError == null) workerError = t;
+            phaseActive = false;
+        }
+        phaseActive = false;
+
+        // Post-join retention hygiene: null stale tail refs beyond snapLen
+        // so discarded entities are not kept alive by the reused array
+        // (zero-alloc pass, main-only, workers parked after DONE).
+        for (int j = total, n2 = arr.length; j < n2; j++) arr[j] = null;
+
+        // Phase 4 (serial): drain deferred EntityCallbacks mutations in FIFO order.
+        Mut m;
+        while ((m = PENDING.poll()) != null) {
+            if (m.add) list.add(m.entity); else list.remove(m.entity);
+        }
+
+        Throwable err = workerError;
+        if (err != null) {
+            if (err instanceof RuntimeException) throw (RuntimeException) err;
+            if (err instanceof Error) throw (Error) err;
+            throw new RuntimeException(err);
+        }
+    }
+
+    /**
+     * Pull STEAL_CHUNK-sized windows from the shared cursor until exhausted.
+     * Intra-chunk order = snapshot order = vanilla insertion order; the
+     * DONE barrier in the finally keeps the join point identical to the
+     * static mode (crash semantics: workerError rethrown on main).
+     */
+    private static void stealChunks() {
+        try {
+            Consumer<Entity> c = consumer;
+            Entity[] b = stealArr;
+            int total = stealLen;
+            for (int i = STEAL_CURSOR.getAndAdd(STEAL_CHUNK); i < total;
+                 i = STEAL_CURSOR.getAndAdd(STEAL_CHUNK)) {
+                int end = Math.min(i + STEAL_CHUNK, total);
+                for (int j = i; j < end; j++) {
+                    c.accept(b[j]); // vanilla per-entity logic, bit-for-bit
+                }
+            }
+        } catch (Throwable t) {
+            if (workerError == null) workerError = t; // crash surfaces on main at join
+        } finally {
+            try {
+                DONE.await();
+            } catch (Throwable t) {
+                if (workerError == null) workerError = t;
+            }
         }
     }
 
@@ -284,7 +438,11 @@ public final class RegionTickOps {
                     while (true) {
                         try {
                             GO.await();
-                            tickBucket(slot);
+                            if (STEAL) {
+                                stealChunks(); // S7-167: pull shared chunks
+                            } else {
+                                tickBucket(slot);
+                            }
                         } catch (Throwable tt) {
                             // broken barrier / tick failure: surface via workerError
                             // (main rethrows at join); park briefly, never hot-spin

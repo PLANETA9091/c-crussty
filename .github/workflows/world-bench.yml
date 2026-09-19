@@ -86,8 +86,11 @@ on:
         description: 'SKIP-STORE-BB #13-SBB S7-166 ARCH-ATTACK (1 = ARMED: value-equal store-skip for Entity.setBoundingBox via the SkipStoreOps body-redirect, entity_compose stage-8 — requires region_threads>=2; 0 = vanilla A/B leg)'
         required: false
         default: '0'
-      inside_diet:
-        description: 'INSIDE-DIET lever #12 v1 (TASK-332): glue-free per-call inside-blocks sweep (InsideDietOps+Visitor, vanilla walk bit-exact), entity_compose stage-9 — requires region_threads>=2; 0 = vanilla A/B leg'
+      # inside_diet input REMOVED (TASK-333): the 25-input GitHub limit;
+      # lever #12 v1 was REFUTED-by-TPS (s7174/75 min-of-2 1.50<1.60) and
+      # rolled back — bridges remain verified infrastructure.
+      region_steal:
+        description: 'STEAL lever #13 v1 (TASK-333): shared snapshot + chunk cursor (512) instead of static region buckets; DONE-park 13.4% -> ~0; requires region_threads>=2; 0 = static-bucket A/B leg'
         required: false
         default: '0'
       population_target:
@@ -202,7 +205,7 @@ jobs:
           ZERO_ALLOC: ${{ inputs.zero_alloc || '0' }}
           ZERO_CURSOR: '0'
           SKIP_STORE_BB: ${{ inputs.skip_store_bb || '0' }}
-          INSIDE_DIET: ${{ inputs.inside_diet || '0' }}
+          REGION_STEAL: ${{ inputs.region_steal || '0' }}
           PARSE_DIAG: ${{ inputs.parse_diag || '0' }}
           POPULATION_TARGET: ${{ inputs.population_target || '0' }}
           POPULATION_SEED: ${{ inputs.population_seed || '42' }}
