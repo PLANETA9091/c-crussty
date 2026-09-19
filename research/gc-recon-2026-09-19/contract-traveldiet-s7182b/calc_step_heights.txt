@@ -1,0 +1,139 @@
+  private static float[] calculateStepHeights(net.minecraft.world.phys.AABB, java.util.List<net.minecraft.world.phys.shapes.VoxelShape>, java.util.List<net.minecraft.world.phys.AABB>, float, float);
+    Code:
+       0: new           #670                // class it/unimi/dsi/fastutil/floats/FloatArraySet
+       3: dup
+       4: invokespecial #673                // Method it/unimi/dsi/fastutil/floats/FloatArraySet."<init>":()V
+       7: astore        5
+       9: iconst_0
+      10: istore        6
+      12: aload_1
+      13: invokeinterface #678,  1          // InterfaceMethod java/util/List.size:()I
+      18: istore        7
+      20: iload         6
+      22: iload         7
+      24: if_icmpge     149
+      27: aload_1
+      28: iload         6
+      30: invokeinterface #682,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+      35: checkcast     #684                // class net/minecraft/world/phys/shapes/VoxelShape
+      38: astore        8
+      40: aload         8
+      42: invokeinterface #690,  1          // InterfaceMethod ca/spottedleaf/moonrise/patches/collisions/shape/CollisionVoxelShape.moonrise$rootCoordinatesY:()[D
+      47: astore        9
+      49: aload         8
+      51: invokeinterface #694,  1          // InterfaceMethod ca/spottedleaf/moonrise/patches/collisions/shape/CollisionVoxelShape.moonrise$offsetY:()D
+      56: dstore        10
+      58: aload         9
+      60: astore        12
+      62: aload         12
+      64: arraylength
+      65: istore        13
+      67: iconst_0
+      68: istore        14
+      70: iload         14
+      72: iload         13
+      74: if_icmpge     143
+      77: aload         12
+      79: iload         14
+      81: daload
+      82: dstore        15
+      84: dload         15
+      86: dload         10
+      88: dadd
+      89: dstore        17
+      91: dload         17
+      93: aload_0
+      94: getfield      #700                // Field net/minecraft/world/phys/AABB.minY:D
+      97: dsub
+      98: d2f
+      99: fstore        19
+     101: fload         19
+     103: fload_3
+     104: fcmpl
+     105: ifle          111
+     108: goto          143
+     111: fload         19
+     113: fconst_0
+     114: fcmpg
+     115: iflt          137
+     118: fload         19
+     120: fload         4
+     122: fcmpl
+     123: ifne          129
+     126: goto          137
+     129: aload         5
+     131: fload         19
+     133: invokevirtual #704                // Method it/unimi/dsi/fastutil/floats/FloatArraySet.add:(F)Z
+     136: pop
+     137: iinc          14, 1
+     140: goto          70
+     143: iinc          6, 1
+     146: goto          20
+     149: iconst_0
+     150: istore        6
+     152: aload_2
+     153: invokeinterface #678,  1          // InterfaceMethod java/util/List.size:()I
+     158: istore        7
+     160: iload         6
+     162: iload         7
+     164: if_icmpge     272
+     167: aload_2
+     168: iload         6
+     170: invokeinterface #682,  2          // InterfaceMethod java/util/List.get:(I)Ljava/lang/Object;
+     175: checkcast     #696                // class net/minecraft/world/phys/AABB
+     178: astore        8
+     180: aload         8
+     182: getfield      #700                // Field net/minecraft/world/phys/AABB.minY:D
+     185: aload_0
+     186: getfield      #700                // Field net/minecraft/world/phys/AABB.minY:D
+     189: dsub
+     190: d2f
+     191: fstore        9
+     193: aload         8
+     195: getfield      #707                // Field net/minecraft/world/phys/AABB.maxY:D
+     198: aload_0
+     199: getfield      #700                // Field net/minecraft/world/phys/AABB.minY:D
+     202: dsub
+     203: d2f
+     204: fstore        10
+     206: fload         9
+     208: fconst_0
+     209: fcmpg
+     210: iflt          236
+     213: fload         9
+     215: fload         4
+     217: fcmpl
+     218: ifeq          236
+     221: fload         9
+     223: fload_3
+     224: fcmpl
+     225: ifgt          236
+     228: aload         5
+     230: fload         9
+     232: invokevirtual #704                // Method it/unimi/dsi/fastutil/floats/FloatArraySet.add:(F)Z
+     235: pop
+     236: fload         10
+     238: fconst_0
+     239: fcmpg
+     240: iflt          266
+     243: fload         10
+     245: fload         4
+     247: fcmpl
+     248: ifeq          266
+     251: fload         10
+     253: fload_3
+     254: fcmpl
+     255: ifgt          266
+     258: aload         5
+     260: fload         10
+     262: invokevirtual #704                // Method it/unimi/dsi/fastutil/floats/FloatArraySet.add:(F)Z
+     265: pop
+     266: iinc          6, 1
+     269: goto          160
+     272: aload         5
+     274: invokevirtual #711                // Method it/unimi/dsi/fastutil/floats/FloatArraySet.toFloatArray:()[F
+     277: astore        6
+     279: aload         6
+     281: invokestatic  #717                // Method it/unimi/dsi/fastutil/floats/FloatArrays.unstableSort:([F)V
+     284: aload         6
+     286: areturn

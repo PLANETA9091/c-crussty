@@ -1,0 +1,267 @@
+  private net.minecraft.world.phys.Vec3 collide(net.minecraft.world.phys.Vec3);
+    Code:
+       0: aload_1
+       1: getfield      #1561               // Field net/minecraft/world/phys/Vec3.x:D
+       4: dconst_0
+       5: dcmpl
+       6: ifne          13
+       9: iconst_1
+      10: goto          14
+      13: iconst_0
+      14: istore_2
+      15: aload_1
+      16: getfield      #1563               // Field net/minecraft/world/phys/Vec3.y:D
+      19: dconst_0
+      20: dcmpl
+      21: ifne          28
+      24: iconst_1
+      25: goto          29
+      28: iconst_0
+      29: istore_3
+      30: aload_1
+      31: getfield      #1565               // Field net/minecraft/world/phys/Vec3.z:D
+      34: dconst_0
+      35: dcmpl
+      36: ifne          43
+      39: iconst_1
+      40: goto          44
+      43: iconst_0
+      44: istore        4
+      46: iload_2
+      47: iload_3
+      48: iand
+      49: iload         4
+      51: iand
+      52: ifeq          57
+      55: aload_1
+      56: areturn
+      57: aload_0
+      58: invokevirtual #1170               // Method getBoundingBox:()Lnet/minecraft/world/phys/AABB;
+      61: astore        5
+      63: new           #1359               // class java/util/ArrayList
+      66: dup
+      67: invokespecial #1360               // Method java/util/ArrayList."<init>":()V
+      70: astore        6
+      72: new           #1359               // class java/util/ArrayList
+      75: dup
+      76: invokespecial #1360               // Method java/util/ArrayList."<init>":()V
+      79: astore        7
+      81: iload_2
+      82: iload         4
+      84: iand
+      85: ifeq          123
+      88: aload_1
+      89: getfield      #1563               // Field net/minecraft/world/phys/Vec3.y:D
+      92: dconst_0
+      93: dcmpg
+      94: ifge          109
+      97: aload         5
+      99: aload_1
+     100: getfield      #1563               // Field net/minecraft/world/phys/Vec3.y:D
+     103: invokestatic  #2499               // Method ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.cutDownwards:(Lnet/minecraft/world/phys/AABB;D)Lnet/minecraft/world/phys/AABB;
+     106: goto          118
+     109: aload         5
+     111: aload_1
+     112: getfield      #1563               // Field net/minecraft/world/phys/Vec3.y:D
+     115: invokestatic  #2502               // Method ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.cutUpwards:(Lnet/minecraft/world/phys/AABB;D)Lnet/minecraft/world/phys/AABB;
+     118: astore        8
+     120: goto          131
+     123: aload         5
+     125: aload_1
+     126: invokevirtual #2505               // Method net/minecraft/world/phys/AABB.expandTowards:(Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/AABB;
+     129: astore        8
+     131: new           #1359               // class java/util/ArrayList
+     134: dup
+     135: invokespecial #1360               // Method java/util/ArrayList."<init>":()V
+     138: astore        9
+     140: aload_0
+     141: getfield      #563                // Field level:Lnet/minecraft/world/level/Level;
+     144: aload_0
+     145: checkcast     #2                  // class net/minecraft/world/entity/Entity
+     148: aload         8
+     150: aload         9
+     152: iconst_0
+     153: aconst_null
+     154: invokestatic  #2509               // Method ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.getEntityHardCollisions:(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;Ljava/util/List;ILjava/util/function/Predicate;)Z
+     157: pop
+     158: aload_0
+     159: getfield      #563                // Field level:Lnet/minecraft/world/level/Level;
+     162: aload_0
+     163: checkcast     #2                  // class net/minecraft/world/entity/Entity
+     166: aload         8
+     168: aload         6
+     170: aload         7
+     172: iconst_4
+     173: aconst_null
+     174: invokestatic  #2513               // Method ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.getCollisionsForBlocksOrWorldBorder:(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;Ljava/util/List;Ljava/util/List;ILjava/util/function/BiPredicate;)Z
+     177: pop
+     178: aload         7
+     180: aload         9
+     182: invokeinterface #2258,  2         // InterfaceMethod java/util/List.addAll:(Ljava/util/Collection;)Z
+     187: pop
+     188: aload_1
+     189: aload         5
+     191: aload         6
+     193: aload         7
+     195: invokestatic  #2517               // Method ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.performCollisions:(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/AABB;Ljava/util/List;Ljava/util/List;)Lnet/minecraft/world/phys/Vec3;
+     198: astore        10
+     200: aload         10
+     202: getfield      #1561               // Field net/minecraft/world/phys/Vec3.x:D
+     205: aload_1
+     206: getfield      #1561               // Field net/minecraft/world/phys/Vec3.x:D
+     209: dcmpl
+     210: ifeq          217
+     213: iconst_1
+     214: goto          218
+     217: iconst_0
+     218: istore        11
+     220: aload         10
+     222: getfield      #1563               // Field net/minecraft/world/phys/Vec3.y:D
+     225: aload_1
+     226: getfield      #1563               // Field net/minecraft/world/phys/Vec3.y:D
+     229: dcmpl
+     230: ifeq          237
+     233: iconst_1
+     234: goto          238
+     237: iconst_0
+     238: istore        12
+     240: aload         10
+     242: getfield      #1565               // Field net/minecraft/world/phys/Vec3.z:D
+     245: aload_1
+     246: getfield      #1565               // Field net/minecraft/world/phys/Vec3.z:D
+     249: dcmpl
+     250: ifeq          257
+     253: iconst_1
+     254: goto          258
+     257: iconst_0
+     258: istore        13
+     260: iload         12
+     262: ifeq          278
+     265: aload_1
+     266: getfield      #1563               // Field net/minecraft/world/phys/Vec3.y:D
+     269: dconst_0
+     270: dcmpg
+     271: ifge          278
+     274: iconst_1
+     275: goto          279
+     278: iconst_0
+     279: istore        14
+     281: iload         14
+     283: ifne          293
+     286: aload_0
+     287: getfield      #1915               // Field onGround:Z
+     290: ifeq          316
+     293: iload         11
+     295: ifne          303
+     298: iload         13
+     300: ifeq          316
+     303: aload_0
+     304: invokevirtual #2519               // Method maxUpStep:()F
+     307: f2d
+     308: dup2
+     309: dstore        15
+     311: dconst_0
+     312: dcmpg
+     313: ifgt          319
+     316: aload         10
+     318: areturn
+     319: iload         14
+     321: ifeq          339
+     324: aload         5
+     326: dconst_0
+     327: aload         10
+     329: getfield      #1563               // Field net/minecraft/world/phys/Vec3.y:D
+     332: dconst_0
+     333: invokevirtual #1902               // Method net/minecraft/world/phys/AABB.move:(DDD)Lnet/minecraft/world/phys/AABB;
+     336: goto          341
+     339: aload         5
+     341: astore        17
+     343: aload         17
+     345: aload_1
+     346: getfield      #1561               // Field net/minecraft/world/phys/Vec3.x:D
+     349: dload         15
+     351: aload_1
+     352: getfield      #1565               // Field net/minecraft/world/phys/Vec3.z:D
+     355: invokevirtual #2521               // Method net/minecraft/world/phys/AABB.expandTowards:(DDD)Lnet/minecraft/world/phys/AABB;
+     358: astore        18
+     360: iload         14
+     362: ifne          377
+     365: aload         18
+     367: dconst_0
+     368: ldc2_w        #2522               // double -9.999999747378752E-6d
+     371: dconst_0
+     372: invokevirtual #2521               // Method net/minecraft/world/phys/AABB.expandTowards:(DDD)Lnet/minecraft/world/phys/AABB;
+     375: astore        18
+     377: new           #1359               // class java/util/ArrayList
+     380: dup
+     381: invokespecial #1360               // Method java/util/ArrayList."<init>":()V
+     384: astore        19
+     386: aload         9
+     388: astore        20
+     390: aload_0
+     391: getfield      #563                // Field level:Lnet/minecraft/world/level/Level;
+     394: aload_0
+     395: checkcast     #2                  // class net/minecraft/world/entity/Entity
+     398: aload         18
+     400: aload         19
+     402: aload         20
+     404: iconst_4
+     405: aconst_null
+     406: invokestatic  #2513               // Method ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.getCollisionsForBlocksOrWorldBorder:(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;Ljava/util/List;Ljava/util/List;ILjava/util/function/BiPredicate;)Z
+     409: pop
+     410: aload         17
+     412: aload         19
+     414: aload         20
+     416: dload         15
+     418: d2f
+     419: aload         10
+     421: getfield      #1563               // Field net/minecraft/world/phys/Vec3.y:D
+     424: d2f
+     425: invokestatic  #2525               // Method calculateStepHeights:(Lnet/minecraft/world/phys/AABB;Ljava/util/List;Ljava/util/List;FF)[F
+     428: astore        21
+     430: aload         21
+     432: arraylength
+     433: istore        22
+     435: iconst_0
+     436: istore        23
+     438: iload         23
+     440: iload         22
+     442: if_icmpge     520
+     445: aload         21
+     447: iload         23
+     449: faload
+     450: fstore        24
+     452: new           #838                // class net/minecraft/world/phys/Vec3
+     455: dup
+     456: aload_1
+     457: getfield      #1561               // Field net/minecraft/world/phys/Vec3.x:D
+     460: fload         24
+     462: f2d
+     463: aload_1
+     464: getfield      #1565               // Field net/minecraft/world/phys/Vec3.z:D
+     467: invokespecial #1236               // Method net/minecraft/world/phys/Vec3."<init>":(DDD)V
+     470: aload         17
+     472: aload         19
+     474: aload         20
+     476: invokestatic  #2517               // Method ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.performCollisions:(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/AABB;Ljava/util/List;Ljava/util/List;)Lnet/minecraft/world/phys/Vec3;
+     479: astore        25
+     481: aload         25
+     483: invokevirtual #2529               // Method net/minecraft/world/phys/Vec3.horizontalDistanceSqr:()D
+     486: aload         10
+     488: invokevirtual #2529               // Method net/minecraft/world/phys/Vec3.horizontalDistanceSqr:()D
+     491: dcmpl
+     492: ifle          514
+     495: aload         25
+     497: dconst_0
+     498: aload         17
+     500: getfield      #700                // Field net/minecraft/world/phys/AABB.minY:D
+     503: aload         5
+     505: getfield      #700                // Field net/minecraft/world/phys/AABB.minY:D
+     508: dsub
+     509: dconst_0
+     510: invokevirtual #2531               // Method net/minecraft/world/phys/Vec3.add:(DDD)Lnet/minecraft/world/phys/Vec3;
+     513: areturn
+     514: iinc          23, 1
+     517: goto          438
+     520: aload         10
+     522: areturn
