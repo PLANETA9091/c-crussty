@@ -66,7 +66,22 @@ def fetch_artifact(tok, run_id):
     req = urllib.request.Request(
         f"{API}/repos/{REPO}/actions/artifacts/{a['id']}/zip",
         headers={"Authorization": f"Bearer {tok}"})
-    with urllib.request.urlopen(req, timeout=300) as r, open(dest, "wb") as f:
+
+    class NoRedirect(urllib.request.HTTPRedirectHandler):
+        def redirect_request(self, req, fp, code, msg, headers, newurl):
+            return None
+
+    # 302 to signed Azure blob: the auth header must NOT be forwarded
+    opener = urllib.request.build_opener(NoRedirect)
+    try:
+        opener.open(req, timeout=300)
+        raise SystemExit("expected redirect")
+    except urllib.error.HTTPError as e:
+        if e.code not in (301, 302, 303, 307):
+            raise
+        loc = e.headers["Location"]
+    breq = urllib.request.Request(loc)  # no auth on the blob host
+    with urllib.request.urlopen(breq, timeout=600) as r, open(dest, "wb") as f:
         while True:
             b = r.read(1 << 20)
             if not b:
