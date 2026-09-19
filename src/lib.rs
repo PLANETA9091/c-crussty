@@ -45,6 +45,7 @@ mod randomtick;
 mod region_threads;
 mod tickhook;
 mod traversal;
+mod zero_alloc;
 
 use cplug_abi::{CPluginApi, JavaVmPtr};
 use jvmti_bindings::prelude::*;
@@ -349,8 +350,13 @@ fn inject_surface() {
     // entity_compose chain stage 6; dormant unless CRUSSTY_FLAT_TRAVERSAL=1
     // AND region_threads>=2).
     traversal::activate();
+    // ZERO-ALLOC-INSIDE (S7-164, lever #10): define ZeroAllocOps into the
+    // kernel loader (define-only; the three Entity body-redirects compose
+    // through the entity_compose chain stage 7; dormant unless
+    // CRUSSTY_ZERO_ALLOC=1 AND region_threads>=2).
+    zero_alloc::activate();
     // ENTITY-COMPOSE (S7-162): apply the single compose chain on Entity
-    // (inside → fluid_free → fluid_dirty → rng → batch → traversal),
+    // (inside → fluid_free → fluid_dirty → rng → batch → traversal → zeroin),
     // publish the rng verdict for region_threads, retransform Entity
     // exactly once.
     entity_compose::activate();

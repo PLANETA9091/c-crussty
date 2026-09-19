@@ -1873,6 +1873,178 @@ fn code_has_exception_table(bytes: &[u8], pool: &Pool, start: usize, _end: usize
 
 #[cfg(test)]
 mod tests {
+
+    // -------------------------------------------------------------------
+    // S7-164 ZERO-ALLOC body-redirect tests (lever #10).
+    // Fixture: the REAL kernel Entity.class (pristine, 1.21.10).
+    // -------------------------------------------------------------------
+    const REAL_ENTITY: &[u8] = include_bytes!("../tests/fixtures/Entity_real.class");
+
+    const ZA_FLUID_V: &str =
+        "(Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;)Z";
+    const ZA_SHAPE_V: &str =
+        "(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Ljava/util/List;)Z";
+    const ZA_PUSH_V: &str = "(Lnet/minecraft/tags/TagKey;D)Z";
+
+    /// All three bodies redirect to ZeroAllocOps statics; the redirected
+    /// Code attribute is exactly aload-chain + invokestatic + ireturn with
+    /// max_stack == max_locals == the descriptor slot count; the method
+    /// re-parses cleanly (pool growth is coherent).
+    #[test]
+    fn zeroalloc_redirect_all_three_and_verify() {
+        let (out, outcome) = patch_entity_zeroalloc(REAL_ENTITY).expect("patch");
+        assert_eq!(outcome, RetargetOutcome::Retargeted { sites: 3 });
+        assert_ne!(out.as_slice(), REAL_ENTITY, "redirect must change bytes");
+
+        let cases: [(&str, &str, &str); 3] = [
+            (
+                "collidedWithFluid",
+                ZA_FLUID_V,
+                "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;)Z",
+            ),
+            (
+                "collidedWithShapeMovingFrom",
+                ZA_SHAPE_V,
+                "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Ljava/util/List;)Z",
+            ),
+            (
+                "updateFluidHeightAndDoFluidPushing",
+                ZA_PUSH_V,
+                "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/tags/TagKey;D)Z",
+            ),
+        ];
+        let layout = parse_layout(&out).expect("re-parse redirected Entity");
+        for (name, vdesc, sdesc) in cases {
+            let name_idx = layout.pool.find_utf8(name).expect("name kept");
+            let desc_idx = layout.pool.find_utf8(vdesc).expect("desc kept");
+            let m = find_method(&out, layout.methods_start, name_idx, desc_idx)
+                .expect("redirected method found");
+            let (code_start, code_len) =
+                find_code_attr(&out, &layout.pool, &m).expect("code attr");
+            let code = &out[code_start..code_start + code_len];
+            // shape: aload_0 [+ param loads] + invokestatic + ireturn
+            assert_eq!(code[0], 0x2a, "{name}: body starts with aload_0");
+            let ret_pos = code.len() - 1;
+            assert_eq!(code[ret_pos], 0xac, "{name}: boolean method ends with ireturn");
+            assert_eq!(code[ret_pos - 3], 0xb8, "{name}: dispatch is invokestatic");
+            let cp_idx = u16::from_be_bytes([code[ret_pos - 2], code[ret_pos - 1]]);
+            let parts = layout.pool.methodref_parts(cp_idx).expect("resolve target");
+            assert_eq!(parts.0, ZERO_ALLOC_OPS_CLASS, "{name}: target owner");
+            assert_eq!(parts.1, name, "{name}: target name matches");
+            assert_eq!(parts.2, sdesc, "{name}: target static desc = receiver-prepended");
+
+            // slot accounting: max_stack == max_locals == total slots
+            let total_slots = desc_param_slots(vdesc).expect("slots");
+            // Code attr layout: name(2) len(4) max_stack(2) max_locals(2)
+            // code_len(4) code[..] — code_start points at the code array.
+            let ms = u16::from_be_bytes([
+                out[code_start - 8],
+                out[code_start - 7],
+            ]);
+            let ml = u16::from_be_bytes([
+                out[code_start - 6],
+                out[code_start - 5],
+            ]);
+            assert_eq!(usize::from(ms), total_slots, "{name}: max_stack == slots");
+            assert_eq!(usize::from(ml), total_slots, "{name}: max_locals == slots");
+            // exact code length: typed loads + 3-byte invokestatic + ireturn
+            let load_bytes: usize = std::iter::once((0usize, SlotKind::A))
+                .chain(desc_slot_kinds(vdesc).expect("kinds"))
+                .map(|(slot, _)| usize::from(slot > 3) + 1)
+                .sum();
+            assert_eq!(
+                code_len as usize,
+                load_bytes + 4,
+                "{name}: code length = typed-load chain + 3-byte invokestatic + ireturn"
+            );
+        }
+    }
+
+    /// Idempotency: re-sighting the redirected Entity is AlreadyPatched
+    /// with byte-identical output.
+    #[test]
+    fn zeroalloc_redirect_idempotent() {
+        let (first, out1) = patch_entity_zeroalloc(REAL_ENTITY).expect("first");
+        assert_eq!(out1, RetargetOutcome::Retargeted { sites: 3 });
+        let (second, out2) = patch_entity_zeroalloc(&first).expect("second");
+        assert_eq!(out2, RetargetOutcome::AlreadyPatched { sites: 3 });
+        assert_eq!(first, second, "AlreadyPatched must not touch bytes");
+    }
+
+    /// NotFound: a body-redirect on a class without the target method must
+    /// return the ORIGINAL bytes and never grow the pool (no half-composed
+    /// stage: the probe happens before any mutation).
+    #[test]
+    fn zeroalloc_redirect_missing_method_not_found_no_mutation() {
+        let before = parse_layout(REAL_ENTITY).unwrap().pool.next;
+        let (bytes_back, outcome) = redirect_method_body_to_static(
+            REAL_ENTITY,
+            "no_such_method",
+            "(I)I",
+            "net/minecraft/world/entity/Entity",
+            ZERO_ALLOC_OPS_CLASS,
+            "no_such_method",
+            "(Lnet/minecraft/world/entity/Entity;I)I",
+        )
+        .expect("clean NotFound");
+        assert_eq!(outcome, RetargetOutcome::NotFound);
+        assert_eq!(bytes_back, REAL_ENTITY, "NotFound returns original bytes");
+        let after = parse_layout(REAL_ENTITY).unwrap().pool.next;
+        assert_eq!(before, after, "NotFound must not append pool entries");
+    }
+
+    /// Shape contract: a static desc without the receiver prepended is
+    /// refused with an error (stack shape would change).
+    #[test]
+    fn zeroalloc_redirect_receiver_shape_enforced() {
+        let err = redirect_method_body_to_static(
+            REAL_ENTITY,
+            "collidedWithFluid",
+            ZA_FLUID_V,
+            "net/minecraft/world/entity/Entity",
+            ZERO_ALLOC_OPS_CLASS,
+            "collidedWithFluid",
+            ZA_FLUID_V, // NOT receiver-prepended
+        )
+        .unwrap_err();
+        assert!(err.contains("receiver"), "{err}");
+    }
+
+    /// Harness bridge: with CRUSSTY_EMIT_PATCHED_ENTITY=<path> set, the
+    /// fully redirected Entity.class is written to disk so the offline
+    /// lockstep harness can defineClass it (HotSpot verifies the generated
+    /// bytecode: typed loads, max_stack/locals, attribute lengths). Silent
+    /// no-op in the default suite.
+    #[test]
+    fn zeroalloc_emit_patched_entity_for_harness() {
+        if let Ok(path) = std::env::var("CRUSSTY_EMIT_PATCHED_ENTITY") {
+            if path.trim().is_empty() {
+                return;
+            }
+            let (out, outcome) = patch_entity_zeroalloc(REAL_ENTITY).expect("patch");
+            assert_eq!(outcome, RetargetOutcome::Retargeted { sites: 3 });
+            std::fs::write(&path, out).expect("write patched entity");
+        }
+    }
+
+    /// Slot accounting: double/long parameters occupy two slots (the
+    /// fluid-push descriptor has a trailing double).
+    #[test]
+    fn zeroalloc_desc_slot_accounting() {
+        assert_eq!(
+            desc_slot_kinds(ZA_PUSH_V),
+            Some(vec![(1, SlotKind::A), (2, SlotKind::D)]),
+            "TagKey=slot1(ref), double=slot2(cat2)"
+        );
+        assert_eq!(desc_param_slots(ZA_PUSH_V), Some(4));
+        assert_eq!(
+            desc_slot_kinds("(JLjava/util/List;)Z"),
+            Some(vec![(1, SlotKind::J), (3, SlotKind::A)])
+        );
+        assert_eq!(desc_param_slots("()V"), Some(1)); // receiver only
+    }
+
+
     use crate::classfile::*;
 
     const REAL: &[u8] = include_bytes!("../tests/fixtures/SingleUserAreaMap.class");
@@ -2510,6 +2682,405 @@ pub fn patch_push_entities(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), S
         ("net/minecraft/world/level/Level", "getPushableEntities", GET_PUSHABLES_DESC),
         (ALLOC_OPS_CLASS, "pushables", OPS_PUSHABLES_DESC),
     )
+}
+
+// ---------------------------------------------------------------------------
+// ZERO-ALLOC-INSIDE (S7-164, lever #10): METHOD-BODY REDIRECT.
+//
+// Unlike retarget_* (which rewrites INVOKE SITES inside one caller), a
+// body-redirect replaces the whole Code attribute of a method with
+// `aload 0..N; invokestatic ZeroAllocOps.<name>(receiver+args); return` —
+// every virtual dispatch from ANY class then lands in the zero-alloc scalar
+// implementation with vanilla-identical parameters. The descriptor is
+// preserved (length-preserving receiver-prepended static form, same shape
+// contract as retarget_virtual_to_static). Debug attributes
+// (LineNumberTable/LocalVariableTable/LocalVariableTypeTable) are dropped
+// with the old code; `Exceptions` and everything else is kept.
+// ---------------------------------------------------------------------------
+
+/// Total local-slot count of a method descriptor's parameters (no receiver).
+fn desc_param_slots(desc: &str) -> Option<usize> {
+    desc_slot_kinds(desc).map(|v| match v.last() {
+        Some((start, kind)) => {
+            start + usize::from(matches!(kind, SlotKind::J | SlotKind::D))
+                + 1
+        }
+        None => 1, // no params: receiver occupies slot 0
+    })
+}
+
+#[derive(Clone, Copy, PartialEq, Debug)]
+enum SlotKind {
+    I, // boolean/byte/char/short/int
+    J, // long
+    F, // float
+    D, // double
+    A, // reference / array
+}
+
+/// For each parameter: its starting local slot (receiver = slot 0 -> first
+/// param starts at 1), its load-kind, and whether it is category-two.
+/// The load kind selects the correct *_load opcode family: an aload on a
+/// double slot would VerifyError on the first redirected call.
+fn desc_slot_kinds(desc: &str) -> Option<Vec<(usize, SlotKind)>> {
+    let b = desc.as_bytes();
+    if b.first() != Some(&b'(') {
+        return None;
+    }
+    let mut i = 1;
+    let mut slot = 1usize;
+    let mut starts = Vec::new();
+    while i < b.len() && b[i] != b')' {
+        let mut was_array = false;
+        while i < b.len() && b[i] == b'[' {
+            was_array = true;
+            i += 1;
+        }
+        let kind = match b.get(i)? {
+            b'L' => {
+                while i < b.len() && b[i] != b';' {
+                    i += 1;
+                }
+                if i >= b.len() {
+                    return None;
+                }
+                i += 1;
+                SlotKind::A
+            }
+            b'D' => {
+                i += 1;
+                if was_array {
+                    SlotKind::A // [D is an objectref: one slot
+                } else {
+                    SlotKind::D
+                }
+            }
+            b'J' => {
+                i += 1;
+                if was_array {
+                    SlotKind::A // [J
+                } else {
+                    SlotKind::J
+                }
+            }
+            b'F' => {
+                i += 1;
+                if was_array {
+                    SlotKind::A // [F
+                } else {
+                    SlotKind::F
+                }
+            }
+            b'B' | b'C' | b'I' | b'S' | b'Z' => {
+                i += 1;
+                if was_array {
+                    SlotKind::A
+                } else {
+                    SlotKind::I
+                }
+            }
+            _ => return None,
+        };
+        let cat2 = matches!(kind, SlotKind::J | SlotKind::D);
+        starts.push((slot, kind));
+        slot += if cat2 { 2 } else { 1 };
+    }
+    if i >= b.len() || b[i] != b')' {
+        return None;
+    }
+    Some(starts)
+}
+
+/// Push the typed load for a parameter slot (short forms for slots 0-3,
+/// explicit form 0x15..0x19 + u1 slot otherwise).
+fn push_load(slot: usize, kind: SlotKind, code: &mut Vec<u8>) -> Result<(), String> {
+    let (short_base, wide_op): (u8, u8) = match kind {
+        SlotKind::I => (0x1a, 0x15), // iload_0.. / iload
+        SlotKind::J => (0x1e, 0x16), // lload_0.. / lload
+        SlotKind::F => (0x22, 0x17), // fload_0.. / fload
+        SlotKind::D => (0x26, 0x18), // dload_0.. / dload
+        SlotKind::A => (0x2a, 0x19), // aload_0.. / aload
+    };
+    match slot {
+        0..=3 => code.push(short_base + slot as u8),
+        s if s <= 255 => {
+            code.push(wide_op);
+            code.push(s as u8);
+        }
+        _ => return Err("local slot overflow (wide load not supported)".into()),
+    }
+    Ok(())
+}
+
+fn return_opcode(desc: &str) -> Option<u8> {
+    let i = desc.rfind(')')?;
+    match &desc[i + 1..] {
+        "Z" | "I" | "B" | "C" | "S" => Some(0xac),
+        "J" => Some(0xad),
+        "F" => Some(0xae),
+        "D" => Some(0xaf),
+        "V" => Some(0xb1),
+        _ => Some(0xb0), // L...; / [...
+    }
+}
+
+/// Replace the whole Code attribute of `method_name`/`method_desc` with a
+/// receiver-prepended static dispatch to `target_class`/`target_name`.
+/// Returns the patched bytes; `AlreadyPatched` if the body already IS the
+/// redirect to the same target. Fail-closed on any shape mismatch.
+pub fn redirect_method_body_to_static(
+    bytes: &[u8],
+    method_name: &str,
+    method_desc: &str,
+    receiver_class: &str,
+    target_class: &str,
+    target_name: &str,
+    target_static_desc: &str,
+) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    // Length-preserving shape contract: static desc = virtual desc with the
+    // METHOD OWNER (receiver) class prepended — the bridge's first parameter
+    // receives the dispatched `this`. `target_class` is the bridge itself.
+    let expect = format!("(L{};{}", receiver_class, &method_desc[1..]);
+    if target_static_desc != expect {
+        return Err(format!(
+            "static desc {} is not the virtual desc {} with receiver {} prepended",
+            target_static_desc, method_desc, target_class
+        ));
+    }
+
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    let mut pool = layout.pool;
+
+    // Find-only probes before ANY pool mutation (audit A4 discipline).
+    let Some(name_idx) = pool.find_utf8(method_name) else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let Some(desc_idx) = pool.find_utf8(method_desc) else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)
+        .ok_or_else(|| format!("method {method_name}{method_desc} not found"))?;
+
+    let Some(slot_kinds) = desc_slot_kinds(method_desc) else {
+        return Err(format!("unparseable descriptor {method_desc}"));
+    };
+    let Some(ret_op) = return_opcode(method_desc) else {
+        return Err(format!("unparseable return type {method_desc}"));
+    };
+    let total_slots = desc_param_slots(method_desc).ok_or_else(|| "bad slots".to_string())?;
+
+    // Generate the replacement bytecode (before mutation, for probe).
+    let mut code: Vec<u8> = Vec::with_capacity(total_slots + 4);
+    for (slot, kind) in std::iter::once((0usize, SlotKind::A)).chain(slot_kinds.iter().copied()) {
+        push_load(slot, kind, &mut code)?;
+    }
+    let invoke_pos = code.len();
+    code.push(0xb8); // invokestatic (index filled after pool append)
+    code.push(0);
+    code.push(0);
+    code.push(ret_op);
+
+    // Locate the Code attribute within the method's attribute table and
+    // collect the attributes to keep (drop Code + debug tables).
+    let mut p = m
+        .start
+        .checked_add(6)
+        .ok_or_else(|| "method header truncated".to_string())?; // access(2) name(2) desc(2) -> attrs_count
+    let attr_count =
+        usize::from(u16_at(bytes, p).ok_or_else(|| "attr count truncated".to_string())?);
+    p = p
+        .checked_add(2)
+        .ok_or_else(|| "attr count truncated".to_string())?;
+    let mut code_attr_start: Option<usize> = None;
+    let mut code_attr_end: Option<usize> = None;
+    let mut kept: Vec<u8> = Vec::new();
+    let mut kept_count = 0usize;
+    for _ in 0..attr_count {
+        let a_name_idx =
+            u16_at(bytes, p).ok_or_else(|| "attr header truncated".to_string())?;
+        let len = u32_at(
+            bytes,
+            p.checked_add(2)
+                .ok_or_else(|| "attr header truncated".to_string())?,
+        )
+        .ok_or_else(|| "attr length truncated".to_string())? as usize;
+        let data = p
+            .checked_add(6)
+            .ok_or_else(|| "attr header truncated".to_string())?;
+        let aend = data
+            .checked_add(len)
+            .ok_or_else(|| "attr data truncated".to_string())?;
+        let aname = pool.utf8_value(a_name_idx).unwrap_or_default();
+        match aname.as_str() {
+            "Code" => {
+                code_attr_start = Some(p);
+                code_attr_end = Some(aend);
+            }
+            "LineNumberTable" | "LocalVariableTable" | "LocalVariableTypeTable" => {
+                // dropped with the old code (debug-only; no semantic value)
+            }
+            _ => {
+                kept.extend_from_slice(
+                    bytes
+                        .get(p..aend)
+                        .ok_or_else(|| "method attribute truncated".to_string())?,
+                );
+                kept_count += 1;
+            }
+        }
+        p = aend;
+    }
+    let Some(code_attr_start) = code_attr_start else {
+        return Err(format!("method {method_name}{method_desc} has no Code attribute"));
+    };
+    let code_attr_end = code_attr_end
+        .ok_or_else(|| "code attr end missing".to_string())?
+        - 0;
+
+    // AlreadyPatched probe: existing code identical to the generated shape
+    // and its invokestatic resolves to the same target Methodref.
+    let code_start = code_attr_start + 6 + 8; // attr hdr + max_stack/max_locals/code_len
+    let existing_code_len = u32_at(bytes, code_attr_start + 6 + 4)
+        .ok_or_else(|| "code length truncated".to_string())? as usize;
+    if existing_code_len == code.len() {
+        let probe = &bytes[code_start..code_start + existing_code_len];
+        let same_shape = probe[..invoke_pos] == code[..invoke_pos]
+            && probe[probe.len() - 1] == ret_op;
+        if same_shape {
+            let cp_idx = u16::from_be_bytes([probe[invoke_pos + 1], probe[invoke_pos + 2]]);
+            if pool.methodref_parts(cp_idx)
+                == Some((
+                    target_class.to_string(),
+                    target_name.to_string(),
+                    target_static_desc.to_string(),
+                ))
+            {
+                return Ok((bytes.to_vec(), RetargetOutcome::AlreadyPatched { sites: 1 }));
+            }
+        }
+    }
+
+    // Pool growth: append (dedup) the target Methodref.
+    let new_idx = pool.method_ref(target_class, target_name, target_static_desc);
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for redirect ref".into());
+    }
+    let idx_bytes = new_idx.to_be_bytes();
+    code[invoke_pos + 1] = idx_bytes[0];
+    code[invoke_pos + 2] = idx_bytes[1];
+
+    // Build the new Code attribute bytes:
+    //   name_idx(2) len(4) | max_stack(2) max_locals(2) code_len(4) code[..]
+    //   | exception_table_len(2)=0 | attributes_count(2)=0
+    // attribute_length covers ONLY what follows the length field:
+    //   max_stack(2) + max_locals(2) + code_length(4) + code + exc_len(2)
+    //   + attributes_count(2) = 12 + code.len() (the 6-byte name+len header
+    //   is NOT part of it — JVMS 4.7.3).
+    let mut new_attr: Vec<u8> = Vec::with_capacity(code.len() + 20);
+    let code_attr_name_idx = pool
+        .find_utf8("Code")
+        .ok_or_else(|| "Code utf8 missing from pool".to_string())?;
+    new_attr.extend_from_slice(&code_attr_name_idx.to_be_bytes());
+    let attr_len = (12 + code.len()) as u32;
+    new_attr.extend_from_slice(&attr_len.to_be_bytes());
+    new_attr.extend_from_slice(&(total_slots as u16).to_be_bytes()); // max_stack
+    new_attr.extend_from_slice(&(total_slots as u16).to_be_bytes()); // max_locals
+    new_attr.extend_from_slice(&(code.len() as u32).to_be_bytes());
+    new_attr.extend_from_slice(&code);
+    new_attr.extend_from_slice(&0u16.to_be_bytes()); // exception_table_len
+    new_attr.extend_from_slice(&0u16.to_be_bytes()); // attributes_count
+
+    // New method segment: access(2) name(2) desc(2) attrs_count(2) = new Code
+    // first + kept attributes (Exceptions etc.).
+    let mut method_seg: Vec<u8> = Vec::with_capacity(8 + new_attr.len() + kept.len());
+    method_seg.extend_from_slice(bytes.get(m.start..m.start + 6).ok_or("method hdr")?);
+    method_seg.extend_from_slice(&((kept_count + 1) as u16).to_be_bytes());
+    method_seg.extend_from_slice(&new_attr);
+    method_seg.extend_from_slice(&kept);
+
+    // Splice: header+grown pool, method prefix, new method segment, tail.
+    let mut out = Vec::with_capacity(bytes.len() + new_attr.len() + 64);
+    out.extend_from_slice(&bytes[0..8]);
+    out.extend_from_slice(&pool.next.to_be_bytes());
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(
+        bytes
+            .get(layout.cp_end..m.start)
+            .ok_or_else(|| "class tail truncated (prefix)".to_string())?,
+    );
+    out.extend_from_slice(&method_seg);
+    out.extend_from_slice(
+        bytes
+            .get(m.end..)
+            .ok_or_else(|| "class tail truncated (suffix)".to_string())?,
+    );
+    let _ = code_attr_end; // superseded by m.end splice (whole method replaced)
+    Ok((out, RetargetOutcome::Retargeted { sites: 1 }))
+}
+
+/// ZERO-ALLOC-INSIDE bridge target (kernel loader, same package as
+/// BlockGetter/TraverseOps).
+pub const ZERO_ALLOC_OPS_CLASS: &str = "net/minecraft/world/level/ZeroAllocOps";
+
+const ZA_FLUID_DESC: &str =
+    "(Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;)Z";
+const ZA_SHAPE_DESC: &str =
+    "(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Ljava/util/List;)Z";
+const ZA_FLUID_PUSH_DESC: &str = "(Lnet/minecraft/tags/TagKey;D)Z";
+
+/// S7-164 lever #10: redirect the THREE hottest Entity inside/fluid bodies
+/// (census: collidedWithFluid ← lambda$checkInsideBlocks$2; collidedAlongVector ←
+/// collidedWithShapeMovingFrom only; both from Entity) to the scalar
+/// ZeroAllocOps implementations. Composite: all three must succeed or the
+/// stage is skipped as a whole (fail-dominant, no half-composed stage).
+pub fn patch_entity_zeroalloc(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let targets: [(&str, &str, &str, &str); 3] = [
+        (
+            "collidedWithFluid",
+            ZA_FLUID_DESC,
+            "collidedWithFluid",
+            "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;)Z",
+        ),
+        (
+            "collidedWithShapeMovingFrom",
+            ZA_SHAPE_DESC,
+            "collidedWithShapeMovingFrom",
+            "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Ljava/util/List;)Z",
+        ),
+        (
+            "updateFluidHeightAndDoFluidPushing",
+            ZA_FLUID_PUSH_DESC,
+            "updateFluidHeightAndDoFluidPushing",
+            "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/tags/TagKey;D)Z",
+        ),
+    ];
+    let mut cur = bytes.to_vec();
+    let mut ret = 0usize;
+    let mut already = 0usize;
+    for (name, desc, tname, tdesc) in targets {
+        let (p, outcome) = redirect_method_body_to_static(
+            &cur,
+            name,
+            desc,
+            "net/minecraft/world/entity/Entity",
+            ZERO_ALLOC_OPS_CLASS,
+            tname,
+            tdesc,
+        )?;
+        cur = p;
+        match outcome {
+            RetargetOutcome::Retargeted { .. } => ret += 1,
+            RetargetOutcome::AlreadyPatched { .. } => already += 1,
+            RetargetOutcome::NotFound => {
+                return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+            }
+        }
+    }
+    if ret == 3 {
+        Ok((cur, RetargetOutcome::Retargeted { sites: 3 }))
+    } else {
+        Ok((cur, RetargetOutcome::AlreadyPatched { sites: 3 }))
+    }
 }
 
 /// Find a method by NAME only (desc resolved by the caller from the found
