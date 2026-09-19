@@ -3333,6 +3333,198 @@ pub const ZA_REDIRECT_TARGETS: [(&str, &str, &str, &str); 3] = [
 /// NoSuchMethodError storm (66 throws in leg#1, 2026-09-19) — invisible to
 /// the defineClass verifier (verification does not resolve) and to the
 /// lockstep oracle (which calls the bridge from source, compile-time).
+
+pub fn redirect_static_method_body_to_static(
+    bytes: &[u8],
+    method_name: &str,
+    method_desc: &str,
+    target_class: &str,
+    target_name: &str,
+    target_static_desc: &str,
+) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    // STATIC->STATIC shape contract (TASK-330 zero-cursor): the bridge
+    // static descriptor must be IDENTICAL to the redirected static method
+    // descriptor — stack shape unchanged, no receiver prepended.
+    if target_static_desc != method_desc {
+        return Err(format!(
+            "static desc {} does not match redirected static desc {} (stack shape must stay identical)",
+            target_static_desc, method_desc
+        ));
+    }
+
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    let mut pool = layout.pool;
+
+    // Find-only probes before ANY pool mutation (audit A4 discipline).
+    let Some(name_idx) = pool.find_utf8(method_name) else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let Some(desc_idx) = pool.find_utf8(method_desc) else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)
+        .ok_or_else(|| format!("method {method_name}{method_desc} not found"))?;
+
+    let Some(slot_kinds) = desc_slot_kinds(method_desc) else {
+        return Err(format!("unparseable descriptor {method_desc}"));
+    };
+    let Some(ret_op) = return_opcode(method_desc) else {
+        return Err(format!("unparseable return type {method_desc}"));
+    };
+    let total_slots = desc_param_slots(method_desc).ok_or_else(|| "bad slots".to_string())?;
+
+    // Generate the replacement bytecode (before mutation, for probe).
+    let mut code: Vec<u8> = Vec::with_capacity(total_slots + 4);
+    // static method: param slots start at 0, no receiver aload.
+    for (slot, kind) in slot_kinds.iter().copied() {
+        push_load(slot, kind, &mut code)?;
+    }
+    let invoke_pos = code.len();
+    code.push(0xb8); // invokestatic (index filled after pool append)
+    code.push(0);
+    code.push(0);
+    code.push(ret_op);
+
+    // Locate the Code attribute within the method's attribute table and
+    // collect the attributes to keep (drop Code + debug tables).
+    let mut p = m
+        .start
+        .checked_add(6)
+        .ok_or_else(|| "method header truncated".to_string())?; // access(2) name(2) desc(2) -> attrs_count
+    let attr_count =
+        usize::from(u16_at(bytes, p).ok_or_else(|| "attr count truncated".to_string())?);
+    p = p
+        .checked_add(2)
+        .ok_or_else(|| "attr count truncated".to_string())?;
+    let mut code_attr_start: Option<usize> = None;
+    let mut code_attr_end: Option<usize> = None;
+    let mut kept: Vec<u8> = Vec::new();
+    let mut kept_count = 0usize;
+    for _ in 0..attr_count {
+        let a_name_idx =
+            u16_at(bytes, p).ok_or_else(|| "attr header truncated".to_string())?;
+        let len = u32_at(
+            bytes,
+            p.checked_add(2)
+                .ok_or_else(|| "attr header truncated".to_string())?,
+        )
+        .ok_or_else(|| "attr length truncated".to_string())? as usize;
+        let data = p
+            .checked_add(6)
+            .ok_or_else(|| "attr header truncated".to_string())?;
+        let aend = data
+            .checked_add(len)
+            .ok_or_else(|| "attr data truncated".to_string())?;
+        let aname = pool.utf8_value(a_name_idx).unwrap_or_default();
+        match aname.as_str() {
+            "Code" => {
+                code_attr_start = Some(p);
+                code_attr_end = Some(aend);
+            }
+            "LineNumberTable" | "LocalVariableTable" | "LocalVariableTypeTable" => {
+                // dropped with the old code (debug-only; no semantic value)
+            }
+            _ => {
+                kept.extend_from_slice(
+                    bytes
+                        .get(p..aend)
+                        .ok_or_else(|| "method attribute truncated".to_string())?,
+                );
+                kept_count += 1;
+            }
+        }
+        p = aend;
+    }
+    let Some(code_attr_start) = code_attr_start else {
+        return Err(format!("method {method_name}{method_desc} has no Code attribute"));
+    };
+    let code_attr_end = code_attr_end
+        .ok_or_else(|| "code attr end missing".to_string())?
+        - 0;
+
+    // AlreadyPatched probe: existing code identical to the generated shape
+    // and its invokestatic resolves to the same target Methodref.
+    let code_start = code_attr_start + 6 + 8; // attr hdr + max_stack/max_locals/code_len
+    let existing_code_len = u32_at(bytes, code_attr_start + 6 + 4)
+        .ok_or_else(|| "code length truncated".to_string())? as usize;
+    if existing_code_len == code.len() {
+        let probe = &bytes[code_start..code_start + existing_code_len];
+        let same_shape = probe[..invoke_pos] == code[..invoke_pos]
+            && probe[probe.len() - 1] == ret_op;
+        if same_shape {
+            let cp_idx = u16::from_be_bytes([probe[invoke_pos + 1], probe[invoke_pos + 2]]);
+            if pool.methodref_parts(cp_idx)
+                == Some((
+                    target_class.to_string(),
+                    target_name.to_string(),
+                    target_static_desc.to_string(),
+                ))
+            {
+                return Ok((bytes.to_vec(), RetargetOutcome::AlreadyPatched { sites: 1 }));
+            }
+        }
+    }
+
+    // Pool growth: append (dedup) the target Methodref.
+    let new_idx = pool.method_ref(target_class, target_name, target_static_desc);
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for redirect ref".into());
+    }
+    let idx_bytes = new_idx.to_be_bytes();
+    code[invoke_pos + 1] = idx_bytes[0];
+    code[invoke_pos + 2] = idx_bytes[1];
+
+    // Build the new Code attribute bytes:
+    //   name_idx(2) len(4) | max_stack(2) max_locals(2) code_len(4) code[..]
+    //   | exception_table_len(2)=0 | attributes_count(2)=0
+    // attribute_length covers ONLY what follows the length field:
+    //   max_stack(2) + max_locals(2) + code_length(4) + code + exc_len(2)
+    //   + attributes_count(2) = 12 + code.len() (the 6-byte name+len header
+    //   is NOT part of it — JVMS 4.7.3).
+    let mut new_attr: Vec<u8> = Vec::with_capacity(code.len() + 20);
+    let code_attr_name_idx = pool
+        .find_utf8("Code")
+        .ok_or_else(|| "Code utf8 missing from pool".to_string())?;
+    new_attr.extend_from_slice(&code_attr_name_idx.to_be_bytes());
+    let attr_len = (12 + code.len()) as u32;
+    new_attr.extend_from_slice(&attr_len.to_be_bytes());
+    new_attr.extend_from_slice(&(total_slots as u16).to_be_bytes()); // max_stack
+    new_attr.extend_from_slice(&(total_slots as u16).to_be_bytes()); // max_locals
+    new_attr.extend_from_slice(&(code.len() as u32).to_be_bytes());
+    new_attr.extend_from_slice(&code);
+    new_attr.extend_from_slice(&0u16.to_be_bytes()); // exception_table_len
+    new_attr.extend_from_slice(&0u16.to_be_bytes()); // attributes_count
+
+    // New method segment: access(2) name(2) desc(2) attrs_count(2) = new Code
+    // first + kept attributes (Exceptions etc.).
+    let mut method_seg: Vec<u8> = Vec::with_capacity(8 + new_attr.len() + kept.len());
+    method_seg.extend_from_slice(bytes.get(m.start..m.start + 6).ok_or("method hdr")?);
+    method_seg.extend_from_slice(&((kept_count + 1) as u16).to_be_bytes());
+    method_seg.extend_from_slice(&new_attr);
+    method_seg.extend_from_slice(&kept);
+
+    // Splice: header+grown pool, method prefix, new method segment, tail.
+    let mut out = Vec::with_capacity(bytes.len() + new_attr.len() + 64);
+    out.extend_from_slice(&bytes[0..8]);
+    out.extend_from_slice(&pool.next.to_be_bytes());
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(
+        bytes
+            .get(layout.cp_end..m.start)
+            .ok_or_else(|| "class tail truncated (prefix)".to_string())?,
+    );
+    out.extend_from_slice(&method_seg);
+    out.extend_from_slice(
+        bytes
+            .get(m.end..)
+            .ok_or_else(|| "class tail truncated (suffix)".to_string())?,
+    );
+    let _ = code_attr_end; // superseded by m.end splice (whole method replaced)
+    Ok((out, RetargetOutcome::Retargeted { sites: 1 }))
+}
+
+/// ZERO-ALLOC-INSIDE bridge target (kernel loader, same package as
+/// BlockGetter/TraverseOps).
 pub fn zeroalloc_resolution_closure(bridge: &[u8]) -> Result<(), String> {
     redirect_targets_resolution_closure(bridge, &ZA_REDIRECT_TARGETS)
 }
@@ -6290,4 +6482,150 @@ mod entity_traversal {
         std::fs::create_dir_all("tests/out").unwrap();
         std::fs::write("tests/out/Entity.traversal.patched.class", &composed).unwrap();
     }
+}
+
+// ---------------------------------------------------------------------------
+// TASK-330 ZERO-CURSOR static body-redirect tests (real kernel BlockPos fixture).
+// ---------------------------------------------------------------------------
+#[cfg(test)]
+mod blockpos_zerocursor {
+    const BLOCKPOS: &[u8] = include_bytes!("../tests/fixtures/BlockPos_real.class");
+
+    use crate::classfile::*;
+
+    const LAMBDA_NAME: &str = "lambda$betweenCornersInDirection$8";
+    const LAMBDA_DESC: &str =
+        "(Lnet/minecraft/core/Direction;Lnet/minecraft/core/Direction;Lnet/minecraft/core/Direction;IIIIII)Ljava/util/Iterator;";
+    const TARGET_CLASS: &str = "net/minecraft/core/ZeroCursorOps";
+    const TARGET_NAME: &str = "lambda8";
+
+    #[test]
+    fn zerocursor_redirects_exactly_one_site_and_is_idempotent() {
+        let (patched, outcome) = redirect_static_method_body_to_static(
+            BLOCKPOS,
+            LAMBDA_NAME,
+            LAMBDA_DESC,
+            TARGET_CLASS,
+            TARGET_NAME,
+            LAMBDA_DESC,
+        )
+        .expect("redirect");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "exactly one lambda$betweenCornersInDirection$8 body (javap census)"
+        );
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        // body-redirect may SHRINK the file (22B lambda body -> 18B dispatch
+        // + dropped debug tables); only guard against gross truncation.
+        assert!(
+            patched.len() * 100 >= BLOCKPOS.len() * 90,
+            "patched {} vs original {} (gross truncation?)",
+            patched.len(),
+            BLOCKPOS.len()
+        );
+        // Idempotency doubles as content proof: the second pass recognizes
+        // the generated shape AND its Methodref == ZeroCursorOps.lambda8.
+        let (again, outcome2) = redirect_static_method_body_to_static(
+            &patched, LAMBDA_NAME, LAMBDA_DESC, TARGET_CLASS, TARGET_NAME, LAMBDA_DESC,
+        )
+        .expect("re-redirect");
+        assert_eq!(outcome2, RetargetOutcome::AlreadyPatched { sites: 1 });
+        assert_eq!(again, patched, "repatch must be byte-identical");
+    }
+
+    #[test]
+    fn zerocursor_wrong_method_not_found() {
+        let (_, outcome) = redirect_static_method_body_to_static(
+            BLOCKPOS,
+            "lambda$betweenCornersInDirection$7",
+            LAMBDA_DESC,
+            TARGET_CLASS,
+            TARGET_NAME,
+            LAMBDA_DESC,
+        )
+        .expect("probe must not error");
+        assert_eq!(outcome, RetargetOutcome::NotFound);
+    }
+
+    #[test]
+    fn zerocursor_desc_mismatch_refused() {
+        let changed =
+            "(Lnet/minecraft/core/Direction;Lnet/minecraft/core/Direction;Lnet/minecraft/core/Direction;IIIII)Ljava/util/Iterator;";
+        let e = redirect_static_method_body_to_static(
+            BLOCKPOS, LAMBDA_NAME, LAMBDA_DESC, TARGET_CLASS, TARGET_NAME, changed,
+        )
+        .unwrap_err();
+        assert!(e.contains("does not match"), "{e}");
+    }
+
+    #[test]
+    fn zerocursor_preserves_class_shape() {
+        let (patched, _) = redirect_static_method_body_to_static(
+            BLOCKPOS, LAMBDA_NAME, LAMBDA_DESC, TARGET_CLASS, TARGET_NAME, LAMBDA_DESC,
+        )
+        .expect("redirect");
+        let major = u16::from_be_bytes([patched[6], patched[7]]);
+        assert_eq!(major, 65, "kernel class major must stay 65");
+        let n_orig = u16::from_be_bytes([BLOCKPOS[8], BLOCKPOS[9]]);
+        let n_new = u16::from_be_bytes([patched[8], patched[9]]);
+        assert!(n_new >= n_orig, "pool may only grow");
+    }
+}
+
+/// TASK-330 zero-cursor resolution closure: the redirected
+/// `BlockPos.lambda$betweenCornersInDirection$8` body invokes
+/// `ZeroCursorOps.lambda8` with the factory descriptor; `ZeroCursorOps`
+/// hands out `ZeroCursorIter` instances whose reset() consumes the factory
+/// args. Both bridges must declare exactly those members or the first
+/// cursor walk detonates a NoSuchMethodError.
+pub fn zerocursor_resolution_closure(ops: &[u8], iter: &[u8]) -> Result<(), String> {
+    const FACTORY_DESC: &str = "(Lnet/minecraft/core/Direction;Lnet/minecraft/core/Direction;Lnet/minecraft/core/Direction;IIIIII)Ljava/util/Iterator;";
+    let targets: &[(&str, &str, &str, &str)] = &[
+        (
+            "class",
+            "net/minecraft/core/ZeroCursorOps",
+            "lambda8",
+            FACTORY_DESC,
+        ),
+        ("class", "net/minecraft/core/ZeroCursorIter", "reset", FACTORY_DESC),
+        ("class", "net/minecraft/core/ZeroCursorIter", "hasNext", "()Z"),
+        ("class", "net/minecraft/core/ZeroCursorIter", "next", "()Lnet/minecraft/core/BlockPos$MutableBlockPos;"),
+    ];
+    // reuse the shared per-bridge member check for both classfiles
+    check_members(ops, &targets[..1])?;
+    check_members(iter, &targets[1..])
+}
+
+fn check_members(bridge: &[u8], targets: &[(&str, &str, &str, &str)]) -> Result<(), String> {
+    let Some(layout) = parse_layout(bridge) else {
+        return Err("bridge classfile unparseable".into());
+    };
+    let mut p = layout.methods_start;
+    let count = usize::from(u16_at(bridge, p).ok_or("truncated method count")?);
+    p = p.checked_add(2).ok_or("truncated method table")?;
+    let mut have: Vec<(String, String)> = Vec::with_capacity(count);
+    for _ in 0..count {
+        let n_idx = u16_at(bridge, p.checked_add(2).ok_or("truncated method")?).ok_or("truncated method name")?;
+        let d_idx = u16_at(bridge, p.checked_add(4).ok_or("truncated method")?).ok_or("truncated method desc")?;
+        let attr_count = usize::from(
+            u16_at(bridge, p.checked_add(6).ok_or("truncated method")?).ok_or("truncated method attrs")?,
+        );
+        p = p.checked_add(8).ok_or("truncated method table")?;
+        for _ in 0..attr_count {
+            let len = u32_at(bridge, p.checked_add(2).ok_or("truncated attr")?).ok_or("truncated attr")? as usize;
+            p = p.checked_add(6).ok_or("truncated attr")?.checked_add(len).ok_or("truncated attr")?;
+        }
+        let name = layout.pool.utf8_value(n_idx).ok_or("bad name idx")?;
+        let desc = layout.pool.utf8_value(d_idx).ok_or("bad desc idx")?;
+        have.push((name, desc));
+    }
+    for (_, _, tname, tdesc) in targets {
+        if !have.iter().any(|(n, d)| n == tname && d == tdesc) {
+            return Err(format!(
+                "bridge misses member {tname}{tdesc} — zero_cursor redirect would detonate NoSuchMethodError"
+            ));
+        }
+    }
+    Ok(())
 }
