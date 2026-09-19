@@ -31,7 +31,7 @@ set -uo pipefail
 WORLD_URL="${WORLD_URL:-https://storage.shield.land/public.php/dav/files/twzsxN3HkBQtyED/Season%203/MineShield-3__Min--Normal.zip}"
 RUN_SECONDS="${RUN_SECONDS:-900}"
 FORCELOAD_RADIUS="${FORCELOAD_RADIUS:-640}"
-SUMMON_SWEEPS="${SUMMON_SWEEPS:-0}"
+SUMMON_SWEEPS="${SUMMON_SWEEPS:-0}" # legacy; input dropped TASK-327
 # BENCH-4 fake players (task170, S7-99): N>0 injects N real ServerPlayers via
 # the BenchFakePlayers bench-only plugin (research/bench4-recon-2026-09-17 is
 # the STEP-0 contract; docs/BENCH4_FAKE_PLAYERS_DESIGN.md the preregistration).
