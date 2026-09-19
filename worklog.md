@@ -2662,3 +2662,21 @@ Stage Summary:
 - c-crussty master a5c353d: S7-170 реализован+загейтован (инфраструктура правильности, не перф-рычаг)
 - в полёте: s7192 (35467929550 @ a5c353d), гейт: маркер + PG-T2 threw=0 + DUAL BAR vs ANCHOR-SLOW 1.60 @ 6680195
 - NEXT id 349: absorb 35467929550; DUAL BAR GREEN → min-of-2 → banking v4; < +10% → лейн #14 REFUTED-вердикт + RECON по CPU-оси; CRASH класса гонки → откат точки подмены
+
+---
+## TASK-353 (RECON-30 офлайн-верификация) — 2026-09-20 06:43 тик (Job 398847), Agent: agent-7625532f
+
+Task: восстановление среды (воркспейс откачен) → S7-108 статус легов → RECON-30 broadphase-мемоизация (NEXT 353, без решения владельца) → учёт ×38 → пуши ×2.
+
+Work Log:
+- Среда: recloned c-crussty (master @ f5c1921 ×37) + crussty-dev-logs (@ 3cca868); JDK21 Temurin 21.0.5 → /tmp/jdk21; runs?per_page=3: только CI-санити (f5c1921/5ee56df/0ab2fc9), бенч-легов в полёте нет, чужих диспатчей нет
+- RECON-30: javap-контракт EntityCollectionBySection.getEntities/getEntitiesLimited (jar s7194; дампы contract-broadphase-s7194/): секции floor(minY−2)>>4..floor(maxY+2)>>4, линейный storage-обход null/excluded/intersects/predicate, порядок детерминирован
+- Кенсус мутаций: членство addEntity/removeEntity (достаточно для версий); геометрия Entity.setPos→makeBoundingBox→setBoundingBox — 150k мобов × каждый тик
+- Вердикт: exact-AABB кэш мёртв (ключ требует BB-версию → 150k бампов/тик → hit-rate ≈ 0; stale-кэш ломает median-exact); звуковой вариант flat live-list layout-диета — потолок ≤3.0-3.5% сцены (контур ~71-77% лейна, intersects+predicate неубираемы) = микро-зона; патчер не реализуется
+- Учёт: RECON30_BROADPHASE_MEMO_FEASIBILITY.md + GOAL ×38 (3288c3f) + CLAIMS TASK-353 (ed31872) + worklog ×2; пуши master/main
+
+Stage Summary:
+- Пятая док-верификация закрытия лейна (RECON-17/20/23/26/30); компонент A «broadphase ~5%» реально ≤3% → ЭПОХА-2 потенциал 12-16% → 10-13% сцены; рекомендация B/C усилена
+- NEXT id 354: решение владельца A/B/C; без решения — офлайн-верификация volatile-диеты ~3.4% (javap-контракт + модель TPS-конверсии)
+
+RUN_ID_DISPATCHED: (нет — диспатчи остановлены до решения владельца; CI-бутов 0)
