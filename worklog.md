@@ -2388,3 +2388,26 @@ Stage Summary:
 - NEXT: absorb 35417195790 по прereg-гейтам → CUMULATIVE v4 или REFUTED+rollback; затем свежий ТОП → следующий круг «ТОП-ПОЖИРАТЕЛЬ → ∞» (movement/AI 20.33% RECON / getFlow v2 / residual)
 
 RUN_ID_DISPATCHED: 35417195790 (preregister A/B leg#1; CI-бутов за тик 1 — санкционированный)
+
+---
+## TASK-312 (S7-164 absorb leg#1 → TECH-DUD → фикс → редиспатч leg#2 + RECON-8) — 2026-09-19 ~11:3x +08 — Job 396026, тик 11:08
+
+Task: поглотить легу #10 ZERO-ALLOC-INSIDE (35417195790) по прereg-гейтам; при PASS банкинг CUMULATIVE v4, при FAIL/дефекте — вердикт; в полёте леги — RECON по методике «ТОП-ПОЖИРАТЕЛЬ → ∞».
+
+Work Log:
+- creds (1b: bootstrap_tick.sh отсутствует, PUSH-URL remote set-url обоим репо); pull ×3 (up to date; CRUSSTY pristine в песочнице отсутствует — не трогался); next TASK id = 312 (ТИК 09:43 закрыт параллельной сессией как TASK-311: реализация+диспатч #10)
+- Лега #1 (35417195790, head eb89b7d) завершилась SUCCESS 11:14:20 +08 (16.2 мин); absorb: PG2 маркеры живы («stage zeroin composed (Retargeted { sites: 3 })», ARMED [inside->rng->batch->zeroin] rc=0, zero_alloc_ops defined, pop 150k VALID, telemetry ×4, 0 NCDFE), НО 71 «Entity threw exception» >> 0–5
+- Форензика: 66 × NoSuchMethodError 'ZeroAllocOps.collidedWithShapeMovingFrom(Entity;Vec3;Vec3;List)' с двух сайтов (InsideBlockOps$Recorder.visit + Entity.lambda$checkInsideBlocks$2) — ZeroAllocOps не содержал статика-цели (тело инлайнено в collidedWithFluid по census, патчер same-name сгенерировал invokestatic для sites:3); 1 × исторический fastutil-шум (sendBlockUpdated, семейство s7161); 4 × голых NPE без стека (fast-throw кандидаты, происхождение неустановимо — лега #2 ответит)
+- ВЕРДИКТ TECH-DUD (прецедент TASK-309): экономика не измерена, REFUTED не выставляется; барьеры не поймали, т.к. defineClass-верификатор не резолвит методы (lazy), оракул зовёт бридж compile-time, cargo проверял только структуру Entity-патча — урок №5, грань «методное замыкание» графа
+- Фикс (e82d81f): ZeroAllocOps.collidedWithShapeMovingFrom(Entity,Vec3,Vec3,List) вербатим-скаляры (примитивы оракула 50k+300k); ZA_REDIRECT_TARGETS — единая таблица целей (патчер+гвард, дескрипторы не разъезжаются); zeroalloc_resolution_closure(bridge) — сверка методной таблицы доставляемого classfile; runtime-гвард fail-closed ДО define_class (провал → громкий dormant); cargo-тест (до фикса падал бы); сьют 167/0/1, оракул 350k PASS
+- Инцидент: первый редиспатч ушёл на незапушенный head 8edcab5 → ран 35418617801 отменён API до бута, фикс запушен (8edcab5→e82d81f), лега #2 редиспатчена; урок — диспатч после remote-head == local-head
+- Редиспатч леги #2: dispatch_s7164.py → RUN 35418679791 (head e82d81f, старт 11:29:24 +08), прereg-входы НЕИЗМЕННЫ
+- RECON-8 (пока лега в полёте, S7-108): movement/AI 20.33% coarse разложен до классов поведения deepest-match'ем (leg#2 125610 + кросс-чек v3 128124, ранжирование стабильно): travel-physics 9.15% CPU + 13.87% alloc (не атакован — S7-133 бил call-site контейнеры, не скаляры тел), goal-selector 3.49% (чистая итерация + canUse RNG side-effects → ПАРК), navigation 3.29% (81% createPath, stroll-цели случайны → hit-rate≈0, ПАРК), sensing 1.34%, targeting 0.33%, entity-other 6.40% (гетерогенен, ≥5% атакующих нет); артефакты research/movement-ai-recon-2026-09-19/
+- Учёт: CLAIMS TASK-312, GOAL СТАТУС ×1 (absorb leg#1 TECH-DUD + фикс + RECON-8 + NEXT), ABSORB_S7164_LEG1_TECHDUD.md, атомарный append; пуш обоих репо
+
+Stage Summary:
+- Дефект-класс «redirect-цель отсутствует в доставленном бридже» закрыт тройным барьером: единая таблица целей (по построению), оффлайн cargo-гвард (до диспатча), runtime fail-closed (dormant вместо краш-шторма); доставка = доставка графа КЛАССОВ + МЕТОДОВ (урок №5 расширен)
+- RECON-8 закрыл декомпозицию ТОП-1: следующая цель эры — travel-physics (кандидат #11 ZERO-ALLOC-TRAVEL, класс #10 без RNG-поверхности); гейты — от свежего профиля банка после absorb #10 (урок №6)
+- NEXT (следующий тик): absorb леги #2 (35418679791) по неизменным гейтам → CUMULATIVE v4 или REFUTED+rollback → свежая пересортировка ТОПа → диспатч #11
+
+RUN_ID_DISPATCHED: 35418679791 (preregister A/B leg#2; CI-бутов за тик 2 санкционированных + 1 отменённый до бута — инцидент прозрачности задокументирован)
