@@ -2476,3 +2476,25 @@ Stage Summary:
 - NEXT: RECON-11 — G1-фаза (25-30%) как ТОП-1: разложить на аллок-драйверы; кандидат #13 по порогу ≥5%/2-3%-класса, иначе paper-REFUTED
 
 RUN_ID_DISPATCHED: нет (RECON-тик; S7-108 чист)
+
+---
+## TASK-316 (RECON-11: G1-фаза 31.0% декомпозирована — card-set 16.39% + oop-scan 10.70%; свип 5 кандидатов #13 закрыт; store-firehose гипотеза → инструмент-гейт) — 2026-09-19 ~13:2x +08 — Job 396026 (тик 13:08)
+
+Task: по CLAIMS TASK-315 NEXT — RECON-11: (а) декомпозиция G1-фазы на драйверы; (б) трёхосевая пересортировка (урок №7); (в) кандидаты #13 → порог ≥5%/2-3% или paper-REFUTED.
+
+Work Log:
+- creds (1b: bootstrap_tick.sh отсутствует, PUSH-URL обоим репо); pull ×3 (up to date, параллельных сессий нет — TASK-315 последний; CRUSSTY pristine отсутствует); next id = 316; CI чист (последний ран 35418679791 completed — поглощён TASK-313)
+- recon11_g1_drivers.py: G1-фаза 31.0% self-CPU = card-set/remset 16.39% (барьерная экономика: карта — на запись ссылки в СТАРЫЙ объект, стоимость ∝ числу записей) + oop-scan 10.70% (live ~3.9G) + evac 1.69% + scrub 0.70%; WallClock::signalHandler 0.945% = артефакт профайлера; gc.log: 50 Normal-young/461s = интервал 9.41s, медиана паузы 156.2ms, аллок ~250MB/s
+- Аллок-база: сер-стеки 0.0% (окно чистое); AABB+Vec3 40.08% (prereg-сходится), BlockPos-семья 15.7%; крупнейший аллокатор = inside-пайплайн (multi-лейбл: AABB 1051, Vec3 797, BlockPos 663, long[] 460)
+- recon11_alloc_attribution.py + ценз внутри-лейна: 11.10% CPU inclusively; банked inside_cache gate+replay = 0.59%, ванильное discovery = 10.51% — статик-гейт почти не дентил (ненулевой deltaMovement почти всегда)
+- javap-контракт discovery: per-step checkInsideBlocks(Vec3 from, Vec3 to, …) + visitor lambda$checkInsideBlocks$2 = segment-тест collidedWithShapeMovingFrom/collidedWithFluid → discovery = функция СВЁРНУТОГО ПУТИ (суб-блочная чувствительность форм)
+- Свип #13: (a) lesson-8-редирект крупных тел PAPER-REFUTED (move 2.3% давления, инлайнится); (b) INSIDE-DIRTY-BOUNDARY INFEASIBLE-BY-PARITY (сегмент-тест ≠ состояние; парити-safe skip = статик, уже банked — урок fluid_dirty с уточнением механики); (c) demux-v2 residual PAPER-REFUTED (1.2-1.5%); (d) объект-пул PAPER-REFUTED (young→young записи карт не создают; сеттеры не сокращаются); (e) скаляризация live-полей PAPER-REFUTED (read/write-асимметрия)
+- Store-firehose гипотеза: ~200-300k old→young записей/тик; сеттеры инлайнены C2 → alloc-стек-атрибуция ломается (зеркальный урок №8) → честная оценка невозможна офлайн → инструмент
+- Учёт: CLAIMS TASK-316, GOAL СТАТУС ×1, worklog, атомарный append; артефакты research/gc-recon-2026-09-19/ (RECON11_G1_DRIVERS.md, RECON11_raw.txt, 2 скрипта); пуш обоих репо
+
+Stage Summary:
+- G1-фаза (ТОП-1 31.0%) декомпозирована: card-set 16.39% драйвится ЧИСЛОМ old→young записей (4-6M/s) — единственная ось с потолком ≥2-3% (value-equal store-skip), но доля entity-полей неизвестна офлайн
+- Все 5 кандидатов #13 закрыты честно (2 INFEASIBLE-BY-PARITY-рода, 3 PAPER-REFUTED); дискавери inside — свёрнутый путь, парити-safe dirty-flag невозможен за пределами статик-гейта
+- NEXT: инструментированный RECON-лег (CI-бут, 0 поведения: -Xlog:gc+remset* диагностика + producer-атрибуция) → GO/NO-GO #13 SKIP-STORE-DIET по измеренной доле ≥40% И потолку ≥2-3% wall
+
+RUN_ID_DISPATCHED: нет (RECON-тик; S7-108 чист)
