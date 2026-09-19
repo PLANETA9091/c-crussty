@@ -1,0 +1,62 @@
+  private static float[] collectCandidateStepUpHeights(net.minecraft.world.phys.AABB, java.util.List<net.minecraft.world.phys.shapes.VoxelShape>, float, float);
+    Code:
+       0: new           #670                // class it/unimi/dsi/fastutil/floats/FloatArraySet
+       3: dup
+       4: iconst_4
+       5: invokespecial #2552               // Method it/unimi/dsi/fastutil/floats/FloatArraySet."<init>":(I)V
+       8: astore        4
+      10: aload_1
+      11: invokeinterface #751,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+      16: astore        5
+      18: aload         5
+      20: invokeinterface #756,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      25: ifeq          130
+      28: aload         5
+      30: invokeinterface #760,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      35: checkcast     #684                // class net/minecraft/world/phys/shapes/VoxelShape
+      38: astore        6
+      40: aload         6
+      42: getstatic     #2466               // Field net/minecraft/core/Direction$Axis.Y:Lnet/minecraft/core/Direction$Axis;
+      45: invokevirtual #2558               // Method net/minecraft/world/phys/shapes/VoxelShape.getCoords:(Lnet/minecraft/core/Direction$Axis;)Lit/unimi/dsi/fastutil/doubles/DoubleList;
+      48: invokeinterface #2563,  1         // InterfaceMethod it/unimi/dsi/fastutil/doubles/DoubleList.iterator:()Lit/unimi/dsi/fastutil/doubles/DoubleListIterator;
+      53: astore        7
+      55: aload         7
+      57: invokeinterface #756,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      62: ifeq          127
+      65: aload         7
+      67: invokeinterface #760,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      72: checkcast     #2565               // class java/lang/Double
+      75: invokevirtual #2568               // Method java/lang/Double.doubleValue:()D
+      78: dstore        8
+      80: dload         8
+      82: aload_0
+      83: getfield      #700                // Field net/minecraft/world/phys/AABB.minY:D
+      86: dsub
+      87: d2f
+      88: fstore        10
+      90: fload         10
+      92: fconst_0
+      93: fcmpg
+      94: iflt          124
+      97: fload         10
+      99: fload_3
+     100: fcmpl
+     101: ifeq          124
+     104: fload         10
+     106: fload_2
+     107: fcmpl
+     108: ifle          114
+     111: goto          127
+     114: aload         4
+     116: fload         10
+     118: invokeinterface #2569,  2         // InterfaceMethod it/unimi/dsi/fastutil/floats/FloatSet.add:(F)Z
+     123: pop
+     124: goto          55
+     127: goto          18
+     130: aload         4
+     132: invokeinterface #2570,  1         // InterfaceMethod it/unimi/dsi/fastutil/floats/FloatSet.toFloatArray:()[F
+     137: astore        5
+     139: aload         5
+     141: invokestatic  #717                // Method it/unimi/dsi/fastutil/floats/FloatArrays.unstableSort:([F)V
+     144: aload         5
+     146: areturn

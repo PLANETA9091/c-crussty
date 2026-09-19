@@ -165,7 +165,7 @@ def main():
         r1 = [f"{k}={'OK' if env_flag(env_txt, k, v) else 'BAD'}" for k, v in want.items()]
         ncde = stdout_txt.count("NoClassDefFoundError")
         pop_ok = "POPULATION FIXTURE-VALIDITY: VALID" in stdout_txt
-        r1_ok = all(x == "OK" for x in r1) and ncde == 0 and pop_ok
+        r1_ok = all(x.endswith("OK") for x in r1) and ncde == 0 and pop_ok
         rep.append("- PG-R1: " + ", ".join(r1) + f", NCDFE={ncde}, "
                    f"pop={'VALID' if pop_ok else 'BAD'} -> **{'PASS' if r1_ok else 'FAIL'}**")
 
