@@ -124,6 +124,7 @@ fn stage_enabled() -> bool {
         || crate::batch_collector::enabled_pub()
         || crate::traversal::enabled_pub()
         || crate::zero_alloc::enabled_pub()
+        || crate::skip_store::enabled_pub()
 }
 
 /// Register the single Entity byte hook (idempotent; call once from
@@ -498,6 +499,53 @@ pub fn activate() {
             }
         }
 
+        // ---- STAGE 8: skip-store-bb value-equal putfield skip (#13-SBB, S7-166) ----
+        // Single-site body redirect of Entity.setBoundingBox(AABB) to the
+        // SkipStoreOps bridge (javap-verbatim normalization + bit-equal
+        // store-skip; RECON-12a parity contract: 0 identity sites on bb,
+        // AABB immutable, bit-equality strictly stronger than dcmp).
+        if crate::skip_store::enabled_pub() {
+            if crate::skip_store::wait_bridge_ready(120_000) {
+                match crate::classfile::patch_entity_skip_store_bb(&bytes) {
+                    Ok((p, outcome)) if matches!(
+                        outcome,
+                        crate::classfile::RetargetOutcome::Retargeted { sites: 1 }
+                    ) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage sbb composed ({outcome:?})"
+                        );
+                        bytes = p;
+                        chain.push("sbb");
+                    }
+                    Ok((p, outcome)) if matches!(
+                        outcome,
+                        crate::classfile::RetargetOutcome::AlreadyPatched { sites: 1 }
+                    ) => {
+                        // Idempotent re-sight (stale retransform replay).
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage sbb composed ({outcome:?})"
+                        );
+                        bytes = p;
+                        chain.push("sbb");
+                    }
+                    Ok((_p, outcome)) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage sbb strict check violated ({outcome:?}), chain continues WITHOUT sbb (fail-dominant)"
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage sbb patch rejected ({e}), chain continues WITHOUT sbb (fail-dominant)"
+                        );
+                    }
+                }
+            } else {
+                eprintln!(
+                    "[crussty-plugin] entity_compose: skip_store bridge missed its window, chain continues WITHOUT sbb (fail-dominant)"
+                );
+            }
+        }
+
         let composed_len = bytes.len();
         t.set_patch(PatchCache {
             bytes: Arc::from(bytes),
@@ -506,8 +554,8 @@ pub fn activate() {
 
         crate::kernel_policy::audit_wire(
             ENTITY_CLASS,
-            "inside-gate/fgate/scan/rngUUID/collector-ctor/traversal/zeroin",
-            "entity_compose v3",
+            "inside-gate/fgate/scan/rngUUID/collector-ctor/traversal/zeroin/skip-store-bb",
+            "entity_compose v5",
         );
         READY.store(true, Ordering::Release);
         let rc = cplug_sdk::retransform_class(t.name);

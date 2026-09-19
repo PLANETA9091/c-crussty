@@ -74,6 +74,7 @@ BATCH_COLLECTOR="${BATCH_COLLECTOR:-0}"
 # retarget — requires region_threads>=2; 0 = vanilla traversal A/B leg).
 FLAT_TRAVERSAL="${FLAT_TRAVERSAL:-0}"
 ZERO_ALLOC="${ZERO_ALLOC:-0}"
+SKIP_STORE_BB="${SKIP_STORE_BB:-0}"
 # BENCH-X150K population fixture (S7-129, docs/BENCH_X150K_SCENARIO.md §2):
 # deterministic living-scene injection AFTER forceload, BEFORE the profiler
 # window (harness waits for the POPULATION INJECT DONE marker). 0 = off.
@@ -155,6 +156,7 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "batch_collector: $BATCH_COLLECTOR (CRUSSTY_BATCH_COLLECTOR; 1 = BATCH-COLLECTOR ARCH-ATTACK lever #8: zero-map flat StepBasedCollector via BatchCollector.ensure swap, requires region_threads>=2, S7-160)"
   echo "flat_traversal: $FLAT_TRAVERSAL (CRUSSTY_FLAT_TRAVERSAL; 1 = FLAT-TRAVERSAL ARCH-ATTACK lever #9: flat bit-exact TraverseOps.forEachFlat via entity_compose stage-6 retarget, requires region_threads>=2, S7-163)"
   echo "zero_alloc: $ZERO_ALLOC (CRUSSTY_ZERO_ALLOC; 1 = ZERO-ALLOC-INSIDE ARCH-ATTACK lever #10: scalar ZeroAllocOps body-redirects of collidedWithFluid/collidedWithShapeMovingFrom/updateFluidHeightAndDoFluidPushing via entity_compose stage-7, requires region_threads>=2, S7-164)"
+  echo "skip_store_bb: $SKIP_STORE_BB (CRUSSTY_SKIP_STORE_BB; 1 = SKIP-STORE-BB #13-SBB ARCH-ATTACK: value-equal store-skip for Entity.setBoundingBox via SkipStoreOps body-redirect entity_compose stage-8, requires region_threads>=2, S7-166)"
   echo "population_target: $POPULATION_TARGET (BENCH-X150K living-scene injection, S7-129; 0 = off)"
   echo "population_seed: $POPULATION_SEED (deterministic injection replay seed; topup seeded from deltaT=ft-T0, S7-130)"
   echo "server_xmx: $SERVER_XMX (S7-130; 150k-scale runs use 10G)"
@@ -385,6 +387,10 @@ export CRUSSTY_BATCH_COLLECTOR="$BATCH_COLLECTOR"
 # entity_compose chain)
 export CRUSSTY_FLAT_TRAVERSAL="$FLAT_TRAVERSAL"
 export CRUSSTY_ZERO_ALLOC="$ZERO_ALLOC"
+# SKIP-STORE-BB gate (#13-SBB, S7-166; skip_store.rs reads it at define
+# time; requires region_threads >= 2 — the redirect composes through the
+# entity_compose chain stage 8)
+export CRUSSTY_SKIP_STORE_BB="$SKIP_STORE_BB"
 # RECON_DIAG (TASK-317, instrument-гейт рычага #13 SKIP-STORE-DIET): чистая
 # наблюдаемость — 0 поведения. GC-политика/heap не трогаются (логирование ≠
 # config-win, вердикт NEXT TASK-316): remset/refine debug-логи (агрегатная

@@ -43,6 +43,7 @@ mod promote_wire;
 mod proto_blend_cache;
 mod randomtick;
 mod region_threads;
+mod skip_store;
 mod tickhook;
 mod traversal;
 mod zero_alloc;
@@ -355,8 +356,12 @@ fn inject_surface() {
     // through the entity_compose chain stage 7; dormant unless
     // CRUSSTY_ZERO_ALLOC=1 AND region_threads>=2).
     zero_alloc::activate();
+    // SKIP-STORE-BB (#13-SBB, S7-166): value-equal store-skip for
+    // Entity.setBoundingBox via the SkipStoreOps bridge (stage 8;
+    // dormant unless CRUSSTY_SKIP_STORE_BB=1 AND region_threads>=2).
+    skip_store::activate();
     // ENTITY-COMPOSE (S7-162): apply the single compose chain on Entity
-    // (inside → fluid_free → fluid_dirty → rng → batch → traversal → zeroin),
+    // (inside → fluid_free → fluid_dirty → rng → batch → traversal → zeroin → sbb),
     // publish the rng verdict for region_threads, retransform Entity
     // exactly once.
     entity_compose::activate();
