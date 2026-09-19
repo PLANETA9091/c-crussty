@@ -1,0 +1,1331 @@
+﻿2026-09-19T18:04:28.9305017Z Current runner version: '2.337.0'
+2026-09-19T18:04:28.9333606Z ##[group]Runner Image Provisioner
+2026-09-19T18:04:28.9334695Z Hosted Compute Agent
+2026-09-19T18:04:28.9335368Z Version: 20260828.587
+2026-09-19T18:04:28.9336034Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+2026-09-19T18:04:28.9336832Z Build Date: 2026-08-28T16:44:25Z
+2026-09-19T18:04:28.9337545Z Worker ID: {c3d2055d-f90e-4b3f-97ac-0ccce886e95e}
+2026-09-19T18:04:28.9338292Z Azure Region: eastus
+2026-09-19T18:04:28.9338978Z ##[endgroup]
+2026-09-19T18:04:28.9340498Z ##[group]Operating System
+2026-09-19T18:04:28.9341237Z Ubuntu
+2026-09-19T18:04:28.9341829Z 24.04.5
+2026-09-19T18:04:28.9342366Z LTS
+2026-09-19T18:04:28.9343227Z ##[endgroup]
+2026-09-19T18:04:28.9343863Z ##[group]Runner Image
+2026-09-19T18:04:28.9344590Z Image: ubuntu-24.04
+2026-09-19T18:04:28.9345225Z Version: 20260907.300.1
+2026-09-19T18:04:28.9346632Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260907.300/images/ubuntu/Ubuntu2404-Readme.md
+2026-09-19T18:04:28.9348209Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260907.300
+2026-09-19T18:04:28.9349241Z ##[endgroup]
+2026-09-19T18:04:28.9350403Z ##[group]GITHUB_TOKEN Permissions
+2026-09-19T18:04:28.9352942Z Contents: read
+2026-09-19T18:04:28.9353693Z Metadata: read
+2026-09-19T18:04:28.9354375Z ##[endgroup]
+2026-09-19T18:04:28.9356902Z Secret source: Actions
+2026-09-19T18:04:28.9357999Z Cache mode: write
+2026-09-19T18:04:28.9358986Z Prepare workflow directory
+2026-09-19T18:04:28.9697699Z Prepare all required actions
+2026-09-19T18:04:28.9747018Z Getting action download info
+2026-09-19T18:04:29.2152233Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-09-19T18:04:29.3263187Z Download action repository 'dtolnay/rust-toolchain@stable' (SHA:6bed0761d98439e5a578e2877258200ad565ba87)
+2026-09-19T18:04:29.4115005Z Download action repository 'Swatinem/rust-cache@v2' (SHA:6323deb102c322ba6fcbdcafc7e3dddab59af2b6)
+2026-09-19T18:04:29.5750937Z Download action repository 'actions/setup-java@v4' (SHA:cf277c60eb25467037889841efdb72551f06f6c3)
+2026-09-19T18:04:29.8064724Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-09-19T18:04:30.1017073Z Complete job name: world-bench
+2026-09-19T18:04:30.2009927Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-09-19T18:04:30.2020479Z ##[group]Run actions/checkout@v4
+2026-09-19T18:04:30.2021546Z with:
+2026-09-19T18:04:30.2022285Z   repository: PLANETA9091/c-crussty
+2026-09-19T18:04:30.2027584Z   token: ***
+2026-09-19T18:04:30.2028300Z   ssh-strict: true
+2026-09-19T18:04:30.2029012Z   ssh-user: git
+2026-09-19T18:04:30.2029725Z   persist-credentials: true
+2026-09-19T18:04:30.2030534Z   clean: true
+2026-09-19T18:04:30.2031244Z   sparse-checkout-cone-mode: true
+2026-09-19T18:04:30.2032059Z   fetch-depth: 1
+2026-09-19T18:04:30.2033096Z   fetch-tags: false
+2026-09-19T18:04:30.2033839Z   show-progress: true
+2026-09-19T18:04:30.2034574Z   lfs: false
+2026-09-19T18:04:30.2035296Z   submodules: false
+2026-09-19T18:04:30.2036013Z   set-safe-directory: true
+2026-09-19T18:04:30.2036788Z   allow-unsafe-pr-checkout: false
+2026-09-19T18:04:30.2037943Z ##[endgroup]
+2026-09-19T18:04:30.3103259Z Syncing repository: PLANETA9091/c-crussty
+2026-09-19T18:04:30.3107077Z ##[group]Getting Git version info
+2026-09-19T18:04:30.3108975Z Working directory is '/home/runner/work/c-crussty/c-crussty'
+2026-09-19T18:04:30.3111512Z [command]/usr/bin/git version
+2026-09-19T18:04:30.3190398Z git version 2.55.0
+2026-09-19T18:04:30.3227324Z ##[endgroup]
+2026-09-19T18:04:30.3240653Z Temporarily overriding HOME='/home/runner/work/_temp/01510d58-1d86-4b10-a1af-e21909c952a6' before making global git config changes
+2026-09-19T18:04:30.3245783Z Adding repository directory to the temporary git global config as a safe directory
+2026-09-19T18:04:30.3248850Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/c-crussty/c-crussty
+2026-09-19T18:04:30.3307228Z Deleting the contents of '/home/runner/work/c-crussty/c-crussty'
+2026-09-19T18:04:30.3318293Z ##[group]Initializing the repository
+2026-09-19T18:04:30.3324962Z [command]/usr/bin/git init /home/runner/work/c-crussty/c-crussty
+2026-09-19T18:04:30.3433079Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-09-19T18:04:30.3435364Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-09-19T18:04:30.3437446Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-09-19T18:04:30.3439381Z hint: call:
+2026-09-19T18:04:30.3440673Z hint:
+2026-09-19T18:04:30.3442260Z hint: 	git config --global init.defaultBranch <name>
+2026-09-19T18:04:30.3443859Z hint:
+2026-09-19T18:04:30.3445075Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-09-19T18:04:30.3446436Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-09-19T18:04:30.3447531Z hint:
+2026-09-19T18:04:30.3448211Z hint: 	git branch -m <name>
+2026-09-19T18:04:30.3448999Z hint:
+2026-09-19T18:04:30.3449938Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-09-19T18:04:30.3456811Z Initialized empty Git repository in /home/runner/work/c-crussty/c-crussty/.git/
+2026-09-19T18:04:30.3474667Z [command]/usr/bin/git remote add origin https://github.com/PLANETA9091/c-crussty
+2026-09-19T18:04:30.3522369Z ##[endgroup]
+2026-09-19T18:04:30.3524709Z ##[group]Disabling automatic garbage collection
+2026-09-19T18:04:30.3528109Z [command]/usr/bin/git config --local gc.auto 0
+2026-09-19T18:04:30.3564899Z ##[endgroup]
+2026-09-19T18:04:30.3566457Z ##[group]Setting up auth
+2026-09-19T18:04:30.3571803Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-09-19T18:04:30.3610493Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-09-19T18:04:30.4010893Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-09-19T18:04:30.4052361Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-09-19T18:04:30.4283661Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-09-19T18:04:30.4322379Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-09-19T18:04:30.4557112Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-09-19T18:04:30.4599109Z ##[endgroup]
+2026-09-19T18:04:30.4609082Z ##[group]Fetching the repository
+2026-09-19T18:04:30.4611115Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +0c65771a0d37cfc057c0e8f26d6ef251cef41279:refs/remotes/origin/master
+2026-09-19T18:04:34.3240809Z From https://github.com/PLANETA9091/c-crussty
+2026-09-19T18:04:34.3242175Z  * [new ref]         0c65771a0d37cfc057c0e8f26d6ef251cef41279 -> origin/master
+2026-09-19T18:04:34.3245561Z ##[endgroup]
+2026-09-19T18:04:34.3246070Z ##[group]Determining the checkout info
+2026-09-19T18:04:34.3248367Z ##[endgroup]
+2026-09-19T18:04:34.3254361Z [command]/usr/bin/git sparse-checkout disable
+2026-09-19T18:04:34.3311832Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-09-19T18:04:34.3348587Z ##[group]Checking out the ref
+2026-09-19T18:04:34.3354126Z [command]/usr/bin/git checkout --progress --force -B master refs/remotes/origin/master
+2026-09-19T18:04:35.4349212Z Updating files:  77% (2099/2709)
+2026-09-19T18:04:35.4366211Z Updating files:  78% (2114/2709)
+2026-09-19T18:04:35.6123554Z Updating files:  79% (2141/2709)
+2026-09-19T18:04:35.8851637Z Updating files:  80% (2168/2709)
+2026-09-19T18:04:36.0613723Z Updating files:  81% (2195/2709)
+2026-09-19T18:04:36.3375897Z Updating files:  82% (2222/2709)
+2026-09-19T18:04:36.3929413Z Updating files:  83% (2249/2709)
+2026-09-19T18:04:36.6034231Z Updating files:  83% (2251/2709)
+2026-09-19T18:04:36.8503927Z Updating files:  84% (2276/2709)
+2026-09-19T18:04:36.8518874Z Updating files:  85% (2303/2709)
+2026-09-19T18:04:36.8695893Z Updating files:  86% (2330/2709)
+2026-09-19T18:04:36.8866348Z Updating files:  87% (2357/2709)
+2026-09-19T18:04:36.8928917Z Updating files:  88% (2384/2709)
+2026-09-19T18:04:36.8953582Z Updating files:  89% (2412/2709)
+2026-09-19T18:04:37.0053664Z Updating files:  90% (2439/2709)
+2026-09-19T18:04:37.1106693Z Updating files:  91% (2466/2709)
+2026-09-19T18:04:37.1118864Z Updating files:  92% (2493/2709)
+2026-09-19T18:04:37.1133288Z Updating files:  93% (2520/2709)
+2026-09-19T18:04:37.1150600Z Updating files:  94% (2547/2709)
+2026-09-19T18:04:37.1170048Z Updating files:  95% (2574/2709)
+2026-09-19T18:04:37.1213481Z Updating files:  96% (2601/2709)
+2026-09-19T18:04:37.1240764Z Updating files:  97% (2628/2709)
+2026-09-19T18:04:37.1279759Z Updating files:  98% (2655/2709)
+2026-09-19T18:04:37.1354792Z Updating files:  99% (2682/2709)
+2026-09-19T18:04:37.1355596Z Updating files: 100% (2709/2709)
+2026-09-19T18:04:37.1356105Z Updating files: 100% (2709/2709), done.
+2026-09-19T18:04:37.1405502Z Reset branch 'master'
+2026-09-19T18:04:37.1411739Z branch 'master' set up to track 'origin/master'.
+2026-09-19T18:04:37.1469081Z ##[endgroup]
+2026-09-19T18:04:37.1517664Z [command]/usr/bin/git log -1 --format=%H
+2026-09-19T18:04:37.1544875Z 0c65771a0d37cfc057c0e8f26d6ef251cef41279
+2026-09-19T18:04:37.1850158Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-09-19T18:04:37.1851867Z ##[group]Run actions/checkout@v4
+2026-09-19T18:04:37.1852113Z with:
+2026-09-19T18:04:37.1852325Z   repository: PLANETA9091/CRUSSTY
+2026-09-19T18:04:37.1852935Z   path: CRUSSTY
+2026-09-19T18:04:37.1855387Z   token: ***
+2026-09-19T18:04:37.1855592Z   ssh-strict: true
+2026-09-19T18:04:37.1855798Z   ssh-user: git
+2026-09-19T18:04:37.1856004Z   persist-credentials: true
+2026-09-19T18:04:37.1856242Z   clean: true
+2026-09-19T18:04:37.1856452Z   sparse-checkout-cone-mode: true
+2026-09-19T18:04:37.1856708Z   fetch-depth: 1
+2026-09-19T18:04:37.1856911Z   fetch-tags: false
+2026-09-19T18:04:37.1857128Z   show-progress: true
+2026-09-19T18:04:37.1857379Z   lfs: false
+2026-09-19T18:04:37.1857567Z   submodules: false
+2026-09-19T18:04:37.1857772Z   set-safe-directory: true
+2026-09-19T18:04:37.1858015Z   allow-unsafe-pr-checkout: false
+2026-09-19T18:04:37.1858268Z ##[endgroup]
+2026-09-19T18:04:37.2720253Z Syncing repository: PLANETA9091/CRUSSTY
+2026-09-19T18:04:37.2727737Z ##[group]Getting Git version info
+2026-09-19T18:04:37.2728454Z Working directory is '/home/runner/work/c-crussty/c-crussty/CRUSSTY'
+2026-09-19T18:04:37.2754704Z [command]/usr/bin/git version
+2026-09-19T18:04:37.2799013Z git version 2.55.0
+2026-09-19T18:04:37.2823018Z ##[endgroup]
+2026-09-19T18:04:37.2838112Z Temporarily overriding HOME='/home/runner/work/_temp/04731846-8030-48b5-afaf-f43079a21597' before making global git config changes
+2026-09-19T18:04:37.2839366Z Adding repository directory to the temporary git global config as a safe directory
+2026-09-19T18:04:37.2844171Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/c-crussty/c-crussty/CRUSSTY
+2026-09-19T18:04:37.2877991Z ##[group]Initializing the repository
+2026-09-19T18:04:37.2884057Z [command]/usr/bin/git init /home/runner/work/c-crussty/c-crussty/CRUSSTY
+2026-09-19T18:04:37.2925069Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-09-19T18:04:37.2926175Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-09-19T18:04:37.2927257Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-09-19T18:04:37.2928248Z hint: call:
+2026-09-19T18:04:37.2928954Z hint:
+2026-09-19T18:04:37.2929637Z hint: 	git config --global init.defaultBranch <name>
+2026-09-19T18:04:37.2930211Z hint:
+2026-09-19T18:04:37.2930882Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-09-19T18:04:37.2931958Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-09-19T18:04:37.2933116Z hint:
+2026-09-19T18:04:37.2933606Z hint: 	git branch -m <name>
+2026-09-19T18:04:37.2933999Z hint:
+2026-09-19T18:04:37.2934550Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-09-19T18:04:37.2935484Z Initialized empty Git repository in /home/runner/work/c-crussty/c-crussty/CRUSSTY/.git/
+2026-09-19T18:04:37.2938089Z [command]/usr/bin/git remote add origin https://github.com/PLANETA9091/CRUSSTY
+2026-09-19T18:04:37.2974044Z ##[endgroup]
+2026-09-19T18:04:37.2974459Z ##[group]Disabling automatic garbage collection
+2026-09-19T18:04:37.2979171Z [command]/usr/bin/git config --local gc.auto 0
+2026-09-19T18:04:37.3009919Z ##[endgroup]
+2026-09-19T18:04:37.3010488Z ##[group]Setting up auth
+2026-09-19T18:04:37.3018187Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-09-19T18:04:37.3050632Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-09-19T18:04:37.3304463Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-09-19T18:04:37.3337199Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-09-19T18:04:37.3598647Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-09-19T18:04:37.3646048Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-09-19T18:04:37.3898334Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-09-19T18:04:37.3938139Z ##[endgroup]
+2026-09-19T18:04:37.3942371Z ##[group]Determining the default branch
+2026-09-19T18:04:37.3943052Z Retrieving the default branch name
+2026-09-19T18:04:37.6409448Z Default branch 'master'
+2026-09-19T18:04:37.6410630Z ##[endgroup]
+2026-09-19T18:04:37.6411387Z ##[group]Fetching the repository
+2026-09-19T18:04:37.6427411Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +refs/heads/master:refs/remotes/origin/master
+2026-09-19T18:04:38.1025209Z From https://github.com/PLANETA9091/CRUSSTY
+2026-09-19T18:04:38.1025831Z  * [new branch]      master     -> origin/master
+2026-09-19T18:04:38.1031358Z ##[endgroup]
+2026-09-19T18:04:38.1032247Z ##[group]Determining the checkout info
+2026-09-19T18:04:38.1034520Z ##[endgroup]
+2026-09-19T18:04:38.1040156Z [command]/usr/bin/git sparse-checkout disable
+2026-09-19T18:04:38.1085320Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-09-19T18:04:38.1117952Z ##[group]Checking out the ref
+2026-09-19T18:04:38.1121785Z [command]/usr/bin/git checkout --progress --force -B master refs/remotes/origin/master
+2026-09-19T18:04:38.1574526Z Reset branch 'master'
+2026-09-19T18:04:38.1578606Z branch 'master' set up to track 'origin/master'.
+2026-09-19T18:04:38.1586062Z ##[endgroup]
+2026-09-19T18:04:38.1634308Z [command]/usr/bin/git log -1 --format=%H
+2026-09-19T18:04:38.1667015Z 1f4c06aa5535b0e3cbf06dd962b1de0f3bf96d92
+2026-09-19T18:04:38.1974492Z ##[group]Run dtolnay/rust-toolchain@stable
+2026-09-19T18:04:38.1974806Z with:
+2026-09-19T18:04:38.1974996Z   toolchain: stable
+2026-09-19T18:04:38.1975205Z ##[endgroup]
+2026-09-19T18:04:38.2069632Z ##[start-action display=Parse toolchain version;id=__dtolnay_rust-toolchain.parse]
+2026-09-19T18:04:38.2123596Z ##[group]Run if [[ -z $toolchain ]]; then
+2026-09-19T18:04:38.2123975Z [36;1mif [[ -z $toolchain ]]; then[0m
+2026-09-19T18:04:38.2124528Z [36;1m  # GitHub does not enforce `required: true` inputs itself. https://github.com/actions/runner/issues/1070[0m
+2026-09-19T18:04:38.2125085Z [36;1m  echo "'toolchain' is a required input" >&2[0m
+2026-09-19T18:04:38.2125385Z [36;1m  exit 1[0m
+2026-09-19T18:04:38.2125720Z [36;1melif [[ $toolchain =~ ^stable' '[0-9]+' '(year|month|week|day)s?' 'ago$ ]]; then[0m
+2026-09-19T18:04:38.2126138Z [36;1m  if [[ Linux == macOS ]]; then[0m
+2026-09-19T18:04:38.2126726Z [36;1m    echo "toolchain=1.$((($(date -v-$(sed 's/stable \([0-9]*\) \(.\).*/\1\2/' <<< $toolchain) +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-09-19T18:04:38.2127246Z [36;1m  else[0m
+2026-09-19T18:04:38.2127658Z [36;1m    echo "toolchain=1.$((($(date --date "${toolchain#stable }" +%s)/60/60/24-16569)/7/6))" >> $GITHUB_OUTPUT[0m
+2026-09-19T18:04:38.2128122Z [36;1m  fi[0m
+2026-09-19T18:04:38.2128415Z [36;1melif [[ $toolchain =~ ^stable' 'minus' '[0-9]+' 'releases?$ ]]; then[0m
+2026-09-19T18:04:38.2128943Z [36;1m  echo "toolchain=1.$((($(date +%s)/60/60/24-16569)/7/6-${toolchain//[^0-9]/}))" >> $GITHUB_OUTPUT[0m
+2026-09-19T18:04:38.2129411Z [36;1melif [[ $toolchain =~ ^1\.[0-9]+$ ]]; then[0m
+2026-09-19T18:04:38.2129948Z [36;1m  echo "toolchain=1.$((i=${toolchain#1.}, c=($(date +%s)/60/60/24-16569)/7/6, i+9*i*(10*i<=c)+90*i*(100*i<=c)))" >> $GITHUB_OUTPUT[0m
+2026-09-19T18:04:38.2130449Z [36;1melse[0m
+2026-09-19T18:04:38.2130695Z [36;1m  echo "toolchain=$toolchain" >> $GITHUB_OUTPUT[0m
+2026-09-19T18:04:38.2130984Z [36;1mfi[0m
+2026-09-19T18:04:38.2173060Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-19T18:04:38.2173416Z env:
+2026-09-19T18:04:38.2173605Z   toolchain: stable
+2026-09-19T18:04:38.2173811Z ##[endgroup]
+2026-09-19T18:04:38.2284433Z ##[end-action id=__dtolnay_rust-toolchain.parse;outcome=success;conclusion=success;duration_ms=21]
+2026-09-19T18:04:38.2296743Z ##[start-action display=Construct rustup command line;id=__dtolnay_rust-toolchain.flags]
+2026-09-19T18:04:38.2316050Z ##[group]Run echo "targets=$(for t in ${targets//,/ }; do echo -n ' --target' $t; done)" >> $GITHUB_OUTPUT
+2026-09-19T18:04:38.2316699Z [36;1mecho "targets=$(for t in ${targets//,/ }; do echo -n ' --target' $t; done)" >> $GITHUB_OUTPUT[0m
+2026-09-19T18:04:38.2317362Z [36;1mecho "components=$(for c in ${components//,/ }; do echo -n ' --component' $c; done)" >> $GITHUB_OUTPUT[0m
+2026-09-19T18:04:38.2317890Z [36;1mecho "downgrade=" >> $GITHUB_OUTPUT[0m
+2026-09-19T18:04:38.2353798Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-19T18:04:38.2354149Z env:
+2026-09-19T18:04:38.2354346Z   targets: 
+2026-09-19T18:04:38.2354536Z   components: 
+2026-09-19T18:04:38.2354731Z ##[endgroup]
+2026-09-19T18:04:38.2424744Z ##[end-action id=__dtolnay_rust-toolchain.flags;outcome=success;conclusion=success;duration_ms=12]
+2026-09-19T18:04:38.2426799Z ##[start-action display=Set $CARGO_HOME;id=__dtolnay_rust-toolchain.__run]
+2026-09-19T18:04:38.2441925Z ##[group]Run echo CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV
+2026-09-19T18:04:38.2442389Z [36;1mecho CARGO_HOME=${CARGO_HOME:-"$HOME/.cargo"} >> $GITHUB_ENV[0m
+2026-09-19T18:04:38.2476896Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-19T18:04:38.2477235Z ##[endgroup]
+2026-09-19T18:04:38.2538422Z ##[end-action id=__dtolnay_rust-toolchain.__run;outcome=success;conclusion=success;duration_ms=11]
+2026-09-19T18:04:38.2540392Z ##[start-action display=Install rustup if needed;id=__dtolnay_rust-toolchain.__run_2]
+2026-09-19T18:04:38.2557002Z ##[group]Run if ! command -v rustup &>/dev/null; then
+2026-09-19T18:04:38.2557487Z [36;1mif ! command -v rustup &>/dev/null; then[0m
+2026-09-19T18:04:38.2558229Z [36;1m  curl --proto '=https' --tlsv1.2 --retry 10 --retry-connrefused --location --silent --show-error --fail https://sh.rustup.rs | sh -s -- --default-toolchain none -y[0m
+2026-09-19T18:04:38.2558966Z [36;1m  echo "$CARGO_HOME/bin" >> $GITHUB_PATH[0m
+2026-09-19T18:04:38.2559252Z [36;1mfi[0m
+2026-09-19T18:04:38.2595238Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-19T18:04:38.2595578Z env:
+2026-09-19T18:04:38.2595783Z   CARGO_HOME: /home/runner/.cargo
+2026-09-19T18:04:38.2596028Z ##[endgroup]
+2026-09-19T18:04:38.2656924Z ##[end-action id=__dtolnay_rust-toolchain.__run_2;outcome=success;conclusion=success;duration_ms=11]
+2026-09-19T18:04:38.2658902Z ##[start-action display=Install rustup if needed on windows;id=__dtolnay_rust-toolchain.__run_3]
+2026-09-19T18:04:38.2664926Z ##[end-action id=__dtolnay_rust-toolchain.__run_3;outcome=skipped;conclusion=skipped;duration_ms=0]
+2026-09-19T18:04:38.2675822Z ##[start-action display=rustup toolchain install stable;id=__dtolnay_rust-toolchain.__run_4]
+2026-09-19T18:04:38.2691493Z ##[group]Run rustup toolchain install stable --profile minimal --no-self-update
+2026-09-19T18:04:38.2692038Z [36;1mrustup toolchain install stable --profile minimal --no-self-update[0m
+2026-09-19T18:04:38.2728595Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-19T18:04:38.2728935Z env:
+2026-09-19T18:04:38.2729129Z   CARGO_HOME: /home/runner/.cargo
+2026-09-19T18:04:38.2729390Z   RUSTUP_PERMIT_COPY_RENAME: 1
+2026-09-19T18:04:38.2729642Z ##[endgroup]
+2026-09-19T18:04:38.4630785Z info: syncing channel updates for stable-x86_64-unknown-linux-gnu
+2026-09-19T18:04:38.5425491Z 
+2026-09-19T18:04:38.5508244Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.98.1 (48a229cea 2026-09-01)
+2026-09-19T18:04:38.5508843Z 
+2026-09-19T18:04:38.5535682Z ##[end-action id=__dtolnay_rust-toolchain.__run_4;outcome=success;conclusion=success;duration_ms=285]
+2026-09-19T18:04:38.5540030Z ##[start-action display=rustup default stable;id=__dtolnay_rust-toolchain.__run_5]
+2026-09-19T18:04:38.5557115Z ##[group]Run rustup default stable
+2026-09-19T18:04:38.5557410Z [36;1mrustup default stable[0m
+2026-09-19T18:04:38.5597589Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-19T18:04:38.5597923Z env:
+2026-09-19T18:04:38.5598118Z   CARGO_HOME: /home/runner/.cargo
+2026-09-19T18:04:38.5598367Z ##[endgroup]
+2026-09-19T18:04:38.5699639Z info: using existing install for stable-x86_64-unknown-linux-gnu
+2026-09-19T18:04:38.5709677Z info: default toolchain set to stable-x86_64-unknown-linux-gnu
+2026-09-19T18:04:38.5709984Z 
+2026-09-19T18:04:38.5786699Z   stable-x86_64-unknown-linux-gnu unchanged - rustc 1.98.1 (48a229cea 2026-09-01)
+2026-09-19T18:04:38.5787272Z 
+2026-09-19T18:04:38.5802111Z ##[end-action id=__dtolnay_rust-toolchain.__run_5;outcome=success;conclusion=success;duration_ms=26]
+2026-09-19T18:04:38.5804786Z ##[start-action display=Create cachekey;id=__dtolnay_rust-toolchain.rustc-version]
+2026-09-19T18:04:38.5821304Z ##[group]Run DATE=$(rustc +stable --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')
+2026-09-19T18:04:38.5822115Z [36;1mDATE=$(rustc +stable --version --verbose | sed -ne 's/^commit-date: \(20[0-9][0-9]\)-\([01][0-9]\)-\([0-3][0-9]\)$/\1\2\3/p')[0m
+2026-09-19T18:04:38.5823092Z [36;1mHASH=$(rustc +stable --version --verbose | sed -ne 's/^commit-hash: //p')[0m
+2026-09-19T18:04:38.5823602Z [36;1mecho "cachekey=$(echo $DATE$HASH | head -c12)" >> $GITHUB_OUTPUT[0m
+2026-09-19T18:04:38.5861859Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-19T18:04:38.5862191Z env:
+2026-09-19T18:04:38.5862388Z   CARGO_HOME: /home/runner/.cargo
+2026-09-19T18:04:38.5862899Z ##[endgroup]
+2026-09-19T18:04:38.6217603Z ##[end-action id=__dtolnay_rust-toolchain.rustc-version;outcome=success;conclusion=success;duration_ms=41]
+2026-09-19T18:04:38.6220217Z ##[start-action display=Disable incremental compilation;id=__dtolnay_rust-toolchain.__run_6]
+2026-09-19T18:04:38.6236781Z ##[group]Run if [ -z "${CARGO_INCREMENTAL+set}" ]; then
+2026-09-19T18:04:38.6237151Z [36;1mif [ -z "${CARGO_INCREMENTAL+set}" ]; then[0m
+2026-09-19T18:04:38.6237467Z [36;1m  echo CARGO_INCREMENTAL=0 >> $GITHUB_ENV[0m
+2026-09-19T18:04:38.6237745Z [36;1mfi[0m
+2026-09-19T18:04:38.6276105Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-19T18:04:38.6276442Z env:
+2026-09-19T18:04:38.6276638Z   CARGO_HOME: /home/runner/.cargo
+2026-09-19T18:04:38.6276894Z ##[endgroup]
+2026-09-19T18:04:38.6339573Z ##[end-action id=__dtolnay_rust-toolchain.__run_6;outcome=success;conclusion=success;duration_ms=11]
+2026-09-19T18:04:38.6341602Z ##[start-action display=Enable colors in Cargo output;id=__dtolnay_rust-toolchain.__run_7]
+2026-09-19T18:04:38.6356578Z ##[group]Run if [ -z "${CARGO_TERM_COLOR+set}" ]; then
+2026-09-19T18:04:38.6356933Z [36;1mif [ -z "${CARGO_TERM_COLOR+set}" ]; then[0m
+2026-09-19T18:04:38.6357269Z [36;1m  echo CARGO_TERM_COLOR=always >> $GITHUB_ENV[0m
+2026-09-19T18:04:38.6357559Z [36;1mfi[0m
+2026-09-19T18:04:38.6394701Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-19T18:04:38.6395036Z env:
+2026-09-19T18:04:38.6395233Z   CARGO_HOME: /home/runner/.cargo
+2026-09-19T18:04:38.6395489Z   CARGO_INCREMENTAL: 0
+2026-09-19T18:04:38.6395703Z ##[endgroup]
+2026-09-19T18:04:38.6458048Z ##[end-action id=__dtolnay_rust-toolchain.__run_7;outcome=success;conclusion=success;duration_ms=11]
+2026-09-19T18:04:38.6477070Z ##[start-action display=Enable Cargo sparse registry;id=__dtolnay_rust-toolchain.__run_8]
+2026-09-19T18:04:38.6494496Z ##[group]Run # implemented in 1.66, stabilized in 1.68, made default in 1.70
+2026-09-19T18:04:38.6495003Z [36;1m# implemented in 1.66, stabilized in 1.68, made default in 1.70[0m
+2026-09-19T18:04:38.6495728Z [36;1mif [ -z "${CARGO_REGISTRIES_CRATES_IO_PROTOCOL+set}" -o -f "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol ]; then[0m
+2026-09-19T18:04:38.6496483Z [36;1m  if rustc +stable --version --verbose | grep -q '^release: 1\.6[89]\.'; then[0m
+2026-09-19T18:04:38.6497052Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-09-19T18:04:38.6497591Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=sparse >> $GITHUB_ENV[0m
+2026-09-19T18:04:38.6498089Z [36;1m  elif rustc +stable --version --verbose | grep -q '^release: 1\.6[67]\.'; then[0m
+2026-09-19T18:04:38.6498651Z [36;1m    touch "/home/runner/work/_temp"/.implicit_cargo_registries_crates_io_protocol || true[0m
+2026-09-19T18:04:38.6499162Z [36;1m    echo CARGO_REGISTRIES_CRATES_IO_PROTOCOL=git >> $GITHUB_ENV[0m
+2026-09-19T18:04:38.6499504Z [36;1m  fi[0m
+2026-09-19T18:04:38.6499695Z [36;1mfi[0m
+2026-09-19T18:04:38.6535457Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-19T18:04:38.6535799Z env:
+2026-09-19T18:04:38.6536000Z   CARGO_HOME: /home/runner/.cargo
+2026-09-19T18:04:38.6536258Z   CARGO_INCREMENTAL: 0
+2026-09-19T18:04:38.6536478Z   CARGO_TERM_COLOR: always
+2026-09-19T18:04:38.6536692Z ##[endgroup]
+2026-09-19T18:04:38.6861119Z ##[end-action id=__dtolnay_rust-toolchain.__run_8;outcome=success;conclusion=success;duration_ms=38]
+2026-09-19T18:04:38.6865836Z ##[start-action display=Work around spurious network errors in curl 8.0;id=__dtolnay_rust-toolchain.__run_9]
+2026-09-19T18:04:38.6891946Z ##[group]Run # https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation
+2026-09-19T18:04:38.6893561Z [36;1m# https://rust-lang.zulipchat.com/#narrow/stream/246057-t-cargo/topic/timeout.20investigation[0m
+2026-09-19T18:04:38.6894669Z [36;1mif rustc +stable --version --verbose | grep -q '^release: 1\.7[01]\.'; then[0m
+2026-09-19T18:04:38.6895509Z [36;1m  echo CARGO_HTTP_MULTIPLEXING=false >> $GITHUB_ENV[0m
+2026-09-19T18:04:38.6896082Z [36;1mfi[0m
+2026-09-19T18:04:38.6955743Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-19T18:04:38.6956331Z env:
+2026-09-19T18:04:38.6956917Z   CARGO_HOME: /home/runner/.cargo
+2026-09-19T18:04:38.6957544Z   CARGO_INCREMENTAL: 0
+2026-09-19T18:04:38.6957948Z   CARGO_TERM_COLOR: always
+2026-09-19T18:04:38.6958365Z ##[endgroup]
+2026-09-19T18:04:38.7175241Z ##[end-action id=__dtolnay_rust-toolchain.__run_9;outcome=success;conclusion=success;duration_ms=30]
+2026-09-19T18:04:38.7181119Z ##[start-action display=rustc +stable --version --verbose;id=__dtolnay_rust-toolchain.__run_10]
+2026-09-19T18:04:38.7208011Z ##[group]Run rustc +stable --version --verbose
+2026-09-19T18:04:38.7208602Z [36;1mrustc +stable --version --verbose[0m
+2026-09-19T18:04:38.7266151Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-09-19T18:04:38.7266729Z env:
+2026-09-19T18:04:38.7267065Z   CARGO_HOME: /home/runner/.cargo
+2026-09-19T18:04:38.7267505Z   CARGO_INCREMENTAL: 0
+2026-09-19T18:04:38.7267885Z   CARGO_TERM_COLOR: always
+2026-09-19T18:04:38.7268275Z ##[endgroup]
+2026-09-19T18:04:38.7450252Z rustc 1.98.1 (48a229cea 2026-09-01)
+2026-09-19T18:04:38.7450984Z binary: rustc
+2026-09-19T18:04:38.7451646Z commit-hash: 48a229ceaefd4985c50990b14116b6d856af0985
+2026-09-19T18:04:38.7452343Z commit-date: 2026-09-01
+2026-09-19T18:04:38.7453252Z host: x86_64-unknown-linux-gnu
+2026-09-19T18:04:38.7453872Z release: 1.98.1
+2026-09-19T18:04:38.7454428Z LLVM version: 22.1.8
+2026-09-19T18:04:38.7472208Z ##[end-action id=__dtolnay_rust-toolchain.__run_10;outcome=success;conclusion=success;duration_ms=28]
+2026-09-19T18:04:38.7562824Z ##[group]Run Swatinem/rust-cache@v2
+2026-09-19T18:04:38.7563129Z with:
+2026-09-19T18:04:38.7563339Z   prefix-key: v0-rust
+2026-09-19T18:04:38.7563563Z   add-job-id-key: true
+2026-09-19T18:04:38.7563793Z   add-rust-environment-hash-key: true
+2026-09-19T18:04:38.7564056Z   cache-targets: true
+2026-09-19T18:04:38.7564263Z   cache-all-crates: false
+2026-09-19T18:04:38.7564497Z   cache-workspace-crates: false
+2026-09-19T18:04:38.7564732Z   save-if: true
+2026-09-19T18:04:38.7564929Z   cache-provider: github
+2026-09-19T18:04:38.7565146Z   cache-bin: true
+2026-09-19T18:04:38.7565355Z   lookup-only: false
+2026-09-19T18:04:38.7565554Z   cmd-format: {0}
+2026-09-19T18:04:38.7565748Z env:
+2026-09-19T18:04:38.7565934Z   CARGO_HOME: /home/runner/.cargo
+2026-09-19T18:04:38.7566177Z   CARGO_INCREMENTAL: 0
+2026-09-19T18:04:38.7566387Z   CARGO_TERM_COLOR: always
+2026-09-19T18:04:38.7566599Z ##[endgroup]
+2026-09-19T18:04:39.4511773Z ##[group]Cache Configuration
+2026-09-19T18:04:39.4512399Z Cache Provider:
+2026-09-19T18:04:39.4512998Z     github
+2026-09-19T18:04:39.4513348Z Workspaces:
+2026-09-19T18:04:39.4513730Z     /home/runner/work/c-crussty/c-crussty
+2026-09-19T18:04:39.4514215Z Cache Paths:
+2026-09-19T18:04:39.4514627Z     /home/runner/.cargo/bin
+2026-09-19T18:04:39.4515124Z     /home/runner/.cargo/.crates.toml
+2026-09-19T18:04:39.4515584Z     /home/runner/.cargo/.crates2.json
+2026-09-19T18:04:39.4516083Z     /home/runner/.cargo/registry
+2026-09-19T18:04:39.4516533Z     /home/runner/.cargo/git
+2026-09-19T18:04:39.4517007Z     /home/runner/work/c-crussty/c-crussty/target
+2026-09-19T18:04:39.4517542Z Restore Key:
+2026-09-19T18:04:39.4517902Z     v0-rust-world-bench-Linux-x64-6ff13d87
+2026-09-19T18:04:39.4518363Z Cache Key:
+2026-09-19T18:04:39.4518788Z     v0-rust-world-bench-Linux-x64-6ff13d87-8464e3d3
+2026-09-19T18:04:39.4519362Z .. Prefix:
+2026-09-19T18:04:39.4519744Z   - v0-rust-world-bench-Linux-x64
+2026-09-19T18:04:39.4520235Z .. Environment considered:
+2026-09-19T18:04:39.4520669Z   - Rust Versions:
+2026-09-19T18:04:39.4521248Z     - 1.98.1 x86_64-unknown-linux-gnu 48a229ceaefd4985c50990b14116b6d856af0985
+2026-09-19T18:04:39.4521900Z   - CARGO_HOME
+2026-09-19T18:04:39.4522274Z   - CARGO_INCREMENTAL
+2026-09-19T18:04:39.4522931Z   - CARGO_TERM_COLOR
+2026-09-19T18:04:39.4523320Z .. Lockfiles considered:
+2026-09-19T18:04:39.4523798Z   - /home/runner/work/c-crussty/c-crussty/Cargo.lock
+2026-09-19T18:04:39.4524389Z   - /home/runner/work/c-crussty/c-crussty/Cargo.toml
+2026-09-19T18:04:39.4525274Z ##[endgroup]
+2026-09-19T18:04:39.4525461Z 
+2026-09-19T18:04:39.4525606Z ... Restoring cache ...
+2026-09-19T18:04:39.5047257Z Cache hit for: v0-rust-world-bench-Linux-x64-6ff13d87-8464e3d3
+2026-09-19T18:04:39.5981128Z Received 628645 of 628645 (100.0%), 10.2 MBs/sec
+2026-09-19T18:04:39.5981734Z Cache Size: ~1 MB (628645 B)
+2026-09-19T18:04:39.6012430Z [command]/usr/bin/tar -xf /home/runner/work/_temp/0717dc3a-4699-4d74-a381-6add682768d8/cache.tzst -P -C /home/runner/work/c-crussty/c-crussty --use-compress-program unzstd
+2026-09-19T18:04:39.6130698Z Cache restored successfully
+2026-09-19T18:04:39.6134798Z Restored from cache key "v0-rust-world-bench-Linux-x64-6ff13d87-8464e3d3" full match: true.
+2026-09-19T18:04:39.6274475Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-09-19T18:04:39.6275755Z ##[group]Run actions/setup-java@v4
+2026-09-19T18:04:39.6276030Z with:
+2026-09-19T18:04:39.6276234Z   distribution: temurin
+2026-09-19T18:04:39.6276458Z   java-version: 21
+2026-09-19T18:04:39.6276669Z   java-package: jdk
+2026-09-19T18:04:39.6276881Z   check-latest: false
+2026-09-19T18:04:39.6277097Z   server-id: github
+2026-09-19T18:04:39.6277316Z   server-username: GITHUB_ACTOR
+2026-09-19T18:04:39.6277577Z   server-password: GITHUB_TOKEN
+2026-09-19T18:04:39.6277830Z   overwrite-settings: true
+2026-09-19T18:04:39.6278059Z   job-status: success
+2026-09-19T18:04:39.6280470Z   token: ***
+2026-09-19T18:04:39.6280665Z env:
+2026-09-19T18:04:39.6280895Z   CARGO_HOME: /home/runner/.cargo
+2026-09-19T18:04:39.6281150Z   CARGO_INCREMENTAL: 0
+2026-09-19T18:04:39.6281369Z   CARGO_TERM_COLOR: always
+2026-09-19T18:04:39.6281597Z   CACHE_ON_FAILURE: false
+2026-09-19T18:04:39.6281819Z ##[endgroup]
+2026-09-19T18:04:39.8015374Z ##[warning]setup-java v4 is deprecated and will no longer receive updates. Please migrate to actions/setup-java@v5.
+2026-09-19T18:04:39.8027529Z ##[group]Installed distributions
+2026-09-19T18:04:39.8073965Z Resolved Java 21.0.12+1 from tool-cache
+2026-09-19T18:04:39.8074477Z Setting Java 21.0.12+1 as the default
+2026-09-19T18:04:39.8084887Z (node:2497) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-09-19T18:04:39.8085716Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-09-19T18:04:39.8088546Z Creating toolchains.xml for JDK version 21 from temurin
+2026-09-19T18:04:39.8165412Z Writing to /home/runner/.m2/toolchains.xml
+2026-09-19T18:04:39.8165811Z 
+2026-09-19T18:04:39.8166001Z Java configuration:
+2026-09-19T18:04:39.8166369Z   Distribution: temurin
+2026-09-19T18:04:39.8166732Z   Version: 21.0.12+1
+2026-09-19T18:04:39.8167268Z   Path: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.12-1/x64
+2026-09-19T18:04:39.8167722Z 
+2026-09-19T18:04:39.8168151Z ##[endgroup]
+2026-09-19T18:04:39.8183301Z Creating settings.xml with server-id: github
+2026-09-19T18:04:39.8211468Z Writing to /home/runner/.m2/settings.xml
+2026-09-19T18:04:39.8393046Z ##[group]Run set -euo pipefail
+2026-09-19T18:04:39.8393501Z [36;1mset -euo pipefail[0m
+2026-09-19T18:04:39.8393812Z [36;1m(cd CRUSSTY/runtime && cargo build --release)[0m
+2026-09-19T18:04:39.8394146Z [36;1mcargo build --release[0m
+2026-09-19T18:04:39.8394535Z [36;1mcp CRUSSTY/runtime/target/release/libcrussty_runtime.so "$RUNNER_TEMP/"[0m
+2026-09-19T18:04:39.8395003Z [36;1mcp target/release/libcrussty.so "$RUNNER_TEMP/"[0m
+2026-09-19T18:04:39.8395350Z [36;1mtouch "$RUNNER_TEMP/.built"[0m
+2026-09-19T18:04:39.8438084Z shell: /usr/bin/bash -e {0}
+2026-09-19T18:04:39.8438361Z env:
+2026-09-19T18:04:39.8438571Z   CARGO_HOME: /home/runner/.cargo
+2026-09-19T18:04:39.8438849Z   CARGO_INCREMENTAL: 0
+2026-09-19T18:04:39.8439085Z   CARGO_TERM_COLOR: always
+2026-09-19T18:04:39.8439322Z   CACHE_ON_FAILURE: false
+2026-09-19T18:04:39.8439671Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.12-1/x64
+2026-09-19T18:04:39.8440440Z   JAVA_HOME_21_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.12-1/x64
+2026-09-19T18:04:39.8440826Z ##[endgroup]
+2026-09-19T18:04:39.9187276Z [1m[92m    Updating[0m crates.io index
+2026-09-19T18:04:40.0346117Z [1m[92m Downloading[0m crates ...
+2026-09-19T18:04:40.0718432Z [1m[92m  Downloaded[0m combine v4.6.7
+2026-09-19T18:04:40.0782005Z [1m[92m  Downloaded[0m same-file v1.0.6
+2026-09-19T18:04:40.0796957Z [1m[92m  Downloaded[0m jni-macros v0.22.4
+2026-09-19T18:04:40.0815515Z [1m[92m  Downloaded[0m simdutf8 v0.1.5
+2026-09-19T18:04:40.0839571Z [1m[92m  Downloaded[0m unicode-ident v1.0.24
+2026-09-19T18:04:40.1114674Z [1m[92m  Downloaded[0m thiserror v2.0.19
+2026-09-19T18:04:40.1198612Z [1m[92m  Downloaded[0m equivalent v1.0.2
+2026-09-19T18:04:40.1210714Z [1m[92m  Downloaded[0m semver v1.0.28
+2026-09-19T18:04:40.1238988Z [1m[92m  Downloaded[0m memchr v2.8.3
+2026-09-19T18:04:40.1296042Z [1m[92m  Downloaded[0m zopfli v0.8.3
+2026-09-19T18:04:40.1320493Z [1m[92m  Downloaded[0m flate2 v1.1.9
+2026-09-19T18:04:40.1371993Z [1m[92m  Downloaded[0m typed-path v0.12.3
+2026-09-19T18:04:40.1442093Z [1m[92m  Downloaded[0m libc v0.2.189
+2026-09-19T18:04:40.1891711Z [1m[92m  Downloaded[0m jni-sys v0.4.1
+2026-09-19T18:04:40.1901690Z [1m[92m  Downloaded[0m simd-adler32 v0.3.10
+2026-09-19T18:04:40.1920574Z [1m[92m  Downloaded[0m zmij v1.0.23
+2026-09-19T18:04:40.1939120Z [1m[92m  Downloaded[0m bumpalo v3.20.3
+2026-09-19T18:04:40.1965480Z [1m[92m  Downloaded[0m rustc_version v0.4.1
+2026-09-19T18:04:40.1978476Z [1m[92m  Downloaded[0m jni-sys-macros v0.4.1
+2026-09-19T18:04:40.1985617Z [1m[92m  Downloaded[0m thiserror-impl v2.0.19
+2026-09-19T18:04:40.2000509Z [1m[92m  Downloaded[0m walkdir v2.5.0
+2026-09-19T18:04:40.2018851Z [1m[92m  Downloaded[0m indexmap v2.14.0
+2026-09-19T18:04:40.2062159Z [1m[92m  Downloaded[0m crc32fast v1.5.0
+2026-09-19T18:04:40.2081900Z [1m[92m  Downloaded[0m proc-macro2 v1.0.107
+2026-09-19T18:04:40.2111630Z [1m[92m  Downloaded[0m serde_derive v1.0.229
+2026-09-19T18:04:40.2142941Z [1m[92m  Downloaded[0m serde v1.0.229
+2026-09-19T18:04:40.2182566Z [1m[92m  Downloaded[0m hashbrown v0.17.1
+2026-09-19T18:04:40.2245777Z [1m[92m  Downloaded[0m serde_json v1.0.151
+2026-09-19T18:04:40.2320808Z [1m[92m  Downloaded[0m zlib-rs v0.6.7
+2026-09-19T18:04:40.2376920Z [1m[92m  Downloaded[0m syn v3.0.3
+2026-09-19T18:04:40.2484629Z [1m[92m  Downloaded[0m simd_cesu8 v1.2.0
+2026-09-19T18:04:40.2529477Z [1m[92m  Downloaded[0m log v0.4.33
+2026-09-19T18:04:40.2555026Z [1m[92m  Downloaded[0m jni v0.22.4
+2026-09-19T18:04:40.2629508Z [1m[92m  Downloaded[0m itoa v1.0.18
+2026-09-19T18:04:40.2645027Z [1m[92m  Downloaded[0m serde_core v1.0.229
+2026-09-19T18:04:40.2672838Z [1m[92m  Downloaded[0m bytes v1.12.1
+2026-09-19T18:04:40.2709794Z [1m[92m  Downloaded[0m syn v2.0.119
+2026-09-19T18:04:40.2817603Z [1m[92m  Downloaded[0m zip v8.6.0
+2026-09-19T18:04:40.2867876Z [1m[92m  Downloaded[0m quote v1.0.47
+2026-09-19T18:04:40.3252331Z [1m[92m   Compiling[0m proc-macro2 v1.0.107
+2026-09-19T18:04:40.3253500Z [1m[92m   Compiling[0m quote v1.0.47
+2026-09-19T18:04:40.3254169Z [1m[92m   Compiling[0m unicode-ident v1.0.24
+2026-09-19T18:04:40.3254861Z [1m[92m   Compiling[0m semver v1.0.28
+2026-09-19T18:04:40.7363055Z [1m[92m   Compiling[0m cfg-if v1.0.4
+2026-09-19T18:04:40.7768037Z [1m[92m   Compiling[0m rustc_version v0.4.1
+2026-09-19T18:04:40.8285166Z [1m[92m   Compiling[0m memchr v2.8.3
+2026-09-19T18:04:41.0295103Z [1m[92m   Compiling[0m same-file v1.0.6
+2026-09-19T18:04:41.0684415Z [1m[92m   Compiling[0m serde_core v1.0.229
+2026-09-19T18:04:41.1086564Z [1m[92m   Compiling[0m crc32fast v1.5.0
+2026-09-19T18:04:41.2326124Z [1m[92m   Compiling[0m walkdir v2.5.0
+2026-09-19T18:04:41.2343472Z [1m[92m   Compiling[0m jni-macros v0.22.4
+2026-09-19T18:04:41.3100958Z [1m[92m   Compiling[0m thiserror v2.0.19
+2026-09-19T18:04:41.4735796Z [1m[92m   Compiling[0m zmij v1.0.23
+2026-09-19T18:04:41.4813950Z [1m[92m   Compiling[0m simdutf8 v0.1.5
+2026-09-19T18:04:41.5876822Z [1m[92m   Compiling[0m log v0.4.33
+2026-09-19T18:04:41.8204223Z [1m[92m   Compiling[0m simd_cesu8 v1.2.0
+2026-09-19T18:04:41.8877536Z [1m[92m   Compiling[0m syn v3.0.3
+2026-09-19T18:04:41.9373502Z [1m[92m   Compiling[0m syn v2.0.119
+2026-09-19T18:04:41.9481789Z [1m[92m   Compiling[0m jni v0.22.4
+2026-09-19T18:04:42.2753913Z [1m[92m   Compiling[0m bytes v1.12.1
+2026-09-19T18:04:43.6134183Z [1m[92m   Compiling[0m equivalent v1.0.2
+2026-09-19T18:04:43.6501092Z [1m[92m   Compiling[0m bumpalo v3.20.3
+2026-09-19T18:04:43.9093125Z [1m[92m   Compiling[0m hashbrown v0.17.1
+2026-09-19T18:04:44.3907023Z [1m[92m   Compiling[0m thiserror-impl v2.0.19
+2026-09-19T18:04:44.7104299Z [1m[92m   Compiling[0m libc v0.2.189
+2026-09-19T18:04:44.8547929Z [1m[92m   Compiling[0m serde v1.0.229
+2026-09-19T18:04:44.9359602Z [1m[92m   Compiling[0m simd-adler32 v0.3.10
+2026-09-19T18:04:45.0274117Z [1m[92m   Compiling[0m serde_json v1.0.151
+2026-09-19T18:04:45.1194054Z [1m[92m   Compiling[0m zlib-rs v0.6.7
+2026-09-19T18:04:45.5199818Z [1m[92m   Compiling[0m zopfli v0.8.3
+2026-09-19T18:04:45.5634133Z [1m[92m   Compiling[0m indexmap v2.14.0
+2026-09-19T18:04:45.6814455Z [1m[92m   Compiling[0m jni-sys-macros v0.4.1
+2026-09-19T18:04:45.9783990Z [1m[92m   Compiling[0m jni-sys v0.4.1
+2026-09-19T18:04:46.4700086Z [1m[92m   Compiling[0m serde_derive v1.0.229
+2026-09-19T18:04:47.3723846Z [1m[92m   Compiling[0m combine v4.6.7
+2026-09-19T18:04:48.4384041Z [1m[92m   Compiling[0m flate2 v1.1.9
+2026-09-19T18:04:49.3185263Z [1m[92m   Compiling[0m itoa v1.0.18
+2026-09-19T18:04:49.3564242Z [1m[92m   Compiling[0m typed-path v0.12.3
+2026-09-19T18:04:50.6804197Z [1m[92m   Compiling[0m zip v8.6.0
+2026-09-19T18:04:52.1153803Z [1m[92m   Compiling[0m libloading v0.8.9
+2026-09-19T18:04:52.2599357Z [1m[92m   Compiling[0m jvmti-bindings v2.2.1
+2026-09-19T18:04:52.7914367Z [1m[92m   Compiling[0m cplug-abi v2.0.0 (/home/runner/work/c-crussty/c-crussty/CRUSSTY/cplug-abi)
+2026-09-19T18:04:59.8680034Z [1m[92m   Compiling[0m crussty-runtime v2.0.0 (/home/runner/work/c-crussty/c-crussty/CRUSSTY/runtime)
+2026-09-19T18:05:10.6024536Z [1m[92m    Finished[0m `release` profile [optimized] target(s) in 30.74s
+2026-09-19T18:05:10.6669184Z [1m[92m   Compiling[0m cplug-abi v2.0.0 (/home/runner/work/c-crussty/c-crussty/cplug-abi)
+2026-09-19T18:05:10.6827866Z [1m[92m   Compiling[0m cplug-sdk v0.1.0 (/home/runner/work/c-crussty/c-crussty/cplug-sdk)
+2026-09-19T18:05:11.7754837Z [1m[92m   Compiling[0m crussty v0.1.0 (/home/runner/work/c-crussty/c-crussty)
+2026-09-19T18:05:11.8799064Z [1m[33mwarning[0m[1m: unused import: `jvmti_bindings::prelude::*`[0m
+2026-09-19T18:05:11.8799674Z   [1m[94m--> [0msrc/alloc_diet.rs:28:5
+2026-09-19T18:05:11.8800058Z    [1m[94m|[0m
+2026-09-19T18:05:11.8800528Z [1m[94m28[0m [1m[94m|[0m use jvmti_bindings::prelude::*;
+2026-09-19T18:05:11.8801064Z    [1m[94m|[0m     [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:11.8801808Z    [1m[94m|[0m
+2026-09-19T18:05:11.8802316Z    [1m[94m= [0m[1mnote[0m: `#[warn(unused_imports)]` (part of `#[warn(unused)]`) on by default
+2026-09-19T18:05:11.8802912Z 
+2026-09-19T18:05:11.8826799Z [1m[33mwarning[0m[1m: unused import: `jvmti_bindings::prelude::*`[0m
+2026-09-19T18:05:11.8827380Z   [1m[94m--> [0msrc/fluid_dirty.rs:27:5
+2026-09-19T18:05:11.8827746Z    [1m[94m|[0m
+2026-09-19T18:05:11.8828468Z [1m[94m27[0m [1m[94m|[0m use jvmti_bindings::prelude::*;
+2026-09-19T18:05:11.8829427Z    [1m[94m|[0m     [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:11.8829887Z 
+2026-09-19T18:05:11.8830407Z [1m[33mwarning[0m[1m: unused import: `jvmti_bindings::prelude::*`[0m
+2026-09-19T18:05:11.8831112Z   [1m[94m--> [0msrc/fluid_free.rs:37:5
+2026-09-19T18:05:11.8831581Z    [1m[94m|[0m
+2026-09-19T18:05:11.8832158Z [1m[94m37[0m [1m[94m|[0m use jvmti_bindings::prelude::*;
+2026-09-19T18:05:11.8833057Z    [1m[94m|[0m     [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:11.8833780Z 
+2026-09-19T18:05:11.8834310Z [1m[33mwarning[0m[1m: unused import: `jvmti_bindings::prelude::*`[0m
+2026-09-19T18:05:11.8835014Z   [1m[94m--> [0msrc/flush_diet.rs:40:5
+2026-09-19T18:05:11.8835488Z    [1m[94m|[0m
+2026-09-19T18:05:11.8836072Z [1m[94m40[0m [1m[94m|[0m use jvmti_bindings::prelude::*;
+2026-09-19T18:05:11.8836740Z    [1m[94m|[0m     [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:11.8837098Z 
+2026-09-19T18:05:11.8848104Z [1m[33mwarning[0m[1m: unused import: `jvmti_bindings::prelude::*`[0m
+2026-09-19T18:05:11.8848567Z   [1m[94m--> [0msrc/paletted.rs:44:5
+2026-09-19T18:05:11.8848872Z    [1m[94m|[0m
+2026-09-19T18:05:11.8849222Z [1m[94m44[0m [1m[94m|[0m use jvmti_bindings::prelude::*;
+2026-09-19T18:05:11.8849618Z    [1m[94m|[0m     [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:11.8849843Z 
+2026-09-19T18:05:11.8852627Z [1m[33mwarning[0m[1m: unused import: `jvmti_bindings::prelude::*`[0m
+2026-09-19T18:05:11.8853257Z   [1m[94m--> [0msrc/region_threads.rs:54:5
+2026-09-19T18:05:11.8853562Z    [1m[94m|[0m
+2026-09-19T18:05:11.8853910Z [1m[94m54[0m [1m[94m|[0m use jvmti_bindings::prelude::*;
+2026-09-19T18:05:11.8854298Z    [1m[94m|[0m     [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:11.8854506Z 
+2026-09-19T18:05:12.3833334Z [1m[33mwarning[0m[1m: unreachable pattern[0m
+2026-09-19T18:05:12.3834327Z     [1m[94m--> [0msrc/classfile.rs:1842:13
+2026-09-19T18:05:12.3835027Z      [1m[94m|[0m
+2026-09-19T18:05:12.3836118Z [1m[94m1841[0m [1m[94m|[0m             0x99..=0xc7 => 3,                       // if*, goto, jsr, null-branch
+2026-09-19T18:05:12.3837528Z      [1m[94m|[0m             [1m[94m-----------[0m [1m[94mmatches all the relevant values[0m
+2026-09-19T18:05:12.3839024Z [1m[94m1842[0m [1m[94m|[0m             0xb2..=0xb8 => 3,                       // get/putstatic, get/putfield, invokes
+2026-09-19T18:05:12.3840484Z      [1m[94m|[0m             [1m[33m^^^^^^^^^^^[0m [1m[33mno value can reach this[0m
+2026-09-19T18:05:12.3841363Z      [1m[94m|[0m
+2026-09-19T18:05:12.3842253Z      [1m[94m= [0m[1mnote[0m: `#[warn(unreachable_patterns)]` (part of `#[warn(unused)]`) on by default
+2026-09-19T18:05:12.3843141Z 
+2026-09-19T18:05:12.3843557Z [1m[33mwarning[0m[1m: unreachable pattern[0m
+2026-09-19T18:05:12.3844213Z     [1m[94m--> [0msrc/classfile.rs:1843:13
+2026-09-19T18:05:12.3844719Z      [1m[94m|[0m
+2026-09-19T18:05:12.3845489Z [1m[94m1841[0m [1m[94m|[0m             0x99..=0xc7 => 3,                       // if*, goto, jsr, null-branch
+2026-09-19T18:05:12.3846572Z      [1m[94m|[0m             [1m[94m-----------[0m [1m[94mmatches all the relevant values[0m
+2026-09-19T18:05:12.3847705Z [1m[94m1842[0m [1m[94m|[0m             0xb2..=0xb8 => 3,                       // get/putstatic, get/putfield, invokes
+2026-09-19T18:05:12.3848788Z [1m[94m1843[0m [1m[94m|[0m             0xba => 5,                              // invokedynamic
+2026-09-19T18:05:12.3850039Z      [1m[94m|[0m             [1m[33m^^^^[0m [1m[33mno value can reach this[0m
+2026-09-19T18:05:12.3850498Z 
+2026-09-19T18:05:12.3855082Z [1m[33mwarning[0m[1m: unreachable pattern[0m
+2026-09-19T18:05:12.3855795Z     [1m[94m--> [0msrc/classfile.rs:1844:13
+2026-09-19T18:05:12.3856314Z      [1m[94m|[0m
+2026-09-19T18:05:12.3857067Z [1m[94m1841[0m [1m[94m|[0m             0x99..=0xc7 => 3,                       // if*, goto, jsr, null-branch
+2026-09-19T18:05:12.3858103Z      [1m[94m|[0m             [1m[94m-----------[0m [1m[94mmatches all the relevant values[0m
+2026-09-19T18:05:12.3858786Z [1m[94m...[0m
+2026-09-19T18:05:12.3859457Z [1m[94m1844[0m [1m[94m|[0m             0xb9 => 5,                              // invokeinterface
+2026-09-19T18:05:12.3860333Z      [1m[94m|[0m             [1m[33m^^^^[0m [1m[33mno value can reach this[0m
+2026-09-19T18:05:12.3860783Z 
+2026-09-19T18:05:12.3861443Z [1m[33mwarning[0m[1m: unreachable pattern[0m
+2026-09-19T18:05:12.3862108Z     [1m[94m--> [0msrc/classfile.rs:1845:13
+2026-09-19T18:05:12.3862971Z      [1m[94m|[0m
+2026-09-19T18:05:12.3863722Z [1m[94m1841[0m [1m[94m|[0m             0x99..=0xc7 => 3,                       // if*, goto, jsr, null-branch
+2026-09-19T18:05:12.3864750Z      [1m[94m|[0m             [1m[94m-----------[0m [1m[94mmatches all the relevant values[0m
+2026-09-19T18:05:12.3865429Z [1m[94m...[0m
+2026-09-19T18:05:12.3866159Z [1m[94m1845[0m [1m[94m|[0m             0xbb..=0xc1 => 3,                       // new, anewarray, checkcast, instanceof
+2026-09-19T18:05:12.3866762Z      [1m[94m|[0m             [1m[33m^^^^^^^^^^^[0m [1m[33mno value can reach this[0m
+2026-09-19T18:05:12.3867045Z 
+2026-09-19T18:05:12.3867240Z [1m[33mwarning[0m[1m: unreachable pattern[0m
+2026-09-19T18:05:12.3867601Z     [1m[94m--> [0msrc/classfile.rs:1846:13
+2026-09-19T18:05:12.3867903Z      [1m[94m|[0m
+2026-09-19T18:05:12.3868350Z [1m[94m1841[0m [1m[94m|[0m             0x99..=0xc7 => 3,                       // if*, goto, jsr, null-branch
+2026-09-19T18:05:12.3868949Z      [1m[94m|[0m             [1m[94m-----------[0m [1m[94mmatches all the relevant values[0m
+2026-09-19T18:05:12.3869347Z [1m[94m...[0m
+2026-09-19T18:05:12.3869741Z [1m[94m1846[0m [1m[94m|[0m             0xc5 => 4,                              // multianewarray
+2026-09-19T18:05:12.3870246Z      [1m[94m|[0m             [1m[33m^^^^[0m [1m[33mno value can reach this[0m
+2026-09-19T18:05:12.3870508Z 
+2026-09-19T18:05:12.3870664Z [1m[33mwarning[0m[1m: unreachable pattern[0m
+2026-09-19T18:05:12.3871012Z     [1m[94m--> [0msrc/classfile.rs:1848:13
+2026-09-19T18:05:12.3871302Z      [1m[94m|[0m
+2026-09-19T18:05:12.3871715Z [1m[94m1841[0m [1m[94m|[0m             0x99..=0xc7 => 3,                       // if*, goto, jsr, null-branch
+2026-09-19T18:05:12.3872292Z      [1m[94m|[0m             [1m[94m-----------[0m [1m[94mmatches all the relevant values[0m
+2026-09-19T18:05:12.3872883Z [1m[94m...[0m
+2026-09-19T18:05:12.3873326Z [1m[94m1848[0m [1m[94m|[0m             0xaa | 0xab => return true,             // tableswitch, lookupswitch
+2026-09-19T18:05:12.3873917Z      [1m[94m|[0m             [1m[33m^^^^^^^^^^^[0m [1m[33mno value can reach this[0m
+2026-09-19T18:05:12.3874197Z 
+2026-09-19T18:05:12.3874358Z [1m[33mwarning[0m[1m: unreachable pattern[0m
+2026-09-19T18:05:12.3874721Z     [1m[94m--> [0msrc/classfile.rs:1849:13
+2026-09-19T18:05:12.3875015Z      [1m[94m|[0m
+2026-09-19T18:05:12.3875448Z [1m[94m1841[0m [1m[94m|[0m             0x99..=0xc7 => 3,                       // if*, goto, jsr, null-branch
+2026-09-19T18:05:12.3876053Z      [1m[94m|[0m             [1m[94m-----------[0m [1m[94mmatches all the relevant values[0m
+2026-09-19T18:05:12.3876465Z [1m[94m...[0m
+2026-09-19T18:05:12.3876832Z [1m[94m1849[0m [1m[94m|[0m             0xc4 => return true,                    // wide
+2026-09-19T18:05:12.3877503Z      [1m[94m|[0m             [1m[33m^^^^[0m [1m[33mno value can reach this[0m
+2026-09-19T18:05:12.3877776Z 
+2026-09-19T18:05:12.3877940Z [1m[33mwarning[0m[1m: unreachable pattern[0m
+2026-09-19T18:05:12.3878294Z     [1m[94m--> [0msrc/classfile.rs:1850:13
+2026-09-19T18:05:12.3878583Z      [1m[94m|[0m
+2026-09-19T18:05:12.3879002Z [1m[94m1841[0m [1m[94m|[0m             0x99..=0xc7 => 3,                       // if*, goto, jsr, null-branch
+2026-09-19T18:05:12.3879597Z      [1m[94m|[0m             [1m[94m-----------[0m [1m[94mmatches all the relevant values[0m
+2026-09-19T18:05:12.3879989Z [1m[94m...[0m
+2026-09-19T18:05:12.3880356Z [1m[94m1850[0m [1m[94m|[0m             0xbf => return true,                    // athrow
+2026-09-19T18:05:12.3880868Z      [1m[94m|[0m             [1m[33m^^^^[0m [1m[33mno value can reach this[0m
+2026-09-19T18:05:12.3881128Z 
+2026-09-19T18:05:12.3923512Z [1m[33mwarning[0m[1m: unused variable: `pool`[0m
+2026-09-19T18:05:12.3924607Z     [1m[94m--> [0msrc/classfile.rs:1930:5
+2026-09-19T18:05:12.3925022Z      [1m[94m|[0m
+2026-09-19T18:05:12.3925401Z [1m[94m1930[0m [1m[94m|[0m     pool: &Pool,
+2026-09-19T18:05:12.3926187Z      [1m[94m|[0m     [1m[33m^^^^[0m [1m[33mhelp: if this is intentional, prefix it with an underscore: `_pool`[0m
+2026-09-19T18:05:12.3926828Z      [1m[94m|[0m
+2026-09-19T18:05:12.3927414Z      [1m[94m= [0m[1mnote[0m: `#[warn(unused_variables)]` (part of `#[warn(unused)]`) on by default
+2026-09-19T18:05:12.3927874Z 
+2026-09-19T18:05:12.4226477Z [1m[33mwarning[0m[1m: variable `already` is assigned to, but never used[0m
+2026-09-19T18:05:12.4227488Z     [1m[94m--> [0msrc/classfile.rs:3716:9
+2026-09-19T18:05:12.4228118Z      [1m[94m|[0m
+2026-09-19T18:05:12.4228786Z [1m[94m3716[0m [1m[94m|[0m     let mut already = 0usize;
+2026-09-19T18:05:12.4229598Z      [1m[94m|[0m         [1m[33m^^^^^^^^^^^[0m
+2026-09-19T18:05:12.4230187Z      [1m[94m|[0m
+2026-09-19T18:05:12.4230699Z      [1m[94m= [0m[1mnote[0m: consider using `_already` instead
+2026-09-19T18:05:12.4230964Z 
+2026-09-19T18:05:12.4231197Z [1m[33mwarning[0m[1m: value assigned to `already` is never read[0m
+2026-09-19T18:05:12.4231629Z     [1m[94m--> [0msrc/classfile.rs:3730:55
+2026-09-19T18:05:12.4231923Z      [1m[94m|[0m
+2026-09-19T18:05:12.4232701Z [1m[94m3730[0m [1m[94m|[0m             RetargetOutcome::AlreadyPatched { .. } => already += 1,
+2026-09-19T18:05:12.4233280Z      [1m[94m|[0m                                                       [1m[33m^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.4233652Z      [1m[94m|[0m
+2026-09-19T18:05:12.4233999Z      [1m[94m= [0m[1mhelp[0m: maybe it is overwritten before being read?
+2026-09-19T18:05:12.4234605Z      [1m[94m= [0m[1mnote[0m: `#[warn(unused_assignments)]` (part of `#[warn(unused)]`) on by default
+2026-09-19T18:05:12.4234970Z 
+2026-09-19T18:05:12.4476296Z [1m[33mwarning[0m[1m: unused variable: `op_pc`[0m
+2026-09-19T18:05:12.4477054Z     [1m[94m--> [0msrc/classfile.rs:4591:10
+2026-09-19T18:05:12.4477446Z      [1m[94m|[0m
+2026-09-19T18:05:12.4477884Z [1m[94m4591[0m [1m[94m|[0m     for (op_pc, cp_idx) in &statics {
+2026-09-19T18:05:12.4478740Z      [1m[94m|[0m          [1m[33m^^^^^[0m [1m[33mhelp: if this is intentional, prefix it with an underscore: `_op_pc`[0m
+2026-09-19T18:05:12.4479228Z 
+2026-09-19T18:05:12.5578650Z [1m[33mwarning[0m[1m: value assigned to `loader_found` is never read[0m
+2026-09-19T18:05:12.5579313Z    [1m[94m--> [0msrc/paletted.rs:145:32
+2026-09-19T18:05:12.5579691Z     [1m[94m|[0m
+2026-09-19T18:05:12.5580119Z [1m[94m145[0m [1m[94m|[0m         let mut loader_found = false;
+2026-09-19T18:05:12.5580850Z     [1m[94m|[0m                                [1m[33m^^^^^[0m [1m[33mthis value is reassigned later and never used[0m
+2026-09-19T18:05:12.5581393Z [1m[94m...[0m
+2026-09-19T18:05:12.5581788Z [1m[94m148[0m [1m[94m|[0m                 loader_found = true;
+2026-09-19T18:05:12.5583187Z     [1m[94m|[0m                 [1m[94m-------------------[0m [1m[94m`loader_found` is overwritten here before the previous value is read[0m
+2026-09-19T18:05:12.5583651Z 
+2026-09-19T18:05:12.6161245Z [1m[33mwarning[0m[1m: field `major` is never read[0m
+2026-09-19T18:05:12.6162786Z   [1m[94m--> [0msrc/alloc_diet.rs:54:5
+2026-09-19T18:05:12.6163410Z    [1m[94m|[0m
+2026-09-19T18:05:12.6164030Z [1m[94m52[0m [1m[94m|[0m struct PatchCache {
+2026-09-19T18:05:12.6164856Z    [1m[94m|[0m        [1m[94m----------[0m [1m[94mfield in this struct[0m
+2026-09-19T18:05:12.6165560Z [1m[94m53[0m [1m[94m|[0m     bytes: Arc<[u8]>,
+2026-09-19T18:05:12.6166204Z [1m[94m54[0m [1m[94m|[0m     major: u16,
+2026-09-19T18:05:12.6166750Z    [1m[94m|[0m     [1m[33m^^^^^[0m
+2026-09-19T18:05:12.6167208Z    [1m[94m|[0m
+2026-09-19T18:05:12.6167885Z    [1m[94m= [0m[1mnote[0m: `#[warn(dead_code)]` (part of `#[warn(unused)]`) on by default
+2026-09-19T18:05:12.6168770Z 
+2026-09-19T18:05:12.6169189Z [1m[33mwarning[0m[1m: method `fieldref_parts` is never used[0m
+2026-09-19T18:05:12.6169868Z    [1m[94m--> [0msrc/classfile.rs:284:8
+2026-09-19T18:05:12.6170348Z     [1m[94m|[0m
+2026-09-19T18:05:12.6170777Z [1m[94m 77[0m [1m[94m|[0m impl Pool {
+2026-09-19T18:05:12.6171493Z     [1m[94m|[0m [1m[94m---------[0m [1m[94mmethod in this implementation[0m
+2026-09-19T18:05:12.6172111Z [1m[94m...[0m
+2026-09-19T18:05:12.6173182Z [1m[94m284[0m [1m[94m|[0m     fn fieldref_parts(&self, idx: u16) -> Option<(String, String, String)> {
+2026-09-19T18:05:12.6174138Z     [1m[94m|[0m        [1m[33m^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6174534Z 
+2026-09-19T18:05:12.6174883Z [1m[33mwarning[0m[1m: constant `F_SNAP` is never used[0m
+2026-09-19T18:05:12.6175485Z     [1m[94m--> [0msrc/classfile.rs:1679:7
+2026-09-19T18:05:12.6175785Z      [1m[94m|[0m
+2026-09-19T18:05:12.6176126Z [1m[94m1679[0m [1m[94m|[0m const F_SNAP: &str = "crusstySnap";
+2026-09-19T18:05:12.6176537Z      [1m[94m|[0m       [1m[33m^^^^^^[0m
+2026-09-19T18:05:12.6176722Z 
+2026-09-19T18:05:12.6176931Z [1m[33mwarning[0m[1m: constant `F_SNAPGEN` is never used[0m
+2026-09-19T18:05:12.6177316Z     [1m[94m--> [0msrc/classfile.rs:1680:7
+2026-09-19T18:05:12.6177596Z      [1m[94m|[0m
+2026-09-19T18:05:12.6177940Z [1m[94m1680[0m [1m[94m|[0m const F_SNAPGEN: &str = "crusstySnapGen";
+2026-09-19T18:05:12.6178335Z      [1m[94m|[0m       [1m[33m^^^^^^^^^[0m
+2026-09-19T18:05:12.6178521Z 
+2026-09-19T18:05:12.6178754Z [1m[33mwarning[0m[1m: constant `F_GEN` is never used[0m
+2026-09-19T18:05:12.6179271Z     [1m[94m--> [0msrc/classfile.rs:1681:7
+2026-09-19T18:05:12.6179787Z      [1m[94m|[0m
+2026-09-19T18:05:12.6180371Z [1m[94m1681[0m [1m[94m|[0m const F_GEN: &str = "crusstyGen";
+2026-09-19T18:05:12.6180989Z      [1m[94m|[0m       [1m[33m^^^^^[0m
+2026-09-19T18:05:12.6181224Z 
+2026-09-19T18:05:12.6181472Z [1m[33mwarning[0m[1m: constant `F_MISS` is never used[0m
+2026-09-19T18:05:12.6182132Z     [1m[94m--> [0msrc/classfile.rs:1682:7
+2026-09-19T18:05:12.6182821Z      [1m[94m|[0m
+2026-09-19T18:05:12.6183362Z [1m[94m1682[0m [1m[94m|[0m const F_MISS: &str = "crusstyMiss";
+2026-09-19T18:05:12.6184025Z      [1m[94m|[0m       [1m[33m^^^^^^[0m
+2026-09-19T18:05:12.6184221Z 
+2026-09-19T18:05:12.6184444Z [1m[33mwarning[0m[1m: constant `DESC_OBJ_ARRAY` is never used[0m
+2026-09-19T18:05:12.6184831Z     [1m[94m--> [0msrc/classfile.rs:1683:7
+2026-09-19T18:05:12.6185354Z      [1m[94m|[0m
+2026-09-19T18:05:12.6185999Z [1m[94m1683[0m [1m[94m|[0m const DESC_OBJ_ARRAY: &str = "[Ljava/lang/Object;";
+2026-09-19T18:05:12.6186721Z      [1m[94m|[0m       [1m[33m^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6187044Z 
+2026-09-19T18:05:12.6187404Z [1m[33mwarning[0m[1m: constant `DESC_INT_ARRAY` is never used[0m
+2026-09-19T18:05:12.6188068Z     [1m[94m--> [0msrc/classfile.rs:1684:7
+2026-09-19T18:05:12.6188469Z      [1m[94m|[0m
+2026-09-19T18:05:12.6188984Z [1m[94m1684[0m [1m[94m|[0m const DESC_INT_ARRAY: &str = "[I";
+2026-09-19T18:05:12.6189371Z      [1m[94m|[0m       [1m[33m^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6189562Z 
+2026-09-19T18:05:12.6189776Z [1m[33mwarning[0m[1m: constant `ACC_TRANSIENT` is never used[0m
+2026-09-19T18:05:12.6190171Z     [1m[94m--> [0msrc/classfile.rs:1688:7
+2026-09-19T18:05:12.6190448Z      [1m[94m|[0m
+2026-09-19T18:05:12.6190761Z [1m[94m1688[0m [1m[94m|[0m const ACC_TRANSIENT: u16 = 0x0080;
+2026-09-19T18:05:12.6191145Z      [1m[94m|[0m       [1m[33m^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6191330Z 
+2026-09-19T18:05:12.6191554Z [1m[33mwarning[0m[1m: constant `INJECTED_FIELDS` is never used[0m
+2026-09-19T18:05:12.6191951Z     [1m[94m--> [0msrc/classfile.rs:1691:7
+2026-09-19T18:05:12.6192309Z      [1m[94m|[0m
+2026-09-19T18:05:12.6192879Z [1m[94m1691[0m [1m[94m|[0m const INJECTED_FIELDS: [(&str, &str, u16); 4] = [
+2026-09-19T18:05:12.6193308Z      [1m[94m|[0m       [1m[33m^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6193644Z 
+2026-09-19T18:05:12.6193901Z [1m[33mwarning[0m[1m: function `patch_paletted_container` is never used[0m
+2026-09-19T18:05:12.6194344Z     [1m[94m--> [0msrc/classfile.rs:1700:8
+2026-09-19T18:05:12.6194618Z      [1m[94m|[0m
+2026-09-19T18:05:12.6195071Z [1m[94m1700[0m [1m[94m|[0m pub fn patch_paletted_container(bytes: &[u8]) -> Result<Vec<u8>, String> {
+2026-09-19T18:05:12.6195597Z      [1m[94m|[0m        [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6195811Z 
+2026-09-19T18:05:12.6196040Z [1m[33mwarning[0m[1m: function `build_method_entry` is never used[0m
+2026-09-19T18:05:12.6196439Z     [1m[94m--> [0msrc/classfile.rs:1819:4
+2026-09-19T18:05:12.6196709Z      [1m[94m|[0m
+2026-09-19T18:05:12.6197125Z [1m[94m1819[0m [1m[94m|[0m fn build_method_entry(m: &Method, full_code_attr: &[u8]) -> Vec<u8> {
+2026-09-19T18:05:12.6197613Z      [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6197807Z 
+2026-09-19T18:05:12.6198039Z [1m[33mwarning[0m[1m: function `code_has_branches` is never used[0m
+2026-09-19T18:05:12.6198447Z     [1m[94m--> [0msrc/classfile.rs:1832:4
+2026-09-19T18:05:12.6198734Z      [1m[94m|[0m
+2026-09-19T18:05:12.6199065Z [1m[94m1832[0m [1m[94m|[0m fn code_has_branches(code: &[u8]) -> bool {
+2026-09-19T18:05:12.6199469Z      [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6199663Z 
+2026-09-19T18:05:12.6199888Z [1m[33mwarning[0m[1m: function `guard_mutator_body` is never used[0m
+2026-09-19T18:05:12.6200310Z     [1m[94m--> [0msrc/classfile.rs:1862:4
+2026-09-19T18:05:12.6200591Z      [1m[94m|[0m
+2026-09-19T18:05:12.6200866Z [1m[94m1862[0m [1m[94m|[0m fn guard_mutator_body(
+2026-09-19T18:05:12.6201217Z      [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6201406Z 
+2026-09-19T18:05:12.6201651Z [1m[33mwarning[0m[1m: function `build_paletted_get_body` is never used[0m
+2026-09-19T18:05:12.6202065Z     [1m[94m--> [0msrc/classfile.rs:1929:4
+2026-09-19T18:05:12.6202351Z      [1m[94m|[0m
+2026-09-19T18:05:12.6202776Z [1m[94m1929[0m [1m[94m|[0m fn build_paletted_get_body(
+2026-09-19T18:05:12.6203161Z      [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6203361Z 
+2026-09-19T18:05:12.6203588Z [1m[33mwarning[0m[1m: function `assemble_code_attr` is never used[0m
+2026-09-19T18:05:12.6203984Z     [1m[94m--> [0msrc/classfile.rs:2011:4
+2026-09-19T18:05:12.6204258Z      [1m[94m|[0m
+2026-09-19T18:05:12.6204535Z [1m[94m2011[0m [1m[94m|[0m fn assemble_code_attr(
+2026-09-19T18:05:12.6204875Z      [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6205067Z 
+2026-09-19T18:05:12.6205281Z [1m[33mwarning[0m[1m: function `parse_code_attr` is never used[0m
+2026-09-19T18:05:12.6205670Z     [1m[94m--> [0msrc/classfile.rs:2043:4
+2026-09-19T18:05:12.6205947Z      [1m[94m|[0m
+2026-09-19T18:05:12.6206224Z [1m[94m2043[0m [1m[94m|[0m fn parse_code_attr<'a>(
+2026-09-19T18:05:12.6206688Z      [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6206887Z 
+2026-09-19T18:05:12.6207137Z [1m[33mwarning[0m[1m: function `code_has_exception_table` is never used[0m
+2026-09-19T18:05:12.6207549Z     [1m[94m--> [0msrc/classfile.rs:2073:4
+2026-09-19T18:05:12.6207824Z      [1m[94m|[0m
+2026-09-19T18:05:12.6208386Z [1m[94m2073[0m [1m[94m|[0m fn code_has_exception_table(bytes: &[u8], pool: &Pool, start: usize, _end: usize) -> Result<bool, String> {
+2026-09-19T18:05:12.6208994Z      [1m[94m|[0m    [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6209194Z 
+2026-09-19T18:05:12.6209459Z [1m[33mwarning[0m[1m: function `blockupd_resolution_closure` is never used[0m
+2026-09-19T18:05:12.6209897Z     [1m[94m--> [0msrc/classfile.rs:3681:8
+2026-09-19T18:05:12.6210171Z      [1m[94m|[0m
+2026-09-19T18:05:12.6210619Z [1m[94m3681[0m [1m[94m|[0m pub fn blockupd_resolution_closure(bridge: &[u8]) -> Result<(), String> {
+2026-09-19T18:05:12.6211269Z      [1m[94m|[0m        [1m[33m^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6211488Z 
+2026-09-19T18:05:12.6211700Z [1m[33mwarning[0m[1m: constant `FLUSH_SBC_CLASS` is never used[0m
+2026-09-19T18:05:12.6212083Z     [1m[94m--> [0msrc/classfile.rs:3987:7
+2026-09-19T18:05:12.6212359Z      [1m[94m|[0m
+2026-09-19T18:05:12.6213119Z [1m[94m3987[0m [1m[94m|[0m const FLUSH_SBC_CLASS: &str = "net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector";
+2026-09-19T18:05:12.6213731Z      [1m[94m|[0m       [1m[33m^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6213924Z 
+2026-09-19T18:05:12.6214139Z [1m[33mwarning[0m[1m: constant `RNG_OPS_CLASS` is never used[0m
+2026-09-19T18:05:12.6214529Z     [1m[94m--> [0msrc/classfile.rs:4208:7
+2026-09-19T18:05:12.6214809Z      [1m[94m|[0m
+2026-09-19T18:05:12.6215196Z [1m[94m4208[0m [1m[94m|[0m const RNG_OPS_CLASS: &str = "net/minecraft/util/RngOps";
+2026-09-19T18:05:12.6215658Z      [1m[94m|[0m       [1m[33m^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6215850Z 
+2026-09-19T18:05:12.6216032Z [1m[33mwarning[0m[1m: field `major` is never read[0m
+2026-09-19T18:05:12.6216389Z   [1m[94m--> [0msrc/entity_compose.rs:63:5
+2026-09-19T18:05:12.6216698Z    [1m[94m|[0m
+2026-09-19T18:05:12.6216969Z [1m[94m61[0m [1m[94m|[0m struct PatchCache {
+2026-09-19T18:05:12.6217388Z    [1m[94m|[0m        [1m[94m----------[0m [1m[94mfield in this struct[0m
+2026-09-19T18:05:12.6217801Z [1m[94m62[0m [1m[94m|[0m     bytes: Arc<[u8]>,
+2026-09-19T18:05:12.6218139Z [1m[94m63[0m [1m[94m|[0m     major: u16,
+2026-09-19T18:05:12.6218447Z    [1m[94m|[0m     [1m[33m^^^^^[0m
+2026-09-19T18:05:12.6218763Z 
+2026-09-19T18:05:12.6218936Z [1m[33mwarning[0m[1m: field `major` is never read[0m
+2026-09-19T18:05:12.6219300Z   [1m[94m--> [0msrc/fluid_dirty.rs:56:5
+2026-09-19T18:05:12.6219577Z    [1m[94m|[0m
+2026-09-19T18:05:12.6219841Z [1m[94m54[0m [1m[94m|[0m struct PatchCache {
+2026-09-19T18:05:12.6220249Z    [1m[94m|[0m        [1m[94m----------[0m [1m[94mfield in this struct[0m
+2026-09-19T18:05:12.6220658Z [1m[94m55[0m [1m[94m|[0m     bytes: Arc<[u8]>,
+2026-09-19T18:05:12.6220989Z [1m[94m56[0m [1m[94m|[0m     major: u16,
+2026-09-19T18:05:12.6221289Z    [1m[94m|[0m     [1m[33m^^^^^[0m
+2026-09-19T18:05:12.6221460Z 
+2026-09-19T18:05:12.6221680Z [1m[33mwarning[0m[1m: constant `CHECK_INSIDE_NAME` is never used[0m
+2026-09-19T18:05:12.6222084Z   [1m[94m--> [0msrc/inside_diet.rs:38:7
+2026-09-19T18:05:12.6222355Z    [1m[94m|[0m
+2026-09-19T18:05:12.6222875Z [1m[94m38[0m [1m[94m|[0m const CHECK_INSIDE_NAME: &str = "checkInsideBlocks";
+2026-09-19T18:05:12.6223310Z    [1m[94m|[0m       [1m[33m^^^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6223505Z 
+2026-09-19T18:05:12.6223751Z [1m[33mwarning[0m[1m: constant `CHECK_INSIDE_DESC` is never used[0m
+2026-09-19T18:05:12.6224535Z   [1m[94m--> [0msrc/inside_diet.rs:39:7
+2026-09-19T18:05:12.6224974Z    [1m[94m|[0m
+2026-09-19T18:05:12.6226413Z [1m[94m39[0m [1m[94m|[0m const CHECK_INSIDE_DESC: &str = "(Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/entity/InsideBl[1m[94m...[0m
+2026-09-19T18:05:12.6227703Z    [1m[94m|[0m       [1m[33m^^^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6228061Z 
+2026-09-19T18:05:12.6228309Z [1m[33mwarning[0m[1m: constant `TARGET_STATIC_DESC` is never used[0m
+2026-09-19T18:05:12.6228723Z   [1m[94m--> [0msrc/inside_diet.rs:40:7
+2026-09-19T18:05:12.6228999Z    [1m[94m|[0m
+2026-09-19T18:05:12.6229739Z [1m[94m40[0m [1m[94m|[0m const TARGET_STATIC_DESC: &str = "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;[1m[94m...[0m
+2026-09-19T18:05:12.6230503Z    [1m[94m|[0m       [1m[33m^^^^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6230707Z 
+2026-09-19T18:05:12.6230930Z [1m[33mwarning[0m[1m: constant `SECTION_ENTRIES` is never used[0m
+2026-09-19T18:05:12.6231345Z   [1m[94m--> [0msrc/palette_gather.rs:47:11
+2026-09-19T18:05:12.6231823Z    [1m[94m|[0m
+2026-09-19T18:05:12.6232156Z [1m[94m47[0m [1m[94m|[0m pub const SECTION_ENTRIES: usize = 4096;
+2026-09-19T18:05:12.6232779Z    [1m[94m|[0m           [1m[33m^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6232976Z 
+2026-09-19T18:05:12.6233176Z [1m[33mwarning[0m[1m: constant `MAX_BPE` is never used[0m
+2026-09-19T18:05:12.6233558Z   [1m[94m--> [0msrc/palette_gather.rs:52:7
+2026-09-19T18:05:12.6233845Z    [1m[94m|[0m
+2026-09-19T18:05:12.6234122Z [1m[94m52[0m [1m[94m|[0m const MAX_BPE: u8 = 31;
+2026-09-19T18:05:12.6234456Z    [1m[94m|[0m       [1m[33m^^^^^^^[0m
+2026-09-19T18:05:12.6234642Z 
+2026-09-19T18:05:12.6234874Z [1m[33mwarning[0m[1m: struct `SectionPacked` is never constructed[0m
+2026-09-19T18:05:12.6235298Z   [1m[94m--> [0msrc/palette_gather.rs:57:12
+2026-09-19T18:05:12.6235586Z    [1m[94m|[0m
+2026-09-19T18:05:12.6235873Z [1m[94m57[0m [1m[94m|[0m pub struct SectionPacked {
+2026-09-19T18:05:12.6236241Z    [1m[94m|[0m            [1m[33m^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6236452Z 
+2026-09-19T18:05:12.6236652Z [1m[33mwarning[0m[1m: function `mask_for` is never used[0m
+2026-09-19T18:05:12.6237031Z   [1m[94m--> [0msrc/palette_gather.rs:66:4
+2026-09-19T18:05:12.6237315Z    [1m[94m|[0m
+2026-09-19T18:05:12.6237605Z [1m[94m66[0m [1m[94m|[0m fn mask_for(bpe: u8) -> u64 {
+2026-09-19T18:05:12.6237954Z    [1m[94m|[0m    [1m[33m^^^^^^^^[0m
+2026-09-19T18:05:12.6238123Z 
+2026-09-19T18:05:12.6238345Z [1m[33mwarning[0m[1m: multiple associated items are never used[0m
+2026-09-19T18:05:12.6238751Z    [1m[94m--> [0msrc/palette_gather.rs:77:12
+2026-09-19T18:05:12.6239041Z     [1m[94m|[0m
+2026-09-19T18:05:12.6239318Z [1m[94m 74[0m [1m[94m|[0m impl SectionPacked {
+2026-09-19T18:05:12.6239812Z     [1m[94m|[0m [1m[94m------------------[0m [1m[94massociated items in this implementation[0m
+2026-09-19T18:05:12.6240227Z [1m[94m...[0m
+2026-09-19T18:05:12.6240737Z [1m[94m 77[0m [1m[94m|[0m     pub fn new(bpe: u8, entries: usize, words: Vec<u64>, palette: Vec<u32>) -> Option<Self> {
+2026-09-19T18:05:12.6241331Z     [1m[94m|[0m            [1m[33m^^^[0m
+2026-09-19T18:05:12.6241608Z [1m[94m...[0m
+2026-09-19T18:05:12.6241900Z [1m[94m100[0m [1m[94m|[0m     pub fn bpe(&self) -> u8 {
+2026-09-19T18:05:12.6242255Z     [1m[94m|[0m            [1m[33m^^^[0m
+2026-09-19T18:05:12.6242660Z [1m[94m...[0m
+2026-09-19T18:05:12.6242981Z [1m[94m103[0m [1m[94m|[0m     pub fn palette_len(&self) -> usize {
+2026-09-19T18:05:12.6243379Z     [1m[94m|[0m            [1m[33m^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6243670Z [1m[94m...[0m
+2026-09-19T18:05:12.6243982Z [1m[94m110[0m [1m[94m|[0m     fn single_value(&self) -> bool {
+2026-09-19T18:05:12.6244363Z     [1m[94m|[0m        [1m[33m^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6244647Z [1m[94m...[0m
+2026-09-19T18:05:12.6244992Z [1m[94m116[0m [1m[94m|[0m     pub fn get_index_scalar(&self, i: usize) -> u32 {
+2026-09-19T18:05:12.6245570Z     [1m[94m|[0m            [1m[33m^^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6245875Z [1m[94m...[0m
+2026-09-19T18:05:12.6246200Z [1m[94m136[0m [1m[94m|[0m     pub fn get_index(&self, i: usize) -> u32 {
+2026-09-19T18:05:12.6246602Z     [1m[94m|[0m            [1m[33m^^^^^^^^^[0m
+2026-09-19T18:05:12.6246893Z [1m[94m...[0m
+2026-09-19T18:05:12.6247235Z [1m[94m154[0m [1m[94m|[0m     pub fn resolve(&self, idx: u32) -> Option<u32> {
+2026-09-19T18:05:12.6247651Z     [1m[94m|[0m            [1m[33m^^^^^^^[0m
+2026-09-19T18:05:12.6247935Z [1m[94m...[0m
+2026-09-19T18:05:12.6248286Z [1m[94m160[0m [1m[94m|[0m     pub fn get_state(&self, i: usize) -> Option<u32> {
+2026-09-19T18:05:12.6248704Z     [1m[94m|[0m            [1m[33m^^^^^^^^^[0m
+2026-09-19T18:05:12.6248985Z [1m[94m...[0m
+2026-09-19T18:05:12.6249437Z [1m[94m170[0m [1m[94m|[0m     pub fn bulk_states(&self, indices: &[u32], out: &mut [u32]) -> Option<usize> {
+2026-09-19T18:05:12.6249957Z     [1m[94m|[0m            [1m[33m^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6250482Z [1m[94m...[0m
+2026-09-19T18:05:12.6250918Z [1m[94m198[0m [1m[94m|[0m     pub fn indices_of(&self, wanted: u32, out: &mut [u32]) -> Option<usize> {
+2026-09-19T18:05:12.6251411Z     [1m[94m|[0m            [1m[33m^^^^^^^^^^[0m
+2026-09-19T18:05:12.6251609Z 
+2026-09-19T18:05:12.6251824Z [1m[33mwarning[0m[1m: constant `ENTITY_CLASS` is never used[0m
+2026-09-19T18:05:12.6252219Z   [1m[94m--> [0msrc/region_threads.rs:62:7
+2026-09-19T18:05:12.6252663Z    [1m[94m|[0m
+2026-09-19T18:05:12.6253059Z [1m[94m62[0m [1m[94m|[0m const ENTITY_CLASS: &str = "net/minecraft/world/entity/Entity";
+2026-09-19T18:05:12.6253515Z    [1m[94m|[0m       [1m[33m^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6253703Z 
+2026-09-19T18:05:12.6253890Z [1m[33mwarning[0m[1m: field `major` is never read[0m
+2026-09-19T18:05:12.6254253Z    [1m[94m--> [0msrc/region_threads.rs:115:5
+2026-09-19T18:05:12.6254550Z     [1m[94m|[0m
+2026-09-19T18:05:12.6254819Z [1m[94m113[0m [1m[94m|[0m struct PatchCache {
+2026-09-19T18:05:12.6255240Z     [1m[94m|[0m        [1m[94m----------[0m [1m[94mfield in this struct[0m
+2026-09-19T18:05:12.6255648Z [1m[94m114[0m [1m[94m|[0m     bytes: Arc<[u8]>,
+2026-09-19T18:05:12.6255990Z [1m[94m115[0m [1m[94m|[0m     major: u16,
+2026-09-19T18:05:12.6256298Z     [1m[94m|[0m     [1m[33m^^^^^[0m
+2026-09-19T18:05:12.6256467Z 
+2026-09-19T18:05:12.6256686Z [1m[33mwarning[0m[1m: function `bridge_ready` is never used[0m
+2026-09-19T18:05:12.6257075Z    [1m[94m--> [0msrc/region_threads.rs:185:8
+2026-09-19T18:05:12.6257365Z     [1m[94m|[0m
+2026-09-19T18:05:12.6257664Z [1m[94m185[0m [1m[94m|[0m pub fn bridge_ready() -> bool {
+2026-09-19T18:05:12.6258034Z     [1m[94m|[0m        [1m[33m^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6258225Z 
+2026-09-19T18:05:12.6258445Z [1m[33mwarning[0m[1m: function `wait_rng_verdict` is never used[0m
+2026-09-19T18:05:12.6258851Z    [1m[94m--> [0msrc/region_threads.rs:208:8
+2026-09-19T18:05:12.6259141Z     [1m[94m|[0m
+2026-09-19T18:05:12.6259492Z [1m[94m208[0m [1m[94m|[0m pub fn wait_rng_verdict(timeout_ms: u64) -> bool {
+2026-09-19T18:05:12.6259916Z     [1m[94m|[0m        [1m[33m^^^^^^^^^^^^^^^^[0m
+2026-09-19T18:05:12.6260115Z 
+2026-09-19T18:05:15.4280096Z [1m[33mwarning[0m: `crussty` (lib) generated 54 warnings (run `cargo fix --lib -p crussty` to apply 8 suggestions)
+2026-09-19T18:05:15.4280967Z [1m[92m    Finished[0m `release` profile [optimized] target(s) in 4.79s
+2026-09-19T18:05:15.4394456Z ##[group]Run set -euo pipefail
+2026-09-19T18:05:15.4394806Z [36;1mset -euo pipefail[0m
+2026-09-19T18:05:15.4395106Z [36;1mmkdir -p world3-run/server/modules/crussty[0m
+2026-09-19T18:05:15.4395531Z [36;1mcp "$RUNNER_TEMP/libcrussty.so" world3-run/server/modules/crussty/[0m
+2026-09-19T18:05:15.4395994Z [36;1mcp "$RUNNER_TEMP/.built" world3-run/server/modules/crussty/[0m
+2026-09-19T18:05:15.4396364Z [36;1mbash bench/world3/run_world3.sh[0m
+2026-09-19T18:05:15.4432192Z shell: /usr/bin/bash -e {0}
+2026-09-19T18:05:15.4432702Z env:
+2026-09-19T18:05:15.4447581Z   CARGO_HOME: /home/runner/.cargo
+2026-09-19T18:05:15.4447883Z   CARGO_INCREMENTAL: 0
+2026-09-19T18:05:15.4448129Z   CARGO_TERM_COLOR: always
+2026-09-19T18:05:15.4448371Z   CACHE_ON_FAILURE: false
+2026-09-19T18:05:15.4448724Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.12-1/x64
+2026-09-19T18:05:15.4449231Z   JAVA_HOME_21_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.12-1/x64
+2026-09-19T18:05:15.4449978Z   WORLD_URL: https://storage.shield.land/public.php/dav/files/twzsxN3HkBQtyED/Season%203/MineShield-3__Min--Normal.zip
+2026-09-19T18:05:15.4450553Z   FORCELOAD_RADIUS: 640
+2026-09-19T18:05:15.4450779Z   RUN_SECONDS: 300
+2026-09-19T18:05:15.4450988Z   SUMMON_SWEEPS: 0
+2026-09-19T18:05:15.4451194Z   FAKE_PLAYERS: 4
+2026-09-19T18:05:15.4451395Z   FLUID_GUARD: 1
+2026-09-19T18:05:15.4451597Z   PALETTED_DEMUX: 0
+2026-09-19T18:05:15.4451802Z   ALLOC_DIET: 0
+2026-09-19T18:05:15.4452221Z   INSIDE_CACHE: 1
+2026-09-19T18:05:15.4452419Z   FLUSH_DIET: 1
+2026-09-19T18:05:15.4452943Z   FLUID_FREE: 0
+2026-09-19T18:05:15.4453134Z   FLUID_DIRTY: 0
+2026-09-19T18:05:15.4453336Z   REGION_THREADS: 4
+2026-09-19T18:05:15.4453537Z   BATCH_COLLECTOR: 1
+2026-09-19T18:05:15.4453748Z   FLAT_TRAVERSAL: 0
+2026-09-19T18:05:15.4453943Z   ZERO_ALLOC: 0
+2026-09-19T18:05:15.4454128Z   ZERO_CURSOR: 0
+2026-09-19T18:05:15.4454327Z   SKIP_STORE_BB: 0
+2026-09-19T18:05:15.4454527Z   REGION_STEAL: 1
+2026-09-19T18:05:15.4454728Z   BU_DEFER: 1
+2026-09-19T18:05:15.4454919Z   PARSE_DIAG: 0
+2026-09-19T18:05:15.4455128Z   POPULATION_TARGET: 150000
+2026-09-19T18:05:15.4455365Z   POPULATION_SEED: 42
+2026-09-19T18:05:15.4455575Z   SERVER_XMX: 10G
+2026-09-19T18:05:15.4455769Z   SERVER_XMS: 4G
+2026-09-19T18:05:15.4455961Z   RECON_DIAG: 0
+2026-09-19T18:05:15.4456419Z   NATIVES_TGZ: https://github.com/PLANETA9091/c-crussty/releases/download/v0.1.0/crussty-v0.1.0-linux-x64.tar.gz
+2026-09-19T18:05:15.4457025Z   RUNTIME_SO: /home/runner/work/_temp/libcrussty_runtime.so
+2026-09-19T18:05:15.4457371Z ##[endgroup]
+2026-09-19T18:05:44.9627703Z /dev/root       145G   43G  102G  30% /
+2026-09-19T18:05:44.9643134Z [world3 18:05:44Z] downloading purpur kernel
+2026-09-19T18:05:45.4270150Z [world3 18:05:45Z] downloading world
+2026-09-19T18:08:58.5269335Z [world3 18:08:58Z] run-env: world_sha256=afb3a0b3ba78397b833032574ed2a1af8c4279dc7cfa31d9cffa0f217a6112d5 runner_cpu_index=6997821 fake_players=4
+2026-09-19T18:08:58.5280554Z [world3 18:08:58Z] extracting world
+2026-09-19T18:09:48.2411441Z [world3 18:09:48Z] world dir: world (from /home/runner/work/c-crussty/c-crussty/world3-run/worldx)
+2026-09-19T18:09:48.4475341Z [world3 18:09:48Z] natives: libpaper_native_chunk_encode_jni.so
+2026-09-19T18:09:48.4476863Z libpaper_native_jni.so
+2026-09-19T18:09:48.4488069Z [world3 18:09:48Z] NATIVES_MODE=full-bridge
+2026-09-19T18:09:48.5985107Z [world3 18:09:48Z] async-profiler: /home/runner/work/c-crussty/c-crussty/world3-run/ap/bin/asprof (from v4.5/async-profiler-4.5-linux-x64.tar.gz)
+2026-09-19T18:09:48.6010323Z [world3 18:09:48Z] module prebuilt by CI
+2026-09-19T18:09:48.6080714Z [world3 18:09:48Z] natives staged into module dir: libcrussty.so libpaper_native_chunk_encode_jni.so libpaper_native_jni.so module.json 
+2026-09-19T18:09:48.6095804Z [world3 18:09:48Z] bench fixture: materializing kernel (eula-less paperclip pass, exits pre-main — NOT a boot)
+2026-09-19T18:10:08.8617675Z [world3 18:10:08Z] bench fixture: kernel materialized (29386794 B)
+2026-09-19T18:10:08.8975183Z [world3 18:10:08Z] bench-4: compiling BenchFakePlayers plugin (javac only — compile is not a boot)
+2026-09-19T18:10:10.6330716Z [world3 18:10:10Z] bench-4: plugin staged (5488 B); N=4
+2026-09-19T18:10:10.6346394Z [world3 18:10:10Z] x150k: compiling BenchPopulation plugin (javac only — compile is not a boot)
+2026-09-19T18:10:12.3000682Z [world3 18:10:12Z] x150k: plugin staged (9440 B); target=150000 seed=42
+2026-09-19T18:10:12.3040080Z [world3 18:10:12Z] bench harness: spigot watchdog timeout-time=86400 monitor-only (S7-162 leg#1 DUD hardening)
+2026-09-19T18:10:12.3069625Z [world3 18:10:12Z] ptrace_scope(pre)=1
+2026-09-19T18:10:12.3197360Z [world3 18:10:12Z] ptrace_scope set to 0
+2026-09-19T18:10:12.3261951Z [world3 18:10:12Z] server pid 3751 (console tail pid 3750) — waiting for Done (<=600s)
+2026-09-19T18:10:30.4690482Z [world3 18:10:30Z] SEEN_DONE=1
+2026-09-19T18:10:30.4743454Z [world3 18:10:30Z] forceload sweep: radius 640 blocks, 6x6 tiles
+2026-09-19T18:10:55.1915301Z [world3 18:10:55Z] x150k: benchpop inject target=150000 seed=42 (waiting <= 900s for DONE marker)
+2026-09-19T18:11:55.2446437Z [world3 18:11:55Z] x150k: still injecting... waited=60s
+2026-09-19T18:12:15.2610328Z [18:12:07 INFO]: [BenchPopulation] [BenchPopulation] POPULATION INJECT DONE target=150000 injected=150000 items=105000 hostiles=30000 passives=15000 elapsedMs=64299 t0FullTime=225986028
+2026-09-19T18:12:15.2663044Z [18:12:07 INFO]: [BenchPopulation] [BenchPopulation] POPULATION FIXTURE-VALIDITY: VALID (injected=150000 target=150000)
+2026-09-19T18:13:40.5508074Z [world3 18:13:40Z] FATAL: server process died mid-soak — ending soak early (crash artifacts preserved)
+2026-09-19T18:13:50.5573111Z [world3 18:13:50Z] asprof alloc-collapsed stop failed
+2026-09-19T18:13:50.5586817Z [world3 18:13:50Z] WARN: /home/runner/work/c-crussty/c-crussty/world3-run/alloc-collapsed.txt EMPTY
+2026-09-19T18:13:50.5613865Z [world3 18:13:50Z] asprof: orphan session before start(-e cpu,interval=5ms) — rescuing into orphan-collapsed.txt
+2026-09-19T18:14:30.5857270Z [world3 18:14:30Z] spark/debug artifacts: 3
+2026-09-19T18:15:17.6746765Z [world3-report] wrote /home/runner/work/c-crussty/c-crussty/world3-run/BOTTLENECKS_3.md (cpu samples 0, wall 0, alloc 0)
+2026-09-19T18:15:17.6808755Z [world3 18:15:17Z] harness complete; artifacts in /home/runner/work/c-crussty/c-crussty/world3-run
+2026-09-19T18:15:17.6844967Z ##[group]Run set -euo pipefail
+2026-09-19T18:15:17.6845376Z [36;1mset -euo pipefail[0m
+2026-09-19T18:15:17.6845740Z [36;1m# paperclip applies patches at boot into cache/versions — the TRUE[0m
+2026-09-19T18:15:17.6846237Z [36;1m# kernel classes live there, NOT in the paperclip jar (run#11[0m
+2026-09-19T18:15:17.6846704Z [36;1m# root-cause: standalone recon job unzip'd the paperclip, matched[0m
+2026-09-19T18:15:17.6847112Z [36;1m# nothing, shipped a header-only artifact).[0m
+2026-09-19T18:15:17.6847520Z [36;1m# run#12 root-cause (recon bug #2): find picked cache/mojang_1.21.10.jar[0m
+2026-09-19T18:15:17.6848010Z [36;1m# (VANILLA bundler, cache sorts before versions) — the patched kernel[0m
+2026-09-19T18:15:17.6848501Z [36;1m# is versions/<v>/purpur-<v>.jar. Fix: content-test every >20M jar[0m
+2026-09-19T18:15:17.6848968Z [36;1m# for net/minecraft/server/level/ServerLevel.class (definitive).[0m
+2026-09-19T18:15:17.6849463Z [36;1m# run#13: + RNG contract classes (task165 BATCH-RNG: advanceSeed[0m
+2026-09-19T18:15:17.6849892Z [36;1m# LCG semantics + LevelChunkSection.randomTick pick loop).[0m
+2026-09-19T18:15:17.6850244Z [36;1mPATCHED_JAR=""[0m
+2026-09-19T18:15:17.6850743Z [36;1mfor cand in $(find world3-run/server/cache world3-run/server/versions -name '*.jar' -size +20M 2>/dev/null); do[0m
+2026-09-19T18:15:17.6851443Z [36;1m  if unzip -l "$cand" 2>/dev/null | grep -q 'net/minecraft/server/level/ServerLevel.class'; then[0m
+2026-09-19T18:15:17.6851965Z [36;1m    PATCHED_JAR="$cand"; break[0m
+2026-09-19T18:15:17.6852221Z [36;1m  fi[0m
+2026-09-19T18:15:17.6852415Z [36;1mdone[0m
+2026-09-19T18:15:17.6852936Z [36;1mif [ -z "$PATCHED_JAR" ]; then[0m
+2026-09-19T18:15:17.6853576Z [36;1m  echo "::warning::no patched kernel jar found — recon skipped"; mkdir -p world3-run; echo "no patched jar found" > world3-run/entity-recon.txt[0m
+2026-09-19T18:15:17.6854199Z [36;1melse[0m
+2026-09-19T18:15:17.6854436Z [36;1m  echo "patched kernel: $PATCHED_JAR"[0m
+2026-09-19T18:15:17.6854748Z [36;1m  mkdir -p recon/classes[0m
+2026-09-19T18:15:17.6855025Z [36;1m  unzip -q -o "$PATCHED_JAR" \[0m
+2026-09-19T18:15:17.6855348Z [36;1m    'net/minecraft/world/entity/Entity*.class' \[0m
+2026-09-19T18:15:17.6855729Z [36;1m    'net/minecraft/world/entity/vehicle/*.class' \[0m
+2026-09-19T18:15:17.6856101Z [36;1m    'net/minecraft/server/level/ServerLevel*.class' \[0m
+2026-09-19T18:15:17.6856545Z [36;1m    'ca/spottedleaf/moonrise/patches/chunk_system/level/entity/*.class' \[0m
+2026-09-19T18:15:17.6856997Z [36;1m    'ca/spottedleaf/moonrise/common/util/*.class' \[0m
+2026-09-19T18:15:17.6857445Z [36;1m    'ca/spottedleaf/moonrise/patches/chunk_system/level/ServerLevel*.class' \[0m
+2026-09-19T18:15:17.6857944Z [36;1m    'net/minecraft/world/level/levelgen/RandomSource*.class' \[0m
+2026-09-19T18:15:17.6858396Z [36;1m    'net/minecraft/world/level/levelgen/BitRandomSource*.class' \[0m
+2026-09-19T18:15:17.6858882Z [36;1m    'net/minecraft/world/level/levelgen/LegacyRandomSource*.class' \[0m
+2026-09-19T18:15:17.6859354Z [36;1m    'net/minecraft/world/level/levelgen/WorldgenRandom*.class' \[0m
+2026-09-19T18:15:17.6859861Z [36;1m    'net/minecraft/world/level/levelgen/ThreadSafeLegacyRandomSource*.class' \[0m
+2026-09-19T18:15:17.6860608Z [36;1m    'net/minecraft/world/level/levelgen/XoroshiroRandomSource*.class' \[0m
+2026-09-19T18:15:17.6861084Z [36;1m    'net/minecraft/world/level/levelgen/RandomSupport*.class' \[0m
+2026-09-19T18:15:17.6861537Z [36;1m    'net/minecraft/world/level/chunk/LevelChunkSection*.class' \[0m
+2026-09-19T18:15:17.6861963Z [36;1m    'net/minecraft/world/level/chunk/LevelChunk.class' \[0m
+2026-09-19T18:15:17.6862311Z [36;1m    -d recon/classes || true[0m
+2026-09-19T18:15:17.6862902Z [36;1m  JAVAP_BIN="$(command -v javap || true)"[0m
+2026-09-19T18:15:17.6863318Z [36;1m  [ -z "$JAVAP_BIN" ] && [ -n "${JAVA_HOME:-}" ] && JAVAP_BIN="$JAVA_HOME/bin/javap"[0m
+2026-09-19T18:15:17.6864144Z [36;1m  CLASSES=$(find recon/classes -name '*.class' | sed 's|recon/classes/||; s|\.class$||; s|/|.|g' | sort)[0m
+2026-09-19T18:15:17.6864670Z [36;1m  echo "classes: $(echo "$CLASSES" | wc -l)"[0m
+2026-09-19T18:15:17.6865081Z [36;1m  { echo "# entity-recon (booted patched kernel) — $(date -u +%FT%TZ)";[0m
+2026-09-19T18:15:17.6865495Z [36;1m    echo "kernel jar: $PATCHED_JAR";[0m
+2026-09-19T18:15:17.6865798Z [36;1m    for c in $CLASSES; do[0m
+2026-09-19T18:15:17.6866057Z [36;1m      echo; echo "==== $c ====";[0m
+2026-09-19T18:15:17.6866520Z [36;1m      "$JAVAP_BIN" -p -c -classpath recon/classes "$c" 2>/dev/null || echo "(javap failed for $c)";[0m
+2026-09-19T18:15:17.6867013Z [36;1m    done; } > world3-run/entity-recon.txt[0m
+2026-09-19T18:15:17.6867333Z [36;1m  wc -l world3-run/entity-recon.txt[0m
+2026-09-19T18:15:17.6867672Z [36;1m  cp "$PATCHED_JAR" world3-run/patched-kernel.jar[0m
+2026-09-19T18:15:17.6867974Z [36;1mfi[0m
+2026-09-19T18:15:17.6914733Z shell: /usr/bin/bash -e {0}
+2026-09-19T18:15:17.6915056Z env:
+2026-09-19T18:15:17.6915284Z   CARGO_HOME: /home/runner/.cargo
+2026-09-19T18:15:17.6915561Z   CARGO_INCREMENTAL: 0
+2026-09-19T18:15:17.6915834Z   CARGO_TERM_COLOR: always
+2026-09-19T18:15:17.6916173Z   CACHE_ON_FAILURE: false
+2026-09-19T18:15:17.6916532Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.12-1/x64
+2026-09-19T18:15:17.6917140Z   JAVA_HOME_21_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.12-1/x64
+2026-09-19T18:15:17.6917575Z ##[endgroup]
+2026-09-19T18:15:17.9204682Z patched kernel: world3-run/server/versions/1.21.10/purpur-1.21.10.jar
+2026-09-19T18:15:17.9544261Z caution: filename not matched:  ca/spottedleaf/moonrise/patches/chunk_system/level/ServerLevel*.class
+2026-09-19T18:15:17.9545504Z caution: filename not matched:  net/minecraft/world/level/levelgen/RandomSource*.class
+2026-09-19T18:15:17.9608512Z classes: 100
+2026-09-19T18:15:46.1585723Z 54210 world3-run/entity-recon.txt
+2026-09-19T18:15:46.1721734Z ##[group]Run test -s world3-run/BOTTLENECKS_3.md \
+2026-09-19T18:15:46.1722181Z [36;1mtest -s world3-run/BOTTLENECKS_3.md \[0m
+2026-09-19T18:15:46.1722994Z [36;1m  || { echo "::error::BOTTLENECKS_3.md missing — report generation failed"; exit 1; }[0m
+2026-09-19T18:15:46.1723485Z [36;1mcat world3-run/BOTTLENECKS_3.md[0m
+2026-09-19T18:15:46.1723874Z [36;1m# BENCH-4 fixture gate (task170): a fake-players run must declare[0m
+2026-09-19T18:15:46.1724345Z [36;1m# itself VALID, else the owner-scenario evidence is unusable.[0m
+2026-09-19T18:15:46.1724714Z [36;1mif [ "4" != "0" ]; then[0m
+2026-09-19T18:15:46.1725076Z [36;1m  grep -q "FIXTURE-VALIDITY: VALID" world3-run/BOTTLENECKS_3.md \[0m
+2026-09-19T18:15:46.1725737Z [36;1m    || { echo "::error::BENCH-4 FIXTURE-VALIDITY: INVALID (spawnable chunks / churn / alive-check failed)"; exit 1; }[0m
+2026-09-19T18:15:46.1726262Z [36;1mfi[0m
+2026-09-19T18:15:46.1726597Z [36;1m# BENCH-X150K population gate (S7-129): a population run must[0m
+2026-09-19T18:15:46.1727059Z [36;1m# complete the injection with the fixture declaring itself VALID[0m
+2026-09-19T18:15:46.1727525Z [36;1m# (>= 90% of target), else the living-scene evidence is unusable.[0m
+2026-09-19T18:15:46.1727885Z [36;1mif [ "150000" != "0" ]; then[0m
+2026-09-19T18:15:46.1728428Z [36;1m  grep -q "POPULATION INJECT DONE" world3-run/server-stdout.log \[0m
+2026-09-19T18:15:46.1729027Z [36;1m    || { echo "::error::X150K POPULATION INJECT DONE marker missing — injection never completed"; exit 1; }[0m
+2026-09-19T18:15:46.1729678Z [36;1m  grep -q "POPULATION FIXTURE-VALIDITY: VALID" world3-run/server-stdout.log \[0m
+2026-09-19T18:15:46.1730315Z [36;1m    || { echo "::error::X150K POPULATION FIXTURE-VALIDITY: INVALID (injected < 90% of target)"; exit 1; }[0m
+2026-09-19T18:15:46.1730790Z [36;1mfi[0m
+2026-09-19T18:15:46.1766723Z shell: /usr/bin/bash -e {0}
+2026-09-19T18:15:46.1766978Z env:
+2026-09-19T18:15:46.1767185Z   CARGO_HOME: /home/runner/.cargo
+2026-09-19T18:15:46.1767461Z   CARGO_INCREMENTAL: 0
+2026-09-19T18:15:46.1767690Z   CARGO_TERM_COLOR: always
+2026-09-19T18:15:46.1767925Z   CACHE_ON_FAILURE: false
+2026-09-19T18:15:46.1768286Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.12-1/x64
+2026-09-19T18:15:46.1768791Z   JAVA_HOME_21_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.12-1/x64
+2026-09-19T18:15:46.1769181Z ##[endgroup]
+2026-09-19T18:15:46.1836302Z # Benchmark 3.0 — BOTTLENECKS_3 (real world, no players) — v2
+2026-09-19T18:15:46.1836788Z 
+2026-09-19T18:15:46.1836976Z - natives mode: **full-bridge**
+2026-09-19T18:15:46.1837426Z - boot reached Done: **1** (boot time 16.538 s)
+2026-09-19T18:15:46.1838044Z - forceload commands issued: 36 (9216 chunks force-loaded)
+2026-09-19T18:15:46.1838611Z - TPS polls captured: 1, first-of-window values: [19.2]
+2026-09-19T18:15:46.1839172Z ### Run environment (pairing discipline, S7-96d)
+2026-09-19T18:15:46.1839555Z 
+2026-09-19T18:15:46.1839727Z - date_utc: 2026-09-19T18:08:58Z
+2026-09-19T18:15:46.1840704Z - world_url: https://storage.shield.land/public.php/dav/files/twzsxN3HkBQtyED/Season%203/MineShield-3__Min--Normal.zip
+2026-09-19T18:15:46.1841919Z - world_sha256: afb3a0b3ba78397b833032574ed2a1af8c4279dc7cfa31d9cffa0f217a6112d5
+2026-09-19T18:15:46.1843299Z - runner_cpu_index: 6997821 (iters/s fixed 6M-step LCG loop; higher = faster/less contended runner)
+2026-09-19T18:15:46.1844084Z - nproc: 4
+2026-09-19T18:15:46.1844336Z - summon_sweeps: 0
+2026-09-19T18:15:46.1844650Z - fake_players: 4 (BENCH-4 fixture: N real ServerPlayers, task170)
+2026-09-19T18:15:46.1845185Z - fluid_guard: 1 (CRUSSTY_FLUID_PUSH_GUARD; 1 = same-state fluid-push guard ARMED, TASK-80/S7-128)
+2026-09-19T18:15:46.1845806Z - paletted_demux: 0 (CRUSSTY_PALETTED_DEMUX; 1 = PALETTED-DEMUX ARCH-ATTACK lever #1, S7-131)
+2026-09-19T18:15:46.1846511Z - alloc_diet: 0 (CRUSSTY_ALLOC_DIET; 1 = ALLOC-DIET ARCH-ATTACK lever #2: zero-alloc push/collision queries, S7-133/TASK-269)
+2026-09-19T18:15:46.1847620Z - inside_cache: 1 (CRUSSTY_INSIDE_CACHE; 1 = INSIDE-CACHE ARCH-ATTACK lever #3: static-entity inside-blocks discovery memoization, S7-135/TASK-271)
+2026-09-19T18:15:46.1848623Z - flush_diet: 1 (CRUSSTY_FLUSH_DIET; 1 = FLUSH-DIET ARCH-ATTACK lever #4: StepBasedCollector.flushStep zero-waste addAll via FlushOps, S7-137)
+2026-09-19T18:15:46.1849653Z - fluid_free: 0 (CRUSSTY_FLUID_FREE; 1 = FLUID-FREE-SECTION ARCH-ATTACK lever #5: fluid-ff verdict cache via FluidOps.fgate, requires paletted_demux=1, S7-143)
+2026-09-19T18:15:46.1850765Z - fluid_dirty: 0 (CRUSSTY_FLUID_DIRTY; 1 = FLUID-DIRTY ARCH-ATTACK lever #6: fluid-scan memoization via FluidPushOps.scan + event-driven dirty-stamp ledger, S7-151/TASK-290)
+2026-09-19T18:15:46.1851855Z - region_threads: 4 (CRUSSTY_REGION_THREADS; >=2 = REGION-THREADS ARCH-ATTACK lever #7: region-threaded entity ticking via RegionTickOps, S7-156/TASK-295)
+2026-09-19T18:15:46.1853580Z - batch_collector: 1 (CRUSSTY_BATCH_COLLECTOR; 1 = BATCH-COLLECTOR ARCH-ATTACK lever #8: zero-map flat StepBasedCollector via BatchCollector.ensure swap, requires region_threads>=2, S7-160)
+2026-09-19T18:15:46.1855906Z - flat_traversal: 0 (CRUSSTY_FLAT_TRAVERSAL; 1 = FLAT-TRAVERSAL ARCH-ATTACK lever #9: flat bit-exact TraverseOps.forEachFlat via entity_compose stage-6 retarget, requires region_threads>=2, S7-163)
+2026-09-19T18:15:46.1858245Z - zero_alloc: 0 (CRUSSTY_ZERO_ALLOC; 1 = ZERO-ALLOC-INSIDE ARCH-ATTACK lever #10: scalar ZeroAllocOps body-redirects of collidedWithFluid/collidedWithShapeMovingFrom/updateFluidHeightAndDoFluidPushing via entity_compose stage-7, requires region_threads>=2, S7-164)
+2026-09-19T18:15:46.1859680Z - parse_diag: 0 (CRUSSTY_PARSE_DIAG; 1 = passive per-chunk parse census bridge ChunkParseDiagOps.diagXIntOr ldc-xPos retarget, RECON-13d/TASK-327)
+2026-09-19T18:15:46.1860771Z - zero_cursor: 0 (CRUSSTY_ZERO_CURSOR; 1 = ZERO-CURSOR lever #11 v1: pooled bit-exact betweenCornersInDirection iterator, kills BlockPos$6+MutableBlockPos churn; TASK-330)
+2026-09-19T18:15:46.1862120Z - skip_store_bb: 0 (CRUSSTY_SKIP_STORE_BB; 1 = SKIP-STORE-BB #13-SBB ARCH-ATTACK: value-equal store-skip for Entity.setBoundingBox via SkipStoreOps body-redirect entity_compose stage-8, requires region_threads>=2, S7-166)
+2026-09-19T18:15:46.1863730Z - region_steal: 1 (CRUSSTY_REGION_STEAL; 1 = STEAL lever #13 v1: shared snapshot + chunk cursor (512) instead of static buckets, DONE-park 13.4% -> ~0; requires region_threads>=2; TASK-333)
+2026-09-19T18:15:46.1865428Z - bu_defer: 1 (CRUSSTY_BU_DEFER; 1 = S7-168 STEAL v2 defect-fix: BlockUpdateOps sendBlockUpdated canalization, workers defer navigate-pass to main phase-4 FIFO replay — kills the s7176 navigatingMobs race NPE; requires region_steal=1; TASK-335)
+2026-09-19T18:15:46.1866558Z - population_target: 150000 (BENCH-X150K living-scene injection, S7-129; 0 = off)
+2026-09-19T18:15:46.1867171Z - population_seed: 42 (deterministic injection replay seed; topup seeded from deltaT=ft-T0, S7-130)
+2026-09-19T18:15:46.1867688Z - server_xmx: 10G (S7-130; 150k-scale runs use 10G)
+2026-09-19T18:15:46.1868155Z - server_xms: 4G (TASK-321 FREE-HOST track; MUST be <= server_xmx; historical default 4G)
+2026-09-19T18:15:46.1868758Z - seconds: 300 (soak window; profiler windows cpu 0-55% / wall 55-80% / alloc 80-100%, S7-134)
+2026-09-19T18:15:46.1869112Z 
+2026-09-19T18:15:46.1869312Z > Pairing law (run#15/#16 lesson): identical snapshot+inputs still gave
+2026-09-19T18:15:46.1869860Z > 20.0 vs 12.5 TPS on different shared runners — cross-run MSPT deltas are
+2026-09-19T18:15:46.1870340Z > noise-dominated; pair runs by (world_sha256, runner_cpu_index) or use
+2026-09-19T18:15:46.1892422Z > same-boot A/B only.
+2026-09-19T18:15:46.1892905Z 
+2026-09-19T18:15:46.1893101Z - tick-behind warnings in log: 0
+2026-09-19T18:15:46.1893396Z 
+2026-09-19T18:15:46.1893528Z ### GC (from gc.log)
+2026-09-19T18:15:46.1893745Z 
+2026-09-19T18:15:46.1893922Z - pause events: **110** (Full GC: **0**)
+2026-09-19T18:15:46.1894461Z - total pause: **7914.7 ms**, avg **71.95 ms**, max **194.8 ms**
+2026-09-19T18:15:46.1895359Z - heap high-water seen: **5700 MB** -> last-after: **3471 MB**
+2026-09-19T18:15:46.1895791Z   - Young (Normal) (G1 Evacuation Pause): 20
+2026-09-19T18:15:46.1896088Z   - Remark: 18
+2026-09-19T18:15:46.1896319Z   - Young (Mixed) (G1 Evacuation Pause): 18
+2026-09-19T18:15:46.1896601Z   - Cleanup: 17
+2026-09-19T18:15:46.1896846Z   - Young (Prepare Mixed) (G1 Evacuation Pause): 17
+2026-09-19T18:15:46.1897208Z   - Young (Concurrent Start) (G1 Evacuation Pause): 12
+2026-09-19T18:15:46.1897426Z 
+2026-09-19T18:15:46.1897549Z ## Preregistered CI metrics (TASK-230 F1/F2/F3)
+2026-09-19T18:15:46.1897756Z 
+2026-09-19T18:15:46.1898295Z - **F2 GC-churn estimate:** 110 pauses / total 7915 ms STW (see GC section above; MB/s needs region-size constants — wired next tick)
+2026-09-19T18:15:46.1899091Z - **F4 entity spawn/despawn churn (owner scenario):** insufficient polls (need >=2 `paper entity list` outputs)
+2026-09-19T18:15:46.1899507Z 
+2026-09-19T18:15:46.1899620Z ## BENCH-4 fixture validity (fake_players=4)
+2026-09-19T18:15:46.1899815Z 
+2026-09-19T18:15:46.1900022Z - spawnable-chunk polls: NONE parsed from `paper mobcaps world` output
+2026-09-19T18:15:46.1900416Z - alive-check heartbeat series: ['4/4']
+2026-09-19T18:15:46.1900707Z - gate 1a spawnable chunks > 0: FAIL
+2026-09-19T18:15:46.1901155Z - gate 1b churn ACTIVE with summons=0 (natural spawn/despawn): FAIL (summons=0, polls=0, delta=n/a)
+2026-09-19T18:15:46.1901780Z - gate 1c alive-check steady at N=4: PASS
+2026-09-19T18:15:46.1901976Z 
+2026-09-19T18:15:46.1902073Z - **FIXTURE-VALIDITY: INVALID**
+2026-09-19T18:15:46.1902886Z   - bench-4 run INVALID as owner-scenario evidence: do NOT use its MSPT as the canonical-scenario baseline; fix the fixture first.
+2026-09-19T18:15:46.1903363Z 
+2026-09-19T18:15:46.1903594Z > NOTE: boot reached Done but no CPU collapsed stacks were produced —
+2026-09-19T18:15:46.1904088Z > profiler attach failed; report ranks are INVALID for this run (log stats only).
+2026-09-19T18:15:46.1904404Z 
+2026-09-19T18:15:46.1904498Z ## Artifacts in this run
+2026-09-19T18:15:46.1904640Z 
+2026-09-19T18:15:46.1904750Z - `server-stdout.log` (221353 B)
+2026-09-19T18:15:46.1904994Z - `gc.log` (156616 B)
+2026-09-19T18:15:46.1905202Z - `ap.log` (110 B)
+2026-09-19T18:15:46.1905417Z - `spark-report` (4096 B)
+2026-09-19T18:15:46.1905561Z 
+2026-09-19T18:15:46.1905756Z NEXT: research rounds attack the top kernel buckets in order —
+2026-09-19T18:15:46.1906201Z each round = one pre-registered c-crussty task with a Rust replacement
+2026-09-19T18:15:46.1906627Z or a native bridge, gated by the module's parity discipline.
+2026-09-19T18:15:46.1909546Z ##[error]BENCH-4 FIXTURE-VALIDITY: INVALID (spawnable chunks / churn / alive-check failed)
+2026-09-19T18:15:46.1911865Z ##[error]Process completed with exit code 1.
+2026-09-19T18:15:46.1963180Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-09-19T18:15:46.1964565Z ##[group]Run actions/upload-artifact@v4
+2026-09-19T18:15:46.1964848Z with:
+2026-09-19T18:15:46.1965036Z   name: world3-bench
+2026-09-19T18:15:46.1966731Z   path: world3-run/BOTTLENECKS_3.md
+world3-run/cpu-collapsed.txt
+world3-run/wall-collapsed.txt
+world3-run/alloc-collapsed.txt
+world3-run/cpu-flamegraph.html
+world3-run/server-stdout.log
+world3-run/gc.log
+world3-run/remset.log
+world3-run/refine.log
+world3-run/recon.jfr
+world3-run/ap.log
+world3-run/run-env.txt
+world3-run/pclip-materialize.log
+world3-run/chunk-parse-diag.txt
+world3-run/entity-recon.txt
+world3-run/patched-kernel.jar
+world3-run/spark-report/
+
+2026-09-19T18:15:46.1968501Z   if-no-files-found: warn
+2026-09-19T18:15:46.1968736Z   compression-level: 6
+2026-09-19T18:15:46.1968946Z   overwrite: false
+2026-09-19T18:15:46.1969156Z   include-hidden-files: false
+2026-09-19T18:15:46.1969393Z env:
+2026-09-19T18:15:46.1969585Z   CARGO_HOME: /home/runner/.cargo
+2026-09-19T18:15:46.1969834Z   CARGO_INCREMENTAL: 0
+2026-09-19T18:15:46.1970049Z   CARGO_TERM_COLOR: always
+2026-09-19T18:15:46.1970280Z   CACHE_ON_FAILURE: false
+2026-09-19T18:15:46.1970609Z   JAVA_HOME: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.12-1/x64
+2026-09-19T18:15:46.1971093Z   JAVA_HOME_21_X64: /opt/hostedtoolcache/Java_Temurin-Hotspot_jdk/21.0.12-1/x64
+2026-09-19T18:15:46.1971477Z ##[endgroup]
+2026-09-19T18:15:46.5077401Z (node:6345) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-09-19T18:15:46.5078797Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-09-19T18:15:46.5216873Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-09-19T18:15:46.5223270Z The least common ancestor is /home/runner/work/c-crussty/c-crussty/world3-run. This will be the root directory of the artifact
+2026-09-19T18:15:46.5223957Z With the provided path, there will be 10 files uploaded
+2026-09-19T18:15:46.5227807Z Artifact name is valid!
+2026-09-19T18:15:46.5228904Z Root directory input is valid!
+2026-09-19T18:15:46.7403583Z Beginning upload of artifact content to blob storage
+2026-09-19T18:15:47.1044483Z (node:6345) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-09-19T18:15:47.2633441Z Uploaded bytes 8388608
+2026-09-19T18:15:47.5092834Z Uploaded bytes 16777216
+2026-09-19T18:15:47.7415407Z Uploaded bytes 25165824
+2026-09-19T18:15:47.7656507Z Uploaded bytes 26194474
+2026-09-19T18:15:47.7792344Z Finished uploading artifact content to blob storage!
+2026-09-19T18:15:47.7793822Z SHA256 digest of uploaded artifact zip is ee90f4503121c457651b8a0de8b5067f4580211671135df9b9132bec3d659a33
+2026-09-19T18:15:47.7796638Z Finalizing artifact upload
+2026-09-19T18:15:47.9693940Z Artifact world3-bench.zip successfully finalized. Artifact ID 10589398856
+2026-09-19T18:15:47.9694947Z Artifact world3-bench has been successfully uploaded! Final size is 26194474 bytes. Artifact ID is 10589398856
+2026-09-19T18:15:47.9701652Z Artifact download URL: https://github.com/PLANETA9091/c-crussty/actions/runs/35460026013/artifacts/10589398856
+2026-09-19T18:15:47.9915690Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-09-19T18:15:47.9916962Z Post job cleanup.
+2026-09-19T18:15:48.1351186Z (node:6358) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-09-19T18:15:48.1352744Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-09-19T18:15:48.1577738Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-09-19T18:15:48.1578970Z Post job cleanup.
+2026-09-19T18:15:48.2528063Z [command]/usr/bin/git version
+2026-09-19T18:15:48.2576300Z git version 2.55.0
+2026-09-19T18:15:48.2621034Z Temporarily overriding HOME='/home/runner/work/_temp/10e37ac1-90f9-46a4-8856-0b5cb9561fc6' before making global git config changes
+2026-09-19T18:15:48.2622687Z Adding repository directory to the temporary git global config as a safe directory
+2026-09-19T18:15:48.2626676Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/c-crussty/c-crussty/CRUSSTY
+2026-09-19T18:15:48.2669146Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-09-19T18:15:48.2717990Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-09-19T18:15:48.2995117Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-09-19T18:15:48.3025407Z http.https://github.com/.extraheader
+2026-09-19T18:15:48.3040797Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-09-19T18:15:48.3082388Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-09-19T18:15:48.3364280Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-09-19T18:15:48.3413600Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-09-19T18:15:48.3950296Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-09-19T18:15:48.3952861Z Post job cleanup.
+2026-09-19T18:15:48.4972355Z [command]/usr/bin/git version
+2026-09-19T18:15:48.5020504Z git version 2.55.0
+2026-09-19T18:15:48.5070355Z Temporarily overriding HOME='/home/runner/work/_temp/137c1f1c-2f20-4ffc-bd73-bdf516808617' before making global git config changes
+2026-09-19T18:15:48.5071362Z Adding repository directory to the temporary git global config as a safe directory
+2026-09-19T18:15:48.5077677Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/c-crussty/c-crussty
+2026-09-19T18:15:48.5121413Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-09-19T18:15:48.5157595Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-09-19T18:15:48.5443153Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-09-19T18:15:48.5468299Z http.https://github.com/.extraheader
+2026-09-19T18:15:48.5480378Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-09-19T18:15:48.5518748Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-09-19T18:15:48.5791571Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-09-19T18:15:48.5839561Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-09-19T18:15:48.6244957Z Cleaning up orphan processes
+2026-09-19T18:15:48.6615737Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-java@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
