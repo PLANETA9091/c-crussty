@@ -6581,6 +6581,13 @@ mod blockpos_zerocursor {
 /// cursor walk detonates a NoSuchMethodError.
 pub fn zerocursor_resolution_closure(ops: &[u8], iter: &[u8]) -> Result<(), String> {
     const FACTORY_DESC: &str = "(Lnet/minecraft/core/Direction;Lnet/minecraft/core/Direction;Lnet/minecraft/core/Direction;IIIIII)Ljava/util/Iterator;";
+    // s7171 lesson: ZeroCursorIter.reset returns VOID — the pooled instance is
+    // returned by lambda8 itself (`it.reset(args); return it;`), so the runtime
+    // call-site descriptor of reset is (... )V. The earlier Iterator-return
+    // assumption failed the closure and kept the hook dormant (PG-Z2 fail,
+    // lever never measured). Verified against the embedded classfiles by the
+    // zerocursor_delivery_tests::zerocursor_resolution_closure_accepts test.
+    const RESET_DESC: &str = "(Lnet/minecraft/core/Direction;Lnet/minecraft/core/Direction;Lnet/minecraft/core/Direction;IIIIII)V";
     let targets: &[(&str, &str, &str, &str)] = &[
         (
             "class",
@@ -6588,7 +6595,7 @@ pub fn zerocursor_resolution_closure(ops: &[u8], iter: &[u8]) -> Result<(), Stri
             "lambda8",
             FACTORY_DESC,
         ),
-        ("class", "net/minecraft/core/ZeroCursorIter", "reset", FACTORY_DESC),
+        ("class", "net/minecraft/core/ZeroCursorIter", "reset", RESET_DESC),
         ("class", "net/minecraft/core/ZeroCursorIter", "hasNext", "()Z"),
         ("class", "net/minecraft/core/ZeroCursorIter", "next", "()Lnet/minecraft/core/BlockPos$MutableBlockPos;"),
     ];
