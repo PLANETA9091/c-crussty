@@ -294,6 +294,7 @@ pub fn activate() {
 
 #[cfg(test)]
 mod zerocursor_delivery_tests {
+    use super::{ITER_BYTES, OPS_BYTES};
     /// S7-163/S7-164 delivery-graph guard mirrored for lever #11: EACH
     /// bridge source MUST declare ZERO nested classes (the two classfiles
     /// are defined alone into the kernel loader; a nested class would
@@ -332,5 +333,18 @@ mod zerocursor_delivery_tests {
             let major = u16::from_be_bytes([bytes[6], bytes[7]]);
             assert_eq!(major, 65, "bridge major must be pinned to 65");
         }
+    }
+
+    /// s7171 delivery-defect guard: the resolution closure MUST accept the
+    /// embedded bridge classfiles as compiled. The closure previously demanded
+    /// `reset(...)Ljava/util/Iterator;` while the actual bridge declares
+    /// `reset(...)V` (void; lambda8 returns the pooled instance) — the hook
+    /// stayed dormant on CI and the lever was never measured. This test pins
+    /// the closure to the real bytes so any future member drift fails here,
+    /// offline, instead of silently disarming the leg.
+    #[test]
+    fn zerocursor_resolution_closure_accepts_embedded_bridges() {
+        crate::classfile::zerocursor_resolution_closure(OPS_BYTES, ITER_BYTES)
+            .expect("resolution closure must accept the embedded ZeroCursor bridge bytes");
     }
 }
