@@ -160,6 +160,7 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "population_target: $POPULATION_TARGET (BENCH-X150K living-scene injection, S7-129; 0 = off)"
   echo "population_seed: $POPULATION_SEED (deterministic injection replay seed; topup seeded from deltaT=ft-T0, S7-130)"
   echo "server_xmx: $SERVER_XMX (S7-130; 150k-scale runs use 10G)"
+  echo "server_xms: $SERVER_XMS (TASK-321 FREE-HOST track; MUST be <= server_xmx; historical default 4G)"
   echo "seconds: $RUN_SECONDS (soak window; profiler windows cpu 0-55% / wall 55-80% / alloc 80-100%, S7-134)"
 } > "$WORK/run-env.txt"
 log "run-env: world_sha256=$WORLD_SHA runner_cpu_index=$RUNNER_CPU_IDX fake_players=$FAKE_PLAYERS"
@@ -424,7 +425,7 @@ rm -f "$WORK/console.pipe"; mkfifo "$WORK/console.pipe"
 TAIL_PID=$!
 java \
   "-agentpath:$RUNTIME_SO=modules=$SERVER/modules;versions=$SERVER/versions;kernel=purpur-1.21.10.jar" \
-  -Xms4G -Xmx"$SERVER_XMX" -XX:+UseG1GC -Dfile.encoding=UTF-8 \
+  -Xms"$SERVER_XMS" -Xmx"$SERVER_XMX" -XX:+UseG1GC -Dfile.encoding=UTF-8 \
   -Xlog:gc*:file="$WORK/gc.log":time,uptime,level,tags \
   "${EXTRA_JVM_DIAG[@]}" \
   -jar "$SERVER/versions/purpur-1.21.10.jar" --nogui \

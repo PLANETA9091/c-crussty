@@ -103,6 +103,10 @@ on:
         description: 'Server JVM max heap (S7-130; 6G = historical default, 150k-scale prime runs use 10G)'
         required: false
         default: '6G'
+      server_xms:
+        description: 'Server JVM initial heap (TASK-321 FREE-HOST track; MUST be <= server_xmx; default 4G preserves all historical legs bit-exact)'
+        required: false
+        default: '4G'
       recon_diag:
         description: 'TASK-317 instrument-gate: remset/refine debug logs + JFR profile recording (pure observability, 0 behavior change; diagnostic leg — NOT a gate leg)'
         required: false
@@ -197,6 +201,7 @@ jobs:
           POPULATION_TARGET: ${{ inputs.population_target || '0' }}
           POPULATION_SEED: ${{ inputs.population_seed || '42' }}
           SERVER_XMX: ${{ inputs.server_xmx || '6G' }}
+          SERVER_XMS: ${{ inputs.server_xms || '4G' }}
           RECON_DIAG: ${{ inputs.recon_diag || '0' }}
           NATIVES_TGZ: ${{ inputs.natives_url || 'https://github.com/PLANETA9091/c-crussty/releases/download/v0.1.0/crussty-v0.1.0-linux-x64.tar.gz' }}
           RUNTIME_SO: ${{ runner.temp }}/libcrussty_runtime.so
