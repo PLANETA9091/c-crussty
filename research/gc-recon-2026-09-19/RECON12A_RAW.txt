@@ -1,0 +1,37 @@
+== RECON-12 store-firehose attribution ==
+
+-- OldObjectSample: 72 objects reached old gen
+-- share by PRODUCER family (object counts):
+   non-entity/other                  55   76.39%
+   boundingBox/move                   8   11.11%
+   other-entity                       5    6.94%
+   block-change path                  3    4.17%
+   sync/SynchedEntityData             1    1.39%
+-- top classes:
+   ?                                               72  100.00%
+
+ENTITY-FIELD SHARE (all non-'non-entity/other'): 23.61%  (gate: >= 40%)
+
+-- ObjectAllocationSample control: 78686 samples, 2.6 MB weighted
+   non-entity/other                   2.2 MB   82.97%
+   other-entity                       0.2 MB    6.92%
+   boundingBox/move                   0.2 MB    6.86%
+   block-change path                  0.0 MB    1.87%
+   sync/SynchedEntityData             0.0 MB    0.65%
+   deltaMovement/travel               0.0 MB    0.62%
+   chunk entity-lists                 0.0 MB    0.11%
+   top classes:
+   byte[]                                           0.6 MB   22.61%
+   short[]                                          0.2 MB    8.02%
+   com.mojang.serialization.DataResult$Success       0.2 MB    7.00%
+   java.lang.Object[]                               0.2 MB    6.08%
+   long[]                                           0.1 MB    4.25%
+   int[]                                            0.1 MB    4.13%
+   net.minecraft.world.phys.Vec3                    0.1 MB    3.34%
+   net.minecraft.world.phys.AABB                    0.1 MB    3.10%
+   java.lang.String                                 0.1 MB    2.65%
+   java.util.ArrayList$Itr                          0.1 MB    2.57%
+
+-- remset debug: 165 GC cycles
+   dirty cards/cycle p50=6,324,224 max=7,438,336; dirty% p50=59.63% max=89.58%; sum visited=511,569,152
+-- refine.log: 6879 lines (inspect manually for thread-run stats)

@@ -89,8 +89,10 @@ def parse_old_objects(txt):
     """Yield (class_name, object_age_ms, [stack frames]) from jfr print output."""
     events = txt.split("jdk.OldObjectSample")
     for ev in events[1:]:
-        cm = re.search(r"object = (\S+)", ev)
-        am = re.search(r"objectAge = ([\d.]+) ms", ev)
+        # JDK 21 jfr print: class on the LINE AFTER "object =  ["
+        cm = re.search(r"object = \s*\[\s*\n\s*(\S+)", ev)
+        am = re.search(r"objectAge = (?:(\d+) m )?([\d.]+) s", ev)
+        age_ms = (float(am.group(1)) * 60 + float(am.group(2))) * 1000 if am else -1.0
         stack = []
         sm = re.search(r"stackTrace = \[\n(.*?)\n\s*\]", ev, re.S)
         if sm:
@@ -99,7 +101,7 @@ def parse_old_objects(txt):
                 if fm:
                     stack.append(fm.group(1))
         yield (cm.group(1) if cm else "?",
-               float(am.group(1)) if am else -1.0,
+               age_ms,
                stack)
 
 def classify(stack):
