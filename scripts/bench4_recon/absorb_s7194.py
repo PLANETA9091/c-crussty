@@ -193,17 +193,21 @@ def main():
               for k, v in want.items()]
         ncde = stdout_txt.count("NoClassDefFoundError")
         pop_ok = "POPULATION FIXTURE-VALIDITY: VALID" in stdout_txt
-        arm = "stage traveldiet composed" in stdout_txt
+        # #10 zeroin arm marker: entity_compose must compose zeroin with sites:3
+        arm = "stage zeroin composed (Retargeted { sites: 3 })" in stdout_txt
+        # isolation guard: travel_diet=0 => traveldiet stage must NOT compose
+        iso = "stage traveldiet composed" not in stdout_txt
         strict = "strict check violated" in stdout_txt
         # S7-170 NAV-MOBS-GUARD marker (heads >= 40a... after RECON-22 fix):
         # "[S7-170] nav-mobs guarded: level=... seeded=N" printed once per level
         # at the Unsafe swap; heads WITHOUT the S7-170 commit report N/A.
         s7170 = stdout_txt.count("[S7-170] nav-mobs guarded")
         s7170_note = f"guarded-marker={'OK' if s7170 > 0 else 'MISSING'} (ОБЯЗАТЕЛЕН: гонка закрыта s7193)"
-        t1_ok = all("OK" in x for x in t1) and ncde == 0 and pop_ok and arm and s7170 > 0 and not strict
+        t1_ok = all("OK" in x for x in t1) and ncde == 0 and pop_ok and arm and iso and s7170 > 0 and not strict
         rep.append("- PG-T1: " + ", ".join(t1) + f", NCDFE={ncde}, "
                    f"pop={'VALID' if pop_ok else 'BAD'}, "
                    f"arm={'COMPOSED' if arm else 'MISSING'}, "
+                   f"isolation={'OK' if iso else 'LEAK'}, "
                    f"{s7170_note}, "
                    f"strict-violated={strict} -> **{'PASS' if t1_ok else 'FAIL'}**")
 
@@ -242,7 +246,8 @@ def main():
                            "zero_alloc(+S7-170)")
             else:
                 verdict = "LANE-OPEN"
-                rep.append("  -> **< +10% хотя бы по одной оси** -> REFUTED попытки "
+                rep.append("  -> **< +10% хотя бы по одной оси** (нога валидна: "
+                           "zeroin COMPOSED sites:3 + threw=0) -> REFUTED "
                            "под-лейна inside-blocks/fluid-scan (22.3% alloc, RECON-24) "
                            "рычагом #10 -> свежий RECON следующего GC-под-лейна "
                            "(jdk-collections/serde 25.5%) до под-лейнов >=5%")
