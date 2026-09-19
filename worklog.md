@@ -2564,3 +2564,11 @@ Stage Summary:
 - Новая целевая линия: 2.5GB free-hosting профиль (директива владельца) — RECON-лег xmx≈2G следующим шагом после вердикта v5
 
 RUN_ID_DISPATCHED: да (v5-кандидат #13-SBB, dispatch_s7166.py; S7-108 — единственный в полёте)
+
+## TASK-320 (absorb v5-кандидата s7166 / run 35428713486: #13-SBB SKIP-STORE-BB = REFUTED; банк v3 сохранён; семья store-skip закрыта; NEXT = FREE-HOST 2.5GB) — 2026-09-19 ~15:3x +08 — Job 396026 (тик 15:08/ручной absorb) 
+**Статус: v5-лег поглощён по НЕИЗМЕННЫМ прегистер-гейтам TASK-318. Вердикт REFUTED: PG3 1.5<1.60 (и −25% vs диаг-базы 2.0), PG4a remset +0.52% (эффект 0), PG4b card-set −6.74%<10%, PG4c AABB −9.45%<20%; PG2/CRASH-FREE PASS; оракул 1.1M был закрыт офлайн. Rollback автоматичен (skip_store_bb default '0'), банк остаётся CUMULATIVE v3.**
+- A/B валиден: v5 = точный v3-банк + skip_store_bb=1 + recon_diag=1, база s7165 = тот же v3-банк + recon_diag=1 (JFR/remset оверхед идентичен); run 35428713486 success, pop 150000 VALID, ARMED [inside->rng->batch->sbb], sites:1, defined, NCDFE=0
+- Измерения: remset dirty p50 6,324,224→6,356,992 (165→161 циклов, max 7.44M→7.52M, visited p50 3.83M ровно); card-set CPU 25.72%→23.82%; AABB jfr 16.90%→17.06% (счёт −9.45%), ap-доля 8.96%→6.75%; TPS-серии 1.4/1.9/2.0/2.3/2.5 vs 1.3/1.4/1.5/1.7/1.8
+- Наука: (1) value-equal bb-скип не драйвит firehose — движущиеся меняют bb каждый тик; скип только стационарным = малые стоки; (2) «проверка дороже стора» — 6×doubleToLongBits+cmp+бридж без экономии = −25% TPS; урок зафиксирован в вердикт-доке
+- Семья store-skip закрыта полностью: широкая paper-REFUTED + deltaMovement INFEASIBLE-BY-PARITY + boundingBox REFUTED-поле. Card-set (TOP-1 ~24-26%) = другие семьи записей без value-skip рычага
+- NEXT (тип+1, директива владельца): FREE-HOST профиль-лег 2.5GB (xmx≈2G, fp4/150k/seed42, recon_diag=1, v3-банк) — RECON под целевой free-hosting профиль; затем атака следующего ТОП-1 оттуда. Кандидаты декомпозиции: oop-scan 10.70%, RECON-13 other-entity 28.04%. Артефакты: RECON12C_V5_S7166_VERDICT.md, run-s7166-v5-candidate/ (spark arCsGa90bZ), GOAL СТАТУС ×N (7). Диспатчей за тик 0; S7-108 чист; CI-бутов 0.
