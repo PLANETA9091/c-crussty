@@ -2341,3 +2341,26 @@ Stage Summary:
 - NEXT: absorb леги #2 (run-id ниже) по неизменным гейтам PG2/PG3/PG4/CRASH-FREE → банкинг CUMULATIVE v4 или REFUTED + rollback; затем свежий ТОП → рычаг #10 ZERO-ALLOC-INSIDE по факту пересортировки
 
 RUN_ID_DISPATCHED: 35410873485 (preregister A/B leg#2; CI-бутов за тик 1 — санкционированный)
+
+---
+## TASK-310 (S7-163 absorb leg#2) — 2026-09-19 09:08-10:1x +08 — Job 396026, тик 09:08
+
+Task: поглотить легу #2 S7-163 FLAT-TRAVERSAL (35410873485) по неизменным прereg-гейтам; при PASS банкинг CUMULATIVE v4, при FAIL — вердикт + rollback.
+
+Work Log:
+- creds (1b: bootstrap_tick.sh отсутствует, PUSH-URL remote set-url обоим репо); pull ×3 (up to date; CRUSSTY pristine в песочнице отсутствует — не трогался); next TASK id = 310 (TASK-309 уже закрыт тиком 08:43: leg#1 TECH-DUD + фикс + редиспатч leg#2)
+- Лега #2 (35410873485, head 61f93d6) завершилась SUCCESS 09:09:40 +08 (16.2 мин); артефакт скачан в run-s7163-leg2-artifact/ (cpu/alloc-collapsed, gc.log, stdout, spark)
+- Форензика исключений: 5 отловленных «Entity threw exception» (1 с полным стеком: BasePressurePlateBlock.entityInside → setBlock → sendBlockUpdated → fastutil ObjectOpenHashSet$SetIterator NPE «wrapped null»); прецеденты ДО traversal: s7160=1, s7161=3 (тот же стек), v3=0 → классификация: исторический шум параллельного region-тика, НЕ traversal; сервер планово завершился (Done 01:01:04 → Stopping 01:08:21)
+- Гейты: PG2 PASS (nested-маркеры живы, ARMED rc=0, 0 NCDFE, pop VALID); PG3 PASS (1.700 ≥ 1.60); PG4a FAIL (лейн 9572→7314 = −23.6%, per-work −19.1% при пороге ≥−50%); PG4b PASS (guava-хвост 1168→2 = −99.8%); PG4c PASS (young 129 ≤ 154, STW 21.13s→16.99s = −19.6%); CRASH-FREE PASS
+- ВЕРДИКТ: FAIL → CUMULATIVE v4 НЕ банкуется; flat_traversal=0 (банк = v3); TraverseOps = инфраструктура (оракул 60106×4 бит-в-бит, delivery-гварды, классфайлы воспроизводимы)
+- Разбор порога (урок эры №6): калибровка −50% была на leg#5-профиле (хвост 31–37% лейна), в v3 orchestration уже 12% — порог устарел молча; впервые зафиксировано правило: пороги гейтов калибруются только от свежего профиля лега-базы
+- Свежий ТОП leg#2: entity-фаза 60.16% (movement/AI 20.33%, broadphase 11.26%, fluid-push 9.76%, inside-pipeline 8.00%, item-entity 7.19%, unclassified 41.91%) → GC/JIT 33.11% → tracker 2.08%; alloc-семья 56.2%→31.4%
+- absorb_s7163_leg2.py: гейты + свежий ТОП (3 оси); нюансы парсинга: alloc-collapsed v3 = листы-типы с точками «net.minecraft...AABB_[i]», leg2 = листы-сайты «net/minecraft/.../AABB.inflate» — нормализация leaf.split("_[")[0].replace(".","/")
+- Учёт: CLAIMS TASK-310, GOAL СТАТУС ×1, worklog, атомарный append; пуш обоих репо
+
+Stage Summary:
+- Рычаг #9 FLAT-TRAVERSAL закрыт вердиктом FAIL-по-гейту при честном механическом успехе (−99.8% итераторов, −16% GC, −19.6% STW): экономика ≤ порога банк-класса; TraverseOps остаётся в арсенале (может быть пере-прицелен под другой гейт позже)
+- Методика «ТОП-ПОЖИРАТЕЛЬ → ∞» продолжается: ТОП-1 = entity-фаза 60.16%; кандидаты: #10 ZERO-ALLOC-INSIDE (fluid-push + inside-pipeline + movement-сайты, двойной эффект CPU+alloc) после RECON-7 (unclassified 41.9%)
+- Урок эры №6: порог гейта, калиброванный на до-банкованном профиле, молча устаревает — калибровать от свежего профиля лега-базы
+
+RUN_ID_DISPATCHED: нет (absorb-тик; S7-108 чист)
