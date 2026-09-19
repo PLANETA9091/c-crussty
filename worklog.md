@@ -2596,3 +2596,9 @@ RUN_ID_DISPATCHED: да (v5-кандидат #13-SBB, dispatch_s7166.py; S7-108 
 ## TASK-325 (RECON-13b офлайн: chunk-parse churn 33.4% аллоков; оконная аномалия = burst 240-300s; s7167 = INFEASIBLE-BY-MEMORY подтверждён TASK-324) — 2026-09-19 ~16:3x +08 — Job 397465 (тик 16:27)
 **Статус: в полёте пусто; офлайн RECON-13b: parse-путь = 33.38% всех аллок-байтов (10,186/30,516); окна: 0.00% CPU / 0.00% wall / 45.03% alloc → burst-перезагрузка чанков в финальном окне. Спарк чанк-статистики не имеет. Рекон-скрипт recon13b_chunk_load.py закоммичен.**
 - NEXT (11): RECON-13c rate-инструмент + триггер burst → рычаг (chunk-parse diet / ticket-churn) → реализация+оракул+диспатч. Диспатчей 0; S7-108 чист; CI-бутов 0.
+
+## TASK-326 (RECON-13c: JFR-фазовая гистограмма + атрибуция checkInsideBlocks-курсора; слепая зона JFR OAS) — 2026-09-19 ~16:5x +08 — Job 397465 (тик 16:43)
+**Статус: в полёте пусто; офлайн RECON-13c выполнен: burst t=390-420s = 40.9GB/бакет (BlockPos$6 19GB ×10, RandomAccessSpliterator 8.8GB ×1000) — 100% атрибуция по ap-стэкам: Entity.checkInsideBlocks → forEachBlockIntersectedBetween → betweenCornersInDirection итератор на каждый тик х 150k сущностей (Server thread + region-workers).**
+- 4 JFR-инструмента (jfr/JfrAlloc, JfrExec, JfrThread .java — single-file, jdk.jfr.consumer) + 3 py-скрипта закоммичены; док RECON13C_PHASES_CURSOR.md.
+- Слепая зона JFR OAS зафиксирована: ap = классы/стэки/объёмы, JFR = время/потоки/фазы. Parse 33.38% (13b) не опровергнут; периодика — через RECON-13d счётчик повторов.
+- NEXT (12): lever #11 CRUSSTY_ZERO_CURSOR (zero-alloc курсор) + гейты (PG1 ↓80% сэмплов, PG2 TPS≥2.0, PG3 remset ±1%, PG4 чистота) → диспатч; параллельно RECON-13d. Диспатчей 0; S7-108 чист; CI-бутов 0. c-crussty cf72167.
