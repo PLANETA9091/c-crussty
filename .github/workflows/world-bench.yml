@@ -93,6 +93,10 @@ on:
         description: 'STEAL lever #13 v1 (TASK-333): shared snapshot + chunk cursor (512) instead of static region buckets; DONE-park 13.4% -> ~0; requires region_threads>=2; 0 = static-bucket A/B leg'
         required: false
         default: '0'
+      bu_defer:
+        description: 'S7-168 STEAL v2 defect-fix (TASK-335): 1 = BlockUpdateOps sendBlockUpdated canalization (workers defer navigate-pass to main phase-4 FIFO replay) — kills the s7176 navigatingMobs race NPE; requires region_steal=1'
+        required: false
+        default: '0'
       population_target:
         description: 'BENCH-X150K living-scene population injection (0 = off; 10000 = smoke; 150000 = prime scale, S7-129)'
         required: false
@@ -206,6 +210,7 @@ jobs:
           ZERO_CURSOR: '0'
           SKIP_STORE_BB: ${{ inputs.skip_store_bb || '0' }}
           REGION_STEAL: ${{ inputs.region_steal || '0' }}
+          BU_DEFER: ${{ inputs.bu_defer || '0' }}
           PARSE_DIAG: ${{ inputs.parse_diag || '0' }}
           POPULATION_TARGET: ${{ inputs.population_target || '0' }}
           POPULATION_SEED: ${{ inputs.population_seed || '42' }}

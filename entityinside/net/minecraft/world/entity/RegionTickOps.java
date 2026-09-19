@@ -127,6 +127,55 @@ public final class RegionTickOps {
     private static volatile boolean phaseActive = false;
 
     /**
+     * BU-DEFER (S7-168, STEAL v2 defect-fix — TASK-335): deferred
+     * ServerLevel.sendBlockUpdated navigate-phase records from workers.
+     * s7176 root-cause: a worker iterating navigatingMobs while the main
+     * thread mutates it detonates the fastutil SetIterator NPE ("wrapped is
+     * null") — and the main thread then dies on the same set. Workers
+     * enqueue [ServerLevel, BlockPos, old, new, flags]; the main thread
+     * replays them FIFO (per-worker queue, queues drained in registration
+     * order) in phase 4, right after the EntityCallbacks Mut drain.
+     * Registration: a worker adds its queue once (CopyOnWriteArrayList +
+     * per-worker REGGED flag; lists carry distinct elements so equals()
+     * can never collapse two queues).
+     */
+    private static final java.util.List<java.util.ArrayList<Object[]>> BU_REG =
+            new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static final ThreadLocal<java.util.ArrayList<Object[]>> BU_TL =
+            ThreadLocal.withInitial(java.util.ArrayList::new);
+    private static final ThreadLocal<Boolean> BU_REGGED =
+            ThreadLocal.withInitial(() -> Boolean.FALSE);
+
+    /** Worker entry (called by BlockUpdateOps.handle for worker threads). */
+    public static void deferBlockUpdate(Object level, Object pos, Object oldS,
+                                        Object newS, int flags) {
+        java.util.ArrayList<Object[]> q = BU_TL.get();
+        q.add(new Object[]{level, pos, oldS, newS, flags});
+        if (!BU_REGGED.get()) {
+            BU_REG.add(q);
+            BU_REGGED.set(Boolean.TRUE);
+        }
+    }
+
+    /** Main-thread phase-4 replay: FIFO across per-worker queues. */
+    public static void drainDeferredBlockUpdates() {
+        if (BU_REG.isEmpty()) {
+            return;
+        }
+        for (java.util.ArrayList<Object[]> q : BU_REG) {
+            while (!q.isEmpty()) {
+                Object[] rec = q.remove(0);
+                net.minecraft.server.level.BlockUpdateOps.vanilla(
+                        (net.minecraft.server.level.ServerLevel) rec[0],
+                        (net.minecraft.core.BlockPos) rec[1],
+                        (net.minecraft.world.level.block.state.BlockState) rec[2],
+                        (net.minecraft.world.level.block.state.BlockState) rec[3],
+                        (Integer) rec[4]);
+            }
+        }
+    }
+
+    /**
      * S7-157b (run 35353820223 crash lesson): Paper pumps MAIN-thread
      * mid-tick tasks per entity tick from Level.guardEntityTick ->
      * moonrise$midTickTasks -> ServerChunkCache$MainThreadExecutor.pollTask —
@@ -298,6 +347,10 @@ public final class RegionTickOps {
             if (m.add) list.add(m.entity); else list.remove(m.entity);
         }
 
+        // Phase 4b (serial, S7-168): replay deferred sendBlockUpdated
+        // navigate-passes (STEAL v2 defect-fix) — main-only, after join.
+        drainDeferredBlockUpdates();
+
         Throwable err = workerError;
         if (err != null) {
             if (err instanceof RuntimeException) throw (RuntimeException) err;
@@ -400,6 +453,10 @@ public final class RegionTickOps {
         while ((m = PENDING.poll()) != null) {
             if (m.add) list.add(m.entity); else list.remove(m.entity);
         }
+
+        // Phase 4b (serial, S7-168): replay deferred sendBlockUpdated
+        // navigate-passes (STEAL v2 defect-fix) — main-only, after join.
+        drainDeferredBlockUpdates();
 
         Throwable err = workerError;
         if (err != null) {
