@@ -48,10 +48,18 @@ fi
 HARNESS_BUILD=entityinside/build-harness-traverse
 mkdir -p "$HARNESS_BUILD"
 
-$JAVAC --release 21 -proc:none \
+# Module-based javac (sandbox fallback) rejects --release on some JVMs;
+# the running JVM IS Java 21 so the default target is already correct.
+if ! $JAVAC --release 21 -proc:none \
   -cp "$KERNEL:$LIBCP:entityinside/build" \
   -d "$HARNESS_BUILD" \
-  entityinside/harness/TraverseLockstepHarness.java
+  entityinside/harness/TraverseLockstepHarness.java; then
+  echo "note: --release 21 rejected, compiling with the JVM default target" >&2
+  $JAVAC -proc:none \
+    -cp "$KERNEL:$LIBCP:entityinside/build" \
+    -d "$HARNESS_BUILD" \
+    entityinside/harness/TraverseLockstepHarness.java
+fi
 
 exec $JAVA -cp "$HARNESS_BUILD:$KERNEL:$LIBCP:entityinside/build" \
   harness.TraverseLockstepHarness "$@"

@@ -30,6 +30,20 @@ const TRAVERSE_CLASS: &str = "net/minecraft/world/level/TraverseOps";
 const TRAVERSE_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/world/level/TraverseOps.class");
 
+/// Nested classes compiled out of TraverseOps.java. EVERY nested classfile
+/// produced by the build MUST be listed here and defined into the kernel
+/// loader in the same activation — a plain classpath resolves nested
+/// classes implicitly, but the kernel loader does NOT, so a missing entry
+/// detonates as NoClassDefFoundError on the first entity tick (S7-163
+/// leg#1 TECH-DUD root cause: TraverseOps$LongTable was compiled but
+/// never defined; the offline lockstep harness could not catch it).
+const TRAVERSE_NESTED: &[(&str, &[u8])] = &[(
+    "net/minecraft/world/level/TraverseOps$LongTable",
+    include_bytes!(
+        "../entityinside/build/net/minecraft/world/level/TraverseOps$LongTable.class"
+    ),
+)];
+
 fn enabled() -> bool {
     std::env::var("CRUSSTY_FLAT_TRAVERSAL")
         .map(|v| {
@@ -135,15 +149,38 @@ pub fn activate() {
                 eprintln!(
                     "[crussty-plugin] flat_traversal: define_class({TRAVERSE_CLASS}) failed"
                 );
+                env.delete_local_ref(loader);
+                env.delete_local_ref(class_cls);
                 return false;
             };
             env.delete_local_ref(c);
+            // Nested classes MUST be defined before BRIDGE_READY: the retarget
+            // makes TraverseOps resolvable, and its first use executes the
+            // nested-class NEW, which resolves against THIS loader only.
+            for (name, bytes) in TRAVERSE_NESTED {
+                let Some(nc) = env.define_class(name, gref, bytes) else {
+                    crate::describe_exception(env);
+                    eprintln!(
+                        "[crussty-plugin] flat_traversal: define_class({name}) failed"
+                    );
+                    env.delete_local_ref(loader);
+                    env.delete_local_ref(class_cls);
+                    return false;
+                };
+                env.delete_local_ref(nc);
+                eprintln!(
+                    "[crussty-plugin] traverse_ops: defined nested {name} in kernel loader"
+                );
+            }
             env.delete_local_ref(loader);
             env.delete_local_ref(class_cls);
             true
         });
         if defined.unwrap_or(false) {
-            eprintln!("[crussty-plugin] traverse_ops: defined {TRAVERSE_CLASS} in kernel loader");
+            eprintln!(
+                "[crussty-plugin] traverse_ops: defined {TRAVERSE_CLASS} (+{} nested) in kernel loader",
+                TRAVERSE_NESTED.len()
+            );
             BRIDGE_READY.store(true, Ordering::Release);
         } else {
             eprintln!(
@@ -151,4 +188,77 @@ pub fn activate() {
             );
         }
     });
+}
+
+#[cfg(test)]
+mod nested_delivery_tests {
+    /// S7-163 leg#1 TECH-DUD guard: every nested class declared in
+    /// TraverseOps.java MUST be embedded in TRAVERSE_NESTED, otherwise the
+    /// kernel-loader delivery crashes the server with NoClassDefFoundError
+    /// on the first entity tick (a plain classpath resolves nested classes
+    /// implicitly, so the offline lockstep harness cannot catch this).
+    #[test]
+    fn every_nested_class_of_traverse_ops_is_embedded() {
+        let src = include_str!("../entityinside/net/minecraft/world/level/TraverseOps.java");
+        let mut declared: Vec<String> = Vec::new();
+        for line in src.lines() {
+            let t = line.trim();
+            for pat in ["class ", "interface ", "enum ", "record "] {
+                if let Some(i) = t.find(pat) {
+                    let before = &t[..i];
+                    // nested declarations carry `static` (private static final class X)
+                    if before.contains("static") {
+                        let rest = &t[i + pat.len()..];
+                        let name: String = rest
+                            .chars()
+                            .take_while(|c| c.is_alphanumeric() || *c == '_')
+                            .collect();
+                        if !name.is_empty() {
+                            declared.push(name);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        assert!(
+            !declared.is_empty(),
+            "no nested classes parsed from TraverseOps.java — parser out of date"
+        );
+        for name in declared {
+            let expected = format!("net/minecraft/world/level/TraverseOps${name}");
+            assert!(
+                super::TRAVERSE_NESTED.iter().any(|(n, _)| *n == expected),
+                "nested class {expected} is compiled but NOT embedded in TRAVERSE_NESTED — \
+                 add it to src/traversal.rs or the server will crash with \
+                 NoClassDefFoundError (S7-163 leg#1 TECH-DUD)"
+            );
+        }
+    }
+
+    /// The build script must produce exactly the top-level classfile plus
+    /// the embedded nested set — no surprise additional nesting may appear
+    /// unlisted (build-time mirror of the source-parse guard).
+    #[test]
+    fn build_dir_classfiles_match_embedded_set() {
+        let dir = "entityinside/build/net/minecraft/world/level";
+        let expected_top = format!("{dir}/TraverseOps.class");
+        let mut expected: Vec<String> = vec![expected_top];
+        for (name, _) in super::TRAVERSE_NESTED {
+            let simple = name.rsplit('/').next().unwrap(); // "TraverseOps$LongTable"
+            expected.push(format!("{dir}/{simple}.class"));
+        }
+        expected.sort();
+        let mut actual: Vec<String> = Vec::new();
+        let rd = std::fs::read_dir(dir).expect("build dir present (run build_traverse_ops.sh)");
+        for e in rd.flatten() {
+            let p = e.path().to_string_lossy().to_string();
+            if p.contains("TraverseOps") && p.ends_with(".class") {
+                actual.push(p);
+            }
+        }
+        actual.sort();
+        assert_eq!(expected, actual,
+            "TraverseOps classfile set drifted — update TRAVERSE_NESTED in src/traversal.rs");
+    }
 }
