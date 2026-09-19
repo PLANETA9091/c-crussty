@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""dispatch_s7187.py - lever #14 TRAVEL-ALLOC-DIET v1 leg (TASK-341).
+"""dispatch_s7188.py - lever #14 TRAVEL-ALLOC-DIET v1 leg (TASK-341).
 
 RECON-20: s7180 (run 35460026013) = CRASH-REFUTED — the BU-DEFER phase-4 replay
 itself hit the s7176 race family (NPE fastutil SetIterator "wrapped is null" at
@@ -102,8 +102,8 @@ def main():
         "server_xmx": "10G",
         "server_xms": "4G",
         "recon_diag": "0",
-        "cpu_band_min": "6350000",
-        "cpu_band_max": "7010000",
+        "cpu_band_min": "8070000",
+        "cpu_band_max": "8920000",
     }
     api(tok, f"{API}/repos/{REPO}/actions/workflows/world-bench.yml/dispatches",
         method="POST", data={"ref": "master", "inputs": inputs})
