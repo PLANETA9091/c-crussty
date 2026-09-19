@@ -103,7 +103,6 @@ def main():
         "flat_traversal": "0",
         "zero_alloc": "0",
         "skip_store_bb": "0",
-        "zero_cursor": "0",
         "inside_diet": "1",
         "population_target": "150000",
         "population_seed": "42",
