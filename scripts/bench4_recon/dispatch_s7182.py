@@ -92,7 +92,9 @@ def main():
         "fluid_dirty": "0",
         "region_threads": "4",
         "batch_collector": "1",
-        "flat_traversal": "0",
+        # flat_traversal input DROPPED from world-bench.yml (TASK-342,
+        # 25-input limit; lever #9 REFUTED) — an unknown dispatch input
+        # 422s the whole POST.
         "zero_alloc": "1",
         "skip_store_bb": "1",
         "region_steal": "0",

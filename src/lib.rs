@@ -49,6 +49,7 @@ mod randomtick;
 mod region_threads;
 mod skip_store;
 mod tickhook;
+mod travel_diet;
 mod traversal;
 mod zero_alloc;
 
@@ -387,6 +388,11 @@ fn inject_surface() {
     // composes through the entity_compose chain stage 9; dormant unless
     // CRUSSTY_INSIDE_DIET=1 AND region_threads>=2).
     inside_diet::activate();
+    // TRAVEL-DIET v2a COLLIDE-DIET (RECON-21, lever #14): define
+    // TravelDietOps into the kernel loader (define-only; the Entity.collide
+    // body-redirect composes through the entity_compose chain; dormant
+    // unless CRUSSTY_TRAVEL_DIET=1 AND region_threads>=2).
+    travel_diet::activate();
     // ENTITY-COMPOSE (S7-162): apply the single compose chain on Entity
     // (inside → fluid_free → fluid_dirty → rng → batch → traversal → zeroin → sbb → inside_diet),
     // publish the rng verdict for region_threads, retransform Entity

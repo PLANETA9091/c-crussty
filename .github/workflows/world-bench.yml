@@ -70,8 +70,11 @@ on:
         description: 'BATCH-COLLECTOR S7-160 ARCH-ATTACK lever #8 (1 = ARMED: zero-map flat StepBasedCollector replacement via BatchCollector.ensure lazy swap in RegionTickOps.tickBucket — requires region_threads>=2; 0 = vanilla collector A/B leg)'
         required: false
         default: '0'
-      flat_traversal:
-        description: 'FLAT-TRAVERSAL S7-163 ARCH-ATTACK lever #9 (1 = ARMED: flat bit-exact TraverseOps.forEachFlat replacing the guava-iterator orchestration of BlockGetter.forEachBlockIntersectedBetween via the entity_compose stage-6 retarget — requires region_threads>=2; 0 = vanilla traversal A/B leg)'
+      # flat_traversal input REMOVED (TASK-342): the 25-input GitHub limit;
+      # lever #9 was REFUTED (FAIL PG4a) long ago and rolled back — the flag
+      # is pinned to '0' below; bridge classes remain infrastructure.
+      travel_diet:
+        description: 'TRAVEL-DIET v2a RECON-21 ARCH-ATTACK lever #14 (1 = ARMED: scalar scratch-slot TravelDietOps.collide mirror replacing the private Entity.collide(Vec3) body via the entity_compose stage-10 body-redirect — AABB/ArrayList/FloatArraySet temporaries die, products stay allocations, bit-exact double order; requires region_threads>=2; 0 = vanilla A/B leg)'
         required: false
         default: '0'
       zero_alloc:
@@ -204,7 +207,8 @@ jobs:
           FLUID_DIRTY: ${{ inputs.fluid_dirty || '0' }}
           REGION_THREADS: ${{ inputs.region_threads || '0' }}
           BATCH_COLLECTOR: ${{ inputs.batch_collector || '0' }}
-          FLAT_TRAVERSAL: ${{ inputs.flat_traversal || '0' }}
+          FLAT_TRAVERSAL: '0' # input dropped TASK-342 (25-input limit; lever #9 REFUTED FAIL PG4a)
+          TRAVEL_DIET: ${{ inputs.travel_diet || '0' }}
           ZERO_ALLOC: ${{ inputs.zero_alloc || '0' }}
           ZERO_CURSOR: '0'
           SKIP_STORE_BB: ${{ inputs.skip_store_bb || '0' }}
