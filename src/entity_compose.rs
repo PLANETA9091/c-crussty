@@ -23,6 +23,9 @@
 //!   4. region rng     `classfile::patch_region_rng_entity`     (strict sites==1)
 //!   5. batch ctor     `classfile::patch_entity_collector_ctor` (strict sites==1)
 //!   6. traversal      `classfile::patch_entity_traversal`      (strict sites==1)
+//!   7. zeroin         `classfile::patch_entity_zeroalloc`      (strict sites==3,
+//!      METHOD-BODY redirects: collidedWithFluid/collidedWithShapeMovingFrom/
+//!      updateFluidHeightAndDoFluidPushing -> ZeroAllocOps statics, S7-164)
 //!
 //! Cross-module contract (region_threads): the region lever must NOT arm
 //! its parallel ticking unless the rng stage composed successfully
@@ -120,6 +123,7 @@ fn stage_enabled() -> bool {
         || crate::region_threads::workers_from_env_pub().is_some()
         || crate::batch_collector::enabled_pub()
         || crate::traversal::enabled_pub()
+        || crate::zero_alloc::enabled_pub()
 }
 
 /// Register the single Entity byte hook (idempotent; call once from
@@ -448,6 +452,52 @@ pub fn activate() {
             }
         }
 
+        // ---- STAGE 7: zero-alloc inside/fluid body-redirects (S7-164 lever #10) ----
+        // Composite: ALL THREE Entity bodies must redirect or the stage is
+        // skipped as a whole (fail-dominant, no half-composed stage).
+        if crate::zero_alloc::enabled_pub() {
+            if crate::zero_alloc::wait_bridge_ready(120_000) {
+                match crate::classfile::patch_entity_zeroalloc(&bytes) {
+                    Ok((p, outcome)) if matches!(
+                        outcome,
+                        crate::classfile::RetargetOutcome::Retargeted { sites: 3 }
+                    ) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage zeroin composed ({outcome:?})"
+                        );
+                        bytes = p;
+                        chain.push("zeroin");
+                    }
+                    Ok((p, outcome)) if matches!(
+                        outcome,
+                        crate::classfile::RetargetOutcome::AlreadyPatched { sites: 3 }
+                    ) => {
+                        // Idempotent re-sight (stale retransform replay): the
+                        // redirects are already in place — treat as composed.
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage zeroin composed ({outcome:?})"
+                        );
+                        bytes = p;
+                        chain.push("zeroin");
+                    }
+                    Ok((_p, outcome)) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage zeroin strict check violated ({outcome:?}), chain continues WITHOUT zeroin (fail-dominant)"
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage zeroin patch rejected ({e}), chain continues WITHOUT zeroin (fail-dominant)"
+                        );
+                    }
+                }
+            } else {
+                eprintln!(
+                    "[crussty-plugin] entity_compose: zero_alloc bridge missed its window, chain continues WITHOUT zeroin (fail-dominant)"
+                );
+            }
+        }
+
         let composed_len = bytes.len();
         t.set_patch(PatchCache {
             bytes: Arc::from(bytes),
@@ -456,8 +506,8 @@ pub fn activate() {
 
         crate::kernel_policy::audit_wire(
             ENTITY_CLASS,
-            "inside-gate/fgate/scan/rngUUID/collector-ctor/traversal",
-            "entity_compose v2",
+            "inside-gate/fgate/scan/rngUUID/collector-ctor/traversal/zeroin",
+            "entity_compose v3",
         );
         READY.store(true, Ordering::Release);
         let rc = cplug_sdk::retransform_class(t.name);
