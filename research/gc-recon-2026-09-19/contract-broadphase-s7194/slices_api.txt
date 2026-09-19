@@ -1,0 +1,45 @@
+Compiled from "ChunkEntitySlices.java"
+public final class ca.spottedleaf.moonrise.patches.chunk_system.level.entity.ChunkEntitySlices {
+  private static final org.slf4j.Logger LOGGER;
+  public final int minSection;
+  public final int maxSection;
+  public final int chunkX;
+  public final int chunkZ;
+  public final net.minecraft.world.level.Level world;
+  private final ca.spottedleaf.moonrise.patches.chunk_system.level.entity.ChunkEntitySlices$EntityCollectionBySection allEntities;
+  private final ca.spottedleaf.moonrise.patches.chunk_system.level.entity.ChunkEntitySlices$EntityCollectionBySection hardCollidingEntities;
+  private final it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap<java.lang.Class<? extends net.minecraft.world.entity.Entity>, ca.spottedleaf.moonrise.patches.chunk_system.level.entity.ChunkEntitySlices$EntityCollectionBySection> entitiesByClass;
+  private final it.unimi.dsi.fastutil.objects.Reference2ObjectOpenHashMap<net.minecraft.world.entity.EntityType<?>, ca.spottedleaf.moonrise.patches.chunk_system.level.entity.ChunkEntitySlices$EntityCollectionBySection> entitiesByType;
+  private final ca.spottedleaf.moonrise.common.list.EntityList entities;
+  public net.minecraft.server.level.FullChunkStatus status;
+  public final ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkData chunkData;
+  private boolean isTransient;
+  private boolean preventStatusUpdates;
+  public boolean isTransient();
+  public void setTransient(boolean);
+  public ca.spottedleaf.moonrise.patches.chunk_system.level.entity.ChunkEntitySlices(net.minecraft.world.level.Level, int, int, net.minecraft.server.level.FullChunkStatus, ca.spottedleaf.moonrise.patches.chunk_system.level.chunk.ChunkData, int, int);
+  public static java.util.List<net.minecraft.world.entity.Entity> readEntities(net.minecraft.server.level.ServerLevel, net.minecraft.world.level.ChunkPos, net.minecraft.nbt.CompoundTag);
+  public static void copyEntities(net.minecraft.nbt.CompoundTag, net.minecraft.nbt.CompoundTag);
+  public static net.minecraft.nbt.CompoundTag saveEntityChunk(java.util.List<net.minecraft.world.entity.Entity>, net.minecraft.world.level.ChunkPos, net.minecraft.server.level.ServerLevel);
+  public static net.minecraft.nbt.CompoundTag saveEntityChunk0(java.util.List<net.minecraft.world.entity.Entity>, net.minecraft.world.level.ChunkPos, net.minecraft.server.level.ServerLevel, boolean);
+  public net.minecraft.nbt.CompoundTag save();
+  public boolean unload();
+  public java.util.List<net.minecraft.world.entity.Entity> getAllEntities();
+  public boolean isEmpty();
+  public void mergeInto(ca.spottedleaf.moonrise.patches.chunk_system.level.entity.ChunkEntitySlices);
+  public boolean startPreventingStatusUpdates();
+  public boolean isPreventingStatusUpdates();
+  public void stopPreventingStatusUpdates(boolean);
+  public void updateStatus(net.minecraft.server.level.FullChunkStatus, ca.spottedleaf.moonrise.patches.chunk_system.level.entity.EntityLookup);
+  public boolean addEntity(net.minecraft.world.entity.Entity, int);
+  public boolean removeEntity(net.minecraft.world.entity.Entity, int);
+  public void getHardCollidingEntities(net.minecraft.world.entity.Entity, net.minecraft.world.phys.AABB, java.util.List<net.minecraft.world.entity.Entity>, java.util.function.Predicate<? super net.minecraft.world.entity.Entity>);
+  public void getEntities(net.minecraft.world.entity.Entity, net.minecraft.world.phys.AABB, java.util.List<net.minecraft.world.entity.Entity>, java.util.function.Predicate<? super net.minecraft.world.entity.Entity>);
+  public boolean getEntities(net.minecraft.world.entity.Entity, net.minecraft.world.phys.AABB, java.util.List<net.minecraft.world.entity.Entity>, java.util.function.Predicate<? super net.minecraft.world.entity.Entity>, int);
+  public <T extends net.minecraft.world.entity.Entity> void getEntities(net.minecraft.world.entity.EntityType<?>, net.minecraft.world.phys.AABB, java.util.List<? super T>, java.util.function.Predicate<? super T>);
+  public <T extends net.minecraft.world.entity.Entity> boolean getEntities(net.minecraft.world.entity.EntityType<?>, net.minecraft.world.phys.AABB, java.util.List<? super T>, java.util.function.Predicate<? super T>, int);
+  protected ca.spottedleaf.moonrise.patches.chunk_system.level.entity.ChunkEntitySlices$EntityCollectionBySection initClass(java.lang.Class<? extends net.minecraft.world.entity.Entity>);
+  public <T extends net.minecraft.world.entity.Entity> void getEntities(java.lang.Class<? extends T>, net.minecraft.world.entity.Entity, net.minecraft.world.phys.AABB, java.util.List<? super T>, java.util.function.Predicate<? super T>);
+  public <T extends net.minecraft.world.entity.Entity> boolean getEntities(java.lang.Class<? extends T>, net.minecraft.world.entity.Entity, net.minecraft.world.phys.AABB, java.util.List<? super T>, java.util.function.Predicate<? super T>, int);
+  static {};
+}
