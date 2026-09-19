@@ -2680,3 +2680,22 @@ Stage Summary:
 - NEXT id 354: решение владельца A/B/C; без решения — офлайн-верификация volatile-диеты ~3.4% (javap-контракт + модель TPS-конверсии)
 
 RUN_ID_DISPATCHED: (нет — диспатчи остановлены до решения владельца; CI-бутов 0)
+
+---
+## TASK-354 (RECON-31 volatile-diet) — 2026-09-20 07:08 тик (Job 398847, trace 1a0bb1f4c82af065-cron-agent-loop-202609200708), Agent: agent-7625532f
+
+Task: pull ×2 → S7-108 (без бенч-легов) → RECON-31 офлайн-верификация volatile-диеты (NEXT 354, без решения владельца) → учёт ×39 → пуши ×2.
+
+Work Log:
+- S7-108: runs?per_page=3 — только CI-санити своих пушей (8943552/3288c3f/f5c1921), бенч-легов и чужих диспатчей нет
+- Профили: cpu-collapsed.txt извлечены из world3-bench.zip обеих ног (s7194 128104 / s7189 127150), после дрилла удалены (в репо остаются zip)
+- RECON-31 (recon31_volatile_diet_drill.py): volatile-лейн 3.51/3.40% = synced-entity-data 1.94/2.00% + chunk-map-concurrent 1.52/1.34% + шум 0.05%
+- javap-контракты (contract-broadphase-s7194/syncdata_api.txt): SynchedEntityData.get→getItem(itemsById AALOAD)→DataItem.value GETFIELD = PLAIN, ноль volatile; generic-хвост getValueVolatile/guard_L_L идентифицирован как ConcurrentLong2ReferenceChainedHashTable$TableEntry (chunk-карта ServerChunkCache)
+- Вердикт: диете нет предмета (sync-plain / chunk-банк-locked), потолок ~0-1%, 6-я док-верификация (RECON-17/20/23/26/30/31), патчер не кодим
+- Учёт: GOAL ×39 (28aa544) + CLAIMS TASK-354 (8b97a66) + worklog; пуши master/main
+
+Stage Summary:
+- ЭПОХА-2 потенциал пересчитан: 10-13% → 9-12% сцены; из компонентов A непроверенными остались только inside-gate ~3.1% + контур ~1.1% + chunk-read ~3.6%
+- NEXT id 355: решение владельца A/B/C; без решения — RECON-32 inside-gate-диета ~3.1% (последний крупный компонент A)
+
+RUN_ID_DISPATCHED: (нет — диспатчи остановлены; CI-бутов 0)
