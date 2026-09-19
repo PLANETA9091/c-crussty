@@ -156,6 +156,7 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "batch_collector: $BATCH_COLLECTOR (CRUSSTY_BATCH_COLLECTOR; 1 = BATCH-COLLECTOR ARCH-ATTACK lever #8: zero-map flat StepBasedCollector via BatchCollector.ensure swap, requires region_threads>=2, S7-160)"
   echo "flat_traversal: $FLAT_TRAVERSAL (CRUSSTY_FLAT_TRAVERSAL; 1 = FLAT-TRAVERSAL ARCH-ATTACK lever #9: flat bit-exact TraverseOps.forEachFlat via entity_compose stage-6 retarget, requires region_threads>=2, S7-163)"
   echo "zero_alloc: $ZERO_ALLOC (CRUSSTY_ZERO_ALLOC; 1 = ZERO-ALLOC-INSIDE ARCH-ATTACK lever #10: scalar ZeroAllocOps body-redirects of collidedWithFluid/collidedWithShapeMovingFrom/updateFluidHeightAndDoFluidPushing via entity_compose stage-7, requires region_threads>=2, S7-164)"
+  echo "parse_diag: $PARSE_DIAG (CRUSSTY_PARSE_DIAG; 1 = passive per-chunk parse census bridge ChunkParseDiagOps.diagXIntOr ldc-xPos retarget, RECON-13d/TASK-327)"
   echo "skip_store_bb: $SKIP_STORE_BB (CRUSSTY_SKIP_STORE_BB; 1 = SKIP-STORE-BB #13-SBB ARCH-ATTACK: value-equal store-skip for Entity.setBoundingBox via SkipStoreOps body-redirect entity_compose stage-8, requires region_threads>=2, S7-166)"
   echo "population_target: $POPULATION_TARGET (BENCH-X150K living-scene injection, S7-129; 0 = off)"
   echo "population_seed: $POPULATION_SEED (deterministic injection replay seed; topup seeded from deltaT=ft-T0, S7-130)"
@@ -392,6 +393,12 @@ export CRUSSTY_ZERO_ALLOC="$ZERO_ALLOC"
 # time; requires region_threads >= 2 — the redirect composes through the
 # entity_compose chain stage 8)
 export CRUSSTY_SKIP_STORE_BB="$SKIP_STORE_BB"
+# CHUNK-PARSE-DIAG gate (RECON-13d, TASK-327; parse_diag.rs reads it at
+# register time): passive per-chunk parse census (chunk-parse = TOP-1 alloc
+# lane 33.38% ap, RECON-13b) — decides cache-vs-ticket-churn for lever #12.
+# Diagnostics-not-config: O(1) map note per parse, no behavior change.
+export CRUSSTY_PARSE_DIAG="$PARSE_DIAG"
+export CRUSSTY_PARSE_DIAG_FILE="$WORK/chunk-parse-diag.txt"
 # RECON_DIAG (TASK-317, instrument-гейт рычага #13 SKIP-STORE-DIET): чистая
 # наблюдаемость — 0 поведения. GC-политика/heap не трогаются (логирование ≠
 # config-win, вердикт NEXT TASK-316): remset/refine debug-логи (агрегатная

@@ -48,6 +48,7 @@
 const TAG_UTF8: u8 = 1;
 const TAG_INTEGER: u8 = 3;
 const TAG_CLASS: u8 = 7;
+const TAG_STRING: u8 = 8;
 const TAG_FIELDREF: u8 = 9;
 const TAG_METHODREF: u8 = 10;
 /// CONSTANT_InterfaceMethodref (JVMS 4.4.2) — `invokestatic`/`invokeinterface`
@@ -258,6 +259,22 @@ impl Pool {
             self.utf8_value(name_utf8)?,
             self.utf8_value(desc_utf8)?,
         ))
+    }
+
+    /// Resolve a CONSTANT_String index to its value (tag 8 -> Utf8 payload).
+    /// Used by the LDC-anchored retarget resolver (RECON-13d): the anchor is
+    /// the `ldc "xPos"` string constant preceding the single getIntOr site
+    /// inside SerializableChunkData.parse.
+    fn string_value(&self, idx: u16) -> Option<String> {
+        let (_, tag, payload) = self.entries.iter().find(|(i, _, _)| *i == idx)?;
+        if *tag != TAG_STRING {
+            return None;
+        }
+        if payload.len() < 2 {
+            return None;
+        }
+        let utf8_idx = u16::from_be_bytes([payload[0], payload[1]]);
+        self.utf8_value(utf8_idx)
     }
 
     /// Resolve a Fieldref index to its `(class_internal_name, field_name,
@@ -1346,6 +1363,216 @@ pub fn retarget_invokestatic(
     out.extend_from_slice(&pool.serialize());
     out.extend_from_slice(&tail);
     Ok((out, RetargetOutcome::Retargeted { sites: rewrite.len() }))
+}
+
+/// RECON-13d resolution closure: the embedded ChunkParseDiagOps bytes MUST
+/// declare the receiver-prepended `diagXIntOr` the retarget emits (name +
+/// descriptor UTF8 entries present); otherwise the first chunk parse
+/// detonates a NoSuchMethodError and the lever must stay dormant.
+pub fn parse_diag_resolution_closure(ops_bytes: &[u8]) -> bool {
+    let layout = match parse_layout(ops_bytes) {
+        Some(l) => l,
+        None => return false,
+    };
+    let pool = layout.pool;
+    pool.find_utf8("diagXIntOr").is_some()
+        && pool
+            .find_utf8("(Lnet/minecraft/nbt/CompoundTag;Ljava/lang/String;I)I")
+            .is_some()
+}
+
+/// LDC-anchored virtual->static retarget (RECON-13d, TASK-327): rewrite the
+/// SINGLE `invokevirtual CompoundTag.getIntOr(String,I)I` call site that is
+/// immediately preceded by `ldc "xPos"` inside `method_name`/`method_desc`
+/// (SerializableChunkData.parse — its ONLY `xPos`-anchored site; the zPos/starlight
+/// sites are NOT anchored by an "xPos" ldc and are never touched).
+///
+/// The target `to` MUST be the receiver-prepended static bridge
+/// (`ChunkParseDiagOps.diagXIntOr(CompoundTag,String,I)I`): the verifier-visible
+/// stack shape stays identical because the invokevirtual receiver becomes the
+/// first static argument. The descriptor therefore differs from `from` (this is
+/// the ONE legitimate difference from [`retarget_invokestatic`], which forbids it).
+///
+/// Site resolution is BY NAME (`pool.methodref_parts`), never by offset (G4 §9).
+/// Idempotency: a site already resolving to `to` yields AlreadyPatched with the
+/// original bytes back. NotFound yields the original bytes without pool growth.
+/// Panic-free on hook-delivered bytes: bounded walk via [`opcode_extra`].
+pub fn retarget_ldc_virtual_to_static(
+    bytes: &[u8],
+    method_name: &str,
+    method_desc: &str,
+    ldc_const: &str,
+    from: (&str, &str, &str),
+    to: (&str, &str, &str),
+) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    let mut pool = layout.pool;
+    let Some(name_idx) = pool.find_utf8(method_name) else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let Some(desc_idx) = pool.find_utf8(method_desc) else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)
+        .ok_or_else(|| format!("method {method_name}{method_desc} not found"))?;
+    let (code_start, code_len) = find_code_attr(bytes, &pool, &m)
+        .ok_or_else(|| format!("method {method_name}{method_desc} has no Code attribute"))?;
+    let code_end = code_start
+        .checked_add(code_len)
+        .ok_or_else(|| "code length overflow".to_string())?;
+    let code = bytes
+        .get(code_start..code_end)
+        .ok_or_else(|| "code region truncated".to_string())?;
+
+    let to_triple = (to.0.to_string(), to.1.to_string(), to.2.to_string());
+    let from_triple = (from.0.to_string(), from.1.to_string(), from.2.to_string());
+
+    // Walk the code array once; find the ldc-anchored invokevirtual site.
+    let mut site_op: Option<usize> = None; // absolute offset of the opcode byte
+    let mut site_cp: Option<u16> = None;
+    let mut already: Option<usize> = None;
+    let mut armed = false; // true right after the anchor ldc
+    let mut pc = 0usize;
+    while pc < code.len() {
+        let op = code[pc];
+        if op == 0x12 {
+            // ldc: one-byte CP operand. The anchor is ONLY the "xPos" string;
+            // a different ldc between the anchor and its invoke disarms.
+            let cidx = *code
+                .get(pc + 1)
+                .ok_or_else(|| "truncated ldc".to_string())? as u16;
+            armed = pool.string_value(cidx).as_deref() == Some(ldc_const);
+            pc += 2;
+            continue;
+        }
+        if (op == 0xb6 || op == 0xb8) && armed {
+            let b = code
+                .get(pc + 1..pc + 3)
+                .ok_or_else(|| "invoke operand truncated".to_string())?;
+            let cp_idx = u16::from_be_bytes([b[0], b[1]]);
+            match pool.methodref_parts(cp_idx) {
+                Some(parts) if parts == to_triple => already = Some(code_start + pc + 1),
+                Some(parts) if parts == from_triple => {
+                    site_op = Some(code_start + pc);
+                    site_cp = Some(cp_idx);
+                }
+                _ => {}
+            }
+            armed = false;
+            pc += 3;
+            continue;
+        }
+        // NOTE: no blanket disarm here — the anchor ldc may be separated from
+        // its invoke by stack-setup instructions (iconst default, etc.).
+        let extra = opcode_extra(op, code, pc)?;
+        pc = pc
+            .checked_add(1 + extra)
+            .ok_or_else(|| "code walk overflow".to_string())?;
+        if pc > code.len() {
+            return Err("truncated code (walk past end)".into());
+        }
+    }
+
+    if site_op.is_none() {
+        return Ok((
+            bytes.to_vec(),
+            if already.is_some() {
+                RetargetOutcome::AlreadyPatched { sites: 1 }
+            } else {
+                RetargetOutcome::NotFound
+            },
+        ));
+    }
+
+    let op_off = site_op.unwrap();
+    // Append (or reuse) the Methodref for `to` — append-only, dedup.
+    let new_idx = pool.method_ref(to.0, to.1, to.2);
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for diag ref".into());
+    }
+    let mut tail = bytes[layout.cp_end..].to_vec();
+    let rel = op_off
+        .checked_sub(layout.cp_end)
+        .ok_or_else(|| "retarget opcode inside pool (corrupt layout?)".to_string())?;
+    if rel + 2 >= tail.len() {
+        return Err("retarget operand outside class tail (corrupt layout?)".into());
+    }
+    // 0xb6 invokevirtual -> 0xb8 invokestatic; operand -> appended Methodref.
+    tail[rel] = 0xb8;
+    let want = new_idx.to_be_bytes();
+    tail[rel + 1] = want[0];
+    tail[rel + 2] = want[1];
+    let _ = site_cp;
+    let mut out = Vec::with_capacity(bytes.len() + 64);
+    out.extend_from_slice(&bytes[0..8]);
+    out.extend_from_slice(&pool.next.to_be_bytes());
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(&tail);
+    Ok((out, RetargetOutcome::Retargeted { sites: 1 }))
+}
+
+#[test]
+fn parse_diag_retargets_xpos_site_once() {
+    // Real kernel class (purpur-1.21.10, captured from run s7165 artifacts).
+    // The patch must retarget EXACTLY the ldc-"xPos"-anchored getIntOr site.
+    let bytes = include_bytes!("../tests/fixtures/SerializableChunkData.class");
+    let parse_desc = "(Lnet/minecraft/world/level/LevelHeightAccessor;Lnet/minecraft/world/level/chunk/PalettedContainerFactory;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/chunk/storage/SerializableChunkData;";
+    let (out1, outcome1) = retarget_ldc_virtual_to_static(
+        bytes,
+        "parse",
+        parse_desc,
+        "xPos",
+        (
+            "net/minecraft/nbt/CompoundTag",
+            "getIntOr",
+            "(Ljava/lang/String;I)I",
+        ),
+        (
+            "net/minecraft/world/level/chunk/storage/ChunkParseDiagOps",
+            "diagXIntOr",
+            "(Lnet/minecraft/nbt/CompoundTag;Ljava/lang/String;I)I",
+        ),
+    )
+    .unwrap();
+    assert_eq!(
+        outcome1,
+        RetargetOutcome::Retargeted { sites: 1 },
+        "exactly one ldc-anchored site must be retargeted"
+    );
+    // The patched class must still parse (layout validity) and the single
+    // re-sight must be idempotent.
+    let (_out2, outcome2) = retarget_ldc_virtual_to_static(
+        &out1,
+        "parse",
+        parse_desc,
+        "xPos",
+        (
+            "net/minecraft/nbt/CompoundTag",
+            "getIntOr",
+            "(Ljava/lang/String;I)I",
+        ),
+        (
+            "net/minecraft/world/level/chunk/storage/ChunkParseDiagOps",
+            "diagXIntOr",
+            "(Lnet/minecraft/nbt/CompoundTag;Ljava/lang/String;I)I",
+        ),
+    )
+    .unwrap();
+    assert_eq!(
+        outcome2,
+        RetargetOutcome::AlreadyPatched { sites: 1 },
+        "re-sighting patched bytes must be AlreadyPatched, never a double patch"
+    );
+    // The zPos site must remain an invokevirtual on the ORIGINAL Methodref.
+    let pool_ok = {
+        let cp_count = u16::from_be_bytes([out1[8], out1[9]]);
+        let (pool, _end) = Pool::parse(&out1, 10, cp_count).unwrap();
+        pool.find_utf8("zPos").is_some()
+            && pool
+                .find_utf8("(Ljava/lang/String;I)I")
+                .is_some()
+    };
+    assert!(pool_ok, "pool must stay consistent after the retarget");
 }
 
 #[test]
