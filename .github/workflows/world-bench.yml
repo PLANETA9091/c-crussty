@@ -35,10 +35,6 @@ on:
         description: 'No-player run window in seconds'
         required: false
         default: '900'
-      summon_sweeps:
-        description: 'Console summon sweeps to exercise spawn pipeline (0/1)'
-        required: false
-        default: '0'
       fake_players:
         description: 'BENCH-4 fake players N (0 = bench-3 no-player mode; 4 = owner-scenario fixture)'
         required: false
@@ -188,7 +184,7 @@ jobs:
           WORLD_URL: ${{ inputs.world_url || 'https://storage.shield.land/public.php/dav/files/twzsxN3HkBQtyED/Season%203/MineShield-3__Min--Normal.zip' }}
           FORCELOAD_RADIUS: ${{ inputs.radius || '640' }}
           RUN_SECONDS: ${{ inputs.seconds || '900' }}
-          SUMMON_SWEEPS: ${{ inputs.summon_sweeps || '0' }}
+          SUMMON_SWEEPS: '0' # legacy (pre-150k era), always 0 since S7-129; input dropped TASK-327 (25-input limit)
           FAKE_PLAYERS: ${{ inputs.fake_players || '0' }}
           FLUID_GUARD: ${{ inputs.fluid_guard || '1' }}
           PALETTED_DEMUX: ${{ inputs.paletted_demux || '0' }}

@@ -76,7 +76,6 @@ def main():
     inputs = {
         "radius": "640",
         "seconds": "300",
-        "summon_sweeps": "0",
         "fake_players": "4",
         "fluid_guard": "1",
         "paletted_demux": "0",
