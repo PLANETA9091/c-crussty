@@ -2588,3 +2588,7 @@ RUN_ID_DISPATCHED: да (v5-кандидат #13-SBB, dispatch_s7166.py; S7-108 
 **Статус: recon13_other_entity.py (фикс разделителя collapsed — пробел, не ';'): entity-семья 35.22%; лейны: tick-core 21.39% (travel-physics внутри), navigation 6.58% (валидная цель), lambda 5.98%. Приложение: DataResult-стэки 19.4% всех аллоков, вызыватель SerializableChunkData.parse + MapDecoder (NBT→объект churn) — новый аллок-гигант.**
 - Парити-заметки: node-pool v2 переоткрыт по критерию young-GC (старый REFUTED был card-dirt); кодек-кэш = парити-риск, нужен RECON вызывателей parse. На FREE-HOST 2.5G профиле аллок-давление весит максимум (частые young-GC).
 - NEXT: absorb s7167 → вердикт (a)/(b); RECON-13b вызыватели parse; выбор атаки. Диспатчей 0; S7-108 чист; CI-бутов 0.
+
+## TASK-324 (absorb s7167: INFEASIBLE-BY-MEMORY — 2,611 Full GC / 121 OOM / inject не завершён; владелец выбирает судьбу FREE-HOST трека) — 2026-09-19 ~16:2x +08 — Job 397396 (тик 16:2x)
+**Вердикт (a) прегистера: 150k-сцена не влезает в 2G (2,611 Full GC vs 0 в базе; 121 OOM; смерть при инъекции; PG-A ARMED/NCDFE чисты). absorb одной командой. Крон v3: мета-темы запрещены.**
+- NEXT: решение владельца (A) free-host с меньшей популяцией ИЛИ (B) 10G-класс + атака из RECON-13 (node-pool v2 / chunk-parse diet). По умолчанию агент идёт (B).
