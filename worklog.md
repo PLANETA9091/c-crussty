@@ -2454,3 +2454,25 @@ Stage Summary:
 - #12 спека зафиксирована с честными рисками и порогом отказа по дизайну; next = RECON-10 (javap-контракт лестницы collide) → GO/NO-GO
 
 RUN_ID_DISPATCHED: нет (RECON-тик; S7-108 чист)
+
+---
+## TASK-315 (RECON-10: #12 NATIVE-COLLIDE закрыт — INFEASIBLE-BY-VERBATIM по сбору + PAPER-REFUTED по лестнице; свежий self-ТОП; кризис классов миссии зафиксирован) — 2026-09-19 ~12:5x +08 — Job 396026 (тик 12:43)
+
+Task: по CLAIMS TASK-314 NEXT — RECON-10: javap-контракт лестницы collide (CollisionUtil.performCollisions/collideBoundingBox, пороги 1.0E-7, border-ветки) → GO/NO-GO → реализация/закрытие.
+
+Work Log:
+- creds (1b: bootstrap_tick.sh отсутствует, PUSH-URL remote set-url обоим репо); pull ×3 (up to date; тик 12:08 закрыт параллельной сессией как TASK-314 — RECON-9 paper-REFUTED #11, объявлен #12; CRUSSTY pristine в песочнице отсутствует — не трогался); next id = 315
+- javap (Temurin 21 через ensure_javap.sh) по РЕАЛЬНЫМ kernel-классам tests/fixtures: CollisionUtil = ca.spottedleaf.moonrise.patches.collisions.CollisionUtil (45439 байт), Entity_real 205458 байт; per-method парсер инструкций → research/native-collide-2026-09-19/{cu_full.txt, entity_full.txt, recon10_methods.json, recon10_collision_bytecode.py}
+- Лестница-ядро ≈1568 юнитов БЕЗ world/border-вызовов: performCollisions 120, performVoxel/AABBCollisions 92×2, X/Y/Z-лупы 22×6, collideX/Y/Z(VoxelShape) 294×3 (CachedShapeData = плоские коорд-массивы, findFloor 40), collideX/Y/Z(AABB) 70×3, voxelShapeIntersectNoEmpty 197, isEmpty 50; EPSILON 1.0E-7 (14+6+6), dcmpg-лестницы 5-7/метод
+- World-часть: getCollisionsForBlocksOrWorldBorder = 519 юнитов с внешними Level/WorldBorder/ChunkSource/BlockState/WorldUtil → ПОРОГ 400 ПРЕВЫШЕН; getEntityHardCollisions 78; isCollidingWithBorder 55; Entity.collide 265 / move 560
+- INCLUSIVE-ценз (recon10_inclusive.py, v3-банк 128124): лестница 0.37% CPU (voxel 0.00%), сбор 3.45% + hard-entities 1.68%, border 0.04%; Entity.collide/move 0.00% — C2 целиком инлайнит; self лестницы 0.27% (findFloor 0.118 максимум)
+- ВЕРДИКТ: #12 = INFEASIBLE-BY-VERBATIM (сбор >400 с world-вызовами) + PAPER-REFUTED (лестница ≤0.37% CPU = 5-10× ниже класса 2-3%; JNI-граница теряет C2-инлайн — урок №8; сериализация shape-данных) — двойное якорение, без CI-бута; «буфер палитр» = реимплементация BlockStateShapeCache-диспетчера → вне класса bit-exact-вербатима
+- Свежий self-ТОП (recon10_cpu_split.py): GC ≈25-30% (даунстрим аллокации), блочные чтения ≈5.5% (residual после PALETTED-DEMUX), updateFluid 1.97%, broadphase ≈2.1% ПАРК, AABB ≈2.2%, SynchedEntityData ≈1.5%; КЛАССЫ МИССИИ ВСЕ ЗАКРЫТЫ → NEXT RECON-11: декомпозиция G1-драйверов + кандидаты #13 (lesson-8-compliant редирект крупных аллок-тел / demux-v2 residual / объект-пул G1-френдли)
+- Учёт: CLAIMS TASK-315, GOAL СТАТУС ×1, worklog, атомарный append; пуш обоих репо; диспатчей 0 (S7-108 чист)
+
+Stage Summary:
+- #12 закрыт честно ДО CI-лега с двойным якорением (байткод-ось + профильная ось): единственный непопробованный класс миссии «Rust/JNI» исчерпан — арсенал эры пройден целиком, «весь ТОП пройден → новый замер»
+- Установлен профильный факт эры: потребление collide-пути сидит в СБОРЕ блоков (5.1%), а не в математике лестницы (0.37%) — любой будущий native-порт должен бить в сбор, что вне вербатим-класса
+- NEXT: RECON-11 — G1-фаза (25-30%) как ТОП-1: разложить на аллок-драйверы; кандидат #13 по порогу ≥5%/2-3%-класса, иначе paper-REFUTED
+
+RUN_ID_DISPATCHED: нет (RECON-тик; S7-108 чист)
