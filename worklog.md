@@ -2411,3 +2411,26 @@ Stage Summary:
 - NEXT (следующий тик): absorb леги #2 (35418679791) по неизменным гейтам → CUMULATIVE v4 или REFUTED+rollback → свежая пересортировка ТОПа → диспатч #11
 
 RUN_ID_DISPATCHED: 35418679791 (preregister A/B leg#2; CI-бутов за тик 2 санкционированных + 1 отменённый до бута — инцидент прозрачности задокументирован)
+
+---
+## TASK-313 (S7-164 absorb leg#2 → REFUTED-BY-ECONOMICS + свежий ТОП + уроки №7/№8) — 2026-09-19 ~12:0x +08 — Job 396026, тик 11:43
+
+Task: поглотить легу #2 ZERO-ALLOC-INSIDE (35418679791, head e82d81f) по НЕИЗМЕННЫМ прereg-гейтам TASK-311 → PASS: банкинг CUMULATIVE v4, FAIL: REFUTED + rollback; затем свежая пересортировка ТОПа.
+
+Work Log:
+- creds (1b: bootstrap_tick.sh отсутствует, PUSH-URL remote set-url обоим репо); pull ×3 (c-crussty up to date на 9165479; CRUSSTY pristine в песочнице отсутствует — не трогался); next TASK id = 313 (тики 08:43-11:08 закрыты параллельными сессиями как TASK-309..312)
+- Лега #2 завершилась SUCCESS ~11:45:4x +08 (~16.3 мин); absorb_s7164_leg2.py (research/zero-alloc-2026-09-19/) — классификаторы откалиброваны на v3 ДО чтения leg2 (fluid-push 13523 точно, collided-сумма 3829 = 1749+687+406+987 суммы-формулы prereg, AABB+Vec3 40.16% vs prereg 40.08% — нормализация)
+- ГЕЙТЫ: PG2 PASS (ARMED [inside->rng->batch->zeroin] rc=0, Retargeted{sites:3}, zero_alloc_ops defined, pop 150k VALID, 0 NCDFE); PG3 PASS-формально (1.600 ровно на пороге; vs v3 1.800 = −11%); PG4a PASS (−71.5% per-work; union −50.7%; shape/getAABB-листы обнулены); PG4b **FAIL** (+15.2% per-work при гейте ≤ −5%); PG4c PASS (young 139 ≤ 154, AABB+Vec3 −39% абс.); CRASH-FREE PASS (0 crash/0 Full/3 исключения ≤ 5-бенда: 1 fastutil-шум + 1 neighbor-update через inside-pipeline + 1 голый NPE)
+- ВЕРДИКТ: **REFUTED-BY-ECONOMICS** → банк = v3, zero_alloc_inside=0 (дефолт workflow '0' — менять нечего); ZeroAllocOps/механика REDIRECT = инфраструктура (оракул 350k, доставка граф-замкнута, 0 дефектов во всей леге)
+- Форензика экономики: тело fluid-push в скаляре = та же доля лейна (18.7%) — аллок-диета не конвертируется в CPU (young-gen дешёвки); per-work инфляция системная (entity +8.3%, GC/JIT +16.5%) → гипотеза потери C2-инлайна мелких тел (урок №8); leg2 на +20.7% быстрой машине (runner 8.53M vs 7.06M) и всё равно ниже — не среда
+- Урок №7 (артефакт измерения): концевой автосейв попал в alloc-окно leg2 (31.8% сэмплов сер-стеки; v3 0.0%) → «взрыв» alloc +174.7% при упавших GC — окно-артефакт; правило фильтрации сер-стеков NbtIo/DataFixer/ChunkSerializer при сравнении alloc-шар
+- Свежий ТОП (база гейтов = v3, урок №6; стабильно n=3): ТОП-1 = travel-physics 9.15% CPU + 13.87% alloc → рычаг #11 ZERO-ALLOC-TRAVEL (примитивы #10, без RNG-поверхности); Артефакты: ABSORB_S7164_LEG2.md, absorb_s7164_leg2.py, run-s7164-leg2/
+- Учёт: CLAIMS TASK-313, GOAL СТАТУС ×1, worklog, атомарный append; пуш обоих репо
+
+Stage Summary:
+- Рычаг #10 закрыт REFUTED-BY-ECONOMICS при полном механическом успехе (−71.5% collided-лейн, −39% AABB/Vec3-аллок, 0 дефектов): агрессивный редирект 3 тел, включая МЕЛКИЕ инлайнибельные (collidedWithFluid), регрессивен по TPS
+- Урок №8: экономика zero-alloc-редиректа = f(размер/инлайнибельность тела) — следующий рычаг редиректит ТОЛЬКО крупные не-инлайнибельные тела
+- Урок №7: alloc-окно может захватывать концевой автосейв → фильтровать сер-стеки до сравнения шаров
+- NEXT (следующий тик): preregister гейтов #11 от свежего v3-профиля + javap-контракты travel-методов + оракул + реализация → диспатч
+
+RUN_ID_DISPATCHED: нет (absorb-тик; S7-108 чист)
