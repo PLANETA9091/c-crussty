@@ -99,6 +99,10 @@ on:
         description: 'Server JVM max heap (S7-130; 6G = historical default, 150k-scale prime runs use 10G)'
         required: false
         default: '6G'
+      recon_diag:
+        description: 'TASK-317 instrument-gate: remset/refine debug logs + JFR profile recording (pure observability, 0 behavior change; diagnostic leg — NOT a gate leg)'
+        required: false
+        default: '0'
       cpu_band_min:
         description: 'Pair-hunter fast-fail: min runner_cpu_index band (empty = no gate; S7-96d law pairing infra)'
         required: false
@@ -188,6 +192,7 @@ jobs:
           POPULATION_TARGET: ${{ inputs.population_target || '0' }}
           POPULATION_SEED: ${{ inputs.population_seed || '42' }}
           SERVER_XMX: ${{ inputs.server_xmx || '6G' }}
+          RECON_DIAG: ${{ inputs.recon_diag || '0' }}
           NATIVES_TGZ: ${{ inputs.natives_url || 'https://github.com/PLANETA9091/c-crussty/releases/download/v0.1.0/crussty-v0.1.0-linux-x64.tar.gz' }}
           RUNTIME_SO: ${{ runner.temp }}/libcrussty_runtime.so
         run: |
@@ -286,6 +291,9 @@ jobs:
             world3-run/cpu-flamegraph.html
             world3-run/server-stdout.log
             world3-run/gc.log
+            world3-run/remset.log
+            world3-run/refine.log
+            world3-run/recon.jfr
             world3-run/ap.log
             world3-run/run-env.txt
             world3-run/pclip-materialize.log

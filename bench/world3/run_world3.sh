@@ -385,6 +385,26 @@ export CRUSSTY_BATCH_COLLECTOR="$BATCH_COLLECTOR"
 # entity_compose chain)
 export CRUSSTY_FLAT_TRAVERSAL="$FLAT_TRAVERSAL"
 export CRUSSTY_ZERO_ALLOC="$ZERO_ALLOC"
+# RECON_DIAG (TASK-317, instrument-гейт рычага #13 SKIP-STORE-DIET): чистая
+# наблюдаемость — 0 поведения. GC-политика/heap не трогаются (логирование ≠
+# config-win, вердикт NEXT TASK-316): remset/refine debug-логи (агрегатная
+# интенсивность old->young карт) + JFR profile recording (jdk.OldObjectSample
+# активен в profile.jfc JDK21: memory-leaks default=stack-traces — объекты,
+# достигшие старого гена, с allocation stack = producer-атрибуция;
+# jdk.ObjectAllocationSample 300/s — контрольный alloc-профиль). Числа этого
+# лега НЕ используются для CPU/TPS-гейтов (JFR overhead смещает профиль) —
+# только атрибуция store-firehose (доля entity-полей в old->young записях).
+# bash-массив (НЕ строка): word-splitting на $@ сохраняет цельность аргументов;
+# пути $WORK без пробелов, но массив паритетен java-строке по построению.
+EXTRA_JVM_DIAG=()
+if [ "${RECON_DIAG:-0}" = "1" ]; then
+  EXTRA_JVM_DIAG=(
+    "-Xlog:gc+remset=debug:file=$WORK/remset.log:time,uptime,level,tags"
+    "-Xlog:gc+refine=debug:file=$WORK/refine.log:time,uptime,level,tags"
+    "-XX:StartFlightRecording=filename=$WORK/recon.jfr,settings=profile,dumponexit=true"
+  )
+  log "recon_diag=1: remset/refine debug-логи + JFR profile (diagnostic leg — NOT a gate leg)"
+fi
 # BENCH-X150K population fixture env (0 = no-op; S7-129)
 export BENCH_POPULATION_TARGET="$POPULATION_TARGET"
 export BENCH_POPULATION_SEED="$POPULATION_SEED"
@@ -400,6 +420,7 @@ java \
   "-agentpath:$RUNTIME_SO=modules=$SERVER/modules;versions=$SERVER/versions;kernel=purpur-1.21.10.jar" \
   -Xms4G -Xmx"$SERVER_XMX" -XX:+UseG1GC -Dfile.encoding=UTF-8 \
   -Xlog:gc*:file="$WORK/gc.log":time,uptime,level,tags \
+  "${EXTRA_JVM_DIAG[@]}" \
   -jar "$SERVER/versions/purpur-1.21.10.jar" --nogui \
   < "$WORK/console.pipe" \
   > "$WORK/server-stdout.log" 2>&1 &
