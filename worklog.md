@@ -2498,3 +2498,24 @@ Stage Summary:
 - NEXT: инструментированный RECON-лег (CI-бут, 0 поведения: -Xlog:gc+remset* диагностика + producer-атрибуция) → GO/NO-GO #13 SKIP-STORE-DIET по измеренной доле ≥40% И потолку ≥2-3% wall
 
 RUN_ID_DISPATCHED: нет (RECON-тик; S7-108 чист)
+
+---
+## TASK-317 (инструмент-гейт #13 SKIP-STORE-DIET: диагностический RECON-лег собран, верифицирован и ДИСПАТЧЕН — remset/refine debug-логи + JFR profile с активным OldObjectSample) — 2026-09-19 ~13:5x +08 — Job 396026 (тик 13:43)
+
+Task: по CLAIMS TASK-316 NEXT — ИНСТРУМЕНТИРОВАННЫЙ RECON-лег (CI-бут, 0 поведения): -Xlog:gc+remset*/gc+refine + producer-атрибуция с учётом инлайн-границ + JFR OldObjectSample → решение GO/NO-GO #13 по preregister-правилу.
+
+Work Log:
+- creds (1b: bootstrap_tick.sh отсутствует, PUSH-URL обоим репо); pull ×2 (c-crussty up to date @1c0a20b — тик 13:08 закрыт параллельной сессией как TASK-316/RECON-11; dev-logs up to date; CRUSSTY pristine отсутствует); next id = 317; CI чист
+- Инструмент: input recon_diag в world-bench.yml → env RECON_DIAG → run_world3.sh EXTRA_JVM_DIAG: (а) -Xlog:gc+remset=debug + gc+refine=debug (агрегат dirty-карт per GC-цикл); (б) -XX:StartFlightRecording=settings=profile,dumponexit=true; GC-политика не тронута (логирование ≠ config-win, TASK-316)
+- Локальный smoke (Temurin 21.0.12.1): JFR стартует (maxsize=250MB), profile.jfc проверен РАЗБОРОМ контролов — old-objects-enabled=true при memory-leaks default=stack-traces → OldObjectSample АКТИВЕН с allocation stack traces (producer-атрибуция по фреймам ВЫШЕ инлайненных сеттеров — зеркальный урок №8); ObjectAllocationSample 300/s — контроль
+- Дефект предупреждён: EXTRA_JVM_DIAG строкой с экранированными кавычками дал бы литеральные кавычки после word-splitting (битые пути JVM) → переписано на bash-массив «${EXTRA_JVM_DIAG[@]}»; bash -n PASS, YAML-парс PASS
+- Диспатчер dispatch_s7165.py: guard S7-108 + remote-head==local-head ДО POST; лег-конфиг = точный v3-банк + recon_diag=1; лег помечен НЕ-гейт-легом (JFR-overhead → числа не идут в PG-гейты/банкинг)
+- Анализатор заготовлен (recon12_store_firehose.py, smoke-passed на локальной записи): OldObjectSample → producer-семьи (deltaMovement/travel, boundingBox/move, sync, chunk-lists, block-change, other-entity) по глубочайшему узнаваемому фрейму + top-классы + objectAge p50/p90; remset → dirty-карты p50/max; окно честности NO-GO-INSUFFICIENT-TOOL при пустом OldObjectSample
+- Учёт: CLAIMS TASK-317, GOAL СТАТУС ×1, worklog, атомарный append; пуш обоих репо
+
+Stage Summary:
+- Инструмент-гейт #13 в полёте: впервые в эре producer-атрибуция old→young записей доступна напрямую (OldObjectSample = объекты старого гена с аллокационным стеком), а не через модель alloc-стеков
+- Решение следующего тика по НЕИЗМЕННОМУ preregister: доля entity-полей ≥ 40% И потолок ≥ 2-3% wall → GO #13 (оракул ≥1M + identity-grep); иначе paper-REFUTED #13
+- CI-бюджет: 1 диагностический RECON-лег за тик (производственных 0)
+
+RUN_ID_DISPATCHED: да (диагностический RECON-лег, dispatch_s7165.py; S7-108 — единственный в полёте)
