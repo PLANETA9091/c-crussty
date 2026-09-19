@@ -2602,3 +2602,10 @@ RUN_ID_DISPATCHED: да (v5-кандидат #13-SBB, dispatch_s7166.py; S7-108 
 - 4 JFR-инструмента (jfr/JfrAlloc, JfrExec, JfrThread .java — single-file, jdk.jfr.consumer) + 3 py-скрипта закоммичены; док RECON13C_PHASES_CURSOR.md.
 - Слепая зона JFR OAS зафиксирована: ap = классы/стэки/объёмы, JFR = время/потоки/фазы. Parse 33.38% (13b) не опровергнут; периодика — через RECON-13d счётчик повторов.
 - NEXT (12): lever #11 CRUSSTY_ZERO_CURSOR (zero-alloc курсор) + гейты (PG1 ↓80% сэмплов, PG2 TPS≥2.0, PG3 remset ±1%, PG4 чистота) → диспатч; параллельно RECON-13d. Диспатчей 0; S7-108 чист; CI-бутов 0. c-crussty cf72167.
+
+## TASK-327 (RECON-13d: chunk-parse census lever реализован+диспатчен в одном тике; лег s7168 в полёте run 35435848509) — 2026-09-19 ~17:5x +08 — Job 397536 (тик 17:06)
+**Статус: ТОП-1 chunk-parse 33.38% → lever CRUSSTY_PARSE_DIAG: ChunkParseDiagOps мост + retarget_ldc_virtual_to_static (ldc"xPos"-анкер, receiver-prepended static, стэк-форма идентична, delegate bit-exact). Census chunk-parse-diag.txt решает кэш-vs-ticket-churn прегенерированным правилом (>=30% GO / <10% REFUTED / 10-30% RECON).**
+- classfile.rs: string_value + retarget_ldc_virtual_to_static + parse_diag_resolution_closure; armed-перезарядка (iconst между ldc и invoke); AlreadyPatched. src/parse_diag.rs (flush_diet-паттерн). Мост собран javac-через-ToolProvider (javac-бинарь отсутствует) против kernel major 65.
+- Тест на РЕАЛЬНОМ классе kernel (fixture из артефактов s7165): Retargeted{sites:1} → AlreadyPatched; pool-consistency; 176/176 PASS; release PASS.
+- Workflow: +input parse_diag; лимит 25 inputs достигнут → legacy summon_sweeps дропнут (26→25); первый POST 422, фикс, повтор → **run 35435848509 in_progress @ 1fc46c3**. dispatch_s7168.py закоммичен.
+- NEXT (13): absorb s7168 → PG-D0..D3 → выбор lever #12 (decode-cache) ИЛИ REFUTED → ТОП-2 (entity-tick-core 21.39%). c-crussty 1fc46c3. S7-108 чист.
