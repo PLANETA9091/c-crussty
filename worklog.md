@@ -2699,3 +2699,22 @@ Stage Summary:
 - NEXT id 355: решение владельца A/B/C; без решения — RECON-32 inside-gate-диета ~3.1% (последний крупный компонент A)
 
 RUN_ID_DISPATCHED: (нет — диспатчи остановлены; CI-бутов 0)
+
+---
+## TASK-355 (RECON-32 inside-gate) — 2026-09-20 07:43 тик (Job 398847, trace 1a0bb1f4c82af065-cron-agent-loop-202609200743), Agent: agent-7625532f
+
+Task: pull ×2 → S7-108 (без бенч-легов) → RECON-32 офлайн-верификация inside-gate ~3.1% (NEXT 355, без решения владельца) → учёт ×40 → пуши ×2.
+
+Work Log:
+- S7-108: runs?per_page=3 — только CI-санити (07fb15e/28aa544/8943552), бенч-легов и чужих диспатчей нет
+- Профили из world3-bench.zip обеих ног; recon32_inside_gate_drill.py: family-classify (gate/recorder | vanilla-discovery | effects-apply | контекст)
+- ГЛАВНАЯ НАХОДКА: клейм 3.1% опровергнут — внутри-семья 11.28/11.65% сцены (discovery движущихся 9.08/9.36 + effects 2.20/2.29 + банк-инфра ~1.8%); стеки чисты (ItemEntity/Mob → applyEffectsFromBlocks → checkInsideBlocks → forEachBlockIntersectedBetween → visit)
+- Под-куски: visit-set = REFUTED #9-интернал (запрещено), alloc-диета = REFUTED #12, effects = парити-семантика; единственный легальный рычаг = секционный solid-bitmask пре-фильтр (сырой потолок ~9.1% CPU, TPS-конверсия ~0 эмпирически)
+- Вердикт: 7-я док-верификация закрытия диеты; картирование ЭПОХИ-2A ЗАВЕРШЕНО — вариант A окончательно не рекомендован; при B флагман = inside-bitmask
+- Учёт: RECON32_INSIDE_GATE_VERDICT.md + GOAL ×40 (5ae18ca) + CLAIMS TASK-355 (fbec1db) + worklog; пуши master/main
+
+Stage Summary:
+- ЭПОХА-2A: все 5 компонентов проверены доками (broadphase ≤3%, volatile 0-1%, inside 11.3/11.6→легально ~9% сырое, контур 1.1%, chunk-read 3.6%); легальный суммарный потолок < двойного бара при конверсии ~0
+- NEXT id 356: решение владельца B/C; без решения — javap-контракт inside-bitmask-флагмана (entry-гейты + секционные solid-биты, median-exact all-air short-circuit) коммит-пригодно
+
+RUN_ID_DISPATCHED: (нет — диспатчи остановлены; CI-бутов 0)
