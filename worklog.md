@@ -2364,3 +2364,4 @@ Stage Summary:
 - Урок эры №6: порог гейта, калиброванный на до-банкованном профиле, молча устаревает — калибровать от свежего профиля лега-базы
 
 RUN_ID_DISPATCHED: нет (absorb-тик; S7-108 чист)
+- [TASK-310 доп.] RECON-7 (в тике после absorb): unclassified 52736 = 55%+ GC/JIT-фреймы (маркер-расхождение классификаторов), реальный MC-хвост ≤3% (bucketOf/setOldPos/sendChanges/clearPlayers); ТОП-1 entity-фаза подтверждена: movement 20.33% > broadphase 11.26% (2×REFUTED) > fluid-push 9.76% > inside-pipeline 8.00% > item-entity 7.19%; рычаг #10 ZERO-ALLOC-INSIDE прицелен (fluid-push + inside-pipeline + collidedWithShapeMovingFrom-сайты в movement); javap-контракт 12 методов снят verbatim: research/flat-traversal-2026-09-19/{RECON7_SUMMARY.md, RECON7_unclassified_leafs.txt, CONTRACT_ZEROALLOC_S7164.txt}; диспатч — следующий тик после фиксации гейтов от СВЕЖЕГО профиля (урок №6)
