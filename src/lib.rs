@@ -34,6 +34,7 @@ mod fluid_free;
 mod flush_diet;
 mod improved_noise;
 mod inside_cache;
+mod inside_diet;
 mod jni_table;
 mod kernel_policy;
 mod loader;
@@ -381,8 +382,13 @@ fn inject_surface() {
     // Entity.setBoundingBox via the SkipStoreOps bridge (stage 8;
     // dormant unless CRUSSTY_SKIP_STORE_BB=1 AND region_threads>=2).
     skip_store::activate();
+    // INSIDE-DIET (TASK-332, lever #12 v1): define InsideDietOps+Visitor into
+    // the kernel loader (define-only; the 5-arg checkInsideBlocks body-redirect
+    // composes through the entity_compose chain stage 9; dormant unless
+    // CRUSSTY_INSIDE_DIET=1 AND region_threads>=2).
+    inside_diet::activate();
     // ENTITY-COMPOSE (S7-162): apply the single compose chain on Entity
-    // (inside → fluid_free → fluid_dirty → rng → batch → traversal → zeroin → sbb),
+    // (inside → fluid_free → fluid_dirty → rng → batch → traversal → zeroin → sbb → inside_diet),
     // publish the rng verdict for region_threads, retransform Entity
     // exactly once.
     entity_compose::activate();

@@ -87,6 +87,10 @@ on:
         description: 'SKIP-STORE-BB #13-SBB S7-166 ARCH-ATTACK (1 = ARMED: value-equal store-skip for Entity.setBoundingBox via the SkipStoreOps body-redirect, entity_compose stage-8 — requires region_threads>=2; 0 = vanilla A/B leg)'
         required: false
         default: '0'
+      inside_diet:
+        description: 'INSIDE-DIET lever #12 v1 (TASK-332): glue-free per-call inside-blocks sweep (InsideDietOps+Visitor, vanilla walk bit-exact), entity_compose stage-9 — requires region_threads>=2; 0 = vanilla A/B leg'
+        required: false
+        default: '0'
       population_target:
         description: 'BENCH-X150K living-scene population injection (0 = off; 10000 = smoke; 150000 = prime scale, S7-129)'
         required: false
@@ -199,6 +203,7 @@ jobs:
           ZERO_ALLOC: ${{ inputs.zero_alloc || '0' }}
           ZERO_CURSOR: ${{ inputs.zero_cursor || '0' }}
           SKIP_STORE_BB: ${{ inputs.skip_store_bb || '0' }}
+          INSIDE_DIET: ${{ inputs.inside_diet || '0' }}
           PARSE_DIAG: ${{ inputs.parse_diag || '0' }}
           POPULATION_TARGET: ${{ inputs.population_target || '0' }}
           POPULATION_SEED: ${{ inputs.population_seed || '42' }}
