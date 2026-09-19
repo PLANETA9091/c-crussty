@@ -79,10 +79,9 @@ on:
         description: 'ZERO-ALLOC-INSIDE S7-164 ARCH-ATTACK lever #10 (1 = ARMED: scalar allocation-free ZeroAllocOps bodies replacing Entity.collidedWithFluid/collidedWithShapeMovingFrom/updateFluidHeightAndDoFluidPushing via the entity_compose stage-7 body-redirect — requires region_threads>=2; 0 = vanilla A/B leg)'
         required: false
         default: '0'
-      zero_cursor:
-        description: 'ZERO-CURSOR lever #11 v1 (TASK-330): pooled bit-exact betweenCornersInDirection iterator (ZeroCursorIter+Ops), kills BlockPos$6+MutableBlockPos churn per travel step; 0 = vanilla A/B leg'
-        required: false
-        default: '0'
+      # zero_cursor input REMOVED (TASK-332): the 25-input GitHub limit; lever
+      # #11 v1 was REFUTED (s7173 harm -22% TPS) and rolled back — the flag is
+      # pinned to '0' below; bridge classes remain infrastructure.
       skip_store_bb:
         description: 'SKIP-STORE-BB #13-SBB S7-166 ARCH-ATTACK (1 = ARMED: value-equal store-skip for Entity.setBoundingBox via the SkipStoreOps body-redirect, entity_compose stage-8 — requires region_threads>=2; 0 = vanilla A/B leg)'
         required: false
@@ -201,7 +200,7 @@ jobs:
           BATCH_COLLECTOR: ${{ inputs.batch_collector || '0' }}
           FLAT_TRAVERSAL: ${{ inputs.flat_traversal || '0' }}
           ZERO_ALLOC: ${{ inputs.zero_alloc || '0' }}
-          ZERO_CURSOR: ${{ inputs.zero_cursor || '0' }}
+          ZERO_CURSOR: '0'
           SKIP_STORE_BB: ${{ inputs.skip_store_bb || '0' }}
           INSIDE_DIET: ${{ inputs.inside_diet || '0' }}
           PARSE_DIAG: ${{ inputs.parse_diag || '0' }}
