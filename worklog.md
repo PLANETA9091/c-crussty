@@ -2272,3 +2272,28 @@ Stage Summary:
 - NEXT (S7-162 leg#2 absorb, следующий тик): гейты без изменений; при PASS банкинг CUMULATIVE v3 → свежий ТОП → S7-163 FLAT-TRAVERSAL (RECON-4: traversal-подлейн 7.27% CPU, orchestration-хвост ~2.3-2.7%, рычаг #9 — плоский long-packed обход вместо guava-итератора)
 
 RUN_ID_DISPATCHED: 35399980345 (preregister A/B leg#2; CI-бутов за тик 1 — санкционированный)
+
+---
+## S7-163 (ARCH-ATTACK) — 2026-09-19 07:0x-09:0x +08 — БАНКОВАНИЕ CUMULATIVE v3 (leg#2 ВСЕ ГЕЙТЫ PASS) + FLAT-TRAVERSAL (рычаг #9): TraverseOps.forEachFlat бит-в-бит 60k, ЛОВУШКА getFurthestCorner поймана харнессом, лег диспатчен (35407788083)
+
+**Task ID: TASK-307 (S7-163, Job 396026, тик 06:43)**, Agent: agent-7625532f
+
+Work Log:
+- creds (1b, bootstrap отсутствует) + pull ×2 up to date; next TASK id = 307; last = TASK-306 (leg#2 в полёте, RECON-5 контракт готов)
+- ABSORB leg#2 (35399980345, fetch_artifact → run-s7162-leg2-artifact): PG2 PASS (compose ARMED [inside->rng->batch] 205458→205610 rc=0, pop 150k VALID, 0 NCDFE, telemetry 153298→161310, first-swap отсутствует); PG3 PASS (медиана 1.90 ≥ 1.60); PG4''' PASS (GC 154 ≤ 180; семья 2345→1251 raw −46.7%, per-work 658 ≤ 1290; инфра 0/1251 = 0.0%); CRASH-FREE PASS → **CUMULATIVE v3 = v2 + batch_collector=1 ЗАБАНКОВАН**; методы flushStep −48%/advanceStep −78%; телеметрия = спавн-поток (вопрос S7-161(a) закрыт)
+- Свежий ТОП leg#2: entity-фаза 59.06% (broadphase 18.8% REFUTED, fluid 17.9% REFUTED, inside-pipeline 17.1% АТАБУЛЬНЫЙ) → GC/JIT 35.49% → tracker 2.08% → атака = traversal (рычаг #9)
+- TraverseOps.java: плоский (f,s,t)-обход (BlockPos$6: Y внешний, YZX/YXZ по |dx|<|dz|, старт по знаку дельты, extents+1 включительно), стационарный путь = BlockPos$4 index/%-итерация, open-addressing long-dedupe (was-new семантика, key 0 через флаг), AABB.clip статик вербатим
+- ХАРНЕСС-ЛОВУШКА: 9/112 расхождений (шаг-индексы DDA) → трассировка → рефлексия getFurthestCorner((0,0,7.75)) = (−1,−1,+1) ≠ (−1,−1,−1) из RECON5-дока — вербатим: **(−sx,−sz,+sy)/(+sz,−sy,−sx)/(−sy,+sx,−sz)** (последний компонент ветки НЕ инвертируется); после правки 0 расхождений
+- TraverseLockstepHarness: 60106 сценариев × 4 политики (always-true/false/N-then-false/random), (posLong,step)+return бит-в-бит; семьи: stationary-boundary 1.0E-5f, sign-zero ×8, aligned, marches 27 октантов, random; OFFLINE PASS
+- cargo suite 155/0/1 (+5 traversal-тестов; первый прогон поймал слишком строгий пул-ассерт — старый Methodref легитимно остаётся в CP при CP-growth, тест переведён на код-уровень верификацию таргета); композит идемпотентность полной v2-цепи + traversal
+- Доставка: traversal.rs (kernel-loader define TraverseOps + BRIDGE_READY + wait_bridge_ready); entity_compose v2 stage 6 (traversal, strict sites=1, fail-dominant, ARMED [inside->rng->batch->traversal]); lib.rs wired; classfile.rs patch_entity_traversal
+- Пломбинг: run_world3.sh FLAT_TRAVERSAL (env export + config-echo, bash -n OK); world-bench.yml input flat_traversal + FLAT_TRAVERSAL env; scripts/build_traverse_ops.sh (module-javac fallback) + run_traverse_lockstep_harness.sh (offline CP fallback)
+- GOAL СТАТУС ×2 (банкование v3 + preregister S7-163 ДО диспатча); диспатч dispatch_s7163.py (concurrency guard чист — leg#2 завершена) → RUN 35407788083 (head 37a0072, in_progress)
+
+Stage Summary:
+- CUMULATIVE v3 забанкован (рычаг #8 закрыт GREEN'ом после двух REFUTED — реванш через стек-доказательство инфра-хвоста + единый compose + телеметрия)
+- FLAT-TRAVERSAL: оракул-харнесс поймал ошибку вербатим-переноса ДО диспатча — методика «javap-контракт + lockstep-оракул» снова окупилась (3-й случай: S7-160 RecordedEffect.accept, S7-162 supersede, S7-163 getFurthestCorner)
+- Урок: RECON5-док содержал ту же инверсию — вербатим надо сверять рефлексией/оракулом, не только глазом; дамп-текст без исполнимой проверки — источник контрактовых багов
+- NEXT (S7-163 absorb, следующий тик): гейты PG2/PG3/PG4/CRASH-FREE vs leg#2 (v3); PASS → CUMULATIVE v4 = v3 + flat_traversal=1; FAIL → REFUTED + rollback flat_traversal=0; затем свежий ТОП → возврат к ТОП-1 по кругу «ТОП-ПОЖИРАТЕЛЬ → ∞»
+
+RUN_ID_DISPATCHED: 35407788083 (preregister A/B; CI-бутов за тик 1 — санкционированный)
