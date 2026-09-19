@@ -73,6 +73,7 @@ BATCH_COLLECTOR="${BATCH_COLLECTOR:-0}"
 # BlockGetter.forEachBlockIntersectedBetween via the entity_compose stage 6
 # retarget — requires region_threads>=2; 0 = vanilla traversal A/B leg).
 FLAT_TRAVERSAL="${FLAT_TRAVERSAL:-0}"
+TRAVEL_DIET="${TRAVEL_DIET:-0}"
 ZERO_ALLOC="${ZERO_ALLOC:-0}"
 ZERO_CURSOR="${ZERO_CURSOR:-0}"
 SKIP_STORE_BB="${SKIP_STORE_BB:-0}"
@@ -158,6 +159,7 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "region_threads: $REGION_THREADS (CRUSSTY_REGION_THREADS; >=2 = REGION-THREADS ARCH-ATTACK lever #7: region-threaded entity ticking via RegionTickOps, S7-156/TASK-295)"
   echo "batch_collector: $BATCH_COLLECTOR (CRUSSTY_BATCH_COLLECTOR; 1 = BATCH-COLLECTOR ARCH-ATTACK lever #8: zero-map flat StepBasedCollector via BatchCollector.ensure swap, requires region_threads>=2, S7-160)"
   echo "flat_traversal: $FLAT_TRAVERSAL (CRUSSTY_FLAT_TRAVERSAL; 1 = FLAT-TRAVERSAL ARCH-ATTACK lever #9: flat bit-exact TraverseOps.forEachFlat via entity_compose stage-6 retarget, requires region_threads>=2, S7-163)"
+  echo "travel_diet: $TRAVEL_DIET (CRUSSTY_TRAVEL_DIET; 1 = TRAVEL-DIET v2a ARCH-ATTACK lever #14: scalar scratch-slot TravelDietOps.collide mirror of the private Entity.collide(Vec3) via entity_compose stage-10, requires region_threads>=2, RECON-21)"
   echo "zero_alloc: $ZERO_ALLOC (CRUSSTY_ZERO_ALLOC; 1 = ZERO-ALLOC-INSIDE ARCH-ATTACK lever #10: scalar ZeroAllocOps body-redirects of collidedWithFluid/collidedWithShapeMovingFrom/updateFluidHeightAndDoFluidPushing via entity_compose stage-7, requires region_threads>=2, S7-164)"
   echo "parse_diag: $PARSE_DIAG (CRUSSTY_PARSE_DIAG; 1 = passive per-chunk parse census bridge ChunkParseDiagOps.diagXIntOr ldc-xPos retarget, RECON-13d/TASK-327)"
   echo "zero_cursor: $ZERO_CURSOR (CRUSSTY_ZERO_CURSOR; 1 = ZERO-CURSOR lever #11 v1: pooled bit-exact betweenCornersInDirection iterator, kills BlockPos\$6+MutableBlockPos churn; TASK-330)"
@@ -394,6 +396,10 @@ export CRUSSTY_BATCH_COLLECTOR="$BATCH_COLLECTOR"
 # requires region_threads >= 2 — the retarget composes through the
 # entity_compose chain)
 export CRUSSTY_FLAT_TRAVERSAL="$FLAT_TRAVERSAL"
+# TRAVEL-DIET v2a gate (RECON-21, lever #14; travel_diet.rs reads it at
+# define time; requires region_threads >= 2 — the redirect composes through
+# the entity_compose chain stage 10)
+export CRUSSTY_TRAVEL_DIET="$TRAVEL_DIET"
 export CRUSSTY_ZERO_ALLOC="$ZERO_ALLOC"
 # SKIP-STORE-BB gate (#13-SBB, S7-166; skip_store.rs reads it at define
 # time; requires region_threads >= 2 — the redirect composes through the

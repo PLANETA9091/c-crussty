@@ -2198,6 +2198,63 @@ mod tests {
         assert_eq!(first, second, "AlreadyPatched must not touch bytes");
     }
 
+    /// TRAVEL-DIET v2a (RECON-21): the collide body redirects to the
+    /// TravelDietOps static; the redirected Code attribute is exactly
+    /// aload-chain + invokestatic + areturn (Vec3 = object return), slots
+    /// accounted, and the redirect is idempotent.
+    #[test]
+    fn traveldiet_redirect_collide_and_verify() {
+        let (out, outcome) = patch_entity_traveldiet(REAL_ENTITY).expect("patch");
+        assert_eq!(outcome, RetargetOutcome::Retargeted { sites: 1 });
+        assert_ne!(out.as_slice(), REAL_ENTITY, "redirect must change bytes");
+
+        let vdesc = TD_COLLIDE_DESC;
+        let sdesc = "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;";
+        let layout = parse_layout(&out).expect("re-parse redirected Entity");
+        let name_idx = layout.pool.find_utf8("collide").expect("name kept");
+        let desc_idx = layout.pool.find_utf8(vdesc).expect("desc kept");
+        let m = find_method(&out, layout.methods_start, name_idx, desc_idx)
+            .expect("redirected method found");
+        let (code_start, code_len) =
+            find_code_attr(&out, &layout.pool, &m).expect("code attr");
+        let code = &out[code_start..code_start + code_len];
+        // shape: aload_0 + aload_1 + invokestatic + areturn
+        assert_eq!(code[0], 0x2a, "collide: body starts with aload_0");
+        let ret_pos = code.len() - 1;
+        assert_eq!(code[ret_pos], 0xb0, "collide: object method ends with areturn");
+        assert_eq!(code[ret_pos - 3], 0xb8, "collide: dispatch is invokestatic");
+        let cp_idx = u16::from_be_bytes([code[ret_pos - 2], code[ret_pos - 1]]);
+        let parts = layout.pool.methodref_parts(cp_idx).expect("resolve target");
+        assert_eq!(parts.0, TRAVEL_DIET_OPS_CLASS, "collide: target owner");
+        assert_eq!(parts.1, "collide", "collide: target name matches");
+        assert_eq!(parts.2, sdesc, "collide: target static desc = receiver-prepended");
+
+        let total_slots = desc_param_slots(vdesc).expect("slots");
+        let ms = u16::from_be_bytes([out[code_start - 8], out[code_start - 7]]);
+        let ml = u16::from_be_bytes([out[code_start - 6], out[code_start - 5]]);
+        assert_eq!(usize::from(ms), total_slots, "collide: max_stack == slots");
+        assert_eq!(usize::from(ml), total_slots, "collide: max_locals == slots");
+        let load_bytes: usize = std::iter::once((0usize, SlotKind::A))
+            .chain(desc_slot_kinds(vdesc).expect("kinds"))
+            .map(|(slot, _)| usize::from(slot > 3) + 1)
+            .sum();
+        assert_eq!(
+            code_len as usize,
+            load_bytes + 4,
+            "collide: code length = typed-load chain + 3-byte invokestatic + areturn"
+        );
+    }
+
+    /// TRAVEL-DIET v2a idempotency: re-sight = AlreadyPatched, bytes intact.
+    #[test]
+    fn traveldiet_redirect_idempotent() {
+        let (first, out1) = patch_entity_traveldiet(REAL_ENTITY).expect("first");
+        assert_eq!(out1, RetargetOutcome::Retargeted { sites: 1 });
+        let (second, out2) = patch_entity_traveldiet(&first).expect("second");
+        assert_eq!(out2, RetargetOutcome::AlreadyPatched { sites: 1 });
+        assert_eq!(first, second, "AlreadyPatched must not touch bytes");
+    }
+
     /// NotFound: a body-redirect on a class without the target method must
     /// return the ORIGINAL bytes and never grow the pool (no half-composed
     /// stage: the probe happens before any mutation).
@@ -3754,6 +3811,42 @@ pub fn patch_entity_inside_diet(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcom
         "checkInsideBlocks",
         "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector;Lit/unimi/dsi/fastutil/longs/LongSet;I)I",
     )
+}
+
+/// TRAVEL-DIET v2a COLLIDE-DIET (RECON-21, lever #14): single-site body
+/// redirect of the private instance method Entity.collide(Vec3)Vec3 to the
+/// TravelDietOps bridge (receiver prepended). Fail-closed: NotFound ->
+/// error up to the compose stage.
+pub const TRAVEL_DIET_OPS_CLASS: &str = "net/minecraft/world/entity/TravelDietOps";
+
+pub const TD_COLLIDE_DESC: &str =
+    "(Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;";
+
+/// Single source of truth for the #14-v2a redirect graph: (site name, site
+/// descriptor, bridge target name, bridge target descriptor). EXACTLY ONE
+/// target. Consumed by (a) `patch_entity_traveldiet` (bytecode surgery)
+/// and (b) `traveldiet_resolution_closure` (delivery guard).
+pub const TD_REDIRECT_TARGETS: [(&str, &str, &str, &str); 1] = [(
+    "collide",
+    TD_COLLIDE_DESC,
+    "collide",
+    "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;",
+)];
+
+pub fn patch_entity_traveldiet(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    redirect_method_body_to_static(
+        bytes,
+        TD_REDIRECT_TARGETS[0].0,
+        TD_REDIRECT_TARGETS[0].1,
+        "net/minecraft/world/entity/Entity",
+        TRAVEL_DIET_OPS_CLASS,
+        TD_REDIRECT_TARGETS[0].2,
+        TD_REDIRECT_TARGETS[0].3,
+    )
+}
+
+pub fn traveldiet_resolution_closure(bridge: &[u8]) -> Result<(), String> {
+    redirect_targets_resolution_closure(bridge, &TD_REDIRECT_TARGETS)
 }
 
 /// Find a method by NAME only (desc resolved by the caller from the found

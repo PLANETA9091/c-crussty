@@ -592,6 +592,54 @@ pub fn activate() {
             }
         }
 
+        // ---- STAGE 10: travel-diet body redirect (RECON-21, lever #14 v2a) ----
+        // Single-site body redirect of the private Entity.collide(Vec3) to
+        // the TravelDietOps bridge (scalar scratch-slot mirror of the vanilla
+        // body — AABB/ArrayList/FloatArraySet temporaries die, products stay
+        // allocations, bit-exact double order). Fail-dominant like every
+        // other stage.
+        if crate::travel_diet::enabled_pub() {
+            if crate::travel_diet::wait_bridge_ready(120_000) {
+                match crate::classfile::patch_entity_traveldiet(&bytes) {
+                    Ok((p, outcome)) if matches!(
+                        outcome,
+                        crate::classfile::RetargetOutcome::Retargeted { sites: 1 }
+                    ) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage traveldiet composed ({outcome:?})"
+                        );
+                        bytes = p;
+                        chain.push("traveldiet");
+                    }
+                    Ok((p, outcome)) if matches!(
+                        outcome,
+                        crate::classfile::RetargetOutcome::AlreadyPatched { sites: 1 }
+                    ) => {
+                        // Idempotent re-sight (stale retransform replay).
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage traveldiet composed ({outcome:?})"
+                        );
+                        bytes = p;
+                        chain.push("traveldiet");
+                    }
+                    Ok((_p, outcome)) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage traveldiet strict check violated ({outcome:?}), chain continues WITHOUT traveldiet (fail-dominant)"
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage traveldiet patch rejected ({e}), chain continues WITHOUT traveldiet (fail-dominant)"
+                        );
+                    }
+                }
+            } else {
+                eprintln!(
+                    "[crussty-plugin] entity_compose: travel_diet bridge missed its window, chain continues WITHOUT traveldiet (fail-dominant)"
+                );
+            }
+        }
+
         let composed_len = bytes.len();
         t.set_patch(PatchCache {
             bytes: Arc::from(bytes),
