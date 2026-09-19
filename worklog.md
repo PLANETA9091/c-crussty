@@ -2583,3 +2583,8 @@ RUN_ID_DISPATCHED: да (v5-кандидат #13-SBB, dispatch_s7166.py; S7-108 
 **Статус: по чартеру 4c (лег в полёте → офлайн-работа) создан scripts/bench4_recon/absorb_s7167.py — absorb FREE-HOST лега одной командой: статус-гейт → fetch → PG-A → окно (a) OOM-детектор INFEASIBLE-BY-MEMORY / окно (b) GC-дuty + card-set лейн + аллок-семьи + remset p50 + TPS → авто-док RECON13_FREEHOST_ABSORB.md.**
 - Смоук на 10G-базе: remset p50 6,324,224/165 ✓, TPS-серия ✓, gc_stats 161/0/20.3s/189ms — дефект двойного счёта пауз (gc,start-маркеры без длительности) найден и устранён при тесте
 - NEXT: absorb s7167 в ближайший тик после завершения (exit 3 пока in_progress); параллельный офлайн-кандидат — RECON-13 классификатор other-entity 28.04%. Диспатчей 0; S7-108 чист (s7167 в полёте); CI-бутов 0.
+
+## TASK-323 (RECON-13 офлайн: entity-под-лейны + кодек-чанк-парс 19.4% аллок-байтов; s7167 в полёте) — 2026-09-19 ~16:1x +08 — Job 397396 (тик 16:08)
+**Статус: recon13_other_entity.py (фикс разделителя collapsed — пробел, не ';'): entity-семья 35.22%; лейны: tick-core 21.39% (travel-physics внутри), navigation 6.58% (валидная цель), lambda 5.98%. Приложение: DataResult-стэки 19.4% всех аллоков, вызыватель SerializableChunkData.parse + MapDecoder (NBT→объект churn) — новый аллок-гигант.**
+- Парити-заметки: node-pool v2 переоткрыт по критерию young-GC (старый REFUTED был card-dirt); кодек-кэш = парити-риск, нужен RECON вызывателей parse. На FREE-HOST 2.5G профиле аллок-давление весит максимум (частые young-GC).
+- NEXT: absorb s7167 → вердикт (a)/(b); RECON-13b вызыватели parse; выбор атаки. Диспатчей 0; S7-108 чист; CI-бутов 0.
