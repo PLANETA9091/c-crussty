@@ -166,7 +166,171 @@ pub fn activate() {
             eprintln!(
                 "[crussty-plugin] travel_diet: bridge definition failed, hook stays dormant"
             );
+            return;
         }
+
+        // ---- v2b: LivingEntity travelInFluid arm (RECON-21 section 4) ----
+        // The bridge is defined; wait for the LivingEntity kernel class,
+        // capture pristine bytes, compute the single-site body redirect,
+        // then arm the serve hook and retransform once (alloc_diet
+        // activation cadence).
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(180);
+        let mut forced = 0usize;
+        loop {
+            if cplug_sdk::classes::find_class(LIVING_CLASS).is_some() {
+                break;
+            }
+            if std::time::Instant::now() > deadline {
+                eprintln!(
+                    "[crussty-plugin] travel_diet: {LIVING_CLASS} not loaded within 180s, living arm stays dormant"
+                );
+                return;
+            }
+            if std::time::Instant::now() > deadline - std::time::Duration::from_secs(170)
+                && forced < 12
+            {
+                forced += 1;
+                eprintln!(
+                    "[crussty-plugin] travel_diet: forcing kernel load of {LIVING_CLASS} (attempt {forced})"
+                );
+                crate::improved_noise::force_load_kernel_class(LIVING_CLASS);
+            }
+            let sighted = cplug_sdk::classes::is_sighted(LIVING_CLASS);
+            std::thread::sleep(std::time::Duration::from_millis(if sighted {
+                2_000
+            } else {
+                10_000
+            }));
+        }
+        // Pristine capture: if LivingEntity predates the hook (fast boot),
+        // no-op retransform while LIVING_READY=false (stash-only callback).
+        if living_orig().is_none() {
+            eprintln!(
+                "[crussty-plugin] travel_diet: {LIVING_CLASS} predates hook, capturing via no-op retransform"
+            );
+            for _ in 1..=3 {
+                let _ = cplug_sdk::retransform_class(LIVING_CLASS);
+                if living_orig().is_some() {
+                    break;
+                }
+                std::thread::sleep(std::time::Duration::from_millis(250));
+            }
+            if living_orig().is_none() {
+                eprintln!(
+                    "[crussty-plugin] travel_diet: no pristine bytes for {LIVING_CLASS}, living arm stays dormant"
+                );
+                return;
+            }
+        }
+        let original = living_take_orig().expect("pristine living bytes checked");
+        let major = crate::improved_noise::class_version(&original)
+            .map(|(m, _)| m)
+            .unwrap_or(0);
+        let (patched, outcome) = match crate::classfile::patch_livingentity_traveldiet(&original) {
+            Ok(pair) => pair,
+            Err(e) => {
+                eprintln!(
+                    "[crussty-plugin] travel_diet: living patch rejected ({e}), living arm stays dormant"
+                );
+                return;
+            }
+        };
+        if !matches!(
+            outcome,
+            crate::classfile::RetargetOutcome::Retargeted { .. }
+                | crate::classfile::RetargetOutcome::AlreadyPatched { .. }
+        ) {
+            eprintln!(
+                "[crussty-plugin] travel_diet: unexpected living patch outcome ({outcome:?}), living arm stays dormant"
+            );
+            return;
+        }
+        eprintln!(
+            "[crussty-plugin] travel_diet: computed living patch ({outcome:?}, {} -> {} bytes)",
+            original.len(),
+            patched.len()
+        );
+        *LIVING.patch.lock().unwrap_or_else(|p| p.into_inner()) = Some(LivingPatch {
+            bytes: std::sync::Arc::from(patched),
+            major,
+        });
+        crate::kernel_policy::audit_wire(
+            TRAVEL_DIET_CLASS,
+            "travelInFluid",
+            "travel_diet v2b",
+        );
+        LIVING_READY.store(true, Ordering::Release);
+        let rc = cplug_sdk::retransform_class(LIVING_CLASS);
+        eprintln!(
+            "[crussty-plugin] travel_diet: living arm armed, retransform rc={rc}"
+        );
+    });
+}
+
+// ---- v2b LivingEntity serve hook (alloc_diet Target pattern, minimal) ----
+
+const LIVING_CLASS: &str = "net/minecraft/world/entity/LivingEntity";
+
+struct LivingPatch {
+    bytes: std::sync::Arc<[u8]>,
+    #[allow(dead_code)]
+    major: u16,
+}
+
+struct LivingTarget {
+    orig: std::sync::Mutex<Option<Vec<u8>>>,
+    patch: std::sync::Mutex<Option<LivingPatch>>,
+}
+
+static LIVING: LivingTarget = LivingTarget {
+    orig: std::sync::Mutex::new(None),
+    patch: std::sync::Mutex::new(None),
+};
+static LIVING_READY: AtomicBool = AtomicBool::new(false);
+
+fn living_orig() -> Option<Vec<u8>> {
+    LIVING
+        .orig
+        .lock()
+        .unwrap_or_else(|p| p.into_inner())
+        .clone()
+}
+
+fn living_take_orig() -> Option<Vec<u8>> {
+    LIVING
+        .orig
+        .lock()
+        .unwrap_or_else(|p| p.into_inner())
+        .take()
+}
+
+/// Byte hook on LivingEntity: pristine capture at the class's own load,
+/// patched bytes served after LIVING_READY (bridge defined + patch
+/// computed). Registration MUST precede any kernel class load (cplugin_init).
+pub fn register_living() {
+    if !enabled() {
+        return;
+    }
+    cplug_sdk::hooks::register_bytes(LIVING_CLASS, move |_name, bytes| {
+        if !LIVING_READY.load(Ordering::Acquire) {
+            let mut guard = LIVING.orig.lock().unwrap_or_else(|p| p.into_inner());
+            if guard.is_none() {
+                eprintln!(
+                    "[crussty-plugin] travel_diet: pristine sighting {LIVING_CLASS} {} bytes (major {})",
+                    bytes.len(),
+                    crate::improved_noise::class_version(bytes).map(|(m, _)| m).unwrap_or(0)
+                );
+                *guard = Some(bytes.to_vec());
+            }
+            return None;
+        }
+        let cached = LIVING
+            .patch
+            .lock()
+            .unwrap_or_else(|p| p.into_inner())
+            .as_ref()
+            .map(|p| p.bytes.clone());
+        cached.map(|c| c.to_vec())
     });
 }
 
