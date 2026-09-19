@@ -58,3 +58,17 @@ fi
 
 echo "built: $OUT_DIR/net/minecraft/world/level/TraverseOps.class"
 sha256sum "$OUT_DIR/net/minecraft/world/level/TraverseOps.class"
+
+# S7-163 leg#1 TECH-DUD guard: EVERY produced classfile must be embedded in
+# src/traversal.rs (TRAVERSE_NESTED) — a plain classpath resolves nested
+# classes implicitly, but the kernel loader does NOT; a missing entry
+# detonates as NoClassDefFoundError on the first entity tick.
+EXPECTED_N=2  # TraverseOps.class + TraverseOps$LongTable.class
+BUILT_N=$(ls "$OUT_DIR"/net/minecraft/world/level/TraverseOps*.class 2>/dev/null | wc -l)
+if [ "$BUILT_N" -ne "$EXPECTED_N" ]; then
+  echo "FAIL: TraverseOps produced $BUILT_N classfiles (expected $EXPECTED_N) — " \
+       "update TRAVERSE_NESTED in src/traversal.rs before any dispatch" >&2
+  ls "$OUT_DIR"/net/minecraft/world/level/TraverseOps*.class >&2
+  exit 1
+fi
+echo "nested-delivery guard: $BUILT_N/$EXPECTED_N classfiles OK"

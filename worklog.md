@@ -2319,3 +2319,25 @@ Stage Summary:
 - NEXT (следующий тик): absorb леги S7-163 (35407788083) по неизменным пререг-гейтам → CUMULATIVE v4 или REFUTED+rollback → свежий ТОП (пересортировка) → диспатч рычага #10 ZERO-ALLOC-INSIDE или иного ТОП-1 по факту
 
 RUN_ID_DISPATCHED: нет (leg 35407788083 в полёте; S7-108)
+
+---
+## TASK-309 (S7-163 absorb leg#1 → TECH-DUD → фикс → редиспатч) — 2026-09-19 08:43-09:4x +08 — Job 396026, тик 08:43
+
+Task: поглотить легу S7-163 leg#1 (35407788083); при PASS банкинг CUMULATIVE v4, при FAIL — вердикт.
+
+Work Log:
+- creds (1b) + pull ×3 (up to date); next TASK id = 309; лега завершилась FAILURE в 08:31:42 +08 (~31.5 мин полёта)
+- Форензика: crash на инжекте 00:09:18 UTC при ~12k/150k — NoClassDefFoundError: net/minecraft/world/level/TraverseOps$LongTable на forEachFlat(TraverseOps.java:83) ← checkInsideBlocks ← applyEffectsFromBlocks ← ItemEntity.tick, шторм на каждой сущности → «Exception while updating neighbours» (fastutil NPE, вторичная) → crash-report → Stopping server; ARMED-цепь [inside->rng->batch->traversal] rc=0 жива до падения; до профайл-окна не дошло
+- Корень (агентский): traversal.rs embed'ил/определял только верхнеуровневый TraverseOps.class; вложенный LongTable.class компилировался отдельно и не определялся в kernel loader; первый NEW → ClassNotFoundException; оффлайн-оракул слеп по построению (classpath резолвит вложенные классы неявно)
+- Вердикт TECH-DUD: не REFUTED (экономика не измерена), не средовой DUD (стек точно в наш класс); алгоритм цел (classfile-ы байт-в-байт 35192a1b/7157df0c, оракул 60106×4 PASS после пересборки)
+- Фикс: TRAVERSE_NESTED в traversal.rs — вложенные классы embed + define в тот же loader ДО BRIDGE_READY (fail-closed); cargo-гварды source-parse + build-dir-set (157/0/1); build_traverse_ops.sh барьер «nested-delivery guard 2/2»; run_traverse_lockstep_harness.sh module-javac fallback (прецедент build-скрипта)
+- Документы: ABSORB_S7163_LEG1_TECHDUD.md, GOAL СТАТУС (leg#1 TECH-DUD + фикс + урок эры №5), RUNBOOK не тронут (leg#1 не входит в выборку — прецедент S7-158/S7-162)
+- Редиспатч леги #2 этим же тиком: dispatch_s7163.py, те же прereg-входы (v4-кандидат = v3 + flat_traversal=1), head = фикс-коммит; PG2 leg#2 ждёт новый маркер «(+1 nested)»
+- Учёт: CLAIMS TASK-309, worklog, оба пуша
+
+Stage Summary:
+- Лега #1 честно разборена как TECH-DUD агентского происхождения: доставка байткода в kernel loader — это доставка ГРАФА классов (урок эры №5); статический produced-vs-embedded guard закрыл категорию дефекта
+- Рычаг #9 не дискредитирован: алгоритм бит-в-бит (60106×4), сьют 157/0/1, паритет-поверхность не менялась
+- NEXT: absorb леги #2 (run-id ниже) по неизменным гейтам PG2/PG3/PG4/CRASH-FREE → банкинг CUMULATIVE v4 или REFUTED + rollback; затем свежий ТОП → рычаг #10 ZERO-ALLOC-INSIDE по факту пересортировки
+
+RUN_ID_DISPATCHED: (вписывается после диспатча ниже; CI-бутов за тик 1 — санкционированный)
