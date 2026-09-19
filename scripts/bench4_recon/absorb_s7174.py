@@ -26,8 +26,8 @@ from collections import Counter
 REPO = "PLANETA9091/c-crussty"
 API = "https://api.github.com"
 RESDIR = "/home/z/c-crussty/research/gc-recon-2026-09-19"
-DEFAULT_RUN = "35444398986"
-EXPECTED_SHA = "SET_AT_DISPATCH"
+DEFAULT_RUN = "35447599753"
+EXPECTED_SHA = "463e60b"
 
 BASE_LANE_ALLOC = 31.18
 BASE_LANE_CPU = 9.20
