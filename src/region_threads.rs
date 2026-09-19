@@ -74,6 +74,21 @@ const TRACKER_BYTES: &[u8] =
 const RNG_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/util/RngOps.class");
 
+/// S7-168 (STEAL v2 defect-fix, TASK-335): BU-DEFER bridge — sendBlockUpdated
+/// канализация для воркеров (javap-контракт: handle receiver-prepended).
+const BLOCKUPD_CLASS: &str = "net/minecraft/server/level/BlockUpdateOps";
+const BLOCKUPD_BYTES: &[u8] =
+    include_bytes!("../entityinside/build/net/minecraft/server/level/BlockUpdateOps.class");
+
+fn bu_defer_enabled() -> bool {
+    std::env::var("CRUSSTY_BU_DEFER")
+        .map(|v| {
+            let v = v.trim().to_ascii_lowercase();
+            v == "1" || v == "true" || v == "on" || v == "yes"
+        })
+        .unwrap_or(false)
+}
+
 fn workers_from_env() -> Option<i64> {
     std::env::var("CRUSSTY_REGION_THREADS")
         .ok()
@@ -364,12 +379,18 @@ pub fn activate() {
         })
         .flatten()
         .unwrap_or(u16::MAX);
-        for (name, bytes) in [
-            (OPS_CLASS, OPS_BYTES),
-            (OPS_INNER_CLASS, OPS_INNER_BYTES),
-            (TRACKER_OPS_CLASS, TRACKER_BYTES),
-            (RNG_OPS_CLASS, RNG_BYTES),
-        ] {
+        for (name, bytes) in {
+            let mut list = vec![
+                (OPS_CLASS, OPS_BYTES),
+                (OPS_INNER_CLASS, OPS_INNER_BYTES),
+                (TRACKER_OPS_CLASS, TRACKER_BYTES),
+                (RNG_OPS_CLASS, RNG_BYTES),
+            ];
+            if bu_defer_enabled() {
+                list.push((BLOCKUPD_CLASS, BLOCKUPD_BYTES));
+            }
+            list
+        } {
             let major = crate::improved_noise::class_version(bytes)
                 .map(|(m, _)| m)
                 .unwrap_or(0);
@@ -409,13 +430,17 @@ pub fn activate() {
                 return false;
             }
             KERNEL_LOADER.store(gref as usize, Ordering::SeqCst);
-            let mut ok = true;
-            for (name, bytes) in [
+            let mut bridge_list: Vec<(&str, &[u8])> = vec![
                 (OPS_CLASS, OPS_BYTES),
                 (OPS_INNER_CLASS, OPS_INNER_BYTES),
                 (TRACKER_OPS_CLASS, TRACKER_BYTES),
                 (RNG_OPS_CLASS, RNG_BYTES),
-            ] {
+            ];
+            if bu_defer_enabled() {
+                bridge_list.push((BLOCKUPD_CLASS, BLOCKUPD_BYTES));
+            }
+            let mut ok = true;
+            for (name, bytes) in bridge_list {
                 match env.define_class(name, gref, bytes) {
                     Some(c) => {
                         env.delete_local_ref(c);
@@ -498,6 +523,36 @@ pub fn activate() {
             );
             return;
         }
+        // S7-168 BU-DEFER (STEAL v2 defect-fix): compose the sendBlockUpdated
+        // body-redirect INTO the ServerLevel bytes (after the lambda$tick$4
+        // retarget). Strict: exactly ONE site; closure guard ran at boot.
+        let sl_patched = if bu_defer_enabled() {
+            let (p2, bu_outcome) =
+                match crate::classfile::patch_serverlevel_send_block_updated(&sl_patched) {
+                    Ok(pair) => pair,
+                    Err(e) => {
+                        eprintln!(
+                            "[crussty-plugin] region_threads: BU-DEFER ServerLevel patch rejected ({e}), hook stays dormant"
+                        );
+                        return;
+                    }
+                };
+            if !matches!(
+                bu_outcome,
+                crate::classfile::RetargetOutcome::Retargeted { sites: 1 }
+            ) {
+                eprintln!(
+                    "[crussty-plugin] region_threads: BU-DEFER strict site-count violated ({bu_outcome:?}), hook stays dormant"
+                );
+                return;
+            }
+            eprintln!(
+                "[crussty-plugin] region_threads: BU-DEFER composed: sendBlockUpdated -> BlockUpdateOps.handle (sites:1)"
+            );
+            p2
+        } else {
+            sl_patched
+        };
         let (cb_patched, (cb_out_add, cb_out_rem)) =
             match crate::classfile::patch_region_tick_callbacks(&cb_orig) {
                 Ok(pair) => pair,
@@ -631,4 +686,102 @@ pub fn activate() {
             "[crussty-plugin] region_threads: ARMED, retransform rc ServerLevel={rc_sl} EntityCallbacks={rc_cb} Level={rc_lv} ChunkMap={rc_cm} (Entity via entity_compose)"
         );
     });
+}
+
+#[cfg(test)]
+mod blockupd_delivery_tests {
+    /// S7-168 delivery-graph guard (mirror of skipstore discipline):
+    /// BlockUpdateOps.java MUST declare ZERO nested classes — the bridge
+    /// compiles to exactly one classfile and is defined alone into the
+    /// kernel loader.
+    #[test]
+    fn blockupd_ops_source_declares_no_nested_classes() {
+        let src =
+            include_str!("../entityinside/net/minecraft/server/level/BlockUpdateOps.java");
+        let mut declared: Vec<String> = Vec::new();
+        for line in src.lines() {
+            let t = line.trim();
+            for pat in ["class ", "interface ", "enum ", "record "] {
+                if let Some(i) = t.find(pat) {
+                    let before = &t[..i];
+                    if before.contains("static") && !before.contains("//") {
+                        let rest = &t[i + pat.len()..];
+                        let name: String = rest
+                            .chars()
+                            .take_while(|c| c.is_alphanumeric() || *c == '_')
+                            .collect();
+                        if !name.is_empty() {
+                            declared.push(name);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        assert!(
+            declared.is_empty(),
+            "BlockUpdateOps.java declares nested classes {declared:?} — kernel-loader \
+             delivery defines exactly ONE classfile; nested classes would crash the \
+             server with NoClassDefFoundError (S7-163 leg#1 TECH-DUD)"
+        );
+    }
+
+    /// Build-dir mirror: exactly one BlockUpdateOps classfile exists.
+    #[test]
+    fn blockupd_build_dir_has_exactly_one_classfile() {
+        let dir = "entityinside/build/net/minecraft/server/level";
+        let mut count = 0;
+        let rd = std::fs::read_dir(dir).expect("build dir present (run build_blockupd_ops.sh)");
+        for e in rd.flatten() {
+            let p = e.path().to_string_lossy().to_string();
+            if p.contains("BlockUpdateOps") && p.ends_with(".class") {
+                count += 1;
+            }
+        }
+        assert_eq!(
+            count, 1,
+            "BlockUpdateOps classfile set drifted — must compile to exactly ONE classfile"
+        );
+    }
+
+    /// The embedded bytes ARE the built classfile (no stale embed).
+    #[test]
+    fn blockupd_embedded_bytes_match_build_dir() {
+        let on_disk =
+            std::fs::read("entityinside/build/net/minecraft/server/level/BlockUpdateOps.class")
+                .expect("built classfile present");
+        assert_eq!(
+            on_disk,
+            super::BLOCKUPD_BYTES,
+            "embedded BlockUpdateOps.class is stale — rerun scripts/build_blockupd_ops.sh"
+        );
+    }
+
+    /// Resolution closure: embedded bridge declares the receiver-prepended
+    /// handle the ServerLevel retarget emits.
+    #[test]
+    fn blockupd_embedded_declares_all_redirect_targets() {
+        if let Err(e) = crate::classfile::blockupd_resolution_closure(super::BLOCKUPD_BYTES) {
+            panic!(
+                "RESOLUTION CLOSURE FAILED: {e} — rebuild entityinside/ via build_blockupd_ops.sh"
+            );
+        }
+    }
+
+    /// Scope lock: EXACTLY the sendBlockUpdated target (single-site lever).
+    #[test]
+    fn blockupd_redirect_table_is_exactly_sendblockupdated() {
+        let targets = crate::classfile::BLOCKUPD_REDIRECT_TARGETS;
+        assert_eq!(targets.len(), 1, "S7-168 BU-DEFER is a SINGLE-SITE lever");
+        assert_eq!(targets[0].0, "sendBlockUpdated");
+        assert_eq!(
+            targets[0].1,
+            "(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;I)V"
+        );
+        assert_eq!(targets[0].2, "handle");
+        assert_eq!(
+            targets[0].3,
+            "(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;I)V"
+        );
+    }
 }

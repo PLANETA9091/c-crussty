@@ -3660,6 +3660,50 @@ pub fn patch_entity_skip_store_bb(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutc
     }
 }
 
+/// S7-168 (STEAL v2 defect-fix, TASK-335): the single ServerLevel
+/// sendBlockUpdated body redirects to BlockUpdateOps.handle — the javap-
+/// verbatim vanilla body (codelen=235 disassembled by javap_lite) lives in
+/// the bridge; workers defer only the navigatingMobs pass to the main
+/// thread (phase-4 FIFO replay), killing the s7176 race NPE
+/// (ObjectOpenHashSet$SetIterator "wrapped is null").
+pub const BLOCKUPD_OPS_CLASS: &str = "net/minecraft/server/level/BlockUpdateOps";
+
+pub const BLOCKUPD_REDIRECT_TARGETS: [(&str, &str, &str, &str); 1] = [(
+    "sendBlockUpdated",
+    "(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;I)V",
+    "handle",
+    "(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;I)V",
+)];
+
+/// #13-STEAL-v2 delivery guard: the BlockUpdateOps classfile being
+/// DELIVERED to the kernel loader must declare handle with the receiver-
+/// prepended static descriptor.
+pub fn blockupd_resolution_closure(bridge: &[u8]) -> Result<(), String> {
+    redirect_targets_resolution_closure(bridge, &BLOCKUPD_REDIRECT_TARGETS)
+}
+
+pub fn patch_serverlevel_send_block_updated(
+    bytes: &[u8],
+) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let (name, desc, tname, tdesc) = BLOCKUPD_REDIRECT_TARGETS[0];
+    let (p, outcome) = redirect_method_body_to_static(
+        bytes,
+        name,
+        desc,
+        "net/minecraft/server/level/ServerLevel",
+        BLOCKUPD_OPS_CLASS,
+        tname,
+        tdesc,
+    )?;
+    match outcome {
+        RetargetOutcome::Retargeted { .. } => Ok((p, RetargetOutcome::Retargeted { sites: 1 })),
+        RetargetOutcome::AlreadyPatched { .. } => {
+            Ok((p, RetargetOutcome::AlreadyPatched { sites: 1 }))
+        }
+        RetargetOutcome::NotFound => Ok((bytes.to_vec(), RetargetOutcome::NotFound)),
+    }
+}
+
 /// S7-164 lever #10: redirect the THREE hottest Entity inside/fluid bodies
 /// (census: collidedWithFluid ← lambda$checkInsideBlocks$2; collidedAlongVector ←
 /// collidedWithShapeMovingFrom only; both from Entity) to the scalar
@@ -6009,6 +6053,29 @@ mod region_threads {
     const ENTITY: &[u8] = include_bytes!("../tests/fixtures/Entity_real.class");
 
     use crate::classfile::*;
+
+    /// S7-168 (STEAL v2 defect-fix): the REAL ServerLevel fixture's
+    /// sendBlockUpdated body redirects to BlockUpdateOps.handle EXACTLY
+    /// once (single non-overloaded body; javap codelen=235 contract).
+    #[test]
+    fn blockupd_serverlevel_retargets_exactly_one_sendblockupdated() {
+        let (patched, outcome) =
+            patch_serverlevel_send_block_updated(SERVER).expect("patch");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "ServerLevel.sendBlockUpdated is EXACTLY the single BU-DEFER site"
+        );
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        // Idempotence guard: repatching the patched bytes must not double-emit.
+        let (_, outcome2) =
+            patch_serverlevel_send_block_updated(&patched).expect("repatch");
+        assert_eq!(
+            outcome2,
+            RetargetOutcome::AlreadyPatched { sites: 1 },
+            "second pass must detect the already-retargeted body"
+        );
+    }
 
     #[test]
     fn region_tracker_chunkmap_retargets_exactly_one_sweep_call() {
