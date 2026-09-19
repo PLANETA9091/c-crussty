@@ -1,6 +1,6 @@
-# absorb #14 TRAVEL-ALLOC-DIET v1 s7182 (run 35461415596, head 0abaaaf) — DUAL BAR
+# absorb #14 TRAVEL-ALLOC-DIET v1 s7182 (run 35462493831, head aedad68) — DUAL BAR
 
 - FAILURE-рулетка: crash-маркеры=0, wedge=0, fixture-INVALID=0, band-discard=True
-  -> **BAND-DISCARD** (S7-96d fast-fail, не вердикт) — ре-диспатч dispatch_s7182.py без анализа
+  -> **BAND-DISCARD** (S7-96d fast-fail, не вердикт) — ре-диспатч dispatch_s7185.py без анализа
 
 ## VERDICT: **BAND-DISCARD**
