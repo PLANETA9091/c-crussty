@@ -2519,3 +2519,25 @@ Stage Summary:
 - CI-бюджет: 1 диагностический RECON-лег за тик (производственных 0)
 
 RUN_ID_DISPATCHED: да (диагностический RECON-лег, dispatch_s7165.py; S7-108 — единственный в полёте)
+
+---
+## TASK-318 (RECON-12 absorb лега 35425246662: remset firehose подтверждён — dirty-cards p50 6.3M/цикл; OldObjectSample канал недостаточен → #13 широкая paper-REFUTED; объявлен #13-SBB SKIP-STORE-BB с preregister remset A/B) — 2026-09-19 ~14:2x +08 — Job 396026 (тик 14:08)
+
+Task: absorb диагностического RECON-лега 35425246662 → решение GO/NO-GO #13 SKIP-STORE-DIET по preregister TASK-316; при открытии — подготовка реализации.
+
+Work Log:
+- creds (1b); pull ×2 (HEAD-ы мои же: dd904c7 / a27e560 — параллельных сессий нет); next id = 318; лег 35425246662 initially in_progress → RECON-подготовка: javap-контракт сеттеров (RECON12A_SKIP_STORE_IDENTITY.md): setBoundingBox = нормализация (dcmpg×3 + dcmpl-кламп 64.0×3 + NaN-вербатим) + new AABB каждый вызов + putfield bb, 0 identity-сайтов; setDeltaMovement = putfield под posLock-монитором + 5 identity-сайтов (guard move() offset 280-285; vanilla зовёт setDeltaMovement ВНУТРИ move: 263 stuck-ZERO, 800/1115 финал) → skip deltaMovement = parity-риск
+- лег completed success 06:11:36 UTC → артефакт скачан (run-s7165-recon-diag/): remset.log/refine.log/recon.jfr доставлены — инструмент цел
+- remset debug: dirty cards/cycle p50 6,324,224 (max 7.4M), dirty% p50 59.63%, 165 циклов → ~670k карт/с, записи ≥ карт ×6-9 — модель TASK-316 (4-6M/s) сходится; измеримая A/B-база
+- jdk.OldObjectSample: 72 события — leakage-сэмплер (objectAge минуты, boot-стеки paperclip/ZipFile) НЕ репрезентирует promoted-поток → канал NO-GO-INSUFFICIENT-TOOL; фикс парсера (object-class перенос строки, objectAge m/s) + счёт-пересчёт
+- jdk.ObjectAllocationSample 78686 сэмплов (счёт): entity-семьи 71.35% АЛЛОКАЦИЙ — boundingBox/move 36.92% (Vec3 18.65% + AABB 16.75%), other-entity 28.04% (LazyEntityCollisionContext 1.19%, Entity$$Lambda 1.16%), deltaMovement 2.89%, sync 0.50%, lists 0.05%; аллокации ≠ записи → гейт-вопрос неотвечен
+- ВЕРДИКТ по preregister TASK-316 (не переписан): условие «измеренная доля записей ≥40%» не открыто → #13 широкая = paper-REFUTED как НЕДОКАЗАННАЯ; RECON12B_ABSORB_S7165.md
+- ОБЪЯВЛЕН #13-SBB SKIP-STORE-BB: value-equal skip ТОЛЬКО setBoundingBox (parity-safe по контракту); measurement-by-effect: remset dirty-cards A/B vs 35425246662 (тот же recon_diag оверхед) = прямое измерение bb-доли записей; preregister гейты зафиксированы (PG4a dirty-cards p50 −10%+, PG4b card-set CPU −10%+, PG4c AABB-аллокация −20%+, оракул ≥1M бит-в-бит + identity-инвариант, банкинг v5 = v3 + skip_store_bb=1)
+- Учёт: CLAIMS TASK-318, GOAL СТАТУС ×1, worklog, atomic append; run-артефакты закоммичены по прецеденту s7162 (collapsed-файлы исключены — не коммитились и раньше); пуш обоих репо (6c0078d)
+
+Stage Summary:
+- card-set firehose (ТОП-1 16.39%) получил измеримую базу и узкий атакуемый сайт: setBoundingBox — единственный parity-safe сеттер (0 identity-сайтов), сам аллоцирует new AABB каждый вызов
+- #13-SBB = честный ход «ТОП-ПОЖИРАТЕЛЬ → ∞»: эффект меряется ПРЯМО по remset-агрегату (не через модельные доли), оверхед JFR в обоих легах идентичен
+- NEXT (тик 14:43): реализация #13-SBB (SkipStoreOps.java, redirect 173 юнита, entity_compose stage 8, оракул ≥1M) → preregister уже зафиксирован → диспатч v5-кандидата; RECON-13 = other-entity 28.04% декомпозиция
+
+RUN_ID_DISPATCHED: нет (лег 35425246662 поглощён; S7-108 чист)
