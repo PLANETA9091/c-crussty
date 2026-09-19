@@ -62,6 +62,7 @@ const CHUNKMAP_CLASS: &str = "net/minecraft/server/level/ChunkMap";
 const ENTITY_CLASS: &str = "net/minecraft/world/entity/Entity";
 const OPS_CLASS: &str = "net/minecraft/world/entity/RegionTickOps";
 const OPS_INNER_CLASS: &str = "net/minecraft/world/entity/RegionTickOps$Mut";
+const OPS_GUARD_CLASS: &str = "net/minecraft/world/entity/RegionTickOps$GuardedNavigatingMobs";
 const TRACKER_OPS_CLASS: &str = "net/minecraft/server/level/TrackerTickOps";
 const RNG_OPS_CLASS: &str = "net/minecraft/util/RngOps";
 
@@ -69,6 +70,12 @@ const OPS_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/world/entity/RegionTickOps.class");
 const OPS_INNER_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/world/entity/RegionTickOps$Mut.class");
+// S7-170 (TASK-349 delivery fix): nested GuardedNavigatingMobs MUST be defined
+// into the kernel loader — RegionTickOps.ensureNavMobsGuarded instantiates it
+// on first swap; missing define = NoClassDefFoundError on the first add flow.
+const OPS_GUARD_BYTES: &[u8] = include_bytes!(
+    "../entityinside/build/net/minecraft/world/entity/RegionTickOps$GuardedNavigatingMobs.class"
+);
 const TRACKER_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/server/level/TrackerTickOps.class");
 const RNG_BYTES: &[u8] =
@@ -383,6 +390,7 @@ pub fn activate() {
             let mut list = vec![
                 (OPS_CLASS, OPS_BYTES),
                 (OPS_INNER_CLASS, OPS_INNER_BYTES),
+                (OPS_GUARD_CLASS, OPS_GUARD_BYTES),
                 (TRACKER_OPS_CLASS, TRACKER_BYTES),
                 (RNG_OPS_CLASS, RNG_BYTES),
             ];
@@ -433,6 +441,7 @@ pub fn activate() {
             let mut bridge_list: Vec<(&str, &[u8])> = vec![
                 (OPS_CLASS, OPS_BYTES),
                 (OPS_INNER_CLASS, OPS_INNER_BYTES),
+                (OPS_GUARD_CLASS, OPS_GUARD_BYTES),
                 (TRACKER_OPS_CLASS, TRACKER_BYTES),
                 (RNG_OPS_CLASS, RNG_BYTES),
             ];
