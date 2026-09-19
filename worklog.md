@@ -2297,3 +2297,25 @@ Stage Summary:
 - NEXT (S7-163 absorb, следующий тик): гейты PG2/PG3/PG4/CRASH-FREE vs leg#2 (v3); PASS → CUMULATIVE v4 = v3 + flat_traversal=1; FAIL → REFUTED + rollback flat_traversal=0; затем свежий ТОП → возврат к ТОП-1 по кругу «ТОП-ПОЖИРАТЕЛЬ → ∞»
 
 RUN_ID_DISPATCHED: 35407788083 (preregister A/B; CI-бутов за тик 1 — санкционированный)
+
+---
+## TASK-308 (RECON-6) — 2026-09-19 ~09:0x +08 — Job 396026 (тик 08:08)
+**Статус: лег S7-163 (35407788083) в полёте весь тик — absorb следующий тик; выполнен RECON-6: фаза GC/JIT (ТОП-2, 35.49% CPU) разложена на под-лейны по трём осям; корень фазы = аллокационный темп 1634 MB/s из entity-путей; кандидат рычага #10 ZERO-ALLOC-INSIDE зафиксирован.**
+
+Work Log:
+- creds (1b: bootstrap_tick.sh отсутствует, PUSH-URL remote set-url обоим репо); pull ×3 (c-crussty, dev-logs — up to date; CRUSSTY pristine в песочнице отсутствует после сброса — не трогался); next TASK id = 308
+- Лег 35407788083 (head 37a0072, старт 08:00:07 +08) весь тик in_progress; диспатч новых лег заблокирован concurrency-гвардом S7-108 → тик использован для RECON по методике «ТОП-ПОЖИРАТЕЛЬ → ∞» (ТОП-2 = неразложенная фаза GC/JIT)
+- Ось CPU (классификатор фазы идентичен absorb_s7162.py): REFINEMENT (G1ConcurrentRefineThread) 22917 сэмплов = 17.89% CPU = 50.40% фазы (refine_buffer 23098 вхождений — один конкурентный тред жрёт ~0.7-0.9 ядра на 4-vCPU боксе); MARKING (G1CMTask) 5.35%; STW evac 4.83% + rebuild-RS 4.20%; JIT 2.04%; неклассифицированный остаток 0.60%
+- Ось gc.log: 154 young GC, 0 Full; медиана паузы 156.0 ms (mean 137.2, max 190.4); живой сегмент (296 s): 77 событий, 12.68 s чистого STW = **4.29% стены**; меж-GC интервал медиана 3.85 s; **аллокационный темп median 1639 MB/s** (max 2037)
+- Ось alloc-collapsed: AABB 20.19% + Vec3 19.89% + BlockPos-семья 15.1% = **56.2% всего давления**; по лейнам семьи: inside-pipeline(checkInsideBlocks) 42.0%, tickBucket-orch 25.0%, broadphase 13.4%, movement/travel 10.4%, fluid 4.6%; BlockPos$6/$4 на 99% = forEachBlockIntersectedBetween (уже атакованы рычагом #9 в полёте)
+- Пиновка вызывающих: AABB ← collidedWithShapeMovingFrom/makeBoundingBox 17.3% + FluidState.getAABB 16.7% + checkInsideBoxes deflate 16.2%; Vec3 ← collidedAlongVector 21.0% + updateFluidHeightAndDoFluidPushing 21.0% + traversal-temps 9.7%
+- ВЕРДИКТ RECON-6: GC/JIT — downstream аллок-темпа 1.6 GB/s; JVM-флаги запрещены → единственный класс рычага = zero-alloc в источнике; кэш-классы collidedWithFluid REFUTED×3 не трогаются (zero-alloc = другой класс: ничего не запоминает, бит-в-бит double-математика, vanilla-parity по построению)
+- Кандидат рычага #10 ZERO-ALLOC-INSIDE зафиксирован в RECON6_GCJIT.md: скоп = inside-pipeline (checkInsideBlocks/collidedWithFluid/collidedWithShapeMovingFrom) + fluid-push (updateFluidHeightAndDoFluidPushing/FlowingFluid.getFlow); методика как #9 (javap-контракт → lockstep-оракул → entity_compose stage → прeregister); диспатч только после absorb #9 по свежей сортировке ТОПа
+- Артефакты: research/gc-jit-recon-2026-09-19/{RECON6_GCJIT.md, RECON6_GCJIT_raw.txt, recon6_gcjit.py, recon6_alloc_callers.py}
+
+Stage Summary:
+- Фаза GC/JIT (35.49% CPU) больше не «чёрный ящик»: 50.4% = конкурентный refine от write-барьеров, ~9% = STW-воркеры, 4.29% стены = прямая заморозка тиков паузами 156-190 ms; все статьи — следствия мусора AABB/Vec3/BlockPos (56.2% аллока) из entity-путей
+- Молодой GC каждые 3.85 s при 1.6 GB/s = системный налог сцены X150K; его снижение бьёт СРАЗУ по двум осям ТОПа (CPU entity-фазы + GC/STW) — двойная отдача архитектурного рычага
+- NEXT (следующий тик): absorb леги S7-163 (35407788083) по неизменным пререг-гейтам → CUMULATIVE v4 или REFUTED+rollback → свежий ТОП (пересортировка) → диспатч рычага #10 ZERO-ALLOC-INSIDE или иного ТОП-1 по факту
+
+RUN_ID_DISPATCHED: нет (leg 35407788083 в полёте; S7-108)
