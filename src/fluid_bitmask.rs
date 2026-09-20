@@ -112,6 +112,7 @@ pub fn activate() {
                     }
                     defined == 2
                 });
+                let ok = ok.unwrap_or(false);
                 if ok {
                     ARMED.store(true, Ordering::SeqCst);
                     eprintln!("[crussty-plugin] fluid_bitmask: gate armed (hook consult live)");
