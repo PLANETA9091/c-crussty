@@ -2768,3 +2768,22 @@ Stage Summary:
 - Спека C-эры S7-171 открыта и закоммичена — C больше не «спека не начата»: есть тезис, пины, фазы, гейты
 - S7-170 race-фундамент зафиксирован в спеке как ЗАКРЫТ (верификация s7193 threw=0)
 - NEXT id 362: без решения владельца — RECON-36 serial-fraction (офлайн); при B — dispatch_s7195.py --sanctioned; при C — P1
+
+---
+Task ID: 362
+Agent: cron-tick (Super Z)
+Task: TASK-362 tick: pull + S7-108 (чисто, CI green 06f8bcc) → P1 RECON-36 serial-fraction (спека §9)
+
+Work Log:
+- git pull --rebase обоих чисты; runs: CI green 06f8bcc, бенч-легов нет, чужих диспатчей нет
+- Ветка (4c) NEXT 362: решения нет → P1 RECON-36 (санкционирован спекой S7-171 §9)
+- scripts/bench4_recon/recon36_serial_fraction.py: взвешенные сэмплы (не линии!), thread-split по вход-пути (WORKER=RegionTickOps.lambda$ensureHelpers$4 дно, MAIN=spin$2, NATIVE=thread_native_entry), фазовая декомпозиция main, таблица Амдала, гейт P1
+- Результаты кросс s7194/s7189: workers 43.8/45.0%, NATIVE-VM 36.2/35.2% (кросс-чек RECON-26 ✓), MAIN 19.8/19.6% — гейт ≤70% ПРОЙДЕН; фазы main: entity-бакеты 78-80% main (region_steal), tracker 2.2%, random+block 1.4%, tail 0.6%
+- Развилка P2: слив main→workers переворачивает крит.путь на медленного worker'а; потолок f(N,I): N4/I1.0 +33%, I1.15 +15%, I1.3 +2%, N8/I1.1 +58%; дисбаланс из collapsed НЕ наблюдаем → прегистр P2-pre-gate (1 CI-лег, thread-separated -t профиль)
+- research/gc-recon-2026-09-19/RECON36_SERIAL_FRACTION_VERDICT.md: полный вердикт + честная аменда спеки (оркестрация 1.8% = микро-зона, Rust-scheduler сам по себе не рычаг)
+- Учёт: GOAL ×47 + CLAIMS TASK-362 + worklog; пуш обоих + re-pull
+
+Stage Summary:
+- P1 закрыт числами: serial 19.7% ≪ 70%, C продолжается; первый профиль-обоснованный путь ≥ ДВОЙНОГО БАРА = геометрия worker-пула (при I≤1.15 потолок +25..33%)
+- Развилка P2 прегистрирована: I≤1.15 → offload; I≥1.3 → ребаланс REGION_CHUNKS/WORKERS
+- NEXT id 363: при C-санкции P2-pre-gate лег; при B — активация #15 одной командой; без решения — P2-pre-gate тул офлайн
