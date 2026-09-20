@@ -1,0 +1,220 @@
+﻿2026-09-20T10:51:26.3083999Z Current runner version: '2.337.0'
+2026-09-20T10:51:26.3101768Z ##[group]Runner Image Provisioner
+2026-09-20T10:51:26.3102424Z Hosted Compute Agent
+2026-09-20T10:51:26.3102788Z Version: 20260828.587
+2026-09-20T10:51:26.3103164Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+2026-09-20T10:51:26.3103685Z Build Date: 2026-08-28T16:44:25Z
+2026-09-20T10:51:26.3104095Z Worker ID: {89097ff3-cb80-432b-af71-c23d013bc210}
+2026-09-20T10:51:26.3104537Z Azure Region: centralus
+2026-09-20T10:51:26.3104903Z ##[endgroup]
+2026-09-20T10:51:26.3105647Z ##[group]Operating System
+2026-09-20T10:51:26.3106095Z Ubuntu
+2026-09-20T10:51:26.3106414Z 24.04.5
+2026-09-20T10:51:26.3106785Z LTS
+2026-09-20T10:51:26.3107111Z ##[endgroup]
+2026-09-20T10:51:26.3107475Z ##[group]Runner Image
+2026-09-20T10:51:26.3107858Z Image: ubuntu-24.04
+2026-09-20T10:51:26.3108200Z Version: 20260907.300.1
+2026-09-20T10:51:26.3109285Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260907.300/images/ubuntu/Ubuntu2404-Readme.md
+2026-09-20T10:51:26.3110236Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260907.300
+2026-09-20T10:51:26.3111073Z ##[endgroup]
+2026-09-20T10:51:26.3112063Z ##[group]GITHUB_TOKEN Permissions
+2026-09-20T10:51:26.3113724Z Contents: read
+2026-09-20T10:51:26.3114206Z Metadata: read
+2026-09-20T10:51:26.3114678Z ##[endgroup]
+2026-09-20T10:51:26.3116381Z Secret source: Actions
+2026-09-20T10:51:26.3117127Z Cache mode: write
+2026-09-20T10:51:26.3117796Z Prepare workflow directory
+2026-09-20T10:51:26.3426042Z Prepare all required actions
+2026-09-20T10:51:26.3465038Z Getting action download info
+2026-09-20T10:51:26.5705307Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-09-20T10:51:26.6679783Z Download action repository 'dtolnay/rust-toolchain@stable' (SHA:6bed0761d98439e5a578e2877258200ad565ba87)
+2026-09-20T10:51:26.8310143Z Download action repository 'Swatinem/rust-cache@v2' (SHA:6323deb102c322ba6fcbdcafc7e3dddab59af2b6)
+2026-09-20T10:51:27.2302601Z Download action repository 'actions/setup-java@v4' (SHA:cf277c60eb25467037889841efdb72551f06f6c3)
+2026-09-20T10:51:28.0767884Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-09-20T10:51:28.7457510Z Complete job name: world-bench
+2026-09-20T10:51:28.8012951Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-09-20T10:51:28.8017587Z ##[group]Run actions/checkout@v4
+2026-09-20T10:51:28.8017800Z with:
+2026-09-20T10:51:28.8017927Z   repository: PLANETA9091/c-crussty
+2026-09-20T10:51:28.8019585Z   token: ***
+2026-09-20T10:51:28.8019703Z   ssh-strict: true
+2026-09-20T10:51:28.8019829Z   ssh-user: git
+2026-09-20T10:51:28.8019953Z   persist-credentials: true
+2026-09-20T10:51:28.8020100Z   clean: true
+2026-09-20T10:51:28.8020226Z   sparse-checkout-cone-mode: true
+2026-09-20T10:51:28.8020375Z   fetch-depth: 1
+2026-09-20T10:51:28.8020502Z   fetch-tags: false
+2026-09-20T10:51:28.8020628Z   show-progress: true
+2026-09-20T10:51:28.8020751Z   lfs: false
+2026-09-20T10:51:28.8020891Z   submodules: false
+2026-09-20T10:51:28.8021014Z   set-safe-directory: true
+2026-09-20T10:51:28.8021157Z   allow-unsafe-pr-checkout: false
+2026-09-20T10:51:28.8021385Z ##[endgroup]
+2026-09-20T10:51:28.8752566Z Syncing repository: PLANETA9091/c-crussty
+2026-09-20T10:51:28.8753477Z ##[group]Getting Git version info
+2026-09-20T10:51:28.8753697Z Working directory is '/home/runner/work/c-crussty/c-crussty'
+2026-09-20T10:51:28.8753991Z [command]/usr/bin/git version
+2026-09-20T10:51:28.8819345Z git version 2.55.0
+2026-09-20T10:51:28.8833714Z ##[endgroup]
+2026-09-20T10:51:28.8845297Z Temporarily overriding HOME='/home/runner/work/_temp/669fe84b-58a9-47a8-b960-c26433951146' before making global git config changes
+2026-09-20T10:51:28.8849762Z Adding repository directory to the temporary git global config as a safe directory
+2026-09-20T10:51:28.8850370Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/c-crussty/c-crussty
+2026-09-20T10:51:28.8910914Z Deleting the contents of '/home/runner/work/c-crussty/c-crussty'
+2026-09-20T10:51:28.8914707Z ##[group]Initializing the repository
+2026-09-20T10:51:28.8917837Z [command]/usr/bin/git init /home/runner/work/c-crussty/c-crussty
+2026-09-20T10:51:28.9079636Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-09-20T10:51:28.9084348Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-09-20T10:51:28.9084855Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-09-20T10:51:28.9085503Z hint: call:
+2026-09-20T10:51:28.9085672Z hint:
+2026-09-20T10:51:28.9085938Z hint: 	git config --global init.defaultBranch <name>
+2026-09-20T10:51:28.9086209Z hint:
+2026-09-20T10:51:28.9086512Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-09-20T10:51:28.9086941Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-09-20T10:51:28.9087290Z hint:
+2026-09-20T10:51:28.9087469Z hint: 	git branch -m <name>
+2026-09-20T10:51:28.9087686Z hint:
+2026-09-20T10:51:28.9087985Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-09-20T10:51:28.9088606Z Initialized empty Git repository in /home/runner/work/c-crussty/c-crussty/.git/
+2026-09-20T10:51:28.9091871Z [command]/usr/bin/git remote add origin https://github.com/PLANETA9091/c-crussty
+2026-09-20T10:51:28.9180226Z ##[endgroup]
+2026-09-20T10:51:28.9180616Z ##[group]Disabling automatic garbage collection
+2026-09-20T10:51:28.9180950Z [command]/usr/bin/git config --local gc.auto 0
+2026-09-20T10:51:28.9272557Z ##[endgroup]
+2026-09-20T10:51:28.9273240Z ##[group]Setting up auth
+2026-09-20T10:51:28.9278667Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-09-20T10:51:28.9312649Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-09-20T10:51:28.9627838Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-09-20T10:51:28.9655563Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-09-20T10:51:28.9831091Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-09-20T10:51:28.9858802Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-09-20T10:51:29.0033211Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-09-20T10:51:29.0258198Z ##[endgroup]
+2026-09-20T10:51:29.0258757Z ##[group]Fetching the repository
+2026-09-20T10:51:29.0265667Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +110c5ca788fb174c50c33b371b19add9e9334e12:refs/remotes/origin/master
+2026-09-20T10:51:32.2520519Z From https://github.com/PLANETA9091/c-crussty
+2026-09-20T10:51:32.2521156Z  * [new ref]         110c5ca788fb174c50c33b371b19add9e9334e12 -> origin/master
+2026-09-20T10:51:32.2523421Z ##[endgroup]
+2026-09-20T10:51:32.2523795Z ##[group]Determining the checkout info
+2026-09-20T10:51:32.2529633Z ##[endgroup]
+2026-09-20T10:51:32.2530588Z [command]/usr/bin/git sparse-checkout disable
+2026-09-20T10:51:32.2573662Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-09-20T10:51:32.2609782Z ##[group]Checking out the ref
+2026-09-20T10:51:32.2610249Z [command]/usr/bin/git checkout --progress --force -B master refs/remotes/origin/master
+2026-09-20T10:51:33.4631084Z Updating files:  75% (2239/2980)
+2026-09-20T10:51:33.7203849Z Updating files:  76% (2265/2980)
+2026-09-20T10:51:33.9139355Z Updating files:  77% (2295/2980)
+2026-09-20T10:51:34.0801141Z Updating files:  78% (2325/2980)
+2026-09-20T10:51:34.2668230Z Updating files:  79% (2355/2980)
+2026-09-20T10:51:34.5199327Z Updating files:  80% (2384/2980)
+2026-09-20T10:51:34.7152536Z Updating files:  81% (2414/2980)
+2026-09-20T10:51:34.9054074Z Updating files:  82% (2444/2980)
+2026-09-20T10:51:35.1316434Z Updating files:  83% (2474/2980)
+2026-09-20T10:51:35.2388135Z Updating files:  84% (2504/2980)
+2026-09-20T10:51:35.2507604Z Updating files:  85% (2533/2980)
+2026-09-20T10:51:35.2662569Z Updating files:  86% (2563/2980)
+2026-09-20T10:51:35.2662952Z Updating files:  86% (2590/2980)
+2026-09-20T10:51:35.2743429Z Updating files:  87% (2593/2980)
+2026-09-20T10:51:35.2761984Z Updating files:  88% (2623/2980)
+2026-09-20T10:51:35.4267117Z Updating files:  89% (2653/2980)
+2026-09-20T10:51:35.4304336Z Updating files:  90% (2682/2980)
+2026-09-20T10:51:35.4314077Z Updating files:  91% (2712/2980)
+2026-09-20T10:51:35.4325566Z Updating files:  92% (2742/2980)
+2026-09-20T10:51:35.4340009Z Updating files:  93% (2772/2980)
+2026-09-20T10:51:35.4356398Z Updating files:  94% (2802/2980)
+2026-09-20T10:51:35.4370275Z Updating files:  95% (2831/2980)
+2026-09-20T10:51:35.4401329Z Updating files:  96% (2861/2980)
+2026-09-20T10:51:35.4425911Z Updating files:  97% (2891/2980)
+2026-09-20T10:51:35.4460580Z Updating files:  98% (2921/2980)
+2026-09-20T10:51:35.4531598Z Updating files:  99% (2951/2980)
+2026-09-20T10:51:35.4531971Z Updating files: 100% (2980/2980)
+2026-09-20T10:51:35.4532355Z Updating files: 100% (2980/2980), done.
+2026-09-20T10:51:35.5543086Z Reset branch 'master'
+2026-09-20T10:51:35.5543634Z branch 'master' set up to track 'origin/master'.
+2026-09-20T10:51:35.5577161Z ##[endgroup]
+2026-09-20T10:51:35.6424771Z [command]/usr/bin/git log -1 --format=%H
+2026-09-20T10:51:35.6451007Z 110c5ca788fb174c50c33b371b19add9e9334e12
+2026-09-20T10:51:35.7949930Z ##[group]Run set -euo pipefail
+2026-09-20T10:51:35.7950180Z [36;1mset -euo pipefail[0m
+2026-09-20T10:51:35.7950330Z [36;1mIDX=$(python3 -c '[0m
+2026-09-20T10:51:35.7950466Z [36;1mimport time[0m
+2026-09-20T10:51:35.7950589Z [36;1mt=time.time(); x=1[0m
+2026-09-20T10:51:35.7950730Z [36;1mfor _ in range(6000000):[0m
+2026-09-20T10:51:35.7950895Z [36;1m    x=(x*1103515245+12345)&0x7fffffff[0m
+2026-09-20T10:51:35.7951080Z [36;1mprint(f"{6000000/(time.time()-t):.0f}")')[0m
+2026-09-20T10:51:35.7951279Z [36;1mecho "runner_cpu_index=$IDX band=[6000000,9500000]"[0m
+2026-09-20T10:51:35.7951498Z [36;1mif [ "$IDX" -lt "6000000" ] || [ "$IDX" -gt "9500000" ]; then[0m
+2026-09-20T10:51:35.7951850Z [36;1m  echo "::notice::runner_cpu_index=$IDX OUTSIDE band — fast-fail pre-download (pairing discard, not a bench failure)"[0m
+2026-09-20T10:51:35.7952140Z [36;1m  exit 1[0m
+2026-09-20T10:51:35.7952252Z [36;1mfi[0m
+2026-09-20T10:51:35.7985458Z shell: /usr/bin/bash -e {0}
+2026-09-20T10:51:35.7985687Z ##[endgroup]
+2026-09-20T10:51:36.4492667Z runner_cpu_index=11250976 band=[6000000,9500000]
+2026-09-20T10:51:36.4509065Z ##[notice]runner_cpu_index=11250976 OUTSIDE band — fast-fail pre-download (pairing discard, not a bench failure)
+2026-09-20T10:51:36.4516489Z ##[error]Process completed with exit code 1.
+2026-09-20T10:51:36.4896534Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-09-20T10:51:36.4897830Z ##[group]Run actions/upload-artifact@v4
+2026-09-20T10:51:36.4897988Z with:
+2026-09-20T10:51:36.4898107Z   name: world3-bench
+2026-09-20T10:51:36.4899198Z   path: world3-run/BOTTLENECKS_3.md
+world3-run/cpu-collapsed.txt
+world3-run/wall-collapsed.txt
+world3-run/alloc-collapsed.txt
+world3-run/cpu-flamegraph.html
+world3-run/server-stdout.log
+world3-run/gc.log
+world3-run/remset.log
+world3-run/refine.log
+world3-run/recon.jfr
+world3-run/ap.log
+world3-run/run-env.txt
+world3-run/pclip-materialize.log
+world3-run/chunk-parse-diag.txt
+world3-run/entity-recon.txt
+world3-run/patched-kernel.jar
+world3-run/spark-report/
+
+2026-09-20T10:51:36.4900302Z   if-no-files-found: warn
+2026-09-20T10:51:36.4900440Z   compression-level: 6
+2026-09-20T10:51:36.4900567Z   overwrite: false
+2026-09-20T10:51:36.4900693Z   include-hidden-files: false
+2026-09-20T10:51:36.4900832Z ##[endgroup]
+2026-09-20T10:51:36.5962181Z (node:2051) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-09-20T10:51:36.5962595Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-09-20T10:51:36.6050806Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-09-20T10:51:36.6054206Z The least common ancestor is /home/runner/work/c-crussty/c-crussty/world3-run. This will be the root directory of the artifact
+2026-09-20T10:51:36.6062395Z ##[warning]No files were found with the provided path: world3-run/BOTTLENECKS_3.md
+world3-run/cpu-collapsed.txt
+world3-run/wall-collapsed.txt
+world3-run/alloc-collapsed.txt
+world3-run/cpu-flamegraph.html
+world3-run/server-stdout.log
+world3-run/gc.log
+world3-run/remset.log
+world3-run/refine.log
+world3-run/recon.jfr
+world3-run/ap.log
+world3-run/run-env.txt
+world3-run/pclip-materialize.log
+world3-run/chunk-parse-diag.txt
+world3-run/entity-recon.txt
+world3-run/patched-kernel.jar
+world3-run/spark-report/. No artifacts will be uploaded.
+2026-09-20T10:51:36.7392322Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-09-20T10:51:36.7393028Z Post job cleanup.
+2026-09-20T10:51:36.7987125Z [command]/usr/bin/git version
+2026-09-20T10:51:36.8021367Z git version 2.55.0
+2026-09-20T10:51:36.8045074Z Temporarily overriding HOME='/home/runner/work/_temp/f07d5e6d-5a83-49ef-ba72-3a473e4e03ce' before making global git config changes
+2026-09-20T10:51:36.8045790Z Adding repository directory to the temporary git global config as a safe directory
+2026-09-20T10:51:36.8048730Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/c-crussty/c-crussty
+2026-09-20T10:51:36.8589753Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-09-20T10:51:36.8627207Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-09-20T10:51:36.8820537Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-09-20T10:51:36.8841607Z http.https://github.com/.extraheader
+2026-09-20T10:51:36.8849622Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-09-20T10:51:36.9682436Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-09-20T10:51:36.9871982Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-09-20T10:51:36.9900042Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-09-20T10:51:37.0190996Z Cleaning up orphan processes
+2026-09-20T10:51:37.0411052Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
