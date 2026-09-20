@@ -91,7 +91,7 @@ def main():
         "region_threads": "4",
         "batch_collector": "1",
         "travel_diet": "1",
-        "zero_alloc": "0",
+        "inside_bitmask": "0",
         "skip_store_bb": "0",
         "region_steal": "0",
         "bu_defer": "0",
