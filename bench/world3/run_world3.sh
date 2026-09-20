@@ -164,7 +164,7 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "fluid_guard: $FLUID_GUARD (CRUSSTY_FLUID_PUSH_GUARD; 1 = same-state fluid-push guard ARMED, TASK-80/S7-128)"
   echo "paletted_demux: $PALETTED_DEMUX (CRUSSTY_PALETTED_DEMUX; 1 = PALETTED-DEMUX ARCH-ATTACK lever #1, S7-131)"
   echo "alloc_diet: $ALLOC_DIET (CRUSSTY_ALLOC_DIET; input dropped TASK-375, lever #2 REFUTED x2 — pinned 0)"
-  echo "gc_tune: $GC_TUNE (GC-TUNE TASK-375; 1 = MaxGCPauseMillis=40 + IHOP=35 + G1HeapRegionSize=8m + AlwaysPreTouch — JVM-level, vanilla-parity)"
+  echo "gc_tune: $GC_TUNE (GC-TUNE TASK-375/376; 1 = MaxGCPauseMillis=40 + IHOP=35 + G1HeapRegionSize=8m + AlwaysPreTouch; 2 = IHOP=35 + 8m + AlwaysPreTouch без pause-target [s7199: pause-target токсичен] — JVM-level, vanilla-parity)"
   echo "inside_cache: $INSIDE_CACHE (CRUSSTY_INSIDE_CACHE; 1 = INSIDE-CACHE ARCH-ATTACK lever #3: static-entity inside-blocks discovery memoization, S7-135/TASK-271)"
   echo "flush_diet: $FLUSH_DIET (CRUSSTY_FLUSH_DIET; 1 = FLUSH-DIET ARCH-ATTACK lever #4: StepBasedCollector.flushStep zero-waste addAll via FlushOps, S7-137)"
   echo "fluid_free: $FLUID_FREE (CRUSSTY_FLUID_FREE; 1 = FLUID-FREE-SECTION ARCH-ATTACK lever #5: fluid-ff verdict cache via FluidOps.fgate, requires paletted_demux=1, S7-143)"
@@ -457,6 +457,13 @@ if [ "${GC_TUNE:-0}" = "1" ]; then
     "-XX:+AlwaysPreTouch"
   )
   log "gc_tune=1: MaxGCPauseMillis=40 + IHOP=35 + RegionSize=8m + AlwaysPreTouch (TASK-375)"
+elif [ "${GC_TUNE:-0}" = "2" ]; then
+  EXTRA_JVM_GC=(
+    "-XX:InitiatingHeapOccupancyPercent=35"
+    "-XX:G1HeapRegionSize=8m"
+    "-XX:+AlwaysPreTouch"
+  )
+  log "gc_tune=2: IHOP=35 + RegionSize=8m + AlwaysPreTouch, NO pause-target (TASK-376 v2: s7199 показал pause-target=40 токсичен — eden 180M, 621 эвакуаций x ~60ms fixed = 44.4s; v2 = чистый A/B без токсичной кнопки)"
 fi
 if [ "${RECON_DIAG:-0}" = "1" ]; then
   EXTRA_JVM_DIAG=(
