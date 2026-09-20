@@ -7175,3 +7175,22 @@ fn check_members(bridge: &[u8], targets: &[(&str, &str, &str, &str)]) -> Result<
     }
     Ok(())
 }
+
+/// ITEMS_SOA (MEGA-ROUND-2, TASK-397-C): single-site body redirect of the
+/// private instance method ItemEntity.mergeWithNeighbours()V to the ItemSoaOps
+/// bridge (receiver prepended). Strict sites==1 by construction; the vanilla
+/// broadphase query is replaced by the SoA grid scan while every merge
+/// DECISION stays vanilla-exact (bridge side).
+pub const ITEM_SOA_OPS_CLASS: &str = "net/minecraft/world/entity/item/ItemSoaOps";
+
+pub fn patch_item_soa(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    redirect_method_body_to_static(
+        bytes,
+        "mergeWithNeighbours",
+        "()V",
+        "net/minecraft/world/entity/item/ItemEntity",
+        ITEM_SOA_OPS_CLASS,
+        "mergeWithNeighbours",
+        "(Lnet/minecraft/world/entity/item/ItemEntity;)V",
+    )
+}

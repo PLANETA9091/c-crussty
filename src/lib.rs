@@ -37,6 +37,7 @@ mod improved_noise;
 mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
+mod item_soa;
 mod jni_table;
 mod kernel_policy;
 mod loader;
@@ -174,6 +175,11 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // EntityCallbacks guard sites, composed on top of F1/F3 bytes (LAST in
     // the byte-hook chain). Dormant unless CRUSSTY_REGION_THREADS>=2.
     region_threads::register();
+    // ITEMS_SOA (MEGA-ROUND-2, TASK-397-C): byte hook on ItemEntity (pristine
+    // capture; mergeWithNeighbours body redirect served via retransform after
+    // the ItemSoaOps bridge lands). Dormant unless
+    // CRUSSTY_LEVER_FLAG=items_soa && CRUSSTY_LEVER_ARG=1.
+    item_soa::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -428,6 +434,10 @@ fn inject_surface() {
     // re-composes the F1 optimiseRandomTick swap; MUST run after
     // randomtick::activate — see src/tickhook.rs module docs).
     tickhook::activate();
+    // ITEMS_SOA (MEGA-ROUND-2, TASK-397-C): define ItemSoaOps into the kernel
+    // loader, then retransform ItemEntity for the mergeWithNeighbours body
+    // redirect (last — waits for boot quiet on its own worker).
+    item_soa::activate();
 }
 
 /// Define one bridge class and register all its natives.
