@@ -2904,6 +2904,74 @@ const CHECK_INSIDE_DESC: &str =
 const GATE_DESC: &str = "(Lnet/minecraft/world/entity/Entity;)Z";
 
 // ---------------------------------------------------------------------------
+// INSIDE-BITMASK (TASK-357, ARCH-ATTACK lever — the inside-discovery lane,
+// section all-air pre-gate; RECON-32/33 contract
+// research/gc-recon-2026-09-19/RECON33_INSIDE_BITMASK_CONTRACT.md).
+//
+// javap-контракт: ЕДИНСТВЕННЫЙ вызыватель private
+// `Entity.checkInsideBlocks(List, StepBasedCollector)V` — это
+// `Entity.applyEffectsFromBlocks(List<Movement>)` bc 58..64:
+//   58: aload_0
+//   59: aload_1
+//   60: aload_0
+//   61: getfield insideEffectCollector
+//   64: invokevirtual checkInsideBlocks:(Ljava/util/List;LStepBasedCollector;)V
+// (ref-census: другие вызыватели отсутствуют; all per-tick входы —
+// ItemEntity/ExperienceOrb/FallingBlock/PrimedTnt/EndCrystal.tick,
+// EnderDragon.aiStep, AbstractBoat.tick ×2, AbstractMinecart.move —
+// фуннелятся через applyEffectsFromBlocks(List)).
+//
+// Shape: ретаргет этого ОДНОГО invokevirtual на invokestatic
+// InsideBitmaskOps.checkInsideBlocksGated
+//   (LEntity;Ljava/util/List;LStepBasedCollector;)V
+// (receiver-first, 3B→3B, длина и форма стека сохранены). Ванильное тело
+// НЕ трогается: фоллбэк = MethodHandle-вызов исходного метода из Ops
+// (fail-closed; probe-then-patch в inside_bitmask.rs гарантирует, что патч
+// не встанет на разоружённый бридж).
+//
+// Strict: ровно ОДИН сайт (javap-ценз s7194); AlreadyPatched — только когда
+// сайт уже invokestatic на бридж; остальное = Err (fail closed, vanilla).
+
+pub const INSIDE_BITMASK_OPS_CLASS: &str = "net/minecraft/world/entity/InsideBitmaskOps";
+const AFB_HOST: &str = "applyEffectsFromBlocks";
+const AFB_HOST_DESC: &str = "(Ljava/util/List;)V";
+const CIB_TARGET: (&str, &str, &str) = (
+    "net/minecraft/world/entity/Entity",
+    "checkInsideBlocks",
+    CHECK_INSIDE_DESC,
+);
+const BITMASK_GATE_DESC: &str =
+    "(Lnet/minecraft/world/entity/Entity;Ljava/util/List;Lnet/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector;)V";
+
+pub fn patch_inside_bitmask(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    for probe in ["applyEffectsFromBlocks", "checkInsideBlocks", "insideEffectCollector"] {
+        if layout.pool.find_utf8(probe).is_none() {
+            return Err(format!("{probe} absent from pool (kernel rename?)"));
+        }
+    }
+    let expect_static = format!("(L{};{}", CIB_TARGET.0, &CIB_TARGET.2[1..]);
+    if BITMASK_GATE_DESC != expect_static {
+        return Err("bitmask gate descriptor is not the receiver-prepended target form".into());
+    }
+    let (out, outcome) = retarget_virtual_to_static(
+        bytes,
+        AFB_HOST,
+        AFB_HOST_DESC,
+        CIB_TARGET,
+        (INSIDE_BITMASK_OPS_CLASS, "checkInsideBlocksGated", BITMASK_GATE_DESC),
+    )?;
+    if let RetargetOutcome::Retargeted { sites } = &outcome {
+        if *sites != 1 {
+            return Err(format!(
+                "expected exactly one checkInsideBlocks site in applyEffectsFromBlocks(List), got {sites}"
+            ));
+        }
+    }
+    Ok((out, outcome))
+}
+
+// ---------------------------------------------------------------------------
 // FLAT-TRAVERSAL (S7-163, ARCH-ATTACK lever #9 — the inside-pipeline
 // traversal lane). The private int-overload
 //   Entity.checkInsideBlocks(Vec3, Vec3, StepBasedCollector, LongSet, int)I
