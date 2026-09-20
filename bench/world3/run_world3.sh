@@ -164,7 +164,7 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "fluid_guard: $FLUID_GUARD (CRUSSTY_FLUID_PUSH_GUARD; 1 = same-state fluid-push guard ARMED, TASK-80/S7-128)"
   echo "paletted_demux: $PALETTED_DEMUX (CRUSSTY_PALETTED_DEMUX; 1 = PALETTED-DEMUX ARCH-ATTACK lever #1, S7-131)"
   echo "alloc_diet: $ALLOC_DIET (CRUSSTY_ALLOC_DIET; input dropped TASK-375, lever #2 REFUTED x2 — pinned 0)"
-  echo "gc_tune: $GC_TUNE (GC-TUNE TASK-375/376/380; 1 = MaxGCPauseMillis=40 + IHOP=35 + G1HeapRegionSize=8m + AlwaysPreTouch; 2 = IHOP=35 + 8m + AlwaysPreTouch без pause-target [s7199: pause-target токсичен]; 3 = COLLECTOR ParallelGC; 4 = COLLECTOR ZGC generational — JVM-level, vanilla-parity)"
+  echo "gc_tune: $GC_TUNE (GC-TUNE TASK-375/376/380/384; 1 = MaxGCPauseMillis=40 + IHOP=35 + G1HeapRegionSize=8m + AlwaysPreTouch; 2 = IHOP=35 + 8m + AlwaysPreTouch без pause-target [s7199: pause-target токсичен]; 3 = COLLECTOR ParallelGC [БАНК v4]; 4 = COLLECTOR ZGC generational; 5 = ParallelGC + TransparentHugePages + AlwaysPreTouch — JVM-level, vanilla-parity)"
   echo "inside_cache: $INSIDE_CACHE (CRUSSTY_INSIDE_CACHE; 1 = INSIDE-CACHE ARCH-ATTACK lever #3: static-entity inside-blocks discovery memoization, S7-135/TASK-271)"
   echo "flush_diet: $FLUSH_DIET (CRUSSTY_FLUSH_DIET; 1 = FLUSH-DIET ARCH-ATTACK lever #4: StepBasedCollector.flushStep zero-waste addAll via FlushOps, S7-137)"
   echo "fluid_free: $FLUID_FREE (CRUSSTY_FLUID_FREE; 1 = FLUID-FREE-SECTION ARCH-ATTACK lever #5: fluid-ff verdict cache via FluidOps.fgate, requires paletted_demux=1, S7-143)"
@@ -475,6 +475,9 @@ elif [ "${GC_TUNE:-0}" = "3" ]; then
 elif [ "${GC_TUNE:-0}" = "4" ]; then
   GC_COLLECTOR=("-XX:+UseZGC" "-XX:+ZGenerational")
   log "gc_tune=4: COLLECTOR SWAP G1->ZGC generational (TASK-380 autonomous A/B: sub-ms паузы против concurrent CPU-цены на 4 ядрах)"
+elif [ "${GC_TUNE:-0}" = "5" ]; then
+  GC_COLLECTOR=("-XX:+UseParallelGC" "-XX:+UseTransparentHugePages" "-XX:+AlwaysPreTouch")
+  log "gc_tune=5: ParallelGC + THP + AlwaysPreTouch (TASK-384 autonomous A/B: RECON-41 — профиль memory-bound [PalettedContainer.get 4.3% + SimpleBitStorage 1.7% воркеров, HashMap.getNode], THP режет TLB-miss и в сцене и в GC-copy 4.35GB/s)"
 fi
 if [ "${RECON_DIAG:-0}" = "1" ]; then
   EXTRA_JVM_DIAG=(
