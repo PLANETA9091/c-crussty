@@ -210,8 +210,15 @@ public final class RegionTickOps {
     private static volatile Consumer<Entity> consumer;
     private static volatile Throwable workerError;
 
-    private static final CyclicBarrier GO = new CyclicBarrier(WORKERS);
-    private static final CyclicBarrier DONE = new CyclicBarrier(WORKERS);
+    // S7-172: under MAIN_OFFLOAD (REGION_STEAL="2") an extra helper joins
+    // both barriers — main orchestrates instead of ticking slot 0, so the
+    // participants are main + w helpers = w+1 (legacy: main-as-slot-0 +
+    // w-1 helpers = w). Inlined parse (not a field) because these finals
+    // initialize textually BEFORE the STEAL/MAIN_OFFLOAD flags below.
+    private static final CyclicBarrier GO =
+            new CyclicBarrier(WORKERS + (parseMainOffload() ? 1 : 0));
+    private static final CyclicBarrier DONE =
+            new CyclicBarrier(WORKERS + (parseMainOffload() ? 1 : 0));
 
     private static volatile boolean helpersStarted = false;
 
@@ -245,6 +252,40 @@ public final class RegionTickOps {
             if (v == null) return false;
             v = v.trim().toLowerCase();
             return v.equals("1") || v.equals("true") || v.equals("on") || v.equals("yes");
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    /**
+     * S7-172 P2-OFFLOAD v1 (RECON-37 I=1.01 OFFLOAD-READY, TASK-371):
+     * REGION_STEAL="2" = MAIN-OFFLOAD static mode — w helpers (not w-1)
+     * tick ALL w buckets; main orchestrates only (snapshot fill -> GO
+     * release -> DONE join -> phase-4/4b drains). Motivation: RECON-37
+     * threaded wall (s7196 re-roll 35488526730, digest-verified): worker
+     * duties 67.4/66.3/68.2% (I=1.01 <= 1.15 = OFFLOAD-READY), main =
+     * slot-0 bucket + its serial phases; draining main's bucket to a 4th
+     * helper re-targets the critical path from main-total (19.7 units,
+     * RECON-36 §2) to the slowest worker (14.9 units at I=1.0 — RECON-36
+     * §4 ceiling +25..33% > ДВОЙНОГО БАРА). Parity: bucketOf unchanged
+     * (same entity->slot map), per-bucket order = snapshot order, GO/DONE
+     * discipline unchanged — the interleave class is identical to the
+     * banked region_threads>=2 baseline; the only change is WHICH thread
+     * executes slot 0 (slot-0 mid-tick pump suppression = the SAME
+     * S7-157b class already accepted for slots 1..w-1; liveness drains
+     * via MinecraftServer.tickMidTickTasks + tickBlockEntities pump).
+     * "0"/absent = legacy static bit-identical; "1" = STEAL v1. The mode
+     * rides the REGION_STEAL input enum because world-bench.yml is at the
+     * 25-input GitHub cap (no new input possible). Precedence: with
+     * STEAL="1" this flag is ignored (steal branch first).
+     */
+    private static final boolean MAIN_OFFLOAD = parseMainOffload();
+
+    private static boolean parseMainOffload() {
+        try {
+            String v = System.getenv("CRUSSTY_REGION_STEAL");
+            if (v == null) return false;
+            return v.trim().equals("2");
         } catch (Throwable t) {
             return false;
         }
@@ -435,7 +476,18 @@ public final class RegionTickOps {
         phaseActive = true;
         try {
             GO.await(); // releases helpers (they park here between ticks)
-            tickBucket(0);
+            if (MAIN_OFFLOAD) {
+                // S7-172: main orchestrates only — the join moves out of
+                // tickBucket(0); helpers own ALL slots (0..w-1). Same
+                // join semantics: last DONE arrival releases everyone.
+                try {
+                    DONE.await();
+                } catch (Throwable t2) {
+                    if (workerError == null) workerError = t2;
+                }
+            } else {
+                tickBucket(0);
+            }
         } catch (Throwable t) {
             if (workerError == null) workerError = t;
             phaseActive = false;
@@ -490,8 +542,11 @@ public final class RegionTickOps {
         if (helpersStarted) return;
         synchronized (RegionTickOps.class) {
             if (helpersStarted) return;
-            for (int i = 1; i < w; i++) {
-                final int slot = i;
+            // S7-172 MAIN_OFFLOAD: helpers cover slots 0..w-1 (helper i
+            // ticks slot i-1); legacy: helpers cover 1..w-1, main slot 0.
+            int hi = MAIN_OFFLOAD ? w : w - 1;
+            for (int i = 1; i <= hi; i++) {
+                final int slot = MAIN_OFFLOAD ? i - 1 : i;
                 Thread t = new TickThread(() -> {
                     WORKER_FLAG.set(Boolean.TRUE); // S7-157b: never pump mid-tick
                     while (true) {
