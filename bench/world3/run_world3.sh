@@ -591,7 +591,22 @@ if [ "$SEEN_DONE" = "1" ]; then
       PROF_PHASE=wall
       if [ -n "$ASPROF" ]; then
         asprof_stop_dump "$WORK/cpu-collapsed.txt" collapsed "cpu-collapsed"
-        asprof_guard_start -e wall
+        # RECON-36 P2-pre-gate (TASK-363): the wall session runs THREADED (-t)
+        # so wall-collapsed.txt carries per-thread stacks: duty of each
+        # crussty-region-worker-* (tickBucket-active vs CyclicBarrier park)
+        # + Server-thread DONE-wait -> worker imbalance I (RECON-36 fork:
+        # I<=1.15 offload-ready / I>=1.3 rebalance). Thread-merged wall had no
+        # thread identity (dead weight). Fallback: plain merged wall if this
+        # asprof build rejects -t.
+        tout="$("$ASPROF" start -t -e wall "$SERVER_PID" 2>&1)"; trc=$?
+        if [ $trc -eq 0 ] && ! echo "$tout" | grep -qi "error"; then
+          echo "$tout" >>"$WORK/ap.log"
+          log "wall session: THREADED (-t -e wall) — per-thread duty/imbalance enabled (RECON-36 P2-pre-gate)"
+        else
+          echo "threaded start rc=$trc: $tout" >>"$WORK/ap.log"
+          log "asprof threaded start FAILED — fallback to merged wall session"
+          asprof_guard_start -e wall
+        fi
       fi
     fi
     if [ "$PROF_PHASE" = "wall" ] && [ $SECONDS -ge $WALL_END ]; then
