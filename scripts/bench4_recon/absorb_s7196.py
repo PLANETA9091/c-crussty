@@ -39,6 +39,8 @@ def token():
 
 
 def api(tok, url):
+    if url.startswith("/"):
+        url = API + url
     req = urllib.request.Request(url, headers={
         "Authorization": f"Bearer {tok}", "Accept": "application/vnd.github+json"})
     try:
@@ -79,10 +81,10 @@ def fetch_artifact(tok, run_id):
         print(f"no world3-bench artifact (available: {[a['name'] for a in arts]})")
         return False
     a = bench[0]
+    os.makedirs(RUN_DIR, exist_ok=True)
     dest = os.path.join(RUN_DIR, a["name"] + ".zip")
     _fetch_redirected(tok, f"{API}/repos/{REPO}/actions/artifacts/{a['id']}/zip", dest)
     print(f"downloaded {dest} ({os.path.getsize(dest)} bytes)")
-    os.makedirs(RUN_DIR, exist_ok=True)
     with zipfile.ZipFile(dest) as z:
         z.extractall(RUN_DIR)
     return True
@@ -114,7 +116,11 @@ def main():
     print(f"run {run_id} @ {head}: status={run.get('status')} conclusion={concl}")
     if concl != "success":
         jl = fetch_joblog(tok, run_id)
-        if re.search(r"cpu_index.*outside|BAND", jl):
+        if re.search(r"cpu_index.*outside|OUTSIDE band|BAND-DISCARD", jl, re.I) or \
+                any(s.get("name", "").startswith("Runner calibration band gate") and
+                    s.get("conclusion") == "failure"
+                    for j in api(tok, f"/repos/{REPO}/actions/runs/{run_id}/jobs").get("jobs", [])
+                    for s in j.get("steps", [])):
             print("VERDICT: BAND-DISCARD (fast-fail, НЕ вердикт) — ре-ролл dispatch_s7196.py")
             return 1
         print("VERDICT: INFRA-FLAKE (ре-ролл, макс 2 подряд); joblog в run-dir")
