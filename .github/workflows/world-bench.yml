@@ -52,7 +52,7 @@ on:
       # построению — они внутри тикового wall-clock; ванильная parity тривиальна —
       # JVM-уровень, семантика игры не трогается).
       gc_tune:
-        description: 'GC-TUNE TASK-375/376 (1 = MaxGCPauseMillis=40 + IHOP=35 + G1HeapRegionSize=8m + AlwaysPreTouch; 2 = IHOP=35 + 8m + AlwaysPreTouch NO pause-target [s7199: pause-target toxic]; 0 = vanilla-GC A/B leg)'
+        description: 'GC-TUNE TASK-375/376/380 (1 = G1 flags MaxGCPauseMillis=40 + IHOP=35 + 8m + AlwaysPreTouch; 2 = G1 IHOP=35 + 8m + AlwaysPreTouch NO pause-target; 3 = COLLECTOR SWAP ParallelGC; 4 = COLLECTOR SWAP ZGC generational; 0 = vanilla-GC A/B leg)'
         required: false
         default: '0'
       inside_cache:
