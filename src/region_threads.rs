@@ -448,6 +448,16 @@ pub fn activate() {
             if bu_defer_enabled() {
                 bridge_list.push((BLOCKUPD_CLASS, BLOCKUPD_BYTES));
             }
+            // ITEMS-SWEEP v2 (ROUND-397 / TASK-397-E): ItemsSweepOps is
+            // CO-DEFINED with RegionTickOps — tickBucket references
+            // ItemsSweepOps.sweepBucket unconditionally and the class must
+            // exist whenever this bridge does. Env gate lives inside the ops
+            // class (SWEEP static-init): lever off = static-read no-op,
+            // dormant-invisible for the bank.
+            bridge_list.push((
+                crate::items_sweep::SWEEP_OPS_CLASS,
+                crate::items_sweep::SWEEP_OPS_BYTES,
+            ));
             let mut ok = true;
             for (name, bytes) in bridge_list {
                 match env.define_class(name, gref, bytes) {

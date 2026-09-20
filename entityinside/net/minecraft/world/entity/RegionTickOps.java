@@ -129,6 +129,17 @@ public final class RegionTickOps {
     private static volatile boolean phaseActive = false;
 
     /**
+     * ROUND-397 items_sweep2 gate for ItemsSweepOps.tickMerge: the item-merge
+     * suppression is valid ONLY inside the parallel phase (every bucket has
+     * been swept this tick and every mergeWithNeighbours caller is a slot
+     * worker or the main slot-0 path). Out-of-phase callers fall back to the
+     * pristine vanilla body. Package-visible state, public probe.
+     */
+    public static boolean sweepPhase() {
+        return phaseActive;
+    }
+
+    /**
      * BU-DEFER (S7-168, STEAL v2 defect-fix — TASK-335): deferred
      * ServerLevel.sendBlockUpdated navigate-phase records from workers.
      * s7176 root-cause: a worker iterating navigatingMobs while the main
@@ -591,6 +602,14 @@ public final class RegionTickOps {
         try {
             Entity[] bucket = bucketArr[slot];
             Consumer<Entity> c = consumer;
+            // ROUND-397 items_sweep2 (TASK-397-E): ONE sort-based sweep-line
+            // batch-merge pass per bucket per tick replaces the per-entity
+            // mergeWithNeighbours broadphase queries (which the retargeted
+            // ItemEntity.tick -> ItemsSweepOps.tickMerge site suppresses for
+            // the phase). Dormant-invisible: ItemsSweepOps.SWEEP=false makes
+            // this a static-read no-op (the class is always co-defined with
+            // this bridge). Failure inside is self-quarantined there.
+            ItemsSweepOps.sweepBucket(bucket, bucketLen[slot]);
             for (int i = 0, n = bucketLen[slot]; i < n; i++) {
                 c.accept(bucket[i]); // vanilla per-entity logic, bit-for-bit
             }
