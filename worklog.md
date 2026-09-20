@@ -2734,3 +2734,21 @@ Stage Summary:
 - Последний несведённый компонент ЭПОХИ-2A сведён: chunk-read = инфраструктура потребителей, самостоятельного рычага нет
 - Карта A/B/C — готовый вход для решения владельца; B активируется одной командой
 - NEXT id 360: решение B/C; при B — активация CRUSSTY_INSIDE_BITMASK=1 CI-легом
+
+---
+Task ID: 360
+Agent: cron-tick (Super Z)
+Task: TASK-360 — #15 activation tooling до одной команды (dispatch_s7195 + absorb_s7195 + env wiring)
+
+Work Log:
+- pull обоих чист; S7-108: CI green на док-коммитах ×44 (5b08930/89dcd08/6d17db3), бенч-легов нет; решения владельца нет → ветка (4b)
+- Найдено недостающее звено активации: inside_bitmask.rs читает CRUSSTY_INSIDE_BITMASK напрямую, run_world3.sh не пробрасывал → INSIDE_BITMASK plumbing (var+echo+export)
+- world-bench.yml: свап zero_alloc (REFUTED #10, прецедент inside_diet/zero_cursor) → inside_bitmask в рамках лимита 25; ZERO_ALLOC pinned '0'; dispatch_s7189.py обновлён; YAML-валидация 25 инпутов/сирен 0
+- dispatch_s7195.py: банк v3 + inside_bitmask=1 + travel_diet=0, широкий банд, SAFETY GATE --sanctioned (проверен: без флага POST не уходит)
+- absorb_s7195.py: PG-T1 внутри-маркеры (owner-armed present + dormant absent + stage composed + strict/rejected/missed absent), PG-T3 двойной протокол v8/B (--protocol B: normalized ≥+10% И median5 ≥ якорь-0), PG-T4/T5, failure-рулетка; py_compile + bash -n чисты
+- Коммиты: 9fa116a (тулинг) + 6d384da (GOAL ×45), CLAIMS TASK-360 (f178676); пуш обоих + re-pull чисты; CI на 9fa116a
+
+Stage Summary:
+- Активация option B теперь literally одна команда: dispatch_s7195.py --sanctioned → absorb_s7195.py <run_id> --protocol B → min-of-2 → banking v4
+- Лимит 25 инпутов расчищен законным прецедентом (REFUTED #10 out, #15 in)
+- NEXT id 361: решение владельца B/C; при B — активация+абсорб+min-of-2 в одном тике
