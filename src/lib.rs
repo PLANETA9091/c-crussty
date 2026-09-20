@@ -37,6 +37,10 @@ mod improved_noise;
 mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
+// ITEMS-SWEEP (ROUND-396 / TASK-396-C vector C): sweep-line batch-merge;
+// bridge co-defined with RegionTickOps, ItemEntity patch gated by
+// CRUSSTY_LEVER_FLAG == "items_sweep".
+mod items_sweep;
 mod jni_table;
 mod kernel_policy;
 mod loader;
@@ -174,6 +178,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // EntityCallbacks guard sites, composed on top of F1/F3 bytes (LAST in
     // the byte-hook chain). Dormant unless CRUSSTY_REGION_THREADS>=2.
     region_threads::register();
+    // ITEMS-SWEEP (ROUND-396 / TASK-396-C): ItemEntity.tick merge-site
+    // suppression hook (gated); the ops class itself is co-defined by
+    // region_threads' bridge_list (dormant-invisible when the flag differs).
+    items_sweep::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -381,6 +389,9 @@ fn inject_surface() {
     // EntityCallbacks, retransform both (dormant unless
     // CRUSSTY_REGION_THREADS>=2).
     region_threads::activate();
+    // ITEMS-SWEEP (ROUND-396 / TASK-396-C): waits for the region_threads
+    // bridge (co-defined ops class), then arms the ItemEntity retarget.
+    items_sweep::activate();
     // BATCH-COLLECTOR (S7-160): define BatchCollector into the kernel
     // loader (define-only; the per-entity lazy swap happens in
     // RegionTickOps.tickBucket; dormant unless CRUSSTY_BATCH_COLLECTOR=1
