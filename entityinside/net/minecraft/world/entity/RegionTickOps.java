@@ -210,6 +210,46 @@ public final class RegionTickOps {
     private static volatile Consumer<Entity> consumer;
     private static volatile Throwable workerError;
 
+    // ==================================================================
+    // ITEM-MANAGER (TASK-395 mega-round, agent J — lever items_manager):
+    // полная замена диспетч-структуры item-фазы. ItemEntity НЕ попадают в
+    // общие bucket-массивы (через c.accept → guardEntityTick →
+    // tickNonPassenger → ItemEntity.tick), а маршрутизируются в per-slot
+    // плотные массивы itemArr; фаза 3 каждого бакет-потока исполняет
+    // ItemEntityManager.tickSlot (batch-движение + ванильный merge по
+    // MethodHandle + age/despawn; гейты lambda$tick$4/tickNonPassenger/
+    // guardEntityTick реплицированы по javap — см. ItemEntityManager).
+    // Ванильный порядок items внутри секции сохранён (маршрутизация в
+    // порядке снапшота; item-фаза на том же бакет-потоке).
+    // Пассажирные ItemEntity (патология) остаются в ванильном пути.
+    // FAIL-CLOSED: класс не определён / MethodHandle-резолв не удался →
+    // itemsManagerArmed()=false → ванильный dispatch бит-в-бит.
+    // STEAL-путь не маршрутизирует (lever активен только в статическом
+    // режиме REGION_STEAL=0 — конфиг банка v4).
+    // ==================================================================
+    private static final java.util.concurrent.atomic.AtomicInteger ITEMS_MGR_POLLED =
+            new java.util.concurrent.atomic.AtomicInteger();
+    private static volatile boolean itemsManagerState;
+
+    private static boolean itemsManagerArmed() {
+        if (ITEMS_MGR_POLLED.get() == 0) {
+            boolean ok = false;
+            try {
+                ok = net.minecraft.world.entity.ItemEntityManager.armed();
+            } catch (Throwable t) {
+                ok = false; // NoClassDefFoundError и пр. — ванильный путь
+            }
+            itemsManagerState = ok;
+            ITEMS_MGR_POLLED.set(1);
+        }
+        return itemsManagerState;
+    }
+
+    /** Per-slot плотные item-массивы (тот же протокол, что bucketArr). */
+    private static volatile net.minecraft.world.entity.item.ItemEntity[][] itemArr =
+            new net.minecraft.world.entity.item.ItemEntity[0][];
+    private static volatile int[] itemLen = new int[0];
+
     // S7-172: under MAIN_OFFLOAD (REGION_STEAL="2") an extra helper joins
     // both barriers — main orchestrates instead of ticking slot 0, so the
     // participants are main + w helpers = w+1 (legacy: main-as-slot-0 +
@@ -486,9 +526,42 @@ public final class RegionTickOps {
             len = len0;
         }
         for (int i = 0; i < w; i++) len[i] = 0;
+        // ITEM-MANAGER: reset + lazy-alloc per-slot item arrays (same protocol)
+        final net.minecraft.world.entity.item.ItemEntity[][] iarr;
+        final int[] ilen;
+        final boolean itemsOn = itemsManagerArmed() && !STEAL;
+        if (itemsOn) {
+            net.minecraft.world.entity.item.ItemEntity[][] ia0 = itemArr;
+            if (ia0.length < w) {
+                net.minecraft.world.entity.item.ItemEntity[][] ia =
+                        new net.minecraft.world.entity.item.ItemEntity[w][];
+                for (int i = 0; i < w; i++) ia[i] = new net.minecraft.world.entity.item.ItemEntity[0];
+                itemArr = ia;
+                itemLen = new int[w];
+                ia0 = ia;
+            }
+            ilen = itemLen;
+            for (int i = 0; i < w; i++) ilen[i] = 0;
+            iarr = ia0;
+        } else {
+            iarr = null;
+            ilen = null;
+        }
         pumpLevel = null; // S7-174: reset BEFORE fill; captured at first entity
         list.forEach(e -> {
             if (pumpLevel == null) pumpLevel = e.level(); // S7-174 capture
+            if (itemsOn && e instanceof net.minecraft.world.entity.item.ItemEntity ie
+                    && e.getPassengers().isEmpty()) {
+                // ITEM-MANAGER routing: item phase owns this entity this tick
+                int s = bucketOf(e, w);
+                net.minecraft.world.entity.item.ItemEntity[] ib = iarr[s];
+                if (ilen[s] == ib.length) {
+                    ib = java.util.Arrays.copyOf(ib, Math.max(16, ilen[s] * 2));
+                    iarr[s] = ib;
+                }
+                ib[ilen[s]++] = ie;
+                return;
+            }
             int s = bucketOf(e, w);
             Entity[] b = arr[s];
             if (len[s] == b.length) {
@@ -568,6 +641,13 @@ public final class RegionTickOps {
             Entity[] b = arr[i];
             for (int j = len[i], n2 = b.length; j < n2; j++) b[j] = null;
         }
+        // ITEM-MANAGER hygiene: same tail-nulling for item arrays.
+        if (itemsOn) {
+            for (int i = 0; i < w; i++) {
+                net.minecraft.world.entity.item.ItemEntity[] b = iarr[i];
+                for (int j = ilen[i], n2 = b.length; j < n2; j++) b[j] = null;
+            }
+        }
 
         // Phase 4 (serial): drain deferred EntityCallbacks mutations in FIFO order.
         Mut m;
@@ -589,6 +669,19 @@ public final class RegionTickOps {
 
     private static void tickBucket(int slot) {
         try {
+            // ITEM-MANAGER: batch item phase for this slot — движение/merge/
+            // age/despawn батч-фазами, ванильные методы ядра, ванильный порядок
+            // items внутри секции (см. ItemEntityManager). До общей фазы:
+            // мобы/взаимодействия читают уже обновлённые позиции items в рамках
+            // того же accepted interleave-класса, что и кросс-бакет параллельный
+            // тик (S7-155/RECON-15).
+            if (itemsManagerState) {
+                net.minecraft.world.entity.item.ItemEntity[] ia = itemArr[slot];
+                int in = itemLen[slot];
+                if (in > 0) {
+                    net.minecraft.world.entity.ItemEntityManager.tickSlot(ia, in, consumer);
+                }
+            }
             Entity[] bucket = bucketArr[slot];
             Consumer<Entity> c = consumer;
             for (int i = 0, n = bucketLen[slot]; i < n; i++) {
