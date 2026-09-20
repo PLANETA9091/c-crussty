@@ -122,7 +122,6 @@ def main():
         "population_seed": "42",
         "server_xmx": "10G",
         "server_xms": "4G",
-        "recon_diag": "0",
         "cpu_band_min": "6000000",
         "cpu_band_max": "9500000",
     }
