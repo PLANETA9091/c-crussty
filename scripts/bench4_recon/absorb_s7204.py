@@ -45,9 +45,17 @@ MAX_PAUSE_GATE_MS = 3000.0
 FULL_GATE = 10
 PAUSE_COUNT_GATE = 3000
 # ARMED-маркеры #15 (RECON-33/impl 6eb3274/oracle dea9de8; тул s7195)
+# + runtime-мarkers урока s7204: probe-then-patch публикует
+# "bridge defined+armed, BRIDGE_READY" ТОЛЬКО при прожитом armState();
+# фейл пробы (s7204: find_class CNFE — системный лоадер) печатает
+# "armState() != ARMED" и каскадно роняет rng-стейдж region_threads.
 ARMED_1 = "[crussty-plugin] inside_bitmask: bridge owner armed"
 ARMED_2 = "stage inside_bitmask composed"
+ARMED_3 = "[crussty-plugin] inside_bitmask: bridge defined+armed, BRIDGE_READY"
 DORMANT = "[crussty-plugin] inside_bitmask: dormant"
+RUNTIME_ARM_FAIL = "inside_bitmask: armState() != ARMED"
+WINDOW_MISS = "inside_bitmask bridge missed its window"
+RNG_CASCADE = "region_threads: Entity rng stage not composed"
 
 
 def token():
@@ -201,8 +209,14 @@ def main():
         pop_ok = "POPULATION FIXTURE-VALIDITY: VALID" in stdout_txt
         arm1 = ARMED_1 in stdout_txt
         arm2 = ARMED_2 in stdout_txt
+        arm3 = ARMED_3 in stdout_txt
+        runtime_arm_fail = RUNTIME_ARM_FAIL in stdout_txt
+        window_miss = WINDOW_MISS in stdout_txt
+        rng_cascade = RNG_CASCADE in stdout_txt
         dormant_bad = DORMANT in stdout_txt
-        arm_ok = arm1 and arm2 and not dormant_bad
+        arm_ok = arm1 and arm2 and arm3 and not runtime_arm_fail \
+            and not window_miss and not dormant_bad
+        cascade_bad = rng_cascade
         workers = "workers=4" in stdout_txt
         gclog = os.path.join(RUN_DIR, "gc.log")
         col_ok = False
@@ -211,11 +225,15 @@ def main():
             col_ok = ("G1 Evacuation Pause" not in gtxt) and \
                      ("Using Parallel" in gtxt or "Pause Young" in gtxt)
         t1_ok = all("OK" in x for x in t1) and ncde == 0 and pop_ok and \
-            arm_ok and workers and col_ok
+            arm_ok and workers and col_ok and not cascade_bad
         rep.append("- PG-T1: " + ", ".join(t1) + f", NCDFE={ncde}, "
                    f"pop={'VALID' if pop_ok else 'BAD'}, "
                    f"ARMED={'OK' if arm1 else 'MISSING'}"
+                   f"+READY={'OK' if arm3 else 'MISSING'}"
                    f"+composed={'OK' if arm2 else 'MISSING'}"
+                   f"+arm-fail={'ОШИБКА-ПРОБЫ' if runtime_arm_fail else 'нет'}"
+                   f"+window-miss={'ЕСТЬ' if window_miss else 'нет'}"
+                   f"+rng-cascade={'ЕСТЬ' if rng_cascade else 'нет'}"
                    f"+dormant={'ОШИБКА-АРМИРОВАНИЯ' if dormant_bad else 'нет'}, "
                    f"mode={'WORKERS4-TELEMETRY' if workers else 'MISSING'}, "
                    f"col={'PARALLEL' if col_ok else 'BAD'}"
