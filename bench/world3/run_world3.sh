@@ -453,6 +453,11 @@ export CRUSSTY_PARSE_DIAG_FILE="$WORK/chunk-parse-diag.txt"
 export CRUSSTY_ZERO_CURSOR="$ZERO_CURSOR"
 export CRUSSTY_REGION_STEAL="$REGION_STEAL"
 export CRUSSTY_BU_DEFER="$BU_DEFER"
+# MEGA-ROUND generic lever gate (TASK-395, world-bench-parallel.yml): empty
+# flag = exact vanilla path (parity by construction); branch bridges/loaders
+# read these at registration time to ARM their architecture lever.
+export CRUSSTY_LEVER_FLAG="${LEVER_FLAG:-}"
+export CRUSSTY_LEVER_ARG="${LEVER_ARG:-}"
 # RECON_DIAG (TASK-317, instrument-гейт рычага #13 SKIP-STORE-DIET): чистая
 # наблюдаемость — 0 поведения. GC-политика/heap не трогаются (логирование ≠
 # config-win, вердикт NEXT TASK-316): remset/refine debug-логи (агрегатная
