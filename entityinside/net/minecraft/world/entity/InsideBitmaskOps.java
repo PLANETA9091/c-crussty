@@ -150,6 +150,13 @@ public final class InsideBitmaskOps {
     }
 
     /**
+     * Thread-confined scratch for the hull bounds — zero-allocation hot path
+     * (region threads each own their slot; never shared across threads).
+     */
+    private static final ThreadLocal<double[]> HULL_TL =
+            ThreadLocal.withInitial(() -> new double[6]);
+
+    /**
      * true = safe to skip the whole vanilla discovery for this movement list.
      * Every doubt path returns false → vanilla body runs (fail-closed).
      */
@@ -171,43 +178,55 @@ public final class InsideBitmaskOps {
             if (lvl == null) {
                 return false;
             }
-            AABB bb = e.getBoundingBox();
-            Vec3 cur = e.position();
-            double minX = bb.minX, minY = bb.minY, minZ = bb.minZ;
-            double maxX = bb.maxX, maxY = bb.maxY, maxZ = bb.maxZ;
-            // conservative swept hull: BB translated to BOTH endpoints of each
-            // movement (vanilla sweeps the to-box along from→to; the swept
-            // volume is contained in the hull of the endpoint boxes).
-            // Zero-allocation: no arrays/boxes on the hot path.
-            for (int i = 0; i < list.size(); i++) {
-                Entity.Movement m = list.get(i);
-                Vec3 f = m.from();
-                double dx = f.x - cur.x, dy = f.y - cur.y, dz = f.z - cur.z;
-                if (bb.minX + dx < minX) minX = bb.minX + dx;
-                if (bb.minY + dy < minY) minY = bb.minY + dy;
-                if (bb.minZ + dz < minZ) minZ = bb.minZ + dz;
-                if (bb.maxX + dx > maxX) maxX = bb.maxX + dx;
-                if (bb.maxY + dy > maxY) maxY = bb.maxY + dy;
-                if (bb.maxZ + dz > maxZ) maxZ = bb.maxZ + dz;
-                Vec3 t = m.to();
-                dx = t.x - cur.x; dy = t.y - cur.y; dz = t.z - cur.z;
-                if (bb.minX + dx < minX) minX = bb.minX + dx;
-                if (bb.minY + dy < minY) minY = bb.minY + dy;
-                if (bb.minZ + dz < minZ) minZ = bb.minZ + dz;
-                if (bb.maxX + dx > maxX) maxX = bb.maxX + dx;
-                if (bb.maxY + dy > maxY) maxY = bb.maxY + dy;
-                if (bb.maxZ + dz > maxZ) maxZ = bb.maxZ + dz;
-            }
-            minX -= SAFETY_MARGIN; minY -= SAFETY_MARGIN; minZ -= SAFETY_MARGIN;
-            maxX += SAFETY_MARGIN; maxY += SAFETY_MARGIN; maxZ += SAFETY_MARGIN;
-            return hullAllAir(lvl, minX, minY, minZ, maxX, maxY, maxZ);
+            double[] h = HULL_TL.get();
+            sweptHullInto(h, e.getBoundingBox(), e.position(), list);
+            return hullAllAir(lvl, h[0], h[1], h[2], h[3], h[4], h[5]);
         } catch (Throwable t) {
             return false;
         }
     }
 
-    /** true только если ВСЯ hull-область — чанки FULL и все секции all-air. */
-    private static boolean hullAllAir(Level lvl, double minX, double minY, double minZ,
+    /**
+     * THE conservative swept hull, verbatim (RECON-33 §3, javadoc-bound):
+     * union of BB translated to BOTH endpoints of every movement (+1-block
+     * safety margin over the vanilla deflate(1e-5) to-box). PACKAGE-PRIVATE
+     * so the offline oracle (InsideBitmaskLockstepHarness) drives THE REAL
+     * formula — the hot path calls exactly this method via HULL_TL scratch;
+     * there is no second copy of the math anywhere.
+     */
+    static void sweptHullInto(double[] out, AABB bb, Vec3 cur, List<Entity.Movement> list) {
+        double minX = bb.minX, minY = bb.minY, minZ = bb.minZ;
+        double maxX = bb.maxX, maxY = bb.maxY, maxZ = bb.maxZ;
+        for (int i = 0; i < list.size(); i++) {
+            Entity.Movement m = list.get(i);
+            Vec3 f = m.from();
+            double dx = f.x - cur.x, dy = f.y - cur.y, dz = f.z - cur.z;
+            if (bb.minX + dx < minX) minX = bb.minX + dx;
+            if (bb.minY + dy < minY) minY = bb.minY + dy;
+            if (bb.minZ + dz < minZ) minZ = bb.minZ + dz;
+            if (bb.maxX + dx > maxX) maxX = bb.maxX + dx;
+            if (bb.maxY + dy > maxY) maxY = bb.maxY + dy;
+            if (bb.maxZ + dz > maxZ) maxZ = bb.maxZ + dz;
+            Vec3 t = m.to();
+            dx = t.x - cur.x; dy = t.y - cur.y; dz = t.z - cur.z;
+            if (bb.minX + dx < minX) minX = bb.minX + dx;
+            if (bb.minY + dy < minY) minY = bb.minY + dy;
+            if (bb.minZ + dz < minZ) minZ = bb.minZ + dz;
+            if (bb.maxX + dx > maxX) maxX = bb.maxX + dx;
+            if (bb.maxY + dy > maxY) maxY = bb.maxY + dy;
+            if (bb.maxZ + dz > maxZ) maxZ = bb.maxZ + dz;
+        }
+        out[0] = minX - SAFETY_MARGIN;
+        out[1] = minY - SAFETY_MARGIN;
+        out[2] = minZ - SAFETY_MARGIN;
+        out[3] = maxX + SAFETY_MARGIN;
+        out[4] = maxY + SAFETY_MARGIN;
+        out[5] = maxZ + SAFETY_MARGIN;
+    }
+
+    /** true только если ВСЯ hull-область — чанки FULL и все секции all-air.
+     *  Package-private: оракул проверяет индексную математику отдельно. */
+    static boolean hullAllAir(Level lvl, double minX, double minY, double minZ,
             double maxX, double maxY, double maxZ) {
         int minCX = floor(minX) >> 4, maxCX = floor(maxX) >> 4;
         int minCZ = floor(minZ) >> 4, maxCZ = floor(maxZ) >> 4;
