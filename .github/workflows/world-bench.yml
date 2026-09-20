@@ -46,8 +46,13 @@ on:
       # paletted_demux input REMOVED (TASK-335): the 25-input GitHub limit
       # (BU-DEFER needs the slot); lever #1 never armed (requires fluid_free=1
       # which itself never armed) — the flag is pinned to '0' below.
-      alloc_diet:
-        description: 'ALLOC-DIET S7-133/TASK-269 ARCH-ATTACK lever #2 (1 = ARMED: zero-alloc push/collision queries via EntityQueryOps rotating pools; 0 = vanilla-alloc A/B leg)'
+      # alloc_diet input REMOVED (TASK-375): lever #2 REFUTED ×2 (JNI-transition
+      # economics, GOAL-реестр) — слот отдан GC-TUNE (парадокс-фикс: STW/параллельный
+      # GC — единственные поверхности, где −CPU конвертируется в +TPS 1:1 по
+      # построению — они внутри тикового wall-clock; ванильная parity тривиальна —
+      # JVM-уровень, семантика игры не трогается).
+      gc_tune:
+        description: 'GC-TUNE TASK-375 (1 = ARMED: MaxGCPauseMillis=40 + IHOP=35 + G1HeapRegionSize=8m + AlwaysPreTouch; 0 = vanilla-GC A/B leg)'
         required: false
         default: '0'
       inside_cache:
@@ -204,7 +209,7 @@ jobs:
           FAKE_PLAYERS: ${{ inputs.fake_players || '0' }}
           FLUID_GUARD: ${{ inputs.fluid_guard || '1' }}
           PALETTED_DEMUX: '0' # input dropped TASK-335 (25-input limit; lever dormant)
-          ALLOC_DIET: ${{ inputs.alloc_diet || '0' }}
+          GC_TUNE: ${{ inputs.gc_tune || '0' }}
           INSIDE_CACHE: ${{ inputs.inside_cache || '0' }}
           FLUSH_DIET: ${{ inputs.flush_diet || '0' }}
           FLUID_FREE: '0' # input dropped TASK-330 (requires paletted_demux=1; lever dormant)

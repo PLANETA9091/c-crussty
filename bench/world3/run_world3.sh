@@ -56,6 +56,17 @@ PALETTED_DEMUX="${PALETTED_DEMUX:-0}"
 # ctor -> EntityQueryOps.mutablePos ring); 0 = vanilla-alloc A/B leg.
 # Targets G1 GC + oop barriers ~27% CPU (allocation-rate derivative).
 ALLOC_DIET="${ALLOC_DIET:-0}"
+# GC-TUNE TASK-375 (парадокс-фикс: здесь −CPU = +TPS 1:1 по построению):
+# G1 STW-паузы ВНУТРИ тикового wall-clock (база s7198: 246 пауз/300s-окно,
+# 19.5s суммарно = 6.5% окна, avg 79ms, max 178ms) и параллельный GC-CPU
+# (37% сэмплов) на 4-ядерном раннере отбирает ядра у тик-воркеров.
+# Флаги ТОЛЬКО JVM-уровня — семантика игры не трогается (parity бит-в-бит):
+# MaxGCPauseMillis=40 (цель паузы vs default 200) + IHOP=35 (раньше
+# concurrent-цикл → mixed-GC держит old-gen до young-давления; high-water
+# 6.3G/10G=63% vs default IHOP 45%) + G1HeapRegionSize=8m (меньше карт/refine
+# bookkeeping: авто при 10G = 4M) + AlwaysPreTouch (pre-commit страниц при
+# буте — убирает soft-fault латентность из тиков).
+GC_TUNE="${GC_TUNE:-0}"
 INSIDE_CACHE="${INSIDE_CACHE:-0}"
 FLUSH_DIET="${FLUSH_DIET:-0}"
 # FLUID-DIRTY S7-151/TASK-290 ARCH-ATTACK lever #6 (1 = ARMED: fluid-scan
@@ -152,7 +163,8 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "fake_players: $FAKE_PLAYERS (BENCH-4 fixture: N real ServerPlayers, task170)"
   echo "fluid_guard: $FLUID_GUARD (CRUSSTY_FLUID_PUSH_GUARD; 1 = same-state fluid-push guard ARMED, TASK-80/S7-128)"
   echo "paletted_demux: $PALETTED_DEMUX (CRUSSTY_PALETTED_DEMUX; 1 = PALETTED-DEMUX ARCH-ATTACK lever #1, S7-131)"
-  echo "alloc_diet: $ALLOC_DIET (CRUSSTY_ALLOC_DIET; 1 = ALLOC-DIET ARCH-ATTACK lever #2: zero-alloc push/collision queries, S7-133/TASK-269)"
+  echo "alloc_diet: $ALLOC_DIET (CRUSSTY_ALLOC_DIET; input dropped TASK-375, lever #2 REFUTED x2 — pinned 0)"
+  echo "gc_tune: $GC_TUNE (GC-TUNE TASK-375; 1 = MaxGCPauseMillis=40 + IHOP=35 + G1HeapRegionSize=8m + AlwaysPreTouch — JVM-level, vanilla-parity)"
   echo "inside_cache: $INSIDE_CACHE (CRUSSTY_INSIDE_CACHE; 1 = INSIDE-CACHE ARCH-ATTACK lever #3: static-entity inside-blocks discovery memoization, S7-135/TASK-271)"
   echo "flush_diet: $FLUSH_DIET (CRUSSTY_FLUSH_DIET; 1 = FLUSH-DIET ARCH-ATTACK lever #4: StepBasedCollector.flushStep zero-waste addAll via FlushOps, S7-137)"
   echo "fluid_free: $FLUID_FREE (CRUSSTY_FLUID_FREE; 1 = FLUID-FREE-SECTION ARCH-ATTACK lever #5: fluid-ff verdict cache via FluidOps.fgate, requires paletted_demux=1, S7-143)"
@@ -434,6 +446,18 @@ export CRUSSTY_BU_DEFER="$BU_DEFER"
 # bash-массив (НЕ строка): word-splitting на $@ сохраняет цельность аргументов;
 # пути $WORK без пробелов, но массив паритетен java-строке по построению.
 EXTRA_JVM_DIAG=()
+# GC-TUNE TASK-375 flag array (armed only at gc_tune=1; vanilla JVM args otherwise —
+# historical legs bit-exact via GC_TUNE default 0)
+EXTRA_JVM_GC=()
+if [ "${GC_TUNE:-0}" = "1" ]; then
+  EXTRA_JVM_GC=(
+    "-XX:MaxGCPauseMillis=40"
+    "-XX:InitiatingHeapOccupancyPercent=35"
+    "-XX:G1HeapRegionSize=8m"
+    "-XX:+AlwaysPreTouch"
+  )
+  log "gc_tune=1: MaxGCPauseMillis=40 + IHOP=35 + RegionSize=8m + AlwaysPreTouch (TASK-375)"
+fi
 if [ "${RECON_DIAG:-0}" = "1" ]; then
   EXTRA_JVM_DIAG=(
     "-Xlog:gc+remset=debug:file=$WORK/remset.log:time,uptime,level,tags"
@@ -456,6 +480,7 @@ TAIL_PID=$!
 java \
   "-agentpath:$RUNTIME_SO=modules=$SERVER/modules;versions=$SERVER/versions;kernel=purpur-1.21.10.jar" \
   -Xms"$SERVER_XMS" -Xmx"$SERVER_XMX" -XX:+UseG1GC -Dfile.encoding=UTF-8 \
+  "${EXTRA_JVM_GC[@]}" \
   -Xlog:gc*:file="$WORK/gc.log":time,uptime,level,tags \
   "${EXTRA_JVM_DIAG[@]}" \
   -jar "$SERVER/versions/purpur-1.21.10.jar" --nogui \
