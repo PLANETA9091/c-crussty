@@ -1,20 +1,22 @@
 #!/usr/bin/env python3
-"""absorb_s7201.py - TASK-380: absorb COLLECTOR A/B leg s7201 (банк v3 + gc_tune=3
-= ParallelGC, директива владельца 20:08 «непривычный но быстрее = ставь») и
-вердикт v8-REGRESSION DUAL BAR vs ANCHOR (1.60 reproduced @ 6680195/8566450).
+"""absorb_s7202.py - TASK-383: absorb COLLECTOR A/B #2 leg s7202 (банк v4 + gc_tune=4
+= ZGC generational) и вердикт v8-REGRESSION DUAL BAR vs ANCHOR-БАНКА v4
+(2.60 @ 8551924 leg#1; банк v4 = v3 + UseParallelGC, GOAL ×68).
 
-ПАРАДОКС-ФИКС-ЛЕГ: STW и параллельный GC-CPU — НА крит-пути (STW внутри
-тикового wall-clock; 37% GC-сэмплов конкурируют за 4 ядра с воркерами),
-поэтому -CPU здесь конвертируется в +TPS по построению.
+ТЕЗИС A/B: ZGC-generational убирает STW-паузы (sub-ms) ценой concurrent-CPU
+(~10-15%) на 4-ядерном раннере — прямой антипод ParallelGC (ядра свободны,
+паузы длинные). Победа только если concurrent-CPU дёшев, а исчезновение STW
+конвертируется. Директива 20:08: непривычный-но-быстрый = ставим.
 
 PREREGISTER GATES:
-  PG-T1 delivery: gc_tune=1 + банк v3 rest + NCDFE=0 + pop 150k VALID +
-    JVM-flag-effect: "Heap Region Size: 8M" в gc.log + workers=4 телеметрия
+  PG-T1 delivery: gc_tune=4 + банк rest + NCDFE=0 + pop 150k VALID +
+    collector-proof: "Using The Z Garbage Collector" в gc.log (и НЕТ
+    "G1 Evacuation Pause") + workers=4 телеметрия
   PG-T2 crash-free + soak >= 3
-  PG-T3 DUAL BAR (обе оси >= +10% vs ANCHOR-SLOW; широкий банд 6.0M..9.5M)
-  PG-T4 GC-гейты (preregister vs база s7198: young 246? нет — 246 total events,
-    19.5188s total, avg 79.34ms): 0 Full; total_pause <= 14.0s; avg <= 60ms;
-    young <= 320
+  PG-T3 DUAL BAR (обе оси >= +10% vs ANCHOR-БАНКА v4; широкий банд 6.0M..9.5M)
+  PG-T4 ZGC-гейты (пререгистр TASK-381): Full <= 2; total_pause <= 10.0s;
+    max_pause <= 50ms; pause-count <= 3000 (ZGC: Pause Mark Start/End +
+    Relocate Start — 3 события/цикл, sub-ms)
   PG-T5 DONE-park N/A tolerated (AP-PID defect).
 Failure handling: BAND-DISCARD / CRASH-REFUTED (rollback gc_tune default 0 =
 vanilla JVM args bit-exact) / INFRA-FLAKE, max 2 подряд.
@@ -26,18 +28,15 @@ import os, re, statistics, subprocess, sys, urllib.request
 REPO = "PLANETA9091/c-crussty"
 API = "https://api.github.com"
 RESDIR = "/home/z/c-crussty/research/gc-recon-2026-09-19"
-RUN_DIR = os.path.join(RESDIR, "run-s7201-parallelgc")
-ANCHOR_TPS, ANCHOR_RUNNER = 1.60, 6680195
+RUN_DIR = os.path.join(RESDIR, "run-s7202-zgcgen")
+ANCHOR_TPS, ANCHOR_RUNNER = 2.60, 8551924
 BAND_MIN, BAND_MAX = 6_000_000, 9_500_000
-# PG-T4 preregister ParallelGC-адаптация (база s7198 G1: young 163/19.0s, total 19.5s,
-# avg 79ms, max 178.7ms; ParallelGC: реже/длиннее паузы, редкие Full допустимы <=2,
-# max <= 2.0s — median5 толерантен к 1-2 мейджорам в 300s-окне)
-TOTAL_PAUSE_GATE_MS = 19_500.0
-AVG_PAUSE_GATE_MS = 300.0
-YOUNG_GATE = 250
-YOUNG_MIN = 30
+# PG-T4 ZGC preregister (TASK-381): sub-ms pause-модель; база ParallelGC v4 leg#1:
+# total 24.6s, max 2954ms, Full=9 — ZGC должен убрать длинные паузы ПОЛНОСТЬЮ
+TOTAL_PAUSE_GATE_MS = 10_000.0
+MAX_PAUSE_GATE_MS = 50.0
 FULL_GATE = 2
-MAX_PAUSE_GATE_MS = 2000.0
+PAUSE_COUNT_GATE = 3000
 
 
 def token():
@@ -123,29 +122,33 @@ def tps_series(path):
     return out
 
 
-def gc_stats(path):
-    """(young, full, total_pause_ms, avg_pause_ms, max_pause_ms) из gc.log
-    (end-строки 'GC(n) Pause ... A->B(C) DUR'; start-строки [gc,start — skip)."""
+def gc_stats_zgc(path):
+    """(pauses, full, total_pause_ms, avg_pause_ms, max_pause_ms) из gc.log ZGC.
+    События: GC(n) Pause Mark Start/Mark End/Relocate Start DUR; 'Full' отдельно
+    (allocation stall / OOM-fallback). Начальные [gc,start-строки skip."""
     if not os.path.isfile(path):
         return None
-    young = full = 0
+    pauses = full = 0
     total = 0.0
     mx = 0.0
     for line in open(path, errors="ignore"):
         if "[gc,start" in line:
             continue
-        m = re.search(r"Pause (Young|Full).*? ([\d.]+)(ms|s)\s*$", line)
+        m = re.search(r"Pause ([\w ]*?)[A-Za-z ]*.*? ([\d.]+)(ms|s)\s*$", line)
         if not m:
-            continue
-        dur = float(m.group(2)) * (1.0 if m.group(3) == "ms" else 1000.0)
-        if m.group(1) == "Young":
-            young += 1
-        else:
+            # fallback: любой Pause с длительностью в конце
+            m = re.search(r"Pause\b.*? ([\d.]+)(ms|s)\s*$", line)
+            if not m:
+                continue
+        if "Full" in line:
             full += 1
+        else:
+            pauses += 1
+        dur = float(m.group(2)) * (1.0 if m.group(3) == "ms" else 1000.0)
         total += dur
         mx = max(mx, dur)
-    n = young + full
-    return young, full, total, (total / n if n else 0.0), mx
+    n = pauses + full
+    return pauses, full, total, (total / n if n else 0.0), mx
 
 
 def env_flag(env_txt, key, want):
@@ -157,7 +160,7 @@ def main():
     tok = token()
     run_id = int(sys.argv[1]) if len(sys.argv) > 1 else 0
     if not run_id:
-        raise SystemExit("usage: absorb_s7201.py <run_id>")
+        raise SystemExit("usage: absorb_s7202.py <run_id>")
     st = api(tok, f"/repos/{REPO}/actions/runs/{run_id}")
     print(f"run {run_id}: status={st.get('status')} conclusion={st.get('conclusion')} "
           f"head={str(st.get('head_sha'))[:7]}")
@@ -166,8 +169,8 @@ def main():
     os.makedirs(RUN_DIR, exist_ok=True)
     have_art = fetch_artifact(tok, run_id)
 
-    rep = [f"# absorb COLLECTOR-A/B ParallelGC s7201 (run {run_id}, head {str(st.get('head_sha'))[:7]}) "
-           f"— PROTOCOL v8-REGRESSION DUAL BAR\n"]
+    rep = [f"# absorb COLLECTOR-A/B #2 ZGC-gen s7202 (run {run_id}, head {str(st.get('head_sha'))[:7]}) "
+           f"— PROTOCOL v8-REGRESSION DUAL BAR vs БАНК v4 (2.60 @ {ANCHOR_RUNNER})\n"]
     verdict = None
 
     stdout = os.path.join(RUN_DIR, "server-stdout.log")
@@ -178,8 +181,8 @@ def main():
         env_txt = open(ep, errors="ignore").read()
 
     if stdout_txt:
-        # ---- PG-T1 delivery (gc_tune armed + банк v3 rest)
-        want = {"gc_tune": "3", "region_steal": "0", "travel_diet": "0",
+        # ---- PG-T1 delivery (gc_tune armed + банк rest)
+        want = {"gc_tune": "4", "region_steal": "0", "travel_diet": "0",
                 "skip_store_bb": "0", "bu_defer": "0", "inside_cache": "1",
                 "flush_diet": "1", "region_threads": "4", "batch_collector": "1",
                 "fluid_guard": "1"}
@@ -191,12 +194,13 @@ def main():
         col_ok = False
         if os.path.isfile(gclog):
             gtxt = open(gclog, errors="ignore").read()
-            col_ok = ("G1 Evacuation Pause" not in gtxt) and ("Pause Young" in gtxt)
+            col_ok = ("G1 Evacuation Pause" not in gtxt) and \
+                     ("Using The Z Garbage Collector" in gtxt or "ZGC" in gtxt)
         t1_ok = all("OK" in x for x in t1) and ncde == 0 and pop_ok and arm and col_ok
         rep.append("- PG-T1: " + ", ".join(t1) + f", NCDFE={ncde}, "
                    f"pop={'VALID' if pop_ok else 'BAD'}, "
                    f"mode={'WORKERS4-TELEMETRY' if arm else 'MISSING'}, "
-                   f"col={'PARALLEL' if col_ok else 'BAD'} -> **{'PASS' if t1_ok else 'FAIL'}**")
+                   f"col={'ZGC' if col_ok else 'BAD'} -> **{'PASS' if t1_ok else 'FAIL'}**")
 
         # ---- PG-T2 crash-free
         threw = stdout_txt.count("Entity threw exception")
@@ -227,22 +231,21 @@ def main():
             verdict = "INFRA-FLAKE"
             rep.append(f"  -> **FIXTURE-INVALID (T1={'PASS' if t1_ok else 'FAIL'}, "
                        f"T2={'PASS' if t2_ok else 'FAIL'}) — двойной бар по мусорным "
-                       f"данным НЕ валиден** (урок #167: pop-BAD + 1 полл = ложный "
-                       f"CANDIDATE-GREEN) — ре-ролл dispatch_s7201.py (не вердикт)")
+                       f"данным НЕ валиден** (урок #167) — ре-ролл dispatch_s7202.py")
         elif med is not None and runner and band_ok:
             nd = (med / runner) / (ANCHOR_TPS / ANCHOR_RUNNER) - 1.0
             ad = med / ANCHOR_TPS - 1.0
             rep.append(f"  DUAL BAR (v8-REGRESSION): normalized={nd:+.1%}, absolute={ad:+.1%} "
-                       f"(бар: ОБЕ >= +10%)")
+                       f"(бар: ОБЕ >= +10% vs банк v4 {ANCHOR_TPS})")
             if nd >= 0.10 and ad >= 0.10:
                 verdict = "CANDIDATE-GREEN"
                 rep.append("  -> **CANDIDATE GREEN** -> подтверждающий лег min-of-2 "
-                           "(dispatch_s7201.py повторно) -> banking v4 = v3 + gc_tune")
+                           "(dispatch_s7202.py повторно) -> banking v5 = v4 + ZGC")
             else:
                 verdict = "LANE-OPEN"
                 rep.append("  -> **< +10% хотя бы по одной оси** -> лейн ОТКРЫТ -> "
-                           "ParallelGC: банковый кандидат v5 (директива 20:08) "
-                           "или следующий крит-путь рычаг")
+                           "ZGC НЕ ПРЕВЗОШЁЛ ParallelGC-банк; следующий кандидат "
+                           "очереди (ParallelGCThreads-tuning / THP) в новом тике")
         elif not band_ok:
             verdict = "INVALID-PAIRING"
             rep.append("  -> **ВНЕ ШИРОКОГО БАНДА** — ре-диспатч (не вердикт)")
@@ -250,18 +253,17 @@ def main():
             verdict = "NO-SOAK"
             rep.append("  -> нет соак-поллов — вердикта нет")
 
-        # ---- PG-T4 GC-гейты (preregister)
-        gs = gc_stats(gclog)
+        # ---- PG-T4 ZGC-гейты (preregister)
+        gs = gc_stats_zgc(gclog)
         if gs:
-            young, full, total, avg, mx = gs
+            pauses, full, total, avg, mx = gs
             t4 = (full <= FULL_GATE and total <= TOTAL_PAUSE_GATE_MS
-                  and avg <= AVG_PAUSE_GATE_MS and mx <= MAX_PAUSE_GATE_MS
-                  and YOUNG_MIN <= young <= YOUNG_GATE)
-            rep.append(f"- PG-T4: young={young}, Full={full}, total_pause={total/1000:.1f}s "
-                       f"(гейт <= {TOTAL_PAUSE_GATE_MS/1000:.1f}s), avg={avg:.1f}ms "
-                       f"(гейт <= {AVG_PAUSE_GATE_MS:.0f}ms), young-банд {YOUNG_MIN}..{YOUNG_GATE}, "
-                       f"Full<= {FULL_GATE}, max={mx:.1f}ms (гейт <= {MAX_PAUSE_GATE_MS:.0f}ms) "
-                       f"-> **{'PASS' if t4 else 'FAIL'}** (база s7198: 19.5s/79.3ms/178.7ms)")
+                  and mx <= MAX_PAUSE_GATE_MS and pauses + full <= PAUSE_COUNT_GATE)
+            rep.append(f"- PG-T4: pauses={pauses}, Full={full}, total_pause={total/1000:.1f}s "
+                       f"(гейт <= {TOTAL_PAUSE_GATE_MS/1000:.1f}s), avg={avg:.3f}ms, "
+                       f"max={mx:.3f}ms (гейт <= {MAX_PAUSE_GATE_MS:.0f}ms) "
+                       f"-> **{'PASS' if t4 else 'FAIL'}** "
+                       f"(банк v4 leg#1 ParallelGC: 24.6s/max 2954ms/Full=9)")
             if verdict is None and not t4:
                 verdict = "GC-FAIL"
         else:
@@ -297,7 +299,7 @@ def main():
                 verdict = "INFRA-FLAKE"
                 rep.append("- PG-GATE: workflow-гейт сказал **FIXTURE-VALIDITY: INVALID** "
                            "-> лег discard (не вердикт), любой предыдущий GREEN/LANE-OPEN "
-                           "АННУЛИРОВАН — ре-ролл dispatch_s7201.py")
+                           "АННУЛИРОВАН — ре-ролл dispatch_s7202.py")
 
     if not have_art or not stdout_txt:
         jl = fetch_joblog(tok, run_id)
@@ -313,7 +315,7 @@ def main():
             if band and crash == 0 and fixture == 0:
                 verdict = "BAND-DISCARD"
                 rep.append("  -> **BAND-DISCARD** (S7-96d fast-fail, не вердикт) — "
-                           "ре-диспатч dispatch_s7201.py (макс 2 подряд)")
+                           "ре-диспатч dispatch_s7202.py (макс 2 подряд)")
             elif crash:
                 verdict = "CRASH-REFUTED"
                 rep.append("  -> **CRASH-REFUTED** — руут-кауз по job-логу; rollback "
@@ -323,7 +325,7 @@ def main():
                 rep.append("  -> **INFRA-FLAKE** — ре-диспатч без вердикта (макс 2 подряд)")
 
     rep.append(f"\n## VERDICT: **{verdict}**")
-    out = os.path.join(RESDIR, "ABSORB_S7201.md")
+    out = os.path.join(RESDIR, "ABSORB_S7202.md")
     open(out, "w").write("\n".join(rep) + "\n")
     print("\n".join(rep))
     print(f"\nwritten: {out}")
