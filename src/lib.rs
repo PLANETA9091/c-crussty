@@ -37,6 +37,7 @@ mod improved_noise;
 mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
+mod items_wakeup;
 mod jni_table;
 mod kernel_policy;
 mod loader;
@@ -174,6 +175,12 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // EntityCallbacks guard sites, composed on top of F1/F3 bytes (LAST in
     // the byte-hook chain). Dormant unless CRUSSTY_REGION_THREADS>=2.
     region_threads::register();
+    // ITEMS-WAKEUP (TASK-396-I, MEGA-ROUND-1 vector I): byte hook on
+    // ItemEntity — both mergeWithNeighbours call sites (tick + teleport)
+    // retargeted to the event-driven wakeup gate (E1 spawn / E2 movement
+    // >0.25 / E3 active bit / E4 post-merge neighbour wake; vanilla body via
+    // reflection delegate). Dormant unless CRUSSTY_LEVER_FLAG=items_wakeup.
+    items_wakeup::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -381,6 +388,10 @@ fn inject_surface() {
     // EntityCallbacks, retransform both (dormant unless
     // CRUSSTY_REGION_THREADS>=2).
     region_threads::activate();
+    // ITEMS-WAKEUP (TASK-396-I): define ItemsWakeupOps into the kernel
+    // loader, compute the two merge-site retargets for ItemEntity,
+    // retransform (dormant unless CRUSSTY_LEVER_FLAG=items_wakeup).
+    items_wakeup::activate();
     // BATCH-COLLECTOR (S7-160): define BatchCollector into the kernel
     // loader (define-only; the per-entity lazy swap happens in
     // RegionTickOps.tickBucket; dormant unless CRUSSTY_BATCH_COLLECTOR=1
