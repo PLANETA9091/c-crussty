@@ -22,6 +22,18 @@ import os, re, sys, zipfile
 WORKER_RX = re.compile(r"^(?:\[)?crussty-region-worker-(\d+)(?:\])?$")
 MAIN_RX = re.compile(r"^(?:\[)?Server thread(?:\])?$")
 
+TID_RX = re.compile(r"^\[(.*)\]$")
+TIDSUF_RX = re.compile(r"\s+tid=\d+$")
+
+
+def canon(tname):
+    """'[crussty-region-worker-2 tid=3851]' -> 'crussty-region-worker-2'."""
+    t = tname.strip()
+    m = TID_RX.match(t)
+    if m:
+        t = m.group(1)
+    return TIDSUF_RX.sub("", t).strip()
+
 
 def load_threaded(path):
     out = []
@@ -33,7 +45,7 @@ def load_threaded(path):
         if not m:
             continue
         parts = m.group(1).split(";")
-        out.append((parts[0].strip(), parts, int(m.group(2))))
+        out.append((canon(parts[0]), parts, int(m.group(2))))
     return out
 
 
