@@ -354,11 +354,23 @@ def main():
                      "ObjectOpenHashSet$SetIterator", "NullPointerException"))
         wedge = jl.count("Watchdog") + jl.count("syncLoad") + jl.count("managedBlock")
         fixture = jl.count("FIXTURE-VALIDITY: INVALID")
-        band = "OUTSIDE band" in jl
+        # TASK-391: строка "OUTSIDE band" появляется в job.log и как ЭХО
+        # исходника guard-шага ($IDX литерально) — бандит только ЭМИТНУТЫЙ
+        # notice (цифры вместо $IDX), иначе ложный BAND-DISCARD (урок
+        # s7206#2 35527308614: guard PASSED, а лег умер на unbound variable).
+        band = bool(re.search(r"::notice::runner_cpu_index=\d+ OUTSIDE band", jl))
+        unbound = bool(re.search(r"unbound variable", jl))
         rep.append(f"- FAILURE-рулетка: crash-маркеры={crash}, wedge={wedge}, "
-                   f"fixture-INVALID={fixture}, band-discard={band}")
+                   f"fixture-INVALID={fixture}, band-discard={band}, "
+                   f"unbound-var={unbound}")
         if verdict is None:
-            if band and crash == 0 and fixture == 0:
+            if unbound and not band:
+                verdict = "INFRA-SCRIPT-FAIL"
+                rep.append("  -> **INFRA-SCRIPT-FAIL** (set -u shell-скрипт умер "
+                           "на unbound variable — НЕ band, НЕ crash, НЕ вердикт "
+                           "рычага) — root-cause fix в bench-скрипте, потом "
+                           "ре-диспатч (§5, прецедент OPS_GREF 30cd34f)")
+            elif band and crash == 0 and fixture == 0:
                 verdict = "BAND-DISCARD"
                 rep.append("  -> **BAND-DISCARD** (S7-96d fast-fail, не вердикт) — "
                            "ре-диспатч dispatch_s7204.py (макс 2 подряд)")
