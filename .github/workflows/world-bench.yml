@@ -77,8 +77,12 @@ on:
         description: 'TRAVEL-DIET v2a RECON-21 ARCH-ATTACK lever #14 (1 = ARMED: scalar scratch-slot TravelDietOps.collide mirror replacing the private Entity.collide(Vec3) body via the entity_compose stage-10 body-redirect — AABB/ArrayList/FloatArraySet temporaries die, products stay allocations, bit-exact double order; requires region_threads>=2; 0 = vanilla A/B leg)'
         required: false
         default: '0'
-      zero_alloc:
-        description: 'ZERO-ALLOC-INSIDE S7-164 ARCH-ATTACK lever #10 (1 = ARMED: scalar allocation-free ZeroAllocOps bodies replacing Entity.collidedWithFluid/collidedWithShapeMovingFrom/updateFluidHeightAndDoFluidPushing via the entity_compose stage-7 body-redirect — requires region_threads>=2; 0 = vanilla A/B leg)'
+      # zero_alloc input REMOVED (TASK-360): the 25-input GitHub limit;
+      # lever #10 REFUTED (s7177: TPS -12.5% counter-effect) and rolled back
+      # long ago — the flag is pinned to '0' below; ZeroAllocOps bridges
+      # remain verified infrastructure.
+      inside_bitmask:
+        description: 'INSIDE-BITMASK RECON-33 ARCH-ATTACK lever #15 (1 = ARMED: section all-air pre-gate for Entity.checkInsideBlocks via InsideBitmaskOps sweptHullInto + hasOnlyAir sections — median-exact short-circuit before ANY observable action; requires region_threads>=2; 0 = vanilla discovery A/B leg). OPTION-B FLAGMAN: activate only on owner sanction (protocol min-MSPT)'
         required: false
         default: '0'
       # zero_cursor input REMOVED (TASK-332): the 25-input GitHub limit; lever
@@ -209,7 +213,8 @@ jobs:
           BATCH_COLLECTOR: ${{ inputs.batch_collector || '0' }}
           FLAT_TRAVERSAL: '0' # input dropped TASK-342 (25-input limit; lever #9 REFUTED FAIL PG4a)
           TRAVEL_DIET: ${{ inputs.travel_diet || '0' }}
-          ZERO_ALLOC: ${{ inputs.zero_alloc || '0' }}
+          ZERO_ALLOC: '0' # input dropped TASK-360 (25-input limit; lever #10 REFUTED s7177)
+          INSIDE_BITMASK: ${{ inputs.inside_bitmask || '0' }}
           ZERO_CURSOR: '0'
           SKIP_STORE_BB: ${{ inputs.skip_store_bb || '0' }}
           REGION_STEAL: ${{ inputs.region_steal || '0' }}
