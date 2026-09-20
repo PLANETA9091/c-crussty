@@ -290,6 +290,35 @@ def main():
     if verdict is None:
         verdict = "DELIVERY-FAIL"
 
+    # ---------- FAILURE-рулетка v2 (нет артефакта/stdout — диагностика по job.log;
+    # уроки s7206#2 unbound + s7207#1 503 + TASK-393 cc0c3f7 рулетка) ----------
+    if not have_art or not stdout_txt:
+        jl = fetch_joblog(tok, run_id)
+        crash = sum(jl.count(x) for x in
+                    ("Encountered an unexpected exception", "ReportedException",
+                     "NullPointerException"))
+        band = bool(re.search(r"::notice::runner_cpu_index=\d+ OUTSIDE band", jl))
+        unbound = bool(re.search(r"unbound variable", jl))
+        delivery503 = bool(re.search(r"503|Failed to download|curl: \(\d+\)", jl))
+        rep.append(f"- FAILURE-рулетка: crash={crash}, band={band}, unbound={unbound}, "
+                   f"delivery-503={delivery503}")
+        if verdict in ("NO-PROFILE", "DELIVERY-FAIL") or not stdout_txt:
+            if unbound and not band:
+                verdict = "INFRA-SCRIPT-FAIL"
+                rep.append("  -> **INFRA-SCRIPT-FAIL** (set -u умер на unbound variable — "
+                           "root-cause fix в bench-скрипте, потом ре-диспатч §5)")
+            elif band and crash == 0:
+                verdict = "BAND-DISCARD"
+                rep.append("  -> **BAND-DISCARD** (S7-96d fast-fail, не вердикт) — "
+                           "ре-диспатч dispatch_s7207.py (макс 2 подряд)")
+            elif delivery503 and crash == 0:
+                verdict = "INFRA-DELIVERY-FAIL"
+                rep.append("  -> **INFRA-DELIVERY-FAIL** (503/сеть внешних загрузок — "
+                           "ре-ролл ТОЛЬКО после root-cause §5; хардинг 785b0a4 стоит)")
+            elif crash:
+                verdict = "CRASH-REFUTED"
+                rep.append("  -> **CRASH-REFUTED** — руут-кауз по job-логу")
+
     rep.append(f"\n## VERDICT: **{verdict}**")
     outp = os.path.join(RESDIR, "ABSORB_S7207.md")
     open(outp, "w", encoding="utf-8").write("\n".join(rep) + "\n")
