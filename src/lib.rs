@@ -37,6 +37,10 @@ mod improved_noise;
 mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
+// ITEMS-STAGGER (ROUND-396 / TASK-396-B vector B): phase-scheduled merge scans;
+// three strict 1:1 tick-site retargets (merge/move/noCollision), N from
+// CRUSSTY_LEVER_ARG; dormant unless CRUSSTY_LEVER_FLAG == "items_stagger".
+mod items_stagger;
 mod jni_table;
 mod kernel_policy;
 mod loader;
@@ -381,6 +385,9 @@ fn inject_surface() {
     // EntityCallbacks, retransform both (dormant unless
     // CRUSSTY_REGION_THREADS>=2).
     region_threads::activate();
+    // ITEMS-STAGGER (ROUND-396 / TASK-396-B): background arm of the
+    // ItemEntity stagger gates (boot-quiet discipline inside).
+    items_stagger::activate();
     // BATCH-COLLECTOR (S7-160): define BatchCollector into the kernel
     // loader (define-only; the per-entity lazy swap happens in
     // RegionTickOps.tickBucket; dormant unless CRUSSTY_BATCH_COLLECTOR=1
