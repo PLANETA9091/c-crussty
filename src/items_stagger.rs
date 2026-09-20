@@ -119,7 +119,7 @@ fn register_hook() {
 /// Any failure (CNFE/NOSUCH/ExceptionInInitializerError) -> None (abort).
 fn probe_signature() -> Option<String> {
     cplug_sdk::jni_util::with_attached(|env| {
-        let gref = OPS_GREF.load(Ordering::SeqCst) as jni::jclass;
+        let gref = OPS_GREF.load(Ordering::SeqCst) ;
         if gref.is_null() {
             return None;
         }
@@ -132,7 +132,7 @@ fn probe_signature() -> Option<String> {
             crate::clear_exception(env);
             return None;
         }
-        let s = env.get_string_utf(res as jni::jstring).unwrap_or_default();
+        let s = env.get_string_utf(res as jvmti_bindings::jni::jstring).unwrap_or_default();
         env.delete_local_ref(res);
         Some(s)
     })
@@ -209,7 +209,10 @@ fn compose(orig: &[u8]) -> Result<Vec<u8>, String> {
         ("move", move_from, move_to),
         ("nocollision", nocoll_from, nocoll_to),
     ] {
-        match crate::classfile::retarget_virtual_to_static(&bytes, "tick", "()V", from, to)? {
+        let (out, outcome) = crate::classfile::retarget_virtual_to_static(
+            &bytes, "tick", "()V", from, to,
+        )?;
+        match outcome {
             crate::classfile::RetargetOutcome::Retargeted { sites: 1 } => {
                 eprintln!("[crussty-plugin] items_stagger: gate {label} retargeted (sites=1)");
             }
@@ -222,12 +225,8 @@ fn compose(orig: &[u8]) -> Result<Vec<u8>, String> {
                 ));
             }
         }
-        // Re-run to thread the mutated buffer through the next stage: the
-        // helper consumes bytes; re-borrow the patched output.
-        bytes = match crate::classfile::retarget_virtual_to_static(&bytes, "tick", "()V", from, to) {
-            Ok((b, crate::classfile::RetargetOutcome::AlreadyPatched { sites: 1 })) => b,
-            _ => bytes, // idempotency self-check only; keep the first result
-        };
+        // Thread the mutated buffer through the next stage.
+        bytes = out;
     }
     Ok(bytes)
 }
