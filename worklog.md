@@ -2752,3 +2752,19 @@ Stage Summary:
 - Активация option B теперь literally одна команда: dispatch_s7195.py --sanctioned → absorb_s7195.py <run_id> --protocol B → min-of-2 → banking v4
 - Лимит 25 инпутов расчищен законным прецедентом (REFUTED #10 out, #15 in)
 - NEXT id 361: решение владельца B/C; при B — активация+абсорб+min-of-2 в одном тике
+
+---
+Task ID: 361
+Agent: cron-tick (Super Z)
+Task: TASK-361 tick: pull + S7-108 + NEXT 361 (решения B/C нет) → спека C-эры офлайн
+
+Work Log:
+- git pull --rebase обоих репо чисты; runs?per_page=3: CI green 9fa116a/6d384da/f12e3af, бенч-легов нет, чужих диспатчей нет
+- Ветка (4c): решения владельца B/C нет → офлайн-работа из NEXT до коммит-пригодного: СПЕКА C-ЭРЫ (рекомендация EPOCH2_DECISION_MAP: «параллельно открыть спеку C»)
+- docs/EPOCH2C_S7-171_RUST_SCHED_SPEC.md: тезис wall-clock/Амдал (не CPU), пины region_threads/S7-170-closed/entity_mirror/jni_table/оракулы, архитектура M1 ordered-commit (median-exact структурно), фазы P0-P4 (P1 = RECON-36 serial-fraction, гейт честности >70% → пауза), гейты PG-C1..C5 прегистрированы, риск-регистр (guard-аудит на каждый worker-путь), границы санкций §9 (P2+ = санкция владельца; P0/P1 офлайн-разрешены)
+- Учёт: GOAL ×46 + worklog + CLAIMS TASK-361; пуш обоих + re-pull
+
+Stage Summary:
+- Спека C-эры S7-171 открыта и закоммичена — C больше не «спека не начата»: есть тезис, пины, фазы, гейты
+- S7-170 race-фундамент зафиксирован в спеке как ЗАКРЫТ (верификация s7193 threw=0)
+- NEXT id 362: без решения владельца — RECON-36 serial-fraction (офлайн); при B — dispatch_s7195.py --sanctioned; при C — P1
