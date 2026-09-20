@@ -27,6 +27,7 @@
 //! gate cannot re-invoke the vanilla body without its MethodHandle, so a
 //! disarmed bridge must NEVER be patched in.
 
+use jvmti_bindings::prelude::*;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 
 const ENTITY_CLASS: &str = "net/minecraft/world/entity/Entity";
@@ -103,7 +104,7 @@ fn probe_armed() -> bool {
             env.delete_local_ref(cls);
             return false;
         }
-        let state = env.get_string_utf(res as jni::jstring).unwrap_or("");
+        let state = env.get_string_utf(res as jni::jstring).unwrap_or_default();
         env.delete_local_ref(res);
         env.delete_local_ref(cls);
         state == "ARMED"
