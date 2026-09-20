@@ -93,6 +93,14 @@ ZERO_CURSOR="${ZERO_CURSOR:-0}"
 SKIP_STORE_BB="${SKIP_STORE_BB:-0}"
 REGION_STEAL="${REGION_STEAL:-0}"
 BU_DEFER="${BU_DEFER:-0}"
+# TASK-391 INFRA-ROOT-CAUSE (s7206#2 35527308614: "run_world3.sh: line 182:
+# PARSE_DIAG: unbound variable" под set -euo pipefail — лег умер после
+# 4.5-минутной загрузки мира, артефакт = run-env-only): PARSE_DIAG был
+# ЕДИНСТВЕННОЙ ручкой без default-init (echo @182 + export @437), workflow
+# world-bench.yml её никогда не биндит. FLUID_FREE — того же класса страховка
+# (сегодня workflow пинит '0', дефолта тут не было).
+PARSE_DIAG="${PARSE_DIAG:-0}"
+FLUID_FREE="${FLUID_FREE:-0}"
 # BENCH-X150K population fixture (S7-129, docs/BENCH_X150K_SCENARIO.md §2):
 # deterministic living-scene injection AFTER forceload, BEFORE the profiler
 # window (harness waits for the POPULATION INJECT DONE marker). 0 = off.
