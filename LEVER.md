@@ -1,7 +1,22 @@
-# LEVER — items_manager (agent J, TASK-395)
+# LEVER — items_subsys2 (agent J, TASK-397 MEGA-ROUND-2, vector subsys_index)
+
+## Round-2 отличия от round-1 items_manager (+3.3%)
+1. **Rust-индекс 1.0-grid** (src/items_index.rs, RegisterNatives на
+   ItemEntityManager): открытая адресация cellKey->head + интрузивные
+   next/cell плоские векторы, один RwLock (writes редкие). idxQuery
+   сканирует клетки floor(q)-1..floor(q)+1 и возвращает id в scratch int[]
+   (zero-alloc, overflow -> -(cap) -> grow+retry). Merge-кандидаты больше НЕ
+   идут через level.getEntitiesOfClass (broadphase-хвост 15.66% устранён);
+   фильтры (level/intersects/predicate/walls-fix) и tryToMerge — ванильные.
+   Отказ -> ванильный mergeWithNeighbours по MethodHandle (fail-closed).
+2. **Один проход**: items остаются в общих bucket-массивах и тикаются инлайн
+   в tickBucket (vanilla interleave per slot); iarr/двойной обход убраны.
+3. **Аллокации**: ноль fastutil/boxing на merge-пути; id-реюз через freeIds.
+
+## Round-1 механизм (основа сохранена)
 
 ## Идентификатор
-- `CRUSSTY_LEVER_FLAG=items_manager`, `CRUSSTY_LEVER_ARG=1`
+- `CRUSSTY_LEVER_FLAG=items_subsys2`, `CRUSSTY_LEVER_ARG=1`
 - Требует `CRUSSTY_REGION_THREADS>=2` и `REGION_STEAL=0` (статический режим
   параллельного тика — конфиг банка v4). Пустой/чужой флаг = точный vanilla.
 
@@ -12,7 +27,7 @@ ItemEntity больше не идут через общий entity-tick dispatch
 EntityTickList) items маршрутизируются в per-slot ПЛОТНЫЕ массивы
 (`itemArr`, grow-on-demand, персистентные — тот же zero-alloc протокол, что
 `bucketArr`, S7-158c). В фазе 3 каждый бакет-поток перед общей фазой исполняет
-`ItemEntityManager.tickSlot(slot)`:
+`ItemEntityManager.tickOne (инлайн в tickBucket)`:
 
 1. **gather** — плотные массивы в ванильном порядке снапшота (порядок items
    внутри секции сохранён).
