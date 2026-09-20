@@ -37,6 +37,10 @@ mod improved_noise;
 mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
+// ITEMS-STAGGER v2 (ROUND-397 / TASK-397-B vector B): phase-scheduled merge
+// scans re-armed — census fixed (invokevirtual+invokespecial, owner-tolerant
+// move site); dormant unless CRUSSTY_LEVER_FLAG == "items_stagger2".
+mod items_stagger2;
 mod jni_table;
 mod kernel_policy;
 mod loader;
@@ -381,6 +385,10 @@ fn inject_surface() {
     // EntityCallbacks, retransform both (dormant unless
     // CRUSSTY_REGION_THREADS>=2).
     region_threads::activate();
+    // ITEMS-STAGGER v2 (ROUND-397 / TASK-397-B): background arm of the
+    // ItemEntity stagger gates (boot-quiet discipline inside; dormant
+    // unless CRUSSTY_LEVER_FLAG == "items_stagger2").
+    items_stagger2::activate();
     // BATCH-COLLECTOR (S7-160): define BatchCollector into the kernel
     // loader (define-only; the per-entity lazy swap happens in
     // RegionTickOps.tickBucket; dormant unless CRUSSTY_BATCH_COLLECTOR=1

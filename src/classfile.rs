@@ -2357,6 +2357,169 @@ mod tests {
         assert_eq!(before, after, "NotFound must not append pool entries");
     }
 
+    // -------------------------------------------------------------------
+    // ROUND-397-B census regression (items_stagger2): the real kernel's
+    // ItemEntity.tick emits `invokevirtual ItemEntity.move` (INHERITED
+    // call — javac uses the receiver's static type as Methodref owner) and
+    // may emit `invokespecial Entity.move` (super-call form); the
+    // round-396-B census missed the first and the lever went fail-closed
+    // dormant. retarget_invoke_to_static must match BOTH opcodes and BOTH
+    // owners, rewrite to the receiver-prepended static, be idempotent, and
+    // never touch bytes on a foreign owner.
+    // -------------------------------------------------------------------
+    fn fake_class_with_tick_move_sites() -> Vec<u8> {
+        const ITEM: &str = "net/minecraft/world/entity/item/ItemEntity";
+        const ENTITY: &str = "net/minecraft/world/entity/Entity";
+        const MOVE_DESC: &str =
+            "(Lnet/minecraft/world/entity/MoverType;Lnet/minecraft/world/phys/Vec3;)V";
+        let mut cp: Vec<u8> = Vec::new();
+        let utf8 = |cp: &mut Vec<u8>, s: &str| {
+            cp.push(1);
+            cp.extend_from_slice(&(s.len() as u16).to_be_bytes());
+            cp.extend_from_slice(s.as_bytes());
+        };
+        let class = |cp: &mut Vec<u8>, n: u16| {
+            cp.push(7);
+            cp.extend_from_slice(&n.to_be_bytes());
+        };
+        let nat = |cp: &mut Vec<u8>, n: u16, d: u16| {
+            cp.push(12);
+            cp.extend_from_slice(&n.to_be_bytes());
+            cp.extend_from_slice(&d.to_be_bytes());
+        };
+        let mref = |cp: &mut Vec<u8>, c: u16, nt: u16| {
+            cp.push(10);
+            cp.extend_from_slice(&c.to_be_bytes());
+            cp.extend_from_slice(&nt.to_be_bytes());
+        };
+        utf8(&mut cp, "test/Fake"); // 1
+        class(&mut cp, 1); // 2
+        utf8(&mut cp, ITEM); // 3
+        class(&mut cp, 3); // 4
+        utf8(&mut cp, "move"); // 5
+        utf8(&mut cp, MOVE_DESC); // 6
+        nat(&mut cp, 5, 6); // 7
+        mref(&mut cp, 4, 7); // 8  = ItemEntity.move (invokevirtual site)
+        utf8(&mut cp, ENTITY); // 9
+        class(&mut cp, 9); // 10
+        mref(&mut cp, 10, 7); // 11 = Entity.move (invokespecial site)
+        utf8(&mut cp, "tick"); // 12
+        utf8(&mut cp, "()V"); // 13
+        utf8(&mut cp, "Code"); // 14
+        let code: Vec<u8> = vec![
+            0x2a, 0xb6, 0x00, 0x08, // aload_0; invokevirtual ItemEntity.move
+            0x2a, 0xb7, 0x00, 0x0b, // aload_0; invokespecial Entity.move
+            0xb1, // return
+        ];
+        let mut code_attr: Vec<u8> = Vec::new();
+        code_attr.extend_from_slice(&1u16.to_be_bytes()); // max_stack
+        code_attr.extend_from_slice(&0u16.to_be_bytes()); // max_locals
+        code_attr.extend_from_slice(&(code.len() as u32).to_be_bytes());
+        code_attr.extend_from_slice(&code);
+        code_attr.extend_from_slice(&0u16.to_be_bytes()); // exception table
+        code_attr.extend_from_slice(&0u16.to_be_bytes()); // code attrs
+        let mut method: Vec<u8> = Vec::new();
+        method.extend_from_slice(&0x0001u16.to_be_bytes()); // public
+        method.extend_from_slice(&12u16.to_be_bytes()); // "tick"
+        method.extend_from_slice(&13u16.to_be_bytes()); // "()V"
+        method.extend_from_slice(&1u16.to_be_bytes()); // 1 attribute
+        method.extend_from_slice(&14u16.to_be_bytes()); // "Code"
+        method.extend_from_slice(&(code_attr.len() as u32).to_be_bytes());
+        method.extend_from_slice(&code_attr);
+        let mut out: Vec<u8> = Vec::new();
+        out.extend_from_slice(&[0xCA, 0xFE, 0xBA, 0xBE]);
+        out.extend_from_slice(&0u16.to_be_bytes()); // minor
+        out.extend_from_slice(&61u16.to_be_bytes()); // major 17
+        out.extend_from_slice(&15u16.to_be_bytes()); // cp_count
+        out.extend_from_slice(&cp);
+        out.extend_from_slice(&0x0021u16.to_be_bytes()); // public super
+        out.extend_from_slice(&2u16.to_be_bytes()); // this
+        out.extend_from_slice(&10u16.to_be_bytes()); // super = Entity
+        out.extend_from_slice(&0u16.to_be_bytes()); // ifaces
+        out.extend_from_slice(&0u16.to_be_bytes()); // fields
+        out.extend_from_slice(&1u16.to_be_bytes()); // methods
+        out.extend_from_slice(&method);
+        out.extend_from_slice(&0u16.to_be_bytes()); // class attrs
+        out
+    }
+
+    #[test]
+    fn items_stagger2_move_sites_virtual_and_special_owner_tolerant() {
+        const MOVE_DESC: &str =
+            "(Lnet/minecraft/world/entity/MoverType;Lnet/minecraft/world/phys/Vec3;)V";
+        const TO_DESC: &str =
+            "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/entity/MoverType;Lnet/minecraft/world/phys/Vec3;)V";
+        let orig = fake_class_with_tick_move_sites();
+        let (out, outcome) = retarget_invoke_to_static(
+            &orig,
+            "tick",
+            "()V",
+            &[
+                (
+                    "net/minecraft/world/entity/item/ItemEntity",
+                    "move",
+                    MOVE_DESC,
+                ),
+                ("net/minecraft/world/entity/Entity", "move", MOVE_DESC),
+            ],
+            ("fake/ItemStaggerOps", "move", TO_DESC),
+        )
+        .expect("both sites retarget");
+        assert_eq!(outcome, RetargetOutcome::Retargeted { sites: 2 });
+        assert_ne!(out.as_slice(), orig.as_slice());
+
+        // Both sites are now invokestatic -> the receiver-prepended static.
+        let layout = parse_layout(&out).expect("re-parse");
+        let name_idx = layout.pool.find_utf8("tick").expect("tick kept");
+        let desc_idx = layout.pool.find_utf8("()V").expect("()V kept");
+        let m = find_method(&out, layout.methods_start, name_idx, desc_idx).expect("tick");
+        let (cs, cl) = find_code_attr(&out, &layout.pool, &m).expect("code");
+        let code = &out[cs..cs + cl];
+        assert_eq!(code[0], 0x2a);
+        assert_eq!(code[1], 0xb8, "virtual site -> invokestatic");
+        assert_eq!(code[5], 0xb8, "special site -> invokestatic");
+        for op in [1usize, 5usize] {
+            let idx = u16::from_be_bytes([code[op + 1], code[op + 2]]);
+            let parts = layout.pool.methodref_parts(idx).expect("resolve");
+            assert_eq!(parts.0, "fake/ItemStaggerOps");
+            assert_eq!(parts.1, "move");
+            assert_eq!(parts.2, TO_DESC);
+        }
+
+        // Idempotent re-sight: AlreadyPatched, bytes untouched.
+        let (again, outcome2) = retarget_invoke_to_static(
+            &out,
+            "tick",
+            "()V",
+            &[
+                (
+                    "net/minecraft/world/entity/item/ItemEntity",
+                    "move",
+                    MOVE_DESC,
+                ),
+                ("net/minecraft/world/entity/Entity", "move", MOVE_DESC),
+            ],
+            ("fake/ItemStaggerOps", "move", TO_DESC),
+        )
+        .expect("idempotent re-sight");
+        assert_eq!(outcome2, RetargetOutcome::AlreadyPatched { sites: 2 });
+        assert_eq!(out, again);
+
+        // Foreign owner: NotFound returns ORIGINAL bytes, pool not grown.
+        let before = parse_layout(&orig).unwrap().pool.next;
+        let (back, outcome3) = retarget_invoke_to_static(
+            &orig,
+            "tick",
+            "()V",
+            &[("net/minecraft/world/level/Level", "move", MOVE_DESC)],
+            ("fake/ItemStaggerOps", "move", TO_DESC),
+        )
+        .expect("clean NotFound");
+        assert_eq!(outcome3, RetargetOutcome::NotFound);
+        assert_eq!(back, orig, "NotFound returns original bytes");
+        assert_eq!(parse_layout(&orig).unwrap().pool.next, before);
+    }
+
     /// Shape contract: a static desc without the receiver prepended is
     /// refused with an error (stack shape would change).
     #[test]
@@ -3126,6 +3289,178 @@ pub fn retarget_virtual_to_static(
     // Splice: header + grown pool + tail; rewrite opcode byte AND operands
     // for each matched site. All sites are >= cp_end (method table follows
     // the pool), so the rewrite applies to the tail copy.
+    let mut tail = bytes[layout.cp_end..].to_vec();
+    let want = new_idx.to_be_bytes();
+    for &op_off in &rewrite {
+        let rel = op_off - layout.cp_end;
+        if rel + 2 >= tail.len() {
+            return Err("retarget opcode outside class tail (corrupt layout?)".into());
+        }
+        tail[rel] = 0xb8; // invokestatic
+        tail[rel + 1] = want[0];
+        tail[rel + 2] = want[1];
+    }
+    let mut out = Vec::with_capacity(bytes.len() + 64);
+    out.extend_from_slice(&bytes[0..8]); // magic, minor, major
+    out.extend_from_slice(&pool.next.to_be_bytes()); // new cp_count
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(&tail);
+    Ok((out, RetargetOutcome::Retargeted { sites: rewrite.len() }))
+}
+
+/// Descriptor with its FIRST parameter (and the opening paren) removed —
+/// e.g. `(LMoverType;LVec3;)V` -> `LMoverType;LVec3;)V`, `()V` -> `)V`.
+/// Used to validate the receiver-prepended static form for ANY receiver
+/// class (the receiver slot is widened to the declarator type at the call
+/// site; the verifier-visible stack shape stays one-ref + original args).
+fn desc_after_first_param(desc: &str) -> Option<&str> {
+    let b = desc.as_bytes();
+    if b.first() != Some(&b'(') {
+        return None;
+    }
+    let mut i = 1usize;
+    while i < b.len() {
+        match b[i] {
+            b'L' => {
+                while i < b.len() && b[i] != b';' {
+                    i += 1;
+                }
+                if i >= b.len() {
+                    return None;
+                }
+                i += 1;
+                break;
+            }
+            b'[' => {
+                i += 1;
+                // component type follows (recursively one descriptor char)
+                continue;
+            }
+            b')' => return Some(&desc[i..]),
+            _ => {
+                i += 1; // primitive one-char param
+                break;
+            }
+        }
+    }
+    Some(&desc[i.min(desc.len())..])
+}
+
+/// Variant S+ retarget (ROUND-397-B census lesson): receiver-prepended
+/// virtual/SPECIAL retarget with OWNER TOLERANCE. Scans BOTH `invokevirtual`
+/// (0xb6) AND `invokespecial` (0xb7) call sites in `method_name`/`method_desc`
+/// and rewrites every site whose Methodref matches ANY of `froms` so it
+/// invokes the single `to` static (receiver becomes the first argument).
+///
+/// Why both opcodes and multiple owners (real kernel census, purpur-1.21.10
+/// ItemEntity.tick — the round-396-B fail-closed lesson):
+///   * a PRIVATE instance method called from the same class compiles to
+///     `invokevirtual` since JEP 181 nestmates (`mergeWithNeighbours`);
+///   * an INHERITED `this.move(...)` compiles to `invokevirtual` with the
+///     receiver's STATIC type as the Methodref owner (`ItemEntity.move`),
+///     while the natural spec names the declarator (`Entity.move`);
+///   * a `super.move(...)` compiles to `invokespecial`.
+/// All three are receiver-on-stack forms: rewriting to a receiver-prepended
+/// invokestatic (receiver param typed by the DECLARATOR, e.g. Entity) keeps
+/// the verifier-visible stack shape identical (ItemEntity is assignable to
+/// Entity), with zero bytecode-length change and no StackMapTable edits.
+///
+/// Idempotency: sites already resolving to `to` are counted and left alone
+/// ([`RetargetOutcome::AlreadyPatched`]); NotFound returns the original
+/// bytes without pool growth. Panic-free on hook-delivered bytes.
+pub fn retarget_invoke_to_static(
+    bytes: &[u8],
+    method_name: &str,
+    method_desc: &str,
+    froms: &[(&str, &str, &str)],
+    to: (&str, &str, &str),
+) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    if froms.is_empty() {
+        return Err("retarget_invoke_to_static: empty froms".into());
+    }
+    let from_desc = froms[0].2;
+    if froms.iter().any(|f| f.2 != from_desc) {
+        return Err("retarget_invoke_to_static: froms disagree on descriptor".into());
+    }
+    let Some(after_first) = desc_after_first_param(to.2) else {
+        return Err(format!("unparseable static desc {}", to.2));
+    };
+    if after_first != &from_desc[1..] {
+        return Err(format!(
+            "static desc {} is not the virtual desc {} with SOME receiver prepended \
+             (stack shape would change)",
+            to.2, from_desc
+        ));
+    }
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    let mut pool = layout.pool;
+    let Some(name_idx) = pool.find_utf8(method_name) else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let Some(desc_idx) = pool.find_utf8(method_desc) else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)
+        .ok_or_else(|| format!("method {method_name}{method_desc} not found"))?;
+    let (code_start, code_len) = find_code_attr(bytes, &pool, &m)
+        .ok_or_else(|| format!("method {method_name}{method_desc} has no Code attribute"))?;
+    let code_end = code_start
+        .checked_add(code_len)
+        .ok_or_else(|| "code length overflow".to_string())?;
+    let code = bytes
+        .get(code_start..code_end)
+        .ok_or_else(|| "code region truncated".to_string())?;
+
+    // Walk once; match BOTH invokevirtual (0xb6) and invokespecial (0xb7)
+    // sites by (owner, name, desc) triples.
+    let to_triple = (to.0.to_string(), to.1.to_string(), to.2.to_string());
+    let from_triples: Vec<(String, String, String)> = froms
+        .iter()
+        .map(|f| (f.0.to_string(), f.1.to_string(), f.2.to_string()))
+        .collect();
+    let mut rewrite: Vec<usize> = Vec::new(); // absolute offsets of the opcode byte
+    let mut already = 0usize;
+    let mut pc = 0usize;
+    while pc < code.len() {
+        let op = code[pc];
+        if op == 0xb6 || op == 0xb7 || op == 0xb8 {
+            let b = code
+                .get(pc + 1..pc + 3)
+                .ok_or_else(|| "invoke operand truncated".to_string())?;
+            let cp_idx = u16::from_be_bytes([b[0], b[1]]);
+            match pool.methodref_parts(cp_idx) {
+                Some(parts) if parts == to_triple => already += 1,
+                Some(parts) if op != 0xb8 && from_triples.iter().any(|f| *f == parts) => {
+                    rewrite.push(code_start + pc);
+                }
+                _ => {}
+            }
+            pc += 3;
+            continue;
+        }
+        let extra = opcode_extra(op, code, pc)?;
+        pc = pc
+            .checked_add(1 + extra)
+            .ok_or_else(|| "code walk overflow".to_string())?;
+        if pc > code.len() {
+            return Err("truncated code (walk past end)".into());
+        }
+    }
+    if rewrite.is_empty() {
+        return Ok((bytes.to_vec(), if already > 0 {
+            RetargetOutcome::AlreadyPatched { sites: already }
+        } else {
+            RetargetOutcome::NotFound
+        }));
+    }
+
+    // Append (or reuse) the Methodref for `to` — append-only, dedup.
+    let new_idx = pool.method_ref(to.0, to.1, to.2);
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for retarget ref".into());
+    }
+
+    // Splice: header + grown pool + tail; rewrite opcode byte AND operands.
     let mut tail = bytes[layout.cp_end..].to_vec();
     let want = new_idx.to_be_bytes();
     for &op_off in &rewrite {
