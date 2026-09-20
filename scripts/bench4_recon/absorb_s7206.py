@@ -184,8 +184,11 @@ def main():
         env_txt = open(ep, errors="ignore").read()
 
     if stdout_txt:
-        # ---- PG-T1 delivery (gc_tune=3 + inside_bitmask=1 + банк rest + ARMED #15)
-        want = {"gc_tune": "3", "inside_bitmask": "1", "region_steal": "0",
+        # ---- PG-T1 delivery (банк v4 + fluid_bitmask=1 + fluid_dirty_ledger=1 —
+        # чистая изоляция #16; inside_bitmask=0! урок TASK-392: want-словарь был
+        # скопирован из absorb_s7204 (#15) с inside_bitmask=1 → ложный T1-FAIL,
+        # ложный INFRA-FLAKE на ЗЕЛЁНОМ леге s7206#3 35528326290)
+        want = {"gc_tune": "3", "inside_bitmask": "0", "region_steal": "0",
                 "travel_diet": "0", "skip_store_bb": "0", "bu_defer": "0",
                 "fluid_bitmask": "1", "fluid_dirty_ledger": "1", "fluid_dirty": "0",
                 "inside_cache": "1", "flush_diet": "1", "region_threads": "4",
