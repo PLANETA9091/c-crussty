@@ -37,6 +37,7 @@ mod improved_noise;
 mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
+mod items_index;
 mod jni_table;
 mod kernel_policy;
 mod loader;
@@ -174,6 +175,11 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // EntityCallbacks guard sites, composed on top of F1/F3 bytes (LAST in
     // the byte-hook chain). Dormant unless CRUSSTY_REGION_THREADS>=2.
     region_threads::register();
+    // ITEMS-INDEX (TASK-395, agent-A): byte hook on ItemEntity (pristine
+    // capture; merge-candidate-scan retarget served via retransform after the
+    // ItemMergeIndexOps trio lands in the kernel loader). Dormant unless
+    // CRUSSTY_LEVER_FLAG=items_index.
+    items_index::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -428,6 +434,11 @@ fn inject_surface() {
     // re-composes the F1 optimiseRandomTick swap; MUST run after
     // randomtick::activate — see src/tickhook.rs module docs).
     tickhook::activate();
+    // ITEMS-INDEX (TASK-395, agent-A): define ItemMergeIndexOps (+Cell/+Shard)
+    // into the kernel loader, compute the length-preserving merge-scan
+    // retarget of ItemEntity.mergeWithNeighbours, retransform (dormant unless
+    // CRUSSTY_LEVER_FLAG=items_index).
+    items_index::activate();
 }
 
 /// Define one bridge class and register all its natives.

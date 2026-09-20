@@ -7175,3 +7175,473 @@ fn check_members(bridge: &[u8], targets: &[(&str, &str, &str, &str)]) -> Result<
     }
     Ok(())
 }
+
+// ---------------------------------------------------------------------------
+// ITEMS-INDEX (TASK-395 MEGA-ROUND, agent-A lever `items_index`) — body swap
+// of ItemEntity.mergeWithNeighbours()V (purpur-1.21.10 kernel, javap-anchored).
+//
+// The vanilla method = self-gate + AABB candidate scan + merge loop:
+//   0: isMergable gate (ifeq END)
+//   7: Level.getEntitiesOfClass(ItemEntity.class, box.inflate(d, y, d), pred)
+//      where d = level.spigotConfig.itemMerge and
+//      y = paper onlyMergeItemsHorizontally ? 0.0 : d - 0.5;
+//      pred = lambda$mergeWithNeighbours$0 = (x != this) && x.isMergable()
+//   70..165: iterator loop — per candidate: isMergable re-check, paper
+//      fixItemsMergingThroughWalls clipDirect(this.pos, cand.pos, ctx)==BLOCK
+//      => exit method, tryToMerge, this.isRemoved => exit method.
+//
+// The body swap delegates the CANDIDATE SCAN to
+// ItemMergeIndexOps.candidates(ItemEntity) (0.5-grid spatial hash, see
+// itemsindex/.../ItemMergeIndexOps.java) and keeps EVERYTHING ELSE as
+// in-class bytes: the self-gate and the whole loop call the ORIGINAL private
+// methods (isMergable/tryToMerge) from within ItemEntity itself — no nest
+// surgery (JVMS 5.3.5 forbids nest attr changes on redefinition), no
+// reimplementation of merge semantics. The query-side predicate is covered by
+// construction: (x != this) + box-intersection live in the ops scan; the
+// predicate's isMergable is subsumed by the vanilla loop's per-candidate
+// isMergable re-check (vanilla evaluates it no earlier than the loop).
+//
+// CP policy: every operand index the new body needs is REUSED from the
+// original method's own pool references (extracted by name from the original
+// bytecode walk — call-site resolution is by name, never by fixed offset);
+// the ONLY appended entry is the candidates Methodref. The private-call
+// opcodes (isMergable/tryToMerge) are REUSED VERBATIM from the original body
+// (this kernel emits invokevirtual for same-class private calls — mirroring
+// the original bytes gives the identical verification outcome). Length
+// changes are fine: the whole method entry is re-spliced (patch_update
+// pattern) and the body carries its own 3-frame StackMapTable (branch targets
+// LHEAD/MERGE/END). Fail-closed on any shape mismatch -> lever stays dormant.
+pub const MERGE_OPS_CLASS: &str = "net/minecraft/world/entity/item/ItemMergeIndexOps";
+pub const MERGE_OPS_METHOD: &str = "candidates";
+pub const MERGE_OPS_DESC: &str = "(Lnet/minecraft/world/entity/item/ItemEntity;)Ljava/util/List;";
+
+/// Resolve a Fieldref index to `(class_internal_name, field_name, descriptor)`.
+fn fieldref_parts(pool: &Pool, idx: u16) -> Option<(String, String, String)> {
+    let (_, tag, payload) = pool.entries.iter().find(|(i, _, _)| *i == idx)?;
+    if *tag != TAG_FIELDREF {
+        return None;
+    }
+    if payload.len() < 4 {
+        return None;
+    }
+    let class_idx = u16::from_be_bytes([payload[0], payload[1]]);
+    let nat_idx = u16::from_be_bytes([payload[2], payload[3]]);
+    let (_, ctag, cpayload) = pool.entries.iter().find(|(i, _, _)| *i == class_idx)?;
+    if *ctag != TAG_CLASS || cpayload.len() < 2 {
+        return None;
+    }
+    let class_utf8 = u16::from_be_bytes([cpayload[0], cpayload[1]]);
+    let (_, ntag, npayload) = pool.entries.iter().find(|(i, _, _)| *i == nat_idx)?;
+    if *ntag != TAG_NAMEANDTYPE || npayload.len() < 4 {
+        return None;
+    }
+    let name_utf8 = u16::from_be_bytes([npayload[0], npayload[1]]);
+    let desc_utf8 = u16::from_be_bytes([npayload[2], npayload[3]]);
+    Some((
+        pool.utf8_value(class_utf8)?,
+        pool.utf8_value(name_utf8)?,
+        pool.utf8_value(desc_utf8)?,
+    ))
+}
+
+/// One collected CP reference from the original method body, keyed by the
+/// semantic name the swapped body re-uses it for.
+struct RefBook {
+    by_name: std::collections::HashMap<&'static str, (u8, u16)>,
+}
+
+impl RefBook {
+    /// Unambiguous opcodes are pinned as a sanity check; the private-call
+    /// opcodes (isMergable/tryToMerge) are taken verbatim from the original.
+    fn get(&self, pool: &Pool, name: &'static str, want_op: Option<u8>) -> Result<(u8, u16), String> {
+        let (op, idx) = self
+            .by_name
+            .get(name)
+            .copied()
+            .ok_or_else(|| format!("ref {name} not found in original mergeWithNeighbours"))?;
+        if let Some(want) = want_op {
+            if op != want {
+                return Err(format!("ref {name}: opcode {op:#04x} != expected {want:#04x}"));
+            }
+        }
+        let parts_ok = match op {
+            0xb6 | 0xb7 | 0xb8 | 0xb9 => pool
+                .methodref_parts(idx)
+                .map(|(_, n, _)| !n.is_empty())
+                .unwrap_or(false),
+            0xb2 | 0xb4 => fieldref_parts(pool, idx).is_some(),
+            0xc0 => true,
+            _ => false,
+        };
+        if !parts_ok {
+            return Err(format!("ref {name}: cp entry #{idx} does not resolve"));
+        }
+        Ok((op, idx))
+    }
+}
+
+/// Walk the ORIGINAL mergeWithNeighbours body and collect the CP refs the
+/// swapped body re-uses, keyed by semantic name. Everything the new body
+/// needs is present in the vanilla method (it IS the same logic). Unknown
+/// members fail closed (kernel rename / shape drift).
+fn collect_refs(code: &[u8], pool: &Pool) -> Result<RefBook, String> {
+    let mut by_name: std::collections::HashMap<&'static str, (u8, u16)> =
+        std::collections::HashMap::new();
+    let mut pc = 0usize;
+    while pc < code.len() {
+        let op = code[pc];
+        let cp_len: usize = match op {
+            0xb2 | 0xb4 | 0xb6 | 0xb7 | 0xb8 | 0xc0 => 3,
+            0xb9 => 5, // op + idx(2) + count + zero
+            _ => {
+                let extra = opcode_extra(op, code, pc)?;
+                pc = pc.checked_add(1 + extra).ok_or("walk overflow")?;
+                if pc > code.len() {
+                    return Err("truncated code (walk past end)".into());
+                }
+                continue;
+            }
+        };
+        if pc + cp_len > code.len() {
+            return Err("cp operand truncated".into());
+        }
+        let idx = u16::from_be_bytes([code[pc + 1], code[pc + 2]]);
+        let key: &'static str = match op {
+            0xb2 => {
+                let (_, fname, _) = fieldref_parts(pool, idx).ok_or("getstatic resolve")?;
+                match fname.as_str() {
+                    "BLOCK" => "getstatic:BLOCK",
+                    other => return Err(format!("unexpected getstatic {other}")),
+                }
+            }
+            0xb4 => {
+                let (_, fname, _) = fieldref_parts(pool, idx).ok_or("getfield resolve")?;
+                match fname.as_str() {
+                    "entities" => "field:entities",
+                    "behavior" => "field:behavior",
+                    "onlyMergeItemsHorizontally" => "field:horiz",
+                    "fixes" => "field:fixes",
+                    "fixItemsMergingThroughWalls" => "field:fixwall",
+                    // vanilla radius plumbing — the ops scan recomputes it
+                    "spigotConfig" | "itemMerge" => {
+                        pc += cp_len;
+                        continue;
+                    }
+                    other => return Err(format!("unexpected getfield {other}")),
+                }
+            }
+            0xb6 => {
+                let (_, n, _) = pool.methodref_parts(idx).ok_or("methodref resolve")?;
+                match n.as_str() {
+                    "isMergable" => "invoke:isMergable",
+                    // this kernel emits invokevirtual for same-class private
+                    // calls (javap: pc1/pc98 isMergable, pc152 tryToMerge) —
+                    // the swapped body mirrors whichever opcode the original
+                    // body used (RefBook returns the op verbatim).
+                    "tryToMerge" => "invoke:tryToMerge",
+                    "level" => "invoke:level",
+                    "paperConfig" => "invoke:paperConfig",
+                    "position" => "invoke:position",
+                    "clipDirect" => "invoke:clipDirect",
+                    "isRemoved" => "invoke:isRemoved",
+                    // vanilla scan plumbing — consumed by the ops scan, skipped
+                    "getEntitiesOfClass" | "getBoundingBox" | "inflate" => {
+                        pc += cp_len;
+                        continue;
+                    }
+                    other => return Err(format!("unexpected invokevirtual {other}")),
+                }
+            }
+            0xb7 => {
+                let (_, n, _) = pool.methodref_parts(idx).ok_or("methodref resolve")?;
+                match n.as_str() {
+                    "isMergable" | "tryToMerge" => {
+                        let key = if n == "isMergable" { "invoke:isMergable" } else { "invoke:tryToMerge" };
+                        by_name.entry(key).or_insert((op, idx));
+                        pc += cp_len;
+                        continue;
+                    }
+                    other => return Err(format!("unexpected invokespecial {other}")),
+                }
+            }
+            0xb8 => {
+                let (_, n, _) = pool.methodref_parts(idx).ok_or("methodref resolve")?;
+                match n.as_str() {
+                    "of" => "invoke:of",
+                    other => return Err(format!("unexpected invokestatic {other}")),
+                }
+            }
+            0xb9 => {
+                let (_, n, _) = pool.methodref_parts(idx).ok_or("imref resolve")?;
+                match n.as_str() {
+                    "iterator" => "iface:iterator",
+                    "hasNext" => "iface:hasNext",
+                    "next" => "iface:next",
+                    other => return Err(format!("unexpected invokeinterface {other}")),
+                }
+            }
+            _ => "class:ItemEntity", // 0xc0 checkcast (the method's only one)
+        };
+        by_name.entry(key).or_insert((op, idx));
+        pc += cp_len;
+    }
+    Ok(RefBook { by_name })
+}
+
+pub fn patch_itementity_merge(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    // Kernel-rename guard: the tokens this patch depends on must be present.
+    for probe in ["mergeWithNeighbours", "isMergable", "tryToMerge", "isRemoved"] {
+        if layout.pool.find_utf8(probe).is_none() {
+            return Err(format!("{probe} absent from pool (kernel rename?)"));
+        }
+    }
+    if this_class_name(&layout).as_deref() != Some("net/minecraft/world/entity/item/ItemEntity") {
+        return Err(format!(
+            "unexpected target class {:?}",
+            this_class_name(&layout)
+        ));
+    }
+    let Some(name_idx) = layout.pool.find_utf8("mergeWithNeighbours") else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let Some(desc_idx) = layout.pool.find_utf8("()V") else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)
+        .ok_or("method mergeWithNeighbours()V not found")?;
+    let (code_start, code_len) = find_code_attr(bytes, &layout.pool, &m)
+        .ok_or("mergeWithNeighbours has no Code attribute")?;
+    let code_end = code_start
+        .checked_add(code_len)
+        .ok_or("code length overflow")?;
+    let code = bytes
+        .get(code_start..code_end)
+        .ok_or("code region truncated")?;
+
+    // ---- idempotency: the swapped body is exactly 105 bytes and delegates
+    // the scan to ItemMergeIndexOps.candidates via invokestatic at pc8 ----
+    if code.len() == 105 && code[0] == 0x2a && code[8] == 0xb8 && code[104] == 0xb1 {
+        let idx = u16::from_be_bytes([code[9], code[10]]);
+        if let Some((owner, name, desc)) = layout.pool.methodref_parts(idx) {
+            if owner == MERGE_OPS_CLASS && name == MERGE_OPS_METHOD && desc == MERGE_OPS_DESC {
+                return Ok((bytes.to_vec(), RetargetOutcome::AlreadyPatched { sites: 1 }));
+            }
+        }
+        return Err("mergeWithNeighbours has a foreign 105-byte body".into());
+    }
+
+    // ---- collect the vanilla CP refs by name (fail-closed) ----
+    let refs = collect_refs(code, &layout.pool)?;
+    let (ism_op, idx_ism) = refs.get(&layout.pool, "invoke:isMergable", None)?;
+    let (try_op, idx_try) = refs.get(&layout.pool, "invoke:tryToMerge", None)?;
+    let idx_level = refs.get(&layout.pool, "invoke:level", Some(0xb6))?.1;
+    let idx_paper = refs.get(&layout.pool, "invoke:paperConfig", Some(0xb6))?.1;
+    let idx_pos = refs.get(&layout.pool, "invoke:position", Some(0xb6))?.1;
+    let idx_clip = refs.get(&layout.pool, "invoke:clipDirect", Some(0xb6))?.1;
+    let idx_rm = refs.get(&layout.pool, "invoke:isRemoved", Some(0xb6))?.1;
+    let idx_of = refs.get(&layout.pool, "invoke:of", Some(0xb8))?.1;
+    // Box-construction refs (entities/behavior/onlyMergeItemsHorizontally) are
+    // validated here (shape gate) but consumed by the ops scan, not the body.
+    let _idx_entities = refs.get(&layout.pool, "field:entities", Some(0xb4))?.1;
+    let _idx_behavior = refs.get(&layout.pool, "field:behavior", Some(0xb4))?.1;
+    let _idx_horiz = refs.get(&layout.pool, "field:horiz", Some(0xb4))?.1;
+    let idx_fixes = refs.get(&layout.pool, "field:fixes", Some(0xb4))?.1;
+    let idx_fixwall = refs.get(&layout.pool, "field:fixwall", Some(0xb4))?.1;
+    let idx_block = refs.get(&layout.pool, "getstatic:BLOCK", Some(0xb2))?.1;
+    let idx_iter = refs.get(&layout.pool, "iface:iterator", Some(0xb9))?.1;
+    let idx_hasnext = refs.get(&layout.pool, "iface:hasNext", Some(0xb9))?.1;
+    let idx_next = refs.get(&layout.pool, "iface:next", Some(0xb9))?.1;
+    let idx_ieclass = refs.get(&layout.pool, "class:ItemEntity", Some(0xc0))?.1;
+
+    let mut pool = layout.pool;
+    let idx_cand = pool.method_ref(MERGE_OPS_CLASS, MERGE_OPS_METHOD, MERGE_OPS_DESC);
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space for candidates ref".into());
+    }
+
+    // ---- new body (105 bytes), branch targets LHEAD=19 MERGE=89 END=104 ----
+    // Vanilla-exact loop: gate -> scan(delegate) -> iterator loop ->
+    // neighbour isMergable re-check -> fixItemsMergingThroughWalls gate ->
+    // clipDirect BLOCK exit -> tryToMerge -> isRemoved exit. (The vanilla
+    // onlyMergeItemsHorizontally fields belong to the BOX construction, which
+    // moved into the ops scan — they are not loop logic and stay out.)
+    let u2 = |out: &mut Vec<u8>, v: u16| out.extend_from_slice(&v.to_be_bytes());
+    let u2br = |out: &mut Vec<u8>, op: u8, from: usize, to: usize| {
+        let off = to as i64 - from as i64;
+        assert!((-32768..=32767).contains(&off), "branch overflow");
+        out.push(op);
+        out.extend_from_slice(&(off as i16).to_be_bytes());
+    };
+    let mut c: Vec<u8> = Vec::with_capacity(105);
+    // self-gate (vanilla pc0-4)
+    c.push(0x2a); // 0: aload_0
+    c.push(ism_op); // 1: <vanilla opcode> isMergable
+    u2(&mut c, idx_ism);
+    u2br(&mut c, 0x99, 4, 104); // 4: ifeq END (vanilla 4: ifeq 168)
+    // delegate the candidate scan to the index (vanilla pc7-17 query)
+    c.push(0x2a); // 7: aload_0
+    c.push(0xb8); // 8: invokestatic ItemMergeIndexOps.candidates
+    u2(&mut c, idx_cand);
+    c.push(0x4c); // 11: astore_1
+    c.push(0x2b); // 12: aload_1
+    c.push(0xb9); // 13: invokeinterface List.iterator
+    u2(&mut c, idx_iter);
+    c.push(0x01); // interface method count
+    c.push(0x00);
+    c.push(0x4d); // 18: astore_2
+    // loop head (vanilla pc76-82)
+    c.push(0x2c); // 19: aload_2                    <- LHEAD
+    c.push(0xb9); // 20: invokeinterface Iterator.hasNext
+    u2(&mut c, idx_hasnext);
+    c.push(0x01); // interface method count
+    c.push(0x00);
+    u2br(&mut c, 0x99, 25, 104); // 25: ifeq END (vanilla 82: ifeq 168)
+    c.push(0x2c); // 28: aload_2
+    c.push(0xb9); // 29: invokeinterface Iterator.next
+    u2(&mut c, idx_next);
+    c.push(0x01); // interface method count
+    c.push(0x00);
+    c.push(0xc0); // 34: checkcast ItemEntity
+    u2(&mut c, idx_ieclass);
+    c.push(0x4e); // 37: astore_3
+    // per-candidate isMergable re-check (vanilla pc96-101)
+    c.push(0x2d); // 38: aload_3
+    c.push(ism_op); // 39: <vanilla opcode> isMergable
+    u2(&mut c, idx_ism);
+    u2br(&mut c, 0x99, 42, 19); // 42: ifeq LHEAD (vanilla 101: ifeq 165)
+    // paper wall-fix gate (vanilla pc104-117):
+    // !fixes.fixItemsMergingThroughWalls -> merge
+    c.push(0x2a); // 45: aload_0
+    c.push(0xb6); // 46: invokevirtual level
+    u2(&mut c, idx_level);
+    c.push(0xb6); // 49: invokevirtual paperConfig
+    u2(&mut c, idx_paper);
+    c.push(0xb4); // 52: getfield WorldConfiguration.fixes
+    u2(&mut c, idx_fixes);
+    c.push(0xb4); // 55: getfield Fixes.fixItemsMergingThroughWalls
+    u2(&mut c, idx_fixwall);
+    u2br(&mut c, 0x99, 58, 89); // 58: ifeq MERGE (vanilla 117: ifeq 149)
+    // clipDirect(this.position(), cand.position(), CollisionContext.of(this))
+    // (vanilla pc120-143)
+    c.push(0x2a); // 61: aload_0
+    c.push(0xb6); // 62: invokevirtual level
+    u2(&mut c, idx_level);
+    c.push(0x2a); // 65: aload_0
+    c.push(0xb6); // 66: invokevirtual position
+    u2(&mut c, idx_pos);
+    c.push(0x2d); // 69: aload_3
+    c.push(0xb6); // 70: invokevirtual position
+    u2(&mut c, idx_pos);
+    c.push(0x2a); // 73: aload_0
+    c.push(0xb8); // 74: invokestatic CollisionContext.of
+    u2(&mut c, idx_of);
+    c.push(0xb6); // 77: invokevirtual clipDirect
+    u2(&mut c, idx_clip);
+    c.push(0xb2); // 80: getstatic HitResult$Type.BLOCK
+    u2(&mut c, idx_block);
+    u2br(&mut c, 0xa0, 83, 89); // 83: if_acmpne MERGE
+    // BLOCK -> skip THIS candidate, continue the loop (vanilla 146: goto 76 =
+    // loop head; the wall blocks only this neighbour, not the whole scan).
+    u2br(&mut c, 0xa7, 86, 19); // 86: goto LHEAD
+    // merge action (vanilla pc149-162)
+    c.push(0x2a); // 89: aload_0                  <- MERGE
+    c.push(0x2d); // 90: aload_3
+    c.push(try_op); // 91: <vanilla opcode> tryToMerge
+    u2(&mut c, idx_try);
+    c.push(0x2a); // 94: aload_0
+    c.push(0xb6); // 95: invokevirtual isRemoved
+    u2(&mut c, idx_rm);
+    u2br(&mut c, 0x99, 98, 19); // 98: ifeq LHEAD (vanilla 159: ifeq 165)
+    u2br(&mut c, 0xa7, 101, 104); // 101: goto END (vanilla 162: goto 168)
+    c.push(0xb1); // 104: return                  <- END
+    assert_eq!(c.len(), 105, "body layout drifted: {}", c.len());
+
+    // ---- StackMapTable: frames at the three branch targets ----
+    // Frame SHAPE mirrors the vanilla method's own table (same predecessor
+    // states, verified on this exact JVM by the kernel itself):
+    // @19: append(Iterator) over initial [this] => locals [this, List,
+    //      Iterator]; back-edges (42/86/98) carry one extra local (slot3
+    //      ItemEntity) — the same declared-fewer-than-source shape vanilla's
+    //      loop-head frame@76 records vs its back-edges.
+    // @89: append(ItemEntity) => locals [this, List, Iterator, ItemEntity];
+    //      both predecessors (58/83) carry exactly this state.
+    // @104: chop(1) => locals [this, List, Iterator]; predecessor 4 (self-gate
+    //      edge, locals [this]) mirrors vanilla's final chop before return
+    //      whose declared frame also exceeds the gate edge's locals.
+    let list_utf8 = pool.utf8("java/util/List");
+    let cls_list = pool.class_of(list_utf8);
+    let iter_utf8 = pool.utf8("java/util/Iterator");
+    let cls_iter = pool.class_of(iter_utf8);
+    let ie_utf8 = pool.utf8("net/minecraft/world/entity/item/ItemEntity");
+    let cls_ie = pool.class_of(ie_utf8);
+    let mut smt: Vec<u8> = Vec::new();
+    u2(&mut smt, 3); // frames count
+    smt.push(253); // append_frame, 2 appended locals, delta = 19
+    u2(&mut smt, 19);
+    smt.push(0x07); // Object_variable_info
+    u2(&mut smt, cls_list);
+    smt.push(0x07);
+    u2(&mut smt, cls_iter);
+    smt.push(252); // append_frame, 1 appended local, delta = 69
+    u2(&mut smt, 89 - 19 - 1);
+    smt.push(0x07);
+    u2(&mut smt, cls_ie);
+    smt.push(250); // chop_frame(1), delta = 14 => locals [this, List, Iterator]
+    u2(&mut smt, 104 - 89 - 1);
+
+    // ---- Code attribute + method entry (patch_update pattern) ----
+    let mut code_attr: Vec<u8> = Vec::new();
+    u2(&mut code_attr, pool.utf8("Code"));
+    let mut body: Vec<u8> = Vec::new();
+    u2(&mut body, 4); // max_stack (level, vec3, vec3, ctx at clipDirect)
+    u2(&mut body, 4); // max_locals (this, list, iterator, neighbour)
+    body.extend_from_slice(&(c.len() as u32).to_be_bytes());
+    body.extend_from_slice(&c);
+    body.extend_from_slice(&[0, 0]); // exception_table_length (none)
+    body.extend_from_slice(&(1u16).to_be_bytes()); // attributes_count
+    u2(&mut body, pool.utf8("StackMapTable"));
+    body.extend_from_slice(&(smt.len() as u32).to_be_bytes());
+    body.extend_from_slice(&smt);
+    code_attr.extend_from_slice(&(body.len() as u32).to_be_bytes());
+    code_attr.extend_from_slice(&body);
+
+    let mut method: Vec<u8> = Vec::new();
+    u2(&mut method, m.access);
+    u2(&mut method, m.name_idx);
+    u2(&mut method, m.desc_idx);
+    u2(&mut method, 1); // attributes_count
+    method.extend_from_slice(&code_attr);
+
+    // ---- splice: header + new cp + tail with the method entry replaced ----
+    let mut out = Vec::with_capacity(bytes.len() + method.len());
+    out.extend_from_slice(&bytes[0..8]); // magic, minor, major
+    u2(&mut out, pool.next); // new cp_count
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(&bytes[layout.cp_end..m.start]);
+    out.extend_from_slice(&method);
+    out.extend_from_slice(&bytes[m.end..]);
+    Ok((out, RetargetOutcome::Retargeted { sites: 1 }))
+}
+mod items_index_tests {
+    /// Local harness (machine-anchored, skipped unless CRUSSTY_TEST_ITEMENTITY
+    /// points at a real kernel ItemEntity.class): run patch_itementity_merge
+    /// against the real bytes; dump patched bytes when CRUSSTY_TEST_PATCHED_OUT
+    /// is set (for javap eyeballing).
+    #[test]
+    fn patch_real_item_entity() {
+        let src = match std::env::var("CRUSSTY_TEST_ITEMENTITY") {
+            Ok(j) if !j.is_empty() => j,
+            _ => return, // inert by default (CI safe)
+        };
+        let bytes = std::fs::read(&src).expect("read ItemEntity.class");
+        let (patched, outcome) = super::patch_itementity_merge(&bytes).expect("patch must apply");
+        eprintln!("outcome: {outcome:?} ({} -> {} bytes)", bytes.len(), patched.len());
+        assert!(matches!(outcome, super::RetargetOutcome::Retargeted { .. }));
+        if let Ok(out_path) = std::env::var("CRUSSTY_TEST_PATCHED_OUT") {
+            if !out_path.is_empty() {
+                std::fs::write(out_path, &patched).expect("write patched class");
+            }
+        }
+    }
+}
