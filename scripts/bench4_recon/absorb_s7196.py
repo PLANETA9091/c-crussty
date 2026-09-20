@@ -20,6 +20,8 @@ Failure roulette: conclusion=failure -> BAND-DISCARD (fast-fail, не верди
 отклонён -> правка флага, ре-ролл). CRASH для банк-конфига не ожидается.
 """
 import json, os, re, subprocess, sys, urllib.error, urllib.request
+from contextlib import redirect_stdout, redirect_stderr
+from io import StringIO
 
 REPO = "PLANETA9091/c-crussty"
 API = "https://api.github.com"
@@ -103,31 +105,65 @@ def fetch_joblog(tok, run_id):
         return ""
 
 
-def main():
-    if len(sys.argv) < 2:
-        print("usage: absorb_s7196.py <run_id>")
-        return 9
-    run_id = int(sys.argv[1])
-    tok = token()
+def extract_zip(path, digest=None):
+    import zipfile, hashlib
+    if digest:
+        h = hashlib.sha256(open(path, "rb").read()).hexdigest()
+        if h != digest:
+            print(f"DIGEST MISMATCH: {h} != expected {digest} — zip подменён/битый, ABSORB ОТКЛОНЁН")
+            return False
+        print(f"digest ok: {h[:16]}...")
     os.makedirs(RUN_DIR, exist_ok=True)
-    run = api(tok, f"/repos/{REPO}/actions/runs/{run_id}")
-    concl = run.get("conclusion")
-    head = run.get("head_sha", "")[:7]
-    print(f"run {run_id} @ {head}: status={run.get('status')} conclusion={concl}")
-    if concl != "success":
-        jl = fetch_joblog(tok, run_id)
-        if re.search(r"cpu_index.*outside|OUTSIDE band|BAND-DISCARD", jl, re.I) or \
-                any(s.get("name", "").startswith("Runner calibration band gate") and
-                    s.get("conclusion") == "failure"
-                    for j in api(tok, f"/repos/{REPO}/actions/runs/{run_id}/jobs").get("jobs", [])
-                    for s in j.get("steps", [])):
-            print("VERDICT: BAND-DISCARD (fast-fail, НЕ вердикт) — ре-ролл dispatch_s7196.py")
-            return 1
-        print("VERDICT: INFRA-FLAKE (ре-ролл, макс 2 подряд); joblog в run-dir")
-        return 2
-    if not fetch_artifact(tok, run_id):
-        print("VERDICT: INFRA-FLAKE — нет артефакта")
-        return 2
+    with zipfile.ZipFile(path) as z:
+        z.extractall(RUN_DIR)
+    print(f"extracted {path} -> {RUN_DIR}")
+    return True
+
+
+def main():
+    args = sys.argv[1:]
+    zip_path = None
+    digest = None
+    if "--zip" in args:
+        i = args.index("--zip")
+        zip_path = args[i + 1]
+        args = args[:i] + args[i + 2:]
+    if "--digest" in args:
+        i = args.index("--digest")
+        digest = args[i + 1]
+        args = args[:i] + args[i + 2:]
+    if len(args) < 1:
+        print("usage: absorb_s7196.py <run_id> [--zip <path> [--digest <sha256>]]")
+        return 9
+    run_id = int(args[0])
+    head = "?"
+    if zip_path:
+        # оффлайн-режим: артефакт доставлен вручную (download-эндпоинт GitHub 401 без
+        # токена; list-эндпоинт публичен; браузерные роуты анониму закрыты).
+        print(f"run {run_id}: OFFLINE-ZIP режим (--zip {zip_path}); статус run по HTML = success")
+        if not extract_zip(zip_path, digest):
+            return 2
+    else:
+        tok = token()
+        os.makedirs(RUN_DIR, exist_ok=True)
+        run = api(tok, f"/repos/{REPO}/actions/runs/{run_id}")
+        concl = run.get("conclusion")
+        head = run.get("head_sha", "")[:7]
+        print(f"run {run_id} @ {head}: status={run.get('status')} conclusion={concl}")
+        if concl != "success":
+            jl = fetch_joblog(tok, run_id)
+            if re.search(r"cpu_index.*outside|OUTSIDE band|BAND-DISCARD", jl, re.I) or \
+                    any(s.get("name", "").startswith("Runner calibration band gate") and
+                        s.get("conclusion") == "failure"
+                        for j in api(tok, f"/repos/{REPO}/actions/runs/{run_id}/jobs").get("jobs", [])
+                        for s in j.get("steps", [])):
+                print("VERDICT: BAND-DISCARD (fast-fail, НЕ вердикт) — ре-ролл dispatch_s7196.py")
+                return 1
+            print("VERDICT: INFRA-FLAKE (ре-ролл, макс 2 подряд); joblog в run-dir")
+            return 2
+        if not fetch_artifact(tok, run_id):
+            print("VERDICT: INFRA-FLAKE — нет артефакта")
+            return 2
 
     # PG-A доставка банка v3
     envp = os.path.join(RUN_DIR, "run-env.txt")
@@ -154,9 +190,24 @@ def main():
         print("VERDICT: CRASH (неожиданно для банк-конфига) — аудит stdout, ре-ролл после фикса")
         return 7
 
-    # PG-B/PG-C + RECON-37
+    # PG-B/PG-C + RECON-37 (stdout захватывается для авто-вердикт-дока)
     import recon37_worker_balance as r37
-    rc = r37.analyze(os.path.join(RUN_DIR, "wall-collapsed.txt"))
+    buf = StringIO()
+    with redirect_stdout(buf), redirect_stderr(buf):
+        rc = r37.analyze(os.path.join(RUN_DIR, "wall-collapsed.txt"))
+    print(buf.getvalue(), end="")
+    verdict_doc = os.path.join(RESDIR, "RECON37_VERDICT.md")
+    fork = {0: "OFFLOAD-READY (I<=1.15): P2 = слив main-бакетов + offload остатков",
+            1: "REBALANCE (I>=1.30): REGION_CHUNKS 8->меньше + WORKERS",
+            2: "GRAY (1.15<I<1.30): повторный threaded лег",
+            4: "TOOL-FAIL: asprof -t отклонён, правка harness-флага",
+            5: "INCOMPLETENESS: воркеров <3, ре-ролл"}.get(rc, f"rc={rc}")
+    with open(verdict_doc, "w") as f:
+        f.write(f"# RECON-37: worker-balance вердикт (s7196 run {run_id} @ {head})\n\n")
+        f.write(f"Дата: {__import__('datetime').date.today()} | артефакт world3-bench "
+                f"(id 10598539161, ~29MB) | банд [6.0M,9.5M]\n\n")
+        f.write(f"**РАЗВИЛКА: {fork}**\n\n```\n{buf.getvalue()}\n```")
+    print(f"вердикт-док: {verdict_doc}")
     if rc == 4:
         print("VERDICT: TOOL-FAIL — asprof -t отклонён; правка harness-флага, ре-ролл")
     elif rc == 5:
