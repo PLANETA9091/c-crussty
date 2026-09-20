@@ -46,6 +46,18 @@ def main():
         for b in owned:
             cb = int(git("log", "-1", "--format=%ct", "--", b) or 0)
             if st > cb:
+                # S7-174 (TASK-373): bit-identical rebuild exemption. If the
+                # blob content in the worktree equals the committed blob
+                # (git hash-object == HEAD:<path>), the recompile of the
+                # newer source reproduced the blob BYTE-EXACTLY — the blob
+                # IS fresh; git simply has no new object to record, so the
+                # commit-timestamp proxy goes stale. Real desyncs (blob
+                # actually older than source) keep flagging: their worktree
+                # content differs from HEAD or the hash differs.
+                wt = git("hash-object", b).strip()
+                head = git("rev-parse", f"HEAD:{b}").strip()
+                if wt == head:
+                    continue
                 age = (st - cb) // 60
                 print(f"DESYNC: {f} newer than {b} ({age} min) — "
                       f"ПЕРЕСОБЕРИ: scripts/build_region_tick_ops.sh + commit blob")
