@@ -172,7 +172,8 @@ def main():
     have_art = fetch_artifact(tok, run_id)
 
     rep = [f"# absorb COLLECTOR-A/B #2 ZGC-gen s7202 (run {run_id}, head {str(st.get('head_sha'))[:7]}) "
-           f"— PROTOCOL v8-REGRESSION DUAL BAR vs БАНК v4 (2.60 @ {ANCHOR_RUNNER})\n"]
+           f"— PROTOCOL v8-REGRESSION DUAL BAR vs БАНК v4 (2-точки: "
+           + ", ".join(f"{t} @ {r}" for t, r in BANK_POINTS) + ")\n"]
     verdict = None
 
     stdout = os.path.join(RUN_DIR, "server-stdout.log")
