@@ -33,6 +33,7 @@ mod fluid_dirty;
 mod fluid_free;
 mod flush_diet;
 mod improved_noise;
+mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
 mod jni_table;
@@ -131,6 +132,9 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // load; patch served via retransform after the InsideBlockOps bridge
     // lands). Dormant unless CRUSSTY_INSIDE_CACHE=1.
     inside_cache::register();
+    // INSIDE-BITMASK (TASK-357): bridge owner registration (dormant unless
+    // CRUSSTY_INSIDE_BITMASK=1).
+    inside_bitmask::register();
     // FLUSH-DIET (S7-137): byte hook on the StepBasedCollector (pristine
     // capture; patch served via retransform after the FlushOps bridge lands).
     // Dormant unless CRUSSTY_FLUSH_DIET=1.
@@ -343,6 +347,10 @@ fn inject_surface() {
     // compute the length-preserving patch, retransform (dormant unless
     // CRUSSTY_INSIDE_CACHE=1).
     inside_cache::activate();
+    // INSIDE-BITMASK (TASK-357): define InsideBitmaskOps into the kernel
+    // loader, probe-then-patch, Entity stage composes via entity_compose
+    // (dormant unless CRUSSTY_INSIDE_BITMASK=1).
+    inside_bitmask::activate();
     // FLUSH-DIET (S7-137): define FlushOps into the kernel loader, compute
     // the length-preserving patch, retransform (dormant unless
     // CRUSSTY_FLUSH_DIET=1).

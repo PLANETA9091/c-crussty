@@ -300,6 +300,39 @@ pub fn activate() {
             }
         }
 
+        // ---- STAGE 1b: inside_bitmask (section all-air pre-gate, TASK-357) ----
+        if crate::inside_bitmask::enabled_pub() {
+            if crate::inside_bitmask::wait_bridge_ready(180_000) {
+                match crate::classfile::patch_inside_bitmask(&bytes) {
+                    Ok((p, outcome)) if matches!(
+                        outcome,
+                        crate::classfile::RetargetOutcome::Retargeted { .. }
+                            | crate::classfile::RetargetOutcome::AlreadyPatched { .. }
+                    ) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_bitmask composed ({outcome:?})"
+                        );
+                        bytes = p;
+                        chain.push("inside_bitmask");
+                    }
+                    Ok((_p, outcome)) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_bitmask strict check violated ({outcome:?}), chain continues WITHOUT inside_bitmask (fail-dominant)"
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_bitmask patch rejected ({e}), chain continues WITHOUT inside_bitmask (fail-dominant)"
+                        );
+                    }
+                }
+            } else {
+                eprintln!(
+                    "[crussty-plugin] entity_compose: inside_bitmask bridge missed its window, chain continues WITHOUT inside_bitmask (fail-dominant)"
+                );
+            }
+        }
+
         // ---- STAGE 2: fluid_free (fgate wrapper retarget) ----
         if crate::fluid_free::enabled_pub() {
             if crate::fluid_free::wait_bridge_ready(60_000) {
