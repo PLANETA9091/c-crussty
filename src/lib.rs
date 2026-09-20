@@ -35,6 +35,7 @@ mod fluid_free;
 mod flush_diet;
 mod improved_noise;
 mod inside_bitmask;
+mod items_stagger;
 mod inside_cache;
 mod inside_diet;
 mod jni_table;
@@ -114,6 +115,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     perlin_noise::register();
     noise_fill::register();
     fluid_guard::register();
+    // ITEMS-STAGGER (TASK-395 agent B): byte hook on ItemEntity for the
+    // whole-body tick replacement (dormant unless CRUSSTY_LEVER_FLAG ==
+    // "items_stagger" — vanilla path, byte-identical kernel otherwise).
+    items_stagger::register();
     // PALETTED-DEMUX (S7-131, ARCH-ATTACK lever #1): PalettedContainer
     // first-load demux patch (field injection + fast-path get + guarded
     // mutators). MUST register before any kernel class loads (onstart).
@@ -386,6 +391,10 @@ fn inject_surface() {
     // RegionTickOps.tickBucket; dormant unless CRUSSTY_BATCH_COLLECTOR=1
     // AND region_threads>=2).
     batch_collector::activate();
+    // ITEMS-STAGGER (TASK-395 agent B): define ItemStaggerOps into the
+    // kernel loader, compute the ItemEntity.tick whole-body patch, retransform
+    // (dormant unless CRUSSTY_LEVER_FLAG == "items_stagger").
+    items_stagger::activate();
     // FLAT-TRAVERSAL (S7-163): define TraverseOps into the kernel loader
     // (define-only; the checkInsideBlocks retarget composes through the
     // entity_compose chain stage 6; dormant unless CRUSSTY_FLAT_TRAVERSAL=1
