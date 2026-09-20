@@ -220,6 +220,17 @@ public final class RegionTickOps {
     private static final CyclicBarrier DONE =
             new CyclicBarrier(WORKERS + (parseMainOffload() ? 1 : 0));
 
+    /**
+     * S7-174 v2 pump capture (main-thread-confined): the Level of the first
+     * entity seen by this tick's fill pass. Main uses it during phase-3 to
+     * pump the main-only mid-tick queue (moonrise$midTickTasks) instead of
+     * parking at DONE — restoring the legacy interleave (main pumped
+     * per-entity from bucket 0). Null list -> null level -> v1 parking for
+     * that tick. Only main reads/writes it (fill and phase-3 are both on
+     * the server thread, program order suffices).
+     */
+    private static Level pumpLevel;
+
     private static volatile boolean helpersStarted = false;
 
     private RegionTickOps() {}
@@ -285,7 +296,27 @@ public final class RegionTickOps {
         try {
             String v = System.getenv("CRUSSTY_REGION_STEAL");
             if (v == null) return false;
-            return v.trim().equals("2");
+            String t = v.trim();
+            // "2" = v1 static main-free offload; "3" = S7-174 v2 offload
+            // with main pumping mid-tick duties during phase-3.
+            return t.equals("2") || t.equals("3");
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    /**
+     * S7-174 v2: REGION_STEAL="3" = MAIN_OFFLOAD + main pumps the
+     * main-only mid-tick queue during phase-3 (pump-restoration lever —
+     * the largest sub-lane of the v1 regression, S7-174 recon).
+     */
+    private static final boolean PUMP_OFFLOAD = parsePumpOffload();
+
+    private static boolean parsePumpOffload() {
+        try {
+            String v = System.getenv("CRUSSTY_REGION_STEAL");
+            if (v == null) return false;
+            return v.trim().equals("3");
         } catch (Throwable t) {
             return false;
         }
@@ -455,7 +486,9 @@ public final class RegionTickOps {
             len = len0;
         }
         for (int i = 0; i < w; i++) len[i] = 0;
+        pumpLevel = null; // S7-174: reset BEFORE fill; captured at first entity
         list.forEach(e -> {
+            if (pumpLevel == null) pumpLevel = e.level(); // S7-174 capture
             int s = bucketOf(e, w);
             Entity[] b = arr[s];
             if (len[s] == b.length) {
@@ -480,6 +513,40 @@ public final class RegionTickOps {
                 // S7-172: main orchestrates only — the join moves out of
                 // tickBucket(0); helpers own ALL slots (0..w-1). Same
                 // join semantics: last DONE arrival releases everyone.
+                //
+                // S7-174 v2 (REGION_STEAL="3", PUMP_OFFLOAD): instead of
+                // parking for the whole phase, main pumps the main-only
+                // mid-tick queue (moonrise$midTickTasks) — restoring the
+                // legacy interleave in which main pumped per-entity from
+                // bucket 0 (S7-157b keep-side). Root-cause of the v1
+                // regression (s7197 run 35499022752, -19..-21% dual bar):
+                // with main parked at DONE nobody pumps during phase-3,
+                // mid-tick work serializes after the phase, per-tick bucket
+                // cost inflates (~+30% bucket-samples per tick at -23%
+                // ticks/window vs s7196 legacy). Pump cadence (bounded
+                // spin + 500ns yield) affects latency only, not queue
+                // order — the pollTask queue stays main-thread-exclusive
+                // (WORKER_FLAG gate untouched). Loop escape: workerError,
+                // phase clear, or all w helpers arrived at DONE (getNumber
+                // Waiting() >= WORKERS; helpers always reach DONE via
+                // tickBucket's finally, so no missed-wakeup deadlock); a
+                // broken barrier yields 0 waiting + workerError from the
+                // helpers' finally -> same unwind as v1.
+                if (PUMP_OFFLOAD) {
+                    Level lvl = pumpLevel;
+                    try {
+                        while (lvl != null && phaseActive && workerError == null
+                                && DONE.getNumberWaiting() < WORKERS) {
+                            if (lvl instanceof ChunkSystemLevel p) {
+                                p.moonrise$midTickTasks(); // vanilla dispatch
+                            }
+                            java.util.concurrent.locks.LockSupport
+                                    .parkNanos(500L);
+                        }
+                    } catch (Throwable t3) {
+                        if (workerError == null) workerError = t3;
+                    }
+                }
                 try {
                     DONE.await();
                 } catch (Throwable t2) {
