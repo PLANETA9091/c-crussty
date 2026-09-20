@@ -1,24 +1,30 @@
-"""absorb_s7203.py - TASK-384: absorb A/B #3 leg s7203 (банк v4 + gc_tune=5 =
-ParallelGC + TransparentHugePages + AlwaysPreTouch) и вердикт v8-REGRESSION
-DUAL BAR vs БАНК v4 (2-точки: 2.6 @ 8551924, 2.2 @ 6653417).
+"""absorb_s7204.py - TASK-385: absorb активационного лега #15 INSIDE-BITMASK
+s7204 (БАНК v4 + gc_tune=3 ParallelGC + inside_bitmask=1) и вердикт
+v8-REGRESSION DUAL BAR vs БАНК v4 (2-точки: 2.6 @ 8551924, 2.2 @ 6653417).
 
-ТЕЗИС (RECON-41): профиль банк-v4 memory-bound (PalettedContainer.get 4.3% +
-SimpleBitStorage 1.7% воркеров, HashMap.getNode, entity slices) + ParallelGC
-copy 4.35GB/s -> THP режет TLB-miss в обоих. Директива 20:08: непривычный-но-
-быстрый = ставим.
+ТЕЗИС (RECON-41, свежая экономика ParallelGC): лейн volatile/inside вырос
+3.2% -> 13.2% java-сцены; G1-вердикты RECON-32/33 (потолок ~9.1%, конверсия
+~0) измерены ДО ParallelGC — свежий A/B по правилу REFUTED-не-закрывает-лейн.
+Рычаг #15 = контракт RECON-33 + impl 6eb3274/1c703f7 + оракул ALL PASS
+dea9de8 (1M кейсов / 210.5M позиций hull-superset). Директива 20:08:
+автономный A/B без санкций.
 
 PREREGISTER GATES:
-  PG-T1 delivery: gc_tune=5 + банк rest + NCDFE=0 + pop 150k VALID +
-    collector-proof "Using Parallel" в gc.log (и НЕТ G1-маркера) + workers=4;
-    THP-unavailable warning в stdout = маркер нейтральности (не гейт)
+  PG-T1 delivery: gc_tune=3 + inside_bitmask=1 + банк rest + NCDFE=0 +
+    pop 150k VALID + collector-proof "Using Parallel" (НЕТ G1-маркера) +
+    workers=4 + ARMED-маркеры #15: "bridge owner armed" ПРИСУТСТВУЕТ +
+    "stage inside_bitmask composed" ПРИСУТСТВУЕТ + dormant-маркер
+    "[crussty-plugin] inside_bitmask: dormant" ОТСУТСТВУЕТ (в stdout
+    dormant-маркер = ОШИБКА армирования -> delivery-FAIL)
   PG-T2 crash-free + soak >= 3 (T1/T2 = предусловие вердикта — урок #167)
   PG-T3 DUAL BAR vs БАНК v4 2-точки (normalized=min по ногам + absolute vs
     интерполяция TPS_exp(runner); ОБЕ >= +10%)
   PG-T4 страховочные ParallelGC: young 30..250, Full <= 10, total <= 20.0s,
     avg <= 200ms, max <= 3000ms — FAIL не отменяет двойной бар
   PG-T5 DONE-park N/A tolerated.
-Failure handling: BAND-DISCARD / CRASH-REFUTED (rollback gc_tune default 0) /
-INFRA-FLAKE (вкл. FIXTURE-INVALID — урок #167), макс 2 подряд.
+Failure handling: BAND-DISCARD / CRASH-REFUTED (rollback inside_bitmask=0,
+gc_tune=3 БАНК v4 ОСТАЁТСЯ) / INFRA-FLAKE (вкл. FIXTURE-INVALID — урок
+#167), макс 2 подряд.
 rc: 0 = CANDIDATE-GREEN/LANE-OPEN, 1 = fail/refuted, 2 = INFRA-FLAKE,
 3 = run not completed, 5 = incomplete data.
 """
@@ -27,18 +33,21 @@ import os, re, statistics, subprocess, sys, urllib.request
 REPO = "PLANETA9091/c-crussty"
 API = "https://api.github.com"
 RESDIR = "/home/z/c-crussty/research/gc-recon-2026-09-19"
-RUN_DIR = os.path.join(RESDIR, "run-s7203-thp")
+RUN_DIR = os.path.join(RESDIR, "run-s7204-bitmask")
 # БАНК v4 якорь = ДВЕ воспроизведённые точки (TPS индекс-зависим на ParallelGC):
 #   leg#1 2.6 @ 8551924, leg#2 2.2 @ 6653417 (обе CANDIDATE-GREEN, min-of-2)
 BANK_POINTS = ((2.6, 8_551_924), (2.2, 6_653_417))
 BAND_MIN, BAND_MAX = 6_000_000, 9_500_000
 # PG-T4 страховочные ParallelGC-гейты (банк v4 leg#2: young 109, total 18.8s,
-# avg 162ms, max 2400ms, Full=7): THP при срабатывании должен СНИЗИТЬ total/max
-# (TLB-miss в copy) — банды широкие, FAIL не отменяет двойной бар
+# avg 162ms, max 2400ms, Full=7): FAIL не отменяет двойной бар
 TOTAL_PAUSE_GATE_MS = 20_000.0
 MAX_PAUSE_GATE_MS = 3000.0
 FULL_GATE = 10
 PAUSE_COUNT_GATE = 3000
+# ARMED-маркеры #15 (RECON-33/impl 6eb3274/oracle dea9de8; тул s7195)
+ARMED_1 = "[crussty-plugin] inside_bitmask: bridge owner armed"
+ARMED_2 = "stage inside_bitmask composed"
+DORMANT = "[crussty-plugin] inside_bitmask: dormant"
 
 
 def token():
@@ -124,7 +133,7 @@ def tps_series(path):
     return out
 
 
-def gc_stats_zgc(path):
+def gc_stats_parallel(path):
     """(young/pauses, full, total_pause_ms, avg_pause_ms, max_pause_ms) из gc.log
     ParallelGC (end-строки 'GC(n) Pause Young/Full ... DUR'; start-строки [gc,start — skip)."""
     if not os.path.isfile(path):
@@ -137,7 +146,6 @@ def gc_stats_zgc(path):
             continue
         m = re.search(r"Pause ([\w ]*?)[A-Za-z ]*.*? ([\d.]+)(ms|s)\s*$", line)
         if not m:
-            # fallback: любой Pause с длительностью в конце
             m = re.search(r"Pause\b.*? ([\d.]+)(ms|s)\s*$", line)
             if not m:
                 continue
@@ -161,7 +169,7 @@ def main():
     tok = token()
     run_id = int(sys.argv[1]) if len(sys.argv) > 1 else 0
     if not run_id:
-        raise SystemExit("usage: absorb_s7203.py <run_id>")
+        raise SystemExit("usage: absorb_s7204.py <run_id>")
     st = api(tok, f"/repos/{REPO}/actions/runs/{run_id}")
     print(f"run {run_id}: status={st.get('status')} conclusion={st.get('conclusion')} "
           f"head={str(st.get('head_sha'))[:7]}")
@@ -170,7 +178,7 @@ def main():
     os.makedirs(RUN_DIR, exist_ok=True)
     have_art = fetch_artifact(tok, run_id)
 
-    rep = [f"# absorb A/B #3 THP s7203 (run {run_id}, head {str(st.get('head_sha'))[:7]}) "
+    rep = [f"# absorb #15 INSIDE-BITMASK s7204 (run {run_id}, head {str(st.get('head_sha'))[:7]}) "
            f"— PROTOCOL v8-REGRESSION DUAL BAR vs БАНК v4 "
            f"(2.6 @ 8551924 / 2.2 @ 6653417, 2-точечная модель)\n"]
     verdict = None
@@ -183,29 +191,35 @@ def main():
         env_txt = open(ep, errors="ignore").read()
 
     if stdout_txt:
-        # ---- PG-T1 delivery (gc_tune armed + банк rest)
-        want = {"gc_tune": "5", "region_steal": "0", "travel_diet": "0",
-                "skip_store_bb": "0", "bu_defer": "0", "inside_cache": "1",
-                "flush_diet": "1", "region_threads": "4", "batch_collector": "1",
-                "fluid_guard": "1"}
+        # ---- PG-T1 delivery (gc_tune=3 + inside_bitmask=1 + банк rest + ARMED #15)
+        want = {"gc_tune": "3", "inside_bitmask": "1", "region_steal": "0",
+                "travel_diet": "0", "skip_store_bb": "0", "bu_defer": "0",
+                "inside_cache": "1", "flush_diet": "1", "region_threads": "4",
+                "batch_collector": "1", "fluid_guard": "1"}
         t1 = [f"{k}={'OK' if env_flag(env_txt, k, v) else 'BAD'}" for k, v in want.items()]
         ncde = stdout_txt.count("NoClassDefFoundError")
         pop_ok = "POPULATION FIXTURE-VALIDITY: VALID" in stdout_txt
-        arm = "workers=4" in stdout_txt
+        arm1 = ARMED_1 in stdout_txt
+        arm2 = ARMED_2 in stdout_txt
+        dormant_bad = DORMANT in stdout_txt
+        arm_ok = arm1 and arm2 and not dormant_bad
+        workers = "workers=4" in stdout_txt
         gclog = os.path.join(RUN_DIR, "gc.log")
-        thp_warn = "Transparent Huge Pages" in stdout_txt
         col_ok = False
         if os.path.isfile(gclog):
             gtxt = open(gclog, errors="ignore").read()
             col_ok = ("G1 Evacuation Pause" not in gtxt) and \
                      ("Using Parallel" in gtxt or "Pause Young" in gtxt)
-        t1_ok = all("OK" in x for x in t1) and ncde == 0 and pop_ok and arm and col_ok
+        t1_ok = all("OK" in x for x in t1) and ncde == 0 and pop_ok and \
+            arm_ok and workers and col_ok
         rep.append("- PG-T1: " + ", ".join(t1) + f", NCDFE={ncde}, "
                    f"pop={'VALID' if pop_ok else 'BAD'}, "
-                   f"mode={'WORKERS4-TELEMETRY' if arm else 'MISSING'}, "
+                   f"ARMED={'OK' if arm1 else 'MISSING'}"
+                   f"+composed={'OK' if arm2 else 'MISSING'}"
+                   f"+dormant={'ОШИБКА-АРМИРОВАНИЯ' if dormant_bad else 'нет'}, "
+                   f"mode={'WORKERS4-TELEMETRY' if workers else 'MISSING'}, "
                    f"col={'PARALLEL' if col_ok else 'BAD'}"
-                   + (f", THP-warn={'НЕДОСТУПЕН-НА-РАННЕРЕ' if thp_warn else 'нет'}" if stdout_txt else "")
-                   + f" -> **{'PASS' if t1_ok else 'FAIL'}**")
+                   f" -> **{'PASS' if t1_ok else 'FAIL'}**")
 
         # ---- PG-T2 crash-free
         threw = stdout_txt.count("Entity threw exception")
@@ -236,18 +250,18 @@ def main():
             verdict = "INFRA-FLAKE"
             rep.append(f"  -> **FIXTURE-INVALID (T1={'PASS' if t1_ok else 'FAIL'}, "
                        f"T2={'PASS' if t2_ok else 'FAIL'}) — двойной бар по мусорным "
-                       f"данным НЕ валиден** (урок #167) — ре-ролл dispatch_s7203.py")
+                       f"данным НЕ валиден** (урок #167) — ре-ролл dispatch_s7204.py")
         elif med is not None and runner and band_ok:
             # ДВУХТОЧЕЧНАЯ модель банка v4 (TASK-383): ось-1 normalized —
-            # минимум по обеим ногам банка (строгий min-of-2 якорь);
-            # ось-2 absolute — интерполяция TPS_exp(runner) через 2 точки банка
+            # минимум по обеим ногам банка; ось-2 absolute — интерполяция
+            # TPS_exp(runner) через 2 точки банка
             nds = []
             for atps, arun in BANK_POINTS:
                 nds.append((med / runner) / (atps / arun) - 1.0)
             nd = min(nds)
-            (t1, r1), (t2, r2) = BANK_POINTS
-            slope = (t2 - t1) / (r2 - r1)
-            tps_exp = t1 + slope * (runner - r1)
+            (t1v, r1), (t2v, r2) = BANK_POINTS
+            slope = (t2v - t1v) / (r2 - r1)
+            tps_exp = t1v + slope * (runner - r1)
             ad = med / tps_exp - 1.0
             rep.append(f"  DUAL BAR (v8-REGRESSION, банк v4 2-точки): "
                        f"normalized=min({nds[0]:+.1%}, {nds[1]:+.1%})={nd:+.1%}, "
@@ -256,11 +270,13 @@ def main():
             if nd >= 0.10 and ad >= 0.10:
                 verdict = "CANDIDATE-GREEN"
                 rep.append("  -> **CANDIDATE GREEN** -> подтверждающий лег min-of-2 "
-                           "(dispatch_s7203.py повторно) -> banking v5 = v4 + THP")
+                           "(dispatch_s7204.py повторно) -> banking v5 = v4 + inside_bitmask")
             else:
                 verdict = "LANE-OPEN"
                 rep.append("  -> **< +10% хотя бы по одной оси** -> лейн ОТКРЫТ -> "
-                           "THP НЕ ПРЕВЗОШЁЛ банк v4; следующий кандидат очереди в новом тике")
+                           "#15 НЕ ПРЕВЗОШЁЛ банк v4 под ParallelGC-экономикой "
+                           "(G1-вердикты RECON-32/33 подтверждены и на новой базе); "
+                           "следующий кандидат очереди в новом тике")
         elif not band_ok:
             verdict = "INVALID-PAIRING"
             rep.append("  -> **ВНЕ ШИРОКОГО БАНДА** — ре-диспатч (не вердикт)")
@@ -269,7 +285,7 @@ def main():
             rep.append("  -> нет соак-поллов — вердикта нет")
 
         # ---- PG-T4 страховочные гейты (ParallelGC)
-        gs = gc_stats_zgc(gclog)
+        gs = gc_stats_parallel(gclog)
         if gs:
             pauses, full, total, avg, mx = gs
             t4 = (full <= FULL_GATE and total <= TOTAL_PAUSE_GATE_MS
@@ -314,7 +330,7 @@ def main():
                 verdict = "INFRA-FLAKE"
                 rep.append("- PG-GATE: workflow-гейт сказал **FIXTURE-VALIDITY: INVALID** "
                            "-> лег discard (не вердикт), любой предыдущий GREEN/LANE-OPEN "
-                           "АННУЛИРОВАН — ре-ролл dispatch_s7203.py")
+                           "АННУЛИРОВАН — ре-ролл dispatch_s7204.py")
 
     if not have_art or not stdout_txt:
         jl = fetch_joblog(tok, run_id)
@@ -330,17 +346,18 @@ def main():
             if band and crash == 0 and fixture == 0:
                 verdict = "BAND-DISCARD"
                 rep.append("  -> **BAND-DISCARD** (S7-96d fast-fail, не вердикт) — "
-                           "ре-диспатч dispatch_s7203.py (макс 2 подряд)")
+                           "ре-диспатч dispatch_s7204.py (макс 2 подряд)")
             elif crash:
                 verdict = "CRASH-REFUTED"
                 rep.append("  -> **CRASH-REFUTED** — руут-кауз по job-логу; rollback "
-                           "gc_tune (дефолт 0 = ванильные JVM-арги bit-exact), вердикт-док")
+                           "inside_bitmask (дефолт 0), БАНК v4 (gc_tune=3) ОСТАЁТСЯ, "
+                           "вердикт-док")
             else:
                 verdict = "INFRA-FLAKE"
                 rep.append("  -> **INFRA-FLAKE** — ре-диспатч без вердикта (макс 2 подряд)")
 
     rep.append(f"\n## VERDICT: **{verdict}**")
-    out = os.path.join(RESDIR, "ABSORB_S7203.md")
+    out = os.path.join(RESDIR, "ABSORB_S7204.md")
     open(out, "w").write("\n".join(rep) + "\n")
     print("\n".join(rep))
     print(f"\nwritten: {out}")
