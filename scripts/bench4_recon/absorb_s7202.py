@@ -29,7 +29,9 @@ REPO = "PLANETA9091/c-crussty"
 API = "https://api.github.com"
 RESDIR = "/home/z/c-crussty/research/gc-recon-2026-09-19"
 RUN_DIR = os.path.join(RESDIR, "run-s7202-zgcgen")
-ANCHOR_TPS, ANCHOR_RUNNER = 2.60, 8551924
+# БАНК v4 якорь = ДВЕ воспроизведённые точки (TPS индекс-зависим на ParallelGC):
+#   leg#1 2.6 @ 8551924, leg#2 2.2 @ 6653417 (обе CANDIDATE-GREEN, min-of-2)
+BANK_POINTS = ((2.6, 8_551_924), (2.2, 6_653_417))
 BAND_MIN, BAND_MAX = 6_000_000, 9_500_000
 # PG-T4 ZGC preregister (TASK-381): sub-ms pause-модель; база ParallelGC v4 leg#1:
 # total 24.6s, max 2954ms, Full=9 — ZGC должен убрать длинные паузы ПОЛНОСТЬЮ
@@ -233,10 +235,21 @@ def main():
                        f"T2={'PASS' if t2_ok else 'FAIL'}) — двойной бар по мусорным "
                        f"данным НЕ валиден** (урок #167) — ре-ролл dispatch_s7202.py")
         elif med is not None and runner and band_ok:
-            nd = (med / runner) / (ANCHOR_TPS / ANCHOR_RUNNER) - 1.0
-            ad = med / ANCHOR_TPS - 1.0
-            rep.append(f"  DUAL BAR (v8-REGRESSION): normalized={nd:+.1%}, absolute={ad:+.1%} "
-                       f"(бар: ОБЕ >= +10% vs банк v4 {ANCHOR_TPS})")
+            # ДВУХТОЧЕЧНАЯ модель банка v4 (TASK-383): ось-1 normalized —
+            # минимум по обеим ногам банка (строгий min-of-2 якорь);
+            # ось-2 absolute — интерполяция TPS_exp(runner) через 2 точки банка
+            nds = []
+            for atps, arun in BANK_POINTS:
+                nds.append((med / runner) / (atps / arun) - 1.0)
+            nd = min(nds)
+            (t1, r1), (t2, r2) = BANK_POINTS
+            slope = (t2 - t1) / (r2 - r1)
+            tps_exp = t1 + slope * (runner - r1)
+            ad = med / tps_exp - 1.0
+            rep.append(f"  DUAL BAR (v8-REGRESSION, банк v4 2-точки): "
+                       f"normalized=min({nds[0]:+.1%}, {nds[1]:+.1%})={nd:+.1%}, "
+                       f"absolute={ad:+.1%} (TPS_exp@{runner}={tps_exp:.2f}; "
+                       f"бар: ОБЕ >= +10%)")
             if nd >= 0.10 and ad >= 0.10:
                 verdict = "CANDIDATE-GREEN"
                 rep.append("  -> **CANDIDATE GREEN** -> подтверждающий лег min-of-2 "
