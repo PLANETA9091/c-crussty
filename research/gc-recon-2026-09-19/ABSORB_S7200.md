@@ -1,6 +1,11 @@
-# absorb GC-TUNE-v2 s7200 (run 35506221612, head 110c5ca) — PROTOCOL v8-REGRESSION DUAL BAR
+# absorb GC-TUNE-v2 s7200 (run 35506999311, head 85fea2d) — PROTOCOL v8-REGRESSION DUAL BAR
 
-- FAILURE-рулетка: crash-маркеры=0, wedge=0, fixture-INVALID=0, band-discard=True
-  -> **BAND-DISCARD** (S7-96d fast-fail, не вердикт) — ре-диспатч dispatch_s7200.py (макс 2 подряд)
+- PG-T1: gc_tune=OK, region_steal=OK, travel_diet=OK, skip_store_bb=OK, bu_defer=OK, inside_cache=OK, flush_diet=OK, region_threads=OK, batch_collector=OK, fluid_guard=OK, NCDFE=0, pop=VALID, mode=WORKERS4-TELEMETRY, region8M=OK -> **PASS**
+- PG-T2: threw=0, unexpected=0, s7180-class=0, TPS-поллов=5 -> **PASS**
+- PG-T3: runner=6218983 (широкий банд 6000000..9500000: OK), median5=1.6
+  DUAL BAR (v8-REGRESSION): normalized=+7.4%, absolute=+0.0% (бар: ОБЕ >= +10%)
+  -> **< +10% хотя бы по одной оси** -> лейн ОТКРЫТ -> GC-лейн: потолок-док (v1+v2 эмпирика) или следующий крит-путь рычаг
+- PG-T4: young=150, Full=0, total_pause=20.6s (гейт <= 19.0s), avg=137.3ms (гейт <= 115ms), young-банд 120..200, max=265.8ms -> **FAIL** (база s7198: 19.5s/79.3ms/178.7ms)
+- PG-T5: park=127/1183 (10.7%; класс ~1.4%) -> PASS/N/A
 
-## VERDICT: **BAND-DISCARD**
+## VERDICT: **LANE-OPEN**
