@@ -74,6 +74,8 @@ FLUSH_DIET="${FLUSH_DIET:-0}"
 # LevelChunk.setBlockState — kills the ~10% CPU fluid-push family on static
 # entities; 0 = vanilla-scan A/B leg).
 FLUID_DIRTY="${FLUID_DIRTY:-0}"
+FLUID_DIRTY_LEDGER="${FLUID_DIRTY_LEDGER:-0}"
+FLUID_BITMASK="${FLUID_BITMASK:-0}"
 REGION_THREADS="${REGION_THREADS:-0}"
 # BATCH-COLLECTOR S7-160 ARCH-ATTACK lever #8 (1 = ARMED: zero-map flat
 # StepBasedCollector replacement, lazy per-entity swap in RegionTickOps
@@ -169,6 +171,8 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "flush_diet: $FLUSH_DIET (CRUSSTY_FLUSH_DIET; 1 = FLUSH-DIET ARCH-ATTACK lever #4: StepBasedCollector.flushStep zero-waste addAll via FlushOps, S7-137)"
   echo "fluid_free: $FLUID_FREE (CRUSSTY_FLUID_FREE; 1 = FLUID-FREE-SECTION ARCH-ATTACK lever #5: fluid-ff verdict cache via FluidOps.fgate, requires paletted_demux=1, S7-143)"
   echo "fluid_dirty: $FLUID_DIRTY (CRUSSTY_FLUID_DIRTY; 1 = FLUID-DIRTY ARCH-ATTACK lever #6: fluid-scan memoization via FluidPushOps.scan + event-driven dirty-stamp ledger, S7-151/TASK-290)"
+  echo "fluid_dirty_ledger: $FLUID_DIRTY_LEDGER (CRUSSTY_FLUID_DIRTY_LEDGER; 1 = LEDGER-ONLY split RECON-43/TASK-389: dirty stamps for fluid_bitmask invalidation, NO refuted memo stage)"
+  echo "fluid_bitmask: $FLUID_BITMASK (CRUSSTY_FLUID_BITMASK; 1 = FLUIDPUSH-BITMASK RECON-43 ARCH-LEVER #16: section-resident fluid bitmaps + median-exact pre-gate in FluidPushGuardHook, replaces the 14.6%-java fluid-scan data plane)"
   echo "region_threads: $REGION_THREADS (CRUSSTY_REGION_THREADS; >=2 = REGION-THREADS ARCH-ATTACK lever #7: region-threaded entity ticking via RegionTickOps, S7-156/TASK-295)"
   echo "batch_collector: $BATCH_COLLECTOR (CRUSSTY_BATCH_COLLECTOR; 1 = BATCH-COLLECTOR ARCH-ATTACK lever #8: zero-map flat StepBasedCollector via BatchCollector.ensure swap, requires region_threads>=2, S7-160)"
   echo "flat_traversal: $FLAT_TRAVERSAL (CRUSSTY_FLAT_TRAVERSAL; 1 = FLAT-TRAVERSAL ARCH-ATTACK lever #9: flat bit-exact TraverseOps.forEachFlat via entity_compose stage-6 retarget, requires region_threads>=2, S7-163)"
@@ -397,6 +401,8 @@ export CRUSSTY_FLUID_FREE="$FLUID_FREE"
 # the entity retarget composes through the inside_cache chain — requires
 # CRUSSTY_INSIDE_CACHE=1 for scan memoization to arm)
 export CRUSSTY_FLUID_DIRTY="$FLUID_DIRTY"
+export CRUSSTY_FLUID_DIRTY_LEDGER="$FLUID_DIRTY_LEDGER"
+export CRUSSTY_FLUID_BITMASK="$FLUID_BITMASK"
 # REGION-THREADS gate (region_threads.rs reads it at register time; S7-156/
 # TASK-295; integer >= 2 arms the tick-segment splice + guard retargets;
 # the Ops re-parses the same env at class-init — 1 degrades to vanilla

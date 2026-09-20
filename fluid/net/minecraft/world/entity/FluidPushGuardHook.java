@@ -38,6 +38,16 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class FluidPushGuardHook {
 
+    /** RECON-43 lever #16 gate (env-read, fail-dominant, dormant-invisible). */
+    static boolean flag(String k) {
+        String v = System.getenv(k);
+        if (v == null) return false;
+        v = v.trim().toLowerCase();
+        return v.equals("1") || v.equals("true") || v.equals("on") || v.equals("yes");
+    }
+    static volatile boolean BITMASK = flag("CRUSSTY_FLUID_BITMASK");
+
+
     /** Weak identity keys (MapMaker.weakKeys uses ==): entries die with the
      * entity, hold no strong refs, and are concurrent-safe under regionized
      * ticking. Values hold only singletons + primitives. Key type is Object:
@@ -109,6 +119,24 @@ public final class FluidPushGuardHook {
     }
 
     public static boolean updateFluidHeightAndDoFluidPushing(Entity self, TagKey<Fluid> tag, double speed) {
+        // RECON-43 ARCH-LEVER #16 (TASK-389): section-bitmap pre-gate — a CLEAN
+        // verdict reduces the vanilla body to the verified pure-negative tail
+        // (put is unconditional in the tail, maxDepth 0.0, return false).
+        // Fail-dominant: any Throwable in the gate permanently disables it.
+        if (BITMASK) {
+            try {
+                if (FluidBitmaskOps.clean(self, tag)) {
+                    self.fluidHeight.put(tag, 0.0);
+                    return false;
+                }
+            } catch (NoClassDefFoundError e) {
+                // wiring window: FluidBitmaskOps not yet defined — skip this
+                // invocation only; the gate stays armed and engages as soon as
+                // the ops class lands (resolution is retried per invocation)
+            } catch (Throwable t) {
+                BITMASK = false;
+            }
+        }
         GuardEntry[] slots = CACHE.get(self);
         GuardEntry e = null;
         if (slots != null) {

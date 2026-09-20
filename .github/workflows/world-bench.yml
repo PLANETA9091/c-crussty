@@ -67,6 +67,14 @@ on:
         description: 'FLUID-DIRTY S7-151/TASK-290 ARCH-ATTACK lever #6 (1 = ARMED: fluid-scan memoization via FluidPushOps.scan + event-driven dirty-stamp ledger on LevelChunk.setBlockState; composes through inside_cache chain; 0 = vanilla-scan A/B leg)'
         required: false
         default: '0'
+      fluid_dirty_ledger:
+        description: 'FLUID-DIRTY-LEDGER RECON-43/TASK-389 split (1 = LEDGER-ONLY: dirty stamps armed for fluid_bitmask invalidation, NO refuted memo stage; 0 = off)'
+        required: false
+        default: '0'
+      fluid_bitmask:
+        description: 'FLUIDPUSH-BITMASK RECON-43 ARCH-LEVER #16 / TASK-389 (1 = ARMED: section-resident fluid bitmaps long[128] + median-exact pre-gate in FluidPushGuardHook — replaces the 14.6%-java fluid-scan data plane; invalidation = FluidPushOps.LEDGER stamps + section identity; 0 = banked-guard-only A/B leg)'
+        required: false
+        default: '0'
       region_threads:
         description: 'REGION-THREADS S7-156/TASK-295 ARCH-ATTACK lever #7 (integer >= 2 = ARMED: region-threaded entity ticking via RegionTickOps — W spatial buckets, W-1 TickThread helpers + main, deferred EntityCallbacks FIFO; 1/0 = vanilla passthrough leg)'
         required: false
@@ -214,6 +222,8 @@ jobs:
           FLUSH_DIET: ${{ inputs.flush_diet || '0' }}
           FLUID_FREE: '0' # input dropped TASK-330 (requires paletted_demux=1; lever dormant)
           FLUID_DIRTY: ${{ inputs.fluid_dirty || '0' }}
+          FLUID_DIRTY_LEDGER: ${{ inputs.fluid_dirty_ledger || '0' }}
+          FLUID_BITMASK: ${{ inputs.fluid_bitmask || '0' }}
           REGION_THREADS: ${{ inputs.region_threads || '0' }}
           BATCH_COLLECTOR: ${{ inputs.batch_collector || '0' }}
           FLAT_TRAVERSAL: '0' # input dropped TASK-342 (25-input limit; lever #9 REFUTED FAIL PG4a)

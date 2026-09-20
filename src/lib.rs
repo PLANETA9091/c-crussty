@@ -29,6 +29,7 @@ mod classfile;
 mod entity_mirror;
 mod entity_compose;
 mod fluid_guard;
+mod fluid_bitmask;
 mod fluid_dirty;
 mod fluid_free;
 mod flush_diet;
@@ -334,6 +335,9 @@ fn inject_surface() {
     improved_noise::activate();
     perlin_noise::activate();
     noise_fill::activate();
+    // RECON-43 lever #16: ops pair defined BEFORE the hook (fluid_bitmask
+    // consult lives inside FluidPushGuardHook; ordering kills the NCDFE window).
+    fluid_bitmask::activate();
     fluid_guard::activate();
     // PALETTED-DEMUX (S7-131): define PalettedContainerOps into the launch
     // loader EARLY (the patch serves at PalettedContainer's first load —
