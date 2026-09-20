@@ -133,14 +133,19 @@ if [ -d /usr/share/dotnet ]; then sudo rm -rf /usr/share/dotnet; fi
 if [ -d /opt/ghc ]; then sudo rm -rf /opt/ghc; fi
 df -h / | tail -1
 
-# --- 1. kernel + world + natives + profilers (retries x3) ------------------
+# --- 1. kernel + world + natives + profilers (retries x5, exp backoff) ------
 fetch() { # fetch <url> <dest>
-  local url="$1" dest="$2" i
-  for i in 1 2 3; do
+  local url="$1" dest="$2" i wait_s
+  # TASK-393 root-cause (s7207#1 35530317923): storage.shield.land отдал 503
+  # на все 3 ретрая за 36с → FATAL → лег сгорел на доставке. Внешние
+  # недоступности живут минутами — терпим до ~3 мин: 5 попыток с
+  # экспоненциальным бэкоффом 10/20/40/80с.
+  for i in 1 2 3 4 5; do
     # Run#5 lesson: NO --fail meant a GitHub-404 BODY (9 bytes "Not Found") was
     # saved as a "successful" fetch — asprof then "not found" in a non-tar file.
     curl -sSfL --retry 2 -o "$dest" "$url" && return 0
-    log "retry $i for $url"; sleep 5
+    wait_s=$(( 10 << (i - 1) ))
+    log "retry $i for $url (next in ${wait_s}s)"; sleep "$wait_s"
   done
   return 1
 }
