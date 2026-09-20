@@ -3887,6 +3887,48 @@ pub fn blockupd_resolution_closure(bridge: &[u8]) -> Result<(), String> {
     redirect_targets_resolution_closure(bridge, &BLOCKUPD_REDIRECT_TARGETS)
 }
 
+/// ITEMS-COMPOSE (MEGA-ROUND-2 / TASK-397-A) delivery guard: the
+/// ItemsComposeOps classfile being DELIVERED to the kernel loader must
+/// declare ALL FOUR retarget handles with the exact receiver-prepended
+/// static descriptors: getMergeCandidates (merge-query site), moveIndexed
+/// (post-move reconcile), mergeWithNeighbours (gated tick scan),
+/// mergeAfterTeleport (teleport scan).
+pub fn itemscompose_resolution_closure(bridge: &[u8]) -> Result<(), String> {
+    const MERGE_QUERY_TO_DESC: &str =
+        "(Lnet/minecraft/world/level/Level;Ljava/lang/Class;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;)Ljava/util/List;";
+    const MOVE_TO_DESC: &str =
+        "(Lnet/minecraft/world/entity/item/ItemEntity;Lnet/minecraft/world/entity/MoverType;Lnet/minecraft/world/phys/Vec3;)V";
+    const GATE_TO_DESC: &str =
+        "(Lnet/minecraft/world/entity/item/ItemEntity;)V";
+    let targets: &[(&str, &str, &str, &str)] = &[
+        (
+            "class",
+            "net/minecraft/world/entity/item/ItemsComposeOps",
+            "getMergeCandidates",
+            MERGE_QUERY_TO_DESC,
+        ),
+        (
+            "class",
+            "net/minecraft/world/entity/item/ItemsComposeOps",
+            "moveIndexed",
+            MOVE_TO_DESC,
+        ),
+        (
+            "class",
+            "net/minecraft/world/entity/item/ItemsComposeOps",
+            "mergeWithNeighbours",
+            GATE_TO_DESC,
+        ),
+        (
+            "class",
+            "net/minecraft/world/entity/item/ItemsComposeOps",
+            "mergeAfterTeleport",
+            GATE_TO_DESC,
+        ),
+    ];
+    redirect_targets_resolution_closure(bridge, targets)
+}
+
 pub fn patch_serverlevel_send_block_updated(
     bytes: &[u8],
 ) -> Result<(Vec<u8>, RetargetOutcome), String> {

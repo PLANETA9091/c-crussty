@@ -37,6 +37,13 @@ mod improved_noise;
 mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
+// ITEMS-COMPOSE (MEGA-ROUND-2 / TASK-397-A, lever_flag="items_compose_ai"):
+// COMPOSITION of round-1 levers A (1.0-grid merge-candidate index — WHERE to
+// look) + I (event-driven wakeup — WHEN to scan) on ONE ItemEntity byte
+// pipeline: four strict retargets, wakeup gates the index, E4-wake reads
+// grid buckets (zero broadphase dumps on the item merge path). Additive
+// module; sole owner of the ItemEntity byte pipeline.
+mod items_compose;
 mod jni_table;
 mod kernel_policy;
 mod loader;
@@ -174,6 +181,11 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // EntityCallbacks guard sites, composed on top of F1/F3 bytes (LAST in
     // the byte-hook chain). Dormant unless CRUSSTY_REGION_THREADS>=2.
     region_threads::register();
+    // ITEMS-COMPOSE (MEGA-ROUND-2 / TASK-397-A): ItemEntity byte hook (the
+    // four retargets: merge-query -> grid index, tick move -> reconcile,
+    // tick scan + teleport scan -> wakeup gate). Dormant unless
+    // CRUSSTY_LEVER_FLAG == "items_compose_ai".
+    items_compose::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -381,6 +393,11 @@ fn inject_surface() {
     // EntityCallbacks, retransform both (dormant unless
     // CRUSSTY_REGION_THREADS>=2).
     region_threads::activate();
+    // ITEMS-COMPOSE (MEGA-ROUND-2 / TASK-397-A): define ItemsComposeOps into
+    // the kernel loader, JNI-verify selfTest, compute the four strict
+    // retargets for ItemEntity, retransform (dormant unless
+    // CRUSSTY_LEVER_FLAG == "items_compose_ai").
+    items_compose::activate();
     // BATCH-COLLECTOR (S7-160): define BatchCollector into the kernel
     // loader (define-only; the per-entity lazy swap happens in
     // RegionTickOps.tickBucket; dormant unless CRUSSTY_BATCH_COLLECTOR=1
