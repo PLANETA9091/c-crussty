@@ -37,6 +37,7 @@ mod improved_noise;
 mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
+mod items_mono;
 mod jni_table;
 mod kernel_policy;
 mod loader;
@@ -376,6 +377,11 @@ fn inject_surface() {
     // compute the secWrite retarget for LevelChunk, arm the inside_chain
     // bridge (dormant unless CRUSSTY_FLUID_DIRTY=1).
     fluid_dirty::activate();
+    // ITEMS-MONO (TASK-396-F, MEGA-ROUND-1 vector F): lever flag owner +
+    // observability (the ServerLevel compose patch happens inside
+    // region_threads::activate; the bridge body lives in the already-defined
+    // RegionTickOps). Dormant unless CRUSSTY_LEVER_FLAG=items_mono.
+    items_mono::activate();
     // REGION-THREADS (S7-156): define RegionTickOps into the kernel loader,
     // compute the tick-segment + guard retargets for ServerLevel and
     // EntityCallbacks, retransform both (dormant unless

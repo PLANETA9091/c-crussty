@@ -118,6 +118,72 @@ public final class RegionTickOps {
         }
     }
 
+    /**
+     * TASK-396-F ITEMS-MONO (lever_flag="items_mono", MEGA-ROUND-1 vector F):
+     * JIT-devirtualization of the item-entity dispatch lane.
+     *
+     * javap contract (patched-kernel s7204, fixture e2992d63): the ONLY
+     * megamorphic dispatch of the entity-tick loop is the single
+     * `invokevirtual Entity.tick()V` inside `ServerLevel.tickNonPassenger`
+     * (bc 80; ItemEntity ~70% of the 150k-entity bench population, items
+     * lane = 31.17% java — TOP-1). The rust patcher (region_threads.rs,
+     * classfile.rs patch_serverlevel_entity_tick) retargets that ONE
+     * instruction to the static `RegionTickOps.entityTick(Entity)` below
+     * (receiver-prepended static, identical stack shape — the forEach /
+     * BU-DEFER / guardEntityTick precedent) WHEN AND ONLY WHEN
+     * CRUSSTY_LEVER_FLAG == "items_mono". With the flag absent the kernel
+     * bytes stay bit-for-bit vanilla and this method is never invoked.
+     *
+     * Body = pure type-test split, semantically identical to the vanilla
+     * virtual dispatch for ANY receiver: the ItemEntity branch executes the
+     * SAME Entity.tick() override (invokevirtual ItemEntity.tick — exactly
+     * one implementation at that site -> C2 monomorphic direct call + inline
+     * of the whole tickNonPassenger -> entityTick -> ItemEntity.tick chain),
+     * the else branch is the byte-identical vanilla invokevirtual Entity.tick
+     * (JIT evidence: RESEARCH-F.md prуфы A-E). Tick ORDER is untouched: no
+     * list reordering, the split happens per-entity inside the dispatch.
+     */
+    public static void entityTick(Entity entity) {
+        if (entity instanceof net.minecraft.world.entity.item.ItemEntity item) {
+            item.tick(); // monomorphic site: static receiver type ItemEntity
+        } else {
+            entity.tick(); // vanilla virtual dispatch, bit-for-bit
+        }
+    }
+
+    /**
+     * TASK-396-F: lever flag parse (mirrors parseBatchCollector pattern).
+     * "items_mono" = ARMED: the rust compose patch rewires the single
+     * tickNonPassenger Entity.tick site to entityTick above. Anything else
+     * = dormant vanilla path (parity by construction). CRUSSTY_LEVER_ARG is
+     * free-form ("1" on the bench leg) and only echoed for the log audit.
+     */
+    private static final boolean ITEMS_MONO = parseItemsMono();
+
+    private static boolean parseItemsMono() {
+        try {
+            String v = System.getenv("CRUSSTY_LEVER_FLAG");
+            boolean armed = v != null && v.trim().equals("items_mono");
+            if (armed) {
+                System.err.println("[S7-F] items_mono ARMED: tickNonPassenger Entity.tick -> "
+                        + "RegionTickOps.entityTick type-test split (ItemEntity monomorphic lane)"
+                        + " lever_arg=" + parseLeverArg());
+            }
+            return armed;
+        } catch (Throwable t) {
+            return false;
+        }
+    }
+
+    private static String parseLeverArg() {
+        try {
+            String v = System.getenv("CRUSSTY_LEVER_ARG");
+            return v == null ? "" : v.trim();
+        } catch (Throwable t) {
+            return "";
+        }
+    }
+
     private static final class Mut {
         final boolean add;
         final Entity entity;
@@ -347,7 +413,8 @@ public final class RegionTickOps {
             System.err.println(
                     "[crussty-plugin] batch_collector: telemetry tick=" + telemetryTicks
                     + " instances=" + BatchCollector.instances()
-                    + " workers=" + WORKERS);
+                    + " workers=" + WORKERS
+                    + " items_mono=" + ITEMS_MONO);
         }
         int w = WORKERS;
         if (w <= 1) {

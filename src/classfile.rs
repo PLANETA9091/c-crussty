@@ -4751,6 +4751,33 @@ pub fn patch_region_tick_serverlevel(bytes: &[u8]) -> Result<(Vec<u8>, RetargetO
     )
 }
 
+/// TASK-396-F (ITEMS-MONO, lever_flag="items_mono"): retarget of the ONLY
+/// megamorphic dispatch of the entity-tick loop — the single
+/// `invokevirtual Entity.tick()V` inside `ServerLevel.tickNonPassenger`
+/// (javap fixture census: exactly 1 site, bc 80; ItemEntity ~70% of the
+/// bench population, items lane 31.17% java = TOP-1) — to the static
+/// `RegionTickOps.entityTick(Entity)V` (receiver-prepended static,
+/// identical stack shape). The bridge body does the instanceof ItemEntity
+/// type-test split: monomorphic invokevirtual ItemEntity.tick for the item
+/// lane, byte-identical vanilla virtual dispatch for everything else.
+/// Tick order/semantics untouched (pure call-structure replacement).
+/// Strict: caller asserts Retargeted{1}.
+pub fn patch_serverlevel_entity_tick(
+    bytes: &[u8],
+) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    retarget_virtual_to_static(
+        bytes,
+        "tickNonPassenger",
+        "(Lnet/minecraft/world/entity/Entity;)V",
+        ("net/minecraft/world/entity/Entity", "tick", "()V"),
+        (
+            REGION_TICK_OPS_CLASS,
+            "entityTick",
+            "(Lnet/minecraft/world/entity/Entity;)V",
+        ),
+    )
+}
+
 /// S7-156: the ONLY `EntityTickList.add/remove` call sites in the whole
 /// kernel (`ServerLevel$EntityCallbacks.onTickingStart/onTickingEnd`) ->
 /// `RegionTickOps.onTickingStart/onTickingEnd` (deferred FIFO during a
@@ -6395,6 +6422,69 @@ mod region_threads {
             outcome2,
             RetargetOutcome::AlreadyPatched { sites: 1 },
             "second pass must detect the already-retargeted body"
+        );
+    }
+
+    /// TASK-396-F (ITEMS-MONO): the REAL ServerLevel fixture's
+    /// tickNonPassenger redirects the single megamorphic Entity.tick site to
+    /// RegionTickOps.entityTick EXACTLY once (javap bc 80; one site in the
+    /// whole method — the strict caller gate depends on this census).
+    #[test]
+    fn items_mono_serverlevel_retargets_exactly_one_entity_tick() {
+        let (patched, outcome) = patch_serverlevel_entity_tick(SERVER).expect("patch");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "ServerLevel.tickNonPassenger is EXACTLY the single megamorphic Entity.tick site"
+        );
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        // Idempotence guard: repatching must detect the already-retargeted site.
+        let (_, outcome2) = patch_serverlevel_entity_tick(&patched).expect("repatch");
+        assert_eq!(
+            outcome2,
+            RetargetOutcome::AlreadyPatched { sites: 1 },
+            "second pass must detect the already-retargeted site"
+        );
+        // The appended Methodref must be RegionTickOps.entityTick(Entity)V.
+        let cp_count = u16::from_be_bytes([patched[8], patched[9]]);
+        let (pool, _end) = Pool::parse(&patched, 10, cp_count).expect("cp parse");
+        assert!(
+            (1..pool.next)
+                .filter_map(|i| pool.methodref_parts(i))
+                .any(|t| t.0 == "net/minecraft/world/entity/RegionTickOps"
+                    && t.1 == "entityTick"
+                    && t.2 == "(Lnet/minecraft/world/entity/Entity;)V"),
+            "RegionTickOps.entityTick Methodref appended"
+        );
+    }
+
+    /// TASK-396-F (ITEMS-MONO): compose sanity — forEach (bank v4) and the
+    /// entityTick type-test split coexist on ONE ServerLevel classfile
+    /// (non-overlapping sites; the runtime chain serves both retargets from
+    /// the same bytes when lever_flag=items_mono).
+    #[test]
+    fn items_mono_composes_with_region_tick_foreach() {
+        let (sl1, o1) = patch_region_tick_serverlevel(SERVER).expect("forEach patch");
+        assert_eq!(o1, RetargetOutcome::Retargeted { sites: 1 });
+        let (sl2, o2) = patch_serverlevel_entity_tick(&sl1).expect("entityTick compose");
+        assert_eq!(o2, RetargetOutcome::Retargeted { sites: 1 });
+        let cp_count = u16::from_be_bytes([sl2[8], sl2[9]]);
+        let (pool, _end) = Pool::parse(&sl2, 10, cp_count).expect("cp parse");
+        let triples: Vec<_> = (1..pool.next)
+            .filter_map(|i| pool.methodref_parts(i))
+            .collect();
+        assert!(
+            triples
+                .iter()
+                .any(|t| t.0 == "net/minecraft/world/entity/RegionTickOps" && t.1 == "forEach"),
+            "RegionTickOps.forEach Methodref present (bank v4 compose)"
+        );
+        assert!(
+            triples
+                .iter()
+                .any(|t| t.0 == "net/minecraft/world/entity/RegionTickOps"
+                    && t.1 == "entityTick"),
+            "RegionTickOps.entityTick Methodref present (items_mono compose)"
         );
     }
 

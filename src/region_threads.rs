@@ -562,6 +562,43 @@ pub fn activate() {
         } else {
             sl_patched
         };
+        // TASK-396-F ITEMS-MONO (lever_flag="items_mono", MEGA-ROUND-1
+        // vector F): compose the megamorphic-dispatch type-test split INTO
+        // the same ServerLevel bytes (after the forEach + optional BU-DEFER
+        // retargets — one hook serve, one retransform, no supersede). The
+        // single `invokevirtual Entity.tick()V` inside tickNonPassenger
+        // (javap census: exactly 1 site) rewires to
+        // `RegionTickOps.entityTick(Entity)` — the bridge body lives in the
+        // ALREADY-DEFINED RegionTickOps bridge (zero new classes, zero
+        // NCDFE surface). Strict: Retargeted{1}; any shape mismatch leaves
+        // the whole hook dormant (fail-closed, same as BU-DEFER).
+        let sl_patched = if crate::items_mono::enabled() {
+            let (p3, it_outcome) =
+                match crate::classfile::patch_serverlevel_entity_tick(&sl_patched) {
+                    Ok(pair) => pair,
+                    Err(e) => {
+                        eprintln!(
+                            "[crussty-plugin] region_threads: ITEMS-MONO ServerLevel patch rejected ({e}), hook stays dormant"
+                        );
+                        return;
+                    }
+                };
+            if !matches!(
+                it_outcome,
+                crate::classfile::RetargetOutcome::Retargeted { sites: 1 }
+            ) {
+                eprintln!(
+                    "[crussty-plugin] region_threads: ITEMS-MONO strict site-count violated ({it_outcome:?}), hook stays dormant"
+                );
+                return;
+            }
+            eprintln!(
+                "[crussty-plugin] region_threads: ITEMS-MONO composed: tickNonPassenger Entity.tick -> RegionTickOps.entityTick (sites:1)"
+            );
+            p3
+        } else {
+            sl_patched
+        };
         let (cb_patched, (cb_out_add, cb_out_rem)) =
             match crate::classfile::patch_region_tick_callbacks(&cb_orig) {
                 Ok(pair) => pair,
