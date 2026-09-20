@@ -37,6 +37,11 @@ mod improved_noise;
 mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
+// ITEMS-INDEX (ROUND-396 / TASK-396-A vector A, lever_flag="items_index"):
+// 1.0-grid hashed ItemEntity merge-candidate index — architecture swap for
+// the TOP-1 bottleneck (items 31.17% + item-driven broadphase). Additive
+// module; sole owner of the ItemEntity byte pipeline.
+mod items_index;
 mod jni_table;
 mod kernel_policy;
 mod loader;
@@ -174,6 +179,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // EntityCallbacks guard sites, composed on top of F1/F3 bytes (LAST in
     // the byte-hook chain). Dormant unless CRUSSTY_REGION_THREADS>=2.
     region_threads::register();
+    // ITEMS-INDEX (ROUND-396 / TASK-396-A vector A): ItemEntity byte hook
+    // (merge-query + post-move retargets). Dormant unless
+    // CRUSSTY_LEVER_FLAG == "items_index".
+    items_index::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -428,6 +437,10 @@ fn inject_surface() {
     // re-composes the F1 optimiseRandomTick swap; MUST run after
     // randomtick::activate — see src/tickhook.rs module docs).
     tickhook::activate();
+    // ITEMS-INDEX (ROUND-396 / TASK-396-A vector A): bridge define into the
+    // kernel loader + strict two-site ItemEntity patch + retransform; no-op
+    // unless CRUSSTY_LEVER_FLAG == "items_index".
+    items_index::activate();
 }
 
 /// Define one bridge class and register all its natives.

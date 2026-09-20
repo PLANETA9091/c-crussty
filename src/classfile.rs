@@ -3887,6 +3887,33 @@ pub fn blockupd_resolution_closure(bridge: &[u8]) -> Result<(), String> {
     redirect_targets_resolution_closure(bridge, &BLOCKUPD_REDIRECT_TARGETS)
 }
 
+/// ITEMS-INDEX (ROUND-396 / TASK-396-A vector A) delivery guard: the
+/// ItemMergeIndexOps classfile being DELIVERED to the kernel loader must
+/// declare BOTH retarget handles (getMergeCandidates for the merge-query
+/// site in mergeWithNeighbours, moveIndexed for the post-move site in
+/// tick) with the exact receiver-prepended static descriptors.
+pub fn itemmerge_resolution_closure(bridge: &[u8]) -> Result<(), String> {
+    const MERGE_TO_DESC: &str =
+        "(Lnet/minecraft/world/level/Level;Ljava/lang/Class;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;)Ljava/util/List;";
+    const MOVE_TO_DESC: &str =
+        "(Lnet/minecraft/world/entity/item/ItemEntity;Lnet/minecraft/world/entity/MoverType;Lnet/minecraft/world/phys/Vec3;)V";
+    let targets: &[(&str, &str, &str, &str)] = &[
+        (
+            "class",
+            "net/minecraft/world/entity/item/ItemMergeIndexOps",
+            "getMergeCandidates",
+            MERGE_TO_DESC,
+        ),
+        (
+            "class",
+            "net/minecraft/world/entity/item/ItemMergeIndexOps",
+            "moveIndexed",
+            MOVE_TO_DESC,
+        ),
+    ];
+    redirect_targets_resolution_closure(bridge, targets)
+}
+
 pub fn patch_serverlevel_send_block_updated(
     bytes: &[u8],
 ) -> Result<(Vec<u8>, RetargetOutcome), String> {
