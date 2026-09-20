@@ -2718,3 +2718,19 @@ Stage Summary:
 - NEXT id 356: решение владельца B/C; без решения — javap-контракт inside-bitmask-флагмана (entry-гейты + секционные solid-биты, median-exact all-air short-circuit) коммит-пригодно
 
 RUN_ID_DISPATCHED: (нет — диспатчи остановлены; CI-бутов 0)
+
+---
+Task ID: 359
+Agent: cron-tick (Super Z)
+Task: TASK-359 — EPOCH-2B финализация: RECON-35 chunk-read drill + сводная карта A/B/C
+
+Work Log:
+- git pull обоих репо чист; S7-108: CI-санити green (5fd1f64/dea9de8), бенч-легов нет; решения владельца B/C нет → ветка NEXT 359
+- RECON-35: recon35_chunkread_consumer_drill.py (deepest-block-read-frame-wins, полный кадр; dot→slash нюанс стеков выявлен и задокументирован) — семья 7.54/7.36% сцены, клейм RECON-29 ~3.6% занижен ~2×; атрибуция потребителям: fluid ~50% / movement ~22% / entity ~17% / inside ~10% / path ~1.4%; 9-е док-закрытие, вариант A исчерпан
+- EPOCH2_DECISION_MAP_A_B_C.md: сводная карта с полными пинами (A исчерпан; B = #15 dormant, активация env+1 лег+min-of-2; C = Rust/JNI эра, предпосылка S7-170)
+- Коммиты: 5b08930 (RECON-35+карта), 89dcd08 (GOAL ×44); CLAIMS TASK-359 (d5b9234, logs main); CI на 5b08930 в полёте; пуш обоих + re-pull
+
+Stage Summary:
+- Последний несведённый компонент ЭПОХИ-2A сведён: chunk-read = инфраструктура потребителей, самостоятельного рычага нет
+- Карта A/B/C — готовый вход для решения владельца; B активируется одной командой
+- NEXT id 360: решение B/C; при B — активация CRUSSTY_INSIDE_BITMASK=1 CI-легом
