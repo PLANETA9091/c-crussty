@@ -2787,3 +2787,21 @@ Stage Summary:
 - P1 закрыт числами: serial 19.7% ≪ 70%, C продолжается; первый профиль-обоснованный путь ≥ ДВОЙНОГО БАРА = геометрия worker-пула (при I≤1.15 потолок +25..33%)
 - Развилка P2 прегистрирована: I≤1.15 → offload; I≥1.3 → ребаланс REGION_CHUNKS/WORKERS
 - NEXT id 363: при C-санкции P2-pre-gate лег; при B — активация #15 одной командой; без решения — P2-pre-gate тул офлайн
+
+---
+Task ID: 363
+Agent: cron-tick (Super Z)
+Task: TASK-363 tick: S7-108 чист → P2-pre-gate тул до конца + диспатч диагностического лега s7196
+
+Work Log:
+- pull чисты; CI green adcaaae; ACTIVE=0; решений владельца нет → ветка (4b): P2-pre-gate реализуется и диспатчится в этом тике
+- Факт: wall-сессия ЖИВА (s7189: 3011 стеков/69650 сэмплов, park-кадры CyclicBarrier есть) — «AP-PID мёртв» устарел; merged-формат без имён потоков = единственный дефект
+- run_world3.sh: wall-фаза → `asprof start -t -e wall` (фоллбэк merged), cpu/alloc не тронуты, 0 behavior change ядра
+- recon37_worker_balance.py: формат-гвард (на merged wall → корректный TOOL-FAIL), duty= tickBucket-активность без барьеров, I=max/avg, развилка прегистра; main park-доля
+- dispatch_s7196.py (банк v3 travel_diet=0, широкий банд, гварды) + absorb_s7196.py (PG-A/B/C/D + рулетка + развилка)
+- py_compile/bash -n чисты; commit f3d3ba4; push+re-pull; HEAD==remote; ДИСПАТЧ: run 35487747157 in_progress
+- Учёт: GOAL ×48 + CLAIMS TASK-363 + worklog
+
+Stage Summary:
+- Резидуал RECON-36 закрыт инструментально: threaded wall даст I и развилку RECON-36 одним прогоном absorb_s7196.py
+- NEXT id 364: absorb_s7196.py 35487747157 → OFFLOAD-READY/REBALANCE/GRAY; при B — dispatch_s7195.py --sanctioned
