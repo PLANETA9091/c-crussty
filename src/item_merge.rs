@@ -22,7 +22,7 @@
 //! byte-indistinguishable from the pre-TASK-396 plugin.
 
 use jvmti_bindings::prelude::*;
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
 use std::sync::{Arc, PoisonError};
 
 pub const ITEM_CLASS: &str = "net/minecraft/world/entity/item/ItemEntity";
@@ -308,7 +308,7 @@ pub fn activate() {
                 bridge_desc: BRIDGE_DESC,
                 args: &[cplug_sdk::asm::ArgSpec::Local { slot: 0, ty: b'L' }],
             };
-            cplug_sdk::asm::replace_body(env, loader as jni::jobject, &original, &spec)
+            cplug_sdk::asm::replace_body(env, loader as jvmti_bindings::jni::jobject, &original, &spec)
         })
         .flatten();
         let Some(patched) = patched else {
@@ -355,9 +355,9 @@ fn resource_stream_capture() -> Option<Vec<u8>> {
         )?;
         let res_name = env.new_string_utf(&format!("{ITEM_CLASS}.class"))?;
         let stream = env.call_object_method(
-            loader as jni::jobject,
+            loader as jvmti_bindings::jni::jobject,
             garm,
-            &[jni::jvalue { l: res_name }],
+            &[jvmti_bindings::jni::jvalue { l: res_name }],
         );
         if stream.is_null() {
             crate::clear_exception(env);
@@ -372,8 +372,8 @@ fn resource_stream_capture() -> Option<Vec<u8>> {
             crate::clear_exception(env);
             None
         } else {
-            let jarr = arr as jni::jbyteArray;
-            let len = env.get_array_length(arr as jni::jarray);
+            let jarr = arr as jvmti_bindings::jni::jbyteArray;
+            let len = env.get_array_length(arr as jvmti_bindings::jni::jarray);
             let mut signed = vec![0i8; len as usize];
             env.get_byte_array_region(jarr, 0, len, &mut signed);
             Some(signed.iter().map(|&b| b as u8).collect::<Vec<u8>>())
@@ -397,7 +397,7 @@ fn bridge_selftest() {
             eprintln!("[crussty-plugin] item_merge: self-test: no stored ops class ref");
             return false;
         }
-        let ops = stored as jni::jclass;
+        let ops = stored as jvmti_bindings::jni::jclass;
         let Some(mid) = env.get_static_method_id(ops, "selfTest", "()Z") else {
             crate::clear_exception(env);
             return false;
