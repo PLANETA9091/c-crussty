@@ -34,6 +34,7 @@ mod fluid_dirty;
 mod fluid_free;
 mod flush_diet;
 mod improved_noise;
+mod item_paper;
 mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
@@ -114,6 +115,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     perlin_noise::register();
     noise_fill::register();
     fluid_guard::register();
+    // ITEMS-PAPER (TASK-397-F, vector F): Canvas item-merge cadence dither (rate==40
+    // for moved items too) + merge-loop exit on !isMergable. Size-neutral byte
+    // surgery on kernel ItemEntity; dormant unless CRUSSTY_LEVER_FLAG=items_paper.
+    item_paper::register();
     // PALETTED-DEMUX (S7-131, ARCH-ATTACK lever #1): PalettedContainer
     // first-load demux patch (field injection + fast-path get + guarded
     // mutators). MUST register before any kernel class loads (onstart).
@@ -339,6 +344,7 @@ fn inject_surface() {
     // consult lives inside FluidPushGuardHook; ordering kills the NCDFE window).
     fluid_bitmask::activate();
     fluid_guard::activate();
+    item_paper::activate();
     // PALETTED-DEMUX (S7-131): define PalettedContainerOps into the launch
     // loader EARLY (the patch serves at PalettedContainer's first load —
     // field injection forbids retransform), then READY.
