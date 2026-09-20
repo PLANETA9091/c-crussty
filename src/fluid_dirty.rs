@@ -37,13 +37,28 @@ const OPS_BYTES: &[u8] =
 const OPS_INNER_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/world/entity/FluidPushOps$ScanOut.class");
 
-fn enabled() -> bool {
-    std::env::var("CRUSSTY_FLUID_DIRTY")
+fn flag_on(k: &str) -> bool {
+    std::env::var(k)
         .map(|v| {
             let v = v.trim().to_ascii_lowercase();
             v == "1" || v == "true" || v == "on" || v == "yes"
         })
         .unwrap_or(false)
+}
+
+fn enabled() -> bool {
+    // RECON-43 lever #16 split (TASK-389): CRUSSTY_FLUID_DIRTY_LEDGER=1 arms
+    // ONLY the LevelChunk dirty-stamp ledger (the invalidation source the
+    // fluid_bitmask section bitmaps need) WITHOUT the entity-side memo stage
+    // (REFUTED-by-economics S7-153: live hit-rate ~0%, GC +18.6%). Full mode
+    // is unchanged and keeps precedence.
+    flag_on("CRUSSTY_FLUID_DIRTY") || flag_on("CRUSSTY_FLUID_DIRTY_LEDGER")
+}
+
+/// LEDGER-only mode: no entity-chain stage may compose (the scan retarget is
+/// the refuted memo; the ledger itself is the sanctioned infra half).
+pub fn ledger_only() -> bool {
+    !flag_on("CRUSSTY_FLUID_DIRTY") && flag_on("CRUSSTY_FLUID_DIRTY_LEDGER")
 }
 
 static READY: AtomicBool = AtomicBool::new(false);
@@ -120,7 +135,9 @@ pub fn bridge_ready() -> bool {
 /// Gate visibility for the inside_chain (does NOT check the bridge — the
 /// chain itself waits on wait_bridge_ready).
 pub fn enabled_pub() -> bool {
-    enabled()
+    // chain visibility: full mode only — in LEDGER-only mode the inside_chain
+    // must NOT compose the scan retarget (fail-dominant to vanilla scan)
+    flag_on("CRUSSTY_FLUID_DIRTY")
 }
 
 /// Bounded wait for the bridge definition (inside_chain protocol).
@@ -166,7 +183,11 @@ pub fn register() {
         );
         return;
     }
-    if !crate::inside_cache::enabled_pub() {
+    if ledger_only() {
+        eprintln!(
+            "[crussty-plugin] fluid_dirty: LEDGER-ONLY mode (CRUSSTY_FLUID_DIRTY_LEDGER=1) — dirty stamps armed for fluid_bitmask, NO entity scan retarget (memo refuted S7-153)"
+        );
+    } else if !crate::inside_cache::enabled_pub() {
         eprintln!(
             "[crussty-plugin] fluid_dirty: WARN CRUSSTY_FLUID_DIRTY requires the inside_cache chain (CRUSSTY_INSIDE_CACHE=1) for the Entity scan retarget; without it the LevelChunk ledger still arms but NO memoization happens — proceed only for isolation runs"
         );
