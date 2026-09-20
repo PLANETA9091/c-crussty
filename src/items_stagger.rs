@@ -119,7 +119,7 @@ fn register_hook() {
 /// Any failure (CNFE/NOSUCH/ExceptionInInitializerError) -> None (abort).
 fn probe_signature() -> Option<String> {
     cplug_sdk::jni_util::with_attached(|env| {
-        let gref = OPS_GREF.load(Ordering::SeqCst) ;
+        let gref = OPS_GREF.load(Ordering::SeqCst) as jvmti_bindings::jni::jclass;
         if gref.is_null() {
             return None;
         }
