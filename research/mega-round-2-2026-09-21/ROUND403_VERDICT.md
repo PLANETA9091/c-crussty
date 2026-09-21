@@ -50,3 +50,20 @@ stagger +12.5 (×3, TASK-402) → **stagcomp +21-27.5 (2/3, leg3 в полёте
 - **Верхний композит cmp403_stagcomp2 (stagcomp ⊕ N=2)**: собран верхним агентом (6 rust + 4 java сайтов, d93894b), 2 ноги в полёте.
 - Агентские рестарты по анти-таймаут протоколу сработали: A2 (stagn16 + tools), B2 (jnibulk диспатч), C2 (leg3 после root-cause).
 - Лестница: stagger +12.5 → **stagcomp +25** → stagcomp2 (ожидание ~+27-29 если N2-окно аддитивно поверх) → jnibulk (потолок 12-17% wall) → 80% бар требует ещё 2-3 мега-вектора (rust-плейн nav+push+collide ~35% wall).
+
+## ФИНАЛЬНАЯ ВОЛНА (23:0x-23:2x +08)
+| нога | run | TPS-мед | runner | pair Δ | вердикт |
+|------|-----|---------|--------|--------|---------|
+| sc2a (stagcomp⊕N2) | 35615072803 | 2.5 | 6701449 | +8.7pp (↔anc4 2.30) | GREEN ARMED ×9 |
+| sc2b (stagcomp⊕N2) | 35615076298 | 2.4 | 6705897 | +4.3pp (↔anc4) | GREEN ARMED ×9 |
+| jb1 (jnibulk leg1) | 35613947014 | 2.4 | 6784909 | +4.3pp (↔anc4) | GREEN ARMED ×10 |
+| anc6 master @15:04 | 35616421872 | — | — | INFRA-DELIVERY-FAIL | discard |
+
+## ВЕРДИКТИ TASK-403 (ИТОГ ТИКА)
+1. **STAGCOMP (cmp402_stagcomp) ≈ +25pp pair-медиана, 5 валидных ARMED-ног (+2.2/+20.8/+20.8/+28.6/+31.3)** — ТОП ступень эры. items 31.17→0.00%, nav_ai −5.56пп, broadphase −1.89пп, GC/RAM норма. НЕ МЕРЖ (бар 80%).
+2. **N-СКАН закрыт**: N2 +4.3 / N4 +12.5 / N16 +12.5 / N8 UNPROVEN (BAND×2). Плато S(N) на N=4. Композит stagcomp⊕N2 РЕФАУТ (+8.7/+4.3 — не аддитивен).
+3. **TICKPLANE**: серия 0/+8.3/+14.3 (медиана +8.3, знак стал консистентен после root-cause C2). 3 ноги.
+4. **JNIBULK leg1 +4.3pp pair ARMED** — JNI-вектор открыт (потолок 12-17% wall), цикл B2 продолжается (min-of-3).
+5. Якорный банк тика: 5 валидных ног 2.1-2.4 @ f19d5f5 (anc1 CRASH, anc6 INFRA — отброшены). BAND-DISCARD ×6 за тик (ночной/краевой пул) — все с ре-роллами.
+6. БАР 80% НЕ ВЗЯТ — МЕРЖ НЕТ. Лестница: stagger +12.5 → stagcomp +25 → нужен rust-плейн nav+push+collide (~35% wall) + jnibulk-развитие.
+NEXT-404: jnibulk min-of-3 + девиртуализация глубже; rust-плейс nav/collide (35% wall); stagcomp ре-репликация на 4-й день для дрейф-контроля; композиция stagcomp⊕tickplane⊕jnibulk.
