@@ -1365,6 +1365,280 @@ pub fn retarget_invokestatic(
     Ok((out, RetargetOutcome::Retargeted { sites: rewrite.len() }))
 }
 
+/// TASK-397-H (items_despawn_heap): SAME-LENGTH tail splice of the vanilla
+/// ItemEntity lifetime gate. The despawn-gate head in `tick()`/`inactiveTick()`
+///
+///     aload_0; invokevirtual Level.isClientSide chain; ifne END   (7 bytes)
+///     aload_0; getfield age; aload_0; getfield despawnRate; if_icmplt END
+///     aload_0; invokestatic callItemDespawnEvent; invokevirtual isCancelled;
+///     ifeq C; aload_0; iconst_0; putfield age; return; C:
+///     aload_0; getstatic DESPAWN; invokevirtual discard; return
+///
+/// has its FIRST 7 BYTES (aload_0 + the level()/isClientSide() virtual probe)
+/// replaced, same length, by
+///
+///     aload_0; invokestatic ItemLifetimeOps.tailGate(ItemEntity)Z; nop,nop,nop
+///
+/// The `ifne END` branch and EVERY byte after it (including the exact vanilla
+/// `age >= despawnRate` field check + ItemDespawnEvent/discard/cancel block)
+/// stay untouched: the ops can only make the vanilla gate RUN, never change
+/// its decision math. Same-length splice = zero branch-target drift, zero
+/// StackMapTable edits (all frames kept; every replaced byte is in straight
+/// line after a frame'd target whose locals[0]=this/stack=[] shape the splice
+/// preserves). Strict: exactly ONE full-template match per method (every CP
+/// operand verified by name/desc through the pool — never by index), else
+/// fail-closed. Idempotent: a second run sees invokestatic tailGate at slot 1
+/// and reports AlreadyPatched{1}.
+pub fn splice_item_lifetime_tail(
+    bytes: &[u8],
+    method_name: &str,
+    ops_class: &str,
+    ops_method: &str,
+) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    let mut pool = layout.pool;
+    let Some(name_idx) = pool.find_utf8(method_name) else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let Some(desc_idx) = pool.find_utf8("()V") else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)
+        .ok_or_else(|| format!("method {method_name}()V not found"))?;
+    let (code_start, code_len) = find_code_attr(bytes, &pool, &m)
+        .ok_or_else(|| format!("method {method_name}()V has no Code attribute"))?;
+    let code_end = code_start
+        .checked_add(code_len)
+        .ok_or_else(|| "code length overflow".to_string())?;
+    let code = bytes
+        .get(code_start..code_end)
+        .ok_or_else(|| "code region truncated".to_string())?;
+
+    // Exception table must be empty (javap census: tick/inactiveTick have
+    // none); a non-empty table would need frame re-analysis -> fail closed.
+    let et_len = u16_at(bytes, code_end)
+        .ok_or_else(|| "code attribute truncated (exception table)".to_string())?;
+    if et_len != 0 {
+        return Err(format!(
+            "{method_name}()V has a non-empty exception table ({et_len}), splice refused"
+        ));
+    }
+
+    // Full instruction walk (fail-closed on unknown opcodes).
+    let mut pcs: Vec<usize> = Vec::with_capacity(code_len / 2);
+    let mut pc = 0usize;
+    while pc < code_len {
+        pcs.push(pc);
+        let op = code[pc];
+        let extra = opcode_extra(op, code, pc)?;
+        pc = pc.checked_add(1 + extra).ok_or_else(|| "pc overflow".to_string())?;
+    }
+    if pc != code_len || code[code_len - 1] != 0xb1 {
+        return Err(format!("{method_name}()V does not end in return"));
+    }
+    let last = pcs.len() - 1;
+
+    // Slot check helper: (index, opcode) with optional CP name/desc check.
+    let at = |i: usize| -> usize { pcs[i] };
+    let opcode_at = |i: usize| -> u8 { code[pcs[i]] };
+    let i16_at_rel = |pc_rel: usize| -> Option<i16> {
+        let b0 = *code.get(pc_rel)?;
+        let b1 = *code.get(pc_rel.checked_add(1)?)?;
+        Some(i16::from_be_bytes([b0, b1]))
+    };
+    let mref = |i: usize| -> Option<(String, String, String)> {
+        let idx = u16_at(code, pcs[i].checked_add(1)?)?;
+        pool.methodref_parts(idx)
+    };
+    let fref = |i: usize| -> Option<(String, String, String)> {
+        let idx = u16_at(code, pcs[i].checked_add(1)?)?;
+        pool.fieldref_parts(idx)
+    };
+    let named = |tr: &(String, String, String), name: &str, desc: &str| -> bool {
+        tr.1 == name && tr.2 == desc
+    };
+
+    // The template needs >= 21 instructions ending exactly at the last return.
+    if last + 1 < 21 {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    }
+    let mut matches: Vec<usize> = Vec::new(); // instruction index of slot 0
+    for start in 0..=(last + 1 - 21) {
+        // every slot must start at the expected pc offset? Not necessarily
+        // contiguous pcs — instead verify slot-by-slot opcodes first.
+        let end = start + 20;
+        if end > last {
+            break;
+        }
+        // Opcodes byte-verified vs purpur-1.21.10 kernel jar (javap pc
+        // 544-588 tick / 51-95 inactiveTick): ifne=0x9a, if_icmplt=0xa1,
+        // ifeq=0x99, iconst_0=0x03 (the cancelled branch stores age=0).
+        let seq: [u8; 21] = [
+            0x2a, 0xb6, 0xb6, 0x9a, 0x2a, 0xb4, 0x2a, 0xb4, 0xa1, 0x2a, 0xb8, 0xb6, 0x99, 0x2a,
+            0x03, 0xb5, 0xb1, 0x2a, 0xb2, 0xb6, 0xb1,
+        ];
+        if (0..21).any(|k| opcode_at(start + k) != seq[k]) {
+            continue;
+        }
+        // Branch targets (absolute code offsets).
+        let ret_pc = at(last);
+        let ifne_pc = at(start + 3);
+        let icmplt_pc = at(start + 8);
+        let Some(ifne_off) = i16_at_rel(ifne_pc + 1) else { continue };
+        let Some(icmpl_off) = i16_at_rel(icmplt_pc + 1) else { continue };
+        let ifeq_pc = at(start + 12);
+        let Some(ifeq_off) = i16_at_rel(ifeq_pc + 1) else { continue };
+        let aload_after_cancel = at(start + 17) as i64;
+        // JVMS §3.12/§6.4: branch operand is relative to the BRANCH
+        // instruction's own opcode address (verified on the kernel fixture:
+        // tick ifne@551 off 37 -> 588 = the final return).
+        if ifne_pc as i64 + ifne_off as i64 != ret_pc as i64
+            || icmplt_pc as i64 + icmpl_off as i64 != ret_pc as i64
+            || ifeq_pc as i64 + ifeq_off as i64 != aload_after_cancel
+        {
+            continue;
+        }
+        // CP name/desc census (never by index, G4 §9).
+        let ok = match (
+            mref(start + 1),
+            mref(start + 2),
+            fref(start + 5),
+            fref(start + 7),
+            mref(start + 10),
+            mref(start + 11),
+            fref(start + 15),
+            fref(start + 18),
+            mref(start + 19),
+        ) {
+            (
+                Some(l),
+                Some(ics),
+                Some(age),
+                Some(rate),
+                Some(ev),
+                Some(cancel),
+                Some(age2),
+                Some(cause),
+                Some(discard),
+            ) =>
+            {
+                named(&l, "level", "()Lnet/minecraft/world/level/Level;")
+                    && named(&ics, "isClientSide", "()Z")
+                    && named(&age, "age", "I")
+                    && named(&rate, "despawnRate", "I")
+                    && named(
+                        &ev,
+                        "callItemDespawnEvent",
+                        "(Lnet/minecraft/world/entity/item/ItemEntity;)Lorg/bukkit/event/entity/ItemDespawnEvent;",
+                    )
+                    && named(&cancel, "isCancelled", "()Z")
+                    && named(&age2, "age", "I")
+                    && named(
+                        &cause,
+                        "DESPAWN",
+                        "Lorg/bukkit/event/entity/EntityRemoveEvent$Cause;",
+                    )
+                    && named(
+                        &discard,
+                        "discard",
+                        "(Lorg/bukkit/event/entity/EntityRemoveEvent$Cause;)V",
+                    )
+            }
+            _ => false,
+        };
+        if ok {
+            matches.push(start);
+        }
+    }
+    match matches.len() {
+        0 => {
+            // Idempotency probe: already-spliced image (retransform rounds can
+            // feed patched bytes back): slot1 = invokestatic -> our ops ref.
+            for start in 0..=(last.saturating_sub(20)) {
+                let mut ok_shape = opcode_at(start) == 0x2a && opcode_at(start + 1) == 0xb8;
+                // Patched image layout: slot1 invokestatic, slots 2-4 are the
+                // three NOPs (real instructions in the walk), slot5 = ifne...
+                for k in 2..21 {
+                    let expect = [0x00, 0x00, 0x00, 0x9a, 0x2a, 0xb4, 0x2a, 0xb4, 0xa1, 0x2a,
+                        0xb8, 0xb6, 0x99, 0x2a, 0x03, 0xb5, 0xb1, 0x2a, 0xb2][k - 2];
+                    if opcode_at(start + k) != expect {
+                        ok_shape = false;
+                        break;
+                    }
+                }
+                if ok_shape {
+                    if let Some(parts) = mref(start + 1) {
+                        if parts.0 == ops_class && parts.1 == ops_method {
+                            return Ok((
+                                bytes.to_vec(),
+                                RetargetOutcome::AlreadyPatched { sites: 1 },
+                            ));
+                        }
+                    }
+                }
+            }
+            return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+        }
+        1 => {}
+        n => return Err(format!("strict tail census violated: {n} matches")),
+    }
+    let s0 = matches[0];
+    let p0 = at(s0);
+
+    // Already-patched detection: slot 1 is invokestatic -> our ops ref.
+    if opcode_at(s0 + 1) == 0xb8 {
+        let Some(parts) = mref(s0 + 1) else {
+            return Err("invokestatic without methodref in spliced tail".into());
+        };
+        if parts.0 == ops_class && parts.1 == ops_method {
+            return Ok((bytes.to_vec(), RetargetOutcome::AlreadyPatched { sites: 1 }));
+        }
+        return Err("slot-1 invokestatic is a foreign static (shape mismatch)".into());
+    }
+
+    // Splice the 7 bytes [p0 .. ifne_pc): aload_0 stays, both invokevirtuals
+    // (1 + 3 + 3 bytes) become invokestatic tailGate + 3 nops. The window end
+    // is the START of the ifne (slot 3) — its branch operand and every byte
+    // after it stay untouched.
+    let probe_len = at(s0 + 3)
+        .checked_sub(p0)
+        .ok_or_else(|| "template slot layout overflow".to_string())?;
+    if probe_len != 7 {
+        return Err("template slot layout unexpected (virtual probe != 7 bytes)".into());
+    }
+    let new_idx = pool.method_ref(
+        ops_class,
+        ops_method,
+        "(Lnet/minecraft/world/entity/item/ItemEntity;)Z",
+    );
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for tail-gate ref".into());
+    }
+    let mut tail = bytes[layout.cp_end..].to_vec();
+    // pcs are CODE-ARRAY-relative; file offset = code_start + p0.
+    let base = code_start
+        .checked_add(p0)
+        .and_then(|o| o.checked_sub(layout.cp_end))
+        .ok_or_else(|| "code offset before cp_end".to_string())?; // p0 > cp_end
+    let patched: [u8; 7] = [
+        0x2a,
+        0xb8,
+        new_idx.to_be_bytes()[0],
+        new_idx.to_be_bytes()[1],
+        0x00,
+        0x00,
+        0x00,
+    ];
+    tail[base..base + 7].copy_from_slice(&patched);
+
+    let mut out = Vec::with_capacity(bytes.len() + 64);
+    out.extend_from_slice(&bytes[0..8]); // magic, minor, major
+    out.extend_from_slice(&pool.next.to_be_bytes()); // new cp_count
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(&tail);
+    Ok((out, RetargetOutcome::Retargeted { sites: 1 }))
+}
+
 /// RECON-13d resolution closure: the embedded ChunkParseDiagOps bytes MUST
 /// declare the receiver-prepended `diagXIntOr` the retarget emits (name +
 /// descriptor UTF8 entries present); otherwise the first chunk parse
@@ -1378,6 +1652,20 @@ pub fn parse_diag_resolution_closure(ops_bytes: &[u8]) -> bool {
     pool.find_utf8("diagXIntOr").is_some()
         && pool
             .find_utf8("(Lnet/minecraft/nbt/CompoundTag;Ljava/lang/String;I)I")
+            .is_some()
+}
+
+/// TASK-397-H resolution closure: the embedded ItemLifetimeOps bytes MUST
+/// declare the `tailGate` static + its descriptor the splice emits, else the
+/// first item tick detonates a NoSuchMethodError and the lever stays dormant.
+pub fn item_lifetime_ops_resolution_closure(ops_bytes: &[u8], ops_method: &str) -> bool {
+    let Some(layout) = parse_layout(ops_bytes) else {
+        return false;
+    };
+    let pool = layout.pool;
+    pool.find_utf8(ops_method).is_some()
+        && pool
+            .find_utf8("(Lnet/minecraft/world/entity/item/ItemEntity;)Z")
             .is_some()
 }
 
@@ -7174,4 +7462,134 @@ fn check_members(bridge: &[u8], targets: &[(&str, &str, &str, &str)]) -> Result<
         }
     }
     Ok(())
+}
+
+
+#[cfg(test)]
+mod item_despawn_heap_splice {
+    // TASK-397-H / items_despawn_heap: REAL kernel fixture (research/
+    // gc-recon-2026-09-19/run-s7204-bitmask/patched-kernel.jar, purpur-1.21.10,
+    // mojang-mapped; 28904 bytes pristine = the bank-v4 sighting size).
+    const ITEM: &[u8] = include_bytes!("../tests/fixtures/ItemEntity.class");
+    const OPS: &str = "net/minecraft/world/entity/item/ItemLifetimeOps";
+    const GATE: &str = "tailGate";
+
+    use crate::classfile::*;
+
+    #[test]
+    fn despawn_tail_strict1_both_methods() {
+        let (p1, o1) = splice_item_lifetime_tail(ITEM, "tick", OPS, GATE).expect("tick splice");
+        assert_eq!(o1, RetargetOutcome::Retargeted { sites: 1 }, "tick tail strict-1");
+        let (p2, o2) =
+            splice_item_lifetime_tail(&p1, "inactiveTick", OPS, GATE).expect("inactiveTick splice");
+        assert_eq!(o2, RetargetOutcome::Retargeted { sites: 1 }, "inactiveTick tail strict-1");
+        assert!(p1.len() > ITEM.len(), "pool grew on first splice");
+        // Second splice reuses the Methodref (same owner/name/desc) -> no
+        // further growth.
+        assert_eq!(p2.len(), p1.len(), "second splice must reuse the pool entry");
+        assert!(p2.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        let major = u16::from_be_bytes([p2[6], p2[7]]);
+        assert_eq!(major, 65, "kernel class major must stay 65");
+    }
+
+    /// The ONLY changes below the constant pool are the 7-byte probe
+    /// windows (6 differing bytes each, aload_0 kept): everything
+    /// before/after is byte-identical (same-length splice => zero
+    /// branch-target drift, zero StackMapTable edits). `want_windows` =
+    /// expected number of spliced tails.
+    fn assert_only_probe_window_changed(orig: &[u8], patched: &[u8], want_windows: usize) {
+        let old_end = parse_layout(orig).expect("parse_layout").cp_end;
+        let new_end = parse_layout(patched).expect("parse_layout").cp_end;
+        let cp0 = u16::from_be_bytes([orig[8], orig[9]]);
+        let cp1 = u16::from_be_bytes([patched[8], patched[9]]);
+        assert!(cp1 > cp0, "cp_count must grow");
+        let tail_o = &orig[old_end..];
+        let tail_p = &patched[new_end..];
+        assert_eq!(tail_o.len(), tail_p.len(), "post-pool region length must be invariant");
+        let mut runs: Vec<(usize, usize)> = Vec::new();
+        for i in 0..tail_o.len() {
+            if tail_o[i] != tail_p[i] {
+                match runs.last_mut() {
+                    Some((_, e)) if *e + 1 == i => *e = i,
+                    _ => runs.push((i, i)),
+                }
+            }
+        }
+        assert_eq!(runs.len(), want_windows, "exactly the spliced tails differ");
+        for &(a, b) in &runs {
+            // aload_0 (window byte 0) is kept byte-identical -> exactly the
+            // 6 operand/opcode bytes behind it differ.
+            assert_eq!(b - a + 1, 6, "window run must be 6 bytes (7-byte splice, aload kept)");
+            assert_eq!(tail_o[a - 1], 0x2a, "original window starts with aload_0");
+            assert_eq!(tail_p[a - 1], 0x2a, "patched window keeps aload_0");
+            assert_eq!(tail_p[a], 0xb8, "invokestatic emitted");
+            assert_eq!(tail_o[a], 0xb6, "first invokevirtual was there");
+            assert_eq!(&tail_p[a + 3..a + 6], &[0x00, 0x00, 0x00], "3 nops pad the window");
+            assert_eq!(tail_p[b + 1], tail_o[b + 1], "the ifne opcode right after is untouched");
+        }
+    }
+
+    #[test]
+    fn despawn_tail_same_length_splice_and_idempotent() {
+        let (p, _) = splice_item_lifetime_tail(ITEM, "tick", OPS, GATE).expect("splice");
+        assert_only_probe_window_changed(ITEM, &p, 1);
+        // Idempotency doubles as content proof: the second pass recognizes
+        // the generated shape AND its Methodref == ItemLifetimeOps.tailGate.
+        let (again, o2) = splice_item_lifetime_tail(&p, "tick", OPS, GATE).expect("re-splice");
+        assert_eq!(o2, RetargetOutcome::AlreadyPatched { sites: 1 });
+        assert_eq!(again, p, "repatch must be byte-identical");
+        // The untouched sibling method still reports vanilla (strict-1 per
+        // method, not global).
+        let (p2, o3) = splice_item_lifetime_tail(&p, "inactiveTick", OPS, GATE).expect("it");
+        assert_eq!(o3, RetargetOutcome::Retargeted { sites: 1 });
+        assert_only_probe_window_changed(ITEM, &p2, 2);
+    }
+
+    #[test]
+    fn despawn_tail_wrong_method_not_found() {
+        let (out, o) = splice_item_lifetime_tail(ITEM, "noSuchMethod", OPS, GATE).expect("probe");
+        assert_eq!(o, RetargetOutcome::NotFound);
+        assert_eq!(out, ITEM.to_vec(), "NotFound must not touch the bytes");
+    }
+
+    #[test]
+    fn despawn_ops_resolution_closure() {
+        // The REAL built ops class must declare tailGate + descriptor.
+        let ops = include_bytes!(
+            "../items_despawn_heap/build/net/minecraft/world/entity/item/ItemLifetimeOps.class"
+        );
+        assert!(item_lifetime_ops_resolution_closure(ops, GATE));
+        assert!(
+            ops.len() > 1000,
+            "ops class must be the real compiled bridge, not a stub"
+        );
+    }
+}
+
+#[cfg(test)]
+mod despawn_dbg2 {
+    use crate::classfile::*;
+    #[test]
+    fn dump_diffs() {
+        let item = include_bytes!("../tests/fixtures/ItemEntity.class");
+        let (p, _) = splice_item_lifetime_tail(item, "tick", "net/minecraft/world/entity/item/ItemLifetimeOps", "tailGate").unwrap();
+        let oe = parse_layout(item).unwrap().cp_end;
+        let ne = parse_layout(&p).unwrap().cp_end;
+        let to = &item[oe..];
+        let tp = &p[ne..];
+        println!("oe={oe} ne={ne} len {} {} d {}", to.len(), tp.len(), p.len()-item.len());
+        let mut runs: Vec<(usize, usize)> = Vec::new();
+        for i in 0..to.len() {
+            if to[i] != tp[i] {
+                match runs.last_mut() {
+                    Some((_, e)) if *e + 1 == i => *e = i,
+                    _ => runs.push((i, i)),
+                }
+            }
+        }
+        println!("runs: {:?}", &runs[..runs.len().min(12)]);
+        for (a, b) in runs.iter().take(6) {
+            println!("run {a}..{b}: orig={:02x?} new={:02x?}", &to[*a..(*b+1).min(to.len())], &tp[*a..(*b+1).min(tp.len())]);
+        }
+    }
 }

@@ -37,6 +37,7 @@ mod improved_noise;
 mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
+mod items_despawn_heap;
 mod jni_table;
 mod kernel_policy;
 mod loader;
@@ -174,6 +175,11 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // EntityCallbacks guard sites, composed on top of F1/F3 bytes (LAST in
     // the byte-hook chain). Dormant unless CRUSSTY_REGION_THREADS>=2.
     region_threads::register();
+    // ITEMS-DESPAWN-HEAP (TASK-397-H, MEGA-ROUND-2): byte hook on ItemEntity —
+    // both lifetime tails (tick + inactiveTick) spliced same-length to the
+    // heap-scheduled despawn gate (flat long min-heap, event-driven lifetime
+    // subsystem). Dormant unless CRUSSTY_LEVER_FLAG=items_despawn_heap.
+    items_despawn_heap::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -381,6 +387,11 @@ fn inject_surface() {
     // EntityCallbacks, retransform both (dormant unless
     // CRUSSTY_REGION_THREADS>=2).
     region_threads::activate();
+    // ITEMS-DESPAWN-HEAP (TASK-397-H, MEGA-ROUND-2): define ItemLifetimeOps
+    // into the kernel loader, splice both ItemEntity lifetime tails to the
+    // heap-scheduled despawn gate, retransform (dormant unless
+    // CRUSSTY_LEVER_FLAG=items_despawn_heap).
+    items_despawn_heap::activate();
     // BATCH-COLLECTOR (S7-160): define BatchCollector into the kernel
     // loader (define-only; the per-entity lazy swap happens in
     // RegionTickOps.tickBucket; dormant unless CRUSSTY_BATCH_COLLECTOR=1
