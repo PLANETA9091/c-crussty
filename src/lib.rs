@@ -57,6 +57,7 @@ mod proto_blend_cache;
 mod randomtick;
 mod region_threads;
 mod skip_store;
+mod stagger;
 mod tickhook;
 mod travel_diet;
 mod traversal;
@@ -126,6 +127,14 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // port). Pristine capture at first load; patch served after the
     // ItemMergeOps bridge lands. Dormant unless CRUSSTY_LEVER_FLAG=items_oss.
     item_merge::register();
+    // STAGGER (TASK-401-I, round-401 vector I): per-entity hashed 1/N
+    // staggering of per-tick un-gated heavy checks — LivingEntity.pushEntities
+    // broadphase neighbor scan + GoalSelector non-visible canUse polls
+    // (multi-rate vanilla invariant: visible aggro/revenge polls stay
+    // every-tick). Byte hooks capture pristine bytes; patches served after
+    // PushStaggerOps/GoalStaggerOps bridges land. Dormant unless
+    // CRUSSTY_LEVER_FLAG == "cmp401_stagger" (STRICT eq).
+    stagger::register();
     // PALETTED-DEMUX (S7-131, ARCH-ATTACK lever #1): PalettedContainer
     // first-load demux patch (field injection + fast-path get + guarded
     // mutators). MUST register before any kernel class loads (onstart).
@@ -361,6 +370,10 @@ fn inject_surface() {
     // compute the mergeWithNeighbours whole-body patch, retransform (dormant
     // unless CRUSSTY_LEVER_FLAG=items_oss).
     item_merge::activate();
+    // STAGGER (TASK-401-I): define PushStaggerOps/GoalStaggerOps into the
+    // kernel loader, compute both single-site retargets, retransform (dormant
+    // unless CRUSSTY_LEVER_FLAG=cmp401_stagger).
+    stagger::activate();
     // PALETTED-DEMUX (S7-131): define PalettedContainerOps into the launch
     // loader EARLY (the patch serves at PalettedContainer's first load —
     // field injection forbids retransform), then READY.
