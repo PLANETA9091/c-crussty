@@ -8,7 +8,7 @@ API = "https://api.github.com"
 WF = "world-bench-parallel.yml"
 
 LEGS = {
-    "dleg2": ("round-406-d-l2", "cmp406_aibatch", "origin/round-406-d-aibatch"),
+    "dleg3": ("round-406-d-l3", "cmp406_aibatch", "origin/round-406-d-aibatch"),
 }
 
 INPUTS = {
