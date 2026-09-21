@@ -862,7 +862,8 @@ pub fn patch_brain_start_each(bytes: &[u8]) -> Result<Vec<u8>, String> {
 // serverAiStep Code attribute only, exactly ONE structural match:
 //
 //   1C        iload_2           (i)
-//   06|08     iconst_2|iconst_4 (modulus — the patched byte)
+//   05|07     iconst_2|iconst_4 (modulus — the patched byte; JVM opcodes:
+//             iconst_0=0x03 .. iconst_5=0x08, so iconst_2=0x05, iconst_4=0x07)
 //   70        irem
 //   99 xx xx  ifeq <FULL>       (forward, == second target)
 //   2A        aload_0
@@ -875,9 +876,16 @@ pub fn patch_brain_start_each(bytes: &[u8]) -> Result<Vec<u8>, String> {
 // getfield operand is additionally resolved through the pool: its
 // NameAndType name must be "tickCount" (Entity.tickCount). Anything else =>
 // Err before any mutation (fail-closed: the hook then serves pristine
-// bytes). Idempotent: on the patched shape (0x08) the function returns the
+// bytes). Idempotent: on the patched shape (0x07) the function returns the
 // bytes unchanged. Length-preserving by construction (no CP/metadata edits,
 // no new jump targets => StackMapTable untouched).
+//
+// TASK-400-B (navfix) ROOT-CAUSE: the first matcher revision scanned for
+// 0x06|0x08 — off-by-one against the actual JVM opcode table (iconst_2=0x05,
+// iconst_4=0x07). On the real kernel Mob.class (round-399 legs,
+// tests/fixtures/Mob.class is byte-identical, md5 4eeb8581) that meant ZERO
+// matches -> "modulus site not found" -> patch failed -> NOT-ARMED (leg
+// 35556455097 fake +12.6%). Fixed to 0x05|0x07 / writes 0x07.
 pub const MOB_CLASS: &str = "net/minecraft/world/entity/Mob";
 const MOB_SERVER_AI_STEP: &str = "serverAiStep";
 const MOB_SERVER_AI_STEP_DESC: &str = "()V";
@@ -903,7 +911,7 @@ pub fn patch_mob_stagger(bytes: &[u8]) -> Result<Vec<u8>, String> {
         .get(code_start..code_start.checked_add(code_len).ok_or("code len overflow")?)
         .ok_or("code out of bounds")?;
 
-    // Scan for the modulus site: [1C, 06|08, 70, 99, lo, hi, 2A, B4, lo, hi,
+    // Scan for the modulus site: [1C, 05|07, 70, 99, lo, hi, 2A, B4, lo, hi,
     // 04, A4, lo, hi] with forward equal branch targets and the getfield
     // resolving to Entity.tickCount. Byte-wise scan; require exactly one
     // hit over the whole method body.
@@ -913,8 +921,8 @@ pub fn patch_mob_stagger(bytes: &[u8]) -> Result<Vec<u8>, String> {
             continue; // iload_2
         }
         let op = code[i + 1];
-        if op != 0x06 && op != 0x08 {
-            continue; // iconst_2 (vanilla) | iconst_4 (already patched)
+        if op != 0x05 && op != 0x07 {
+            continue; // iconst_2 (vanilla, 0x05) | iconst_4 (already patched, 0x07)
         }
         if code[i + 2] != 0x70 || code[i + 3] != 0x99 {
             continue; // irem; ifeq
@@ -965,11 +973,11 @@ pub fn patch_mob_stagger(bytes: &[u8]) -> Result<Vec<u8>, String> {
                 .into(),
         );
     };
-    if code[off] == 0x08 {
+    if code[off] == 0x07 {
         return Ok(bytes.to_vec()); // idempotent: already at N=4
     }
     let mut out = bytes.to_vec();
-    out[code_start + off] = 0x08; // iconst_2 -> iconst_4 (single byte, length-preserving)
+    out[code_start + off] = 0x07; // iconst_2 (0x05) -> iconst_4 (0x07), single byte, length-preserving
     Ok(out)
 }
 
@@ -7334,14 +7342,18 @@ fn check_members(bridge: &[u8], targets: &[(&str, &str, &str, &str)]) -> Result<
 
 #[cfg(test)]
 mod navstagger_tests {
-    /// NAVSTAGGER (TASK-399-C) against the REAL kernel fixture
-    /// (purpur patched-kernel.jar, round-j2b build — the exact bytes the
-    /// hook will see at retransform). Contract:
-    ///   1. exactly ONE byte changes, `iconst_2 -> iconst_4`, inside
-    ///      serverAiStep's Code at the (tickCount + getId()) % 2 site;
+    /// NAVSTAGGER (TASK-399-C, fixed TASK-400-B) against the REAL kernel
+    /// fixture (purpur patched-kernel.jar of the round-399 legs — the exact
+    /// bytes the hook will see at retransform; fixture md5 4eeb8581 is
+    /// byte-identical to leg 35556455097's kernel Mob.class). Contract:
+    ///   1. exactly ONE byte changes, `iconst_2 (0x05) -> iconst_4 (0x07)`,
+    ///      inside serverAiStep's Code at the (tickCount + getId()) % 2 site;
     ///   2. patch(patch(x)) == patch(x) (idempotent re-served bytes);
     ///   3. every other byte of the class is untouched (length-preserving,
-    ///      StackMapTable/CP/metadata intact — no verification hazard).
+    ///      StackMapTable/CP/metadata intact — no verification hazard);
+    ///   4. ROUNDTRIP: the patched class re-parses (parse_layout), the
+    ///      serverAiStep Code is re-found in the PATCHED bytes and the
+    ///      modulus site now reads iconst_4 (0x07) — pool/lengths converge.
     #[test]
     fn mob_stagger_single_byte_on_real_kernel_fixture() {
         const REAL_MOB: &[u8] = include_bytes!("../tests/fixtures/Mob.class");
@@ -7355,11 +7367,60 @@ mod navstagger_tests {
             .collect();
         assert_eq!(diff.len(), 1, "exactly one byte must change, got {diff:?}");
         let i = diff[0];
-        assert_eq!(REAL_MOB[i], 0x06, "vanilla byte must be iconst_2");
-        assert_eq!(patched[i], 0x08, "patched byte must be iconst_4");
+        assert_eq!(REAL_MOB[i], 0x05, "vanilla byte must be iconst_2 (0x05)");
+        assert_eq!(patched[i], 0x07, "patched byte must be iconst_4 (0x07)");
 
         // Idempotency: re-patching the already-patched bytes is a no-op.
         let again = super::patch_mob_stagger(&patched).expect("re-patch must succeed");
         assert_eq!(again, patched, "patch(patch(x)) == patch(x)");
+
+        // ROUNDTRIP (TASK-400-B): re-parse the patched class and re-locate
+        // the modulus site in the PATCHED bytes; it must read iconst_4.
+        let layout = super::parse_layout(&patched).expect("patched class must re-parse");
+        let this = super::this_class_name(&layout).expect("this_class resolvable");
+        assert_eq!(this, super::MOB_CLASS);
+        let name_idx = layout
+            .pool
+            .find_utf8(super::MOB_SERVER_AI_STEP)
+            .expect("serverAiStep utf8 in patched pool");
+        let desc_idx = layout
+            .pool
+            .find_utf8(super::MOB_SERVER_AI_STEP_DESC)
+            .expect("()V utf8 in patched pool");
+        let m = super::find_method(&patched, layout.methods_start, name_idx, desc_idx)
+            .expect("serverAiStep()V present in patched class");
+        let (code_start, code_len) = super::find_code_attr(&patched, &layout.pool, &m)
+            .expect("serverAiStep Code present in patched class");
+        // original code length AND offset preserved byte-for-byte (pools are
+        // identical, so vanilla lookups may reuse the patched layout).
+        let (vstart, vlen) = super::find_code_attr(REAL_MOB, &layout.pool, &m)
+            .expect("code in vanilla");
+        assert_eq!(code_start, vstart, "code offset unchanged (length-preserving edit)");
+        assert_eq!(code_len, vlen, "code length unchanged (length-preserving edit)");
+        let code = &patched[code_start..code_start + code_len];
+        let site_matches = |w: &[u8]| {
+            w[0] == 0x1C && w[1] == 0x07 && w[2] == 0x70 && w[3] == 0x99 && w[6] == 0x2A
+                && w[7] == 0xB4 && w[10] == 0x04 && w[11] == 0xA4
+        };
+        let site = code
+            .windows(14)
+            .position(|w| {
+                site_matches(w)
+                    && layout
+                        .pool
+                        .fieldref_parts(u16::from_be_bytes([w[8], w[9]]))
+                        .map(|(owner, name, desc)| {
+                            owner == "net/minecraft/world/entity/Entity"
+                                && name == "tickCount"
+                                && desc == "I"
+                        })
+                        .unwrap_or(false)
+            })
+            .expect("patched modulus site (iconst_4) must be present");
+        // exactly one iconst_4 site (no duplicates)
+        let count = code.windows(14).filter(|w| site_matches(w)).count();
+        assert_eq!(count, 1, "single patched site, at {site:#x}");
+        // emit for external javap/JVM verification (kept out of CI asserts)
+        std::fs::write("/tmp/Mob_patched_b.class", &patched).ok();
     }
 }
