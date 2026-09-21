@@ -60,7 +60,7 @@ const CANUSE_STATIC_DESC: &str = "(Lnet/minecraft/world/entity/ai/goal/WrappedGo
 fn enabled() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp401_stagger") | Ok("cmp402_stagcomp")
+        Ok("cmp401_stagger") | Ok("cmp402_stagcomp") | Ok("cmp403_tickplane")
     )
 }
 
@@ -345,8 +345,14 @@ pub fn activate() {
             }
         }
         if ok {
+            // TASK-403-C: маркер печатает ФАКТИЧЕСКИЙ флаг раунда
+            // (tickplane = сегмент mob-stagger плейна).
+            let flag = std::env::var("CRUSSTY_LEVER_FLAG")
+                .unwrap_or_default()
+                .trim()
+                .to_string();
             eprintln!(
-                "[crussty-plugin] cmp401_stagger ARMED (push=retargeted 1 site, goal=retargeted 1 site, N from env CRUSSTY_STAGGER_N/LEVER_ARG default 4)"
+                "[crussty-plugin] {flag}: ARMED stagger (push=retargeted 1 site, goal=retargeted 1 site, N from env CRUSSTY_STAGGER_N/LEVER_ARG default 4)"
             );
         } else {
             eprintln!(

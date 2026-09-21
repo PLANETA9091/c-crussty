@@ -62,7 +62,7 @@ fn lever_flag_matches_for(f: &str) -> bool {
     // включает ОБА item-суб-механизма (shard-grid + lifetime-heap) наряду с
     // мобовыми soa+grid — единый гейт раунда.
     f == "items_subsys2" || f.starts_with("cmp399_") || f == "cmp402_comp"
-        || f == "cmp402_stagcomp"
+        || f == "cmp402_stagcomp" || f == "cmp403_tickplane"
 }
 
 pub fn activate() {
@@ -81,7 +81,9 @@ pub fn activate() {
     let flag = lever_flag();
     let shard = flag == "cmp399_shard";
     let bfcomp = flag == "cmp399_bfcomp";
-    let comp = flag == "cmp402_comp" || flag == "cmp402_stagcomp";
+    let comp = flag == "cmp402_comp"
+        || flag == "cmp402_stagcomp"
+        || flag == "cmp403_tickplane";
     let despawn2 = flag == "cmp399_despawn2" || bfcomp || comp;
     if shard {
         // ГРОМКИЙ ARM-МАРКЕР (TASK-399-B): без этой строки нога не-armed.
@@ -98,10 +100,12 @@ pub fn activate() {
     }
     if comp {
         // ГРОМКИЙ ARM-МАРКЕР ГЛАВНОГО КОМПОЗИТА (TASK-402-B, обязателен):
-        // item-половина cmp402_comp = shardgrid (B) + lifetime-heap (F);
+        // item-половина композита = shardgrid (B) + lifetime-heap (F);
         // мобовая половина (soa+grid) маркерится в mobs_manager.
+        // TASK-403-C: маркер печатает ФАКТИЧЕСКИЙ флаг (tickplane = сегмент
+        // items-plane плейна).
         eprintln!(
-            "[crussty-plugin] cmp402_comp: ARMED items shards=64 seqlock-reads=per-cell-version writer=global-mutex shard_cap=16384 max_ids=1048576 heap=lifetime-minheap(rust,vec) push=batch(1/tick) due-poll=1/tick despawn-flow=vanilla (composite shardgrid+heap leg; soa+grid armed in mobs_manager)"
+            "[crussty-plugin] {flag}: ARMED items shards=64 seqlock-reads=per-cell-version writer=global-mutex shard_cap=16384 max_ids=1048576 heap=lifetime-minheap(rust,vec) push=batch(1/tick) due-poll=1/tick despawn-flow=vanilla (composite shardgrid+heap leg; soa+grid armed in mobs_manager)"
         );
     }
     std::thread::spawn(move || {

@@ -60,6 +60,7 @@ mod region_threads;
 mod skip_store;
 mod stagger;
 mod tickhook;
+mod tickplane;
 mod travel_diet;
 mod traversal;
 mod zero_alloc;
@@ -136,6 +137,13 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // PushStaggerOps/GoalStaggerOps bridges land. Dormant unless
     // CRUSSTY_LEVER_FLAG == "cmp401_stagger" (STRICT eq).
     stagger::register();
+    // TICK-PLANE (TASK-403-C, round-403 vector C): whole-body retarget
+    // segment registry — единый rust tick-plane для ТЕЛА энтити-тика
+    // (items/push/collide/stagger сегменты под одним STRICT-eq флагом;
+    // AI-решения НЕ трогаются). Реестр хуков не ставит — только сводный
+    // маркер + coarse-stamp эпохи. Dormant unless CRUSSTY_LEVER_FLAG ==
+    // cmp403_tickplane (пустой флаг = ваниль бит-в-бит).
+    tickplane::register();
     // PALETTED-DEMUX (S7-131, ARCH-ATTACK lever #1): PalettedContainer
     // first-load demux patch (field injection + fast-path get + guarded
     // mutators). MUST register before any kernel class loads (onstart).
@@ -492,6 +500,10 @@ fn inject_surface() {
     // TASK-402-B: also under cmp402_comp — the composite arms soa + the
     // mobs_grid sharded mirror as the push-broadphase pair).
     mobs_manager::activate();
+    // TICK-PLANE (TASK-403-C): сводный ARM-маркер плейна после активации
+    // всех сегментов (items/push-soa+grid/stagger/collide) — coarse-stamp
+    // эпохи; dormant unless CRUSSTY_LEVER_FLAG == cmp403_tickplane.
+    tickplane::activate();
 }
 
 /// Define one bridge class and register all its natives.
