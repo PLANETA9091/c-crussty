@@ -56,7 +56,7 @@ pub(crate) fn mirror_mode() -> bool {
     static M: OnceLock<bool> = OnceLock::new();
     *M.get_or_init(|| {
         std::env::var("CRUSSTY_LEVER_FLAG")
-            .map(|v| v.trim() == "cmp402_comp")
+            .map(|v| v.trim() == "cmp402_comp" || v.trim() == "cmp402_stagcomp")
             .unwrap_or(false)
     })
 }

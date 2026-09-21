@@ -76,7 +76,8 @@ public final class MobPushOps {
         // plane — mobGridQuery below). Legacy cmp401_soa keeps its exact
         // prior behavior: grid natives are never called under it.
         return f != null
-                && (f.trim().equals("cmp401_soa") || f.trim().equals("cmp402_comp"));
+                && (f.trim().equals("cmp401_soa") || f.trim().equals("cmp402_comp")
+                    || f.trim().equals("cmp402_stagcomp"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -84,7 +85,8 @@ public final class MobPushOps {
     /** TASK-402-B: composite mode (mirror-grid fallback active). */
     private static boolean compositeEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return f != null && f.trim().equals("cmp402_comp");
+        return f != null && (f.trim().equals("cmp402_comp")
+                || f.trim().equals("cmp402_stagcomp"));
     }
 
     private static final boolean COMPOSITE = compositeEnabled();
