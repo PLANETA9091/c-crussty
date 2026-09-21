@@ -31,8 +31,14 @@ const IM_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/world/entity/ItemEntityManager.class");
 
 fn lever_flag_matches() -> bool {
+    // TASK-399-I (mega-round-3 composition contract): any cmp399_* lever flag
+    // arms the items_subsys2 subsystem alongside its own lever (J armed when
+    // the composite run sets CRUSSTY_LEVER_FLAG=cmp399_wakeup).
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim().eq("items_subsys2"))
+        .map(|v| {
+            let v = v.trim();
+            v.eq("items_subsys2") || v.starts_with("cmp399_")
+        })
         .unwrap_or(false)
 }
 

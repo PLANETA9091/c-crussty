@@ -1511,6 +1511,256 @@ pub fn retarget_ldc_virtual_to_static(
     Ok((out, RetargetOutcome::Retargeted { sites: 1 }))
 }
 
+/// LDC/LDC_W-anchored virtual->static retarget (TASK-399-I wakeup-list).
+/// Generalization of [`retarget_ldc_virtual_to_static`] for anchors encoded
+/// with `ldc_w` (0x13, TWO-byte CP operand) as well as plain `ldc` (0x12,
+/// one-byte operand) — `Mob.serverAiStep` anchors its goal-tick call sites
+/// with `ldc_w "targetSelector"/"goalSelector"` (string pool indices far
+/// above 255, which the 1-byte form cannot encode). Anchor semantics are
+/// otherwise IDENTICAL to RECON-13d: the anchor arms; the FIRST matching
+/// invoke after it is the site; `invokeinterface` stack-setup between anchor
+/// and invoke does NOT disarm; a processed `invokevirtual`/`invokestatic`
+/// consumes the arm. One site per call; iterate for the 4-site wakeup chain.
+pub fn retarget_ldcw_virtual_to_static(
+    bytes: &[u8],
+    method_name: &str,
+    method_desc: &str,
+    ldc_consts: &[&str],
+    from: (&str, &str, &str),
+    to: (&str, &str, &str),
+) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    let mut pool = layout.pool;
+    let Some(name_idx) = pool.find_utf8(method_name) else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let Some(desc_idx) = pool.find_utf8(method_desc) else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)
+        .ok_or_else(|| format!("method {method_name}{method_desc} not found"))?;
+    let (code_start, code_len) = find_code_attr(bytes, &pool, &m)
+        .ok_or_else(|| format!("method {method_name}{method_desc} has no Code attribute"))?;
+    let code_end = code_start
+        .checked_add(code_len)
+        .ok_or_else(|| "code length overflow".to_string())?;
+    let code = bytes
+        .get(code_start..code_end)
+        .ok_or_else(|| "code region truncated".to_string())?;
+
+    let to_triple = (to.0.to_string(), to.1.to_string(), to.2.to_string());
+    let from_triple = (from.0.to_string(), from.1.to_string(), from.2.to_string());
+
+    // Walk the code array once; find the ldc/ldc_w-anchored invokevirtual site.
+    let mut site_op: Option<usize> = None; // absolute offset of the opcode byte
+    let mut armed = false; // true right after the anchor ldc/ldc_w
+    let mut pc = 0usize;
+    while pc < code.len() {
+        let op = code[pc];
+        if op == 0x12 || op == 0x13 {
+            // ldc: one-byte CP operand; ldc_w: TWO-byte CP operand. Both may
+            // carry a CONSTANT_String anchor; a different string disarms.
+            let cidx = match op {
+                0x12 => *code
+                    .get(pc + 1)
+                    .ok_or_else(|| "truncated ldc".to_string())?
+                    as u16,
+                _ => {
+                    let b = code
+                        .get(pc + 1..pc + 3)
+                        .ok_or_else(|| "truncated ldc_w".to_string())?;
+                    u16::from_be_bytes([b[0], b[1]])
+                }
+            };
+            armed = match pool.string_value(cidx) {
+                Some(s) => ldc_consts.iter().any(|a| *a == s),
+                None => false,
+            };
+            pc += if op == 0x12 { 2 } else { 3 };
+            continue;
+        }
+        if (op == 0xb6 || op == 0xb8) && armed {
+            let b = code
+                .get(pc + 1..pc + 3)
+                .ok_or_else(|| "invoke operand truncated".to_string())?;
+            let cp_idx = u16::from_be_bytes([b[0], b[1]]);
+            if let Some(parts) = pool.methodref_parts(cp_idx) {
+                if parts == from_triple {
+                    site_op = Some(code_start + pc);
+                    armed = false;
+                    pc += 3;
+                    continue;
+                }
+            }
+            // A different invoke consumes the arm (anchor is unambiguous for
+            // the wakeup sites: only ProfilerFiller push/pop intervene, which
+            // are invokeinterface/invokespecial and never disarm early).
+            armed = false;
+            pc += 3;
+            continue;
+        }
+        // NOTE: no blanket disarm here — the anchor ldc may be separated from
+        // its invoke by stack-setup instructions (aload/getfield/iconst_0,
+        // invokeinterface ProfilerFiller.push, etc.).
+        let extra = opcode_extra(op, code, pc)?;
+        pc = pc
+            .checked_add(1 + extra)
+            .ok_or_else(|| "code walk overflow".to_string())?;
+        if pc > code.len() {
+            return Err("truncated code (walk past end)".into());
+        }
+    }
+
+    if site_op.is_none() {
+        // Idempotency: a site already resolving to `to` (invokestatic with the
+        // appended Methodref) yields AlreadyPatched with the original bytes
+        // back — mirrors retarget_ldc_virtual_to_static (RECON-13d).
+        let mut already = false;
+        let mut pc2 = 0usize;
+        while pc2 < code.len() {
+            let op = code[pc2];
+            let extra = opcode_extra(op, code, pc2)?;
+            if op == 0xb8 {
+                if let Some(b) = code.get(pc2 + 1..pc2 + 3) {
+                    let cp_idx = u16::from_be_bytes([b[0], b[1]]);
+                    if pool.methodref_parts(cp_idx).as_ref() == Some(&to_triple) {
+                        already = true;
+                        break;
+                    }
+                }
+            }
+            pc2 = pc2
+                .checked_add(1 + extra)
+                .ok_or_else(|| "code walk overflow (rescan)".to_string())?;
+        }
+        return Ok((
+            bytes.to_vec(),
+            if already {
+                RetargetOutcome::AlreadyPatched { sites: 1 }
+            } else {
+                RetargetOutcome::NotFound
+            },
+        ));
+    }
+
+    let op_off = site_op.unwrap();
+    // Append (or reuse) the Methodref for `to` — append-only, dedup.
+    let new_idx = pool.method_ref(to.0, to.1, to.2);
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for wakeup ref".into());
+    }
+    let mut tail = bytes[layout.cp_end..].to_vec();
+    let rel = op_off
+        .checked_sub(layout.cp_end)
+        .ok_or_else(|| "retarget opcode inside pool (corrupt layout?)".to_string())?;
+    if rel + 2 >= tail.len() {
+        return Err("retarget operand outside class tail (corrupt layout?)".into());
+    }
+    // 0xb6 invokevirtual -> 0xb8 invokestatic; operand -> appended Methodref.
+    // Same-length rewrite: no PC shift, StackMapTable untouched.
+    tail[rel] = 0xb8;
+    let want = new_idx.to_be_bytes();
+    tail[rel + 1] = want[0];
+    tail[rel + 2] = want[1];
+    let mut out = Vec::with_capacity(bytes.len() + 64);
+    out.extend_from_slice(&bytes[0..8]);
+    out.extend_from_slice(&pool.next.to_be_bytes());
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(&tail);
+    Ok((out, RetargetOutcome::Retargeted { sites: 1 }))
+}
+
+/// Wakeup chain spec (TASK-399-I): the two anchored GoalSelector call shapes
+/// inside Mob.serverAiStep and their receiver-prepended AiWakeupOps statics.
+pub const WAKEUP_FROM_TICK: (&str, &str, &str) =
+    ("net/minecraft/world/entity/ai/goal/GoalSelector", "tick", "()V");
+pub const WAKEUP_TO_TICK: (&str, &str, &str) = (
+    "net/minecraft/world/entity/AiWakeupOps",
+    "tickSel",
+    "(Lnet/minecraft/world/entity/Mob;Lnet/minecraft/world/entity/ai/goal/GoalSelector;)V",
+);
+pub const WAKEUP_FROM_RUNNING: (&str, &str, &str) = (
+    "net/minecraft/world/entity/ai/goal/GoalSelector",
+    "tickRunningGoals",
+    "(Z)V",
+);
+pub const WAKEUP_TO_RUNNING: (&str, &str, &str) = (
+    "net/minecraft/world/entity/AiWakeupOps",
+    "tickRunning",
+    "(Lnet/minecraft/world/entity/Mob;Lnet/minecraft/world/entity/ai/goal/GoalSelector;Z)V",
+);
+pub const WAKEUP_ANCHORS: [&str; 2] = ["goalSelector", "targetSelector"];
+pub const WAKEUP_METHOD: &str = "serverAiStep";
+pub const WAKEUP_METHOD_DESC: &str = "()V";
+
+#[test]
+fn wakeup_retargets_four_serveraistep_sites() {
+    // Real kernel class (round-j2b patched-kernel.jar, Purpur 1.21.10).
+    let bytes = include_bytes!("../tests/fixtures/Mob.class");
+    let mut cur: Vec<u8> = bytes.to_vec();
+    let mut n_tick = 0usize;
+    for _ in 0..2 {
+        let (b, outcome) = retarget_ldcw_virtual_to_static(
+            &cur,
+            WAKEUP_METHOD,
+            WAKEUP_METHOD_DESC,
+            &WAKEUP_ANCHORS,
+            WAKEUP_FROM_TICK,
+            WAKEUP_TO_TICK,
+        )
+        .unwrap();
+        assert_eq!(outcome, RetargetOutcome::Retargeted { sites: 1 });
+        cur = b;
+        n_tick += 1;
+    }
+    let mut n_run = 0usize;
+    for _ in 0..2 {
+        let (b, outcome) = retarget_ldcw_virtual_to_static(
+            &cur,
+            WAKEUP_METHOD,
+            WAKEUP_METHOD_DESC,
+            &WAKEUP_ANCHORS,
+            WAKEUP_FROM_RUNNING,
+            WAKEUP_TO_RUNNING,
+        )
+        .unwrap();
+        assert_eq!(outcome, RetargetOutcome::Retargeted { sites: 1 });
+        cur = b;
+        n_run += 1;
+    }
+    assert_eq!((n_tick, n_run), (2, 2), "exactly 2+2 sites must be retargeted");
+    // Idempotent re-sight: both specs now report AlreadyPatched.
+    let (_, o1) = retarget_ldcw_virtual_to_static(
+        &cur,
+        WAKEUP_METHOD,
+        WAKEUP_METHOD_DESC,
+        &WAKEUP_ANCHORS,
+        WAKEUP_FROM_TICK,
+        WAKEUP_TO_TICK,
+    )
+    .unwrap();
+    let (_, o2) = retarget_ldcw_virtual_to_static(
+        &cur,
+        WAKEUP_METHOD,
+        WAKEUP_METHOD_DESC,
+        &WAKEUP_ANCHORS,
+        WAKEUP_FROM_RUNNING,
+        WAKEUP_TO_RUNNING,
+    )
+    .unwrap();
+    assert_eq!(o1, RetargetOutcome::AlreadyPatched { sites: 1 });
+    assert_eq!(o2, RetargetOutcome::AlreadyPatched { sites: 1 });
+    // The patched class must still parse (layout validity).
+    let cp_count = u16::from_be_bytes([cur[8], cur[9]]);
+    let (pool, _end) = Pool::parse(&cur, 10, cp_count).unwrap();
+    assert!(pool
+        .find_utf8("net/minecraft/world/entity/AiWakeupOps")
+        .is_some());
+    assert!(pool.find_utf8("tickSel").is_some());
+    assert!(pool.find_utf8("tickRunning").is_some());
+    assert!(pool.find_utf8("(Lnet/minecraft/world/entity/Mob;Lnet/minecraft/world/entity/ai/goal/GoalSelector;Z)V").is_some());
+}
+
 #[test]
 fn parse_diag_retargets_xpos_site_once() {
     // Real kernel class (purpur-1.21.10, captured from run s7165 artifacts).
