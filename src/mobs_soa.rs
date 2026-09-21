@@ -1,5 +1,9 @@
 //! STRUCTURE-OF-ARRAYS flat mirror for the MOB push-broadphase (TASK-401-E —
-//! vector soa; lever cmp401_soa). Data-oriented rewrite of the per-slot
+//! vector soa; lever cmp401_soa; TASK-402-B: primary plane of the round-402
+//! composite cmp402_comp = B-shardgrid ⊕ mobpush ⊕ E-soa — under the
+//! composite every write ALSO mirrors into the sharded grid of
+//! src/mobs_grid.rs inside the same critical section, and the grid serves
+//! as the per-call fallback read plane). Data-oriented rewrite of the per-slot
 //! record grid (round-400-J mobs_grid): the hot fields of the mob side live
 //! in FLAT parallel vectors indexed by dense id —
 //!
@@ -162,12 +166,28 @@ fn ensure_plane() {
 /// empty/foreign flag = the tables are never touched).
 fn lever_mode() -> bool {
     static FLAG: OnceLock<String> = OnceLock::new();
-    FLAG.get_or_init(|| {
-        std::env::var("CRUSSTY_LEVER_FLAG")
-            .unwrap_or_default()
-            .trim()
-            .to_string()
-    }) == "cmp401_soa"
+    let f = FLAG
+        .get_or_init(|| {
+            std::env::var("CRUSSTY_LEVER_FLAG")
+                .unwrap_or_default()
+                .trim()
+                .to_string()
+        })
+        .as_str();
+    // TASK-402-B: the round-402 composite cmp402_comp arms the SoA plane as
+    // its primary mob push broadphase (together with the mobs_grid sharded
+    // mirror — see mirror_mode()); the legacy cmp401_soa leg keeps its exact
+    // prior behavior (no mirror, no grid reads) — two-mode A/B by design.
+    f == "cmp401_soa" || f == "cmp402_comp"
+}
+
+/// Mirror-plane selector: the sharded grid (src/mobs_grid.rs) is armed ONLY
+/// by the round-402 composite. Under cmp402_comp every SoA write also
+/// mirrors into the grid inside the SAME WLOCK/VERSION critical section,
+/// and the grid serves as the per-call fallback read plane.
+#[inline]
+fn mirror_mode() -> bool {
+    crate::mobs_grid::mirror_mode()
 }
 
 // ---------------------------------------------------------------------------
@@ -399,6 +419,16 @@ pub unsafe extern "system" fn mob_upsert(
     let v = VERSION.fetch_add(1, Ordering::AcqRel); // → odd
     debug_assert!(v % 2 == 0);
     let rc = soa_upsert(data_mut(), id as usize, k, x, y, z, hw, hh);
+    // TASK-402-B composite: mirror the SAME (id, cell-key) mutation into the
+    // sharded grid inside this critical section (no extra WLOCK acquisition;
+    // per-shard version bracket inside mirror_upsert). A grid structural
+    // failure is ISOLATED: mark_broken() stops mirroring, the SoA rc stays
+    // authoritative.
+    if mirror_mode() {
+        if crate::mobs_grid::mirror_upsert(id as usize, k) < 0 {
+            crate::mobs_grid::mark_broken();
+        }
+    }
     VERSION.fetch_add(1, Ordering::AcqRel); // → even
     rc
 }
@@ -437,6 +467,13 @@ pub unsafe extern "system" fn mob_remove(
     } else {
         0
     };
+    // TASK-402-B composite: mirror the removal into the sharded grid in the
+    // same critical section (failures isolated — see mob_upsert).
+    if mirror_mode() {
+        if crate::mobs_grid::mirror_remove(id as usize) < 0 {
+            crate::mobs_grid::mark_broken();
+        }
+    }
     VERSION.fetch_add(1, Ordering::AcqRel); // → even
     rc
 }

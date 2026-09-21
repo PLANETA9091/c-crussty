@@ -210,6 +210,49 @@ public final class RegionTickOps {
     private static volatile Consumer<Entity> consumer;
     private static volatile Throwable workerError;
 
+    // ==================================================================
+    // ITEM-SUBSYS2 (TASK-397 mega-round-2, agent J — lever items_subsys2):
+    // полная замена item-фазы СОБСТВЕННЫМ индексом. Items остаются в общих
+    // bucket-массивах в ванильном порядке снапшота и тикаются ИНЛАЙН в
+    // tickBucket (tickOne — гейты lambda$tick$4/tickNonPassenger/
+    // guardEntityTick реплицированы по javap — см. ItemEntityManager):
+    // один проход, без per-slot item-массивов и двойного обхода round-1.
+    // Merge — из собственного 1.0-grid rust-индекса (src/items_index.rs,
+    // RegisterNatives): ноль getEntitiesOfClass-broadphase на item-пути.
+    // Индекс-букингп: onTickingStart/onTickingEnd + phase-4 drain + lazy
+    // indexAdd на первом manager-тике.
+    // Пассажирные ItemEntity (патология) остаются в ванильном пути.
+    // FAIL-CLOSED: класс не определён / нативы не зарегистрированы /
+    // структурный отказ индекса → itemsManagerArmed()=false → ванильный
+    // dispatch бит-в-бит.
+    // STEAL-путь не маршрутизирует (lever активен только в статическом
+    // режиме REGION_STEAL=0 — конфиг банка v4).
+    // ==================================================================
+    private static final java.util.concurrent.atomic.AtomicInteger ITEMS_MGR_POLLED =
+            new java.util.concurrent.atomic.AtomicInteger();
+    private static volatile boolean itemsManagerState;
+
+    /**
+     * Ленивая армировка с периодическим ретраем: первая консультация может
+     * случиться раньше регистрации нативов (boot+15s) — каждый ~256-й вызов
+     * перепроверяет armed() до успеха.
+     */
+    private static boolean itemsManagerArmed() {
+        if (itemsManagerState) {
+            return true;
+        }
+        if (ITEMS_MGR_POLLED.get() == 0 || (ITEMS_MGR_POLLED.incrementAndGet() & 0xFF) == 0) {
+            boolean ok = false;
+            try {
+                ok = net.minecraft.world.entity.ItemEntityManager.armed();
+            } catch (Throwable t) {
+                ok = false; // NoClassDefFoundError и пр. — ванильный путь
+            }
+            itemsManagerState = ok;
+        }
+        return itemsManagerState;
+    }
+
     // S7-172: under MAIN_OFFLOAD (REGION_STEAL="2") an extra helper joins
     // both barriers — main orchestrates instead of ticking slot 0, so the
     // participants are main + w helpers = w+1 (legacy: main-as-slot-0 +
@@ -486,6 +529,10 @@ public final class RegionTickOps {
             len = len0;
         }
         for (int i = 0; i < w; i++) len[i] = 0;
+        final boolean itemsOn = itemsManagerArmed() && !STEAL;
+        if (itemsOn) {
+            itemsManagerState = true; // arm the tickBucket inline routing for this phase
+        }
         pumpLevel = null; // S7-174: reset BEFORE fill; captured at first entity
         list.forEach(e -> {
             if (pumpLevel == null) pumpLevel = e.level(); // S7-174 capture
@@ -568,11 +615,42 @@ public final class RegionTickOps {
             Entity[] b = arr[i];
             for (int j = len[i], n2 = b.length; j < n2; j++) b[j] = null;
         }
-
         // Phase 4 (serial): drain deferred EntityCallbacks mutations in FIFO order.
         Mut m;
         while ((m = PENDING.poll()) != null) {
-            if (m.add) list.add(m.entity); else list.remove(m.entity);
+            if (m.add) {
+                list.add(m.entity);
+                if (itemsManagerState && m.entity instanceof net.minecraft.world.entity.item.ItemEntity ie) {
+                    try {
+                        net.minecraft.world.entity.ItemEntityManager.indexAdd(ie);
+                    } catch (Throwable ignored) {
+                        // fail-closed: merge уйдёт в vanilla; bookkeeping не блокируем
+                    }
+                }
+            } else {
+                list.remove(m.entity);
+                if (itemsManagerState && m.entity instanceof net.minecraft.world.entity.item.ItemEntity ie) {
+                    try {
+                        net.minecraft.world.entity.ItemEntityManager.indexRemove(ie);
+                    } catch (Throwable ignored) {
+                        // fail-closed: stale entry безвреден (disarm → запросов не будет)
+                    }
+                }
+            }
+        }
+
+        // ITEM-LIFETIME (TASK-399-F despawnv2, cmp399_despawn2): per-tick
+        // деспавн-полл — main, после join фазы и PENDING drain (indexAdd/
+        // indexRemove этого тика уже обработаны): батч-пуш дедлайнов →
+        // drain due-id → ванильный despawn-flow (event не пропускается).
+        // Один native-push + один native-drain на тик независимо от населения.
+        if (itemsManagerState) {
+            try {
+                net.minecraft.world.entity.ItemEntityManager.lifetimeTick();
+            } catch (Throwable ignored) {
+                // fail-closed: despawn2Active гасится внутри lifetimeTick;
+                // ванильная despawn-ветка tickBody возвращается сама.
+            }
         }
 
         // Phase 4b (serial, S7-168): replay deferred sendBlockUpdated
@@ -589,10 +667,32 @@ public final class RegionTickOps {
 
     private static void tickBucket(int slot) {
         try {
+            // ITEM-SUBSYS2: items тикаются ИНЛАЙН в этом же проходе — один
+            // обход, ванильный порядок снапшота EntityTickList per slot
+            // (сильнее round-1: отдельная item-фаза до общего цикла).
+            // Merge — из собственного rust-индекса (см. ItemEntityManager).
+            // Пассажирные ItemEntity (патология) — ванильный consumer.
             Entity[] bucket = bucketArr[slot];
             Consumer<Entity> c = consumer;
-            for (int i = 0, n = bucketLen[slot]; i < n; i++) {
-                c.accept(bucket[i]); // vanilla per-entity logic, bit-for-bit
+            int n = bucketLen[slot];
+            if (itemsManagerState && n > 0) {
+                Level lvl = pumpLevel;
+                net.minecraft.world.TickRateManager trm =
+                        lvl instanceof net.minecraft.server.level.ServerLevel sl
+                                ? sl.tickRateManager() : null;
+                for (int i = 0; i < n; i++) {
+                    Entity e = bucket[i];
+                    if (e instanceof net.minecraft.world.entity.item.ItemEntity ie
+                            && e.getPassengers().isEmpty()) {
+                        net.minecraft.world.entity.ItemEntityManager.tickOne(ie, trm);
+                    } else {
+                        c.accept(e); // vanilla per-entity logic, bit-for-bit
+                    }
+                }
+            } else {
+                for (int i = 0; i < n; i++) {
+                    c.accept(bucket[i]); // vanilla per-entity logic, bit-for-bit
+                }
             }
         } catch (Throwable t) {
             if (workerError == null) workerError = t; // crash surfaces on main at join
@@ -649,6 +749,14 @@ public final class RegionTickOps {
      */
     public static void onTickingStart(EntityTickList list, Entity entity) {
         ensureNavMobsGuarded(entity); // S7-170: swap long before any worker phase races
+        if (!phaseActive && itemsManagerState
+                && entity instanceof net.minecraft.world.entity.item.ItemEntity ie) {
+            try {
+                net.minecraft.world.entity.ItemEntityManager.indexAdd(ie);
+            } catch (Throwable ignored) {
+                // fail-closed: merge уйдёт в vanilla; bookkeeping не блокируем
+            }
+        }
         if (phaseActive) {
             PENDING.add(new Mut(true, entity));
         } else {
@@ -662,6 +770,13 @@ public final class RegionTickOps {
      */
     public static void onTickingEnd(EntityTickList list, Entity entity) {
         ensureNavMobsGuarded(entity); // S7-170: idempotent, covers late-first-tick levels
+        if (itemsManagerState && entity instanceof net.minecraft.world.entity.item.ItemEntity ie) {
+            try {
+                net.minecraft.world.entity.ItemEntityManager.indexRemove(ie);
+            } catch (Throwable ignored) {
+                // fail-closed: stale entry безвреден (disarm → запросов не будет)
+            }
+        }
         if (phaseActive) {
             PENDING.add(new Mut(false, entity));
         } else {

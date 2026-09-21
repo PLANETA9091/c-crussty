@@ -71,12 +71,26 @@ public final class MobPushOps {
 
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return f != null && f.trim().equals("cmp401_soa");
+        // TASK-402-B: the round-402 composite arms the SoA plane (primary)
+        // together with the mobs_grid sharded mirror (per-call fallback read
+        // plane — mobGridQuery below). Legacy cmp401_soa keeps its exact
+        // prior behavior: grid natives are never called under it.
+        return f != null
+                && (f.trim().equals("cmp401_soa") || f.trim().equals("cmp402_comp"));
     }
 
     private static final boolean ENABLED = leverEnabled();
 
+    /** TASK-402-B: composite mode (mirror-grid fallback active). */
+    private static boolean compositeEnabled() {
+        String f = System.getenv("CRUSSTY_LEVER_FLAG");
+        return f != null && f.trim().equals("cmp402_comp");
+    }
+
+    private static final boolean COMPOSITE = compositeEnabled();
+
     private static final int PROBE_MAGIC = 0x5053; // "SOA"
+    private static final int GRID_PROBE_MAGIC = 0x4D50; // "MP" (mobs_grid)
 
     /** Result codes natives: >=0 ok/count; -1 ERR_STRUCT (дизарм); -2 ERR_RANGE (per-call vanilla); -(cap) overflow. */
     private static final int ERR_STRUCT = -1;
@@ -96,7 +110,14 @@ public final class MobPushOps {
     private static native int mobQuery(double qx0, double qy0, double qz0,
             double qx1, double qy1, double qz1, int lid, int[] out);
 
+    // ---- TASK-402-B composite: sharded mirror grid (impl: src/mobs_grid.rs;
+    // кандидаты — те же плотные id SoA-плоскости, резолвятся тем же byId) ----
+    private static native int mobGridProbe();
+    private static native int mobGridQuery(double qx0, double qy0, double qz0,
+            double qx1, double qy1, double qz1, int lid, int[] out);
+
     private static volatile boolean nativeOk;
+    private static volatile boolean gridNativeOk;
     private static volatile boolean broken;
     private static volatile boolean oversized;
 
@@ -149,6 +170,27 @@ public final class MobPushOps {
         }
     }
 
+    /** Ленивая проверка зеркального грида (только под композитом). */
+    private static boolean gridProbeOnce() {
+        if (!COMPOSITE || broken) {
+            return false;
+        }
+        if (gridNativeOk) {
+            return true;
+        }
+        synchronized (MobPushOps.class) {
+            if (gridNativeOk) {
+                return true;
+            }
+            try {
+                gridNativeOk = mobGridProbe() == GRID_PROBE_MAGIC;
+            } catch (Throwable t) {
+                gridNativeOk = false;
+            }
+            return gridNativeOk;
+        }
+    }
+
     /** Gate для rust-стороны/диагностики: армирован ли бридж. */
     public static boolean armed() {
         return ENABLED && !broken && !oversized && probeOnce();
@@ -176,10 +218,36 @@ public final class MobPushOps {
             if (n < 0) {
                 if (n == ERR_STRUCT) {
                     broken = true; // структурный отказ — весь рычаг дизармится
+                    return vanillaFill(level, entity, box);
+                }
+                // ERR_RANGE / overflow-retry-fail: под композитом — retry
+                // через зеркальный sharded grid (те же плотные id, тот же
+                // byId, те же точные ванильные фильтры) ДО ванильного fill;
+                // сама плоскость SoA не дизармится (per-call деградация).
+                if (gridProbeOnce()) {
+                    int n2 = mobGridQuery(box.minX, box.minY, box.minZ,
+                            box.maxX, box.maxY, box.maxZ, lid, out);
+                    if (n2 < 0 && n2 <= OVERFLOW_MAX) {
+                        out = new int[(-n2) * 4];
+                        SCRATCH.set(out);
+                        n2 = mobGridQuery(box.minX, box.minY, box.minZ,
+                                box.maxX, box.maxY, box.maxZ, lid, out);
+                    }
+                    if (n2 >= 0) {
+                        return collect(level, entity, box, out, n2);
+                    }
                 }
                 return vanillaFill(level, entity, box); // ERR_RANGE/overflow-retry-fail — per-call vanilla
             }
         }
+        return collect(level, entity, box, out, n);
+    }
+
+    /**
+     * Точная ванильная фильтрация кандидатов (level/AABB/pushableBy/other !=
+     * entity) — общий хвост SoA-пути и зеркального grid-пути композита.
+     */
+    private static List<Entity> collect(Level level, Entity entity, AABB box, int[] out, int n) {
         ArrayList<Entity>[] ring = RING.get();
         int[] cursor = RING_CURSOR.get();
         int slot = cursor[0];
