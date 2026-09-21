@@ -182,6 +182,7 @@ fn lever_mode() -> bool {
         || f == "cmp402_comp"
         || f == "cmp402_stagcomp"
         || f == "cmp403_tickplane"
+        || f == "cmp405_stagtick"
 }
 
 /// Mirror-plane selector: the sharded grid (src/mobs_grid.rs) is armed ONLY

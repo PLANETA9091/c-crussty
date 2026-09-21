@@ -53,6 +53,8 @@ const GATE_LEVER_STAGCOMP: &str = "cmp402_stagcomp";
 /// TASK-403-C: tickplane — whole-body retarget плейн раунда-403 (единый
 /// флаг всех сегментов ТЕЛА тика; STRICT eq, пустой флаг = ваниль).
 const GATE_LEVER_TICKPLANE: &str = "cmp403_tickplane";
+/// TASK-405-F: композит stagcomp⊕tickplane — единый флаг раунда-405.
+const GATE_LEVER_STAGTICK: &str = "cmp405_stagtick";
 
 fn lever_flag() -> String {
     std::env::var("CRUSSTY_LEVER_FLAG")
@@ -67,6 +69,7 @@ fn java_gate_matches(f: &str) -> bool {
         || f == GATE_LEVER_COMP
         || f == GATE_LEVER_STAGCOMP
         || f == GATE_LEVER_TICKPLANE
+        || f == GATE_LEVER_STAGTICK
 }
 
 static READY: AtomicBool = AtomicBool::new(false);

@@ -284,6 +284,7 @@ fn shard_mode() -> bool {
                     || v == "cmp402_comp"
                     || v == "cmp402_stagcomp"
                     || v == "cmp403_tickplane"
+                    || v == "cmp405_stagtick"
             })
             .unwrap_or(false)
     })

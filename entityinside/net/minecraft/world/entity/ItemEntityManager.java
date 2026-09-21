@@ -85,7 +85,9 @@ public final class ItemEntityManager {
                     || "cmp402_stagcomp".equals(LEVER_FLAG)
                     // TASK-403-C: tickplane whole-body plane (items-plane
                     // сегмент; STRICT eq, пустой флаг = ваниль).
-                    || "cmp403_tickplane".equals(LEVER_FLAG);
+                    || "cmp403_tickplane".equals(LEVER_FLAG)
+                    // TASK-405-F: композит stagcomp⊕tickplane.
+                    || "cmp405_stagtick".equals(LEVER_FLAG);
 
     /**
      * TASK-403-C2 ITEM-PLANE RESTING (точный флаг cmp403_tickplane, STRICT eq;
@@ -115,7 +117,8 @@ public final class ItemEntityManager {
      * 1/32 (<=32t transient, строже upstream inactiveTick, где recheck
      * отсутствует вовсе).
      */
-    private static final boolean REST_PLANE = "cmp403_tickplane".equals(LEVER_FLAG);
+    private static final boolean REST_PLANE =
+            "cmp403_tickplane".equals(LEVER_FLAG) || "cmp405_stagtick".equals(LEVER_FLAG);
 
     /** TASK-399-F despawnv2: rust lifetime-heap + батч-деспавн (точный флаг).
      *  TASK-400-A: составной флаг cmp399_bfcomp (B+F) включает despawnv2
@@ -127,7 +130,9 @@ public final class ItemEntityManager {
                     || "cmp402_comp".equals(LEVER_FLAG)
                     || "cmp402_stagcomp".equals(LEVER_FLAG)
                     // TASK-403-C: tickplane включает lifetime-heap сегмент.
-                    || "cmp403_tickplane".equals(LEVER_FLAG);
+                    || "cmp403_tickplane".equals(LEVER_FLAG)
+                    // TASK-405-F: композит stagcomp⊕tickplane.
+                    || "cmp405_stagtick".equals(LEVER_FLAG);
 
     private static final int PROBE_MAGIC = 0x1D3A;
 

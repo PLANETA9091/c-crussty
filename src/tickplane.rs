@@ -43,7 +43,11 @@ pub const SEGMENTS: [&str; 5] = [
 #[inline]
 pub fn enabled() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim() == LEVER)
+        .map(|v| {
+            let v = v.trim();
+            // TASK-405-F: композит stagtick вооружает плейн тем же STRICT-eq.
+            v == LEVER || v == "cmp405_stagtick"
+        })
         .unwrap_or(false)
 }
 
