@@ -41,6 +41,8 @@ mod item_merge;
 mod jni_table;
 mod kernel_policy;
 mod loader;
+mod mobs_manager;
+mod mobs_soa;
 mod noise_fill;
 mod parse_diag;
 mod zero_cursor;
@@ -180,6 +182,12 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // EntityCallbacks guard sites, composed on top of F1/F3 bytes (LAST in
     // the byte-hook chain). Dormant unless CRUSSTY_REGION_THREADS>=2.
     region_threads::register();
+    // MOB-SOA (TASK-401-E, vector soa): LivingEntity byte hook for the
+    // getPushableEntities→MobPushOps.pushables retarget — pristine capture at
+    // first load, patch served after the MobPushOps bridge lands in the
+    // kernel loader (mobs_manager::activate worker). Dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp401_soa (empty flag = exact vanilla path).
+    mobs_manager::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -438,6 +446,10 @@ fn inject_surface() {
     // re-composes the F1 optimiseRandomTick swap; MUST run after
     // randomtick::activate — see src/tickhook.rs module docs).
     tickhook::activate();
+    // MOB-SOA (TASK-401-E, vector soa): define MobPushOps into the kernel
+    // loader, compute the single-site pushEntities retarget, retransform
+    // LivingEntity (dormant unless CRUSSTY_LEVER_FLAG == cmp401_soa).
+    mobs_manager::activate();
 }
 
 /// Define one bridge class and register all its natives.
