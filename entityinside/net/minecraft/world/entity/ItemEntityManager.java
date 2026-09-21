@@ -87,6 +87,36 @@ public final class ItemEntityManager {
                     // сегмент; STRICT eq, пустой флаг = ваниль).
                     || "cmp403_tickplane".equals(LEVER_FLAG);
 
+    /**
+     * TASK-403-C2 ITEM-PLANE RESTING (точный флаг cmp403_tickplane, STRICT eq;
+     * пустой/чужой флаг = ваниль бит-в-бит).
+     *
+     * Root-cause (lane_map round403cl1/cl2, пары к базлайну r402anc1):
+     * fluid-лейн 17-19% (~19-22k сэмплов) — это ItemEntityManager.tickBody →
+     * Entity.baseTick → updateInWaterStateAndDoFluidPushing: item-плейн гоняет
+     * ПОЛНЫЙ faithful tickBody (fluid-push ×2 + inside + move + friction-block
+     * + merge-scan) на КАЖДЫЙ тик каждого из ~150k item, хотя большинство —
+     * resting (onGround, hdSqr <= 1e-5 — ванильный move-gate predicate).
+     * ITEM-PLANE state machine (дизайн TASK-402-E, upstream-пруфы: Paper
+     * ActivationRange inactiveTick / Pufferfish DAB / LOD-ticking) НЕ была
+     * реализована в базе 3c03dad (stage=setup).
+     *
+     * МЕХАНИКА: resting item тикает фазой (tickCount+id)&31==0 полным faithful
+     * tickBody (support/fluid recheck 1/32), в остальные 31/32 тиков —
+     * e.inactiveTick(): ПОБАЙТОВАЯ upstream-семантика Paper ActivationRange
+     * (javap pruf: Entity.inactiveTick no-op + pickupDelay-- guard + age++ +
+     * despawn-gate с CraftEventFactory.callItemDespawnEvent) + merge-gate на
+     * ванильном cadence tickCount%40==0 (k=40 resting, javap offsets 376..473).
+     *
+     * ВАНИЛЬНОСТЬ: despawn-тайминг точный (age++ и despawn-gate каждый тик,
+     * один ItemDespawnEvent — heap stale-early см. lifetimeDue); merge —
+     * только ванильно-eligible тики; вода/лава/портал/свежий дроп (pickupDelay
+     * >0) = ACTIVE per-tick faithful; переходы resting→active по fluid recheck
+     * 1/32 (<=32t transient, строже upstream inactiveTick, где recheck
+     * отсутствует вовсе).
+     */
+    private static final boolean REST_PLANE = "cmp403_tickplane".equals(LEVER_FLAG);
+
     /** TASK-399-F despawnv2: rust lifetime-heap + батч-деспавн (точный флаг).
      *  TASK-400-A: составной флаг cmp399_bfcomp (B+F) включает despawnv2
      *  наряду с точным cmp399_despawn2 — векторы ортогональны
@@ -182,6 +212,11 @@ public final class ItemEntityManager {
         READY = ok;
         if (READY) {
             LOG.info("[crussty-plugin] items_subsys2: bridge ready (enabled=" + ENABLED + ")");
+        }
+        if (REST_PLANE) {
+            // громкий ARM-маркер новой нога-механики (server-stdout.log pruf)
+            LOG.info("[crussty-plugin] items_restplane ARMED phase=32 resting=inactiveTick"
+                    + " merge_gate=vanilla%40 fluid_recheck=1/32");
         }
     }
 
@@ -503,11 +538,52 @@ public final class ItemEntityManager {
         e.totalEntityAge++;
         boolean active = ActivationRange.checkIfActive(e);
         if (active) {
-            tickBody(e);
-            e.postTick();
+            if (REST_PLANE && planeResting(e)) {
+                if (((e.tickCount + e.getId()) & 31) == 0) {
+                    // plane tick: полный faithful tickBody — support/fluid
+                    // recheck 1/32 (переходы resting→active, buoyancy onset)
+                    tickBody(e);
+                    e.postTick();
+                } else {
+                    // upstream Paper ActivationRange resting-семантика:
+                    // pickupDelay-- guard + age++ + despawn-gate (javap pruf),
+                    // ноль voxel-сканов baseTick
+                    e.inactiveTick();
+                    // merge-gate на ванильном resting cadence (k=40): скан
+                    // только в vanilla-eligible тики, кандидаты из индекса
+                    if (e.tickCount % 40 == 0 && !e.level().isClientSide()) {
+                        ItemStack stack = e.getItem();
+                        if (isMergable(e, stack)) {
+                            mergeWithNeighbours(e, stack);
+                        }
+                    }
+                }
+            } else {
+                tickBody(e);
+                e.postTick();
+            }
         } else {
             e.inactiveTick();
         }
+    }
+
+    /**
+     * Ванильный resting-предикат (move-gate offsets 226..270 minus %4-phase):
+     * onGround + hdSqr <= 9.999999747378752E-6. Консервативные исключения —
+     * всё, что требует per-tick faithful семантики: fluid (вода/лава —
+     * buoyancy), свежий дроп (pickupDelay > 0 && != 32767), сущность в портале
+     * (postTick.handlePortal — public field, дешёвое чтение).
+     */
+    private static boolean planeResting(ItemEntity e) {
+        if (!e.onGround() || e.portalProcess != null) {
+            return false;
+        }
+        int pd = e.pickupDelay;
+        if (pd != 0 && pd != 32767) {
+            return false;
+        }
+        return !e.isInWater() && !e.isInLava()
+                && e.getDeltaMovement().horizontalDistanceSqr() <= 9.999999747378752E-6D;
     }
 
     /**
