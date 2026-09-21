@@ -48,6 +48,8 @@ const GATE_LEVER: &str = "cmp401_soa";
 /// TASK-402-B: the round-402 composite arms the SoA plane together with the
 /// sharded mirror grid (src/mobs_grid.rs) — see java_gate_matches.
 const GATE_LEVER_COMP: &str = "cmp402_comp";
+/// TASK-402-F: stagcomp = композит + stagger (единый флаг раунда).
+const GATE_LEVER_STAGCOMP: &str = "cmp402_stagcomp";
 
 fn lever_flag() -> String {
     std::env::var("CRUSSTY_LEVER_FLAG")
@@ -58,7 +60,7 @@ fn lever_flag() -> String {
 
 /// TASK-402-B: the hook arms under the legacy soa flag AND the composite.
 fn java_gate_matches(f: &str) -> bool {
-    f == GATE_LEVER || f == GATE_LEVER_COMP
+    f == GATE_LEVER || f == GATE_LEVER_COMP || f == GATE_LEVER_STAGCOMP
 }
 
 static READY: AtomicBool = AtomicBool::new(false);
@@ -386,9 +388,10 @@ pub fn activate() {
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
         // TASK-402-B: под композитом маркер объявляет ВСЕ суб-механизмы
         // (soa + зеркальный sharded grid; item-половина — в items_manager).
-        if f == GATE_LEVER_COMP {
+        if f == GATE_LEVER_COMP || f == GATE_LEVER_STAGCOMP {
             eprintln!(
-                "[crussty-plugin] cmp402_comp: ARMED soa=flat-arrays seqlock=global-version writer=global-mutex ids_cap=1048576 cell_cap=262144 cell=1.0 pad=1.0 radius_gate=1.0 rust_prune=coarse-hw-hh + mobgrid=sharded-mirror shards=64 shard_cap=16384 fallback-read=per-call (rust mobs_soa SoA flat x/y/z/hw/hh/flags ⊕ mobs_grid mirror; pushEntities tail untouched vanilla; per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT)"
+                "[crussty-plugin] {}: ARMED soa=flat-arrays seqlock=global-version writer=global-mutex ids_cap=1048576 cell_cap=262144 cell=1.0 pad=1.0 radius_gate=1.0 rust_prune=coarse-hw-hh + mobgrid=sharded-mirror shards=64 shard_cap=16384 fallback-read=per-call (rust mobs_soa SoA flat x/y/z/hw/hh/flags ⊕ mobs_grid mirror; pushEntities tail untouched vanilla; per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT)",
+                f
             );
         } else {
             eprintln!(
