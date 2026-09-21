@@ -60,8 +60,22 @@ import org.bukkit.event.entity.EntityRemoveEvent;
  */
 public final class ItemEntityManager {
 
-    private static final boolean ENABLED =
-            "items_subsys2".equals(trimToEmpty(System.getenv("CRUSSTY_LEVER_FLAG")));
+    /**
+     * TASK-399-B (cmp399_shard): gate widened to the cmp399_* lever family.
+     * NOTE (source/binary delta): the committed build/…/ItemEntityManager.class
+     * is the round-398-J javac artifact whose baked gate string is the bare
+     * "items_subsys2"; for cmp399_* levers the rust side CP-patches that one
+     * Utf8 constant at define time (src/classfile.rs patch_utf8_gate — bytecode
+     * transparent, cp indices unchanged), so the shipped binary arms under
+     * cmp399_shard exactly. Recompiling THIS source yields a superset gate
+     * (every cmp399_*), semantics-compatible with the runtime patch.
+     */
+    private static boolean leverEnabled() {
+        String f = trimToEmpty(System.getenv("CRUSSTY_LEVER_FLAG"));
+        return "items_subsys2".equals(f) || f.startsWith("cmp399_");
+    }
+
+    private static final boolean ENABLED = leverEnabled();
 
     private static final int PROBE_MAGIC = 0x1D3A;
 

@@ -30,10 +30,28 @@ const IM_CLASS: &str = "net/minecraft/world/entity/ItemEntityManager";
 const IM_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/world/entity/ItemEntityManager.class");
 
-fn lever_flag_matches() -> bool {
+/// TASK-399-B (cmp399_shard): the Java-side gate string baked into IM_BYTES
+/// (<clinit>: ENABLED = "items_subsys2".equals(trimToEmpty(getenv))). With a
+/// cmp399_* lever the gate is CP-patched at define time (classfile::patch_utf8_gate,
+/// bytecode-transparent) so the same bridge arms under the round-399 flag.
+const GATE_LEGACY: &str = "items_subsys2";
+const GATE_CMP: &str = "cmp399_shard";
+
+fn lever_flag() -> String {
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim().eq("items_subsys2"))
-        .unwrap_or(false)
+        .unwrap_or_default()
+        .trim()
+        .to_string()
+}
+
+fn lever_flag_matches() -> bool {
+    // TASK-399-B: arm the J-subsystem for the legacy flag AND the round-399
+    // cmp399_* lever family (cmp399_shard selects the sharded grid arm).
+    lever_flag_matches_for(&lever_flag())
+}
+
+fn lever_flag_matches_for(f: &str) -> bool {
+    f == "items_subsys2" || f.starts_with("cmp399_")
 }
 
 pub fn activate() {
@@ -49,7 +67,15 @@ pub fn activate() {
         );
         return;
     }
-    std::thread::spawn(|| {
+    let flag = lever_flag();
+    let shard = flag == "cmp399_shard";
+    if shard {
+        // ГРОМКИЙ ARM-МАРКЕР (TASK-399-B): без этой строки нога не-armed.
+        eprintln!(
+            "[crussty-plugin] cmp399_shard: ARMED shards=64 seqlock-reads=per-cell-version writer=global-mutex shard_cap=16384 max_ids=1048576 (rust items_index sharded mode; legacy RwLock path intact for items_subsys2)"
+        );
+    }
+    std::thread::spawn(move || {
         // Boot discipline: same as batch_collector (quiet loader before define).
         if !crate::improved_noise::wait_for_boot() {
             eprintln!(
@@ -73,6 +99,31 @@ pub fn activate() {
             eprintln!("[crussty-plugin] items_subsys2: {IM_CLASS} is class major {major} but JVM supports up to {jvm_major} — rebuild entityinside/; hook stays dormant");
             return;
         }
+
+        // TASK-399-B: widen the JAVA arm gate for the cmp399_* family by
+        // CP-patching the embedded bridge class at define time (the committed
+        // .class is round-398-J's javac artifact; no javac in this loop).
+        // Legacy flag → original bytes (byte-identical arm path, A/B parity).
+        let im_bytes: Vec<u8> = if shard {
+            match crate::classfile::patch_utf8_gate(IM_BYTES, GATE_LEGACY, GATE_CMP) {
+                Ok(b) => {
+                    eprintln!(
+                        "[crussty-plugin] cmp399_shard: java gate CP-patched ({GATE_LEGACY} -> {GATE_CMP}, {} -> {} bytes)",
+                        IM_BYTES.len(),
+                        b.len()
+                    );
+                    b
+                }
+                Err(e) => {
+                    eprintln!(
+                        "[crussty-plugin] cmp399_shard: java gate patch failed ({e}) — hook stays dormant"
+                    );
+                    return;
+                }
+            }
+        } else {
+            IM_BYTES.to_vec()
+        };
 
         let defined = cplug_sdk::jni_util::with_attached(|env| {
             let Some(cls) = cplug_sdk::classes::find_class("net/minecraft/world/entity/Entity")
@@ -101,7 +152,7 @@ pub fn activate() {
                 env.delete_local_ref(class_cls);
                 return false;
             }
-            let Some(c) = env.define_class(IM_CLASS, gref, IM_BYTES) else {
+            let Some(c) = env.define_class(IM_CLASS, gref, &im_bytes) else {
                 crate::describe_exception(env);
                 eprintln!("[crussty-plugin] items_subsys2: define_class({IM_CLASS}) failed");
                 return false;
@@ -175,4 +226,37 @@ pub fn activate() {
             );
         }
     });
+}
+
+#[cfg(test)]
+mod tests {
+    /// TASK-399-B: the runtime CP-patch of the embedded bridge class must be
+    /// bytecode-transparent and exactly swap the arm-gate string both ways.
+    #[test]
+    fn gate_patch_swaps_exactly_one_utf8() {
+        let patched = crate::classfile::patch_utf8_gate(
+            super::IM_BYTES,
+            super::GATE_LEGACY,
+            super::GATE_CMP,
+        )
+        .expect("gate patch must succeed on the committed round-398-J artifact");
+        assert_eq!(
+            patched.len(),
+            super::IM_BYTES.len() - super::GATE_LEGACY.len() + super::GATE_CMP.len()
+        );
+        // Reverse patch restores the original shape (no pool drift).
+        let back = crate::classfile::patch_utf8_gate(
+            &patched,
+            super::GATE_CMP,
+            super::GATE_LEGACY,
+        )
+        .expect("reverse patch");
+        assert_eq!(back.len(), super::IM_BYTES.len());
+        // Legacy flag path must stay byte-identical (A/B parity).
+        assert_eq!(super::lever_flag_matches_for("items_subsys2"), true);
+        assert_eq!(super::lever_flag_matches_for("cmp399_shard"), true);
+        assert_eq!(super::lever_flag_matches_for("cmp399_other"), true);
+        assert_eq!(super::lever_flag_matches_for("items_oss"), false);
+        assert_eq!(super::lever_flag_matches_for(""), false);
+    }
 }
