@@ -158,7 +158,14 @@ pub fn activate() {
                 );
                 return;
             }
-            force_load_mob();
+            // TASK-399 FIX (верхний агент, boot-NPE root-cause): force_load_mob()
+            // форсил Entity.<clinit> через Bukkit PluginClassLoader ДО инициализации
+            // миров — clinit звал getEngineByName("rhino") в loader-контексте без
+            // rhino ⇒ Entity.scriptEngine = null навсегда ⇒ PurpurWorldConfig.
+            // skeletonSettings NPE на boot (run 35556475043). Mob sightings
+            // происходят натурально во время server-init (прецеденты brainhook/
+            // items_manager) — пасивный полл достаточен, force-load удалён.
+            // force_load_mob();
             let sighted = cplug_sdk::classes::is_sighted(MOB_CLASS);
             std::thread::sleep(std::time::Duration::from_millis(if sighted {
                 2_000
