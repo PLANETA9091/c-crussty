@@ -53,8 +53,38 @@ const ENTRY_BYTES: &[u8] =
 const SLAB_BYTES: &[u8] =
     include_bytes!("../entityinside/build/ca/spottedleaf/moonrise/patches/chunk_system/level/entity/SenseBatchOps$Slab.class");
 
+pub const KEY_NAME: &str =
+    "ca/spottedleaf/moonrise/patches/chunk_system/level/entity/SenseBatchOps$Key";
+pub const ENTRY_NAME: &str =
+    "ca/spottedleaf/moonrise/patches/chunk_system/level/entity/SenseBatchOps$Entry";
+pub const SLAB_NAME: &str =
+    "ca/spottedleaf/moonrise/patches/chunk_system/level/entity/SenseBatchOps$Slab";
+
 static READY: AtomicBool = AtomicBool::new(false);
 static PATCHED: AtomicBool = AtomicBool::new(false);
+
+/// (name, bytes) pairs that MUST be defined into the kernel loader BEFORE
+/// RegionTickOps: the committed RegionTickOps bytes carry UNCONDITIONAL
+/// cmp399_sensebatch beginBucket/endBucket blocks (the ARMED gate lives
+/// inside SenseBatchOps), resolved lazily on the first bucket tick — a
+/// missing SenseBatchOps at that moment is NoClassDefFoundError and the
+/// server dies mid-population (root cause of TASK-400-E run 35560866298:
+/// the 45s fallback define fired only after ticking had already started;
+/// the "region_threads bridge list FIRST" delivery in this module's header
+/// doc was designed but never wired into region_threads.rs — TASK-400-E).
+/// Nested classes FIRST (S7-170 lesson: missing nested define =
+/// NoClassDefFoundError on first use). Empty unless the lever flag matches.
+pub fn bridge_prelist() -> Vec<(&'static str, &'static [u8])> {
+    if !lever_flag_matches() {
+        return Vec::new();
+    }
+    vec![
+        (KEY_NAME, KEY_BYTES),
+        (ENTRY_NAME, ENTRY_BYTES),
+        (SLAB_NAME, SLAB_BYTES),
+        (OPS_NAME, OPS_BYTES),
+    ]
+}
 
 fn lever_flag_matches() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")

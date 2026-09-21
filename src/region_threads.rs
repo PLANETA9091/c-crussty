@@ -387,13 +387,20 @@ pub fn activate() {
         .flatten()
         .unwrap_or(u16::MAX);
         for (name, bytes) in {
-            let mut list = vec![
+            // TASK-400-E sensebatch re-arm: SenseBatchOps (+ nested) rides
+            // FIRST in the same synchronous bridge list — RegionTickOps bytes
+            // carry unconditional cmp399_sensebatch beginBucket/endBucket
+            // blocks resolved lazily on the first bucket tick; defining the
+            // bridge without it = NoClassDefFoundError mid-population (root
+            // cause of run 35560866298). Empty list when the flag is absent.
+            let mut list = crate::sense_batch::bridge_prelist();
+            list.extend([
                 (OPS_CLASS, OPS_BYTES),
                 (OPS_INNER_CLASS, OPS_INNER_BYTES),
                 (OPS_GUARD_CLASS, OPS_GUARD_BYTES),
                 (TRACKER_OPS_CLASS, TRACKER_BYTES),
                 (RNG_OPS_CLASS, RNG_BYTES),
-            ];
+            ]);
             if bu_defer_enabled() {
                 list.push((BLOCKUPD_CLASS, BLOCKUPD_BYTES));
             }
@@ -438,13 +445,18 @@ pub fn activate() {
                 return false;
             }
             KERNEL_LOADER.store(gref as usize, Ordering::SeqCst);
-            let mut bridge_list: Vec<(&str, &[u8])> = vec![
+            // TASK-400-E sensebatch re-arm: prelist BEFORE RegionTickOps
+            // (lazy beginBucket resolution on first bucket tick must always
+            // find the class — see bridge_prelist doc for the run 35560866298
+            // NoClassDefFoundError root cause).
+            let mut bridge_list: Vec<(&str, &[u8])> = crate::sense_batch::bridge_prelist();
+            bridge_list.extend([
                 (OPS_CLASS, OPS_BYTES),
                 (OPS_INNER_CLASS, OPS_INNER_BYTES),
                 (OPS_GUARD_CLASS, OPS_GUARD_BYTES),
                 (TRACKER_OPS_CLASS, TRACKER_BYTES),
                 (RNG_OPS_CLASS, RNG_BYTES),
-            ];
+            ]);
             if bu_defer_enabled() {
                 bridge_list.push((BLOCKUPD_CLASS, BLOCKUPD_BYTES));
             }
