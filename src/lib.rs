@@ -41,6 +41,10 @@ mod item_merge;
 mod jni_table;
 mod kernel_policy;
 mod loader;
+// OFF-THREAD STAGE (TASK-401-D, vector offthread): mobs broadphase grid +
+// background prep stage (candidate pre-computation off the tick path).
+mod mobs_offgrid;
+mod offstage_manager;
 mod noise_fill;
 mod parse_diag;
 mod zero_cursor;
@@ -180,6 +184,12 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // EntityCallbacks guard sites, composed on top of F1/F3 bytes (LAST in
     // the byte-hook chain). Dormant unless CRUSSTY_REGION_THREADS>=2.
     region_threads::register();
+    // OFF-THREAD STAGE (TASK-401-D): LivingEntity byte hook for the
+    // getPushableEntities→MobStageOps.pushables retarget; the heavy candidate
+    // enumeration runs on a background prep thread (mobs_offgrid), the tick
+    // only consumes co-version-validated results. Dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp401_offthread (empty flag = exact vanilla).
+    offstage_manager::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -337,6 +347,11 @@ fn inject_surface() {
         Some(())
     });
 
+    // OFF-THREAD STAGE (TASK-401-D): define MobStageOps into the kernel
+    // loader, register natives, retarget the pushEntities site, then spawn
+    // the background prep stage (dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp401_offthread).
+    offstage_manager::activate();
     area_map::activate();
     improved_noise::activate();
     perlin_noise::activate();

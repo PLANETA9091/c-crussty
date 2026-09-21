@@ -2885,6 +2885,10 @@ mod dbg3 {
 /// Bridge class defined into the kernel loader by alloc_diet.rs.
 pub const ALLOC_OPS_CLASS: &str = "net/minecraft/world/entity/EntityQueryOps";
 
+/// Bridge class defined into the kernel loader by offstage_manager.rs
+/// (TASK-401-D offthread — background prep stage for the mob push lane).
+pub const MOB_OPS_CLASS: &str = "net/minecraft/world/entity/MobStageOps";
+
 const GET_PUSHABLES_DESC: &str =
     "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;)Ljava/util/List;";
 const OPS_PUSHABLES_DESC: &str =
@@ -3157,6 +3161,21 @@ pub fn patch_push_entities(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), S
         "()V",
         ("net/minecraft/world/level/Level", "getPushableEntities", GET_PUSHABLES_DESC),
         (ALLOC_OPS_CLASS, "pushables", OPS_PUSHABLES_DESC),
+    )
+}
+
+/// TASK-401-D (offthread): the SAME single `Level.getPushableEntities` call
+/// site inside `LivingEntity.pushEntities()V`, retargeted to the static
+/// `MobStageOps.pushables` bridge (net/minecraft/world/entity/MobStageOps,
+/// defined into the kernel loader by offstage_manager.rs). Strict single-site,
+/// fail-closed — same contract as `patch_push_entities`.
+pub fn patch_push_entities_stage(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    retarget_virtual_to_static(
+        bytes,
+        "pushEntities",
+        "()V",
+        ("net/minecraft/world/level/Level", "getPushableEntities", GET_PUSHABLES_DESC),
+        (MOB_OPS_CLASS, "pushables", OPS_PUSHABLES_DESC),
     )
 }
 
@@ -7174,4 +7193,90 @@ fn check_members(bridge: &[u8], targets: &[(&str, &str, &str, &str)]) -> Result<
         }
     }
     Ok(())
+}
+
+/// TASK-399-B (cmp399_shard): transparent CONSTANT_Utf8 replacement.
+///
+/// Replaces the SINGLE Utf8 entry whose value equals `from` with `to`.
+/// Constant-pool indices are unchanged (replacement, not append), so every
+/// bytecode reference (ldc of the gate string, method/field refs, attributes)
+/// stays valid — the JVM-visible delta is exactly the string constant. The
+/// use-case: widen the ITEM-SUBSYS2 Java arm gate (ItemEntityManager.<clinit>,
+/// `ENABLED = "items_subsys2".equals(trimToEmpty(getenv(...)))`) to the
+/// cmp399_* lever family without javac in the loop (the committed .class is
+/// the round-398-J build artifact; local toolchain is JRE-only).
+///
+/// Fails loudly on anything but exactly one occurrence, and self-verifies the
+/// rebuilt class by re-parsing the constant pool (the patched entry must
+/// resolve to `to`, and `from` must be gone).
+pub fn patch_utf8_gate(bytes: &[u8], from: &str, to: &str) -> Result<Vec<u8>, String> {
+    if bytes.len() < 10 || &bytes[0..4] != [0xCA, 0xFE, 0xBA, 0xBE] {
+        return Err("bad magic".to_string());
+    }
+    let cp_count = u16::from_be_bytes([bytes[8], bytes[9]]);
+    let mut p = 10usize;
+    let mut hits: Vec<usize> = Vec::new();
+    let entries_total = u32::from(cp_count.saturating_sub(1));
+    let mut seen: u32 = 0;
+    while seen < entries_total {
+        let tag = *bytes.get(p).ok_or("cp overrun")?;
+        p += 1;
+        match tag {
+            TAG_UTF8 => {
+                if p + 2 > bytes.len() {
+                    return Err("utf8 overrun".to_string());
+                }
+                let len = usize::from(u16::from_be_bytes([bytes[p], bytes[p + 1]]));
+                let val = bytes
+                    .get(p + 2..p + 2 + len)
+                    .ok_or("utf8 overrun")?;
+                if val == from.as_bytes() {
+                    hits.push(p); // offset of the u2 length prefix
+                }
+                p += 2 + len;
+                seen += 1;
+            }
+            TAG_INTEGER | 4 => {
+                p += 4;
+                seen += 1;
+            }
+            5 | 6 => {
+                p += 8;
+                seen += 2;
+            }
+            7 | 8 | 16 | 19 | 20 => {
+                p += 2;
+                seen += 1;
+            }
+            9 | 10 | 11 | 12 | 17 | 18 => {
+                p += 4;
+                seen += 1;
+            }
+            15 => {
+                p += 3;
+                seen += 1;
+            }
+            _ => return Err(format!("bad cp tag {tag}")),
+        }
+    }
+    if hits.len() != 1 {
+        return Err(format!(
+            "gate utf8 '{from}': {} occurrences, expected exactly 1",
+            hits.len()
+        ));
+    }
+    let off = hits[0];
+    let mut out = Vec::with_capacity(bytes.len() + to.len() - from.len());
+    out.extend_from_slice(&bytes[..off]);
+    out.extend_from_slice(&(to.len() as u16).to_be_bytes());
+    out.extend_from_slice(to.as_bytes());
+    out.extend_from_slice(&bytes[off + 2 + from.len()..]);
+    // Self-check: the patched class must re-parse cleanly and the gate string
+    // must now resolve to `to` (and `from` must be gone).
+    let cp_count2 = u16::from_be_bytes([out[8], out[9]]);
+    let (pool, _) = Pool::parse(&out, 10, cp_count2).ok_or("re-parse failed")?;
+    if pool.find_utf8(to).is_none() || pool.find_utf8(from).is_some() {
+        return Err("gate utf8 not swapped".to_string());
+    }
+    Ok(out)
 }
