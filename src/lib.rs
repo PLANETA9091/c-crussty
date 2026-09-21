@@ -28,6 +28,8 @@ mod classfile;
 #[cfg(test)]
 mod entity_mirror;
 mod entity_compose;
+mod entity_index;
+mod entity_index_manager;
 mod fluid_guard;
 mod fluid_bitmask;
 mod fluid_dirty;
@@ -201,6 +203,11 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // kernel loader (mobs_manager::activate worker). Dormant unless
     // CRUSSTY_LEVER_FLAG == cmp401_soa (empty flag = exact vanilla path).
     mobs_manager::register();
+    // EINDEX (TASK-405-C, vector eindex): byte hooks on EntityLookup + Entity
+    // + the 4 rare setBoundingBox owners for the Rust chunk-mirror counts-skip
+    // plane. Dormant unless CRUSSTY_LEVER_FLAG == cmp405_eindex (STRICT eq;
+    // empty flag = vanilla bit-in-bit, no hook registered).
+    entity_index_manager::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -478,6 +485,10 @@ fn inject_surface() {
     // TASK-402-B: also under cmp402_comp — the composite arms soa + the
     // mobs_grid sharded mirror as the push-broadphase pair).
     mobs_manager::activate();
+    // EINDEX (TASK-405-C): define EntityIndexOps into the kernel loader,
+    // RegisterNatives, seed the chunk mirror, arm + retransform EntityLookup/
+    // Entity (dormant unless CRUSSTY_LEVER_FLAG == cmp405_eindex).
+    entity_index_manager::activate();
 }
 
 /// Define one bridge class and register all its natives.
