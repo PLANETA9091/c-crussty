@@ -10,6 +10,7 @@ WF = "world-bench-parallel.yml"
 LEGS = {
     "comp1": ("round-405-comp-l1", "cmp405_stagtick", "origin/round-405-f-comp"),
     "comp2": ("round-405-comp-l2", "cmp405_stagtick", "origin/round-405-f-comp"),
+    "comp3": ("round-405-comp-l3", "cmp405_stagtick", "origin/round-405-f-comp"),
 }
 
 INPUTS = {

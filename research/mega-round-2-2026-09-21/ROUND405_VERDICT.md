@@ -1,4 +1,4 @@
-# ROUND405 VERDICT (interim → финал в конце тика, 2026-09-22 00:20→0x:xx +08, TASK-405)
+# ROUND405 VERDICT — ФИНАЛ (2026-09-22 00:20→02:5x +08, TASK-405, cron 402447)
 
 ## Сводка ноги за ногой (pair-by-runner, min-of-3, ARM-ПРУФ обязателен)
 
@@ -27,14 +27,27 @@
 - min-of-3 в полёте: comp3 35633645282 + дубли-репликации comp-l1 35633594662 / comp-l2 35633618630 (итого серия до 5 ног)
 - Свежие якоря тика: **anchorc 2.7@8841704, anchord 2.1@6845027** (оба валидны, ваниль items ~30%)
 
-### 5) Волна-1 R-векторов (закон 6 RUST-FIRST)
-- TASK-405-A nav→Rust bulk (cmp405_navrust): worktree @60fe902, имплементация
-- TASK-405-B fluid→Rust bulk (cmp405_fluidrust): worktree @60fe902, имплементация
-- TASK-405-C getEntities→Rust-индекс (cmp405_eindex): push @877077d (recon javap-контракт EntityLookup/ChunkEntitySlices)
+### 5) Волна-1 R-векторов (закон 6 RUST-FIRST) — рестарт по застою, ноги = тик 406
+- TASK-405-A nav→Rust bulk (cmp405_navrust): рестарт 02:1x, RESEARCH-1, имплементация (1-й процесс — 2ч ноль артефактов)
+- TASK-405-B fluid→Rust bulk (cmp405_fluidrust): рестарт 02:1x, impl-1 FluidRustOps bridge (14 файлов в работе)
+- TASK-405-C getEntities→Rust-индекс (cmp405_eindex): рестарт 02:1x, entity_index.rs + EntityIn... имплементация
 
 ## Инциденты тика
 - sparse-checkout set в linked worktree (f-comp) перезаписал общий patterns → main-worktree потерял 832 tracked artifact-файла + untracked bleg-абсорбы. Оформлено purge-коммитом 0eb844c (прецедент e9bd2dc); kernel-jar возвращён 1d66496. Урок: sparse-операции в worktree → сразу git status в main.
 - Диск 96% → 66% (sparse f-comp 2.6G→5.4M, rm /tmp/kx*).
 
+## ФИНАЛ КОМПОЗИЦИИ: cmp405_stagtick = НОВЫЙ ТОП-КОМБО ЭРЫ
+Серия ×5 (все GREEN-CANDIDATE, cmp405_stagtick ARMED ×3, GC 17-22s / Full 9-10 = норма):
+
+| нога | TPS | runner | ближайший якорь | pair |
+|------|-----|--------|----------------|------|
+| comp1 | 2.7 | 7069582 | 2.40@7089030 | +12.5pp |
+| comp1b | 2.6 | 6964660 | 2.1@6898063 | +23.8pp |
+| comp2 | 3.2 | 7214503 | 2.2@7125977 | +45.5pp |
+| comp2b | 2.7 | 6784450 | 2.3@6797859 | +17.4pp |
+| comp3 | **3.3 (рекорд эры)** | 7619630 | 2.6@7237388 | +26.9pp |
+
+**МЕДИАНА +23.8pp (stagcomp был +20.8), min-of-3 ✓ (5 ног), ARM-ПРУФ ✓, GC/RAM без регресса ✓ → ступень зафиксирована. БАР 80% НЕ ВЗЯТ — МЕРЖ НЕТ (закон 2).**
+
 ## БАР 80%
-Не взят (текущая лестница: stagcomp +20.8 медиана → comp-композиция в полёте → R-векторы волны-1). МЕРЖ НЕТ.
+Не взят. Лестница: stagger +12.5 → stagcomp +20.8 → **stagtick +23.8** → (80% требует R-переносы волны-405: fluid 18.45% / broadphase 14.81% / inside 13.30% / nav 10.13% — все в имплементации сабагентами).
