@@ -56,7 +56,12 @@ pub(crate) fn mirror_mode() -> bool {
     static M: OnceLock<bool> = OnceLock::new();
     *M.get_or_init(|| {
         std::env::var("CRUSSTY_LEVER_FLAG")
-            .map(|v| v.trim() == "cmp402_comp" || v.trim() == "cmp402_stagcomp")
+            .map(|v| {
+                v.trim() == "cmp402_comp" || v.trim() == "cmp402_stagcomp"
+                    // TASK-403-B: bulk-флаг = композит + jnibulk (raw-arena/stamp
+                    // memo на item-стороне); зеркальный grid — часть композита.
+                    || v.trim() == "cmp403_jnibulk"
+            })
             .unwrap_or(false)
     })
 }

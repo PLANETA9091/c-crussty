@@ -61,6 +61,9 @@ fn enabled() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
         Ok("cmp401_stagger") | Ok("cmp402_stagcomp")
+            // TASK-403-B: bulk-флаг = композит + jnibulk; stagger — часть
+            // композита, армится тем же флагом.
+            | Ok("cmp403_jnibulk")
     )
 }
 

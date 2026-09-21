@@ -77,7 +77,11 @@ public final class MobPushOps {
         // prior behavior: grid natives are never called under it.
         return f != null
                 && (f.trim().equals("cmp401_soa") || f.trim().equals("cmp402_comp")
-                    || f.trim().equals("cmp402_stagcomp"));
+                    || f.trim().equals("cmp402_stagcomp")
+                    // TASK-403-B: jnibulk = композит + bulk-транспорт; мобовая
+                    // SoA-плоскость армится тем же флагом (иначе PARTIAL-ARM —
+                    // урок 60fe902).
+                    || f.trim().equals("cmp403_jnibulk"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -86,7 +90,9 @@ public final class MobPushOps {
     private static boolean compositeEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
         return f != null && (f.trim().equals("cmp402_comp")
-                || f.trim().equals("cmp402_stagcomp"));
+                || f.trim().equals("cmp402_stagcomp")
+                // TASK-403-B: зеркальный grid fallback — часть композита.
+                || f.trim().equals("cmp403_jnibulk"));
     }
 
     private static final boolean COMPOSITE = compositeEnabled();

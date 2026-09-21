@@ -61,8 +61,10 @@ fn lever_flag_matches_for(f: &str) -> bool {
     // TASK-402-B: главный композит cmp402_comp (shardgrid ⊕ mobpush ⊕ E-soa)
     // включает ОБА item-суб-механизма (shard-grid + lifetime-heap) наряду с
     // мобовыми soa+grid — единый гейт раунда.
+    // TASK-403-B: cmp403_jnibulk = тот же композит + bulk-транспорт
+    // (raw-arena + coarse-stamp memo; natives idxQueryP/idxScratch*/idxCoarseBase).
     f == "items_subsys2" || f.starts_with("cmp399_") || f == "cmp402_comp"
-        || f == "cmp402_stagcomp"
+        || f == "cmp402_stagcomp" || f == "cmp403_jnibulk"
 }
 
 pub fn activate() {
@@ -81,7 +83,7 @@ pub fn activate() {
     let flag = lever_flag();
     let shard = flag == "cmp399_shard";
     let bfcomp = flag == "cmp399_bfcomp";
-    let comp = flag == "cmp402_comp" || flag == "cmp402_stagcomp";
+    let comp = flag == "cmp402_comp" || flag == "cmp402_stagcomp" || flag == "cmp403_jnibulk";
     let despawn2 = flag == "cmp399_despawn2" || bfcomp || comp;
     if shard {
         // ГРОМКИЙ ARM-МАРКЕР (TASK-399-B): без этой строки нога не-armed.
@@ -102,6 +104,15 @@ pub fn activate() {
         // мобовая половина (soa+grid) маркерится в mobs_manager.
         eprintln!(
             "[crussty-plugin] cmp402_comp: ARMED items shards=64 seqlock-reads=per-cell-version writer=global-mutex shard_cap=16384 max_ids=1048576 heap=lifetime-minheap(rust,vec) push=batch(1/tick) due-poll=1/tick despawn-flow=vanilla (composite shardgrid+heap leg; soa+grid armed in mobs_manager)"
+        );
+    }
+    if flag == "cmp403_jnibulk" {
+        // ГРОМКИЙ ARM-МАРКЕР BULK-ТРАНСПОРТА (TASK-403-B, обязателен):
+        // raw-arena (ноль JNI-вызовов внутри idxQueryP) + coarse-stamp memo
+        // (262144 регионов 8³ клеток, bump на каждой мутации индекса) +
+        // java-сторона replay'ит кандидатов через ТОТ ЖЕ live-filter.
+        eprintln!(
+            "[crussty-plugin] cmp403_jnibulk: ARMED items shards=64 seqlock-reads=per-cell-version writer=global-mutex max_ids=1048576 heap=lifetime-minheap(rust,vec) + jnibulk=raw-arena(idxQueryP, zero-JNI-body) coarse-stamps=262144x8^3cells java-memo=window+stamps replay=live-filter (composite + bulk transport; soa+grid armed in mobs_manager, stagger in stagger.rs)"
         );
     }
     std::thread::spawn(move || {
@@ -193,8 +204,12 @@ pub fn activate() {
 
             // RegisterNatives: idxProbe/idxInsert/idxSetCell/idxRemove/idxQuery
             // (impl — src/items_index.rs) + lifetimePush/lifetimeDue (impl —
-            // src/items_lifetime.rs, TASK-399-F despawnv2). Провал регистрации
-            // → armed()=false (probeOnce не пройдёт magic) → ванильный путь.
+            // src/items_lifetime.rs, TASK-399-F despawnv2) + idxQueryP/
+            // idxScratchAlloc/idxScratchFree/idxCoarseBase (impl —
+            // src/items_index.rs JNI-BULK блок, TASK-403-B cmp403_jnibulk;
+            // транспорт — direct ByteBuffers, ноль Unsafe на java-стороне).
+            // Провал регистрации → armed()=false (probeOnce не пройдёт magic)
+            // → ванильный путь.
             let names = [
                 CString::new("idxProbe").expect("no NUL"),
                 CString::new("idxInsert").expect("no NUL"),
@@ -203,6 +218,10 @@ pub fn activate() {
                 CString::new("idxQuery").expect("no NUL"),
                 CString::new("lifetimePush").expect("no NUL"),
                 CString::new("lifetimeDue").expect("no NUL"),
+                CString::new("idxQueryP").expect("no NUL"),
+                CString::new("idxScratchAlloc").expect("no NUL"),
+                CString::new("idxScratchFree").expect("no NUL"),
+                CString::new("idxCoarseBase").expect("no NUL"),
             ];
             let sigs = [
                 CString::new("()I").expect("no NUL"),
@@ -212,6 +231,10 @@ pub fn activate() {
                 CString::new("(DDDDDDI[I)I").expect("no NUL"),
                 CString::new("([JI)I").expect("no NUL"),
                 CString::new("(J[J)I").expect("no NUL"),
+                CString::new("(DDDDDDILjava/nio/ByteBuffer;)I").expect("no NUL"),
+                CString::new("(I)Ljava/nio/ByteBuffer;").expect("no NUL"),
+                CString::new("(Ljava/nio/ByteBuffer;)I").expect("no NUL"),
+                CString::new("()Ljava/nio/ByteBuffer;").expect("no NUL"),
             ];
             let natives = [
                 jvmti_bindings::jni::JNINativeMethod {
@@ -248,6 +271,26 @@ pub fn activate() {
                     name: names[6].as_ptr(),
                     signature: sigs[6].as_ptr(),
                     fnPtr: crate::items_lifetime::lifetime_due as *const c_void as *mut c_void,
+                },
+                jvmti_bindings::jni::JNINativeMethod {
+                    name: names[7].as_ptr(),
+                    signature: sigs[7].as_ptr(),
+                    fnPtr: crate::items_index::idx_query_p as *const c_void as *mut c_void,
+                },
+                jvmti_bindings::jni::JNINativeMethod {
+                    name: names[8].as_ptr(),
+                    signature: sigs[8].as_ptr(),
+                    fnPtr: crate::items_index::idx_scratch_alloc as *const c_void as *mut c_void,
+                },
+                jvmti_bindings::jni::JNINativeMethod {
+                    name: names[9].as_ptr(),
+                    signature: sigs[9].as_ptr(),
+                    fnPtr: crate::items_index::idx_scratch_free as *const c_void as *mut c_void,
+                },
+                jvmti_bindings::jni::JNINativeMethod {
+                    name: names[10].as_ptr(),
+                    signature: sigs[10].as_ptr(),
+                    fnPtr: crate::items_index::idx_coarse_base as *const c_void as *mut c_void,
                 },
             ];
             let reg = env.register_natives(c, &natives);
@@ -314,6 +357,8 @@ mod tests {
         // TASK-400-A: composite flag joins the cmp399_* family gate.
         assert_eq!(super::lever_flag_matches_for("cmp399_bfcomp"), true);
         assert_eq!(super::lever_flag_matches_for("cmp399_other"), true);
+        // TASK-403-B: bulk-transport flag arms the composite items half.
+        assert_eq!(super::lever_flag_matches_for("cmp403_jnibulk"), true);
         assert_eq!(super::lever_flag_matches_for("items_oss"), false);
         assert_eq!(super::lever_flag_matches_for(""), false);
     }

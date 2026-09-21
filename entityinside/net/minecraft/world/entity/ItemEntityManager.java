@@ -82,7 +82,9 @@ public final class ItemEntityManager {
                     // включаются наряду с мобовыми soa+grid единым флагом.
                     || "cmp402_comp".equals(LEVER_FLAG)
                     // TASK-402-F: stagcomp = композит + stagger (единый флаг).
-                    || "cmp402_stagcomp".equals(LEVER_FLAG);
+                    || "cmp402_stagcomp".equals(LEVER_FLAG)
+                    // TASK-403-B: jnibulk = тот же композит + bulk-транспорт.
+                    || "cmp403_jnibulk".equals(LEVER_FLAG);
 
     /** TASK-399-F despawnv2: rust lifetime-heap + батч-деспавн (точный флаг).
      *  TASK-400-A: составной флаг cmp399_bfcomp (B+F) включает despawnv2
@@ -92,7 +94,9 @@ public final class ItemEntityManager {
             "cmp399_despawn2".equals(LEVER_FLAG) || "cmp399_bfcomp".equals(LEVER_FLAG)
                     // TASK-402-B: композит включает lifetime-heap суб-механизм.
                     || "cmp402_comp".equals(LEVER_FLAG)
-                    || "cmp402_stagcomp".equals(LEVER_FLAG);
+                    || "cmp402_stagcomp".equals(LEVER_FLAG)
+                    // TASK-403-B: jnibulk = композит + bulk-транспорт.
+                    || "cmp403_jnibulk".equals(LEVER_FLAG);
 
     private static final int PROBE_MAGIC = 0x1D3A;
 
@@ -120,6 +124,52 @@ public final class ItemEntityManager {
     private static native int lifetimePush(long[] batch, int n);
     /** Drain всех due <= nowTick; -total для grow-retry (записи ждут в staging). */
     private static native int lifetimeDue(long nowTick, long[] out);
+
+    // ---- natives (impl: src/items_index.rs JNI-BULK блок, TASK-403-B
+    //      cmp403_jnibulk) ---- raw-arena + coarse-stamp memo. Транспорт —
+    // DIRECT ByteBuffers над rust-памятью (NewDirectByteBuffer): чтение —
+    // публичные абсолютные getInt/getLong, НОЛЬ sun.misc.Unsafe и НОЛЬ
+    // module-opens зависимостей. STRICT-гейт cmp403_jnibulk на rust-стороне:
+    // прочие флаги (включая композитных родителей) получают null/err —
+    // java-bulk не армится; пустой флаг = бит-в-байт ваниль.
+    /** Bulk-запрос: кандидаты пишутся в raw-arena (direct ByteBuffer над
+     *  rust-памятью), тело натива — ноль JNI-вызовов. n>=0 = число
+     *  кандидатов; -(cap) = переполнение (grow ×4, ретрай); ERR_RANGE (-2);
+     *  ERR_STRUCT (-1, fail-closed → legacy int[]-путь). */
+    private static native int idxQueryP(double qx0, double qy0, double qz0,
+            double qx1, double qy1, double qz1, int lid,
+            java.nio.ByteBuffer arena, int cap);
+    /** Raw-arena на cap int (direct ByteBuffer над rust-памятью, без
+     *  cleaner — освобождает только idxScratchFree; per-thread, воркеры
+     *  персистентны). null = отказ (fail-closed → legacy путь). */
+    private static native java.nio.ByteBuffer idxScratchAlloc(int cap);
+    /** Освободить арену от idxScratchAlloc. 0 = ok. */
+    private static native int idxScratchFree(java.nio.ByteBuffer arena);
+    /** Direct ByteBuffer над таблицей coarse-штампов (262144 u64-слотов,
+     *  2 MiB rust .bss, процесс- lifetime). null = отказ. */
+    private static native java.nio.ByteBuffer idxCoarseBase();
+
+    /** TASK-403-B: STRICT-eq bulk-гейт (raw-arena + coarse-stamp memo).
+     *  Пустой/иной флаг — bulk никогда не вызывается (бит-в-байт ваниль). */
+    private static final boolean BULK = "cmp403_jnibulk".equals(LEVER_FLAG);
+
+    // Per-thread bulk-состояние (Task-403-B jnibulk). НОЛЬ новых классов:
+    // мост доставляется как РОВНО ОДИН classfile через define_class — nested
+    // класс детонировал бы NoClassDefFoundError (kernel-loader delivery,
+    // урок S7-170/zero_alloc). Формат Object[6] (типы статичны по слотам):
+    //   [0] java.nio.ByteBuffer — вид над COARSE (rust .bss), лениво
+    //   [1] java.nio.ByteBuffer — арена idxScratchAlloc
+    //   [2] int[9]: {valid, lid, cx0, cy0, cz0, cx1, cy1, cz1, n}
+    //   [3] int[1]: {arenaCap}
+    //   [4] long[8]: 8 региональных штампов memo-ключа
+    //   [5] int[]: копия кандидатов последнего fill
+    private static final ThreadLocal<Object[]> BULK_CTX =
+            ThreadLocal.withInitial(() -> new Object[6]);
+    /** Структурный отказ bulk (арена/штампы/ERR_STRUCT): bulk отключается,
+     *  ИНДЕКС ЖИВ — вызовы уходят на legacy int[]-путь (композит не страдает). */
+    private static volatile boolean bulkBroken;
+    /** One-time java-bulk ARM-маркер (ARM-пруф server-stdout.log). */
+    private static volatile boolean bulkLogged;
 
     /** despawnv2 активен (mode=true, нативы живы, индекс не сломан). Читается
      *  воркерами каждый item-тик; пишется main-потоком между фазами. */
@@ -666,6 +716,32 @@ public final class ItemEntityManager {
         AABB qb = self.getBoundingBox().inflate(r,
                 lvl.paperConfig().entities.behavior.onlyMergeItemsHorizontally ? 0.0D : r - 0.5D, r);
         int lid = System.identityHashCode(lvl);
+        boolean walls = lvl.paperConfig().fixes.fixItemsMergingThroughWalls;
+
+        // TASK-403-B jnibulk (cmp403_jnibulk, STRICT-eq): кандидаты через
+        // raw-arena + coarse-stamp memo (ноль JNI при memo-hit, ноль
+        // pin/critical при fill). Механика НЕ меняет множество кандидатов:
+        // memo-ключ (окно клеток + штампы всех покрытых 8³-регионов) и
+        // ре-плей через ТОТ ЖЕ live-filter ниже. Fail-closed: структурный
+        // отказ → bulkBroken → legacy int[]-путь (индекс жив); разовый
+        // отказ (ERR_RANGE) → ванильный merge ЭТОГО вызова (как в legacy).
+        if (BULK && !bulkBroken) {
+            Object[] c = BULK_CTX.get();
+            int[] bulkIds = bulkCandidates(qb, lid, c);
+            if (bulkIds != null) {
+                replayCandidates(self, lvl, qb, walls, bulkIds, ((int[]) c[2])[8]);
+                return;
+            }
+            if (!bulkBroken) {
+                // Разовый отказ (ERR_RANGE / исчерпан grow) — точный аналог
+                // legacy-ветки n<0 после ретрая: ванильный merge ЭТОГО вызова.
+                invokeVanillaMerge(self);
+                return;
+            }
+            // bulkBroken: структурный отказ bulk — индекс здоров, падаем в
+            // legacy int[]-путь ниже (композит продолжает работать).
+        }
+
         int[] out = SCRATCH.get();
         int n = idxQuery(qb.minX, qb.minY, qb.minZ, qb.maxX, qb.maxY, qb.maxZ, lid, out);
         if (n < 0) {
@@ -680,7 +756,18 @@ public final class ItemEntityManager {
                 return;
             }
         }
-        boolean walls = lvl.paperConfig().fixes.fixItemsMergingThroughWalls;
+        replayCandidates(self, lvl, qb, walls, out, n);
+    }
+
+    /**
+     * Единый replay-цикл кандидатов merge (TASK-403-B: тело перенесено из
+     * mergeWithNeighbours 1:1; bulk-путь (cmp403_jnibulk) ре-плейит memo-
+     * кандидатов через ЭТОТ ЖЕ фильтр — исход и множество кандидатов =
+     * ванильным). bounds-check byId — на каждый вызов (индекс может расти
+     * параллельно с ленивой индексацией соседнего воркера).
+     */
+    private static void replayCandidates(ItemEntity self, Level lvl, AABB qb,
+            boolean walls, int[] out, int n) {
         for (int i = 0; i < n; i++) {
             int cid = out[i];
             // guard: индекс может вырасти параллельно (lazi indexAdd с соседнего
@@ -708,6 +795,133 @@ public final class ItemEntityManager {
                 return;
             }
         }
+    }
+
+    /** u64 coarse-штампа региона 8³ клеток, покрывающего клетку (cx,cy,cz):
+     *  slot = (rx&63)|(ry&63)<<6|(rz&63)<<12 — ТОЧНО как rust stamp_slot. */
+    private static long bulkStamp(java.nio.ByteBuffer coarse, int cx, int cy, int cz) {
+        int slot = ((cx >> 3) & 63) | (((cy >> 3) & 63) << 6) | (((cz >> 3) & 63) << 12);
+        return coarse.getLong(slot << 3);
+    }
+
+    /**
+     * TASK-403-B jnibulk (cmp403_jnibulk): кандидаты merge-запроса через
+     * raw-arena + coarse-stamp memo. Возвращает массив кандидатов (штук —
+     * c.n) или null (не заполнено). null + !bulkBroken → разовый отказ
+     * (ERR_RANGE) → ванильный merge этого вызова; null + bulkBroken →
+     * структурный отказ bulk → legacy int[]-путь (индекс жив).
+     *
+     * КОРРЕКТНОСТЬ MEMO: кандидат-список зависит только от клеток окна и
+     * состояния индекса. Каждая мутация индекса (insert/set_cell/remove)
+     * проходит через нативы, штампующие 8³-регионы затронутых клеток (per-id
+     * координаты хранятся — remove штампует регион, который id ПОКИДАЕТ).
+     * Окно ширины ≤7 клеток накрывает ≤8 регионов — их штампы и есть ключ.
+     * False positive (кандидат ушёл) фильтруется тем же live-filter; false
+     * negative требует входа id в окно без мутации накрытого региона —
+     * невозможна по построению. Алиасинг слотов (регионы в 64³) даёт только
+     * ЛИШНИЕ refills, не пропуски. Аргументация mid-tick — как у
+     * cmp399_shard (vanilla per-section snapshot semantics).
+     */
+    private static int[] bulkCandidates(AABB qb, int lid, Object[] c) {
+        java.nio.ByteBuffer coarse = (java.nio.ByteBuffer) c[0];
+        if (coarse == null) {
+            // Ленивый per-thread вид на таблицу штампов (rust .bss, 2 MiB).
+            coarse = idxCoarseBase();
+            if (coarse == null) {
+                bulkBroken = true;
+                return null;
+            }
+            c[0] = coarse;
+            c[2] = new int[9];      // {valid, lid, cx0, cy0, cz0, cx1, cy1, cz1, n}
+            c[3] = new int[1];      // {arenaCap}
+            c[4] = new long[8];     // штампы 8 накрытых регионов
+            c[5] = new int[128];    // кэш кандидатов
+            if (!bulkLogged) {
+                // ГРОМКИЙ java-ARM-МАРКЕР (обязателен для ARM-пруфа).
+                bulkLogged = true;
+                LOG.info("[crussty-plugin] cmp403_jnibulk: java-bulk ARMED raw-arena=DirectByteBuffer zero-JNI-body coarse=262144x8^3cells memo=window+8stamps replay=live-filter fail-closed=(struct->legacy-int[]-path, range->vanilla-call)");
+            }
+        }
+        int[] key = (int[]) c[2];
+        int[] capBox = (int[]) c[3];
+        long[] stamps = (long[]) c[4];
+        int[] ids = (int[]) c[5];
+        // Окно клеток — ТОЧНО как rust idx_query_p: floor(q)±pad(±1).
+        int cx0 = (int) Math.floor(qb.minX) - 1, cx1 = (int) Math.floor(qb.maxX) + 1;
+        int cy0 = (int) Math.floor(qb.minY) - 1, cy1 = (int) Math.floor(qb.maxY) + 1;
+        int cz0 = (int) Math.floor(qb.minZ) - 1, cz1 = (int) Math.floor(qb.maxZ) + 1;
+        // ≤8 регионов накрытия (окно ≤7 клеток на ось → ≤2 региона на ось).
+        long s0 = bulkStamp(coarse, cx0, cy0, cz0);
+        long s1 = bulkStamp(coarse, cx1, cy0, cz0);
+        long s2 = bulkStamp(coarse, cx0, cy1, cz0);
+        long s3 = bulkStamp(coarse, cx1, cy1, cz0);
+        long s4 = bulkStamp(coarse, cx0, cy0, cz1);
+        long s5 = bulkStamp(coarse, cx1, cy0, cz1);
+        long s6 = bulkStamp(coarse, cx0, cy1, cz1);
+        long s7 = bulkStamp(coarse, cx1, cy1, cz1);
+        if (key[0] == 1 && key[1] == lid
+                && key[2] == cx0 && key[3] == cy0 && key[4] == cz0
+                && key[5] == cx1 && key[6] == cy1 && key[7] == cz1
+                && stamps[0] == s0 && stamps[1] == s1
+                && stamps[2] == s2 && stamps[3] == s3
+                && stamps[4] == s4 && stamps[5] == s5
+                && stamps[6] == s6 && stamps[7] == s7) {
+            // MEMO-HIT: ноль JNI — ре-плей кэша через тот же live-filter.
+            return ids;
+        }
+        java.nio.ByteBuffer arena = (java.nio.ByteBuffer) c[1];
+        if (arena == null) {
+            arena = idxScratchAlloc(128);
+            if (arena == null) {
+                bulkBroken = true;
+                return null;
+            }
+            c[1] = arena;
+            capBox[0] = 128;
+        }
+        int n = idxQueryP(qb.minX, qb.minY, qb.minZ, qb.maxX, qb.maxY, qb.maxZ,
+                lid, arena, capBox[0]);
+        if (n <= -128) {
+            // Переполнение -(cap), cap ≥ 128: grow ×4 (legacy SCRATCH spiral),
+            // ретрай. ERR_RANGE — ровно -2, сюда не попадает.
+            int want = (-n) * 4;
+            idxScratchFree(arena);
+            arena = idxScratchAlloc(want);
+            if (arena == null) {
+                c[1] = null;
+                capBox[0] = 0;
+                bulkBroken = true;
+                return null;
+            }
+            c[1] = arena;
+            capBox[0] = want;
+            n = idxQueryP(qb.minX, qb.minY, qb.minZ, qb.maxX, qb.maxY, qb.maxZ,
+                    lid, arena, capBox[0]);
+        }
+        if (n < 0) {
+            // ERR_STRUCT (-1) → структурный отказ bulk (без disarm индекса);
+            // ERR_RANGE (-2) → разовый отказ → ванильный merge этого вызова.
+            if (n == -1) {
+                bulkBroken = true;
+            }
+            return null;
+        }
+        if (ids.length < n) {
+            ids = new int[Math.max(n, ids.length * 2)];
+            c[5] = ids;
+        }
+        // Копия кандидатов из raw-арены (публичные абсолютные getInt).
+        for (int i = 0; i < n; i++) {
+            ids[i] = arena.getInt(i << 2);
+        }
+        key[0] = 1;
+        key[1] = lid;
+        key[2] = cx0; key[3] = cy0; key[4] = cz0;
+        key[5] = cx1; key[6] = cy1; key[7] = cz1;
+        key[8] = n;
+        stamps[0] = s0; stamps[1] = s1; stamps[2] = s2; stamps[3] = s3;
+        stamps[4] = s4; stamps[5] = s5; stamps[6] = s6; stamps[7] = s7;
+        return ids;
     }
 
     private static void tryToMerge(ItemEntity self, ItemEntity other) {

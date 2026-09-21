@@ -59,7 +59,7 @@
 //! Level) AND re-checked Java-side (`other.level() == self.level()`).
 
 use jvmti_bindings::jni;
-use std::sync::atomic::{AtomicI32, AtomicI64, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicI32, AtomicI64, AtomicU64, AtomicUsize, Ordering};
 use std::sync::{Mutex, OnceLock, RwLock};
 
 // ---------------------------------------------------------------------------
@@ -279,8 +279,10 @@ fn shard_mode() -> bool {
                 // sharded mode наряду с точным cmp399_shard.
                 // TASK-402-B: главный композит cmp402_comp включает shardgrid
                 // как суб-механизм (soa+shardgrid+mobpush одновременно).
+                // TASK-403-B: cmp403_jnibulk = тот же композит + bulk-транспорт
+                // (raw-arena + coarse-stamp memo, см. JNI-BULK блок внизу).
                 v == "cmp399_shard" || v == "cmp399_bfcomp" || v == "cmp402_comp"
-                    || v == "cmp402_stagcomp"
+                    || v == "cmp402_stagcomp" || v == "cmp403_jnibulk"
             })
             .unwrap_or(false)
     })
@@ -476,7 +478,7 @@ fn shard_remove(id: usize) -> i32 {
 /// a stable anomaly (= real corruption → bridge disarms, legacy parity).
 #[allow(clippy::too_many_arguments)]
 fn shard_query(
-    dst: &mut [jni::jint],
+    dst: *mut jni::jint,
     cap: i32,
     lid: i32,
     (cx0, cx1): (i32, i32),
@@ -519,7 +521,9 @@ fn shard_query(
                             }
                             // SAFETY: id < MAX_IDS (checked above).
                             if unsafe { CELL.get_unchecked(id) }.load(Ordering::Relaxed) == k {
-                                dst[n as usize] = cur - 1;
+                                // SAFETY: n < cap (checked above), dst valid for
+                                // cap ints (pinned java array or bulk arena).
+                                unsafe { *dst.add(n as usize) = cur - 1 };
                                 n += 1;
                             }
                             cur = unsafe { NEXT.get_unchecked(id) }.load(Ordering::Relaxed);
@@ -599,7 +603,13 @@ pub unsafe extern "system" fn idx_insert(
         return ERR_STRUCT;
     }
     if shard_mode() {
-        return shard_insert(id as usize, cell_key(lid, cx, cy, cz));
+        let rc = shard_insert(id as usize, cell_key(lid, cx, cy, cz));
+        if rc == 0 {
+            // TASK-403-B jnibulk: insert = появление id в клетке (cx,cy,cz) —
+            // регион штампуется, все memo-окна, покрывающие клетку, invalidate.
+            stamp_store_and_bump(id as usize, cx, cy, cz);
+        }
+        return rc;
     }
     let k = cell_key(lid, cx, cy, cz);
     let mut g = idx_mut();
@@ -629,7 +639,14 @@ pub unsafe extern "system" fn idx_set_cell(
         return ERR_STRUCT;
     }
     if shard_mode() {
-        return shard_set_cell(id as usize, cell_key(lid, cx, cy, cz));
+        // TASK-403-B jnibulk: переезд = выход из старого региона (bump по
+        // сохранённым координатам) + вход в новый (bump по аргументам).
+        stamp_bump_stored(id as usize);
+        let rc = shard_set_cell(id as usize, cell_key(lid, cx, cy, cz));
+        if rc == 0 {
+            stamp_store_and_bump(id as usize, cx, cy, cz);
+        }
+        return rc;
     }
     let k = cell_key(lid, cx, cy, cz);
     let mut g = idx_mut();
@@ -658,6 +675,9 @@ pub unsafe extern "system" fn idx_remove(
         return ERR_STRUCT;
     }
     if shard_mode() {
+        // TASK-403-B jnibulk: удаление = исчезновение id из его клетки —
+        // регион старой клетки (координаты из per-id хранения) штампуется.
+        stamp_bump_stored(id as usize);
         return shard_remove(id as usize);
     }
     let mut g = idx_mut();
@@ -719,16 +739,15 @@ pub unsafe extern "system" fn idx_query(
     if pinned.is_null() {
         return ERR_STRUCT;
     }
-    let dst = unsafe { std::slice::from_raw_parts_mut(pinned as *mut jni::jint, cap as usize) };
 
     let n: i32;
     if shard_mode() {
         // cmp399_shard: lock-free sharded walk (per-cell seqlock validation).
-        n = shard_query(dst, cap, lid, (cx0, cx1), (cy0, cy1), (cz0, cz1));
+        n = shard_query(pinned as *mut jni::jint, cap, lid, (cx0, cx1), (cy0, cy1), (cz0, cz1));
     } else {
         // Legacy single-RwLock path (verbatim body, extracted as-is).
         let g = idx();
-        n = legacy_query(&g, dst, cap, lid, (cx0, cx1), (cy0, cy1), (cz0, cz1));
+        n = legacy_query(&g, unsafe { std::slice::from_raw_parts_mut(pinned as *mut jni::jint, cap as usize) }, cap, lid, (cx0, cx1), (cy0, cy1), (cz0, cz1));
     }
     unsafe { (vt.ReleasePrimitiveArrayCritical)(env, out, pinned, 0) };
     n
@@ -777,4 +796,295 @@ fn legacy_query(
         }
     }
     n
+}
+
+// ---------------------------------------------------------------------------
+// TASK-403-B (vector jnibulk, flag cmp403_jnibulk): JNI-boundary amortization
+// ---------------------------------------------------------------------------
+//
+// Hidden price being attacked (BOTTLENECK ROUND-400 §4, delta-method): the
+// rust items index trades the 31% java items lane for per-entity JNI
+// crossings that java profiles cannot attribute (≈12-17% wall). Two mechanics
+// shrink that boundary without changing ANY candidate outcome:
+//
+//  1. RAW ARENA (idxQueryP): the query result is written straight into
+//     native memory wrapped by a DIRECT BYTE BUFFER (created by the native
+//     itself via NewDirectByteBuffer) instead of a pinned int[] — the native
+//     body performs ZERO JNI calls (no GetArrayLength, no Get/Release
+//     PrimitiveArrayCritical ⇒ no GCLocker window). Java reads the payload
+//     through the PUBLIC absolute ByteBuffer.getInt — no sun.misc.Unsafe, no
+//     module-opens dependency (resolve failure on the Java side ⇒ bulk stays
+//     off, legacy int[] path verbatim).
+//
+//  2. COARSE-STAMP MEMO (idxCoarseBase + stamps bumped by every index
+//     mutation): the candidate list of a query depends only on the scan
+//     window cells and the index state. Every mutation (insert / set_cell /
+//     remove) passes through idx_insert/idx_set_cell/idx_remove, which stamp
+//     the 8³-cell coarse regions of the touched cells (per-id coords are
+//     stored so remove can stamp the region the id LEAVES). A Java-side
+//     memo keyed by (scan window, ≤8 regional stamps) replays the cached
+//     candidate ids through the SAME exact java live-filter loop
+//     (isAlive/level/AABB.intersects/clipDirect/tryToMerge) — false
+//     positives are filtered exactly as after a native fill; a false
+//     negative requires an id to enter the window without any covered-cell
+//     mutation, which is impossible by construction (mid-mutation single
+//     tick is bounded by the vanilla EntitySectionStorage per-section
+//     snapshot semantics — the documented cmp399_shard precedent).
+//
+// GATES: the arena/stamp natives are STRICT-eq gated on cmp403_jnibulk
+// (bulk_mode()); any other flag — including the composite parents — gets 0 /
+// ERR_STRUCT from them and the java bulk sub-gate stays off. Empty flag =
+// bit-in-bit vanilla (the whole block is dormant-invisible).
+
+const U0: AtomicU64 = AtomicU64::new(0);
+
+/// Strict bulk-transport gate (STRICT eq — never starts_with: the
+/// полу-вооружённый мост lesson, TASK-400-D).
+#[inline]
+pub(crate) fn bulk_mode() -> bool {
+    static M: OnceLock<bool> = OnceLock::new();
+    *M.get_or_init(|| {
+        std::env::var("CRUSSTY_LEVER_FLAG")
+            .map(|v| v.trim() == "cmp403_jnibulk")
+            .unwrap_or(false)
+    })
+}
+
+/// Coarse mutation stamps: 64³ slots covering the 8³-cell regions of every
+/// 1.0-cell via (rx&63)|(ry&63)<<6|(rz&63)<<12. Aliased regions (±64 regions
+/// apart) share a slot → only SPURIOUS invalidation (extra native fills),
+/// never a missed one. 2 MiB of zero-initialized .bss.
+static COARSE: [AtomicU64; 262_144] = [U0; 262_144];
+
+/// Per-id last-known cell coords (for the LEAVE-region stamp on set_cell /
+/// remove). 12 MiB of zero-initialized .bss; written only under WLOCK by the
+/// shard mutators' callers.
+static CXP: [AtomicI32; MAX_IDS] = [H0; MAX_IDS];
+static CYP: [AtomicI32; MAX_IDS] = [H0; MAX_IDS];
+static CZP: [AtomicI32; MAX_IDS] = [H0; MAX_IDS];
+
+#[inline]
+fn stamp_slot(cx: i32, cy: i32, cz: i32) -> usize {
+    (((cx >> 3) & 63) as usize)
+        | ((((cy >> 3) & 63) as usize) << 6)
+        | ((((cz >> 3) & 63) as usize) << 12)
+}
+
+#[inline]
+fn stamp_bump(cx: i32, cy: i32, cz: i32) {
+    COARSE[stamp_slot(cx, cy, cz)].fetch_add(1, Ordering::Release);
+}
+
+/// Store the id's cell coords and stamp the region it ENTERED (successful
+/// insert / set_cell target). Release ordering publishes the pre-bump index
+/// stores to any reader that observes the bump.
+#[inline]
+fn stamp_store_and_bump(id: usize, cx: i32, cy: i32, cz: i32) {
+    if !bulk_mode() || id >= MAX_IDS {
+        return;
+    }
+    // SAFETY: id < MAX_IDS (checked above).
+    unsafe {
+        CXP.get_unchecked(id).store(cx, Ordering::Relaxed);
+        CYP.get_unchecked(id).store(cy, Ordering::Relaxed);
+        CZP.get_unchecked(id).store(cz, Ordering::Relaxed);
+    }
+    stamp_bump(cx, cy, cz);
+}
+
+/// Stamp the region the id LEAVES (set_cell away / remove) using the stored
+/// coords. A never-inserted id has (0,0,0) — stamping region(0,0,0) is a
+/// spurious invalidation only, never a missed one.
+#[inline]
+fn stamp_bump_stored(id: usize) {
+    if !bulk_mode() || id >= MAX_IDS {
+        return;
+    }
+    // SAFETY: id < MAX_IDS (checked above).
+    let (cx, cy, cz) = unsafe {
+        (
+            CXP.get_unchecked(id).load(Ordering::Relaxed),
+            CYP.get_unchecked(id).load(Ordering::Relaxed),
+            CZP.get_unchecked(id).load(Ordering::Relaxed),
+        )
+    };
+    stamp_bump(cx, cy, cz);
+}
+
+/// Direct ByteBuffer over the coarse-stamp table (layout: u64[slot],
+/// 262144 slots ⇒ 2 MiB). The buffer has NO cleaner (NewDirectByteBuffer
+/// memory is native-owned: .bss, process-lifetime) — GC of the view frees
+/// nothing. Returns null unless the STRICT cmp403_jnibulk gate matches
+/// (fail-closed: the java bulk sub-gate never arms without it).
+///
+/// Transport note (TASK-403-B): java reads stamps with the PUBLIC absolute
+/// ByteBuffer.getLong(idx) — zero sun.misc.Unsafe, zero module-opens deps.
+/// # Safety
+/// Called by the JVM through RegisterNatives.
+#[no_mangle]
+pub unsafe extern "system" fn idx_coarse_base(
+    env: *mut jni::JNIEnv,
+    _clazz: jni::jclass,
+) -> jni::jobject {
+    if !bulk_mode() || env.is_null() {
+        return std::ptr::null_mut();
+    }
+    let vt = unsafe { &**env };
+    // SAFETY: COARSE outlives the JVM (.bss static); capacity = slots·8.
+    unsafe {
+        (vt.NewDirectByteBuffer)(
+            env,
+            COARSE.as_ptr() as *mut std::ffi::c_void,
+            (COARSE.len() * std::mem::size_of::<AtomicU64>()) as jni::jlong,
+        )
+    }
+}
+
+/// Allocate the raw query arena: one [u64 cap][i32 × cap] block; the returned
+/// DIRECT BYTE BUFFER wraps the payload (header hidden before it). Bounds
+/// [128, 1<<26] — the same scratch floor the legacy int[] path starts at, and
+/// a grow-spiral cap. Returns null on any refusal (fail-closed; java keeps
+/// the legacy path). The buffer has no cleaner: the memory is freed only by
+/// idx_scratch_free (arenas are per-THREAD and region workers are persistent,
+/// so steady-state leaks nothing; a dead thread's arena is a bounded leak).
+/// # Safety
+/// Called by the JVM through RegisterNatives.
+#[no_mangle]
+pub unsafe extern "system" fn idx_scratch_alloc(
+    env: *mut jni::JNIEnv,
+    _clazz: jni::jclass,
+    cap: jni::jint,
+) -> jni::jobject {
+    if !bulk_mode() || env.is_null() || cap < 128 || cap > (1 << 26) {
+        return std::ptr::null_mut();
+    }
+    let bytes = 8 + 4 * cap as usize;
+    // SAFETY: bytes > 0 and ≤ 8+4·2²⁶ = 256 MiB + 8; align 16 satisfies the
+    // u64 header and any i32 payload access.
+    let layout = std::alloc::Layout::from_size_align(bytes, 16)
+        .expect("arena layout: size fits usize, align is a power of two");
+    let base = std::alloc::alloc(layout);
+    if base.is_null() {
+        return std::ptr::null_mut();
+    }
+    // Header: payload capacity (free() reconstructs the layout from it).
+    unsafe { (base as *mut i64).write_unaligned(cap as i64) };
+    let vt = unsafe { &**env };
+    let bb = unsafe {
+        (vt.NewDirectByteBuffer)(
+            env,
+            base.add(8) as *mut std::ffi::c_void,
+            (4 * cap) as jni::jlong,
+        )
+    };
+    if bb.is_null() {
+        // SAFETY: same layout the block was allocated with above.
+        unsafe { std::alloc::dealloc(base, layout) };
+    }
+    bb
+}
+
+/// Free an arena returned by idx_scratch_alloc (cap is recovered from the
+/// hidden header in front of the wrapped payload). Non-zero rc on anything
+/// un-freeable (fail-closed: the bounded leak is acceptable — arenas are
+/// per-THREAD and the region workers are persistent, so steady-state leaks
+/// nothing).
+/// # Safety
+/// Called by the JVM through RegisterNatives; buf must come from
+/// idx_scratch_alloc of the same process.
+#[no_mangle]
+pub unsafe extern "system" fn idx_scratch_free(
+    env: *mut jni::JNIEnv,
+    _clazz: jni::jclass,
+    buf: jni::jobject,
+) -> jni::jint {
+    if !bulk_mode() || env.is_null() || buf.is_null() {
+        return ERR_STRUCT;
+    }
+    let vt = unsafe { &**env };
+    // SAFETY: buf is a direct ByteBuffer created by idx_scratch_alloc.
+    let payload = unsafe { (vt.GetDirectBufferAddress)(env, buf) };
+    if payload.is_null() {
+        return ERR_STRUCT;
+    }
+    // SAFETY: payload = base+8 of an alloc'd block; header read is in-bounds.
+    let cap = unsafe { (payload.sub(8) as *mut i64).read_unaligned() };
+    if !(128..=(1 << 26)).contains(&cap) {
+        return ERR_RANGE;
+    }
+    let bytes = 8 + 4 * cap as usize;
+    // SAFETY: same layout the block was allocated with (reconstructed from
+    // the header).
+    let layout = std::alloc::Layout::from_size_align(bytes, 16)
+        .expect("arena layout: size fits usize, align is a power of two");
+    unsafe { std::alloc::dealloc(payload.cast(), layout) };
+    0
+}
+
+/// Bulk query: identical candidate semantics to idx_query (same window
+/// guards, same shard_query walk) but the result is written to the RAW arena
+/// payload (address taken from the direct ByteBuffer — ONE plain JNI table
+/// call per query, then a zero-JNI body: no GetArrayLength, no Get/Release
+/// PrimitiveArrayCritical ⇒ no GCLocker window). Overflow returns -(cap)
+/// (java grows the arena and retries), ERR_RANGE for absurd scan widths or a
+/// too-small buffer, ERR_STRUCT on gate/pointer trouble.
+/// # Safety
+/// Called by the JVM through RegisterNatives; buf must be a direct ByteBuffer
+/// whose capacity ≥ `cap` ints obtained from idx_scratch_alloc.
+#[no_mangle]
+#[allow(clippy::too_many_arguments)]
+pub unsafe extern "system" fn idx_query_p(
+    env: *mut jni::JNIEnv,
+    _clazz: jni::jclass,
+    qx0: jni::jdouble,
+    qy0: jni::jdouble,
+    qz0: jni::jdouble,
+    qx1: jni::jdouble,
+    qy1: jni::jdouble,
+    qz1: jni::jdouble,
+    lid: jni::jint,
+    buf: jni::jobject,
+    cap: jni::jint,
+) -> jni::jint {
+    if !bulk_mode() || env.is_null() || buf.is_null() || cap <= 0 {
+        return ERR_STRUCT;
+    }
+    let vt = unsafe { &**env };
+    // SAFETY: buf is a direct ByteBuffer created by idx_scratch_alloc.
+    let addr = unsafe { (vt.GetDirectBufferAddress)(env, buf) };
+    if addr.is_null() {
+        return ERR_STRUCT;
+    }
+    // Fail-closed against a truncated view: the payload must hold ≥ cap ints.
+    let buf_cap = unsafe { (vt.GetDirectBufferCapacity)(env, buf) };
+    if buf_cap < cap as jni::jlong {
+        return ERR_RANGE;
+    }
+    // Cell window with the ±1 pad; guard absurd itemMerge configs (verbatim
+    // idx_query semantics).
+    let cx0 = qx0.floor() as i32 - 1;
+    let cx1 = qx1.floor() as i32 + 1;
+    let cy0 = qy0.floor() as i32 - 1;
+    let cy1 = qy1.floor() as i32 + 1;
+    let cz0 = qz0.floor() as i32 - 1;
+    let cz1 = qz1.floor() as i32 + 1;
+    if (cx1 - cx0) > 6 || (cy1 - cy0) > 6 || (cz1 - cz0) > 6 {
+        return ERR_RANGE;
+    }
+    if !shard_mode() {
+        // Unreachable with matching rust/java gates (jnibulk ⇒ shard mode);
+        // fail-closed rather than walk the RwLock path through a raw pointer.
+        return ERR_STRUCT;
+    }
+    // SAFETY: addr = payload of a buffer with capacity ≥ cap ints (verified
+    // above against GetDirectBufferCapacity; the arena grows exactly like the
+    // legacy SCRATCH did).
+    shard_query(
+        addr as *mut jni::jint,
+        cap,
+        lid,
+        (cx0, cx1),
+        (cy0, cy1),
+        (cz0, cz1),
+    )
 }

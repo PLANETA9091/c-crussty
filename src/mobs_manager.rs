@@ -50,6 +50,9 @@ const GATE_LEVER: &str = "cmp401_soa";
 const GATE_LEVER_COMP: &str = "cmp402_comp";
 /// TASK-402-F: stagcomp = композит + stagger (единый флаг раунда).
 const GATE_LEVER_STAGCOMP: &str = "cmp402_stagcomp";
+/// TASK-403-B: bulk-транспорт флаг — композит + jnibulk (raw-arena/stamp memo
+/// на item-стороне); мобовая soa+grid половина армится тем же флагом.
+const GATE_LEVER_JNIBULK: &str = "cmp403_jnibulk";
 
 fn lever_flag() -> String {
     std::env::var("CRUSSTY_LEVER_FLAG")
@@ -59,8 +62,10 @@ fn lever_flag() -> String {
 }
 
 /// TASK-402-B: the hook arms under the legacy soa flag AND the composite.
+/// TASK-403-B: + the bulk-transport flag (composite + jnibulk).
 fn java_gate_matches(f: &str) -> bool {
     f == GATE_LEVER || f == GATE_LEVER_COMP || f == GATE_LEVER_STAGCOMP
+        || f == GATE_LEVER_JNIBULK
 }
 
 static READY: AtomicBool = AtomicBool::new(false);
@@ -388,7 +393,7 @@ pub fn activate() {
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
         // TASK-402-B: под композитом маркер объявляет ВСЕ суб-механизмы
         // (soa + зеркальный sharded grid; item-половина — в items_manager).
-        if f == GATE_LEVER_COMP || f == GATE_LEVER_STAGCOMP {
+        if f == GATE_LEVER_COMP || f == GATE_LEVER_STAGCOMP || f == GATE_LEVER_JNIBULK {
             eprintln!(
                 "[crussty-plugin] {}: ARMED soa=flat-arrays seqlock=global-version writer=global-mutex ids_cap=1048576 cell_cap=262144 cell=1.0 pad=1.0 radius_gate=1.0 rust_prune=coarse-hw-hh + mobgrid=sharded-mirror shards=64 shard_cap=16384 fallback-read=per-call (rust mobs_soa SoA flat x/y/z/hw/hh/flags ⊕ mobs_grid mirror; pushEntities tail untouched vanilla; per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT)",
                 f
