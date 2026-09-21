@@ -11,7 +11,10 @@ import net.minecraft.server.MinecraftServer;
  * {@code LivingEntity.aiStep → invokevirtual serverAiStep()V} (javap ground
  * truth purpur-1.21.10: ровно 1 сайт @ offset 277, внутри guard
  * {@code isEffectiveAi() && !level().isClientSide()}) на статический мост
- * {@code MobAiOps.serverAiStepGate(Entity)V}. Мост:
+ * {@code MobAiOps.serverAiStepGate(LivingEntity)V} (desc = virtual desc с
+ * receiver-классом LivingEntity, препендированным — contract
+ * retarget_virtual_to_static; dleg2 compose-reject урок: (LEntity;)V
+ * отклоняется валидатором stack-shape). Мост:
  *
  *   - не-Mob (Player/ServerPlayer/ArmorStand) — ваниль {@code serverAiStep()}
  *     КАЖДЫЙ тик (видимая семантика игроков не трогается);
@@ -105,12 +108,11 @@ public final class MobAiOps {
     /**
      * Замена сайта {@code invokevirtual serverAiStep()V} в LivingEntity.aiStep.
      * Возвращает void — stack-identical замещение (receiver consummирован).
+     * Desc РОВНО (Lnet/minecraft/world/entity/LivingEntity;)V — virtual desc
+     * ()V с receiver-классом, препендированным (валидатор compose).
      */
-    public static void serverAiStepGate(Entity e) {
-        if (!(e instanceof LivingEntity le)) {
-            return; // недостижимо (сайт внутри LivingEntity.aiStep) — защита верификатора
-        }
-        if (e instanceof Mob mob && skipAi(mob)) {
+    public static void serverAiStepGate(LivingEntity le) {
+        if (le instanceof Mob mob && skipAi(mob)) {
             return; // вне окна: AI-плейн этого моба пропущен (тело aiStep/пуш/коллизии — ваниль)
         }
         le.serverAiStep(); // ваниль (виртуально: Mob/Player/ArmorStand override)

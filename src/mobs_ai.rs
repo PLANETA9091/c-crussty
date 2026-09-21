@@ -53,7 +53,11 @@ const OPS_BYTES: &[u8] =
     include_bytes!("../mobai/build/net/minecraft/world/entity/MobAiOps.class");
 
 const SERVERAISTEP_DESC: &str = "()V";
-const GATE_STATIC_DESC: &str = "(Lnet/minecraft/world/entity/Entity;)V";
+// dleg2 root-cause fix (compose-reject): валидатор требует РОВНО virtual-desc
+// с receiver-классом LivingEntity, препендированным к static-дескриптору
+// (см. retarget_virtual_to_static: expect_static = "(L{receiver};{desc[1..]}").
+// Мост принимает LivingEntity и сам сужает до Mob внутри.
+const GATE_STATIC_DESC: &str = "(Lnet/minecraft/world/entity/LivingEntity;)V";
 
 const ERR_STRUCT: i32 = -1;
 const ERR_RANGE: i32 = -2;
@@ -487,10 +491,11 @@ mod tests {
     fn retarget_desc_contract() {
         // Receiver-prepended static form (stack-identical void → void).
         let expect_static = format!("(L{LIVING_CLASS};{}", SERVERAISTEP_DESC[1..].to_string());
-        // serverAiStep's receiver IS LivingEntity — the bridge widens it to
-        // Entity (superclass), which the verifier accepts at the call site.
-        assert_eq!(GATE_STATIC_DESC, "(Lnet/minecraft/world/entity/Entity;)V");
-        assert!(expect_static.starts_with("(Lnet/minecraft/world/entity/LivingEntity;)"));
+        // dleg2 compose-reject root cause: валидатор требует РОВНО expect_static
+        // — widening до суперкласса (LEntity;)V отклоняется (stack-shape guard).
+        // Мост принимает LivingEntity и сужает до Mob внутри себя.
+        assert_eq!(GATE_STATIC_DESC, expect_static);
+        assert_eq!(GATE_STATIC_DESC, "(Lnet/minecraft/world/entity/LivingEntity;)V");
     }
 
     #[test]
