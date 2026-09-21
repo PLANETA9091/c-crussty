@@ -42,6 +42,8 @@ mod items_manager;
 mod jni_table;
 mod kernel_policy;
 mod loader;
+mod mobs_grid;
+mod mobs_manager;
 mod noise_fill;
 mod parse_diag;
 mod zero_cursor;
@@ -176,6 +178,12 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // EntityCallbacks guard sites, composed on top of F1/F3 bytes (LAST in
     // the byte-hook chain). Dormant unless CRUSSTY_REGION_THREADS>=2.
     region_threads::register();
+    // MOB-PUSH (TASK-400-J, vector mobpush): LivingEntity byte hook for the
+    // getPushableEntities→MobPushOps.pushables retarget — pristine capture at
+    // first load, patch served after the MobPushOps bridge lands in the
+    // kernel loader (mobs_manager::activate worker). Dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp399_mobpush (empty flag = exact vanilla path).
+    mobs_manager::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -394,6 +402,11 @@ fn inject_surface() {
     // region_threads>=2, статический режим; items уходят из общего
     // entity-dispatch в батч-фазы).
     items_manager::activate();
+    // MOB-PUSH (TASK-400-J, vector mobpush): define MobPushOps into the
+    // kernel loader, compute the single-site pushEntities retarget,
+    // retransform LivingEntity (dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp399_mobpush).
+    mobs_manager::activate();
     // FLAT-TRAVERSAL (S7-163): define TraverseOps into the kernel loader
     // (define-only; the checkInsideBlocks retarget composes through the
     // entity_compose chain stage 6; dormant unless CRUSSTY_FLAT_TRAVERSAL=1
