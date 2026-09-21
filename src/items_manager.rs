@@ -62,6 +62,7 @@ fn lever_flag_matches_for(f: &str) -> bool {
     // включает ОБА item-суб-механизма (shard-grid + lifetime-heap) наряду с
     // мобовыми soa+grid — единый гейт раунда.
     f == "items_subsys2" || f.starts_with("cmp399_") || f == "cmp402_comp"
+        || f == "cmp402_stagcomp"
 }
 
 pub fn activate() {
@@ -80,7 +81,7 @@ pub fn activate() {
     let flag = lever_flag();
     let shard = flag == "cmp399_shard";
     let bfcomp = flag == "cmp399_bfcomp";
-    let comp = flag == "cmp402_comp";
+    let comp = flag == "cmp402_comp" || flag == "cmp402_stagcomp";
     let despawn2 = flag == "cmp399_despawn2" || bfcomp || comp;
     if shard {
         // ГРОМКИЙ ARM-МАРКЕР (TASK-399-B): без этой строки нога не-armed.
