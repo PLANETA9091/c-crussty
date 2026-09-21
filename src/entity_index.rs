@@ -26,10 +26,15 @@
 //! SYNC: java note sites buffer rows per-thread (zero JNI per note); every
 //! query drains ALL published buffers and applies them in ONE fused JNI
 //! (eidxFlushQuery = flush + per-chunk counts). Writers hold one global
-//! mutex (batches, not scalars); readers take per-shard seqlock snapshots
-//! (QRETRY budget → ERR_RANGE → per-call vanilla fallback). Any structural
-//! failure (table overflow / probe exhaustion) → ERR_STRUCT → the bridge
-//! disarms permanently (broken=true) → exact vanilla replication forever.
+//! mutex (batches, not scalars — skipped entirely for empty batches, k2);
+//! readers take per-shard seqlock snapshots (QRETRY budget → ERR_RANGE →
+//! per-call vanilla fallback). k2: each chunk entry carries a monotone
+//! CONSERVATIVE aggregate hull (min/max over every member bb ever stored),
+//! so a query AABB that misses the hull returns count 0 without the chain
+//! walk — hull-miss ⇒ no member can intersect (hull ⊇ every member bb).
+//! Any structural failure (table overflow / probe exhaustion) → ERR_STRUCT
+//! → the bridge disarms permanently (broken=true) → exact vanilla
+//! replication forever.
 //!
 //! FAIL-CLOSED: natives are registered only under the STRICT-eq lever flag;
 //! ERR codes never change the result list, only skip-or-fallback decisions.
@@ -57,6 +62,10 @@ const K0: AtomicI64 = AtomicI64::new(0);
 const U0: AtomicU64 = AtomicU64::new(0);
 const I0: AtomicI32 = AtomicI32::new(0);
 const V0: AtomicUsize = AtomicUsize::new(0);
+/// Unset aggregate marker (quiet NaN bits) — fails every ordered f64
+/// comparison, so an unset aggregate reads as "no overlap" (safe: unset
+/// means the chunk entry has no members yet → count 0 is exact).
+const NAN_BITS: u64 = 0x7FF8_0000_0000_0000;
 
 struct Shard {
     /// Seqlock version: even = stable, odd = write in flight (monotonic).
@@ -69,6 +78,13 @@ struct Shard {
     s_id: [AtomicI32; SLOT_CAP],
     s_next: [AtomicI32; SLOT_CAP],
     s_bb: [AtomicU64; 6 * SLOT_CAP],
+    /// Per-chunk CONSERVATIVE aggregate bb (k2): min-of-mins/max-of-maxes
+    /// over every bb ever stored in the chunk (monotone — REMOVE never
+    /// shrinks). Unset = NaN bits. A count query whose AABB misses the
+    /// aggregate can return 0 WITHOUT the chain walk (superset contract:
+    /// no member bb can overlap if the aggregate does not). Bits only;
+    /// compare via f64 after from_bits.
+    a_bb: [AtomicU64; 6 * CHUNK_CAP],
     /// id table (open-addressed): i_key = id+1 (0 = free, never erased —
     /// dead entries have i_slot == 0 and are revived by id reuse).
     i_key: [AtomicI64; ID_CAP],
@@ -84,6 +100,7 @@ static SHARDS: [Shard; NSHARDS] = [const {
         s_id: [I0; SLOT_CAP],
         s_next: [I0; SLOT_CAP],
         s_bb: [U0; 6 * SLOT_CAP],
+        a_bb: [U0; 6 * CHUNK_CAP],
         i_key: [K0; ID_CAP],
         i_cell: [K0; ID_CAP],
         i_slot: [I0; ID_CAP],
@@ -206,7 +223,8 @@ fn chunk_find(sh: &Shard, key: i64) -> Option<usize> {
     None
 }
 
-/// (WLOCK) chunk-table find-or-insert.
+/// (WLOCK) chunk-table find-or-insert. Fresh entries get a NaN aggregate
+/// (no members yet) BEFORE publish — readers only see stable windows.
 fn chunk_entry(sh: &Shard, key: i64) -> Result<usize, i32> {
     let mut p = shard_of(key) & (CHUNK_CAP - 1);
     for _ in 0..PROBE_MAX {
@@ -217,6 +235,11 @@ fn chunk_entry(sh: &Shard, key: i64) -> Result<usize, i32> {
         if cur == 0 {
             sh.keys[p].store(key, Ordering::Release);
             sh.head[p].store(0, Ordering::Relaxed);
+            let mut j = 0;
+            while j < 6 {
+                sh.a_bb[6 * p + j].store(NAN_BITS, Ordering::Relaxed);
+                j += 1;
+            }
             return Ok(p);
         }
         p = (p + 1) & (CHUNK_CAP - 1);
@@ -272,6 +295,26 @@ fn write_bb(sh: &Shard, slot: usize, bb: &[f64; 6]) {
     }
 }
 
+/// (WLOCK, shard odd) Monotone aggregate expansion: agg = hull(agg, bb).
+/// NaN current → adopt v (first member). Never shrinks → readers may use a
+/// stale-large aggregate (superset preserved; only false positives).
+fn agg_expand(sh: &Shard, ki: usize, bb: &[f64; 6]) {
+    for j in 0..3 {
+        let cur = f64::from_bits(sh.a_bb[6 * ki + j].load(Ordering::Relaxed));
+        let v = bb[j];
+        if !(cur <= v) {
+            sh.a_bb[6 * ki + j].store(v.to_bits(), Ordering::Relaxed);
+        }
+    }
+    for j in 3..6 {
+        let cur = f64::from_bits(sh.a_bb[6 * ki + j].load(Ordering::Relaxed));
+        let v = bb[j];
+        if !(cur >= v) {
+            sh.a_bb[6 * ki + j].store(v.to_bits(), Ordering::Relaxed);
+        }
+    }
+}
+
 /// One sync op: (op, id, cx, cz, bb6). op: 0=BB, 1=ADD, 2=REMOVE.
 struct Op {
     op: u8,
@@ -282,6 +325,12 @@ struct Op {
 }
 
 fn apply_ops(ops: &[Op]) -> i32 {
+    if ops.is_empty() {
+        // k2: queries with no pending notes (the common case) must not pay
+        // the global writer mutex — applying nothing changes nothing and
+        // every shard version stays even/stable.
+        return 0;
+    }
     let mut st = match WSTATE.lock() {
         Ok(g) => g,
         Err(_) => return ERR_STRUCT,
@@ -313,6 +362,7 @@ fn apply_ops(ops: &[Op]) -> i32 {
                         let sh = &SHARDS[cshard];
                         if let Some(ki) = chunk_find(sh, ckey) {
                             write_bb(sh, slot, &op.bb);
+                            agg_expand(sh, ki, &op.bb);
                         }
                         let _ = ei;
                         continue;
@@ -361,6 +411,7 @@ fn apply_ops(ops: &[Op]) -> i32 {
                     };
                     csh.s_id[slot].store(id_key(op.id) as i32, Ordering::Relaxed);
                     write_bb(csh, slot, &op.bb);
+                    agg_expand(csh, ki, &op.bb);
                     chain_push(csh, ki, slot);
                     ish.i_cell[ei].store(ckey, Ordering::Release);
                     ish.i_slot[ei].store(slot as i32 + 1, Ordering::Release);
@@ -391,8 +442,9 @@ fn apply_ops(ops: &[Op]) -> i32 {
                         let cshard = shard_of(old_cell);
                         bump_odd!(cshard);
                         let csh = &SHARDS[cshard];
-                        if let Some(_ki) = chunk_find(csh, old_cell) {
+                        if let Some(ki) = chunk_find(csh, old_cell) {
                             write_bb(csh, slot, &op.bb);
+                            agg_expand(csh, ki, &op.bb);
                         }
                     }
                 }
@@ -438,21 +490,42 @@ fn count_chunk(cx: i32, cz: i32, b: &[f64; 6]) -> Result<i32, i32> {
         match chunk_find(sh, key) {
             None => {}
             Some(ki) => {
-                let mut cur = sh.head[ki].load(Ordering::Acquire);
-                while cur != 0 {
-                    let s = (cur - 1) as usize;
-                    let bb = [
-                        f64::from_bits(sh.s_bb[6 * s].load(Ordering::Relaxed)),
-                        f64::from_bits(sh.s_bb[6 * s + 1].load(Ordering::Relaxed)),
-                        f64::from_bits(sh.s_bb[6 * s + 2].load(Ordering::Relaxed)),
-                        f64::from_bits(sh.s_bb[6 * s + 3].load(Ordering::Relaxed)),
-                        f64::from_bits(sh.s_bb[6 * s + 4].load(Ordering::Relaxed)),
-                        f64::from_bits(sh.s_bb[6 * s + 5].load(Ordering::Relaxed)),
-                    ];
-                    if bb_overlaps(b, &bb) {
-                        count += 1;
+                // k2 fast path: the conservative aggregate hull answers
+                // "definitely no candidate" without the chain walk. NaN
+                // (unset) reads as no-overlap — exact for member-less
+                // entries, impossible for published entries WITH members
+                // (agg_expand runs before the ADD publishes).
+                let agg = [
+                    f64::from_bits(sh.a_bb[6 * ki].load(Ordering::Relaxed)),
+                    f64::from_bits(sh.a_bb[6 * ki + 1].load(Ordering::Relaxed)),
+                    f64::from_bits(sh.a_bb[6 * ki + 2].load(Ordering::Relaxed)),
+                    f64::from_bits(sh.a_bb[6 * ki + 3].load(Ordering::Relaxed)),
+                    f64::from_bits(sh.a_bb[6 * ki + 4].load(Ordering::Relaxed)),
+                    f64::from_bits(sh.a_bb[6 * ki + 5].load(Ordering::Relaxed)),
+                ];
+                if agg[0] <= b[3]
+                    && agg[3] >= b[0]
+                    && agg[1] <= b[4]
+                    && agg[4] >= b[1]
+                    && agg[2] <= b[5]
+                    && agg[5] >= b[2]
+                {
+                    let mut cur = sh.head[ki].load(Ordering::Acquire);
+                    while cur != 0 {
+                        let s = (cur - 1) as usize;
+                        let bb = [
+                            f64::from_bits(sh.s_bb[6 * s].load(Ordering::Relaxed)),
+                            f64::from_bits(sh.s_bb[6 * s + 1].load(Ordering::Relaxed)),
+                            f64::from_bits(sh.s_bb[6 * s + 2].load(Ordering::Relaxed)),
+                            f64::from_bits(sh.s_bb[6 * s + 3].load(Ordering::Relaxed)),
+                            f64::from_bits(sh.s_bb[6 * s + 4].load(Ordering::Relaxed)),
+                            f64::from_bits(sh.s_bb[6 * s + 5].load(Ordering::Relaxed)),
+                        ];
+                        if bb_overlaps(b, &bb) {
+                            count += 1;
+                        }
+                        cur = sh.s_next[s].load(Ordering::Relaxed);
                     }
-                    cur = sh.s_next[s].load(Ordering::Relaxed);
                 }
             }
         }
