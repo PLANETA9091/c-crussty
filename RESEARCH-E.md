@@ -69,3 +69,54 @@ cp = patched-kernel.jar + fastutil + adventure-api + adventure-key + paper-api),
 Лейн: despawn-скан = 150k мобов × O(players) java-итерации/тик → Rust DOD
 (~6M f64-оп/тик) + устранение 600k предикат-вызовов/тик. Ожидаемый потолок
 умеренный (скан ~2-4% wall cpu-collapsed comp-сцены) — цель pair ≥ 80% от пула.
+
+## K2-RESEARCH (TASK-409-E tick, веб ≥3 пруфа + javap ground truth нашего kernel-jar) — расширение окна sscanEpoch
+
+### Ground truth из round-round406eleg1/patched-kernel.jar (наш leg1 kernel, purpur-1.21.10) + entity-recon.txt
+1. **DESPAWN-СКАН (закрыт leg1)**: `Mob.checkDespawn` → 1 сайт `Level.findNearbyPlayer(Entity,D,Predicate)`
+   (javap @55, RESEARCH-E) — O(мобы×игроки)/тик, 150k мобов bench-сцены.
+2. **ACTIVATION-СКАН (новый таргет k2)**: javap `io.papermc.paper.entity.activation.ActivationRange`
+   из kernel-jar:
+   - `ServerLevel.tickNonPassenger` @72: `ActivationRange.checkIfActive(Entity)` на КАЖДОГО
+     энтити КАЖДЫЙ тик — НО это лишь чтение `Entity.activatedTick >= currentTick` (скана игроков нет).
+   - ВЕСЬ player-скан концентрирован в `ActivationRange.activateEntities(Level)` (вызов из
+     ServerLevel @517 recon): на КАЖДОГО игрока за тик: 7 inflated AABB (по ActivationType:
+     misc/raider/animal/monster/water/flying-monster/villager) + **ОДИН broadphase-запрос
+     `Level.getEntities(null, maxBB, predicate)`** (maxBB = union) + `activateEntity(e)` на каждый
+     хит (= `e.activatedTick = currentTick`, идемпотентный сет, порядок НЕ важен).
+   - Следствие k2: retarget единственного сайта `getEntities(null,maxBB,pred)` внутри
+     activateEntities на java-мост, читающий из той же epoch-снапшот-плоскости rust-колонку
+     `activation_hits[I]` (SoA box-overlap entity-BB ⊆ players' maxBB в ТОМ ЖЕ bulk-JNI проходе) →
+     java-итерация ТОЛЬКО по хитам с нетронутым ванильным `activateEntity` (все java-состояния
+     immunities/wakeup/afk/spectator/markers сохраняются бит-в-байт — решение activateEntity
+     идемпотентно, порядок обхода не наблюдаем).
+3. **SPAWN-СКАН (деприоритизирован)**: natural-spawn `getNearestPlayer` проверки не входят в топ-лейны
+   BOTTLENECK-409 (fluid 16.9-18.5 / broadphase 14.3 / inside 13.3 / nav_ai 9.6-10.1 / JNI wall 12-17);
+   фиксед в design-note, не в k2-коде.
+
+### Веб-пруфы (≥3, industry precedent)
+- **Paper/Spigot EAR** (docs.papermc.io spigot.yml, патч 0014-Entity-Activation-Range.patch github):
+  entities вне activation-range тикают на 1/4 rate (изначально 5%) — само существование плоскости
+  «решение по дистанции до игрока» = отраслевой стандарт.
+- **Airplane DEAR** (blog.airplane.gg/dear-configuration): «limits how often a mob decides to do
+  something based on how far away they are from a player»; per-entity freq = dist²/2^mod, 1/1@22blk
+  … 1/20@101blk — подтверждает кэшируемость/огрубляемость per-entity player-дистанции без ломания
+  механик (entities всё ещё двигаются/действуют 100% времени).
+- **Pufferfish DAB** (docs.pufferfish.host): градиентное тикирование brain/goals по дистанции
+  (villager/axolotl brains limited) — тот же принцип «меньше решений на далёких мобах».
+- ВАЖНО для ванильности: наши ноги НЕ меняют частоты решений (это был бы геймплейный сдвиг
+  = запрет на изменение значений). k2 устраняет ТОЛЬКО дублирующий поиск (broadphase-запрос/игрок/тик
+  и O(P) итерации/моб), сохраняя бит-в-байт решения тика — категория «сколько работы», не «что решается».
+
+### K2-дизайн (ОДИН bulk-JNI/батч — закон 6)
+- sscanEpoch расширяем выход: `nearest[I]` (leg1) + `act_hits` (пер-игрок список denseId внутри
+  maxBB-игрока; box-overlap по entity.getBoundingBox ⊣ inflate типов — union maxBB как в ванили;
+  полуинтервалы идентичны `AABB.intersects`).
+- Java-мост `MobScanOps.activateEntitiesBridge(Level)` ретаргетит call-site
+  `ActivationRange.activateEntities` (invokestatic, единственный @ServerLevel @517): при STRICT-флаге
+  и живом снапшоте — итерация хитов + ванильный `ActivationRange.activateEntity(e)`; при любом
+  промахе (эпоха/структура/magic) — ванильный `getEntities`-путь на этот тик.
+- Экономика: 4 игрока × getEntities(maxBB≈250blk) broadphase-запрос/тик уходит из ChunkEntitySlices
+  (broadphase-лейн 14.3% BOTTLENECK-409) → DOD-проход по уже резидентным SoA-позициям.
+- Классы: MobScanOps.java расширяем (новый мост + ретаргет-контракт), javac rebuild + commit
+  ВСЕГДА (урок 408). ItemEntityManager.class блоб (гейты ×3 из 63bf3b3) — rebuild В k2-коммит.
