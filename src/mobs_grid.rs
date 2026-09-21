@@ -60,6 +60,7 @@ pub(crate) fn mirror_mode() -> bool {
                 v.trim() == "cmp402_comp"
                     || v.trim() == "cmp402_stagcomp"
                     || v.trim() == "cmp403_tickplane"
+                    || v.trim() == "cmp405_stagtick"
             })
             .unwrap_or(false)
     })

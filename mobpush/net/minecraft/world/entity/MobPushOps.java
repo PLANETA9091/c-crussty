@@ -78,7 +78,8 @@ public final class MobPushOps {
         return f != null
                 && (f.trim().equals("cmp401_soa") || f.trim().equals("cmp402_comp")
                     || f.trim().equals("cmp402_stagcomp")
-                    || f.trim().equals("cmp403_tickplane"));
+                    || f.trim().equals("cmp403_tickplane")
+                    || f.trim().equals("cmp405_stagtick"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -88,7 +89,8 @@ public final class MobPushOps {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
         return f != null && (f.trim().equals("cmp402_comp")
                 || f.trim().equals("cmp402_stagcomp")
-                || f.trim().equals("cmp403_tickplane"));
+                || f.trim().equals("cmp403_tickplane")
+                || f.trim().equals("cmp405_stagtick"));
     }
 
     private static final boolean COMPOSITE = compositeEnabled();

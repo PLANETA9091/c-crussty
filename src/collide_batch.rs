@@ -73,7 +73,7 @@ fn lever_flag_matches() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let v = v.trim();
-            v == "cmp401_collide" || v == "cmp403_tickplane"
+            v == "cmp401_collide" || v == "cmp403_tickplane" || v == "cmp405_stagtick"
         })
         .unwrap_or(false)
 }
@@ -214,11 +214,15 @@ pub fn activate() {
         );
         // TASK-403-C: сегментный маркер плейна с фактическим флагом раунда.
         if std::env::var("CRUSSTY_LEVER_FLAG")
-            .map(|v| v.trim() == "cmp403_tickplane")
+            .map(|v| {
+                let v = v.trim();
+                v == "cmp403_tickplane" || v == "cmp405_stagtick"
+            })
             .unwrap_or(false)
         {
             eprintln!(
-                "[crussty-plugin] cmp403_tickplane: segment collide-batch ARMED (retransform rc={rc})"
+                "[crussty-plugin] {} segment collide-batch ARMED (retransform rc={rc})",
+                std::env::var("CRUSSTY_LEVER_FLAG").unwrap_or_default().trim()
             );
         }
         std::thread::sleep(std::time::Duration::from_millis(250));

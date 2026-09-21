@@ -61,6 +61,7 @@ fn enabled() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
         Ok("cmp401_stagger") | Ok("cmp402_stagcomp") | Ok("cmp403_tickplane")
+            | Ok("cmp405_stagtick")
     )
 }
 
