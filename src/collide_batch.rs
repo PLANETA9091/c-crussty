@@ -73,7 +73,7 @@ fn lever_flag_matches() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let v = v.trim();
-            v == "cmp401_collide" || v == "cmp403_tickplane" || v == "cmp405_stagtick"
+            v == "cmp401_collide" || v == "cmp403_tickplane" || v == "cmp405_stagtick" || v == "cmp406_sscan"
         })
         .unwrap_or(false)
 }
@@ -216,7 +216,7 @@ pub fn activate() {
         if std::env::var("CRUSSTY_LEVER_FLAG")
             .map(|v| {
                 let v = v.trim();
-                v == "cmp403_tickplane" || v == "cmp405_stagtick"
+                v == "cmp403_tickplane" || v == "cmp405_stagtick" || v == "cmp406_sscan"
             })
             .unwrap_or(false)
         {

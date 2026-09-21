@@ -162,6 +162,22 @@ fn ensure_plane() {
     }
 }
 
+/// TASK-406-E (sscan despawn scan): read view for the nearest-player epoch
+/// pass — the f64 x/y/z position slices + the seqlock version. The caller
+/// (mobs_sscan::sscan_epoch) brackets its scan with the SAME version
+/// discipline as `mob_query` (even v1 → scan → even v2, bounded retries); a
+/// torn snapshot retries the whole pass, so the column is always a
+/// CONSISTENT SoA state (a mob whose id was assigned always has its position
+/// written before the version bump — no half-assigned slots). No WLOCK:
+/// readers never block writers. Positions of non-alive slots may be stale —
+/// such slots are never consulted (dead mobs are not ticked).
+pub(crate) fn sscan_snapshot() -> Option<(&'static [f64], &'static [f64], &'static [f64], &'static AtomicUsize)> {
+    let d = data()?;
+    // d: &'static Soa (published once, never freed) — the f64 slices are
+    // &'static by construction, no unsafe required.
+    Some((d.x.as_slice(), d.y.as_slice(), d.z.as_slice(), &VERSION))
+}
+
 /// Strict gate: natives work only under the exact lever flag (STRICT eq;
 /// empty/foreign flag = the tables are never touched).
 fn lever_mode() -> bool {
@@ -183,6 +199,9 @@ fn lever_mode() -> bool {
         || f == "cmp402_stagcomp"
         || f == "cmp403_tickplane"
         || f == "cmp405_stagtick"
+        // TASK-406-E: композит раунда-406 — SoA-плоскость primary push
+        // broadphase + источник популяции для sscanEpoch (despawn-scan column).
+        || f == "cmp406_sscan"
 }
 
 /// Mirror-plane selector: the sharded grid (src/mobs_grid.rs) is armed ONLY
