@@ -38,6 +38,7 @@ mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
 mod item_merge;
+mod mob_oss;
 mod jni_table;
 mod kernel_policy;
 mod loader;
@@ -119,6 +120,9 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // mergeWithNeighbours whole-body retarget (Lithium item_entity_merging
     // port). Pristine capture at first load; patch served after the
     // ItemMergeOps bridge lands. Dormant unless CRUSSTY_LEVER_FLAG=items_oss.
+    // MOB-OSSPORT (TASK-401-F): Level byte hook for the getPushableEntities
+    // whole-body retarget (Lithium unpushable_cramming push-lane adaptation).
+    // Dormant unless CRUSSTY_LEVER_FLAG=cmp401_ossport.
     item_merge::register();
     // PALETTED-DEMUX (S7-131, ARCH-ATTACK lever #1): PalettedContainer
     // first-load demux patch (field injection + fast-path get + guarded
@@ -349,6 +353,7 @@ fn inject_surface() {
     // compute the mergeWithNeighbours whole-body patch, retransform (dormant
     // unless CRUSSTY_LEVER_FLAG=items_oss).
     item_merge::activate();
+    mob_oss::activate();
     // PALETTED-DEMUX (S7-131): define PalettedContainerOps into the launch
     // loader EARLY (the patch serves at PalettedContainer's first load —
     // field injection forbids retransform), then READY.
