@@ -89,6 +89,14 @@ fn cell_key(lid: i32, cx: i32, cy: i32, cz: i32) -> i64 {
 
 #[inline]
 fn find_slot(keys: &[i64], k: i64) -> Result<usize, usize> {
+    // TASK-398 lifetime-guard: the static IDX starts with EMPTY vecs (the old
+    // code never applied INIT_CAP). find_slot on an empty table used to compute
+    // `keys.len() - 1` → usize underflow → get_unchecked(wild) → SIGSEGV in
+    // link (crash round-397-J). Guard: empty table = "not found", callers
+    // treat Err as the insert slot only after grow_grid guarantees capacity.
+    if keys.is_empty() {
+        return Err(0);
+    }
     let mask = keys.len() - 1;
     let mut s = (mix64(k as u64) as usize) & mask;
     loop {
@@ -114,10 +122,13 @@ fn ensure_id_space(inner: &mut Inner, id: usize) {
 fn grow_grid(inner: &mut Inner) {
     let cap = inner.keys.len();
     let used = inner.used;
-    if used * 8 < cap * 5 {
+    if !inner.keys.is_empty() && used * 8 < cap * 5 {
         return; // <62.5% load
     }
-    let ncap = cap * 2;
+    // TASK-398 root-cause fix: cap==0 on the very first link used to produce
+    // ncap == 0 (0*2) — the table stayed empty and every find_slot hit the
+    // underflow above (SIGSEGV). Floor the first allocation at INIT_CAP.
+    let ncap = (cap * 2).max(INIT_CAP);
     let mut keys = vec![0i64; ncap];
     let mut head = vec![0i32; ncap];
     for s in 0..cap {
@@ -140,6 +151,7 @@ fn grow_grid(inner: &mut Inner) {
 /// Link `id` as the head of cell-key `k` (caller guarantees id is unlinked).
 fn link(inner: &mut Inner, id: usize, k: i64) {
     grow_grid(inner);
+    debug_assert!(!inner.keys.is_empty(), "items_index grid must be grown before link");
     let slot = match find_slot(&inner.keys, k) {
         Ok(s) => s,
         Err(s) => {
@@ -367,8 +379,16 @@ pub unsafe extern "system" fn idx_query(
                             return -cap;
                         }
                         let id = (cur - 1) as usize;
-                        // SAFETY: id < next.len(); cell[id] == k because the
-                        // chain for `k` only contains ids whose cell == k.
+                        if id >= g.next.len() {
+                            // TASK-398 fail-closed: a chain id outside the id
+                            // space means corruption (stale link) — never walk
+                            // it. Release the pin and hand the caller a
+                            // structural error so the Java bridge disarms.
+                            unsafe { (vt.ReleasePrimitiveArrayCritical)(env, out, pinned, 0) };
+                            return ERR_STRUCT;
+                        }
+                        // SAFETY: id < next.len() (checked above); cell[id] == k
+                        // because the chain for `k` only contains ids with cell == k.
                         if unsafe { *g.cell.get_unchecked(id) } == k {
                             dst[n as usize] = cur - 1;
                             n += 1;
