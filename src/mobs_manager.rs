@@ -50,6 +50,8 @@ const GATE_LEVER: &str = "cmp401_soa";
 const GATE_LEVER_COMP: &str = "cmp402_comp";
 /// TASK-402-F: stagcomp = композит + stagger (единый флаг раунда).
 const GATE_LEVER_STAGCOMP: &str = "cmp402_stagcomp";
+/// TASK-403 (upper): stagcomp2 = stagcomp ⊕ stagn2 (N=2 окно) — единый флаг.
+const GATE_LEVER_STAGCOMP2: &str = "cmp403_stagcomp2";
 
 fn lever_flag() -> String {
     std::env::var("CRUSSTY_LEVER_FLAG")

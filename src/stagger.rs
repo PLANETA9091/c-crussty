@@ -60,8 +60,17 @@ const CANUSE_STATIC_DESC: &str = "(Lnet/minecraft/world/entity/ai/goal/WrappedGo
 fn enabled() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp401_stagger") | Ok("cmp402_stagcomp")
+        Ok("cmp401_stagger") | Ok("cmp402_stagcomp") | Ok("cmp403_stagcomp2")
     )
+}
+
+/// TASK-403 (upper): mirror of java bridge N-derivation for the composite
+/// flag cmp403_stagcomp2 (stagcomp ⊕ stagn2): marker/audit truth only.
+fn staged_n() -> u32 {
+    match std::env::var("CRUSSTY_LEVER_FLAG").as_deref() {
+        Ok("cmp403_stagcomp2") => 2,
+        _ => 4,
+    }
 }
 
 static READY: AtomicBool = AtomicBool::new(false);
@@ -333,8 +342,8 @@ pub fn activate() {
         }
 
         // Committed: arm and retransform both classes (hooks serve patches).
-        crate::kernel_policy::audit_wire(PUSH_OPS, "pushables", "cmp401_stagger v1");
-        crate::kernel_policy::audit_wire(GOAL_OPS, "canUseGate", "cmp401_stagger v1");
+        crate::kernel_policy::audit_wire(PUSH_OPS, "pushables", if std::env::var("CRUSSTY_LEVER_FLAG").as_deref() == Ok("cmp403_stagcomp2") { "cmp403_stagcomp2 v1" } else { "cmp401_stagger v1" });
+        crate::kernel_policy::audit_wire(GOAL_OPS, "canUseGate", if std::env::var("CRUSSTY_LEVER_FLAG").as_deref() == Ok("cmp403_stagcomp2") { "cmp403_stagcomp2 v1" } else { "cmp401_stagger v1" });
         READY.store(true, Ordering::Release);
         let mut ok = true;
         for class_name in [LIVING_CLASS, GOALSEL_CLASS] {
@@ -346,11 +355,13 @@ pub fn activate() {
         }
         if ok {
             eprintln!(
-                "[crussty-plugin] cmp401_stagger ARMED (push=retargeted 1 site, goal=retargeted 1 site, N from env CRUSSTY_STAGGER_N/LEVER_ARG default 4)"
+                "[crussty-plugin] {} ARMED (push=retargeted 1 site, goal=retargeted 1 site, N={} flag-derived)",
+                 if std::env::var("CRUSSTY_LEVER_FLAG").as_deref() == Ok("cmp403_stagcomp2") { "cmp403_stagcomp2" } else { "cmp401_stagger" }, staged_n()
             );
         } else {
             eprintln!(
-                "[crussty-plugin] cmp401_stagger NOT ARMED (retransform rc != 0) — vanilla behavior"
+                "[crussty-plugin] {} NOT ARMED (retransform rc != 0) — vanilla behavior",
+                if std::env::var("CRUSSTY_LEVER_FLAG").as_deref() == Ok("cmp403_stagcomp2") { "cmp403_stagcomp2" } else { "cmp401_stagger" }
             );
         }
     });

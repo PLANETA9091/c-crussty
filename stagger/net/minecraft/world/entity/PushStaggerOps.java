@@ -34,7 +34,12 @@ import java.util.List;
  *
  * Fail-closed: ARMED=false (N<2 или getServer()==null или env-мусор) →
  * прямой ванильный вызов. Бридж определён в kernel loader ТОЛЬКО когда
- * lever_flag == "cmp401_stagger" (rust-гейт, строго eq).
+ * lever_flag == "cmp401_stagger" / "cmp403_stagn2" / "cmp403_stagn8" /
+ * "cmp403_stagn16" (rust-гейт, строго eq).
+ *
+ * TASK-403-A N-scan: N выводится из CRUSSTY_LEVER_FLAG (stagn2→2,
+ * stagn8→8, stagn16→16); иначе legacy-режим (CRUSSTY_STAGGER_N →
+ * LEVER_ARG, дефолт 4) для обратной совместимости cmp401_stagger.
  */
 public final class PushStaggerOps {
 
@@ -58,6 +63,26 @@ public final class PushStaggerOps {
     }
 
     private static int readN() {
+        // TASK-403-A N-scan: флаг определяет окно детерминированно на ногу
+        // (lever_arg=1 по банку; env-оверрайды не применяются к новым флагам).
+        String flag = null;
+        try {
+            flag = System.getenv("CRUSSTY_LEVER_FLAG");
+        } catch (Throwable ignored) {
+            // env-мусор → legacy-режим
+        }
+        if ("cmp403_stagcomp2".equals(flag)) {
+            return 2; // TASK-403 upper: stagcomp ⊕ stagn2 единый флаг
+        }
+        if ("cmp403_stagn2".equals(flag)) {
+            return 2;
+        }
+        if ("cmp403_stagn8".equals(flag)) {
+            return 8;
+        }
+        if ("cmp403_stagn16".equals(flag)) {
+            return 16;
+        }
         String raw = null;
         try {
             raw = System.getenv("CRUSSTY_STAGGER_N");

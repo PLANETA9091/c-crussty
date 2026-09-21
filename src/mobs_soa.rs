@@ -178,7 +178,7 @@ fn lever_mode() -> bool {
     // its primary mob push broadphase (together with the mobs_grid sharded
     // mirror — see mirror_mode()); the legacy cmp401_soa leg keeps its exact
     // prior behavior (no mirror, no grid reads) — two-mode A/B by design.
-    f == "cmp401_soa" || f == "cmp402_comp" || f == "cmp402_stagcomp"
+    f == "cmp401_soa" || f == "cmp402_comp" || f == "cmp402_stagcomp" || f == "cmp403_stagcomp2"
 }
 
 /// Mirror-plane selector: the sharded grid (src/mobs_grid.rs) is armed ONLY
