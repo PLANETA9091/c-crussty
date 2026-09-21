@@ -51,6 +51,7 @@ mod promote_wire;
 mod proto_blend_cache;
 mod randomtick;
 mod region_threads;
+mod sense_batch;
 mod skip_store;
 mod tickhook;
 mod travel_diet;
@@ -176,6 +177,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // EntityCallbacks guard sites, composed on top of F1/F3 bytes (LAST in
     // the byte-hook chain). Dormant unless CRUSSTY_REGION_THREADS>=2.
     region_threads::register();
+    // SENSEBATCH (TASK-399-D, agent D): EntityLookup getEntities funnel
+    // body-swaps (Entity/Class overloads -> SenseBatchOps batched transport).
+    // Dormant unless CRUSSTY_LEVER_FLAG=cmp399_sensebatch.
+    sense_batch::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -436,6 +441,12 @@ fn inject_surface() {
     // re-composes the F1 optimiseRandomTick swap; MUST run after
     // randomtick::activate — see src/tickhook.rs module docs).
     tickhook::activate();
+    // SENSEBATCH (TASK-399-D, agent D): ensure SenseBatchOps is defined into
+    // the kernel loader, arm it, retransform EntityLookup for the two
+    // getEntities funnel body swaps (dormant unless
+    // CRUSSTY_LEVER_FLAG=cmp399_sensebatch; MUST run after region_threads
+    // activation — SenseBatchOps rides region_threads' bridge list first).
+    sense_batch::activate();
 }
 
 /// Define one bridge class and register all its natives.

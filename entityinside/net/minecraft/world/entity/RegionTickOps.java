@@ -484,6 +484,9 @@ public final class RegionTickOps {
      */
     private static void stealChunks() {
         try {
+            // TASK-399-D cmp399_sensebatch: open the batched-sensing window
+            // for this pull-window (ThreadLocal slab, gen-invalidated at end).
+            ca.spottedleaf.moonrise.patches.chunk_system.level.entity.SenseBatchOps.beginBucket();
             Consumer<Entity> c = consumer;
             Entity[] b = stealArr;
             int total = stealLen;
@@ -497,6 +500,7 @@ public final class RegionTickOps {
         } catch (Throwable t) {
             if (workerError == null) workerError = t; // crash surfaces on main at join
         } finally {
+            ca.spottedleaf.moonrise.patches.chunk_system.level.entity.SenseBatchOps.endBucket();
             try {
                 DONE.await();
             } catch (Throwable t) {
@@ -653,6 +657,11 @@ public final class RegionTickOps {
 
     private static void tickBucket(int slot) {
         try {
+            // TASK-399-D cmp399_sensebatch: open the batched-sensing window
+            // for this bucket's AI phase (targeting/sensing getEntities from
+            // GoalSelector/Brain collapse into one candidate pass per
+            // (chunk-slices, class) pair — see SenseBatchOps/LEVER-V399-D.md).
+            ca.spottedleaf.moonrise.patches.chunk_system.level.entity.SenseBatchOps.beginBucket();
             // ITEM-SUBSYS2: items тикаются ИНЛАЙН в этом же проходе — один
             // обход, ванильный порядок снапшота EntityTickList per slot
             // (сильнее round-1: отдельная item-фаза до общего цикла).
@@ -683,6 +692,7 @@ public final class RegionTickOps {
         } catch (Throwable t) {
             if (workerError == null) workerError = t; // crash surfaces on main at join
         } finally {
+            ca.spottedleaf.moonrise.patches.chunk_system.level.entity.SenseBatchOps.endBucket();
             try {
                 DONE.await();
             } catch (Throwable t) {

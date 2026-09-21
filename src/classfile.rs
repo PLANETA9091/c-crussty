@@ -587,7 +587,7 @@ pub fn patch_update(bytes: &[u8]) -> Result<Vec<u8>, String> {
     // ---- splice: header + new cp + tail with the update method replaced ----
     let mut out = Vec::with_capacity(bytes.len() + 256);
     out.extend_from_slice(&bytes[0..8]); // magic, minor, major
-    u2(&mut out, pool.next); // new cp_count
+    out.extend_from_slice(&(pool.next as u16).to_be_bytes()); // new cp_count (u2)
     out.extend_from_slice(&pool.serialize());
     out.extend_from_slice(&bytes[layout.cp_end..m.start]);
     out.extend_from_slice(&method);
@@ -715,7 +715,7 @@ pub fn patch_optimise_random_tick(bytes: &[u8]) -> Result<Vec<u8>, String> {
     // ---- splice: header + new cp + tail with the method replaced ----
     let mut out = Vec::with_capacity(bytes.len() + 128);
     out.extend_from_slice(&bytes[0..8]); // magic, minor, major
-    u2(&mut out, pool.next); // new cp_count
+    out.extend_from_slice(&(pool.next as u16).to_be_bytes()); // new cp_count (u2)
     out.extend_from_slice(&pool.serialize());
     out.extend_from_slice(&bytes[layout.cp_end..m.start]);
     out.extend_from_slice(&method);
@@ -826,11 +826,155 @@ pub fn patch_brain_start_each(bytes: &[u8]) -> Result<Vec<u8>, String> {
     // ---- splice: header + new cp + tail with the method replaced ----
     let mut out = Vec::with_capacity(bytes.len() + 128);
     out.extend_from_slice(&bytes[0..8]); // magic, minor, major
-    u2(&mut out, pool.next); // new cp_count
+    out.extend_from_slice(&(pool.next as u16).to_be_bytes()); // new cp_count (u2)
     out.extend_from_slice(&pool.serialize());
     out.extend_from_slice(&bytes[layout.cp_end..m.start]);
     out.extend_from_slice(&method);
     out.extend_from_slice(&bytes[m.end..]);
+    Ok(out)
+}
+
+// ---------------------------------------------------------------------------
+// TASK-399-D cmp399_sensebatch (agent D, vector sensebatch): BOTH EntityLookup
+// getEntities funnels body-swapped to SenseBatchOps delegation.
+//
+//   1. `getEntities(Entity, AABB, List, Predicate)V` ->
+//      aload_0..aload_3; aload 4; invokestatic SenseBatchOps.getEntitiesSrc
+//      (10 bytes, max_locals 5, max_stack 5).
+//   2. `<T> getEntities(Class, Entity, AABB, List, Predicate)V` ->
+//      aload_0..aload_3; aload 4; aload 5; invokestatic
+//      SenseBatchOps.getEntitiesCls (12 bytes, max_locals 6, max_stack 6).
+//
+// Both bodies are straight-line (no branches) => EMPTY StackMapTable, the
+// F2 machine pattern. SenseBatchOps (defined into the SAME kernel loader,
+// same package ca.spottedleaf...chunk_system...entity) replicates the vanilla
+// region-loop byte-exactly when no bucket phase is active and routes through
+// the per-(chunk-slices, class) candidate slabs during a RegionTickOps bucket
+// phase — see entityinside/.../SenseBatchOps.java and LEVER-V399-D.md.
+//
+// Fail-closed: any other class / missing method / descriptor mismatch => Err
+// before any mutation (the hook then returns None and the kernel transport
+// stays vanilla). The int-limit getEntities siblings are intentionally NOT
+// patched (vanilla callers pass Integer.MAX_VALUE and never reach them).
+pub const ENTITY_LOOKUP_CLASS: &str =
+    "ca/spottedleaf/moonrise/patches/chunk_system/level/entity/EntityLookup";
+pub const SENSE_BATCH_OPS_CLASS: &str =
+    "ca/spottedleaf/moonrise/patches/chunk_system/level/entity/SenseBatchOps";
+const SENSE_GET_SRC_DESC: &str =
+    "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;Ljava/util/List;Ljava/util/function/Predicate;)V";
+const SENSE_GET_CLS_DESC: &str =
+    "(Ljava/lang/Class;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;Ljava/util/List;Ljava/util/function/Predicate;)V";
+const SENSE_OPS_SRC_DESC: &str = "(Lca/spottedleaf/moonrise/patches/chunk_system/level/entity/EntityLookup;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;Ljava/util/List;Ljava/util/function/Predicate;)V";
+const SENSE_OPS_CLS_DESC: &str = "(Lca/spottedleaf/moonrise/patches/chunk_system/level/entity/EntityLookup;Ljava/lang/Class;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;Ljava/util/List;Ljava/util/function/Predicate;)V";
+
+/// Straight-line Code attribute (empty exception table + empty
+/// StackMapTable) wrapping `code` — the F2 body-swap machine.
+fn sense_code_attr(pool: &mut Pool, code: &[u8], max_stack: u16, max_locals: u16) -> Vec<u8> {
+    let mut code_attr = Vec::new();
+    let u2 = |out: &mut Vec<u8>, v: u16| out.extend_from_slice(&v.to_be_bytes());
+    u2(&mut code_attr, pool.utf8("Code"));
+    let mut body = Vec::new();
+    u2(&mut body, max_stack);
+    u2(&mut body, max_locals);
+    body.extend_from_slice(&(code.len() as u32).to_be_bytes());
+    body.extend_from_slice(code);
+    body.extend_from_slice(&[0, 0]); // exception_table_length
+    body.extend_from_slice(&(1u16).to_be_bytes()); // attributes_count
+    u2(&mut body, pool.utf8("StackMapTable"));
+    body.extend_from_slice(&2u32.to_be_bytes()); // attribute_length
+    body.extend_from_slice(&0u16.to_be_bytes()); // number_of_entries = 0
+    // FIX (TASK-399 верхний агент): attribute_length у Code-атрибута — u32 поле
+    // (4 байта); прежний `u2(&mut code_attr, body.len() as u32)` был и
+    // типово-неверен (u16 closure), и бит класс-файл. Пишем u4 явно.
+    code_attr.extend_from_slice(&(body.len() as u32).to_be_bytes());
+    code_attr.extend_from_slice(&body);
+    code_attr
+}
+
+pub fn patch_entitylookup_sensebatch(bytes: &[u8]) -> Result<Vec<u8>, String> {
+    let layout = parse_layout(bytes).ok_or("bad classfile layout")?;
+    let this_name = this_class_name(&layout).ok_or("cannot resolve this_class name")?;
+    if this_name != ENTITY_LOOKUP_CLASS {
+        return Err(format!("unexpected class {this_name}"));
+    }
+    let mut pool = layout.pool;
+
+    // Find-only probes first (fail-closed before any pool mutation).
+    let Some(name_idx) = pool.find_utf8("getEntities") else {
+        return Err("getEntities not found".into());
+    };
+    let Some(src_desc_idx) = pool.find_utf8(SENSE_GET_SRC_DESC) else {
+        return Err("getEntities(Entity,AABB,List,Predicate) descriptor not found".into());
+    };
+    let Some(cls_desc_idx) = pool.find_utf8(SENSE_GET_CLS_DESC) else {
+        return Err("getEntities(Class,Entity,AABB,List,Predicate) descriptor not found".into());
+    };
+    let m_src = find_method(bytes, layout.methods_start, name_idx, src_desc_idx).ok_or(
+        "getEntities(Entity,AABB,List,Predicate)V not found",
+    )?;
+    let m_cls = find_method(bytes, layout.methods_start, name_idx, cls_desc_idx).ok_or(
+        "getEntities(Class,Entity,AABB,List,Predicate)V not found",
+    )?;
+
+    let m_ops_src = pool.method_ref(SENSE_BATCH_OPS_CLASS, "getEntitiesSrc", SENSE_OPS_SRC_DESC);
+    let m_ops_cls = pool.method_ref(SENSE_BATCH_OPS_CLASS, "getEntitiesCls", SENSE_OPS_CLS_DESC);
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for sensebatch refs".into());
+    }
+
+    // src body: aload_0..3, aload 4, invokestatic, return
+    let mut code_src = Vec::with_capacity(10);
+    code_src.extend_from_slice(&[0x2a, 0x2b, 0x2c, 0x2d, 0x19, 0x04]);
+    code_src.push(0xb8); // invokestatic
+    code_src.extend_from_slice(&m_ops_src.to_be_bytes());
+    code_src.push(0xb1); // return
+    let attr_src = sense_code_attr(&mut pool, &code_src, 5, 5);
+
+    // cls body: aload_0..3, aload 4, aload 5, invokestatic, return
+    let mut code_cls = Vec::with_capacity(12);
+    code_cls.extend_from_slice(&[0x2a, 0x2b, 0x2c, 0x2d, 0x19, 0x04, 0x19, 0x05]);
+    code_cls.push(0xb8); // invokestatic
+    code_cls.extend_from_slice(&m_ops_cls.to_be_bytes());
+    code_cls.push(0xb1); // return
+    let attr_cls = sense_code_attr(&mut pool, &code_cls, 6, 6);
+
+    let entry_src = |attr: &[u8]| -> Vec<u8> {
+        let mut v = Vec::with_capacity(8 + attr.len());
+        v.extend_from_slice(&m_src.access.to_be_bytes());
+        v.extend_from_slice(&m_src.name_idx.to_be_bytes());
+        v.extend_from_slice(&m_src.desc_idx.to_be_bytes());
+        v.extend_from_slice(&1u16.to_be_bytes()); // attributes_count
+        v.extend_from_slice(attr);
+        v
+    };
+    let entry_cls = |attr: &[u8]| -> Vec<u8> {
+        let mut v = Vec::with_capacity(8 + attr.len());
+        v.extend_from_slice(&m_cls.access.to_be_bytes());
+        v.extend_from_slice(&m_cls.name_idx.to_be_bytes());
+        v.extend_from_slice(&m_cls.desc_idx.to_be_bytes());
+        v.extend_from_slice(&1u16.to_be_bytes()); // attributes_count
+        v.extend_from_slice(attr);
+        v
+    };
+    let method_src = entry_src(&attr_src);
+    let method_cls = entry_cls(&attr_cls);
+
+    // Single splice pass: order the two replacements by their original
+    // offsets so both survive one rewrite.
+    let (first, first_entry, second, second_entry) = if m_src.start < m_cls.start {
+        (&m_src, &method_src, &m_cls, &method_cls)
+    } else {
+        (&m_cls, &method_cls, &m_src, &method_src)
+    };
+    let mut out = Vec::with_capacity(bytes.len() + 256);
+    out.extend_from_slice(&bytes[0..8]); // magic, minor, major
+    out.extend_from_slice(&(pool.next as u16).to_be_bytes()); // new cp_count (u2)
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(&bytes[layout.cp_end..first.start]);
+    out.extend_from_slice(first_entry);
+    out.extend_from_slice(&bytes[first.end..second.start]);
+    out.extend_from_slice(second_entry);
+    out.extend_from_slice(&bytes[second.end..]);
     Ok(out)
 }
 
@@ -942,7 +1086,7 @@ pub fn patch_run_collected_ticks(bytes: &[u8]) -> Result<Vec<u8>, String> {
 
     let mut out = Vec::with_capacity(bytes.len() + 64);
     out.extend_from_slice(&bytes[0..8]); // magic, minor, major
-    u2(&mut out, pool.next); // new cp_count
+    out.extend_from_slice(&(pool.next as u16).to_be_bytes()); // new cp_count (u2)
     out.extend_from_slice(&pool.serialize());
     out.extend_from_slice(&bytes[layout.cp_end..m.start]);
     out.extend_from_slice(&method);
@@ -1024,7 +1168,7 @@ pub fn patch_collect_ticks(bytes: &[u8]) -> Result<Vec<u8>, String> {
 
     let mut out = Vec::with_capacity(bytes.len() + 64);
     out.extend_from_slice(&bytes[0..8]); // magic, minor, major
-    u2(&mut out, pool.next); // new cp_count
+    out.extend_from_slice(&(pool.next as u16).to_be_bytes()); // new cp_count (u2)
     out.extend_from_slice(&pool.serialize());
     out.extend_from_slice(&bytes[layout.cp_end..m.start]);
     out.extend_from_slice(&method);
@@ -1093,7 +1237,7 @@ pub fn patch_tick_block(bytes: &[u8]) -> Result<Vec<u8>, String> {
 
     let mut out = Vec::with_capacity(bytes.len() + 64);
     out.extend_from_slice(&bytes[0..8]); // magic, minor, major
-    u2(&mut out, pool.next); // new cp_count
+    out.extend_from_slice(&(pool.next as u16).to_be_bytes()); // new cp_count (u2)
     out.extend_from_slice(&pool.serialize());
     out.extend_from_slice(&bytes[layout.cp_end..m.start]);
     out.extend_from_slice(&method);
