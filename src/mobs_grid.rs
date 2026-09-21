@@ -56,7 +56,11 @@ pub(crate) fn mirror_mode() -> bool {
     static M: OnceLock<bool> = OnceLock::new();
     *M.get_or_init(|| {
         std::env::var("CRUSSTY_LEVER_FLAG")
-            .map(|v| v.trim() == "cmp402_comp" || v.trim() == "cmp402_stagcomp")
+            .map(|v| {
+                let v = v.trim();
+                v == "cmp402_comp" || v == "cmp402_stagcomp"
+                    || v == "cmp405_fluidrust" // TASK-405-B: унаследованный сайт композита
+            })
             .unwrap_or(false)
     })
 }

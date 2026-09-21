@@ -60,7 +60,7 @@ const CANUSE_STATIC_DESC: &str = "(Lnet/minecraft/world/entity/ai/goal/WrappedGo
 fn enabled() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp401_stagger") | Ok("cmp402_stagcomp")
+        Ok("cmp401_stagger") | Ok("cmp402_stagcomp") | Ok("cmp405_fluidrust")
     )
 }
 

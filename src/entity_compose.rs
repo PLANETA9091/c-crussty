@@ -120,6 +120,7 @@ fn stage_enabled() -> bool {
     crate::inside_cache::enabled_pub()
         || crate::fluid_free::enabled_pub()
         || crate::fluid_dirty::enabled_pub()
+        || crate::fluid_rust::enabled_pub()
         || crate::region_threads::workers_from_env_pub().is_some()
         || crate::batch_collector::enabled_pub()
         || crate::traversal::enabled_pub()
@@ -377,6 +378,39 @@ pub fn activate() {
             } else {
                 eprintln!(
                     "[crussty-plugin] entity_compose: fluid_dirty bridge missed its window, chain continues WITHOUT fluid_dirty (fail-dominant)"
+                );
+            }
+        }
+
+        // ---- STAGE 3b: fluid_rust (bulk push plane, TASK-405-B) ----
+        if crate::fluid_rust::enabled_pub() {
+            if crate::fluid_rust::wait_bridge_ready(180_000) {
+                match crate::classfile::patch_fluid_rust(&bytes) {
+                    Ok((p, outcome)) if matches!(
+                        outcome,
+                        crate::classfile::RetargetOutcome::Retargeted { .. }
+                            | crate::classfile::RetargetOutcome::AlreadyPatched { .. }
+                    ) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage fluid_rust composed ({outcome:?})"
+                        );
+                        bytes = p;
+                        chain.push("fluid_rust");
+                    }
+                    Ok((_p, outcome)) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage fluid_rust strict check violated ({outcome:?}), chain continues WITHOUT fluid_rust (fail-dominant)"
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage fluid_rust patch rejected ({e}), chain continues WITHOUT fluid_rust (fail-dominant)"
+                        );
+                    }
+                }
+            } else {
+                eprintln!(
+                    "[crussty-plugin] entity_compose: fluid_rust bridge missed its window, chain continues WITHOUT fluid_rust (fail-dominant)"
                 );
             }
         }

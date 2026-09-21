@@ -29,6 +29,7 @@ mod classfile;
 mod entity_mirror;
 mod entity_compose;
 mod fluid_guard;
+mod fluid_rust;
 mod fluid_bitmask;
 mod fluid_dirty;
 mod fluid_free;
@@ -122,6 +123,13 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     perlin_noise::register();
     noise_fill::register();
     fluid_guard::register();
+    // FLUID-RUST (TASK-405-B, lever cmp405_fluidrust): the bulk push plane
+    // bridge (FluidRustOps) — no Entity byte hook here (entity_compose owns
+    // the Entity pipeline; the compose stage retargets the two wrapper
+    // call-sites of updateFluidHeightAndDoFluidPushing). Dormant unless
+    // CRUSSTY_LEVER_FLAG == "cmp405_fluidrust" (STRICT eq; empty flag =
+    // vanilla bit-in-bit).
+    fluid_rust::register();
     // ITEMS-OSS (TASK-396-H, round-396 vector H): ItemEntity byte hook for the
     // mergeWithNeighbours whole-body retarget (Lithium item_entity_merging
     // port). Pristine capture at first load; patch served after the
@@ -366,6 +374,11 @@ fn inject_surface() {
     // consult lives inside FluidPushGuardHook; ordering kills the NCDFE window).
     fluid_bitmask::activate();
     fluid_guard::activate();
+    // FLUID-RUST (TASK-405-B): define FluidRustOps into the kernel loader +
+    // RegisterNatives (fluidProbe/fluidPushBatch) BEFORE entity_compose —
+    // the compose stage waits on bridge_ready and serves the two wrapper
+    // retargets (dormant unless CRUSSTY_LEVER_FLAG == cmp405_fluidrust).
+    fluid_rust::activate();
     // ITEMS-OSS (TASK-396-H): define ItemMergeOps into the kernel loader,
     // compute the mergeWithNeighbours whole-body patch, retransform (dormant
     // unless CRUSSTY_LEVER_FLAG=items_oss).
