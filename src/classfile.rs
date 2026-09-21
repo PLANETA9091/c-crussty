@@ -4240,6 +4240,62 @@ pub fn patch_collision_temps(bytes: &[u8]) -> Result<Vec<u8>, String> {
     Ok(out)
 }
 
+// ============================================================================
+// TASK-401-B COLLIDE BATCH-MERGE (vector collide-batch, lever cmp401_collide).
+//
+// Single body-redirect on the kernel collision data plane (RESEARCH-B.md):
+//   STATIC scan: CollisionUtil.getCollisionsForBlocksOrWorldBorder ->
+//   CollideBatchOps.blockCollisions (identical descriptor; the bridge runs
+//   the verbatim moonrise fragment below the sweep threshold and serves
+//   dense sections from a per-tick per-worker section plan — batch-merge of
+//   per-entity block queries to the same section into one build per tick).
+//   Unlike round-400-F collidesweep there is NO Entity.collide redirect:
+//   Entity.collide stays vanilla verbatim; the mechanism is purely the
+//   inter-query dedup of block reads.
+// ============================================================================
+
+/// Kernel owner of the block-collision scan (same class as round-400-F).
+pub const COLLISION_UTIL_CLASS_B: &str =
+    "ca/spottedleaf/moonrise/patches/collisions/CollisionUtil";
+/// COLLIDE-BATCH bridge (kernel loader, same package as Entity).
+pub const COLLIDE_BATCH_OPS_CLASS: &str = "net/minecraft/world/entity/CollideBatchOps";
+
+/// Descriptor of CollisionUtil.getCollisionsForBlocksOrWorldBorder (javap on
+/// the real kernel class; the redirect target CollideBatchOps.blockCollisions
+/// MUST declare exactly this erased signature — stack shape unchanged).
+pub const CB_SCAN_DESC: &str = "(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;Ljava/util/List;Ljava/util/List;ILjava/util/function/BiPredicate;)Z";
+
+/// Single source of truth for the collide-batch redirect graph (bytecode
+/// surgery + delivered-classfile resolution closure).
+pub const CB_REDIRECT_TARGETS: [(&str, &str, &str, &str); 1] = [(
+    "blockCollisions",
+    CB_SCAN_DESC,
+    "blockCollisions",
+    CB_SCAN_DESC,
+)];
+
+/// Resolution closure (S7-164 NoSuchMethodError-storm guard): the delivered
+/// CollideBatchOps classfile must declare the redirect static exactly.
+pub fn collidebatch_resolution_closure(ops: &[u8]) -> Result<(), String> {
+    redirect_targets_resolution_closure(ops, &CB_REDIRECT_TARGETS)
+}
+
+/// Static→static whole-body redirect of
+/// CollisionUtil.getCollisionsForBlocksOrWorldBorder to
+/// CollideBatchOps.blockCollisions. Strict sites: 1 (the kernel has exactly
+/// one such method; NotFound means a foreign kernel shape — fail closed).
+pub fn patch_collision_batch(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let (p, outcome) = redirect_static_method_body_to_static(
+        bytes,
+        "getCollisionsForBlocksOrWorldBorder",
+        CB_SCAN_DESC,
+        COLLIDE_BATCH_OPS_CLASS,
+        "blockCollisions",
+        CB_SCAN_DESC,
+    )?;
+    Ok((p, outcome))
+}
+
 /// Whole-bridge patch for S7-135/TASK-271 INSIDE-CACHE: retarget the single
 /// `Entity.isAffectedByBlocks` site INSIDE
 /// `Entity.checkInsideBlocks(List, StepBasedCollector)` (javap offset 1 —
