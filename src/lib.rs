@@ -23,6 +23,7 @@ mod batch_collector;
 mod batch_desc;
 mod batch_table;
 mod brainhook;
+mod wakeup;
 mod bridge_class;
 mod classfile;
 #[cfg(test)]
@@ -173,6 +174,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     randomtick::register();
     // F2 BRAIN-ITERATORS (family-agg pack member, S7-114): Brain body-swap hook.
     brainhook::register();
+    // TASK-401-G EVENT-DRIVEN AI WAKEUP (cmp401_wakeup): byte hook on
+    // net/minecraft/world/entity/Mob for the 9-site serverAiStep retarget
+    // chain (dormant unless CRUSSTY_LEVER_FLAG=cmp401_wakeup).
+    wakeup::register();
     // F3 LEVELTICKS-READS (family-agg pack member, S7-116): LevelTicks +
     // ServerLevel body-swap hooks (the ServerLevel one composes with F1).
     tickhook::register();
@@ -433,6 +438,10 @@ fn inject_surface() {
     // F2 BRAIN-ITERATORS (S7-114): define BrainOps (+ nested) into the Brain
     // loader, then retransform for the startEachNonRunningBehavior body swap.
     brainhook::activate();
+    // TASK-401-G wakeup-list: define AiWakeupOps into the Mob loader, then
+    // retransform for the 9-site serverAiStep retarget chain (passive
+    // sighting poll — NO force-load, boot-NPE precedent 4140600).
+    wakeup::activate();
     // F3 LEVELTICKS-READS (S7-116): define TickBlockOps into the kernel
     // loader, then retransform LevelTicks + ServerLevel (tickBlock hook
     // re-composes the F1 optimiseRandomTick swap; MUST run after
