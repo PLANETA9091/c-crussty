@@ -25,10 +25,14 @@
 //! `classfile::retarget_virtual_to_static` (strict: exactly 1 site each,
 //! anything else is fail-closed → vanilla bytes served, NOT ARMED).
 //!
-//! Gate: env `CRUSSTY_LEVER_FLAG == "cmp401_stagger"` (STRICT eq, round-400
-//! lever protocol; полу-вооружённый мост AIOOBE урок TASK-400-D). Off by
-//! default — dormant-invisible discipline: with the gate off no byte hook is
-//! registered, nothing is defined or retransformed, the module is
+//! Gate (TASK-403-A N-scan): env `CRUSSTY_LEVER_FLAG` STRICT eq against
+//! `cmp401_stagger` (round-400 lever protocol; полу-вооружённый мост AIOOBE
+//! урок TASK-400-D) or the round-403 window variants `cmp403_stagn2` (N=2)
+//! / `cmp403_stagn8` (N=8). Same two lanes, same single sites, same
+//! golden-phase formula — ONLY the window N differs (derived per-flag inside
+//! the java bridge static-init; lever_arg stays 1 per dispatch bank rules).
+//! Off by default — dormant-invisible discipline: with the gate off no byte
+//! hook is registered, nothing is defined or retransformed, the module is
 //! byte-indistinguishable from the pre-TASK-401 plugin.
 
 use jvmti_bindings::prelude::*;
@@ -55,10 +59,32 @@ const PUSH_STATIC_DESC: &str =
 const CANUSE_DESC: &str = "()Z";
 const CANUSE_STATIC_DESC: &str = "(Lnet/minecraft/world/entity/ai/goal/WrappedGoal;)Z";
 
-/// env gate per the round-400 lever protocol (STRICT eq — never starts_with /
-/// contains: полу-вооружённый мост AIOOBE lesson TASK-400-D).
+/// Active lever flag per the round-400 lever protocol (STRICT eq — never
+/// starts_with / contains: полу-вооружённый мост AIOOBE lesson TASK-400-D).
+/// TASK-403-A: the N-scan variants are mechanical aliases — identical bridge
+/// classes, identical retarget sites; only N changes (java side derives it
+/// from CRUSSTY_LEVER_FLAG, rust mirrors the derivation for markers).
+fn active_flag() -> Option<&'static str> {
+    match std::env::var("CRUSSTY_LEVER_FLAG").as_deref() {
+        Ok("cmp401_stagger") => Some("cmp401_stagger"),
+        Ok("cmp403_stagn2") => Some("cmp403_stagn2"),
+        Ok("cmp403_stagn8") => Some("cmp403_stagn8"),
+        _ => None,
+    }
+}
+
 fn enabled() -> bool {
-    matches!(std::env::var("CRUSSTY_LEVER_FLAG").as_deref(), Ok("cmp401_stagger"))
+    active_flag().is_some()
+}
+
+/// Mirror of the java bridge N-derivation (marker/audit truth only — the
+/// actual gate lives in PushStaggerOps/GoalStaggerOps static-init).
+fn staged_n() -> u32 {
+    match active_flag() {
+        Some("cmp403_stagn2") => 2,
+        Some("cmp403_stagn8") => 8,
+        _ => 4,
+    }
 }
 
 static READY: AtomicBool = AtomicBool::new(false);
@@ -82,7 +108,7 @@ fn orig_lock(class_name: &str) -> &'static std::sync::Mutex<Option<Vec<u8>>> {
 pub fn register() {
     if !enabled() {
         eprintln!(
-            "[crussty-plugin] stagger: dormant (lever_flag != cmp401_stagger, vanilla push/goal checks)"
+            "[crussty-plugin] stagger: dormant (lever_flag not in {{cmp401_stagger,cmp403_stagn2,cmp403_stagn8}}, vanilla push/goal checks)"
         );
         return;
     }
@@ -330,8 +356,10 @@ pub fn activate() {
         }
 
         // Committed: arm and retransform both classes (hooks serve patches).
-        crate::kernel_policy::audit_wire(PUSH_OPS, "pushables", "cmp401_stagger v1");
-        crate::kernel_policy::audit_wire(GOAL_OPS, "canUseGate", "cmp401_stagger v1");
+        let flag = active_flag().unwrap_or("cmp401_stagger");
+        let wire = format!("{flag} v1");
+        crate::kernel_policy::audit_wire(PUSH_OPS, "pushables", &wire);
+        crate::kernel_policy::audit_wire(GOAL_OPS, "canUseGate", &wire);
         READY.store(true, Ordering::Release);
         let mut ok = true;
         for class_name in [LIVING_CLASS, GOALSEL_CLASS] {
@@ -343,11 +371,12 @@ pub fn activate() {
         }
         if ok {
             eprintln!(
-                "[crussty-plugin] cmp401_stagger ARMED (push=retargeted 1 site, goal=retargeted 1 site, N from env CRUSSTY_STAGGER_N/LEVER_ARG default 4)"
+                "[crussty-plugin] {flag} ARMED (push=retargeted 1 site, goal=retargeted 1 site, N={} flag-derived)",
+                staged_n()
             );
         } else {
             eprintln!(
-                "[crussty-plugin] cmp401_stagger NOT ARMED (retransform rc != 0) — vanilla behavior"
+                "[crussty-plugin] {flag} NOT ARMED (retransform rc != 0) — vanilla behavior"
             );
         }
     });
