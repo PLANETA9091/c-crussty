@@ -34,8 +34,117 @@
 //! chunks). Level scoping is carried by the key (identityHashCode of the
 //! Level) AND re-checked Java-side (`other.level() == self.level()`).
 
+//! TASK-399-E (cmp399_rustpre): per-id AABB snapshots (6×f64, flat SoA slab of
+//! AtomicU64 bit-patterns, stride 6) + EXACT java AABB.intersects pre-filter in
+//! idx_query (bit-in-bit with net/minecraft/world/phys/AABB javap'd from
+//! patched-kernel.jar: strict </> via dcmpg/dcmpl — NaN ⇒ false, touching ⇒
+//! false). Java pushes the snapshot at insert and on every positional change
+//! right after the move-gate (bb is tick-final there), so a concurrent merge
+//! query sees the same value vanilla would read fresh; the vanilla java
+//! intersects re-check stays on the surviving (small) set — final candidate
+//! set is bit-exact vanilla by construction, the java-side AABB/floor share
+//! on the merge path collapses instead.
+
 use jvmti_bindings::jni;
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::sync::RwLock;
+
+/// cmp399_rustpre: when false (default) idx_query keeps the EXACT old path
+/// (return every grid candidate; the aabb slab simply stays unused). Set by
+/// items_manager::activate() when CRUSSTY_LEVER_FLAG contains cmp399_rustpre.
+static RUSTPRE: AtomicBool = AtomicBool::new(false);
+
+pub fn set_rustpre(on: bool) {
+    RUSTPRE.store(on, Ordering::Relaxed);
+}
+
+/// Per-id AABB slab: 6×u64 (f64 bits) per id, [minX,minY,minZ,maxX,maxY,maxZ].
+/// VALUE reads/writes are lock-free Relaxed atomics (pushes are hot); only
+/// GROWTH takes the RwLock — readers/pushers clone the Arc (short read guard,
+/// never blocks on a query-length critical section). Free/never-set slots are
+/// NaN: every strict comparison is false ⇒ the candidate is filtered out
+/// (a linked id always has real values — insert carries the snapshot).
+static AABB: RwLock<Option<std::sync::Arc<Vec<AtomicU64>>>> = RwLock::new(None);
+
+const F64_NAN_BITS: u64 = 0x7ff8_0000_0000_0000;
+
+#[inline]
+fn aabb_read() -> std::sync::Arc<Vec<AtomicU64>> {
+    let g = match AABB.read() {
+        Ok(g) => g,
+        Err(p) => p.into_inner(),
+    };
+    match &*g {
+        Some(a) => a.clone(),
+        None => std::sync::Arc::new(Vec::new()),
+    }
+}
+
+/// Grow the slab to cover `id` (copy old values, NaN-fill the tail) and
+/// return the current snapshot.
+fn aabb_ensure(id: usize) -> std::sync::Arc<Vec<AtomicU64>> {
+    {
+        let g = match AABB.read() {
+            Ok(g) => g,
+            Err(p) => p.into_inner(),
+        };
+        if let Some(a) = &*g {
+            if id * 6 + 5 < a.len() {
+                return a.clone();
+            }
+        }
+    }
+    let mut w = match AABB.write() {
+        Ok(w) => w,
+        Err(p) => p.into_inner(),
+    };
+    let cur = match &*w {
+        Some(a) => a.clone(),
+        None => std::sync::Arc::new(Vec::new()),
+    };
+    if id * 6 + 5 >= cur.len() {
+        let ncap = ((id + 1).next_power_of_two().max(1024)) * 6;
+        let mut nv = Vec::with_capacity(ncap);
+        for _ in 0..ncap {
+            nv.push(AtomicU64::new(F64_NAN_BITS));
+        }
+        for i in 0..cur.len() {
+            nv[i].store(cur[i].load(Ordering::Relaxed), Ordering::Relaxed);
+        }
+        *w = Some(std::sync::Arc::new(nv));
+    }
+    match &*w {
+        Some(a) => a.clone(),
+        None => unreachable!("aabb slab grown"),
+    }
+}
+
+#[inline]
+fn aabb_store(slots: &[AtomicU64], id: usize, x0: f64, y0: f64, z0: f64, x1: f64, y1: f64, z1: f64) {
+    let base = id * 6;
+    slots[base].store(x0.to_bits(), Ordering::Relaxed);
+    slots[base + 1].store(y0.to_bits(), Ordering::Relaxed);
+    slots[base + 2].store(z0.to_bits(), Ordering::Relaxed);
+    slots[base + 3].store(x1.to_bits(), Ordering::Relaxed);
+    slots[base + 4].store(y1.to_bits(), Ordering::Relaxed);
+    slots[base + 5].store(z1.to_bits(), Ordering::Relaxed);
+}
+
+/// Bit-in-bit java `AABB.intersects(AABB)` with this = candidate box `b`,
+/// arg = query box — javap of patched-kernel.jar (strict </> via dcmpg/dcmpl;
+/// NaN ⇒ false; touching ⇒ false). Layout of `b`: [minX,minY,minZ,maxX,maxY,maxZ].
+#[inline]
+fn aabb_hits_candidate(
+    b: &[f64; 6],
+    qx0: f64,
+    qy0: f64,
+    qz0: f64,
+    qx1: f64,
+    qy1: f64,
+    qz1: f64,
+) -> bool {
+    b[0] < qx1 && b[3] > qx0 && b[1] < qy1 && b[4] > qy0 && b[2] < qz1 && b[5] > qz0
+}
 
 // ---------------------------------------------------------------------------
 // Flat table
@@ -238,6 +347,10 @@ pub unsafe extern "system" fn idx_probe(
 
 /// # Safety
 /// See idx_probe.
+/// TASK-399-E: carries the entity's current AABB (6×f64, [minX,minY,minZ,
+/// maxX,maxY,maxZ]) so the linked id is immediately filterable. The java side
+/// always passes the real `e.getBoundingBox()` bounds — the slab is correct
+/// regardless of the flag; under cmp399_rustpre the query filter consumes it.
 #[no_mangle]
 pub unsafe extern "system" fn idx_insert(
     _env: *mut jni::JNIEnv,
@@ -247,6 +360,12 @@ pub unsafe extern "system" fn idx_insert(
     cx: jni::jint,
     cy: jni::jint,
     cz: jni::jint,
+    bx0: jni::jdouble,
+    by0: jni::jdouble,
+    bz0: jni::jdouble,
+    bx1: jni::jdouble,
+    by1: jni::jdouble,
+    bz1: jni::jdouble,
 ) -> jni::jint {
     if id < 0 {
         return ERR_STRUCT;
@@ -259,7 +378,36 @@ pub unsafe extern "system" fn idx_insert(
             return ERR_STRUCT;
         }
     }
+    let slots = aabb_ensure(id as usize);
+    aabb_store(&slots, id as usize, bx0, by0, bz0, bx1, by1, bz1);
     link(&mut g, id as usize, k);
+    0
+}
+
+/// TASK-399-E: update the AABB snapshot of an already-linked id. Called by the
+/// bridge right after the move-gate whenever the entity's position changed
+/// this tick (the snapshot is tick-final there) — settled items never call
+/// this, so the steady-state push rate decays to zero.
+///
+/// # Safety
+/// See idx_probe.
+#[no_mangle]
+pub unsafe extern "system" fn idx_set_aabb(
+    _env: *mut jni::JNIEnv,
+    _clazz: jni::jclass,
+    id: jni::jint,
+    bx0: jni::jdouble,
+    by0: jni::jdouble,
+    bz0: jni::jdouble,
+    bx1: jni::jdouble,
+    by1: jni::jdouble,
+    bz1: jni::jdouble,
+) -> jni::jint {
+    if id < 0 {
+        return ERR_STRUCT;
+    }
+    let slots = aabb_ensure(id as usize);
+    aabb_store(&slots, id as usize, bx0, by0, bz0, bx1, by1, bz1);
     0
 }
 
@@ -312,7 +460,18 @@ pub unsafe extern "system" fn idx_remove(
         return 0;
     }
     match unlink(&mut g, id as usize) {
-        Ok(()) => 0,
+        Ok(()) => {
+            // TASK-399-E hygiene: NaN-out the snapshot so a reused/never-set id
+            // can never leak a stale box into the filter.
+            let slots = aabb_read();
+            let base = id as usize * 6;
+            if base + 5 < slots.len() {
+                for s in &slots[base..base + 6] {
+                    s.store(F64_NAN_BITS, Ordering::Relaxed);
+                }
+            }
+            0
+        }
         Err(()) => ERR_STRUCT,
     }
 }
@@ -321,6 +480,12 @@ pub unsafe extern "system" fn idx_remove(
 /// already-inflated vanilla merge box). Writes ids into the pinned `out`
 /// array; returns the count, -(out_cap) on overflow (caller grows + retries),
 /// ERR_RANGE for absurd scan widths, ERR_STRUCT on JNI trouble.
+///
+/// TASK-399-E (cmp399_rustpre): when armed, each grid candidate is additionally
+/// narrowed by the EXACT java AABB.intersects test (strict </>, NaN⇒false,
+/// touching⇒false — javap of patched-kernel.jar) against the per-id snapshot
+/// slab; only intersecting ids reach the caller. Without the flag the EXACT
+/// old path runs (every grid candidate; the slab is unused).
 ///
 /// # Safety
 /// See idx_probe.
@@ -366,6 +531,12 @@ pub unsafe extern "system" fn idx_query(
     let dst = unsafe { std::slice::from_raw_parts_mut(pinned as *mut jni::jint, cap as usize) };
 
     let g = idx();
+    let rustpre = RUSTPRE.load(Ordering::Relaxed);
+    let aab = if rustpre {
+        Some(aabb_read())
+    } else {
+        None
+    };
     let mut n: i32 = 0;
     for cz in cz0..=cz1 {
         for cy in cy0..=cy1 {
@@ -390,8 +561,44 @@ pub unsafe extern "system" fn idx_query(
                         // SAFETY: id < next.len() (checked above); cell[id] == k
                         // because the chain for `k` only contains ids with cell == k.
                         if unsafe { *g.cell.get_unchecked(id) } == k {
-                            dst[n as usize] = cur - 1;
-                            n += 1;
+                            let mut keep = true;
+                            if let Some(slots) = &aab {
+                                // TASK-399-E narrow-phase: exact java
+                                // other.getBoundingBox().intersects(qb) on the
+                                // snapshot (this = candidate, arg = query).
+                                let base = id * 6;
+                                if base + 5 < slots.len() {
+                                    let bx0 =
+                                        f64::from_bits(slots[base].load(Ordering::Relaxed));
+                                    let by0 =
+                                        f64::from_bits(slots[base + 1].load(Ordering::Relaxed));
+                                    let bz0 =
+                                        f64::from_bits(slots[base + 2].load(Ordering::Relaxed));
+                                    let bx1 =
+                                        f64::from_bits(slots[base + 3].load(Ordering::Relaxed));
+                                    let by1 =
+                                        f64::from_bits(slots[base + 4].load(Ordering::Relaxed));
+                                    let bz1 =
+                                        f64::from_bits(slots[base + 5].load(Ordering::Relaxed));
+                                    keep = aabb_hits_candidate(
+                                        &[bx0, by0, bz0, bx1, by1, bz1],
+                                        qx0,
+                                        qy0,
+                                        qz0,
+                                        qx1,
+                                        qy1,
+                                        qz1,
+                                    );
+                                }
+                                // else: snapshot slot missing (cannot happen for
+                                // a linked id — insert carries it) → defensive
+                                // keep; the retained vanilla java intersects
+                                // re-check filters the final set.
+                            }
+                            if keep {
+                                dst[n as usize] = cur - 1;
+                                n += 1;
+                            }
                         }
                         cur = unsafe { *g.next.get_unchecked(id) };
                     }

@@ -60,8 +60,12 @@ import org.bukkit.event.entity.EntityRemoveEvent;
  */
 public final class ItemEntityManager {
 
-    private static final boolean ENABLED =
-            "items_subsys2".equals(trimToEmpty(System.getenv("CRUSSTY_LEVER_FLAG")));
+    private static final boolean ENABLED = flagTokens().stream()
+            .anyMatch(f -> f.equals("items_subsys2") || f.startsWith("cmp399_"));
+
+    /** TASK-399-E: включение rust-side AABB pre-filter (cmp399_rustpre). */
+    private static final boolean RUSTPRE = flagTokens().stream()
+            .anyMatch(f -> f.equals("cmp399_rustpre"));
 
     private static final int PROBE_MAGIC = 0x1D3A;
 
@@ -78,11 +82,16 @@ public final class ItemEntityManager {
 
     // ---- natives (impl: src/items_index.rs, RegisterNatives после define) ----
     private static native int idxProbe();
-    private static native int idxInsert(int id, int lid, int cx, int cy, int cz);
+    // TASK-399-E: insert несёт снапшот AABB (6×double) — id сразу фильтруем.
+    private static native int idxInsert(int id, int lid, int cx, int cy, int cz,
+            double minX, double minY, double minZ, double maxX, double maxY, double maxZ);
     private static native int idxSetCell(int id, int lid, int cx, int cy, int cz);
     private static native int idxRemove(int id);
     private static native int idxQuery(double qx0, double qy0, double qz0,
             double qx1, double qy1, double qz1, int lid, int[] out);
+    // TASK-399-E: обновление снапшота AABB на изменивших позицию тиках.
+    private static native int idxSetAabb(int id, double minX, double minY, double minZ,
+            double maxX, double maxY, double maxZ);
 
     private static volatile boolean nativeOk;
     private static volatile boolean indexBroken;
@@ -132,8 +141,20 @@ public final class ItemEntityManager {
 
     private ItemEntityManager() {}
 
-    private static String trimToEmpty(String s) {
-        return s == null ? "" : s.trim();
+    /** Композитные флаги: eq("items_subsys2") || starts_with("cmp399_") по токенам. */
+    private static java.util.List<String> flagTokens() {
+        String v = System.getenv("CRUSSTY_LEVER_FLAG");
+        if (v == null) {
+            return java.util.List.of();
+        }
+        java.util.List<String> out = new java.util.ArrayList<>();
+        for (String t : v.trim().split(",")) {
+            String f = t.trim();
+            if (!f.isEmpty()) {
+                out.add(f);
+            }
+        }
+        return out;
     }
 
     /** Ленивая проверка нативов (первый armed(); до регистрации — Throwable → false, ретрай). */
@@ -186,7 +207,9 @@ public final class ItemEntityManager {
                 id = idTop++;
             }
             int lid = System.identityHashCode(e.level());
-            int rc = idxInsert(id, lid, Mth.floor(e.getX()), Mth.floor(e.getY()), Mth.floor(e.getZ()));
+            AABB bb = e.getBoundingBox();
+            int rc = idxInsert(id, lid, Mth.floor(e.getX()), Mth.floor(e.getY()), Mth.floor(e.getZ()),
+                    bb.minX, bb.minY, bb.minZ, bb.maxX, bb.maxY, bb.maxZ);
             if (rc != 0) {
                 indexBroken = true;
                 return; // id не занят (rollback выше) — merge уйдёт в vanilla
@@ -343,6 +366,20 @@ public final class ItemEntityManager {
         } else {
             e.move(MoverType.SELF, e.getDeltaMovement());
         }
+        // TASK-399-E (cmp399_rustpre): снапшот AABB для rust-фильтра. bb —
+        // чистая функция позиции (фикс. dimensions 0.25×0.25); позади move-gate
+        // она «тиков-финальна» (дальше только velocity/age), xo/yo/zo
+        // снапшотятся ванильно ДО space-push и move ⇒ posChanged ловит любое
+        // смещение тика. Push ДО merge-окна ⇒ конкурентный merge-запрос видит
+        // ровно то значение, которое ваниль прочитала бы свежим
+        // getBoundingBox(). Осевшие items никогда не заходят сюда — steady-state
+        // push-рейт затухает к нулю. Ванильный java intersects-речек на
+        // rust-прошедших сохранён (mergeWithNeighbours) ⇒ финальный
+        // кандидат-сет бит-в-бит ванильному.
+        if (RUSTPRE && (e.getX() != e.xo || e.getY() != e.yo || e.getZ() != e.zo)
+                && !e.level().isClientSide()) {
+            pushAabb(e);
+        }
         // offset 272
         e.applyEffectsFromBlocks();
         // offsets 276..341: friction
@@ -409,6 +446,22 @@ public final class ItemEntityManager {
         e.setDeltaMovement(vec3.x * mult,
                 vec3.y + (vec3.y < 0.05999999865889549D ? 0.004999999888241291D : 0.0D),
                 vec3.z * mult);
+    }
+
+    /**
+     * TASK-399-E: обновить rust-снапшот AABB (id → 6×f64 в SoA-слоте
+     * src/items_index.rs). Структурный отказ → indexBroken → ванильный путь.
+     */
+    private static void pushAabb(ItemEntity e) {
+        int[] box = idMap.get(e);
+        if (box == null) {
+            return; // ещё не проиндексирован — insert несёт свежий bb
+        }
+        AABB bb = e.getBoundingBox();
+        int rc = idxSetAabb(box[0], bb.minX, bb.minY, bb.minZ, bb.maxX, bb.maxY, bb.maxZ);
+        if (rc != 0) {
+            indexBroken = true;
+        }
     }
 
     /** Реплика приватного isMergable() (offsets 0..59) c hoisted stack. */

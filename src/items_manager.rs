@@ -30,18 +30,48 @@ const IM_CLASS: &str = "net/minecraft/world/entity/ItemEntityManager";
 const IM_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/world/entity/ItemEntityManager.class");
 
-fn lever_flag_matches() -> bool {
+fn lever_tokens() -> Vec<String> {
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim().eq("items_subsys2"))
-        .unwrap_or(false)
+        .map(|v| {
+            v.trim()
+                .split(',')
+                .map(|t| t.trim().to_string())
+                .filter(|t| !t.is_empty())
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+/// TASK-399-E: база J (items_subsys2) армится и своим флагом, и любым
+/// cmp399_* (композитная композиция J+rustpre): f.eq("items_subsys2") →
+/// f.eq("items_subsys2") || f.starts_with("cmp399_").
+fn lever_flag_matches() -> bool {
+    lever_tokens()
+        .iter()
+        .any(|f| f == "items_subsys2" || f.starts_with("cmp399_"))
+}
+
+/// Свой вектор E: точный AABB pre-filter в rust (перенос narrow-phase
+/// candidates-теста из java в idx_query, см. src/items_index.rs).
+fn rustpre_enabled() -> bool {
+    lever_tokens().iter().any(|f| f == "cmp399_rustpre")
 }
 
 pub fn activate() {
+    let rustpre = rustpre_enabled();
+    // Флаг включает/выключает ТОЛЬКО rust-фильтр; сама J-подсистема (grid)
+    // живёт при любом армирующем флаге. Включаем до spawn — queries ещё нет.
+    crate::items_index::set_rustpre(rustpre);
     if !lever_flag_matches() {
         eprintln!(
             "[crussty-plugin] items_subsys2: dormant (set CRUSSTY_LEVER_FLAG=items_subsys2 to enable)"
         );
         return;
+    }
+    if rustpre {
+        eprintln!(
+            "[crussty-plugin] cmp399_rustpre: enabling rust-side AABB pre-filter (idx_query narrow-phase, per-id aabb snapshots)"
+        );
     }
     if crate::region_threads::workers_from_env_pub().is_none() {
         eprintln!(
@@ -49,7 +79,7 @@ pub fn activate() {
         );
         return;
     }
-    std::thread::spawn(|| {
+    std::thread::spawn(move || {
         // Boot discipline: same as batch_collector (quiet loader before define).
         if !crate::improved_noise::wait_for_boot() {
             eprintln!(
@@ -108,21 +138,25 @@ pub fn activate() {
             };
 
             // RegisterNatives: idxProbe/idxInsert/idxSetCell/idxRemove/idxQuery
-            // (impl — src/items_index.rs). Провал регистрации → armed()=false
-            // (probeOnce не пройдёт magic) → ванильный путь.
+            // (impl — src/items_index.rs) + TASK-399-E idxSetAabb. Провал
+            // регистрации → armed()=false (probeOnce не пройдёт magic) →
+            // ванильный путь.
             let names = [
                 CString::new("idxProbe").expect("no NUL"),
                 CString::new("idxInsert").expect("no NUL"),
                 CString::new("idxSetCell").expect("no NUL"),
                 CString::new("idxRemove").expect("no NUL"),
                 CString::new("idxQuery").expect("no NUL"),
+                CString::new("idxSetAabb").expect("no NUL"),
             ];
             let sigs = [
                 CString::new("()I").expect("no NUL"),
-                CString::new("(IIIII)I").expect("no NUL"),
+                // TASK-399-E: insert carries the aabb snapshot (6×double).
+                CString::new("(IIIIIDDDDDD)I").expect("no NUL"),
                 CString::new("(IIIII)I").expect("no NUL"),
                 CString::new("(I)I").expect("no NUL"),
                 CString::new("(DDDDDDI[I)I").expect("no NUL"),
+                CString::new("(IDDDDDD)I").expect("no NUL"),
             ];
             let natives = [
                 jvmti_bindings::jni::JNINativeMethod {
@@ -150,6 +184,11 @@ pub fn activate() {
                     signature: sigs[4].as_ptr(),
                     fnPtr: crate::items_index::idx_query as *const c_void as *mut c_void,
                 },
+                jvmti_bindings::jni::JNINativeMethod {
+                    name: names[5].as_ptr(),
+                    signature: sigs[5].as_ptr(),
+                    fnPtr: crate::items_index::idx_set_aabb as *const c_void as *mut c_void,
+                },
             ];
             let reg = env.register_natives(c, &natives);
             if let Err(code) = reg {
@@ -169,6 +208,9 @@ pub fn activate() {
         });
         if defined.unwrap_or(false) {
             eprintln!("[crussty-plugin] items_subsys2: defined {IM_CLASS} in kernel loader + registered index natives");
+            if rustpre {
+                eprintln!("[crussty-plugin] cmp399_rustpre: ARMED rust-side AABB pre-filter (per-id aabb snapshots + idx_query narrow-phase, javap bit-match AABB.intersects)");
+            }
         } else {
             eprintln!(
                 "[crussty-plugin] items_subsys2: bridge definition failed, hook stays dormant"
