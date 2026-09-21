@@ -153,18 +153,52 @@ public final class ItemEntityManager {
      *  Пустой/иной флаг — bulk никогда не вызывается (бит-в-байт ваниль). */
     private static final boolean BULK = "cmp403_jnibulk".equals(LEVER_FLAG);
 
-    // Per-thread bulk-состояние (Task-403-B jnibulk). НОЛЬ новых классов:
-    // мост доставляется как РОВНО ОДИН classfile через define_class — nested
-    // класс детонировал бы NoClassDefFoundError (kernel-loader delivery,
-    // урок S7-170/zero_alloc). Формат Object[6] (типы статичны по слотам):
+    // Per-thread bulk-СКРАТЧ (Task-403-B jnibulk). НОЛЬ новых классов: мост
+    // доставляется как РОВНО ОДИН classfile через define_class — nested класс
+    // детонировал бы NoClassDefFoundError (kernel-loader delivery, урок
+    // S7-170/zero_alloc). Формат Object[4] (типы статичны по слотам):
     //   [0] java.nio.ByteBuffer — вид над COARSE (rust .bss), лениво
     //   [1] java.nio.ByteBuffer — арена idxScratchAlloc
-    //   [2] int[9]: {valid, lid, cx0, cy0, cz0, cx1, cy1, cz1, n}
-    //   [3] int[1]: {arenaCap}
-    //   [4] long[8]: 8 региональных штампов memo-ключа
-    //   [5] int[]: копия кандидатов последнего fill
+    //   [2] int[1]: {arenaCap}
+    //   [3] int[1]: {n последнего fill} — для вызова replay без повторного чтения
     private static final ThreadLocal<Object[]> BULK_CTX =
-            ThreadLocal.withInitial(() -> new Object[6]);
+            ThreadLocal.withInitial(() -> new Object[4]);
+
+    // PER-ITEM memo (урок INFRA-DROP round-400-i: осевший item делает
+    // merge-запрос раз в 40 тиков — per-потоковый кэш при чередовании разных
+    // окон на воркере почти не попадает; per-id попадает в 100% покоя).
+    // Параллельные плоские массивы по плотному id, растут в lockstep с byId
+    // (growCache из indexAdd — единственного места аллокации id):
+    //   M_N[id]      — n кандидатов; 0 = кэша нет
+    //   M_WIN[7·id]  — {lid, cx0, cy0, cz0, cx1, cy1, cz1}
+    //   M_STAMPS[8·id] — 8 региональных u64-штампов последнего fill
+    //   M_IDS[id]    — копия кандидатов (переиспользуется при refill)
+    // Освобождение id (indexRemove → freeIds): M_N=0, M_IDS=null.
+    private static int[] M_N = new int[0];
+    private static int[] M_WIN = new int[0];
+    private static long[] M_STAMPS = new long[0];
+    private static int[][] M_IDS = new int[0][];
+    private static final Object M_GROW_LOCK = new Object();
+    /** Телеметрия jnibulk (memo-hit / native-fill) — ARM/эффект-пруф stdout. */
+    private static volatile long bulkHits = 0;
+    private static volatile long bulkFills = 0;
+
+    /** Рост memo-массивов в lockstep с byId (вызывается из indexAdd —
+     *  единственного места аллокации id; benign-race: лишний refill). */
+    private static void growCache(int len) {
+        if (len <= M_N.length) {
+            return;
+        }
+        synchronized (M_GROW_LOCK) {
+            if (len <= M_N.length) {
+                return;
+            }
+            M_N = java.util.Arrays.copyOf(M_N, len);
+            M_WIN = java.util.Arrays.copyOf(M_WIN, len * 7);
+            M_STAMPS = java.util.Arrays.copyOf(M_STAMPS, len * 8);
+            M_IDS = java.util.Arrays.copyOf(M_IDS, len);
+        }
+    }
     /** Структурный отказ bulk (арена/штампы/ERR_STRUCT): bulk отключается,
      *  ИНДЕКС ЖИВ — вызовы уходят на legacy int[]-путь (композит не страдает). */
     private static volatile boolean bulkBroken;
@@ -449,6 +483,9 @@ public final class ItemEntityManager {
                 }
                 id = idTop++;
             }
+            // TASK-403-B jnibulk: per-item memo-массивы растут в lockstep с byId
+            // (единственное место аллокации id; benign-race → только лишний refill).
+            growCache(byId.length);
             int lid = System.identityHashCode(e.level());
             int rc = idxInsert(id, lid, Mth.floor(e.getX()), Mth.floor(e.getY()), Mth.floor(e.getZ()));
             if (rc != 0) {
@@ -470,6 +507,12 @@ public final class ItemEntityManager {
         int id = box[0];
         int rc = idxRemove(id);
         byId[id] = null;
+        // TASK-403-B jnibulk: memo снятого id больше не валиден (id уйдёт во freeIds;
+        // window-ключ и так отфильтровал бы, но явная очистка дешевле проверки).
+        if (id < M_N.length) {
+            M_N[id] = 0;
+            M_IDS[id] = null;
+        }
         synchronized (ID_LOCK) {
             if (freeTop == freeIds.length) {
                 freeIds = java.util.Arrays.copyOf(freeIds, Math.max(16, freeTop * 2));
@@ -492,7 +535,8 @@ public final class ItemEntityManager {
      */
     public static void tickOne(ItemEntity e, TickRateManager trm) {
         if ((++telemetryCounter % TELEMETRY_INTERVAL) == 0L) {
-            LOG.info("[crussty-plugin] items_subsys2: telemetry calls=" + telemetryCounter);
+            LOG.info("[crussty-plugin] items_subsys2: telemetry calls=" + telemetryCounter
+                    + (BULK ? " jnibulk{hits=" + bulkHits + ",fills=" + bulkFills + "}" : ""));
         }
         // ---- guardEntityTick (CraftBukkit body): try { dispatch } catch { log+event+discard } ----
         try {
@@ -727,9 +771,11 @@ public final class ItemEntityManager {
         // отказ (ERR_RANGE) → ванильный merge ЭТОГО вызова (как в legacy).
         if (BULK && !bulkBroken) {
             Object[] c = BULK_CTX.get();
-            int[] bulkIds = bulkCandidates(qb, lid, c);
+            int[] bulkIds = bulkCandidates(qb, lid, box[0], c);
             if (bulkIds != null) {
-                replayCandidates(self, lvl, qb, walls, bulkIds, ((int[]) c[2])[8]);
+                // n последнего fill — из per-thread nBox (memo-hit → M_N[id],
+                // свежая копия → её длина; всё записано в bulkCandidates).
+                replayCandidates(self, lvl, qb, walls, bulkIds, ((int[]) c[3])[0]);
                 return;
             }
             if (!bulkBroken) {
@@ -806,8 +852,8 @@ public final class ItemEntityManager {
 
     /**
      * TASK-403-B jnibulk (cmp403_jnibulk): кандидаты merge-запроса через
-     * raw-arena + coarse-stamp memo. Возвращает массив кандидатов (штук —
-     * c.n) или null (не заполнено). null + !bulkBroken → разовый отказ
+     * raw-arena + PER-ITEM coarse-stamp memo. Возвращает массив кандидатов
+     * или null (не заполнено). null + !bulkBroken → разовый отказ
      * (ERR_RANGE) → ванильный merge этого вызова; null + bulkBroken →
      * структурный отказ bulk → legacy int[]-путь (индекс жив).
      *
@@ -822,7 +868,7 @@ public final class ItemEntityManager {
      * ЛИШНИЕ refills, не пропуски. Аргументация mid-tick — как у
      * cmp399_shard (vanilla per-section snapshot semantics).
      */
-    private static int[] bulkCandidates(AABB qb, int lid, Object[] c) {
+    private static int[] bulkCandidates(AABB qb, int lid, int id, Object[] c) {
         java.nio.ByteBuffer coarse = (java.nio.ByteBuffer) c[0];
         if (coarse == null) {
             // Ленивый per-thread вид на таблицу штампов (rust .bss, 2 MiB).
@@ -832,20 +878,14 @@ public final class ItemEntityManager {
                 return null;
             }
             c[0] = coarse;
-            c[2] = new int[9];      // {valid, lid, cx0, cy0, cz0, cx1, cy1, cz1, n}
-            c[3] = new int[1];      // {arenaCap}
-            c[4] = new long[8];     // штампы 8 накрытых регионов
-            c[5] = new int[128];    // кэш кандидатов
+            c[2] = new int[1];      // {arenaCap}
+            c[3] = new int[1];      // {n}
             if (!bulkLogged) {
                 // ГРОМКИЙ java-ARM-МАРКЕР (обязателен для ARM-пруфа).
                 bulkLogged = true;
-                LOG.info("[crussty-plugin] cmp403_jnibulk: java-bulk ARMED raw-arena=DirectByteBuffer zero-JNI-body coarse=262144x8^3cells memo=window+8stamps replay=live-filter fail-closed=(struct->legacy-int[]-path, range->vanilla-call)");
+                LOG.info("[crussty-plugin] cmp403_jnibulk: java-bulk ARMED raw-arena=DirectByteBuffer zero-JNI-body coarse=262144x8^3cells memo=per-item-window+8stamps replay=live-filter fail-closed=(struct->legacy-int[]-path, range->vanilla-call)");
             }
         }
-        int[] key = (int[]) c[2];
-        int[] capBox = (int[]) c[3];
-        long[] stamps = (long[]) c[4];
-        int[] ids = (int[]) c[5];
         // Окно клеток — ТОЧНО как rust idx_query_p: floor(q)±pad(±1).
         int cx0 = (int) Math.floor(qb.minX) - 1, cx1 = (int) Math.floor(qb.maxX) + 1;
         int cy0 = (int) Math.floor(qb.minY) - 1, cy1 = (int) Math.floor(qb.maxY) + 1;
@@ -859,17 +899,23 @@ public final class ItemEntityManager {
         long s5 = bulkStamp(coarse, cx1, cy0, cz1);
         long s6 = bulkStamp(coarse, cx0, cy1, cz1);
         long s7 = bulkStamp(coarse, cx1, cy1, cz1);
-        if (key[0] == 1 && key[1] == lid
-                && key[2] == cx0 && key[3] == cy0 && key[4] == cz0
-                && key[5] == cx1 && key[6] == cy1 && key[7] == cz1
-                && stamps[0] == s0 && stamps[1] == s1
-                && stamps[2] == s2 && stamps[3] == s3
-                && stamps[4] == s4 && stamps[5] == s5
-                && stamps[6] == s6 && stamps[7] == s7) {
+        int base7 = id * 7;
+        int base8 = id * 8;
+        if (id < M_N.length && M_N[id] > 0
+                && M_WIN[base7] == lid
+                && M_WIN[base7 + 1] == cx0 && M_WIN[base7 + 2] == cy0 && M_WIN[base7 + 3] == cz0
+                && M_WIN[base7 + 4] == cx1 && M_WIN[base7 + 5] == cy1 && M_WIN[base7 + 6] == cz1
+                && M_STAMPS[base8] == s0 && M_STAMPS[base8 + 1] == s1
+                && M_STAMPS[base8 + 2] == s2 && M_STAMPS[base8 + 3] == s3
+                && M_STAMPS[base8 + 4] == s4 && M_STAMPS[base8 + 5] == s5
+                && M_STAMPS[base8 + 6] == s6 && M_STAMPS[base8 + 7] == s7) {
             // MEMO-HIT: ноль JNI — ре-плей кэша через тот же live-filter.
-            return ids;
+            bulkHits++;
+            ((int[]) c[3])[0] = M_N[id];
+            return M_IDS[id];
         }
         java.nio.ByteBuffer arena = (java.nio.ByteBuffer) c[1];
+        int[] capBox = (int[]) c[2];
         if (arena == null) {
             arena = idxScratchAlloc(128);
             if (arena == null) {
@@ -906,21 +952,37 @@ public final class ItemEntityManager {
             }
             return null;
         }
-        if (ids.length < n) {
-            ids = new int[Math.max(n, ids.length * 2)];
-            c[5] = ids;
+        bulkFills++;
+        // n последнего fill — для вызова replay из mergeWithNeighbours.
+        ((int[]) c[3])[0] = n;
+        // Копия кандидатов из raw-арены (публичные абсолютные getInt) в
+        // per-item кэш. growCache уже прошёл в indexAdd; на гонке/раннем id —
+        // benign: заполняем только места в границах, иначе только fill.
+        if (id < M_N.length) {
+            int[] ids = M_IDS[id];
+            if (ids == null || ids.length < n) {
+                ids = new int[Math.max(n, 128)];
+                M_IDS[id] = ids;
+            }
+            for (int i = 0; i < n; i++) {
+                ids[i] = arena.getInt(i << 2);
+            }
+            M_N[id] = n;
+            M_WIN[base7] = lid;
+            M_WIN[base7 + 1] = cx0; M_WIN[base7 + 2] = cy0; M_WIN[base7 + 3] = cz0;
+            M_WIN[base7 + 4] = cx1; M_WIN[base7 + 5] = cy1; M_WIN[base7 + 6] = cz1;
+            M_STAMPS[base8] = s0; M_STAMPS[base8 + 1] = s1;
+            M_STAMPS[base8 + 2] = s2; M_STAMPS[base8 + 3] = s3;
+            M_STAMPS[base8 + 4] = s4; M_STAMPS[base8 + 5] = s5;
+            M_STAMPS[base8 + 6] = s6; M_STAMPS[base8 + 7] = s7;
         }
-        // Копия кандидатов из raw-арены (публичные абсолютные getInt).
+        // Fallback без memo (id вне memo-границ — гонка роста, benign):
+        // свежая копия кандидатов из арены.
+        int[] ids = new int[n];
         for (int i = 0; i < n; i++) {
             ids[i] = arena.getInt(i << 2);
         }
-        key[0] = 1;
-        key[1] = lid;
-        key[2] = cx0; key[3] = cy0; key[4] = cz0;
-        key[5] = cx1; key[6] = cy1; key[7] = cz1;
-        key[8] = n;
-        stamps[0] = s0; stamps[1] = s1; stamps[2] = s2; stamps[3] = s3;
-        stamps[4] = s4; stamps[5] = s5; stamps[6] = s6; stamps[7] = s7;
+        ((int[]) c[3])[0] = n;
         return ids;
     }
 
