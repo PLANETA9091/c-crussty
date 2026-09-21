@@ -64,6 +64,8 @@ fn lever_flag_matches_for(f: &str) -> bool {
     f == "items_subsys2" || f.starts_with("cmp399_") || f == "cmp402_comp"
         || f == "cmp402_stagcomp" || f == "cmp403_tickplane"
         || f == "cmp405_stagtick"
+        // TASK-406-D: композит раунда-406 включает оба item-суб-механизма.
+        || f == "cmp406_aibatch"
 }
 
 pub fn activate() {
@@ -85,7 +87,9 @@ pub fn activate() {
     let comp = flag == "cmp402_comp"
         || flag == "cmp402_stagcomp"
         || flag == "cmp403_tickplane"
-        || flag == "cmp405_stagtick";
+        || flag == "cmp405_stagtick"
+        // TASK-406-D: композит раунда-406.
+        || flag == "cmp406_aibatch";
     let despawn2 = flag == "cmp399_despawn2" || bfcomp || comp;
     if shard {
         // ГРОМКИЙ ARM-МАРКЕР (TASK-399-B): без этой строки нога не-armed.

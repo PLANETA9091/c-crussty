@@ -162,6 +162,20 @@ fn ensure_plane() {
     }
 }
 
+/// TASK-406-D (mob_ai_step window): read view for the AI-window epoch pass —
+/// the alive flags + the seqlock version. The caller (mobs_ai::ai_epoch)
+/// brackets its scan with the SAME version discipline as `mob_query` (even
+/// v1 → scan → even v2, bounded retries); flags bit0 flips always happen
+/// under the odd/even bracket, so the snapshot contract is identical. No
+/// WLOCK: readers never block writers.
+pub(crate) fn ai_window_snapshot() -> Option<(&'static [u8], &'static AtomicUsize)> {
+    let d = data()?;
+    // d: &'static Soa (published once, never freed) — the flags slice is
+    // &'static by construction, no unsafe required.
+    let flags: &'static [u8] = d.flags.as_slice();
+    Some((flags, &VERSION))
+}
+
 /// Strict gate: natives work only under the exact lever flag (STRICT eq;
 /// empty/foreign flag = the tables are never touched).
 fn lever_mode() -> bool {
@@ -183,6 +197,9 @@ fn lever_mode() -> bool {
         || f == "cmp402_stagcomp"
         || f == "cmp403_tickplane"
         || f == "cmp405_stagtick"
+        // TASK-406-D: композит раунда-406 — SoA-плоскость primary push
+        // broadphase + источник популяции для aiEpoch (mob_ai_step window).
+        || f == "cmp406_aibatch"
 }
 
 /// Mirror-plane selector: the sharded grid (src/mobs_grid.rs) is armed ONLY

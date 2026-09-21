@@ -62,12 +62,22 @@ fn enabled() -> bool {
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
         Ok("cmp401_stagger") | Ok("cmp402_stagcomp") | Ok("cmp403_tickplane")
             | Ok("cmp405_stagtick")
+            // TASK-406-D: композит раунда-406 — goal-стаггер (GoalSelector
+            // canUseGate) активен вместе с новым AI-window срезом (мобы вне
+            // ai-окна пропускают и goal-тик; мобы в окне — стаггернутые
+            // canUse-поллы как в базе stagtick).
+            | Ok("cmp406_aibatch")
     )
 }
 
 static READY: AtomicBool = AtomicBool::new(false);
 /// Global ref to the kernel classloader, captured at activation.
 static KERNEL_LOADER: AtomicUsize = AtomicUsize::new(0);
+
+/// TASK-406-D: сигнал «LivingEntity retransform отработал» для mobs_ai —
+/// AI-window хук компоузит поверх выходов цепочки хуков и должен
+/// retransform'ить ПОСЛЕ stagger'а (последний non-None serve побеждает).
+static LIVING_SERVED: AtomicBool = AtomicBool::new(false);
 
 /// Pristine bytes per hooked class (captured at first load or via
 /// resource-stream / no-op retransform fallback).
@@ -346,6 +356,9 @@ pub fn activate() {
             }
         }
         if ok {
+            // TASK-406-D: сигнал для mobs_ai (составление поверх soa+stagger).
+            LIVING_SERVED.store(true, Ordering::Release);
+            crate::mobs_ai::note_stagger_served();
             // TASK-403-C: маркер печатает ФАКТИЧЕСКИЙ флаг раунда
             // (tickplane = сегмент mob-stagger плейна).
             let flag = std::env::var("CRUSSTY_LEVER_FLAG")

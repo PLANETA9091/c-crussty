@@ -46,7 +46,8 @@ pub fn enabled() -> bool {
         .map(|v| {
             let v = v.trim();
             // TASK-405-F: композит stagtick вооружает плейн тем же STRICT-eq.
-            v == LEVER || v == "cmp405_stagtick"
+            // TASK-406-D: композит раунда-406 (stagtick ⊕ ai-window).
+            v == LEVER || v == "cmp405_stagtick" || v == "cmp406_aibatch"
         })
         .unwrap_or(false)
 }

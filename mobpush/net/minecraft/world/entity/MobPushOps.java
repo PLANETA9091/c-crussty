@@ -79,7 +79,9 @@ public final class MobPushOps {
                 && (f.trim().equals("cmp401_soa") || f.trim().equals("cmp402_comp")
                     || f.trim().equals("cmp402_stagcomp")
                     || f.trim().equals("cmp403_tickplane")
-                    || f.trim().equals("cmp405_stagtick"));
+                    || f.trim().equals("cmp405_stagtick")
+                    // TASK-406-D: композит раунда-406 (stagtick ⊕ ai-window).
+                    || f.trim().equals("cmp406_aibatch"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -90,7 +92,9 @@ public final class MobPushOps {
         return f != null && (f.trim().equals("cmp402_comp")
                 || f.trim().equals("cmp402_stagcomp")
                 || f.trim().equals("cmp403_tickplane")
-                || f.trim().equals("cmp405_stagtick"));
+                || f.trim().equals("cmp405_stagtick")
+                // TASK-406-D: композит раунда-406 включает mirror-grid.
+                || f.trim().equals("cmp406_aibatch"));
     }
 
     private static final boolean COMPOSITE = compositeEnabled();
@@ -157,6 +161,29 @@ public final class MobPushOps {
     }
 
     private MobPushOps() {}
+
+    // ------------------------------------------------------------------
+    // TASK-406-D (mob_ai_step window plane): package-private read accessors
+    // for MobAiOps (same package) — the AI-window bridge reads the plane's
+    // dense id space so its per-tick bulk aiEpoch pass and the O(1) per-mob
+    // window lookup share the SAME id universe as the push lane. Read-only:
+    // the window plane never mutates the id/SoA state.
+    // ------------------------------------------------------------------
+
+    /** Плотный id моба в SoA-плоскости или null (не апсертнут). */
+    static int[] idBoxOf(Entity e) {
+        return idMap.get(e);
+    }
+
+    /** Верхняя граница плотного id-пространства (top, racy int read ок). */
+    static int idCount() {
+        return idTop;
+    }
+
+    /** Ёмкость id-массива (для grow-гейта окна-зеркала MobAiOps). */
+    static int idCapacity() {
+        return byId.length;
+    }
 
     /** Ленивая проверка нативов (первый armed(); до регистрации — Throwable -> false, ретрай). */
     private static boolean probeOnce() {

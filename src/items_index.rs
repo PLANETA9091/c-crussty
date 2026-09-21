@@ -285,6 +285,8 @@ fn shard_mode() -> bool {
                     || v == "cmp402_stagcomp"
                     || v == "cmp403_tickplane"
                     || v == "cmp405_stagtick"
+                    // TASK-406-D: композит раунда-406 включает shardgrid.
+                    || v == "cmp406_aibatch"
             })
             .unwrap_or(false)
     })

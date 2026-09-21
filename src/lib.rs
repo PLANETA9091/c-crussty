@@ -48,6 +48,7 @@ mod loader;
 mod mobs_grid;
 mod mobs_manager;
 mod mobs_soa;
+mod mobs_ai;
 mod noise_fill;
 mod parse_diag;
 mod zero_cursor;
@@ -218,6 +219,12 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // kernel loader (mobs_manager::activate worker). Dormant unless
     // CRUSSTY_LEVER_FLAG == cmp401_soa (empty flag = exact vanilla path).
     mobs_manager::register();
+    // MOB-AI-WINDOW (TASK-406-D, vector R3 mob_ai_step): the LAST hook on
+    // LivingEntity — composes the serverAiStep→MobAiOps.serverAiStepGate
+    // retarget ONTO the received chain bytes (soa rewrite preserved), window
+    // column written by ONE bulk aiEpoch JNI per tick over the SoA
+    // population. Dormant unless CRUSSTY_LEVER_FLAG == cmp406_aibatch.
+    mobs_ai::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -500,6 +507,11 @@ fn inject_surface() {
     // TASK-402-B: also under cmp402_comp — the composite arms soa + the
     // mobs_grid sharded mirror as the push-broadphase pair).
     mobs_manager::activate();
+    // MOB-AI-WINDOW (TASK-406-D): waits for the mobs_soa/stagger LIVING
+    // serves, defines MobAiOps + RegisterNatives (aiProbe/aiEpoch), composes
+    // the aiStep retarget and retransforms LivingEntity LAST (dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp406_aibatch).
+    mobs_ai::activate();
     // TICK-PLANE (TASK-403-C): сводный ARM-маркер плейна после активации
     // всех сегментов (items/push-soa+grid/stagger/collide) — coarse-stamp
     // эпохи; dormant unless CRUSSTY_LEVER_FLAG == cmp403_tickplane.

@@ -1,0 +1,59 @@
+{
+  "agent": "406-D",
+  "vector": "R3 RUST-FIRST: mob-ai_step batch plane — весь AI-плейн моба (Mob.serverAiStep subtree 9.73% wall: sensing/targeting/goals/navigation/brain/controls) свёрнут в golden-phase WINDOW (skip (N-1)/N тиков, N=CRUSSTY_AI_N|LEVER_ARG clamp[2..64] default 4); rust = единственный источник решения: aiEpoch = ОДИН bulk-JNI/тик DOD-проход по SoA-популяции mobs_soa (flags bit0=alive) пишет колонку окна window[denseId] в общий java int[] (GetPrimitiveArrayCritical); per-entity JNI отсутствует (закон 6: JNI = один bulk-вызов на батч). Retarget сайта LivingEntity.aiStep → invokevirtual serverAiStep()V (javap: 1 сайт @ offset 277) → MobAiOps.serverAiStepGate(Entity)V; не-Mob (Player/ArmorStand) — ваниль каждый тик; вне окна — весь AI-плейн скип; в окне — ваниль. CHAIN-COMPOSE: mobs_ai hook — ПОСЛЕДНИЙ хук LivingEntity, сервет retarget ПОВЕРХ полученных байт (soa rewrite сохранён; AlreadyPatched idempotent; Err → None fail-closed), активация ждёт SOA_SERVED/STAGGER_SERVED сигналы → retransform строго последним",
+  "branch": "round-406-d-aibatch",
+  "base": "origin/round-405-f-comp @ fef3746 (cmp405_stagtick, медиана +23.8pp pair ×5 ARMED)",
+  "gate": {
+    "lever_flag": "cmp406_aibatch",
+    "strict_eq": true,
+    "extends_all_stagtick_sites": true,
+    "gate_sites_extended": [
+      "rust: src/collide_batch.rs (×2: lever_flag_matches + segment marker)",
+      "rust: src/items_index.rs (shardgrid)",
+      "rust: src/items_manager.rs (×2: lever_flag_matches_for + comp)",
+      "rust: src/mobs_grid.rs (mirror_mode)",
+      "rust: src/mobs_manager.rs (java_gate_matches + GATE_LEVER_AIBATCH + arm-marker branch)",
+      "rust: src/mobs_soa.rs (lever_mode)",
+      "rust: src/stagger.rs (enabled matches!)",
+      "rust: src/tickplane.rs (enabled)",
+      "java: MobPushOps.java (leverEnabled + compositeEnabled)",
+      "java: ItemEntityManager.java (×3: ITEMS_ARMED + REST_PLANE + DESPAWN2)",
+      "java: MobAiOps.java (новый STRICT eq cmp406_aibatch only)"
+    ],
+    "empty_flag": "vanilla bit-for-bit (хук не регистрируется)"
+  },
+  "build": {
+    "javac": "MobPushOps.class 10361B + MobAiOps.class 4217B (--release 21, cp patched-kernel.jar) OK",
+    "cargo_check": "PASS 0 errors",
+    "cargo_test": "223 passed / 0 failed (включая 6 новых mobs_ai: golden 1/N coverage, uniform spread, determinism, desc contract)",
+    "target_deleted": true
+  },
+  "research": {
+    "file": "RESEARCH-D.md",
+    "proofs": [
+      "Pufferfish DAB (docs.pufferfish.host): brain-tick debounce frequency reduction",
+      "Spigot/Paper Entity Activation Range (spigotmc 2013 / docs.papermc.io): 1/20 tick rate for distant entities, -30%+ entity ticking",
+      "Airplane DEAR (blog.airplane.gg 2021): tiered 1/2, 1/4 entity ticking — наш дефолт N=4",
+      "Lithium (jellysquid.me): mob brain/AI-task selection optimization",
+      "repo-прецедент: item-plane resting phase (tickCount+id)&31==0 (TASK-403-C2) — та же golden-phase арифметика в топ-композиции"
+    ]
+  },
+  "lane_was": "nav_ai 9.81% (serverAiStep subtree 9.73%: GoalSelector.tick 6.93 / Brain 1.27 / Sensing 0.75 / nav 0.35) — cpu-collapsed round405comp3, subtree-атрибуция 107040 сэмплов",
+  "lane_expected": "serverAiStep 9.73% × 3/4 ≈ +7.3% wall при N=4 (потолок pair ~+5..9pp поверх +23.8pp базы)",
+  "legs": [],
+  "best_delta_pair_pct": null,
+  "ram_stw_full": null,
+  "parity": "BENCH-структурная (rate-инвариант класса accepted stagger/item-plane; despawn (Mob.tick) / push (pushEntities хвост aiStep) / коллизии/fluid — мимо сайта, ваниль каждый тик; Player/ServerPlayer/ArmorStand — ваниль каждый тик)",
+  "verdict": "IN_PROGRESS",
+  "evidence": [],
+  "what": [
+    "1. worktree + диск-гигиена (purge round-405/agent-c 2.5G stale worktree, 100%→50%→75%)",
+    "2. профиль: subtree-атрибуция comp3 → serverAiStep 9.73% = единый retarget-сайт ≥8% wall",
+    "3. веб-рисёрч 4+ upstream-пруфа (DAB/EAR/DEAR/Lithium) → RESEARCH-D.md",
+    "4. имплементация: mobai/MobAiOps.java (мост+окно+bulk epoch), src/mobs_ai.rs (composing hook, natives aiProbe/aiEpoch, ordering signals, fail-closed лестница), mobs_soa::ai_window_snapshot (seqlock read view), MobPushOps accessors (idBoxOf/idCount/idCapacity)",
+    "5. гейт-чеклист: ВСЕ 15 сайтов (rust 10 + java 5) расширены || cmp406_aibatch (урок TASK-402 полу-armed гейт)",
+    "6. build green: javac ×2 класс + cargo check 0 err + 223 тестов PASS (6 новых), target удалён",
+    "7. push + dispatch dleg1"
+  ],
+  "next": "dispatch_round406_d.py dleg1 (lever cmp406_aibatch, lever_arg=1 → N=4) → poll → absorb → pair verdict vs anchor 2.7@8841704/2.1@6845027"
+}

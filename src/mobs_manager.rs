@@ -55,6 +55,9 @@ const GATE_LEVER_STAGCOMP: &str = "cmp402_stagcomp";
 const GATE_LEVER_TICKPLANE: &str = "cmp403_tickplane";
 /// TASK-405-F: композит stagcomp⊕tickplane — единый флаг раунда-405.
 const GATE_LEVER_STAGTICK: &str = "cmp405_stagtick";
+/// TASK-406-D: композит раунда-406 (stagtick ⊕ ai-window) — SoA-плоскость
+/// primary push broadphase + популяция для aiEpoch (mob_ai_step window).
+const GATE_LEVER_AIBATCH: &str = "cmp406_aibatch";
 
 fn lever_flag() -> String {
     std::env::var("CRUSSTY_LEVER_FLAG")
@@ -70,6 +73,7 @@ fn java_gate_matches(f: &str) -> bool {
         || f == GATE_LEVER_STAGCOMP
         || f == GATE_LEVER_TICKPLANE
         || f == GATE_LEVER_STAGTICK
+        || f == GATE_LEVER_AIBATCH
 }
 
 static READY: AtomicBool = AtomicBool::new(false);
@@ -397,7 +401,7 @@ pub fn activate() {
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
         // TASK-402-B: под композитом маркер объявляет ВСЕ суб-механизмы
         // (soa + зеркальный sharded grid; item-половина — в items_manager).
-        if f == GATE_LEVER_COMP || f == GATE_LEVER_STAGCOMP || f == GATE_LEVER_TICKPLANE {
+        if f == GATE_LEVER_COMP || f == GATE_LEVER_STAGCOMP || f == GATE_LEVER_TICKPLANE || f == GATE_LEVER_STAGTICK || f == GATE_LEVER_AIBATCH {
             eprintln!(
                 "[crussty-plugin] {}: ARMED soa=flat-arrays seqlock=global-version writer=global-mutex ids_cap=1048576 cell_cap=262144 cell=1.0 pad=1.0 radius_gate=1.0 rust_prune=coarse-hw-hh + mobgrid=sharded-mirror shards=64 shard_cap=16384 fallback-read=per-call (rust mobs_soa SoA flat x/y/z/hw/hh/flags ⊕ mobs_grid mirror; pushEntities tail untouched vanilla; per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT)",
                 f
@@ -413,5 +417,9 @@ pub fn activate() {
         READY.store(true, Ordering::Release);
         let rc = cplug_sdk::retransform_class(t.name);
         eprintln!("[crussty-plugin] mobs_soa: {} armed, retransform rc={rc}", t.name);
+        if rc == 0 {
+            // TASK-406-D: публикуем сигнал ДЛЯ mobs_ai (составление поверх).
+            crate::mobs_ai::note_soa_served();
+        }
     });
 }
