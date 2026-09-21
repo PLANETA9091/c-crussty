@@ -41,7 +41,8 @@ import net.minecraft.world.entity.player.Player;
  * ванилла сама рандомна).
  *
  * TASK-403-A N-scan: N выводится из CRUSSTY_LEVER_FLAG (stagn2→2,
- * stagn8→8); иначе legacy-режим (CRUSSTY_STAGGER_N → LEVER_ARG, дефолт 4).
+ * stagn8→8, stagn16→16); иначе legacy-режим (CRUSSTY_STAGGER_N →
+ * LEVER_ARG, дефолт 4).
  */
 public final class GoalStaggerOps {
 
@@ -78,6 +79,9 @@ public final class GoalStaggerOps {
         }
         if ("cmp403_stagn8".equals(flag)) {
             return 8;
+        }
+        if ("cmp403_stagn16".equals(flag)) {
+            return 16;
         }
         String raw = null;
         try {

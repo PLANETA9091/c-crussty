@@ -28,7 +28,8 @@
 //! Gate (TASK-403-A N-scan): env `CRUSSTY_LEVER_FLAG` STRICT eq against
 //! `cmp401_stagger` (round-400 lever protocol; полу-вооружённый мост AIOOBE
 //! урок TASK-400-D) or the round-403 window variants `cmp403_stagn2` (N=2)
-//! / `cmp403_stagn8` (N=8). Same two lanes, same single sites, same
+//! / `cmp403_stagn8` (N=8) / `cmp403_stagn16` (N=16, ceiling probe).
+//! Same two lanes, same single sites, same
 //! golden-phase formula — ONLY the window N differs (derived per-flag inside
 //! the java bridge static-init; lever_arg stays 1 per dispatch bank rules).
 //! Off by default — dormant-invisible discipline: with the gate off no byte
@@ -69,6 +70,7 @@ fn active_flag() -> Option<&'static str> {
         Ok("cmp401_stagger") => Some("cmp401_stagger"),
         Ok("cmp403_stagn2") => Some("cmp403_stagn2"),
         Ok("cmp403_stagn8") => Some("cmp403_stagn8"),
+        Ok("cmp403_stagn16") => Some("cmp403_stagn16"),
         _ => None,
     }
 }
@@ -83,6 +85,7 @@ fn staged_n() -> u32 {
     match active_flag() {
         Some("cmp403_stagn2") => 2,
         Some("cmp403_stagn8") => 8,
+        Some("cmp403_stagn16") => 16,
         _ => 4,
     }
 }
@@ -108,7 +111,7 @@ fn orig_lock(class_name: &str) -> &'static std::sync::Mutex<Option<Vec<u8>>> {
 pub fn register() {
     if !enabled() {
         eprintln!(
-            "[crussty-plugin] stagger: dormant (lever_flag not in {{cmp401_stagger,cmp403_stagn2,cmp403_stagn8}}, vanilla push/goal checks)"
+            "[crussty-plugin] stagger: dormant (lever_flag not in {{cmp401_stagger,cmp403_stagn2,cmp403_stagn8,cmp403_stagn16}}, vanilla push/goal checks)"
         );
         return;
     }

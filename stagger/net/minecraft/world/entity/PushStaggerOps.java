@@ -34,12 +34,12 @@ import java.util.List;
  *
  * Fail-closed: ARMED=false (N<2 или getServer()==null или env-мусор) →
  * прямой ванильный вызов. Бридж определён в kernel loader ТОЛЬКО когда
- * lever_flag == "cmp401_stagger" / "cmp403_stagn2" / "cmp403_stagn8"
- * (rust-гейт, строго eq).
+ * lever_flag == "cmp401_stagger" / "cmp403_stagn2" / "cmp403_stagn8" /
+ * "cmp403_stagn16" (rust-гейт, строго eq).
  *
  * TASK-403-A N-scan: N выводится из CRUSSTY_LEVER_FLAG (stagn2→2,
- * stagn8→8); иначе legacy-режим (CRUSSTY_STAGGER_N → LEVER_ARG, дефолт 4)
- * для обратной совместимости cmp401_stagger.
+ * stagn8→8, stagn16→16); иначе legacy-режим (CRUSSTY_STAGGER_N →
+ * LEVER_ARG, дефолт 4) для обратной совместимости cmp401_stagger.
  */
 public final class PushStaggerOps {
 
@@ -76,6 +76,9 @@ public final class PushStaggerOps {
         }
         if ("cmp403_stagn8".equals(flag)) {
             return 8;
+        }
+        if ("cmp403_stagn16".equals(flag)) {
+            return 16;
         }
         String raw = null;
         try {
