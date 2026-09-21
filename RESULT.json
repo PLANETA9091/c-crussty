@@ -1,12 +1,12 @@
 {
   "task": "TASK-405-A nav->Rust bulk (cmp405_navplane)",
-  "agent": "TASK-409-A (продолжение 405-A-r2)",
+  "agent": "TASK-409-A",
   "vector": "R-вектор закона 6 RUST-FIRST, класс nav/pathfinding: nav_ai lane (9.8-14% wall comp-сцены) — срез shouldRecomputePath × navigatingMobs, ОДИН bulk-JNI на батч мобов",
   "branch": "round-405-a-nav",
   "base": "origin/master aa2129e (rebase по протоколу рестарта; pair-вердикт чистый vs ваниль-якоря)",
   "worktree": "/home/z/rounds/ROUND-405/agent-a",
   "commit": "d538a32 (1aba03e = navplane-код; d538a32 = write-through RESULT.json + dispatch-скрипты)",
-  "stage": "aleg3 IN-FLIGHT (run 35667055638) + k4 research DONE: RESEARCH-A-k4 nav→Rust bulk-поверхность ИСЧЕРПАНА (доказательство: парити-ловушка tick-head + findPath world-query мост-антипаттерн + GoalSelector RNG-PARK; 3 внешних пруфа) — k5-кандидаты: A* node-pool ~1.2% (Lithium-прецедент), eindex-хэндофф findTarget",
+  "stage": "CLOSED: aleg3 (min-of-3) абсорбирован и вердикт поставлен; k4 рисёрч закрыт (исчерпание); серия navplane закрыта медианой +9.5pp",
   "run_id": 35667055638,
   "legs": [
     {
@@ -40,10 +40,15 @@
       "lever": "cmp405_navplane",
       "branch": "round-405-a-nav@e88f73b",
       "run_id": 35667055638,
-      "runner": null,
-      "tps_med": null,
-      "delta_pair_pct": null,
-      "status": "in_progress (dispatch, банка inputs ровно, NOT-A-BENCH гвард в absorb)"
+      "runner": 6021509,
+      "tps_med": 2.0,
+      "delta_pair_pct": -3.2,
+      "status": "done",
+      "pair_vs": "нет парного якоря (ближайший 2.4@6604167, дист. 582k = непаряемо; норм. vs экстраполированный банк TPS_exp 2.07)",
+      "verdict": "RED/OUTLIER-LEG (валидная ARMED-нога в band 6.02M>=6.0M; самый медленный раннер эры, ниже нижней точки калибровки банка 6.65M — экстраполяция)",
+      "armed": "ARMED 1 маркер (cmp405_navplane ARMED navDecide bulk -> NavPlaneOps + region_threads defined NavPlaneOps in kernel loader) — идентично aleg1/aleg2",
+      "lane": "nav_ai 14.16->13.25% (-0.91пп = эффект окна, как aleg1); paletted +0.81 noise; items -0.74 noise",
+      "gc": "young=109 Full=9 total=23.8s avg=202ms (bank 18.8s/162ms/Full=7 — чуть хуже; у GREEN-aleg2 было Full=9 24.4s — не инфра-маркер)"
     }
   ],
   "best": {
@@ -53,20 +58,24 @@
     "delta_pair_pct": 9.5,
     "pair_vs": "2.10@6845027"
   },
-  "tps_med": 2.3,
-  "delta_pair_pct": 9.5,
-  "lane_was": "nav_ai 14.16% (pre-comp) -> 9.34% (bleg1) / 9.81% (comp3); leg1 cpu: nav_ai 13.28% (−0.9пп vs 14.16) — срез sendBlockUpdated/shouldRecomputePath узкий",
-  "lane_now": null,
-  "ram": null,
-  "parity": "PENDING (пустой/чужой флаг = ваниль бит-в-байт по построению: NavPlaneOps не определяется, ретаргет не компонуется, хук не регистрируется — STRICT eq в nav_plane::armed + region_threads compose; armed-математика javap-verbatim, apply в порядке сета, CME-retry 95..157->160 реплицирован)",
-  "verdict": "IN-PROGRESS: aleg1 GREEN-CANDIDATE pair +9.5pp; aleg2 (min-of-3) в полёте; если aleg2 <80% от +9.5pp -> рисёрч-углубление (PathNavigation.tick/Brain.tick, ванильность бит-в-байт) -> aleg3",
+  "tps_med": 2.0,
+  "delta_pair_pct": -3.2,
+  "lane_was": "nav_ai 14.16% (baseline) -> 13.92% (aleg2) -> 13.25% (aleg3)",
+  "lane_now": "nav_ai 13.25%: GoalSelector 7.25%wall (RNG-PARK/broadphase/eindex), findPath A* 3.05% (world-query мост-антипаттерн), tick-head 0.64% (парити-ловушка, per-entity JNI запрещён)",
+  "ram": "STW: Full=9/23.8s young (avg 202ms, max 2908ms) — в пределах серии (aleg2 Full=9/24.4s)",
+  "parity": "ARM-пруф ДО вердикта ✓; delivery PASS (pop VALID, NCDFE=0, col PARALLEL, банк-словарь OK, band 6.02M in [6.0,9.5]M); пустой флаг = ваниль по построению (STRICT eq)",
+  "verdict": "aleg3 leg: RED/OUTLIER (2.00@6021509, норм. -3.2% vs экстраполированный банк 2.07; парного якоря нет — ближайший 2.4@6604167 на 582k). СЕРИЯ navplane min-of-3 ЗАКРЫТА: legs {aleg1 +9.5pp GREEN, aleg2 +10.6pp GREEN, aleg3 -3.2% RED-outlier} -> МЕДИАНА +9.5pp = значение вектора. Для cmp409_multi: условие '⊕navplane при GREEN aleg3' ФОРМАЛЬНО НЕ ВЫПОЛНЕНО — navplane остаётся CANDIDATE (медиана-положительный, 2/3 GREEN), решение за верхним агентом. k4: рисёрч закрыт с доказательством исчерпания bulk-поверхности nav (RESEARCH-A-k4.md, 3 внешних пруфа + свежая декомпозиция + парити-ловушка tick-head) — шум-диспатч k4-плейна признан нецелесообразным (нулевая дельта = невалидная нога, экономия раннер-пула)",
   "evidence": [
     "aleg1 (run 35649236693): GREEN-CANDIDATE, 2.3@6507187 ARMED x7, pair +9.5pp vs 2.10@6845027 — учтён в GOAL x92",
     "RESEARCH-A-k2.md (рестарт): 5 javap-пруфов — единственный call-site shouldRecomputePath = ServerLevel.sendBlockUpdated:138; Paper-тело shouldRecomputePath = 1 Vec3-alloc/моб/апдейт + closerToCenterThan(nodeCount-nextNodeIndex); IEEE754-контракты Vec3i.distToCenterSqr/Mth.square; exception-table 95..157->160 CME-retry; RECON-44 per-entity JNI 12-17% wall -> bulk-only дизайн",
     "RECON-8 PARK подтверждён: goal-selector (canUse RNG side-effect) и createPath A* (world-query поверхность) — без права атаки; aleg3-кандидаты углубления: PathNavigation.tick (followPath-математика) / Brain.tick — только с ванильностью бит-в-байт",
     "cargo check --lib PASS; cargo test nav_plane 5/5; javac --release 21, 1 classfile 6477B zero nested",
-    "ARM-пруф план: маркер 'cmp405_navplane ARMED' + 'navplane: ... (sites:1)' в server-stdout.log"
+    "ARM-пруф план: маркер 'cmp405_navplane ARMED' + 'navplane: ... (sites:1)' в server-stdout.log",
+    "aleg3 (run 35667055638): RED/OUTLIER 2.00@6021509 ARMED, в band; TPS_exp 2.07 (экстраполяция банка ниже 6.65M — вне калибровки); threw=0, поллов=5",
+    "fresh якоря-408 абсорбированы: anchora 2.25@6833921 PARITY (run 35666723979), anchorc 2.30@6846036 PARITY (run 35666762102) — банк пополнен, anchorb в полёте",
+    "RESEARCH-A-k4.md (6593b85): nav_ai 13.92% (aleg2) декомпозирован полностью: GoalSelector 7.25%wall = RNG-PARK + findTarget(getEntities)=eindex-лейн агента C + Java-структура; findPath A* 3.05% = world-query на расширение узла = мост-антипаттерн (урок fluidplane RED 16.72->71.48%); tick-head 0.64% = парити-ловушка (tail setWantedPosition потребляет решение прибытия того же тика, MoveControl.tick в том же serverAiStep) -> per-entity JNI запрещён законом 6, deferred = сдвиг wantedPos на тик = не-парити",
+    "3 внешних пруфа: Pufferfish DAB docs ('DAB does impact the AI goal selector behavior' — поведение-меняющий = PARK подтверждён экосистемой); Lithium #743 (goal-selector = структура контейнера, не decision-batch); Lithium ai.pathing (node-pool = техника-прецедент для findPath, потолок ~1.2%)"
   ],
-  "what": "Рестарт-2: (1) dirty=2 закоммичены (RESULT.json + dispatch_round405_a.py) -> d538a32 push; (2) dispatch_round405_a2.py (LEGS={aleg2: round-405-a-l2/cmp405_navplane/origin/round-405-a-nav}, банк ровно, lever_arg=1) -> run 35659531401; (3) полл -> absorb round405aleg2 -> pair-вердикт vs пул {2.35@6992836, 2.10@6851475, 2.70@8841704, 2.10@6845027, 407-anchor*}; BAND 6.0-9.5M (вне = discard, ре-ролл <=2 -> aleg3); (4) aleg3 по вердикту: подтверждение min-of-3 или углубление среза | k4: RESEARCH-A-k4.md (web-пруфы + aleg2-fresh декомпозиция 13.92% wall) закоммичен 6593b85, push OK; решение: рисёрч-итерация без диспатча (диспатч-нуль-дельта = шум-нога, экономия раннер-пула); aleg3 = подтверждение min-of-3 тем же кодом @e88f73b",
-  "next": "1) полл run 35667055638 (sleep 120) 2) ARM-пруф 'cmp405_navplane' в server-stdout.log ДО вердикта 3) absorb_round.py 35667055638 round409aleg3 4) band-чек runner_cpu_index 6.0-9.5M (вне = BAND-DISCARD, ре-ролл <=2) 5) pair-вердикт vs якоря-407 {2.4@6604167, 2.2@6976430} + fresh якоря-408 (round-408-anchora/b/c, валидны только в band) 6) min-of-3 закрыт -> k4: свежий рисёрч nav-углубление (>=3 пруфа) -> имплементация -> cargo check (target удалить) -> javac из текущих .java + коммит classfiles -> push -> aleg4 -> абсорб -> вердикт 7) RESULT.json write-through на каждом шаге"
+  "what": "TASK-409-A тик: (1) диспатч aleg3 @e88f73b ref round-405-a-l3 (банк ровно, NOT-A-BENCH гвард, run 35667055638); (2) абсорб aleg3 + ARM-пруф (маркер идентичен aleg1/2) + вердикт RED/OUTLIER (в band, без ре-ролла — cherry-picking запрещён); (3) min-of-3 закрыт медианой +9.5pp (2 GREEN + 1 RED-outlier на некалиброванном медленном раннере); (4) k4: веб-рисёрч (>=3 пруфа) + свежая декомпозиция nav_ai по aleg2/aleg3 данным -> доказано исчерпание bulk-поверхности nav -> RESEARCH-A-k4.md закоммичен+запушен; (5) fresh якоря-408 anchora/anchorc абсорбированы в банк; (6) RESULT.json write-through на каждом шаге",
+  "next": "NEXT-410-A: (1) k5 = A* node-pool (Lithium-прецедент): пул Node/heap в Rust, мульти-сайт ретаргет PathFinder/PathNodeNavigator, потолок ~1.2% wall, оценка = полный тик; (2) хэндофф findTarget/getEntities (5.95%wall) -> eindex (агент C cleg-серия); (3) верхнему агенту: navplane в cmp409_multi — кандидат с медианой +9.5pp, aleg3-условие формально не выполнено (2/3 GREEN); (4) при ре-запуске серии: якоря добивать в day-окно 6.6-7.2M (bank-калибровка), избегать 6.0-6.2M экстраполяционного хвоста"
 }
