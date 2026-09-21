@@ -37,6 +37,7 @@ mod improved_noise;
 mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
+mod item_footprint;
 mod jni_table;
 mod kernel_policy;
 mod loader;
@@ -174,6 +175,12 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // EntityCallbacks guard sites, composed on top of F1/F3 bytes (LAST in
     // the byte-hook chain). Dormant unless CRUSSTY_REGION_THREADS>=2.
     region_threads::register();
+    // ITEM-FOOTPRINT (round-397-G): byte hook on ItemEntity (pristine
+    // capture + level-1 field reorder served AT FIRST LOAD — schema changes
+    // are illegal on retransform; level-2 SoA retarget served via
+    // retransform after the ItemFootprintOps bridge + rust arena land).
+    // Dormant unless CRUSSTY_LEVER_FLAG == "items_footprint".
+    item_footprint::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -386,6 +393,11 @@ fn inject_surface() {
     // RegionTickOps.tickBucket; dormant unless CRUSSTY_BATCH_COLLECTOR=1
     // AND region_threads>=2).
     batch_collector::activate();
+    // ITEM-FOOTPRINT (round-397-G): define ItemFootprintOps into the kernel
+    // loader, RegisterNatives the arena ensure, compute the age/pickupDelay
+    // retarget on top of the live schema, retransform (dormant unless
+    // CRUSSTY_LEVER_FLAG == "items_footprint").
+    item_footprint::activate();
     // FLAT-TRAVERSAL (S7-163): define TraverseOps into the kernel loader
     // (define-only; the checkInsideBlocks retarget composes through the
     // entity_compose chain stage 6; dormant unless CRUSSTY_FLAT_TRAVERSAL=1

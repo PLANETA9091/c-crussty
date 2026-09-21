@@ -7175,3 +7175,322 @@ fn check_members(bridge: &[u8], targets: &[(&str, &str, &str, &str)]) -> Result<
     }
     Ok(())
 }
+
+// ---------------------------------------------------------------------------
+// ITEM-FOOTPRINT (round-397-g-footprint, TASK-397-G) — the ItemEntity hot
+// scalar fields (age / pickupDelay) footprint diet. Two self-contained
+// classfile transforms:
+//
+//   1. patch_item_footprint(): retarget EVERY getfield/putfield of
+//      ItemEntity.age / ItemEntity.pickupDelay (48 sites by the javap census:
+//      tick 9, inactiveTick 7, playerTouch 6, static merge 6, setters 8,
+//      ctor 2, NBT save/load 4, isMergable 3, getAge/hasPickUpDelay 2, rest
+//      misc) onto the static bridge accessors
+//      `ItemFootprintOps.getAge/putAge/getPickupDelay/putPickupDelay`.
+//      3B -> 3B length-preserving opcode swap (0xb4/0xb5 -> 0xb8), the stack
+//      shapes are verifier-identical ([obj]->[i] / [obj,i]->[]), so
+//      StackMapTable is untouched (flush_step pattern, minus the nops).
+//      Retarget resolution is BY NAME over the resolved Fieldref triple
+//      (G4 §3: never by fixed bytecode offset / cp index).
+//   2. reorder_item_entity_fields(): move the two hot int fields to the FRONT
+//      of the ItemEntity field table (HotSpot packs non-static fields in size
+//      groups — oops, long/double, int/float, short/char, byte/boolean —
+//      preserving declaration order WITHIN a group, so a declaration reorder
+//      moves age/pickupDelay to the head of the ItemEntity int region).
+//      Field-table order is invisible to the verifier and to bytecode (refs
+//      are by name); reflection order is unspecified either way. This is a
+//      SCHEMA change — legal ONLY at first-load transform, never via
+//      retransform (JVMTI redefinition forbids field changes), which is why
+//      the module serves it from the first-load hook sighting only.
+// ---------------------------------------------------------------------------
+
+pub const ITEM_ENTITY_CLASS: &str = "net/minecraft/world/entity/item/ItemEntity";
+pub const ITEM_FOOTPRINT_OPS_CLASS: &str = "net/minecraft/world/entity/item/ItemFootprintOps";
+
+/// Opcode-aware census of the class-wide hot-field access sites (the round
+/// contract requires the census to be opcode-aware). For these two int
+/// fields the observed spectrum is getfield/putfield only; invokespecial is
+/// counted CLASS-WIDE to prove nothing field-shaped hides behind a call
+/// (a special method never reads fields itself).
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub struct ItemFootprintCensus {
+    pub getfield_age: usize,
+    pub putfield_age: usize,
+    pub getfield_pickup_delay: usize,
+    pub putfield_pickup_delay: usize,
+    pub invokespecial_class_wide: usize,
+}
+
+impl ItemFootprintCensus {
+    pub fn hot_sites(&self) -> usize {
+        self.getfield_age
+            + self.putfield_age
+            + self.getfield_pickup_delay
+            + self.putfield_pickup_delay
+    }
+}
+
+const IF_ITEM_DESC: &str = "Lnet/minecraft/world/entity/item/ItemEntity;";
+
+/// (name, descriptor) of the 4 receiver-prepending bridge accessors, indexed
+/// [get_age, put_age, get_pd, put_pd].
+const IF_BRIDGE: [(&str, &str); 4] = [
+    ("getAge", "(Lnet/minecraft/world/entity/item/ItemEntity;)I"),
+    ("putAge", "(Lnet/minecraft/world/entity/item/ItemEntity;I)V"),
+    ("getPickupDelay", "(Lnet/minecraft/world/entity/item/ItemEntity;)I"),
+    ("putPickupDelay", "(Lnet/minecraft/world/entity/item/ItemEntity;I)V"),
+];
+
+/// Retarget every age/pickupDelay field access inside the class bytes to the
+/// ItemFootprintOps bridge. Idempotent: bytes whose hot-field sites are
+/// already resolved to the bridge return AlreadyPatched unchanged.
+pub fn patch_item_footprint(
+    bytes: &[u8],
+) -> Result<(Vec<u8>, RetargetOutcome, ItemFootprintCensus), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+
+    // Kernel-rename guard: BOTH hot fields must exist in the pool. An absent
+    // pickupDelay means the kernel renamed the field — the census contract is
+    // void and the patch must not guess.
+    if layout.pool.find_utf8("age").is_none() || layout.pool.find_utf8("pickupDelay").is_none() {
+        return Err("age/pickupDelay absent from pool (kernel rename?)".into());
+    }
+
+    let mut census = ItemFootprintCensus::default();
+    // (absolute opcode offset, opcode, pristine fieldref cp idx)
+    let mut sites: Vec<(usize, u8, u16)> = Vec::new();
+
+    walk_class_code(bytes, &layout, |bytes, layout, code_start, code_end, pc, op| {
+        if op == 0xb4 || op == 0xb5 {
+            let idx = u16_at(bytes, pc + 1).ok_or("truncated field op")?;
+            if let Some((owner, fname, fdesc)) = layout.pool.fieldref_parts(idx) {
+                if owner == ITEM_ENTITY_CLASS && fdesc == "I" && (fname == "age" || fname == "pickupDelay") {
+                    match (op, fname == "pickupDelay") {
+                        (0xb4, false) => census.getfield_age += 1,
+                        (0xb5, false) => census.putfield_age += 1,
+                        (0xb4, true) => census.getfield_pickup_delay += 1,
+                        (_, true) => census.putfield_pickup_delay += 1,
+                        _ => {}
+                    }
+                    sites.push((pc, op, idx));
+                }
+            }
+            return Ok(3usize); // field ops are 3B; consumed by the walker caller
+        }
+        if op == 0xb6 {
+            census.invokespecial_class_wide += 1;
+        }
+        let extra = opcode_extra(op, &bytes[code_start..code_end], pc - code_start)?;
+        Ok(1 + extra)
+    })?;
+
+    // AlreadyPatched detection: no hot-field sites left, but bridge statics
+    // present (name-resolved, never index-resolved).
+    if sites.is_empty() {
+        let bridge_statics = count_item_footprint_statics(bytes)?;
+        if bridge_statics > 0 {
+            return Ok((
+                bytes.to_vec(),
+                RetargetOutcome::AlreadyPatched { sites: bridge_statics },
+                census,
+            ));
+        }
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound, census));
+    }
+
+    if census.hot_sites() != sites.len() {
+        return Err(format!(
+            "census {census:?} disagrees with {sites_len} sites — refusing to patch",
+            sites_len = sites.len()
+        ));
+    }
+
+    // Append (or reuse) the 4 bridge Methodrefs — append-only, dedup (Pool).
+    let mut pool = layout.pool;
+    let mut want_idx = [0u16; 4];
+    for (i, (name, desc)) in IF_BRIDGE.iter().enumerate() {
+        want_idx[i] = pool.method_ref(ITEM_FOOTPRINT_OPS_CLASS, name, desc);
+    }
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for bridge refs".into());
+    }
+
+    // Splice: header + grown pool + tail; 3 bytes per site: 0xb8 + new idx.
+    // The get/put and age/pickupDelay selection re-resolves the PRISTINE
+    // fieldref recorded during the walk (name-based, never offset-based).
+    let mut tail = bytes[layout.cp_end..].to_vec();
+    for &(op_pc, op, pristine_idx) in &sites {
+        let rel = op_pc - layout.cp_end;
+        if rel + 2 >= tail.len() {
+            return Err("retarget opcode outside class tail (corrupt layout?)".into());
+        }
+        if tail[rel] != op {
+            return Err("site opcode changed under patcher (corrupt state?)".into());
+        }
+        let is_pd = match pool.fieldref_parts(pristine_idx) {
+            Some((_, ref f, _)) if f == "pickupDelay" => true,
+            Some((_, ref f, _)) if f == "age" => false,
+            _ => return Err("site field renamed mid-patch".into()),
+        };
+        let new_idx = match (op, is_pd) {
+            (0xb4, false) => want_idx[0],
+            (0xb5, false) => want_idx[1],
+            (0xb4, true) => want_idx[2],
+            (0xb5, true) => want_idx[3],
+            _ => return Err("unexpected site opcode".into()),
+        };
+        let w = new_idx.to_be_bytes();
+        tail[rel] = 0xb8; // invokestatic
+        tail[rel + 1] = w[0];
+        tail[rel + 2] = w[1];
+    }
+
+    let mut out = Vec::with_capacity(bytes.len() + 96);
+    out.extend_from_slice(&bytes[0..8]); // magic, minor, major
+    out.extend_from_slice(&pool.next.to_be_bytes()); // new cp_count
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(&tail);
+    Ok((
+        out,
+        RetargetOutcome::Retargeted { sites: sites.len() },
+        census,
+    ))
+}
+
+/// Shared bounds-checked walk over EVERY method's Code attribute in the
+/// class. The visitor receives absolute offsets and the opcode; it returns
+/// the TOTAL instruction length at `pc` (1 + operand bytes). Field-op
+/// handling stays with the caller (patch vs census differ).
+fn walk_class_code<F>(bytes: &[u8], layout: &ClassLayout, mut visit: F) -> Result<(), String>
+where
+    F: FnMut(&[u8], &ClassLayout, usize, usize, usize, u8) -> Result<usize, String>,
+{
+    let methods_count = usize::from(u16_at(bytes, layout.methods_start).ok_or("bad methods_count")?);
+    let mut p = layout.methods_start.checked_add(2).ok_or("bad methods table")?;
+    for _ in 0..methods_count {
+        p = p.checked_add(6).ok_or("truncated method header")?; // access(2) name(2) desc(2)
+        let attr_count = usize::from(u16_at(bytes, p).ok_or("truncated method attrs")?);
+        p = p.checked_add(2).ok_or("truncated method attrs")?;
+        for _ in 0..attr_count {
+            let a_name_idx = u16_at(bytes, p).ok_or("truncated method attr")?;
+            let a_len = u32_at(bytes, p.checked_add(2).ok_or("truncated method attr")?)
+                .ok_or("truncated method attr")?
+                as usize;
+            let a_data = p.checked_add(6).ok_or("truncated method attr")?;
+            if layout.pool.utf8_value(a_name_idx).as_deref() == Some("Code") {
+                let code_len = u32_at(bytes, a_data.checked_add(4).ok_or("bad Code attr")?)
+                    .ok_or("bad Code attr")?
+                    as usize;
+                let code_start = a_data.checked_add(8).ok_or("bad Code attr")?;
+                let code_end = code_start
+                    .checked_add(code_len)
+                    .ok_or("Code attr overflow")?;
+                if code_end > bytes.len() {
+                    return Err("Code attr past class end".into());
+                }
+                let mut pc = code_start;
+                while pc < code_end {
+                    let op = bytes[pc];
+                    let len = visit(bytes, layout, code_start, code_end, pc, op)?;
+                    pc = pc.checked_add(len).ok_or("code walk overflow")?;
+                    if pc > code_end {
+                        return Err("walk stepped past code end".into());
+                    }
+                }
+            }
+            p = a_data.checked_add(a_len).ok_or("method attr overflow")?;
+        }
+        if p > bytes.len() {
+            return Err("method table past class end".into());
+        }
+    }
+    Ok(())
+}
+
+/// Count invokestatic sites resolved to ItemFootprintOps (AlreadyPatched
+/// detection, name-based).
+fn count_item_footprint_statics(bytes: &[u8]) -> Result<usize, String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    let mut hits = 0usize;
+    walk_class_code(bytes, &layout, |bytes, layout, code_start, code_end, pc, op| {
+        if op == 0xb8 {
+            let idx = u16_at(bytes, pc + 1).ok_or("truncated invokestatic")?;
+            if let Some((owner, name, _d)) = layout.pool.methodref_parts(idx) {
+                if owner == ITEM_FOOTPRINT_OPS_CLASS
+                    && IF_BRIDGE.iter().any(|(n, _)| *n == name)
+                {
+                    hits += 1;
+                }
+            }
+        }
+        let extra = opcode_extra(op, &bytes[code_start..code_end], pc - code_start)?;
+        Ok(1 + extra)
+    })?;
+    Ok(hits)
+}
+
+/// Move the hot int fields (`age`, `pickupDelay`) to the FRONT of the field
+/// table (see the section comment for the HotSpot layout rationale). Pure
+/// table splice: constant-pool indexes are unchanged (field refs are by
+/// name), methods/attributes are untouched.
+pub fn reorder_item_entity_fields(bytes: &[u8]) -> Result<(Vec<u8>, usize), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    let this_name = this_class_name(&layout)
+        .ok_or_else(|| "cannot resolve this_class name".to_string())?;
+    if this_name != ITEM_ENTITY_CLASS {
+        return Err(format!("reorder: unexpected class {this_name}"));
+    }
+    let fields_count = usize::from(u16_at(bytes, layout.fields_start).ok_or("bad fields_count")?);
+    let mut p = layout.fields_start.checked_add(2).ok_or("bad fields table")?;
+    let mut hot: Vec<(String, Vec<u8>)> = Vec::new();
+    let mut cold: Vec<Vec<u8>> = Vec::new();
+    for _ in 0..fields_count {
+        let start = p;
+        p = p.checked_add(6).ok_or("truncated field header")?; // access(2) name(2) desc(2)
+        let attr_count = usize::from(u16_at(bytes, p).ok_or("truncated field attrs")?);
+        p = p.checked_add(2).ok_or("truncated field attrs")?;
+        for _ in 0..attr_count {
+            let len = u32_at(bytes, p.checked_add(2).ok_or("truncated field attr")?)
+                .ok_or("truncated field attr")?
+                as usize;
+            p = p
+                .checked_add(6)
+                .ok_or("truncated field attr")?
+                .checked_add(len)
+                .ok_or("field attr overflow")?;
+        }
+        let entry = bytes
+            .get(start..p)
+            .ok_or("field entry past class end")?
+            .to_vec();
+        let n_idx = u16_at(bytes, start + 2).ok_or("bad field name idx")?;
+        let name = layout
+            .pool
+            .utf8_value(n_idx)
+            .ok_or_else(|| "bad field name utf8".to_string())?;
+        if name == "age" || name == "pickupDelay" {
+            hot.push((name, entry));
+        } else {
+            cold.push(entry);
+        }
+    }
+    // Exactly age first, pickupDelay second (vanilla declaration order) —
+    // anything else means the kernel table changed shape: fail closed.
+    let hot_names: Vec<&str> = hot.iter().map(|(n, _)| n.as_str()).collect();
+    if hot_names != ["age", "pickupDelay"] {
+        return Err(format!("reorder: unexpected hot fields {hot_names:?}"));
+    }
+
+    // Splice: [head][fields_count][age][pickupDelay][everything else][tail].
+    let mut out = Vec::with_capacity(bytes.len());
+    out.extend_from_slice(&bytes[..layout.fields_start]);
+    out.extend_from_slice(&bytes[layout.fields_start..layout.fields_start + 2]);
+    for (_, e) in &hot {
+        out.extend_from_slice(e);
+    }
+    for e in &cold {
+        out.extend_from_slice(e);
+    }
+    out.extend_from_slice(&bytes[p..]);
+    Ok((out, hot.len()))
+}
