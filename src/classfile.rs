@@ -3160,6 +3160,34 @@ pub fn patch_push_entities(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), S
     )
 }
 
+/// MEGA-ROUND-2 TASK-397-D (`items_offthread`): retarget the single
+/// `ItemEntity.mergeWithNeighbours()V` call site in `tick()V` to the static
+/// `ItemMergeOps.tickMerge(ItemEntity)V` bridge (receiver-prepended, same
+/// stack shape). Census (javap, kernel s7204): mergeWithNeighbours is PRIVATE
+/// but the call is INVOKEVIRTUAL #462 (nestmates-era javac emission — the
+/// round-1 "invokespecial в census" lesson: verify the opcode on the ACTUAL
+/// kernel, don't assume); tick()V holds exactly one site, the second site in
+/// teleport(TeleportTransition) stays vanilla bytes (rare path; the
+/// off-thread scan covers it on a later cadence tick). Fail-closed: NotFound
+/// returns vanilla bytes without pool growth.
+pub fn patch_itementity_tick_merge(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    retarget_virtual_to_static(
+        bytes,
+        "tick",
+        "()V",
+        (
+            "net/minecraft/world/entity/item/ItemEntity",
+            "mergeWithNeighbours",
+            "()V",
+        ),
+        (
+            "net/minecraft/world/entity/item/ItemMergeOps",
+            "tickMerge",
+            "(Lnet/minecraft/world/entity/item/ItemEntity;)V",
+        ),
+    )
+}
+
 // ---------------------------------------------------------------------------
 // ZERO-ALLOC-INSIDE (S7-164, lever #10): METHOD-BODY REDIRECT.
 //
@@ -6921,6 +6949,42 @@ mod entity_traversal {
         // Dump for the offline structural gate.
         std::fs::create_dir_all("tests/out").unwrap();
         std::fs::write("tests/out/Entity.traversal.patched.class", &composed).unwrap();
+    }
+
+    /// MEGA-ROUND-2 TASK-397-D (`items_offthread`): the REAL kernel ItemEntity
+    /// fixture (s7204 patched-kernel, 28904 bytes) must retarget exactly ONE
+    /// site inside tick()V — the private mergeWithNeighbours()V call emitted
+    /// as invokevirtual #462 (nestmates-era javac; round-1 "census учитывает
+    /// опкод" lesson). The second site (teleport) lives in another method and
+    /// must stay vanilla. Patch is length-preserving (CP-append only) and
+    /// idempotent (re-patch byte-identical, AlreadyPatched).
+    #[test]
+    fn itementity_tick_merge_retargets_exactly_one_site() {
+        const REAL: &[u8] = include_bytes!("../tests/fixtures/ItemEntity_real.class");
+        assert_eq!(REAL.len(), 28904, "fixture must be the s7204 pristine");
+        let (patched, outcome) = patch_itementity_tick_merge(REAL).expect("patch");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "exactly one mergeWithNeighbours site in tick()V"
+        );
+        // Idempotence + byte-identity.
+        let (again, outcome2) = patch_itementity_tick_merge(&patched).expect("re-patch");
+        assert_eq!(outcome2, RetargetOutcome::AlreadyPatched { sites: 1 });
+        assert_eq!(again, patched, "repatch must be byte-identical");
+        // Shape guards: same major (65), pool may only grow, class stays
+        // parseable, target bridge name utf8 present in the grown pool.
+        assert_eq!(u16::from_be_bytes([patched[6], patched[7]]), 65);
+        let n_orig = u16::from_be_bytes([REAL[8], REAL[9]]);
+        let n_new = u16::from_be_bytes([patched[8], patched[9]]);
+        assert!(n_new > n_orig, "pool must grow for the bridge ref");
+        let layout = parse_layout(&patched).expect("patched classfile parses");
+        assert!(layout.pool.find_utf8("tickMerge").is_some(), "bridge method name utf8 must be appended");
+        eprintln!(
+            "items_offthread offline census: ItemEntity.tick patch {} -> {} bytes",
+            REAL.len(),
+            patched.len()
+        );
     }
 }
 

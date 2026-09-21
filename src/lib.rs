@@ -37,6 +37,7 @@ mod improved_noise;
 mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
+mod items_offthread;
 mod jni_table;
 mod kernel_policy;
 mod loader;
@@ -174,6 +175,12 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // EntityCallbacks guard sites, composed on top of F1/F3 bytes (LAST in
     // the byte-hook chain). Dormant unless CRUSSTY_REGION_THREADS>=2.
     region_threads::register();
+    // ITEMS-OFFTHREAD (MEGA-ROUND-2, TASK-397-D): off-thread item merge
+    // candidate scan on the RegionTickOps worker pool, deterministic
+    // post-barrier apply on main. Byte hook on ItemEntity.tick (merge scan
+    // call site retarget). Dormant unless CRUSSTY_LEVER_FLAG=items_offthread
+    // AND CRUSSTY_REGION_THREADS>=2 AND REGION_STEAL!=1.
+    items_offthread::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -386,6 +393,11 @@ fn inject_surface() {
     // RegionTickOps.tickBucket; dormant unless CRUSSTY_BATCH_COLLECTOR=1
     // AND region_threads>=2).
     batch_collector::activate();
+    // ITEMS-OFFTHREAD (MEGA-ROUND-2, TASK-397-D): define ItemMergeOps into
+    // the kernel loader (static init wires the RegionTickOps hooks), compute
+    // the ItemEntity.tick merge-site retarget, retransform (dormant unless
+    // CRUSSTY_LEVER_FLAG=items_offthread).
+    items_offthread::activate();
     // FLAT-TRAVERSAL (S7-163): define TraverseOps into the kernel loader
     // (define-only; the checkInsideBlocks retarget composes through the
     // entity_compose chain stage 6; dormant unless CRUSSTY_FLAT_TRAVERSAL=1

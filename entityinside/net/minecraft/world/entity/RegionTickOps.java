@@ -210,6 +210,21 @@ public final class RegionTickOps {
     private static volatile Consumer<Entity> consumer;
     private static volatile Throwable workerError;
 
+    // TASK-397-D items_offthread extension hooks (null = exact vanilla
+    // behavior — the lever arms them from ItemMergeOps static init only when
+    // CRUSSTY_LEVER_FLAG=items_offthread AND the parallel phase is active).
+    //  - postBucketHook: fired by the WORKER that ticked a bucket, inside
+    //    the try block right after its sweep (before DONE), receiving the
+    //    bucket slice packed as (slot<<32|len) so the worker can scan its
+    //    OWN entities race-free and buffer merge decisions per slot.
+    //  - postJoinHook: fired by MAIN after the barrier + deferred-mutation
+    //    drains (phase inactive = vanilla EntityTickList mutation protocol);
+    //    applies the buffered decisions deterministically (slot order).
+    // JDK functional interfaces only — no crussty class references here, so
+    // a dormant lever never triggers a NoClassDefFoundError on this class.
+    public static volatile java.util.function.ObjLongConsumer<Entity[]> postBucketHook;
+    public static volatile Runnable postJoinHook;
+
     // S7-172: under MAIN_OFFLOAD (REGION_STEAL="2") an extra helper joins
     // both barriers — main orchestrates instead of ticking slot 0, so the
     // participants are main + w helpers = w+1 (legacy: main-as-slot-0 +
@@ -579,6 +594,13 @@ public final class RegionTickOps {
         // navigate-passes (STEAL v2 defect-fix) — main-only, after join.
         drainDeferredBlockUpdates();
 
+        // Phase 4c (TASK-397-D): apply the buffered item-merge decisions on
+        // MAIN after the join (phase inactive). Null hook = vanilla no-op.
+        Runnable applyHook = postJoinHook;
+        if (applyHook != null && workerError == null) {
+            applyHook.run();
+        }
+
         Throwable err = workerError;
         if (err != null) {
             if (err instanceof RuntimeException) throw (RuntimeException) err;
@@ -591,8 +613,16 @@ public final class RegionTickOps {
         try {
             Entity[] bucket = bucketArr[slot];
             Consumer<Entity> c = consumer;
-            for (int i = 0, n = bucketLen[slot]; i < n; i++) {
+            int n = bucketLen[slot];
+            for (int i = 0; i < n; i++) {
                 c.accept(bucket[i]); // vanilla per-entity logic, bit-for-bit
+            }
+            // TASK-397-D: worker-side off-thread merge scan of THIS bucket
+            // (still inside the try so a scan error surfaces via workerError
+            // and DONE is always awaited). Null hook = vanilla, zero cost.
+            java.util.function.ObjLongConsumer<Entity[]> scan = postBucketHook;
+            if (scan != null) {
+                scan.accept(bucket, ((long) slot << 32) | (long) n);
             }
         } catch (Throwable t) {
             if (workerError == null) workerError = t; // crash surfaces on main at join
