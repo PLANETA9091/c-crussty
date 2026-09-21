@@ -1,18 +1,58 @@
 {
   "task": "TASK-405-A nav->Rust bulk (cmp405_navplane)",
-  "agent": "405-A-r2",
+  "agent": "TASK-409-A (продолжение 405-A-r2)",
   "vector": "R-вектор закона 6 RUST-FIRST, класс nav/pathfinding: nav_ai lane (9.8-14% wall comp-сцены) — срез shouldRecomputePath × navigatingMobs, ОДИН bulk-JNI на батч мобов",
   "branch": "round-405-a-nav",
   "base": "origin/master aa2129e (rebase по протоколу рестарта; pair-вердикт чистый vs ваниль-якоря)",
   "worktree": "/home/z/rounds/ROUND-405/agent-a",
   "commit": "d538a32 (1aba03e = navplane-код; d538a32 = write-through RESULT.json + dispatch-скрипты)",
-  "stage": "DISPATCHED aleg2 (run 35659531401, ref round-405-a-l2 @d538a32, lever cmp405_navplane, inputs = банк ровно, lever_arg 1); min-of-3: aleg1 GREEN-CANDIDATE, aleg2 в полёте, aleg3 = решение по вердикту aleg2",
-  "run_id": 35659531401,
+  "stage": "aleg3 IN-FLIGHT (run 35667055638) + k4 research DONE: RESEARCH-A-k4 nav→Rust bulk-поверхность ИСЧЕРПАНА (доказательство: парити-ловушка tick-head + findPath world-query мост-антипаттерн + GoalSelector RNG-PARK; 3 внешних пруфа) — k5-кандидаты: A* node-pool ~1.2% (Lithium-прецедент), eindex-хэндофф findTarget",
+  "run_id": 35667055638,
   "legs": [
-    {"leg": "aleg1", "ref": "round-405-a-l1", "lever": "cmp405_navplane", "branch": "round-405-a-nav@1aba03e", "run_id": 35649236693, "runner": 6507187, "tps_med": 2.3, "delta_pair_pct": 9.5, "pair_vs": "2.10@6845027", "verdict": "GREEN-CANDIDATE", "armed": "ARMED x7 (cmp405_navplane), items 30.27% ваниль", "status": "done (учтён GOAL x92); ABSORB.md восстановлен рестартом в research/gc-recon-2026-09-19/round-round405aleg1/"},
-    {"leg": "aleg2", "ref": "round-405-a-l2", "lever": "cmp405_navplane", "branch": "round-405-a-nav@d538a32", "run_id": 35659531401, "runner": null, "tps_med": null, "delta_pair_pct": null, "status": "in_progress (dispatch 21:49Z)"}
+    {
+      "leg": "aleg1",
+      "ref": "round-405-a-l1",
+      "lever": "cmp405_navplane",
+      "branch": "round-405-a-nav@1aba03e",
+      "run_id": 35649236693,
+      "runner": 6507187,
+      "tps_med": 2.3,
+      "delta_pair_pct": 9.5,
+      "pair_vs": "2.10@6845027",
+      "verdict": "GREEN-CANDIDATE",
+      "armed": "ARMED x7 (cmp405_navplane), items 30.27% ваниль",
+      "status": "done (учтён GOAL x92); ABSORB.md восстановлен рестартом в research/gc-recon-2026-09-19/round-round405aleg1/"
+    },
+    {
+      "leg": "aleg2",
+      "ref": "round-405-a-l2",
+      "lever": "cmp405_navplane",
+      "branch": "round-405-a-nav@d538a32",
+      "run_id": 35659531401,
+      "runner": null,
+      "tps_med": null,
+      "delta_pair_pct": null,
+      "status": "in_progress (dispatch 21:49Z)"
+    },
+    {
+      "leg": "aleg3",
+      "ref": "round-405-a-l3",
+      "lever": "cmp405_navplane",
+      "branch": "round-405-a-nav@e88f73b",
+      "run_id": 35667055638,
+      "runner": null,
+      "tps_med": null,
+      "delta_pair_pct": null,
+      "status": "in_progress (dispatch, банка inputs ровно, NOT-A-BENCH гвард в absorb)"
+    }
   ],
-  "best": {"leg": "aleg1", "tps_med": 2.3, "runner": 6507187, "delta_pair_pct": 9.5, "pair_vs": "2.10@6845027"},
+  "best": {
+    "leg": "aleg1",
+    "tps_med": 2.3,
+    "runner": 6507187,
+    "delta_pair_pct": 9.5,
+    "pair_vs": "2.10@6845027"
+  },
   "tps_med": 2.3,
   "delta_pair_pct": 9.5,
   "lane_was": "nav_ai 14.16% (pre-comp) -> 9.34% (bleg1) / 9.81% (comp3); leg1 cpu: nav_ai 13.28% (−0.9пп vs 14.16) — срез sendBlockUpdated/shouldRecomputePath узкий",
@@ -27,6 +67,6 @@
     "cargo check --lib PASS; cargo test nav_plane 5/5; javac --release 21, 1 classfile 6477B zero nested",
     "ARM-пруф план: маркер 'cmp405_navplane ARMED' + 'navplane: ... (sites:1)' в server-stdout.log"
   ],
-  "what": "Рестарт-2: (1) dirty=2 закоммичены (RESULT.json + dispatch_round405_a.py) -> d538a32 push; (2) dispatch_round405_a2.py (LEGS={aleg2: round-405-a-l2/cmp405_navplane/origin/round-405-a-nav}, банк ровно, lever_arg=1) -> run 35659531401; (3) полл -> absorb round405aleg2 -> pair-вердикт vs пул {2.35@6992836, 2.10@6851475, 2.70@8841704, 2.10@6845027, 407-anchor*}; BAND 6.0-9.5M (вне = discard, ре-ролл <=2 -> aleg3); (4) aleg3 по вердикту: подтверждение min-of-3 или углубление среза",
-  "next": "1) полл run 35659531401 (~40 мин) 2) ARM-пруф 'cmp405_navplane' в server-stdout.log 3) absorb_round.py 35659531401 round405aleg2 4) pair-вердикт vs пул by-runner 5) BAND-чек 6) aleg3: green >=80% от +9.5pp -> подтверждение; иначе углубление nav-среза -> aleg3 7) RESULT.json финал"
+  "what": "Рестарт-2: (1) dirty=2 закоммичены (RESULT.json + dispatch_round405_a.py) -> d538a32 push; (2) dispatch_round405_a2.py (LEGS={aleg2: round-405-a-l2/cmp405_navplane/origin/round-405-a-nav}, банк ровно, lever_arg=1) -> run 35659531401; (3) полл -> absorb round405aleg2 -> pair-вердикт vs пул {2.35@6992836, 2.10@6851475, 2.70@8841704, 2.10@6845027, 407-anchor*}; BAND 6.0-9.5M (вне = discard, ре-ролл <=2 -> aleg3); (4) aleg3 по вердикту: подтверждение min-of-3 или углубление среза | k4: RESEARCH-A-k4.md (web-пруфы + aleg2-fresh декомпозиция 13.92% wall) закоммичен 6593b85, push OK; решение: рисёрч-итерация без диспатча (диспатч-нуль-дельта = шум-нога, экономия раннер-пула); aleg3 = подтверждение min-of-3 тем же кодом @e88f73b",
+  "next": "1) полл run 35667055638 (sleep 120) 2) ARM-пруф 'cmp405_navplane' в server-stdout.log ДО вердикта 3) absorb_round.py 35667055638 round409aleg3 4) band-чек runner_cpu_index 6.0-9.5M (вне = BAND-DISCARD, ре-ролл <=2) 5) pair-вердикт vs якоря-407 {2.4@6604167, 2.2@6976430} + fresh якоря-408 (round-408-anchora/b/c, валидны только в band) 6) min-of-3 закрыт -> k4: свежий рисёрч nav-углубление (>=3 пруфа) -> имплементация -> cargo check (target удалить) -> javac из текущих .java + коммит classfiles -> push -> aleg4 -> абсорб -> вердикт 7) RESULT.json write-through на каждом шаге"
 }
