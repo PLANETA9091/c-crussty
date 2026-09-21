@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""dispatch_round408.py — TASK-408: гейт-фикс композит-нога dleg4 (cmp406_aibatch
-@ round-406-d-aibatch dac1140, классы пересобраны) + 2 свежих якоря-407 (master)."""
+"""dispatch_round408.py — TASK-409: 3 свежих якорных ноги (master, lever_flag="")
+для pair-вердиктов волны-409 (мультикомпозит + leg-серии). Alias-refs per-ref."""
 import json, re, subprocess, sys, time, urllib.request
 
 REPO = "PLANETA9091/c-crussty"
@@ -8,9 +8,9 @@ API = "https://api.github.com"
 WF = "world-bench-parallel.yml"
 
 LEGS = {
-    "dleg4": ("round-406-d-l4", "cmp406_aibatch", "origin/round-406-d-aibatch"),
-    "anchor407a": ("round-407-anchora", "", "origin/master"),
-    "anchor407b": ("round-407-anchorb", "", "origin/master"),
+    "anchora": ("round-408-anchora", "", "origin/master"),
+    "anchorb": ("round-408-anchorb", "", "origin/master"),
+    "anchorc": ("round-408-anchorc", "", "origin/master"),
 }
 
 INPUTS = {
@@ -28,7 +28,7 @@ INPUTS = {
 def token_from_remote():
     url = subprocess.run(["git", "-C", "/home/z/c-crussty", "remote", "get-url", "origin"],
                          capture_output=True, text=True).stdout.strip()
-    m = re.match(r"^https://[^:]+:([^@]+)@github\.com/", url)
+    m = re.match(r"^https://[^:]+:([^@]+)@github.com/", url)
     if not m:
         raise SystemExit("no token in origin remote URL")
     return m.group(1)
