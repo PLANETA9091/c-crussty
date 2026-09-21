@@ -1,0 +1,26 @@
+{
+  "agent": "TASK-409-E",
+  "vector": "sscan (R4 despawn/spawn/activation scans → Rust батч, lever cmp406_sscan)",
+  "branch": "round-406-e-sscan @ fb8dc77",
+  "worktree": "/home/z/rounds/ROUND-406/agent-e",
+  "run_id": null,
+  "legs": {
+    "eleg1": {"run_id": 35660646779, "ref": "round-406-e-l1", "tps_med": 2.55, "cpu_idx": 6905070, "delta_pair_pct": 15.9, "verdict": "GREEN ARMED (tick-408)"},
+    "eleg2": {"run_id": 35667342821, "ref": "round-406-e-l2", "status": "in_progress", "band_gate": "PASS"},
+    "eleg3": {"run_id": 35667359195, "ref": "round-406-e-l3", "status": "in_progress"}
+  },
+  "tps_med": null,
+  "delta_pair_pct": null,
+  "lane": "dispawn-scan O(mobs×players) per-tick per-mob getNearestPlayer → sscanEpoch ОДИН bulk-JNI/тик DOD-проход SoA → колонка nearest-qualifying-player; leg1→leg3 min-of-3",
+  "ram_stw_full": null,
+  "parity": "ванильность бит-в-байт: first-strictly-closer по порядку players(), лестница (best==-1||d<best), порядок компонент distanceToSqr; тело checkDespawn после скана — нетронутый ванильный байткод; FAIL-CLOSED STRICT eq; пустой флаг = сайт вообще не ретаргетится",
+  "verdict": "PREFLIGHT PASS",
+  "evidence": [
+    "preflight: MobScanOps.class + MobPushOps.class byte-IDENTICAL to fresh javac rebuild (--release 21, cp full kernel jar round-round406eleg1/patched-kernel.jar + fastutil.jar; jar round-396-a purged — использован полный kernel-jar собственной GREEN-ноги, round-j2b не годится по миссии)",
+    "preflight: .java не менялись с 63bf3b3 (классы коммичены там же) — блобы актуальны",
+    "preflight: cargo check --lib PASS 4.37s (61 warnings, 0 errors), CARGO_TARGET_DIR удалён немедленно",
+    "preflight: worktree clean, HEAD fb8dc77 == origin/round-406-e-sscan; alias round-406-e-l1 @ 0578583 (код-дерево идентично fb8dc77 по код-файлам — только RESEARCH-E.md/dispatch-script после)",
+    "note k2: entityinside/ItemEntityManager.class блоб от fef3746 (гейты ×3 cmp406_sscan в .java из 63bf3b3 не в блобе) — СОЗНАТЕЛЬНО не трогаю для пула min-of-3 с eleg1 (это состояние treatment leg1; empirical +15.9pp получено на нём); rebuild входит в k2-итерацию"
+  ],
+  "what": "PREFLIGHT: class-blob verification + cargo check; диспатч eleg2/eleg3 @ fb8dc77"
+}
