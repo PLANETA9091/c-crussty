@@ -3909,6 +3909,44 @@ pub fn patch_serverlevel_send_block_updated(
     }
 }
 
+/// NAV-PLANE (TASK-405-A restart, cmp405_navplane): the same single-site
+/// body redirect as the BU-DEFER variant, but to OUR NavPlaneOps.handle —
+/// the javap-verbatim vanilla body with the navigatingMobs pass collapsed
+/// into ONE bulk navDecide native per block-update batch (law 6: one
+/// JNI per batch; per-entity JNI = design error). Composed only when the
+/// lever flag is armed (region_threads.rs), independent of bu_defer so the
+/// armed delta is purely the nav-batch plane.
+pub const NAVPLANE_OPS_CLASS: &str = "net/minecraft/server/level/NavPlaneOps";
+
+pub const NAVPLANE_REDIRECT_TARGETS: [(&str, &str, &str, &str); 1] = [(
+    "sendBlockUpdated",
+    "(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;I)V",
+    "handle",
+    "(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;I)V",
+)];
+
+pub fn patch_serverlevel_send_block_updated_navplane(
+    bytes: &[u8],
+) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let (name, desc, tname, tdesc) = NAVPLANE_REDIRECT_TARGETS[0];
+    let (p, outcome) = redirect_method_body_to_static(
+        bytes,
+        name,
+        desc,
+        "net/minecraft/server/level/ServerLevel",
+        NAVPLANE_OPS_CLASS,
+        tname,
+        tdesc,
+    )?;
+    match outcome {
+        RetargetOutcome::Retargeted { .. } => Ok((p, RetargetOutcome::Retargeted { sites: 1 })),
+        RetargetOutcome::AlreadyPatched { .. } => {
+            Ok((p, RetargetOutcome::AlreadyPatched { sites: 1 }))
+        }
+        RetargetOutcome::NotFound => Ok((bytes.to_vec(), RetargetOutcome::NotFound)),
+    }
+}
+
 /// S7-164 lever #10: redirect the THREE hottest Entity inside/fluid bodies
 /// (census: collidedWithFluid ← lambda$checkInsideBlocks$2; collidedAlongVector ←
 /// collidedWithShapeMovingFrom only; both from Entity) to the scalar
