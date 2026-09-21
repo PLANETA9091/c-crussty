@@ -21,7 +21,11 @@
 
 ### 4) Композиция cmp405_stagtick (stagcomp⊕tickplane) — верхний агент
 - Ветка round-405-f-comp @fef3746: merge round-403-c-tickplane → 60fe902 ЧИСТЫЙ; гейт-чеклист 10 сайтов (mobs_manager/mobs_grid/mobs_soa/items_manager/items_index/stagger/collide_batch/tickplane.rs + java MobPushOps/ItemEntityManager), классы пересобраны javac --release 21 (cp: patched-kernel.jar+paper-api 1.21.10+adventure 4.24), cargo check --lib PASS
-- comp1 35630922520 / comp2 35630952157 @fef3746 — в полёте.
+- **comp1 2.7@7069582 GREEN-CANDIDATE, ARMED ×5 (cmp405_stagtick ×3 + cmp401_soa + cmp401_collide) → pair +12.5pp (vs 2.40@7089030)**
+- **comp2 3.2@7214503 GREEN-CANDIDATE, cmp405_stagtick ARMED ×3 → pair +45.5pp (vs 2.2@7125977) / +23.1pp (vs 2.6@7237388) = РЕКОРД ЭРЫ ПО СЫРОМУ СЧЁТУ (3.2 TPS)**
+- Лейны comp2: items 31.17→0.00%, nav_ai→10.13%, broadphase→14.81%, fluid→18.45% (новый топ-лейн), inside_volatile→13.30%; GC 21.7s/Full 9 (норма)
+- min-of-3 в полёте: comp3 35633645282 + дубли-репликации comp-l1 35633594662 / comp-l2 35633618630 (итого серия до 5 ног)
+- Свежие якоря тика: **anchorc 2.7@8841704, anchord 2.1@6845027** (оба валидны, ваниль items ~30%)
 
 ### 5) Волна-1 R-векторов (закон 6 RUST-FIRST)
 - TASK-405-A nav→Rust bulk (cmp405_navrust): worktree @60fe902, имплементация
