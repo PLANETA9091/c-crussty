@@ -179,7 +179,6 @@ fn lever_mode() -> bool {
     // mirror — see mirror_mode()); the legacy cmp401_soa leg keeps its exact
     // prior behavior (no mirror, no grid reads) — two-mode A/B by design.
     f == "cmp401_soa" || f == "cmp402_comp" || f == "cmp402_stagcomp"
-        || f == "cmp405_fluidrust" // TASK-405-B: унаследованный сайт композита
 }
 
 /// Mirror-plane selector: the sharded grid (src/mobs_grid.rs) is armed ONLY

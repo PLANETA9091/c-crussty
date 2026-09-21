@@ -1,5 +1,5 @@
 //! Runtime wiring for the FLUID-RUST bulk push lever (TASK-405-B, vector
-//! fluid→Rust — lever cmp405_fluidrust; bridge
+//! fluid→Rust — lever cmp405_fluidplane; bridge
 //! fluidrust/net/minecraft/world/entity/FluidRustOps.java, retarget in
 //! src/classfile.rs patch_fluid_rust, compose stage in src/entity_compose.rs).
 //!
@@ -21,7 +21,7 @@
 //! into the kernel loader + RegisterNatives (fluidProbe/fluidPushBatch) and
 //! publishes bridge_ready() for the compose stage.
 //!
-//! Fail-closed: lever flag != "cmp405_fluidrust" (STRICT eq) → module fully
+//! Fail-closed: lever flag != "cmp405_fluidplane" (STRICT eq) → module fully
 //! dormant; native error codes → per-call vanilla replica (ERR_RANGE) or
 //! permanent disarm (ERR_STRUCT).
 
@@ -48,7 +48,7 @@ fn lever_flag() -> String {
 
 /// STRICT eq — empty flag = vanilla bit-in-bit.
 fn java_gate_matches(f: &str) -> bool {
-    f == "cmp405_fluidrust"
+    f == "cmp405_fluidplane"
 }
 
 /// Gate visibility for the entity_compose compose stage.
@@ -79,7 +79,7 @@ pub fn wait_bridge_ready(timeout_ms: u64) -> bool {
 pub fn register() {
     if !enabled_pub() {
         eprintln!(
-            "[crussty-plugin] fluid_rust: dormant (set CRUSSTY_LEVER_FLAG=cmp405_fluidrust to enable)"
+            "[crussty-plugin] fluid_rust: dormant (set CRUSSTY_LEVER_FLAG=cmp405_fluidplane to enable)"
         );
     }
 }
@@ -184,7 +184,7 @@ pub fn activate() {
         crate::kernel_policy::audit_wire(OPS_CLASS, "fluidPushBatch", "fluid_rust v1");
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
         eprintln!(
-            "[crussty-plugin] cmp405_fluidrust: ARMED fluidpush=bulk-rust-dataplane jni=1-per-positive-call negative=0-jni-identity-verdict slow=faithful-vanilla-replica (rust getFlow/push math bit-in-bit: Plane.HORIZONTAL order f32-heights f64-Vec3 ops ZERO-identity touched-flag running-maxDepth-0.4; no cross-tick world state; spread lane vanilla)"
+            "[crussty-plugin] cmp405_fluidplane: ARMED fluidpush=bulk-rust-dataplane jni=1-per-positive-call negative=0-jni-identity-verdict slow=faithful-vanilla-replica (rust getFlow/push math bit-in-bit: Plane.HORIZONTAL order f32-heights f64-Vec3 ops ZERO-identity touched-flag running-maxDepth-0.4; no cross-tick world state; spread lane vanilla)"
         );
     });
 }
@@ -433,11 +433,13 @@ mod tests {
         f[12] = -1.0; // W stepX=-1
         let flag = 0b1111;
         let (x, _, _) = get_flow(&f, flag);
-        // f1 = own - 5/9 = 3/9 = 1/3; vx = (double)(1.0f * 1/3f); normalize → 1.0
+        // f1 = own - 5/9 = 3/9 = 1/3; vx = (double)(1.0f * 1/3f); normalize →
+        // x = vx / sqrt(vx*vx + 0 + 0) (exact formula — sqrt(vx²) may differ
+        // from |vx| by 1 ulp, so the oracle mirrors the full expression).
         let f1 = own - 5.0f32 / 9.0;
         let vx = (1.0f32 * f1) as f64;
-        let d = vx.abs().sqrt();
-        assert!((x - vx / d).abs() < 1e-12, "x={x}");
+        let d = (vx * vx + 0.0 + 0.0).sqrt();
+        assert_eq!(x, vx / d, "x={x}");
     }
 
     #[test]

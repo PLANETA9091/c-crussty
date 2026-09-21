@@ -82,9 +82,7 @@ public final class ItemEntityManager {
                     // включаются наряду с мобовыми soa+grid единым флагом.
                     || "cmp402_comp".equals(LEVER_FLAG)
                     // TASK-402-F: stagcomp = композит + stagger (единый флаг).
-                    || "cmp402_stagcomp".equals(LEVER_FLAG)
-                    // TASK-405-B: fluid→Rust bulk — унаследованный сайт композита.
-                    || "cmp405_fluidrust".equals(LEVER_FLAG);
+                    || "cmp402_stagcomp".equals(LEVER_FLAG);
 
     /** TASK-399-F despawnv2: rust lifetime-heap + батч-деспавн (точный флаг).
      *  TASK-400-A: составной флаг cmp399_bfcomp (B+F) включает despawnv2
@@ -94,8 +92,7 @@ public final class ItemEntityManager {
             "cmp399_despawn2".equals(LEVER_FLAG) || "cmp399_bfcomp".equals(LEVER_FLAG)
                     // TASK-402-B: композит включает lifetime-heap суб-механизм.
                     || "cmp402_comp".equals(LEVER_FLAG)
-                    || "cmp402_stagcomp".equals(LEVER_FLAG)
-                    || "cmp405_fluidrust".equals(LEVER_FLAG); // TASK-405-B
+                    || "cmp402_stagcomp".equals(LEVER_FLAG);
 
     private static final int PROBE_MAGIC = 0x1D3A;
 

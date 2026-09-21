@@ -4417,7 +4417,7 @@ pub fn patch_fluid_gate(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), Stri
 }
 
 // ---------------------------------------------------------------------------
-// FLUID-RUST (TASK-405-B, lever cmp405_fluidrust): fluid→Rust bulk push
+// FLUID-RUST (TASK-405-B, lever cmp405_fluidplane): fluid→Rust bulk push
 // plane. Retargets BOTH Entity wrapper call-sites of
 // updateFluidHeightAndDoFluidPushing (WATER wrapper
 // updateInWaterStateAndDoWaterCurrentPushing offset 39 + LAVA wrapper

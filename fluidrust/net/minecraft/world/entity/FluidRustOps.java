@@ -20,7 +20,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * TASK-405-B (cmp405_fluidrust): fluid→Rust bulk push plane.
+ * TASK-405-B (cmp405_fluidplane): fluid→Rust bulk push plane.
  *
  * Whole-site replacement for the TWO kernel call-sites of
  * Entity.updateFluidHeightAndDoFluidPushing (the WATER wrapper
@@ -73,7 +73,7 @@ import net.minecraft.world.phys.Vec3;
  * CONCURRENCY: region-parallel ticking — ALL per-call state is ThreadLocal;
  * natives are stateless array readers; `broken`/`nativeOk` are volatile.
  *
- * FAIL-CLOSED: ENABLED (env CRUSSTY_LEVER_FLAG == "cmp405_fluidrust", STRICT
+ * FAIL-CLOSED: ENABLED (env CRUSSTY_LEVER_FLAG == "cmp405_fluidplane", STRICT
  * eq) && nativeOk (probe magic) && !broken. Empty/foreign lever flag → the
  * rust side never serves the patch (entity_compose stage dormant) and this
  * class is never invoked (vanilla bit-in-bit).
@@ -82,7 +82,7 @@ public final class FluidRustOps {
 
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return f != null && f.trim().equals("cmp405_fluidrust");
+        return f != null && f.trim().equals("cmp405_fluidplane");
     }
 
     private static final boolean ENABLED = leverEnabled();
