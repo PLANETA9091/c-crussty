@@ -835,6 +835,162 @@ pub fn patch_brain_start_each(bytes: &[u8]) -> Result<Vec<u8>, String> {
 }
 
 // ---------------------------------------------------------------------------
+// NAVSTAGGER (TASK-399-C, flag cmp399_navstag): N=4-phase goal re-selection
+// scheduler for mob AI. The kernel (vanilla 1.21.2+ shape, javap-verified on
+// round-j2b patched-kernel.jar) already implements a 2-phase id-based
+// round-robin inside `Mob.serverAiStep()V` (`protected final`, never
+// overridden): i = tickCount + getId(); if (i % 2 != 0 && tickCount > 1) ->
+// targetSelector/goalSelector `tickRunningGoals(false)` (running goals keep
+// executing — movement/attack continuity), else FULL `tick()` on both
+// selectors (goalCleanup + goalUpdate). navigation.tick / customServerAiStep
+// / controls sit OUTSIDE the branch and run every tick for every mob.
+//
+// The lever widens the modulus 2 -> 4 by patching ONE byte: the `iconst_2`
+// operand of the `irem` becomes `iconst_4`. Result: FULL goal re-selection
+// executes for exactly the (tickCount + id) % 4 == 0 slot (~25% of mobs per
+// tick, deterministic by id — round-robin, not time-based); the other 75%
+// keep tickRunningGoals(false) every tick. The tickCount <= 1 bootstrap
+// (FULL for freshly spawned mobs on their first ticks) is untouched.
+//
+// Superiority deviation (documented in LEVER-V399-C.md): goal
+// re-evaluation — including goalCleanup stop() of a finished goal — for a
+// cold mob is delayed by up to 4 ticks (vanilla bound: 2). Running goals
+// still tick every tick, so movement/attack paths are the vanilla code
+// byte-for-byte; only goal TRANSITIONS lag.
+//
+// Patch contract (audit A4 discipline): pattern-match inside the
+// serverAiStep Code attribute only, exactly ONE structural match:
+//
+//   1C        iload_2           (i)
+//   06|08     iconst_2|iconst_4 (modulus — the patched byte)
+//   70        irem
+//   99 xx xx  ifeq <FULL>       (forward, == second target)
+//   2A        aload_0
+//   B4 xx xx  getfield tickCount (context anchor)
+//   04        iconst_1
+//   A4 xx xx  if_icmple <FULL>  (forward, == first target)
+//
+// The two branch targets must be identical and forward — that pins the
+// branch pair to the vanilla shape (both jump to the FULL block). The
+// getfield operand is additionally resolved through the pool: its
+// NameAndType name must be "tickCount" (Entity.tickCount). Anything else =>
+// Err before any mutation (fail-closed: the hook then serves pristine
+// bytes). Idempotent: on the patched shape (0x08) the function returns the
+// bytes unchanged. Length-preserving by construction (no CP/metadata edits,
+// no new jump targets => StackMapTable untouched).
+pub const MOB_CLASS: &str = "net/minecraft/world/entity/Mob";
+const MOB_SERVER_AI_STEP: &str = "serverAiStep";
+const MOB_SERVER_AI_STEP_DESC: &str = "()V";
+
+pub fn patch_mob_stagger(bytes: &[u8]) -> Result<Vec<u8>, String> {
+    let layout = parse_layout(bytes).ok_or("bad classfile layout")?;
+    let this_name = this_class_name(&layout).ok_or("cannot resolve this_class name")?;
+    if this_name != MOB_CLASS {
+        return Err(format!("unexpected class {this_name}"));
+    }
+    let pool = layout.pool;
+    let Some(name_idx) = pool.find_utf8(MOB_SERVER_AI_STEP) else {
+        return Err("serverAiStep not found".into());
+    };
+    let Some(desc_idx) = pool.find_utf8(MOB_SERVER_AI_STEP_DESC) else {
+        return Err("()V descriptor not found".into());
+    };
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)
+        .ok_or("serverAiStep()V not found")?;
+    let (code_start, code_len) = find_code_attr(bytes, &pool, &m)
+        .ok_or("serverAiStep()V has no Code attribute")?;
+    let code = bytes
+        .get(code_start..code_start.checked_add(code_len).ok_or("code len overflow")?)
+        .ok_or("code out of bounds")?;
+
+    // Scan for the modulus site: [1C, 06|08, 70, 99, lo, hi, 2A, B4, lo, hi,
+    // 04, A4, lo, hi] with forward equal branch targets and the getfield
+    // resolving to Entity.tickCount. Byte-wise scan; require exactly one
+    // hit over the whole method body.
+    let mut site: Option<usize> = None; // offset of the iconst operand
+    for i in 0..code.len().saturating_sub(13) {
+        if code[i] != 0x1C {
+            continue; // iload_2
+        }
+        let op = code[i + 1];
+        if op != 0x06 && op != 0x08 {
+            continue; // iconst_2 (vanilla) | iconst_4 (already patched)
+        }
+        if code[i + 2] != 0x70 || code[i + 3] != 0x99 {
+            continue; // irem; ifeq
+        }
+        if code[i + 6] != 0x2A || code[i + 7] != 0xB4 || code[i + 10] != 0x04 || code[i + 11] != 0xA4
+        {
+            continue; // aload_0; getfield; iconst_1; if_icmple
+        }
+        // Branch operands (s2 big-endian, relative to the branch opcode);
+        // the vanilla shape jumps FORWARD to the same FULL block.
+        let (Some(d1), Some(d2)) = (s2_forward(code, i + 4), s2_forward(code, i + 12)) else {
+            continue;
+        };
+        let t1 = match (i + 3).checked_add(d1) {
+            Some(v) => v,
+            None => continue,
+        };
+        let t2 = match (i + 11).checked_add(d2) {
+            Some(v) => v,
+            None => continue,
+        };
+        if t1 != t2 || t1 <= i + 11 || t1 > code.len() {
+            continue;
+        }
+        // getfield operand must resolve to Entity.tickCount by NAME.
+        let Some(fidx) = s2_u16(code, i + 8) else {
+            continue;
+        };
+        let is_tick_count = pool
+            .fieldref_parts(fidx)
+            .map(|(owner, name, desc)| {
+                owner == "net/minecraft/world/entity/Entity"
+                    && name == "tickCount"
+                    && desc == "I"
+            })
+            .unwrap_or(false);
+        if !is_tick_count {
+            continue;
+        }
+        if site.is_some() {
+            return Err("serverAiStep: multiple modulus sites — ambiguous shape".into());
+        }
+        site = Some(i + 1);
+    }
+    let Some(off) = site else {
+        return Err(
+            "serverAiStep: id-based goal-selection modulus site not found (kernel build mismatch?)"
+                .into(),
+        );
+    };
+    if code[off] == 0x08 {
+        return Ok(bytes.to_vec()); // idempotent: already at N=4
+    }
+    let mut out = bytes.to_vec();
+    out[code_start + off] = 0x08; // iconst_2 -> iconst_4 (single byte, length-preserving)
+    Ok(out)
+}
+
+/// Bounds-checked forward branch operand reader for the navstagger pattern
+/// matcher: s2 big-endian, must be non-negative (forward jump), as usize.
+fn s2_forward(code: &[u8], p: usize) -> Option<usize> {
+    let b = code.get(p..p.checked_add(2)?)?;
+    let raw = i16::from_be_bytes([b[0], b[1]]);
+    if raw < 0 {
+        return None;
+    }
+    Some(raw as usize)
+}
+
+/// Bounds-checked u16 operand reader (CP index in the navstagger matcher).
+fn s2_u16(code: &[u8], p: usize) -> Option<u16> {
+    let b = code.get(p..p.checked_add(2)?)?;
+    Some(u16::from_be_bytes([b[0], b[1]]))
+}
+
+// ---------------------------------------------------------------------------
 // F3 LEVELTICKS-READS body swaps (family-agg pack member F3, TASK-251/S7-115
 // -> S7-116; protocol: docs/FAMILY_AGG_PREREGISTRATION.md §5). The F2 machine
 // applied twice on the scheduled-tick drain pair:
@@ -7174,4 +7330,36 @@ fn check_members(bridge: &[u8], targets: &[(&str, &str, &str, &str)]) -> Result<
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod navstagger_tests {
+    /// NAVSTAGGER (TASK-399-C) against the REAL kernel fixture
+    /// (purpur patched-kernel.jar, round-j2b build — the exact bytes the
+    /// hook will see at retransform). Contract:
+    ///   1. exactly ONE byte changes, `iconst_2 -> iconst_4`, inside
+    ///      serverAiStep's Code at the (tickCount + getId()) % 2 site;
+    ///   2. patch(patch(x)) == patch(x) (idempotent re-served bytes);
+    ///   3. every other byte of the class is untouched (length-preserving,
+    ///      StackMapTable/CP/metadata intact — no verification hazard).
+    #[test]
+    fn mob_stagger_single_byte_on_real_kernel_fixture() {
+        const REAL_MOB: &[u8] = include_bytes!("../tests/fixtures/Mob.class");
+        let patched = super::patch_mob_stagger(REAL_MOB).expect("real Mob.class must patch");
+        assert_eq!(patched.len(), REAL_MOB.len(), "length must be preserved");
+        let diff: Vec<usize> = patched
+            .iter()
+            .zip(REAL_MOB.iter())
+            .enumerate()
+            .filter_map(|(i, (a, b))| (a != b).then_some(i))
+            .collect();
+        assert_eq!(diff.len(), 1, "exactly one byte must change, got {diff:?}");
+        let i = diff[0];
+        assert_eq!(REAL_MOB[i], 0x06, "vanilla byte must be iconst_2");
+        assert_eq!(patched[i], 0x08, "patched byte must be iconst_4");
+
+        // Idempotency: re-patching the already-patched bytes is a no-op.
+        let again = super::patch_mob_stagger(&patched).expect("re-patch must succeed");
+        assert_eq!(again, patched, "patch(patch(x)) == patch(x)");
+    }
 }

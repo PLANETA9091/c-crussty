@@ -32,7 +32,13 @@ const IM_BYTES: &[u8] =
 
 fn lever_flag_matches() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim().eq("items_subsys2"))
+        .map(|v| {
+            let f = v.trim();
+            // TASK-399-C композиционный контракт: J-подсистема armится и в
+            // ногах раунда-3 (cmp399_* флаги) — item-тейк в rust вместе с
+            // navstagger-вектором агента C.
+            f.eq("items_subsys2") || f.starts_with("cmp399_")
+        })
         .unwrap_or(false)
 }
 

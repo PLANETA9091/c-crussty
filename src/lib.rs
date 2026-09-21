@@ -42,6 +42,7 @@ mod items_manager;
 mod jni_table;
 mod kernel_policy;
 mod loader;
+mod navstagger;
 mod noise_fill;
 mod parse_diag;
 mod zero_cursor;
@@ -176,6 +177,11 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // EntityCallbacks guard sites, composed on top of F1/F3 bytes (LAST in
     // the byte-hook chain). Dormant unless CRUSSTY_REGION_THREADS>=2.
     region_threads::register();
+    // NAVSTAGGER (TASK-399-C): Mob.serverAiStep one-byte goal re-selection
+    // modulus patch (N=2 -> N=4). Independent class — no composition with the
+    // ServerLevel/Entity chains. Dormant unless CRUSSTY_LEVER_FLAG=cmp399_navstag
+    // AND CRUSSTY_REGION_THREADS>=2.
+    navstagger::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -436,6 +442,10 @@ fn inject_surface() {
     // re-composes the F1 optimiseRandomTick swap; MUST run after
     // randomtick::activate — see src/tickhook.rs module docs).
     tickhook::activate();
+    // NAVSTAGGER (TASK-399-C): wait for kernel Mob, READY + retransform for
+    // the serverAiStep goal re-selection modulus patch (dormant unless
+    // CRUSSTY_LEVER_FLAG=cmp399_navstag AND region_threads>=2).
+    navstagger::activate();
 }
 
 /// Define one bridge class and register all its natives.
