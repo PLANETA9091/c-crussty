@@ -38,6 +38,7 @@ mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
 mod items_index;
+mod items_lifetime;
 mod items_manager;
 mod jni_table;
 mod kernel_policy;

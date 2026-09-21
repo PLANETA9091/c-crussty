@@ -31,8 +31,14 @@ const IM_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/world/entity/ItemEntityManager.class");
 
 fn lever_flag_matches() -> bool {
+    // TASK-399-F композиция: J-подсистема армится и под раунд-3 флагами
+    // (cmp399_*); суб-вектор despawnv2 дополнительно гейтится java-стороной
+    // по точному флагу cmp399_despawn2 (см. ItemEntityManager.DESPAWN2).
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim().eq("items_subsys2"))
+        .map(|v| {
+            let v = v.trim();
+            v.eq("items_subsys2") || v.starts_with("cmp399_")
+        })
         .unwrap_or(false)
 }
 
@@ -108,14 +114,17 @@ pub fn activate() {
             };
 
             // RegisterNatives: idxProbe/idxInsert/idxSetCell/idxRemove/idxQuery
-            // (impl — src/items_index.rs). Провал регистрации → armed()=false
-            // (probeOnce не пройдёт magic) → ванильный путь.
+            // (impl — src/items_index.rs) + lifetimePush/lifetimeDue (impl —
+            // src/items_lifetime.rs, TASK-399-F despawnv2). Провал регистрации
+            // → armed()=false (probeOnce не пройдёт magic) → ванильный путь.
             let names = [
                 CString::new("idxProbe").expect("no NUL"),
                 CString::new("idxInsert").expect("no NUL"),
                 CString::new("idxSetCell").expect("no NUL"),
                 CString::new("idxRemove").expect("no NUL"),
                 CString::new("idxQuery").expect("no NUL"),
+                CString::new("lifetimePush").expect("no NUL"),
+                CString::new("lifetimeDue").expect("no NUL"),
             ];
             let sigs = [
                 CString::new("()I").expect("no NUL"),
@@ -123,6 +132,8 @@ pub fn activate() {
                 CString::new("(IIIII)I").expect("no NUL"),
                 CString::new("(I)I").expect("no NUL"),
                 CString::new("(DDDDDDI[I)I").expect("no NUL"),
+                CString::new("([JI)I").expect("no NUL"),
+                CString::new("(J[J)I").expect("no NUL"),
             ];
             let natives = [
                 jvmti_bindings::jni::JNINativeMethod {
@@ -150,6 +161,16 @@ pub fn activate() {
                     signature: sigs[4].as_ptr(),
                     fnPtr: crate::items_index::idx_query as *const c_void as *mut c_void,
                 },
+                jvmti_bindings::jni::JNINativeMethod {
+                    name: names[5].as_ptr(),
+                    signature: sigs[5].as_ptr(),
+                    fnPtr: crate::items_lifetime::lifetime_push as *const c_void as *mut c_void,
+                },
+                jvmti_bindings::jni::JNINativeMethod {
+                    name: names[6].as_ptr(),
+                    signature: sigs[6].as_ptr(),
+                    fnPtr: crate::items_lifetime::lifetime_due as *const c_void as *mut c_void,
+                },
             ];
             let reg = env.register_natives(c, &natives);
             if let Err(code) = reg {
@@ -169,6 +190,16 @@ pub fn activate() {
         });
         if defined.unwrap_or(false) {
             eprintln!("[crussty-plugin] items_subsys2: defined {IM_CLASS} in kernel loader + registered index natives");
+            // TASK-399-F despawnv2 ARM-маркер (обязателен при флаге
+            // cmp399_despawn2): rust lifetime-heap + батч-деспавн.
+            if std::env::var("CRUSSTY_LEVER_FLAG")
+                .map(|v| v.trim().eq("cmp399_despawn2"))
+                .unwrap_or(false)
+            {
+                eprintln!(
+                    "[crussty-plugin] cmp399_despawn2: ARMED heap=lifetime-minheap(rust,vec) push=batch(1/tick) due-poll=1/tick despawn-flow=vanilla"
+                );
+            }
         } else {
             eprintln!(
                 "[crussty-plugin] items_subsys2: bridge definition failed, hook stays dormant"
