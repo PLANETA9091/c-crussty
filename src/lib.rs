@@ -38,6 +38,9 @@ mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
 mod item_merge;
+mod items_index;
+mod items_lifetime;
+mod items_manager;
 mod jni_table;
 mod kernel_policy;
 mod loader;
@@ -396,6 +399,12 @@ fn inject_surface() {
     // RegionTickOps.tickBucket; dormant unless CRUSSTY_BATCH_COLLECTOR=1
     // AND region_threads>=2).
     batch_collector::activate();
+    // ITEM-MANAGER (TASK-395, agent J): define ItemEntityManager into the
+    // kernel loader (define-only; армирование — в RegionTickOps
+    // itemsManagerArmed() при CRUSSTY_LEVER_FLAG=items_manager и
+    // region_threads>=2, статический режим; items уходят из общего
+    // entity-dispatch в батч-фазы).
+    items_manager::activate();
     // FLAT-TRAVERSAL (S7-163): define TraverseOps into the kernel loader
     // (define-only; the checkInsideBlocks retarget composes through the
     // entity_compose chain stage 6; dormant unless CRUSSTY_FLAT_TRAVERSAL=1
