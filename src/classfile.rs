@@ -7175,3 +7175,506 @@ fn check_members(bridge: &[u8], targets: &[(&str, &str, &str, &str)]) -> Result<
     }
     Ok(())
 }
+
+// ---------------------------------------------------------------------------
+// TASK-399-G cmp399_devirt (MEGA-ROUND-3, agent G — JIT-friendly
+// devirtualization). Two independent retargets, both javap-verified against
+// the round-j2b profile kernel (research/gc-recon-2026-09-19/round-j2b/
+// patched-kernel.jar):
+//
+// D1  patch_synched_data_get — full method-body fusion of
+//     `SynchedEntityData.get(EntityDataAccessor)Ljava/lang/Object;`
+//     pristine (9B): 2A 2B B6(getItem) B6(getValue) B0
+//     fused   (13B): 2A B4(itemsById) 2B B6(id()I) BE aaload B4(value) B0
+//     Semantics bit-equivalent: the getItem body IS itemsById[accessor.id()]
+//     (javap: getfield itemsById; aload_1; invokevirtual id()I; aaload) and
+//     DataItem.getValue body IS `getfield value` (plain read — no volatile
+//     on either side, so read ordering guarantees are unchanged). Removes
+//     the two invokevirtual hops (getItem + getValue) at EVERY
+//     SynchedEntityData read site — the round-j2b profile attributes
+//     ~2.5-5% java self time to the chain (getHealth/isAlive,
+//     tickBody/getItem, getSharedFlag/isSprinting, isNoGravity, isNoAi,
+//     getAirSupply, getSleepingPos...).
+//
+// D2  patch_goal_contains_flags — body-redirect of the static
+//     `GoalSelector.goalContainsAnyFlags(WrappedGoal;OptimizedSmallEnumSet;)Z`
+//     to the IDENTICAL static on the already-defined ItemEntityManager
+//     bridge (J lever class). The vanilla site is the profile's vtable-stub
+//     hotspot on WrappedGoal.getFlags (0.33%): WrappedGoal is not final, the
+//     aged site never devirtualizes. A fresh static call site restarts type
+//     profiling at one receiver type -> C2 devirtualizes + inlines.
+//     Same reads, same order (vanilla-equivalent relocation).
+//
+// Both are idempotent (patch(patch(x)) == patch(x)); strict pristine-shape
+// verification; any mismatch -> Err -> dormant stage (fail-dominant).
+
+pub const SYNCHED_DATA_CLASS: &str = "net/minecraft/network/syncher/SynchedEntityData";
+pub const DATA_ITEM_CLASS: &str = "net/minecraft/network/syncher/SynchedEntityData$DataItem";
+pub const ACCESSOR_CLASS: &str = "net/minecraft/network/syncher/EntityDataAccessor";
+pub const GOAL_SELECTOR_CLASS: &str = "net/minecraft/world/entity/ai/goal/GoalSelector";
+pub const DEVIRT_IM_CLASS: &str = "net/minecraft/world/entity/ItemEntityManager";
+
+const GET_NAME: &str = "get";
+const GET_DESC: &str = "(Lnet/minecraft/network/syncher/EntityDataAccessor;)Ljava/lang/Object;";
+const GOAL_FLAGS_NAME: &str = "goalContainsAnyFlags";
+const GOAL_FLAGS_DESC: &str =
+    "(Lnet/minecraft/world/entity/ai/goal/WrappedGoal;Lca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet;)Z";
+
+/// D1: fuse the `SynchedEntityData.get` body into a direct
+/// `itemsById[accessor.id()].value` read chain (see module doc above).
+pub fn patch_synched_data_get(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    let this_name = this_class_name(&layout).ok_or("cannot resolve this_class name")?;
+    if this_name != SYNCHED_DATA_CLASS {
+        return Err(format!("unexpected class {this_name} (kernel rename?)"));
+    }
+    let mut pool = layout.pool;
+
+    // Find-only probes before ANY pool mutation (NotFound must not mutate).
+    let Some(name_idx) = pool.find_utf8(GET_NAME) else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let Some(desc_idx) = pool.find_utf8(GET_DESC) else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)
+        .ok_or_else(|| "SynchedEntityData.get(EntityDataAccessor) not found".to_string())?;
+
+    // Locate the Code attribute + pristine body (bounds-checked).
+    let (code_start, code_len) = find_code_attr(bytes, &pool, &m)
+        .ok_or_else(|| "get() has no Code attribute".to_string())?;
+    let code = bytes
+        .get(code_start..code_start.checked_add(code_len).ok_or("code length overflow")?)
+        .ok_or_else(|| "code region truncated".to_string())?;
+
+    // Fused body: this.itemsById[accessor.id()].value (13 bytes, straight-line).
+    // Pool refs appended dedup'd (append-only; existing indices stay valid).
+    let f_items = pool.field_ref(
+        SYNCHED_DATA_CLASS,
+        "itemsById",
+        "[Lnet/minecraft/network/syncher/SynchedEntityData$DataItem;",
+    );
+    let m_id = pool.method_ref(ACCESSOR_CLASS, "id", "()I");
+    let f_value = pool.field_ref(DATA_ITEM_CLASS, "value", "Ljava/lang/Object;");
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for devirt refs".into());
+    }
+    let mut code_new: Vec<u8> = Vec::with_capacity(13);
+    code_new.push(0x2a); // aload_0
+    code_new.push(0xb4); // getfield itemsById
+    code_new.extend_from_slice(&f_items.to_be_bytes());
+    code_new.push(0x2b); // aload_1
+    code_new.push(0xb6); // invokevirtual EntityDataAccessor.id()I
+    code_new.extend_from_slice(&m_id.to_be_bytes());
+    code_new.push(0xbe); // aaload
+    code_new.push(0xb4); // getfield DataItem.value:Ljava/lang/Object;
+    code_new.extend_from_slice(&f_value.to_be_bytes());
+    code_new.push(0xb0); // areturn
+
+    if code_len == code_new.len() {
+        // Idempotent re-sight: identical fused shape (byte-equal).
+        if code == code_new.as_slice() {
+            return Ok((bytes.to_vec(), RetargetOutcome::AlreadyPatched { sites: 1 }));
+        }
+        return Err(format!(
+            "get() body is {code_len}B but does not match the fused shape (kernel drift?)"
+        ));
+    }
+    // Strict pristine shape: 2A 2B B6(getItem) B6(getValue) B0.
+    if code_len != 9 || code.len() != 9 {
+        return Err(format!(
+            "get() body is {code_len}B, expected pristine 9B (kernel drift?)"
+        ));
+    }
+    if code[0] != 0x2a || code[1] != 0x2b || code[2] != 0xb6 || code[5] != 0xb6 || code[8] != 0xb0 {
+        return Err("get() pristine shape mismatch (opcodes)".into());
+    }
+    let get_item_idx = u16::from_be_bytes([code[3], code[4]]);
+    let get_value_idx = u16::from_be_bytes([code[6], code[7]]);
+    let want_get_item = (
+        SYNCHED_DATA_CLASS.to_string(),
+        "getItem".to_string(),
+        "(Lnet/minecraft/network/syncher/EntityDataAccessor;)Lnet/minecraft/network/syncher/SynchedEntityData$DataItem;".to_string(),
+    );
+    let want_get_value = (
+        DATA_ITEM_CLASS.to_string(),
+        "getValue".to_string(),
+        "()Ljava/lang/Object;".to_string(),
+    );
+    if pool.methodref_parts(get_item_idx) != Some(want_get_item) {
+        return Err("get() getItem ref mismatch (kernel drift?)".into());
+    }
+    if pool.methodref_parts(get_value_idx) != Some(want_get_value) {
+        return Err("get() getValue ref mismatch (kernel drift?)".into());
+    }
+
+    // New Code attribute: max_stack=2, max_locals=2, no exception table, no
+    // auxiliary attributes (branchless body -> zero StackMapTable frames).
+    let mut new_attr: Vec<u8> = Vec::with_capacity(code_new.len() + 20);
+    let code_attr_name_idx = pool
+        .find_utf8("Code")
+        .ok_or_else(|| "Code utf8 missing from pool".to_string())?;
+    new_attr.extend_from_slice(&code_attr_name_idx.to_be_bytes());
+    new_attr.extend_from_slice(&((12 + code_new.len()) as u32).to_be_bytes());
+    new_attr.extend_from_slice(&2u16.to_be_bytes()); // max_stack
+    new_attr.extend_from_slice(&2u16.to_be_bytes()); // max_locals
+    new_attr.extend_from_slice(&(code_new.len() as u32).to_be_bytes());
+    new_attr.extend_from_slice(&code_new);
+    new_attr.extend_from_slice(&0u16.to_be_bytes()); // exception_table_len
+    new_attr.extend_from_slice(&0u16.to_be_bytes()); // attributes_count
+
+    // Rebuild the method_info: Code replaced, non-Code attributes kept
+    // (Exceptions etc.), debug tables dropped with the old code.
+    let mut kept: Vec<u8> = Vec::new();
+    let mut kept_count = 0usize;
+    {
+        let mut p = m.start.checked_add(6).ok_or("method truncated")?;
+        let attr_count = usize::from(u16_at(bytes, p).ok_or("attr count truncated")?);
+        p = p.checked_add(2).ok_or("attr count truncated")?;
+        for _ in 0..attr_count {
+            let a_name_idx = u16_at(bytes, p).ok_or("attr header truncated")?;
+            let len = u32_at(bytes, p.checked_add(2).ok_or("attr length truncated")?)
+                .ok_or("attr length truncated")? as usize;
+            let data = p.checked_add(6).ok_or("attr header truncated")?;
+            let aend = data.checked_add(len).ok_or("attr data truncated")?;
+            let aname = pool.utf8_value(a_name_idx).unwrap_or_default();
+            if aname != "Code" {
+                kept.extend_from_slice(
+                    bytes
+                        .get(p..aend)
+                        .ok_or_else(|| "method attribute truncated".to_string())?,
+                );
+                kept_count += 1;
+            }
+            p = aend;
+        }
+    }
+    let hdr = bytes
+        .get(m.start..m.start + 6)
+        .ok_or("method header truncated")?;
+    let mut method_seg: Vec<u8> = Vec::with_capacity(8 + new_attr.len() + kept.len());
+    method_seg.extend_from_slice(hdr);
+    method_seg.extend_from_slice(&((kept_count + 1) as u16).to_be_bytes());
+    method_seg.extend_from_slice(&new_attr);
+    method_seg.extend_from_slice(&kept);
+
+    // Splice: magic+versions, grown pool, prefix, method segment, tail.
+    let mut out = Vec::with_capacity(bytes.len() + new_attr.len() + 64);
+    out.extend_from_slice(&bytes[0..8]);
+    out.extend_from_slice(&pool.next.to_be_bytes());
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(
+        bytes
+            .get(layout.cp_end..m.start)
+            .ok_or_else(|| "class prefix truncated".to_string())?,
+    );
+    out.extend_from_slice(&method_seg);
+    out.extend_from_slice(
+        bytes
+            .get(m.end..)
+            .ok_or_else(|| "class tail truncated".to_string())?,
+    );
+    Ok((out, RetargetOutcome::Retargeted { sites: 1 }))
+}
+
+/// D2: redirect `GoalSelector.goalContainsAnyFlags` body to the identical
+/// static on the ItemEntityManager bridge (fresh call site -> fresh type
+/// profile -> devirtualized + inlined `WrappedGoal.getFlags`).
+pub fn patch_goal_contains_flags(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    let this_name = this_class_name(&layout).ok_or("cannot resolve this_class name")?;
+    if this_name != GOAL_SELECTOR_CLASS {
+        return Err(format!("unexpected class {this_name} (kernel rename?)"));
+    }
+    redirect_static_method_body_to_static(
+        bytes,
+        GOAL_FLAGS_NAME,
+        GOAL_FLAGS_DESC,
+        DEVIRT_IM_CLASS,
+        GOAL_FLAGS_NAME,
+        GOAL_FLAGS_DESC,
+    )
+}
+
+/// Resolution closure for D2: the redirected goalContainsAnyFlags body
+/// invokes ItemEntityManager.goalContainsAnyFlags with the exact descriptor;
+/// the bridge must declare it or the first goal tick detonates
+/// NoSuchMethodError.
+pub fn devirt_resolution_closure(items_bridge: &[u8]) -> Result<(), String> {
+    let targets = &[("class", DEVIRT_IM_CLASS, GOAL_FLAGS_NAME, GOAL_FLAGS_DESC)];
+    check_members(items_bridge, targets)
+}
+
+// ---------------------------------------------------------------------------
+// TASK-401-J cmp401_devirt (MEGA-ROUND-5, agent J — devirtualize hot
+// dispatch, write side). D1b patch_synched_data_set — the symmetric
+// megamorphic-ish sibling of D1: every SynchedEntityData WRITE in the entity
+// tick path (setSharedFlag, setAirSupply, setNoAi, setSprinting, pose/sleep
+// updates...) goes through the same double-dispatch chain as get():
+//
+//   set(acc, value, force) pristine:
+//     item = getItem(acc);                        // invokevirtual getItem
+//     if (!force && ObjectUtils.notEqual(value, item.getValue())) return;
+//                                                 // invokevirtual getValue
+//     item.setValue(value);                       // invokevirtual setValue
+//     entity.onSyncedDataUpdated(acc); item.setDirty(true); isDirty = true;
+//
+// javap-verified against the round-j2b profile kernel (research/
+// gc-recon-2026-09-19/round-j2b/patched-kernel.jar):
+//   - DataItem.getValue body IS `getfield value` (plain, non-volatile);
+//   - DataItem.setValue body IS `putfield value` (plain, non-volatile);
+//   - `value` is package-private and SynchedEntityData shares BOTH the
+//     package (net/minecraft/network/syncher) AND the nest (nestmates,
+//     class major 61+), so getfield/putfield from SynchedEntityData code
+//     passes access control bit-for-bit.
+// Replacement is BYTE-LENGTH-PRESERVING: invokevirtual(3B) -> getfield(3B)
+// and invokevirtual(3B) -> putfield(3B). Code length, branches, offsets,
+// exception table and StackMapTable stay bit-identical — the two virtual
+// hops disappear at every set site with zero control-flow surgery (lesson
+// G / round-399-g: the crash came from re-laying out bodies; here the body
+// layout is untouched, only CP indices change).
+//
+// Strict shape contract: exactly one getValue + one setValue site in
+// set(...Z)V; any other virtual count -> Err -> dormant (vanilla).
+const SET_NAME: &str = "set";
+const SET_DESC: &str =
+    "(Lnet/minecraft/network/syncher/EntityDataAccessor;Ljava/lang/Object;Z)V";
+
+pub fn patch_synched_data_set(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    let this_name = this_class_name(&layout).ok_or("cannot resolve this_class name")?;
+    if this_name != SYNCHED_DATA_CLASS {
+        return Err(format!("unexpected class {this_name} (kernel rename?)"));
+    }
+    let mut pool = layout.pool;
+
+    let Some(name_idx) = pool.find_utf8(SET_NAME) else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let Some(desc_idx) = pool.find_utf8(SET_DESC) else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)
+        .ok_or_else(|| "SynchedEntityData.set(acc,Object,Z) not found".to_string())?;
+    let (code_start, code_len) = find_code_attr(bytes, &pool, &m)
+        .ok_or_else(|| "set() has no Code attribute".to_string())?;
+    let code = bytes
+        .get(code_start..code_start.checked_add(code_len).ok_or("code length overflow")?)
+        .ok_or_else(|| "code region truncated".to_string())?;
+
+    let want_get_value = (
+        DATA_ITEM_CLASS.to_string(),
+        "getValue".to_string(),
+        "()Ljava/lang/Object;".to_string(),
+    );
+    let want_set_value = (
+        DATA_ITEM_CLASS.to_string(),
+        "setValue".to_string(),
+        "(Ljava/lang/Object;)V".to_string(),
+    );
+
+    let f_value = pool.field_ref(DATA_ITEM_CLASS, "value", "Ljava/lang/Object;");
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for set-fusion refs".into());
+    }
+
+    // Classify every invokevirtual inside set()'s code by NAME (never by
+    // fixed offset — kernel drift stays fail-closed).
+    let mut patches: Vec<(usize, u8)> = Vec::with_capacity(2);
+    let mut fused = 0usize;
+    let mut p = 0usize;
+    while p + 2 < code_len {
+        if code[p] != 0xb6 {
+            p += 1;
+            continue;
+        }
+        let idx = u16::from_be_bytes([code[p + 1], code[p + 2]]);
+        match pool.methodref_parts(idx) {
+            Some(r) if r == want_get_value => {
+                patches.push((p, 0xb4)); // getfield value
+                fused += 1;
+            }
+            Some(r) if r == want_set_value => {
+                patches.push((p, 0xb3)); // putfield value
+                fused += 1;
+            }
+            _ => {}
+        }
+        p += 3;
+    }
+    if fused != 2 {
+        if fused == 0 {
+            // Already-fused? The two sites must now be getfield/putfield on
+            // the same `value` fieldref (idempotency probe).
+            let mut again = 0usize;
+            let mut q = 0usize;
+            while q + 2 < code_len {
+                if (code[q] == 0xb4 || code[q] == 0xb3)
+                    && u16::from_be_bytes([code[q + 1], code[q + 2]]) == f_value
+                {
+                    again += 1;
+                }
+                q += 1;
+            }
+            if again == 2 {
+                return Ok((bytes.to_vec(), RetargetOutcome::AlreadyPatched { sites: 2 }));
+            }
+            return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+        }
+        return Err(format!("set() pristine shape mismatch: {fused} DataItem virtuals (want 2)"));
+    }
+
+    // Byte-length-preserving swap on a copy of the pristine class, THEN the
+    // pool-grown splice (unchanged method segments byte-for-byte).
+    let mut body = bytes.to_vec();
+    for (off, new_op) in &patches {
+        let at = code_start + off;
+        body[at] = *new_op;
+        body[at + 1..at + 3].copy_from_slice(&f_value.to_be_bytes());
+    }
+
+    let mut out = Vec::with_capacity(bytes.len() + 64);
+    out.extend_from_slice(&body[0..8]);
+    out.extend_from_slice(&pool.next.to_be_bytes());
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(
+        body.get(layout.cp_end..)
+            .ok_or_else(|| "class body truncated".to_string())?,
+    );
+    Ok((out, RetargetOutcome::Retargeted { sites: 2 }))
+}
+
+// ---------------------------------------------------------------------------
+// cmp399_devirt (TASK-399-G) patcher tests against the REAL kernel classes
+// (extracted from the round-j2b profile kernel jar — same provenance
+// discipline as real_noise: byte-identical to what the hook delivers).
+// ---------------------------------------------------------------------------
+#[cfg(test)]
+mod devirt_patchers {
+    use super::*;
+
+    const REAL_SED: &[u8] = include_bytes!("../tests/fixtures/SynchedEntityData_real.class");
+    const REAL_GS: &[u8] = include_bytes!("../tests/fixtures/GoalSelector_real.class");
+
+    #[test]
+    fn synched_data_set_fuses_and_is_idempotent() {
+        // D1b (TASK-401-J): set(acc,value,force) — byte-length-preserving
+        // virtual->field swap on the two DataItem hops.
+        let (p1, o1) = patch_synched_data_set(REAL_SED).expect("D1b patch");
+        assert!(
+            matches!(o1, RetargetOutcome::Retargeted { sites: 2 }),
+            "D1b first pass must Retargeted{{2}}, got {o1:?}"
+        );
+        parse_layout(&p1).expect("patched SynchedEntityData must parse");
+        // Code attribute length of set() must be UNCHANGED (length-preserving swap).
+        let (p2, o2) = patch_synched_data_set(&p1).expect("D1b second pass");
+        assert!(
+            matches!(o2, RetargetOutcome::AlreadyPatched { sites: 2 }),
+            "D1b second pass must AlreadyPatched{{2}}, got {o2:?}"
+        );
+        assert_eq!(p1, p2, "D1b must be byte-idempotent");
+        // Both D1+D1b compose on the same class (the runtime arm path).
+        let (p12, o12) = {
+            let (a, _) = patch_synched_data_get(REAL_SED).expect("D1 patch");
+            patch_synched_data_set(&a).expect("D1b on D1 output")
+        };
+        assert!(
+            matches!(o12, RetargetOutcome::Retargeted { sites: 2 }),
+            "composition order D1->D1b must hold, got {o12:?}"
+        );
+        parse_layout(&p12).expect("composed patch must parse");
+    }
+
+    #[test]
+    fn synched_data_get_fuses_and_is_idempotent() {
+        let (p1, o1) = patch_synched_data_get(REAL_SED).expect("D1 patch");
+        assert!(
+            matches!(o1, RetargetOutcome::Retargeted { sites: 1 }),
+            "D1 first pass must Retargeted{{1}}, got {o1:?}"
+        );
+        // Output must parse end-to-end (pool growth + code splice well-formed).
+        parse_layout(&p1).expect("patched SynchedEntityData must parse");
+        // Idempotency: patch(patch(x)) == patch(x) via AlreadyPatched.
+        let (p2, o2) = patch_synched_data_get(&p1).expect("D1 second pass");
+        assert!(
+            matches!(o2, RetargetOutcome::AlreadyPatched { sites: 1 }),
+            "D1 second pass must AlreadyPatched{{1}}, got {o2:?}"
+        );
+        assert_eq!(p1, p2, "D1 must be byte-idempotent");
+    }
+
+    #[test]
+    fn synched_data_get_fused_body_shape() {
+        let (p1, _) = patch_synched_data_get(REAL_SED).expect("D1 patch");
+        let layout = parse_layout(&p1).expect("parse");
+        let mut pool = layout.pool;
+        let name_idx = pool.find_utf8("get").expect("get utf8");
+        let desc_idx = pool
+            .find_utf8("(Lnet/minecraft/network/syncher/EntityDataAccessor;)Ljava/lang/Object;")
+            .expect("get desc utf8");
+        let m = find_method(&p1, layout.methods_start, name_idx, desc_idx)
+            .expect("get() still present");
+        let (cs, cl) = find_code_attr(&p1, &pool, &m).expect("code attr");
+        let code = &p1[cs..cs + cl];
+        assert_eq!(cl, 13, "fused body must be 13 bytes");
+        // Opcode skeleton with CP indices filled in (TASK-401-J: the
+        // placeholder-0 exact-bytes assert was wrong — pool.field_ref()
+        // appends REAL indices; members are verified by NAME below).
+        let opcodes = [
+            code[0], code[1], code[4], code[5], code[8], code[9], code[12],
+        ];
+        assert_eq!(
+            opcodes,
+            [0x2a, 0xb4, 0x2b, 0xb6, 0xbe, 0xb4, 0xb0],
+            "fused body opcode skeleton: aload_0 getfield aload_1 invokevirtual aaload getfield areturn"
+        );
+        // Refs resolve to the intended members.
+        let f_items = u16::from_be_bytes([code[2], code[3]]);
+        let m_id = u16::from_be_bytes([code[6], code[7]]);
+        let f_value = u16::from_be_bytes([code[10], code[11]]);
+        assert_eq!(
+            pool.fieldref_parts(f_items),
+            Some((
+                "net/minecraft/network/syncher/SynchedEntityData".to_string(),
+                "itemsById".to_string(),
+                "[Lnet/minecraft/network/syncher/SynchedEntityData$DataItem;".to_string()
+            ))
+        );
+        assert_eq!(
+            pool.methodref_parts(m_id),
+            Some((
+                "net/minecraft/network/syncher/EntityDataAccessor".to_string(),
+                "id".to_string(),
+                "()I".to_string()
+            ))
+        );
+        assert_eq!(
+            pool.fieldref_parts(f_value),
+            Some((
+                "net/minecraft/network/syncher/SynchedEntityData$DataItem".to_string(),
+                "value".to_string(),
+                "Ljava/lang/Object;".to_string()
+            ))
+        );
+    }
+
+    #[test]
+    fn goal_contains_flags_redirects_and_is_idempotent() {
+        let (p1, o1) = patch_goal_contains_flags(REAL_GS).expect("D2 patch");
+        assert!(
+            matches!(o1, RetargetOutcome::Retargeted { sites: 1 }),
+            "D2 first pass must Retargeted{{1}}, got {o1:?}"
+        );
+        parse_layout(&p1).expect("patched GoalSelector must parse");
+        let (p2, o2) = patch_goal_contains_flags(&p1).expect("D2 second pass");
+        assert!(
+            matches!(o2, RetargetOutcome::AlreadyPatched { sites: 1 }),
+            "D2 second pass must AlreadyPatched{{1}}, got {o2:?}"
+        );
+        assert_eq!(p1, p2, "D2 must be byte-idempotent");
+    }
+
+    // NOTE (TASK-401-J): the D2 GoalSelector->ItemEntityManager redirect is
+    // NOT carried into round-401 (its bridge class does not exist on the
+    // round-401 base). Its resolution-closure test was removed with it.
+}

@@ -25,6 +25,9 @@ mod batch_table;
 mod brainhook;
 mod bridge_class;
 mod classfile;
+// CMP401-DEVIRT (TASK-401-J, agent J): devirtualization of hot dispatch —
+// SynchedEntityData read+write fusion. Registered/activated below.
+mod devirt;
 #[cfg(test)]
 mod entity_mirror;
 mod entity_compose;
@@ -180,6 +183,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // EntityCallbacks guard sites, composed on top of F1/F3 bytes (LAST in
     // the byte-hook chain). Dormant unless CRUSSTY_REGION_THREADS>=2.
     region_threads::register();
+    // CMP401-DEVIRT (TASK-401-J): whole-class byte hook on SynchedEntityData
+    // (pristine capture at first load; patch served after the activation
+    // worker arms). Dormant unless CRUSSTY_LEVER_FLAG=cmp401_devirt (STRICT eq).
+    devirt::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -396,6 +403,10 @@ fn inject_surface() {
     // RegionTickOps.tickBucket; dormant unless CRUSSTY_BATCH_COLLECTOR=1
     // AND region_threads>=2).
     batch_collector::activate();
+    // CMP401-DEVIRT (TASK-401-J): D1 SynchedEntityData.get fusion + D1b set
+    // fusion (one composed class patch, one retransform). Dormant unless
+    // CRUSSTY_LEVER_FLAG=cmp401_devirt.
+    devirt::activate();
     // FLAT-TRAVERSAL (S7-163): define TraverseOps into the kernel loader
     // (define-only; the checkInsideBlocks retarget composes through the
     // entity_compose chain stage 6; dormant unless CRUSSTY_FLAT_TRAVERSAL=1
