@@ -57,6 +57,30 @@ import org.bukkit.event.entity.EntityRemoveEvent;
  *
  * FAIL-CLOSED: ENABLED (env) && READY (MethodHandle resolve) && nativeOk
  * (idxProbe magic) && !indexBroken → иначе 100% ванильный путь.
+ *
+ * TASK-400-I (vector jnibulk, flag cmp399_jnib) — JNI-boundary амортизация:
+ *  1) idxQueryP: кандидаты доставляются через СЫРУЮ арену (jlong addr + cap),
+ *     а не через int[] + пару Get/ReleasePrimitiveArrayCritical + GetArrayLength.
+ *     Внутри натива НОЛЬ JNI-функций (spec: critical region = «must not call other
+ *     JNI functions» + «a VM may temporarily disable garbage collection» —
+ *     HotSpot GCLocker: entering a CR may suspend GC until the thread exits).
+ *     Java читает кандидатов через sun.misc.Unsafe.getInt (jdk.unsupported
+ *     экспортирует sun.misc в unnamed module; resolve failed → JNI_BULK=false,
+ *     путь = legacy int[] байт-в-байт).
+ *  2) stamp-мемоизация: результат merge-запроса зависит только от окна клеток и
+ *     состояния индекса; все мутации индекса (insert/setCell) проходят через
+ *     нативы, которые stamp'ят coarse-регионы 8³ клеток (262144 u64-слотов,
+ *     ±1 регион = ±8 блоков ⊇ любое окно ±2.25 клетки вокруг соседа).
+ *     Если окно (6 floor'ов) и ≤8 штампов региона окна не изменились — native
+ *     вызов НЕ ДЕЛАЕТСЯ, кандидаты переигрываются из кэша через ТОТ ЖЕ
+ *     live-фильтр (isAlive/level/AABB.intersects/clipDirect/tryToMerge) —
+ *     бит-паритет исходов merge (все false-positive id отсеиваются фильтром;
+ *     false-negative невозможны: любое появление id в окне = insert/move-in =
+ *     stamp клетки). Race worker-мутации ограничен одним гейт-окном и накрыт
+ *     vanilla-семантикой снапшота EntitySectionStorage (прецедент cmp399_shard).
+ *  3) Старый idxQuery(int[]) остаётся зарегистрированным и вербатим-равным —
+ *     паритет всех прочих флагов (items_subsys2, cmp399_shard, …) по построению;
+ *     ваниль (пустой флаг) не трогается.
  */
 public final class ItemEntityManager {
 
@@ -79,6 +103,49 @@ public final class ItemEntityManager {
 
     private static final int PROBE_MAGIC = 0x1D3A;
 
+    // ---- TASK-400-I jnibulk: raw-arena delivery + coarse mutation stamps ----
+
+    /** Начальная capacity bulk-арены (payload int), = legacy SCRATCH[128]. */
+    private static final int BULK_CAP_MIN = 128;
+    /** Верхняя граница payload-capacity арены (защита от гроу-спирали). */
+    private static final int BULK_CAP_MAX = 1 << 26;
+
+    /** jdk.unsupported: sun.misc экспортирован в unnamed module (netty-паттерн). */
+    private static final sun.misc.Unsafe UNSAFE = resolveUnsafe();
+
+    /** Подгейт вектора: ТОЧНО cmp399_jnib + Unsafe доступен (fail-closed). */
+    private static final boolean JNI_BULK =
+            "cmp399_jnib".equals(trimToEmpty(System.getenv("CRUSSTY_LEVER_FLAG"))) && UNSAFE != null;
+
+    /** База coarse-штампов (rust static [AtomicU64; 262144]); 0 = не разрешена. */
+    private static volatile long COARSE_BASE = 0L;
+    private static boolean bulkArmed = false;
+
+    /** Per-thread bulk-арена: {payloadAddr, payloadCap}. */
+    private static final ThreadLocal<long[]> BULK_SCRATCH = new ThreadLocal<>();
+
+    /** Кэш запросов, параллельно byId (плоские массивы, grow в lockstep):
+     *  C_STAMPS — 8 штампов регионов окна; C_WIN — 6 границ окна;
+     *  C_N — n+1 кандидатов (0 = кэша нет); C_IDS — id-кандидаты (null при n=0). */
+    private static long[] C_STAMPS = new long[0];
+    private static int[] C_WIN = new int[0];
+    private static int[] C_N = new int[0];
+    private static int[][] C_IDS = new int[0][];
+
+    /** Телеметрия jnibulk (replay-hit / native-fill). */
+    private static volatile long bulkHits = 0;
+    private static volatile long bulkFills = 0;
+
+    private static sun.misc.Unsafe resolveUnsafe() {
+        try {
+            java.lang.reflect.Field f = sun.misc.Unsafe.class.getDeclaredField("theUnsafe");
+            f.setAccessible(true);
+            return (sun.misc.Unsafe) f.get(null);
+        } catch (Throwable t) {
+            return null;
+        }
+    }
+
     private static final MethodHandle MH_TRY_TO_MERGE;          // ItemEntity.tryToMerge(ItemEntity) private
     private static final MethodHandle MH_MERGE_WITH_NEIGHBOURS; // vanilla fallback
     private static final MethodHandle MH_DESPAWN_RATE;          // ItemEntity.despawnRate (private int)
@@ -97,6 +164,17 @@ public final class ItemEntityManager {
     private static native int idxRemove(int id);
     private static native int idxQuery(double qx0, double qy0, double qz0,
             double qx1, double qy1, double qz1, int lid, int[] out);
+    // ---- TASK-400-I jnibulk natives (registered alongside; impl: items_index.rs) ----
+    /** Результат запроса пишется СРЕЗОМ прямо в арену addr (cap int); внутри натива
+     *  ноль JNI-функций: ни GetArrayLength, ни Get/ReleasePrimitiveArrayCritical. */
+    private static native int idxQueryP(double qx0, double qy0, double qz0,
+            double qx1, double qy1, double qz1, int lid, long addr, int cap);
+    /** payload cap int; возвращает addr payload или 0. Header (u64 cap) скрыт. */
+    private static native long idxScratchAlloc(int cap);
+    /** Возврат арены (только grow-retry / thread-end неважен: bounded leak). */
+    private static native int idxScratchFree(long addr);
+    /** База coarse-штампов мутаций ([AtomicU64; 262144], layout = u64[idx]). */
+    private static native long idxCoarseBase();
 
     private static volatile boolean nativeOk;
     private static volatile boolean indexBroken;
@@ -153,16 +231,50 @@ public final class ItemEntityManager {
     /** Ленивая проверка нативов (первый armed(); до регистрации — Throwable → false, ретрай). */
     private static boolean probeOnce() {
         if (nativeOk) {
-            return true;
+            return bulkArmOnce();
         }
         synchronized (ItemEntityManager.class) {
             if (nativeOk) {
-                return true;
+                // TASK-400-I: повторная проверка, чтобы bulkArmOnce отработал и здесь
+                bulkArmOnce();
+                return nativeOk;
             }
             try {
                 nativeOk = idxProbe() == PROBE_MAGIC;
             } catch (Throwable t) {
                 nativeOk = false;
+            }
+            if (nativeOk) {
+                bulkArmOnce();
+            }
+            return nativeOk;
+        }
+    }
+
+    /** TASK-400-I: один раз резолвит базу coarse-штампов и громко ARM-ится.
+     *  Fail-closed: idxCoarseBase == 0 → bulk остаётся выключенным (legacy scratch). */
+    private static boolean bulkArmOnce() {
+        if (!JNI_BULK || bulkArmed || COARSE_BASE != 0L) {
+            return nativeOk;
+        }
+        synchronized (ItemEntityManager.class) {
+            if (!JNI_BULK || bulkArmed || COARSE_BASE != 0L) {
+                return nativeOk;
+            }
+            try {
+                long base = idxCoarseBase();
+                if (base != 0L) {
+                    COARSE_BASE = base;
+                    bulkArmed = true;
+                    LOG.info("[crussty-plugin] cmp399_jnib: ARMED bulk-query cache "
+                            + "(delivery=raw-arena idxQueryP, critical-region=none, GetArrayLength=none, "
+                            + "decode=sun.misc.Unsafe.getInt, stamps=coarse-8^3 regions=262144, "
+                            + "shardgrid=off/legacy-RwLock)");
+                } else {
+                    LOG.severe("[crussty-plugin] cmp399_jnib: idxCoarseBase()==0 — bulk path off, legacy scratch active");
+                }
+            } catch (Throwable t) {
+                LOG.severe("[crussty-plugin] cmp399_jnib: bulk arm failed (" + t + ") — legacy scratch active");
             }
             return nativeOk;
         }
@@ -199,6 +311,7 @@ public final class ItemEntityManager {
                 }
                 id = idTop++;
             }
+            growCache(byId.length); // TASK-400-I: кэш запросов растёт в lockstep с byId
             int lid = System.identityHashCode(e.level());
             int rc = idxInsert(id, lid, Mth.floor(e.getX()), Mth.floor(e.getY()), Mth.floor(e.getZ()));
             if (rc != 0) {
@@ -219,6 +332,11 @@ public final class ItemEntityManager {
         int id = box[0];
         int rc = idxRemove(id);
         byId[id] = null;
+        // TASK-400-I: кэш запросов снятого id больше не валиден (id уйдёт во freeIds).
+        if (id < C_N.length) {
+            C_N[id] = 0;
+            C_IDS[id] = null;
+        }
         synchronized (ID_LOCK) {
             if (freeTop == freeIds.length) {
                 freeIds = java.util.Arrays.copyOf(freeIds, Math.max(16, freeTop * 2));
@@ -241,7 +359,8 @@ public final class ItemEntityManager {
      */
     public static void tickOne(ItemEntity e, TickRateManager trm) {
         if ((++telemetryCounter % TELEMETRY_INTERVAL) == 0L) {
-            LOG.info("[crussty-plugin] items_subsys2: telemetry calls=" + telemetryCounter);
+            LOG.info("[crussty-plugin] items_subsys2: telemetry calls=" + telemetryCounter
+                    + " jnibulk{hits=" + bulkHits + ",fills=" + bulkFills + "}");
         }
         // ---- guardEntityTick (CraftBukkit body): try { dispatch } catch { log+event+discard } ----
         try {
