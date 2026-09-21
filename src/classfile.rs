@@ -3145,6 +3145,10 @@ pub fn retarget_virtual_to_static(
     Ok((out, RetargetOutcome::Retargeted { sites: rewrite.len() }))
 }
 
+/// Bridge class defined into the kernel loader by mobhash_manager.rs
+/// (TASK-401-A spatial-hash neighbors, lever cmp401_mobhash).
+pub const MOBHASH_OPS_CLASS: &str = "net/minecraft/world/entity/MobHashOps";
+
 /// Whole-bridge patch for `LivingEntity.pushEntities()V`: retarget the
 /// single `Level.getPushableEntities` call site to the static
 /// `EntityQueryOps.pushables` bridge. Strict: anything other than exactly
@@ -3157,6 +3161,21 @@ pub fn patch_push_entities(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), S
         "()V",
         ("net/minecraft/world/level/Level", "getPushableEntities", GET_PUSHABLES_DESC),
         (ALLOC_OPS_CLASS, "pushables", OPS_PUSHABLES_DESC),
+    )
+}
+
+/// TASK-401-A (mobhash): the SAME single `Level.getPushableEntities` call
+/// site inside `LivingEntity.pushEntities()V`, retargeted to the static
+/// `MobHashOps.pushables` bridge (net/minecraft/world/entity/MobHashOps,
+/// defined into the kernel loader by mobhash_manager.rs). Strict single-site,
+/// fail-closed — same contract as `patch_push_entities`.
+pub fn patch_push_entities_mobhash(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    retarget_virtual_to_static(
+        bytes,
+        "pushEntities",
+        "()V",
+        ("net/minecraft/world/level/Level", "getPushableEntities", GET_PUSHABLES_DESC),
+        (MOBHASH_OPS_CLASS, "pushables", OPS_PUSHABLES_DESC),
     )
 }
 
