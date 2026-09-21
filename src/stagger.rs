@@ -58,7 +58,10 @@ const CANUSE_STATIC_DESC: &str = "(Lnet/minecraft/world/entity/ai/goal/WrappedGo
 /// env gate per the round-400 lever protocol (STRICT eq — never starts_with /
 /// contains: полу-вооружённый мост AIOOBE lesson TASK-400-D).
 fn enabled() -> bool {
-    matches!(std::env::var("CRUSSTY_LEVER_FLAG").as_deref(), Ok("cmp401_stagger"))
+    matches!(
+        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
+        Ok("cmp401_stagger") | Ok("cmp402_stagcomp")
+    )
 }
 
 static READY: AtomicBool = AtomicBool::new(false);
