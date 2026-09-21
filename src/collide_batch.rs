@@ -74,6 +74,8 @@ fn lever_flag_matches() -> bool {
         .map(|v| {
             let v = v.trim();
             v == "cmp401_collide" || v == "cmp403_tickplane" || v == "cmp405_stagtick"
+                // TASK-406-D: композит раунда-406 включает collide-сегмент.
+                || v == "cmp406_aibatch"
         })
         .unwrap_or(false)
 }
@@ -217,6 +219,8 @@ pub fn activate() {
             .map(|v| {
                 let v = v.trim();
                 v == "cmp403_tickplane" || v == "cmp405_stagtick"
+                    // TASK-406-D: композит раунда-406 (сегментный маркер).
+                    || v == "cmp406_aibatch"
             })
             .unwrap_or(false)
         {

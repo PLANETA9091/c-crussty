@@ -61,6 +61,8 @@ pub(crate) fn mirror_mode() -> bool {
                     || v.trim() == "cmp402_stagcomp"
                     || v.trim() == "cmp403_tickplane"
                     || v.trim() == "cmp405_stagtick"
+                    // TASK-406-D: композит раунда-406 включает mirror-grid.
+                    || v.trim() == "cmp406_aibatch"
             })
             .unwrap_or(false)
     })
