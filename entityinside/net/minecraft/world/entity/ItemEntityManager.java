@@ -63,6 +63,11 @@ import org.bukkit.event.entity.EntityRemoveEvent;
  *
  * FAIL-CLOSED: ENABLED (env) && READY (MethodHandle resolve) && nativeOk
  * (idxProbe magic) && !indexBroken → иначе 100% ванильный путь.
+ *
+ * TASK-401-H (composite cmp401_comp): эта ветка = bfcomp (shardgrid +
+ * lifetime-heap) + devirtfix (D1/D2, goalContainsAnyFlags ниже) + mobpush;
+ * ENABLED покрывает семейства cmp399_* и cmp401_*, DESPAWN2 — cmp401_comp;
+ * композитный флаг сам-armed (класс пересобран javac, CP-патч не нужен).
  */
 public final class ItemEntityManager {
 
@@ -77,14 +82,16 @@ public final class ItemEntityManager {
      * rust side patches only the legacy cmp399_shard path, byte-parity A/B).
      */
     private static final boolean ENABLED =
-            "items_subsys2".equals(LEVER_FLAG) || LEVER_FLAG.startsWith("cmp399_");
+            "items_subsys2".equals(LEVER_FLAG) || LEVER_FLAG.startsWith("cmp399_")
+            || LEVER_FLAG.startsWith("cmp401_");
 
     /** TASK-399-F despawnv2: rust lifetime-heap + батч-деспавн (точный флаг).
      *  TASK-400-A: составной флаг cmp399_bfcomp (B+F) включает despawnv2
      *  наряду с точным cmp399_despawn2 — векторы ортогональны
      *  (read-scaling vs despawn-хвост) и армятся одновременно. */
     private static final boolean DESPAWN2 =
-            "cmp399_despawn2".equals(LEVER_FLAG) || "cmp399_bfcomp".equals(LEVER_FLAG);
+            "cmp399_despawn2".equals(LEVER_FLAG) || "cmp399_bfcomp".equals(LEVER_FLAG)
+            || "cmp401_comp".equals(LEVER_FLAG);
 
     private static final int PROBE_MAGIC = 0x1D3A;
 
@@ -199,6 +206,23 @@ public final class ItemEntityManager {
     /** Gate для RegionTickOps: армировать ли item-маршрутизацию. */
     public static boolean armed() {
         return ENABLED && READY && !indexBroken && probeOnce();
+    }
+
+    // ------------------------------------------------------------------
+    // CMP399-DEVIRT (TASK-399-G, agent G; композит TASK-401-H) — goal-loop
+    // redirect target. Ванильная реплика
+    // GoalSelector.goalContainsAnyFlags(WrappedGoal, Set): тело переезжает
+    // сюда БЕЗ ИЗМЕНЕНИЯ ЧТЕНИЙ (goal.getFlags().hasCommonElements(flags)) —
+    // свежая точка вызова перезаводит type-profile с одного receiver-типа →
+    // C2 девиртуализует WrappedGoal (не final) и инлайнит getFlags.
+    // Дескриптор обязан совпадать байт-в-байт с ретаргеченным дескриптором
+    // GoalSelector — проверяется rust-стороной
+    // (classfile::devirt_resolution_closure) до армирования.
+    // ------------------------------------------------------------------
+    public static boolean goalContainsAnyFlags(
+            net.minecraft.world.entity.ai.goal.WrappedGoal goal,
+            ca.spottedleaf.moonrise.common.set.OptimizedSmallEnumSet<net.minecraft.world.entity.ai.goal.Goal.Flag> flags) {
+        return goal.getFlags().hasCommonElements(flags);
     }
 
     // ------------------------------------------------------------------

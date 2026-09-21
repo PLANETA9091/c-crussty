@@ -55,11 +55,13 @@ fn lever_flag_matches() -> bool {
     // java-стороной по точному флагу (см. ItemEntityManager.DESPAWN2).
     // TASK-400-A: составной cmp399_bfcomp входит в семейство cmp399_* и
     // включает ОБА суб-вектора (shard-grid + lifetime-heap).
+    // TASK-401-H: композитный cmp401_comp — семейство cmp401_* тоже армит
+    // (java ENABLED/DESPAWN2 уже покрывают cmp401_comp в этой ветке).
     lever_flag_matches_for(&lever_flag())
 }
 
 fn lever_flag_matches_for(f: &str) -> bool {
-    f == "items_subsys2" || f.starts_with("cmp399_")
+    f == "items_subsys2" || f.starts_with("cmp399_") || f.starts_with("cmp401_")
 }
 
 pub fn activate() {

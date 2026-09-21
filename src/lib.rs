@@ -46,6 +46,7 @@ mod kernel_policy;
 mod loader;
 mod noise_fill;
 mod parse_diag;
+mod devirt;
 mod zero_cursor;
 mod palette_gather;
 mod paletted;
@@ -183,6 +184,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // EntityCallbacks guard sites, composed on top of F1/F3 bytes (LAST in
     // the byte-hook chain). Dormant unless CRUSSTY_REGION_THREADS>=2.
     region_threads::register();
+    // CMP399-DEVIRT (TASK-399-G): whole-class hooks on SynchedEntityData +
+    // GoalSelector (pristine capture at first load; patch served after the
+    // activation worker arms). Dormant unless CRUSSTY_LEVER_FLAG=cmp399_devirt.
+    devirt::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -405,6 +410,11 @@ fn inject_surface() {
     // region_threads>=2, статический режим; items уходят из общего
     // entity-dispatch в батч-фазы).
     items_manager::activate();
+    // CMP399-DEVIRT (TASK-399-G): D1 SynchedEntityData.get fusion + D2
+    // GoalSelector.goalContainsAnyFlags redirect (D2 gated on the
+    // ItemEntityManager bridge above). Dormant unless
+    // CRUSSTY_LEVER_FLAG=cmp399_devirt.
+    devirt::activate();
     // FLAT-TRAVERSAL (S7-163): define TraverseOps into the kernel loader
     // (define-only; the checkInsideBlocks retarget composes through the
     // entity_compose chain stage 6; dormant unless CRUSSTY_FLAT_TRAVERSAL=1
