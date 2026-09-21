@@ -60,8 +60,18 @@ import org.bukkit.event.entity.EntityRemoveEvent;
  */
 public final class ItemEntityManager {
 
-    private static final boolean ENABLED =
-            "items_subsys2".equals(trimToEmpty(System.getenv("CRUSSTY_LEVER_FLAG")));
+    private static final boolean ENABLED = flagMatches(System.getenv("CRUSSTY_LEVER_FLAG"));
+
+    /**
+     * TASK-399-G composition contract: the subsystem arms on its own
+     * items_subsys2 flag AND on any round-3 cmp399_* lever — agent G's
+     * cmp399_devirt rides the J subsystem (rust items_manager.rs mirrors
+     * this predicate; both sides must agree or the bridge disarms).
+     */
+    private static boolean flagMatches(String raw) {
+        String f = trimToEmpty(raw);
+        return "items_subsys2".equals(f) || f.startsWith("cmp399_");
+    }
 
     private static final int PROBE_MAGIC = 0x1D3A;
 
@@ -157,6 +167,23 @@ public final class ItemEntityManager {
     /** Gate для RegionTickOps: армировать ли item-маршрутизацию. */
     public static boolean armed() {
         return ENABLED && READY && !indexBroken && probeOnce();
+    }
+
+    // ------------------------------------------------------------------
+    // CMP399-DEVIRT (TASK-399-G, agent G) — goal-loop redirect target.
+    // Ванильная реплика GoalSelector.goalContainsAnyFlags(WrappedGoal, Set):
+    // тело переезжает сюда БЕЗ ИЗМЕНЕНИЯ ЧТЕНИЙ (goal.getFlags().
+    // hasCommonElements(flags)) — свежая точка вызова перезаводит
+    // type-profile с одного receiver-типа → C2 девиртуализует WrappedGoal
+    // (не final) и инлайнит getFlags (vtable-stub сайт 0.33% в профиле
+    // round-j2b). Дескриптор обязан совпадать байт-в-байт с ретаргеченным
+    // дескриптором GoalSelector — проверяется rust-стороной
+    // (classfile::devirt_resolution_closure) до армирования.
+    // ------------------------------------------------------------------
+    public static boolean goalContainsAnyFlags(
+            net.minecraft.world.entity.ai.goal.WrappedGoal goal,
+            ca.spottedleaf.moonrise.common.set.OptimizedSmallEnumSet<net.minecraft.world.entity.ai.goal.Goal.Flag> flags) {
+        return goal.getFlags().hasCommonElements(flags);
     }
 
     // ------------------------------------------------------------------

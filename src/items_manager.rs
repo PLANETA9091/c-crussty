@@ -32,7 +32,14 @@ const IM_BYTES: &[u8] =
 
 fn lever_flag_matches() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim().eq("items_subsys2"))
+        .map(|v| {
+            // TASK-399-G composition contract: the J bridge arms on its own
+            // flag AND on any cmp399_* round-3 lever (agent G's
+            // cmp399_devirt rides the J subsystem; D2's redirect static
+            // lives in this bridge class).
+            let f = v.trim();
+            f.eq("items_subsys2") || f.starts_with("cmp399_")
+        })
         .unwrap_or(false)
 }
 
@@ -169,6 +176,7 @@ pub fn activate() {
         });
         if defined.unwrap_or(false) {
             eprintln!("[crussty-plugin] items_subsys2: defined {IM_CLASS} in kernel loader + registered index natives");
+            eprintln!("[crussty-plugin] items_subsys2: bridge ready");
         } else {
             eprintln!(
                 "[crussty-plugin] items_subsys2: bridge definition failed, hook stays dormant"
