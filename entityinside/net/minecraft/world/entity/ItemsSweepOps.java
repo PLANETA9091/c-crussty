@@ -190,6 +190,7 @@ public final class ItemsSweepOps {
         // the stride/activation SOURCE gate is a flag bit, evaluated here
         // once per item (vanilla pays the same per-item branch in tick).
         int n = 0;
+        int sources = 0;
         double candHalfMax = 0.0D;
         for (int i = 0; i < len; i++) {
             if (bucket[i] instanceof ItemEntity ie) {
@@ -205,12 +206,22 @@ public final class ItemsSweepOps {
                 xs[n] = cx;
                 zs[n] = cz;
                 keys[n] = eligible ? FLAG_BIT : 0L; // eligibility rides here
+                if (eligible) {
+                    sources++;
+                }
                 n++;
                 if (n >= IDX_CAP) {
                     // Impossible at bench populations; fail-open loudly.
                     throw new IllegalStateException("item slot exceeds key index capacity");
                 }
             }
+        }
+        // ROUND-397-E2 (re-arm cost fix): no eligible source this tick means
+        // the sweep could not merge anything even in principle (the source
+        // gate mirrors vanilla's per-tick merge cadence) — skip the key pack
+        // + sort + window scan entirely instead of paying them for a no-op.
+        if (sources == 0) {
+            return;
         }
         if (n < 2) {
             return;
@@ -287,25 +298,33 @@ public final class ItemsSweepOps {
     // ==================================================================
 
     private static boolean sourceEligible(ItemEntity e) {
+        // ROUND-397-E2 (re-arm cost fix): the collect pass runs this per item
+        // per tick over the whole bucket (~100k items). The tick-modulo /
+        // block-crossing gates are pure arithmetic and already reject ~97%
+        // of items — keep the MethodHandle (isMergable) and ActivationRange
+        // calls BEHIND them. Pure predicates: order change cannot alter the
+        // boolean result (parity by construction).
+        int t = e.tickCount + 1; // baseTick increments before the merge site
+        if (t % 40 != 0) {
+            if (t % 2 != 0) {
+                return false;
+            }
+            // stride-2 movers: mirror the block-boundary crossing with LAST
+            // movement's pre/post positions (this tick's move has not
+            // happened yet at sweep time — documented ±1 tick deviation).
+            if (Mth.floor(e.xo) == Mth.floor(e.getX())
+                    && Mth.floor(e.yo) == Mth.floor(e.getY())
+                    && Mth.floor(e.zo) == Mth.floor(e.getZ())) {
+                return false;
+            }
+        }
         if (!isMergable(e)) {
             return false;
         }
         if (!ActivationRange.checkIfActive(e)) {
             return false; // inactive items never reach ItemEntity.tick
         }
-        int t = e.tickCount + 1; // baseTick increments before the merge site
-        if (t % 40 == 0) {
-            return true;
-        }
-        if (t % 2 != 0) {
-            return false;
-        }
-        // stride-2 movers: mirror the block-boundary crossing with LAST
-        // movement's pre/post positions (this tick's move has not happened
-        // yet at sweep time — documented ±1 tick transition deviation).
-        return Mth.floor(e.xo) != Mth.floor(e.getX())
-                || Mth.floor(e.yo) != Mth.floor(e.getY())
-                || Mth.floor(e.zo) != Mth.floor(e.getZ());
+        return true;
     }
 
     // ==================================================================

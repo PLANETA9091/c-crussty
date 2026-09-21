@@ -181,7 +181,7 @@ pub fn activate() {
                 }
                 if std::time::Instant::now() > deadline {
                     eprintln!(
-                        "[crussty-plugin] items_sweep2: {ITEM_ENTITY} not loaded within 180s, hook stays dormant"
+                        "[crussty-plugin] items_sweep2: PATCH-FAIL {ITEM_ENTITY} not loaded within 180s — lever stays vanilla (fail-closed)"
                     );
                     return;
                 }
@@ -194,7 +194,9 @@ pub fn activate() {
             }
 
             if !crate::improved_noise::wait_for_boot() {
-                eprintln!("[crussty-plugin] items_sweep2: boot marker not seen, hook stays dormant");
+                eprintln!(
+                    "[crussty-plugin] items_sweep2: PATCH-FAIL boot marker not seen — lever stays vanilla (fail-closed)"
+                );
                 return;
             }
             std::thread::sleep(std::time::Duration::from_secs(20));
@@ -205,7 +207,7 @@ pub fn activate() {
             // otherwise NCDFE on the first item tick).
             if !crate::region_threads::wait_bridge_ready_pub(180_000) {
                 eprintln!(
-                    "[crussty-plugin] items_sweep2: region_threads bridge never became ready (ItemsSweepOps co-define), hook stays dormant"
+                    "[crussty-plugin] items_sweep2: PATCH-FAIL region_threads bridge never became ready (ItemsSweepOps co-define) — lever stays vanilla (fail-closed)"
                 );
                 return;
             }
@@ -226,7 +228,7 @@ pub fn activate() {
                 }
                 if !t.orig_is_some() {
                     eprintln!(
-                        "[crussty-plugin] items_sweep2: no pristine bytes for {ITEM_ENTITY}, hook stays dormant"
+                        "[crussty-plugin] items_sweep2: PATCH-FAIL no pristine bytes for {ITEM_ENTITY} — lever stays vanilla (fail-closed)"
                     );
                     return;
                 }
@@ -241,15 +243,20 @@ pub fn activate() {
             let major = crate::improved_noise::class_version(&original)
                 .map(|(m, _)| m)
                 .unwrap_or(0);
+            let orig_len = original.len();
             let (patched, outcome) = match patch_items_sweep(&original) {
                 Ok(pair) => pair,
                 Err(e) => {
+                    // OWNER-MANDATED LOUD FAILURE (TASK-397-E2 re-arm): a
+                    // rejected patch must never pass silently — the marker
+                    // token PATCH-FAIL is the CI grep for silent-fail.
                     eprintln!(
-                        "[crussty-plugin] items_sweep2: patch rejected ({e}), hook stays dormant"
+                        "[crussty-plugin] items_sweep2: PATCH-FAIL {ITEM_ENTITY} {orig_len} bytes: {e} — lever stays vanilla (fail-closed)"
                     );
                     return;
                 }
             };
+            let patch_len = patched.len();
             eprintln!(
                 "[crussty-plugin] items_sweep2: computed patch for {ITEM_ENTITY} ({} -> {} bytes, {outcome})",
                 original.len(),
@@ -266,9 +273,71 @@ pub fn activate() {
             if rc == 0 {
                 ARMED.store(true, Ordering::SeqCst);
             }
-            eprintln!(
-                "[crussty-plugin] items_sweep2: {ITEM_ENTITY} armed, retransform rc={rc}"
-            );
+            // OWNER-MANDATED LOUD SUCCESS (TASK-397-E2 re-arm): ONE greppable
+            // ARMED line carrying the class-size change (pristine -> patched).
+            // A leg whose log lacks this line for the live class is NOT armed.
+            if rc == 0 {
+                eprintln!(
+                    "[crussty-plugin] items_sweep2: ARMED {ITEM_ENTITY} {orig_len} -> {patch_len} bytes ({outcome}; merge site -> {SWEEP_OPS_CLASS}.tickMerge)"
+                );
+            } else {
+                eprintln!(
+                    "[crussty-plugin] items_sweep2: PATCH-FAIL {ITEM_ENTITY} retransform rc={rc} (patch {orig_len} -> {patch_len} bytes computed) — lever stays vanilla (fail-closed)"
+                );
+            }
         })
         .ok();
+}
+
+#[cfg(test)]
+mod tests {
+    /// TASK-397-E2 (d): the patcher must transform EXACTLY the real kernel
+    /// ItemEntity bytes (pristine 28904 bytes, major 65, purpur-1.21.10
+    /// patched-kernel). Extract once with:
+    ///   python3 -c "import zipfile;open('/tmp/ItemEntity_pristine.class','wb')\
+    ///     .write(zipfile.ZipFile('<patched-kernel.jar>')\
+    ///     .read('net/minecraft/world/entity/item/ItemEntity.class'))"
+    /// then run: ITEM_ENTITY_CLASS=/tmp/ItemEntity_pristine.class cargo test items_sweep
+    /// Skips (green) when the fixture path is absent.
+    #[test]
+    fn patch_real_kernel_item_entity_bytes() {
+        let Ok(path) = std::env::var("ITEM_ENTITY_CLASS") else {
+            eprintln!("skip: ITEM_ENTITY_CLASS not set");
+            return;
+        };
+        let bytes = match std::fs::read(&path) {
+            Ok(b) => b,
+            Err(e) => {
+                eprintln!("skip: cannot read {path}: {e}");
+                return;
+            }
+        };
+        assert_eq!(bytes.len(), 28904, "pristine ItemEntity size drift");
+        assert_eq!(
+            crate::improved_noise::class_version(&bytes).map(|(m, _)| m),
+            Some(65),
+            "pristine ItemEntity major drift"
+        );
+        let (out, outcome) =
+            super::patch_items_sweep(&bytes).expect("patch must succeed on real kernel bytes");
+        assert_eq!(
+            outcome,
+            "tick site=1",
+            "strict single-site contract violated"
+        );
+        assert_ne!(out.len(), bytes.len(), "patched size must differ");
+        // The retargeted site must name the ops bridge entrypoint.
+        let hay: &[u8] = &out;
+        for needle in ["ItemsSweepOps".as_bytes(), b"tickMerge"] {
+            assert!(
+                hay.windows(needle.len()).any(|w| w == needle),
+                "patched bytes missing {:?}",
+                String::from_utf8_lossy(needle)
+            );
+        }
+        // Idempotent purity: same input -> same output (pure function).
+        let (out2, outcome2) = super::patch_items_sweep(&bytes).unwrap();
+        assert_eq!(out, out2);
+        assert_eq!(outcome, outcome2);
+    }
 }
