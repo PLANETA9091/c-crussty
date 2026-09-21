@@ -27,6 +27,8 @@ mod wakeup;
 mod bridge_class;
 mod classfile;
 #[cfg(test)]
+mod classfile_dump_tmp;
+#[cfg(test)]
 mod entity_mirror;
 mod entity_compose;
 mod fluid_guard;

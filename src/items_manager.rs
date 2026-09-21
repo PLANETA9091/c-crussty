@@ -31,14 +31,16 @@ const IM_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/world/entity/ItemEntityManager.class");
 
 fn lever_flag_matches() -> bool {
-    // TASK-399-I (mega-round-3 composition contract): any cmp399_* lever flag
-    // arms the items_subsys2 subsystem alongside its own lever (J armed when
-    // the composite run sets CRUSSTY_LEVER_FLAG=cmp399_wakeup).
+    // TASK-400-D wakefix ROOT-CAUSE (r3i leg2 35557524097, pop=INVALID):
+    // widening this gate to cmp399_* half-arms the item bridge — rust side
+    // defines ItemEntityManager + armed kernel-policy retargets, while the
+    // java-side ENABLED stays false (CP-rewrite does not cover cmp399_wakeup)
+    // -> every addEntity threw AIOOBE(-1, 16385) during population inject.
+    // Dual-layer gating MUST be consistent: rust arms ONLY on items_subsys2
+    // (wakeup measures alone; J-composite needs the java CP-patch extended —
+    // documented in LEVER-D.md).
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| {
-            let v = v.trim();
-            v.eq("items_subsys2") || v.starts_with("cmp399_")
-        })
+        .map(|v| v.trim().eq("items_subsys2"))
         .unwrap_or(false)
 }
 
