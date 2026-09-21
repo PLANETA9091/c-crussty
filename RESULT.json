@@ -58,8 +58,18 @@
       "sha": "a46a094",
       "lever": "cmp406_aibatch",
       "lever_arg": "1",
-      "status": "in_progress",
-      "inputs": "bank-константы РОВНО (radius 640, seconds 300, fp 4, pop 150k seed 42, xmx 10G, band 6.0-9.5M)"
+      "status": "SLICE-NOT-ENGAGED (compose-reject, fail-closed vanilla) — фикс dleg3",
+      "inputs": "bank-константы РОВНО (radius 640, seconds 300, fp 4, pop 150k seed 42, xmx 10G, band 6.0-9.5M)",
+      "result": {
+        "verdict_absorb": "GREEN-CANDIDATE",
+        "tps_med": 2.6,
+        "runner": 6791121,
+        "pair_vs_vanilla_anchor": "+23.8% (2.60 vs 2.10@6845027 — это вклад КОМПОЗИЦИИ, не aibatch)",
+        "marginal_vs_comp": "-3.7% (2.60 vs comp2b 2.70@6784450 — тот же раннер, в шуме)",
+        "norm_vs_bank": "+16.6%",
+        "gc": "young=114 Full=9 total=21.6s max=2391ms"
+      },
+      "root_cause": "compose-reject: GATE_STATIC_DESC (Lnet/minecraft/world/entity/Entity;)V (widening) отклонён валидатором retarget_virtual_to_static (требует РОВНО receiver-prepended (Lnet/minecraft/world/entity/LivingEntity;)V) → pass-through fail-closed → нога = comp-alone; пруфы: 'mobs_ai: compose patch rejected' + 0 frames MobAiOps в cpu-collapsed + serverAiStep 9.73%→8.72% (не срезан)"
     }
   ],
   "best_delta_pair_pct": null,
@@ -70,7 +80,7 @@
   },
   "ram_stw_full": null,
   "parity": "BENCH-структурная (rate-инвариант класса accepted stagger/item-plane; despawn (Mob.tick) / push (pushEntities хвост aiStep) / коллизии/fluid — мимо сайта, ваниль каждый тик; Player/ServerPlayer/ArmorStand — ваниль каждый тик)",
-  "verdict": "IN_PROGRESS",
+  "verdict": "IN_PROGRESS (dleg3 — финальная нога)",
   "evidence": [],
   "what": [
     "1. worktree + диск-гигиена (purge round-405/agent-c 2.5G stale worktree, 100%→50%→75%)",
@@ -79,7 +89,9 @@
     "4. имплементация: mobai/MobAiOps.java (мост+окно+bulk epoch), src/mobs_ai.rs (composing hook, natives aiProbe/aiEpoch, ordering signals, fail-closed лестница), mobs_soa::ai_window_snapshot (seqlock read view), MobPushOps accessors (idBoxOf/idCount/idCapacity)",
     "5. гейт-чеклист: ВСЕ 15 сайтов (rust 10 + java 5) расширены || cmp406_aibatch (урок TASK-402 полу-armed гейт)",
     "6. build green: javac ×2 класс + cargo check 0 err + 223 тестов PASS (6 новых), target удалён",
-    "7. push + dispatch dleg1"
+    "7. push + dispatch dleg1",
+    "8. рестарт: pull-rebase green; dleg2 dispatched (35652772569) → GREEN-CANDIDATE формально, НО compose-reject = слайс не вооружён (0 MobAiOps фреймов, serverAiStep 8.72% без среза); root-cause desc-widening; фикс (LivingEntity;)V + rebuild + 223 тестов; dleg3 dispatched"
   ],
-  "next": "dleg2 run 35652772569 in_progress → poll → absorb round406dleg2 → pair verdict"
+  "next": "dleg3 (alias round-406-d-l3) → poll → absorb → ЧЕСТНЫЙ маркер-effect (epoch ok + first-skip + MobAiOps фреймы + serverAiStep subtree срез ~1/4) + pair verdict",
+  "fix_dleg2": "GATE_STATIC_DESC → (Lnet/minecraft/world/entity/LivingEntity;)V (mobs_ai.rs const+test contract); MobAiOps.serverAiStepGate(LivingEntity) с сужением до Mob внутри; javac rebuild 4192B --release 21 cp patched-kernel.jar(dleg2)+mobpush/build; cargo check green + 223 тестов PASS (retarget_desc_contract обновлён); target удалён"
 }
