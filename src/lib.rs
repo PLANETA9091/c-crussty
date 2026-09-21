@@ -37,6 +37,7 @@ mod improved_noise;
 mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
+mod item_merge;
 mod jni_table;
 mod kernel_policy;
 mod loader;
@@ -114,6 +115,11 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     perlin_noise::register();
     noise_fill::register();
     fluid_guard::register();
+    // ITEMS-OSS (TASK-396-H, round-396 vector H): ItemEntity byte hook for the
+    // mergeWithNeighbours whole-body retarget (Lithium item_entity_merging
+    // port). Pristine capture at first load; patch served after the
+    // ItemMergeOps bridge lands. Dormant unless CRUSSTY_LEVER_FLAG=items_oss.
+    item_merge::register();
     // PALETTED-DEMUX (S7-131, ARCH-ATTACK lever #1): PalettedContainer
     // first-load demux patch (field injection + fast-path get + guarded
     // mutators). MUST register before any kernel class loads (onstart).
@@ -339,6 +345,10 @@ fn inject_surface() {
     // consult lives inside FluidPushGuardHook; ordering kills the NCDFE window).
     fluid_bitmask::activate();
     fluid_guard::activate();
+    // ITEMS-OSS (TASK-396-H): define ItemMergeOps into the kernel loader,
+    // compute the mergeWithNeighbours whole-body patch, retransform (dormant
+    // unless CRUSSTY_LEVER_FLAG=items_oss).
+    item_merge::activate();
     // PALETTED-DEMUX (S7-131): define PalettedContainerOps into the launch
     // loader EARLY (the patch serves at PalettedContainer's first load —
     // field injection forbids retransform), then READY.
