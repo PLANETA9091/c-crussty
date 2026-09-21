@@ -16,6 +16,7 @@
 //! byte hooks on top of this surface — see the project docs.
 
 mod alloc_diet;
+mod actrange;
 mod area_map;
 mod perlin_noise;
 mod batch_api;
@@ -423,6 +424,10 @@ fn inject_surface() {
     // publish the rng verdict for region_threads, retransform Entity
     // exactly once.
     entity_compose::activate();
+    // ACTIVATION-RANGE (TASK-400-H, lever cmp399_dab): Paper EAR-2 taxonomy x
+    // Pufferfish DAB-hard port; background activation (waits ServerLevel),
+    // dormant unless CRUSSTY_LEVER_FLAG=cmp399_dab.
+    actrange::activate();
     // Dormant unless CRUSSTY_NATIVE_BLEND_CACHE is set (see docs/HOOK_BLEND_CACHE.md).
     proto_blend_cache::activate();
     // F1 BATCH-RNG (S7-112): define RandomTickOps into the ServerLevel loader,
