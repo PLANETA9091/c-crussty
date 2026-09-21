@@ -41,16 +41,24 @@ const OPS_BYTES: &[u8] =
     include_bytes!("../mobpush/build/net/minecraft/world/entity/MobPushOps.class");
 
 /// Java-side gate baked into OPS_BYTES (<clinit>: ENABLED =
-/// "cmp401_soa".equals(trim(getenv))). The exact-match lever keeps the
+/// "cmp401_soa" || "cmp402_comp"). The exact-match lever keeps the
 /// item-shard family (cmp399_shard) and the item subsystem off — the mobs
 /// grid is a separate instance.
 const GATE_LEVER: &str = "cmp401_soa";
+/// TASK-402-B: the round-402 composite arms the SoA plane together with the
+/// sharded mirror grid (src/mobs_grid.rs) — see java_gate_matches.
+const GATE_LEVER_COMP: &str = "cmp402_comp";
 
 fn lever_flag() -> String {
     std::env::var("CRUSSTY_LEVER_FLAG")
         .unwrap_or_default()
         .trim()
         .to_string()
+}
+
+/// TASK-402-B: the hook arms under the legacy soa flag AND the composite.
+fn java_gate_matches(f: &str) -> bool {
+    f == GATE_LEVER || f == GATE_LEVER_COMP
 }
 
 static READY: AtomicBool = AtomicBool::new(false);
@@ -119,9 +127,10 @@ fn target() -> &'static Target {
 /// with the lever flag unset/mismatched NOTHING is registered — the plugin
 /// stays byte-indistinguishable from vanilla for this vector.
 pub fn register() {
-    if lever_flag() != GATE_LEVER {
+    let f = lever_flag();
+    if !java_gate_matches(&f) {
         eprintln!(
-            "[crussty-plugin] mobs_soa: dormant (set CRUSSTY_LEVER_FLAG={GATE_LEVER} to enable)"
+            "[crussty-plugin] mobs_soa: dormant (set CRUSSTY_LEVER_FLAG={GATE_LEVER} or {GATE_LEVER_COMP} to enable)"
         );
         return;
     }
@@ -157,10 +166,11 @@ pub fn register() {
 /// MobPushOps bridge into the kernel loader, RegisterNatives, compute the
 /// single-site retarget from the pristine bytes, flip READY, retransform.
 pub fn activate() {
-    if lever_flag() != GATE_LEVER {
+    let f = lever_flag();
+    if !java_gate_matches(&f) {
         return;
     }
-    std::thread::spawn(|| {
+    std::thread::spawn(move || {
         let t = target();
         // LivingEntity loads at boot (entity superclass); wait it out.
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(180);
@@ -257,18 +267,24 @@ pub fn activate() {
             };
 
             // RegisterNatives: mobProbe/mobUpsert/mobRemove/mobQuery
-            // (impl — src/mobs_soa.rs). Провал регистрации → armed()=false
-            // (probeOnce не пройдёт magic) → ванильный путь.
+            // (impl — src/mobs_soa.rs) + under the TASK-402-B composite also
+            // mobGridProbe/mobGridQuery (impl — src/mobs_grid.rs, the
+            // sharded mirror fallback read plane). Провал регистрации
+            // → armed()=false (probeOnce не пройдёт magic) → ванильный путь.
             let names = [
                 CString::new("mobProbe").expect("no NUL"),
                 CString::new("mobUpsert").expect("no NUL"),
                 CString::new("mobRemove").expect("no NUL"),
                 CString::new("mobQuery").expect("no NUL"),
+                CString::new("mobGridProbe").expect("no NUL"),
+                CString::new("mobGridQuery").expect("no NUL"),
             ];
             let sigs = [
                 CString::new("()I").expect("no NUL"),
                 CString::new("(IIDDDDD)I").expect("no NUL"),
                 CString::new("(I)I").expect("no NUL"),
+                CString::new("(DDDDDDI[I)I").expect("no NUL"),
+                CString::new("()I").expect("no NUL"),
                 CString::new("(DDDDDDI[I)I").expect("no NUL"),
             ];
             let natives = [
@@ -291,6 +307,16 @@ pub fn activate() {
                     name: names[3].as_ptr(),
                     signature: sigs[3].as_ptr(),
                     fnPtr: crate::mobs_soa::mob_query as *const c_void as *mut c_void,
+                },
+                jvmti_bindings::jni::JNINativeMethod {
+                    name: names[4].as_ptr(),
+                    signature: sigs[4].as_ptr(),
+                    fnPtr: crate::mobs_grid::mob_grid_probe as *const c_void as *mut c_void,
+                },
+                jvmti_bindings::jni::JNINativeMethod {
+                    name: names[5].as_ptr(),
+                    signature: sigs[5].as_ptr(),
+                    fnPtr: crate::mobs_grid::mob_grid_query as *const c_void as *mut c_void,
                 },
             ];
             let reg = env.register_natives(c, &natives);
@@ -358,9 +384,17 @@ pub fn activate() {
         });
 
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
-        eprintln!(
-            "[crussty-plugin] cmp401_soa: ARMED soa=flat-arrays seqlock=global-version writer=global-mutex ids_cap=1048576 cell_cap=262144 cell=1.0 pad=1.0 radius_gate=1.0 rust_prune=coarse-hw-hh (rust mobs_soa SoA flat x/y/z/hw/hh/flags; pushEntities tail untouched vanilla; per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT)"
-        );
+        // TASK-402-B: под композитом маркер объявляет ВСЕ суб-механизмы
+        // (soa + зеркальный sharded grid; item-половина — в items_manager).
+        if f == GATE_LEVER_COMP {
+            eprintln!(
+                "[crussty-plugin] cmp402_comp: ARMED soa=flat-arrays seqlock=global-version writer=global-mutex ids_cap=1048576 cell_cap=262144 cell=1.0 pad=1.0 radius_gate=1.0 rust_prune=coarse-hw-hh + mobgrid=sharded-mirror shards=64 shard_cap=16384 fallback-read=per-call (rust mobs_soa SoA flat x/y/z/hw/hh/flags ⊕ mobs_grid mirror; pushEntities tail untouched vanilla; per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT)"
+            );
+        } else {
+            eprintln!(
+                "[crussty-plugin] cmp401_soa: ARMED soa=flat-arrays seqlock=global-version writer=global-mutex ids_cap=1048576 cell_cap=262144 cell=1.0 pad=1.0 radius_gate=1.0 rust_prune=coarse-hw-hh (rust mobs_soa SoA flat x/y/z/hw/hh/flags; pushEntities tail untouched vanilla; per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT)"
+            );
+        }
 
         // Single retransform; the callback serves the cached patch.
         crate::kernel_policy::audit_wire(OPS_CLASS, "pushables", "mobs_soa v1");
