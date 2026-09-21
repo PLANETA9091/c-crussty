@@ -1,12 +1,17 @@
 {
- "ts": "2026-09-21T00:00:00Z",
- "step": 1,
- "status": "WORKTREE_OK",
+ "ts": "2026-09-21T07:05:00Z",
+ "agent": "TASK-403-B2",
+ "step": 2,
+ "status": "LEG1_DISPATCHED_PENDING",
  "data": {
   "worktree": "/home/z/rounds/ROUND-403/agent-b",
   "branch": "round-403-b-jnibulk",
-  "base": "3c03dad (local round-402-d-jnibulk; remote ref absent — TASK-402-D not pushed; 3c03dad..f19d5f5 docs-only so server behavior == master f19d5f5)",
-  "recon": "TASK-402-D RESULT.json: jnibulk rust-side (raw-arena + coarse-stamp) never done; pattern = java bridge class -> javac -> include_bytes -> byte hook + replace_body retransform, gate CRUSSTY_LEVER_FLAG strict-eq; pivot of 402-D was navreg (different lane)",
-  "lesson": "round-400-i-jnibulk = INFRA-DROP (branch exists origin), studying diff for pitfalls"
+  "pushed": ["1c6e3a6 jnibulk raw-arena+coarse-stamp+java-bulk", "be4f665 memo->per-item"],
+  "lane": "cmp403_jnibulk (STRICT-eq) = композит cmp402_comp (shardgrid+soa+grid+stagger+lifetime-heap) + bulk-транспорт item-индекса: raw-arena idxQueryP (zero-JNI-body, DirectByteBuffer — ноль Unsafe) + per-item coarse-stamp memo (262144x8^3 u64-штампов, bump на каждой мутации; memo-hit = ноль JNI, replay через тот же live-filter)",
+  "note_flag_name": "кратко в задании 'cmp403_navreg' — устаревшее имя; navreg.rs/NavRegOps.java в worktree НЕ существует (recon подтверждает: 402-D-jnibulk = docs-only над 401); реальная наработка прошлого инстанса = cmp403_jnibulk — диспатчу её, чтобы не сжечь ногу в ваниль",
+  "build": "cargo check PASS; cargo test 210/210; ItemEntityManager.class (1 classfile, без nested — урок kernel-loader delivery) + MobPushOps.class пересобраны javac --release 21 (purpur+fastutil+paper-api+adventure)",
+  "gate_checklist": "rust: items_index.shard_mode/bulk_mode(STRICT), items_manager.lever_flag_matches_for+comp+ARM-маркер, mobs_grid.mirror_mode, mobs_manager.gate+marker, mobs_soa.lever_mode, stagger.enabled; java: ItemEntityManager ENABLED/DESPAWN2/BULK(STRICT), MobPushOps.leverEnabled+compositeEnabled (был пропущен — полу-armed урок 60fe902, зафиксирован); пустой флаг = ваниль по построению",
+  "dispatch": "scripts/bench4_recon/dispatch_round403_b2.py: LEGS bleg1=round-403-b-jnibulk+cmp403_jnibulk; inputs = банк-константы (radius 640, seconds 300, fake_players 4, fluid_guard 1, gc_tune 3, inside_cache 1, flush_diet 1, fluid_dirty 0, fluid_bitmask 0, region_threads 4, batch_collector 1, inside_bitmask 0, skip_store_bb 0, region_steal 0, bu_defer 0, population_target 150000, population_seed 42, server_xmx 10G, server_xms 4G, cpu_band 6.0-9.5M, lever_arg 1); алиасы round-403-bleg2/bleg3 = тот же sha (для leg2/3 без per-ref clash)",
+  "verdict_plan": "pair-by-runner (ближайший runner_cpu_index) против якорного банка @f19d5f5 (anc2 2.40@7089030 / anc3 2.10@6898063 / anc4 2.30@6706928 / anc5 2.25@6621660), min-of-3, ARM-пруф (cmp403_jnibulk ARMED в server-stdout.log + java-bulk ARMED + telemetry jnibulk{hits,fills}), parity PASS обязателен, BAND-закон 6.0-9.5M"
  }
 }
