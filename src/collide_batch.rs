@@ -69,8 +69,12 @@ fn stash_orig(bytes: &[u8]) {
 }
 
 fn lever_flag_matches() -> bool {
+    // TASK-403-C: tickplane включает collide-сегмент плейна (STRICT eq).
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim().eq("cmp401_collide"))
+        .map(|v| {
+            let v = v.trim();
+            v == "cmp401_collide" || v == "cmp403_tickplane"
+        })
         .unwrap_or(false)
 }
 
@@ -208,6 +212,15 @@ pub fn activate() {
         eprintln!(
             "[crussty-plugin] cmp401_collide: ARMED (section-plan batch-merge; retransform rc={rc})"
         );
+        // TASK-403-C: сегментный маркер плейна с фактическим флагом раунда.
+        if std::env::var("CRUSSTY_LEVER_FLAG")
+            .map(|v| v.trim() == "cmp403_tickplane")
+            .unwrap_or(false)
+        {
+            eprintln!(
+                "[crussty-plugin] cmp403_tickplane: segment collide-batch ARMED (retransform rc={rc})"
+            );
+        }
         std::thread::sleep(std::time::Duration::from_millis(250));
         if target().served.load(Ordering::SeqCst) {
             eprintln!(

@@ -279,8 +279,11 @@ fn shard_mode() -> bool {
                 // sharded mode наряду с точным cmp399_shard.
                 // TASK-402-B: главный композит cmp402_comp включает shardgrid
                 // как суб-механизм (soa+shardgrid+mobpush одновременно).
-                v == "cmp399_shard" || v == "cmp399_bfcomp" || v == "cmp402_comp"
+                v == "cmp399_shard"
+                    || v == "cmp399_bfcomp"
+                    || v == "cmp402_comp"
                     || v == "cmp402_stagcomp"
+                    || v == "cmp403_tickplane"
             })
             .unwrap_or(false)
     })
