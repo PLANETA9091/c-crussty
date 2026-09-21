@@ -2885,6 +2885,10 @@ mod dbg3 {
 /// Bridge class defined into the kernel loader by alloc_diet.rs.
 pub const ALLOC_OPS_CLASS: &str = "net/minecraft/world/entity/EntityQueryOps";
 
+/// Bridge class defined into the kernel loader by mobs_manager.rs
+/// (TASK-400-J mobpush).
+pub const MOB_OPS_CLASS: &str = "net/minecraft/world/entity/MobPushOps";
+
 const GET_PUSHABLES_DESC: &str =
     "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;)Ljava/util/List;";
 const OPS_PUSHABLES_DESC: &str =
@@ -3157,6 +3161,21 @@ pub fn patch_push_entities(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), S
         "()V",
         ("net/minecraft/world/level/Level", "getPushableEntities", GET_PUSHABLES_DESC),
         (ALLOC_OPS_CLASS, "pushables", OPS_PUSHABLES_DESC),
+    )
+}
+
+/// TASK-400-J (mobpush): the SAME single `Level.getPushableEntities` call
+/// site inside `LivingEntity.pushEntities()V`, retargeted to the static
+/// `MobPushOps.pushables` bridge (net/minecraft/world/entity/MobPushOps,
+/// defined into the kernel loader by mobs_manager.rs). Strict single-site,
+/// fail-closed — same contract as `patch_push_entities`.
+pub fn patch_push_entities_mob(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    retarget_virtual_to_static(
+        bytes,
+        "pushEntities",
+        "()V",
+        ("net/minecraft/world/level/Level", "getPushableEntities", GET_PUSHABLES_DESC),
+        (MOB_OPS_CLASS, "pushables", OPS_PUSHABLES_DESC),
     )
 }
 
