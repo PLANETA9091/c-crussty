@@ -61,6 +61,16 @@ const ENTITY_BB_NOTE_DESC: &str =
 const OPS_CLASS: &str = "net/minecraft/world/entity/EntityIndexOps";
 const OPS_BYTES: &[u8] =
     include_bytes!("../entityquery/build/net/minecraft/world/entity/EntityIndexOps.class");
+/// Inner buffer POJO — MUST be defined into the kernel loader BEFORE the
+/// outer class links. cleg1 (run 35659765756) evidence: define_class +
+/// RegisterNatives succeed, then GetStaticMethodID("eidxProbe") triggers
+/// LINKING, linking must resolve EntityIndexOps$Buf (REGISTRY field type /
+/// T_BUF generic), the kernel loader has no such class → NoClassDefFoundError
+/// → probe resolve failed → hook dormant. The other bridges (MobPushOps etc.)
+/// are single-class blobs, which is why this failure mode was new.
+const OPS_BUF_CLASS: &str = "net/minecraft/world/entity/EntityIndexOps$Buf";
+const OPS_BUF_BYTES: &[u8] =
+    include_bytes!("../entityquery/build/net/minecraft/world/entity/EntityIndexOps$Buf.class");
 
 const GATE_LEVER: &str = "cmp405_eindex";
 
@@ -290,7 +300,9 @@ pub fn activate() {
         .unwrap_or(u16::MAX);
         let ops_major =
             crate::improved_noise::class_version(OPS_BYTES).map(|(m, _)| m).unwrap_or(0);
-        if ops_major > jvm_major {
+        let buf_major =
+            crate::improved_noise::class_version(OPS_BUF_BYTES).map(|(m, _)| m).unwrap_or(0);
+        if ops_major.max(buf_major) > jvm_major {
             eprintln!(
                 "[crussty-plugin] eindex: {OPS_CLASS} is class major {ops_major} but JVM supports up to {jvm_major} — rebuild entityquery/ via scripts/build_entity_index_ops.sh; hook stays dormant"
             );
@@ -349,11 +361,24 @@ pub fn activate() {
                 env.delete_local_ref(class_cls);
                 return None;
             }
+            // Inner Buf first: the outer class must not link (probe resolve)
+            // before the loader can resolve its inner-class references.
+            let Some(buf_c) = env.define_class(OPS_BUF_CLASS, gref, OPS_BUF_BYTES) else {
+                crate::describe_exception(env);
+                eprintln!("[crussty-plugin] eindex: define_class({OPS_BUF_CLASS}) failed");
+                env.delete_local_ref(loader);
+                env.delete_local_ref(class_cls);
+                return None;
+            };
             let Some(c) = env.define_class(OPS_CLASS, gref, OPS_BYTES) else {
                 crate::describe_exception(env);
                 eprintln!("[crussty-plugin] eindex: define_class({OPS_CLASS}) failed");
+                env.delete_local_ref(buf_c);
+                env.delete_local_ref(loader);
+                env.delete_local_ref(class_cls);
                 return None;
             };
+            env.delete_local_ref(buf_c);
             let gcls = env.new_global_ref(c);
             if gcls.is_null() {
                 crate::describe_exception(env);
@@ -415,7 +440,7 @@ pub fn activate() {
         let ok = cplug_sdk::jni_util::with_attached(|env| {
             // Probe sanity (magic "EIDX").
             let Some(mid) = env.get_static_method_id(gcls, "eidxProbe", "()I") else {
-                crate::clear_exception(env);
+                crate::describe_exception(env);
                 eprintln!("[crussty-plugin] eindex: eidxProbe resolve failed");
                 return false;
             };
@@ -429,7 +454,7 @@ pub fn activate() {
             // Seed the mirror from atomic getAllCopy() snapshots (idempotent
             // by id; buffered notes racing the seed converge on vanilla).
             let Some(mid) = env.get_static_method_id(gcls, "seedAll", "()I") else {
-                crate::clear_exception(env);
+                crate::describe_exception(env);
                 eprintln!("[crussty-plugin] eindex: seedAll resolve failed");
                 return false;
             };
