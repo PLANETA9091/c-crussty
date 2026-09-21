@@ -62,7 +62,13 @@ public final class MobPushOps {
 
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return f != null && f.trim().equals("cmp399_mobpush");
+        if (f == null) {
+            return false;
+        }
+        String t = f.trim();
+        // TASK-401-H: composite cmp401_comp arms mobpush (rust mobs_manager /
+        // mobs_grid mirror this exact list — half-armed bridge is impossible).
+        return t.equals("cmp399_mobpush") || t.equals("cmp401_comp");
     }
 
     private static final boolean ENABLED = leverEnabled();

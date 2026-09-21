@@ -1,0 +1,36 @@
+{
+  "agent": "TASK-401-H",
+  "vector": "COMPOSITE cmp401_comp = bfcomp(shardgrid+lifetime-heap) + devirtfix(D1+D2) + mobpush(mobs_grid)",
+  "branch": "round-401-h-comp",
+  "base": "origin/master d26f524",
+  "merges": [
+    "origin/round-400-a-bfcomp fbb6251 (resolved: lib.rs mod item_merge+items_* both)",
+    "origin/round-400-c-devirtfix 99a0ab4 (resolved: items_manager gates, ItemEntityManager.java merged, classfile.rs both sides)",
+    "origin/round-400-j-mobpush e7d083a (resolved: lib.rs devirt+mobs register/activate both)"
+  ],
+  "wakefix_decision": "NOT merged — half-armed bridge impossible by construction (rust/java gate predicates identical per subsystem; classes rebuilt with cmp401_comp gates)",
+  "composite_gate": "cmp401_comp",
+  "vanilla_law": "empty/foreign flag = 0 hooks, 0 define, 0 retransform (all gates false; test lever_flag_matches_for(\"\")==false)",
+  "classes_rebuilt": {
+    "ItemEntityManager.class": "19142 -> 19956 B (javap: goalContainsAnyFlags present, gates cmp401_*)",
+    "MobPushOps.class": "8816 -> 8845 B (gates cmp399_mobpush + cmp401_comp)"
+  },
+  "build": {
+    "cargo_check": "PASS (60 warnings, 0 errors)",
+    "cargo_test_lib": "210 passed / 0 failed / 1 ignored (2 pre-existing test bugs fixed, prod untouched)"
+  },
+  "status": "built-green, ready-to-push+dispatch",
+  "run_id": null,
+  "dispatch_inputs": {
+    "radius": 640, "seconds": 300, "fake_players": 4, "fluid_guard": 1,
+    "gc_tune": 3, "inside_cache": 1, "flush_diet": 1, "fluid_dirty": 0,
+    "fluid_bitmask": 0, "region_threads": 4, "batch_collector": 1,
+    "inside_bitmask": 0, "skip_store_bb": 0, "region_steal": 0, "bu_defer": 0,
+    "population_target": 150000, "population_seed": 42,
+    "server_xmx": "10G", "server_xms": "4G",
+    "cpu_band_min": 6000000, "cpu_band_max": 9500000,
+    "lever_flag": "cmp401_comp", "lever_arg": 1
+  },
+  "iterations_done": 0,
+  "updated_at": "2026-09-21T08:05:00+08:00"
+}

@@ -7554,21 +7554,13 @@ mod devirt_patchers {
         let (cs, cl) = find_code_attr(&p1, &pool, &m).expect("code attr");
         let code = &p1[cs..cs + cl];
         assert_eq!(cl, 13, "fused body must be 13 bytes");
-        assert_eq!(
-            code,
-            &[
-                0x2a,
-                0xb4, // getfield itemsById (idx resolved below)
-                0, 0,
-                0x2b,
-                0xb6, // invokevirtual EntityDataAccessor.id()I
-                0, 0,
-                0xbe, // aaload
-                0xb4, // getfield DataItem.value (idx resolved below)
-                0, 0,
-                0xb0, // areturn
-            ][..]
-        );
+        // Оpercode-shape assert (pre-existing test bug fix, TASK-401-H: the
+        // patcher resolves REAL constant-pool indices — the old placeholder
+        // [0,0] slots made this test fail even on the source branch):
+        // 2a b4 <itemsById> 2b b6 <id()I> be b4 <value> b0
+        for (pos, op) in [(0usize, 0x2au8), (1, 0xb4), (4, 0x2b), (5, 0xb6), (8, 0xbe), (9, 0xb4), (12, 0xb0)] {
+            assert_eq!(code[pos], op, "opcode at {pos}");
+        }
         // Refs resolve to the intended members.
         let f_items = u16::from_be_bytes([code[2], code[3]]);
         let m_id = u16::from_be_bytes([code[6], code[7]]);

@@ -80,7 +80,10 @@ pub fn activate() {
     let flag = lever_flag();
     let shard = flag == "cmp399_shard";
     let bfcomp = flag == "cmp399_bfcomp";
-    let despawn2 = flag == "cmp399_despawn2" || bfcomp;
+    // TASK-401-H: композитный флаг армит shard-grid (rust shard_mode),
+    // lifetime-heap (DESPAWN2 в java) и маркерится как композит.
+    let comp401 = flag == "cmp401_comp";
+    let despawn2 = flag == "cmp399_despawn2" || bfcomp || comp401;
     if shard {
         // ГРОМКИЙ ARM-МАРКЕР (TASK-399-B): без этой строки нога не-armed.
         eprintln!(
@@ -92,6 +95,13 @@ pub fn activate() {
         // суб-вектора B+F одновременно — shard-grid (B) + lifetime-heap (F).
         eprintln!(
             "[crussty-plugin] cmp399_bfcomp: ARMED shards=64 seqlock-reads=per-cell-version writer=global-mutex shard_cap=16384 max_ids=1048576 heap=lifetime-minheap(rust,vec) push=batch(1/tick) due-poll=1/tick despawn-flow=vanilla (composite B+F)"
+        );
+    }
+    if comp401 {
+        // ГРОМКИЙ ARM-МАРКЕР КОМПОЗИТА TASK-401-H (обязателен): shard-grid
+        // (B) + lifetime-heap (F) + devirt D1/D2 (G) + mobpush (J400).
+        eprintln!(
+            "[crussty-plugin] cmp401_comp: ARMED shards=64 seqlock-reads=per-cell-version writer=global-mutex shard_cap=16384 max_ids=1048576 heap=lifetime-minheap(rust,vec) push=batch(1/tick) due-poll=1/tick despawn-flow=vanilla mobpush=sharded-grid devirt=D1+D2 (composite TASK-401-H)"
         );
     }
     std::thread::spawn(move || {
@@ -127,6 +137,8 @@ pub fn activate() {
         // the patch below stays for byte-parity of the legacy shard path
         // (works on both artifact generations: "items_subsys2" occurs once).
         // Legacy flag → original bytes (byte-identical arm path, A/B parity).
+        // TASK-401-H: cmp401_comp self-arms via the recompiled committed class
+        // (ENABLED covers cmp401_*), so NO CP-patch on the composite path.
         let im_bytes: Vec<u8> = if shard {
             match crate::classfile::patch_utf8_gate(IM_BYTES, GATE_LEGACY, GATE_CMP) {
                 Ok(b) => {
@@ -303,6 +315,9 @@ mod tests {
         assert_eq!(super::lever_flag_matches_for("cmp399_shard"), true);
         // TASK-400-A: composite flag joins the cmp399_* family gate.
         assert_eq!(super::lever_flag_matches_for("cmp399_bfcomp"), true);
+        // TASK-401-H: the cmp401_* composite family joins too.
+        assert_eq!(super::lever_flag_matches_for("cmp401_comp"), true);
+        assert_eq!(super::lever_flag_matches_for(""), false);
         assert_eq!(super::lever_flag_matches_for("cmp399_other"), true);
         assert_eq!(super::lever_flag_matches_for("items_oss"), false);
         assert_eq!(super::lever_flag_matches_for(""), false);

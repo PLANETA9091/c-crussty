@@ -50,6 +50,13 @@ fn lever_flag() -> String {
         .to_string()
 }
 
+/// TASK-401-H: the mob-push vector arms on its own cmp399_mobpush flag AND
+/// on the composite cmp401_comp (same lever the java MobPushOps gate reads).
+fn lever_matches() -> bool {
+    let f = lever_flag();
+    f == GATE_LEVER || f == "cmp401_comp"
+}
+
 static READY: AtomicBool = AtomicBool::new(false);
 
 struct PatchCache {
@@ -116,7 +123,7 @@ fn target() -> &'static Target {
 /// with the lever flag unset/mismatched NOTHING is registered — the plugin
 /// stays byte-indistinguishable from vanilla for this vector.
 pub fn register() {
-    if lever_flag() != GATE_LEVER {
+    if !lever_matches() {
         eprintln!(
             "[crussty-plugin] mobs_grid: dormant (set CRUSSTY_LEVER_FLAG={GATE_LEVER} to enable)"
         );
@@ -154,7 +161,7 @@ pub fn register() {
 /// MobPushOps bridge into the kernel loader, RegisterNatives, compute the
 /// single-site retarget from the pristine bytes, flip READY, retransform.
 pub fn activate() {
-    if lever_flag() != GATE_LEVER {
+    if !lever_matches() {
         return;
     }
     std::thread::spawn(|| {
@@ -354,9 +361,12 @@ pub fn activate() {
             major,
         });
 
-        // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
+        // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed). TASK-401-H:
+        // маркер несёт фактический флаг — композит cmp401_comp обязан быть
+        // различим в server-stdout от точечного cmp399_mobpush.
         eprintln!(
-            "[crussty-plugin] cmp399_mobpush: ARMED shards=64 seqlock-reads=per-cell-version writer=global-mutex shard_cap=16384 max_ids=1048576 cell=1.0 pad=1.0 radius_gate=1.0 (rust mobs_grid sharded; pushEntities tail untouched vanilla; per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT)"
+            "[crussty-plugin] {} ARMED shards=64 seqlock-reads=per-cell-version writer=global-mutex shard_cap=16384 max_ids=1048576 cell=1.0 pad=1.0 radius_gate=1.0 (rust mobs_grid sharded; pushEntities tail untouched vanilla; per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT)",
+            lever_flag()
         );
 
         // Single retransform; the callback serves the cached patch.

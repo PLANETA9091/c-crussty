@@ -110,7 +110,12 @@ fn target_gs() -> &'static Target {
 
 fn flag_matches() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim() == "cmp399_devirt")
+        // TASK-401-H: composite cmp401_comp arms D1+D2 (the ItemEntityManager
+        // bridge and the GoalSelector redirect both self-arm on this flag).
+        .map(|v| {
+            let v = v.trim();
+            v == "cmp399_devirt" || v == "cmp401_comp"
+        })
         .unwrap_or(false)
 }
 
@@ -121,7 +126,7 @@ fn flag_matches() -> bool {
 pub fn register() {
     if !flag_matches() {
         eprintln!(
-            "[crussty-plugin] cmp399_devirt: dormant (set CRUSSTY_LEVER_FLAG=cmp399_devirt to enable)"
+            "[crussty-plugin] devirt: dormant (set CRUSSTY_LEVER_FLAG=cmp399_devirt or cmp401_comp to enable)"
         );
         return;
     }
@@ -221,8 +226,11 @@ fn arm_stage(
             t.set_patch(p);
             t.ready.store(true, Ordering::Release);
             let rc = cplug_sdk::retransform_class(t.name);
+            // TASK-401-H: stage marker carries the ACTUAL lever flag so the
+            // composite run is distinguishable in server-stdout (ARM-proof).
+            let flag = std::env::var("CRUSSTY_LEVER_FLAG").unwrap_or_default();
             eprintln!(
-                "[crussty-plugin] cmp399_devirt: stage {stage} ARMED ({outcome:?}), {orig_len} -> {composed_len} bytes, retransform rc={rc}"
+                "[crussty-plugin] {flag}: devirt stage {stage} ARMED ({outcome:?}), {orig_len} -> {composed_len} bytes, retransform rc={rc}"
             );
             true
         }
@@ -335,7 +343,12 @@ pub fn activate() {
             "devirt-fusion/body-redirect",
             "cmp399_devirt v1",
         );
-        eprintln!("[crussty-plugin] cmp399_devirt: ARMED sites={sites}");
+        // TASK-401-H: ARM-маркер несёт фактический флаг — композит обязан
+        // быть различим в server-stdout (частично-armed = ФЕЙК).
+        eprintln!(
+            "[crussty-plugin] {} devirt: ARMED sites={sites}",
+            std::env::var("CRUSSTY_LEVER_FLAG").unwrap_or_default().trim()
+        );
     });
 }
 

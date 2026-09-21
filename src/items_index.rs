@@ -276,7 +276,8 @@ fn shard_mode() -> bool {
                 let v = v.trim();
                 // TASK-400-A: составной флаг cmp399_bfcomp (B+F) включает
                 // sharded mode наряду с точным cmp399_shard.
-                v == "cmp399_shard" || v == "cmp399_bfcomp"
+                // TASK-401-H: композит cmp401_comp тоже включает shard-grid.
+                v == "cmp399_shard" || v == "cmp399_bfcomp" || v == "cmp401_comp"
             })
             .unwrap_or(false)
     })
