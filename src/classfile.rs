@@ -7356,6 +7356,14 @@ pub fn patch_eindex_lookup_redirects(bytes: &[u8]) -> Result<(Vec<u8>, RetargetO
 }
 
 /// The 4 note-site retargets inside EntityLookup (addEntity×2, removeEntity×2).
+/// RUNTIME-VERIFIED (round409cleg2b entity-recon.txt, booted kernel):
+///   addEntity(Entity;ZZ)Z  → slices.addEntity(Entity;I)Z   @291 (×1)
+///   removeEntity(Entity)V  → slices.removeEntity(Entity;I)Z @119 (×1)
+///   moveEntity(Entity)     → slices.removeEntity(Entity;I)Z @145 (×1)
+///   moveEntity(Entity)     → slices.addEntity(Entity;I)Z    @177 (×1)
+/// cleg2b ROOT-CAUSE (run 35667449721): `from` was hardcoded to addEntity for
+/// all rows — the removeEntity rows searched for an addEntity invoke inside
+/// EntityLookup.removeEntity → NotFound → whole patch rejected → dormant.
 pub fn patch_eindex_lookup_notes(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
     let add_to = (
         EIDX_OPS_CLASS,
@@ -7367,7 +7375,8 @@ pub fn patch_eindex_lookup_notes(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutco
         "noteRemove",
         format!("(L{EIDX_SLICES_CLASS};{}", &EIDX_SLICES_ADD_DESC[1..]),
     );
-    let from = (EIDX_SLICES_CLASS, "addEntity", EIDX_SLICES_ADD_DESC);
+    let from_add = (EIDX_SLICES_CLASS, "addEntity", EIDX_SLICES_ADD_DESC);
+    let from_rem = (EIDX_SLICES_CLASS, "removeEntity", EIDX_SLICES_ADD_DESC);
     let specs: [(&str, &str, bool); 4] = [
         ("addEntity", "(Lnet/minecraft/world/entity/Entity;ZZ)Z", true),
         ("moveEntity", EIDX_MOVE_DESC, true),
@@ -7377,7 +7386,7 @@ pub fn patch_eindex_lookup_notes(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutco
     let mut cur = bytes.to_vec();
     let mut ret = 0usize;
     for (name, desc, is_add) in specs {
-        let to = if is_add { &add_to } else { &rem_to };
+        let (to, from) = if is_add { (&add_to, &from_add) } else { (&rem_to, &from_rem) };
         let (p, outcome) = retarget_virtual_to_static(
             &cur,
             name,
@@ -7391,7 +7400,11 @@ pub fn patch_eindex_lookup_notes(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutco
                 ret += 1;
             }
             RetargetOutcome::NotFound => {
-                return Err(format!("eindex note site {name}{desc} not found"));
+                return Err(format!(
+                    "eindex note site {name}{desc} (callee {}.{}) not found",
+                    from.0.rsplit('/').next().unwrap_or(from.0),
+                    from.1
+                ));
             }
         }
     }
