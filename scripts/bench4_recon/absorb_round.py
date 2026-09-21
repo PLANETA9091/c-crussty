@@ -196,6 +196,14 @@ def main():
           f"conclusion={st.get('conclusion')} head={str(st.get('head_sha'))[:7]}")
     if st.get("status") != "completed":
         sys.exit(3)
+    # TASK-404 гвард (root-cause ложных INFRA-DELIVERY-FAIL): push-CI ран на
+    # master имеет 5 build/smoke джоб БЕЗ world-bench — это не нога вообще.
+    jobs = api(tok, f"/repos/{REPO}/actions/runs/{run_id}/jobs?per_page=100")
+    job_names = [j.get("name", "") for j in jobs.get("jobs", [])]
+    if not any("world-bench" in n for n in job_names):
+        print(f"NOT-A-BENCH: jobs={job_names} — push-CI run, не бенч-нога "
+              f"(рулетка не применяется, артефакты не качаются)")
+        return
     # cache: переиспользуем уже скачанный артефакт
     if os.path.isfile(os.path.join(run_dir, "server-stdout.log")) and \
             os.path.isfile(os.path.join(run_dir, "cpu-collapsed.txt")):

@@ -57,7 +57,7 @@ stagger +12.5 (×3, TASK-402) → **stagcomp +21-27.5 (2/3, leg3 в полёте
 | sc2a (stagcomp⊕N2) | 35615072803 | 2.5 | 6701449 | +8.7pp (↔anc4 2.30) | GREEN ARMED ×9 |
 | sc2b (stagcomp⊕N2) | 35615076298 | 2.4 | 6705897 | +4.3pp (↔anc4) | GREEN ARMED ×9 |
 | jb1 (jnibulk leg1) | 35613947014 | 2.4 | 6784909 | +4.3pp (↔anc4) | GREEN ARMED ×10 |
-| anc6 master @15:04 | 35616421872 | — | — | INFRA-DELIVERY-FAIL | discard |
+| anc6 master @15:04 | 35616421872 | — | — | NOT-A-BENCH (push-CI, гвард TASK-404) | discard |
 
 ## ВЕРДИКТИ TASK-403 (ИТОГ ТИКА)
 1. **STAGCOMP (cmp402_stagcomp) ≈ +25pp pair-медиана, 5 валидных ARMED-ног (+2.2/+20.8/+20.8/+28.6/+31.3)** — ТОП ступень эры. items 31.17→0.00%, nav_ai −5.56пп, broadphase −1.89пп, GC/RAM норма. НЕ МЕРЖ (бар 80%).
