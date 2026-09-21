@@ -38,9 +38,13 @@ mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
 mod item_merge;
+mod items_index;
+mod items_lifetime;
+mod items_manager;
 mod jni_table;
 mod kernel_policy;
 mod loader;
+mod mobs_grid;
 mod mobs_manager;
 mod mobs_soa;
 mod noise_fill;
@@ -446,9 +450,20 @@ fn inject_surface() {
     // re-composes the F1 optimiseRandomTick swap; MUST run after
     // randomtick::activate — see src/tickhook.rs module docs).
     tickhook::activate();
+    // ITEM-SHARDGRID + LIFETIME-HEAP (TASK-402-B composite cmp402_comp;
+    // previously TASK-400-A cmp399_bfcomp family): define ItemEntityManager
+    // into the kernel loader + RegisterNatives (idxProbe/idxInsert/idxSetCell/
+    // idxRemove/idxQuery + lifetimePush/lifetimeDue). RegionTickOps (defined
+    // by region_threads::activate above) routes the item phase inline and
+    // polls ItemEntityManager.armed() lazily (dormant unless the lever flag
+    // matches — see items_manager::lever_flag_matches_for; empty flag =
+    // vanilla bit-in-bit). Requires CRUSSTY_REGION_THREADS>=2.
+    items_manager::activate();
     // MOB-SOA (TASK-401-E, vector soa): define MobPushOps into the kernel
     // loader, compute the single-site pushEntities retarget, retransform
-    // LivingEntity (dormant unless CRUSSTY_LEVER_FLAG == cmp401_soa).
+    // LivingEntity (dormant unless CRUSSTY_LEVER_FLAG == cmp401_soa;
+    // TASK-402-B: also under cmp402_comp — the composite arms soa + the
+    // mobs_grid sharded mirror as the push-broadphase pair).
     mobs_manager::activate();
 }
 
