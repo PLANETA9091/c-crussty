@@ -6357,7 +6357,76 @@ mod fluid_dirty {
         let (lc, _) = patch_fluid_dirty_levelchunk(LEVEL_CHUNK).expect("patch");
         std::fs::create_dir_all("tests/out").unwrap();
         std::fs::write("tests/out/Entity.fluiddirty.patched.class", &entity).unwrap();
-        std::fs::write("tests/out/LevelChunk.fluiddirty.patched.class", &lc).unwrap();
+
+    }
+    /// TASK-401-C roundtrip: whole-body redirect composes on the real kernel
+    /// WalkNodeEvaluator.class, re-parses, emits aload_0 aload_1 invokestatic
+    /// NavOps.getPathTypeFromState areturn, idempotent on re-sight.
+    #[test]
+    fn navsys_wne_path_type_redirect_roundtrip() {
+        const WNE_DESC: &str = "(Lnet/minecraft/world/level/BlockGetter;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/pathfinder/PathType;";
+        const NAVOPS: &str = "net/minecraft/world/entity/ai/NavOps";
+        let bytes = include_bytes!("../tests/fixtures/WalkNodeEvaluator.class");
+        assert!(parse_layout(bytes).is_some(), "fixture parses");
+        let (out, outcome) = redirect_static_method_body_to_static(
+            bytes,
+            "getPathTypeFromState",
+            WNE_DESC,
+            NAVOPS,
+            "getPathTypeFromState",
+            WNE_DESC,
+        )
+        .expect("redirect composes on kernel WNE");
+        assert!(matches!(outcome, RetargetOutcome::Retargeted { .. }));
+        assert_ne!(out.as_slice(), bytes.as_slice(), "redirect must change bytes");
+        let layout = parse_layout(&out).expect("re-parse patched WNE");
+        let name_idx = layout.pool.find_utf8("getPathTypeFromState").expect("name in pool");
+        let desc_idx = layout.pool.find_utf8(WNE_DESC).expect("desc in pool");
+        let m = find_method(&out, layout.methods_start, name_idx, desc_idx)
+            .expect("redirected method present");
+        let p = m.start + 6; // access(2)+name(2)+desc(2) -> attrs_count
+        let attr_count = u16::from_be_bytes([out[p], out[p + 1]]) as usize;
+        let mut q = p + 2;
+        let mut code: Option<&[u8]> = None;
+        for _ in 0..attr_count {
+            let len = u32::from_be_bytes([out[q + 2], out[q + 3], out[q + 4], out[q + 5]]) as usize;
+            let aname = layout
+                .pool
+                .utf8_value(u16::from_be_bytes([out[q], out[q + 1]]))
+                .unwrap_or_default();
+            if aname == "Code" {
+                // body: max_stack(2) max_locals(2) code_len(4) code[..]
+                let clen =
+                    u32::from_be_bytes([out[q + 10], out[q + 11], out[q + 12], out[q + 13]]) as usize;
+                code = Some(&out[q + 14..q + 14 + clen]);
+                break;
+            }
+            q += 6 + len;
+        }
+        let code = code.expect("Code attribute");
+        assert_eq!(code.len(), 6, "redirected body is exactly 6 bytes");
+        assert_eq!(&code[..3], &[0x2a, 0x2b, 0xb8], "aload_0 aload_1 invokestatic");
+        assert_eq!(code[5], 0xb0, "areturn");
+        let cp_idx = u16::from_be_bytes([code[3], code[4]]);
+        assert_eq!(
+            layout.pool.methodref_parts(cp_idx),
+            Some((
+                NAVOPS.to_string(),
+                "getPathTypeFromState".to_string(),
+                WNE_DESC.to_string(),
+            )),
+            "invokestatic must resolve NavOps.getPathTypeFromState"
+        );
+        let (_out2, outcome2) = redirect_static_method_body_to_static(
+            &out,
+            "getPathTypeFromState",
+            WNE_DESC,
+            NAVOPS,
+            "getPathTypeFromState",
+            WNE_DESC,
+        )
+        .expect("re-sight composes");
+        assert!(matches!(outcome2, RetargetOutcome::AlreadyPatched { .. }));
     }
 }
 

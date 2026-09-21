@@ -40,6 +40,8 @@ mod inside_diet;
 mod item_merge;
 mod jni_table;
 mod kernel_policy;
+mod nav_path_type;
+mod nav_sys;
 mod loader;
 mod noise_fill;
 mod parse_diag;
@@ -120,6 +122,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // port). Pristine capture at first load; patch served after the
     // ItemMergeOps bridge lands. Dormant unless CRUSSTY_LEVER_FLAG=items_oss.
     item_merge::register();
+    // NAV-SUBSYSTEM (TASK-401-C): byte hook on WalkNodeEvaluator (pristine
+    // capture at first load; whole-body redirect served via retransform after
+    // the NavOps bridge lands). Dormant unless CRUSSTY_LEVER_FLAG=cmp401_navsys.
+    nav_sys::register();
     // PALETTED-DEMUX (S7-131, ARCH-ATTACK lever #1): PalettedContainer
     // first-load demux patch (field injection + fast-path get + guarded
     // mutators). MUST register before any kernel class loads (onstart).
@@ -349,6 +355,11 @@ fn inject_surface() {
     // compute the mergeWithNeighbours whole-body patch, retransform (dormant
     // unless CRUSSTY_LEVER_FLAG=items_oss).
     item_merge::activate();
+    // NAV-SUBSYSTEM (TASK-401-C, cmp401_navsys): define NavOps bridge into the
+    // kernel loader, register the canonical-state PathType memo natives, then
+    // serve the WalkNodeEvaluator.getPathTypeFromState whole-body redirect.
+    // Dormant unless CRUSSTY_LEVER_FLAG=cmp401_navsys.
+    nav_sys::activate();
     // PALETTED-DEMUX (S7-131): define PalettedContainerOps into the launch
     // loader EARLY (the patch serves at PalettedContainer's first load —
     // field injection forbids retransform), then READY.
