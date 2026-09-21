@@ -1,26 +1,77 @@
 {
-  "agent": "TASK-409-E",
-  "vector": "sscan (R4 despawn/spawn/activation scans → Rust батч, lever cmp406_sscan)",
-  "branch": "round-406-e-sscan @ fb8dc77",
-  "worktree": "/home/z/rounds/ROUND-406/agent-e",
-  "run_id": null,
-  "legs": {
-    "eleg1": {"run_id": 35660646779, "ref": "round-406-e-l1", "tps_med": 2.55, "cpu_idx": 6905070, "delta_pair_pct": 15.9, "verdict": "GREEN ARMED (tick-408)"},
-    "eleg2": {"run_id": 35667342821, "ref": "round-406-e-l2", "status": "in_progress", "band_gate": "PASS"},
-    "eleg3": {"run_id": 35667359195, "ref": "round-406-e-l3", "status": "in_progress"}
+ "agent": "TASK-409-E",
+ "vector": "sscan (R4 despawn/spawn/activation scans → Rust батч, lever cmp406_sscan)",
+ "branch": "round-406-e-sscan @ fb8dc77",
+ "worktree": "/home/z/rounds/ROUND-406/agent-e",
+ "run_id": null,
+ "legs": {
+  "eleg1": {
+   "run_id": 35660646779,
+   "ref": "round-406-e-l1",
+   "tps_med": 2.55,
+   "cpu_idx": 6905070,
+   "delta_pair_pct": 15.9,
+   "verdict": "INVALID TREATMENT (reclassified tick-409: natives dormant, comp-base-only)"
   },
-  "tps_med": null,
-  "delta_pair_pct": null,
-  "lane": "dispawn-scan O(mobs×players) per-tick per-mob getNearestPlayer → sscanEpoch ОДИН bulk-JNI/тик DOD-проход SoA → колонка nearest-qualifying-player; leg1→leg3 min-of-3",
-  "ram_stw_full": null,
-  "parity": "ванильность бит-в-байт: first-strictly-closer по порядку players(), лестница (best==-1||d<best), порядок компонент distanceToSqr; тело checkDespawn после скана — нетронутый ванильный байткод; FAIL-CLOSED STRICT eq; пустой флаг = сайт вообще не ретаргетится",
-  "verdict": "PREFLIGHT PASS",
-  "evidence": [
-    "preflight: MobScanOps.class + MobPushOps.class byte-IDENTICAL to fresh javac rebuild (--release 21, cp full kernel jar round-round406eleg1/patched-kernel.jar + fastutil.jar; jar round-396-a purged — использован полный kernel-jar собственной GREEN-ноги, round-j2b не годится по миссии)",
-    "preflight: .java не менялись с 63bf3b3 (классы коммичены там же) — блобы актуальны",
-    "preflight: cargo check --lib PASS 4.37s (61 warnings, 0 errors), CARGO_TARGET_DIR удалён немедленно",
-    "preflight: worktree clean, HEAD fb8dc77 == origin/round-406-e-sscan; alias round-406-e-l1 @ 0578583 (код-дерево идентично fb8dc77 по код-файлам — только RESEARCH-E.md/dispatch-script после)",
-    "note k2: entityinside/ItemEntityManager.class блоб от fef3746 (гейты ×3 cmp406_sscan в .java из 63bf3b3 не в блобе) — СОЗНАТЕЛЬНО не трогаю для пула min-of-3 с eleg1 (это состояние treatment leg1; empirical +15.9pp получено на нём); rebuild входит в k2-итерацию"
-  ],
-  "what": "PREFLIGHT: class-blob verification + cargo check; диспатч eleg2/eleg3 @ fb8dc77"
+  "eleg2": {
+   "run_id": 35667342821,
+   "ref": "round-406-e-l2",
+   "tps_med": 2.5,
+   "cpu_idx": 7090478,
+   "verdict": "INVALID TREATMENT — mobs_sscan register_natives failed (code -1): sig '(III[D[I)I' != java '(II[D[I)I' -> NoSuchMethodError, despawn-мост спал; ARMED-маркеры только от comp-сегментов; gain = comp-база под sscan-флагом"
+  },
+  "eleg3": {
+   "run_id": 35667359195,
+   "ref": "round-406-e-l3",
+   "status": "completed, absorb skipped (dormant-гейт подтверждён на eleg2, лечение невалидно; тело не качалось — экономия диска)"
+  },
+  "eleg2b": {
+   "run_id": 35669097430,
+   "ref": "round-406-e-l2b",
+   "sha": "b405fe1",
+   "status": "in_progress"
+  },
+  "eleg3b": {
+   "run_id": 35669112587,
+   "ref": "round-406-e-l3b",
+   "sha": "b405fe1",
+   "status": "in_progress"
+  }
+ },
+ "tps_med": null,
+ "delta_pair_pct": null,
+ "lane": "dispawn-scan O(mobs×players) per-tick per-mob getNearestPlayer → sscanEpoch ОДИН bulk-JNI/тик DOD-проход SoA → колонка nearest-qualifying-player; leg1→leg3 min-of-3",
+ "ram_stw_full": null,
+ "parity": "ванильность бит-в-байт: first-strictly-closer по порядку players(), лестница (best==-1||d<best), порядок компонент distanceToSqr; тело checkDespawn после скана — нетронутый ванильный байткод; FAIL-CLOSED STRICT eq; пустой флаг = сайт вообще не ретаргетится",
+ "verdict": "ROOT-CAUSED, FIX PUSHED, RE-ROLL IN FLIGHT (eleg2b/eleg3b @ b405fe1)",
+ "evidence": [
+  "preflight: MobScanOps.class + MobPushOps.class byte-IDENTICAL to fresh javac rebuild (--release 21, cp full kernel jar round-round406eleg1/patched-kernel.jar + fastutil.jar; jar round-396-a purged — использован полный kernel-jar собственной GREEN-ноги, round-j2b не годится по миссии)",
+  "preflight: .java не менялись с 63bf3b3 (классы коммичены там же) — блобы актуальны",
+  "preflight: cargo check --lib PASS 4.37s (61 warnings, 0 errors), CARGO_TARGET_DIR удалён немедленно",
+  "preflight: worktree clean, HEAD fb8dc77 == origin/round-406-e-sscan; alias round-406-e-l1 @ 0578583 (код-дерево идентично fb8dc77 по код-файлам — только RESEARCH-E.md/dispatch-script после)",
+  "note k2: entityinside/ItemEntityManager.class блоб от fef3746 (гейты ×3 cmp406_sscan в .java из 63bf3b3 не в блобе) — СОЗНАТЕЛЬНО не трогаю для пула min-of-3 с eleg1 (это состояние treatment leg1; empirical +15.9pp получено на нём); rebuild входит в k2-итерацию",
+  "eleg2 stdout:1069 'mobs_sscan: register_natives failed (code -1) — hook stays dormant' + 1070 bridge definition failed; ARMED-маркеры (13) — только comp-сегменты (items/soa+grid/collide/stagger); NO 'ARMED sscan-despawn' / NO 'EFFECT armed' маркеров",
+  "eleg1 stdout:1079-1080 — ТОТ ЖЕ dormant-гейт → leg1 +15.9 RECLASSIFIED как comp-base-only (tick-408 не заметил)",
+  "anchors-408 fresh: anchora 2.25@6833921, anchorc 2.30@6846036 (обе vanilla PARITY) — абсорбированы round409*"
+ ],
+ "what": "PREFLIGHT→диспатч eleg2/3→абсорб anchors-408a/c→ARM-ПРУФ провален (natives dormant)→root-cause sig-мисматч→фикс b405fe1→ре-ролл eleg2b/eleg3b",
+ "anchors_408_fresh": {
+  "round409anchora": {
+   "run_id": 35666723979,
+   "tps_med": 2.25,
+   "cpu_idx": 6833921,
+   "verdict": "PARITY (vanilla anchor, lever empty)"
+  },
+  "round409anchorc": {
+   "run_id": 35666762102,
+   "tps_med": 2.3,
+   "cpu_idx": 6846036,
+   "verdict": "PARITY (vanilla anchor, lever empty)"
+  },
+  "round409anchorb": {
+   "run_id": 35666743738,
+   "status": "in_progress (upper-agent leg)"
+  }
+ },
+ "root_cause": "eleg1/2: mobs_sscan RegisterNatives sig mismatch '(III[D[I)I' vs java '(II[D[I)I' (NoSuchMethodError -> JNI_ERR -1) — despawn-мост никогда не armed; fix b405fe1: sig + describe_exception до clear"
 }

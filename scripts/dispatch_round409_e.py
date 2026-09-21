@@ -9,8 +9,8 @@ API = "https://api.github.com"
 WF = "world-bench-parallel.yml"
 
 LEGS = {
-    "eleg2": ("round-406-e-l2", "cmp406_sscan", "origin/round-406-e-sscan"),
-    "eleg3": ("round-406-e-l3", "cmp406_sscan", "origin/round-406-e-sscan"),
+    "eleg2b": ("round-406-e-l2b", "cmp406_sscan", "origin/round-406-e-sscan"),
+    "eleg3b": ("round-406-e-l3b", "cmp406_sscan", "origin/round-406-e-sscan"),
 }
 
 INPUTS = {
