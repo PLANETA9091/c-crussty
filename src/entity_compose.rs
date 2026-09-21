@@ -125,6 +125,7 @@ fn stage_enabled() -> bool {
         || crate::traversal::enabled_pub()
         || crate::zero_alloc::enabled_pub()
         || crate::skip_store::enabled_pub()
+        || crate::collide_sweep::enabled_pub()
 }
 
 /// Register the single Entity byte hook (idempotent; call once from
@@ -673,6 +674,55 @@ pub fn activate() {
             }
         }
 
+        // ---- STAGE 11: collide-sweep body redirect (TASK-400-F, cmp399_coll) ----
+        // Single-site body redirect of the private Entity.collide(Vec3) to
+        // the CollideSweepOps bridge (scalar-scratch collide + swept/batched
+        // blockCollisions scan; TravelDietOps v2a lineage). Family
+        // arbitration: travel_diet STAGE 10 redirects the SAME body — the
+        // patcher refuses a foreign supersede (S7-162) and this stage is
+        // skipped fail-dominant while the scan redirect still arms.
+        if crate::collide_sweep::enabled_pub() {
+            if crate::collide_sweep::wait_bridge_ready(120_000) {
+                match crate::classfile::patch_entity_collide_sweep(&bytes) {
+                    Ok((p, outcome)) if matches!(
+                        outcome,
+                        crate::classfile::RetargetOutcome::Retargeted { sites: 1 }
+                    ) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage collide_sweep composed ({outcome:?})"
+                        );
+                        bytes = p;
+                        chain.push("collide_sweep");
+                    }
+                    Ok((p, outcome)) if matches!(
+                        outcome,
+                        crate::classfile::RetargetOutcome::AlreadyPatched { sites: 1 }
+                    ) => {
+                        // Idempotent re-sight (stale retransform replay).
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage collide_sweep composed ({outcome:?})"
+                        );
+                        bytes = p;
+                        chain.push("collide_sweep");
+                    }
+                    Ok((_p, outcome)) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage collide_sweep strict check violated ({outcome:?}), chain continues WITHOUT collide_sweep (fail-dominant)"
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage collide_sweep patch rejected ({e})"
+                        );
+                    }
+                }
+            } else {
+                eprintln!(
+                    "[crussty-plugin] entity_compose: collide_sweep bridge missed its window, chain continues WITHOUT collide_sweep (fail-dominant)"
+                );
+            }
+        }
+
         let composed_len = bytes.len();
         t.set_patch(PatchCache {
             bytes: Arc::from(bytes),
@@ -681,8 +731,8 @@ pub fn activate() {
 
         crate::kernel_policy::audit_wire(
             ENTITY_CLASS,
-            "inside-gate/fgate/scan/rngUUID/collector-ctor/traversal/zeroin/skip-store-bb/travel-diet",
-            "entity_compose v5",
+            "inside-gate/fgate/scan/rngUUID/collector-ctor/traversal/zeroin/skip-store-bb/travel-diet/collide-sweep",
+            "entity_compose v6",
         );
         READY.store(true, Ordering::Release);
         let rc = cplug_sdk::retransform_class(t.name);

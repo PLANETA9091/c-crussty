@@ -4077,6 +4077,127 @@ pub fn traveldiet_resolution_closure(bridge: &[u8]) -> Result<(), String> {
     redirect_targets_resolution_closure(bridge, &TD_ALL_TARGETS)
 }
 
+// ============================================================================
+// TASK-400-F COLLIDE-SWEEP (vector collidesweep, lever flag cmp399_coll).
+//
+// Two body-redirects on the kernel collision data plane (RESEARCH-F.md):
+//   1. STATIC scan: CollisionUtil.getCollisionsForBlocksOrWorldBorder ->
+//      CollideSweepOps.blockCollisions (identical descriptor; the bridge is
+//      a bit-exact port whose only delta is the allocation-free single-AABB
+//      miss path). Served by collide_sweep's own byte hook.
+//   2. INSTANCE collide: private Entity.collide(Vec3) ->
+//      CollideSweepOps.collide (receiver-prepended static; TravelDietOps v2a
+//      scalar-scratch contract). Served by entity_compose STAGE 11.
+//
+// Family arbitration: travel_diet STAGE 10 redirects the SAME Entity body.
+// When both levers are armed, stage order (10 then 11) would let this patch
+// silently REPLACE the travel-diet redirect (same 6-byte body shape, only
+// the Methodref differs) — that supersede is FORBIDDEN (S7-162 lesson), so
+// patch_entity_collide_sweep refuses (Err, fail-dominant) when the body is
+// already a foreign static redirect.
+// ============================================================================
+
+/// Kernel owner of the block-collision scan.
+pub const COLLISION_UTIL_CLASS: &str = "ca/spottedleaf/moonrise/patches/collisions/CollisionUtil";
+/// COLLIDE-SWEEP bridge (kernel loader, same package as Entity/TravelDietOps).
+pub const COLLIDE_SWEEP_OPS_CLASS: &str = "net/minecraft/world/entity/CollideSweepOps";
+
+/// Descriptor of CollisionUtil.getCollisionsForBlocksOrWorldBorder (javap on
+/// the real kernel class; the redirect target CollideSweepOps.blockCollisions
+/// MUST declare exactly this erased signature — stack shape unchanged).
+pub const CS_SCAN_DESC: &str = "(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;Ljava/util/List;Ljava/util/List;ILjava/util/function/BiPredicate;)Z";
+/// Descriptor of the private Entity.collide(Vec3) and of the receiver-prepended
+/// CollideSweepOps.collide static.
+pub const CS_COLLIDE_DESC: &str = "(Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;";
+pub const CS_COLLIDE_STATIC_DESC: &str =
+    "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/Vec3;)Lnet/minecraft/world/phys/Vec3;";
+
+/// Single source of truth for the collide-sweep redirect graph (bytecode
+/// surgery + delivered-classfile resolution closure).
+pub const CS_REDIRECT_TARGETS: [(&str, &str, &str, &str); 2] = [
+    (
+        "blockCollisions",
+        CS_SCAN_DESC,
+        "blockCollisions",
+        CS_SCAN_DESC,
+    ),
+    (
+        "collide",
+        CS_COLLIDE_STATIC_DESC,
+        "collide",
+        CS_COLLIDE_STATIC_DESC,
+    ),
+];
+
+/// Resolution closure (S7-164 NoSuchMethodError-storm guard): the delivered
+/// CollideSweepOps classfile must declare both redirect statics exactly.
+pub fn collidesweep_resolution_closure(ops: &[u8]) -> Result<(), String> {
+    redirect_targets_resolution_closure(ops, &CS_REDIRECT_TARGETS)
+}
+
+/// Static→static whole-body redirect of
+/// CollisionUtil.getCollisionsForBlocksOrWorldBorder to
+/// CollideSweepOps.blockCollisions. Strict sites: 1 (the kernel has exactly
+/// one such method; NotFound means a foreign kernel shape — fail closed).
+pub fn patch_collision_sweep(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let (p, outcome) = redirect_static_method_body_to_static(
+        bytes,
+        "getCollisionsForBlocksOrWorldBorder",
+        CS_SCAN_DESC,
+        COLLIDE_SWEEP_OPS_CLASS,
+        "blockCollisions",
+        CS_SCAN_DESC,
+    )?;
+    Ok((p, outcome))
+}
+
+/// Instance→static (receiver-prepended) whole-body redirect of the private
+/// Entity.collide(Vec3) to CollideSweepOps.collide.
+///
+/// Guard (family arbitration): if the current body is ALREADY a minimal
+/// static redirect whose Methodref resolves to a foreign bridge (travel_diet
+/// — same site), this patch refuses with Err so the compose chain skips the
+/// stage loudly instead of silently superseding the earlier lever.
+pub fn patch_entity_collide_sweep(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    if let Some(owner) = collide_site_redirect_owner(bytes) {
+        if owner != COLLIDE_SWEEP_OPS_CLASS {
+            return Err(format!(
+                "Entity.collide(Vec3) body already redirected to {owner} (travel_diet armed?) — collide_sweep stage declines (family arbitration, S7-162 no-supersede)"
+            ));
+        }
+    }
+    redirect_method_body_to_static(
+        bytes,
+        "collide",
+        CS_COLLIDE_DESC,
+        "net/minecraft/world/entity/Entity",
+        COLLIDE_SWEEP_OPS_CLASS,
+        "collide",
+        CS_COLLIDE_STATIC_DESC,
+    )
+}
+
+/// Probe: if the collide(Vec3) body is the minimal static-redirect shape
+/// (aload_0, aload_1, invokestatic, areturn = 6 bytes), return the Methodref
+/// owner class. Anything else -> None (vanilla body or unknown shape).
+fn collide_site_redirect_owner(bytes: &[u8]) -> Option<String> {
+    let layout = parse_layout(bytes)?;
+    let pool = &layout.pool;
+    let name_idx = pool.find_utf8("collide")?;
+    let desc_idx = pool.find_utf8(CS_COLLIDE_DESC)?;
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)?;
+    let (code_start, code_len) = find_code_attr(bytes, &pool, &m)?;
+    if code_len != 6 {
+        return None;
+    }
+    let code = bytes.get(code_start..code_start + 6)?;
+    if code[0] != 0x2a || code[1] != 0x2b || code[2] != 0xb8 || code[5] != 0xb0 {
+        return None;
+    }
+    let idx = u16::from_be_bytes([code[3], code[4]]);
+    pool.methodref_parts(idx).map(|(c, _, _)| c)
+}
+
 /// Find a method by NAME only (desc resolved by the caller from the found
 /// entry). Returns all matches — the collision patcher requires exactly one
 /// (fail-closed on overloads).
@@ -7260,4 +7381,168 @@ pub fn patch_utf8_gate(bytes: &[u8], from: &str, to: &str) -> Result<Vec<u8>, St
         return Err("gate utf8 not swapped".to_string());
     }
     Ok(out)
+}
+
+#[cfg(test)]
+mod collide_sweep {
+    // TASK-400-F (vector collidesweep): REAL kernel classes (round-j2b
+    // patched-kernel.jar, hook-byte identical) + the DELIVERED bridge
+    // classfile snapshot (tests/fixtures/CollideSweepOps.class = the
+    // compiled entityinside/net/minecraft/world/entity/CollideSweepOps.java).
+    const REAL_COLLISION: &[u8] = include_bytes!("../tests/fixtures/CollisionUtil.class");
+    const REAL_ENTITY: &[u8] = include_bytes!("../tests/fixtures/Entity_real.class");
+    const OPS: &[u8] = include_bytes!("../tests/fixtures/CollideSweepOps.class");
+
+    use crate::classfile::*;
+
+    /// The delivered CollideSweepOps classfile must declare BOTH redirect
+    /// statics with the exact erased descriptors (S7-164 storm guard).
+    #[test]
+    fn collidesweep_resolution_closure_accepts() {
+        collidesweep_resolution_closure(OPS)
+            .expect("delivered CollideSweepOps must declare blockCollisions + collide");
+    }
+
+    /// STATIC scan redirect on the REAL CollisionUtil: exactly one site,
+    /// idempotent re-sight, class major pinned, pool only grows, and the
+    /// redirected body is aload_0..aload_6 + invokestatic + ireturn with the
+    /// IDENTICAL (static) descriptor.
+    #[test]
+    fn collision_scan_redirects_exactly_one_site_and_is_idempotent() {
+        let (patched, outcome) = patch_collision_sweep(REAL_COLLISION).expect("redirect");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "exactly one getCollisionsForBlocksOrWorldBorder body"
+        );
+        let (again, outcome2) = patch_collision_sweep(&patched).expect("re-redirect");
+        assert_eq!(outcome2, RetargetOutcome::AlreadyPatched { sites: 1 });
+        assert_eq!(again, patched, "repatch must be byte-identical");
+        // shape guards: same major, pool may only grow
+        assert_eq!(
+            u16::from_be_bytes([patched[6], patched[7]]),
+            u16::from_be_bytes([REAL_COLLISION[6], REAL_COLLISION[7]]),
+            "class major must stay pinned"
+        );
+        let n_orig = u16::from_be_bytes([REAL_COLLISION[8], REAL_COLLISION[9]]);
+        let n_new = u16::from_be_bytes([patched[8], patched[9]]);
+        assert!(n_new >= n_orig, "pool may only grow");
+
+        // redirected body shape (static: 7 params -> 8 loads — AABB/Entity/
+        // Level are 1 slot, lists 1 each, int 1, BiPredicate 1 = 7 loads +
+        // dload? no: (Level, Entity, AABB, List, List, I, BiPredicate) = 7
+        // single-slot params => 7 loads) + invokestatic + ireturn.
+        let layout = parse_layout(&patched).expect("re-parse patched CollisionUtil");
+        let name_idx = layout
+            .pool
+            .find_utf8("getCollisionsForBlocksOrWorldBorder")
+            .expect("name kept");
+        let desc_idx = layout.pool.find_utf8(CS_SCAN_DESC).expect("desc kept");
+        let m = find_method(&patched, layout.methods_start, name_idx, desc_idx)
+            .expect("redirected method found");
+        let (code_start, code_len) =
+            find_code_attr(&patched, &layout.pool, &m).expect("code attr");
+        let code = &patched[code_start..code_start + code_len];
+        assert_eq!(code[0], 0x2a, "scan: aload_0 = Level (static slot 0)");
+        assert_eq!(code[1], 0x2b, "scan: aload_1 = Entity");
+        assert_eq!(code[2], 0x2c, "scan: aload_2 = AABB");
+        assert_eq!(code[3], 0x2d, "scan: aload_3 = shapesVoxel");
+        assert_eq!(code[4], 0x19, "scan: aload (wide form)");
+        assert_eq!(code[5], 0x04, "scan: aload 4 = boxesAABB");
+        assert_eq!(code[6], 0x15, "scan: iload (wide form)");
+        assert_eq!(code[7], 0x05, "scan: iload 5 = flags");
+        assert_eq!(code[8], 0x19, "scan: aload (wide form)");
+        assert_eq!(code[9], 0x06, "scan: aload 6 = filter");
+        let ret_pos = code.len() - 1;
+        assert_eq!(code[ret_pos], 0xac, "scan: ends with ireturn");
+        assert_eq!(code[ret_pos - 3], 0xb8, "scan: dispatch is invokestatic");
+        let cp_idx = u16::from_be_bytes([code[ret_pos - 2], code[ret_pos - 1]]);
+        let parts = layout.pool.methodref_parts(cp_idx).expect("resolve target");
+        assert_eq!(parts.0, COLLIDE_SWEEP_OPS_CLASS, "scan: target owner");
+        assert_eq!(parts.1, "blockCollisions", "scan: target name");
+        assert_eq!(parts.2, CS_SCAN_DESC, "scan: static-to-static, IDENTICAL descriptor");
+        // typed loads (10 bytes: 4 short + 3 wide) + invokestatic(3) + ireturn(1)
+        // (static slot numbering from 0 after the s7172 remap: slots 4..6 wide)
+        let load_bytes: usize = (0..desc_slot_kinds(CS_SCAN_DESC).expect("kinds").len())
+            .map(|slot| usize::from(slot > 3) + 1)
+            .sum();
+        assert_eq!(
+            code_len as usize,
+            load_bytes + 4,
+            "scan: code length = typed-load chain + invokestatic + ireturn"
+        );
+    }
+
+    /// INSTANCE collide redirect on the REAL Entity: exactly one site,
+    /// receiver-prepended static desc, idempotent.
+    #[test]
+    fn entity_collide_redirects_exactly_one_site_and_is_idempotent() {
+        let (patched, outcome) = patch_entity_collide_sweep(REAL_ENTITY).expect("redirect");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "exactly one collide(Vec3) body"
+        );
+        let (again, outcome2) = patch_entity_collide_sweep(&patched).expect("re-redirect");
+        assert_eq!(outcome2, RetargetOutcome::AlreadyPatched { sites: 1 });
+        assert_eq!(again, patched, "repatch must be byte-identical");
+        assert_eq!(
+            u16::from_be_bytes([patched[6], patched[7]]),
+            u16::from_be_bytes([REAL_ENTITY[6], REAL_ENTITY[7]]),
+            "class major must stay pinned"
+        );
+        let layout = parse_layout(&patched).expect("re-parse patched Entity");
+        let name_idx = layout.pool.find_utf8("collide").expect("name kept");
+        let desc_idx = layout.pool.find_utf8(CS_COLLIDE_DESC).expect("desc kept");
+        let m = find_method(&patched, layout.methods_start, name_idx, desc_idx)
+            .expect("redirected method found");
+        let (code_start, code_len) =
+            find_code_attr(&patched, &layout.pool, &m).expect("code attr");
+        let code = &patched[code_start..code_start + code_len];
+        assert_eq!(code[0], 0x2a, "collide: aload_0 (receiver)");
+        assert_eq!(code[1], 0x2b, "collide: aload_1 = Vec3");
+        let ret_pos = code.len() - 1;
+        assert_eq!(code[ret_pos], 0xb0, "collide: ends with areturn");
+        assert_eq!(code[ret_pos - 3], 0xb8, "collide: invokestatic");
+        let cp_idx = u16::from_be_bytes([code[ret_pos - 2], code[ret_pos - 1]]);
+        let parts = layout.pool.methodref_parts(cp_idx).expect("resolve target");
+        assert_eq!(parts.0, COLLIDE_SWEEP_OPS_CLASS, "collide: target owner");
+        assert_eq!(parts.1, "collide", "collide: target name");
+        assert_eq!(parts.2, CS_COLLIDE_STATIC_DESC, "collide: receiver-prepended desc");
+        assert_eq!(code_len, 2 + 4, "collide: 2 loads + invokestatic + areturn");
+    }
+
+    /// FAMILY ARBITRATION (S7-162 no-supersede): with travel_diet composed
+    /// FIRST (same site), the collide-sweep Entity patch must REFUSE (Err) —
+    /// the travel-diet redirect stays the served one.
+    #[test]
+    fn collidesweep_refuses_to_supersede_traveldiet() {
+        let (td, out1) = patch_entity_traveldiet(REAL_ENTITY).expect("travel patch");
+        assert_eq!(out1, RetargetOutcome::Retargeted { sites: 2 });
+        let err = patch_entity_collide_sweep(&td)
+            .err()
+            .expect("collide_sweep must refuse a foreign supersede");
+        assert!(
+            err.contains("travel_diet") || err.contains("family"),
+            "refusal must name the arbitration: {err}"
+        );
+    }
+
+    /// Harness bridge: with CRUSSTY_EMIT_COLLIDESWEEP=<dir> set, emit the
+    /// patched CollisionUtil + Entity for the offline lockstep harness
+    /// (defineClass = full HotSpot verification).
+    #[test]
+    fn emit_patched_for_verifier_probe() {
+        if let Ok(dir) = std::env::var("CRUSSTY_EMIT_COLLIDESWEEP") {
+            let (cpatched, _) = patch_collision_sweep(REAL_COLLISION).expect("scan patch");
+            let (epatched, _) = patch_entity_collide_sweep(REAL_ENTITY).expect("entity patch");
+            std::fs::create_dir_all(&dir).unwrap();
+            std::fs::write(
+                format!("{dir}/CollisionUtil.sweep.patched.class"),
+                &cpatched,
+            )
+            .unwrap();
+            std::fs::write(format!("{dir}/Entity.sweep.patched.class"), &epatched).unwrap();
+        }
+    }
 }

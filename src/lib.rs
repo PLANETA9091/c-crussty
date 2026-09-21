@@ -28,6 +28,7 @@ mod classfile;
 #[cfg(test)]
 mod entity_mirror;
 mod entity_compose;
+mod collide_sweep;
 mod fluid_guard;
 mod fluid_bitmask;
 mod fluid_dirty;
@@ -126,6 +127,13 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // retransform after the EntityQueryOps bridge lands. Dormant unless
     // CRUSSTY_ALLOC_DIET=1.
     alloc_diet::register();
+    // COLLIDE-SWEEP (TASK-400-F, vector collidesweep): byte hook on the
+    // kernel CollisionUtil (scan body redirect to CollideSweepOps).
+    // Registered AFTER alloc_diet so that when both levers are armed the
+    // chain is alloc_diet-splice -> collide_sweep-redirect (deterministic).
+    // Entity.collide stage composes via entity_compose STAGE 11.
+    // Dormant unless CRUSSTY_LEVER_FLAG=cmp399_coll.
+    collide_sweep::register();
     // TRAVEL-DIET v2b (RECON-21, lever #14): LivingEntity byte hook for the
     // travelInFluid body redirect — pristine capture at first load, patch
     // served after the TravelDietOps bridge lands in the kernel loader
@@ -349,6 +357,11 @@ fn inject_surface() {
     // compute both length-preserving patches, retransform (dormant unless
     // CRUSSTY_ALLOC_DIET=1).
     alloc_diet::activate();
+    // COLLIDE-SWEEP (TASK-400-F): define CollideSweepOps into the kernel
+    // loader, compute the CollisionUtil scan redirect, retransform (dormant
+    // unless CRUSSTY_LEVER_FLAG=cmp399_coll). Entity.collide stage composes
+    // via entity_compose STAGE 11.
+    collide_sweep::activate();
     // INSIDE-CACHE (S7-135): define InsideBlockOps into the kernel loader,
     // compute the length-preserving patch, retransform (dormant unless
     // CRUSSTY_INSIDE_CACHE=1).
