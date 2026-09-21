@@ -25,6 +25,7 @@ mod batch_table;
 mod brainhook;
 mod bridge_class;
 mod classfile;
+mod collide_batch;
 #[cfg(test)]
 mod entity_mirror;
 mod entity_compose;
@@ -145,6 +146,14 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // retransform after the EntityQueryOps bridge lands. Dormant unless
     // CRUSSTY_ALLOC_DIET=1.
     alloc_diet::register();
+    // COLLIDE BATCH-MERGE (TASK-401-B, round-401 vector B): byte hook on
+    // CollisionUtil (pristine capture at first load; the whole-body redirect
+    // of getCollisionsForBlocksOrWorldBorder -> CollideBatchOps.blockCollisions
+    // is served via retransform after the CollideBatchOps bridge lands).
+    // Chains after alloc_diet's hook on the SAME class (registration order;
+    // alloc_diet passes vanilla bytes through when dormant). Dormant unless
+    // CRUSSTY_LEVER_FLAG=cmp401_collide.
+    collide_batch::register();
     // TRAVEL-DIET v2b (RECON-21, lever #14): LivingEntity byte hook for the
     // travelInFluid body redirect — pristine capture at first load, patch
     // served after the TravelDietOps bridge lands in the kernel loader
@@ -445,6 +454,11 @@ fn inject_surface() {
     // body-redirect composes through the entity_compose chain; dormant
     // unless CRUSSTY_TRAVEL_DIET=1 AND region_threads>=2).
     travel_diet::activate();
+    // COLLIDE BATCH-MERGE (TASK-401-B): define CollideBatchOps into the
+    // kernel loader, compute the whole-body redirect of
+    // CollisionUtil.getCollisionsForBlocksOrWorldBorder, retransform
+    // (dormant unless CRUSSTY_LEVER_FLAG=cmp401_collide).
+    collide_batch::activate();
     // ENTITY-COMPOSE (S7-162): apply the single compose chain on Entity
     // (inside → fluid_free → fluid_dirty → rng → batch → traversal → zeroin → sbb → inside_diet),
     // publish the rng verdict for region_threads, retransform Entity
