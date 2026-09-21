@@ -12,6 +12,8 @@ WF = "world-bench-parallel.yml"
 LEGS = {
     "anchora": ("round-405-anchora", "",                "origin/master"),
     "anchorb": ("round-405-anchorb", "",                "origin/master"),
+    "anchorc": ("round-405-anchorc", "",                "origin/master"),
+    "anchord": ("round-405-anchord", "",                "origin/master"),
     "scd4":    ("round-405-scd4",    "cmp402_stagcomp", "origin/round-402-f-stagcomp"),
 }
 
