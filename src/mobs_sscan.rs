@@ -233,9 +233,16 @@ pub fn activate() {
                 CString::new("sscanProbe").expect("no NUL"),
                 CString::new("sscanEpoch").expect("no NUL"),
             ];
+            // TASK-409-E ROOT-CAUSE (eleg1/eleg2 dormant-гейт): java-side
+            // declaration is `sscanEpoch(int tick, int idTop, double[], int[])`
+            // = (II[D[I)I — TWO leading ints (tick, idTop). The registered
+            // sig had a stray third `I` -> RegisterNatives posted
+            // NoSuchMethodError and returned JNI_ERR (-1) EVERY boot, so the
+            // despawn bridge silently never armed (legs measured only the
+            // comp base). Sig must match the declared native EXACTLY.
             let sigs = [
                 CString::new("()I").expect("no NUL"),
-                CString::new("(III[D[I)I").expect("no NUL"),
+                CString::new("(II[D[I)I").expect("no NUL"),
             ];
             let natives = [
                 jvmti_bindings::jni::JNINativeMethod {
@@ -251,6 +258,10 @@ pub fn activate() {
             ];
             let reg = env.register_natives(c, &natives);
             if let Err(code) = reg {
+                // TASK-409-E: describe BEFORE clear — a sig/name mismatch
+                // posts NoSuchMethodError; without this the only trace is a
+                // bare (code -1) and the gate sleeps silently (урон 2 ног).
+                crate::describe_exception(env);
                 env.exception_clear();
                 eprintln!(
                     "[crussty-plugin] mobs_sscan: register_natives failed (code {code}) — hook stays dormant"
