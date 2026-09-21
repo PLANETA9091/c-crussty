@@ -97,6 +97,18 @@ public final class MobPushOps {
 
     private static final boolean COMPOSITE = compositeEnabled();
 
+    /** TASK-404-B: fused mob-push step gate (STRICT eq — only the jnibulk
+     *  bulk-transport flag; legacy flags keep the exact two-transition leg1
+     *  path; empty/foreign flag never reaches the fused native). */
+    private static boolean fusedEnabled() {
+        String f = System.getenv("CRUSSTY_LEVER_FLAG");
+        return f != null && f.trim().equals("cmp403_jnibulk");
+    }
+
+    private static final boolean FUSED = fusedEnabled();
+    /** One-shot effect-proof маркер первого успешного fused-вызова (stdout). */
+    private static volatile boolean fusedProof;
+
     private static final int PROBE_MAGIC = 0x5053; // "SOA"
     private static final int GRID_PROBE_MAGIC = 0x4D50; // "MP" (mobs_grid)
 
@@ -123,6 +135,17 @@ public final class MobPushOps {
     private static native int mobGridProbe();
     private static native int mobGridQuery(double qx0, double qy0, double qz0,
             double qx1, double qy1, double qz1, int lid, int[] out);
+
+    // ---- TASK-404-B jnibulk deepening: FUSED self-upsert + candidate scan
+    // в ОДНОМ JNI-переходе (impl: src/mobs_soa.rs mob_push_step; семантика =
+    // mobUpsert(...) затем mobQuery(...) в одной WLOCK-критической секции,
+    // single-pass скан без seqlock-ретраев; overflow -(cap), ERR-лестница 1:1
+    // с leg1). STRICT: активен только под cmp403_jnibulk — legacy-флаги идут
+    // точным leg1-путём двух переходов; пустой/чужой флаг = не вызывается.
+    private static native int mobPushStep(int id, int lid,
+            double x, double y, double z, double hw, double hh,
+            double qx0, double qy0, double qz0,
+            double qx1, double qy1, double qz1, int[] out);
 
     private static volatile boolean nativeOk;
     private static volatile boolean gridNativeOk;
@@ -205,12 +228,107 @@ public final class MobPushOps {
     }
 
     /**
+     * TASK-404-B (jnibulk deepening): FUSED steady-state путь — mobPushStep
+     * (upsert+scan = 1 JNI-переход). @return null — первый вызов сущности
+     * (id ещё не аллоцирован): вызывающий уходит в legacy-путь (alloc +
+     * publish ровно как в leg1); иначе — результат (включая per-call vanilla
+     * лестницы ошибок, 1:1 с leg1: upsert-ERR_RANGE = ваниль на вызов БЕЗ
+     * grid-read, ERR_STRUCT = дизарм, overflow = grow ×4 → retry fused →
+     * grid-fallback → vanilla).
+     */
+    private static List<Entity> pushablesFused(Level level, Entity entity, AABB box) {
+        int[] boxId = idMap.get(entity);
+        if (boxId == null) {
+            return null; // первый вызов сущности — legacy alloc-путь
+        }
+        AABB bb = entity.getBoundingBox();
+        double hw = Math.max((bb.maxX - bb.minX) * 0.5D, (bb.maxZ - bb.minZ) * 0.5D);
+        double hh = (bb.maxY - bb.minY) * 0.5D;
+        if (Math.max(hw, hh) > 1.0D) {
+            if (!oversized) {
+                oversized = true; // не-грид-юниверс: весь рычаг в ваниль (fail-closed)
+                LOG.warning("[crussty-plugin] cmp401_soa: oversized bounding radius "
+                        + Math.max(hw, hh) + " on " + entity.getType() + " — lever reverted to vanilla");
+            }
+            return vanillaFill(level, entity, box);
+        }
+        double cx = (bb.minX + bb.maxX) * 0.5D;
+        double cy = (bb.minY + bb.maxY) * 0.5D;
+        double cz = (bb.minZ + bb.maxZ) * 0.5D;
+        int lid = System.identityHashCode(level);
+        int[] out = SCRATCH.get();
+        int n = mobPushStep(boxId[0], lid, cx, cy, cz, hw, hh,
+                box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ, out);
+        if (n >= 0) {
+            fusedProofOnce();
+            return collect(level, entity, box, out, n);
+        }
+        if (n == ERR_STRUCT) {
+            broken = true; // структурный отказ — весь рычаг дизармится
+            return vanillaFill(level, entity, box);
+        }
+        if (n <= OVERFLOW_MAX) {
+            out = new int[(-n) * 4];
+            SCRATCH.set(out);
+            // retry fused: re-upsert идемпотентен (тот же id/координаты)
+            n = mobPushStep(boxId[0], lid, cx, cy, cz, hw, hh,
+                    box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ, out);
+            if (n >= 0) {
+                fusedProofOnce();
+                return collect(level, entity, box, out, n);
+            }
+            if (n == ERR_STRUCT) {
+                broken = true;
+                return vanillaFill(level, entity, box);
+            }
+            if (n <= OVERFLOW_MAX && gridProbeOnce()) {
+                // self опубликован (первый upsert прошёл с rc=0) — grid
+                // fallback равен legacy post-query лестнице
+                int n2 = mobGridQuery(box.minX, box.minY, box.minZ,
+                        box.maxX, box.maxY, box.maxZ, lid, out);
+                if (n2 < 0 && n2 <= OVERFLOW_MAX) {
+                    out = new int[(-n2) * 4];
+                    SCRATCH.set(out);
+                    n2 = mobGridQuery(box.minX, box.minY, box.minZ,
+                            box.maxX, box.maxY, box.maxZ, lid, out);
+                }
+                if (n2 >= 0) {
+                    return collect(level, entity, box, out, n2);
+                }
+            }
+        }
+        // ERR_RANGE: давление окна/таблицы индекса. upsert-pressure = self НЕ
+        // опубликован в этом вызове — легаси-лестница upsert-rc!=0 = ваниль
+        // на вызов (без grid-read); исчерпанные лестницы — туда же.
+        return vanillaFill(level, entity, box);
+    }
+
+    /** One-shot effect-proof: отличает leg2/3-раны от leg1 в server-stdout. */
+    private static void fusedProofOnce() {
+        if (!fusedProof) {
+            fusedProof = true;
+            LOG.warning("[crussty-plugin] cmp403_jnibulk: mob-step fused ARMED "
+                    + "(self-upsert+scan = 1 JNI transition/call, single-pass scan under writer lock)");
+        }
+    }
+
+    /**
      * Замена сайта Level.getPushableEntities в LivingEntity.pushEntities
      * (ванильный хвост тела — cramming/numCollisions/doPush — работает по
      * возвращённому списку без изменений).
      */
     public static List<Entity> pushables(Level level, Entity entity, AABB box) {
         Profiler.get().incrementCounter("getEntities");
+        // TASK-404-B: fused steady-state path (STRICT cmp403_jnibulk) —
+        // self-upsert + candidate scan = ONE JNI transition instead of two.
+        // Первый вызов сущности (idMap miss) проваливается в legacy-путь,
+        // который аллоцирует/публикует id ровно как раньше.
+        if (FUSED && !broken && !oversized) {
+            List<Entity> fused = pushablesFused(level, entity, box);
+            if (fused != null) {
+                return fused;
+            }
+        }
         if (upsertSelf(entity) || broken) {
             return vanillaFill(level, entity, box);
         }

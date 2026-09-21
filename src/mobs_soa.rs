@@ -560,6 +560,113 @@ pub unsafe extern "system" fn mob_query(
     n
 }
 
+/// TASK-404-B (jnibulk deepening): FUSED mob-push step — self-upsert and the
+/// candidate scan in ONE JNI transition. The steady-state push path paid two
+/// full java↔rust crossings per mob-tick (mobUpsert then mobQuery, each with
+/// argument marshalling + safepoint/hook transitions) plus a seqlock retry
+/// loop against concurrent writers; the fused native does both halves inside
+/// ONE WLOCK critical section, so:
+///   - the crossing count halves on the hottest per-call site,
+///   - the scan is a single deterministic pass (the writer holds the lock —
+///     no torn snapshot, no QRETRY rescan inside the pinned critical section;
+///     the pin window is strictly shorter than the legacy query's),
+///   - one WLOCK round-trip and one VERSION odd/even pair disappear.
+/// Semantics == mob_upsert(id..) followed immediately by mob_query(box..):
+/// same self-publication (and the same unconditional grid mirror under the
+/// composite), same coarse superset scan, same candidate order. Error ladder:
+/// window-span/table-pressure -> ERR_RANGE BEFORE any mutation (java takes
+/// the per-call vanilla path — identical to the legacy upsert-rc!=0 ladder);
+/// corruption -> ERR_STRUCT (java disarms); scan overflow -> -(cap) with the
+/// version bracket still closed (java grows + retries the fused call — the
+/// re-upsert is idempotent).
+///
+/// # Safety
+/// See mob_probe.
+#[no_mangle]
+pub unsafe extern "system" fn mob_push_step(
+    env: *mut jni::JNIEnv,
+    _clazz: jni::jclass,
+    id: jni::jint,
+    lid: jni::jint,
+    x: jni::jdouble,
+    y: jni::jdouble,
+    z: jni::jdouble,
+    hw: jni::jdouble,
+    hh: jni::jdouble,
+    qx0: jni::jdouble,
+    qy0: jni::jdouble,
+    qz0: jni::jdouble,
+    qx1: jni::jdouble,
+    qy1: jni::jdouble,
+    qz1: jni::jdouble,
+    out: jni::jintArray,
+) -> jni::jint {
+    if !lever_mode() || id < 0 || (id as usize) >= IDS_CAP || env.is_null() || out.is_null() {
+        return ERR_STRUCT;
+    }
+    let vt = unsafe { &**env };
+    let cap = unsafe { (vt.GetArrayLength)(env, out) };
+    if cap <= 0 {
+        return ERR_RANGE;
+    }
+    let cap = cap as i32;
+
+    let cx0 = qx0.floor() as i32 - 1;
+    let cx1 = qx1.floor() as i32 + 1;
+    let cy0 = qy0.floor() as i32 - 1;
+    let cy1 = qy1.floor() as i32 + 1;
+    let cz0 = qz0.floor() as i32 - 1;
+    let cz1 = qz1.floor() as i32 + 1;
+    if (cx1 - cx0) > MAX_SPAN || (cy1 - cy0) > MAX_SPAN || (cz1 - cz0) > MAX_SPAN {
+        return ERR_RANGE; // window validation BEFORE any mutation (fail-closed)
+    }
+
+    let k = cell_key(lid, x.floor() as i32, y.floor() as i32, z.floor() as i32);
+    let _g = WLOCK.lock().unwrap_or_else(|p| p.into_inner());
+    ensure_plane();
+    // Pin INSIDE the critical section: the pin window covers only the pure
+    // computation below (no JVM calls in between), and the WLOCK wait — the
+    // only unbounded part — happens unpinned (GC-friendly; the legacy query
+    // pinned across its whole retry loop).
+    let pinned = unsafe { (vt.GetPrimitiveArrayCritical)(env, out, std::ptr::null_mut()) };
+    if pinned.is_null() {
+        return ERR_STRUCT; // _g drops → WLOCK released; plane untouched
+    }
+    let dst = unsafe { std::slice::from_raw_parts_mut(pinned as *mut jni::jint, cap as usize) };
+    let d = data_mut();
+    let v = VERSION.fetch_add(1, Ordering::AcqRel); // → odd
+    debug_assert!(v % 2 == 0);
+    let rc = soa_upsert(d, id as usize, k, x, y, z, hw, hh);
+    // TASK-402-B composite: mirror the SAME (id, cell-key) mutation into the
+    // sharded grid inside this critical section — identical to mob_upsert
+    // (mirror fires regardless of the SoA rc; failures isolated).
+    if mirror_mode() {
+        if crate::mobs_grid::mirror_upsert(id as usize, k) < 0 {
+            crate::mobs_grid::mark_broken();
+        }
+    }
+    // Writer holds WLOCK: no concurrent mutation can interleave — one
+    // deterministic scan pass, no seqlock read/retry (readers still validate
+    // against VERSION and simply spin until the bracket closes).
+    let n = if rc == 0 {
+        soa_scan(
+            d,
+            dst,
+            cap,
+            lid,
+            (cx0, cx1),
+            (cy0, cy1),
+            (cz0, cz1),
+            (qx0, qy0, qz0, qx1, qy1, qz1),
+        )
+    } else {
+        rc // upsert pressure/corruption — no scan; java = legacy rc ladder
+    };
+    VERSION.fetch_add(1, Ordering::AcqRel); // → even (closed even on overflow too)
+    unsafe { (vt.ReleasePrimitiveArrayCritical)(env, out, pinned, 0) };
+    n
+}
+
 // ---------------------------------------------------------------------------
 // Tests: oracle parity for the SoA scan (same discipline as items_index /
 // mobs_grid): the scan must return exactly the ids whose STORED flat fields

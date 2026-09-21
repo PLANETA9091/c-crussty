@@ -276,8 +276,11 @@ pub fn activate() {
             // RegisterNatives: mobProbe/mobUpsert/mobRemove/mobQuery
             // (impl — src/mobs_soa.rs) + under the TASK-402-B composite also
             // mobGridProbe/mobGridQuery (impl — src/mobs_grid.rs, the
-            // sharded mirror fallback read plane). Провал регистрации
-            // → armed()=false (probeOnce не пройдёт magic) → ванильный путь.
+            // sharded mirror fallback read plane) + TASK-404-B fused
+            // mobPushStep (upsert+scan = ONE JNI transition per steady-state
+            // push call; STRICT java gate cmp403_jnibulk only). Провал
+            // регистрации → armed()=false (probeOnce не пройдёт magic) →
+            // ванильный путь.
             let names = [
                 CString::new("mobProbe").expect("no NUL"),
                 CString::new("mobUpsert").expect("no NUL"),
@@ -285,6 +288,7 @@ pub fn activate() {
                 CString::new("mobQuery").expect("no NUL"),
                 CString::new("mobGridProbe").expect("no NUL"),
                 CString::new("mobGridQuery").expect("no NUL"),
+                CString::new("mobPushStep").expect("no NUL"),
             ];
             let sigs = [
                 CString::new("()I").expect("no NUL"),
@@ -293,6 +297,8 @@ pub fn activate() {
                 CString::new("(DDDDDDI[I)I").expect("no NUL"),
                 CString::new("()I").expect("no NUL"),
                 CString::new("(DDDDDDI[I)I").expect("no NUL"),
+                // id, lid + self x/y/z/hw/hh + query box 6×double + out
+                CString::new("(IIDDDDDDDDDDDD[I)I").expect("no NUL"),
             ];
             let natives = [
                 jvmti_bindings::jni::JNINativeMethod {
@@ -324,6 +330,11 @@ pub fn activate() {
                     name: names[5].as_ptr(),
                     signature: sigs[5].as_ptr(),
                     fnPtr: crate::mobs_grid::mob_grid_query as *const c_void as *mut c_void,
+                },
+                jvmti_bindings::jni::JNINativeMethod {
+                    name: names[6].as_ptr(),
+                    signature: sigs[6].as_ptr(),
+                    fnPtr: crate::mobs_soa::mob_push_step as *const c_void as *mut c_void,
                 },
             ];
             let reg = env.register_natives(c, &natives);
