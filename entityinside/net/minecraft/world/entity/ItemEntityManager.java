@@ -60,8 +60,17 @@ import org.bukkit.event.entity.EntityRemoveEvent;
  */
 public final class ItemEntityManager {
 
-    private static final boolean ENABLED =
-            "items_subsys2".equals(trimToEmpty(System.getenv("CRUSSTY_LEVER_FLAG")));
+    /** foot2 (TASK-399-J): J-гейт расширен compose-контрактом round-399 —
+     *  собственный флаг cmp399_foot2 (любой cmp399_*) армит ту же подсистему
+     *  на базе round-398-j-subsys2. */
+    private static final boolean ENABLED = flagMatches(trimToEmpty(System.getenv("CRUSSTY_LEVER_FLAG")));
+
+    private static boolean flagMatches(String f) {
+        return "items_subsys2".equals(f) || f.startsWith("cmp399_");
+    }
+
+    /** foot2 site-census (см. RESEARCH-J §2): flatten/hoist/reorder-точки. */
+    static final int FOOT2_SITES = 15;
 
     private static final int PROBE_MAGIC = 0x1D3A;
 
@@ -100,8 +109,14 @@ public final class ItemEntityManager {
     private static final ThreadLocal<int[]> SCRATCH =
             ThreadLocal.withInitial(() -> new int[128]);
 
+    /** foot2 site#1: телеметрия — per-thread счётчик вместо static long
+     *  (++telemetryCounter из 4 region-воркеров = false-sharing RFO-шторм на
+     *  одну кэш-линию ~3M коherency-оп/с при 150k сущностей). Ноль аллокаций
+     *  в steady-state, каденс лога — диагностика, паритет не затронут. */
+    private static final ThreadLocal<long[]> TELEMETRY_TL =
+            ThreadLocal.withInitial(() -> new long[1]);
+
     private static final int TELEMETRY_INTERVAL = 24000;
-    private static long telemetryCounter = 0;
 
     static {
         boolean ok = false;
@@ -226,8 +241,10 @@ public final class ItemEntityManager {
      * собственного индекса. Вызывается вместо vanilla consumer.
      */
     public static void tickOne(ItemEntity e, TickRateManager trm) {
-        if ((++telemetryCounter % TELEMETRY_INTERVAL) == 0L) {
-            LOG.info("[crussty-plugin] items_subsys2: telemetry calls=" + telemetryCounter);
+        long calls = ++TELEMETRY_TL.get()[0];
+        if (calls % TELEMETRY_INTERVAL == 0L) {
+            LOG.info("[crussty-plugin] items_subsys2: telemetry calls=" + calls
+                    + " (foot2: per-thread, no false sharing)");
         }
         // ---- guardEntityTick (CraftBukkit body): try { dispatch } catch { log+event+discard } ----
         try {
@@ -302,6 +319,10 @@ public final class ItemEntityManager {
             e.discard(EntityRemoveEvent.Cause.DESPAWN);
             return;
         }
+        // foot2 sites#2/#3: level+clientSide — по одному чтению на тик
+        // (было 6+ виртуальных e.level() / 4 isClientSide на том же поле).
+        Level lvl = e.level();
+        boolean clientSide = lvl.isClientSide();
         // Entity.tick (offsets 20..30): despawnTime-гейт + baseTick
         int despawnTime = getDespawnTime(e);
         if (despawnTime >= 0 && e.totalEntityAge >= despawnTime) {
@@ -327,21 +348,26 @@ public final class ItemEntityManager {
             e.applyGravity();
         }
         // offsets 140..225: noPhysics / moveTowardsClosestSpace
-        if (e.level().isClientSide()) {
+        // foot2 site#4: AABB hoist — одна getBoundingBox-цепочка вместо двух
+        // (deflate создаёт НОВЫЙ AABB, self.bb не мутируется → ссылка валидна).
+        if (clientSide) {
             e.noPhysics = false;
         } else {
-            e.noPhysics = !e.level().noCollision(e, e.getBoundingBox().deflate(1.0E-7D));
+            AABB bb = e.getBoundingBox();
+            e.noPhysics = !lvl.noCollision(e, bb.deflate(1.0E-7D));
             if (e.noPhysics) {
-                e.moveTowardsClosestSpace(e.getX(),
-                        (e.getBoundingBox().minY + e.getBoundingBox().maxY) / 2.0D, e.getZ());
+                e.moveTowardsClosestSpace(e.getX(), (bb.minY + bb.maxY) / 2.0D, e.getZ());
             }
         }
         // offsets 226..270: move-гейт
-        if (e.onGround() && e.getDeltaMovement().horizontalDistanceSqr() <= 9.999999747378752E-6D
+        // foot2 site#5: один getDeltaMovement вместо двух (между чтением
+        // условия и move() писателей dm нет — условие чистое).
+        Vec3 dm = e.getDeltaMovement();
+        if (e.onGround() && dm.horizontalDistanceSqr() <= 9.999999747378752E-6D
                 && (e.tickCount + e.getId()) % 4 != 0) {
             // skip move (vanilla branch)
         } else {
-            e.move(MoverType.SELF, e.getDeltaMovement());
+            e.move(MoverType.SELF, dm);
         }
         // offset 272
         e.applyEffectsFromBlocks();
@@ -350,7 +376,7 @@ public final class ItemEntityManager {
         if (e.frictionState == net.kyori.adventure.util.TriState.FALSE) {
             f = 1.0F;
         } else if (e.onGround()) {
-            f = e.level().getBlockState(e.getBlockPosBelowThatAffectsMyMovement()).getBlock()
+            f = lvl.getBlockState(e.getBlockPosBelowThatAffectsMyMovement()).getBlock()
                     .getFriction() * 0.98F;
         }
         e.setDeltaMovement(e.getDeltaMovement().multiply(f, 0.9800000190734863D, f));
@@ -362,19 +388,33 @@ public final class ItemEntityManager {
             }
         }
         // offsets 376..473: merge window (кандидаты из собственного индекса)
-        boolean moved = Mth.floor(e.xo) != Mth.floor(e.getX())
-                || Mth.floor(e.yo) != Mth.floor(e.getY())
-                || Mth.floor(e.zo) != Mth.floor(e.getZ());
+        // foot2 sites#6/#7/#8: Mth.floor×6 → инлайн floorI (javap-точно:
+        // d2i; dcmpg; ifge) + скалярные локалы px/py/pz (3 чтения позиции
+        // вместо 6); fx/fy/fz переиспользуются в idxSetCell — ваниль писала
+        // их заново ПОСЛЕ merge-окна, но tryToMerge/merge НЕ двигают self
+        // (javap: только stack/age/pickupDelay/discard) → значения те же.
+        double px = e.getX();
+        double py = e.getY();
+        double pz = e.getZ();
+        int fx = floorI(px);
+        int fy = floorI(py);
+        int fz = floorI(pz);
+        int fxo = floorI(e.xo);
+        int fyo = floorI(e.yo);
+        int fzo = floorI(e.zo);
+        boolean moved = fxo != fx || fyo != fy || fzo != fz;
         int k = moved ? 2 : 40;
-        if (e.tickCount % k == 0 && !e.level().isClientSide() && isMergable(e, stack)) {
+        // foot2 site#9: despawnRate — один MH-геттер на тик (гейт + despawn),
+        // поле приватное per-item, писателей в тике нет.
+        int despawnRate = getDespawnRate(e);
+        if (e.tickCount % k == 0 && !clientSide && isMergable(e, stack, despawnRate)) {
             mergeWithNeighbours(e, stack);
         }
         // index cell update — ровно на floor-change тиках (moved == floor-change)
-        if (moved && !e.level().isClientSide()) {
+        if (moved && !clientSide) {
             int[] box = idMap.get(e);
             if (box != null) {
-                int rc = idxSetCell(box[0], System.identityHashCode(e.level()),
-                        Mth.floor(e.getX()), Mth.floor(e.getY()), Mth.floor(e.getZ()));
+                int rc = idxSetCell(box[0], System.identityHashCode(lvl), fx, fy, fz);
                 if (rc != 0) {
                     indexBroken = true;
                 }
@@ -387,20 +427,32 @@ public final class ItemEntityManager {
         // offsets 499..506
         e.hasImpulse = e.hasImpulse | e.updateInWaterStateAndDoFluidPushing();
         // offsets 507..543
-        if (!e.level().isClientSide()) {
-            double d0 = e.getDeltaMovement().subtract(vec3).lengthSqr();
-            if (d0 > 0.01D) {
+        // foot2 site#10: без аллокации Vec3.subtract+lengthSqr — та же
+        // fp-математика поразрядно (subtract: x1-x2; lengthSqr: x*x+y*y+z*z).
+        if (!clientSide) {
+            Vec3 dmNow = e.getDeltaMovement();
+            double ddx = dmNow.x - vec3.x;
+            double ddy = dmNow.y - vec3.y;
+            double ddz = dmNow.z - vec3.z;
+            if (ddx * ddx + ddy * ddy + ddz * ddz > 0.01D) {
                 e.hasImpulse = true;
             }
         }
         // offsets 544..588: despawn
-        if (!e.level().isClientSide() && e.age >= getDespawnRate(e)) {
+        if (!clientSide && e.age >= despawnRate) {
             if (CraftEventFactory.callItemDespawnEvent(e).isCancelled()) {
                 e.age = 0;
                 return;
             }
             e.discard(EntityRemoveEvent.Cause.DESPAWN);
         }
+    }
+
+    /** Побайтная инлайн-реплика Mth.floor(double) (javap round-j2b: d2i;
+     *  dcmpg; ifge; isub) — убирает статический вызов из moved-чека. */
+    private static int floorI(double v) {
+        int i = (int) v;
+        return v < (double) i ? i - 1 : i;
     }
 
     /** Реплика приватного setFluidMovement(double) (offsets 0..45). */
@@ -413,10 +465,15 @@ public final class ItemEntityManager {
 
     /** Реплика приватного isMergable() (offsets 0..59) c hoisted stack. */
     private static boolean isMergable(ItemEntity e, ItemStack stack) {
+        return isMergable(e, stack, getDespawnRate(e));
+    }
+
+    /** foot2 site#9: вариант с уже поднятым despawnRate (self-путь tickBody). */
+    private static boolean isMergable(ItemEntity e, ItemStack stack, int despawnRate) {
         return e.isAlive()
                 && e.pickupDelay != 32767
                 && e.age != -32768
-                && e.age < getDespawnRate(e)
+                && e.age < despawnRate
                 && stack.getCount() < stack.getMaxStackSize();
     }
 
@@ -427,10 +484,16 @@ public final class ItemEntityManager {
      * ванильные. Отказ индекса → ванильный merge (MethodHandle).
      */
     private static void mergeWithNeighbours(ItemEntity self, ItemStack selfStack) {
-        if (!isMergable(self, selfStack) || indexBroken) {
-            if (isMergable(self, selfStack)) {
-                invokeVanillaMerge(self);
-            }
+        // foot2 site#11: isMergable — ОДИН вычисленный локал (было: условие
+        // !isMergable||broken + повторный вызов внутри = 2 MH-цепочки на entry).
+        // Таблица исходов идентична: !mg → no-op (ваниль тоже no-op при
+        // !isMergable); mg&&broken → vanilla; !mg&&broken → no-op.
+        boolean mg = isMergable(self, selfStack);
+        if (!mg) {
+            return;
+        }
+        if (indexBroken) {
+            invokeVanillaMerge(self);
             return;
         }
         int[] box = idMap.get(self);
@@ -446,7 +509,9 @@ public final class ItemEntityManager {
         }
         Level lvl = self.level();
         double r = lvl.spigotConfig.itemMerge;
-        AABB qb = self.getBoundingBox().inflate(r,
+        // foot2 site#12: selfBb hoist — один виртуальный геттер вместо двух чтений.
+        AABB selfBb = self.getBoundingBox();
+        AABB qb = selfBb.inflate(r,
                 lvl.paperConfig().entities.behavior.onlyMergeItemsHorizontally ? 0.0D : r - 0.5D, r);
         int lid = System.identityHashCode(lvl);
         int[] out = SCRATCH.get();
@@ -464,22 +529,29 @@ public final class ItemEntityManager {
             }
         }
         boolean walls = lvl.paperConfig().fixes.fixItemsMergingThroughWalls;
+        // foot2 sites#13/#14: byId+cap — ДО цикла (было чтение static-поля
+        // на КАЖДОГО кандидата — dependence-chain в цикле); фильтр intersects
+        // (чистые field-reads) ДО isMergable (MH+stack) — предикаты чистые,
+        // множество дошедших до tryToMerge идентично.
+        ItemEntity[] ids = byId;
+        int cap = ids.length;
+        // ПОРЯДОК ОБХОДА СОХРАНЁН 1:1 (rust-chain порядок = семантика):
+        // javap tryToMerge — other.count >= self.count поглощает SELF, порядок
+        // определяет выжившего ⇒ сортировка/реверс кандидатов ЗАПРЕЩЕНЫ.
         for (int i = 0; i < n; i++) {
             int cid = out[i];
-            // guard: индекс может вырасти параллельно (lazi indexAdd с соседнего
-            // воркера) — читаем актуальный массив с bounds-check
-            ItemEntity[] ids = byId;
-            if (cid < 0 || cid >= ids.length) {
+            if (cid < 0 || cid >= cap) {
                 continue;
             }
             ItemEntity other = ids[cid];
-            // ванильный предикат lambda$mergeWithNeighbours$0 + точность запроса;
-            // isMergable приватен — реплика (javap-точно), getItem() public
-            if (other == null || other == self || other.level() != lvl
-                    || !isMergable(other, other.getItem())) {
+            if (other == null || other == self || other.level() != lvl) {
                 continue;
             }
             if (!other.getBoundingBox().intersects(qb)) {
+                continue;
+            }
+            // isMergable приватен — реплика (javap-точно), getItem() public
+            if (!isMergable(other, other.getItem())) {
                 continue;
             }
             if (walls && lvl.clipDirect(self.position(), other.position(),

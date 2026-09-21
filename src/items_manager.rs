@@ -30,9 +30,24 @@ const IM_CLASS: &str = "net/minecraft/world/entity/ItemEntityManager";
 const IM_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/world/entity/ItemEntityManager.class");
 
+/// foot2 (TASK-399-J): site-census flatten/hoist/reorder-точек в
+/// ItemEntityManager.java (см. RESEARCH-J.md §2, "cmp399_foot2: ARMED sites=N").
+const FOOT2_SITES: u32 = 15;
+
 fn lever_flag_matches() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim().eq("items_subsys2"))
+        .map(|v| {
+            let v = v.trim();
+            // foot2 compose-контракт round-399: собственный флаг cmp399_*
+            // армит ту же items_subsys2-подсистему на базе round-398-j-subsys2.
+            v.eq("items_subsys2") || v.starts_with("cmp399_")
+        })
+        .unwrap_or(false)
+}
+
+fn flag_is_cmp399() -> bool {
+    std::env::var("CRUSSTY_LEVER_FLAG")
+        .map(|v| v.trim().starts_with("cmp399_"))
         .unwrap_or(false)
 }
 
@@ -169,6 +184,9 @@ pub fn activate() {
         });
         if defined.unwrap_or(false) {
             eprintln!("[crussty-plugin] items_subsys2: defined {IM_CLASS} in kernel loader + registered index natives");
+            if flag_is_cmp399() {
+                eprintln!("[crussty-plugin] cmp399_foot2: ARMED sites={FOOT2_SITES}");
+            }
         } else {
             eprintln!(
                 "[crussty-plugin] items_subsys2: bridge definition failed, hook stays dormant"
