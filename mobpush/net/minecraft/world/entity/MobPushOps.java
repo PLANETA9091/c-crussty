@@ -79,18 +79,21 @@ public final class MobPushOps {
                 && (f.trim().equals("cmp401_soa") || f.trim().equals("cmp402_comp")
                     || f.trim().equals("cmp402_stagcomp")
                     || f.trim().equals("cmp403_tickplane")
-                    || f.trim().equals("cmp405_stagtick"));
+                    || f.trim().equals("cmp405_stagtick")
+                    || f.trim().equals("cmp406_sscan"));
     }
 
     private static final boolean ENABLED = leverEnabled();
 
-    /** TASK-402-B: composite mode (mirror-grid fallback active). */
+    /** TASK-402-B: composite mode (mirror-grid fallback active). TASK-406-E:
+     *  cmp406_sscan расширяет композит (SoA-плоскость primary + despawn-скан). */
     private static boolean compositeEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
         return f != null && (f.trim().equals("cmp402_comp")
                 || f.trim().equals("cmp402_stagcomp")
                 || f.trim().equals("cmp403_tickplane")
-                || f.trim().equals("cmp405_stagtick"));
+                || f.trim().equals("cmp405_stagtick")
+                || f.trim().equals("cmp406_sscan"));
     }
 
     private static final boolean COMPOSITE = compositeEnabled();
@@ -135,6 +138,29 @@ public final class MobPushOps {
     /** entity -> id-box. Пишется под ID_LOCK; читается воркерами. */
     private static final ConcurrentHashMap<Entity, int[]> idMap = new ConcurrentHashMap<>();
     private static final Object ID_LOCK = new Object();
+
+    // ------------------------------------------------------------------
+    // TASK-406-E (sscan despawn plane): package-private read accessors for
+    // MobScanOps (same package) — the despawn-scan bridge reads the plane's
+    // dense id space so its per-tick bulk sscanEpoch pass and the O(1)
+    // per-mob nearest-player lookup share the SAME id universe as the push
+    // lane. Read-only: the scan plane never mutates the id/SoA state.
+    // ------------------------------------------------------------------
+
+    /** Плотный id моба в SoA-плоскости или null (не апсертнут). */
+    static int[] idBoxOf(Entity e) {
+        return idMap.get(e);
+    }
+
+    /** Верхняя граница плотного id-пространства (top, racy int read ок). */
+    static int idCount() {
+        return idTop;
+    }
+
+    /** Ёмкость id-массива (для grow-гейта колонки MobScanOps). */
+    static int idCapacity() {
+        return byId.length;
+    }
 
     /** Query scratch: per-thread, grow-only, ноль аллокаций в steady-state. */
     private static final ThreadLocal<int[]> SCRATCH =

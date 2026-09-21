@@ -62,6 +62,11 @@ fn enabled() -> bool {
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
         Ok("cmp401_stagger") | Ok("cmp402_stagcomp") | Ok("cmp403_tickplane")
             | Ok("cmp405_stagtick")
+            // TASK-406-E: композит раунда-406 — goal-стаггер (GoalSelector
+            // canUseGate) активен вместе с новым despawn-scan срезом (мобы
+            // вне ai-окна пропускают и goal-тик; despawn-скан батчится
+            // отдельно через mobs_sscan, гейт cmp406_sscan).
+            | Ok("cmp406_sscan")
     )
 }
 
