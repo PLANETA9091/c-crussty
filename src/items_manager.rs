@@ -34,6 +34,10 @@ const IM_BYTES: &[u8] =
 /// (<clinit>: ENABLED = "items_subsys2".equals(trimToEmpty(getenv))). With a
 /// cmp399_* lever the gate is CP-patched at define time (classfile::patch_utf8_gate,
 /// bytecode-transparent) so the same bridge arms under the round-399 flag.
+/// TASK-400-A (cmp399_bfcomp composite): the committed .class is REBUILT from
+/// the merged source whose ENABLED/DESPAWN2 already cover cmp399_bfcomp, so
+/// the composite flag needs no runtime patch — patching stays on the legacy
+/// cmp399_shard path only (byte-identical A/B parity for that flag).
 const GATE_LEGACY: &str = "items_subsys2";
 const GATE_CMP: &str = "cmp399_shard";
 
@@ -47,6 +51,10 @@ fn lever_flag() -> String {
 fn lever_flag_matches() -> bool {
     // TASK-399-B: arm the J-subsystem for the legacy flag AND the round-399
     // cmp399_* lever family (cmp399_shard selects the sharded grid arm).
+    // TASK-399-F композиция: суб-вектор despawnv2 дополнительно гейтится
+    // java-стороной по точному флагу (см. ItemEntityManager.DESPAWN2).
+    // TASK-400-A: составной cmp399_bfcomp входит в семейство cmp399_* и
+    // включает ОБА суб-вектора (shard-grid + lifetime-heap).
     lever_flag_matches_for(&lever_flag())
 }
 
@@ -69,10 +77,19 @@ pub fn activate() {
     }
     let flag = lever_flag();
     let shard = flag == "cmp399_shard";
+    let bfcomp = flag == "cmp399_bfcomp";
+    let despawn2 = flag == "cmp399_despawn2" || bfcomp;
     if shard {
         // ГРОМКИЙ ARM-МАРКЕР (TASK-399-B): без этой строки нога не-armed.
         eprintln!(
             "[crussty-plugin] cmp399_shard: ARMED shards=64 seqlock-reads=per-cell-version writer=global-mutex shard_cap=16384 max_ids=1048576 (rust items_index sharded mode; legacy RwLock path intact for items_subsys2)"
+        );
+    }
+    if bfcomp {
+        // ГРОМКИЙ ARM-МАРКЕР КОМПОЗИТА (TASK-400-A, обязателен): оба
+        // суб-вектора B+F одновременно — shard-grid (B) + lifetime-heap (F).
+        eprintln!(
+            "[crussty-plugin] cmp399_bfcomp: ARMED shards=64 seqlock-reads=per-cell-version writer=global-mutex shard_cap=16384 max_ids=1048576 heap=lifetime-minheap(rust,vec) push=batch(1/tick) due-poll=1/tick despawn-flow=vanilla (composite B+F)"
         );
     }
     std::thread::spawn(move || {
@@ -100,9 +117,13 @@ pub fn activate() {
             return;
         }
 
-        // TASK-399-B: widen the JAVA arm gate for the cmp399_* family by
-        // CP-patching the embedded bridge class at define time (the committed
-        // .class is round-398-J's javac artifact; no javac in this loop).
+        // TASK-399-B: widen the JAVA arm gate for the exact cmp399_shard flag
+        // by CP-patching the embedded bridge class at define time. Since the
+        // round-400-A rebuild the committed .class is compiled from the merged
+        // source (ENABLED covers the whole cmp399_* family, DESPAWN2 covers
+        // cmp399_despawn2 || cmp399_bfcomp), so the composite flag self-arms;
+        // the patch below stays for byte-parity of the legacy shard path
+        // (works on both artifact generations: "items_subsys2" occurs once).
         // Legacy flag → original bytes (byte-identical arm path, A/B parity).
         let im_bytes: Vec<u8> = if shard {
             match crate::classfile::patch_utf8_gate(IM_BYTES, GATE_LEGACY, GATE_CMP) {
@@ -159,14 +180,17 @@ pub fn activate() {
             };
 
             // RegisterNatives: idxProbe/idxInsert/idxSetCell/idxRemove/idxQuery
-            // (impl — src/items_index.rs). Провал регистрации → armed()=false
-            // (probeOnce не пройдёт magic) → ванильный путь.
+            // (impl — src/items_index.rs) + lifetimePush/lifetimeDue (impl —
+            // src/items_lifetime.rs, TASK-399-F despawnv2). Провал регистрации
+            // → armed()=false (probeOnce не пройдёт magic) → ванильный путь.
             let names = [
                 CString::new("idxProbe").expect("no NUL"),
                 CString::new("idxInsert").expect("no NUL"),
                 CString::new("idxSetCell").expect("no NUL"),
                 CString::new("idxRemove").expect("no NUL"),
                 CString::new("idxQuery").expect("no NUL"),
+                CString::new("lifetimePush").expect("no NUL"),
+                CString::new("lifetimeDue").expect("no NUL"),
             ];
             let sigs = [
                 CString::new("()I").expect("no NUL"),
@@ -174,6 +198,8 @@ pub fn activate() {
                 CString::new("(IIIII)I").expect("no NUL"),
                 CString::new("(I)I").expect("no NUL"),
                 CString::new("(DDDDDDI[I)I").expect("no NUL"),
+                CString::new("([JI)I").expect("no NUL"),
+                CString::new("(J[J)I").expect("no NUL"),
             ];
             let natives = [
                 jvmti_bindings::jni::JNINativeMethod {
@@ -201,6 +227,16 @@ pub fn activate() {
                     signature: sigs[4].as_ptr(),
                     fnPtr: crate::items_index::idx_query as *const c_void as *mut c_void,
                 },
+                jvmti_bindings::jni::JNINativeMethod {
+                    name: names[5].as_ptr(),
+                    signature: sigs[5].as_ptr(),
+                    fnPtr: crate::items_lifetime::lifetime_push as *const c_void as *mut c_void,
+                },
+                jvmti_bindings::jni::JNINativeMethod {
+                    name: names[6].as_ptr(),
+                    signature: sigs[6].as_ptr(),
+                    fnPtr: crate::items_lifetime::lifetime_due as *const c_void as *mut c_void,
+                },
             ];
             let reg = env.register_natives(c, &natives);
             if let Err(code) = reg {
@@ -220,6 +256,14 @@ pub fn activate() {
         });
         if defined.unwrap_or(false) {
             eprintln!("[crussty-plugin] items_subsys2: defined {IM_CLASS} in kernel loader + registered index natives");
+            // TASK-399-F despawnv2 ARM-маркер (обязателен при флаге
+            // cmp399_despawn2 и в композите cmp399_bfcomp): rust
+            // lifetime-heap + батч-деспавн.
+            if despawn2 {
+                eprintln!(
+                    "[crussty-plugin] {flag}: ARMED heap=lifetime-minheap(rust,vec) push=batch(1/tick) due-poll=1/tick despawn-flow=vanilla"
+                );
+            }
         } else {
             eprintln!(
                 "[crussty-plugin] items_subsys2: bridge definition failed, hook stays dormant"
@@ -255,6 +299,8 @@ mod tests {
         // Legacy flag path must stay byte-identical (A/B parity).
         assert_eq!(super::lever_flag_matches_for("items_subsys2"), true);
         assert_eq!(super::lever_flag_matches_for("cmp399_shard"), true);
+        // TASK-400-A: composite flag joins the cmp399_* family gate.
+        assert_eq!(super::lever_flag_matches_for("cmp399_bfcomp"), true);
         assert_eq!(super::lever_flag_matches_for("cmp399_other"), true);
         assert_eq!(super::lever_flag_matches_for("items_oss"), false);
         assert_eq!(super::lever_flag_matches_for(""), false);

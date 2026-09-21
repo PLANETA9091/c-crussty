@@ -24,7 +24,8 @@
 //! stays a few ns per query.
 //!
 //! cmp399_shard (TASK-399-B — vector shardgrid): optional SHARDED mode, gated
-//! by CRUSSTY_LEVER_FLAG=="cmp399_shard" (any other flag, incl. items_subsys2,
+//! by CRUSSTY_LEVER_FLAG=="cmp399_shard" or =="cmp399_bfcomp" (TASK-400-A
+//! composite B+F; any other flag, incl. items_subsys2,
 //! keeps the legacy single-RwLock path verbatim — two-mode A/B by
 //! construction). The cell-key universe is split over 64 shards (shard =
 //! mix64(cell_key) & 63); each shard owns its own open-addressed table. Read
@@ -271,7 +272,12 @@ fn shard_mode() -> bool {
     static M: OnceLock<bool> = OnceLock::new();
     *M.get_or_init(|| {
         std::env::var("CRUSSTY_LEVER_FLAG")
-            .map(|v| v.trim() == "cmp399_shard")
+            .map(|v| {
+                let v = v.trim();
+                // TASK-400-A: составной флаг cmp399_bfcomp (B+F) включает
+                // sharded mode наряду с точным cmp399_shard.
+                v == "cmp399_shard" || v == "cmp399_bfcomp"
+            })
             .unwrap_or(false)
     })
 }

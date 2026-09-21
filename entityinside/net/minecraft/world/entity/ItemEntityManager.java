@@ -23,6 +23,12 @@ import org.bukkit.event.entity.EntityRemoveEvent;
 
 /**
  * ITEM-SUBSYS2 (TASK-397 mega-round-2, agent J — lever items_subsys2).
+ * TASK-399-F (vector despawnv2, flag cmp399_despawn2): despawn-хвост item-фазы
+ * ведётся RUST lifetime-heap (src/items_lifetime.rs) — per-item despawn-гейт
+ * (реплика offsets 544..588) из tickBody уходит, дедлайны пушатся батчем
+ * (один native/тик), drain — один native/тик, применение — ВАНИЛЬНЫЙ flow
+ * (callItemDespawnEvent → cancel? age=0 : discard(DESPAWN)) на each due-id.
+ * События не пропускаются; java.util-куча не используется вовсе.
  *
  * Эволюция items_manager (round-1): полная замена item-фазы СОБСТВЕННЫМ
  * индексом. Два отличия от round-1:
@@ -60,22 +66,25 @@ import org.bukkit.event.entity.EntityRemoveEvent;
  */
 public final class ItemEntityManager {
 
-    /**
-     * TASK-399-B (cmp399_shard): gate widened to the cmp399_* lever family.
-     * NOTE (source/binary delta): the committed build/…/ItemEntityManager.class
-     * is the round-398-J javac artifact whose baked gate string is the bare
-     * "items_subsys2"; for cmp399_* levers the rust side CP-patches that one
-     * Utf8 constant at define time (src/classfile.rs patch_utf8_gate — bytecode
-     * transparent, cp indices unchanged), so the shipped binary arms under
-     * cmp399_shard exactly. Recompiling THIS source yields a superset gate
-     * (every cmp399_*), semantics-compatible with the runtime patch.
-     */
-    private static boolean leverEnabled() {
-        String f = trimToEmpty(System.getenv("CRUSSTY_LEVER_FLAG"));
-        return "items_subsys2".equals(f) || f.startsWith("cmp399_");
-    }
+    private static final String LEVER_FLAG = trimToEmpty(System.getenv("CRUSSTY_LEVER_FLAG"));
 
-    private static final boolean ENABLED = leverEnabled();
+    /**
+     * TASK-399-B (cmp399_shard): gate = legacy flag OR the whole cmp399_* lever
+     * family (family-gate: J-подсистема армится любым cmp399_*-флагом).
+     * TASK-400-A (cmp399_bfcomp composite): the committed build/…class is
+     * recompiled from THIS merged source, so ENABLED and DESPAWN2 below bake
+     * the composite flag in directly (no runtime CP-patch needed for it — the
+     * rust side patches only the legacy cmp399_shard path, byte-parity A/B).
+     */
+    private static final boolean ENABLED =
+            "items_subsys2".equals(LEVER_FLAG) || LEVER_FLAG.startsWith("cmp399_");
+
+    /** TASK-399-F despawnv2: rust lifetime-heap + батч-деспавн (точный флаг).
+     *  TASK-400-A: составной флаг cmp399_bfcomp (B+F) включает despawnv2
+     *  наряду с точным cmp399_despawn2 — векторы ортогональны
+     *  (read-scaling vs despawn-хвост) и армятся одновременно. */
+    private static final boolean DESPAWN2 =
+            "cmp399_despawn2".equals(LEVER_FLAG) || "cmp399_bfcomp".equals(LEVER_FLAG);
 
     private static final int PROBE_MAGIC = 0x1D3A;
 
@@ -97,6 +106,25 @@ public final class ItemEntityManager {
     private static native int idxRemove(int id);
     private static native int idxQuery(double qx0, double qy0, double qz0,
             double qx1, double qy1, double qz1, int lid, int[] out);
+
+    // ---- natives (impl: src/items_lifetime.rs, TASK-399-F despawnv2) ----
+    /** Батч-пуш дедлайнов: long = id<<32 | due&0xFFFFFFFF; возвращает 0/err. */
+    private static native int lifetimePush(long[] batch, int n);
+    /** Drain всех due <= nowTick; -total для grow-retry (записи ждут в staging). */
+    private static native int lifetimeDue(long nowTick, long[] out);
+
+    /** despawnv2 активен (mode=true, нативы живы, индекс не сломан). Читается
+     *  воркерами каждый item-тик; пишется main-потоком между фазами. */
+    private static volatile boolean despawn2Active;
+    /** mode: lifetime-хук активирован (enmass уже сделан, поллы идут). */
+    private static boolean despawn2Mode;
+
+    /** Буфер indexAdd-ов текущего тика (ids) — flush одним lifetimePush. */
+    private static int[] pushBuf = new int[256];
+    private static int pushTop = 0;
+    private static final Object PUSH_LOCK = new Object();
+    /** Drain-scratch: grow-only, ноль аллокаций в steady-state. */
+    private static long[] dueScratch = new long[4096];
 
     private static volatile boolean nativeOk;
     private static volatile boolean indexBroken;
@@ -174,6 +202,170 @@ public final class ItemEntityManager {
     }
 
     // ------------------------------------------------------------------
+    // TASK-399-F despawnv2: rust lifetime-heap + batch despawn
+    // ------------------------------------------------------------------
+
+    /** Буферизовать дедлайн-пуш для id (вычисляется на flush от live-age).
+     *  Вызывается из indexAdd (в т.ч. с воркера — lazy indexAdd). */
+    private static void lifetimeBufferPush(int id) {
+        if (!DESPAWN2 || !despawn2Active) {
+            return;
+        }
+        synchronized (PUSH_LOCK) {
+            if (pushTop == pushBuf.length) {
+                pushBuf = java.util.Arrays.copyOf(pushBuf, pushTop * 2);
+            }
+            pushBuf[pushTop++] = id;
+        }
+    }
+
+    /** Абсолютный дедлайн записи конца тика: due = now + max(0, rate - age).
+     *  Вывод (RESEARCH-F): запись конца тика T с возрастом A срабатывает
+     *  ванильно в конце T+j ⟺ A+j >= rate ⟺ due = T + (rate - A). */
+    private static long lifetimeDueOf(ItemEntity e, long now) {
+        int remaining = getDespawnRate(e) - e.age;
+        if (remaining < 0) {
+            remaining = 0;
+        }
+        return now + remaining;
+    }
+
+    /** Активация despawnv2: enmass-пуш всех проиндексированных items (один
+     *  батч), далее — только diff за тик. main-поток, после join фазы. */
+    private static void lifetimeEnmass(long now) {
+        long[] batch = new long[idMap.size()];
+        int n = 0;
+        for (java.util.Map.Entry<ItemEntity, int[]> en : idMap.entrySet()) {
+            ItemEntity e = en.getKey();
+            int id = en.getValue()[0];
+            if (e.isRemoved() || e.age == -32768 || e.level().isClientSide()) {
+                continue;
+            }
+            batch[n++] = packLifetime(id, lifetimeDueOf(e, now));
+        }
+        if (n > 0) {
+            lifetimePush(batch, n);
+        }
+        LOG.info("[crussty-plugin] cmp399_despawn2: lifetime-heap active (enmass=" + n + ")");
+    }
+
+    private static long packLifetime(int id, long due) {
+        return ((long) id << 32) | (due & 0xFFFFFFFFL);
+    }
+
+    /** Flush буфера indexAdd-ов: due считается от КОНЦА текущего тика (age
+     *  уже финальный: потикавшиеся — post-increment, PENDING-add — pre-first-
+     *  tick; обе ветки покрываются одной формулой lifetimeDueOf). */
+    private static void lifetimeFlush(long now) {
+        int n;
+        int[] ids;
+        synchronized (PUSH_LOCK) {
+            n = pushTop;
+            pushTop = 0;
+            ids = pushBuf;
+        }
+        if (n <= 0) {
+            return;
+        }
+        long[] batch = new long[n];
+        int m = 0;
+        ItemEntity[] table = byId;
+        for (int i = 0; i < n; i++) {
+            int id = ids[i];
+            if (id < 0 || id >= table.length) {
+                continue;
+            }
+            ItemEntity e = table[id];
+            if (e == null || e.isRemoved() || e.age == -32768 || e.level().isClientSide()) {
+                continue;
+            }
+            batch[m++] = packLifetime(id, lifetimeDueOf(e, now));
+        }
+        if (m > 0) {
+            lifetimePush(batch, m);
+        }
+    }
+
+    /** Прямой точечный пуш (cancel/stale-early re-push; вне буфера — буфер
+     *  уже флашен на этом тике). */
+    private static void lifetimePushOne(int id, long due) {
+        lifetimePush(new long[] {packLifetime(id, due)}, 1);
+    }
+
+    /** Per-tick despawnv2-хук: RegionTickOps.forEach, main, после join фазы
+     *  (PENDING drain уже обработал indexAdd/indexRemove). Один native-push
+     *  + один native-drain на тик; применение — ванильный flow. */
+    public static void lifetimeTick() {
+        if (!DESPAWN2 || despawn2ModeBroken()) {
+            despawn2Active = false;
+            return;
+        }
+        try {
+            long now = net.minecraft.server.MinecraftServer.currentTick;
+            if (!despawn2Mode) {
+                despawn2Mode = true;
+                lifetimeEnmass(now);
+            }
+            lifetimeFlush(now);
+            lifetimePoll(now);
+            despawn2Active = !indexBroken;
+        } catch (Throwable t) {
+            // fail-closed: ванильная despawn-ветка tickBody вернётся; записи
+            // кучи подчищаются последующими поллами/верификацией.
+            despawn2Active = false;
+            LOG.severe("[crussty-plugin] cmp399_despawn2: lifetime tick failed — vanilla despawn branch restored: " + t);
+        }
+    }
+
+    private static boolean despawn2ModeBroken() {
+        return !READY || indexBroken || !probeOnce();
+    }
+
+    /** Полл due-id и применение ВАНИЛЬНОГО despawn-flow. */
+    private static void lifetimePoll(long now) {
+        long[] due = dueScratch;
+        int n = lifetimeDue(now, due);
+        if (n < 0) {
+            due = new long[-n];
+            dueScratch = due;
+            n = lifetimeDue(now, due);
+        }
+        if (n < 0) {
+            indexBroken = true; // структурный отказ — весь путь в vanilla
+            return;
+        }
+        for (int i = 0; i < n; i++) {
+            long l = due[i];
+            int id = (int) (l >> 32);
+            ItemEntity[] table = byId;
+            if (id < 0 || id >= table.length) {
+                continue;
+            }
+            ItemEntity e = table[id];
+            if (e == null || e.isRemoved()) {
+                continue; // stale запись (merge/pickup/discard раньше due)
+            }
+            if (e.level().isClientSide()) {
+                continue;
+            }
+            int rate = getDespawnRate(e);
+            if (e.age < rate) {
+                // stale-early: merge делает survivor.age = min(...) — дедлайн
+                // пересчитать от live-возраста (событие НЕ вызываем).
+                lifetimePushOne(id, now + Math.max(0, rate - e.age));
+                continue;
+            }
+            // ВАНИЛЬНЫЙ flow (javap tick()V 565..585): event → cancel? age=0 : discard
+            if (CraftEventFactory.callItemDespawnEvent(e).isCancelled()) {
+                e.age = 0;
+                lifetimePushOne(id, now + Math.max(0, rate));
+            } else {
+                e.discard(EntityRemoveEvent.Cause.DESPAWN);
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------
     // Index lifecycle (main-thread; фазы region-tick защищены deferral)
     // ------------------------------------------------------------------
 
@@ -207,6 +399,7 @@ public final class ItemEntityManager {
             }
             byId[id] = e;
             idMap.put(e, new int[] {id});
+            lifetimeBufferPush(id); // despawnv2: дедлайн считается на flush конца тика
         }
     }
 
@@ -407,8 +600,10 @@ public final class ItemEntityManager {
                 e.hasImpulse = true;
             }
         }
-        // offsets 544..588: despawn
-        if (!e.level().isClientSide() && e.age >= getDespawnRate(e)) {
+        // offsets 544..588: despawn — vanilla; при despawnv2 гейт уходит в
+        // rust lifetime-heap (lifetimeTick после фазы: тот же тик, ванильный
+        // flow, события не пропускаются; age++ выше остаётся per-item).
+        if (!despawn2Active && !e.level().isClientSide() && e.age >= getDespawnRate(e)) {
             if (CraftEventFactory.callItemDespawnEvent(e).isCancelled()) {
                 e.age = 0;
                 return;

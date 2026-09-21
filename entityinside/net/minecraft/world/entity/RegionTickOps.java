@@ -639,6 +639,20 @@ public final class RegionTickOps {
             }
         }
 
+        // ITEM-LIFETIME (TASK-399-F despawnv2, cmp399_despawn2): per-tick
+        // деспавн-полл — main, после join фазы и PENDING drain (indexAdd/
+        // indexRemove этого тика уже обработаны): батч-пуш дедлайнов →
+        // drain due-id → ванильный despawn-flow (event не пропускается).
+        // Один native-push + один native-drain на тик независимо от населения.
+        if (itemsManagerState) {
+            try {
+                net.minecraft.world.entity.ItemEntityManager.lifetimeTick();
+            } catch (Throwable ignored) {
+                // fail-closed: despawn2Active гасится внутри lifetimeTick;
+                // ванильная despawn-ветка tickBody возвращается сама.
+            }
+        }
+
         // Phase 4b (serial, S7-168): replay deferred sendBlockUpdated
         // navigate-passes (STEAL v2 defect-fix) — main-only, after join.
         drainDeferredBlockUpdates();
