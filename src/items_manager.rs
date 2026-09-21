@@ -31,8 +31,21 @@ const IM_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/world/entity/ItemEntityManager.class");
 
 fn lever_flag_matches() -> bool {
+    // TASK-399-A: армим J-подсистему и на базовом флаге items_subsys2, и на
+    // ЛЮБОМ композиционном флаге раунда-3 с префиксом cmp399_ (наши CI-ноги
+    // идут с cmp399_batch). Чужие флаги/пустой — ванильный путь.
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim().eq("items_subsys2"))
+        .map(|v| {
+            let f = v.trim();
+            f.eq("items_subsys2") || f.starts_with("cmp399_")
+        })
+        .unwrap_or(false)
+}
+
+/// TASK-399-A: точный гейт batch-JNI вектора (cmp399_batch — только он).
+fn batch_flag_exact() -> bool {
+    std::env::var("CRUSSTY_LEVER_FLAG")
+        .map(|v| v.trim().eq("cmp399_batch"))
         .unwrap_or(false)
 }
 
@@ -161,6 +174,32 @@ pub fn activate() {
                 env.delete_local_ref(loader);
                 env.delete_local_ref(class_cls);
                 return false;
+            }
+
+            // TASK-399-A (cmp399_batch): отдельный RegisterNatives для батч-
+            // натива idxBatchApply — ТОЛЬКО на точном флаге cmp399_batch
+            // (на J-ногах класс его не объявляет, отдельный вызов не ломает
+            // J-композицию; провал регистрации → java fail-closed: flushBatch
+            // ловит UnsatisfiedLinkError → indexBroken → ванильные мерджи).
+            if batch_flag_exact() {
+                let b_name = CString::new("idxBatchApply").expect("no NUL");
+                let b_sig = CString::new("([II[I)I").expect("no NUL");
+                let b_natives = [jvmti_bindings::jni::JNINativeMethod {
+                    name: b_name.as_ptr(),
+                    signature: b_sig.as_ptr(),
+                    fnPtr: crate::items_index::idx_batch_apply as *const c_void as *mut c_void,
+                }];
+                match env.register_natives(c, &b_natives) {
+                    Ok(()) => eprintln!(
+                        "[crussty-plugin] cmp399_batch: ARMED batch_apply=idx_batch_apply (flat int[] ops+queries stream, ONE RwLock capture, ONE GetPrimitiveArrayCritical in/out, offset+len candidates)"
+                    ),
+                    Err(code) => {
+                        env.exception_clear();
+                        eprintln!(
+                            "[crussty-plugin] cmp399_batch: idxBatchApply register_natives failed (code {code}) — java side fail-closes to vanilla merges"
+                        );
+                    }
+                }
             }
             env.delete_local_ref(c);
             env.delete_local_ref(loader);

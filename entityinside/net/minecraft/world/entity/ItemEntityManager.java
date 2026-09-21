@@ -60,8 +60,12 @@ import org.bukkit.event.entity.EntityRemoveEvent;
  */
 public final class ItemEntityManager {
 
+    /** TASK-399-A: J-arm (items_subsys2) ИЛИ batch-JNI вектор (cmp399_batch). */
+    private static final String FLAG = trimToEmpty(System.getenv("CRUSSTY_LEVER_FLAG"));
     private static final boolean ENABLED =
-            "items_subsys2".equals(trimToEmpty(System.getenv("CRUSSTY_LEVER_FLAG")));
+            "items_subsys2".equals(FLAG) || "cmp399_batch".equals(FLAG);
+    /** TASK-399-A: батч-транспорт активен ТОЛЬКО на точном флаге cmp399_batch. */
+    private static final boolean BATCH_MODE = "cmp399_batch".equals(FLAG);
 
     private static final int PROBE_MAGIC = 0x1D3A;
 
@@ -83,6 +87,8 @@ public final class ItemEntityManager {
     private static native int idxRemove(int id);
     private static native int idxQuery(double qx0, double qy0, double qz0,
             double qx1, double qy1, double qz1, int lid, int[] out);
+    /** TASK-399-A: батч-натив (impl: src/items_index.rs::idx_batch_apply). */
+    private static native int idxBatchApply(int[] ops, int opLen, int[] out);
 
     private static volatile boolean nativeOk;
     private static volatile boolean indexBroken;
@@ -102,6 +108,41 @@ public final class ItemEntityManager {
 
     private static final int TELEMETRY_INTERVAL = 24000;
     private static long telemetryCounter = 0;
+
+    // ------------------------------------------------------------------
+    // TASK-399-A (cmp399_batch): плоский батч-транспорт. Java копит за фазу
+    // все grid-ops и merge-запросы этого потока в плоский int[] (op-код, id,
+    // cx, cy, cz; для query — уже проскейленное окно бокса), затем ОДИН
+    // нативный вызов idxBatchApply на фазу (flushBatch). Никаких новых
+    // classfile (ThreadLocal + массивы JDK) — define_class классов не добавляет.
+    // ------------------------------------------------------------------
+    private static final int OP_INSERT = 1;
+    private static final int OP_SETCELL = 2;
+    private static final int OP_REMOVE = 3;
+    private static final int OP_QUERY = 4;
+    /** Sentinel переполнения out-массива (impl: items_index::BATCH_OVERFLOW). */
+    private static final int BATCH_OVERFLOW = Integer.MIN_VALUE;
+    /** top[0] = opTop (int-хвост стрима), top[1] = qCount (merge-запросов). */
+    private static final ThreadLocal<int[]> BATCH_TOP =
+            BATCH_MODE ? ThreadLocal.withInitial(() -> new int[2]) : null;
+    /** Плоский поток ops+queries фазы (temporal order данного потока). */
+    private static final ThreadLocal<int[]> BATCH_STREAM =
+            BATCH_MODE ? ThreadLocal.withInitial(() -> new int[8192]) : null;
+    private static final ThreadLocal<int[]> BATCH_OUT =
+            BATCH_MODE ? ThreadLocal.withInitial(() -> new int[8192]) : null;
+    /** self-ссылки merge-запросов батча (в порядке записи). */
+    private static final ThreadLocal<ItemEntity[]> BATCH_QSELF =
+            BATCH_MODE ? ThreadLocal.withInitial(() -> new ItemEntity[256]) : null;
+    private static final ThreadLocal<Level[]> BATCH_QLVL =
+            BATCH_MODE ? ThreadLocal.withInitial(() -> new Level[256]) : null;
+    /** [0] = count; id-освобождения ждут применения батча (safe id-reuse). */
+    private static final ThreadLocal<int[]> BATCH_FREED =
+            BATCH_MODE ? ThreadLocal.withInitial(() -> new int[256]) : null;
+    private static final int BATCH_TELEMETRY_INTERVAL = 24000;
+    private static long batchTelemetry = 0;
+    private static long batchCalls = 0;
+    private static long batchOps = 0;
+    private static long batchQueries = 0;
 
     static {
         boolean ok = false;
@@ -127,6 +168,9 @@ public final class ItemEntityManager {
         READY = ok;
         if (READY) {
             LOG.info("[crussty-plugin] items_subsys2: bridge ready (enabled=" + ENABLED + ")");
+            if (BATCH_MODE) {
+                LOG.info("[crussty-plugin] cmp399_batch: ARMED batch transport (idxBatchApply, per-phase flush)");
+            }
         }
     }
 
@@ -186,10 +230,28 @@ public final class ItemEntityManager {
                 id = idTop++;
             }
             int lid = System.identityHashCode(e.level());
-            int rc = idxInsert(id, lid, Mth.floor(e.getX()), Mth.floor(e.getY()), Mth.floor(e.getZ()));
-            if (rc != 0) {
-                indexBroken = true;
-                return; // id не занят (rollback выше) — merge уйдёт в vanilla
+            if (BATCH_MODE) {
+                // TASK-399-A: op-запись в плоский стрим; применение — на flush.
+                int[] top = BATCH_TOP.get();
+                int[] ops = BATCH_STREAM.get();
+                int t = top[0];
+                if (t + 6 > ops.length) {
+                    ops = java.util.Arrays.copyOf(ops, ops.length * 2);
+                    BATCH_STREAM.set(ops);
+                }
+                ops[t] = OP_INSERT;
+                ops[t + 1] = id;
+                ops[t + 2] = lid;
+                ops[t + 3] = Mth.floor(e.getX());
+                ops[t + 4] = Mth.floor(e.getY());
+                ops[t + 5] = Mth.floor(e.getZ());
+                top[0] = t + 6;
+            } else {
+                int rc = idxInsert(id, lid, Mth.floor(e.getX()), Mth.floor(e.getY()), Mth.floor(e.getZ()));
+                if (rc != 0) {
+                    indexBroken = true;
+                    return; // id не занят (rollback выше) — merge уйдёт в vanilla
+                }
             }
             byId[id] = e;
             idMap.put(e, new int[] {id});
@@ -203,6 +265,37 @@ public final class ItemEntityManager {
             return;
         }
         int id = box[0];
+        if (BATCH_MODE && !indexBroken) {
+            // TASK-399-A: op-запись; id НЕ возвращаем в freeIds сразу — реюз
+            // возможен только после применения батча, иначе insert нового item
+            // с этим id мог бы обогнать remove на чужом батче (потеря link).
+            // broken: записи прекращаем (иначе ThreadLocal-стрим растёт вечным
+            // хвостом удалений — буфер не ограничен фазой).
+            int[] top = BATCH_TOP.get();
+            int[] ops = BATCH_STREAM.get();
+            int t = top[0];
+            if (t + 6 > ops.length) {
+                ops = java.util.Arrays.copyOf(ops, ops.length * 2);
+                BATCH_STREAM.set(ops);
+            }
+            ops[t] = OP_REMOVE;
+            ops[t + 1] = id;
+            ops[t + 2] = 0;
+            ops[t + 3] = 0;
+            ops[t + 4] = 0;
+            ops[t + 5] = 0;
+            top[0] = t + 6;
+            int[] freed = BATCH_FREED.get();
+            int ft = freed[0];
+            if (ft + 2 > freed.length) {
+                freed = java.util.Arrays.copyOf(freed, Math.max(16, freed.length * 2));
+                BATCH_FREED.set(freed);
+            }
+            freed[ft + 1] = id;
+            freed[0] = ft + 1;
+            byId[id] = null;
+            return; // структурный отказ применится на flushBatch
+        }
         int rc = idxRemove(id);
         byId[id] = null;
         synchronized (ID_LOCK) {
@@ -373,10 +466,29 @@ public final class ItemEntityManager {
         if (moved && !e.level().isClientSide()) {
             int[] box = idMap.get(e);
             if (box != null) {
-                int rc = idxSetCell(box[0], System.identityHashCode(e.level()),
-                        Mth.floor(e.getX()), Mth.floor(e.getY()), Mth.floor(e.getZ()));
-                if (rc != 0) {
-                    indexBroken = true;
+                if (BATCH_MODE && !indexBroken) {
+                    // TASK-399-A: op-запись setCell в плоский стрим фазы.
+                    // broken: в ванильный per-call (registered) — как в J.
+                    int[] top = BATCH_TOP.get();
+                    int[] ops = BATCH_STREAM.get();
+                    int t = top[0];
+                    if (t + 6 > ops.length) {
+                        ops = java.util.Arrays.copyOf(ops, ops.length * 2);
+                        BATCH_STREAM.set(ops);
+                    }
+                    ops[t] = OP_SETCELL;
+                    ops[t + 1] = box[0];
+                    ops[t + 2] = System.identityHashCode(e.level());
+                    ops[t + 3] = Mth.floor(e.getX());
+                    ops[t + 4] = Mth.floor(e.getY());
+                    ops[t + 5] = Mth.floor(e.getZ());
+                    top[0] = t + 6;
+                } else {
+                    int rc = idxSetCell(box[0], System.identityHashCode(e.level()),
+                            Mth.floor(e.getX()), Mth.floor(e.getY()), Mth.floor(e.getZ()));
+                    if (rc != 0) {
+                        indexBroken = true;
+                    }
                 }
             }
         }
@@ -448,6 +560,50 @@ public final class ItemEntityManager {
         double r = lvl.spigotConfig.itemMerge;
         AABB qb = self.getBoundingBox().inflate(r,
                 lvl.paperConfig().entities.behavior.onlyMergeItemsHorizontally ? 0.0D : r - 0.5D, r);
+        if (BATCH_MODE) {
+            // TASK-399-A: merge-запрос копится в батч фазы; кандидаты вернёт
+            // idxBatchApply на flush (задержка ≤1 фазы — LEVER-V399-A.md).
+            // Окно скейлится JAVA-side той же двойной математикой, что и
+            // per-call idx_query (floor(min)-1 .. floor(max)+1) — паритет окна
+            // побайтовый; экзотический бокс (>6 клеток по оси = ERR_RANGE
+            // в per-call) → ванильный merge прямо сейчас, как в J.
+            int cx0 = (int) Math.floor(qb.minX) - 1, cx1 = (int) Math.floor(qb.maxX) + 1;
+            int cy0 = (int) Math.floor(qb.minY) - 1, cy1 = (int) Math.floor(qb.maxY) + 1;
+            int cz0 = (int) Math.floor(qb.minZ) - 1, cz1 = (int) Math.floor(qb.maxZ) + 1;
+            if ((cx1 - cx0) > 6 || (cy1 - cy0) > 6 || (cz1 - cz0) > 6) {
+                invokeVanillaMerge(self);
+                return;
+            }
+            int[] top = BATCH_TOP.get();
+            int[] ops = BATCH_STREAM.get();
+            int t = top[0];
+            if (t + 8 > ops.length) {
+                ops = java.util.Arrays.copyOf(ops, ops.length * 2);
+                BATCH_STREAM.set(ops);
+            }
+            ops[t] = OP_QUERY;
+            ops[t + 1] = System.identityHashCode(lvl);
+            ops[t + 2] = cx0;
+            ops[t + 3] = cy0;
+            ops[t + 4] = cz0;
+            ops[t + 5] = cx1;
+            ops[t + 6] = cy1;
+            ops[t + 7] = cz1;
+            top[0] = t + 8;
+            int qi = top[1];
+            ItemEntity[] qself = BATCH_QSELF.get();
+            Level[] qlvl = BATCH_QLVL.get();
+            if (qi >= qself.length) {
+                qself = java.util.Arrays.copyOf(qself, qself.length * 2);
+                BATCH_QSELF.set(qself);
+                qlvl = java.util.Arrays.copyOf(qlvl, qlvl.length * 2);
+                BATCH_QLVL.set(qlvl);
+            }
+            qself[qi] = self;
+            qlvl[qi] = lvl;
+            top[1] = qi + 1;
+            return;
+        }
         int lid = System.identityHashCode(lvl);
         int[] out = SCRATCH.get();
         int n = idxQuery(qb.minX, qb.minY, qb.minZ, qb.maxX, qb.maxY, qb.maxZ, lid, out);
@@ -491,6 +647,175 @@ public final class ItemEntityManager {
                 return;
             }
         }
+    }
+
+    // ------------------------------------------------------------------
+    // TASK-399-A (cmp399_batch): фазовый flush — ОДИН нативный вызов на фазу
+    // на поток. Вызывается из RegionTickOps: tickBucket-finally (воркер/главный
+    // слот), forEach-start и после phase-4 drain (main). Вне BATCH_MODE — no-op.
+    // ------------------------------------------------------------------
+
+    /**
+     * Применить батч фазы: idxBatchApply (1 лок, 1 critical in/out) → точные
+     * ванильные фильтры (level/AABB/walls/isMergable) по кандидатам каждого
+     * merge-запроса в порядке записи. Провал натива → indexBroken + ванильные
+     * мерджи для накопленных запросов (fail-closed, как per-call ERR_STRUCT).
+     */
+    public static void flushBatch() {
+        if (!BATCH_MODE) {
+            return;
+        }
+        int[] top = BATCH_TOP.get();
+        if (indexBroken) {
+            // broken: мерджи уже в ваниле; записи ops/setCell просто сбрасываем,
+            // чтобы ThreadLocal-буферы не росли бесконечно.
+            clearBatch(top);
+            return;
+        }
+        int opTop = top[0];
+        int qCount = top[1];
+        if (opTop == 0) {
+            return;
+        }
+        int[] ops = BATCH_STREAM.get();
+        int[] out = BATCH_OUT.get();
+        batchCalls++;
+        int rc;
+        try {
+            rc = idxBatchApply(ops, opTop, out);
+            int tries = 0;
+            while (rc == BATCH_OVERFLOW) {
+                out = java.util.Arrays.copyOf(out, Math.max(1024, out.length * 4));
+                BATCH_OUT.set(out);
+                if (++tries > 4) {
+                    rc = -1;
+                    break;
+                }
+                rc = idxBatchApply(ops, opTop, out);
+            }
+        } catch (Throwable t) {
+            rc = -1; // UnsatisfiedLinkError и пр. — fail-closed в ваниль
+        }
+        if (rc != 0) {
+            indexBroken = true;
+            ItemEntity[] qself = BATCH_QSELF.get();
+            for (int j = 0; j < qCount && j < qself.length; j++) {
+                ItemEntity s = qself[j];
+                if (s != null && isMergable(s, s.getItem())) {
+                    invokeVanillaMerge(s);
+                }
+            }
+            clearBatch(top);
+            return;
+        }
+        int q = out[1];
+        if (q < 0 || q > qCount) {
+            indexBroken = true; // рассинхрон заголовка — структурный отказ
+            clearBatch(top);
+            return;
+        }
+        int blobStart = 2 + 2 * q;
+        batchOps += opTop;
+        batchQueries += q;
+        ItemEntity[] qself = BATCH_QSELF.get();
+        Level[] qlvl = BATCH_QLVL.get();
+        for (int j = 0; j < q; j++) {
+            int off = out[2 + 2 * j];
+            int len = out[3 + 2 * j];
+            ItemEntity self = j < qself.length ? qself[j] : null;
+            Level lvl = j < qlvl.length ? qlvl[j] : null;
+            try {
+                applyMergeResults(self, lvl, out, blobStart + off, len);
+            } catch (Throwable t) {
+                // guardEntityTick-семантика на flush: лог + discard self
+                try {
+                    LOG.severe("[crussty-plugin] cmp399_batch: flush merge threw: " + t);
+                    if (self != null && !self.isRemoved()) {
+                        self.discard(EntityRemoveEvent.Cause.DISCARD);
+                    }
+                } catch (Throwable ignored) {
+                    // diagnostics-only
+                }
+            }
+        }
+        // id-освобождения возвращаем в оборот ТОЛЬКО после применения батча
+        // (safe id-reuse: insert с reused-id не может обогнать свой remove).
+        int[] freed = BATCH_FREED.get();
+        int ft = freed[0];
+        if (ft > 0) {
+            synchronized (ID_LOCK) {
+                for (int j = 1; j <= ft; j++) {
+                    if (freeTop == freeIds.length) {
+                        freeIds = java.util.Arrays.copyOf(freeIds, Math.max(16, freeTop * 2));
+                    }
+                    freeIds[freeTop++] = freed[j];
+                }
+            }
+            freed[0] = 0;
+        }
+        if ((++batchTelemetry % BATCH_TELEMETRY_INTERVAL) == 0L) {
+            LOG.info("[crussty-plugin] cmp399_batch: telemetry batches=" + batchCalls
+                    + " ops=" + batchOps + " queries=" + batchQueries);
+        }
+        clearBatch(top);
+    }
+
+    /**
+     * Точные ванильные фильтры (реплика пост-цикла mergeWithNeighbours) по
+     * кандидатам одного merge-запроса: level, isMergable, AABB.intersects,
+     * walls-clip, tryToMerge, break-on-removed — порядок сохранён.
+     */
+    private static void applyMergeResults(ItemEntity self, Level lvl, int[] out, int base, int n) {
+        if (self == null || lvl == null) {
+            return;
+        }
+        ItemStack selfStack = self.getItem();
+        // J-at-gate: !isMergable(self) → мерджа не было бы → skip = паритет;
+        // self.isRemoved (деспавн после гейта того же тика) → documented
+        // ≤1-phase deviation (LEVER-V399-A.md).
+        if (self.isRemoved() || !isMergable(self, selfStack)) {
+            return;
+        }
+        double r = lvl.spigotConfig.itemMerge;
+        AABB qb = self.getBoundingBox().inflate(r,
+                lvl.paperConfig().entities.behavior.onlyMergeItemsHorizontally ? 0.0D : r - 0.5D, r);
+        boolean walls = lvl.paperConfig().fixes.fixItemsMergingThroughWalls;
+        for (int i = 0; i < n; i++) {
+            int cid = out[base + i];
+            // guard: индекс может вырасти параллельно — читаем актуальный
+            // массив с bounds-check (как в J)
+            ItemEntity[] ids = byId;
+            if (cid < 0 || cid >= ids.length) {
+                continue;
+            }
+            ItemEntity other = ids[cid];
+            // ванильный предикат lambda$mergeWithNeighbours$0 + точность запроса
+            if (other == null || other == self || other.level() != lvl
+                    || !isMergable(other, other.getItem())) {
+                continue;
+            }
+            if (!other.getBoundingBox().intersects(qb)) {
+                continue;
+            }
+            if (walls && lvl.clipDirect(self.position(), other.position(),
+                    CollisionContext.of(self)) == HitResult.Type.BLOCK) {
+                continue;
+            }
+            tryToMerge(self, other);
+            if (self.isRemoved()) {
+                return;
+            }
+        }
+    }
+
+    /** Сброс буферов фазы (ref-гигиена: не держим сущности между фазами). */
+    private static void clearBatch(int[] top) {
+        top[0] = 0;
+        top[1] = 0;
+        ItemEntity[] qs = BATCH_QSELF.get();
+        java.util.Arrays.fill(qs, null);
+        Level[] ql = BATCH_QLVL.get();
+        java.util.Arrays.fill(ql, null);
     }
 
     private static void tryToMerge(ItemEntity self, ItemEntity other) {

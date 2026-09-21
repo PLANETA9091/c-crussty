@@ -532,6 +532,15 @@ public final class RegionTickOps {
         final boolean itemsOn = itemsManagerArmed() && !STEAL;
         if (itemsOn) {
             itemsManagerState = true; // arm the tickBucket inline routing for this phase
+            // TASK-399-A (cmp399_batch): main-flush батча, накопленного между
+            // фазами (onTickingStart/onTickingEnd immediate-path) — ДО фазы-3,
+            // чтобы воркерские merge-запросы видели эти ops. Вне BATCH_MODE —
+            // no-op за один статический boolean.
+            try {
+                net.minecraft.world.entity.ItemEntityManager.flushBatch();
+            } catch (Throwable ignored) {
+                // fail-closed: батч будет переигран следующей фазой / ваниль
+            }
         }
         pumpLevel = null; // S7-174: reset BEFORE fill; captured at first entity
         list.forEach(e -> {
@@ -639,6 +648,16 @@ public final class RegionTickOps {
             }
         }
 
+        // TASK-399-A (cmp399_batch): flush ops, записанных phase-4 drain'ом
+        // (indexAdd/indexRemove) — конец фазы на main. Вне BATCH_MODE — no-op.
+        if (itemsManagerState) {
+            try {
+                net.minecraft.world.entity.ItemEntityManager.flushBatch();
+            } catch (Throwable ignored) {
+                // fail-closed
+            }
+        }
+
         // Phase 4b (serial, S7-168): replay deferred sendBlockUpdated
         // navigate-passes (STEAL v2 defect-fix) — main-only, after join.
         drainDeferredBlockUpdates();
@@ -683,6 +702,16 @@ public final class RegionTickOps {
         } catch (Throwable t) {
             if (workerError == null) workerError = t; // crash surfaces on main at join
         } finally {
+            // TASK-399-A (cmp399_batch): фазовый flush батча этого слота —
+            // ОДИН нативный вызов на фазу на поток (merge-запросы и ops,
+            // накопленные tickOne'ом за фазу). Вне BATCH_MODE — no-op.
+            if (itemsManagerState) {
+                try {
+                    net.minecraft.world.entity.ItemEntityManager.flushBatch();
+                } catch (Throwable t2) {
+                    if (workerError == null) workerError = t2;
+                }
+            }
             try {
                 DONE.await();
             } catch (Throwable t) {

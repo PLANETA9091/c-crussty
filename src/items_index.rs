@@ -402,3 +402,277 @@ pub unsafe extern "system" fn idx_query(
     unsafe { (vt.ReleasePrimitiveArrayCritical)(env, out, pinned, 0) };
     n
 }
+
+// ---------------------------------------------------------------------------
+// TASK-399-A (cmp399_batch): BATCH-JNI transport — idxBatchApply
+// ---------------------------------------------------------------------------
+//
+// Один нативный вызов на фазу тик-бакета на поток вместо per-item
+// idx_insert/idx_set_cell/idx_remove/idx_query. Java (ItemEntityManager)
+// копит за фазу плоский int[]-стрим (temporal order данного потока):
+//
+//   [OP_INSERT=1,  id, lid, cx, cy, cz]        (6 ints)
+//   [OP_SETCELL=2, id, lid, cx, cy, cz]        (6 ints)
+//   [OP_REMOVE=3,  id, 0,  0,  0,  0]          (6 ints)
+//   [OP_QUERY=4,   lid, cx0, cy0, cz0, cx1, cy1, cz1] (8 ints)
+//
+// QUERY-окно приходит уже проскейленным JAVA-side двойной математикой
+// (cx0 = floor(minX)-1 …) — натив не видит double вовсе, паритет окна
+// побайтовый с per-call idx_query. Rust обрабатывает записи последовательно
+// под ОДНИМ захватом RwLock (write — стрим содержит и мутации, и запросы),
+// с ОДНИМ GetPrimitiveArrayCritical на вход и ОДНИМ на выход. Кандидаты
+// merge-запросов возвращаются одним плоским массивом:
+//
+//   out[0] = 0 (rc ok — код возврата несёт результат)
+//   out[1] = Q (число query-записей)
+//   out[2 + 2j], out[3 + 2j] = (offset, len) пары по query j
+//   out[blobStart + off .. +len] = id-кандидаты (blobStart = 2 + 2*Q)
+//
+// ПАРИТЕТ: семантика каждой op-записи — байт-в-байт реплика
+// соответствующего per-call натива; порядок кандидатов в окне — тот же
+// (cz→cy→cx вложенные, chain order per cell). Точные AABB/уровень/walls
+// фильтры остаются java-side (ItemEntityManager.applyMergeResults) в
+// ванильном порядке.
+//
+// КОДЫ ВОЗВРАТА: 0 = ок; ERR_STRUCT (-1) = структурный отказ (java disarms
+// подсистему целиком, как per-call); BATCH_OVERFLOW (i32::MIN) = out массив
+// мал — java растит его и переигрывает ВЕСЬ батч (все ops идемпотентны:
+// insert=unlink+link, setCell=unlink+link, remove=noop-безопасен).
+
+/// Sentinel переполнения out-массива (никогда не совпадает с -1/-2/-cap).
+pub const BATCH_OVERFLOW: i32 = i32::MIN;
+
+enum BatchErr {
+    Struct,
+    Overflow,
+}
+
+/// Реплика per-call idx_insert (fail-closed семантика 1:1).
+fn batch_insert(g: &mut Inner, id: i32, lid: i32, cx: i32, cy: i32, cz: i32) -> Result<(), BatchErr> {
+    if id < 0 {
+        return Err(BatchErr::Struct);
+    }
+    let k = cell_key(lid, cx, cy, cz);
+    ensure_id_space(g, id as usize);
+    if g.cell[id as usize] != 0 {
+        if unlink(g, id as usize).is_err() {
+            return Err(BatchErr::Struct);
+        }
+    }
+    link(g, id as usize, k);
+    Ok(())
+}
+
+/// Реплика per-call idx_set_cell.
+fn batch_set_cell(g: &mut Inner, id: i32, lid: i32, cx: i32, cy: i32, cz: i32) -> Result<(), BatchErr> {
+    if id < 0 {
+        return Err(BatchErr::Struct);
+    }
+    let k = cell_key(lid, cx, cy, cz);
+    if (g.next.len() as i64) <= id as i64 {
+        return Err(BatchErr::Struct); // never inserted
+    }
+    if g.cell[id as usize] == k {
+        return Ok(());
+    }
+    if unlink(g, id as usize).is_err() {
+        return Err(BatchErr::Struct);
+    }
+    link(g, id as usize, k);
+    Ok(())
+}
+
+/// Реплика per-call idx_remove.
+fn batch_remove(g: &mut Inner, id: i32) -> Result<(), BatchErr> {
+    if id < 0 {
+        return Err(BatchErr::Struct);
+    }
+    if (g.next.len() as i64) <= id as i64 {
+        return Ok(()); // never inserted — nothing to do
+    }
+    if g.cell[id as usize] == 0 {
+        return Ok(());
+    }
+    unlink(g, id as usize).map_err(|_| BatchErr::Struct)
+}
+
+/// Реплика per-call idx_query по уже проскейленному java-side окну.
+/// Порядок обхода клеток — cz→cy→cx (как в idx_query), chain order per cell.
+#[allow(clippy::too_many_arguments)]
+fn batch_query(
+    g: &Inner,
+    lid: i32,
+    cx0: i32,
+    cy0: i32,
+    cz0: i32,
+    cx1: i32,
+    cy1: i32,
+    cz1: i32,
+    dst: &mut [jni::jint],
+    header: usize,
+    blob_cap: usize,
+    blob: &mut usize,
+) -> Result<(i32, i32), BatchErr> {
+    // Java-side guard уже отсёк экзотические окна; защита от i32-переполнения
+    // на абсурдных координатах — fail-closed (недостижимо на вооружённом пути).
+    if (cx1 as i64 - cx0 as i64) > 6
+        || (cy1 as i64 - cy0 as i64) > 6
+        || (cz1 as i64 - cz0 as i64) > 6
+    {
+        return Err(BatchErr::Struct);
+    }
+    let off = *blob as i32;
+    let mut n: i32 = 0;
+    for cz in cz0..=cz1 {
+        for cy in cy0..=cy1 {
+            for cx in cx0..=cx1 {
+                let k = cell_key(lid, cx, cy, cz);
+                if let Ok(slot) = find_slot(&g.keys, k) {
+                    let mut cur = g.head[slot];
+                    while cur != 0 {
+                        let id = (cur - 1) as usize;
+                        if id >= g.next.len() {
+                            // TASK-398 fail-closed: stale link — не ходим.
+                            return Err(BatchErr::Struct);
+                        }
+                        if unsafe { *g.cell.get_unchecked(id) } == k {
+                            if *blob >= blob_cap {
+                                return Err(BatchErr::Overflow);
+                            }
+                            dst[header + *blob] = cur - 1;
+                            *blob += 1;
+                            n += 1;
+                        }
+                        cur = unsafe { *g.next.get_unchecked(id) };
+                    }
+                }
+            }
+        }
+    }
+    Ok((off, n))
+}
+
+/// # Safety
+/// Called by the JVM through RegisterNatives; env/class are the live JNI
+/// pointers of the calling thread.
+#[no_mangle]
+pub unsafe extern "system" fn idx_batch_apply(
+    env: *mut jni::JNIEnv,
+    _clazz: jni::jclass,
+    ops: jni::jintArray,
+    ops_len: jni::jint,
+    out: jni::jintArray,
+) -> jni::jint {
+    if env.is_null() || ops.is_null() || out.is_null() || ops_len < 0 {
+        return ERR_STRUCT;
+    }
+    let vt = unsafe { &**env };
+    let ops_cap = unsafe { (vt.GetArrayLength)(env, ops) };
+    if (ops_len as i64) > ops_cap as i64 {
+        return ERR_STRUCT;
+    }
+    let out_cap = unsafe { (vt.GetArrayLength)(env, out) } as usize;
+
+    // ОДИН критический пин входа на весь батч.
+    let ops_pin = unsafe { (vt.GetPrimitiveArrayCritical)(env, ops, std::ptr::null_mut()) };
+    if ops_pin.is_null() {
+        return ERR_STRUCT;
+    }
+    let src: &[jni::jint] =
+        unsafe { std::slice::from_raw_parts(ops_pin as *const jni::jint, ops_len as usize) };
+
+    // Pre-scan: валидация записей + подсчёт query-записей (нужен для заголовка
+    // out: пары offset+len идут ПЕРЕД блобом кандидатов).
+    let mut q: usize = 0;
+    let mut parse_ok = true;
+    let mut i = 0usize;
+    while i < src.len() {
+        let op = unsafe { *src.get_unchecked(i) };
+        let w = match op {
+            1 | 2 | 3 => 6usize,
+            4 => 8usize,
+            _ => {
+                parse_ok = false;
+                break;
+            }
+        };
+        if i + w > src.len() {
+            parse_ok = false;
+            break;
+        }
+        if op == 4 {
+            q += 1;
+        }
+        i += w;
+    }
+    let header: usize = 2 + 2 * q;
+    if !parse_ok || out_cap < header {
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, ops, ops_pin, 0) };
+        return if parse_ok { BATCH_OVERFLOW } else { ERR_STRUCT };
+    }
+    let blob_cap: usize = out_cap - header;
+
+    // ОДИН критический пин выхода на весь батч.
+    let out_pin = unsafe { (vt.GetPrimitiveArrayCritical)(env, out, std::ptr::null_mut()) };
+    if out_pin.is_null() {
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, ops, ops_pin, 0) };
+        return ERR_STRUCT;
+    }
+    let dst: &mut [jni::jint] =
+        unsafe { std::slice::from_raw_parts_mut(out_pin as *mut jni::jint, out_cap) };
+
+    // ОДИН захват лока на весь батч (write: стрим содержит мутации и запросы).
+    let mut g = idx_mut();
+    let mut blob: usize = 0;
+    let mut q_written: usize = 0;
+    let mut i = 0usize;
+    let mut res: Result<(), BatchErr> = Ok(());
+    while i < src.len() {
+        let op = unsafe { *src.get_unchecked(i) };
+        let r = match op {
+            1 => batch_insert(&mut g, src[i + 1], src[i + 2], src[i + 3], src[i + 4], src[i + 5]),
+            2 => batch_set_cell(&mut g, src[i + 1], src[i + 2], src[i + 3], src[i + 4], src[i + 5]),
+            3 => batch_remove(&mut g, src[i + 1]),
+            4 => batch_query(
+                &g,
+                src[i + 1],
+                src[i + 2],
+                src[i + 3],
+                src[i + 4],
+                src[i + 5],
+                src[i + 6],
+                src[i + 7],
+                dst,
+                header,
+                blob_cap,
+                &mut blob,
+            )
+            .map(|(off, n)| {
+                dst[2 + 2 * q_written] = off;
+                dst[3 + 2 * q_written] = n;
+                q_written += 1;
+            }),
+            _ => Err(BatchErr::Struct),
+        };
+        if let Err(e) = r {
+            res = Err(e);
+            break;
+        }
+        i += if op == 4 { 8 } else { 6 };
+    }
+    let rc = match res {
+        Err(BatchErr::Overflow) => BATCH_OVERFLOW,
+        Err(BatchErr::Struct) => ERR_STRUCT,
+        Ok(()) => {
+            dst[0] = 0;
+            dst[1] = q_written as jni::jint;
+            0
+        }
+    };
+    drop(g);
+    // Релиз пинов: обратный порядок захвату. Внутри критических регионов —
+    // только плоские проходы по массивам, ни одного JNI-колбэка.
+    unsafe { (vt.ReleasePrimitiveArrayCritical)(env, out, out_pin, 0) };
+    unsafe { (vt.ReleasePrimitiveArrayCritical)(env, ops, ops_pin, 0) };
+    rc
+}
