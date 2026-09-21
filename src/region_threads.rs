@@ -448,10 +448,24 @@ pub fn activate() {
             if bu_defer_enabled() {
                 bridge_list.push((BLOCKUPD_CLASS, BLOCKUPD_BYTES));
             }
+            // NAV-PLANE (TASK-405-A, cmp405_navplane STRICT eq): define the
+            // NavPlaneOps bridge ONLY when armed; empty flag = not defined,
+            // not registered, not retargeted -> vanilla bit-in-byte.
+            if crate::nav_plane::armed() {
+                bridge_list.push((crate::nav_plane::NAV_CLASS, crate::nav_plane::NAV_BYTES));
+            }
             let mut ok = true;
             for (name, bytes) in bridge_list {
                 match env.define_class(name, gref, bytes) {
                     Some(c) => {
+                        if name == crate::nav_plane::NAV_CLASS {
+                            // RegisterNatives navDecide BEFORE flipping any
+                            // READY latch: first armed handle() call must
+                            // bind, else the java ERR ladder goes vanilla.
+                            if !crate::nav_plane::register_native(env, c) {
+                                ok = false;
+                            }
+                        }
                         env.delete_local_ref(c);
                         eprintln!(
                             "[crussty-plugin] region_threads: defined {name} in kernel loader"
@@ -559,6 +573,35 @@ pub fn activate() {
                 "[crussty-plugin] region_threads: BU-DEFER composed: sendBlockUpdated -> BlockUpdateOps.handle (sites:1)"
             );
             p2
+        } else {
+            sl_patched
+        };
+        // NAV-PLANE compose (TASK-405-A, cmp405_navplane STRICT eq):
+        // independent of bu_defer so the armed delta vs the vanilla anchor is
+        // PURELY the nav-batch read plane (same javap-verbatim body, batched
+        // shouldRecomputePath decisions). Strict: exactly ONE site.
+        let sl_patched = if crate::nav_plane::armed() {
+            let (p3, nav_outcome) =
+                match crate::classfile::patch_serverlevel_send_block_updated_navplane(&sl_patched)
+                {
+                    Ok(pair) => pair,
+                    Err(e) => {
+                        eprintln!(
+                            "[crussty-plugin] navplane: ServerLevel patch rejected ({e}), lever stays vanilla"
+                        );
+                        return;
+                    }
+                };
+            if !matches!(
+                nav_outcome,
+                crate::classfile::RetargetOutcome::Retargeted { sites: 1 }
+            ) {
+                eprintln!(
+                    "[crussty-plugin] navplane: strict site-count violated ({nav_outcome:?}), lever stays vanilla"
+                );
+                return;
+            }
+            p3
         } else {
             sl_patched
         };
