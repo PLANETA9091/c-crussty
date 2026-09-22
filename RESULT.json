@@ -1,18 +1,20 @@
 {
   "agent": "TASK-412-C",
   "vector": "eindex K4-v2 (тик 15:08+08, продолжение TASK-411-C): cmp411_eqsnap dirty-дельты — mob_upsert аппендит (id,alive,x,y,z,hw,hh) в пер-потоковые DeltaShard'ы (0 локов/0 seqlock/0 cell-хэша), eq_epoch СНАЧАЛА один bulk-drain O(dirty) в плоские колонки, ПОТОМ прежний full chain-build (self-consistency сохранена); pushables лестница под eqsnap = снапшот → vanillaFill (легаси mobQuery/grid пропущены — цепи плоскости невалидны), точная ваниль = fail-closed",
-  "branch": "round-405-c-eindex (worktree /home/z/rounds/ROUND-411/agent-c, HEAD c0f97e5 = v2 cmp411_eqsnap dirty-дельты)",
+  "branch": "round-412-c-r1 (worktree /home/z/rounds/ROUND-412/agent-c, от origin/round-412-c-l2 @24008bd)",
   "background": "cl1 run 35691270899 = RED 0.5 TPS при лейнах ВНИЗ (broadphase 15.66→7.64% — плоскость двигается, полный rebuild был дорог; 84140 samples: mob_upsert 24.9% CPU per-entity WLOCK+JNI КАЖДЫЙ тик) — dirty-дельты = прямой ответ на пост-мортем",
-  "stage": "V2 COMMITTED+VERIFIED: cargo test --lib 225 green / 0 failed / 1 ignored (+eqsnap_shard_drain_applies_dirty_rows: dirty-apply/move/last-write-wins/NaN+OOR-ghost-гварды/генерация-ресет/переполнение), c4-target УДАЛЕН сразу; grep-чеклист STRICT-eq по всем сайтам ПРОЙДЕН (mobs_soa.rs eqsnap_mode/lever_mode/drain/upsert-shard/mob_query ERR_RANGE; entity_query.rs enabled/eqsnap-флаг/ARM-лейбл/drain-EFFECT маркер; MobPushOps leverEnabled/eqsnapEnabled/K4_LABEL/RADIUS_GATE (K4||EQSNAP)?2.0:1.0/лестница eqsnap=снапшот→vanillaFill; EntityGoalQueryOps leverEnabled/FLAG_LABEL); хуки учёта cmp405_eindex ВЫКЛЮЧЕНЫ (GATE_LEVER-гейт, диспатч-флаг их не активирует); blob-sync OK (ровно-1-classfile: MobPushOps 11756B, EntityGoalQueryOps 9696B, свежее .java)",
+  "stage": "RE-DISPATCH (re-roll #1, INFRA-класс): нога round-412-c-l2 (run 35699456160) умерла FIXTURE-INVALID от spawn-race харнесса — AIOOBE Index -1 (length 65537) в BenchPopulationPlugin.spawnItem (×122 в /tmp/cl2/server-stdout.log), инъекция встала ~48k/150k, gate timeout; ваниль-якорь round-412-anchorb (/tmp/ak5b) имел тот же класс ×26215 (spawnItem:380/injectSlice:279) → race БАНКА (region_threads=4 ⊕ инъекция), НЕ код агента; ARM-маркер 'cmp411_eqsnap: ARMED goal-query' в cl2-логе есть, EFFECT нет (инъекция не завершилась); cargo 225 green, STRICT-eq grep-чеклист, blob-sync — всё в силе с c0f97e5",
   "dispatch_plan": {
-    "alias": "round-412-c-l2",
+    "alias": "round-412-c-r1",
+    "script": "scripts/bench4_recon/dispatch_round412c.py (копия dispatch_round412.py @master, LEGS=cr1, refs из HEAD worktree)",
     "workflow": "world-bench-parallel.yml (труба идентична c-crussty, verified diff-clean)",
     "inputs_bank": "radius 640, seconds 300, fake_players 4, fluid_guard 1, gc_tune 3, inside_cache 1, flush_diet 1, fluid_dirty 0, fluid_bitmask 0, region_threads 4, batch_collector 1, inside_bitmask 0, skip_store_bb 0, region_steal 0, bu_defer 0, population_target 150000, population_seed 42, server_xmx 10G, server_xms 4G, cpu_band_min 6000000, cpu_band_max 9500000",
     "lever": "cmp411_eqsnap=1",
     "excluded": "travel_diet / fluid_dirty_ledger НЕ шлются (слотов в workflow нет)"
   },
-  "next": "poll run → absorb_round.py <run_id> round412cl2 → pair-by-runner vs пул {2.2@6840530, 2.2@6858619, 2.1@6776758, 2.4@6604167, 2.2@6976430, 2.25@6833921, 2.30@6846036} (ближайший runner) → BAND 6.0-9.5M вне = BAND-DISCARD ре-ролл ≤2 → чек-лист ARM+EFFECT(first gate hit / shard-drain epoch ok)+AIOOBE=0 → Δ<80% = рисёрч",
+  "next": "полл sleep 120+curl → FIXTURE-INVALID по spawn-race = INFRA re-roll (≤2 всего) → absorb_round.py <run_id> → pair-by-runner vs пул {2.2@6840530, 2.2@6858619, 2.1@6776758, 2.4@6604167, 2.2@6976430, 2.25@6833921, 2.30@6846036, 2.50@8548287, 2.95@8880170, 2.60@8827927} + якоря-412 (round-round412anchor*) → чек-лист ARM+EFFECT(first gate hit / shard-drain / push-snapshot)+AIOOBE=0 → Δ<80% = виток 2 (расширение entity-query слоя: NearestAttackableTargetGoal tail, AvoidEntityGoal, sensing-цепи; база meganav f579c1c)",
   "run_id": null,
+  "reroll_budget": {"infra_rerolls_used": 1, "infra_rerolls_max": 2, "dead_runs": [{"run_id": 35699456160, "class": "FIXTURE-INVALID spawn-race AIOOBE Index -1 (BenchPopulationPlugin.spawnItem, банка region_threads=4, vanilla anchorb тот же ×26215)"}]},
   "gates_checklist": "ARM 'cmp411_eqsnap: ARMED goal-query' + 'cmp411_eqsnap: ARMED soa-population+push-snapshot' (rust mobs_manager/entity_query), EFFECT 'epoch ok' rows>1000 + 'shard-drain EFFECT armed (first bulk drain applied' + 'push-snapshot EFFECT', grep AIOOBE=0, grep oversized=0 (gate 2.0 не должен стрелять на бенч-популяции)",
   "evidence": [
     "worklog TASK-411-C: cl1 пост-мортем 35691270899 (broadphase 15.66→7.64, mob_upsert 24.9%)",
