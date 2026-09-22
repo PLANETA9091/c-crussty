@@ -58,7 +58,7 @@ import net.minecraft.world.phys.AABB;
  *
  * FAIL-CLOSED: ENABLED (env == "cmp401_soa", STRICT eq) && nativeOk (mobProbe
  * magic) && !broken (структурный отказ плоскости — дизарм навсегда) &&
- * !oversized (в популяции замечен r_eff > 1.0 — весь рычаг в ванильный
+ * !oversized (в популяции замечен r_eff > RADIUS_GATE — весь рычаг в ванильный
  * режим) — иначе 100% ванильный fill (точная реплика fill-последовательности
  * Level.getEntities: Profiler-счётчик + EntityLookup.getEntities +
  * PlatformHooks.addToGetEntities, EntityQueryOps-контракт). Любой ненулевой
@@ -66,6 +66,27 @@ import net.minecraft.world.phys.AABB;
  * используется), ERR_STRUCT — дизарм.
  * Пустой/чужой CRUSSTY_LEVER_FLAG — сайт вообще не ретаргетится (rust-сторона
  * не ставит патч), путь ванильный по построению.
+ *
+ * TASK-411-C (k4soa): K4-нога — флаг "cmp411_k4soa" (STRICT eq; прежние
+ * флаги сохраняют ТОЧНОЕ прежнее поведение).
+ * (1) РАДИУС-РЕМОНТ: RADIUS_GATE 1.0 → 2.0 — хроника oversized-disarm
+ *     (camel 1.1875 round-406d..410ck3l, iron_golem 1.35 round-409eleg2b,
+ *     warden 1.45 round-409multi1) глобально дизармила ВСЮ SoA-плоскость
+ *     с тика ~13 в КАЖДОЙ SoA-armed ноге — 4 PARITY/RED ноги серии меряли
+ *     чистую ваниль. Пад в rust mob_query поднят до ±2 ячеек (soundness
+ *     floor(q0−hw) ≥ floor(q0)−2 при hw ≤ 2.0) — пара (RADIUS_GATE, PAD)
+ *     = контракт суперсета.
+ * (2) PUSH ИЗ СНАПШОТА (0 per-query JNI): под k4soa pushables СНАЧАЛА
+ *     пробует EntityGoalQueryOps.pushCandidates — тот же eqEpoch
+ *     chain-снапшот, что entitiesOfClassGate, но предикат pushableBy,
+ *     фильтр other != entity, без cls-гейта (универс = SoA-популяция
+ *     LivingEntity — ТОТ ЖЕ контракт round-401, что и mobQuery: не-living
+ *     pushables (boats) не в универсе — унаследованная документированная
+ *     дельта, не новая). ДЕДУП ячеек прямоугольника ДО прохода цепей:
+ *     двойной проход одной цепи дал бы дубликат-кандидата = двойной
+ *     doPush (для nearest-пика дубликаты безвредны — для push tail НЕТ).
+ *     Лестница: снапшот не готов → легаси mobQuery (JNI per-call,
+ *     без изменений) → vanillaFill.
  */
 public final class MobPushOps {
 
@@ -83,7 +104,10 @@ public final class MobPushOps {
                     // (EntityQueryOps.eqEpoch; sscan-прецедент TASK-406-E:
                     // составная нога SoA-plane + query-мост, маржинал меряется
                     // против cmp401_soa контроль-ноги).
-                    || f.trim().equals("cmp410_eindexq"));
+                    || f.trim().equals("cmp410_eindexq")
+                    // TASK-411-C (k4soa): K4 — радиус-ремонт населения
+                    // (gate 2.0 / rust pad 2) + push-лейн из chain-снапшота.
+                    || f.trim().equals("cmp411_k4soa"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -96,6 +120,39 @@ public final class MobPushOps {
     }
 
     private static final boolean COMPOSITE = compositeEnabled();
+
+    /** TASK-411-C (k4soa): K4 push-from-snapshot mode (STRICT eq). */
+    private static boolean k4Enabled() {
+        String f = System.getenv("CRUSSTY_LEVER_FLAG");
+        return f != null && f.trim().equals("cmp411_k4soa");
+    }
+
+    private static final boolean K4 = k4Enabled();
+
+    /**
+     * TASK-411-C (k4soa): радиус-гейт населения. 1.0 глобально дизармился на
+     * camel 1.1875 / iron_golem 1.35 / warden 1.45 (хроника round-406d..410);
+     * 2.0 покрывает r_eff всех ванильных мобов бенча. МЕНЯЕТСЯ ТОЛЬКО В ПАРЕ
+     * с rust PAD (src/mobs_soa.rs mob_query окно ±PAD ячеек, PAD ≥ ceil(gate)).
+     * STRICT-eq изоляция ног: константа фолдится компилятором — под прежними
+     * флагами (cmp401_soa, cmp402_comp/stagcomp, cmp410_eindexq) гейт
+     * ОСТАЁТСЯ 1.0 (бит-в-байт прежнее поведение, включая oversized-дизарм),
+     * 2.0 — только под cmp411_k4soa.
+     */
+    static final double RADIUS_GATE = K4 ? 2.0D : 1.0D;
+
+    /** One-shot EFFECT-пруф k4soa снапшот-пути (server-stdout.log). */
+    private static volatile boolean K4_SNAP_LOGGED = false;
+
+    private static void k4SnapMarker(int n) {
+        if (!K4_SNAP_LOGGED) {
+            K4_SNAP_LOGGED = true;
+            LOG.info("[crussty-plugin] cmp411_k4soa: push-snapshot EFFECT armed"
+                    + " (first chain-snapshot serve at tick "
+                    + net.minecraft.server.MinecraftServer.getServer().getTickCount()
+                    + ", candidates=" + n + ", zero per-query JNI)");
+        }
+    }
 
     private static final int PROBE_MAGIC = 0x5053; // "SOA"
     private static final int GRID_PROBE_MAGIC = 0x4D50; // "MP" (mobs_grid)
@@ -234,6 +291,25 @@ public final class MobPushOps {
         if (upsertSelf(entity) || broken) {
             return vanillaFill(level, entity, box);
         }
+        // TASK-411-C (k4soa): K4 — снапшот-путь ПЕРВЫМ (0 per-query JNI):
+        // тот же eqEpoch chain-снапшот, что и entitiesOfClassGate. null =
+        // снапшот не готов/структурный дрейф/абсурдный rect — дальше легаси
+        // mobQuery (без изменений), затем vanillaFill. Контракт универса —
+        // ТОТ ЖЕ, что у mobQuery (SoA-популяция LivingEntity) — см. class doc.
+        if (K4) {
+            ArrayList<Entity>[] ring = RING.get();
+            int[] cursor = RING_CURSOR.get();
+            int slot = cursor[0];
+            cursor[0] = (slot + 1) % RING_SLOTS;
+            ArrayList<Entity> list = ring[slot];
+            list.clear();
+            if (EntityGoalQueryOps.pushCandidates(level, entity, box, list)) {
+                k4SnapMarker(list.size());
+                maybeSweep();
+                return list;
+            }
+            list.clear(); // не обслужено — слот кольца чист для legacy-пути
+        }
         int lid = System.identityHashCode(level);
         int[] out = SCRATCH.get();
         int n = mobQuery(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ, lid, out);
@@ -315,9 +391,9 @@ public final class MobPushOps {
         AABB bb = e.getBoundingBox();
         double hw = Math.max((bb.maxX - bb.minX) * 0.5D, (bb.maxZ - bb.minZ) * 0.5D);
         double hh = (bb.maxY - bb.minY) * 0.5D;
-        if (Math.max(hw, hh) > 1.0D) {
+        if (Math.max(hw, hh) > RADIUS_GATE) {
             oversized = true; // не-грид-юниверс: весь рычаг в ваниль (fail-closed)
-            LOG.warning("[crussty-plugin] cmp401_soa: oversized bounding radius "
+            LOG.warning("[crussty-plugin] cmp401_soa/k4soa: oversized bounding radius "
                     + Math.max(hw, hh) + " on " + e.getType() + " — lever reverted to vanilla");
             return true;
         }

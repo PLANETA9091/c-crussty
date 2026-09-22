@@ -112,10 +112,20 @@ const H2: i32 = 0x85EB_CA77u32 as i32;
 
 /// STRICT-eq gate (round-400 lever protocol; полу-armed мост = невалидная
 /// нога, TASK-402-F). Пустой/чужой флаг = ваниль бит-в-байт.
+/// TASK-411-C (k4soa): K4-нога — та же снапшот-механика + радиус-ремонт
+/// населения (gate 2.0 / pad 2) + push-лейн из снапшота (pushCandidates).
 fn enabled() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp410_eindexq")
+        Ok("cmp410_eindexq") | Ok("cmp411_k4soa")
+    )
+}
+
+/// TASK-411-C (k4soa): true under the K4 flag only (ARM-marker labelling).
+fn enabled_flag_is_k4() -> bool {
+    matches!(
+        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
+        Ok("cmp411_k4soa")
     )
 }
 
@@ -421,8 +431,9 @@ pub fn activate() {
         }
 
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
+        let flag_label = if enabled_flag_is_k4() { "cmp411_k4soa" } else { "cmp410_eindexq" };
         eprintln!(
-            "[crussty-plugin] cmp410_eindexq: ARMED goal-query (NearestAttackableTargetGoal.findTarget + AvoidEntityGoal.canUse Level.getEntitiesOfClass sites -> EntityGoalQueryOps.entitiesOfClassGate; rust eqEpoch = ONE bulk JNI/tick single-pass chain build over mobs_soa SoA population -> head[65536]/next[id]/frozen x,y,z,hw,hh columns; java: cell-rect(AABB±8.0) -> chains -> frozen prune(AABB±8.0) -> byId -> live AABB.intersects + predicate = strict superset, nearest-pick order-delta documented; vanilla getNearestEntity/TargetingConditions tail untouched; zero per-entity JNI; empty flag = vanilla bit-for-bit)"
+            "[crussty-plugin] {flag_label}: ARMED goal-query (NearestAttackableTargetGoal.findTarget + AvoidEntityGoal.canUse Level.getEntitiesOfClass sites -> EntityGoalQueryOps.entitiesOfClassGate; rust eqEpoch = ONE bulk JNI/tick single-pass chain build over mobs_soa SoA population -> head[65536]/next[id]/frozen x,y,z,hw,hh columns; java: cell-rect(AABB±8.0) -> chains -> frozen prune(AABB±8.0) -> byId -> live AABB.intersects + predicate = strict superset, nearest-pick order-delta documented; vanilla getNearestEntity/TargetingConditions tail untouched; zero per-entity JNI; k4soa: radius-gate 2.0/pad-2 repair + push-lane served from the SAME snapshot (pushCandidates, cell-rect dedup); empty flag = vanilla bit-for-bit)"
         );
 
         crate::kernel_policy::audit_wire(OPS_CLASS, "entitiesOfClassGate", "cmp410_eindexq v1");
@@ -592,17 +603,20 @@ mod tests {
     use super::*;
 
     fn enabled_with(s: &str) -> bool {
-        s == "cmp410_eindexq"
+        s == "cmp410_eindexq" || s == "cmp411_k4soa"
     }
 
     #[test]
     fn strict_gate_matches() {
         assert!(enabled_with("cmp410_eindexq"));
+        assert!(enabled_with("cmp411_k4soa"));
         assert!(!enabled_with(""));
         assert!(!enabled_with("cmp405_eindex"));
         assert!(!enabled_with("cmp401_soa"));
         assert!(!enabled_with("cmp410_eindexq_x"));
+        assert!(!enabled_with("cmp411_k4soa_x"));
         assert!(!enabled_with(" cmp410_eindexq"));
+        assert!(!enabled_with(" cmp411_k4soa"));
     }
 
     /// Mirror of the java EntityGoalQueryOps.cellHash operating on the same

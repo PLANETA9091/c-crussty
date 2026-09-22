@@ -20,8 +20,10 @@
 //! vs query box) so java re-validates only true neighbors.
 //!
 //! SUPERSET PROOF (rust prune can never hide a vanilla candidate): java gates
-//! every member to half-extent ≤ 1.0 (`r_eff = max(hw, hh) ≤ 1.0`, oversized
-//! → lever reverts to vanilla). A candidate whose true AABB intersects the
+//! every member to half-extent ≤ 2.0 (`r_eff = max(hw, hh) ≤ 2.0`, oversized
+//! → lever reverts to vanilla; TASK-411-C k4soa raised the gate 1.0 → 2.0 and
+//! the query center-window pad to ±2 cells to cover camel/iron_golem/warden
+//! population radii). A candidate whose true AABB intersects the
 //! query box has center c with |c.a - box| ≤ true_a_extent/2 ≤ radii_a
 //! (hw ≥ x/z half-extents by construction), hence the flat-array test
 //! `c.a - r < q.max && c.a + r > q.min` (strict, mirroring
@@ -78,9 +80,18 @@ use std::sync::{Mutex, OnceLock};
 const IDS_CAP: usize = 1 << 20; // per-id flat arrays; java reuses ids via freeIds
 const CELL_CAP: usize = 1 << 18; // 262144 open-addressed cell slots (live + tombstones)
 const QRETRY: u32 = 4096; // seqlock retry budget per query → ERR_RANGE
-/// Max cell-window half-width beyond the ±1 pad (self AABB span cap): wider
+/// TASK-411-C (k4soa): center-window pad in CELLS. The java radius gate
+/// (MobPushOps.upsertSelf) admits r_eff = max(hw, hh) ≤ 2.0 (camel 1.1875 /
+/// iron_golem 1.35 / warden 1.45 in the bench population), so an intersecting
+/// AABB's CENTER can sit up to 2.0 blocks outside the query box and its cell
+/// up to 2 cells below floor(q0). SOUNDNESS: floor(q0 − hw) ≥ floor(q0) − 2
+/// for hw ≤ 2.0 (floor(a − n·cell) = floor(a) − n for integer n·cell shifts),
+/// therefore pad ≥ ceil(RADIUS_GATE) = 2. MUST stay ≥ ceil of the java gate
+/// (MobPushOps.RADIUS_GATE) — the pair is the superset contract.
+const PAD: i32 = 2;
+/// Max cell-window half-width beyond the ±PAD (self AABB span cap): wider
 /// queries return ERR_RANGE (per-call vanilla fallback; oversized selves are
-/// gated java-side by the ≤1.0 bounding-radius gate).
+/// gated java-side by the ≤2.0 bounding-radius gate).
 const MAX_SPAN: i32 = 32;
 
 const ERR_STRUCT: i32 = -1;
@@ -185,6 +196,9 @@ fn lever_mode() -> bool {
         // популяции для goal-query CSR-снапшота (EntityQueryOps.eqEpoch;
         // sscan-прецедент TASK-406-E).
         || f == "cmp410_eindexq"
+        // TASK-411-C (k4soa): K4 — радиус-ремонт населения (gate 2.0 / pad 2)
+        // + push-лейн из chain-снапшота (0 per-query JNI).
+        || f == "cmp411_k4soa"
 }
 
 /// TASK-410-C (eindexq): read view for the goal-query CSR epoch pass —
@@ -426,7 +440,8 @@ pub unsafe extern "system" fn mob_probe(
 }
 
 /// Insert-or-move `id` at the AABB center (x, y, z) with flat radii
-/// (hw = half of max(x/z)-extent, hh = half height; java gates both ≤ 1.0).
+/// (hw = half of max(x/z)-extent, hh = half height; java gates both ≤ 2.0 —
+/// TASK-411-C k4soa, was ≤ 1.0).
 /// Returns 0, ERR_RANGE (capacity pressure — per-call vanilla fallback) or
 /// ERR_STRUCT (corruption — java disarms).
 ///
@@ -513,8 +528,8 @@ pub unsafe extern "system" fn mob_remove(
 }
 
 /// Query candidate ids for the AABB [qx0..qx1]×[qy0..qy1]×[qz0..qz1] with the
-/// ±1.0 center-window pad (java guarantees all members have half-extent
-/// ≤ 1.0). The scan reads the SoA flat arrays and prunes with the coarse
+/// ±PAD(2) center-window pad (java guarantees all members have half-extent
+/// ≤ 2.0 — k4soa gate). The scan reads the SoA flat arrays and prunes with the coarse
 /// center±radii test (superset of AABB.intersects — see module docs).
 /// Writes ids into the pinned `out` array; returns the count, -(out_cap) on
 /// overflow (caller grows + retries), ERR_RANGE for absurd widths/instability,
@@ -545,12 +560,14 @@ pub unsafe extern "system" fn mob_query(
     }
     let cap = cap as i32;
 
-    let cx0 = qx0.floor() as i32 - 1;
-    let cx1 = qx1.floor() as i32 + 1;
-    let cy0 = qy0.floor() as i32 - 1;
-    let cy1 = qy1.floor() as i32 + 1;
-    let cz0 = qz0.floor() as i32 - 1;
-    let cz1 = qz1.floor() as i32 + 1;
+    // TASK-411-C (k4soa): PAD-cell center window (was ±1 for the 1.0 radius
+    // gate; the 2.0 gate needs ±2 — see PAD soundness note).
+    let cx0 = qx0.floor() as i32 - PAD;
+    let cx1 = qx1.floor() as i32 + PAD;
+    let cy0 = qy0.floor() as i32 - PAD;
+    let cy1 = qy1.floor() as i32 + PAD;
+    let cz0 = qz0.floor() as i32 - PAD;
+    let cz1 = qz1.floor() as i32 + PAD;
     if (cx1 - cx0) > MAX_SPAN || (cy1 - cy0) > MAX_SPAN || (cz1 - cz0) > MAX_SPAN {
         return ERR_RANGE;
     }
@@ -661,14 +678,15 @@ mod tests {
             && m.z + m.hw > qz0
     }
 
+    // TASK-411-C (k4soa): test window mirrors mob_query — MUST track PAD.
     fn query(d: &Soa, lid: i32, q: (f64, f64, f64, f64, f64, f64)) -> Vec<usize> {
         let (qx0, qy0, qz0, qx1, qy1, qz1) = q;
-        let cx0 = qx0.floor() as i32 - 1;
-        let cx1 = qx1.floor() as i32 + 1;
-        let cy0 = qy0.floor() as i32 - 1;
-        let cy1 = qy1.floor() as i32 + 1;
-        let cz0 = qz0.floor() as i32 - 1;
-        let cz1 = qz1.floor() as i32 + 1;
+        let cx0 = qx0.floor() as i32 - PAD;
+        let cx1 = qx1.floor() as i32 + PAD;
+        let cy0 = qy0.floor() as i32 - PAD;
+        let cy1 = qy1.floor() as i32 + PAD;
+        let cz0 = qz0.floor() as i32 - PAD;
+        let cz1 = qz1.floor() as i32 + PAD;
         let mut out = [0i32; 4096];
         let cap = out.len() as i32;
         let n = soa_scan(
@@ -745,6 +763,66 @@ mod tests {
         for m in &model {
             assert_eq!(m.remove(&mut d), 0);
         }
+    }
+
+    /// TASK-411-C (k4soa): pad-2 soundness oracle — mobs with bench radii
+    /// (camel 1.1875 / iron_golem 1.35 / gate-max 2.0) centered OUTSIDE the
+    /// query box must still be found when their AABB intersects it (the exact
+    /// case the ±1 pad missed: center cell = floor(qx0) − 2).
+    #[test]
+    fn k4soa_large_radius_superset() {
+        let mut d = Soa::new();
+        let radii = [1.1875f64, 1.35, 2.0];
+        let mut id = 9000usize;
+        for (i, r) in radii.iter().enumerate() {
+            let r = *r;
+            // Center sits (r − 0.125) blocks left of the integer box edge
+            // qx0 = 10.0 with true half-extent ex = ez = r ⇒ AABB reaches
+            // x = 10.125 > qx0 (genuine intersection), while the CENTER cell
+            // = floor(10 − r + 0.125) = 8 = floor(qx0) − 2 for all three r
+            // (pad-1 window starts at cell 9 and misses it; pad-2 covers).
+            let m = Mob {
+                id,
+                lid: 11,
+                x: 10.0 - (r - 0.125),
+                y: 64.0,
+                z: 10.0 + i as f64 * 0.25,
+                ex: r,
+                ey: 0.4,
+                ez: r,
+                hw: r,
+                hh: r,
+            };
+            assert_eq!(m.upsert(&mut d), 0);
+            let q = (10.0, 63.5, m.z - 0.5, 11.0, 64.5, m.z + 0.5);
+            assert!(
+                exact_hits(&m, q),
+                "model must genuinely intersect the query (r={r})"
+            );
+            assert!(
+                query(&d, 11, q).contains(&id),
+                "pad-2 window must surface gate-max radius candidate r={r}"
+            );
+            id += 1;
+        }
+        // Mirror case above the box (y axis): center a full radius above the
+        // box top edge — the ±2 y-window must reach it (live-bb intersects).
+        let m = Mob { id, lid: 11, x: 50.5, y: 64.0 + 1.35, z: 50.5, ex: 0.4, ey: 1.35, ez: 0.4, hw: 1.35, hh: 1.35 };
+        assert_eq!(m.upsert(&mut d), 0);
+        let q = (49.5, 64.0 + 0.5 - 1e-9, 49.5, 51.5, 64.0 + 1.5 - 1e-9, 51.5);
+        assert!(exact_hits(&m, q) && query(&d, 11, q).contains(&id));
+        // Exact pad-2 boundary with a NON-integer box edge: center x = 7.6
+        // (cell 7), hw = hh = 2.0, true ex = 1.95 — AABB reaches 9.55 >
+        // qx0 = 9.5 − 1e-9; floor(qx0) − 2 = 7 → only the ±2 window reaches
+        // cell 7 (the ±1 window of the old gate missed it).
+        let b = Mob { id: id + 1, lid: 11, x: 7.6, y: 64.0, z: 50.5, ex: 1.95, ey: 1.0, ez: 0.5, hw: 2.0, hh: 2.0 };
+        assert_eq!(b.upsert(&mut d), 0);
+        let q2 = (9.5 - 1e-9, 62.0, 49.5, 11.0, 66.0, 51.5);
+        assert!(exact_hits(&b, q2));
+        assert!(
+            query(&d, 11, q2).contains(&(id + 1)),
+            "pad-2 boundary regression: center cell == floor(qx0)-2 must be scanned"
+        );
     }
 
     #[test]
