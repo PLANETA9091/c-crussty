@@ -42,6 +42,7 @@ mod jni_table;
 mod kernel_policy;
 mod loader;
 mod nav_plane;
+mod nav_pool;
 mod noise_fill;
 mod parse_diag;
 mod zero_cursor;
