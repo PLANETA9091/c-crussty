@@ -106,7 +106,7 @@ def main():
     for rid, rb, ca in sorted(set(seen), key=lambda x: x[2]):
         print(f"RUN {rid} {rb} created {ca}")
     with open("/home/z/rounds/ROUND-417/ANCHORS_DISPATCH.txt", "w") as f:
-        f.write(f"master {master_sha}\n")
+        f.write(f"head {head_sha} (round-417-c-bq, lever cmp417_bq)\n")
         for rid, rb, ca in sorted(set(seen), key=lambda x: x[2]):
             f.write(f"{rid} {rb} {ca}\n")
 
