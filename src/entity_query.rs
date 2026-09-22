@@ -114,10 +114,14 @@ const H2: i32 = 0x85EB_CA77u32 as i32;
 /// нога, TASK-402-F). Пустой/чужой флаг = ваниль бит-в-байт.
 /// TASK-411-C (k4soa): K4-нога — та же снапшот-механика + радиус-ремонт
 /// населения (gate 2.0 / pad 2) + push-лейн из снапшота (pushCandidates).
+/// TASK-411-C (eqsnap, v2): та же снапшот-механика, НО upserts идут в
+/// пер-потоковые delta-шарды (0 локов/seqlock), eq_epoch СНАЧАЛА сливает их
+/// одним bulk-drain (O(dirty)) и только потом строит цепи (cl1 35691270899:
+/// per-entity WLOCK-мутации = 24.9% CPU → 0.5 TPS; eq chain build = 0.025%).
 fn enabled() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp410_eindexq") | Ok("cmp411_k4soa")
+        Ok("cmp410_eindexq") | Ok("cmp411_k4soa") | Ok("cmp411_eqsnap")
     )
 }
 
@@ -126,6 +130,15 @@ fn enabled_flag_is_k4() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
         Ok("cmp411_k4soa")
+    )
+}
+
+/// TASK-411-C (eqsnap, v2): true under the eqsnap flag only (marker labelling
+/// + the shard-drain switch inside eq_epoch).
+fn enabled_flag_is_eqsnap() -> bool {
+    matches!(
+        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
+        Ok("cmp411_eqsnap")
     )
 }
 
@@ -431,9 +444,15 @@ pub fn activate() {
         }
 
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
-        let flag_label = if enabled_flag_is_k4() { "cmp411_k4soa" } else { "cmp410_eindexq" };
+        let flag_label = if enabled_flag_is_eqsnap() {
+            "cmp411_eqsnap"
+        } else if enabled_flag_is_k4() {
+            "cmp411_k4soa"
+        } else {
+            "cmp410_eindexq"
+        };
         eprintln!(
-            "[crussty-plugin] {flag_label}: ARMED goal-query (NearestAttackableTargetGoal.findTarget + AvoidEntityGoal.canUse Level.getEntitiesOfClass sites -> EntityGoalQueryOps.entitiesOfClassGate; rust eqEpoch = ONE bulk JNI/tick single-pass chain build over mobs_soa SoA population -> head[65536]/next[id]/frozen x,y,z,hw,hh columns; java: cell-rect(AABB±8.0) -> chains -> frozen prune(AABB±8.0) -> byId -> live AABB.intersects + predicate = strict superset, nearest-pick order-delta documented; vanilla getNearestEntity/TargetingConditions tail untouched; zero per-entity JNI; k4soa: radius-gate 2.0/pad-2 repair + push-lane served from the SAME snapshot (pushCandidates, cell-rect dedup); empty flag = vanilla bit-for-bit)"
+            "[crussty-plugin] {flag_label}: ARMED goal-query (NearestAttackableTargetGoal.findTarget + AvoidEntityGoal.canUse Level.getEntitiesOfClass sites -> EntityGoalQueryOps.entitiesOfClassGate; rust eqEpoch = ONE bulk JNI/tick single-pass chain build over mobs_soa SoA population -> head[65536]/next[id]/frozen x,y,z,hw,hh columns; java: cell-rect(AABB±8.0) -> chains -> frozen prune(AABB±8.0) -> byId -> live AABB.intersects + predicate = strict superset, nearest-pick order-delta documented; vanilla getNearestEntity/TargetingConditions tail untouched; zero per-entity JNI; k4soa: radius-gate 2.0/pad-2 repair + push-lane served from the SAME snapshot (pushCandidates, cell-rect dedup); eqsnap v2: per-entity upserts land in per-THREAD delta shards (0 locks/0 seqlock — cl1 post-mortem: global-WLOCK upsert storm = 24.9% CPU → 0.5 TPS), eqEpoch FIRST drains all shards into the flat columns (O(dirty), one bulk JNI/tick) THEN builds chains; empty flag = vanilla bit-for-bit)"
         );
 
         crate::kernel_policy::audit_wire(OPS_CLASS, "entitiesOfClassGate", "cmp410_eindexq v1");
@@ -516,6 +535,25 @@ pub unsafe extern "system" fn eq_epoch(
     let Some((xs, ys, zs, hws, hhs, flags, _version)) = crate::mobs_soa::eq_snapshot() else {
         return ERR_RANGE; // plane tables not initialized (cold) — vanilla this tick
     };
+
+    // TASK-411-C (eqsnap, v2): the per-tick dirty-delta drain — apply every
+    // per-thread shard row to the flat columns (O(dirty), ONE WLOCK hold)
+    // BEFORE the chain pass. The eq_snapshot slices above point at the SAME
+    // plane columns the drain writes (single consumer thread: eq_epoch runs
+    // under the java EPOCH_LOCK; concurrent mobRemove bumps the seqlock and
+    // only clears flags — the existing ≤1-tick ghost contract covers the
+    // interleave). Under legacy flags this is a no-op (shards never written).
+    let drained = if enabled_flag_is_eqsnap() {
+        crate::mobs_soa::drain_eqsnap_shards()
+    } else {
+        0
+    };
+    static DRAIN_LOGGED: AtomicBool = AtomicBool::new(false);
+    if drained > 0 && !DRAIN_LOGGED.swap(true, Ordering::Relaxed) {
+        eprintln!(
+            "[crussty-plugin] cmp411_eqsnap: shard-drain EFFECT armed (first bulk drain applied {drained} dirty rows, O(dirty) per tick — no per-entity plane mutation)"
+        );
+    }
 
     let bound = (id_top as usize)
         .min((soa_cap as usize) / STRIDE)
@@ -603,20 +641,23 @@ mod tests {
     use super::*;
 
     fn enabled_with(s: &str) -> bool {
-        s == "cmp410_eindexq" || s == "cmp411_k4soa"
+        s == "cmp410_eindexq" || s == "cmp411_k4soa" || s == "cmp411_eqsnap"
     }
 
     #[test]
     fn strict_gate_matches() {
         assert!(enabled_with("cmp410_eindexq"));
         assert!(enabled_with("cmp411_k4soa"));
+        assert!(enabled_with("cmp411_eqsnap"));
         assert!(!enabled_with(""));
         assert!(!enabled_with("cmp405_eindex"));
         assert!(!enabled_with("cmp401_soa"));
         assert!(!enabled_with("cmp410_eindexq_x"));
         assert!(!enabled_with("cmp411_k4soa_x"));
+        assert!(!enabled_with("cmp411_eqsnap_x"));
         assert!(!enabled_with(" cmp410_eindexq"));
         assert!(!enabled_with(" cmp411_k4soa"));
+        assert!(!enabled_with(" cmp411_eqsnap"));
     }
 
     /// Mirror of the java EntityGoalQueryOps.cellHash operating on the same

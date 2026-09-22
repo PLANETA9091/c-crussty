@@ -90,8 +90,13 @@ public final class EntityGoalQueryOps {
         // TASK-411-C (k4soa): K4-нога — та же снапшот-механика; отличия:
         // популяция с радиус-гейтом 2.0 (rust pad 2) + новый пакет-приватный
         // pushCandidates (push-лейн из снапшота, вызывается MobPushOps.pushables).
+        // TASK-411-C (eqsnap, v2): та же механика; upserts идут в
+        // пер-потоковые delta-шарды руста (0 локов), eq_epoch сливает их
+        // одним bulk-drain O(dirty) перед chain-build (пост-мортем cl1
+        // 35691270899: per-entity WLOCK-мутации = 24.9% CPU → 0.5 TPS).
         return f != null && (f.trim().equals("cmp410_eindexq")
-                || f.trim().equals("cmp411_k4soa"));
+                || f.trim().equals("cmp411_k4soa")
+                || f.trim().equals("cmp411_eqsnap"));
     }
 
     /** TASK-411-C (k4soa): K4-режим (маркировка EFFECT-строк). */
@@ -103,7 +108,12 @@ public final class EntityGoalQueryOps {
     private static final boolean ENABLED = leverEnabled();
     private static final boolean K4 = k4Mode();
     /** Метка флага для EFFECT/диагностических строк (одна из ARM-пар). */
-    private static final String FLAG_LABEL = K4 ? "cmp411_k4soa" : "cmp410_eindexq";
+    private static final String FLAG_LABEL;
+    static {
+        String f = System.getenv("CRUSSTY_LEVER_FLAG");
+        FLAG_LABEL = f != null && f.trim().equals("cmp411_eqsnap")
+                ? "cmp411_eqsnap" : (K4 ? "cmp411_k4soa" : "cmp410_eindexq");
+    }
 
     private static final int PROBE_MAGIC = 0x4547; // "EG"
     private static final int ERR_STRUCT = -1;
