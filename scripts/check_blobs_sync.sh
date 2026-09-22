@@ -1,18 +1,20 @@
 #!/usr/bin/env bash
-# check_blobs_sync.sh — javap-gate against the ×93 blob-sync lesson
-# (TASK-414-B: cv3b-1 boot-log 'items_restplane ARMED' absent, items lane 34.23%
-# — java gate flags were extended on the rust side but the java-side gates of
-# ItemEntityManager/MobAiOps/MobScanOps did not accept the composite flag).
+# check_blobs_sync.sh — TASK-417-C javap-gate against the ×93 blob-sync lesson
+# (ported from 1aec4f8 @round-414, extended: queryplane + entitygoalquery +
+# cmp417_bq gate flags + flat==nested byte identity. ×93 discipline:
+# include_bytes! embeds the NESTED path; a flat-only refresh leaves the
+# embedded blob stale = dormant plane).
 #
 # For every lever bridge class:
-#   1. the .class blob must exist and be a valid Java 21 (major 65) classfile;
+#   1. the NESTED .class blob (the path include_bytes! actually embeds) must
+#      exist, be major 65, and match its FLAT sibling byte-for-byte;
 #   2. javap of the blob must contain the expected ARM marker strings;
-#   3. javap of the blob must contain the expected flag strings (the composite
-#      gate lives in the CONSTANT POOL of the blob — a source-only edit without
-#      a rebuild fails here);
-#   4. expected native method declarations must be present (javap -p).
+#   3. javap of the blob must contain EVERY flag string accepted by the
+#      SOURCE gate (composite gate lives in the CONSTANT POOL — a source-only
+#      edit without a rebuild fails here);
+#   4. expected native declarations must be present (javap -p).
 #
-# Usage: scripts/check_blobs_sync.sh [javac-home]   (exit 0 = in sync)
+# Usage: scripts/check_blobs_sync.sh   (exit 0 = in sync)
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
@@ -47,26 +49,42 @@ PY
   done
 }
 
-echo "== javap-gate: lever bridge blobs vs ARM markers / gate flags =="
+check_flat_matches_nested() { # fqcn-dir fqcn — flat copy == nested copy
+  local dir="$1" fqcn="$2"
+  local nested="$dir/$fqcn.class" flat="$dir/$(basename "$fqcn").class"
+  if [ ! -f "$nested" ]; then die "missing nested blob: $nested"; return; fi
+  if [ ! -f "$flat" ]; then die "missing flat blob: $flat (legacy path)"; return; fi
+  if ! cmp -s "$nested" "$flat"; then
+    die "$nested != $flat — rebuild via scripts/build_417c_blobs_all.sh (×93: nested is what include_bytes! embeds)"
+  else
+    note "$nested == flat: byte-identical"
+  fi
+}
+
+echo "== javap-gate: lever bridge blobs vs ARM markers / gate flags (lever cmp417_bq) =="
 
 check_class \
   "entityinside/build/net/minecraft/world/entity/ItemEntityManager.class" \
-  "items_restplane ARMED" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
+  "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
   "native int idxProbe" "static void indexAdd" "native int lifetimeDue"
 
 check_class \
+  "queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class" \
+  "cmp417_bq" "cmp412_b2p1" "selfTest" "isHardCollidingProbe"
+
+check_class \
   "mobai/build/net/minecraft/world/entity/MobAiOps.class" \
-  "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
+  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
   "native"
 
 check_class \
   "sscan/build/net/minecraft/world/entity/MobScanOps.class" \
-  "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
+  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
   "native"
 
 check_class \
   "mobpush/build/net/minecraft/world/entity/MobPushOps.class" \
-  "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
+  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
   "native"
 
 check_class \
@@ -81,7 +99,9 @@ for pair in \
   "sscan/net/minecraft/world/entity/MobScanOps.java:sscan/build/net/minecraft/world/entity/MobScanOps.class" \
   "mobpush/net/minecraft/world/entity/MobPushOps.java:mobpush/build/net/minecraft/world/entity/MobPushOps.class" \
   "entitygoalquery/net/minecraft/world/entity/EntityGoalQueryOps.java:entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
-  "entityinside/net/minecraft/world/entity/ItemEntityManager.java:entityinside/build/net/minecraft/world/entity/ItemEntityManager.class"
+  "entityinside/net/minecraft/world/entity/ItemEntityManager.java:entityinside/build/net/minecraft/world/entity/ItemEntityManager.class" \
+  "entitygoalquery/net/minecraft/world/entity/EntityGoalQueryOps.java:entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
+  "queryplane/net/minecraft/world/entity/QueryPlaneOps.java:queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class"
 do
   src="${pair%%:*}"; blob="${pair##*:}"
   flags=$(grep -o '"cmp[0-9_a-z]*"' "$src" | tr -d '"' | sort -u)
@@ -95,6 +115,15 @@ do
   done
   note "$src <-> $blob: $(printf '%s\n' "$flags" | wc -l) gate flags in sync"
 done
+
+# flat-vs-nested byte identity (round-415 rebuild-script bug root-cause)
+check_flat_matches_nested "mobpush/build" "net/minecraft/world/entity/MobPushOps"
+check_flat_matches_nested "sscan/build" "net/minecraft/world/entity/MobScanOps"
+check_flat_matches_nested "sscan/build" "net/minecraft/world/entity/MobPushOps"
+check_flat_matches_nested "mobai/build" "net/minecraft/world/entity/MobAiOps"
+check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/ItemEntityManager"
+check_flat_matches_nested "entitygoalquery/build" "net/minecraft/world/entity/EntityGoalQueryOps"
+check_flat_matches_nested "queryplane/build" "net/minecraft/world/entity/QueryPlaneOps"
 
 if [ "$FAIL" = "0" ]; then
   echo "check_blobs_sync: ALL IN SYNC"
