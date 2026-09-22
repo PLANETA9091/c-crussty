@@ -70,7 +70,9 @@ fn lever_flag_matches_for(f: &str) -> bool {
         || f == "cmp405_stagtick" || f == "cmp406_sscan"
         || f == "cmp409_multi" || f == "cmp412_meganav" || f == "cmp414_cvs"
         // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
-        || f == "cmp412_eqsnapv3" || f == "cmp414_cvs"
+        // TASK-417-C: cvs-носитель ⊕ queryplane-awake композит (STRICT OR;
+        // legacy id-шники нетронуты — другие носители не затронуты).
+        || f == "cmp412_eqsnapv3" || f == "cmp414_cvs" || f == "cmp417_bq"
 }
 
 pub fn activate() {
@@ -100,7 +102,8 @@ pub fn activate() {
         // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
         || flag == "cmp409_multi" || flag == "cmp412_meganav" || flag == "cmp414_cvs"
         // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
-        || flag == "cmp412_eqsnapv3" || flag == "cmp414_cvs";
+        // TASK-417-C: cvs-носитель ⊕ queryplane-awake композит.
+        || flag == "cmp412_eqsnapv3" || flag == "cmp414_cvs" || flag == "cmp417_bq";
     let despawn2 = flag == "cmp399_despawn2" || bfcomp || comp;
     if shard {
         // ГРОМКИЙ ARM-МАРКЕР (TASK-399-B): без этой строки нога не-armed.

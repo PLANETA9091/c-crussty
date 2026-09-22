@@ -1,17 +1,43 @@
 {
   "agent": "TASK-417-C",
   "vector": "queryplane-awake on cvs",
-  "step": 1,
-  "status": "worktree",
+  "step": 2,
+  "status": "port-complete-prebuild",
   "branch": "round-417-c-bq",
   "base": "1aec4f8",
-  "base_note": "validated cvs carrier: meganav + eqsnap-v3 + race-fix + blob-sync; min-of-3 2.70, items 0.00, +35.0 pair",
-  "worktree": "/home/z/rounds/ROUND-417/agent-c",
-  "worktree_note": "sparse-checkout (excludes research/gc-recon-2026-09-19/round-* except round-396-a javac cp; ENOSPC disk limit 2.5G free vs 3.0G full tree); HEAD tree = 1aec4f8 exactly",
-  "source_material": {
-    "queryplane_base": "125c474",
-    "retagged": "origin/round-416-a-mc2 @af1cca8 (lever_id markers + selfTest-gate, STRICT-OR {b2p1,mcomp})",
-    "find_class_fix": "158889b:research/RESEARCH-A-iter3.md bottom: find_class JVMTI-scan filters INITIALIZED; fix = selfTest on LOCAL ref from define_class"
+  "ported": [
+    "src/classfile.rs QUERYPLANE section (af1cca8 verbatim: 2 whole-body redirects + slices hard-probe + resolution closure)",
+    "src/queryplane.rs NEW (oracle tests + delivery tests adapted to cvs STRICT-OR)",
+    "queryplane/QueryPlaneOps.java (flagArmed + cmp417_bq)",
+    "tests/fixtures/ChunkEntitySlices_real.class",
+    "scripts/build_queryplane_ops.sh",
+    "lib.rs mod+register(last)+activate(last)"
+  ],
+  "find_class_fix": "selfTest called on LOCAL ref from define_class inside one with_attached closure (define_bridge_and_selftest); find_class REMOVED from selfTest path (root-cause 158889b RESEARCH-A-iter3: JVMTI scan filters non-INITIALIZED classes)",
+  "gate_retags_cmp417_bq": {
+    "rust": [
+      "collide_batch x2",
+      "entity_query x4",
+      "items_index",
+      "mobs_ai",
+      "mobs_grid",
+      "mobs_manager x3",
+      "mobs_soa x2",
+      "mobs_sscan",
+      "nav_plane",
+      "stagger",
+      "tickplane",
+      "queryplane lever_flag_matches+lever_id"
+    ],
+    "java": [
+      "EntityGoalQueryOps",
+      "ItemEntityManager x3",
+      "MobAiOps",
+      "MobPushOps x2",
+      "MobScanOps",
+      "QueryPlaneOps flagArmed"
+    ],
+    "old_ids_kept": "b2p1/mcomp/meganav/eqsnapv3/cvs arms intact"
   },
-  "next": "port queryplane.rs + QueryPlaneOps.java onto cvs base, apply find_class fix, cmp417_bq STRICT-OR all gate sites"
+  "next": "blobs build + selftest main + cargo + javap-gate + dispatch"
 }

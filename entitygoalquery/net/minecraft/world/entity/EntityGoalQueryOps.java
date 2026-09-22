@@ -101,7 +101,11 @@ public final class EntityGoalQueryOps {
                 // cmp412_meganav-сайты остаются нетронутыми.
                 || f.trim().equals("cmp412_eqsnapv3")
                 // TASK-414-B: leg flag cmp414_cvs (meganav⊕eqsnap revival).
-                || f.trim().equals("cmp414_cvs"));
+                || f.trim().equals("cmp414_cvs")
+                // TASK-417-C: cvs-носитель ⊕ queryplane (broadphase-query
+                // awake; 2 goal-сайта НЕТРОНУТЫ этим флагом — они ретаргетятся
+                // entity_query::enabled(), queryplane берёт Level-сайты).
+                || f.trim().equals("cmp417_bq"));
     }
 
     /** TASK-411-C (k4soa): K4-режим (маркировка EFFECT-строк). */
