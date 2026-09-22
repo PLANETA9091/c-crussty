@@ -147,14 +147,30 @@ const TARGETS: [Target; 3] = [
     },
 ];
 
-/// env-gate (off by default), read once at register time
+/// env-gate (off by default), read once at register time.
+/// TASK-419-C STRICT-OR (cmp419_chunk, law 8 GEN-axis): the legacy
+/// CRUSSTY_NATIVE_NOISE_FILL env key OR a chunk-pipeline wave lever flag
+/// arms the batch noise-fill bridge. TASK-420-C adds cmp420_chunk2 to the
+/// lever union (stability iteration re-arms the GEN-axis). TASK-420-MEGA
+/// adds cmp420_colpush (disjoint-lane composition carrier, law 7). The
+/// chunk-parse plane itself never reads the env key, and this gate never
+/// reads lever ids outside the wave/mega ids — a STRICT union, no
+/// broadening (empty lever flag + unset env = vanilla noise,
+/// dormant-invisible).
 fn enabled() -> bool {
-    std::env::var("CRUSSTY_NATIVE_NOISE_FILL")
+    let env_gate = std::env::var("CRUSSTY_NATIVE_NOISE_FILL")
         .map(|v| {
             let v = v.trim().to_ascii_lowercase();
             v == "1" || v == "true" || v == "on" || v == "yes"
         })
-        .unwrap_or(false)
+        .unwrap_or(false);
+    let lever_gate = std::env::var("CRUSSTY_LEVER_FLAG")
+        .map(|v| {
+            let v = v.trim();
+            v == "cmp419_chunk" || v == "cmp420_chunk2" || v == "cmp420_colpush"
+        })
+        .unwrap_or(false);
+    env_gate || lever_gate
 }
 
 static READY: [AtomicBool; 3] = [AtomicBool::new(false), AtomicBool::new(false), AtomicBool::new(false)];
