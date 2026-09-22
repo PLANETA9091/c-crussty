@@ -21,9 +21,22 @@
    "step": "2 (restart)",
    "time": "now",
    "state": "obrayv healed: broken `v ==` gate edits fixed to compile across 13 rust gates; cmp419_sense added STRICT-OR to 6 java bridges (MobPushOps x2+label, MobScanOps, MobAiOps, ItemEntityManager x3, QueryPlaneOps, EntityGoalQueryOps+FLAG_LABEL); sense-plane implemented: rust native senseArena (2nd bulk JNI in same EPOCH_LOCK window, CSR arena from just-built chains, chain-walk order parity by construction, cycle/drift guards fail-closed) + java snapshotQuery arena walk under SENSE + register_natives sig (II[I[I[I[I)I + parity oracle test arena_matches_chain_walk + gate test; blobs rebuilt (build_417c_blobs_all.sh, 6 bridges, major 65); check_blobs_sync.sh extended (cmp419_sense + native int senseArena) ALL IN SYNC; cargo test --lib 285 passed 0 failed; target dir deleted"
+  },
+  {
+   "step": "3",
+   "time": "20:21 UTC",
+   "state": "dispatched 3 legs cmp419_sense@ a6cf691 via world-bench-parallel.yml (ensure_alias refs round-419-b-sba/sbb/sbc); inputs exact per mandate (no travel_diet/fluid_dirty_ledger, no concurrency guards)"
   }
  ],
- "run_ids": [],
+ "run_ids": [
+  "35779689421 round-419-b-sba",
+  "35779697793 round-419-b-sbb",
+  "35779706422 round-419-b-sbc"
+ ],
  "verdict": "PENDING",
- "anchors_419_absorbed": {"a": "2.30@6841181", "b": "2.40@8541939", "c": "2.35@6971994"}
+ "anchors_419_absorbed": {
+  "a": "2.30@6841181",
+  "b": "2.40@8541939",
+  "c": "2.35@6971994"
+ }
 }
