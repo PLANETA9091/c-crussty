@@ -2,7 +2,7 @@
   "agent": "A",
   "vector": "k5c: ReferenceList mutator fence (REFSYNC) — full single-monitor serialization of ALL Reference2IntOpenHashMap mutator call sites (add/remove/contains, 22 sites / 8 classes) + retained 12-site entityMap fence + navpool hardening",
   "branch": "round-412-a-r1",
-  "run_id": null,
+  "run_id": 35713591178,
   "tps_med": null,
   "delta_pair_pct": null,
   "lane": "cmp405_navplane",
@@ -10,5 +10,18 @@
   "parity": "cargo test --lib 230/230 GREEN (refsync: exact-census retarget on 4 REAL kernel fixtures + byte-identical idempotent repatch + uncensused-class reject + census-table 11+9+2=22) + offline JVMTI probe (RefsyncRetransformProbe): RETRANSFORM OK x3 (BaseChunkSystemHooks/NearbyPlayers$TrackedChunk/EntitySchedulerTickList) + SEMANTIC OK (add/contains/remove parity on real fastutil ReferenceList) + REF SAFE (8-thread ensure-add/remove hammer 400k ops: no AIOOBE/hang, post-quiescent map.size==list.count); vanilla bit-in-byte on any census violation",
   "verdict": "FIX v2 IMPLEMENTED (restart session): previous 12-site value-iterator fence did NOT stop the spawn-race — a-k5b (run 35698807454, watchdog in Reference2IntOpenHashMap.find:246<-putIfAbsent:422<-ReferenceList.add:65<-ServerEntityLookup.entityStartLoaded + 3278 AIOOBE 'Index -1 length 16385') and c-l2 (16389x length 65537) both died FIXTURE-INVALID. GROUND-TRUTHED: the race surfaced on the OTHER unsynchronized fastutil map — moonrise ReferenceList.referenceToIndex. FIX: javap census on pristine kernel 1.21.10 = EXACTLY 22 add/remove/contains sites in 8 classes (EntitySchedulerTickList 1+1, BaseChunkSystemHooks 3+3, NearbyPlayers$TrackedChunk 2+1, ServerEntityLookup 1+1, CraftWorld 1+0, ChunkHolder 1+1+1, ServerLevel 2+2, ChunkMap$TrackedEntity 0+0+1); ALL retargeted to EntityMapOps.refListAdd/refListRemove/refListContains — synchronized(list-instance) => all referenceToIndex mutators+probes mutually exclusive => size/table desync impossible BY CONSTRUCTION => infinite probe and key[--pos] downscan impossible. READ-ONLY sites (size/getRawDataUnchecked/getChecked/getUnchecked/iterator/copy) deliberately left vanilla (cannot corrupt the map); ReferenceList$1 iterator-remove is dead code (0 iterator() callers in kernel — verified javap census); NO clear() sites exist. TEST-CAUGHT DEFECT in previous session's uncommitted work: scanner used 0xb9 (invokeinterface, emap idiom) but ReferenceList is a final CLASS => sites are invokevirtual 0xB6 (3 bytes) — fixed to the b6->b8 single-byte-swap + operand-repoint idiom (Entity-rng precedent); read-only-site allowlist added (kernel drift => class rejected). ServerLevel composed in-chain (strict 4 sites), 7 classes via dedicated hooks, all fail-dominant per class.",
   "evidence": "classfile.rs patch_referencelist_callsites (strict census REFSYNC_CENSUS, REFSYNC_READONLY_SITES allowlist, idempotent) + region_threads.rs REFSYNC_CLASSES hooks + ServerLevel compose + entityinside/harness/RefsyncRetransformProbe.java (JVMTI retransform gate) + tests/fixtures/*_real.class (4 real kernel fixtures)",
-  "what": "TASK-412-A-restart step: refsync fence committed+pushed; NEXT dispatch round-412-a-ak5c on this sha (world-bench-parallel.yml, bank inputs: radius 640, sec 300, fp 4, pop 150000/seed 42, band 6.0-9.5M, region_threads 4, lever cmp405_navplane=1); FIXTURE-INVALID spawn-race re-roll budget <=2 (INFRA)"
+  "what": "TASK-413-A: RACE-FENCE COST A/B DISPATCHED (law 3) — 2 legs on the SAME cmp405_navplane lane/bank inputs, the ONLY diff = the race-fence sub-gate (emap 12-site + refsync 22-site): leg1 round-413-a-fence @3642210 (fence ON, run 35717258406) vs leg2 round-413-a-nofence @95abe36 (RACE_FENCE_DEFAULT=false, run 35717278723). No race_fence workflow input exists (25-input GitHub limit) => gate is a compile-time const + CRUSSTY_RACEFENCE env override in crate::emap (fail-safe to ARMED); branch tip re-armed right after the leg2 capture commit. Grep-able proof markers: 'racefence=ON|OFF', 'refsync fenced N/7 classes', 'emap ... Retargeted'. fence_cost_pp = pair(leg1) - pair(leg2) pending poll; pathfinder subsystem slice (getNeighbors batch) in parallel.",
+  "ab_legs": {
+    "fence": {
+      "alias": "round-413-a-fence",
+      "sha": "3642210",
+      "run_id": 35717258406
+    },
+    "nofence": {
+      "alias": "round-413-a-nofence",
+      "sha": "95abe36",
+      "run_id": 35717278723
+    }
+  },
+  "fence_cost_pp": null
 }
