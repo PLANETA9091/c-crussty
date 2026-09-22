@@ -5666,6 +5666,266 @@ pub fn patch_flush_step(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), Stri
 }
 
 // ---------------------------------------------------------------------------
+// QUERYPLANE (TASK-412-B/413-B, lever cmp412_b2p1 STRICT eq — entity-query
+// snapshot plane, broadphase-лейн 13.91-14.23% на meganav-профиле).
+//
+// Три сайта (javap-контракты patched-kernel.jar 2025-12-11):
+//
+//   1) Level.getEntitiesOfClass(Class,AABB,Predicate) — public final,
+//      erased desc (Ljava/lang/Class;Lnet/minecraft/world/phys/AABB;
+//      Ljava/util/function/Predicate;)Ljava/util/List; — WHOLE-BODY REDIRECT
+//      (receiver-prepended static) на QueryPlaneOps.getEntitiesOfClass.
+//      Ванильное тело (javap @0-37): Profiler.get().incrementCounter
+//      ("getEntities") + new ArrayList + ChunkSystemLevel.moonrise$
+//      getEntityLookup().getEntities(clazz, null, box, list, pred) + areturn
+//      — реплицировано в бридже бит-в-бит (fallback и fast path).
+//
+//   2) Level.moonrise$getHardCollidingEntities(Entity,AABB,Predicate) —
+//      public final, тот же shape — WHOLE-BODY REDIRECT на
+//      QueryPlaneOps.getHardCollidingEntities.
+//
+//   3) ChunkEntitySlices.addEntity(Entity,int)Z — ОДИН invokeinterface-сайт
+//      ChunkSystemEntity.moonrise$isHardColliding:()Z (javap @50, 5 байт:
+//      0xb9 idx1 idx2 count 0) → invokestatic
+//      QueryPlaneOps.isHardCollidingProbe (3 байта) + 2×nop —
+//      length-preserving (flush-diet fladd прецедент), стек-шейп
+//      ([Entity]→[Z]) идентичен, StackMapTable не сдвигается. Монотонный
+//      add-счетчик hard-colliders (HARD_ADDS) — гейт пустого fast path
+//      плоскости 2: 0 добавлений за жизнь JVM ⇒ hard-коллекции пусты ⇒
+//      ванильный walk вернул бы empty list.
+//
+// Fail-closed: любой shape-mismatch = Err/NotFound (оригинальные байты,
+// ваниль); резолюшн-кложура бриджа проверяется ДО define (S7-164-guard).
+// ---------------------------------------------------------------------------
+
+pub const QUERY_OPS_CLASS: &str = "net/minecraft/world/entity/QueryPlaneOps";
+pub const QUERY_LEVEL_CLASS: &str = "net/minecraft/world/level/Level";
+pub const SLICES_CLASS: &str =
+    "ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices";
+pub const CHUNK_SYSTEM_ENTITY_CLASS: &str =
+    "ca/spottedleaf/moonrise/patches/chunk_system/entity/ChunkSystemEntity";
+
+/// Виртуальный (erased) дескриптор Level.getEntitiesOfClass(Class,AABB,Pred).
+pub const QUERY_GEOC_DESC: &str = "(Ljava/lang/Class;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;)Ljava/util/List;";
+/// Статический бридж-дескриптор = receiver Level, префиксованный.
+pub const QUERY_GEOC_STATIC_DESC: &str = "(Lnet/minecraft/world/level/Level;Ljava/lang/Class;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;)Ljava/util/List;";
+/// Виртуальный (erased) дескриптор Level.moonrise$getHardCollidingEntities.
+pub const QUERY_GHC_DESC: &str = "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;)Ljava/util/List;";
+/// Статический бридж-дескриптор = receiver Level, префиксованный.
+pub const QUERY_GHC_STATIC_DESC: &str = "(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;Ljava/util/function/Predicate;)Ljava/util/List;";
+/// Дескриптор ChunkEntitySlices.addEntity.
+pub const SLICES_ADD_DESC: &str = "(Lnet/minecraft/world/entity/Entity;I)Z";
+/// Статический probe-дескриптор = receiver-класс CP-сайта (интерфейс
+/// ChunkSystemEntity), префиксованный (flush-diet fladd форма).
+pub const SLICES_PROBE_DESC: &str = "(Lca/spottedleaf/moonrise/patches/chunk_system/entity/ChunkSystemEntity;)Z";
+
+/// Whole-body redirect сайта 1 (см. баннер секции).
+pub fn patch_level_get_entities_of_class(
+    bytes: &[u8],
+) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    redirect_method_body_to_static(
+        bytes,
+        "getEntitiesOfClass",
+        QUERY_GEOC_DESC,
+        QUERY_LEVEL_CLASS,
+        QUERY_OPS_CLASS,
+        "getEntitiesOfClass",
+        QUERY_GEOC_STATIC_DESC,
+    )
+}
+
+/// Whole-body redirect сайта 2 (см. баннер секции).
+pub fn patch_level_get_hard_colliding_entities(
+    bytes: &[u8],
+) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    redirect_method_body_to_static(
+        bytes,
+        "moonrise$getHardCollidingEntities",
+        QUERY_GHC_DESC,
+        QUERY_LEVEL_CLASS,
+        QUERY_OPS_CLASS,
+        "getHardCollidingEntities",
+        QUERY_GHC_STATIC_DESC,
+    )
+}
+
+/// Сайт 3: invokeinterface → invokestatic + 2×nop внутри
+/// ChunkEntitySlices.addEntity(Entity,int)Z. Strict: ровно ОДИН сайт
+/// moonrise$isHardColliding (javap-контракт @50); zero сайтов при уже
+/// стоящем probe = AlreadyPatched; иначе — shape mismatch → Err.
+/// Идемпотентен (re-sight не портит байты).
+pub fn patch_slices_hard_probe(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    // Kernel-rename guard: имена контракта должны присутствовать ДО мутаций.
+    for probe in ["addEntity", "moonrise$isHardColliding"] {
+        if layout.pool.find_utf8(probe).is_none() {
+            return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+        }
+    }
+    let Some(name_idx) = layout.pool.find_utf8("addEntity") else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let Some(desc_idx) = layout.pool.find_utf8(SLICES_ADD_DESC) else {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    };
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)
+        .ok_or_else(|| "method addEntity(Entity,int)Z not found".to_string())?;
+    let (code_start, code_len) = find_code_attr(bytes, &layout.pool, &m)
+        .ok_or_else(|| "addEntity has no Code attribute".to_string())?;
+    let code_end = code_start
+        .checked_add(code_len)
+        .ok_or_else(|| "code length overflow".to_string())?;
+    let code = bytes
+        .get(code_start..code_end)
+        .ok_or_else(|| "code region truncated".to_string())?;
+
+    // Walk: invokeinterface (0xb9, 5B) + invokestatic (0xb8, 3B), всё
+    // остальное через общий length-table (fail-closed на неизвестных опах).
+    let mut iface: Vec<(usize, u16)> = Vec::new();
+    let mut statics: Vec<(usize, u16)> = Vec::new();
+    let mut pc = 0usize;
+    while pc < code.len() {
+        let op = code[pc];
+        if op == 0xb9 {
+            let b = code
+                .get(pc + 1..pc + 3)
+                .ok_or_else(|| "invokeinterface operand truncated".to_string())?;
+            iface.push((code_start + pc, u16::from_be_bytes([b[0], b[1]])));
+            pc += 5;
+            continue;
+        }
+        if op == 0xb8 {
+            let b = code
+                .get(pc + 1..pc + 3)
+                .ok_or_else(|| "invokestatic operand truncated".to_string())?;
+            statics.push((code_start + pc, u16::from_be_bytes([b[0], b[1]])));
+            pc += 3;
+            continue;
+        }
+        let extra = opcode_extra(op, code, pc)?;
+        pc = pc
+            .checked_add(1 + extra)
+            .ok_or_else(|| "code walk overflow".to_string())?;
+        if pc > code.len() {
+            return Err("truncated code (walk past end)".into());
+        }
+    }
+
+    // Классификация ПО ИМЕНИ (CP-индексы плывут между ASM-прогонами).
+    let from_triple = (
+        CHUNK_SYSTEM_ENTITY_CLASS.to_string(),
+        "moonrise$isHardColliding".to_string(),
+        "()Z".to_string(),
+    );
+    let to_triple = (
+        QUERY_OPS_CLASS.to_string(),
+        "isHardCollidingProbe".to_string(),
+        SLICES_PROBE_DESC.to_string(),
+    );
+    let mut rewrite: Vec<usize> = Vec::new();
+    let mut already = 0usize;
+    for (op_pc, cp_idx) in &iface {
+        if layout.pool.methodref_parts(*cp_idx) == Some(from_triple.clone()) {
+            rewrite.push(*op_pc);
+        }
+    }
+    for (op_pc, cp_idx) in &statics {
+        if layout.pool.methodref_parts(*cp_idx) == Some(to_triple.clone()) {
+            already += 1;
+        } else {
+            // Посторонний invokestatic внутри addEntity — сайт ровно один,
+            // любой чужой статик = shape mismatch из другой вселенной.
+            return Err(format!(
+                "addEntity carries a foreign invokestatic at {op_pc:#x} (shape mismatch)"
+            ));
+        }
+    }
+    if rewrite.is_empty() {
+        return Ok((
+            bytes.to_vec(),
+            if already == 1 {
+                RetargetOutcome::AlreadyPatched { sites: already }
+            } else {
+                RetargetOutcome::NotFound
+            },
+        ));
+    }
+    if rewrite.len() != 1 {
+        return Err(format!(
+            "expected exactly one moonrise$isHardColliding site in addEntity, got {}",
+            rewrite.len()
+        ));
+    }
+
+    // Append-only (dedup) Methodref на probe.
+    let mut pool = layout.pool;
+    let new_idx = pool.method_ref(
+        QUERY_OPS_CLASS,
+        "isHardCollidingProbe",
+        SLICES_PROBE_DESC,
+    );
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for probe ref".into());
+    }
+
+    // Splice: header + grown pool + tail; 5 байт на сайт:
+    // [0xb8][idx1][idx2][0x00][0x00] — invokestatic + 2 nop (бывшие count/zero
+    // операнды invokeinterface; length-preserving, StackMapTable не двигается).
+    let mut tail = bytes[layout.cp_end..].to_vec();
+    let want = new_idx.to_be_bytes();
+    for &op_off in &rewrite {
+        let rel = op_off - layout.cp_end;
+        if rel + 4 >= tail.len() {
+            return Err("retarget opcode outside class tail (corrupt layout?)".into());
+        }
+        tail[rel] = 0xb8; // invokestatic
+        tail[rel + 1] = want[0];
+        tail[rel + 2] = want[1];
+        tail[rel + 3] = 0x00; // nop (former count operand)
+        tail[rel + 4] = 0x00; // nop (former zero operand)
+    }
+    let mut out = Vec::with_capacity(bytes.len() + 64);
+    out.extend_from_slice(&bytes[0..8]); // magic, minor, major
+    out.extend_from_slice(&pool.next.to_be_bytes()); // new cp_count
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(&tail);
+    Ok((
+        out,
+        RetargetOutcome::Retargeted { sites: rewrite.len() },
+    ))
+}
+
+/// Резолюшн-кложура бриджа (S7-164 guard): QueryPlaneOps обязан объявлять
+/// ровно те статики, куда прыгают редиректы — иначе NoSuchMethodError на
+/// первом же запросе. Проверяется ДО define_class.
+pub const QUERY_REDIRECT_TARGETS: [(&str, &str, &str, &str); 3] = [
+    (
+        "getEntitiesOfClass",
+        QUERY_GEOC_DESC,
+        "getEntitiesOfClass",
+        QUERY_GEOC_STATIC_DESC,
+    ),
+    (
+        "moonrise$getHardCollidingEntities",
+        QUERY_GHC_DESC,
+        "getHardCollidingEntities",
+        QUERY_GHC_STATIC_DESC,
+    ),
+    (
+        "moonrise$isHardColliding",
+        "()Z",
+        "isHardCollidingProbe",
+        SLICES_PROBE_DESC,
+    ),
+];
+
+pub fn queryplane_resolution_closure(ops: &[u8]) -> Result<(), String> {
+    redirect_targets_resolution_closure(ops, &QUERY_REDIRECT_TARGETS)
+}
+
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
 // SECTION-FF FIELD INJECTION (S7-143, FLUID-FREE-SECTION lever) — append-only
 // 2-field splice into LevelChunkSection:
 //   crusstyFf    : B  PUBLIC VOLATILE — verdict byte, 0=unknown / 1=fluid-free
