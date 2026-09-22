@@ -430,6 +430,16 @@ pub fn activate() {
         return;
     }
     std::thread::spawn(move || {
+        // TASK-413-A A/B proof marker (grep-able, one-shot): the race-fence
+        // sub-gate state at activation. leg1 (fence) must log racefence=ON,
+        // leg2 (nofence) racefence=OFF — the emap/refsync compose and hooks
+        // follow this gate verbatim; navplane/navpool do not.
+        eprintln!(
+            "[crussty-plugin] region_threads: racefence={} (emap+refsync A/B sub-gate; default={} lane-lever={})",
+            if crate::emap::race_fence_on() { "ON" } else { "OFF" },
+            crate::emap::RACE_FENCE_DEFAULT,
+            crate::nav_plane::armed(),
+        );
         let sl = sl_target();
         let cb = cb_target();
         let lv = lv_target();

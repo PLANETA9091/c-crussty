@@ -37,9 +37,52 @@ pub const EMAP_VALUES_BYTES: &[u8] =
 pub const EMAP_ITR_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/server/level/EntityMapSafeItr.class");
 
-/// STRICT eq lever gate — the k5b nav lane lever (same as navpool).
+/// STRICT eq lever gate — the k5b nav lane lever (same as navpool) AND-gated
+/// with the TASK-413-A RACE-FENCE sub-gate: the emap+refsync fence arms only
+/// when the lane lever is armed AND race_fence_on() (see below). Everything
+/// else on the lane (navplane read plane, navpool, region-threads,
+/// batch-collector, banking levers) is untouched by the sub-gate — that is
+/// the exact A/B cut.
 pub fn armed() -> bool {
-    crate::nav_plane::armed()
+    crate::nav_plane::armed() && race_fence_on()
+}
+
+/// TASK-413-A RACE-FENCE A/B sub-gate (quantify the fence CPU price, law 3):
+/// leg1 = fence ON (this branch default), leg2 = fence OFF — SAME lever
+/// `cmp405_navplane`, SAME bank inputs; the ONLY difference is this gate.
+///
+/// Semantics (fail-safe to ARMED — the fence is the validated spawn-race
+/// fix, it must never silently vanish):
+///  - compile-time default RACE_FENCE_DEFAULT below. The nofence dispatch
+///    leg is a ONE-COMMIT flip of this const (branch-minus-fence): the
+///    workflow has NO spare input slot for a race_fence input (25-input
+///    GitHub limit, world-bench-parallel.yml) and no generic env passthrough;
+///  - env override CRUSSTY_RACEFENCE: value "0" / "false" / "off"
+///    (ASCII-insensitive) = OFF; anything else / unset = the default.
+pub const RACE_FENCE_DEFAULT: bool = true;
+
+/// Pure decision kernel (unit-testable without touching process env):
+/// (default_on, observed CRUSSTY_RACEFENCE value) -> fence on.
+pub fn race_fence_decide(default_on: bool, env: Option<&str>) -> bool {
+    if !default_on {
+        return false;
+    }
+    match env {
+        Some(v) => {
+            let v = v.trim();
+            !(v == "0" || v.eq_ignore_ascii_case("false") || v.eq_ignore_ascii_case("off"))
+        }
+        None => true,
+    }
+}
+
+/// The live sub-gate (read once per armed() call; process env is
+/// boot-stable in the harness, no caching needed).
+pub fn race_fence_on() -> bool {
+    race_fence_decide(
+        RACE_FENCE_DEFAULT,
+        std::env::var("CRUSSTY_RACEFENCE").ok().as_deref(),
+    )
 }
 
 /// The full define list, in dependency order (values/itr reference ops
@@ -56,6 +99,33 @@ pub fn define_list() -> [(&'static str, &'static [u8]); 3] {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// TASK-413-A gate semantics: fail-safe to ARMED.
+    #[test]
+    fn race_fence_gate_semantics() {
+        // default ON (the shipping branch): only explicit 0/false/off kills.
+        assert!(race_fence_decide(true, None));
+        assert!(race_fence_decide(true, Some("1")));
+        assert!(race_fence_decide(true, Some("")));
+        assert!(race_fence_decide(true, Some(" 1 ")));
+        assert!(!race_fence_decide(true, Some("0")));
+        assert!(!race_fence_decide(true, Some(" false ")));
+        assert!(!race_fence_decide(true, Some("OFF")));
+        assert!(!race_fence_decide(true, Some("Off")));
+        // default OFF (the nofence leg): env cannot resurrect it.
+        assert!(!race_fence_decide(false, None));
+        assert!(!race_fence_decide(false, Some("1")));
+        assert!(!race_fence_decide(false, Some("0")));
+    }
+
+    /// The gate is an AND on the lane lever — nothing else.
+    #[test]
+    fn armed_gate_is_lever_and_fence() {
+        // Mirror of the armed() body: lever && race fence.
+        let lever = crate::nav_plane::armed();
+        let fence = race_fence_on();
+        assert_eq!(armed(), lever && fence);
+    }
 
     /// Blob-sync guard (check_blob_sync discipline): the embedded bytes
     /// MUST equal the on-disk build output — a rebuilt .java without a
