@@ -1,23 +1,9 @@
 {
-  "agent": "412-F-upper",
-  "vector": "LAW-7 MEGA-COMPOSITION: cmp412_meganav = multi(f7d04d2: comp(stagtick)+aibatch+sscan) ⊕ navplane+navpool(5d8af33) — мега-композит реплицированных векторов эры + nav-подсистема (закон 6: pathfinder-slice: navDecide bulk + A* node-pool)",
-  "branch": "round-412-f-meganav",
-  "base": "f7d04d2 (round-408-f-multi, pair ≈+21pp ×3) ⊕ origin/round-405-a-nav @ 5d8af33 (navplane серия +9.5/+10.6 2/3 GREEN)",
-  "gate": {
-    "lever_flag": "cmp412_meganav",
-    "strict_eq": true,
-    "gate_sites_extended": [
-      "rust: stagger/mobs_grid/mobs_sscan/tickplane/items_index/mobs_soa/items_manager x2/collide_batch x2/mobs_manager x2/nav_plane (11)",
-      "java: MobPushOps x2 / MobAiOps / ItemEntityManager x3 / MobScanOps (7)"
-    ],
-    "empty_flag": "vanilla bit-for-bit"
-  },
-  "build": {
-    "javac": "MobPushOps 10505B + MobAiOps 4231B + MobScanOps 5551B + ItemEntityManager 20258B (--release 21, cp=kernel396a+fastutil+paper-api-1.21.10+adventure-api/key-4.24.0) OK",
-    "cargo_check": "PASS 0 errors",
-    "cargo_test": "247 passed / 0 failed / 1 ignored",
-    "target_deleted": true
-  },
-  "status": "DISPATCHED meganav1/meganav2 (world-bench, bank exact)",
-  "expectation": "multi +21 ⊕ navplane +9.5 (nav_ai лейн multi 7.54% — nav-плоскость НЕ перекрыта mob-окном) → ожидание pair ≈+25-30pp, ступень эры"
+  "agent": "TASK-414-C (Super Z subagent C, виток-2)",
+  "vector": "pathfinder-подсистема виток-2: NodeEvaluator neighbor-batch (bulk-JNI 1/тик) поверх meganav f579c1c ⊕ race-fix 109e4d7",
+  "branch": "round-414-c-pf2",
+  "step": "worktree-ready",
+  "evidence": "worktree /home/z/rounds/ROUND-414/agent-c @f579c1c (meganav base); merge 109e4d7 next; recon neighbor-generation после",
+  "head": "f579c1c",
+  "ts": "2026-09-22 20:1x +08"
 }
