@@ -1,11 +1,44 @@
 {
-  "agent": "TASK-415-C",
-  "vector": "fluid bulk-bridge (подсистема fluid-апдейт целиком, gather piggyback на soa-популяцию, 1 bulk-JNI/тик)",
-  "branch": "round-415-c-fluid",
-  "base": "1aec4f8 (round-414-b-cvs: meganav⊕eqsnap⊕racefix⊕blobsync)",
-  "step": "PHASE 0 done: worktree sparse-checkout (диск 99% — research/ исключён, collapsed-профили читаю из main-repo checkout)",
-  "recon_fluid_split": null,
-  "design": null,
-  "legs": [],
-  "verdict": "IN_PROGRESS"
+  "agent": "TASK-416-C (iter-2 restart)",
+  "vector": "fluid bulk-bridge v2 (fluid-апдейт слой целиком: java data-plane LUT + rust control-plane, ONE bulk-JNI/тик, lazy probe-dedup — anti-bl2)",
+  "branch": "round-416-c-fluid2",
+  "base": "48a5a58 (round-415-c-fluid = cvs-носитель 1aec4f8: meganav⊕eqsnap⊕racefix⊕blobsync)",
+  "step": "CI-FAIL x3 (E0433 crate::fluid_bulk x4) root-caused: src/lib.rs omission in commit 8599c79 (local check был cache-hit) → фикс 596fa80 (mod fluid_bulk + register + activate); cargo check --lib реальный компайл green + cargo test 281/281 + target purged; ре-ролл 1/2: alias refs f1/f2/f3 → 596fa809cbdeda010c7503bed8f739e0a0b77b81, ре-диспатч",
+  "recon_fluid_split": "fluid lane 16.0-16.7% vanilla (mc1 13.76%): PalettedContainer.get 22% lane / sweep body 17% / SimpleBitStorage 9% / VarHandle 8% / Mth.floor 7% / getFluidState 6% / FluidState.getType 4% / touchingUnloadedChunk map 8%",
+  "design": "LAZY LUT per-slot (tick,GEN)-stamp (никакого gather-прохода — анти-урок bl2); инвалидация = GLOBAL GEN-bump через 1 сайт LevelChunk.setBlockState→secWrite (не мемо/битмап — закон 5); 4 фикса C-415: rustOk-deadlock / bounded-retry(1) / per-slot tag-stamp вместо per-tick bulk-clear / side-effect-free sweep + tail-once",
+  "legs": [
+    {
+      "leg": "f1",
+      "run_id": 35752381708,
+      "ref": "round-416-c-f1",
+      "sha": "8599c79",
+      "lever": "cmp416_fluid"
+    },
+    {
+      "leg": "f2",
+      "run_id": 35752402747,
+      "ref": "round-416-c-f2",
+      "sha": "8599c79",
+      "lever": "cmp416_fluid"
+    },
+    {
+      "leg": "f3",
+      "run_id": 35752423529,
+      "ref": "round-416-c-f3",
+      "sha": "8599c79",
+      "lever": "cmp416_fluid"
+    }
+  ],
+  "verdict": "IN_PROGRESS",
+  "cifail_1": {
+    "runs": [
+      35752381708,
+      35752402747,
+      35752423529
+    ],
+    "error": "E0433 cannot find fluid_bulk in crate x4",
+    "root_cause": "lib.rs omitted from 8599c79",
+    "fix": "596fa80"
+  },
+  "head": "596fa809cbdeda010c7503bed8f739e0a0b77b81"
 }
