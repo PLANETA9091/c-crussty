@@ -59,7 +59,7 @@ pub fn armed() -> bool {
 ///    GitHub limit, world-bench-parallel.yml) and no generic env passthrough;
 ///  - env override CRUSSTY_RACEFENCE: value "0" / "false" / "off"
 ///    (ASCII-insensitive) = OFF; anything else / unset = the default.
-pub const RACE_FENCE_DEFAULT: bool = true;
+pub const RACE_FENCE_DEFAULT: bool = false; // TASK-413-A leg2 (nofence) capture point — re-armed in the next commit; the round-413-a-nofence alias pins THIS sha.
 
 /// Pure decision kernel (unit-testable without touching process env):
 /// (default_on, observed CRUSSTY_RACEFENCE value) -> fence on.
