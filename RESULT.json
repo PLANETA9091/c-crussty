@@ -1,11 +1,27 @@
 {
-  "task": "TASK-414-C2",
+  "task": "TASK-414-C2 (restart после infra-timeout прошлого вызова)",
   "agent": "Super Z subagent C2",
-  "vector": "pathfinder виток-2: NodeEvaluator neighbor-batch (Rust bulk-JNI поверх носителя round-414-b-cvs @598b3c3)",
+  "vector": "pathfinder виток-2: gsel-batch (GoalSelector tick-scheduling batch) — neighbor-batch смещён по анти-плацебо протоколу",
   "branch": "round-414-c-pfb",
   "carrier": "598b3c3 (meganav f579c1c + eqsnap-v3 NCDFE-fix + race-fix 109e4d7 + blob-sync fix)",
-  "stage": "worktree-ready",
-  "steps": ["worktree OK (sparse, research/ excluded)", "recon in progress"],
-  "legs": [],
-  "verdict": "PENDING"
+  "head": "e76cb51",
+  "recon": {
+    "source": "research/gc-recon-2026-09-19/round-cvs2v2/cpu-collapsed.txt (cvs2 leg @598b3c3, nav_ai=10.57%)",
+    "neighbor_gen_pct": "getNeighbors 1.51% / NodeEvaluator 1.65% / pathfinder 2.20% — ВСЁ <2% порога",
+    "retarget": "GoalSelector.tick subtree 9.54% (scheduler-bookkeeping ~2.9% + goal-logic 4.18% + unclassified 2.41%)",
+    "decision": "gsel-batch: ванильный двухфазный scheduler над плоским зеркалом + rust SoA реестр + 1 bulk JNI/тик"
+  },
+  "implementation": {
+    "java": "gsel/.../GoalBatchOps.java (zero nested classes, reflection goalTypes, lock-plane int[8])",
+    "rust": "src/goal_batch.rs (SoA registry + gselEpoch DOD telemetry, 4-site retarget strict census)",
+    "gates": "cmp414_pfb добавлен в 21 гейт-сайт носителя (14 файлов: 9 rust + 5 java)",
+    "blobs": "6 блобов rebuilt one-pass javac full-cp (build_gsel_blobs_all.sh), major 65",
+    "tests": "cargo check PASS, cargo test 277/277 green (5 новых gsel тестов)"
+  },
+  "legs": [
+    {"leg": "pfb1", "run_id": 35733825772, "ref": "round-414-c-pfb1", "sha": "e76cb51", "lever": "cmp414_pfb", "status": "in_progress"},
+    {"leg": "pfb2", "run_id": 35733844088, "ref": "round-414-c-pfb2", "sha": "e76cb51", "lever": "cmp414_pfb", "status": "queued"}
+  ],
+  "verdict": "PENDING_POLL",
+  "gates_checklist": "ARM-маркер + Retargeted sites:4 + gsel epoch>0 + AIOOBE=0 + band 6.0-9.5M + pair-by-runner vs anchorb414 2.45@6701329 + якоря-413 (2.10@6862504/2.40@6978562) + лейн nav_ai 10.57→?"
 }
