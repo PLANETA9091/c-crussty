@@ -76,7 +76,9 @@ public final class QueryPlaneOps {
     private static boolean flagArmed() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
         return f != null && (f.trim().equals("cmp412_b2p1") || f.trim().equals("cmp415_mcomp") || f.trim().equals("cmp416_mcomp")
-                || f.trim().equals("cmp417_bq"));
+                || f.trim().equals("cmp417_bq")
+                // TASK-419-A (colpush): колпаш-носитель — queryplane awake.
+                || f.trim().equals("cmp419_colpush"));
     }
 
     private static final boolean ENABLED = flagArmed();

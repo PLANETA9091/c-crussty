@@ -145,7 +145,11 @@ public final class MobPushOps {
                     // TASK-414-B: leg flag cmp414_cvs.
                     || f.trim().equals("cmp414_cvs")
                     // TASK-417-C: cvs-носитель ⊕ queryplane.
-                    || f.trim().equals("cmp417_bq"));
+                    || f.trim().equals("cmp417_bq")
+                    // TASK-419-A (colpush): колпаш-носитель — SoA-плоскость
+                    // жива для planeReady()/byArr()/idCount() (eqsnap/sscan/ai);
+                    // сам per-entity upsert спит (whole-body redirect).
+                    || f.trim().equals("cmp419_colpush"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -176,7 +180,10 @@ public final class MobPushOps {
                     // TASK-414-B: leg flag cmp414_cvs.
                     || f.trim().equals("cmp414_cvs")
                     // TASK-417-C: cvs-носитель ⊕ queryplane.
-                    || f.trim().equals("cmp417_bq"));
+                    || f.trim().equals("cmp417_bq")
+                    // TASK-419-A (colpush): shard-drain no-op (шарды пусты),
+                    // eq_epoch chain-build жив над colpush-колонками.
+                    || f.trim().equals("cmp419_colpush"));
     }
 
     private static final boolean EQSNAP = eqsnapEnabled();
@@ -285,6 +292,50 @@ public final class MobPushOps {
     /** Плотный id моба в SoA-плоскости или null (не апсертнут). */
     static int[] idBoxOf(Entity e) {
         return idMap.get(e);
+    }
+
+    /**
+     * TASK-419-A (colpush): java-side id-регистрация БЕЗ per-entity JNI
+     * (0 JNI: колпаш-плоскость кормится ОДНИМ bulk colpushTick/тик через
+     * colpush_plane_refresh). Тот же idMap/byId/freeIds юниверс, что у
+     * upsertSelf (eqsnap/sscan/ai-плоскости его читают). @return id-box
+     * или null (broken).
+     */
+    static int[] boxFor(Entity e) {
+        if (broken) {
+            return null;
+        }
+        int[] box = idMap.get(e);
+        if (box != null) {
+            return box;
+        }
+        synchronized (ID_LOCK) {
+            box = idMap.get(e);
+            if (box != null) {
+                return box;
+            }
+            if (broken) {
+                return null;
+            }
+            int id;
+            if (freeTop > 0) {
+                id = freeIds[--freeTop];
+            } else {
+                if (idTop == byId.length) {
+                    byId = java.util.Arrays.copyOf(byId, byId.length * 2);
+                }
+                id = idTop++;
+            }
+            box = new int[] {id};
+            byId[id] = e;
+            idMap.put(e, box);
+            return box;
+        }
+    }
+
+    /** TASK-419-A (colpush): graveyard sweep из bulkTick (каденция внутри). */
+    static void colpushSweep() {
+        maybeSweep();
     }
 
     private static int[] freeIds = new int[256];
