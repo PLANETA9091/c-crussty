@@ -293,6 +293,8 @@ fn shard_mode() -> bool {
                     || v == "cmp409_multi" || v == "cmp412_meganav" || v == "cmp414_cvs"
                     // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
                     || v == "cmp412_eqsnapv3" || v == "cmp414_cvs" || v == "cmp417_bq"
+                    // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
+                    || v == "cmp420_colpush"
             })
             .unwrap_or(false)
     })
