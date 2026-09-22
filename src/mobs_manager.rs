@@ -414,6 +414,34 @@ pub fn activate() {
             major,
         });
 
+        // TASK-413-C (NCDFE root-cause cv3-1 35712182885 / cv3-2 35712204518):
+        // under the k4soa/eqsnap flags the MobPushOps blob executes
+        // `EntityGoalQueryOps.pushCandidates` from the FIRST pushables call
+        // (population inject) — the bridge must be defined + natives
+        // registered in THIS loader BEFORE LivingEntity goes live with the
+        // retarget. A missed define is unrecoverable at runtime (HotSpot
+        // caches the NCDFE per constant-pool entry — cv3-1: ×3938 AFTER the
+        // late define). HARD publish gate (probe-then-patch: define →
+        // register natives → probe → publish): bridge not defined → push
+        // lane stays vanilla (fail-closed, no NCDFE). Under other flags the
+        // guarded branch is never executed (lazy resolution) → no gate.
+        if crate::entity_query::lever_matches() {
+            let mut bridge_ok = crate::entity_query::ensure_bridge_early();
+            for _ in 0..4 {
+                if bridge_ok {
+                    break;
+                }
+                std::thread::sleep(std::time::Duration::from_millis(1_000));
+                bridge_ok = crate::entity_query::ensure_bridge_early();
+            }
+            if !bridge_ok {
+                eprintln!(
+                    "[crussty-plugin] mobs_soa: EntityGoalQueryOps bridge not defined before publish — push lane stays vanilla (fail-closed, NCDFE guard)"
+                );
+                return;
+            }
+        }
+
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
         // TASK-402-B: под композитом маркер объявляет ВСЕ суб-механизмы
         // (soa + зеркальный sharded grid; item-половина — в items_manager).
