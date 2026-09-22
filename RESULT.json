@@ -1,29 +1,9 @@
 {
-  "agent": "TASK-412-C-restart",
-  "vector": "eqsnap-v3 (TASK-412-C): meganav ⊕ eqsnap — STRICT OR (cmp412_eqsnapv3 активирует плоскости cmp412_meganav (multi⊕navplane+navpool, tickplane, ai-window, sscan, items, stagger, collide-batch) || eqsnap-плоскость (DeltaShard 16×8192 dirty-дельты, drain O(dirty) один bulk JNI/тик, RADIUS_GATE 2.0/pad-2, лестница push eqsnap = снапшот → vanillaFill)). Пустой/чужой флаг = ваниль бит-в-байт; cmp412_meganav-сайты не тронуты (13 сайтов целы)",
-  "branch": "round-412-c-v3 (worktree /home/z/rounds/ROUND-412/agent-c-v3, HEAD e408aac = v3 gate wiring поверх merge c667560)",
-  "background": "leg round-412-c-r1 (re-roll cmp411_eqsnap на старой базе) = DELIVERY-FAIL (run 35706186210, 1 poll — spawn-race INFRA: AIOOBE Index -1 в BenchPopulationPlugin.spawnItem, инъекция не встала; классификация: INFRA re-roll ≤2). meganav = топ-база эры (cmp412_meganav f579c1c: 2/2 GREEN, AIOOBE=0, pair +13-17.4). eqsnap-v2 → v3: та же dirty-дельта-механика, но несётся меганав-композитом",
-  "stage": "V3 GATE WIRED+VERIFIED: cargo test --lib 262 green / 0 failed / 1 ignored (target удалён сразу); javac --release 21 rebuild (cp=kernel396a+fastutil+paper-api-1.21.10+adventure-api+adventure-key; major 65 verified, ровно-1-classfile): MobPushOps 12255B, EntityGoalQueryOps 9763B; grep-чеклист STRICT-eq ПРОЙДЕН: 14 rust-сайтов + 2 java-блоба под cmp412_eqsnapv3 (mobs_soa eqsnap_mode/lever_mode, mobs_manager java_gate_matches+ARM-маркер meganav⊕eqsnap, entity_query enabled/eqsnap-флаг/eqsnapv3-лейбл/drain-EFFECT/тесты, tickplane/mobs_ai/mobs_sscan/nav_plane/collide_batch×2/items_index/items_manager×2/mobs_grid(mirror inert)/stagger; MobPushOps leverEnabled/eqsnapEnabled/K4_LABEL/RADIUS_GATE (K4||EQSNAP)?2.0:1.0; EntityGoalQueryOps leverEnabled/FLAG_LABEL)",
-  "dispatch_plan": {
-    "alias": "round-412-cv3 (legs c-v3-1, c-v3-2)",
-    "workflow": "world-bench-parallel.yml",
-    "script": "scripts/bench4_recon/dispatch_round412cv3.py (alias PATCH-фикс)",
-    "inputs_bank": "radius 640, seconds 300, fake_players 4, fluid_guard 1, gc_tune 3, inside_cache 1, flush_diet 1, fluid_dirty 0, fluid_bitmask 0, region_threads 4, batch_collector 1, inside_bitmask 0, skip_store_bb 0, region_steal 0, bu_defer 0, population_target 150000, population_seed 42, server_xmx 10G, server_xms 4G, cpu_band_min 6000000, cpu_band_max 9500000, lever_arg 1",
-    "lever": "cmp412_eqsnapv3=1"
-  },
-  "run_ids": {
-    "c-v3-1": 35712182885,
-    "c-v3-2": 35712204518
-  },
-  "verdict_pool_today": [2.30, 2.35, 2.4, 2.25, 2.30, 2.2, 2.2, 2.50, 2.95, 2.60],
-  "verdict_pool_today_ids": [6803065, 6435981, 6604167, 6833921, 6846036, 6858619, 6840530, 8548287, 8880170, 8827927],
-  "meganav_pool": [2.60, 2.70],
-  "meganav_pool_ids": [6725119, 6781278],
-  "next": "poll → artifact API /actions/artifacts/<id>/zip → absorb_round.py <run_id> round412cv3x → pair-by-runner vs сегодня-пул {2.30@6803065, 2.35@6435981, 2.4@6604167, 2.25@6833921, 2.30@6846036, 2.2@6858619, 2.2@6840530, 2.50@8548287, 2.95@8880170, 2.60@8827927} + meganav {2.60@6725119, 2.70@6781278} → grep AIOOBE=0 + EFFECT-маркеры (drain-EFFECT / eqEpoch bulk 1/tick / first gate hit; ARM-строки не доказывают armed) → FIXTURE-INVALID spawn-race = INFRA re-roll ≤2 → Δ<80% = виток 2 (расширение entity-query слоя: sensing-цепи, AvoidEntityGoal tail)",
-  "gates_checklist": "ARM 'cmp412_eqsnapv3: ARMED goal-query' + 'cmp412_eqsnapv3: ARMED meganav⊕eqsnap soa-population+push-snapshot' + meganav-сайты ('cmp412_meganav: ARMED' невалидно под v3 — v3 несёт свой ARM-текст), EFFECT 'shard-drain EFFECT armed (first bulk drain applied' + 'push-snapshot EFFECT armed' + 'epoch ok' rows>1000, grep AIOOBE=0, navplane/tickplane/ai/sscan/items-ARM-строки под v3-флагом",
-  "evidence": [
-    "commit e408aac: v3 gate wiring (14 rust-сайтов + 2 java-блоба), cargo 262 green, javac major 65",
-    "commit c667560: merge eqsnap (K4-v2 cmp411_eqsnap) в meganav базу — UNION 8 add/add-конфликтов resolved руками",
-    "commit 416e1a8 (master): dispatch_round412cv3.py"
-  ]
+  "agent": "Super Z subagent B",
+  "task": "TASK-414-B blob-sync revival",
+  "vector": "meganav items-plane revival (gate-omission fix) + eqsnap-v3 re-dispatch on race-fix 109e4d7, leg flag cmp414_cvs",
+  "branch": "round-414-b-cvs",
+  "step": "3-racefix-merged",
+  "blob_root_cause": "ROOT-CAUSE CONFIRMED (not stale blob, but GATE-OMISSION): at 43a8318 eqsnap-v3 composite extended ALL 12 rust gate files with cmp412_eqsnapv3 and only 2 java files (EntityGoalQueryOps+MobPushOps); ItemEntityManager.java (ENABLED/REST_PLANE/DESPAWN2), MobAiOps.java, MobScanOps.java gates END at cmp412_meganav. With flag cmp412_eqsnapv3 at cv3b-1: ItemEntityManager.ENABLED=false -> items-plane (rest-plane+index+lifetime-heap) asleep -> boot-log 'items_restplane ARMED' absent -> spark items lane 34.23% (vanilla items ticking). java source and blob are IN SYNC (both lack the flag) - lesson x93 blob-sync applies to the rebuild step after gate extension",
+  "evidence": "merge 109e4d7 (REFSYNC v2 fence, 22 sites, EntityMapOps+SafeItr+SafeValues+fixtures, classfile.rs +409 auto-merged clean, region_threads.rs fence layer) merged into round-414-b-cvs; patched-kernel.jar now present in tree; RESULT.json conflict resolved ours"
 }
