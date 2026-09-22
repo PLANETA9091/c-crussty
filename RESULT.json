@@ -11,8 +11,9 @@
     "lever": "cmp411_eqsnap=1",
     "excluded": "travel_diet / fluid_dirty_ledger НЕ шлются (слотов в workflow нет)"
   },
-  "next": "poll run → absorb_round.py <run_id> round412cl2 → pair-by-runner vs пул {2.2@6840530, 2.2@6858619, 2.1@6776758, 2.4@6604167, 2.2@6976430, 2.25@6833921, 2.30@6846036} (ближайший runner) → BAND 6.0-9.5M вне = BAND-DISCARD ре-ролл ≤2 → чек-лист ARM+EFFECT(first gate hit / shard-drain epoch ok)+AIOOBE=0 → Δ<80% = рисёрч",
-  "run_id": null,
+  "next": "poll run 35699456160 → absorb_round.py 35699456160 round412cl2 → pair-by-runner vs пул {2.2@6840530, 2.2@6858619, 2.1@6776758, 2.4@6604167, 2.2@6976430, 2.25@6833921, 2.30@6846036} (ближайший runner) → BAND 6.0-9.5M вне = BAND-DISCARD ре-ролл ≤2 → чек-лист ARM+EFFECT(first gate hit / shard-drain epoch ok)+AIOOBE=0 → Δ<80% = рисёрч",
+  "run_id": 35699456160,
+  "dispatched": "run 35699456160, alias round-412-c-l2 @24008bd (refs API, force-move гвард), lever cmp411_eqsnap=1, банк exact, travel_diet/fluid_dirty_ledger не посланы",
   "gates_checklist": "ARM 'cmp411_eqsnap: ARMED goal-query' + 'cmp411_eqsnap: ARMED soa-population+push-snapshot' (rust mobs_manager/entity_query), EFFECT 'epoch ok' rows>1000 + 'shard-drain EFFECT armed (first bulk drain applied' + 'push-snapshot EFFECT', grep AIOOBE=0, grep oversized=0 (gate 2.0 не должен стрелять на бенч-популяции)",
   "evidence": [
     "worklog TASK-411-C: cl1 пост-мортем 35691270899 (broadphase 15.66→7.64, mob_upsert 24.9%)",
