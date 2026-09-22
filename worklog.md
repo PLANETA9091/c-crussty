@@ -5615,3 +5615,24 @@ Stage Summary:
 - в полёте: s7192 (35467929550 @ a5c353d), гейт: маркер + PG-T2 threw=0 + DUAL BAR vs ANCHOR-SLOW 1.60 @ 6680195
 - NEXT id 349: absorb 35467929550; DUAL BAR GREEN → min-of-2 → banking v4; < +10% → лейн #14 REFUTED-вердикт + RECON по CPU-оси; CRASH класса гонки → откат точки подмены
 
+
+---
+Task ID: TASK-417
+Agent: cron tick (Job 405193, 01:08 +08, v16)
+Task: полный MEGA-CYCLE tick-417: absorb, BOTTLENECK, якоря ×3, волна ×3 (mc-convoy-fix / chunk-pipeline-owner / queryplane-cvs), pair-вердикты, GOAL ×101, CLAIMS next-418
+
+Work Log:
+- Phase 0: token+flock+pull; диск 91%→65% (agent-b full-checkout 2.8G → sparse-checkout); работа с параллельным лупом координирована (23c21da/1039db4 — его абсорбы, мои диспатчи — одна волна)
+- BOTTLENECK-417: топ-1 = mob_query конвой mc-композита (mc2 0.20/0.20/0.70); планы из RESEARCH-A-iter3.md @158889b
+- Якоря-417: anchora FAILURE→anchorc3 2.10 (RED-флаг, референс); anchorb 2.35@6960975 ✓; anchorc 2.40@6761869 ✓ (ночь)
+- Волна ×3 рестартом с контекстом (adapter-deadline ×2 ≠ смерть): A=protocol v2 convoy-fix, B=chunk-pipeline (директива владельца 01:4x «шум/чанки»), C=queryplane-awake на cvs
+- A: protocol v2 (N_SHARDS=64 striped seqlock, two-phase no-JNI-critical-retries, bounded fail-open ERR_RANGE, tombstone-rebuild + 4 hardening-фикса UAF/tearing) + queryplane find_class-фикс; cargo 289/0, javap flat==nested, selftest 6/6; mc3a/b/c = 2.50@6787526/2.70@8678220/3.20@8697388 — КОЛЛАПСА НЕТ, polls 6, threw=0, AIOOBE=0, items 0.00 ×3, broadphase −6.0..−6.5, nav_ai −9.8..−10.0
+- C: порт queryplane на cvs 1aec4f8 + find_class-фикс; selftest 5/5, cargo 283/283, блобы 6 мостов; bqa/bqb/bqc = 3.20@8960321/3.30@7242099/2.60@6837461, selfTest==true ×3 stdout, AIOOBE=0, pair-by-runner: +40.4/+8.3/+36.2 (provisional) — медиана +36.2%; bqb 3.30 = лучший ночной абсолют эры
+- Вердикты: mc-композит ЗДОРОВ (конвой побеждён; ночь ≈+15 provisional, дневной потенциал ≥+40); bq median +36.2; БАР 80% НЕ ВЗЯТ — МЕРЖ НЕТ
+- B-wgen: арминг cmp417_wgen в run_world3.sh (noise_fill-наследие TASK-108, пустой флаг = ваниль), noise bridge rebuild в момент закрытия тика — ноги переданы тику-418
+- GOAL ×101, CLAIMS next-418, collapsed-purge ×1, push master (92cb37d) + dev-logs
+
+Stage Summary:
+- mc-композит (multi⊕racefix⊕queryplane⊕gsel @20c9fdc cmp417_mcomp) впервые ЗДОРОВ: топ-лесенка разблокирована для дневного окна тика-418 (цель ≥+40-50)
+- queryplane awake на раннере ×6 ног — find_class INITIALIZED-фикс закрыл класс dormant-отказов (b2p1/mc1)
+- Директива владельца принята в систему векторов: chunk-pipeline (B-wgen) + наследие noise_fill; inside_volatile → 418
