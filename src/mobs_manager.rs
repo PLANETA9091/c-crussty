@@ -60,7 +60,10 @@ fn lever_flag() -> String {
 
 /// TASK-402-B: the hook arms under the legacy soa flag AND the composite.
 fn java_gate_matches(f: &str) -> bool {
+    // TASK-410-C (eindexq): SoA-плоскость = источник популяции goal-query
+    // CSR-снапшота (EntityQueryOps; sscan-прецедент TASK-406-E).
     f == GATE_LEVER || f == GATE_LEVER_COMP || f == GATE_LEVER_STAGCOMP
+        || f == "cmp410_eindexq"
 }
 
 static READY: AtomicBool = AtomicBool::new(false);
@@ -392,6 +395,10 @@ pub fn activate() {
             eprintln!(
                 "[crussty-plugin] {}: ARMED soa=flat-arrays seqlock=global-version writer=global-mutex ids_cap=1048576 cell_cap=262144 cell=1.0 pad=1.0 radius_gate=1.0 rust_prune=coarse-hw-hh + mobgrid=sharded-mirror shards=64 shard_cap=16384 fallback-read=per-call (rust mobs_soa SoA flat x/y/z/hw/hh/flags ⊕ mobs_grid mirror; pushEntities tail untouched vanilla; per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT)",
                 f
+            );
+        } else if f == "cmp410_eindexq" {
+            eprintln!(
+                "[crussty-plugin] cmp410_eindexq: ARMED soa-population (flat-arrays seqlock=global-version writer=global-mutex ids_cap=1048576 cell_cap=262144 cell=1.0 pad=1.0 radius_gate=1.0 rust_prune=coarse-hw-hh; rust mobs_soa SoA flat x/y/z/hw/hh/flags = ПОПУЛЯЦИЯ goal-query снапшота EntityGoalQueryOps.eqEpoch; pushEntities tail untouched vanilla; per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT)"
             );
         } else {
             eprintln!(

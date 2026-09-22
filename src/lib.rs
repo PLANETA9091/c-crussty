@@ -30,6 +30,7 @@ mod entity_mirror;
 mod entity_compose;
 mod entity_index;
 mod entity_index_manager;
+mod entity_query;
 mod fluid_guard;
 mod fluid_bitmask;
 mod fluid_dirty;
@@ -208,6 +209,16 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // plane. Dormant unless CRUSSTY_LEVER_FLAG == cmp405_eindex (STRICT eq;
     // empty flag = vanilla bit-in-bit, no hook registered).
     entity_index_manager::register();
+    // EINDEX-Q (TASK-410-C, K3 pivot): byte hooks on
+    // NearestAttackableTargetGoal + AvoidEntityGoal for the
+    // getEntitiesOfClass→EntityGoalQueryOps.entitiesOfClassGate retarget —
+    // pristine capture at first load, patch served after the bridge lands
+    // (entity_query::activate worker). Dormant unless CRUSSTY_LEVER_FLAG ==
+    // cmp410_eindexq (STRICT eq; empty flag = vanilla bit-in-bit). The OLD
+    // 4-site accounting index (entity_index_manager) stays OFF under this
+    // flag — upper-agent tick-410 mandate: only the query plane, no
+    // add/remove/move accounting hooks (cleg5b AIOOBE root-cause).
+    entity_query::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -489,6 +500,12 @@ fn inject_surface() {
     // RegisterNatives, seed the chunk mirror, arm + retransform EntityLookup/
     // Entity (dormant unless CRUSSTY_LEVER_FLAG == cmp405_eindex).
     entity_index_manager::activate();
+    // EINDEX-Q (TASK-410-C, K3 pivot): define EntityGoalQueryOps into the
+    // kernel loader, RegisterNatives (eqProbe/eqEpoch), compute the 2-site
+    // goal-query retargets, retransform (dormant unless CRUSSTY_LEVER_FLAG ==
+    // cmp410_eindexq). Runs AFTER mobs_manager::activate: the goal-query
+    // epoch reads the SAME SoA plane the push bridge populates.
+    entity_query::activate();
 }
 
 /// Define one bridge class and register all its natives.

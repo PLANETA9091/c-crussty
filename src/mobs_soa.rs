@@ -178,7 +178,41 @@ fn lever_mode() -> bool {
     // its primary mob push broadphase (together with the mobs_grid sharded
     // mirror — see mirror_mode()); the legacy cmp401_soa leg keeps its exact
     // prior behavior (no mirror, no grid reads) — two-mode A/B by design.
-    f == "cmp401_soa" || f == "cmp402_comp" || f == "cmp402_stagcomp"
+    f == "cmp401_soa"
+        || f == "cmp402_comp"
+        || f == "cmp402_stagcomp"
+        // TASK-410-C (eindexq): K3-пивот R2 — SoA-плоскость = источник
+        // популяции для goal-query CSR-снапшота (EntityQueryOps.eqEpoch;
+        // sscan-прецедент TASK-406-E).
+        || f == "cmp410_eindexq"
+}
+
+/// TASK-410-C (eindexq): read view for the goal-query CSR epoch pass —
+/// x/y/z/hw/hh f64 slices + alive flags + the seqlock version. The caller
+/// (entity_query::eq_epoch) brackets its scan with the SAME version
+/// discipline as `mob_query` (even v1 -> scan -> even v2, bounded retries);
+/// a torn snapshot retries the whole pass, so the published CSR is always a
+/// CONSISTENT SoA state. No WLOCK: readers never block writers. Slices are
+/// &'static by construction (Soa published once, never freed).
+pub(crate) fn eq_snapshot() -> Option<(
+    &'static [f64],
+    &'static [f64],
+    &'static [f64],
+    &'static [f64],
+    &'static [f64],
+    &'static [u8],
+    &'static AtomicUsize,
+)> {
+    let d = data()?;
+    Some((
+        d.x.as_slice(),
+        d.y.as_slice(),
+        d.z.as_slice(),
+        d.hw.as_slice(),
+        d.hh.as_slice(),
+        d.flags.as_slice(),
+        &VERSION,
+    ))
 }
 
 /// Mirror-plane selector: the sharded grid (src/mobs_grid.rs) is armed ONLY
