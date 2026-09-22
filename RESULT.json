@@ -1,0 +1,34 @@
+{
+  "task": "TASK-410-B fluid law(6) vector k2: SECTIONAL bulk-JNI redesign (anti-lesson bleg1 per-entity JNI explosion 16.72->71.48%)",
+  "agent": "410-B",
+  "stage": "gates-passed-pushing",
+  "branch": "round-410-b-fluidsec",
+  "base": "origin/master 8ef9e5b (fresh, comp-sites NOT inherited — pure fluid-only vector, lesson eb7a870)",
+  "old_context": {
+    "worktree": "/home/z/rounds/ROUND-405/agent-b @eb7a870 (round-405-b-fluid)",
+    "bleg1": "RED: fluid lane 16.72->71.48% (per-entity JNI + Critical-array hot loop = design error law 6)",
+    "assets": "FluidRustOps.java + src/fluid_rust.rs REWRITTEN for k2 by the pre-restart session (found complete in worktree)"
+  },
+  "vector_k2": "(a) java per-tick gather of ALL fluid-contact entities into flat buffer (0 JNI in gather, inline verdicts); (b) ONE fluidBatchTick per tick per thread (gameTime-stamp flush + 8192-record valve); (c) rust push/height verdicts bit-in-bit one pass incl water->lava delta threading (newEntity=0 continues previous record); (d) packed out-arrays copied-out ONCE (Get/SetArrayRegion, no Critical in any loop)",
+  "restart_delta": [
+    "wired lib.rs: mod fluid_rust + register() + activate() (define-only; retarget via compose chain)",
+    "wired classfile.rs: patch_fluid_rust ported from 405 @eb7a870 (WATER offset39 + LAVA offset41 -> FluidRustOps.updateFluidHeightAndDoFluidPushing (Entity,TagKey,D)Z strict 1+1)",
+    "wired entity_compose.rs: stage 3b after fluid_dirty (wait_bridge_ready 180s, fail-dominant) + stage_enabled()",
+    "fluid_guard supersede-lesson eb7a870 verified: compose chain registers AFTER fluid_guard -> serves from pristine cache identically on anchor and leg (pair clean)",
+    "NESTED-CLASS FIX: FluidRustOps$Q + $Gather now defined explicitly (fluid_guard CLASSES pattern) — a missed nested class = latent NoClassDefFoundError in the hot loop",
+    "oracle fixes: touched-flag semantics corrected to vanilla identity (Vec3.add ALWAYS allocates => any recorded cell leaves ZERO ref, tail runs, delta numerically unchanged); threading test now uses real-world adjacency (water+lava consecutive); exact pow2 bit-pins (0.0045000000000000005 floor pattern)"
+  ],
+  "legs": [],
+  "best_delta_pair_pct": null,
+  "lane": "fluid was 16.7-18.5% vanilla -> k2 target: shrink lane, any lane GROWTH = RED",
+  "ram": null,
+  "parity": "STRICT eq gate (empty flag = vanilla bit-in-bit); cargo test 208 passed incl 7 fluid_rust oracles (N entities x mixed media, water->lava threading, floor branches, valve shapes)",
+  "verdict": "IN_PROGRESS",
+  "evidence": [
+    "javac --release 21 OK vs /home/z/c-crussty/research/gc-recon-2026-09-19/round-396-a/patched-kernel.jar + /home/z/tools/fastutil.jar (FluidRustOps 16677B + $Q 1367B + $Gather 401B — build blobs committed)",
+    "cargo check --lib PASS; cargo test 208/208 (1 ignored pre-existing)",
+    "gate checklist grep: cmp410_fluidsec ONLY fluid_rust.rs + FluidRustOps.java (gates) + comments lib.rs/classfile.rs + RESULT.json"
+  ],
+  "what": "k2 bridge complete + wired + gates green; next: commit, push branch, alias round-410-b-l2 on own sha, dispatch world-bench-parallel with EXACT bank inputs + lever_flag=cmp410_fluidsec",
+  "next": "poll run -> absorb_round.py <run_id> round410bl2 -> verdict pair-by-runner vs pool-410 {2.50@8548287, 2.95@8880170, 2.60@8827927} + bank {2.4@6604167, 2.2@6976430, 2.25@6833921, 2.30@6846036}; fluid lane MUST NOT GROW; BAND 6.0-9.5M outside = BAND-DISCARD re-roll <=2"
+}

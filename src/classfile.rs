@@ -4398,6 +4398,90 @@ pub fn patch_fluid_gate(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), Stri
 }
 
 // ---------------------------------------------------------------------------
+// FLUID-RUST (TASK-410-B, lever cmp410_fluidsec): fluid→Rust SECTIONAL batch
+// push plane — the law-(6) anti-bleg1 redesign (the round-405 per-entity JNI
+// bridge exploded the fluid lane 16.72%→71.48%). The retarget is UNCHANGED
+// from 405: retarget BOTH Entity wrapper call-sites of
+// updateFluidHeightAndDoFluidPushing (WATER wrapper
+// updateInWaterStateAndDoWaterCurrentPushing offset 39 + LAVA wrapper
+// updateInWaterStateAndDoFluidPushing offset 41 — the ONLY two call sites in
+// the kernel, javap census) to the static FluidRustOps bridge
+// (Entity,TagKey,double)Z (receiver-prepended, 3B→3B, length-preserving).
+// The bridge: java gather (zero JNI, inline verdicts) + ONE bulk JNI per
+// TICK per thread (fluidBatchTick → rust getFlow/push/tail math bit-in-bit,
+// packed outputs copied out ONCE) + faithful vanilla slow replica
+// (fail-closed). No cross-tick world state (law 5). Strict: exactly ONE
+// matching site per wrapper, total TWO; anything else = fail closed.
+
+const FLUID_RUST_OPS_CLASS: &str = "net/minecraft/world/entity/FluidRustOps";
+const FLUID_RUST_DESC: &str = "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/tags/TagKey;D)Z";
+
+pub fn patch_fluid_rust(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    for probe in [
+        "updateInWaterStateAndDoWaterCurrentPushing",
+        "updateInWaterStateAndDoFluidPushing",
+        "fluidHeight",
+        "touchingUnloadedChunk",
+    ] {
+        if layout.pool.find_utf8(probe).is_none() {
+            return Err(format!("{probe} absent from pool (kernel rename?)"));
+        }
+    }
+    let expect_static = format!("(L{};{}", FLUID_TARGET.0, &FLUID_TARGET.2[1..]);
+    if FLUID_RUST_DESC != expect_static {
+        return Err("fluid-rust descriptor is not the receiver-prepended target form".into());
+    }
+
+    // Retarget site #1: the WATER wrapper's call.
+    let (out1, outcome1) = retarget_virtual_to_static(
+        bytes,
+        "updateInWaterStateAndDoWaterCurrentPushing",
+        "()V",
+        FLUID_TARGET,
+        (
+            FLUID_RUST_OPS_CLASS,
+            "updateFluidHeightAndDoFluidPushing",
+            FLUID_RUST_DESC,
+        ),
+    )?;
+    // Retarget site #2: the LAVA wrapper's call (on top of #1's output).
+    let (out2, outcome2) = retarget_virtual_to_static(
+        &out1,
+        "updateInWaterStateAndDoFluidPushing",
+        "()Z",
+        FLUID_TARGET,
+        (
+            FLUID_RUST_OPS_CLASS,
+            "updateFluidHeightAndDoFluidPushing",
+            FLUID_RUST_DESC,
+        ),
+    )?;
+
+    let sites1 = match &outcome1 {
+        RetargetOutcome::Retargeted { sites } => *sites,
+        RetargetOutcome::AlreadyPatched { sites } => *sites,
+        RetargetOutcome::NotFound => 0,
+    };
+    let sites2 = match &outcome2 {
+        RetargetOutcome::Retargeted { sites } => *sites,
+        RetargetOutcome::AlreadyPatched { sites } => *sites,
+        RetargetOutcome::NotFound => 0,
+    };
+    match (sites1, sites2) {
+        (1, 1) => match (&outcome1, &outcome2) {
+            (RetargetOutcome::AlreadyPatched { .. }, RetargetOutcome::AlreadyPatched { .. }) => {
+                Ok((out2, RetargetOutcome::AlreadyPatched { sites: 2 }))
+            }
+            _ => Ok((out2, RetargetOutcome::Retargeted { sites: 2 })),
+        },
+        _ => Err(format!(
+            "expected exactly one fluid-rust site per wrapper (water={sites1}, lava={sites2})"
+        )),
+    }
+}
+
+// ---------------------------------------------------------------------------
 // FLUID-DIRTY (S7-151 / TASK-290, ARCH-ATTACK lever #6): per-entity
 // memoization of the fluid-scan portion. Two retargets:
 //   1) BOTH Entity wrapper call-sites of updateFluidHeightAndDoFluidPushing

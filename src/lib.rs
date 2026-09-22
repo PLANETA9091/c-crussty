@@ -32,6 +32,7 @@ mod fluid_guard;
 mod fluid_bitmask;
 mod fluid_dirty;
 mod fluid_free;
+mod fluid_rust;
 mod flush_diet;
 mod improved_noise;
 mod inside_bitmask;
@@ -163,9 +164,13 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // dirty-stamp ledger) + FluidPushOps bridge composed by the inside_chain
     // (scan retarget). Dormant unless CRUSSTY_FLUID_DIRTY=1.
     fluid_dirty::register();
+    // FLUID-RUST (TASK-410-B): sectional bulk-JNI fluid push plane; define-only
+    // here (the retarget composes through the entity_compose chain stage 3b).
+    // Dormant unless CRUSSTY_LEVER_FLAG=cmp410_fluidsec (STRICT eq).
+    fluid_rust::register();
     // ENTITY-COMPOSE (S7-162): the SINGLE owner of the Entity byte pipeline
-    // (inside → fluid_free → fluid_dirty → rng → batch, one hook, one
-    // retransform — hooks on one class supersede each other: leg #5 886/895).
+    // (inside → fluid_free → fluid_dirty → fluid_rust → rng → batch, one hook,
+    // one retransform — hooks on one class supersede each other: leg #5 886/895).
     // Dormant unless at least one Entity-stage lever is enabled.
     entity_compose::register();
     proto_blend_cache::register();
@@ -386,6 +391,11 @@ fn inject_surface() {
     // compute the secWrite retarget for LevelChunk, arm the inside_chain
     // bridge (dormant unless CRUSSTY_FLUID_DIRTY=1).
     fluid_dirty::activate();
+    // FLUID-RUST (TASK-410-B): define FluidRustOps into the kernel loader,
+    // RegisterNatives fluidProbe/fluidBatchTick, publish the bridge-ready
+    // verdict for the entity_compose stage 3b (dormant unless
+    // CRUSSTY_LEVER_FLAG=cmp410_fluidsec).
+    fluid_rust::activate();
     // REGION-THREADS (S7-156): define RegionTickOps into the kernel loader,
     // compute the tick-segment + guard retargets for ServerLevel and
     // EntityCallbacks, retransform both (dormant unless
