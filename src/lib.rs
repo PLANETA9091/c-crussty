@@ -34,6 +34,7 @@ mod entity_index;
 mod entity_index_manager;
 mod entity_query;
 mod fluid_guard;
+mod goal_batch;
 mod fluid_bitmask;
 mod fluid_dirty;
 mod fluid_free;
@@ -253,6 +254,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // flag — upper-agent tick-410 mandate: only the query plane, no
     // add/remove/move accounting hooks (cleg5b AIOOBE root-cause).
     entity_query::register();
+    // GSEL-BATCH (TASK-414-C2): LAST Mob hook — composes onto received bytes
+    // (sscan/prepare stand earlier in the chain); dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp414_pfb.
+    goal_batch::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -558,6 +563,10 @@ fn inject_surface() {
     // cmp410_eindexq). Runs AFTER mobs_manager::activate: the goal-query
     // epoch reads the SAME SoA plane the push bridge populates.
     entity_query::activate();
+    // GSEL-BATCH (TASK-414-C2): define GoalBatchOps, RegisterNatives
+    // (gselProbe/gselRegister/gselEpoch), flip READY, retransform Mob
+    // (dormant unless CRUSSTY_LEVER_FLAG == cmp414_pfb).
+    goal_batch::activate();
 }
 
 /// Define one bridge class and register all its natives.

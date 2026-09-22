@@ -143,7 +143,7 @@ public final class MobPushOps {
                     // cmp412_meganav-сайты остаются нетронутыми.
                     || f.trim().equals("cmp412_eqsnapv3")
                     // TASK-414-B: leg flag cmp414_cvs.
-                    || f.trim().equals("cmp414_cvs"));
+                    || f.trim().equals("cmp414_cvs") || f.trim().equals("cmp414_pfb"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -172,7 +172,7 @@ public final class MobPushOps {
                 // TASK-412-C (eqsnap-v3): меганав-композит несёт eqsnap-плоскость.
                 || f.trim().equals("cmp412_eqsnapv3")
                     // TASK-414-B: leg flag cmp414_cvs.
-                    || f.trim().equals("cmp414_cvs"));
+                    || f.trim().equals("cmp414_cvs") || f.trim().equals("cmp414_pfb"));
     }
 
     private static final boolean EQSNAP = eqsnapEnabled();
