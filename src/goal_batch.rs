@@ -11,13 +11,26 @@
 //! ≈ 2.9% = linked-set iteration + lockedFlags map + removeIf + flag-сет
 //! операции; остальное = goal-logic canUse/start, остаётся java-ваниль).
 //!
-//! RUST-FIRST (закон 6): rust-плоскость держит SoA-реестр селекторов
-//! (selId → flags[]/priorities[] коло́нки, bulk `gselRegister` sync при
-//! редких rebuild) и обрабатывает ОДИН bulk JNI за серверный тик
-//! (`gselEpoch`: DOD-проход по реестру + per-selector телеметрия в stats[]).
-//! ZERO per-entity JNI. Последовательные решения (canUse/canContinueToUse/
-//! start/stop) остаются java-ваниль над плоским зеркалом — порядок и решения
-//! бит-в-байт (jsel contract в GoalBatchOps.java).
+//! RUST-FIRST (закон 6): rust-плоскость держит DENSE SoA-реестр селекторов
+//! (коло́нки goals_col/flags_col/prios_col + offsets, selId = индекс; bulk
+//! `gselRegister` sync при редкой регистрации) и обрабатывает ОДИН bulk JNI
+//! за серверный тик. ИТЕРАЦИЯ-4 (TASK-416-B, бисекция по round-g3b
+//! collapsed-профилям): gselEpoch стал СКАЛЯРНЫМ `(IJ)I` — ноль JNI-копий
+//! массивов (раньше GetIntArrayRegion/GetLongArrayRegion на 65k×3 элементов
+//! под глобальным java-локом на каждый тик); DOD-проход по коло́нкам суммирует
+//! реестр локально в Rust. ZERO per-entity JNI, zero per-tick JNI array copy.
+//! Последовательные решения (canUse/canContinueToUse/start/stop) остаются
+//! java-ваниль над плоским зеркалом — порядок и решения бит-в-байт
+//! (jsel contract в GoalBatchOps.java).
+//!
+//! ИТЕРАЦИЯ-3 ВЕРДИКТ (анти-урок, встроен в iter-4): nav_ai-эффект РЕАЛЕН
+//! (9.31 → 6.63-7.04), но батч-цикл (мутация/публикация/аллокации) съедал
+//! лейн-выигрыш ×6: Integer-боксинг selId + System.getenv byte[] на КАЖДОМ
+//! гейте (×~300k/тик) = GC-churn (avg-pause 156мс vs cvs 22-24мс),
+//! BATCH_LOCK monitor-park на 4 region-workers, JNI-копии 65k×3 под локом.
+//! iter-4 java: lever-флаг static-final кэш, ОДНА identity-CHM на гейт,
+//! LongAdder-гейты, скалярный epoch; rust: коло́ночный реестр вместо
+//! HashMap<i32,SelReg>.
 //!
 //! RETARGET (STRICT census, javap ground truth): ровно 4 сайта
 //! `invokevirtual GoalSelector.tick()V` в классе Mob — serverAiStep ×2
@@ -33,7 +46,6 @@
 //! флаг = hook не регистрируется вообще — ваниль бит-в-байт).
 
 use jvmti_bindings::jni;
-use std::collections::HashMap;
 use std::ffi::{c_void, CString};
 use std::sync::atomic::{AtomicBool, AtomicI64, AtomicU64, Ordering};
 use std::sync::Mutex;
@@ -54,6 +66,12 @@ const ERR_STRUCT: i32 = -1;
 const ERR_RANGE: i32 = -2;
 const PROBE_MAGIC: i32 = 0x4753; // "GS"
 
+/// iter-4: gselEpoch — скалярный дескриптор (tick:int, gatesSum:long) -> int;
+/// ноль JNI-массивов (бисекция round-g3b). Institutional: тест
+/// epoch_scalar_sig_contract держит контракт вместе с
+/// scripts/check_gsel_native_sigs.sh (javap ground truth).
+const EPOCH_SIG: &str = "(IJ)I";
+
 /// STRICT-eq gate: только флаг этого вектора (cmp416_gsel3).
 fn enabled() -> bool {
     matches!(
@@ -65,22 +83,89 @@ fn enabled() -> bool {
 static READY: AtomicBool = AtomicBool::new(false);
 
 // ---------------------------------------------------------------------------
-// Rust SoA registry (подсистемные данные: per-selector flags/priorities)
+// Rust DENSE SoA registry (подсистемные данные: коло́нки по всем селекторам,
+// selId = индекс; iter-4 — замена HashMap<i32, SelReg>, DOD-проход по коло́нке
+// — последовательное чтение, prefetch-friendly)
 // ---------------------------------------------------------------------------
 
-struct SelReg {
-    goals: usize,
-    flags: Vec<i64>,
-    prios: Vec<i32>,
+/// Колоночный реестр: offsets.len() == goals_col.len() + 1, offsets[i] —
+/// старт селектора i в flags_col/prios_col (инвариант offsets[0] == 0).
+#[derive(Default)]
+struct SoaRegistry {
+    goals_col: Vec<u32>,
+    flags_col: Vec<i64>,
+    prios_col: Vec<i32>,
+    offsets: Vec<u32>,
 }
 
-static REGISTRY: Mutex<Option<HashMap<i32, SelReg>>> = Mutex::new(None);
+impl SoaRegistry {
+    const fn new() -> Self {
+        Self {
+            goals_col: Vec::new(),
+            flags_col: Vec::new(),
+            prios_col: Vec::new(),
+            offsets: Vec::new(),
+        }
+    }
+
+    fn slots(&self) -> usize {
+        self.goals_col.len()
+    }
+
+    /// Append (sel_id == slots, живой путь) / gap-fill + append (defensive:
+    /// сожжённый id после неудачного register) / замена диапазона (rare
+    /// re-register). Err = разной длины flags/prios (недостижимо с java).
+    fn upsert(&mut self, sel_id: usize, flags: Vec<i64>, prios: Vec<i32>) -> Result<(), ()> {
+        if flags.len() != prios.len() {
+            return Err(());
+        }
+        while sel_id > self.slots() {
+            // gap: пустой слот (walk-сумма не затрагивается, плотность ОК)
+            self.append(0, &[], &[]);
+        }
+        if sel_id == self.slots() {
+            self.append(flags.len(), &flags, &prios);
+            return Ok(());
+        }
+        // replace range (re-register): сохранить плотность коло́нок
+        let start = self.offsets[sel_id] as usize;
+        let end = self.offsets[sel_id + 1] as usize;
+        let n = flags.len();
+        let delta = n as i64 - (end - start) as i64;
+        self.flags_col.splice(start..end, flags);
+        self.prios_col.splice(start..end, prios);
+        self.goals_col[sel_id] = n as u32;
+        if delta != 0 {
+            for off in self.offsets[sel_id + 1..].iter_mut() {
+                *off = ((*off as i64) + delta) as u32;
+            }
+        }
+        Ok(())
+    }
+
+    fn append(&mut self, n: usize, flags: &[i64], prios: &[i32]) {
+        if self.offsets.is_empty() {
+            // инвариант: offsets[0] == 0 (старт селектора 0), len == slots + 1
+            self.offsets.push(0u32);
+        }
+        let start = (*self.offsets.last().unwrap()) as usize;
+        self.flags_col.extend_from_slice(flags);
+        self.prios_col.extend_from_slice(prios);
+        self.goals_col.push(n as u32);
+        self.offsets.push((start + n) as u32);
+    }
+
+    /// DOD-проход по коло́нке целей (последовательный, ~2ns/элемент).
+    fn walk_goal_sum(&self) -> u64 {
+        self.goals_col.iter().map(|&g| g as u64).sum()
+    }
+}
+
+static REGISTRY: Mutex<SoaRegistry> = Mutex::new(SoaRegistry::new());
 
 static EPOCH_COUNT: AtomicU64 = AtomicU64::new(0);
 static SEL_TOTAL: AtomicU64 = AtomicU64::new(0);
 static GOALS_TOTAL: AtomicU64 = AtomicU64::new(0);
-static DISABLED_BLOCKED: AtomicU64 = AtomicU64::new(0);
-static LOCK_BLOCKED: AtomicU64 = AtomicU64::new(0);
 static LAST_EPOCH_TICK: AtomicI64 = AtomicI64::new(-1);
 static REG_SLOTS: AtomicU64 = AtomicU64::new(0);
 
@@ -243,13 +328,12 @@ pub fn activate() {
             ];
             let sigs = [
                 CString::new("()I").expect("no NUL"),
-                // ROOT-CAUSE pfb1 (TASK-415-B iter-2): обе строки были
-                // опечатаны vs javap-дескрипторы GoalBatchOps.class →
-                // RegisterNatives = JNI_ERR(-1) → hook dormant → нога мерила
-                // ваниль+шум. Точные дескрипторы (javap -s ground truth):
-                //   gselProbe()I / gselRegister(II[J[I)I / gselEpoch(II[I[J[J[I)I
+                // ROOT-CAUSE pfb1 (TASK-415-B iter-2): опечатанные sig-строки
+                // → RegisterNatives = JNI_ERR(-1) → hook dormant. Точные
+                // дескрипторы (javap -s ground truth, iter-4):
+                //   gselProbe()I / gselRegister(II[J[I)I / gselEpoch(IJ)I
                 CString::new("(II[J[I)I").expect("no NUL"),
-                CString::new("(II[I[J[J[I)I").expect("no NUL"),
+                CString::new("(IJ)I").expect("no NUL"), // == EPOCH_SIG (javap-gate greps литерал)
             ];
             let natives = [
                 jvmti_bindings::jni::JNINativeMethod {
@@ -291,7 +375,7 @@ pub fn activate() {
 
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
         eprintln!(
-            "[crussty-plugin] cmp416_gsel3: ARMED gsel-batch (Mob.serverAiStep x2 + Mob.inactiveTick x2 GoalSelector.tick sites -> GoalBatchOps.tickGate; rust SoA registry + gselEpoch = ONE bulk JNI/tick, zero per-goal JNI; scheduler decisions vanilla bit-for-bit over flat mirror; empty flag = vanilla bit-for-bit)"
+            "[crussty-plugin] cmp416_gsel3: ARMED gsel-batch iter-4 fastpath (Mob.serverAiStep x2 + Mob.inactiveTick x2 GoalSelector.tick sites -> GoalBatchOps.tickGate; rust dense-SoA registry + SCALAR gselEpoch(IJ)I = ONE bulk JNI/tick zero array copies; java fastpath: cached lever flag, single identity-CHM, no hot-path monitor, LongAdder gates; scheduler decisions vanilla bit-for-bit over flat mirror; empty flag = vanilla bit-for-bit)"
         );
 
         crate::kernel_policy::audit_wire(OPS_CLASS, "tickGate", "cmp416_gsel3 v1");
@@ -329,8 +413,10 @@ pub unsafe extern "system" fn gsel_probe(
     PROBE_MAGIC
 }
 
-/// BULK SoA sync (rare: mirror rebuild). java -> rust: selId, n, flags[n],
-/// priorities[n]. Stores the selector registry plane; returns n or ERR.
+/// BULK SoA sync (rare: first-sighting registration). java -> rust: selId,
+/// n, flags[n], priorities[n]. Writes the DENSE SoA columns (selId = index,
+/// append-only на живом пути — java гарантирует плотную нумерацию);
+/// returns n or ERR.
 ///
 /// # Safety
 /// See gsel_probe.
@@ -361,146 +447,67 @@ pub unsafe extern "system" fn gsel_register(
         unsafe { (vt.GetLongArrayRegion)(env, flags, 0, n as jni::jsize, fbuf.as_mut_ptr()) };
         unsafe { (vt.GetIntArrayRegion)(env, prios, 0, n as jni::jsize, pbuf.as_mut_ptr()) };
     }
-    if let Ok(mut guard) = REGISTRY.lock() {
-        let map = guard.get_or_insert_with(HashMap::new);
-        let fresh = !map.contains_key(&sel_id);
-        map.insert(
-            sel_id,
-            SelReg {
-                goals: n as usize,
-                flags: fbuf,
-                prios: pbuf,
-            },
-        );
-        if fresh {
-            REG_SLOTS.fetch_add(1, Ordering::Relaxed);
+    match REGISTRY.lock() {
+        Ok(mut reg) => {
+            let fresh = (sel_id as usize) == reg.slots();
+            if reg.upsert(sel_id as usize, fbuf, pbuf).is_err() {
+                return ERR_RANGE;
+            }
+            if fresh {
+                REG_SLOTS.fetch_add(1, Ordering::Relaxed);
+            }
         }
-    } else {
-        return ERR_STRUCT;
+        Err(_) => return ERR_STRUCT,
     }
     n
 }
 
 /// BULK epoch — ONE transition per server tick (never per goal/selector from
-/// java's perspective: java accumulates the batch, ONE native call flushes).
-/// DOD pass over the SoA registry: per-selector telemetry
-/// `stats[i] = (goals << 16) | min(disabledBlocked, 0xFFFF)`; aggregates
-/// counted for the effect marker. Decisions were already applied java-side
-/// (vanilla bit-for-bit) — this plane is the subsystem data-residency +
-/// telemetry leg of the lever.
+/// java's perspective), СКАЛЯРНЫЙ (iter-4): java передаёт только (tick,
+/// gatesSum) — ноль JNI-копий массивов (iter-3 платил GetArrayRegion на
+/// 65k×3 элементов под глобальным java-локом каждый тик; бисекция g3b).
+/// DOD-проход по коло́нкам SoA-реестра: сумма целей по всем слотам —
+/// последовательное чтение ~2ns/элемент. Decisions were already applied
+/// java-side (vanilla bit-for-bit) — this plane is the subsystem
+/// data-residency + telemetry leg of the lever.
 ///
-/// Returns the number of processed selectors or ERR_STRUCT/ERR_RANGE.
+/// Returns the number of registered slots or ERR_STRUCT/ERR_RANGE.
 ///
 /// # Safety
 /// See gsel_probe.
 #[no_mangle]
 pub unsafe extern "system" fn gsel_epoch(
-    env: *mut jni::JNIEnv,
+    _env: *mut jni::JNIEnv,
     _clazz: jni::jclass,
     tick: jni::jint,
-    n: jni::jint,
-    sel_ids: jni::jintArray,
-    locks: jni::jlongArray,
-    disabled: jni::jlongArray,
-    stats: jni::jintArray,
+    gates_sum: jni::jlong,
 ) -> jni::jint {
-    if !enabled() || env.is_null() {
+    if !enabled() {
         return ERR_STRUCT;
     }
-    if tick < 0 || n < 0 {
+    if tick < 0 || gates_sum < 0 {
         return ERR_RANGE;
     }
-    let vt = unsafe { &**env };
-    if sel_ids.is_null() || locks.is_null() || disabled.is_null() || stats.is_null() {
-        return ERR_STRUCT;
-    }
-    let ilen = unsafe { (vt.GetArrayLength)(env, sel_ids) } as i32;
-    let llen = unsafe { (vt.GetArrayLength)(env, locks) } as i32;
-    let dlen = unsafe { (vt.GetArrayLength)(env, disabled) } as i32;
-    let slen = unsafe { (vt.GetArrayLength)(env, stats) } as i32;
-    if ilen < n || llen < n || dlen < n || slen < n {
-        return ERR_RANGE;
-    }
-    let mut ids = vec![0i32; n as usize];
-    let mut lbuf = vec![0i64; n as usize];
-    let mut dbuf = vec![0i64; n as usize];
-    if n > 0 {
-        unsafe { (vt.GetIntArrayRegion)(env, sel_ids, 0, n as jni::jsize, ids.as_mut_ptr()) };
-        unsafe { (vt.GetLongArrayRegion)(env, locks, 0, n as jni::jsize, lbuf.as_mut_ptr()) };
-        unsafe { (vt.GetLongArrayRegion)(env, disabled, 0, n as jni::jsize, dbuf.as_mut_ptr()) };
-    }
-
     let registry = match REGISTRY.lock() {
         Ok(g) => g,
         Err(_) => return ERR_STRUCT,
     };
-    let map = match registry.as_ref() {
-        Some(m) => m,
-        None => {
-            // реестра ещё нет (rebuilds не было) — совместимо: телеметрия нулевая
-            drop(registry);
-            if n > 0 {
-                let zeros = vec![0i32; n as usize];
-                unsafe {
-                    (vt.SetIntArrayRegion)(env, stats, 0, n as jni::jsize, zeros.as_ptr())
-                };
-            }
-            EPOCH_COUNT.fetch_add(1, Ordering::Relaxed);
-            return n;
-        }
-    };
-
-    let mut sbuf = vec![0i32; n as usize];
-    let mut sel_sum = 0u64;
-    let mut goals_sum = 0u64;
-    let mut dis_sum = 0u64;
-    let mut lock_sum = 0u64;
-    for i in 0..n as usize {
-        let sid = ids[i];
-        let locks_i = lbuf[i];
-        let dis_i = dbuf[i];
-        let (gcount, dcount, lcount) = match map.get(&sid) {
-            Some(reg) => {
-                let mut d = 0usize;
-                let mut l = 0usize;
-                for &fl in &reg.flags {
-                    if (fl & dis_i) != 0 {
-                        d += 1;
-                    }
-                    if (fl & locks_i) != 0 {
-                        l += 1;
-                    }
-                }
-                (reg.goals, d, l)
-            }
-            None => (0, 0, 0),
-        };
-        sel_sum += 1;
-        goals_sum += gcount as u64;
-        dis_sum += dcount as u64;
-        lock_sum += lcount as u64;
-        sbuf[i] = ((gcount.min(0x7FFF) as i32) << 16) | (dcount.min(0xFFFF) as i32);
-    }
+    let slots = registry.slots() as u64;
+    let goals_sum = registry.walk_goal_sum();
     drop(registry);
 
-    if n > 0 {
-        unsafe { (vt.SetIntArrayRegion)(env, stats, 0, n as jni::jsize, sbuf.as_ptr()) };
-    }
     EPOCH_COUNT.fetch_add(1, Ordering::Relaxed);
-    SEL_TOTAL.fetch_add(sel_sum, Ordering::Relaxed);
+    SEL_TOTAL.fetch_add(slots, Ordering::Relaxed);
     GOALS_TOTAL.fetch_add(goals_sum, Ordering::Relaxed);
-    DISABLED_BLOCKED.fetch_add(dis_sum, Ordering::Relaxed);
-    LOCK_BLOCKED.fetch_add(lock_sum, Ordering::Relaxed);
     LAST_EPOCH_TICK.store(tick as i64, Ordering::Relaxed);
 
     let ep = EPOCH_COUNT.load(Ordering::Relaxed);
     if ep <= 3 || ep % 600 == 0 {
         eprintln!(
-            "[crussty-plugin] gsel: epoch t={tick} n={n} goals={goals_sum} disabledBlocked={dis_sum} lockBlocked={lock_sum} slots={} (rust SoA plane alive, ONE bulk JNI/tick)",
-            REG_SLOTS.load(Ordering::Relaxed)
+            "[crussty-plugin] gsel: epoch t={tick} slots={slots} goals={goals_sum} gates_java={gates_sum} (rust dense-SoA plane alive, ONE scalar bulk JNI/tick, zero array copies)"
         );
     }
-    n
+    slots as jni::jint
 }
 
 // ---------------------------------------------------------------------------
@@ -531,13 +538,60 @@ mod tests {
     }
 
     #[test]
-    fn registry_plane_math() {
-        // телеметрия-упаковка stats[i] = (goals<<16)|disabledBlocked
-        let g: i32 = 12;
-        let d: i32 = 3;
-        let packed = ((g.min(0x7FFF)) << 16) | d.min(0xFFFF);
-        assert_eq!(packed >> 16, 12);
-        assert_eq!(packed & 0xFFFF, 3);
+    fn soa_append_and_walk() {
+        // коло́ночный реестр: append 3 селекторов, инвариант offsets + walk-сумма
+        let mut reg = SoaRegistry::new();
+        reg.upsert(0, vec![1, 2], vec![0, 1]).unwrap();
+        reg.upsert(1, vec![4], vec![2]).unwrap();
+        reg.upsert(2, vec![], vec![]).unwrap();
+        assert_eq!(reg.slots(), 3);
+        assert_eq!(reg.offsets, vec![0, 2, 3, 3], "offsets invariant (len=slots+1, monotone)");
+        assert_eq!(reg.walk_goal_sum(), 3, "DOD-сумма по коло́нке целей");
+    }
+
+    #[test]
+    fn soa_gap_fill_defensive() {
+        // сожжённый id после неудачного register не ломает плотность:
+        // gap-fill пустыми слотами, walk-сумма не затрагивается
+        let mut reg = SoaRegistry::new();
+        reg.upsert(0, vec![1], vec![0]).unwrap();
+        reg.upsert(3, vec![5, 5], vec![1, 1]).unwrap(); // gap 1..3
+        assert_eq!(reg.slots(), 4);
+        assert_eq!(reg.goals_col, vec![1, 0, 0, 2]);
+        assert_eq!(reg.offsets, vec![0, 1, 1, 1, 3]);
+        assert_eq!(reg.walk_goal_sum(), 3);
+    }
+
+    #[test]
+    fn soa_replace_preserves_density() {
+        // re-register (rare rebuild path): замена диапазона сохраняет
+        // плотность коло́нок при изменении n
+        let mut reg = SoaRegistry::new();
+        reg.upsert(0, vec![1, 2, 3], vec![0, 0, 0]).unwrap();
+        reg.upsert(1, vec![7, 7], vec![1, 1]).unwrap();
+        // заменяем sel 0: n 3 → 1
+        reg.upsert(0, vec![9], vec![5]).unwrap();
+        assert_eq!(reg.slots(), 2);
+        assert_eq!(reg.offsets, vec![0, 1, 3]);
+        assert_eq!(reg.flags_col, vec![9, 7, 7]);
+        assert_eq!(reg.prios_col, vec![5, 1, 1]);
+        assert_eq!(reg.walk_goal_sum(), 3);
+        // заменяем sel 0 обратно: n 1 → 2
+        reg.upsert(0, vec![3, 3], vec![8, 8]).unwrap();
+        assert_eq!(reg.flags_col, vec![3, 3, 7, 7]);
+        assert_eq!(reg.offsets, vec![0, 2, 4]);
+    }
+
+    #[test]
+    fn epoch_scalar_sig_contract() {
+        // iter-4: gselEpoch СКАЛЯРНЫЙ (IJ)I — ноль JNI-массивов в дескрипторе
+        // (бисекция g3b: GetArrayRegion 65k×3 под java-локом = overhead)
+        assert_eq!(EPOCH_SIG, "(IJ)I");
+        assert!(!EPOCH_SIG.contains('['), "epoch desc не должен нести массивы");
+        // старый батч-дескриптор удалён (склеиваем литерал — сам тест его содержит)
+        let src = include_str!("../src/goal_batch.rs");
+        let old = format!("(II[I[{}[{}I)I", "J", "J");
+        assert!(!src.contains(&old), "старый батч-дескриптор удалён");
     }
 
     #[test]

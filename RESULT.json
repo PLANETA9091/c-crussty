@@ -1,47 +1,44 @@
 {
   "agent": "TASK-416-B",
-  "vector": "gsel-iter-3 live-blobs",
+  "vector": "gsel iter-4 fastpath (zero per-gate garbage + scalar epoch + dense-SoA)",
   "branch": "round-416-b-gsel3",
-  "base": "1aec4f8 (origin/round-414-b-cvs, live cvs-carrier: meganav f579c1c + eqsnap-v3 NCDFE + race-fix 109e4d7 + blob-sync fix; min-of-3 {2.55@6593164, 2.80@6655252, 2.70@6710453} med 2.70 = +10.2pp pair, items 0.00 x3, AIOOBE=0 x3)",
-  "slice_sources": [
-    "origin/round-414-c-pfb (gsel-batch v1: GoalBatchOps.java + goal_batch.rs + 4 retarget sites)",
-    "origin/round-415-b-gsel2 @86afeba (iter-2: pfb1 RegisterNatives sig root-fix + check_gsel_native_sigs.sh; carrier там был мёртвый по blob-sync — НЕ переиспользуем)"
-  ],
-  "plan": [
-    "slice retarget: GoalBatchOps.java + goal_batch.rs + lib.rs register/activate (LAST hook) + check_gsel_native_sigs.sh + build_gsel_blobs_all.sh",
-    "retag gates -> cmp416_gsel3 (STRICT OR, cmp414_cvs ветки НЕ ломаются): 5 java bridges + 10 rust gates",
-    "extend scripts/check_blobs_sync.sh gsel-блобом",
-    "rebuild blobs (1 javac pass, cp=full round-396-a kernel) после КАЖДОЙ правки .java",
-    "cargo check --lib + cargo test green ДО диспатча, cargo-target rm сразу после",
-    "dispatch legs g3a/g3b/g3c (alias refs round-416-b-g3{a,b,c} -> HEAD, lever cmp416_gsel3)",
-    "poll/absorb/verdict: pair-by-runner, ARM+effect markers, AIOOBE=0, band 6.0-9.5M, nav_ai вниз + items 0.00"
-  ],
-  "run_id": 35747862343,
-  "tps_med": null,
-  "delta_pair_pct": null,
-  "lane": null,
-  "RAM": null,
-  "parity": null,
-  "verdict": "IN_PROGRESS",
-  "evidence": [],
-  "what": "iter-3: живой носитель 1aec4f8 + gsel-слайс (GoalBatchOps/goal_batch, 4 сайта GoalSelector.tick), гейты STRICT OR cmp416_gsel3 (cmp414_cvs не тронуты), блобы пересобраны в оба пути (javap-гейт поймал stale fqcn — починено в build_gsel_blobs_all.sh). Диспатч g3a/g3b/g3c следующий.",
-  "commits": [
-    "slice+retag+blobs+gates",
-    "cargo green 277/277 + dispatch script"
-  ],
+  "base": "1aec4f8 (live cvs-carrier meganav+eqsnap+racefix+blobsync; min-of-3 med 2.70 = +10.2pp; cvs3 2.70@6710453)",
+  "iter3_verdict": "nav_ai lane effect REAL x3 (9.31 cvs3 -> 6.63-7.04), anti-placebo PASS, but TPS marginal NEGATIVE: pair {g3a2 +20.0, g3c +14.3, g3b invalid} vs cvs-carrier-equivalent +35.0 => gsel overhead ~= -15pp. GC avg-pause 156ms vs cvs 22-24ms; java_util +0.3..0.9pp.",
+  "iter4_bisection": {
+    "evidence": "round-g3b alloc-collapsed under GoalBatchOps: java.lang.Integer 23 samples (selId>127 boxing in MIR_GOALS/MIR_LOCKS.get x2/gate) + byte[] 15 samples (System.getenv key-encode per gate in leverEnabled); wall-collapsed: monitor-park 42 samples (BATCH_LOCK contention across 4 region workers + JNI flush inside lock), AtomicLong.get in logMarker per gate, 3x CHM.get per gate",
+    "fixes": [
+      "lever flag cached static-final (env fixed at JVM start; STRICT-eq semantics unchanged)",
+      "per-gate state = ONE identity-CHM lookup -> Object[]{WrappedGoal[], int[8] lockPlane} (created once; zero boxing)",
+      "hot path lock-free: lock-plane per selector touched by its own region thread only; rare registration under REG_LOCK",
+      "epoch = ONE scalar bulk JNI per tick gselEpoch(IJ): tick-boundary via volatile epochTickSeen + EPOCH_LOCK only on crossing; ZERO JNI array copies (was GetArrayRegion 65k*3 under global lock every tick)",
+      "gates telemetry LongAdder (no CAS ping-pong across 5 tick threads)",
+      "rust: dense SoA registry (goals_col/flags_col/prios_col + offsets, selId=index) replaces HashMap<i32,SelReg>; epoch does local DOD column walk (~2ns/elem)"
+    ],
+    "unchanged": "runVanillaScheduler byte-for-byte from iter-3 (the nav_ai win); disabled mask fresh reflection read per gate (setControlFlag visible immediately); fail-closed + vanilla fallbacks"
+  },
   "gates": {
-    "check_blobs_sync": "ALL IN SYNC (6 bridges, fqcn+short blobs)",
-    "check_gsel_native_sigs": "PASS (gselProbe ()I / gselRegister (II[J[I)I / gselEpoch (II[I[J[J[I)I)",
+    "check_blobs_sync": "ALL IN SYNC (6 bridges, gsel blob rebuilt post-logMarker-fix)",
+    "check_gsel_native_sigs": "PASS (gselProbe ()I / gselRegister (II[J[I)I / gselEpoch (IJ)I)",
     "cargo_check_lib": "GREEN",
-    "cargo_test": "277 passed; 0 failed"
+    "cargo_test": "280 passed; 0 failed (incl. new soa_append_and_walk, soa_gap_fill_defensive, soa_replace_preserves_density, epoch_scalar_sig_contract)"
   },
   "runs": {
-    "g3a": {
-      "reroll1": 35748314494,
-      "reroll0": "35747862343 BAND-DISCARD cpu_index=11796194 (fast-fail pre-download, не бенч)"
-    },
-    "g3b": 35747884647,
-    "g3c": 35747906874
+    "g4a": null,
+    "g4b": null,
+    "g4c": null
   },
-  "run_head": "b1dbc66"
+  "tps_med": null,
+  "delta_pair_pct": null,
+  "lane": "expect nav_ai ~6.x KEPT + java_util back to cvs baseline + GC avg-pause back to ~22-30ms",
+  "RAM": null,
+  "parity": null,
+  "verdict": "IMPLEMENTED_GATES_GREEN_DISPATCHING",
+  "evidence": [
+    "menu items 1+2+4 combined: buffer-reuse/state-reuse (single CHM, no per-gate garbage), delta publication (scalar epoch O(1)/tick), bisection grounded on round-g3b collapsed stacks"
+  ],
+  "what": "iter-4: устранён per-gate overhead батча (getenv/boxing/lock/JNI-copies) при сохранении ванильного планировщика и SoA-плоскости (dense columns + scalar epoch). Следующий шаг: диспатч g4a/g4b/g4c alias-refs, lever cmp416_gsel3.",
+  "run_head": null,
+  "commits": [
+    "iter-4 fastpath: java GoalBatchOps rewrite + rust dense-SoA + scalar gselEpoch(IJ)I + blobs + gates green"
+  ]
 }
