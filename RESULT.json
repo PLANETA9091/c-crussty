@@ -2,7 +2,7 @@
   "agent": "TASK-415-A",
   "vector": "MEGA-COMPOSITE: multi(f7d04d2 cmp409_multi) + race-fix REFENCE(109e4d7) + queryplane-slice(125c474)",
   "branch": "round-415-a-mcomp",
-  "head": "gate-extension-in-progress",
-  "step": "S3-queryplane-merged-gates-extended",
-  "evidence": "merge 125c474 OK (parents 07b558c+125c474, classfile.rs union ENTITYMAP-FENCE+INSIDE-BATCH sections). Gates extended to cmp415_mcomp: rust 12 sites in 11 files (mobs_soa/items_index/tickplane/mobs_ai/mobs_manager x2/collide_batch x2/items_manager x2/mobs_sscan/mobs_grid/stagger/nav_plane) + java 8 sites (MobPushOps x2, MobAiOps, MobScanOps, ItemEntityManager x3, QueryPlaneOps) + queryplane rust gate {b2p1,mcomp} + guard test extended. nav_plane::armed() extension = emap fence/refsync/navpool layer ON under cmp415_mcomp (bp1/bp2 lesson)"
+  "head": "3be50c5",
+  "step": "S4-blobs-rebuilt-armed-selfcheck",
+  "evidence": "scripts/build_mcomp_blobs_all.sh: 5 bridges one javac pass (MobPushOps 11264B, MobScanOps 5642B, MobAiOps 4322B, ItemEntityManager 20423B, QueryPlaneOps 4803B), cp=kernel396a+fastutil+paper-api-1.21.10+adventure-api/key-4.24.0, major 65. Self-check: strings|grep cmp415_mcomp = 1/1 in all 5 pools (dead-gate=0), javap -p signature sanity OK"
 }
