@@ -80,6 +80,13 @@ public final class NavPoolOps {
      * Depth = Mth.floor(bb + 1.0F). The native tick runs FIRST (search
      * boundary): epoch++ + previous-search stats flush; any failure is
      * swallowed (stats only, parity never depends on the native).
+     *
+     * TASK-411-A fail-dominant: ANY anomaly inside the laundering (map
+     * iteration, a node field, the size probe) degrades to the EXACT
+     * vanilla map handling — nodes.clear() — for that search. A cleared
+     * map IS the vanilla prepare state, so the search proceeds bit-identical
+     * to vanilla from that boundary; a pool failure is never observable
+     * beyond falling back to vanilla.
      */
     public static void prepare(NodeEvaluator eval, PathNavigationRegion region,
                                Mob mob) {
@@ -95,21 +102,37 @@ public final class NavPoolOps {
 
         eval.currentContext = new PathfindingContext(region, mob);
         eval.mob = mob;
-        Int2ObjectMap<Node> nodes = eval.nodes;
-        if (nodes.size() > MAP_CAP) {
-            nodes.clear();
-            OVERFLOWS.increment();
-        } else {
-            for (Node n : nodes.values()) {
-                n.heapIdx = -1;
-                n.closed = false;
-                n.g = 0.0F;
-                n.h = 0.0F;
-                n.f = 0.0F;
-                n.cameFrom = null;
-                n.walkedDistance = 0.0F;
-                n.costMalus = 0.0F;
-                n.type = PathType.BLOCKED;
+        try {
+            Int2ObjectMap<Node> nodes = eval.nodes;
+            if (nodes.size() > MAP_CAP) {
+                // Retention bound (between-search guard; mid-search the map
+                // grows UNBOUNDED exactly like vanilla computeIfAbsent — a
+                // mid-search clear would orphan live open-heap nodes).
+                nodes.clear();
+                OVERFLOWS.increment();
+            } else {
+                for (Node n : nodes.values()) {
+                    n.heapIdx = -1;
+                    n.closed = false;
+                    n.g = 0.0F;
+                    n.h = 0.0F;
+                    n.f = 0.0F;
+                    n.cameFrom = null;
+                    n.walkedDistance = 0.0F;
+                    n.costMalus = 0.0F;
+                    n.type = PathType.BLOCKED;
+                }
+            }
+        } catch (Throwable t) {
+            // FAIL-DOMINANT (TASK-411-A): laundering failed (corrupt map
+            // state) -> the vanilla fallback for this search; fresh-map
+            // semantics are re-established on demand by getNode.
+            try {
+                eval.nodes.clear();
+                OVERFLOWS.increment();
+            } catch (Throwable suppressed) {
+                // map beyond rescue: getNode re-fills what it can; the
+                // search must never die from pool-side state
             }
         }
         eval.entityWidth = Mth.floor(mob.getBbWidth() + 1.0F);
@@ -122,18 +145,46 @@ public final class NavPoolOps {
      * Vanilla: nodes.computeIfAbsent(Node.createHash(x,y,z), -> new Node).
      * Pool: get; null or stale-position (cross-search hash collision) ->
      * new Node + put. Bit-identical results, zero alloc on hits.
+     *
+     * TASK-411-A fail-dominant: the hash is a map KEY (never an array
+     * index — hypothesis (b) negative-hash is structurally unreachable);
+     * every map touch is guarded — a refusing map degrades to the vanilla
+     * clear-and-continue, and a beyond-rescue map still returns a fresh
+     * Node with EXACT vanilla fresh-shape semantics (computeIfAbsent miss
+     * path) so the live search survives any pool-side state.
      */
     public static Node getNode(NodeEvaluator eval, int x, int y, int z) {
         Int2ObjectMap<Node> nodes = eval.nodes;
         int hash = Node.createHash(x, y, z);
-        Node n = nodes.get(hash);
-        if (n == null || n.x != x || n.y != y || n.z != z) {
-            n = new Node(x, y, z);
-            nodes.put(hash, n);
+        try {
+            Node n = nodes.get(hash);
+            if (n == null || n.x != x || n.y != y || n.z != z) {
+                n = new Node(x, y, z);
+                try {
+                    nodes.put(hash, n);
+                } catch (Throwable t) {
+                    // FAIL-DOMINANT: put refused (corrupt/full map) ->
+                    // vanilla clear for this map, then retry once; the
+                    // search continues on fresh-map semantics.
+                    try {
+                        nodes.clear();
+                        OVERFLOWS.increment();
+                        nodes.put(hash, n);
+                    } catch (Throwable suppressed) {
+                        // return the fresh node unmapped — the search
+                        // keeps running (degraded, vanilla-shaped nodes)
+                    }
+                }
+                NEWS.increment();
+            } else {
+                HITS.increment();
+            }
+            return n;
+        } catch (Throwable t) {
+            // last resort: a fresh unmapped node == the vanilla miss
+            // product; the search survives, the map refills on demand
             NEWS.increment();
-        } else {
-            HITS.increment();
+            return new Node(x, y, z);
         }
-        return n;
     }
 }

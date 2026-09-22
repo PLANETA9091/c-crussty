@@ -96,6 +96,10 @@ const NAVPOOL_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/world/level/pathfinder/NavPoolOps.class");
 const NODE_EVALUATOR_CLASS: &str = "net/minecraft/world/level/pathfinder/NodeEvaluator";
 
+/// ENTITYMAP FENCE (TASK-411-A k5b, cmp405_navplane lane): the three flat
+/// bridge classes (ZERO nested) are owned by crate::emap; the ChunkMap
+/// compose appends the 12-site fence to the tracker-patched bytes.
+
 fn bu_defer_enabled() -> bool {
     std::env::var("CRUSSTY_BU_DEFER")
         .map(|v| {
@@ -440,6 +444,13 @@ pub fn activate() {
             if crate::nav_pool::armed() {
                 list.push((NAVPOOL_CLASS, NAVPOOL_BYTES));
             }
+            // TASK-411-A: emap fence classes join the major-version
+            // pre-check when the lane lever is armed.
+            if crate::emap::armed() {
+                for (n, b) in crate::emap::define_list() {
+                    list.push((n, b));
+                }
+            }
             list
         } {
             let major = crate::improved_noise::class_version(bytes)
@@ -456,11 +467,11 @@ pub fn activate() {
         // Capture the kernel loader global ref from ServerLevel.
         let defined = cplug_sdk::jni_util::with_attached(|env| {
             let Some(cls) = cplug_sdk::classes::find_class(sl.name) else {
-                return false;
+                return (false, false);
             };
             let Some(class_cls) = env.find_class("java/lang/Class") else {
                 crate::clear_exception(env);
-                return false;
+                return (false, false);
             };
             let Some(loader) = env
                 .get_method_id(class_cls, "getClassLoader", "()Ljava/lang/ClassLoader;")
@@ -471,14 +482,14 @@ pub fn activate() {
             else {
                 crate::clear_exception(env);
                 env.delete_local_ref(class_cls);
-                return false;
+                return (false, false);
             };
             let gref = env.new_global_ref(loader);
             if gref.is_null() {
                 crate::describe_exception(env);
                 env.delete_local_ref(loader);
                 env.delete_local_ref(class_cls);
-                return false;
+                return (false, false);
             }
             KERNEL_LOADER.store(gref as usize, Ordering::SeqCst);
             let mut bridge_list: Vec<(&str, &[u8])> = vec![
@@ -501,7 +512,17 @@ pub fn activate() {
                 // exact same STRICT eq gate.
                 bridge_list.push((NAVPOOL_CLASS, NAVPOOL_BYTES));
             }
+            // ENTITYMAP FENCE (TASK-411-A k5b, same lever): define the
+            // three flat fence classes BEFORE the ChunkMap retransform —
+            // the fence helpers must resolve when the first fenced call
+            // site executes.
+            if crate::emap::armed() {
+                for (n, b) in crate::emap::define_list() {
+                    bridge_list.push((n, b));
+                }
+            }
             let mut ok = true;
+            let mut emap_defined = !crate::emap::armed();
             for (name, bytes) in bridge_list {
                 match env.define_class(name, gref, bytes) {
                     Some(c) => {
@@ -522,6 +543,14 @@ pub fn activate() {
                                 ok = false;
                             }
                         }
+                        if crate::emap::armed()
+                            && crate::emap::define_list().iter().any(|(n, _)| *n == name)
+                        {
+                            // Probe-then-patch: the define IS the emap ARM
+                            // probe — a failed define leaves the fence
+                            // uncomposed (vanilla entityMap).
+                            emap_defined = true;
+                        }
                         env.delete_local_ref(c);
                         eprintln!(
                             "[crussty-plugin] region_threads: defined {name} in kernel loader"
@@ -533,18 +562,33 @@ pub fn activate() {
                             "[crussty-plugin] region_threads: define_class({name}) failed"
                         );
                         ok = false;
+                        if crate::emap::armed()
+                            && crate::emap::define_list().iter().any(|(n, _)| *n == name)
+                        {
+                            emap_defined = false;
+                        }
                         break;
                     }
                 }
             }
-            ok
+            (ok, emap_defined)
         });
-        if !defined.unwrap_or(false) {
+        let Some((ok_defined, emap_defined)) = defined else {
+            eprintln!(
+                "[crussty-plugin] region_threads: bridge definition aborted, hook stays dormant"
+            );
+            return;
+        };
+        if !ok_defined {
             eprintln!(
                 "[crussty-plugin] region_threads: bridge definition aborted, hook stays dormant"
             );
             return;
         }
+        eprintln!(
+            "[crussty-plugin] region_threads: emap fence define probe = {}",
+            if emap_defined { "OK (armed, will compose)" } else { "FAILED (entityMap stays vanilla)" }
+        );
         BRIDGE_READY.store(true, Ordering::Release);
 
         // Pristine bytes for all four targets (hook stash or no-op
@@ -755,9 +799,44 @@ pub fn activate() {
         let cm_major = crate::improved_noise::class_version(&cm_orig)
             .map(|(m, _)| m)
             .unwrap_or(0);
-        let (cm_len, cm_len_patched) = (cm_orig.len(), cm_patched.len());
+        // ENTITYMAP FENCE (TASK-411-A k5b): compose the 12-site fence ONTO
+        // the tracker-patched bytes (one set_patch carries BOTH — the
+        // single-retransform discipline: hooks on one class are composed
+        // on the bytes, never staged as competing retransforms).
+        // Fail-dominant: probe failed / patch rejected / strict census
+        // violated -> tracker-only bytes, entityMap stays vanilla.
+        let mut cm_final = cm_patched.clone();
+        let mut emap_status = "vanilla (lever off or define failed)".to_string();
+        if crate::emap::armed() && emap_defined {
+            match crate::classfile::patch_chunkmap_entitymap(&cm_patched) {
+                Ok((p, o)) => {
+                    let ok = matches!(
+                        o,
+                        crate::classfile::RetargetOutcome::Retargeted { sites: 12 }
+                            | crate::classfile::RetargetOutcome::AlreadyPatched { sites: 12 }
+                    );
+                    if ok {
+                        cm_final = p;
+                        emap_status = format!("{o:?} (idempotent)");
+                        eprintln!(
+                            "[crussty-plugin] emap: entityMap fence composed on ChunkMap ({o:?}) — 12 sites monitor-fenced"
+                        );
+                    } else {
+                        eprintln!(
+                            "[crussty-plugin] emap: fence outcome {o:?} violates strict census:12, entityMap stays vanilla"
+                        );
+                    }
+                }
+                Err(e) => {
+                    eprintln!(
+                        "[crussty-plugin] emap: fence patch rejected ({e}), entityMap stays vanilla"
+                    );
+                }
+            }
+        }
+        let (cm_len, cm_len_patched) = (cm_orig.len(), cm_final.len());
         cm.set_patch(PatchCache {
-            bytes: Arc::from(cm_patched),
+            bytes: Arc::from(cm_final),
             major: cm_major,
         });
 
@@ -855,6 +934,13 @@ pub fn activate() {
                 "nav_pool v1",
             );
         }
+        if emap_status.starts_with("Retargeted") || emap_status.starts_with("AlreadyPatched") {
+            crate::kernel_policy::audit_wire(
+                crate::emap::EMAP_OPS_CLASS,
+                "entityMap fence (containsKey/put/remove/get/values monitor-serialized)",
+                "emap v1",
+            );
+        }
         READY.store(true, Ordering::Release);
         let rc_sl = cplug_sdk::retransform_class(sl.name);
         let rc_cb = cplug_sdk::retransform_class(cb.name);
@@ -866,7 +952,7 @@ pub fn activate() {
             -1
         };
         eprintln!(
-            "[crussty-plugin] region_threads: ARMED, retransform rc ServerLevel={rc_sl} EntityCallbacks={rc_cb} Level={rc_lv} ChunkMap={rc_cm} NodeEvaluator={rc_ne} (Entity via entity_compose; navpool {})",
+            "[crussty-plugin] region_threads: ARMED, retransform rc ServerLevel={rc_sl} EntityCallbacks={rc_cb} Level={rc_lv} ChunkMap={rc_cm} NodeEvaluator={rc_ne} (Entity via entity_compose; navpool {}; emap {emap_status})",
             if ne_patched { "ARMED" } else { "vanilla" }
         );
     });

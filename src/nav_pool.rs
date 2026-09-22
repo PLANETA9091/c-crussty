@@ -239,6 +239,10 @@ impl PoolStore {
     /// NavPoolOps.prepare: ONE call per search boundary. Launders every
     /// mapped slot back to the fresh shape (the generation tag), or falls
     /// back to the vanilla clear beyond the retention bound.
+    ///
+    /// TASK-411-A fail-dominant: mapped handles are VALIDATED before any
+    /// indexing — an out-of-bounds index entry is dropped (the vanilla
+    /// fresh-map semantics it models), never dereferenced.
     pub fn prepare(&mut self) {
         self.epoch += 1;
         if self.index.len() > self.cap {
@@ -249,6 +253,11 @@ impl PoolStore {
             self.overflows += 1;
             return;
         }
+        // Bound-check EVERY index entry before indexing (hypothesis (d):
+        // the MAP_CAP/corruption guard on all paths — a corrupt handle is
+        // dropped here exactly like the vanilla clear would drop it).
+        let slots_len = self.slots.len() as u32;
+        self.index.retain(|_, s| *s < slots_len);
         for s in self.index.values() {
             let n = &mut self.slots[*s as usize];
             *n = PNode::laundered(n.x, n.y, n.z, self.epoch);
@@ -259,14 +268,22 @@ impl PoolStore {
     /// Vanilla computeIfAbsent on a fresh map never sees stale entries, so
     /// a position mismatch is a miss in both worlds (see module docs for
     /// the within-search collision bound).
+    ///
+    /// TASK-411-A fail-dominant: the hash is a map KEY (never an array
+    /// index — hypothesis (b): negative sign-bit hashes index nothing);
+    /// the mapped slot handle is VALIDATED (bound + generation) BEFORE
+    /// any indexing — an OOB or stale-generation slot degrades to the
+    /// vanilla fresh-map miss path (new node), never panics, never reuses
+    /// a state that is not provably this-search (hypothesis (c)).
     #[inline]
     pub fn get_node(&mut self, x: i32, y: i32, z: i32) -> u32 {
         let hash = create_hash(x, y, z);
         if let Some(&s) = self.index.get(&hash) {
-            let n = &self.slots[s as usize];
-            if n.x == x && n.y == y && n.z == z {
-                self.hits += 1;
-                return s;
+            if let Some(n) = self.try_node(s) {
+                if n.gen == self.epoch && n.x == x && n.y == y && n.z == z {
+                    self.hits += 1;
+                    return s;
+                }
             }
         }
         let idx = self.slots.len() as u32;
@@ -284,6 +301,19 @@ impl PoolStore {
     #[inline]
     pub fn node_mut(&mut self, s: u32) -> &mut PNode {
         &mut self.slots[s as usize]
+    }
+
+    /// Bound-checked accessor (TASK-411-A fail-dominant): garbage/stale
+    /// handles return None instead of indexing — the arena equivalent of
+    /// a bound-check on every array load.
+    #[inline]
+    pub fn try_node(&self, s: u32) -> Option<&PNode> {
+        self.slots.get(s as usize)
+    }
+
+    #[inline]
+    pub fn try_node_mut(&mut self, s: u32) -> Option<&mut PNode> {
+        self.slots.get_mut(s as usize)
     }
 }
 
