@@ -124,6 +124,9 @@ fn enabled() -> bool {
         Ok("cmp410_eindexq") | Ok("cmp411_k4soa") | Ok("cmp411_eqsnap")
             // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
             | Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs") | Ok("cmp417_bq")
+            // TASK-419-A (colpush): колпаш-носитель — eq_epoch снапшот жив
+            // (плоскость кормит colpush_plane_refresh).
+            | Ok("cmp419_colpush")
     )
 }
 

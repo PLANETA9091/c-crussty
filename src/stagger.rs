@@ -75,6 +75,8 @@ fn enabled() -> bool {
             | Ok("cmp409_multi") | Ok("cmp412_meganav") | Ok("cmp414_cvs")
             // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
             | Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs") | Ok("cmp417_bq")
+            // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
+            | Ok("cmp419_colpush")
     )
 }
 

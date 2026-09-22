@@ -3703,6 +3703,54 @@ pub fn patch_push_entities_mob(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome
     )
 }
 
+/// TASK-419-A (colpush): WHOLE-BODY redirect of `LivingEntity.pushEntities()V`
+/// to the static `ColpushOps.pushEntities(LivingEntity)V` bridge
+/// (net/minecraft/world/entity/ColpushOps, defined into the kernel loader by
+/// colpush.rs). The body replacement is total: the per-entity
+/// `MobPushOps.pushables` ladder (per-entity JNI mobUpsert + chain scan +
+/// per-query allocations) is bypassed entirely — the bridge re-implements the
+/// vanilla tail bit-exactly (cramming RNG/numCollisions/doPush on live
+/// fields) consuming the bulk CSR broadphase written once per tick by the
+/// rust `colpushTick` native. Strict single-method, fail-closed — same
+/// contract as `redirect_method_body_to_static`.
+pub const COLPUSH_OPS_CLASS: &str = "net/minecraft/world/entity/ColpushOps";
+
+pub fn patch_push_entities_colpush(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    redirect_method_body_to_static(
+        bytes,
+        "pushEntities",
+        "()V",
+        "net/minecraft/world/entity/LivingEntity",
+        COLPUSH_OPS_CLASS,
+        "pushEntities",
+        "(Lnet/minecraft/world/entity/LivingEntity;)V",
+    )
+}
+
+/// S7-164-style resolution gate for the delivered ColpushOps classfile: the
+/// bridge must declare EVERY static entry point the surgery / the
+/// RegionTickOps trigger call, offline, before any retransform (member drift
+/// fails here instead of NoSuchMethodError on the first tick).
+pub fn colpush_resolution_closure(ops: &[u8]) -> Result<(), String> {
+    redirect_targets_resolution_closure(
+        ops,
+        &[
+            (
+                "net/minecraft/world/entity/LivingEntity",
+                "()V",
+                "pushEntities",
+                "(Lnet/minecraft/world/entity/LivingEntity;)V",
+            ),
+            (
+                "net/minecraft/server/level/ServerLevel",
+                "()V",
+                "bulkTick",
+                "()V",
+            ),
+        ],
+    )
+}
+
 // ---------------------------------------------------------------------------
 // ZERO-ALLOC-INSIDE (S7-164, lever #10): METHOD-BODY REDIRECT.
 //
@@ -6675,6 +6723,8 @@ mod alloc_diet {
     // S7-133 / TASK-269: REAL kernel classes (purpur-1.21.10.jar, hook-byte
     // identical), extracted 2026-09-18 for the alloc-diet patchers.
     const LIVING: &[u8] = include_bytes!("../tests/fixtures/LivingEntity.class");
+    #[cfg(test)]
+    const COLPUSH_BLOB: &[u8] = include_bytes!("../colpush/build/net/minecraft/world/entity/ColpushOps.class");
     const COLLISION: &[u8] = include_bytes!("../tests/fixtures/CollisionUtil.class");
 
     use crate::classfile::*;
@@ -6717,6 +6767,23 @@ mod alloc_diet {
         let (again, outcome) = patch_push_entities(&patched).expect("repatch");
         assert_eq!(outcome, RetargetOutcome::AlreadyPatched { sites: 1 });
         assert_eq!(again, patched, "repatch must be byte-identical");
+    }
+
+    #[test]
+    fn push_entities_colpush_whole_body_redirect_roundtrip() {
+        // TASK-419-A: whole-body redirect of pushEntities on the REAL kernel
+        // LivingEntity fixture — Retargeted on first sight, byte-identical on
+        // re-sight (idempotent retransform), and the delivered ColpushOps
+        // blob passes the resolution closure (every redirect target declared).
+        let (patched, outcome) = patch_push_entities_colpush(LIVING).expect("colpush patch");
+        assert!(matches!(outcome, RetargetOutcome::Retargeted { sites: 1 }), "{outcome:?}");
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        // Re-sight (retransform replay): the redirect machinery detects the
+        // already-rewritten body — AlreadyPatched, byte-identical output.
+        let (again, outcome2) = patch_push_entities_colpush(&patched).expect("repatch");
+        assert!(matches!(outcome2, RetargetOutcome::AlreadyPatched { .. }), "{outcome2:?}");
+        assert_eq!(again, patched, "colpush repatch must be byte-identical");
+        colpush_resolution_closure(COLPUSH_BLOB).expect("resolution closure");
     }
 
     #[test]

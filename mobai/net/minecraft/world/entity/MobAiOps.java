@@ -58,7 +58,9 @@ public final class MobAiOps {
                 // TASK-414-B: eqsnap-v3 family + leg flag cmp414_cvs (root-cause cv3b-1).
                 || f.trim().equals("cmp412_eqsnapv3") || f.trim().equals("cmp414_cvs")
                 // TASK-417-C: cvs-носитель ⊕ queryplane.
-                || f.trim().equals("cmp417_bq"));
+                || f.trim().equals("cmp417_bq")
+                // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
+                || f.trim().equals("cmp419_colpush"));
     }
 
     private static final boolean ENABLED = leverEnabled();

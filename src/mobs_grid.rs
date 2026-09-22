@@ -71,6 +71,8 @@ pub(crate) fn mirror_mode() -> bool {
                     // (mirror inert: eqsnap upsert path returns before mirror
                     // write, push ladder skips grid legs под EQSNAP).
                     || v.trim() == "cmp412_eqsnapv3" || v.trim() == "cmp414_cvs" || v.trim() == "cmp417_bq"
+                    // TASK-419-A (colpush): колпаш-носитель (mirror inert).
+                    || v.trim() == "cmp419_colpush"
             })
             .unwrap_or(false)
     })
