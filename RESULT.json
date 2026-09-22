@@ -2,11 +2,12 @@
   "agent": "TASK-414-A",
   "vector": "queryplane ⊕ REFENCE — ре-базис, pair-вердикт",
   "branch": "round-414-a-b2p",
-  "head": "259c985",
-  "step": "S6-legs-in-flight",
+  "head": "67d0b0e",
+  "step": "S6-poll1",
   "legs": {
-    "b2p1": {"run_id": 35727630306, "ref": "round-414-a-b2p1", "status": "in_progress"},
-    "b2p2": {"run_id": 35727647725, "ref": "round-414-a-b2p2", "status": "in_progress"}
+    "b2p1": {"run_id": 35727630306, "status": "in_progress"},
+    "b2p2": {"run_id": 35727647725, "status": "completed FAILURE = BAND-DISCARD (runner_cpu_index=11867733 > 9.5M, fast-fail pre-download, pairing discard НЕ bench-fail)"},
+    "b2p2r": {"run_id": 35728745209, "ref": "round-414-a-b2p2r", "status": "queued", "re-roll": 1}
   },
-  "evidence": "оба диспатча confirmed in_progress @259c985, lever=cmp414_b2p, inputs банк exact"
+  "evidence": "b2p2 band-discard → ре-ролл b2p2r @67d0b0e (ре-ролл 1/2)"
 }
