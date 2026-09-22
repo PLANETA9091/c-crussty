@@ -58,7 +58,7 @@ import net.minecraft.world.phys.AABB;
  *
  * FAIL-CLOSED: ENABLED (env == "cmp401_soa", STRICT eq) && nativeOk (mobProbe
  * magic) && !broken (структурный отказ плоскости — дизарм навсегда) &&
- * !oversized (в популяции замечен r_eff > 1.0 — весь рычаг в ванильный
+ * !oversized (в популяции замечен r_eff > RADIUS_GATE — весь рычаг в ванильный
  * режим) — иначе 100% ванильный fill (точная реплика fill-последовательности
  * Level.getEntities: Profiler-счётчик + EntityLookup.getEntities +
  * PlatformHooks.addToGetEntities, EntityQueryOps-контракт). Любой ненулевой
@@ -66,6 +66,44 @@ import net.minecraft.world.phys.AABB;
  * используется), ERR_STRUCT — дизарм.
  * Пустой/чужой CRUSSTY_LEVER_FLAG — сайт вообще не ретаргетится (rust-сторона
  * не ставит патч), путь ванильный по построению.
+ *
+ * TASK-411-C (k4soa): K4-нога — флаг "cmp411_k4soa" (STRICT eq; прежние
+ * флаги сохраняют ТОЧНОЕ прежнее поведение).
+ * (1) РАДИУС-РЕМОНТ: RADIUS_GATE 1.0 → 2.0 — хроника oversized-disarm
+ *     (camel 1.1875 round-406d..410ck3l, iron_golem 1.35 round-409eleg2b,
+ *     warden 1.45 round-409multi1) глобально дизармила ВСЮ SoA-плоскость
+ *     с тика ~13 в КАЖДОЙ SoA-armed ноге — 4 PARITY/RED ноги серии меряли
+ *     чистую ваниль. Пад в rust mob_query поднят до ±2 ячеек (soundness
+ *     floor(q0−hw) ≥ floor(q0)−2 при hw ≤ 2.0) — пара (RADIUS_GATE, PAD)
+ *     = контракт суперсета.
+ * (2) PUSH ИЗ СНАПШОТА (0 per-query JNI): под k4soa pushables СНАЧАЛА
+ *     пробует EntityGoalQueryOps.pushCandidates — тот же eqEpoch
+ *     chain-снапшот, что entitiesOfClassGate, но предикат pushableBy,
+ *     фильтр other != entity, без cls-гейта (универс = SoA-популяция
+ *     LivingEntity — ТОТ ЖЕ контракт round-401, что и mobQuery: не-living
+ *     pushables (boats) не в универсе — унаследованная документированная
+ *     дельта, не новая). ДЕДУП ячеек прямоугольника ДО прохода цепей:
+ *     двойной проход одной цепи дал бы дубликат-кандидата = двойной
+ *     doPush (для nearest-пика дубликаты безвредны — для push tail НЕТ).
+ *     Лестница: снапшот не готов → легаси mobQuery (JNI per-call,
+ *     без изменений) → vanillaFill.
+ *
+ * TASK-411-C (eqsnap, v2 — пост-мортем run 35691270899 RED 0.5 TPS):
+ * флаг "cmp411_eqsnap" (STRICT eq; прежние флаги — бит-в-байт). cl1-профиль
+ * (84140 samples): mob_upsert = 24.9% CPU — КАЖДЫЙ per-entity upsert (48k/
+ * тик) шёл через JNI под ГЛОБАЛЬНЫМ WLOCK + seqlock + 1-блочный cell-хэш;
+ * сам eq chain build = 0.025% — rebuild НЕ дорог, дорога per-entity мутация
+ * плоскости. V2: (а) upsertSelf ВЫЗОВЫ НЕ ИЗМЕНИЛИСЬ java-стороне — native
+ * mobUpsert под eqsnap аппендит dirty-строку (id,alive,x,y,z,hw,hh) в
+ * ПЕР-ПОТОКОВЫЙ delta-шард руста (0 локов/seqlock/хэша); eq_epoch (ОДИН
+ * bulk JNI/тик) СНАЧАЛА сливает шарды в плоские колонки (O(dirty), один
+ * потребитель), ПОТОМ строит цепи (cost per-tick = O(dirty)); (б) cell-
+ * цепи плоскости под eqsnap НЕ поддерживаются → легаси mobQuery/grid-ноги
+ * НЕВалидны и ПРОПУСКАЮТСЯ: лестница eqsnap = снапшот → vanillaFill
+ * (точная ваниль = безупречный фоллбек); (в) RADIUS_GATE 2.0 (ремонт
+ * населения k4soa переносится). Дельта свежести: позиция в снапшоте отстаёт
+ * ≤1 тик (drain-каденция) — тот же документированный ghost-контракт,
+ * что и у самой цепи-снапшота (замороженные колонки per-tick).
  */
 public final class MobPushOps {
 
@@ -85,28 +123,77 @@ public final class MobPushOps {
                     // TASK-406-E: композит раунда-406 (stagtick ⊕ sscan).
                     || f.trim().equals("cmp406_sscan")
                     // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
-                    || f.trim().equals("cmp409_multi") || f.trim().equals("cmp412_meganav"));
+                    || f.trim().equals("cmp409_multi")
+                    // TASK-412-F meganav: multi ⊕ navplane+navpool.
+                    || f.trim().equals("cmp412_meganav")
+                    // TASK-410-C (eindexq): K3-пивот R2 — SoA-плоскость =
+                    // источник популяции для goal-query CSR-снапшота
+                    // (EntityQueryOps.eqEpoch; sscan-прецедент TASK-406-E:
+                    // составная нога SoA-plane + query-мост, маржинал меряется
+                    // против cmp401_soa контроль-ноги).
+                    || f.trim().equals("cmp410_eindexq")
+                    // TASK-411-C (k4soa): K4 — радиус-ремонт населения
+                    // (gate 2.0 / rust pad 2) + push-лейн из chain-снапшота.
+                    || f.trim().equals("cmp411_k4soa")
+                    // TASK-411-C (eqsnap, v2): dirty-дельты — upserts в
+                    // пер-потоковые шарды, drain O(dirty) за тик.
+                    || f.trim().equals("cmp411_eqsnap"));
     }
 
     private static final boolean ENABLED = leverEnabled();
 
-    /** TASK-402-B: composite mode (mirror-grid fallback active). TASK-406-E:
-     *  cmp406_sscan расширяет композит (SoA-плоскость primary + despawn-скан). */
+    /** TASK-402-B: composite mode (mirror-grid fallback active). */
     private static boolean compositeEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
         return f != null && (f.trim().equals("cmp402_comp")
-                || f.trim().equals("cmp402_stagcomp")
-                || f.trim().equals("cmp403_tickplane")
-                || f.trim().equals("cmp405_stagtick")
-                // TASK-406-D: композит раунда-406 включает mirror-grid.
-                || f.trim().equals("cmp406_aibatch")
-                // TASK-406-E: композит раунда-406 включает mirror-grid.
-                || f.trim().equals("cmp406_sscan")
-                // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
-                || f.trim().equals("cmp409_multi") || f.trim().equals("cmp412_meganav"));
+                || f.trim().equals("cmp402_stagcomp"));
     }
 
     private static final boolean COMPOSITE = compositeEnabled();
+
+    /** TASK-411-C (k4soa): K4 push-from-snapshot mode (STRICT eq). */
+    private static boolean k4Enabled() {
+        String f = System.getenv("CRUSSTY_LEVER_FLAG");
+        return f != null && f.trim().equals("cmp411_k4soa");
+    }
+
+    private static final boolean K4 = k4Enabled();
+
+    /** TASK-411-C (eqsnap, v2): delta-shard mode (STRICT eq). */
+    private static boolean eqsnapEnabled() {
+        String f = System.getenv("CRUSSTY_LEVER_FLAG");
+        return f != null && f.trim().equals("cmp411_eqsnap");
+    }
+
+    private static final boolean EQSNAP = eqsnapEnabled();
+
+    /** LABEL для EFFECT-маркеров (server-stdout greps). */
+    private static final String K4_LABEL = EQSNAP ? "cmp411_eqsnap" : "cmp411_k4soa";
+
+    /**
+     * TASK-411-C (k4soa): радиус-гейт населения. 1.0 глобально дизармился на
+     * camel 1.1875 / iron_golem 1.35 / warden 1.45 (хроника round-406d..410);
+     * 2.0 покрывает r_eff всех ванильных мобов бенча. МЕНЯЕТСЯ ТОЛЬКО В ПАРЕ
+     * с rust PAD (src/mobs_soa.rs mob_query окно ±PAD ячеек, PAD ≥ ceil(gate)).
+     * STRICT-eq изоляция ног: константа фолдится компилятором — под прежними
+     * флагами (cmp401_soa, cmp402_comp/stagcomp, cmp410_eindexq) гейт
+     * ОСТАЁТСЯ 1.0 (бит-в-байт прежнее поведение, включая oversized-дизарм),
+     * 2.0 — только под cmp411_k4soa / cmp411_eqsnap.
+     */
+    static final double RADIUS_GATE = (K4 || EQSNAP) ? 2.0D : 1.0D;
+
+    /** One-shot EFFECT-пруф k4soa/eqsnap снапшот-пути (server-stdout.log). */
+    private static volatile boolean K4_SNAP_LOGGED = false;
+
+    private static void k4SnapMarker(int n) {
+        if (!K4_SNAP_LOGGED) {
+            K4_SNAP_LOGGED = true;
+            LOG.info("[crussty-plugin] " + K4_LABEL + ": push-snapshot EFFECT armed"
+                    + " (first chain-snapshot serve at tick "
+                    + net.minecraft.server.MinecraftServer.getServer().getTickCount()
+                    + ", candidates=" + n + ", zero per-query JNI)");
+        }
+    }
 
     private static final int PROBE_MAGIC = 0x5053; // "SOA"
     private static final int GRID_PROBE_MAGIC = 0x4D50; // "MP" (mobs_grid)
@@ -143,18 +230,33 @@ public final class MobPushOps {
     /** id -> entity (плотный массив, grow x2; ids реиспользуются через freeIds). */
     private static Entity[] byId = new Entity[1024];
     private static int idTop = 0;
-    private static int[] freeIds = new int[256];
-    private static int freeTop = 0;
-    /** entity -> id-box. Пишется под ID_LOCK; читается воркерами. */
-    private static final ConcurrentHashMap<Entity, int[]> idMap = new ConcurrentHashMap<>();
-    private static final Object ID_LOCK = new Object();
+
+    // ---- TASK-410-C (eindexq): package-private accessors для goal-query
+    // моста EntityQueryOps (тот же пакет; dense-id = SoA-ряды mobs_soa). ----
+    static Entity[] byIdArr() {
+        return byId;
+    }
+
+    static int idCount() {
+        return idTop;
+    }
+
+    static int idCapacity() {
+        return byId.length;
+    }
+
+    /** Готовность SoA-плоскости как источника популяции (fail-closed гейт). */
+    static boolean planeReady() {
+        return !broken && !oversized && probeOnce();
+    }
 
     // ------------------------------------------------------------------
-    // TASK-406-E (sscan despawn plane): package-private read accessors for
-    // MobScanOps (same package) — the despawn-scan bridge reads the plane's
-    // dense id space so its per-tick bulk sscanEpoch pass and the O(1)
-    // per-mob nearest-player lookup share the SAME id universe as the push
-    // lane. Read-only: the scan plane never mutates the id/SoA state.
+    // TASK-406-E (sscan despawn plane; мержено из meganav-линии TASK-412-F):
+    // package-private read accessors for MobScanOps (same package) — the
+    // despawn-scan bridge reads the plane's dense id space so its per-tick
+    // bulk sscanEpoch pass and the O(1) per-mob nearest-player lookup share
+    // the SAME id universe as the push lane. Read-only: the scan plane never
+    // mutates the id/SoA state.
     // ------------------------------------------------------------------
 
     /** Плотный id моба в SoA-плоскости или null (не апсертнут). */
@@ -162,15 +264,11 @@ public final class MobPushOps {
         return idMap.get(e);
     }
 
-    /** Верхняя граница плотного id-пространства (top, racy int read ок). */
-    static int idCount() {
-        return idTop;
-    }
-
-    /** Ёмкость id-массива (для grow-гейта колонки MobScanOps). */
-    static int idCapacity() {
-        return byId.length;
-    }
+    private static int[] freeIds = new int[256];
+    private static int freeTop = 0;
+    /** entity -> id-box. Пишется под ID_LOCK; читается воркерами. */
+    private static final ConcurrentHashMap<Entity, int[]> idMap = new ConcurrentHashMap<>();
+    private static final Object ID_LOCK = new Object();
 
     /** Query scratch: per-thread, grow-only, ноль аллокаций в steady-state. */
     private static final ThreadLocal<int[]> SCRATCH =
@@ -247,6 +345,32 @@ public final class MobPushOps {
         Profiler.get().incrementCounter("getEntities");
         if (upsertSelf(entity) || broken) {
             return vanillaFill(level, entity, box);
+        }
+        // TASK-411-C (k4soa/eqsnap): снапшот-путь ПЕРВЫМ (0 per-query JNI):
+        // тот же eqEpoch chain-снапшот, что и entitiesOfClassGate. null =
+        // снапшот не готов/структурный дрейф/абсурдный rect — дальше легаси
+        // mobQuery (без изменений), затем vanillaFill. Контракт универса —
+        // ТОТ ЖЕ, что у mobQuery (SoA-популяция LivingEntity) — см. class doc.
+        // TASK-411-C (eqsnap): под delta-шардами cell-цепи плоскости НЕ
+        // поддерживаются (upserts в шардах, drain обновляет ТОЛЬКО плоские
+        // колонки) — легаси mobQuery/grid-ноги невалидны и пропускаются:
+        // лестница eqsnap = снапшот → vanillaFill (точная ваниль).
+        if (K4 || EQSNAP) {
+            ArrayList<Entity>[] ring = RING.get();
+            int[] cursor = RING_CURSOR.get();
+            int slot = cursor[0];
+            cursor[0] = (slot + 1) % RING_SLOTS;
+            ArrayList<Entity> list = ring[slot];
+            list.clear();
+            if (EntityGoalQueryOps.pushCandidates(level, entity, box, list)) {
+                k4SnapMarker(list.size());
+                maybeSweep();
+                return list;
+            }
+            list.clear(); // не обслужено — слот кольца чист для legacy-пути
+            if (EQSNAP) {
+                return vanillaFill(level, entity, box);
+            }
         }
         int lid = System.identityHashCode(level);
         int[] out = SCRATCH.get();
@@ -329,9 +453,9 @@ public final class MobPushOps {
         AABB bb = e.getBoundingBox();
         double hw = Math.max((bb.maxX - bb.minX) * 0.5D, (bb.maxZ - bb.minZ) * 0.5D);
         double hh = (bb.maxY - bb.minY) * 0.5D;
-        if (Math.max(hw, hh) > 1.0D) {
+        if (Math.max(hw, hh) > RADIUS_GATE) {
             oversized = true; // не-грид-юниверс: весь рычаг в ваниль (fail-closed)
-            LOG.warning("[crussty-plugin] cmp401_soa: oversized bounding radius "
+            LOG.warning("[crussty-plugin] cmp401_soa/k4soa: oversized bounding radius "
                     + Math.max(hw, hh) + " on " + e.getType() + " — lever reverted to vanilla");
             return true;
         }
