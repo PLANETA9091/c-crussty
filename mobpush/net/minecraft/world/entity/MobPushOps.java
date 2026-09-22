@@ -87,6 +87,23 @@ import net.minecraft.world.phys.AABB;
  *     doPush (для nearest-пика дубликаты безвредны — для push tail НЕТ).
  *     Лестница: снапшот не готов → легаси mobQuery (JNI per-call,
  *     без изменений) → vanillaFill.
+ *
+ * TASK-411-C (eqsnap, v2 — пост-мортем run 35691270899 RED 0.5 TPS):
+ * флаг "cmp411_eqsnap" (STRICT eq; прежние флаги — бит-в-байт). cl1-профиль
+ * (84140 samples): mob_upsert = 24.9% CPU — КАЖДЫЙ per-entity upsert (48k/
+ * тик) шёл через JNI под ГЛОБАЛЬНЫМ WLOCK + seqlock + 1-блочный cell-хэш;
+ * сам eq chain build = 0.025% — rebuild НЕ дорог, дорога per-entity мутация
+ * плоскости. V2: (а) upsertSelf ВЫЗОВЫ НЕ ИЗМЕНИЛИСЬ java-стороне — native
+ * mobUpsert под eqsnap аппендит dirty-строку (id,alive,x,y,z,hw,hh) в
+ * ПЕР-ПОТОКОВЫЙ delta-шард руста (0 локов/seqlock/хэша); eq_epoch (ОДИН
+ * bulk JNI/тик) СНАЧАЛА сливает шарды в плоские колонки (O(dirty), один
+ * потребитель), ПОТОМ строит цепи (cost per-tick = O(dirty)); (б) cell-
+ * цепи плоскости под eqsnap НЕ поддерживаются → легаси mobQuery/grid-ноги
+ * НЕВалидны и ПРОПУСКАЮТСЯ: лестница eqsnap = снапшот → vanillaFill
+ * (точная ваниль = безупречный фоллбек); (в) RADIUS_GATE 2.0 (ремонт
+ * населения k4soa переносится). Дельта свежести: позиция в снапшоте отстаёт
+ * ≤1 тик (drain-каденция) — тот же документированный ghost-контракт,
+ * что и у самой цепи-снапшота (замороженные колонки per-tick).
  */
 public final class MobPushOps {
 
@@ -107,7 +124,10 @@ public final class MobPushOps {
                     || f.trim().equals("cmp410_eindexq")
                     // TASK-411-C (k4soa): K4 — радиус-ремонт населения
                     // (gate 2.0 / rust pad 2) + push-лейн из chain-снапшота.
-                    || f.trim().equals("cmp411_k4soa"));
+                    || f.trim().equals("cmp411_k4soa")
+                    // TASK-411-C (eqsnap, v2): dirty-дельты — upserts в
+                    // пер-потоковые шарды, drain O(dirty) за тик.
+                    || f.trim().equals("cmp411_eqsnap"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -129,6 +149,17 @@ public final class MobPushOps {
 
     private static final boolean K4 = k4Enabled();
 
+    /** TASK-411-C (eqsnap, v2): delta-shard mode (STRICT eq). */
+    private static boolean eqsnapEnabled() {
+        String f = System.getenv("CRUSSTY_LEVER_FLAG");
+        return f != null && f.trim().equals("cmp411_eqsnap");
+    }
+
+    private static final boolean EQSNAP = eqsnapEnabled();
+
+    /** LABEL для EFFECT-маркеров (server-stdout greps). */
+    private static final String K4_LABEL = EQSNAP ? "cmp411_eqsnap" : "cmp411_k4soa";
+
     /**
      * TASK-411-C (k4soa): радиус-гейт населения. 1.0 глобально дизармился на
      * camel 1.1875 / iron_golem 1.35 / warden 1.45 (хроника round-406d..410);
@@ -137,17 +168,17 @@ public final class MobPushOps {
      * STRICT-eq изоляция ног: константа фолдится компилятором — под прежними
      * флагами (cmp401_soa, cmp402_comp/stagcomp, cmp410_eindexq) гейт
      * ОСТАЁТСЯ 1.0 (бит-в-байт прежнее поведение, включая oversized-дизарм),
-     * 2.0 — только под cmp411_k4soa.
+     * 2.0 — только под cmp411_k4soa / cmp411_eqsnap.
      */
-    static final double RADIUS_GATE = K4 ? 2.0D : 1.0D;
+    static final double RADIUS_GATE = (K4 || EQSNAP) ? 2.0D : 1.0D;
 
-    /** One-shot EFFECT-пруф k4soa снапшот-пути (server-stdout.log). */
+    /** One-shot EFFECT-пруф k4soa/eqsnap снапшот-пути (server-stdout.log). */
     private static volatile boolean K4_SNAP_LOGGED = false;
 
     private static void k4SnapMarker(int n) {
         if (!K4_SNAP_LOGGED) {
             K4_SNAP_LOGGED = true;
-            LOG.info("[crussty-plugin] cmp411_k4soa: push-snapshot EFFECT armed"
+            LOG.info("[crussty-plugin] " + K4_LABEL + ": push-snapshot EFFECT armed"
                     + " (first chain-snapshot serve at tick "
                     + net.minecraft.server.MinecraftServer.getServer().getTickCount()
                     + ", candidates=" + n + ", zero per-query JNI)");
@@ -291,12 +322,16 @@ public final class MobPushOps {
         if (upsertSelf(entity) || broken) {
             return vanillaFill(level, entity, box);
         }
-        // TASK-411-C (k4soa): K4 — снапшот-путь ПЕРВЫМ (0 per-query JNI):
+        // TASK-411-C (k4soa/eqsnap): снапшот-путь ПЕРВЫМ (0 per-query JNI):
         // тот же eqEpoch chain-снапшот, что и entitiesOfClassGate. null =
         // снапшот не готов/структурный дрейф/абсурдный rect — дальше легаси
         // mobQuery (без изменений), затем vanillaFill. Контракт универса —
         // ТОТ ЖЕ, что у mobQuery (SoA-популяция LivingEntity) — см. class doc.
-        if (K4) {
+        // TASK-411-C (eqsnap): под delta-шардами cell-цепи плоскости НЕ
+        // поддерживаются (upserts в шардах, drain обновляет ТОЛЬКО плоские
+        // колонки) — легаси mobQuery/grid-ноги невалидны и пропускаются:
+        // лестница eqsnap = снапшот → vanillaFill (точная ваниль).
+        if (K4 || EQSNAP) {
             ArrayList<Entity>[] ring = RING.get();
             int[] cursor = RING_CURSOR.get();
             int slot = cursor[0];
@@ -309,6 +344,9 @@ public final class MobPushOps {
                 return list;
             }
             list.clear(); // не обслужено — слот кольца чист для legacy-пути
+            if (EQSNAP) {
+                return vanillaFill(level, entity, box);
+            }
         }
         int lid = System.identityHashCode(level);
         int[] out = SCRATCH.get();
