@@ -290,7 +290,7 @@ fn shard_mode() -> bool {
                     // TASK-406-E: композит раунда-406 включает shardgrid.
                     || v == "cmp406_sscan"
                     // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
-                    || v == "cmp409_multi" || v == "cmp412_meganav"
+                    || v == "cmp409_multi" || v == "cmp412_meganav" || v == "cmp412_b2p1"
             })
             .unwrap_or(false)
     })

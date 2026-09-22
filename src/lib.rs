@@ -60,6 +60,7 @@ mod palette_gather;
 mod paletted;
 mod promote_wire;
 mod proto_blend_cache;
+mod queryplane;
 mod randomtick;
 mod region_threads;
 mod skip_store;
@@ -239,6 +240,14 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // qualifying player column). Dormant unless CRUSSTY_LEVER_FLAG ==
     // cmp406_sscan (empty flag = exact vanilla path).
     mobs_sscan::register();
+    // QUERYPLANE (TASK-412-B/413-B, lever cmp412_b2p1 STRICT eq): Level
+    // whole-body redirects (getEntitiesOfClass / moonrise$getHardColliding
+    // Entities — compose ON TOP of the stagger/navplane sendBlockUpdated
+    // retarget already in the Level hook chain, mobs_ai precedent) +
+    // ChunkEntitySlices.addEntity hard-colliding probe (pristine stash).
+    // Dormant unless CRUSSTY_LEVER_FLAG == cmp412_b2p1 (empty flag = exact
+    // vanilla path).
+    queryplane::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -539,6 +548,12 @@ fn inject_surface() {
     // всех сегментов (items/push-soa+grid/stagger/collide) — coarse-stamp
     // эпохи; dormant unless CRUSSTY_LEVER_FLAG == cmp403_tickplane.
     tickplane::activate();
+    // QUERYPLANE (TASK-412-B/413-B): define QueryPlaneOps (+selfTest) в
+    // kernel loader, whole-body redirects Level (getEntitiesOfClass /
+    // moonrise$getHardCollidingEntities) + addEntity hard-probe на
+    // ChunkEntitySlices, retransform обоих. Dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp412_b2p1.
+    queryplane::activate();
 }
 
 /// Define one bridge class and register all its natives.

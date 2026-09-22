@@ -62,7 +62,7 @@ public final class MobScanOps {
         // (rust не ставит сайт).
         return f != null && (f.trim().equals("cmp406_sscan")
                 // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
-                || f.trim().equals("cmp409_multi") || f.trim().equals("cmp412_meganav"));
+                || f.trim().equals("cmp409_multi") || f.trim().equals("cmp412_meganav") || f.trim().equals("cmp412_b2p1"));
     }
 
     private static final boolean ENABLED = leverEnabled();
