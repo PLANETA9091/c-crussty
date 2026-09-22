@@ -124,7 +124,16 @@ public final class InsideRustOps {
                         LongSet.class, int.class);
                 m.setAccessible(true);
                 mh = MethodHandles.lookup().unreflect(m);
-                if (mh.type().changeReturnType(int.class).parameterCount() != 5) {
+                // R4-412B root-cause fix: unreflect of an INSTANCE method
+                // yields the receiver-prepended type
+                // (Entity,Vec3,Vec3,StepBasedCollector,LongSet,int)I —
+                // parameterCount()==6. The previous `!= 5` check was
+                // unreachable-true and permanently disarmed the lever
+                // ("unexpected checkInsideBlocks handle type", run
+                // 35700016663 boot log). Retarget destination contract is
+                // the same receiver-prepended 6-arg form (see checkInside).
+                if (mh.type().parameterCount() != 6
+                        || mh.type().returnType() != int.class) {
                     throw new IllegalStateException("unexpected checkInsideBlocks handle type");
                 }
                 Field uf = Unsafe.class.getDeclaredField("theUnsafe");

@@ -4,10 +4,10 @@
   "plane": "inside_volatile (Entity.checkInsideBlocks — List-body 3 сайта int-overload)",
   "lever": "cmp411_insidebat",
   "status": "IN_PROGRESS",
-  "stage": "STEP1-impl-done-dispatch-pending",
-  "updated": "2026-09-22T15:08:00+08:00",
-  "worktree": "/home/z/rounds/ROUND-411/agent-b",
-  "branch": "round-411-b-inside",
+  "stage": "R412B-step3-rootcause-fixed-dispatch-pending",
+  "updated": "2026-09-22T16:35:00+08:00",
+  "worktree": "/home/z/rounds/ROUND-412/agent-b",
+  "branch": "round-412-b-r1",
   "head": "da0a856",
   "prior": {
     "task": "TASK-411-B-R3",
@@ -15,12 +15,50 @@
     "note": "фон 411 умер на R3 step2 (classfile.rs patch_inside_batch + тесты committed); остаток R4 = rust-сторона + регистрация + сборка + диспатч"
   },
   "steps": [
-    {"id": "S0", "name": "profile (RESEARCH-B-k3: 11.76/12.77/12.87% lane, item 60-62%)", "status": "DONE", "commit": "40b170a^"},
-    {"id": "S1", "name": "java bridge InsideRustOps (negative fast-plane + gather + flush + STRICT gate)", "status": "DONE", "commit": "4957487"},
-    {"id": "S2", "name": "classfile patch_inside_batch STRICT ровно-3 сайта bc 171/204/229", "status": "DONE", "commit": "15bdfea"},
-    {"id": "S3", "name": "rust-сторона: fl_sec=floori>>4, wire=DISTINCT first-occurrence + rust REPLAY-валидация (TRIPLE/FLAG/COUNT+равенство counts), TState embed+define, RegisterNatives ДО BRIDGE_READY, stage 1c entity_compose, supersede-чек fluid_guard (118<175), оракул N=256 блоки/флюиды vs ваниль 8/8, full --lib 215/0, javac sha 929469a2, b4-target удалён", "status": "DONE", "commit": "da0a856"},
-    {"id": "S4", "name": "dispatch round-412-b-l1 @da0a856", "status": "PENDING"},
-    {"id": "S5", "name": "poll sleep 120 + absorb round412bl1 + pair-by-runner verdict", "status": "PENDING"}
+    {
+      "id": "S0",
+      "name": "profile (RESEARCH-B-k3: 11.76/12.77/12.87% lane, item 60-62%)",
+      "status": "DONE",
+      "commit": "40b170a^"
+    },
+    {
+      "id": "S1",
+      "name": "java bridge InsideRustOps (negative fast-plane + gather + flush + STRICT gate)",
+      "status": "DONE",
+      "commit": "4957487"
+    },
+    {
+      "id": "S2",
+      "name": "classfile patch_inside_batch STRICT ровно-3 сайта bc 171/204/229",
+      "status": "DONE",
+      "commit": "15bdfea"
+    },
+    {
+      "id": "S3",
+      "name": "rust-сторона: fl_sec=floori>>4, wire=DISTINCT first-occurrence + rust REPLAY-валидация (TRIPLE/FLAG/COUNT+равенство counts), TState embed+define, RegisterNatives ДО BRIDGE_READY, stage 1c entity_compose, supersede-чек fluid_guard (118<175), оракул N=256 блоки/флюиды vs ваниль 8/8, full --lib 215/0, javac sha 929469a2, b4-target удалён",
+      "status": "DONE",
+      "commit": "da0a856"
+    },
+    {
+      "id": "S4",
+      "name": "dispatch round-412-b-l1 @da0a856",
+      "status": "PENDING"
+    },
+    {
+      "id": "S5",
+      "name": "poll sleep 120 + absorb round412bl1 + pair-by-runner verdict",
+      "status": "PENDING"
+    },
+    {
+      "id": "S4x",
+      "name": "poll round412bl1 run 35700016663 = RED 0.70 (median, runner 6595922 band OK, fixture VALID, AIOOBE=0)",
+      "status": "DONE"
+    },
+    {
+      "id": "S5x",
+      "name": "ROOT-CAUSE: A=arm param-count 6-vs-5, B=rng-stage после 180s inside-окна; фикс A (InsideRustOps.java parameterCount==6, blob rebuild javac sha a1549d2e) + фикс B (entity_compose rng->STAGE 0, verdict публикуется первым), cargo 215/0, oracle 8/8",
+      "status": "DONE"
+    }
   ],
   "gate_checklist": {
     "lever_flag": "cmp411_insidebat (STRICT eq, empty=vanilla) — DOUBLE side java+rust",
@@ -38,17 +76,34 @@
     "alias": "round-412-b-l1",
     "workflow": "world-bench-parallel.yml",
     "inputs": {
-      "radius": "640", "seconds": "300", "fake_players": "4",
-      "fluid_guard": "1", "gc_tune": "3", "inside_cache": "1", "flush_diet": "1",
-      "fluid_dirty": "0", "fluid_bitmask": "0", "region_threads": "4",
-      "batch_collector": "1", "inside_bitmask": "0", "skip_store_bb": "0",
-      "region_steal": "0", "bu_defer": "0",
-      "population_target": "150000", "population_seed": "42",
-      "server_xmx": "10G", "server_xms": "4G",
-      "cpu_band_min": "6000000", "cpu_band_max": "9500000",
-      "lever_flag": "cmp411_insidebat", "lever_arg": "1"
+      "radius": "640",
+      "seconds": "300",
+      "fake_players": "4",
+      "fluid_guard": "1",
+      "gc_tune": "3",
+      "inside_cache": "1",
+      "flush_diet": "1",
+      "fluid_dirty": "0",
+      "fluid_bitmask": "0",
+      "region_threads": "4",
+      "batch_collector": "1",
+      "inside_bitmask": "0",
+      "skip_store_bb": "0",
+      "region_steal": "0",
+      "bu_defer": "0",
+      "population_target": "150000",
+      "population_seed": "42",
+      "server_xmx": "10G",
+      "server_xms": "4G",
+      "cpu_band_min": "6000000",
+      "cpu_band_max": "9500000",
+      "lever_flag": "cmp411_insidebat",
+      "lever_arg": "1"
     },
-    "not_sent": ["travel_diet", "fluid_dirty_ledger"]
+    "not_sent": [
+      "travel_diet",
+      "fluid_dirty_ledger"
+    ]
   },
   "checklist_run": {
     "ARM": "[crussty-insidebat] ARMED (server-stdout)",
@@ -57,5 +112,9 @@
     "inside_lane": "был 11.76-12.87% → стал ?; РОСТ = RED",
     "pool_pairs": "2.2@6840530, 2.2@6858619, 2.1@6776758, 2.4@6604167, 2.2@6976430, 2.25@6833921, 2.30@6846036 (ближайший runner)",
     "band": "6.0-9.5M; вне = BAND-DISCARD ре-ролл ≤2"
+  },
+  "prior2": {
+    "leg": "round-412-b-l1 run 35700016663 @e555178 = HONEST RED 0.70 TPS",
+    "root_cause": "DVOЙНОЙ дефект: (A) InsideRustOps arm-check parameterCount()!=5 — unreflect INSTANCE-метода даёт receiver-prepended тип (6 параметров) => IllegalStateException 'unexpected checkInsideBlocks handle type' => inside_batch ВООБЩЕ не ARMED (boot log 07:40:32); (B) entity_compose stage-1c inside_batch выжигает свой 180s wait_bridge_ready window ВПЕРЕДИ region-rng stage => region_threads::wait_rng_verdict(180s) истёк раньше (log 07:43:27) => region_threads hook DORMANT весь ран => 150k энтити тикали ОДНОПОТОЧНО => 0.70 TPS (wall x3.1, CPU/tick x1.17, inject 94.5s vs anchorc 57s, лейны-доли ~базлайн)"
   }
 }
