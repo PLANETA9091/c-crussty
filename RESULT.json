@@ -1,9 +1,9 @@
 {
   "agent": "TASK-410-C",
-  "vector": "eindex K3 PIVOT (R2 rethink: broadphase flat -> goal-target/sensing query class, batch snapshot)",
+  "vector": "eindex K3 PIVOT R2 (goal-target/sensing query class): cmp410_eindexq = SoA-population push-plane + goal-query chain-snapshot bridge; старый 4-сайтный индекс учёта ВЫКЛЮЧЕН (gated cmp405_eindex only)",
   "branch": "round-405-c-eindex (reuse worktree, merge origin/master 8ef9e5b)",
   "flag": "cmp405_eindex (kept STRICT) + pivot gate cmp410_eindexq (STRICT eq, empty=vanilla)",
-  "stage": "K3-STEP1 DONE: symbol profile of broadphase lane; cleg5b run 35673647163 polling (in_progress at start)",
+  "stage": "K3-STEP2 CODED+BUILT: EntityGoalQueryOps chain-snapshot bridge (goal-target query pivot) — cargo/test green, blobs fresh, next: push+dispatch round-410-c-k3l",
   "run_id": 35673647163,
   "run_id_cleg5b": 35673647163,
   "k3_step1_symbol_profile": {
@@ -20,7 +20,7 @@
       "EntityLookup.getEntities": 2.96
     },
     "vanilla_anchor_split_pct_of_lane": {
-      "ChunkEntitySlices.getEntities*": 47.90,
+      "ChunkEntitySlices.getEntities*": 47.9,
       "CollisionUtil.getCollisions*": 38.03,
       "EntityLookup.getHardCollidingEntities": 4.66,
       "EntitySectionStorage/other": 3.83,
@@ -39,10 +39,30 @@
   "verdict": "K3 STEP 1 DONE — pivot to query-complex APPROVED by data: block-collision dominates block-move half of lane (entity index can't help), but goal-target entity queries deliver a clean 2.7-3.0% slice through a SINGLE chokepoint EntityLookup.getEntities -> ChunkEntitySlices.getEntities (86-88%), ideal for ONE bulk-JNI SOA snapshot/tick (MobScanOps pattern). STEP 2 in progress",
   "evidence": [
     "cleg5b run 35673647163 (re-roll of cleg5 BENCH-4 FIXTURE-INVALID) in flight, ref round-410-c-l5b @d05c930 lever cmp405_eindex",
-    "script /tmp/k3_symbols.py + /tmp/k3b.py (collapsed-stack attribution)"
+    "script /tmp/k3_symbols.py + /tmp/k3b.py (collapsed-stack attribution)",
+    "UPPER-NOTE-cleg5b.md прочитан и исполнен: хуки учёта (addEntity/removeEntity/moveEntity) НЕ армятся — entity_index_manager gated cmp405_eindex only, под cmp410_eindexq dormant",
+    "AIOOBE-мандат: гейт не трогает секции (read-only снимок; ванильные вызовы бит-в-байт) — grep AIOOBE в вердикте"
   ],
   "what": [
     "step1a: stack-weighted symbol split cleg4 vs vanilla anchor: 48/37/5/3/3 vs 48/38/5/4/3 — identical shape => documented in RESEARCH-C-k3.md",
     "step1b: goal/target-only restriction: single chokepoint EntityLookup.getEntities -> ChunkEntitySlices.getEntities 86-88%, no CollisionUtil involvement (0.2%) => pivot target sites = this chokepoint + Level.getEntitiesOfClass (AvoidEntityGoal)"
-  ]
+  ],
+  "pivot_design": {
+    "bridge": "entitygoalquery/net/minecraft/world/entity/EntityGoalQueryOps.java (FQCN EntityQueryOps занят alloc-diet S7-133 — LinkageError риск; префикс Goal)",
+    "retarget_sites": [
+      "NearestAttackableTargetGoal.findTarget()V @52 invokevirtual Level.getEntitiesOfClass (javap: ровно 1 сайт; Player/ServerPlayer -> getNearestPlayer не сюда)",
+      "AvoidEntityGoal.canUse()Z @47 тот же дескриптор (ровно 1 сайт)"
+    ],
+    "bulk_jni": "eqEpoch(tick,idTop,soa[D],head[I],next[I]) sig (II[D[I[I)I — ONE per tick, single-pass intrusive-chain build (65536 buckets, hash floor(x/16)/floor(z/16) bit-exact java int mul), frozen soa columns stride 5",
+    "why_chains_not_csr": "2-pass CSR требует глобального seqlock — ретраи не сходятся под 150k upserts/тик; однопроходные цепи самосогласованны при любом interleave (placement хэширует те же замороженные x/z); рваная строка = призрак <=1 тик у границы, маржа 8.0 блоков >= 4x tick-дрейфа",
+    "superset_contract": "только Mob/Player-assignable cls; точный живой bb.intersects + predicate в Java; players из level.players(); prune замороженными колонками vs box.inflate(8.0); Profiler counter getEntities реплицирован",
+    "fail_closed": "STRICT-eq cmp410_eindexq; planeReady(broken/oversized/probe); idTop==0 или rc==0 -> ваниль тик; ERR_STRUCT дизарм; ERR_RANGE/дрейф/абсурд-rect -> ваниль вызов; магия 0x4547"
+  },
+  "verification_step2": {
+    "javap_ground_truth": "полный kernel-jar /home/z/rounds/ROUND-405/lib/patched-kernel.jar: 2 сайта ровно по 1, body getEntitiesOfClass = Profiler+EntityLookup.getEntities(cls,null,box,list,pred)",
+    "kernel_fixture_tests": "tests/fixtures/NearestAttackableTargetGoal.class + AvoidEntityGoal.class: retarget ровно 1 сайт/метод, idempotent, wrong-desc fail-closed (d05c930-метод offline)",
+    "javac": "--release 21 vs kernel-jar: EntityGoalQueryOps.class + MobPushOps.class (accessors) major 65; check_blob_sync OK",
+    "cargo": "check --lib зелёный; test 223 passed / 0 failed (cellHash java-parity, chain no-dup/no-cycle, saturating floor, delivery guards, RegisterNatives sig == java decl (409-E урок)); target удалён"
+  },
+  "next": "commit+push (рано) -> alias round-410-c-k3l -> world-bench-parallel.yml банк-410 -> poll -> absorb round410ck3 -> pair-by-runner vs пул {2.50@8548287,2.95@8880170,2.60@8827927}+банк"
 }

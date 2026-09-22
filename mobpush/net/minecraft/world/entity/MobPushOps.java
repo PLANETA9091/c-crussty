@@ -77,7 +77,13 @@ public final class MobPushOps {
         // prior behavior: grid natives are never called under it.
         return f != null
                 && (f.trim().equals("cmp401_soa") || f.trim().equals("cmp402_comp")
-                    || f.trim().equals("cmp402_stagcomp"));
+                    || f.trim().equals("cmp402_stagcomp")
+                    // TASK-410-C (eindexq): K3-пивот R2 — SoA-плоскость =
+                    // источник популяции для goal-query CSR-снапшота
+                    // (EntityQueryOps.eqEpoch; sscan-прецедент TASK-406-E:
+                    // составная нога SoA-plane + query-мост, маржинал меряется
+                    // против cmp401_soa контроль-ноги).
+                    || f.trim().equals("cmp410_eindexq"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -126,6 +132,26 @@ public final class MobPushOps {
     /** id -> entity (плотный массив, grow x2; ids реиспользуются через freeIds). */
     private static Entity[] byId = new Entity[1024];
     private static int idTop = 0;
+
+    // ---- TASK-410-C (eindexq): package-private accessors для goal-query
+    // моста EntityQueryOps (тот же пакет; dense-id = SoA-ряды mobs_soa). ----
+    static Entity[] byIdArr() {
+        return byId;
+    }
+
+    static int idCount() {
+        return idTop;
+    }
+
+    static int idCapacity() {
+        return byId.length;
+    }
+
+    /** Готовность SoA-плоскости как источника популяции (fail-closed гейт). */
+    static boolean planeReady() {
+        return !broken && !oversized && probeOnce();
+    }
+
     private static int[] freeIds = new int[256];
     private static int freeTop = 0;
     /** entity -> id-box. Пишется под ID_LOCK; читается воркерами. */
