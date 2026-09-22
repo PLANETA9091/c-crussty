@@ -2805,3 +2805,22 @@ Work Log:
 Stage Summary:
 - Резидуал RECON-36 закрыт инструментально: threaded wall даст I и развилку RECON-36 одним прогоном absorb_s7196.py
 - NEXT id 364: absorb_s7196.py 35487747157 → OFFLOAD-READY/REBALANCE/GRAY; при B — dispatch_s7195.py --sanctioned
+
+---
+Task ID: TASK-416 (v16 tick, cron 405193, 23:08 +08)
+Agent: Super Z main
+Task: v16 MEGA-CYCLE — mc iter-2 gate-reconciliation, gsel iter-3/4, fluid-bulk v2, якоря-416, pair-вердикты, GOAL ×100
+
+Work Log:
+- PHASE 0: master 5869010; диск 73%; якоря-416 ×3 диспатч (anchorc FAILURE → anchorc2 ре-ролл OK)
+- Волна ×3 (A mc-iter-2 / B gsel-iter-3 / C fluid) — adapter-deadline ×3, агенты довели до диспатчей; осиротевшие ноги абсорблены главным тиком
+- A: ДВА КОРНЯ франкен-мержа пойманы (blobs без cmp415_mcomp в constant pool = ENABLED false; install_blob FLAT-vs-NESTED include_bytes no-op) — mc2a/b/c всё равно RED 0.2/0.2/0.7: mob_query конвой (progressive collapse 20→0, Server+воркеры в MobPushOps.mobQuery Native); бисекция: токсичная пара = multi-плоскости ⊕ race-fix-фенсы; iter-3 research @158889b → тик-417
+- B: iter-3 g3×3 (nav_ai −2.3..−2.7пп реален, items 0.00 ×3, маргинал −15пп) + iter-4 fastpath g4×3 (+8пп, медиана +11.9 norm, всё ещё −10пп vs cvs) — ВЕКТОР ЗАКРЫТ ×4 итерации
+- C: FluidBulkOps v2 (4 фикса черновика, 8 гейт-сайтов, блобы in sync, CI-fail lib.rs root-cause) — f1 3.3/f2 BAND/f3 2.6, fluid-лейн ВВЕРХ +1.8..+2.7, маргинал −3.7пп — ВЕКТОР ЗАКРЫТ (3-я архитектура)
+- CVS-носитель ре-валидирован +35.0 pair сегодня (4-е подтверждение)
+- GOAL ×100 + CLAIMS next-417 + пуш обоих
+
+Stage Summary:
+- БАР 80% НЕ ВЗЯТ, МЕРЖ НЕТ. Лесенка: multi ≈+26 ×4 ⊕ cvs +35 pair сегодня (штат)
+- НОВЫЕ УРОКИ: include_bytes FLAT≠NESTED (rebuild no-op — javap-гейт FLAT==NESTED обязателен); конвой Rust-reader × Java-monitor-фенсы × region-воркеры = progressive collapse (не статичный RED); парить ТОЛЬКО свежими якорями (ночь −10пп к эксп-модели)
+- NEXT-417: A iter-3 protocol v2 (per-shard/epoch-read) + queryplane find_class + бисекция фенс-токсичности; волна плоскостей cvs-носителя (inside/broadphase-query); gsel/fluid не тратить
