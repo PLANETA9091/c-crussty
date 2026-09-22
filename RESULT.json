@@ -2,7 +2,11 @@
   "agent": "TASK-414-A",
   "vector": "queryplane ⊕ REFENCE — ре-базис, pair-вердикт",
   "branch": "round-414-a-b2p",
-  "step": "S5-dispatch",
-  "head": "318ade4",
-  "evidence": "dispatch_round414a.py committed; legs b2p1/b2p2 ref=round-414-a-b2p{1,2} lever=cmp414_b2p; aliases ensure → HEAD d842acf (queryplane 125c474 ⊕ REFENCE 109e4d7, blobs verified, cargo 282/282)"
+  "head": "259c985",
+  "step": "S6-legs-in-flight",
+  "legs": {
+    "b2p1": {"run_id": 35727630306, "ref": "round-414-a-b2p1", "status": "in_progress"},
+    "b2p2": {"run_id": 35727647725, "ref": "round-414-a-b2p2", "status": "in_progress"}
+  },
+  "evidence": "оба диспатча confirmed in_progress @259c985, lever=cmp414_b2p, inputs банк exact"
 }
