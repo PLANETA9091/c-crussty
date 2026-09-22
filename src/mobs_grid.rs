@@ -66,11 +66,11 @@ pub(crate) fn mirror_mode() -> bool {
                     // TASK-406-E: композит раунда-406 включает mirror-grid.
                     || v.trim() == "cmp406_sscan"
                     // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
-                    || v.trim() == "cmp409_multi" || v.trim() == "cmp412_meganav"
+                    || v.trim() == "cmp409_multi" || v.trim() == "cmp412_meganav" || v.trim() == "cmp414_cvs"
                     // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR
                     // (mirror inert: eqsnap upsert path returns before mirror
                     // write, push ladder skips grid legs под EQSNAP).
-                    || v.trim() == "cmp412_eqsnapv3"
+                    || v.trim() == "cmp412_eqsnapv3" || v.trim() == "cmp414_cvs"
             })
             .unwrap_or(false)
     })
