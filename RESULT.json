@@ -1,41 +1,22 @@
 {
-  "agent": "TASK-411-C",
-  "vector": "eindex K4 (cron tick-411): SoA-plane REPAIR + push-lane served from eq chain-snapshot (menu (a) realized) — flag cmp411_k4soa STRICT eq, empty=vanilla bit-in-bit",
-  "branch": "round-411-c-k4 (worktree /home/z/rounds/ROUND-411/agent-c, base origin/round-405-c-eindex @1b68a87)",
-  "stage": "K4-STEP1 CODED+BUILT: gate 2.0/pad 2 repair + push-snapshot (pushCandidates, bucket-dedup, 0 per-query JNI) — javap ground truth re-verified on FULL kernel jar round-396-a, javac blobs fresh (both classes, exactly-1-classfile), cargo test 224 green, next: push+dispatch round-411-c-l1",
-  "step0_profile": {
-    "sources": [
-      "research/gc-recon-2026-09-19/round-round410anchora/cpu-collapsed.txt (115385 samples, lane 15.67%)",
-      "research/gc-recon-2026-09-19/round-round410multi3/cpu-collapsed.txt (110026 samples, engine 6.47% wall)",
-      "research/gc-recon-2026-09-19/round-round410ck3l/cpu-collapsed.txt (116376 samples, lane 14.76%)"
-    ],
-    "engine_decomposition_anchora": "engine 8630 = 7.48% wall: pushEntities/getPushableEntities 50.0%, getEntitiesOfClass 41.0% (findTarget 65% + AvoidEntityGoal 9% + ItemEntity-pickup 26%), getHardCollidingEntities 8.9%; CollisionUtil block-collision separate 4.78% wall",
-    "ck3l_smoking_gun": "engine 8348: 43.8% pushEntities->MobPushOps.pushables->vanillaFill (SoA plane DEAD), 33.6% findTarget/canUse->entitiesOfClassGate->vanilla (population DEAD)",
-    "root_cause": "server-stdout 410ck3l 02:30:26-27: 'epoch ok tick=12 rows=2' then 'cmp401_soa: oversized bounding radius 1.1875 on entity.minecraft.camel — lever reverted to vanilla'; chronic grep over ALL artifact dirs 405-411: oversized fired in 11/11 SoA-armed legs of the 150k era (camel 1.1875 x9: 406dleg3/4/6, 406eleg1, 409eleg2, 409eleg3b, 409multi2, 410ck3l, 410multi3; iron_golem 1.35: 409eleg2b; warden 1.45: 409multi1); zero in non-SoA legs (anchors/cleg/bl2/ak5) — chronicle complete",
-    "scope_honest": "era verdicts NOT flipped: multi/comp legs GREEN carried by LIVE planes (multi3 items 31.17->0.00%, nav_ai 14.16->7.54%; 406d items-carried; eleg sscan-carried with own epoch-ok markers after the warn); what WAS corrupted: (a) 410ck3l PARITY = artifact (goal-query bridge measured with dead 2-row population — class not refuted), (b) SoA push-plane never measured armed in the era, (c) cmp410_eindexq-цепь наследовала disarm через общий upsertSelf. Full scope table in RESEARCH-C-k4.md",
-    "verdict_step0": "menu (b) collide+R3 REJECTED (stateful per-move block-collision verdicts not batchable by 1 bulk-JNI/tick, block data unavailable to Rust SoA, bit-exact voxel oracle out of tick budget); menu (a) SELECTED as repair+extend of existing snapshot planes"
+  "agent": "TASK-412-C",
+  "vector": "eindex K4-v2 (тик 15:08+08, продолжение TASK-411-C): cmp411_eqsnap dirty-дельты — mob_upsert аппендит (id,alive,x,y,z,hw,hh) в пер-потоковые DeltaShard'ы (0 локов/0 seqlock/0 cell-хэша), eq_epoch СНАЧАЛА один bulk-drain O(dirty) в плоские колонки, ПОТОМ прежний full chain-build (self-consistency сохранена); pushables лестница под eqsnap = снапшот → vanillaFill (легаси mobQuery/grid пропущены — цепи плоскости невалидны), точная ваниль = fail-closed",
+  "branch": "round-405-c-eindex (worktree /home/z/rounds/ROUND-411/agent-c, HEAD c0f97e5 = v2 cmp411_eqsnap dirty-дельты)",
+  "background": "cl1 run 35691270899 = RED 0.5 TPS при лейнах ВНИЗ (broadphase 15.66→7.64% — плоскость двигается, полный rebuild был дорог; 84140 samples: mob_upsert 24.9% CPU per-entity WLOCK+JNI КАЖДЫЙ тик) — dirty-дельты = прямой ответ на пост-мортем",
+  "stage": "V2 COMMITTED+VERIFIED: cargo test --lib 225 green / 0 failed / 1 ignored (+eqsnap_shard_drain_applies_dirty_rows: dirty-apply/move/last-write-wins/NaN+OOR-ghost-гварды/генерация-ресет/переполнение), c4-target УДАЛЕН сразу; grep-чеклист STRICT-eq по всем сайтам ПРОЙДЕН (mobs_soa.rs eqsnap_mode/lever_mode/drain/upsert-shard/mob_query ERR_RANGE; entity_query.rs enabled/eqsnap-флаг/ARM-лейбл/drain-EFFECT маркер; MobPushOps leverEnabled/eqsnapEnabled/K4_LABEL/RADIUS_GATE (K4||EQSNAP)?2.0:1.0/лестница eqsnap=снапшот→vanillaFill; EntityGoalQueryOps leverEnabled/FLAG_LABEL); хуки учёта cmp405_eindex ВЫКЛЮЧЕНЫ (GATE_LEVER-гейт, диспатч-флаг их не активирует); blob-sync OK (ровно-1-classfile: MobPushOps 11756B, EntityGoalQueryOps 9696B, свежее .java)",
+  "dispatch_plan": {
+    "alias": "round-412-c-l2",
+    "workflow": "world-bench-parallel.yml (труба идентична c-crussty, verified diff-clean)",
+    "inputs_bank": "radius 640, seconds 300, fake_players 4, fluid_guard 1, gc_tune 3, inside_cache 1, flush_diet 1, fluid_dirty 0, fluid_bitmask 0, region_threads 4, batch_collector 1, inside_bitmask 0, skip_store_bb 0, region_steal 0, bu_defer 0, population_target 150000, population_seed 42, server_xmx 10G, server_xms 4G, cpu_band_min 6000000, cpu_band_max 9500000",
+    "lever": "cmp411_eqsnap=1",
+    "excluded": "travel_diet / fluid_dirty_ledger НЕ шлются (слотов в workflow нет)"
   },
-  "k4_design": {
-    "flag": "cmp411_k4soa (STRICT eq everywhere; cmp410_eindexq/cmp401_soa keep exact prior behavior — RADIUS_GATE flag-conditional K4?2.0:1.0, compiled as runtime <clinit> init: old flags keep gate 1.0 incl. oversized-disarm bit-in-bit)",
-    "change1_radius_repair": "MobPushOps.upsertSelf r_eff gate 1.0 -> 2.0 under k4soa only (covers camel 1.1875 / iron_golem 1.35 / warden 1.45); mobs_soa.rs mob_query pad +-1 -> +-2 cells (PAD=2 const, soundness floor(q0-hw) >= floor(q0)-2 for hw<=2.0; result-identical under old gates — wider window only adds ids that fail the exact live-bb filter)",
-    "change2_push_snapshot": "MobPushOps.pushables under k4soa: try EntityGoalQueryOps.pushCandidates(level,entity,box,list) FIRST (same eqEpoch chain-scan as entitiesOfClassGate, predicate EntitySelector.pushableBy(entity) [javap: public static Predicate<Entity> pushableBy(Entity)], filter other!=entity, NO cls gate — same LivingEntity universe contract as round-401 mobQuery incl. documented no-players/boats delta; BUCKET-DEDUP before chain walk via per-thread scratch int[64] ZERO-ALLOC: duplicate chain pass = duplicate candidate = double doPush — NOT harmless for push tail unlike nearest-pick); fallback ladder snapshot-null -> legacy mobQuery (JNI per call, kept) -> vanillaFill",
-    "not_served": "ItemEntity-pickup (Mob.aiStep @109 javap: 2-arg getEntitiesOfClass, ItemEntity class not in universe), getHardCollidingEntities (boats/shulkers universe), CollisionUtil block-collision (4.78% wall accepted)",
-    "javap_ground_truth_reverified": "FULL kernel jar research/gc-recon-2026-09-19/round-396-a/patched-kernel.jar (29MB boot artifact): NearestAttackableTargetGoal.findTarget()V @52 = 1 site getEntitiesOfClass(Class,AABB,Predicate)List; AvoidEntityGoal.canUse()Z @47 = 1 site same desc; LivingEntity.pushEntities()V @75 = 1 site getPushableEntities(Entity,AABB)List (file-wide count 1); Mob.aiStep @109 = 2-arg ItemEntity pickup — refusal documented",
-    "expected": "engine ceiling -(3.2 push + 2.4 goal)pp wall; realistic -2..-4pp; target TPS >= 2.35 vs pool-411 2.1-2.4"
-  },
-  "verification_step1": {
-    "javac": "--release 21 vs round-396-a kernel jar: EntityGoalQueryOps.class 9620B + MobPushOps.class 11452B, exactly-1-classfile each (BUCKET_SCRATCH lambda = synthetic method, no nested), javap: MobPushOps.pushables invokestatic pushCandidates + getstatic RADIUS_GATE (runtime <clinit> init, not folded)",
-    "build_script_fix": "scripts/build_mobpush_ops.sh classpath += entitygoalquery/build (MobPushOps now references EntityGoalQueryOps.pushCandidates — same package, kernel-loader delivery intact)",
-    "cargo": "check --lib green; test 224 passed / 0 failed / 1 ignored (new k4soa_large_radius_superset: camel/iron_golem/gate-max radii centered OUTSIDE integer box, center cell = floor(qx0)-2, pad-1 window misses, pad-2 covers; + non-integer-edge boundary case ex=1.95/hw=2.0; + y-axis mirror) — target DELETED after run",
-    "kernel_fixture_tests": "retarget=1/idempotent/wrong-desc fixtures untouched (no new retarget sites; pushCandidates rides the EXISTING round-401 pushables site)"
-  },
-  "next": "poll run 35691270899 (alias round-411-c-l1 @f5d3bd9, dispatched 05:34:57Z, inputs bank exact) -> absorb round411cl1 -> pair-by-runner verdict vs pool-411 {2.2@6840530, 2.2@6858619, 2.1@6776758} + bank {2.4@6604167, 2.2@6976430, 2.25@6833921, 2.30@6846036}",
-  "run_id": 35691270899,
-  "gates_checklist": "ARM markers 'cmp411_k4soa: ARMED soa-population+push-snapshot' (rust mobs_manager) + 'cmp411_k4soa: ARMED goal-query' (rust entity_query) + EFFECT markers ('epoch ok' rows>1000, 'push-snapshot EFFECT armed (first chain-snapshot serve') + grep AIOOBE=0 + grep oversized=0 (gate 2.0 must NOT fire on bench population)",
+  "next": "poll run → absorb_round.py <run_id> round412cl2 → pair-by-runner vs пул {2.2@6840530, 2.2@6858619, 2.1@6776758, 2.4@6604167, 2.2@6976430, 2.25@6833921, 2.30@6846036} (ближайший runner) → BAND 6.0-9.5M вне = BAND-DISCARD ре-ролл ≤2 → чек-лист ARM+EFFECT(first gate hit / shard-drain epoch ok)+AIOOBE=0 → Δ<80% = рисёрч",
+  "run_id": null,
+  "gates_checklist": "ARM 'cmp411_eqsnap: ARMED goal-query' + 'cmp411_eqsnap: ARMED soa-population+push-snapshot' (rust mobs_manager/entity_query), EFFECT 'epoch ok' rows>1000 + 'shard-drain EFFECT armed (first bulk drain applied' + 'push-snapshot EFFECT', grep AIOOBE=0, grep oversized=0 (gate 2.0 не должен стрелять на бенч-популяции)",
   "evidence": [
-    "RESEARCH-C-k4.md (this tree) — STEP0 analysis + honest scope table + javap offsets",
-    "/home/z/k4work/{k4_symbols,k4_decomp,k4_entries,k4_buckets}.py — attribution scripts",
-    "/home/z/k4work/{monster_javap,mob_javap,natg,avoid,living}.txt — javap dumps round-396-a kernel",
-    "/tmp/k4v/{natg,avoid,living,mob,sel}.txt — re-verification dumps of THIS session (sites @52/@47/@75/pushableBy sig)"
+    "worklog TASK-411-C: cl1 пост-мортем 35691270899 (broadphase 15.66→7.64, mob_upsert 24.9%)",
+    "commit c0f97e5: v2 dirty-дельты (DeltaShard 16×8192, reserve fetch_add/published fetch_max Release, drain под WLOCK одним потребителем)",
+    "cargo 225 green (target удалён), blob-sync, STRICT-eq grep-чеклист этого тика"
   ]
 }
