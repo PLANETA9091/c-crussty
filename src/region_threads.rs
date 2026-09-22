@@ -87,6 +87,15 @@ const BLOCKUPD_CLASS: &str = "net/minecraft/server/level/BlockUpdateOps";
 const BLOCKUPD_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/server/level/BlockUpdateOps.class");
 
+/// NAV-POOL (TASK-410-A k5, cmp405_navplane STRICT eq): A* node-pool bridge
+/// — prepare launders the node map to the fresh shape instead of clearing,
+/// getNode drops the per-call lambda (get + position check + new-on-miss).
+/// Same package as NodeEvaluator (protected `nodes` field access).
+const NAVPOOL_CLASS: &str = "net/minecraft/world/level/pathfinder/NavPoolOps";
+const NAVPOOL_BYTES: &[u8] =
+    include_bytes!("../entityinside/build/net/minecraft/world/level/pathfinder/NavPoolOps.class");
+const NODE_EVALUATOR_CLASS: &str = "net/minecraft/world/level/pathfinder/NodeEvaluator";
+
 fn bu_defer_enabled() -> bool {
     std::env::var("CRUSSTY_BU_DEFER")
         .map(|v| {
@@ -173,6 +182,8 @@ static TARGET_SL: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
 static TARGET_CB: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
 static TARGET_LV: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
 static TARGET_CM: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
+// TASK-410-A k5: NodeEvaluator target (navpool compose owner; fail-open).
+static TARGET_NE: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
 // S7-162: the Entity target moved to entity_compose (single compose-chain
 // owner); this module no longer registers an Entity hook nor patches Entity.
 
@@ -187,6 +198,9 @@ fn lv_target() -> &'static Target {
 }
 fn cm_target() -> &'static Target {
     TARGET_CM.get_or_init(|| Target::new(CHUNKMAP_CLASS))
+}
+fn ne_target() -> &'static Target {
+    TARGET_NE.get_or_init(|| Target::new(NODE_EVALUATOR_CLASS))
 }
 
 pub fn bridge_ready() -> bool {
@@ -322,6 +336,32 @@ pub fn register() {
         }
         cached.map(|c| c.to_vec())
     });
+    // Hook 5 (TASK-410-A k5, cmp405_navplane STRICT eq): NodeEvaluator —
+    // the A* node-pool compose target. Registered ONLY when armed; empty/
+    // other flag = no hook, no definition, no retarget (vanilla bit-in-byte).
+    if crate::nav_pool::armed() {
+        cplug_sdk::hooks::register_bytes(NODE_EVALUATOR_CLASS, |_name, bytes| {
+            let t = ne_target();
+            if !READY.load(Ordering::Relaxed) {
+                eprintln!(
+                    "[crussty-plugin] navpool: pristine sighting {} {} bytes",
+                    t.name,
+                    bytes.len()
+                );
+                t.stash_orig(bytes);
+                return None;
+            }
+            let cached = t.patch_bytes();
+            if !t.served.swap(true, Ordering::Relaxed) {
+                eprintln!(
+                    "[crussty-plugin] navpool: hook serve {} {} bytes",
+                    t.name,
+                    cached.as_ref().map(|c| c.len()).unwrap_or(0)
+                );
+            }
+            cached.map(|c| c.to_vec())
+        });
+    }
     // S7-162: the Entity hook (S7-158d serialized UUID seeding site) moved
     // to entity_compose::register — the single compose-chain owner. This
     // module no longer registers an Entity hook.
@@ -397,6 +437,9 @@ pub fn activate() {
             if bu_defer_enabled() {
                 list.push((BLOCKUPD_CLASS, BLOCKUPD_BYTES));
             }
+            if crate::nav_pool::armed() {
+                list.push((NAVPOOL_CLASS, NAVPOOL_BYTES));
+            }
             list
         } {
             let major = crate::improved_noise::class_version(bytes)
@@ -453,6 +496,10 @@ pub fn activate() {
             // not registered, not retargeted -> vanilla bit-in-byte.
             if crate::nav_plane::armed() {
                 bridge_list.push((crate::nav_plane::NAV_CLASS, crate::nav_plane::NAV_BYTES));
+                // NAV-POOL (TASK-410-A k5, same lever): the pool bridge is
+                // part of the nav vector — defined+registered under the
+                // exact same STRICT eq gate.
+                bridge_list.push((NAVPOOL_CLASS, NAVPOOL_BYTES));
             }
             let mut ok = true;
             for (name, bytes) in bridge_list {
@@ -463,6 +510,15 @@ pub fn activate() {
                             // READY latch: first armed handle() call must
                             // bind, else the java ERR ladder goes vanilla.
                             if !crate::nav_plane::register_native(env, c) {
+                                ok = false;
+                            }
+                        }
+                        if name == NAVPOOL_CLASS {
+                            // RegisterNatives navPoolTick BEFORE READY: the
+                            // first armed prepare() call must bind (telemetry
+                            // failure is swallowed java-side, but the bind
+                            // must be in place for the ARM/EFFECT markers).
+                            if !crate::nav_pool::register_native(env, c) {
                                 ok = false;
                             }
                         }
@@ -705,6 +761,69 @@ pub fn activate() {
             major: cm_major,
         });
 
+        // NAV-POOL (TASK-410-A k5, cmp405_navplane STRICT eq): compose the
+        // A* node-pool into NodeEvaluator (prepare + getNode, strict
+        // sites:2). Fail-OPEN for this stage only: capture/patch failure
+        // leaves the region hook intact and the pool vanilla this boot.
+        let mut ne_patched = false;
+        if crate::nav_pool::armed() {
+            let ne = ne_target();
+            'navpool: {
+                if !ne.orig_is_some() {
+                    eprintln!(
+                        "[crussty-plugin] navpool: {} not sighted yet, forcing kernel load",
+                        ne.name
+                    );
+                    crate::improved_noise::force_load_kernel_class(ne.name);
+                    for _attempt in 1..=3 {
+                        let _ = cplug_sdk::retransform_class(ne.name);
+                        if ne.orig_is_some() {
+                            break;
+                        }
+                        std::thread::sleep(std::time::Duration::from_millis(250));
+                    }
+                }
+                let Some(ne_orig) = ne.take_orig() else {
+                    eprintln!(
+                        "[crussty-plugin] navpool: NodeEvaluator not capturable, pool stays vanilla this boot"
+                    );
+                    break 'navpool;
+                };
+                let (ne_p, ne_outcome) =
+                    match crate::classfile::patch_nodeevaluator_navpool(&ne_orig) {
+                        Ok(pair) => pair,
+                        Err(e) => {
+                            eprintln!(
+                                "[crussty-plugin] navpool: NodeEvaluator patch rejected ({e}), pool stays vanilla"
+                            );
+                            break 'navpool;
+                        }
+                    };
+                if !matches!(
+                    ne_outcome,
+                    crate::classfile::RetargetOutcome::Retargeted { sites: 2 }
+                ) {
+                    eprintln!(
+                        "[crussty-plugin] navpool: strict site-count violated ({ne_outcome:?}), pool stays vanilla"
+                    );
+                    break 'navpool;
+                }
+                let ne_major = crate::improved_noise::class_version(&ne_orig)
+                    .map(|(m, _)| m)
+                    .unwrap_or(0);
+                eprintln!(
+                    "[crussty-plugin] navpool: NodeEvaluator composed ({} -> {} bytes {ne_outcome:?})",
+                    ne_orig.len(),
+                    ne_p.len()
+                );
+                ne.set_patch(PatchCache {
+                    bytes: Arc::from(ne_p),
+                    major: ne_major,
+                });
+                ne_patched = true;
+            }
+        }
+
         // S7-162: the Entity rng patch (S7-158d) and the batch collector
         // ctor retarget (S7-161) moved to entity_compose — the single
         // compose-chain owner (hooks on one class supersede each other:
@@ -729,13 +848,26 @@ pub fn activate() {
             "forEach/onTickingStart/onTickingEnd/midTickTasks/trackerTick/rngUUID",
             "region_threads v4",
         );
+        if ne_patched {
+            crate::kernel_policy::audit_wire(
+                NAVPOOL_CLASS,
+                "prepare/getNode (A* node-pool, fresh-shape laundering)",
+                "nav_pool v1",
+            );
+        }
         READY.store(true, Ordering::Release);
         let rc_sl = cplug_sdk::retransform_class(sl.name);
         let rc_cb = cplug_sdk::retransform_class(cb.name);
         let rc_lv = cplug_sdk::retransform_class(lv.name);
         let rc_cm = cplug_sdk::retransform_class(cm.name);
+        let rc_ne = if ne_patched {
+            cplug_sdk::retransform_class(ne_target().name)
+        } else {
+            -1
+        };
         eprintln!(
-            "[crussty-plugin] region_threads: ARMED, retransform rc ServerLevel={rc_sl} EntityCallbacks={rc_cb} Level={rc_lv} ChunkMap={rc_cm} (Entity via entity_compose)"
+            "[crussty-plugin] region_threads: ARMED, retransform rc ServerLevel={rc_sl} EntityCallbacks={rc_cb} Level={rc_lv} ChunkMap={rc_cm} NodeEvaluator={rc_ne} (Entity via entity_compose; navpool {})",
+            if ne_patched { "ARMED" } else { "vanilla" }
         );
     });
 }
@@ -834,6 +966,138 @@ mod blockupd_delivery_tests {
         assert_eq!(
             targets[0].3,
             "(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;I)V"
+        );
+    }
+}
+
+#[cfg(test)]
+mod navpool_delivery_tests {
+    /// TASK-410-A k5 delivery-graph guard (mirror of blockupd discipline):
+    /// NavPoolOps.java MUST declare ZERO nested classes — the bridge
+    /// compiles to exactly one classfile and is defined alone into the
+    /// kernel loader.
+    #[test]
+    fn navpool_ops_source_declares_no_nested_classes() {
+        let src = include_str!(
+            "../entityinside/net/minecraft/world/level/pathfinder/NavPoolOps.java"
+        );
+        let mut declared: Vec<String> = Vec::new();
+        for line in src.lines() {
+            let t = line.trim();
+            for pat in ["class ", "interface ", "enum ", "record "] {
+                if let Some(i) = t.find(pat) {
+                    let before = &t[..i];
+                    if before.contains("static") && !before.contains("//") {
+                        let rest = &t[i + pat.len()..];
+                        let name: String = rest
+                            .chars()
+                            .take_while(|c| c.is_alphanumeric() || *c == '_')
+                            .collect();
+                        if !name.is_empty() {
+                            declared.push(name);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        assert!(
+            declared.is_empty(),
+            "NavPoolOps.java declares nested classes {declared:?} — kernel-loader \
+             delivery defines exactly ONE classfile; nested classes would crash the \
+             server with NoClassDefFoundError (S7-163 leg#1 TECH-DUD)"
+        );
+    }
+
+    /// Build-dir mirror: exactly one NavPoolOps classfile exists.
+    #[test]
+    fn navpool_build_dir_has_exactly_one_classfile() {
+        let dir = "entityinside/build/net/minecraft/world/level/pathfinder";
+        let mut count = 0;
+        let rd = std::fs::read_dir(dir).expect("build dir present (run build_navpool_ops.sh)");
+        for e in rd.flatten() {
+            let p = e.path().to_string_lossy().to_string();
+            if p.contains("NavPoolOps") && p.ends_with(".class") {
+                count += 1;
+            }
+        }
+        assert_eq!(
+            count, 1,
+            "NavPoolOps classfile set drifted — must compile to exactly ONE classfile"
+        );
+    }
+
+    /// The embedded bytes ARE the built classfile (no stale embed).
+    #[test]
+    fn navpool_embedded_bytes_match_build_dir() {
+        let on_disk = std::fs::read(
+            "entityinside/build/net/minecraft/world/level/pathfinder/NavPoolOps.class",
+        )
+        .expect("built classfile present");
+        assert_eq!(
+            on_disk,
+            super::NAVPOOL_BYTES,
+            "embedded NavPoolOps.class is stale — rerun scripts/build_navpool_ops.sh"
+        );
+    }
+
+    /// Resolution closure: the embedded bridge declares BOTH receiver-
+    /// prepended targets the NodeEvaluator retarget emits.
+    #[test]
+    fn navpool_embedded_declares_all_redirect_targets() {
+        if let Err(e) = crate::classfile::navpool_resolution_closure(super::NAVPOOL_BYTES) {
+            panic!(
+                "RESOLUTION CLOSURE FAILED: {e} — rebuild entityinside/ via build_navpool_ops.sh"
+            );
+        }
+    }
+
+    /// Scope lock: EXACTLY prepare+getNode (the two-site pool lever).
+    #[test]
+    fn navpool_redirect_table_is_exactly_prepare_getnode() {
+        let targets = crate::classfile::NAVPOOL_REDIRECT_TARGETS;
+        assert_eq!(targets.len(), 2, "TASK-410-A k5 is a TWO-SITE lever");
+        assert_eq!(targets[0].0, "prepare");
+        assert_eq!(
+            targets[0].1,
+            "(Lnet/minecraft/world/level/PathNavigationRegion;Lnet/minecraft/world/entity/Mob;)V"
+        );
+        assert_eq!(targets[0].2, "prepare");
+        assert_eq!(
+            targets[0].3,
+            "(Lnet/minecraft/world/level/pathfinder/NodeEvaluator;Lnet/minecraft/world/level/PathNavigationRegion;Lnet/minecraft/world/entity/Mob;)V"
+        );
+        assert_eq!(targets[1].0, "getNode");
+        assert_eq!(targets[1].1, "(III)Lnet/minecraft/world/level/pathfinder/Node;");
+        assert_eq!(targets[1].2, "getNode");
+        assert_eq!(
+            targets[1].3,
+            "(Lnet/minecraft/world/level/pathfinder/NodeEvaluator;III)Lnet/minecraft/world/level/pathfinder/Node;"
+        );
+    }
+
+    /// The laundering field-set must cover EVERY mutable Node field
+    /// (javap: heapIdx/closed/g/h/f/cameFrom/walkedDistance/costMalus/type;
+    /// x/y/z/hash are final — identity, never laundered).
+    #[test]
+    fn navpool_laundering_covers_every_mutable_node_field() {
+        let src = include_str!(
+            "../entityinside/net/minecraft/world/level/pathfinder/NavPoolOps.java"
+        );
+        for field in [
+            "heapIdx", "closed", ".g =", ".h =", ".f =", "cameFrom", "walkedDistance",
+            "costMalus", ".type =",
+        ] {
+            assert!(
+                src.contains(field),
+                "NavPoolOps.prepare laundering misses mutable Node field {field} — \
+                 stale values would leak across searches (parity break)"
+            );
+        }
+        // The vanilla fallback MUST stay in place beyond the retention bound.
+        assert!(
+            src.contains("nodes.clear()"),
+            "MAP_CAP overflow path must fall back to the vanilla clear"
         );
     }
 }
