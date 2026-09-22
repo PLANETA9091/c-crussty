@@ -17,6 +17,7 @@
 
 mod alloc_diet;
 mod area_map;
+mod emap;
 mod perlin_noise;
 mod batch_api;
 mod batch_collector;
@@ -25,9 +26,14 @@ mod batch_table;
 mod brainhook;
 mod bridge_class;
 mod classfile;
+mod collide_batch;
 #[cfg(test)]
 mod entity_mirror;
 mod entity_compose;
+mod entity_index;
+mod entity_index_manager;
+mod entity_query;
+mod queryplane;
 mod fluid_guard;
 mod fluid_bitmask;
 mod fluid_dirty;
@@ -38,9 +44,19 @@ mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
 mod item_merge;
+mod items_index;
+mod items_lifetime;
+mod items_manager;
 mod jni_table;
 mod kernel_policy;
 mod loader;
+mod mobs_grid;
+mod mobs_manager;
+mod mobs_soa;
+mod mobs_ai;
+mod mobs_sscan;
+mod nav_plane;
+mod nav_pool;
 mod noise_fill;
 mod parse_diag;
 mod zero_cursor;
@@ -51,7 +67,9 @@ mod proto_blend_cache;
 mod randomtick;
 mod region_threads;
 mod skip_store;
+mod stagger;
 mod tickhook;
+mod tickplane;
 mod travel_diet;
 mod traversal;
 mod zero_alloc;
@@ -120,6 +138,21 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // port). Pristine capture at first load; patch served after the
     // ItemMergeOps bridge lands. Dormant unless CRUSSTY_LEVER_FLAG=items_oss.
     item_merge::register();
+    // STAGGER (TASK-401-I, round-401 vector I): per-entity hashed 1/N
+    // staggering of per-tick un-gated heavy checks — LivingEntity.pushEntities
+    // broadphase neighbor scan + GoalSelector non-visible canUse polls
+    // (multi-rate vanilla invariant: visible aggro/revenge polls stay
+    // every-tick). Byte hooks capture pristine bytes; patches served after
+    // PushStaggerOps/GoalStaggerOps bridges land. Dormant unless
+    // CRUSSTY_LEVER_FLAG == "cmp401_stagger" (STRICT eq).
+    stagger::register();
+    // TICK-PLANE (TASK-403-C, round-403 vector C): whole-body retarget
+    // segment registry — единый rust tick-plane для ТЕЛА энтити-тика
+    // (items/push/collide/stagger сегменты под одним STRICT-eq флагом;
+    // AI-решения НЕ трогаются). Реестр хуков не ставит — только сводный
+    // маркер + coarse-stamp эпохи. Dormant unless CRUSSTY_LEVER_FLAG ==
+    // cmp403_tickplane (пустой флаг = ваниль бит-в-бит).
+    tickplane::register();
     // PALETTED-DEMUX (S7-131, ARCH-ATTACK lever #1): PalettedContainer
     // first-load demux patch (field injection + fast-path get + guarded
     // mutators). MUST register before any kernel class loads (onstart).
@@ -130,6 +163,14 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // retransform after the EntityQueryOps bridge lands. Dormant unless
     // CRUSSTY_ALLOC_DIET=1.
     alloc_diet::register();
+    // COLLIDE BATCH-MERGE (TASK-401-B, round-401 vector B): byte hook on
+    // CollisionUtil (pristine capture at first load; the whole-body redirect
+    // of getCollisionsForBlocksOrWorldBorder -> CollideBatchOps.blockCollisions
+    // is served via retransform after the CollideBatchOps bridge lands).
+    // Chains after alloc_diet's hook on the SAME class (registration order;
+    // alloc_diet passes vanilla bytes through when dormant). Dormant unless
+    // CRUSSTY_LEVER_FLAG=cmp401_collide.
+    collide_batch::register();
     // TRAVEL-DIET v2b (RECON-21, lever #14): LivingEntity byte hook for the
     // travelInFluid body redirect — pristine capture at first load, patch
     // served after the TravelDietOps bridge lands in the kernel loader
@@ -180,6 +221,47 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // EntityCallbacks guard sites, composed on top of F1/F3 bytes (LAST in
     // the byte-hook chain). Dormant unless CRUSSTY_REGION_THREADS>=2.
     region_threads::register();
+    // MOB-SOA (TASK-401-E, vector soa): LivingEntity byte hook for the
+    // getPushableEntities→MobPushOps.pushables retarget — pristine capture at
+    // first load, patch served after the MobPushOps bridge lands in the
+    // kernel loader (mobs_manager::activate worker). Dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp401_soa (empty flag = exact vanilla path).
+    mobs_manager::register();
+    // MOB-AI-WINDOW (TASK-406-D, vector R3 mob_ai_step): the LAST hook on
+    // LivingEntity — composes the serverAiStep→MobAiOps.serverAiStepGate
+    // retarget ONTO the received chain bytes (soa rewrite preserved), window
+    // column written by ONE bulk aiEpoch JNI per tick over the SoA
+    // population. Dormant unless CRUSSTY_LEVER_FLAG == cmp406_aibatch.
+    mobs_ai::register();
+    // SSCAN-DESPAWN (TASK-406-E, vector R4 despawn/spawn/activation scans):
+    // the Mob.checkDespawn → Level.findNearbyPlayer site retarget with ONE
+    // bulk sscanEpoch JNI per tick over the mobs_soa SoA population (nearest
+    // qualifying player column). Dormant unless CRUSSTY_LEVER_FLAG ==
+    // cmp406_sscan (empty flag = exact vanilla path).
+    mobs_sscan::register();
+    // EINDEX (TASK-405-C, vector eindex): byte hooks on EntityLookup + Entity
+    // + the 4 rare setBoundingBox owners for the Rust chunk-mirror counts-skip
+    // plane. Dormant unless CRUSSTY_LEVER_FLAG == cmp405_eindex (STRICT eq;
+    // empty flag = vanilla bit-in-bit, no hook registered).
+    entity_index_manager::register();
+    // EINDEX-Q (TASK-410-C, K3 pivot): byte hooks on
+    // NearestAttackableTargetGoal + AvoidEntityGoal for the
+    // getEntitiesOfClass→EntityGoalQueryOps.entitiesOfClassGate retarget —
+    // pristine capture at first load, patch served after the bridge lands
+    // (entity_query::activate worker). Dormant unless CRUSSTY_LEVER_FLAG ==
+    // cmp410_eindexq (STRICT eq; empty flag = vanilla bit-in-bit). The OLD
+    // 4-site accounting index (entity_index_manager) stays OFF under this
+    // flag — upper-agent tick-410 mandate: only the query plane, no
+    // add/remove/move accounting hooks (cleg5b AIOOBE root-cause).
+    entity_query::register();
+    // QUERYPLANE (TASK-417-C, broadphase-query plane on the cvs carrier):
+    // Level compose-on-top hook (LAST on Level — receives region_threads'
+    // guardEntityTick bytes, composes getEntitiesOfClass +
+    // moonrise$getHardCollidingEntities whole-body redirects on top;
+    // mobs_ai precedent) + ChunkEntitySlices stash/serve (collide_batch
+    // pattern). Dormant unless CRUSSTY_LEVER_FLAG == cmp417_bq (STRICT OR
+    // with legacy b2p1/mcomp ids; empty/foreign flag = vanilla bit-in-bit).
+    queryplane::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -349,6 +431,10 @@ fn inject_surface() {
     // compute the mergeWithNeighbours whole-body patch, retransform (dormant
     // unless CRUSSTY_LEVER_FLAG=items_oss).
     item_merge::activate();
+    // STAGGER (TASK-401-I): define PushStaggerOps/GoalStaggerOps into the
+    // kernel loader, compute both single-site retargets, retransform (dormant
+    // unless CRUSSTY_LEVER_FLAG=cmp401_stagger).
+    stagger::activate();
     // PALETTED-DEMUX (S7-131): define PalettedContainerOps into the launch
     // loader EARLY (the patch serves at PalettedContainer's first load —
     // field injection forbids retransform), then READY.
@@ -420,6 +506,11 @@ fn inject_surface() {
     // body-redirect composes through the entity_compose chain; dormant
     // unless CRUSSTY_TRAVEL_DIET=1 AND region_threads>=2).
     travel_diet::activate();
+    // COLLIDE BATCH-MERGE (TASK-401-B): define CollideBatchOps into the
+    // kernel loader, compute the whole-body redirect of
+    // CollisionUtil.getCollisionsForBlocksOrWorldBorder, retransform
+    // (dormant unless CRUSSTY_LEVER_FLAG=cmp401_collide).
+    collide_batch::activate();
     // ENTITY-COMPOSE (S7-162): apply the single compose chain on Entity
     // (inside → fluid_free → fluid_dirty → rng → batch → traversal → zeroin → sbb → inside_diet),
     // publish the rng verdict for region_threads, retransform Entity
@@ -438,6 +529,50 @@ fn inject_surface() {
     // re-composes the F1 optimiseRandomTick swap; MUST run after
     // randomtick::activate — see src/tickhook.rs module docs).
     tickhook::activate();
+    // ITEM-SHARDGRID + LIFETIME-HEAP (TASK-402-B composite cmp402_comp;
+    // previously TASK-400-A cmp399_bfcomp family): define ItemEntityManager
+    // into the kernel loader + RegisterNatives (idxProbe/idxInsert/idxSetCell/
+    // idxRemove/idxQuery + lifetimePush/lifetimeDue). RegionTickOps (defined
+    // by region_threads::activate above) routes the item phase inline and
+    // polls ItemEntityManager.armed() lazily (dormant unless the lever flag
+    // matches — see items_manager::lever_flag_matches_for; empty flag =
+    // vanilla bit-in-bit). Requires CRUSSTY_REGION_THREADS>=2.
+    items_manager::activate();
+    // MOB-SOA (TASK-401-E, vector soa): define MobPushOps into the kernel
+    // loader, compute the single-site pushEntities retarget, retransform
+    // LivingEntity (dormant unless CRUSSTY_LEVER_FLAG == cmp401_soa;
+    // TASK-402-B: also under cmp402_comp — the composite arms soa + the
+    // mobs_grid sharded mirror as the push-broadphase pair).
+    mobs_manager::activate();
+    // MOB-AI-WINDOW (TASK-406-D): waits for the mobs_soa/stagger LIVING
+    // serves, defines MobAiOps + RegisterNatives (aiProbe/aiEpoch), composes
+    // the aiStep retarget and retransforms LivingEntity LAST (dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp406_aibatch).
+    mobs_ai::activate();
+    // SSCAN-DESPAWN (TASK-406-E): waits for boot, defines MobScanOps +
+    // RegisterNatives (sscanProbe/sscanEpoch), flips READY and retransforms
+    // Mob (dormant unless CRUSSTY_LEVER_FLAG == cmp406_sscan).
+    mobs_sscan::activate();
+    // TICK-PLANE (TASK-403-C): сводный ARM-маркер плейна после активации
+    // всех сегментов (items/push-soa+grid/stagger/collide) — coarse-stamp
+    // эпохи; dormant unless CRUSSTY_LEVER_FLAG == cmp403_tickplane.
+    tickplane::activate();
+    // EINDEX (TASK-405-C): define EntityIndexOps into the kernel loader,
+    // RegisterNatives, seed the chunk mirror, arm + retransform EntityLookup/
+    // Entity (dormant unless CRUSSTY_LEVER_FLAG == cmp405_eindex).
+    entity_index_manager::activate();
+    // EINDEX-Q (TASK-410-C, K3 pivot): define EntityGoalQueryOps into the
+    // kernel loader, RegisterNatives (eqProbe/eqEpoch), compute the 2-site
+    // goal-query retargets, retransform (dormant unless CRUSSTY_LEVER_FLAG ==
+    // cmp410_eindexq). Runs AFTER mobs_manager::activate: the goal-query
+    // epoch reads the SAME SoA plane the push bridge populates.
+    entity_query::activate();
+    // QUERYPLANE (TASK-417-C): boot quiet -> define QueryPlaneOps into the
+    // kernel loader + selfTest on the LOCAL ref from define_class (find_class
+    // fix: JVMTI-scan filters non-INITIALIZED classes, just-defined bridge
+    // was filtered -> selfTest false on runner) -> compute patches -> READY
+    // -> retransform Level + ChunkEntitySlices. Dormant unless cmp417_bq.
+    queryplane::activate();
 }
 
 /// Define one bridge class and register all its natives.
