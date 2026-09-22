@@ -101,7 +101,9 @@ public final class EntityGoalQueryOps {
                 // cmp412_meganav-сайты остаются нетронутыми.
                 || f.trim().equals("cmp412_eqsnapv3")
                 // TASK-414-B: leg flag cmp414_cvs (meganav⊕eqsnap revival).
-                || f.trim().equals("cmp414_cvs"));
+                || f.trim().equals("cmp414_cvs")
+                // TASK-416-C: fluid-bulk composite (cvs ⊕ fluid LUT plane).
+                || f.trim().equals("cmp416_fluid"));
     }
 
     /** TASK-411-C (k4soa): K4-режим (маркировка EFFECT-строк). */

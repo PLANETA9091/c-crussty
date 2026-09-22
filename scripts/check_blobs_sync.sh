@@ -71,8 +71,13 @@ check_class \
 
 check_class \
   "entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
-  "cmp414_cvs" "cmp412_eqsnapv3" \
+  "cmp414_cvs" "cmp412_eqsnapv3" "cmp416_fluid" \
   "native int eqProbe"
+
+check_class \
+  "fluid/build/net/minecraft/world/entity/FluidBulkOps.class" \
+  "cmp416_fluid" "fluidProbe failed" "ERR_STRUCT" \
+  "native int fluidProbe" "native int fluidBulk"
 
 # gate-flag consistency: every flag string accepted by the SOURCE gate must
 # also be present in the BLOB constant pool (covers the ×93 rebuild lesson).
@@ -81,7 +86,8 @@ for pair in \
   "sscan/net/minecraft/world/entity/MobScanOps.java:sscan/build/net/minecraft/world/entity/MobScanOps.class" \
   "mobpush/net/minecraft/world/entity/MobPushOps.java:mobpush/build/net/minecraft/world/entity/MobPushOps.class" \
   "entitygoalquery/net/minecraft/world/entity/EntityGoalQueryOps.java:entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
-  "entityinside/net/minecraft/world/entity/ItemEntityManager.java:entityinside/build/net/minecraft/world/entity/ItemEntityManager.class"
+  "entityinside/net/minecraft/world/entity/ItemEntityManager.java:entityinside/build/net/minecraft/world/entity/ItemEntityManager.class" \
+  "fluid/net/minecraft/world/entity/FluidBulkOps.java:fluid/build/net/minecraft/world/entity/FluidBulkOps.class"
 do
   src="${pair%%:*}"; blob="${pair##*:}"
   flags=$(grep -o '"cmp[0-9_a-z]*"' "$src" | tr -d '"' | sort -u)

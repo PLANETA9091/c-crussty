@@ -16,7 +16,7 @@ if [ -z "$JAVAC" ]; then
   else echo "no javac found (pass one as arg 1 or install a JDK)" >&2; exit 1; fi
 fi
 
-KERNEL_JAR="${KERNEL_JAR:-/home/z/rounds/ROUND-405/lib/patched-kernel.jar}"
+KERNEL_JAR="${KERNEL_JAR:-/home/z/c-crussty/research/gc-recon-2026-09-19/round-396-a/patched-kernel.jar}"
 if [ ! -f "$KERNEL_JAR" ]; then echo "kernel jar not found: $KERNEL_JAR" >&2; exit 1; fi
 
 OUT_DIR=mobpush/build

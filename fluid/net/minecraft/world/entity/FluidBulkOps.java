@@ -18,65 +18,66 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * TASK-415-C FLUID-BULK (lever cmp415-fluid family, flag STRICT-eq
- * "cmp415_fluid"): subsystem-scale rebuild of the fluid-update plane
- * Entity.updateFluidHeightAndDoFluidPushing — the top untouched lane of the
- * era (16.7% of the cvs1r profile).
+ * TASK-416-C FLUID-BULK v2 (lever cmp416_fluid, flag STRICT-eq): subsystem
+ * rebuild of the fluid-update plane Entity.updateFluidHeightAndDoFluidPushing
+ — the top untouched lane of the era (16.0-16.7% vanilla, 13.76% on the
+ * meganav-era mc1 profile).
  *
- * RECON ROOT-CAUSE (cvs1r cpu-collapsed decomposition, TASK-415-C): of the
- * 16.78% fluid lane, reads dominate — PalettedContainer.get + SimpleBitStorage
- * + VarHandle volatile chains ~10-12%, touchingUnloadedChunk -> hasChunksAt ->
- * ServerChunkCache.getChunkNow concurrent-map volatile reads ~6.6%, the
- * per-call bridge/guard machinery (weak-map cache probes, AABB inflate,
- * bounds math) ~10-15%, and only the wet-cell math (FlowingFluid.getHeight /
- * getFlow ~18%) is irreducible vanilla work. The 150k population re-reads the
- * SAME cells 10-100x per tick (items pile inside 0.5 blocks; every entity of
- * a pile re-sweeps the same cells).
+ * RECON (RESEARCH-C-416.md, mc1 leaf split): of the fluid lane the DAILY BREAD
+ * is re-reading the same cells 10-100x per tick (PalettedContainer.get 3.0% +
+ * SimpleBitStorage.get 1.2% + VarHandle chains + LevelChunk.getFluidState
+ * 0.8% + FluidState.getType 0.5%); the wet math (getHeight/getFlow) is
+ * irreducible vanilla work. 150k entities pile inside 0.5 blocks — every
+ * member of a pile re-sweeps the same box cells.
  *
- * DESIGN (the "gather-piggyback" recon direction, honestly amended): a
- * tick-scoped CELL LUT replaces the data plane. Per (worker thread, tick,
- * fluid-generation epoch) each cell's FluidState is read EXACTLY ONCE with
- * the bit-exact vanilla fetch (the FluidPushGuardHook.slow flat-section
- * body, javap-proven since TASK-80) and every later sweep of the same cell
- * on that thread is one array probe. This IS the "gather piggyback": the
- * first entity to touch a cell does the gathering for the whole pile — no
- * separate gather pass exists (a Rust prefill pass was evaluated and
- * REJECTED by economics: it duplicates sweep reads 1:1 onto a single
- * thread's ThreadLocal plane; the lazy probe-dedup gathers for free).
+ * DESIGN (anti-lesson bl2 AMENDED — NO gather pass): a thread-confined CELL
+ * LUT with per-slot validity stamps. Each cell's FluidState is read EXACTLY
+ * ONCE per (thread, tick, GEN) — the first entity to touch the cell gathers
+ * it for the whole pile (lazy probe-dedup); every later sweep of that cell is
+ * one array probe. No separate traversal exists (the bl2 gather-scan cost is
+ * structurally absent).
  *
- * INVALIDATION (RECON-43 ec880c2 generation-write-bump contract, NOT the
- * forbidden fluid_dirty memo): the ONE retargeted write site
- * LevelChunk.setBlockState -> LevelChunkSection.setBlockState is delegated
+ * v2 FIXES over the TASK-415-C draft (RESEARCH-C-416.md §"Отличия"):
+ * 1. rustOk deadlock: the draft tested `!rustOk` before the only site that
+ *    could set it (maybeEpoch) — the LUT could never arm. Entry now stamps
+ *    the plane FIRST and drives maybeEpoch off the (tick) stamp.
+ * 2. Unbounded retry: a GEN bump racing BOTH the sweep and its retry
+ *    recursed. Now exactly ONE retry, then the bit-exact vanilla body.
+ * 3. Per-tick bulk clear: the draft Arrays.fill'ed the 65536-slot ref array
+ *    at every (tick, GEN) rollover (~65k card-table writes/thread/tick for
+ *    nothing). Validity now rides a per-slot packed (tick,GEN) stamp array —
+ *    rollover is a stamp swap, ZERO bulk writes.
+ * 4. Lever renamed cmp415_fluid -> cmp416_fluid (STRICT-eq; empty/foreign
+ *    flag = vanilla bit-in-byte).
+ *
+ * INVALIDATION (RECON-43 ec880c2 write-bump contract, NOT the forbidden
+ * fluid_dirty memo / fluid_bitmask): the ONE retargeted write site
+ * LevelChunk.setBlockState -> LevelChunkSection.setBlockState delegates
  * through {@link #secWrite}, which bumps the GLOBAL fluid generation
  * {@link #GEN} on a real fluid-state change (FluidState singleton
- * ref-compare). LUT validity = (tick, GEN) pair; a write mid-tick
- * invalidates the whole LUT for the next sweep; a sweep that observed a GEN
- * bump mid-flight is REDONE once, then falls to vanilla — never mixed.
- * Chunk-column presence is cached under the same (tick, GEN) validity with
- * the documented invariant that chunk UNLOADS are processed outside the
- * region entity-tick phases (chunk system runs between ticks), so
- * touchingUnloadedChunk's answer cannot change inside one entity-tick phase
- * for an unchanged chunk map.
+ * ref-compare). Slot validity = (tick, GEN) stamp; a mid-tick write bumps
+ * GEN and the next sweep refills; a sweep that observed a GEN bump mid-flight
+ * is redone ONCE, then falls to the vanilla body — never mixed.
  *
  * ONE BULK JNI/TICK (law 6): {@code fluidBulk(tick, io)} is invoked once per
- * server tick (JVM-wide, EPOCH volatile release-edge, the MobScanOps
- * protocol) — RUST owns the tick-epoch authority, aggregates the census
- * (calls/hits/wet/slow deltas), runs the SoA validation pass and the
- * fail-closed disarm policy. Per-entity JNI is absent by construction (the
- * hot path is pure Java array probes).
+ * server tick (JVM-wide stamp guard, EPOCH_LOCK, the MobScanOps protocol).
+ * RUST (src/fluid_bulk.rs) owns the tick-epoch authority: validates the
+ * census (calls/hits/wet/slow/presence/fill), enforces the fail-closed
+ * disarm policy, and answers with the lifetime LUT fill count. Per-entity
+ * JNI is absent by construction.
  *
  * VANILLA SEMANTICS (law 4): the sweep body is the javap transcript of the
  * vanilla method (identical to the deployed FluidPushGuardHook.slow): same
  * deflated-box cell bounds, same float/double height arithmetic, same
  * lastLavaContact writes, same flow accumulation ladder
- * (maxDepth<0.4 ? flow.scale(maxDepth) : flow), same normalize/scale/0.003 /
+ * (maxDepth<0.4 ? flow.scale(maxDepth) : flow), same normalize/scale/0.003/
  * 0.0045 push tail, same fluidHeight.put(tag, maxDepth) and boolean return.
  * With the lever flag unset the whole module never loads and Entity runs
  * vanilla bit-in-byte.
  *
- * FAIL-CLOSED: any Throwable in the fast path -> permanent per-call vanilla
- * body (bit-exact); fluidBulk ERR_STRUCT -> LUT disarmed forever (vanilla);
- * GEN re-check failure -> the sweep is redone once, then vanilla.
+ * FAIL-CLOSED: any Throwable in the fast path -> permanent vanilla body
+ * (bit-exact); fluidBulk ERR_STRUCT -> LUT disarmed forever (vanilla); a
+ * second GEN race inside the retry -> vanilla for that call.
  */
 public final class FluidBulkOps {
 
@@ -86,11 +87,7 @@ public final class FluidBulkOps {
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
         if (f == null) return false;
-        f = f.trim();
-        // TASK-415-C: own lever + carrier composite superset. The composite
-        // "cmp415_fluid" is the only arming flag on this branch (the carrier
-        // modules gate on their own OR-chains; see src/fluid_bulk.rs).
-        return f.equals("cmp415_fluid");
+        return f.trim().equals("cmp416_fluid");
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -114,6 +111,8 @@ public final class FluidBulkOps {
     private static volatile boolean nativeOk;
     /** Rust policy verdict: true while the bulk channel is healthy. */
     private static volatile boolean rustOk;
+    /** Permanent vanilla (ERR_STRUCT) — no more JNI attempts, no locking. */
+    private static volatile boolean DISARMED;
     private static volatile long STAMPED_TICK = Long.MIN_VALUE;
     private static final Object EPOCH_LOCK = new Object();
 
@@ -135,45 +134,54 @@ public final class FluidBulkOps {
 
     /**
      * Tick-epoch handshake: ONCE per server tick JVM-wide, the rust bulk
-     * native validates the epoch and drains the census deltas. Every other
-     * call this tick is one volatile read. rc<0 keeps the plane alive
-     * (rustOk=false degrades the LUT to per-call vanilla, never wrong).
+     * native validates the epoch and drains the census deltas. rc<0 keeps
+     * the plane alive but disarmed (rustOk=false -> per-call vanilla body,
+     * never wrong); ERR_STRUCT disarms permanently.
      */
-    private static void maybeEpoch() {
-        long t = MinecraftServer.getServer().getTickCount();
-        if (STAMPED_TICK == t) return; // hot path
+    private static void maybeEpoch(long tick) {
+        if (STAMPED_TICK == tick && rustOk) return; // hot: stamped this tick
         synchronized (EPOCH_LOCK) {
-            if (STAMPED_TICK == t) return;
+            if (STAMPED_TICK == tick && rustOk) return;
+            if (!probeOnce()) {
+                DISARMED = true;
+                rustOk = false;
+                System.err.println(
+                        "[crussty-plugin] cmp416_fluid: fluidProbe failed — LUT disarmed to vanilla");
+                STAMPED_TICK = tick;
+                return;
+            }
             long[] io = new long[8];
-            io[0] = t;
-            io[1] = C_CALLS; io[2] = C_HITS; io[3] = C_WET; io[4] = C_SLOW;
-            io[5] = C_PRESENCE; io[6] = C_FILL; io[7] = GEN;
+            io[0] = tick;
+            io[1] = C_CALLS; io[2] = C_HITS; io[3] = C_WET;
+            io[4] = C_SLOW; io[5] = C_PRESENCE; io[6] = C_FILL;
+            io[7] = GEN;
             int rc;
             try {
-                rc = fluidBulk((int) t, io);
+                rc = fluidBulk((int) tick, io);
             } catch (Throwable th) {
                 rc = ERR_STRUCT;
             }
             if (rc == ERR_STRUCT) {
                 rustOk = false;
+                DISARMED = true;
                 System.err.println(
-                        "[crussty-plugin] cmp415_fluid: fluidBulk ERR_STRUCT — LUT disarmed to vanilla");
+                        "[crussty-plugin] cmp416_fluid: fluidBulk ERR_STRUCT — LUT disarmed to vanilla");
             } else {
-                rustOk = rc >= 0;
+                rustOk = true;
             }
             if (!ARM_LOGGED && rc >= 0) {
                 ARM_LOGGED = true;
                 System.err.println(
-                        "[crussty-plugin] cmp415_fluid: EFFECT armed (bulk epoch stamped at tick " + t
-                                + ", rc=" + rc + ", cells cached this boot: " + io[7] + ")");
+                        "[crussty-plugin] cmp416_fluid: EFFECT armed (bulk epoch stamped at tick " + tick
+                                + ", rc=" + rc + ", lut fills: " + io[7] + ")");
             }
-            STAMPED_TICK = t;
+            STAMPED_TICK = tick;
         }
     }
 
     // ---------------- thread-confined LUT + presence cache ----------------
 
-    static final int LUT_BITS = 16; // 65536 slots (~1 MiB/thread)
+    static final int LUT_BITS = 16; // 65536 slots (~1.5 MiB/thread with stamps)
     static final int LUT_MASK = (1 << LUT_BITS) - 1;
 
     static final int PRES_BITS = 12; // 4096 columns
@@ -181,11 +189,15 @@ public final class FluidBulkOps {
 
     static final class Plane {
         final long[] key = new long[1 << LUT_BITS];
+        /** Packed (tick, GEN) validity stamp per slot — replaces the v1
+         * bulk-clear: rollover swaps ONE long, slots go stale by stamp. */
+        final long[] tag = new long[1 << LUT_BITS];
         final FluidState[] val = new FluidState[1 << LUT_BITS];
         final long[] pkey = new long[1 << PRES_BITS];
         final boolean[] pval = new boolean[1 << PRES_BITS];
         long gen = Long.MIN_VALUE;
         long tick = Long.MIN_VALUE;
+        long stamp = Long.MIN_VALUE;
     }
 
     private static final ThreadLocal<Plane> PLANE =
@@ -205,39 +217,95 @@ public final class FluidBulkOps {
         return ((x & 0x3FFFFFFL) << 38) | ((z & 0x3FFFFFFL) << 12) | (y & 0xFFFL);
     }
 
+    /** Packed (tick, GEN) validity stamp: tick in the high 32 bits (the JVM
+     * tick counter is a non-negative int), GEN in the low 32 (a wrap after
+     * 2^32 fluid-changing writes can at worst force one spurious refill). */
+    private static long stamp(long tick, long gen) {
+        return (tick << 32) | (gen & 0xFFFFFFFFL);
+    }
+
     // ---------------- the whole-body bridge ----------------
 
     public static boolean updateFluidHeightAndDoFluidPushing(Entity self, TagKey<Fluid> tag, double speed) {
-        if (!ENABLED || !rustOk) {
+        if (!ENABLED || DISARMED) {
             return slowVanilla(self, tag, speed);
         }
         final Plane p = PLANE.get();
         final long tick = MinecraftServer.getServer().getTickCount();
         if (p.tick != tick || p.gen != GEN) {
-            // (tick, GEN) rollover: drop all entries for this thread.
-            java.util.Arrays.fill(p.val, null);
+            // (tick, GEN) rollover: swap the stamp (NO bulk clear — v2).
             p.tick = tick;
             p.gen = GEN;
-            maybeEpoch();
+            p.stamp = stamp(tick, GEN);
+        }
+        // ONE bulk JNI/tick: the first sweep of a tick stamps the epoch and
+        // drains the census to rust (subsequent sweeps see STAMPED_TICK).
+        if (STAMPED_TICK != tick || !rustOk) {
+            maybeEpoch(tick);
             if (!rustOk) {
                 return slowVanilla(self, tag, speed);
             }
         }
         try {
-            return sweep(self, tag, speed, p);
+            // Bounded GEN-race protocol: ONE retry, then the vanilla body.
+            // The sweep writes NO entity state (except lastLavaContact, whose
+            // value is overwritten by the clean pass); the fluidHeight/push
+            // tail runs EXACTLY ONCE, from a non-raced pass — a raced sweep
+            // can never double-apply the push (v1 side-effect bug).
+            Res r = RES.get();
+            long g0 = GEN;
+            int st = sweep(self, tag, speed, p, r);
+            if (st == SWEEP_UNLOADED) {
+                return false;
+            }
+            if (g0 != GEN) {
+                C_SLOW++;
+                p.gen = GEN;
+                p.stamp = stamp(tick, GEN);
+                st = sweep(self, tag, speed, p, r);
+                if (st == SWEEP_UNLOADED) {
+                    return false;
+                }
+                if (GEN != p.gen) {
+                    C_SLOW++;
+                    return slowVanilla(self, tag, speed);
+                }
+            }
+            return tail(self, tag, speed, r);
         } catch (Throwable th) {
             // Fail-dominant: any inconsistency degrades this plane to the
             // bit-exact vanilla body forever (matches fluid_guard protocol).
             rustOk = false;
+            DISARMED = true;
             return slowVanilla(self, tag, speed);
         }
     }
 
-    /** Bit-exact vanilla sweep with the LUT data plane. */
-    private static boolean sweep(Entity self, TagKey<Fluid> tag, double speed, Plane p) {
+    // Sweep protocol: SWEEP_UNLOADED = vanilla early-out (no fluidHeight put,
+    // no push — vanilla touchingUnloadedChunk tail); SWEEP_DONE = full sweep,
+    // results in the Res holder, caller runs the tail exactly once.
+    private static final int SWEEP_UNLOADED = 0;
+    private static final int SWEEP_DONE = 1;
+
+    /** Thread-confined sweep result (entity ticking is one-thread-per-region
+     * and never re-enters — the FluidPushGuardHook TL-buffer invariant). */
+    private static final class Res {
+        Vec3 flowAcc = Vec3.ZERO;
+        double maxDepth;
+        boolean inFluid;
+        int flowCount;
+    }
+
+    private static final ThreadLocal<Res> RES = ThreadLocal.withInitial(Res::new);
+
+    /** Bit-exact vanilla sweep over the LUT data plane. SIDE-EFFECT-FREE on
+     * entity state except lastLavaContact (mid-loop in vanilla, overwritten
+     * by the clean pass after a retry); the fluidHeight/push tail lives in
+     * {@link #tail} so a raced sweep can never double-apply a push. */
+    private static int sweep(Entity self, TagKey<Fluid> tag, double speed, Plane p, Res r) {
         C_CALLS++;
         if (self.touchingUnloadedChunk()) {
-            return false;
+            return SWEEP_UNLOADED;
         }
         Level level = self.level();
         AABB box = self.getBoundingBox().deflate(0.001);
@@ -254,25 +322,29 @@ public final class FluidBulkOps {
         double maxDepth = 0.0;
         boolean inFluid = false;
         int flowCount = 0;
-        long genAtStart = GEN;
+        final long now = p.stamp;
 
         BlockPos.MutableBlockPos mpos = new BlockPos.MutableBlockPos();
+        // (x,y,z) iteration identical to the vanilla body — the Res holder
+        // only collects what the tail needs.
         for (int x = minX; x <= maxX; x++) {
             for (int y = minY; y <= maxY; y++) {
                 for (int z = minZ; z <= maxZ; z++) {
                     long k = pack(x, y, z);
                     int slot = (int) mix(k) & LUT_MASK;
-                    FluidState fs = p.val[slot];
-                    if (fs == null || p.key[slot] != k) {
+                    FluidState fs;
+                    if (p.tag[slot] == now && p.key[slot] == k) {
+                        fs = p.val[slot];
+                        C_HITS++;
+                    } else {
                         // vanilla fetch: the only read of this cell on this
                         // thread this (tick, gen) — the flat-section body of
                         // the guard, via Level.getFluidState semantics.
                         fs = fetch(p, level, x, y, z, minSection);
                         C_FILL++;
                         p.key[slot] = k;
+                        p.tag[slot] = now;
                         p.val[slot] = fs;
-                    } else {
-                        C_HITS++;
                     }
                     if (fs.isEmpty() || !fs.is(tag)) {
                         continue;
@@ -303,16 +375,22 @@ public final class FluidBulkOps {
                 }
             }
         }
-        // GEN re-check: a write that raced the sweep invalidates mixed reads.
-        if (genAtStart != GEN) {
-            C_SLOW++;
-            return sweepRetry(self, tag, speed, p);
+        r.flowAcc = flowAcc;
+        r.maxDepth = maxDepth;
+        r.inFluid = inFluid;
+        r.flowCount = flowCount;
+        return SWEEP_DONE;
+    }
+
+    /** The vanilla tail, run EXACTLY ONCE per bridge call from a non-raced
+     * sweep: fluidHeight.put(tag, maxDepth) + the normalize/scale/0.003/
+     * 0.0045 push ladder (javap @540-640). */
+    private static boolean tail(Entity self, TagKey<Fluid> tag, double speed, Res r) {
+        self.fluidHeight.put(tag, r.maxDepth);
+        if (r.flowAcc == Vec3.ZERO) {
+            return r.inFluid;
         }
-        self.fluidHeight.put(tag, maxDepth);
-        if (flowAcc == Vec3.ZERO) {
-            return inFluid;
-        }
-        flowAcc = flowAcc.scale(1.0 / flowCount); // javap @572-578
+        Vec3 flowAcc = r.flowAcc.scale(1.0 / r.flowCount); // javap @572-578
         Vec3 delta = self.getDeltaMovement();
         if (!(self instanceof net.minecraft.world.entity.player.Player)) {
             flowAcc = flowAcc.normalize();
@@ -325,17 +403,12 @@ public final class FluidBulkOps {
         return true;
     }
 
-    /** One retry after a mid-sweep GEN bump; fresh (gen-stamped) LUT state. */
-    private static boolean sweepRetry(Entity self, TagKey<Fluid> tag, double speed, Plane p) {
-        java.util.Arrays.fill(p.val, null);
-        p.gen = GEN;
-        return sweep(self, tag, speed, p);
-    }
-
     /**
      * The vanilla per-cell fetch with the guard's flat-section chunk protocol
      * (load=false after touchingUnloadedChunk guaranteed presence). Cached
-     * column presence rides the same (tick, GEN) validity window.
+     * column presence rides the documented invariant that chunk UNLOADS are
+     * processed outside the region entity-tick phases; a presence-cache hit
+     * that disagrees with the live map escalates to load=true (self-healing).
      */
     private static FluidState fetch(Plane p, Level level, int x, int y, int z, int minSection) {
         ChunkSource source = level.getChunkSource();
@@ -466,7 +539,7 @@ public final class FluidBulkOps {
     }
 
     /** Reflective self-test (driven from src/fluid_bulk.rs after arming):
-     * probe/pack/presence algebra sanity inside the live JVM. */
+     * probe/pack/stamp/presence algebra sanity inside the live JVM. */
     public static boolean selfTest() {
         Plane p = new Plane();
         long k = pack(123456, 64, -654321);
@@ -475,6 +548,15 @@ public final class FluidBulkOps {
         if (s < 0 || s >= p.key.length) return false;
         p.key[s] = k;
         if (p.val[s] != null) return false;
+        // stamp algebra: different tick or different GEN must differ; the
+        // packed stamp of (tick,gen) must be stable and non-degenerate.
+        long s1 = stamp(100, 7);
+        long s2 = stamp(101, 7);
+        long s3 = stamp(100, 8);
+        if (s1 == s2 || s1 == s3 || s2 == s3) return false;
+        if (stamp(100, 7) != s1) return false;
+        p.tag[s] = s1;
+        if (p.tag[s] != s1) return false;
         p.pkey[s & PRES_MASK] = mix(pack(3, 0, 4)) | Long.MIN_VALUE;
         if (p.pkey[s & PRES_MASK] >= 0) return false;
         // GEN visibility + census array shape
