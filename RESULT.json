@@ -2,7 +2,7 @@
   "agent": "TASK-415-A",
   "vector": "MEGA-COMPOSITE: multi(f7d04d2 cmp409_multi) + race-fix REFENCE(109e4d7) + queryplane-slice(125c474)",
   "branch": "round-415-a-mcomp",
-  "head": "9d5a7bf",
-  "step": "S2-racefix-merged",
-  "evidence": "merge 109e4d7 --no-edit OK, conflicts 3/3 union-resolved (lib.rs mods union mobs_*+nav_*, classfile.rs both patch_utf8_gate + navpool test, RESULT.json ours). Sparse-checkout applied to skip heavy old-round artifacts (research 1.8G->43M local, disk 100%->70%); javac kernel jar via absolute main-repo path (round-396-a patched-kernel.jar), files still tracked in commits for runners"
+  "head": "gate-extension-in-progress",
+  "step": "S3-queryplane-merged-gates-extended",
+  "evidence": "merge 125c474 OK (parents 07b558c+125c474, classfile.rs union ENTITYMAP-FENCE+INSIDE-BATCH sections). Gates extended to cmp415_mcomp: rust 12 sites in 11 files (mobs_soa/items_index/tickplane/mobs_ai/mobs_manager x2/collide_batch x2/items_manager x2/mobs_sscan/mobs_grid/stagger/nav_plane) + java 8 sites (MobPushOps x2, MobAiOps, MobScanOps, ItemEntityManager x3, QueryPlaneOps) + queryplane rust gate {b2p1,mcomp} + guard test extended. nav_plane::armed() extension = emap fence/refsync/navpool layer ON under cmp415_mcomp (bp1/bp2 lesson)"
 }

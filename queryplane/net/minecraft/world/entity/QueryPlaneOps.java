@@ -69,10 +69,11 @@ import java.util.function.Predicate;
  */
 public final class QueryPlaneOps {
 
-    /** STRICT eq lever (пустой/чужой флаг = false; ретаргеты и так сняты). */
+    /** STRICT OR lever (пустой/чужой флаг = false; ретаргеты и так сняты).
+     *  TASK-415-A: {cmp412_b2p1 || cmp415_mcomp} (композит эры). */
     private static boolean flagArmed() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return f != null && f.trim().equals("cmp412_b2p1");
+        return f != null && (f.trim().equals("cmp412_b2p1") || f.trim().equals("cmp415_mcomp"));
     }
 
     private static final boolean ENABLED = flagArmed();

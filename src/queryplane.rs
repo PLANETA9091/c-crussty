@@ -57,13 +57,14 @@ const OPS_BYTES: &[u8] =
 
 static READY: AtomicBool = AtomicBool::new(false);
 
-/// STRICT eq: ТОЛЬКО cmp412_b2p1. STRICT OR распространяется в обратную
-/// сторону (meganav-плоскости армятся ОБОИМИ флагами — nav_plane/tickplane/
-/// mobs_manager/ItemEntityManager/MobAiOps/MobScanOps/collide_batch/stagger),
-/// новые java-гейты этой плоскости — только b2p1.
+/// STRICT OR (TASK-415-A): {cmp412_b2p1 || cmp415_mcomp}. STRICT OR
+/// распространяется в обратную сторону (meganav-плоскости армятся ОБОИМИ
+/// флагами — nav_plane/tickplane/mobs_manager/ItemEntityManager/MobAiOps/
+/// MobScanOps/collide_batch/stagger), новые java-гейты этой плоскости —
+/// только b2p1/mcomp (композит эры cmp415_mcomp = multi⊕racefix⊕queryplane).
 fn lever_flag_matches() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim() == "cmp412_b2p1")
+        .map(|v| v.trim() == "cmp412_b2p1" || v.trim() == "cmp415_mcomp")
         .unwrap_or(false)
 }
 
@@ -701,10 +702,10 @@ mod queryplane_delivery_tests {
         assert_eq!(same, FOREIGN.to_vec());
     }
 
-    /// STRICT-OR wiring guard: meganav-плоскости обязаны принимать ОБА флага
-    /// (cmp412_meganav || cmp412_b2p1) — source-level защита от случайного
-    /// реверта STRICT OR (гейт моей плоскости при этом STRICT eq — только
-    /// b2p1, см. lever_flag_matches).
+    /// STRICT-OR wiring guard: meganav-плоскости обязаны принимать флаги
+    /// (cmp412_meganav || cmp412_b2p1 || cmp415_mcomp) — source-level защита
+    /// от случайного реверта STRICT OR (гейт моей плоскости при этом STRICT OR
+    /// {b2p1, mcomp}, см. lever_flag_matches).
     #[test]
     fn meganav_planes_accept_both_flags_strict_or() {
         for src in [
@@ -717,6 +718,10 @@ mod queryplane_delivery_tests {
             assert!(
                 src.contains("cmp412_b2p1"),
                 "meganav plane lost the STRICT OR b2p1 arm"
+            );
+            assert!(
+                src.contains("cmp415_mcomp"),
+                "meganav plane lost the cmp415_mcomp composite arm (TASK-415-A)"
             );
             assert!(
                 src.contains("cmp412_meganav"),
