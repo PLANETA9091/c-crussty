@@ -23,21 +23,21 @@
     "cargo_test": "280 passed; 0 failed (incl. new soa_append_and_walk, soa_gap_fill_defensive, soa_replace_preserves_density, epoch_scalar_sig_contract)"
   },
   "runs": {
-    "g4a": null,
-    "g4b": null,
-    "g4c": null
+    "g4a": 35754098983,
+    "g4b": 35754118590,
+    "g4c": 35754138828
   },
   "tps_med": null,
   "delta_pair_pct": null,
   "lane": "expect nav_ai ~6.x KEPT + java_util back to cvs baseline + GC avg-pause back to ~22-30ms",
   "RAM": null,
   "parity": null,
-  "verdict": "IMPLEMENTED_GATES_GREEN_DISPATCHING",
+  "verdict": "G4_LEGS_IN_FLIGHT",
   "evidence": [
     "menu items 1+2+4 combined: buffer-reuse/state-reuse (single CHM, no per-gate garbage), delta publication (scalar epoch O(1)/tick), bisection grounded on round-g3b collapsed stacks"
   ],
-  "what": "iter-4: устранён per-gate overhead батча (getenv/boxing/lock/JNI-copies) при сохранении ванильного планировщика и SoA-плоскости (dense columns + scalar epoch). Следующий шаг: диспатч g4a/g4b/g4c alias-refs, lever cmp416_gsel3.",
-  "run_head": null,
+  "what": "iter-4 fastpath (zero per-gate garbage + scalar epoch + dense-SoA) dispatched: g4a=35754098983 g4b=35754118590 g4c=35754138828 @89b3bff, lever cmp416_gsel3. Полл + абсорб + pair vs якоря-416 {2.00@6776643, 2.10@6944574, 2.20@6736936}.",
+  "run_head": "89b3bff",
   "commits": [
     "iter-4 fastpath: java GoalBatchOps rewrite + rust dense-SoA + scalar gselEpoch(IJ)I + blobs + gates green"
   ]
