@@ -3,6 +3,7 @@ package net.minecraft.world.entity;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Predicate;
 
@@ -56,16 +57,29 @@ import net.minecraft.world.phys.AABB;
  * push(Entity): additive deltas) ⇒ living<->living свежесть точная в
  * пределах однопроходного тика.
  *
- * FAIL-CLOSED: ENABLED (env == "cmp401_soa", STRICT eq) && nativeOk (mobProbe
- * magic) && !broken (структурный отказ плоскости — дизарм навсегда) &&
- * !oversized (в популяции замечен r_eff > 1.0 — весь рычаг в ванильный
- * режим) — иначе 100% ванильный fill (точная реплика fill-последовательности
- * Level.getEntities: Profiler-счётчик + EntityLookup.getEntities +
- * PlatformHooks.addToGetEntities, EntityQueryOps-контракт). Любой ненулевой
- * rc mobUpsert → ваниль на ЭТОТ вызов (self не опубликован — грид не
- * используется), ERR_STRUCT — дизарм.
+ * FAIL-CLOSED: ENABLED (lever, STRICT eq) && nativeOk (mobProbe magic) &&
+ * !broken (структурный отказ плоскости — дизарм навсегда) — иначе 100%
+ * ванильный fill (точная реплика fill-последовательности Level.getEntities:
+ * Profiler-счётчик + EntityLookup.getEntities + PlatformHooks.addToGetEntities,
+ * EntityQueryOps-контракт). Любой ненулевой rc mobUpsert → ваниль на ЭТОТ
+ * вызов (self не опубликован — грид не используется), ERR_STRUCT — дизарм.
  * Пустой/чужой CRUSSTY_LEVER_FLAG — сайт вообще не ретаргетится (rust-сторона
  * не ставит патч), путь ванильный по построению.
+ *
+ * TASK-412-B PIVOT (oversized de-globalization, run 35705650726 root-cause:
+ * "oversized bounding radius 1.1875 on entity.minecraft.camel" — ОДИН
+ * natural-spawn верблюд гасил ГЛОБАЛЬНЫЙ oversized-latch → весь soa-мост
+ * в ваниль → 4.36% wall на vanillaFill-сканах broadphase-лейна). РЕШЕНИЕ:
+ * r_eff > 1.0 больше НЕ дизармит плоскость — такие сущности НЕ зеркалятся
+ * (rust pad-контракт ±1.0 остается точным для зеркалируемой популяции), а
+ * регистрируются в слабом OVERSIZED-реестре, который каждый collect()
+ * сканирует ТОЧНО (level/intersects/predicate). Суперсет полон: кандидат,
+ * чей текущий AABB пересекает box, либо (a) зеркалирован с текущими
+ * радиусами → rust-прун пропускает (доказ. mobs_soa.rs), либо (b) в
+ * реестре → точный java-скан. Re-entrant shrink>1.0→<=1.0: обычный путь
+ * делает OVERSIZED.remove(e) — реестр и зеркало взаимоисключающи per-call.
+ * Порядок кандидатов: реестровые кандидаты после soa-кандидатов
+ * (документир. дельта класса items_subsys2).
  */
 public final class MobPushOps {
 
@@ -85,7 +99,7 @@ public final class MobPushOps {
                     // TASK-406-E: композит раунда-406 (stagtick ⊕ sscan).
                     || f.trim().equals("cmp406_sscan")
                     // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
-                    || f.trim().equals("cmp409_multi"));
+                    || f.trim().equals("cmp409_multi") || f.trim().equals("cmp412_meganav") || f.trim().equals("cmp412_b2p1"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -103,7 +117,7 @@ public final class MobPushOps {
                 // TASK-406-E: композит раунда-406 включает mirror-grid.
                 || f.trim().equals("cmp406_sscan")
                 // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
-                || f.trim().equals("cmp409_multi"));
+                || f.trim().equals("cmp409_multi") || f.trim().equals("cmp412_meganav") || f.trim().equals("cmp412_b2p1"));
     }
 
     private static final boolean COMPOSITE = compositeEnabled();
@@ -138,7 +152,16 @@ public final class MobPushOps {
     private static volatile boolean nativeOk;
     private static volatile boolean gridNativeOk;
     private static volatile boolean broken;
-    private static volatile boolean oversized;
+
+    /** TASK-412-B pivot: registry of never-mirrored r_eff > 1.0
+     * entities (natural camels). CopyOnWriteArrayList (no guava dep):
+     * add/remove are rare (per-entity lifecycle events); iteration is a
+     * lock-free snapshot; dead entries are purged inside the same exact
+     * scan (bounded size — only oversized species ever enter). Exact-scanned
+     * by collect() (and only it). */
+    private static final CopyOnWriteArrayList<Entity> OVERSIZED =
+            new CopyOnWriteArrayList<>();
+    private static volatile boolean oversizedLogged;
 
     /** id -> entity (плотный массив, grow x2; ids реиспользуются через freeIds). */
     private static Entity[] byId = new Entity[1024];
@@ -233,9 +256,10 @@ public final class MobPushOps {
         }
     }
 
-    /** Gate для rust-стороны/диагностики: армирован ли бридж. */
+    /** Gate для rust-стороны/диагностики: армирован ли бридж (TASK-412-B:
+     * oversized больше не глобальный дизарм — только ERR_STRUCT/broken). */
     public static boolean armed() {
-        return ENABLED && !broken && !oversized && probeOnce();
+        return ENABLED && !broken && probeOnce();
     }
 
     /**
@@ -314,27 +338,64 @@ public final class MobPushOps {
             }
             list.add(other);
         }
+        // TASK-412-B pivot: точный скан never-mirrored r_eff > 1.0 (обычно
+        // пусто — одна size-проверка). Полный суперсет: soa (<=1.0) ⊕
+        // OVERSIZED (>1.0). Dead-записи пуржируются тем же проходом
+        // (CopyOnWriteArrayList removeAll — редкий event, размер ограничен).
+        int osize = OVERSIZED.size();
+        if (osize != 0) {
+            ArrayList<Entity> dead = null;
+            for (int oi = 0; oi < osize; oi++) {
+                Entity other = OVERSIZED.get(oi);
+                if (other.isRemoved()) {
+                    if (dead == null) {
+                        dead = new ArrayList<>(2);
+                    }
+                    dead.add(other);
+                    continue;
+                }
+                if (other == entity || other.level() != level) {
+                    continue;
+                }
+                if (!other.getBoundingBox().intersects(box)) {
+                    continue;
+                }
+                if (!predicate.test(other)) {
+                    continue;
+                }
+                list.add(other);
+            }
+            if (dead != null) {
+                OVERSIZED.removeAll(dead);
+            }
+        }
         maybeSweep();
         return list;
     }
 
     /**
      * Само-апсерт self в грид (id лениво). @return true — уйти в ваниль
-     * (oversized / broken / структурный отказ).
+     * (broken / структурный отказ; r>1.0-сущность НЕ уходит в ваниль —
+     * TASK-412-B pivot: она попадает в OVERSIZED-реестр, запрос продолжается).
      */
     private static boolean upsertSelf(Entity e) {
-        if (oversized) {
-            return true;
-        }
         AABB bb = e.getBoundingBox();
         double hw = Math.max((bb.maxX - bb.minX) * 0.5D, (bb.maxZ - bb.minZ) * 0.5D);
         double hh = (bb.maxY - bb.minY) * 0.5D;
         if (Math.max(hw, hh) > 1.0D) {
-            oversized = true; // не-грид-юниверс: весь рычаг в ваниль (fail-closed)
-            LOG.warning("[crussty-plugin] cmp401_soa: oversized bounding radius "
-                    + Math.max(hw, hh) + " on " + e.getType() + " — lever reverted to vanilla");
-            return true;
+            // TASK-412-B pivot: r_eff > 1.0 — entity НЕ зеркалируется (rust
+            // pad ±1.0 остается точным), но плоскость живет: он попадает в
+            // слабый OVERSIZED-реестр, collect() сканирует его точно.
+            OVERSIZED.addIfAbsent(e);
+            if (!oversizedLogged) {
+                oversizedLogged = true;
+                LOG.warning("[crussty-plugin] cmp412_b2p1: oversized bounding radius "
+                        + Math.max(hw, hh) + " on " + e.getType()
+                        + " — registered in OVERSIZED (exact-scan), soa plane stays live");
+            }
+            return false; // продолжаем soa-запрос (self не нужен в плоскости)
         }
+        OVERSIZED.remove(e); // shrink-кейс: реестр и зеркало взаимоисключающи (no-op когда пуст)
         double cx = (bb.minX + bb.maxX) * 0.5D;
         double cy = (bb.minY + bb.maxY) * 0.5D;
         double cz = (bb.minZ + bb.maxZ) * 0.5D;

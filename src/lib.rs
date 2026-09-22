@@ -36,6 +36,7 @@ mod fluid_dirty;
 mod fluid_free;
 mod flush_diet;
 mod improved_noise;
+mod inside_batch;
 mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
@@ -60,6 +61,7 @@ mod palette_gather;
 mod paletted;
 mod promote_wire;
 mod proto_blend_cache;
+mod queryplane;
 mod randomtick;
 mod region_threads;
 mod skip_store;
@@ -179,6 +181,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // INSIDE-BITMASK (TASK-357): bridge owner registration (dormant unless
     // CRUSSTY_INSIDE_BITMASK=1).
     inside_bitmask::register();
+    // INSIDE-BATCH (TASK-411-B R3): bridge owner registration — negative
+    // fast-plane + one bulk verdict JNI per tick on the inside lane. Dormant
+    // unless CRUSSTY_LEVER_FLAG=cmp411_insidebat (STRICT eq; empty = vanilla).
+    inside_batch::register();
     // FLUSH-DIET (S7-137): byte hook on the StepBasedCollector (pristine
     // capture; patch served via retransform after the FlushOps bridge lands).
     // Dormant unless CRUSSTY_FLUSH_DIET=1.
@@ -235,6 +241,14 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // qualifying player column). Dormant unless CRUSSTY_LEVER_FLAG ==
     // cmp406_sscan (empty flag = exact vanilla path).
     mobs_sscan::register();
+    // QUERYPLANE (TASK-412-B/413-B, lever cmp412_b2p1 STRICT eq): Level
+    // whole-body redirects (getEntitiesOfClass / moonrise$getHardColliding
+    // Entities — compose ON TOP of the stagger/navplane sendBlockUpdated
+    // retarget already in the Level hook chain, mobs_ai precedent) +
+    // ChunkEntitySlices.addEntity hard-colliding probe (pristine stash).
+    // Dormant unless CRUSSTY_LEVER_FLAG == cmp412_b2p1 (empty flag = exact
+    // vanilla path).
+    queryplane::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -424,6 +438,11 @@ fn inject_surface() {
     // loader, probe-then-patch, Entity stage composes via entity_compose
     // (dormant unless CRUSSTY_INSIDE_BITMASK=1).
     inside_bitmask::activate();
+    // INSIDE-BATCH (TASK-411-B R3): define InsideRustOps into the kernel
+    // loader, RegisterNatives the bulk verdict stage, probe-then-patch,
+    // Entity stage composes via entity_compose (dormant unless
+    // CRUSSTY_LEVER_FLAG=cmp411_insidebat).
+    inside_batch::activate();
     // FLUSH-DIET (S7-137): define FlushOps into the kernel loader, compute
     // the length-preserving patch, retransform (dormant unless
     // CRUSSTY_FLUSH_DIET=1).
@@ -530,6 +549,12 @@ fn inject_surface() {
     // всех сегментов (items/push-soa+grid/stagger/collide) — coarse-stamp
     // эпохи; dormant unless CRUSSTY_LEVER_FLAG == cmp403_tickplane.
     tickplane::activate();
+    // QUERYPLANE (TASK-412-B/413-B): define QueryPlaneOps (+selfTest) в
+    // kernel loader, whole-body redirects Level (getEntitiesOfClass /
+    // moonrise$getHardCollidingEntities) + addEntity hard-probe на
+    // ChunkEntitySlices, retransform обоих. Dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp412_b2p1.
+    queryplane::activate();
 }
 
 /// Define one bridge class and register all its natives.

@@ -17,10 +17,13 @@
 //! WITHOUT it — vanilla behaviour for that concern; no stage ever
 //! invents semantics):
 //!
+//!   0. region rng     `classfile::patch_region_rng_entity`     (strict sites==1;
+//!      FIRST + verdict published immediately — the region lever's parity
+//!      precondition must never wait behind a non-region bridge window,
+//!      R4-412B run-35700016663 lesson)
 //!   1. inside_cache   `classfile::patch_inside_cache`          (Retargeted/AlreadyPatched)
 //!   2. fluid_free     `fluid_free::compose_entity`             (Option)
 //!   3. fluid_dirty    `fluid_dirty::compose_entity`            (Option)
-//!   4. region rng     `classfile::patch_region_rng_entity`     (strict sites==1)
 //!   5. batch ctor     `classfile::patch_entity_collector_ctor` (strict sites==1)
 //!   6. traversal      `classfile::patch_entity_traversal`      (strict sites==1)
 //!   7. zeroin         `classfile::patch_entity_zeroalloc`      (strict sites==3,
@@ -30,9 +33,12 @@
 //! Cross-module contract (region_threads): the region lever must NOT arm
 //! its parallel ticking unless the rng stage composed successfully
 //! (serialized UUID seeding is a parity precondition of worker
-//! parallelism). This module publishes the rng verdict BEFORE the batch
-//! stage wait; `region_threads::activate` calls `wait_rng_verdict` and
-//! aborts on failure — the same "Entity rng failure kills region"
+//! parallelism). This module publishes the rng verdict FIRST (stage 0,
+//! ahead of every inside/fluid/batch bridge window — R4-412B run
+//! 35700016663 lesson: a non-region 180s window ahead of rng starved
+//! region_threads' own 180s verdict wait and silently serialized the
+//! whole tick loop); `region_threads::activate` calls `wait_rng_verdict`
+//! and aborts on failure — the same "Entity rng failure kills region"
 //! semantics as the pre-compose code, without the deadlock (the verdict
 //! needs only the region BRIDGE classes defined, not region READY).
 //!
@@ -118,6 +124,7 @@ fn target() -> &'static Target {
 
 fn stage_enabled() -> bool {
     crate::inside_cache::enabled_pub()
+        || crate::inside_batch::enabled_pub()
         || crate::fluid_free::enabled_pub()
         || crate::fluid_dirty::enabled_pub()
         || crate::region_threads::workers_from_env_pub().is_some()
@@ -267,6 +274,55 @@ pub fn activate() {
             .unwrap_or(0);
         let mut chain: Vec<&str> = Vec::new();
 
+        // ---- STAGE 0: region rng (serialized UUID seeding) ----
+        // R4-412B root-cause fix (run 35700016663): the rng stage and its
+        // RNG_VERDICT publication are hoisted to the FRONT of the chain.
+        // Previously it sat behind the inside stages' 180s bridge windows;
+        // when the inside_batch bridge never became ready (its Java-side
+        // arm bug), stage 1c burned the whole window and region_threads'
+        // own 180s wait_rng_verdict expired first → region hook dormant →
+        // the whole run ticked 150k entities single-threaded (0.70 TPS).
+        // The region lever's parity precondition must never depend on a
+        // non-region stage's bridge window again. Stages are byte-disjoint
+        // (supersede audit in InsideRustOps), so the patch order is free.
+        if crate::region_threads::workers_from_env_pub().is_some() {
+            let mut rng_ok = false;
+            if crate::region_threads::wait_bridge_ready_pub(180_000) {
+                match crate::classfile::patch_region_rng_entity(&bytes) {
+                    Ok((p, outcome)) if matches!(
+                        outcome,
+                        crate::classfile::RetargetOutcome::Retargeted { sites: 1 }
+                    ) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage region_rng composed ({outcome:?})"
+                        );
+                        bytes = p;
+                        chain.push("rng");
+                        rng_ok = true;
+                    }
+                    Ok((_p, outcome)) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage region_rng strict site-count violated ({outcome:?}), chain continues WITHOUT rng (fail-dominant)"
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage region_rng patch rejected ({e}), chain continues WITHOUT rng (fail-dominant)"
+                        );
+                    }
+                }
+            } else {
+                eprintln!(
+                    "[crussty-plugin] entity_compose: region bridge missed its window, chain continues WITHOUT rng (fail-dominant)"
+                );
+            }
+            RNG_VERDICT.store(if rng_ok { 1 } else { 2 }, Ordering::Release);
+        } else {
+            // Region lever off: nobody polls the verdict; mark n/a as failed
+            // so a stray poller fails closed.
+            RNG_VERDICT.store(2, Ordering::Release);
+        }
+
         // ---- STAGE 1: inside_cache (discovery gate retarget) ----
         if crate::inside_cache::enabled_pub() {
             if crate::inside_cache::wait_bridge_ready(180_000) {
@@ -333,6 +389,43 @@ pub fn activate() {
             }
         }
 
+        // ---- STAGE 1c: inside_batch (3× per-movement retarget, TASK-411-B) ----
+        // Byte-sites bc 171/204/229 of checkInsideBlocks(List) — disjoint
+        // from the inside_cache gate (bc 1..4) of the same method; the
+        // InsideRustOps bridge is defined AND armed before this stage runs
+        // (probe-then-patch, inside_batch::wait_bridge_ready).
+        if crate::inside_batch::enabled_pub() {
+            if crate::inside_batch::wait_bridge_ready(180_000) {
+                match crate::classfile::patch_inside_batch(&bytes) {
+                    Ok((p, outcome)) if matches!(
+                        outcome,
+                        crate::classfile::RetargetOutcome::Retargeted { .. }
+                            | crate::classfile::RetargetOutcome::AlreadyPatched { .. }
+                    ) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_batch composed ({outcome:?})"
+                        );
+                        bytes = p;
+                        chain.push("inside_batch");
+                    }
+                    Ok((_p, outcome)) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_batch strict check violated ({outcome:?}), chain continues WITHOUT inside_batch (fail-dominant)"
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_batch patch rejected ({e}), chain continues WITHOUT inside_batch (fail-dominant)"
+                        );
+                    }
+                }
+            } else {
+                eprintln!(
+                    "[crussty-plugin] entity_compose: inside_batch bridge missed its window, chain continues WITHOUT inside_batch (fail-dominant)"
+                );
+            }
+        }
+
         // ---- STAGE 2: fluid_free (fgate wrapper retarget) ----
         if crate::fluid_free::enabled_pub() {
             if crate::fluid_free::wait_bridge_ready(60_000) {
@@ -381,46 +474,9 @@ pub fn activate() {
             }
         }
 
-        // ---- STAGE 4: region rng (serialized UUID seeding) ----
-        // Verdict is published BEFORE the batch wait so region_threads never
-        // blocks on the batch bridge window.
-        if crate::region_threads::workers_from_env_pub().is_some() {
-            let mut rng_ok = false;
-            if crate::region_threads::wait_bridge_ready_pub(180_000) {
-                match crate::classfile::patch_region_rng_entity(&bytes) {
-                    Ok((p, outcome)) if matches!(
-                        outcome,
-                        crate::classfile::RetargetOutcome::Retargeted { sites: 1 }
-                    ) => {
-                        eprintln!(
-                            "[crussty-plugin] entity_compose: stage region_rng composed ({outcome:?})"
-                        );
-                        bytes = p;
-                        chain.push("rng");
-                        rng_ok = true;
-                    }
-                    Ok((_p, outcome)) => {
-                        eprintln!(
-                            "[crussty-plugin] entity_compose: stage region_rng strict site-count violated ({outcome:?}), chain continues WITHOUT rng (fail-dominant)"
-                        );
-                    }
-                    Err(e) => {
-                        eprintln!(
-                            "[crussty-plugin] entity_compose: stage region_rng patch rejected ({e}), chain continues WITHOUT rng (fail-dominant)"
-                        );
-                    }
-                }
-            } else {
-                eprintln!(
-                    "[crussty-plugin] entity_compose: region bridge missed its window, chain continues WITHOUT rng (fail-dominant)"
-                );
-            }
-            RNG_VERDICT.store(if rng_ok { 1 } else { 2 }, Ordering::Release);
-        } else {
-            // Region lever off: nobody polls the verdict; mark n/a as failed
-            // so a stray poller fails closed.
-            RNG_VERDICT.store(2, Ordering::Release);
-        }
+        // (STAGE 4 region rng moved to STAGE 0 — see the R4-412B note at
+        // the head of the pipeline; RNG_VERDICT is already published by
+        // this point, before any inside-stage bridge window.)
 
         // ---- STAGE 5: batch collector ctor retarget ----
         if crate::batch_collector::enabled_pub() {
