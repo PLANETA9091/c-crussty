@@ -29,8 +29,8 @@
     "cargo": "check --lib green; test 224 passed / 0 failed / 1 ignored (new k4soa_large_radius_superset: camel/iron_golem/gate-max radii centered OUTSIDE integer box, center cell = floor(qx0)-2, pad-1 window misses, pad-2 covers; + non-integer-edge boundary case ex=1.95/hw=2.0; + y-axis mirror) — target DELETED after run",
     "kernel_fixture_tests": "retarget=1/idempotent/wrong-desc fixtures untouched (no new retarget sites; pushCandidates rides the EXISTING round-401 pushables site)"
   },
-  "next": "commit+push (рано) -> alias round-411-c-l1 -> world-bench-parallel.yml bank exact (radius 640 seconds 300 fake_players 4 gc_tune 3 inside_cache 1 flush_diet 1 region_threads 4 batch_collector 1 population 150000 seed 42 xmx 10G xms 4G band 6.0-9.5M lever_flag=cmp411_k4soa lever_arg=1) -> poll -> absorb round411cl1 -> pair-by-runner verdict vs pool-411 {2.2@6840530, 2.2@6858619, 2.1@6776758} + bank {2.4@6604167, 2.2@6976430, 2.25@6833921, 2.30@6846036}",
-  "run_id": null,
+  "next": "poll run 35691270899 (alias round-411-c-l1 @f5d3bd9, dispatched 05:34:57Z, inputs bank exact) -> absorb round411cl1 -> pair-by-runner verdict vs pool-411 {2.2@6840530, 2.2@6858619, 2.1@6776758} + bank {2.4@6604167, 2.2@6976430, 2.25@6833921, 2.30@6846036}",
+  "run_id": 35691270899,
   "gates_checklist": "ARM markers 'cmp411_k4soa: ARMED soa-population+push-snapshot' (rust mobs_manager) + 'cmp411_k4soa: ARMED goal-query' (rust entity_query) + EFFECT markers ('epoch ok' rows>1000, 'push-snapshot EFFECT armed (first chain-snapshot serve') + grep AIOOBE=0 + grep oversized=0 (gate 2.0 must NOT fire on bench population)",
   "evidence": [
     "RESEARCH-C-k4.md (this tree) — STEP0 analysis + honest scope table + javap offsets",
