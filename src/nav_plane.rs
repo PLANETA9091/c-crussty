@@ -50,6 +50,8 @@ pub fn armed() -> bool {
             v.trim() == "cmp405_navplane" || v.trim() == "cmp412_meganav" || v.trim() == "cmp414_cvs"
                 // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
                 || v.trim() == "cmp412_eqsnapv3" || v.trim() == "cmp414_cvs" || v.trim() == "cmp417_bq"
+                // TASK-419-B (sense-plane composite): STRICT OR.
+                || v.trim() == "cmp419_sense"
         })
         .unwrap_or(false)
 }

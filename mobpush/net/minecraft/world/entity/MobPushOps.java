@@ -145,7 +145,9 @@ public final class MobPushOps {
                     // TASK-414-B: leg flag cmp414_cvs.
                     || f.trim().equals("cmp414_cvs")
                     // TASK-417-C: cvs-носитель ⊕ queryplane.
-                    || f.trim().equals("cmp417_bq"));
+                    || f.trim().equals("cmp417_bq")
+                    // TASK-419-B (sense-plane composite): STRICT OR.
+                    || f.trim().equals("cmp419_sense"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -176,7 +178,9 @@ public final class MobPushOps {
                     // TASK-414-B: leg flag cmp414_cvs.
                     || f.trim().equals("cmp414_cvs")
                     // TASK-417-C: cvs-носитель ⊕ queryplane.
-                    || f.trim().equals("cmp417_bq"));
+                    || f.trim().equals("cmp417_bq")
+                    // TASK-419-B (sense-plane composite): STRICT OR.
+                    || f.trim().equals("cmp419_sense"));
     }
 
     private static final boolean EQSNAP = eqsnapEnabled();
@@ -188,6 +192,8 @@ public final class MobPushOps {
     private static String eqsnapFlagLabel() {
         if (!EQSNAP) return "cmp411_k4soa";
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
+        // TASK-419-B (sense-plane composite): свой id в EFFECT-маркерах.
+        if (f != null && f.trim().equals("cmp419_sense")) return "cmp419_sense";
         return f != null && f.trim().equals("cmp412_eqsnapv3")
                 ? "cmp412_eqsnapv3" : "cmp411_eqsnap";
     }

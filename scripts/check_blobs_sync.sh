@@ -61,36 +61,36 @@ check_flat_matches_nested() { # fqcn-dir fqcn — flat copy == nested copy
   fi
 }
 
-echo "== javap-gate: lever bridge blobs vs ARM markers / gate flags (lever cmp417_bq) =="
+echo "== javap-gate: lever bridge blobs vs ARM markers / gate flags (lever cmp417_bq / cmp419_sense) =="
 
 check_class \
   "entityinside/build/net/minecraft/world/entity/ItemEntityManager.class" \
-  "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
+  "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp419_sense" \
   "native int idxProbe" "static void indexAdd" "native int lifetimeDue"
 
 check_class \
   "queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class" \
-  "cmp417_bq" "cmp412_b2p1" "selfTest" "isHardCollidingProbe"
+  "cmp417_bq" "cmp412_b2p1" "cmp419_sense" "selfTest" "isHardCollidingProbe"
 
 check_class \
   "mobai/build/net/minecraft/world/entity/MobAiOps.class" \
-  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
+  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp419_sense" \
   "native"
 
 check_class \
   "sscan/build/net/minecraft/world/entity/MobScanOps.class" \
-  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
+  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp419_sense" \
   "native"
 
 check_class \
   "mobpush/build/net/minecraft/world/entity/MobPushOps.class" \
-  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
+  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp419_sense" \
   "native"
 
 check_class \
   "entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
-  "cmp414_cvs" "cmp412_eqsnapv3" \
-  "native int eqProbe"
+  "cmp414_cvs" "cmp412_eqsnapv3" "cmp419_sense" \
+  "native int eqProbe" "native int senseArena"
 
 # gate-flag consistency: every flag string accepted by the SOURCE gate must
 # also be present in the BLOB constant pool (covers the ×93 rebuild lesson).

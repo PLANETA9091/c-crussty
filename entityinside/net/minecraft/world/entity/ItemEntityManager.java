@@ -98,7 +98,9 @@ public final class ItemEntityManager {
                     // (root-cause cv3b-1: items/AI/sscan java gates slept under cmp412_eqsnapv3)
                     || "cmp412_eqsnapv3".equals(LEVER_FLAG) || "cmp414_cvs".equals(LEVER_FLAG)
                     // TASK-417-C: cvs-носитель ⊕ queryplane.
-                    || "cmp417_bq".equals(LEVER_FLAG);
+                    || "cmp417_bq".equals(LEVER_FLAG)
+                    // TASK-419-B (sense-plane composite): STRICT OR.
+                    || "cmp419_sense".equals(LEVER_FLAG);
 
     /**
      * TASK-403-C2 ITEM-PLANE RESTING (точный флаг cmp403_tickplane, STRICT eq;
@@ -140,7 +142,9 @@ public final class ItemEntityManager {
                     // (root-cause cv3b-1: items/AI/sscan java gates slept under cmp412_eqsnapv3)
                     || "cmp412_eqsnapv3".equals(LEVER_FLAG) || "cmp414_cvs".equals(LEVER_FLAG)
                     // TASK-417-C: cvs-носитель ⊕ queryplane.
-                    || "cmp417_bq".equals(LEVER_FLAG);
+                    || "cmp417_bq".equals(LEVER_FLAG)
+                    // TASK-419-B (sense-plane composite): STRICT OR.
+                    || "cmp419_sense".equals(LEVER_FLAG);
 
     /** TASK-399-F despawnv2: rust lifetime-heap + батч-деспавн (точный флаг).
      *  TASK-400-A: составной флаг cmp399_bfcomp (B+F) включает despawnv2
@@ -165,7 +169,9 @@ public final class ItemEntityManager {
                     // (root-cause cv3b-1: items/AI/sscan java gates slept under cmp412_eqsnapv3)
                     || "cmp412_eqsnapv3".equals(LEVER_FLAG) || "cmp414_cvs".equals(LEVER_FLAG)
                     // TASK-417-C: cvs-носитель ⊕ queryplane.
-                    || "cmp417_bq".equals(LEVER_FLAG);
+                    || "cmp417_bq".equals(LEVER_FLAG)
+                    // TASK-419-B (sense-plane composite): STRICT OR.
+                    || "cmp419_sense".equals(LEVER_FLAG);
 
     private static final int PROBE_MAGIC = 0x1D3A;
 

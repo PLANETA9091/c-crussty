@@ -71,6 +71,8 @@ fn lever_flag_matches() -> bool {
                 || v.trim() == "cmp415_mcomp"
                 || v.trim() == "cmp416_mcomp"
                 || v.trim() == "cmp417_bq"
+                // TASK-419-B (sense-plane composite): STRICT OR.
+                || v.trim() == "cmp419_sense"
         })
         .unwrap_or(false)
 }
@@ -79,7 +81,9 @@ fn lever_flag_matches() -> bool {
 /// ARM/EFFECT-маркерах; легаси флаги печатают свой id). Round-417-C: cmp417_bq.
 fn lever_id() -> &'static str {
     match std::env::var("CRUSSTY_LEVER_FLAG").as_deref() {
-        Ok("cmp417_bq") => "cmp417_bq",
+        Ok("cmp417_bq")
+            // TASK-419-B (sense-plane composite): свой id в ARM-маркерах.
+            | Ok("cmp419_sense") => "cmp419_sense",
         Ok("cmp416_mcomp") => "cmp416_mcomp",
         Ok("cmp415_mcomp") => "cmp415_mcomp",
         _ => "cmp412_b2p1",

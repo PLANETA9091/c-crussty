@@ -53,7 +53,7 @@ pub fn enabled() -> bool {
             // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
             || v == "cmp409_multi" || v == "cmp412_meganav" || v == "cmp414_cvs"
             // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
-            || v == "cmp412_eqsnapv3" || v == "cmp414_cvs" || v == "cmp417_bq"
+            || v == "cmp412_eqsnapv3" || v == "cmp414_cvs" || v == "cmp417_bq" || v == "cmp419_sense"
         })
         .unwrap_or(false)
 }
