@@ -34,6 +34,7 @@ mod entity_index;
 mod entity_index_manager;
 mod entity_query;
 mod fluid_guard;
+mod fluid_bulk;
 mod fluid_bitmask;
 mod fluid_dirty;
 mod fluid_free;
@@ -132,6 +133,11 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     perlin_noise::register();
     noise_fill::register();
     fluid_guard::register();
+    // FLUID-BULK (TASK-416-C, cmp416_fluid): LevelChunk byte hook for the
+    // secWrite GEN-bump retarget (pristine capture at first load; patch
+    // served by the fluid_bulk::activate worker AFTER the ops class +
+    // natives land). Dormant unless CRUSSTY_LEVER_FLAG=cmp416_fluid.
+    fluid_bulk::register();
     // ITEMS-OSS (TASK-396-H, round-396 vector H): ItemEntity byte hook for the
     // mergeWithNeighbours whole-body retarget (Lithium item_entity_merging
     // port). Pristine capture at first load; patch served after the
@@ -418,6 +424,12 @@ fn inject_surface() {
     // consult lives inside FluidPushGuardHook; ordering kills the NCDFE window).
     fluid_bitmask::activate();
     fluid_guard::activate();
+    // FLUID-BULK (TASK-416-C): define FluidBulkOps(+Plane+Res) into the
+    // kernel loader, RegisterNatives(fluidProbe/fluidBulk) — the ONE bulk
+    // JNI/tick epoch authority — then arm the LevelChunk secWrite retarget.
+    // entity_compose stage 11 (fluid_bulk) waits on ops_ready(). Dormant
+    // unless CRUSSTY_LEVER_FLAG=cmp416_fluid (STRICT eq).
+    fluid_bulk::activate();
     // ITEMS-OSS (TASK-396-H): define ItemMergeOps into the kernel loader,
     // compute the mergeWithNeighbours whole-body patch, retransform (dormant
     // unless CRUSSTY_LEVER_FLAG=items_oss).
