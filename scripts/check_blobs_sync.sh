@@ -92,6 +92,15 @@ check_class \
   "cmp414_cvs" "cmp412_eqsnapv3" \
   "native int eqProbe"
 
+# TASK-419-C chunk-pipeline plane (cmp419_chunk): the bridge must carry the
+# lever marker + the parse-cache effect strings in its constant pool, and
+# declare the redirect entry points (descriptor pinned by build script javap
+# grep; flat-only pinned by build script '$' guard + rust delivery test).
+check_class \
+  "chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class" \
+  "cmp419_chunk" "parse-cache first hit" "parse-cache selftest" \
+  "public static void init" "parseSection"
+
 # gate-flag consistency: every flag string accepted by the SOURCE gate must
 # also be present in the BLOB constant pool (covers the ×93 rebuild lesson).
 for pair in \
@@ -101,7 +110,8 @@ for pair in \
   "entitygoalquery/net/minecraft/world/entity/EntityGoalQueryOps.java:entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
   "entityinside/net/minecraft/world/entity/ItemEntityManager.java:entityinside/build/net/minecraft/world/entity/ItemEntityManager.class" \
   "entitygoalquery/net/minecraft/world/entity/EntityGoalQueryOps.java:entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
-  "queryplane/net/minecraft/world/entity/QueryPlaneOps.java:queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class"
+  "queryplane/net/minecraft/world/entity/QueryPlaneOps.java:queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class" \
+  "chunkparse/net/minecraft/world/level/chunk/storage/ChunkParseOps.java:chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class"
 do
   src="${pair%%:*}"; blob="${pair##*:}"
   flags=$(grep -o '"cmp[0-9_a-z]*"' "$src" | tr -d '"' | sort -u)

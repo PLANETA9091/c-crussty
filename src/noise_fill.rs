@@ -147,14 +147,24 @@ const TARGETS: [Target; 3] = [
     },
 ];
 
-/// env-gate (off by default), read once at register time
+/// env-gate (off by default), read once at register time.
+/// TASK-419-C STRICT-OR (cmp419_chunk, law 8 GEN-axis): the legacy
+/// CRUSSTY_NATIVE_NOISE_FILL env key OR the wave-419 chunk-pipeline lever
+/// flag arm the batch noise-fill bridge. The chunk-parse plane itself never
+/// reads the env key, and this lever never reads lever ids other than
+/// cmp419_chunk — a STRICT union, no broadening (empty lever flag +
+/// unset env = vanilla noise, dormant-invisible).
 fn enabled() -> bool {
-    std::env::var("CRUSSTY_NATIVE_NOISE_FILL")
+    let env_gate = std::env::var("CRUSSTY_NATIVE_NOISE_FILL")
         .map(|v| {
             let v = v.trim().to_ascii_lowercase();
             v == "1" || v == "true" || v == "on" || v == "yes"
         })
-        .unwrap_or(false)
+        .unwrap_or(false);
+    let lever_gate = std::env::var("CRUSSTY_LEVER_FLAG")
+        .map(|v| v.trim() == "cmp419_chunk")
+        .unwrap_or(false);
+    env_gate || lever_gate
 }
 
 static READY: [AtomicBool; 3] = [AtomicBool::new(false), AtomicBool::new(false), AtomicBool::new(false)];
