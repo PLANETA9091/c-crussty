@@ -1,26 +1,14 @@
 {
-  "task": "TASK-410-A nav k5 (A* node-pool) — continue of TASK-405-A navplane (cmp405_navplane)",
-  "agent": "TASK-410-A-RESTART",
-  "vector": "R-вектор закона 6 RUST-FIRST, nav/pathfinding k5: A* node-pool (Lithium-прецедент) — пул-протокол: prepare лаундерит ноды в fresh-shape вместо clear, getNode = get+position-check+new-on-miss (lambda-alloc-kill, ноль аллокаций на hit), same-position in-place reuse; потолок ~1.2% wall — скромно, добор серии navplane (min-of-3: +9.5/+10.6/+RED-outlier → медиана +9.5)",
-  "branch": "round-405-a-nav",
-  "base": "origin/master 8ef9e5b (GOAL x94)",
-  "worktree": "/home/z/rounds/ROUND-405/agent-a (живой, переиспользован по мандату)",
-  "stage": "IMPLEMENTATION COMPLETE: javap-рекон сделан заново и зафиксирован — createHash = y&255 | (x&32767)<<8 | (z&32767)<<24 | x-sign | z-sign (коллизии внутри поиска: dx/dz=32768 — невозможно; dy=256 — недостижимо при follow range <= 111, сцена range 16 span 65); Node/NodeEvaluator/Path/PathFinder/BinaryHeap javap-вердикт: Path имеет НОЛЬ getfield на мутабельные поля Node (мусорка безопасна для live-Path); prepare/getNode(III) НЕ переопределены ни в одном сабклассе (все 4 prepare-овершеда зовут super.prepare); NavPoolOps.java (bridge, same package — protected nodes access) + NavPoolOps.class (3197B, zero nested); src/nav_pool.rs (движок-модель арены + 7 cargo-тестов: reference-vs-pooled A* парити бит-в-бит f32 на 64 seeded-мирах x4 поиска, in-place reuse (0 аллокаций в steady-state), stale-position-miss, overflow-guard MAP_CAP, createHash-репликация, строгий гейт); classfile.rs patch_nodeevaluator_navpool (2 STRICT сайта prepare+getNode, fail-dominant) + REAL-kernel смоук (Retargeted{sites:2} + idempotent AlreadyPatched{2}); region_threads.rs: hook 5 NodeEvaluator (только armed), define NavPoolOps в kernel loader + RegisterNatives navPoolTick ДО READY, композ strict sites:2 fail-OPEN (только navpool-стейдж), retransform вместе с ARM-строкой; cargo test --lib 220/220 GREEN, target удалён (диск 92%)",
-  "design_k5": "см. stage + src/nav_pool.rs docs; урок разрешения: PathNavigationRegion живёт в net.minecraft.world.level (НЕ pathfinder) — ловлено resolution-closure гвардом",
-  "run_id": 35679132437,
-  "legs": [
-    {
-      "leg": "ak5",
-      "ref": "round-410-a-k5",
-      "sha": "5d8af33",
-      "run_id": 35679132437,
-      "lever": "cmp405_navplane",
-      "lever_arg": "1",
-      "status": "in_progress",
-      "dispatched": "tick-410-restart",
-      "inputs": "radius 640 / seconds 300 / fp 4 / fluid_guard 1 / gc_tune 3 / inside_cache 1 / flush_diet 1 / region_threads 4 / batch_collector 1 / pop 150000 / seed 42 / xmx 10G xms 4G / band 6.0-9.5M"
-    }
-  ],
-  "verdict": "in_progress",
-  "next": "push round-405-a-nav -> гейт-чеклист grep -> alias round-410-a-k5 (git refs API) -> dispatch world-bench-parallel (radius 640, seconds 300, fp 4, fluid_guard 1, gc_tune 3, inside_cache 1, flush_diet 1, region_threads 4, batch_collector 1, pop 150000, seed 42, xmx 10G xms 4G, band 6.0-9.5M, lever cmp405_navplane arg 1) -> poll/absorb round410ak5 -> pair-вердикт vs пул-410 {2.50@8548287, 2.95@8880170, 2.60@8827927} + банк {2.4@6604167, 2.2@6976430, 2.25@6833921, 2.30@6846036} -> ЦИКЛ ЗАКОНА (3) при Δ<80%: GoalSelector-slice рисёрч (round-406-d-aibatch MobAiOps golden-phase window)"
+  "agent": "A",
+  "vector": "k5b nav A* node-pool AIOOBE fix",
+  "branch": "round-411-a-nav",
+  "run_id": null,
+  "tps_med": null,
+  "delta_pair_pct": null,
+  "lane": "cmp405_navplane",
+  "RAM": null,
+  "parity": "pending",
+  "verdict": "ROOT-CAUSED: AIOOBE 131073 = ChunkMap.entityMap full-table race (region-threads era), NOT navpool — round-round409anchorb (no navpool) = 26,215x same signature; ak5 navpool markers healthy (73x EFFECT). Navpool fail-dominant hardening in progress",
+  "evidence": "docs/TASK411_A_AIOOBE_ROOTCAUSE.md: watchdog stuck containsKey:349<-ChunkMap.addEntity:953; 5x 'Index -1 length 131073' = fastutil MapIterator downscan on full table (n=131072, window 49153..98304 tracked entities)",
+  "what": "TASK-411-A step-1 root-cause closed; hardening next (hypotheses a-d: empty-pop/negative-hash/reuse-during-remove/MAP_CAP)"
 }
