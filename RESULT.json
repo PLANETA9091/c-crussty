@@ -1,7 +1,7 @@
 {
   "agent": "TASK-414-A",
-  "vector": "queryplane (entity-query snapshot plane) ⊕ race-fix REFENCE 109e4d7 — ре-базис на multi⊕racefix, pair-вердикт",
+  "vector": "queryplane ⊕ REFENCE 109e4d7 — ре-базис, pair-вердикт",
   "branch": "round-414-a-b2p",
-  "step": "S2-merge-REFENCE",
-  "evidence": "merge 109e4d7 @a4eaa7f: 2 конфликта (RESULT.json trivial, src/classfile.rs union) — inside_batch (HEAD) + entitymap-fence/refsync (109e4d7) ОБА выжили; цензы подтверждены: REFSYNC_SITES_TOTAL=22 (11+9+2, 8 классов STRICT), EMAP_SITES_TOTAL=12 (3+1+1+4+3); entityMap fence wired region_threads.rs:897, refsync wired region_threads.rs:774-786; queryplane mod+register/activate intact (lib.rs 64/251/557)"
+  "step": "S3-blobs-verified + S4-cargo-green",
+  "evidence": "19 ключевых блобов (queryplane+emap-fence+navplane/navpool+multi-lineage: InsideRustOps/BatchCollector/CollideBatchOps/FlushOps/ItemEntityManager/TrackerTick/BlockUpdate/RegionTick/MobAiOps/MobScanOps/MobPushOps/ItemMergeOps/PushStaggerOps) пересобраны full-cp javac (kernel396a+fastutil+paper-api+adventure×2) — БАЙТ-ИДЕНТИЧНЫ committed (урок ×93 honored, stale-blob риск = 0); cargo check --lib PASS; cargo test 282/282 PASS (1 ignored); target удалён сразу; disk-инцидент 100% → sparse-checkout purge research absorb-dirs в worktree (2.3G, round-396-a kernel сохранён, git status clean)"
 }
