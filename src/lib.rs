@@ -240,7 +240,7 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // bridge; aiStep retarget preserved). ONE bulk colpushTick JNI per tick
     // (RegionTickOps pre-GO trigger) feeds the CSR candidates + refreshes the
     // mobs_soa columns (0 per-entity JNI — the round-417 per-entity mobUpsert
-    // ladder is gone). Dormant unless CRUSSTY_LEVER_FLAG == cmp419_colpush
+    // ladder is gone). Dormant unless CRUSSTY_LEVER_FLAG == cmp420_colpush
     // (STRICT eq; empty flag = vanilla bit-in-bit).
     colpush::register();
     // SSCAN-DESPAWN (TASK-406-E, vector R4 despawn/spawn/activation scans):
@@ -563,7 +563,7 @@ fn inject_surface() {
     // defines ColpushOps + RegisterNatives (colpushProbe/colpushTick), flips
     // READY (the hook composes the whole-body redirect) and retransforms
     // LivingEntity after mobs_ai — the LAST serve in the chain (dormant
-    // unless CRUSSTY_LEVER_FLAG == cmp419_colpush).
+    // unless CRUSSTY_LEVER_FLAG == cmp420_colpush).
     colpush::activate();
     // SSCAN-DESPAWN (TASK-406-E): waits for boot, defines MobScanOps +
     // RegisterNatives (sscanProbe/sscanEpoch), flips READY and retransforms

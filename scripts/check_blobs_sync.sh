@@ -70,35 +70,35 @@ check_class \
 
 check_class \
   "queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class" \
-  "cmp417_bq" "cmp419_colpush" "cmp412_b2p1" "selfTest" "isHardCollidingProbe"
+  "cmp417_bq" "cmp420_colpush" "cmp412_b2p1" "selfTest" "isHardCollidingProbe"
 
 check_class \
   "mobai/build/net/minecraft/world/entity/MobAiOps.class" \
-  "cmp417_bq" "cmp419_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
+  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
   "native"
 
 check_class \
   "sscan/build/net/minecraft/world/entity/MobScanOps.class" \
-  "cmp417_bq" "cmp419_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
+  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
   "native"
 
 check_class \
   "mobpush/build/net/minecraft/world/entity/MobPushOps.class" \
-  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp419_colpush" \
+  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" \
   "native int mobProbe" "boxFor" "colpushSweep"
 
 check_class \
   "colpush/build/net/minecraft/world/entity/ColpushOps.class" \
-  "cmp419_colpush" "pushEntities" "bulkTick" "selfTest" "armed" \
+  "cmp420_colpush" "pushEntities" "bulkTick" "selfTest" "armed" \
   "native int colpushProbe" "native int colpushTick"
 
 check_class \
   "entityinside/build/net/minecraft/world/entity/RegionTickOps.class" \
-  "cmp419_colpush" "COLPUSH_ARMED"
+  "COLPUSH_ON" "COLPUSH_BROKEN" "ColpushOps.bulkTick:()V"
 
 check_class \
   "entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
-  "cmp414_cvs" "cmp412_eqsnapv3" "cmp419_colpush" \
+  "cmp414_cvs" "cmp412_eqsnapv3" "cmp420_colpush" \
   "native int eqProbe"
 
 # gate-flag consistency: every flag string accepted by the SOURCE gate must
@@ -116,9 +116,16 @@ for pair in \
 do
   src="${pair%%:*}"; blob="${pair##*:}"
   flags=$(grep -o '"cmp[0-9_a-z]*"' "$src" | tr -d '"' | sort -u)
-  jp=$("$JAVAP" -p -c "$blob" 2>/dev/null)
+  # TASK-420-A: raw-byte grep instead of javap output — gate strings inside
+  # indy makeConcatWithConstants recipes never show in javap -c, but ARE in
+  # the classfile constant pool (raw bytes = cp truth).
   for f in $flags; do
-    if [[ "$jp" == *"$f"* ]]; then
+    if python3 - "$blob" "$f" << 'PY'
+import sys
+b = open(sys.argv[1], 'rb').read()
+sys.exit(0 if sys.argv[2].encode() in b else 1)
+PY
+    then
       :
     else
       die "$blob: source gate flag '$f' missing from blob constant pool — REBUILD"

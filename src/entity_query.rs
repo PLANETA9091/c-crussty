@@ -126,7 +126,7 @@ fn enabled() -> bool {
             | Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs") | Ok("cmp417_bq")
             // TASK-419-A (colpush): колпаш-носитель — eq_epoch снапшот жив
             // (плоскость кормит colpush_plane_refresh).
-            | Ok("cmp419_colpush")
+            | Ok("cmp420_colpush")
     )
 }
 

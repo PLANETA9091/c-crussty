@@ -294,7 +294,7 @@ fn shard_mode() -> bool {
                     // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
                     || v == "cmp412_eqsnapv3" || v == "cmp414_cvs" || v == "cmp417_bq"
                     // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
-                    || v == "cmp419_colpush"
+                    || v == "cmp420_colpush"
             })
             .unwrap_or(false)
     })

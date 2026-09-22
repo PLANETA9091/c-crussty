@@ -1,4 +1,4 @@
-# ROOT-CAUSE cmp419_colpush NCDFE ×1902 (ноги cpa/cpb/cpc, 2026-09-23 05:2x +08)
+# ROOT-CAUSE cmp420_colpush NCDFE ×1902 (ноги cpa/cpb/cpc, 2026-09-23 05:2x +08)
 
 ## Симптом
 Все 3 ноги: tps 1.40-1.65 (база якорей 2.30-2.40), NCDFE 3270-3804/ран, GC 48-65s (×2 нормы), DELIVERY-FAIL.

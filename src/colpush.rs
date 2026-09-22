@@ -1,5 +1,5 @@
 //! COLPUSH — подсистема collide+push (push-половина) ЦЕЛИКОМ на Rust
-//! (TASK-419-A, round-419 vector A — lever cmp419_colpush, закон 6 v17).
+//! (TASK-419-A, round-419 vector A — lever cmp420_colpush, закон 6 v17).
 //!
 //! БОТЛНЕК (BOTTLENECK-419): collide ~8.7% + MobPushOps.push/move ~7-9% java.
 //! На master push-путь per-entity: mobUpsert-JNI + chain-скан + java-фильтры
@@ -41,10 +41,10 @@
 //! Пустой флаг = бридж не определён, хук спит, LivingEntity бит-в-байт ваниль.
 //!
 //! ARM markers (server stdout):
-//!   "[crussty-plugin] cmp419_colpush: defined net/minecraft/world/entity/ColpushOps in kernel loader"
-//!   "[crussty-plugin] cmp419_colpush: ARMED (bulk push broadphase CSR; retransform rc=...)"
-//!   "[crussty-plugin] cmp419_colpush: PATCHED LivingEntity.pushEntities (...)"
-//!   "[crussty-plugin] cmp419_colpush: bulk EFFECT armed (first tick N, rows A, pairs B)"
+//!   "[crussty-plugin] cmp420_colpush: defined net/minecraft/world/entity/ColpushOps in kernel loader"
+//!   "[crussty-plugin] cmp420_colpush: ARMED (bulk push broadphase CSR; retransform rc=...)"
+//!   "[crussty-plugin] cmp420_colpush: PATCHED LivingEntity.pushEntities (...)"
+//!   "[crussty-plugin] cmp420_colpush: bulk EFFECT armed (first tick N, rows A, pairs B)"
 //! Java-маркер (ColpushOps): "colpush: push-plane EFFECT armed (first gate hit ...)".
 
 use crate::classfile;
@@ -113,7 +113,7 @@ fn bulk_state() -> &'static Mutex<BulkState> {
 fn lever_flag_matches() -> bool {
     // STRICT eq: ТОЛЬКО мой флаг (прошлые флаги = бит-в-байт прежнее поведение).
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim() == "cmp419_colpush")
+        .map(|v| v.trim() == "cmp420_colpush")
         .unwrap_or(false)
 }
 
@@ -125,7 +125,7 @@ fn lever_flag_matches() -> bool {
 pub fn register() {
     if !lever_flag_matches() {
         eprintln!(
-            "[crussty-plugin] cmp419_colpush: dormant (lever_flag != cmp419_colpush, vanilla pushEntities)"
+            "[crussty-plugin] cmp420_colpush: dormant (lever_flag != cmp420_colpush, vanilla pushEntities)"
         );
         return;
     }
@@ -148,7 +148,7 @@ pub fn register() {
                     static SERVED: AtomicBool = AtomicBool::new(false);
                     if !SERVED.swap(true, Ordering::Relaxed) {
                         eprintln!(
-                            "[crussty-plugin] cmp419_colpush: PATCHED {TARGET_CLASS}.pushEntities ({} bytes; whole-body redirect -> ColpushOps.pushEntities, bulk push broadphase CSR; {outcome:?})",
+                            "[crussty-plugin] cmp420_colpush: PATCHED {TARGET_CLASS}.pushEntities ({} bytes; whole-body redirect -> ColpushOps.pushEntities, bulk push broadphase CSR; {outcome:?})",
                             out.len()
                         );
                     }
@@ -158,7 +158,7 @@ pub fn register() {
                     static NF: AtomicBool = AtomicBool::new(false);
                     if !NF.swap(true, Ordering::Relaxed) {
                         eprintln!(
-                            "[crussty-plugin] cmp419_colpush: pushEntities site not rewritten ({other:?}) — pass-through (fail-closed)"
+                            "[crussty-plugin] cmp420_colpush: pushEntities site not rewritten ({other:?}) — pass-through (fail-closed)"
                         );
                     }
                     None
@@ -168,7 +168,7 @@ pub fn register() {
                 static ERR: AtomicBool = AtomicBool::new(false);
                 if !ERR.swap(true, Ordering::Relaxed) {
                     eprintln!(
-                        "[crussty-plugin] cmp419_colpush: compose patch rejected ({e}) — pass-through, pushEntities vanilla"
+                        "[crussty-plugin] cmp420_colpush: compose patch rejected ({e}) — pass-through, pushEntities vanilla"
                     );
                 }
                 None
@@ -182,6 +182,27 @@ pub fn register() {
 /// must not run AFTER my compose) → define ColpushOps + RegisterNatives →
 /// resolution closure → READY (hook starts composing) → retransform
 /// LivingEntity (mobs_ai pattern; the serve happens in the hook chain).
+/// Background activation (TASK-420-A FIX-МАНДАТ п.1 — define ДО арма,
+/// root-cause round-colpusha ROOTCAUSE-NCDFE.md: волна-419 звала
+/// RegionTickOps.bulkTick→ColpushOps ДО define ⇒ HotSpot кэширует провал
+/// CP-резолюции ⇒ NCDFE ×1902 навсегда).
+///
+/// ПОРЯДОК (queryplane-паттерн mod+register(last)+activate(last)):
+///   1. wait LivingEntity load + boot-quiet;
+///   2. class-version + resolution-closure gates (structural, no JNI exec);
+///   3. EARLY DEFINE: define_class(ColpushOps) + RegisterNatives, БЕЗ
+///      исполнения java-кода (0 резолюций ⇒ poison невозможен). 20s settle
+///      убран: define пассивен, а java-гейт bulkTick (RegionTickOps
+///      COLPUSH_ON) держит call site недостижимым до флипа п.7;
+///   4. wait soa/stagger/ai LIVING serves (compose ordering ретрансформа);
+///   5. selfTest на СОХРАНЁННОМ global ref (TASK-417-C find_class-fix:
+///      JVMTI-скан фильтрует не-INITIALIZED, звать надо на ref от
+///      define_class). После soa_served MobPushOps гарантированно определён
+///      ⇒ selfTest не может отравиться NCDFE;
+///   6. READY → retransform LivingEntity (compose serve pushEntities);
+///   7. ARM ПОСЛЕДНИМ шагом: RegionTickOps.COLPUSH_ON = true (JNI
+///      SetStaticBooleanField через kernel-loader Class.forName, retry до
+///      120s) — вызов bulkTick возможен ТОЛЬКО после define+selfTest.
 pub fn activate() {
     if !lever_flag_matches() {
         return;
@@ -192,7 +213,7 @@ pub fn activate() {
         while cplug_sdk::classes::find_class(TARGET_CLASS).is_none() {
             if std::time::Instant::now() > deadline {
                 eprintln!(
-                    "[crussty-plugin] cmp419_colpush: {TARGET_CLASS} not loaded within 180s, hook stays dormant"
+                    "[crussty-plugin] cmp420_colpush: {TARGET_CLASS} not loaded within 180s, hook stays dormant"
                 );
                 return;
             }
@@ -200,10 +221,9 @@ pub fn activate() {
         }
 
         if !crate::improved_noise::wait_for_boot() {
-            eprintln!("[crussty-plugin] cmp419_colpush: boot marker not seen, hook stays dormant");
+            eprintln!("[crussty-plugin] cmp420_colpush: boot marker not seen, hook stays dormant");
             return;
         }
-        std::thread::sleep(std::time::Duration::from_secs(20));
 
         let jvm_major = cplug_sdk::jni_util::with_attached(|env| {
             crate::improved_noise::jvm_class_major(env)
@@ -216,7 +236,7 @@ pub fn activate() {
             .unwrap_or(0);
         if major > jvm_major {
             eprintln!(
-                "[crussty-plugin] cmp419_colpush: {OPS_CLASS} is class major {major} but JVM supports up to {jvm_major} — rebuild colpush/; hook stays dormant"
+                "[crussty-plugin] cmp420_colpush: {OPS_CLASS} is class major {major} but JVM supports up to {jvm_major} — rebuild colpush/; hook stays dormant"
             );
             return;
         }
@@ -225,12 +245,23 @@ pub fn activate() {
         // входы (pushEntities-редирект + bulkTick-триггер RegionTickOps).
         if let Err(e) = classfile::colpush_resolution_closure(OPS_BYTES) {
             eprintln!(
-                "[crussty-plugin] cmp419_colpush: RESOLUTION CLOSURE FAILED: {e} — hook stays dormant"
+                "[crussty-plugin] cmp420_colpush: RESOLUTION CLOSURE FAILED: {e} — hook stays dormant"
             );
             return;
         }
 
-        // Ordering: wait for the soa/stagger/ai LivingEntity serves (their
+        // (3) EARLY DEFINE — define_class + RegisterNatives, java-код НЕ
+        // исполняется (0 lazy-резолюций). Мост в лоадере ЗАРАНЕЕ до любого
+        // тика; global ref сохраняется для selfTest п.5.
+        let Some(gops) = define_bridge() else {
+            eprintln!("[crussty-plugin] cmp420_colpush: bridge definition failed, hook stays dormant");
+            return;
+        };
+        eprintln!(
+            "[crussty-plugin] cmp420_colpush: defined {OPS_CLASS} in kernel loader (pre-arm: RegionTickOps bulkTick gate still OFF — NCDFE structurally impossible)"
+        );
+
+        // (4) Ordering: wait for the soa/stagger/ai LivingEntity serves (their
         // stash-based serves would REPLACE my composed bytes if they ran
         // after my retransform). Timeout = proceed anyway (fail-open on
         // ordering only, composition itself stays fail-closed).
@@ -244,40 +275,80 @@ pub fn activate() {
             }
             if std::time::Instant::now() > order_deadline {
                 eprintln!(
-                    "[crussty-plugin] cmp419_colpush: LIVING serve signals timeout (soa={soa} stagger={stag} ai={ai}) — arming anyway, chain composes current bytes"
+                    "[crussty-plugin] cmp420_colpush: LIVING serve signals timeout (soa={soa} stagger={stag} ai={ai}) — proceeding, chain composes current bytes"
                 );
                 break;
             }
             std::thread::sleep(std::time::Duration::from_millis(500));
         }
 
-        let defined = define_bridge();
-        if !defined {
-            eprintln!("[crussty-plugin] cmp419_colpush: bridge definition failed, hook stays dormant");
+        // (5) selfTest на сохранённом global ref (мандат п.1: selfTest ДО
+        // арма). soa_served ⇒ MobPushOps определён ⇒ резолюции selfTest
+        // безопасны; any Throwable ⇒ fail-closed dormant (never arm).
+        let selftest = cplug_sdk::jni_util::with_attached(|env| colpush_selftest(env, gops))
+            .unwrap_or(false);
+        if !selftest {
+            eprintln!(
+                "[crussty-plugin] cmp420_colpush: selfTest FAILED — hook stays dormant (fail-closed; bulkTick gate stays OFF)"
+            );
             return;
         }
-        eprintln!("[crussty-plugin] cmp419_colpush: defined {OPS_CLASS} in kernel loader");
+        eprintln!("[crussty-plugin] cmp420_colpush: selfTest=true (row-layout/IDS_CAP/MobPushOps universe OK) BEFORE arm");
 
+        // (6) READY → retransform LivingEntity: hook composes the whole-body
+        // pushEntities redirect onto the received chain bytes (soa+ai srv
+        // preserved) and retransform publishes them.
         READY.store(true, Ordering::Release);
         let rc = cplug_sdk::retransform_class(TARGET_CLASS);
         eprintln!(
-            "[crussty-plugin] cmp419_colpush: ARMED (bulk push broadphase CSR; retransform rc={rc})"
+            "[crussty-plugin] cmp420_colpush: ARMED (bulk push broadphase CSR; retransform rc={rc})"
         );
         std::thread::sleep(std::time::Duration::from_millis(250));
         eprintln!(
-            "[crussty-plugin] cmp419_colpush: applied (pushEntities -> ColpushOps; java tail = vanilla bit-exact, rust = bulk broadphase 1 JNI/tick)"
+            "[crussty-plugin] cmp420_colpush: applied (pushEntities -> ColpushOps; java tail = vanilla bit-exact, rust = bulk broadphase 1 JNI/tick)"
         );
+
+        // (7) ARM — ПОСЛЕДНИЙ шаг (define+selfTest+retransform позади):
+        // флип RegionTickOps.COLPUSH_ON=true делает bulkTick call site
+        // достижимым ТОЛЬКО теперь ⇒ NCDFE невозможен по построению.
+        arm_regiontickops_bulk();
     });
 }
 
-fn define_bridge() -> bool {
-    let defined = cplug_sdk::jni_util::with_attached(|env| {
+/// SelfTest on the KEPT global ref of the just-defined bridge (TASK-417-C
+/// find_class-fix: JVMTI-scan filters non-INITIALIZED classes — call on the
+/// define_class ref; this call is the class's first active use ⇒ <clinit>).
+/// Any pending exception is cleared and reported as failure (fail-closed).
+fn colpush_selftest(env: &jvmti_bindings::env::JniEnv, gops: *mut c_void) -> bool {
+    let cls = gops as jni::jclass;
+    let Some(mid) = env.get_static_method_id(cls, "selfTest", "()Z") else {
+        crate::clear_exception(env);
+        eprintln!("[crussty-plugin] cmp420_colpush: selfTest method resolution failed");
+        return false;
+    };
+    let rc = env.call_static_int_method(cls, mid, &[]);
+    let had_exc = crate::clear_exception(env);
+    if had_exc {
+        eprintln!(
+            "[crussty-plugin] cmp420_colpush: selfTest threw (late resolution) — fail-closed"
+        );
+        return false;
+    }
+    rc != 0
+}
+
+/// Define the ColpushOps bridge into the kernel loader (Entity anchor) +
+/// RegisterNatives (colpushProbe/colpushTick). NO java code executed here
+/// (0 lazy resolutions ⇒ no NCDFE-poison risk). Returns the KEPT global ref
+/// of the defined class (for the later selfTest call).
+fn define_bridge() -> Option<*mut c_void> {
+    cplug_sdk::jni_util::with_attached(|env| {
         let Some(cls) = cplug_sdk::classes::find_class("net/minecraft/world/entity/Entity") else {
-            return false;
+            return None;
         };
         let Some(class_cls) = env.find_class("java/lang/Class") else {
             crate::clear_exception(env);
-            return false;
+            return None;
         };
         let Some(loader) = env
             .get_method_id(class_cls, "getClassLoader", "()Ljava/lang/ClassLoader;")
@@ -288,19 +359,19 @@ fn define_bridge() -> bool {
         else {
             crate::clear_exception(env);
             env.delete_local_ref(class_cls);
-            return false;
+            return None;
         };
         let gref = env.new_global_ref(loader);
         if gref.is_null() {
             crate::describe_exception(env);
             env.delete_local_ref(loader);
             env.delete_local_ref(class_cls);
-            return false;
+            return None;
         }
         let Some(c) = env.define_class(OPS_CLASS, gref, OPS_BYTES) else {
             crate::describe_exception(env);
-            eprintln!("[crussty-plugin] cmp419_colpush: define_class({OPS_CLASS}) failed");
-            return false;
+            eprintln!("[crussty-plugin] cmp420_colpush: define_class({OPS_CLASS}) failed");
+            return None;
         };
 
         // RegisterNatives: colpushProbe/colpushTick (impl — этот модуль).
@@ -328,20 +399,135 @@ fn define_bridge() -> bool {
         if let Err(code) = reg {
             env.exception_clear();
             eprintln!(
-                "[crussty-plugin] cmp419_colpush: register_natives failed (code {code}) — hook stays dormant"
+                "[crussty-plugin] cmp420_colpush: register_natives failed (code {code}) — hook stays dormant"
             );
             env.delete_local_ref(c);
             env.delete_local_ref(loader);
             env.delete_local_ref(class_cls);
-            return false;
+            return None;
         }
+
+        // Keep the bridge across the with_attached boundary (selfTest later).
+        let gops = env.new_global_ref(c);
         env.delete_local_ref(c);
         env.delete_local_ref(loader);
         env.delete_local_ref(class_cls);
-        true
-    });
-    defined.unwrap_or(false)
+        if gops.is_null() {
+            crate::describe_exception(env);
+            return None;
+        }
+        Some(gops as *mut c_void)
+    })
+    .flatten()
 }
+
+/// (7) ARM: flip RegionTickOps.COLPUSH_ON = true via JNI (kernel-loader
+/// Class.forName(initialize=true) → GetStaticFieldID → SetStaticBooleanField
+/// → read-back verify). RegionTickOps может быть ещё не определён
+/// region_threads на этот момент — retry до 120s. До флипа bulkTick call
+/// site НЕДОСТИЖИМ (volatile gate default OFF) ⇒ порядок define→arm
+/// гарантирован даже при самом позднем define.
+fn arm_regiontickops_bulk() {
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(120);
+    loop {
+        let ok = cplug_sdk::jni_util::with_attached(|env| {
+            let Some(entity) = cplug_sdk::classes::find_class("net/minecraft/world/entity/Entity")
+            else {
+                crate::clear_exception(env);
+                return false;
+            };
+            let Some(class_cls) = env.find_class("java/lang/Class") else {
+                crate::clear_exception(env);
+                return false;
+            };
+            let Some(loader) = env
+                .get_method_id(class_cls, "getClassLoader", "()Ljava/lang/ClassLoader;")
+                .and_then(|mid| {
+                    let l = env.call_object_method(entity.as_jclass(), mid, &[]);
+                    (l as usize != 0).then_some(l)
+                })
+            else {
+                crate::clear_exception(env);
+                env.delete_local_ref(class_cls);
+                return false;
+            };
+            let Some(forname) = env.get_static_method_id(
+                class_cls,
+                "forName",
+                "(Ljava/lang/String;ZLjava/lang/ClassLoader;)Ljava/lang/Class;",
+            ) else {
+                crate::clear_exception(env);
+                env.delete_local_ref(loader);
+                env.delete_local_ref(class_cls);
+                return false;
+            };
+            let Some(name) = env.new_string("net.minecraft.world.entity.RegionTickOps") else {
+                crate::clear_exception(env);
+                env.delete_local_ref(loader);
+                env.delete_local_ref(class_cls);
+                return false;
+            };
+            let loaded = env.call_static_object_method(
+                class_cls,
+                forname,
+                &[
+                    jvmti_bindings::jni::jvalue { l: name },
+                    jvmti_bindings::jni::jvalue { z: 1 /* initialize */ },
+                    jvmti_bindings::jni::jvalue { l: loader },
+                ],
+            );
+            let had_exc = crate::clear_exception(env);
+            env.delete_local_ref(name);
+            env.delete_local_ref(loader);
+            env.delete_local_ref(class_cls);
+            if had_exc || loaded.is_null() {
+                // RegionTickOps ещё не определён region_threads — ретрай.
+                return false;
+            }
+            let Some(fid) = env.get_static_field_id(loaded as jni::jclass, "COLPUSH_ON", "Z") else {
+                crate::clear_exception(env);
+                eprintln!(
+                    "[crussty-plugin] cmp420_colpush: ARM-флип: RegionTickOps.COLPUSH_ON field not found — bulkTick stays OFF"
+                );
+                env.delete_local_ref(loaded);
+                return false;
+            };
+            // Raw SetStaticBooleanField/GetStaticBooleanField (wrapper lacks
+            // the boolean static-field setters; fn-table call is the
+            // improved_noise.rs:876 precedent).
+            let raw = env.raw();
+            unsafe {
+                let fn_table = &(**raw);
+                (fn_table.SetStaticBooleanField)(raw, loaded as jni::jclass, fid, 1);
+            }
+            let back = unsafe {
+                let fn_table = &(**raw);
+                (fn_table.GetStaticBooleanField)(raw, loaded as jni::jclass, fid)
+            };
+            env.delete_local_ref(loaded);
+            if back == 0 {
+                eprintln!("[crussty-plugin] cmp420_colpush: ARM-флип read-back failed — bulkTick stays OFF");
+                return false;
+            }
+            true
+        })
+        .unwrap_or(false);
+        if ok {
+            eprintln!(
+                "[crussty-plugin] cmp420_colpush: RegionTickOps.bulkTick ARMED (COLPUSH_ON=true AFTER define+selfTest — arm-before-define NCDFE root-cause eliminated)"
+            );
+            return;
+        }
+        if std::time::Instant::now() > deadline {
+            eprintln!(
+                "[crussty-plugin] cmp420_colpush: RegionTickOps not reachable within 120s — bulkTick trigger stays OFF (fail-closed, vanilla push)"
+            );
+            return;
+        }
+        std::thread::sleep(std::time::Duration::from_millis(2_000));
+    }
+}
+
 
 /// # Safety
 /// Called by the JVM through RegisterNatives.
@@ -619,7 +805,7 @@ pub unsafe extern "system" fn colpush_tick(
     LAST_PAIRS.store(total, Ordering::Relaxed);
     if FIRST_BULK.swap(false, Ordering::Relaxed) {
         eprintln!(
-            "[crussty-plugin] cmp419_colpush: bulk EFFECT armed (first tick {tick}, rows {rows}, pair-slots {total}, plane-refresh {drained})"
+            "[crussty-plugin] cmp420_colpush: bulk EFFECT armed (first tick {tick}, rows {rows}, pair-slots {total}, plane-refresh {drained})"
         );
     }
     total as i32
