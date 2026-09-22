@@ -76,9 +76,14 @@
 //!
 //!   Tombstone-reclaim: keys keep tombstones (chain-safety), but when the
 //!   keys table nears capacity (used ≥ CAP-1) or a probe hits the probe-cap,
-//!   a ONE-SHOT rebuild rehashes the LIVE chains into a fresh table under
-//!   the WLOCK + bump of EVERY shard version (readers retry, bounded);
-//!   find_slot got a probe-cap (no infinite walks on a full table).
+//!   a ONE-SHOT rebuild rehashes the LIVE chains into the FIXED rebuild
+//!   scratch and copies back IN PLACE (no buffer identity change — the
+//!   fixed-capacity no-dangling-buffer UAF contract is preserved) under the
+//!   WLOCK + bump of EVERY shard version (readers of any cell retry,
+//!   bounded); find_slot got a probe-cap (no infinite walks on a full
+//!   table). A move publishes its unlink+link under ONE combined old+new
+//!   shard bracket — the id is visible in exactly one cell at every
+//!   validated reader snapshot (no mid-move miss window).
 //!
 //! RESEARCH NOTES (TASK-401-E, sandbox is offline — sources cited from
 //! memory, honestly marked): the SoA/DOD backing for this layout is (1)
@@ -141,6 +146,14 @@ struct Soa {
     keys: Vec<i64>,
     /// Per-slot chain head: id+1 (0 = empty chain).
     head: Vec<i32>,
+    /// Protocol v2 REBUILD SCRATCH (FIXED capacity, allocated once at plane
+    /// init, never re-swapped): the tombstone-reclaim rebuild rehashes the
+    /// live chains into THIS buffer and copies back IN PLACE. The v1-fixed
+    /// no-dangling-buffer contract for lock-free readers is preserved — a
+    /// buffer-swap rebuild (`d.keys = fresh; drop(old)`) would free the old
+    /// table under a lock-free reader mid-walk = UAF.
+    rkeys: Vec<i64>,
+    rhead: Vec<i32>,
     /// Occupied key slots incl. tombstones (load accounting, writers only).
     used: usize,
 }
@@ -158,6 +171,8 @@ impl Soa {
             cell: vec![0i64; IDS_CAP],
             keys: vec![0i64; CELL_CAP],
             head: vec![0i32; CELL_CAP],
+            rkeys: vec![0i64; CELL_CAP],
+            rhead: vec![0i32; CELL_CAP],
             used: 0,
         })
     }
@@ -369,24 +384,38 @@ fn find_slot(keys: &[i64], k: i64) -> Result<usize, usize> {
 }
 
 /// ONE-SHOT tombstone-reclaim rebuild (protocol v2): rehash every LIVE key
-/// (non-empty chain) into a fresh table, dropping tombstones. Caller holds
-/// WLOCK; the caller ALSO brackets the GLOBAL VERSION and bumps EVERY shard
-/// version (odd → mutate → even) so any in-flight reader of any cell detects
-/// the rebuild and retries (bounded). Returns false on allocation pressure
-/// (caller fail-opens with ERR_RANGE — no panic path).
+/// (non-empty chain) into the FIXED rebuild scratch and copy back IN PLACE,
+/// dropping tombstones. Self-contained version bracket: the caller holds the
+/// WLOCK (single writer) and this function bumps EVERY shard version odd →
+/// mutate → even, so any in-flight reader of ANY cell detects the rebuild and
+/// retries (bounded). The in-place copy-back (no `d.keys = fresh` buffer
+/// swap, no allocation) preserves the fixed-capacity no-dangling-buffer
+/// contract for the lock-free readers: a swapped-out old table would be
+/// freed under a reader mid-walk = UAF. Returns false on pathological
+/// pressure (caller fail-opens with ERR_RANGE — no panic path).
 fn rebuild_tables(d: &mut Soa) -> bool {
+    // All-shard bracket: readers of every cell see a changed version pair.
+    for s in 0..N_SHARDS {
+        shard_begin(s);
+    }
+    let ok = rebuild_tables_inner(d);
+    for s in 0..N_SHARDS {
+        shard_end(s);
+    }
+    ok
+}
+
+fn rebuild_tables_inner(d: &mut Soa) -> bool {
     // Give up (fail-open) rather than build a table whose probe walks could
     // exceed the probe cap.
     if d.used + PROBE_CAP >= CELL_CAP {
         return false;
     }
-    let mut nk: Vec<i64> = Vec::new();
-    let mut nh: Vec<i32> = Vec::new();
-    if nk.try_reserve_exact(CELL_CAP).is_err() || nh.try_reserve_exact(CELL_CAP).is_err() {
-        return false;
-    }
-    nk.resize(CELL_CAP, 0);
-    nh.resize(CELL_CAP, 0);
+    // Rehash into the FIXED scratch: zero it, place every live chain, copy
+    // back. No allocation, no buffer identity change — readers can hold no
+    // reference that can dangle.
+    d.rkeys.fill(0);
+    d.rhead.fill(0);
     let mut used = 0usize;
     for s in 0..CELL_CAP {
         let k = d.keys[s];
@@ -394,17 +423,17 @@ fn rebuild_tables(d: &mut Soa) -> bool {
             continue; // never-used slot or tombstone (chain already empty)
         }
         // Fresh table: no tombstones, load < 1 ⇒ a zero slot always exists.
-        if let Err(t) = find_slot(&nk, k) {
+        if let Err(t) = find_slot(&d.rkeys, k) {
             if t == PROBE_FAIL {
-                return false;
+                return false; // scratch untouched — the live table is intact
             }
-            nk[t] = k;
-            nh[t] = d.head[s];
+            d.rkeys[t] = k;
+            d.rhead[t] = d.head[s];
             used += 1;
         }
     }
-    d.keys = nk;
-    d.head = nh;
+    d.keys.copy_from_slice(&d.rkeys);
+    d.head.copy_from_slice(&d.rhead);
     d.used = used;
     true
 }
@@ -454,9 +483,13 @@ fn unlink(d: &mut Soa, id: usize) -> Result<(), ()> {
 /// Writer-side insert-or-move + field refresh (protocol v2). Caller holds
 /// WLOCK and the GLOBAL VERSION odd bracket; THIS function owns the per-shard
 /// brackets: same-cell refresh brackets shard(cell); a move brackets the OLD
-/// shard (unlink) and the NEW shard (link + fields) separately. All Err
-/// paths leave the plane CONSISTENT (the id either fully linked or fully
-/// unlinked).
+/// and NEW shards TOGETHER as one atomic transition (unlink + link + fields
+/// publish inside a single combined odd-window — a reader of either cell
+/// retries into the post-state, so the id is visible in EXACTLY one cell at
+/// every validated snapshot; separate unlink/link brackets would leave a
+/// nanosecond-wide window where both cells read stable-but-mid-move = missed
+/// candidate). All Err paths leave the plane CONSISTENT (the id either fully
+/// linked or fully unlinked).
 fn soa_upsert(
     d: &mut Soa,
     id: usize,
@@ -484,7 +517,8 @@ fn soa_upsert(
     }
     // Pre-resolve the target slot BEFORE unlinking (no partial state on
     // capacity pressure). Pressure (used ≥ CAP-1) or a probe-cap hit triggers
-    // the ONE-SHOT tombstone-reclaim rebuild; failure = ERR_RANGE fail-open.
+    // the ONE-SHOT tombstone-reclaim rebuild (self-bracketed on ALL shards —
+    // readers of any cell retry); failure = ERR_RANGE fail-open.
     let slot = loop {
         match find_slot(&d.keys, k) {
             Ok(s) => break s,
@@ -506,29 +540,40 @@ fn soa_upsert(
             }
         }
     };
-    if d.cell[id] != 0 {
-        // Unlink under the OLD cell's shard bracket (protocol v2).
-        let so = shard_of(d.cell[id]);
-        shard_begin(so);
-        let r = unlink(d, id);
-        shard_end(so);
-        if r.is_err() {
-            return ERR_STRUCT; // dangling chain — corruption
-        }
-    }
-    // Link + fields under the NEW cell's shard bracket (protocol v2).
+    // Move / first insert under a COMBINED old+new shard bracket (deduped).
+    let so = if d.cell[id] != 0 { shard_of(d.cell[id]) } else { usize::MAX };
     let sn = shard_of(k);
-    shard_begin(sn);
-    d.x[id] = x;
-    d.y[id] = y;
-    d.z[id] = z;
-    d.hw[id] = hw;
-    d.hh[id] = hh;
-    d.flags[id] |= 1;
-    d.next[id] = d.head[slot];
-    d.head[slot] = (id as i32) + 1;
-    d.cell[id] = k;
-    shard_end(sn);
+    if so != usize::MAX {
+        shard_begin(so);
+    }
+    if so != sn {
+        shard_begin(sn);
+    }
+    let r = if so != usize::MAX {
+        unlink(d, id)
+    } else {
+        Ok(())
+    };
+    if r.is_ok() {
+        d.x[id] = x;
+        d.y[id] = y;
+        d.z[id] = z;
+        d.hw[id] = hw;
+        d.hh[id] = hh;
+        d.flags[id] |= 1;
+        d.next[id] = d.head[slot];
+        d.head[slot] = (id as i32) + 1;
+        d.cell[id] = k;
+    }
+    if so != sn {
+        shard_end(sn);
+    }
+    if so != usize::MAX {
+        shard_end(so);
+    }
+    if r.is_err() {
+        return ERR_STRUCT; // dangling chain — corruption
+    }
     0
 }
 
@@ -768,11 +813,13 @@ pub unsafe extern "system" fn mob_remove(
     }
     let v = VERSION.fetch_add(1, Ordering::AcqRel); // → odd (global; ai/sscan contract)
     debug_assert!(v % 2 == 0);
-    d.flags[id as usize] &= !1;
     let rc = if d.cell[id as usize] != 0 {
-        // Protocol v2: unlink under the id's cell shard bracket.
+        // Protocol v2: unlink + alive-flag clear under the id's cell shard
+        // bracket (readers validate the flags column against the SAME shard
+        // version — no unbracketed writer stores).
         let s = shard_of(d.cell[id as usize]);
         shard_begin(s);
+        d.flags[id as usize] &= !1;
         let r = unlink(d, id as usize);
         shard_end(s);
         if r.is_err() {
@@ -781,6 +828,9 @@ pub unsafe extern "system" fn mob_remove(
             0
         }
     } else {
+        // No chain to unlink (defensive path: alive flag without a link can
+        // not be produced by upsert) — clear the flag unbracketed.
+        d.flags[id as usize] &= !1;
         0
     };
     VERSION.fetch_add(1, Ordering::AcqRel); // → even
