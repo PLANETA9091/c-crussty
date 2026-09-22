@@ -79,7 +79,7 @@ const QRETRY: u32 = 128;
 fn enabled() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp406_sscan") | Ok("cmp409_multi")
+        Ok("cmp406_sscan") | Ok("cmp409_multi") | Ok("cmp412_meganav")
     )
 }
 

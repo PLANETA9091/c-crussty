@@ -3928,6 +3928,105 @@ pub fn patch_serverlevel_send_block_updated(
     }
 }
 
+/// NAV-PLANE (TASK-405-A restart, cmp405_navplane): the same single-site
+/// body redirect as the BU-DEFER variant, but to OUR NavPlaneOps.handle —
+/// the javap-verbatim vanilla body with the navigatingMobs pass collapsed
+/// into ONE bulk navDecide native per block-update batch (law 6: one
+/// JNI per batch; per-entity JNI = design error). Composed only when the
+/// lever flag is armed (region_threads.rs), independent of bu_defer so the
+/// armed delta is purely the nav-batch plane.
+pub const NAVPLANE_OPS_CLASS: &str = "net/minecraft/server/level/NavPlaneOps";
+
+pub const NAVPLANE_REDIRECT_TARGETS: [(&str, &str, &str, &str); 1] = [(
+    "sendBlockUpdated",
+    "(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;I)V",
+    "handle",
+    "(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;I)V",
+)];
+
+pub fn patch_serverlevel_send_block_updated_navplane(
+    bytes: &[u8],
+) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let (name, desc, tname, tdesc) = NAVPLANE_REDIRECT_TARGETS[0];
+    let (p, outcome) = redirect_method_body_to_static(
+        bytes,
+        name,
+        desc,
+        "net/minecraft/server/level/ServerLevel",
+        NAVPLANE_OPS_CLASS,
+        tname,
+        tdesc,
+    )?;
+    match outcome {
+        RetargetOutcome::Retargeted { .. } => Ok((p, RetargetOutcome::Retargeted { sites: 1 })),
+        RetargetOutcome::AlreadyPatched { .. } => {
+            Ok((p, RetargetOutcome::AlreadyPatched { sites: 1 }))
+        }
+        RetargetOutcome::NotFound => Ok((bytes.to_vec(), RetargetOutcome::NotFound)),
+    }
+}
+
+/// NAV-POOL (TASK-410-A k5, cmp405_navplane STRICT eq): the A* node-pool —
+/// NodeEvaluator.prepare body-redirected to NavPoolOps.prepare (vanilla
+/// body with nodes.clear() REPLACED by the fresh-shape laundering) and
+/// NodeEvaluator.getNode(III) body-redirected to NavPoolOps.getNode
+/// (map.get + position check + new-on-miss, ZERO lambda on the hot path).
+/// Composed only when the lever flag is armed (region_threads.rs). The
+/// bridge lives in the SAME package (protected `nodes` field access).
+/// Composite fail-dominant: BOTH sites or none (parity: a half-pool would
+/// mix laundering with vanilla computeIfAbsent — semantically safe but the
+/// strict pair keeps the delivery inspectable).
+pub const NAVPOOL_OPS_CLASS: &str = "net/minecraft/world/level/pathfinder/NavPoolOps";
+
+pub const NAVPOOL_REDIRECT_TARGETS: [(&str, &str, &str, &str); 2] = [
+    (
+        "prepare",
+        "(Lnet/minecraft/world/level/PathNavigationRegion;Lnet/minecraft/world/entity/Mob;)V",
+        "prepare",
+        "(Lnet/minecraft/world/level/pathfinder/NodeEvaluator;Lnet/minecraft/world/level/PathNavigationRegion;Lnet/minecraft/world/entity/Mob;)V",
+    ),
+    (
+        "getNode",
+        "(III)Lnet/minecraft/world/level/pathfinder/Node;",
+        "getNode",
+        "(Lnet/minecraft/world/level/pathfinder/NodeEvaluator;III)Lnet/minecraft/world/level/pathfinder/Node;",
+    ),
+];
+
+pub fn patch_nodeevaluator_navpool(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let mut cur = bytes.to_vec();
+    let mut ret = 0usize;
+    let mut already = 0usize;
+    for (name, desc, tname, tdesc) in NAVPOOL_REDIRECT_TARGETS {
+        let (p, outcome) = redirect_method_body_to_static(
+            &cur,
+            name,
+            desc,
+            "net/minecraft/world/level/pathfinder/NodeEvaluator",
+            NAVPOOL_OPS_CLASS,
+            tname,
+            tdesc,
+        )?;
+        cur = p;
+        match outcome {
+            RetargetOutcome::Retargeted { .. } => ret += 1,
+            RetargetOutcome::AlreadyPatched { .. } => already += 1,
+            RetargetOutcome::NotFound => {
+                return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+            }
+        }
+    }
+    if ret == 2 {
+        Ok((cur, RetargetOutcome::Retargeted { sites: 2 }))
+    } else {
+        Ok((cur, RetargetOutcome::AlreadyPatched { sites: 2 }))
+    }
+}
+
+pub fn navpool_resolution_closure(bridge: &[u8]) -> Result<(), String> {
+    redirect_targets_resolution_closure(bridge, &NAVPOOL_REDIRECT_TARGETS)
+}
+
 /// S7-164 lever #10: redirect the THREE hottest Entity inside/fluid bodies
 /// (census: collidedWithFluid ← lambda$checkInsideBlocks$2; collidedAlongVector ←
 /// collidedWithShapeMovingFrom only; both from Entity) to the scalar
@@ -7335,4 +7434,35 @@ pub fn patch_utf8_gate(bytes: &[u8], from: &str, to: &str) -> Result<Vec<u8>, St
         return Err("gate utf8 not swapped".to_string());
     }
     Ok(out)
+}
+
+#[cfg(test)]
+mod navpool {
+    // TASK-410-A k5: REAL kernel fixture (round-396-a patched-kernel.jar,
+    // same source jar as every other fixture).
+    const NODE_EVALUATOR: &[u8] = include_bytes!("../tests/fixtures/NodeEvaluator_real.class");
+
+    use crate::classfile::*;
+
+    /// The REAL NodeEvaluator's prepare + getNode(III) bodies redirect to
+    /// the NavPoolOps bridge EXACTLY twice (composite fail-dominant).
+    #[test]
+    fn nodeevaluator_retargets_exactly_two_sites() {
+        let (patched, outcome) = patch_nodeevaluator_navpool(NODE_EVALUATOR).expect("patch");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 2 },
+            "k5 contract: prepare + getNode(III) must both retarget — a NotFound/1-site \
+             outcome means the kernel shape drifted and the lever must stay vanilla"
+        );
+        assert!(patched.len() != NODE_EVALUATOR.len() || patched != NODE_EVALUATOR);
+        // Idempotent re-sight: second pass is AlreadyPatched{2}.
+        let (again, outcome2) = patch_nodeevaluator_navpool(&patched).expect("re-patch");
+        assert_eq!(
+            outcome2,
+            RetargetOutcome::AlreadyPatched { sites: 2 },
+            "retransform re-sights must be idempotent (PATCHED-swap convention)"
+        );
+        assert_eq!(again, patched);
+    }
 }

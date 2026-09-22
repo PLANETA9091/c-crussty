@@ -50,6 +50,8 @@ mod mobs_manager;
 mod mobs_soa;
 mod mobs_ai;
 mod mobs_sscan;
+mod nav_plane;
+mod nav_pool;
 mod noise_fill;
 mod parse_diag;
 mod zero_cursor;

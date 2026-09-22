@@ -85,7 +85,7 @@ public final class MobPushOps {
                     // TASK-406-E: композит раунда-406 (stagtick ⊕ sscan).
                     || f.trim().equals("cmp406_sscan")
                     // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
-                    || f.trim().equals("cmp409_multi"));
+                    || f.trim().equals("cmp409_multi") || f.trim().equals("cmp412_meganav"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -103,7 +103,7 @@ public final class MobPushOps {
                 // TASK-406-E: композит раунда-406 включает mirror-grid.
                 || f.trim().equals("cmp406_sscan")
                 // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
-                || f.trim().equals("cmp409_multi"));
+                || f.trim().equals("cmp409_multi") || f.trim().equals("cmp412_meganav"));
     }
 
     private static final boolean COMPOSITE = compositeEnabled();
