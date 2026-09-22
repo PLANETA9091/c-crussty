@@ -3,14 +3,27 @@
   "vector": "chunk-pipeline (law 8): parse-path section-cache redirect (lambda$parse$5 -> ChunkParseOps.parseSection, twin lambda$parse$7 pristine) + noise-fill STRICT-OR GEN-axis, flag cmp419_chunk",
   "branch": "round-419-c-chunk",
   "base": "fbb06e3",
-  "step": "step-4 implementation DONE: Java bridge rebuilt (9152B, major 65, flat), src/chunk_parse.rs + classfile chunkparse closure/pristine-guard, lib.rs wiring, noise_fill STRICT-OR, run_world3.sh cmp419_chunk arming (KERNEL_POLICY=off documented override); check_blobs_sync ALL IN SYNC",
-  "steps_done": ["worktree", "STEP-0-profile", "research", "design", "implementation"],
-  "run_ids": [],
+  "step": "step-5 DISPATCHED: 3 legs @ f7b0be4 lever_flag=cmp419_chunk lever_arg=1 (run_world3.sh KERNEL_POLICY=off arming included in branch)",
+  "steps_done": [
+    "worktree",
+    "STEP-0-profile",
+    "research",
+    "design",
+    "implementation",
+    "cargo-289-pass",
+    "dispatch"
+  ],
+  "run_ids": [
+    "35779686961@round-419-c-cha",
+    "35779695430@round-419-c-chb",
+    "35779704341@round-419-c-chc"
+  ],
   "tps_med": null,
   "delta_pair_pct": null,
   "lane_before": "chunk-system TPS-slice 9.8%; parse-path 33.38% alloc bytes in burst 240-300s (RECON-13b); codec machinery 19.06% + paletted-decode 13.98% (RECON-13f)",
   "lane_after": null,
   "parity": "STRICT lever gate cmp419_chunk; empty flag = vanilla bit-in-bit; HIT = Data.copy of vanilla-decoded equal tag (identity-codec key, anti-xray presets auto-miss); MISS/twin = pristine vanilla lambda; ARM marker 'cmp419_chunk: ARMED chunk-parse section-cache'; EFFECT markers 'parse-cache first hit' + 'parse-cache selftest PASS'",
-  "verdict": "IMPL-DONE-PRE-CARGO",
-  "notes": "next: cargo check --lib + cargo test (target deleted after), commit+push, dispatch legs round-419-c-cha/chb/chc lever_flag=cmp419_chunk"
+  "verdict": "DISPATCHED-POLLING",
+  "notes": "next: cargo check --lib + cargo test (target deleted after), commit+push, dispatch legs round-419-c-cha/chb/chc lever_flag=cmp419_chunk",
+  "branch_head": "f7b0be4"
 }
