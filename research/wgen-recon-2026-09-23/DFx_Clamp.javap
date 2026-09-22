@@ -1,0 +1,128 @@
+Compiled from "DensityFunctions.java"
+public final class net.minecraft.world.level.levelgen.DensityFunctions$Clamp extends java.lang.Record implements net.minecraft.world.level.levelgen.DensityFunctions$PureTransformer {
+  private final net.minecraft.world.level.levelgen.DensityFunction input;
+
+  private final double minValue;
+
+  private final double maxValue;
+
+  private static final com.mojang.serialization.MapCodec<net.minecraft.world.level.levelgen.DensityFunctions$Clamp> DATA_CODEC;
+
+  public static final net.minecraft.util.KeyDispatchDataCodec<net.minecraft.world.level.levelgen.DensityFunctions$Clamp> CODEC;
+
+  protected net.minecraft.world.level.levelgen.DensityFunctions$Clamp(net.minecraft.world.level.levelgen.DensityFunction, double, double);
+    Code:
+       0: aload_0
+       1: invokespecial #47                 // Method java/lang/Record."<init>":()V
+       4: aload_0
+       5: aload_1
+       6: putfield      #49                 // Field input:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       9: aload_0
+      10: dload_2
+      11: putfield      #51                 // Field minValue:D
+      14: aload_0
+      15: dload         4
+      17: putfield      #53                 // Field maxValue:D
+      20: return
+
+  public double transform(double);
+    Code:
+       0: dload_1
+       1: aload_0
+       2: getfield      #51                 // Field minValue:D
+       5: aload_0
+       6: getfield      #53                 // Field maxValue:D
+       9: invokestatic  #63                 // Method net/minecraft/util/Mth.clamp:(DDD)D
+      12: dreturn
+
+  public net.minecraft.world.level.levelgen.DensityFunction mapAll(net.minecraft.world.level.levelgen.DensityFunction$Visitor);
+    Code:
+       0: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$Clamp
+       3: dup
+       4: aload_0
+       5: getfield      #49                 // Field input:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       8: aload_1
+       9: invokeinterface #68,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.mapAll:(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      14: aload_0
+      15: getfield      #51                 // Field minValue:D
+      18: aload_0
+      19: getfield      #53                 // Field maxValue:D
+      22: invokespecial #70                 // Method "<init>":(Lnet/minecraft/world/level/levelgen/DensityFunction;DD)V
+      25: areturn
+
+  public net.minecraft.util.KeyDispatchDataCodec<? extends net.minecraft.world.level.levelgen.DensityFunction> codec();
+    Code:
+       0: getstatic     #77                 // Field CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+       3: areturn
+
+  public final java.lang.String toString();
+    Code:
+       0: aload_0
+       1: invokedynamic #94,  0             // InvokeDynamic #0:toString:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Clamp;)Ljava/lang/String;
+       6: areturn
+
+  public final int hashCode();
+    Code:
+       0: aload_0
+       1: invokedynamic #99,  0             // InvokeDynamic #0:hashCode:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Clamp;)I
+       6: ireturn
+
+  public final boolean equals(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokedynamic #104,  0            // InvokeDynamic #0:equals:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Clamp;Ljava/lang/Object;)Z
+       7: ireturn
+
+  public net.minecraft.world.level.levelgen.DensityFunction input();
+    Code:
+       0: aload_0
+       1: getfield      #49                 // Field input:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       4: areturn
+
+  public double minValue();
+    Code:
+       0: aload_0
+       1: getfield      #51                 // Field minValue:D
+       4: dreturn
+
+  public double maxValue();
+    Code:
+       0: aload_0
+       1: getfield      #53                 // Field maxValue:D
+       4: dreturn
+
+  private static com.mojang.datafixers.kinds.App lambda$static$0(com.mojang.serialization.codecs.RecordCodecBuilder$Instance);
+    Code:
+       0: aload_0
+       1: getstatic     #114                // Field net/minecraft/world/level/levelgen/DensityFunction.DIRECT_CODEC:Lcom/mojang/serialization/Codec;
+       4: ldc           #115                // String input
+       6: invokeinterface #121,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      11: invokedynamic #139,  0            // InvokeDynamic #1:apply:()Ljava/util/function/Function;
+      16: invokevirtual #145                // Method com/mojang/serialization/MapCodec.forGetter:(Ljava/util/function/Function;)Lcom/mojang/serialization/codecs/RecordCodecBuilder;
+      19: getstatic     #148                // Field net/minecraft/world/level/levelgen/DensityFunctions.NOISE_VALUE_CODEC:Lcom/mojang/serialization/Codec;
+      22: ldc           #150                // String min
+      24: invokeinterface #121,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      29: invokedynamic #156,  0            // InvokeDynamic #2:apply:()Ljava/util/function/Function;
+      34: invokevirtual #145                // Method com/mojang/serialization/MapCodec.forGetter:(Ljava/util/function/Function;)Lcom/mojang/serialization/codecs/RecordCodecBuilder;
+      37: getstatic     #148                // Field net/minecraft/world/level/levelgen/DensityFunctions.NOISE_VALUE_CODEC:Lcom/mojang/serialization/Codec;
+      40: ldc           #158                // String max
+      42: invokeinterface #121,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      47: invokedynamic #162,  0            // InvokeDynamic #3:apply:()Ljava/util/function/Function;
+      52: invokevirtual #145                // Method com/mojang/serialization/MapCodec.forGetter:(Ljava/util/function/Function;)Lcom/mojang/serialization/codecs/RecordCodecBuilder;
+      55: invokevirtual #166                // Method com/mojang/serialization/codecs/RecordCodecBuilder$Instance.group:(Lcom/mojang/datafixers/kinds/App;Lcom/mojang/datafixers/kinds/App;Lcom/mojang/datafixers/kinds/App;)Lcom/mojang/datafixers/Products$P3;
+      58: aload_0
+      59: invokedynamic #174,  0            // InvokeDynamic #4:apply:()Lcom/mojang/datafixers/util/Function3;
+      64: invokevirtual #177                // Method com/mojang/datafixers/Products$P3.apply:(Lcom/mojang/datafixers/kinds/Applicative;Lcom/mojang/datafixers/util/Function3;)Lcom/mojang/datafixers/kinds/App;
+      67: areturn
+
+  static {};
+    Code:
+       0: invokedynamic #185,  0            // InvokeDynamic #5:apply:()Ljava/util/function/Function;
+       5: invokestatic  #189                // Method com/mojang/serialization/codecs/RecordCodecBuilder.mapCodec:(Ljava/util/function/Function;)Lcom/mojang/serialization/MapCodec;
+       8: putstatic     #191                // Field DATA_CODEC:Lcom/mojang/serialization/MapCodec;
+      11: getstatic     #191                // Field DATA_CODEC:Lcom/mojang/serialization/MapCodec;
+      14: invokestatic  #197                // Method net/minecraft/util/KeyDispatchDataCodec.of:(Lcom/mojang/serialization/MapCodec;)Lnet/minecraft/util/KeyDispatchDataCodec;
+      17: putstatic     #77                 // Field CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+      20: return
+}

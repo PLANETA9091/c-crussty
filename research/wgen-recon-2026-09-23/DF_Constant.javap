@@ -1,0 +1,87 @@
+Compiled from "DensityFunctions.java"
+final class net.minecraft.world.level.levelgen.DensityFunctions$Constant extends java.lang.Record implements net.minecraft.world.level.levelgen.DensityFunction$SimpleFunction {
+  private final double value;
+
+  static final net.minecraft.util.KeyDispatchDataCodec<net.minecraft.world.level.levelgen.DensityFunctions$Constant> CODEC;
+
+  static final net.minecraft.world.level.levelgen.DensityFunctions$Constant ZERO;
+
+  net.minecraft.world.level.levelgen.DensityFunctions$Constant(double);
+    Code:
+       0: aload_0
+       1: invokespecial #36                 // Method java/lang/Record."<init>":()V
+       4: aload_0
+       5: dload_1
+       6: putfield      #38                 // Field value:D
+       9: return
+
+  public double compute(net.minecraft.world.level.levelgen.DensityFunction$FunctionContext);
+    Code:
+       0: aload_0
+       1: getfield      #38                 // Field value:D
+       4: dreturn
+
+  public void fillArray(double[], net.minecraft.world.level.levelgen.DensityFunction$ContextProvider);
+    Code:
+       0: aload_1
+       1: aload_0
+       2: getfield      #38                 // Field value:D
+       5: invokestatic  #51                 // Method java/util/Arrays.fill:([DD)V
+       8: return
+
+  public double minValue();
+    Code:
+       0: aload_0
+       1: getfield      #38                 // Field value:D
+       4: dreturn
+
+  public double maxValue();
+    Code:
+       0: aload_0
+       1: getfield      #38                 // Field value:D
+       4: dreturn
+
+  public net.minecraft.util.KeyDispatchDataCodec<? extends net.minecraft.world.level.levelgen.DensityFunction> codec();
+    Code:
+       0: getstatic     #63                 // Field CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+       3: areturn
+
+  public final java.lang.String toString();
+    Code:
+       0: aload_0
+       1: invokedynamic #77,  0             // InvokeDynamic #0:toString:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Constant;)Ljava/lang/String;
+       6: areturn
+
+  public final int hashCode();
+    Code:
+       0: aload_0
+       1: invokedynamic #82,  0             // InvokeDynamic #0:hashCode:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Constant;)I
+       6: ireturn
+
+  public final boolean equals(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokedynamic #87,  0             // InvokeDynamic #0:equals:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Constant;Ljava/lang/Object;)Z
+       7: ireturn
+
+  public double value();
+    Code:
+       0: aload_0
+       1: getfield      #38                 // Field value:D
+       4: dreturn
+
+  static {};
+    Code:
+       0: getstatic     #94                 // Field net/minecraft/world/level/levelgen/DensityFunctions.NOISE_VALUE_CODEC:Lcom/mojang/serialization/Codec;
+       3: invokedynamic #112,  0            // InvokeDynamic #1:apply:()Ljava/util/function/Function;
+       8: invokedynamic #118,  0            // InvokeDynamic #2:apply:()Ljava/util/function/Function;
+      13: invokestatic  #122                // Method net/minecraft/world/level/levelgen/DensityFunctions.singleArgumentCodec:(Lcom/mojang/serialization/Codec;Ljava/util/function/Function;Ljava/util/function/Function;)Lnet/minecraft/util/KeyDispatchDataCodec;
+      16: putstatic     #63                 // Field CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+      19: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$Constant
+      22: dup
+      23: dconst_0
+      24: invokespecial #98                 // Method "<init>":(D)V
+      27: putstatic     #124                // Field ZERO:Lnet/minecraft/world/level/levelgen/DensityFunctions$Constant;
+      30: return
+}

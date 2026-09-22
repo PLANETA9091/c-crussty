@@ -1,0 +1,123 @@
+Compiled from "DensityFunctions.java"
+public final class net.minecraft.world.level.levelgen.DensityFunctions$Spline extends java.lang.Record implements net.minecraft.world.level.levelgen.DensityFunction {
+  private final net.minecraft.util.CubicSpline<net.minecraft.world.level.levelgen.DensityFunctions$Spline$Point, net.minecraft.world.level.levelgen.DensityFunctions$Spline$Coordinate> spline;
+
+  private static final com.mojang.serialization.Codec<net.minecraft.util.CubicSpline<net.minecraft.world.level.levelgen.DensityFunctions$Spline$Point, net.minecraft.world.level.levelgen.DensityFunctions$Spline$Coordinate>> SPLINE_CODEC;
+
+  private static final com.mojang.serialization.MapCodec<net.minecraft.world.level.levelgen.DensityFunctions$Spline> DATA_CODEC;
+
+  public static final net.minecraft.util.KeyDispatchDataCodec<net.minecraft.world.level.levelgen.DensityFunctions$Spline> CODEC;
+
+  public net.minecraft.world.level.levelgen.DensityFunctions$Spline(net.minecraft.util.CubicSpline<net.minecraft.world.level.levelgen.DensityFunctions$Spline$Point, net.minecraft.world.level.levelgen.DensityFunctions$Spline$Coordinate>);
+    Code:
+       0: aload_0
+       1: invokespecial #53                 // Method java/lang/Record."<init>":()V
+       4: aload_0
+       5: aload_1
+       6: putfield      #55                 // Field spline:Lnet/minecraft/util/CubicSpline;
+       9: return
+
+  public double compute(net.minecraft.world.level.levelgen.DensityFunction$FunctionContext);
+    Code:
+       0: aload_0
+       1: getfield      #55                 // Field spline:Lnet/minecraft/util/CubicSpline;
+       4: new           #12                 // class net/minecraft/world/level/levelgen/DensityFunctions$Spline$Point
+       7: dup
+       8: aload_1
+       9: invokespecial #62                 // Method net/minecraft/world/level/levelgen/DensityFunctions$Spline$Point."<init>":(Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;)V
+      12: invokeinterface #66,  2           // InterfaceMethod net/minecraft/util/CubicSpline.apply:(Ljava/lang/Object;)F
+      17: f2d
+      18: dreturn
+
+  public double minValue();
+    Code:
+       0: aload_0
+       1: getfield      #55                 // Field spline:Lnet/minecraft/util/CubicSpline;
+       4: invokeinterface #73,  1           // InterfaceMethod net/minecraft/util/CubicSpline.minValue:()F
+       9: f2d
+      10: dreturn
+
+  public double maxValue();
+    Code:
+       0: aload_0
+       1: getfield      #55                 // Field spline:Lnet/minecraft/util/CubicSpline;
+       4: invokeinterface #76,  1           // InterfaceMethod net/minecraft/util/CubicSpline.maxValue:()F
+       9: f2d
+      10: dreturn
+
+  public void fillArray(double[], net.minecraft.world.level.levelgen.DensityFunction$ContextProvider);
+    Code:
+       0: aload_2
+       1: aload_1
+       2: aload_0
+       3: invokeinterface #82,  3           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$ContextProvider.fillAllDirectly:([DLnet/minecraft/world/level/levelgen/DensityFunction;)V
+       8: return
+
+  public net.minecraft.world.level.levelgen.DensityFunction mapAll(net.minecraft.world.level.levelgen.DensityFunction$Visitor);
+    Code:
+       0: aload_1
+       1: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$Spline
+       4: dup
+       5: aload_0
+       6: getfield      #55                 // Field spline:Lnet/minecraft/util/CubicSpline;
+       9: aload_1
+      10: invokedynamic #108,  0            // InvokeDynamic #0:visit:(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/util/CubicSpline$CoordinateVisitor;
+      15: invokeinterface #111,  2          // InterfaceMethod net/minecraft/util/CubicSpline.mapAll:(Lnet/minecraft/util/CubicSpline$CoordinateVisitor;)Lnet/minecraft/util/CubicSpline;
+      20: invokespecial #113                // Method "<init>":(Lnet/minecraft/util/CubicSpline;)V
+      23: invokeinterface #116,  2          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$Visitor.apply:(Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      28: areturn
+
+  public net.minecraft.util.KeyDispatchDataCodec<? extends net.minecraft.world.level.levelgen.DensityFunction> codec();
+    Code:
+       0: getstatic     #123                // Field CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+       3: areturn
+
+  public final java.lang.String toString();
+    Code:
+       0: aload_0
+       1: invokedynamic #137,  0            // InvokeDynamic #1:toString:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Spline;)Ljava/lang/String;
+       6: areturn
+
+  public final int hashCode();
+    Code:
+       0: aload_0
+       1: invokedynamic #142,  0            // InvokeDynamic #1:hashCode:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Spline;)I
+       6: ireturn
+
+  public final boolean equals(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokedynamic #147,  0            // InvokeDynamic #1:equals:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Spline;Ljava/lang/Object;)Z
+       7: ireturn
+
+  public net.minecraft.util.CubicSpline<net.minecraft.world.level.levelgen.DensityFunctions$Spline$Point, net.minecraft.world.level.levelgen.DensityFunctions$Spline$Coordinate> spline();
+    Code:
+       0: aload_0
+       1: getfield      #55                 // Field spline:Lnet/minecraft/util/CubicSpline;
+       4: areturn
+
+  private static net.minecraft.world.level.levelgen.DensityFunctions$Spline$Coordinate lambda$mapAll$0(net.minecraft.world.level.levelgen.DensityFunction$Visitor, net.minecraft.world.level.levelgen.DensityFunctions$Spline$Coordinate);
+    Code:
+       0: aload_1
+       1: aload_0
+       2: invokevirtual #154                // Method net/minecraft/world/level/levelgen/DensityFunctions$Spline$Coordinate.mapAll:(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/DensityFunctions$Spline$Coordinate;
+       5: areturn
+
+  static {};
+    Code:
+       0: getstatic     #159                // Field net/minecraft/world/level/levelgen/DensityFunctions$Spline$Coordinate.CODEC:Lcom/mojang/serialization/Codec;
+       3: invokestatic  #162                // InterfaceMethod net/minecraft/util/CubicSpline.codec:(Lcom/mojang/serialization/Codec;)Lcom/mojang/serialization/Codec;
+       6: putstatic     #164                // Field SPLINE_CODEC:Lcom/mojang/serialization/Codec;
+       9: getstatic     #164                // Field SPLINE_CODEC:Lcom/mojang/serialization/Codec;
+      12: ldc           #126                // String spline
+      14: invokeinterface #170,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      19: invokedynamic #176,  0            // InvokeDynamic #2:apply:()Ljava/util/function/Function;
+      24: invokedynamic #182,  0            // InvokeDynamic #3:apply:()Ljava/util/function/Function;
+      29: invokevirtual #188                // Method com/mojang/serialization/MapCodec.xmap:(Ljava/util/function/Function;Ljava/util/function/Function;)Lcom/mojang/serialization/MapCodec;
+      32: putstatic     #190                // Field DATA_CODEC:Lcom/mojang/serialization/MapCodec;
+      35: getstatic     #190                // Field DATA_CODEC:Lcom/mojang/serialization/MapCodec;
+      38: invokestatic  #196                // Method net/minecraft/util/KeyDispatchDataCodec.of:(Lcom/mojang/serialization/MapCodec;)Lnet/minecraft/util/KeyDispatchDataCodec;
+      41: putstatic     #123                // Field CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+      44: return
+}

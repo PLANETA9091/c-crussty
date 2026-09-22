@@ -1,0 +1,515 @@
+Compiled from "BlendedNoise.java"
+public class net.minecraft.world.level.levelgen.synth.BlendedNoise implements net.minecraft.world.level.levelgen.DensityFunction$SimpleFunction {
+  private static final com.mojang.serialization.Codec<java.lang.Double> SCALE_RANGE;
+
+  private static final com.mojang.serialization.MapCodec<net.minecraft.world.level.levelgen.synth.BlendedNoise> DATA_CODEC;
+
+  public static final net.minecraft.util.KeyDispatchDataCodec<net.minecraft.world.level.levelgen.synth.BlendedNoise> CODEC;
+
+  private final net.minecraft.world.level.levelgen.synth.PerlinNoise minLimitNoise;
+
+  private final net.minecraft.world.level.levelgen.synth.PerlinNoise maxLimitNoise;
+
+  private final net.minecraft.world.level.levelgen.synth.PerlinNoise mainNoise;
+
+  private final double xzMultiplier;
+
+  private final double yMultiplier;
+
+  private final double xzFactor;
+
+  private final double yFactor;
+
+  private final double smearScaleMultiplier;
+
+  private final double maxValue;
+
+  private final double xzScale;
+
+  private final double yScale;
+
+  public static net.minecraft.world.level.levelgen.synth.BlendedNoise createUnseeded(double, double, double, double, double);
+    Code:
+       0: new           #2                  // class net/minecraft/world/level/levelgen/synth/BlendedNoise
+       3: dup
+       4: new           #54                 // class net/minecraft/world/level/levelgen/XoroshiroRandomSource
+       7: dup
+       8: lconst_0
+       9: invokespecial #58                 // Method net/minecraft/world/level/levelgen/XoroshiroRandomSource."<init>":(J)V
+      12: dload_0
+      13: dload_2
+      14: dload         4
+      16: dload         6
+      18: dload         8
+      20: invokespecial #61                 // Method "<init>":(Lnet/minecraft/util/RandomSource;DDDDD)V
+      23: areturn
+
+  private net.minecraft.world.level.levelgen.synth.BlendedNoise(net.minecraft.world.level.levelgen.synth.PerlinNoise, net.minecraft.world.level.levelgen.synth.PerlinNoise, net.minecraft.world.level.levelgen.synth.PerlinNoise, double, double, double, double, double);
+    Code:
+       0: aload_0
+       1: invokespecial #65                 // Method java/lang/Object."<init>":()V
+       4: aload_0
+       5: aload_1
+       6: putfield      #67                 // Field minLimitNoise:Lnet/minecraft/world/level/levelgen/synth/PerlinNoise;
+       9: aload_0
+      10: aload_2
+      11: putfield      #69                 // Field maxLimitNoise:Lnet/minecraft/world/level/levelgen/synth/PerlinNoise;
+      14: aload_0
+      15: aload_3
+      16: putfield      #71                 // Field mainNoise:Lnet/minecraft/world/level/levelgen/synth/PerlinNoise;
+      19: aload_0
+      20: dload         4
+      22: putfield      #73                 // Field xzScale:D
+      25: aload_0
+      26: dload         6
+      28: putfield      #75                 // Field yScale:D
+      31: aload_0
+      32: dload         8
+      34: putfield      #77                 // Field xzFactor:D
+      37: aload_0
+      38: dload         10
+      40: putfield      #79                 // Field yFactor:D
+      43: aload_0
+      44: dload         12
+      46: putfield      #81                 // Field smearScaleMultiplier:D
+      49: aload_0
+      50: ldc2_w        #82                 // double 684.412d
+      53: aload_0
+      54: getfield      #73                 // Field xzScale:D
+      57: dmul
+      58: putfield      #85                 // Field xzMultiplier:D
+      61: aload_0
+      62: ldc2_w        #82                 // double 684.412d
+      65: aload_0
+      66: getfield      #75                 // Field yScale:D
+      69: dmul
+      70: putfield      #87                 // Field yMultiplier:D
+      73: aload_0
+      74: aload_1
+      75: aload_0
+      76: getfield      #87                 // Field yMultiplier:D
+      79: invokevirtual #93                 // Method net/minecraft/world/level/levelgen/synth/PerlinNoise.maxBrokenValue:(D)D
+      82: putfield      #95                 // Field maxValue:D
+      85: return
+
+  public net.minecraft.world.level.levelgen.synth.BlendedNoise(net.minecraft.util.RandomSource, double, double, double, double, double);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: bipush        -15
+       4: iconst_0
+       5: invokestatic  #104                // InterfaceMethod java/util/stream/IntStream.rangeClosed:(II)Ljava/util/stream/IntStream;
+       8: invokestatic  #108                // Method net/minecraft/world/level/levelgen/synth/PerlinNoise.createLegacyForBlendedNoise:(Lnet/minecraft/util/RandomSource;Ljava/util/stream/IntStream;)Lnet/minecraft/world/level/levelgen/synth/PerlinNoise;
+      11: aload_1
+      12: bipush        -15
+      14: iconst_0
+      15: invokestatic  #104                // InterfaceMethod java/util/stream/IntStream.rangeClosed:(II)Ljava/util/stream/IntStream;
+      18: invokestatic  #108                // Method net/minecraft/world/level/levelgen/synth/PerlinNoise.createLegacyForBlendedNoise:(Lnet/minecraft/util/RandomSource;Ljava/util/stream/IntStream;)Lnet/minecraft/world/level/levelgen/synth/PerlinNoise;
+      21: aload_1
+      22: bipush        -7
+      24: iconst_0
+      25: invokestatic  #104                // InterfaceMethod java/util/stream/IntStream.rangeClosed:(II)Ljava/util/stream/IntStream;
+      28: invokestatic  #108                // Method net/minecraft/world/level/levelgen/synth/PerlinNoise.createLegacyForBlendedNoise:(Lnet/minecraft/util/RandomSource;Ljava/util/stream/IntStream;)Lnet/minecraft/world/level/levelgen/synth/PerlinNoise;
+      31: dload_2
+      32: dload         4
+      34: dload         6
+      36: dload         8
+      38: dload         10
+      40: invokespecial #110                // Method "<init>":(Lnet/minecraft/world/level/levelgen/synth/PerlinNoise;Lnet/minecraft/world/level/levelgen/synth/PerlinNoise;Lnet/minecraft/world/level/levelgen/synth/PerlinNoise;DDDDD)V
+      43: return
+
+  public net.minecraft.world.level.levelgen.synth.BlendedNoise withNewRandom(net.minecraft.util.RandomSource);
+    Code:
+       0: new           #2                  // class net/minecraft/world/level/levelgen/synth/BlendedNoise
+       3: dup
+       4: aload_1
+       5: aload_0
+       6: getfield      #73                 // Field xzScale:D
+       9: aload_0
+      10: getfield      #75                 // Field yScale:D
+      13: aload_0
+      14: getfield      #77                 // Field xzFactor:D
+      17: aload_0
+      18: getfield      #79                 // Field yFactor:D
+      21: aload_0
+      22: getfield      #81                 // Field smearScaleMultiplier:D
+      25: invokespecial #61                 // Method "<init>":(Lnet/minecraft/util/RandomSource;DDDDD)V
+      28: areturn
+
+  public double compute(net.minecraft.world.level.levelgen.DensityFunction$FunctionContext);
+    Code:
+       0: aload_1
+       1: invokeinterface #120,  1          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$FunctionContext.blockX:()I
+       6: i2d
+       7: aload_0
+       8: getfield      #85                 // Field xzMultiplier:D
+      11: dmul
+      12: dstore_2
+      13: aload_1
+      14: invokeinterface #123,  1          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$FunctionContext.blockY:()I
+      19: i2d
+      20: aload_0
+      21: getfield      #87                 // Field yMultiplier:D
+      24: dmul
+      25: dstore        4
+      27: aload_1
+      28: invokeinterface #126,  1          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$FunctionContext.blockZ:()I
+      33: i2d
+      34: aload_0
+      35: getfield      #85                 // Field xzMultiplier:D
+      38: dmul
+      39: dstore        6
+      41: dload_2
+      42: aload_0
+      43: getfield      #77                 // Field xzFactor:D
+      46: ddiv
+      47: dstore        8
+      49: dload         4
+      51: aload_0
+      52: getfield      #79                 // Field yFactor:D
+      55: ddiv
+      56: dstore        10
+      58: dload         6
+      60: aload_0
+      61: getfield      #77                 // Field xzFactor:D
+      64: ddiv
+      65: dstore        12
+      67: aload_0
+      68: getfield      #87                 // Field yMultiplier:D
+      71: aload_0
+      72: getfield      #81                 // Field smearScaleMultiplier:D
+      75: dmul
+      76: dstore        14
+      78: dload         14
+      80: aload_0
+      81: getfield      #79                 // Field yFactor:D
+      84: ddiv
+      85: dstore        16
+      87: dconst_0
+      88: dstore        18
+      90: dconst_0
+      91: dstore        20
+      93: dconst_0
+      94: dstore        22
+      96: iconst_1
+      97: istore        24
+      99: dconst_1
+     100: dstore        25
+     102: iconst_0
+     103: istore        27
+     105: iload         27
+     107: bipush        8
+     109: if_icmpge     189
+     112: aload_0
+     113: getfield      #71                 // Field mainNoise:Lnet/minecraft/world/level/levelgen/synth/PerlinNoise;
+     116: iload         27
+     118: invokevirtual #130                // Method net/minecraft/world/level/levelgen/synth/PerlinNoise.getOctaveNoise:(I)Lnet/minecraft/world/level/levelgen/synth/ImprovedNoise;
+     121: astore        28
+     123: aload         28
+     125: ifnull        175
+     128: dload         22
+     130: aload         28
+     132: dload         8
+     134: dload         25
+     136: dmul
+     137: invokestatic  #133                // Method net/minecraft/world/level/levelgen/synth/PerlinNoise.wrap:(D)D
+     140: dload         10
+     142: dload         25
+     144: dmul
+     145: invokestatic  #133                // Method net/minecraft/world/level/levelgen/synth/PerlinNoise.wrap:(D)D
+     148: dload         12
+     150: dload         25
+     152: dmul
+     153: invokestatic  #133                // Method net/minecraft/world/level/levelgen/synth/PerlinNoise.wrap:(D)D
+     156: dload         16
+     158: dload         25
+     160: dmul
+     161: dload         10
+     163: dload         25
+     165: dmul
+     166: invokevirtual #139                // Method net/minecraft/world/level/levelgen/synth/ImprovedNoise.noise:(DDDDD)D
+     169: dload         25
+     171: ddiv
+     172: dadd
+     173: dstore        22
+     175: dload         25
+     177: ldc2_w        #140                // double 2.0d
+     180: ddiv
+     181: dstore        25
+     183: iinc          27, 1
+     186: goto          105
+     189: dload         22
+     191: ldc2_w        #142                // double 10.0d
+     194: ddiv
+     195: dconst_1
+     196: dadd
+     197: ldc2_w        #140                // double 2.0d
+     200: ddiv
+     201: dstore        27
+     203: dload         27
+     205: dconst_1
+     206: dcmpl
+     207: iflt          214
+     210: iconst_1
+     211: goto          215
+     214: iconst_0
+     215: istore        29
+     217: dload         27
+     219: dconst_0
+     220: dcmpg
+     221: ifgt          228
+     224: iconst_1
+     225: goto          229
+     228: iconst_0
+     229: istore        30
+     231: dconst_1
+     232: dstore        25
+     234: iconst_0
+     235: istore        31
+     237: iload         31
+     239: bipush        16
+     241: if_icmpge     388
+     244: dload_2
+     245: dload         25
+     247: dmul
+     248: invokestatic  #133                // Method net/minecraft/world/level/levelgen/synth/PerlinNoise.wrap:(D)D
+     251: dstore        32
+     253: dload         4
+     255: dload         25
+     257: dmul
+     258: invokestatic  #133                // Method net/minecraft/world/level/levelgen/synth/PerlinNoise.wrap:(D)D
+     261: dstore        34
+     263: dload         6
+     265: dload         25
+     267: dmul
+     268: invokestatic  #133                // Method net/minecraft/world/level/levelgen/synth/PerlinNoise.wrap:(D)D
+     271: dstore        36
+     273: dload         14
+     275: dload         25
+     277: dmul
+     278: dstore        38
+     280: iload         29
+     282: ifne          327
+     285: aload_0
+     286: getfield      #67                 // Field minLimitNoise:Lnet/minecraft/world/level/levelgen/synth/PerlinNoise;
+     289: iload         31
+     291: invokevirtual #130                // Method net/minecraft/world/level/levelgen/synth/PerlinNoise.getOctaveNoise:(I)Lnet/minecraft/world/level/levelgen/synth/ImprovedNoise;
+     294: astore        40
+     296: aload         40
+     298: ifnull        327
+     301: dload         18
+     303: aload         40
+     305: dload         32
+     307: dload         34
+     309: dload         36
+     311: dload         38
+     313: dload         4
+     315: dload         25
+     317: dmul
+     318: invokevirtual #139                // Method net/minecraft/world/level/levelgen/synth/ImprovedNoise.noise:(DDDDD)D
+     321: dload         25
+     323: ddiv
+     324: dadd
+     325: dstore        18
+     327: iload         30
+     329: ifne          374
+     332: aload_0
+     333: getfield      #69                 // Field maxLimitNoise:Lnet/minecraft/world/level/levelgen/synth/PerlinNoise;
+     336: iload         31
+     338: invokevirtual #130                // Method net/minecraft/world/level/levelgen/synth/PerlinNoise.getOctaveNoise:(I)Lnet/minecraft/world/level/levelgen/synth/ImprovedNoise;
+     341: astore        40
+     343: aload         40
+     345: ifnull        374
+     348: dload         20
+     350: aload         40
+     352: dload         32
+     354: dload         34
+     356: dload         36
+     358: dload         38
+     360: dload         4
+     362: dload         25
+     364: dmul
+     365: invokevirtual #139                // Method net/minecraft/world/level/levelgen/synth/ImprovedNoise.noise:(DDDDD)D
+     368: dload         25
+     370: ddiv
+     371: dadd
+     372: dstore        20
+     374: dload         25
+     376: ldc2_w        #140                // double 2.0d
+     379: ddiv
+     380: dstore        25
+     382: iinc          31, 1
+     385: goto          237
+     388: dload         18
+     390: ldc2_w        #144                // double 512.0d
+     393: ddiv
+     394: dload         20
+     396: ldc2_w        #144                // double 512.0d
+     399: ddiv
+     400: dload         27
+     402: invokestatic  #151                // Method net/minecraft/util/Mth.clampedLerp:(DDD)D
+     405: ldc2_w        #152                // double 128.0d
+     408: ddiv
+     409: dreturn
+
+  public double minValue();
+    Code:
+       0: aload_0
+       1: invokevirtual #186                // Method maxValue:()D
+       4: dneg
+       5: dreturn
+
+  public double maxValue();
+    Code:
+       0: aload_0
+       1: getfield      #95                 // Field maxValue:D
+       4: dreturn
+
+  public void parityConfigString(java.lang.StringBuilder);
+    Code:
+       0: aload_1
+       1: ldc           #190                // String BlendedNoise{minLimitNoise=
+       3: invokevirtual #196                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+       6: pop
+       7: aload_0
+       8: getfield      #67                 // Field minLimitNoise:Lnet/minecraft/world/level/levelgen/synth/PerlinNoise;
+      11: aload_1
+      12: invokevirtual #198                // Method net/minecraft/world/level/levelgen/synth/PerlinNoise.parityConfigString:(Ljava/lang/StringBuilder;)V
+      15: aload_1
+      16: ldc           #200                // String , maxLimitNoise=
+      18: invokevirtual #196                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      21: pop
+      22: aload_0
+      23: getfield      #69                 // Field maxLimitNoise:Lnet/minecraft/world/level/levelgen/synth/PerlinNoise;
+      26: aload_1
+      27: invokevirtual #198                // Method net/minecraft/world/level/levelgen/synth/PerlinNoise.parityConfigString:(Ljava/lang/StringBuilder;)V
+      30: aload_1
+      31: ldc           #202                // String , mainNoise=
+      33: invokevirtual #196                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      36: pop
+      37: aload_0
+      38: getfield      #71                 // Field mainNoise:Lnet/minecraft/world/level/levelgen/synth/PerlinNoise;
+      41: aload_1
+      42: invokevirtual #198                // Method net/minecraft/world/level/levelgen/synth/PerlinNoise.parityConfigString:(Ljava/lang/StringBuilder;)V
+      45: aload_1
+      46: getstatic     #208                // Field java/util/Locale.ROOT:Ljava/util/Locale;
+      49: ldc           #210                // String , xzScale=%.3f, yScale=%.3f, xzMainScale=%.3f, yMainScale=%.3f, cellWidth=4, cellHeight=8
+      51: iconst_4
+      52: anewarray     #4                  // class java/lang/Object
+      55: dup
+      56: iconst_0
+      57: ldc2_w        #82                 // double 684.412d
+      60: invokestatic  #216                // Method java/lang/Double.valueOf:(D)Ljava/lang/Double;
+      63: aastore
+      64: dup
+      65: iconst_1
+      66: ldc2_w        #82                 // double 684.412d
+      69: invokestatic  #216                // Method java/lang/Double.valueOf:(D)Ljava/lang/Double;
+      72: aastore
+      73: dup
+      74: iconst_2
+      75: ldc2_w        #217                // double 8.555150000000001d
+      78: invokestatic  #216                // Method java/lang/Double.valueOf:(D)Ljava/lang/Double;
+      81: aastore
+      82: dup
+      83: iconst_3
+      84: ldc2_w        #219                // double 4.277575000000001d
+      87: invokestatic  #216                // Method java/lang/Double.valueOf:(D)Ljava/lang/Double;
+      90: aastore
+      91: invokestatic  #226                // Method java/lang/String.format:(Ljava/util/Locale;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      94: invokevirtual #196                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      97: bipush        125
+      99: invokevirtual #229                // Method java/lang/StringBuilder.append:(C)Ljava/lang/StringBuilder;
+     102: pop
+     103: return
+
+  public net.minecraft.util.KeyDispatchDataCodec<? extends net.minecraft.world.level.levelgen.DensityFunction> codec();
+    Code:
+       0: getstatic     #236                // Field CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+       3: areturn
+
+  private static com.mojang.datafixers.kinds.App lambda$static$5(com.mojang.serialization.codecs.RecordCodecBuilder$Instance);
+    Code:
+       0: aload_0
+       1: getstatic     #240                // Field SCALE_RANGE:Lcom/mojang/serialization/Codec;
+       4: ldc           #242                // String xz_scale
+       6: invokeinterface #248,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      11: invokedynamic #267,  0            // InvokeDynamic #0:apply:()Ljava/util/function/Function;
+      16: invokevirtual #273                // Method com/mojang/serialization/MapCodec.forGetter:(Ljava/util/function/Function;)Lcom/mojang/serialization/codecs/RecordCodecBuilder;
+      19: getstatic     #240                // Field SCALE_RANGE:Lcom/mojang/serialization/Codec;
+      22: ldc_w         #275                // String y_scale
+      25: invokeinterface #248,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      30: invokedynamic #280,  0            // InvokeDynamic #1:apply:()Ljava/util/function/Function;
+      35: invokevirtual #273                // Method com/mojang/serialization/MapCodec.forGetter:(Ljava/util/function/Function;)Lcom/mojang/serialization/codecs/RecordCodecBuilder;
+      38: getstatic     #240                // Field SCALE_RANGE:Lcom/mojang/serialization/Codec;
+      41: ldc_w         #282                // String xz_factor
+      44: invokeinterface #248,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      49: invokedynamic #287,  0            // InvokeDynamic #2:apply:()Ljava/util/function/Function;
+      54: invokevirtual #273                // Method com/mojang/serialization/MapCodec.forGetter:(Ljava/util/function/Function;)Lcom/mojang/serialization/codecs/RecordCodecBuilder;
+      57: getstatic     #240                // Field SCALE_RANGE:Lcom/mojang/serialization/Codec;
+      60: ldc_w         #289                // String y_factor
+      63: invokeinterface #248,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      68: invokedynamic #294,  0            // InvokeDynamic #3:apply:()Ljava/util/function/Function;
+      73: invokevirtual #273                // Method com/mojang/serialization/MapCodec.forGetter:(Ljava/util/function/Function;)Lcom/mojang/serialization/codecs/RecordCodecBuilder;
+      76: dconst_1
+      77: ldc2_w        #295                // double 8.0d
+      80: invokestatic  #300                // InterfaceMethod com/mojang/serialization/Codec.doubleRange:(DD)Lcom/mojang/serialization/Codec;
+      83: ldc_w         #302                // String smear_scale_multiplier
+      86: invokeinterface #248,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      91: invokedynamic #307,  0            // InvokeDynamic #4:apply:()Ljava/util/function/Function;
+      96: invokevirtual #273                // Method com/mojang/serialization/MapCodec.forGetter:(Ljava/util/function/Function;)Lcom/mojang/serialization/codecs/RecordCodecBuilder;
+      99: invokevirtual #311                // Method com/mojang/serialization/codecs/RecordCodecBuilder$Instance.group:(Lcom/mojang/datafixers/kinds/App;Lcom/mojang/datafixers/kinds/App;Lcom/mojang/datafixers/kinds/App;Lcom/mojang/datafixers/kinds/App;Lcom/mojang/datafixers/kinds/App;)Lcom/mojang/datafixers/Products$P5;
+     102: aload_0
+     103: invokedynamic #321,  0            // InvokeDynamic #5:apply:()Lcom/mojang/datafixers/util/Function5;
+     108: invokevirtual #324                // Method com/mojang/datafixers/Products$P5.apply:(Lcom/mojang/datafixers/kinds/Applicative;Lcom/mojang/datafixers/util/Function5;)Lcom/mojang/datafixers/kinds/App;
+     111: areturn
+
+  private static java.lang.Double lambda$static$4(net.minecraft.world.level.levelgen.synth.BlendedNoise);
+    Code:
+       0: aload_0
+       1: getfield      #81                 // Field smearScaleMultiplier:D
+       4: invokestatic  #216                // Method java/lang/Double.valueOf:(D)Ljava/lang/Double;
+       7: areturn
+
+  private static java.lang.Double lambda$static$3(net.minecraft.world.level.levelgen.synth.BlendedNoise);
+    Code:
+       0: aload_0
+       1: getfield      #79                 // Field yFactor:D
+       4: invokestatic  #216                // Method java/lang/Double.valueOf:(D)Ljava/lang/Double;
+       7: areturn
+
+  private static java.lang.Double lambda$static$2(net.minecraft.world.level.levelgen.synth.BlendedNoise);
+    Code:
+       0: aload_0
+       1: getfield      #77                 // Field xzFactor:D
+       4: invokestatic  #216                // Method java/lang/Double.valueOf:(D)Ljava/lang/Double;
+       7: areturn
+
+  private static java.lang.Double lambda$static$1(net.minecraft.world.level.levelgen.synth.BlendedNoise);
+    Code:
+       0: aload_0
+       1: getfield      #75                 // Field yScale:D
+       4: invokestatic  #216                // Method java/lang/Double.valueOf:(D)Ljava/lang/Double;
+       7: areturn
+
+  private static java.lang.Double lambda$static$0(net.minecraft.world.level.levelgen.synth.BlendedNoise);
+    Code:
+       0: aload_0
+       1: getfield      #73                 // Field xzScale:D
+       4: invokestatic  #216                // Method java/lang/Double.valueOf:(D)Ljava/lang/Double;
+       7: areturn
+
+  static {};
+    Code:
+       0: ldc2_w        #329                // double 0.001d
+       3: ldc2_w        #331                // double 1000.0d
+       6: invokestatic  #300                // InterfaceMethod com/mojang/serialization/Codec.doubleRange:(DD)Lcom/mojang/serialization/Codec;
+       9: putstatic     #240                // Field SCALE_RANGE:Lcom/mojang/serialization/Codec;
+      12: invokedynamic #337,  0            // InvokeDynamic #6:apply:()Ljava/util/function/Function;
+      17: invokestatic  #341                // Method com/mojang/serialization/codecs/RecordCodecBuilder.mapCodec:(Ljava/util/function/Function;)Lcom/mojang/serialization/MapCodec;
+      20: putstatic     #343                // Field DATA_CODEC:Lcom/mojang/serialization/MapCodec;
+      23: getstatic     #343                // Field DATA_CODEC:Lcom/mojang/serialization/MapCodec;
+      26: invokestatic  #349                // Method net/minecraft/util/KeyDispatchDataCodec.of:(Lcom/mojang/serialization/MapCodec;)Lnet/minecraft/util/KeyDispatchDataCodec;
+      29: putstatic     #236                // Field CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+      32: return
+}

@@ -1,0 +1,225 @@
+Compiled from "DensityFunctions.java"
+final class net.minecraft.world.level.levelgen.DensityFunctions$FindTopSurface extends java.lang.Record implements net.minecraft.world.level.levelgen.DensityFunction {
+  private final net.minecraft.world.level.levelgen.DensityFunction density;
+
+  private final net.minecraft.world.level.levelgen.DensityFunction upperBound;
+
+  private final int lowerBound;
+
+  private final int cellHeight;
+
+  private static final com.mojang.serialization.MapCodec<net.minecraft.world.level.levelgen.DensityFunctions$FindTopSurface> DATA_CODEC;
+
+  public static final net.minecraft.util.KeyDispatchDataCodec<net.minecraft.world.level.levelgen.DensityFunctions$FindTopSurface> CODEC;
+
+  net.minecraft.world.level.levelgen.DensityFunctions$FindTopSurface(net.minecraft.world.level.levelgen.DensityFunction, net.minecraft.world.level.levelgen.DensityFunction, int, int);
+    Code:
+       0: aload_0
+       1: invokespecial #54                 // Method java/lang/Record."<init>":()V
+       4: aload_0
+       5: aload_1
+       6: putfield      #56                 // Field density:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       9: aload_0
+      10: aload_2
+      11: putfield      #58                 // Field upperBound:Lnet/minecraft/world/level/levelgen/DensityFunction;
+      14: aload_0
+      15: iload_3
+      16: putfield      #60                 // Field lowerBound:I
+      19: aload_0
+      20: iload         4
+      22: putfield      #62                 // Field cellHeight:I
+      25: return
+
+  public double compute(net.minecraft.world.level.levelgen.DensityFunction$FunctionContext);
+    Code:
+       0: aload_0
+       1: getfield      #58                 // Field upperBound:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       4: aload_1
+       5: invokeinterface #68,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.compute:(Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;)D
+      10: aload_0
+      11: getfield      #62                 // Field cellHeight:I
+      14: i2d
+      15: ddiv
+      16: invokestatic  #74                 // Method net/minecraft/util/Mth.floor:(D)I
+      19: aload_0
+      20: getfield      #62                 // Field cellHeight:I
+      23: imul
+      24: istore_2
+      25: iload_2
+      26: aload_0
+      27: getfield      #60                 // Field lowerBound:I
+      30: if_icmpgt     39
+      33: aload_0
+      34: getfield      #60                 // Field lowerBound:I
+      37: i2d
+      38: dreturn
+      39: iload_2
+      40: istore_3
+      41: iload_3
+      42: aload_0
+      43: getfield      #60                 // Field lowerBound:I
+      46: if_icmplt     96
+      49: aload_0
+      50: getfield      #56                 // Field density:Lnet/minecraft/world/level/levelgen/DensityFunction;
+      53: new           #15                 // class net/minecraft/world/level/levelgen/DensityFunction$SinglePointContext
+      56: dup
+      57: aload_1
+      58: invokeinterface #78,  1           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$FunctionContext.blockX:()I
+      63: iload_3
+      64: aload_1
+      65: invokeinterface #81,  1           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$FunctionContext.blockZ:()I
+      70: invokespecial #84                 // Method net/minecraft/world/level/levelgen/DensityFunction$SinglePointContext."<init>":(III)V
+      73: invokeinterface #68,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.compute:(Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;)D
+      78: dconst_0
+      79: dcmpl
+      80: ifle          86
+      83: iload_3
+      84: i2d
+      85: dreturn
+      86: iload_3
+      87: aload_0
+      88: getfield      #62                 // Field cellHeight:I
+      91: isub
+      92: istore_3
+      93: goto          41
+      96: aload_0
+      97: getfield      #60                 // Field lowerBound:I
+     100: i2d
+     101: dreturn
+
+  public void fillArray(double[], net.minecraft.world.level.levelgen.DensityFunction$ContextProvider);
+    Code:
+       0: aload_2
+       1: aload_1
+       2: aload_0
+       3: invokeinterface #94,  3           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$ContextProvider.fillAllDirectly:([DLnet/minecraft/world/level/levelgen/DensityFunction;)V
+       8: return
+
+  public net.minecraft.world.level.levelgen.DensityFunction mapAll(net.minecraft.world.level.levelgen.DensityFunction$Visitor);
+    Code:
+       0: aload_1
+       1: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$FindTopSurface
+       4: dup
+       5: aload_0
+       6: getfield      #56                 // Field density:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       9: aload_1
+      10: invokeinterface #102,  2          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.mapAll:(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      15: aload_0
+      16: getfield      #58                 // Field upperBound:Lnet/minecraft/world/level/levelgen/DensityFunction;
+      19: aload_1
+      20: invokeinterface #102,  2          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.mapAll:(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      25: aload_0
+      26: getfield      #60                 // Field lowerBound:I
+      29: aload_0
+      30: getfield      #62                 // Field cellHeight:I
+      33: invokespecial #104                // Method "<init>":(Lnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction;II)V
+      36: invokeinterface #108,  2          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$Visitor.apply:(Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      41: areturn
+
+  public double minValue();
+    Code:
+       0: aload_0
+       1: getfield      #60                 // Field lowerBound:I
+       4: i2d
+       5: dreturn
+
+  public double maxValue();
+    Code:
+       0: aload_0
+       1: getfield      #60                 // Field lowerBound:I
+       4: i2d
+       5: aload_0
+       6: getfield      #58                 // Field upperBound:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       9: invokeinterface #115,  1          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.maxValue:()D
+      14: invokestatic  #121                // Method java/lang/Math.max:(DD)D
+      17: dreturn
+
+  public net.minecraft.util.KeyDispatchDataCodec<? extends net.minecraft.world.level.levelgen.DensityFunction> codec();
+    Code:
+       0: getstatic     #126                // Field CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+       3: areturn
+
+  public final java.lang.String toString();
+    Code:
+       0: aload_0
+       1: invokedynamic #144,  0            // InvokeDynamic #0:toString:(Lnet/minecraft/world/level/levelgen/DensityFunctions$FindTopSurface;)Ljava/lang/String;
+       6: areturn
+
+  public final int hashCode();
+    Code:
+       0: aload_0
+       1: invokedynamic #148,  0            // InvokeDynamic #0:hashCode:(Lnet/minecraft/world/level/levelgen/DensityFunctions$FindTopSurface;)I
+       6: ireturn
+
+  public final boolean equals(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokedynamic #153,  0            // InvokeDynamic #0:equals:(Lnet/minecraft/world/level/levelgen/DensityFunctions$FindTopSurface;Ljava/lang/Object;)Z
+       7: ireturn
+
+  public net.minecraft.world.level.levelgen.DensityFunction density();
+    Code:
+       0: aload_0
+       1: getfield      #56                 // Field density:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       4: areturn
+
+  public net.minecraft.world.level.levelgen.DensityFunction upperBound();
+    Code:
+       0: aload_0
+       1: getfield      #58                 // Field upperBound:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       4: areturn
+
+  public int lowerBound();
+    Code:
+       0: aload_0
+       1: getfield      #60                 // Field lowerBound:I
+       4: ireturn
+
+  public int cellHeight();
+    Code:
+       0: aload_0
+       1: getfield      #62                 // Field cellHeight:I
+       4: ireturn
+
+  private static com.mojang.datafixers.kinds.App lambda$static$0(com.mojang.serialization.codecs.RecordCodecBuilder$Instance);
+    Code:
+       0: aload_0
+       1: getstatic     #162                // Field net/minecraft/world/level/levelgen/DensityFunction.HOLDER_HELPER_CODEC:Lcom/mojang/serialization/Codec;
+       4: ldc           #163                // String density
+       6: invokeinterface #169,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      11: invokedynamic #186,  0            // InvokeDynamic #1:apply:()Ljava/util/function/Function;
+      16: invokevirtual #192                // Method com/mojang/serialization/MapCodec.forGetter:(Ljava/util/function/Function;)Lcom/mojang/serialization/codecs/RecordCodecBuilder;
+      19: getstatic     #162                // Field net/minecraft/world/level/levelgen/DensityFunction.HOLDER_HELPER_CODEC:Lcom/mojang/serialization/Codec;
+      22: ldc           #194                // String upper_bound
+      24: invokeinterface #169,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      29: invokedynamic #198,  0            // InvokeDynamic #2:apply:()Ljava/util/function/Function;
+      34: invokevirtual #192                // Method com/mojang/serialization/MapCodec.forGetter:(Ljava/util/function/Function;)Lcom/mojang/serialization/codecs/RecordCodecBuilder;
+      37: sipush        -4064
+      40: sipush        4062
+      43: invokestatic  #202                // InterfaceMethod com/mojang/serialization/Codec.intRange:(II)Lcom/mojang/serialization/Codec;
+      46: ldc           #204                // String lower_bound
+      48: invokeinterface #169,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      53: invokedynamic #210,  0            // InvokeDynamic #3:apply:()Ljava/util/function/Function;
+      58: invokevirtual #192                // Method com/mojang/serialization/MapCodec.forGetter:(Ljava/util/function/Function;)Lcom/mojang/serialization/codecs/RecordCodecBuilder;
+      61: getstatic     #215                // Field net/minecraft/util/ExtraCodecs.POSITIVE_INT:Lcom/mojang/serialization/Codec;
+      64: ldc           #217                // String cell_height
+      66: invokeinterface #169,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      71: invokedynamic #221,  0            // InvokeDynamic #4:apply:()Ljava/util/function/Function;
+      76: invokevirtual #192                // Method com/mojang/serialization/MapCodec.forGetter:(Ljava/util/function/Function;)Lcom/mojang/serialization/codecs/RecordCodecBuilder;
+      79: invokevirtual #225                // Method com/mojang/serialization/codecs/RecordCodecBuilder$Instance.group:(Lcom/mojang/datafixers/kinds/App;Lcom/mojang/datafixers/kinds/App;Lcom/mojang/datafixers/kinds/App;Lcom/mojang/datafixers/kinds/App;)Lcom/mojang/datafixers/Products$P4;
+      82: aload_0
+      83: invokedynamic #233,  0            // InvokeDynamic #5:apply:()Lcom/mojang/datafixers/util/Function4;
+      88: invokevirtual #236                // Method com/mojang/datafixers/Products$P4.apply:(Lcom/mojang/datafixers/kinds/Applicative;Lcom/mojang/datafixers/util/Function4;)Lcom/mojang/datafixers/kinds/App;
+      91: areturn
+
+  static {};
+    Code:
+       0: invokedynamic #244,  0            // InvokeDynamic #6:apply:()Ljava/util/function/Function;
+       5: invokestatic  #248                // Method com/mojang/serialization/codecs/RecordCodecBuilder.mapCodec:(Ljava/util/function/Function;)Lcom/mojang/serialization/MapCodec;
+       8: putstatic     #250                // Field DATA_CODEC:Lcom/mojang/serialization/MapCodec;
+      11: getstatic     #250                // Field DATA_CODEC:Lcom/mojang/serialization/MapCodec;
+      14: invokestatic  #256                // Method net/minecraft/util/KeyDispatchDataCodec.of:(Lcom/mojang/serialization/MapCodec;)Lnet/minecraft/util/KeyDispatchDataCodec;
+      17: putstatic     #126                // Field CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+      20: return
+}

@@ -1,0 +1,119 @@
+Compiled from "DensityFunctions.java"
+public final class net.minecraft.world.level.levelgen.DensityFunctions$TwoArgumentSimpleFunction$Type extends java.lang.Enum<net.minecraft.world.level.levelgen.DensityFunctions$TwoArgumentSimpleFunction$Type> implements net.minecraft.util.StringRepresentable {
+  public static final net.minecraft.world.level.levelgen.DensityFunctions$TwoArgumentSimpleFunction$Type ADD;
+
+  public static final net.minecraft.world.level.levelgen.DensityFunctions$TwoArgumentSimpleFunction$Type MUL;
+
+  public static final net.minecraft.world.level.levelgen.DensityFunctions$TwoArgumentSimpleFunction$Type MIN;
+
+  public static final net.minecraft.world.level.levelgen.DensityFunctions$TwoArgumentSimpleFunction$Type MAX;
+
+  final net.minecraft.util.KeyDispatchDataCodec<net.minecraft.world.level.levelgen.DensityFunctions$TwoArgumentSimpleFunction> codec;
+
+  private final java.lang.String name;
+
+  private static final net.minecraft.world.level.levelgen.DensityFunctions$TwoArgumentSimpleFunction$Type[] $VALUES;
+
+  public static net.minecraft.world.level.levelgen.DensityFunctions$TwoArgumentSimpleFunction$Type[] values();
+    Code:
+       0: getstatic     #35                 // Field $VALUES:[Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+       3: invokevirtual #40                 // Method "[Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;".clone:()Ljava/lang/Object;
+       6: checkcast     #36                 // class "[Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;"
+       9: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunctions$TwoArgumentSimpleFunction$Type valueOf(java.lang.String);
+    Code:
+       0: ldc           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type
+       2: aload_0
+       3: invokestatic  #45                 // Method java/lang/Enum.valueOf:(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Enum;
+       6: checkcast     #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type
+       9: areturn
+
+  private net.minecraft.world.level.levelgen.DensityFunctions$TwoArgumentSimpleFunction$Type(java.lang.String);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: iload_2
+       3: invokespecial #51                 // Method java/lang/Enum."<init>":(Ljava/lang/String;I)V
+       6: aload_0
+       7: aload_0
+       8: invokedynamic #70,  0             // InvokeDynamic #0:apply:(Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;)Ljava/util/function/BiFunction;
+      13: invokedynamic #82,  0             // InvokeDynamic #1:apply:()Ljava/util/function/Function;
+      18: invokedynamic #87,  0             // InvokeDynamic #2:apply:()Ljava/util/function/Function;
+      23: invokestatic  #91                 // Method net/minecraft/world/level/levelgen/DensityFunctions.doubleFunctionArgumentCodec:(Ljava/util/function/BiFunction;Ljava/util/function/Function;Ljava/util/function/Function;)Lnet/minecraft/util/KeyDispatchDataCodec;
+      26: putfield      #93                 // Field codec:Lnet/minecraft/util/KeyDispatchDataCodec;
+      29: aload_0
+      30: aload_3
+      31: putfield      #95                 // Field name:Ljava/lang/String;
+      34: return
+
+  public java.lang.String getSerializedName();
+    Code:
+       0: aload_0
+       1: getfield      #95                 // Field name:Ljava/lang/String;
+       4: areturn
+
+  private net.minecraft.world.level.levelgen.DensityFunctions$TwoArgumentSimpleFunction lambda$new$0(net.minecraft.world.level.levelgen.DensityFunction, net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: aload_2
+       3: invokestatic  #102                // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction.create:(Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;Lnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction;
+       6: areturn
+
+  private static net.minecraft.world.level.levelgen.DensityFunctions$TwoArgumentSimpleFunction$Type[] $values();
+    Code:
+       0: iconst_4
+       1: anewarray     #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type
+       4: dup
+       5: iconst_0
+       6: getstatic     #108                // Field ADD:Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+       9: aastore
+      10: dup
+      11: iconst_1
+      12: getstatic     #110                // Field MUL:Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+      15: aastore
+      16: dup
+      17: iconst_2
+      18: getstatic     #112                // Field MIN:Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+      21: aastore
+      22: dup
+      23: iconst_3
+      24: getstatic     #114                // Field MAX:Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+      27: aastore
+      28: areturn
+
+  static {};
+    Code:
+       0: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type
+       3: dup
+       4: ldc           #117                // String ADD
+       6: iconst_0
+       7: ldc           #119                // String add
+       9: invokespecial #121                // Method "<init>":(Ljava/lang/String;ILjava/lang/String;)V
+      12: putstatic     #108                // Field ADD:Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+      15: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type
+      18: dup
+      19: ldc           #122                // String MUL
+      21: iconst_1
+      22: ldc           #124                // String mul
+      24: invokespecial #121                // Method "<init>":(Ljava/lang/String;ILjava/lang/String;)V
+      27: putstatic     #110                // Field MUL:Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+      30: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type
+      33: dup
+      34: ldc           #125                // String MIN
+      36: iconst_2
+      37: ldc           #127                // String min
+      39: invokespecial #121                // Method "<init>":(Ljava/lang/String;ILjava/lang/String;)V
+      42: putstatic     #112                // Field MIN:Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+      45: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type
+      48: dup
+      49: ldc           #128                // String MAX
+      51: iconst_3
+      52: ldc           #130                // String max
+      54: invokespecial #121                // Method "<init>":(Ljava/lang/String;ILjava/lang/String;)V
+      57: putstatic     #114                // Field MAX:Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+      60: invokestatic  #132                // Method $values:()[Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+      63: putstatic     #35                 // Field $VALUES:[Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+      66: return
+}

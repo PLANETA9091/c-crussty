@@ -24,6 +24,13 @@ FAIL=0
 note() { printf '  %s\n' "$1"; }
 die()  { printf 'FAIL: %s\n' "$1" >&2; FAIL=1; }
 
+# Expected class-file major for the CURRENT check_class call. The lever
+# bridge blobs compile --release 21 (major 65); the noise heritage blobs
+# compile --release 8 (major 52) by design (scripts/build_noise.sh law:
+# phantom-reaper bridge needs nothing from Java 9+, the runtime guard in
+# src/improved_noise.rs keeps them dormant on older kernels).
+EXPECTED_MAJOR=65
+
 check_class() { # blob expected_native... — then markers via MARKERS_<n>
   local blob="$1"; shift
   if [ ! -f "$blob" ]; then die "missing blob: $blob"; return; fi
@@ -35,7 +42,7 @@ b = open(sys.argv[1], 'rb').read(8)
 print((b[6] << 8) | b[7])
 PY
 )
-  [ "$major" = "65" ] || die "$blob: major $major != 65 (rebuild with --release 21)"
+  [ "$major" = "$EXPECTED_MAJOR" ] || die "$blob: major $major != $EXPECTED_MAJOR (wrong toolchain release)"
   local javap_out
   javap_out=$("$JAVAP" -p -c "$blob" 2>&1) || die "$blob: javap failed"
   for marker in "$@"; do
@@ -73,6 +80,29 @@ check_class \
   "entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
   "cmp414_cvs" "cmp412_eqsnapv3" \
   "native int eqProbe"
+
+# TASK-417-B (chunk-pipeline R-vector): the paletted demux ops bridge — the
+# bulk-JNI section data-plane unpacker (Rust palette_gather core) + the
+# bit-exact probe markers. The cmp417_wgen lever gate lives in the RUST side
+# (src/paletted.rs STRICT-OR), the Java blob only carries the effect markers.
+check_class \
+  "paletted/build/net/minecraft/world/level/chunk/PalettedContainerOps.class" \
+  "bulk-unpack ARMED" \
+  "native int bulkUnpack" \
+  "bulk-probe PASS"
+
+# TASK-417-B GEN axis: the noise heritage bridge gained the 4th whole-body
+# target (DensityFunction$SimpleFunction default fillArray -> YClampedGradient
+# memo batch). Gate flags live in src/noise_fill.rs; the blob must carry the
+# bridge + census markers (a source-only edit without a rebuild fails here).
+# NOTE: noise blobs are --release 8 (major 52) by build_noise.sh law.
+EXPECTED_MAJOR=52
+check_class \
+  "noise/build/net/minecraft/world/level/levelgen/NormalNoiseBatchOps.class" \
+  "fillSimpleDefault" \
+  "YClampedGradient" \
+  "ygCalls"
+EXPECTED_MAJOR=65
 
 # gate-flag consistency: every flag string accepted by the SOURCE gate must
 # also be present in the BLOB constant pool (covers the ×93 rebuild lesson).

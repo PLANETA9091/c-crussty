@@ -1,0 +1,1341 @@
+Compiled from "Blender.java"
+public class net.minecraft.world.level.levelgen.blending.Blender {
+  private static final net.minecraft.world.level.levelgen.blending.Blender EMPTY;
+
+  private static final net.minecraft.world.level.levelgen.synth.NormalNoise SHIFT_NOISE;
+
+  private static final int HEIGHT_BLENDING_RANGE_CELLS;
+
+  private static final int HEIGHT_BLENDING_RANGE_CHUNKS;
+
+  private static final int DENSITY_BLENDING_RANGE_CELLS;
+
+  private static final int DENSITY_BLENDING_RANGE_CHUNKS;
+
+  private static final double OLD_CHUNK_XZ_RADIUS;
+
+  private final it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap<net.minecraft.world.level.levelgen.blending.BlendingData> heightAndBiomeBlendingData;
+
+  private final it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap<net.minecraft.world.level.levelgen.blending.BlendingData> densityBlendingData;
+
+  public static net.minecraft.world.level.levelgen.blending.Blender empty();
+    Code:
+       0: getstatic     #94                 // Field EMPTY:Lnet/minecraft/world/level/levelgen/blending/Blender;
+       3: areturn
+
+  public static net.minecraft.world.level.levelgen.blending.Blender of(net.minecraft.server.level.WorldGenRegion);
+    Code:
+       0: getstatic     #103                // Field net/minecraft/SharedConstants.DEBUG_DISABLE_BLENDING:Z
+       3: ifne          237
+       6: aload_0
+       7: ifnull        237
+      10: aload_0
+      11: invokevirtual #109                // Method net/minecraft/server/level/WorldGenRegion.getCenter:()Lnet/minecraft/world/level/ChunkPos;
+      14: astore_1
+      15: aload_0
+      16: aload_1
+      17: getstatic     #111                // Field HEIGHT_BLENDING_RANGE_CHUNKS:I
+      20: invokevirtual #115                // Method net/minecraft/server/level/WorldGenRegion.isOldChunkAround:(Lnet/minecraft/world/level/ChunkPos;I)Z
+      23: ifne          30
+      26: getstatic     #94                 // Field EMPTY:Lnet/minecraft/world/level/levelgen/blending/Blender;
+      29: areturn
+      30: new           #119                // class it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap
+      33: dup
+      34: invokespecial #123                // Method it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap."<init>":()V
+      37: astore_2
+      38: new           #119                // class it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap
+      41: dup
+      42: invokespecial #123                // Method it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap."<init>":()V
+      45: astore_3
+      46: getstatic     #111                // Field HEIGHT_BLENDING_RANGE_CHUNKS:I
+      49: iconst_1
+      50: iadd
+      51: invokestatic  #129                // Method net/minecraft/util/Mth.square:(I)I
+      54: istore        4
+      56: getstatic     #111                // Field HEIGHT_BLENDING_RANGE_CHUNKS:I
+      59: ineg
+      60: istore        5
+      62: iload         5
+      64: getstatic     #111                // Field HEIGHT_BLENDING_RANGE_CHUNKS:I
+      67: if_icmpgt     207
+      70: getstatic     #111                // Field HEIGHT_BLENDING_RANGE_CHUNKS:I
+      73: ineg
+      74: istore        6
+      76: iload         6
+      78: getstatic     #111                // Field HEIGHT_BLENDING_RANGE_CHUNKS:I
+      81: if_icmpgt     201
+      84: iload         5
+      86: iload         5
+      88: imul
+      89: iload         6
+      91: iload         6
+      93: imul
+      94: iadd
+      95: iload         4
+      97: if_icmpgt     195
+     100: aload_1
+     101: getfield      #132                // Field net/minecraft/world/level/ChunkPos.x:I
+     104: iload         5
+     106: iadd
+     107: istore        7
+     109: aload_1
+     110: getfield      #135                // Field net/minecraft/world/level/ChunkPos.z:I
+     113: iload         6
+     115: iadd
+     116: istore        8
+     118: aload_0
+     119: iload         7
+     121: iload         8
+     123: invokestatic  #139                // Method net/minecraft/world/level/levelgen/blending/BlendingData.getOrUpdateBlendingData:(Lnet/minecraft/server/level/WorldGenRegion;II)Lnet/minecraft/world/level/levelgen/blending/BlendingData;
+     126: astore        9
+     128: aload         9
+     130: ifnull        195
+     133: aload_2
+     134: iload         7
+     136: iload         8
+     138: invokestatic  #143                // Method net/minecraft/world/level/ChunkPos.asLong:(II)J
+     141: aload         9
+     143: invokevirtual #147                // Method it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap.put:(JLjava/lang/Object;)Ljava/lang/Object;
+     146: pop
+     147: iload         5
+     149: getstatic     #149                // Field DENSITY_BLENDING_RANGE_CHUNKS:I
+     152: ineg
+     153: if_icmplt     195
+     156: iload         5
+     158: getstatic     #149                // Field DENSITY_BLENDING_RANGE_CHUNKS:I
+     161: if_icmpgt     195
+     164: iload         6
+     166: getstatic     #149                // Field DENSITY_BLENDING_RANGE_CHUNKS:I
+     169: ineg
+     170: if_icmplt     195
+     173: iload         6
+     175: getstatic     #149                // Field DENSITY_BLENDING_RANGE_CHUNKS:I
+     178: if_icmpgt     195
+     181: aload_3
+     182: iload         7
+     184: iload         8
+     186: invokestatic  #143                // Method net/minecraft/world/level/ChunkPos.asLong:(II)J
+     189: aload         9
+     191: invokevirtual #147                // Method it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap.put:(JLjava/lang/Object;)Ljava/lang/Object;
+     194: pop
+     195: iinc          6, 1
+     198: goto          76
+     201: iinc          5, 1
+     204: goto          62
+     207: aload_2
+     208: invokevirtual #153                // Method it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap.isEmpty:()Z
+     211: ifeq          227
+     214: aload_3
+     215: invokevirtual #153                // Method it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap.isEmpty:()Z
+     218: ifeq          227
+     221: getstatic     #94                 // Field EMPTY:Lnet/minecraft/world/level/levelgen/blending/Blender;
+     224: goto          236
+     227: new           #2                  // class net/minecraft/world/level/levelgen/blending/Blender
+     230: dup
+     231: aload_2
+     232: aload_3
+     233: invokespecial #156                // Method "<init>":(Lit/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap;Lit/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap;)V
+     236: areturn
+     237: getstatic     #94                 // Field EMPTY:Lnet/minecraft/world/level/levelgen/blending/Blender;
+     240: areturn
+
+  net.minecraft.world.level.levelgen.blending.Blender(it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap<net.minecraft.world.level.levelgen.blending.BlendingData>, it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap<net.minecraft.world.level.levelgen.blending.BlendingData>);
+    Code:
+       0: aload_0
+       1: invokespecial #171                // Method java/lang/Object."<init>":()V
+       4: aload_0
+       5: aload_1
+       6: putfield      #173                // Field heightAndBiomeBlendingData:Lit/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap;
+       9: aload_0
+      10: aload_2
+      11: putfield      #175                // Field densityBlendingData:Lit/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap;
+      14: return
+
+  public boolean isEmpty();
+    Code:
+       0: aload_0
+       1: getfield      #173                // Field heightAndBiomeBlendingData:Lit/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap;
+       4: invokevirtual #153                // Method it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap.isEmpty:()Z
+       7: ifeq          24
+      10: aload_0
+      11: getfield      #175                // Field densityBlendingData:Lit/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap;
+      14: invokevirtual #153                // Method it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap.isEmpty:()Z
+      17: ifeq          24
+      20: iconst_1
+      21: goto          25
+      24: iconst_0
+      25: ireturn
+
+  public net.minecraft.world.level.levelgen.blending.Blender$BlendingOutput blendOffsetAndFactor(int, int);
+    Code:
+       0: iload_1
+       1: invokestatic  #183                // Method net/minecraft/core/QuartPos.fromBlock:(I)I
+       4: istore_3
+       5: iload_2
+       6: invokestatic  #183                // Method net/minecraft/core/QuartPos.fromBlock:(I)I
+       9: istore        4
+      11: aload_0
+      12: iload_3
+      13: iconst_0
+      14: iload         4
+      16: invokedynamic #201,  0            // InvokeDynamic #0:get:()Lnet/minecraft/world/level/levelgen/blending/Blender$CellValueGetter;
+      21: invokevirtual #205                // Method getBlendingDataValue:(IIILnet/minecraft/world/level/levelgen/blending/Blender$CellValueGetter;)D
+      24: dstore        5
+      26: dload         5
+      28: ldc2_w        #206                // double 1.7976931348623157E308d
+      31: dcmpl
+      32: ifeq          49
+      35: new           #11                 // class net/minecraft/world/level/levelgen/blending/Blender$BlendingOutput
+      38: dup
+      39: dconst_0
+      40: dload         5
+      42: invokestatic  #211                // Method heightToOffset:(D)D
+      45: invokespecial #214                // Method net/minecraft/world/level/levelgen/blending/Blender$BlendingOutput."<init>":(DD)V
+      48: areturn
+      49: new           #216                // class org/apache/commons/lang3/mutable/MutableDouble
+      52: dup
+      53: dconst_0
+      54: invokespecial #219                // Method org/apache/commons/lang3/mutable/MutableDouble."<init>":(D)V
+      57: astore        7
+      59: new           #216                // class org/apache/commons/lang3/mutable/MutableDouble
+      62: dup
+      63: dconst_0
+      64: invokespecial #219                // Method org/apache/commons/lang3/mutable/MutableDouble."<init>":(D)V
+      67: astore        8
+      69: new           #216                // class org/apache/commons/lang3/mutable/MutableDouble
+      72: dup
+      73: ldc2_w        #220                // double Infinityd
+      76: invokespecial #219                // Method org/apache/commons/lang3/mutable/MutableDouble."<init>":(D)V
+      79: astore        9
+      81: aload_0
+      82: getfield      #173                // Field heightAndBiomeBlendingData:Lit/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap;
+      85: iload_3
+      86: iload         4
+      88: aload         9
+      90: aload         8
+      92: aload         7
+      94: invokedynamic #234,  0            // InvokeDynamic #1:accept:(IILorg/apache/commons/lang3/mutable/MutableDouble;Lorg/apache/commons/lang3/mutable/MutableDouble;Lorg/apache/commons/lang3/mutable/MutableDouble;)Ljava/util/function/BiConsumer;
+      99: invokevirtual #238                // Method it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap.forEach:(Ljava/util/function/BiConsumer;)V
+     102: aload         9
+     104: invokevirtual #242                // Method org/apache/commons/lang3/mutable/MutableDouble.doubleValue:()D
+     107: ldc2_w        #220                // double Infinityd
+     110: dcmpl
+     111: ifne          124
+     114: new           #11                 // class net/minecraft/world/level/levelgen/blending/Blender$BlendingOutput
+     117: dup
+     118: dconst_1
+     119: dconst_0
+     120: invokespecial #214                // Method net/minecraft/world/level/levelgen/blending/Blender$BlendingOutput."<init>":(DD)V
+     123: areturn
+     124: aload         8
+     126: invokevirtual #242                // Method org/apache/commons/lang3/mutable/MutableDouble.doubleValue:()D
+     129: aload         7
+     131: invokevirtual #242                // Method org/apache/commons/lang3/mutable/MutableDouble.doubleValue:()D
+     134: ddiv
+     135: dstore        10
+     137: aload         9
+     139: invokevirtual #242                // Method org/apache/commons/lang3/mutable/MutableDouble.doubleValue:()D
+     142: getstatic     #244                // Field HEIGHT_BLENDING_RANGE_CELLS:I
+     145: iconst_1
+     146: iadd
+     147: i2d
+     148: ddiv
+     149: dconst_0
+     150: dconst_1
+     151: invokestatic  #248                // Method net/minecraft/util/Mth.clamp:(DDD)D
+     154: dstore        12
+     156: ldc2_w        #249                // double 3.0d
+     159: dload         12
+     161: dmul
+     162: dload         12
+     164: dmul
+     165: ldc2_w        #251                // double 2.0d
+     168: dload         12
+     170: dmul
+     171: dload         12
+     173: dmul
+     174: dload         12
+     176: dmul
+     177: dsub
+     178: dstore        12
+     180: new           #11                 // class net/minecraft/world/level/levelgen/blending/Blender$BlendingOutput
+     183: dup
+     184: dload         12
+     186: dload         10
+     188: invokestatic  #211                // Method heightToOffset:(D)D
+     191: invokespecial #214                // Method net/minecraft/world/level/levelgen/blending/Blender$BlendingOutput."<init>":(DD)V
+     194: areturn
+
+  private static double heightToOffset(double);
+    Code:
+       0: dconst_1
+       1: dstore_2
+       2: dload_0
+       3: ldc2_w        #262                // double 0.5d
+       6: dadd
+       7: dstore        4
+       9: dload         4
+      11: ldc2_w        #85                 // double 8.0d
+      14: invokestatic  #267                // Method net/minecraft/util/Mth.positiveModulo:(DD)D
+      17: dstore        6
+      19: dconst_1
+      20: ldc2_w        #268                // double 32.0d
+      23: dload         4
+      25: ldc2_w        #270                // double 128.0d
+      28: dsub
+      29: dmul
+      30: ldc2_w        #249                // double 3.0d
+      33: dload         4
+      35: ldc2_w        #272                // double 120.0d
+      38: dsub
+      39: dmul
+      40: dload         6
+      42: dmul
+      43: dsub
+      44: ldc2_w        #249                // double 3.0d
+      47: dload         6
+      49: dmul
+      50: dload         6
+      52: dmul
+      53: dadd
+      54: dmul
+      55: ldc2_w        #270                // double 128.0d
+      58: ldc2_w        #268                // double 32.0d
+      61: ldc2_w        #249                // double 3.0d
+      64: dload         6
+      66: dmul
+      67: dsub
+      68: dmul
+      69: ddiv
+      70: dreturn
+
+  public double blendDensity(net.minecraft.world.level.levelgen.DensityFunction$FunctionContext, double);
+    Code:
+       0: aload_1
+       1: invokeinterface #281,  1          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$FunctionContext.blockX:()I
+       6: invokestatic  #183                // Method net/minecraft/core/QuartPos.fromBlock:(I)I
+       9: istore        4
+      11: aload_1
+      12: invokeinterface #284,  1          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$FunctionContext.blockY:()I
+      17: bipush        8
+      19: idiv
+      20: istore        5
+      22: aload_1
+      23: invokeinterface #287,  1          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$FunctionContext.blockZ:()I
+      28: invokestatic  #183                // Method net/minecraft/core/QuartPos.fromBlock:(I)I
+      31: istore        6
+      33: aload_0
+      34: iload         4
+      36: iload         5
+      38: iload         6
+      40: invokedynamic #292,  0            // InvokeDynamic #2:get:()Lnet/minecraft/world/level/levelgen/blending/Blender$CellValueGetter;
+      45: invokevirtual #205                // Method getBlendingDataValue:(IIILnet/minecraft/world/level/levelgen/blending/Blender$CellValueGetter;)D
+      48: dstore        7
+      50: dload         7
+      52: ldc2_w        #206                // double 1.7976931348623157E308d
+      55: dcmpl
+      56: ifeq          62
+      59: dload         7
+      61: dreturn
+      62: new           #216                // class org/apache/commons/lang3/mutable/MutableDouble
+      65: dup
+      66: dconst_0
+      67: invokespecial #219                // Method org/apache/commons/lang3/mutable/MutableDouble."<init>":(D)V
+      70: astore        9
+      72: new           #216                // class org/apache/commons/lang3/mutable/MutableDouble
+      75: dup
+      76: dconst_0
+      77: invokespecial #219                // Method org/apache/commons/lang3/mutable/MutableDouble."<init>":(D)V
+      80: astore        10
+      82: new           #216                // class org/apache/commons/lang3/mutable/MutableDouble
+      85: dup
+      86: ldc2_w        #220                // double Infinityd
+      89: invokespecial #219                // Method org/apache/commons/lang3/mutable/MutableDouble."<init>":(D)V
+      92: astore        11
+      94: aload_0
+      95: getfield      #175                // Field densityBlendingData:Lit/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap;
+      98: iload         5
+     100: iload         4
+     102: iload         6
+     104: aload         11
+     106: aload         10
+     108: aload         9
+     110: invokedynamic #300,  0            // InvokeDynamic #3:accept:(IIILorg/apache/commons/lang3/mutable/MutableDouble;Lorg/apache/commons/lang3/mutable/MutableDouble;Lorg/apache/commons/lang3/mutable/MutableDouble;)Ljava/util/function/BiConsumer;
+     115: invokevirtual #238                // Method it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap.forEach:(Ljava/util/function/BiConsumer;)V
+     118: aload         11
+     120: invokevirtual #242                // Method org/apache/commons/lang3/mutable/MutableDouble.doubleValue:()D
+     123: ldc2_w        #220                // double Infinityd
+     126: dcmpl
+     127: ifne          132
+     130: dload_2
+     131: dreturn
+     132: aload         10
+     134: invokevirtual #242                // Method org/apache/commons/lang3/mutable/MutableDouble.doubleValue:()D
+     137: aload         9
+     139: invokevirtual #242                // Method org/apache/commons/lang3/mutable/MutableDouble.doubleValue:()D
+     142: ddiv
+     143: dstore        12
+     145: aload         11
+     147: invokevirtual #242                // Method org/apache/commons/lang3/mutable/MutableDouble.doubleValue:()D
+     150: ldc2_w        #249                // double 3.0d
+     153: ddiv
+     154: dconst_0
+     155: dconst_1
+     156: invokestatic  #248                // Method net/minecraft/util/Mth.clamp:(DDD)D
+     159: dstore        14
+     161: dload         14
+     163: dload         12
+     165: dload_2
+     166: invokestatic  #303                // Method net/minecraft/util/Mth.lerp:(DDD)D
+     169: dreturn
+
+  private double getBlendingDataValue(int, int, int, net.minecraft.world.level.levelgen.blending.Blender$CellValueGetter);
+    Code:
+       0: iload_1
+       1: invokestatic  #309                // Method net/minecraft/core/QuartPos.toSection:(I)I
+       4: istore        5
+       6: iload_3
+       7: invokestatic  #309                // Method net/minecraft/core/QuartPos.toSection:(I)I
+      10: istore        6
+      12: iload_1
+      13: iconst_3
+      14: iand
+      15: ifne          22
+      18: iconst_1
+      19: goto          23
+      22: iconst_0
+      23: istore        7
+      25: iload_3
+      26: iconst_3
+      27: iand
+      28: ifne          35
+      31: iconst_1
+      32: goto          36
+      35: iconst_0
+      36: istore        8
+      38: aload_0
+      39: aload         4
+      41: iload         5
+      43: iload         6
+      45: iload_1
+      46: iload_2
+      47: iload_3
+      48: invokevirtual #312                // Method getBlendingDataValue:(Lnet/minecraft/world/level/levelgen/blending/Blender$CellValueGetter;IIIII)D
+      51: dstore        9
+      53: dload         9
+      55: ldc2_w        #206                // double 1.7976931348623157E308d
+      58: dcmpl
+      59: ifne          153
+      62: iload         7
+      64: ifeq          91
+      67: iload         8
+      69: ifeq          91
+      72: aload_0
+      73: aload         4
+      75: iload         5
+      77: iconst_1
+      78: isub
+      79: iload         6
+      81: iconst_1
+      82: isub
+      83: iload_1
+      84: iload_2
+      85: iload_3
+      86: invokevirtual #312                // Method getBlendingDataValue:(Lnet/minecraft/world/level/levelgen/blending/Blender$CellValueGetter;IIIII)D
+      89: dstore        9
+      91: dload         9
+      93: ldc2_w        #206                // double 1.7976931348623157E308d
+      96: dcmpl
+      97: ifne          153
+     100: iload         7
+     102: ifeq          122
+     105: aload_0
+     106: aload         4
+     108: iload         5
+     110: iconst_1
+     111: isub
+     112: iload         6
+     114: iload_1
+     115: iload_2
+     116: iload_3
+     117: invokevirtual #312                // Method getBlendingDataValue:(Lnet/minecraft/world/level/levelgen/blending/Blender$CellValueGetter;IIIII)D
+     120: dstore        9
+     122: dload         9
+     124: ldc2_w        #206                // double 1.7976931348623157E308d
+     127: dcmpl
+     128: ifne          153
+     131: iload         8
+     133: ifeq          153
+     136: aload_0
+     137: aload         4
+     139: iload         5
+     141: iload         6
+     143: iconst_1
+     144: isub
+     145: iload_1
+     146: iload_2
+     147: iload_3
+     148: invokevirtual #312                // Method getBlendingDataValue:(Lnet/minecraft/world/level/levelgen/blending/Blender$CellValueGetter;IIIII)D
+     151: dstore        9
+     153: dload         9
+     155: dreturn
+
+  private double getBlendingDataValue(net.minecraft.world.level.levelgen.blending.Blender$CellValueGetter, int, int, int, int, int);
+    Code:
+       0: aload_0
+       1: getfield      #173                // Field heightAndBiomeBlendingData:Lit/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap;
+       4: iload_2
+       5: iload_3
+       6: invokestatic  #143                // Method net/minecraft/world/level/ChunkPos.asLong:(II)J
+       9: invokevirtual #322                // Method it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap.get:(J)Ljava/lang/Object;
+      12: checkcast     #50                 // class net/minecraft/world/level/levelgen/blending/BlendingData
+      15: astore        7
+      17: aload         7
+      19: ifnull        49
+      22: aload_1
+      23: aload         7
+      25: iload         4
+      27: iload_2
+      28: invokestatic  #325                // Method net/minecraft/core/QuartPos.fromSection:(I)I
+      31: isub
+      32: iload         5
+      34: iload         6
+      36: iload_3
+      37: invokestatic  #325                // Method net/minecraft/core/QuartPos.fromSection:(I)I
+      40: isub
+      41: invokeinterface #327,  5          // InterfaceMethod net/minecraft/world/level/levelgen/blending/Blender$CellValueGetter.get:(Lnet/minecraft/world/level/levelgen/blending/BlendingData;III)D
+      46: goto          52
+      49: ldc2_w        #206                // double 1.7976931348623157E308d
+      52: dreturn
+
+  public net.minecraft.world.level.biome.BiomeResolver getBiomeResolver(net.minecraft.world.level.biome.BiomeResolver);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokedynamic #343,  0            // InvokeDynamic #4:getNoiseBiome:(Lnet/minecraft/world/level/levelgen/blending/Blender;Lnet/minecraft/world/level/biome/BiomeResolver;)Lnet/minecraft/world/level/biome/BiomeResolver;
+       7: areturn
+
+  private net.minecraft.core.Holder<net.minecraft.world.level.biome.Biome> blendBiome(int, int, int);
+    Code:
+       0: new           #216                // class org/apache/commons/lang3/mutable/MutableDouble
+       3: dup
+       4: ldc2_w        #220                // double Infinityd
+       7: invokespecial #219                // Method org/apache/commons/lang3/mutable/MutableDouble."<init>":(D)V
+      10: astore        4
+      12: new           #350                // class org/apache/commons/lang3/mutable/MutableObject
+      15: dup
+      16: invokespecial #351                // Method org/apache/commons/lang3/mutable/MutableObject."<init>":()V
+      19: astore        5
+      21: aload_0
+      22: getfield      #173                // Field heightAndBiomeBlendingData:Lit/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap;
+      25: iload_2
+      26: iload_1
+      27: iload_3
+      28: aload         4
+      30: aload         5
+      32: invokedynamic #359,  0            // InvokeDynamic #5:accept:(IIILorg/apache/commons/lang3/mutable/MutableDouble;Lorg/apache/commons/lang3/mutable/MutableObject;)Ljava/util/function/BiConsumer;
+      37: invokevirtual #238                // Method it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap.forEach:(Ljava/util/function/BiConsumer;)V
+      40: aload         4
+      42: invokevirtual #242                // Method org/apache/commons/lang3/mutable/MutableDouble.doubleValue:()D
+      45: ldc2_w        #220                // double Infinityd
+      48: dcmpl
+      49: ifne          54
+      52: aconst_null
+      53: areturn
+      54: getstatic     #361                // Field SHIFT_NOISE:Lnet/minecraft/world/level/levelgen/synth/NormalNoise;
+      57: iload_1
+      58: i2d
+      59: dconst_0
+      60: iload_3
+      61: i2d
+      62: invokevirtual #364                // Method net/minecraft/world/level/levelgen/synth/NormalNoise.getValue:(DDD)D
+      65: ldc2_w        #365                // double 12.0d
+      68: dmul
+      69: dstore        6
+      71: aload         4
+      73: invokevirtual #242                // Method org/apache/commons/lang3/mutable/MutableDouble.doubleValue:()D
+      76: dload         6
+      78: dadd
+      79: getstatic     #244                // Field HEIGHT_BLENDING_RANGE_CELLS:I
+      82: iconst_1
+      83: iadd
+      84: i2d
+      85: ddiv
+      86: dconst_0
+      87: dconst_1
+      88: invokestatic  #248                // Method net/minecraft/util/Mth.clamp:(DDD)D
+      91: dstore        8
+      93: dload         8
+      95: ldc2_w        #262                // double 0.5d
+      98: dcmpl
+      99: ifle          106
+     102: aconst_null
+     103: goto          114
+     106: aload         5
+     108: invokevirtual #369                // Method org/apache/commons/lang3/mutable/MutableObject.getValue:()Ljava/lang/Object;
+     111: checkcast     #371                // class net/minecraft/core/Holder
+     114: areturn
+
+  public static void generateBorderTicks(net.minecraft.server.level.WorldGenRegion, net.minecraft.world.level.chunk.ChunkAccess);
+    Code:
+       0: getstatic     #103                // Field net/minecraft/SharedConstants.DEBUG_DISABLE_BLENDING:Z
+       3: ifne          402
+       6: aload_1
+       7: invokevirtual #381                // Method net/minecraft/world/level/chunk/ChunkAccess.getPos:()Lnet/minecraft/world/level/ChunkPos;
+      10: astore_2
+      11: aload_1
+      12: invokevirtual #384                // Method net/minecraft/world/level/chunk/ChunkAccess.isOldNoiseGeneration:()Z
+      15: istore_3
+      16: new           #22                 // class net/minecraft/core/BlockPos$MutableBlockPos
+      19: dup
+      20: invokespecial #385                // Method net/minecraft/core/BlockPos$MutableBlockPos."<init>":()V
+      23: astore        4
+      25: new           #24                 // class net/minecraft/core/BlockPos
+      28: dup
+      29: aload_2
+      30: invokevirtual #388                // Method net/minecraft/world/level/ChunkPos.getMinBlockX:()I
+      33: iconst_0
+      34: aload_2
+      35: invokevirtual #391                // Method net/minecraft/world/level/ChunkPos.getMinBlockZ:()I
+      38: invokespecial #394                // Method net/minecraft/core/BlockPos."<init>":(III)V
+      41: astore        5
+      43: aload_1
+      44: invokevirtual #398                // Method net/minecraft/world/level/chunk/ChunkAccess.getBlendingData:()Lnet/minecraft/world/level/levelgen/blending/BlendingData;
+      47: astore        6
+      49: aload         6
+      51: ifnull        402
+      54: aload         6
+      56: invokevirtual #402                // Method net/minecraft/world/level/levelgen/blending/BlendingData.getAreaWithOldGeneration:()Lnet/minecraft/world/level/LevelHeightAccessor;
+      59: invokeinterface #407,  1          // InterfaceMethod net/minecraft/world/level/LevelHeightAccessor.getMinY:()I
+      64: istore        7
+      66: aload         6
+      68: invokevirtual #402                // Method net/minecraft/world/level/levelgen/blending/BlendingData.getAreaWithOldGeneration:()Lnet/minecraft/world/level/LevelHeightAccessor;
+      71: invokeinterface #410,  1          // InterfaceMethod net/minecraft/world/level/LevelHeightAccessor.getMaxY:()I
+      76: istore        8
+      78: iload_3
+      79: ifeq          186
+      82: iconst_0
+      83: istore        9
+      85: iload         9
+      87: bipush        16
+      89: if_icmpge     186
+      92: iconst_0
+      93: istore        10
+      95: iload         10
+      97: bipush        16
+      99: if_icmpge     180
+     102: aload_1
+     103: aload         4
+     105: aload         5
+     107: iload         9
+     109: iload         7
+     111: iconst_1
+     112: isub
+     113: iload         10
+     115: invokevirtual #414                // Method net/minecraft/core/BlockPos$MutableBlockPos.setWithOffset:(Lnet/minecraft/core/Vec3i;III)Lnet/minecraft/core/BlockPos$MutableBlockPos;
+     118: invokestatic  #418                // Method generateBorderTick:(Lnet/minecraft/world/level/chunk/ChunkAccess;Lnet/minecraft/core/BlockPos;)V
+     121: aload_1
+     122: aload         4
+     124: aload         5
+     126: iload         9
+     128: iload         7
+     130: iload         10
+     132: invokevirtual #414                // Method net/minecraft/core/BlockPos$MutableBlockPos.setWithOffset:(Lnet/minecraft/core/Vec3i;III)Lnet/minecraft/core/BlockPos$MutableBlockPos;
+     135: invokestatic  #418                // Method generateBorderTick:(Lnet/minecraft/world/level/chunk/ChunkAccess;Lnet/minecraft/core/BlockPos;)V
+     138: aload_1
+     139: aload         4
+     141: aload         5
+     143: iload         9
+     145: iload         8
+     147: iload         10
+     149: invokevirtual #414                // Method net/minecraft/core/BlockPos$MutableBlockPos.setWithOffset:(Lnet/minecraft/core/Vec3i;III)Lnet/minecraft/core/BlockPos$MutableBlockPos;
+     152: invokestatic  #418                // Method generateBorderTick:(Lnet/minecraft/world/level/chunk/ChunkAccess;Lnet/minecraft/core/BlockPos;)V
+     155: aload_1
+     156: aload         4
+     158: aload         5
+     160: iload         9
+     162: iload         8
+     164: iconst_1
+     165: iadd
+     166: iload         10
+     168: invokevirtual #414                // Method net/minecraft/core/BlockPos$MutableBlockPos.setWithOffset:(Lnet/minecraft/core/Vec3i;III)Lnet/minecraft/core/BlockPos$MutableBlockPos;
+     171: invokestatic  #418                // Method generateBorderTick:(Lnet/minecraft/world/level/chunk/ChunkAccess;Lnet/minecraft/core/BlockPos;)V
+     174: iinc          10, 1
+     177: goto          95
+     180: iinc          9, 1
+     183: goto          85
+     186: getstatic     #422                // Field net/minecraft/core/Direction$Plane.HORIZONTAL:Lnet/minecraft/core/Direction$Plane;
+     189: invokevirtual #426                // Method net/minecraft/core/Direction$Plane.iterator:()Ljava/util/Iterator;
+     192: astore        9
+     194: aload         9
+     196: invokeinterface #431,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+     201: ifeq          402
+     204: aload         9
+     206: invokeinterface #434,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     211: checkcast     #29                 // class net/minecraft/core/Direction
+     214: astore        10
+     216: aload_0
+     217: aload_2
+     218: getfield      #132                // Field net/minecraft/world/level/ChunkPos.x:I
+     221: aload         10
+     223: invokevirtual #437                // Method net/minecraft/core/Direction.getStepX:()I
+     226: iadd
+     227: aload_2
+     228: getfield      #135                // Field net/minecraft/world/level/ChunkPos.z:I
+     231: aload         10
+     233: invokevirtual #440                // Method net/minecraft/core/Direction.getStepZ:()I
+     236: iadd
+     237: invokevirtual #444                // Method net/minecraft/server/level/WorldGenRegion.getChunk:(II)Lnet/minecraft/world/level/chunk/ChunkAccess;
+     240: invokevirtual #384                // Method net/minecraft/world/level/chunk/ChunkAccess.isOldNoiseGeneration:()Z
+     243: iload_3
+     244: if_icmpeq     399
+     247: aload         10
+     249: getstatic     #448                // Field net/minecraft/core/Direction.EAST:Lnet/minecraft/core/Direction;
+     252: if_acmpne     260
+     255: bipush        15
+     257: goto          261
+     260: iconst_0
+     261: istore        11
+     263: aload         10
+     265: getstatic     #451                // Field net/minecraft/core/Direction.WEST:Lnet/minecraft/core/Direction;
+     268: if_acmpne     275
+     271: iconst_0
+     272: goto          277
+     275: bipush        15
+     277: istore        12
+     279: aload         10
+     281: getstatic     #454                // Field net/minecraft/core/Direction.SOUTH:Lnet/minecraft/core/Direction;
+     284: if_acmpne     292
+     287: bipush        15
+     289: goto          293
+     292: iconst_0
+     293: istore        13
+     295: aload         10
+     297: getstatic     #457                // Field net/minecraft/core/Direction.NORTH:Lnet/minecraft/core/Direction;
+     300: if_acmpne     307
+     303: iconst_0
+     304: goto          309
+     307: bipush        15
+     309: istore        14
+     311: iload         11
+     313: istore        15
+     315: iload         15
+     317: iload         12
+     319: if_icmpgt     399
+     322: iload         13
+     324: istore        16
+     326: iload         16
+     328: iload         14
+     330: if_icmpgt     393
+     333: iload         8
+     335: aload_1
+     336: getstatic     #461                // Field net/minecraft/world/level/levelgen/Heightmap$Types.MOTION_BLOCKING:Lnet/minecraft/world/level/levelgen/Heightmap$Types;
+     339: iload         15
+     341: iload         16
+     343: invokevirtual #464                // Method net/minecraft/world/level/chunk/ChunkAccess.getHeight:(Lnet/minecraft/world/level/levelgen/Heightmap$Types;II)I
+     346: invokestatic  #470                // Method java/lang/Math.min:(II)I
+     349: iconst_1
+     350: iadd
+     351: istore        17
+     353: iload         7
+     355: istore        18
+     357: iload         18
+     359: iload         17
+     361: if_icmpge     387
+     364: aload_1
+     365: aload         4
+     367: aload         5
+     369: iload         15
+     371: iload         18
+     373: iload         16
+     375: invokevirtual #414                // Method net/minecraft/core/BlockPos$MutableBlockPos.setWithOffset:(Lnet/minecraft/core/Vec3i;III)Lnet/minecraft/core/BlockPos$MutableBlockPos;
+     378: invokestatic  #418                // Method generateBorderTick:(Lnet/minecraft/world/level/chunk/ChunkAccess;Lnet/minecraft/core/BlockPos;)V
+     381: iinc          18, 1
+     384: goto          357
+     387: iinc          16, 1
+     390: goto          326
+     393: iinc          15, 1
+     396: goto          315
+     399: goto          194
+     402: return
+
+  private static void generateBorderTick(net.minecraft.world.level.chunk.ChunkAccess, net.minecraft.core.BlockPos);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #490                // Method net/minecraft/world/level/chunk/ChunkAccess.getBlockState:(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;
+       5: astore_2
+       6: aload_2
+       7: getstatic     #496                // Field net/minecraft/tags/BlockTags.LEAVES:Lnet/minecraft/tags/TagKey;
+      10: invokevirtual #502                // Method net/minecraft/world/level/block/state/BlockState.is:(Lnet/minecraft/tags/TagKey;)Z
+      13: ifeq          21
+      16: aload_0
+      17: aload_1
+      18: invokevirtual #506                // Method net/minecraft/world/level/chunk/ChunkAccess.markPosForPostprocessing:(Lnet/minecraft/core/BlockPos;)V
+      21: aload_0
+      22: aload_1
+      23: invokevirtual #510                // Method net/minecraft/world/level/chunk/ChunkAccess.getFluidState:(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/material/FluidState;
+      26: astore_3
+      27: aload_3
+      28: invokevirtual #513                // Method net/minecraft/world/level/material/FluidState.isEmpty:()Z
+      31: ifne          39
+      34: aload_0
+      35: aload_1
+      36: invokevirtual #506                // Method net/minecraft/world/level/chunk/ChunkAccess.markPosForPostprocessing:(Lnet/minecraft/core/BlockPos;)V
+      39: return
+
+  public static void addAroundOldChunksCarvingMaskFilter(net.minecraft.world.level.WorldGenLevel, net.minecraft.world.level.chunk.ProtoChunk);
+    Code:
+       0: getstatic     #103                // Field net/minecraft/SharedConstants.DEBUG_DISABLE_BLENDING:Z
+       3: ifne          151
+       6: aload_1
+       7: invokevirtual #522                // Method net/minecraft/world/level/chunk/ProtoChunk.getPos:()Lnet/minecraft/world/level/ChunkPos;
+      10: astore_2
+      11: invokestatic  #526                // Method com/google/common/collect/ImmutableMap.builder:()Lcom/google/common/collect/ImmutableMap$Builder;
+      14: astore_3
+      15: invokestatic  #532                // Method net/minecraft/core/Direction8.values:()[Lnet/minecraft/core/Direction8;
+      18: astore        4
+      20: aload         4
+      22: arraylength
+      23: istore        5
+      25: iconst_0
+      26: istore        6
+      28: iload         6
+      30: iload         5
+      32: if_icmpge     101
+      35: aload         4
+      37: iload         6
+      39: aaload
+      40: astore        7
+      42: aload_2
+      43: getfield      #132                // Field net/minecraft/world/level/ChunkPos.x:I
+      46: aload         7
+      48: invokevirtual #537                // Method net/minecraft/core/Direction8.getStepX:()I
+      51: iadd
+      52: istore        8
+      54: aload_2
+      55: getfield      #135                // Field net/minecraft/world/level/ChunkPos.z:I
+      58: aload         7
+      60: invokevirtual #538                // Method net/minecraft/core/Direction8.getStepZ:()I
+      63: iadd
+      64: istore        9
+      66: aload_0
+      67: iload         8
+      69: iload         9
+      71: invokeinterface #539,  3          // InterfaceMethod net/minecraft/world/level/WorldGenLevel.getChunk:(II)Lnet/minecraft/world/level/chunk/ChunkAccess;
+      76: invokevirtual #398                // Method net/minecraft/world/level/chunk/ChunkAccess.getBlendingData:()Lnet/minecraft/world/level/levelgen/blending/BlendingData;
+      79: astore        10
+      81: aload         10
+      83: ifnull        95
+      86: aload_3
+      87: aload         7
+      89: aload         10
+      91: invokevirtual #542                // Method com/google/common/collect/ImmutableMap$Builder.put:(Ljava/lang/Object;Ljava/lang/Object;)Lcom/google/common/collect/ImmutableMap$Builder;
+      94: pop
+      95: iinc          6, 1
+      98: goto          28
+     101: aload_3
+     102: invokevirtual #546                // Method com/google/common/collect/ImmutableMap$Builder.build:()Lcom/google/common/collect/ImmutableMap;
+     105: astore        4
+     107: aload_1
+     108: invokevirtual #547                // Method net/minecraft/world/level/chunk/ProtoChunk.isOldNoiseGeneration:()Z
+     111: ifne          122
+     114: aload         4
+     116: invokevirtual #548                // Method com/google/common/collect/ImmutableMap.isEmpty:()Z
+     119: ifne          151
+     122: aload_1
+     123: invokevirtual #549                // Method net/minecraft/world/level/chunk/ProtoChunk.getBlendingData:()Lnet/minecraft/world/level/levelgen/blending/BlendingData;
+     126: aload         4
+     128: invokestatic  #553                // Method makeOldChunkDistanceGetter:(Lnet/minecraft/world/level/levelgen/blending/BlendingData;Ljava/util/Map;)Lnet/minecraft/world/level/levelgen/blending/Blender$DistanceGetter;
+     131: astore        5
+     133: aload         5
+     135: invokedynamic #564,  0            // InvokeDynamic #6:test:(Lnet/minecraft/world/level/levelgen/blending/Blender$DistanceGetter;)Lnet/minecraft/world/level/chunk/CarvingMask$Mask;
+     140: astore        6
+     142: aload_1
+     143: invokevirtual #568                // Method net/minecraft/world/level/chunk/ProtoChunk.getOrCreateCarvingMask:()Lnet/minecraft/world/level/chunk/CarvingMask;
+     146: aload         6
+     148: invokevirtual #572                // Method net/minecraft/world/level/chunk/CarvingMask.setAdditionalMask:(Lnet/minecraft/world/level/chunk/CarvingMask$Mask;)V
+     151: return
+
+  public static net.minecraft.world.level.levelgen.blending.Blender$DistanceGetter makeOldChunkDistanceGetter(net.minecraft.world.level.levelgen.blending.BlendingData, java.util.Map<net.minecraft.core.Direction8, net.minecraft.world.level.levelgen.blending.BlendingData>);
+    Code:
+       0: invokestatic  #592                // Method com/google/common/collect/Lists.newArrayList:()Ljava/util/ArrayList;
+       3: astore_2
+       4: aload_0
+       5: ifnull        20
+       8: aload_2
+       9: aconst_null
+      10: aload_0
+      11: invokestatic  #596                // Method makeOffsetOldChunkDistanceGetter:(Lnet/minecraft/core/Direction8;Lnet/minecraft/world/level/levelgen/blending/BlendingData;)Lnet/minecraft/world/level/levelgen/blending/Blender$DistanceGetter;
+      14: invokeinterface #602,  2          // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+      19: pop
+      20: aload_1
+      21: aload_2
+      22: invokedynamic #612,  0            // InvokeDynamic #7:accept:(Ljava/util/List;)Ljava/util/function/BiConsumer;
+      27: invokeinterface #615,  2          // InterfaceMethod java/util/Map.forEach:(Ljava/util/function/BiConsumer;)V
+      32: aload_2
+      33: invokedynamic #625,  0            // InvokeDynamic #8:getDistance:(Ljava/util/List;)Lnet/minecraft/world/level/levelgen/blending/Blender$DistanceGetter;
+      38: areturn
+
+  private static net.minecraft.world.level.levelgen.blending.Blender$DistanceGetter makeOffsetOldChunkDistanceGetter(net.minecraft.core.Direction8, net.minecraft.world.level.levelgen.blending.BlendingData);
+    Code:
+       0: dconst_0
+       1: dstore_2
+       2: dconst_0
+       3: dstore        4
+       5: aload_0
+       6: ifnull        71
+       9: aload_0
+      10: invokevirtual #635                // Method net/minecraft/core/Direction8.getDirections:()Ljava/util/Set;
+      13: invokeinterface #638,  1          // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+      18: astore        6
+      20: aload         6
+      22: invokeinterface #431,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      27: ifeq          71
+      30: aload         6
+      32: invokeinterface #434,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      37: checkcast     #29                 // class net/minecraft/core/Direction
+      40: astore        7
+      42: dload_2
+      43: aload         7
+      45: invokevirtual #437                // Method net/minecraft/core/Direction.getStepX:()I
+      48: bipush        16
+      50: imul
+      51: i2d
+      52: dadd
+      53: dstore_2
+      54: dload         4
+      56: aload         7
+      58: invokevirtual #440                // Method net/minecraft/core/Direction.getStepZ:()I
+      61: bipush        16
+      63: imul
+      64: i2d
+      65: dadd
+      66: dstore        4
+      68: goto          20
+      71: dload_2
+      72: dstore        6
+      74: dload         4
+      76: dstore        8
+      78: aload_1
+      79: invokevirtual #402                // Method net/minecraft/world/level/levelgen/blending/BlendingData.getAreaWithOldGeneration:()Lnet/minecraft/world/level/LevelHeightAccessor;
+      82: invokeinterface #640,  1          // InterfaceMethod net/minecraft/world/level/LevelHeightAccessor.getHeight:()I
+      87: i2d
+      88: ldc2_w        #251                // double 2.0d
+      91: ddiv
+      92: dstore        10
+      94: aload_1
+      95: invokevirtual #402                // Method net/minecraft/world/level/levelgen/blending/BlendingData.getAreaWithOldGeneration:()Lnet/minecraft/world/level/LevelHeightAccessor;
+      98: invokeinterface #407,  1          // InterfaceMethod net/minecraft/world/level/LevelHeightAccessor.getMinY:()I
+     103: i2d
+     104: dload         10
+     106: dadd
+     107: dstore        12
+     109: dload         6
+     111: dload         12
+     113: dload         8
+     115: dload         10
+     117: invokedynamic #648,  0            // InvokeDynamic #9:getDistance:(DDDD)Lnet/minecraft/world/level/levelgen/blending/Blender$DistanceGetter;
+     122: areturn
+
+  private static double distanceToCube(double, double, double, double, double, double);
+    Code:
+       0: dload_0
+       1: invokestatic  #657                // Method java/lang/Math.abs:(D)D
+       4: dload         6
+       6: dsub
+       7: dstore        12
+       9: dload_2
+      10: invokestatic  #657                // Method java/lang/Math.abs:(D)D
+      13: dload         8
+      15: dsub
+      16: dstore        14
+      18: dload         4
+      20: invokestatic  #657                // Method java/lang/Math.abs:(D)D
+      23: dload         10
+      25: dsub
+      26: dstore        16
+      28: dconst_0
+      29: dload         12
+      31: invokestatic  #660                // Method java/lang/Math.max:(DD)D
+      34: dconst_0
+      35: dload         14
+      37: invokestatic  #660                // Method java/lang/Math.max:(DD)D
+      40: dconst_0
+      41: dload         16
+      43: invokestatic  #660                // Method java/lang/Math.max:(DD)D
+      46: invokestatic  #663                // Method net/minecraft/util/Mth.length:(DDD)D
+      49: dreturn
+
+  private static double lambda$makeOffsetOldChunkDistanceGetter$10(double, double, double, double, double, double, double);
+    Code:
+       0: dload         8
+       2: ldc2_w        #85                 // double 8.0d
+       5: dsub
+       6: dload_0
+       7: dsub
+       8: dload         10
+      10: dload_2
+      11: dsub
+      12: dload         12
+      14: ldc2_w        #85                 // double 8.0d
+      17: dsub
+      18: dload         4
+      20: dsub
+      21: ldc2_w        #85                 // double 8.0d
+      24: dload         6
+      26: ldc2_w        #85                 // double 8.0d
+      29: invokestatic  #671                // Method distanceToCube:(DDDDDD)D
+      32: dreturn
+
+  private static double lambda$makeOldChunkDistanceGetter$9(java.util.List, double, double, double);
+    Code:
+       0: ldc2_w        #220                // double Infinityd
+       3: dstore        7
+       5: aload_0
+       6: invokeinterface #674,  1          // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+      11: astore        9
+      13: aload         9
+      15: invokeinterface #431,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      20: ifeq          63
+      23: aload         9
+      25: invokeinterface #434,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      30: checkcast     #7                  // class net/minecraft/world/level/levelgen/blending/Blender$DistanceGetter
+      33: astore        10
+      35: aload         10
+      37: dload_1
+      38: dload_3
+      39: dload         5
+      41: invokeinterface #676,  7          // InterfaceMethod net/minecraft/world/level/levelgen/blending/Blender$DistanceGetter.getDistance:(DDD)D
+      46: dstore        11
+      48: dload         11
+      50: dload         7
+      52: dcmpg
+      53: ifge          60
+      56: dload         11
+      58: dstore        7
+      60: goto          13
+      63: dload         7
+      65: dreturn
+
+  private static void lambda$makeOldChunkDistanceGetter$8(java.util.List, net.minecraft.core.Direction8, net.minecraft.world.level.levelgen.blending.BlendingData);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: aload_2
+       3: invokestatic  #596                // Method makeOffsetOldChunkDistanceGetter:(Lnet/minecraft/core/Direction8;Lnet/minecraft/world/level/levelgen/blending/BlendingData;)Lnet/minecraft/world/level/levelgen/blending/Blender$DistanceGetter;
+       6: invokeinterface #602,  2          // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+      11: pop
+      12: return
+
+  private static boolean lambda$addAroundOldChunksCarvingMaskFilter$7(net.minecraft.world.level.levelgen.blending.Blender$DistanceGetter, int, int, int);
+    Code:
+       0: iload_1
+       1: i2d
+       2: ldc2_w        #262                // double 0.5d
+       5: dadd
+       6: getstatic     #361                // Field SHIFT_NOISE:Lnet/minecraft/world/level/levelgen/synth/NormalNoise;
+       9: iload_1
+      10: i2d
+      11: iload_2
+      12: i2d
+      13: iload_3
+      14: i2d
+      15: invokevirtual #364                // Method net/minecraft/world/level/levelgen/synth/NormalNoise.getValue:(DDD)D
+      18: ldc2_w        #679                // double 4.0d
+      21: dmul
+      22: dadd
+      23: dstore        4
+      25: iload_2
+      26: i2d
+      27: ldc2_w        #262                // double 0.5d
+      30: dadd
+      31: getstatic     #361                // Field SHIFT_NOISE:Lnet/minecraft/world/level/levelgen/synth/NormalNoise;
+      34: iload_2
+      35: i2d
+      36: iload_3
+      37: i2d
+      38: iload_1
+      39: i2d
+      40: invokevirtual #364                // Method net/minecraft/world/level/levelgen/synth/NormalNoise.getValue:(DDD)D
+      43: ldc2_w        #679                // double 4.0d
+      46: dmul
+      47: dadd
+      48: dstore        6
+      50: iload_3
+      51: i2d
+      52: ldc2_w        #262                // double 0.5d
+      55: dadd
+      56: getstatic     #361                // Field SHIFT_NOISE:Lnet/minecraft/world/level/levelgen/synth/NormalNoise;
+      59: iload_3
+      60: i2d
+      61: iload_1
+      62: i2d
+      63: iload_2
+      64: i2d
+      65: invokevirtual #364                // Method net/minecraft/world/level/levelgen/synth/NormalNoise.getValue:(DDD)D
+      68: ldc2_w        #679                // double 4.0d
+      71: dmul
+      72: dadd
+      73: dstore        8
+      75: aload_0
+      76: dload         4
+      78: dload         6
+      80: dload         8
+      82: invokeinterface #676,  7          // InterfaceMethod net/minecraft/world/level/levelgen/blending/Blender$DistanceGetter.getDistance:(DDD)D
+      87: ldc2_w        #679                // double 4.0d
+      90: dcmpg
+      91: ifge          98
+      94: iconst_1
+      95: goto          99
+      98: iconst_0
+      99: ireturn
+
+  private static void lambda$blendBiome$6(int, int, int, org.apache.commons.lang3.mutable.MutableDouble, org.apache.commons.lang3.mutable.MutableObject, java.lang.Long, net.minecraft.world.level.levelgen.blending.BlendingData);
+    Code:
+       0: aload         6
+       2: aload         5
+       4: invokevirtual #686                // Method java/lang/Long.longValue:()J
+       7: invokestatic  #690                // Method net/minecraft/world/level/ChunkPos.getX:(J)I
+      10: invokestatic  #325                // Method net/minecraft/core/QuartPos.fromSection:(I)I
+      13: iload_0
+      14: aload         5
+      16: invokevirtual #686                // Method java/lang/Long.longValue:()J
+      19: invokestatic  #693                // Method net/minecraft/world/level/ChunkPos.getZ:(J)I
+      22: invokestatic  #325                // Method net/minecraft/core/QuartPos.fromSection:(I)I
+      25: iload_1
+      26: iload_2
+      27: aload_3
+      28: aload         4
+      30: invokedynamic #704,  0            // InvokeDynamic #10:consume:(IILorg/apache/commons/lang3/mutable/MutableDouble;Lorg/apache/commons/lang3/mutable/MutableObject;)Lnet/minecraft/world/level/levelgen/blending/BlendingData$BiomeConsumer;
+      35: invokevirtual #708                // Method net/minecraft/world/level/levelgen/blending/BlendingData.iterateBiomes:(IIILnet/minecraft/world/level/levelgen/blending/BlendingData$BiomeConsumer;)V
+      38: return
+
+  private static void lambda$blendBiome$5(int, int, org.apache.commons.lang3.mutable.MutableDouble, org.apache.commons.lang3.mutable.MutableObject, int, int, net.minecraft.core.Holder);
+    Code:
+       0: iload_0
+       1: iload         4
+       3: isub
+       4: i2f
+       5: iload_1
+       6: iload         5
+       8: isub
+       9: i2f
+      10: invokestatic  #713                // Method net/minecraft/util/Mth.length:(FF)F
+      13: f2d
+      14: dstore        7
+      16: dload         7
+      18: getstatic     #244                // Field HEIGHT_BLENDING_RANGE_CELLS:I
+      21: i2d
+      22: dcmpl
+      23: ifgt          48
+      26: dload         7
+      28: aload_2
+      29: invokevirtual #242                // Method org/apache/commons/lang3/mutable/MutableDouble.doubleValue:()D
+      32: dcmpg
+      33: ifge          48
+      36: aload_3
+      37: aload         6
+      39: invokevirtual #717                // Method org/apache/commons/lang3/mutable/MutableObject.setValue:(Ljava/lang/Object;)V
+      42: aload_2
+      43: dload         7
+      45: invokevirtual #719                // Method org/apache/commons/lang3/mutable/MutableDouble.setValue:(D)V
+      48: return
+
+  private net.minecraft.core.Holder lambda$getBiomeResolver$4(net.minecraft.world.level.biome.BiomeResolver, int, int, int, net.minecraft.world.level.biome.Climate$Sampler);
+    Code:
+       0: aload_0
+       1: iload_2
+       2: iload_3
+       3: iload         4
+       5: invokevirtual #723                // Method blendBiome:(III)Lnet/minecraft/core/Holder;
+       8: astore        6
+      10: aload         6
+      12: ifnonnull     30
+      15: aload_1
+      16: iload_2
+      17: iload_3
+      18: iload         4
+      20: aload         5
+      22: invokeinterface #727,  5          // InterfaceMethod net/minecraft/world/level/biome/BiomeResolver.getNoiseBiome:(IIILnet/minecraft/world/level/biome/Climate$Sampler;)Lnet/minecraft/core/Holder;
+      27: goto          32
+      30: aload         6
+      32: areturn
+
+  private static void lambda$blendDensity$3(int, int, int, org.apache.commons.lang3.mutable.MutableDouble, org.apache.commons.lang3.mutable.MutableDouble, org.apache.commons.lang3.mutable.MutableDouble, java.lang.Long, net.minecraft.world.level.levelgen.blending.BlendingData);
+    Code:
+       0: aload         7
+       2: aload         6
+       4: invokevirtual #686                // Method java/lang/Long.longValue:()J
+       7: invokestatic  #690                // Method net/minecraft/world/level/ChunkPos.getX:(J)I
+      10: invokestatic  #325                // Method net/minecraft/core/QuartPos.fromSection:(I)I
+      13: aload         6
+      15: invokevirtual #686                // Method java/lang/Long.longValue:()J
+      18: invokestatic  #693                // Method net/minecraft/world/level/ChunkPos.getZ:(J)I
+      21: invokestatic  #325                // Method net/minecraft/core/QuartPos.fromSection:(I)I
+      24: iload_0
+      25: iconst_1
+      26: isub
+      27: iload_0
+      28: iconst_1
+      29: iadd
+      30: iload_1
+      31: iload_0
+      32: iload_2
+      33: aload_3
+      34: aload         4
+      36: aload         5
+      38: invokedynamic #741,  0            // InvokeDynamic #11:consume:(IIILorg/apache/commons/lang3/mutable/MutableDouble;Lorg/apache/commons/lang3/mutable/MutableDouble;Lorg/apache/commons/lang3/mutable/MutableDouble;)Lnet/minecraft/world/level/levelgen/blending/BlendingData$DensityConsumer;
+      43: invokevirtual #745                // Method net/minecraft/world/level/levelgen/blending/BlendingData.iterateDensities:(IIIILnet/minecraft/world/level/levelgen/blending/BlendingData$DensityConsumer;)V
+      46: return
+
+  private static void lambda$blendDensity$2(int, int, int, org.apache.commons.lang3.mutable.MutableDouble, org.apache.commons.lang3.mutable.MutableDouble, org.apache.commons.lang3.mutable.MutableDouble, int, int, int, double);
+    Code:
+       0: iload_0
+       1: iload         6
+       3: isub
+       4: i2d
+       5: iload_1
+       6: iload         7
+       8: isub
+       9: iconst_2
+      10: imul
+      11: i2d
+      12: iload_2
+      13: iload         8
+      15: isub
+      16: i2d
+      17: invokestatic  #663                // Method net/minecraft/util/Mth.length:(DDD)D
+      20: dstore        11
+      22: dload         11
+      24: ldc2_w        #251                // double 2.0d
+      27: dcmpl
+      28: ifgt          79
+      31: dload         11
+      33: aload_3
+      34: invokevirtual #242                // Method org/apache/commons/lang3/mutable/MutableDouble.doubleValue:()D
+      37: dcmpg
+      38: ifge          47
+      41: aload_3
+      42: dload         11
+      44: invokevirtual #719                // Method org/apache/commons/lang3/mutable/MutableDouble.setValue:(D)V
+      47: dconst_1
+      48: dload         11
+      50: dload         11
+      52: dmul
+      53: dload         11
+      55: dmul
+      56: dload         11
+      58: dmul
+      59: ddiv
+      60: dstore        13
+      62: aload         4
+      64: dload         9
+      66: dload         13
+      68: dmul
+      69: invokevirtual #747                // Method org/apache/commons/lang3/mutable/MutableDouble.add:(D)V
+      72: aload         5
+      74: dload         13
+      76: invokevirtual #747                // Method org/apache/commons/lang3/mutable/MutableDouble.add:(D)V
+      79: return
+
+  private static void lambda$blendOffsetAndFactor$1(int, int, org.apache.commons.lang3.mutable.MutableDouble, org.apache.commons.lang3.mutable.MutableDouble, org.apache.commons.lang3.mutable.MutableDouble, java.lang.Long, net.minecraft.world.level.levelgen.blending.BlendingData);
+    Code:
+       0: aload         6
+       2: aload         5
+       4: invokevirtual #686                // Method java/lang/Long.longValue:()J
+       7: invokestatic  #690                // Method net/minecraft/world/level/ChunkPos.getX:(J)I
+      10: invokestatic  #325                // Method net/minecraft/core/QuartPos.fromSection:(I)I
+      13: aload         5
+      15: invokevirtual #686                // Method java/lang/Long.longValue:()J
+      18: invokestatic  #693                // Method net/minecraft/world/level/ChunkPos.getZ:(J)I
+      21: invokestatic  #325                // Method net/minecraft/core/QuartPos.fromSection:(I)I
+      24: iload_0
+      25: iload_1
+      26: aload_2
+      27: aload_3
+      28: aload         4
+      30: invokedynamic #759,  0            // InvokeDynamic #12:consume:(IILorg/apache/commons/lang3/mutable/MutableDouble;Lorg/apache/commons/lang3/mutable/MutableDouble;Lorg/apache/commons/lang3/mutable/MutableDouble;)Lnet/minecraft/world/level/levelgen/blending/BlendingData$HeightConsumer;
+      35: invokevirtual #763                // Method net/minecraft/world/level/levelgen/blending/BlendingData.iterateHeights:(IILnet/minecraft/world/level/levelgen/blending/BlendingData$HeightConsumer;)V
+      38: return
+
+  private static void lambda$blendOffsetAndFactor$0(int, int, org.apache.commons.lang3.mutable.MutableDouble, org.apache.commons.lang3.mutable.MutableDouble, org.apache.commons.lang3.mutable.MutableDouble, int, int, double);
+    Code:
+       0: iload_0
+       1: iload         5
+       3: isub
+       4: i2f
+       5: iload_1
+       6: iload         6
+       8: isub
+       9: i2f
+      10: invokestatic  #713                // Method net/minecraft/util/Mth.length:(FF)F
+      13: f2d
+      14: dstore        9
+      16: dload         9
+      18: getstatic     #244                // Field HEIGHT_BLENDING_RANGE_CELLS:I
+      21: i2d
+      22: dcmpl
+      23: ifgt          73
+      26: dload         9
+      28: aload_2
+      29: invokevirtual #242                // Method org/apache/commons/lang3/mutable/MutableDouble.doubleValue:()D
+      32: dcmpg
+      33: ifge          42
+      36: aload_2
+      37: dload         9
+      39: invokevirtual #719                // Method org/apache/commons/lang3/mutable/MutableDouble.setValue:(D)V
+      42: dconst_1
+      43: dload         9
+      45: dload         9
+      47: dmul
+      48: dload         9
+      50: dmul
+      51: dload         9
+      53: dmul
+      54: ddiv
+      55: dstore        11
+      57: aload_3
+      58: dload         7
+      60: dload         11
+      62: dmul
+      63: invokevirtual #747                // Method org/apache/commons/lang3/mutable/MutableDouble.add:(D)V
+      66: aload         4
+      68: dload         11
+      70: invokevirtual #747                // Method org/apache/commons/lang3/mutable/MutableDouble.add:(D)V
+      73: return
+
+  static {};
+    Code:
+       0: new           #13                 // class net/minecraft/world/level/levelgen/blending/Blender$1
+       3: dup
+       4: new           #119                // class it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap
+       7: dup
+       8: invokespecial #123                // Method it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap."<init>":()V
+      11: new           #119                // class it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap
+      14: dup
+      15: invokespecial #123                // Method it/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap."<init>":()V
+      18: invokespecial #765                // Method net/minecraft/world/level/levelgen/blending/Blender$1."<init>":(Lit/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap;Lit/unimi/dsi/fastutil/longs/Long2ObjectOpenHashMap;)V
+      21: putstatic     #94                 // Field EMPTY:Lnet/minecraft/world/level/levelgen/blending/Blender;
+      24: new           #767                // class net/minecraft/world/level/levelgen/XoroshiroRandomSource
+      27: dup
+      28: ldc2_w        #768                // long 42l
+      31: invokespecial #772                // Method net/minecraft/world/level/levelgen/XoroshiroRandomSource."<init>":(J)V
+      34: getstatic     #778                // Field net/minecraft/data/worldgen/NoiseData.DEFAULT_SHIFT:Lnet/minecraft/world/level/levelgen/synth/NormalNoise$NoiseParameters;
+      37: invokestatic  #782                // Method net/minecraft/world/level/levelgen/synth/NormalNoise.create:(Lnet/minecraft/util/RandomSource;Lnet/minecraft/world/level/levelgen/synth/NormalNoise$NoiseParameters;)Lnet/minecraft/world/level/levelgen/synth/NormalNoise;
+      40: putstatic     #361                // Field SHIFT_NOISE:Lnet/minecraft/world/level/levelgen/synth/NormalNoise;
+      43: bipush        7
+      45: invokestatic  #325                // Method net/minecraft/core/QuartPos.fromSection:(I)I
+      48: iconst_1
+      49: isub
+      50: putstatic     #244                // Field HEIGHT_BLENDING_RANGE_CELLS:I
+      53: getstatic     #244                // Field HEIGHT_BLENDING_RANGE_CELLS:I
+      56: iconst_3
+      57: iadd
+      58: invokestatic  #309                // Method net/minecraft/core/QuartPos.toSection:(I)I
+      61: putstatic     #111                // Field HEIGHT_BLENDING_RANGE_CHUNKS:I
+      64: iconst_5
+      65: invokestatic  #309                // Method net/minecraft/core/QuartPos.toSection:(I)I
+      68: putstatic     #149                // Field DENSITY_BLENDING_RANGE_CHUNKS:I
+      71: return
+}

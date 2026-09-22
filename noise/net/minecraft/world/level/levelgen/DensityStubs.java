@@ -193,6 +193,11 @@ final class DensityFunctions {
     }
 
     static final class YClampedGradient implements DensityFunction {
+        // TASK-417-B: canonical ctor shape of the real record (javap-pinned
+        // `(II DD)V`, package-private) — selfTest constructs REAL instances
+        // reflectively (reflectiveNew) to drive the bridged fillArray.
+        YClampedGradient(int fromY, int toY, double fromValue, double toValue) {
+        }
         public int fromY() {
             return 0;
         }

@@ -1,0 +1,28 @@
+Compiled from "DensityFunctions.java"
+public interface net.minecraft.world.level.levelgen.DensityFunctions$MarkerOrMarked extends net.minecraft.world.level.levelgen.DensityFunction {
+  public abstract net.minecraft.world.level.levelgen.DensityFunctions$Marker$Type type();
+
+  public abstract net.minecraft.world.level.levelgen.DensityFunction wrapped();
+
+  public default net.minecraft.util.KeyDispatchDataCodec<? extends net.minecraft.world.level.levelgen.DensityFunction> codec();
+    Code:
+       0: aload_0
+       1: invokeinterface #28,  1           // InterfaceMethod type:()Lnet/minecraft/world/level/levelgen/DensityFunctions$Marker$Type;
+       6: getfield      #31                 // Field net/minecraft/world/level/levelgen/DensityFunctions$Marker$Type.codec:Lnet/minecraft/util/KeyDispatchDataCodec;
+       9: areturn
+
+  public default net.minecraft.world.level.levelgen.DensityFunction mapAll(net.minecraft.world.level.levelgen.DensityFunction$Visitor);
+    Code:
+       0: aload_1
+       1: new           #12                 // class net/minecraft/world/level/levelgen/DensityFunctions$Marker
+       4: dup
+       5: aload_0
+       6: invokeinterface #28,  1           // InterfaceMethod type:()Lnet/minecraft/world/level/levelgen/DensityFunctions$Marker$Type;
+      11: aload_0
+      12: invokeinterface #37,  1           // InterfaceMethod wrapped:()Lnet/minecraft/world/level/levelgen/DensityFunction;
+      17: aload_1
+      18: invokeinterface #39,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.mapAll:(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      23: invokespecial #43                 // Method net/minecraft/world/level/levelgen/DensityFunctions$Marker."<init>":(Lnet/minecraft/world/level/levelgen/DensityFunctions$Marker$Type;Lnet/minecraft/world/level/levelgen/DensityFunction;)V
+      26: invokeinterface #47,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$Visitor.apply:(Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      31: areturn
+}

@@ -1,0 +1,41 @@
+Compiled from "DensityFunctions.java"
+interface net.minecraft.world.level.levelgen.DensityFunctions$PureTransformer extends net.minecraft.world.level.levelgen.DensityFunction {
+  public abstract net.minecraft.world.level.levelgen.DensityFunction input();
+
+  public default double compute(net.minecraft.world.level.levelgen.DensityFunction$FunctionContext);
+    Code:
+       0: aload_0
+       1: aload_0
+       2: invokeinterface #22,  1           // InterfaceMethod input:()Lnet/minecraft/world/level/levelgen/DensityFunction;
+       7: aload_1
+       8: invokeinterface #24,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.compute:(Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;)D
+      13: invokeinterface #28,  3           // InterfaceMethod transform:(D)D
+      18: dreturn
+
+  public default void fillArray(double[], net.minecraft.world.level.levelgen.DensityFunction$ContextProvider);
+    Code:
+       0: aload_0
+       1: invokeinterface #22,  1           // InterfaceMethod input:()Lnet/minecraft/world/level/levelgen/DensityFunction;
+       6: aload_1
+       7: aload_2
+       8: invokeinterface #36,  3           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.fillArray:([DLnet/minecraft/world/level/levelgen/DensityFunction$ContextProvider;)V
+      13: iconst_0
+      14: istore_3
+      15: iload_3
+      16: aload_1
+      17: arraylength
+      18: if_icmpge     39
+      21: aload_1
+      22: iload_3
+      23: aload_0
+      24: aload_1
+      25: iload_3
+      26: daload
+      27: invokeinterface #28,  3           // InterfaceMethod transform:(D)D
+      32: dastore
+      33: iinc          3, 1
+      36: goto          15
+      39: return
+
+  public abstract double transform(double);
+}

@@ -1,0 +1,85 @@
+Compiled from "DensityFunctions.java"
+final class net.minecraft.world.level.levelgen.DensityFunctions$BlendDensity extends java.lang.Record implements net.minecraft.world.level.levelgen.DensityFunctions$TransformerWithContext {
+  private final net.minecraft.world.level.levelgen.DensityFunction input;
+
+  static final net.minecraft.util.KeyDispatchDataCodec<net.minecraft.world.level.levelgen.DensityFunctions$BlendDensity> CODEC;
+
+  net.minecraft.world.level.levelgen.DensityFunctions$BlendDensity(net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: aload_0
+       1: invokespecial #34                 // Method java/lang/Record."<init>":()V
+       4: aload_0
+       5: aload_1
+       6: putfield      #36                 // Field input:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       9: return
+
+  public double transform(net.minecraft.world.level.levelgen.DensityFunction$FunctionContext, double);
+    Code:
+       0: aload_1
+       1: invokeinterface #44,  1           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$FunctionContext.getBlender:()Lnet/minecraft/world/level/levelgen/blending/Blender;
+       6: aload_1
+       7: dload_2
+       8: invokevirtual #49                 // Method net/minecraft/world/level/levelgen/blending/Blender.blendDensity:(Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;D)D
+      11: dreturn
+
+  public net.minecraft.world.level.levelgen.DensityFunction mapAll(net.minecraft.world.level.levelgen.DensityFunction$Visitor);
+    Code:
+       0: aload_1
+       1: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$BlendDensity
+       4: dup
+       5: aload_0
+       6: getfield      #36                 // Field input:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       9: aload_1
+      10: invokeinterface #57,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.mapAll:(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      15: invokespecial #59                 // Method "<init>":(Lnet/minecraft/world/level/levelgen/DensityFunction;)V
+      18: invokeinterface #63,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$Visitor.apply:(Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      23: areturn
+
+  public double minValue();
+    Code:
+       0: ldc2_w        #68                 // double -Infinityd
+       3: dreturn
+
+  public double maxValue();
+    Code:
+       0: ldc2_w        #71                 // double Infinityd
+       3: dreturn
+
+  public net.minecraft.util.KeyDispatchDataCodec<? extends net.minecraft.world.level.levelgen.DensityFunction> codec();
+    Code:
+       0: getstatic     #77                 // Field CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+       3: areturn
+
+  public final java.lang.String toString();
+    Code:
+       0: aload_0
+       1: invokedynamic #91,  0             // InvokeDynamic #0:toString:(Lnet/minecraft/world/level/levelgen/DensityFunctions$BlendDensity;)Ljava/lang/String;
+       6: areturn
+
+  public final int hashCode();
+    Code:
+       0: aload_0
+       1: invokedynamic #96,  0             // InvokeDynamic #0:hashCode:(Lnet/minecraft/world/level/levelgen/DensityFunctions$BlendDensity;)I
+       6: ireturn
+
+  public final boolean equals(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokedynamic #101,  0            // InvokeDynamic #0:equals:(Lnet/minecraft/world/level/levelgen/DensityFunctions$BlendDensity;Ljava/lang/Object;)Z
+       7: ireturn
+
+  public net.minecraft.world.level.levelgen.DensityFunction input();
+    Code:
+       0: aload_0
+       1: getfield      #36                 // Field input:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       4: areturn
+
+  static {};
+    Code:
+       0: invokedynamic #120,  0            // InvokeDynamic #1:apply:()Ljava/util/function/Function;
+       5: invokedynamic #126,  0            // InvokeDynamic #2:apply:()Ljava/util/function/Function;
+      10: invokestatic  #130                // Method net/minecraft/world/level/levelgen/DensityFunctions.singleFunctionArgumentCodec:(Ljava/util/function/Function;Ljava/util/function/Function;)Lnet/minecraft/util/KeyDispatchDataCodec;
+      13: putstatic     #77                 // Field CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+      16: return
+}

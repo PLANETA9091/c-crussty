@@ -43,6 +43,10 @@ use std::sync::{Arc, PoisonError};
 const FILL_CLASS: &str = "net/minecraft/world/level/levelgen/DensityFunctions$Noise";
 const SHIFT_CLASS: &str = "net/minecraft/world/level/levelgen/DensityFunctions$ShiftNoise";
 const INTERP_CLASS: &str = "net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator";
+/// TASK-417-B GEN axis: the SimpleFunction interface DEFAULT — inherited by
+/// the tier-1 nodes vanilla never batched (YClampedGradient is the engaged
+/// one; the bridge passes every other consumer through the exact vanilla body).
+const SIMPLE_CLASS: &str = "net/minecraft/world/level/levelgen/DensityFunction$SimpleFunction";
 const OPS_NAME: &str = "net/minecraft/world/level/levelgen/NormalNoiseBatchOps";
 
 const FILLARRAY_DESC: &str = "([DLnet/minecraft/world/level/levelgen/DensityFunction$ContextProvider;)V";
@@ -76,8 +80,14 @@ const OPS_TEST_PROVIDER_BYTES: &[u8] = include_bytes!(concat!(
 const OPS_INTERP_BYTES: &[u8] = include_bytes!(concat!(
     "../noise/build/net/minecraft/world/level/levelgen/DensityArrayInterpreter.class"
 ));
+const OPS_YGRAD_BYTES: &[u8] = include_bytes!(concat!(
+    "../noise/build/net/minecraft/world/level/levelgen/NormalNoiseBatchOps$YGradRecorder.class"
+));
+const OPS_YGRAD_TL_BYTES: &[u8] = include_bytes!(concat!(
+    "../noise/build/net/minecraft/world/level/levelgen/NormalNoiseBatchOps$YGradRecorderTL.class"
+));
 
-const OPS_EMBEDS: [(&str, &[u8]); 9] = [
+const OPS_EMBEDS: [(&str, &[u8]); 11] = [
     (OPS_NAME, OPS_BYTES),
     (
         "net/minecraft/world/level/levelgen/NormalNoiseBatchOps$Handle",
@@ -111,6 +121,14 @@ const OPS_EMBEDS: [(&str, &[u8]); 9] = [
         "net/minecraft/world/level/levelgen/DensityArrayInterpreter",
         OPS_INTERP_BYTES,
     ),
+    (
+        "net/minecraft/world/level/levelgen/NormalNoiseBatchOps$YGradRecorder",
+        OPS_YGRAD_BYTES,
+    ),
+    (
+        "net/minecraft/world/level/levelgen/NormalNoiseBatchOps$YGradRecorderTL",
+        OPS_YGRAD_TL_BYTES,
+    ),
 ];
 
 /// One whole-body swap target: the class to patch and the same-package
@@ -122,7 +140,7 @@ struct Target {
     label: &'static str,
 }
 
-const TARGETS: [Target; 3] = [
+const TARGETS: [Target; 4] = [
     Target {
         class: FILL_CLASS,
         bridge_name: "fillNoise",
@@ -145,19 +163,41 @@ const TARGETS: [Target; 3] = [
         bridge_desc: "(Lnet/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator;[DLnet/minecraft/world/level/levelgen/DensityFunction$ContextProvider;)V",
         label: "NoiseInterpolator",
     },
+    // TASK-417-B GEN axis (heritage extension): the SimpleFunction interface
+    // DEFAULT fillArray — the tier-1 gap (vanilla never batched the nodes
+    // that inherit it). YClampedGradient = memoized one-pass batch inside
+    // the provider's own loop (bit-exact: same Mth.clampedMap static);
+    // every other default consumer = exact vanilla pass-through.
+    Target {
+        class: SIMPLE_CLASS,
+        bridge_name: "fillSimpleDefault",
+        bridge_desc: "(Lnet/minecraft/world/level/levelgen/DensityFunction;[DLnet/minecraft/world/level/levelgen/DensityFunction$ContextProvider;)V",
+        label: "SimpleFunction",
+    },
 ];
 
-/// env-gate (off by default), read once at register time
+/// env-gate (off by default), read once at register time.
+///
+/// TASK-417-B STRICT-OR: legacy env id `CRUSSTY_NATIVE_NOISE_FILL` (TASK-108,
+/// kept intact) OR the round lever `CRUSSTY_LEVER_FLAG == "cmp417_wgen"`.
+/// NOTE: the two-key kernel-policy rule still applies on top — bench arms
+/// that arm via the lever also set CRUSSTY_KERNEL_POLICY=off (the documented
+/// benchmarking override; the fill family is not in PROVEN_WINS by design).
 fn enabled() -> bool {
-    std::env::var("CRUSSTY_NATIVE_NOISE_FILL")
+    let legacy = std::env::var("CRUSSTY_NATIVE_NOISE_FILL")
         .map(|v| {
             let v = v.trim().to_ascii_lowercase();
             v == "1" || v == "true" || v == "on" || v == "yes"
         })
-        .unwrap_or(false)
+        .unwrap_or(false);
+    let lever = std::env::var("CRUSSTY_LEVER_FLAG")
+        .unwrap_or_default()
+        .trim()
+        == "cmp417_wgen";
+    legacy || lever
 }
 
-static READY: [AtomicBool; 3] = [AtomicBool::new(false), AtomicBool::new(false), AtomicBool::new(false)];
+static READY: [AtomicBool; 4] = [AtomicBool::new(false), AtomicBool::new(false), AtomicBool::new(false), AtomicBool::new(false)];
 /// Global ref to the kernel classloader (captured at activation).
 static KERNEL_LOADER: AtomicUsize = AtomicUsize::new(0);
 /// Global ref to the JNI-defined ops bridge class (captured at define time;
@@ -166,8 +206,8 @@ static KERNEL_LOADER: AtomicUsize = AtomicUsize::new(0);
 static OPS_GREF: AtomicUsize = AtomicUsize::new(0);
 
 /// Original class bytes captured from the FIRST sight of each target.
-static ORIG_BYTES: [std::sync::OnceLock<std::sync::Mutex<Option<Vec<u8>>>>; 3] =
-    [const { std::sync::OnceLock::new() }, const { std::sync::OnceLock::new() }, const { std::sync::OnceLock::new() }];
+static ORIG_BYTES: [std::sync::OnceLock<std::sync::Mutex<Option<Vec<u8>>>>; 4] =
+    [const { std::sync::OnceLock::new() }, const { std::sync::OnceLock::new() }, const { std::sync::OnceLock::new() }, const { std::sync::OnceLock::new() }];
 
 /// Patched bytecode cache per target (TASK-26/C5 pattern: Arc + major).
 #[derive(Clone)]
@@ -176,10 +216,10 @@ struct PatchCache {
     major: u16,
 }
 
-static PATCH_CACHE: [std::sync::OnceLock<std::sync::Mutex<Option<PatchCache>>>; 3] =
-    [const { std::sync::OnceLock::new() }, const { std::sync::OnceLock::new() }, const { std::sync::OnceLock::new() }];
+static PATCH_CACHE: [std::sync::OnceLock<std::sync::Mutex<Option<PatchCache>>>; 4] =
+    [const { std::sync::OnceLock::new() }, const { std::sync::OnceLock::new() }, const { std::sync::OnceLock::new() }, const { std::sync::OnceLock::new() }];
 /// One-shot flag per target for the per-serve log line.
-static SERVE_LOGGED: [AtomicBool; 3] = [AtomicBool::new(false), AtomicBool::new(false), AtomicBool::new(false)];
+static SERVE_LOGGED: [AtomicBool; 4] = [AtomicBool::new(false), AtomicBool::new(false), AtomicBool::new(false), AtomicBool::new(false)];
 
 fn orig_lock(i: usize) -> &'static std::sync::Mutex<Option<Vec<u8>>> {
     ORIG_BYTES[i].get_or_init(|| std::sync::Mutex::new(None))

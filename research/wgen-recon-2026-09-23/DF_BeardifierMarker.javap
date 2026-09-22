@@ -1,0 +1,73 @@
+Compiled from "DensityFunctions.java"
+public final class net.minecraft.world.level.levelgen.DensityFunctions$BeardifierMarker extends java.lang.Enum<net.minecraft.world.level.levelgen.DensityFunctions$BeardifierMarker> implements net.minecraft.world.level.levelgen.DensityFunctions$BeardifierOrMarker {
+  public static final net.minecraft.world.level.levelgen.DensityFunctions$BeardifierMarker INSTANCE;
+
+  private static final net.minecraft.world.level.levelgen.DensityFunctions$BeardifierMarker[] $VALUES;
+
+  public static net.minecraft.world.level.levelgen.DensityFunctions$BeardifierMarker[] values();
+    Code:
+       0: getstatic     #28                 // Field $VALUES:[Lnet/minecraft/world/level/levelgen/DensityFunctions$BeardifierMarker;
+       3: invokevirtual #33                 // Method "[Lnet/minecraft/world/level/levelgen/DensityFunctions$BeardifierMarker;".clone:()Ljava/lang/Object;
+       6: checkcast     #29                 // class "[Lnet/minecraft/world/level/levelgen/DensityFunctions$BeardifierMarker;"
+       9: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunctions$BeardifierMarker valueOf(java.lang.String);
+    Code:
+       0: ldc           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$BeardifierMarker
+       2: aload_0
+       3: invokestatic  #38                 // Method java/lang/Enum.valueOf:(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Enum;
+       6: checkcast     #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$BeardifierMarker
+       9: areturn
+
+  private net.minecraft.world.level.levelgen.DensityFunctions$BeardifierMarker();
+    Code:
+       0: aload_0
+       1: aload_1
+       2: iload_2
+       3: invokespecial #45                 // Method java/lang/Enum."<init>":(Ljava/lang/String;I)V
+       6: return
+
+  public double compute(net.minecraft.world.level.levelgen.DensityFunction$FunctionContext);
+    Code:
+       0: dconst_0
+       1: dreturn
+
+  public void fillArray(double[], net.minecraft.world.level.levelgen.DensityFunction$ContextProvider);
+    Code:
+       0: aload_1
+       1: dconst_0
+       2: invokestatic  #58                 // Method java/util/Arrays.fill:([DD)V
+       5: return
+
+  public double minValue();
+    Code:
+       0: dconst_0
+       1: dreturn
+
+  public double maxValue();
+    Code:
+       0: dconst_0
+       1: dreturn
+
+  private static net.minecraft.world.level.levelgen.DensityFunctions$BeardifierMarker[] $values();
+    Code:
+       0: iconst_1
+       1: anewarray     #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$BeardifierMarker
+       4: dup
+       5: iconst_0
+       6: getstatic     #68                 // Field INSTANCE:Lnet/minecraft/world/level/levelgen/DensityFunctions$BeardifierMarker;
+       9: aastore
+      10: areturn
+
+  static {};
+    Code:
+       0: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$BeardifierMarker
+       3: dup
+       4: ldc           #70                 // String INSTANCE
+       6: iconst_0
+       7: invokespecial #71                 // Method "<init>":(Ljava/lang/String;I)V
+      10: putstatic     #68                 // Field INSTANCE:Lnet/minecraft/world/level/levelgen/DensityFunctions$BeardifierMarker;
+      13: invokestatic  #73                 // Method $values:()[Lnet/minecraft/world/level/levelgen/DensityFunctions$BeardifierMarker;
+      16: putstatic     #28                 // Field $VALUES:[Lnet/minecraft/world/level/levelgen/DensityFunctions$BeardifierMarker;
+      19: return
+}

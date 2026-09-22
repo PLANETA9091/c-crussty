@@ -1,0 +1,24 @@
+Compiled from "DensityFunctions.java"
+final class net.minecraft.world.level.levelgen.DensityFunctions$EndIslandDensityFunction$NoiseCache {
+  public long[] keys;
+
+  public float[] values;
+
+  public net.minecraft.world.level.levelgen.DensityFunctions$EndIslandDensityFunction$NoiseCache();
+    Code:
+       0: aload_0
+       1: invokespecial #19                 // Method java/lang/Object."<init>":()V
+       4: aload_0
+       5: sipush        8192
+       8: newarray       long
+      10: putfield      #21                 // Field keys:[J
+      13: aload_0
+      14: sipush        8192
+      17: newarray       float
+      19: putfield      #23                 // Field values:[F
+      22: aload_0
+      23: getfield      #21                 // Field keys:[J
+      26: ldc2_w        #24                 // long -9223372036854775808l
+      29: invokestatic  #31                 // Method java/util/Arrays.fill:([JJ)V
+      32: return
+}

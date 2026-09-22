@@ -1,0 +1,150 @@
+Compiled from "DensityFunctions.java"
+public final class net.minecraft.world.level.levelgen.DensityFunctions$Spline$Coordinate extends java.lang.Record implements net.minecraft.util.BoundedFloatFunction<net.minecraft.world.level.levelgen.DensityFunctions$Spline$Point> {
+  private final net.minecraft.core.Holder<net.minecraft.world.level.levelgen.DensityFunction> function;
+
+  public static final com.mojang.serialization.Codec<net.minecraft.world.level.levelgen.DensityFunctions$Spline$Coordinate> CODEC;
+
+  public net.minecraft.world.level.levelgen.DensityFunctions$Spline$Coordinate(net.minecraft.core.Holder<net.minecraft.world.level.levelgen.DensityFunction>);
+    Code:
+       0: aload_0
+       1: invokespecial #47                 // Method java/lang/Record."<init>":()V
+       4: aload_0
+       5: aload_1
+       6: putfield      #49                 // Field function:Lnet/minecraft/core/Holder;
+       9: return
+
+  public java.lang.String toString();
+    Code:
+       0: aload_0
+       1: getfield      #49                 // Field function:Lnet/minecraft/core/Holder;
+       4: invokeinterface #57,  1           // InterfaceMethod net/minecraft/core/Holder.unwrapKey:()Ljava/util/Optional;
+       9: astore_1
+      10: aload_1
+      11: invokevirtual #63                 // Method java/util/Optional.isPresent:()Z
+      14: ifeq          65
+      17: aload_1
+      18: invokevirtual #67                 // Method java/util/Optional.get:()Ljava/lang/Object;
+      21: checkcast     #69                 // class net/minecraft/resources/ResourceKey
+      24: astore_2
+      25: aload_2
+      26: getstatic     #75                 // Field net/minecraft/world/level/levelgen/NoiseRouterData.CONTINENTS:Lnet/minecraft/resources/ResourceKey;
+      29: if_acmpne     35
+      32: ldc           #77                 // String continents
+      34: areturn
+      35: aload_2
+      36: getstatic     #80                 // Field net/minecraft/world/level/levelgen/NoiseRouterData.EROSION:Lnet/minecraft/resources/ResourceKey;
+      39: if_acmpne     45
+      42: ldc           #82                 // String erosion
+      44: areturn
+      45: aload_2
+      46: getstatic     #85                 // Field net/minecraft/world/level/levelgen/NoiseRouterData.RIDGES:Lnet/minecraft/resources/ResourceKey;
+      49: if_acmpne     55
+      52: ldc           #87                 // String weirdness
+      54: areturn
+      55: aload_2
+      56: getstatic     #90                 // Field net/minecraft/world/level/levelgen/NoiseRouterData.RIDGES_FOLDED:Lnet/minecraft/resources/ResourceKey;
+      59: if_acmpne     65
+      62: ldc           #92                 // String ridges
+      64: areturn
+      65: aload_0
+      66: getfield      #49                 // Field function:Lnet/minecraft/core/Holder;
+      69: invokestatic  #98                 // Method java/lang/String.valueOf:(Ljava/lang/Object;)Ljava/lang/String;
+      72: invokedynamic #110,  0            // InvokeDynamic #0:makeConcatWithConstants:(Ljava/lang/String;)Ljava/lang/String;
+      77: areturn
+
+  public float apply(net.minecraft.world.level.levelgen.DensityFunctions$Spline$Point);
+    Code:
+       0: aload_0
+       1: getfield      #49                 // Field function:Lnet/minecraft/core/Holder;
+       4: invokeinterface #120,  1          // InterfaceMethod net/minecraft/core/Holder.value:()Ljava/lang/Object;
+       9: checkcast     #21                 // class net/minecraft/world/level/levelgen/DensityFunction
+      12: aload_1
+      13: invokevirtual #124                // Method net/minecraft/world/level/levelgen/DensityFunctions$Spline$Point.context:()Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;
+      16: invokeinterface #128,  2          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.compute:(Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;)D
+      21: d2f
+      22: freturn
+
+  public float minValue();
+    Code:
+       0: aload_0
+       1: getfield      #49                 // Field function:Lnet/minecraft/core/Holder;
+       4: invokeinterface #134,  1          // InterfaceMethod net/minecraft/core/Holder.isBound:()Z
+       9: ifeq          33
+      12: aload_0
+      13: getfield      #49                 // Field function:Lnet/minecraft/core/Holder;
+      16: invokeinterface #120,  1          // InterfaceMethod net/minecraft/core/Holder.value:()Ljava/lang/Object;
+      21: checkcast     #21                 // class net/minecraft/world/level/levelgen/DensityFunction
+      24: invokeinterface #137,  1          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.minValue:()D
+      29: d2f
+      30: goto          35
+      33: ldc           #138                // float -Infinityf
+      35: freturn
+
+  public float maxValue();
+    Code:
+       0: aload_0
+       1: getfield      #49                 // Field function:Lnet/minecraft/core/Holder;
+       4: invokeinterface #134,  1          // InterfaceMethod net/minecraft/core/Holder.isBound:()Z
+       9: ifeq          33
+      12: aload_0
+      13: getfield      #49                 // Field function:Lnet/minecraft/core/Holder;
+      16: invokeinterface #120,  1          // InterfaceMethod net/minecraft/core/Holder.value:()Ljava/lang/Object;
+      21: checkcast     #21                 // class net/minecraft/world/level/levelgen/DensityFunction
+      24: invokeinterface #141,  1          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.maxValue:()D
+      29: d2f
+      30: goto          35
+      33: ldc           #142                // float Infinityf
+      35: freturn
+
+  public net.minecraft.world.level.levelgen.DensityFunctions$Spline$Coordinate mapAll(net.minecraft.world.level.levelgen.DensityFunction$Visitor);
+    Code:
+       0: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$Spline$Coordinate
+       3: dup
+       4: new           #24                 // class net/minecraft/core/Holder$Direct
+       7: dup
+       8: aload_0
+       9: getfield      #49                 // Field function:Lnet/minecraft/core/Holder;
+      12: invokeinterface #120,  1          // InterfaceMethod net/minecraft/core/Holder.value:()Ljava/lang/Object;
+      17: checkcast     #21                 // class net/minecraft/world/level/levelgen/DensityFunction
+      20: aload_1
+      21: invokeinterface #147,  2          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.mapAll:(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      26: invokespecial #150                // Method net/minecraft/core/Holder$Direct."<init>":(Ljava/lang/Object;)V
+      29: invokespecial #152                // Method "<init>":(Lnet/minecraft/core/Holder;)V
+      32: areturn
+
+  public final int hashCode();
+    Code:
+       0: aload_0
+       1: invokedynamic #168,  0            // InvokeDynamic #1:hashCode:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Spline$Coordinate;)I
+       6: ireturn
+
+  public final boolean equals(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokedynamic #173,  0            // InvokeDynamic #1:equals:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Spline$Coordinate;Ljava/lang/Object;)Z
+       7: ireturn
+
+  public net.minecraft.core.Holder<net.minecraft.world.level.levelgen.DensityFunction> function();
+    Code:
+       0: aload_0
+       1: getfield      #49                 // Field function:Lnet/minecraft/core/Holder;
+       4: areturn
+
+  public float apply(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: checkcast     #16                 // class net/minecraft/world/level/levelgen/DensityFunctions$Spline$Point
+       5: invokevirtual #180                // Method apply:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Spline$Point;)F
+       8: freturn
+
+  static {};
+    Code:
+       0: getstatic     #183                // Field net/minecraft/world/level/levelgen/DensityFunction.CODEC:Lcom/mojang/serialization/Codec;
+       3: invokedynamic #198,  0            // InvokeDynamic #2:apply:()Ljava/util/function/Function;
+       8: invokedynamic #204,  0            // InvokeDynamic #3:apply:()Ljava/util/function/Function;
+      13: invokeinterface #210,  3          // InterfaceMethod com/mojang/serialization/Codec.xmap:(Ljava/util/function/Function;Ljava/util/function/Function;)Lcom/mojang/serialization/Codec;
+      18: putstatic     #211                // Field CODEC:Lcom/mojang/serialization/Codec;
+      21: return
+}

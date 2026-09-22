@@ -1,0 +1,46 @@
+Compiled from "DensityFunctions.java"
+interface net.minecraft.world.level.levelgen.DensityFunctions$ShiftNoise extends net.minecraft.world.level.levelgen.DensityFunction {
+  public abstract net.minecraft.world.level.levelgen.DensityFunction$NoiseHolder offsetNoise();
+
+  public default double minValue();
+    Code:
+       0: aload_0
+       1: invokeinterface #23,  1           // InterfaceMethod maxValue:()D
+       6: dneg
+       7: dreturn
+
+  public default double maxValue();
+    Code:
+       0: aload_0
+       1: invokeinterface #27,  1           // InterfaceMethod offsetNoise:()Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;
+       6: invokevirtual #28                 // Method net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder.maxValue:()D
+       9: ldc2_w        #29                 // double 4.0d
+      12: dmul
+      13: dreturn
+
+  public default double compute(double, double, double);
+    Code:
+       0: aload_0
+       1: invokeinterface #27,  1           // InterfaceMethod offsetNoise:()Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;
+       6: dload_1
+       7: ldc2_w        #33                 // double 0.25d
+      10: dmul
+      11: dload_3
+      12: ldc2_w        #33                 // double 0.25d
+      15: dmul
+      16: dload         5
+      18: ldc2_w        #33                 // double 0.25d
+      21: dmul
+      22: invokevirtual #37                 // Method net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder.getValue:(DDD)D
+      25: ldc2_w        #29                 // double 4.0d
+      28: dmul
+      29: dreturn
+
+  public default void fillArray(double[], net.minecraft.world.level.levelgen.DensityFunction$ContextProvider);
+    Code:
+       0: aload_2
+       1: aload_1
+       2: aload_0
+       3: invokeinterface #47,  3           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$ContextProvider.fillAllDirectly:([DLnet/minecraft/world/level/levelgen/DensityFunction;)V
+       8: return
+}

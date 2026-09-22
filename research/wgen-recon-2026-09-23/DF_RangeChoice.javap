@@ -1,0 +1,260 @@
+Compiled from "DensityFunctions.java"
+final class net.minecraft.world.level.levelgen.DensityFunctions$RangeChoice extends java.lang.Record implements net.minecraft.world.level.levelgen.DensityFunction {
+  private final net.minecraft.world.level.levelgen.DensityFunction input;
+
+  private final double minInclusive;
+
+  private final double maxExclusive;
+
+  private final net.minecraft.world.level.levelgen.DensityFunction whenInRange;
+
+  private final net.minecraft.world.level.levelgen.DensityFunction whenOutOfRange;
+
+  public static final com.mojang.serialization.MapCodec<net.minecraft.world.level.levelgen.DensityFunctions$RangeChoice> DATA_CODEC;
+
+  public static final net.minecraft.util.KeyDispatchDataCodec<net.minecraft.world.level.levelgen.DensityFunctions$RangeChoice> CODEC;
+
+  net.minecraft.world.level.levelgen.DensityFunctions$RangeChoice(net.minecraft.world.level.levelgen.DensityFunction, double, double, net.minecraft.world.level.levelgen.DensityFunction, net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: aload_0
+       1: invokespecial #52                 // Method java/lang/Record."<init>":()V
+       4: aload_0
+       5: aload_1
+       6: putfield      #54                 // Field input:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       9: aload_0
+      10: dload_2
+      11: putfield      #56                 // Field minInclusive:D
+      14: aload_0
+      15: dload         4
+      17: putfield      #58                 // Field maxExclusive:D
+      20: aload_0
+      21: aload         6
+      23: putfield      #60                 // Field whenInRange:Lnet/minecraft/world/level/levelgen/DensityFunction;
+      26: aload_0
+      27: aload         7
+      29: putfield      #62                 // Field whenOutOfRange:Lnet/minecraft/world/level/levelgen/DensityFunction;
+      32: return
+
+  public double compute(net.minecraft.world.level.levelgen.DensityFunction$FunctionContext);
+    Code:
+       0: aload_0
+       1: getfield      #54                 // Field input:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       4: aload_1
+       5: invokeinterface #68,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.compute:(Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;)D
+      10: dstore_2
+      11: dload_2
+      12: aload_0
+      13: getfield      #56                 // Field minInclusive:D
+      16: dcmpl
+      17: iflt          42
+      20: dload_2
+      21: aload_0
+      22: getfield      #58                 // Field maxExclusive:D
+      25: dcmpg
+      26: ifge          42
+      29: aload_0
+      30: getfield      #60                 // Field whenInRange:Lnet/minecraft/world/level/levelgen/DensityFunction;
+      33: aload_1
+      34: invokeinterface #68,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.compute:(Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;)D
+      39: goto          52
+      42: aload_0
+      43: getfield      #62                 // Field whenOutOfRange:Lnet/minecraft/world/level/levelgen/DensityFunction;
+      46: aload_1
+      47: invokeinterface #68,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.compute:(Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;)D
+      52: dreturn
+
+  public void fillArray(double[], net.minecraft.world.level.levelgen.DensityFunction$ContextProvider);
+    Code:
+       0: aload_0
+       1: getfield      #54                 // Field input:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       4: aload_1
+       5: aload_2
+       6: invokeinterface #75,  3           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.fillArray:([DLnet/minecraft/world/level/levelgen/DensityFunction$ContextProvider;)V
+      11: iconst_0
+      12: istore_3
+      13: iload_3
+      14: aload_1
+      15: arraylength
+      16: if_icmpge     91
+      19: aload_1
+      20: iload_3
+      21: daload
+      22: dstore        4
+      24: dload         4
+      26: aload_0
+      27: getfield      #56                 // Field minInclusive:D
+      30: dcmpl
+      31: iflt          66
+      34: dload         4
+      36: aload_0
+      37: getfield      #58                 // Field maxExclusive:D
+      40: dcmpg
+      41: ifge          66
+      44: aload_1
+      45: iload_3
+      46: aload_0
+      47: getfield      #60                 // Field whenInRange:Lnet/minecraft/world/level/levelgen/DensityFunction;
+      50: aload_2
+      51: iload_3
+      52: invokeinterface #79,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$ContextProvider.forIndex:(I)Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;
+      57: invokeinterface #68,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.compute:(Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;)D
+      62: dastore
+      63: goto          85
+      66: aload_1
+      67: iload_3
+      68: aload_0
+      69: getfield      #62                 // Field whenOutOfRange:Lnet/minecraft/world/level/levelgen/DensityFunction;
+      72: aload_2
+      73: iload_3
+      74: invokeinterface #79,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$ContextProvider.forIndex:(I)Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;
+      79: invokeinterface #68,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.compute:(Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;)D
+      84: dastore
+      85: iinc          3, 1
+      88: goto          13
+      91: return
+
+  public net.minecraft.world.level.levelgen.DensityFunction mapAll(net.minecraft.world.level.levelgen.DensityFunction$Visitor);
+    Code:
+       0: aload_1
+       1: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$RangeChoice
+       4: dup
+       5: aload_0
+       6: getfield      #54                 // Field input:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       9: aload_1
+      10: invokeinterface #89,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.mapAll:(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      15: aload_0
+      16: getfield      #56                 // Field minInclusive:D
+      19: aload_0
+      20: getfield      #58                 // Field maxExclusive:D
+      23: aload_0
+      24: getfield      #60                 // Field whenInRange:Lnet/minecraft/world/level/levelgen/DensityFunction;
+      27: aload_1
+      28: invokeinterface #89,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.mapAll:(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      33: aload_0
+      34: getfield      #62                 // Field whenOutOfRange:Lnet/minecraft/world/level/levelgen/DensityFunction;
+      37: aload_1
+      38: invokeinterface #89,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.mapAll:(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      43: invokespecial #91                 // Method "<init>":(Lnet/minecraft/world/level/levelgen/DensityFunction;DDLnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction;)V
+      46: invokeinterface #95,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$Visitor.apply:(Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      51: areturn
+
+  public double minValue();
+    Code:
+       0: aload_0
+       1: getfield      #60                 // Field whenInRange:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       4: invokeinterface #101,  1          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.minValue:()D
+       9: aload_0
+      10: getfield      #62                 // Field whenOutOfRange:Lnet/minecraft/world/level/levelgen/DensityFunction;
+      13: invokeinterface #101,  1          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.minValue:()D
+      18: invokestatic  #107                // Method java/lang/Math.min:(DD)D
+      21: dreturn
+
+  public double maxValue();
+    Code:
+       0: aload_0
+       1: getfield      #60                 // Field whenInRange:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       4: invokeinterface #110,  1          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.maxValue:()D
+       9: aload_0
+      10: getfield      #62                 // Field whenOutOfRange:Lnet/minecraft/world/level/levelgen/DensityFunction;
+      13: invokeinterface #110,  1          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.maxValue:()D
+      18: invokestatic  #113                // Method java/lang/Math.max:(DD)D
+      21: dreturn
+
+  public net.minecraft.util.KeyDispatchDataCodec<? extends net.minecraft.world.level.levelgen.DensityFunction> codec();
+    Code:
+       0: getstatic     #118                // Field CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+       3: areturn
+
+  public final java.lang.String toString();
+    Code:
+       0: aload_0
+       1: invokedynamic #137,  0            // InvokeDynamic #0:toString:(Lnet/minecraft/world/level/levelgen/DensityFunctions$RangeChoice;)Ljava/lang/String;
+       6: areturn
+
+  public final int hashCode();
+    Code:
+       0: aload_0
+       1: invokedynamic #142,  0            // InvokeDynamic #0:hashCode:(Lnet/minecraft/world/level/levelgen/DensityFunctions$RangeChoice;)I
+       6: ireturn
+
+  public final boolean equals(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokedynamic #147,  0            // InvokeDynamic #0:equals:(Lnet/minecraft/world/level/levelgen/DensityFunctions$RangeChoice;Ljava/lang/Object;)Z
+       7: ireturn
+
+  public net.minecraft.world.level.levelgen.DensityFunction input();
+    Code:
+       0: aload_0
+       1: getfield      #54                 // Field input:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       4: areturn
+
+  public double minInclusive();
+    Code:
+       0: aload_0
+       1: getfield      #56                 // Field minInclusive:D
+       4: dreturn
+
+  public double maxExclusive();
+    Code:
+       0: aload_0
+       1: getfield      #58                 // Field maxExclusive:D
+       4: dreturn
+
+  public net.minecraft.world.level.levelgen.DensityFunction whenInRange();
+    Code:
+       0: aload_0
+       1: getfield      #60                 // Field whenInRange:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       4: areturn
+
+  public net.minecraft.world.level.levelgen.DensityFunction whenOutOfRange();
+    Code:
+       0: aload_0
+       1: getfield      #62                 // Field whenOutOfRange:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       4: areturn
+
+  private static com.mojang.datafixers.kinds.App lambda$static$0(com.mojang.serialization.codecs.RecordCodecBuilder$Instance);
+    Code:
+       0: aload_0
+       1: getstatic     #156                // Field net/minecraft/world/level/levelgen/DensityFunction.HOLDER_HELPER_CODEC:Lcom/mojang/serialization/Codec;
+       4: ldc           #157                // String input
+       6: invokeinterface #163,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      11: invokedynamic #180,  0            // InvokeDynamic #1:apply:()Ljava/util/function/Function;
+      16: invokevirtual #186                // Method com/mojang/serialization/MapCodec.forGetter:(Ljava/util/function/Function;)Lcom/mojang/serialization/codecs/RecordCodecBuilder;
+      19: getstatic     #189                // Field net/minecraft/world/level/levelgen/DensityFunctions.NOISE_VALUE_CODEC:Lcom/mojang/serialization/Codec;
+      22: ldc           #191                // String min_inclusive
+      24: invokeinterface #163,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      29: invokedynamic #197,  0            // InvokeDynamic #2:apply:()Ljava/util/function/Function;
+      34: invokevirtual #186                // Method com/mojang/serialization/MapCodec.forGetter:(Ljava/util/function/Function;)Lcom/mojang/serialization/codecs/RecordCodecBuilder;
+      37: getstatic     #189                // Field net/minecraft/world/level/levelgen/DensityFunctions.NOISE_VALUE_CODEC:Lcom/mojang/serialization/Codec;
+      40: ldc           #199                // String max_exclusive
+      42: invokeinterface #163,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      47: invokedynamic #203,  0            // InvokeDynamic #3:apply:()Ljava/util/function/Function;
+      52: invokevirtual #186                // Method com/mojang/serialization/MapCodec.forGetter:(Ljava/util/function/Function;)Lcom/mojang/serialization/codecs/RecordCodecBuilder;
+      55: getstatic     #156                // Field net/minecraft/world/level/levelgen/DensityFunction.HOLDER_HELPER_CODEC:Lcom/mojang/serialization/Codec;
+      58: ldc           #205                // String when_in_range
+      60: invokeinterface #163,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      65: invokedynamic #209,  0            // InvokeDynamic #4:apply:()Ljava/util/function/Function;
+      70: invokevirtual #186                // Method com/mojang/serialization/MapCodec.forGetter:(Ljava/util/function/Function;)Lcom/mojang/serialization/codecs/RecordCodecBuilder;
+      73: getstatic     #156                // Field net/minecraft/world/level/levelgen/DensityFunction.HOLDER_HELPER_CODEC:Lcom/mojang/serialization/Codec;
+      76: ldc           #211                // String when_out_of_range
+      78: invokeinterface #163,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      83: invokedynamic #215,  0            // InvokeDynamic #5:apply:()Ljava/util/function/Function;
+      88: invokevirtual #186                // Method com/mojang/serialization/MapCodec.forGetter:(Ljava/util/function/Function;)Lcom/mojang/serialization/codecs/RecordCodecBuilder;
+      91: invokevirtual #219                // Method com/mojang/serialization/codecs/RecordCodecBuilder$Instance.group:(Lcom/mojang/datafixers/kinds/App;Lcom/mojang/datafixers/kinds/App;Lcom/mojang/datafixers/kinds/App;Lcom/mojang/datafixers/kinds/App;Lcom/mojang/datafixers/kinds/App;)Lcom/mojang/datafixers/Products$P5;
+      94: aload_0
+      95: invokedynamic #227,  0            // InvokeDynamic #6:apply:()Lcom/mojang/datafixers/util/Function5;
+     100: invokevirtual #230                // Method com/mojang/datafixers/Products$P5.apply:(Lcom/mojang/datafixers/kinds/Applicative;Lcom/mojang/datafixers/util/Function5;)Lcom/mojang/datafixers/kinds/App;
+     103: areturn
+
+  static {};
+    Code:
+       0: invokedynamic #238,  0            // InvokeDynamic #7:apply:()Ljava/util/function/Function;
+       5: invokestatic  #242                // Method com/mojang/serialization/codecs/RecordCodecBuilder.mapCodec:(Ljava/util/function/Function;)Lcom/mojang/serialization/MapCodec;
+       8: putstatic     #244                // Field DATA_CODEC:Lcom/mojang/serialization/MapCodec;
+      11: getstatic     #244                // Field DATA_CODEC:Lcom/mojang/serialization/MapCodec;
+      14: invokestatic  #250                // Method net/minecraft/util/KeyDispatchDataCodec.of:(Lcom/mojang/serialization/MapCodec;)Lnet/minecraft/util/KeyDispatchDataCodec;
+      17: putstatic     #118                // Field CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+      20: return
+}

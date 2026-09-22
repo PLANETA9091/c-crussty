@@ -1,0 +1,84 @@
+Compiled from "DensityFunctions.java"
+public final class net.minecraft.world.level.levelgen.DensityFunctions$BlendAlpha extends java.lang.Enum<net.minecraft.world.level.levelgen.DensityFunctions$BlendAlpha> implements net.minecraft.world.level.levelgen.DensityFunction$SimpleFunction {
+  public static final net.minecraft.world.level.levelgen.DensityFunctions$BlendAlpha INSTANCE;
+
+  public static final net.minecraft.util.KeyDispatchDataCodec<net.minecraft.world.level.levelgen.DensityFunction> CODEC;
+
+  private static final net.minecraft.world.level.levelgen.DensityFunctions$BlendAlpha[] $VALUES;
+
+  public static net.minecraft.world.level.levelgen.DensityFunctions$BlendAlpha[] values();
+    Code:
+       0: getstatic     #31                 // Field $VALUES:[Lnet/minecraft/world/level/levelgen/DensityFunctions$BlendAlpha;
+       3: invokevirtual #36                 // Method "[Lnet/minecraft/world/level/levelgen/DensityFunctions$BlendAlpha;".clone:()Ljava/lang/Object;
+       6: checkcast     #32                 // class "[Lnet/minecraft/world/level/levelgen/DensityFunctions$BlendAlpha;"
+       9: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunctions$BlendAlpha valueOf(java.lang.String);
+    Code:
+       0: ldc           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$BlendAlpha
+       2: aload_0
+       3: invokestatic  #41                 // Method java/lang/Enum.valueOf:(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Enum;
+       6: checkcast     #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$BlendAlpha
+       9: areturn
+
+  private net.minecraft.world.level.levelgen.DensityFunctions$BlendAlpha();
+    Code:
+       0: aload_0
+       1: aload_1
+       2: iload_2
+       3: invokespecial #48                 // Method java/lang/Enum."<init>":(Ljava/lang/String;I)V
+       6: return
+
+  public double compute(net.minecraft.world.level.levelgen.DensityFunction$FunctionContext);
+    Code:
+       0: dconst_1
+       1: dreturn
+
+  public void fillArray(double[], net.minecraft.world.level.levelgen.DensityFunction$ContextProvider);
+    Code:
+       0: aload_1
+       1: dconst_1
+       2: invokestatic  #61                 // Method java/util/Arrays.fill:([DD)V
+       5: return
+
+  public double minValue();
+    Code:
+       0: dconst_1
+       1: dreturn
+
+  public double maxValue();
+    Code:
+       0: dconst_1
+       1: dreturn
+
+  public net.minecraft.util.KeyDispatchDataCodec<? extends net.minecraft.world.level.levelgen.DensityFunction> codec();
+    Code:
+       0: getstatic     #73                 // Field CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+       3: areturn
+
+  private static net.minecraft.world.level.levelgen.DensityFunctions$BlendAlpha[] $values();
+    Code:
+       0: iconst_1
+       1: anewarray     #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$BlendAlpha
+       4: dup
+       5: iconst_0
+       6: getstatic     #76                 // Field INSTANCE:Lnet/minecraft/world/level/levelgen/DensityFunctions$BlendAlpha;
+       9: aastore
+      10: areturn
+
+  static {};
+    Code:
+       0: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$BlendAlpha
+       3: dup
+       4: ldc           #78                 // String INSTANCE
+       6: iconst_0
+       7: invokespecial #79                 // Method "<init>":(Ljava/lang/String;I)V
+      10: putstatic     #76                 // Field INSTANCE:Lnet/minecraft/world/level/levelgen/DensityFunctions$BlendAlpha;
+      13: invokestatic  #81                 // Method $values:()[Lnet/minecraft/world/level/levelgen/DensityFunctions$BlendAlpha;
+      16: putstatic     #31                 // Field $VALUES:[Lnet/minecraft/world/level/levelgen/DensityFunctions$BlendAlpha;
+      19: getstatic     #76                 // Field INSTANCE:Lnet/minecraft/world/level/levelgen/DensityFunctions$BlendAlpha;
+      22: invokestatic  #87                 // Method com/mojang/serialization/MapCodec.unit:(Ljava/lang/Object;)Lcom/mojang/serialization/MapCodec;
+      25: invokestatic  #93                 // Method net/minecraft/util/KeyDispatchDataCodec.of:(Lcom/mojang/serialization/MapCodec;)Lnet/minecraft/util/KeyDispatchDataCodec;
+      28: putstatic     #73                 // Field CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+      31: return
+}

@@ -458,6 +458,17 @@ export CRUSSTY_BU_DEFER="$BU_DEFER"
 # read these at registration time to ARM their architecture lever.
 export CRUSSTY_LEVER_FLAG="${LEVER_FLAG:-}"
 export CRUSSTY_LEVER_ARG="${LEVER_ARG:-}"
+# TASK-417-B GEN axis (cmp417_wgen): arm the noise/worldgen heritage plane
+# (noise_fill whole-body targets: DensityFunctions$Noise / ShiftNoise /
+# NoiseChunk$NoiseInterpolator / DensityFunction$SimpleFunction) under the
+# SAME lever. The fill family is deliberately NOT in PROVEN_WINS, so the
+# arming also sets the documented benchmarking override (TASK-108 law:
+# "A/B arms run with CRUSSTY_KERNEL_POLICY=off"). Anchors (empty flag) stay
+# bit-for-bit vanilla.
+if [ "$CRUSSTY_LEVER_FLAG" = "cmp417_wgen" ]; then
+  export CRUSSTY_NATIVE_NOISE_FILL=1
+  export CRUSSTY_KERNEL_POLICY=off
+fi
 # RECON_DIAG (TASK-317, instrument-гейт рычага #13 SKIP-STORE-DIET): чистая
 # наблюдаемость — 0 поведения. GC-политика/heap не трогаются (логирование ≠
 # config-win, вердикт NEXT TASK-316): remset/refine debug-логи (агрегатная

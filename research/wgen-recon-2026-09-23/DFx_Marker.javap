@@ -1,0 +1,80 @@
+Compiled from "DensityFunctions.java"
+public final class net.minecraft.world.level.levelgen.DensityFunctions$Marker extends java.lang.Record implements net.minecraft.world.level.levelgen.DensityFunctions$MarkerOrMarked {
+  private final net.minecraft.world.level.levelgen.DensityFunctions$Marker$Type type;
+
+  private final net.minecraft.world.level.levelgen.DensityFunction wrapped;
+
+  protected net.minecraft.world.level.levelgen.DensityFunctions$Marker(net.minecraft.world.level.levelgen.DensityFunctions$Marker$Type, net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: aload_0
+       1: invokespecial #36                 // Method java/lang/Record."<init>":()V
+       4: aload_0
+       5: aload_1
+       6: putfield      #38                 // Field type:Lnet/minecraft/world/level/levelgen/DensityFunctions$Marker$Type;
+       9: aload_0
+      10: aload_2
+      11: putfield      #40                 // Field wrapped:Lnet/minecraft/world/level/levelgen/DensityFunction;
+      14: return
+
+  public double compute(net.minecraft.world.level.levelgen.DensityFunction$FunctionContext);
+    Code:
+       0: aload_0
+       1: getfield      #40                 // Field wrapped:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       4: aload_1
+       5: invokeinterface #46,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.compute:(Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;)D
+      10: dreturn
+
+  public void fillArray(double[], net.minecraft.world.level.levelgen.DensityFunction$ContextProvider);
+    Code:
+       0: aload_0
+       1: getfield      #40                 // Field wrapped:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       4: aload_1
+       5: aload_2
+       6: invokeinterface #52,  3           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.fillArray:([DLnet/minecraft/world/level/levelgen/DensityFunction$ContextProvider;)V
+      11: return
+
+  public double minValue();
+    Code:
+       0: aload_0
+       1: getfield      #40                 // Field wrapped:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       4: invokeinterface #60,  1           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.minValue:()D
+       9: dreturn
+
+  public double maxValue();
+    Code:
+       0: aload_0
+       1: getfield      #40                 // Field wrapped:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       4: invokeinterface #63,  1           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.maxValue:()D
+       9: dreturn
+
+  public final java.lang.String toString();
+    Code:
+       0: aload_0
+       1: invokedynamic #79,  0             // InvokeDynamic #0:toString:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Marker;)Ljava/lang/String;
+       6: areturn
+
+  public final int hashCode();
+    Code:
+       0: aload_0
+       1: invokedynamic #84,  0             // InvokeDynamic #0:hashCode:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Marker;)I
+       6: ireturn
+
+  public final boolean equals(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokedynamic #89,  0             // InvokeDynamic #0:equals:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Marker;Ljava/lang/Object;)Z
+       7: ireturn
+
+  public net.minecraft.world.level.levelgen.DensityFunctions$Marker$Type type();
+    Code:
+       0: aload_0
+       1: getfield      #38                 // Field type:Lnet/minecraft/world/level/levelgen/DensityFunctions$Marker$Type;
+       4: areturn
+
+  public net.minecraft.world.level.levelgen.DensityFunction wrapped();
+    Code:
+       0: aload_0
+       1: getfield      #40                 // Field wrapped:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       4: areturn
+}

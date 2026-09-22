@@ -1,0 +1,633 @@
+Compiled from "PerlinNoise.java"
+public class net.minecraft.world.level.levelgen.synth.PerlinNoise {
+  private static final int ROUND_OFF;
+
+  private final net.minecraft.world.level.levelgen.synth.ImprovedNoise[] noiseLevels;
+
+  private final int firstOctave;
+
+  private final it.unimi.dsi.fastutil.doubles.DoubleList amplitudes;
+
+  private final double lowestFreqValueFactor;
+
+  private final double lowestFreqInputFactor;
+
+  private final double maxValue;
+
+  public static net.minecraft.world.level.levelgen.synth.PerlinNoise createLegacyForBlendedNoise(net.minecraft.util.RandomSource, java.util.stream.IntStream);
+    Code:
+       0: new           #2                  // class net/minecraft/world/level/levelgen/synth/PerlinNoise
+       3: dup
+       4: aload_0
+       5: new           #27                 // class it/unimi/dsi/fastutil/ints/IntRBTreeSet
+       8: dup
+       9: aload_1
+      10: invokeinterface #33,  1           // InterfaceMethod java/util/stream/IntStream.boxed:()Ljava/util/stream/Stream;
+      15: invokestatic  #39                 // Method com/google/common/collect/ImmutableList.toImmutableList:()Ljava/util/stream/Collector;
+      18: invokeinterface #45,  2           // InterfaceMethod java/util/stream/Stream.collect:(Ljava/util/stream/Collector;)Ljava/lang/Object;
+      23: checkcast     #47                 // class java/util/Collection
+      26: invokespecial #51                 // Method it/unimi/dsi/fastutil/ints/IntRBTreeSet."<init>":(Ljava/util/Collection;)V
+      29: invokestatic  #55                 // Method makeAmplitudes:(Lit/unimi/dsi/fastutil/ints/IntSortedSet;)Lcom/mojang/datafixers/util/Pair;
+      32: iconst_0
+      33: invokespecial #58                 // Method "<init>":(Lnet/minecraft/util/RandomSource;Lcom/mojang/datafixers/util/Pair;Z)V
+      36: areturn
+
+  public static net.minecraft.world.level.levelgen.synth.PerlinNoise createLegacyForLegacyNetherBiome(net.minecraft.util.RandomSource, int, it.unimi.dsi.fastutil.doubles.DoubleList);
+    Code:
+       0: new           #2                  // class net/minecraft/world/level/levelgen/synth/PerlinNoise
+       3: dup
+       4: aload_0
+       5: iload_1
+       6: invokestatic  #70                 // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+       9: aload_2
+      10: invokestatic  #76                 // Method com/mojang/datafixers/util/Pair.of:(Ljava/lang/Object;Ljava/lang/Object;)Lcom/mojang/datafixers/util/Pair;
+      13: iconst_0
+      14: invokespecial #58                 // Method "<init>":(Lnet/minecraft/util/RandomSource;Lcom/mojang/datafixers/util/Pair;Z)V
+      17: areturn
+
+  public static net.minecraft.world.level.levelgen.synth.PerlinNoise create(net.minecraft.util.RandomSource, java.util.stream.IntStream);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokeinterface #33,  1           // InterfaceMethod java/util/stream/IntStream.boxed:()Ljava/util/stream/Stream;
+       7: invokestatic  #39                 // Method com/google/common/collect/ImmutableList.toImmutableList:()Ljava/util/stream/Collector;
+      10: invokeinterface #45,  2           // InterfaceMethod java/util/stream/Stream.collect:(Ljava/util/stream/Collector;)Ljava/lang/Object;
+      15: checkcast     #79                 // class java/util/List
+      18: invokestatic  #82                 // Method create:(Lnet/minecraft/util/RandomSource;Ljava/util/List;)Lnet/minecraft/world/level/levelgen/synth/PerlinNoise;
+      21: areturn
+
+  public static net.minecraft.world.level.levelgen.synth.PerlinNoise create(net.minecraft.util.RandomSource, java.util.List<java.lang.Integer>);
+    Code:
+       0: new           #2                  // class net/minecraft/world/level/levelgen/synth/PerlinNoise
+       3: dup
+       4: aload_0
+       5: new           #27                 // class it/unimi/dsi/fastutil/ints/IntRBTreeSet
+       8: dup
+       9: aload_1
+      10: invokespecial #51                 // Method it/unimi/dsi/fastutil/ints/IntRBTreeSet."<init>":(Ljava/util/Collection;)V
+      13: invokestatic  #55                 // Method makeAmplitudes:(Lit/unimi/dsi/fastutil/ints/IntSortedSet;)Lcom/mojang/datafixers/util/Pair;
+      16: iconst_1
+      17: invokespecial #58                 // Method "<init>":(Lnet/minecraft/util/RandomSource;Lcom/mojang/datafixers/util/Pair;Z)V
+      20: areturn
+
+  public static net.minecraft.world.level.levelgen.synth.PerlinNoise create(net.minecraft.util.RandomSource, int, double, double...);
+    Code:
+       0: new           #88                 // class it/unimi/dsi/fastutil/doubles/DoubleArrayList
+       3: dup
+       4: aload         4
+       6: invokespecial #91                 // Method it/unimi/dsi/fastutil/doubles/DoubleArrayList."<init>":([D)V
+       9: astore        5
+      11: aload         5
+      13: iconst_0
+      14: dload_2
+      15: invokevirtual #95                 // Method it/unimi/dsi/fastutil/doubles/DoubleArrayList.add:(ID)V
+      18: new           #2                  // class net/minecraft/world/level/levelgen/synth/PerlinNoise
+      21: dup
+      22: aload_0
+      23: iload_1
+      24: invokestatic  #70                 // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      27: aload         5
+      29: invokestatic  #76                 // Method com/mojang/datafixers/util/Pair.of:(Ljava/lang/Object;Ljava/lang/Object;)Lcom/mojang/datafixers/util/Pair;
+      32: iconst_1
+      33: invokespecial #58                 // Method "<init>":(Lnet/minecraft/util/RandomSource;Lcom/mojang/datafixers/util/Pair;Z)V
+      36: areturn
+
+  public static net.minecraft.world.level.levelgen.synth.PerlinNoise create(net.minecraft.util.RandomSource, int, it.unimi.dsi.fastutil.doubles.DoubleList);
+    Code:
+       0: new           #2                  // class net/minecraft/world/level/levelgen/synth/PerlinNoise
+       3: dup
+       4: aload_0
+       5: iload_1
+       6: invokestatic  #70                 // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+       9: aload_2
+      10: invokestatic  #76                 // Method com/mojang/datafixers/util/Pair.of:(Ljava/lang/Object;Ljava/lang/Object;)Lcom/mojang/datafixers/util/Pair;
+      13: iconst_1
+      14: invokespecial #58                 // Method "<init>":(Lnet/minecraft/util/RandomSource;Lcom/mojang/datafixers/util/Pair;Z)V
+      17: areturn
+
+  private static com.mojang.datafixers.util.Pair<java.lang.Integer, it.unimi.dsi.fastutil.doubles.DoubleList> makeAmplitudes(it.unimi.dsi.fastutil.ints.IntSortedSet);
+    Code:
+       0: aload_0
+       1: invokeinterface #106,  1          // InterfaceMethod it/unimi/dsi/fastutil/ints/IntSortedSet.isEmpty:()Z
+       6: ifeq          19
+       9: new           #108                // class java/lang/IllegalArgumentException
+      12: dup
+      13: ldc           #110                // String Need some octaves!
+      15: invokespecial #113                // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+      18: athrow
+      19: aload_0
+      20: invokeinterface #117,  1          // InterfaceMethod it/unimi/dsi/fastutil/ints/IntSortedSet.firstInt:()I
+      25: ineg
+      26: istore_1
+      27: aload_0
+      28: invokeinterface #120,  1          // InterfaceMethod it/unimi/dsi/fastutil/ints/IntSortedSet.lastInt:()I
+      33: istore_2
+      34: iload_1
+      35: iload_2
+      36: iadd
+      37: iconst_1
+      38: iadd
+      39: istore_3
+      40: iload_3
+      41: iconst_1
+      42: if_icmpge     55
+      45: new           #108                // class java/lang/IllegalArgumentException
+      48: dup
+      49: ldc           #122                // String Total number of octaves needs to be >= 1
+      51: invokespecial #113                // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+      54: athrow
+      55: new           #88                 // class it/unimi/dsi/fastutil/doubles/DoubleArrayList
+      58: dup
+      59: iload_3
+      60: newarray       double
+      62: invokespecial #91                 // Method it/unimi/dsi/fastutil/doubles/DoubleArrayList."<init>":([D)V
+      65: astore        4
+      67: aload_0
+      68: invokeinterface #126,  1          // InterfaceMethod it/unimi/dsi/fastutil/ints/IntSortedSet.iterator:()Lit/unimi/dsi/fastutil/ints/IntBidirectionalIterator;
+      73: astore        5
+      75: aload         5
+      77: invokeinterface #133,  1          // InterfaceMethod it/unimi/dsi/fastutil/ints/IntBidirectionalIterator.hasNext:()Z
+      82: ifeq          110
+      85: aload         5
+      87: invokeinterface #136,  1          // InterfaceMethod it/unimi/dsi/fastutil/ints/IntBidirectionalIterator.nextInt:()I
+      92: istore        6
+      94: aload         4
+      96: iload         6
+      98: iload_1
+      99: iadd
+     100: dconst_1
+     101: invokeinterface #140,  4          // InterfaceMethod it/unimi/dsi/fastutil/doubles/DoubleList.set:(ID)D
+     106: pop2
+     107: goto          75
+     110: iload_1
+     111: ineg
+     112: invokestatic  #70                 // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+     115: aload         4
+     117: invokestatic  #76                 // Method com/mojang/datafixers/util/Pair.of:(Ljava/lang/Object;Ljava/lang/Object;)Lcom/mojang/datafixers/util/Pair;
+     120: areturn
+
+  protected net.minecraft.world.level.levelgen.synth.PerlinNoise(net.minecraft.util.RandomSource, com.mojang.datafixers.util.Pair<java.lang.Integer, it.unimi.dsi.fastutil.doubles.DoubleList>, boolean);
+    Code:
+       0: aload_0
+       1: invokespecial #151                // Method java/lang/Object."<init>":()V
+       4: aload_0
+       5: aload_2
+       6: invokevirtual #155                // Method com/mojang/datafixers/util/Pair.getFirst:()Ljava/lang/Object;
+       9: checkcast     #66                 // class java/lang/Integer
+      12: invokevirtual #158                // Method java/lang/Integer.intValue:()I
+      15: putfield      #160                // Field firstOctave:I
+      18: aload_0
+      19: aload_2
+      20: invokevirtual #163                // Method com/mojang/datafixers/util/Pair.getSecond:()Ljava/lang/Object;
+      23: checkcast     #128                // class it/unimi/dsi/fastutil/doubles/DoubleList
+      26: putfield      #165                // Field amplitudes:Lit/unimi/dsi/fastutil/doubles/DoubleList;
+      29: aload_0
+      30: getfield      #165                // Field amplitudes:Lit/unimi/dsi/fastutil/doubles/DoubleList;
+      33: invokeinterface #168,  1          // InterfaceMethod it/unimi/dsi/fastutil/doubles/DoubleList.size:()I
+      38: istore        4
+      40: aload_0
+      41: getfield      #160                // Field firstOctave:I
+      44: ineg
+      45: istore        5
+      47: aload_0
+      48: iload         4
+      50: anewarray     #170                // class net/minecraft/world/level/levelgen/synth/ImprovedNoise
+      53: putfield      #172                // Field noiseLevels:[Lnet/minecraft/world/level/levelgen/synth/ImprovedNoise;
+      56: iload_3
+      57: ifeq          140
+      60: aload_1
+      61: invokeinterface #178,  1          // InterfaceMethod net/minecraft/util/RandomSource.forkPositional:()Lnet/minecraft/world/level/levelgen/PositionalRandomFactory;
+      66: astore        6
+      68: iconst_0
+      69: istore        7
+      71: iload         7
+      73: iload         4
+      75: if_icmpge     137
+      78: aload_0
+      79: getfield      #165                // Field amplitudes:Lit/unimi/dsi/fastutil/doubles/DoubleList;
+      82: iload         7
+      84: invokeinterface #184,  2          // InterfaceMethod it/unimi/dsi/fastutil/doubles/DoubleList.getDouble:(I)D
+      89: dconst_0
+      90: dcmpl
+      91: ifeq          131
+      94: aload_0
+      95: getfield      #160                // Field firstOctave:I
+      98: iload         7
+     100: iadd
+     101: istore        8
+     103: aload_0
+     104: getfield      #172                // Field noiseLevels:[Lnet/minecraft/world/level/levelgen/synth/ImprovedNoise;
+     107: iload         7
+     109: new           #170                // class net/minecraft/world/level/levelgen/synth/ImprovedNoise
+     112: dup
+     113: aload         6
+     115: iload         8
+     117: invokedynamic #196,  0            // InvokeDynamic #0:makeConcatWithConstants:(I)Ljava/lang/String;
+     122: invokeinterface #200,  2          // InterfaceMethod net/minecraft/world/level/levelgen/PositionalRandomFactory.fromHashOf:(Ljava/lang/String;)Lnet/minecraft/util/RandomSource;
+     127: invokespecial #203                // Method net/minecraft/world/level/levelgen/synth/ImprovedNoise."<init>":(Lnet/minecraft/util/RandomSource;)V
+     130: aastore
+     131: iinc          7, 1
+     134: goto          71
+     137: goto          344
+     140: new           #170                // class net/minecraft/world/level/levelgen/synth/ImprovedNoise
+     143: dup
+     144: aload_1
+     145: invokespecial #203                // Method net/minecraft/world/level/levelgen/synth/ImprovedNoise."<init>":(Lnet/minecraft/util/RandomSource;)V
+     148: astore        6
+     150: iload         5
+     152: iflt          191
+     155: iload         5
+     157: iload         4
+     159: if_icmpge     191
+     162: aload_0
+     163: getfield      #165                // Field amplitudes:Lit/unimi/dsi/fastutil/doubles/DoubleList;
+     166: iload         5
+     168: invokeinterface #184,  2          // InterfaceMethod it/unimi/dsi/fastutil/doubles/DoubleList.getDouble:(I)D
+     173: dstore        7
+     175: dload         7
+     177: dconst_0
+     178: dcmpl
+     179: ifeq          191
+     182: aload_0
+     183: getfield      #172                // Field noiseLevels:[Lnet/minecraft/world/level/levelgen/synth/ImprovedNoise;
+     186: iload         5
+     188: aload         6
+     190: aastore
+     191: iload         5
+     193: iconst_1
+     194: isub
+     195: istore        7
+     197: iload         7
+     199: iflt          264
+     202: iload         7
+     204: iload         4
+     206: if_icmpge     254
+     209: aload_0
+     210: getfield      #165                // Field amplitudes:Lit/unimi/dsi/fastutil/doubles/DoubleList;
+     213: iload         7
+     215: invokeinterface #184,  2          // InterfaceMethod it/unimi/dsi/fastutil/doubles/DoubleList.getDouble:(I)D
+     220: dstore        8
+     222: dload         8
+     224: dconst_0
+     225: dcmpl
+     226: ifeq          247
+     229: aload_0
+     230: getfield      #172                // Field noiseLevels:[Lnet/minecraft/world/level/levelgen/synth/ImprovedNoise;
+     233: iload         7
+     235: new           #170                // class net/minecraft/world/level/levelgen/synth/ImprovedNoise
+     238: dup
+     239: aload_1
+     240: invokespecial #203                // Method net/minecraft/world/level/levelgen/synth/ImprovedNoise."<init>":(Lnet/minecraft/util/RandomSource;)V
+     243: aastore
+     244: goto          251
+     247: aload_1
+     248: invokestatic  #206                // Method skipOctave:(Lnet/minecraft/util/RandomSource;)V
+     251: goto          258
+     254: aload_1
+     255: invokestatic  #206                // Method skipOctave:(Lnet/minecraft/util/RandomSource;)V
+     258: iinc          7, -1
+     261: goto          197
+     264: aload_0
+     265: getfield      #172                // Field noiseLevels:[Lnet/minecraft/world/level/levelgen/synth/ImprovedNoise;
+     268: invokestatic  #212                // Method java/util/Arrays.stream:([Ljava/lang/Object;)Ljava/util/stream/Stream;
+     271: invokedynamic #233,  0            // InvokeDynamic #1:test:()Ljava/util/function/Predicate;
+     276: invokeinterface #237,  2          // InterfaceMethod java/util/stream/Stream.filter:(Ljava/util/function/Predicate;)Ljava/util/stream/Stream;
+     281: invokeinterface #241,  1          // InterfaceMethod java/util/stream/Stream.count:()J
+     286: aload_0
+     287: getfield      #165                // Field amplitudes:Lit/unimi/dsi/fastutil/doubles/DoubleList;
+     290: invokeinterface #243,  1          // InterfaceMethod it/unimi/dsi/fastutil/doubles/DoubleList.stream:()Ljava/util/stream/Stream;
+     295: invokedynamic #250,  0            // InvokeDynamic #2:test:()Ljava/util/function/Predicate;
+     300: invokeinterface #237,  2          // InterfaceMethod java/util/stream/Stream.filter:(Ljava/util/function/Predicate;)Ljava/util/stream/Stream;
+     305: invokeinterface #241,  1          // InterfaceMethod java/util/stream/Stream.count:()J
+     310: lcmp
+     311: ifeq          324
+     314: new           #252                // class java/lang/IllegalStateException
+     317: dup
+     318: ldc           #254                // String Failed to create correct number of noise levels for given non-zero amplitudes
+     320: invokespecial #255                // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+     323: athrow
+     324: iload         5
+     326: iload         4
+     328: iconst_1
+     329: isub
+     330: if_icmpge     344
+     333: new           #108                // class java/lang/IllegalArgumentException
+     336: dup
+     337: ldc_w         #257                // String Positive octaves are temporarily disabled
+     340: invokespecial #113                // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+     343: athrow
+     344: aload_0
+     345: ldc2_w        #258                // double 2.0d
+     348: iload         5
+     350: ineg
+     351: i2d
+     352: invokestatic  #265                // Method java/lang/Math.pow:(DD)D
+     355: putfield      #267                // Field lowestFreqInputFactor:D
+     358: aload_0
+     359: ldc2_w        #258                // double 2.0d
+     362: iload         4
+     364: iconst_1
+     365: isub
+     366: i2d
+     367: invokestatic  #265                // Method java/lang/Math.pow:(DD)D
+     370: ldc2_w        #258                // double 2.0d
+     373: iload         4
+     375: i2d
+     376: invokestatic  #265                // Method java/lang/Math.pow:(DD)D
+     379: dconst_1
+     380: dsub
+     381: ddiv
+     382: putfield      #269                // Field lowestFreqValueFactor:D
+     385: aload_0
+     386: aload_0
+     387: ldc2_w        #258                // double 2.0d
+     390: invokevirtual #273                // Method edgeValue:(D)D
+     393: putfield      #275                // Field maxValue:D
+     396: return
+
+  protected double maxValue();
+    Code:
+       0: aload_0
+       1: getfield      #275                // Field maxValue:D
+       4: dreturn
+
+  private static void skipOctave(net.minecraft.util.RandomSource);
+    Code:
+       0: aload_0
+       1: sipush        262
+       4: invokeinterface #294,  2          // InterfaceMethod net/minecraft/util/RandomSource.consumeCount:(I)V
+       9: return
+
+  public double getValue(double, double, double);
+    Code:
+       0: aload_0
+       1: dload_1
+       2: dload_3
+       3: dload         5
+       5: dconst_0
+       6: dconst_0
+       7: iconst_0
+       8: invokevirtual #299                // Method getValue:(DDDDDZ)D
+      11: dreturn
+
+  public double getValue(double, double, double, double, double, boolean);
+    Code:
+       0: dconst_0
+       1: dstore        12
+       3: aload_0
+       4: getfield      #267                // Field lowestFreqInputFactor:D
+       7: dstore        14
+       9: aload_0
+      10: getfield      #269                // Field lowestFreqValueFactor:D
+      13: dstore        16
+      15: iconst_0
+      16: istore        18
+      18: iload         18
+      20: aload_0
+      21: getfield      #172                // Field noiseLevels:[Lnet/minecraft/world/level/levelgen/synth/ImprovedNoise;
+      24: arraylength
+      25: if_icmpge     139
+      28: aload_0
+      29: getfield      #172                // Field noiseLevels:[Lnet/minecraft/world/level/levelgen/synth/ImprovedNoise;
+      32: iload         18
+      34: aaload
+      35: astore        19
+      37: aload         19
+      39: ifnull        117
+      42: aload         19
+      44: dload_1
+      45: dload         14
+      47: dmul
+      48: invokestatic  #305                // Method wrap:(D)D
+      51: iload         11
+      53: ifeq          65
+      56: aload         19
+      58: getfield      #308                // Field net/minecraft/world/level/levelgen/synth/ImprovedNoise.yo:D
+      61: dneg
+      62: goto          72
+      65: dload_3
+      66: dload         14
+      68: dmul
+      69: invokestatic  #305                // Method wrap:(D)D
+      72: dload         5
+      74: dload         14
+      76: dmul
+      77: invokestatic  #305                // Method wrap:(D)D
+      80: dload         7
+      82: dload         14
+      84: dmul
+      85: dload         9
+      87: dload         14
+      89: dmul
+      90: invokevirtual #312                // Method net/minecraft/world/level/levelgen/synth/ImprovedNoise.noise:(DDDDD)D
+      93: dstore        20
+      95: dload         12
+      97: aload_0
+      98: getfield      #165                // Field amplitudes:Lit/unimi/dsi/fastutil/doubles/DoubleList;
+     101: iload         18
+     103: invokeinterface #184,  2          // InterfaceMethod it/unimi/dsi/fastutil/doubles/DoubleList.getDouble:(I)D
+     108: dload         20
+     110: dmul
+     111: dload         16
+     113: dmul
+     114: dadd
+     115: dstore        12
+     117: dload         14
+     119: ldc2_w        #258                // double 2.0d
+     122: dmul
+     123: dstore        14
+     125: dload         16
+     127: ldc2_w        #258                // double 2.0d
+     130: ddiv
+     131: dstore        16
+     133: iinc          18, 1
+     136: goto          18
+     139: dload         12
+     141: dreturn
+
+  public double maxBrokenValue(double);
+    Code:
+       0: aload_0
+       1: dload_1
+       2: ldc2_w        #258                // double 2.0d
+       5: dadd
+       6: invokevirtual #273                // Method edgeValue:(D)D
+       9: dreturn
+
+  private double edgeValue(double);
+    Code:
+       0: dconst_0
+       1: dstore_3
+       2: aload_0
+       3: getfield      #269                // Field lowestFreqValueFactor:D
+       6: dstore        5
+       8: iconst_0
+       9: istore        7
+      11: iload         7
+      13: aload_0
+      14: getfield      #172                // Field noiseLevels:[Lnet/minecraft/world/level/levelgen/synth/ImprovedNoise;
+      17: arraylength
+      18: if_icmpge     68
+      21: aload_0
+      22: getfield      #172                // Field noiseLevels:[Lnet/minecraft/world/level/levelgen/synth/ImprovedNoise;
+      25: iload         7
+      27: aaload
+      28: astore        8
+      30: aload         8
+      32: ifnull        54
+      35: dload_3
+      36: aload_0
+      37: getfield      #165                // Field amplitudes:Lit/unimi/dsi/fastutil/doubles/DoubleList;
+      40: iload         7
+      42: invokeinterface #184,  2          // InterfaceMethod it/unimi/dsi/fastutil/doubles/DoubleList.getDouble:(I)D
+      47: dload_1
+      48: dmul
+      49: dload         5
+      51: dmul
+      52: dadd
+      53: dstore_3
+      54: dload         5
+      56: ldc2_w        #258                // double 2.0d
+      59: ddiv
+      60: dstore        5
+      62: iinc          7, 1
+      65: goto          11
+      68: dload_3
+      69: dreturn
+
+  public net.minecraft.world.level.levelgen.synth.ImprovedNoise getOctaveNoise(int);
+    Code:
+       0: aload_0
+       1: getfield      #172                // Field noiseLevels:[Lnet/minecraft/world/level/levelgen/synth/ImprovedNoise;
+       4: aload_0
+       5: getfield      #172                // Field noiseLevels:[Lnet/minecraft/world/level/levelgen/synth/ImprovedNoise;
+       8: arraylength
+       9: iconst_1
+      10: isub
+      11: iload_1
+      12: isub
+      13: aaload
+      14: areturn
+
+  public static double wrap(double);
+    Code:
+       0: dload_0
+       1: dload_0
+       2: ldc2_w        #327                // double 3.3554432E7d
+       5: ddiv
+       6: ldc2_w        #329                // double 0.5d
+       9: dadd
+      10: invokestatic  #336                // Method net/minecraft/util/Mth.lfloor:(D)J
+      13: l2d
+      14: ldc2_w        #327                // double 3.3554432E7d
+      17: dmul
+      18: dsub
+      19: dreturn
+
+  protected int firstOctave();
+    Code:
+       0: aload_0
+       1: getfield      #160                // Field firstOctave:I
+       4: ireturn
+
+  protected it.unimi.dsi.fastutil.doubles.DoubleList amplitudes();
+    Code:
+       0: aload_0
+       1: getfield      #165                // Field amplitudes:Lit/unimi/dsi/fastutil/doubles/DoubleList;
+       4: areturn
+
+  public void parityConfigString(java.lang.StringBuilder);
+    Code:
+       0: aload_1
+       1: ldc_w         #343                // String PerlinNoise{
+       4: invokevirtual #349                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+       7: pop
+       8: aload_0
+       9: getfield      #165                // Field amplitudes:Lit/unimi/dsi/fastutil/doubles/DoubleList;
+      12: invokeinterface #243,  1          // InterfaceMethod it/unimi/dsi/fastutil/doubles/DoubleList.stream:()Ljava/util/stream/Stream;
+      17: invokedynamic #361,  0            // InvokeDynamic #3:apply:()Ljava/util/function/Function;
+      22: invokeinterface #365,  2          // InterfaceMethod java/util/stream/Stream.map:(Ljava/util/function/Function;)Ljava/util/stream/Stream;
+      27: invokeinterface #369,  1          // InterfaceMethod java/util/stream/Stream.toList:()Ljava/util/List;
+      32: astore_2
+      33: aload_1
+      34: ldc_w         #371                // String first octave:
+      37: invokevirtual #349                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      40: aload_0
+      41: getfield      #160                // Field firstOctave:I
+      44: invokevirtual #374                // Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;
+      47: ldc_w         #376                // String , amplitudes:
+      50: invokevirtual #349                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      53: aload_2
+      54: invokevirtual #379                // Method java/lang/StringBuilder.append:(Ljava/lang/Object;)Ljava/lang/StringBuilder;
+      57: ldc_w         #381                // String , noise levels: [
+      60: invokevirtual #349                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      63: pop
+      64: iconst_0
+      65: istore_3
+      66: iload_3
+      67: aload_0
+      68: getfield      #172                // Field noiseLevels:[Lnet/minecraft/world/level/levelgen/synth/ImprovedNoise;
+      71: arraylength
+      72: if_icmpge     131
+      75: aload_1
+      76: iload_3
+      77: invokevirtual #374                // Method java/lang/StringBuilder.append:(I)Ljava/lang/StringBuilder;
+      80: ldc_w         #383                // String :
+      83: invokevirtual #349                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+      86: pop
+      87: aload_0
+      88: getfield      #172                // Field noiseLevels:[Lnet/minecraft/world/level/levelgen/synth/ImprovedNoise;
+      91: iload_3
+      92: aaload
+      93: astore        4
+      95: aload         4
+      97: ifnonnull     111
+     100: aload_1
+     101: ldc_w         #385                // String null
+     104: invokevirtual #349                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+     107: pop
+     108: goto          117
+     111: aload         4
+     113: aload_1
+     114: invokevirtual #387                // Method net/minecraft/world/level/levelgen/synth/ImprovedNoise.parityConfigString:(Ljava/lang/StringBuilder;)V
+     117: aload_1
+     118: ldc_w         #389                // String ,
+     121: invokevirtual #349                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+     124: pop
+     125: iinc          3, 1
+     128: goto          66
+     131: aload_1
+     132: ldc_w         #391                // String ]
+     135: invokevirtual #349                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+     138: pop
+     139: aload_1
+     140: ldc_w         #393                // String }
+     143: invokevirtual #349                // Method java/lang/StringBuilder.append:(Ljava/lang/String;)Ljava/lang/StringBuilder;
+     146: pop
+     147: return
+
+  private static java.lang.String lambda$parityConfigString$1(java.lang.Double);
+    Code:
+       0: getstatic     #402                // Field java/util/Locale.ROOT:Ljava/util/Locale;
+       3: ldc_w         #404                // String %.2f
+       6: iconst_1
+       7: anewarray     #4                  // class java/lang/Object
+      10: dup
+      11: iconst_0
+      12: aload_0
+      13: aastore
+      14: invokestatic  #410                // Method java/lang/String.format:(Ljava/util/Locale;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      17: areturn
+
+  private static boolean lambda$new$0(java.lang.Double);
+    Code:
+       0: aload_0
+       1: invokevirtual #417                // Method java/lang/Double.doubleValue:()D
+       4: dconst_0
+       5: dcmpl
+       6: ifeq          13
+       9: iconst_1
+      10: goto          14
+      13: iconst_0
+      14: ireturn
+}

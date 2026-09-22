@@ -1,0 +1,45 @@
+Compiled from "DensityFunctions.java"
+interface net.minecraft.world.level.levelgen.DensityFunctions$TransformerWithContext extends net.minecraft.world.level.levelgen.DensityFunction {
+  public abstract net.minecraft.world.level.levelgen.DensityFunction input();
+
+  public default double compute(net.minecraft.world.level.levelgen.DensityFunction$FunctionContext);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: aload_0
+       3: invokeinterface #22,  1           // InterfaceMethod input:()Lnet/minecraft/world/level/levelgen/DensityFunction;
+       8: aload_1
+       9: invokeinterface #24,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.compute:(Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;)D
+      14: invokeinterface #28,  4           // InterfaceMethod transform:(Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;D)D
+      19: dreturn
+
+  public default void fillArray(double[], net.minecraft.world.level.levelgen.DensityFunction$ContextProvider);
+    Code:
+       0: aload_0
+       1: invokeinterface #22,  1           // InterfaceMethod input:()Lnet/minecraft/world/level/levelgen/DensityFunction;
+       6: aload_1
+       7: aload_2
+       8: invokeinterface #36,  3           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.fillArray:([DLnet/minecraft/world/level/levelgen/DensityFunction$ContextProvider;)V
+      13: iconst_0
+      14: istore_3
+      15: iload_3
+      16: aload_1
+      17: arraylength
+      18: if_icmpge     46
+      21: aload_1
+      22: iload_3
+      23: aload_0
+      24: aload_2
+      25: iload_3
+      26: invokeinterface #40,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$ContextProvider.forIndex:(I)Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;
+      31: aload_1
+      32: iload_3
+      33: daload
+      34: invokeinterface #28,  4           // InterfaceMethod transform:(Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;D)D
+      39: dastore
+      40: iinc          3, 1
+      43: goto          15
+      46: return
+
+  public abstract double transform(net.minecraft.world.level.levelgen.DensityFunction$FunctionContext, double);
+}

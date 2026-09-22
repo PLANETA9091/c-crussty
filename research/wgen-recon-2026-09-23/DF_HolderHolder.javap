@@ -1,0 +1,115 @@
+Compiled from "DensityFunctions.java"
+public final class net.minecraft.world.level.levelgen.DensityFunctions$HolderHolder extends java.lang.Record implements net.minecraft.world.level.levelgen.DensityFunction {
+  private final net.minecraft.core.Holder<net.minecraft.world.level.levelgen.DensityFunction> function;
+
+  public net.minecraft.world.level.levelgen.DensityFunctions$HolderHolder(net.minecraft.core.Holder<net.minecraft.world.level.levelgen.DensityFunction>);
+    Code:
+       0: aload_0
+       1: invokespecial #39                 // Method java/lang/Record."<init>":()V
+       4: aload_0
+       5: aload_1
+       6: putfield      #41                 // Field function:Lnet/minecraft/core/Holder;
+       9: return
+
+  public double compute(net.minecraft.world.level.levelgen.DensityFunction$FunctionContext);
+    Code:
+       0: aload_0
+       1: getfield      #41                 // Field function:Lnet/minecraft/core/Holder;
+       4: invokeinterface #49,  1           // InterfaceMethod net/minecraft/core/Holder.value:()Ljava/lang/Object;
+       9: checkcast     #6                  // class net/minecraft/world/level/levelgen/DensityFunction
+      12: aload_1
+      13: invokeinterface #51,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.compute:(Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;)D
+      18: dreturn
+
+  public void fillArray(double[], net.minecraft.world.level.levelgen.DensityFunction$ContextProvider);
+    Code:
+       0: aload_0
+       1: getfield      #41                 // Field function:Lnet/minecraft/core/Holder;
+       4: invokeinterface #49,  1           // InterfaceMethod net/minecraft/core/Holder.value:()Ljava/lang/Object;
+       9: checkcast     #6                  // class net/minecraft/world/level/levelgen/DensityFunction
+      12: aload_1
+      13: aload_2
+      14: invokeinterface #57,  3           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.fillArray:([DLnet/minecraft/world/level/levelgen/DensityFunction$ContextProvider;)V
+      19: return
+
+  public net.minecraft.world.level.levelgen.DensityFunction mapAll(net.minecraft.world.level.levelgen.DensityFunction$Visitor);
+    Code:
+       0: aload_1
+       1: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$HolderHolder
+       4: dup
+       5: new           #19                 // class net/minecraft/core/Holder$Direct
+       8: dup
+       9: aload_0
+      10: getfield      #41                 // Field function:Lnet/minecraft/core/Holder;
+      13: invokeinterface #49,  1           // InterfaceMethod net/minecraft/core/Holder.value:()Ljava/lang/Object;
+      18: checkcast     #6                  // class net/minecraft/world/level/levelgen/DensityFunction
+      21: aload_1
+      22: invokeinterface #65,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.mapAll:(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      27: invokespecial #68                 // Method net/minecraft/core/Holder$Direct."<init>":(Ljava/lang/Object;)V
+      30: invokespecial #70                 // Method "<init>":(Lnet/minecraft/core/Holder;)V
+      33: invokeinterface #74,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$Visitor.apply:(Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      38: areturn
+
+  public double minValue();
+    Code:
+       0: aload_0
+       1: getfield      #41                 // Field function:Lnet/minecraft/core/Holder;
+       4: invokeinterface #82,  1           // InterfaceMethod net/minecraft/core/Holder.isBound:()Z
+       9: ifeq          32
+      12: aload_0
+      13: getfield      #41                 // Field function:Lnet/minecraft/core/Holder;
+      16: invokeinterface #49,  1           // InterfaceMethod net/minecraft/core/Holder.value:()Ljava/lang/Object;
+      21: checkcast     #6                  // class net/minecraft/world/level/levelgen/DensityFunction
+      24: invokeinterface #84,  1           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.minValue:()D
+      29: goto          35
+      32: ldc2_w        #85                 // double -Infinityd
+      35: dreturn
+
+  public double maxValue();
+    Code:
+       0: aload_0
+       1: getfield      #41                 // Field function:Lnet/minecraft/core/Holder;
+       4: invokeinterface #82,  1           // InterfaceMethod net/minecraft/core/Holder.isBound:()Z
+       9: ifeq          32
+      12: aload_0
+      13: getfield      #41                 // Field function:Lnet/minecraft/core/Holder;
+      16: invokeinterface #49,  1           // InterfaceMethod net/minecraft/core/Holder.value:()Ljava/lang/Object;
+      21: checkcast     #6                  // class net/minecraft/world/level/levelgen/DensityFunction
+      24: invokeinterface #89,  1           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.maxValue:()D
+      29: goto          35
+      32: ldc2_w        #90                 // double Infinityd
+      35: dreturn
+
+  public net.minecraft.util.KeyDispatchDataCodec<? extends net.minecraft.world.level.levelgen.DensityFunction> codec();
+    Code:
+       0: new           #96                 // class java/lang/UnsupportedOperationException
+       3: dup
+       4: ldc           #98                 // String Calling .codec() on HolderHolder
+       6: invokespecial #101                // Method java/lang/UnsupportedOperationException."<init>":(Ljava/lang/String;)V
+       9: athrow
+
+  public final java.lang.String toString();
+    Code:
+       0: aload_0
+       1: invokedynamic #115,  0            // InvokeDynamic #0:toString:(Lnet/minecraft/world/level/levelgen/DensityFunctions$HolderHolder;)Ljava/lang/String;
+       6: areturn
+
+  public final int hashCode();
+    Code:
+       0: aload_0
+       1: invokedynamic #120,  0            // InvokeDynamic #0:hashCode:(Lnet/minecraft/world/level/levelgen/DensityFunctions$HolderHolder;)I
+       6: ireturn
+
+  public final boolean equals(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokedynamic #125,  0            // InvokeDynamic #0:equals:(Lnet/minecraft/world/level/levelgen/DensityFunctions$HolderHolder;Ljava/lang/Object;)Z
+       7: ireturn
+
+  public net.minecraft.core.Holder<net.minecraft.world.level.levelgen.DensityFunction> function();
+    Code:
+       0: aload_0
+       1: getfield      #41                 // Field function:Lnet/minecraft/core/Holder;
+       4: areturn
+}

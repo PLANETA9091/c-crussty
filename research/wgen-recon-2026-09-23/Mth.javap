@@ -1,0 +1,2385 @@
+Compiled from "Mth.java"
+public class net.minecraft.util.Mth {
+  private static final long UUID_VERSION;
+
+  private static final long UUID_VERSION_TYPE_4;
+
+  private static final long UUID_VARIANT;
+
+  private static final long UUID_VARIANT_2;
+
+  public static final float PI;
+
+  public static final float HALF_PI;
+
+  public static final float TWO_PI;
+
+  public static final float DEG_TO_RAD;
+
+  public static final float RAD_TO_DEG;
+
+  public static final float EPSILON;
+
+  public static final float SQRT_OF_TWO;
+
+  private static final float SIN_SCALE;
+
+  public static final org.joml.Vector3f Y_AXIS;
+
+  public static final org.joml.Vector3f X_AXIS;
+
+  public static final org.joml.Vector3f Z_AXIS;
+
+  private static final float[] SIN;
+
+  private static final net.minecraft.util.RandomSource RANDOM;
+
+  private static final int[] MULTIPLY_DE_BRUIJN_BIT_POSITION;
+
+  private static final double ONE_SIXTH;
+
+  private static final int FRAC_EXP;
+
+  private static final int LUT_SIZE;
+
+  private static final double FRAC_BIAS;
+
+  private static final double[] ASIN_TAB;
+
+  private static final double[] COS_TAB;
+
+  public net.minecraft.util.Mth();
+    Code:
+       0: aload_0
+       1: invokespecial #66                 // Method java/lang/Object."<init>":()V
+       4: return
+
+  public static float sin(float);
+    Code:
+       0: getstatic     #72                 // Field SIN:[F
+       3: fload_0
+       4: ldc           #39                 // float 10430.378f
+       6: fmul
+       7: f2i
+       8: ldc           #73                 // int 65535
+      10: iand
+      11: faload
+      12: freturn
+
+  public static float cos(float);
+    Code:
+       0: getstatic     #72                 // Field SIN:[F
+       3: fload_0
+       4: ldc           #39                 // float 10430.378f
+       6: fmul
+       7: ldc           #76                 // float 16384.0f
+       9: fadd
+      10: f2i
+      11: ldc           #73                 // int 65535
+      13: iand
+      14: faload
+      15: freturn
+
+  public static float sqrt(float);
+    Code:
+       0: fload_0
+       1: f2d
+       2: invokestatic  #82                 // Method java/lang/Math.sqrt:(D)D
+       5: d2f
+       6: freturn
+
+  public static int floor(float);
+    Code:
+       0: fload_0
+       1: f2i
+       2: istore_1
+       3: fload_0
+       4: iload_1
+       5: i2f
+       6: fcmpg
+       7: ifge          16
+      10: iload_1
+      11: iconst_1
+      12: isub
+      13: goto          17
+      16: iload_1
+      17: ireturn
+
+  public static int floor(double);
+    Code:
+       0: dload_0
+       1: d2i
+       2: istore_2
+       3: dload_0
+       4: iload_2
+       5: i2d
+       6: dcmpg
+       7: ifge          16
+      10: iload_2
+      11: iconst_1
+      12: isub
+      13: goto          17
+      16: iload_2
+      17: ireturn
+
+  public static long lfloor(double);
+    Code:
+       0: dload_0
+       1: d2l
+       2: lstore_2
+       3: dload_0
+       4: lload_2
+       5: l2d
+       6: dcmpg
+       7: ifge          16
+      10: lload_2
+      11: lconst_1
+      12: lsub
+      13: goto          17
+      16: lload_2
+      17: lreturn
+
+  public static float abs(float);
+    Code:
+       0: fload_0
+       1: invokestatic  #92                 // Method java/lang/Math.abs:(F)F
+       4: freturn
+
+  public static int abs(int);
+    Code:
+       0: iload_0
+       1: invokestatic  #95                 // Method java/lang/Math.abs:(I)I
+       4: ireturn
+
+  public static int ceil(float);
+    Code:
+       0: fload_0
+       1: f2i
+       2: istore_1
+       3: fload_0
+       4: iload_1
+       5: i2f
+       6: fcmpl
+       7: ifle          16
+      10: iload_1
+      11: iconst_1
+      12: iadd
+      13: goto          17
+      16: iload_1
+      17: ireturn
+
+  public static int ceil(double);
+    Code:
+       0: dload_0
+       1: d2i
+       2: istore_2
+       3: dload_0
+       4: iload_2
+       5: i2d
+       6: dcmpl
+       7: ifle          16
+      10: iload_2
+      11: iconst_1
+      12: iadd
+      13: goto          17
+      16: iload_2
+      17: ireturn
+
+  public static long ceilLong(double);
+    Code:
+       0: dload_0
+       1: d2l
+       2: lstore_2
+       3: dload_0
+       4: lload_2
+       5: l2d
+       6: dcmpl
+       7: ifle          16
+      10: lload_2
+      11: lconst_1
+      12: ladd
+      13: goto          17
+      16: lload_2
+      17: lreturn
+
+  public static int clamp(int, int, int);
+    Code:
+       0: iload_0
+       1: iload_1
+       2: invokestatic  #103                // Method java/lang/Math.max:(II)I
+       5: iload_2
+       6: invokestatic  #106                // Method java/lang/Math.min:(II)I
+       9: ireturn
+
+  public static long clamp(long, long, long);
+    Code:
+       0: lload_0
+       1: lload_2
+       2: invokestatic  #110                // Method java/lang/Math.max:(JJ)J
+       5: lload         4
+       7: invokestatic  #112                // Method java/lang/Math.min:(JJ)J
+      10: lreturn
+
+  public static float clamp(float, float, float);
+    Code:
+       0: fload_0
+       1: fload_1
+       2: fcmpg
+       3: ifge          10
+       6: fload_1
+       7: goto          15
+      10: fload_0
+      11: fload_2
+      12: invokestatic  #116                // Method java/lang/Math.min:(FF)F
+      15: freturn
+
+  public static double clamp(double, double, double);
+    Code:
+       0: dload_0
+       1: dload_2
+       2: dcmpg
+       3: ifge          10
+       6: dload_2
+       7: goto          16
+      10: dload_0
+      11: dload         4
+      13: invokestatic  #120                // Method java/lang/Math.min:(DD)D
+      16: dreturn
+
+  public static double clampedLerp(double, double, double);
+    Code:
+       0: dload         4
+       2: dconst_0
+       3: dcmpg
+       4: ifge          9
+       7: dload_0
+       8: dreturn
+       9: dload         4
+      11: dconst_1
+      12: dcmpl
+      13: ifle          20
+      16: dload_2
+      17: goto          27
+      20: dload         4
+      22: dload_0
+      23: dload_2
+      24: invokestatic  #124                // Method lerp:(DDD)D
+      27: dreturn
+
+  public static float clampedLerp(float, float, float);
+    Code:
+       0: fload_2
+       1: fconst_0
+       2: fcmpg
+       3: ifge          8
+       6: fload_0
+       7: freturn
+       8: fload_2
+       9: fconst_1
+      10: fcmpl
+      11: ifle          18
+      14: fload_1
+      15: goto          24
+      18: fload_2
+      19: fload_0
+      20: fload_1
+      21: invokestatic  #129                // Method lerp:(FFF)F
+      24: freturn
+
+  public static double absMax(double, double);
+    Code:
+       0: dload_0
+       1: invokestatic  #132                // Method java/lang/Math.abs:(D)D
+       4: dload_2
+       5: invokestatic  #132                // Method java/lang/Math.abs:(D)D
+       8: invokestatic  #134                // Method java/lang/Math.max:(DD)D
+      11: dreturn
+
+  public static int floorDiv(int, int);
+    Code:
+       0: iload_0
+       1: iload_1
+       2: invokestatic  #139                // Method java/lang/Math.floorDiv:(II)I
+       5: ireturn
+
+  public static int nextInt(net.minecraft.util.RandomSource, int, int);
+    Code:
+       0: iload_1
+       1: iload_2
+       2: if_icmplt     9
+       5: iload_1
+       6: goto          22
+       9: aload_0
+      10: iload_2
+      11: iload_1
+      12: isub
+      13: iconst_1
+      14: iadd
+      15: invokeinterface #147,  2          // InterfaceMethod net/minecraft/util/RandomSource.nextInt:(I)I
+      20: iload_1
+      21: iadd
+      22: ireturn
+
+  public static float nextFloat(net.minecraft.util.RandomSource, float, float);
+    Code:
+       0: fload_1
+       1: fload_2
+       2: fcmpl
+       3: iflt          10
+       6: fload_1
+       7: goto          22
+      10: aload_0
+      11: invokeinterface #155,  1          // InterfaceMethod net/minecraft/util/RandomSource.nextFloat:()F
+      16: fload_2
+      17: fload_1
+      18: fsub
+      19: fmul
+      20: fload_1
+      21: fadd
+      22: freturn
+
+  public static double nextDouble(net.minecraft.util.RandomSource, double, double);
+    Code:
+       0: dload_1
+       1: dload_3
+       2: dcmpl
+       3: iflt          10
+       6: dload_1
+       7: goto          22
+      10: aload_0
+      11: invokeinterface #160,  1          // InterfaceMethod net/minecraft/util/RandomSource.nextDouble:()D
+      16: dload_3
+      17: dload_1
+      18: dsub
+      19: dmul
+      20: dload_1
+      21: dadd
+      22: dreturn
+
+  public static boolean equal(float, float);
+    Code:
+       0: fload_1
+       1: fload_0
+       2: fsub
+       3: invokestatic  #92                 // Method java/lang/Math.abs:(F)F
+       6: ldc           #36                 // float 1.0E-5f
+       8: fcmpg
+       9: ifge          16
+      12: iconst_1
+      13: goto          17
+      16: iconst_0
+      17: ireturn
+
+  public static boolean equal(double, double);
+    Code:
+       0: dload_2
+       1: dload_0
+       2: dsub
+       3: invokestatic  #132                // Method java/lang/Math.abs:(D)D
+       6: ldc2_w        #164                // double 9.999999747378752E-6d
+       9: dcmpg
+      10: ifge          17
+      13: iconst_1
+      14: goto          18
+      17: iconst_0
+      18: ireturn
+
+  public static int positiveModulo(int, int);
+    Code:
+       0: iload_0
+       1: iload_1
+       2: invokestatic  #169                // Method java/lang/Math.floorMod:(II)I
+       5: ireturn
+
+  public static float positiveModulo(float, float);
+    Code:
+       0: fload_0
+       1: fload_1
+       2: frem
+       3: fload_1
+       4: fadd
+       5: fload_1
+       6: frem
+       7: freturn
+
+  public static double positiveModulo(double, double);
+    Code:
+       0: dload_0
+       1: dload_2
+       2: drem
+       3: dload_2
+       4: dadd
+       5: dload_2
+       6: drem
+       7: dreturn
+
+  public static boolean isMultipleOf(int, int);
+    Code:
+       0: iload_0
+       1: iload_1
+       2: irem
+       3: ifne          10
+       6: iconst_1
+       7: goto          11
+      10: iconst_0
+      11: ireturn
+
+  public static byte packDegrees(float);
+    Code:
+       0: fload_0
+       1: ldc           #178                // float 256.0f
+       3: fmul
+       4: ldc           #179                // float 360.0f
+       6: fdiv
+       7: invokestatic  #181                // Method floor:(F)I
+      10: i2b
+      11: ireturn
+
+  public static float unpackDegrees(byte);
+    Code:
+       0: iload_0
+       1: sipush        360
+       4: imul
+       5: i2f
+       6: ldc           #178                // float 256.0f
+       8: fdiv
+       9: freturn
+
+  public static int wrapDegrees(int);
+    Code:
+       0: iload_0
+       1: sipush        360
+       4: irem
+       5: istore_1
+       6: iload_1
+       7: sipush        180
+      10: if_icmplt     19
+      13: iinc_w        1, -360
+      19: iload_1
+      20: sipush        -180
+      23: if_icmpge     32
+      26: iinc_w        1, 360
+      32: iload_1
+      33: ireturn
+
+  public static float wrapDegrees(long);
+    Code:
+       0: lload_0
+       1: ldc2_w        #189                // long 360l
+       4: lrem
+       5: l2f
+       6: fstore_2
+       7: fload_2
+       8: ldc           #191                // float 180.0f
+      10: fcmpl
+      11: iflt          19
+      14: fload_2
+      15: ldc           #179                // float 360.0f
+      17: fsub
+      18: fstore_2
+      19: fload_2
+      20: ldc           #192                // float -180.0f
+      22: fcmpg
+      23: ifge          31
+      26: fload_2
+      27: ldc           #179                // float 360.0f
+      29: fadd
+      30: fstore_2
+      31: fload_2
+      32: freturn
+
+  public static float wrapDegrees(float);
+    Code:
+       0: fload_0
+       1: ldc           #179                // float 360.0f
+       3: frem
+       4: fstore_1
+       5: fload_1
+       6: ldc           #191                // float 180.0f
+       8: fcmpl
+       9: iflt          17
+      12: fload_1
+      13: ldc           #179                // float 360.0f
+      15: fsub
+      16: fstore_1
+      17: fload_1
+      18: ldc           #192                // float -180.0f
+      20: fcmpg
+      21: ifge          29
+      24: fload_1
+      25: ldc           #179                // float 360.0f
+      27: fadd
+      28: fstore_1
+      29: fload_1
+      30: freturn
+
+  public static double wrapDegrees(double);
+    Code:
+       0: dload_0
+       1: ldc2_w        #194                // double 360.0d
+       4: drem
+       5: dstore_2
+       6: dload_2
+       7: ldc2_w        #196                // double 180.0d
+      10: dcmpl
+      11: iflt          20
+      14: dload_2
+      15: ldc2_w        #194                // double 360.0d
+      18: dsub
+      19: dstore_2
+      20: dload_2
+      21: ldc2_w        #198                // double -180.0d
+      24: dcmpg
+      25: ifge          34
+      28: dload_2
+      29: ldc2_w        #194                // double 360.0d
+      32: dadd
+      33: dstore_2
+      34: dload_2
+      35: dreturn
+
+  public static float degreesDifference(float, float);
+    Code:
+       0: fload_1
+       1: fload_0
+       2: fsub
+       3: invokestatic  #203                // Method wrapDegrees:(F)F
+       6: freturn
+
+  public static float degreesDifferenceAbs(float, float);
+    Code:
+       0: fload_0
+       1: fload_1
+       2: invokestatic  #206                // Method degreesDifference:(FF)F
+       5: invokestatic  #207                // Method abs:(F)F
+       8: freturn
+
+  public static float rotateIfNecessary(float, float, float);
+    Code:
+       0: fload_0
+       1: fload_1
+       2: invokestatic  #206                // Method degreesDifference:(FF)F
+       5: fstore_3
+       6: fload_3
+       7: fload_2
+       8: fneg
+       9: fload_2
+      10: invokestatic  #210                // Method clamp:(FFF)F
+      13: fstore        4
+      15: fload_1
+      16: fload         4
+      18: fsub
+      19: freturn
+
+  public static float approach(float, float, float);
+    Code:
+       0: fload_2
+       1: invokestatic  #207                // Method abs:(F)F
+       4: fstore_2
+       5: fload_0
+       6: fload_1
+       7: fcmpg
+       8: ifge          22
+      11: fload_0
+      12: fload_2
+      13: fadd
+      14: fload_0
+      15: fload_1
+      16: invokestatic  #210                // Method clamp:(FFF)F
+      19: goto          30
+      22: fload_0
+      23: fload_2
+      24: fsub
+      25: fload_1
+      26: fload_0
+      27: invokestatic  #210                // Method clamp:(FFF)F
+      30: freturn
+
+  public static float approachDegrees(float, float, float);
+    Code:
+       0: fload_0
+       1: fload_1
+       2: invokestatic  #206                // Method degreesDifference:(FF)F
+       5: fstore_3
+       6: fload_0
+       7: fload_0
+       8: fload_3
+       9: fadd
+      10: fload_2
+      11: invokestatic  #220                // Method approach:(FFF)F
+      14: freturn
+
+  public static int getInt(java.lang.String, int);
+    Code:
+       0: aload_0
+       1: iload_1
+       2: invokestatic  #227                // Method org/apache/commons/lang3/math/NumberUtils.toInt:(Ljava/lang/String;I)I
+       5: ireturn
+
+  public static int smallestEncompassingPowerOfTwo(int);
+    Code:
+       0: iload_0
+       1: iconst_1
+       2: isub
+       3: istore_1
+       4: iload_1
+       5: iload_1
+       6: iconst_1
+       7: ishr
+       8: ior
+       9: istore_1
+      10: iload_1
+      11: iload_1
+      12: iconst_2
+      13: ishr
+      14: ior
+      15: istore_1
+      16: iload_1
+      17: iload_1
+      18: iconst_4
+      19: ishr
+      20: ior
+      21: istore_1
+      22: iload_1
+      23: iload_1
+      24: bipush        8
+      26: ishr
+      27: ior
+      28: istore_1
+      29: iload_1
+      30: iload_1
+      31: bipush        16
+      33: ishr
+      34: ior
+      35: istore_1
+      36: iload_1
+      37: iconst_1
+      38: iadd
+      39: ireturn
+
+  public static int smallestSquareSide(int);
+    Code:
+       0: iload_0
+       1: ifge          14
+       4: new           #233                // class java/lang/IllegalArgumentException
+       7: dup
+       8: ldc           #235                // String itemCount must be greater than or equal to zero
+      10: invokespecial #238                // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+      13: athrow
+      14: iload_0
+      15: i2d
+      16: invokestatic  #82                 // Method java/lang/Math.sqrt:(D)D
+      19: invokestatic  #240                // Method ceil:(D)I
+      22: ireturn
+
+  public static boolean isPowerOfTwo(int);
+    Code:
+       0: iload_0
+       1: ifeq          16
+       4: iload_0
+       5: iload_0
+       6: iconst_1
+       7: isub
+       8: iand
+       9: ifne          16
+      12: iconst_1
+      13: goto          17
+      16: iconst_0
+      17: ireturn
+
+  public static int ceillog2(int);
+    Code:
+       0: iload_0
+       1: invokestatic  #246                // Method isPowerOfTwo:(I)Z
+       4: ifeq          11
+       7: iload_0
+       8: goto          15
+      11: iload_0
+      12: invokestatic  #248                // Method smallestEncompassingPowerOfTwo:(I)I
+      15: istore_0
+      16: getstatic     #250                // Field MULTIPLY_DE_BRUIJN_BIT_POSITION:[I
+      19: iload_0
+      20: i2l
+      21: ldc2_w        #251                // long 125613361l
+      24: lmul
+      25: bipush        27
+      27: lshr
+      28: l2i
+      29: bipush        31
+      31: iand
+      32: iaload
+      33: ireturn
+
+  public static int log2(int);
+    Code:
+       0: iload_0
+       1: invokestatic  #255                // Method ceillog2:(I)I
+       4: iload_0
+       5: invokestatic  #246                // Method isPowerOfTwo:(I)Z
+       8: ifeq          15
+      11: iconst_0
+      12: goto          16
+      15: iconst_1
+      16: isub
+      17: ireturn
+
+  public static float frac(float);
+    Code:
+       0: fload_0
+       1: fload_0
+       2: invokestatic  #181                // Method floor:(F)I
+       5: i2f
+       6: fsub
+       7: freturn
+
+  public static double frac(double);
+    Code:
+       0: dload_0
+       1: dload_0
+       2: invokestatic  #258                // Method lfloor:(D)J
+       5: l2d
+       6: dsub
+       7: dreturn
+
+  public static long getSeed(net.minecraft.core.Vec3i);
+    Code:
+       0: aload_0
+       1: invokevirtual #267                // Method net/minecraft/core/Vec3i.getX:()I
+       4: aload_0
+       5: invokevirtual #270                // Method net/minecraft/core/Vec3i.getY:()I
+       8: aload_0
+       9: invokevirtual #273                // Method net/minecraft/core/Vec3i.getZ:()I
+      12: invokestatic  #276                // Method getSeed:(III)J
+      15: lreturn
+
+  public static long getSeed(int, int, int);
+    Code:
+       0: iload_0
+       1: ldc_w         #279                // int 3129871
+       4: imul
+       5: i2l
+       6: iload_2
+       7: i2l
+       8: ldc2_w        #280                // long 116129781l
+      11: lmul
+      12: lxor
+      13: iload_1
+      14: i2l
+      15: lxor
+      16: lstore_3
+      17: lload_3
+      18: lload_3
+      19: lmul
+      20: ldc2_w        #282                // long 42317861l
+      23: lmul
+      24: lload_3
+      25: ldc2_w        #284                // long 11l
+      28: lmul
+      29: ladd
+      30: lstore_3
+      31: lload_3
+      32: bipush        16
+      34: lshr
+      35: lreturn
+
+  public static java.util.UUID createInsecureUUID(net.minecraft.util.RandomSource);
+    Code:
+       0: aload_0
+       1: invokeinterface #292,  1          // InterfaceMethod net/minecraft/util/RandomSource.nextLong:()J
+       6: ldc2_w        #293                // long -61441l
+       9: land
+      10: ldc2_w        #16                 // long 16384l
+      13: lor
+      14: lstore_1
+      15: aload_0
+      16: invokeinterface #292,  1          // InterfaceMethod net/minecraft/util/RandomSource.nextLong:()J
+      21: ldc2_w        #295                // long 4611686018427387903l
+      24: land
+      25: ldc2_w        #22                 // long -9223372036854775808l
+      28: lor
+      29: lstore_3
+      30: new           #298                // class java/util/UUID
+      33: dup
+      34: lload_1
+      35: lload_3
+      36: invokespecial #301                // Method java/util/UUID."<init>":(JJ)V
+      39: areturn
+
+  public static java.util.UUID createInsecureUUID();
+    Code:
+       0: getstatic     #305                // Field RANDOM:Lnet/minecraft/util/RandomSource;
+       3: invokestatic  #307                // Method createInsecureUUID:(Lnet/minecraft/util/RandomSource;)Ljava/util/UUID;
+       6: areturn
+
+  public static double inverseLerp(double, double, double);
+    Code:
+       0: dload_0
+       1: dload_2
+       2: dsub
+       3: dload         4
+       5: dload_2
+       6: dsub
+       7: ddiv
+       8: dreturn
+
+  public static float inverseLerp(float, float, float);
+    Code:
+       0: fload_0
+       1: fload_1
+       2: fsub
+       3: fload_2
+       4: fload_1
+       5: fsub
+       6: fdiv
+       7: freturn
+
+  public static boolean rayIntersectsAABB(net.minecraft.world.phys.Vec3, net.minecraft.world.phys.Vec3, net.minecraft.world.phys.AABB);
+    Code:
+       0: aload_2
+       1: getfield      #315                // Field net/minecraft/world/phys/AABB.minX:D
+       4: aload_2
+       5: getfield      #318                // Field net/minecraft/world/phys/AABB.maxX:D
+       8: dadd
+       9: ldc2_w        #319                // double 0.5d
+      12: dmul
+      13: dstore_3
+      14: aload_2
+      15: getfield      #318                // Field net/minecraft/world/phys/AABB.maxX:D
+      18: aload_2
+      19: getfield      #315                // Field net/minecraft/world/phys/AABB.minX:D
+      22: dsub
+      23: ldc2_w        #319                // double 0.5d
+      26: dmul
+      27: dstore        5
+      29: aload_0
+      30: getfield      #324                // Field net/minecraft/world/phys/Vec3.x:D
+      33: dload_3
+      34: dsub
+      35: dstore        7
+      37: dload         7
+      39: invokestatic  #132                // Method java/lang/Math.abs:(D)D
+      42: dload         5
+      44: dcmpl
+      45: ifle          62
+      48: dload         7
+      50: aload_1
+      51: getfield      #324                // Field net/minecraft/world/phys/Vec3.x:D
+      54: dmul
+      55: dconst_0
+      56: dcmpl
+      57: iflt          62
+      60: iconst_0
+      61: ireturn
+      62: aload_2
+      63: getfield      #327                // Field net/minecraft/world/phys/AABB.minY:D
+      66: aload_2
+      67: getfield      #330                // Field net/minecraft/world/phys/AABB.maxY:D
+      70: dadd
+      71: ldc2_w        #319                // double 0.5d
+      74: dmul
+      75: dstore        9
+      77: aload_2
+      78: getfield      #330                // Field net/minecraft/world/phys/AABB.maxY:D
+      81: aload_2
+      82: getfield      #327                // Field net/minecraft/world/phys/AABB.minY:D
+      85: dsub
+      86: ldc2_w        #319                // double 0.5d
+      89: dmul
+      90: dstore        11
+      92: aload_0
+      93: getfield      #332                // Field net/minecraft/world/phys/Vec3.y:D
+      96: dload         9
+      98: dsub
+      99: dstore        13
+     101: dload         13
+     103: invokestatic  #132                // Method java/lang/Math.abs:(D)D
+     106: dload         11
+     108: dcmpl
+     109: ifle          126
+     112: dload         13
+     114: aload_1
+     115: getfield      #332                // Field net/minecraft/world/phys/Vec3.y:D
+     118: dmul
+     119: dconst_0
+     120: dcmpl
+     121: iflt          126
+     124: iconst_0
+     125: ireturn
+     126: aload_2
+     127: getfield      #335                // Field net/minecraft/world/phys/AABB.minZ:D
+     130: aload_2
+     131: getfield      #338                // Field net/minecraft/world/phys/AABB.maxZ:D
+     134: dadd
+     135: ldc2_w        #319                // double 0.5d
+     138: dmul
+     139: dstore        15
+     141: aload_2
+     142: getfield      #338                // Field net/minecraft/world/phys/AABB.maxZ:D
+     145: aload_2
+     146: getfield      #335                // Field net/minecraft/world/phys/AABB.minZ:D
+     149: dsub
+     150: ldc2_w        #319                // double 0.5d
+     153: dmul
+     154: dstore        17
+     156: aload_0
+     157: getfield      #340                // Field net/minecraft/world/phys/Vec3.z:D
+     160: dload         15
+     162: dsub
+     163: dstore        19
+     165: dload         19
+     167: invokestatic  #132                // Method java/lang/Math.abs:(D)D
+     170: dload         17
+     172: dcmpl
+     173: ifle          190
+     176: dload         19
+     178: aload_1
+     179: getfield      #340                // Field net/minecraft/world/phys/Vec3.z:D
+     182: dmul
+     183: dconst_0
+     184: dcmpl
+     185: iflt          190
+     188: iconst_0
+     189: ireturn
+     190: aload_1
+     191: getfield      #324                // Field net/minecraft/world/phys/Vec3.x:D
+     194: invokestatic  #132                // Method java/lang/Math.abs:(D)D
+     197: dstore        21
+     199: aload_1
+     200: getfield      #332                // Field net/minecraft/world/phys/Vec3.y:D
+     203: invokestatic  #132                // Method java/lang/Math.abs:(D)D
+     206: dstore        23
+     208: aload_1
+     209: getfield      #340                // Field net/minecraft/world/phys/Vec3.z:D
+     212: invokestatic  #132                // Method java/lang/Math.abs:(D)D
+     215: dstore        25
+     217: aload_1
+     218: getfield      #332                // Field net/minecraft/world/phys/Vec3.y:D
+     221: dload         19
+     223: dmul
+     224: aload_1
+     225: getfield      #340                // Field net/minecraft/world/phys/Vec3.z:D
+     228: dload         13
+     230: dmul
+     231: dsub
+     232: dstore        27
+     234: dload         27
+     236: invokestatic  #132                // Method java/lang/Math.abs:(D)D
+     239: dload         11
+     241: dload         25
+     243: dmul
+     244: dload         17
+     246: dload         23
+     248: dmul
+     249: dadd
+     250: dcmpl
+     251: ifle          256
+     254: iconst_0
+     255: ireturn
+     256: aload_1
+     257: getfield      #340                // Field net/minecraft/world/phys/Vec3.z:D
+     260: dload         7
+     262: dmul
+     263: aload_1
+     264: getfield      #324                // Field net/minecraft/world/phys/Vec3.x:D
+     267: dload         19
+     269: dmul
+     270: dsub
+     271: dstore        27
+     273: dload         27
+     275: invokestatic  #132                // Method java/lang/Math.abs:(D)D
+     278: dload         5
+     280: dload         25
+     282: dmul
+     283: dload         17
+     285: dload         21
+     287: dmul
+     288: dadd
+     289: dcmpl
+     290: ifle          295
+     293: iconst_0
+     294: ireturn
+     295: aload_1
+     296: getfield      #324                // Field net/minecraft/world/phys/Vec3.x:D
+     299: dload         13
+     301: dmul
+     302: aload_1
+     303: getfield      #332                // Field net/minecraft/world/phys/Vec3.y:D
+     306: dload         7
+     308: dmul
+     309: dsub
+     310: dstore        27
+     312: dload         27
+     314: invokestatic  #132                // Method java/lang/Math.abs:(D)D
+     317: dload         5
+     319: dload         23
+     321: dmul
+     322: dload         11
+     324: dload         21
+     326: dmul
+     327: dadd
+     328: dcmpg
+     329: ifge          336
+     332: iconst_1
+     333: goto          337
+     336: iconst_0
+     337: ireturn
+
+  public static double atan2(double, double);
+    Code:
+       0: dload_2
+       1: dload_2
+       2: dmul
+       3: dload_0
+       4: dload_0
+       5: dmul
+       6: dadd
+       7: dstore        4
+       9: dload         4
+      11: invokestatic  #361                // Method java/lang/Double.isNaN:(D)Z
+      14: ifeq          21
+      17: ldc2_w        #362                // double NaNd
+      20: dreturn
+      21: dload_0
+      22: dconst_0
+      23: dcmpg
+      24: ifge          31
+      27: iconst_1
+      28: goto          32
+      31: iconst_0
+      32: istore        6
+      34: iload         6
+      36: ifeq          42
+      39: dload_0
+      40: dneg
+      41: dstore_0
+      42: dload_2
+      43: dconst_0
+      44: dcmpg
+      45: ifge          52
+      48: iconst_1
+      49: goto          53
+      52: iconst_0
+      53: istore        7
+      55: iload         7
+      57: ifeq          63
+      60: dload_2
+      61: dneg
+      62: dstore_2
+      63: dload_0
+      64: dload_2
+      65: dcmpl
+      66: ifle          73
+      69: iconst_1
+      70: goto          74
+      73: iconst_0
+      74: istore        8
+      76: iload         8
+      78: ifeq          89
+      81: dload_2
+      82: dstore        9
+      84: dload_0
+      85: dstore_2
+      86: dload         9
+      88: dstore_0
+      89: dload         4
+      91: invokestatic  #366                // Method fastInvSqrt:(D)D
+      94: dstore        9
+      96: dload_2
+      97: dload         9
+      99: dmul
+     100: dstore_2
+     101: dload_0
+     102: dload         9
+     104: dmul
+     105: dstore_0
+     106: getstatic     #368                // Field FRAC_BIAS:D
+     109: dload_0
+     110: dadd
+     111: dstore        11
+     113: dload         11
+     115: invokestatic  #371                // Method java/lang/Double.doubleToRawLongBits:(D)J
+     118: l2i
+     119: istore        13
+     121: getstatic     #373                // Field ASIN_TAB:[D
+     124: iload         13
+     126: daload
+     127: dstore        14
+     129: getstatic     #375                // Field COS_TAB:[D
+     132: iload         13
+     134: daload
+     135: dstore        16
+     137: dload         11
+     139: getstatic     #368                // Field FRAC_BIAS:D
+     142: dsub
+     143: dstore        18
+     145: dload_0
+     146: dload         16
+     148: dmul
+     149: dload_2
+     150: dload         18
+     152: dmul
+     153: dsub
+     154: dstore        20
+     156: ldc2_w        #376                // double 6.0d
+     159: dload         20
+     161: dload         20
+     163: dmul
+     164: dadd
+     165: dload         20
+     167: dmul
+     168: ldc2_w        #52                 // double 0.16666666666666666d
+     171: dmul
+     172: dstore        22
+     174: dload         14
+     176: dload         22
+     178: dadd
+     179: dstore        24
+     181: iload         8
+     183: ifeq          194
+     186: ldc2_w        #378                // double 1.5707963267948966d
+     189: dload         24
+     191: dsub
+     192: dstore        24
+     194: iload         7
+     196: ifeq          207
+     199: ldc2_w        #380                // double 3.141592653589793d
+     202: dload         24
+     204: dsub
+     205: dstore        24
+     207: iload         6
+     209: ifeq          217
+     212: dload         24
+     214: dneg
+     215: dstore        24
+     217: dload         24
+     219: dreturn
+
+  public static float invSqrt(float);
+    Code:
+       0: fload_0
+       1: invokestatic  #391                // Method org/joml/Math.invsqrt:(F)F
+       4: freturn
+
+  public static double invSqrt(double);
+    Code:
+       0: dload_0
+       1: invokestatic  #393                // Method org/joml/Math.invsqrt:(D)D
+       4: dreturn
+
+  public static double fastInvSqrt(double);
+    Code:
+       0: ldc2_w        #319                // double 0.5d
+       3: dload_0
+       4: dmul
+       5: dstore_2
+       6: dload_0
+       7: invokestatic  #371                // Method java/lang/Double.doubleToRawLongBits:(D)J
+      10: lstore        4
+      12: ldc2_w        #394                // long 6910469410427058090l
+      15: lload         4
+      17: iconst_1
+      18: lshr
+      19: lsub
+      20: lstore        4
+      22: lload         4
+      24: invokestatic  #399                // Method java/lang/Double.longBitsToDouble:(J)D
+      27: dstore_0
+      28: dload_0
+      29: ldc2_w        #400                // double 1.5d
+      32: dload_2
+      33: dload_0
+      34: dmul
+      35: dload_0
+      36: dmul
+      37: dsub
+      38: dmul
+      39: dreturn
+
+  public static float fastInvCubeRoot(float);
+    Code:
+       0: fload_0
+       1: invokestatic  #407                // Method java/lang/Float.floatToIntBits:(F)I
+       4: istore_1
+       5: ldc_w         #408                // int 1419967116
+       8: iload_1
+       9: iconst_3
+      10: idiv
+      11: isub
+      12: istore_1
+      13: iload_1
+      14: invokestatic  #412                // Method java/lang/Float.intBitsToFloat:(I)F
+      17: fstore_2
+      18: ldc_w         #413                // float 0.6666667f
+      21: fload_2
+      22: fmul
+      23: fconst_1
+      24: ldc_w         #414                // float 3.0f
+      27: fload_2
+      28: fmul
+      29: fload_2
+      30: fmul
+      31: fload_0
+      32: fmul
+      33: fdiv
+      34: fadd
+      35: fstore_2
+      36: ldc_w         #413                // float 0.6666667f
+      39: fload_2
+      40: fmul
+      41: fconst_1
+      42: ldc_w         #414                // float 3.0f
+      45: fload_2
+      46: fmul
+      47: fload_2
+      48: fmul
+      49: fload_0
+      50: fmul
+      51: fdiv
+      52: fadd
+      53: freturn
+
+  public static int hsvToRgb(float, float, float);
+    Code:
+       0: fload_0
+       1: fload_1
+       2: fload_2
+       3: iconst_0
+       4: invokestatic  #420                // Method hsvToArgb:(FFFI)I
+       7: ireturn
+
+  public static int hsvToArgb(float, float, float, int);
+    Code:
+       0: fload_0
+       1: ldc_w         #423                // float 6.0f
+       4: fmul
+       5: f2i
+       6: bipush        6
+       8: irem
+       9: istore        4
+      11: fload_0
+      12: ldc_w         #423                // float 6.0f
+      15: fmul
+      16: iload         4
+      18: i2f
+      19: fsub
+      20: fstore        5
+      22: fload_2
+      23: fconst_1
+      24: fload_1
+      25: fsub
+      26: fmul
+      27: fstore        6
+      29: fload_2
+      30: fconst_1
+      31: fload         5
+      33: fload_1
+      34: fmul
+      35: fsub
+      36: fmul
+      37: fstore        7
+      39: fload_2
+      40: fconst_1
+      41: fconst_1
+      42: fload         5
+      44: fsub
+      45: fload_1
+      46: fmul
+      47: fsub
+      48: fmul
+      49: fstore        8
+      51: iload         4
+      53: tableswitch   { // 0 to 5
+                     0: 92
+                     1: 106
+                     2: 120
+                     3: 134
+                     4: 148
+                     5: 162
+               default: 176
+          }
+      92: fload_2
+      93: fstore        9
+      95: fload         8
+      97: fstore        10
+      99: fload         6
+     101: fstore        11
+     103: goto          192
+     106: fload         7
+     108: fstore        9
+     110: fload_2
+     111: fstore        10
+     113: fload         6
+     115: fstore        11
+     117: goto          192
+     120: fload         6
+     122: fstore        9
+     124: fload_2
+     125: fstore        10
+     127: fload         8
+     129: fstore        11
+     131: goto          192
+     134: fload         6
+     136: fstore        9
+     138: fload         7
+     140: fstore        10
+     142: fload_2
+     143: fstore        11
+     145: goto          192
+     148: fload         8
+     150: fstore        9
+     152: fload         6
+     154: fstore        10
+     156: fload_2
+     157: fstore        11
+     159: goto          192
+     162: fload_2
+     163: fstore        9
+     165: fload         6
+     167: fstore        10
+     169: fload         7
+     171: fstore        11
+     173: goto          192
+     176: new           #425                // class java/lang/RuntimeException
+     179: dup
+     180: fload_0
+     181: fload_1
+     182: fload_2
+     183: invokedynamic #437,  0            // InvokeDynamic #0:makeConcatWithConstants:(FFF)Ljava/lang/String;
+     188: invokespecial #438                // Method java/lang/RuntimeException."<init>":(Ljava/lang/String;)V
+     191: athrow
+     192: iload_3
+     193: fload         9
+     195: ldc_w         #439                // float 255.0f
+     198: fmul
+     199: f2i
+     200: iconst_0
+     201: sipush        255
+     204: invokestatic  #441                // Method clamp:(III)I
+     207: fload         10
+     209: ldc_w         #439                // float 255.0f
+     212: fmul
+     213: f2i
+     214: iconst_0
+     215: sipush        255
+     218: invokestatic  #441                // Method clamp:(III)I
+     221: fload         11
+     223: ldc_w         #439                // float 255.0f
+     226: fmul
+     227: f2i
+     228: iconst_0
+     229: sipush        255
+     232: invokestatic  #441                // Method clamp:(III)I
+     235: invokestatic  #447                // Method net/minecraft/util/ARGB.color:(IIII)I
+     238: ireturn
+
+  public static int murmurHash3Mixer(int);
+    Code:
+       0: iload_0
+       1: iload_0
+       2: bipush        16
+       4: iushr
+       5: ixor
+       6: istore_0
+       7: iload_0
+       8: ldc_w         #455                // int -2048144789
+      11: imul
+      12: istore_0
+      13: iload_0
+      14: iload_0
+      15: bipush        13
+      17: iushr
+      18: ixor
+      19: istore_0
+      20: iload_0
+      21: ldc_w         #456                // int -1028477387
+      24: imul
+      25: istore_0
+      26: iload_0
+      27: iload_0
+      28: bipush        16
+      30: iushr
+      31: ixor
+      32: ireturn
+
+  public static int binarySearch(int, int, java.util.function.IntPredicate);
+    Code:
+       0: iload_1
+       1: iload_0
+       2: isub
+       3: istore_3
+       4: iload_3
+       5: ifle          51
+       8: iload_3
+       9: iconst_2
+      10: idiv
+      11: istore        4
+      13: iload_0
+      14: iload         4
+      16: iadd
+      17: istore        5
+      19: aload_2
+      20: iload         5
+      22: invokeinterface #464,  2          // InterfaceMethod java/util/function/IntPredicate.test:(I)Z
+      27: ifeq          36
+      30: iload         4
+      32: istore_3
+      33: goto          48
+      36: iload         5
+      38: iconst_1
+      39: iadd
+      40: istore_0
+      41: iload_3
+      42: iload         4
+      44: iconst_1
+      45: iadd
+      46: isub
+      47: istore_3
+      48: goto          4
+      51: iload_0
+      52: ireturn
+
+  public static int lerpInt(float, int, int);
+    Code:
+       0: iload_1
+       1: fload_0
+       2: iload_2
+       3: iload_1
+       4: isub
+       5: i2f
+       6: fmul
+       7: invokestatic  #181                // Method floor:(F)I
+      10: iadd
+      11: ireturn
+
+  public static int lerpDiscrete(float, int, int);
+    Code:
+       0: iload_2
+       1: iload_1
+       2: isub
+       3: istore_3
+       4: iload_1
+       5: fload_0
+       6: iload_3
+       7: iconst_1
+       8: isub
+       9: i2f
+      10: fmul
+      11: invokestatic  #181                // Method floor:(F)I
+      14: iadd
+      15: fload_0
+      16: fconst_0
+      17: fcmpl
+      18: ifle          25
+      21: iconst_1
+      22: goto          26
+      25: iconst_0
+      26: iadd
+      27: ireturn
+
+  public static float lerp(float, float, float);
+    Code:
+       0: fload_1
+       1: fload_0
+       2: fload_2
+       3: fload_1
+       4: fsub
+       5: fmul
+       6: fadd
+       7: freturn
+
+  public static net.minecraft.world.phys.Vec3 lerp(double, net.minecraft.world.phys.Vec3, net.minecraft.world.phys.Vec3);
+    Code:
+       0: new           #322                // class net/minecraft/world/phys/Vec3
+       3: dup
+       4: dload_0
+       5: aload_2
+       6: getfield      #324                // Field net/minecraft/world/phys/Vec3.x:D
+       9: aload_3
+      10: getfield      #324                // Field net/minecraft/world/phys/Vec3.x:D
+      13: invokestatic  #124                // Method lerp:(DDD)D
+      16: dload_0
+      17: aload_2
+      18: getfield      #332                // Field net/minecraft/world/phys/Vec3.y:D
+      21: aload_3
+      22: getfield      #332                // Field net/minecraft/world/phys/Vec3.y:D
+      25: invokestatic  #124                // Method lerp:(DDD)D
+      28: dload_0
+      29: aload_2
+      30: getfield      #340                // Field net/minecraft/world/phys/Vec3.z:D
+      33: aload_3
+      34: getfield      #340                // Field net/minecraft/world/phys/Vec3.z:D
+      37: invokestatic  #124                // Method lerp:(DDD)D
+      40: invokespecial #475                // Method net/minecraft/world/phys/Vec3."<init>":(DDD)V
+      43: areturn
+
+  public static double lerp(double, double, double);
+    Code:
+       0: dload_2
+       1: dload_0
+       2: dload         4
+       4: dload_2
+       5: dsub
+       6: dmul
+       7: dadd
+       8: dreturn
+
+  public static double lerp2(double, double, double, double, double, double);
+    Code:
+       0: dload_2
+       1: dload_0
+       2: dload         4
+       4: dload         6
+       6: invokestatic  #124                // Method lerp:(DDD)D
+       9: dload_0
+      10: dload         8
+      12: dload         10
+      14: invokestatic  #124                // Method lerp:(DDD)D
+      17: invokestatic  #124                // Method lerp:(DDD)D
+      20: dreturn
+
+  public static double lerp3(double, double, double, double, double, double, double, double, double, double, double);
+    Code:
+       0: dload         4
+       2: dload_0
+       3: dload_2
+       4: dload         6
+       6: dload         8
+       8: dload         10
+      10: dload         12
+      12: invokestatic  #487                // Method lerp2:(DDDDDD)D
+      15: dload_0
+      16: dload_2
+      17: dload         14
+      19: dload         16
+      21: dload         18
+      23: dload         20
+      25: invokestatic  #487                // Method lerp2:(DDDDDD)D
+      28: invokestatic  #124                // Method lerp:(DDD)D
+      31: dreturn
+
+  public static float catmullrom(float, float, float, float, float);
+    Code:
+       0: ldc_w         #495                // float 0.5f
+       3: fconst_2
+       4: fload_2
+       5: fmul
+       6: fload_3
+       7: fload_1
+       8: fsub
+       9: fload_0
+      10: fmul
+      11: fadd
+      12: fconst_2
+      13: fload_1
+      14: fmul
+      15: ldc_w         #496                // float 5.0f
+      18: fload_2
+      19: fmul
+      20: fsub
+      21: ldc_w         #497                // float 4.0f
+      24: fload_3
+      25: fmul
+      26: fadd
+      27: fload         4
+      29: fsub
+      30: fload_0
+      31: fmul
+      32: fload_0
+      33: fmul
+      34: fadd
+      35: ldc_w         #414                // float 3.0f
+      38: fload_2
+      39: fmul
+      40: fload_1
+      41: fsub
+      42: ldc_w         #414                // float 3.0f
+      45: fload_3
+      46: fmul
+      47: fsub
+      48: fload         4
+      50: fadd
+      51: fload_0
+      52: fmul
+      53: fload_0
+      54: fmul
+      55: fload_0
+      56: fmul
+      57: fadd
+      58: fmul
+      59: freturn
+
+  public static double smoothstep(double);
+    Code:
+       0: dload_0
+       1: dload_0
+       2: dmul
+       3: dload_0
+       4: dmul
+       5: dload_0
+       6: dload_0
+       7: ldc2_w        #376                // double 6.0d
+      10: dmul
+      11: ldc2_w        #503                // double 15.0d
+      14: dsub
+      15: dmul
+      16: ldc2_w        #505                // double 10.0d
+      19: dadd
+      20: dmul
+      21: dreturn
+
+  public static double smoothstepDerivative(double);
+    Code:
+       0: ldc2_w        #508                // double 30.0d
+       3: dload_0
+       4: dmul
+       5: dload_0
+       6: dmul
+       7: dload_0
+       8: dconst_1
+       9: dsub
+      10: dmul
+      11: dload_0
+      12: dconst_1
+      13: dsub
+      14: dmul
+      15: dreturn
+
+  public static int sign(double);
+    Code:
+       0: dload_0
+       1: dconst_0
+       2: dcmpl
+       3: ifne          8
+       6: iconst_0
+       7: ireturn
+       8: dload_0
+       9: dconst_0
+      10: dcmpl
+      11: ifle          18
+      14: iconst_1
+      15: goto          19
+      18: iconst_m1
+      19: ireturn
+
+  public static float rotLerp(float, float, float);
+    Code:
+       0: fload_1
+       1: fload_0
+       2: fload_2
+       3: fload_1
+       4: fsub
+       5: invokestatic  #203                // Method wrapDegrees:(F)F
+       8: fmul
+       9: fadd
+      10: freturn
+
+  public static double rotLerp(double, double, double);
+    Code:
+       0: dload_2
+       1: dload_0
+       2: dload         4
+       4: dload_2
+       5: dsub
+       6: invokestatic  #513                // Method wrapDegrees:(D)D
+       9: dmul
+      10: dadd
+      11: dreturn
+
+  public static float rotLerpRad(float, float, float);
+    Code:
+       0: fload_2
+       1: fload_1
+       2: fsub
+       3: fstore_3
+       4: fload_3
+       5: ldc_w         #515                // float -3.1415927f
+       8: fcmpg
+       9: ifge          20
+      12: fload_3
+      13: ldc           #30                 // float 6.2831855f
+      15: fadd
+      16: fstore_3
+      17: goto          4
+      20: fload_3
+      21: ldc           #26                 // float 3.1415927f
+      23: fcmpl
+      24: iflt          35
+      27: fload_3
+      28: ldc           #30                 // float 6.2831855f
+      30: fsub
+      31: fstore_3
+      32: goto          20
+      35: fload_1
+      36: fload_0
+      37: fload_3
+      38: fmul
+      39: fadd
+      40: freturn
+
+  public static float triangleWave(float, float);
+    Code:
+       0: fload_0
+       1: fload_1
+       2: frem
+       3: fload_1
+       4: ldc_w         #495                // float 0.5f
+       7: fmul
+       8: fsub
+       9: invokestatic  #92                 // Method java/lang/Math.abs:(F)F
+      12: fload_1
+      13: ldc_w         #517                // float 0.25f
+      16: fmul
+      17: fsub
+      18: fload_1
+      19: ldc_w         #517                // float 0.25f
+      22: fmul
+      23: fdiv
+      24: freturn
+
+  public static float square(float);
+    Code:
+       0: fload_0
+       1: fload_0
+       2: fmul
+       3: freturn
+
+  public static double square(double);
+    Code:
+       0: dload_0
+       1: dload_0
+       2: dmul
+       3: dreturn
+
+  public static int square(int);
+    Code:
+       0: iload_0
+       1: iload_0
+       2: imul
+       3: ireturn
+
+  public static long square(long);
+    Code:
+       0: lload_0
+       1: lload_0
+       2: lmul
+       3: lreturn
+
+  public static double clampedMap(double, double, double, double, double);
+    Code:
+       0: dload         6
+       2: dload         8
+       4: dload_0
+       5: dload_2
+       6: dload         4
+       8: invokestatic  #524                // Method inverseLerp:(DDD)D
+      11: invokestatic  #526                // Method clampedLerp:(DDD)D
+      14: dreturn
+
+  public static float clampedMap(float, float, float, float, float);
+    Code:
+       0: fload_3
+       1: fload         4
+       3: fload_0
+       4: fload_1
+       5: fload_2
+       6: invokestatic  #532                // Method inverseLerp:(FFF)F
+       9: invokestatic  #534                // Method clampedLerp:(FFF)F
+      12: freturn
+
+  public static double map(double, double, double, double, double);
+    Code:
+       0: dload_0
+       1: dload_2
+       2: dload         4
+       4: invokestatic  #524                // Method inverseLerp:(DDD)D
+       7: dload         6
+       9: dload         8
+      11: invokestatic  #124                // Method lerp:(DDD)D
+      14: dreturn
+
+  public static float map(float, float, float, float, float);
+    Code:
+       0: fload_0
+       1: fload_1
+       2: fload_2
+       3: invokestatic  #532                // Method inverseLerp:(FFF)F
+       6: fload_3
+       7: fload         4
+       9: invokestatic  #129                // Method lerp:(FFF)F
+      12: freturn
+
+  public static double wobble(double);
+    Code:
+       0: dload_0
+       1: ldc2_w        #537                // double 2.0d
+       4: dload_0
+       5: ldc2_w        #539                // double 3000.0d
+       8: dmul
+       9: invokestatic  #542                // Method floor:(D)I
+      12: i2l
+      13: invokestatic  #546                // InterfaceMethod net/minecraft/util/RandomSource.create:(J)Lnet/minecraft/util/RandomSource;
+      16: invokeinterface #160,  1          // InterfaceMethod net/minecraft/util/RandomSource.nextDouble:()D
+      21: dmul
+      22: dconst_1
+      23: dsub
+      24: ldc2_w        #547                // double 1.0E-7d
+      27: dmul
+      28: ldc2_w        #537                // double 2.0d
+      31: ddiv
+      32: dadd
+      33: dreturn
+
+  public static int roundToward(int, int);
+    Code:
+       0: iload_0
+       1: iload_1
+       2: invokestatic  #552                // Method positiveCeilDiv:(II)I
+       5: iload_1
+       6: imul
+       7: ireturn
+
+  public static int positiveCeilDiv(int, int);
+    Code:
+       0: iload_0
+       1: ineg
+       2: iload_1
+       3: invokestatic  #139                // Method java/lang/Math.floorDiv:(II)I
+       6: ineg
+       7: ireturn
+
+  public static int randomBetweenInclusive(net.minecraft.util.RandomSource, int, int);
+    Code:
+       0: aload_0
+       1: iload_2
+       2: iload_1
+       3: isub
+       4: iconst_1
+       5: iadd
+       6: invokeinterface #147,  2          // InterfaceMethod net/minecraft/util/RandomSource.nextInt:(I)I
+      11: iload_1
+      12: iadd
+      13: ireturn
+
+  public static float randomBetween(net.minecraft.util.RandomSource, float, float);
+    Code:
+       0: aload_0
+       1: invokeinterface #155,  1          // InterfaceMethod net/minecraft/util/RandomSource.nextFloat:()F
+       6: fload_2
+       7: fload_1
+       8: fsub
+       9: fmul
+      10: fload_1
+      11: fadd
+      12: freturn
+
+  public static float normal(net.minecraft.util.RandomSource, float, float);
+    Code:
+       0: fload_1
+       1: aload_0
+       2: invokeinterface #562,  1          // InterfaceMethod net/minecraft/util/RandomSource.nextGaussian:()D
+       7: d2f
+       8: fload_2
+       9: fmul
+      10: fadd
+      11: freturn
+
+  public static double lengthSquared(double, double);
+    Code:
+       0: dload_0
+       1: dload_0
+       2: dmul
+       3: dload_2
+       4: dload_2
+       5: dmul
+       6: dadd
+       7: dreturn
+
+  public static double length(double, double);
+    Code:
+       0: dload_0
+       1: dload_2
+       2: invokestatic  #570                // Method lengthSquared:(DD)D
+       5: invokestatic  #82                 // Method java/lang/Math.sqrt:(D)D
+       8: dreturn
+
+  public static float length(float, float);
+    Code:
+       0: fload_0
+       1: f2d
+       2: fload_1
+       3: f2d
+       4: invokestatic  #570                // Method lengthSquared:(DD)D
+       7: invokestatic  #82                 // Method java/lang/Math.sqrt:(D)D
+      10: d2f
+      11: freturn
+
+  public static double lengthSquared(double, double, double);
+    Code:
+       0: dload_0
+       1: dload_0
+       2: dmul
+       3: dload_2
+       4: dload_2
+       5: dmul
+       6: dadd
+       7: dload         4
+       9: dload         4
+      11: dmul
+      12: dadd
+      13: dreturn
+
+  public static double length(double, double, double);
+    Code:
+       0: dload_0
+       1: dload_2
+       2: dload         4
+       4: invokestatic  #573                // Method lengthSquared:(DDD)D
+       7: invokestatic  #82                 // Method java/lang/Math.sqrt:(D)D
+      10: dreturn
+
+  public static float lengthSquared(float, float, float);
+    Code:
+       0: fload_0
+       1: fload_0
+       2: fmul
+       3: fload_1
+       4: fload_1
+       5: fmul
+       6: fadd
+       7: fload_2
+       8: fload_2
+       9: fmul
+      10: fadd
+      11: freturn
+
+  public static int quantize(double, int);
+    Code:
+       0: dload_0
+       1: iload_2
+       2: i2d
+       3: ddiv
+       4: invokestatic  #542                // Method floor:(D)I
+       7: iload_2
+       8: imul
+       9: ireturn
+
+  public static java.util.stream.IntStream outFromOrigin(int, int, int);
+    Code:
+       0: iload_0
+       1: iload_1
+       2: iload_2
+       3: iconst_1
+       4: invokestatic  #580                // Method outFromOrigin:(IIII)Ljava/util/stream/IntStream;
+       7: areturn
+
+  public static java.util.stream.IntStream outFromOrigin(int, int, int, int);
+    Code:
+       0: iload_1
+       1: iload_2
+       2: if_icmple     40
+       5: new           #233                // class java/lang/IllegalArgumentException
+       8: dup
+       9: getstatic     #588                // Field java/util/Locale.ROOT:Ljava/util/Locale;
+      12: ldc_w         #590                // String upperBound %d expected to be > lowerBound %d
+      15: iconst_2
+      16: anewarray     #4                  // class java/lang/Object
+      19: dup
+      20: iconst_0
+      21: iload_2
+      22: invokestatic  #596                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      25: aastore
+      26: dup
+      27: iconst_1
+      28: iload_1
+      29: invokestatic  #596                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      32: aastore
+      33: invokestatic  #602                // Method java/lang/String.format:(Ljava/util/Locale;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      36: invokespecial #238                // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+      39: athrow
+      40: iload_3
+      41: iconst_1
+      42: if_icmpge     73
+      45: new           #233                // class java/lang/IllegalArgumentException
+      48: dup
+      49: getstatic     #588                // Field java/util/Locale.ROOT:Ljava/util/Locale;
+      52: ldc_w         #604                // String step size expected to be >= 1, was %d
+      55: iconst_1
+      56: anewarray     #4                  // class java/lang/Object
+      59: dup
+      60: iconst_0
+      61: iload_3
+      62: invokestatic  #596                // Method java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+      65: aastore
+      66: invokestatic  #602                // Method java/lang/String.format:(Ljava/util/Locale;Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/String;
+      69: invokespecial #238                // Method java/lang/IllegalArgumentException."<init>":(Ljava/lang/String;)V
+      72: athrow
+      73: iload_0
+      74: iload_1
+      75: iload_2
+      76: invokestatic  #441                // Method clamp:(III)I
+      79: istore        4
+      81: iload         4
+      83: iload         4
+      85: iload_1
+      86: iload_2
+      87: invokedynamic #620,  0            // InvokeDynamic #1:test:(III)Ljava/util/function/IntPredicate;
+      92: iload         4
+      94: iload_3
+      95: iload_2
+      96: iload_1
+      97: invokedynamic #630,  0            // InvokeDynamic #2:applyAsInt:(IIII)Ljava/util/function/IntUnaryOperator;
+     102: invokestatic  #636                // InterfaceMethod java/util/stream/IntStream.iterate:(ILjava/util/function/IntPredicate;Ljava/util/function/IntUnaryOperator;)Ljava/util/stream/IntStream;
+     105: areturn
+
+  public static org.joml.Quaternionf rotationAroundAxis(org.joml.Vector3f, org.joml.Quaternionf, org.joml.Quaternionf);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: getfield      #643                // Field org/joml/Quaternionf.x:F
+       5: aload_1
+       6: getfield      #645                // Field org/joml/Quaternionf.y:F
+       9: aload_1
+      10: getfield      #647                // Field org/joml/Quaternionf.z:F
+      13: invokevirtual #652                // Method org/joml/Vector3f.dot:(FFF)F
+      16: fstore_3
+      17: aload_2
+      18: aload_0
+      19: getfield      #653                // Field org/joml/Vector3f.x:F
+      22: fload_3
+      23: fmul
+      24: aload_0
+      25: getfield      #654                // Field org/joml/Vector3f.y:F
+      28: fload_3
+      29: fmul
+      30: aload_0
+      31: getfield      #655                // Field org/joml/Vector3f.z:F
+      34: fload_3
+      35: fmul
+      36: aload_1
+      37: getfield      #658                // Field org/joml/Quaternionf.w:F
+      40: invokevirtual #662                // Method org/joml/Quaternionf.set:(FFFF)Lorg/joml/Quaternionf;
+      43: invokevirtual #666                // Method org/joml/Quaternionf.normalize:()Lorg/joml/Quaternionf;
+      46: areturn
+
+  public static int mulAndTruncate(org.apache.commons.lang3.math.Fraction, int);
+    Code:
+       0: aload_0
+       1: invokevirtual #677                // Method org/apache/commons/lang3/math/Fraction.getNumerator:()I
+       4: iload_1
+       5: imul
+       6: aload_0
+       7: invokevirtual #680                // Method org/apache/commons/lang3/math/Fraction.getDenominator:()I
+      10: idiv
+      11: ireturn
+
+  public static float easeInOutSine(float);
+    Code:
+       0: ldc           #26                 // float 3.1415927f
+       2: fload_0
+       3: fmul
+       4: invokestatic  #685                // Method cos:(F)F
+       7: fconst_1
+       8: fsub
+       9: fneg
+      10: fconst_2
+      11: fdiv
+      12: freturn
+
+  private static int lambda$outFromOrigin$2(int, int, int, int, int);
+    Code:
+       0: iload         4
+       2: iload_0
+       3: if_icmpgt     10
+       6: iconst_1
+       7: goto          11
+      10: iconst_0
+      11: istore        5
+      13: iload_0
+      14: iload         4
+      16: isub
+      17: invokestatic  #95                 // Method java/lang/Math.abs:(I)I
+      20: istore        6
+      22: iload_0
+      23: iload         6
+      25: iadd
+      26: iload_1
+      27: iadd
+      28: iload_2
+      29: if_icmpgt     36
+      32: iconst_1
+      33: goto          37
+      36: iconst_0
+      37: istore        7
+      39: iload         5
+      41: ifeq          49
+      44: iload         7
+      46: ifne          75
+      49: iload_0
+      50: iload         6
+      52: isub
+      53: iload         5
+      55: ifeq          62
+      58: iload_1
+      59: goto          63
+      62: iconst_0
+      63: isub
+      64: istore        8
+      66: iload         8
+      68: iload_3
+      69: if_icmplt     75
+      72: iload         8
+      74: ireturn
+      75: iload_0
+      76: iload         6
+      78: iadd
+      79: iload_1
+      80: iadd
+      81: ireturn
+
+  private static boolean lambda$outFromOrigin$1(int, int, int, int);
+    Code:
+       0: iload_0
+       1: iload_3
+       2: isub
+       3: invokestatic  #95                 // Method java/lang/Math.abs:(I)I
+       6: istore        4
+       8: iload_0
+       9: iload         4
+      11: isub
+      12: iload_1
+      13: if_icmpge     24
+      16: iload_0
+      17: iload         4
+      19: iadd
+      20: iload_2
+      21: if_icmpgt     28
+      24: iconst_1
+      25: goto          29
+      28: iconst_0
+      29: ireturn
+
+  private static void lambda$static$0(float[]);
+    Code:
+       0: iconst_0
+       1: istore_1
+       2: iload_1
+       3: aload_0
+       4: arraylength
+       5: if_icmpge     35
+       8: aload_0
+       9: iload_1
+      10: iload_1
+      11: i2d
+      12: ldc2_w        #380                // double 3.141592653589793d
+      15: dmul
+      16: ldc2_w        #537                // double 2.0d
+      19: dmul
+      20: ldc2_w        #688                // double 65536.0d
+      23: ddiv
+      24: invokestatic  #691                // Method java/lang/Math.sin:(D)D
+      27: d2f
+      28: fastore
+      29: iinc          1, 1
+      32: goto          2
+      35: return
+
+  static {};
+    Code:
+       0: fconst_2
+       1: invokestatic  #695                // Method sqrt:(F)F
+       4: putstatic     #697                // Field SQRT_OF_TWO:F
+       7: new           #649                // class org/joml/Vector3f
+      10: dup
+      11: fconst_0
+      12: fconst_1
+      13: fconst_0
+      14: invokespecial #700                // Method org/joml/Vector3f."<init>":(FFF)V
+      17: putstatic     #702                // Field Y_AXIS:Lorg/joml/Vector3f;
+      20: new           #649                // class org/joml/Vector3f
+      23: dup
+      24: fconst_1
+      25: fconst_0
+      26: fconst_0
+      27: invokespecial #700                // Method org/joml/Vector3f."<init>":(FFF)V
+      30: putstatic     #704                // Field X_AXIS:Lorg/joml/Vector3f;
+      33: new           #649                // class org/joml/Vector3f
+      36: dup
+      37: fconst_0
+      38: fconst_0
+      39: fconst_1
+      40: invokespecial #700                // Method org/joml/Vector3f."<init>":(FFF)V
+      43: putstatic     #706                // Field Z_AXIS:Lorg/joml/Vector3f;
+      46: ldc_w         #707                // int 65536
+      49: newarray       float
+      51: invokedynamic #717,  0            // InvokeDynamic #3:accept:()Ljava/util/function/Consumer;
+      56: invokestatic  #723                // Method net/minecraft/Util.make:(Ljava/lang/Object;Ljava/util/function/Consumer;)Ljava/lang/Object;
+      59: checkcast     #724                // class "[F"
+      62: putstatic     #72                 // Field SIN:[F
+      65: invokestatic  #728                // InterfaceMethod net/minecraft/util/RandomSource.createThreadSafe:()Lnet/minecraft/util/RandomSource;
+      68: putstatic     #305                // Field RANDOM:Lnet/minecraft/util/RandomSource;
+      71: bipush        32
+      73: newarray       int
+      75: dup
+      76: iconst_0
+      77: iconst_0
+      78: iastore
+      79: dup
+      80: iconst_1
+      81: iconst_1
+      82: iastore
+      83: dup
+      84: iconst_2
+      85: bipush        28
+      87: iastore
+      88: dup
+      89: iconst_3
+      90: iconst_2
+      91: iastore
+      92: dup
+      93: iconst_4
+      94: bipush        29
+      96: iastore
+      97: dup
+      98: iconst_5
+      99: bipush        14
+     101: iastore
+     102: dup
+     103: bipush        6
+     105: bipush        24
+     107: iastore
+     108: dup
+     109: bipush        7
+     111: iconst_3
+     112: iastore
+     113: dup
+     114: bipush        8
+     116: bipush        30
+     118: iastore
+     119: dup
+     120: bipush        9
+     122: bipush        22
+     124: iastore
+     125: dup
+     126: bipush        10
+     128: bipush        20
+     130: iastore
+     131: dup
+     132: bipush        11
+     134: bipush        15
+     136: iastore
+     137: dup
+     138: bipush        12
+     140: bipush        25
+     142: iastore
+     143: dup
+     144: bipush        13
+     146: bipush        17
+     148: iastore
+     149: dup
+     150: bipush        14
+     152: iconst_4
+     153: iastore
+     154: dup
+     155: bipush        15
+     157: bipush        8
+     159: iastore
+     160: dup
+     161: bipush        16
+     163: bipush        31
+     165: iastore
+     166: dup
+     167: bipush        17
+     169: bipush        27
+     171: iastore
+     172: dup
+     173: bipush        18
+     175: bipush        13
+     177: iastore
+     178: dup
+     179: bipush        19
+     181: bipush        23
+     183: iastore
+     184: dup
+     185: bipush        20
+     187: bipush        21
+     189: iastore
+     190: dup
+     191: bipush        21
+     193: bipush        19
+     195: iastore
+     196: dup
+     197: bipush        22
+     199: bipush        16
+     201: iastore
+     202: dup
+     203: bipush        23
+     205: bipush        7
+     207: iastore
+     208: dup
+     209: bipush        24
+     211: bipush        26
+     213: iastore
+     214: dup
+     215: bipush        25
+     217: bipush        12
+     219: iastore
+     220: dup
+     221: bipush        26
+     223: bipush        18
+     225: iastore
+     226: dup
+     227: bipush        27
+     229: bipush        6
+     231: iastore
+     232: dup
+     233: bipush        28
+     235: bipush        11
+     237: iastore
+     238: dup
+     239: bipush        29
+     241: iconst_5
+     242: iastore
+     243: dup
+     244: bipush        30
+     246: bipush        10
+     248: iastore
+     249: dup
+     250: bipush        31
+     252: bipush        9
+     254: iastore
+     255: putstatic     #250                // Field MULTIPLY_DE_BRUIJN_BIT_POSITION:[I
+     258: ldc2_w        #729                // long 4805340802404319232l
+     261: invokestatic  #399                // Method java/lang/Double.longBitsToDouble:(J)D
+     264: putstatic     #368                // Field FRAC_BIAS:D
+     267: sipush        257
+     270: newarray       double
+     272: putstatic     #373                // Field ASIN_TAB:[D
+     275: sipush        257
+     278: newarray       double
+     280: putstatic     #375                // Field COS_TAB:[D
+     283: iconst_0
+     284: istore_0
+     285: iload_0
+     286: sipush        257
+     289: if_icmpge     325
+     292: iload_0
+     293: i2d
+     294: ldc2_w        #731                // double 256.0d
+     297: ddiv
+     298: dstore_1
+     299: dload_1
+     300: invokestatic  #735                // Method java/lang/Math.asin:(D)D
+     303: dstore_3
+     304: getstatic     #375                // Field COS_TAB:[D
+     307: iload_0
+     308: dload_3
+     309: invokestatic  #737                // Method java/lang/Math.cos:(D)D
+     312: dastore
+     313: getstatic     #373                // Field ASIN_TAB:[D
+     316: iload_0
+     317: dload_3
+     318: dastore
+     319: iinc          0, 1
+     322: goto          285
+     325: return
+}

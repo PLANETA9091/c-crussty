@@ -1,0 +1,104 @@
+Compiled from "DensityFunction.java"
+public final class net.minecraft.world.level.levelgen.DensityFunction$NoiseHolder extends java.lang.Record {
+  private final net.minecraft.core.Holder<net.minecraft.world.level.levelgen.synth.NormalNoise$NoiseParameters> noiseData;
+
+  private final net.minecraft.world.level.levelgen.synth.NormalNoise noise;
+
+  public static final com.mojang.serialization.Codec<net.minecraft.world.level.levelgen.DensityFunction$NoiseHolder> CODEC;
+
+  public net.minecraft.world.level.levelgen.DensityFunction$NoiseHolder(net.minecraft.core.Holder<net.minecraft.world.level.levelgen.synth.NormalNoise$NoiseParameters>);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: aconst_null
+       3: invokespecial #33                 // Method "<init>":(Lnet/minecraft/core/Holder;Lnet/minecraft/world/level/levelgen/synth/NormalNoise;)V
+       6: return
+
+  public net.minecraft.world.level.levelgen.DensityFunction$NoiseHolder(net.minecraft.core.Holder<net.minecraft.world.level.levelgen.synth.NormalNoise$NoiseParameters>, net.minecraft.world.level.levelgen.synth.NormalNoise);
+    Code:
+       0: aload_0
+       1: invokespecial #39                 // Method java/lang/Record."<init>":()V
+       4: aload_0
+       5: aload_1
+       6: putfield      #41                 // Field noiseData:Lnet/minecraft/core/Holder;
+       9: aload_0
+      10: aload_2
+      11: putfield      #43                 // Field noise:Lnet/minecraft/world/level/levelgen/synth/NormalNoise;
+      14: return
+
+  public double getValue(double, double, double);
+    Code:
+       0: aload_0
+       1: getfield      #43                 // Field noise:Lnet/minecraft/world/level/levelgen/synth/NormalNoise;
+       4: ifnonnull     11
+       7: dconst_0
+       8: goto          22
+      11: aload_0
+      12: getfield      #43                 // Field noise:Lnet/minecraft/world/level/levelgen/synth/NormalNoise;
+      15: dload_1
+      16: dload_3
+      17: dload         5
+      19: invokevirtual #47                 // Method net/minecraft/world/level/levelgen/synth/NormalNoise.getValue:(DDD)D
+      22: dreturn
+
+  public double maxValue();
+    Code:
+       0: aload_0
+       1: getfield      #43                 // Field noise:Lnet/minecraft/world/level/levelgen/synth/NormalNoise;
+       4: ifnonnull     13
+       7: ldc2_w        #54                 // double 2.0d
+      10: goto          20
+      13: aload_0
+      14: getfield      #43                 // Field noise:Lnet/minecraft/world/level/levelgen/synth/NormalNoise;
+      17: invokevirtual #57                 // Method net/minecraft/world/level/levelgen/synth/NormalNoise.maxValue:()D
+      20: dreturn
+
+  public final java.lang.String toString();
+    Code:
+       0: aload_0
+       1: invokedynamic #73,  0             // InvokeDynamic #0:toString:(Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;)Ljava/lang/String;
+       6: areturn
+
+  public final int hashCode();
+    Code:
+       0: aload_0
+       1: invokedynamic #78,  0             // InvokeDynamic #0:hashCode:(Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;)I
+       6: ireturn
+
+  public final boolean equals(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokedynamic #83,  0             // InvokeDynamic #0:equals:(Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;Ljava/lang/Object;)Z
+       7: ireturn
+
+  public net.minecraft.core.Holder<net.minecraft.world.level.levelgen.synth.NormalNoise$NoiseParameters> noiseData();
+    Code:
+       0: aload_0
+       1: getfield      #41                 // Field noiseData:Lnet/minecraft/core/Holder;
+       4: areturn
+
+  public net.minecraft.world.level.levelgen.synth.NormalNoise noise();
+    Code:
+       0: aload_0
+       1: getfield      #43                 // Field noise:Lnet/minecraft/world/level/levelgen/synth/NormalNoise;
+       4: areturn
+
+  private static net.minecraft.world.level.levelgen.DensityFunction$NoiseHolder lambda$static$0(net.minecraft.core.Holder);
+    Code:
+       0: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder
+       3: dup
+       4: aload_0
+       5: aconst_null
+       6: invokespecial #33                 // Method "<init>":(Lnet/minecraft/core/Holder;Lnet/minecraft/world/level/levelgen/synth/NormalNoise;)V
+       9: areturn
+
+  static {};
+    Code:
+       0: getstatic     #94                 // Field net/minecraft/world/level/levelgen/synth/NormalNoise$NoiseParameters.CODEC:Lcom/mojang/serialization/Codec;
+       3: invokedynamic #111,  0            // InvokeDynamic #1:apply:()Ljava/util/function/Function;
+       8: invokedynamic #117,  0            // InvokeDynamic #2:apply:()Ljava/util/function/Function;
+      13: invokeinterface #123,  3          // InterfaceMethod com/mojang/serialization/Codec.xmap:(Ljava/util/function/Function;Ljava/util/function/Function;)Lcom/mojang/serialization/Codec;
+      18: putstatic     #124                // Field CODEC:Lcom/mojang/serialization/Codec;
+      21: return
+}

@@ -1,0 +1,289 @@
+Compiled from "DensityFunctions.java"
+public final class net.minecraft.world.level.levelgen.DensityFunctions$EndIslandDensityFunction implements net.minecraft.world.level.levelgen.DensityFunction$SimpleFunction {
+  public static final net.minecraft.util.KeyDispatchDataCodec<net.minecraft.world.level.levelgen.DensityFunctions$EndIslandDensityFunction> CODEC;
+
+  private static final float ISLAND_THRESHOLD;
+
+  private final net.minecraft.world.level.levelgen.synth.SimplexNoise islandNoise;
+
+  private static final java.lang.ThreadLocal<java.util.Map<net.minecraft.world.level.levelgen.synth.SimplexNoise, net.minecraft.world.level.levelgen.DensityFunctions$EndIslandDensityFunction$NoiseCache>> noiseCache;
+
+  public net.minecraft.world.level.levelgen.DensityFunctions$EndIslandDensityFunction(long);
+    Code:
+       0: aload_0
+       1: invokespecial #40                 // Method java/lang/Object."<init>":()V
+       4: new           #42                 // class net/minecraft/world/level/levelgen/LegacyRandomSource
+       7: dup
+       8: lload_1
+       9: invokespecial #44                 // Method net/minecraft/world/level/levelgen/LegacyRandomSource."<init>":(J)V
+      12: astore_3
+      13: aload_3
+      14: sipush        17292
+      17: invokeinterface #50,  2           // InterfaceMethod net/minecraft/util/RandomSource.consumeCount:(I)V
+      22: aload_0
+      23: new           #52                 // class net/minecraft/world/level/levelgen/synth/SimplexNoise
+      26: dup
+      27: aload_3
+      28: invokespecial #55                 // Method net/minecraft/world/level/levelgen/synth/SimplexNoise."<init>":(Lnet/minecraft/util/RandomSource;)V
+      31: putfield      #57                 // Field islandNoise:Lnet/minecraft/world/level/levelgen/synth/SimplexNoise;
+      34: return
+
+  private static float getHeightValue(net.minecraft.world.level.levelgen.synth.SimplexNoise, int, int);
+    Code:
+       0: iload_1
+       1: iconst_2
+       2: idiv
+       3: istore_3
+       4: iload_2
+       5: iconst_2
+       6: idiv
+       7: istore        4
+       9: iload_1
+      10: iconst_2
+      11: irem
+      12: istore        5
+      14: iload_2
+      15: iconst_2
+      16: irem
+      17: istore        6
+      19: ldc           #66                 // float 100.0f
+      21: getstatic     #72                 // Field org/purpurmc/purpur/PurpurConfig.generateEndVoidRings:Z
+      24: ifeq          38
+      27: iload_1
+      28: iload_1
+      29: imul
+      30: iload_2
+      31: iload_2
+      32: imul
+      33: iadd
+      34: i2f
+      35: goto          50
+      38: iload_1
+      39: i2l
+      40: iload_1
+      41: i2l
+      42: lmul
+      43: iload_2
+      44: i2l
+      45: iload_2
+      46: i2l
+      47: lmul
+      48: ladd
+      49: l2f
+      50: invokestatic  #78                 // Method net/minecraft/util/Mth.sqrt:(F)F
+      53: ldc           #79                 // float 8.0f
+      55: fmul
+      56: fsub
+      57: fstore        7
+      59: fload         7
+      61: ldc           #80                 // float -100.0f
+      63: ldc           #81                 // float 80.0f
+      65: invokestatic  #85                 // Method net/minecraft/util/Mth.clamp:(FFF)F
+      68: fstore        7
+      70: getstatic     #87                 // Field noiseCache:Ljava/lang/ThreadLocal;
+      73: invokevirtual #93                 // Method java/lang/ThreadLocal.get:()Ljava/lang/Object;
+      76: checkcast     #95                 // class java/util/Map
+      79: aload_0
+      80: invokedynamic #114,  0            // InvokeDynamic #0:apply:()Ljava/util/function/Function;
+      85: invokeinterface #118,  3          // InterfaceMethod java/util/Map.computeIfAbsent:(Ljava/lang/Object;Ljava/util/function/Function;)Ljava/lang/Object;
+      90: checkcast     #12                 // class net/minecraft/world/level/levelgen/DensityFunctions$EndIslandDensityFunction$NoiseCache
+      93: astore        8
+      95: bipush        -12
+      97: istore        9
+      99: iload         9
+     101: bipush        12
+     103: if_icmpgt     358
+     106: bipush        -12
+     108: istore        10
+     110: iload         10
+     112: bipush        12
+     114: if_icmpgt     352
+     117: iload_3
+     118: iload         9
+     120: iadd
+     121: i2l
+     122: lstore        11
+     124: lload         11
+     126: l2i
+     127: istore        13
+     129: iload         4
+     131: iload         10
+     133: iadd
+     134: i2l
+     135: lstore        14
+     137: lload         14
+     139: l2i
+     140: istore        16
+     142: iload         13
+     144: iload         16
+     146: invokestatic  #124                // Method net/minecraft/world/level/ChunkPos.asLong:(II)J
+     149: lstore        17
+     151: lload         17
+     153: invokestatic  #130                // Method it/unimi/dsi/fastutil/HashCommon.mix:(J)J
+     156: l2i
+     157: sipush        8191
+     160: iand
+     161: istore        19
+     163: ldc           #131                // float 1.4E-45f
+     165: fstore        20
+     167: aload         8
+     169: getfield      #135                // Field net/minecraft/world/level/levelgen/DensityFunctions$EndIslandDensityFunction$NoiseCache.keys:[J
+     172: iload         19
+     174: laload
+     175: lload         17
+     177: lcmp
+     178: ifne          194
+     181: aload         8
+     183: getfield      #139                // Field net/minecraft/world/level/levelgen/DensityFunctions$EndIslandDensityFunction$NoiseCache.values:[F
+     186: iload         19
+     188: faload
+     189: fstore        20
+     191: goto          276
+     194: lload         11
+     196: lload         11
+     198: lmul
+     199: lload         14
+     201: lload         14
+     203: lmul
+     204: ladd
+     205: ldc2_w        #140                // long 4096l
+     208: lcmp
+     209: ifle          256
+     212: aload_0
+     213: lload         11
+     215: l2d
+     216: lload         14
+     218: l2d
+     219: invokevirtual #145                // Method net/minecraft/world/level/levelgen/synth/SimplexNoise.getValue:(DD)D
+     222: ldc2_w        #146                // double -0.8999999761581421d
+     225: dcmpg
+     226: ifge          256
+     229: lload         11
+     231: l2f
+     232: invokestatic  #150                // Method net/minecraft/util/Mth.abs:(F)F
+     235: ldc           #151                // float 3439.0f
+     237: fmul
+     238: lload         14
+     240: l2f
+     241: invokestatic  #150                // Method net/minecraft/util/Mth.abs:(F)F
+     244: ldc           #152                // float 147.0f
+     246: fmul
+     247: fadd
+     248: ldc           #153                // float 13.0f
+     250: frem
+     251: ldc           #154                // float 9.0f
+     253: fadd
+     254: fstore        20
+     256: aload         8
+     258: getfield      #135                // Field net/minecraft/world/level/levelgen/DensityFunctions$EndIslandDensityFunction$NoiseCache.keys:[J
+     261: iload         19
+     263: lload         17
+     265: lastore
+     266: aload         8
+     268: getfield      #139                // Field net/minecraft/world/level/levelgen/DensityFunctions$EndIslandDensityFunction$NoiseCache.values:[F
+     271: iload         19
+     273: fload         20
+     275: fastore
+     276: fload         20
+     278: ldc           #131                // float 1.4E-45f
+     280: fcmpl
+     281: ifeq          346
+     284: iload         5
+     286: iload         9
+     288: iconst_2
+     289: imul
+     290: isub
+     291: i2f
+     292: fstore        21
+     294: iload         6
+     296: iload         10
+     298: iconst_2
+     299: imul
+     300: isub
+     301: i2f
+     302: fstore        22
+     304: ldc           #66                 // float 100.0f
+     306: fload         21
+     308: fload         21
+     310: fmul
+     311: fload         22
+     313: fload         22
+     315: fmul
+     316: fadd
+     317: invokestatic  #78                 // Method net/minecraft/util/Mth.sqrt:(F)F
+     320: fload         20
+     322: fmul
+     323: fsub
+     324: fstore        23
+     326: fload         23
+     328: ldc           #80                 // float -100.0f
+     330: ldc           #81                 // float 80.0f
+     332: invokestatic  #85                 // Method net/minecraft/util/Mth.clamp:(FFF)F
+     335: fstore        23
+     337: fload         7
+     339: fload         23
+     341: invokestatic  #160                // Method java/lang/Math.max:(FF)F
+     344: fstore        7
+     346: iinc          10, 1
+     349: goto          110
+     352: iinc          9, 1
+     355: goto          99
+     358: fload         7
+     360: freturn
+
+  public double compute(net.minecraft.world.level.levelgen.DensityFunction$FunctionContext);
+    Code:
+       0: aload_0
+       1: getfield      #57                 // Field islandNoise:Lnet/minecraft/world/level/levelgen/synth/SimplexNoise;
+       4: aload_1
+       5: invokeinterface #189,  1          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$FunctionContext.blockX:()I
+      10: bipush        8
+      12: idiv
+      13: aload_1
+      14: invokeinterface #192,  1          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$FunctionContext.blockZ:()I
+      19: bipush        8
+      21: idiv
+      22: invokestatic  #194                // Method getHeightValue:(Lnet/minecraft/world/level/levelgen/synth/SimplexNoise;II)F
+      25: f2d
+      26: ldc2_w        #195                // double 8.0d
+      29: dsub
+      30: ldc2_w        #197                // double 128.0d
+      33: ddiv
+      34: dreturn
+
+  public double minValue();
+    Code:
+       0: ldc2_w        #203                // double -0.84375d
+       3: dreturn
+
+  public double maxValue();
+    Code:
+       0: ldc2_w        #206                // double 0.5625d
+       3: dreturn
+
+  public net.minecraft.util.KeyDispatchDataCodec<? extends net.minecraft.world.level.levelgen.DensityFunction> codec();
+    Code:
+       0: getstatic     #212                // Field CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+       3: areturn
+
+  private static net.minecraft.world.level.levelgen.DensityFunctions$EndIslandDensityFunction$NoiseCache lambda$getHeightValue$0(net.minecraft.world.level.levelgen.synth.SimplexNoise);
+    Code:
+       0: new           #12                 // class net/minecraft/world/level/levelgen/DensityFunctions$EndIslandDensityFunction$NoiseCache
+       3: dup
+       4: invokespecial #213                // Method net/minecraft/world/level/levelgen/DensityFunctions$EndIslandDensityFunction$NoiseCache."<init>":()V
+       7: areturn
+
+  static {};
+    Code:
+       0: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$EndIslandDensityFunction
+       3: dup
+       4: lconst_0
+       5: invokespecial #216                // Method "<init>":(J)V
+       8: invokestatic  #222                // Method com/mojang/serialization/MapCodec.unit:(Ljava/lang/Object;)Lcom/mojang/serialization/MapCodec;
+      11: invokestatic  #228                // Method net/minecraft/util/KeyDispatchDataCodec.of:(Lcom/mojang/serialization/MapCodec;)Lnet/minecraft/util/KeyDispatchDataCodec;
+      14: putstatic     #212                // Field CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+      17: invokedynamic #238,  0            // InvokeDynamic #1:get:()Ljava/util/function/Supplier;
+      22: invokestatic  #242                // Method java/lang/ThreadLocal.withInitial:(Ljava/util/function/Supplier;)Ljava/lang/ThreadLocal;
+      25: putstatic     #87                 // Field noiseCache:Ljava/lang/ThreadLocal;
+      28: return
+}

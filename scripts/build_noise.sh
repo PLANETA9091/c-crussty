@@ -110,6 +110,7 @@ SHIP_FILL = {"NormalNoiseBatchOps.class", "NormalNoiseBatchOps$Handle.class",
              "NormalNoiseBatchOps$Reaper.class", "NormalNoiseBatchOps$Recorder.class",
              "NormalNoiseBatchOps$RecorderTL.class", "NormalNoiseBatchOps$RecOutTL.class",
              "NormalNoiseBatchOps$Census.class", "NormalNoiseBatchOps$TestProvider.class",
+             "NormalNoiseBatchOps$YGradRecorder.class", "NormalNoiseBatchOps$YGradRecorderTL.class",
              "DensityArrayInterpreter.class"}
 
 bad = 0

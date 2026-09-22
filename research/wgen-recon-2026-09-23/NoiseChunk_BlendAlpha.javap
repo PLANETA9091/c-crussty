@@ -1,0 +1,61 @@
+Compiled from "NoiseChunk.java"
+class net.minecraft.world.level.levelgen.NoiseChunk$BlendAlpha implements net.minecraft.world.level.levelgen.NoiseChunk$NoiseChunkDensityFunction {
+  final net.minecraft.world.level.levelgen.NoiseChunk this$0;
+
+  net.minecraft.world.level.levelgen.NoiseChunk$BlendAlpha(net.minecraft.world.level.levelgen.NoiseChunk);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: putfield      #37                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+       5: aload_0
+       6: invokespecial #40                 // Method java/lang/Object."<init>":()V
+       9: return
+
+  public net.minecraft.world.level.levelgen.DensityFunction wrapped();
+    Code:
+       0: getstatic     #48                 // Field net/minecraft/world/level/levelgen/DensityFunctions$BlendAlpha.INSTANCE:Lnet/minecraft/world/level/levelgen/DensityFunctions$BlendAlpha;
+       3: areturn
+
+  public net.minecraft.world.level.levelgen.DensityFunction mapAll(net.minecraft.world.level.levelgen.DensityFunction$Visitor);
+    Code:
+       0: aload_0
+       1: invokevirtual #52                 // Method wrapped:()Lnet/minecraft/world/level/levelgen/DensityFunction;
+       4: aload_1
+       5: invokeinterface #54,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.mapAll:(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      10: areturn
+
+  public double compute(net.minecraft.world.level.levelgen.DensityFunction$FunctionContext);
+    Code:
+       0: aload_0
+       1: getfield      #37                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+       4: aload_1
+       5: invokeinterface #62,  1           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$FunctionContext.blockX:()I
+      10: aload_1
+      11: invokeinterface #65,  1           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$FunctionContext.blockZ:()I
+      16: invokevirtual #69                 // Method net/minecraft/world/level/levelgen/NoiseChunk.getOrComputeBlendingOutput:(II)Lnet/minecraft/world/level/levelgen/blending/Blender$BlendingOutput;
+      19: invokevirtual #73                 // Method net/minecraft/world/level/levelgen/blending/Blender$BlendingOutput.alpha:()D
+      22: dreturn
+
+  public void fillArray(double[], net.minecraft.world.level.levelgen.DensityFunction$ContextProvider);
+    Code:
+       0: aload_2
+       1: aload_1
+       2: aload_0
+       3: invokeinterface #81,  3           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$ContextProvider.fillAllDirectly:([DLnet/minecraft/world/level/levelgen/DensityFunction;)V
+       8: return
+
+  public double minValue();
+    Code:
+       0: dconst_0
+       1: dreturn
+
+  public double maxValue();
+    Code:
+       0: dconst_1
+       1: dreturn
+
+  public net.minecraft.util.KeyDispatchDataCodec<? extends net.minecraft.world.level.levelgen.DensityFunction> codec();
+    Code:
+       0: getstatic     #94                 // Field net/minecraft/world/level/levelgen/DensityFunctions$BlendAlpha.CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+       3: areturn
+}

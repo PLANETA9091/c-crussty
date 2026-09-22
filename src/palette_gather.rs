@@ -51,6 +51,84 @@ pub const SECTION_ENTRIES: usize = 4096;
 /// never exceeds 15 for non-global palettes, but the core is generous).
 const MAX_BPE: u8 = 31;
 
+/// TASK-417-B bulk-JNI bridge (PalettedContainerOps.bulkUnpack): the whole
+/// 4096-entry packed section plane is unpacked in ONE native crossing —
+/// `out[i] = SimpleBitStorage.get(i)` for the full plane, bit-exact
+/// (property-tested oracle below) — replacing the Java loop of 4096
+/// per-position get() calls inside the demux materializer. The Java side
+/// falls back to the vanilla-form loop on any negative rc (shape guard).
+use jvmti_bindings::jni;
+pub unsafe extern "system" fn jni_bulk_unpack(
+    env: *mut jni::JNIEnv,
+    _clazz: jni::jclass,
+    words: jni::jlongArray,
+    size: jni::jint,
+    bits: jni::jint,
+    out: jni::jintArray,
+) -> jni::jint {
+    use jni::sys::*;
+
+    const ERR_SHAPE: jni::jint = -1;
+    if env.is_null() || words.is_null() || out.is_null() {
+        return ERR_SHAPE;
+    }
+    if size <= 0 || bits <= 0 || bits > MAX_BPE as jni::jint {
+        return ERR_SHAPE;
+    }
+    let size = size as usize;
+    let bits = bits as u8;
+    // words must cover size*bits bits exactly (no partial trailing word slack
+    // beyond the required ceiling — vanilla always passes the exact packing)
+    let need_words = (size as u64 * bits as u64).div_ceil(64) as usize;
+    let vt = unsafe { &**env };
+    let words_len = unsafe { (vt.GetArrayLength)(env, words) } as usize;
+    if words_len < need_words {
+        return ERR_SHAPE;
+    }
+    let out_len = unsafe { (vt.GetArrayLength)(env, out) } as usize;
+    if out_len < size {
+        return ERR_SHAPE;
+    }
+    let mut packed: Vec<u64> = vec![0u64; need_words];
+    unsafe {
+        (vt.GetLongArrayRegion)(env, words, 0, need_words as jsize, packed.as_mut_ptr());
+    }
+    if unsafe { (vt.ExceptionCheck)(env) } != 0 {
+        unsafe { (vt.ExceptionClear)(env) };
+        return ERR_SHAPE;
+    }
+    let mask = mask_for(bits);
+    let mut decoded: Vec<jni::jint> = Vec::with_capacity(size);
+    for i in 0..size {
+        decoded.push(raw_get(&packed, bits, mask, i) as jni::jint);
+    }
+    unsafe {
+        (vt.SetIntArrayRegion)(env, out, 0, size as jsize, decoded.as_ptr());
+    }
+    if unsafe { (vt.ExceptionCheck)(env) } != 0 {
+        unsafe { (vt.ExceptionClear)(env) };
+        return ERR_SHAPE;
+    }
+    size as jni::jint
+}
+
+/// The bare `SimpleBitStorage.get` replica over raw words (no palette, no
+/// single-value fast path — the pure packing formula, shared by the JNI bulk
+/// unpacker and the property-test oracle).
+#[inline]
+pub fn raw_get(words: &[u64], bpe: u8, mask: u64, i: usize) -> u32 {
+    let bpe = bpe as usize;
+    let offset = i * bpe;
+    let word = offset >> 6;
+    let shift = offset & 63;
+    let mut v = words[word] >> shift;
+    if shift + bpe > 64 {
+        // Java `data[word+1] << (64 - shift)` — LEFT shift by 64-shift
+        v |= words[word + 1] << (64 - shift);
+    }
+    (v & mask) as u32
+}
+
 /// A resolved section view: bits-per-entry, packed words, palette (latent ->
 /// global state id). Owned by the caller at the JNI boundary; the core never
 /// allocates in any query path below.
@@ -308,6 +386,36 @@ mod tests {
         let sec2 = SectionPacked::new(7, 64, words7.to_vec(), (0..128).collect()).unwrap();
         assert_eq!(sec2.get_index(9), oracle(&words7, 9, 7));
         assert_eq!(sec2.get_index(9), 1); // 1 bit from all-ones word0, 6 zeros from word1
+    }
+
+    #[test]
+    fn raw_get_matches_oracle_all_bpe() {
+        // TASK-417-B bulk-JNI unpacker core: every bpe 1..=31, random fills,
+        // all positions, straddles forced at word boundaries — EXACT parity
+        // with the SimpleBitStorage.get formula (the same oracle used for
+        // the SectionPacked paths).
+        for bpe in 1..=31u8 {
+            let words_len = (512u64 * bpe as u64).div_ceil(64) as usize + 1;
+            let mut s = (0x417_417u64 << 8) | bpe as u64;
+            let mut words = Vec::with_capacity(words_len);
+            for _ in 0..words_len {
+                s ^= s >> 12;
+                s ^= s << 25;
+                s ^= s >> 27;
+                s = s.wrapping_mul(0x2545F4914F6CDD1D);
+                words.push(s);
+            }
+            let mask = mask_for(bpe);
+            for i in 0..512usize {
+                assert_eq!(
+                    raw_get(&words, bpe, mask, i),
+                    oracle(&words, i, bpe),
+                    "raw_get bpe={} i={}",
+                    bpe,
+                    i
+                );
+            }
+        }
     }
 
     #[test]

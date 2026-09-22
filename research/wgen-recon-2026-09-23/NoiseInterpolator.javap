@@ -1,0 +1,370 @@
+Compiled from "NoiseChunk.java"
+public class net.minecraft.world.level.levelgen.NoiseChunk$NoiseInterpolator implements net.minecraft.world.level.levelgen.DensityFunctions$MarkerOrMarked,net.minecraft.world.level.levelgen.NoiseChunk$NoiseChunkDensityFunction {
+  double[][] slice0;
+
+  double[][] slice1;
+
+  private final net.minecraft.world.level.levelgen.DensityFunction noiseFiller;
+
+  private double noise000;
+
+  private double noise001;
+
+  private double noise100;
+
+  private double noise101;
+
+  private double noise010;
+
+  private double noise011;
+
+  private double noise110;
+
+  private double noise111;
+
+  private double valueXZ00;
+
+  private double valueXZ10;
+
+  private double valueXZ01;
+
+  private double valueXZ11;
+
+  private double valueZ0;
+
+  private double valueZ1;
+
+  private double value;
+
+  final net.minecraft.world.level.levelgen.NoiseChunk this$0;
+
+  net.minecraft.world.level.levelgen.NoiseChunk$NoiseInterpolator(net.minecraft.world.level.levelgen.NoiseChunk, net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: putfield      #57                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+       5: aload_0
+       6: invokespecial #60                 // Method java/lang/Object."<init>":()V
+       9: aload_0
+      10: aload_2
+      11: putfield      #62                 // Field noiseFiller:Lnet/minecraft/world/level/levelgen/DensityFunction;
+      14: aload_0
+      15: aload_0
+      16: aload_1
+      17: getfield      #66                 // Field net/minecraft/world/level/levelgen/NoiseChunk.cellCountY:I
+      20: aload_1
+      21: getfield      #69                 // Field net/minecraft/world/level/levelgen/NoiseChunk.cellCountXZ:I
+      24: invokevirtual #73                 // Method allocateSlice:(II)[[D
+      27: putfield      #75                 // Field slice0:[[D
+      30: aload_0
+      31: aload_0
+      32: aload_1
+      33: getfield      #66                 // Field net/minecraft/world/level/levelgen/NoiseChunk.cellCountY:I
+      36: aload_1
+      37: getfield      #69                 // Field net/minecraft/world/level/levelgen/NoiseChunk.cellCountXZ:I
+      40: invokevirtual #73                 // Method allocateSlice:(II)[[D
+      43: putfield      #77                 // Field slice1:[[D
+      46: aload_1
+      47: getfield      #81                 // Field net/minecraft/world/level/levelgen/NoiseChunk.interpolators:Ljava/util/List;
+      50: aload_0
+      51: invokeinterface #87,  2           // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+      56: pop
+      57: return
+
+  private double[][] allocateSlice(int, int);
+    Code:
+       0: iload_2
+       1: iconst_1
+       2: iadd
+       3: istore_3
+       4: iload_1
+       5: iconst_1
+       6: iadd
+       7: istore        4
+       9: iload_3
+      10: iload         4
+      12: multianewarray #90,  2            // class "[[D"
+      16: astore        5
+      18: iconst_0
+      19: istore        6
+      21: iload         6
+      23: iload_3
+      24: if_icmpge     42
+      27: aload         5
+      29: iload         6
+      31: iload         4
+      33: newarray       double
+      35: aastore
+      36: iinc          6, 1
+      39: goto          21
+      42: aload         5
+      44: areturn
+
+  void selectCellYZ(int, int);
+    Code:
+       0: aload_0
+       1: aload_0
+       2: getfield      #75                 // Field slice0:[[D
+       5: iload_2
+       6: aaload
+       7: iload_1
+       8: daload
+       9: putfield      #98                 // Field noise000:D
+      12: aload_0
+      13: aload_0
+      14: getfield      #75                 // Field slice0:[[D
+      17: iload_2
+      18: iconst_1
+      19: iadd
+      20: aaload
+      21: iload_1
+      22: daload
+      23: putfield      #100                // Field noise001:D
+      26: aload_0
+      27: aload_0
+      28: getfield      #77                 // Field slice1:[[D
+      31: iload_2
+      32: aaload
+      33: iload_1
+      34: daload
+      35: putfield      #102                // Field noise100:D
+      38: aload_0
+      39: aload_0
+      40: getfield      #77                 // Field slice1:[[D
+      43: iload_2
+      44: iconst_1
+      45: iadd
+      46: aaload
+      47: iload_1
+      48: daload
+      49: putfield      #104                // Field noise101:D
+      52: aload_0
+      53: aload_0
+      54: getfield      #75                 // Field slice0:[[D
+      57: iload_2
+      58: aaload
+      59: iload_1
+      60: iconst_1
+      61: iadd
+      62: daload
+      63: putfield      #106                // Field noise010:D
+      66: aload_0
+      67: aload_0
+      68: getfield      #75                 // Field slice0:[[D
+      71: iload_2
+      72: iconst_1
+      73: iadd
+      74: aaload
+      75: iload_1
+      76: iconst_1
+      77: iadd
+      78: daload
+      79: putfield      #108                // Field noise011:D
+      82: aload_0
+      83: aload_0
+      84: getfield      #77                 // Field slice1:[[D
+      87: iload_2
+      88: aaload
+      89: iload_1
+      90: iconst_1
+      91: iadd
+      92: daload
+      93: putfield      #110                // Field noise110:D
+      96: aload_0
+      97: aload_0
+      98: getfield      #77                 // Field slice1:[[D
+     101: iload_2
+     102: iconst_1
+     103: iadd
+     104: aaload
+     105: iload_1
+     106: iconst_1
+     107: iadd
+     108: daload
+     109: putfield      #112                // Field noise111:D
+     112: return
+
+  void updateForY(double);
+    Code:
+       0: aload_0
+       1: dload_1
+       2: aload_0
+       3: getfield      #98                 // Field noise000:D
+       6: aload_0
+       7: getfield      #106                // Field noise010:D
+      10: invokestatic  #122                // Method net/minecraft/util/Mth.lerp:(DDD)D
+      13: putfield      #124                // Field valueXZ00:D
+      16: aload_0
+      17: dload_1
+      18: aload_0
+      19: getfield      #102                // Field noise100:D
+      22: aload_0
+      23: getfield      #110                // Field noise110:D
+      26: invokestatic  #122                // Method net/minecraft/util/Mth.lerp:(DDD)D
+      29: putfield      #126                // Field valueXZ10:D
+      32: aload_0
+      33: dload_1
+      34: aload_0
+      35: getfield      #100                // Field noise001:D
+      38: aload_0
+      39: getfield      #108                // Field noise011:D
+      42: invokestatic  #122                // Method net/minecraft/util/Mth.lerp:(DDD)D
+      45: putfield      #128                // Field valueXZ01:D
+      48: aload_0
+      49: dload_1
+      50: aload_0
+      51: getfield      #104                // Field noise101:D
+      54: aload_0
+      55: getfield      #112                // Field noise111:D
+      58: invokestatic  #122                // Method net/minecraft/util/Mth.lerp:(DDD)D
+      61: putfield      #130                // Field valueXZ11:D
+      64: return
+
+  void updateForX(double);
+    Code:
+       0: aload_0
+       1: dload_1
+       2: aload_0
+       3: getfield      #124                // Field valueXZ00:D
+       6: aload_0
+       7: getfield      #126                // Field valueXZ10:D
+      10: invokestatic  #122                // Method net/minecraft/util/Mth.lerp:(DDD)D
+      13: putfield      #133                // Field valueZ0:D
+      16: aload_0
+      17: dload_1
+      18: aload_0
+      19: getfield      #128                // Field valueXZ01:D
+      22: aload_0
+      23: getfield      #130                // Field valueXZ11:D
+      26: invokestatic  #122                // Method net/minecraft/util/Mth.lerp:(DDD)D
+      29: putfield      #135                // Field valueZ1:D
+      32: return
+
+  void updateForZ(double);
+    Code:
+       0: aload_0
+       1: dload_1
+       2: aload_0
+       3: getfield      #133                // Field valueZ0:D
+       6: aload_0
+       7: getfield      #135                // Field valueZ1:D
+      10: invokestatic  #122                // Method net/minecraft/util/Mth.lerp:(DDD)D
+      13: putfield      #139                // Field value:D
+      16: return
+
+  public double compute(net.minecraft.world.level.levelgen.DensityFunction$FunctionContext);
+    Code:
+       0: aload_1
+       1: aload_0
+       2: getfield      #57                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+       5: if_acmpeq     19
+       8: aload_0
+       9: getfield      #62                 // Field noiseFiller:Lnet/minecraft/world/level/levelgen/DensityFunction;
+      12: aload_1
+      13: invokeinterface #143,  2          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.compute:(Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;)D
+      18: dreturn
+      19: aload_0
+      20: getfield      #57                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+      23: getfield      #147                // Field net/minecraft/world/level/levelgen/NoiseChunk.interpolating:Z
+      26: ifne          39
+      29: new           #149                // class java/lang/IllegalStateException
+      32: dup
+      33: ldc           #151                // String Trying to sample interpolator outside the interpolation loop
+      35: invokespecial #154                // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+      38: athrow
+      39: aload_0
+      40: getfield      #57                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+      43: getfield      #157                // Field net/minecraft/world/level/levelgen/NoiseChunk.fillingCell:Z
+      46: ifeq          138
+      49: aload_0
+      50: getfield      #57                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+      53: getfield      #160                // Field net/minecraft/world/level/levelgen/NoiseChunk.inCellX:I
+      56: i2d
+      57: aload_0
+      58: getfield      #57                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+      61: getfield      #163                // Field net/minecraft/world/level/levelgen/NoiseChunk.cellWidth:I
+      64: i2d
+      65: ddiv
+      66: aload_0
+      67: getfield      #57                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+      70: getfield      #166                // Field net/minecraft/world/level/levelgen/NoiseChunk.inCellY:I
+      73: i2d
+      74: aload_0
+      75: getfield      #57                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+      78: getfield      #169                // Field net/minecraft/world/level/levelgen/NoiseChunk.cellHeight:I
+      81: i2d
+      82: ddiv
+      83: aload_0
+      84: getfield      #57                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+      87: getfield      #172                // Field net/minecraft/world/level/levelgen/NoiseChunk.inCellZ:I
+      90: i2d
+      91: aload_0
+      92: getfield      #57                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+      95: getfield      #163                // Field net/minecraft/world/level/levelgen/NoiseChunk.cellWidth:I
+      98: i2d
+      99: ddiv
+     100: aload_0
+     101: getfield      #98                 // Field noise000:D
+     104: aload_0
+     105: getfield      #102                // Field noise100:D
+     108: aload_0
+     109: getfield      #106                // Field noise010:D
+     112: aload_0
+     113: getfield      #110                // Field noise110:D
+     116: aload_0
+     117: getfield      #100                // Field noise001:D
+     120: aload_0
+     121: getfield      #104                // Field noise101:D
+     124: aload_0
+     125: getfield      #108                // Field noise011:D
+     128: aload_0
+     129: getfield      #112                // Field noise111:D
+     132: invokestatic  #176                // Method net/minecraft/util/Mth.lerp3:(DDDDDDDDDDD)D
+     135: goto          142
+     138: aload_0
+     139: getfield      #139                // Field value:D
+     142: dreturn
+
+  public void fillArray(double[], net.minecraft.world.level.levelgen.DensityFunction$ContextProvider);
+    Code:
+       0: aload_0
+       1: getfield      #57                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+       4: getfield      #157                // Field net/minecraft/world/level/levelgen/NoiseChunk.fillingCell:Z
+       7: ifeq          21
+      10: aload_2
+      11: aload_1
+      12: aload_0
+      13: invokeinterface #184,  3          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$ContextProvider.fillAllDirectly:([DLnet/minecraft/world/level/levelgen/DensityFunction;)V
+      18: goto          32
+      21: aload_0
+      22: invokevirtual #188                // Method wrapped:()Lnet/minecraft/world/level/levelgen/DensityFunction;
+      25: aload_1
+      26: aload_2
+      27: invokeinterface #190,  3          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.fillArray:([DLnet/minecraft/world/level/levelgen/DensityFunction$ContextProvider;)V
+      32: return
+
+  public net.minecraft.world.level.levelgen.DensityFunction wrapped();
+    Code:
+       0: aload_0
+       1: getfield      #62                 // Field noiseFiller:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       4: areturn
+
+  private void swapSlices();
+    Code:
+       0: aload_0
+       1: getfield      #75                 // Field slice0:[[D
+       4: astore_1
+       5: aload_0
+       6: aload_0
+       7: getfield      #77                 // Field slice1:[[D
+      10: putfield      #75                 // Field slice0:[[D
+      13: aload_0
+      14: aload_1
+      15: putfield      #77                 // Field slice1:[[D
+      18: return
+
+  public net.minecraft.world.level.levelgen.DensityFunctions$Marker$Type type();
+    Code:
+       0: getstatic     #201                // Field net/minecraft/world/level/levelgen/DensityFunctions$Marker$Type.Interpolated:Lnet/minecraft/world/level/levelgen/DensityFunctions$Marker$Type;
+       3: areturn
+}

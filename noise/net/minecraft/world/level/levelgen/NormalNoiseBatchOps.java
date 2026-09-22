@@ -32,6 +32,19 @@ import net.minecraft.world.level.levelgen.synth.PerlinNoise;
  * it; ShiftedNoise and any other implementor falls back to vanilla inside
  * fillShift's instanceof dispatch).
  *
+ * TASK-417-B (GEN axis, heritage extension — the 4th whole-body target):
+ *   DensityFunction$SimpleFunction.fillArray -> fillSimpleDefault(this, out, ctx)
+ * the interface DEFAULT the tier-1 nodes inherit when vanilla never batched
+ * them. YClampedGradient is the production-engaged one (the overworld depth
+ * root RangeChoice delegates input.fillArray to it on EVERY column fill;
+ * census-417: RangeChoice roots = 87.5% of production fills), and its value
+ * is a PURE function of blockY — the bridge drives the provider's own
+ * fillAllDirectly with a MEMOIZING recorder (same Mth.clampedMap static =
+ * bit-exact by construction; y-dedup = the batch), so out[] is filled in
+ * ONE pass with zero extra side effects. Every other default consumer
+ * (BlendedNoise / EndIsland / MulOrAdd / ...) gets the EXACT vanilla body
+ * (ctx.fillAllDirectly(out, self)) — pass-through, byte-identical behavior.
+ *
  * BATCH PATH per crossing:
  *   1. resolve the NormalNoise behind the holder (null = proto -> vanilla),
  *   2. resolve the striped {h1, h2, vf} handle triple (PhantomReference
@@ -82,6 +95,12 @@ public final class NormalNoiseBatchOps {
     static final AtomicLong C_MIN = new AtomicLong(Long.MAX_VALUE);
     static final AtomicLong C_MAX = new AtomicLong(0);
     static final AtomicLong C_FALLBACKS = new AtomicLong();
+    // TASK-417-B GEN axis: YClampedGradient whole-array fills (the batch =
+    // y-dedup inside the provider's own loop). Pts/misses prove engagement
+    // + memo efficiency in the boot logs (EFFECT markers).
+    static final AtomicLong C_YG_CALLS = new AtomicLong();
+    static final AtomicLong C_YG_PTS = new AtomicLong();
+    static final AtomicLong C_YG_MISS = new AtomicLong();
 
     /** Named nested class (no lambda capture): dumps the census to stderr
      *  every 30s when CRUSSTY_NOISE_FILL_CENSUS=1. Bench-only observability. */
@@ -111,7 +130,10 @@ public final class NormalNoiseBatchOps {
             + " minN=" + (min == Long.MAX_VALUE ? 0 : min)
             + " maxN=" + max
             + " avgN=" + (calls == 0 ? 0.0D : (double) C_SUM.get() / (double) calls)
-            + " fallbacks=" + C_FALLBACKS.get();
+            + " fallbacks=" + C_FALLBACKS.get()
+            + " ygCalls=" + C_YG_CALLS.get()
+            + " ygPts=" + C_YG_PTS.get()
+            + " ygMiss=" + C_YG_MISS.get();
     }
 
     private static void census(int n) {
@@ -482,6 +504,91 @@ public final class NormalNoiseBatchOps {
         return rec.idx;
     }
 
+    // ---------- TASK-417-B GEN axis: YClampedGradient whole-array fill ----------
+
+    /** Memoizing recorder for the SimpleFunction-default swap. The provider's
+     *  own fillAllDirectly drives compute() exactly once per index — like
+     *  vanilla — and the recorder answers with the gradient value of that y:
+     *  the SAME static Mth.clampedMap the vanilla compute() calls (bit-exact
+     *  by construction), deduplicated through a direct-mapped y->value table
+     *  (a cell column repeats <=8 unique y per fill; collisions recompute —
+     *  correctness NEVER depends on the memo: the value is a pure function
+     *  of y). out[] is filled by the provider's loop with the FINAL values —
+     *  one pass, no recording buffer, no native crossing, no side-effect
+     *  window (the provider loop runs exactly once, like vanilla). */
+    private static final class YGradRecorder implements DensityFunction {
+        static final int EMPTY = Integer.MIN_VALUE;
+        final int[] keys = new int[64];   // y (EMPTY = no entry; blockY never == MIN_VALUE)
+        final double[] vals = new double[64];
+        int fromY;
+        int toY;
+        double fromValue;
+        double toValue;
+        YGradRecorder reset(int fy, int ty, double fv, double tv) {
+            this.fromY = fy;
+            this.toY = ty;
+            this.fromValue = fv;
+            this.toValue = tv;
+            java.util.Arrays.fill(this.keys, EMPTY);
+            return this;
+        }
+        @Override public double compute(FunctionContext f) {
+            C_YG_PTS.incrementAndGet();
+            final int y = f.blockY();
+            final int slot = y & 63;
+            if (this.keys[slot] == y) {
+                return this.vals[slot];
+            }
+            C_YG_MISS.incrementAndGet();
+            final double v = net.minecraft.util.Mth.clampedMap((double) y,
+                (double) this.fromY, (double) this.toY, this.fromValue, this.toValue);
+            this.keys[slot] = y;
+            this.vals[slot] = v;
+            return v;
+        }
+        @Override public void fillArray(double[] o, ContextProvider c) {
+            throw new IllegalStateException("crussty-ygrad-recorder");
+        }
+        @Override public DensityFunction mapAll(Visitor v) {
+            return this;
+        }
+        @Override public double minValue() {
+            return 0.0D;
+        }
+        @Override public double maxValue() {
+            return 0.0D;
+        }
+        @Override public KeyDispatchDataCodec<DensityFunction> codec() {
+            throw new IllegalStateException("crussty-ygrad-recorder");
+        }
+    }
+
+    /** Named ThreadLocal holder (an anonymous subclass would mint a
+     *  synthetic $1 the define loop never embeds — ship-audit rule). */
+    private static final class YGradRecorderTL extends ThreadLocal<YGradRecorder> {
+        @Override protected YGradRecorder initialValue() {
+            return new YGradRecorder();
+        }
+    }
+
+    private static final ThreadLocal<YGradRecorder> YGRAD = new YGradRecorderTL();
+
+    /** Whole-body replacement of {@code DensityFunction$SimpleFunction
+     *  .fillArray} (the interface DEFAULT). YClampedGradient = the batched
+     *  one-pass memo fill; every other default consumer = the EXACT vanilla
+     *  default body. Fallback law: ANY Throwable here must not exist — the
+     *  body is two straight-line paths with no allocation beyond the
+     *  thread-held recorder, so nothing can throw. */
+    public static void fillSimpleDefault(DensityFunction self, double[] out, ContextProvider ctx) {
+        if (self instanceof DensityFunctions.YClampedGradient) {
+            final DensityFunctions.YClampedGradient g = (DensityFunctions.YClampedGradient) self;
+            C_YG_CALLS.incrementAndGet();
+            ctx.fillAllDirectly(out, YGRAD.get().reset(g.fromY(), g.toY(), g.fromValue(), g.toValue()));
+            return;
+        }
+        ctx.fillAllDirectly(out, self);
+    }
+
     // ---------- the two whole-body swap bridge methods ----------
 
     /**
@@ -721,6 +828,19 @@ public final class NormalNoiseBatchOps {
                 new Class<?>[] {NoiseHolder.class}, new Object[] {holder}, "ShiftA");
             final Object shiftB = reflectiveNew(DensityFunctions.ShiftB.class,
                 new Class<?>[] {NoiseHolder.class}, new Object[] {holder}, "ShiftB");
+            // TASK-417-B GEN axis: REAL YClampedGradient records (javap-pinned
+            // (II DD)V canonical ctor) covering mid-range + both clamp regimes.
+            final Object[] grads = {
+                reflectiveNew(DensityFunctions.YClampedGradient.class,
+                    new Class<?>[] {int.class, int.class, double.class, double.class},
+                    new Object[] {-32, 64, -1.5D, 2.25D}, "YClampedGradient(mid)"),
+                reflectiveNew(DensityFunctions.YClampedGradient.class,
+                    new Class<?>[] {int.class, int.class, double.class, double.class},
+                    new Object[] {100, 105, -3.0D, 3.0D}, "YClampedGradient(clampLow)"),
+                reflectiveNew(DensityFunctions.YClampedGradient.class,
+                    new Class<?>[] {int.class, int.class, double.class, double.class},
+                    new Object[] {500, 505, 1.0D, -1.0D}, "YClampedGradient(clampLow2)"),
+            };
             final int[] sizes = new int[] {1, 17, 256};
             for (int s = 0; s < sizes.length; s++) {
                 final int n = sizes[s];
@@ -762,6 +882,47 @@ public final class NormalNoiseBatchOps {
                 if (!bitEqual(out, want, n)) {
                     return "CRUSSTY_NOISE_FILL SELFTEST FAIL mode=NoiseProto n=" + n
                         + firstMismatch(out, want, n) + diagLine();
+                }
+                // TASK-417-B GEN axis: YClampedGradient via the SimpleFunction
+                // default swap — bridged fillArray (memoizing one-pass) vs the
+                // vanilla per-point compute, raw-bits, all three regimes.
+                for (int g = 0; g < grads.length; g++) {
+                    final DensityFunctions.YClampedGradient grad =
+                        (DensityFunctions.YClampedGradient) grads[g];
+                    for (int i = 0; i < n; i++) {
+                        want[i] = grad.compute(tp.forIndex(i));
+                    }
+                    grad.fillArray(out, tp);
+                    if (!bitEqual(out, want, n)) {
+                        return "CRUSSTY_NOISE_FILL SELFTEST FAIL mode=YClampedGradient#" + g
+                            + " n=" + n + firstMismatch(out, want, n);
+                    }
+                }
+                // pass-through law: a NON-gradient default consumer must see
+                // the exact vanilla default body (compute per point, identity
+                // side-effect order) — drive the bridge method directly.
+                {
+                    final DensityFunctions.YClampedGradient grad =
+                        (DensityFunctions.YClampedGradient) grads[0];
+                    for (int i = 0; i < n; i++) {
+                        want[i] = grad.compute(tp.forIndex(i));
+                    }
+                    fillSimpleDefault(grad, out, tp);
+                    if (!bitEqual(out, want, n)) {
+                        return "CRUSSTY_NOISE_FILL SELFTEST FAIL mode=SimpleDefault-YGrad n=" + n
+                            + firstMismatch(out, want, n);
+                    }
+                    // pass-through law on a REAL non-gradient kernel node: the
+                    // proto-holder Noise must see the exact vanilla default
+                    // body (per-point compute through the provider's loop).
+                    for (int i = 0; i < n; i++) {
+                        want[i] = ((DensityFunctions.Noise) noiseProto).compute(tp.forIndex(i));
+                    }
+                    fillSimpleDefault((DensityFunctions.Noise) noiseProto, out, tp);
+                    if (!bitEqual(out, want, n)) {
+                        return "CRUSSTY_NOISE_FILL SELFTEST FAIL mode=SimpleDefault-passthrough n=" + n
+                            + firstMismatch(out, want, n);
+                    }
                 }
             }
             final long handles = liveHandles();

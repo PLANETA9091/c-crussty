@@ -1,0 +1,169 @@
+Compiled from "DensityFunctions.java"
+public final class net.minecraft.world.level.levelgen.DensityFunctions$WeirdScaledSampler extends java.lang.Record implements net.minecraft.world.level.levelgen.DensityFunctions$TransformerWithContext {
+  private final net.minecraft.world.level.levelgen.DensityFunction input;
+
+  private final net.minecraft.world.level.levelgen.DensityFunction$NoiseHolder noise;
+
+  private final net.minecraft.world.level.levelgen.DensityFunctions$WeirdScaledSampler$RarityValueMapper rarityValueMapper;
+
+  private static final com.mojang.serialization.MapCodec<net.minecraft.world.level.levelgen.DensityFunctions$WeirdScaledSampler> DATA_CODEC;
+
+  public static final net.minecraft.util.KeyDispatchDataCodec<net.minecraft.world.level.levelgen.DensityFunctions$WeirdScaledSampler> CODEC;
+
+  protected net.minecraft.world.level.levelgen.DensityFunctions$WeirdScaledSampler(net.minecraft.world.level.levelgen.DensityFunction, net.minecraft.world.level.levelgen.DensityFunction$NoiseHolder, net.minecraft.world.level.levelgen.DensityFunctions$WeirdScaledSampler$RarityValueMapper);
+    Code:
+       0: aload_0
+       1: invokespecial #57                 // Method java/lang/Record."<init>":()V
+       4: aload_0
+       5: aload_1
+       6: putfield      #59                 // Field input:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       9: aload_0
+      10: aload_2
+      11: putfield      #61                 // Field noise:Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;
+      14: aload_0
+      15: aload_3
+      16: putfield      #63                 // Field rarityValueMapper:Lnet/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper;
+      19: return
+
+  public double transform(net.minecraft.world.level.levelgen.DensityFunction$FunctionContext, double);
+    Code:
+       0: aload_0
+       1: getfield      #63                 // Field rarityValueMapper:Lnet/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper;
+       4: getfield      #71                 // Field net/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper.mapper:Lit/unimi/dsi/fastutil/doubles/Double2DoubleFunction;
+       7: dload_2
+       8: invokeinterface #77,  3           // InterfaceMethod it/unimi/dsi/fastutil/doubles/Double2DoubleFunction.get:(D)D
+      13: dstore        4
+      15: dload         4
+      17: aload_0
+      18: getfield      #61                 // Field noise:Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;
+      21: aload_1
+      22: invokeinterface #81,  1           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$FunctionContext.blockX:()I
+      27: i2d
+      28: dload         4
+      30: ddiv
+      31: aload_1
+      32: invokeinterface #84,  1           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$FunctionContext.blockY:()I
+      37: i2d
+      38: dload         4
+      40: ddiv
+      41: aload_1
+      42: invokeinterface #87,  1           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$FunctionContext.blockZ:()I
+      47: i2d
+      48: dload         4
+      50: ddiv
+      51: invokevirtual #91                 // Method net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder.getValue:(DDD)D
+      54: invokestatic  #96                 // Method java/lang/Math.abs:(D)D
+      57: dmul
+      58: dreturn
+
+  public net.minecraft.world.level.levelgen.DensityFunction mapAll(net.minecraft.world.level.levelgen.DensityFunction$Visitor);
+    Code:
+       0: aload_1
+       1: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler
+       4: dup
+       5: aload_0
+       6: getfield      #59                 // Field input:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       9: aload_1
+      10: invokeinterface #105,  2          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.mapAll:(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      15: aload_1
+      16: aload_0
+      17: getfield      #61                 // Field noise:Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;
+      20: invokeinterface #109,  2          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$Visitor.visitNoise:(Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;)Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;
+      25: aload_0
+      26: getfield      #63                 // Field rarityValueMapper:Lnet/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper;
+      29: invokespecial #111                // Method "<init>":(Lnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;Lnet/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper;)V
+      32: invokeinterface #115,  2          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$Visitor.apply:(Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      37: areturn
+
+  public double minValue();
+    Code:
+       0: dconst_0
+       1: dreturn
+
+  public double maxValue();
+    Code:
+       0: aload_0
+       1: getfield      #63                 // Field rarityValueMapper:Lnet/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper;
+       4: getfield      #123                // Field net/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper.maxRarity:D
+       7: aload_0
+       8: getfield      #61                 // Field noise:Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;
+      11: invokevirtual #125                // Method net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder.maxValue:()D
+      14: dmul
+      15: dreturn
+
+  public net.minecraft.util.KeyDispatchDataCodec<? extends net.minecraft.world.level.levelgen.DensityFunction> codec();
+    Code:
+       0: getstatic     #130                // Field CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+       3: areturn
+
+  public final java.lang.String toString();
+    Code:
+       0: aload_0
+       1: invokedynamic #147,  0            // InvokeDynamic #0:toString:(Lnet/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler;)Ljava/lang/String;
+       6: areturn
+
+  public final int hashCode();
+    Code:
+       0: aload_0
+       1: invokedynamic #151,  0            // InvokeDynamic #0:hashCode:(Lnet/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler;)I
+       6: ireturn
+
+  public final boolean equals(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokedynamic #156,  0            // InvokeDynamic #0:equals:(Lnet/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler;Ljava/lang/Object;)Z
+       7: ireturn
+
+  public net.minecraft.world.level.levelgen.DensityFunction input();
+    Code:
+       0: aload_0
+       1: getfield      #59                 // Field input:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       4: areturn
+
+  public net.minecraft.world.level.levelgen.DensityFunction$NoiseHolder noise();
+    Code:
+       0: aload_0
+       1: getfield      #61                 // Field noise:Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;
+       4: areturn
+
+  public net.minecraft.world.level.levelgen.DensityFunctions$WeirdScaledSampler$RarityValueMapper rarityValueMapper();
+    Code:
+       0: aload_0
+       1: getfield      #63                 // Field rarityValueMapper:Lnet/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper;
+       4: areturn
+
+  private static com.mojang.datafixers.kinds.App lambda$static$0(com.mojang.serialization.codecs.RecordCodecBuilder$Instance);
+    Code:
+       0: aload_0
+       1: getstatic     #167                // Field net/minecraft/world/level/levelgen/DensityFunction.HOLDER_HELPER_CODEC:Lcom/mojang/serialization/Codec;
+       4: ldc           #168                // String input
+       6: invokeinterface #174,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      11: invokedynamic #191,  0            // InvokeDynamic #1:apply:()Ljava/util/function/Function;
+      16: invokevirtual #197                // Method com/mojang/serialization/MapCodec.forGetter:(Ljava/util/function/Function;)Lcom/mojang/serialization/codecs/RecordCodecBuilder;
+      19: getstatic     #199                // Field net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder.CODEC:Lcom/mojang/serialization/Codec;
+      22: ldc           #200                // String noise
+      24: invokeinterface #174,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      29: invokedynamic #206,  0            // InvokeDynamic #2:apply:()Ljava/util/function/Function;
+      34: invokevirtual #197                // Method com/mojang/serialization/MapCodec.forGetter:(Ljava/util/function/Function;)Lcom/mojang/serialization/codecs/RecordCodecBuilder;
+      37: getstatic     #207                // Field net/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper.CODEC:Lcom/mojang/serialization/Codec;
+      40: ldc           #209                // String rarity_value_mapper
+      42: invokeinterface #174,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      47: invokedynamic #215,  0            // InvokeDynamic #3:apply:()Ljava/util/function/Function;
+      52: invokevirtual #197                // Method com/mojang/serialization/MapCodec.forGetter:(Ljava/util/function/Function;)Lcom/mojang/serialization/codecs/RecordCodecBuilder;
+      55: invokevirtual #219                // Method com/mojang/serialization/codecs/RecordCodecBuilder$Instance.group:(Lcom/mojang/datafixers/kinds/App;Lcom/mojang/datafixers/kinds/App;Lcom/mojang/datafixers/kinds/App;)Lcom/mojang/datafixers/Products$P3;
+      58: aload_0
+      59: invokedynamic #227,  0            // InvokeDynamic #4:apply:()Lcom/mojang/datafixers/util/Function3;
+      64: invokevirtual #230                // Method com/mojang/datafixers/Products$P3.apply:(Lcom/mojang/datafixers/kinds/Applicative;Lcom/mojang/datafixers/util/Function3;)Lcom/mojang/datafixers/kinds/App;
+      67: areturn
+
+  static {};
+    Code:
+       0: invokedynamic #238,  0            // InvokeDynamic #5:apply:()Ljava/util/function/Function;
+       5: invokestatic  #242                // Method com/mojang/serialization/codecs/RecordCodecBuilder.mapCodec:(Ljava/util/function/Function;)Lcom/mojang/serialization/MapCodec;
+       8: putstatic     #244                // Field DATA_CODEC:Lcom/mojang/serialization/MapCodec;
+      11: getstatic     #244                // Field DATA_CODEC:Lcom/mojang/serialization/MapCodec;
+      14: invokestatic  #250                // Method net/minecraft/util/KeyDispatchDataCodec.of:(Lcom/mojang/serialization/MapCodec;)Lnet/minecraft/util/KeyDispatchDataCodec;
+      17: putstatic     #130                // Field CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+      20: return
+}

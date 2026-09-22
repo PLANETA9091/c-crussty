@@ -1,0 +1,659 @@
+Compiled from "DensityFunctions.java"
+public final class net.minecraft.world.level.levelgen.DensityFunctions {
+  private static final com.mojang.serialization.Codec<net.minecraft.world.level.levelgen.DensityFunction> CODEC;
+
+  protected static final double MAX_REASONABLE_NOISE_VALUE;
+
+  static final com.mojang.serialization.Codec<java.lang.Double> NOISE_VALUE_CODEC;
+
+  public static final com.mojang.serialization.Codec<net.minecraft.world.level.levelgen.DensityFunction> DIRECT_CODEC;
+
+  public static com.mojang.serialization.MapCodec<? extends net.minecraft.world.level.levelgen.DensityFunction> bootstrap(net.minecraft.core.Registry<com.mojang.serialization.MapCodec<? extends net.minecraft.world.level.levelgen.DensityFunction>>);
+    Code:
+       0: aload_0
+       1: ldc           #150                // String blend_alpha
+       3: getstatic     #153                // Field net/minecraft/world/level/levelgen/DensityFunctions$BlendAlpha.CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+       6: invokestatic  #157                // Method register:(Lnet/minecraft/core/Registry;Ljava/lang/String;Lnet/minecraft/util/KeyDispatchDataCodec;)Lcom/mojang/serialization/MapCodec;
+       9: pop
+      10: aload_0
+      11: ldc           #159                // String blend_offset
+      13: getstatic     #160                // Field net/minecraft/world/level/levelgen/DensityFunctions$BlendOffset.CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+      16: invokestatic  #157                // Method register:(Lnet/minecraft/core/Registry;Ljava/lang/String;Lnet/minecraft/util/KeyDispatchDataCodec;)Lcom/mojang/serialization/MapCodec;
+      19: pop
+      20: aload_0
+      21: ldc           #162                // String beardifier
+      23: getstatic     #163                // Field net/minecraft/world/level/levelgen/DensityFunctions$BeardifierMarker.CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+      26: invokestatic  #157                // Method register:(Lnet/minecraft/core/Registry;Ljava/lang/String;Lnet/minecraft/util/KeyDispatchDataCodec;)Lcom/mojang/serialization/MapCodec;
+      29: pop
+      30: aload_0
+      31: ldc           #165                // String old_blended_noise
+      33: getstatic     #168                // Field net/minecraft/world/level/levelgen/synth/BlendedNoise.CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+      36: invokestatic  #157                // Method register:(Lnet/minecraft/core/Registry;Ljava/lang/String;Lnet/minecraft/util/KeyDispatchDataCodec;)Lcom/mojang/serialization/MapCodec;
+      39: pop
+      40: invokestatic  #172                // Method net/minecraft/world/level/levelgen/DensityFunctions$Marker$Type.values:()[Lnet/minecraft/world/level/levelgen/DensityFunctions$Marker$Type;
+      43: astore_1
+      44: aload_1
+      45: arraylength
+      46: istore_2
+      47: iconst_0
+      48: istore_3
+      49: iload_3
+      50: iload_2
+      51: if_icmpge     80
+      54: aload_1
+      55: iload_3
+      56: aaload
+      57: astore        4
+      59: aload_0
+      60: aload         4
+      62: invokevirtual #178                // Method net/minecraft/world/level/levelgen/DensityFunctions$Marker$Type.getSerializedName:()Ljava/lang/String;
+      65: aload         4
+      67: getfield      #181                // Field net/minecraft/world/level/levelgen/DensityFunctions$Marker$Type.codec:Lnet/minecraft/util/KeyDispatchDataCodec;
+      70: invokestatic  #157                // Method register:(Lnet/minecraft/core/Registry;Ljava/lang/String;Lnet/minecraft/util/KeyDispatchDataCodec;)Lcom/mojang/serialization/MapCodec;
+      73: pop
+      74: iinc          3, 1
+      77: goto          49
+      80: aload_0
+      81: ldc           #183                // String noise
+      83: getstatic     #184                // Field net/minecraft/world/level/levelgen/DensityFunctions$Noise.CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+      86: invokestatic  #157                // Method register:(Lnet/minecraft/core/Registry;Ljava/lang/String;Lnet/minecraft/util/KeyDispatchDataCodec;)Lcom/mojang/serialization/MapCodec;
+      89: pop
+      90: aload_0
+      91: ldc           #186                // String end_islands
+      93: getstatic     #187                // Field net/minecraft/world/level/levelgen/DensityFunctions$EndIslandDensityFunction.CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+      96: invokestatic  #157                // Method register:(Lnet/minecraft/core/Registry;Ljava/lang/String;Lnet/minecraft/util/KeyDispatchDataCodec;)Lcom/mojang/serialization/MapCodec;
+      99: pop
+     100: aload_0
+     101: ldc           #189                // String weird_scaled_sampler
+     103: getstatic     #190                // Field net/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler.CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+     106: invokestatic  #157                // Method register:(Lnet/minecraft/core/Registry;Ljava/lang/String;Lnet/minecraft/util/KeyDispatchDataCodec;)Lcom/mojang/serialization/MapCodec;
+     109: pop
+     110: aload_0
+     111: ldc           #192                // String shifted_noise
+     113: getstatic     #193                // Field net/minecraft/world/level/levelgen/DensityFunctions$ShiftedNoise.CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+     116: invokestatic  #157                // Method register:(Lnet/minecraft/core/Registry;Ljava/lang/String;Lnet/minecraft/util/KeyDispatchDataCodec;)Lcom/mojang/serialization/MapCodec;
+     119: pop
+     120: aload_0
+     121: ldc           #195                // String range_choice
+     123: getstatic     #196                // Field net/minecraft/world/level/levelgen/DensityFunctions$RangeChoice.CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+     126: invokestatic  #157                // Method register:(Lnet/minecraft/core/Registry;Ljava/lang/String;Lnet/minecraft/util/KeyDispatchDataCodec;)Lcom/mojang/serialization/MapCodec;
+     129: pop
+     130: aload_0
+     131: ldc           #198                // String shift_a
+     133: getstatic     #199                // Field net/minecraft/world/level/levelgen/DensityFunctions$ShiftA.CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+     136: invokestatic  #157                // Method register:(Lnet/minecraft/core/Registry;Ljava/lang/String;Lnet/minecraft/util/KeyDispatchDataCodec;)Lcom/mojang/serialization/MapCodec;
+     139: pop
+     140: aload_0
+     141: ldc           #201                // String shift_b
+     143: getstatic     #202                // Field net/minecraft/world/level/levelgen/DensityFunctions$ShiftB.CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+     146: invokestatic  #157                // Method register:(Lnet/minecraft/core/Registry;Ljava/lang/String;Lnet/minecraft/util/KeyDispatchDataCodec;)Lcom/mojang/serialization/MapCodec;
+     149: pop
+     150: aload_0
+     151: ldc           #204                // String shift
+     153: getstatic     #205                // Field net/minecraft/world/level/levelgen/DensityFunctions$Shift.CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+     156: invokestatic  #157                // Method register:(Lnet/minecraft/core/Registry;Ljava/lang/String;Lnet/minecraft/util/KeyDispatchDataCodec;)Lcom/mojang/serialization/MapCodec;
+     159: pop
+     160: aload_0
+     161: ldc           #207                // String blend_density
+     163: getstatic     #208                // Field net/minecraft/world/level/levelgen/DensityFunctions$BlendDensity.CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+     166: invokestatic  #157                // Method register:(Lnet/minecraft/core/Registry;Ljava/lang/String;Lnet/minecraft/util/KeyDispatchDataCodec;)Lcom/mojang/serialization/MapCodec;
+     169: pop
+     170: aload_0
+     171: ldc           #210                // String clamp
+     173: getstatic     #211                // Field net/minecraft/world/level/levelgen/DensityFunctions$Clamp.CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+     176: invokestatic  #157                // Method register:(Lnet/minecraft/core/Registry;Ljava/lang/String;Lnet/minecraft/util/KeyDispatchDataCodec;)Lcom/mojang/serialization/MapCodec;
+     179: pop
+     180: invokestatic  #214                // Method net/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type.values:()[Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type;
+     183: astore_1
+     184: aload_1
+     185: arraylength
+     186: istore_2
+     187: iconst_0
+     188: istore_3
+     189: iload_3
+     190: iload_2
+     191: if_icmpge     220
+     194: aload_1
+     195: iload_3
+     196: aaload
+     197: astore        4
+     199: aload_0
+     200: aload         4
+     202: invokevirtual #217                // Method net/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type.getSerializedName:()Ljava/lang/String;
+     205: aload         4
+     207: getfield      #218                // Field net/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type.codec:Lnet/minecraft/util/KeyDispatchDataCodec;
+     210: invokestatic  #157                // Method register:(Lnet/minecraft/core/Registry;Ljava/lang/String;Lnet/minecraft/util/KeyDispatchDataCodec;)Lcom/mojang/serialization/MapCodec;
+     213: pop
+     214: iinc          3, 1
+     217: goto          189
+     220: invokestatic  #221                // Method net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type.values:()[Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+     223: astore_1
+     224: aload_1
+     225: arraylength
+     226: istore_2
+     227: iconst_0
+     228: istore_3
+     229: iload_3
+     230: iload_2
+     231: if_icmpge     260
+     234: aload_1
+     235: iload_3
+     236: aaload
+     237: astore        4
+     239: aload_0
+     240: aload         4
+     242: invokevirtual #224                // Method net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type.getSerializedName:()Ljava/lang/String;
+     245: aload         4
+     247: getfield      #225                // Field net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type.codec:Lnet/minecraft/util/KeyDispatchDataCodec;
+     250: invokestatic  #157                // Method register:(Lnet/minecraft/core/Registry;Ljava/lang/String;Lnet/minecraft/util/KeyDispatchDataCodec;)Lcom/mojang/serialization/MapCodec;
+     253: pop
+     254: iinc          3, 1
+     257: goto          229
+     260: aload_0
+     261: ldc           #227                // String spline
+     263: getstatic     #228                // Field net/minecraft/world/level/levelgen/DensityFunctions$Spline.CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+     266: invokestatic  #157                // Method register:(Lnet/minecraft/core/Registry;Ljava/lang/String;Lnet/minecraft/util/KeyDispatchDataCodec;)Lcom/mojang/serialization/MapCodec;
+     269: pop
+     270: aload_0
+     271: ldc           #230                // String constant
+     273: getstatic     #231                // Field net/minecraft/world/level/levelgen/DensityFunctions$Constant.CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+     276: invokestatic  #157                // Method register:(Lnet/minecraft/core/Registry;Ljava/lang/String;Lnet/minecraft/util/KeyDispatchDataCodec;)Lcom/mojang/serialization/MapCodec;
+     279: pop
+     280: aload_0
+     281: ldc           #233                // String y_clamped_gradient
+     283: getstatic     #234                // Field net/minecraft/world/level/levelgen/DensityFunctions$YClampedGradient.CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+     286: invokestatic  #157                // Method register:(Lnet/minecraft/core/Registry;Ljava/lang/String;Lnet/minecraft/util/KeyDispatchDataCodec;)Lcom/mojang/serialization/MapCodec;
+     289: pop
+     290: aload_0
+     291: ldc           #236                // String find_top_surface
+     293: getstatic     #237                // Field net/minecraft/world/level/levelgen/DensityFunctions$FindTopSurface.CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+     296: invokestatic  #157                // Method register:(Lnet/minecraft/core/Registry;Ljava/lang/String;Lnet/minecraft/util/KeyDispatchDataCodec;)Lcom/mojang/serialization/MapCodec;
+     299: areturn
+
+  private static com.mojang.serialization.MapCodec<? extends net.minecraft.world.level.levelgen.DensityFunction> register(net.minecraft.core.Registry<com.mojang.serialization.MapCodec<? extends net.minecraft.world.level.levelgen.DensityFunction>>, java.lang.String, net.minecraft.util.KeyDispatchDataCodec<? extends net.minecraft.world.level.levelgen.DensityFunction>);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: aload_2
+       3: invokevirtual #252                // Method net/minecraft/util/KeyDispatchDataCodec.codec:()Lcom/mojang/serialization/MapCodec;
+       6: invokestatic  #257                // InterfaceMethod net/minecraft/core/Registry.register:(Lnet/minecraft/core/Registry;Ljava/lang/String;Ljava/lang/Object;)Ljava/lang/Object;
+       9: checkcast     #259                // class com/mojang/serialization/MapCodec
+      12: areturn
+
+  static <A, O> net.minecraft.util.KeyDispatchDataCodec<O> singleArgumentCodec(com.mojang.serialization.Codec<A>, java.util.function.Function<A, O>, java.util.function.Function<O, A>);
+    Code:
+       0: aload_0
+       1: ldc_w         #267                // String argument
+       4: invokeinterface #273,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+       9: aload_1
+      10: aload_2
+      11: invokevirtual #277                // Method com/mojang/serialization/MapCodec.xmap:(Ljava/util/function/Function;Ljava/util/function/Function;)Lcom/mojang/serialization/MapCodec;
+      14: invokestatic  #281                // Method net/minecraft/util/KeyDispatchDataCodec.of:(Lcom/mojang/serialization/MapCodec;)Lnet/minecraft/util/KeyDispatchDataCodec;
+      17: areturn
+
+  static <O> net.minecraft.util.KeyDispatchDataCodec<O> singleFunctionArgumentCodec(java.util.function.Function<net.minecraft.world.level.levelgen.DensityFunction, O>, java.util.function.Function<O, net.minecraft.world.level.levelgen.DensityFunction>);
+    Code:
+       0: getstatic     #293                // Field net/minecraft/world/level/levelgen/DensityFunction.HOLDER_HELPER_CODEC:Lcom/mojang/serialization/Codec;
+       3: aload_0
+       4: aload_1
+       5: invokestatic  #295                // Method singleArgumentCodec:(Lcom/mojang/serialization/Codec;Ljava/util/function/Function;Ljava/util/function/Function;)Lnet/minecraft/util/KeyDispatchDataCodec;
+       8: areturn
+
+  static <O> net.minecraft.util.KeyDispatchDataCodec<O> doubleFunctionArgumentCodec(java.util.function.BiFunction<net.minecraft.world.level.levelgen.DensityFunction, net.minecraft.world.level.levelgen.DensityFunction, O>, java.util.function.Function<O, net.minecraft.world.level.levelgen.DensityFunction>, java.util.function.Function<O, net.minecraft.world.level.levelgen.DensityFunction>);
+    Code:
+       0: aload_1
+       1: aload_2
+       2: aload_0
+       3: invokedynamic #320,  0            // InvokeDynamic #0:apply:(Ljava/util/function/Function;Ljava/util/function/Function;Ljava/util/function/BiFunction;)Ljava/util/function/Function;
+       8: invokestatic  #324                // Method com/mojang/serialization/codecs/RecordCodecBuilder.mapCodec:(Ljava/util/function/Function;)Lcom/mojang/serialization/MapCodec;
+      11: invokestatic  #281                // Method net/minecraft/util/KeyDispatchDataCodec.of:(Lcom/mojang/serialization/MapCodec;)Lnet/minecraft/util/KeyDispatchDataCodec;
+      14: areturn
+
+  static <O> net.minecraft.util.KeyDispatchDataCodec<O> makeCodec(com.mojang.serialization.MapCodec<O>);
+    Code:
+       0: aload_0
+       1: invokestatic  #281                // Method net/minecraft/util/KeyDispatchDataCodec.of:(Lcom/mojang/serialization/MapCodec;)Lnet/minecraft/util/KeyDispatchDataCodec;
+       4: areturn
+
+  private net.minecraft.world.level.levelgen.DensityFunctions();
+    Code:
+       0: aload_0
+       1: invokespecial #336                // Method java/lang/Object."<init>":()V
+       4: return
+
+  public static net.minecraft.world.level.levelgen.DensityFunction interpolated(net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: new           #47                 // class net/minecraft/world/level/levelgen/DensityFunctions$Marker
+       3: dup
+       4: getstatic     #343                // Field net/minecraft/world/level/levelgen/DensityFunctions$Marker$Type.Interpolated:Lnet/minecraft/world/level/levelgen/DensityFunctions$Marker$Type;
+       7: aload_0
+       8: invokespecial #346                // Method net/minecraft/world/level/levelgen/DensityFunctions$Marker."<init>":(Lnet/minecraft/world/level/levelgen/DensityFunctions$Marker$Type;Lnet/minecraft/world/level/levelgen/DensityFunction;)V
+      11: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction flatCache(net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: new           #47                 // class net/minecraft/world/level/levelgen/DensityFunctions$Marker
+       3: dup
+       4: getstatic     #352                // Field net/minecraft/world/level/levelgen/DensityFunctions$Marker$Type.FlatCache:Lnet/minecraft/world/level/levelgen/DensityFunctions$Marker$Type;
+       7: aload_0
+       8: invokespecial #346                // Method net/minecraft/world/level/levelgen/DensityFunctions$Marker."<init>":(Lnet/minecraft/world/level/levelgen/DensityFunctions$Marker$Type;Lnet/minecraft/world/level/levelgen/DensityFunction;)V
+      11: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction cache2d(net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: new           #47                 // class net/minecraft/world/level/levelgen/DensityFunctions$Marker
+       3: dup
+       4: getstatic     #356                // Field net/minecraft/world/level/levelgen/DensityFunctions$Marker$Type.Cache2D:Lnet/minecraft/world/level/levelgen/DensityFunctions$Marker$Type;
+       7: aload_0
+       8: invokespecial #346                // Method net/minecraft/world/level/levelgen/DensityFunctions$Marker."<init>":(Lnet/minecraft/world/level/levelgen/DensityFunctions$Marker$Type;Lnet/minecraft/world/level/levelgen/DensityFunction;)V
+      11: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction cacheOnce(net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: new           #47                 // class net/minecraft/world/level/levelgen/DensityFunctions$Marker
+       3: dup
+       4: getstatic     #360                // Field net/minecraft/world/level/levelgen/DensityFunctions$Marker$Type.CacheOnce:Lnet/minecraft/world/level/levelgen/DensityFunctions$Marker$Type;
+       7: aload_0
+       8: invokespecial #346                // Method net/minecraft/world/level/levelgen/DensityFunctions$Marker."<init>":(Lnet/minecraft/world/level/levelgen/DensityFunctions$Marker$Type;Lnet/minecraft/world/level/levelgen/DensityFunction;)V
+      11: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction cacheAllInCell(net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: new           #47                 // class net/minecraft/world/level/levelgen/DensityFunctions$Marker
+       3: dup
+       4: getstatic     #364                // Field net/minecraft/world/level/levelgen/DensityFunctions$Marker$Type.CacheAllInCell:Lnet/minecraft/world/level/levelgen/DensityFunctions$Marker$Type;
+       7: aload_0
+       8: invokespecial #346                // Method net/minecraft/world/level/levelgen/DensityFunctions$Marker."<init>":(Lnet/minecraft/world/level/levelgen/DensityFunctions$Marker$Type;Lnet/minecraft/world/level/levelgen/DensityFunction;)V
+      11: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction mappedNoise(net.minecraft.core.Holder<net.minecraft.world.level.levelgen.synth.NormalNoise$NoiseParameters>, double, double, double, double);
+    Code:
+       0: new           #39                 // class net/minecraft/world/level/levelgen/DensityFunctions$Noise
+       3: dup
+       4: new           #100                // class net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder
+       7: dup
+       8: aload_0
+       9: invokespecial #371                // Method net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder."<init>":(Lnet/minecraft/core/Holder;)V
+      12: dload_1
+      13: dload_3
+      14: invokespecial #374                // Method net/minecraft/world/level/levelgen/DensityFunctions$Noise."<init>":(Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;DD)V
+      17: dload         5
+      19: dload         7
+      21: invokestatic  #378                // Method mapFromUnitTo:(Lnet/minecraft/world/level/levelgen/DensityFunction;DD)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      24: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction mappedNoise(net.minecraft.core.Holder<net.minecraft.world.level.levelgen.synth.NormalNoise$NoiseParameters>, double, double, double);
+    Code:
+       0: aload_0
+       1: dconst_1
+       2: dload_1
+       3: dload_3
+       4: dload         5
+       6: invokestatic  #389                // Method mappedNoise:(Lnet/minecraft/core/Holder;DDDD)Lnet/minecraft/world/level/levelgen/DensityFunction;
+       9: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction mappedNoise(net.minecraft.core.Holder<net.minecraft.world.level.levelgen.synth.NormalNoise$NoiseParameters>, double, double);
+    Code:
+       0: aload_0
+       1: dconst_1
+       2: dconst_1
+       3: dload_1
+       4: dload_3
+       5: invokestatic  #389                // Method mappedNoise:(Lnet/minecraft/core/Holder;DDDD)Lnet/minecraft/world/level/levelgen/DensityFunction;
+       8: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction shiftedNoise2d(net.minecraft.world.level.levelgen.DensityFunction, net.minecraft.world.level.levelgen.DensityFunction, double, net.minecraft.core.Holder<net.minecraft.world.level.levelgen.synth.NormalNoise$NoiseParameters>);
+    Code:
+       0: new           #25                 // class net/minecraft/world/level/levelgen/DensityFunctions$ShiftedNoise
+       3: dup
+       4: aload_0
+       5: invokestatic  #398                // Method zero:()Lnet/minecraft/world/level/levelgen/DensityFunction;
+       8: aload_1
+       9: dload_2
+      10: dconst_0
+      11: new           #100                // class net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder
+      14: dup
+      15: aload         4
+      17: invokespecial #371                // Method net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder."<init>":(Lnet/minecraft/core/Holder;)V
+      20: invokespecial #401                // Method net/minecraft/world/level/levelgen/DensityFunctions$ShiftedNoise."<init>":(Lnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction;DDLnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;)V
+      23: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction noise(net.minecraft.core.Holder<net.minecraft.world.level.levelgen.synth.NormalNoise$NoiseParameters>);
+    Code:
+       0: aload_0
+       1: dconst_1
+       2: dconst_1
+       3: invokestatic  #407                // Method noise:(Lnet/minecraft/core/Holder;DD)Lnet/minecraft/world/level/levelgen/DensityFunction;
+       6: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction noise(net.minecraft.core.Holder<net.minecraft.world.level.levelgen.synth.NormalNoise$NoiseParameters>, double, double);
+    Code:
+       0: new           #39                 // class net/minecraft/world/level/levelgen/DensityFunctions$Noise
+       3: dup
+       4: new           #100                // class net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder
+       7: dup
+       8: aload_0
+       9: invokespecial #371                // Method net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder."<init>":(Lnet/minecraft/core/Holder;)V
+      12: dload_1
+      13: dload_3
+      14: invokespecial #374                // Method net/minecraft/world/level/levelgen/DensityFunctions$Noise."<init>":(Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;DD)V
+      17: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction noise(net.minecraft.core.Holder<net.minecraft.world.level.levelgen.synth.NormalNoise$NoiseParameters>, double);
+    Code:
+       0: aload_0
+       1: dconst_1
+       2: dload_1
+       3: invokestatic  #407                // Method noise:(Lnet/minecraft/core/Holder;DD)Lnet/minecraft/world/level/levelgen/DensityFunction;
+       6: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction rangeChoice(net.minecraft.world.level.levelgen.DensityFunction, double, double, net.minecraft.world.level.levelgen.DensityFunction, net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: new           #35                 // class net/minecraft/world/level/levelgen/DensityFunctions$RangeChoice
+       3: dup
+       4: aload_0
+       5: dload_1
+       6: dload_3
+       7: aload         5
+       9: aload         6
+      11: invokespecial #414                // Method net/minecraft/world/level/levelgen/DensityFunctions$RangeChoice."<init>":(Lnet/minecraft/world/level/levelgen/DensityFunction;DDLnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction;)V
+      14: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction shiftA(net.minecraft.core.Holder<net.minecraft.world.level.levelgen.synth.NormalNoise$NoiseParameters>);
+    Code:
+       0: new           #31                 // class net/minecraft/world/level/levelgen/DensityFunctions$ShiftA
+       3: dup
+       4: new           #100                // class net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder
+       7: dup
+       8: aload_0
+       9: invokespecial #371                // Method net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder."<init>":(Lnet/minecraft/core/Holder;)V
+      12: invokespecial #423                // Method net/minecraft/world/level/levelgen/DensityFunctions$ShiftA."<init>":(Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;)V
+      15: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction shiftB(net.minecraft.core.Holder<net.minecraft.world.level.levelgen.synth.NormalNoise$NoiseParameters>);
+    Code:
+       0: new           #29                 // class net/minecraft/world/level/levelgen/DensityFunctions$ShiftB
+       3: dup
+       4: new           #100                // class net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder
+       7: dup
+       8: aload_0
+       9: invokespecial #371                // Method net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder."<init>":(Lnet/minecraft/core/Holder;)V
+      12: invokespecial #425                // Method net/minecraft/world/level/levelgen/DensityFunctions$ShiftB."<init>":(Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;)V
+      15: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction shift(net.minecraft.core.Holder<net.minecraft.world.level.levelgen.synth.NormalNoise$NoiseParameters>);
+    Code:
+       0: new           #33                 // class net/minecraft/world/level/levelgen/DensityFunctions$Shift
+       3: dup
+       4: new           #100                // class net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder
+       7: dup
+       8: aload_0
+       9: invokespecial #371                // Method net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder."<init>":(Lnet/minecraft/core/Holder;)V
+      12: invokespecial #426                // Method net/minecraft/world/level/levelgen/DensityFunctions$Shift."<init>":(Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;)V
+      15: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction blendDensity(net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: new           #69                 // class net/minecraft/world/level/levelgen/DensityFunctions$BlendDensity
+       3: dup
+       4: aload_0
+       5: invokespecial #430                // Method net/minecraft/world/level/levelgen/DensityFunctions$BlendDensity."<init>":(Lnet/minecraft/world/level/levelgen/DensityFunction;)V
+       8: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction endIslands(long);
+    Code:
+       0: new           #59                 // class net/minecraft/world/level/levelgen/DensityFunctions$EndIslandDensityFunction
+       3: dup
+       4: lload_0
+       5: invokespecial #435                // Method net/minecraft/world/level/levelgen/DensityFunctions$EndIslandDensityFunction."<init>":(J)V
+       8: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction weirdScaledSampler(net.minecraft.world.level.levelgen.DensityFunction, net.minecraft.core.Holder<net.minecraft.world.level.levelgen.synth.NormalNoise$NoiseParameters>, net.minecraft.world.level.levelgen.DensityFunctions$WeirdScaledSampler$RarityValueMapper);
+    Code:
+       0: new           #9                  // class net/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler
+       3: dup
+       4: aload_0
+       5: new           #100                // class net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder
+       8: dup
+       9: aload_1
+      10: invokespecial #371                // Method net/minecraft/world/level/levelgen/DensityFunction$NoiseHolder."<init>":(Lnet/minecraft/core/Holder;)V
+      13: aload_2
+      14: invokespecial #443                // Method net/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler."<init>":(Lnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction$NoiseHolder;Lnet/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper;)V
+      17: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction add(net.minecraft.world.level.levelgen.DensityFunction, net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: getstatic     #450                // Field net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type.ADD:Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+       3: aload_0
+       4: aload_1
+       5: invokestatic  #454                // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction.create:(Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;Lnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction;
+       8: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction mul(net.minecraft.world.level.levelgen.DensityFunction, net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: getstatic     #460                // Field net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type.MUL:Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+       3: aload_0
+       4: aload_1
+       5: invokestatic  #454                // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction.create:(Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;Lnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction;
+       8: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction min(net.minecraft.world.level.levelgen.DensityFunction, net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: getstatic     #464                // Field net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type.MIN:Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+       3: aload_0
+       4: aload_1
+       5: invokestatic  #454                // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction.create:(Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;Lnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction;
+       8: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction max(net.minecraft.world.level.levelgen.DensityFunction, net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: getstatic     #468                // Field net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type.MAX:Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+       3: aload_0
+       4: aload_1
+       5: invokestatic  #454                // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction.create:(Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;Lnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction;
+       8: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction spline(net.minecraft.util.CubicSpline<net.minecraft.world.level.levelgen.DensityFunctions$Spline$Point, net.minecraft.world.level.levelgen.DensityFunctions$Spline$Coordinate>);
+    Code:
+       0: new           #19                 // class net/minecraft/world/level/levelgen/DensityFunctions$Spline
+       3: dup
+       4: aload_0
+       5: invokespecial #473                // Method net/minecraft/world/level/levelgen/DensityFunctions$Spline."<init>":(Lnet/minecraft/util/CubicSpline;)V
+       8: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction zero();
+    Code:
+       0: getstatic     #479                // Field net/minecraft/world/level/levelgen/DensityFunctions$Constant.ZERO:Lnet/minecraft/world/level/levelgen/DensityFunctions$Constant;
+       3: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction constant(double);
+    Code:
+       0: new           #63                 // class net/minecraft/world/level/levelgen/DensityFunctions$Constant
+       3: dup
+       4: dload_0
+       5: invokespecial #483                // Method net/minecraft/world/level/levelgen/DensityFunctions$Constant."<init>":(D)V
+       8: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction yClampedGradient(int, int, double, double);
+    Code:
+       0: new           #7                  // class net/minecraft/world/level/levelgen/DensityFunctions$YClampedGradient
+       3: dup
+       4: iload_0
+       5: iload_1
+       6: dload_2
+       7: dload         4
+       9: invokespecial #489                // Method net/minecraft/world/level/levelgen/DensityFunctions$YClampedGradient."<init>":(IIDD)V
+      12: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction map(net.minecraft.world.level.levelgen.DensityFunction, net.minecraft.world.level.levelgen.DensityFunctions$Mapped$Type);
+    Code:
+       0: aload_1
+       1: aload_0
+       2: invokestatic  #497                // Method net/minecraft/world/level/levelgen/DensityFunctions$Mapped.create:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type;Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped;
+       5: areturn
+
+  private static net.minecraft.world.level.levelgen.DensityFunction mapFromUnitTo(net.minecraft.world.level.levelgen.DensityFunction, double, double);
+    Code:
+       0: dload_1
+       1: dload_3
+       2: dadd
+       3: ldc2_w        #498                // double 0.5d
+       6: dmul
+       7: dstore        5
+       9: dload_3
+      10: dload_1
+      11: dsub
+      12: ldc2_w        #498                // double 0.5d
+      15: dmul
+      16: dstore        7
+      18: dload         5
+      20: invokestatic  #501                // Method constant:(D)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      23: dload         7
+      25: invokestatic  #501                // Method constant:(D)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      28: aload_0
+      29: invokestatic  #503                // Method mul:(Lnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      32: invokestatic  #505                // Method add:(Lnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      35: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction blendAlpha();
+    Code:
+       0: getstatic     #513                // Field net/minecraft/world/level/levelgen/DensityFunctions$BlendAlpha.INSTANCE:Lnet/minecraft/world/level/levelgen/DensityFunctions$BlendAlpha;
+       3: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction blendOffset();
+    Code:
+       0: getstatic     #517                // Field net/minecraft/world/level/levelgen/DensityFunctions$BlendOffset.INSTANCE:Lnet/minecraft/world/level/levelgen/DensityFunctions$BlendOffset;
+       3: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction lerp(net.minecraft.world.level.levelgen.DensityFunction, net.minecraft.world.level.levelgen.DensityFunction, net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: aload_1
+       1: instanceof    #63                 // class net/minecraft/world/level/levelgen/DensityFunctions$Constant
+       4: ifeq          22
+       7: aload_1
+       8: checkcast     #63                 // class net/minecraft/world/level/levelgen/DensityFunctions$Constant
+      11: astore_3
+      12: aload_0
+      13: aload_3
+      14: getfield      #521                // Field net/minecraft/world/level/levelgen/DensityFunctions$Constant.value:D
+      17: aload_2
+      18: invokestatic  #524                // Method lerp:(Lnet/minecraft/world/level/levelgen/DensityFunction;DLnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      21: areturn
+      22: aload_0
+      23: invokestatic  #526                // Method cacheOnce:(Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      26: astore        4
+      28: aload         4
+      30: ldc2_w        #527                // double -1.0d
+      33: invokestatic  #501                // Method constant:(D)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      36: invokestatic  #503                // Method mul:(Lnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      39: dconst_1
+      40: invokestatic  #501                // Method constant:(D)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      43: invokestatic  #505                // Method add:(Lnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      46: astore        5
+      48: aload_1
+      49: aload         5
+      51: invokestatic  #503                // Method mul:(Lnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      54: aload_2
+      55: aload         4
+      57: invokestatic  #503                // Method mul:(Lnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      60: invokestatic  #505                // Method add:(Lnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      63: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction lerp(net.minecraft.world.level.levelgen.DensityFunction, double, net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: aload_0
+       1: aload_3
+       2: dload_1
+       3: dneg
+       4: invokestatic  #501                // Method constant:(D)Lnet/minecraft/world/level/levelgen/DensityFunction;
+       7: invokestatic  #505                // Method add:(Lnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      10: invokestatic  #503                // Method mul:(Lnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      13: dload_1
+      14: invokestatic  #501                // Method constant:(D)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      17: invokestatic  #505                // Method add:(Lnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      20: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunction findTopSurface(net.minecraft.world.level.levelgen.DensityFunction, net.minecraft.world.level.levelgen.DensityFunction, int, int);
+    Code:
+       0: new           #57                 // class net/minecraft/world/level/levelgen/DensityFunctions$FindTopSurface
+       3: dup
+       4: aload_0
+       5: aload_1
+       6: iload_2
+       7: iload_3
+       8: invokespecial #537                // Method net/minecraft/world/level/levelgen/DensityFunctions$FindTopSurface."<init>":(Lnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction;II)V
+      11: areturn
+
+  private static com.mojang.datafixers.kinds.App lambda$doubleFunctionArgumentCodec$3(java.util.function.Function, java.util.function.Function, java.util.function.BiFunction, com.mojang.serialization.codecs.RecordCodecBuilder$Instance);
+    Code:
+       0: aload_3
+       1: getstatic     #293                // Field net/minecraft/world/level/levelgen/DensityFunction.HOLDER_HELPER_CODEC:Lcom/mojang/serialization/Codec;
+       4: ldc_w         #542                // String argument1
+       7: invokeinterface #273,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      12: aload_0
+      13: invokevirtual #546                // Method com/mojang/serialization/MapCodec.forGetter:(Ljava/util/function/Function;)Lcom/mojang/serialization/codecs/RecordCodecBuilder;
+      16: getstatic     #293                // Field net/minecraft/world/level/levelgen/DensityFunction.HOLDER_HELPER_CODEC:Lcom/mojang/serialization/Codec;
+      19: ldc_w         #547                // String argument2
+      22: invokeinterface #273,  2          // InterfaceMethod com/mojang/serialization/Codec.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+      27: aload_1
+      28: invokevirtual #546                // Method com/mojang/serialization/MapCodec.forGetter:(Ljava/util/function/Function;)Lcom/mojang/serialization/codecs/RecordCodecBuilder;
+      31: invokevirtual #551                // Method com/mojang/serialization/codecs/RecordCodecBuilder$Instance.group:(Lcom/mojang/datafixers/kinds/App;Lcom/mojang/datafixers/kinds/App;)Lcom/mojang/datafixers/Products$P2;
+      34: aload_3
+      35: aload_2
+      36: invokevirtual #554                // Method com/mojang/datafixers/Products$P2.apply:(Lcom/mojang/datafixers/kinds/Applicative;Ljava/util/function/BiFunction;)Lcom/mojang/datafixers/kinds/App;
+      39: areturn
+
+  private static com.mojang.datafixers.util.Either lambda$static$2(net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: aload_0
+       1: instanceof    #63                 // class net/minecraft/world/level/levelgen/DensityFunctions$Constant
+       4: ifeq          25
+       7: aload_0
+       8: checkcast     #63                 // class net/minecraft/world/level/levelgen/DensityFunctions$Constant
+      11: astore_1
+      12: aload_1
+      13: invokevirtual #561                // Method net/minecraft/world/level/levelgen/DensityFunctions$Constant.value:()D
+      16: invokestatic  #567                // Method java/lang/Double.valueOf:(D)Ljava/lang/Double;
+      19: invokestatic  #573                // Method com/mojang/datafixers/util/Either.left:(Ljava/lang/Object;)Lcom/mojang/datafixers/util/Either;
+      22: goto          29
+      25: aload_0
+      26: invokestatic  #576                // Method com/mojang/datafixers/util/Either.right:(Ljava/lang/Object;)Lcom/mojang/datafixers/util/Either;
+      29: areturn
+
+  private static net.minecraft.world.level.levelgen.DensityFunction lambda$static$1(com.mojang.datafixers.util.Either);
+    Code:
+       0: aload_0
+       1: invokedynamic #584,  0            // InvokeDynamic #1:apply:()Ljava/util/function/Function;
+       6: invokestatic  #589                // InterfaceMethod java/util/function/Function.identity:()Ljava/util/function/Function;
+       9: invokevirtual #592                // Method com/mojang/datafixers/util/Either.map:(Ljava/util/function/Function;Ljava/util/function/Function;)Ljava/lang/Object;
+      12: checkcast     #102                // class net/minecraft/world/level/levelgen/DensityFunction
+      15: areturn
+
+  private static com.mojang.serialization.MapCodec lambda$static$0(net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: aload_0
+       1: invokeinterface #599,  1          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.codec:()Lnet/minecraft/util/KeyDispatchDataCodec;
+       6: invokevirtual #252                // Method net/minecraft/util/KeyDispatchDataCodec.codec:()Lcom/mojang/serialization/MapCodec;
+       9: areturn
+
+  static {};
+    Code:
+       0: getstatic     #605                // Field net/minecraft/core/registries/BuiltInRegistries.DENSITY_FUNCTION_TYPE:Lnet/minecraft/core/Registry;
+       3: invokeinterface #609,  1          // InterfaceMethod net/minecraft/core/Registry.byNameCodec:()Lcom/mojang/serialization/Codec;
+       8: invokedynamic #614,  0            // InvokeDynamic #2:apply:()Ljava/util/function/Function;
+      13: invokestatic  #589                // InterfaceMethod java/util/function/Function.identity:()Ljava/util/function/Function;
+      16: invokeinterface #618,  3          // InterfaceMethod com/mojang/serialization/Codec.dispatch:(Ljava/util/function/Function;Ljava/util/function/Function;)Lcom/mojang/serialization/Codec;
+      21: putstatic     #620                // Field CODEC:Lcom/mojang/serialization/Codec;
+      24: ldc2_w        #621                // double -1000000.0d
+      27: ldc2_w        #141                // double 1000000.0d
+      30: invokestatic  #626                // InterfaceMethod com/mojang/serialization/Codec.doubleRange:(DD)Lcom/mojang/serialization/Codec;
+      33: putstatic     #628                // Field NOISE_VALUE_CODEC:Lcom/mojang/serialization/Codec;
+      36: getstatic     #628                // Field NOISE_VALUE_CODEC:Lcom/mojang/serialization/Codec;
+      39: getstatic     #620                // Field CODEC:Lcom/mojang/serialization/Codec;
+      42: invokestatic  #631                // InterfaceMethod com/mojang/serialization/Codec.either:(Lcom/mojang/serialization/Codec;Lcom/mojang/serialization/Codec;)Lcom/mojang/serialization/Codec;
+      45: invokedynamic #636,  0            // InvokeDynamic #3:apply:()Ljava/util/function/Function;
+      50: invokedynamic #641,  0            // InvokeDynamic #4:apply:()Ljava/util/function/Function;
+      55: invokeinterface #643,  3          // InterfaceMethod com/mojang/serialization/Codec.xmap:(Ljava/util/function/Function;Ljava/util/function/Function;)Lcom/mojang/serialization/Codec;
+      60: putstatic     #645                // Field DIRECT_CODEC:Lcom/mojang/serialization/Codec;
+      63: return
+}

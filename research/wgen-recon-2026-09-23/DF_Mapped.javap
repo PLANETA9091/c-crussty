@@ -1,0 +1,250 @@
+Compiled from "DensityFunctions.java"
+public final class net.minecraft.world.level.levelgen.DensityFunctions$Mapped extends java.lang.Record implements net.minecraft.world.level.levelgen.DensityFunctions$PureTransformer {
+  private final net.minecraft.world.level.levelgen.DensityFunctions$Mapped$Type type;
+
+  private final net.minecraft.world.level.levelgen.DensityFunction input;
+
+  private final double minValue;
+
+  private final double maxValue;
+
+  protected net.minecraft.world.level.levelgen.DensityFunctions$Mapped(net.minecraft.world.level.levelgen.DensityFunctions$Mapped$Type, net.minecraft.world.level.levelgen.DensityFunction, double, double);
+    Code:
+       0: aload_0
+       1: invokespecial #36                 // Method java/lang/Record."<init>":()V
+       4: aload_0
+       5: aload_1
+       6: putfield      #38                 // Field type:Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type;
+       9: aload_0
+      10: aload_2
+      11: putfield      #40                 // Field input:Lnet/minecraft/world/level/levelgen/DensityFunction;
+      14: aload_0
+      15: dload_3
+      16: putfield      #42                 // Field minValue:D
+      19: aload_0
+      20: dload         5
+      22: putfield      #44                 // Field maxValue:D
+      25: return
+
+  public static net.minecraft.world.level.levelgen.DensityFunctions$Mapped create(net.minecraft.world.level.levelgen.DensityFunctions$Mapped$Type, net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: aload_1
+       1: invokeinterface #51,  1           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.minValue:()D
+       6: dstore_2
+       7: aload_1
+       8: invokeinterface #53,  1           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.maxValue:()D
+      13: dstore        4
+      15: aload_0
+      16: dload_2
+      17: invokestatic  #57                 // Method transform:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type;D)D
+      20: dstore        6
+      22: aload_0
+      23: dload         4
+      25: invokestatic  #57                 // Method transform:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type;D)D
+      28: dstore        8
+      30: aload_0
+      31: getstatic     #60                 // Field net/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type.INVERT:Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type;
+      34: if_acmpne     82
+      37: dload_2
+      38: dconst_0
+      39: dcmpg
+      40: ifge          68
+      43: dload         4
+      45: dconst_0
+      46: dcmpl
+      47: ifle          68
+      50: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$Mapped
+      53: dup
+      54: aload_0
+      55: aload_1
+      56: ldc2_w        #61                 // double -Infinityd
+      59: ldc2_w        #63                 // double Infinityd
+      62: invokespecial #66                 // Method "<init>":(Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type;Lnet/minecraft/world/level/levelgen/DensityFunction;DD)V
+      65: goto          81
+      68: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$Mapped
+      71: dup
+      72: aload_0
+      73: aload_1
+      74: dload         8
+      76: dload         6
+      78: invokespecial #66                 // Method "<init>":(Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type;Lnet/minecraft/world/level/levelgen/DensityFunction;DD)V
+      81: areturn
+      82: aload_0
+      83: getstatic     #69                 // Field net/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type.ABS:Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type;
+      86: if_acmpeq     112
+      89: aload_0
+      90: getstatic     #72                 // Field net/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type.SQUARE:Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type;
+      93: if_acmpeq     112
+      96: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$Mapped
+      99: dup
+     100: aload_0
+     101: aload_1
+     102: dload         6
+     104: dload         8
+     106: invokespecial #66                 // Method "<init>":(Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type;Lnet/minecraft/world/level/levelgen/DensityFunction;DD)V
+     109: goto          133
+     112: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$Mapped
+     115: dup
+     116: aload_0
+     117: aload_1
+     118: dconst_0
+     119: dload_2
+     120: invokestatic  #78                 // Method java/lang/Math.max:(DD)D
+     123: dload         6
+     125: dload         8
+     127: invokestatic  #78                 // Method java/lang/Math.max:(DD)D
+     130: invokespecial #66                 // Method "<init>":(Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type;Lnet/minecraft/world/level/levelgen/DensityFunction;DD)V
+     133: areturn
+
+  private static double transform(net.minecraft.world.level.levelgen.DensityFunctions$Mapped$Type, double);
+    Code:
+       0: aload_0
+       1: invokevirtual #86                 // Method net/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type.ordinal:()I
+       4: tableswitch   { // 0 to 6
+                     0: 58
+                     1: 65
+                     2: 71
+                     3: 79
+                     4: 97
+                     5: 115
+                     6: 121
+               default: 48
+          }
+      48: new           #88                 // class java/lang/MatchException
+      51: dup
+      52: aconst_null
+      53: aconst_null
+      54: invokespecial #91                 // Method java/lang/MatchException."<init>":(Ljava/lang/String;Ljava/lang/Throwable;)V
+      57: athrow
+      58: dload_1
+      59: invokestatic  #95                 // Method java/lang/Math.abs:(D)D
+      62: goto          148
+      65: dload_1
+      66: dload_1
+      67: dmul
+      68: goto          148
+      71: dload_1
+      72: dload_1
+      73: dmul
+      74: dload_1
+      75: dmul
+      76: goto          148
+      79: dload_1
+      80: dconst_0
+      81: dcmpl
+      82: ifle          89
+      85: dload_1
+      86: goto          148
+      89: dload_1
+      90: ldc2_w        #96                 // double 0.5d
+      93: dmul
+      94: goto          148
+      97: dload_1
+      98: dconst_0
+      99: dcmpl
+     100: ifle          107
+     103: dload_1
+     104: goto          148
+     107: dload_1
+     108: ldc2_w        #98                 // double 0.25d
+     111: dmul
+     112: goto          148
+     115: dconst_1
+     116: dload_1
+     117: ddiv
+     118: goto          148
+     121: dload_1
+     122: ldc2_w        #100                // double -1.0d
+     125: dconst_1
+     126: invokestatic  #107                // Method net/minecraft/util/Mth.clamp:(DDD)D
+     129: dstore_3
+     130: dload_3
+     131: ldc2_w        #108                // double 2.0d
+     134: ddiv
+     135: dload_3
+     136: dload_3
+     137: dmul
+     138: dload_3
+     139: dmul
+     140: ldc2_w        #110                // double 24.0d
+     143: ddiv
+     144: dsub
+     145: goto          148
+     148: dreturn
+
+  public double transform(double);
+    Code:
+       0: aload_0
+       1: getfield      #38                 // Field type:Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type;
+       4: dload_1
+       5: invokestatic  #57                 // Method transform:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type;D)D
+       8: dreturn
+
+  public net.minecraft.world.level.levelgen.DensityFunctions$Mapped mapAll(net.minecraft.world.level.levelgen.DensityFunction$Visitor);
+    Code:
+       0: aload_0
+       1: getfield      #38                 // Field type:Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type;
+       4: aload_0
+       5: getfield      #40                 // Field input:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       8: aload_1
+       9: invokeinterface #117,  2          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.mapAll:(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/DensityFunction;
+      14: invokestatic  #119                // Method create:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type;Lnet/minecraft/world/level/levelgen/DensityFunction;)Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped;
+      17: areturn
+
+  public net.minecraft.util.KeyDispatchDataCodec<? extends net.minecraft.world.level.levelgen.DensityFunction> codec();
+    Code:
+       0: aload_0
+       1: getfield      #38                 // Field type:Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type;
+       4: getfield      #127                // Field net/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type.codec:Lnet/minecraft/util/KeyDispatchDataCodec;
+       7: areturn
+
+  public final java.lang.String toString();
+    Code:
+       0: aload_0
+       1: invokedynamic #145,  0            // InvokeDynamic #0:toString:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped;)Ljava/lang/String;
+       6: areturn
+
+  public final int hashCode();
+    Code:
+       0: aload_0
+       1: invokedynamic #149,  0            // InvokeDynamic #0:hashCode:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped;)I
+       6: ireturn
+
+  public final boolean equals(java.lang.Object);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokedynamic #154,  0            // InvokeDynamic #0:equals:(Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped;Ljava/lang/Object;)Z
+       7: ireturn
+
+  public net.minecraft.world.level.levelgen.DensityFunctions$Mapped$Type type();
+    Code:
+       0: aload_0
+       1: getfield      #38                 // Field type:Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped$Type;
+       4: areturn
+
+  public net.minecraft.world.level.levelgen.DensityFunction input();
+    Code:
+       0: aload_0
+       1: getfield      #40                 // Field input:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       4: areturn
+
+  public double minValue();
+    Code:
+       0: aload_0
+       1: getfield      #42                 // Field minValue:D
+       4: dreturn
+
+  public double maxValue();
+    Code:
+       0: aload_0
+       1: getfield      #44                 // Field maxValue:D
+       4: dreturn
+
+  public net.minecraft.world.level.levelgen.DensityFunction mapAll(net.minecraft.world.level.levelgen.DensityFunction$Visitor);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #160                // Method mapAll:(Lnet/minecraft/world/level/levelgen/DensityFunction$Visitor;)Lnet/minecraft/world/level/levelgen/DensityFunctions$Mapped;
+       5: areturn
+}

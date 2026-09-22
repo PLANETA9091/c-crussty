@@ -59,13 +59,22 @@ static READY: AtomicBool = AtomicBool::new(false);
 static PATCHED: AtomicBool = AtomicBool::new(false);
 
 /// env gate (off by default — dormant-invisible discipline).
+///
+/// TASK-417-B STRICT-OR: legacy env id `CRUSSTY_PALETTED_DEMUX` (S7-131,
+/// kept intact) OR the round lever `CRUSSTY_LEVER_FLAG == "cmp417_wgen"`.
+/// Empty lever flag / no env = vanilla bit-for-bit (hopper-jar rule).
 fn enabled() -> bool {
-    std::env::var("CRUSSTY_PALETTED_DEMUX")
+    let legacy = std::env::var("CRUSSTY_PALETTED_DEMUX")
         .map(|v| {
             let v = v.trim().to_ascii_lowercase();
             v == "1" || v == "true" || v == "on" || v == "yes"
         })
-        .unwrap_or(false)
+        .unwrap_or(false);
+    let lever = std::env::var("CRUSSTY_LEVER_FLAG")
+        .unwrap_or_default()
+        .trim()
+        == "cmp417_wgen";
+    legacy || lever
 }
 
 /// Fingerprint of the pinned kernel image: length + header + cp probes.
@@ -94,7 +103,9 @@ fn fingerprint_matches(bytes: &[u8]) -> bool {
 /// Register the byte hook (call once from cplugin_init).
 pub fn register() {
     if !enabled() {
-        eprintln!("[crussty-plugin] paletted: dormant (set CRUSSTY_PALETTED_DEMUX=1 to enable)");
+        eprintln!(
+            "[crussty-plugin] paletted: dormant (set CRUSSTY_PALETTED_DEMUX=1 or CRUSSTY_LEVER_FLAG=cmp417_wgen to enable)"
+        );
         return;
     }
     cplug_sdk::hooks::register_bytes(PALETTED_CLASS, |name, bytes| {
@@ -177,6 +188,55 @@ pub fn activate() {
                 }
                 let ok = match env.define_class(OPS_NAME, loaded, OPS_BYTES) {
                     Some(c) => {
+                        // TASK-417-B: bind the bulk-JNI unpacker (Rust
+                        // palette_gather core) to the freshly defined Ops
+                        // class. Registration failure -> BULK_OK stays false
+                        // -> the materializer uses the vanilla-form Java loop
+                        // (fail-closed, demux still arms).
+                        let name = std::ffi::CString::new("bulkUnpack").expect("no NUL");
+                        let sig =
+                            std::ffi::CString::new("([JI[I)I").expect("no NUL");
+                        let natives = [jvmti_bindings::jni::JNINativeMethod {
+                            name: name.as_ptr(),
+                            signature: sig.as_ptr(),
+                            fnPtr: crate::palette_gather::jni_bulk_unpack
+                                as *const std::ffi::c_void as *mut std::ffi::c_void,
+                        }];
+                        match env.register_natives(c, &natives) {
+                            Ok(()) => {
+                                eprintln!(
+                                    "[crussty-plugin] paletted: bulkUnpack natives registered (palette_gather core)"
+                                );
+                                // Bit-exactness probe BEFORE READY flips: the
+                                // demux must never serve a snapshot built
+                                // through an unproven path (fail-closed).
+                                if let Some(mid) =
+                                    env.get_static_method_id(c, "bulkProbe", "()Ljava/lang/String;")
+                                {
+                                    let val = env.call_static_object_method(c, mid, &[]);
+                                    let _ = crate::clear_exception(env);
+                                    if !val.is_null() {
+                                        let line = env.get_string_utf(val as jni::jstring);
+                                        env.delete_local_ref(val);
+                                        eprintln!(
+                                            "[crussty-plugin] paletted: {}",
+                                            line.unwrap_or_else(|| "bulk-probe: <unreadable>".into())
+                                        );
+                                    }
+                                } else {
+                                    crate::clear_exception(env);
+                                    eprintln!(
+                                        "[crussty-plugin] paletted: bulkProbe resolution failed — Java-loop fallback"
+                                    );
+                                }
+                            }
+                            Err(code) => {
+                                crate::clear_exception(env);
+                                eprintln!(
+                                    "[crussty-plugin] paletted: register_natives(bulkUnpack) failed code={code} — Java-loop fallback"
+                                );
+                            }
+                        }
                         env.delete_local_ref(c);
                         eprintln!("[crussty-plugin] paletted: defined {OPS_NAME} in launch loader (probe {probe})");
                         true

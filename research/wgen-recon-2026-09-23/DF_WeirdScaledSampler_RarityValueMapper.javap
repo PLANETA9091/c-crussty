@@ -1,0 +1,95 @@
+Compiled from "DensityFunctions.java"
+public final class net.minecraft.world.level.levelgen.DensityFunctions$WeirdScaledSampler$RarityValueMapper extends java.lang.Enum<net.minecraft.world.level.levelgen.DensityFunctions$WeirdScaledSampler$RarityValueMapper> implements net.minecraft.util.StringRepresentable {
+  public static final net.minecraft.world.level.levelgen.DensityFunctions$WeirdScaledSampler$RarityValueMapper TYPE1;
+
+  public static final net.minecraft.world.level.levelgen.DensityFunctions$WeirdScaledSampler$RarityValueMapper TYPE2;
+
+  public static final com.mojang.serialization.Codec<net.minecraft.world.level.levelgen.DensityFunctions$WeirdScaledSampler$RarityValueMapper> CODEC;
+
+  private final java.lang.String name;
+
+  final it.unimi.dsi.fastutil.doubles.Double2DoubleFunction mapper;
+
+  final double maxRarity;
+
+  private static final net.minecraft.world.level.levelgen.DensityFunctions$WeirdScaledSampler$RarityValueMapper[] $VALUES;
+
+  public static net.minecraft.world.level.levelgen.DensityFunctions$WeirdScaledSampler$RarityValueMapper[] values();
+    Code:
+       0: getstatic     #45                 // Field $VALUES:[Lnet/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper;
+       3: invokevirtual #50                 // Method "[Lnet/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper;".clone:()Ljava/lang/Object;
+       6: checkcast     #46                 // class "[Lnet/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper;"
+       9: areturn
+
+  public static net.minecraft.world.level.levelgen.DensityFunctions$WeirdScaledSampler$RarityValueMapper valueOf(java.lang.String);
+    Code:
+       0: ldc           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper
+       2: aload_0
+       3: invokestatic  #55                 // Method java/lang/Enum.valueOf:(Ljava/lang/Class;Ljava/lang/String;)Ljava/lang/Enum;
+       6: checkcast     #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper
+       9: areturn
+
+  private net.minecraft.world.level.levelgen.DensityFunctions$WeirdScaledSampler$RarityValueMapper(java.lang.String, it.unimi.dsi.fastutil.doubles.Double2DoubleFunction, double);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: iload_2
+       3: invokespecial #61                 // Method java/lang/Enum."<init>":(Ljava/lang/String;I)V
+       6: aload_0
+       7: aload_3
+       8: putfield      #63                 // Field name:Ljava/lang/String;
+      11: aload_0
+      12: aload         4
+      14: putfield      #65                 // Field mapper:Lit/unimi/dsi/fastutil/doubles/Double2DoubleFunction;
+      17: aload_0
+      18: dload         5
+      20: putfield      #67                 // Field maxRarity:D
+      23: return
+
+  public java.lang.String getSerializedName();
+    Code:
+       0: aload_0
+       1: getfield      #63                 // Field name:Ljava/lang/String;
+       4: areturn
+
+  private static net.minecraft.world.level.levelgen.DensityFunctions$WeirdScaledSampler$RarityValueMapper[] $values();
+    Code:
+       0: iconst_2
+       1: anewarray     #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper
+       4: dup
+       5: iconst_0
+       6: getstatic     #73                 // Field TYPE1:Lnet/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper;
+       9: aastore
+      10: dup
+      11: iconst_1
+      12: getstatic     #75                 // Field TYPE2:Lnet/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper;
+      15: aastore
+      16: areturn
+
+  static {};
+    Code:
+       0: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper
+       3: dup
+       4: ldc           #78                 // String TYPE1
+       6: iconst_0
+       7: ldc           #80                 // String type_1
+       9: invokedynamic #97,  0             // InvokeDynamic #0:get:()Lit/unimi/dsi/fastutil/doubles/Double2DoubleFunction;
+      14: ldc2_w        #98                 // double 2.0d
+      17: invokespecial #101                // Method "<init>":(Ljava/lang/String;ILjava/lang/String;Lit/unimi/dsi/fastutil/doubles/Double2DoubleFunction;D)V
+      20: putstatic     #73                 // Field TYPE1:Lnet/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper;
+      23: new           #2                  // class net/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper
+      26: dup
+      27: ldc           #102                // String TYPE2
+      29: iconst_1
+      30: ldc           #104                // String type_2
+      32: invokedynamic #109,  0            // InvokeDynamic #1:get:()Lit/unimi/dsi/fastutil/doubles/Double2DoubleFunction;
+      37: ldc2_w        #110                // double 3.0d
+      40: invokespecial #101                // Method "<init>":(Ljava/lang/String;ILjava/lang/String;Lit/unimi/dsi/fastutil/doubles/Double2DoubleFunction;D)V
+      43: putstatic     #75                 // Field TYPE2:Lnet/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper;
+      46: invokestatic  #113                // Method $values:()[Lnet/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper;
+      49: putstatic     #45                 // Field $VALUES:[Lnet/minecraft/world/level/levelgen/DensityFunctions$WeirdScaledSampler$RarityValueMapper;
+      52: invokedynamic #121,  0            // InvokeDynamic #2:get:()Ljava/util/function/Supplier;
+      57: invokestatic  #125                // InterfaceMethod net/minecraft/util/StringRepresentable.fromEnum:(Ljava/util/function/Supplier;)Lnet/minecraft/util/StringRepresentable$EnumCodec;
+      60: putstatic     #127                // Field CODEC:Lcom/mojang/serialization/Codec;
+      63: return
+}

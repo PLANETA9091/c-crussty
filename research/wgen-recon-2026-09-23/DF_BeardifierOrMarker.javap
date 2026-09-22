@@ -1,0 +1,17 @@
+Compiled from "DensityFunctions.java"
+public interface net.minecraft.world.level.levelgen.DensityFunctions$BeardifierOrMarker extends net.minecraft.world.level.levelgen.DensityFunction$SimpleFunction {
+  public static final net.minecraft.util.KeyDispatchDataCodec<net.minecraft.world.level.levelgen.DensityFunction> CODEC;
+
+  public default net.minecraft.util.KeyDispatchDataCodec<? extends net.minecraft.world.level.levelgen.DensityFunction> codec();
+    Code:
+       0: getstatic     #24                 // Field CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+       3: areturn
+
+  static {};
+    Code:
+       0: getstatic     #32                 // Field net/minecraft/world/level/levelgen/DensityFunctions$BeardifierMarker.INSTANCE:Lnet/minecraft/world/level/levelgen/DensityFunctions$BeardifierMarker;
+       3: invokestatic  #38                 // Method com/mojang/serialization/MapCodec.unit:(Ljava/lang/Object;)Lcom/mojang/serialization/MapCodec;
+       6: invokestatic  #44                 // Method net/minecraft/util/KeyDispatchDataCodec.of:(Lcom/mojang/serialization/MapCodec;)Lnet/minecraft/util/KeyDispatchDataCodec;
+       9: putstatic     #24                 // Field CODEC:Lnet/minecraft/util/KeyDispatchDataCodec;
+      12: return
+}

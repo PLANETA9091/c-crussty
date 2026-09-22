@@ -1,0 +1,137 @@
+Compiled from "NoiseChunk.java"
+class net.minecraft.world.level.levelgen.NoiseChunk$CacheAllInCell implements net.minecraft.world.level.levelgen.DensityFunctions$MarkerOrMarked,net.minecraft.world.level.levelgen.NoiseChunk$NoiseChunkDensityFunction {
+  final net.minecraft.world.level.levelgen.DensityFunction noiseFiller;
+
+  final double[] values;
+
+  final net.minecraft.world.level.levelgen.NoiseChunk this$0;
+
+  net.minecraft.world.level.levelgen.NoiseChunk$CacheAllInCell(net.minecraft.world.level.levelgen.NoiseChunk, net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: putfield      #40                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+       5: aload_0
+       6: invokespecial #43                 // Method java/lang/Object."<init>":()V
+       9: aload_0
+      10: aload_2
+      11: putfield      #45                 // Field noiseFiller:Lnet/minecraft/world/level/levelgen/DensityFunction;
+      14: aload_0
+      15: aload_1
+      16: getfield      #49                 // Field net/minecraft/world/level/levelgen/NoiseChunk.cellWidth:I
+      19: aload_1
+      20: getfield      #49                 // Field net/minecraft/world/level/levelgen/NoiseChunk.cellWidth:I
+      23: imul
+      24: aload_1
+      25: getfield      #52                 // Field net/minecraft/world/level/levelgen/NoiseChunk.cellHeight:I
+      28: imul
+      29: newarray       double
+      31: putfield      #54                 // Field values:[D
+      34: aload_1
+      35: getfield      #58                 // Field net/minecraft/world/level/levelgen/NoiseChunk.cellCaches:Ljava/util/List;
+      38: aload_0
+      39: invokeinterface #64,  2           // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+      44: pop
+      45: return
+
+  public double compute(net.minecraft.world.level.levelgen.DensityFunction$FunctionContext);
+    Code:
+       0: aload_1
+       1: aload_0
+       2: getfield      #40                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+       5: if_acmpeq     19
+       8: aload_0
+       9: getfield      #45                 // Field noiseFiller:Lnet/minecraft/world/level/levelgen/DensityFunction;
+      12: aload_1
+      13: invokeinterface #70,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.compute:(Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;)D
+      18: dreturn
+      19: aload_0
+      20: getfield      #40                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+      23: getfield      #74                 // Field net/minecraft/world/level/levelgen/NoiseChunk.interpolating:Z
+      26: ifne          39
+      29: new           #76                 // class java/lang/IllegalStateException
+      32: dup
+      33: ldc           #78                 // String Trying to sample interpolator outside the interpolation loop
+      35: invokespecial #81                 // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+      38: athrow
+      39: aload_0
+      40: getfield      #40                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+      43: getfield      #84                 // Field net/minecraft/world/level/levelgen/NoiseChunk.inCellX:I
+      46: istore_2
+      47: aload_0
+      48: getfield      #40                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+      51: getfield      #87                 // Field net/minecraft/world/level/levelgen/NoiseChunk.inCellY:I
+      54: istore_3
+      55: aload_0
+      56: getfield      #40                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+      59: getfield      #90                 // Field net/minecraft/world/level/levelgen/NoiseChunk.inCellZ:I
+      62: istore        4
+      64: iload_2
+      65: iflt          151
+      68: iload_3
+      69: iflt          151
+      72: iload         4
+      74: iflt          151
+      77: iload_2
+      78: aload_0
+      79: getfield      #40                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+      82: getfield      #49                 // Field net/minecraft/world/level/levelgen/NoiseChunk.cellWidth:I
+      85: if_icmpge     151
+      88: iload_3
+      89: aload_0
+      90: getfield      #40                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+      93: getfield      #52                 // Field net/minecraft/world/level/levelgen/NoiseChunk.cellHeight:I
+      96: if_icmpge     151
+      99: iload         4
+     101: aload_0
+     102: getfield      #40                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+     105: getfield      #49                 // Field net/minecraft/world/level/levelgen/NoiseChunk.cellWidth:I
+     108: if_icmpge     151
+     111: aload_0
+     112: getfield      #54                 // Field values:[D
+     115: aload_0
+     116: getfield      #40                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+     119: getfield      #52                 // Field net/minecraft/world/level/levelgen/NoiseChunk.cellHeight:I
+     122: iconst_1
+     123: isub
+     124: iload_3
+     125: isub
+     126: aload_0
+     127: getfield      #40                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+     130: getfield      #49                 // Field net/minecraft/world/level/levelgen/NoiseChunk.cellWidth:I
+     133: imul
+     134: iload_2
+     135: iadd
+     136: aload_0
+     137: getfield      #40                 // Field this$0:Lnet/minecraft/world/level/levelgen/NoiseChunk;
+     140: getfield      #49                 // Field net/minecraft/world/level/levelgen/NoiseChunk.cellWidth:I
+     143: imul
+     144: iload         4
+     146: iadd
+     147: daload
+     148: goto          161
+     151: aload_0
+     152: getfield      #45                 // Field noiseFiller:Lnet/minecraft/world/level/levelgen/DensityFunction;
+     155: aload_1
+     156: invokeinterface #70,  2           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.compute:(Lnet/minecraft/world/level/levelgen/DensityFunction$FunctionContext;)D
+     161: dreturn
+
+  public void fillArray(double[], net.minecraft.world.level.levelgen.DensityFunction$ContextProvider);
+    Code:
+       0: aload_2
+       1: aload_1
+       2: aload_0
+       3: invokeinterface #101,  3          // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction$ContextProvider.fillAllDirectly:([DLnet/minecraft/world/level/levelgen/DensityFunction;)V
+       8: return
+
+  public net.minecraft.world.level.levelgen.DensityFunction wrapped();
+    Code:
+       0: aload_0
+       1: getfield      #45                 // Field noiseFiller:Lnet/minecraft/world/level/levelgen/DensityFunction;
+       4: areturn
+
+  public net.minecraft.world.level.levelgen.DensityFunctions$Marker$Type type();
+    Code:
+       0: getstatic     #111                // Field net/minecraft/world/level/levelgen/DensityFunctions$Marker$Type.CacheAllInCell:Lnet/minecraft/world/level/levelgen/DensityFunctions$Marker$Type;
+       3: areturn
+}

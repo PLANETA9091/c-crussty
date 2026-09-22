@@ -1,0 +1,256 @@
+Compiled from "DensityFunctions.java"
+interface net.minecraft.world.level.levelgen.DensityFunctions$TwoArgumentSimpleFunction extends net.minecraft.world.level.levelgen.DensityFunction {
+  public static final org.slf4j.Logger LOGGER;
+
+  public static net.minecraft.world.level.levelgen.DensityFunctions$TwoArgumentSimpleFunction create(net.minecraft.world.level.levelgen.DensityFunctions$TwoArgumentSimpleFunction$Type, net.minecraft.world.level.levelgen.DensityFunction, net.minecraft.world.level.levelgen.DensityFunction);
+    Code:
+       0: aload_1
+       1: invokeinterface #32,  1           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.minValue:()D
+       6: dstore_3
+       7: aload_2
+       8: invokeinterface #32,  1           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.minValue:()D
+      13: dstore        5
+      15: aload_1
+      16: invokeinterface #35,  1           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.maxValue:()D
+      21: dstore        7
+      23: aload_2
+      24: invokeinterface #35,  1           // InterfaceMethod net/minecraft/world/level/levelgen/DensityFunction.maxValue:()D
+      29: dstore        9
+      31: aload_0
+      32: getstatic     #39                 // Field net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type.MIN:Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+      35: if_acmpeq     45
+      38: aload_0
+      39: getstatic     #42                 // Field net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type.MAX:Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+      42: if_acmpne     110
+      45: dload_3
+      46: dload         9
+      48: dcmpl
+      49: iflt          56
+      52: iconst_1
+      53: goto          57
+      56: iconst_0
+      57: istore        11
+      59: dload         5
+      61: dload         7
+      63: dcmpl
+      64: iflt          71
+      67: iconst_1
+      68: goto          72
+      71: iconst_0
+      72: istore        12
+      74: iload         11
+      76: ifne          84
+      79: iload         12
+      81: ifeq          110
+      84: getstatic     #44                 // Field LOGGER:Lorg/slf4j/Logger;
+      87: ldc           #46                 // String Creating a {} function between two non-overlapping inputs: {} and {}
+      89: iconst_3
+      90: anewarray     #4                  // class java/lang/Object
+      93: dup
+      94: iconst_0
+      95: aload_0
+      96: aastore
+      97: dup
+      98: iconst_1
+      99: aload_1
+     100: aastore
+     101: dup
+     102: iconst_2
+     103: aload_2
+     104: aastore
+     105: invokeinterface #52,  3           // InterfaceMethod org/slf4j/Logger.warn:(Ljava/lang/String;[Ljava/lang/Object;)V
+     110: aload_0
+     111: invokevirtual #56                 // Method net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type.ordinal:()I
+     114: tableswitch   { // 0 to 3
+                     0: 154
+                     1: 161
+                     2: 218
+                     3: 227
+               default: 144
+          }
+     144: new           #58                 // class java/lang/MatchException
+     147: dup
+     148: aconst_null
+     149: aconst_null
+     150: invokespecial #62                 // Method java/lang/MatchException."<init>":(Ljava/lang/String;Ljava/lang/Throwable;)V
+     153: athrow
+     154: dload_3
+     155: dload         5
+     157: dadd
+     158: goto          233
+     161: dload_3
+     162: dconst_0
+     163: dcmpl
+     164: ifle          181
+     167: dload         5
+     169: dconst_0
+     170: dcmpl
+     171: ifle          181
+     174: dload_3
+     175: dload         5
+     177: dmul
+     178: goto          233
+     181: dload         7
+     183: dconst_0
+     184: dcmpg
+     185: ifge          203
+     188: dload         9
+     190: dconst_0
+     191: dcmpg
+     192: ifge          203
+     195: dload         7
+     197: dload         9
+     199: dmul
+     200: goto          233
+     203: dload_3
+     204: dload         9
+     206: dmul
+     207: dload         7
+     209: dload         5
+     211: dmul
+     212: invokestatic  #68                 // Method java/lang/Math.min:(DD)D
+     215: goto          233
+     218: dload_3
+     219: dload         5
+     221: invokestatic  #68                 // Method java/lang/Math.min:(DD)D
+     224: goto          233
+     227: dload_3
+     228: dload         5
+     230: invokestatic  #71                 // Method java/lang/Math.max:(DD)D
+     233: dstore        11
+     235: aload_0
+     236: invokevirtual #56                 // Method net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type.ordinal:()I
+     239: tableswitch   { // 0 to 3
+                     0: 278
+                     1: 286
+                     2: 343
+                     3: 353
+               default: 268
+          }
+     268: new           #58                 // class java/lang/MatchException
+     271: dup
+     272: aconst_null
+     273: aconst_null
+     274: invokespecial #62                 // Method java/lang/MatchException."<init>":(Ljava/lang/String;Ljava/lang/Throwable;)V
+     277: athrow
+     278: dload         7
+     280: dload         9
+     282: dadd
+     283: goto          360
+     286: dload_3
+     287: dconst_0
+     288: dcmpl
+     289: ifle          307
+     292: dload         5
+     294: dconst_0
+     295: dcmpl
+     296: ifle          307
+     299: dload         7
+     301: dload         9
+     303: dmul
+     304: goto          360
+     307: dload         7
+     309: dconst_0
+     310: dcmpg
+     311: ifge          328
+     314: dload         9
+     316: dconst_0
+     317: dcmpg
+     318: ifge          328
+     321: dload_3
+     322: dload         5
+     324: dmul
+     325: goto          360
+     328: dload_3
+     329: dload         5
+     331: dmul
+     332: dload         7
+     334: dload         9
+     336: dmul
+     337: invokestatic  #71                 // Method java/lang/Math.max:(DD)D
+     340: goto          360
+     343: dload         7
+     345: dload         9
+     347: invokestatic  #68                 // Method java/lang/Math.min:(DD)D
+     350: goto          360
+     353: dload         7
+     355: dload         9
+     357: invokestatic  #71                 // Method java/lang/Math.max:(DD)D
+     360: dstore        13
+     362: aload_0
+     363: getstatic     #74                 // Field net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type.MUL:Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+     366: if_acmpeq     376
+     369: aload_0
+     370: getstatic     #77                 // Field net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type.ADD:Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+     373: if_acmpne     470
+     376: aload_1
+     377: instanceof    #15                 // class net/minecraft/world/level/levelgen/DensityFunctions$Constant
+     380: ifeq          423
+     383: aload_1
+     384: checkcast     #15                 // class net/minecraft/world/level/levelgen/DensityFunctions$Constant
+     387: astore        15
+     389: new           #18                 // class net/minecraft/world/level/levelgen/DensityFunctions$MulOrAdd
+     392: dup
+     393: aload_0
+     394: getstatic     #77                 // Field net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type.ADD:Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+     397: if_acmpne     406
+     400: getstatic     #80                 // Field net/minecraft/world/level/levelgen/DensityFunctions$MulOrAdd$Type.ADD:Lnet/minecraft/world/level/levelgen/DensityFunctions$MulOrAdd$Type;
+     403: goto          409
+     406: getstatic     #82                 // Field net/minecraft/world/level/levelgen/DensityFunctions$MulOrAdd$Type.MUL:Lnet/minecraft/world/level/levelgen/DensityFunctions$MulOrAdd$Type;
+     409: aload_2
+     410: dload         11
+     412: dload         13
+     414: aload         15
+     416: getfield      #86                 // Field net/minecraft/world/level/levelgen/DensityFunctions$Constant.value:D
+     419: invokespecial #89                 // Method net/minecraft/world/level/levelgen/DensityFunctions$MulOrAdd."<init>":(Lnet/minecraft/world/level/levelgen/DensityFunctions$MulOrAdd$Type;Lnet/minecraft/world/level/levelgen/DensityFunction;DDD)V
+     422: areturn
+     423: aload_2
+     424: instanceof    #15                 // class net/minecraft/world/level/levelgen/DensityFunctions$Constant
+     427: ifeq          470
+     430: aload_2
+     431: checkcast     #15                 // class net/minecraft/world/level/levelgen/DensityFunctions$Constant
+     434: astore        15
+     436: new           #18                 // class net/minecraft/world/level/levelgen/DensityFunctions$MulOrAdd
+     439: dup
+     440: aload_0
+     441: getstatic     #77                 // Field net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type.ADD:Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+     444: if_acmpne     453
+     447: getstatic     #80                 // Field net/minecraft/world/level/levelgen/DensityFunctions$MulOrAdd$Type.ADD:Lnet/minecraft/world/level/levelgen/DensityFunctions$MulOrAdd$Type;
+     450: goto          456
+     453: getstatic     #82                 // Field net/minecraft/world/level/levelgen/DensityFunctions$MulOrAdd$Type.MUL:Lnet/minecraft/world/level/levelgen/DensityFunctions$MulOrAdd$Type;
+     456: aload_1
+     457: dload         11
+     459: dload         13
+     461: aload         15
+     463: getfield      #86                 // Field net/minecraft/world/level/levelgen/DensityFunctions$Constant.value:D
+     466: invokespecial #89                 // Method net/minecraft/world/level/levelgen/DensityFunctions$MulOrAdd."<init>":(Lnet/minecraft/world/level/levelgen/DensityFunctions$MulOrAdd$Type;Lnet/minecraft/world/level/levelgen/DensityFunction;DDD)V
+     469: areturn
+     470: new           #23                 // class net/minecraft/world/level/levelgen/DensityFunctions$Ap2
+     473: dup
+     474: aload_0
+     475: aload_1
+     476: aload_2
+     477: dload         11
+     479: dload         13
+     481: invokespecial #92                 // Method net/minecraft/world/level/levelgen/DensityFunctions$Ap2."<init>":(Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;Lnet/minecraft/world/level/levelgen/DensityFunction;Lnet/minecraft/world/level/levelgen/DensityFunction;DD)V
+     484: areturn
+
+  public abstract net.minecraft.world.level.levelgen.DensityFunctions$TwoArgumentSimpleFunction$Type type();
+
+  public abstract net.minecraft.world.level.levelgen.DensityFunction argument1();
+
+  public abstract net.minecraft.world.level.levelgen.DensityFunction argument2();
+
+  public default net.minecraft.util.KeyDispatchDataCodec<? extends net.minecraft.world.level.levelgen.DensityFunction> codec();
+    Code:
+       0: aload_0
+       1: invokeinterface #114,  1          // InterfaceMethod type:()Lnet/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type;
+       6: getfield      #117                // Field net/minecraft/world/level/levelgen/DensityFunctions$TwoArgumentSimpleFunction$Type.codec:Lnet/minecraft/util/KeyDispatchDataCodec;
+       9: areturn
+
+  static {};
+    Code:
+       0: invokestatic  #127                // Method com/mojang/logging/LogUtils.getLogger:()Lorg/slf4j/Logger;
+       3: putstatic     #44                 // Field LOGGER:Lorg/slf4j/Logger;
+       6: return
+}
