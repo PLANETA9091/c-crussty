@@ -24,5 +24,15 @@
   "parity": null,
   "verdict": "IN_PROGRESS",
   "evidence": [],
-  "what": "iter-3 стартовал: работа от ЖИВОГО носителя 1aec4f8, перенос только gsel-слайса, гейты STRICT OR на cmp416_gsel3. Анти-плацебо: nav_ai 9.31 -> <=6.5 цель, иначе не победа."
+  "what": "iter-3: живой носитель 1aec4f8 + gsel-слайс (GoalBatchOps/goal_batch, 4 сайта GoalSelector.tick), гейты STRICT OR cmp416_gsel3 (cmp414_cvs не тронуты), блобы пересобраны в оба пути (javap-гейт поймал stale fqcn — починено в build_gsel_blobs_all.sh). Диспатч g3a/g3b/g3c следующий.",
+  "commits": [
+    "slice+retag+blobs+gates",
+    "cargo green 277/277 + dispatch script"
+  ],
+  "gates": {
+    "check_blobs_sync": "ALL IN SYNC (6 bridges, fqcn+short blobs)",
+    "check_gsel_native_sigs": "PASS (gselProbe ()I / gselRegister (II[J[I)I / gselEpoch (II[I[J[J[I)I)",
+    "cargo_check_lib": "GREEN",
+    "cargo_test": "277 passed; 0 failed"
+  }
 }
