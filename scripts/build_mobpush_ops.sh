@@ -23,7 +23,7 @@ OUT_DIR=mobpush/build
 mkdir -p "$OUT_DIR"
 
 "$JAVAC" --release 21 -nowarn \
-  -classpath "$KERNEL_JAR" \
+  -classpath "$KERNEL_JAR:entitygoalquery/build" \
   -d "$OUT_DIR" \
   mobpush/net/minecraft/world/entity/MobPushOps.java
 

@@ -67,8 +67,8 @@ import net.minecraft.world.phys.AABB;
  * тела getEntitiesOfClass воспроизведён на snapshot-пути (прецедент
  * MobPushOps.pushables).
  *
- * FAIL-CLOSED: ENABLED STRICT-eq "cmp410_eindexq" (пустой/чужой флаг — сайт
- * вообще не ретаргетится rust-стороной); SoA-плоскость не готова
+ * FAIL-CLOSED: ENABLED STRICT-eq "cmp410_eindexq"|"cmp411_k4soa" (пустой/чужой
+ * флаг — сайт вообще не ретаргетится rust-стороной); SoA-плоскость не готова
  * (MobPushOps.planeReady()==false: broken/oversized/probe) → ваниль;
  * idTop==0 (плоскость холодная) → ваниль на этот тик; rc==0 при idTop>0
  * (холодные таблицы) → ваниль на этот тик (эпоха ретраится следующим);
@@ -85,12 +85,25 @@ public final class EntityGoalQueryOps {
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
         // STRICT eq (TASK-402-F урок полу-armed гейта): только точный флаг
-        // раунда-410. База/другие рычаги этот мост не вызывают (rust не
-        // ставит сайт).
-        return f != null && f.trim().equals("cmp410_eindexq");
+        // раунда-410 / раунда-411. База/другие рычаги этот мост не вызывают
+        // (rust не ставит сайт).
+        // TASK-411-C (k4soa): K4-нога — та же снапшот-механика; отличия:
+        // популяция с радиус-гейтом 2.0 (rust pad 2) + новый пакет-приватный
+        // pushCandidates (push-лейн из снапшота, вызывается MobPushOps.pushables).
+        return f != null && (f.trim().equals("cmp410_eindexq")
+                || f.trim().equals("cmp411_k4soa"));
+    }
+
+    /** TASK-411-C (k4soa): K4-режим (маркировка EFFECT-строк). */
+    private static boolean k4Mode() {
+        String f = System.getenv("CRUSSTY_LEVER_FLAG");
+        return f != null && f.trim().equals("cmp411_k4soa");
     }
 
     private static final boolean ENABLED = leverEnabled();
+    private static final boolean K4 = k4Mode();
+    /** Метка флага для EFFECT/диагностических строк (одна из ARM-пар). */
+    private static final String FLAG_LABEL = K4 ? "cmp411_k4soa" : "cmp410_eindexq";
 
     private static final int PROBE_MAGIC = 0x4547; // "EG"
     private static final int ERR_STRUCT = -1;
@@ -142,6 +155,15 @@ public final class EntityGoalQueryOps {
      * гейта плоскости — снапшот-прун не может скрыть живого кандидата.
      */
     static final double MARGIN = 8.0D;
+
+    /**
+     * TASK-411-C (k4soa): scratch для дедупликации bucket'ов push-прямоугольника
+     * (pushCandidates; окно ≤ 64 bucket'ов). Per-thread, zero per-query alloc —
+     * pushables зовётся каждым living-энтити каждый тик (150k масштаб),
+     * аллокация на запрос недопустима (GC-давление = обратный эффект).
+     */
+    private static final ThreadLocal<int[]> BUCKET_SCRATCH =
+            ThreadLocal.withInitial(() -> new int[64]);
 
     private EntityGoalQueryOps() {}
 
@@ -202,7 +224,7 @@ public final class EntityGoalQueryOps {
                     Profiler.get().incrementCounter("getEntities");
                     if (!ARM_LOGGED) {
                         ARM_LOGGED = true;
-                        LOG.info("[crussty-plugin] cmp410_eindexq: goal-query EFFECT armed"
+                        LOG.info("[crussty-plugin] " + FLAG_LABEL + ": goal-query EFFECT armed"
                                 + " (first gate hit at tick "
                                 + MinecraftServer.getServer().getTickCount()
                                 + ", class=" + cls.getSimpleName() + ")");
@@ -258,7 +280,7 @@ public final class EntityGoalQueryOps {
             }
             if (rc == ERR_STRUCT) {
                 broken = true; // структурный отказ — весь рычаг в ваниль навсегда
-                LOG.warning("[crussty-plugin] cmp410_eindexq: eqEpoch ERR_STRUCT — goal-query disarmed to vanilla");
+                LOG.warning("[crussty-plugin] " + FLAG_LABEL + ": eqEpoch ERR_STRUCT — goal-query disarmed to vanilla");
                 return;
             }
             if (rc == ERR_RANGE) {
@@ -277,7 +299,7 @@ public final class EntityGoalQueryOps {
             EPOCH_TICK = t;         // release-edge: читатели видят консистентную тройку
             if (!EPOCH_LOGGED) {
                 EPOCH_LOGGED = true;
-                LOG.info("[crussty-plugin] cmp410_eindexq: epoch ok tick=" + t
+                LOG.info("[crussty-plugin] " + FLAG_LABEL + ": epoch ok tick=" + t
                         + " rows=" + idTop + " linked=" + rc
                         + " (bulk JNI 1/tick over mobs_soa SoA population, chain cells="
                         + CELLS + ")");
@@ -379,5 +401,107 @@ public final class EntityGoalQueryOps {
             }
         }
         return out;
+    }
+
+    /**
+     * TASK-411-C (k4soa): push-кандидаты из chain-снапшота (0 per-query JNI).
+     * Вызывается MobPushOps.pushables под флагом cmp411_k4soa ПЕРЕД легаси
+     * mobQuery. Универс = SoA-популяция (ТОТ ЖЕ контракт round-401, что и
+     * mobQuery); предикат = EntitySelector.pushableBy(entity); фильтры:
+     * level, other != entity, живой bb.intersects(box).
+     *
+     * ДЕДУП ПО БУКЕТАМ (не по ячейкам!): две разные ячейки прямоугольника с
+     * одним bucket дали бы двойной проход одной цепи = дубликат-кандидата =
+     * двойной doPush (для nearest-пика дубликаты безвредны — для push tail
+     * НЕТ). Прямоугольник push-запроса мал (box + MARGIN ≈ 2-3 ячейки на
+     * ось) — попарная дедупликация ≤ 64 bucket'ов дешева.
+     *
+     * @return false — не обслужено (снапшот не готов / структурный дрейф /
+     *         абсурдный rect; out НЕ тронут или очищен), иначе true и out =
+     *         кандидаты без дубликатов.
+     */
+    static boolean pushCandidates(Level level, Entity entity, AABB box,
+            java.util.List<Entity> out) {
+        if (broken) {
+            return false;
+        }
+        maybeEpoch();
+        final double[] soa = SOA;
+        final int[] head = HEAD;
+        final int[] next = NEXT;
+        final int rows = SNAP_ROWS;
+        if (rows <= 0 || soa.length < (long) rows * STRIDE
+                || head.length != CELLS || next.length < rows) {
+            return false; // структурный дрейф/холодный снапшот — легаси путь
+        }
+        // Тот же расширенный прямоугольник, что snapshotQuery: маржа покрывает
+        // радиус населения (≤ MobPushOps.RADIUS_GATE = 2.0) + tick-дрейф.
+        final double mx0 = box.minX - MARGIN, mx1 = box.maxX + MARGIN;
+        final double mz0 = box.minZ - MARGIN, mz1 = box.maxZ + MARGIN;
+        final int cx0 = floorCell(mx0);
+        final int cx1 = floorCell(mx1);
+        final int cz0 = floorCell(mz0);
+        final int cz1 = floorCell(mz1);
+        final long rw = (long) (cx1 - cx0) + 1L, rh = (long) (cz1 - cz0) + 1L;
+        if (rw * rh > 64L) {
+            return false; // абсурдный/гигантский rect — легаси путь
+        }
+        final Entity[] byId = MobPushOps.byIdArr();
+        if (byId == null || byId.length == 0) {
+            return false;
+        }
+        // Дедуп bucket'ов прямоугольника (scratch переиспользуется — 0 alloc).
+        final int cnt = (int) (rw * rh);
+        final int[] buckets = BUCKET_SCRATCH.get();
+        int n = 0;
+        for (int cz = cz0; cz <= cz1; cz++) {
+            for (int cx = cx0; cx <= cx1; cx++) {
+                int h = cellHash(cx, cz);
+                boolean dup = false;
+                for (int i = 0; i < n; i++) {
+                    if (buckets[i] == h) {
+                        dup = true;
+                        break;
+                    }
+                }
+                if (!dup) {
+                    buckets[n++] = h;
+                }
+            }
+        }
+        final Predicate<? super Entity> pred = EntitySelector.pushableBy(entity);
+        for (int i = 0; i < n; i++) {
+            final int h = buckets[i];
+            for (int link = head[h]; link != 0; link = next[link - 1]) {
+                final int id = link - 1;
+                if (id < 0 || id >= rows) {
+                    out.clear();
+                    return false; // структурный дрейф цепи — легаси путь
+                }
+                final int b = id * STRIDE;
+                final double x = soa[b];
+                final double z = soa[b + 2];
+                final double hw = soa[b + 3];
+                // SoA-прун по замороженным колонкам против РАСШИРЕННОЙ
+                // коробки (superset живого AABB.intersects; y не пруним —
+                // вертикальный дрейф не ограничен маржой по x/z).
+                if (x - hw >= mx1 || x + hw <= mx0
+                        || z - hw >= mz1 || z + hw <= mz0) {
+                    continue;
+                }
+                final Entity cand = byId[id];
+                if (cand == null || cand == entity || cand.level() != level) {
+                    continue;
+                }
+                // ТОЧНЫЙ ванильный тест на ЖИВОМ bb.
+                if (!cand.getBoundingBox().intersects(box)) {
+                    continue;
+                }
+                if (pred.test(cand)) {
+                    out.add(cand);
+                }
+            }
+        }
+        return true;
     }
 }

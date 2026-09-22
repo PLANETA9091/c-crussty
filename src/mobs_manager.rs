@@ -62,8 +62,10 @@ fn lever_flag() -> String {
 fn java_gate_matches(f: &str) -> bool {
     // TASK-410-C (eindexq): SoA-плоскость = источник популяции goal-query
     // CSR-снапшота (EntityQueryOps; sscan-прецедент TASK-406-E).
+    // TASK-411-C (k4soa): K4 — радиус-ремонт (gate 2.0 / pad 2) + push-лейн
+    // из chain-снапшота (MobPushOps.pushCandidates path).
     f == GATE_LEVER || f == GATE_LEVER_COMP || f == GATE_LEVER_STAGCOMP
-        || f == "cmp410_eindexq"
+        || f == "cmp410_eindexq" || f == "cmp411_k4soa"
 }
 
 static READY: AtomicBool = AtomicBool::new(false);
@@ -399,6 +401,10 @@ pub fn activate() {
         } else if f == "cmp410_eindexq" {
             eprintln!(
                 "[crussty-plugin] cmp410_eindexq: ARMED soa-population (flat-arrays seqlock=global-version writer=global-mutex ids_cap=1048576 cell_cap=262144 cell=1.0 pad=1.0 radius_gate=1.0 rust_prune=coarse-hw-hh; rust mobs_soa SoA flat x/y/z/hw/hh/flags = ПОПУЛЯЦИЯ goal-query снапшота EntityGoalQueryOps.eqEpoch; pushEntities tail untouched vanilla; per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT)"
+            );
+        } else if f == "cmp411_k4soa" {
+            eprintln!(
+                "[crussty-plugin] cmp411_k4soa: ARMED soa-population+push-snapshot (flat-arrays seqlock=global-version writer=global-mutex ids_cap=1048576 cell_cap=262144 cell=1.0 pad=2 radius_gate=2.0 rust_prune=coarse-hw-hh; K4 РЕМОНТ: gate 1.0->2.0 покрывает camel 1.1875/iron_golem 1.35/warden 1.45 — oversized-disarm хроники round-406d..410ck3l устранена; pushEntities -> MobPushOps.pushables = сначала chain-снапшот pushCandidates (0 per-query JNI, cell-rect dedup), fallback mobQuery, хвост ванильный; per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT)"
             );
         } else {
             eprintln!(

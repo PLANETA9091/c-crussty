@@ -1,68 +1,41 @@
 {
-  "agent": "TASK-410-C",
-  "vector": "eindex K3 PIVOT R2 (goal-target/sensing query class): cmp410_eindexq = SoA-population push-plane + goal-query chain-snapshot bridge; старый 4-сайтный индекс учёта ВЫКЛЮЧЕН (gated cmp405_eindex only)",
-  "branch": "round-405-c-eindex (reuse worktree, merge origin/master 8ef9e5b)",
-  "flag": "cmp405_eindex (kept STRICT) + pivot gate cmp410_eindexq (STRICT eq, empty=vanilla)",
-  "stage": "K3-STEP2 CODED+BUILT: EntityGoalQueryOps chain-snapshot bridge (goal-target query pivot) — cargo/test green, blobs fresh, next: push+dispatch round-410-c-k3l",
-  "run_id": 35673647163,
-  "run_id_cleg5b": 35673647163,
-  "k3_step1_symbol_profile": {
+  "agent": "TASK-411-C",
+  "vector": "eindex K4 (cron tick-411): SoA-plane REPAIR + push-lane served from eq chain-snapshot (menu (a) realized) — flag cmp411_k4soa STRICT eq, empty=vanilla bit-in-bit",
+  "branch": "round-411-c-k4 (worktree /home/z/rounds/ROUND-411/agent-c, base origin/round-405-c-eindex @1b68a87)",
+  "stage": "K4-STEP1 CODED+BUILT: gate 2.0/pad 2 repair + push-snapshot (pushCandidates, bucket-dedup, 0 per-query JNI) — javap ground truth re-verified on FULL kernel jar round-396-a, javac blobs fresh (both classes, exactly-1-classfile), cargo test 224 green, next: push+dispatch round-411-c-l1",
+  "step0_profile": {
     "sources": [
-      "research/gc-recon-2026-09-19/round-round409cleg4/cpu-collapsed.txt (eindex k2 leg, 116155 samples, broadphase 15.02%)",
-      "research/gc-recon-2026-09-19/round-round409anchora/cpu-collapsed.txt (vanilla anchor, 113919 samples, broadphase 15.36%)"
+      "research/gc-recon-2026-09-19/round-round410anchora/cpu-collapsed.txt (115385 samples, lane 15.67%)",
+      "research/gc-recon-2026-09-19/round-round410multi3/cpu-collapsed.txt (110026 samples, engine 6.47% wall)",
+      "research/gc-recon-2026-09-19/round-round410ck3l/cpu-collapsed.txt (116376 samples, lane 14.76%)"
     ],
-    "method": "stack-weighted attribution to DEEPEST lane frame (regex CollisionUtil|getEntities|EntityLookup|getCollisionsForBlocksOrWorldBorder|performCollisions|EntitySectionStorage)",
-    "cleg4_split_pct_of_lane": {
-      "ChunkEntitySlices.getEntities*": 48.58,
-      "CollisionUtil.getCollisions*": 37.09,
-      "EntityLookup.getHardCollidingEntities": 5.03,
-      "EntitySectionStorage/other": 3.69,
-      "EntityLookup.getEntities": 2.96
-    },
-    "vanilla_anchor_split_pct_of_lane": {
-      "ChunkEntitySlices.getEntities*": 47.9,
-      "CollisionUtil.getCollisions*": 38.03,
-      "EntityLookup.getHardCollidingEntities": 4.66,
-      "EntitySectionStorage/other": 3.83,
-      "EntityLookup.getEntities": 2.85
-    },
-    "verdict_step1": "PARITY of splits across eindex vs vanilla => eindex sites genuinely not lane-moving; ~37-38% of lane is BLOCK-collision (CollisionUtil) which an entity index cannot serve; ~48% is ChunkEntitySlices.getEntities engine; caller of deepest lane frame: EntityLookup.getEntities 27-31% of lane, Entity.collide 19-27%, Level.noCollision 12-13%, moonrise$getHardCollidingEntities ~5%, getPushableEntities ~2-3%, getEntitiesOfClass ~2%"
+    "engine_decomposition_anchora": "engine 8630 = 7.48% wall: pushEntities/getPushableEntities 50.0%, getEntitiesOfClass 41.0% (findTarget 65% + AvoidEntityGoal 9% + ItemEntity-pickup 26%), getHardCollidingEntities 8.9%; CollisionUtil block-collision separate 4.78% wall",
+    "ck3l_smoking_gun": "engine 8348: 43.8% pushEntities->MobPushOps.pushables->vanillaFill (SoA plane DEAD), 33.6% findTarget/canUse->entitiesOfClassGate->vanilla (population DEAD)",
+    "root_cause": "server-stdout 410ck3l 02:30:26-27: 'epoch ok tick=12 rows=2' then 'cmp401_soa: oversized bounding radius 1.1875 on entity.minecraft.camel — lever reverted to vanilla'; chronic grep over ALL artifact dirs 405-411: oversized fired in 11/11 SoA-armed legs of the 150k era (camel 1.1875 x9: 406dleg3/4/6, 406eleg1, 409eleg2, 409eleg3b, 409multi2, 410ck3l, 410multi3; iron_golem 1.35: 409eleg2b; warden 1.45: 409multi1); zero in non-SoA legs (anchors/cleg/bl2/ak5) — chronicle complete",
+    "scope_honest": "era verdicts NOT flipped: multi/comp legs GREEN carried by LIVE planes (multi3 items 31.17->0.00%, nav_ai 14.16->7.54%; 406d items-carried; eleg sscan-carried with own epoch-ok markers after the warn); what WAS corrupted: (a) 410ck3l PARITY = artifact (goal-query bridge measured with dead 2-row population — class not refuted), (b) SoA push-plane never measured armed in the era, (c) cmp410_eindexq-цепь наследовала disarm через общий upsertSelf. Full scope table in RESEARCH-C-k4.md",
+    "verdict_step0": "menu (b) collide+R3 REJECTED (stateful per-move block-collision verdicts not batchable by 1 bulk-JNI/tick, block data unavailable to Rust SoA, bit-exact voxel oracle out of tick budget); menu (a) SELECTED as repair+extend of existing snapshot planes"
   },
-  "goal_target_pivot_sizing": {
-    "goal/target-restricted broadphase slice (regex GoalSelector|findNearestTarget|TargetingConditions|/Sensing\\.|getNearestPlayer)": {
-      "cleg4": "3467 samples = 2.98% wall; 88% ChunkEntitySlices.getEntities*, 86% delivered via EntityLookup.getEntities caller",
-      "anchor": "3029 samples = 2.66% wall; same shape (88%/86%)"
-    },
-    "top leaf in goal slice": "AABB.intersects + EntityCollectionBySection.getEntities",
-    "note": "A-k4 handoff said findTarget/getEntities ~5.95% of nav_ai lane (14.2%); own measurement: goal-target broadphase slice = 2.7-3.0% wall + goal-lane remainder is non-query (goal scheduling/behavior). Pivot ceiling realistic ~3-5pp wall, NOT 15%."
+  "k4_design": {
+    "flag": "cmp411_k4soa (STRICT eq everywhere; cmp410_eindexq/cmp401_soa keep exact prior behavior — RADIUS_GATE flag-conditional K4?2.0:1.0, compiled as runtime <clinit> init: old flags keep gate 1.0 incl. oversized-disarm bit-in-bit)",
+    "change1_radius_repair": "MobPushOps.upsertSelf r_eff gate 1.0 -> 2.0 under k4soa only (covers camel 1.1875 / iron_golem 1.35 / warden 1.45); mobs_soa.rs mob_query pad +-1 -> +-2 cells (PAD=2 const, soundness floor(q0-hw) >= floor(q0)-2 for hw<=2.0; result-identical under old gates — wider window only adds ids that fail the exact live-bb filter)",
+    "change2_push_snapshot": "MobPushOps.pushables under k4soa: try EntityGoalQueryOps.pushCandidates(level,entity,box,list) FIRST (same eqEpoch chain-scan as entitiesOfClassGate, predicate EntitySelector.pushableBy(entity) [javap: public static Predicate<Entity> pushableBy(Entity)], filter other!=entity, NO cls gate — same LivingEntity universe contract as round-401 mobQuery incl. documented no-players/boats delta; BUCKET-DEDUP before chain walk via per-thread scratch int[64] ZERO-ALLOC: duplicate chain pass = duplicate candidate = double doPush — NOT harmless for push tail unlike nearest-pick); fallback ladder snapshot-null -> legacy mobQuery (JNI per call, kept) -> vanillaFill",
+    "not_served": "ItemEntity-pickup (Mob.aiStep @109 javap: 2-arg getEntitiesOfClass, ItemEntity class not in universe), getHardCollidingEntities (boats/shulkers universe), CollisionUtil block-collision (4.78% wall accepted)",
+    "javap_ground_truth_reverified": "FULL kernel jar research/gc-recon-2026-09-19/round-396-a/patched-kernel.jar (29MB boot artifact): NearestAttackableTargetGoal.findTarget()V @52 = 1 site getEntitiesOfClass(Class,AABB,Predicate)List; AvoidEntityGoal.canUse()Z @47 = 1 site same desc; LivingEntity.pushEntities()V @75 = 1 site getPushableEntities(Entity,AABB)List (file-wide count 1); Mob.aiStep @109 = 2-arg ItemEntity pickup — refusal documented",
+    "expected": "engine ceiling -(3.2 push + 2.4 goal)pp wall; realistic -2..-4pp; target TPS >= 2.35 vs pool-411 2.1-2.4"
   },
-  "verdict": "K3 STEP 1 DONE — pivot to query-complex APPROVED by data: block-collision dominates block-move half of lane (entity index can't help), but goal-target entity queries deliver a clean 2.7-3.0% slice through a SINGLE chokepoint EntityLookup.getEntities -> ChunkEntitySlices.getEntities (86-88%), ideal for ONE bulk-JNI SOA snapshot/tick (MobScanOps pattern). STEP 2 in progress",
+  "verification_step1": {
+    "javac": "--release 21 vs round-396-a kernel jar: EntityGoalQueryOps.class 9620B + MobPushOps.class 11452B, exactly-1-classfile each (BUCKET_SCRATCH lambda = synthetic method, no nested), javap: MobPushOps.pushables invokestatic pushCandidates + getstatic RADIUS_GATE (runtime <clinit> init, not folded)",
+    "build_script_fix": "scripts/build_mobpush_ops.sh classpath += entitygoalquery/build (MobPushOps now references EntityGoalQueryOps.pushCandidates — same package, kernel-loader delivery intact)",
+    "cargo": "check --lib green; test 224 passed / 0 failed / 1 ignored (new k4soa_large_radius_superset: camel/iron_golem/gate-max radii centered OUTSIDE integer box, center cell = floor(qx0)-2, pad-1 window misses, pad-2 covers; + non-integer-edge boundary case ex=1.95/hw=2.0; + y-axis mirror) — target DELETED after run",
+    "kernel_fixture_tests": "retarget=1/idempotent/wrong-desc fixtures untouched (no new retarget sites; pushCandidates rides the EXISTING round-401 pushables site)"
+  },
+  "next": "commit+push (рано) -> alias round-411-c-l1 -> world-bench-parallel.yml bank exact (radius 640 seconds 300 fake_players 4 gc_tune 3 inside_cache 1 flush_diet 1 region_threads 4 batch_collector 1 population 150000 seed 42 xmx 10G xms 4G band 6.0-9.5M lever_flag=cmp411_k4soa lever_arg=1) -> poll -> absorb round411cl1 -> pair-by-runner verdict vs pool-411 {2.2@6840530, 2.2@6858619, 2.1@6776758} + bank {2.4@6604167, 2.2@6976430, 2.25@6833921, 2.30@6846036}",
+  "run_id": null,
+  "gates_checklist": "ARM markers 'cmp411_k4soa: ARMED soa-population+push-snapshot' (rust mobs_manager) + 'cmp411_k4soa: ARMED goal-query' (rust entity_query) + EFFECT markers ('epoch ok' rows>1000, 'push-snapshot EFFECT armed (first chain-snapshot serve') + grep AIOOBE=0 + grep oversized=0 (gate 2.0 must NOT fire on bench population)",
   "evidence": [
-    "cleg5b run 35673647163 (re-roll of cleg5 BENCH-4 FIXTURE-INVALID) in flight, ref round-410-c-l5b @d05c930 lever cmp405_eindex",
-    "script /tmp/k3_symbols.py + /tmp/k3b.py (collapsed-stack attribution)",
-    "UPPER-NOTE-cleg5b.md прочитан и исполнен: хуки учёта (addEntity/removeEntity/moveEntity) НЕ армятся — entity_index_manager gated cmp405_eindex only, под cmp410_eindexq dormant",
-    "AIOOBE-мандат: гейт не трогает секции (read-only снимок; ванильные вызовы бит-в-байт) — grep AIOOBE в вердикте"
-  ],
-  "what": [
-    "step1a: stack-weighted symbol split cleg4 vs vanilla anchor: 48/37/5/3/3 vs 48/38/5/4/3 — identical shape => documented in RESEARCH-C-k3.md",
-    "step1b: goal/target-only restriction: single chokepoint EntityLookup.getEntities -> ChunkEntitySlices.getEntities 86-88%, no CollisionUtil involvement (0.2%) => pivot target sites = this chokepoint + Level.getEntitiesOfClass (AvoidEntityGoal)"
-  ],
-  "pivot_design": {
-    "bridge": "entitygoalquery/net/minecraft/world/entity/EntityGoalQueryOps.java (FQCN EntityQueryOps занят alloc-diet S7-133 — LinkageError риск; префикс Goal)",
-    "retarget_sites": [
-      "NearestAttackableTargetGoal.findTarget()V @52 invokevirtual Level.getEntitiesOfClass (javap: ровно 1 сайт; Player/ServerPlayer -> getNearestPlayer не сюда)",
-      "AvoidEntityGoal.canUse()Z @47 тот же дескриптор (ровно 1 сайт)"
-    ],
-    "bulk_jni": "eqEpoch(tick,idTop,soa[D],head[I],next[I]) sig (II[D[I[I)I — ONE per tick, single-pass intrusive-chain build (65536 buckets, hash floor(x/16)/floor(z/16) bit-exact java int mul), frozen soa columns stride 5",
-    "why_chains_not_csr": "2-pass CSR требует глобального seqlock — ретраи не сходятся под 150k upserts/тик; однопроходные цепи самосогласованны при любом interleave (placement хэширует те же замороженные x/z); рваная строка = призрак <=1 тик у границы, маржа 8.0 блоков >= 4x tick-дрейфа",
-    "superset_contract": "только Mob/Player-assignable cls; точный живой bb.intersects + predicate в Java; players из level.players(); prune замороженными колонками vs box.inflate(8.0); Profiler counter getEntities реплицирован",
-    "fail_closed": "STRICT-eq cmp410_eindexq; planeReady(broken/oversized/probe); idTop==0 или rc==0 -> ваниль тик; ERR_STRUCT дизарм; ERR_RANGE/дрейф/абсурд-rect -> ваниль вызов; магия 0x4547"
-  },
-  "verification_step2": {
-    "javap_ground_truth": "полный kernel-jar /home/z/rounds/ROUND-405/lib/patched-kernel.jar: 2 сайта ровно по 1, body getEntitiesOfClass = Profiler+EntityLookup.getEntities(cls,null,box,list,pred)",
-    "kernel_fixture_tests": "tests/fixtures/NearestAttackableTargetGoal.class + AvoidEntityGoal.class: retarget ровно 1 сайт/метод, idempotent, wrong-desc fail-closed (d05c930-метод offline)",
-    "javac": "--release 21 vs kernel-jar: EntityGoalQueryOps.class + MobPushOps.class (accessors) major 65; check_blob_sync OK",
-    "cargo": "check --lib зелёный; test 223 passed / 0 failed (cellHash java-parity, chain no-dup/no-cycle, saturating floor, delivery guards, RegisterNatives sig == java decl (409-E урок)); target удалён"
-  },
-  "next": "commit+push (рано) -> alias round-410-c-k3l -> world-bench-parallel.yml банк-410 -> poll -> absorb round410ck3 -> pair-by-runner vs пул {2.50@8548287,2.95@8880170,2.60@8827927}+банк"
+    "RESEARCH-C-k4.md (this tree) — STEP0 analysis + honest scope table + javap offsets",
+    "/home/z/k4work/{k4_symbols,k4_decomp,k4_entries,k4_buckets}.py — attribution scripts",
+    "/home/z/k4work/{monster_javap,mob_javap,natg,avoid,living}.txt — javap dumps round-396-a kernel",
+    "/tmp/k4v/{natg,avoid,living,mob,sel}.txt — re-verification dumps of THIS session (sites @52/@47/@75/pushableBy sig)"
+  ]
 }
