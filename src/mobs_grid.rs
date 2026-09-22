@@ -70,7 +70,7 @@ pub(crate) fn mirror_mode() -> bool {
                     // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR
                     // (mirror inert: eqsnap upsert path returns before mirror
                     // write, push ladder skips grid legs под EQSNAP).
-                    || v.trim() == "cmp412_eqsnapv3" || v.trim() == "cmp414_cvs"
+                    || v.trim() == "cmp412_eqsnapv3" || v.trim() == "cmp414_cvs" || v.trim() == "cmp417_bq"
             })
             .unwrap_or(false)
     })

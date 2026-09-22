@@ -33,6 +33,7 @@ mod entity_compose;
 mod entity_index;
 mod entity_index_manager;
 mod entity_query;
+mod queryplane;
 mod fluid_guard;
 mod fluid_bitmask;
 mod fluid_dirty;
@@ -253,6 +254,14 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // flag — upper-agent tick-410 mandate: only the query plane, no
     // add/remove/move accounting hooks (cleg5b AIOOBE root-cause).
     entity_query::register();
+    // QUERYPLANE (TASK-417-C, broadphase-query plane on the cvs carrier):
+    // Level compose-on-top hook (LAST on Level — receives region_threads'
+    // guardEntityTick bytes, composes getEntitiesOfClass +
+    // moonrise$getHardCollidingEntities whole-body redirects on top;
+    // mobs_ai precedent) + ChunkEntitySlices stash/serve (collide_batch
+    // pattern). Dormant unless CRUSSTY_LEVER_FLAG == cmp417_bq (STRICT OR
+    // with legacy b2p1/mcomp ids; empty/foreign flag = vanilla bit-in-bit).
+    queryplane::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -558,6 +567,12 @@ fn inject_surface() {
     // cmp410_eindexq). Runs AFTER mobs_manager::activate: the goal-query
     // epoch reads the SAME SoA plane the push bridge populates.
     entity_query::activate();
+    // QUERYPLANE (TASK-417-C): boot quiet -> define QueryPlaneOps into the
+    // kernel loader + selfTest on the LOCAL ref from define_class (find_class
+    // fix: JVMTI-scan filters non-INITIALIZED classes, just-defined bridge
+    // was filtered -> selfTest false on runner) -> compute patches -> READY
+    // -> retransform Level + ChunkEntitySlices. Dormant unless cmp417_bq.
+    queryplane::activate();
 }
 
 /// Define one bridge class and register all its natives.

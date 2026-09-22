@@ -238,7 +238,7 @@ fn eqsnap_mode() -> bool {
                 .to_string()
         })
         .as_str();
-    f == "cmp411_eqsnap" || f == "cmp412_eqsnapv3" || f == "cmp414_cvs"
+    f == "cmp411_eqsnap" || f == "cmp412_eqsnapv3" || f == "cmp414_cvs" || f == "cmp417_bq"
 }
 
 /// Strict gate: natives work only under the exact lever flag (STRICT eq;
@@ -274,7 +274,7 @@ fn lever_mode() -> bool {
         // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR (плоскости
         // cmp412_meganav || eqsnap-плоскость); eqsnap-режим (DeltaShard
         // upserts, drain O(dirty)) берёт вверх в mob_upsert/лестнице push.
-        || f == "cmp412_eqsnapv3" || f == "cmp414_cvs"
+        || f == "cmp412_eqsnapv3" || f == "cmp414_cvs" || f == "cmp417_bq"
         // TASK-410-C (eindexq): K3-пивот R2 — SoA-плоскость = источник
         // популяции для goal-query CSR-снапшота (EntityQueryOps.eqEpoch;
         // sscan-прецедент TASK-406-E).
