@@ -2,7 +2,7 @@
   "agent": "TASK-415-A",
   "vector": "MEGA-COMPOSITE: multi(f7d04d2 cmp409_multi) + race-fix REFENCE(109e4d7) + queryplane-slice(125c474)",
   "branch": "round-415-a-mcomp",
-  "head": "3be50c5",
-  "step": "S4-blobs-rebuilt-armed-selfcheck",
-  "evidence": "scripts/build_mcomp_blobs_all.sh: 5 bridges one javac pass (MobPushOps 11264B, MobScanOps 5642B, MobAiOps 4322B, ItemEntityManager 20423B, QueryPlaneOps 4803B), cp=kernel396a+fastutil+paper-api-1.21.10+adventure-api/key-4.24.0, major 65. Self-check: strings|grep cmp415_mcomp = 1/1 in all 5 pools (dead-gate=0), javap -p signature sanity OK"
+  "head": "f8e4aa0",
+  "step": "S5-cargo-green",
+  "evidence": "cargo check --lib PASS (4.75s, warnings only), cargo test 282 passed / 0 failed / 1 ignored (incl. queryplane strict-oracle x256, emap fence blob-sync guards, extended STRICT-OR wiring guard). cargo target /tmp/a15-target deleted immediately (disk 71%)"
 }
