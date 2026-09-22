@@ -125,6 +125,7 @@ fn stage_enabled() -> bool {
         || crate::traversal::enabled_pub()
         || crate::zero_alloc::enabled_pub()
         || crate::skip_store::enabled_pub()
+        || crate::fluid_bulk::enabled()
 }
 
 /// Register the single Entity byte hook (idempotent; call once from
@@ -669,6 +670,36 @@ pub fn activate() {
             } else {
                 eprintln!(
                     "[crussty-plugin] entity_compose: travel_diet bridge missed its window, chain continues WITHOUT traveldiet (fail-dominant)"
+                );
+            }
+        }
+
+        // ---- STAGE 11: fluid-bulk two-wrapper retarget (TASK-416-C, cmp416_fluid) ----
+        // The fluid-update SUBSYSTEM migration: BOTH Entity call sites of
+        // updateFluidHeightAndDoFluidPushing (the only two in the kernel,
+        // S7151_CENSUS) retarget to FluidBulkOps.updateFluidHeightAndDoFluidPushing
+        // (thread-confined cell LUT + rust bulk epoch). The ops class MUST be
+        // defined + natives bound first (wait_ops_ready) — the retargeted
+        // sites resolve the bridge on first call (NCDFE-window kill).
+        if crate::fluid_bulk::enabled() {
+            if crate::fluid_bulk::wait_ops_ready(180_000) {
+                match crate::fluid_bulk::compose_entity(&bytes) {
+                    Some(p) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage fluid_bulk composed (2 wrapper sites -> FluidBulkOps)"
+                        );
+                        bytes = p;
+                        chain.push("fluid_bulk");
+                    }
+                    None => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage fluid_bulk rejected, chain continues WITHOUT fluid_bulk (fail-dominant)"
+                        );
+                    }
+                }
+            } else {
+                eprintln!(
+                    "[crussty-plugin] entity_compose: fluid_bulk ops missed their window, chain continues WITHOUT fluid_bulk (fail-dominant)"
                 );
             }
         }

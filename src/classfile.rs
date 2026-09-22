@@ -5196,6 +5196,105 @@ pub fn patch_fluid_dirty_levelchunk(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOu
     )
 }
 
+// --- FLUID-BULK (TASK-416-C, cmp416_fluid): the LevelChunk write-bump ----
+// retarget of the fluid-bulk subsystem migration (RECON-43 write-bump
+// contract): the SAME single LevelChunkSection.setBlockState call site as
+// the fluid_dirty ledger, but delegated to FluidBulkOps.secWrite — the
+// delegate bumps the GLOBAL fluid generation (FluidState singleton
+// ref-compare) instead of per-section dirty stamps. Not a memo, not a
+// bitmask: one long increment on a real fluid-state change (law-5 clean).
+
+const FLUID_BULK_OPS_CLASS: &str = "net/minecraft/world/entity/FluidBulkOps";
+
+/// Entity bytes: retarget BOTH fluid-scan wrapper sites to
+/// FluidBulkOps.updateFluidHeightAndDoFluidPushing (TASK-416-C fluid-bulk
+/// subsystem migration; same receiver-prepended 3B→3B shape as the
+/// fluid_dirty scan retarget — S7-151 census: exactly one site per wrapper).
+pub fn patch_fluid_bulk_entity(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    for probe in [
+        "updateInWaterStateAndDoWaterCurrentPushing",
+        "updateInWaterStateAndDoFluidPushing",
+        "fluidHeight",
+        "touchingUnloadedChunk",
+    ] {
+        if layout.pool.find_utf8(probe).is_none() {
+            return Err(format!("{probe} absent from pool (kernel rename?)"));
+        }
+    }
+    let expect_static = format!("(L{};{}", FLUID_TARGET.0, &FLUID_TARGET.2[1..]);
+    if FLUID_SCAN_DESC != expect_static {
+        return Err("scan descriptor is not the receiver-prepended target form".into());
+    }
+
+    let (out1, outcome1) = retarget_virtual_to_static(
+        bytes,
+        "updateInWaterStateAndDoWaterCurrentPushing",
+        "()V",
+        FLUID_TARGET,
+        (
+            FLUID_BULK_OPS_CLASS,
+            "updateFluidHeightAndDoFluidPushing",
+            FLUID_SCAN_DESC,
+        ),
+    )?;
+    let (out2, outcome2) = retarget_virtual_to_static(
+        &out1,
+        "updateInWaterStateAndDoFluidPushing",
+        "()Z",
+        FLUID_TARGET,
+        (
+            FLUID_BULK_OPS_CLASS,
+            "updateFluidHeightAndDoFluidPushing",
+            FLUID_SCAN_DESC,
+        ),
+    )?;
+
+    let sites1 = match &outcome1 {
+        RetargetOutcome::Retargeted { sites } => *sites,
+        RetargetOutcome::AlreadyPatched { sites } => *sites,
+        RetargetOutcome::NotFound => 0,
+    };
+    let sites2 = match &outcome2 {
+        RetargetOutcome::Retargeted { sites } => *sites,
+        RetargetOutcome::AlreadyPatched { sites } => *sites,
+        RetargetOutcome::NotFound => 0,
+    };
+    match (sites1, sites2) {
+        (1, 1) => match (&outcome1, &outcome2) {
+            (RetargetOutcome::AlreadyPatched { .. }, RetargetOutcome::AlreadyPatched { .. }) => {
+                Ok((out2, RetargetOutcome::AlreadyPatched { sites: 2 }))
+            }
+            _ => Ok((out2, RetargetOutcome::Retargeted { sites: 2 })),
+        },
+        _ => Err(format!(
+            "expected exactly one fluid-bulk site per wrapper (water={sites1}, lava-ish={sites2})"
+        )),
+    }
+}
+
+/// LevelChunk bytes: retarget the single LevelChunkSection.setBlockState
+/// site to FluidBulkOps.secWrite (delegate + global GEN bump).
+pub fn patch_fluid_bulk_levelchunk(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    for probe in ["setBlockState", "net/minecraft/world/level/chunk/LevelChunkSection"] {
+        if layout.pool.find_utf8(probe).is_none() {
+            return Err(format!("{probe} absent from pool (kernel rename?)"));
+        }
+    }
+    let expect_static = format!("(L{};{}", SEC_WRITE_FROM.0, &SEC_WRITE_FROM.2[1..]);
+    if SEC_WRITE_DESC != expect_static {
+        return Err("secWrite descriptor is not the receiver-prepended target form".into());
+    }
+    retarget_virtual_to_static(
+        bytes,
+        "setBlockState",
+        LEVELCHUNK_SETBLOCK_DESC,
+        SEC_WRITE_FROM,
+        (FLUID_BULK_OPS_CLASS, "secWrite", SEC_WRITE_DESC),
+    )
+}
+
 // --- REGION-THREADS (S7-156, TASK-295) -------------------------------------
 
 const REGION_TICK_OPS_CLASS: &str = "net/minecraft/world/entity/RegionTickOps";
