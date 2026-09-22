@@ -2976,6 +2976,73 @@ pub fn patch_inside_bitmask(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), 
 }
 
 // ---------------------------------------------------------------------------
+// INSIDE-BATCH (TASK-411-B R3 — the inside-discovery lane, negative
+// fast-plane + per-tick bulk verdict flush; RESEARCH-B-k3 §5 design).
+//
+// javap-контракт (round-396-a): РОВНО 3 сайта invokevirtual private
+// int-overload
+//   Entity.checkInsideBlocks(Vec3,Vec3,StepBasedCollector,LongSet,int)I
+// внутри checkInsideBlocks(List, StepBasedCollector)V — bc 171 (axis-split,
+// только d≠0-сегменты) / 204 (прямой) / 229 (fallback (to,to,1)) —
+// ЕДИНСТВЕННЫЕ вызовы перегрузки в кернеле (javap-ценз).
+//
+// Shape: ретаргет всех трёх на invokestatic
+//   InsideRustOps.checkInside (receiver-prepended, 3B→3B,
+//   length-preserving). Ванильное тело НЕ трогается: fail-closed =
+//   MethodHandle-вызов исходной перегрузки из Ops (InsideRustOps static-init).
+//
+// Byte-site disjointness (supersede-аудит, урок eb7a870): внутри ТОГО ЖЕ
+// метода inside_cache ретаргетит isAffectedByBlocks на bc 1..4 — смещения
+// не пересекаются; fluid_guard/flush_diet/batch_collector патчат другие
+// методы/классы. Порядок стадий в entity_compose: inside_cache →
+// inside_batch (обе strict, одна накопительная буферизация).
+//
+// Strict: ровно ТРИ сайта; AlreadyPatched — только когда все 3 уже
+// invokestatic на бридж; остальное = Err (fail closed, vanilla).
+
+pub const INSIDE_RUST_OPS_CLASS: &str = "net/minecraft/world/entity/InsideRustOps";
+/// Descriptor of the private per-movement int-overload (javap bc 4409).
+const CIB_INT_DESC: &str = "(Lnet/minecraft/world/phys/Vec3;\
+     Lnet/minecraft/world/phys/Vec3;\
+     Lnet/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector;\
+     Lit/unimi/dsi/fastutil/longs/LongSet;I)I";
+/// Receiver-prepended static form asserted by retarget_virtual_to_static.
+const INSIDE_BAT_DESC: &str = "(Lnet/minecraft/world/entity/Entity;\
+     Lnet/minecraft/world/phys/Vec3;\
+     Lnet/minecraft/world/phys/Vec3;\
+     Lnet/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector;\
+     Lit/unimi/dsi/fastutil/longs/LongSet;I)I";
+
+pub fn patch_inside_batch(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    for probe in ["checkInsideBlocks", "isAffectedByBlocks", "visitedBlocks"] {
+        if layout.pool.find_utf8(probe).is_none() {
+            return Err(format!("{probe} absent from pool (kernel rename?)"));
+        }
+    }
+    let expect_static = format!("(L{};{}", CIB_TARGET.0, &CIB_INT_DESC[1..]);
+    if INSIDE_BAT_DESC != expect_static {
+        return Err("inside_batch static descriptor is not the receiver-prepended form".into());
+    }
+    let (out, outcome) = retarget_virtual_to_static(
+        bytes,
+        "checkInsideBlocks",
+        CHECK_INSIDE_DESC,
+        (CIB_TARGET.0, CIB_TARGET.1, CIB_INT_DESC),
+        (INSIDE_RUST_OPS_CLASS, "checkInside", INSIDE_BAT_DESC),
+    )?;
+    if let RetargetOutcome::Retargeted { sites } = &outcome {
+        if *sites != 3 {
+            return Err(format!(
+                "expected exactly 3 checkInsideBlocks int-overload sites in \
+                 checkInsideBlocks(List,Collector), got {sites}"
+            ));
+        }
+    }
+    Ok((out, outcome))
+}
+
+// ---------------------------------------------------------------------------
 // FLAT-TRAVERSAL (S7-163, ARCH-ATTACK lever #9 — the inside-pipeline
 // traversal lane). The private int-overload
 //   Entity.checkInsideBlocks(Vec3, Vec3, StepBasedCollector, LongSet, int)I
@@ -6078,6 +6145,102 @@ mod inside_cache {
         let (entity, _) = patch_inside_cache(ENTITY).expect("patch");
         std::fs::create_dir_all("tests/out").unwrap();
         std::fs::write("tests/out/Entity.patched.class", &entity).unwrap();
+    }
+}
+
+#[cfg(test)]
+mod inside_batch {
+    // TASK-411-B R3: REAL kernel Entity.class fixture (same capture as the
+    // inside_cache module — hook-byte identical purpur-1.21.10 kernel).
+    const ENTITY: &[u8] = include_bytes!("../tests/fixtures/Entity_real.class");
+
+    use crate::classfile::*;
+
+    const BRIDGE: &str = "net/minecraft/world/entity/InsideRustOps";
+    const INT_DESC: &str = "(Lnet/minecraft/world/phys/Vec3;\
+Lnet/minecraft/world/phys/Vec3;\
+Lnet/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector;\
+Lit/unimi/dsi/fastutil/longs/LongSet;I)I";
+    const STATIC_DESC: &str = "(Lnet/minecraft/world/entity/Entity;\
+Lnet/minecraft/world/phys/Vec3;\
+Lnet/minecraft/world/phys/Vec3;\
+Lnet/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector;\
+Lit/unimi/dsi/fastutil/longs/LongSet;I)I";
+
+    #[test]
+    fn inside_batch_retargets_exactly_three_sites() {
+        let (patched, outcome) = patch_inside_batch(ENTITY).expect("patch");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 3 },
+            "javap-ценз: bc 171/204/229 — ровно 3 сайта int-overload в checkInsideBlocks(List)"
+        );
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        assert!(patched.len() >= ENTITY.len(), "file grows by appended CP entries");
+    }
+
+    #[test]
+    fn inside_batch_sites_resolve_to_bridge() {
+        let (patched, _) = patch_inside_batch(ENTITY).expect("patch");
+        let cp_count = u16::from_be_bytes([patched[8], patched[9]]);
+        let (pool, _end) = Pool::parse(&patched, 10, cp_count).expect("cp parse");
+        let bridge = (1..pool.next)
+            .filter_map(|i| pool.methodref_parts(i))
+            .filter(|t| t.0 == BRIDGE)
+            .collect::<Vec<_>>();
+        assert_eq!(bridge.len(), 1, "single bridge Methodref appended");
+        assert_eq!(bridge[0].1, "checkInside");
+        assert_eq!(bridge[0].2, STATIC_DESC);
+        // The int-overload descriptor must exist in the pool (retarget source).
+        assert!(pool.find_utf8(INT_DESC).is_some());
+    }
+
+    #[test]
+    fn inside_batch_composes_over_inside_cache() {
+        // Compose-chain discipline: inside_cache (bc 1..4) FIRST, then
+        // inside_batch (bc 171/204/229) on the SAME accumulated buffer —
+        // byte-sites disjoint, both strict stages must succeed.
+        let (inside, _) = patch_inside_cache(ENTITY).expect("inside_cache");
+        let (both, outcome) = patch_inside_batch(&inside).expect("inside_batch");
+        assert_eq!(outcome, RetargetOutcome::Retargeted { sites: 3 });
+        assert!(both.len() >= inside.len());
+    }
+
+    #[test]
+    fn inside_batch_idempotent() {
+        let (patched, _) = patch_inside_batch(ENTITY).expect("patch");
+        let (again, outcome) = patch_inside_batch(&patched).expect("repatch");
+        assert_eq!(outcome, RetargetOutcome::AlreadyPatched { sites: 3 });
+        assert_eq!(again, patched, "repatch must be byte-identical");
+    }
+
+    #[test]
+    fn inside_batch_wrong_class_fails_closed() {
+        // A class without checkInsideBlocks(List,Collector) hits NotFound
+        // (original bytes, no pool growth); the pool probes guard renames.
+        match patch_inside_batch(include_bytes!(
+            "../tests/fixtures/PalettedContainer.class"
+        )) {
+            Err(e) => assert!(
+                e.contains("absent from pool") || e.contains("not found"),
+                "{e}"
+            ),
+            Ok((out, outcome)) => {
+                assert_eq!(outcome, RetargetOutcome::NotFound);
+                assert_eq!(
+                    out,
+                    include_bytes!("../tests/fixtures/PalettedContainer.class").to_vec()
+                );
+            }
+        }
+    }
+
+    /// Dump artifacts for the offline JVM-verifier harness.
+    #[test]
+    fn dump_patched_for_verifier() {
+        let (entity, _) = patch_inside_batch(ENTITY).expect("patch");
+        std::fs::create_dir_all("tests/out").unwrap();
+        std::fs::write("tests/out/Entity.insidebatch.patched.class", &entity).unwrap();
     }
 }
 
