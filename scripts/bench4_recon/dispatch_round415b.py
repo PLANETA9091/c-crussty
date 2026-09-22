@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
-"""dispatch_round414.py — TASK-414: якоря ×2 fresh @master(a6b4f0b).
-Якоря = vanilla (lever_flag=""), band 6.0-9.5M, банк inputs exact.
+"""dispatch_round415b.py — TASK-415-B iter-2: gsel-batch ноги ×2
+@round-415-b-gsel2 head (1aec4f8 + fixed gsel slice, cmp415_gsel2).
+Банк inputs exact; lever_arg=1; НЕТ travel_diet/fluid_dirty_ledger.
+Refs = alias-ветки round-415-b-g1/g2 -> HEAD моей ветки.
 """
 import json, re, subprocess, sys, time, urllib.request
 
