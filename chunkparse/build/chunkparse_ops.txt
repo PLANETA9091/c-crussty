@@ -1,0 +1,28 @@
+Compiled from "ChunkParseOps.java"
+public final class net.minecraft.world.level.chunk.storage.ChunkParseOps {
+  static final int CACHE_CAP;
+  static final int SELFTEST_SECTIONS;
+  static final java.lang.String PFX;
+  static final java.lang.String CARRIER_UNION;
+  private static final java.util.Map<java.lang.Object, java.util.concurrent.ConcurrentHashMap<net.minecraft.nbt.CompoundTag, net.minecraft.world.level.chunk.PalettedContainer<?>>> CACHE;
+  private static long hits;
+  private static long misses;
+  private static long sections;
+  private static long evictions;
+  private static int selftestLeft;
+  private static boolean firstHitLogged;
+  private static final java.lang.ThreadLocal<int[]> DEPTH;
+  private static volatile java.lang.String twinName;
+  private static volatile java.lang.reflect.Method twinMethod;
+  private net.minecraft.world.level.chunk.storage.ChunkParseOps();
+  public static void init(java.lang.String);
+  public static net.minecraft.world.level.chunk.PalettedContainer<?> parseSection(com.mojang.serialization.Codec<?>, net.minecraft.world.level.ChunkPos, int, net.minecraft.nbt.CompoundTag);
+  private static net.minecraft.world.level.chunk.PalettedContainer<?> invokeTwin(java.lang.Object, net.minecraft.world.level.ChunkPos, int, net.minecraft.nbt.CompoundTag);
+  private static void selftest(net.minecraft.world.level.ChunkPos, int, java.lang.Object, net.minecraft.nbt.CompoundTag, net.minecraft.world.level.chunk.PalettedContainer<?>);
+  private static net.minecraft.world.level.chunk.PalettedContainer<?> vanillaReplica(java.lang.Object, net.minecraft.world.level.ChunkPos, int, net.minecraft.nbt.CompoundTag);
+  public static java.lang.String stats();
+  private static java.lang.Object lambda$vanillaReplica$2(java.lang.reflect.Constructor, java.lang.Object);
+  private static void lambda$vanillaReplica$1(net.minecraft.world.level.ChunkPos, int, java.lang.Object);
+  private static int[] lambda$static$0();
+  static {};
+}

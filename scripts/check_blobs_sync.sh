@@ -43,6 +43,10 @@ PY
   for marker in "$@"; do
     if [[ "$javap_out" == *"$marker"* ]]; then
       note "$blob: OK marker '$marker'"
+    elif python3 -c "import sys; sys.exit(0 if b'$marker' in open(sys.argv[1],'rb').read() else 1)" "$blob"; then
+      # indy-recipe lesson (x93/420a): concat constants fold into bootstrap
+      # method recipes — invisible to javap -c, alive in raw constant pool.
+      note "$blob: OK marker '$marker' (raw-byte cp grep, indy recipe)"
     else
       die "$blob: expected marker/flag '$marker' NOT in javap output (stale blob or missing gate)"
     fi
@@ -100,6 +104,15 @@ check_class \
   "entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
   "cmp414_cvs" "cmp412_eqsnapv3" "cmp420_colpush" \
   "native int eqProbe"
+
+# TASK-420-C chunk-pipeline plane (cmp420_chunk2): the bridge must carry the
+# lever marker + the parse-cache effect strings in its constant pool, and
+# declare the redirect entry points (descriptor pinned by build script javap
+# grep; flat-only pinned by build script '$' guard + rust delivery test).
+check_class \
+  "chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class" \
+  "cmp420_chunk2" "cmp420_colpush" "parse-cache first hit" "parse-cache selftest" \
+  "public static void init" "parseSection"
 
 # gate-flag consistency: every flag string accepted by the SOURCE gate must
 # also be present in the BLOB constant pool (covers the ×93 rebuild lesson).
