@@ -3043,6 +3043,530 @@ pub fn patch_inside_batch(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), St
 }
 
 // ---------------------------------------------------------------------------
+// ENTITYMAP FENCE (TASK-411-A k5b, cmp405_navplane lane): ChunkMap.entityMap
+// full-table race. Root cause (docs/TASK411_A_AIOOBE_ROOTCAUSE.md): the
+// unsynchronized fastutil Int2ObjectOpenHashMap is mutated from two thread
+// domains (population puts vs tick-phase removes) -> size/table desync ->
+// full table -> infinite containsKey probe (watchdog) + MapIterator
+// key[--pos] downscan "Index -1 ... length 131073".
+//
+// FIX: every Int2ObjectMap interface call site on entityMap is retargeted
+// to the EntityMapOps static fence helpers (monitor serialized on the map
+// instance; snapshot-safe iterators). LENGTH-PRESERVING rewrite:
+//   invokeinterface #idx, count (0xb9, 5 bytes)
+//     -> invokestatic #idx' (0xb8, 3 bytes) + 0x00 0x00 (2 nops)
+// The receiver becomes the first static argument (receiver-prepended
+// descriptor contract) — identical operand stack, identical instruction
+// length (branch offsets / exception ranges / StackMapTable UNTOUCHED).
+//
+// javap census on pristine kernel 1.21.10 ChunkMap.class (ALL sites are
+// `getfield #205 entityMap` immediately before the invoke):
+//   containsKey(I)Z x3 (addEntity x2, removeEntity x1)
+//   put(ILjava/lang/Object;)Ljava/lang/Object; x1 (addEntity)
+//   remove(I)Ljava/lang/Object; x1 (removeEntity)
+//   get(I)Ljava/lang/Object; x4 (sendToTrackingPlayers + 3 helpers)
+//   values()ObjectCollection x3 (addEntity warn, removeEntity,
+//                                 forEachEntityTrackedBy)
+// STRICT: exact census counts or NO patch at all (fail-dominant vanilla).
+// The read-only site in Entity.resendPossiblyDesyncedEntityData is
+// deliberately left vanilla (fail-dominant fallback for that site).
+// ---------------------------------------------------------------------------
+pub const EMAP_OPS_CLASS: &str = "net/minecraft/server/level/EntityMapOps";
+
+const EMAP_I2O: &str = "it/unimi/dsi/fastutil/ints/Int2ObjectMap";
+
+/// (from-name, from-desc, exact site census) — single source of truth.
+pub const EMAP_SITES: [(&str, &str, usize); 5] = [
+    ("containsKey", "(I)Z", 3),
+    ("put", "(ILjava/lang/Object;)Ljava/lang/Object;", 1),
+    ("remove", "(I)Ljava/lang/Object;", 1),
+    ("get", "(I)Ljava/lang/Object;", 4),
+    (
+        "values",
+        "()Lit/unimi/dsi/fastutil/objects/ObjectCollection;",
+        3,
+    ),
+];
+
+/// Total fence sites (= sum of the census).
+pub const EMAP_SITES_TOTAL: usize = 12;
+
+fn emap_to_desc(from_desc: &str) -> String {
+    // Receiver-prepended static form (same contract as
+    // retarget_virtual_to_static): the entityMap reference becomes arg0.
+    format!("(L{};{}", EMAP_I2O, &from_desc[1..])
+}
+
+/// Collect (code_start, code_len) spans of EVERY method's Code attribute.
+fn collect_code_spans(bytes: &[u8], pool: &Pool, methods_start: usize) -> Result<Vec<(usize, usize)>, String> {
+    let mut p = methods_start;
+    let count = usize::from(u16_at(bytes, p).ok_or("methods_count oob")?);
+    p += 2;
+    let mut spans = Vec::with_capacity(count);
+    for _ in 0..count {
+        let access = u16_at(bytes, p).ok_or("method access oob")?;
+        let name_idx = u16_at(bytes, p + 2).ok_or("method name oob")?;
+        let desc_idx = u16_at(bytes, p + 4).ok_or("method desc oob")?;
+        p += 6;
+        let attr_count = usize::from(u16_at(bytes, p).ok_or("method attr_count oob")?);
+        p += 2;
+        for _ in 0..attr_count {
+            let len = u32_at(bytes, p + 2).ok_or("attr len oob")? as usize;
+            let start = p;
+            p = p.checked_add(6 + len).ok_or("attr overflow")?;
+            if pool.utf8_value(u16_at(bytes, start).ok_or("attr name oob")?)
+                .as_deref()
+                == Some("Code")
+            {
+                let _ = (access, name_idx, desc_idx);
+                let data = start + 6;
+                let code_len = u32_at(bytes, data.checked_add(4).ok_or("code_len oob")?)
+                    .ok_or("code_len oob")? as usize;
+                let code_start = data.checked_add(8).ok_or("code start oob")?;
+                if code_start.checked_add(code_len).ok_or("code end oob")? > start + 6 + len {
+                    return Err("Code attr claims code past its own length".into());
+                }
+                spans.push((code_start, code_len));
+            }
+        }
+    }
+    Ok(spans)
+}
+
+/// Strict (exact census) length-preserving fence patch over the WHOLE
+/// ChunkMap class. Idempotent: sites already resolving to the fence
+/// helpers are classified AlreadyPatched (their counts must STILL match
+/// the census — drift fails closed).
+pub fn patch_chunkmap_entitymap(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or("bad classfile layout")?;
+    // Find-only probe (audit A4): a kernel without the fastutil utf8 can
+    // not carry the sites — fail closed BEFORE any pool mutation.
+    if layout.pool.find_utf8(EMAP_I2O).is_none() {
+        return Err(format!("{EMAP_I2O} absent from pool (kernel rename?)"));
+    }
+    let spans = collect_code_spans(bytes, &layout.pool, layout.methods_start)?;
+    let mut sites: Vec<(usize, u16)> = Vec::new(); // (abs offset of opcode, cp idx)
+    for (code_start, code_len) in spans {
+        let code = bytes
+            .get(code_start..code_start.checked_add(code_len).ok_or("code span oob")?)
+            .ok_or("code span oob")?;
+        let mut pc = 0usize;
+        while pc < code.len() {
+            let op = code[pc];
+            if op == 0xb9 || op == 0xb8 {
+                let b = code
+                    .get(pc + 1..pc + 3)
+                    .ok_or_else(|| "invoke operand truncated".to_string())?;
+                sites.push((code_start + pc, u16::from_be_bytes([b[0], b[1]])));
+                pc += 3; // 0xb9: +2 more bytes consumed below (count/zero)
+                if op == 0xb9 {
+                    pc += 2;
+                }
+                continue;
+            }
+            let extra = opcode_extra(op, code, pc)?;
+            pc = pc
+                .checked_add(1 + extra)
+                .ok_or_else(|| "code walk overflow".to_string())?;
+            if pc > code.len() {
+                return Err("truncated code (walk past end)".into());
+            }
+        }
+    }
+
+    // Classify every invoke site by its resolved triple. A from-site
+    // resolves to Int2ObjectMap (invokeinterface), an already-patched site
+    // resolves to EntityMapOps (invokestatic) — BOTH are visible to the
+    // walk (idempotency discipline of scan_invoke_sites).
+    let mut rewrite: Vec<usize> = Vec::new();
+    let mut already = 0usize;
+    let mut per_name: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+    for &(op_pc, cp_idx) in &sites {
+        let Some(parts) = layout.pool.methodref_parts(cp_idx) else {
+            continue;
+        };
+        if parts.0 == EMAP_I2O {
+            if EMAP_SITES
+                .iter()
+                .any(|(n, d, _)| *n == parts.1 && *d == parts.2)
+            {
+                rewrite.push(op_pc);
+                *per_name.entry(parts.1).or_insert(0) += 1;
+            }
+            // An Int2ObjectMap site with an UNEXPECTED name/desc = kernel
+            // drift -> strict failure (never rewrite a site we did not
+            // census).
+            else {
+                return Err(format!(
+                    "uncensused Int2ObjectMap site {}{} — kernel drift, fence rejected",
+                    parts.1, parts.2
+                ));
+            }
+        } else if parts.0 == EMAP_OPS_CLASS {
+            // Already-fenced site: must resolve to one of the helpers with
+            // the EXACT receiver-prepended descriptor.
+            let Some((_, from_desc, _)) = EMAP_SITES.iter().find(|(n, _, _)| *n == parts.1)
+            else {
+                return Err(format!(
+                    "unexpected EntityMapOps site {}{} — kernel drift, fence rejected",
+                    parts.1, parts.2
+                ));
+            };
+            if parts.2 != emap_to_desc(from_desc) {
+                return Err(format!(
+                    "fence descriptor drift at site {}{} — fence rejected",
+                    parts.1, parts.2
+                ));
+            }
+            already += 1;
+            *per_name.entry(parts.1).or_insert(0) += 1;
+        }
+    }
+    for (name, _desc, want) in &EMAP_SITES {
+        let got = per_name.get(*name).copied().unwrap_or(0);
+        if got != *want {
+            return Err(format!(
+                "emap census violated for {name}: {got} sites, expected {want} — fence rejected"
+            ));
+        }
+    }
+    if rewrite.is_empty() {
+        if already == EMAP_SITES_TOTAL {
+            return Ok((bytes.to_vec(), RetargetOutcome::AlreadyPatched { sites: already }));
+        }
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    }
+
+    // Append (or reuse) the fence Methodrefs — append-only, dedup.
+    let mut pool = layout.pool;
+    let mut idx_of: std::collections::HashMap<String, u16> = std::collections::HashMap::new();
+    for (name, desc, _n) in &EMAP_SITES {
+        let idx = pool.method_ref(EMAP_OPS_CLASS, name, &emap_to_desc(desc));
+        idx_of.insert(name.to_string(), idx);
+    }
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for fence refs".into());
+    }
+
+    // Splice: header + grown pool + tail; rewrite each matched site
+    // b9 xxxxxxxx (5B) -> b8 yyyy 00 00 (3B + 2 nops) — LENGTH PRESERVED.
+    let mut tail = bytes[layout.cp_end..].to_vec();
+    for &op_off in &rewrite {
+        let rel = op_off - layout.cp_end;
+        if rel + 4 >= tail.len() {
+            return Err("fence site outside class tail (corrupt layout?)".into());
+        }
+        let op = tail[rel];
+        if op != 0xb9 {
+            return Err(format!("fence site opcode {op:#x} is not invokeinterface"));
+        }
+        let cp_idx = u16::from_be_bytes([tail[rel + 1], tail[rel + 2]]);
+        let Some(parts) = pool.methodref_parts(cp_idx) else {
+            return Err("fence site operand does not resolve".into());
+        };
+        let idx = *idx_of.get(&parts.1).ok_or("no fence ref for site")?;
+        let want = idx.to_be_bytes();
+        tail[rel] = 0xb8; // invokestatic
+        tail[rel + 1] = want[0];
+        tail[rel + 2] = want[1];
+        tail[rel + 3] = 0x00; // nop (the invokeinterface count byte)
+        tail[rel + 4] = 0x00; // nop (the invokeinterface zero byte)
+    }
+    let mut out = Vec::with_capacity(bytes.len() + 64);
+    out.extend_from_slice(&bytes[0..8]); // magic, minor, major
+    out.extend_from_slice(&pool.next.to_be_bytes()); // new cp_count
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(&tail);
+    Ok((out, RetargetOutcome::Retargeted { sites: rewrite.len() }))
+}
+
+// ---------------------------------------------------------------------------
+// REFSYNC (TASK-412-A): ReferenceList mutator fence — the SECOND fastutil
+// race surface (a-k5b leg evidence, run 35698807454). The k5b emap fence
+// closed ChunkMap.entityMap; the SAME population-vs-region-worker race
+// then surfaced on moonrise ReferenceList.referenceToIndex
+// (Reference2IntOpenHashMap): watchdog RUNNABLE forever in
+// Reference2IntOpenHashMap.find:246 <- putIfAbsent:422 <-
+// ReferenceList.add:65 <- ServerEntityLookup.entityStartLoaded (main
+// thread, injection), plus 3278 AIOOBE ("Index -1 ... length 16385" =
+// downscan below slot 0 on the n+1 table at n=16384, x203 message-ful +
+// x3075 message-less) in the same population window.
+//
+// Fix: every ReferenceList add/remove/contains call site (the map
+// mutators + the map probe) is retargeted — LENGTH-PRESERVING
+// invokevirtual (0xb6, 3 bytes) -> invokestatic (0xb8, 3 bytes), the
+// opcode byte is the ONLY change (operand CP index and stack shape are
+// identical: the static helper consumes the receiver as its first
+// parameter) — to the EntityMapOps.refList* helpers (receiver-prepended
+// descriptor), each serializing on the LIST INSTANCE monitor. Read-only
+// array readers (size/getRawDataUnchecked) are deliberately left vanilla
+// (Entity.resendPossiblyDesyncedEntityData precedent: they cannot
+// corrupt the map; vanilla weakly-consistent iteration semantics).
+// OPCODE NOTE (test-caught): ReferenceList is a final CLASS, so its call
+// sites are invokevirtual 0xB6 — NOT invokeinterface 0xB9 (the emap
+// fence's Int2ObjectMap sites are interface invokes; this fence is the
+// 3-byte single-swap idiom of the Entity rng retarget, same as line ~1500).
+//
+// javap census on pristine kernel 1.21.10 (COMPLETE: ReferenceList is
+// final => every site is an invokevirtual whose Methodref owner is the
+// class name itself; binary constant-pool grep finds 12 referencing
+// classes, of which 8 carry add/remove/contains sites):
+//   EntityScheduler$EntitySchedulerTickList  add x1 remove x1
+//   BaseChunkSystemHooks                     add x3 remove x3
+//   NearbyPlayers$TrackedChunk               add x2 remove x1
+//   ServerEntityLookup                       add x1 remove x1
+//   CraftWorld                               add x1
+//   ChunkHolder              add x1 remove x1 contains x1
+//   ServerLevel              add x2 remove x2
+//   ChunkMap$TrackedEntity                   contains x1
+// TOTAL 22 sites (add x11, remove x9, contains x2). STRICT per-class
+// census or NO patch at all (fail-dominant vanilla).
+// ---------------------------------------------------------------------------
+/// The ReferenceList owner class (all retargeted sites resolve to it).
+pub const REFLIST_CLASS: &str = "ca/spottedleaf/moonrise/common/list/ReferenceList";
+
+/// (from-name, from-desc) pairs — add/remove/contains share the erased
+/// one-Object-arg shape; the static helpers take the receiver prepended.
+pub const REFSYNC_SITES: [(&str, &str); 3] = [
+    ("add", "(Ljava/lang/Object;)Z"),
+    ("remove", "(Ljava/lang/Object;)Z"),
+    ("contains", "(Ljava/lang/Object;)Z"),
+];
+
+/// Per-class STRICT census: (this_class, [(site-name, want)]).
+/// A class NOT in this table is rejected outright (kernel drift guard —
+/// the refsync compose runs on EXACTLY these 8 classes).
+pub const REFSYNC_CENSUS: [(&str, [(&str, usize); 3]); 8] = [
+    (
+        "io/papermc/paper/threadedregions/EntityScheduler$EntitySchedulerTickList",
+        [("add", 1), ("remove", 1), ("contains", 0)],
+    ),
+    (
+        "ca/spottedleaf/moonrise/paper/util/BaseChunkSystemHooks",
+        [("add", 3), ("remove", 3), ("contains", 0)],
+    ),
+    (
+        "ca/spottedleaf/moonrise/common/misc/NearbyPlayers$TrackedChunk",
+        [("add", 2), ("remove", 1), ("contains", 0)],
+    ),
+    (
+        "ca/spottedleaf/moonrise/patches/chunk_system/level/entity/server/ServerEntityLookup",
+        [("add", 1), ("remove", 1), ("contains", 0)],
+    ),
+    (
+        "org/bukkit/craftbukkit/CraftWorld",
+        [("add", 1), ("remove", 0), ("contains", 0)],
+    ),
+    (
+        "net/minecraft/server/level/ChunkHolder",
+        [("add", 1), ("remove", 1), ("contains", 1)],
+    ),
+    (
+        "net/minecraft/server/level/ServerLevel",
+        [("add", 2), ("remove", 2), ("contains", 0)],
+    ),
+    (
+        "net/minecraft/server/level/ChunkMap$TrackedEntity",
+        [("add", 0), ("remove", 0), ("contains", 1)],
+    ),
+];
+
+/// Total retargeted sites across the kernel (add 11 + remove 9 + contains 2).
+pub const REFSYNC_SITES_TOTAL: usize = 22;
+
+/// ReferenceList READ-ONLY members whose call sites are DELIBERATELY left
+/// vanilla (they touch only the `references` array / `count` snapshot, never
+/// the referenceToIndex map — the corruption surface is mutator-only).
+/// A ReferenceList site outside REFSYNC_SITES ∪ this allowlist is kernel
+/// drift => the whole class is rejected (fail-dominant).
+pub const REFSYNC_READONLY_SITES: [&str; 7] = [
+    "size",
+    "getRawData",
+    "getRawDataUnchecked",
+    "getChecked",
+    "getUnchecked",
+    "iterator",
+    "copy",
+];
+
+/// Receiver-prepended static descriptor for a ReferenceList mutator site.
+/// All three sites share the erased one-Object-arg boolean shape.
+fn refsync_to_desc() -> String {
+    format!("(L{};Ljava/lang/Object;)Z", REFLIST_CLASS)
+}
+
+/// Expected retargeted site count for a censused refsync class (0 = the
+/// class carries only read-only ReferenceList sites and stays vanilla).
+pub fn refsync_want_sites(class: &str) -> usize {
+    REFSYNC_CENSUS
+        .iter()
+        .find(|(c, _)| *c == class)
+        .map(|(_, w)| w.iter().map(|(_, n)| *n).sum())
+        .unwrap_or(0)
+}
+
+fn refsync_helper_name(from_name: &str) -> String {
+    let mut c = from_name.chars();
+    match c.next() {
+        Some(f) => format!("refList{}{}", f.to_ascii_uppercase(), c.as_str()),
+        None => "refList".to_string(),
+    }
+}
+
+/// Strict per-class retarget of ReferenceList add/remove/contains sites to
+/// the EntityMapOps.refList* fence helpers. Idempotent: already-retargeted
+/// sites (invokestatic to EntityMapOps with the refList* name + exact
+/// receiver-prepended descriptor) count as AlreadyPatched.
+pub fn patch_referencelist_callsites(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or("bad classfile layout")?;
+    let this_name = this_class_name(&layout).ok_or("cannot resolve this_class name")?;
+    let want: [(&str, usize); 3] = match REFSYNC_CENSUS.iter().find(|(c, _)| *c == this_name) {
+        Some((_, w)) => *w,
+        None => {
+            return Err(format!(
+                "class {this_name} is not in the refsync census — patch rejected"
+            ));
+        }
+    };
+    let spans = collect_code_spans(bytes, &layout.pool, layout.methods_start)?;
+    let mut sites: Vec<(usize, u16)> = Vec::new();
+    for (code_start, code_len) in spans {
+        let code = bytes
+            .get(code_start..code_start.checked_add(code_len).ok_or("code span oob")?)
+            .ok_or("code span oob")?;
+        let mut pc = 0usize;
+        while pc < code.len() {
+            let op = code[pc];
+            // 0xb6 invokevirtual (3 bytes) and 0xb8 invokestatic (3 bytes):
+            // vanilla ReferenceList sites are invokevirtual (final class);
+            // the static form is the ALREADY-PATCHED shape (idempotency).
+            if op == 0xb6 || op == 0xb8 {
+                let b = code
+                    .get(pc + 1..pc + 3)
+                    .ok_or_else(|| "invoke operand truncated".to_string())?;
+                sites.push((code_start + pc, u16::from_be_bytes([b[0], b[1]])));
+                pc += 3;
+                continue;
+            }
+            let extra = opcode_extra(op, code, pc)?;
+            pc = pc
+                .checked_add(1 + extra)
+                .ok_or_else(|| "code walk overflow".to_string())?;
+            if pc > code.len() {
+                return Err("truncated code (walk past end)".into());
+            }
+        }
+    }
+    let mut rewrite: Vec<usize> = Vec::new();
+    let mut already = 0usize;
+    let mut per_name: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+    for &(op_pc, cp_idx) in &sites {
+        let Some(parts) = layout.pool.methodref_parts(cp_idx) else {
+            continue;
+        };
+        if parts.0 == REFLIST_CLASS {
+            if REFSYNC_SITES
+                .iter()
+                .any(|(n, d)| *n == parts.1 && *d == parts.2)
+            {
+                rewrite.push(op_pc);
+                *per_name.entry(parts.1.to_string()).or_insert(0) += 1;
+            } else if REFSYNC_READONLY_SITES.contains(&parts.1.as_str()) {
+                // Read-only array reader: left vanilla by design (see the
+                // fence rationale above) — neither counted nor rewritten.
+            } else {
+                return Err(format!(
+                    "uncensused ReferenceList site {}{} in {this_name} — kernel drift, refsync rejected",
+                    parts.1, parts.2
+                ));
+            }
+        } else if parts.0 == EMAP_OPS_CLASS && parts.1.starts_with("refList") {
+            // Already-fenced site: helper name must map back to a censused
+            // site and the descriptor must be the exact receiver-prepended
+            // form.
+            let suffix = parts.1.strip_prefix("refList").unwrap_or("");
+            let from_name = if suffix.is_empty() {
+                String::new()
+            } else {
+                let mut c = suffix.chars();
+                match c.next() {
+                    Some(f) => format!("{}{}", f.to_ascii_lowercase(), c.as_str()),
+                    None => String::new(),
+                }
+            };
+            if !REFSYNC_SITES.iter().any(|(n, _)| *n == from_name)
+                || parts.2 != refsync_to_desc()
+            {
+                return Err(format!(
+                    "unexpected refsync helper site {}{} in {this_name} — kernel drift, refsync rejected",
+                    parts.1, parts.2
+                ));
+            }
+            already += 1;
+            *per_name.entry(from_name).or_insert(0) += 1;
+        }
+    }
+    for (name, want_n) in &want {
+        let got = per_name.get(*name).copied().unwrap_or(0);
+        if got != *want_n {
+            return Err(format!(
+                "refsync census violated for {this_name}.{name}: {got} sites, expected {want_n} — patch rejected"
+            ));
+        }
+    }
+    if rewrite.is_empty() {
+        let total: usize = want.iter().map(|(_, n)| *n).sum();
+        if already == total {
+            return Ok((bytes.to_vec(), RetargetOutcome::AlreadyPatched { sites: already }));
+        }
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    }
+
+    // Append (or reuse) the fence Methodrefs — append-only, dedup.
+    let mut pool = layout.pool;
+    for (name, _d) in &REFSYNC_SITES {
+        let _ = pool.method_ref(EMAP_OPS_CLASS, &refsync_helper_name(name), &refsync_to_desc());
+    }
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for refsync refs".into());
+    }
+
+    let mut tail = bytes[layout.cp_end..].to_vec();
+    for &op_off in &rewrite {
+        let rel = op_off - layout.cp_end;
+        if rel + 4 >= tail.len() {
+            return Err("refsync site outside class tail (corrupt layout?)".into());
+        }
+        let op = tail[rel];
+        if op != 0xb6 {
+            return Err(format!("refsync site opcode {op:#x} is not invokevirtual"));
+        }
+        let cp_idx = u16::from_be_bytes([tail[rel + 1], tail[rel + 2]]);
+        let Some(parts) = pool.methodref_parts(cp_idx) else {
+            return Err("refsync site operand does not resolve".into());
+        };
+        let idx =
+            pool.method_ref(EMAP_OPS_CLASS, &refsync_helper_name(&parts.1), &refsync_to_desc());
+        // LENGTH-PRESERVING 3-byte swap: invokevirtual (0xb6, 3 bytes) ->
+        // invokestatic (0xb8, 3 bytes). Opcode byte changes AND the 2-byte
+        // CP operand is repointed at the appended helper Methodref (the
+        // receiver becomes the helper's first parameter — same stack
+        // shape). No nops, no code-span shift => branch offsets and
+        // StackMapTable stay byte-identical.
+        let want_idx = idx.to_be_bytes();
+        tail[rel] = 0xb8; // invokestatic
+        tail[rel + 1] = want_idx[0];
+        tail[rel + 2] = want_idx[1];
+    }
+    let mut out = Vec::with_capacity(bytes.len() + 64);
+    out.extend_from_slice(&bytes[0..8]); // magic, minor, major
+    out.extend_from_slice(&pool.next.to_be_bytes()); // new cp_count
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(&tail);
+    Ok((out, RetargetOutcome::Retargeted { sites: rewrite.len() }))
+}
+
+// ---------------------------------------------------------------------------
 // FLAT-TRAVERSAL (S7-163, ARCH-ATTACK lever #9 — the inside-pipeline
 // traversal lane). The private int-overload
 //   Entity.checkInsideBlocks(Vec3, Vec3, StepBasedCollector, LongSet, int)I
@@ -7015,6 +7539,220 @@ mod region_threads {
         let (again, outcome2) = patch_region_tracker_chunkmap(&patched).expect("repatch");
         assert_eq!(outcome2, RetargetOutcome::AlreadyPatched { sites: 1 });
         assert_eq!(again, patched, "repatch must be byte-identical");
+    }
+
+    /// TASK-411-A k5b: the entityMap fence retargets the EXACT javap
+    /// census (containsKey x3 + put x1 + remove x1 + get x4 + values x3
+    /// = 12 sites) on the REAL pristine ChunkMap fixture, composes with
+    /// the region-tracker patch (tracker first, fence second — live boot
+    /// order), and re-patches idempotently (AlreadyPatched sites:12,
+    /// byte-identical). Every rewritten site must be invokestatic into
+    /// EntityMapOps with the receiver-prepended descriptor followed by
+    /// exactly two nops (length-preserving: code size UNCHANGED, so
+    /// branch offsets / exception ranges / StackMapTable stay valid).
+    #[test]
+    fn emap_fence_retargets_exactly_twelve_sites() {
+        let (patched, outcome) = patch_chunkmap_entitymap(CHUNKMAP).expect("patch");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 12 },
+            "entityMap fence = EXACTLY the 12 censused Int2ObjectMap sites"
+        );
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        // Pool grew coherently.
+        let cp_count = u16::from_be_bytes([patched[8], patched[9]]);
+        let (pool, cp_end) = Pool::parse(&patched, 10, cp_count).expect("cp parse");
+        let triples: Vec<_> = (1..pool.next)
+            .filter_map(|i| pool.methodref_parts(i))
+            .collect();
+        for (name, _d, _want) in EMAP_SITES.iter() {
+            let got = triples
+                .iter()
+                .filter(|t| t.0 == EMAP_OPS_CLASS && t.1 == *name)
+                .count();
+            assert_eq!(
+                got, 1,
+                "exactly ONE deduped fence Methodref for {name} (one ref, many sites)"
+            );
+        }
+        assert_eq!(
+            triples
+                .iter()
+                .filter(|t| t.0 == EMAP_OPS_CLASS)
+                .count(),
+            EMAP_SITES.len(),
+            "pool carries exactly the five fence helper refs"
+        );
+        // Walk the patched code: each fence site is b8 + 2 nops, and the
+        // class is otherwise length-preserving (cp grew, code spans did
+        // not move — re-scan must find the SAME 12 sites as already).
+        let (again, outcome2) = patch_chunkmap_entitymap(&patched).expect("repatch");
+        assert_eq!(
+            outcome2,
+            RetargetOutcome::AlreadyPatched { sites: 12 },
+            "second pass must classify all 12 fence sites as already-patched"
+        );
+        assert_eq!(again, patched, "repatch must be byte-identical");
+        // Compose contract with the live boot chain: tracker patch FIRST,
+        // fence SECOND (the tracker site in tick() must survive the fence
+        // walk untouched).
+        let (tracker_patched, t_outcome) =
+            patch_region_tracker_chunkmap(CHUNKMAP).expect("tracker patch");
+        assert_eq!(t_outcome, RetargetOutcome::Retargeted { sites: 1 });
+        let (both, f_outcome) = patch_chunkmap_entitymap(&tracker_patched).expect("fence patch");
+        assert_eq!(f_outcome, RetargetOutcome::Retargeted { sites: 12 });
+        let (tp, _cp_end2) = Pool::parse(&both, 10, cp_count).expect("cp parse");
+        let t2: Vec<_> = (1..tp.next)
+            .filter_map(|i| tp.methodref_parts(i))
+            .collect();
+        assert!(
+            t2.iter()
+                .any(|t| t.0 == "net/minecraft/server/level/TrackerTickOps"
+                    && t.1 == "newTrackerTick"),
+            "tracker site survives the fence compose"
+        );
+        let _ = cp_end;
+    }
+
+    /// Fail-dominant probe: the fence must refuse to patch a class
+    /// without the fastutil utf8 in its pool (kernel-rename guard).
+    #[test]
+    fn emap_fence_rejects_missing_fastutil_pool() {
+        // The SingleUserAreaMap fixture has no Int2ObjectMap utf8.
+        const SAM: &[u8] = include_bytes!("../tests/fixtures/SingleUserAreaMap.class");
+        let r = patch_chunkmap_entitymap(SAM);
+        assert!(r.is_err(), "fence must fail closed on a foreign class");
+    }
+
+    /// Dump artifacts for the offline JVM-verifier harness (emap).
+    #[test]
+    fn dump_emap_patched_for_verifier() {
+        let (patched, _) = patch_chunkmap_entitymap(CHUNKMAP).expect("patch");
+        std::fs::create_dir_all("tests/out").unwrap();
+        std::fs::write("tests/out/ChunkMap.emap.patched.class", &patched).unwrap();
+    }
+
+    // ---------------- REFSYNC (TASK-412-A) ----------------
+
+    const BASE_HOOKS: &[u8] = include_bytes!("../tests/fixtures/BaseChunkSystemHooks_real.class");
+    const NEARBY_CHUNK: &[u8] =
+        include_bytes!("../tests/fixtures/NearbyPlayers$TrackedChunk_real.class");
+    const TRACKED_ENTITY: &[u8] =
+        include_bytes!("../tests/fixtures/ChunkMap$TrackedEntity_real.class");
+    const SCHED_TICKLIST: &[u8] =
+        include_bytes!("../tests/fixtures/EntityScheduler$EntitySchedulerTickList_real.class");
+
+    /// TASK-412-A: the ReferenceList mutator fence retargets the EXACT
+    /// per-class javap census on REAL kernel fixtures (add/remove/contains
+    /// -> EntityMapOps.refList*), composes idempotently, and preserves
+    /// length (code spans untouched => branch offsets / StackMapTable
+    /// stay valid).
+    #[test]
+    fn refsync_retargets_exact_census_on_real_fixtures() {
+        for (fixture, class, sites) in [
+            (
+                BASE_HOOKS,
+                "ca/spottedleaf/moonrise/paper/util/BaseChunkSystemHooks",
+                6usize,
+            ),
+            (
+                NEARBY_CHUNK,
+                "ca/spottedleaf/moonrise/common/misc/NearbyPlayers$TrackedChunk",
+                3,
+            ),
+            (
+                TRACKED_ENTITY,
+                "net/minecraft/server/level/ChunkMap$TrackedEntity",
+                1,
+            ),
+            (
+                SCHED_TICKLIST,
+                "io/papermc/paper/threadedregions/EntityScheduler$EntitySchedulerTickList",
+                2,
+            ),
+        ] {
+            let (patched, outcome) = patch_referencelist_callsites(fixture).expect("patch");
+            assert_eq!(
+                outcome,
+                RetargetOutcome::Retargeted { sites },
+                "{class} must retarget EXACTLY its censused sites"
+            );
+            assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+            let cp_count = u16::from_be_bytes([patched[8], patched[9]]);
+            let (pool, _end) = Pool::parse(&patched, 10, cp_count).expect("cp parse");
+            let triples: Vec<_> = (1..pool.next)
+                .filter_map(|i| pool.methodref_parts(i))
+                .collect();
+            for helper in ["refListAdd", "refListRemove", "refListContains"] {
+                let got = triples
+                    .iter()
+                    .filter(|t| t.0 == EMAP_OPS_CLASS && t.1 == helper)
+                    .count();
+                assert!(got <= 1, "{helper}: at most one deduped Methodref");
+            }
+            // Idempotence: second pass classifies every site as already
+            // patched and is byte-identical.
+            let (again, outcome2) = patch_referencelist_callsites(&patched).expect("repatch");
+            assert_eq!(
+                outcome2,
+                RetargetOutcome::AlreadyPatched { sites },
+                "{class}: second pass must see all sites already fenced"
+            );
+            assert_eq!(again, patched, "{class}: repatch must be byte-identical");
+        }
+    }
+
+    /// Fail-dominant: a class OUTSIDE the census table is rejected.
+    #[test]
+    fn refsync_rejects_uncensused_class() {
+        const SAM: &[u8] = include_bytes!("../tests/fixtures/SingleUserAreaMap.class");
+        assert!(patch_referencelist_callsites(SAM).is_err());
+        assert!(patch_referencelist_callsites(CHUNKMAP).is_err());
+    }
+
+    /// The census table must sum to the documented totals
+    /// (add 11 + remove 9 + contains 2 = 22 sites across 8 classes).
+    #[test]
+    fn refsync_census_table_sums_to_22_sites() {
+        let mut per = std::collections::HashMap::new();
+        for (_, sites) in REFSYNC_CENSUS.iter() {
+            for (name, n) in sites.iter() {
+                *per.entry(*name).or_insert(0usize) += n;
+            }
+        }
+        assert_eq!(per.get("add"), Some(&11));
+        assert_eq!(per.get("remove"), Some(&9));
+        assert_eq!(per.get("contains"), Some(&2));
+        let total: usize = per.values().sum();
+        assert_eq!(total, REFSYNC_SITES_TOTAL);
+        // Helper naming contract matches the EntityMapOps.java source.
+        assert_eq!(refsync_helper_name("add"), "refListAdd");
+        assert_eq!(refsync_helper_name("remove"), "refListRemove");
+        assert_eq!(refsync_helper_name("contains"), "refListContains");
+        assert_eq!(
+            refsync_to_desc(),
+            "(Lca/spottedleaf/moonrise/common/list/ReferenceList;Ljava/lang/Object;)Z"
+        );
+    }
+
+    /// Dump artifacts for the offline JVM-verifier harness (refsync).
+    #[test]
+    fn dump_refsync_patched_for_verifier() {
+        std::fs::create_dir_all("tests/out").unwrap();
+        for (fixture, out) in [
+            (BASE_HOOKS, "BaseChunkSystemHooks.refsync.patched.class"),
+            (
+                NEARBY_CHUNK,
+                "NearbyPlayers$TrackedChunk.refsync.patched.class",
+            ),
+            (
+                SCHED_TICKLIST,
+                "EntityScheduler$EntitySchedulerTickList.refsync.patched.class",
+            ),
+        ] {
+            let (patched, _) = patch_referencelist_callsites(fixture).expect("patch");
+            std::fs::write(format!("tests/out/{out}"), &patched).unwrap();
+        }
     }
 
     #[test]
