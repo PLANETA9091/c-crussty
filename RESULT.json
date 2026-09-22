@@ -1,14 +1,14 @@
 {
   "agent": "A",
-  "vector": "k5b nav A* node-pool AIOOBE fix",
+  "vector": "k5b: ChunkMap.entityMap full-table race fence (12-site monitor fence) + navpool fail-dominant hardening",
   "branch": "round-411-a-nav",
   "run_id": null,
   "tps_med": null,
   "delta_pair_pct": null,
   "lane": "cmp405_navplane",
   "RAM": null,
-  "parity": "pending",
-  "verdict": "ROOT-CAUSED: AIOOBE 131073 = ChunkMap.entityMap full-table race (region-threads era), NOT navpool — round-round409anchorb (no navpool) = 26,215x same signature; ak5 navpool markers healthy (73x EFFECT). Navpool fail-dominant hardening in progress",
-  "evidence": "docs/TASK411_A_AIOOBE_ROOTCAUSE.md: watchdog stuck containsKey:349<-ChunkMap.addEntity:953; 5x 'Index -1 length 131073' = fastutil MapIterator downscan on full table (n=131072, window 49153..98304 tracked entities)",
-  "what": "TASK-411-A step-1 root-cause closed; hardening next (hypotheses a-d: empty-pop/negative-hash/reuse-during-remove/MAP_CAP)"
+  "parity": "cargo test --lib 226/226 GREEN (empty-pop/negative-hash/reuse + emap 12-site census/idempotent/foreign-class-reject) + offline JVMTI probe RETRANSFORM OK / SEMANTIC OK; vanilla bit-in-byte (fallback = ваниль)",
+  "verdict": "FIX IMPLEMENTED: entityMap full-table race fenced — 12 Int2ObjectMap sites in ChunkMap retargeted (length-preserving b9->b8+2nops) to EntityMapOps monitor-serialized helpers (per-map sectional lock => size/table invariant cannot desync => infinite probe & key[--pos] downscan impossible by construction); values() iterators created under map monitor + bound-checked EntityMapSafeItr (fail-dominant, AIOOBE degrades to early iteration end); strict census 3+1+1+4+3=12 else vanilla; probe-then-patch (failed define = vanilla entityMap); navpool hardening: try_node bound-checked arena accessors, gen-tagged validate-before-index, Throwable->vanilla clear fallback in prepare/getNode",
+  "evidence": "classfile.rs emap_fence_retargets_exactly_twelve_sites (compose with tracker patch, byte-identical repatch) + emap_fence_rejects_missing_fastutil_pool; region_threads.rs compose-onto-tracker-patched single retransform; docs/TASK411_A_AIOOBE_ROOTCAUSE.md",
+  "what": "TASK-412-A: fix committed+pushed; dispatch round-412-a-k5b on this sha (world-bench-parallel.yml, radius 640, sec 300, fp 4, pop 150000/seed 42, band 6.0-9.5M, lever cmp405_navplane=1)"
 }

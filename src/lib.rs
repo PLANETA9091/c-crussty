@@ -17,6 +17,7 @@
 
 mod alloc_diet;
 mod area_map;
+mod emap;
 mod perlin_noise;
 mod batch_api;
 mod batch_collector;
