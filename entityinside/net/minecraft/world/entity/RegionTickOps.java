@@ -384,8 +384,31 @@ public final class RegionTickOps {
     /** Main-thread-only snapshot length scratch (no per-tick alloc). */
     private static int snapLen;
 
+    /**
+     * TASK-419-A (colpush): STRICT-eq java-гейт носителя (ветка НЕ исполняется
+     * под другими флагами ⇒ lazy resolution ColpushOps не срабатывает —
+     * класс может быть вообще не определён rust-стороной, NCDFE невозможен).
+     */
+    private static final boolean COLPUSH_ARMED = colpushArmed();
+
+    private static boolean colpushArmed() {
+        String f = System.getenv("CRUSSTY_LEVER_FLAG");
+        return f != null && f.trim().equals("cmp419_colpush");
+    }
+
     /** Retarget of the single ServerLevel.tick forEach call site (1:1 stack). */
     public static void forEach(EntityTickList list, Consumer<Entity> consumer) {
+        // TASK-419-A (colpush): ОДИН bulk colpushTick JNI за тик, main-поток,
+        // ДО GO-барьера фазы воркеров (0 гонок: воркеры ещё не тикнули ни одну
+        // сущность этого тика; rust lazy tryLock — конвой невозможен). Свежесть
+        // строк = end-of-previous-tick снапшот (fresh == tick-1).
+        if (COLPUSH_ARMED) {
+            try {
+                ColpushOps.bulkTick();
+            } catch (Throwable t) {
+                System.err.println("[crussty-plugin] cmp419_colpush: bulkTick threw " + t);
+            }
+        }
         if (BATCH_COLLECTOR && (++telemetryTicks % TELEMETRY_INTERVAL) == 0L) {
             System.err.println(
                     "[crussty-plugin] batch_collector: telemetry tick=" + telemetryTicks

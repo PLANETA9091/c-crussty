@@ -239,6 +239,9 @@ fn eqsnap_mode() -> bool {
         })
         .as_str();
     f == "cmp411_eqsnap" || f == "cmp412_eqsnapv3" || f == "cmp414_cvs" || f == "cmp417_bq"
+        // TASK-419-A (colpush): колпаш-носитель — mob natives (probe/remove)
+        // и read-views живут; colpush_plane_refresh кормит колонки.
+        || f == "cmp419_colpush"
 }
 
 /// Strict gate: natives work only under the exact lever flag (STRICT eq;
@@ -275,6 +278,10 @@ fn lever_mode() -> bool {
         // cmp412_meganav || eqsnap-плоскость); eqsnap-режим (DeltaShard
         // upserts, drain O(dirty)) берёт вверх в mob_upsert/лестнице push.
         || f == "cmp412_eqsnapv3" || f == "cmp414_cvs" || f == "cmp417_bq"
+        // TASK-419-A (colpush): STRICT OR — колпаш-носитель несёт eqsnap-
+        // плоскость (drain шардов пуст, плоские колонки кормит
+        // colpush_plane_refresh одним WLOCK/тик).
+        || f == "cmp419_colpush"
         // TASK-410-C (eindexq): K3-пивот R2 — SoA-плоскость = источник
         // популяции для goal-query CSR-снапшота (EntityQueryOps.eqEpoch;
         // sscan-прецедент TASK-406-E).
@@ -285,6 +292,10 @@ fn lever_mode() -> bool {
         // TASK-411-C (eqsnap, v2): dirty-дельты — upserts в пер-потоковые
         // шарды (0 локов), eq_epoch сливает их одним bulk-JNI/тик (O(dirty)).
         || f == "cmp411_eqsnap"
+        // TASK-419-A (colpush): колпаш-носитель — per-entity mobUpsert не
+        // вызывается (pushEntities whole-body redirect), плоскость кормится
+        // colpush_plane_refresh; read-views sscan/ai/eq сохранены.
+        || f == "cmp419_colpush"
 }
 
 // ---------------------------------------------------------------------------
@@ -440,6 +451,60 @@ pub(crate) fn drain_eqsnap_shards() -> usize {
         total += s.drain_into(d);
     }
     total
+}
+
+/// TASK-419-A (colpush): ОДИН bulk WLOCK-рефреш плоских колонок плоскости из
+/// java-строк колпаша (COL_D/COL_I — персистентные массивы ColpushOps,
+/// записанные per-entity в aiStep БЕЗ JNI). Обновляются ТОЛЬКО строки с
+/// fresh == want_tick (затиканные СУЩНОСТИ этого тика) — невиденные строки
+/// сохраняют прежнее состояние (тот же контракт, что у eqsnap-drain: нетик
+/// = не-дельта; НЕ-очистка alive у дальних мобов = паритет sscan-despawn).
+/// hw = max(hx, hz) — контракт суперсета плоскости (x/z полуэкстенты).
+/// Cell-цепи поддерживаются soa_upsert'ом (insert-or-move), зеркало
+/// mirror_mode() под колпашем инертно (cmp402_comp-флаги не активны).
+/// Один WLOCK + seqlock-брэкет — читатели sscan/ai/eq видят КОНСИСТЕНТНОЕ
+/// SoA-состояние; вызывающий (colpush_tick, main-поток ДО GO-барьера) не
+/// конкурирует с ai/eq-эпохами воркеров (после GO). Returns refreshed rows.
+pub(crate) fn colpush_plane_refresh(n: usize, d: &[f64], i: &[i32], want_tick: i32) -> usize {
+    if !lever_mode() || n == 0 {
+        return 0;
+    }
+    if d.len() < n * crate::colpush::ROW_D || i.len() < n * crate::colpush::ROW_I {
+        return 0; // структурный дрейф буферов — java дизармится отдельно
+    }
+    let _g = WLOCK.lock().unwrap_or_else(|p| p.into_inner());
+    ensure_plane();
+    let v = VERSION.fetch_add(1, Ordering::AcqRel); // → odd
+    debug_assert!(v % 2 == 0);
+    let plane = data_mut();
+    let mut rows = 0usize;
+    for id in 0..n {
+        let flags = i[id * crate::colpush::ROW_I + 1];
+        let fresh = i[id * crate::colpush::ROW_I + 2];
+        if fresh != want_tick || flags & crate::colpush::FLAG_INCLUDE == 0 {
+            continue;
+        }
+        let b = id * crate::colpush::ROW_D;
+        let (cx, cy, cz, hx, hz, hh) = (d[b], d[b + 1], d[b + 2], d[b + 3], d[b + 4], d[b + 5]);
+        if !(cx.is_finite() && cy.is_finite() && cz.is_finite())
+            || !(hx.is_finite() && hz.is_finite() && hh.is_finite())
+        {
+            continue;
+        }
+        let lid = i[id * crate::colpush::ROW_I];
+        let k = cell_key(
+            lid,
+            cx.floor() as i32,
+            cy.floor() as i32,
+            cz.floor() as i32,
+        );
+        let hw = if hx > hz { hx } else { hz };
+        if soa_upsert(plane, id, k, cx, cy, cz, hw, hh) == 0 {
+            rows += 1;
+        }
+    }
+    VERSION.fetch_add(1, Ordering::AcqRel); // → even
+    rows
 }
 
 /// TASK-410-C (eindexq): read view for the goal-query CSR epoch pass —

@@ -70,26 +70,35 @@ check_class \
 
 check_class \
   "queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class" \
-  "cmp417_bq" "cmp412_b2p1" "selfTest" "isHardCollidingProbe"
+  "cmp417_bq" "cmp419_colpush" "cmp412_b2p1" "selfTest" "isHardCollidingProbe"
 
 check_class \
   "mobai/build/net/minecraft/world/entity/MobAiOps.class" \
-  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
+  "cmp417_bq" "cmp419_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
   "native"
 
 check_class \
   "sscan/build/net/minecraft/world/entity/MobScanOps.class" \
-  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
+  "cmp417_bq" "cmp419_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
   "native"
 
 check_class \
   "mobpush/build/net/minecraft/world/entity/MobPushOps.class" \
-  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
-  "native"
+  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp419_colpush" \
+  "native int mobProbe" "boxFor" "colpushSweep"
+
+check_class \
+  "colpush/build/net/minecraft/world/entity/ColpushOps.class" \
+  "cmp419_colpush" "pushEntities" "bulkTick" "selfTest" "armed" \
+  "native int colpushProbe" "native int colpushTick"
+
+check_class \
+  "entityinside/build/net/minecraft/world/entity/RegionTickOps.class" \
+  "cmp419_colpush" "COLPUSH_ARMED"
 
 check_class \
   "entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
-  "cmp414_cvs" "cmp412_eqsnapv3" \
+  "cmp414_cvs" "cmp412_eqsnapv3" "cmp419_colpush" \
   "native int eqProbe"
 
 # gate-flag consistency: every flag string accepted by the SOURCE gate must
@@ -101,7 +110,9 @@ for pair in \
   "entitygoalquery/net/minecraft/world/entity/EntityGoalQueryOps.java:entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
   "entityinside/net/minecraft/world/entity/ItemEntityManager.java:entityinside/build/net/minecraft/world/entity/ItemEntityManager.class" \
   "entitygoalquery/net/minecraft/world/entity/EntityGoalQueryOps.java:entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
-  "queryplane/net/minecraft/world/entity/QueryPlaneOps.java:queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class"
+  "queryplane/net/minecraft/world/entity/QueryPlaneOps.java:queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class" \
+  "colpush/net/minecraft/world/entity/ColpushOps.java:colpush/build/net/minecraft/world/entity/ColpushOps.class" \
+  "entityinside/net/minecraft/world/entity/RegionTickOps.java:entityinside/build/net/minecraft/world/entity/RegionTickOps.class"
 do
   src="${pair%%:*}"; blob="${pair##*:}"
   flags=$(grep -o '"cmp[0-9_a-z]*"' "$src" | tr -d '"' | sort -u)
@@ -124,6 +135,8 @@ check_flat_matches_nested "mobai/build" "net/minecraft/world/entity/MobAiOps"
 check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/ItemEntityManager"
 check_flat_matches_nested "entitygoalquery/build" "net/minecraft/world/entity/EntityGoalQueryOps"
 check_flat_matches_nested "queryplane/build" "net/minecraft/world/entity/QueryPlaneOps"
+check_flat_matches_nested "colpush/build" "net/minecraft/world/entity/ColpushOps"
+check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/RegionTickOps"
 
 if [ "$FAIL" = "0" ]; then
   echo "check_blobs_sync: ALL IN SYNC"
