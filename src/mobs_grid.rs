@@ -66,7 +66,7 @@ pub(crate) fn mirror_mode() -> bool {
                     // TASK-406-E: композит раунда-406 включает mirror-grid.
                     || v.trim() == "cmp406_sscan"
                     // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
-                    || v.trim() == "cmp409_multi"
+                    || v.trim() == "cmp409_multi" || v.trim() == "cmp412_meganav"
             })
             .unwrap_or(false)
     })

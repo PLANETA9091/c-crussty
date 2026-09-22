@@ -219,7 +219,7 @@ fn lever_mode() -> bool {
         // TASK-406-E: композит раунда-406 — SoA-плоскость primary push
         // broadphase + источник популяции для sscanEpoch (despawn-scan column).
         || f == "cmp406_sscan"
-        || f == "cmp409_multi"
+        || f == "cmp409_multi" || f == "cmp412_meganav"
 }
 
 /// Mirror-plane selector: the sharded grid (src/mobs_grid.rs) is armed ONLY
