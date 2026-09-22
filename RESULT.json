@@ -3,7 +3,13 @@
   "task": "TASK-414-B blob-sync revival",
   "vector": "meganav items-plane revival (gate-omission fix) + eqsnap-v3 re-dispatch on race-fix 109e4d7, leg flag cmp414_cvs",
   "branch": "round-414-b-cvs",
-  "step": "3-racefix-merged",
-  "blob_root_cause": "ROOT-CAUSE CONFIRMED (not stale blob, but GATE-OMISSION): at 43a8318 eqsnap-v3 composite extended ALL 12 rust gate files with cmp412_eqsnapv3 and only 2 java files (EntityGoalQueryOps+MobPushOps); ItemEntityManager.java (ENABLED/REST_PLANE/DESPAWN2), MobAiOps.java, MobScanOps.java gates END at cmp412_meganav. With flag cmp412_eqsnapv3 at cv3b-1: ItemEntityManager.ENABLED=false -> items-plane (rest-plane+index+lifetime-heap) asleep -> boot-log 'items_restplane ARMED' absent -> spark items lane 34.23% (vanilla items ticking). java source and blob are IN SYNC (both lack the flag) - lesson x93 blob-sync applies to the rebuild step after gate extension",
-  "evidence": "merge 109e4d7 (REFSYNC v2 fence, 22 sites, EntityMapOps+SafeItr+SafeValues+fixtures, classfile.rs +409 auto-merged clean, region_threads.rs fence layer) merged into round-414-b-cvs; patched-kernel.jar now present in tree; RESULT.json conflict resolved ours"
+  "step": "4-gates-extended-blobs-rebuilt-javap-gate-green",
+  "blob_root_cause": "GATE-OMISSION: java gates of ItemEntityManager (ENABLED/REST_PLANE/DESPAWN2), MobAiOps, MobScanOps ended at cmp412_meganav; under cmp412_eqsnapv3 (cv3b-1) ItemEntityManager.ENABLED=false -> items-plane asleep -> 'items_restplane ARMED' absent -> items 34.23%. Rust side was fully extended (12/12 files) - asymmetry java-vs-rust",
+  "fix_applied": {
+    "java_gates_extended": ["ItemEntityManager.java x3 gates (ENABLED/REST_PLANE/DESPAWN2)", "MobAiOps.java", "MobScanOps.java", "MobPushOps.java x2 (leverEnabled+eqsnapEnabled)", "EntityGoalQueryOps.java"],
+    "rust_gates_extended": "12 files, 33 sites: collide_batch, entity_query(enabled+eqsnap-labelling+test-helper), items_index, items_manager, mobs_ai, mobs_grid, mobs_manager(main+ARM branches), mobs_soa(dirty-delta switch+population), mobs_sscan, nav_plane(emap+navpool delegate), stagger, tickplane — all accept cmp414_cvs STRICT OR",
+    "blobs_rebuilt": ["mobpush/build/MobPushOps.class", "sscan/build/MobScanOps.class (+MobPushOps side-product)", "mobai/build/MobAiOps.class", "entityinside/build/ItemEntityManager.class", "entitygoalquery/build/EntityGoalQueryOps.class"],
+    "javap_gate": "scripts/check_blobs_sync.sh GREEN (ALL IN SYNC): ARM markers + gate flags + native decls + major65 + source<->blob flag consistency for all 5 lever blobs; SIGPIPE-race fix (bash pattern match instead of grep -q on pipe)"
+  },
+  "evidence": "javap: ItemEntityManager.class has cmp414_cvs x3 + 'items_restplane ARMED' + native idxProbe/lifetimeDue; check_blobs_sync.sh exit 0"
 }

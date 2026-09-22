@@ -79,9 +79,9 @@ const QRETRY: u32 = 128;
 fn enabled() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp406_sscan") | Ok("cmp409_multi") | Ok("cmp412_meganav")
+        Ok("cmp406_sscan") | Ok("cmp409_multi") | Ok("cmp412_meganav") | Ok("cmp414_cvs")
             // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
-            | Ok("cmp412_eqsnapv3")
+            | Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs")
     )
 }
 
