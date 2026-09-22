@@ -1,23 +1,22 @@
 {
-  "agent": "412-F-upper",
-  "vector": "LAW-7 MEGA-COMPOSITION: cmp412_meganav = multi(f7d04d2: comp(stagtick)+aibatch+sscan) ⊕ navplane+navpool(5d8af33) — мега-композит реплицированных векторов эры + nav-подсистема (закон 6: pathfinder-slice: navDecide bulk + A* node-pool)",
-  "branch": "round-412-f-meganav",
-  "base": "f7d04d2 (round-408-f-multi, pair ≈+21pp ×3) ⊕ origin/round-405-a-nav @ 5d8af33 (navplane серия +9.5/+10.6 2/3 GREEN)",
-  "gate": {
-    "lever_flag": "cmp412_meganav",
-    "strict_eq": true,
-    "gate_sites_extended": [
-      "rust: stagger/mobs_grid/mobs_sscan/tickplane/items_index/mobs_soa/items_manager x2/collide_batch x2/mobs_manager x2/nav_plane (11)",
-      "java: MobPushOps x2 / MobAiOps / ItemEntityManager x3 / MobScanOps (7)"
-    ],
-    "empty_flag": "vanilla bit-for-bit"
+  "agent": "TASK-412-C",
+  "vector": "eindex K4-v2 (тик 15:08+08, продолжение TASK-411-C): cmp411_eqsnap dirty-дельты — mob_upsert аппендит (id,alive,x,y,z,hw,hh) в пер-потоковые DeltaShard'ы (0 локов/0 seqlock/0 cell-хэша), eq_epoch СНАЧАЛА один bulk-drain O(dirty) в плоские колонки, ПОТОМ прежний full chain-build (self-consistency сохранена); pushables лестница под eqsnap = снапшот → vanillaFill (легаси mobQuery/grid пропущены — цепи плоскости невалидны), точная ваниль = fail-closed",
+  "branch": "round-405-c-eindex (worktree /home/z/rounds/ROUND-411/agent-c, HEAD c0f97e5 = v2 cmp411_eqsnap dirty-дельты)",
+  "background": "cl1 run 35691270899 = RED 0.5 TPS при лейнах ВНИЗ (broadphase 15.66→7.64% — плоскость двигается, полный rebuild был дорог; 84140 samples: mob_upsert 24.9% CPU per-entity WLOCK+JNI КАЖДЫЙ тик) — dirty-дельты = прямой ответ на пост-мортем",
+  "stage": "V2 COMMITTED+VERIFIED: cargo test --lib 225 green / 0 failed / 1 ignored (+eqsnap_shard_drain_applies_dirty_rows: dirty-apply/move/last-write-wins/NaN+OOR-ghost-гварды/генерация-ресет/переполнение), c4-target УДАЛЕН сразу; grep-чеклист STRICT-eq по всем сайтам ПРОЙДЕН (mobs_soa.rs eqsnap_mode/lever_mode/drain/upsert-shard/mob_query ERR_RANGE; entity_query.rs enabled/eqsnap-флаг/ARM-лейбл/drain-EFFECT маркер; MobPushOps leverEnabled/eqsnapEnabled/K4_LABEL/RADIUS_GATE (K4||EQSNAP)?2.0:1.0/лестница eqsnap=снапшот→vanillaFill; EntityGoalQueryOps leverEnabled/FLAG_LABEL); хуки учёта cmp405_eindex ВЫКЛЮЧЕНЫ (GATE_LEVER-гейт, диспатч-флаг их не активирует); blob-sync OK (ровно-1-classfile: MobPushOps 11756B, EntityGoalQueryOps 9696B, свежее .java)",
+  "dispatch_plan": {
+    "alias": "round-412-c-l2",
+    "workflow": "world-bench-parallel.yml (труба идентична c-crussty, verified diff-clean)",
+    "inputs_bank": "radius 640, seconds 300, fake_players 4, fluid_guard 1, gc_tune 3, inside_cache 1, flush_diet 1, fluid_dirty 0, fluid_bitmask 0, region_threads 4, batch_collector 1, inside_bitmask 0, skip_store_bb 0, region_steal 0, bu_defer 0, population_target 150000, population_seed 42, server_xmx 10G, server_xms 4G, cpu_band_min 6000000, cpu_band_max 9500000",
+    "lever": "cmp411_eqsnap=1",
+    "excluded": "travel_diet / fluid_dirty_ledger НЕ шлются (слотов в workflow нет)"
   },
-  "build": {
-    "javac": "MobPushOps 10505B + MobAiOps 4231B + MobScanOps 5551B + ItemEntityManager 20258B (--release 21, cp=kernel396a+fastutil+paper-api-1.21.10+adventure-api/key-4.24.0) OK",
-    "cargo_check": "PASS 0 errors",
-    "cargo_test": "247 passed / 0 failed / 1 ignored",
-    "target_deleted": true
-  },
-  "status": "DISPATCHED meganav1/meganav2 (world-bench, bank exact)",
-  "expectation": "multi +21 ⊕ navplane +9.5 (nav_ai лейн multi 7.54% — nav-плоскость НЕ перекрыта mob-окном) → ожидание pair ≈+25-30pp, ступень эры"
+  "next": "poll run → absorb_round.py <run_id> round412cl2 → pair-by-runner vs пул {2.2@6840530, 2.2@6858619, 2.1@6776758, 2.4@6604167, 2.2@6976430, 2.25@6833921, 2.30@6846036} (ближайший runner) → BAND 6.0-9.5M вне = BAND-DISCARD ре-ролл ≤2 → чек-лист ARM+EFFECT(first gate hit / shard-drain epoch ok)+AIOOBE=0 → Δ<80% = рисёрч",
+  "run_id": null,
+  "gates_checklist": "ARM 'cmp411_eqsnap: ARMED goal-query' + 'cmp411_eqsnap: ARMED soa-population+push-snapshot' (rust mobs_manager/entity_query), EFFECT 'epoch ok' rows>1000 + 'shard-drain EFFECT armed (first bulk drain applied' + 'push-snapshot EFFECT', grep AIOOBE=0, grep oversized=0 (gate 2.0 не должен стрелять на бенч-популяции)",
+  "evidence": [
+    "worklog TASK-411-C: cl1 пост-мортем 35691270899 (broadphase 15.66→7.64, mob_upsert 24.9%)",
+    "commit c0f97e5: v2 dirty-дельты (DeltaShard 16×8192, reserve fetch_add/published fetch_max Release, drain под WLOCK одним потребителем)",
+    "cargo 225 green (target удалён), blob-sync, STRICT-eq grep-чеклист этого тика"
+  ]
 }

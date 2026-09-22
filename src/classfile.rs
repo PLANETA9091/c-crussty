@@ -7466,3 +7466,155 @@ mod navpool {
         assert_eq!(again, patched);
     }
 }
+// ---------------------------------------------------------------------------
+// TASK-405-C (vector eindex — lever cmp405_eindex): EntityLookup query-body
+// redirects + note-site retargets for the Rust entity-chunk mirror
+// (src/entity_index.rs). Delivery contract (javap round-j2b):
+//   - the 4 core getEntities/getHardCollidingEntities bodies are redirected
+//     whole (receiver-prepended static form, EntityIndexOps.getEntitiesE/T/C/
+//     getHardCollidingE); the trailing-int overloads stay vanilla;
+//   - the 4 ChunkEntitySlices.addEntity/removeEntity invoke sites inside
+//     EntityLookup.addEntity/removeEntity/moveEntity are retargeted to
+//     EntityIndexOps.noteAdd/noteRemove;
+//   - the 5 Entity.setBoundingBox invoke sites (Entity.setPosRaw(DDDZ),
+//     Shulker.onSyncedDataUpdated, HangingEntity/LeashFenceKnotEntity
+//     .recalculateBoundingBox, Interaction.readAdditionalSaveData) are
+//     retargeted to the per-owner noteBB overloads.
+// All-or-nothing per class: any NotFound/mismatch → Err (fail closed).
+// ---------------------------------------------------------------------------
+
+pub const EIDX_OPS_CLASS: &str = "net/minecraft/world/entity/EntityIndexOps";
+pub const EIDX_LOOKUP_CLASS: &str =
+    "ca/spottedleaf/moonrise/patches/chunk_system/level/entity/EntityLookup";
+pub const EIDX_SLICES_CLASS: &str =
+    "ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices";
+
+const EIDX_GENT_DESC: &str = "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;Ljava/util/List;Ljava/util/function/Predicate;)V";
+const EIDX_GTYPE_DESC: &str = "(Lnet/minecraft/world/entity/EntityType;Lnet/minecraft/world/phys/AABB;Ljava/util/List;Ljava/util/function/Predicate;)V";
+const EIDX_GCLASS_DESC: &str = "(Ljava/lang/Class;Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/phys/AABB;Ljava/util/List;Ljava/util/function/Predicate;)V";
+const EIDX_MOVE_DESC: &str =
+    "(Lnet/minecraft/world/entity/Entity;)Lca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices;";
+const EIDX_SLICES_ADD_DESC: &str = "(Lnet/minecraft/world/entity/Entity;I)Z";
+const EIDX_BB_DESC: &str = "(Lnet/minecraft/world/phys/AABB;)V";
+
+fn eidx_static(desc: &str) -> String {
+    format!("(L{EIDX_LOOKUP_CLASS};{}", &desc[1..])
+}
+
+/// The 4 query-body redirects (EntityLookup). Count: 4 Retargeted (or
+/// AlreadyPatched after a re-serve) = success; anything else = Err.
+pub fn patch_eindex_lookup_redirects(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let specs: [(&str, &str, &str); 4] = [
+        ("getEntities", EIDX_GENT_DESC, "getEntitiesE"),
+        ("getHardCollidingEntities", EIDX_GENT_DESC, "getHardCollidingE"),
+        ("getEntities", EIDX_GTYPE_DESC, "getEntitiesT"),
+        ("getEntities", EIDX_GCLASS_DESC, "getEntitiesC"),
+    ];
+    let mut cur = bytes.to_vec();
+    let mut ret = 0usize;
+    let mut already = 0usize;
+    for (name, desc, tname) in specs {
+        let tdesc = eidx_static(desc);
+        let (p, outcome) = redirect_method_body_to_static(
+            &cur,
+            name,
+            desc,
+            EIDX_LOOKUP_CLASS,
+            EIDX_OPS_CLASS,
+            tname,
+            &tdesc,
+        )?;
+        cur = p;
+        match outcome {
+            RetargetOutcome::Retargeted { .. } => ret += 1,
+            RetargetOutcome::AlreadyPatched { .. } => already += 1,
+            RetargetOutcome::NotFound => {
+                return Err(format!("eindex redirect site {name}{desc} not found"));
+            }
+        }
+    }
+    if ret == 4 {
+        Ok((cur, RetargetOutcome::Retargeted { sites: 4 }))
+    } else {
+        Ok((cur, RetargetOutcome::AlreadyPatched { sites: already }))
+    }
+}
+
+/// The 4 note-site retargets inside EntityLookup (addEntity×2, removeEntity×2).
+/// RUNTIME-VERIFIED (round409cleg2b entity-recon.txt, booted kernel):
+///   addEntity(Entity;ZZ)Z  → slices.addEntity(Entity;I)Z   @291 (×1)
+///   removeEntity(Entity)V  → slices.removeEntity(Entity;I)Z @119 (×1)
+///   moveEntity(Entity)     → slices.removeEntity(Entity;I)Z @145 (×1)
+///   moveEntity(Entity)     → slices.addEntity(Entity;I)Z    @177 (×1)
+/// cleg2b ROOT-CAUSE (run 35667449721): `from` was hardcoded to addEntity for
+/// all rows — the removeEntity rows searched for an addEntity invoke inside
+/// EntityLookup.removeEntity → NotFound → whole patch rejected → dormant.
+pub fn patch_eindex_lookup_notes(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let add_to = (
+        EIDX_OPS_CLASS,
+        "noteAdd",
+        format!("(L{EIDX_SLICES_CLASS};{}", &EIDX_SLICES_ADD_DESC[1..]),
+    );
+    let rem_to = (
+        EIDX_OPS_CLASS,
+        "noteRemove",
+        format!("(L{EIDX_SLICES_CLASS};{}", &EIDX_SLICES_ADD_DESC[1..]),
+    );
+    let from_add = (EIDX_SLICES_CLASS, "addEntity", EIDX_SLICES_ADD_DESC);
+    let from_rem = (EIDX_SLICES_CLASS, "removeEntity", EIDX_SLICES_ADD_DESC);
+    let specs: [(&str, &str, bool); 4] = [
+        ("addEntity", "(Lnet/minecraft/world/entity/Entity;ZZ)Z", true),
+        ("moveEntity", EIDX_MOVE_DESC, true),
+        ("removeEntity", "(Lnet/minecraft/world/entity/Entity;)V", false),
+        ("moveEntity", EIDX_MOVE_DESC, false),
+    ];
+    let mut cur = bytes.to_vec();
+    let mut ret = 0usize;
+    for (name, desc, is_add) in specs {
+        let (to, from) = if is_add { (&add_to, &from_add) } else { (&rem_to, &from_rem) };
+        let (p, outcome) = retarget_virtual_to_static(
+            &cur,
+            name,
+            desc,
+            (&from.0, &from.1, &from.2),
+            (&to.0, &to.1, &to.2),
+        )?;
+        cur = p;
+        match outcome {
+            RetargetOutcome::Retargeted { .. } | RetargetOutcome::AlreadyPatched { .. } => {
+                ret += 1;
+            }
+            RetargetOutcome::NotFound => {
+                return Err(format!(
+                    "eindex note site {name}{desc} (callee {}.{}) not found",
+                    from.0.rsplit('/').next().unwrap_or(from.0),
+                    from.1
+                ));
+            }
+        }
+    }
+    if ret == 4 {
+        Ok((cur, RetargetOutcome::Retargeted { sites: 4 }))
+    } else {
+        Ok((cur, RetargetOutcome::AlreadyPatched { sites: 4 }))
+    }
+}
+
+/// One Entity.setBoundingBox invoke-site retarget in `owner.method`. The CP
+/// class of the site is the OWNER class itself (javap short-form reference),
+/// so the noteBB overload's first parameter is the owner type.
+pub fn patch_eindex_bb_site(
+    bytes: &[u8],
+    method_name: &str,
+    method_desc: &str,
+    owner_class: &str,
+    note_bb_desc: &str,
+) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    retarget_virtual_to_static(
+        bytes,
+        method_name,
+        method_desc,
+        (owner_class, "setBoundingBox", EIDX_BB_DESC),
+        (EIDX_OPS_CLASS, "noteBB", note_bb_desc),
+    )
+}

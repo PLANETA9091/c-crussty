@@ -20,8 +20,10 @@
 //! vs query box) so java re-validates only true neighbors.
 //!
 //! SUPERSET PROOF (rust prune can never hide a vanilla candidate): java gates
-//! every member to half-extent ≤ 1.0 (`r_eff = max(hw, hh) ≤ 1.0`, oversized
-//! → lever reverts to vanilla). A candidate whose true AABB intersects the
+//! every member to half-extent ≤ 2.0 (`r_eff = max(hw, hh) ≤ 2.0`, oversized
+//! → lever reverts to vanilla; TASK-411-C k4soa raised the gate 1.0 → 2.0 and
+//! the query center-window pad to ±2 cells to cover camel/iron_golem/warden
+//! population radii). A candidate whose true AABB intersects the
 //! query box has center c with |c.a - box| ≤ true_a_extent/2 ≤ radii_a
 //! (hw ≥ x/z half-extents by construction), hence the flat-array test
 //! `c.a - r < q.max && c.a + r > q.min` (strict, mirroring
@@ -78,9 +80,35 @@ use std::sync::{Mutex, OnceLock};
 const IDS_CAP: usize = 1 << 20; // per-id flat arrays; java reuses ids via freeIds
 const CELL_CAP: usize = 1 << 18; // 262144 open-addressed cell slots (live + tombstones)
 const QRETRY: u32 = 4096; // seqlock retry budget per query → ERR_RANGE
-/// Max cell-window half-width beyond the ±1 pad (self AABB span cap): wider
+/// TASK-411-C (k4soa): center-window pad in CELLS. The java radius gate
+/// (MobPushOps.upsertSelf) admits r_eff = max(hw, hh) ≤ 2.0 (camel 1.1875 /
+/// iron_golem 1.35 / warden 1.45 in the bench population), so an intersecting
+/// AABB's CENTER can sit up to 2.0 blocks outside the query box and its cell
+/// up to 2 cells below floor(q0). SOUNDNESS: floor(q0 − hw) ≥ floor(q0) − 2
+/// for hw ≤ 2.0 (floor(a − n·cell) = floor(a) − n for integer n·cell shifts),
+/// therefore pad ≥ ceil(RADIUS_GATE) = 2. MUST stay ≥ ceil of the java gate
+/// (MobPushOps.RADIUS_GATE) — the pair is the superset contract.
+const PAD: i32 = 2;
+
+// TASK-411-C (eqsnap, v2 — пост-мортем run 35691270899 RED 0.5 TPS):
+// cl1-профиль (84140 samples): mob_upsert = 24.9% CPU — per-entity JNI
+// upsert (48k/тик), каждый под ГЛОБАЛЬНЫМ WLOCK + seqlock + 1-блочный
+// cell-хэш; eq_epoch full chain build = 21 sample (0.025%) — сам rebuild НЕ
+// дорог. V2 = dirty-дельты: под cmp411_eqsnap mob_upsert НЕ трогает
+// плоскость — строка (id,alive,x,y,z,hw,hh) аппендится в ПЕР-ПОТОКОВЫЙ
+// delta-шард (0 локов, 0 seqlock, 0 cell-хэша — O(десятки ns)); eq_epoch
+// (ОДИН bulk JNI/тик) ПЕРЕД chain-build сливает шарды в плоские колонки
+// плоскости (O(dirty), один потребитель) — стоимость per-tick = O(dirty),
+// не O(population) под глобальным локом. Chain-build остаётся full-pass
+// (измеримо бесплатный, сохраняет self-consistency-аргумент одиночного
+// прохода). Плоские cell-цепи (keys/head/soa_scan) под eqsnap НЕ
+// поддерживаются — java-лестница eqsnap НЕ вызывает mobQuery (fail-closed
+// ваниль), mob_query под eqsnap отвечает ERR_RANGE (per-call vanilla, lever
+// жив). Потеря/разрыв строки шарда при гонке drain vs straggler-upsert =
+// тот же документированный контракт ≤1-тик ghost (доки модуля выше).
+/// Max cell-window half-width beyond the ±PAD (self AABB span cap): wider
 /// queries return ERR_RANGE (per-call vanilla fallback; oversized selves are
-/// gated java-side by the ≤1.0 bounding-radius gate).
+/// gated java-side by the ≤2.0 bounding-radius gate).
 const MAX_SPAN: i32 = 32;
 
 const ERR_STRUCT: i32 = -1;
@@ -167,7 +195,10 @@ fn ensure_plane() {
 /// brackets its scan with the SAME version discipline as `mob_query` (even
 /// v1 → scan → even v2, bounded retries); flags bit0 flips always happen
 /// under the odd/even bracket, so the snapshot contract is identical. No
-/// WLOCK: readers never block writers.
+/// WLOCK: readers never block writers. (Merged from meganav lineage
+/// TASK-412-F: под eqsnap read-view видит состояние плоскости ПОСЛЕ
+/// drain_eqsnap_shards текущего тика — тот же документированный контракт
+/// ≤1-тик ghost.)
 pub(crate) fn ai_window_snapshot() -> Option<(&'static [u8], &'static AtomicUsize)> {
     let d = data()?;
     // d: &'static Soa (published once, never freed) — the flags slice is
@@ -190,6 +221,22 @@ pub(crate) fn sscan_snapshot() -> Option<(&'static [f64], &'static [f64], &'stat
     // d: &'static Soa (published once, never freed) — the f64 slices are
     // &'static by construction, no unsafe required.
     Some((d.x.as_slice(), d.y.as_slice(), d.z.as_slice(), &VERSION))
+}
+
+/// TASK-411-C (eqsnap, v2): STRICT-eq gate of the delta-shard mode. Only the
+/// exact new flag routes mob_upsert into the per-thread shards; every prior
+/// flag keeps bit-in-bit prior behavior (full WLOCK plane mutation).
+fn eqsnap_mode() -> bool {
+    static FLAG: OnceLock<String> = OnceLock::new();
+    let f = FLAG
+        .get_or_init(|| {
+            std::env::var("CRUSSTY_LEVER_FLAG")
+                .unwrap_or_default()
+                .trim()
+                .to_string()
+        })
+        .as_str();
+    f == "cmp411_eqsnap"
 }
 
 /// Strict gate: natives work only under the exact lever flag (STRICT eq;
@@ -219,7 +266,202 @@ fn lever_mode() -> bool {
         // TASK-406-E: композит раунда-406 — SoA-плоскость primary push
         // broadphase + источник популяции для sscanEpoch (despawn-scan column).
         || f == "cmp406_sscan"
-        || f == "cmp409_multi" || f == "cmp412_meganav"
+        || f == "cmp409_multi"
+        // TASK-412-F meganav: multi ⊕ navplane+navpool (топ-композиция эры).
+        || f == "cmp412_meganav"
+        // TASK-410-C (eindexq): K3-пивот R2 — SoA-плоскость = источник
+        // популяции для goal-query CSR-снапшота (EntityQueryOps.eqEpoch;
+        // sscan-прецедент TASK-406-E).
+        || f == "cmp410_eindexq"
+        // TASK-411-C (k4soa): K4 — радиус-ремонт населения (gate 2.0 / pad 2)
+        // + push-лейн из chain-снапшота (0 per-query JNI).
+        || f == "cmp411_k4soa"
+        // TASK-411-C (eqsnap, v2): dirty-дельты — upserts в пер-потоковые
+        // шарды (0 локов), eq_epoch сливает их одним bulk-JNI/тик (O(dirty)).
+        || f == "cmp411_eqsnap"
+}
+
+// ---------------------------------------------------------------------------
+// TASK-411-C (eqsnap, v2): per-thread delta shards
+// ---------------------------------------------------------------------------
+
+/// Shard row layout: [id, alive, x, y, z, hw, hh] (7 f64; id/alive — точные
+/// малые целые, представимы f64 без потерь).
+const SHARD_ROW: usize = 7;
+/// Fixed per-shard row capacity. Steady-state ~48k upserts/tick across ~5
+/// writer threads ⇒ ≤ ~12k rows/thread/tick; 8192 покрывает бурсты ×4+.
+/// Overflow ⇒ mob_upsert ERR_RANGE (per-call vanilla, lever stays armed).
+const SHARD_CAP: usize = 1 << 13;
+/// 16 fixed shards; threads claim one each (sequential, ~5 live threads) —
+/// no hashing, no cross-thread contention on a shard.
+const SHARD_N: usize = 16;
+
+struct DeltaShard {
+    /// Reservation cursor (fetch_add) — writers claim slots.
+    reserve: AtomicUsize,
+    /// Published watermark: rows [0..published) are complete (Release after
+    /// the row write; consumer reads Acquire). Single consumer per tick.
+    published: AtomicUsize,
+    /// Row storage (fixed, zero-alloc steady state).
+    rows: Vec<f64>,
+}
+
+impl DeltaShard {
+    /// Lock-free append. Returns false on capacity pressure (caller maps to
+    /// ERR_RANGE = per-call vanilla fallback, the legacy capacity contract).
+    /// Interior mutability through a raw base pointer: `rows` is sized ONCE
+    /// at shard construction and never reallocated (fixed-capacity contract),
+    /// so writers may mutate through `&self` — the same discipline as the
+    /// published-once Soa plane above.
+    fn push(&self, id: usize, alive: bool, x: f64, y: f64, z: f64, hw: f64, hh: f64) -> bool {
+        let p = self.reserve.fetch_add(1, Ordering::Relaxed);
+        if p >= SHARD_CAP {
+            return false; // burst overflow — per-call vanilla this upsert
+        }
+        let b = p * SHARD_ROW;
+        // SAFETY: rows sized SHARD_CAP*SHARD_ROW once at init; p < SHARD_CAP
+        // checked above; single writer per shard (thread-bound), the drain
+        // reads rows < published (Release/Acquire) and never writes rows.
+        unsafe {
+            let base = self.rows.as_ptr() as *mut f64;
+            *base.add(b) = id as f64;
+            *base.add(b + 1) = if alive { 1.0 } else { 0.0 };
+            *base.add(b + 2) = x;
+            *base.add(b + 3) = y;
+            *base.add(b + 4) = z;
+            *base.add(b + 5) = hw;
+            *base.add(b + 6) = hh;
+        }
+        // Publish AFTER the row write (Release): the consumer's Acquire load
+        // of `published` sees every row below the watermark complete.
+        self.published.fetch_max(p + 1, Ordering::Release);
+        true
+    }
+
+    /// Single-consumer drain: apply rows [0..published) to the plane's FLAT
+    /// columns ONLY (id → x/y/z/hw/hh + alive bit). NO cell-chain maintenance
+    /// under eqsnap (mobQuery unreachable — java ladder fail-closes to
+    /// vanilla). Rows for ids ≥ the chain-build `bound` stay in the columns
+    /// and link on the NEXT epoch (1-tick delay, ghost contract). Resets the
+    /// cursors AFTER processing; a straggler writer racing the reset loses
+    /// its row (or re-writes it — idempotent) = the documented ≤1-tick ghost,
+    /// bounded by the 8-block java margin.
+    /// Returns the number of applied rows.
+    fn drain_into(&self, d: &mut Soa) -> usize {
+        let n = self.published.load(Ordering::Acquire).min(SHARD_CAP);
+        let mut applied = 0usize;
+        for p in 0..n {
+            let b = p * SHARD_ROW;
+            // SAFETY: n ≤ SHARD_CAP and rows sized SHARD_CAP*SHARD_ROW.
+            let row = unsafe { self.rows.get_unchecked(b..b + SHARD_ROW) };
+            let id = row[0] as usize;
+            if id >= IDS_CAP || row[1] != 1.0 {
+                continue; // defensive bounds / non-upsert row — skip
+            }
+            let (x, y, z, hw, hh) = (row[2], row[3], row[4], row[5], row[6]);
+            if !x.is_finite()
+                || !y.is_finite()
+                || !z.is_finite()
+                || !hw.is_finite()
+                || !hh.is_finite()
+            {
+                continue; // torn/garbage row (straggler race) — ghost ≤1 tick
+            }
+            d.x[id] = x;
+            d.y[id] = y;
+            d.z[id] = z;
+            d.hw[id] = hw;
+            d.hh[id] = hh;
+            d.flags[id] |= 1;
+            applied += 1;
+        }
+        // Reset AFTER processing (SeqCst): fresh generation next tick.
+        self.reserve.store(0, Ordering::SeqCst);
+        self.published.store(0, Ordering::SeqCst);
+        applied
+    }
+}
+
+/// Published once, never freed (fixed-capacity contract — Soa precedent).
+static SHARDS: OnceLock<Vec<DeltaShard>> = OnceLock::new();
+/// Sequential shard claim: each writer thread binds ONE shard for life
+/// (region workers are a fixed pool; a dead thread's shard drains empty).
+static SHARD_SEQ: AtomicUsize = AtomicUsize::new(0);
+
+thread_local! {
+    static SHARD_IDX: std::cell::Cell<usize> = const { std::cell::Cell::new(usize::MAX) };
+}
+
+fn shards() -> &'static [DeltaShard] {
+    SHARDS.get_or_init(|| {
+        (0..SHARD_N)
+            .map(|_| DeltaShard {
+                reserve: AtomicUsize::new(0),
+                published: AtomicUsize::new(0),
+                rows: vec![0.0; SHARD_CAP * SHARD_ROW],
+            })
+            .collect()
+    })
+}
+
+#[inline]
+fn thread_shard() -> &'static DeltaShard {
+    SHARD_IDX.with(|c| {
+        let mut i = c.get();
+        if i >= SHARD_N {
+            i = SHARD_SEQ.fetch_add(1, Ordering::Relaxed) % SHARD_N;
+            c.set(i);
+        }
+        // SAFETY: shards() is a fixed Vec<DeltaShard> of len SHARD_N.
+        unsafe { shards().get_unchecked(i) }
+    })
+}
+
+/// TASK-411-C (eqsnap): ONE bulk drain per tick, called from eq_epoch
+/// (entity_query) BEFORE the chain build. Applies every shard's published
+/// delta rows to the flat columns. Single consumer (eq_epoch runs under the
+/// java EPOCH_LOCK); writers never take locks. Returns total applied rows
+/// (diagnostics/marker).
+pub(crate) fn drain_eqsnap_shards() -> usize {
+    if !eqsnap_mode() {
+        return 0; // legacy flags: shards never written — no-op
+    }
+    let _g = WLOCK.lock().unwrap_or_else(|p| p.into_inner());
+    ensure_plane();
+    let d = data_mut();
+    let mut total = 0usize;
+    for s in shards() {
+        total += s.drain_into(d);
+    }
+    total
+}
+
+/// TASK-410-C (eindexq): read view for the goal-query CSR epoch pass —
+/// x/y/z/hw/hh f64 slices + alive flags + the seqlock version. The caller
+/// (entity_query::eq_epoch) brackets its scan with the SAME version
+/// discipline as `mob_query` (even v1 -> scan -> even v2, bounded retries);
+/// a torn snapshot retries the whole pass, so the published CSR is always a
+/// CONSISTENT SoA state. No WLOCK: readers never block writers. Slices are
+/// &'static by construction (Soa published once, never freed).
+pub(crate) fn eq_snapshot() -> Option<(
+    &'static [f64],
+    &'static [f64],
+    &'static [f64],
+    &'static [f64],
+    &'static [f64],
+    &'static [u8],
+    &'static AtomicUsize,
+)> {
+    let d = data()?;
+    Some((
+        d.x.as_slice(),
+        d.y.as_slice(),
+        d.z.as_slice(),
+        d.hw.as_slice(),
+        d.hh.as_slice(),
+        d.flags.as_slice(),
+        &VERSION,
+    ))
 }
 
 /// Mirror-plane selector: the sharded grid (src/mobs_grid.rs) is armed ONLY
@@ -433,7 +675,8 @@ pub unsafe extern "system" fn mob_probe(
 }
 
 /// Insert-or-move `id` at the AABB center (x, y, z) with flat radii
-/// (hw = half of max(x/z)-extent, hh = half height; java gates both ≤ 1.0).
+/// (hw = half of max(x/z)-extent, hh = half height; java gates both ≤ 2.0 —
+/// TASK-411-C k4soa, was ≤ 1.0).
 /// Returns 0, ERR_RANGE (capacity pressure — per-call vanilla fallback) or
 /// ERR_STRUCT (corruption — java disarms).
 ///
@@ -453,6 +696,19 @@ pub unsafe extern "system" fn mob_upsert(
 ) -> jni::jint {
     if !lever_mode() || id < 0 || (id as usize) >= IDS_CAP {
         return ERR_STRUCT;
+    }
+    // TASK-411-C (eqsnap, v2): dirty-delta path — the per-entity upsert lands
+    // in the caller's per-thread shard (0 locks, 0 seqlock, 0 cell hash); the
+    // plane is refreshed ONCE per tick by drain_eqsnap_shards() inside
+    // eq_epoch. cl1 evidence: per-entity WLOCK+JNI mutation = 24.9% CPU.
+    // lid is unused here (eq chains are level-agnostic — java filters
+    // other.level() != level exactly); legacy paths keep the keyed plane.
+    if eqsnap_mode() {
+        return if thread_shard().push(id as usize, true, x, y, z, hw, hh) {
+            0
+        } else {
+            ERR_RANGE // shard burst overflow — per-call vanilla, lever armed
+        };
     }
     let k = cell_key(lid, x.floor() as i32, y.floor() as i32, z.floor() as i32);
     let _g = WLOCK.lock().unwrap_or_else(|p| p.into_inner());
@@ -520,8 +776,8 @@ pub unsafe extern "system" fn mob_remove(
 }
 
 /// Query candidate ids for the AABB [qx0..qx1]×[qy0..qy1]×[qz0..qz1] with the
-/// ±1.0 center-window pad (java guarantees all members have half-extent
-/// ≤ 1.0). The scan reads the SoA flat arrays and prunes with the coarse
+/// ±PAD(2) center-window pad (java guarantees all members have half-extent
+/// ≤ 2.0 — k4soa gate). The scan reads the SoA flat arrays and prunes with the coarse
 /// center±radii test (superset of AABB.intersects — see module docs).
 /// Writes ids into the pinned `out` array; returns the count, -(out_cap) on
 /// overflow (caller grows + retries), ERR_RANGE for absurd widths/instability,
@@ -545,6 +801,14 @@ pub unsafe extern "system" fn mob_query(
     if !lever_mode() || env.is_null() || out.is_null() {
         return ERR_STRUCT;
     }
+    // TASK-411-C (eqsnap): cell chains are NOT maintained under the delta-
+    // shard mode (upserts land in shards; the drain refreshes flat columns
+    // only) — a chain scan would be UNSOUND. No java path reaches this
+    // native under eqsnap (pushables ladder fail-closes to vanillaFill);
+    // ERR_RANGE keeps the lever ARMED if a foreign caller ever hits it.
+    if eqsnap_mode() {
+        return ERR_RANGE;
+    }
     let vt = unsafe { &**env };
     let cap = unsafe { (vt.GetArrayLength)(env, out) };
     if cap <= 0 {
@@ -552,12 +816,14 @@ pub unsafe extern "system" fn mob_query(
     }
     let cap = cap as i32;
 
-    let cx0 = qx0.floor() as i32 - 1;
-    let cx1 = qx1.floor() as i32 + 1;
-    let cy0 = qy0.floor() as i32 - 1;
-    let cy1 = qy1.floor() as i32 + 1;
-    let cz0 = qz0.floor() as i32 - 1;
-    let cz1 = qz1.floor() as i32 + 1;
+    // TASK-411-C (k4soa): PAD-cell center window (was ±1 for the 1.0 radius
+    // gate; the 2.0 gate needs ±2 — see PAD soundness note).
+    let cx0 = qx0.floor() as i32 - PAD;
+    let cx1 = qx1.floor() as i32 + PAD;
+    let cy0 = qy0.floor() as i32 - PAD;
+    let cy1 = qy1.floor() as i32 + PAD;
+    let cz0 = qz0.floor() as i32 - PAD;
+    let cz1 = qz1.floor() as i32 + PAD;
     if (cx1 - cx0) > MAX_SPAN || (cy1 - cy0) > MAX_SPAN || (cz1 - cz0) > MAX_SPAN {
         return ERR_RANGE;
     }
@@ -668,14 +934,15 @@ mod tests {
             && m.z + m.hw > qz0
     }
 
+    // TASK-411-C (k4soa): test window mirrors mob_query — MUST track PAD.
     fn query(d: &Soa, lid: i32, q: (f64, f64, f64, f64, f64, f64)) -> Vec<usize> {
         let (qx0, qy0, qz0, qx1, qy1, qz1) = q;
-        let cx0 = qx0.floor() as i32 - 1;
-        let cx1 = qx1.floor() as i32 + 1;
-        let cy0 = qy0.floor() as i32 - 1;
-        let cy1 = qy1.floor() as i32 + 1;
-        let cz0 = qz0.floor() as i32 - 1;
-        let cz1 = qz1.floor() as i32 + 1;
+        let cx0 = qx0.floor() as i32 - PAD;
+        let cx1 = qx1.floor() as i32 + PAD;
+        let cy0 = qy0.floor() as i32 - PAD;
+        let cy1 = qy1.floor() as i32 + PAD;
+        let cz0 = qz0.floor() as i32 - PAD;
+        let cz1 = qz1.floor() as i32 + PAD;
         let mut out = [0i32; 4096];
         let cap = out.len() as i32;
         let n = soa_scan(
@@ -752,6 +1019,66 @@ mod tests {
         for m in &model {
             assert_eq!(m.remove(&mut d), 0);
         }
+    }
+
+    /// TASK-411-C (k4soa): pad-2 soundness oracle — mobs with bench radii
+    /// (camel 1.1875 / iron_golem 1.35 / gate-max 2.0) centered OUTSIDE the
+    /// query box must still be found when their AABB intersects it (the exact
+    /// case the ±1 pad missed: center cell = floor(qx0) − 2).
+    #[test]
+    fn k4soa_large_radius_superset() {
+        let mut d = Soa::new();
+        let radii = [1.1875f64, 1.35, 2.0];
+        let mut id = 9000usize;
+        for (i, r) in radii.iter().enumerate() {
+            let r = *r;
+            // Center sits (r − 0.125) blocks left of the integer box edge
+            // qx0 = 10.0 with true half-extent ex = ez = r ⇒ AABB reaches
+            // x = 10.125 > qx0 (genuine intersection), while the CENTER cell
+            // = floor(10 − r + 0.125) = 8 = floor(qx0) − 2 for all three r
+            // (pad-1 window starts at cell 9 and misses it; pad-2 covers).
+            let m = Mob {
+                id,
+                lid: 11,
+                x: 10.0 - (r - 0.125),
+                y: 64.0,
+                z: 10.0 + i as f64 * 0.25,
+                ex: r,
+                ey: 0.4,
+                ez: r,
+                hw: r,
+                hh: r,
+            };
+            assert_eq!(m.upsert(&mut d), 0);
+            let q = (10.0, 63.5, m.z - 0.5, 11.0, 64.5, m.z + 0.5);
+            assert!(
+                exact_hits(&m, q),
+                "model must genuinely intersect the query (r={r})"
+            );
+            assert!(
+                query(&d, 11, q).contains(&id),
+                "pad-2 window must surface gate-max radius candidate r={r}"
+            );
+            id += 1;
+        }
+        // Mirror case above the box (y axis): center a full radius above the
+        // box top edge — the ±2 y-window must reach it (live-bb intersects).
+        let m = Mob { id, lid: 11, x: 50.5, y: 64.0 + 1.35, z: 50.5, ex: 0.4, ey: 1.35, ez: 0.4, hw: 1.35, hh: 1.35 };
+        assert_eq!(m.upsert(&mut d), 0);
+        let q = (49.5, 64.0 + 0.5 - 1e-9, 49.5, 51.5, 64.0 + 1.5 - 1e-9, 51.5);
+        assert!(exact_hits(&m, q) && query(&d, 11, q).contains(&id));
+        // Exact pad-2 boundary with a NON-integer box edge: center x = 7.6
+        // (cell 7), hw = hh = 2.0, true ex = 1.95 — AABB reaches 9.55 >
+        // qx0 = 9.5 − 1e-9; floor(qx0) − 2 = 7 → only the ±2 window reaches
+        // cell 7 (the ±1 window of the old gate missed it).
+        let b = Mob { id: id + 1, lid: 11, x: 7.6, y: 64.0, z: 50.5, ex: 1.95, ey: 1.0, ez: 0.5, hw: 2.0, hh: 2.0 };
+        assert_eq!(b.upsert(&mut d), 0);
+        let q2 = (9.5 - 1e-9, 62.0, 49.5, 11.0, 66.0, 51.5);
+        assert!(exact_hits(&b, q2));
+        assert!(
+            query(&d, 11, q2).contains(&(id + 1)),
+            "pad-2 boundary regression: center cell == floor(qx0)-2 must be scanned"
+        );
     }
 
     #[test]
@@ -852,5 +1179,48 @@ mod tests {
         for (i, &kk) in live.iter().enumerate() {
             assert!(find_slot(&d.keys, kk).is_ok(), "final live key {i} lost");
         }
+    }
+
+    /// TASK-411-C (eqsnap, v2): delta-shard drain contract — published rows
+    /// land in the flat columns (O(dirty)), the cursors reset after the
+    /// drain, a second drain is empty, non-finite/out-of-range rows are
+    /// skipped (ghost contract), and the chain structure stays untouched
+    /// (cell==0 under eqsnap — mobQuery is unreachable by ladder design).
+    #[test]
+    fn eqsnap_shard_drain_applies_dirty_rows() {
+        let shard = DeltaShard {
+            reserve: AtomicUsize::new(0),
+            published: AtomicUsize::new(0),
+            rows: vec![0.0; SHARD_CAP * SHARD_ROW],
+        };
+        let mut d = Soa::new();
+        // Three dirty rows for one id sequence: add + move + (finite guard).
+        assert!(shard.push(11, true, 1.5, 64.0, -2.5, 0.3, 0.9));
+        assert!(shard.push(12, true, 10.5, 64.0, 3.5, 1.1875, 1.3));
+        assert!(shard.push(11, true, 2.5, 64.0, -2.5, 0.3, 0.9)); // move
+        assert!(shard.push(IDS_CAP + 5, true, 0.0, 0.0, 0.0, 0.1, 0.1)); // OOR id
+        assert!(shard.push(13, true, f64::NAN, 0.0, 0.0, 0.1, 0.1)); // torn guard
+        let applied = shard.drain_into(&mut d);
+        assert_eq!(applied, 3, "3 valid rows applied (11, 12, 11-move)");
+        assert_eq!(d.flags[11] & 1, 1);
+        assert_eq!(d.flags[12] & 1, 1);
+        assert_eq!(d.flags[13] & 1, 0, "non-finite row skipped");
+        // Out-of-range id: skipped BEFORE any column access (no panic).
+        assert_eq!(applied, 3);
+        // The MOVE landed: last write wins, flat columns carry the newest row.
+        assert_eq!(d.x[11], 2.5);
+        assert_eq!(d.hw[12], 1.1875);
+        // Chains untouched under eqsnap (mobQuery ladder-disabled).
+        assert_eq!(d.cell[11], 0);
+        assert_eq!(d.cell[12], 0);
+        // Generation reset: second drain is empty (fresh tick).
+        assert_eq!(shard.drain_into(&mut d), 0);
+        // Capacity pressure: SHARD_CAP-th push fails → ERR_RANGE contract.
+        let full = DeltaShard {
+            reserve: AtomicUsize::new(SHARD_CAP),
+            published: AtomicUsize::new(0),
+            rows: vec![0.0; SHARD_CAP * SHARD_ROW],
+        };
+        assert!(!full.push(1, true, 0.0, 0.0, 0.0, 0.1, 0.1));
     }
 }
