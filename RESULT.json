@@ -4,8 +4,8 @@
   "plane": "PIVOT: broadphase entity-query слой (MobPushOps vanillaFill-fallback 4.4% wall + Level.getEntitiesOfClass 1.8% + moonrise$getHardCollidingEntities 2.0%) на meganav-базе; LEGACY: inside_batch (cmp411_insidebat) везётся dormant с round-412-b-r1",
   "lever": "cmp412_b2p1 (STRICT OR с cmp412_meganav: meganav-планы армятся обоими флагами, новые java-гейты — только cmp412_b2p1)",
   "status": "IN_PROGRESS",
-  "stage": "S3-done-committed (impl+build+oracle) → S4-dispatch",
-  "updated": "2026-09-22T12:05:00+00:00",
+  "stage": "S4-dispatched (runs 35723440147 bp1 / 35723457526 bp2, ref=round-413-bp{1,2} @125c474, lever=cmp412_b2p1, inputs bank exact)",
+  "updated": "2026-09-22T12:20:00+00:00",
   "worktree": "/home/z/rounds/ROUND-412/agent-b2",
   "branch": "round-412-b-p1",
   "base": "f579c1c (round-412-f-meganav)",
@@ -44,22 +44,42 @@
     {
       "id": "S2",
       "name": "java-срез: MobPushOps oversized-fix + EntityQueryOps (getEntitiesOfClass + hardCollisions) + classfile.rs ретаргеты Level",
-      "status": "PENDING"
+      "status": "DONE",
+      "commit": "125c474"
     },
     {
       "id": "S3",
       "name": "cargo check+test + javac блобов + STRICT ваниль-верификация (oracle)",
-      "status": "PENDING"
+      "status": "DONE",
+      "commit": "125c474"
     },
     {
       "id": "S4",
       "name": "dispatch_round412b2.py (leg b2p1, lever=cmp412_b2p1, inputs РОВНО банковские) + poll",
-      "status": "PENDING"
+      "status": "IN_PROGRESS",
+      "runs": {
+        "bp1": 35723440147,
+        "bp2": 35723457526
+      }
     },
     {
       "id": "S5",
       "name": "артефакт + абсорб + вердикт pair-by-runner vs банк {2.30@6803065, 2.35@6435981, 2.4@6604167, 2.25@6833921, 2.30@6846036, 2.2@6858619, 2.2@6840530, 2.50@8548287, 2.95@8880170, 2.60@8827927} + meganav {2.60@6725119, 2.70@6781278}",
       "status": "PENDING"
     }
-  ]
+  ],
+  "runs": {
+    "bp1": 35723440147,
+    "bp2": 35723457526
+  },
+  "dispatch": {
+    "script": "scripts/bench4_recon/dispatch_round413b.py",
+    "refs": [
+      "round-413-bp1",
+      "round-413-bp2"
+    ],
+    "alias_head": "round-413-b-p1 @125c474",
+    "lever": "cmp412_b2p1",
+    "inputs": "bank exact (radius 640/seconds 300/fake_players 4/.../lever_arg 1)"
+  }
 }
