@@ -1,7 +1,7 @@
 {
   "task": "TASK-410-B fluid law(6) vector k2: SECTIONAL bulk-JNI redesign (anti-lesson bleg1 per-entity JNI explosion 16.72->71.48%)",
   "agent": "410-B",
-  "stage": "gates-passed-pushing",
+  "stage": "leg-in-flight",
   "branch": "round-410-b-fluidsec",
   "base": "origin/master 8ef9e5b (fresh, comp-sites NOT inherited — pure fluid-only vector, lesson eb7a870)",
   "old_context": {
@@ -18,7 +18,19 @@
     "NESTED-CLASS FIX: FluidRustOps$Q + $Gather now defined explicitly (fluid_guard CLASSES pattern) — a missed nested class = latent NoClassDefFoundError in the hot loop",
     "oracle fixes: touched-flag semantics corrected to vanilla identity (Vec3.add ALWAYS allocates => any recorded cell leaves ZERO ref, tail runs, delta numerically unchanged); threading test now uses real-world adjacency (water+lava consecutive); exact pow2 bit-pins (0.0045000000000000005 floor pattern)"
   ],
-  "legs": [],
+  "legs": [
+    {
+      "leg": "round410bl2",
+      "ref": "round-410-b-l2",
+      "lever": "cmp410_fluidsec",
+      "run_id": 35678632488,
+      "sha": "ea3ed47",
+      "status": "RUNNING",
+      "tps_med": null,
+      "runner_cpu_index": null,
+      "verdict": null
+    }
+  ],
   "best_delta_pair_pct": null,
   "lane": "fluid was 16.7-18.5% vanilla -> k2 target: shrink lane, any lane GROWTH = RED",
   "ram": null,
@@ -29,6 +41,6 @@
     "cargo check --lib PASS; cargo test 208/208 (1 ignored pre-existing)",
     "gate checklist grep: cmp410_fluidsec ONLY fluid_rust.rs + FluidRustOps.java (gates) + comments lib.rs/classfile.rs + RESULT.json"
   ],
-  "what": "k2 bridge complete + wired + gates green; next: commit, push branch, alias round-410-b-l2 on own sha, dispatch world-bench-parallel with EXACT bank inputs + lever_flag=cmp410_fluidsec",
+  "what": "k2 dispatched: alias round-410-b-l2 @ea3ed47, run 35678632488, bank inputs EXACT + lever_flag=cmp410_fluidsec/lever_arg=1",
   "next": "poll run -> absorb_round.py <run_id> round410bl2 -> verdict pair-by-runner vs pool-410 {2.50@8548287, 2.95@8880170, 2.60@8827927} + bank {2.4@6604167, 2.2@6976430, 2.25@6833921, 2.30@6846036}; fluid lane MUST NOT GROW; BAND 6.0-9.5M outside = BAND-DISCARD re-roll <=2"
 }
