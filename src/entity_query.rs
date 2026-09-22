@@ -123,7 +123,7 @@ fn enabled() -> bool {
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
         Ok("cmp410_eindexq") | Ok("cmp411_k4soa") | Ok("cmp411_eqsnap")
             // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
-            | Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs")
+            | Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs") | Ok("cmp416_gsel3") // TASK-416-B gsel-iter-3.
     )
 }
 
@@ -140,7 +140,7 @@ fn enabled_flag_is_k4() -> bool {
 fn enabled_flag_is_eqsnap() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp411_eqsnap") | Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs")
+        Ok("cmp411_eqsnap") | Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs") | Ok("cmp416_gsel3") // TASK-416-B gsel-iter-3.
     )
 }
 
@@ -149,7 +149,7 @@ fn enabled_flag_is_eqsnap() -> bool {
 fn enabled_flag_is_eqsnapv3() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs")
+        Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs") | Ok("cmp416_gsel3") // TASK-416-B gsel-iter-3.
     )
 }
 
@@ -779,7 +779,7 @@ mod tests {
         s == "cmp410_eindexq"
             || s == "cmp411_k4soa"
             || s == "cmp411_eqsnap"
-            || s == "cmp412_eqsnapv3" || s == "cmp414_cvs"
+            || s == "cmp412_eqsnapv3" || s == "cmp414_cvs" || s == "cmp416_gsel3"
     }
 
     #[test]

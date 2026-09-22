@@ -56,8 +56,13 @@ check_class \
 
 check_class \
   "mobai/build/net/minecraft/world/entity/MobAiOps.class" \
-  "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
+  "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp416_gsel3" \
   "native"
+
+check_class \
+  "gsel/build/net/minecraft/world/entity/ai/goal/GoalBatchOps.class" \
+  "cmp416_gsel3" "tickGate" \
+  "native int gselProbe" "native int gselRegister" "native int gselEpoch"
 
 check_class \
   "sscan/build/net/minecraft/world/entity/MobScanOps.class" \
@@ -81,7 +86,8 @@ for pair in \
   "sscan/net/minecraft/world/entity/MobScanOps.java:sscan/build/net/minecraft/world/entity/MobScanOps.class" \
   "mobpush/net/minecraft/world/entity/MobPushOps.java:mobpush/build/net/minecraft/world/entity/MobPushOps.class" \
   "entitygoalquery/net/minecraft/world/entity/EntityGoalQueryOps.java:entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
-  "entityinside/net/minecraft/world/entity/ItemEntityManager.java:entityinside/build/net/minecraft/world/entity/ItemEntityManager.class"
+  "entityinside/net/minecraft/world/entity/ItemEntityManager.java:entityinside/build/net/minecraft/world/entity/ItemEntityManager.class" \
+  "gsel/net/minecraft/world/entity/ai/goal/GoalBatchOps.java:gsel/build/net/minecraft/world/entity/ai/goal/GoalBatchOps.class"
 do
   src="${pair%%:*}"; blob="${pair##*:}"
   flags=$(grep -o '"cmp[0-9_a-z]*"' "$src" | tr -d '"' | sort -u)

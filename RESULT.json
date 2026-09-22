@@ -1,11 +1,28 @@
 {
-  "agent": "Super Z subagent B",
-  "task": "TASK-414-B blob-sync revival",
-  "vector": "meganav items-plane revival (gate-omission fix) + eqsnap-v3 re-dispatch on race-fix 109e4d7, leg flag cmp414_cvs",
-  "branch": "round-414-b-cvs",
-  "step": "5-rust-green",
-  "cargo_check": "PASS (lib, 6.9s, 90 warnings pre-existing)",
-  "cargo_test": "PASS 272/272 (0 failed, 1 ignored), target deleted immediately (disk 74%)",
-  "blob_gate": "scripts/check_blobs_sync.sh GREEN",
-  "evidence": "cargo test result: ok. 272 passed; 0 failed; 1 ignored"
+  "agent": "TASK-416-B",
+  "vector": "gsel-iter-3 live-blobs",
+  "branch": "round-416-b-gsel3",
+  "base": "1aec4f8 (origin/round-414-b-cvs, live cvs-carrier: meganav f579c1c + eqsnap-v3 NCDFE + race-fix 109e4d7 + blob-sync fix; min-of-3 {2.55@6593164, 2.80@6655252, 2.70@6710453} med 2.70 = +10.2pp pair, items 0.00 x3, AIOOBE=0 x3)",
+  "slice_sources": [
+    "origin/round-414-c-pfb (gsel-batch v1: GoalBatchOps.java + goal_batch.rs + 4 retarget sites)",
+    "origin/round-415-b-gsel2 @86afeba (iter-2: pfb1 RegisterNatives sig root-fix + check_gsel_native_sigs.sh; carrier там был мёртвый по blob-sync — НЕ переиспользуем)"
+  ],
+  "plan": [
+    "slice retarget: GoalBatchOps.java + goal_batch.rs + lib.rs register/activate (LAST hook) + check_gsel_native_sigs.sh + build_gsel_blobs_all.sh",
+    "retag gates -> cmp416_gsel3 (STRICT OR, cmp414_cvs ветки НЕ ломаются): 5 java bridges + 10 rust gates",
+    "extend scripts/check_blobs_sync.sh gsel-блобом",
+    "rebuild blobs (1 javac pass, cp=full round-396-a kernel) после КАЖДОЙ правки .java",
+    "cargo check --lib + cargo test green ДО диспатча, cargo-target rm сразу после",
+    "dispatch legs g3a/g3b/g3c (alias refs round-416-b-g3{a,b,c} -> HEAD, lever cmp416_gsel3)",
+    "poll/absorb/verdict: pair-by-runner, ARM+effect markers, AIOOBE=0, band 6.0-9.5M, nav_ai вниз + items 0.00"
+  ],
+  "run_id": null,
+  "tps_med": null,
+  "delta_pair_pct": null,
+  "lane": null,
+  "RAM": null,
+  "parity": null,
+  "verdict": "IN_PROGRESS",
+  "evidence": [],
+  "what": "iter-3 стартовал: работа от ЖИВОГО носителя 1aec4f8, перенос только gsel-слайса, гейты STRICT OR на cmp416_gsel3. Анти-плацебо: nav_ai 9.31 -> <=6.5 цель, иначе не победа."
 }

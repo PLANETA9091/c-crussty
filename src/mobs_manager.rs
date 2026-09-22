@@ -85,9 +85,9 @@ fn java_gate_matches(f: &str) -> bool {
         || f == GATE_LEVER_TICKPLANE
         || f == GATE_LEVER_STAGTICK
         || f == GATE_LEVER_AIBATCH
-        || f == GATE_LEVER_MULTI || f == "cmp412_meganav" || f == "cmp414_cvs"
+        || f == GATE_LEVER_MULTI || f == "cmp412_meganav" || f == "cmp414_cvs" || f == "cmp416_gsel3" // TASK-416-B gsel-iter-3: живой cvs-носитель + gsel-слайс.
         // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
-        || f == "cmp412_eqsnapv3" || f == "cmp414_cvs"
+        || f == "cmp412_eqsnapv3" || f == "cmp414_cvs" || f == "cmp416_gsel3"
         || f == GATE_LEVER_SSCAN
         || f == "cmp410_eindexq" || f == "cmp411_k4soa" || f == "cmp411_eqsnap"
 }
@@ -445,7 +445,7 @@ pub fn activate() {
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
         // TASK-402-B: под композитом маркер объявляет ВСЕ суб-механизмы
         // (soa + зеркальный sharded grid; item-половина — в items_manager).
-        if f == GATE_LEVER_COMP || f == GATE_LEVER_STAGCOMP || f == GATE_LEVER_TICKPLANE || f == GATE_LEVER_STAGTICK || f == GATE_LEVER_AIBATCH || f == GATE_LEVER_SSCAN || f == GATE_LEVER_MULTI || f == "cmp412_meganav" || f == "cmp414_cvs" {
+        if f == GATE_LEVER_COMP || f == GATE_LEVER_STAGCOMP || f == GATE_LEVER_TICKPLANE || f == GATE_LEVER_STAGTICK || f == GATE_LEVER_AIBATCH || f == GATE_LEVER_SSCAN || f == GATE_LEVER_MULTI || f == "cmp412_meganav" || f == "cmp414_cvs" || f == "cmp416_gsel3" {
             eprintln!(
                 "[crussty-plugin] {}: ARMED soa=flat-arrays seqlock=global-version writer=global-mutex ids_cap=1048576 cell_cap=262144 cell=1.0 pad=1.0 radius_gate=1.0 rust_prune=coarse-hw-hh + mobgrid=sharded-mirror shards=64 shard_cap=16384 fallback-read=per-call (rust mobs_soa SoA flat x/y/z/hw/hh/flags ⊕ mobs_grid mirror; pushEntities tail untouched vanilla; per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT)",
                 f

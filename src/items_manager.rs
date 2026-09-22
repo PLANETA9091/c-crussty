@@ -68,9 +68,9 @@ fn lever_flag_matches_for(f: &str) -> bool {
         || f == "cmp406_aibatch"
         || f == "cmp409_multi"
         || f == "cmp405_stagtick" || f == "cmp406_sscan"
-        || f == "cmp409_multi" || f == "cmp412_meganav" || f == "cmp414_cvs"
+        || f == "cmp409_multi" || f == "cmp412_meganav" || f == "cmp414_cvs" || f == "cmp416_gsel3"
         // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
-        || f == "cmp412_eqsnapv3" || f == "cmp414_cvs"
+        || f == "cmp412_eqsnapv3" || f == "cmp414_cvs" || f == "cmp416_gsel3" // TASK-416-B gsel-iter-3.
 }
 
 pub fn activate() {
@@ -98,9 +98,9 @@ pub fn activate() {
         // TASK-406-E: композит раунда-406.
         || flag == "cmp406_sscan"
         // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
-        || flag == "cmp409_multi" || flag == "cmp412_meganav" || flag == "cmp414_cvs"
+        || flag == "cmp409_multi" || flag == "cmp412_meganav" || flag == "cmp414_cvs" || flag == "cmp416_gsel3"
         // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
-        || flag == "cmp412_eqsnapv3" || flag == "cmp414_cvs";
+        || flag == "cmp412_eqsnapv3" || flag == "cmp414_cvs" || flag == "cmp416_gsel3";
     let despawn2 = flag == "cmp399_despawn2" || bfcomp || comp;
     if shard {
         // ГРОМКИЙ ARM-МАРКЕР (TASK-399-B): без этой строки нога не-armed.

@@ -51,9 +51,9 @@ pub fn enabled() -> bool {
             // TASK-406-E: композит раунда-406 (stagtick ⊕ sscan).
             || v == "cmp406_sscan"
             // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
-            || v == "cmp409_multi" || v == "cmp412_meganav" || v == "cmp414_cvs"
+            || v == "cmp409_multi" || v == "cmp412_meganav" || v == "cmp414_cvs" || v == "cmp416_gsel3"
             // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
-            || v == "cmp412_eqsnapv3" || v == "cmp414_cvs"
+            || v == "cmp412_eqsnapv3" || v == "cmp414_cvs" || v == "cmp416_gsel3" // TASK-416-B gsel-iter-3.
         })
         .unwrap_or(false)
 }

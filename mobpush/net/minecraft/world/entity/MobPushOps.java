@@ -143,7 +143,9 @@ public final class MobPushOps {
                     // cmp412_meganav-сайты остаются нетронутыми.
                     || f.trim().equals("cmp412_eqsnapv3")
                     // TASK-414-B: leg flag cmp414_cvs.
-                    || f.trim().equals("cmp414_cvs"));
+                    || f.trim().equals("cmp414_cvs")
+                    // TASK-416-B: gsel-iter-3 slice поверх живого cvs-носителя.
+                    || f.trim().equals("cmp416_gsel3"));
     }
 
     private static final boolean ENABLED = leverEnabled();
