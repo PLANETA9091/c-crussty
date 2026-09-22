@@ -18,6 +18,7 @@ run_case() { # lever expected
   CRUSSTY_LEVER_FLAG="$1" EXPECTED="$2" "$JAVA" -cp "$KERNEL:queryplane/build:$OUT" \
     QueryPlaneSelfTestMain 2>/dev/null | tee /dev/stderr | grep -q GATE-OK || RC=1
 }
+run_case cmp417_mcomp true   # TASK-417-A era lever — MUST be true (fresh blob gate)
 run_case cmp416_mcomp true   # era lever — MUST be true (fresh blob gate)
 run_case cmp415_mcomp true   # legacy era composite stays armed
 run_case cmp412_b2p1 true    # original queryplane lever stays armed
