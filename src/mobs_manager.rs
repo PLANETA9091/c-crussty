@@ -58,6 +58,11 @@ const GATE_LEVER_STAGTICK: &str = "cmp405_stagtick";
 /// TASK-406-D: композит раунда-406 (stagtick ⊕ ai-window) — SoA-плоскость
 /// primary push broadphase + популяция для aiEpoch (mob_ai_step window).
 const GATE_LEVER_AIBATCH: &str = "cmp406_aibatch";
+const GATE_LEVER_MULTI: &str = "cmp409_multi";
+
+/// TASK-406-E: композит раунда-406 (stagtick ⊕ sscan) — SoA-плоскость
+/// primary push broadphase + популяция для sscanEpoch (despawn-scan column).
+const GATE_LEVER_SSCAN: &str = "cmp406_sscan";
 
 fn lever_flag() -> String {
     std::env::var("CRUSSTY_LEVER_FLAG")
@@ -74,6 +79,8 @@ fn java_gate_matches(f: &str) -> bool {
         || f == GATE_LEVER_TICKPLANE
         || f == GATE_LEVER_STAGTICK
         || f == GATE_LEVER_AIBATCH
+        || f == GATE_LEVER_MULTI
+        || f == GATE_LEVER_SSCAN
 }
 
 static READY: AtomicBool = AtomicBool::new(false);
@@ -401,7 +408,7 @@ pub fn activate() {
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
         // TASK-402-B: под композитом маркер объявляет ВСЕ суб-механизмы
         // (soa + зеркальный sharded grid; item-половина — в items_manager).
-        if f == GATE_LEVER_COMP || f == GATE_LEVER_STAGCOMP || f == GATE_LEVER_TICKPLANE || f == GATE_LEVER_STAGTICK || f == GATE_LEVER_AIBATCH {
+        if f == GATE_LEVER_COMP || f == GATE_LEVER_STAGCOMP || f == GATE_LEVER_TICKPLANE || f == GATE_LEVER_STAGTICK || f == GATE_LEVER_AIBATCH || f == GATE_LEVER_SSCAN || f == GATE_LEVER_MULTI {
             eprintln!(
                 "[crussty-plugin] {}: ARMED soa=flat-arrays seqlock=global-version writer=global-mutex ids_cap=1048576 cell_cap=262144 cell=1.0 pad=1.0 radius_gate=1.0 rust_prune=coarse-hw-hh + mobgrid=sharded-mirror shards=64 shard_cap=16384 fallback-read=per-call (rust mobs_soa SoA flat x/y/z/hw/hh/flags ⊕ mobs_grid mirror; pushEntities tail untouched vanilla; per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT)",
                 f

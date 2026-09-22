@@ -67,6 +67,12 @@ fn enabled() -> bool {
             // ai-окна пропускают и goal-тик; мобы в окне — стаггернутые
             // canUse-поллы как в базе stagtick).
             | Ok("cmp406_aibatch")
+            // TASK-406-E: композит раунда-406 — goal-стаггер (GoalSelector
+            // canUseGate) активен вместе с новым despawn-scan срезом (мобы
+            // вне ai-окна пропускают и goal-тик; despawn-скан батчится
+            // отдельно через mobs_sscan, гейт cmp406_sscan).
+            | Ok("cmp406_sscan")
+            | Ok("cmp409_multi")
     )
 }
 

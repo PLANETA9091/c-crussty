@@ -49,6 +49,7 @@ mod mobs_grid;
 mod mobs_manager;
 mod mobs_soa;
 mod mobs_ai;
+mod mobs_sscan;
 mod noise_fill;
 mod parse_diag;
 mod zero_cursor;
@@ -225,6 +226,12 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // column written by ONE bulk aiEpoch JNI per tick over the SoA
     // population. Dormant unless CRUSSTY_LEVER_FLAG == cmp406_aibatch.
     mobs_ai::register();
+    // SSCAN-DESPAWN (TASK-406-E, vector R4 despawn/spawn/activation scans):
+    // the Mob.checkDespawn → Level.findNearbyPlayer site retarget with ONE
+    // bulk sscanEpoch JNI per tick over the mobs_soa SoA population (nearest
+    // qualifying player column). Dormant unless CRUSSTY_LEVER_FLAG ==
+    // cmp406_sscan (empty flag = exact vanilla path).
+    mobs_sscan::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -512,6 +519,10 @@ fn inject_surface() {
     // the aiStep retarget and retransforms LivingEntity LAST (dormant unless
     // CRUSSTY_LEVER_FLAG == cmp406_aibatch).
     mobs_ai::activate();
+    // SSCAN-DESPAWN (TASK-406-E): waits for boot, defines MobScanOps +
+    // RegisterNatives (sscanProbe/sscanEpoch), flips READY and retransforms
+    // Mob (dormant unless CRUSSTY_LEVER_FLAG == cmp406_sscan).
+    mobs_sscan::activate();
     // TICK-PLANE (TASK-403-C): сводный ARM-маркер плейна после активации
     // всех сегментов (items/push-soa+grid/stagger/collide) — coarse-stamp
     // эпохи; dormant unless CRUSSTY_LEVER_FLAG == cmp403_tickplane.

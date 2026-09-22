@@ -49,9 +49,12 @@ public final class MobAiOps {
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
         // STRICT eq (TASK-402-F урок полу-armed гейта): только точный флаг
-        // раунда-406. База stagtick вооружается СВОИМИ гейтами; этот мост
-        // под cmp405_stagtick не вызывается (rust не ставит сайт).
-        return f != null && f.trim().equals("cmp406_aibatch");
+        // раунда-406 или мультикомпозит-409. База stagtick вооружается
+        // СВОИМИ гейтами; этот мост под cmp405_stagtick не вызывается
+        // (rust не ставит сайт).
+        return f != null && (f.trim().equals("cmp406_aibatch")
+                // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
+                || f.trim().equals("cmp409_multi"));
     }
 
     private static final boolean ENABLED = leverEnabled();
