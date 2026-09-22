@@ -27,6 +27,7 @@ mod brainhook;
 mod bridge_class;
 mod classfile;
 mod collide_batch;
+mod colpush;
 #[cfg(test)]
 mod entity_mirror;
 mod entity_compose;
@@ -57,6 +58,7 @@ mod mobs_ai;
 mod mobs_sscan;
 mod nav_plane;
 mod nav_pool;
+mod chunk_parse;
 mod noise_fill;
 mod parse_diag;
 mod zero_cursor;
@@ -233,6 +235,15 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // column written by ONE bulk aiEpoch JNI per tick over the SoA
     // population. Dormant unless CRUSSTY_LEVER_FLAG == cmp406_aibatch.
     mobs_ai::register();
+    // COLPUSH (TASK-419-A): the NEW LAST hook on LivingEntity — composes the
+    // pushEntities whole-body redirect → ColpushOps.pushEntities ONTO the
+    // received chain bytes (soa pushables-retarget replaced by the bulk-CSR
+    // bridge; aiStep retarget preserved). ONE bulk colpushTick JNI per tick
+    // (RegionTickOps pre-GO trigger) feeds the CSR candidates + refreshes the
+    // mobs_soa columns (0 per-entity JNI — the round-417 per-entity mobUpsert
+    // ladder is gone). Dormant unless CRUSSTY_LEVER_FLAG == cmp420_colpush
+    // (STRICT eq; empty flag = vanilla bit-in-bit).
+    colpush::register();
     // SSCAN-DESPAWN (TASK-406-E, vector R4 despawn/spawn/activation scans):
     // the Mob.checkDespawn → Level.findNearbyPlayer site retarget with ONE
     // bulk sscanEpoch JNI per tick over the mobs_soa SoA population (nearest
@@ -254,6 +265,14 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // flag — upper-agent tick-410 mandate: only the query plane, no
     // add/remove/move accounting hooks (cleg5b AIOOBE root-cause).
     entity_query::register();
+    // CHUNK-PARSE SECTION-CACHE (TASK-419-C base, TASK-420-C deepening,
+    // lever cmp420_chunk2, law 8 chunk-loading axis): byte hook on
+    // SerializableChunkData (pristine capture), ChunkParseOps cache-first
+    // decoder defined at activation, static body-redirect of lambda$parse$5
+    // (blocks; twin lambda$parse$7 biomes stays pristine). Dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp420_chunk2 (STRICT eq; empty/foreign flag =
+    // vanilla bit-in-bit).
+    chunk_parse::register();
     // QUERYPLANE (TASK-417-C, broadphase-query plane on the cvs carrier):
     // Level compose-on-top hook (LAST on Level — receives region_threads'
     // guardEntityTick bytes, composes getEntitiesOfClass +
@@ -549,6 +568,12 @@ fn inject_surface() {
     // the aiStep retarget and retransforms LivingEntity LAST (dormant unless
     // CRUSSTY_LEVER_FLAG == cmp406_aibatch).
     mobs_ai::activate();
+    // COLPUSH (TASK-419-A): waits for the soa/stagger/ai LIVING serves, then
+    // defines ColpushOps + RegisterNatives (colpushProbe/colpushTick), flips
+    // READY (the hook composes the whole-body redirect) and retransforms
+    // LivingEntity after mobs_ai — the LAST serve in the chain (dormant
+    // unless CRUSSTY_LEVER_FLAG == cmp420_colpush).
+    colpush::activate();
     // SSCAN-DESPAWN (TASK-406-E): waits for boot, defines MobScanOps +
     // RegisterNatives (sscanProbe/sscanEpoch), flips READY and retransforms
     // Mob (dormant unless CRUSSTY_LEVER_FLAG == cmp406_sscan).
@@ -573,6 +598,12 @@ fn inject_surface() {
     // was filtered -> selfTest false on runner) -> compute patches -> READY
     // -> retransform Level + ChunkEntitySlices. Dormant unless cmp417_bq.
     queryplane::activate();
+    // CHUNK-PARSE SECTION-CACHE (TASK-419-C): boot quiet -> define
+    // ChunkParseOps into the kernel loader + init(twin) on the LOCAL ref ->
+    // pristine guard (javap-verified shape) -> static body-redirect of
+    // lambda$parse$5 -> READY -> retransform SerializableChunkData (dormant
+    // unless CRUSSTY_LEVER_FLAG == cmp420_chunk2).
+    chunk_parse::activate();
 }
 
 /// Define one bridge class and register all its natives.

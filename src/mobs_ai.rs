@@ -72,6 +72,8 @@ fn enabled() -> bool {
         Ok("cmp406_aibatch") | Ok("cmp409_multi") | Ok("cmp412_meganav") | Ok("cmp414_cvs")
             // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
             | Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs") | Ok("cmp417_bq")
+            // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
+            | Ok("cmp420_colpush")
     )
 }
 
@@ -91,6 +93,22 @@ pub fn note_soa_served() {
 pub fn note_stagger_served() {
     STAGGER_SERVED.store(true, Ordering::Release);
 }
+
+/// TASK-419-A (colpush): read-views of the LIVING serve signals — colpush.rs
+/// (the LAST LivingEntity hook) waits for soa+stagger+ai before its own
+/// retransform, so the chain composes all serves in one round.
+pub fn soa_served() -> bool {
+    SOA_SERVED.load(Ordering::Acquire)
+}
+
+pub fn stagger_served() -> bool {
+    STAGGER_SERVED.load(Ordering::Acquire)
+}
+
+pub fn ai_ready() -> bool {
+    READY.load(Ordering::Acquire)
+}
+
 
 /// Window rule — the single source of truth (mirrored 1:1 in the rust
 /// `aiEpoch` writer; java never re-derives it). Golden-multiplicative phase:
