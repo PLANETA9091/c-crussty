@@ -248,6 +248,174 @@ pub fn register() {
     }
 }
 
+// ---------------------------------------------------------------------------
+// TASK-413-C: EARLY bridge define (NCDFE root-cause cv3-1 35712182885 /
+// cv3-2 35712204518).
+//
+// MobPushOps.pushables (mobpush blob, `if (K4 || EQSNAP)` branch) executes
+// `EntityGoalQueryOps.pushCandidates` from the FIRST entity push — i.e. from
+// the start of the population inject — while the late define below used to
+// wait for BOTH goal classes to load + boot-quiet + 20s. On the meganav base
+// the race flipped (cv3-1: first pushables call 09:52:03 vs goal-query ARMED
+// much later): the JVM resolved EntityGoalQueryOps through MobPushOps's
+// defining loader → ClassNotFoundException → and HotSpot CACHES the NCDFE per
+// constant-pool entry, so the error repeated ×3938 for the whole run even
+// AFTER the late define finally succeeded (log: NCDFE span 1074..83741,
+// ARM at 9888). ARM-маркеры были, retarget случился, но мост для push-лейна
+// так и не был виден.
+//
+// STRICT-порядок (закон 6 v16): define → register natives → probe ARMED →
+// publish. The early define is IDEMPOTENT (BRIDGE_DEFINED + lock — a second
+// define_class into the same loader = LinkageError) and anchored on the
+// first loaded of {goal classes, LivingEntity}: LivingEntity loads at boot
+// and is the SAME kernel loader mobs_manager defines MobPushOps into (c-l2
+// empirics: a goal-anchored define was resolved through the living loader —
+// one loader). mobs_manager gates its push-lane publish on this returning
+// true → the bridge is in place BEFORE pushables can ever execute.
+// ---------------------------------------------------------------------------
+
+static BRIDGE_DEFINED: AtomicBool = AtomicBool::new(false);
+static BRIDGE_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+/// TASK-413-C: true iff the lever flag carries the eqsnap/k4 plane — the ONLY
+/// java blobs that resolve this bridge at runtime (the MobPushOps
+/// `if (K4 || EQSNAP)` branch; javac does not fold these <clinit>-computed
+/// statics, but the branch is never EXECUTED under other flags, so the cp
+/// entry is never resolved — lazy resolution). mobs_manager requires the
+/// bridge before arming the push lane exactly under these flags.
+pub fn lever_matches() -> bool {
+    enabled()
+}
+
+/// Anchor preference for the early define: goal classes keep the late
+/// phase's anchor identical when they are already up; LivingEntity loads at
+/// boot (entity superclass) and is the loader MobPushOps lands in.
+const EARLY_ANCHORS: &[&str] = &[
+    "net/minecraft/world/entity/ai/goal/target/NearestAttackableTargetGoal",
+    "net/minecraft/world/entity/ai/goal/AvoidEntityGoal",
+    "net/minecraft/world/entity/LivingEntity",
+];
+
+/// Define the bridge + RegisterNatives into `anchor`'s loader. Idempotent
+/// (BRIDGE_DEFINED; double-check under BRIDGE_LOCK — two workers may race).
+/// Returns true iff the bridge is defined + natives bound.
+fn define_bridge_once(anchor: &str) -> bool {
+    if BRIDGE_DEFINED.load(Ordering::Acquire) {
+        return true;
+    }
+    let _guard = match BRIDGE_LOCK.lock() {
+        Ok(g) => g,
+        Err(_) => return false,
+    };
+    if BRIDGE_DEFINED.load(Ordering::Acquire) {
+        return true;
+    }
+    let ok = cplug_sdk::jni_util::with_attached(|env| {
+        let Some(cls) = cplug_sdk::classes::find_class(anchor) else {
+            return false;
+        };
+        let Some(class_cls) = env.find_class("java/lang/Class") else {
+            crate::clear_exception(env);
+            return false;
+        };
+        let Some(loader) = env
+            .get_method_id(class_cls, "getClassLoader", "()Ljava/lang/ClassLoader;")
+            .and_then(|mid| {
+                let l = env.call_object_method(cls.as_jclass(), mid, &[]);
+                (l as usize != 0).then_some(l)
+            })
+        else {
+            crate::clear_exception(env);
+            env.delete_local_ref(class_cls);
+            return false;
+        };
+        let gref = env.new_global_ref(loader);
+        if gref.is_null() {
+            crate::describe_exception(env);
+            env.delete_local_ref(loader);
+            env.delete_local_ref(class_cls);
+            return false;
+        }
+        let Some(c) = env.define_class(OPS_CLASS, gref, OPS_BYTES) else {
+            crate::describe_exception(env);
+            eprintln!("[crussty-plugin] entity_query: define_class({OPS_CLASS}) failed");
+            return false;
+        };
+
+        // RegisterNatives: eqProbe (magic) + eqEpoch (bulk chain builder).
+        // TASK-409-E ROOT-CAUSE lesson: the registered sig must match the
+        // java declaration EXACTLY. Java:
+        //   eqProbe()                                    -> ()I
+        //   eqEpoch(int,int,double[],int[],int[])        -> (II[D[I[I)I
+        let names = [
+            CString::new("eqProbe").expect("no NUL"),
+            CString::new("eqEpoch").expect("no NUL"),
+        ];
+        let sigs = [
+            CString::new("()I").expect("no NUL"),
+            CString::new("(II[D[I[I)I").expect("no NUL"),
+        ];
+        let natives = [
+            jvmti_bindings::jni::JNINativeMethod {
+                name: names[0].as_ptr(),
+                signature: sigs[0].as_ptr(),
+                fnPtr: eq_probe as *const c_void as *mut c_void,
+            },
+            jvmti_bindings::jni::JNINativeMethod {
+                name: names[1].as_ptr(),
+                signature: sigs[1].as_ptr(),
+                fnPtr: eq_epoch as *const c_void as *mut c_void,
+            },
+        ];
+        let reg = env.register_natives(c, &natives);
+        if let Err(code) = reg {
+            // describe BEFORE clear (TASK-409-E: sig/name mismatch posts
+            // NoSuchMethodError; without this the only trace is (code -1)).
+            crate::describe_exception(env);
+            env.exception_clear();
+            eprintln!(
+                "[crussty-plugin] entity_query: register_natives failed (code {code}) — hook stays dormant"
+            );
+            env.delete_local_ref(c);
+            env.delete_local_ref(loader);
+            env.delete_local_ref(class_cls);
+            return false;
+        }
+        env.delete_local_ref(c);
+        env.delete_local_ref(loader);
+        env.delete_local_ref(class_cls);
+        true
+    });
+    let ok = ok.unwrap_or(false);
+    if ok {
+        BRIDGE_DEFINED.store(true, Ordering::Release);
+        eprintln!(
+            "[crussty-plugin] entity_query: bridge EARLY define ok (anchor={anchor}) — push-lane NCDFE window closed"
+        );
+    }
+    ok
+}
+
+/// TASK-413-C public entry: guarantee the bridge is defined + natives bound
+/// BEFORE the push lane goes live. Called by mobs_manager as a HARD publish
+/// gate (probe-then-patch: define → register natives → probe → publish) and
+/// by the activate worker's early phase. Never caches failure — each call
+/// re-probes the anchors (transient JNI hiccups recoverable).
+pub fn ensure_bridge_early() -> bool {
+    if BRIDGE_DEFINED.load(Ordering::Acquire) {
+        return true;
+    }
+    if !enabled() {
+        return false;
+    }
+    for anchor in EARLY_ANCHORS {
+        if cplug_sdk::classes::find_class(anchor).is_some() {
+            return define_bridge_once(anchor);
+        }
+    }
+    false
+}
+
 /// Background activation: wait for the target classes + boot quiet, define
 /// the EntityGoalQueryOps bridge into the kernel loader + RegisterNatives
 /// (eqProbe/eqEpoch), compute both retargets from the pristine bytes, flip
@@ -257,6 +425,27 @@ pub fn activate() {
         return;
     }
     std::thread::spawn(|| {
+        // TASK-413-C EARLY PHASE: define the bridge as soon as the loader is
+        // quiet and ANY anchor is up (LivingEntity at boot; goal classes may
+        // lag the push lane by whole boot phases). This — plus the mobs_manager
+        // publish gate — makes define-before-pushables deterministic instead
+        // of a boot-timing race. Retarget/publish stays strictly gated below.
+        if crate::improved_noise::wait_for_boot() {
+            let early_deadline = std::time::Instant::now() + std::time::Duration::from_secs(180);
+            loop {
+                if ensure_bridge_early() {
+                    break;
+                }
+                if std::time::Instant::now() > early_deadline {
+                    eprintln!(
+                        "[crussty-plugin] entity_query: EARLY bridge define did not land within 180s — push lane will fail-closed at mobs_manager"
+                    );
+                    break;
+                }
+                std::thread::sleep(std::time::Duration::from_millis(2_000));
+            }
+        }
+
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(180);
         for t in targets() {
             while cplug_sdk::classes::find_class(t.name).is_none() {
@@ -326,84 +515,12 @@ pub fn activate() {
         }
 
         // Define the bridge + RegisterNatives in the kernel loader.
+        // TASK-413-C: idempotent — the EARLY define (top of this worker, or
+        // mobs_manager's push-lane publish gate) may have landed already; a
+        // second define_class into the same loader = LinkageError.
         let anchor = targets()[0].name;
-        let defined = cplug_sdk::jni_util::with_attached(|env| {
-            let Some(cls) = cplug_sdk::classes::find_class(anchor) else {
-                return false;
-            };
-            let Some(class_cls) = env.find_class("java/lang/Class") else {
-                crate::clear_exception(env);
-                return false;
-            };
-            let Some(loader) = env
-                .get_method_id(class_cls, "getClassLoader", "()Ljava/lang/ClassLoader;")
-                .and_then(|mid| {
-                    let l = env.call_object_method(cls.as_jclass(), mid, &[]);
-                    (l as usize != 0).then_some(l)
-                })
-            else {
-                crate::clear_exception(env);
-                env.delete_local_ref(class_cls);
-                return false;
-            };
-            let gref = env.new_global_ref(loader);
-            if gref.is_null() {
-                crate::describe_exception(env);
-                env.delete_local_ref(loader);
-                env.delete_local_ref(class_cls);
-                return false;
-            }
-            let Some(c) = env.define_class(OPS_CLASS, gref, OPS_BYTES) else {
-                crate::describe_exception(env);
-                eprintln!("[crussty-plugin] entity_query: define_class({OPS_CLASS}) failed");
-                return false;
-            };
-
-            // RegisterNatives: eqProbe (magic) + eqEpoch (bulk chain builder).
-            // TASK-409-E ROOT-CAUSE lesson: the registered sig must match the
-            // java declaration EXACTLY. Java:
-            //   eqProbe()                                    -> ()I
-            //   eqEpoch(int,int,double[],int[],int[])        -> (II[D[I[I)I
-            let names = [
-                CString::new("eqProbe").expect("no NUL"),
-                CString::new("eqEpoch").expect("no NUL"),
-            ];
-            let sigs = [
-                CString::new("()I").expect("no NUL"),
-                CString::new("(II[D[I[I)I").expect("no NUL"),
-            ];
-            let natives = [
-                jvmti_bindings::jni::JNINativeMethod {
-                    name: names[0].as_ptr(),
-                    signature: sigs[0].as_ptr(),
-                    fnPtr: eq_probe as *const c_void as *mut c_void,
-                },
-                jvmti_bindings::jni::JNINativeMethod {
-                    name: names[1].as_ptr(),
-                    signature: sigs[1].as_ptr(),
-                    fnPtr: eq_epoch as *const c_void as *mut c_void,
-                },
-            ];
-            let reg = env.register_natives(c, &natives);
-            if let Err(code) = reg {
-                // describe BEFORE clear (TASK-409-E: sig/name mismatch posts
-                // NoSuchMethodError; without this the only trace is (code -1)).
-                crate::describe_exception(env);
-                env.exception_clear();
-                eprintln!(
-                    "[crussty-plugin] entity_query: register_natives failed (code {code}) — hook stays dormant"
-                );
-                env.delete_local_ref(c);
-                env.delete_local_ref(loader);
-                env.delete_local_ref(class_cls);
-                return false;
-            }
-            env.delete_local_ref(c);
-            env.delete_local_ref(loader);
-            env.delete_local_ref(class_cls);
-            true
-        });
-        if !defined.unwrap_or(false) {
+        let defined = define_bridge_once(anchor);
+        if !defined {
             eprintln!("[crussty-plugin] entity_query: bridge definition failed, hook stays dormant");
             return;
         }
