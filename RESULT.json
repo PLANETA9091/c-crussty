@@ -1,17 +1,29 @@
 {
-  "agent": "TASK-419-A",
-  "vector": "collide+push subsystem entirely Java->Rust (MobPushOps.push/move + collide_batch family, LivingEntity.aiStep collide slice)",
-  "branch": "round-419-a-colpush @ fbb06e3",
-  "status": "RESEARCH",
-  "step": "worktree created, disk cleaned 93->63%, 417 worktrees preserved+pushed",
+  "agent": "TASK-419-A-restart",
+  "vector": "collide+push subsystem entirely Java->Rust (MobPushOps.push/move + collide family; ONE bulk colpushTick JNI/tick; per-entity JNI removed)",
+  "branch": "round-419-a-colpush @ dc4afd9",
+  "status": "DISPATCHED",
+  "step": "implementation complete (rust+java+blobs, cargo 284/0, javap gate ALL IN SYNC) -> 3 legs dispatched, polling",
   "lever_flag": "cmp419_colpush",
   "run_ids": [],
   "anchor_runs": [35770227563, 35770236750, 35770245316],
+  "anchors_absorbed": {"a": 2.30, "b": 2.40, "c": 2.35, "note": "anchor419 a/b/c @ research/gc-recon-2026-09-19/round-anchor419{a,b,c}/ pair-by-runner reference"},
   "tps_med": null,
   "delta_pair_pct": null,
-  "lane": {"was": "collide ~8.7% + MobPushOps.push/move ~7-9% (java)", "became": null},
-  "parity": null,
+  "lane": {
+    "was": "collide ~8.7% + MobPushOps.push/move ~7-9% (java): per-entity mobUpsert JNI ~40-48k/tick + eqsnap chain-scan + collect allocations",
+    "became": "ONE bulk colpushTick JNI/tick (grid broadphase CSR, main pre-GO) + vanilla-exact java tail (live revalidation, cramming RNG, numCollisions, e.push(self)); mobs_soa fed by colpush_plane_refresh (1 WLOCK/tick)"
+  },
+  "parity": "pending (empty flag = vanilla bit-in-bit; STRICT-OR carrier cmp417_bq-era bridges)",
   "verdict": null,
-  "evidence": [],
-  "what": "worktree round-419-a-colpush @ origin/master fbb06e3; research phase starting"
+  "evidence": [
+    "commit dc4afd9: src/colpush.rs (bulk grid CSR + plane refresh), classfile.rs patch_push_entities_colpush + colpush_resolution_closure, mobs_soa.rs colpush_plane_refresh",
+    "java ColpushOps.java: vanilla tail offsets 0..319 bit-exact (javap-verified), vanillaReplica fail-closed branch, ERR_RANGE grow+retry, oversized disarm 2.0",
+    "cargo test 284 passed / 0 failed (incl. colpush whole-body roundtrip on kernel LivingEntity fixture)",
+    "scripts/check_blobs_sync.sh ALL IN SYNC (ColpushOps/MobPushOps/RegionTickOps + all carrier blobs, nested==flat)",
+    "carrier STRICT-OR: rust lever gates + java leverEnabled (MobPushOps/EntityGoalQueryOps/QueryPlaneOps/MobAiOps/MobScanOps/ItemEntityManager/RegionTickOps COLPUSH_ARMED)"
+  ],
+  "what": "restart continued from a75e62b research; implementation finished from break-off point; blobs rebuilt; dispatching 3 legs round-419-a-cpa/cpb/cpc @ dc4afd9",
+  "legs_refs": ["round-419-a-cpa", "round-419-a-cpb", "round-419-a-cpc"],
+  "legs_inputs": {"radius": 640, "seconds": 300, "fake_players": 4, "fluid_guard": 1, "gc_tune": 3, "inside_cache": 1, "flush_diet": 1, "fluid_dirty": 0, "fluid_bitmask": 0, "region_threads": 4, "batch_collector": 1, "inside_bitmask": 0, "skip_store_bb": 0, "region_steal": 0, "bu_defer": 0, "population_target": 150000, "population_seed": 42, "server_xmx": "10G", "server_xms": "4G", "cpu_band_min": 6000000, "cpu_band_max": 9500000, "lever_flag": "cmp419_colpush", "lever_arg": 1}
 }
