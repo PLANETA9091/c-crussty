@@ -3,7 +3,7 @@ import net.minecraft.world.entity.QueryPlaneOps;
 /**
  * TASK-416-A recipe 3 pre-gate: run QueryPlaneOps.selfTest() LOCALLY (soot)
  * against the FRESH blob + real kernel jar, before any dispatch.
- * Expect: true for {cmp412_b2p1, cmp415_mcomp, cmp416_mcomp}, false otherwise.
+ * Expect: true for {cmp412_b2p1, cmp415_mcomp, cmp416_mcomp, cmp417_mcomp}, false otherwise.
  */
 public final class QueryPlaneSelfTestMain {
     public static void main(String[] args) {

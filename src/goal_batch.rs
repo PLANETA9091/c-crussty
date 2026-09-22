@@ -63,13 +63,14 @@ const PROBE_MAGIC: i32 = 0x4753; // "GS"
 fn enabled() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp414_pfb") | Ok("cmp416_mcomp")
+        Ok("cmp414_pfb") | Ok("cmp416_mcomp") | Ok("cmp417_mcomp")
     )
 }
 
 /// Lever id for boot markers.
 fn lever_id() -> &'static str {
     match std::env::var("CRUSSTY_LEVER_FLAG").as_deref() {
+        Ok("cmp417_mcomp") => "cmp417_mcomp",
         Ok("cmp416_mcomp") => "cmp416_mcomp",
         _ => "cmp414_pfb",
     }
@@ -130,7 +131,7 @@ fn retarget_gsel(bytes: &[u8]) -> Result<(Vec<u8>, usize), String> {
 pub fn register() {
     if !enabled() {
         eprintln!(
-            "[crussty-plugin] goal_batch: dormant (lever_flag != cmp414_pfb/cmp416_mcomp, vanilla goal selectors)"
+            "[crussty-plugin] goal_batch: dormant (lever_flag != cmp414_pfb/cmp416_mcomp/cmp417_mcomp, vanilla goal selectors)"
         );
         return;
     }
@@ -303,7 +304,7 @@ pub fn activate() {
             lever_id()
         );
 
-        crate::kernel_policy::audit_wire(OPS_CLASS, "tickGate", "cmp416_mcomp gsel v1");
+        crate::kernel_policy::audit_wire(OPS_CLASS, "tickGate", "cmp416_mcomp|cmp417_mcomp gsel v1");
         READY.store(true, Ordering::Release);
         let rc = cplug_sdk::retransform_class(MOB_CLASS);
         eprintln!(

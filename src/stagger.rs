@@ -72,7 +72,7 @@ fn enabled() -> bool {
             // вне ai-окна пропускают и goal-тик; despawn-скан батчится
             // отдельно через mobs_sscan, гейт cmp406_sscan).
             | Ok("cmp406_sscan")
-            | Ok("cmp409_multi") | Ok("cmp412_meganav") | Ok("cmp412_b2p1") | Ok("cmp415_mcomp") | Ok("cmp416_mcomp")
+            | Ok("cmp409_multi") | Ok("cmp412_meganav") | Ok("cmp412_b2p1") | Ok("cmp415_mcomp") | Ok("cmp416_mcomp") | Ok("cmp417_mcomp")
     )
 }
 

@@ -48,13 +48,14 @@ const BRIDGE_DESC: &str = "(Lnet/minecraft/world/entity/item/ItemEntity;)V";
 fn enabled() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("items_oss") | Ok("cmp416_mcomp")
+        Ok("items_oss") | Ok("cmp416_mcomp") | Ok("cmp417_mcomp")
     )
 }
 
 /// Distinct lever id for markers (round-416 lever-id protocol).
 fn lever_id() -> &'static str {
     match std::env::var("CRUSSTY_LEVER_FLAG").as_deref() {
+        Ok("cmp417_mcomp") => "cmp417_mcomp",
         Ok("cmp416_mcomp") => "cmp416_mcomp",
         _ => "items_oss",
     }
@@ -98,7 +99,7 @@ fn patch_lock() -> &'static std::sync::Mutex<Option<PatchCache>> {
 pub fn register() {
     if !enabled() {
         eprintln!(
-            "[crussty-plugin] item_merge: dormant (lever_flag != items_oss/cmp416_mcomp, vanilla item merging)"
+            "[crussty-plugin] item_merge: dormant (lever_flag != items_oss/cmp416_mcomp/cmp417_mcomp, vanilla item merging)"
         );
         return;
     }

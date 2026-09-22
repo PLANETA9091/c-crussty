@@ -1,8 +1,6 @@
 use jvmti_bindings::jni;
 use std::sync::atomic::{AtomicBool, AtomicI32, AtomicI64, AtomicUsize, Ordering};
-#[cfg(test)]
-use std::sync::Mutex;
-use std::sync::OnceLock;
+use std::sync::{Mutex, MutexGuard, OnceLock};
 
 // ---------------------------------------------------------------------------
 // Sharded grid (pattern B: items_index.rs cmp399_shard arm, verbatim shapes)
@@ -24,12 +22,20 @@ struct Shard {
     keys: [AtomicI64; SHARD_CAP],
     /// Per-slot chain head: id+1 (0 = empty chain).
     head: [AtomicI32; SHARD_CAP],
-    /// Occupied key slots (load accounting — writers only, under WLOCK).
+    /// Occupied key slots (load accounting — writers only, under the shard
+    /// writer mutex).
     used: AtomicUsize,
+    /// PROTOCOL V2 (TASK-417-A): per-shard WRITER Mutex. The mirror upsert/
+    /// remove calls now run OUTSIDE the SoA global WLOCK (no lock-group
+    /// nesting — mobs_soa mob_upsert releases its lock before mirroring), so
+    /// mirror writers serialize HERE, per shard, locks taken in ascending
+    /// shard-index order on a two-shard move (deadlock-free).
+    wlock: Mutex<()>,
 }
 
 const K0: AtomicI64 = AtomicI64::new(0);
 const H0: AtomicI32 = AtomicI32::new(0);
+const W0: Mutex<()> = Mutex::new(());
 
 // Fixed-capacity statics: zero-filled (0 = empty key / empty chain / version
 // 0 = stable) and NEVER reallocated — the prerequisite for lock-free reads.
@@ -39,8 +45,18 @@ static SHARDS: [Shard; NSHARDS] = [const {
         keys: [K0; SHARD_CAP],
         head: [H0; SHARD_CAP],
         used: AtomicUsize::new(0),
+        wlock: W0,
     }
 }; NSHARDS];
+
+/// Writer-side per-shard lock + version bracket (protocol v2): the guard
+/// serializes mirror writers of this shard; w_begin/w_end wrap the mutation
+/// while the guard is held.
+fn shard_writer(s: &'static Shard) -> MutexGuard<'static, ()> {
+    // Mirror writers are worker threads; a poisoned lock recovers (same
+    // discipline as the mobs_soa WLOCK).
+    s.wlock.lock().unwrap_or_else(|p| p.into_inner())
+}
 
 /// Per-id intrusive chain link (next id+1 in the same cell, 0 = end).
 static NEXT: [AtomicI32; MAX_IDS] = [H0; MAX_IDS];
@@ -67,6 +83,7 @@ pub(crate) fn mirror_mode() -> bool {
                     || v.trim() == "cmp406_sscan"
                     // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
                     || v.trim() == "cmp409_multi" || v.trim() == "cmp412_meganav" || v.trim() == "cmp412_b2p1" || v.trim() == "cmp415_mcomp" || v.trim() == "cmp416_mcomp"
+                    || v.trim() == "cmp417_mcomp"
             })
             .unwrap_or(false)
     })
@@ -145,8 +162,9 @@ fn shard_find_slot(s: &Shard, k: i64) -> Result<usize, usize> {
     }
 }
 
-/// Link `id` as the head of cell-key `k` in its shard. Caller holds WLOCK and
-/// brackets this call with w_begin/w_end on the OWNING shard.
+/// Link `id` as the head of cell-key `k` in its shard. Caller holds the
+/// shard's writer Mutex and brackets this call with w_begin/w_end on the
+/// OWNING shard.
 fn shard_link(id: usize, k: i64) -> Result<(), ()> {
     let s = &SHARDS[shard_of(k)];
     // Fixed-capacity load gate (fail-closed; unreachable at bench scale:
@@ -176,8 +194,9 @@ fn shard_link(id: usize, k: i64) -> Result<(), ()> {
 /// FIX over the pattern-B verbatim shape (zeroing an emptied slot breaks the
 /// linear-probe chain of any key that probed past it — found by the
 /// `delete_find_stress` oracle test: upsert → unlink → find_slot(K2) Err →
-/// ERR_STRUCT disarm). Caller holds WLOCK inside this shard's version
-/// bracket; clusters are ~1 entry at bench load, so the shift is O(1).
+/// ERR_STRUCT disarm). Caller holds the shard's writer Mutex inside this
+/// shard's version bracket; clusters are ~1 entry at bench load, so the
+/// shift is O(1).
 fn shard_delete_slot(s: &Shard, mut hole: usize) {
     let mask = SHARD_CAP - 1;
     loop {
@@ -215,7 +234,8 @@ fn shard_delete_slot(s: &Shard, mut hole: usize) {
 }
 
 /// Unlink `id` from its stored cell chain in its shard. Ok(()) or Err(()) if
-/// dangling. Caller holds WLOCK and brackets with the owning shard's version.
+/// dangling. Caller holds the shard's writer Mutex and brackets with the
+/// owning shard's version.
 fn shard_unlink(id: usize) -> Result<(), ()> {
     // SAFETY: id < MAX_IDS (checked by every native entry point).
     let k = unsafe { CELL.get_unchecked(id) }.load(Ordering::Relaxed);
@@ -253,11 +273,13 @@ fn shard_unlink(id: usize) -> Result<(), ()> {
 
 /// Insert-or-move: (re)place `id` into cell `k` (idempotent per id — a stale
 /// ghost entry after a sweep race self-heals on the next owner upsert).
-/// MIRROR contract: the caller (mobs_soa::mob_upsert) already holds the
-/// global writer WLOCK and the global SoA seqlock VERSION bracket — this
-/// function takes NO mutex and only brackets the touched shard's version.
-/// Gate responsibility: the caller checks mirror_mode() (kept out of the
-/// hot path and out of the direct-plane tests).
+/// MIRROR contract (protocol v2): the caller (mobs_soa::mob_upsert) has
+/// ALREADY released the SoA writer WLOCK before calling — this function
+/// serializes on ITS OWN per-shard writer Mutex(es): one shard on a
+/// same-cell/no-op or first link, TWO shards (old + new, locked in ascending
+/// index order — deadlock-free) on a cell move. Gate responsibility: the
+/// caller checks mirror_mode() (kept out of the hot path and out of the
+/// direct-plane tests).
 pub(crate) fn mirror_upsert(id: usize, k: i64) -> i32 {
     if is_broken() {
         return ERR_STRUCT;
@@ -270,28 +292,52 @@ pub(crate) fn mirror_upsert(id: usize, k: i64) -> i32 {
         return 0; // same cell — no mutation at all (settled-population fast path)
     }
     if old != 0 {
-        let sold = &SHARDS[shard_of(old)];
-        w_begin(sold);
-        let r = shard_unlink(id);
-        w_end(sold);
-        if r.is_err() {
-            return ERR_STRUCT;
+        let sold = shard_of(old);
+        let snew = shard_of(k);
+        if sold == snew {
+            // One shard covers both the unlink and the link.
+            let s = &SHARDS[sold];
+            let g = shard_writer(s);
+            w_begin(s);
+            let r = shard_unlink(id).and_then(|_| shard_link(id, k));
+            w_end(s);
+            drop(g);
+            return if r.is_err() { ERR_STRUCT } else { 0 };
         }
+        // Two-shard move: lock in ASCENDING index order (deadlock-free),
+        // bracket both versions, mutate, publish both.
+        let (first, second) = if sold < snew { (sold, snew) } else { (snew, sold) };
+        let g1 = shard_writer(&SHARDS[first]);
+        let g2 = shard_writer(&SHARDS[second]);
+        let s_old = &SHARDS[sold];
+        let s_new = &SHARDS[snew];
+        w_begin(s_old);
+        w_begin(s_new);
+        let r = shard_unlink(id).and_then(|_| shard_link(id, k));
+        w_end(s_new);
+        w_end(s_old);
+        drop(g2);
+        drop(g1);
+        return if r.is_err() { ERR_STRUCT } else { 0 };
     }
     let s = &SHARDS[shard_of(k)];
+    let g = shard_writer(s);
     w_begin(s);
     let r = shard_link(id, k);
     w_end(s);
+    drop(g);
     if r.is_err() {
         return ERR_STRUCT;
     }
     0
 }
 
-/// Remove `id` from the mirror (graveyard sweep). MIRROR contract: caller
-/// (mobs_soa::mob_remove) already holds the global writer WLOCK. Returns 0
-/// (also when never inserted) or ERR_STRUCT on a dangling chain. Gate
-/// responsibility: the caller checks mirror_mode().
+/// Remove `id` from the mirror (graveyard sweep). MIRROR contract (protocol
+/// v2): caller (mobs_soa::mob_remove) has ALREADY released the SoA writer
+/// WLOCK — this function serializes on the id's shard writer Mutex and
+/// brackets the shard version. Returns 0 (also when never inserted) or
+/// ERR_STRUCT on a dangling chain. Gate responsibility: the caller checks
+/// mirror_mode().
 pub(crate) fn mirror_remove(id: usize) -> i32 {
     if is_broken() {
         return ERR_STRUCT;
@@ -303,10 +349,12 @@ pub(crate) fn mirror_remove(id: usize) -> i32 {
     if old == 0 {
         return 0; // never inserted — nothing to do
     }
-    let sold = &SHARDS[shard_of(old)];
-    w_begin(sold);
+    let s = &SHARDS[shard_of(old)];
+    let g = shard_writer(s);
+    w_begin(s);
     let r = shard_unlink(id);
-    w_end(sold);
+    w_end(s);
+    drop(g);
     if r.is_err() {
         ERR_STRUCT
     } else {
@@ -487,9 +535,9 @@ pub unsafe extern "system" fn mob_grid_query(
 mod tests {
     use super::*;
 
-    /// The mirror contract expects the caller to hold the writer WLOCK
-    /// (mobs_soa's); in tests the planes are driven directly, so tests
-    /// serialize on their own process-wide lock instead.
+    /// The mirror upsert/remove calls now serialize on their own per-shard
+    /// writer Mutexes (protocol v2); tests still hold the module lock for
+    /// their WHOLE body so the shared per-id statics cannot cross-contaminate.
     static TLOCK: Mutex<()> = Mutex::new(());
 
     /// All tests of this module share ONE id universe (the per-id statics)

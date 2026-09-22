@@ -57,21 +57,28 @@ const OPS_BYTES: &[u8] =
 
 static READY: AtomicBool = AtomicBool::new(false);
 
-/// STRICT OR (TASK-415-A): {cmp412_b2p1 || cmp415_mcomp}. STRICT OR
-/// распространяется в обратную сторону (meganav-плоскости армятся ОБОИМИ
-/// флагами — nav_plane/tickplane/mobs_manager/ItemEntityManager/MobAiOps/
-/// MobScanOps/collide_batch/stagger), новые java-гейты этой плоскости —
-/// только b2p1/mcomp (композит эры cmp415_mcomp = multi⊕racefix⊕queryplane).
+/// STRICT OR (TASK-415-A): {cmp412_b2p1 || cmp415_mcomp || cmp417_mcomp}.
+/// STRICT OR распространяется в обратную сторону (meganav-плоскости армятся
+/// ОБОИМИ флагами — nav_plane/tickplane/mobs_manager/ItemEntityManager/
+/// MobAiOps/MobScanOps/collide_batch/stagger), новые java-гейты этой
+/// плоскости — только b2p1/mcomp/mconv (композит эры cmp417_mcomp =
+/// cmp416_mcomp ⊕ protocol-v2 mobs_soa). Легаси id не удаляются.
 fn lever_flag_matches() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim() == "cmp412_b2p1" || v.trim() == "cmp415_mcomp" || v.trim() == "cmp416_mcomp")
+        .map(|v| {
+            v.trim() == "cmp412_b2p1"
+                || v.trim() == "cmp415_mcomp"
+                || v.trim() == "cmp416_mcomp"
+                || v.trim() == "cmp417_mcomp"
+        })
         .unwrap_or(false)
 }
 
-/// Lever id for boot markers (TASK-416-A: единый lever-id cmp416_mcomp в
-/// ARM/EFFECT-маркерах; легаси флаги печатают свой id).
+/// Lever id for boot markers (TASK-416-A: единый lever-id в ARM/EFFECT-
+/// маркерах; TASK-417-A: + cmp417_mcomp; легаси флаги печатают свой id).
 fn lever_id() -> &'static str {
     match std::env::var("CRUSSTY_LEVER_FLAG").as_deref() {
+        Ok("cmp417_mcomp") => "cmp417_mcomp",
         Ok("cmp416_mcomp") => "cmp416_mcomp",
         Ok("cmp415_mcomp") => "cmp415_mcomp",
         _ => "cmp412_b2p1",
@@ -222,34 +229,12 @@ pub fn activate() {
 
         // Define the bridge into the KERNEL loader (Entity anchor — same as
         // collide/nav bridges) and run the java-side selfTest() reflectively
-        // (эффект-маркер: класс жив ДО всяких ретаргетов).
-        let defined = define_bridge();
-        if !defined {
-            eprintln!(
-                "[crussty-plugin] cmp412_b2p1: bridge definition failed, hook stays dormant"
-            );
-            return;
-        }
-        let selftest = cplug_sdk::jni_util::with_attached(|env| {
-            let Some(cls) = cplug_sdk::classes::find_class(OPS_CLASS.replace('/', ".").as_str())
-            else {
-                crate::clear_exception(env);
-                return false;
-            };
-            let ok = env
-                .get_static_method_id(cls.as_jclass(), "selfTest", "()Z")
-                .map(|mid| env.call_static_int_method(cls.as_jclass(), mid, &[]) != 0)
-                .unwrap_or_else(|| {
-                    crate::clear_exception(env);
-                    false
-                });
-            env.delete_local_ref(cls.as_jclass());
-            ok
-        })
-        .unwrap_or(false);
+        // on the LOCAL ref returned by define_class (эффект-маркер: класс
+        // жив ДО всяких ретаргетов).
+        let selftest = define_bridge_selftest();
         if !selftest {
             eprintln!(
-                "[crussty-plugin] {}: QueryPlaneOps.selfTest() false/failed — hook stays dormant (TASK-416-A прегист-гейт: fresh blob + lever gate обязательны)",
+                "[crussty-plugin] {}: bridge definition/selfTest failed, hook stays dormant (TASK-416-A прегист-гейт: fresh blob + lever gate обязательны)",
                 lever_id()
             );
             return;
@@ -354,8 +339,20 @@ pub fn activate() {
     });
 }
 
-fn define_bridge() -> bool {
-    let defined = cplug_sdk::jni_util::with_attached(|env| {
+/// Define the bridge into the kernel loader and run selfTest() on the LOCAL
+/// ref returned by define_class.
+///
+/// TASK-417-A ROOT-CAUSE FIX (RESEARCH-A-iter3.md): the previous shape called
+/// selfTest via cplug_sdk::classes::find_class, whose JVMTI scan FILTERS on
+/// JVMTI_CLASS_STATUS_INITIALIZED. A class just defined via define_class is
+/// NOT yet initialized (initialization happens on its first static call —
+/// and selfTest IS that first call) → the scan dropped it → find_class None
+/// → selfTest false on the runner (local 5/5 was green via the app-loader
+/// path) → deterministic dormancy. The fix: call selfTest on the LOCAL ref
+/// from define_class (the static call initializes the class), find_class
+/// does NOT participate in the selfTest path.
+fn define_bridge_selftest() -> bool {
+    let ok = cplug_sdk::jni_util::with_attached(|env| {
         let Some(cls) = cplug_sdk::classes::find_class("net/minecraft/world/entity/Entity") else {
             return false;
         };
@@ -381,17 +378,31 @@ fn define_bridge() -> bool {
             env.delete_local_ref(class_cls);
             return false;
         }
-        let Some(c) = env.define_class(OPS_CLASS, gref, OPS_BYTES) else {
+        let Some(ops) = env.define_class(OPS_CLASS, gref, OPS_BYTES) else {
             crate::describe_exception(env);
             eprintln!("[crussty-plugin] cmp412_b2p1: define_class({OPS_CLASS}) failed");
+            env.delete_local_ref(loader);
+            env.delete_local_ref(class_cls);
             return false;
         };
-        env.delete_local_ref(c);
+        // First static call on the JUST-DEFINED local ref: JVM initializes
+        // the class here — no JVMTI INITIALIZED-status scan involved.
+        let ok = env
+            .get_static_method_id(ops, "selfTest", "()Z")
+            .map(|mid| env.call_static_int_method(ops, mid, &[]) != 0)
+            .unwrap_or_else(|| {
+                crate::clear_exception(env);
+                false
+            });
+        if !ok {
+            eprintln!("[crussty-plugin] cmp412_b2p1: local-ref selfTest failed/false");
+        }
+        env.delete_local_ref(ops);
         env.delete_local_ref(loader);
         env.delete_local_ref(class_cls);
-        true
+        ok
     });
-    defined.unwrap_or(false)
+    ok.unwrap_or(false)
 }
 
 // ---------------------------------------------------------------------------
@@ -721,9 +732,10 @@ mod queryplane_delivery_tests {
     }
 
     /// STRICT-OR wiring guard: meganav-плоскости обязаны принимать флаги
-    /// (cmp412_meganav || cmp412_b2p1 || cmp415_mcomp) — source-level защита
-    /// от случайного реверта STRICT OR (гейт моей плоскости при этом STRICT OR
-    /// {b2p1, mcomp}, см. lever_flag_matches).
+    /// (cmp412_meganav || cmp412_b2p1 || cmp415_mcomp || cmp416_mcomp ||
+    /// cmp417_mcomp) — source-level защита от случайного реверта STRICT OR
+    /// (гейт моей плоскости при этом STRICT OR {b2p1, mcomp, mconv}, см.
+    /// lever_flag_matches).
     #[test]
     fn meganav_planes_accept_both_flags_strict_or() {
         for src in [
@@ -742,6 +754,14 @@ mod queryplane_delivery_tests {
                 "meganav plane lost the cmp415_mcomp composite arm (TASK-415-A)"
             );
             assert!(
+                src.contains("cmp416_mcomp"),
+                "meganav plane lost the cmp416_mcomp composite arm (TASK-416-A)"
+            );
+            assert!(
+                src.contains("cmp417_mcomp"),
+                "meganav plane lost the cmp417_mcomp composite arm (TASK-417-A)"
+            );
+            assert!(
                 src.contains("cmp412_meganav"),
                 "meganav plane lost its own flag"
             );
@@ -755,6 +775,10 @@ mod queryplane_delivery_tests {
             assert!(
                 src.contains("cmp412_b2p1"),
                 "java meganav gate lost the STRICT OR b2p1 arm"
+            );
+            assert!(
+                src.contains("cmp417_mcomp"),
+                "java meganav gate lost the cmp417_mcomp composite arm (TASK-417-A)"
             );
         }
     }

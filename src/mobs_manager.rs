@@ -79,7 +79,7 @@ fn java_gate_matches(f: &str) -> bool {
         || f == GATE_LEVER_TICKPLANE
         || f == GATE_LEVER_STAGTICK
         || f == GATE_LEVER_AIBATCH
-        || f == GATE_LEVER_MULTI || f == "cmp412_meganav" || f == "cmp412_b2p1" || f == "cmp415_mcomp" || f == "cmp416_mcomp"
+        || f == GATE_LEVER_MULTI || f == "cmp412_meganav" || f == "cmp412_b2p1" || f == "cmp415_mcomp" || f == "cmp416_mcomp" || f == "cmp417_mcomp"
         || f == GATE_LEVER_SSCAN
 }
 
@@ -408,9 +408,9 @@ pub fn activate() {
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
         // TASK-402-B: под композитом маркер объявляет ВСЕ суб-механизмы
         // (soa + зеркальный sharded grid; item-половина — в items_manager).
-        if f == GATE_LEVER_COMP || f == GATE_LEVER_STAGCOMP || f == GATE_LEVER_TICKPLANE || f == GATE_LEVER_STAGTICK || f == GATE_LEVER_AIBATCH || f == GATE_LEVER_SSCAN || f == GATE_LEVER_MULTI || f == "cmp412_meganav" || f == "cmp412_b2p1" || f == "cmp415_mcomp" || f == "cmp416_mcomp" {
+        if f == GATE_LEVER_COMP || f == GATE_LEVER_STAGCOMP || f == GATE_LEVER_TICKPLANE || f == GATE_LEVER_STAGTICK || f == GATE_LEVER_AIBATCH || f == GATE_LEVER_SSCAN || f == GATE_LEVER_MULTI || f == "cmp412_meganav" || f == "cmp412_b2p1" || f == "cmp415_mcomp" || f == "cmp416_mcomp" || f == "cmp417_mcomp" {
             eprintln!(
-                "[crussty-plugin] {}: ARMED soa=flat-arrays seqlock=global-version writer=global-mutex ids_cap=1048576 cell_cap=262144 cell=1.0 pad=1.0 radius_gate=1.0 rust_prune=coarse-hw-hh + mobgrid=sharded-mirror shards=64 shard_cap=16384 fallback-read=per-call (rust mobs_soa SoA flat x/y/z/hw/hh/flags ⊕ mobs_grid mirror; pushEntities tail untouched vanilla; per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT)",
+                "[crussty-plugin] {}: ARMED soa=flat-arrays seqlock=shard64-per-cell-bracket retries=8-failopen writer=global-mutex jni_critical=memcpy-only ids_cap=1048576 cell_cap=262144 cell=1.0 pad=1.0 radius_gate=1.0 rust_prune=coarse-hw-hh + mobgrid=sharded-mirror shards=64 shard_cap=16384 mirror_writer=per-shard-mutex fallback-read=per-call (rust mobs_soa SoA flat x/y/z/hw/hh/flags PROTOCOL-V2 ⊕ mobs_grid mirror; pushEntities tail untouched vanilla; per-call fallback ERR_RANGE mirror-grid→vanilla, disarm ERR_STRUCT)",
                 f
             );
         } else {

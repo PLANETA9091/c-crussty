@@ -79,7 +79,7 @@ public final class GoalBatchOps {
             return false;
         }
         String t = f.trim();
-        return t.equals(LEVER_FLAG) || t.equals("cmp416_mcomp");
+        return t.equals(LEVER_FLAG) || t.equals("cmp416_mcomp") || t.equals("cmp417_mcomp");
     }
 
     // ---- disabled-flags reflection (GoalSelector.goalTypes приватен) ----

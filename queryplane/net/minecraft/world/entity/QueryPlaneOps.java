@@ -73,7 +73,7 @@ public final class QueryPlaneOps {
      *  TASK-415-A: {cmp412_b2p1 || cmp415_mcomp} (композит эры). */
     private static boolean flagArmed() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return f != null && (f.trim().equals("cmp412_b2p1") || f.trim().equals("cmp415_mcomp") || f.trim().equals("cmp416_mcomp"));
+        return f != null && (f.trim().equals("cmp412_b2p1") || f.trim().equals("cmp415_mcomp") || f.trim().equals("cmp416_mcomp") || f.trim().equals("cmp417_mcomp"));
     }
 
     private static final boolean ENABLED = flagArmed();
