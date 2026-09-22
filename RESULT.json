@@ -9,6 +9,11 @@
   "ram": {"stw": null, "full_gc": null},
   "parity": null,
   "verdict": "INFRA",
-  "evidence": ["worktree created from origin/master @41456af", "cherry-pick dc4afd9 done (artifacts dropped, code carried)"],
-  "what": "step 1/9: worktree round-420-a-colpush2 @41456af + port of cmp419 carrier; fix mandate (define-before-arm + NCDFE one-shot guard + lever cmp420_colpush) in progress"
+  "evidence": [
+    "cherry-pick dc4afd9 + fix commit 9bde8bf pushed to origin/round-420-a-colpush2",
+    "FIX-1 define-before-arm: RegionTickOps.COLPUSH_ON volatile default-OFF; rust EARLY define + selfTest-on-global-ref (after soa_served) + JNI SetStaticBooleanField flip LAST (read-back verified)",
+    "FIX-2 one-shot guard: forEach catch Throwable -> x1 print + DISARM (COLPUSH_ON=false, COLPUSH_BROKEN=true); ColpushOps.bulkTick try/catch wrapper -> DISARM + vanilla tail (javap-verified bytecode)",
+    "FIX-3 javap gate: flat==nested PASS all 9 classes; gate-flag raw-byte cp grep (indy recipe lesson); cargo test 284/284 green; cargo-target deleted (disk law)"
+  ],
+  "what": "steps 1-3/9 done; next: dispatch 3 legs round-420-a-cp{a,b,c} @9bde8bf lever cmp420_colpush"
 }
