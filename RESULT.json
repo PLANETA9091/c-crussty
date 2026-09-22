@@ -1,34 +1,61 @@
 {
-  "task": "TASK-411-B-R2",
+  "task": "TASK-412-B-R4",
   "agent": "agent-b",
-  "plane": "inside_volatile (Entity.checkInsideBlocks | collidedWithShapeMovingFrom)",
+  "plane": "inside_volatile (Entity.checkInsideBlocks — List-body 3 сайта int-overload)",
   "lever": "cmp411_insidebat",
   "status": "IN_PROGRESS",
-  "stage": "STEP0-profile-done",
-  "updated": "2026-09-22T05:45:00+08:00",
+  "stage": "STEP1-impl-done-dispatch-pending",
+  "updated": "2026-09-22T15:08:00+08:00",
   "worktree": "/home/z/rounds/ROUND-411/agent-b",
   "branch": "round-411-b-inside",
-  "research": {
-    "doc": "RESEARCH-B-k3.md",
-    "scenes": {
-      "round410anchora": {"total": 115385, "lane_pct": 11.76, "checkInsideBlocks": 13573, "collidedWithShapeMovingFrom_pct": 0.68, "item_share_of_lane_pct": 60.27},
-      "round409multi2": {"total": 110274, "lane_pct": 12.77, "item_share_of_lane_pct": 60.94},
-      "round410multi3": {"total": 110026, "lane_pct": 12.87, "item_share_of_lane_pct": 61.8, "collidedWithShapeMovingFrom_pct": 0.63}
-    },
-    "verdict": "collidedWithShapeMovingFrom = 0.63-0.68% total, 100% из collidedWithFluid внутри visit-лямбды checkInsideBlocks — НЕ collide-поддерево. Таргет строго Entity.checkInsideBlocks (внутри-семантика)."
+  "head": "da0a856",
+  "prior": {
+    "task": "TASK-411-B-R3",
+    "head_at takeover": "15bdfea",
+    "note": "фон 411 умер на R3 step2 (classfile.rs patch_inside_batch + тесты committed); остаток R4 = rust-сторона + регистрация + сборка + диспатч"
   },
   "steps": [
-    {"id": "S0", "name": "profile", "status": "DONE", "artifacts": ["RESEARCH-B-k3.md", "lane_profile2.py", "research/k3-javap/Entity_javap.txt", "research/k3-javap/BlockGetter_javap.txt"]},
-    {"id": "S1", "name": "bridge+patch+tests", "status": "PENDING"},
-    {"id": "S2", "name": "build (javac blobs + cargo check/test)", "status": "PENDING"},
-    {"id": "S3", "name": "dispatch round-411-b-l1", "status": "PENDING"},
-    {"id": "S4", "name": "poll+absorb+verdict", "status": "PENDING"}
+    {"id": "S0", "name": "profile (RESEARCH-B-k3: 11.76/12.77/12.87% lane, item 60-62%)", "status": "DONE", "commit": "40b170a^"},
+    {"id": "S1", "name": "java bridge InsideRustOps (negative fast-plane + gather + flush + STRICT gate)", "status": "DONE", "commit": "4957487"},
+    {"id": "S2", "name": "classfile patch_inside_batch STRICT ровно-3 сайта bc 171/204/229", "status": "DONE", "commit": "15bdfea"},
+    {"id": "S3", "name": "rust-сторона: fl_sec=floori>>4, wire=DISTINCT first-occurrence + rust REPLAY-валидация (TRIPLE/FLAG/COUNT+равенство counts), TState embed+define, RegisterNatives ДО BRIDGE_READY, stage 1c entity_compose, supersede-чек fluid_guard (118<175), оракул N=256 блоки/флюиды vs ваниль 8/8, full --lib 215/0, javac sha 929469a2, b4-target удалён", "status": "DONE", "commit": "da0a856"},
+    {"id": "S4", "name": "dispatch round-412-b-l1 @da0a856", "status": "PENDING"},
+    {"id": "S5", "name": "poll sleep 120 + absorb round412bl1 + pair-by-runner verdict", "status": "PENDING"}
   ],
   "gate_checklist": {
-    "lever_flag": "cmp411_insidebat (STRICT eq, empty=vanilla)",
+    "lever_flag": "cmp411_insidebat (STRICT eq, empty=vanilla) — DOUBLE side java+rust",
+    "grep_gate": "cmp411_insidebat только в inside_batch.rs + InsideRustOps.java (+комменты lib.rs, docs, RESULT.json)",
     "retarget_sites": 3,
-    "bulk_jni": "insideBatchTick ONE per phase per thread",
-    "per_entity_jni": "FORBIDDEN — not used",
-    "fail_closed": "ERR_STRUCT -> permanent disarm to inline vanilla replica"
+    "fast_plane": "verdict==0 → return 1 бит-в-бит (vanilla still-return=1 всегда, air-visit без наблюдаемых действий); verdict!=0 → всегда ваниль ORIG",
+    "fail_closed": "any Throwable / native rc<0 (ERR_STRUCT) → permanent disarm → ORIG MethodHandle vanilla replica; unknown секция=2 → verdict 1",
+    "bulk_jni": "insideBatchTick ОДИН на фазу на поток (RegisterNatives до READY, probe-then-patch)",
+    "per_entity_jni": "FORBIDDEN — 0 вхождений",
+    "fluid_guard_supersede": "fluid_guard::register (lib.rs:118) РАНЬШЕ entity_compose::register (lib.rs:175) — compose serve из pristine кэша замещает whole-class serve, пара чистая (урок eb7a870); byte-сайты checkInsideBlocks(List bc171/204/229) vs updateFluidHeightAndDoFluidPushing — не пересекаются",
+    "nested_class": "InsideRustOps$TState embed+define (kernel-loader resolution, InsideBlockOps$Recorder прецедент)",
+    "forbidden_levers": "ZGC/alloc_diet/zero_alloc/flat_traversal/fluid_dirty/inside_bitmask/fluid_bitmask/THP/RECON-42/players-16/GC-lottery — 0/не посланы в диспатче"
+  },
+  "dispatch": {
+    "alias": "round-412-b-l1",
+    "workflow": "world-bench-parallel.yml",
+    "inputs": {
+      "radius": "640", "seconds": "300", "fake_players": "4",
+      "fluid_guard": "1", "gc_tune": "3", "inside_cache": "1", "flush_diet": "1",
+      "fluid_dirty": "0", "fluid_bitmask": "0", "region_threads": "4",
+      "batch_collector": "1", "inside_bitmask": "0", "skip_store_bb": "0",
+      "region_steal": "0", "bu_defer": "0",
+      "population_target": "150000", "population_seed": "42",
+      "server_xmx": "10G", "server_xms": "4G",
+      "cpu_band_min": "6000000", "cpu_band_max": "9500000",
+      "lever_flag": "cmp411_insidebat", "lever_arg": "1"
+    },
+    "not_sent": ["travel_diet", "fluid_dirty_ledger"]
+  },
+  "checklist_run": {
+    "ARM": "[crussty-insidebat] ARMED (server-stdout)",
+    "EFFECT": "[crussty-insidebat] EFFECT fast-hit / FLUSH n= (server-stdout)",
+    "AIOOBE": "grep = 0",
+    "inside_lane": "был 11.76-12.87% → стал ?; РОСТ = RED",
+    "pool_pairs": "2.2@6840530, 2.2@6858619, 2.1@6776758, 2.4@6604167, 2.2@6976430, 2.25@6833921, 2.30@6846036 (ближайший runner)",
+    "band": "6.0-9.5M; вне = BAND-DISCARD ре-ролл ≤2"
   }
 }
