@@ -1,0 +1,48 @@
+{
+  "agent": "TASK-410-C",
+  "vector": "eindex K3 PIVOT (R2 rethink: broadphase flat -> goal-target/sensing query class, batch snapshot)",
+  "branch": "round-405-c-eindex (reuse worktree, merge origin/master 8ef9e5b)",
+  "flag": "cmp405_eindex (kept STRICT) + pivot gate cmp410_eindexq (STRICT eq, empty=vanilla)",
+  "stage": "K3-STEP1 DONE: symbol profile of broadphase lane; cleg5b run 35673647163 polling (in_progress at start)",
+  "run_id": 35673647163,
+  "run_id_cleg5b": 35673647163,
+  "k3_step1_symbol_profile": {
+    "sources": [
+      "research/gc-recon-2026-09-19/round-round409cleg4/cpu-collapsed.txt (eindex k2 leg, 116155 samples, broadphase 15.02%)",
+      "research/gc-recon-2026-09-19/round-round409anchora/cpu-collapsed.txt (vanilla anchor, 113919 samples, broadphase 15.36%)"
+    ],
+    "method": "stack-weighted attribution to DEEPEST lane frame (regex CollisionUtil|getEntities|EntityLookup|getCollisionsForBlocksOrWorldBorder|performCollisions|EntitySectionStorage)",
+    "cleg4_split_pct_of_lane": {
+      "ChunkEntitySlices.getEntities*": 48.58,
+      "CollisionUtil.getCollisions*": 37.09,
+      "EntityLookup.getHardCollidingEntities": 5.03,
+      "EntitySectionStorage/other": 3.69,
+      "EntityLookup.getEntities": 2.96
+    },
+    "vanilla_anchor_split_pct_of_lane": {
+      "ChunkEntitySlices.getEntities*": 47.90,
+      "CollisionUtil.getCollisions*": 38.03,
+      "EntityLookup.getHardCollidingEntities": 4.66,
+      "EntitySectionStorage/other": 3.83,
+      "EntityLookup.getEntities": 2.85
+    },
+    "verdict_step1": "PARITY of splits across eindex vs vanilla => eindex sites genuinely not lane-moving; ~37-38% of lane is BLOCK-collision (CollisionUtil) which an entity index cannot serve; ~48% is ChunkEntitySlices.getEntities engine; caller of deepest lane frame: EntityLookup.getEntities 27-31% of lane, Entity.collide 19-27%, Level.noCollision 12-13%, moonrise$getHardCollidingEntities ~5%, getPushableEntities ~2-3%, getEntitiesOfClass ~2%"
+  },
+  "goal_target_pivot_sizing": {
+    "goal/target-restricted broadphase slice (regex GoalSelector|findNearestTarget|TargetingConditions|/Sensing\\.|getNearestPlayer)": {
+      "cleg4": "3467 samples = 2.98% wall; 88% ChunkEntitySlices.getEntities*, 86% delivered via EntityLookup.getEntities caller",
+      "anchor": "3029 samples = 2.66% wall; same shape (88%/86%)"
+    },
+    "top leaf in goal slice": "AABB.intersects + EntityCollectionBySection.getEntities",
+    "note": "A-k4 handoff said findTarget/getEntities ~5.95% of nav_ai lane (14.2%); own measurement: goal-target broadphase slice = 2.7-3.0% wall + goal-lane remainder is non-query (goal scheduling/behavior). Pivot ceiling realistic ~3-5pp wall, NOT 15%."
+  },
+  "verdict": "K3 STEP 1 DONE — pivot to query-complex APPROVED by data: block-collision dominates block-move half of lane (entity index can't help), but goal-target entity queries deliver a clean 2.7-3.0% slice through a SINGLE chokepoint EntityLookup.getEntities -> ChunkEntitySlices.getEntities (86-88%), ideal for ONE bulk-JNI SOA snapshot/tick (MobScanOps pattern). STEP 2 in progress",
+  "evidence": [
+    "cleg5b run 35673647163 (re-roll of cleg5 BENCH-4 FIXTURE-INVALID) in flight, ref round-410-c-l5b @d05c930 lever cmp405_eindex",
+    "script /tmp/k3_symbols.py + /tmp/k3b.py (collapsed-stack attribution)"
+  ],
+  "what": [
+    "step1a: stack-weighted symbol split cleg4 vs vanilla anchor: 48/37/5/3/3 vs 48/38/5/4/3 — identical shape => documented in RESEARCH-C-k3.md",
+    "step1b: goal/target-only restriction: single chokepoint EntityLookup.getEntities -> ChunkEntitySlices.getEntities 86-88%, no CollisionUtil involvement (0.2%) => pivot target sites = this chokepoint + Level.getEntitiesOfClass (AvoidEntityGoal)"
+  ]
+}
