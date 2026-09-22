@@ -79,7 +79,7 @@ fn lever_flag_matches() -> bool {
                 // TASK-406-E: композит раунда-406 включает collide-сегмент.
                 || v == "cmp406_sscan"
                 // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
-                || v == "cmp409_multi" || v == "cmp412_meganav" || v == "cmp412_b2p1" || v == "cmp415_mcomp"
+                || v == "cmp409_multi" || v == "cmp412_meganav" || v == "cmp412_b2p1" || v == "cmp415_mcomp" || v == "cmp416_mcomp"
         })
         .unwrap_or(false)
 }
@@ -228,7 +228,7 @@ pub fn activate() {
                     // TASK-406-E: композит раунда-406 (сегментный маркер).
                     || v == "cmp406_sscan"
                     // TASK-409: мультикомпозит.
-                    || v == "cmp409_multi" || v == "cmp412_meganav" || v == "cmp412_b2p1" || v == "cmp415_mcomp"
+                    || v == "cmp409_multi" || v == "cmp412_meganav" || v == "cmp412_b2p1" || v == "cmp415_mcomp" || v == "cmp416_mcomp"
             })
             .unwrap_or(false)
         {

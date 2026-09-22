@@ -46,7 +46,7 @@ pub const ERR_RANGE: i32 = -2;
 /// STRICT eq lever gate (пустой флаг / любой другой флаг = false).
 pub fn armed() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim() == "cmp405_navplane" || v.trim() == "cmp412_meganav" || v.trim() == "cmp412_b2p1" || v.trim() == "cmp415_mcomp")
+        .map(|v| v.trim() == "cmp405_navplane" || v.trim() == "cmp412_meganav" || v.trim() == "cmp412_b2p1" || v.trim() == "cmp415_mcomp" || v.trim() == "cmp416_mcomp")
         .unwrap_or(false)
 }
 

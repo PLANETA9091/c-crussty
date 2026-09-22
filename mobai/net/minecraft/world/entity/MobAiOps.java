@@ -54,7 +54,7 @@ public final class MobAiOps {
         // (rust не ставит сайт).
         return f != null && (f.trim().equals("cmp406_aibatch")
                 // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
-                || f.trim().equals("cmp409_multi") || f.trim().equals("cmp412_meganav") || f.trim().equals("cmp412_b2p1") || f.trim().equals("cmp415_mcomp"));
+                || f.trim().equals("cmp409_multi") || f.trim().equals("cmp412_meganav") || f.trim().equals("cmp412_b2p1") || f.trim().equals("cmp415_mcomp") || f.trim().equals("cmp416_mcomp"));
     }
 
     private static final boolean ENABLED = leverEnabled();

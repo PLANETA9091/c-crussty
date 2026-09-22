@@ -38,8 +38,26 @@ const OPS_BYTES: &[u8] =
 const BRIDGE_DESC: &str = "(Lnet/minecraft/world/entity/item/ItemEntity;)V";
 
 /// env gate per the round-396 lever protocol (NOT a CRUSSTY_ITEMS_OSS flag).
+/// TASK-416-A (iter-2 gate-reconciliation, recipe item 2): the multi
+/// composite cmp416_mcomp arms the items_oss lithium port TOO — multi-era
+/// evidence: items_oss semantics are a strict subset of the ItemEntityManager
+/// multi plane (vanilla-exact merge outcomes; routed items never reach
+/// mergeWithNeighbours, so this covers only vanilla-path merges — belt and
+/// suspenders + the mandated 'item_merge: ARMED' boot marker). Legacy
+/// items_oss flag stays byte-identical.
 fn enabled() -> bool {
-    matches!(std::env::var("CRUSSTY_LEVER_FLAG").as_deref(), Ok("items_oss"))
+    matches!(
+        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
+        Ok("items_oss") | Ok("cmp416_mcomp")
+    )
+}
+
+/// Distinct lever id for markers (round-416 lever-id protocol).
+fn lever_id() -> &'static str {
+    match std::env::var("CRUSSTY_LEVER_FLAG").as_deref() {
+        Ok("cmp416_mcomp") => "cmp416_mcomp",
+        _ => "items_oss",
+    }
 }
 
 static READY: AtomicBool = AtomicBool::new(false);
@@ -80,7 +98,7 @@ fn patch_lock() -> &'static std::sync::Mutex<Option<PatchCache>> {
 pub fn register() {
     if !enabled() {
         eprintln!(
-            "[crussty-plugin] item_merge: dormant (lever_flag != items_oss, vanilla item merging)"
+            "[crussty-plugin] item_merge: dormant (lever_flag != items_oss/cmp416_mcomp, vanilla item merging)"
         );
         return;
     }
@@ -334,6 +352,12 @@ pub fn activate() {
         READY.store(true, Ordering::Release);
         let rc = cplug_sdk::retransform_class(ITEM_CLASS);
         eprintln!("[crussty-plugin] item_merge: hook armed, retransform rc={rc}");
+        // ГРОМКИЙ ARM-МАРКЕР (TASK-416-A рецепт 2: целевой boot-маркер
+        // 'items_oss ARMED' — grep-able, отличим от легаси shardgrid-строк).
+        eprintln!(
+            "[crussty-plugin] {}: ARMED items_oss (lithium item_entity_merging port; whole-body mergeWithNeighbours -> ItemMergeOps, limited per-class section walk + dry-run merge sim; vanilla fallback exact; multi items_oss variant of the cmp416_mcomp items plane)",
+            lever_id()
+        );
 
         bridge_selftest();
     });

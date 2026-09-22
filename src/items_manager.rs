@@ -68,7 +68,7 @@ fn lever_flag_matches_for(f: &str) -> bool {
         || f == "cmp406_aibatch"
         || f == "cmp409_multi"
         || f == "cmp405_stagtick" || f == "cmp406_sscan"
-        || f == "cmp409_multi" || f == "cmp412_meganav" || f == "cmp412_b2p1" || f == "cmp415_mcomp"
+        || f == "cmp409_multi" || f == "cmp412_meganav" || f == "cmp412_b2p1" || f == "cmp415_mcomp" || f == "cmp416_mcomp"
 }
 
 pub fn activate() {
@@ -96,7 +96,7 @@ pub fn activate() {
         // TASK-406-E: композит раунда-406.
         || flag == "cmp406_sscan"
         // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
-        || flag == "cmp409_multi" || flag == "cmp412_meganav" || flag == "cmp412_b2p1" || flag == "cmp415_mcomp";
+        || flag == "cmp409_multi" || flag == "cmp412_meganav" || flag == "cmp412_b2p1" || flag == "cmp415_mcomp" || flag == "cmp416_mcomp";
     let despawn2 = flag == "cmp399_despawn2" || bfcomp || comp;
     if shard {
         // ГРОМКИЙ ARM-МАРКЕР (TASK-399-B): без этой строки нога не-armed.
@@ -111,7 +111,18 @@ pub fn activate() {
             "[crussty-plugin] cmp399_bfcomp: ARMED shards=64 seqlock-reads=per-cell-version writer=global-mutex shard_cap=16384 max_ids=1048576 heap=lifetime-minheap(rust,vec) push=batch(1/tick) due-poll=1/tick despawn-flow=vanilla (composite B+F)"
         );
     }
-    if comp {
+    if comp && flag == "cmp416_mcomp" {
+        // ГРОМКИЙ ARM-МАРКЕР (TASK-416-A рецепт 2, обязателен): под ЕДИНЫМ
+        // lever-id cmp416_mcomp армится ТОЛЬКО multi items_oss-вариант
+        // item-плоскости (ItemEntityManager multi-вариант: rust-индекс
+        // shardgrid-значения ⊕ lifetime-heap ⊕ restplane-32 — ТОЧНО тот микс,
+        // что дал items 0.00 ×4 ног на cmp409_multi), а легаси shardgrid-маркер
+        // 'ARMED items shards=64 seqlock' (REFUTED-легаси тик-398) ДЛЯ ЭТОГО
+        // ФЛАГА НЕ ПЕЧАТАЕТСЯ — boot-доказательство гейт-реконсиляции.
+        eprintln!(
+            "[crussty-plugin] cmp416_mcomp: ARMED items_oss multi-plane (ItemEntityManager multi-variant: rust 1.0-grid index ⊕ lifetime-heap ⊕ restplane phase=32 merge_gate=vanilla%40; legacy shardgrid-solo marker suppressed for this lever; target lane items 0.00)"
+        );
+    } else if comp {
         // ГРОМКИЙ ARM-МАРКЕР ГЛАВНОГО КОМПОЗИТА (TASK-402-B, обязателен):
         // item-половина композита = shardgrid (B) + lifetime-heap (F);
         // мобовая половина (soa+grid) маркерится в mobs_manager.

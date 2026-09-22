@@ -64,8 +64,18 @@ static READY: AtomicBool = AtomicBool::new(false);
 /// только b2p1/mcomp (композит эры cmp415_mcomp = multi⊕racefix⊕queryplane).
 fn lever_flag_matches() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim() == "cmp412_b2p1" || v.trim() == "cmp415_mcomp")
+        .map(|v| v.trim() == "cmp412_b2p1" || v.trim() == "cmp415_mcomp" || v.trim() == "cmp416_mcomp")
         .unwrap_or(false)
+}
+
+/// Lever id for boot markers (TASK-416-A: единый lever-id cmp416_mcomp в
+/// ARM/EFFECT-маркерах; легаси флаги печатают свой id).
+fn lever_id() -> &'static str {
+    match std::env::var("CRUSSTY_LEVER_FLAG").as_deref() {
+        Ok("cmp416_mcomp") => "cmp416_mcomp",
+        Ok("cmp415_mcomp") => "cmp415_mcomp",
+        _ => "cmp412_b2p1",
+    }
 }
 
 // --- ChunkEntitySlices stash (collide_batch pattern) -----------------------
@@ -239,12 +249,20 @@ pub fn activate() {
         .unwrap_or(false);
         if !selftest {
             eprintln!(
-                "[crussty-plugin] cmp412_b2p1: QueryPlaneOps.selfTest() false/failed — hook stays dormant"
+                "[crussty-plugin] {}: QueryPlaneOps.selfTest() false/failed — hook stays dormant (TASK-416-A прегист-гейт: fresh blob + lever gate обязательны)",
+                lever_id()
             );
             return;
         }
+        // ГРОМКИЙ ARM-МАРКЕР (TASK-416-A рецепт 3: queryplane ARMED/awake —
+        // grep-able boot-доказательство, selfTest()==true ДО всяких ретаргетов).
         eprintln!(
-            "[crussty-plugin] cmp412_b2p1: defined {OPS_CLASS} in kernel loader, selfTest ok (HARD_ADDS=0)"
+            "[crussty-plugin] {}: ARMED queryplane awake (selfTest==true, HARD_ADDS=0; Level.getEntitiesOfClass players fast path + hard-colliding empty fast path + addEntity hard-probe; target broadphase <=7)",
+            lever_id()
+        );
+        eprintln!(
+            "[crussty-plugin] {}: defined {OPS_CLASS} in kernel loader, selfTest ok (HARD_ADDS=0)",
+            lever_id()
         );
 
         // ChunkEntitySlices pristine capture (predates hook = no-op
