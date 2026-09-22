@@ -1,65 +1,7 @@
 {
-  "task": "TASK-412-B-restart",
-  "agent": "agent-b2",
-  "plane": "PIVOT: broadphase entity-query слой (MobPushOps vanillaFill-fallback 4.4% wall + Level.getEntitiesOfClass 1.8% + moonrise$getHardCollidingEntities 2.0%) на meganav-базе; LEGACY: inside_batch (cmp411_insidebat) везётся dormant с round-412-b-r1",
-  "lever": "cmp412_b2p1 (STRICT OR с cmp412_meganav: meganav-планы армятся обоими флагами, новые java-гейты — только cmp412_b2p1)",
-  "status": "IN_PROGRESS",
-  "stage": "S3-done-committed (impl+build+oracle) → S4-dispatch",
-  "updated": "2026-09-22T12:05:00+00:00",
-  "worktree": "/home/z/rounds/ROUND-412/agent-b2",
-  "branch": "round-412-b-p1",
-  "base": "f579c1c (round-412-f-meganav)",
-  "merged": "round-412-b-r1 @1160783 (inside_batch rust+java+dispatch, гейт cmp411_insidebat — dormant под cmp412_b2p1)",
-  "research": {
-    "profile_source": "research/gc-recon-2026-09-19/round-round412meganav1/cpu-collapsed.txt (107629 samples)",
-    "broadphase_lane": "13.91%: EntityLookup.getEntities 6.45% (из них MobPushOps.vanillaFill-fallback 4.36% — ROOT-CAUSE: 'oversized bounding radius 1.1875 on entity.minecraft.camel' → глобальный oversized-latch → весь soa-мост в ваниль), getEntityHardCollisions 2.01% (Entity.collide 1.02 + Level.noCollision 0.92), Level.getEntitiesOfClass 1.85% (NearestAttackableTargetGoal.findTarget 0.81 + AvoidEntityGoal.canUse 0.22 + sensors)",
-    "fluid_lane": "16.02%: updateFluidHeightAndDoFluidPushing 13.10%, НО getFlow+getHeight+hasSameAbove ≈7.3% = in-water flow-math (Rust-репликация FlowingFluid.getFlow = высокий риск), negative-plane = FluidBitmaskOps уже существует; fluid → следующий виток",
-    "decision": "подсистема = entity-query snapshot-плоскость (закон 6 v16): S1 oversized de-globalization (java-only, superset через OVERSIZED-list), S2 getEntitiesOfClass fast path (Player.class-gated, кандидаты из level.players() — O(players) в бенче 4), S3 hard-collisions fast path (isHardColliding add-counter, fail-dominant vanilla при любом когда-либо hard-коллайдере)"
-  },
-  "impl": {
-    "java": [
-      "queryplane/net/minecraft/world/entity/QueryPlaneOps.java — NEW: два whole-body redirect-таргета (getEntitiesOfClass Player.class fast path через level.players() с точными ванильными фильтрами intersects/predicate; getHardCollidingEntities empty fast path при HARD_ADDS==0) + ванильная реплика тела как fallback (javap @0-37); isHardCollidingProbe(ChunkSystemEntity)Z — invokeinterface→invokestatic+2nop приёмник с монотонным HARD_ADDS-счётчиком; per-plane permanent disarm latches (fail-dominant); ЭФФЕКТ-МАРКЕРЫ first gate hit (one-shot) на обеих плоскостях",
-      "mobpush/MobPushOps.java — oversized de-globalization: r_eff>1.0 больше НЕ дизармит soa-плоскость (run 35705650726 root-cause, camel 1.1875); never-mirrored r>1.0 → CopyOnWriteArrayList OVERSIZED-реестр, exact-scanned каждым collect() (level/intersects/predicate + dead-purge); armed() без oversized",
-      "гейты STRICT OR ×9 (nav_plane/tickplane/collide_batch/mobs_manager/stagger rust + ItemEntityManager/MobAiOps/MobPushOps/MobScanOps java): meganav-плоскости армятся cmp412_meganav || cmp412_b2p1; queryplane-гейты — STRICT eq только cmp412_b2p1"
-    ],
-    "rust": [
-      "src/classfile.rs QUERYPLANE: patch_level_get_entities_of_class + patch_level_get_hard_colliding_entities (redirect_method_body_to_static, receiver-prepended, дескрипторы pinned по javap patched-kernel.jar) + patch_slices_hard_probe (invokeinterface ChunkSystemEntity.moonrise$isHardColliding:()Z @50 → invokestatic isHardCollidingProbe + 2×nop, length-preserving, flush-diet fladd прецедент; zero чужих invokestatic в addEntity — strict) + queryplane_resolution_closure (S7-164 guard, 3 таргета)",
-      "src/queryplane.rs — NEW: STRICT-оракул ваниль-математики (aabb_intersects = javap AABB.intersects @0-63: строгие dcmpg/dcmpl `<`/`>`, NaN→false; candidate-set section-walk-модели == fast-path модели бит-в-байт на 256 рандомизированных кейсах); hooks: Level compose-on-top (mobs_ai прецедент — navplane sendBlockUpdated живёт в той же цепи выше) + ChunkEntitySlices stash/serve (collide_batch прецедент); define QueryPlaneOps в kernel loader (якорь Entity) + reflective selfTest; ARM с Retargeted sites-доказательствами в log-строках",
-      "src/lib.rs: mod queryplane + register() (хуки после mobs_sscan) + activate() (после tickplane)"
-    ],
-    "bulk_jni_per_tick": "0 добавленных JNI (fast paths чисто-java, O(players)); soa-мост сохраняет свой один bulk mobQuery на батч",
-    "build": [
-      "scripts/build_queryplane_ops.sh — javac --release 21 (major 65), cp=kernel396a+fastutil+adventure-api+adventure-key+paper-api; blob deltas только по изменённым исходникам (restore-compatible: entityinside/build НЕ rm — там блобы чужих волн)",
-      "blobs rebuilt+committed: queryplane/build/QueryPlaneOps.class (sha1 91751ee4), mobpush+sscan+mobai MobPushOps.class (sha1 63d0ed54), sscan MobScanOps.class, entityinside ItemEntityManager.class, mobai MobAiOps.class"
-    ],
-    "tests": "cargo test 272 passed / 0 failed (включая 8 новых queryplane-тестов: strict-oracle candidate-set ×256 кейсов, boundary/NaN семантика, Level/ChunkEntitySlices roundtrip на РЕАЛЬНЫХ kernel-фикстурах Level_real + ChunkEntitySlices_real (извлечён из kernel396a), композиция редиректов, резолюшн-кложура, STRICT-OR wiring guard ×9, гейт STRICT eq)"
-  },
-  "steps": [
-    {
-      "id": "S1",
-      "name": "worktree agent-b2 @f579c1c + merge round-412-b-r1 + гейты STRICT OR",
-      "status": "DONE",
-      "commit": "TBD"
-    },
-    {
-      "id": "S2",
-      "name": "java-срез: MobPushOps oversized-fix + EntityQueryOps (getEntitiesOfClass + hardCollisions) + classfile.rs ретаргеты Level",
-      "status": "PENDING"
-    },
-    {
-      "id": "S3",
-      "name": "cargo check+test + javac блобов + STRICT ваниль-верификация (oracle)",
-      "status": "PENDING"
-    },
-    {
-      "id": "S4",
-      "name": "dispatch_round412b2.py (leg b2p1, lever=cmp412_b2p1, inputs РОВНО банковские) + poll",
-      "status": "PENDING"
-    },
-    {
-      "id": "S5",
-      "name": "артефакт + абсорб + вердикт pair-by-runner vs банк {2.30@6803065, 2.35@6435981, 2.4@6604167, 2.25@6833921, 2.30@6846036, 2.2@6858619, 2.2@6840530, 2.50@8548287, 2.95@8880170, 2.60@8827927} + meganav {2.60@6725119, 2.70@6781278}",
-      "status": "PENDING"
-    }
-  ]
+  "agent": "TASK-414-A",
+  "vector": "queryplane (entity-query snapshot plane) ⊕ race-fix REFENCE 109e4d7 — ре-базис на multi⊕racefix, pair-вердикт",
+  "branch": "round-414-a-b2p",
+  "step": "S1-worktree",
+  "evidence": "worktree @125c474 (bp1 queryplane head) создан /home/z/rounds/ROUND-414/agent-a; disk 83%→45% (purged ROUND-412 worktrees 4.3G + target-413a; все ветки подтверждены на origin)"
 }
