@@ -27,16 +27,26 @@ $JAVAC --release 21 -cp "$CP" -d "$ALL_BUILD" \
   sscan/net/minecraft/world/entity/MobScanOps.java \
   mobai/net/minecraft/world/entity/MobAiOps.java \
   entityinside/net/minecraft/world/entity/ItemEntityManager.java \
-  queryplane/net/minecraft/world/entity/QueryPlaneOps.java
+  queryplane/net/minecraft/world/entity/QueryPlaneOps.java \
+  gsel/net/minecraft/world/entity/ai/goal/GoalBatchOps.java \
+  items/net/minecraft/world/entity/item/ItemMergeOps.java
 
 install_blob() { # outdir fqcn...
+  # TASK-416-A ×93-гейт КРИТИЧНО: rust include_bytes! читает ВЛОЖЕННЫЙ путь
+  # (build/net/minecraft/...), легаси-скрипт обновлял ТОЛЬКО плоский
+  # build/<Name>.class — «пересборка» оставляла реально-вшитый блоб устаревшим
+  # (второй корень franken-merge mc1-3: плоский свежий, вложенный спит).
+  # Обновляем ОБА пути: вложенный (include_bytes! contract) + плоский (legacy).
   local outdir="$1"; shift
   mkdir -p "$outdir"
-  local cls base
+  local cls base nested
   for cls in "$@"; do
     base=$(basename "$cls")
+    nested="$outdir/$cls.class"
+    mkdir -p "$(dirname "$nested")"
+    cp "$ALL_BUILD/$cls.class" "$nested"
     cp "$ALL_BUILD/$cls.class" "$outdir/$base.class"
-    echo "blob: $outdir/$base.class ($(stat -c%s "$outdir/$base.class") bytes)"
+    echo "blob: $nested ($(stat -c%s "$nested") bytes) + flat $outdir/$base.class"
   done
 }
 
@@ -45,5 +55,7 @@ install_blob sscan/build net/minecraft/world/entity/MobScanOps
 install_blob mobai/build net/minecraft/world/entity/MobAiOps
 install_blob entityinside/build net/minecraft/world/entity/ItemEntityManager
 install_blob queryplane/build net/minecraft/world/entity/QueryPlaneOps
+install_blob gsel/build net/minecraft/world/entity/ai/goal/GoalBatchOps
+install_blob items/build net/minecraft/world/entity/item/ItemMergeOps
 
-echo "== mcomp blob rebuild OK (5 bridges, one javac pass, cp=full, major 65) =="
+echo "== mcomp blob rebuild OK (7 bridges, one javac pass, cp=full, major 65) =="
