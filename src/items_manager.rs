@@ -74,7 +74,7 @@ fn lever_flag_matches_for(f: &str) -> bool {
         // legacy id-шники нетронуты — другие носители не затронуты).
         || f == "cmp412_eqsnapv3" || f == "cmp414_cvs" || f == "cmp417_bq"
         // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
-        || f == "cmp419_colpush"
+        || f == "cmp420_colpush"
 }
 
 pub fn activate() {
@@ -107,7 +107,7 @@ pub fn activate() {
         // TASK-417-C: cvs-носитель ⊕ queryplane-awake композит.
         || flag == "cmp412_eqsnapv3" || flag == "cmp414_cvs" || flag == "cmp417_bq"
         // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
-        || flag == "cmp419_colpush";
+        || flag == "cmp420_colpush";
     let despawn2 = flag == "cmp399_despawn2" || bfcomp || comp;
     if shard {
         // ГРОМКИЙ ARM-МАРКЕР (TASK-399-B): без этой строки нога не-armed.

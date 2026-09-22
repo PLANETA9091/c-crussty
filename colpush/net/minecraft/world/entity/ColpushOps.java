@@ -14,7 +14,7 @@ import net.minecraft.world.scores.PlayerTeam;
 import net.minecraft.world.scores.Team;
 
 /**
- * COLPUSH (TASK-419-A, round-419 vector A — lever cmp419_colpush).
+ * COLPUSH (TASK-419-A, round-419 vector A — lever cmp420_colpush).
  *
  * COLLIDE+PUSH ПОДСИСТЕМА ЦЕЛИКОМ Java→Rust: заменяет ПЕР-СУЩНОСТНУЮ лестницу
  * push-лейна master (MobPushOps.pushables → upsertSelf JNI + eqsnap chain
@@ -67,7 +67,7 @@ public final class ColpushOps {
     static final java.util.logging.Logger LOG =
             java.util.logging.Logger.getLogger("crussty-plugin");
 
-    private static final String FLAG = "cmp419_colpush";
+    private static final String FLAG = "cmp420_colpush";
     private static final int ERR_STRUCT = -1;
     private static final int ERR_RANGE = -2;
 
@@ -335,6 +335,23 @@ public final class ColpushOps {
         if (broken || !ENABLED) {
             return;
         }
+        // TASK-420-A (FIX-МАНДАТ п.2, belt-and-braces): ОДНОРАЗОВЫЙ guard
+        // вокруг ВСЕГО тела — первый Throwable (в т.ч. NCDFE любой поздней
+        // резолюции) = eprintln ×1 + vanilla-хвост (pushEntities fail-closed
+        // уже ванильная реплика) + DISARM lever навсегда (RegionTickOps
+        // COLPUSH_ON=false ⇒ call site мёртв): шторм ×1902 невозможен.
+        try {
+            bulkTickImpl();
+        } catch (Throwable t) {
+            broken = true;
+            RegionTickOps.COLPUSH_ON = false;
+            RegionTickOps.COLPUSH_BROKEN = true;
+            LOG.warning("[crussty-plugin] " + FLAG + ": bulkTick one-shot guard — " + t
+                    + " — DISARM (vanilla tail, no storm)");
+        }
+    }
+
+    private static void bulkTickImpl() {
         if (colD == null) {
             colD = new double[IDS_CAP * ROW_D];
             colI = new int[IDS_CAP * ROW_I];

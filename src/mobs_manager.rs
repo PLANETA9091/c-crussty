@@ -90,7 +90,7 @@ fn java_gate_matches(f: &str) -> bool {
         || f == "cmp412_eqsnapv3" || f == "cmp414_cvs" || f == "cmp417_bq"
         // TASK-419-A (colpush): колпаш-носитель — SoA-плоскость + eqsnap
         // (столбцы кормит colpush_plane_refresh, per-entity upsert спит).
-        || f == "cmp419_colpush"
+        || f == "cmp420_colpush"
         || f == GATE_LEVER_SSCAN
         || f == "cmp410_eindexq" || f == "cmp411_k4soa" || f == "cmp411_eqsnap"
 }
@@ -469,9 +469,9 @@ pub fn activate() {
             eprintln!(
                 "[crussty-plugin] cmp412_eqsnapv3: ARMED meganav⊕eqsnap soa-population+push-snapshot (flat-arrays seqlock=global-version writer=global-mutex ids_cap=1048576 cell_cap=262144 cell=1.0 pad=2 radius_gate=2.0 rust_prune=coarse-hw-hh; STRICT OR: плоскости cmp412_meganav (multi⊕navplane+navpool, tickplane, ai-window, sscan, items, stagger, collide-batch) || eqsnap-плоскость; dirty-дельты: mob_upsert = append (id,alive,x,y,z,hw,hh) в пер-потоковый DeltaShard (16×8192, 0 локов/seqlock/хэша), eq_epoch СНАЧАЛА drain_eqsnap_shards O(dirty) один WLOCK, ПОТОМ full chain-build; pushEntities -> MobPushOps.pushables лестница eqsnap = снапшот → vanillaFill (cell-цепи плоскости невалидны, легаси mobQuery/grid пропущены; ai/sscan read-views = состояние ПОСЛЕ drain, ≤1-тик ghost); per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT)"
             );
-        } else if f == "cmp419_colpush" {
+        } else if f == "cmp420_colpush" {
             eprintln!(
-                "[crussty-plugin] cmp419_colpush: ARMED soa-population (flat-arrays seqlock=global-version writer=global-mutex ids_cap=1048576 cell_cap=262144 cell=1.0 pad=2 radius_gate=2.0; STRICT OR носитель cmp417_bq-эры + colpush: pushEntities whole-body redirect -> ColpushOps (per-entity mobUpsert спит), плоские колонки кормит colpush_plane_refresh одним WLOCK/тик, eq_epoch chain-build жив; per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT)"
+                "[crussty-plugin] cmp420_colpush: ARMED soa-population (flat-arrays seqlock=global-version writer=global-mutex ids_cap=1048576 cell_cap=262144 cell=1.0 pad=2 radius_gate=2.0; STRICT OR носитель cmp417_bq-эры + colpush: pushEntities whole-body redirect -> ColpushOps (per-entity mobUpsert спит), плоские колонки кормит colpush_plane_refresh одним WLOCK/тик, eq_epoch chain-build жив; per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT)"
             );
         } else {
             eprintln!(

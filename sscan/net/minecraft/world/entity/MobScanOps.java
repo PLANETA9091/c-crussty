@@ -68,7 +68,7 @@ public final class MobScanOps {
                 // TASK-417-C: cvs-носитель ⊕ queryplane.
                 || f.trim().equals("cmp417_bq")
                 // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
-                || f.trim().equals("cmp419_colpush"));
+                || f.trim().equals("cmp420_colpush"));
     }
 
     private static final boolean ENABLED = leverEnabled();

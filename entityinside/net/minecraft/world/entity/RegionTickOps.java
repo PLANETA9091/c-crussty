@@ -385,16 +385,18 @@ public final class RegionTickOps {
     private static int snapLen;
 
     /**
-     * TASK-419-A (colpush): STRICT-eq java-гейт носителя (ветка НЕ исполняется
-     * под другими флагами ⇒ lazy resolution ColpushOps не срабатывает —
-     * класс может быть вообще не определён rust-стороной, NCDFE невозможен).
+     * TASK-420-A (colpush FIX-МАНДАТ п.1, root-cause round-colpusha
+     * ROOTCAUSE-NCDFE.md): волна-419 армила bulkTick вызов статическим
+     * env-гейтом в &lt;clinit&gt; ⇒ RegionTickOps forEach дергал ColpushOps
+     * ДО его define (HotSpot кэширует провал резолюции CP-сайта ⇒ NCDFE
+     * навсегда, ×1902/ран). ФИКС: триггер = volatile COLPUSH_ON, DEFAULT
+     * OFF; rust-сторона флипает его ТОЛЬКО ПОСЛЕ define(ColpushOps)+
+     * RegisterNatives+selfTest==true (src/colpush.rs activate: arm ПОСЛЕ
+     * define). Call site недостижим до флипа ⇒ NCDFE структурно невозможен;
+     * пустой/чужой lever flag ⇒ флип не происходит никогда (паритет).
      */
-    private static final boolean COLPUSH_ARMED = colpushArmed();
-
-    private static boolean colpushArmed() {
-        String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return f != null && f.trim().equals("cmp419_colpush");
-    }
+    static volatile boolean COLPUSH_ON = false;
+    static volatile boolean COLPUSH_BROKEN = false;
 
     /** Retarget of the single ServerLevel.tick forEach call site (1:1 stack). */
     public static void forEach(EntityTickList list, Consumer<Entity> consumer) {
@@ -402,11 +404,20 @@ public final class RegionTickOps {
         // ДО GO-барьера фазы воркеров (0 гонок: воркеры ещё не тикнули ни одну
         // сущность этого тика; rust lazy tryLock — конвой невозможен). Свежесть
         // строк = end-of-previous-tick снапшот (fresh == tick-1).
-        if (COLPUSH_ARMED) {
+        // TASK-420-A (мандат п.2, belt-and-braces): ОДНОРАЗОВЫЙ guard — первый
+        // Throwable (страховка от любой поздней резолюции) = eprintln ×1 +
+        // vanilla-хвост (ветка просто больше не исполняется) + DISARM lever
+        // навсегда: шторм ×1902 невозможен ПО ПОСТРОЕНИЮ.
+        if (COLPUSH_ON && !COLPUSH_BROKEN) {
             try {
                 ColpushOps.bulkTick();
             } catch (Throwable t) {
-                System.err.println("[crussty-plugin] cmp419_colpush: bulkTick threw " + t);
+                if (!COLPUSH_BROKEN) {
+                    COLPUSH_BROKEN = true;
+                    COLPUSH_ON = false;
+                    System.err.println("[crussty-plugin] cmp420_colpush: bulkTick threw "
+                            + t + " — one-shot guard: DISARM (vanilla tail, no storm)");
+                }
             }
         }
         if (BATCH_COLLECTOR && (++telemetryTicks % TELEMETRY_INTERVAL) == 0L) {

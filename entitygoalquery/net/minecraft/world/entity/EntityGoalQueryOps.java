@@ -108,7 +108,7 @@ public final class EntityGoalQueryOps {
                 || f.trim().equals("cmp417_bq")
                 // TASK-419-A (colpush): колпаш-носитель — eq-снапшот жив
                 // (плоскость кормит colpush_plane_refresh).
-                || f.trim().equals("cmp419_colpush"));
+                || f.trim().equals("cmp420_colpush"));
     }
 
     /** TASK-411-C (k4soa): K4-режим (маркировка EFFECT-строк). */
