@@ -118,6 +118,7 @@ fn target() -> &'static Target {
 
 fn stage_enabled() -> bool {
     crate::inside_cache::enabled_pub()
+        || crate::inside_batch::enabled_pub()
         || crate::fluid_free::enabled_pub()
         || crate::fluid_dirty::enabled_pub()
         || crate::region_threads::workers_from_env_pub().is_some()
@@ -329,6 +330,43 @@ pub fn activate() {
             } else {
                 eprintln!(
                     "[crussty-plugin] entity_compose: inside_bitmask bridge missed its window, chain continues WITHOUT inside_bitmask (fail-dominant)"
+                );
+            }
+        }
+
+        // ---- STAGE 1c: inside_batch (3× per-movement retarget, TASK-411-B) ----
+        // Byte-sites bc 171/204/229 of checkInsideBlocks(List) — disjoint
+        // from the inside_cache gate (bc 1..4) of the same method; the
+        // InsideRustOps bridge is defined AND armed before this stage runs
+        // (probe-then-patch, inside_batch::wait_bridge_ready).
+        if crate::inside_batch::enabled_pub() {
+            if crate::inside_batch::wait_bridge_ready(180_000) {
+                match crate::classfile::patch_inside_batch(&bytes) {
+                    Ok((p, outcome)) if matches!(
+                        outcome,
+                        crate::classfile::RetargetOutcome::Retargeted { .. }
+                            | crate::classfile::RetargetOutcome::AlreadyPatched { .. }
+                    ) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_batch composed ({outcome:?})"
+                        );
+                        bytes = p;
+                        chain.push("inside_batch");
+                    }
+                    Ok((_p, outcome)) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_batch strict check violated ({outcome:?}), chain continues WITHOUT inside_batch (fail-dominant)"
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_batch patch rejected ({e}), chain continues WITHOUT inside_batch (fail-dominant)"
+                        );
+                    }
+                }
+            } else {
+                eprintln!(
+                    "[crussty-plugin] entity_compose: inside_batch bridge missed its window, chain continues WITHOUT inside_batch (fail-dominant)"
                 );
             }
         }

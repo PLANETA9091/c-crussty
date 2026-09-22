@@ -600,8 +600,12 @@ public final class InsideRustOps {
      *
      * @param metaI  int[7n]: per record [id, x0,y0,z0, x1,y1,z1] (clamped floors)
      * @param metaD  double[6n]: per record box minX..maxZ (gather-time)
-     * @param secIdx int[3s]: distinct sections (cx,cy,cz), records enumerate
-     *               their hulls in nested x/y/z order (running prefix)
+     * @param secIdx int[3s]: DISTINCT sections (cx,cy,cz) in FIRST-OCCURRENCE
+     *               order of the per-record nested x/y/z enumeration (a
+     *               section shared by several records is wired once, where
+     *               the earliest record reached it); the native replays the
+     *               same enumeration from metaI/metaD and cross-validates
+     *               the distinct sequence + flags bit-in-byte
      * @param flags  int[s]: per distinct section {0,1,2}
      * @param out    byte[n]: verdict per record {0,1}
      * @return 0 ok; negative ERR_* → permanent vanilla on the java side
