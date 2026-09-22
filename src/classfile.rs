@@ -8362,6 +8362,124 @@ fn check_members(bridge: &[u8], targets: &[(&str, &str, &str, &str)]) -> Result<
 /// Fails loudly on anything but exactly one occurrence, and self-verifies the
 /// rebuilt class by re-parsing the constant pool (the patched entry must
 /// resolve to `to`, and `from` must be gone).
+// ---------------------------------------------------------------------------
+// CHUNK-PARSE SECTION-CACHE (TASK-419-C, lever cmp419_chunk, law 8
+// chunk-loading axis). Ground truth: kernel javap (round-396-a
+// patched-kernel.jar, purpur 1.21.10) — SerializableChunkData.parse's
+// section loop calls the block_states decode through indy #4 -> BOOTSTRAP
+// method #4 -> lambda$parse$5, and the biomes decode through indy #6 ->
+// BOOTSTRAP #6 -> lambda$parse$7. Both lambdas carry the SAME canonical
+// descriptor (below) and byte-identical semantics:
+//   codec.parse(NbtOps, tag).promotePartial(-> logErrors(pos,y,msg))
+//     .getOrThrow(-> new ChunkReadException(msg))  (checkcast + areturn)
+// The redirect swaps the BLOCKS lambda body for ChunkParseOps.parseSection
+// (cache-first decoder, twin = the pristine biomes lambda); the canonical
+// descriptor makes the static->static stack shape a pass-through.
+// ---------------------------------------------------------------------------
+pub const CHUNKPARSE_TARGET_CLASS: &str =
+    "net/minecraft/world/level/chunk/storage/SerializableChunkData";
+pub const CHUNKPARSE_OPS_CLASS: &str = "net/minecraft/world/level/chunk/storage/ChunkParseOps";
+pub const CHUNKPARSE_BLOCKS_LAMBDA: &str = "lambda$parse$5";
+pub const CHUNKPARSE_TWIN_LAMBDA: &str = "lambda$parse$7";
+pub const CHUNKPARSE_SECTION_LAMBDA_DESC: &str = "(Lcom/mojang/serialization/Codec;Lnet/minecraft/world/level/ChunkPos;ILnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/chunk/PalettedContainer;";
+
+/// Resolution closure for the ChunkParseOps bridge: the bridge must declare
+/// `parseSection` with the EXACT vanilla lambda descriptor (redirect
+/// stack-shape contract) and `init(Ljava/lang/String;)V` (twin injection),
+/// and must be FLAT (zero nested classes — the classfile is defined alone
+/// into the kernel loader; a nested class would detonate as
+/// NoClassDefFoundError on the first parse).
+pub fn chunkparse_resolution_closure(ops: &[u8]) -> Result<(), String> {
+    let targets: &[(&str, &str, &str, &str)] = &[
+        (
+            "class",
+            CHUNKPARSE_OPS_CLASS,
+            "parseSection",
+            CHUNKPARSE_SECTION_LAMBDA_DESC,
+        ),
+        ("class", CHUNKPARSE_OPS_CLASS, "init", "(Ljava/lang/String;)V"),
+    ];
+    check_members(ops, targets)?;
+    // Flat delivery guard: a nested class would surface as a
+    // "ChunkParseOps$..." Class reference somewhere in the pool.
+    if find_nested_class_ref(ops, "ChunkParseOps$") {
+        return Err("bridge declares/references a nested ChunkParseOps$ class — flat-only delivery contract".into());
+    }
+    Ok(())
+}
+
+/// Byte-level scan: does this classfile reference any class whose binary
+/// name contains `needle` (e.g. "ChunkParseOps$")? Pure constant-pool Utf8
+/// walk — robust against pool entry reordering.
+fn find_nested_class_ref(bytes: &[u8], needle: &str) -> bool {
+    let needle = needle.as_bytes();
+    bytes.windows(needle.len()).any(|w| w == needle)
+}
+
+/// Pristine guard for the ORIGINAL SerializableChunkData bytes (called on
+/// the captured bytes BEFORE any patch is computed; a kernel shape drift
+/// must leave the hook dormant instead of serving a blind redirect):
+///   * `parse(LevelHeightAccessor, PalettedContainerFactory, CompoundTag)`
+///     exists (the owner of the indy sites);
+///   * BOTH section lambdas (`lambda$parse$5` blocks + `lambda$parse$7`
+///     biomes twin) exist with the canonical descriptor;
+///   * the descriptor is carried by EXACTLY 2 methods (no third candidate —
+///     a drift would make the name->role mapping untrustworthy).
+pub fn chunkparse_pristine_guard(bytes: &[u8]) -> Result<(), String> {
+    let layout = parse_layout(bytes).ok_or("bad classfile layout".to_string())?;
+    let mut p = layout.methods_start;
+    let count = usize::from(u16_at(bytes, p).ok_or("truncated method count")?);
+    p = p.checked_add(2).ok_or("truncated method table")?;
+    let mut section_lambdas: Vec<String> = Vec::with_capacity(2);
+    let mut parse_ok = false;
+    for _ in 0..count {
+        let n_idx = u16_at(bytes, p.checked_add(2).ok_or("truncated method")?)
+            .ok_or("truncated method name")?;
+        let d_idx = u16_at(bytes, p.checked_add(4).ok_or("truncated method")?)
+            .ok_or("truncated method desc")?;
+        let attr_count = usize::from(
+            u16_at(bytes, p.checked_add(6).ok_or("truncated method")?)
+                .ok_or("truncated method attrs")?,
+        );
+        p = p.checked_add(8).ok_or("truncated method table")?;
+        for _ in 0..attr_count {
+            let len = u32_at(bytes, p.checked_add(2).ok_or("truncated attr")?)
+                .ok_or("truncated attr")? as usize;
+            p = p
+                .checked_add(6)
+                .ok_or("truncated attr")?
+                .checked_add(len)
+                .ok_or("truncated attr")?;
+        }
+        let name = layout.pool.utf8_value(n_idx).ok_or("bad name idx")?;
+        let desc = layout.pool.utf8_value(d_idx).ok_or("bad desc idx")?;
+        if name == "parse"
+            && desc
+                == "(Lnet/minecraft/world/level/LevelHeightAccessor;Lnet/minecraft/world/level/chunk/PalettedContainerFactory;Lnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/chunk/storage/SerializableChunkData;"
+        {
+            parse_ok = true;
+        }
+        if desc == CHUNKPARSE_SECTION_LAMBDA_DESC {
+            section_lambdas.push(name);
+        }
+    }
+    if !parse_ok {
+        return Err("parse(LevelHeightAccessor, PalettedContainerFactory, CompoundTag) not found — kernel shape drift".into());
+    }
+    for expected in [CHUNKPARSE_BLOCKS_LAMBDA, CHUNKPARSE_TWIN_LAMBDA] {
+        if !section_lambdas.iter().any(|n| n == expected) {
+            return Err(format!("section lambda {expected} missing — kernel shape drift"));
+        }
+    }
+    if section_lambdas.len() != 2 {
+        return Err(format!(
+            "canonical section-lambda descriptor carried by {} methods, expected exactly 2 — name->role mapping untrustworthy",
+            section_lambdas.len()
+        ));
+    }
+    Ok(())
+}
+
 pub fn patch_utf8_gate(bytes: &[u8], from: &str, to: &str) -> Result<Vec<u8>, String> {
     if bytes.len() < 10 || &bytes[0..4] != [0xCA, 0xFE, 0xBA, 0xBE] {
         return Err("bad magic".to_string());

@@ -458,6 +458,16 @@ export CRUSSTY_BU_DEFER="$BU_DEFER"
 # read these at registration time to ARM their architecture lever.
 export CRUSSTY_LEVER_FLAG="${LEVER_FLAG:-}"
 export CRUSSTY_LEVER_ARG="${LEVER_ARG:-}"
+# cmp419_chunk arming (TASK-419-C, chunk-pipeline law 8): the noise-fill
+# GEN-axis (noise_fill.rs STRICT-OR gate) is NOT in PROVEN_WINS, so the
+# kernel-policy two-key rule must be overridden for the A/B leg — the
+# documented benchmarking override (kernel_policy.rs: off = A/B only).
+# The chunk-parse plane needs no policy key (byte redirect, zero natives).
+# Empty lever_flag = vanilla bit-in-bit, no policy change.
+if [ "${LEVER_FLAG:-}" = "cmp419_chunk" ]; then
+  export CRUSSTY_KERNEL_POLICY="off"
+  log "cmp419_chunk armed: chunk-parse section-cache + noise-fill GEN-axis (CRUSSTY_KERNEL_POLICY=off — documented two-key A/B override; noiseFillArrayWholeBody not in PROVEN_WINS)"
+fi
 # RECON_DIAG (TASK-317, instrument-гейт рычага #13 SKIP-STORE-DIET): чистая
 # наблюдаемость — 0 поведения. GC-политика/heap не трогаются (логирование ≠
 # config-win, вердикт NEXT TASK-316): remset/refine debug-логи (агрегатная

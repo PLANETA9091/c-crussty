@@ -1,50 +1,16 @@
 {
-  "agent": "TASK-417-C",
-  "vector": "queryplane-awake on cvs",
-  "step": 3,
-  "status": "local-gates-green",
-  "branch": "round-417-c-bq",
-  "base": "1aec4f8",
-  "ported": [
-    "src/classfile.rs QUERYPLANE section (af1cca8 verbatim: 2 whole-body redirects + slices hard-probe + resolution closure)",
-    "src/queryplane.rs NEW (oracle tests + delivery tests adapted to cvs STRICT-OR)",
-    "queryplane/QueryPlaneOps.java (flagArmed + cmp417_bq)",
-    "tests/fixtures/ChunkEntitySlices_real.class",
-    "scripts/build_queryplane_ops.sh",
-    "lib.rs mod+register(last)+activate(last)"
-  ],
-  "find_class_fix": "selfTest called on LOCAL ref from define_class inside one with_attached closure (define_bridge_and_selftest); find_class REMOVED from selfTest path (root-cause 158889b RESEARCH-A-iter3: JVMTI scan filters non-INITIALIZED classes)",
-  "gate_retags_cmp417_bq": {
-    "rust": [
-      "collide_batch x2",
-      "entity_query x4",
-      "items_index",
-      "mobs_ai",
-      "mobs_grid",
-      "mobs_manager x3",
-      "mobs_soa x2",
-      "mobs_sscan",
-      "nav_plane",
-      "stagger",
-      "tickplane",
-      "queryplane lever_flag_matches+lever_id"
-    ],
-    "java": [
-      "EntityGoalQueryOps",
-      "ItemEntityManager x3",
-      "MobAiOps",
-      "MobPushOps x2",
-      "MobScanOps",
-      "QueryPlaneOps flagArmed"
-    ],
-    "old_ids_kept": "b2p1/mcomp/meganav/eqsnapv3/cvs arms intact"
-  },
-  "next": "dispatch legs bqa/bqb/bqc lever cmp417_bq, bank inputs exact",
-  "local_gates": {
-    "selftest_5_5": "QueryPlaneSelfTestMain PASS 5/5 under CRUSSTY_LEVER_FLAG=cmp417_bq (negative controls cmp414_cvs/empty = FAILED as designed)",
-    "cargo_check": "PASS (lib, 94 warnings pre-existing)",
-    "cargo_test": "PASS 283/283 (0 failed, 1 ignored) — 11 queryplane tests incl. strict-oracle x256, Level/ChunkEntitySlices real-fixture roundtrips, composition, resolution closure, wiring guards; target deleted right after",
-    "blob_gate": "check_blobs_sync.sh ALL IN SYNC — cmp417_bq marker in constant pool of all 6 rebuilt bridges, flat==nested byte-identical, source<->blob gate flags in sync",
-    "blob_rebuild": "scripts/build_417c_blobs_all.sh — 6 bridges one javac pass full cp major 65"
-  }
+  "agent": "TASK-419-C",
+  "vector": "chunk-pipeline (law 8): parse-path section-cache redirect (lambda$parse$5 -> ChunkParseOps.parseSection, twin lambda$parse$7 pristine) + noise-fill STRICT-OR GEN-axis, flag cmp419_chunk",
+  "branch": "round-419-c-chunk",
+  "base": "fbb06e3",
+  "step": "step-4 implementation DONE: Java bridge rebuilt (9152B, major 65, flat), src/chunk_parse.rs + classfile chunkparse closure/pristine-guard, lib.rs wiring, noise_fill STRICT-OR, run_world3.sh cmp419_chunk arming (KERNEL_POLICY=off documented override); check_blobs_sync ALL IN SYNC",
+  "steps_done": ["worktree", "STEP-0-profile", "research", "design", "implementation"],
+  "run_ids": [],
+  "tps_med": null,
+  "delta_pair_pct": null,
+  "lane_before": "chunk-system TPS-slice 9.8%; parse-path 33.38% alloc bytes in burst 240-300s (RECON-13b); codec machinery 19.06% + paletted-decode 13.98% (RECON-13f)",
+  "lane_after": null,
+  "parity": "STRICT lever gate cmp419_chunk; empty flag = vanilla bit-in-bit; HIT = Data.copy of vanilla-decoded equal tag (identity-codec key, anti-xray presets auto-miss); MISS/twin = pristine vanilla lambda; ARM marker 'cmp419_chunk: ARMED chunk-parse section-cache'; EFFECT markers 'parse-cache first hit' + 'parse-cache selftest PASS'",
+  "verdict": "IMPL-DONE-PRE-CARGO",
+  "notes": "next: cargo check --lib + cargo test (target deleted after), commit+push, dispatch legs round-419-c-cha/chb/chc lever_flag=cmp419_chunk"
 }
