@@ -791,6 +791,8 @@ mod queryplane_delivery_tests {
         // lever_flag_matches читается активацией.)
         assert!(src.contains("\"cmp417_bq\""), "lost the cmp417_bq arm");
         assert!(src.contains("\"cmp412_b2p1\""), "lost the legacy b2p1 arm");
-        assert!(!src.contains("\"cmp412_meganav\""));
+        // гейт НЕ принимает meganav-флаг (негатив — по стилю сравнения гейта,
+        // чтобы wiring-guard-строки выше не ложились на self-include).
+        assert!(!src.contains("== \"cmp412_meganav\""));
     }
 }

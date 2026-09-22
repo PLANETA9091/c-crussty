@@ -1,8 +1,8 @@
 {
   "agent": "TASK-417-C",
   "vector": "queryplane-awake on cvs",
-  "step": 2,
-  "status": "port-complete-prebuild",
+  "step": 3,
+  "status": "local-gates-green",
   "branch": "round-417-c-bq",
   "base": "1aec4f8",
   "ported": [
@@ -39,5 +39,12 @@
     ],
     "old_ids_kept": "b2p1/mcomp/meganav/eqsnapv3/cvs arms intact"
   },
-  "next": "blobs build + selftest main + cargo + javap-gate + dispatch"
+  "next": "dispatch legs bqa/bqb/bqc lever cmp417_bq, bank inputs exact",
+  "local_gates": {
+    "selftest_5_5": "QueryPlaneSelfTestMain PASS 5/5 under CRUSSTY_LEVER_FLAG=cmp417_bq (negative controls cmp414_cvs/empty = FAILED as designed)",
+    "cargo_check": "PASS (lib, 94 warnings pre-existing)",
+    "cargo_test": "PASS 283/283 (0 failed, 1 ignored) — 11 queryplane tests incl. strict-oracle x256, Level/ChunkEntitySlices real-fixture roundtrips, composition, resolution closure, wiring guards; target deleted right after",
+    "blob_gate": "check_blobs_sync.sh ALL IN SYNC — cmp417_bq marker in constant pool of all 6 rebuilt bridges, flat==nested byte-identical, source<->blob gate flags in sync",
+    "blob_rebuild": "scripts/build_417c_blobs_all.sh — 6 bridges one javac pass full cp major 65"
+  }
 }
