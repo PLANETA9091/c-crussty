@@ -2,18 +2,42 @@ package net.minecraft.world.level.chunk.storage;
 
 import com.mojang.serialization.Codec;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.IdentityHashMap;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.chunk.PalettedContainer;
 
 /**
- * CHUNK-PARSE SECTION-CACHE (TASK-419-C, chunk-pipeline lever cmp419_chunk,
- * law 8: player-visible chunk-loading axis; RECON-13b/13f: the parse path is
- * the top alloc lane of the 150k scene — 33.38% of ALL alloc bytes in the
+ * CHUNK-PARSE SECTION-CACHE — STABILITY DEEPENING (TASK-419-C base,
+ * TASK-420-C iteration, chunk-pipeline lever cmp420_chunk2, law 8:
+ * player-visible chunk-loading axis; RECON-13b/13f: the parse path is the
+ * top alloc lane of the 150k scene — 33.38% of ALL alloc bytes in the
  * 240-300s burst window; codec machinery 19.06% + paletted-decode 13.98%).
+ *
+ * Wave-419 ground truth (runs cha/chb/chc @ f7b0be4): hit-rate plateaued at
+ * 64% because CACHE_CAP=1024 thrashed — every overflow did a full
+ * inner.clear(), dropping hot serialized-section tags between chunk
+ * revisions; and the tag probe (deep hashCode + equals) ran INSIDE the
+ * global CACHE lock, adding cross-worker contention nondeterminism to the
+ * late-run polls (the cha/chc tail-crush signal).
+ *
+ * TASK-420-C deepening (same decoder contract, deeper cache):
+ * <ul>
+ *   <li><b>CACHE_CAP 1024 -&gt; 16384</b> — serialized-section templates
+ *       now survive across chunk revisions for the whole run (~2-3 KB per
+ *       4-bit template; 16384 x ~2.5 KB &lt;= 40 MB, bounded, no leak).</li>
+ *   <li><b>evict-half on overflow</b> — a thrashing overflow no longer
+ *       wipes the working set: every other entry is dropped (hits stay
+ *       monotonic, worst case re-decodes half the map once).</li>
+ *   <li><b>lock-free probe</b> — the per-codec inner map is a
+ *       ConcurrentHashMap; the global lock now guards ONLY the outer
+ *       identity lookup (a few entries, O(#codecs)). The deep
+ *       tag hashCode/equals probe runs OUTSIDE any lock — cross-worker
+ *       contention removed from the chunk-load burst (tail stability).</li>
+ * </ul>
  *
  * The redirected vanilla section-decode lambda
  * ({@code SerializableChunkData.lambda$parse$5(Codec, ChunkPos, int,
@@ -50,7 +74,7 @@ import net.minecraft.world.level.chunk.PalettedContainer;
  *
  * Delivery discipline: this classfile is defined ALONE into the kernel loader
  * together with its compiled form only — the source declares ZERO nested
- * classes (an inner class would detonate as NoClassDefFoundError; the
+ * classes (an inner one would detonate as NoClassDefFoundError; the
  * rust-side guard pins this).
  *
  * Residual (documented): a section that produces a partial decode warning
@@ -62,31 +86,37 @@ import net.minecraft.world.level.chunk.PalettedContainer;
  * results by identity plus the container bit config; the PASS marker goes to
  * stdout as the bench effect-marker for the verdict checklist.
  *
- * Grep markers: "cmp419_chunk: parse-cache".
+ * Grep markers: "cmp420_chunk2: parse-cache".
  */
 public final class ChunkParseOps {
 
     private ChunkParseOps() {}
 
-    /** Inner-cache bound (per codec); overflow clears that codec's map. */
-    static final int CACHE_CAP = 1024;
+    /**
+     * Inner-cache bound (per codec); overflow evicts HALF of that map
+     * (TASK-420-C: was 1024 with a full clear — the thrash that capped the
+     * wave-419 hit-rate at 64%).
+     */
+    static final int CACHE_CAP = 16384;
 
     /** Sections decoded through the selftest compare window. */
     static final int SELFTEST_SECTIONS = 3;
 
     /** Marker/log prefix (matches the rust ARM markers). */
-    static final String PFX = "[crussty-plugin] cmp419_chunk:";
+    static final String PFX = "[crussty-plugin] cmp420_chunk2:";
 
     /**
-     * codec(identity) -> (tag -> pristine decoded template). synchronized:
-     * parse runs on chunk-load worker threads; the sync also publishes the
-     * templates safely to every copying reader.
+     * codec(identity) -> (tag -> pristine decoded template). The outer map
+     * is synchronized ONLY for its own few-entry get/put; the inner maps are
+     * ConcurrentHashMaps so the deep tag probe runs lock-free (TASK-420-C:
+     * the deep hashCode/equals left the global critical section).
      */
-    private static final Map<Object, HashMap<CompoundTag, PalettedContainer<?>>> CACHE =
+    private static final Map<Object, ConcurrentHashMap<CompoundTag, PalettedContainer<?>>> CACHE =
             new IdentityHashMap<>();
     private static long hits = 0;
     private static long misses = 0;
     private static long sections = 0;
+    private static long evictions = 0;
     private static int selftestLeft = SELFTEST_SECTIONS;
     private static boolean firstHitLogged = false;
 
@@ -130,16 +160,16 @@ public final class ChunkParseOps {
         }
         d[0]++;
         try {
-            HashMap<CompoundTag, PalettedContainer<?>> inner;
-            PalettedContainer<?> tpl;
+            ConcurrentHashMap<CompoundTag, PalettedContainer<?>> inner;
             synchronized (CACHE) {
                 inner = CACHE.get(codec);
                 if (inner == null) {
-                    inner = new HashMap<>();
+                    inner = new ConcurrentHashMap<>();
                     CACHE.put(codec, inner);
                 }
-                tpl = inner.get(tag);
             }
+            // LOCK-FREE probe: deep hashCode + equals run outside every lock.
+            PalettedContainer<?> tpl = inner.get(tag);
             if (tpl != null) {
                 hits++;
                 if (!firstHitLogged) {
@@ -152,12 +182,23 @@ public final class ChunkParseOps {
             misses++;
             PalettedContainer<?> fresh = invokeTwin(codec, pos, y, tag);
             PalettedContainer<?> copy = fresh.copy();
-            synchronized (CACHE) {
-                if (inner.size() >= CACHE_CAP) {
-                    inner.clear();
+            if (inner.size() >= CACHE_CAP) {
+                // evict-half (TASK-420-C): keep the working set warm instead
+                // of the wave-419 full clear; CHM iterators are weakly
+                // consistent — no lock, at most one extra decode per entry.
+                int seen = 0;
+                Iterator<Map.Entry<CompoundTag, PalettedContainer<?>>> it =
+                        inner.entrySet().iterator();
+                while (it.hasNext()) {
+                    it.next();
+                    if ((seen & 1) == 0) {
+                        it.remove();
+                        evictions++;
+                    }
+                    seen++;
                 }
-                inner.put(tag, copy);
             }
+            inner.put(tag, copy);
             sections++;
             if (selftestLeft > 0) {
                 selftestLeft--;
@@ -166,7 +207,8 @@ public final class ChunkParseOps {
                 long total = hits + misses;
                 System.out.println(PFX + " parse-cache stats sections=" + sections
                         + " hits=" + hits + " misses=" + misses
-                        + " rate=" + (total == 0 ? 0 : (hits * 100 / total)) + "%");
+                        + " rate=" + (total == 0 ? 0 : (hits * 100 / total)) + "%"
+                        + " evicted=" + evictions + " cap=" + CACHE_CAP);
             }
             return fresh;
         } finally {
@@ -206,7 +248,7 @@ public final class ChunkParseOps {
             if (t instanceof RuntimeException) {
                 throw (RuntimeException) t;
             }
-            throw new IllegalStateException("cmp419_chunk twin invoke", t);
+            throw new IllegalStateException("cmp420_chunk2 twin invoke", t);
         }
     }
 
@@ -280,14 +322,19 @@ public final class ChunkParseOps {
             });
             return (PalettedContainer<?>) out;
         } catch (ReflectiveOperationException e) {
-            throw new IllegalStateException("cmp419_chunk vanilla replica", e);
+            throw new IllegalStateException("cmp420_chunk2 vanilla replica", e);
         }
     }
 
     /** Diagnostics for the boot/absorb greps (never allocates on hot path). */
     public static String stats() {
+        int codecs;
+        synchronized (CACHE) {
+            codecs = CACHE.size();
+        }
         return PFX + " sections=" + sections + " hits=" + hits + " misses=" + misses
-                + " codecs=" + CACHE.size() + " cap=" + CACHE_CAP
+                + " codecs=" + codecs + " cap=" + CACHE_CAP
+                + " evicted=" + evictions
                 + " selftest=" + (SELFTEST_SECTIONS - selftestLeft);
     }
 }

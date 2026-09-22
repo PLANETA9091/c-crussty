@@ -1,7 +1,7 @@
-//! Runtime wiring for the CHUNK-PARSE SECTION-CACHE lever (TASK-419-C,
-//! lever cmp419_chunk, law 8 chunk-loading axis — see
-//! chunkparse/net/minecraft/world/level/chunk/storage/ChunkParseOps.java +
-//! RESEARCH-C-419.md).
+//! Runtime wiring for the CHUNK-PARSE SECTION-CACHE lever (TASK-419-C base,
+//! TASK-420-C stability deepening, lever cmp420_chunk2, law 8 chunk-loading
+//! axis — see chunkparse/net/minecraft/world/level/chunk/storage/
+//! ChunkParseOps.java).
 //!
 //! RECON-13b/13f ground truth: the SerializableChunkData.parse decode path
 //! is the TOP alloc lane of the 150k scene — 33.38% of ALL alloc bytes in
@@ -40,9 +40,9 @@
 //! plane is Java-side (cache + reflective twin); the activator uses exactly
 //! one JNI call (init) at boot. Per-chunk <= 1 satisfied trivially (0).
 //!
-//! ARM marker: "[crussty-plugin] cmp419_chunk: ARMED chunk-parse
+//! ARM marker: "[crussty-plugin] cmp420_chunk2: ARMED chunk-parse
 //! section-cache"; EFFECT markers (Java side): "parse-cache first hit" +
-//! "parse-cache selftest PASS". Grep marker: "cmp419_chunk".
+//! "parse-cache selftest PASS". Grep marker: "cmp420_chunk2".
 
 use jvmti_bindings::prelude::*;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -58,7 +58,7 @@ const OPS_BYTES: &[u8] = include_bytes!(
     "../chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class"
 );
 
-const LEVER_ID: &str = "cmp419_chunk";
+const LEVER_ID: &str = "cmp420_chunk2";
 
 struct Target {
     name: &'static str,
@@ -111,7 +111,7 @@ fn target() -> &'static Target {
     TARGET.get_or_init(|| Target::new(CHUNKPARSE_TARGET_CLASS))
 }
 
-/// STRICT lever gate: CRUSSTY_LEVER_FLAG == "cmp419_chunk" exactly.
+/// STRICT lever gate: CRUSSTY_LEVER_FLAG == "cmp420_chunk2" exactly.
 /// Empty/foreign flag = vanilla bit-in-bit (no env duplicates by design —
 /// RESEARCH-C-419: only the noise-fill GEN-axis carries a STRICT-OR).
 fn enabled() -> bool {
@@ -389,7 +389,7 @@ pub fn activate() {
         READY.store(true, Ordering::Release);
         let rc = cplug_sdk::retransform_class(t.name);
         eprintln!(
-            "[crussty-plugin] {LEVER_ID}: ARMED chunk-parse section-cache (blocks lambda {CHUNKPARSE_BLOCKS_LAMBDA} -> ChunkParseOps.parseSection, twin {CHUNKPARSE_TWIN_LAMBDA} pristine; identity-codec key, template.copy() HIT path, 0 added JNI; retransform rc={rc})"
+            "[crussty-plugin] {LEVER_ID}: ARMED chunk-parse section-cache (deep: cap 16384, evict-half, lock-free CHM probe; blocks lambda {CHUNKPARSE_BLOCKS_LAMBDA} -> ChunkParseOps.parseSection, twin {CHUNKPARSE_TWIN_LAMBDA} pristine; identity-codec key, template.copy() HIT path, 0 added JNI; retransform rc={rc})"
         );
     });
 }

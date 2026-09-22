@@ -3,10 +3,11 @@ public final class net.minecraft.world.level.chunk.storage.ChunkParseOps {
   static final int CACHE_CAP;
   static final int SELFTEST_SECTIONS;
   static final java.lang.String PFX;
-  private static final java.util.Map<java.lang.Object, java.util.HashMap<net.minecraft.nbt.CompoundTag, net.minecraft.world.level.chunk.PalettedContainer<?>>> CACHE;
+  private static final java.util.Map<java.lang.Object, java.util.concurrent.ConcurrentHashMap<net.minecraft.nbt.CompoundTag, net.minecraft.world.level.chunk.PalettedContainer<?>>> CACHE;
   private static long hits;
   private static long misses;
   private static long sections;
+  private static long evictions;
   private static int selftestLeft;
   private static boolean firstHitLogged;
   private static final java.lang.ThreadLocal<int[]> DEPTH;

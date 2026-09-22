@@ -8363,7 +8363,8 @@ fn check_members(bridge: &[u8], targets: &[(&str, &str, &str, &str)]) -> Result<
 /// rebuilt class by re-parsing the constant pool (the patched entry must
 /// resolve to `to`, and `from` must be gone).
 // ---------------------------------------------------------------------------
-// CHUNK-PARSE SECTION-CACHE (TASK-419-C, lever cmp419_chunk, law 8
+// CHUNK-PARSE SECTION-CACHE (TASK-419-C base, TASK-420-C deepening,
+// lever cmp420_chunk2, law 8
 // chunk-loading axis). Ground truth: kernel javap (round-396-a
 // patched-kernel.jar, purpur 1.21.10) — SerializableChunkData.parse's
 // section loop calls the block_states decode through indy #4 -> BOOTSTRAP

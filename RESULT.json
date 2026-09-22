@@ -1,16 +1,17 @@
 {
-  "agent": "TASK-419-C",
-  "vector": "chunk-pipeline (law 8): parse-path section-cache redirect (lambda$parse$5 -> ChunkParseOps.parseSection, twin lambda$parse$7 pristine) + noise-fill STRICT-OR GEN-axis, flag cmp419_chunk",
-  "branch": "round-419-c-chunk",
-  "base": "fbb06e3",
-  "step": "step-4 implementation DONE: Java bridge rebuilt (9152B, major 65, flat), src/chunk_parse.rs + classfile chunkparse closure/pristine-guard, lib.rs wiring, noise_fill STRICT-OR, run_world3.sh cmp419_chunk arming (KERNEL_POLICY=off documented override); check_blobs_sync ALL IN SYNC",
-  "steps_done": ["worktree", "STEP-0-profile", "research", "design", "implementation"],
+  "agent": "TASK-420-C",
+  "vector": "chunk-pipeline stability iteration (law 8): parse-path section-cache DEEPENED (cap 1024->16384, evict-half instead of full-clear thrash, lock-free ConcurrentHashMap probe outside global lock) + noise-fill GEN-axis re-armed (STRICT-OR lever union + KERNEL_POLICY=off), flag cmp420_chunk2",
+  "branch": "round-420-c-chunk2",
+  "base": "41456af (cherry-pick f7b0be4 wave-419 base)",
+  "step": "step-1 implementation DONE: Java bridge rebuilt (9592B, major 65, flat), javap gate ok, check_blobs_sync ALL IN SYNC, cargo check --lib OK, cargo test 289/0/1 (+6 chunkparse delivery on kernel fixture), cargo-target deleted (disk law)",
+  "steps_done": ["worktree", "cherry-pick-f7b0be4", "deepening-cap-16384-evict-half-chm-probe", "lever-id-cmp420_chunk2-all-gates", "noise-fill-rearm", "build-green"],
   "run_ids": [],
   "tps_med": null,
   "delta_pair_pct": null,
-  "lane_before": "chunk-system TPS-slice 9.8%; parse-path 33.38% alloc bytes in burst 240-300s (RECON-13b); codec machinery 19.06% + paletted-decode 13.98% (RECON-13f)",
-  "lane_after": null,
-  "parity": "STRICT lever gate cmp419_chunk; empty flag = vanilla bit-in-bit; HIT = Data.copy of vanilla-decoded equal tag (identity-codec key, anti-xray presets auto-miss); MISS/twin = pristine vanilla lambda; ARM marker 'cmp419_chunk: ARMED chunk-parse section-cache'; EFFECT markers 'parse-cache first hit' + 'parse-cache selftest PASS'",
-  "verdict": "IMPL-DONE-PRE-CARGO",
-  "notes": "next: cargo check --lib + cargo test (target deleted after), commit+push, dispatch legs round-419-c-cha/chb/chc lever_flag=cmp419_chunk"
+  "lane_before": "chunk/parse lane: wave-419 hit-rate plateau 64% (cap-1024 thrash, full-clear drops hot serialized-section tags between revisions); global CACHE lock holds deep tag probe (contention nondeterminism -> cha/chc tail crush); noise-fill armed but median +4.3",
+  "lane_after": "pending dispatch round-420-c-ch{a,b,c}",
+  "parity": "STRICT lever gate cmp420_chunk2 (STRICT eq; empty/foreign flag = vanilla bit-in-bit); HIT = Data.copy of vanilla-decoded equal tag (identity-codec key, anti-xray presets auto-miss); MISS/twin = pristine vanilla lambda lambda$parse$7; CHM probe is value-exact (same tag hashCode/equals contract); evict-half only touches cache occupancy, never values; ARM marker 'cmp420_chunk2: ARMED chunk-parse section-cache (deep: cap 16384, evict-half, lock-free CHM probe...)'; EFFECT markers 'parse-cache first hit' + 'parse-cache selftest PASS'; noise-fill STRICT-OR {env} U {cmp419_chunk} U {cmp420_chunk2}",
+  "verdict": "IMPL-DONE-BUILD-GREEN",
+  "evidence": ["cargo test 289 passed / 0 failed / 1 ignored (chunkparse delivery x6 on REAL kernel fixture)", "check_blobs_sync ALL IN SYNC (chunkparse gate cmp420_chunk2 + effect strings pinned)", "javap: ChunkParseOps 9592B flat, parseSection canonical descriptor", "anchorc re-roll dispatched (run 35788823743 was failure, re-roll 1)"],
+  "notes": "next: commit+push, dispatch 3 legs round-420-c-ch{a,b,c} lever_flag=cmp420_chunk2 lever_arg=1, poll, absorb, pair-vs-anchors-420 (35788810224/35788816648/35788823743 @41456af), min-of-3 >= +20% else cycle"
 }

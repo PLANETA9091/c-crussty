@@ -92,13 +92,13 @@ check_class \
   "cmp414_cvs" "cmp412_eqsnapv3" \
   "native int eqProbe"
 
-# TASK-419-C chunk-pipeline plane (cmp419_chunk): the bridge must carry the
+# TASK-420-C chunk-pipeline plane (cmp420_chunk2): the bridge must carry the
 # lever marker + the parse-cache effect strings in its constant pool, and
 # declare the redirect entry points (descriptor pinned by build script javap
 # grep; flat-only pinned by build script '$' guard + rust delivery test).
 check_class \
   "chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class" \
-  "cmp419_chunk" "parse-cache first hit" "parse-cache selftest" \
+  "cmp420_chunk2" "parse-cache first hit" "parse-cache selftest" \
   "public static void init" "parseSection"
 
 # gate-flag consistency: every flag string accepted by the SOURCE gate must
