@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # build_gsel_blobs_all.sh — TASK-414-C2: rebuild ALL lever blobs after ANY
 # .java edit (lesson ×93: stale blob = lever-BUG/plane-sleep) + build the NEW
-# GoalBatchOps bridge (cmp414_pfb gsel-batch plane).
+# GoalBatchOps bridge (cmp415_gsel2 gsel-batch plane).
 #
 # Full cp per tick-414 mandate: kernel round-396-a + fastutil + paper-api
 # 1.21.10 + adventure-api/key 4.24.0. Class major pinned 65 (--release 21).

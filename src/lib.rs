@@ -256,7 +256,7 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     entity_query::register();
     // GSEL-BATCH (TASK-414-C2): LAST Mob hook — composes onto received bytes
     // (sscan/prepare stand earlier in the chain); dormant unless
-    // CRUSSTY_LEVER_FLAG == cmp414_pfb.
+    // CRUSSTY_LEVER_FLAG == cmp415_gsel2.
     goal_batch::register();
     std::thread::spawn(inject_surface);
     0
@@ -565,7 +565,7 @@ fn inject_surface() {
     entity_query::activate();
     // GSEL-BATCH (TASK-414-C2): define GoalBatchOps, RegisterNatives
     // (gselProbe/gselRegister/gselEpoch), flip READY, retransform Mob
-    // (dormant unless CRUSSTY_LEVER_FLAG == cmp414_pfb).
+    // (dormant unless CRUSSTY_LEVER_FLAG == cmp415_gsel2).
     goal_batch::activate();
 }
 

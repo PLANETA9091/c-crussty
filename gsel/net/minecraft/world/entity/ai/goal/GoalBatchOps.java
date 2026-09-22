@@ -13,7 +13,7 @@ import net.minecraft.server.MinecraftServer;
 
 /**
  * GOAL-SELECTOR BATCH (TASK-414-C2, pathfinder/brain виток-2 — lever
- * cmp414_pfb): batch-плоскость тика GoalSelector (Mob.goalSelector +
+ * cmp415_gsel2): batch-плоскость тика GoalSelector (Mob.goalSelector +
  * Mob.targetSelector; recon round-cvs2v2: GoalSelector.tick subtree = 9.54%
  * wall, из них scheduler-bookkeeping ≈ 2.9% — linked-set iteration +
  * lockedFlags map + removeIf + flag-сет-операции; neighbor-batch/NodeEvaluator
@@ -65,7 +65,7 @@ public final class GoalBatchOps {
 
     private static final Logger LOG = Logger.getLogger("GoalBatchOps");
 
-    static final String LEVER_FLAG = "cmp414_pfb";
+    static final String LEVER_FLAG = "cmp415_gsel2";
     private static final int ERR_STRUCT = -1;
     private static final int ERR_RANGE = -2;
     private static final int BATCH_CAP = 1 << 16;

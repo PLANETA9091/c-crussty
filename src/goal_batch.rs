@@ -1,6 +1,6 @@
 //! Runtime wiring for the GOAL-SELECTOR BATCH plane (TASK-414-C2, vector
 //! «pathfinder/brain виток-2: GoalSelector tick-scheduling batch» — lever
-//! `cmp414_pfb`; bridge gsel/net/minecraft/world/entity/ai/goal/GoalBatchOps.java,
+//! `cmp415_gsel2`; bridge gsel/net/minecraft/world/entity/ai/goal/GoalBatchOps.java,
 //! natives below, retarget of the `GoalSelector.tick()V` call sites via
 //! `classfile::retarget_virtual_to_static`).
 //!
@@ -29,7 +29,7 @@
 //! регистрируется ПОСЛЕДНИМ в cplugin_init и КОМПОЗИРУЕТ на полученные байты
 //! (AlreadyPatched → idempotent pass-through; Err → None fail-closed).
 //!
-//! Gate: env `CRUSSTY_LEVER_FLAG == "cmp414_pfb"` (STRICT eq; пустой/чужой
+//! Gate: env `CRUSSTY_LEVER_FLAG == "cmp415_gsel2"` (STRICT eq; пустой/чужой
 //! флаг = hook не регистрируется вообще — ваниль бит-в-байт).
 
 use jvmti_bindings::jni;
@@ -54,11 +54,11 @@ const ERR_STRUCT: i32 = -1;
 const ERR_RANGE: i32 = -2;
 const PROBE_MAGIC: i32 = 0x4753; // "GS"
 
-/// STRICT-eq gate: только флаг этого вектора (cmp414_pfb).
+/// STRICT-eq gate: только флаг этого вектора (cmp415_gsel2).
 fn enabled() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp414_pfb")
+        Ok("cmp415_gsel2")
     )
 }
 
@@ -117,7 +117,7 @@ fn retarget_gsel(bytes: &[u8]) -> Result<(Vec<u8>, usize), String> {
 pub fn register() {
     if !enabled() {
         eprintln!(
-            "[crussty-plugin] goal_batch: dormant (lever_flag != cmp414_pfb, vanilla goal selectors)"
+            "[crussty-plugin] goal_batch: dormant (lever_flag != cmp415_gsel2, vanilla goal selectors)"
         );
         return;
     }
@@ -243,8 +243,13 @@ pub fn activate() {
             ];
             let sigs = [
                 CString::new("()I").expect("no NUL"),
-                CString::new("(II[I[I)[I").expect("no NUL"),
-                CString::new("(I[I[J[J[J[I)I").expect("no NUL"),
+                // ROOT-CAUSE pfb1 (TASK-415-B iter-2): обе строки были
+                // опечатаны vs javap-дескрипторы GoalBatchOps.class →
+                // RegisterNatives = JNI_ERR(-1) → hook dormant → нога мерила
+                // ваниль+шум. Точные дескрипторы (javap -s ground truth):
+                //   gselProbe()I / gselRegister(II[J[I)I / gselEpoch(II[I[J[J[I)I
+                CString::new("(II[J[I)I").expect("no NUL"),
+                CString::new("(II[I[J[J[I)I").expect("no NUL"),
             ];
             let natives = [
                 jvmti_bindings::jni::JNINativeMethod {
@@ -286,10 +291,10 @@ pub fn activate() {
 
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
         eprintln!(
-            "[crussty-plugin] cmp414_pfb: ARMED gsel-batch (Mob.serverAiStep x2 + Mob.inactiveTick x2 GoalSelector.tick sites -> GoalBatchOps.tickGate; rust SoA registry + gselEpoch = ONE bulk JNI/tick, zero per-goal JNI; scheduler decisions vanilla bit-for-bit over flat mirror; empty flag = vanilla bit-for-bit)"
+            "[crussty-plugin] cmp415_gsel2: ARMED gsel-batch (Mob.serverAiStep x2 + Mob.inactiveTick x2 GoalSelector.tick sites -> GoalBatchOps.tickGate; rust SoA registry + gselEpoch = ONE bulk JNI/tick, zero per-goal JNI; scheduler decisions vanilla bit-for-bit over flat mirror; empty flag = vanilla bit-for-bit)"
         );
 
-        crate::kernel_policy::audit_wire(OPS_CLASS, "tickGate", "cmp414_pfb v1");
+        crate::kernel_policy::audit_wire(OPS_CLASS, "tickGate", "cmp415_gsel2 v1");
         READY.store(true, Ordering::Release);
         let rc = cplug_sdk::retransform_class(MOB_CLASS);
         eprintln!(
