@@ -60,7 +60,8 @@ public final class MobAiOps {
                 // TASK-417-C: cvs-носитель ⊕ queryplane.
                 || f.trim().equals("cmp417_bq")
                 // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
-                || f.trim().equals("cmp420_colpush"));
+                || f.trim().equals("cmp420_colpush")
+                || f.trim().equals("cmp421_brain"));
     }
 
     private static final boolean ENABLED = leverEnabled();

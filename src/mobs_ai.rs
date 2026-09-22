@@ -74,6 +74,7 @@ fn enabled() -> bool {
             | Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs") | Ok("cmp417_bq")
             // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
             | Ok("cmp420_colpush")
+            | Ok("cmp421_brain")
     )
 }
 
