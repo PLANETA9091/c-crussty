@@ -1,33 +1,11 @@
 {
-  "agent": "Super Z subagent B",
-  "task": "TASK-414-B blob-sync revival",
-  "vector": "meganav items-plane revival + eqsnap-v3 re-dispatch on race-fix 109e4d7, leg flag cmp414_cvs",
-  "branch": "round-414-b-cvs",
-  "step": "6-dispatched-rr1",
-  "head": "1aec4f8e167e0e64cf7e46b34d79e99838a8ff82",
-  "legs": {
-    "cvs1": {
-      "run_id": 35729389765,
-      "ref": "round-414-b-cvs1",
-      "lever_flag": "cmp414_cvs",
-      "sha": "1aec4f8",
-      "note": "re-roll #1: run 35728179631 externally CANCELLED at 12:42 (6min, build phase, no server boot); anchora-414 also failure - infra-class"
-    },
-    "cvs2": {
-      "run_id": 35728198347,
-      "ref": "round-414-b-cvs2",
-      "lever_flag": "cmp414_cvs",
-      "sha": "1aec4f8"
-    }
-  },
-  "inputs": "bank exact (radius 640/seconds 300/fp 4/gc_tune 3/inside_cache 1/flush_diet 1/region_threads 4/batch_collector 1/pop 150k seed 42/xmx 10G/band 6.0-9.5M), lever_arg=1, NO travel_diet/fluid_dirty_ledger",
-  "pair_anchors_414": {
-    "anchora": 35725974740,
-    "anchorb": 35725992222,
-    "sha": "5b4bf42 vanilla"
-  },
-  "pair_anchors_413": {
-    "a": "2.10@6862504",
-    "b": "2.40@6978562"
-  }
+  "task": "TASK-414-C2",
+  "agent": "Super Z subagent C2",
+  "vector": "pathfinder виток-2: NodeEvaluator neighbor-batch (Rust bulk-JNI поверх носителя round-414-b-cvs @598b3c3)",
+  "branch": "round-414-c-pfb",
+  "carrier": "598b3c3 (meganav f579c1c + eqsnap-v3 NCDFE-fix + race-fix 109e4d7 + blob-sync fix)",
+  "stage": "worktree-ready",
+  "steps": ["worktree OK (sparse, research/ excluded)", "recon in progress"],
+  "legs": [],
+  "verdict": "PENDING"
 }
