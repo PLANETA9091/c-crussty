@@ -48,6 +48,10 @@ pub fn enabled() -> bool {
             // TASK-405-F: композит stagtick вооружает плейн тем же STRICT-eq.
             // TASK-406-D: композит раунда-406 (stagtick ⊕ ai-window).
             v == LEVER || v == "cmp405_stagtick" || v == "cmp406_aibatch"
+            // TASK-406-E: композит раунда-406 (stagtick ⊕ sscan).
+            || v == "cmp406_sscan"
+            // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
+            || v == "cmp409_multi"
         })
         .unwrap_or(false)
 }
