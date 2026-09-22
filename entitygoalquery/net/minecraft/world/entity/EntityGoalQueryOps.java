@@ -96,7 +96,10 @@ public final class EntityGoalQueryOps {
         // 35691270899: per-entity WLOCK-мутации = 24.9% CPU → 0.5 TPS).
         return f != null && (f.trim().equals("cmp410_eindexq")
                 || f.trim().equals("cmp411_k4soa")
-                || f.trim().equals("cmp411_eqsnap"));
+                || f.trim().equals("cmp411_eqsnap")
+                // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR;
+                // cmp412_meganav-сайты остаются нетронутыми.
+                || f.trim().equals("cmp412_eqsnapv3"));
     }
 
     /** TASK-411-C (k4soa): K4-режим (маркировка EFFECT-строк). */
@@ -111,8 +114,10 @@ public final class EntityGoalQueryOps {
     private static final String FLAG_LABEL;
     static {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        FLAG_LABEL = f != null && f.trim().equals("cmp411_eqsnap")
-                ? "cmp411_eqsnap" : (K4 ? "cmp411_k4soa" : "cmp410_eindexq");
+        FLAG_LABEL = f != null && f.trim().equals("cmp412_eqsnapv3")
+                ? "cmp412_eqsnapv3" // TASK-412-C (eqsnap-v3): точная метка.
+                : (f != null && f.trim().equals("cmp411_eqsnap")
+                        ? "cmp411_eqsnap" : (K4 ? "cmp411_k4soa" : "cmp410_eindexq"));
     }
 
     private static final int PROBE_MAGIC = 0x4547; // "EG"

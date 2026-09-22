@@ -122,6 +122,8 @@ fn enabled() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
         Ok("cmp410_eindexq") | Ok("cmp411_k4soa") | Ok("cmp411_eqsnap")
+            // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
+            | Ok("cmp412_eqsnapv3")
     )
 }
 
@@ -138,7 +140,16 @@ fn enabled_flag_is_k4() -> bool {
 fn enabled_flag_is_eqsnap() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp411_eqsnap")
+        Ok("cmp411_eqsnap") | Ok("cmp412_eqsnapv3")
+    )
+}
+
+/// TASK-412-C (eqsnap-v3): true under the v3 composite flag only
+/// (ARM-marker labelling — точная метка флага в EFFECT-строках).
+fn enabled_flag_is_eqsnapv3() -> bool {
+    matches!(
+        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
+        Ok("cmp412_eqsnapv3")
     )
 }
 
@@ -444,7 +455,9 @@ pub fn activate() {
         }
 
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
-        let flag_label = if enabled_flag_is_eqsnap() {
+        let flag_label = if enabled_flag_is_eqsnapv3() {
+            "cmp412_eqsnapv3"
+        } else if enabled_flag_is_eqsnap() {
             "cmp411_eqsnap"
         } else if enabled_flag_is_k4() {
             "cmp411_k4soa"
@@ -550,8 +563,13 @@ pub unsafe extern "system" fn eq_epoch(
     };
     static DRAIN_LOGGED: AtomicBool = AtomicBool::new(false);
     if drained > 0 && !DRAIN_LOGGED.swap(true, Ordering::Relaxed) {
+        let drain_label = if enabled_flag_is_eqsnapv3() {
+            "cmp412_eqsnapv3"
+        } else {
+            "cmp411_eqsnap"
+        };
         eprintln!(
-            "[crussty-plugin] cmp411_eqsnap: shard-drain EFFECT armed (first bulk drain applied {drained} dirty rows, O(dirty) per tick — no per-entity plane mutation)"
+            "[crussty-plugin] {drain_label}: shard-drain EFFECT armed (first bulk drain applied {drained} dirty rows, O(dirty) per tick — no per-entity plane mutation)"
         );
     }
 
@@ -641,7 +659,10 @@ mod tests {
     use super::*;
 
     fn enabled_with(s: &str) -> bool {
-        s == "cmp410_eindexq" || s == "cmp411_k4soa" || s == "cmp411_eqsnap"
+        s == "cmp410_eindexq"
+            || s == "cmp411_k4soa"
+            || s == "cmp411_eqsnap"
+            || s == "cmp412_eqsnapv3"
     }
 
     #[test]
@@ -649,15 +670,19 @@ mod tests {
         assert!(enabled_with("cmp410_eindexq"));
         assert!(enabled_with("cmp411_k4soa"));
         assert!(enabled_with("cmp411_eqsnap"));
+        assert!(enabled_with("cmp412_eqsnapv3"));
         assert!(!enabled_with(""));
         assert!(!enabled_with("cmp405_eindex"));
         assert!(!enabled_with("cmp401_soa"));
+        assert!(!enabled_with("cmp412_meganav"));
         assert!(!enabled_with("cmp410_eindexq_x"));
         assert!(!enabled_with("cmp411_k4soa_x"));
         assert!(!enabled_with("cmp411_eqsnap_x"));
+        assert!(!enabled_with("cmp412_eqsnapv3_x"));
         assert!(!enabled_with(" cmp410_eindexq"));
         assert!(!enabled_with(" cmp411_k4soa"));
         assert!(!enabled_with(" cmp411_eqsnap"));
+        assert!(!enabled_with(" cmp412_eqsnapv3"));
     }
 
     /// Mirror of the java EntityGoalQueryOps.cellHash operating on the same
