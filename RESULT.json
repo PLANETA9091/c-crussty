@@ -1,0 +1,34 @@
+{
+  "task": "TASK-411-B-R2",
+  "agent": "agent-b",
+  "plane": "inside_volatile (Entity.checkInsideBlocks | collidedWithShapeMovingFrom)",
+  "lever": "cmp411_insidebat",
+  "status": "IN_PROGRESS",
+  "stage": "STEP0-profile-done",
+  "updated": "2026-09-22T05:45:00+08:00",
+  "worktree": "/home/z/rounds/ROUND-411/agent-b",
+  "branch": "round-411-b-inside",
+  "research": {
+    "doc": "RESEARCH-B-k3.md",
+    "scenes": {
+      "round410anchora": {"total": 115385, "lane_pct": 11.76, "checkInsideBlocks": 13573, "collidedWithShapeMovingFrom_pct": 0.68, "item_share_of_lane_pct": 60.27},
+      "round409multi2": {"total": 110274, "lane_pct": 12.77, "item_share_of_lane_pct": 60.94},
+      "round410multi3": {"total": 110026, "lane_pct": 12.87, "item_share_of_lane_pct": 61.8, "collidedWithShapeMovingFrom_pct": 0.63}
+    },
+    "verdict": "collidedWithShapeMovingFrom = 0.63-0.68% total, 100% из collidedWithFluid внутри visit-лямбды checkInsideBlocks — НЕ collide-поддерево. Таргет строго Entity.checkInsideBlocks (внутри-семантика)."
+  },
+  "steps": [
+    {"id": "S0", "name": "profile", "status": "DONE", "artifacts": ["RESEARCH-B-k3.md", "lane_profile2.py", "research/k3-javap/Entity_javap.txt", "research/k3-javap/BlockGetter_javap.txt"]},
+    {"id": "S1", "name": "bridge+patch+tests", "status": "PENDING"},
+    {"id": "S2", "name": "build (javac blobs + cargo check/test)", "status": "PENDING"},
+    {"id": "S3", "name": "dispatch round-411-b-l1", "status": "PENDING"},
+    {"id": "S4", "name": "poll+absorb+verdict", "status": "PENDING"}
+  ],
+  "gate_checklist": {
+    "lever_flag": "cmp411_insidebat (STRICT eq, empty=vanilla)",
+    "retarget_sites": 3,
+    "bulk_jni": "insideBatchTick ONE per phase per thread",
+    "per_entity_jni": "FORBIDDEN — not used",
+    "fail_closed": "ERR_STRUCT -> permanent disarm to inline vanilla replica"
+  }
+}
