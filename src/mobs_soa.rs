@@ -94,7 +94,7 @@ const PAD: i32 = 2;
 // cl1-профиль (84140 samples): mob_upsert = 24.9% CPU — per-entity JNI
 // upsert (48k/тик), каждый под ГЛОБАЛЬНЫМ WLOCK + seqlock + 1-блочный
 // cell-хэш; eq_epoch full chain build = 21 sample (0.025%) — сам rebuild НЕ
-// дорог. V2 = dirty-дельты: под cmp411_eqsnap mob_upsert НЕ трогает
+// дорог. V2 = dirty-дельты: под cmp411_eqsnap / cmp412_eqsnapv3 mob_upsert НЕ трогает
 // плоскость — строка (id,alive,x,y,z,hw,hh) аппендится в ПЕР-ПОТОКОВЫЙ
 // delta-шард (0 локов, 0 seqlock, 0 cell-хэша — O(десятки ns)); eq_epoch
 // (ОДИН bulk JNI/тик) ПЕРЕД chain-build сливает шарды в плоские колонки
@@ -226,6 +226,8 @@ pub(crate) fn sscan_snapshot() -> Option<(&'static [f64], &'static [f64], &'stat
 /// TASK-411-C (eqsnap, v2): STRICT-eq gate of the delta-shard mode. Only the
 /// exact new flag routes mob_upsert into the per-thread shards; every prior
 /// flag keeps bit-in-bit prior behavior (full WLOCK plane mutation).
+/// TASK-412-C (eqsnap-v3): меганав-композит cmp412_eqsnapv3 несёт
+/// eqsnap-плоскость (STRICT OR: плоскости cmp412_meganav || eqsnap).
 fn eqsnap_mode() -> bool {
     static FLAG: OnceLock<String> = OnceLock::new();
     let f = FLAG
@@ -236,7 +238,7 @@ fn eqsnap_mode() -> bool {
                 .to_string()
         })
         .as_str();
-    f == "cmp411_eqsnap"
+    f == "cmp411_eqsnap" || f == "cmp412_eqsnapv3"
 }
 
 /// Strict gate: natives work only under the exact lever flag (STRICT eq;
@@ -269,6 +271,10 @@ fn lever_mode() -> bool {
         || f == "cmp409_multi"
         // TASK-412-F meganav: multi ⊕ navplane+navpool (топ-композиция эры).
         || f == "cmp412_meganav"
+        // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR (плоскости
+        // cmp412_meganav || eqsnap-плоскость); eqsnap-режим (DeltaShard
+        // upserts, drain O(dirty)) берёт вверх в mob_upsert/лестнице push.
+        || f == "cmp412_eqsnapv3"
         // TASK-410-C (eindexq): K3-пивот R2 — SoA-плоскость = источник
         // популяции для goal-query CSR-снапшота (EntityQueryOps.eqEpoch;
         // sscan-прецедент TASK-406-E).

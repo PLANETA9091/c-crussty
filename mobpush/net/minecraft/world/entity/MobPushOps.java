@@ -137,7 +137,11 @@ public final class MobPushOps {
                     || f.trim().equals("cmp411_k4soa")
                     // TASK-411-C (eqsnap, v2): dirty-дельты — upserts в
                     // пер-потоковые шарды, drain O(dirty) за тик.
-                    || f.trim().equals("cmp411_eqsnap"));
+                    || f.trim().equals("cmp411_eqsnap")
+                    // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR
+                    // (плоскости cmp412_meganav || eqsnap-плоскость).
+                    // cmp412_meganav-сайты остаются нетронутыми.
+                    || f.trim().equals("cmp412_eqsnapv3"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -162,13 +166,23 @@ public final class MobPushOps {
     /** TASK-411-C (eqsnap, v2): delta-shard mode (STRICT eq). */
     private static boolean eqsnapEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return f != null && f.trim().equals("cmp411_eqsnap");
+        return f != null && (f.trim().equals("cmp411_eqsnap")
+                // TASK-412-C (eqsnap-v3): меганав-композит несёт eqsnap-плоскость.
+                || f.trim().equals("cmp412_eqsnapv3"));
     }
 
     private static final boolean EQSNAP = eqsnapEnabled();
 
     /** LABEL для EFFECT-маркеров (server-stdout greps). */
-    private static final String K4_LABEL = EQSNAP ? "cmp411_eqsnap" : "cmp411_k4soa";
+    private static final String K4_LABEL = eqsnapFlagLabel();
+
+    /** TASK-412-C (eqsnap-v3): EFFECT-метка = точный активный флаг. */
+    private static String eqsnapFlagLabel() {
+        if (!EQSNAP) return "cmp411_k4soa";
+        String f = System.getenv("CRUSSTY_LEVER_FLAG");
+        return f != null && f.trim().equals("cmp412_eqsnapv3")
+                ? "cmp412_eqsnapv3" : "cmp411_eqsnap";
+    }
 
     /**
      * TASK-411-C (k4soa): радиус-гейт населения. 1.0 глобально дизармился на
@@ -178,7 +192,8 @@ public final class MobPushOps {
      * STRICT-eq изоляция ног: константа фолдится компилятором — под прежними
      * флагами (cmp401_soa, cmp402_comp/stagcomp, cmp410_eindexq) гейт
      * ОСТАЁТСЯ 1.0 (бит-в-байт прежнее поведение, включая oversized-дизарм),
-     * 2.0 — только под cmp411_k4soa / cmp411_eqsnap.
+     * 2.0 — только под cmp411_k4soa / cmp411_eqsnap / cmp412_eqsnapv3
+     * (TASK-412-C: v3-композит несёт eqsnap-плоскость → тот же гейт).
      */
     static final double RADIUS_GATE = (K4 || EQSNAP) ? 2.0D : 1.0D;
 

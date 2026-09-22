@@ -52,6 +52,8 @@ pub fn enabled() -> bool {
             || v == "cmp406_sscan"
             // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
             || v == "cmp409_multi" || v == "cmp412_meganav"
+            // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
+            || v == "cmp412_eqsnapv3"
         })
         .unwrap_or(false)
 }

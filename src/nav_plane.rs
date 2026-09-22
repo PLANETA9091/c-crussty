@@ -46,7 +46,11 @@ pub const ERR_RANGE: i32 = -2;
 /// STRICT eq lever gate (пустой флаг / любой другой флаг = false).
 pub fn armed() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim() == "cmp405_navplane" || v.trim() == "cmp412_meganav")
+        .map(|v| {
+            v.trim() == "cmp405_navplane" || v.trim() == "cmp412_meganav"
+                // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
+                || v.trim() == "cmp412_eqsnapv3"
+        })
         .unwrap_or(false)
 }
 
