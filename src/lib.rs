@@ -242,11 +242,11 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // qualifying player column). Dormant unless CRUSSTY_LEVER_FLAG ==
     // cmp406_sscan (empty flag = exact vanilla path).
     mobs_sscan::register();
-    // GSEL-BATCH (TASK-414-C2 gsel-слайс, TASK-416-A ретаг cmp416_mcomp):
+    // GSEL-BATCH (TASK-414-C2 gsel-слайс, TASK-416-A ретаг cmp416_mcomp, TASK-417-A +cmp417_mcomp):
     // ПОСЛЕДНИЙ Mob-hook — компонуется на полученные байты (sscan стоит
     // раньше в цепочке); aibatch-приоритет: gsel-сайты структурно вне
     // aibatch-окна (skip-нутые aiStep не доходят до GoalSelector.tick).
-    // Dormant unless CRUSSTY_LEVER_FLAG == cmp414_pfb|cmp416_mcomp.
+    // Dormant unless CRUSSTY_LEVER_FLAG == cmp414_pfb|cmp416_mcomp|cmp417_mcomp.
     goal_batch::register();
     // QUERYPLANE (TASK-412-B/413-B, lever cmp412_b2p1 STRICT eq): Level
     // whole-body redirects (getEntitiesOfClass / moonrise$getHardColliding
@@ -555,7 +555,7 @@ fn inject_surface() {
     // GSEL-BATCH (TASK-414-C2 gsel-слайс): define GoalBatchOps,
     // RegisterNatives (gselProbe/gselRegister/gselEpoch), flip READY,
     // retransform Mob (dormant unless CRUSSTY_LEVER_FLAG ==
-    // cmp414_pfb|cmp416_mcomp).
+    // cmp414_pfb|cmp416_mcomp|cmp417_mcomp).
     goal_batch::activate();
     // TICK-PLANE (TASK-403-C): сводный ARM-маркер плейна после активации
     // всех сегментов (items/push-soa+grid/stagger/collide) — coarse-stamp
