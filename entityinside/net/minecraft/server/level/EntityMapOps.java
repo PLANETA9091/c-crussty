@@ -115,4 +115,73 @@ public final class EntityMapOps {
         }
         return new EntityMapSafeValues(inner, map);
     }
+
+    // ==================== REFSYNC (TASK-412-A) ====================
+    // ReferenceList mutator fence (round-412-a-k5b leg #2 evidence:
+    // run 35698807454 — watchdog RUNNABLE forever in
+    // Reference2IntOpenHashMap.find:246 <- putIfAbsent:422 <-
+    // ReferenceList.add:65 <- ServerEntityLookup.entityStartLoaded:115 <-
+    // EntityLookup.addNewEntity <- main-thread BenchPopulationPlugin
+    // injection, plus 3278 AIOOBE ("Index -1 ... length 16385" downscan
+    // x203 + message-less x3075) in the same population window).
+    // The emap entityMap fence (12 ChunkMap sites) closed the k5-diag
+    // hang; the race then surfaced on the OTHER unsynchronized fastutil
+    // map: ReferenceList.referenceToIndex (Reference2IntOpenHashMap,
+    // n+1 = 16385 at n=16384). Same mechanism: main-thread population
+    // adds vs region-worker unload removes (entityEndLoaded) interleave
+    // on the open-addressing table -> size/table desync -> full table ->
+    // infinite probe (hang) / below-slot-0 downscan (AIOOBE -1).
+    //
+    // THE FIX: every ReferenceList add/remove/contains call site in the
+    // kernel (javap census on kernel 1.21.10 = 8 classes / 22 sites:
+    // add x11, remove x9, contains x2) is retargeted to the helpers
+    // below — monitor serialized on the LIST INSTANCE. All map
+    // mutators+probes mutually exclusive => the table can never fill
+    // past maxFill => the infinite probe and the -1 downscan are
+    // impossible by construction. Read-only array readers
+    // (size/getRawDataUnchecked — the raw-array iteration idiom) are
+    // DELIBERATELY left vanilla (Entity.resendPossiblyDesyncedEntityData
+    // precedent: read-only sites cannot corrupt the map; they inherit
+    // the vanilla weakly-consistent iteration semantics).
+    //
+    // PARITY: same return values, same check-then-act window as vanilla,
+    // null receiver still NPEs (inside the helper); only serialization
+    // added. Zero lock nesting (helpers acquire exactly the list monitor
+    // and call nothing that synchronizes) => deadlock-free by
+    // construction. A census violation on ANY class leaves that class
+    // completely vanilla (fail-dominant, classfile.rs strict counts).
+
+    /// One-shot EFFECT marker (bench checklist: grep REFSAFE in boot log).
+    private static volatile boolean refArmedOnce = false;
+
+    static void refArmMark() {
+        if (!refArmedOnce) {
+            refArmedOnce = true;
+            System.err.println(
+                "[REFSAFE] ReferenceList mutator fence ACTIVE "
+                    + "(add/remove/contains monitor-serialized on the list instance)");
+        }
+    }
+
+    // Raw ReferenceList params: the retargeted call sites are invokevirtual
+    // (erased descriptors); raw types keep the erased signatures EXACT.
+
+    public static boolean refListAdd(ca.spottedleaf.moonrise.common.list.ReferenceList list, Object e) {
+        refArmMark();
+        synchronized (list) {
+            return list.add(e);
+        }
+    }
+
+    public static boolean refListRemove(ca.spottedleaf.moonrise.common.list.ReferenceList list, Object e) {
+        synchronized (list) {
+            return list.remove(e);
+        }
+    }
+
+    public static boolean refListContains(ca.spottedleaf.moonrise.common.list.ReferenceList list, Object e) {
+        synchronized (list) {
+            return list.contains(e);
+        }
+    }
 }
