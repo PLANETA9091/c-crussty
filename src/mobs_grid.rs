@@ -73,6 +73,7 @@ pub(crate) fn mirror_mode() -> bool {
                     || v.trim() == "cmp412_eqsnapv3" || v.trim() == "cmp414_cvs" || v.trim() == "cmp417_bq"
                     // TASK-419-A (colpush): колпаш-носитель (mirror inert).
                     || v.trim() == "cmp420_colpush"
+                    || v.trim() == "cmp421_brain"
             })
             .unwrap_or(false)
     })
