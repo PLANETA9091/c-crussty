@@ -5,10 +5,10 @@
   "run_id": null,
   "tps_med": null,
   "delta_pair_pct": null,
-  "lane": "step-0: worktree recreated, fetch OK, HEAD 062baea verified; next: build gates (build_430b_blobs + check_blobs_sync + cargo check) -> push branch ASAP -> dispatch_436a.py READY (NOT run, golden slot 02:08 tick uses it); plan-B research in parallel",
+  "lane": "step-1: gates green in worktree (build_430b_blobs flat==nested OK; check_blobs_sync ALL IN SYNC; cargo check --lib green, target purged); branch PUSHED a794c0b; dispatch_436a.py READY (5 runs: anchors round-436a-anchor-1/2 @master + w4-1/2/3 @round-436-a-wgen4 lever=cmp434_wgen3) — NOT RUN, golden slot 02:08 tick executes it",
   "ram_stw_full": null,
-  "parity": "carried: blobs IN SYNC, cargo green, PALETTED-DEMUX fingerprint MATCH len=30967 major=65 (banked S7-145); re-verify in this worktree",
-  "verdict": "STEP-0 DONE (worktree up)",
+  "parity": "re-verified this worktree: blobs IN SYNC, cargo green, PALETTED-DEMUX fingerprint MATCH len=30967 major=65 (banked S7-145)",
+  "verdict": "GOLDEN DISPATCH READY (branch + dispatcher banked; fix-if-found lands as follow-up commits)",
   "evidence": "round-436 fetched: C already pushed chk3 legs (round-436c-chk3-1/2/3); my branch = clean 062baea carry, fix-if-found lands as follow-up commits only after gates",
-  "what": "step-0 done: worktree + branch created; dispatch batch prepped next: 2-3 legs round-436a-w4-<n> base=round-436-a-wgen4 lever=cmp434_wgen3 + 2 anchors round-436a-anchor-<n> @master lever=''"
+  "what": "step-1 done: gates + push + dispatcher banked; next: plan-B research doc + optional PALETTED-DEMUX write-path fix (each step commit+push)"
 }
