@@ -71,7 +71,7 @@ public final class MobAiOps {
                 // TASK-424-A: GC-ревизия brain3 (STRICT OR).
                 || f.trim().equals("cmp423_brain3")
                 // TASK-426-A: SoA-feed carrier (STRICT OR).
-                || f.trim().equals("cmp424_mobfeed"));
+                || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside"));
     }
 
     private static final boolean ENABLED = leverEnabled();

@@ -69,37 +69,37 @@ echo "== javap-gate: lever bridge blobs vs ARM markers / gate flags (lever cmp41
 
 check_class \
   "entityinside/build/net/minecraft/world/entity/ItemEntityManager.class" \
-  "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" \
+  "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" \
   "native int idxProbe" "static void indexAdd" "native int lifetimeDue"
 
 check_class \
   "goalops/build/net/minecraft/world/entity/ai/goal/GoalOps.class" \
-  "cmp421_brain" "cmp422_brain2" "goal-selector EFFECT armed" "goalCleanup" "goalUpdate" \
+  "cmp421_brain" "cmp422_brain2" "cmp430_inside" "goal-selector EFFECT armed" "goalCleanup" "goalUpdate" \
   "goal-selector running EFFECT armed" \
   "tickGate" "tickRunningGate" "availableGoals" "lockedFlags" "goalTypes"
 
 check_class \
   "queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp412_b2p1" "cmp421_brain" "cmp422_brain2" "selfTest" "isHardCollidingProbe"
+  "cmp417_bq" "cmp420_colpush" "cmp412_b2p1" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "selfTest" "isHardCollidingProbe"
 
 check_class \
   "mobai/build/net/minecraft/world/entity/MobAiOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" \
+  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" \
   "native"
 
 check_class \
   "sscan/build/net/minecraft/world/entity/MobScanOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" \
+  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" \
   "native"
 
 check_class \
   "mobpush/build/net/minecraft/world/entity/MobPushOps.class" \
-  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" \
+  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" \
   "native int mobProbe" "boxFor" "colpushSweep"
 
 check_class \
   "colpush/build/net/minecraft/world/entity/ColpushOps.class" \
-  "cmp420_colpush" "pushEntities" "bulkTick" "selfTest" "armed" \
+  "cmp420_colpush" "cmp430_inside" "pushEntities" "bulkTick" "selfTest" "armed" \
   "native int colpushProbe" "native int colpushTick"
 
 check_class \
@@ -108,13 +108,31 @@ check_class \
 
 check_class \
   "entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
-  "cmp414_cvs" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" \
+  "cmp414_cvs" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" \
   "native int eqProbe" "native int senseArena"
 
 # TASK-420-C chunk-pipeline plane (cmp420_chunk2): the bridge must carry the
 # lever marker + the parse-cache effect strings in its constant pool, and
 # declare the redirect entry points (descriptor pinned by build script javap
 # grep; flat-only pinned by build script '$' guard + rust delivery test).
+# TASK-430-B inside-plane subsystem (cmp430_inside): the snapshot-plane
+# bridge declares the two retarget statics (snapGet/secWrite) + the native
+# table (snapProbe/snapCollect) + selfTest; the bitmask pre-gate bridge
+# declares its entry (checkInsideBlocksGated) + armState probe. Lever wiring
+# lives rust-side (STRICT eq cmp430_inside) — these blobs carry no lever id.
+check_class \
+  "entityinside/build/net/minecraft/world/entity/InsideSnapOps.class" \
+  "snapGet" "secWrite" "selfTest" "inside_snap: first gate HIT served" \
+  "native int snapProbe" "native int snapCollect"
+
+check_class \
+  'entityinside/build/net/minecraft/world/entity/InsideSnapOps$Snap.class' \
+  "builtAtGen"
+
+check_class \
+  "entityinside/build/net/minecraft/world/entity/InsideBitmaskOps.class" \
+  "checkInsideBlocksGated" "armState" "sweptHullInto"
+
 check_class \
   "chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class" \
   "cmp420_chunk2" "cmp420_colpush" "parse-cache first hit" "parse-cache selftest" \
