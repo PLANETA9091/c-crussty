@@ -127,6 +127,8 @@ fn enabled() -> bool {
             // TASK-419-A (colpush): колпаш-носитель — eq_epoch снапшот жив
             // (плоскость кормит colpush_plane_refresh).
             | Ok("cmp420_colpush")
+            // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
+            | Ok("cmp422_brain2")
             | Ok("cmp421_brain")
     )
 }
@@ -162,10 +164,19 @@ fn enabled_flag_is_eqsnapv3() -> bool {
 /// TASK-419-B (sense-plane): true under the sense composite flag only —
 /// включает достройку CSR-арены (sense_arena) сразу после eq_epoch в том же
 /// EPOCH_LOCK-окне; snapshotQuery-джава читает слайсы арены вместо цепей.
+/// TASK-422-B (iter-2): STRICT-OR — вектор-флаг несёт тот же sense-срез.
 fn enabled_flag_is_sense() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp421_brain")
+        Ok("cmp421_brain") | Ok("cmp422_brain2")
+    )
+}
+
+/// TASK-422-B (iter-2): точная метка вектор-флага в ARM/EFFECT-маркерах.
+fn enabled_flag_is_brain2() -> bool {
+    matches!(
+        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
+        Ok("cmp422_brain2")
     )
 }
 
@@ -597,7 +608,9 @@ pub fn activate() {
         }
 
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
-        let flag_label = if enabled_flag_is_sense() {
+        let flag_label = if enabled_flag_is_brain2() {
+            "cmp422_brain2"
+        } else if enabled_flag_is_sense() {
             "cmp421_brain"
         } else if enabled_flag_is_eqsnapv3() {
             "cmp412_eqsnapv3"
@@ -949,7 +962,7 @@ mod tests {
             || s == "cmp411_k4soa"
             || s == "cmp411_eqsnap"
             || s == "cmp412_eqsnapv3" || s == "cmp414_cvs" || s == "cmp417_bq"
-            || s == "cmp421_brain"
+            || s == "cmp421_brain" || s == "cmp422_brain2"
     }
 
     #[test]

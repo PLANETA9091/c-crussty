@@ -1,37 +1,37 @@
-//! Runtime wiring for the GOAL-SELECTOR FLAT PRIORITY FAST-PATH
-//! (TASK-421-A brain-slice, lever `cmp421_brain`; закон 6 v17: подсистема
-//! sense+brain ЦЕЛИКОМ на rust-носителе — этот модуль = срез «goal
-//! priorities»; сенс-плоскость (CSR-арена, goal-query walk) живёт в
-//! src/entity_query.rs того же крейта).
+//! Runtime wiring for the GOAL-SELECTOR FLAT PRIORITY FAST-PATH — iter-2,
+//! слайс подсистемы ЦЕЛИКОМ (TASK-421-A → TASK-422-B; lever STRICT-OR
+//! `cmp421_brain` ∨ `cmp422_brain2`; закон 6 v17: крейт владеет вайрингом
+//! brain-среза).
 //!
-//! RUST-FIRST (мандат тика-421): крейт владеет вайрингом brain-среза —
-//! ретаргет сайта `invokevirtual GoalSelector.tick()V` в
-//! `Mob.serverAiStep()V` (javap ground truth purpur-1.21.10: РОВНО 2 сайта,
-//! targetSelector + goalSelector; Paper-сплит уже вынес tickRunningGoals
-//! наружу — эти сайты НЕ трогаются, там нет выигрыша). Мост
-//! goalops/net/minecraft/world/entity/ai/goal/GoalOps.java реплицирует
-//! ванильное тело tick() 1:1 (goalCleanup → lockedFlags purge → goalUpdate →
-//! goalTick), но три полных обхода ObjectLinkedOpenHashSet заменяет одним
-//! обходом + плоскими проходами по ThreadLocal-массиву (порядок вызовов
-//! stop/start/canUse/canContinueToUse/tick — insertion-order, как в ванили;
-//! NO_GOAL-сентинел свёрнут в null-проверки по javap-эквивалентности).
+//! RUST-FIRST: ретаргет сайтов в `Mob.serverAiStep()V` (javap ground truth
+//! purpur-1.21.10, `protected final void serverAiStep()V`):
+//!   - `invokevirtual GoalSelector.tick()V` — РОВНО 2 сайта (@161 targetSelector,
+//!     @183 goalSelector; чётные тики);
+//!   - `invokevirtual GoalSelector.tickRunningGoals(Z)V` — РОВНО 2 сайта
+//!     (@113/@136; нечётные тики, Paper-сплит, оба false).
 //!
-//! БЕЗ natives: win = устройство данных (flat priorities), не rust-вычисления
-//! (закон 6 RUST-FIRST уважен: крейт = единственный источник вайринга; bulk
-//! JNI sense+brain-подсистемы уже исчерпан eqEpoch+senseArena в том же
-//! EPOCH_LOCK-окне — третий bulk-вызов не нужен).
+//! TASK-422-B FIX (root-cause плацебо mga421, PROFILE-B2): предыдущая версия
+//! сканировала ОКРУЖАЮЩИЙ метод `tick()V` (FROM.1/FROM.2 передавались как
+//! метод-содержатель) — в Mob.class ЕСТЬ собственный `public void tick()V`
+//! (LivingEntity.tick + updateControlFlags) БЕЗ этих сайтов → NotFound →
+//! fail-closed → плечо cmp421_brain работало ванильно при ARM-маркере
+//! (grep GoalOps в cpu-collapsed mga421 = 0; EFFECT-маркера нет).
+//! Окружающий метод = `serverAiStep()V` — только там живут 4 сайта.
+//!
+//! Мост goalops/.../GoalOps.java: tickGate (флет-приоритеты: 1 обход set +
+//! плоские проходы vs 3 ванильных, порядок stop/start/canUse/canContinueToUse/
+//! tick — insertion-order) + tickRunningGate (нечётные тики: 1 плоский проход
+//! по снапшоту vs итератор; isRunning читается ЖИВЫМ — семантика ванили).
+//! БЕЗ natives: win = устройство данных (flat priorities), не rust-вычисления.
 //!
 //! CHAIN COMPOSITION (cplug-sdk ORDERING CONTRACT): Mob.class уже несёт
-//! ретаргет mobs_sscan (checkDespawn, sites=1). Этот хук КОМПОЗИРУЕТ:
-//! на serve-времени ретаргетит tick-сайты В ПОЛУЧЕННЫХ байтах (вывод
-//! предыдущих хуков сохранён; AlreadyPatched → pass-through; Err → None
-//! fail-closed). Порядок converge'ит: кто бы ни ретрансформировал первым,
-//! второй хук получает compose-выход и добавляет свой сайт.
+//! ретаргет mobs_sscan (checkDespawn, sites=1). Этот хук КОМПОЗИРУЕТ: на
+//! serve-времени ретаргетит 4 сайта В ПОЛУЧЕННЫХ байтах. Порядок converge'ит.
 //!
-//! Гейт: env `CRUSSTY_LEVER_FLAG == "cmp421_brain"` (STRICT eq; пустой/
-//! чужой флаг = хук не регистрируется вовсе — бит-в-байт ваниль).
-//! FAIL-CLOSED лестница: sites != 2 → hook stays dormant; define_class
-//! failed → dormant; java-гейт сам зовёт sel.tick() (ваниль) на SETUP-дрейф.
+//! Гейт: env `CRUSSTY_LEVER_FLAG == "cmp421_brain" || == "cmp422_brain2"`
+//! (STRICT-OR по образцу 40adceb; пустой/чужой флаг = ваниль бит-в-байт).
+//! FAIL-CLOSED лестница: sites != (2,2) → hook stays dormant; define_class
+//! failed → dormant; java-гейт сам зовёт ваниль на SETUP-дрейф.
 
 use std::sync::atomic::{AtomicBool, Ordering};
 
@@ -41,11 +41,18 @@ const OPS_CLASS: &str = "net/minecraft/world/entity/ai/goal/GoalOps";
 const OPS_BYTES: &[u8] =
     include_bytes!("../goalops/build/net/minecraft/world/entity/ai/goal/GoalOps.class");
 
-/// purpur-1.21.10 javap: `invokevirtual GoalSelector.tick:()V` — ровно 2 сайта
-/// в Mob.serverAiStep (targetSelector @161, goalSelector @183).
-const TICK_SITES: usize = 2;
+/// ОКРУЖАЮЩИЙ метод, в коде которого ретаргетятся сайты (TASK-422-B FIX —
+/// ранее ошибочно сканировался Mob.tick()V: NotFound, плечо спало).
+const ENCL: (&str, &str) = ("serverAiStep", "()V");
 
-const FROM: (&str, &str, &str) = (
+/// purpur-1.21.10 javap Mob.serverAiStep: `invokevirtual GoalSelector.tick:()V`
+/// — РОВНО 2 сайта (@161 targetSelector, @183 goalSelector).
+const TICK_SITES: usize = 2;
+/// ...и `invokevirtual GoalSelector.tickRunningGoals:(Z)V` — РОВНО 2 сайта
+/// (@113/@136, нечётные тики, оба аргумента false).
+const RUNNING_SITES: usize = 2;
+
+const FROM_TICK: (&str, &str, &str) = (
     "net/minecraft/world/entity/ai/goal/GoalSelector",
     "tick",
     "()V",
@@ -53,17 +60,29 @@ const FROM: (&str, &str, &str) = (
 /// Receiver-prepended static form (stack-identical GoalSelector→static gate).
 const GATE_STATIC_DESC: &str = "(Lnet/minecraft/world/entity/ai/goal/GoalSelector;)V";
 
+const FROM_RUN: (&str, &str, &str) = (
+    "net/minecraft/world/entity/ai/goal/GoalSelector",
+    "tickRunningGoals",
+    "(Z)V",
+);
+const GATE_RUNNING_DESC: &str = "(Lnet/minecraft/world/entity/ai/goal/GoalSelector;Z)V";
+
 static READY: AtomicBool = AtomicBool::new(false);
 
 /// mobs_manager.rs-стиль сигнал для будущих compose-очередей (Mob-цепь).
 static SERVED: AtomicBool = AtomicBool::new(false);
 
-/// STRICT-eq gate (round-400 lever protocol; полу-armed мост = невалидная
-/// нога, TASK-402-F). Пустой/чужой флаг = ваниль бит-в-байт.
+/// STRICT-OR gate (round-400 lever protocol; полу-armed мост = невалидная
+/// нога, TASK-402-F). Пустой/чужой флаг = ваниль бит-в-байт. Носитель-флаг
+/// cmp421_brain (мега-ноги тика-421/422) ∨ вектор-флаг cmp422_brain2.
 fn enabled() -> bool {
-    std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim() == "cmp421_brain")
-        .unwrap_or(false)
+    match std::env::var("CRUSSTY_LEVER_FLAG") {
+        Ok(v) => {
+            let v = v.trim();
+            v == "cmp421_brain" || v == "cmp422_brain2"
+        }
+        Err(_) => false,
+    }
 }
 
 /// Register the byte hook (idempotent; call once from cplugin_init).
@@ -72,7 +91,7 @@ fn enabled() -> bool {
 pub fn register() {
     if !enabled() {
         eprintln!(
-            "[crussty-plugin] goal_selector: dormant (lever_flag != cmp421_brain, vanilla goal selector)"
+            "[crussty-plugin] goal_selector: dormant (lever_flag ∉ {{cmp421_brain, cmp422_brain2}}, vanilla goal selector)"
         );
         return;
     }
@@ -84,27 +103,32 @@ pub fn register() {
             return None;
         }
         // Compose onto the RECEIVED bytes (previous hooks' output preserved).
-        match retarget_goal_tick(bytes) {
-            Ok((out, outcome)) => match outcome {
-                crate::classfile::RetargetOutcome::Retargeted { sites } if sites == TICK_SITES => {
+        match retarget_ai_sites(bytes) {
+            Ok((out, pair)) => match (pair.tick, pair.run) {
+                (
+                    crate::classfile::RetargetOutcome::Retargeted { sites: ts },
+                    crate::classfile::RetargetOutcome::Retargeted { sites: rs },
+                ) if ts == TICK_SITES && rs == RUNNING_SITES => {
                     static SERVE_LOGGED: AtomicBool = AtomicBool::new(false);
                     if !SERVE_LOGGED.swap(true, Ordering::Relaxed) {
                         eprintln!(
-                            "[crussty-plugin] goal_selector: hook serve {MOB_CLASS} {} bytes (composed, sites={sites})",
+                            "[crussty-plugin] goal_selector: hook serve {MOB_CLASS} {} bytes (composed, tick sites={ts}, running sites={rs})",
                             out.len()
                         );
                     }
                     Some(out)
                 }
-                crate::classfile::RetargetOutcome::AlreadyPatched { .. } => {
+                (crate::classfile::RetargetOutcome::AlreadyPatched { .. },
+                 crate::classfile::RetargetOutcome::AlreadyPatched { .. }) => {
                     // Idempotent: keep the chain output (my rewrite already in).
                     Some(out)
                 }
-                other => {
+                _ => {
                     static NF_LOGGED: AtomicBool = AtomicBool::new(false);
                     if !NF_LOGGED.swap(true, Ordering::Relaxed) {
                         eprintln!(
-                            "[crussty-plugin] goal_selector: GoalSelector.tick sites not rewritten ({other:?}) — pass-through (fail-closed)"
+                            "[crussty-plugin] goal_selector: serverAiStep sites not rewritten (tick={:?}, running={:?}) — pass-through (fail-closed)",
+                            pair.tick, pair.run
                         );
                     }
                     None
@@ -123,17 +147,36 @@ pub fn register() {
     });
 }
 
+/// Исход обоих ретаргетов одного serve (tick-сайты + running-сайты).
+#[derive(Debug, Clone, Copy)]
+struct AiRetargetPair {
+    tick: crate::classfile::RetargetOutcome,
+    run: crate::classfile::RetargetOutcome,
+}
+
 /// Compute the retarget patch from the RECEIVED (pristine or composed) bytes.
-fn retarget_goal_tick(
+/// TASK-422-B: ДВА прохода по ОДНОМУ окружающему методу `serverAiStep()V`:
+/// сначала tick-сайты (→ GoalOps.tickGate), затем running-сайты на ВЫХОДЕ
+/// первого прохода (→ GoalOps.tickRunningGate). Любой Err всплывает
+/// (fail-closed, хук остаётся ванильным).
+fn retarget_ai_sites(
     bytes: &[u8],
-) -> Result<(Vec<u8>, crate::classfile::RetargetOutcome), String> {
-    crate::classfile::retarget_virtual_to_static(
+) -> Result<(Vec<u8>, AiRetargetPair), String> {
+    let (out1, tick) = crate::classfile::retarget_virtual_to_static(
         bytes,
-        FROM.1,
-        FROM.2,
-        FROM,
+        ENCL.0,
+        ENCL.1,
+        FROM_TICK,
         (OPS_CLASS, "tickGate", GATE_STATIC_DESC),
-    )
+    )?;
+    let (out2, run) = crate::classfile::retarget_virtual_to_static(
+        &out1,
+        ENCL.0,
+        ENCL.1,
+        FROM_RUN,
+        (OPS_CLASS, "tickRunningGate", GATE_RUNNING_DESC),
+    )?;
+    Ok((out2, AiRetargetPair { tick, run }))
 }
 
 /// Background activation: wait for Mob + GoalSelector to load, boot quiet,
@@ -230,12 +273,14 @@ pub fn activate() {
             "[crussty-plugin] cmp421_brain: defined {OPS_CLASS} in kernel loader"
         );
 
-        // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
+        // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed; EFFECT-маркеры
+        // кладёт GoalOps на первом плоском тике — вердикты только по ним,
+        // урок тика-409/PROFILE-B2).
         eprintln!(
-            "[crussty-plugin] cmp421_brain: ARMED goal-selector flat priority fast-path (Mob.serverAiStep GoalSelector.tick x2 -> GoalOps.tickGate; 1 set traversal + flat passes vs 3 vanilla; exact stop/start order; zero natives; empty flag = vanilla bit-for-bit)"
+            "[crussty-plugin] cmp422_brain2: ARMED goal-selector flat priority fast-path (Mob.serverAiStep GoalSelector.tick x2 -> GoalOps.tickGate + GoalSelector.tickRunningGoals x2 -> GoalOps.tickRunningGate; 1 set traversal + flat passes vs 3 vanilla, 1 flat pass on odd ticks; exact stop/start order; zero natives; empty/foreign flag = vanilla bit-for-bit)"
         );
 
-        crate::kernel_policy::audit_wire(OPS_CLASS, "tickGate", "cmp421_brain v1");
+        crate::kernel_policy::audit_wire(OPS_CLASS, "tickGate", "cmp422_brain2 v2 (iter-2, fix serverAiStep) + tickRunningGate");
         READY.store(true, Ordering::Release);
         let rc = cplug_sdk::retransform_class(MOB_CLASS);
         eprintln!(
@@ -272,24 +317,39 @@ mod tests {
         // (env-гейт читается динамически; здесь проверяем чистую функцию
         // дескрипторного контракта — env-мутации в параллельных тестах
         // недетерминированы, STRICT-семантика покрыта java-гейтом.)
-        assert_eq!(FROM.2, "()V");
+        // TASK-422-B FIX regression: окружающий метод — ИМЕННО serverAiStep
+        // (скан tick()V давал NotFound на реальном Mob.class: плацебо-плечо).
+        assert_eq!(ENCL, ("serverAiStep", "()V"));
+        assert_eq!(FROM_TICK.2, "()V");
         assert_eq!(
             GATE_STATIC_DESC,
             "(Lnet/minecraft/world/entity/ai/goal/GoalSelector;)V"
         );
+        assert_eq!(FROM_RUN, ("net/minecraft/world/entity/ai/goal/GoalSelector", "tickRunningGoals", "(Z)V"));
+        // receiver-prepended: virtual (Z)V + receiver GoalSelector.
+        assert_eq!(
+            GATE_RUNNING_DESC,
+            "(Lnet/minecraft/world/entity/ai/goal/GoalSelector;Z)V"
+        );
         assert_eq!(TICK_SITES, 2);
+        assert_eq!(RUNNING_SITES, 2);
     }
 
     #[test]
     fn goalops_blob_carries_gate_and_markers() {
-        // javap-гейт: блоб должен нести STRICT-флаг и маркеры (cp truth).
+        // javap-гейт: блоб должен нести STRICT-флаги (ОБА — STRICT-OR) и
+        // маркеры обоих гейтов (cp truth).
         let blob = OPS_BYTES;
         for marker in [
             "cmp421_brain",
+            "cmp422_brain2",
             "goal-selector EFFECT armed",
+            "goal-selector running EFFECT armed",
             "goalCleanup",
             "goalUpdate",
+            "goalTick",
             "tickGate",
+            "tickRunningGate",
         ] {
             assert!(
                 blob.windows(marker.len()).any(|w| w == marker.as_bytes()),
@@ -303,12 +363,52 @@ mod tests {
         // Валидатор compose должен отвергнуть НЕ receiver-prepended desc.
         let err = crate::classfile::retarget_virtual_to_static(
             &[],
-            FROM.1,
-            FROM.2,
-            FROM,
+            ENCL.0,
+            ENCL.1,
+            FROM_TICK,
             (OPS_CLASS, "tickGate", "()V"),
         )
         .unwrap_err();
         assert!(err.contains("receiver"), "unexpected error: {err}");
+    }
+
+    #[test]
+    fn retarget_running_rejects_wrong_desc() {
+        // running-гейт: неверный static desc отвергается ДО скана сайтов.
+        let err = crate::classfile::retarget_virtual_to_static(
+            &[],
+            ENCL.0,
+            ENCL.1,
+            FROM_RUN,
+            (OPS_CLASS, "tickRunningGate", "(Lnet/minecraft/world/entity/ai/goal/GoalSelector;)V"),
+        )
+        .unwrap_err();
+        assert!(err.contains("receiver"), "unexpected error: {err}");
+    }
+
+    #[test]
+    fn mob_bytes_retarget_four_sites_if_available() {
+        // Реальные байты ядра (ground-truth проф: /tmp/crussty-mob-bytes/
+        // Mob.class из patched-kernel.jar round-396-a; в CI/sans файла —
+        // тихий пропуск, тест остаётся hermetic).
+        let Ok(path) = std::env::var("CRUSSTY_MOB_BYTES") else {
+            eprintln!("skip: CRUSSTY_MOB_BYTES not set (no real kernel Mob.class in env)");
+            return;
+        };
+        let Ok(bytes) = std::fs::read(&path) else {
+            eprintln!("skip: cannot read {path}");
+            return;
+        };
+        let (_, pair) = retarget_ai_sites(&bytes).expect("retarget on real Mob bytes must not Err");
+        assert!(
+            matches!(pair.tick, crate::classfile::RetargetOutcome::Retargeted { sites: 2 }),
+            "tick sites expected 2, got {:?} — ENCL/FROM contract broken",
+            pair.tick
+        );
+        assert!(
+            matches!(pair.run, crate::classfile::RetargetOutcome::Retargeted { sites: 2 }),
+            "running sites expected 2, got {:?} — ENCL/FROM contract broken",
+            pair.run
+        );
     }
 }

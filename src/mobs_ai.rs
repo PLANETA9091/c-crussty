@@ -74,6 +74,8 @@ fn enabled() -> bool {
             | Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs") | Ok("cmp417_bq")
             // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
             | Ok("cmp420_colpush")
+            // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
+            | Ok("cmp422_brain2")
             | Ok("cmp421_brain")
     )
 }

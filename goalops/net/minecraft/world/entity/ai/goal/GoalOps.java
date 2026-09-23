@@ -28,6 +28,12 @@ import ca.spottedleaf.moonrise.common.set.OptimizedSmallEnumSet;
  * canUse / start / stop / tick в ТОМ ЖЕ insertion-order (ванильный порядок
  * итерации доступных целей).
  *
+ * TASK-422-B (iter-2): слайс ЦЕЛИКОМ — сайт tick()V (чётные тики) ДОПОЛНЕН
+ * сайтами tickRunningGoals(Z) (нечётные тики, Paper-сплит: РОВНО 2 сайта
+ * в serverAiStep, оба false) → {@link #tickRunningGate} — та же плоская
+ * семантика одним обходом. STRICT-OR гейт: cmp421_brain ИЛИ cmp422_brain2
+ * (носитель-унион + вектор-ноги тика-422; пустой/чужой флаг = ваниль).
+ *
  * ФЛЕТ-ФАСТПАТ (единственное отличие от ванили — устройство данных): три
  * полных обхода ObjectLinkedOpenHashSet (итератор: hasNext/next + checkcast
  * на каждом шаге) заменяются ОДНИМ обходом с построением плоского
@@ -49,8 +55,9 @@ import ca.spottedleaf.moonrise.common.set.OptimizedSmallEnumSet;
  *     (Goal.isInterruptable()=true, NO_GOAL.priority=Integer.MAX_VALUE —
  *     javap GoalSelector$1/$2).
  *
- * FAIL-CLOSED: STRICT-eq CRUSSTY_LEVER_FLAG=="cmp421_brain" (пустой/чужой
- * флаг — rust вообще не ретаргетит сайт, а гейт зовёт ванильное тело);
+ * FAIL-CLOSED: STRICT-eq CRUSSTY_LEVER_FLAG ∈ {"cmp421_brain",
+ * "cmp422_brain2"} (пустой/чужой флаг — rust вообще не ретаргетит сайт, а
+ * гейт зовёт ванильное тело);
  * любое reflect-отражение/структурный дрейф на SETUP-фазе (ДО мутаций) →
  * ванильный sel.tick() на этот вызов; исключение в МУТАЦИОННОЙ фазе
  * распространяется как в ванили (тот же частичный state — паритет).
@@ -59,12 +66,31 @@ public final class GoalOps {
 
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return f != null && f.trim().equals("cmp421_brain");
+        // STRICT-OR (TASK-422-B): носитель-флаг cmp421_brain ИЛИ вектор-флаг
+        // cmp422_brain2; пустой/чужой флаг = ваниль бит-в-байт.
+        return f != null && (f.trim().equals("cmp421_brain")
+                || f.trim().equals("cmp422_brain2"));
     }
 
     private static final boolean ENABLED = leverEnabled();
     private static volatile boolean broken = false;
     private static volatile boolean armLogged = false;
+    private static volatile boolean runLogged = false;
+
+    /** Активный флаг (для меток): cmp422_brain2 > cmp421_brain, иначе "(off)". */
+    private static final String FLAG_LABEL = flagLabel();
+
+    private static String flagLabel() {
+        String f = System.getenv("CRUSSTY_LEVER_FLAG");
+        if (f == null) {
+            return "(off)";
+        }
+        return switch (f.trim()) {
+            case "cmp422_brain2" -> "cmp422_brain2";
+            case "cmp421_brain" -> "cmp421_brain";
+            default -> "(off)";
+        };
+    }
 
     static final Logger LOG = Logger.getLogger("crussty-plugin");
 
@@ -192,8 +218,11 @@ public final class GoalOps {
         profiler.push("goalCleanup");
         // ваниль (javap GoalSelector.tick 12-72):
         //   for (g : availableGoals)
-        //     if (g.isRunning() && (!goalContainsAnyFlags(g, disabled)
+        //     if (g.isRunning() && (goalContainsAnyFlags(g, disabled)
         //         || !g.canContinueToUse())) g.stop();
+        // (javap 204-211: goalContainsAnyFlags ifne -> stop; canContinueToUse
+        //  ifne -> skip; goalContainsAnyFlags = getFlags().hasCommonElements
+        //  БЕЗ отрицания — javap GoalSelector 132-138 ireturn напрямую)
         for (int i = 0; i < n; i++) {
             WrappedGoal g = arr[i];
             if (g.isRunning()) {
@@ -262,6 +291,90 @@ public final class GoalOps {
             LOG.info("[crussty-plugin] cmp421_brain: goal-selector EFFECT armed (first flat tick, goals="
                     + n + " — 1 set traversal + flat passes vs 3 vanilla traversals, exact stop/start order)");
         }
+    }
+
+    /**
+     * Замена сайтов {@code invokevirtual GoalSelector.tickRunningGoals(Z)V}
+     * в Mob.serverAiStep (нечётные тики, Paper-сплит; оба сайта передают
+     * false). Тело ванили (javap GoalSelector.tickRunningGoals 1:1):
+     * profiler push("goalTick") → для всех availableGoals:
+     * isRunning() && (stopAll || requiresUpdateEveryTick()) → tick() → pop.
+     * Единственное отличие — плоский проход по снапшоту вместо итератора
+     * множества (тот же documented-стенс: addGoal/removeGoal вне тика;
+     * isRunning читается ЖИВЫМ на каждом шаге, как ваниль).
+     * Stack-identical: receiver consummирован, boolean остаётся вторым
+     * аргументом (receiver-prepended static desc).
+     */
+    public static void tickRunningGate(GoalSelector sel, boolean stopAll) {
+        if (!ENABLED || broken) {
+            sel.tickRunningGoals(stopAll); // ваниль (fail-closed)
+            return;
+        }
+        Object[] scratch = SCRATCH.get();
+        WrappedGoal[] arr;
+        int n;
+        try {
+            // ---- SETUP-фаза: только чтения, ДО любых мутаций ----
+            if (!reflectSetup()) {
+                sel.tickRunningGoals(stopAll);
+                return;
+            }
+            Object setObj = agGet.invoke(sel);
+            if (!(setObj instanceof Set<?> set)) {
+                sel.tickRunningGoals(stopAll); // структурный дрейф — ваниль
+                return;
+            }
+            int size = set.size();
+            if (size == 0) {
+                sel.tickRunningGoals(stopAll); // пустой селектор — ваниль
+                return;
+            }
+            Object arrObj = scratch[0];
+            if (!(arrObj instanceof WrappedGoal[]) || ((WrappedGoal[]) arrObj).length < size) {
+                arr = new WrappedGoal[Math.max(16, size * 2)];
+                scratch[0] = arr;
+            } else {
+                arr = (WrappedGoal[]) arrObj;
+            }
+            int i = 0;
+            for (Object o : set) {
+                if (!(o instanceof WrappedGoal) || i >= arr.length) {
+                    sel.tickRunningGoals(stopAll); // чужой контент — ваниль
+                    return;
+                }
+                arr[i++] = (WrappedGoal) o;
+            }
+            if (i != size) {
+                sel.tickRunningGoals(stopAll); // дрейф размера — ваниль
+                return;
+            }
+            n = i;
+        } catch (Throwable t) {
+            broken = true;
+            LOG.warning("[crussty-plugin] " + label() + ": goal-selector running snapshot failed — disarmed to vanilla: " + t);
+            sel.tickRunningGoals(stopAll);
+            return;
+        }
+        // ---- МУТАЦИОННАЯ фаза: точная ванильная последовательность ----
+        final ProfilerFiller profiler = Profiler.get();
+        profiler.push("goalTick");
+        for (int i = 0; i < n; i++) {
+            WrappedGoal g = arr[i];
+            if (g.isRunning() && (stopAll || g.requiresUpdateEveryTick())) {
+                g.tick();
+            }
+        }
+        profiler.pop();
+        if (!runLogged) {
+            runLogged = true;
+            LOG.info("[crussty-plugin] " + label() + ": goal-selector running EFFECT armed (first flat tickRunning, goals="
+                    + n + " stopAll=" + stopAll + " — 1 flat pass vs set-iterator traversal, exact isRunning/requiresUpdate order)");
+        }
+    }
+
+    /** Метка активного флага для маркеров (STRICT-OR диагностика). */
+    private static String label() {
+        return FLAG_LABEL;
     }
 
     /** ваниль goalCanBeReplacedForAllFlags (javap 1:1; NO_GOAL свёрнут в null). */
