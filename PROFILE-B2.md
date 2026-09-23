@@ -80,8 +80,30 @@ flat_traversal/alloc_diet/memo не вводятся, гейт STRICT (пуст�
 - Починка активирует спящую часть носителя: ожидаемый дельта-бонус к меге ~+2.5-3.5% CPU.
 - pair-вердикт — против свежих якорей-422 @57a2e67 (ids в DISPATCH.txt), медиана 3 ног.
 
-## Дозагрузка якоря-422
-- round-422-anchorb (35809267976) на момент среза ещё in_progress (диспатч 02:10:06Z).
-- anchora/anchorc = band fast-fail (11.5M/10.8M), ре-роллы anchorar/anchorcr в полёте —
-  вердикт-парение будет по ре-роллам/anchorb по закону pair-fresh.
-- Файл будет дополнен, если anchorb успеет завершиться до диспатча ног.
+## Дозагрузка якоря-422 (round-422-anchorb, run 35809267976, SUCCESS)
+
+Vanilla @57a2e67, runner_cpu_index 6724897, TPS-поллы 1.7/1.8/2.0/2.4/2.5 (справочно;
+медиана считается абсорбом).
+
+Лейн-карта (cpu-collapsed, TOTAL 116234):
+
+| лейн | samples | % | vs mga421 (моя база) |
+|---|---|---|---|
+| items | 34233 | 29.45 | **0.00 на базе** (ARMED-носитель гасит items целиком) |
+| fluid | 18261 | 15.71 | 16.61 (неизменен, закрыт) |
+| broadphase | 17928 | 15.42 | 13.10 |
+| **nav_ai** | **16953** | **14.59** | **10.90** (sense-plane базы уже срезал findTarget-сканы) |
+| inside | 12775 | 10.99 | 12.72 (лейн A) |
+| fastutil | 10009 | 8.61 | 8.29 |
+| paletted | 7048 | 6.06 | 6.42 |
+
+nav/brain-family drill (vanilla, frame-occurrence view, double-counts):
+GoalSelector.tick 12818, PathNavigation.createPath 19096, PathFinder.findPath 7665,
+moveTo 3710, tickRunningGoals 1510, goalContainsAnyFlags 457, goalCanBeReplacedForAllFlags
+354, Brain.startEachNonRunningBehavior 556, Sensing.tick 513 — та же топология, что и на
+базе, но с ГОРЯЧИМ findTarget/canUse-сканом (срезан на базе sense-plane'ом).
+
+Вывод: цель iter-2 подтверждена на обоих профилях — goal-selector остаётся главным
+срезом nav_ai/brain-family и на ванили (14.6%), и на базе (8.6%); плоского
+fast-path нет НИГДЕ (GoalOps-фреймов 0 в обоих collapsed).
+
