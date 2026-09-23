@@ -163,7 +163,10 @@ pub fn activate() {
                     "[crussty-plugin] inside_bitmask: forcing kernel load of {}",
                     ENTITY_CLASS
                 );
-                crate::improved_noise::force_load_kernel_class(ENTITY_CLASS);
+                // RC7 canon (TASK-433-B; ref a3991c2): LAZY force-load
+                // (initialize=false) — no <clinit> on the poll thread before
+                // Bootstrap; first real use initializes post-bootStrap.
+                crate::improved_noise::force_load_kernel_class_lazy(ENTITY_CLASS);
             }
             let sighted = cplug_sdk::classes::is_sighted(ENTITY_CLASS);
             std::thread::sleep(std::time::Duration::from_millis(if sighted {
