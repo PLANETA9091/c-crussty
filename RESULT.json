@@ -1,17 +1,30 @@
 {
-  "agent": "TASK-427-A2",
-  "vector": "mobs_soa subsystem wake+perf (protocol-v2 port, gate-bitmap, per-shard writer)",
-  "branch": "round-427-a2-mobsoa @fe4ee57 (impl) — run head",
-  "run_id": "in-flight (6 runs dispatched)",
+  "agent": "TASK-431-B",
+  "vector": "R-закон 6: inside/block-contact плоскость целиком (inside_bitmask pre-gate stage-1b + inside_snap snapshot plane stage-1c, ONE bulk-JNI per collect) на пробуждённом SoA-носителе A2 round-427-a2-mobsoa @18151a96; ветка round-430-b-inside @5a3cd38",
+  "branch": "round-430-b-inside",
+  "base": "origin/round-427-a2-mobsoa @18151a96 (код=fe4ee57, cmp424_mobfeed)",
+  "lever": "cmp430_inside",
+  "run_id": null,
   "tps_med": null,
   "delta_pair_pct": null,
-  "verdict": "S3-DISPATCHED",
+  "lane_before": "inside_volatile 12.18% флэт (wgen-l1 профиль, BOTTLENECK-430); адресуемо 1.3-1.6% PROFILE-B (modulo-декодер round-423-b-inside)",
+  "lane_after": null,
+  "ram_stw": null,
+  "ram_full": null,
+  "parity": "план: ARM+ЭФФЕКТ маркеры + Retargeted sites>0 (inside_bitmask stage-1b sites:1, inside_snap stage-1c sites:1, LevelChunk secWrite sites:1) + AIOOBE=0 + NCDFE=0 + selfTest==true + javap flat==nested + polls threw=0",
+  "verdict": "IN_PROGRESS: step-2 верификация пройдена, диспатч ждёт завершения round-431-* пробного батча (CI-окно главного агента)",
   "evidence": [
-    "runs dispatched (world-bench-parallel.yml, bank inputs EXACT: radius 640 / seconds 300 / fake_players 4 / fluid_guard 1 / gc_tune 3 / inside_cache 1 / flush_diet 1 / fluid_dirty 0 / fluid_bitmask 0 / region_threads 4 / batch_collector 1 / inside_bitmask 0 / skip_store_bb 0 / region_steal 0 / bu_defer 0 / population_target 150000 / population_seed 42 / server_xmx 10G / server_xms 4G / cpu_band 6.0-9.5M / lever_arg 1; NO travel_diet, NO fluid_dirty_ledger)",
-    "legs: a2-l1/a2-l2/a2-l3 branch=round-427-a2-mobsoa @fe4ee57 lever=cmp424_mobfeed",
-    "anchors: a2-anchora/a2-anchorb/a2-anchorc branch=round-427-a2-anchor{a,b,c} @790dc2f lever='' (fresh same-window vanilla pairs)",
-    "dispatch script: /home/z/rounds/ROUND-427/agent-a2/dispatch_427a2.py (committed)",
-    "poll plan: sleep 120 + curl; absorb scripts/bench4_recon/absorb_round.py <run_id> <tag>"
+    "step-1 @5a3cd38 (запушен): STRICT-OR plumbing 24 rust gate-строк (17 файлов) + 8 java blob gates + InsideSnapOps.java 471 строка + InsideBitmaskOps.class + build_430b_blobs.sh, блобы ALL IN SYNC",
+    "step-2 верификация: cargo check --lib green; cargo test --lib 302/0 (+inside_snap modulo 4 tests); check_blobs_sync ALL IN SYNC; javap InsideSnapOps.selfTest invokestatic snapProbe NOT-a-stub; flat==nested byte-identical (InsideSnapOps + InsideBitmaskOps)",
+    "triаж round-431-a2-l8r3 (чужой пробный батч): BAND fast-fail runner_cpu_index=11110082 OUTSIDE band — pairing discard, не bench-фейл; band-гварды работают",
+    "диск-закон: cargo target удалён сразу после теста (71% hold)",
+    "ре-роллы round-431-*: a2-l8r3 требует ре-ролла после диспатча своего батча — вне моей очереди (главный агент)"
   ],
-  "what": "S3 dispatched 3+3. Next: poll to completion, absorb, gate verdicts (DATA-PLAN mobSlots>0 + selfTest=true + AIOOBE=0 + NCDFE=0 + polls threw=0 + javap flat==nested + raw-byte), pair-by-runner Δ<=50k min-of-3, band 6.0-9.5M."
+  "what": "закон 6: вся inside/block-contact подсистема = (A) bitmask all-air pre-gate на ЕДИНСТВЕННОМ сайте applyEffectsFromBlocks->checkInsideBlocks (13 входов из RECON-33 census), (B) snapshot-плоскость per-section BlockState[4096] с ONE bulk-JNI collect + modulo-декодером в Rust и secWrite-инвалидацией; пер-сайт ретаргеты = клей миграции",
+  "steps_log": [
+    "step-0: worktree + research + диск-закон OK",
+    "step-1: имплементация выполнена, блобы пересобраны, запушено @5a3cd38",
+    "step-2: верификация (cargo 302/0, blobs ALL IN SYNC, javap NOT-a-stub) OK; dispatch_431b.py готов (3 якоря master + 3 inside-ноги cmp430_inside интерлив, банк inputs вербатим)",
+    "step-3 PENDING: диспатч после завершения round-431-*"
+  ]
 }
