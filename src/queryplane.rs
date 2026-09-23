@@ -73,6 +73,10 @@ fn lever_flag_matches() -> bool {
                 || v.trim() == "cmp417_bq"
                 // TASK-419-A (colpush): колпаш-носитель — queryplane awake.
                 || v.trim() == "cmp420_colpush"
+                // TASK-424-C (wgen): ROUND-423 chunk-pipeline carrier
+                // (chunk-parse ⊕ biomes-parse ⊕ queryplane, law 7) —
+                // queryplane rides as a disjoint-lane leg.
+                || v.trim() == "cmp423_wgen"
         })
         .unwrap_or(false)
 }
@@ -85,6 +89,8 @@ fn lever_id() -> &'static str {
         Ok("cmp417_bq") => "cmp417_bq",
         Ok("cmp416_mcomp") => "cmp416_mcomp",
         Ok("cmp415_mcomp") => "cmp415_mcomp",
+        // TASK-424-C (wgen): ROUND-423 chunk-pipeline carrier.
+        Ok("cmp423_wgen") => "cmp423_wgen",
         _ => "cmp412_b2p1",
     }
 }

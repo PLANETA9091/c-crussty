@@ -111,8 +111,9 @@ check_class \
 # grep; flat-only pinned by build script '$' guard + rust delivery test).
 check_class \
   "chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class" \
-  "cmp420_chunk2" "cmp420_colpush" "parse-cache first hit" "parse-cache selftest" \
-  "public static void init" "parseSection"
+  "cmp420_chunk2" "cmp420_colpush" "cmp423_wgen" "parse-cache first hit" "parse-cache selftest" \
+  "biomes-cache first hit" "biomes selftest" \
+  "public static void init" "parseSection" "parseBiomesSection"
 
 # gate-flag consistency: every flag string accepted by the SOURCE gate must
 # also be present in the BLOB constant pool (covers the ×93 rebuild lesson).
@@ -125,7 +126,8 @@ for pair in \
   "entitygoalquery/net/minecraft/world/entity/EntityGoalQueryOps.java:entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
   "queryplane/net/minecraft/world/entity/QueryPlaneOps.java:queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class" \
   "colpush/net/minecraft/world/entity/ColpushOps.java:colpush/build/net/minecraft/world/entity/ColpushOps.class" \
-  "entityinside/net/minecraft/world/entity/RegionTickOps.java:entityinside/build/net/minecraft/world/entity/RegionTickOps.class"
+  "entityinside/net/minecraft/world/entity/RegionTickOps.java:entityinside/build/net/minecraft/world/entity/RegionTickOps.class" \
+  "chunkparse/net/minecraft/world/level/chunk/storage/ChunkParseOps.java:chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class"
 do
   src="${pair%%:*}"; blob="${pair##*:}"
   flags=$(grep -o '"cmp[0-9_a-z]*"' "$src" | tr -d '"' | sort -u)
