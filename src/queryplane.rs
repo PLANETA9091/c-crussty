@@ -73,6 +73,9 @@ fn lever_flag_matches() -> bool {
                 || v.trim() == "cmp417_bq"
                 // TASK-419-A (colpush): колпаш-носитель — queryplane awake.
                 || v.trim() == "cmp420_colpush"
+                // TASK-424-B (inside_snap): cmp424_inside = inside-снап-плоскость
+                // ⊕ entity-query слой (закон 7 композит — второй слой вектора B).
+                || v.trim() == "cmp424_inside"
         })
         .unwrap_or(false)
 }
@@ -81,6 +84,8 @@ fn lever_flag_matches() -> bool {
 /// ARM/EFFECT-маркерах; легаси флаги печатают свой id). Round-417-C: cmp417_bq.
 fn lever_id() -> &'static str {
     match std::env::var("CRUSSTY_LEVER_FLAG").as_deref() {
+        // TASK-424-B: inside⊕queryplane юнион-носитель — свой lever-id в маркерах.
+        Ok("cmp424_inside") => "cmp424_inside",
         Ok("cmp420_colpush") => "cmp420_colpush",
         Ok("cmp417_bq") => "cmp417_bq",
         Ok("cmp416_mcomp") => "cmp416_mcomp",

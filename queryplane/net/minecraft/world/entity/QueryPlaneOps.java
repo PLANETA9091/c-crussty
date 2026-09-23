@@ -78,7 +78,9 @@ public final class QueryPlaneOps {
         return f != null && (f.trim().equals("cmp412_b2p1") || f.trim().equals("cmp415_mcomp") || f.trim().equals("cmp416_mcomp")
                 || f.trim().equals("cmp417_bq")
                 // TASK-419-A (colpush): колпаш-носитель — queryplane awake.
-                || f.trim().equals("cmp420_colpush"));
+                || f.trim().equals("cmp420_colpush")
+                // TASK-424-B (inside_snap): закон-7 композит — inside-снап-плоскость ⊕ entity-query слой.
+                || f.trim().equals("cmp424_inside"));
     }
 
     private static final boolean ENABLED = flagArmed();
