@@ -66,7 +66,9 @@ public final class MobAiOps {
                 // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
                 || f.trim().equals("cmp422_brain2")
                 // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-                || f.trim().equals("cmp423_brain3"));
+                || f.trim().equals("cmp423_brain3")
+                // TASK-426-A: SoA-feed carrier (STRICT OR).
+                || f.trim().equals("cmp424_mobfeed"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -94,6 +96,18 @@ public final class MobAiOps {
 
     /** One-shot ARM/effect-пруф (виден в server-stdout.log). */
     private static volatile boolean ARM_LOGGED = false;
+
+    /** TASK-426-A: one-shot DATA-PLAN-пруф (mobSlots>0 + windowLen>0 — fed-состояние
+     * SoA-популяции, канон TASK-425(0); без него вердикт = плацебо-класс). */
+    private static volatile boolean DATA_PLAN_LOGGED = false;
+
+    /** Метка активного флага для ARM/DATA-PLAN-строк (TASK-426-A). */
+    private static final String LABEL = label();
+
+    private static String label() {
+        String f = System.getenv("CRUSSTY_LEVER_FLAG");
+        return f == null ? "(off)" : f.trim();
+    }
 
     private MobAiOps() {}
 
@@ -229,9 +243,15 @@ public final class MobAiOps {
             EPOCH_TICK = t;
             if (!ARM_LOGGED) {
                 ARM_LOGGED = true; // TASK-424-A: one-shot на publish (не в skip)
-                LOG.info("[crussty-plugin] cmp423_brain3: epoch ok tick=" + t
+                LOG.info("[crussty-plugin] " + LABEL + ": epoch ok tick=" + t
                         + " windowLen=" + rc + " n=" + n
                         + " (bulk JNI 1/tick over soa population)");
+            }
+            if (!DATA_PLAN_LOGGED && rc > 0) {
+                DATA_PLAN_LOGGED = true; // TASK-426-A: канонический DATA-PLAN-гейт
+                LOG.info("[crussty-plugin] mobfeed DATA-PLAN: mobSlots=" + MobPushOps.idCount()
+                        + " windowLen=" + rc + " tick=" + t
+                        + " — SoA family FED (mobSlots>0 windowLen>0, flag=" + LABEL + ")");
             }
         }
     }

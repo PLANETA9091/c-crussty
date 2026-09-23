@@ -242,7 +242,7 @@ fn eqsnap_mode() -> bool {
         // TASK-419-A (colpush): колпаш-носитель — mob natives (probe/remove)
         // и read-views живут; colpush_plane_refresh кормит колонки.
         || f == "cmp420_colpush"
-        || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3"
+        || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed"
 }
 
 /// Strict gate: natives work only under the exact lever flag (STRICT eq;
@@ -283,7 +283,7 @@ fn lever_mode() -> bool {
         // плоскость (drain шардов пуст, плоские колонки кормит
         // colpush_plane_refresh одним WLOCK/тик).
         || f == "cmp420_colpush"
-        || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3"
+        || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed"
         // TASK-410-C (eindexq): K3-пивот R2 — SoA-плоскость = источник
         // популяции для goal-query CSR-снапшота (EntityQueryOps.eqEpoch;
         // sscan-прецедент TASK-406-E).

@@ -84,7 +84,9 @@ public final class QueryPlaneOps {
                 // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
                 || f.trim().equals("cmp422_brain2")
                 // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-                || f.trim().equals("cmp423_brain3"));
+                || f.trim().equals("cmp423_brain3")
+                // TASK-426-A: SoA-feed carrier (STRICT OR).
+                || f.trim().equals("cmp424_mobfeed"));
     }
 
     private static final boolean ENABLED = flagArmed();

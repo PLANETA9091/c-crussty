@@ -68,6 +68,9 @@ public final class ColpushOps {
             java.util.logging.Logger.getLogger("crussty-plugin");
 
     private static final String FLAG = "cmp420_colpush";
+    /** TASK-426-A: SoA-feed carrier — STRICT-OR (будит java-сторону колпаша
+     * под вектор-флагом; без него ENABLED=false = спящий гейт, урок ×93). */
+    private static final String FLAG2 = "cmp424_mobfeed";
     private static final int ERR_STRUCT = -1;
     private static final int ERR_RANGE = -2;
 
@@ -83,7 +86,7 @@ public final class ColpushOps {
 
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return f != null && f.trim().equals(FLAG);
+        return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2));
     }
 
     /** Структурный отказ — весь рычаг дизармится навсегда (ваниль-реплика). */

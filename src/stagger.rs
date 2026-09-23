@@ -80,7 +80,7 @@ fn enabled() -> bool {
             // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
             | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-            | Ok("cmp423_brain3")
+            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed")
             | Ok("cmp421_brain")
     )
 }

@@ -176,7 +176,7 @@ fn enabled() -> bool {
                 || v == "cmp420_chunk2"
                 || v == "cmp420_colpush"
                 || v == "cmp421_chunk"
-                || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3"
+                || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed"
         })
         .unwrap_or(false);
     env_gate || lever_gate
