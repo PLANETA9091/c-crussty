@@ -102,6 +102,21 @@ public final class InsideSnapOps {
     /** Flipped by rust ONLY after define+RegisterNatives+selfTest (colpush arm-order: arm is the LAST step). */
     private static volatile boolean ARMED = false;
 
+    /**
+     * TASK-436-B serve-plane closure round (lever cmp436_ins4, STRICT-OR
+     * cmp432_inside2): flipped by rust via v4() BEFORE selfTest/arm —
+     * fail-closed (V4=false keeps the V2 serve path byte-for-byte; the V2
+     * method is kept UNTOUCHED as the control body). NO new probes, NO new
+     * exception sites on the hot path (V3 post-mortem: threw=26 on
+     * round-435b-ins-1 = probe/exception machinery — never again).
+     */
+    private static volatile boolean V4 = false;
+
+    /** Rust flip (pre-selfTest): cmp436_ins4 serve-plane closure ON. */
+    public static void v4() {
+        V4 = true;
+    }
+
     public static void arm() {
         ARMED = true;
         try {
@@ -181,7 +196,7 @@ public final class InsideSnapOps {
     public static BlockState snapGet(Level level, BlockPos pos) {
         if (ARMED) {
             try {
-                BlockState hit = serve(level, pos);
+                BlockState hit = V4 ? serve4(level, pos) : serve(level, pos);
                 if (hit != null) {
                     STAT_HITS.increment();
                     if (!FIRST_HIT_LOGGED) {
@@ -211,6 +226,16 @@ public final class InsideSnapOps {
         LevelChunkSection[] secs;
         LevelChunkSection sec;     // L2: sec-ref -> snap (sec->snap is immutable)
         Snap snap;
+        // ---- TASK-436-B V4 fields (serve4 only; V2 serve never reads them) ----
+        /** Per-claim snap cache aligned to secs (sec->snap immutable: SNAPS never evicts). */
+        Snap[] secSnaps;
+        /** Per-claim resolve stamps (true = secSnaps[i] resolved this claim, incl. null). */
+        boolean[] secKnown;
+        /** Per-claim minSectionY cache (Integer.MIN_VALUE = unresolved); javap-proven
+         *  getSectionIndex(y)=(y>>4)-getMinSectionY() (round-435-b javap work). */
+        int minSecY = Integer.MIN_VALUE;
+        /** Per-thread last-served lane index (stored on lanes[0] — zero-alloc hint). */
+        int hint;
     }
 
     // NO-INDY CLINIT (round-3 NCDFE root-cause, canon ×93-indy): the previous
@@ -323,6 +348,143 @@ public final class InsideSnapOps {
         // @3f6f6e6: ((y&15)<<8)|((z&15)<<4)|(x&15)) — kills the redundant second
         // chunk-map lookup the old level.getBlockState(pos) fallthrough paid.
         return sec.states.get(packed);
+    }
+
+    // ------------------------------------------------------------------
+    // TASK-436-B SERVE-PLANE CLOSURE (cmp436_ins4) — V4 fastpath
+    // ------------------------------------------------------------------
+
+    /**
+     * V4 serve body. Delta vs V2 serve (which stays untouched as control):
+     *   1. per-claim secSnaps[]/secKnown[] lane arrays — the per-visit
+     *      SNAPS.get CHM hop AND the per-visit register churn collapse to an
+     *      array index (sec->snap mapping is immutable: SNAPS never evicts);
+     *   2. UNTRACKED-MISS CLOSURE: a loaded-but-untracked section (cap
+     *      reached / not yet collected / register lost the race) serves
+     *      sec.states.get(packed) — the SAME bit-exact
+     *      LevelChunk.getBlockStateFinal non-air continuation the V2
+     *      stale-miss path already uses (javap @3f6f6e6 packing, non-air
+     *      precondition enforced above) — instead of falling through to
+     *      vanilla level.getBlockState which repeats the chunk-map lookup;
+     *   3. per-claim minSecY cache + inline si=(y>>4)-minSec (javap-proven
+     *      round-435-b: LevelHeightAccessor.getSectionIndex) — one virtual
+     *      getMinSectionY call per claim instead of per visit; the si bounds
+     *      check stays (any formula drift => vanilla, fail-closed);
+     *   4. per-thread last-lane hint (lanes[0].hint) — the same-chunk burst
+     *      hits its lane slot on the FIRST compare.
+     * No new Throwable sites; any Throwable is caught by snapGet exactly as
+     * in V2 (fail-dominant vanilla continuation).
+     */
+    static BlockState serve4(Level level, BlockPos pos) {
+        int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+        int cx = x >> 4, cz = z >> 4;
+        long nowTick = level.getGameTime();
+        Lane[] lanes = lanes();
+        // (4) last-served lane first (per-thread slot lives on lanes[0].hint)
+        Lane lane = null;
+        int h = lanes[0].hint;
+        if (h > 0 && h < LANES) {
+            Lane l = lanes[h];
+            if (l.tick == nowTick && l.level == level && l.cx == cx && l.cz == cz) {
+                lane = l;
+            }
+        }
+        ChunkAccess ch;
+        LevelChunkSection[] secs;
+        if (lane == null) {
+            for (int i = 0; i < LANES; i++) {
+                Lane l = lanes[i];
+                if (l.tick == nowTick && l.level == level && l.cx == cx && l.cz == cz) {
+                    lane = l;
+                    break;
+                }
+            }
+            if (lane != null) {
+                ch = lane.ch;
+                secs = lane.secs;
+            } else {
+                ch = level.getChunkSource().getChunk(cx, cz, ChunkStatus.FULL, false);
+                if (ch == null) {
+                    return null; // not loaded: vanilla owns the load semantics
+                }
+                secs = ch.getSections();
+                Lane l = lanes[(LANE_CURSOR.getAndIncrement() & (LANES - 1))];
+                l.tick = nowTick;
+                l.level = level;
+                l.cx = cx;
+                l.cz = cz;
+                l.ch = ch;
+                l.secs = secs;
+                l.sec = null;
+                l.snap = null;
+                // (1) per-claim reset — REUSE arrays at fixed section count
+                // (zero steady-state allocation; world height is per-level stable)
+                if (l.secKnown == null || l.secKnown.length != secs.length) {
+                    l.secKnown = new boolean[secs.length];
+                    l.secSnaps = new Snap[secs.length];
+                } else {
+                    java.util.Arrays.fill(l.secKnown, false);
+                }
+                l.minSecY = Integer.MIN_VALUE;
+                lane = l;
+            }
+        } else {
+            ch = lane.ch;
+            secs = lane.secs;
+        }
+        lanes[0].hint = indexOfLane(lanes, lane); // (4) refresh per-thread hint
+        // (3) per-claim minSecY cache + inline section index (bounds-guarded)
+        if (lane.minSecY == Integer.MIN_VALUE) {
+            lane.minSecY = ((LevelHeightAccessor) ch).getMinSectionY();
+        }
+        int si = (y >> 4) - lane.minSecY;
+        if (si < 0 || si >= secs.length) {
+            return null; // outside storage: vanilla (VOID_AIR branch)
+        }
+        LevelChunkSection sec = secs[si];
+        if (sec == null || sec.hasOnlyAir()) {
+            return null; // vanilla AIR branch; no snapshot needed
+        }
+        // (1) per-claim snap resolve (one CHM.get per section-index per claim)
+        if (!lane.secKnown[si]) {
+            lane.secKnown[si] = true;
+            Snap s0 = SNAPS.get(sec);
+            lane.secSnaps[si] = s0;
+            if (s0 == null) {
+                register(sec); // best-effort, ONCE per claim per section
+                maybeCollect();
+            }
+        }
+        Snap s = lane.secSnaps[si];
+        int packed = ((y & 15) << 8) | ((z & 15) << 4) | (x & 15);
+        if (s == null) {
+            // (2) UNTRACKED-MISS CLOSURE: loaded, non-air, no snap — serve
+            // the live palette read (bit-exact getBlockStateFinal continuation).
+            return sec.states.get(packed);
+        }
+        BlockState[] a = s.states;
+        if (a != null && s.builtAtGen == s.gen) {
+            return a[packed];
+        }
+        BlockState sg = s.single;
+        if (sg != null && s.builtAtGen == s.gen) {
+            return sg;
+        }
+        if (s.pending) {
+            maybeCollect();
+        }
+        // stale-miss: same V2 continuation (bit-exact, proven in legs r1-r4)
+        return sec.states.get(packed);
+    }
+
+    /** Lane identity index (per-thread array — linear scan is 8 wide). */
+    private static int indexOfLane(Lane[] lanes, Lane lane) {
+        for (int i = 0; i < LANES; i++) {
+            if (lanes[i] == lane) {
+                return i;
+            }
+        }
+        return 0;
     }
 
     static void register(LevelChunkSection sec) {
