@@ -167,7 +167,12 @@ fn enabled() -> bool {
     let lever_gate = std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let v = v.trim();
+            // TASK-424-C: cmp423_wgen = ROUND-423 chunk-pipeline carrier
+            // (axis continuity; the GEN-axis is inert 0.03% on the
+            // pregenerated fixture — CHUNK_ROOTCAUSE RC-A — the union is
+            // kept for the boot worldgen tail only).
             v == "cmp419_chunk" || v == "cmp420_chunk2" || v == "cmp420_colpush"
+                || v == "cmp423_wgen"
         })
         .unwrap_or(false);
     env_gate || lever_gate
