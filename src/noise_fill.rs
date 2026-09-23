@@ -153,6 +153,7 @@ const TARGETS: [Target; 3] = [
 /// arms the batch noise-fill bridge. TASK-420-C adds cmp420_chunk2 to the
 /// lever union (stability iteration re-arms the GEN-axis). TASK-420-MEGA
 /// adds cmp420_colpush (disjoint-lane composition carrier, law 7).
+/// TASK-421-MEGA adds cmp421_brain (mega carrier union, law 7).
 /// TASK-421-C adds cmp421_chunk (stabilized chunk-axis round: PROFILE-C
 /// ground truth — the GEN-axis is inert on the pregenerated fixture at
 /// 0.0% soak CPU, the union is kept for axis continuity and the boot
@@ -175,6 +176,7 @@ fn enabled() -> bool {
                 || v == "cmp420_chunk2"
                 || v == "cmp420_colpush"
                 || v == "cmp421_chunk"
+                || v == "cmp421_brain"
         })
         .unwrap_or(false);
     env_gate || lever_gate
