@@ -16,3 +16,8 @@
   - players_packets: 0.01% -> 0.01% (+0.00%) флэт
 
 ## VERDICT: **PARITY/LOW**
+
+## BOOT-METRIC (TASK-425-C, player-visible chunk axis)
+- boot_done_s: **16.678s**
+- ramp_polls (first 3 soak): [1.8, 2.1, 2.4]
+- tps_med (all soak polls): 2.4
