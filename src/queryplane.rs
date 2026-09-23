@@ -76,7 +76,7 @@ fn lever_flag_matches() -> bool {
                 || v.trim() == "cmp421_brain" || v.trim() == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside"
                 // TASK-434-C (chunkpl): chunk-pipeline R5 carrier — queryplane
                 // rides as a disjoint-lane leg (law 7).
-                || v.trim() == "cmp434_chunkpl"
+                || v.trim() == "cmp434_chunkpl" || v.trim() == "cmp435_chunk3"
         })
         .unwrap_or(false)
 }
@@ -92,6 +92,7 @@ fn lever_id() -> &'static str {
         Ok("cmp430_inside") => "cmp430_inside",
         // TASK-434-C: chunk-pipeline R5 carrier — свой id в ARM-маркерах.
         Ok("cmp434_chunkpl") => "cmp434_chunkpl",
+        Ok("cmp435_chunk3") => "cmp435_chunk3", // TASK-435-C: R6 carrier marker id
         Ok("cmp417_bq")
             // TASK-421-A (brain): свой id в ARM-маркерах.
             | Ok("cmp421_brain") => "cmp421_brain",

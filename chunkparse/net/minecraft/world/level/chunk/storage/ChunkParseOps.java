@@ -124,6 +124,15 @@ public final class ChunkParseOps {
     static final String CARRIER_UNION_423 = "cmp434_chunkpl";
 
     /**
+     * TASK-435-C chunk-pipeline R6 carrier (law 7/8): STRICT-OR successor
+     * id ON TOP of cmp434_chunkpl (same planes: block_states deep cache ⊕
+     * biomes-parse cache ⊕ full composite union; no new lever — round-id
+     * hygiene for ROUND-435 certification). Kept in the constant pool for
+     * the raw-byte blob-sync gate (check_blobs_sync.sh) — x93 lesson.
+     */
+    static final String CARRIER_UNION_435 = "cmp435_chunk3";
+
+    /**
      * codec(identity) -> (tag -> pristine decoded template). The outer map
      * is synchronized ONLY for its own few-entry get/put; the inner maps are
      * ConcurrentHashMaps so the deep tag probe runs lock-free (TASK-420-C:
@@ -245,7 +254,7 @@ public final class ChunkParseOps {
                     biomesFirstHitLogged = true;
                     System.out.println(
                             PFX + " biomes-cache first hit (chunk section reuse live, union="
-                                    + CARRIER_UNION_423 + ")");
+                                    + CARRIER_UNION_423 + "/" + CARRIER_UNION_435 + ")");
                 }
             } else {
                 hits++;
@@ -473,6 +482,6 @@ public final class ChunkParseOps {
                 + " selftest=" + (SELFTEST_SECTIONS - selftestLeft)
                 + " biomesSections=" + biomesSections
                 + " biomesHits=" + biomesHits + " biomesMisses=" + biomesMisses
-                + " union=" + CARRIER_UNION_423;
+                + " union=" + CARRIER_UNION_423 + "/" + CARRIER_UNION_435;
     }
 }

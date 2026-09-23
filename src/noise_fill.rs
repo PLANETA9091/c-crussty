@@ -180,7 +180,7 @@ fn enabled() -> bool {
                 // TASK-434-C: cmp434_chunkpl = chunk-pipeline R5 carrier (law 7
                 // union; the GEN-axis stays dormant via kernel-policy — the
                 // round rides the composite + parse planes, noise untouched).
-                || v == "cmp434_chunkpl"
+                || v == "cmp434_chunkpl" || v == "cmp435_chunk3"
         })
         .unwrap_or(false);
     env_gate || lever_gate

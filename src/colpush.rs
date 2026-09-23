@@ -118,7 +118,7 @@ fn lever_flag_matches() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let t = v.trim();
-            t == "cmp420_colpush" || t == "cmp424_mobfeed" || t == "cmp430_inside" || t == "cmp434_chunkpl"
+            t == "cmp420_colpush" || t == "cmp424_mobfeed" || t == "cmp430_inside" || t == "cmp434_chunkpl" || t == "cmp435_chunk3"
         })
         .unwrap_or(false)
 }

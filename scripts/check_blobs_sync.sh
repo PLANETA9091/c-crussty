@@ -135,7 +135,7 @@ check_class \
 
 check_class \
   "chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class" \
-  "cmp420_chunk2" "cmp420_colpush" "cmp434_chunkpl" "parse-cache first hit" "parse-cache selftest" \
+  "cmp420_chunk2" "cmp420_colpush" "cmp434_chunkpl" "cmp435_chunk3" "parse-cache first hit" "parse-cache selftest" \
   "biomes-cache first hit" "biomes selftest" \
   "public static void init" "parseSection" "parseBiomesSection"
 
