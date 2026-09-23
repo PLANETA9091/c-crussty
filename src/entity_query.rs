@@ -61,7 +61,148 @@
 
 use jvmti_bindings::jni;
 use std::ffi::{c_void, CString};
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
+use std::sync::Mutex;
+
+/// TASK-427-B2 (scanq): TWO-PHASE CHAIN-BUILD (protocol-v2 D2 fix port,
+/// mc-линия 20c9fdc/afbc1dc — «JNI-critical=memcpy-only»):
+/// phase 1 builds the chain into a RUST-side scratch (NO JNI criticals held —
+/// the GC-locker can always proceed), phase 2 publishes with ONE short
+/// critical region per array (pure memcpy of the filled prefix, nanoseconds-
+/// to-microseconds — vs the old single-critical-across-the-whole-pass that
+/// blocked the JVM-wide allocator under 150k-entity GC pressure).
+/// The build itself stays the SAME single-pass self-consistent chain
+/// construction (no seqlock, documented ≤1-tick ghost contract — module doc
+/// above); the scratch is guarded by the same single-flight invariant that
+/// serializes eq_epoch (java EPOCH_LOCK around maybeEpoch) — the Mutex is a
+/// defense-in-depth belt for hypothetical multi-bridge callers, uncontended
+/// in practice (ns).
+struct EqBuildScratch {
+    /// Frozen columns [x,y,z,hw,hh] × row (stride STRIDE), rust-side.
+    soa: Vec<f64>,
+    /// Chain links by dense id (id+1, 0 = end), rust-side.
+    next: Vec<i32>,
+    /// Chain heads per bucket (id+1, 0 = empty), rust-side.
+    head: Vec<i32>,
+}
+
+static EQ_BUILD: Mutex<Option<EqBuildScratch>> = Mutex::new(None);
+
+/// TASK-427-B2: one-shot EFFECT-маркер two-phase публикатора (server-stdout
+/// evidence lane — ARM-строка не доказывает эффект, эффект-маркер обязателен).
+static SCANQ_LOGGED: AtomicBool = AtomicBool::new(false);
+
+/// TASK-427-B2: total published bytes per epoch (evidence lane for the
+/// memcpy-only critical — server-stdout EFFECT line). Monotone-ish, cheap.
+static EQ_PUBLISH_BYTES: AtomicUsize = AtomicUsize::new(0);
+
+/// Build the chain into the scratch for rows `0..bound`. Pure rust (no JNI).
+/// Same per-row logic as the legacy single-critical inline pass (parity by
+/// construction — the rows/branches are identical, only the destination
+/// moved). Returns the number of LINKED rows.
+fn eq_build_into_scratch(
+    scratch: &mut EqBuildScratch,
+    bound: usize,
+    xs: &[f64],
+    ys: &[f64],
+    zs: &[f64],
+    hws: &[f64],
+    hhs: &[f64],
+    flags: &[u8],
+) -> i32 {
+    if scratch.soa.len() < bound * STRIDE {
+        scratch.soa.resize(bound * STRIDE, 0.0);
+    }
+    if scratch.next.len() < bound {
+        scratch.next.resize(bound, 0);
+    }
+    if scratch.head.len() != CELLS {
+        scratch.head.resize(CELLS, 0);
+    }
+    scratch.head[..CELLS].fill(0);
+    let mut linked: i32 = 0;
+    for id in 0..bound {
+        if flags[id] & 1 == 0 {
+            continue; // removed from the plane (swept) — never enumerated
+        }
+        let x = xs[id];
+        let y = ys[id];
+        let z = zs[id];
+        if !x.is_finite() || !y.is_finite() || !z.is_finite() {
+            continue; // corrupt row — cannot be enumerated safely
+        }
+        let hw = hws[id];
+        let hh = hhs[id];
+        let b = id * STRIDE;
+        scratch.soa[b] = x;
+        scratch.soa[b + 1] = y;
+        scratch.soa[b + 2] = z;
+        scratch.soa[b + 3] = hw;
+        scratch.soa[b + 4] = hh;
+        // Java-parity cell hash: floor(x/16) with SATURATING i32 casts on
+        // both sides (java (int)Math.floor(v/16.0); rust `as i32` saturates
+        // identically; NaN rows are skipped above).
+        let cx = (x / CELL_SIZE).floor() as i32;
+        let cz = (z / CELL_SIZE).floor() as i32;
+        let mut h = cx.wrapping_mul(H1) ^ cz.wrapping_mul(H2);
+        h ^= ((h as u32) >> 16) as i32;
+        let h = (h & (CELLS as i32 - 1)) as usize;
+        // Intrusive insert at chain head: next[id] = old head; head[h] = id+1.
+        scratch.next[id] = scratch.head[h];
+        scratch.head[h] = (id + 1) as i32;
+        linked += 1;
+    }
+    linked
+}
+
+/// Publish a built scratch into the java arrays with SHORTEST POSSIBLE JNI
+/// critical regions (memcpy-only, filled prefixes only). All-or-nothing on
+/// pin failure (all released, ERR_STRUCT). Returns Ok(()) or Err(()).
+unsafe fn eq_publish_critical(
+    env: *mut jni::JNIEnv,
+    soa: jni::jdoubleArray,
+    head: jni::jintArray,
+    next: jni::jintArray,
+    soa_cap: usize,
+    next_cap: usize,
+    scratch: &EqBuildScratch,
+    bound: usize,
+) -> Result<(), ()> {
+    let vt = unsafe { &**env };
+    let soa_pin = unsafe { (vt.GetPrimitiveArrayCritical)(env, soa, std::ptr::null_mut()) };
+    if soa_pin.is_null() {
+        return Err(());
+    }
+    let head_pin = unsafe { (vt.GetPrimitiveArrayCritical)(env, head, std::ptr::null_mut()) };
+    if head_pin.is_null() {
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, soa, soa_pin, 0) };
+        return Err(());
+    }
+    let next_pin = unsafe { (vt.GetPrimitiveArrayCritical)(env, next, std::ptr::null_mut()) };
+    if next_pin.is_null() {
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, head, head_pin, 0) };
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, soa, soa_pin, 0) };
+        return Err(());
+    }
+    let soa_s =
+        unsafe { std::slice::from_raw_parts_mut(soa_pin as *mut jni::jdouble, soa_cap) };
+    let head_s = unsafe { std::slice::from_raw_parts_mut(head_pin as *mut jni::jint, CELLS) };
+    let next_s =
+        unsafe { std::slice::from_raw_parts_mut(next_pin as *mut jni::jint, next_cap) };
+    // Filled prefixes only: soa rows 0..bound (java readers touch soa[b..b+5]
+    // ONLY for chain-visited ids — every visited id was written THIS epoch);
+    // next 0..bound (unreachable dead slots may hold stale links — same as
+    // legacy); head full CELLS.
+    let n = bound * STRIDE;
+    soa_s[..n].copy_from_slice(&scratch.soa[..n]);
+    head_s.copy_from_slice(&scratch.head);
+    next_s[..bound].copy_from_slice(&scratch.next[..bound]);
+    EQ_PUBLISH_BYTES.store(n * 8 + CELLS * 4 + bound * 4, Ordering::Relaxed);
+    unsafe { (vt.ReleasePrimitiveArrayCritical)(env, next, next_pin, 0) };
+    unsafe { (vt.ReleasePrimitiveArrayCritical)(env, head, head_pin, 0) };
+    unsafe { (vt.ReleasePrimitiveArrayCritical)(env, soa, soa_pin, 0) };
+    Ok(())
+}
 
 /// javap ground truth (patched-kernel.jar round-396-a, purpur-1.21.10
 /// Mojang-mapped): exactly ONE
@@ -674,9 +815,10 @@ pub unsafe extern "system" fn eq_probe(
 }
 
 /// BULK goal-query chain builder — ONE transition per tick (never per
-/// entity/query).
-///
-/// Single linear pass over the mobs_soa SoA population
+/// entity/query). TASK-427-B2 (scanq): TWO-PHASE body —
+/// phase 1 builds the chain into a rust-side scratch (NO criticals), phase 2
+/// publishes with memcpy-only criticals (protocol-v2 D2 fix, mc-линия
+/// 20c9fdc). Single linear pass over the mobs_soa SoA population
 /// `id in 0..min(id_top, caps)`: alive rows (flags bit0) with finite x/y/z
 /// are frozen into `soa[id*5..id*5+5] = x,y,z,hw,hh` and linked into the
 /// chain bucket `hash(floor(x/16), floor(z/16))`: `next[id] = head[h];
@@ -750,68 +892,43 @@ pub unsafe extern "system" fn eq_epoch(
         .min(hws.len())
         .min(hhs.len());
 
-    let soa_pin = unsafe { (vt.GetPrimitiveArrayCritical)(env, soa, std::ptr::null_mut()) };
-    if soa_pin.is_null() {
-        return ERR_STRUCT;
-    }
-    let head_pin = unsafe { (vt.GetPrimitiveArrayCritical)(env, head, std::ptr::null_mut()) };
-    if head_pin.is_null() {
-        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, soa, soa_pin, 0) };
-        return ERR_STRUCT;
-    }
-    let next_pin = unsafe { (vt.GetPrimitiveArrayCritical)(env, next, std::ptr::null_mut()) };
-    if next_pin.is_null() {
-        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, head, head_pin, 0) };
-        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, soa, soa_pin, 0) };
-        return ERR_STRUCT;
-    }
+    // TASK-427-B2 (scanq) TWO-PHASE: phase 1 — pure-rust build into the
+    // scratch (NO JNI criticals held: the GC-locker/JIT can always proceed;
+    // under 150k-entity GC pressure the old single-critical-across-the-pass
+    // staged a JVM-wide allocator stall = the mc-line collapse mechanism).
+    // TASK-411-C (eqsnap, v2) dirty-delta drain (O(dirty), ONE WLOCK hold)
+    // stays BEFORE the chain pass (unchanged contract). The eq_snapshot
+    // slices point at the SAME plane columns the drain writes (single
+    // consumer thread: eq_epoch under the java EPOCH_LOCK).
+    let mut guard = EQ_BUILD.lock().unwrap_or_else(|p| p.into_inner());
+    let scratch = guard.get_or_insert_with(|| EqBuildScratch {
+        soa: Vec::new(),
+        next: Vec::new(),
+        head: Vec::new(),
+    });
+    let linked = eq_build_into_scratch(scratch, bound, xs, ys, zs, hws, hhs, flags);
 
-    let soa_s = unsafe { std::slice::from_raw_parts_mut(soa_pin as *mut jni::jdouble, soa_cap as usize) };
-    let head_s = unsafe { std::slice::from_raw_parts_mut(head_pin as *mut jni::jint, CELLS) };
-    let next_s = unsafe { std::slice::from_raw_parts_mut(next_pin as *mut jni::jint, next_cap as usize) };
-
-    // Zero the chain heads (fresh epoch; NEXT slots of dead rows keep stale
-    // links from prior epochs but are UNREACHABLE — every live chain member
-    // was linked THIS epoch through head→next).
-    head_s.fill(0);
-
-    let mut linked: i32 = 0;
-    for id in 0..bound {
-        if flags[id] & 1 == 0 {
-            continue; // removed from the plane (swept) — never enumerated
+    // Phase 2 — publish with memcpy-only criticals (filled prefixes).
+    // All-or-nothing: pin failure = ERR_STRUCT (java disarms — same ladder
+    // as legacy).
+    match unsafe {
+        eq_publish_critical(env, soa, head, next, soa_cap as usize, next_cap as usize, scratch, bound)
+    } {
+        Ok(()) => {
+            if !SCANQ_LOGGED.swap(true, Ordering::Relaxed) {
+                let label = std::env::var("CRUSSTY_LEVER_FLAG")
+                    .unwrap_or_default()
+                    .trim()
+                    .to_string();
+                eprintln!(
+                    "[crussty-plugin] {label}: scanq EFFECT armed (first two-phase chain-build: scratch pass NO criticals + memcpy-only publish {} bytes, bound={bound})",
+                    EQ_PUBLISH_BYTES.load(Ordering::Relaxed)
+                );
+            }
+            linked
         }
-        let x = xs[id];
-        let y = ys[id];
-        let z = zs[id];
-        if !x.is_finite() || !y.is_finite() || !z.is_finite() {
-            continue; // corrupt row — cannot be enumerated safely
-        }
-        let hw = hws[id];
-        let hh = hhs[id];
-        let b = id * STRIDE;
-        soa_s[b] = x;
-        soa_s[b + 1] = y;
-        soa_s[b + 2] = z;
-        soa_s[b + 3] = hw;
-        soa_s[b + 4] = hh;
-        // Java-parity cell hash: floor(x/16) with SATURATING i32 casts on
-        // both sides (java (int)Math.floor(v/16.0); rust `as i32` saturates
-        // identically; NaN rows are skipped above).
-        let cx = (x / CELL_SIZE).floor() as i32;
-        let cz = (z / CELL_SIZE).floor() as i32;
-        let mut h = cx.wrapping_mul(H1) ^ cz.wrapping_mul(H2);
-        h ^= ((h as u32) >> 16) as i32;
-        let h = (h & (CELLS as i32 - 1)) as usize;
-        // Intrusive insert at chain head: next[id] = old head; head[h] = id+1.
-        next_s[id] = head_s[h];
-        head_s[h] = (id + 1) as jni::jint;
-        linked += 1;
+        Err(()) => ERR_STRUCT,
     }
-
-    unsafe { (vt.ReleasePrimitiveArrayCritical)(env, next, next_pin, 0) };
-    unsafe { (vt.ReleasePrimitiveArrayCritical)(env, head, head_pin, 0) };
-    unsafe { (vt.ReleasePrimitiveArrayCritical)(env, soa, soa_pin, 0) };
-    linked
 }
 
 /// TASK-419-B (sense-plane): CSR-арена из УЖЕ построенных цепей. Заполнение
@@ -1284,7 +1401,7 @@ mod entityquery_delivery_tests {
 
 #[cfg(test)]
 mod entityquery_kernel_tests {
-    use super::{FROM, GATE_STATIC_DESC, OPS_CLASS, TARGETS};
+    use super::{eq_build_into_scratch, EqBuildScratch, CELLS, STRIDE, FROM, GATE_STATIC_DESC, OPS_CLASS, TARGETS};
     use crate::classfile::{retarget_virtual_to_static, RetargetOutcome};
 
     const NAT: &[&[u8]] = &[
@@ -1360,5 +1477,124 @@ mod entityquery_kernel_tests {
             (OPS_CLASS, "entitiesOfClassGate", GATE_STATIC_DESC),
         );
         assert!(r.is_err(), "wrong (name, desc) pair must error, not patch");
+    }
+
+    /// TASK-427-B2 (scanq): the two-phase scratch build must produce the
+    /// IDENTICAL chain structure to a reference inline pass — every alive
+    /// finite row linked exactly once, chain-walk from every non-empty head
+    /// visits each id exactly once, frozen columns match the source slices,
+    /// dead/NaN rows unreachable.
+    #[test]
+    fn eq_scratch_build_chain_parity() {
+        let bound = 300usize;
+        let mut xs = vec![0.0f64; bound];
+        let mut ys = vec![0.0f64; bound];
+        let mut zs = vec![0.0f64; bound];
+        let hws = vec![0.6f64; bound];
+        let hhs = vec![1.8f64; bound];
+        let mut flags = vec![1u8; bound];
+        for id in 0..bound {
+            xs[id] = ((id as i64 * 37) % 640) as f64 - 320.0 + 0.25;
+            ys[id] = 64.0;
+            zs[id] = ((id as i64 * 91) % 640) as f64 - 320.0 + 0.75;
+            if id % 7 == 0 {
+                flags[id] = 0; // swept row — must stay unlinked
+            }
+        }
+        // A NaN row (corrupt) must also stay unlinked.
+        xs[11] = f64::NAN;
+        flags[11] = 1;
+
+        let mut scratch = EqBuildScratch {
+            soa: Vec::new(),
+            next: Vec::new(),
+            head: Vec::new(),
+        };
+        let linked =
+            eq_build_into_scratch(&mut scratch, bound, &xs, &ys, &zs, &hws, &hhs, &flags);
+
+        let expect_alive = (0..bound)
+            .filter(|&id| flags[id] & 1 == 1 && xs[id].is_finite() && ys[id].is_finite() && zs[id].is_finite())
+            .count();
+        assert_eq!(linked as usize, expect_alive, "linked == alive finite rows");
+
+        // Chain-walk parity: every non-empty bucket visited exactly once,
+        // total visited == linked, order = legacy head-insertion order.
+        let mut visited = vec![false; bound];
+        let mut total = 0usize;
+        for h in 0..CELLS {
+            let mut link = scratch.head[h];
+            let mut steps = 0usize;
+            while link != 0 {
+                assert!(link > 0, "positive links only");
+                let id = (link as usize) - 1;
+                assert!(id < bound);
+                assert!(!visited[id], "id linked exactly once");
+                visited[id] = true;
+                total += 1;
+                link = scratch.next[id];
+                steps += 1;
+                assert!(steps <= bound, "no cycles");
+            }
+        }
+        assert_eq!(total, expect_alive);
+        for id in 0..bound {
+            let reachable = visited[id];
+            let should = flags[id] & 1 == 1
+                && xs[id].is_finite()
+                && ys[id].is_finite()
+                && zs[id].is_finite();
+            assert_eq!(reachable, should, "id {id} reachability");
+        }
+        // Frozen columns for a reachable row match the source slices.
+        for id in 0..bound {
+            if !visited[id] {
+                continue;
+            }
+            let b = id * STRIDE;
+            assert_eq!(scratch.soa[b], xs[id]);
+            assert_eq!(scratch.soa[b + 1], ys[id]);
+            assert_eq!(scratch.soa[b + 2], zs[id]);
+            assert_eq!(scratch.soa[b + 3], hws[id]);
+            assert_eq!(scratch.soa[b + 4], hhs[id]);
+        }
+    }
+
+    /// TASK-427-B2: rebuild into a REUSED scratch (the steady-state per-tick
+    /// path) must fully reset state — heads zeroed, stale links overwritten.
+    #[test]
+    fn eq_scratch_rebuild_is_idempotent() {
+        let bound = 50usize;
+        let xs = vec![1.5f64; bound];
+        let ys = vec![64.0f64; bound];
+        let zs = vec![2.5f64; bound];
+        let hws = vec![0.6f64; bound];
+        let hhs = vec![1.8f64; bound];
+        let flags = vec![1u8; bound];
+        let mut scratch = EqBuildScratch {
+            soa: Vec::new(),
+            next: Vec::new(),
+            head: Vec::new(),
+        };
+        let l1 = eq_build_into_scratch(&mut scratch, bound, &xs, &ys, &zs, &hws, &hhs, &flags);
+        assert_eq!(l1, bound as i32);
+        // Second epoch: a subset swept — heads must NOT retain stale links.
+        let mut flags2 = vec![1u8; bound];
+        for id in (0..bound).step_by(2) {
+            flags2[id] = 0;
+        }
+        let l2 = eq_build_into_scratch(&mut scratch, bound, &xs, &ys, &zs, &hws, &hhs, &flags2);
+        assert_eq!(l2, (bound - bound / 2) as i32);
+        let mut visited = 0usize;
+        for h in 0..CELLS {
+            let mut link = scratch.head[h];
+            while link != 0 {
+                let id = (link as usize) - 1;
+                assert_eq!(flags2[id] & 1, 1, "no swept id reachable after rebuild");
+                visited += 1;
+                link = scratch.next[id];
+            }
+        }
+        assert_eq!(visited, l2 as usize);
     }
 }

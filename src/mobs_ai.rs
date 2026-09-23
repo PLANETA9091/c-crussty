@@ -45,6 +45,7 @@
 use jvmti_bindings::jni;
 use std::ffi::{c_void, CString};
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Mutex;
 
 const LIVING_CLASS: &str = "net/minecraft/world/entity/LivingEntity";
 const OPS_CLASS: &str = "net/minecraft/world/entity/MobAiOps";
@@ -62,7 +63,28 @@ const GATE_STATIC_DESC: &str = "(Lnet/minecraft/world/entity/LivingEntity;)V";
 const ERR_STRUCT: i32 = -1;
 const ERR_RANGE: i32 = -2;
 const PROBE_MAGIC: i32 = 0x4149; // "AI"
-const QRETRY: u32 = 128;
+
+// ---------------------------------------------------------------------------
+// TASK-427-B2 (scanq): TWO-PHASE ai-window epoch (protocol-v2 D2 slice port,
+// mc-линия 20c9fdc/afbc1dc — «JNI-critical=memcpy-only»): the legacy epoch
+// pinned the java WINDOW column across the WHOLE population pass AND the
+// whole QRETRY ladder — under 150k-entity GC pressure that staged a JVM-
+// wide allocator stall (GC-locker). Now the pass runs into a rust scratch
+// with NO criticals; the ONLY critical is the final memcpy (microseconds,
+// bounded). Retry ladder bounded (RETRIES, spin→yield); exhaustion →
+// ERR_RANGE → java vanilla-this-tick (bounded fail-open, mc canon).
+// The window VALUES and the full-column per-tick semantics are UNCHANGED
+// (every id reflects THIS tick's golden phase — the aibatch skip contract).
+// ---------------------------------------------------------------------------
+
+/// Bounded retry budget for the version bracket (scratch pass, no criticals).
+const AI_RETRIES: u32 = 4;
+
+struct AiScratch {
+    buf: Vec<i32>,
+}
+
+static AI_BUILD: Mutex<Option<AiScratch>> = Mutex::new(None);
 
 /// STRICT-eq gate (round-400 lever protocol; полу-armed мост = невалидная
 /// нога, TASK-402-F). Пустой/чужой флаг = ваниль бит-в-байт.
@@ -380,14 +402,19 @@ pub unsafe extern "system" fn ai_probe(
 }
 
 /// BULK window writer — ONE transition per tick-batch (never per entity).
+/// TASK-427-B2 (scanq): TWO-PHASE body — phase 1 computes the whole window
+/// into a rust scratch with NO criticals held (bounded retry ladder,
+/// spin→yield); phase 2 memcpy-publishes the filled prefix under ONE short
+/// critical. Values and full-column per-tick semantics UNCHANGED.
 ///
 /// Scans the mobs_soa SoA population (flags bit0 = alive) for
-/// `id in 0..min(id_top, window_cap, flags_len)` under the seqlock reader
-/// bracket (no WLOCK — writers proceed; torn snapshot → bounded retry) and
-/// writes `window[id] = active(rule)` straight into the pinned java array.
-/// Returns the number of written elements (the java WINDOW_LEN) or
-/// ERR_RANGE (bad n/window) / ERR_STRUCT (null env/array, pin failure,
-/// retries exhausted). Java fail-closed: any non-count → vanilla AI tick.
+/// `id in 0..min(id_top, window_cap, flags_len)` under the bounded version
+/// bracket (no WLOCK — writers proceed; torn pass → bounded retry;
+/// exhaustion → ERR_RANGE = java vanilla this tick) and computes
+/// `window[id] = active(rule)`. Returns the number of written elements (the
+/// java WINDOW_LEN) or ERR_RANGE (bad n/window) / ERR_STRUCT (null
+/// env/array, pin failure). Java fail-closed: any non-count → vanilla AI
+/// tick.
 ///
 /// # Safety
 /// See ai_probe.
@@ -418,38 +445,50 @@ pub unsafe extern "system" fn ai_epoch(
         .min(cap as usize)
         .min(flags.len());
 
-    let pinned = unsafe { (vt.GetPrimitiveArrayCritical)(env, window, std::ptr::null_mut()) };
-    if pinned.is_null() {
-        return ERR_STRUCT;
+    // Phase 1 — compute the window into the scratch (NO criticals held).
+    let mut guard = AI_BUILD.lock().unwrap_or_else(|p| p.into_inner());
+    let scratch = guard.get_or_insert_with(|| AiScratch { buf: Vec::new() });
+    if scratch.buf.len() < bound {
+        scratch.buf.resize(bound, 0);
     }
-    let dst = unsafe { std::slice::from_raw_parts_mut(pinned as *mut jni::jint, bound) };
+    let buf: &mut [i32] = &mut scratch.buf[..bound];
 
-    let rc: i32;
+    let mut ok = false;
     let mut tries: u32 = 0;
     loop {
         tries += 1;
-        if tries > QRETRY {
-            rc = ERR_RANGE; // writer storm — java falls back to vanilla this tick
-            break;
+        if tries > AI_RETRIES {
+            break; // writer storm — java falls back to vanilla this tick
         }
         let v1 = version.load(Ordering::Acquire);
         if v1 & 1 == 1 {
             std::hint::spin_loop();
+            std::thread::yield_now();
             continue;
         }
-        for (id, slot) in dst.iter_mut().enumerate() {
+        for (id, slot) in buf.iter_mut().enumerate() {
             *slot = ((flags[id] & 1 != 0) && window_active(id, tick as i64, n as i64)) as i32;
         }
         let v2 = version.load(Ordering::Acquire);
         if v2 != v1 {
-            continue; // torn snapshot — retry the whole pass
+            continue; // torn snapshot — bounded retry (NO critical held)
         }
-        rc = bound as i32;
+        ok = true;
         break;
     }
+    if !ok {
+        return ERR_RANGE;
+    }
 
+    // Phase 2 — memcpy-publish the filled prefix (shortest possible critical).
+    let pinned = unsafe { (vt.GetPrimitiveArrayCritical)(env, window, std::ptr::null_mut()) };
+    if pinned.is_null() {
+        return ERR_STRUCT;
+    }
+    let dst = unsafe { std::slice::from_raw_parts_mut(pinned as *mut jni::jint, cap as usize) };
+    dst[..bound].copy_from_slice(buf);
     unsafe { (vt.ReleasePrimitiveArrayCritical)(env, window, pinned, 0) };
-    rc
+    bound as i32
 }
 
 // ---------------------------------------------------------------------------
