@@ -115,12 +115,22 @@ pub fn wait_bridge_ready(timeout_ms: u64) -> bool {
 fn lever_flag_matches() -> bool {
     // TASK-432-B STRICT-OR: глубокая внутри-плоскость round-432 (cmp432_inside2)
     // ИЛИ несущий round-430 (cmp430_inside, A/B ре-плей); пустой/чужой = ваниль
-    // бит-в-байт.
+    // бит-в-байт. TASK-436-B: serve-plane closure round (cmp436_ins4) rides
+    // STRICT-OR поверх cmp432_inside2.
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let v = v.trim();
-            v == "cmp432_inside2" || v == "cmp430_inside"
+            v == "cmp432_inside2" || v == "cmp430_inside" || v == "cmp436_ins4"
         })
+        .unwrap_or(false)
+}
+
+/// TASK-436-B: cmp436_ins4 selects the V4 serve body (per-claim lane snap
+/// arrays + untracked-miss closure + cached minSecY + lane hint). The V2
+/// serve() stays byte-for-byte as the control path (V4=false default).
+fn v4_requested() -> bool {
+    std::env::var("CRUSSTY_LEVER_FLAG")
+        .map(|v| v.trim() == "cmp436_ins4")
         .unwrap_or(false)
 }
 
@@ -249,6 +259,21 @@ pub fn activate() {
         eprintln!(
             "[crussty-plugin] cmp432_inside2: defined {OPS_CLASS} in kernel loader (+ Snap + Lane), natives registered"
         );
+
+        // TASK-436-B: flip the V4 serve body BEFORE selfTest/arm — fail-closed:
+        // any resolution/invocation failure leaves the bridge dormant (never a
+        // half-flipped serve path). V2 stays byte-for-byte under cmp432_inside2.
+        if v4_requested() {
+            let flipped = cplug_sdk::jni_util::with_attached(|env| call_v4(env, gops))
+                .unwrap_or(false);
+            if !flipped {
+                eprintln!(
+                    "[crussty-plugin] cmp436_ins4: v4() flip FAILED — hook stays dormant (fail-closed)"
+                );
+                return;
+            }
+            eprintln!("[crussty-plugin] cmp436_ins4: V4 serve body FLIPPED (per-claim snap arrays + untracked-miss closure + minSecY cache + lane hint)");
+        }
 
         // selfTest on the KEPT define_class ref (TASK-417-C find_class fix):
         // any Throwable => fail-closed dormant (never arm).
@@ -460,6 +485,18 @@ fn selftest(env: &jvmti_bindings::env::JniEnv, gops: *mut c_void) -> bool {
 fn call_arm(env: &jvmti_bindings::env::JniEnv, gops: *mut c_void) -> bool {
     let cls = gops as jni::jclass;
     let Some(mid) = env.get_static_method_id(cls, "arm", "()V") else {
+        crate::clear_exception(env);
+        return false;
+    };
+    env.call_static_void_method(cls, mid, &[]);
+    let had_exc = crate::clear_exception(env);
+    !had_exc
+}
+
+/// TASK-436-B: flip the java V4 serve path (cmp436_ins4 only, pre-selfTest).
+fn call_v4(env: &jvmti_bindings::env::JniEnv, gops: *mut c_void) -> bool {
+    let cls = gops as jni::jclass;
+    let Some(mid) = env.get_static_method_id(cls, "v4", "()V") else {
         crate::clear_exception(env);
         return false;
     };

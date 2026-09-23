@@ -44,7 +44,7 @@ fn enabled() -> bool {
     let lever = std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let v = v.trim();
-            v == "cmp432_inside2" || v == "cmp430_inside"
+            v == "cmp432_inside2" || v == "cmp430_inside" || v == "cmp436_ins4"
         })
         .unwrap_or(false);
     if lever {
