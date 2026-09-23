@@ -23,11 +23,32 @@
     }
   ],
   "legs": {
-    "l1": {"run_id": 35833848852, "alias": "round-426-b-l1", "sha": "aa55277", "status": "in_progress"},
-    "l2": {"run_id": 35833867528, "alias": "round-426-b-l2", "sha": "aa55277", "status": "in_progress"},
-    "l3": {"run_id": 35833884778, "alias": "round-426-b-l3", "sha": "aa55277", "status": "in_progress"}
+    "l1": {"run_id": 35833848852, "alias": "round-426-b-l1", "sha": "aa55277", "status": "completed success, absorbed i426b-l1"},
+    "l2": {"run_id": 35833867528, "alias": "round-426-b-l2", "sha": "aa55277", "status": "completed success, absorbed i426b-l2"},
+    "l3": {"run_id": 35833884778, "alias": "round-426-b-l3", "sha": "aa55277", "status": "completed success, absorbed i426b-l3"}
   },
-  "anchors_425": {"runs": [35833398327, 35833416580, 35833435422, 35833453590], "sha": "790dc2f", "lever": "", "absorbed": false},
-  "status": "LEGS RUNNING + ABSORBING ANCHORS-425",
-  "verdict": "PENDING"
+  "anchors_425": {"runs": [35833398327, 35833416580, 35833435422, 35833453590], "sha": "790dc2f", "lever": "", "absorbed": true},
+  "status": "VERDICT-1 RECORDED -> LAW-3 CYCLE (composition)",
+  "verdict_1": {
+    "legs": {
+      "l1": {"run": 35833848852, "tps_med": 2.20, "runner": 6012964, "norm_pct": 6.5, "inside_lane": "12.01->12.89 (+0.89 UP)", "arm": "FULL: selfTest=true BEFORE arm + PATCHED setBlockState->secWrite Retargeted sites:1 + inside_snap ARMED + queryplane awake selfTest==true", "aioobe": 0, "ncdfe": 0, "polls": 6, "threw": 0},
+      "l2": {"run": 35833867528, "tps_med": 2.60, "runner": 8223137, "norm_pct": 2.7, "inside_lane": "12.01->12.44 (+0.43 UP)", "arm": "FULL (same markers)", "aioobe": 0, "ncdfe": 0, "polls": 6, "threw": 0},
+      "l3": {"run": 35833884778, "tps_med": 2.10, "runner": 6527695, "norm_pct": -3.4, "inside_lane": "12.01->12.83 (+0.83 UP)", "arm": "FULL (same markers)", "aioobe": 0, "ncdfe": 0, "polls": 6, "threw": 0}
+    },
+    "anchors_425": {
+      "a425a": {"run": 35833398327, "verdict": "INFRA-DELIVERY-FAIL (no artifact)"},
+      "a425b": {"run": 35833416580, "tps_med": 2.10, "runner": 7044209, "norm_pct": -8.0},
+      "a425c": {"run": 35833435422, "verdict": "INFRA-DELIVERY-FAIL (no artifact)"},
+      "a425d": {"run": 35833453590, "tps_med": 2.40, "runner": 6893615, "norm_pct": 6.6}
+    },
+    "pair": "НЕТ пары с d_runner<=50k: ближайшие l3-vs-a425d 364k, l1-vs-a425d 881k, l2-vs-a425b 1179k -> PAIR-гейт не пройден ни одной ногой",
+    "window": "спред якорей-425 2.10@7.04M vs 2.40@6.89M = 14.6пп норм-дельты >> +-5пп -> ОКНО ЗАБРАКОВАНО (мерж-рекомендации НЕ даётся)",
+    "effect": "inside_volatile лейн ВВЕРХ на всех 3 ногах (+0.43..+0.89), broadphase -0.53..-0.95 (в пределах шума) -> снапшот-плоскость cost-neutral-at-best на этом носителе: gate+collect >= экономии getBlockState",
+    "verdict": "RED / НЕ СЕРТИФИЦИРОВАНО: ARM x3 полный, но pair min-of-3 d>=+20% НЕ ВЗЯТ (норм-дельты -3.4/+2.7/+6.5, pair не валиден). Закон 3 цикл продолжается.",
+    "verdict_note": "ре-ролл того же вектора на том же носителе признан бессмысленным: лейн-дельта отрицательная при полном ARM — эффект не в шуме, его нет"
+  },
+  "cycle_3": {
+    "decision": "углубление юниона + композиция с готовыми ветками (канон промпта): НОВЫЙ носитель origin/round-424-c-chunk @6f92ea7 (cmp424_chunksend, l2 pair-certified +17.4%) ⊕ inside-плоскость ⊕ queryplane wake; опционально gcfix 831394a (brain3 GC-ревизия) против GC-регресса ног (Full=10/22-25.5s vs vanilla 9/20-21s)",
+    "status": "RESEARCH"
+  }
 }
