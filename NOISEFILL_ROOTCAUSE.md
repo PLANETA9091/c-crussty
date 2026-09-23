@@ -74,3 +74,29 @@ TPS↔runner_cpu_index внутри тира: 2.10@6.76M … 2.45@7.10M.
   GC-debt relief в бурсте; (б) chunk-send serialization cache (PlayerChunkSender/
   ChunkMap срез — revision-keyed переиспользование сериализованных чанк-пакетов;
   единственный chunk-lane, живущий В soak: трекер+отправка 2.0-2.2% сцены, RECON-36).
+
+## 5. TASK-430-A: root-cause wgen-l3 CI-fail (run 35865655409) — RC7 BOOT-POISON
+
+Симптом: SEEN_DONE=0, boot не дошёл до Done за 600s, FIXTURE-VALIDITY INVALID. server-stdout:
+- последний прогресс: "[13:20:56 INFO]: [PluginInitializerManager] Bukkit plugins (2):" — main умер
+  на следующем шаге.
+- java.lang.NoClassDefFoundError: Could not initialize class net.minecraft.core.registries.BuiltInRegistries
+  at net.minecraft.server.Bootstrap.bootStrap(Bootstrap.java:47) ... Caused by:
+  ExceptionInInitializerError: IllegalArgumentException: Not bootstrapped (called from registry
+  minecraft:game_event) [in thread "Thread-22"] ... at DensityFunctions.<clinit>(DensityFunctions.java:32)
+  at Class.forName0 ... — т.е. <clinit>-цепочку DensityFunction→DensityFunctions→BuiltInRegistries
+  запустил ФОНОВЫЙ поток noise_fill early-arm.
+
+Механизм: TASK-429-A early-arm сменил каденс с "sleep 10s → force" на "force с первого прохода, 2s poll".
+force_load_kernel_class зовёт Class.forName(target, initialize=TRUE) → если полл успевает ДО того как
+main дойдёт до Bootstrap.bootStrap() (окно 4-13s после attach), BuiltInRegistries.<clinit> падает на
+poll-потоке (checkBootstrapCalled → false), класс ЯДОВИТ навсегда (ExceptionInInitializerError), main
+умирает NoClassDefFoundError → JVM висит на фоновых потоках. l1/l2 выиграли гонку, l3 проиграл (1/3).
+
+Фикс (rust-only, блобы НЕ тронуты): improved_noise::force_load_kernel_class_lazy — Class.forName
+initialize=FALSE (define есть → ClassFileLoadHook ловит pristine-байты → phase-0 по find_class
+(только INITIALIZED-классы) разрывается, когда СЕРВЕР сам инициализирует DensityFunctions в
+bootstrap-фазе — в l1 sightings на 8s post-attach, до Done). <clinit> навсегда остаётся за main.
+Побочный бонус: arm-латентность ≤ boot marker (не Done+15-25s как до 429-A).
+
+Валидация: cargo check --lib PASS, cargo test --lib 302/0. Ветка: round-429-a-wgen (след. коммит).
