@@ -1,24 +1,22 @@
 {
-  "agent": "B (brain iter-2, TASK-422-B)",
-  "vector": "brain iter-2 — goal-selector subsystem COMPLETE (fix placebo + tickRunningGate extension)",
-  "branch": "round-422-b-brain2",
-  "base": "origin/round-421-mega 99ffefa (mega-carrier, merge candidate)",
-  "head": "e91d021",
-  "lever": "cmp422_brain2",
+  "agent": "TASK-427-B2",
+  "vector": "entity-goal-query + despawn-scan scanq: two-phase chain-build (memcpy-only criticals), striped bounded despawn-scan, two-phase ai-window; target-scan per-tick snapshot reuse verified (EPOCH_TICK double-check)",
+  "branch": "round-427-b2-scanq",
+  "base": "9009e05 (round-424-a-mobfeed javac-fold fix)",
   "run_id": null,
-  "run_ids": [],
   "tps_med": null,
   "delta_pair_pct": null,
-  "delta_pair_pcts": [],
-  "lane": {
-    "was": "nav_ai(goalsel) 8.6% + nav 2.3% + brain 1.36% (~12.3%) on mga421 profile; goal-fast-path PLAICEBO (0 GoalOps frames, NotFound at stdout:1186 — retarget scanned Mob.tick()V instead of serverAiStep()V)",
-    "now": "goal-selector slice armed: serverAiStep 2x GoalSelector.tick -> GoalOps.tickGate + 2x tickRunningGoals -> GoalOps.tickRunningGate; expected -2.5-4% CPU vs mga421"
-  },
-  "verdict": "PENDING-BENCH",
+  "verdict": "STEP-1 IMPLEMENTED (gates green)",
   "evidence": [
-    "PROFILE-B2.md: mga421 (run 35806660177, @99ffefa lever=cmp421_brain, 3.20@8.82M) collapsed 109304 samples: GoalOps=0 frames vs GoalSelector.tick=8220 — b6b1146 fast-path INERT on all 421 legs",
-    "root-cause: goal_selector.rs passed FROM.1/FROM.2 ('tick','()V') as ENCLOSING method; Mob declares public void tick()V (LivingEntity.tick+updateControlFlags) with 0 goal sites; real sites (javap): serverAiStep GoalSelector.tick @161/@183, tickRunningGoals(Z) @113/@136",
-    "step1 e91d021: fix ENCL=serverAiStep + dual retarget (2+2 sites) + tickRunningGate java bridge (flat pass, live isRunning, javap 1:1) + STRICT-OR cmp422_brain2 in 17 rust + 7 java gates; blobs rebuilt, check_blobs_sync ALL IN SYNC; cargo test 296/0 incl. mob_bytes_retarget_four_sites_if_available (real kernel Mob.class -> Retargeted{2}+Retargeted{2})"
+    "root-cause read of mf427l2 collapse: GetPrimitiveArrayCritical held across WHOLE population pass AND retry ladder (sscan QRETRY=128 x 41k x players rescans, ai same, eq 3-critical full pass) = GC-locker JVM-wide allocator stall (mc-line D2 mechanism, 20c9fdc/afbc1dc); full-plane per-tick passes unbounded",
+    "eq_epoch: two-phase (rust scratch build no-criticals -> memcpy-only publish, filled prefixes; single-pass chain parity kept, no seqlock ghost contract kept)",
+    "sscan_epoch: striped (STRIPE_CAP=16384 ids/tick budget, rotation STRIPE_MIN>=4, warm-up FULL pass on bound growth — no uninit entries/phantom player-0) + two-phase memcpy publish + bounded RETRIES=4 spin-yield, ERR_RANGE fail-open (mc canon)",
+    "ai_epoch: two-phase memcpy-only publish, bounded retries (same GC-locker stall class)",
+    "cargo test 300/300 (was 296 base + 4 new: eq chain parity oracle, rebuild idempotency, stripe tiling, warm-up rule)",
+    "check_blobs_sync ALL IN SYNC (no .java edits needed — signatures/ERR contracts unchanged)",
+    "javap gate: ColpushOps.selfTest NOT a stub (invokestatic idCount/idCapacity/byIdArr live) — 9009e05 javac-fold fix intact",
+    "target-scan reuse: EntityGoalQueryOps.maybeEpoch EPOCH_TICK==t double-check = 1 snapshot/tick shared by all targeting scans (verified, no change needed)",
+    "EFFECT markers added: 'scanq EFFECT armed (two-phase chain-build...)' (eq), 'scanq-stripes EFFECT armed (striped two-phase epoch...)' (sscan)"
   ],
-  "what": "step1 committed+pushed; next: dispatch 3 legs l1/l2/l3 lever=cmp422_brain2 (bank inputs EXACT), absorb, verdict vs fresh anchors-422 @57a2e67; if delta<+20% -> law-3 cycle (next slice: Brain.tick/behavior/memory/sensor or nav-path slice)"
+  "what": "step-1 rust impl + gates; next: commit+push, dispatch legs b2-scanq x2 + fresh vanilla anchors x2-3, pair min-of-3"
 }
