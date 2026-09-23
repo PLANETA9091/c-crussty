@@ -74,6 +74,10 @@ public final class ColpushOps {
     /** TASK-428-C: chunksend⊕mobsoa UNION carrier (law-7/закон-8 chunk-ось) —
      * STRICT-OR; пустой/чужой флаг = ваниль bit-in-bат (закон 4). */
     private static final String FLAG3 = "cmp428_chunkunion";
+    /** TASK-429-A: noise-fill/worldgen stabilization round rides the union
+     * carrier (law-8 GEN-axis arm, cmp429_wgen STRICT-OR) — raw-byte gate
+     * marker for check_blobs_sync (x93/indy lesson: keep in constant pool). */
+    private static final String FLAG4 = "cmp429_wgen";
     private static final int ERR_STRUCT = -1;
     private static final int ERR_RANGE = -2;
 
@@ -90,7 +94,7 @@ public final class ColpushOps {
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
         return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2)
-                || f.trim().equals(FLAG3));
+                || f.trim().equals(FLAG3) || f.trim().equals(FLAG4));
     }
 
     /** Структурный отказ — весь рычаг дизармится навсегда (ваниль-реплика). */

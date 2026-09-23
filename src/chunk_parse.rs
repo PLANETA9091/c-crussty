@@ -129,7 +129,7 @@ fn enabled() -> bool {
                 || v == "cmp424_chunksend"
                 // TASK-428-C (chunk-ось, закон 8): chunksend⊕mobsoa UNION —
                 // round-428-c-chunkunion (wgen-слайс 6f92ea7 ⊕ A2-носитель fe4ee57).
-                || v == "cmp428_chunkunion"
+                || v == "cmp428_chunkunion" || v == "cmp429_wgen"
         })
         .unwrap_or(false)
 }
@@ -619,6 +619,19 @@ mod chunkparse_delivery_tests {
         assert!(
             blob.windows(needle.len()).any(|w| w == needle),
             "blob constant pool must carry the cmp428_chunkunion union carrier"
+        );
+    }
+
+    /// TASK-429-A gate consistency: the cmp429_wgen noise-fill/worldgen
+    /// stabilization round rides the union carrier — the chunk-parse gate
+    /// must accept it STRICT-OR and the blob cp must carry the raw bytes.
+    #[test]
+    fn chunkparse_gate_accepts_429_wgen() {
+        let blob = include_bytes!("../chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class");
+        let needle = b"cmp429_wgen";
+        assert!(
+            blob.windows(needle.len()).any(|w| w == needle),
+            "blob constant pool must carry the cmp429_wgen wgen carrier"
         );
     }
 }

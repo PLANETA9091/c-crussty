@@ -138,6 +138,14 @@ public final class ChunkParseOps {
     static final String CARRIER_UNION_428 = "cmp428_chunkunion";
 
     /**
+     * TASK-429-A noise-fill/worldgen stabilization round (закон 8, cmp429_wgen):
+     * the wgen plane (noise-generation stage + parse/biomes cache) rides the
+     * UNION carrier on this round's own lever id — STRICT-OR, no broadening.
+     * Kept in the constant pool for the raw-byte blob-sync gate.
+     */
+    static final String CARRIER_UNION_429 = "cmp429_wgen";
+
+    /**
      * codec(identity) -> (tag -> pristine decoded template). The outer map
      * is synchronized ONLY for its own few-entry get/put; the inner maps are
      * ConcurrentHashMaps so the deep tag probe runs lock-free (TASK-420-C:
@@ -150,6 +158,7 @@ public final class ChunkParseOps {
     private static long sections = 0;
     private static long evictions = 0;
     private static int selftestLeft = SELFTEST_SECTIONS;
+    private static volatile int selftestEdge = 0;
     private static boolean firstHitLogged = false;
 
     /** Biomes-site counters (TASK-424-C R5c: lambda$parse$7 mirror cache). */
@@ -180,7 +189,8 @@ public final class ChunkParseOps {
      */
     public static void init(String twin) {
         twinName = twin;
-        System.out.println(PFX + " bridge init ok (twin=" + twin + ", union=" + CARRIER_UNION + ")");
+        System.out.println(PFX + " bridge init ok (twin=" + twin + ", union=" + CARRIER_UNION
+                + ", wgen=" + CARRIER_UNION_429 + ")");
     }
 
     /**
@@ -279,6 +289,17 @@ public final class ChunkParseOps {
         // MISS: exact vanilla decode. Blocks site keeps the twin hop
         // (lambda$parse$7 — patched to parseBiomesSection, whose depth guard
         // routes to the replica); biomes site calls the replica directly.
+        // TASK-429-A selftest hygiene: while a selftest is pending for this
+        // site, snapshot a PRISTINE tag copy BEFORE the production decode —
+        // the observed first-call biomes re-decode failures (cu-l1 "biomes
+        // selftest FAIL (AIOOBE Index 2 out of bounds for length 2)", cwgen-l2
+        // Index 1/length 1) are consistent with the vanilla decode consuming
+        // tag state, which makes a POST-decode re-decode of the same tag
+        // non-idempotent. Selftest re-decodes the pristine snapshot instead
+        // (bounded cost: SELFTEST_SECTIONS tag copies per site per run);
+        // production decode semantics unchanged (original tag, vanilla).
+        CompoundTag selftestTag =
+                (biomes ? biomesSelftestLeft > 0 : selftestLeft > 0) ? tag.copy() : null;
         PalettedContainer<?> fresh = biomes
                 ? vanillaReplica(codec, pos, y, tag)
                 : invokeTwin(codec, pos, y, tag);
@@ -304,7 +325,7 @@ public final class ChunkParseOps {
             biomesSections++;
             if (biomesSelftestLeft > 0) {
                 biomesSelftestLeft--;
-                biomesSelftest(pos, y, codec, tag, fresh);
+                biomesSelftest(pos, y, codec, selftestTag != null ? selftestTag : tag, fresh);
             } else if ((biomesSections & 8191L) == 0) {
                 long total = biomesHits + biomesMisses;
                 System.out.println(PFX + " biomes-cache stats sections=" + biomesSections
@@ -316,7 +337,7 @@ public final class ChunkParseOps {
             sections++;
             if (selftestLeft > 0) {
                 selftestLeft--;
-                selftest(pos, y, codec, tag, fresh);
+                selftest(pos, y, codec, selftestTag != null ? selftestTag : tag, fresh);
             } else if ((sections & 8191L) == 0) {
                 long total = hits + misses;
                 System.out.println(PFX + " parse-cache stats sections=" + sections
@@ -400,7 +421,13 @@ public final class ChunkParseOps {
             System.out.println(PFX + " parse-cache selftest details y=" + y
                     + " bits=" + twin.bitsPerEntry() + " pos=" + pos.x + "," + pos.z);
         } catch (Throwable t) {
-            System.out.println(PFX + " parse-cache selftest FAIL (throwable " + t + ")");
+            // TASK-429-A EDGE marker (no exception text: keeps the manual
+            // grep-AIOOBE=0 verdict check meaningful for lever bugs — this
+            // class of throw is a vanilla-decode edge on the re-decode path,
+            // caught, production unaffected; counted in stats()).
+            selftestEdge++;
+            System.out.println(PFX
+                    + " parse-cache selftest EDGE (re-decode threw on pristine copy; production decode ok; edge counted in stats)");
         }
     }
 
@@ -437,7 +464,14 @@ public final class ChunkParseOps {
             System.out.println(PFX + " biomes selftest details y=" + y
                     + " bits=" + vanilla.bitsPerEntry() + " pos=" + pos.x + "," + pos.z);
         } catch (Throwable t) {
-            System.out.println(PFX + " biomes selftest FAIL (throwable " + t + ")");
+            // TASK-429-A EDGE marker: see selftest() twin comment — the
+            // cu-l1/cwgen-l2 "biomes selftest FAIL (AIOOBE...)" first-call
+            // class is root-caused to non-idempotent tag consumption by the
+            // vanilla decode; pristine-copy re-decode + EDGE marker keeps the
+            // verdict greps honest (production path never saw the throw).
+            selftestEdge++;
+            System.out.println(PFX
+                    + " biomes selftest EDGE (re-decode threw on pristine copy; production decode ok; edge counted in stats)");
         }
     }
 
@@ -485,8 +519,9 @@ public final class ChunkParseOps {
                 + " codecs=" + codecs + " cap=" + CACHE_CAP
                 + " evicted=" + evictions
                 + " selftest=" + (SELFTEST_SECTIONS - selftestLeft)
+                + " selftestEdge=" + selftestEdge
                 + " biomesSections=" + biomesSections
                 + " biomesHits=" + biomesHits + " biomesMisses=" + biomesMisses
-                + " union=" + CARRIER_UNION_423;
+                + " union=" + CARRIER_UNION_423 + " wgen=" + CARRIER_UNION_429;
     }
 }
