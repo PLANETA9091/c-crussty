@@ -471,14 +471,17 @@ case "${LEVER_FLAG:-}" in
     log "${LEVER_FLAG} armed: chunk-parse section-cache (deep: cap 16384, evict-half, lock-free probe) + noise-fill GEN-axis (CRUSSTY_KERNEL_POLICY=off — documented two-key A/B override; noiseFillArrayWholeBody not in PROVEN_WINS); cmp421_chunk = TASK-421-C stabilized chunk-axis round (NOISEFILL_ROOTCAUSE.md)"
     ;;
 esac
-# TASK-430-B inside-plane subsystem (cmp430_inside): inside_bitmask pre-gate
-# (RECON-33 option-B flagman, stage-1b) + inside_snap snapshot plane (modulo
-# decoder, ONE bulk-JNI per collect, stage-1c) + the A2 mobsoa carrier stack
-# via STRICT-OR. No kernel-policy change (byte redirects + bulk-JNI only —
-# same two-key behavior as cmp424_mobfeed legs; section-cache needs no key).
+# TASK-430-B inside-plane subsystem (cmp430_inside) + TASK-434-C chunk-pipeline
+# R5 (cmp434_chunkpl): inside_bitmask pre-gate (RECON-33 option-B flagman,
+# stage-1b) + inside_snap snapshot plane (modulo decoder, ONE bulk-JNI per
+# collect, stage-1c) + the A2 mobsoa carrier stack via STRICT-OR; chunkpl adds
+# the biomes-parse cache (second section-decode site, 558fd1d port) + the
+# block_states deep cache. No kernel-policy change (byte redirects + bulk-JNI
+# only — same two-key behavior as cmp424_mobfeed legs; section-cache needs no
+# key; GEN-axis stays dormant under chunkpl, kernel-policy untouched).
 case "${LEVER_FLAG:-}" in
-  cmp430_inside)
-    log "${LEVER_FLAG} armed: inside-plane subsystem = inside_bitmask all-air pre-gate (median-exact, entity_compose stage-1b) + inside_snap per-section BlockState[4096] snapshots (ONE bulk-JNI per collect, event-driven secWrite invalidation, entity_compose stage-1c) + mobsoa/colpush/queryplane/goal/items carrier stack via STRICT-OR (TASK-430-B, закон 6)"
+  cmp430_inside|cmp434_chunkpl)
+    log "${LEVER_FLAG} armed: inside-plane subsystem = inside_bitmask all-air pre-gate (median-exact, entity_compose stage-1b) + inside_snap per-section BlockState[4096] snapshots (ONE bulk-JNI per collect, event-driven secWrite invalidation, entity_compose stage-1c) + mobsoa/colpush/queryplane/goal/items carrier stack via STRICT-OR (TASK-430-B, закон 6); cmp434_chunkpl adds chunk-parse deep cache + biomes-parse cache (TASK-434-C R5, both section lambdas)"
     ;;
 esac
 # RECON_DIAG (TASK-317, instrument-гейт рычага #13 SKIP-STORE-DIET): чистая
