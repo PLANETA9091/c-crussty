@@ -1,0 +1,66 @@
+### base v2 leg#5 (35381522360): /home/z/c-crussty/research/region-threads-2026-09-18/run-s7159-leg5-artifact
+  total=129734
+     entity-tick (tickBucket lane incl. workers)               68750   52.99%
+     GC/JIT-native (G1/JIT symbols)                            53036   40.88%
+     tracker (ChunkMap/ServerEntity)                            2885    2.22%
+     other/uncategorized                                        1610    1.24%
+     main-server-tick-other                                      999    0.77%
+     chunk-system workers                                        983    0.76%
+     region-threads-infra (fill/barriers, no tickBucket)         911    0.70%
+     navigation/pathfinding                                      357    0.28%
+     broadphase/collision/push                                   110    0.08%
+     AI/goal-selector/brain/sensing                               92    0.07%
+     inside-pipeline (traversal+collector)                         1    0.00%
+  -- entity-phase breakdown (69917 = 53.89% CPU):
+     main-server-tick-other                                    14141  10.90% CPU ( 20.2% phase)
+     inside-pipeline (traversal+collector)                     13904  10.72% CPU ( 19.9% phase)
+     fluid-scan                                                11895   9.17% CPU ( 17.0% phase)
+     broadphase/collision/push                                 11872   9.15% CPU ( 17.0% phase)
+     AI/goal-selector/brain/sensing                             7623   5.88% CPU ( 10.9% phase)
+     movement-integration                                       5680   4.38% CPU (  8.1% phase)
+     navigation/pathfinding                                     3424   2.64% CPU (  4.9% phase)
+     entity-residual                                            1010   0.78% CPU (  1.4% phase)
+     chunk-system workers                                        368   0.28% CPU (  0.5% phase)
+  collector-family=2345 (1.81%)
+  young_gc=180 total=21457ms worst=170.1ms full=0
+  TPS median=2.40 (crawl n=6)
+  NCDFE=0 NPE=0 uuid=0 navmob=0 pop=150000 VALID=True
+  BC defined=False composed=False first-swap(seen)=False
+### leg v2+bc-ctor (S7-161): /home/z/c-crussty/research/batch-collector-2026-09-19/run-s7161-batch-collector-artifact
+  total=127749
+     entity-tick (tickBucket lane incl. workers)               71515   55.98%
+     GC/JIT-native (G1/JIT symbols)                            47479   37.17%
+     tracker (ChunkMap/ServerEntity)                            2659    2.08%
+     other/uncategorized                                        2139    1.67%
+     region-threads-infra (fill/barriers, no tickBucket)        1093    0.86%
+     chunk-system workers                                       1058    0.83%
+     main-server-tick-other                                     1010    0.79%
+     navigation/pathfinding                                      653    0.51%
+     broadphase/collision/push                                    95    0.07%
+     AI/goal-selector/brain/sensing                               36    0.03%
+     fluid-scan                                                   11    0.01%
+     movement-integration                                          1    0.00%
+  -- entity-phase breakdown (72308 = 56.60% CPU):
+     main-server-tick-other                                    15775  12.35% CPU ( 21.8% phase)
+     inside-pipeline (traversal+collector)                     14746  11.54% CPU ( 20.4% phase)
+     broadphase/collision/push                                 13507  10.57% CPU ( 18.7% phase)
+     fluid-scan                                                12126   9.49% CPU ( 16.8% phase)
+     AI/goal-selector/brain/sensing                             6009   4.70% CPU (  8.3% phase)
+     movement-integration                                       5929   4.64% CPU (  8.2% phase)
+     navigation/pathfinding                                     3520   2.76% CPU (  4.9% phase)
+     chunk-system workers                                        419   0.33% CPU (  0.6% phase)
+     entity-residual                                             277   0.22% CPU (  0.4% phase)
+  collector-family=2836 (2.22%)
+  young_gc=161 total=20408ms worst=194.5ms full=0
+  TPS median=1.50 (crawl n=6)
+  NCDFE=0 NPE=0 uuid=0 navmob=0 pop=150000 VALID=True
+  BC defined=True composed=True first-swap(seen)=True
+
+=== GATES (preregistered S7-160) ===
+PG2: PASS (NCDFE=0, pop=150000, VALID=True, defined=True, composed=True)
+PG3 non-regression: median=1.50 (cap >= 1.60) => FAIL
+PG4'': young GC=161 (cap 180) OK; collector-family 2345->2836 (cap <= 1290, -20.9%) => FAIL
+CRASH-FREE: PASS (navmob watchlist=0)
+
+=== VERDICT S7-160 ===
+GATES NOT CLEAN -> REFUTED-BY-ECONOMICS + rollback batch_collector=0 (v2 stays banked)

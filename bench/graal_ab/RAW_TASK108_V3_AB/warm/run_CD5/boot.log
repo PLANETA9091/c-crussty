@@ -1,0 +1,91 @@
+[crussty-runtime] v2.0.0 loaded (options: modules=/home/z/server/modules;versions=/home/z/server/versions;kernel=purpur-1.21.10.jar)
+[crussty-plugin] cplugin_init: injecting Crussty CE native surface in background
+[crussty-plugin] improved_noise: dormant (set CRUSSTY_NATIVE_IMPROVED_NOISE=1 to enable)
+[crussty-plugin] perlin_noise: dormant (set CRUSSTY_NATIVE_PERLIN_NOISE=1 to enable)
+[crussty-plugin] noise_fill: dormant (set CRUSSTY_NATIVE_NOISE_FILL=1 to enable)
+[crussty-plugin] fluid_guard: dormant (set CRUSSTY_FLUID_PUSH_GUARD=1 to enable)
+[crussty-plugin] blend_cache: dormant (prototype; set CRUSSTY_NATIVE_BLEND_CACHE=1 to run the read-only parity harness — no patch ships)
+[crussty-runtime] module crussty -> init rc=0
+[crussty-runtime] pipeline ready: 1 module hook(s)
+[crussty-runtime] transform engine: 23 rule(s) registered
+[crussty:hot-reload] SIGUSR1 reload trigger armed (1 module(s) reloadable)
+Starting org.bukkit.craftbukkit.Main
+[00:59:02 INFO]: [bootstrap] Running Java 21 (OpenJDK 64-Bit Server VM 21.0.12.1+1-LTS; Eclipse Adoptium Temurin-21.0.12.1+1) on Linux 5.10.134-013.8.3.kangaroo.al8.x86_64 (amd64)
+[00:59:02 INFO]: [bootstrap] Loading Purpur 1.21.10-2535-HEAD@0a2dc04 (1970-01-01T00:00:00Z) for Minecraft 1.21.10
+[00:59:02 INFO]: [PluginInitializerManager] Initializing plugins...
+[crussty-runtime] hook class in visible table: JNIStr { internal: "dev/crussty/hooks/SchedulerHooks" }
+[crussty-runtime] hook class in visible table: JNIStr { internal: "dev/crussty/hooks/StorageHooks" }
+[crussty-runtime] hook class in visible table: JNIStr { internal: "dev/crussty/hooks/NetHooks" }
+[crussty-runtime] hook class in visible table: JNIStr { internal: "dev/crussty/hooks/TickHook" }
+[crussty-runtime] transform hook classes installed (4); transform engine armed
+[00:59:02 INFO]: [PluginInitializerManager] Initialized 0 plugins
+[crussty-plugin] native libs: "/home/z/server/modules/crussty/libpaper_native_jni.so" (+ "/home/z/server/modules/crussty/libpaper_native_chunk_encode_jni.so")
+[crussty-plugin] attached: injecting bridge classes
+[crussty-plugin] injection loop done
+[crussty-plugin] batch: rollout gate CRUSSTY_BATCH=unset -> mode=off (site arming disabled (default; bridge exists, zero consumers))
+[crussty-plugin] batch: 21 kernels resolved, run() + abiVersion() registered on crussty/batch/PaperNativeBatchDispatch
+[crussty-plugin] native surface live: 98 bridge classes, 283 natives registered (0 symbols unresolved)
+[crussty-plugin] live proof: normalNoise.nativeCheck() = 1
+[crussty-plugin] live proof: ticketset binarySummary(1000) wrote 1 long(s)
+[00:59:09 INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[00:59:11 INFO]: Loaded 1461 recipes
+[00:59:11 INFO]: Loaded 1574 advancements
+[00:59:11 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Initialising converters for DataConverter...
+[00:59:12 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Finished initialising converters for DataConverter in 711.9ms
+[00:59:12 INFO]: Starting minecraft server version 1.21.10
+[00:59:12 INFO]: Loading properties
+[00:59:12 INFO]: This server is running Purpur version 1.21.10-2535-HEAD@0a2dc04 (1970-01-01T00:00:00Z) (Implementing API version 1.21.10-R0.1-SNAPSHOT)
+[00:59:13 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[00:59:13 INFO]: Server Ping Player Sample Count: 12
+[00:59:13 INFO]: Using 4 threads for Netty based IO
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 1)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[00:59:14 INFO]: [MoonriseCommon] Paper is using 1 worker threads, 1 I/O threads
+>   [00:59:15 INFO]: Default game type: SURVIVAL
+>   [00:59:15 INFO]: Generating keypair
+>   [00:59:15 INFO]: Starting Minecraft server on *:25565
+>   [00:59:15 INFO]: Using epoll channel type
+>   [00:59:15 INFO]: Paper: Using libdeflate (Linux x86_64) compression from Velocity.
+>   [00:59:15 INFO]: Paper: Using OpenSSL 3.x.x (Linux x86_64) cipher from Velocity.
+>   [00:59:15 INFO]: Server permissions file permissions.yml is empty, ignoring it
+>   [00:59:15 INFO]: Preparing level "world"
+> [crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 2)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+  [00:59:16 INFO]: Loading 0 persistent chunks for world 'minecraft:overworld'...
+>   [00:59:16 INFO]: Preparing spawn area: 100%
+>   [00:59:16 INFO]: Prepared spawn area in 1 ms
+>   [00:59:16 INFO]: Loading 0 persistent chunks for world 'minecraft:the_nether'...
+>   [00:59:16 INFO]: Prepared spawn area in 0 ms
+>   [00:59:16 INFO]: Loading 0 persistent chunks for world 'minecraft:the_end'...
+>   [00:59:16 INFO]: Prepared spawn area in 1 ms
+>   [00:59:16 INFO]: Done preparing level "world" (0.935s)
+>   [00:59:16 INFO]: [spark] Starting background profiler...
+>   [00:59:17 INFO]: Running delayed init tasks
+>   [00:59:17 INFO]: Done (15.998s)! For help, type "help"
+> [crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 3)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 4)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 5)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 6)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 7)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] area_map: budget gate CRUSSTY_AREAMAP_BUDGET=unset -> mode=off (legacy grow-to-cap scratch (default; fail-safe))
+[crussty-plugin] area_map: budget path OFF (gate off; legacy grow-to-cap scratch)
+[crussty-plugin] area_map: defined ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps$Scratch in map loader
+[crussty-plugin] area_map: defined ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps$1 in map loader
+[crussty-plugin] area_map: defined ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps in map loader
+[crussty-runtime] retransform ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap: is_modifiable_class=true
+[crussty-runtime] retransform ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap: class_status=0x7
+[crussty-plugin] area_map: patched ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap update() (5075 -> 3320 bytes)
+[crussty-plugin] area_map: hook armed, retransform rc=0
+[crussty-plugin] area_map: sighting feed: 7 full class-heap scans avoided
+[crussty-plugin] area_map: self-test OK (64 rects, native == naive set difference)
+[crussty-plugin] area_map: defined dev/crussty/areamapprobe/AreaMapProbe$RecMap in map loader
+[crussty-plugin] area_map: defined dev/crussty/areamapprobe/AreaMapProbe in map loader
+[crussty-plugin] area_map: call-level self-test OK (141 rects via patched update(), scratch=1156 legacy arm)
+>   [00:59:41 INFO]: Marked 25 chunks in minecraft:overworld from [212, 212] to [216, 216] to be force loaded
+> >   [01:00:02 INFO]: Marked 64 chunks in minecraft:overworld from [200, 200] to [207, 207] to be force loaded
+> 

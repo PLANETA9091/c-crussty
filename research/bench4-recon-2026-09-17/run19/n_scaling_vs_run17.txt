@@ -1,0 +1,34 @@
+=== legA total_samples=224568 mspt=76.98 cpu=9080657 churn=774.0 (8.9%)
+=== legB total_samples=141110 mspt=57.01 cpu=10088241 churn=747.0 (8.4%)
+
+=== LANE DELTA (share_pp = B - A share points; abs = samples scaled to equal totals) ===
+  JVM internals (G1 GC)                        4.48% ->   5.99% (pp +1.51; abs/1000t 27.7 -> 59.9) <-- GROWTH
+  JVM internals (GC oop barriers)              4.50% ->   5.61% (pp +1.11; abs/1000t 27.8 -> 56.1) <-- GROWTH
+  JDK other                                    1.79% ->   2.08% (pp +0.29; abs/1000t 11.0 -> 20.8)
+  chunk system (kernel)                       10.37% ->  10.44% (pp +0.07; abs/1000t 64.0 -> 104.4)
+  JIT stubs (vtable/itable)                    2.61% ->   2.65% (pp +0.04; abs/1000t 16.1 -> 26.5)
+  other                                       14.91% ->  14.92% (pp +0.01; abs/1000t 92.0 -> 149.2)
+  JDK collections                              6.47% ->   6.43% (pp -0.04; abs/1000t 40.0 -> 64.3)
+  (other/unbucketed tail)                      3.96% ->   3.89% (pp -0.07; abs/1000t 24.4 -> 38.9)
+  fastutil collections                         4.41% ->   4.30% (pp -0.11; abs/1000t 27.2 -> 43.0)
+  JDK invokes/VarHandle                        1.89% ->   1.53% (pp -0.36; abs/1000t 11.7 -> 15.3)
+  moonrise/paper patches                       7.68% ->   7.26% (pp -0.42; abs/1000t 47.4 -> 72.6)
+  entities/mobs (kernel)                      12.74% ->  12.13% (pp -0.61; abs/1000t 78.6 -> 121.3) <-- SHRINK
+  network (kernel)                             1.47% ->   0.85% (pp -0.62; abs/1000t 9.1 -> 8.5) <-- SHRINK
+  kernel: other                               21.46% ->  20.80% (pp -0.66; abs/1000t 132.5 -> 208.0) <-- SHRINK
+  block entities/hoppers (kernel)              1.26% ->   0.00% (pp -1.26; abs/1000t 7.8 -> 0.0) <-- SHRINK
+
+=== SPAWN LANE (bench-4 signature) ===
+  NaturalSpawner                 0.25% ->   0.38% (abs/1000t 2.47 -> 3.79)
+  checkDespawn                   0.11% ->   0.06% (abs/1000t 1.15 -> 0.64)
+  createState                    0.24% ->   0.12% (abs/1000t 2.36 -> 1.21)
+  findNearbyPlayer               0.00% ->   0.00% (abs/1000t 0.00 -> 0.01)
+  spawnForChunk                  0.10% ->   0.19% (abs/1000t 0.61 -> 1.90)
+  tickSpawning                   0.00% ->   0.01% (abs/1000t 0.02 -> 0.08)
+
+=== VISIBILITY/NETWORK LEAVES ===
+  [kernel: other] net/minecraft/server/level/ServerEntity.sendChanges: 1067 -> 0 (abs/1000t 4.75 -> 0.00)
+
+=== VERDICT ===
+  gate: a lane earns STEP-0 if replaceable core >= 3% MSPT at realistic N
+  (see lane deltas above; family-aggregate or owner-gated paths otherwise)

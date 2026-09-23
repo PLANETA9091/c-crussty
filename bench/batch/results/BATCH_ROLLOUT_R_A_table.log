@@ -1,0 +1,128 @@
+# config abi=65548 (table=1 kernels=12) lib=/home/z/wT47/target/release/libcrussty.so jdk=21.0.12.1 route=DIRECT controls=false
+# refused_probe id=9999 ret=-3 (negative=true)
+# shape-B mechanical OK id=10 K=8 ret=8 outs0=0 (dispatch path executes; value = kernel rejection for synthesized input)
+# shape-B mechanical OK id=11 K=8 ret=8 outs0=0 (dispatch path executes; value = kernel rejection for synthesized input)
+# probe id=0 ns_per_op=505502 (>10us body) -> scaled budget x50
+# parity OK id=0 lanes=1 (batch == direct, bit-exact)
+RESULT_DIRECT	id=0	group=ticketsetsearch-ids01	K=1	route=direct	ns_per_op_median=509421.4	ns_min=507517.2	ns_max=521403.1
+RESULT_BATCH	id=0	group=ticketsetsearch-ids01	K=1	route=direct	ns_per_op_median=509394.1	ns_min=508838.4	ns_max=512077.3
+ROUTE_COST	id=0	K=1	routed_ns_per_op=509421.4
+# parity OK id=0 lanes=1 (batch == direct, bit-exact)
+RESULT_DIRECT	id=0	group=ticketsetsearch-ids01	K=8	route=direct	ns_per_op_median=507374.2	ns_min=505249.0	ns_max=514235.4
+RESULT_BATCH	id=0	group=ticketsetsearch-ids01	K=8	route=direct	ns_per_op_median=503153.3	ns_min=502735.8	ns_max=507357.6
+ROUTE_COST	id=0	K=8	routed_ns_per_op=507374.2
+# parity OK id=0 lanes=1 (batch == direct, bit-exact)
+RESULT_DIRECT	id=0	group=ticketsetsearch-ids01	K=16	route=direct	ns_per_op_median=482969.9	ns_min=482958.4	ns_max=485040.0
+RESULT_BATCH	id=0	group=ticketsetsearch-ids01	K=16	route=direct	ns_per_op_median=492099.7	ns_min=475693.9	ns_max=494461.9
+ROUTE_COST	id=0	K=16	routed_ns_per_op=482969.9
+# parity OK id=0 lanes=1 (batch == direct, bit-exact)
+RESULT_DIRECT	id=0	group=ticketsetsearch-ids01	K=64	route=direct	ns_per_op_median=479562.1	ns_min=477531.3	ns_max=482024.9
+RESULT_BATCH	id=0	group=ticketsetsearch-ids01	K=64	route=direct	ns_per_op_median=477256.6	ns_min=476766.9	ns_max=481537.8
+ROUTE_COST	id=0	K=64	routed_ns_per_op=479562.1
+# parity OK id=0 lanes=1 (batch == direct, bit-exact)
+RESULT_DIRECT	id=0	group=ticketsetsearch-ids01	K=256	route=direct	ns_per_op_median=485034.1	ns_min=483103.9	ns_max=485049.4
+RESULT_BATCH	id=0	group=ticketsetsearch-ids01	K=256	route=direct	ns_per_op_median=479725.1	ns_min=476062.4	ns_max=480802.4
+ROUTE_COST	id=0	K=256	routed_ns_per_op=485034.1
+# parity OK id=2 lanes=4 (batch == direct, bit-exact)
+RESULT_DIRECT	id=2	group=aquiferindexstride-ids23(g0)	K=1	route=direct	ns_per_op_median=758.7	ns_min=752.5	ns_max=783.5
+RESULT_BATCH	id=2	group=aquiferindexstride-ids23(g0)	K=1	route=direct	ns_per_op_median=1023.2	ns_min=991.8	ns_max=1096.0
+ROUTE_COST	id=2	K=1	routed_ns_per_op=758.7
+# parity OK id=2 lanes=4 (batch == direct, bit-exact)
+RESULT_DIRECT	id=2	group=aquiferindexstride-ids23(g0)	K=8	route=direct	ns_per_op_median=757.8	ns_min=753.4	ns_max=763.1
+RESULT_BATCH	id=2	group=aquiferindexstride-ids23(g0)	K=8	route=direct	ns_per_op_median=823.2	ns_min=821.9	ns_max=823.3
+ROUTE_COST	id=2	K=8	routed_ns_per_op=757.8
+# parity OK id=2 lanes=4 (batch == direct, bit-exact)
+RESULT_DIRECT	id=2	group=aquiferindexstride-ids23(g0)	K=16	route=direct	ns_per_op_median=755.3	ns_min=751.8	ns_max=819.4
+RESULT_BATCH	id=2	group=aquiferindexstride-ids23(g0)	K=16	route=direct	ns_per_op_median=815.3	ns_min=807.9	ns_max=870.1
+ROUTE_COST	id=2	K=16	routed_ns_per_op=755.3
+# parity OK id=2 lanes=4 (batch == direct, bit-exact)
+RESULT_DIRECT	id=2	group=aquiferindexstride-ids23(g0)	K=64	route=direct	ns_per_op_median=756.6	ns_min=752.6	ns_max=772.7
+RESULT_BATCH	id=2	group=aquiferindexstride-ids23(g0)	K=64	route=direct	ns_per_op_median=801.7	ns_min=800.2	ns_max=812.4
+ROUTE_COST	id=2	K=64	routed_ns_per_op=756.6
+# parity OK id=2 lanes=4 (batch == direct, bit-exact)
+RESULT_DIRECT	id=2	group=aquiferindexstride-ids23(g0)	K=256	route=direct	ns_per_op_median=754.0	ns_min=751.6	ns_max=762.3
+RESULT_BATCH	id=2	group=aquiferindexstride-ids23(g0)	K=256	route=direct	ns_per_op_median=801.9	ns_min=797.9	ns_max=808.5
+ROUTE_COST	id=2	K=256	routed_ns_per_op=754.0
+# parity OK id=4 lanes=4 (batch == direct, bit-exact)
+RESULT_DIRECT	id=4	group=chunkdependencies-ids45(g5)	K=1	route=direct	ns_per_op_median=179.5	ns_min=178.5	ns_max=182.6
+RESULT_BATCH	id=4	group=chunkdependencies-ids45(g5)	K=1	route=direct	ns_per_op_median=420.3	ns_min=418.0	ns_max=428.3
+ROUTE_COST	id=4	K=1	routed_ns_per_op=179.5
+# parity OK id=4 lanes=4 (batch == direct, bit-exact)
+RESULT_DIRECT	id=4	group=chunkdependencies-ids45(g5)	K=8	route=direct	ns_per_op_median=179.4	ns_min=178.6	ns_max=180.1
+RESULT_BATCH	id=4	group=chunkdependencies-ids45(g5)	K=8	route=direct	ns_per_op_median=246.2	ns_min=245.1	ns_max=249.7
+ROUTE_COST	id=4	K=8	routed_ns_per_op=179.4
+# parity OK id=4 lanes=4 (batch == direct, bit-exact)
+RESULT_DIRECT	id=4	group=chunkdependencies-ids45(g5)	K=16	route=direct	ns_per_op_median=179.7	ns_min=178.9	ns_max=194.4
+RESULT_BATCH	id=4	group=chunkdependencies-ids45(g5)	K=16	route=direct	ns_per_op_median=235.4	ns_min=233.7	ns_max=241.4
+ROUTE_COST	id=4	K=16	routed_ns_per_op=179.7
+# parity OK id=4 lanes=4 (batch == direct, bit-exact)
+RESULT_DIRECT	id=4	group=chunkdependencies-ids45(g5)	K=64	route=direct	ns_per_op_median=179.3	ns_min=178.9	ns_max=180.2
+RESULT_BATCH	id=4	group=chunkdependencies-ids45(g5)	K=64	route=direct	ns_per_op_median=224.8	ns_min=223.6	ns_max=225.8
+ROUTE_COST	id=4	K=64	routed_ns_per_op=179.3
+# parity OK id=4 lanes=4 (batch == direct, bit-exact)
+RESULT_DIRECT	id=4	group=chunkdependencies-ids45(g5)	K=256	route=direct	ns_per_op_median=182.4	ns_min=179.8	ns_max=288.9
+RESULT_BATCH	id=4	group=chunkdependencies-ids45(g5)	K=256	route=direct	ns_per_op_median=252.0	ns_min=220.4	ns_max=345.0
+ROUTE_COST	id=4	K=256	routed_ns_per_op=182.4
+# parity OK id=6 lanes=4 (batch == direct, bit-exact)
+RESULT_DIRECT	id=6	group=densitysplinecontext-ids67(g10)	K=1	route=direct	ns_per_op_median=482.7	ns_min=381.1	ns_max=864.6
+RESULT_BATCH	id=6	group=densitysplinecontext-ids67(g10)	K=1	route=direct	ns_per_op_median=654.4	ns_min=611.7	ns_max=1311.3
+ROUTE_COST	id=6	K=1	routed_ns_per_op=482.7
+# parity OK id=6 lanes=4 (batch == direct, bit-exact)
+RESULT_DIRECT	id=6	group=densitysplinecontext-ids67(g10)	K=8	route=direct	ns_per_op_median=377.5	ns_min=374.5	ns_max=380.8
+RESULT_BATCH	id=6	group=densitysplinecontext-ids67(g10)	K=8	route=direct	ns_per_op_median=444.6	ns_min=443.2	ns_max=447.9
+ROUTE_COST	id=6	K=8	routed_ns_per_op=377.5
+# parity OK id=6 lanes=4 (batch == direct, bit-exact)
+RESULT_DIRECT	id=6	group=densitysplinecontext-ids67(g10)	K=16	route=direct	ns_per_op_median=375.6	ns_min=375.0	ns_max=400.1
+RESULT_BATCH	id=6	group=densitysplinecontext-ids67(g10)	K=16	route=direct	ns_per_op_median=438.1	ns_min=429.0	ns_max=447.0
+ROUTE_COST	id=6	K=16	routed_ns_per_op=375.6
+# parity OK id=6 lanes=4 (batch == direct, bit-exact)
+RESULT_DIRECT	id=6	group=densitysplinecontext-ids67(g10)	K=64	route=direct	ns_per_op_median=375.6	ns_min=375.4	ns_max=492.0
+RESULT_BATCH	id=6	group=densitysplinecontext-ids67(g10)	K=64	route=direct	ns_per_op_median=424.1	ns_min=420.1	ns_max=432.8
+ROUTE_COST	id=6	K=64	routed_ns_per_op=375.6
+# parity OK id=6 lanes=4 (batch == direct, bit-exact)
+RESULT_DIRECT	id=6	group=densitysplinecontext-ids67(g10)	K=256	route=direct	ns_per_op_median=374.8	ns_min=374.4	ns_max=375.8
+RESULT_BATCH	id=6	group=densitysplinecontext-ids67(g10)	K=256	route=direct	ns_per_op_median=416.6	ns_min=415.9	ns_max=418.9
+ROUTE_COST	id=6	K=256	routed_ns_per_op=374.8
+# parity OK id=8 lanes=4 (batch == direct, bit-exact)
+RESULT_DIRECT	id=8	group=entitylookupstatus-id8(g14)	K=1	route=direct	ns_per_op_median=140.9	ns_min=140.5	ns_max=144.0
+RESULT_BATCH	id=8	group=entitylookupstatus-id8(g14)	K=1	route=direct	ns_per_op_median=377.8	ns_min=377.3	ns_max=383.9
+ROUTE_COST	id=8	K=1	routed_ns_per_op=140.9
+# parity OK id=8 lanes=4 (batch == direct, bit-exact)
+RESULT_DIRECT	id=8	group=entitylookupstatus-id8(g14)	K=8	route=direct	ns_per_op_median=141.0	ns_min=140.7	ns_max=141.6
+RESULT_BATCH	id=8	group=entitylookupstatus-id8(g14)	K=8	route=direct	ns_per_op_median=206.4	ns_min=206.0	ns_max=207.1
+ROUTE_COST	id=8	K=8	routed_ns_per_op=141.0
+# parity OK id=8 lanes=4 (batch == direct, bit-exact)
+RESULT_DIRECT	id=8	group=entitylookupstatus-id8(g14)	K=16	route=direct	ns_per_op_median=141.4	ns_min=141.0	ns_max=141.6
+RESULT_BATCH	id=8	group=entitylookupstatus-id8(g14)	K=16	route=direct	ns_per_op_median=195.0	ns_min=193.7	ns_max=195.9
+ROUTE_COST	id=8	K=16	routed_ns_per_op=141.4
+# parity OK id=8 lanes=4 (batch == direct, bit-exact)
+RESULT_DIRECT	id=8	group=entitylookupstatus-id8(g14)	K=64	route=direct	ns_per_op_median=141.1	ns_min=140.6	ns_max=141.3
+RESULT_BATCH	id=8	group=entitylookupstatus-id8(g14)	K=64	route=direct	ns_per_op_median=185.2	ns_min=184.4	ns_max=186.1
+ROUTE_COST	id=8	K=64	routed_ns_per_op=141.1
+# parity OK id=8 lanes=4 (batch == direct, bit-exact)
+RESULT_DIRECT	id=8	group=entitylookupstatus-id8(g14)	K=256	route=direct	ns_per_op_median=140.7	ns_min=140.4	ns_max=149.9
+RESULT_BATCH	id=8	group=entitylookupstatus-id8(g14)	K=256	route=direct	ns_per_op_median=181.9	ns_min=181.2	ns_max=183.1
+ROUTE_COST	id=8	K=256	routed_ns_per_op=140.7
+# parity OK id=9 lanes=3 (batch == direct, bit-exact)
+RESULT_DIRECT	id=9	group=noiseinterpolatorfractions-id9	K=1	route=direct	ns_per_op_median=168.9	ns_min=168.2	ns_max=188.2
+RESULT_BATCH	id=9	group=noiseinterpolatorfractions-id9	K=1	route=direct	ns_per_op_median=406.4	ns_min=405.1	ns_max=417.4
+ROUTE_COST	id=9	K=1	routed_ns_per_op=168.9
+# parity OK id=9 lanes=3 (batch == direct, bit-exact)
+RESULT_DIRECT	id=9	group=noiseinterpolatorfractions-id9	K=8	route=direct	ns_per_op_median=168.7	ns_min=168.5	ns_max=169.4
+RESULT_BATCH	id=9	group=noiseinterpolatorfractions-id9	K=8	route=direct	ns_per_op_median=234.3	ns_min=232.7	ns_max=236.6
+ROUTE_COST	id=9	K=8	routed_ns_per_op=168.7
+# parity OK id=9 lanes=3 (batch == direct, bit-exact)
+RESULT_DIRECT	id=9	group=noiseinterpolatorfractions-id9	K=16	route=direct	ns_per_op_median=168.3	ns_min=167.9	ns_max=169.7
+RESULT_BATCH	id=9	group=noiseinterpolatorfractions-id9	K=16	route=direct	ns_per_op_median=222.1	ns_min=221.3	ns_max=237.8
+ROUTE_COST	id=9	K=16	routed_ns_per_op=168.3
+# parity OK id=9 lanes=3 (batch == direct, bit-exact)
+RESULT_DIRECT	id=9	group=noiseinterpolatorfractions-id9	K=64	route=direct	ns_per_op_median=168.8	ns_min=167.5	ns_max=173.2
+RESULT_BATCH	id=9	group=noiseinterpolatorfractions-id9	K=64	route=direct	ns_per_op_median=211.9	ns_min=211.5	ns_max=212.8
+ROUTE_COST	id=9	K=64	routed_ns_per_op=168.8
+# parity OK id=9 lanes=3 (batch == direct, bit-exact)
+RESULT_DIRECT	id=9	group=noiseinterpolatorfractions-id9	K=256	route=direct	ns_per_op_median=168.8	ns_min=168.1	ns_max=170.2
+RESULT_BATCH	id=9	group=noiseinterpolatorfractions-id9	K=256	route=direct	ns_per_op_median=210.5	ns_min=208.3	ns_max=214.8
+ROUTE_COST	id=9	K=256	routed_ns_per_op=168.8
+# EXCLUDED ids=10,11 shape=B reason=kernel-input-protocol-not-synthesizable (see BATCH_ROLLOUT_AB.md)
+# rss_hwm_kb=VmHWM:    70316 kB
+# done

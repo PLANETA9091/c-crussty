@@ -1,0 +1,61 @@
+Note: src/net/minecraft/world/level/levelgen/synth/Step0ReconBench.java uses or overrides a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+recon config: PerlinNoise noiseLevels.length=8
+  P_getValue3_perlin       rep0: 230463 ops in 134.3 ms -> 582.7 ns/op
+  P_getValue3_perlin       rep1: 260869 ops in 120.0 ms -> 460.0 ns/op
+  P_getValue3_perlin       rep2: 289530 ops in 120.0 ms -> 414.5 ns/op
+  P_getValue3_perlin       rep3: 305609 ops in 120.0 ms -> 392.7 ns/op
+  P_getValue3_perlin       rep4: 240505 ops in 132.4 ms -> 550.7 ns/op
+  NN_getValue3_normal      rep0: 127914 ops in 120.0 ms -> 938.1 ns/op
+  NN_getValue3_normal      rep1: 152907 ops in 120.0 ms -> 784.8 ns/op
+  NN_getValue3_normal      rep2: 153712 ops in 120.0 ms -> 780.7 ns/op
+  NN_getValue3_normal      rep3: 123350 ops in 129.1 ms -> 1046.8 ns/op
+  NN_getValue3_normal      rep4: 153509 ops in 120.0 ms -> 781.7 ns/op
+  OCT_corner_noise00       rep0: 1205425 ops in 120.0 ms -> 99.6 ns/op
+  OCT_corner_noise00       rep1: 1262854 ops in 120.0 ms -> 95.0 ns/op
+  OCT_corner_noise00       rep2: 1192457 ops in 136.4 ms -> 114.4 ns/op
+  OCT_corner_noise00       rep3: 1266992 ops in 120.0 ms -> 94.7 ns/op
+  OCT_corner_noise00       rep4: 1248417 ops in 120.0 ms -> 96.1 ns/op
+  OCT_raw_noise3           rep0: 1260753 ops in 120.0 ms -> 95.2 ns/op
+  OCT_raw_noise3           rep1: 1280980 ops in 120.0 ms -> 93.7 ns/op
+  OCT_raw_noise3           rep2: 1279821 ops in 120.0 ms -> 93.8 ns/op
+  OCT_raw_noise3           rep3: 1347623 ops in 120.0 ms -> 89.0 ns/op
+  OCT_raw_noise3           rep4: 1053806 ops in 132.0 ms -> 125.2 ns/op
+  [rev]OCT_raw_noise3      rep0: 1277073 ops in 120.0 ms -> 94.0 ns/op
+  [rev]OCT_raw_noise3      rep1: 1285770 ops in 120.0 ms -> 93.3 ns/op
+  [rev]OCT_raw_noise3      rep2: 1281580 ops in 120.0 ms -> 93.6 ns/op
+  [rev]OCT_raw_noise3      rep3: 1122123 ops in 129.8 ms -> 115.7 ns/op
+  [rev]OCT_raw_noise3      rep4: 1280551 ops in 120.0 ms -> 93.7 ns/op
+  [rev]OCT_corner_noise00  rep0: 1346249 ops in 120.0 ms -> 89.1 ns/op
+  [rev]OCT_corner_noise00  rep1: 1276656 ops in 120.0 ms -> 94.0 ns/op
+  [rev]OCT_corner_noise00  rep2: 1199163 ops in 137.6 ms -> 114.7 ns/op
+  [rev]OCT_corner_noise00  rep3: 1351165 ops in 120.0 ms -> 88.8 ns/op
+  [rev]OCT_corner_noise00  rep4: 1335099 ops in 120.0 ms -> 89.9 ns/op
+  [rev]NN_getValue3_normal rep0: 152236 ops in 120.0 ms -> 788.3 ns/op
+  [rev]NN_getValue3_normal rep1: 141715 ops in 138.4 ms -> 976.9 ns/op
+  [rev]NN_getValue3_normal rep2: 163457 ops in 120.0 ms -> 734.1 ns/op
+  [rev]NN_getValue3_normal rep3: 162199 ops in 120.0 ms -> 739.8 ns/op
+  [rev]NN_getValue3_normal rep4: 153513 ops in 120.0 ms -> 781.7 ns/op
+  [rev]P_getValue3_perlin  rep0: 285361 ops in 136.4 ms -> 477.9 ns/op
+  [rev]P_getValue3_perlin  rep1: 277491 ops in 120.1 ms -> 432.7 ns/op
+  [rev]P_getValue3_perlin  rep2: 281017 ops in 120.0 ms -> 427.0 ns/op
+  [rev]P_getValue3_perlin  rep3: 280830 ops in 120.0 ms -> 427.3 ns/op
+  [rev]P_getValue3_perlin  rep4: 300648 ops in 120.0 ms -> 399.1 ns/op
+== G-RECON owner costs (ns/call, min-of-medians) ==
+P_getValue3_perlin            427.3 ns/call
+NN_getValue3_normal           781.7 ns/call
+OCT_corner_noise00             89.9 ns/call
+OCT_raw_noise3                 93.7 ns/call
+
+ derivation:
+  effective N_o (corner / raw)  = 427.3 ns/call ÷ 89.9 = 4.75 octaves-equivalent
+  owner-loop overhead share     = 1 - 427.3/(89.9*8.0) = 40.6%
+  NormalNoise vs 2x PerlinNoise = 781.7 vs 854.6 (tree-loop overhead -8.5%)
+--BEGIN_CSV--
+arm,ns_call
+P_getValue3_perlin,427.3
+NN_getValue3_normal,781.7
+OCT_corner_noise00,89.9
+OCT_raw_noise3,93.7
+--END_CSV--
+sink=327104.49822888337 nOct=8

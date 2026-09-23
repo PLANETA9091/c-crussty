@@ -1,0 +1,19 @@
+E2E	shipped	R0-abi-gate	131087	131087	PASS	table=2 kernels=15
+E2E	shipped	R1-valid-batch	3	3	PASS	kernel id2 K=3, outs written=true
+E2E	shipped	R2-out-of-range(-3)	-3	-3	PASS	ids=[2,15] mixed; outs untouched=true
+E2E	shipped	R2b-out-of-range-single(-3)	-3	-3	PASS	ids=[15]; outs untouched=true
+E2E	shipped	R3-refused(-10)	SKIP	shipped table: every table id allowed by drift-guard invariant; true -10 needs the rig arm
+E2E	shipped	R4-negative-id(-3)	-3	-3	PASS	ids=[-1]; outs untouched=true
+E2E	shipped	R5-codes-distinct	-3 != -10	-3 != -10	PASS	ERR_BAD_KERNEL_ID != ERR_KERNEL_REFUSED
+E2E_VERDICT	shipped	PASS	pass=6 fail=0
+# arm=shipped exit=0
+E2E	rig	R0-abi-gate	131088	131088	PASS	table=2 kernels=16
+E2E	rig	R1-valid-batch	3	3	PASS	kernel id2 K=3, outs written=true
+E2E	rig	R2-out-of-range(-3)	-3	-3	PASS	ids=[2,16] mixed; outs untouched=true
+E2E	rig	R2b-out-of-range-single(-3)	-3	-3	PASS	ids=[16]; outs untouched=true
+E2E	rig	R3-refused-single(-10)	-10	-10	PASS	rig id=15 (DO_NOT_WIRE LevelChunkHeightmap.newCombinedUpdateSummary); outs untouched=true
+E2E	rig	R3b-refused-mixed-no-partial(-10)	-10	-10	PASS	ids=[2,15,2] - valid ops must NOT run; outs untouched=true
+E2E	rig	R4-negative-id(-3)	-3	-3	PASS	ids=[-1]; outs untouched=true
+E2E	rig	R5-codes-distinct	-3 != -10	-3 != -10	PASS	ERR_BAD_KERNEL_ID != ERR_KERNEL_REFUSED
+E2E_VERDICT	rig	PASS	pass=8 fail=0
+# arm=rig exit=0

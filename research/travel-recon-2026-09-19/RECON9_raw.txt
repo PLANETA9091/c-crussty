@@ -1,0 +1,40 @@
+entity-tick AABB+Vec3 alloc: 4115 samples
+   1031 (25.1%)  unmatched
+    598 (14.5%)  makeBoundingBox
+    587 (14.3%)  CollisionUtil
+    515 (12.5%)  checkInsideBlocks
+    430 (10.4%)  AABB.collidedAlongVector
+    351 ( 8.5%)  collidedWithFluid
+    235 ( 5.7%)  Entity.move
+    141 ( 3.4%)  setPosRaw
+     70 ( 1.7%)  Entity.collide
+     70 ( 1.7%)  LivingEntity.travel
+     64 ( 1.6%)  findSupportingBlock
+     23 ( 0.6%)  applyEffectsFromBlocks
+
+travel-family + unmatched (не-атаковано #10): 2209 (53.7% entity AABB+Vec3)
+whole-server alloc samples: 10263; entity AABB+Vec3 share = 40.1%
+
+CPU total=128124 entity=75667 (59.06%)
+   47392 (62.6% ent / 36.99% all)  unmatched
+    9895 (13.1% ent / 7.72% all)  checkInsideBlocks
+    5315 ( 7.0% ent / 4.15% all)  CollisionUtil
+    4239 ( 5.6% ent / 3.31% all)  Entity.move
+    2087 ( 2.8% ent / 1.63% all)  applyEffectsFromBlocks
+    1679 ( 2.2% ent / 1.31% all)  PalettedContainer.get
+    1022 ( 1.4% ent / 0.80% all)  Entity.collide
+    1008 ( 1.3% ent / 0.79% all)  collidedWithFluid
+    1008 ( 1.3% ent / 0.79% all)  LivingEntity.travel
+     553 ( 0.7% ent / 0.43% all)  findSupportingBlock
+     403 ( 0.5% ent / 0.31% all)  setPosRaw
+     373 ( 0.5% ent / 0.29% all)  AABB.collidedAlongVector
+     359 ( 0.5% ent / 0.28% all)  makeBoundingBox
+     239 ( 0.3% ent / 0.19% all)  handleRelFrict
+
+collide/travel CPU-семья (без CollisionUtil-внутр.): 7823 = 6.11% всего CPU
+
+CEILING #11 (идеальный zero-alloc travel, все аллокации сняты):
+  alloc-pressure share: <= 21.5% всего аллок-давления
+  при young-GC STW <= 7.1% wall -> выигрыш <= 1.53% wall-clock
+  консервативно (без unmatched, только конкретные travel-сайты): 3084 (30.0% давления) -> выигрыш <= 2.13% wall-clock
+  CPU-ось не конвертируется (урок №10-обобщение: тело в скаляре = та же доля CPU, доказано #10: 18.7%==18.7%)

@@ -1,0 +1,46 @@
+============================================================================
+S7-163 FLAT-TRAVERSAL absorb: leg#2 (35410873485) vs CUMULATIVE v3
+============================================================================
+
+PG2: armed=True nested_define=True (+1_nested_marker)=True pop150k=True NCDFE=0 crash_report=False -> PASS
+     caught 'Entity threw exception': 5 (pre-existing parallel-tick noise range 0-5: s7160=1 s7161=3 v3=0)
+
+PG3: TPS last-5 median leg2=1.700 (n=6)  v3=1.800 (n=6)  delta=-5.6%  -> PASS
+
+PG4: CPU total v3=128124 leg2=125610
+     traversal lane: v3=9572 (7.47%)  leg2=7314 (5.82%)  delta=-23.6% (gate <= -50%)
+     per-work (lane/TPSmedian): v3=5318  leg2=4302  delta=-19.1%
+     lane decomposition: v3 orch=9175 applier=397  |  leg2 orch=6998 applier=316
+     guava tail (BlockPos$6/$4): v3=1168 (0.91%)  leg2=2 (0.00%)  delta=-99.8% (gate <= -70%)
+     young GC: v3=154 leg2=129 (gate <= 154); Full: v3=0 leg2=0
+     leg2 pause ms: median=152.6 max=190.9 total=16.99s (v3 total=21.13s)
+     -> FAIL
+
+CRASH-FREE: NCDFE=0 crash_report=False fullGC=0 -> PASS
+
+############################################################################
+VERDICT S7-163 (lever #9 FLAT-TRAVERSAL): FAIL
+############################################################################
+
+--- FRESH TOP-eaters: leg#2 (3 axes) ---
+(a) CPU lanes (share of total CPU samples):
+     entity-tick phase (tickBucket lane)              75569  60.16%
+     GC/JIT-native phase                              41586  33.11%
+     tracker                                           2613   2.08%
+     broadphase/collision                               183   0.15%
+     fluid-push lane                                      7   0.01%
+     unclassified                                      5652   4.50%
+(b) alloc pressure: total samples v3=10263  leg2=16391 (+59.7%)
+    leaf-site families (share of alloc):
+     AABB-sites                                     v3    2078 (20.2%)  leg2    2008 (12.3%)
+     Vec3-sites                                     v3    2044 (19.9%)  leg2    2144 (13.1%)
+     BlockPos-sites                                 v3    1668 (16.3%)  leg2     984 ( 6.0%)
+     java/container-sites                           v3     920 ( 9.0%)  leg2    1262 ( 7.7%)
+     other                                          v3    3553 (34.6%)  leg2    9993 (61.0%)
+    lanes (share of alloc):
+     inside-pipeline                                v3    3278 (31.9%)  leg2    3552 (21.7%)
+     fluid-push                                     v3    1102 (10.7%)  leg2    1074 ( 6.6%)
+     traversal-only                                 v3       0 ( 0.0%)  leg2       0 ( 0.0%)
+     tickBucket-orch                                v3    3795 (37.0%)  leg2    3397 (20.7%)
+     other-lanes                                    v3    2088 (20.3%)  leg2    8368 (51.1%)
+(c) gc.log: young=129 (v3 154), median pause 152.6ms (v3 156.1ms), TPS median 1.70 (v3 1.80)

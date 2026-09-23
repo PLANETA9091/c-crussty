@@ -1,0 +1,41 @@
+      56: aload_0
+      57: invokevirtual #1626               // Method getVehicle:()Lnet/minecraft/world/entity/Entity;
+      60: invokevirtual #1218               // Method isRemoved:()Z
+      63: ifeq          70
+      66: aload_0
+      67: invokevirtual #1233               // Method stopRiding:()V
+      70: aload_0
+      71: getfield      #1628               // Field boardingCooldown:I
+      74: ifle          87
+      77: aload_0
+      78: dup
+      79: getfield      #1628               // Field boardingCooldown:I
+      82: iconst_1
+      83: isub
+      84: putfield      #1628               // Field boardingCooldown:I
+      87: aload_0
+      88: instanceof    #1302               // class net/minecraft/server/level/ServerPlayer
+      91: ifeq          98
+      94: aload_0
+      95: invokevirtual #1604               // Method handlePortal:()V
+      98: aload_0
+      99: invokevirtual #1631               // Method canSpawnSprintParticle:()Z
+     102: ifeq          109
+     105: aload_0
+     106: invokevirtual #1634               // Method spawnSprintParticle:()V
+     109: aload_0
+     110: aload_0
+     111: getfield      #801                // Field isInPowderSnow:Z
+     114: putfield      #803                // Field wasInPowderSnow:Z
+     117: aload_0
+     118: iconst_0
+     119: putfield      #801                // Field isInPowderSnow:Z
+     122: aload_0
+     123: invokevirtual #1637               // Method updateInWaterStateAndDoFluidPushing:()Z
+     126: pop
+     127: aload_0
+     128: invokevirtual #1640               // Method updateFluidOnEyes:()V
+     131: aload_0
+     132: invokevirtual #1643               // Method updateSwimming:()V
+     135: aload_0
+     136: invokevirtual #773                // Method level:()Lnet/minecraft/world/level/Level;

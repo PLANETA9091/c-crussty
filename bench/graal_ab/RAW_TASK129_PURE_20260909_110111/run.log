@@ -1,0 +1,10 @@
+[11:01:28] R1 boot done: Done (16.642s) (pure-inject stock Temurin 21.0.12.1)
+[crussty-runtime] v2.0.0 loaded (options: modules=/home/z/server/modules;versions=/home/z/server/versions;kernel=purpur-1.21.10.jar)
+[11:01:35] R1 baseline: R0=830MB used=440832K committed=498688K, smapRss=833MB Pss=831MB
+[11:02:05] R1 post-add: R1=922MB used=487046K committed=541696K,
+[11:04:16] R1 R2=956MB > v2 gate 930.0MB (max(R0*1.10,R0+100)) -> diagnostic jcmd GC.run
+[11:04:32] run R1 done: FAIL-leak-signature (R0=830 R1=922 R2=956 R3=964)
+[11:04:32] hs_err delta: 0 (must be 0)
+[11:04:32] === SUMMARY ===
+R1	R0=830MB	R1=922MB	R2=956MB	R3=964	verdict=FAIL-leak-signature	heap@base=used=440832K committed=498688K,	heap@add=used=487046K committed=541696K,	heap@remove_end=used=417970K committed=565248K,	heap@final=used=255344K committed=565248K,	v2_gate=930.0MB	v1_class=exceeds-v1	v1_final=FAIL
+[11:04:32] TASK-129 pure-inject canonical validation complete (owner law 14:45+08; gate v2 binding per TASK-130 §5 — TASK-133 rig flip)

@@ -1,0 +1,595 @@
+[0.001s][info][cds] optimized module handling: disabled due to incompatible property: jdk.module.addmods.0=jdk.internal.vm.ci
+[0.009s][info][cds] trying to map /home/z/graalvm-dl/graalvm-community-openjdk-21.0.2+13.1/lib/server/classes.jsa
+[0.009s][info][cds] Opened archive /home/z/graalvm-dl/graalvm-community-openjdk-21.0.2+13.1/lib/server/classes.jsa.
+[0.009s][info][cds] Archive was created with UseCompressedOops = 1, UseCompressedClassPointers = 1
+[0.009s][info][cds] optimized module handling: disabled because archive was created without optimized module handling
+[0.009s][info][cds] full module graph: disabled because archive was created without full module graph
+[0.009s][info][cds] Core region alignment: 4096
+[0.009s][info][cds] ArchiveRelocationMode == 1: always map archive(s) at an alternative address
+[0.009s][info][cds] Try to map archive(s) at an alternative address
+[0.009s][info][cds] Reserved archive_space_rs [0x00007fd19f000000 - 0x00007fd1a0000000] (16777216) bytes
+[0.009s][info][cds] Reserved class_space_rs   [0x00007fd1a0000000 - 0x00007fd1e0000000] (1073741824) bytes
+[0.009s][info][cds] Mapped static  region #0 at base 0x00007fd19f000000 top 0x00007fd19f47c000 (ReadWrite)
+[0.010s][info][cds] Mapped static  region #1 at base 0x00007fd19f47c000 top 0x00007fd19fc94000 (ReadOnly)
+[0.010s][info][cds] Mapped static  region #2 at base 0x00007fd21e496000 top 0x00007fd21e4d3000 (Bitmap)
+[0.016s][info][cds] CDS archive was created with max heap size = 128M, and the following configuration:
+[0.016s][info][cds]     narrow_klass_base = 0x00007fd19f000000, narrow_klass_shift = 0
+[0.016s][info][cds]     narrow_oop_mode = 0, narrow_oop_base = 0x0000000000000000, narrow_oop_shift = 0
+[0.016s][info][cds]     heap range = [0x00000000f8000000 - 0x0000000100000000]
+[0.016s][info][cds] The current max heap size = 2048M, HeapRegion::GrainBytes = 1048576
+[0.016s][info][cds]     narrow_klass_base = 0x00007fd19f000000, narrow_klass_shift = 0
+[0.016s][info][cds]     narrow_oop_mode = 0, narrow_oop_base = 0x0000000000000000, narrow_oop_shift = 0
+[0.016s][info][cds]     heap range = [0x0000000080000000 - 0x0000000100000000]
+[0.016s][info][cds] Requested heap region [0x00000000fff00000 - 0x00000000fffe0390] =   918416 bytes
+[0.016s][info][cds] CDS heap data relocation delta = 0 bytes
+[0.016s][info][cds] Trying to map heap data at 0x00000000fff00000, size =   918416 bytes
+[0.017s][info][cds] optimized module handling: disabled
+[0.017s][info][cds] full module graph: disabled
+[0.017s][info][cds] Unmapping region #2 at base 0x00007fd21e496000 (Bitmap)
+Starting org.bukkit.craftbukkit.Main
+[21:32:05 INFO]: [bootstrap] Running Java 21 (OpenJDK 64-Bit Server VM 21.0.2+13-jvmci-23.1-b30; GraalVM Community GraalVM CE 21.0.2+13.1) on Linux 5.10.134-013.8.3.kangaroo.al8.x86_64 (amd64)
+[21:32:05 INFO]: [bootstrap] Loading Purpur 1.21.10-2535-HEAD@0a2dc04 (1970-01-01T00:00:00Z) for Minecraft 1.21.10
+[21:32:05 INFO]: [PluginInitializerManager] Initializing plugins...
+[21:32:05 INFO]: [PluginInitializerManager] Initialized 0 plugins
+[21:32:12 INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[21:32:16 INFO]: Loaded 1461 recipes
+[21:32:16 INFO]: Loaded 1574 advancements
+[21:32:16 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Initialising converters for DataConverter...
+[21:32:17 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Finished initialising converters for DataConverter in 615.6ms
+[21:32:17 INFO]: Starting minecraft server version 1.21.10
+[21:32:17 INFO]: Loading properties
+[21:32:17 INFO]: This server is running Purpur version 1.21.10-2535-HEAD@0a2dc04 (1970-01-01T00:00:00Z) (Implementing API version 1.21.10-R0.1-SNAPSHOT)
+[21:32:17 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[21:32:17 INFO]: Server Ping Player Sample Count: 12
+[21:32:17 INFO]: Using 4 threads for Netty based IO
+[21:32:19 INFO]: [MoonriseCommon] Paper is using 1 worker threads, 1 I/O threads
+> > > > > > > > > > > > > > >   [21:32:20 INFO]: Default game type: SURVIVAL
+>   [21:32:20 INFO]: Generating keypair
+>   [21:32:20 INFO]: Starting Minecraft server on *:25565
+> > > > > > > > >   [21:32:20 INFO]: Using epoll channel type
+>   [21:32:20 INFO]: Paper: Using libdeflate (Linux x86_64) compression from Velocity.
+>   [21:32:20 INFO]: Paper: Using OpenSSL 3.x.x (Linux x86_64) cipher from Velocity.
+> >   [21:32:20 INFO]: Server permissions file permissions.yml is empty, ignoring it
+>   [33;1m[21:32:20 WARN]: **** SERVER IS RUNNING IN OFFLINE/INSECURE MODE!
+[m>   [33;1m[21:32:20 WARN]: The server will make no attempt to authenticate usernames. Beware.
+[m>   [33;1m[21:32:20 WARN]: While this makes the game possible to play without internet access, it also opens up the ability for hackers to connect with any username they choose.
+[m>   [33;1m[21:32:20 WARN]: To change this, set "online-mode" to "true" in the server.properties file.
+[m>   [21:32:20 INFO]: Preparing level "world"
+> > > > > > > > > > > > > > > > > > > > > > > > >   [21:32:21 INFO]: Loading 0 persistent chunks for world 'minecraft:overworld'...
+>   [21:32:21 INFO]: Preparing spawn area: 100%
+>   [21:32:21 INFO]: Prepared spawn area in 6 ms
+>   [21:32:21 INFO]: Loading 0 persistent chunks for world 'minecraft:the_nether'...
+>   [21:32:21 INFO]: Preparing spawn area: 100%
+>   [21:32:21 INFO]: Prepared spawn area in 2 ms
+>   [21:32:21 INFO]: Loading 0 persistent chunks for world 'minecraft:the_end'...
+>   [21:32:21 INFO]: Preparing spawn area: 100%
+>   [21:32:21 INFO]: Prepared spawn area in 2 ms
+>   [21:32:21 INFO]: Done preparing level "world" (1.171s)
+> > >   [21:32:21 INFO]: [spark] Starting background profiler...
+> > > > > >   [21:32:22 INFO]: Starting remote control listener
+>   [21:32:22 INFO]: Thread RCON Listener started
+>   [21:32:22 INFO]: RCON running on 0.0.0.0:25575
+>   [21:32:22 INFO]: Running delayed init tasks
+>   [21:32:22 INFO]: Done (18.361s)! For help, type "help"
+> > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > > >   [21:32:26 INFO]: Thread RCON Client /127.0.0.1 started
+> >   [21:32:26 INFO]: [3m[37m[Rcon: Stopping the server][0m
+>   [21:32:26 INFO]: Thread RCON Client /127.0.0.1 shutting down
+>   [21:32:26 INFO]: Stopping server
+>   [21:32:26 INFO]: Saving players
+> [21:32:26 INFO]: Saving worlds
+[21:32:26 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+[21:32:26 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world'
+[21:32:26 INFO]: [ChunkHolderManager] Halted chunk system for world 'world'
+[21:32:26 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world'
+[21:32:26 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'world' in 0.01s
+[21:32:26 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'world'
+[21:32:26 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'world'
+[21:32:26 INFO]: Saving chunks for level 'ServerLevel[world_nether]'/minecraft:the_nether
+[21:32:26 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_nether'
+[21:32:26 INFO]: [ChunkHolderManager] Halted chunk system for world 'world_nether'
+[21:32:26 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world_nether'
+[21:32:26 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'world_nether' in 0.00s
+[21:32:26 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'world_nether'
+[21:32:26 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'world_nether'
+[21:32:26 INFO]: Saving chunks for level 'ServerLevel[world_the_end]'/minecraft:the_end
+[21:32:26 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_the_end'
+[21:32:26 INFO]: [ChunkHolderManager] Halted chunk system for world 'world_the_end'
+[21:32:26 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world_the_end'
+[21:32:26 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'world_the_end' in 0.00s
+[21:32:26 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'world_the_end'
+[21:32:26 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'world_the_end'
+[21:32:26 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+[21:32:26 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+[21:32:26 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+[21:32:26 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+[21:32:26 INFO]: Waiting for all RegionFile I/O tasks to complete...
+[21:32:26 INFO]: All RegionFile I/O tasks to complete
+[21:32:26 INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+[21:32:26 INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...
+[24.003s][info][cds] Regenerate MethodHandle Holder classes...
+[24.100s][info][cds] Regenerate MethodHandle Holder classes...done
+[24.166s][warning][cds] Skipping org/spongepowered/configurate/serialize/TypeSerializer: Signed JAR
+[24.166s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/ObjectMapperImpl: Signed JAR
+[24.166s][warning][cds] Skipping org/spongepowered/configurate/transformation/TransformAction: Signed JAR
+[24.166s][warning][cds] Skipping io/papermc/paper/configuration/transformation/world/FeatureSeedsGeneration: interface org/spongepowered/configurate/transformation/TransformAction is excluded
+[24.166s][warning][cds] Skipping org/spongepowered/configurate/loader/AbstractConfigurationLoader: Signed JAR
+[24.166s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/SafeConstructor$ConstructYamlStr: Signed JAR
+[24.166s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/DumperOptions$ScalarStyle: Signed JAR
+[24.166s][warning][cds] Skipping jdk/proxy1/$Proxy58: Unsupported location
+[24.166s][warning][cds] Skipping jdk/proxy1/$Proxy37: Unsupported location
+[24.166s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/meta/NodeResolver: Signed JAR
+[24.166s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/Constructor$ConstructScalar: Signed JAR
+[24.166s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/events/MappingEndEvent: Signed JAR
+[24.166s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/emitter/Emitable: Signed JAR
+[24.167s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/tokens/AliasToken: Signed JAR
+[24.167s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/composer/Composer$1: Signed JAR
+[24.167s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/emitter/Emitter$ExpectBlockMappingKey: Signed JAR
+[24.167s][warning][cds] Skipping io/papermc/paper/configuration/transformation/world/versioned/V29_ZeroWorldHeight: interface org/spongepowered/configurate/transformation/TransformAction is excluded
+[24.167s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/parser/ParserImpl$ParseIndentlessSequenceEntryKey: Signed JAR
+[24.167s][warning][cds] Skipping net/minecraft/util/profiling/jfr/event/PacketReceivedEvent: JFR event class
+[24.167s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/tokens/ScalarToken: Signed JAR
+[24.167s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/nodes/ScalarNode: Signed JAR
+[24.167s][warning][cds] Skipping jdk/proxy1/$Proxy8: Unsupported location
+[24.167s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/nodes/Node: Signed JAR
+[24.167s][warning][cds] Skipping org/spongepowered/configurate/loader/AtomicFiles: Signed JAR
+[24.167s][warning][cds] Skipping org/spongepowered/configurate/transformation/ConfigurationTransformation$Builder: Signed JAR
+[24.167s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/tokens/AnchorToken: Signed JAR
+[24.167s][warning][cds] Skipping org/spongepowered/configurate/serialize/ArraySerializer$Booleans: Signed JAR
+[24.167s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/error/YAMLException: Signed JAR
+[24.167s][warning][cds] Skipping org/spongepowered/configurate/serialize/ScalarSerializer$Annotated: Signed JAR
+[24.167s][warning][cds] Skipping io/papermc/paper/configuration/serializer/NbtPathSerializer: super class org/spongepowered/configurate/serialize/ScalarSerializer$Annotated is excluded
+[24.167s][warning][cds] Skipping net/minecraft/util/profiling/jfr/event/PacketSentEvent: JFR event class
+[24.167s][warning][cds] Skipping org/spongepowered/configurate/yaml/YamlConfigurationLoader: Signed JAR
+[24.167s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/meta/NodeResolver$Factory: Signed JAR
+[24.167s][warning][cds] Skipping io/papermc/paper/configuration/NestedSetting$Factory: interface org/spongepowered/configurate/objectmapping/meta/NodeResolver$Factory is excluded
+[24.167s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/emitter/Emitter$ExpectFirstBlockMappingKey: Signed JAR
+[24.167s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/util/MergeUtils: Signed JAR
+[24.168s][warning][cds] Skipping org/spongepowered/configurate/util/NamingSchemes$1: Signed JAR
+[24.168s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/parser/ParserImpl$ParseIndentlessSequenceEntryValue: Signed JAR
+[24.168s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/emitter/Emitter: Signed JAR
+[24.168s][warning][cds] Skipping org/joml/Vector3i: Old class has been linked
+[24.168s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/util/ArrayStack: Signed JAR
+[24.168s][warning][cds] Skipping jdk/proxy1/$Proxy27: Unsupported location
+[24.168s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/SafeConstructor$ConstructYamlTimestamp: Signed JAR
+[24.168s][warning][cds] Skipping io/papermc/paper/configuration/legacy/MaxEntityCollisionsInitializer: interface org/spongepowered/configurate/objectmapping/meta/NodeResolver is excluded
+[24.168s][warning][cds] Skipping org/spongepowered/configurate/serialize/ArraySerializer$Objects: Signed JAR
+[24.168s][warning][cds] Skipping org/joml/Vector2i: Old class has been linked
+[24.168s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/serializer/AnchorGenerator: Signed JAR
+[24.168s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/parser/ParserImpl$ParseDocumentStart: Signed JAR
+[24.168s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/composer/ComposerException: Signed JAR
+[24.168s][warning][cds] Skipping org/spongepowered/configurate/serialize/ScalarSerializer: Signed JAR
+[24.168s][warning][cds] Skipping io/papermc/paper/configuration/serializer/ServerboundPacketClassSerializer: super class org/spongepowered/configurate/serialize/ScalarSerializer is excluded
+[24.168s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/tokens/CommentToken: Signed JAR
+[24.168s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/emitter/EmitterException: Signed JAR
+[24.168s][warning][cds] Skipping jdk/internal/event/X509CertificateEvent: JFR event class
+[24.168s][warning][cds] Skipping org/spongepowered/configurate/serialize/TypeSerializer$Annotated: Signed JAR
+[24.168s][warning][cds] Skipping io/papermc/paper/configuration/serializer/collection/TableSerializer: interface org/spongepowered/configurate/serialize/TypeSerializer$Annotated is excluded
+[24.168s][warning][cds] Skipping org/joml/Vector3ic: Old class has been linked
+[24.168s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/meta/NodeKey: Signed JAR
+[24.168s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/error/Mark: Signed JAR
+[24.168s][warning][cds] Skipping org/objectweb/asm/Type: Old class has been linked
+[24.168s][warning][cds] Skipping org/joml/Matrix3fc: Old class has been linked
+[24.168s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/meta/Setting: Signed JAR
+[24.168s][warning][cds] Skipping io/papermc/paper/configuration/legacy/RequiresSpigotInitialization$Factory: interface org/spongepowered/configurate/objectmapping/meta/NodeResolver$Factory is excluded
+[24.168s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/Constructor$ConstructYamlObject: Signed JAR
+[24.168s][warning][cds] Skipping org/spongepowered/configurate/serialize/SerializationException: Signed JAR
+[24.168s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/events/StreamEndEvent: Signed JAR
+[24.168s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/events/NodeEvent: Signed JAR
+[24.169s][warning][cds] Skipping org/joml/Vector2ic: Old class has been linked
+[24.169s][warning][cds] Skipping org/spongepowered/configurate/util/EnumLookup: Signed JAR
+[24.169s][warning][cds] Skipping io/papermc/paper/configuration/type/number/OptionalNumSerializer: super class org/spongepowered/configurate/serialize/ScalarSerializer$Annotated is excluded
+[24.169s][warning][cds] Skipping io/papermc/paper/configuration/type/number/DoubleOr$Serializer: super class io/papermc/paper/configuration/type/number/OptionalNumSerializer is excluded
+[24.169s][warning][cds] Skipping jdk/internal/event/TLSHandshakeEvent: JFR event class
+[24.169s][warning][cds] Skipping net/minecraft/util/profiling/jfr/event/NetworkSummaryEvent: JFR event class
+[24.169s][warning][cds] Skipping io/papermc/paper/configuration/serializer/registry/RegistryEntrySerializer: super class org/spongepowered/configurate/serialize/ScalarSerializer$Annotated is excluded
+[24.169s][warning][cds] Skipping io/papermc/paper/configuration/serializer/registry/RegistryValueSerializer: super class io/papermc/paper/configuration/serializer/registry/RegistryEntrySerializer is excluded
+[24.169s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/error/MarkedYAMLException: Signed JAR
+[24.169s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/tokens/ValueToken: Signed JAR
+[24.169s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/serializer/SerializerException: Signed JAR
+[24.169s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/ConstructorException: Signed JAR
+[24.169s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/parser/VersionTagsTuple: Signed JAR
+[24.169s][warning][cds] Skipping org/spongepowered/configurate/util/CheckedFunction: Signed JAR
+[24.169s][warning][cds] Skipping io/papermc/paper/configuration/mapping/InnerClassInstanceSupplier: interface org/spongepowered/configurate/util/CheckedFunction is excluded
+[24.169s][warning][cds] Skipping org/spongepowered/configurate/loader/ParsingException: Signed JAR
+[24.169s][warning][cds] Skipping jdk/jfr/Event: JFR event class
+[24.169s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/SafeConstructor$ConstructYamlSeq: Signed JAR
+[24.169s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/events/Event: Signed JAR
+[24.169s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/tokens/KeyToken: Signed JAR
+[24.169s][warning][cds] Skipping org/spongepowered/configurate/serialize/ArraySerializer$Shorts: Signed JAR
+[24.169s][warning][cds] Skipping org/joml/Matrix4d: Old class has been linked
+[24.169s][warning][cds] Skipping org/spongepowered/configurate/util/NamingSchemes$3: Signed JAR
+[24.169s][warning][cds] Skipping jdk/proxy1/$Proxy29: Unsupported location
+[24.169s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/parser/ParserImpl$ParseFlowSequenceFirstEntry: Signed JAR
+[24.169s][warning][cds] Skipping org/spongepowered/configurate/serialize/UriSerializer: Signed JAR
+[24.169s][warning][cds] Skipping org/spongepowered/configurate/loader/AbstractConfigurationLoader$Builder: Signed JAR
+[24.169s][warning][cds] Skipping org/spongepowered/configurate/util/NamingSchemes$2: Signed JAR
+[24.169s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/DumperOptions$FlowStyle: Signed JAR
+[24.169s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/meta/Constraint$Factory: Signed JAR
+[24.169s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/serializer/Serializer$1: Signed JAR
+[24.170s][warning][cds] Skipping org/spongepowered/configurate/serialize/ArraySerializer$Chars: Signed JAR
+[24.170s][warning][cds] Skipping net/minecraft/util/profiling/jfr/event/ServerTickTimeEvent: JFR event class
+[24.170s][warning][cds] Skipping javax/annotation/Nullable: Old class has been linked
+[24.170s][warning][cds] Skipping org/joml/Quaternionf: Old class has been linked
+[24.170s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/nodes/SequenceNode: Signed JAR
+[24.170s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/meta/Comment: Signed JAR
+[24.170s][warning][cds] Skipping jdk/proxy2/$Proxy51: interface org/spongepowered/configurate/objectmapping/meta/Comment is excluded
+[24.170s][warning][cds] Skipping org/joml/Matrix3f: Old class has been linked
+[24.170s][warning][cds] Skipping jdk/proxy1/$Proxy9: Unsupported location
+[24.170s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/parser/ParserException: Signed JAR
+[24.170s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/representer/Representer: Signed JAR
+[24.170s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/tokens/BlockMappingStartToken: Signed JAR
+[24.170s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/parser/ParserImpl$ParseStreamStart: Signed JAR
+[24.170s][warning][cds] Skipping org/spongepowered/configurate/ConfigurateException: Signed JAR
+[24.170s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/parser/ParserImpl$ParseFlowSequenceEntry: Signed JAR
+[24.170s][warning][cds] Skipping org/spongepowered/configurate/serialize/UrlSerializer: Signed JAR
+[24.170s][warning][cds] Skipping org/joml/Matrix4fc: Old class has been linked
+[24.170s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/parser/ParserImpl: Signed JAR
+[24.170s][warning][cds] Skipping io/papermc/paper/configuration/serializer/StringRepresentableSerializer: super class org/spongepowered/configurate/serialize/ScalarSerializer is excluded
+[24.170s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/util/PlatformFeatureDetector: Signed JAR
+[24.170s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/serializer/Serializer: Signed JAR
+[24.170s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/tokens/BlockSequenceStartToken: Signed JAR
+[24.170s][warning][cds] Skipping org/spongepowered/configurate/util/NamingScheme: Signed JAR
+[24.170s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/representer/SafeRepresenter: Signed JAR
+[24.170s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/ConfigSerializable: Signed JAR
+[24.170s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/events/StreamStartEvent: Signed JAR
+[24.170s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/meta/PostProcess: Signed JAR
+[24.170s][warning][cds] Skipping jdk/proxy2/$Proxy52: interface org/spongepowered/configurate/objectmapping/meta/PostProcess is excluded
+[24.170s][warning][cds] Skipping net/minecraft/util/profiling/jfr/event/ChunkGenerationEvent: JFR event class
+[24.170s][warning][cds] Skipping jdk/proxy1/$Proxy28: Unsupported location
+[24.170s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/BaseConstructor: Signed JAR
+[24.170s][warning][cds] Skipping jdk/proxy2/$Proxy20: Old class has been linked
+[24.170s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/FieldDiscoverer$FieldCollector: Signed JAR
+[24.170s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/events/SequenceEndEvent: Signed JAR
+[24.170s][warning][cds] Skipping org/joml/Vector4ic: Old class has been linked
+[24.171s][warning][cds] Skipping org/spongepowered/configurate/util/CheckedConsumer: Signed JAR
+[24.171s][warning][cds] Skipping io/papermc/paper/configuration/serializer/registry/RegistryHolderSerializer: super class io/papermc/paper/configuration/serializer/registry/RegistryEntrySerializer is excluded
+[24.171s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/comments/CommentEventsCollector: Signed JAR
+[24.171s][warning][cds] Skipping jdk/proxy1/$Proxy38: Unsupported location
+[24.171s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/ObjectMapperFactoryImpl$StacklessWrapper: Signed JAR
+[24.171s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/tokens/BlockEntryToken: Signed JAR
+[24.171s][warning][cds] Skipping org/spongepowered/configurate/serialize/ArraySerializer$Bytes: Signed JAR
+[24.171s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/nodes/MappingNode: Signed JAR
+[24.171s][warning][cds] Skipping org/spongepowered/configurate/serialize/UuidSerializer: Signed JAR
+[24.171s][warning][cds] Skipping org/spongepowered/configurate/yaml/YamlConfigurationLoader$Builder: Signed JAR
+[24.171s][warning][cds] Skipping org/spongepowered/configurate/serialize/ArraySerializer$Floats: Signed JAR
+[24.171s][warning][cds] Skipping org/spongepowered/configurate/ConfigurationNode: Signed JAR
+[24.171s][warning][cds] Skipping net/minecraft/util/profiling/jfr/event/ChunkRegionIoEvent: JFR event class
+[24.171s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/ObjectMapperFactoryImpl$Builder: Signed JAR
+[24.171s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/nodes/CollectionNode: Signed JAR
+[24.171s][warning][cds] Skipping io/papermc/paper/configuration/type/DespawnRange$Serializer: interface org/spongepowered/configurate/serialize/TypeSerializer is excluded
+[24.171s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/resolver/Resolver: Signed JAR
+[24.171s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/comments/CommentType: Signed JAR
+[24.171s][warning][cds] Skipping org/spongepowered/configurate/util/MapFactory: Signed JAR
+[24.171s][warning][cds] Skipping jdk/proxy1/$Proxy22: Unsupported location
+[24.171s][warning][cds] Skipping org/joml/Vector4i: Old class has been linked
+[24.171s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/representer/BaseRepresenter: Signed JAR
+[24.171s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/tokens/FlowSequenceEndToken: Signed JAR
+[24.171s][warning][cds] Skipping org/spongepowered/configurate/util/NamingSchemes: Signed JAR
+[24.171s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/FieldData: Signed JAR
+[24.171s][warning][cds] Skipping com/sun/proxy/jdk/proxy1/$Proxy21: Unsupported location
+[24.171s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/SafeConstructor: Signed JAR
+[24.171s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/SafeConstructor$ConstructUndefined: Signed JAR
+[24.171s][warning][cds] Skipping org/joml/Vector4fc: Old class has been linked
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/SafeConstructor$ConstructYamlOmap: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/serialize/FunctionScalarSerializer: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/comments/CommentEventsCollector$1: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/ListConfigValue$1: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/serialize/ArraySerializer$Longs: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/util/MapFactories: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/introspector/BeanAccess: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/representer/SafeRepresenter$RepresentEnum: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/ObjectMapper: Signed JAR
+[24.172s][warning][cds] Skipping jdk/internal/event/ProcessStartEvent: JFR event class
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/tokens/FlowEntryToken: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/FieldData$Deserializer: Signed JAR
+[24.172s][warning][cds] Skipping net/minecraft/util/profiling/jfr/event/ChunkRegionReadEvent: JFR event class
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/util/MapFactories$DefaultFactory$1: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/tokens/FlowSequenceStartToken: Signed JAR
+[24.172s][warning][cds] Skipping org/joml/Matrix2fc: Old class has been linked
+[24.172s][warning][cds] Skipping io/papermc/paper/configuration/type/fallback/FallbackValueSerializer: super class org/spongepowered/configurate/serialize/ScalarSerializer is excluded
+[24.172s][warning][cds] Skipping org/joml/Vector4f: Old class has been linked
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/AbstractConstruct: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/serialize/ArraySerializer$Ints: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/serialize/CoercionFailedException: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/transformation/MoveStrategy: Signed JAR
+[24.172s][warning][cds] Skipping jdk/proxy1/$Proxy30: Unsupported location
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/introspector/MissingProperty: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/ObjectFieldDiscoverer$ImplicitProvider: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/representer/Representer$RepresentJavaBean: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/transformation/ConfigurationTransformation$Versioned: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/serializer/NumberAnchorGenerator: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/FieldDiscoverer: Signed JAR
+[24.172s][warning][cds] Skipping io/papermc/paper/configuration/mapping/InnerClassFieldDiscoverer: interface org/spongepowered/configurate/objectmapping/FieldDiscoverer is excluded
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/ObjectMapper$Factory$Builder: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/Construct: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/VisitorSafeNoopException: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/emitter/Emitter$ExpectDocumentStart: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/serialize/EnumValueSerializer$1: Signed JAR
+[24.172s][warning][cds] Skipping org/joml/Matrix2f: Old class has been linked
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/introspector/Property: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/tokens/FlowMappingEndToken: Signed JAR
+[24.172s][warning][cds] Skipping org/spongepowered/configurate/util/MapFactories$DefaultFactory: Signed JAR
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/reader/ReaderException: Signed JAR
+[24.173s][warning][cds] Skipping org/joml/MemUtil: Old class has been linked
+[24.173s][warning][cds] Skipping org/joml/Matrix3dc: Old class has been linked
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/serialize/ConfigurationNodeSerializer: Signed JAR
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/parser/ParserImpl$ParseImplicitDocumentStart: Signed JAR
+[24.173s][warning][cds] Skipping io/papermc/paper/configuration/transformation/global/versioned/V29_LogIPs: interface org/spongepowered/configurate/transformation/TransformAction is excluded
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/util/UriEncoder: Signed JAR
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/transformation/ConfigurationTransformation: Signed JAR
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/SafeConstructor$ConstructYamlPairs: Signed JAR
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/emitter/Emitter$ExpectFirstDocumentStart: Signed JAR
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/tokens/DocumentEndToken: Signed JAR
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/serialize/NumericSerializers: Signed JAR
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/AbstractConfigurationNode: Signed JAR
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/meta/PostProcessor: Signed JAR
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/Constructor: Signed JAR
+[24.173s][warning][cds] Skipping net/minecraft/util/profiling/jfr/event/ChunkRegionWriteEvent: JFR event class
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/ObjectMapper$Factory: Signed JAR
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/composer/Composer: Signed JAR
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/ConfigValue: Signed JAR
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/serialize/PathSerializer: Signed JAR
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/external/com/google/gdata/util/common/base/Escaper: Signed JAR
+[24.173s][warning][cds] Skipping org/joml/Matrix3d: Old class has been linked
+[24.173s][warning][cds] Skipping org/joml/Matrix3x2fc: Old class has been linked
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/serializer/Serializer$2: Signed JAR
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/ScalarConfigValue: Signed JAR
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/DuplicateKeyException: Signed JAR
+[24.173s][warning][cds] Skipping io/papermc/paper/configuration/transformation/global/versioned/V30_PacketIds: interface org/spongepowered/configurate/transformation/TransformAction is excluded
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/serialize/MapSerializer$1: Signed JAR
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/loader/HeaderMode: Signed JAR
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/tokens/FlowMappingStartToken: Signed JAR
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/events/DocumentStartEvent: Signed JAR
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/ObjectMapperFactoryImpl: Signed JAR
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/serialize/FileSerializer: Signed JAR
+[24.173s][warning][cds] Skipping org/joml/Matrix4dc: Old class has been linked
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/tokens/StreamEndToken: Signed JAR
+[24.173s][warning][cds] Skipping net/minecraft/util/profiling/jfr/event/PacketEvent: JFR event class
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/CommentedConfigurationNode: Signed JAR
+[24.173s][warning][cds] Skipping org/spongepowered/configurate/MapConfigValue: Signed JAR
+[24.174s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/resolver/ResolverTuple: Signed JAR
+[24.174s][warning][cds] Skipping org/spongepowered/configurate/ConfigurationOptions: Signed JAR
+[24.174s][warning][cds] Skipping org/spongepowered/configurate/ConfigurationOptions$Lazy: Signed JAR
+[24.174s][warning][cds] Skipping io/papermc/paper/configuration/serializer/collection/map/FastutilMapSerializer: interface org/spongepowered/configurate/serialize/TypeSerializer$Annotated is excluded
+[24.174s][warning][cds] Skipping io/papermc/paper/configuration/serializer/collection/map/FastutilMapSerializer$SomethingToSomething: super class io/papermc/paper/configuration/serializer/collection/map/FastutilMapSerializer is excluded
+[24.174s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/external/com/google/gdata/util/common/base/UnicodeEscaper: Signed JAR
+[24.174s][warning][cds] Skipping org/spongepowered/configurate/util/UnmodifiableCollections: Signed JAR
+[24.174s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/SafeConstructor$ConstructYamlSet: Signed JAR
+[24.174s][warning][cds] Skipping jdk/proxy1/$Proxy26: Unsupported location
+[24.174s][warning][cds] Skipping io/papermc/paper/configuration/type/number/IntOr$Serializer: super class io/papermc/paper/configuration/type/number/OptionalNumSerializer is excluded
+[24.174s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/events/CommentEvent: Signed JAR
+[24.174s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/meta/PostProcessor$Factory: Signed JAR
+[24.174s][warning][cds] Skipping jdk/internal/event/ThreadSleepEvent: JFR event class
+[24.174s][warning][cds] Skipping io/papermc/paper/configuration/transformation/global/versioned/V31_AllowNetherPropertiesToConfig: interface org/spongepowered/configurate/transformation/ConfigurationTransformation is excluded
+[24.174s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/tokens/StreamStartToken: Signed JAR
+[24.174s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/representer/SafeRepresenter$RepresentNumber: Signed JAR
+[24.174s][warning][cds] Skipping org/joml/Matrix4x3fc: Old class has been linked
+[24.174s][warning][cds] Skipping io/papermc/paper/configuration/constraint/Constraints$Max$Factory: interface org/spongepowered/configurate/objectmapping/meta/Constraint$Factory is excluded
+[24.174s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/reader/StreamReader: Signed JAR
+[24.174s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/meta/Required: Signed JAR
+[24.174s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/external/com/google/gdata/util/common/base/PercentEscaper: Signed JAR
+[24.174s][warning][cds] Skipping org/spongepowered/configurate/CommentedConfigurationNodeIntermediary: Signed JAR
+[24.174s][warning][cds] Skipping jdk/internal/event/SecurityProviderServiceEvent: JFR event class
+[24.174s][warning][cds] Skipping org/spongepowered/configurate/AutoValue_ConfigurationOptions: Signed JAR
+[24.174s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/representer/SafeRepresenter$RepresentPrimitiveArray: Signed JAR
+[24.174s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/nodes/AnchorNode: Signed JAR
+[24.174s][warning][cds] Skipping org/spongepowered/configurate/serialize/ArraySerializer$Doubles: Signed JAR
+[24.174s][warning][cds] Skipping org/spongepowered/configurate/transformation/VersionedTransformation: Signed JAR
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/serialize/MapSerializer: Signed JAR
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/serialize/TypeSerializerCollection$Builder: Signed JAR
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/ListConfigValue: Signed JAR
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/events/Event$ID: Signed JAR
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/ScopedConfigurationNode: Signed JAR
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/TypeDescription: Signed JAR
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/emitter/Emitter$ExpectStreamStart: Signed JAR
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/representer/SafeRepresenter$RepresentMap: Signed JAR
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/NodePathImpl: Signed JAR
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/tokens/DocumentStartToken: Signed JAR
+[24.175s][warning][cds] Skipping io/papermc/paper/configuration/constraint/Constraints$Min$Factory: interface org/spongepowered/configurate/objectmapping/meta/Constraint$Factory is excluded
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/serialize/Scalars: Signed JAR
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/meta/Constraint: Signed JAR
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/serialize/ListSerializer$1: Signed JAR
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/AbstractCommentedConfigurationNode: Signed JAR
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/serialize/SetSerializer: Signed JAR
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/emitter/EmitterState: Signed JAR
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/representer/SafeRepresenter$RepresentList: Signed JAR
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/serialize/TypeSerializerCollection$NoOp: Signed JAR
+[24.175s][warning][cds] Skipping org/joml/Options: Old class has been linked
+[24.175s][warning][cds] Skipping io/papermc/paper/configuration/constraint/Constraint$Factory: interface org/spongepowered/configurate/objectmapping/meta/Constraint$Factory is excluded
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/scanner/Constant: Signed JAR
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/meta/Matches: Signed JAR
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/scanner/ScannerException: Signed JAR
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/internal/Logger: Signed JAR
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/Yaml: Signed JAR
+[24.175s][warning][cds] Skipping org/spongepowered/configurate/util/Types: Signed JAR
+[24.176s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/ObjectFieldDiscoverer: Signed JAR
+[24.176s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/emitter/Emitter$ExpectFirstFlowSequenceItem: Signed JAR
+[24.176s][warning][cds] Skipping org/spongepowered/configurate/serialize/ListSerializer: Signed JAR
+[24.176s][warning][cds] Skipping org/spongepowered/configurate/serialize/OptionalSerializer$OfDouble: Signed JAR
+[24.176s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/AutoValue_Definition: Signed JAR
+[24.176s][warning][cds] Skipping org/joml/Math: Old class has been linked
+[24.176s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/representer/SafeRepresenter$RepresentIterator: Signed JAR
+[24.176s][warning][cds] Skipping org/joml/Quaternionfc: Old class has been linked
+[24.176s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/scanner/ScannerImpl: Signed JAR
+[24.176s][warning][cds] Skipping org/spongepowered/configurate/NodePath: Signed JAR
+[24.176s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/nodes/Tag: Signed JAR
+[24.176s][warning][cds] Skipping org/spongepowered/configurate/serialize/TypeSerializerCollection: Signed JAR
+[24.176s][warning][cds] Skipping com/sun/proxy/jdk/proxy1/$Proxy49: Unsupported location
+[24.176s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/FieldDiscoverer$InstanceFactory: Signed JAR
+[24.176s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/inspector/TagInspector: Signed JAR
+[24.176s][warning][cds] Skipping jdk/proxy1/$Proxy33: Unsupported location
+[24.176s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/RecordFieldDiscoverer: Signed JAR
+[24.176s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/tokens/Token$ID: Signed JAR
+[24.176s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/Definition: Signed JAR
+[24.176s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/emitter/Emitter$ExpectFirstBlockSequenceItem: Signed JAR
+[24.176s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/representer/SafeRepresenter$RepresentSet: Signed JAR
+[24.176s][warning][cds] Skipping jdk/proxy1/$Proxy3: Unsupported location
+[24.176s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/SafeConstructor$ConstructYamlInt: Signed JAR
+[24.176s][warning][cds] Skipping org/spongepowered/configurate/serialize/AbstractListChildSerializer: Signed JAR
+[24.176s][warning][cds] Skipping org/joml/Matrix3x2f: Old class has been linked
+[24.177s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/tokens/BlockEndToken: Signed JAR
+[24.177s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/inspector/UnTrustedTagInspector: Signed JAR
+[24.177s][warning][cds] Skipping org/spongepowered/configurate/serialize/OptionalSerializer$OfLong: Signed JAR
+[24.177s][warning][cds] Skipping io/papermc/paper/configuration/serializer/collection/map/MapSerializer: interface org/spongepowered/configurate/serialize/TypeSerializer$Annotated is excluded
+[24.177s][warning][cds] Skipping org/spongepowered/configurate/CommentedConfigurationNodeImpl: Signed JAR
+[24.177s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/representer/SafeRepresenter$RepresentDate: Signed JAR
+[24.177s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/emitter/Emitter$ExpectBlockSequenceItem: Signed JAR
+[24.177s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/SafeConstructor$ConstructYamlBool: Signed JAR
+[24.177s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/events/DocumentEndEvent: Signed JAR
+[24.177s][warning][cds] Skipping org/joml/MemUtil$MemUtilNIO: Old class has been linked
+[24.177s][warning][cds] Skipping com/sun/proxy/jdk/proxy1/$Proxy35: Unsupported location
+[24.177s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/AutoValue_FieldData: Signed JAR
+[24.177s][warning][cds] Skipping org/spongepowered/configurate/transformation/NodePathComparator: Signed JAR
+[24.177s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/tokens/Token: Signed JAR
+[24.177s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/meta/Processor$Factory: Signed JAR
+[24.177s][warning][cds] Skipping org/joml/Vector2f: Old class has been linked
+[24.177s][warning][cds] Skipping org/spongepowered/configurate/transformation/MoveStrategy$1: Signed JAR
+[24.177s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/DumperOptions: Signed JAR
+[24.177s][warning][cds] Skipping org/spongepowered/configurate/util/MapFactories$DefaultFactory$2: Signed JAR
+[24.177s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/parser/ParserImpl$ParseBlockNode: Signed JAR
+[24.177s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/representer/SafeRepresenter$RepresentArray: Signed JAR
+[24.177s][warning][cds] Skipping com/sun/proxy/jdk/proxy1/$Proxy34: Unsupported location
+[24.177s][warning][cds] Skipping jdk/proxy1/$Proxy25: Unsupported location
+[24.178s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/SafeConstructor$ConstructYamlBinary: Signed JAR
+[24.178s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/LoaderOptions: Signed JAR
+[24.178s][warning][cds] Skipping jdk/internal/event/Event: JFR event class
+[24.178s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/representer/Represent: Signed JAR
+[24.178s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/SafeConstructor$ConstructYamlFloat: Signed JAR
+[24.178s][warning][cds] Skipping org/joml/Matrix4x3f: Old class has been linked
+[24.178s][warning][cds] Skipping org/spongepowered/configurate/util/Types$CombinedAnnotations: Signed JAR
+[24.178s][warning][cds] Skipping org/spongepowered/configurate/BasicConfigurationNodeImpl: Signed JAR
+[24.178s][warning][cds] Skipping org/spongepowered/configurate/transformation/MoveStrategy$2: Signed JAR
+[24.178s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/ObjectMapperFactoryImpl$1: Signed JAR
+[24.178s][warning][cds] Skipping org/joml/Vector2fc: Old class has been linked
+[24.178s][warning][cds] Skipping org/spongepowered/configurate/util/MapFactories$DefaultFactory$3: Signed JAR
+[24.178s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/scanner/SimpleKey: Signed JAR
+[24.178s][warning][cds] Skipping org/joml/AxisAngle4f: Old class has been linked
+[24.178s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/events/ScalarEvent: Signed JAR
+[24.178s][warning][cds] Skipping org/joml/MemUtil$MemUtilUnsafe: Old class has been linked
+[24.178s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/representer/BaseRepresenter$1: Signed JAR
+[24.178s][warning][cds] Skipping io/papermc/paper/configuration/type/Duration$Serializer: super class org/spongepowered/configurate/serialize/ScalarSerializer is excluded
+[24.178s][warning][cds] Skipping jdk/proxy2/$Proxy50: interface org/spongepowered/configurate/objectmapping/meta/Setting is excluded
+[24.178s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/RecordFieldDiscoverer$1: Signed JAR
+[24.178s][warning][cds] Skipping org/spongepowered/configurate/loader/CommentHandlers$AbstractDelineatedHandler: Signed JAR
+[24.178s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/emitter/Emitter$ExpectNothing: Signed JAR
+[24.178s][warning][cds] Skipping jdk/proxy1/$Proxy31: Unsupported location
+[24.178s][warning][cds] Skipping org/spongepowered/configurate/serialize/OptionalSerializer: Signed JAR
+[24.178s][warning][cds] Skipping jdk/proxy2/$Proxy53: interface org/spongepowered/configurate/objectmapping/ConfigSerializable is excluded
+[24.178s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/nodes/NodeId: Signed JAR
+[24.178s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/parser/ParserImpl$ParseDocumentEnd: Signed JAR
+[24.178s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/events/MappingStartEvent: Signed JAR
+[24.179s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/meta/Processor: Signed JAR
+[24.179s][warning][cds] Skipping org/joml/Vector3fc: Old class has been linked
+[24.179s][warning][cds] Skipping org/spongepowered/configurate/transformation/ConfigurationTransformation$VersionedBuilder: Signed JAR
+[24.179s][warning][cds] Skipping org/spongepowered/configurate/serialize/OptionalSerializer$OfInt: Signed JAR
+[24.179s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/external/com/google/gdata/util/common/base/UnicodeEscaper$2: Signed JAR
+[24.179s][warning][cds] Skipping net/minecraft/util/profiling/jfr/event/WorldLoadFinishedEvent: JFR event class
+[24.179s][warning][cds] Skipping io/papermc/paper/configuration/type/DurationOrDisabled$Serializer: super class org/spongepowered/configurate/serialize/ScalarSerializer is excluded
+[24.179s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/representer/SafeRepresenter$RepresentNull: Signed JAR
+[24.179s][warning][cds] Skipping org/spongepowered/configurate/serialize/TypeSerializerCollection$TypeRegistration: Signed JAR
+[24.179s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/scanner/Scanner: Signed JAR
+[24.179s][warning][cds] Skipping org/spongepowered/configurate/BasicConfigurationNode: Signed JAR
+[24.179s][warning][cds] Skipping org/spongepowered/configurate/serialize/PatternSerializer: Signed JAR
+[24.179s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/events/CollectionEndEvent: Signed JAR
+[24.179s][warning][cds] Skipping org/spongepowered/configurate/loader/CommentHandlers: Signed JAR
+[24.179s][warning][cds] Skipping jdk/proxy2/$Proxy55: interface org/spongepowered/configurate/objectmapping/meta/Required is excluded
+[24.179s][warning][cds] Skipping org/joml/Vector3f: Old class has been linked
+[24.179s][warning][cds] Skipping io/papermc/paper/configuration/serializer/ComponentSerializer: super class org/spongepowered/configurate/serialize/ScalarSerializer$Annotated is excluded
+[24.179s][warning][cds] Skipping org/spongepowered/configurate/serialize/OptionalSerializer$1: Signed JAR
+[24.179s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/SafeConstructor$ConstructYamlMap: Signed JAR
+[24.179s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/events/AliasEvent: Signed JAR
+[24.179s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/representer/SafeRepresenter$RepresentString: Signed JAR
+[24.179s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/FieldDiscoverer$MutableInstanceFactory: Signed JAR
+[24.179s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/parser/ParserImpl$ParseBlockMappingKey: Signed JAR
+[24.179s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/SafeConstructor$ConstructYamlNull: Signed JAR
+[24.179s][warning][cds] Skipping org/spongepowered/configurate/loader/CommentHandlers$AbstractPrefixHandler: Signed JAR
+[24.179s][warning][cds] Skipping io/papermc/paper/configuration/serializer/ResourceLocationSerializer: super class org/spongepowered/configurate/serialize/ScalarSerializer$Annotated is excluded
+[24.179s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/DumperOptions$NonPrintableStyle: Signed JAR
+[24.179s][warning][cds] Skipping org/spongepowered/configurate/util/CheckedSupplier: Signed JAR
+[24.179s][warning][cds] Skipping org/spongepowered/configurate/NullConfigValue: Signed JAR
+[24.179s][warning][cds] Skipping jdk/proxy1/$Proxy32: Unsupported location
+[24.179s][warning][cds] Skipping jdk/proxy1/$Proxy24: Unsupported location
+[24.180s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/emitter/Emitter$ExpectBlockMappingSimpleValue: Signed JAR
+[24.180s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/representer/SafeRepresenter$RepresentBoolean: Signed JAR
+[24.180s][warning][cds] Skipping org/spongepowered/configurate/yaml/NodeStyle: Signed JAR
+[24.180s][warning][cds] Skipping net/minecraft/util/profiling/jfr/event/StructureGenerationEvent: JFR event class
+[24.180s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/parser/Production: Signed JAR
+[24.180s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/ObjectFieldDiscoverer$1: Signed JAR
+[24.180s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/resolver/Resolver$1: Signed JAR
+[24.180s][warning][cds] Skipping org/spongepowered/configurate/serialize/EnumValueSerializer: Signed JAR
+[24.180s][warning][cds] Skipping io/papermc/paper/configuration/serializer/EnumValueSerializer: super class org/spongepowered/configurate/serialize/ScalarSerializer$Annotated is excluded
+[24.180s][warning][cds] Skipping org/spongepowered/configurate/serialize/TypeSerializerCollection$RegisteredSerializer: Signed JAR
+[24.180s][warning][cds] Skipping jdk/proxy1/$Proxy23: Unsupported location
+[24.180s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/emitter/ScalarAnalysis: Signed JAR
+[24.180s][warning][cds] Skipping io/papermc/paper/configuration/mapping/InnerClassInstanceFactory: interface org/spongepowered/configurate/objectmapping/FieldDiscoverer$MutableInstanceFactory is excluded
+[24.180s][warning][cds] Skipping org/spongepowered/configurate/ConfigurationVisitor: Signed JAR
+[24.180s][warning][cds] Skipping org/spongepowered/configurate/transformation/MutableNodePath: Signed JAR
+[24.180s][warning][cds] Skipping org/joml/Runtime: Old class has been linked
+[24.180s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/parser/ParserImpl$ParseBlockMappingFirstKey: Signed JAR
+[24.180s][warning][cds] Skipping org/spongepowered/configurate/ConfigurationNodeFactory: Signed JAR
+[24.180s][warning][cds] Skipping jdk/proxy1/$Proxy0: Unsupported location
+[24.180s][warning][cds] Skipping org/joml/Matrix4f: Old class has been linked
+[24.180s][warning][cds] Skipping io/papermc/paper/configuration/type/BooleanOrDefault$Serializer: super class org/spongepowered/configurate/serialize/ScalarSerializer$Annotated is excluded
+[24.180s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/events/CollectionStartEvent: Signed JAR
+[24.180s][warning][cds] Skipping org/spongepowered/configurate/loader/AtomicFiles$AtomicFileWriter: Signed JAR
+[24.180s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/ObjectMapper$Mutable: Signed JAR
+[24.180s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/nodes/NodeTuple: Signed JAR
+[24.180s][warning][cds] Skipping org/spongepowered/configurate/serialize/ArraySerializer: Signed JAR
+[24.180s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/DumperOptions$LineBreak: Signed JAR
+[24.180s][warning][cds] Skipping org/spongepowered/configurate/transformation/SingleConfigurationTransformation: Signed JAR
+[24.181s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/reader/UnicodeReader: Signed JAR
+[24.181s][warning][cds] Skipping org/spongepowered/configurate/serialize/CharSerializer: Signed JAR
+[24.181s][warning][cds] Skipping jdk/internal/event/X509ValidationEvent: JFR event class
+[24.181s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/events/SequenceStartEvent: Signed JAR
+[24.181s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/representer/SafeRepresenter$RepresentUuid: Signed JAR
+[24.181s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/emitter/Emitter$1: Signed JAR
+[24.181s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/introspector/PropertyUtils: Signed JAR
+[24.181s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/events/ImplicitTuple: Signed JAR
+[24.181s][warning][cds] Skipping org/spongepowered/configurate/loader/CommentHandler: Signed JAR
+[24.181s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/parser/Parser: Signed JAR
+[24.181s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/Constructor$ConstructMapping: Signed JAR
+[24.181s][warning][cds] Skipping org/spongepowered/configurate/serialize/StringSerializer: Signed JAR
+[24.181s][warning][cds] Skipping io/papermc/paper/configuration/serializer/EngineModeSerializer: super class org/spongepowered/configurate/serialize/ScalarSerializer is excluded
+[24.181s][warning][cds] Skipping org/spongepowered/configurate/objectmapping/ObjectMapperImpl$Mutable: Signed JAR
+[24.181s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/emitter/Emitter$ExpectDocumentEnd: Signed JAR
+[24.181s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/representer/SafeRepresenter$RepresentByteArray: Signed JAR
+[24.181s][warning][cds] Skipping org/spongepowered/configurate/loader/ConfigurationLoader: Signed JAR
+[24.181s][warning][cds] Skipping io/papermc/paper/configuration/serializer/collection/map/FastutilMapSerializer$SomethingToPrimitive: super class io/papermc/paper/configuration/serializer/collection/map/FastutilMapSerializer is excluded
+[24.181s][warning][cds] Skipping org/spongepowered/configurate/util/NamingSchemes$4: Signed JAR
+[24.181s][warning][cds] Skipping jdk/proxy1/$Proxy36: Unsupported location
+[24.181s][warning][cds] Skipping org/spongepowered/configurate/serialize/BooleanSerializer: Signed JAR
+[24.181s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/tokens/TagToken: Signed JAR
+[24.181s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/parser/ParserImpl$ParseBlockMappingValue: Signed JAR
+[24.181s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/emitter/Emitter$ExpectDocumentRoot: Signed JAR
+[24.181s][warning][cds] Skipping org/spongepowered/configurate/yaml/internal/snakeyaml/constructor/Constructor$ConstructSequence: Signed JAR
+[24.184s][info   ][cds] Gathering all archivable objects ... 
+[24.184s][info   ][cds] Gathering classes and symbols ... 
+[26.177s][info   ][cds] _estimated_hashtable_bytes = 3178664 + 700272 = 3878936
+[26.177s][info   ][cds] _estimated_metaspaceobj_bytes = 123326664
+[26.177s][info   ][cds] total estimate bytes = 127213792
+[26.177s][info   ][cds] Reserved output buffer space at 0x00007fd1606ad000 [127217664 bytes]
+[26.180s][info   ][cds] Allocating RW objects ... 
+[26.362s][info   ][cds] done (374774 objects)
+[26.362s][info   ][cds] Allocating RO objects ... 
+[26.716s][info   ][cds] done (611908 objects)
+[26.716s][info   ][cds] Relocating embedded pointers in core regions ... 
+[27.047s][info   ][cds] MetaspaceObjs estimate = 123326664 used = 123326664; diff = 0 bytes
+[27.218s][info   ][cds] Hashtables estimate = 3878936 used = 3650696; diff = 228240 bytes
+[27.366s][info   ][cds] Make classes shareable
+[27.497s][info   ][cds] Number of classes 14048
+[27.497s][info   ][cds]     instance classes   = 14048
+[27.497s][info   ][cds]       boot             =  2743
+[27.497s][info   ][cds]       app              =     9
+[27.497s][info   ][cds]       platform         =   130
+[27.497s][info   ][cds]       unregistered     = 11166
+[27.497s][info   ][cds]       (hidden)         =   247
+[27.497s][info   ][cds]       (unlinked)       =  2439
+[27.497s][info   ][cds]     obj array classes  =     0
+[27.497s][info   ][cds]     type array classes =     0
+[27.497s][info   ][cds]                symbols = 328985
+[27.497s][info   ][cds] Adjust lambda proxy class dictionary
+[27.526s][info   ][cds] Dumping shared data to file: 
+[27.526s][info   ][cds]    /tmp/graal_boot_compose.jsa
+[27.551s][info   ][cds] Shared file region (rw) 0: 57788136 bytes, addr 0x0000000800c94000 file offset 0x00001000 crc 0x47e44c25
+[27.613s][info   ][cds] Shared file region (ro) 1: 69189224 bytes, addr 0x00000008043b1000 file offset 0x0371e000 crc 0x553c18f8
+[27.644s][info   ][cds] Shared file region (bm) 2:  1984064 bytes, addr 0x0000000000000000 file offset 0x0791a000 crc 0x92e208c9
