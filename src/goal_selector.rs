@@ -28,7 +28,7 @@
 //! ретаргет mobs_sscan (checkDespawn, sites=1). Этот хук КОМПОЗИРУЕТ: на
 //! serve-времени ретаргетит 4 сайта В ПОЛУЧЕННЫХ байтах. Порядок converge'ит.
 //!
-//! Гейт: env `CRUSSTY_LEVER_FLAG == "cmp421_brain" || == "cmp422_brain2"`
+//! Гейт: env `CRUSSTY_LEVER_FLAG == "cmp421_brain" || == "cmp422_brain2" || v == "cmp423_brain3"`
 //! (STRICT-OR по образцу 40adceb; пустой/чужой флаг = ваниль бит-в-байт).
 //! FAIL-CLOSED лестница: sites != (2,2) → hook stays dormant; define_class
 //! failed → dormant; java-гейт сам зовёт ваниль на SETUP-дрейф.
@@ -79,7 +79,7 @@ fn enabled() -> bool {
     match std::env::var("CRUSSTY_LEVER_FLAG") {
         Ok(v) => {
             let v = v.trim();
-            v == "cmp421_brain" || v == "cmp422_brain2"
+            v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3"
         }
         Err(_) => false,
     }

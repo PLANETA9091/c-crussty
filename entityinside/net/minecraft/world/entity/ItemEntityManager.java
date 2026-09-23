@@ -104,7 +104,9 @@ public final class ItemEntityManager {
                     // TASK-421-A: brain-носитель (STRICT OR).
                     || "cmp421_brain".equals(LEVER_FLAG)
                     // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
-                    || "cmp422_brain2".equals(LEVER_FLAG);
+                    || "cmp422_brain2".equals(LEVER_FLAG)
+                    // TASK-424-A: GC-ревизия brain3 (STRICT OR).
+                    || "cmp423_brain3".equals(LEVER_FLAG);
 
     /**
      * TASK-403-C2 ITEM-PLANE RESTING (точный флаг cmp403_tickplane, STRICT eq;
@@ -152,7 +154,9 @@ public final class ItemEntityManager {
                     // TASK-421-A: brain-носитель (STRICT OR).
                     || "cmp421_brain".equals(LEVER_FLAG)
                     // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
-                    || "cmp422_brain2".equals(LEVER_FLAG);
+                    || "cmp422_brain2".equals(LEVER_FLAG)
+                    // TASK-424-A: GC-ревизия brain3 (STRICT OR).
+                    || "cmp423_brain3".equals(LEVER_FLAG);
 
     /** TASK-399-F despawnv2: rust lifetime-heap + батч-деспавн (точный флаг).
      *  TASK-400-A: составной флаг cmp399_bfcomp (B+F) включает despawnv2
@@ -537,9 +541,6 @@ public final class ItemEntityManager {
      * собственного индекса. Вызывается вместо vanilla consumer.
      */
     public static void tickOne(ItemEntity e, TickRateManager trm) {
-        if ((++telemetryCounter % TELEMETRY_INTERVAL) == 0L) {
-            LOG.info("[crussty-plugin] items_subsys2: telemetry calls=" + telemetryCounter);
-        }
         // ---- guardEntityTick (CraftBukkit body): try { dispatch } catch { log+event+discard } ----
         try {
             dispatch(e, trm);

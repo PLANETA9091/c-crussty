@@ -69,7 +69,9 @@ public final class GoalOps {
         // STRICT-OR (TASK-422-B): носитель-флаг cmp421_brain ИЛИ вектор-флаг
         // cmp422_brain2; пустой/чужой флаг = ваниль бит-в-байт.
         return f != null && (f.trim().equals("cmp421_brain")
-                || f.trim().equals("cmp422_brain2"));
+                || f.trim().equals("cmp422_brain2")
+                // TASK-424-A: GC-ревизия brain3 (STRICT OR).
+                || f.trim().equals("cmp423_brain3"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -87,6 +89,7 @@ public final class GoalOps {
         }
         return switch (f.trim()) {
             case "cmp422_brain2" -> "cmp422_brain2";
+            case "cmp423_brain3" -> "cmp423_brain3";
             case "cmp421_brain" -> "cmp421_brain";
             default -> "(off)";
         };
