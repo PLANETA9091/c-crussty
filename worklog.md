@@ -5636,3 +5636,22 @@ Stage Summary:
 - mc-композит (multi⊕racefix⊕queryplane⊕gsel @20c9fdc cmp417_mcomp) впервые ЗДОРОВ: топ-лесенка разблокирована для дневного окна тика-418 (цель ≥+40-50)
 - queryplane awake на раннере ×6 ног — find_class INITIALIZED-фикс закрыл класс dormant-отказов (b2p1/mc1)
 - Директива владельца принята в систему векторов: chunk-pipeline (B-wgen) + наследие noise_fill; inside_volatile → 418
+---
+Task ID: 425-fin
+Agent: main-finisher
+Task: TASK-425 PHASE 3/4 finisher (main tool-gateway died): absorb anchord+c2, C-verdict pair-by-runner, merge decision, accounting, pushes
+
+Work Log:
+- Absorbs: anchor424c2 35829367357 -> 2.2@6765225 band-OK; anchor424d 35829381716 -> 2.4@6929838 band-OK (polls 6 threw=0, NCDFE=0); anchorb2/b3 FAIL BAND fast-fail — skipped
+- Anchor pool x5 band-OK: a 2.2@6911381 / b 1.9@6856588 (low outlier) / c 2.3@6874937 / c2 2.2@6765225 / d 2.4@6929838 -> spread 26.3% raw / 9.1% ex-outlier — WINDOW NOT CERTIFIED (>±5pp gate, noisy day x2 ticks in a row)
+- C verdict (cmp424_chunksend @6f92ea7): leg gates green x3 (ARMED / queryplane selfTest==true / Retargeted{sites:1} l3 / AIOOBE=0 / NCDFE=0 / polls threw=0 x6 / band OK); pairs: l2 -> anchorc D12k = +17.4% CERTIFIED (only exact pair of tick); l1 -> d D2.47M raw +41.7% / l3 -> d D1.78M raw +29.2% — wide lanes NOT certified; min-of-3 median impossible (1 certified pair of 3) -> certified point +17.4% < BAR +20%
+- NO MERGE honest (double gate: bar AND window both red; lesson x422 applied — no inflated medians from wide lanes/noisy window)
+- Lane map C: anchors 1.9-2.4 -> c-legs 2.7-3.4 TPS; boot-Done axis (law 8): vanilla anchors 15.557/15.213/15.726/16.919s -> legs 13.703/16.070/12.326s (l1 -10-12% / l2 parity / l3 -19-27%, player-visible chunk-send win)
+- KEY FACT x3 legs: mobSlots=0 (1105/930/1042 stdout lines) — colpush feed dormant (colpush.rs:113-118 STRICT-eq outside C union) -> SoA family starving, DATA-PLAN FAIL for mob-planes; C win = items/queryplane/stagger/wgen segments + boot axis; SoA-feeding = open reserve TASK-426 (aibatch/sscan/goalquery ~24-25% CPU)
+- Agent A (cmp424_mobfeed @27c07d0 = master+gcfix): implementation in flight, 0 dispatches at 15:24 +08 (0 runs lever cmp424_mobfeed); Agent B (cmp424_inside): legs l1/l2/l3/l1r FAIL CI-127 (run_world3.sh missing via 'git add -u' staging disk-law deletes); fix aa55277 found LOCAL-ONLY (not pushed despite tick status) -> pushed by finisher (origin/round-424-b-inside 592fba3->aa55277 ff)
+- Accounting: GOAL x108 + CLAIMS TASK-426 (double merge-gate canon: PAIR D<=50k non-outlier + WINDOW <=±5pp) + worklog copies; disk law: /tmp/cargo-c424 173M < 500M kept, df 79%
+
+Stage Summary:
+- Ladder stays at +29.5 (era merge 4ab7306); C chunksend best certified pair +17.4% — one honest re-roll wave (anchors in 8.7-9.4M runner windows) away from the BAR
+- Merge gates canonized: PAIR (Drunner <=50k AND anchor-not-outlier) + WINDOW (spread <=±5pp) — both mandatory, wide lanes never enter medians
+- TASK-426 opened: mobfeed SoA-feeding (main vector, ~24-25% CPU addressable), chunksend pair-certification anchors, inside re-rolls @aa55277, evening/night windows
