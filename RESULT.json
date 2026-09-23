@@ -1,35 +1,14 @@
 {
- "agent": "TASK-433-B (restart линии TASK-431-B/TASK-432-B — предшественник не вышел из полл-цикла; артефакты живы)",
- "vector": "inside2 углубление ПОВЕРХ ccefix-композита (закон 6 v17, мандат ≥+20% pair-stable): (A) snapshot-plane serve fastpath + (B) gate-fusion + (F) slots 2^18 + RC7-фикс арма (lazy init=false force-load)",
- "branch": "round-433-b-inside3",
- "base": "round-433-ccefix @513c4835 = master d282985 + CCE-433 фикс (inside_snap collect палитра стёртого Object[] → element-level BlockState casts ×3 sites)",
- "lever": "cmp432_inside2",
- "run_id": 35902792520,
- "run_started_utc": "2026-09-23T18:29:11Z",
- "tps_med": null,
- "delta_pair_pct": null,
- "lane_before": "inside_volatile 15.91% (431b-inside-l1 3.10@7177515; gate-слой ≈2.7% адресуемо); нога предшественника DELIVERY-FAIL: run 35894909390 NCDFE=473412, selfTest resolution failed → dormant, TPS 16.7 пустой мир",
- "lane_after": null,
- "ram_stw": null,
- "ram_full": null,
- "parity": "median-exact по построению: snapGet возвращает тот же palette-объект, miss → ванильный метод; lane-мемо тик-стамповано; secWrite seqlock контракт сохранён (builtAtGen==gen); STRICT-OR бинарный паритет; Retargeted sites > 0; selfTest==true; javap flat==nested; CCE-433 grep «collect failed» ≤ десятки — бонус-гейт",
- "rc7_fix": "ROOT-CAUSE RC7-семейство: early-arm резолвил классы init=true ДО Bootstrap → отравление registries → NCDFE шторм → мир пуст. КАНОН-ФИКС @a3991c2 (wgen RC7) портирован: force_load_kernel_class_lazy (Class.forName initialize=false) в improved_noise.rs + ОБА call-site моего арма переведены на lazy: inside_snap.rs (LevelChunk) + inside_bitmask.rs (Entity). Define-only: ClassFileLoadHook стреляет (pristine bytes), <clinit> остаётся главному треду post-bootStrap. Ноль init=true преранних резолвов в арме; самодиагностика (selfTest) осталась ЗА wait_for_boot() (post-Bootstrap +10s) — fail-closed контракт сохранён",
- "verdict": "IN_PROGRESS: cherry-pick 5bdb4d2+fd0cf0b на ccefix-базу 513c4835 OK (conflict только 2 бинарных блоба — разрешён пересборкой из merged-источника), RC7-фикс применён, сборка зелёная (blobs flat==nested, check_blobs_sync ALL IN SYNC, javap selfTest НЕ-стаб, cargo check ok, cargo test 302/0), коммит+push, далее диспатч ref=round-433-b-inside3",
- "evidence": [
-  "cherry-pick 5bdb4d2 (inside2 step-2: ENGINE A/B/F + STRICT-OR plumbing 24 rust sites + 8 java blob gates + build_432b_blobs.sh) — java-источники auto-merge ЧИСТО: merged InsideSnapOps.java содержит И CCE-433 фикс (строки 405-479: (Object[])(Object) + element-level casts), И inside2 маркеры (serve fastpath/InsideBlockOps fusion/SNAP_ARMED)",
-  "RC7-порт: improved_noise.rs +25 строк (force_load_kernel_class_lazy/opt verbatim canon a3991c2); inside_snap.rs:184 + inside_bitmask.rs:169 → lazy; cargo check --lib green (7.7s), cargo test --lib 302 passed / 0 failed (7.1s)",
-  "гейты: build_432b_blobs.sh один javac pass → InsideSnapOps.class 12566B ( merged CCE-fix+inside2), flat==nested gates OK; check_blobs_sync ALL IN SYNC (13 gate-flag файлов + byte-identical flat==nested); javap InsideSnapOps.selfTest = invokestatic snapProbe + ldc_w + roundtrip-цикл — НЕ-стаб",
-  "ожидаемый эффект: inside2 углубление поверх ccefix-композита ≥+20% pair; бонус-гейт CCE: grep «collect failed» ≤ десятки (CCE-433 в базе)",
-  "диск-закон: target/ удалён сразу, cargo в /tmp/cargo-b; kernel round-396-a jar НЕ тронут"
- ],
- "what": "рестарт линии TASK-432-B: перенос inside2 имплементации на свежий master+ccefix и лечение RC7-NCDFE арма; далее pair-сертификация vs round-433-anchor* (Δ≤50k, band 6.0-9.5M, депресс-гейт ≥ −2%) до ≥+20% (мандат владельца 2026-09-23)",
- "steps_log": [
-  "step-0: worktree round-433-b-inside3 @513c4835 создан; контекст прочитан (worklog ×2 секции + CLAIMS TASK-432/433) OK",
-  "step-1: cherry-pick 5bdb4d2 + fd0cf0b — конфликты только 2 бинарных блоба InsideSnapOps.class (HEAD=ccefix vs inside2), java auto-merge чисто (CCE-фикс ⊕ inside2) OK",
-  "step-2: RC7-фикс портирован и применён к арму (lazy init=false ×2 call-sites + canon-комментарии) OK",
-  "step-3: сборка — blobs rebuild (flat==nested OK) + check_blobs_sync ALL IN SYNC + javap selfTest НЕ-стаб + cargo check ok + cargo test 302/0 OK; target удалён",
-  "step-4: push @5a789c4 (step-1) + @dispatch_433b (step-2) OK",
-  "step-5: диспатч 433b-inside3-l1 ref=round-433-b-inside3 @5a789c4c lever=cmp432_inside2 → run 35902792520 in_progress; round-433-* батч тика в полёте (anchors b-f + cce l1r4/l1r5/l2r4/l3r3 + wgen l7/l8) OK",
-  "step-6: полл + абсорб + вердикт pair-by-runner vs round-433-anchor* (Δ≤50k, band 6.0-9.5M, депресс-гейт ≥ −2%) — IN FLIGHT"
- ]
+  "agent": "TASK-434-B",
+  "vector": "inside2-deepen round-3 NCDFE root-cause + fix + bench",
+  "branch": null,
+  "run_id": null,
+  "tps_med": null,
+  "delta_pair_pct": null,
+  "lane": "was: NCDFE selfTest DELIVERY-FAIL x2 (run 35902792520) -> to: fixed?",
+  "ram": null,
+  "parity": null,
+  "verdict": "IN_PROGRESS",
+  "evidence": [],
+  "what": "phase 0 starting: worktree setup"
 }
