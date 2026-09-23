@@ -113,7 +113,13 @@ fn bulk_state() -> &'static Mutex<BulkState> {
 fn lever_flag_matches() -> bool {
     // STRICT eq: ТОЛЬКО мой флаг (прошлые флаги = бит-в-байт прежнее поведение).
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim() == "cmp420_colpush")
+        .map(|v| {
+            v.trim() == "cmp420_colpush"
+                // TASK-425-C (chunk/boot axis): round-424 carrier cmp424_chunksend
+                // = colpush proven set ⊕ wgen set (STRICT OR, law 7; empty/
+                // foreign flag = vanilla pushEntities bit-in-bit, law 4).
+                || v.trim() == "cmp424_chunksend"
+        })
         .unwrap_or(false)
 }
 

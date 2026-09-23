@@ -83,7 +83,9 @@ public final class ColpushOps {
 
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return f != null && f.trim().equals(FLAG);
+        // TASK-425-C (chunk/boot): round-424 mega-carrier cmp424_chunksend
+        // rides the colpush writer (STRICT OR; empty/foreign = vanilla).
+        return f != null && (f.trim().equals(FLAG) || f.trim().equals("cmp424_chunksend"));
     }
 
     /** Структурный отказ — весь рычаг дизармится навсегда (ваниль-реплика). */

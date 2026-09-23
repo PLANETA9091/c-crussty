@@ -77,6 +77,9 @@ fn lever_flag_matches() -> bool {
                 // (chunk-parse ⊕ biomes-parse ⊕ queryplane, law 7) —
                 // queryplane rides as a disjoint-lane leg.
                 || v.trim() == "cmp423_wgen"
+                // TASK-425-C (chunk/boot): round-424 carrier cmp424_chunksend
+                // = colpush proven set ⊕ wgen set (STRICT OR, law 7).
+                || v.trim() == "cmp424_chunksend"
         })
         .unwrap_or(false)
 }
@@ -91,6 +94,8 @@ fn lever_id() -> &'static str {
         Ok("cmp415_mcomp") => "cmp415_mcomp",
         // TASK-424-C (wgen): ROUND-423 chunk-pipeline carrier.
         Ok("cmp423_wgen") => "cmp423_wgen",
+        // TASK-425-C (chunk/boot): round-424 chunk-pipeline mega-carrier.
+        Ok("cmp424_chunksend") => "cmp424_chunksend",
         _ => "cmp412_b2p1",
     }
 }

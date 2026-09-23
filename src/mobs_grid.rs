@@ -73,6 +73,10 @@ pub(crate) fn mirror_mode() -> bool {
                     || v.trim() == "cmp412_eqsnapv3" || v.trim() == "cmp414_cvs" || v.trim() == "cmp417_bq"
                     // TASK-419-A (colpush): колпаш-носитель (mirror inert).
                     || v.trim() == "cmp420_colpush"
+                    // TASK-425-C (chunk/boot): round-424 mega-carrier (STRICT OR;
+                    // mirror inert same as colpush — eqsnap upsert path returns
+                    // before mirror write).
+                    || v.trim() == "cmp424_chunksend"
             })
             .unwrap_or(false)
     })

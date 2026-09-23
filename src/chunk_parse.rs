@@ -124,6 +124,9 @@ fn enabled() -> bool {
         .map(|v| {
             let v = v.trim();
             v == LEVER_ID || v == "cmp420_colpush" || v == "cmp421_chunk" || v == "cmp423_wgen"
+                // TASK-425-C (chunk/boot): round-424 mega-carrier (colpush set ⊕
+                // wgen set, law 7) — chunk-parse + biomes-parse cache ride it.
+                || v == "cmp424_chunksend"
         })
         .unwrap_or(false)
 }
@@ -587,6 +590,19 @@ mod chunkparse_delivery_tests {
         assert!(
             blob.windows(needle2.len()).any(|w| w == needle2),
             "blob must declare the biomes entry point"
+        );
+    }
+
+    /// TASK-425-C gate consistency: the cmp424_chunksend round-424
+    /// mega-carrier id must be accepted by the chunk-parse gate
+    /// (STRICT-OR, no broadening) and carried in the blob cp.
+    #[test]
+    fn chunkparse_gate_accepts_424_carrier() {
+        let blob = include_bytes!("../chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class");
+        let needle = b"cmp424_chunksend";
+        assert!(
+            blob.windows(needle.len()).any(|w| w == needle),
+            "blob constant pool must carry the cmp424_chunksend carrier union"
         );
     }
 }

@@ -68,7 +68,9 @@ public final class MobScanOps {
                 // TASK-417-C: cvs-носитель ⊕ queryplane.
                 || f.trim().equals("cmp417_bq")
                 // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
-                || f.trim().equals("cmp420_colpush"));
+                || f.trim().equals("cmp420_colpush")
+                // TASK-425-C (chunk/boot): round-424 mega-carrier (STRICT OR).
+                || f.trim().equals("cmp424_chunksend"));
     }
 
     private static final boolean ENABLED = leverEnabled();

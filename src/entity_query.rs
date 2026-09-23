@@ -127,6 +127,8 @@ fn enabled() -> bool {
             // TASK-419-A (colpush): колпаш-носитель — eq_epoch снапшот жив
             // (плоскость кормит colpush_plane_refresh).
             | Ok("cmp420_colpush")
+            // TASK-425-C (chunk/boot): round-424 mega-carrier (STRICT OR).
+            | Ok("cmp424_chunksend")
     )
 }
 

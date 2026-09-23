@@ -295,6 +295,8 @@ fn shard_mode() -> bool {
                     || v == "cmp412_eqsnapv3" || v == "cmp414_cvs" || v == "cmp417_bq"
                     // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
                     || v == "cmp420_colpush"
+                    // TASK-425-C (chunk/boot): round-424 mega-carrier (STRICT OR).
+                    || v == "cmp424_chunksend"
             })
             .unwrap_or(false)
     })

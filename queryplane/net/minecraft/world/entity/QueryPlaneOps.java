@@ -78,7 +78,9 @@ public final class QueryPlaneOps {
         return f != null && (f.trim().equals("cmp412_b2p1") || f.trim().equals("cmp415_mcomp") || f.trim().equals("cmp416_mcomp")
                 || f.trim().equals("cmp417_bq")
                 // TASK-419-A (colpush): колпаш-носитель — queryplane awake.
-                || f.trim().equals("cmp420_colpush"));
+                || f.trim().equals("cmp420_colpush")
+                // TASK-425-C (chunk/boot): round-424 mega-carrier (STRICT OR).
+                || f.trim().equals("cmp424_chunksend"));
     }
 
     private static final boolean ENABLED = flagArmed();

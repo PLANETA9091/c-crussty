@@ -100,7 +100,9 @@ public final class ItemEntityManager {
                     // TASK-417-C: cvs-носитель ⊕ queryplane.
                     || "cmp417_bq".equals(LEVER_FLAG)
                     // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
-                    || "cmp420_colpush".equals(LEVER_FLAG);
+                    || "cmp420_colpush".equals(LEVER_FLAG)
+                    // TASK-425-C (chunk/boot): round-424 mega-carrier (STRICT OR).
+                    || "cmp424_chunksend".equals(LEVER_FLAG);
 
     /**
      * TASK-403-C2 ITEM-PLANE RESTING (точный флаг cmp403_tickplane, STRICT eq;
@@ -144,7 +146,9 @@ public final class ItemEntityManager {
                     // TASK-417-C: cvs-носитель ⊕ queryplane.
                     || "cmp417_bq".equals(LEVER_FLAG)
                     // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
-                    || "cmp420_colpush".equals(LEVER_FLAG);
+                    || "cmp420_colpush".equals(LEVER_FLAG)
+                    // TASK-425-C (chunk/boot): round-424 mega-carrier (STRICT OR).
+                    || "cmp424_chunksend".equals(LEVER_FLAG);
 
     /** TASK-399-F despawnv2: rust lifetime-heap + батч-деспавн (точный флаг).
      *  TASK-400-A: составной флаг cmp399_bfcomp (B+F) включает despawnv2
@@ -171,7 +175,9 @@ public final class ItemEntityManager {
                     // TASK-417-C: cvs-носитель ⊕ queryplane.
                     || "cmp417_bq".equals(LEVER_FLAG)
                     // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
-                    || "cmp420_colpush".equals(LEVER_FLAG);
+                    || "cmp420_colpush".equals(LEVER_FLAG)
+                    // TASK-425-C (chunk/boot): round-424 mega-carrier (STRICT OR).
+                    || "cmp424_chunksend".equals(LEVER_FLAG);
 
     private static final int PROBE_MAGIC = 0x1D3A;
 

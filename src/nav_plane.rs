@@ -52,6 +52,8 @@ pub fn armed() -> bool {
                 || v.trim() == "cmp412_eqsnapv3" || v.trim() == "cmp414_cvs" || v.trim() == "cmp417_bq"
                 // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
                 || v.trim() == "cmp420_colpush"
+                // TASK-425-C (chunk/boot): round-424 mega-carrier (STRICT OR).
+                || v.trim() == "cmp424_chunksend"
         })
         .unwrap_or(false)
 }

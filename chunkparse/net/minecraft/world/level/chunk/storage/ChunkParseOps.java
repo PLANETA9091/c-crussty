@@ -122,6 +122,14 @@ public final class ChunkParseOps {
     static final String CARRIER_UNION_423 = "cmp423_wgen";
 
     /**
+     * TASK-425-C round-424 mega-carrier union (law 7): cmp424_chunksend =
+     * colpush proven set ⊕ wgen set (queryplane ⊕ chunk-parse ⊕ biomes-parse
+     * ⊕ noise_fill). Kept in the constant pool for the raw-byte blob-sync
+     * gate (check_blobs_sync.sh + chunk_parse.rs carrier tests).
+     */
+    static final String CARRIER_UNION_424 = "cmp424_chunksend";
+
+    /**
      * codec(identity) -> (tag -> pristine decoded template). The outer map
      * is synchronized ONLY for its own few-entry get/put; the inner maps are
      * ConcurrentHashMaps so the deep tag probe runs lock-free (TASK-420-C:

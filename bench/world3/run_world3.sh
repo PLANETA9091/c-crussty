@@ -466,9 +466,9 @@ export CRUSSTY_LEVER_ARG="${LEVER_ARG:-}"
 # The chunk-parse plane needs no policy key (byte redirect, zero natives).
 # Empty lever_flag = vanilla bit-in-bit, no policy change.
 case "${LEVER_FLAG:-}" in
-  cmp419_chunk|cmp420_chunk2|cmp420_colpush|cmp423_wgen)
+  cmp419_chunk|cmp420_chunk2|cmp420_colpush|cmp423_wgen|cmp424_chunksend)
     export CRUSSTY_KERNEL_POLICY="off"
-    log "${LEVER_FLAG} armed: chunk-parse section-cache + biomes-parse cache (TASK-424-C R5c: both section lambdas) + queryplane carrier union (law 7) + noise-fill GEN-axis (CRUSSTY_KERNEL_POLICY=off — documented two-key A/B override; noiseFillArrayWholeBody not in PROVEN_WINS)"
+    log "${LEVER_FLAG} armed: chunk-parse section-cache + biomes-parse cache (TASK-424-C R5c: both section lambdas) + queryplane carrier union (law 7) + colpush mega-carrier set (TASK-425-C cmp424_chunksend = colpush proven set ⊕ wgen set, law 7) + noise-fill GEN-axis (CRUSSTY_KERNEL_POLICY=off — documented two-key A/B override; noiseFillArrayWholeBody not in PROVEN_WINS)"
     ;;
 esac
 # RECON_DIAG (TASK-317, instrument-гейт рычага #13 SKIP-STORE-DIET): чистая

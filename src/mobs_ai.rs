@@ -74,6 +74,8 @@ fn enabled() -> bool {
             | Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs") | Ok("cmp417_bq")
             // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
             | Ok("cmp420_colpush")
+            // TASK-425-C (chunk/boot): round-424 mega-carrier (STRICT OR).
+            | Ok("cmp424_chunksend")
     )
 }
 

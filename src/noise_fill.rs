@@ -173,6 +173,8 @@ fn enabled() -> bool {
             // kept for the boot worldgen tail only).
             v == "cmp419_chunk" || v == "cmp420_chunk2" || v == "cmp420_colpush"
                 || v == "cmp423_wgen"
+                // TASK-425-C (chunk/boot): round-424 mega-carrier (STRICT OR).
+                || v == "cmp424_chunksend"
         })
         .unwrap_or(false);
     env_gate || lever_gate

@@ -149,7 +149,9 @@ public final class MobPushOps {
                     // TASK-419-A (colpush): колпаш-носитель — SoA-плоскость
                     // жива для planeReady()/byArr()/idCount() (eqsnap/sscan/ai);
                     // сам per-entity upsert спит (whole-body redirect).
-                    || f.trim().equals("cmp420_colpush"));
+                    || f.trim().equals("cmp420_colpush")
+                    // TASK-425-C (chunk/boot): round-424 mega-carrier (STRICT OR).
+                    || f.trim().equals("cmp424_chunksend"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -183,7 +185,9 @@ public final class MobPushOps {
                     || f.trim().equals("cmp417_bq")
                     // TASK-419-A (colpush): shard-drain no-op (шарды пусты),
                     // eq_epoch chain-build жив над colpush-колонками.
-                    || f.trim().equals("cmp420_colpush"));
+                    || f.trim().equals("cmp420_colpush")
+                    // TASK-425-C (chunk/boot): round-424 mega-carrier (STRICT OR).
+                    || f.trim().equals("cmp424_chunksend"));
     }
 
     private static final boolean EQSNAP = eqsnapEnabled();
