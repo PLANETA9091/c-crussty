@@ -124,6 +124,8 @@ fn target() -> &'static Target {
 /// never merged into master before TASK-434-C).
 /// TASK-434-C adds "cmp434_chunkpl" (chunk-pipeline R5 carrier: full
 /// composite union ⊕ block_states cache ⊕ biomes-parse cache, law 7/8).
+/// TASK-435-C adds "cmp435_chunk3" (R6 carrier: STRICT-OR successor id ON
+/// TOP of cmp434_chunkpl — same planes, round-id hygiene for ROUND-435).
 fn enabled() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
@@ -131,6 +133,8 @@ fn enabled() -> bool {
             v == LEVER_ID || v == "cmp420_colpush" || v == "cmp421_chunk" || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside"
                 // TASK-434-C: chunk-pipeline R5 union carrier.
                 || v == "cmp434_chunkpl"
+                // TASK-435-C: R6 carrier (STRICT-OR successor, no broadening).
+                || v == "cmp435_chunk3"
         })
         .unwrap_or(false)
 }
@@ -592,6 +596,12 @@ mod chunkparse_delivery_tests {
         assert!(
             blob.windows(needle.len()).any(|w| w == needle),
             "blob constant pool must carry the cmp434_chunkpl carrier union"
+        );
+        // TASK-435-C: R6 carrier id must ALSO ride the blob constant pool.
+        let needle3 = b"cmp435_chunk3";
+        assert!(
+            blob.windows(needle3.len()).any(|w| w == needle3),
+            "blob constant pool must carry the cmp435_chunk3 R6 carrier union"
         );
         let needle2 = b"parseBiomesSection";
         assert!(
