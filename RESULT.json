@@ -1,22 +1,16 @@
 {
   "agent": "TASK-427-B2",
-  "vector": "entity-goal-query + despawn-scan scanq: two-phase chain-build (memcpy-only criticals), striped bounded despawn-scan, two-phase ai-window; target-scan per-tick snapshot reuse verified (EPOCH_TICK double-check)",
+  "vector": "entity-goal-query + despawn-scan scanq: two-phase chain-build (memcpy-only criticals), striped bounded despawn-scan, two-phase ai-window; target-scan per-tick snapshot reuse verified",
   "branch": "round-427-b2-scanq",
-  "base": "9009e05 (round-424-a-mobfeed javac-fold fix)",
-  "run_id": null,
+  "base": "9009e05 (round-424-a-mobfeed javac-fold fix); head benched 51dc2f8",
+  "run_id": {"b2l1": 35850147738, "b2l2": 35850166286, "anchora": 35850108997, "anchorb": 35850130357},
   "tps_med": null,
   "delta_pair_pct": null,
-  "verdict": "STEP-1 IMPLEMENTED (gates green)",
+  "verdict": "DISPATCHED (4 legs in flight, simultaneous window)",
   "evidence": [
-    "root-cause read of mf427l2 collapse: GetPrimitiveArrayCritical held across WHOLE population pass AND retry ladder (sscan QRETRY=128 x 41k x players rescans, ai same, eq 3-critical full pass) = GC-locker JVM-wide allocator stall (mc-line D2 mechanism, 20c9fdc/afbc1dc); full-plane per-tick passes unbounded",
-    "eq_epoch: two-phase (rust scratch build no-criticals -> memcpy-only publish, filled prefixes; single-pass chain parity kept, no seqlock ghost contract kept)",
-    "sscan_epoch: striped (STRIPE_CAP=16384 ids/tick budget, rotation STRIPE_MIN>=4, warm-up FULL pass on bound growth — no uninit entries/phantom player-0) + two-phase memcpy publish + bounded RETRIES=4 spin-yield, ERR_RANGE fail-open (mc canon)",
-    "ai_epoch: two-phase memcpy-only publish, bounded retries (same GC-locker stall class)",
-    "cargo test 300/300 (was 296 base + 4 new: eq chain parity oracle, rebuild idempotency, stripe tiling, warm-up rule)",
-    "check_blobs_sync ALL IN SYNC (no .java edits needed — signatures/ERR contracts unchanged)",
-    "javap gate: ColpushOps.selfTest NOT a stub (invokestatic idCount/idCapacity/byIdArr live) — 9009e05 javac-fold fix intact",
-    "target-scan reuse: EntityGoalQueryOps.maybeEpoch EPOCH_TICK==t double-check = 1 snapshot/tick shared by all targeting scans (verified, no change needed)",
-    "EFFECT markers added: 'scanq EFFECT armed (two-phase chain-build...)' (eq), 'scanq-stripes EFFECT armed (striped two-phase epoch...)' (sscan)"
+    "step-1 @ed41dcc: scanq two-phase + striped SoA readers (cargo 300/300, blobs ALL IN SYNC, javap selfTest non-stub)",
+    "anchors round-427-b2-anchora/b created @790dc2f lever='' (vanilla bit-for-bit)",
+    "inputs bank-exact: radius 640, seconds 300, fake_players 4, fluid_guard 1, gc_tune 3, inside_cache 1, flush_diet 1, fluid_dirty 0, fluid_bitmask 0, region_threads 4, batch_collector 1, inside_bitmask 0, skip_store_bb 0, region_steal 0, bu_defer 0, population_target 150000, population_seed 42, xmx 10G, xms 4G, band 6.0-9.5M, lever_arg 1"
   ],
-  "what": "step-1 rust impl + gates; next: commit+push, dispatch legs b2-scanq x2 + fresh vanilla anchors x2-3, pair min-of-3"
+  "what": "step-2 dispatched; next: poll sleep 120 + curl, absorb via scripts/bench4_recon/absorb_round.py, pair-by-runner min-of-3, verdict gates"
 }
