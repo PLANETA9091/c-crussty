@@ -174,7 +174,14 @@ pub fn activate() {
                 eprintln!(
                     "[crussty-plugin] cmp432_inside2: forcing kernel load of {TARGET_CLASS}"
                 );
-                crate::improved_noise::force_load_kernel_class(TARGET_CLASS);
+                // RC7 canon (TASK-433-B; ref a3991c2): LAZY force-load
+                // (initialize=false). The initializing variant fired pre-
+                // Bootstrap on the poll thread and poisoned BuiltInRegistries
+                // (inside2 run 35894909390: NCDFE=473412, selfTest resolution
+                // failed, empty world). Lazy define still lands pristine bytes
+                // for the transform engine; <clinit> stays with the main
+                // thread's post-bootStrap first use.
+                crate::improved_noise::force_load_kernel_class_lazy(TARGET_CLASS);
             }
             let sighted = cplug_sdk::classes::is_sighted(TARGET_CLASS);
             std::thread::sleep(std::time::Duration::from_millis(if sighted {
