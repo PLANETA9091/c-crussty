@@ -68,7 +68,13 @@ public final class MobScanOps {
                 // TASK-417-C: cvs-носитель ⊕ queryplane.
                 || f.trim().equals("cmp417_bq")
                 // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
-                || f.trim().equals("cmp420_colpush"));
+                || f.trim().equals("cmp420_colpush")
+                // TASK-421-A: brain-носитель (STRICT OR).
+                || f.trim().equals("cmp421_brain")
+                // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
+                || f.trim().equals("cmp422_brain2")
+                // TASK-424-A: GC-ревизия brain3 (STRICT OR).
+                || f.trim().equals("cmp423_brain3"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -212,6 +218,13 @@ public final class MobScanOps {
                 coords[i * 3 + 2] = p.getZ();
             }
             int idTop = MobPushOps.idCount();
+            if (idTop <= 0) {
+                // TASK-424-A empty-plane short-circuit: SoA холодная — vanilla
+                // без JNI/буферов/лога на этот тик (эпоха помечена).
+                SNAPSHOT_EMPTY = true;
+                EPOCH_TICK = t;
+                return;
+            }
             int[] col = NEAREST;
             int cap = Math.max(1024, MobPushOps.idCapacity());
             if (col == null || col.length < cap) {
@@ -237,7 +250,8 @@ public final class MobScanOps {
             NEAREST_LEN = rc;       // volatile write = publication edge для читателей
             EPOCH_TICK = t;         // release-edge: читатели видят консистентную тройку
             if (!ARM_LOGGED) {
-                LOG.info("[crussty-plugin] cmp406_sscan: epoch ok tick=" + t
+                ARM_LOGGED = true; // TASK-424-A: one-shot на publish
+                LOG.info("[crussty-plugin] cmp423_brain3: epoch ok tick=" + t
                         + " mobSlots=" + rc + " players=" + arr.length
                         + " (bulk JNI 1/tick over soa population)");
             }

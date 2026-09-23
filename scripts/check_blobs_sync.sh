@@ -65,30 +65,36 @@ check_flat_matches_nested() { # fqcn-dir fqcn — flat copy == nested copy
   fi
 }
 
-echo "== javap-gate: lever bridge blobs vs ARM markers / gate flags (lever cmp417_bq) =="
+echo "== javap-gate: lever bridge blobs vs ARM markers / gate flags (lever cmp417_bq / cmp421_brain) =="
 
 check_class \
   "entityinside/build/net/minecraft/world/entity/ItemEntityManager.class" \
-  "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
+  "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" \
   "native int idxProbe" "static void indexAdd" "native int lifetimeDue"
 
 check_class \
+  "goalops/build/net/minecraft/world/entity/ai/goal/GoalOps.class" \
+  "cmp421_brain" "cmp422_brain2" "goal-selector EFFECT armed" "goalCleanup" "goalUpdate" \
+  "goal-selector running EFFECT armed" \
+  "tickGate" "tickRunningGate" "availableGoals" "lockedFlags" "goalTypes"
+
+check_class \
   "queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp412_b2p1" "selfTest" "isHardCollidingProbe"
+  "cmp417_bq" "cmp420_colpush" "cmp412_b2p1" "cmp421_brain" "cmp422_brain2" "selfTest" "isHardCollidingProbe"
 
 check_class \
   "mobai/build/net/minecraft/world/entity/MobAiOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
+  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" \
   "native"
 
 check_class \
   "sscan/build/net/minecraft/world/entity/MobScanOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" \
+  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" \
   "native"
 
 check_class \
   "mobpush/build/net/minecraft/world/entity/MobPushOps.class" \
-  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" \
+  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" \
   "native int mobProbe" "boxFor" "colpushSweep"
 
 check_class \
@@ -102,8 +108,8 @@ check_class \
 
 check_class \
   "entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
-  "cmp414_cvs" "cmp412_eqsnapv3" "cmp420_colpush" \
-  "native int eqProbe"
+  "cmp414_cvs" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" \
+  "native int eqProbe" "native int senseArena"
 
 # TASK-420-C chunk-pipeline plane (cmp420_chunk2): the bridge must carry the
 # lever marker + the parse-cache effect strings in its constant pool, and
@@ -113,6 +119,48 @@ check_class \
   "chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class" \
   "cmp420_chunk2" "cmp420_colpush" "parse-cache first hit" "parse-cache selftest" \
   "public static void init" "parseSection"
+
+# TASK-421-C noise-blob coverage: the GEN-axis bridge family (noise/build,
+# NOISE_RELEASE=8 => major 52) was OUTSIDE this gate — the only lever family
+# whose blobs check_blobs_sync never audited (the x93 gate hole). The blobs
+# are include_bytes!'d by src/noise_fill.rs (levelgen package) and
+# src/improved_noise.rs (synth package); the embed-set audit lives in
+# build_noise.sh, here we pin: major version + the bridge entry methods that
+# the whole-body redirects target (a stale/partial rebuild loses them).
+noise_check_class() { # blob marker... — major-52 variant of check_class
+  local blob="$1"; shift
+  if [ ! -f "$blob" ]; then die "missing blob: $blob"; return; fi
+  local major
+  major=$(python3 - "$blob" << 'PY'
+import sys
+b = open(sys.argv[1], 'rb').read(8)
+print((b[6] << 8) | b[7])
+PY
+)
+  [ "$major" = "52" ] || die "$blob: major $major != 52 (noise bridge = NOISE_RELEASE 8; >65 would fail the runtime guard)"
+  local javap_out
+  javap_out=$("$JAVAP" -p -c "$blob" 2>&1) || die "$blob: javap failed"
+  for marker in "$@"; do
+    if [[ "$javap_out" == *"$marker"* ]]; then
+      note "$blob: OK marker '$marker' (major 52)"
+    else
+      die "$blob: expected method marker '$marker' NOT in javap output (stale blob or missing gate)"
+    fi
+  done
+}
+
+noise_check_class \
+  "noise/build/net/minecraft/world/level/levelgen/NormalNoiseBatchOps.class" \
+  "fillNoise" "fillShift" "selfTest" "nativeFillScaledPositions"
+noise_check_class \
+  "noise/build/net/minecraft/world/level/levelgen/DensityArrayInterpreter.class" \
+  "interpFillArray"
+noise_check_class \
+  "noise/build/net/minecraft/world/level/levelgen/synth/ImprovedNoiseBatchOps.class" \
+  "public static double noise" "selfTestFlush"
+noise_check_class \
+  "noise/build/net/minecraft/world/level/levelgen/synth/PerlinNoiseNativeOps.class" \
+  "native"
 
 # gate-flag consistency: every flag string accepted by the SOURCE gate must
 # also be present in the BLOB constant pool (covers the ×93 rebuild lesson).
@@ -124,6 +172,7 @@ for pair in \
   "entityinside/net/minecraft/world/entity/ItemEntityManager.java:entityinside/build/net/minecraft/world/entity/ItemEntityManager.class" \
   "entitygoalquery/net/minecraft/world/entity/EntityGoalQueryOps.java:entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
   "queryplane/net/minecraft/world/entity/QueryPlaneOps.java:queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class" \
+  "goalops/net/minecraft/world/entity/ai/goal/GoalOps.java:goalops/build/net/minecraft/world/entity/ai/goal/GoalOps.class" \
   "colpush/net/minecraft/world/entity/ColpushOps.java:colpush/build/net/minecraft/world/entity/ColpushOps.class" \
   "entityinside/net/minecraft/world/entity/RegionTickOps.java:entityinside/build/net/minecraft/world/entity/RegionTickOps.class"
 do
@@ -155,6 +204,7 @@ check_flat_matches_nested "mobai/build" "net/minecraft/world/entity/MobAiOps"
 check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/ItemEntityManager"
 check_flat_matches_nested "entitygoalquery/build" "net/minecraft/world/entity/EntityGoalQueryOps"
 check_flat_matches_nested "queryplane/build" "net/minecraft/world/entity/QueryPlaneOps"
+check_flat_matches_nested "goalops/build" "net/minecraft/world/entity/ai/goal/GoalOps"
 check_flat_matches_nested "colpush/build" "net/minecraft/world/entity/ColpushOps"
 check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/RegionTickOps"
 

@@ -78,7 +78,13 @@ public final class QueryPlaneOps {
         return f != null && (f.trim().equals("cmp412_b2p1") || f.trim().equals("cmp415_mcomp") || f.trim().equals("cmp416_mcomp")
                 || f.trim().equals("cmp417_bq")
                 // TASK-419-A (colpush): колпаш-носитель — queryplane awake.
-                || f.trim().equals("cmp420_colpush"));
+                || f.trim().equals("cmp420_colpush")
+                // TASK-421-A: brain-носитель (STRICT OR).
+                || f.trim().equals("cmp421_brain")
+                // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
+                || f.trim().equals("cmp422_brain2")
+                // TASK-424-A: GC-ревизия brain3 (STRICT OR).
+                || f.trim().equals("cmp423_brain3"));
     }
 
     private static final boolean ENABLED = flagArmed();
