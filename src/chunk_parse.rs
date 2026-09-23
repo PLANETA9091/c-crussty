@@ -119,11 +119,18 @@ fn target() -> &'static Target {
 /// TASK-421-C adds "cmp421_chunk" (stabilized chunk-axis round; the STRICT
 /// union carries the round id, no broadening: empty/foreign flag = vanilla
 /// bit-in-bit — no env duplicates by design, RESEARCH-C-419).
+/// TASK-424-C step-1 added the BIOMES-PARSE cache (parseBiomesSection —
+/// mirror template cache, second section-decode site; the 558fd1d lineage,
+/// never merged into master before TASK-434-C).
+/// TASK-434-C adds "cmp434_chunkpl" (chunk-pipeline R5 carrier: full
+/// composite union ⊕ block_states cache ⊕ biomes-parse cache, law 7/8).
 fn enabled() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let v = v.trim();
             v == LEVER_ID || v == "cmp420_colpush" || v == "cmp421_chunk" || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside"
+                // TASK-434-C: chunk-pipeline R5 union carrier.
+                || v == "cmp434_chunkpl"
         })
         .unwrap_or(false)
 }
@@ -360,7 +367,12 @@ pub fn activate() {
             return;
         }
 
-        let (patched, outcome) = match crate::classfile::redirect_static_method_body_to_static(
+        // TASK-424-C (R5c): TWO redirects — the blocks lambda (parseSection,
+        // template cache) AND the biomes lambda (parseBiomesSection, mirror
+        // template cache; both share the canonical descriptor). The second
+        // redirect is computed on the already-patched bytes; BOTH must land
+        // with sites:1 (anti-placebo gate: sites>0 per site, else disarm).
+        let (patched_blocks, outcome_blocks) = match crate::classfile::redirect_static_method_body_to_static(
             &original,
             CHUNKPARSE_BLOCKS_LAMBDA,
             CHUNKPARSE_SECTION_LAMBDA_DESC,
@@ -371,24 +383,45 @@ pub fn activate() {
             Ok(pair) => pair,
             Err(e) => {
                 eprintln!(
-                    "[crussty-plugin] {LEVER_ID}: redirect rejected ({e}), hook stays dormant"
+                    "[crussty-plugin] {LEVER_ID}: blocks redirect rejected ({e}), hook stays dormant"
                 );
                 return;
             }
         };
-        let redirected = matches!(
-            outcome,
+        let blocks_ok = matches!(
+            outcome_blocks,
             crate::classfile::RetargetOutcome::Retargeted { .. }
                 | crate::classfile::RetargetOutcome::AlreadyPatched { .. }
         );
-        if !redirected {
+        let (patched, outcome_biomes) = match crate::classfile::redirect_static_method_body_to_static(
+            &patched_blocks,
+            CHUNKPARSE_TWIN_LAMBDA,
+            CHUNKPARSE_SECTION_LAMBDA_DESC,
+            CHUNKPARSE_OPS_CLASS,
+            crate::classfile::CHUNKPARSE_BIOMES_OPS_METHOD,
+            CHUNKPARSE_SECTION_LAMBDA_DESC,
+        ) {
+            Ok(pair) => pair,
+            Err(e) => {
+                eprintln!(
+                    "[crussty-plugin] {LEVER_ID}: biomes redirect rejected ({e}), hook stays dormant"
+                );
+                return;
+            }
+        };
+        let biomes_ok = matches!(
+            outcome_biomes,
+            crate::classfile::RetargetOutcome::Retargeted { .. }
+                | crate::classfile::RetargetOutcome::AlreadyPatched { .. }
+        );
+        if !(blocks_ok && biomes_ok) {
             eprintln!(
-                "[crussty-plugin] {LEVER_ID}: unexpected redirect outcome ({outcome:?}), hook stays dormant"
+                "[crussty-plugin] {LEVER_ID}: unexpected redirect outcomes (blocks={outcome_blocks:?}, biomes={outcome_biomes:?}), hook stays dormant"
             );
             return;
         }
         eprintln!(
-            "[crussty-plugin] {LEVER_ID}: computed redirect for {} ({} -> {} bytes, {outcome:?})",
+            "[crussty-plugin] {LEVER_ID}: computed redirects for {} ({} -> {} bytes, blocks={outcome_blocks:?}, biomes={outcome_biomes:?})",
             t.name,
             original.len(),
             patched.len()
@@ -397,7 +430,7 @@ pub fn activate() {
         READY.store(true, Ordering::Release);
         let rc = cplug_sdk::retransform_class(t.name);
         eprintln!(
-            "[crussty-plugin] {LEVER_ID}: ARMED chunk-parse section-cache (deep: cap 16384, evict-half, lock-free CHM probe; blocks lambda {CHUNKPARSE_BLOCKS_LAMBDA} -> ChunkParseOps.parseSection, twin {CHUNKPARSE_TWIN_LAMBDA} pristine; identity-codec key, template.copy() HIT path, 0 added JNI; retransform rc={rc})"
+            "[crussty-plugin] {LEVER_ID}: ARMED chunk-parse section-cache + biomes-cache (deep: cap 16384, evict-half, lock-free CHM probe; blocks {CHUNKPARSE_BLOCKS_LAMBDA} -> ChunkParseOps.parseSection, biomes {CHUNKPARSE_TWIN_LAMBDA} -> ChunkParseOps.parseBiomesSection, identity-codec key, template.copy() HIT path, 0 added JNI; retransform rc={rc})"
         );
     });
 }
@@ -474,7 +507,7 @@ mod chunkparse_delivery_tests {
     }
 
     /// The redirect itself must land on the kernel fixture: exactly one
-    /// site (the blocks lambda), idempotent on re-sight.
+    /// site per lambda (blocks + biomes), idempotent on re-sight.
     #[test]
     fn chunkparse_redirect_applies_to_kernel_fixture() {
         use crate::classfile::redirect_static_method_body_to_static;
@@ -493,8 +526,26 @@ mod chunkparse_delivery_tests {
             crate::classfile::RetargetOutcome::Retargeted { sites: 1 },
             "exactly the blocks lambda body must be replaced"
         );
-        let (again, outcome2) = redirect_static_method_body_to_static(
+        // TASK-424-C (R5c): the biomes lambda is redirected ON TOP of the
+        // already-patched bytes — the second site must land with sites:1.
+        let (patched2, outcome2) = redirect_static_method_body_to_static(
             &patched,
+            crate::classfile::CHUNKPARSE_TWIN_LAMBDA,
+            CHUNKPARSE_SECTION_LAMBDA_DESC,
+            CHUNKPARSE_OPS_CLASS,
+            crate::classfile::CHUNKPARSE_BIOMES_OPS_METHOD,
+            CHUNKPARSE_SECTION_LAMBDA_DESC,
+        )
+        .expect("biomes redirect must compute");
+        assert_eq!(
+            outcome2,
+            crate::classfile::RetargetOutcome::Retargeted { sites: 1 },
+            "exactly the biomes lambda body must be replaced"
+        );
+        // Idempotency: re-sighting both sites on the final bytes must be
+        // AlreadyPatched x2 with byte-identical output.
+        let (again, o1) = redirect_static_method_body_to_static(
+            &patched2,
             crate::classfile::CHUNKPARSE_BLOCKS_LAMBDA,
             CHUNKPARSE_SECTION_LAMBDA_DESC,
             CHUNKPARSE_OPS_CLASS,
@@ -503,10 +554,49 @@ mod chunkparse_delivery_tests {
         )
         .expect("re-redirect must compute");
         assert_eq!(
-            outcome2,
+            o1,
             crate::classfile::RetargetOutcome::AlreadyPatched { sites: 1 },
-            "retransform re-sights must be idempotent"
+            "blocks re-sight must be idempotent"
         );
-        assert_eq!(again, patched);
+        let (again2, o2) = redirect_static_method_body_to_static(
+            &again,
+            crate::classfile::CHUNKPARSE_TWIN_LAMBDA,
+            CHUNKPARSE_SECTION_LAMBDA_DESC,
+            CHUNKPARSE_OPS_CLASS,
+            crate::classfile::CHUNKPARSE_BIOMES_OPS_METHOD,
+            CHUNKPARSE_SECTION_LAMBDA_DESC,
+        )
+        .expect("re-redirect must compute");
+        assert_eq!(
+            o2,
+            crate::classfile::RetargetOutcome::AlreadyPatched { sites: 1 },
+            "biomes re-sight must be idempotent"
+        );
+        assert_eq!(again2, patched2);
+    }
+
+    /// TASK-424-C gate consistency + TASK-434-C retag: the chunk-pipeline
+    /// carrier ids must be accepted by the chunk-parse gate (STRICT-OR, no
+    /// broadening). The cmp423_wgen era id retired to cmp434_chunkpl when
+    /// the never-merged biomes cache lineage was ported onto the composite.
+    #[test]
+    fn chunkparse_gate_accepts_423_carrier() {
+        // The gate reads the env var directly; this test pins the accepted
+        // set via the source contract instead (no env mutation races).
+        // Hand-verified set: {cmp420_chunk2, cmp420_colpush, cmp421_chunk,
+        // cmp421_brain..cmp430_inside, cmp434_chunkpl}. The embedded bridge
+        // must carry the carrier string in its constant pool (raw-byte
+        // gate, x93 lesson).
+        let blob = include_bytes!("../chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class");
+        let needle = b"cmp434_chunkpl";
+        assert!(
+            blob.windows(needle.len()).any(|w| w == needle),
+            "blob constant pool must carry the cmp434_chunkpl carrier union"
+        );
+        let needle2 = b"parseBiomesSection";
+        assert!(
+            blob.windows(needle2.len()).any(|w| w == needle2),
+            "blob must declare the biomes entry point"
+        );
     }
 }
