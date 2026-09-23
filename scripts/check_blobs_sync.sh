@@ -69,7 +69,7 @@ echo "== javap-gate: lever bridge blobs vs ARM markers / gate flags (lever cmp41
 
 check_class \
   "entityinside/build/net/minecraft/world/entity/ItemEntityManager.class" \
-  "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" \
+  "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp424_mobfeed" "cmp428_chunkunion" \
   "native int idxProbe" "static void indexAdd" "native int lifetimeDue"
 
 check_class \
@@ -80,11 +80,11 @@ check_class \
 
 check_class \
   "queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp412_b2p1" "cmp421_brain" "cmp422_brain2" "selfTest" "isHardCollidingProbe"
+  "cmp417_bq" "cmp420_colpush" "cmp412_b2p1" "cmp421_brain" "cmp422_brain2" "selfTest" "isHardCollidingProbe" "cmp424_mobfeed" "cmp428_chunkunion"
 
 check_class \
   "mobai/build/net/minecraft/world/entity/MobAiOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" \
+  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp424_mobfeed" "cmp428_chunkunion" \
   "native"
 
 check_class \
@@ -94,12 +94,12 @@ check_class \
 
 check_class \
   "mobpush/build/net/minecraft/world/entity/MobPushOps.class" \
-  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" \
+  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp424_mobfeed" "cmp428_chunkunion" \
   "native int mobProbe" "boxFor" "colpushSweep"
 
 check_class \
   "colpush/build/net/minecraft/world/entity/ColpushOps.class" \
-  "cmp420_colpush" "pushEntities" "bulkTick" "selfTest" "armed" \
+  "cmp420_colpush" "cmp424_mobfeed" "cmp428_chunkunion" "pushEntities" "bulkTick" "selfTest" "armed" \
   "native int colpushProbe" "native int colpushTick"
 
 check_class \
@@ -108,7 +108,7 @@ check_class \
 
 check_class \
   "entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
-  "cmp414_cvs" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" \
+  "cmp414_cvs" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp424_mobfeed" "cmp428_chunkunion" \
   "native int eqProbe" "native int senseArena"
 
 # TASK-420-C chunk-pipeline plane (cmp420_chunk2): the bridge must carry the
@@ -117,8 +117,9 @@ check_class \
 # grep; flat-only pinned by build script '$' guard + rust delivery test).
 check_class \
   "chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class" \
-  "cmp420_chunk2" "cmp420_colpush" "parse-cache first hit" "parse-cache selftest" \
-  "public static void init" "parseSection"
+  "cmp420_chunk2" "cmp420_colpush" "cmp423_wgen" "cmp424_chunksend" "cmp428_chunkunion" "parse-cache first hit" "parse-cache selftest" \
+  "biomes-cache first hit" "biomes selftest" \
+  "public static void init" "parseSection" "parseBiomesSection"
 
 # TASK-421-C noise-blob coverage: the GEN-axis bridge family (noise/build,
 # NOISE_RELEASE=8 => major 52) was OUTSIDE this gate — the only lever family
@@ -174,7 +175,8 @@ for pair in \
   "queryplane/net/minecraft/world/entity/QueryPlaneOps.java:queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class" \
   "goalops/net/minecraft/world/entity/ai/goal/GoalOps.java:goalops/build/net/minecraft/world/entity/ai/goal/GoalOps.class" \
   "colpush/net/minecraft/world/entity/ColpushOps.java:colpush/build/net/minecraft/world/entity/ColpushOps.class" \
-  "entityinside/net/minecraft/world/entity/RegionTickOps.java:entityinside/build/net/minecraft/world/entity/RegionTickOps.class"
+  "entityinside/net/minecraft/world/entity/RegionTickOps.java:entityinside/build/net/minecraft/world/entity/RegionTickOps.class" \
+  "chunkparse/net/minecraft/world/level/chunk/storage/ChunkParseOps.java:chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class"
 do
   src="${pair%%:*}"; blob="${pair##*:}"
   flags=$(grep -o '"cmp[0-9_a-z]*"' "$src" | tr -d '"' | sort -u)

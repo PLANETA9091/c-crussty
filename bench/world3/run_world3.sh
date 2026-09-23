@@ -466,9 +466,9 @@ export CRUSSTY_LEVER_ARG="${LEVER_ARG:-}"
 # The chunk-parse plane needs no policy key (byte redirect, zero natives).
 # Empty lever_flag = vanilla bit-in-bit, no policy change.
 case "${LEVER_FLAG:-}" in
-  cmp419_chunk|cmp420_chunk2|cmp420_colpush|cmp421_chunk|cmp421_brain)
+  cmp419_chunk|cmp420_chunk2|cmp420_colpush|cmp421_chunk|cmp421_brain|cmp422_brain2|cmp423_brain3|cmp423_wgen|cmp424_chunksend|cmp424_mobfeed|cmp428_chunkunion)
     export CRUSSTY_KERNEL_POLICY="off"
-    log "${LEVER_FLAG} armed: chunk-parse section-cache (deep: cap 16384, evict-half, lock-free probe) + noise-fill GEN-axis (CRUSSTY_KERNEL_POLICY=off — documented two-key A/B override; noiseFillArrayWholeBody not in PROVEN_WINS); cmp421_chunk = TASK-421-C stabilized chunk-axis round (NOISEFILL_ROOTCAUSE.md)"
+    log "${LEVER_FLAG} armed: chunk-parse section-cache + biomes-parse cache (TASK-424-C R5c both section lambdas) + noise-fill GEN-axis + colpush/mobsoa family gates (CRUSSTY_KERNEL_POLICY=off — documented two-key A/B override); cmp428_chunkunion = TASK-428-C chunksend⊕mobsoa UNION carrier (wgen-slice 6f92ea7 ⊕ awakened mobsoa fe4ee57, закон-8 chunk-ось)"
     ;;
 esac
 # RECON_DIAG (TASK-317, instrument-гейт рычага #13 SKIP-STORE-DIET): чистая

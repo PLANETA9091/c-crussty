@@ -71,6 +71,9 @@ public final class ColpushOps {
     /** TASK-426-A: SoA-feed carrier — STRICT-OR (будит java-сторону колпаша
      * под вектор-флагом; без него ENABLED=false = спящий гейт, урок ×93). */
     private static final String FLAG2 = "cmp424_mobfeed";
+    /** TASK-428-C: chunksend⊕mobsoa UNION carrier (law-7/закон-8 chunk-ось) —
+     * STRICT-OR; пустой/чужой флаг = ваниль bit-in-bат (закон 4). */
+    private static final String FLAG3 = "cmp428_chunkunion";
     private static final int ERR_STRUCT = -1;
     private static final int ERR_RANGE = -2;
 
@@ -86,7 +89,8 @@ public final class ColpushOps {
 
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2));
+        return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2)
+                || f.trim().equals(FLAG3));
     }
 
     /** Структурный отказ — весь рычаг дизармится навсегда (ваниль-реплика). */
