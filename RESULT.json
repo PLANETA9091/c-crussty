@@ -1,30 +1,33 @@
 {
-  "agent": "TASK-431-B",
-  "vector": "R-закон 6: inside/block-contact плоскость целиком (inside_bitmask pre-gate stage-1b + inside_snap snapshot plane stage-1c, ONE bulk-JNI per collect) на пробуждённом SoA-носителе A2 round-427-a2-mobsoa @18151a96; ветка round-430-b-inside @5a3cd38",
-  "branch": "round-430-b-inside",
-  "base": "origin/round-427-a2-mobsoa @18151a96 (код=fe4ee57, cmp424_mobfeed)",
-  "lever": "cmp430_inside",
-  "run_id": null,
-  "tps_med": null,
-  "delta_pair_pct": null,
-  "lane_before": "inside_volatile 12.18% флэт (wgen-l1 профиль, BOTTLENECK-430); адресуемо 1.3-1.6% PROFILE-B (modulo-декодер round-423-b-inside)",
-  "lane_after": null,
-  "ram_stw": null,
-  "ram_full": null,
-  "parity": "план: ARM+ЭФФЕКТ маркеры + Retargeted sites>0 (inside_bitmask stage-1b sites:1, inside_snap stage-1c sites:1, LevelChunk secWrite sites:1) + AIOOBE=0 + NCDFE=0 + selfTest==true + javap flat==nested + polls threw=0",
-  "verdict": "IN_PROGRESS: step-2 верификация пройдена, диспатч ждёт завершения round-431-* пробного батча (CI-окно главного агента)",
-  "evidence": [
-    "step-1 @5a3cd38 (запушен): STRICT-OR plumbing 24 rust gate-строк (17 файлов) + 8 java blob gates + InsideSnapOps.java 471 строка + InsideBitmaskOps.class + build_430b_blobs.sh, блобы ALL IN SYNC",
-    "step-2 верификация: cargo check --lib green; cargo test --lib 302/0 (+inside_snap modulo 4 tests); check_blobs_sync ALL IN SYNC; javap InsideSnapOps.selfTest invokestatic snapProbe NOT-a-stub; flat==nested byte-identical (InsideSnapOps + InsideBitmaskOps)",
-    "triаж round-431-a2-l8r3 (чужой пробный батч): BAND fast-fail runner_cpu_index=11110082 OUTSIDE band — pairing discard, не bench-фейл; band-гварды работают",
-    "диск-закон: cargo target удалён сразу после теста (71% hold)",
-    "ре-роллы round-431-*: a2-l8r3 требует ре-ролла после диспатча своего батча — вне моей очереди (главный агент)"
-  ],
-  "what": "закон 6: вся inside/block-contact подсистема = (A) bitmask all-air pre-gate на ЕДИНСТВЕННОМ сайте applyEffectsFromBlocks->checkInsideBlocks (13 входов из RECON-33 census), (B) snapshot-плоскость per-section BlockState[4096] с ONE bulk-JNI collect + modulo-декодером в Rust и secWrite-инвалидацией; пер-сайт ретаргеты = клей миграции",
-  "steps_log": [
-    "step-0: worktree + research + диск-закон OK",
-    "step-1: имплементация выполнена, блобы пересобраны, запушено @5a3cd38",
-    "step-2: верификация (cargo 302/0, blobs ALL IN SYNC, javap NOT-a-stub) OK; dispatch_431b.py готов (3 якоря master + 3 inside-ноги cmp430_inside интерлив, банк inputs вербатим)",
-    "step-3 PENDING: диспатч после завершения round-431-*"
-  ]
+ "agent": "TASK-432-B",
+ "vector": "закон 6 deepening: внутри-плоскость композита mobsoa⊕inside steps 3-9 — (A) snapshot-plane serve fastpath: per-thread per-TICK lane-мемо {level,cx,cz→chunk,secs,sec→snap} + stale-miss bit-exact continuation sec.states.get(packed) (javap getBlockStateFinal packing) + LongAdder hit-счётчик; (B) gate-fusion: inside_cache мемо-гейт (InsideBlockOps verify/replay/Recorder reads) маршрутизируется через ту же снап-плоскость (SNAP_ARMED note + bstate, NCDFE-safe arm-order + 5s retry); (F) slot-space 2^17→2^18 (полное покрытие population 150k, конец ~13% вечной ванили)",
+ "branch": "round-432-b-inside2",
+ "base": "round-430-b-inside @3f6f6e6 (композит mobsoa⊕inside, содержит A2 @18151a96 целиком)",
+ "lever": "cmp432_inside2",
+ "run_id": null,
+ "tps_med": null,
+ "delta_pair_pct": null,
+ "lane_before": "inside_volatile 15.91% (431b-inside-l1 3.10@7177515, профиль разбора: gate-слой InsideBlockOps.gate 0.93% + CHM.get 0.75% + tabAt 0.37% + InsideSnapOps.serve 0.49% + stale-miss double-lookup 0.21% ≈ 2.7% адресуемо; Paletted внутри-лейна уже убит снап-плоскостью 0.28%)",
+ "lane_after": null,
+ "ram_stw": null,
+ "ram_full": null,
+ "parity": "median-exact по построению: snapGet возвращает тот же palette-объект, miss → ванильный метод; lane-мемо тик-стамповано (никогда не переживает тик — stale-chunk serve невозможен); secWrite seqlock контракт сохранён (builtAtGen==gen); бинарный паритет: пустой флаг = ваниль бит-в-байт (STRICT-OR); Retargeted sites > 0 маркеры; selfTest==true; javap flat==nested",
+ "verdict": "IN_PROGRESS: имплементация собрана (blobs ALL IN SYNC, javap fusion-markers, cargo check+test 302/0), коммит+push, далее диспатч",
+ "evidence": [
+  "research (профиль лучшей ноги 431b-inside-l1, cpu-collapsed из world3-bench): внутри-лейн 15.91% = 16629 сэмплов; топ внутри-листья: InsideBlockOps.gate 971 + CHM.get 785 + tabAt 383 (chunk-map lookups мемо-гейта!) + InsideSnapOps.serve 508 + getBlockStateFinal-через-snapGet miss 199 + BatchCollector/AtomicInteger infra ~1.1% (не моя плоскость)",
+  "PalettedContainer.get глобально 3.83%: fluid-lane 3.8% (CLOSED ×4 — не трогать), снап-плоскость уже убила внутри-лейн до 0.28% — остаток = ОРКЕСТРАЦИЯ гейтов, не volatile-чтения",
+  "ENGINE A: per-tick lane-мемо убивает chunk-lookup+SNAPS CHM.get на повторных визитах; stale-miss продолжает ТОЧНО как LevelChunk.getBlockStateFinal non-air ветка (javap: (y&15)<<8|(z&15)<<4|(x&15)) без второго chunk-lookup",
+  "ENGINE B: gate verify (≤12 pos/тик/статик) + replay + Recorder capture читают через bstate() = SNAP_ARMED ? snapGet : vanilla; констант-пул ref резолвится только при исполнении взятой ветки (arm-order контракт) => NCDFE недостижим при выключенной снап-плоскости",
+  "ENGINE F: NSLOTS 2^18 = 262144 > 150000 — ~13% population (19k) больше не вечные-ванильные (ping-pong hardening S7-136 сохранён: захват только из пустого слота); цена +55MB примитивных массивов на 10G Xmx",
+  "гейты: build_432b_blobs.sh (joml 1.10.7 добавлен в /home/z/tools для $Recorder toAabbs linkage — старый источник /tmp/pdec purged); flat==nested OK; check_blobs_sync ALL IN SYNC (+8 needle cmp432_inside2, +check_class InsideBlockOps: noteSnapArmed/snapGet/bstate/SNAP_ARMED/mirror); javap selfTest snapProbe NOT-a-stub; cargo 302/0",
+  "диск-закон: cargo target удалён сразу (пик 93%→79% после purge round-423-* absorbed dirs; kernel round-396-a jar сохранён 29386794B)"
+ ],
+ "what": "углубление внутри-плоскости по её плану steps 3-9: ОДНА снап-плоскость с ОДНИМ bulk-JNI/collect теперь обслуживает ОБОИХ потребителей (lambda-гейт discovery + inside_cache мемо-гейт verify/replay), serve fastpath убирает оркестрационный оверхед гейт-слоя (~2.7% CPU адресуемо), полный population под мемо",
+ "steps_log": [
+  "step-0: worktree round-432-b-inside2 @3f6f6e6 + диск-закон (93→79%) OK",
+  "step-1: research — разбор cpu-collapsed 431b-inside-l1 (lane-атрибуция Paletted-цепочки, gate-слой, slot-cap) OK",
+  "step-2: STRICT-OR plumbing cmp432_inside2: 24 rust gate-строк (17 файлов) + 8 java blob gates + honest labels (queryplane lever_id, MobPushOps eqsnapFlagLabel, EntityGoalQueryOps FLAG_LABEL, ColpushOps FLAG4) + run_world3 case + check_blobs needles OK",
+  "step-3: ENGINE A (serve fastpath) + ENGINE B (gate fusion) + ENGINE F (2^18 slots) имплементация OK",
+  "step-4: сборка — blobs ALL IN SYNC + javap gates + cargo 302/0 OK; push"
+ ]
 }

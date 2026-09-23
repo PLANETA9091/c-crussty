@@ -88,7 +88,13 @@ public final class InsideBlockOps {
 
     private InsideBlockOps() {}
 
-    static final int NSLOTS = 1 << 17; // 131072 слотов
+    // TASK-432-B (ENGINE F): 2^17 слотов при population 150000 оставляли ~13%
+    // сущностей ВЕЧНО ванильными (слот занят чужим eid, захват из пустого слота
+    // запрещён ping-pong-харделингом S7-136) — полная discovery-машинерия на
+    // каждый тик каждой такой сущности. 2^18 = 262144 > 150000 живых: весь
+    // population попадает под мемо. Цена — +~55MB примитивных массивов (10G
+    // Xmx-банк допускает); динамических аллокаций ноль (плоские массивы).
+    static final int NSLOTS = 1 << 18; // 262144 слотов
     static final int MAXVIS = 12;
     static final int MAXSTEPS = 16; // javap-контракт бюджета визитора
 
@@ -106,6 +112,34 @@ public final class InsideBlockOps {
     static final int[] EFF_FLAG = new int[NSLOTS * MAXVIS]; // bit0 block, bit1 fluid, bit2 intersected
 
     static final double DEFLATE = 9.999999747378752E-6d; // javap #2462 inner checkInsideBlocks
+
+    // ------------------------------------------------------------------
+    // TASK-432-B GATE FUSION (ENGINE B): verify/replay block reads route
+    // through the inside_snap snapshot plane when IT is armed (lever
+    // cmp432_inside2/cmp430_inside). ONE snapshot store, ONE bulk-JNI
+    // collect, два потребителя (lambda-гейт + этот мемо-гейт).
+    //
+    // ПАРИТИ: snapGet возвращает ТОТ ЖЕ объект BlockState, что и
+    // level.getBlockState (палитровый слот), на любом miss/failure сам
+    // падает в ванильный метод — median-exact по построению. Констант-пул
+    // ref InsideSnapOps.snapGet резолвится ТОЛЬКО при исполнении взятой
+    // ветки (SNAP_ARMED=true возможен ТОЛЬКО после define+RegisterNatives+
+    // selfTest снап-плоскости — arm-order контракт) => при выключенной
+    // снап-плоскости NCDFE недостижим (урок leg #2'').
+    // Stale SNAP_ARMED (снап-плоскость disarmed после ERR_STRUCT) безопасен:
+    // snapGet при собственном ARMED=false сам возвращает level.getBlockState.
+    // ------------------------------------------------------------------
+    static volatile boolean SNAP_ARMED = false;
+
+    /** Called by InsideSnapOps.arm() (kernel-loader sibling; fail-open there). */
+    public static void noteSnapArmed() {
+        SNAP_ARMED = true;
+    }
+
+    /** Fused read: snapshot plane when armed, vanilla otherwise. */
+    private static BlockState bstate(Level level, BlockPos pos) {
+        return SNAP_ARMED ? InsideSnapOps.snapGet(level, pos) : level.getBlockState(pos);
+    }
     private static final int FLAG_BLOCK = 1;
     private static final int FLAG_FLUID = 2;
     private static final int FLAG_INTERSECTED = 4;
@@ -224,7 +258,7 @@ public final class InsideBlockOps {
         for (int i = 0; i < nv; i++) {
             BlockPos.MutableBlockPos mpos = mp();
             mpos.set(BlockPos.getX(VIS_POS[base + i]), BlockPos.getY(VIS_POS[base + i]), BlockPos.getZ(VIS_POS[base + i]));
-            BlockState st = level.getBlockState(mpos);
+            BlockState st = bstate(level, mpos);
             if (Block.getId(st) != VIS_STATE[base + i]) {
                 SLOT_EID[slot] = 0; // инвалидация
                 mirror(e, level, col, px, py, pz, slot, eid); // re-discover + apply + capture
@@ -236,7 +270,7 @@ public final class InsideBlockOps {
         int ebase = slot * MAXVIS;
         for (int i = 0; i < ne; i++) {
             BlockPos bp = BlockPos.of(EFF_POS[ebase + i]);
-            BlockState st = level.getBlockState(bp);
+            BlockState st = bstate(level, bp);
             int flag = EFF_FLAG[ebase + i];
             if ((flag & FLAG_BLOCK) != 0) {
                 col.advanceStep(EFF_STEP[ebase + i], bp);
@@ -319,7 +353,7 @@ public final class InsideBlockOps {
             if (!e.isAlive()) {
                 return false; // зеркало гейта визитора (0-8)
             }
-            BlockState st = level.getBlockState(bp);
+            BlockState st = bstate(level, bp);
             long p = bp.asLong();
             if (n < MAXVIS) {
                 vpos[n] = p;
