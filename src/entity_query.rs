@@ -130,7 +130,7 @@ fn enabled() -> bool {
             // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
             | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp428_chunkunion") | Ok("cmp429_wgen")
+            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp428_chunkunion") | Ok("cmp429_wgen") | Ok("cmp434_wgen3")
             | Ok("cmp421_brain")
     )
 }
@@ -172,7 +172,7 @@ fn enabled_flag_is_sense() -> bool {
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
         Ok("cmp421_brain") | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp428_chunkunion") | Ok("cmp429_wgen")
+            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp428_chunkunion") | Ok("cmp429_wgen") | Ok("cmp434_wgen3")
     )
 }
 

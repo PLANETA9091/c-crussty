@@ -466,7 +466,7 @@ export CRUSSTY_LEVER_ARG="${LEVER_ARG:-}"
 # The chunk-parse plane needs no policy key (byte redirect, zero natives).
 # Empty lever_flag = vanilla bit-in-bit, no policy change.
 case "${LEVER_FLAG:-}" in
-  cmp419_chunk|cmp420_chunk2|cmp420_colpush|cmp421_chunk|cmp421_brain|cmp422_brain2|cmp423_brain3|cmp423_wgen|cmp424_chunksend|cmp424_mobfeed|cmp428_chunkunion|cmp429_wgen)
+  cmp419_chunk|cmp420_chunk2|cmp420_colpush|cmp421_chunk|cmp421_brain|cmp422_brain2|cmp423_brain3|cmp423_wgen|cmp424_chunksend|cmp424_mobfeed|cmp428_chunkunion|cmp429_wgen|cmp434_wgen3)
     export CRUSSTY_KERNEL_POLICY="off"
     # TASK-429-A: 30s N-census stream on the wgen rounds (bench observability
     # of the noise-generation stage; stderr, ~10 lines/run, no hot-path cost).

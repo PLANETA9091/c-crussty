@@ -60,12 +60,21 @@ static PATCHED: AtomicBool = AtomicBool::new(false);
 
 /// env gate (off by default — dormant-invisible discipline).
 fn enabled() -> bool {
-    std::env::var("CRUSSTY_PALETTED_DEMUX")
+    // TASK-434-A: lever carry (chunk-axis deepening, cmp434_wgen3 STRICT-OR).
+    // The banked parity harness (research/paletted-demux-2026-09-18/,
+    // S7-145 repro 20000-op lockstep PASS x3) is the bit-exact contract;
+    // the env gate stays for standalone lab runs, the lever id arms the
+    // plane on bench legs. Fail-closed: fingerprint mismatch = vanilla.
+    let env_gate = std::env::var("CRUSSTY_PALETTED_DEMUX")
         .map(|v| {
             let v = v.trim().to_ascii_lowercase();
             v == "1" || v == "true" || v == "on" || v == "yes"
         })
-        .unwrap_or(false)
+        .unwrap_or(false);
+    let lever_gate = std::env::var("CRUSSTY_LEVER_FLAG")
+        .map(|v| v.trim() == "cmp434_wgen3")
+        .unwrap_or(false);
+    env_gate || lever_gate
 }
 
 /// Fingerprint of the pinned kernel image: length + header + cp probes.
@@ -94,7 +103,7 @@ fn fingerprint_matches(bytes: &[u8]) -> bool {
 /// Register the byte hook (call once from cplugin_init).
 pub fn register() {
     if !enabled() {
-        eprintln!("[crussty-plugin] paletted: dormant (set CRUSSTY_PALETTED_DEMUX=1 to enable)");
+        eprintln!("[crussty-plugin] paletted: dormant (set CRUSSTY_PALETTED_DEMUX=1 or lever cmp434_wgen3 to enable)");
         return;
     }
     cplug_sdk::hooks::register_bytes(PALETTED_CLASS, |name, bytes| {

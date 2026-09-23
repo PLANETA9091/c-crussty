@@ -146,6 +146,13 @@ public final class ChunkParseOps {
     static final String CARRIER_UNION_429 = "cmp429_wgen";
 
     /**
+     * TASK-434-A wgen3 deepening round (cmp434_wgen3 STRICT-OR): full-stack
+     * arm on the ccefix composite base + paletted-demux carry. Raw-byte gate
+     * const for the blob-sync audit.
+     */
+    static final String CARRIER_UNION_434 = "cmp434_wgen3";
+
+    /**
      * codec(identity) -> (tag -> pristine decoded template). The outer map
      * is synchronized ONLY for its own few-entry get/put; the inner maps are
      * ConcurrentHashMaps so the deep tag probe runs lock-free (TASK-420-C:
@@ -190,7 +197,7 @@ public final class ChunkParseOps {
     public static void init(String twin) {
         twinName = twin;
         System.out.println(PFX + " bridge init ok (twin=" + twin + ", union=" + CARRIER_UNION
-                + ", wgen=" + CARRIER_UNION_429 + ")");
+                + ", wgen=" + CARRIER_UNION_429 + ", wgen3=" + CARRIER_UNION_434 + ")");
     }
 
     /**
@@ -522,6 +529,6 @@ public final class ChunkParseOps {
                 + " selftestEdge=" + selftestEdge
                 + " biomesSections=" + biomesSections
                 + " biomesHits=" + biomesHits + " biomesMisses=" + biomesMisses
-                + " union=" + CARRIER_UNION_423 + " wgen=" + CARRIER_UNION_429;
+                + " union=" + CARRIER_UNION_423 + " wgen=" + CARRIER_UNION_429 + " wgen3=" + CARRIER_UNION_434;
     }
 }

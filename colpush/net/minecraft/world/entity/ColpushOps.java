@@ -78,6 +78,12 @@ public final class ColpushOps {
      * carrier (law-8 GEN-axis arm, cmp429_wgen STRICT-OR) — raw-byte gate
      * marker for check_blobs_sync (x93/indy lesson: keep in constant pool). */
     private static final String FLAG4 = "cmp429_wgen";
+
+    /**
+     * TASK-434-A wgen3 deepening round (law-8 GEN/chunk axis, cmp434_wgen3
+     * STRICT-OR) — raw-byte gate const; carries paletted-demux + full stack.
+     */
+    private static final String FLAG5 = "cmp434_wgen3";
     private static final int ERR_STRUCT = -1;
     private static final int ERR_RANGE = -2;
 
@@ -94,7 +100,7 @@ public final class ColpushOps {
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
         return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2)
-                || f.trim().equals(FLAG3) || f.trim().equals(FLAG4));
+                || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5));
     }
 
     /** Структурный отказ — весь рычаг дизармится навсегда (ваниль-реплика). */

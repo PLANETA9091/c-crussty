@@ -75,7 +75,7 @@ fn lever_flag_matches_for(f: &str) -> bool {
         || f == "cmp412_eqsnapv3" || f == "cmp414_cvs" || f == "cmp417_bq"
         // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
         || f == "cmp420_colpush"
-        || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp428_chunkunion" || f == "cmp429_wgen"
+        || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp428_chunkunion" || f == "cmp429_wgen" || f == "cmp434_wgen3"
 }
 
 pub fn activate() {

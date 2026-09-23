@@ -129,7 +129,7 @@ fn enabled() -> bool {
                 || v == "cmp424_chunksend"
                 // TASK-428-C (chunk-ось, закон 8): chunksend⊕mobsoa UNION —
                 // round-428-c-chunkunion (wgen-слайс 6f92ea7 ⊕ A2-носитель fe4ee57).
-                || v == "cmp428_chunkunion" || v == "cmp429_wgen"
+                || v == "cmp428_chunkunion" || v == "cmp429_wgen" || v == "cmp434_wgen3"
         })
         .unwrap_or(false)
 }

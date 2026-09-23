@@ -69,7 +69,7 @@ echo "== javap-gate: lever bridge blobs vs ARM markers / gate flags (lever cmp41
 
 check_class \
   "entityinside/build/net/minecraft/world/entity/ItemEntityManager.class" \
-  "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp424_mobfeed" "cmp428_chunkunion" "cmp429_wgen" \
+  "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp424_mobfeed" "cmp428_chunkunion" "cmp429_wgen" "cmp434_wgen3" \
   "native int idxProbe" "static void indexAdd" "native int lifetimeDue"
 
 check_class \
@@ -80,11 +80,11 @@ check_class \
 
 check_class \
   "queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp412_b2p1" "cmp421_brain" "cmp422_brain2" "selfTest" "isHardCollidingProbe" "cmp424_mobfeed" "cmp428_chunkunion" "cmp429_wgen"
+  "cmp417_bq" "cmp420_colpush" "cmp412_b2p1" "cmp421_brain" "cmp422_brain2" "selfTest" "isHardCollidingProbe" "cmp424_mobfeed" "cmp428_chunkunion" "cmp429_wgen" "cmp434_wgen3"
 
 check_class \
   "mobai/build/net/minecraft/world/entity/MobAiOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp424_mobfeed" "cmp428_chunkunion" "cmp429_wgen" \
+  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp424_mobfeed" "cmp428_chunkunion" "cmp429_wgen" "cmp434_wgen3" \
   "native"
 
 check_class \
@@ -94,12 +94,12 @@ check_class \
 
 check_class \
   "mobpush/build/net/minecraft/world/entity/MobPushOps.class" \
-  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp424_mobfeed" "cmp428_chunkunion" "cmp429_wgen" \
+  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp424_mobfeed" "cmp428_chunkunion" "cmp429_wgen" "cmp434_wgen3" \
   "native int mobProbe" "boxFor" "colpushSweep"
 
 check_class \
   "colpush/build/net/minecraft/world/entity/ColpushOps.class" \
-  "cmp420_colpush" "cmp424_mobfeed" "cmp428_chunkunion" "cmp429_wgen" "pushEntities" "bulkTick" "selfTest" "armed" \
+  "cmp420_colpush" "cmp424_mobfeed" "cmp428_chunkunion" "cmp429_wgen" "cmp434_wgen3" "pushEntities" "bulkTick" "selfTest" "armed" \
   "native int colpushProbe" "native int colpushTick"
 
 check_class \
@@ -108,7 +108,7 @@ check_class \
 
 check_class \
   "entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
-  "cmp414_cvs" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp424_mobfeed" "cmp428_chunkunion" "cmp429_wgen" \
+  "cmp414_cvs" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp424_mobfeed" "cmp428_chunkunion" "cmp429_wgen" "cmp434_wgen3" \
   "native int eqProbe" "native int senseArena"
 
 # TASK-420-C chunk-pipeline plane (cmp420_chunk2): the bridge must carry the
@@ -117,7 +117,7 @@ check_class \
 # grep; flat-only pinned by build script '$' guard + rust delivery test).
 check_class \
   "chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class" \
-  "cmp420_chunk2" "cmp420_colpush" "cmp423_wgen" "cmp424_chunksend" "cmp428_chunkunion" "cmp429_wgen" "parse-cache first hit" "parse-cache selftest" \
+  "cmp420_chunk2" "cmp420_colpush" "cmp423_wgen" "cmp424_chunksend" "cmp428_chunkunion" "cmp429_wgen" "cmp434_wgen3" "parse-cache first hit" "parse-cache selftest" \
   "biomes-cache first hit" "biomes selftest" \
   "public static void init" "parseSection" "parseBiomesSection"
 

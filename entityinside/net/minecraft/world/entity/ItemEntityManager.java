@@ -106,7 +106,7 @@ public final class ItemEntityManager {
                     // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
                     || "cmp422_brain2".equals(LEVER_FLAG)
                     // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-                    || "cmp423_brain3".equals(LEVER_FLAG) || "cmp424_mobfeed".equals(LEVER_FLAG) || "cmp428_chunkunion".equals(LEVER_FLAG) || "cmp429_wgen".equals(LEVER_FLAG);
+                    || "cmp423_brain3".equals(LEVER_FLAG) || "cmp424_mobfeed".equals(LEVER_FLAG) || "cmp428_chunkunion".equals(LEVER_FLAG) || "cmp429_wgen".equals(LEVER_FLAG) || "cmp434_wgen3".equals(LEVER_FLAG);
 
     /**
      * TASK-403-C2 ITEM-PLANE RESTING (точный флаг cmp403_tickplane, STRICT eq;
@@ -156,7 +156,7 @@ public final class ItemEntityManager {
                     // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
                     || "cmp422_brain2".equals(LEVER_FLAG)
                     // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-                    || "cmp423_brain3".equals(LEVER_FLAG) || "cmp424_mobfeed".equals(LEVER_FLAG) || "cmp428_chunkunion".equals(LEVER_FLAG) || "cmp429_wgen".equals(LEVER_FLAG);
+                    || "cmp423_brain3".equals(LEVER_FLAG) || "cmp424_mobfeed".equals(LEVER_FLAG) || "cmp428_chunkunion".equals(LEVER_FLAG) || "cmp429_wgen".equals(LEVER_FLAG) || "cmp434_wgen3".equals(LEVER_FLAG);
 
     /** TASK-399-F despawnv2: rust lifetime-heap + батч-деспавн (точный флаг).
      *  TASK-400-A: составной флаг cmp399_bfcomp (B+F) включает despawnv2
@@ -190,7 +190,7 @@ public final class ItemEntityManager {
                     || "cmp422_brain2".equals(LEVER_FLAG)
                     // TASK-426-A: SoA-feed carrier — деспавн-срез сертифицированного
                     // cmp420_colpush-меги (DESPAWN2 был в меге, brain3 его не нёс).
-                    || "cmp424_mobfeed".equals(LEVER_FLAG) || "cmp428_chunkunion".equals(LEVER_FLAG) || "cmp429_wgen".equals(LEVER_FLAG);
+                    || "cmp424_mobfeed".equals(LEVER_FLAG) || "cmp428_chunkunion".equals(LEVER_FLAG) || "cmp429_wgen".equals(LEVER_FLAG) || "cmp434_wgen3".equals(LEVER_FLAG);
 
     private static final int PROBE_MAGIC = 0x1D3A;
 
