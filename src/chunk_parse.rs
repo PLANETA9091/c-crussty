@@ -114,6 +114,8 @@ fn target() -> &'static Target {
 /// MEGA-CARRIER gate (TASK-420 mega, law 7 composition): CRUSSTY_LEVER_FLAG ==
 /// "cmp420_chunk2" (own wave id) OR "cmp420_colpush" (the collide+push
 /// composite carrier — chunk-parse plane rides it as a disjoint-lane leg).
+/// TASK-421-MEGA adds "cmp421_brain" (mega carrier, law 7: brain+chunk
+/// disjoint-lane composition rides the same union pattern as tick-420).
 /// TASK-421-C adds "cmp421_chunk" (stabilized chunk-axis round; the STRICT
 /// union carries the round id, no broadening: empty/foreign flag = vanilla
 /// bit-in-bit — no env duplicates by design, RESEARCH-C-419).
@@ -121,7 +123,7 @@ fn enabled() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let v = v.trim();
-            v == LEVER_ID || v == "cmp420_colpush" || v == "cmp421_chunk"
+            v == LEVER_ID || v == "cmp420_colpush" || v == "cmp421_chunk" || v == "cmp421_brain"
         })
         .unwrap_or(false)
 }
