@@ -1,24 +1,16 @@
 {
-  "agent": "B (brain iter-2, TASK-422-B)",
-  "vector": "brain iter-2 — goal-selector subsystem COMPLETE (fix placebo + tickRunningGate extension)",
-  "branch": "round-422-b-brain2",
-  "base": "origin/round-421-mega 99ffefa (mega-carrier, merge candidate)",
-  "head": "e91d021",
-  "lever": "cmp422_brain2",
+  "agent": "TASK-427-A2",
+  "vector": "mobs_soa subsystem wake+perf (protocol-v2 port, gate-bitmap, per-shard writer)",
+  "branch": "round-427-a2-mobsoa",
   "run_id": null,
-  "run_ids": [],
   "tps_med": null,
   "delta_pair_pct": null,
-  "delta_pair_pcts": [],
-  "lane": {
-    "was": "nav_ai(goalsel) 8.6% + nav 2.3% + brain 1.36% (~12.3%) on mga421 profile; goal-fast-path PLAICEBO (0 GoalOps frames, NotFound at stdout:1186 — retarget scanned Mob.tick()V instead of serverAiStep()V)",
-    "now": "goal-selector slice armed: serverAiStep 2x GoalSelector.tick -> GoalOps.tickGate + 2x tickRunningGoals -> GoalOps.tickRunningGate; expected -2.5-4% CPU vs mga421"
-  },
-  "verdict": "PENDING-BENCH",
+  "verdict": "S0-SETUP",
   "evidence": [
-    "PROFILE-B2.md: mga421 (run 35806660177, @99ffefa lever=cmp421_brain, 3.20@8.82M) collapsed 109304 samples: GoalOps=0 frames vs GoalSelector.tick=8220 — b6b1146 fast-path INERT on all 421 legs",
-    "root-cause: goal_selector.rs passed FROM.1/FROM.2 ('tick','()V') as ENCLOSING method; Mob declares public void tick()V (LivingEntity.tick+updateControlFlags) with 0 goal sites; real sites (javap): serverAiStep GoalSelector.tick @161/@183, tickRunningGoals(Z) @113/@136",
-    "step1 e91d021: fix ENCL=serverAiStep + dual retarget (2+2 sites) + tickRunningGate java bridge (flat pass, live isRunning, javap 1:1) + STRICT-OR cmp422_brain2 in 17 rust + 7 java gates; blobs rebuilt, check_blobs_sync ALL IN SYNC; cargo test 296/0 incl. mob_bytes_retarget_four_sites_if_available (real kernel Mob.class -> Retargeted{2}+Retargeted{2})"
+    "worktree /home/z/rounds/ROUND-427/agent-a2 @9009e05 (round-427-a2-mobsoa) created",
+    "base = round-424-a-mobfeed head: ColpushOps.selfTest javac-fold fix (long arithmetic), selfTest runtime-live",
+    "disk law enforced: gc-recon collapsed/zip/kernel purge 2.2G->97M, disposable worktrees ROUND-423/agent-a+agent-c removed; df 98%->68%",
+    "protocol-v2 source located: origin/round-417-a-mc2 afbc1dc (protocol v2) + 7c7e8d4 (hardening 4 findings)"
   ],
-  "what": "step1 committed+pushed; next: dispatch 3 legs l1/l2/l3 lever=cmp422_brain2 (bank inputs EXACT), absorb, verdict vs fresh anchors-422 @57a2e67; if delta<+20% -> law-3 cycle (next slice: Brain.tick/behavior/memory/sensor or nav-path slice)"
+  "what": "S0 setup done. Next: S1 recon diff mobs_soa*.rs/MobPushOps.java @afbc1dc->20c9fdc vs base, then port."
 }
