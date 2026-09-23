@@ -1,14 +1,22 @@
 {
-  "agent": "TASK-434-B",
-  "vector": "inside2-deepen round-3 NCDFE root-cause + fix + bench",
-  "branch": null,
-  "run_id": null,
+  "agent": "TASK-435-B",
+  "vector": "inside2-DEEPEN round-4 (inside_volatile 15.9% next hot-lane) — SERVE-V3 lean fastpath",
+  "branch": "round-435-b-ins5 @base 92cd1e5 (origin/round-434-b-inside4)",
+  "run_id": "pending dispatch",
   "tps_med": null,
   "delta_pair_pct": null,
-  "lane": "was: NCDFE selfTest DELIVERY-FAIL x2 (run 35902792520) -> to: fixed?",
-  "ram": null,
-  "parity": null,
-  "verdict": "IN_PROGRESS",
-  "evidence": [],
-  "what": "phase 0 starting: worktree setup"
+  "lane": "research: serve() self 1.9% = NEW top-6 leaf on 434b legs (snap plane live) — per-visit overhead (8-lane scan + 2 itable getSectionIndex chain + hasOnlyAir + LongAdder per-HIT contention) now exceeds what it saves; anchor o2 tree: checkInsideBlocks subtree 10.83% (lambda body: collidedWithFluid 1.69/fluid-AABB 1.02 [other lever's lane], advanceStep 1.08, Level.getBlockState 0.90 [snap target], LongOpenHashSet.add 0.50; gate memo 1.61) — V3 targets the serve fastpath itself",
+  "ram": "n/a (bench server xmx 10G)",
+  "parity": "pending bench",
+  "verdict": "IN_PROGRESS: research done, implementing cmp435_inside3 STRICT-OR over cmp432_inside2",
+  "evidence": [
+    "profiles compared: anchor o2 (master, 117279 samples) vs 434b-ins l1/l2/l3 legs (cmp432_inside2 live): PalettedContainer.get 3.8->3.3, readPalette 1.0->0.7, getBlockStateFinal 0.8-><0.6 BUT InsideSnapOps.serve 0->1.9 self = net cost shift",
+    "inside_volatile lane definition: regex checkInsideBlocks|collidedWithShapeMovingFrom (absorb_round.py:19); split: checkInside subtree 10.83%, collidedWithShapeMovingFrom subtree 0.64% (o2)",
+    "serve volume driver: InsideBlockOps.gate HIT-verify (inside_cache=1) routes bstate->snapGet for every visited pos of ~107k static items EVERY tick; same-chunk/same-section bursts dominate => L0 direct lane beats 8-slot scan",
+    "javap proof: SectionPos.blockToSectionCoord(I)=i>>4 (ishr only); LevelHeightAccessor.getSectionIndex(y)=(y>>4)-getMinSectionY() => inline formula with cached minSecY is byte-equivalent; runtime per-chunk 3-point parity probe with itable fallback (fail-open)",
+    "hasOnlyAir=nonEmptyBlockCount==0 (plain short read) => per-claim air-mask (long) kills per-visit call",
+    "STAT_HITS LongAdder per-HIT on 4 region workers = striped-cell contention on hottest path => per-thread sampled bump (exact within 63/thread)",
+    "no-new-nested-class discipline: L0 = lanes[LANES] slot (LANES_TOTAL=9, claims masked to 8), no new ThreadLocal.withInitial, no indy in clinit (build gate strict)"
+  ],
+  "what": "implementing V3 serve (L0 lanes + inline si + air-mask + sampled stats) behind cmp435_inside3; legs round-435b-ins-n base=round-435-b-ins5"
 }
