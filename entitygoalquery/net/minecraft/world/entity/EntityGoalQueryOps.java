@@ -108,7 +108,15 @@ public final class EntityGoalQueryOps {
                 || f.trim().equals("cmp417_bq")
                 // TASK-419-A (colpush): колпаш-носитель — eq-снапшот жив
                 // (плоскость кормит colpush_plane_refresh).
-                || f.trim().equals("cmp420_colpush"));
+                || f.trim().equals("cmp420_colpush")
+                // TASK-421-A: brain-носитель (STRICT OR).
+                || f.trim().equals("cmp421_brain")
+                // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
+                || f.trim().equals("cmp422_brain2")
+                // TASK-424-A: GC-ревизия brain3 (STRICT OR).
+                || f.trim().equals("cmp423_brain3")
+                // TASK-426-A: SoA-feed carrier (STRICT OR).
+                || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside"));
     }
 
     /** TASK-411-C (k4soa): K4-режим (маркировка EFFECT-строк). */
@@ -117,16 +125,43 @@ public final class EntityGoalQueryOps {
         return f != null && f.trim().equals("cmp411_k4soa");
     }
 
+    /**
+     * TASK-419-B (sense-plane): sense-arena режим (STRICT eq). Только под
+     * этим флагом maybeEpoch достраивает CSR-арену (второй bulk-нататив
+     * senseArena в ТОМ ЖЕ EPOCH_LOCK-окне), а snapshotQuery читает
+     * последовательные слайсы arena[off[h]..off[h+1]) вместо next-цепей.
+     */
+    private static boolean senseMode() {
+        String f = System.getenv("CRUSSTY_LEVER_FLAG");
+        // TASK-422-B (iter-2): STRICT-OR — вектор-флаг несёт тот же sense-срез.
+        // TASK-424-A: brain3 (GC-ревизия) несёт тот же sense-срез.
+        // TASK-426-A: cmp424_mobfeed НЕ несёт sense-срез (сознательно: сенс-арена
+        // не входит в master-сертифицированный cmp420_colpush-мега — ближайший
+        // к сертифицированной конфигурации паритет; sense-эффект не доказан).
+        return f != null && (f.trim().equals("cmp421_brain")
+                || f.trim().equals("cmp422_brain2")
+                || f.trim().equals("cmp423_brain3"));
+    }
+
     private static final boolean ENABLED = leverEnabled();
     private static final boolean K4 = k4Mode();
+    private static final boolean SENSE = senseMode();
     /** Метка флага для EFFECT/диагностических строк (одна из ARM-пар). */
     private static final String FLAG_LABEL;
     static {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        FLAG_LABEL = f != null && f.trim().equals("cmp412_eqsnapv3")
-                ? "cmp412_eqsnapv3" // TASK-412-C (eqsnap-v3): точная метка.
-                : (f != null && f.trim().equals("cmp411_eqsnap")
-                        ? "cmp411_eqsnap" : (K4 ? "cmp411_k4soa" : "cmp410_eindexq"));
+        // TASK-419-B (sense-plane): свой id в ARM/EFFECT-маркерах.
+        // TASK-422-B (iter-2): свой id для вектор-ног.
+        // TASK-426-A: SoA-feed carrier id (cmp424_mobfeed).
+        String t = f == null ? "" : f.trim();
+        FLAG_LABEL = t.equals("cmp422_brain2") ? "cmp422_brain2"
+                : t.equals("cmp423_brain3") ? "cmp423_brain3"
+                : t.equals("cmp424_mobfeed") ? "cmp424_mobfeed"
+                : t.equals("cmp430_inside") ? "cmp430_inside"
+                : t.equals("cmp421_brain") ? "cmp421_brain"
+                : t.equals("cmp412_eqsnapv3") ? "cmp412_eqsnapv3" // TASK-412-C: точная метка.
+                : t.equals("cmp411_eqsnap") ? "cmp411_eqsnap"
+                : (K4 ? "cmp411_k4soa" : "cmp410_eindexq");
     }
 
     private static final int PROBE_MAGIC = 0x4547; // "EG"
@@ -148,12 +183,30 @@ public final class EntityGoalQueryOps {
     private static native int eqEpoch(int tick, int idTop, double[] soa,
             int[] head, int[] next);
 
+    /**
+     * TASK-419-B (sense-plane): ОДИН bulk JNI за тик, зовётся СРАЗУ после
+     * eqEpoch в ТОМ ЖЕ EPOCH_LOCK-окне (суммарно 2 bulk-перехода плоскости
+     * на тик; per-entity JNI по-прежнему отсутствует). Достраивает CSR-арену
+     * из ТОЛЬКО ЧТО построенных цепей: arena[arenaOff[h]..arenaOff[h+1]) =
+     * id-шники бакета h В ТОЧНОСТИ в порядке chain-walk (паритет по
+     * построению — заполнение буквально идёт по тем же head/next цепям).
+     * Per-query java читает последовательный int[]-слайс вместо рандомного
+     * deref next[link-1] на каждого кандидата. rc = число размещённых id;
+     * ERR_RANGE — структурный дрейф/цикл-гард (ваниль на этот тик);
+     * ERR_STRUCT — pin failure/гейт (дизарм).
+     */
+    private static native int senseArena(int tick, int rows, int[] head,
+            int[] next, int[] arena, int[] arenaOff);
+
     private static volatile boolean nativeOk;
     private static volatile boolean broken;
 
     /** One-shot ARM/effect-пруфы (видны в server-stdout.log). */
     private static volatile boolean ARM_LOGGED = false;
     private static volatile boolean EPOCH_LOGGED = false;
+
+    /** TASK-426-A: one-shot DATA-PLAN-пруф goal-query (snapRows>0 — fed-состояние). */
+    private static volatile boolean DATA_PLAN_LOGGED = false;
 
     // ---- снапшот (volatile publication ladder как MobScanOps) ----
     /** Замороженные колонки [x,y,z,hw,hh] × row (stride STRIDE). */
@@ -162,6 +215,13 @@ public final class EntityGoalQueryOps {
     private static volatile int[] HEAD = new int[0];
     /** Следующий в цепи: id+1, 0 = конец. Indexed by dense id. */
     private static volatile int[] NEXT = new int[0];
+    /**
+     * TASK-419-B (sense-plane): CSR-арена — плотные id-шники, per-bucket
+     * contiguous, порядок внутри бакета = chain-walk (паритет по построению).
+     */
+    private static volatile int[] ARENA = new int[0];
+    /** Границы бакетов арены: arenaOff[h]..arenaOff[h+1) — слайс бакета h. */
+    private static volatile int[] ARENA_OFF = new int[0];
     /** Граница валидных dense-id снапшота (= idTop эпохи). */
     private static volatile int SNAP_ROWS = 0;
     /** Серверный тик последней успешной эпохи (double-checked locking). */
@@ -281,7 +341,14 @@ public final class EntityGoalQueryOps {
             }
             int idTop = MobPushOps.idCount();
             if (idTop <= 0) {
-                return; // плоскость холодная — суперсет не доказан, ваниль этот тик
+                // TASK-424-A empty-plane short-circuit: плоскость холодная —
+                // суперсет не доказан, ваниль этот тик; эпоха ПОМЕЧАЕТСЯ
+                // (без этого каждый gate-вызов берёт EPOCH_LOCK впустую),
+                // а SNAP_ROWS обнуляется — читатель fail-closed (rows<=0
+                // → vanilla), mid-tick спавн не увидит устаревший снапшот.
+                SNAP_ROWS = 0;
+                EPOCH_TICK = t;
+                return;
             }
             int cap = Math.max(idTop, MobPushOps.idCapacity());
             double[] soa = SOA;
@@ -316,6 +383,38 @@ public final class EntityGoalQueryOps {
                 // парити-фантом); ваниль этот тик, эпоха ретраится следующим.
                 return;
             }
+            // TASK-419-B (sense-plane): в ТОМ ЖЕ EPOCH_LOCK-окне достраиваем
+            // CSR-арену из ТОЛЬКО ЧТО построенных цепей (паритет по построению).
+            // Публикация одним лестничным блоком внизу: арена публикуется ДО
+            // SNAP_ROWS/EPOCH_TICK — читатель, увидевший новый rows, видит и
+            // новую арену (volatile SC-семантика).
+            if (SENSE) {
+                int[] arena = ARENA;
+                if (arena.length < cap) {
+                    arena = new int[cap];
+                }
+                int[] arenaOff = ARENA_OFF;
+                if (arenaOff.length != CELLS + 1) {
+                    arenaOff = new int[CELLS + 1];
+                }
+                int arc;
+                try {
+                    arc = senseArena((int) t, idTop, head, next, arena, arenaOff);
+                } catch (Throwable th) {
+                    arc = ERR_STRUCT;
+                }
+                if (arc == ERR_STRUCT) {
+                    broken = true; // структурный отказ арены — весь рычаг в ваниль навсегда
+                    LOG.warning("[crussty-plugin] " + FLAG_LABEL
+                            + ": senseArena ERR_STRUCT — goal-query disarmed to vanilla");
+                    return;
+                }
+                if (arc == ERR_RANGE) {
+                    return; // дрейф/цикл-гард: весь тик ваниль, эпоха ретраится следующим
+                }
+                ARENA = arena;          // публикация арены ДО release-edge
+                ARENA_OFF = arenaOff;
+            }
             SOA = soa;              // публикуем колонки ДО цепей
             HEAD = head;
             NEXT = next;
@@ -325,8 +424,14 @@ public final class EntityGoalQueryOps {
                 EPOCH_LOGGED = true;
                 LOG.info("[crussty-plugin] " + FLAG_LABEL + ": epoch ok tick=" + t
                         + " rows=" + idTop + " linked=" + rc
+                        + (SENSE ? " sense-arena=on (CSR contiguous slices, chain-walk order)" : "")
                         + " (bulk JNI 1/tick over mobs_soa SoA population, chain cells="
                         + CELLS + ")");
+            }
+            if (!DATA_PLAN_LOGGED && idTop > 0) {
+                DATA_PLAN_LOGGED = true; // TASK-426-A: DATA-PLAN-гейт goal-query
+                LOG.info("[crussty-plugin] mobfeed DATA-PLAN-GOALQ: snapRows=" + idTop
+                        + " tick=" + t + " — goal-query fed (snapRows>0, flag=" + FLAG_LABEL + ")");
             }
         }
     }
@@ -335,16 +440,29 @@ public final class EntityGoalQueryOps {
      * Плоский chain-скан снапшота. @return null — структурный дрейф/не
      * поддающийся запрос (ваниль на этот вызов); иначе список кандидатов
      * (суперсет → точные ванильные фильтры внутри).
+     *
+     * TASK-419-B (sense-plane): под SENSE перечисление идёт по CSR-арене —
+     * последовательный проход arena[arenaOff[h]..arenaOff[h+1]) вместо
+     * рандомных deref next[link-1]. Порядок кандидатов ИДЕНТИЧЕН chain-пути:
+     * арена заполняется проходом по ТЕМ ЖЕ цепям в том же порядке (оракул
+     * паритета — rust-тест arena_matches_chain_walk). Дрейф арен-границ —
+     * ваниль на этот вызов (return null, fail-closed консервативнее
+     * chain-пути: границы слайса — инвариант всего снапшота).
      */
     private static List<Entity> snapshotQuery(Level level, Class<? extends Entity> cls,
             AABB box, Predicate<? super Entity> pred) {
         final double[] soa = SOA;
         final int[] head = HEAD;
         final int[] next = NEXT;
+        final int[] arena = ARENA;
+        final int[] arenaOff = ARENA_OFF;
         final int rows = SNAP_ROWS;
         if (rows <= 0 || soa.length < (long) rows * STRIDE
                 || head.length != CELLS || next.length < rows) {
             return null; // структурный дрейф — ваниль на этот вызов
+        }
+        if (SENSE && (arena.length < rows || arenaOff.length != CELLS + 1)) {
+            return null; // sense-arena структурный дрейф — ваниль на этот вызов
         }
         // Прямоугольник ячеек по РАСШИРЕННОЙ коробке (та же маржа, по которой
         // rust строил прун-контракт) — снапшот-перечисление не может скрыть
@@ -372,6 +490,45 @@ public final class EntityGoalQueryOps {
                 // потребителя (getNearestEntity: строго-ближайший — тот же
                 // пик; лестница «первый строго-ближе» не зависит от дубля).
                 int h = cellHash(cx, cz);
+                if (SENSE) {
+                    // TASK-419-B: CSR-слайс бакета h — последовательный int[]
+                    // проход (та же выборка, тот же порядок, что chain-walk).
+                    final int st = arenaOff[h];
+                    final int en = arenaOff[h + 1];
+                    if (st < 0 || en > rows || st > en) {
+                        return null; // дрейф арен-границ — ваниль на этот вызов
+                    }
+                    for (int i = st; i < en; i++) {
+                        int id = arena[i];
+                        if (id < 0 || id >= rows) {
+                            return null; // дрейф слайса — ваниль на этот вызов
+                        }
+                        int b = id * STRIDE;
+                        double x = soa[b];
+                        double z = soa[b + 2];
+                        double hw = soa[b + 3];
+                        // SoA-прун — ТОТ ЖЕ, что в chain-пути ниже (суперсет
+                        // живого AABB.intersects; y не пруним).
+                        if (x - hw >= mx1 || x + hw <= mx0
+                                || z - hw >= mz1 || z + hw <= mz0) {
+                            continue;
+                        }
+                        Entity cand = byId[id];
+                        if (cand == null || cand.level() != level) {
+                            continue;
+                        }
+                        if (!cls.isInstance(cand)) {
+                            continue;
+                        }
+                        if (!cand.getBoundingBox().intersects(box)) {
+                            continue;
+                        }
+                        if (pred.test(cand)) {
+                            out.add(cand);
+                        }
+                    }
+                    continue;
+                }
                 for (int link = head[h]; link != 0; link = next[link - 1]) {
                     int id = link - 1;
                     if (id < 0 || id >= rows) {

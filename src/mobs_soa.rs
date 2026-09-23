@@ -70,6 +70,7 @@
 //! index links for hot mass-phase fields — implemented here verbatim.
 
 use jvmti_bindings::jni;
+use std::cell::RefCell;
 use std::sync::atomic::{AtomicPtr, AtomicUsize, Ordering};
 use std::sync::{Mutex, OnceLock};
 
@@ -79,7 +80,20 @@ use std::sync::{Mutex, OnceLock};
 
 const IDS_CAP: usize = 1 << 20; // per-id flat arrays; java reuses ids via freeIds
 const CELL_CAP: usize = 1 << 18; // 262144 open-addressed cell slots (live + tombstones)
-const QRETRY: u32 = 4096; // seqlock retry budget per query → ERR_RANGE
+/// TASK-427-A2 (protocol v2 port, TASK-417-A afbc1dc): striped seqlock shard count.
+const N_SHARDS: usize = 64;
+/// TASK-427-A2: bounded per-cell retry budget → ERR_RANGE (fail-open).
+const SHARD_RETRIES: u32 = 8;
+/// TASK-427-A2: linear-probe cap in find_slot (no infinite walk on a full /
+/// tombstone-degenerate table; the caller treats the cap as pressure →
+/// tombstone-reclaim rebuild). PROFILE ROOT-CAUSE round-mf427l2: base had NO
+/// reclaim — `used` grew monotonically toward CELL_CAP under 300 ticks of mob
+/// wandering (every cell-move leaves a tombstone), probe walks degenerated and
+/// soa_upsert burned 12.2% self CPU (~120ms/tick) before saturating to
+/// permanent ERR_RANGE. The cap + rebuild is the primary TPS-recovery fix.
+const PROBE_CAP: usize = 128;
+/// Sentinel Err slot of find_slot when the probe cap is hit.
+const PROBE_FAIL: usize = usize::MAX;
 /// TASK-411-C (k4soa): center-window pad in CELLS. The java radius gate
 /// (MobPushOps.upsertSelf) admits r_eff = max(hw, hh) ≤ 2.0 (camel 1.1875 /
 /// iron_golem 1.35 / warden 1.45 in the bench population), so an intersecting
@@ -133,6 +147,14 @@ struct Soa {
     keys: Vec<i64>,
     /// Per-slot chain head: id+1 (0 = empty chain).
     head: Vec<i32>,
+    /// TASK-427-A2 REBUILD SCRATCH (FIXED capacity, allocated once at plane
+    /// init, never re-swapped): the tombstone-reclaim rebuild rehashes the
+    /// live chains into THIS buffer and copies back IN PLACE. The fixed
+    /// no-dangling-buffer contract for lock-free readers is preserved — a
+    /// buffer-swap rebuild (`d.keys = fresh; drop(old)`) would free the old
+    /// table under a lock-free reader mid-walk = UAF.
+    rkeys: Vec<i64>,
+    rhead: Vec<i32>,
     /// Occupied key slots incl. tombstones (load accounting, writers only).
     used: usize,
 }
@@ -150,6 +172,8 @@ impl Soa {
             cell: vec![0i64; IDS_CAP],
             keys: vec![0i64; CELL_CAP],
             head: vec![0i32; CELL_CAP],
+            rkeys: vec![0i64; CELL_CAP],
+            rhead: vec![0i32; CELL_CAP],
             used: 0,
         })
     }
@@ -163,6 +187,51 @@ static DATA: AtomicPtr<Soa> = AtomicPtr::new(std::ptr::null_mut());
 static VERSION: AtomicUsize = AtomicUsize::new(0);
 /// Writer serialization (odd/even bump happens under this lock).
 static WLOCK: Mutex<()> = Mutex::new(());
+/// TASK-427-A2 (protocol v2): PER-SHARD seqlock versions (striped by
+/// hash(cell_key)). Even = stable, odd = a write touching a cell of this shard
+/// is in flight. A writer under WLOCK bumps only the shards of the cells it
+/// mutates; a reader brackets each scanned cell against its own shard version
+/// with a bounded retry — churn visible to one reader drops ~N_SHARDS-fold.
+/// The GLOBAL VERSION above is retained for the ai/sscan/eq epoch-reader
+/// contract (ai_window_snapshot / sscan_snapshot / eq_snapshot).
+static SVER: [AtomicUsize; N_SHARDS] = [const { AtomicUsize::new(0) }; N_SHARDS];
+
+#[inline]
+fn shard_of(k: i64) -> usize {
+    (mix64(k as u64) as usize) & (N_SHARDS - 1)
+}
+
+/// Writer-side shard bracket begin (odd). Callers hold WLOCK.
+#[inline]
+fn shard_begin(s: usize) {
+    SVER[s].fetch_add(1, Ordering::Release);
+}
+/// Writer-side shard bracket end (even; Release publishes the data stores).
+#[inline]
+fn shard_end(s: usize) {
+    SVER[s].fetch_add(1, Ordering::Release);
+}
+
+/// Reader backoff between per-cell seqlock retries: spin first, yield later
+/// (protocol v2 bounded fail-open — no unbounded spinning).
+#[inline]
+fn backoff(tries: u32) {
+    if tries < 4 {
+        for _ in 0..(16u32 << tries) {
+            std::hint::spin_loop();
+        }
+    } else {
+        std::thread::yield_now();
+    }
+}
+
+/// TASK-427-A2 (protocol v2): local per-thread scratch for the two-phase
+/// query — the scan with all its retries/backoffs writes HERE; the
+/// JNI-critical region is only the final memcpy. Grow-only per thread — zero
+/// allocations in steady state.
+thread_local! {
+    static SCRATCH: RefCell<Vec<i32>> = const { RefCell::new(Vec::new()) };
+}
 
 #[inline]
 fn data() -> Option<&'static Soa> {
@@ -242,6 +311,7 @@ fn eqsnap_mode() -> bool {
         // TASK-419-A (colpush): колпаш-носитель — mob natives (probe/remove)
         // и read-views живут; colpush_plane_refresh кормит колонки.
         || f == "cmp420_colpush"
+        || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside"
 }
 
 /// Strict gate: natives work only under the exact lever flag (STRICT eq;
@@ -282,6 +352,7 @@ fn lever_mode() -> bool {
         // плоскость (drain шардов пуст, плоские колонки кормит
         // colpush_plane_refresh одним WLOCK/тик).
         || f == "cmp420_colpush"
+        || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside"
         // TASK-410-C (eindexq): K3-пивот R2 — SoA-плоскость = источник
         // популяции для goal-query CSR-снапшота (EntityQueryOps.eqEpoch;
         // sscan-прецедент TASK-406-E).
@@ -576,6 +647,7 @@ fn find_slot(keys: &[i64], k: i64) -> Result<usize, usize> {
     debug_assert!(!keys.is_empty() && keys.len() & (keys.len() - 1) == 0);
     let mask = keys.len() - 1;
     let mut s = (mix64(k as u64) as usize) & mask;
+    let mut probes = 0usize;
     loop {
         let cur = unsafe { *keys.get_unchecked(s) };
         if cur == k {
@@ -584,17 +656,92 @@ fn find_slot(keys: &[i64], k: i64) -> Result<usize, usize> {
         if cur == 0 {
             return Err(s);
         }
+        probes += 1;
+        if probes > PROBE_CAP {
+            // TASK-427-A2 (protocol v2): a full/degenerate table can no longer
+            // produce an infinite walk — the caller treats the cap as pressure
+            // (tombstone-reclaim rebuild or ERR_RANGE fail-open).
+            return Err(PROBE_FAIL);
+        }
         s = (s + 1) & mask;
     }
 }
 
+/// TASK-427-A2 (protocol v2): ONE-SHOT tombstone-reclaim rebuild — rehash
+/// every LIVE key (non-empty chain) into the FIXED rebuild scratch and copy
+/// back IN PLACE, dropping tombstones. Self-contained version bracket: the
+/// caller holds the WLOCK (single writer) and this function bumps EVERY shard
+/// version odd → mutate → even, so any in-flight reader of ANY cell detects
+/// the rebuild and retries (bounded). The in-place copy-back (no buffer swap,
+/// no allocation) preserves the fixed-capacity no-dangling-buffer contract
+/// for the lock-free readers. Returns false on pathological pressure (caller
+/// fail-opens with ERR_RANGE — no panic path).
+fn rebuild_tables(d: &mut Soa) -> bool {
+    for s in 0..N_SHARDS {
+        shard_begin(s);
+    }
+    let ok = rebuild_tables_inner(d);
+    for s in 0..N_SHARDS {
+        shard_end(s);
+    }
+    ok
+}
+
+fn rebuild_tables_inner(d: &mut Soa) -> bool {
+    // Give up (fail-open) rather than build a table whose probe walks could
+    // exceed the probe cap.
+    if d.used + PROBE_CAP >= CELL_CAP {
+        return false;
+    }
+    // Rehash into the FIXED scratch: zero it, place every live chain, copy
+    // back. No allocation, no buffer identity change — readers can hold no
+    // reference that can dangle.
+    d.rkeys.fill(0);
+    d.rhead.fill(0);
+    let mut used = 0usize;
+    for s in 0..CELL_CAP {
+        let k = d.keys[s];
+        if k == 0 || d.head[s] == 0 {
+            continue; // never-used slot or tombstone (chain already empty)
+        }
+        // Fresh table: no tombstones, load < 1 ⇒ a zero slot always exists.
+        if let Err(t) = find_slot(&d.rkeys, k) {
+            if t == PROBE_FAIL {
+                return false; // scratch untouched — the live table is intact
+            }
+            d.rkeys[t] = k;
+            d.rhead[t] = d.head[s];
+            used += 1;
+        }
+    }
+    d.keys.copy_from_slice(&d.rkeys);
+    d.head.copy_from_slice(&d.rhead);
+    d.used = used;
+    true
+}
+
 /// Unlink `id` from its stored cell chain. The key slot is kept (tombstone).
+/// TASK-427-A2 (protocol v2): a probe-cap hit triggers one tombstone-reclaim
+/// rebuild + re-find (the key MUST exist — cell[id] != 0 — so exhaustion here
+/// means a pathologically tombstoned table, not a dangling chain).
 fn unlink(d: &mut Soa, id: usize) -> Result<(), ()> {
     let k = d.cell[id];
     if k == 0 {
         return Err(());
     }
-    let slot = find_slot(&d.keys, k).map_err(|_| ())?;
+    let slot = match find_slot(&d.keys, k) {
+        Ok(s) => s,
+        Err(PROBE_FAIL) => {
+            if !rebuild_tables(d) {
+                return Err(());
+            }
+            match find_slot(&d.keys, k) {
+                Ok(s) => s,
+                Err(_) => return Err(()),
+            }
+        }
+        Err(_) => return Err(()),
+    };
     let mut prev: i32 = 0;
     let mut cur = d.head[slot];
     while cur != 0 {
@@ -615,9 +762,17 @@ fn unlink(d: &mut Soa, id: usize) -> Result<(), ()> {
     Err(())
 }
 
-/// Writer-side insert-or-move + field refresh. Caller holds WLOCK, version
-/// bumped odd. All Err paths leave the plane CONSISTENT (the id either fully
-/// linked or fully unlinked).
+/// Writer-side insert-or-move + field refresh. Caller holds WLOCK (and the
+/// legacy GLOBAL VERSION odd bracket for the ai/sscan/eq epoch contract).
+/// TASK-427-A2 (protocol v2): THIS function owns the per-shard brackets —
+/// same-cell refresh brackets shard(cell); a move brackets the OLD and NEW
+/// shards TOGETHER as one atomic transition (unlink + link + fields publish
+/// inside a single combined odd-window — a reader of either cell retries into
+/// the post-state, so the id is visible in EXACTLY one cell at every
+/// validated snapshot). All Err paths leave the plane CONSISTENT (the id
+/// either fully linked or fully unlinked). Capacity pressure / probe-cap hit
+/// triggers the ONE-SHOT tombstone-reclaim rebuild (self-bracketed on ALL
+/// shards); failure = ERR_RANGE fail-open.
 fn soa_upsert(
     d: &mut Soa,
     id: usize,
@@ -630,44 +785,143 @@ fn soa_upsert(
 ) -> i32 {
     if d.cell[id] == k {
         // Same cell: refresh flat fields only (hot path — settled population).
+        // The reader reads these fields under THIS cell's shard bracket —
+        // bump it around the writes (protocol v2).
+        let s = shard_of(k);
+        shard_begin(s);
         d.x[id] = x;
         d.y[id] = y;
         d.z[id] = z;
         d.hw[id] = hw;
         d.hh[id] = hh;
         d.flags[id] |= 1;
+        shard_end(s);
         return 0;
     }
     // Pre-resolve the target slot BEFORE unlinking (no partial state on
     // capacity pressure).
-    let slot = match find_slot(&d.keys, k) {
-        Ok(s) => s,
-        Err(s) => {
-            if d.used >= CELL_CAP - 1 {
-                return ERR_RANGE; // table pressure — per-call vanilla fallback
+    let slot = loop {
+        match find_slot(&d.keys, k) {
+            Ok(s) => break s,
+            Err(PROBE_FAIL) => {
+                if !rebuild_tables(d) {
+                    return ERR_RANGE; // pathological pressure — per-call vanilla fallback
+                }
             }
-            d.keys[s] = k;
-            d.used += 1;
-            s
+            Err(s) => {
+                if d.used >= CELL_CAP - 1 {
+                    if !rebuild_tables(d) {
+                        return ERR_RANGE; // table pressure — per-call vanilla fallback
+                    }
+                    continue;
+                }
+                d.keys[s] = k;
+                d.used += 1;
+                break s;
+            }
         }
     };
-    if d.cell[id] != 0 && unlink(d, id).is_err() {
+    // Move / first insert under a COMBINED old+new shard bracket (deduped).
+    let so = if d.cell[id] != 0 { shard_of(d.cell[id]) } else { usize::MAX };
+    let sn = shard_of(k);
+    if so != usize::MAX {
+        shard_begin(so);
+    }
+    if so != sn {
+        shard_begin(sn);
+    }
+    let r = if so != usize::MAX {
+        unlink(d, id)
+    } else {
+        Ok(())
+    };
+    if r.is_ok() {
+        d.x[id] = x;
+        d.y[id] = y;
+        d.z[id] = z;
+        d.hw[id] = hw;
+        d.hh[id] = hh;
+        d.flags[id] |= 1;
+        d.next[id] = d.head[slot];
+        d.head[slot] = (id as i32) + 1;
+        d.cell[id] = k;
+    }
+    if so != sn {
+        shard_end(sn);
+    }
+    if so != usize::MAX {
+        shard_end(so);
+    }
+    if r.is_err() {
         return ERR_STRUCT; // dangling chain — corruption
     }
-    d.x[id] = x;
-    d.y[id] = y;
-    d.z[id] = z;
-    d.hw[id] = hw;
-    d.hh[id] = hh;
-    d.flags[id] |= 1;
-    d.next[id] = d.head[slot];
-    d.head[slot] = (id as i32) + 1;
-    d.cell[id] = k;
     0
 }
 
-/// Reader scan: padded cell window → chain walk → flat-field coarse AABB
-/// prune. Returns the candidate count, -(cap) on overflow.
+/// One CELL of the reader scan: padded-window key → chain walk → flat-field
+/// coarse AABB prune. Pure (no version brackets) — the test oracle drives it
+/// directly; the native reader wraps it in per-shard seqlock brackets.
+/// TASK-427-A2 (protocol v2).
+fn scan_cell(
+    d: &Soa,
+    dst: &mut [i32],
+    n: &mut i32,
+    cap: i32,
+    k: i64,
+    q: (f64, f64, f64, f64, f64, f64),
+) -> CellScan {
+    let (qx0, qy0, qz0, qx1, qy1, qz1) = q;
+    let Ok(slot) = find_slot(&d.keys, k) else {
+        return CellScan::Ok; // absent key or probe-cap hit → no candidates here
+    };
+    let mut cur = unsafe { *d.head.get_unchecked(slot) };
+    while cur != 0 {
+        let id = (cur - 1) as usize;
+        if id >= IDS_CAP {
+            // The caller's version bracket decides torn vs corrupt.
+            return CellScan::Struct;
+        }
+        // SAFETY: id < IDS_CAP (checked); fixed-cap vectors.
+        let (alive, x, y, z, hw, hh) = unsafe {
+            (
+                *d.flags.get_unchecked(id) & 1 != 0,
+                *d.x.get_unchecked(id),
+                *d.y.get_unchecked(id),
+                *d.z.get_unchecked(id),
+                *d.hw.get_unchecked(id),
+                *d.hh.get_unchecked(id),
+            )
+        };
+        if alive
+            && x - hw < qx1
+            && x + hw > qx0
+            && y - hh < qy1
+            && y + hh > qy0
+            && z - hw < qz1
+            && z + hw > qz0
+        {
+            if *n >= cap {
+                return CellScan::Overflow;
+            }
+            dst[*n as usize] = id as i32;
+            *n += 1;
+        }
+        cur = unsafe { *d.next.get_unchecked(id) };
+    }
+    CellScan::Ok
+}
+
+#[derive(Clone, Copy, PartialEq, Eq)]
+enum CellScan {
+    Ok,
+    Overflow,
+    Struct,
+}
+
+/// Test-oracle scan (no brackets): padded cell window → per-cell chain walk
+/// + coarse prune. Returns the candidate count, -(cap) on overflow,
+/// ERR_STRUCT on a stable anomaly. (Base soa_scan refactored onto scan_cell —
+/// same discipline as items_index / mobs_grid.)
 fn soa_scan(
     d: &Soa,
     dst: &mut [i32],
@@ -678,48 +932,78 @@ fn soa_scan(
     (cz0, cz1): (i32, i32),
     q: (f64, f64, f64, f64, f64, f64),
 ) -> i32 {
-    let (qx0, qy0, qz0, qx1, qy1, qz1) = q;
     let mut n: i32 = 0;
     for cz in cz0..=cz1 {
         for cy in cy0..=cy1 {
             for cx in cx0..=cx1 {
                 let k = cell_key(lid, cx, cy, cz);
-                let Ok(slot) = find_slot(&d.keys, k) else {
-                    continue;
-                };
-                let mut cur = unsafe { *d.head.get_unchecked(slot) };
-                while cur != 0 {
-                    let id = (cur - 1) as usize;
-                    if id >= IDS_CAP {
-                        // Version check by the caller decides torn vs corrupt.
-                        return ERR_STRUCT;
+                match scan_cell(d, dst, &mut n, cap, k, q) {
+                    CellScan::Ok => {}
+                    CellScan::Overflow => return -cap,
+                    CellScan::Struct => return ERR_STRUCT,
+                }
+            }
+        }
+    }
+    n
+}
+
+/// TASK-427-A2 (protocol v2 READER): per-CELL seqlock brackets against the
+/// cell's shard version, bounded retries (≤8, spin→yield backoff) with n0
+/// rollback, exhaustion → ERR_RANGE (java per-call fallback mirror-grid →
+/// vanillaFill; NO plane disarm). Writes into the caller's LOCAL scratch —
+/// no JNI-critical region is held across any retry/backoff.
+#[allow(clippy::too_many_arguments)]
+fn sharded_scan(
+    d: &Soa,
+    dst: &mut [i32],
+    cap: i32,
+    lid: i32,
+    (cx0, cx1): (i32, i32),
+    (cy0, cy1): (i32, i32),
+    (cz0, cz1): (i32, i32),
+    q: (f64, f64, f64, f64, f64, f64),
+) -> i32 {
+    let mut n: i32 = 0;
+    for cz in cz0..=cz1 {
+        for cy in cy0..=cy1 {
+            for cx in cx0..=cx1 {
+                let k = cell_key(lid, cx, cy, cz);
+                let s = shard_of(k);
+                let n0 = n;
+                let mut tries: u32 = 0;
+                loop {
+                    tries += 1;
+                    if tries > SHARD_RETRIES {
+                        // Bounded fail-open: per-call fallback (mirror grid →
+                        // vanilla), the plane STAYS ARMED.
+                        return ERR_RANGE;
                     }
-                    // SAFETY: id < IDS_CAP (checked); fixed-cap vectors.
-                    let (alive, x, y, z, hw, hh) = unsafe {
-                        (
-                            *d.flags.get_unchecked(id) & 1 != 0,
-                            *d.x.get_unchecked(id),
-                            *d.y.get_unchecked(id),
-                            *d.z.get_unchecked(id),
-                            *d.hw.get_unchecked(id),
-                            *d.hh.get_unchecked(id),
-                        )
-                    };
-                    if alive
-                        && x - hw < qx1
-                        && x + hw > qx0
-                        && y - hh < qy1
-                        && y + hh > qy0
-                        && z - hw < qz1
-                        && z + hw > qz0
-                    {
-                        if n >= cap {
-                            return -cap;
+                    let v1 = SVER[s].load(Ordering::Acquire);
+                    if v1 & 1 == 1 {
+                        backoff(tries);
+                        continue;
+                    }
+                    match scan_cell(d, dst, &mut n, cap, k, q) {
+                        CellScan::Overflow => return -cap,
+                        CellScan::Struct => {
+                            let v2 = SVER[s].load(Ordering::Acquire);
+                            if v2 != v1 {
+                                n = n0; // torn view — retry this cell
+                                backoff(tries);
+                                continue;
+                            }
+                            return ERR_STRUCT; // stable anomaly = real corruption
                         }
-                        dst[n as usize] = id as i32;
-                        n += 1;
+                        CellScan::Ok => {}
                     }
-                    cur = unsafe { *d.next.get_unchecked(id) };
+                    let v2 = SVER[s].load(Ordering::Acquire);
+                    if v2 != v1 {
+                        n = n0; // torn snapshot of this cell — retry
+                        backoff(tries);
+                        continue;
+                    }
+                    break;
                 }
             }
         }
@@ -784,20 +1068,24 @@ pub unsafe extern "system" fn mob_upsert(
     let k = cell_key(lid, x.floor() as i32, y.floor() as i32, z.floor() as i32);
     let _g = WLOCK.lock().unwrap_or_else(|p| p.into_inner());
     ensure_plane();
-    let v = VERSION.fetch_add(1, Ordering::AcqRel); // → odd
+    let v = VERSION.fetch_add(1, Ordering::AcqRel); // → odd (global; ai/sscan/eq contract)
     debug_assert!(v % 2 == 0);
+    // TASK-427-A2 (protocol v2): soa_upsert self-brackets the touched shards
+    // (same-cell refresh / combined old+new move bracket); probe-cap/pressure
+    // triggers the one-shot tombstone-reclaim rebuild inside.
     let rc = soa_upsert(data_mut(), id as usize, k, x, y, z, hw, hh);
-    // TASK-402-B composite: mirror the SAME (id, cell-key) mutation into the
-    // sharded grid inside this critical section (no extra WLOCK acquisition;
-    // per-shard version bracket inside mirror_upsert). A grid structural
-    // failure is ISOLATED: mark_broken() stops mirroring, the SoA rc stays
-    // authoritative.
-    if mirror_mode() {
+    VERSION.fetch_add(1, Ordering::AcqRel); // → even
+    drop(_g);
+    // TASK-427-A2 (protocol v2): mirror the SAME (id, cell-key) mutation into
+    // the sharded grid OUTSIDE the SoA writer lock (no lock-group nesting; the
+    // mirror serializes on its OWN per-shard writer Mutexes). A grid
+    // structural failure is ISOLATED: mark_broken() stops mirroring, the SoA
+    // rc stays authoritative.
+    if rc != ERR_STRUCT && mirror_mode() {
         if crate::mobs_grid::mirror_upsert(id as usize, k) < 0 {
             crate::mobs_grid::mark_broken();
         }
     }
-    VERSION.fetch_add(1, Ordering::AcqRel); // → even
     rc
 }
 
@@ -823,36 +1111,49 @@ pub unsafe extern "system" fn mob_remove(
     if d.flags[id as usize] & 1 == 0 && d.cell[id as usize] == 0 {
         return 0; // never inserted / already removed — idempotent
     }
-    let v = VERSION.fetch_add(1, Ordering::AcqRel); // → odd
+    let v = VERSION.fetch_add(1, Ordering::AcqRel); // → odd (global; ai/sscan/eq contract)
     debug_assert!(v % 2 == 0);
-    d.flags[id as usize] &= !1;
     let rc = if d.cell[id as usize] != 0 {
-        if unlink(d, id as usize).is_err() {
+        // TASK-427-A2 (protocol v2): unlink + alive-flag clear under the id's
+        // cell shard bracket (readers validate the flags column against the
+        // SAME shard version — no unbracketed writer stores).
+        let s = shard_of(d.cell[id as usize]);
+        shard_begin(s);
+        d.flags[id as usize] &= !1;
+        let r = unlink(d, id as usize);
+        shard_end(s);
+        if r.is_err() {
             ERR_STRUCT
         } else {
             0
         }
     } else {
+        // No chain to unlink (defensive path: alive flag without a link can
+        // not be produced by upsert) — clear the flag unbracketed.
+        d.flags[id as usize] &= !1;
         0
     };
-    // TASK-402-B composite: mirror the removal into the sharded grid in the
-    // same critical section (failures isolated — see mob_upsert).
-    if mirror_mode() {
+    VERSION.fetch_add(1, Ordering::AcqRel); // → even
+    drop(_g);
+    // TASK-427-A2 (protocol v2): mirror OUTSIDE the SoA writer lock (no
+    // lock-group nesting; failures isolated — see mob_upsert).
+    if rc != ERR_STRUCT && mirror_mode() {
         if crate::mobs_grid::mirror_remove(id as usize) < 0 {
             crate::mobs_grid::mark_broken();
         }
     }
-    VERSION.fetch_add(1, Ordering::AcqRel); // → even
     rc
 }
 
 /// Query candidate ids for the AABB [qx0..qx1]×[qy0..qy1]×[qz0..qz1] with the
 /// ±PAD(2) center-window pad (java guarantees all members have half-extent
-/// ≤ 2.0 — k4soa gate). The scan reads the SoA flat arrays and prunes with the coarse
-/// center±radii test (superset of AABB.intersects — see module docs).
-/// Writes ids into the pinned `out` array; returns the count, -(out_cap) on
-/// overflow (caller grows + retries), ERR_RANGE for absurd widths/instability,
-/// ERR_STRUCT on corruption/JNI trouble.
+/// ≤ 2.0 — k4soa gate). Protocol v2 TWO-PHASE shape: PHASE 1 scans + retries
+/// + backoff into the thread-local scratch (per-cell shard seqlock brackets,
+/// bounded — NO JNI-critical region held across any of it); PHASE 2 pins
+/// `out` ONLY for the final memcpy of the ready result. Returns the count,
+/// -(out_cap) on overflow (caller grows + retries), ERR_RANGE on per-cell
+/// retry exhaustion / absurd widths (java per-call fallback mirror-grid →
+/// vanillaFill; the plane stays armed), ERR_STRUCT on corruption/JNI trouble.
 ///
 /// # Safety
 /// See mob_probe.
@@ -903,34 +1204,40 @@ pub unsafe extern "system" fn mob_query(
         return 0; // empty universe — no upserts ever, no candidates
     };
 
+    // TASK-427-A2 (protocol v2 TWO-PHASE shape): PHASE 1 scans + retries +
+    // backoff into the thread-local scratch (per-cell shard seqlock brackets,
+    // bounded — NO JNI-critical region held across any of it: the GC-locker
+    // convoy of the v1 whole-scan-critical shape is impossible by
+    // construction). PHASE 2 pins `out` ONLY for the final memcpy of the
+    // READY result.
+    let q = (qx0, qy0, qz0, qx1, qy1, qz1);
+    let n: i32 = SCRATCH.with(|cell| {
+        let mut sc = cell.borrow_mut();
+        if sc.len() < cap as usize {
+            sc.resize(cap as usize, 0);
+        }
+        let dst: &mut [i32] = &mut sc[..cap as usize];
+        sharded_scan(d, dst, cap, lid, (cx0, cx1), (cy0, cy1), (cz0, cz1), q)
+    });
+    if n < 0 {
+        return n; // ERR_RANGE fail-open / -(cap) overflow / ERR_STRUCT corruption
+    }
+
+    // PHASE 2: the ONLY JNI-critical region = memcpy of the READY result.
     let pinned = unsafe { (vt.GetPrimitiveArrayCritical)(env, out, std::ptr::null_mut()) };
     if pinned.is_null() {
         return ERR_STRUCT;
     }
-    let dst = unsafe { std::slice::from_raw_parts_mut(pinned as *mut jni::jint, cap as usize) };
-
-    let q = (qx0, qy0, qz0, qx1, qy1, qz1);
-    let mut n: i32;
-    let mut tries: u32 = 0;
-    loop {
-        tries += 1;
-        if tries > QRETRY {
-            n = ERR_RANGE;
-            break;
-        }
-        let v1 = VERSION.load(Ordering::Acquire);
-        if v1 & 1 == 1 {
-            std::hint::spin_loop();
-            continue;
-        }
-        n = soa_scan(d, dst, cap, lid, (cx0, cx1), (cy0, cy1), (cz0, cz1), q);
-        let v2 = VERSION.load(Ordering::Acquire);
-        if v2 != v1 {
-            continue; // torn snapshot — retry whole scan
-        }
-        break;
+    {
+        let src = SCRATCH.with(|cell| {
+            let sc = cell.borrow();
+            // SAFETY: n ≥ 0 and n ≤ cap (the scan never exceeds cap).
+            let base = unsafe { std::slice::from_raw_parts(sc.as_ptr(), n as usize) };
+            std::ptr::copy_nonoverlapping(base.as_ptr(), pinned as *mut jni::jint, n as usize);
+            n
+        });
+        debug_assert_eq!(src, n);
     }
-
     unsafe { (vt.ReleasePrimitiveArrayCritical)(env, out, pinned, 0) };
     n
 }
@@ -1293,5 +1600,96 @@ mod tests {
             rows: vec![0.0; SHARD_CAP * SHARD_ROW],
         };
         assert!(!full.push(1, true, 0.0, 0.0, 0.0, 0.1, 0.1));
+    }
+
+    /// TASK-427-A2 (protocol v2): the sharded per-cell-bracket reader must be
+    /// parity-identical to the unbracketed oracle scan on a quiescent plane
+    /// (same candidate SET — order is chain/bucket order, identical by
+    /// construction here).
+    #[test]
+    fn sharded_scan_parity_vs_oracle() {
+        let mut d = Soa::new();
+        let mut rng: u64 = 0x0DDB_1A55_EEDF_BEEF;
+        let mut next = move || {
+            rng ^= rng << 13;
+            rng ^= rng >> 7;
+            rng ^= rng << 17;
+            rng
+        };
+        for id in 0..400usize {
+            let (x, y, z) = (
+                (next() % 48) as f64 - 24.0 + (next() % 1000) as f64 / 1000.0,
+                (next() % 12) as f64 + 60.0,
+                (next() % 48) as f64 - 24.0 + (next() % 1000) as f64 / 1000.0,
+            );
+            let m = Mob { id, lid: 2, x, y, z, ex: 0.2, ey: 0.5, ez: 0.2, hw: 0.25, hh: 0.5 };
+            assert_eq!(m.upsert(&mut d), 0);
+        }
+        for _ in 0..60 {
+            let (qx, qy, qz) = (
+                (next() % 48) as f64 - 24.0,
+                (next() % 12) as f64 + 60.0,
+                (next() % 48) as f64 - 24.0,
+            );
+            let q = (qx - 0.4, qy - 0.9, qz - 0.4, qx + 0.4, qy + 0.9, qz + 0.4);
+            let mut o1 = [0i32; 4096];
+            let mut o2 = [0i32; 4096];
+            let n1 = soa_scan(&d, &mut o1, 4096, 2, (-26, 26), (58, 72), (-26, 26), q);
+            let n2 = sharded_scan(&d, &mut o2, 4096, 2, (-26, 26), (58, 72), (-26, 26), q);
+            assert_eq!(n1, n2, "sharded reader diverged from the oracle");
+            assert!(n1 >= 0);
+            let mut a: Vec<i32> = o1[..n1 as usize].to_vec();
+            let mut b: Vec<i32> = o2[..n2 as usize].to_vec();
+            a.sort_unstable();
+            b.sort_unstable();
+            assert_eq!(a, b);
+        }
+    }
+
+    /// TASK-427-A2 (protocol v2): tombstone-reclaim rebuild — live chains
+    /// survive, tombstone slots are reclaimed (used == live count), the
+    /// walkability of every live chain is preserved and churn continues
+    /// cleanly after a rebuild. Direct regression for the round-mf427l2
+    /// TOP-1 leaf (soa_upsert 12.2% self = tombstone degeneration).
+    #[test]
+    fn tombstone_reclaim_rebuild() {
+        let mut d = Soa::new();
+        // 600 live ids, then remove every second one → ~300 tombstone keys.
+        for i in 0..600i32 {
+            let m = Mob { id: i as usize, lid: 11, x: (i * 3) as f64 + 0.5, y: (i * 5) as f64 + 0.5, z: (-i * 7) as f64 + 0.5, ex: 0.1, ey: 0.1, ez: 0.1, hw: 0.1, hh: 0.1 };
+            assert_eq!(m.upsert(&mut d), 0);
+        }
+        for i in (0..600i32).step_by(2) {
+            let m = Mob { id: i as usize, lid: 11, x: (i * 3) as f64 + 0.5, y: (i * 5) as f64 + 0.5, z: (-i * 7) as f64 + 0.5, ex: 0.1, ey: 0.1, ez: 0.1, hw: 0.1, hh: 0.1 };
+            assert_eq!(m.remove(&mut d), 0);
+        }
+        let heads_before: Vec<i32> = (0..CELL_CAP)
+            .filter(|&s| d.keys[s] != 0 && d.head[s] != 0)
+            .map(|s| d.head[s])
+            .collect();
+        assert!(rebuild_tables(&mut d), "rebuild must succeed on a sane table");
+        let heads_after: Vec<i32> = (0..CELL_CAP)
+            .filter(|&s| d.keys[s] != 0 && d.head[s] != 0)
+            .map(|s| d.head[s])
+            .collect();
+        assert_eq!(heads_before.len(), 300, "expected ~300 live keys pre-rebuild");
+        assert_eq!(heads_before, heads_after, "live chains must survive the rebuild");
+        assert_eq!(d.used, 300, "tombstones reclaimed");
+        // Every live chain still walkable and every live candidate findable:
+        // a query at the cell of odd id 1 (3.5, 5.5, -6.5) must return it and
+        // nothing else (removed even neighbors are gone).
+        let q = (3.0, 5.0, -7.0, 4.0, 6.0, -6.0);
+        let got = query(&d, 11, q);
+        assert_eq!(got, vec![1usize], "exactly the live odd id survives (q {q:?})");
+        // Churn continues cleanly after a rebuild (probe chains intact).
+        for round in 0..2000i32 {
+            let i = (round % 600) as i32;
+            let m = Mob { id: i as usize, lid: 11, x: (i * 3) as f64 + 0.5, y: (i * 5) as f64 + 0.5, z: (-i * 7) as f64 + 0.5, ex: 0.1, ey: 0.1, ez: 0.1, hw: 0.1, hh: 0.1 };
+            if i % 2 == 0 {
+                assert_eq!(m.upsert(&mut d), 0, "round {round}");
+            } else {
+                assert_eq!(m.remove(&mut d), 0, "round {round}");
+            }
+        }
     }
 }

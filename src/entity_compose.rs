@@ -125,6 +125,7 @@ fn stage_enabled() -> bool {
         || crate::traversal::enabled_pub()
         || crate::zero_alloc::enabled_pub()
         || crate::skip_store::enabled_pub()
+        || crate::inside_snap::enabled_pub()
 }
 
 /// Register the single Entity byte hook (idempotent; call once from
@@ -329,6 +330,41 @@ pub fn activate() {
             } else {
                 eprintln!(
                     "[crussty-plugin] entity_compose: inside_bitmask bridge missed its window, chain continues WITHOUT inside_bitmask (fail-dominant)"
+                );
+            }
+        }
+
+        // ---- STAGE 1c: inside_snap (cmp424_inside: snapshot gate retarget) ----
+        // ТОЛЬКО ОДИН getBlockState-сайт (Entity.lambda$checkInsideBlocks$2);
+        // snapshot-плоскость + секWrite-инвалидация живут в inside_snap.rs.
+        if crate::inside_snap::enabled_pub() {
+            if crate::inside_snap::wait_bridge_ready(180_000) {
+                match crate::classfile::patch_inside_snap_gate(&bytes) {
+                    Ok((p, outcome)) if matches!(
+                        outcome,
+                        crate::classfile::RetargetOutcome::Retargeted { sites: 1 }
+                            | crate::classfile::RetargetOutcome::AlreadyPatched { sites: 1 }
+                    ) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_snap composed ({outcome:?})"
+                        );
+                        bytes = p;
+                        chain.push("inside_snap");
+                    }
+                    Ok((_p, outcome)) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_snap strict check violated ({outcome:?}), chain continues WITHOUT inside_snap (fail-dominant)"
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_snap patch rejected ({e}), chain continues WITHOUT inside_snap (fail-dominant)"
+                        );
+                    }
+                }
+            } else {
+                eprintln!(
+                    "[crussty-plugin] entity_compose: inside_snap bridge missed its window, chain continues WITHOUT inside_snap (fail-dominant)"
                 );
             }
         }

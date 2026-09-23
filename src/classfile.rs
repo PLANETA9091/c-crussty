@@ -5244,6 +5244,117 @@ pub fn patch_fluid_dirty_levelchunk(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOu
     )
 }
 
+// ---------------------------------------------------------------------------
+// INSIDE-SNAP (TASK-424-B, lever cmp424_inside): per-section BlockState[4096]
+// snapshot plane. TWO retargets:
+//   1) The SINGLE Level.getBlockState call inside
+//      Entity.lambda$checkInsideBlocks$2 (javap @4789ca7: one invokevirtual
+//      Level.getBlockState at bytecode 29, receiver = this.level()) ->
+//      InsideSnapOps.snapGet(Level,BlockPos)BlockState (receiver-first 3B->3B).
+//   2) The SINGLE LevelChunkSection.setBlockState(IIILBlockState)BlockState
+//      call site inside LevelChunk.setBlockState(BlockPos,BlockState,I) ->
+//      InsideSnapOps.secWrite(...) (delegate + generation bump on a real
+//      change; FluidPushOps.secWrite pattern — same FROM site as fluid_dirty,
+//      disjoint lever: STRICT flag eq, only one of the two is ever armed).
+
+pub const INSIDE_SNAP_OPS_CLASS: &str = "net/minecraft/world/entity/InsideSnapOps";
+pub const INSIDE_SNAP_GATE_CALLER: (&str, &str) = (
+    "lambda$checkInsideBlocks$2",
+    "(ILjava/util/concurrent/atomic/AtomicInteger;ZLnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lit/unimi/dsi/fastutil/longs/LongSet;ZLnet/minecraft/world/phys/AABB;Lnet/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector;Lnet/minecraft/core/BlockPos;I)Z",
+);
+pub const INSIDE_SNAP_GATE_FROM: (&str, &str, &str) = (
+    "net/minecraft/world/level/Level",
+    "getBlockState",
+    "(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;",
+);
+pub const INSIDE_SNAP_GATE_TO: (&str, &str, &str) = (
+    "net/minecraft/world/entity/InsideSnapOps",
+    "snapGet",
+    "(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;",
+);
+
+/// Entity bytes: retarget the single Level.getBlockState site inside
+/// lambda$checkInsideBlocks$2 to InsideSnapOps.snapGet. Strict: exactly ONE
+/// site (javap census @4789ca7).
+pub fn patch_inside_snap_gate(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    for probe in [
+        "checkInsideBlocks",
+        "getBlockState",
+        "net/minecraft/core/BlockPos",
+        "net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector",
+    ] {
+        if layout.pool.find_utf8(probe).is_none() {
+            return Err(format!("{probe} absent from pool (kernel rename?)"));
+        }
+    }
+    let expect_static = format!(
+        "(L{};{}",
+        INSIDE_SNAP_GATE_FROM.0,
+        &INSIDE_SNAP_GATE_FROM.2[1..]
+    );
+    if INSIDE_SNAP_GATE_TO.2 != expect_static {
+        return Err("snapGet descriptor is not the receiver-prepended target form".into());
+    }
+    let (name, desc) = INSIDE_SNAP_GATE_CALLER;
+    retarget_virtual_to_static(bytes, name, desc, INSIDE_SNAP_GATE_FROM, INSIDE_SNAP_GATE_TO)
+}
+
+/// LevelChunk bytes: retarget the single LevelChunkSection.setBlockState site
+/// to InsideSnapOps.secWrite (delegate + generation bump).
+pub fn patch_inside_snap_levelchunk(
+    bytes: &[u8],
+) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    for probe in ["setBlockState", "net/minecraft/world/level/chunk/LevelChunkSection"] {
+        if layout.pool.find_utf8(probe).is_none() {
+            return Err(format!("{probe} absent from pool (kernel rename?)"));
+        }
+    }
+    retarget_virtual_to_static(
+        bytes,
+        "setBlockState",
+        LEVELCHUNK_SETBLOCK_DESC,
+        SEC_WRITE_FROM,
+        (INSIDE_SNAP_OPS_CLASS, "secWrite", SEC_WRITE_DESC),
+    )
+}
+
+/// Structural delivery guard: the bridge must declare every static the two
+/// retargets + the native table resolve (entity_compose redirects would
+/// detonate NoSuchMethodError on the first tick otherwise).
+pub fn inside_snap_resolution_closure(ops: &[u8]) -> Result<(), String> {
+    redirect_targets_resolution_closure(
+        ops,
+        &[
+            (
+                "net/minecraft/world/level/Level",
+                "(Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;",
+                "snapGet",
+                "(Lnet/minecraft/world/level/Level;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/level/block/state/BlockState;",
+            ),
+            (
+                "net/minecraft/world/level/chunk/LevelChunkSection",
+                "(IIILnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/level/block/state/BlockState;",
+                "secWrite",
+                "(Lnet/minecraft/world/level/chunk/LevelChunkSection;IIILnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/level/block/state/BlockState;",
+            ),
+            (
+                "",
+                "",
+                "selfTest",
+                "()Z",
+            ),
+            (
+                "",
+                "",
+                "arm",
+                "()V",
+            ),
+        ],
+    )
+}
+
 // --- REGION-THREADS (S7-156, TASK-295) -------------------------------------
 
 const REGION_TICK_OPS_CLASS: &str = "net/minecraft/world/entity/RegionTickOps";
