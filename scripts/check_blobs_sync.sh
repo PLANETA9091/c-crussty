@@ -114,6 +114,48 @@ check_class \
   "cmp420_chunk2" "cmp420_colpush" "parse-cache first hit" "parse-cache selftest" \
   "public static void init" "parseSection"
 
+# TASK-421-C noise-blob coverage: the GEN-axis bridge family (noise/build,
+# NOISE_RELEASE=8 => major 52) was OUTSIDE this gate — the only lever family
+# whose blobs check_blobs_sync never audited (the x93 gate hole). The blobs
+# are include_bytes!'d by src/noise_fill.rs (levelgen package) and
+# src/improved_noise.rs (synth package); the embed-set audit lives in
+# build_noise.sh, here we pin: major version + the bridge entry methods that
+# the whole-body redirects target (a stale/partial rebuild loses them).
+noise_check_class() { # blob marker... — major-52 variant of check_class
+  local blob="$1"; shift
+  if [ ! -f "$blob" ]; then die "missing blob: $blob"; return; fi
+  local major
+  major=$(python3 - "$blob" << 'PY'
+import sys
+b = open(sys.argv[1], 'rb').read(8)
+print((b[6] << 8) | b[7])
+PY
+)
+  [ "$major" = "52" ] || die "$blob: major $major != 52 (noise bridge = NOISE_RELEASE 8; >65 would fail the runtime guard)"
+  local javap_out
+  javap_out=$("$JAVAP" -p -c "$blob" 2>&1) || die "$blob: javap failed"
+  for marker in "$@"; do
+    if [[ "$javap_out" == *"$marker"* ]]; then
+      note "$blob: OK marker '$marker' (major 52)"
+    else
+      die "$blob: expected method marker '$marker' NOT in javap output (stale blob or missing gate)"
+    fi
+  done
+}
+
+noise_check_class \
+  "noise/build/net/minecraft/world/level/levelgen/NormalNoiseBatchOps.class" \
+  "fillNoise" "fillShift" "selfTest" "nativeFillScaledPositions"
+noise_check_class \
+  "noise/build/net/minecraft/world/level/levelgen/DensityArrayInterpreter.class" \
+  "interpFillArray"
+noise_check_class \
+  "noise/build/net/minecraft/world/level/levelgen/synth/ImprovedNoiseBatchOps.class" \
+  "public static double noise" "selfTestFlush"
+noise_check_class \
+  "noise/build/net/minecraft/world/level/levelgen/synth/PerlinNoiseNativeOps.class" \
+  "native"
+
 # gate-flag consistency: every flag string accepted by the SOURCE gate must
 # also be present in the BLOB constant pool (covers the ×93 rebuild lesson).
 for pair in \
