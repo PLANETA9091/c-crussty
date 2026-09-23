@@ -71,6 +71,9 @@ public final class ColpushOps {
     /** TASK-426-A: SoA-feed carrier — STRICT-OR (будит java-сторону колпаша
      * под вектор-флагом; без него ENABLED=false = спящий гейт, урок ×93). */
     private static final String FLAG2 = "cmp424_mobfeed";
+    /** TASK-430-B: inside-plane subsystem round rides the carrier (STRICT-OR;
+     * constant-pool marker for the check_blobs_sync raw-byte gate, x93). */
+    private static final String FLAG3 = "cmp430_inside";
     private static final int ERR_STRUCT = -1;
     private static final int ERR_RANGE = -2;
 
@@ -86,7 +89,7 @@ public final class ColpushOps {
 
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2));
+        return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3));
     }
 
     /** Структурный отказ — весь рычаг дизармится навсегда (ваниль-реплика). */
