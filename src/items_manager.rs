@@ -75,7 +75,7 @@ fn lever_flag_matches_for(f: &str) -> bool {
         || f == "cmp412_eqsnapv3" || f == "cmp414_cvs" || f == "cmp417_bq"
         // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
         || f == "cmp420_colpush"
-        || f == "cmp421_brain"
+        || f == "cmp421_brain" || f == "cmp422_brain2"
 }
 
 pub fn activate() {
@@ -109,7 +109,7 @@ pub fn activate() {
         || flag == "cmp412_eqsnapv3" || flag == "cmp414_cvs" || flag == "cmp417_bq"
         // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
         || flag == "cmp420_colpush";
-        || flag == "cmp421_brain";
+        || flag == "cmp421_brain" || flag == "cmp422_brain2";
     let despawn2 = flag == "cmp399_despawn2" || bfcomp || comp;
     if shard {
         // ГРОМКИЙ ARM-МАРКЕР (TASK-399-B): без этой строки нога не-armed.

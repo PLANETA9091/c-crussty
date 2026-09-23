@@ -73,7 +73,7 @@ fn lever_flag_matches() -> bool {
                 || v.trim() == "cmp417_bq"
                 // TASK-419-A (colpush): колпаш-носитель — queryplane awake.
                 || v.trim() == "cmp420_colpush"
-                || v.trim() == "cmp421_brain"
+                || v.trim() == "cmp421_brain" || v.trim() == "cmp422_brain2"
         })
         .unwrap_or(false)
 }
@@ -86,6 +86,8 @@ fn lever_id() -> &'static str {
         Ok("cmp417_bq")
             // TASK-421-A (brain): свой id в ARM-маркерах.
             | Ok("cmp421_brain") => "cmp421_brain",
+        // TASK-422-B (iter-2): свой id для вектор-ног.
+        Ok("cmp422_brain2") => "cmp422_brain2",
         Ok("cmp416_mcomp") => "cmp416_mcomp",
         Ok("cmp415_mcomp") => "cmp415_mcomp",
         _ => "cmp412_b2p1",

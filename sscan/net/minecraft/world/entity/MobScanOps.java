@@ -69,7 +69,10 @@ public final class MobScanOps {
                 || f.trim().equals("cmp417_bq")
                 // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
                 || f.trim().equals("cmp420_colpush")
-                || f.trim().equals("cmp421_brain"));
+                // TASK-421-A: brain-носитель (STRICT OR).
+                || f.trim().equals("cmp421_brain")
+                // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
+                || f.trim().equals("cmp422_brain2"));
     }
 
     private static final boolean ENABLED = leverEnabled();
