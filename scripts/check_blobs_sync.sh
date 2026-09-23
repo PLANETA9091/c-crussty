@@ -69,37 +69,37 @@ echo "== javap-gate: lever bridge blobs vs ARM markers / gate flags (lever cmp41
 
 check_class \
   "entityinside/build/net/minecraft/world/entity/ItemEntityManager.class" \
-  "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" \
+  "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" \
   "native int idxProbe" "static void indexAdd" "native int lifetimeDue"
 
 check_class \
   "goalops/build/net/minecraft/world/entity/ai/goal/GoalOps.class" \
-  "cmp421_brain" "cmp422_brain2" "cmp430_inside" "goal-selector EFFECT armed" "goalCleanup" "goalUpdate" \
+  "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "goal-selector EFFECT armed" "goalCleanup" "goalUpdate" \
   "goal-selector running EFFECT armed" \
   "tickGate" "tickRunningGate" "availableGoals" "lockedFlags" "goalTypes"
 
 check_class \
   "queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp412_b2p1" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "selfTest" "isHardCollidingProbe"
+  "cmp417_bq" "cmp420_colpush" "cmp412_b2p1" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "selfTest" "isHardCollidingProbe"
 
 check_class \
   "mobai/build/net/minecraft/world/entity/MobAiOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" \
+  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" \
   "native"
 
 check_class \
   "sscan/build/net/minecraft/world/entity/MobScanOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" \
+  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" \
   "native"
 
 check_class \
   "mobpush/build/net/minecraft/world/entity/MobPushOps.class" \
-  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" \
+  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" \
   "native int mobProbe" "boxFor" "colpushSweep"
 
 check_class \
   "colpush/build/net/minecraft/world/entity/ColpushOps.class" \
-  "cmp420_colpush" "cmp430_inside" "pushEntities" "bulkTick" "selfTest" "armed" \
+  "cmp420_colpush" "cmp430_inside" "cmp432_inside2" "pushEntities" "bulkTick" "selfTest" "armed" \
   "native int colpushProbe" "native int colpushTick"
 
 check_class \
@@ -108,7 +108,7 @@ check_class \
 
 check_class \
   "entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
-  "cmp414_cvs" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" \
+  "cmp414_cvs" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" \
   "native int eqProbe" "native int senseArena"
 
 # TASK-420-C chunk-pipeline plane (cmp420_chunk2): the bridge must carry the
@@ -132,6 +132,13 @@ check_class \
 check_class \
   "entityinside/build/net/minecraft/world/entity/InsideBitmaskOps.class" \
   "checkInsideBlocksGated" "armState" "sweptHullInto"
+
+# TASK-432-B inside-plane deepening: the inside_cache gate bridge carries the
+# fusion hook (SNAP_ARMED note) + the fused read helper + the widened slot
+# space; its bytes must show the snapGet ref (fusion) and the 2^18 slot cap.
+check_class \
+  "entityinside/build/net/minecraft/world/entity/InsideBlockOps.class" \
+  "noteSnapArmed" "snapGet" "bstate" "SNAP_ARMED" "mirror"
 
 check_class \
   "chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class" \

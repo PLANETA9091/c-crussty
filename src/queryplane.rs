@@ -73,9 +73,19 @@ fn lever_flag_matches() -> bool {
                 || v.trim() == "cmp417_bq"
                 // TASK-419-A (colpush): колпаш-носитель — queryplane awake.
                 || v.trim() == "cmp420_colpush"
-                || v.trim() == "cmp421_brain" || v.trim() == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside"
+                || v.trim() == "cmp421_brain" || v.trim() == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2"
         })
         .unwrap_or(false)
+}
+
+
+/// TASK-432-B: honest lever-id for the inside-plane composite (either the
+/// round-432 flag or the round-430 carrier flag arms the same stages).
+fn inside_plane_label() -> &'static str {
+    match std::env::var("CRUSSTY_LEVER_FLAG").as_deref() {
+        Ok("cmp432_inside2") => "cmp432_inside2",
+        _ => "cmp430_inside",
+    }
 }
 
 /// Lever id for boot markers (TASK-416-A: единый lever-id композита эры в
@@ -86,7 +96,7 @@ fn lever_id() -> &'static str {
         // TASK-426-A: SoA-feed carrier — свой id в ARM/EFFECT-маркерах.
         Ok("cmp424_mobfeed") => "cmp424_mobfeed",
         // TASK-430-B: inside-plane subsystem round — свой id.
-        Ok("cmp430_inside") => "cmp430_inside",
+        Ok("cmp430_inside") | Ok("cmp432_inside2") => inside_plane_label(),
         Ok("cmp417_bq")
             // TASK-421-A (brain): свой id в ARM-маркерах.
             | Ok("cmp421_brain") => "cmp421_brain",

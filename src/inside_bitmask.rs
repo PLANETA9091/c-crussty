@@ -42,7 +42,10 @@ fn enabled() -> bool {
     // The legacy CRUSSTY_INSIDE_BITMASK env stays accepted for A/B replays
     // (bank keeps it 0; lever flag is the dispatch key on the carrier).
     let lever = std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim() == "cmp430_inside")
+        .map(|v| {
+            let v = v.trim();
+            v == "cmp432_inside2" || v == "cmp430_inside"
+        })
         .unwrap_or(false);
     if lever {
         return true;
@@ -97,7 +100,7 @@ pub fn wait_bridge_ready(timeout_ms: u64) -> bool {
 pub fn register() {
     if !enabled() {
         eprintln!(
-            "[crussty-plugin] inside_bitmask: dormant (lever_flag != cmp430_inside and CRUSSTY_INSIDE_BITMASK unset)"
+            "[crussty-plugin] inside_bitmask: dormant (lever_flag not in {{cmp432_inside2/cmp430_inside}} and CRUSSTY_INSIDE_BITMASK unset)"
         );
         return;
     }

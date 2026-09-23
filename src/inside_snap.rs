@@ -1,4 +1,4 @@
-//! INSIDE-SNAP (TASK-424-B, round-423 vector B — lever cmp430_inside, закон 6 v17).
+//! INSIDE-SNAP (TASK-424-B origin; round-430 carrier; TASK-432-B deepening — lever cmp432_inside2 STRICT-OR cmp430_inside, закон 6 v17).
 //!
 //! ПОДСИСТЕМА: per-section BlockState[4096] снапшоты для inside-лейна
 //! (PROFILE-B: адресуемый срез = volatile-чтения PalettedContainer ≈1.3-1.6%
@@ -40,10 +40,10 @@
 //! регистрируются).
 //!
 //! ARM markers (server stdout; порядок = stale-window контракт):
-//!   "[crussty-plugin] cmp430_inside: defined InsideSnapOps in kernel loader"
-//!   "[crussty-plugin] cmp430_inside: selfTest=true BEFORE arm"
-//!   "[crussty-plugin] cmp430_inside: PATCHED LevelChunk.setBlockState (Retargeted { sites: 1 })"
-//!   "[crussty-plugin] cmp430_inside: ARMED (snapshot gate + secWrite invalidation live BEFORE gate)"
+//!   "[crussty-plugin] cmp432_inside2: defined InsideSnapOps in kernel loader"
+//!   "[crussty-plugin] cmp432_inside2: selfTest=true BEFORE arm"
+//!   "[crussty-plugin] cmp432_inside2: PATCHED LevelChunk.setBlockState (Retargeted { sites: 1 })"
+//!   "[crussty-plugin] cmp432_inside2: ARMED (snapshot gate + secWrite invalidation live BEFORE gate)"
 //!   entity_compose: "stage inside_snap composed (Retargeted { sites: 1 })"
 //!   java: "inside_snap: ARMED ..." + "inside_snap: first gate HIT served"
 
@@ -101,9 +101,14 @@ pub fn wait_bridge_ready(timeout_ms: u64) -> bool {
 }
 
 fn lever_flag_matches() -> bool {
-    // STRICT eq: ТОЛЬКО мой флаг (пустой/чужой = ваниль бит-в-байт).
+    // TASK-432-B STRICT-OR: глубокая внутри-плоскость round-432 (cmp432_inside2)
+    // ИЛИ несущий round-430 (cmp430_inside, A/B ре-плей); пустой/чужой = ваниль
+    // бит-в-байт.
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim() == "cmp430_inside")
+        .map(|v| {
+            let v = v.trim();
+            v == "cmp432_inside2" || v == "cmp430_inside"
+        })
         .unwrap_or(false)
 }
 
@@ -120,7 +125,7 @@ pub fn enabled_pub() -> bool {
 pub fn register() {
     if !lever_flag_matches() {
         eprintln!(
-            "[crussty-plugin] cmp430_inside: dormant (lever_flag != cmp430_inside, vanilla inside lane)"
+            "[crussty-plugin] cmp432_inside2: dormant (lever_flag not in {{cmp432_inside2/cmp430_inside}}, vanilla inside lane)"
         );
         return;
     }
@@ -130,7 +135,7 @@ pub fn register() {
             let mut orig = t.orig.lock().unwrap_or_else(PoisonError::into_inner);
             if orig.is_none() {
                 eprintln!(
-                    "[crussty-plugin] cmp430_inside: pristine sighting {TARGET_CLASS} {} bytes (major {})",
+                    "[crussty-plugin] cmp432_inside2: pristine sighting {TARGET_CLASS} {} bytes (major {})",
                     bytes.len(),
                     crate::improved_noise::class_version(bytes).map(|(m, _)| m).unwrap_or(0)
                 );
@@ -161,13 +166,13 @@ pub fn activate() {
             }
             if std::time::Instant::now() > deadline {
                 eprintln!(
-                    "[crussty-plugin] cmp430_inside: {TARGET_CLASS} not loaded within 180s, hook stays dormant"
+                    "[crussty-plugin] cmp432_inside2: {TARGET_CLASS} not loaded within 180s, hook stays dormant"
                 );
                 return;
             }
             if std::time::Instant::now() > deadline - std::time::Duration::from_secs(170) {
                 eprintln!(
-                    "[crussty-plugin] cmp430_inside: forcing kernel load of {TARGET_CLASS}"
+                    "[crussty-plugin] cmp432_inside2: forcing kernel load of {TARGET_CLASS}"
                 );
                 crate::improved_noise::force_load_kernel_class(TARGET_CLASS);
             }
@@ -179,7 +184,7 @@ pub fn activate() {
             }));
         }
         if !crate::improved_noise::wait_for_boot() {
-            eprintln!("[crussty-plugin] cmp430_inside: boot marker not seen, hook stays dormant");
+            eprintln!("[crussty-plugin] cmp432_inside2: boot marker not seen, hook stays dormant");
             return;
         }
 
@@ -196,7 +201,7 @@ pub fn activate() {
                 .unwrap_or(0);
             if major > jvm_major {
                 eprintln!(
-                    "[crussty-plugin] cmp430_inside: {name} is class major {major} but JVM supports up to {jvm_major} — rebuild entityinside/ blobs; hook stays dormant"
+                    "[crussty-plugin] cmp432_inside2: {name} is class major {major} but JVM supports up to {jvm_major} — rebuild entityinside/ blobs; hook stays dormant"
                 );
                 return;
             }
@@ -206,7 +211,7 @@ pub fn activate() {
         // retargets + the native table resolve (structural, no JNI exec).
         if let Err(e) = classfile::inside_snap_resolution_closure(OPS_BYTES) {
             eprintln!(
-                "[crussty-plugin] cmp430_inside: RESOLUTION CLOSURE FAILED: {e} — hook stays dormant"
+                "[crussty-plugin] cmp432_inside2: RESOLUTION CLOSURE FAILED: {e} — hook stays dormant"
             );
             return;
         }
@@ -214,13 +219,13 @@ pub fn activate() {
         // Define both classes into the KERNEL loader + RegisterNatives.
         let Some(gops) = define_bridge() else {
             eprintln!(
-                "[crussty-plugin] cmp430_inside: bridge definition failed, hook stays dormant"
+                "[crussty-plugin] cmp432_inside2: bridge definition failed, hook stays dormant"
             );
             return;
         };
         BRIDGE_READY.store(true, Ordering::Release);
         eprintln!(
-            "[crussty-plugin] cmp430_inside: defined {OPS_CLASS} in kernel loader (+ Snap), natives registered"
+            "[crussty-plugin] cmp432_inside2: defined {OPS_CLASS} in kernel loader (+ Snap), natives registered"
         );
 
         // selfTest on the KEPT define_class ref (TASK-417-C find_class fix):
@@ -229,11 +234,11 @@ pub fn activate() {
             .unwrap_or(false);
         if !selftest {
             eprintln!(
-                "[crussty-plugin] cmp430_inside: selfTest FAILED — hook stays dormant (fail-closed)"
+                "[crussty-plugin] cmp432_inside2: selfTest FAILED — hook stays dormant (fail-closed)"
             );
             return;
         }
-        eprintln!("[crussty-plugin] cmp430_inside: selfTest=true BEFORE arm (probe + bpe4/bpe15 modulo-layout roundtrips)");
+        eprintln!("[crussty-plugin] cmp432_inside2: selfTest=true BEFORE arm (probe + bpe4/bpe15 modulo-layout roundtrips)");
 
         // ARM-ORDER (TASK-424-B stale-window fix): the java gate is armed LAST —
         // AFTER the secWrite invalidation retransform is LIVE. Arming first would
@@ -251,7 +256,7 @@ pub fn activate() {
             .clone()
         else {
             eprintln!(
-                "[crussty-plugin] cmp430_inside: no pristine bytes for {TARGET_CLASS} — DISARM (fail-closed: snapshots without invalidation go permanently stale)"
+                "[crussty-plugin] cmp432_inside2: no pristine bytes for {TARGET_CLASS} — DISARM (fail-closed: snapshots without invalidation go permanently stale)"
             );
             cplug_sdk::jni_util::with_attached(|env| call_disarm(env, gops));
             return;
@@ -266,14 +271,14 @@ pub fn activate() {
                     READY.store(true, Ordering::Release);
                     let rc = cplug_sdk::retransform_class(TARGET_CLASS);
                     eprintln!(
-                        "[crussty-plugin] cmp430_inside: PATCHED {TARGET_CLASS}.setBlockState -> InsideSnapOps.secWrite (Retargeted {{ sites: {sites} }}; {} -> {} bytes; retransform rc={rc})",
+                        "[crussty-plugin] cmp432_inside2: PATCHED {TARGET_CLASS}.setBlockState -> InsideSnapOps.secWrite (Retargeted {{ sites: {sites} }}; {} -> {} bytes; retransform rc={rc})",
                         orig.len(),
                         patched.len()
                     );
                 }
                 other => {
                     eprintln!(
-                        "[crussty-plugin] cmp430_inside: unexpected LevelChunk outcome ({other:?}) — DISARM (fail-closed: snapshots without invalidation go permanently stale)"
+                        "[crussty-plugin] cmp432_inside2: unexpected LevelChunk outcome ({other:?}) — DISARM (fail-closed: snapshots without invalidation go permanently stale)"
                     );
                     cplug_sdk::jni_util::with_attached(|env| call_disarm(env, gops));
                     return;
@@ -281,7 +286,7 @@ pub fn activate() {
             },
             Err(e) => {
                 eprintln!(
-                    "[crussty-plugin] cmp430_inside: LevelChunk patch rejected ({e}) — DISARM (fail-closed)"
+                    "[crussty-plugin] cmp432_inside2: LevelChunk patch rejected ({e}) — DISARM (fail-closed)"
                 );
                 cplug_sdk::jni_util::with_attached(|env| call_disarm(env, gops));
                 return;
@@ -294,12 +299,12 @@ pub fn activate() {
         let armed = cplug_sdk::jni_util::with_attached(|env| call_arm(env, gops)).unwrap_or(false);
         if !armed {
             eprintln!(
-                "[crussty-plugin] cmp430_inside: java arm() failed — gate stays vanilla (fail-closed)"
+                "[crussty-plugin] cmp432_inside2: java arm() failed — gate stays vanilla (fail-closed)"
             );
             return;
         }
         eprintln!(
-            "[crussty-plugin] cmp430_inside: ARMED (snapshot gate + secWrite invalidation live BEFORE gate; steady-state ≈0 collects)"
+            "[crussty-plugin] cmp432_inside2: ARMED (snapshot gate + secWrite invalidation live BEFORE gate; steady-state ≈0 collects)"
         );
     });
 }
@@ -333,7 +338,7 @@ fn define_bridge() -> Option<*mut c_void> {
         }
         let Some(c) = env.define_class(OPS_CLASS, gref, OPS_BYTES) else {
             crate::describe_exception(env);
-            eprintln!("[crussty-plugin] cmp430_inside: define_class({OPS_CLASS}) failed");
+            eprintln!("[crussty-plugin] cmp432_inside2: define_class({OPS_CLASS}) failed");
             return None;
         };
         let names = [
@@ -360,7 +365,7 @@ fn define_bridge() -> Option<*mut c_void> {
         if let Err(code) = reg {
             env.exception_clear();
             eprintln!(
-                "[crussty-plugin] cmp430_inside: register_natives failed (code {code}) — hook stays dormant"
+                "[crussty-plugin] cmp432_inside2: register_natives failed (code {code}) — hook stays dormant"
             );
             env.delete_local_ref(c);
             env.delete_local_ref(loader);
@@ -372,7 +377,7 @@ fn define_bridge() -> Option<*mut c_void> {
             env.delete_local_ref(s);
         } else {
             crate::describe_exception(env);
-            eprintln!("[crussty-plugin] cmp430_inside: define_class({SNAP_CLASS}) failed");
+            eprintln!("[crussty-plugin] cmp432_inside2: define_class({SNAP_CLASS}) failed");
             env.delete_local_ref(c);
             env.delete_local_ref(loader);
             env.delete_local_ref(class_cls);
@@ -395,13 +400,13 @@ fn selftest(env: &jvmti_bindings::env::JniEnv, gops: *mut c_void) -> bool {
     let cls = gops as jni::jclass;
     let Some(mid) = env.get_static_method_id(cls, "selfTest", "()Z") else {
         crate::clear_exception(env);
-        eprintln!("[crussty-plugin] cmp430_inside: selfTest resolution failed");
+        eprintln!("[crussty-plugin] cmp432_inside2: selfTest resolution failed");
         return false;
     };
     let rc = env.call_static_int_method(cls, mid, &[]);
     let had_exc = crate::clear_exception(env);
     if had_exc {
-        eprintln!("[crussty-plugin] cmp430_inside: selfTest threw — fail-closed");
+        eprintln!("[crussty-plugin] cmp432_inside2: selfTest threw — fail-closed");
         return false;
     }
     rc != 0
