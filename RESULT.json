@@ -4,7 +4,8 @@
  "branch": "round-433-b-inside3",
  "base": "round-433-ccefix @513c4835 = master d282985 + CCE-433 фикс (inside_snap collect палитра стёртого Object[] → element-level BlockState casts ×3 sites)",
  "lever": "cmp432_inside2",
- "run_id": null,
+ "run_id": 35902792520,
+ "run_started_utc": "2026-09-23T18:29:11Z",
  "tps_med": null,
  "delta_pair_pct": null,
  "lane_before": "inside_volatile 15.91% (431b-inside-l1 3.10@7177515; gate-слой ≈2.7% адресуемо); нога предшественника DELIVERY-FAIL: run 35894909390 NCDFE=473412, selfTest resolution failed → dormant, TPS 16.7 пустой мир",
@@ -27,6 +28,8 @@
   "step-1: cherry-pick 5bdb4d2 + fd0cf0b — конфликты только 2 бинарных блоба InsideSnapOps.class (HEAD=ccefix vs inside2), java auto-merge чисто (CCE-фикс ⊕ inside2) OK",
   "step-2: RC7-фикс портирован и применён к арму (lazy init=false ×2 call-sites + canon-комментарии) OK",
   "step-3: сборка — blobs rebuild (flat==nested OK) + check_blobs_sync ALL IN SYNC + javap selfTest НЕ-стаб + cargo check ok + cargo test 302/0 OK; target удалён",
-  "step-4: коммит + push (следующий); далее диспатч world-bench-parallel.yml ref=round-433-b-inside3, inputs канон-банк, lever cmp432_inside2/arg 1"
+  "step-4: push @5a789c4 (step-1) + @dispatch_433b (step-2) OK",
+  "step-5: диспатч 433b-inside3-l1 ref=round-433-b-inside3 @5a789c4c lever=cmp432_inside2 → run 35902792520 in_progress; round-433-* батч тика в полёте (anchors b-f + cce l1r4/l1r5/l2r4/l3r3 + wgen l7/l8) OK",
+  "step-6: полл + абсорб + вердикт pair-by-runner vs round-433-anchor* (Δ≤50k, band 6.0-9.5M, депресс-гейт ≥ −2%) — IN FLIGHT"
  ]
 }
