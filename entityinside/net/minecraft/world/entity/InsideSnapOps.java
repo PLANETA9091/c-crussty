@@ -213,12 +213,30 @@ public final class InsideSnapOps {
         Snap snap;
     }
 
-    // Method-ref indy (same delivery class as InsideBlockOps.MP_RING: indy
-    // bootstraps execute fine on kernel-loader-defined bridges — S7-135
-    // production precedent ×200+ legs). An anonymous nested class would need
-    // its own define_class entry — deliberately avoided.
-    static final ThreadLocal<Lane[]> LANE_TL =
-            ThreadLocal.withInitial(InsideSnapOps::newLanes);
+    // NO-INDY CLINIT (round-3 NCDFE root-cause, canon ×93-indy): the previous
+    // `ThreadLocal.withInitial(InsideSnapOps::newLanes)` was a method-ref INDY
+    // whose bootstrap ran during <clinit>; linking `InsideSnapOps::newLanes`
+    // resolves the descriptor type `[Lnet/minecraft/world/entity/InsideSnapOps$Lane;`
+    // — on the kernel-loader-defined bridge that resolution went through the
+    // kernel loader, and with no InsideSnapOps$Lane blob defined there the
+    // bootstrap threw NoClassDefFoundError INSIDE <clinit> (run 35902792520:
+    // ExceptionInInitializerError @ InsideSnapOps.java:220 -> the class was
+    // permanently erroneous -> NCDFE 473412 storm -> fail-closed empty world).
+    // Fix = plain `new ThreadLocal<>()` (java.base, no nested class, no indy):
+    // nothing Lane-typed is touched until the first per-thread lanes() use on
+    // a live server thread (post-Bootstrap), and $Lane is now also DEFINED
+    // into the kernel loader by the plugin (see src/inside_snap.rs LANE_CLASS).
+    static final ThreadLocal<Lane[]> LANE_TL = new ThreadLocal<>();
+
+    /** Per-thread lanes, created on first USE (never in <clinit>). */
+    private static Lane[] lanes() {
+        Lane[] a = LANE_TL.get();
+        if (a == null) {
+            a = newLanes();
+            LANE_TL.set(a);
+        }
+        return a;
+    }
 
     private static Lane[] newLanes() {
         Lane[] a = new Lane[LANES];
@@ -236,7 +254,7 @@ public final class InsideSnapOps {
         int x = pos.getX(), y = pos.getY(), z = pos.getZ();
         int cx = x >> 4, cz = z >> 4;
         long nowTick = level.getGameTime();
-        Lane[] lanes = LANE_TL.get();
+        Lane[] lanes = lanes();
         Lane lane = null;
         for (int i = 0; i < LANES; i++) {
             Lane l = lanes[i];
