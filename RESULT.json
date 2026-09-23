@@ -1,49 +1,33 @@
 {
-  "agent": "TASK-424-B",
-  "round": "round-424-b-inside",
-  "vector": "inside-плоскость Rust ⊕ queryplane юнион (закон 7), подсистема целиком (закон 6)",
-  "branch": "round-424-b-inside @ origin/master a8ef2fc",
-  "lever": "cmp424_inside (STRICT eq; пустой/чужой = ваниль бит-в-байт)",
-  "mandate": ">= +20% pair-stable min-of-3 (owner 2026-09-23); ниже = не финишировал",
+  "agent": "TASK-426-B",
+  "round": "ROUND-425",
+  "restart_of": "TASK-425-B (обрыв по таймауту)",
+  "vector": "inside-плоскость Rust ⊕ queryplane юнион (cmp424_inside), закон 6 подсистема целиком + закон 7 юнион",
+  "branch": "round-424-b-inside @ aa55277 (CI-GREEN, CI-127 fix: run_world3.sh восстановлен)",
+  "worktree": "/home/z/rounds/ROUND-423/agent-b (НЕ создавался новый, disk-law)",
+  "lever": "cmp424_inside",
+  "mandate": ">= +20% pair-stable min-of-3 (owner 2026-09-23); ниже = не финишировал; цикл закона 3",
+  "plan": [
+    "1. Диспатч 3 ноги l1/l2/l3: алиасы round-426-b-l1/l2/l3 <- round-424-b-inside @aa55277, lever_flag=cmp424_inside, inputs РОВНО банк",
+    "2. Параллельно: абсорб FRESH якорей-425 (runs 35833398327/35833416580/35833435422/35833453590 @790dc2f lever='') tag a425a/b/c/d",
+    "3. Полл sleep 120 + curl runs; нога ~25-35 мин",
+    "4. Абсорб ног absorb_round.py, вердикт двойной гейт TASK-426 (ARM+ЭФФЕКТ+Retargeted>0+grep AIOOBE=0+NCDFE=0+band 6.0-9.5M+PAIR d<=50k не-аутлаер+min-of-3+selfTest+javap flat==nested+raw-byte indy+polls threw=0+OKNO <=+-5пп)",
+    "5. d>=+20% -> GREEN (мерж НЕ делать, мейн смержит), push RESULT.json; d<+20% -> цикл закона 3: углубление юниона (shared collision-scans, block-collision slice, entity-inside callers) или композиция с round-423-a-gcfix 831394a / round-424-c-chunk chunksend"
+  ],
   "steps": [
     {
-      "step": "0-setup",
+      "step": "0-restart",
+      "time": "2026-09-23",
       "status": "done",
-      "note": "worktree round-423/agent-b переезда на ветку round-424-b-inside от origin/master a8ef2fc; унаследован незакоммиченный inside-snap каркас предыдущей сессии (round-423-b-inside @4789ca7): src/inside_snap.rs (687 строк) + InsideSnapOps.java (457 строк) + entity_compose stage 1c + classfile retargets + queryplane flagArmed union; флаг переименован cmp423_inside -> cmp424_inside (STRICT) во всех маркерах/гейтах; build_424b_blobs.sh"
-    },
-    {
-      "step": "0b-census-verify",
-      "status": "done",
-      "note": "независимый javap-цензор @kernel round-396-a: (1) lambda$checkInsideBlocks$2 descriptor (I;AtomicInteger;Z;Vec3;Vec3;LongSet;Z;AABB;StepBasedCollector;BlockPos;I)Z — ровно ОДИН invokevirtual Level.getBlockState(BlockPos)BlockState @bc29; (2) LevelChunk: ровно ОДИН LevelChunkSection.setBlockState(IIILBlockState)BlockState @bc73 внутри setBlockState(BlockPos,BlockState,I); (3) SimpleBitStorage.get(int): word=(magic*i)>>>20, shift=((magic*i)&0xFFFFF)*mulBits>>>20, value=(data[word]>>>shift)&mask = MODULO layout (word=i/valuesPerLong, shift=(i%valuesPerLong)*bits), straddle-ветки НЕТ — rust decode_section_modulo бит-в-байт"
-    },
-    {
-      "step": "0c-build-gates",
-      "status": "done",
-      "note": "blobs пересобраны javac --release 21 (kernel round-396-a + fastutil + paper-api + adventure; НЕ round-j2b): InsideSnapOps 10005B + Snap 537B + QueryPlaneOps 4939B; javap-гейт flat==nested x3 PASS; raw-byte indy-гейт чист; check_blobs_sync ALL IN SYNC; cargo check --lib OK; cargo test 294 passed / 0 failed (вкл. 4 новых inside_snap: modulo_matches_oracle_all_bpe, selftest_vectors_reproduced, zero_bpe_and_shape_guards, bpe5_tail_word_partial); CARGO_TARGET_DIR=/tmp/cargo-b424 удалён (диск-закон)"
-    },
-    {
-      "step": "0d-hardening",
-      "status": "done",
-      "note": "ARM-ORDER fix (stale-window): java gate ARMED теперь ПОСЛЕ live secWrite-retransform (window [ARMED..retransform) = forever-stale serve устранён; SNAPS пуст при ванильном гейте); spin-guard: Snap.fails>=3 -> permanent vanilla-miss (no collector livelock), reset on real write/clean publish; blobs rebuilt (InsideSnapOps 10111B + Snap 557B), ALL IN SYNC; cargo 294/0"
+      "note": "Рестарт TASK-425-B. Worktree /home/z/rounds/ROUND-423/agent-b на round-424-b-inside @aa55277 (совпадает с origin). Имплементация готова: inside_snap подсистема (per-section BlockState[4096] снапшоты, ОДИН bulk-JNI collect, event-driven secWrite invalidation, single-site gate lambda$checkInsideBlocks$2, бит-в-байт MODULO декодер) + queryplane wake OR + entity_compose stage 1c; javap census x3, blobs flat==nested, cargo 294/0. CI-127 фикс (run_world3.sh) в дереве aa55277 подтверждён git ls-tree. Диск-урок: explicit-path adds only ('git add -u' стейджит disk-law делиты)."
     }
   ],
-  "subsystem": {
-    "snapshots": "CHM<LevelChunkSection, Snap{gen, builtAtGen, states[4096] | single}>; HIT = palette-объект того же инстанса, что возвращает ванильный readPalette (moonrise$getPalette()[idx])",
-    "invalidation": "единственный сайт LevelChunkSection.setBlockState в LevelChunk.setBlockState -> InsideSnapOps.secWrite (делегат + ref-compare old!=new -> gen bump, seqlock); old==new = слова+палитта неизменны = 0 стоимости",
-    "gate": "единственный сайт Level.getBlockState в Entity.lambda$checkInsideBlocks$2 -> InsideSnapOps.snapGet(Level,BlockPos) (receiver-first 3B->3B); miss = ванильное продолжение level.getBlockState(pos)",
-    "collect": "ОДИН bulk-JNI на сбор (event-driven, PENDING-триггер, steady-state ~0): meta[k*3]={bpe,off,len} + flat words -> rust MODULO-декод 4096 индексов/секция -> java скэттер BlockState[4096] из снятой палитты + gen re-verify (seqlock)",
-    "caps": "CAP 2^15 секций, FULL_CAP 2^13 полных массивов (~262MB worst), MAX_PER_COLLECT 64; ERR_STRUCT -> перманентный DISARM (fail-closed)",
-    "union_law7": "cmp424_inside будит queryplane (src/queryplane.rs lever OR + QueryPlaneOps.flagArmed) = entity-query слой (Level.getEntitiesOfClass players fast path + hard-colliding empty fast path + ChunkEntitySlices addEntity probe) — общий носитель, один флаг, без двойного хука Entity (inside-гейт через entity_compose stage 1c, ОДИН Entity-hook дисциплина S7-162)"
+  "legs": {
+    "l1": {"run_id": 35833848852, "alias": "round-426-b-l1", "sha": "aa55277", "status": "in_progress"},
+    "l2": {"run_id": 35833867528, "alias": "round-426-b-l2", "sha": "aa55277", "status": "in_progress"},
+    "l3": {"run_id": 35833884778, "alias": "round-426-b-l3", "sha": "aa55277", "status": "in_progress"}
   },
-  "legs": [],
-  "anchor_refs": "round-424-anchor{a,b,c} runs 35825614835/35825628919/35825641995 @a8ef2fc lever='' (fresh якоря; если абсорбов нет — absorb_round.py tag anchor424a/b/c)",
-  "bench_plan": "3 ноги l1/l2/l3 world-bench-parallel.yml, алиасы round-424-b-l1/l2/l3 <- round-424-b-inside, lever_flag=cmp424_inside, inputs РОВНО банк (radius 640, seconds 300, fake_players 4, population 150000 seed 42, xmx 10G, band 6.0-9.5M, ...)",
-  "verdict": "IN_PROGRESS",
-  "evidence": [
-    "javap census x3 verified independently vs kernel jar",
-    "cargo 294/0, blobs in sync, flat==nested x3",
-    "STRICT-гейт: пустой флаг = бридж не определяется, хуки не регистрируются"
-  ],
-  "what": "next: commit+push, dispatch l1/l2/l3, poll ~30min, absorb + pair-vs-fresh-anchors verdict; если Δ<+20% — закон-3 цикл: углубление юниона (shared collision-scans/block-collision slice) или композиция с round-423-a-gcfix 831394a",
-  "updated": "step-0d"
+  "anchors_425": {"runs": [35833398327, 35833416580, 35833435422, 35833453590], "sha": "790dc2f", "lever": "", "absorbed": false},
+  "status": "LEGS RUNNING + ABSORBING ANCHORS-425",
+  "verdict": "PENDING"
 }
