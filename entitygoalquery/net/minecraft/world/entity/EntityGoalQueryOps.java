@@ -116,7 +116,7 @@ public final class EntityGoalQueryOps {
                 // TASK-424-A: GC-ревизия brain3 (STRICT OR).
                 || f.trim().equals("cmp423_brain3")
                 // TASK-426-A: SoA-feed carrier (STRICT OR).
-                || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside"));
+                || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside") || f.trim().equals("cmp432_inside2"));
     }
 
     /** TASK-411-C (k4soa): K4-режим (маркировка EFFECT-строк). */
@@ -158,6 +158,7 @@ public final class EntityGoalQueryOps {
                 : t.equals("cmp423_brain3") ? "cmp423_brain3"
                 : t.equals("cmp424_mobfeed") ? "cmp424_mobfeed"
                 : t.equals("cmp430_inside") ? "cmp430_inside"
+                : t.equals("cmp432_inside2") ? "cmp432_inside2"
                 : t.equals("cmp421_brain") ? "cmp421_brain"
                 : t.equals("cmp412_eqsnapv3") ? "cmp412_eqsnapv3" // TASK-412-C: точная метка.
                 : t.equals("cmp411_eqsnap") ? "cmp411_eqsnap"
