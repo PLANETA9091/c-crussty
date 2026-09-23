@@ -20,6 +20,11 @@
       "step": "0c-build-gates",
       "status": "done",
       "note": "blobs пересобраны javac --release 21 (kernel round-396-a + fastutil + paper-api + adventure; НЕ round-j2b): InsideSnapOps 10005B + Snap 537B + QueryPlaneOps 4939B; javap-гейт flat==nested x3 PASS; raw-byte indy-гейт чист; check_blobs_sync ALL IN SYNC; cargo check --lib OK; cargo test 294 passed / 0 failed (вкл. 4 новых inside_snap: modulo_matches_oracle_all_bpe, selftest_vectors_reproduced, zero_bpe_and_shape_guards, bpe5_tail_word_partial); CARGO_TARGET_DIR=/tmp/cargo-b424 удалён (диск-закон)"
+    },
+    {
+      "step": "0d-hardening",
+      "status": "done",
+      "note": "ARM-ORDER fix (stale-window): java gate ARMED теперь ПОСЛЕ live secWrite-retransform (window [ARMED..retransform) = forever-stale serve устранён; SNAPS пуст при ванильном гейте); spin-guard: Snap.fails>=3 -> permanent vanilla-miss (no collector livelock), reset on real write/clean publish; blobs rebuilt (InsideSnapOps 10111B + Snap 557B), ALL IN SYNC; cargo 294/0"
     }
   ],
   "subsystem": {
@@ -29,7 +34,7 @@
     "collect": "ОДИН bulk-JNI на сбор (event-driven, PENDING-триггер, steady-state ~0): meta[k*3]={bpe,off,len} + flat words -> rust MODULO-декод 4096 индексов/секция -> java скэттер BlockState[4096] из снятой палитты + gen re-verify (seqlock)",
     "caps": "CAP 2^15 секций, FULL_CAP 2^13 полных массивов (~262MB worst), MAX_PER_COLLECT 64; ERR_STRUCT -> перманентный DISARM (fail-closed)",
     "union_law7": "cmp424_inside будит queryplane (src/queryplane.rs lever OR + QueryPlaneOps.flagArmed) = entity-query слой (Level.getEntitiesOfClass players fast path + hard-colliding empty fast path + ChunkEntitySlices addEntity probe) — общий носитель, один флаг, без двойного хука Entity (inside-гейт через entity_compose stage 1c, ОДИН Entity-hook дисциплина S7-162)"
-    },
+  },
   "legs": [],
   "anchor_refs": "round-424-anchor{a,b,c} runs 35825614835/35825628919/35825641995 @a8ef2fc lever='' (fresh якоря; если абсорбов нет — absorb_round.py tag anchor424a/b/c)",
   "bench_plan": "3 ноги l1/l2/l3 world-bench-parallel.yml, алиасы round-424-b-l1/l2/l3 <- round-424-b-inside, lever_flag=cmp424_inside, inputs РОВНО банк (radius 640, seconds 300, fake_players 4, population 150000 seed 42, xmx 10G, band 6.0-9.5M, ...)",
@@ -40,5 +45,5 @@
     "STRICT-гейт: пустой флаг = бридж не определяется, хуки не регистрируются"
   ],
   "what": "next: commit+push, dispatch l1/l2/l3, poll ~30min, absorb + pair-vs-fresh-anchors verdict; если Δ<+20% — закон-3 цикл: углубление юниона (shared collision-scans/block-collision slice) или композиция с round-423-a-gcfix 831394a",
-  "updated": "step-0c"
+  "updated": "step-0d"
 }

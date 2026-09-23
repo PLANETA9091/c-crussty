@@ -39,11 +39,11 @@
 //! cmp424_inside (пустой = ваниль бит-в-байт: бридж не определяется, хуки не
 //! регистрируются).
 //!
-//! ARM markers (server stdout):
+//! ARM markers (server stdout; порядок = stale-window контракт):
 //!   "[crussty-plugin] cmp424_inside: defined InsideSnapOps in kernel loader"
 //!   "[crussty-plugin] cmp424_inside: selfTest=true BEFORE arm"
-//!   "[crussty-plugin] cmp424_inside: ARMED (snapshot gate + secWrite invalidation)"
 //!   "[crussty-plugin] cmp424_inside: PATCHED LevelChunk.setBlockState (Retargeted { sites: 1 })"
+//!   "[crussty-plugin] cmp424_inside: ARMED (snapshot gate + secWrite invalidation live BEFORE gate)"
 //!   entity_compose: "stage inside_snap composed (Retargeted { sites: 1 })"
 //!   java: "inside_snap: ARMED ..." + "inside_snap: first gate HIT served"
 
@@ -235,18 +235,13 @@ pub fn activate() {
         }
         eprintln!("[crussty-plugin] cmp424_inside: selfTest=true BEFORE arm (probe + bpe4/bpe15 modulo-layout roundtrips)");
 
-        // ARM the java gate LAST-ish (define+selfTest behind): flip InsideSnapOps.ARMED.
-        let armed = cplug_sdk::jni_util::with_attached(|env| call_arm(env, gops)).unwrap_or(false);
-        if !armed {
-            eprintln!(
-                "[crussty-plugin] cmp424_inside: java arm() failed — gate stays vanilla (fail-closed)"
-            );
-            return;
-        }
-        eprintln!(
-            "[crussty-plugin] cmp424_inside: ARMED (snapshot gate + secWrite invalidation; steady-state ≈0 collects)"
-        );
-
+        // ARM-ORDER (TASK-424-B stale-window fix): the java gate is armed LAST —
+        // AFTER the secWrite invalidation retransform is LIVE. Arming first would
+        // open an [ARMED .. LevelChunk-retransform) window where a section could
+        // be published and then written WITHOUT a gen bump (patch not live yet)
+        // = forever-stale serve. With this order no snapshot can exist before
+        // invalidation is live (serve() registers only after ARMED, so SNAPS is
+        // empty while the gate is still vanilla).
         // LevelChunk patch from the pristine stash (secWrite invalidation site)
         // and the single retransform. Entity gate composes via entity_compose.
         let Some(orig) = target()
@@ -281,6 +276,7 @@ pub fn activate() {
                         "[crussty-plugin] cmp424_inside: unexpected LevelChunk outcome ({other:?}) — DISARM (fail-closed: snapshots without invalidation go permanently stale)"
                     );
                     cplug_sdk::jni_util::with_attached(|env| call_disarm(env, gops));
+                    return;
                 }
             },
             Err(e) => {
@@ -288,8 +284,23 @@ pub fn activate() {
                     "[crussty-plugin] cmp424_inside: LevelChunk patch rejected ({e}) — DISARM (fail-closed)"
                 );
                 cplug_sdk::jni_util::with_attached(|env| call_disarm(env, gops));
+                return;
             }
         }
+
+        // Invalidation is LIVE (retransform returned). NOW flip the gate: the
+        // entity_compose stage may have already retargeted the Entity lambda —
+        // snapGet sees ARMED=false and falls through to vanilla until here.
+        let armed = cplug_sdk::jni_util::with_attached(|env| call_arm(env, gops)).unwrap_or(false);
+        if !armed {
+            eprintln!(
+                "[crussty-plugin] cmp424_inside: java arm() failed — gate stays vanilla (fail-closed)"
+            );
+            return;
+        }
+        eprintln!(
+            "[crussty-plugin] cmp424_inside: ARMED (snapshot gate + secWrite invalidation live BEFORE gate; steady-state ≈0 collects)"
+        );
     });
 }
 

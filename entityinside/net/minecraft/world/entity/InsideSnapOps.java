@@ -117,6 +117,7 @@ public final class InsideSnapOps {
         volatile BlockState[] states; // full mode (null in single mode)
         volatile BlockState single;   // single mode: one-object serve (bpe==0)
         volatile boolean pending;     // needs (re)build
+        volatile int fails;           // consecutive publish failures (spin guard)
     }
 
     static final ConcurrentHashMap<LevelChunkSection, Snap> SNAPS = new ConcurrentHashMap<>();
@@ -214,6 +215,7 @@ public final class InsideSnapOps {
             if (s != null) {
                 s.gen++;          // volatile bump AFTER the write (seqlock discipline)
                 s.pending = true;
+                s.fails = 0;      // real write happened: a retry is meaningful again
                 STAT_INVALIDATIONS.incrementAndGet();
                 PENDING.incrementAndGet();
             }
@@ -342,7 +344,10 @@ public final class InsideSnapOps {
             }
             if (bpe == 0) {
                 BlockState v = ((BlockState[]) PALB[k])[0];
-                if (v == null) { s.pending = true; leftover++; continue; }
+                if (v == null) {
+                    if (++s.fails >= 3) { s.pending = false; } else { s.pending = true; leftover++; }
+                    continue;
+                }
                 s.single = v;      // publish content, then stamp (reader order: content -> gens)
                 if (s.states != null) { // full -> single downgrade: release a full slot
                     s.states = null;
@@ -363,8 +368,16 @@ public final class InsideSnapOps {
                     arr[i] = v;
                 }
                 if (bad) {
-                    s.pending = true;
-                    leftover++;
+                    // torn read (in-flight write) => retry; a STRUCTURALLY bad
+                    // section (palette invariant violation) must NOT spin the
+                    // collector: after 3 failed sweeps give up permanently
+                    // (vanilla miss forever) until a real write resets fails.
+                    if (++s.fails >= 3) {
+                        s.pending = false;
+                    } else {
+                        s.pending = true;
+                        leftover++;
+                    }
                     continue;
                 }
                 if (FULL_COUNT.get() >= FULL_CAP && s.states == null) {
@@ -379,6 +392,7 @@ public final class InsideSnapOps {
                 s.builtAtGen = g;
             }
             s.pending = false;
+            s.fails = 0; // clean publish: reset the spin guard
             if (s.gen != g) { // in-flight invalidation AFTER publish: disarm stamp
                 s.builtAtGen = -1L;
                 s.pending = true;
