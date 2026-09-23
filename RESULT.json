@@ -5,10 +5,10 @@
   "run_id": "pending dispatch",
   "tps_med": null,
   "delta_pair_pct": null,
-  "lane": "research: serve() self 1.9% = NEW top-6 leaf on 434b legs (snap plane live) — per-visit overhead (8-lane scan + 2 itable getSectionIndex chain + hasOnlyAir + LongAdder per-HIT contention) now exceeds what it saves; anchor o2 tree: checkInsideBlocks subtree 10.83% (lambda body: collidedWithFluid 1.69/fluid-AABB 1.02 [other lever's lane], advanceStep 1.08, Level.getBlockState 0.90 [snap target], LongOpenHashSet.add 0.50; gate memo 1.61) — V3 targets the serve fastpath itself",
+  "lane": "implemented: SERVE-V3 (cmp435_inside3 STRICT-OR over cmp432_inside2) — java V3 lean fastpath (L0 direct lane + copy-on-match, inline si (y>>4)-minSecY with runtime 3-point parity probe + itable fallback, per-claim air-mask, per-thread sampled hits lanes[0].hitSub->LongAdder/64, V2 byte-for-byte control) + rust v3() flip pre-selfTest fail-closed + resolution closure +v3 ()V + STRICT-OR lever lists (mobs_manager x3, mobs_grid, MobPushOps/GoalOps/QueryPlaneOps + eqsnap label)",
   "ram": "n/a (bench server xmx 10G)",
   "parity": "pending bench",
-  "verdict": "IN_PROGRESS: research done, implementing cmp435_inside3 STRICT-OR over cmp432_inside2",
+  "verdict": "IN_PROGRESS: V3 implemented, gates green, dispatching 2 legs + 1 anchor",
   "evidence": [
     "profiles compared: anchor o2 (master, 117279 samples) vs 434b-ins l1/l2/l3 legs (cmp432_inside2 live): PalettedContainer.get 3.8->3.3, readPalette 1.0->0.7, getBlockStateFinal 0.8-><0.6 BUT InsideSnapOps.serve 0->1.9 self = net cost shift",
     "inside_volatile lane definition: regex checkInsideBlocks|collidedWithShapeMovingFrom (absorb_round.py:19); split: checkInside subtree 10.83%, collidedWithShapeMovingFrom subtree 0.64% (o2)",
@@ -16,7 +16,8 @@
     "javap proof: SectionPos.blockToSectionCoord(I)=i>>4 (ishr only); LevelHeightAccessor.getSectionIndex(y)=(y>>4)-getMinSectionY() => inline formula with cached minSecY is byte-equivalent; runtime per-chunk 3-point parity probe with itable fallback (fail-open)",
     "hasOnlyAir=nonEmptyBlockCount==0 (plain short read) => per-claim air-mask (long) kills per-visit call",
     "STAT_HITS LongAdder per-HIT on 4 region workers = striped-cell contention on hottest path => per-thread sampled bump (exact within 63/thread)",
-    "no-new-nested-class discipline: L0 = lanes[LANES] slot (LANES_TOTAL=9, claims masked to 8), no new ThreadLocal.withInitial, no indy in clinit (build gate strict)"
+    "no-new-nested-class discipline: L0 = lanes[LANES] slot (LANES_TOTAL=9, claims masked to 8), no new ThreadLocal.withInitial, no indy in clinit (build gate strict)",
+    "build_432b_blobs OK (InsideSnapOps 15063, $Lane 859, $Snap 557; clinit-indy STRICT gate PASS; flat==nested OK); check_blobs_sync ALL IN SYNC; javap: v3/serveV3/serveV2/hitV3/buildAirMask/copyLane present; cargo check --lib ok; cargo test --lib inside_snap 4/4 (299 filtered)"
   ],
   "what": "implementing V3 serve (L0 lanes + inline si + air-mask + sampled stats) behind cmp435_inside3; legs round-435b-ins-n base=round-435-b-ins5"
 }

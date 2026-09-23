@@ -88,6 +88,39 @@ import net.minecraft.world.level.block.state.BlockState;
  *      so the memo-verify/replay block reads route through this plane too
  *      (one snapshot store, ONE bulk-JNI collect, two consumers).
  *
+ * TASK-435-B DEEPENING-4 (lever cmp435_inside3, STRICT-OR cmp432_inside2):
+ *   9. SERVE-V3 LEAN FASTPATH (research/gc-recon-2026-09-19/ROUND435_B_RESEARCH.md):
+ *      with the plane LIVE the serve() self-time is the NEW top-6 leaf (~1.9%
+ *      on the round-434b legs; call volume is driven by the inside_cache
+ *      HIT-verify of ~107k static items — same-chunk/same-section bursts).
+ *      Per-visit V3 hit path replaces the 8-lane scan + 2-itable
+ *      getSectionIndex chain + hasOnlyAir call + per-HIT LongAdder with:
+ *      a) L0 DIRECT LANE: lanes[LANES] slot checked first (5 compares);
+ *         8-slot round-robin stays as fallback with copy-on-match into L0
+ *         (chunk switches cost one copy, bursts cost one compare);
+ *      b) INLINE SECTION-INDEX: lane.minSecY cached at claim —
+ *         si = (y>>4) - minSecY, javap-equivalent to the kernel chain
+ *         (SectionPos.blockToSectionCoord(I) = i>>4 ishr-only;
+ *         getSectionIndex(y) = (y>>4) - getMinSectionY()); RUNTIME PARITY
+ *         PROBE per claim (3 sampled y against the live chunk) with itable
+ *         fallback on any mismatch (fail-open, median-exact);
+ *      c) AIR-MASK: per-claim long mask of null/hasOnlyAir sections
+ *         (hasOnlyAir = nonEmptyBlockCount==0, plain short read) — the
+ *         per-visit call collapses to one bit test (mask only when
+ *         secs.length <= 64; conservative direct checks otherwise);
+ *      d) SAMPLED PER-THREAD HITS: STAT_HITS LongAdder (striped cells, 4
+ *         region workers) on EVERY hit was cache-line contention on the
+ *         hottest path — V3 counts per-thread in lanes[0].hitSub (plain
+ *         int, zero sharing) and adds to the LongAdder every 64 (exact
+ *         within 63/thread; hits() is diagnostic, absorb greps the
+ *         "first gate HIT served" marker which is unchanged).
+ *      V2 stays byte-for-byte (serve() dispatches V3 ? serveV3 : serveV2):
+ *      cmp432_inside2/cmp430_inside legs are the untouched control.
+ *      PARITY: same BlockState objects, same null/miss branches, same
+ *      seqlock and stale-miss continuation; rust flips V3 (static v3())
+ *      ONLY under lever cmp435_inside3 BEFORE selfTest/arm (fail-closed
+ *      resolution: v3() unresolvable => dormant).
+ *
  * INJECTS-ONLY: class defined into the kernel loader by src/inside_snap.rs
  * (register_natives for snapCollect; ARMED flipped by rust after selfTest).
  */
@@ -130,6 +163,17 @@ public final class InsideSnapOps {
 
     public static boolean armed() {
         return ARMED;
+    }
+
+    /**
+     * TASK-435-B V3 arm (called by rust ONLY under lever cmp435_inside3,
+     * BEFORE selfTest/arm — fail-closed: if rust cannot resolve this static
+     * the whole plane stays dormant rather than silently running V2).
+     */
+    private static volatile boolean V3 = false;
+
+    public static void v3() {
+        V3 = true;
     }
 
     static final java.util.logging.Logger LOG =
@@ -183,7 +227,11 @@ public final class InsideSnapOps {
             try {
                 BlockState hit = serve(level, pos);
                 if (hit != null) {
-                    STAT_HITS.increment();
+                    if (!V3) {
+                        // V3 counts per-thread sampled (see lanes[0].hitSub);
+                        // V2 keeps the legacy per-hit LongAdder bump.
+                        STAT_HITS.increment();
+                    }
                     if (!FIRST_HIT_LOGGED) {
                         FIRST_HIT_LOGGED = true;
                         LOG.info("inside_snap: first gate HIT served (palette[" + ((pos.getY() & 15) << 8 | (pos.getZ() & 15) << 4 | (pos.getX() & 15)) + "] from fresh section snapshot)");
@@ -201,6 +249,7 @@ public final class InsideSnapOps {
     // TASK-432-B SERVE FASTPATH — per-thread, per-tick warm lanes
     // ------------------------------------------------------------------
 
+    /** Claimable lanes (round-robin). TASK-435-B: slot LANES is the L0 direct lane. */
     static final int LANES = 8;
 
     static final class Lane {
@@ -211,6 +260,14 @@ public final class InsideSnapOps {
         LevelChunkSection[] secs;
         LevelChunkSection sec;     // L2: sec-ref -> snap (sec->snap is immutable)
         Snap snap;
+        // TASK-435-B V3 extras (never read by V2): inline section-index base
+        // + runtime-probed ok-flag + per-claim air-mask + per-thread hit
+        // counter (sampled into STAT_HITS; lives in slot 0, never copied).
+        int minSecY;
+        boolean inlineOk;
+        boolean maskOk;
+        long airMask;
+        int hitSub;
     }
 
     // NO-INDY CLINIT (round-3 NCDFE root-cause, canon ×93-indy): the previous
@@ -239,8 +296,9 @@ public final class InsideSnapOps {
     }
 
     private static Lane[] newLanes() {
-        Lane[] a = new Lane[LANES];
-        for (int i = 0; i < LANES; i++) {
+        // TASK-435-B: LANES claimable + 1 L0 direct slot (index LANES).
+        Lane[] a = new Lane[LANES + 1];
+        for (int i = 0; i < LANES + 1; i++) {
             a[i] = new Lane();
         }
         return a;
@@ -249,8 +307,155 @@ public final class InsideSnapOps {
     /** Shared round-robin for the claim-on-miss slot (misses are the slow path). */
     static final AtomicInteger LANE_CURSOR = new AtomicInteger();
 
-    /** Fresh-hit serve; null => miss (caller falls through to vanilla). */
+    /** Fresh-hit serve; null => miss (caller falls through to vanilla).
+     *  TASK-435-B: V3 dispatch — V2 is the byte-for-byte control path. */
     static BlockState serve(Level level, BlockPos pos) {
+        return V3 ? serveV3(level, pos) : serveV2(level, pos);
+    }
+
+    /**
+     * TASK-435-B V3 lean fastpath (cmp435_inside3). Bit-exact contract of
+     * serveV2: identical BlockState objects, identical null/miss branches,
+     * identical seqlock + stale-miss continuation; only the per-visit
+     * CONSTANT overhead is restructured (research ROUND435_B_RESEARCH.md).
+     */
+    static BlockState serveV3(Level level, BlockPos pos) {
+        final int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+        final int cx = x >> 4, cz = z >> 4;
+        final long nowTick = level.getGameTime();
+        final Lane[] lanes = lanes();
+        final Lane l0 = lanes[LANES]; // L0 direct slot — never claimed
+        ChunkAccess ch = l0.ch;
+        LevelChunkSection[] secs = l0.secs;
+        if (!(l0.tick == nowTick && l0.level == level && l0.cx == cx && l0.cz == cz)) {
+            Lane hit = null;
+            for (int i = 0; i < LANES; i++) {
+                Lane l = lanes[i];
+                if (l.tick == nowTick && l.level == level && l.cx == cx && l.cz == cz) {
+                    hit = l;
+                    break;
+                }
+            }
+            if (hit != null) {
+                copyLane(hit, l0); // copy-on-match: bursts pay 5 compares again
+            } else {
+                ch = level.getChunkSource().getChunk(cx, cz, ChunkStatus.FULL, false);
+                if (ch == null) {
+                    return null; // not loaded: vanilla owns the load semantics
+                }
+                secs = ch.getSections();
+                Lane l = lanes[(LANE_CURSOR.getAndIncrement() & (LANES - 1))];
+                l.tick = nowTick;
+                l.level = level;
+                l.cx = cx;
+                l.cz = cz;
+                l.ch = ch;
+                l.secs = secs;
+                l.sec = null;
+                l.snap = null;
+                // V3 claim extras. Inline-si parity probe (fail-open): the
+                // kernel chain is javap-proven ((y>>4) - getMinSectionY()),
+                // the probe re-proves it per-chunk against the LIVE receiver.
+                final LevelHeightAccessor ha = (LevelHeightAccessor) ch;
+                final int minSecY = ha.getMinSectionY();
+                l.minSecY = minSecY;
+                l.inlineOk = ha.getSectionIndex(0) == (0 >> 4) - minSecY
+                        && ha.getSectionIndex(17) == (17 >> 4) - minSecY
+                        && ha.getSectionIndex(-17) == ((-17) >> 4) - minSecY;
+                l.maskOk = secs.length <= 64;
+                l.airMask = l.maskOk ? buildAirMask(secs) : 0L;
+                copyLane(l, l0); // L0 mirrors the fresh claim
+                ch = l0.ch;
+                secs = l0.secs;
+            }
+        }
+        final int si = l0.inlineOk ? ((y >> 4) - l0.minSecY)
+                : ((LevelHeightAccessor) ch).getSectionIndex(y);
+        if (si < 0 || si >= secs.length) {
+            return null; // outside storage: vanilla (VOID_AIR branch)
+        }
+        if (l0.maskOk) {
+            if (((l0.airMask >> si) & 1L) != 0L) {
+                return null; // sec == null || hasOnlyAir(): vanilla AIR branch
+            }
+        } else {
+            LevelChunkSection pre = secs[si];
+            if (pre == null || pre.hasOnlyAir()) {
+                return null;
+            }
+        }
+        final LevelChunkSection sec = secs[si];
+        Snap s;
+        if (l0.sec == sec && l0.snap != null) {
+            s = l0.snap; // sec->snap mapping is immutable (SNAPS never evicts)
+        } else {
+            s = SNAPS.get(sec);
+            if (s == null) {
+                register(sec);
+                maybeCollect();
+                return null;
+            }
+            l0.sec = sec;
+            l0.snap = s;
+        }
+        final int packed = ((y & 15) << 8) | ((z & 15) << 4) | (x & 15);
+        BlockState[] a = s.states;
+        if (a != null && s.builtAtGen == s.gen) {
+            return hitV3(lanes, a[packed]);
+        }
+        BlockState sg = s.single;
+        if (sg != null && s.builtAtGen == s.gen) {
+            return hitV3(lanes, sg);
+        }
+        if (s.pending) {
+            maybeCollect();
+        }
+        // STALE-MISS: bit-exact continuation of LevelChunk.getBlockStateFinal's
+        // non-air branch from the section resolved above (V2 semantics).
+        return sec.states.get(packed);
+    }
+
+    /** Per-thread sampled hit accounting (V3): exact within 63/thread. */
+    private static BlockState hitV3(Lane[] lanes, BlockState st) {
+        if (st != null) {
+            Lane c = lanes[0]; // slot 0 doubles as the per-thread stats holder
+            if (++c.hitSub == 64) {
+                c.hitSub = 0;
+                STAT_HITS.add(64);
+            }
+        }
+        return st;
+    }
+
+    /** Per-claim air-mask: bit si set <=> secs[si] == null || hasOnlyAir(). */
+    private static long buildAirMask(LevelChunkSection[] secs) {
+        long mask = 0L;
+        for (int i = 0; i < secs.length && i < 64; i++) {
+            LevelChunkSection sc = secs[i];
+            if (sc == null || sc.hasOnlyAir()) {
+                mask |= (1L << i);
+            }
+        }
+        return mask;
+    }
+
+    private static void copyLane(Lane src, Lane dst) {
+        dst.tick = src.tick;
+        dst.level = src.level;
+        dst.cx = src.cx;
+        dst.cz = src.cz;
+        dst.ch = src.ch;
+        dst.secs = src.secs;
+        dst.sec = src.sec;
+        dst.snap = src.snap;
+        dst.minSecY = src.minSecY;
+        dst.inlineOk = src.inlineOk;
+        dst.maskOk = src.maskOk;
+        dst.airMask = src.airMask;
+        // dst.hitSub NOT copied: slot 0 is the per-thread stats holder
+    }
+
+    static BlockState serveV2(Level level, BlockPos pos) {
         int x = pos.getX(), y = pos.getY(), z = pos.getZ();
         int cx = x >> 4, cz = z >> 4;
         long nowTick = level.getGameTime();

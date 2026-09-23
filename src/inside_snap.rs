@@ -114,13 +114,22 @@ pub fn wait_bridge_ready(timeout_ms: u64) -> bool {
 
 fn lever_flag_matches() -> bool {
     // TASK-432-B STRICT-OR: глубокая внутри-плоскость round-432 (cmp432_inside2)
-    // ИЛИ несущий round-430 (cmp430_inside, A/B ре-плей); пустой/чужой = ваниль
-    // бит-в-байт.
+    // ИЛИ несущий round-430 (cmp430_inside, A/B ре-плей); TASK-435-B STRICT-OR:
+    // round-435 SERVE-V3 (cmp435_inside3) над cmp432_inside2. Пустой/чужой =
+    // ваниль бит-в-байт.
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let v = v.trim();
-            v == "cmp432_inside2" || v == "cmp430_inside"
+            v == "cmp432_inside2" || v == "cmp430_inside" || v == "cmp435_inside3"
         })
+        .unwrap_or(false)
+}
+
+/// TASK-435-B: SERVE-V3 requested (STRICT-OR layer: cmp435_inside3 implies the
+/// full cmp432_inside2 plane; V3 is the lean-serve deepening on top).
+fn v3_requested() -> bool {
+    std::env::var("CRUSSTY_LEVER_FLAG")
+        .map(|v| v.trim() == "cmp435_inside3")
         .unwrap_or(false)
 }
 
@@ -249,6 +258,21 @@ pub fn activate() {
         eprintln!(
             "[crussty-plugin] cmp432_inside2: defined {OPS_CLASS} in kernel loader (+ Snap + Lane), natives registered"
         );
+
+        // TASK-435-B V3 flip (STRICT-OR cmp435_inside3): BEFORE selfTest/arm;
+        // fail-closed — an unresolvable v3() static keeps the whole plane
+        // dormant rather than silently serving the V2 control path.
+        if v3_requested() {
+            let v3ok = cplug_sdk::jni_util::with_attached(|env| call_v3(env, gops))
+                .unwrap_or(false);
+            if !v3ok {
+                eprintln!(
+                    "[crussty-plugin] cmp435_inside3: v3() static unresolvable — hook stays dormant (fail-closed)"
+                );
+                return;
+            }
+            eprintln!("[crussty-plugin] cmp435_inside3: V3-serve enabled (L0 lane + inline-si parity-probed + air-mask + sampled per-thread hits)");
+        }
 
         // selfTest on the KEPT define_class ref (TASK-417-C find_class fix):
         // any Throwable => fail-closed dormant (never arm).
@@ -460,6 +484,20 @@ fn selftest(env: &jvmti_bindings::env::JniEnv, gops: *mut c_void) -> bool {
 fn call_arm(env: &jvmti_bindings::env::JniEnv, gops: *mut c_void) -> bool {
     let cls = gops as jni::jclass;
     let Some(mid) = env.get_static_method_id(cls, "arm", "()V") else {
+        crate::clear_exception(env);
+        return false;
+    };
+    env.call_static_void_method(cls, mid, &[]);
+    let had_exc = crate::clear_exception(env);
+    !had_exc
+}
+
+/// TASK-435-B: flip the java V3 serve (cmp435_inside3 STRICT-OR). Called AFTER
+/// define_bridge (class resolvable) and BEFORE selfTest/arm so the very first
+/// served position already runs the lean fastpath.
+fn call_v3(env: &jvmti_bindings::env::JniEnv, gops: *mut c_void) -> bool {
+    let cls = gops as jni::jclass;
+    let Some(mid) = env.get_static_method_id(cls, "v3", "()V") else {
         crate::clear_exception(env);
         return false;
     };

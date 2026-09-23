@@ -5351,6 +5351,15 @@ pub fn inside_snap_resolution_closure(ops: &[u8]) -> Result<(), String> {
                 "arm",
                 "()V",
             ),
+            // TASK-435-B: V3 serve flip (cmp435_inside3 STRICT-OR); called
+            // after define, before selfTest/arm — the closure structurally
+            // proves the blob declares it.
+            (
+                "",
+                "",
+                "v3",
+                "()V",
+            ),
         ],
     )
 }
