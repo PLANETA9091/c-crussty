@@ -1,12 +1,22 @@
 {
-  "agent": "TASK-421-A (agent-a, tick 08:08 +08)",
-  "vector": "sensing+brain subsystem Java->Rust port on new carrier 2d23f45 (law 6) + brain-slice extension",
-  "branch": "round-421-a-brain",
-  "run_id": null,
+  "agent": "TASK-421-C",
+  "vector": "chunk-pipeline/worldgen axis (law 8): noise-fill STABILIZATION root-caused (RC1 GEN-axis inert on pregenerated fixture 0.0% soak; RC2 parse burst boot-only, polls never overlap; RC3 hit-rate plateau structural evicted=0; RC4 ramp noise +-5-8pp dominates; RC5 gate order excluded; RC6 stable +6-8pp via GC-debt relief cross-checked cp420-vs-mg) + cmp421_chunk STRICT-OR wired into all three gate sites + NEW SLICE: biomes-site parse cache + chunk-send serialization cache (PlayerChunkSender/ChunkMap slice, revision-keyed) in chunkparse crate",
+  "branch": "round-421-c-chunk",
+  "base": "2d23f45 (master, second merge of era)",
+  "step": "step-1 stabilization: gates cmp421_chunk (noise_fill.rs + chunk_parse.rs + run_world3.sh case), check_blobs_sync noise-blob coverage added (GEN-axis family was the only unaudited lever family), PROFILE-C.md + NOISEFILL_ROOTCAUSE.md, dispatch_round421_c.py",
+  "steps_done": ["worktree-base-2d23f45", "rootcause-noisefill-instability", "cmp421_chunk-strict-or-x3-sites", "blobs-gate-noise-coverage", "profile-C", "dispatch-script"],
+  "run_ids": [],
   "tps_med": null,
   "delta_pair_pct": null,
-  "lane": "sense+brain 12-14% CPU (nav_ai lane post-mega: goal priorities + Behavior lines + query walk)",
-  "verdict": "STEP2-EXTENSION-DONE-BENCH-PENDING",
-  "evidence": "step1: cherry-pick b3e0929 -> 40adceb (cmp421_brain rename, union gates, blobs ALL IN SYNC, cargo 291/0). step2: brain-slice extension b6b1146 — NEW GoalOps bridge (goalops/) replicates vanilla GoalSelector.tick() 1:1 by javap (goalCleanup -> lockedFlags purge -> goalUpdate -> goalTick) but 3x ObjectLinkedOpenHashSet traversals -> 1 traversal + flat ThreadLocal[] passes; sites = Mob.serverAiStep GoalSelector.tick x2 (javap ground truth purpur-1.21.10 @161/@183); NO_GOAL sentinel null-folded by javap equivalence; fail-closed ladder (setup-phase drift -> vanilla this call; STRICT-eq flag; zero natives — bulk JNI budget of sense+brain subsystem already eqEpoch+senseArena in same EPOCH_LOCK window); crate wiring src/goal_selector.rs composes on Mob chain after mobs_sscan checkDespawn serve; cargo test 294/0 incl blob-marker oracle + retarget contract tests; check_blobs_sync ALL IN SYNC (GoalOps javap gate + flat==nested)",
-  "what": "extension scope: sense-arena goal-query walk (ported) + goal-priorities flat fast-path (new). next: dispatch 3 legs cmp421_brain vs anchors-421 (35800920567/35800926548/35800931828), pair by runner_cpu_index, verdict >=+20% else cycle law 3"
+  "lane_before": "chunk/worldgen lane on carrier: chunk-system 8.4% soak CPU (block-read family 7.5% REFUTED per RECON-35), chunk tick 1.8% + off-main 1.2%, tracker+send 2.0-2.2% (RECON-36), worldgen/noise 0.0% (GEN-axis inert), parse burst boot-only 33.38% alloc-burst; noise-fill legs unstable -4.5..+20.8 (ramp noise > lever effect)",
+  "lane_after": "pending dispatch round-421-c-chunk-l{1,2,3}",
+  "parity": "STRICT-OR lever gate cmp421_chunk (empty/foreign flag = vanilla bit-in-bit); parse cache identity-codec key + template.copy() HIT + pristine twin MISS (unchanged); noise-fill env OR wave/mega/round union {cmp419_chunk, cmp420_chunk2, cmp420_colpush, cmp421_chunk}; CRUSSTY_KERNEL_POLICY=off documented A/B override via run_world3 case; ARM marker 'cmp421_chunk armed: chunk-parse section-cache...' from run_world3 + effect markers 'parse-cache first hit'/'parse-cache selftest PASS'",
+  "verdict": "STEP1-STABILIZATION-DONE",
+  "evidence": [
+    "NOISEFILL_ROOTCAUSE.md: 6 root-cause items, each pinned to run artifacts (BOTTLENECKS_3 buckets, parse-cache stats lines, poll timelines, anchor banks 419/420)",
+    "PROFILE-C.md: chunk/worldgen lane decomposition on carrier; worldgen/noise = 42 samples 0.0% soak",
+    "check_blobs_sync.sh extended: noise blobs (major-52 pin + method markers) — ALL IN SYNC",
+    "anchors-421 in flight: 35800920567/35800926548/35800931828 @2d23f45"
+  ],
+  "notes": "next: commit-2 new slice (biomes-site cache + chunk-send serialization cache, chunkparse crate, zero added hot JNI), dispatch 3 legs lever=cmp421_chunk, pair vs nearest anchor-421 by runner_cpu_index, min-of-3 >= +20% else law-3 cycle with scope extension (POI/light/tracker slices)"
 }
