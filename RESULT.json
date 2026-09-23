@@ -1,17 +1,17 @@
 {
   "agent": "TASK-427-A2",
   "vector": "mobs_soa subsystem wake+perf (protocol-v2 port, gate-bitmap, per-shard writer)",
-  "branch": "round-427-a2-mobsoa",
-  "run_id": null,
+  "branch": "round-427-a2-mobsoa @fe4ee57 (impl) — run head",
+  "run_id": "in-flight (6 runs dispatched)",
   "tps_med": null,
   "delta_pair_pct": null,
-  "verdict": "S2-IMPLEMENTED (gates green)",
+  "verdict": "S3-DISPATCHED",
   "evidence": [
-    "mobs_soa.rs protocol-v2 port: N_SHARDS=64 SVER striped seqlock, PROBE_CAP=128 + tombstone-reclaim rebuild_tables (fixed rkeys/rhead scratch, in-place copy-back, no UAF), soa_upsert per-shard brackets with combined old+new move window, sharded_scan bounded reader (<=8 retries spin->yield, n0 rollback, fail-open ERR_RANGE), mob_query two-phase thread-local SCRATCH (JNI-critical = final memcpy only), mob_remove flag-clear inside shard bracket, mirror outside WLOCK",
-    "mobs_grid.rs per-shard writer Mutex port (ascending-order two-shard moves)",
-    "MobAiOps.java GATE-BITMAP: VAN_WIN dense stamps keyed by vanilla entity id, publishStamps O(idTop) once/tick under EPOCH_LOCK, touch-list exact clear, skipAi O(1) mob.getId() read; javap blob: idBoxOf refs = 0",
-    "GATES: blobs rebuilt (419a one-pass, major 65), check_blobs_sync ALL IN SYNC, javap ColpushOps.selfTest NOT-a-stab (invokestatic idCount/capacity/byIdArr live, no iconst_0 start), raw-byte cmp420_colpush+cmp424_mobfeed markers PRESENT x3 blobs, cargo test 298/0 (+2 v2 tests), cargo target purged",
-    "flag-gate: lever lists untouched — empty CRUSSTY_LEVER_FLAG = vanilla bit-for-bit (rust gates STRICT, java ENABLED STRICT-OR family preserved incl. cmp424_mobfeed)"
+    "runs dispatched (world-bench-parallel.yml, bank inputs EXACT: radius 640 / seconds 300 / fake_players 4 / fluid_guard 1 / gc_tune 3 / inside_cache 1 / flush_diet 1 / fluid_dirty 0 / fluid_bitmask 0 / region_threads 4 / batch_collector 1 / inside_bitmask 0 / skip_store_bb 0 / region_steal 0 / bu_defer 0 / population_target 150000 / population_seed 42 / server_xmx 10G / server_xms 4G / cpu_band 6.0-9.5M / lever_arg 1; NO travel_diet, NO fluid_dirty_ledger)",
+    "legs: a2-l1/a2-l2/a2-l3 branch=round-427-a2-mobsoa @fe4ee57 lever=cmp424_mobfeed",
+    "anchors: a2-anchora/a2-anchorb/a2-anchorc branch=round-427-a2-anchor{a,b,c} @790dc2f lever='' (fresh same-window vanilla pairs)",
+    "dispatch script: /home/z/rounds/ROUND-427/agent-a2/dispatch_427a2.py (committed)",
+    "poll plan: sleep 120 + curl; absorb scripts/bench4_recon/absorb_round.py <run_id> <tag>"
   ],
-  "what": "S2 done @ impl commit. Next: S3 dispatch legs (lever cmp424_mobfeed, exact bank inputs) + anchors round-427-a2-anchora/b @790dc2f, poll sleep 120 + curl, absorb_round.py, pair-by-runner verdict."
+  "what": "S3 dispatched 3+3. Next: poll to completion, absorb, gate verdicts (DATA-PLAN mobSlots>0 + selfTest=true + AIOOBE=0 + NCDFE=0 + polls threw=0 + javap flat==nested + raw-byte), pair-by-runner Δ<=50k min-of-3, band 6.0-9.5M."
 }
