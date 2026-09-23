@@ -112,7 +112,9 @@ public final class EntityGoalQueryOps {
                 // TASK-421-A: brain-носитель (STRICT OR).
                 || f.trim().equals("cmp421_brain")
                 // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
-                || f.trim().equals("cmp422_brain2"));
+                || f.trim().equals("cmp422_brain2")
+                // TASK-424-A: GC-ревизия brain3 (STRICT OR).
+                || f.trim().equals("cmp423_brain3"));
     }
 
     /** TASK-411-C (k4soa): K4-режим (маркировка EFFECT-строк). */
@@ -130,8 +132,10 @@ public final class EntityGoalQueryOps {
     private static boolean senseMode() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
         // TASK-422-B (iter-2): STRICT-OR — вектор-флаг несёт тот же sense-срез.
+        // TASK-424-A: brain3 (GC-ревизия) несёт тот же sense-срез.
         return f != null && (f.trim().equals("cmp421_brain")
-                || f.trim().equals("cmp422_brain2"));
+                || f.trim().equals("cmp422_brain2")
+                || f.trim().equals("cmp423_brain3"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -145,12 +149,14 @@ public final class EntityGoalQueryOps {
         // TASK-422-B (iter-2): свой id для вектор-ног.
         FLAG_LABEL = f != null && f.trim().equals("cmp422_brain2")
                 ? "cmp422_brain2"
-                : (f != null && f.trim().equals("cmp421_brain")
+                : (f != null && f.trim().equals("cmp423_brain3")
+                        ? "cmp423_brain3"
+                        : (f != null && f.trim().equals("cmp421_brain")
                         ? "cmp421_brain"
                         : (f != null && f.trim().equals("cmp412_eqsnapv3")
                                 ? "cmp412_eqsnapv3" // TASK-412-C (eqsnap-v3): точная метка.
                                 : (f != null && f.trim().equals("cmp411_eqsnap")
-                                        ? "cmp411_eqsnap" : (K4 ? "cmp411_k4soa" : "cmp410_eindexq"))));
+                                        ? "cmp411_eqsnap" : (K4 ? "cmp411_k4soa" : "cmp410_eindexq")))));
     }
 
     private static final int PROBE_MAGIC = 0x4547; // "EG"
@@ -327,7 +333,14 @@ public final class EntityGoalQueryOps {
             }
             int idTop = MobPushOps.idCount();
             if (idTop <= 0) {
-                return; // плоскость холодная — суперсет не доказан, ваниль этот тик
+                // TASK-424-A empty-plane short-circuit: плоскость холодная —
+                // суперсет не доказан, ваниль этот тик; эпоха ПОМЕЧАЕТСЯ
+                // (без этого каждый gate-вызов берёт EPOCH_LOCK впустую),
+                // а SNAP_ROWS обнуляется — читатель fail-closed (rows<=0
+                // → vanilla), mid-tick спавн не увидит устаревший снапшот.
+                SNAP_ROWS = 0;
+                EPOCH_TICK = t;
+                return;
             }
             int cap = Math.max(idTop, MobPushOps.idCapacity());
             double[] soa = SOA;

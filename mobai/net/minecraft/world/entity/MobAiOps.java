@@ -64,7 +64,9 @@ public final class MobAiOps {
                 // TASK-421-A: brain-носитель (STRICT OR).
                 || f.trim().equals("cmp421_brain")
                 // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
-                || f.trim().equals("cmp422_brain2"));
+                || f.trim().equals("cmp422_brain2")
+                // TASK-424-A: GC-ревизия brain3 (STRICT OR).
+                || f.trim().equals("cmp423_brain3"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -194,6 +196,15 @@ public final class MobAiOps {
             }
             int n = windowN();
             int idTop = MobPushOps.idCount();
+            if (idTop <= 0) {
+                // TASK-424-A empty-plane short-circuit: SoA холодная — vanilla
+                // БЕЗ JNI/буферов/лога на этот тик (эпоха помечена —
+                // холостых эпох и спама «epoch ok» больше нет); WINDOW_LEN=0
+                // → читатели fail-closed (id >= len → vanilla).
+                WINDOW_LEN = 0;
+                EPOCH_TICK = t;
+                return;
+            }
             int[] w = WINDOW;
             int cap = Math.max(1024, MobPushOps.idCapacity());
             if (w.length < cap) {
@@ -217,7 +228,8 @@ public final class MobAiOps {
             WINDOW_LEN = rc;        // volatile write = publication edge для читателей
             EPOCH_TICK = t;
             if (!ARM_LOGGED) {
-                LOG.info("[crussty-plugin] cmp406_aibatch: epoch ok tick=" + t
+                ARM_LOGGED = true; // TASK-424-A: one-shot на publish (не в skip)
+                LOG.info("[crussty-plugin] cmp423_brain3: epoch ok tick=" + t
                         + " windowLen=" + rc + " n=" + n
                         + " (bulk JNI 1/tick over soa population)");
             }
