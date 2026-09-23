@@ -1,14 +1,19 @@
 {
   "agent": "TASK-436-A",
-  "vector": "wgen3 golden-window final attempt (law-3 cycle, CLAIMS p.3): cmp434_wgen3 STRICT-OR (wgen set + PALETTED-DEMUX) carried to round-436-a-wgen4 @062baea",
-  "branch": "round-436-a-wgen4 (worktree /home/z/rounds/ROUND-436/agent-a, tracks origin/round-434-a-wgen3 @062baea)",
-  "run_id": null,
+  "vector": "wgen3 golden-window final attempt (law-3 cycle, CLAIMS p.3): cmp434_wgen3 STRICT-OR (wgen set + PALETTED-DEMUX) carried to round-436-a-wgen4; plan-B researched for post-closure slot",
+  "branch": "round-436-a-wgen4 @8d983fb (worktree /home/z/rounds/ROUND-436/agent-a, tracks origin/round-434-a-wgen3 @062baea + gates + docs)",
+  "run_id": "pending golden-slot dispatch (NOT mine to run: tick 02:08 +08 executes dispatch_436a.py)",
   "tps_med": null,
   "delta_pair_pct": null,
-  "lane": "step-1: gates green in worktree (build_430b_blobs flat==nested OK; check_blobs_sync ALL IN SYNC; cargo check --lib green, target purged); branch PUSHED a794c0b; dispatch_436a.py READY (5 runs: anchors round-436a-anchor-1/2 @master + w4-1/2/3 @round-436-a-wgen4 lever=cmp434_wgen3) — NOT RUN, golden slot 02:08 tick executes it",
+  "lane": "step-2: PLAN-B research banked (research/gc-recon-2026-09-19/RESEARCH-A-436-PLAN-B.md) — B1 sscan2 despawn+spawn plane cmp436_sscan2 (owner-named, MobScanOps substrate complete+dormant, blobs ALL IN SYNC), B2 eqw cmp436_eqw conditional on golden-verdict decomposition (snapshotQuery 7.5% self cost diet first), B3 anchor-support of inside2/chunkpl lines; PALETTED-DEMUX write-path guard designed and deferred (verdict purity, dual-mirror law-6 cost)",
   "ram_stw_full": null,
-  "parity": "re-verified this worktree: blobs IN SYNC, cargo green, PALETTED-DEMUX fingerprint MATCH len=30967 major=65 (banked S7-145)",
-  "verdict": "GOLDEN DISPATCH READY (branch + dispatcher banked; fix-if-found lands as follow-up commits)",
-  "evidence": "round-436 fetched: C already pushed chk3 legs (round-436c-chk3-1/2/3); my branch = clean 062baea carry, fix-if-found lands as follow-up commits only after gates",
-  "what": "step-1 done: gates + push + dispatcher banked; next: plan-B research doc + optional PALETTED-DEMUX write-path fix (each step commit+push)"
+  "parity": "re-verified this worktree: blobs IN SYNC (build_430b_blobs flat==nested OK; check_blobs_sync ALL IN SYNC), cargo check --lib green, PALETTED-DEMUX fingerprint MATCH len=30967 major=65 (banked S7-145)",
+  "verdict": "GOLDEN DISPATCH READY + PLAN-B BANKED (8d983fb); golden shot = last wgen3 attempt, <=0 closes the vector per CLAIMS p.3",
+  "evidence": [
+    "profiles: round-435a-anchor-a (master) vs round-435a-w3-1/2 (lever): paletted lane 7.06->5.76 (-1.3pp demux working), snapshotQuery 0->7.5 self = wgen-stack cost in deflated windows; nav_ai -8.2pp / items -31pp = pie shift",
+    "dispatch_436a.py READY: 2 anchors round-436a-anchor-1/2 @master lever='' + 3 legs round-436a-w4-1/2/3 @round-436-a-wgen4 lever=cmp434_wgen3, INPUTS bank exact, interleaved, py-valid",
+    "round-436 master e05994c (tick-435 FINAL); C already dispatched chk3 legs; A slot wave = wgen4 golden batch",
+    "plan-B evidence: mobs_sscan.rs complete dormant plane (lib.rs:597 activation, natives sscanProbe/sscanEpoch, blob 6177B synced); S7-140 walls respected in candidate matrix (DATA-PLAN/S7-140 closed, fluid law-5 dead, chunk-parse complete per RESEARCH-G)"
+  ],
+  "what": "step-2 done: RESEARCH-A-436-PLAN-B.md committed+pushed; next: worklog append; golden-slot tick runs dispatch_436a.py then absorb+pair verdict (band 6.0-9.5M, anchors norm >= -2%, pair Δ<=50k, min-of-3, >=+20% finish)"
 }
