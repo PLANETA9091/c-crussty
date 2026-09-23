@@ -4759,883 +4759,96 @@ Work Log:
 Stage Summary:
 - БАР 80% НЕ ВЗЯТ, МЕРЖ НЕТ. Лестница: MULTI +21 3/3 @3.0 TPS (mob-плоскость закрыта) → fluid 16.6/inside 11-12/broadphase-query 15 (~43% wall остаток).
 - NEXT-411: A-k5b фикс AIOOBE → ре-диспатч; B-k3 профиль fluid → gather-piggyback ИЛИ пивот inside_volatile; C-k4 re-profile nav_ai → реальный таргет или ДРОП; композитный мандат multi⊕(fluid|inside).
+
 ---
-Task ID: cron-v15-tick-411
-Agent: Super Z main (tick 12:08 +08; 11:08-тик отработал параллельным инстансом до server_shutdown)
-Task: TASK-411 — восстановление после sandbox-reset, абсорб якорей-411, волна A-k5b/B-k3/C-k4
+Task ID: TASK-420
+Agent: main (Super Z, tick 05:43 +08, Job 406609, v17)
+Task: Полный MEGA-CYCLE тика-420: абсорб, BOTTLENECK (law 8), якоря ×3, mc-день ×3, волна ×3, вердикты, мерж при ≥+20%
 
 Work Log:
-- PHASE 0: sandbox reset (репо/rounds/worklog пропали) → reclone c-crussty + crussty-dev-logs; master 40b170a (параллельный инстанс закрыл GOAL ×95 a3c92ab + диспатчил якоря-411); worklog.md восстановлен из dev-logs (301 секция); диск 51%.
-- Якоря-411 абсорбированы: anchora 2.2@6840530 / anchorb 2.2@6858619 / anchorc 2.1@6776758 — ваниль ✓, band OK. Пул-411 готов.
-- BOTTLENECK-411 записан: inside_volatile 11-12% = единственная крупная плоскость без Rust-хозяина; multi-сцена рекорд 3.0 TPS.
-- Волна-411: A-k5b (fix navpool AIOOBE 32,764×), B-k3 (пивот на inside_volatile после bl2 RED), C-k4 (eindex k4 — section-resident или дроп на collide-плейн). Все 3 R-вектора закона (6).
+- PHASE 0: sandbox-reset (repos+tools wiped) → recloned оба репо, восстановлен тулчейн (temurin 21.0.12.1, fastutil 8.5.15, cargo 1.98.1); диск 16%→69% к концу тика
+- Обнаружен параллельный инстанс tick-419 (e809ded: colpush 0/3 NCDFE root-caused, sense +6.4/+8.7, chunk chb +20.8 exact-pair, честный NO-MERGE) → мой тик = ROUND-420/TASK-420
+- База-диспатч: якоря-420 ×3 @41456af (2.75@8.65M/2.20@6.83M/2.10@6.30M; anchorc 503→re-roll PASS) + mc4a/b/c @20c9fdc дневная репликация cmp417_mcomp
+- Волна ×3 диспатч (adapter-deadline ×3, агенты живы): A colpush-fix, B sense→brain, C chunk-stability
+- mc4 pair: +4.8/0.0/+15.9 → медиана +4.8 < бара — НЕ взята (ночь +15 не подтвердилась)
+- Агенты A/C застыли после ног → абсорб на себя: cp420a/b/c pair +18.2/+13.6/+18.2 (медиана +18.2, NCDFE=0, ARM ×3); ch420a/b/c pair −4.5/+11.4/+4.5 (медиана +4.5)
+- МЕГА-КОМПОЗИЦИЯ (закон 7) самим мейн-агентом: round-420-mega = colpush-fix-carrier(9bde8bf) ⊕ cherry-pick chunk2(85f74b8); конфликты HEAD-пусто→theirs; реставрирован mod chunk_parse + env_gate; юнион-гейты {cmp420_chunk2, cmp420_colpush} + noise-fill + run_world3 KERNEL_POLICY; ChunkParseOps CARRIER_UNION; check_blobs raw-byte indy-recipe фолбэк (новый урок: javap -c не видит concat-константы в bootstrap-рецептах); cargo 290/0, ALL IN SYNC
+- Мега-ноги @77b22b7 lever cmp420_colpush: mga +25.0 / mgc +31.0 / mgd +29.5 (mgb BAND ×3 → mgd); МЕДИАНA PAIR +29.5% ≥ +20%
+- ВТОРОЙ МЕРЖ ЭПОХИ: --no-ff 77b22b7 → master 4ab7306; GOAL ×104 + CLAIMS TASK-421 → 2d23f45 push
+- Диск-закон: flamegraphs/collapsed/zip purge из абсорб-диров
 
 Stage Summary:
-- GOAL ×95 = multi min-of-3 3/3 GREEN 3.0 TPS рекорд; sscan-мост реальный; 2 lever-BUG пойманы. БАР 80% НЕ ВЗЯТ, МЕРЖ НЕТ.
-- Sandbox-reset протокол отработан (reclone + worklog-восстановление, 5 мин).
-
+- master 4ab7306 = cvs⊕queryplane⊕colpush-fix⊕chunk-parse, +29.5% pair vs свежие якоря-420, все гейты ×3 зелёные
+- Урок ×93-indy добавлен в чек-лист (raw-byte cp grep для concat-констант)
+- Открыто на 421: B-sense+brain ноги, inside_volatile ре-профиль на новом носителе, mc⊕sense композиция, noise-fill стабильность
 ---
-Task ID: TASK-412 (v16 tick, cron 405193, 16:08 +08)
-Agent: Super Z main
-Task: v16 MEGA-CYCLE — абсорб 412-ног, meganav (закон 7), подсистемная волна (закон 6)
+Task ID: TASK-421
+Agent: main (Super Z, tick 08:08 +08, Job 406609, v17)
+Task: Полный MEGA-CYCLE тика-421: абсорб, BOTTLENECK (law 8), якоря ×3, волна ×3, вердикты, мерж при ≥+20%
 
 Work Log:
-- PHASE 0: token/lock/pull OK; master 3bd07fe (+dispatch-412 script); диск-инцидент 100% (meganav worktree) → пурж ROUND-411 worktrees (2.2G, ветки запушены, c-k4 бэкап round-411-c-k4-backup) → 64%
-- Абсорб: b-l1 (35700016663) RED 0.70 TPS честный (AIOOBE=0, fixture PASS, все лейны вниз — sink вне топ-лейнов, B-цикл root-cause); a-k5b (35698807454) + c-l2 (35699456160) = FIXTURE-INVALID spawn-race: AIOOBE Index -1 (16385/65537) в BenchPopulationPlugin.spawnItem, инъекция встаёт 30-48k/150k; vanilla 409anchorb имел тот же класс ×26215 (131073) → race харнесса (region_threads=4 ⊕ инъекция), НЕ lever; eqsnap c-l2 ARMED успел
-- Якоря-412 ×3 диспатчены @3bd07fe (35704269872/35704286802/35704304263)
-- МЕГА-КОМПОЗИТ cmp412_meganav (закон 7): round-412-f-meganav f579c1c = multi(f7d04d2) ⊕ navplane+navpool(5d8af33) — union merge (lib.rs mods, classfile.rs utf8_gate+navpool-tests), STRICT OR gates 11 rust + 7 java, классы пересобраны (kernel396a+fastutil+paper-api-1.21.10+adventure-api/key-4.24.0 — jars скачаны в /home/z/tools), cargo check PASS, cargo test 247/247; ноги meganav1/2 (35705650726/35705669376) в полёте
-- Волна-412 ×3 запущена (adapter-deadline ожидаем, артефакты фоном): A = entityMap race full-fix + pathfinder-slice re-dispatch; B = inside_batch 0.70 root-cause → редизайн; C = eqsnap v2 re-dispatch
+- PHASE 0: token/flock/pull OK; master 2d23f45 (= второй мерж 4ab7306 + учёт ×104, параллельный инстанс тика-420 финишировал ранее); диск 66%
+- Обнаружено: все runs тика-420 completed/absorbed; B-вектор sense @b3e0929 на старой базе — порт на 2d23f45 = главный候选 тика
+- Якоря-421 ×3 @2d23f45 диспатчены (08:11): anchora 503-фейл → ре-ролл 2.70@8.979M PASS / anchorb 2.15@6.796M / anchorc 2.55@6.742M — ОКНО ШУМНОЕ: b/c spread ±18% при Δrunner 54k
+- Волна ×3 (adapter-deadline ×3 → агенты родились фоном: A создал worktree+коммиты, C закоммитил step-1, B стартовал; затем застой 15-20 мин → мейн забрал диспатчи, закон 1)
+- A brain: round-421-a-brain 3e8c431 (cherry-pick b3e0929→40adceb + GoalOps fast-path b6b1146, cargo 294/0, blobs SYNC) — ноги l1 BAND 10.08M fast-fail / l2 2.50@6.815M +16.3 / l3 2.60@6.753M +2.0 / l4 2.80@6.615M +9.8 → медиана +9.8
+- B inside: PROFILE-B (inside 10.68% ваниль / 12.26% ARMED; forEachBlockIntersectedBetween 8.045%, visitor 5.07%) — пивот не нужен, имплементация → 422
+- C chunk: round-421-c-chunk 600e3cc (NOISEFILL_ROOTCAUSE 6 пунктов: GEN-axis 0.0% soak inert, parse burst boot-only, ramp-шум ±5-8pp доминирует; + biomes-parse cache + chunk-send slices) — ноги l2 +3.7 / l3 −4.7 / l4 1.65@6.82M −23.3 → медиана −4.7
+- ДИСК-КРИЗИС 93% (cargo-кризис worktrees) → purge ROUND-420 worktrees (ветки на origin) → 63%
+- МЕГА-КОМПОЗИЦИЯ (закон 7) мейном: round-421-mega 99ffefa = a-brain ⊕ c-chunk (конфликт только RESULT.json; юнион-гейты chunk_parse/noise_fill/run_world3 +cmp421_brain — паттерн тика-420); cargo 294/0, blobs SYNC
+- Мега-ноги @99ffefa lever cmp421_brain: mga 3.20@8.820M vs anchora +18.5 (лучший абсолют эры на этом носителе) / mgb 2.35@7.175M +9.3 / mgc 2.70@8.728M 0.0 → МЕДИАНА +9.3 < +20%
+- БАР +20% НЕ ВЗЯТ — МЕРЖ НЕТ (честно; матзакрыто: median из {18.5, 9.3, 0.0} не поднялся бы ре-роллами); GOAL ×105 + CLAIMS TASK-422 + VERDICTS.md + push
 
 Stage Summary:
-- БАР 80% НЕ ВЗЯТ, МЕРЖ НЕТ. Лесенка: multi +21 3/3 → meganav ожидание +25-30 (nav_ai 7.54 не перекрыт)
-- Урок тика: spawn-race fixture-fails = INFRA-класс (vanilla-доказано), ре-роллы легитимны; javac-cp для ItemEntityManager = kernel+fastutil+paper-api+adventure-api+adventure-key
-
+- master остаётся 2d23f45 (лесенка на +29.5); вектора brain/chunk/mega ЖИВЫ и запушены (round-421-a-brain / c-chunk / mega + alias-ноги)
+- Урок тика: якорный шум спокойного-на-вид окна (2.15 vs 2.55) ≥ эффект подсистемных векторов (+9-18) — verdict-окна выбирать по свежему якорному спреду; min-of-3 только в якорь-стабильном пуле
+- Открыто на 422: мега re-roll спокойное окно (mga +18.5 реален), inside-имплементация (PROFILE-B), mc⊕mega решение, якоря ×3 fresh
 ---
-Task ID: TASK-412 (продолжение, 17:0x +08)
-Agent: Super Z main
-Task: волна ×3 жива; абсорб якорей-412 + meganav ×2; multi4 день-репликация
+Task ID: TASK-422
+Agent: main (Super Z, tick 10:08 +08, Job 406609, v17)
+Task: Полный MEGA-CYCLE тика-422: абсорб, BOTTLENECK (law 8), якоря ×3, мега re-roll ×3, волна ×2, вердикты, мерж при ≥+20%
 
 Work Log:
-- Adapter-deadline ×3 на волне — агенты живы фоном (протокол): A пуржил диск (2.3G free), B уже диспатчил b-r1 (35708224953), C ре-диспатчил c-r1 (35706186210) + готовит eqsnap-v3 поверх meganav (agent-c-v3 worktree)
-- Якоря-412: anchora 2.30@6803065 ✓ / anchorb 1.90@4786608 = BAND-DISCARD (4.79M) / anchorc 2.35@6435981 ✓
-- МЕГАНАВ ВЕРДИКТ (cmp412_meganav f579c1c): meganav1 2.60@6725119 / meganav2 2.70@6781278 — items 0.00 ×2, ВСЕ плоскости multi ARMED + navplane+navpool ARMED, AIOOBE=0 ×2, tail-поллы 2.8-2.9 ≈ multi 3.0; pair vs сегодня-якоря: +13.0 (Δ78k) / +17.4 (Δ22k) → маргинал navplane поверх multi ≈ 0-2пп (nav_ai 9.04 vs multi 7.54 — ai-окно перекрыло nav; 4-й случай перекрытия эры). МЕГАНАВ = multi-эквивалент (без регресса, композит жив), НЕ новая ступень
-- c-r1 = DELIVERY-FAIL (1 poll, gc 3.7s — ранняя смерть; классификация у агента C: ожидаемо spawn-race re-roll #2)
-- multi4 (35709605852 @f7d04d2 cmp409_multi) диспатчен — день-репликация ступени multi vs свежие якоря
+- PHASE 0: token/flock/pull OK; master 57a2e67; диск 86→83% (zip-purge); PROFILE-B сохранён в репо
+- Диспатч: якоря-422 ×3 @57a2e67 + МЕГА re-roll ×3 @99ffefa (lever cmp421_brain); band-фейлы ×3 мгновенно (пул 10.8-11.9M) → ре-роллы anchorar/anchorcr/anchorcr2/mgbr
+- Банк-422: anchorar 2.40@6.681M / anchorb 2.00@6.725M / anchorcr2 2.10@6.818M — СПРЕД ±20% (второй шумный тик подряд)
+- Волна ×2 (adapter-deadline, агенты родились): A inside — РЕАЛЬНЫЙ СТАГНАЦИЯ 45+ мин (worktree пустой, 0 коммитов) → вектор передан 423; B brain2 — ФИНИШ: PLACEBO-ROOT-CAUSE (GoalOps ретаргечен на Mob.tick()V 0 сайтов вместо serverAiStep()V ×2 + tickRunningGoals ×2 — fast-path тика-421 СПАЛ на всех ногах!) → фикс + STRICT-OR ×17 rust + 7 java + cargo 296/0 (real-kernel-Mob-bytes retarget proof) → ноги b2l1/l2/l3
+- Мега-ноги @99ffefa: 2.60@6.431M / 2.20@6.520M / 2.70@6.753M → pair {+8.3, −8.3, +35.0} медиана +8.3
+- Ноги brain2 @290c214: 2.50 ×3 @6.47-6.68M — ПЛОТНЕЙШИЙ КЛАСТЕР ЭРЫ (spread 0.00); pair +4.2 ×3 (anchorar exact Δ0.9k); vs банк-медиана 2.10 = +19.0; GC-цена 41.8-45.4s/full 10-11 (vanilla 20-23s/9) — RAM/CPU-ревизия до мержа
+- БАР +20% НЕ ВЗЯТ — МЕРЖ НЕТ (честно; окно не сертифицирует: истина между +4 и +35); GOAL ×106 + CLAIMS TASK-423 (новые гейты: Retargeted>0 прегист + окно-спред-гейт) + push обоих
 
 Stage Summary:
-- БАР 80% НЕ ВЗЯТ, МЕРЖ НЕТ. Лесенка: multi +21 (вчерашний класс) / meganav +13-17.4 (сегодняшний класс, маргинал ≈0)
-- Остаток wall: fluid 16.0 / broadphase 13.9 / inside 12.2 / nav_ai 9.0 / fastutil 7.5 — подсистемные волны A/B/C = единственный путь
-
+- Урок тика ×2: (1) placebo-класс ловится ТОЛЬКО подсчётом ретаргеченных сайтов (javap/пруф), 'ARMED' без сайтов = сон; (2) якорный спред >±5пп = окно браковано (вектор-ноги не тратить)
+- Носитель-кандидат 423: round-422-b-brain2 290c214 (мега+фикс-brain, stable 2.50 ×3) — re-roll в ночном окне после GC-ревизии
+- Вектора живы: brain2 (фикс реален), inside (PROFILE-B готов), mega (3.20 абсолют)
 ---
-Task ID: TASK-412 (финал тика, 17:5x +08)
-Agent: Super Z main
-Task: multi4 вердикт + рестарт-волна + PHASE 4
+Task ID: TASK-424
+Agent: main (Super Z, tick 11:43 +08, Job 406609, v17)
+Task: Полный MEGA-CYCLE тика-423: абсорб, BOTTLENECK (law 8), якоря ×3 + ОКНО-ГЕЙТ, волна ×3, вердикты, мерж при ≥+20%
 
 Work Log:
-- multi4 (35709605852) абсорб: 2.90@6952974 GREEN-CANDIDATE, items 0.00, AIOOBE=0 — pair vs сегодня-якоря (2.30@6803065 Δ150k / 2.35@6435981 / 2.25@6833921 Δ119k) = +26.1/+23.4/+28.9 → медиана ≈+26pp; multi стабилен ×4-я нога, ДВЕ эпохи раннеров
-- Меганав финал: маргинал ОТРИЦАТЕЛЬНЫЙ (2.60/2.70 vs 2.90; −0.2 TPS; ai-окно село на nav) — НЕ ступень, топ-композит = cmp409_multi f7d04d2
-- Рестарт-волна после реального застоя (50-70 мин): A = REFENCE v2 race-fix 109e4d7 (22 сайта) + нога 35713591178 в полёте; B = пивот agent-b2 99df12f (meganav-база, fluid/broadphase-подсистема); C = eqsnap-v3 ×2 (35712182885/35712204518)
-- GOAL ×96 + ×96-ФИНАЛ; CLAIMS TASK-412 + NEXT-413; master 29733a8 push; dev-logs push
+- PHASE 0: token/flock/pull OK; master 4789ca7; диск 94% → purge ROUND-422 agent-диры + старые round-дир gc-recon (54→10, kernel round-396-a сохранён) → 56%
+- Якоря-423 ×3 @4789ca7 диспатчены 03:46; anchorb band fast-fail → re-roll anchorb2 PASS
+- БАНК-423: anchora 2.3@6.769M / anchorb2 2.3@6.701M / anchorc 2.4@6.970M — СПРЕД 4.3% ≤ ±5пп → ОКНО-ГЕЙТ PASSED (первое сертифицированное окно с ночи тика-417)
+- Волна ×3 диспатчена (все вызовы Task умерли по context deadline, агенты родились фоном): A gcfix, B inside⊕queryplane, C chunk/wgen
+- C: ROOTCAUSE (GEN-noise 0.03% inert pregenerated world, chunk-send 0.01% dead, broadphase-query 11.6% live) → R5c biomes-parse cache (cmp423_wgen, b582bc3) → ноги l1 BAND 5.80M discard → l1r re-roll; l2 2.4@7.54M +0.0 pair / l3 2.7@8.88M norm +1.2 / l1r 2.65@8.63M norm +1.3 → soak-медиана ≈+1.2 < бар (GEN-ось инертна в soak, boot-метрики — реальный сигнал)
+- A (агент застрял 95+ мин, мейн забрал вектор): GC_ROOTCAUSE ×3 факта — (1) young-GC шторм 4130/300s = ФАЗА ИНЪЕКЦИИ (271-542 GC/мин), soak идентичен ванили (59 vs 58, pause_p50 106 vs 116ms); (2) SoA-плоскости mob-конвоя ПУСТЫЕ ВЕСЬ РАН (mobSlots=0/windowLen=0 ×895 тиков, rc=0, idCount()=0 — rust не видит ни одной мобы, skipAi fail-closed, эпоха гоняется вхолостую каждый тик) — новый placebo-класс; (3) топ-1 soak-аллокатор = лог-спам («epoch ok» ×895: ARM_LOGGED ставится только в skip-ветке — никогда; items telemetry ×3591, static++ 2M/s)
+- A wave-1 cmp423_brain3 @831394a (имплементировано мейном): empty-plane short-circuit ×3 опс (publish EPOCH_TICK + WINDOW_LEN=0/SNAP_ROWS=0 fail-closed, без JNI/lock/лога), ARM_LOGGED one-shot на publish, telemetry из tickOne удалён, флаг cmp423_brain3 в 7 java + 16 rust STRICT-OR; блобы все пересобраны (маркер raw-byte, flat==nested), cargo test 296/0; ноги l1(BAND→l1r)/l2/l3 @lever cmp423_brain3 в полёте
+- B: design-read + bit-exact modulo decoder (SimpleBitStorage = MODULO layout!) + QueryPlaneOps правится — в работе, дедлайн до конца тика
 
 Stage Summary:
-- БАР 80% НЕ ВЗЯТ, МЕРЖ НЕТ. Лестница: multi ≈+26pp медиана ×4 (стабильна) → подсистемные волны (fluid 16.0 / broadphase 14.2 / inside 12.8 / nav_ai 9.4 остаток wall)
-- Уроки: javac-cp полный (kernel396a+fastutil+paper-api+adventure-api+adventure-key); spawn-race = INFRA-класс (vanilla-доказан ×26215); adapter-deadline ×6 за тик — агенты живут фоном, рестарт только реального застоя
-- ПОСТ-ФИНАЛ ТИКА: абсорбы 412 закоммичены (9c1b9eb), heavy-artifacts пурж (диск 98→88%), ноги a-r1 (35713591178) + cv3-1/2 (35712182885/35712204518) в полёте → тик-413 абсорбирует; master 9c1b9eb, dev-logs синхронизированы.
-
----
-Task ID: TASK-413 (v16 tick, cron 405193, 18:08 +08)
-Agent: Super Z main
-Task: v16 MEGA-CYCLE — абсорб ног 412-волны, якоря-413, подсистемные волны продолжение
-
-Work Log:
-- PHASE 0: token/lock/pull OK; master dab32b4; worklog synced; диск 88%
-- Абсорб cv3-1 (35712182885): DELIVERY-FAIL → классификация = LEVER-BUG NCDFE ClassNotFoundException EntityGoalQueryOps (meganav-база не содержит define-стадии класса из eindex-линии; eqsnap-v3 ссылается → смерть) + 201× spawn-race фон; cv3-2 (35712204518) и a-r1 (35713591178, race-fix REFENCE v2) в полёте
-- Якоря-413 ×2 диспатчены @dab32b4 (35714990661/35715005958)
-- Агенты живы: B = queryplane-реализация активна 18:01 (agent-b2, round-412-b-p1); C = поллит cv3-ноги (NCDFE-фикс — его цикл); A = a-r1 в полёте
-- BOTTLENECK-413 записан (меганав-профили: fluid 16.0 / broadphase 13.9-14.2 / inside 12.2-12.8 / nav_ai 9.0-9.4 / fastutil 7.5)
-
-Stage Summary:
-- БАР 80% НЕ ВЗЯТ, МЕРЖ НЕТ. Топ-композит cmp409_multi ≈+26pp ×4
-
----
-Task ID: TASK-413 (финал тика, 19:3x +08)
-Agent: Super Z main
-Task: v16 MEGA-CYCLE финал — race-fix A/B-пруф, eqsnap-v3 NCDFE-фикс вердикты, PHASE 4
-
-Work Log:
-- Абсорб ×7: a-r1 (2.30@6961932 PARITY, инъекция 150k/150k ЗАВЕРШЕНА — race-fix работает); a-fence (2.20@6741043, AIOOBE=0) vs a-nofence (NO-TPS spawn-race смерть) = A/B-ПРУФ fence; cv3b-1 (2.40@6756401 GREEN +5-7пп, NCDFE починен, НО items 34.23% = meganav items-плоскость спала — блоб-синк); cv3b-2 DELIVERY-FAIL; якоря-413: 2.10@6862504 / 2.40@6978562
-- NAVPLANE-серия финал: {+9.5, +10.6, −3.2, 0.0, parity} медиана ≈+5пп — вектор понижен (не ступень)
-- Рестарты: A (fence-cost A/B диспатч — выполнено), C (NCDFE-фикс — выполнено, f1517b7), B (queryplane — рестарт после 80-мин застоя, диспатч bp1/bp2 в фоне)
-- GOAL ×97, CLAIMS next-414, master 698d026 push
-
-Stage Summary:
-- БАР 80% НЕ ВЗЯТ, МЕРЖ НЕТ. Топ-композит multi ≈+26pp ×4
-- НОВОЕ ШТАТНОЕ: race-fix REFENCE = слой стабильности lever-ног (fence-on ноги живут, fence-off умирают) — NEXT-414: multi⊕racefix база
-- Чек-лист вердиктов дополнен: лейн-проверка (ARM без лейн-дельты = плацебо)
-
----
-Task ID: TASK-414 (v16 tick, cron 405193, 20:08 +08)
-Agent: Super Z main
-Task: v16 MEGA-CYCLE — absorb bp1/bp2, якоря-414, волна ×3 (queryplane⊕racefix / blob-sync revival / gsel-batch), pair-вердикты, GOAL ×98
-
-Work Log:
-- PHASE 0: token/lock/pull; master a6b4f0b (тик-413 вперёд — absorb параллельного тика); диск 92→94% → purge collapsed/zips → 76-79%
-- Абсорб bp1 (35723440147) RED 1.00@6989196 + bp2 (35723457526) RED 1.05@6788478 — root-cause RACEFIX-NOT-IN-bp1 (spawn-race INFRA-класс, лейны при смерти broadphase −9пп = плоскость живёт)
-- BOTTLENECK-414: items-плоскость meganav спит 34.23% (топ-спящий лейн), broadphase 13.9, fluid 16.0, nav_ai 9.0
-- Якоря-414 ×2 диспатч: anchorb 2.45@6701329 GREEN; anchora/anchora2 FAILURE ×2 (spawn-race ваниль-класс, ре-роллы исчерпаны)
-- Волна ×3 Task-вызова (адаптер-таймауты ×2 волны — агенты выжили, write-through: A S6-poll, B 6-dispatch, C2 полный цикл gsel-batch с анти-плацебо пивотом getNeighbors 1.51%→GoalSelector.tick 9.54%, 277/277 cargo)
-- Главный тик абсорбил осиротевшие ноги: b2p1 2.40@6919315 (меганав-плоскости УСЫПЛЕНЫ merge A — урок ×93 третий повтор), b2p2 BAND 11.87M discard, b2p2r BAND-OUT 10.02M, cvs2 2.55@6593164 items 0.00, cvs1r 2.80@6655252 items 0.00 (pair +14.3 vs anchorb), mctrl 2.60@6530239 items 0.00 (меганав контроль — meganav < multi подтверждён ×96), pfb1 2.60@6669214 nav_ai РОСТ +1.5 (анти-плацебо: не победа), cvs3/cvs3r band fast-fail ×2 (горячее окно)
-- GOAL ×98 + CLAIMS next-415 + пуш обоих
-
-Stage Summary:
-- БАР 80% НЕ ВЗЯТ, МЕРЖ НЕТ. Топ-композит = cmp409_multi @f7d04d2 ≈+26pp ×4; cvs-линия (meganav⊕eqsnap⊕racefix⊕blobsync) min-of-2 2.675 ≈ multi-паритет (best 2.80)
-- ШТАТНЫЕ СЛОИ ТИКА: race-fix REFENCE (ноги без него умирают — bp1/bp2 пруф) + blob-sync чек после КАЖДОГО merge (урок ×93 повтор ×2 за тик: A усыпил меганав, B оживил)
-- NEXT-415: multi⊕racefix⊕queryplane свежий носитель (закон 7), cvs3 min-of-3 спокойное окно, gsel iter-2, fluid bulk-мост
-
----
-Task ID: TASK-415 (v16 tick, cron 405193, 22:08 +08)
-Agent: Super Z main
-Task: v16 MEGA-CYCLE — cvs3 min-of-3, мега-композит волна ×3 (mcomp / gsel iter-2 / fluid), pair-вердикты, GOAL ×99
-
-Work Log:
-- PHASE 0: master 1bbec92; диск 83% (транзиент 99% от worktree-агента — самоочистка)
-- Диспатчи: якоря-415 ×2 (оба FAILURE vanilla spawn-race класс) + cvs3 (2.70@6710453 GREEN items 0.00)
-- Волна ×3: A mc-mcomp (f7d04d2⊕109e4d7⊕125c474), B gsel iter-2, C fluid — адаптер-таймауты ×3, агенты выжили
-- Абсорбы главного тика: mc1-3 RED ×3 (0.95/1.00/0.40) — root-cause boot-log: QueryPlaneOps.selfTest() false → queryplane DORMANT (гейт cmp412_b2p1 не ретагирован) + items-plane = shardgrid-легаси (лейн 27%); fence жив (emap 12, refsync 7/7) — класс lever-config franken-merge
-- g1/g2: nav_ai 14.16→5.80/5.96 (gsel-эффект −8.2пп РЕАЛЕН) но items 28-30% (блоб-синк ×93 четвёртый повтор) → TPS 2.35-2.50
-- cvs3: cmp414_cvs min-of-3 ЗАКРЫТ {2.55, 2.80, 2.70} медиана 2.70 ≈ +10.2пп pair — реплицированная ступень, носитель валиден
-- GOAL ×99 + CLAIMS next-416 + пуш обоих
-
-Stage Summary:
-- БАР 80% НЕ ВЗЯТ, МЕРЖ НЕТ. multi ≈+26 ×4 ⊕ cvs +10.2 штат
-- РЕЦЕПТ mc iter-2: gate-reconciliation (единый lever-id, items_oss не shardgrid, selfTest прегист-гейт, javap-блобы)
-- NEXT-416: mc iter-2 + gsel iter-3 на живых блобах + fluid f1/f2 absorb
-Task ID: TASK-416 (v16 tick, cron 405193, 23:08 +08)
-Agent: Super Z main
-Task: v16 MEGA-CYCLE — mc iter-2 gate-reconciliation, gsel iter-3/4, fluid-bulk v2, якоря-416, pair-вердикты, GOAL ×100
-
-Work Log:
-- PHASE 0: master 5869010; диск 73%; якоря-416 ×3 диспатч (anchorc FAILURE → anchorc2 ре-ролл OK)
-- Волна ×3 (A mc-iter-2 / B gsel-iter-3 / C fluid) — adapter-deadline ×3, агенты довели до диспатчей; осиротевшие ноги абсорблены главным тиком
-- A: ДВА КОРНЯ франкен-мержа пойманы (blobs без cmp415_mcomp в constant pool = ENABLED false; install_blob FLAT-vs-NESTED include_bytes no-op) — mc2a/b/c всё равно RED 0.2/0.2/0.7: mob_query конвой (progressive collapse 20→0, Server+воркеры в MobPushOps.mobQuery Native); бисекция: токсичная пара = multi-плоскости ⊕ race-fix-фенсы; iter-3 research @158889b → тик-417
-- B: iter-3 g3×3 (nav_ai −2.3..−2.7пп реален, items 0.00 ×3, маргинал −15пп) + iter-4 fastpath g4×3 (+8пп, медиана +11.9 norm, всё ещё −10пп vs cvs) — ВЕКТОР ЗАКРЫТ ×4 итерации
-- C: FluidBulkOps v2 (4 фикса черновика, 8 гейт-сайтов, блобы in sync, CI-fail lib.rs root-cause) — f1 3.3/f2 BAND/f3 2.6, fluid-лейн ВВЕРХ +1.8..+2.7, маргинал −3.7пп — ВЕКТОР ЗАКРЫТ (3-я архитектура)
-- CVS-носитель ре-валидирован +35.0 pair сегодня (4-е подтверждение)
-- GOAL ×100 + CLAIMS next-417 + пуш обоих
-
-Stage Summary:
-- БАР 80% НЕ ВЗЯТ, МЕРЖ НЕТ. Лесенка: multi ≈+26 ×4 ⊕ cvs +35 pair сегодня (штат)
-- НОВЫЕ УРОКИ: include_bytes FLAT≠NESTED (rebuild no-op — javap-гейт FLAT==NESTED обязателен); конвой Rust-reader × Java-monitor-фенсы × region-воркеры = progressive collapse (не статичный RED); парить ТОЛЬКО свежими якорями (ночь −10пп к эксп-модели)
-- NEXT-417: A iter-3 protocol v2 (per-shard/epoch-read) + queryplane find_class + бисекция фенс-токсичности; волна плоскостей cvs-носителя (inside/broadphase-query); gsel/fluid не тратить
-
-
----
-# BACKFILL-RECOVERY (tick-416, 01:1x +08): 38 секций S7-эры/cron-эры, отсутствовавших в этом файле (обнаружено при сверке c-crussty@5869010 vs dev-logs@7577a0e; c-crussty-копия была усечена — preserve > chronology, секции восстановлены дословно)
----
-Task ID: TASK-62 (agent-7625532f, cron 11:20+08)
-Worldgen-burst JFR under REAL load — g9 revisit trigger FIRED. Boot 17.337s (stdin lifeline live: list+forceload query round-trip 3s), JFR per TASK-57 recipe, dormant env; burst = 2x64 distant fresh chunks (full terrain-fill pipeline; Watchdog 10s stall = severity proof); mid-burst dump 6.1MB + dumponexit 7.7MB; graceful fifo stop. RESULTS: fillArray 120/2610 samples (6.1% burst minute; PureTransformer<-Ap2x2<-selectCellYZ<-doFill on Paper Common Worker #0) — TASK-57 §2 reopen criterion MET, "method absent" was a pre-generated-world artifact; Ap2 both legs alive (fillArray 88 + compute 138); hook ceiling 1.2 CPU-s/128-chunk burst; proven noise bridge targets 4.12 CPU-s of same burst (3.4x larger, already landed+P500) → fresh worldgen = addressable channel for CRUSSTY_NATIVE_IMPROVED_NOISE (boot channel refuted in TASK-58). 86% burst CPU on one worker thread (per-area serialization caveat). Ops: 64-chunk forceload stalls Server thread 10s+ → <=16-chunk/staged guidance. Gates: tests 61/61, clippy 12 (uniq, real) = baseline Δ0, src 0. Report bench/e2e/results/WORLDGEN_BURST_JFR_2026-09-09.md. Hygiene: world RESTORED byte-identical (tar+diff -r), forceload remove all, holder/fifo cleaned, BENCH.lock released, server stopped as found, token clean. Next: TASK-63 candidate = bridge real-load paired A/B with scripted burst harness; docs §8 g9 wording fix (F1).
-
-## TASK-63 — cron 11:40+08 (agent-7625532f, 2026-09-09)
-
-Paired A/B: noise-native bridge under REAL worldgen load — **P500 win does NOT transfer**. ABBA n=5/арм (one-run-per-tool-call driver после трёх SIGKILL фоновых деревьев sandbox-reaper'ом — traps молчат = KILL), arming gate post-Done (11-13s, NO_ARM@25 карантин → 90s cap + hard-abort), /proc CPU-rate completion detector, seed-tar якорь + restore после каждого рана (финальный diff -r IDENTICAL). Результат: B median 48.38s vs A 43.96s (+10.0%), cpu +5.24 CPU-s, boot Done flat; JFR mechanism-proof: bridge ENGAGED (NativeOps stubs 0.44 CPU-s, Java noise 4.12→1.19), net отрицательный — per-call JNI экономика vs амортизированный batch-crossing. OPS: improved_noise=1 держать OFF для worldgen-heavy. Инцидент задокументирован честно (selfheal-before-backup → world deletion; overworld восстановлен байт-идентично из task62-якоря; nether/end data-empty assessment). Гейты: tests 61/61, clippy Δ0 attributable. Отчёт bench/e2e/results/WORLDGEN_AB_NOISE_BRIDGE_2026-09-09.md; c-crussty fe38f31; CLAIMS 4842411 done.
-
-## TASK-65 — cron 12:40+08 (agent-7625532f, 2026-09-09)
-
-Worldgen parallelism probe (TASK-62 F3 follow-up): **F3 closes NEGATIVE**. Per-thread /proc CPU accounting (fork-free sampler; `set --` clobber bug found+fixed) — ОДИН busy Paper Common Worker в 10/10 ранов в ОБОИХ армах (S contiguous 16x8 vs P distant pair), top-worker share 100%. P slower 5/5 adjacent pairs (+4.14s median): dispatch×2 + edge duplication при том же single-worker бюджете. Ops: single contiguous region быстрее; gen-latency levers = только per-chunk work reduction или scheduler (engine territory). Гейты: 61/61, clippy Δ0. bench/e2e/results/WORLDGEN_PARALLELISM_2026-09-09.md; aaecccc; CLAIMS 798e821.
-
-## TASK-66 — cron 13:20+08 (agent-7625532f, 2026-09-08T05:2xZ)
-
-Worldgen batching-layer DESIGN DOC + PROVEN_WINS channel-scope correction (docs-only; сосед клеймил TASK-64 variant C — 0 пересечений,ребейз прошёл чисто поверх их a58bcb5). Ключевая находка дизайна: **site-level батчинг структурно невозможен** — retarget-сайт обязан вернуть значение синхронно (worldgen потребляет его немедленно), поэтому TASK-63 OPS 'batching layer on worldgen call-sites' может означать только **loop-grain**: патч octave-loop владельца (area_map whole-method паттерн + Variant R поверх invokestatic на сгенерированном теле), нативный batch kernel = proven nativeNoise core в Rust-цикле (паритет by construction — вся аккумуляция остаётся в Java в исходном порядке), один crossing на getValue (амортизация ×N_o≈16). Реестр: TABLE_VERSION 5, id 21, ABI 327702 (зарезервировано в доке, не тронуто); env gate default-OFF (TASK-64 прецедент); degradation ladder B.2.2 переиспользован. Честная арифметика ожиданий на single-worker потолке TASK-65: оптимистично −0.3..−0.9 CPU-s (~1-2% wall), пессимистично (native core медленнее JIT — не исключено данными) +0.3..+0.8 WORSE, hard ceiling ~7%; **вероятнейший исход = bounded refutation** — поэтому implementation гейтится STEP-0 micro-bench (native per-sample ≤1.0× JIT Java at breakeven N≤16), NO-GO валиден на каждом гейте и закрывает worldgen noise канал окончательно (per-call TASK-63, batched STEP-0, boot TASK-58, geometry TASK-65 — канал закрыт со всех сторон). PROVEN_WINS_SYNC §3.2 channel-scope note исполняет коррекцию TASK-63 F1: per-call мост на production fresh-worldgen канале измеренно НЕ адресуем. Гейты: tests 61/61, clippy 15/5 типов = pre-existing all-targets baseline Δ0 attributable (docs-only). docs/WORLDGEN_BATCHING_LAYER_DESIGN.md; c-crussty a94cd01; CLAIMS TASK-66.
-
-## TASK-67 — cron 13:40+08 (agent-7625532f, 2026-09-08T06:4xZ)
-
-G-STEP0 gate — **GO** (первый implementation-гейт batching-layer из TASK-66 дизайна). Риг bench/step0_noise (standalone JVM, CPU-only, NO server boot/deploy; BENCH.lock inline): Java-арма = РЕАЛЬНЫЙ ImprovedNoise из deployed paperclip-patched jar versions/1.21.10/purpur-1.21.10.jar (mojang-mapped — те же байты что в рантайме; найден jar-археологией: bundler cache/mojang → nested server-1.21.10.jar (obf) → patched versions/1.21.10/purpur); native-армы = closed lib repo copy: nativeNoise(NoYScale) + УЖЕ существующие batch kernels nativeFill/nativeFillNoYScale (JNI_EXPORTS.manifest:264-265 — N сэмплов на ОДИН crossing; открыто при инспекции bench/noise_ab stub'ов). ПАРИТЕТ ДО ТАЙМИНГА: 0/20000 mismatches обе формы (bit-exact vs реальный класс с этого пути). P500-метод (120ms, median-of-5, fwd/rev, min-of-medians, SINK, общий координатный пул). РЕЗУЛЬТАТ: J3 Java 91.1 ns/sample; per-call native 92.7 (1.02x — TASK-63 refutation независимо переподтверждена); **batch N=16 = 54.1 = 0.59x Java** (3-arg доминирующий worldgen путь); N=1024 = 37.5 = 0.41x; 5-arg batch N=16 = 0.84x. Core-only 38-53ns согласован ×3 оценки. Breakeven: любой N≥2. Ожидания (дизайн §4): 4.12 CPU-s × (1−0.59) ≈ 1.7 CPU-s recoverable → 1.4-1.6 CPU-s ≈ 3-4% burst wall; пессимистичная сцена REFUTED измерением. Гейты: cargo test 61/61 (src не тронут). bench/p500/results/STEP0_NOISE_CORE_2026-09-09.md + RAW log; 8b3e12e; CLAIMS TASK-67 done. Коорд: ребейзы поверх соседских 6f1520f (их TASK-64 phase 3 live-verify) чистые; сосед клеймил TASK-68 (server lane) — lanes разнесены.
-
-## TASK-69 — cron 14:00+08 (agent-7625532f, 2026-09-08T07:0xZ)
-
-G-RECON gate — **GO с честным уточнением**. (1) javap рекогносцировка владельцев (deployed patched jar): PerlinNoise.getValue(3-arg) = 12-байтный делегат к 6-arg (yScale=0,yMax=0); 6-arg = ОДИН self-contained octave loop на весь метод (aaload+null-check, 3×wrap, условный yo-field read, noise(DDDDD)D, amplitudes.getDouble interface call, аккумуляция) — whole-body swap форма, pristine-fallback тривиален; NormalNoise.getValue = два дерева + valueFactor. (2) МАНИФЕСТ: whole-object kernels УЖЕ в closed lib — PaperNativePerlinNoise.nativeBuildHandle([B[B[D[D[D[DDD)J + nativeGetValue(JDDDDDZ)D + nativeGetValueNoYScale(JDDD)D, PaperNativeNormalNoise.nativeGetValue(JJDDDD)D + fill-семейство, P500 getValueBatchSummary — 'новый batch kernel' из TASK-66 §3.3 возможно не нужен; ABI decode ([B[B[D[D[D[DDD, 11 аргументов) = новый суб-гейт G-ABI (в repo артефактах семантики нет — engine repo не содержит noise kernel sources). (3) ЗАМЕР владельцев (Step0ReconBench, реальный patched jar, P500-метод): P.getValue(8 октав) 427.3 ns/call; NN.getValue 781.7; corner-noise(0,0) 89.9; 3-arg 93.7. КЛЮЧЕВОЕ УТОЧНЕНИЕ: in-loop октава стоит 53.4ns (427.3/8) — JIT амортизирует overhead изолированного вызова (91.1); честный native headroom в контексте цикла = 0.70-0.96x (не 0.59x); whole-getValue kernel ≈ 353ns vs 427.3 = 0.83x; recoverable пересчитан: 0.7-1.2 CPU-s ≈ 1.6-2.7% burst wall (вместо 3-4% изолированной оценки; оригинальный коридор TASK-66 0-3% остаётся верным). Следствие для формы патча: батчить ACROSS getValue calls где позволяет caller (fillSlice-зерно — fill{Vertical,Cell} кернелы lib hint'ят что авторы lib атаковали именно это зерно), сохраняя core на 0.41-0.59x. Гейты: cargo test 61/61 (src не тронут). bench/p500/results/GRECON_OWNERS_2026-09-09.md + RAW; de2cacd; CLAIMS TASK-69 done. Дизайн-док §7: G-RECON=GO, новые суб-гейты G-ABI и G-AB pending.
-
-
----
-Task ID: cron-18:40+08-Job366516 (TASK-80, session closeout)
-Agent: agent-7625532f
-Task: Guard-wave Session-1 (fluid-push same-state guard): implementation, live bring-up, falsifier measurement, engine critical fix. Joint closeout with S7-25 (their 2f4f599/00fd889 verdict; my c69fd71 results doc).
-
-Work Log:
-- Built FluidPushGuardHook (pure-Java bridge, no JNI): negative-only same-state guard + javap-exact slow-path reimplementation; quantized cell-bounds key; per-entity 4-slot array (tag-alternation fix); hit-rate counters (falsifier). Env CRUSSTY_FLUID_PUSH_GUARD default OFF, dormant byte-identity, kill-switch=arming gate. Gates: cargo test 64/64, clippy Δ0, P500 FULL duty 70/70 ×2 (0 regressions).
-- THREE measured bring-up fixes (RAW archived): (1) exact-double-bits key NEVER hits — item friction ×0.98/tick rebuilds the AABB with fresh bits every tick (pilot B SLOWER than A, 3.29 vs 2.19 CPU-s) → integer cell-bounds key (outcome is cell-set-determined, bit-exact); (2) single-slot cache thrashed by WATER/LAVA alternation — hit_rate 2.0% → slot array; (3) `forceload add` takes BLOCK coords (chunk-looking args marked 1 chunk) + spawn chunks not auto-kept-loaded → summoned entities saved-to-disk on chunk unload and vanished from @e → block-coord forceload + accumulated-log delta counting.
-- ENGINE CRITICAL FIX (CRUSSTY 4f5d5ea): runtime class_file_load_hook passed a non-NUL-terminated Rust String pointer to plugin hooks — C-string scans hit heap garbage → hook-name matching was heap-layout-dependent; Entity's whole-body patches were silent no-ops (retransform rc=0, no "hook serve"); PerlinNoise worked by heap luck. Restores deterministic dispatch for ALL project class hooks. Deployed libcrussty_runtime.so (bak_prefix_nul rollback).
-- Live verification post-fix: pristine sighting 205458 B → hook serve 204078 B → armed rc=0 → self-test passed → hit_rate 96.4% (252,722/262,144) across every armed run; JFR proof: patched chain sampled live (Entity→FluidPushGuardHook, MapMakerInternalMap.get, cellsUnchanged→PalettedContainer.get).
-- Live A/B (n=5/arm, protocol v2, 30 s fixed window, 400-item deterministic grid): A med 2.72 vs B med 2.59 CPU-s (−4.8%), MW exact p_two=0.6905, OVERLAP — under-powered at this profile; p<0.1 wall gate honestly NOT passed. x1000 entity-path guard branch CONFIRMED falsified by live falsifier data (6th refuted branch, first closed with a working impl + measured hit rate).
-- Incident: 2 new-signature hs_err (WorldBorder.<init> SI_KERNEL; BlockEntity.<clinit> SIGILL) inside the runtime/plugin hot-swap churn window; discriminator 3/3 clean dormant boots on the fixed runtime; classified hot-swap transients; deploy discipline hardened (.so swaps only on pgrep==0 quiescence).
-
-Stage Summary:
-- TASK-80 closed jointly: guard ships default-OFF DO-NOT-WIRE-BY-DEFAULT (real but small ~2% census win; not x1000-class). Biggest deliverable = the engine NUL-termination fix (a reliability multiplier for every future hook channel).
-- Pushes: c-crussty 2f4f599+c69fd71+dd298fc (origin/master), CRUSSTY 4f5d5ea (origin/master), CLAIMS 00fd889 (dev-logs). Open claims: none. Next: mob-dense census (S7-26/81), kernel-policy whitelist + B.2.2 runbook (P2), ck_cap verify-strings (P2), D6 P3 design; user-directed web-research lane for new optimization architectures (puzzle-assembly of published techniques) authorized by owner this session.
-
----
-Task ID: cron-22:20+08-Job366516
-Agent: agent-7625532f
-Task: TASK-86 (kernel-policy whitelist + B.2.2 runbook для whole-body класса) — ИМПЛЕМЕНТАЦИЯ ЗЕЛЁНАЯ, ПУШ ЗАБЛОКИРОВАН (sandbox reset, токен погиб).
-
-Work Log:
-- Клейм TASK-86 улетел в dev-logs ДО ресета (ed2e1d3, 14:3xZ) — соседу виден. Mид-тик (~14:45Z) sandbox rootfs WIPED: /home/z/c-crussty, CRUSSTY, crussty-dev-logs, jdk21, server, ~/.git-credentials — всё удалено; my-project сброшен; локальный worklog потерян (пересоздан с incident-записью).
-- Восстановление: rustup (2-я попытка; сеть флапала) → клон c-crussty @ ad7a343 (публичный, история цела) + CRUSSTY @ 4f5d5ea → ПЕРЕ-ПРИМЕНЕНИЕ TASK-86 правок байт-в-байт из контекста сессии (git diff --stat: 96 insertions / 3 файла): PROVEN_WINS += ("PerlinNoise","getValueWholeBody") + ("ImprovedNoise","noiseWholeBody") с evidence-указателями; policy-гейт decide() в register() обоих модулей (KeepJava → dormant + лог-строка; audit_wire на arming); новый тест whole_body_bridge_wirings_are_policy_gated (drift-guard: переименование ключа с одной стороны = тест падает).
-- Гейты на восстановленном дереве: cargo test 65/65 ok (64 + новый); clippy Δ0 (12, те же категории); P500 FULL duty rc=0 70/70, 0 CRASH/SKIP, 4 известных регрессии на месте (5.561/4.641/2.317/1.773). JAVA_HOME для P500 — свежескачанный Temurin 21.0.12.1 (adoptium; apt-jdk недоступен без root).
-- Доки: KERNEL_POLICY.md §whole-body (two-key контракт + таблица записей + promotion procedure); BATCH_ROLLOUT_RUNBOOK.md §9 (B.2.2 ladder для whole-body: dormant/armed/refusal gates, PASS, abort-лестница env→registry→.so); RESULTS_LEDGER.md ADDENDUM-4.
-- БЛОКЕР: ~/.git-credentials погиб с ресетом; crussty-dev-logs = private (недоступен даже на чтение); push невозможен ДО перепровижининга токена владельцем. Секрет-гигиена: токен из кода/истории НЕ восстанавливается (никогда не коммитился — по правилам).
-- Живые буты (dormant zero-delta + armed smoke) отложены: Purpur 1.21.10 jars + world anchor погибли с ресетом; переменная среды восстановления — следующий тик с токеном.
-
-Stage Summary:
-- TASK-86: КОД+ДОКИ ГОТОВЫ К ПУШУ (гейты зелёные на восстановленном дереве), вердикт не финализирован до пуша/бутов. Promotion-механика whole-body класса теперь двухключевая: env-флаг оператора + kernel-policy леджер — демоция записи в реестре мгновенно отключает живой мост на следующем буте.
-- Инфра-статус сандбокса: rust ✓ (stable), jdk21 ✓ (Temurin 21.0.12.1), c-crussty+CRUSSTY клонов ✓; НЕТ: токен (→ push + private dev-logs), Purpur jars, world anchor, BENCH.lock-канон |. Следующий тик: пуш TASK-86 при восстановленном токене, ребилд server-энва, доклейка бут-гейтов.
-
----
-Task ID: cron-23:00+08-Job366516
-Agent: agent-7625532f
-Task: TASK-86 phase 2 — живые бут-гейты runbook §9 (dormant/armed/refusal) на восстановленном после ресета окружении.
-
-Work Log:
-- Ребилд server-энва с нуля: Purpur 1.21.10 build 2535 (md5 d48ae0c3 проверен против API; первый /latest/download дал битый хэш — качать по /2535/download), eula + crussty.toml (канонический минимум), launcher.jar + libcrussty_runtime.so из релиза v2.2.9 — ЗАМЕНА: релизный runtime (1848184B) ПРЕДШЕСТВУЕТ нашему NUL-фиксу → собран runtime из клона 4f5d5ea (1848488B, release 41s); module.json + libcrussty.so (TASK-86 build) + ЗАКРЫТЫЕ либы (libpaper_native_jni.so + chunk_encode) в modules/crussty/ — первый бут без них дал честный FAIL "native surface live" (verify различает marker-capable .so без life-signs = FAIL, что и сработало).
-- УРОК-КОРРЕКЦИЯ (F4): e2e boot/verify НЕ оборачивать в flock — скрипт имеет собственный guard, а обёртка протекает fd лока в долгоживущий stdin-holder (sleep 3600 наследует fd → BENCH.lock удержан весь аптайм сервера; обнаружено сканом /proc/*/fd, killed orphan). Бут/верифай — без обёртки; P500/duty — flock как раньше.
-- ГЕЙТ 1 dormant: verify ALL PASS rc=0 (16.3s Done), 0 hs_err, все dormant-маркеры 5 модулей.
-- ГЕЙТ 2 armed+audit (CRUSSTY_KERNEL_POLICY=audit + CRUSSTY_NATIVE_PERLIN_NOISE=1): полный маркерный след — bridge defined ×3 → patch 11030→10765B → hook serve → retransform rc=0 → self-test passed; НОВАЯ policy-строка в логе: "kernel-policy: WIRE PerlinNoise.getValueWholeBody at perlin_noise whole-body bridge arming: allowed (proven)" + 4 DO_NOT_WIRE регистрации помечены surface-only; v1 audit-line (nativeGetValue REFUSED) = пре-существующий audit-only сайт (ад7а343, не мой гейт) — задокументировано.
-- ГЕЙТ 3 refusal (detached-worktree риг по прецеденту refused_e2e): entry удалена → cargo release 6s → бут с env ON → "kernel-policy KeepJava (kernel is not in PROVEN_WINS ...) — staying dormant despite env gate", 0 arming-маркеров; вариант .so также ПАДАЕТ на drift-guard тесте (64/1) — тест ловит именно такой registry drift. Промоутед-сборка восстановлена (md5 == артефакт 6665300), финальный dormant бут ALL PASS.
-- runbook §9 дополнен таблицей live-валидации (operator-ready). 0 новых hs_err за все 5 бутов; мир fresh-gen (анкор потерян с ресетом — для A/B нужен новый анкор).
-
-Stage Summary:
-- TASK-86 ПОЛНОСТЬЮ ГОТОВ: код+доки+гейты (test 65/65, clippy Δ0, P500 70/70) + все 3 бут-гейта §9 живьём. Коммит 6665300 + evidence-апдейт локально. ЕДИНСТВЕННЫЙ блокер — токен: push 6665300 + CLAIMS done в dev-logs (private, недоступен) — на первый тик с восстановленным токеном.
-
-
----
-Task ID: S7-88
-Agent: Super Z (main, cron job 370520, 19:20+08)
-Task: c-crussty attempt-25 — P6B-24 rcon remedy + SERVING soak
-
-Work Log:
-- Pulled repos (twin TASK-141 done = §86 tail, no S7-88 claim => lane mine); claim-first pushed 5d72db4; restored accidental dev-logs/worklog.md clobber via git checkout (uncommitted twin damage, canonical log is here)
-- OFFLINE DECODE 0 boots: javap RconThread/GenericThread/DedicatedServer (real purpur jar) => run() bytecode NO exit path (catch IOException -> log -> goto 0), field `socket` re-read per iteration; boot.log smoking gun "[jdk.crac] Socket ...localport=25575 was not closed by the application" => LAW P6B-29: CRaC closes unclaimed java.net sockets JAVA-LEVEL at CK; restore1.log "Socket closed" from NioSocketImpl.ensureOpen => dup2 branch structurally inapplicable (honest refutation)
-- Rig v12.6 (6799691): repairRcon() reflective field-swap RconThread.socket <- fresh ServerSocket(:25575, reuseaddr, backlog 50); rconPreCapture() at BCP; rcon.py honest RCON-protocol probe (SERVERDATA_AUTH wrong-pwd, no secret read); SOAK-R1/R2 sustained x3; portClear() hex-case fix; stale-evidence cleanup; javac pre-check before boot (0 burned boots)
-- 1 boot 18.4s: CK first-try deterministic -> restore x2 alive -> RCON-REPAIR-SWAPPED both -> PROBE-25575 RCON-SERVING R1+R2, SOAK-25575 3/3+3/3, storm ZERO after swap (spree 674/813 vs 2436 = pre-swap window only) => P6B-24 CLOSED
-- Honest regression banked: 25565 SOAK R1 2/3, R2 0/3 (TCP ok, SLP timeout); NETTY-ERR = 1x epoll_wait EINVAL per restore; mechanism = swap-branch fresh epoll created EMPTY (ctlAdd only in dup2 branch) => parked loop loses wakeup; confound = repairRcon fd allocation before repairAllLoops; both flagged with a26 levers
-- Banked c-crussty (results ATTEMPT25 + ledger §87, tail re-grepped) + dev-logs (CLAIMS done + SESSION 088)
-
-Stage Summary:
-- RCON 25575 SERVING AFTER RESTORE achieved (protocol-level evidence, sustained) — second port alive post-restore, INJECTS-ONLY, zero config. 25565 durability = final serving blocker with precise mechanism (swap-branch wakeup gap) and 3 pre-registered a26 levers. P6B-29 law banked. S7-89 = a26
-
-
----
-Task ID: S7-89
-Agent: Super Z (main, cron job 370520, 19:15+08)
-Task: c-crussty attempt-26 — 25565 soak repair (wakeup-gap fix)
-
-Work Log:
-- Push race #19 at claim: twin TASK-142 registry sweep landed mid-push => rebase + union-resolve keep-both + re-append claim (2a011f5); their sweep consumed no §
-- Rig v12.7 (bee6331): lever-1 swap-branch ctlAdd eventfd re-arm; lever-2 repairRcon after repairAllLoops; lever-3 verifyLoops liveness census at repairer +1.2s; javac precheck before boot
-- 1 boot 17.4s (canonical): CK first-try deterministic => restore x2 alive => ctlAdd x6 rc=0 in-vivo => AR-REBIND rc=0 ms=22/22 => SOAK 25565 3/3+3/3 SERVING (a25: 2/3, 0/3!) + 25575 3/3+3/3 maintained => serving matrix COMPLETE both ports
-- Confound disproven: 25565 recovered despite more swap-branches than a25 => causal = ctlAdd re-arm, not fd-layout lottery
-- Honest: verifyLoops census 0/0 (instance-walk discovery misses static groups — a27 union-fix); NETTY-ERR = 1x EINVAL/restore now cosmetic (a25 same line = death, a26 = benign)
-- Banked c-crussty (results ATTEMPT26 + ledger §88) + dev-logs (CLAIMS done + SESSION 089)
-
-Stage Summary:
-- Phase-6c serving matrix COMPLETE: 25565 SLP + 25575 RCON sustained 3/3 both restores, INJECTS-ONLY, 0 config. Residuals: census discovery bug (a27), 1x EINVAL cosmetic. S7-90 = a27 census fix + LONG-SOAK exit gate (2min periodic probes), then phase-6d production-integration planning
-
-
----
-Task ID: S7-90
-Agent: Super Z (main, cron job 370520, 19:30+08)
-Task: c-crussty attempt-27 — census union-fix + LONG-SOAK exit gate
-
-Work Log:
-- Claim a8c94ad (no twin S7-90); rig v12.8: census fed findLoops+findLoopsStatic union + LONGSOAK 12x10s; v12.8.1 trimmed 12->8 rounds (foreground tool-run timeout budget, deviation disclosed)
-- Process lesson: nohup background launch REAPED between tool calls (0-byte log, no boot); foreground re-run OK — 1-boot budget intact
-- 1 boot 17.4s: census alive=7/8 (first real finding: 1 NioEventLoop dead — Nio group unrepaired by design scope; serving unaffected, Epoll-routed); swap-branch ctlAdd rc=0 absorbed aggressive fd recycling (eventFd wrapper held spark-jfr.tmp path); REBIND rc=0 29/25ms; CK deterministic
-- CAPTURE ERROR honest: verdicts piped through tail-30 => 25565 longsoak counts LOST (no ping traces server-side => unmeasurable); 25575 12/12+12/12 RECONSTRUCTED from server-side rcon-client logs (exact probe-schedule match both restores)
-- Rig v12.9 (9470ff2): exec tee run.log — verdict capture institutionalized; push races #19/#20 resolved (rebase; twin TASK-142/143 consumed §89 => mine §90)
-- Banked c-crussty (results ATTEMPT27 + ledger §90) + dev-logs (CLAIMS done + SESSION 090)
-
-Stage Summary:
-- Exit gate 3/4 proven, NOT claimed closed (honest): 25575 sustained both restores; 25565 unmeasured this run. Census = working per-loop truth-teller (Nio dead loop found). S7-91 a28 = v12.9 tee re-measurement (8/8+8/8 target => gate CLOSED) + Nio decode, then phase-6d
-
-
----
-Task ID: S7-91 (task160)
-Agent: Super Z (main session, live owner window «так ты сам всё делай. ты автономный. у тебя же есть ключ от гитхаба»)
-Task: Benchmark 3.0 first REAL CI run — autonomous end-to-end (claim TASK-228 in dev-logs 1a11edf)
-
-Work Log:
-- Sandbox boot env verified WIPED (no /home/z/crac-jdk, /home/z/server, crac.jar, deployed .so) => a28 LONG-SOAK v12.9 tee re-measure HONESTLY PARKED (needs provisioning tick), not silently dropped; CLAIMS TASK-228 discloses this
-- Owner directive executed instead: Benchmark 3.0 in GitHub CI, autonomous incl. GitHub ops via stored token (verified: repo public, release v0.1.0 natives asset present => full-bridge expected)
-- RUN #1 (35106393250, 32309d2): rust build OK, world 6.68GB download+extract OK, FATAL "no world dir in zip" — root-caused WITHOUT re-download: range-request of last 4MB + sparse-file reconstruct + central-directory parse => zip is a BARE world (level.dat/region//DIM-1//DIM1/poi//entities/ at zip ROOT, no wrapper folder; 4228 entries)
-- Harness fix c659d43: extract->staging, level.dat any-depth detection + region/ sibling requirement + normalize to $SERVER/world; rg->grep portability; honest FATAL with diagnostic listing if structure ever differs
-- RUN #2 dispatched (35107535812, c659d43) — in flight at write time
-- Parallel: docs/RESEARCH_BENCH3_BUCKETS_2026-09-16.md — huge research round per owner bar: bucket ladder (7 buckets) mapped to Rust-replacement candidates with pre-registered gates (NOISE-COLS SIMD column-noise; ENT-BP broadphase bridge w/ propose-verify = speculative-decoding mapping + SoA mirror = MLA mapping + GetPrimitiveArrayCritical pinning discipline per Shipilev/IBM/Oracle; chunk zero-copy lenses = R57 banked design; hopper batch mirror; tick-queue arena; JVM = no-touch per C3 corpus §91-96) + self-audit law (<2% own self-time) + escalation protocol
-
-Stage Summary:
-- First REAL CI benchmark executed autonomously end-to-end (owner's GitHub-key directive): run#1 fail root-caused with a novel remote-zip-introspection trick (no 6.68GB re-download), fixed, re-dispatched. a28 parked honestly. Research ladder pre-registered for the data-driven rounds. NEXT: run#2 artifacts => BOTTLENECKS_3 real numbers => ledger §108 => top-bucket round per RESEARCH doc
-
-
----
-Task ID: S7-91 (task160) — continuation
-Agent: Super Z (main session)
-Task: runs #2-#5 lifecycle — root-cause ladder on the road to first REAL BOTTLENECKS data
-
-Work Log:
-- RUN#2 (c659d43): workflow "success" but HONEST ZERO (my pre-registration (iv)): boot Done=0, all metrics 0. Root-cause from 2.5KB server log: eula.txt failed — java launched with cwd=repo root; Paper resolves eula/world vs CWD. (Twin fixed in parallel: df8ff78 cd $SERVER + natives INTO modules/crussty + die() hardening + BOOT_TIMEOUT 600.)
-- RUN#3 (35107179017) CANCELLED by concurrency group (my dispatch raced twin's).
-- RUN#4 (df8ff78): gate FAILED. Artifact archaeology: server reached Done (19.025s)! — world loaded, DIM-1/DIM1 auto-migrated, module FULLY ARMED on real purpur: area_map 5075->3320 retransform rc=0 self-test 64+141 rects OK, perlin whole-body 11030->10765 armed rc=0 self-test PASS, natives staged in module dir. BUT harness declared SEEN_DONE=0: my c659d43 grep -q "Done \(" in BRE = unmatched-group ERROR every iteration (silenced). Window skipped, stop issued at 600s. Plus: report never ran (relative dirname $0 after cd) + asprof fetch failed silently (empty var).
-- FIX 79c9fb1: grep -qF "Done (" (literal); SCRIPT_DIR absolute-once; asprof pinned v4.1 fallback + loud WARN; SEEN_DONE=0 dumps last 40 server lines to job log.
-- RUN#5 (79c9fb1) dispatched — in flight.
-
-Stage Summary:
-- Boot ladder closed one loop at a time: zip structure → eula/cwd → grep BRE → report path → asprof. Each fix is a run#N lesson in the harness header (institutionalized). The module's CI-armed evidence (run#4 log) is the first REAL-kernel confirmation that both hotpatches engage end-to-end outside the sandbox. Run#5 should produce the FIRST real BOTTLENECKS_3 data.
-
-
----
-Task ID: S7-91 (task160) — closeout
-Agent: Super Z (main session, tick 22:08+08 Job 390126, shared lane with parallel instance)
-Task: TASK-228 final — BENCH 3.0 run#10 COMPLETE (collapsed stacks) + full banking
-
-Work Log:
-- run#7 (my dispatch, 4a120f2 exact-name find + chmod/-x guard) cancelled by twin's concurrent dispatch — shared-goal protocol, adopted twin's run#8 35119562399
-- run#9 evidence: attach WORKED (asprof bin found, ptrace_scope 1→0, "Profiling started") but 4.x single-session ("Profiler already started" on alloc) + removed --format ⇒ 0-byte dumps; root-causes pushed by twin (507f3f5: cpu-only, dump -o collapsed -f)
-- run#10 35122692415 COMPLETE: boot 18.12s, 36 cmds = 9216 chunks force-loaded, zero-player soak ~13.5 TPS steady, MSPT avg 80.86 / max 199.45ms, 224,660 CPU samples collapsed (154MB) + 1.5MB flamegraph, spark xCLQqUSJao
-- BUCKET TABLE banked (first on a real world): entities/mobs 12.6% TOP (AABB.intersects 1.2% + collision 0.8% + SynchedEntityData ~2.2%) → ENT-BP; chunk system 9.8% (PalettedContainer.get 3.7% largest kernel leaf + getBlockStateFinal 1.7% + SimpleBitStorage.get 1.6% + readPalette 1.5%) → PALETTE bridge; random-tick lane ~4.5% DISCOVERED (optimiseRandomTick 2.2% + advanceSeed 1.7% + snowy dirt 0.6%); worldgen/noise 0.0% (85 samples) — sandbox noise-dominance assumption REFUTED by real world, NOISE-COLS demoted; GC/JVM ~39% native bucket = §6 no-meddle holds; module self-audit <2% PASS (own frames absent from top-40)
-- module armed EVERY leg (10/10 dispatches): area_map retransform rc=0 self-test 64+141 rects OK; perlin whole-body 11030→10765 armed rc=0 self-test PASS
-- Banking: bench/world3/results/BENCH3_RUNS_2026-09-16.md (lifecycle + tables) + ledger §108 + INDEX row (c8e8940, pushed, origin==local); CLAIMS TASK-228 done row (dev-logs 27bf349, pushed)
-
-Stage Summary:
-- TASK-228 CLOSED with the owner's core deliverable: a data-driven ranked bottleneck table from a REAL world under forceload with the module armed — the research ladder now has real targets (ENT-BP 12.6% / PALETTE 9.8% / random-tick 4.5%) and one honest refutation (noise 0.0%). NEXT: task161 = ENT-BP huge research + pre-registered gates; task162 = PALETTE/chunk-state bridge design (zero-copy lens); a28 boot lane stays parked (sandbox env); Full-world 43.4GB + summon_sweeps legs = owner dispatch choices
-
-
----
-Task ID: S7-91 (task160) — FINAL closeout (main session)
-Agent: Super Z
-Task: BENCH 3.0 run#10 COMPLETE + JVM re-bucketing + lane handoff
-
-Work Log:
-- RUN#10 (507f3f5): asprof v4 dump -o collapsed -f fix => cpu-collapsed.txt 154MB (224,660 samples), flamegraph 1.5MB, FIRST REAL BOTTLENECK RANKING. Boot 18.12s, 9216 chunks, window ~13.5 TPS, MSPT avg 80.86/max 199.45ms, spark xCLQqUSJao.
-- Ladder (twin's results doc + my JVM addendum): ENT-BP 12.6% (1st), PALETTE/chunk-state 9.8% (2nd, PalettedContainer.get 3.7% top leaf), RANDOM-TICK ~4.5% (3rd, discovered), GC 9.5% total (JVM re-bucket: 'other' 39.3% -> 13.9% residual; barriers 4.7 + G1 4.0 + 0.8), NOISE-COLS demoted 0.0% (pregenerated world — sandbox intuition refuted), module/engine/natives 0.0% self-time (§8 law PASSES).
-- report_world3.py institutionalized: JVM content-buckets (no libjvm.so prefix in HotSpot C++ frames), Marked/TPS/MSPT/spark-link parsers, INVALID-rank note.
-- Coordinated with twin via keep-both (runs #3/#6/#8 cancelled by concurrency, no lost work; fixes landed disjoint; §108 + results doc + INDEX already banked by twin, my addenda appended on top).
-
-Stage Summary:
-- TASK-228 COMPLETE: Benchmark 3.0 executed END-TO-END autonomously (dispatch, monitor, root-cause x8, fix, re-dispatch, artifact analysis, ledger, research ladder). The pipeline now produces a ranked bottleneck table EVERY dispatch. NEXT lanes pre-ranked: (1) ENT-BP broadphase/entity mirror (12.6%), (2) PALETTE zero-copy lens bridge (9.8%), (3) RANDOM-TICK speculative lane (~4.5%), GC structural. a28 (LONG-SOAK v12.9) remains parked for a provisioned sandbox tick.
-
-
----
-Task ID: S7-92 (task161) — ENT-BP research round CLAIM
-Agent: agent-7625532f (session web-f7888d46, cron tick 2026-09-17 01:08+08, Job 390126)
-Task: task161 = ENT-BP huge research + design round (top bucket: entities/mobs 12.6% per run#10)
-
-Work Log:
-- creds FIRST -> worklog tails (my-project/c-crussty/CLAIMS) -> 3x pull --rebase (all up to date, twin silent since b08f1ab/0951123)
-- RUN#10 artifact RE-DOWNLOADED from CI (world3-bench, 9.4MB zip; 154MB collapsed intact, 100,915 stacks, 224,660 samples verified)
-- EXACT-FRAME re-mining of the entity bucket (entbp_mine.py): hot loop owner = MOONRISE ca.spottedleaf.moonrise...ChunkEntitySlices$EntityCollectionBySection.getEntities (NOT vanilla EntitySectionStorage — pre-registered §2 target REFRAMED, addendum follows)
-- Numbers: EntityLookup.getEntities lane 4.76% presence; EntityCollectionBySection.getEntities 3.79% presence (loop machinery replaceable ~2.27% absolute: loop self 0.68 + AABB.intersects 1.13 + getBoundingBox 0.14 + fastutil section-map 0.32); predicate retention ~1.3% (EntitySelector pushable lambdas + Scoreboard.getPlayersTeam 0.99% — runs on TRUE candidates, does NOT shrink under a correct mirror); top driver AbstractBoat.tick 9.66% presence (move->collide->hard-collision+pushable queries per boat per tick)
-- Lesson banked: grep-substring aggregation polluted EntityLookup.get as "5.04%" — exact-frame match = 0.06% (HangingEntity.canCoexist chain). Frame discipline = exact match + caller chains, never substring
-- HUGE RESEARCH (web): CUDA GPU Gems 3 Ch.32 broad-phase (uniform grid wins for chunk-stationary objects; SAP wins for high-velocity); gameprogrammingpatterns Data Locality (SoA); box2d "SIMD for Collision" + Barczak 4-wide box tests (AVX2 batching); Shipilev quark 17 + IBM JNI docs + JEP 423 (critical-region discipline: copy-out-then-compute, no JNI inside); Leaf async target-search (propose-verify precedent); moonrise entity architecture (do-not-duplicate list)
-- STALENESS HAZARD analyzed: query-side re-verify fixes false POSITIVES only; stale mirror = false NEGATIVES = lost entities. Airtight design = full write-path coverage (EntityLookup.add/remove + AABB mutation sites) + CI SHADOW-DIFF leg (mirror candidates vs kernel scan, full soak) before any G2 claim
-- Rust core entity_mirror.rs IMPLEMENTED this tick: loose 16^3 grid + SoA slot store + generation-stamp dedup + AVX2 4-wide batch box tests w/ scalar fallback (0 new deps) + no-alloc fast path + property tests vs linear oracle
-
-Stage Summary:
-- task161 CLAIMED and research round DELIVERED: docs/RESEARCH_ENTBP_2026-09-17.md (measured anatomy + literature + staleness matrix + lever spec ENT-BP v2 + pre-registered gates G1-G4 + follow-up levers). Rust core landed with parity tests. JNI surface + hot-patch wiring = next tick after CI recon leg (javap dump of moonrise entity classes). INJECTS-ONLY: 0 sandbox boots, cargo test only
-
-
----
-Task ID: S7-92 (task161) — round closeout
-Agent: agent-7625532f (same tick)
-Task: ENT-BP v2 research + Rust core — DONE (lever production claim PENDING CI legs)
-
-Work Log:
-- run#10 artifact re-mined with exact-frame discipline: hot loop owner = moonrise ChunkEntitySlices$EntityCollectionBySection.getEntities (vanilla EntitySectionStorage ABSENT from hot path — §2 target REFRAMED, gates unchanged); replaceable core 2.27% absolute; predicate retention 1.3%; AbstractBoat.tick 9.66% = top driver
-- docs/RESEARCH_ENTBP_2026-09-17.md: measured anatomy (9-row table), literature (CUDA Ch.32 uniform-grid verdict, gameprogrammingpatterns SoA, box2d/Barczak SIMD, Shipilev quark17+JEP423 critical discipline, Leaf async precedent, moonrise do-not-duplicate list), staleness decision matrix (per-tick reconcile REJECTED half-tick-stale; inflated-epsilon REJECTED unbounded displacement; full write-path coverage SELECTED; async PARKED), lever spec + verification ladder (core -> recon leg -> shadow-diff -> A/B x2 -> TASK-148 promotion flow), kill-criteria, follow-up levers (PUSH-MEMO 0.99%, ENT-DATA 0.79%, CollisionUtil->PALETTE overlap)
-- src/entity_mirror.rs IMPLEMENTED (production Rust, 0 new deps): loose 16^3 grid + SoA slot store + generation-stamp dedup (no clearing) + wildcard conservative list (giant/NaN/inverted boxes) + AVX2 4-wide batch box tests with scalar fallback + caller-owned output buffer + checksum handle (ClimateRTree precedent)
-- TESTS 72/72 PASS (incl. 7 new): property parity vs linear oracle x64 trials x3000 ops (candidate-set EQUALITY), scalar==SIMD exact, dedup, wildcard, churn/free-list, gen-wrap, checksum stability
-- G3 core evidence (counting global allocator, single-threaded): 10,000 queries -> 0 allocs; 3,000 same-span moves -> 0 allocs; boundary-crossing moves = designed slow path, 442 allocs/3000 banked
-- CORE bench (NOT a CI claim): 30k entities farm shape (70% in 12 clusters), 20k queries avg 315.8 candidates: mirror 34.2us/query vs full linear scan 150.5us (4.4x); honest caveat banked: kernel scans sections, not full — mirror-vs-kernel = CI A/B (G2) only
-- TEST-BUG lesson: first zero-alloc failure was the test's own bug (buf allocated after counter reset); diag-batch harness isolated query path clean; no mirror change involved
-
-Stage Summary:
-- task161 round DELIVERED: research doc + Rust core + parity tests. Lever NOT claimed vs G1/G2 — ladder: (1) CI recon leg (javap artifact entity-recon from booted jar: EntityLookup/ChunkEntitySlices/Entity AABB mutation sites), (2) shadow-diff diagnostic leg (zero mismatches required), (3) A/B x2 env CRUSSTY_NATIVE_ENT_BP, (4) TASK-148-style promotion. PUSH-MEMO (scoreboard 0.99%) pre-ranked as next lever same bucket. INJECTS-ONLY: 0 sandbox boots. Push: c-crussty + dev-logs (CLAIMS TASK-229); CRUSSTY untouched (pristine)
-
-
----
-Task ID: S7-93 (TASK-230) — LLM-ARCH mega-research round («архитектуры от дипсика», CPU-only)
-Agent: agent-7625532f (session web-f7888d46, live owner window 2026-09-17 2026-09-16T17:51Z)
-Task: owner directives «рисерч делай от дипсика например архитектуры :)» + «без гпу тоже надо мега ускорение» + «крон с гитхаб токеном чтобы не потерять вообще всё»
-
-Work Log:
-- protocol: creds FIRST -> tails (my-project/c-crussty/CLAIMS) -> 3x pull --rebase (c-crussty 30487bb, dev-logs 7568922, CRUSSTY pristine 1f4c06a untouched)
-- 3 LLM passes (z-ai-web-dev-sdk backend; q3 thinking ON): (q1) перенос 7 DeepSeek/LLM-паттернов (MLA/DeepSeekMoE/MTP/PagedAttention/FlashAttention/DualPipe/FP8) -> Paper tick-loop; (q2) полный CPU-only survey (SoA/SIMD/GC off-heap/арена/амортизация/параллелизм/palette-lens/boat/JNI-порог); (q3) красная команда по 5 кандидатам + выбор победителя. Raw: research/llm-arch-2026-09-17/ (q1 14.4KB, q2, q3, w1-w4; 2 веб-поиска упали 429, перепрогнаны CLI)
-- ЧЕСТНЫЕ ФИЛЬТРЫ над выдачей: MLA->palette вырожден (палитра УЖЕ латентное сжатие); MoE->boat-эксперты = метафора без routing-механики; DualPipe->chunk preload = гонка с moonrise (чанки уже пайплайнятся вне тик-потока); FP8-квантование = парити-запрет; MTP -> трансформирован в BATCH-RNG (бит-точный 48-bit LCG батч за один JNI-вызов — амортизация входа вместо невозможной SIMD-параллелизации зависимого потока)
-- КРАСНАЯ КОМАНДА вердикты: ENT-BP wiring NO-GO СОЛО (потолок 1.5-1.8% < гейта 3%; entity_mirror.rs = инфраструктура, production-клейм припаркован; future-банда ENT-BP+PUSH-MEMO+ENT-DATA ~4% потолок, реалистично sub-3); PALETTE per-get lens NO-GO (JNI-вход 30-50нс x 10k+ вызовов/тик >= выигрыш от 3.7% leaf); BOAT whole-body hot-patch GO = ПОБЕДИТЕЛЬ (AbstractBoat.tick 9.66% presence, потолок 4.5-6.2%); RANDOM-TICK BATCH-RNG GO резерв (3.2%); GC allocation-shape условный GO (2.8-4.7%, ждёт allocation-профиль F2)
-- ПРЕДРЕГИСТРАЦИЯ ПОБЕДИТЕЛЯ (task162, S7-93): BOAT whole-body hot-patch, мишень AbstractBoat.tick; ШАГ 0 kill-gate = exact-frame анатомия из raw collapsed run#10 (self + SIMD-able callees против JNI-upcalls в мир): заменяемая база < 4% MSPT => рычаг опровергнут ДО реализации, следующий = BATCH-RNG; гейт >=3% CI A/B min-of-2 (CRUSSTY_NATIVE_BOAT); parity = bit-exact pos/vel/флаги 20,000 тиков (вода/лава/лёд/сухопутье/падение/пассажир); лестница (0)анатомия -> (1)Rust core+parity cargo -> (2)shadow-diff CI -> (3)A/B x2 -> (4)TASK-148 promotion; клиентский lerp = сетевой слой, сервер authoritative
-- 3 новые CI-метрики пререгистрированы: F1 JNI/module self-time share (контроль §8), F2 allocation rate/тик (питает GC-лейн), F3 per-class tick split top-N
-- Доставлено: docs/RESEARCH_ARCH_LLM_2026-09-17.md (дистиллят с фильтрами и арифметикой) + research/llm-arch-2026-09-17/ raw; ledger §109; INDEX row; CLAIMS TASK-230
-
-Stage Summary:
-- Раунд дал ОДНОГО нового победителя (BOAT, 4.5-6.2%) и два измеримых закрытия до реализации (ENT-BP соло, PALETTE per-get) — экономия минимум двух раундов; реалистичный потенциал связки [BOAT + BATCH-RNG + ENT-BP-инфра + GC-shape] ~6-10% MSPT без GPU; один рычаг за раунд: следующий тик = ШАГ 0 анатомия BOAT (килл-гейт) -> Rust core либо BATCH-RNG. INJECTS-ONLY: 0 sandbox boots
-
-
----
-Task ID: S7-94 (task163) — PALETTE-GATHER batch-lens round
-Agent: agent-7625532f (cron tick 2026-09-17 01:43 +08, trace 1a0aa7402bc4d711-cron-agent-loop-202609170143; live owner directives: «рисерч делай от дипсика например архитектуры», «крон сделай с гитхаб токеном чтобы не потенять», «без гпу тоже надо мега ускорение»)
-Task: Benchmark 3.0 v2 upgrade + entity-recon CI leg (task161 ladder step 1) + DeepSeek-architecture research round on the top kernel lane (owner: huge research, CPU-only)
-
-Work Log:
-- creds FIRST via NEW persistent /home/z/my-project/scripts/bootstrap_tick.sh (token baked, idempotent; owner directive anti-loss) -> 3x pull --rebase
-- BENCH3 v2 SHIPPED: run_world3.sh three-window asprof (cpu 55% -> wall 25% -> alloc 20%; v4.x single-session discipline per run#9; final dump mislabel near-miss fixed — alloc dumps to alloc-collapsed, not cpu); +paper mspt +paper entity list polls; report_world3.py v2: GC stats from gc.log (308 pauses / 5.76s STW total / avg 18.7ms / max 129.5ms / 0 Full GC on run#10 data), tick-phase split via stack ancestry (entity 43.3% / BE 8.1% / random 5.6% / chunk 3.7% on run#10), JVM-vs-native leaf split (75.5/24.2), MSPT percentile windows, entity top-types, wall/alloc top-20 — reporter v2 VALIDATED OFFLINE on run#10 real artifacts (224,660 samples), 0 boots
-- entity-recon CI JOB added (world-bench.yml): javap dump of Entity*/ServerLevel*/moonrise entity classes FROM the booted-kernel purpur jar = task161 ladder step 1 artifact; world-bench-3 run#11 dispatched (seconds=600) with both jobs
-- task163 (PALETTE-GATHER batch-lens, CPU-only): 8 web-search rounds (MLA latent+absorb, FP8 1x128/128x128 tile-wise, PagedAttention block-table zero-alloc, FlashAttention tiling+fusion, DualPipe overlap, MTP speculative, AVX2-gather reality check, oxidized-mc) -> docs/RESEARCH_DEEPSEEK_CPU_2026-09-17.md mapping matrix
-- Rust core src/palette_gather.rs LANDED (production, 0 new deps): bit-exact SimpleBitStorage replica incl. word-straddle (v |= words[w+1] << (64-shift)), get_index/get_state fused, bulk_states (batch, zero-alloc, fail-fast no partial writes), indices_of (latent-space whole-section scan, SWAR word-chunk), single-value fast path (MTP-by-construction). AVX2-gather REFUTED for v1 with cited numbers (0.95x-1.2x small sets) — SWAR scalar is the production path
-- TESTS 79/79 PASS (7 new): hand straddle vectors, property scalar==oracle bpe 1..=16 all positions, property bulk+scan==oracle walk bpe {1,3,4,5,6,7,8,9,12,15} every palette index, corrupt-input report (no partial writes), zero-alloc EXACT 0, single-value, occupancy
-- S7-93 LESSON (twin's allocator, shared code): global counting allocator raced sibling test threads (entity_mirror zero-alloc flapped 185 once heavy property tests landed) -> fixed PER-THREAD const-init thread_local counting; exact-zero assert now schedule-deterministic both cores
-- RACE RECONCILED with twin TASK-230 (S7-93, BOAT winner preregistered; per-get PALETTE closed): my round = the batch-lens branch they left open -> decided by DATA: bench/world3/task163_caller_census.py over byte-same run#10 stacks: lane 21,668 = 9.6% CPU; batchable share 7,473 = 3.3% of TOTAL tick CPU (BE loops 13.7% lane, collision 7.7%, movement+boat 9.5%, pathfinding 2.8%; random tick scattered 4.1%) — AT the gate, below realistic win -> PALETTE-GATHER solo GO REFUTED with numbers; core stays BANKED infrastructure
-- NEW DISCOVERY banked: redstone signal sub-lane HIDES in the lane (drill-down: SignalGetter.getDirectSignal 15.3% + getSignal 9.1% + RedstoneWireEvaluator 7.9% + NeighborUpdater 4.9% + RedStoneWireBlock 2.6% = ~39.8% lane = ~3.8% total CPU) + fluids ~8.8% lane + entity inside-block checks ~5.6% lane -> REDSTONE-LENS queued (STEP 0 anatomy round first, BOAT pattern, no code)
-
-Stage Summary:
-- task163 DELIVERED: bench3 v2 (GC/phase/JVM-native/mspt/entity coverage, 3-window profiling) + entity-recon CI leg (task161 step 1) + DeepSeek research doc + palette_gather.rs core (79/79) + caller-census verdict (batch-lens refuted at 3.3% ceiling) + REDSTONE-LENS queued. One lever per round held; refutations banked with numbers. Push: c-crussty + dev-logs (CLAIMS TASK-231); CRUSSTY untouched pristine. INJECTS-ONLY: 0 sandbox boots all tick (CI boots sanctioned)
-
-
----
-Task ID: S7-95 (task164) — BOAT STEP-0 kill-gate + F1/F2/F3 + recon-fix
-Agent: agent-7625532f (cron tick 2026-09-17 02:08 +08, Job 390639, trace 1a0ab4bc476caced-cron-agent-loop-202609170213)
-Task: DEFAULT MISSION per cron v2 — BOAT STEP-0 exact-frame anatomy from raw run#10 collapsed; if <4% => refutation row + BATCH-RNG switch (same round); F1/F2/F3 metrics; run#11 absorption
-
-Work Log:
-- FIRST STEP via persistent bootstrap_tick.sh (token baked — owner anti-loss directive works: wiped-$HOME tick restored in 3s) -> tails -> 3x pull --rebase (c-crussty e26c63c, dev-logs 5253b06, CRUSSTY pristine 1f4c06a)
-- run#11 world-bench-3 COMPLETED SUCCESS (35131335160): first FULL v2 coverage — wall-collapsed 85MB + alloc-collapsed 109MB + GC (216 pauses/4.77s STW/0 Full) + MSPT avg 84.47ms (variance vs run#10 80.86 = ~4%, paired A/B discipline confirmed necessary); artifact fetched and folded to bench3_research/run11
-- BOAT STEP-0 (task164, bench/world3/task164_boat_anatomy.py): presence 9.66% CONFIRMED but ownership model refutes the lever — leaf split: MISC 3.32 / JVM-BOUND 2.54 / MOONRISE-COLLISION 0.97 (do-not-duplicate law) / KERNEL-WORLD-READS 0.96 (move-not-save) / MIRROR-ENTBP 0.88 (boats = TOP consumer of entity_mirror: 2.31 of 3.79 broadphase lane presence) / BOAT-OWNED 0.76 / PREDICATE 0.22 => **BOAT REFUTED at 0.76% vs 4% kill-gate** (generous ceiling <2%); preregistered fallback armed
-- BATCH-RNG claimed as next lever per preregistration: random-tick lane 3.9% cluster (optimiseRandomTick 2.2% self + advanceSeed 1.7%; alloc sites #2/#4); bit-exact contract NEEDS advanceSeed/optimiseRandomTick bytecode => core lands NEXT tick from recon artifact (no guessing — "from the booted jar" law)
-- RECON ROOT-CAUSED + FIXED: standalone entity-recon job unzipped the PAPERCLIP jar (classes live in the PATCHED kernel materialized at boot into cache/) -> produced header-only artifact (still green — test -s passed on header; artifact upload then deduped/absent in list). Fix shipped: entity-recon is now a POST-BOOT step inside world-bench job (javap from the real booted jar, JDK from setup-java) + patched-kernel.jar uploaded as artifact (60MB, retention) -> future recon can run offline locally too
-- F1/F2/F3 WIRED into report_world3.py and validated on run#11 real data: F1 module/JNI self-time 0.00% (§8 PASS), F3 per-class entity tick split top-12 (AbstractBoat 9.70% top, NEW: Brain.tick 6.85% mob-AI cluster, minecarts ~5.3% combined, Villager 3.47%), F2 alloc top-10 sites + GC-churn line (MB/s estimate needs region constants — next)
-- Deliverables: docs/RESEARCH_BOAT_STEP0_2026-09-17.md (verdict + ownership model + positive yield), bench/world3/task164_boat_anatomy.py, report v2.1 (F1/F2/F3), workflow recon fix
-
-Stage Summary:
-- STEP-0 discipline saved an entire implementation round: 9.66%-presence mirage -> 0.76% replaceable. Positive yield: boats identified as entity_mirror's top consumer (vehicle-dense A/B planned), Brain.tick 6.85% discovered as next big AI cluster, recon leg unblocked for BATCH-RNG. Round closes with BATCH-RNG claimed + recon artifact pipeline fixed. INJECTS-ONLY: 0 sandbox boots
-
-
----
-Task ID: S7-96 (task165) — BATCH-RNG STEP-0 bytecode kill-gate + GOAL 20 TPS + alloc-calibration
-Agent: agent-7625532f (cron tick 2026-09-17 02:35+08, Job 390639; LIVE owner directives this tick: «так не каких фоллбеков, всё должно быть ускорено а не просто менять конфиги!» + «твоя задача сделать 20 тпс, минимальный количество мспт на этом майншилд 3 сервере со всеми чанками форс лоадами и что бы и мобы спавнились, и деспавнились, когбудто бы игроки есть как бы что бы это было если тчо.»)
-Task: BATCH-RNG STEP-0 (per TASK-232 preregistration) under the NEW binding north star: 20 TPS / minimal MSPT on MineShield-3 (force-load all chunks, mob spawn/despawn as-if-players); no fallbacks, no config-wins — real code acceleration only.
-
-Work Log:
-- creds FIRST (bootstrap_tick.sh token baked) -> tails -> 3x pull --rebase (c-crussty 5378efc, dev-logs e8ac129, CRUSSTY pristine 1f4c06a); run#12 (35134479069) found COMPLETED with the task164 recon fix aboard
-- run#12 artifact archaeology: world3-bench 68MB (vs 16MB run#11) contains patched-kernel.jar — BUT entity-recon.txt = "kernel jar: world3-run/server/cache/mojang_1.21.10.jar" => RECON BUG #2: `find ... | head -1` picked the VANILLA bundler jar from cache/ (alphabetically first), not versions/1.21.10/purpur-1.21.10.jar (crussty-runtime log line: versions=...;kernel=purpur-1.21.10.jar proves the true path)
-- WORKFLOW FIX #2 shipped: recon find now content-tests every >20M jar candidate for net/minecraft/server/level/ServerLevel.class (definitive) instead of head -1
-- OFFLINE KERNEL MATERIALIZATION (no boot): paperclip + cached vanilla mojang_1.21.10.jar -> versions/1.21.10/purpur-1.21.10.jar materialized locally in 45s, process KILLED pre-main (INJECTS-ONLY intact, 0 server boots); sha256 e2992d63abd2c2544a4d1564...; javap via /tmp JDK21 (no sudo, sandbox JRE lacks javap) — tooling banked: scripts/materialize_kernel.sh + scripts/ensure_javap.sh
-- BYTECODE CONTRACT EXTRACTED (research/rng-recon-2026-09-16/*.javap): optimiseRandomTick = per-section loop over moonrise tickingBlockList; per pick: simpleRandom.nextInt()&4095 -> ShortList.getRaw -> PalettedContainer.get -> new BlockPos(verified ALLOC SITE) -> BlockState.randomTick (JVM body, do-not-duplicate) [+ fluid follow-up]; SimpleThreadUnsafeRandom.advanceSeed = exact 48-bit LCG (value=value*25214903917+11 & 2^48-1), nextInt()=(int)(seed>>>16) — IDENTICAL to java.util.Random, contract banked
-- BATCH-RNG KILL-GATE (task165_rng_brain_anatomy.py, run#11 93,223 samples): lane presence 5.46% (SELF 2.36 / advanceSeed 1.57 / world-reads 1.40 / other 0.13); replaceable = RNG 1.57% + RNG-share-of-SELF only — upper bound 3.93% UNREACHABLE because JVM must still iterate picks, read palette, alloc BlockPos, dispatch randomTick => honest ceiling 1.6-1.9% < 3.0% gate => **BATCH-RNG REFUTED pre-code** (docs/RESEARCH_BATCHRNG_STEP0_2026-09-16.md)
-- Brain.tick cluster anatomy (same script): 6.85% = startEachNonRunningBehavior 4.66% + tickEachRunning 1.41% + tickSensors 0.76%; machinery leaves (itable stubs 0.49+0.35, LinkedHashMap/HashMap iterators 1.03, getNode 0.23, sequencedKeySet 0.11, getRunningBehaviors 0.11) ≈ 2.3% + streams only 0.11% + world-reads 0.36%; alloc in cluster = 11.32% of tick allocs; top entity driver generic Mob.serverAiStep 5.21%
-- ALLOC-PROFILE CALIBRATION (protects all future rounds): alloc-collapsed leaves are NOT new-sites — PalettedContainer.get (3.10% top leaf) has ZERO new in bytecode; AABB.intersects (1.39%) is pure math; interpretation = TLAB-refill correlation, NOT site map; verified-site method = javap new-scan (Banked in GOAL doc §калибровка)
-- GOAL DOC SHIPPED: docs/GOAL_20TPS_MINESSHIELD3.md — north star (MSPT <=50ms => TPS 20, gap ~30-34ms = ~40% CPU), binding directives (NO FALLBACKS / NO CONFIG-WINS), full MSPT budget ledger, honest arithmetic (closed solo levers sum ~5-7% => path = AGGREGATE FAMILIES: GC-SHAPE + ENTITY-LENS + REDSTONE-LENS + entity_mirror A/B + bench-4 fake-players scenario per owner's spawn-as-if-players requirement), profiler calibration
-- NEXT LEVER PRE-REGISTERED: GC-SHAPE-1 (task166) — series of VERIFIED alloc-site eliminations (BlockPos in optimiseRandomTick FIRST — javap-verified new-per-pick; Brain LinkedHashMap iterator churn second) targeting GC 9.5% lane + correlated CPU; gate >=3% MSPT CI A/B min-of-2; per-directive NO config-wins, code only
-- run#13 dispatched with workflow fix #2 (real patched-kernel.jar + full entity-recon for offline recon forever)
-
-Stage Summary:
-- The north star is set and binding: 20 TPS = MSPT <=50ms = -40% CPU — honest arithmetic says solo levers are exhausted (~5-7% banked); the path is verified aggregate families. BATCH-RNG refuted by bytecode (third STEP-0 kill in a row: ENT-BP, BOAT, BATCH-RNG — presence-mirage pattern keeps dying to exact anatomy, each refutation saves an implementation round). Two infra wins: recon bug #2 fixed (content-test find), offline kernel materialization tooling (no boot). Allocator-profile semantics calibrated — no more false alloc levers. GC-SHAPE-1 armed with the first javap-verified site (new BlockPos per pick). INJECTS-ONLY: 0 sandbox boots (paperclip killed pre-main; CI-sanctioned boots only)
-
-
----
-Task ID: S7-96b (task165-доп, дубль-агент) — research leg + независимая репликация + харнесс-фиксы
-Agent: agent-7625532f (session web-f7888d46, trace 1a0ab4bc476caced-cron-agent-loop-202609170243 + live owner directives: «никаких фоллбеков, всё должно быть ускорено а не просто менять конфиги», «20 TPS, минимальный MSPT, мобы спавнятся/деспавнятся как будто игроки есть»)
-Task: комплементарная линия к TASK-233 (близнец закрыл BATCH-RNG javap-контрактом и GOAL-доком; моя линия = HUGE LLM+web research миссии, независимая репликация рефутации, F4 spawn-churn, харнесс-обсервабилити)
-
-Work Log:
-- adopted uncommitted WIP предшественника (task165_rng_brain_anatomy.py + recon fix#2 content-test) -> commit b8850b2; расширил recon RNG-классами (RandomSource/Legacy/Bit/Worldgen/Xoroshiro/RandomSupport/LevelChunkSection/LevelChunk) для контракта BATCH-RNG
-- run#13 (мой деспатч, sweeps=1) CANCELLED конкарренси-группой: близнец деспатчнул run#14 (18:53Z) поверх — по протоколу adopt-don't-clobber усыновлён run#14; наблюдение за завершением
-- НЕЗАВИСИМАЯ РЕПЛИКАЦИЯ рефутации BATCH-RNG (task165_rng_brain_anatomy.py на raw run#11+run#12): RNG-only replaceable 1.57%/1.40% FAIL vs 3% gate; upper (RNG+SELF) 3.93%/3.13% недостижим — per-position getBlockState upcalls (~660k/тик) доказанно дороже выигрыша (PALETTE per-get закон); Brain-кластер стабилен cross-run: 6.85%/6.28%, startEachNonRunning 4.66%/4.28%, machinery ~1.6-1.7%; согласовано с javap-вердиктом близнеца 1.6-1.9%
-- RESEARCH LEG (owner «рисёрчи огромные»): 4 LLM (q1 Brain-LENS дизайн; q2 RNG-closeout + jump-ahead банк; q3 20TPS портфель thinking ON; q4 MoE→AI-dispatch) + 6 web (Lithium AI, ECS-батчинг, LCG jump-ahead, мегаморфный диспатч, Paper randomtick, Brain perf); raw -> research/brainlens-2026-09-17/ (INDEX.md), дистиллят -> docs/RESEARCH_AI_DISPATCH_2026-09-16.md
-- КЛЮЧЕВЫЕ ВЕРДИКТЫ RESEARCH: Brain hot-patch (Object[]+bitmap, insertion-order parity) РЕКОМЕНДОВАН ~3.0% потолок — следующий большой рычаг после GC-SHAPE-1; Rust-зеркало Brain batch-JNI ОТКЛОНЕН (cache-coherence); MTP-спекуляция стартов поведений ОТКЛОНЕНА (side effects canStart); q3-роадмап red-teamed («Boats -3.5ms» опровергнут presence/owned-путаницей — верифицированные числа ledger не тронуты)
-- ХАРНЕСС-БАГИ НАЙДЕНЫ+ПОЧИНЕНЫ (молчали с run#10!): (1) `paper mspt` НЕ существует на Purpur 1.21.10 — каждый полл Usage-error, MSPT всё это время шёл от spark tickmonitor [⚡] -> полл заменён на `paper mobcaps world` (спавн-обсервабилити владельца); (2) `paper entity list` требует фильтр+мир — 0 данных по сущностям с run#10 -> `paper entity list * world`; (3) parse_mspt_windows fallback на [⚡]-строки (валидировано на run#12: Min 57.06/Max 145.36/Avg 75.62); (4) F4 entity spawn/despawn churn метрика в report_world3.py (polls/delta/churn%/top movers/summons + вердикт ACTIVE|STAGNANT — owner-условие мобов станет измеримым с run#15)
-- 0 sandbox boots; CI: run#14 наблюдается (recon-валидация близнеца); run#15 (sweeps=1, каноническое условие владельца) — на диспатч после завершения run#14
-
-Stage Summary:
-- Раунд S7-96 закрыт с двух сторон: близнец (javap-контракт, GOAL-док, GC-SHAPE-1 пререгистрация) + дубль-агент (независимая репликация, research leg, F4, харнесс-фиксы). BATCH-RNG REFUTED окончательно (2 линии). Следующие рычаги: GC-SHAPE-1 (task166, близнец) -> BRAIN-LENS (~3.0%, research-вердикт) -> bench-4 fake-players (owner-условие). INJECTS-ONLY: 0 boots
-
-
----
-Task ID: S7-96c (task165-доп2, дубль-агент) — run#14 recon SUCCESS + run#15 north-star condition FIRST MEASUREMENT + min-of-2
-Agent: agent-7625532f (session web-f7888d46, trace 1a0ab4bc476caced, Job 390639)
-Task: абсорбция run#14/run#15, валидность-проверка 20 TPS, min-of-2 подтверждение
-
-Work Log:
-- run#14 ABSORBED: entity-recon 54,210 строк из НАСТОЯЩЕГО booted purpur-1.21.10.jar (content-test сработал; saga recon-багов закрыта: #1 paperclip -> #2 vanilla jar -> FIXED); advanceSeed контракт из booted ядра: value=(value*25214903917+11)&(2^48-1) — корроборирует офлайн-javap близнеца; НЮАНС: ядро уже тикает на moonrise SimpleThreadUnsafeRandom (unsync) — малость RNG-лейна объяснена; полный dump -> research/rng-recon-2026-09-16/booted-run14/
-- run#15 ABSORBED (первый с моими харнесс-фиксами c81f12a + sweeps=1): 75 summons; F4 ЖИВАЯ ДАННАЯ: polls=15, total 8572..9201 (churn 7.2%), top movers item 148->772, drowned 11->47, bee 1->20, zombie 62->71 — вердикт churn ACTIVE (условие владельца ИЗМЕРИМО и выполнено); mobcaps: 0 spawnable chunks при 0 игроках = natural spawning СТРУКТУРНО выключен без игроков => fake-players (bench-4) обязательны для настоящего as-if-players спавна
-- ПАРСЕР-ФИКС: реальный формат entity list run#15 = "Total Ticking: N, Total Non-Ticking: M" + "count (tick) : type" — parse_entity_totals/parse_entity_churn переписаны (старые регексы не матчили НИКОГДА)
-- ВАЛИДНОСТЬ: run#15 = 20.0 TPS / ~49.6ms MSPT steady (8 окон tickmonitor) — НО модульных оптимизаций не шипилось; run#14 на том же мире/forceload/модуле = 13-14 TPS / 68-75ms; профили структурно схожи (тик быстрее целиком). Гипотеза: вариативность живого снапшота мира (world URL = живой экспорт; run#15 boot item 148->772 = свежий снапшот). North star НЕ объявляется достигнутым до min-of-2
-- run#16 деспатчен (19:53Z, те же входы sweeps=1) для paired confirmation; если ~50ms — снапшот-вариативность = доминирующий фактор базовой линии => paired download discipline обязательна для всех будущих A/B
-- push: 544b014 (booted recon), GOAL-док обновлён (run#15 строка + вывод)
-
-Stage Summary:
-- Observability раунда восстановлена полностью: recon booted-ядра, F4 churn, mobcaps, MSPT-окна. Первое измерение канонического условия владельца: 20 TPS / 49.6ms — под min-of-2 проверкой (run#16). Ключевой риск базовой линии выявлен: снапшот-вариативность мира
-
-
----
-Task ID: S7-97 (task166/167) — GC-SHAPE-1 REFUTED by GC physics + REDSTONE/LEVELTICKS-LENS STEP-0 (fifth/sixth STEP-0 kills)
-Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911, Job 390768)
-Task: task166 GC-SHAPE-1 STEP-0 (javap new-scan verified alloc sites) -> gate -> lever switch
-
-Work Log:
-- run#16 (2ebb854) absorbed: 20 TPS run#15 REFUTED (runner-variance law), baseline re-anchored 12.5-13.5 TPS / 74-80ms; GOAL doc re-anchored (run#16 column + law note)
-- GC-SHAPE-1 STEP-0: javap new-scan optimiseRandomTick = EXACTLY ONE new (BlockPos @180, GUARDED rand<tickingList.size() => hit-only alloc); retention consumers (scheduleTick stores pos) make reuse unsound anyway
-- GC REALITY measured (scripts/gc_steady_scan.py, banked): run#12/15 gc.log steady-state — eden ~2.4GB/GC, interval 4.1-5.9s => alloc 412-598 MB/s; young-GC STW duty 0.50-0.56% wall (avg 13.2-17.1ms pause); hit-path CPU bounds BlockPos <=30-50K hits/tick = 2-3% of alloc => relief <=0.015% MSPT; Brain-LHM churn 0.40-0.69% alloc => <=0.005% MSPT. Both 200-600x < 3% gate => REFUTED
-- GC-FAMILY LAW (portfolio-level): ledger "GC 9.5%" = concurrent worker CPU (G1CM/RebuildRemSet oop_iterate leaves), NOT MSPT (spare cores); garbage-shape relief = alloc_share x STW-duty 0.5%; pause size ∝ LIVE set => ALLOC-SHAPE FAMILY DEAD as MSPT lever, future alloc-shape STEP-0s cancelled
-- Lever switch per mission: REDSTONE-LENS STEP-0 (task167). Lane re-measured: bucket 8.28/11.55% (run#12/15), entry-census = LevelTicks.tick 8.08/11.35% (старый "~3.8% redstone" = bucket mirage; реальный лейн = scheduled-tick DRAIN)
-- VERIFIED CONTRACT (javap /tmp/pp kernel purpur-1.21.10.jar): LevelTicks.runCollectedTicks = poll + toRunThisTickSet.remove + alreadyRunThisTick.add + BiConsumer.accept(pos, type); ServerLevel.tickBlock = getBlockState -> state.is -> state.tick -> (tickedBlocksOrFluids & 7) != 0 => moonrise$executeMidTickTasks every 7/8 scheduled ticks
-- Decomposition: reads 2.65/3.77% (irreducible per-query; batch-resolve saves <=0.5%), signal-eval 1.18/1.43%, queue 0.76/0.50%, Bukkit glue 0.29/0.62%, mid-tick-yield 1.57/1.83% (whole-server), tail = JIT-inlined heterogeneous bodies (no block class >0.02%) => ALL slices <3% solo => REFUTED-as-solo (pre-code), family-bank parked
-- NO new CI runs (STEP-0 refutations don't need A/B); artifacts banked: research/levelticks-recon-2026-09-17/ (ANALYSIS.md + tickBlock.javap + LevelTicks.javap + LevelChunkTicks.javap), scripts/gc_steady_scan.py
-- 0 sandbox boots; INJECTS-ONLY intact (javap on offline materialized kernel = not a boot)
-
-Stage Summary:
-- Шестой и седьмой consecutive STEP-0 kills (GC-SHAPE-1, REDSTONE-LENS); GC-семейство закрыто ФИЗИКОЙ (потолок семейства <0.5% MSPT); очередь перестроена: BRAIN-LENS (task168, ~3.0%, единственный >=3% GO-кандидат) -> minecarts STEP-0 (task169) -> bench-4 fake-players. Честная арифметика 20 TPS задокументирована в GOAL: соло-рычагов >=3% почти не осталось — нужен либо семейный агрегат с пересмотром правила гейта, либо инфраструктурный сдвиг (pinned runner + bench-4), либо новая анатомия minecarts
-
-
----
-Task ID: S7-98 (task168/169/170) — BRAIN-LENS + MINECARTS REFUTED; SOLO-ERA OVER; bench-4 pre-registered
-Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609170508, Job 390768)
-Task: task168 BRAIN-LENS STEP-0 (stale-tick 390768 re-executed per latest state) -> kill-gate -> lever switch
-
-Work Log:
-- bootstrap + pulls (c-crussty 5c32472, dev-logs a9c6821; no remote changes — no twin activity; tick charter = stale task166 mission, already done in S7-97 => executed next queue lever task168)
-- BRAIN-LENS STEP-0: exact anatomy Brain.tick subtree (run#12/15 cpu-collapsed, deepest-Brain-frame attribution): startEachNonRunningBehavior 4.13/4.41%, tickEachRunningBehavior 0.79/0.82, getRunningBehaviors 0.57/0.46, tickSensors 0.45/0.41, forgetOutdatedMemories 0.16/0.19
-- decompose: REPLACEABLE = LHM/HashMap iterators 0.80/0.47 + getNode 0.18/0.16 + sequencedKeySet/views 0.20/0.08 + half SELF ~0.15-0.25 = 0.9-1.5% total; IRREDUCIBLE = itable-stub dispatch 0.45/0.48 (same call sites post-patch) + canStart predicate bodies (PalettedContainer/PathTypeCache/Long2Object/ReferenceOpenHashSet) — behavior logic untouched by Object[]+bitmap patch => 0.9-1.5% << 3% gate => REFUTED pre-code (seventh kill; research ~3.0% потолок оптимистично считал dispatch — pre-registered criteria сработали)
-- lever switch: MINECARTS STEP-0 (task169): lane 2.15/2.58% (run#12/15; ledger "~5.3%" = mirage corrected): move 0.55/0.73 + applyEffectsFromBlocks 0.40/0.46 + hopper-suck 0.18/0.21 + pushAndPickup 0.12/0.17 + fluid-push 0.12/0.14 => whole-lane < gate => REFUTED (eighth kill)
-- SOLO-ERA VERDICT: 7 kills подряд, verified >=3% solos исчерпаны на 0-player профиле; honest path: bench-4 fake-players (owner scenario) => fresh recon => новые ядра; семейные агрегаты (нужно решение владельца по гейту); pinned runner infra
-- BENCH-4 PREREGISTERED: docs/BENCH4_FAKE_PLAYERS_DESIGN.md — NaturalSpawner контракт верифицирован javap (spawnForChunk + isRightDistanceToPlayerAndSpawnPoint + createState + moonrise PlayerMobDistanceMap 0-player=0-chunks); инъекция = bench-only plugin, real ServerPlayer + Connection-stub, PlayerList registration, N=4 grid; fixture-validity gate (spawnable>0 + F4 ACTIVE else INVALID) + baseline gate (min-of-2 paired, scenario-delta не модульная победа)
-- 0 sandbox boots; artifacts: docs/BENCH4_FAKE_PLAYERS_DESIGN.md, ledger §115, GOAL re-rank (Brain/minecarts REFUTED, queue: bench-4 = task170)
-
-Stage Summary:
-- Восьмой STEP-0-килл за два раунда; соло-портфель исчерпан честной арифметикой. Раунд переводит стратегию на канонический сценарий владельца: bench-4 fake-players (task170) = следующий исполняемый шаг, его fresh recon решит, откуда брать следующие >=3% ядра
-
----
-Task ID: S7-99 (task170 / TASK-236) — BENCH-4 FAKE-PLAYERS IMPLEMENTED; validation run 35156292165 dispatched
-Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609170543, Job 390768)
-Task: task170 bench-4 implementation per S7-98 queue (WIPE recovery first: sandbox recycled to pre-c-crussty snapshot; /tmp/my-project survived)
-
-Work Log:
-- WIPE RECOVERY: bootstrap_tick.sh + repos + c-crussty-era scripts restored from /tmp/my-project; 3x pull (c-crussty 8c14735 = S7-98 already pushed by prior tick; dev-logs main cloned via baked creds; CRUSSTY pristine 1f4c06a untouched)
-- STEP-0 offline javap vs materialized mojang-mapped kernel (paperclip remap, killed pre-main = NOT a boot; e2992d63abd2c254): 10 contracts verified — placeNewPlayer public + internal SGPL 4-arg; doSendPacket isConnected-safe; Connection.tick never runs for hand-made Connection (no auto-disconnect); ServerPlayer 4-arg ctor + public connection field; CommonListenerCookie.createInitial; max-players gate NOT in placeNewPlayer path; mobcaps header = getSpawnableChunkCount (PaperCommand path moved to io.papermc); Dec-2025 kernel REMOVED PlayerMobDistanceMap → LocalMobCapCalculator.playersNearChunk (same fixture requirement); checkDespawn → findNearbyPlayer; KEEPALIVE TRAP (15s timeout → disconnect) closed via public handleKeepAlive response in channel stub
-- BenchFakePlayersPlugin: real ServerPlayer + EmbeddedChannel discard-handler + keepalive auto-response; deterministic UUIDs (nameUUIDFromBytes) = parity law; N=4 ring (±320) over forceload zone; heightmap ground-snap + noPhysics/noGravity/invulnerable; alive-check heartbeat 60s; javac --release 21 vs real kernel + 125 libs = CLEAN (0 boots)
-- harness: run_world3.sh FAKE_PLAYERS param — eula-less materialize (NOT a boot) → javac vs kernel → plugins/BenchFakePlayers.jar; max-players=N+8; run-env fake_players; report_world3.py BENCH-4 fixture-validity gate (spawnable>0 + churn ACTIVE with summons=0 + alive-check steady → FIXTURE-VALIDITY VALID/INVALID; bench-3 N/A); world-bench.yml fake_players input + fail-on-INVALID; smoke-tested VALID/INVALID/N-A paths
-- DISPATCH: run 35156292165 (8a6988d, fake_players=4, summon_sweeps=0, 900s) in_progress — fixture-validation leg; F1/F2/F3 + MSPT + gate verdict absorb next tick
-- ledger §116 + INDEX row + GOAL re-rank (bench-4 = IMPLEMENTED, fresh recon next); CRUSSTY pristine untouched
-
-Stage Summary:
-- bench-4 (task170) = РЕАЛИЗОВАН полностью по пререгистрации S7-98: STEP-0 контракт, плагин, harness, gate. Валидационный прогон 35156292165 в работе; после absorb — fresh recon нового профиля (spawn/AI лейны) и выбор следующего рычага. INJECTS-ONLY: 0 sandbox boots
-
----
-Task ID: S7-99b (watch/prep tick, 06:14+08, Job 390768) — validation run in flight; absorb tooling prepped
-Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609170614)
-Task: stale-charter tick re-executed per latest state — S7-99 already done (bench-4 implemented, run 35156292165 dispatched); this tick = watch + absorb-prep
-
-Work Log:
-- bootstrap + 3x pull: no remote movement (c-crussty 6efb0ca = S7-99 own push; CRUSSTY pristine untouched)
-- run 35156292165 in_progress (step: Run Benchmark 3.0 — soak phase; ~25-45 min left)
-- prep: bench/world3/recon_lanes.py — fresh-recon lane tool (lane table + spawn/despawn signature + per-lane top leaves + --diff A/B with pairing disclosure per S7-96d law); smoke-tested incl. diff mode
-- prep: my-project scripts/bench4_recon/absorb_run17.sh — artifact download + honest-absorb gates (FIXTURE-VALIDITY VALID + run-env fake_players=4 + plugin registration lines in log); dry-run = correctly reports run-not-finished
-- pushed aab60dd; INJECTS-ONLY intact (0 boots)
-
-Stage Summary:
-- S7-100 absorb ready: absorb_run17.sh -> recon_lanes.py --diff vs run16 baseline -> next lever STEP-0 from the NEW profile's re-ranked lanes
-
----
-Task ID: S7-100 (absorb tick, 06:43+08, Job 390768) — BENCH-4 VALIDATED; run#18 leg-2 dispatched
-Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609170643)
-Task: stale-charter tick (Job 390768 dup) re-executed per latest state — S7-99b prepped absorb; this tick = absorb run#17 + fresh recon + dispatch leg 2
-
-Work Log:
-- bootstrap + 3x pull: no remote movement (c-crussty f3c82b3 = own S7-99b push; CRUSSTY pristine 1f4c06a untouched)
-- run 35156292165 COMPLETED SUCCESS (22:34:33Z, 9 min after tick start) → absorbed via bench4_recon/absorb_run17.sh → /home/z/my-project/scripts/bench3_research/run17 (patched-kernel.jar + cpu/wall/alloc-collapsed + entity-recon + gc.log + spark-report)
-- ABSORB GATES ALL PASS: FIXTURE-VALIDITY VALID (1a spawnable=289 const; 1b churn ACTIVE summons=0: polls=15, дельта 774 — item 163→814, ocelot 4→100, zombie 67→96, creeper 80→105, bee 2→19; 1c alive-check 4/4 ×10 — keepalive-стаб держит фикстуру живой; контракты C8/C10 подтверждены живьём)
-- БАЗА leg 1: MSPT headline 76.98ms / [⚡]-окна 72.1ms, TPS 12.8-14.6 steady; GC 321 паузы avg 19.6ms duty 0.70% wall — GC-FAMILY law сохраняется
-- FRESH RECON: bench/world3/recon_lanes.py run17 --diff world3_art(run#16) → research/bench4-recon-2026-09-17/run17/lanes_vs_run16.txt. Профиль структурно стабилен (kernel:other 21.46/22.01, entities 12.74/12.47, chunk 10.37/9.75); spawn-лейн ~0.6% — owner-сценарий НЕ взрывает профиль; новинки: ServerEntity.sendChanges 0.77%, setDeltaMovement 1.10%, frem+fmod 1.13%; ЗАМЕНЯЕМЫХ СОЛО >=3% НЕТ (PalettedContainer.get 3.62% = closed chunk lane). Кросс-ран с run#16 не парится (cpu_idx 9080657, у world3_art нет run-env) — S7-96d law соблюдена
-- DISPATCH run#18 35159240368 (master f3c82b3, fake_players=4, sweeps=0, 900s, 22:45Z, HTTP 204 → in_progress) = bench-4 база leg 2 → min-of-2 paired
-- ledger: GOAL (run#17 колонка + run#17 блок + BENCH-4=VALIDATED + СТАТУС S7-100) + RESULTS_LEDGER §117 + INDEX 237 + CLAIMS TASK-237; INJECTS-ONLY: 0 sandbox boots
-
-Stage Summary:
-- BENCH-4 era открыт: каноническое условие владельца (спавн/деспавн as-if-players) теперь измеряется фикстур-валидно; min-of-2 база завершается run#18 (absorb next tick). Следующий рычаг выбирается из min-of-2 профиля: entity-кластеры / network-visibility lane / семейные агрегаты (последние требуют owner-санкции пересмотра >=3% гейта). c-crussty push: worklog+ledger+recon
-
----
-Task ID: S7-101 (watch/prep tick, 07:08+08, Job 390768) — run#18 in flight; min-of-2 verdict tooling prepped
-Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609170708)
-Task: stale-charter tick re-executed per latest state — S7-100 absorbed run#17 + dispatched run#18; this tick = watch + absorb-prep
-
-Work Log:
-- bootstrap + 3x pull: no remote movement (c-crussty 09676cb = S7-100 own push; CRUSSTY pristine 1f4c06a untouched)
-- run#18 35159240368 in_progress (23-27 min elapsed; run#17 took 24 min + artifact upload — absorb next tick)
-- prep: my-project scripts/bench4_recon/absorb_run18.sh (default id 35159240368, dest run18/, same 3 honest-absorb gates as run17 variant)
-- prep: bench/world3/bench4_baseline.py — min-of-2 paired baseline verdict tool: parses both legs' BOTTLENECKS_3.md + run-env.txt (MSPT headline + [⚡] windows + TPS steady + GC + churn + fixture), pairing verdict per S7-96d law (world_sha256 + cpu_idx + fp MATCH/MISMATCH), conservative min-of-2 baseline + A/B gate law reminder; smoke-tested run17 vs world3_art (UNKNOWN-pairing path + regex fix: [⚡] avg captured correctly 72.1175 after 4-cell skip)
-- run17 entity-recon.txt re-verified: real booted-kernel javap dump (4193 bodies, kernel jar world3-run/server/versions/1.21.10/purpur-1.21.10.jar)
-- INJECTS-ONLY: 0 sandbox boots
-
-Stage Summary:
-- S7-102 absorb ready: absorb_run18.sh → bench4_baseline.py run17 run18 → paired verdict + min-of-2 conservative baseline; затем recon_lanes --diff run18 vs run17 (пары leg1/leg2) → выбор следующего рычага из min-of-2 профиля
-
----
-Task ID: S7-102 (absorb tick, 07:43+08, Job 390768) — SANDBOX RESET recovered; BENCH-4 BASELINE MIN-OF-2 established; run#19 N=16 probe dispatched
-Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609170743)
-Task: absorb run#18 leg2 + min-of-2 verdict + next-lever probe dispatch
-
-Work Log:
-- ENVIRONMENT EVENT: sandbox reset (workspace = stale snapshot; repos/creds/bootstrap отсутствовали). RECOVERY: /tmp/my-project teardown snapshot 23:10Z (bootstrap_tick.sh с токеном + bench4_recon + bench3_research 1.8GB + worklog через S7-101); bootstrap восстановил ~/.git-credentials + re-cloned все 3 репо; верифицированы pushed states (c-crussty 7747a8f, dev-logs 563bf18, CRUSSTY 1f4c06a pristine). Нулевая потеря канонического состояния
-- run#18 35159240368 COMPLETED SUCCESS (23:10:26Z) → absorbed via absorb_run18.sh → run18/, ВСЕ 3 GATES PASS (FIXTURE-VALIDITY VALID: churn дельта 816/9.4% summons=0)
-- MIN-OF-2 VERDICT (bench4_baseline.py run17 run18): world MATCH, fp 4/4 MATCH, runners РАЗНЫЕ (9080657 vs 6746569) spread 10.7% => baseline = run#17 76.98ms / TPS 12.8-14.6 — консервативная планка будущих A/B
-- MIN-OF-2 PROFILE: recon_lanes run18 --diff run17 → research/bench4-recon-2026-09-17/run18/lanes_vs_run17.txt; структурно стабилен (PalettedContainer.get 3.42/3.62 closed, optimiseRandomTick 1.96/2.56 refuted, spawn-лейн 0.73/0.6); заменимых соло >=3% НЕТ
-- DISPATCH run#19 35163894978 (master 7747a8f, fake_players=16, 900s, 23:48Z) = N=16 SCALING PROBE — pre-registered кандидат: network/visibility + spawn-proximity рост с N; absorb next tick
-- ledger: GOAL (run#18 колонка + min-of-2 блок + СТАТУС S7-102) + RESULTS_LEDGER §118 + INDEX 238; INJECTS-ONLY: 0 sandbox boots
-
-Stage Summary:
-- BENCH-4 база min-of-2 = run#17 76.98ms: каноническое условие владельца теперь имеет чётную планку. Sоло-эра подтверждена дважды. Следующий рычаг решит N=16 probe (если лейн >=3% replaceable) — иначе только owner-пути (семейные агрегаты / pinned runner)
-
----
-Task ID: S7-103 (watch/prep tick, 08:08+08, Job 390768) — run#19 N=16 in flight; N-scaling verdict tooling prepped
-Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609170808)
-Task: stale-charter tick per latest state — S7-102 established min-of-2 baseline; this tick = watch + probe-absorb prep
-
-Work Log:
-- bootstrap + pulls: no remote movement (c-crussty 8eadd69 = S7-102 own push; CRUSSTY pristine untouched)
-- run#19 35163894978 in_progress (20-26 min elapsed; absorb this tick if finishes)
-- prep: my-project scripts/bench4_recon/absorb_run19.sh (default id 35163894978, dest run19/, same 3 gates)
-- prep: bench/world3/n_scaling_verdict.py (also in my-project bench4_recon/) — N-scaling lane verdict: parses two recon_lanes outputs + churn/MSPT/cpu_idx, per-lane pp-delta + abs/1000t scaling (share alone lies at different totals), spawn signature table, visibility leaves (sendChanges etc. incl kernel:other lane after fix); smoke-tested on run17/run18 pair
-- INJECTS-ONLY: 0 sandbox boots
-
-Stage Summary:
-- S7-104 absorb ready: absorb_run19.sh -> n_scaling_verdict.py (N=4 pair legs vs N=16 probe) -> если network/visibility/spawn-proximity lane >=3% replaceable при N=16 => следующий рычаг STEP-0; иначе owner-gated пути (семейные агрегаты / pinned runner)
-
----
-Task ID: S7-103/104 (probe absorb tick, 08:08+08, Job 390768) — N=16 SCALING PROBE REFUTED; solo-era confirmed thrice; owner-gated paths documented
-Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609170808)
-Task: watch run#19 -> absorbed within tick -> N-scaling verdict -> honest end-state documentation
-
-Work Log:
-- run#19 35163894978 COMPLETED SUCCESS 00:13:11Z (absorbed this tick, ~2.5h dispatch-to-absorb latency avoided)
-- absorb_run19.sh gates: FIXTURE-VALIDITY VALID + plugin registered PASS; fp=4 gate честно отклонил N=16 (probe — не база leg); run-env подтверждён fake_players=16, cpu_idx 10088241 (самый быстрый runner серии)
-- fixture at N=16: VALID (churn 747/8.4%, alive-check стабилен); MSPT 57.01ms, TPS 16.9-20.3 (абсолют невалиден кросс-ран — вердикт по долям)
-- N-SCALING VERDICT (n_scaling_verdict.py, smoke-fixed kernel:other lane scan): REFUTED — network 1.47->0.85 SHRINK, sendChanges total 2180->1258 (1.57->0.89%), spawn-лейн 0.7% суб-линейно, рост только GC-лейны +2.6pp (closed law); профиль N-инвариантен; заменимых соло >=3% НЕТ и при N=16
-- RUNNER-КОНТЕНШН ГИПОТЕЗА (1 нога, не вердикт): ~19-20 TPS на быстром runner — зафиксирована в GOAL для владельца; проверка = pinned runner
-- ledger: GOAL (run#19 блок + СТАТУС S7-104) + RESULTS_LEDGER §119 + INDEX 239 + CLAIMS TASK-240; INJECTS-ONLY: 0 sandbox boots
-
-Stage Summary:
-- ИНЖЕНЕРНОЕ СОСТОЯНИЕ ЧЕСТНОЕ: в рамках текущих правил модульных рычагов >=3% на профиле НЕТ (подтверждено на N=4 min-of-2 и N=16). Пути вперёд owner-gated: семейные агрегаты (санкция на пересмотр гейта), pinned runner (проверка контеншн-гипотезы), смена сценария. Модуль = полный стек bench-4 фикстуры + min-of-2 база + трижды подтверждённая соло-карта профиля
-
----
-Task ID: S7-105 (infra tick, 08:43+08, Job 390768) — PAIR-HUNTER infrastructure (task171): legal min-of-2 pairing without owner hardware
-Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609170843)
-Task: stale-charter tick per latest state — solo-map closed (thrice-confirmed); this tick = infra lever from pre-registered path (3)
-
-Work Log:
-- bootstrap + pulls: no remote movement (c-crussty 3f46505 = own S7-103/104 push; CRUSSTY pristine untouched); no runs in flight
-- task171 PAIR-HUNTER (self-served pairing per S7-96d law, pre-registered path 3): bench/world3/pair_hunter.py — dispatch->poll->scrape run-env из workflow log (cpu_idx уже эхо-печатаются harness'ом с S7-99) -> index cache (runs_index.jsonl, копится меж тиками) -> pair rule (world_sha MATCH + fp MATCH + fixture VALID + |cpu_idx delta|<=2%); smoke-tested --no-dispatch: 19 исторических ран indexed, 0 пар (все cpu_idx различаются — ожидаемо; преран#17 логи не содержат run-env echo — добавлено в S7-99)
-- world-bench.yml: + inputs cpu_band_min/cpu_band_max + FAIL-FAST calibration step (тот же LCG-loop 6M, проверка банды ДО чекаута CRUSSTY/world-download — out-of-band ран умирает за ~30с вместо 25мин); YAML validated; честная семантика: банда = coarse pre-filter, КЛЮЧ ПАРИНГА = harness cpu_idx (run-env.txt) ±2%
-- pair_hunter.py: --band-min/--band-max передаются в dispatch inputs
-- DISPATCH attempt: 422 (inputs ещё не на master) — после push деспатчен band-gated probe run20 (band 8636000-9525000 вокруг run#17 cpu_idx 9080657 ±5%, fp=4) — absorb next tick
-- INJECTS-ONLY: 0 sandbox boots
-
-Stage Summary:
-- Инфраструктура честных A/B теперь самодостаточна: band-gated fast-fail + log-scrape индекс + 2% pairing rule. Следующий модульный рычаг (когда появится) получит легальный min-of-2 без owner-hardware. Pairing probe run20 in flight
-
----
-Task ID: S7-106 (pair-landing tick, 09:08+08, Job 390768) — FIRST LEGAL PAIR LANDED (run#17 × run#21, spread 1.3%)
-Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609170908)
-Task: stale-charter tick per latest state — S7-105 built pair-hunter + dispatched band-gated probe (fast-fail'd out-of-band); this tick = continue hunt, land in-band leg, pair verdict
-
-Work Log:
-- bootstrap + pulls: remote moved to S7-105 (b94a728) — pair-hunter infra + band gate on master; no runs in flight (run20 35168042596 fast-fail уже известен)
-- HUNT: dispatch 35169547594 fast-fail cpu 7086411 (~30s) → 35169620123 fast-fail 9958944 (~30s) → 35169715709 IN-BAND (пережил gate, SUCCESS 01:37:36Z за 22.5 мин); новый инструмент dispatch_band.py (my-project bench4_recon): dispatch -> 120s grace -> failure=retry (budget 6) / running=in-band
-- ABSORB run#21 35169715709 (absorb_run21.sh): 3 гейта PASS (FIXTURE-VALIDITY VALID, fp=4, plugin registered); полный сет (collapsed×3, entity-recon, patched-kernel.jar, spark-report, gc.log) -> bench3_research/run21/; run-env cpu_idx 8914646, world afb3a0b3ba78
-- **PAIR VERDICT (pair_hunter.py --no-dispatch)**: ПЕРВАЯ ЛЕГАЛЬНАЯ ПАРА — runA 35169715709 cpu 8914646 MSPT 76.01 × runB 35156292165 (run#17) cpu 9080657 MSPT 76.98; world MATCH + fp 4/4 + cpu Δ1.86%<=2% => **SPREAD 1.3%** (кросс-ран был 10.7% — pairing схлопывает шум на порядок; S7-96d law количественно)
-- PAIRED PROFILE (recon_lanes run21 --diff run17 -> research/bench4-recon-2026-09-17/run21/): kernel-лейны ±1.6pp, шевелятся только GC (+1.3/+0.4pp, закрытая семья) и "other" +2.06pp; заменимых соло >=3% НЕТ — соло-карта подтверждена 4-й раз
-- КОНТЕНШН-ГИПОТЕЗА апдейт (GOAL): внутри класса воспроизводимость 1.3% => 76ms (mid-band) vs 57ms (fastest 10088241, N=16) = разница КЛАССА ЖЕЛЕЗА ~25% MSPT, не рандомный контеншн; эксплуатация = pinned runner (owner-gated)
-- ledger: GOAL (run#21 блок + СТАТУС S7-106) + RESULTS_LEDGER §121 + INDEX 241 + CLAIMS TASK-242; runs_index.jsonl (24 рана) снапшот committed в research/ для sandbox-устойчивости; INJECTS-ONLY: 0 sandbox boots
-
-Stage Summary:
-- task171 pair-hunter доставлен END-TO-END: первая легальная min-of-2 пара посажена без owner-hardware (охота = 2×30s fast-fail + 1 нога; pool выдаёт in-band каждый ~3-й диспатч). База будущих A/B = 76.01ms на паре; спред внутри класса 1.3%. Все пути вперёд owner-gated (агрегаты/санкция гейта, pinned runner ~25% железа, смена сценария); модульных рычагов >=3% нет — состояние честное
-
----
-Task ID: S7-107 (replication-hunt tick, 09:43+08, Job 390768) — 0/18 in-band this tick; POOL-CLASS DISTRIBUTION LAW measured; scraper patch + index backfill + S7-106 attribution fix
-Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609170943)
-Task: stale-charter tick per latest state — replicate the S7-106 legal pair (n=1 pair thin evidence); harden pair-hunter infra
-
-Work Log:
-- bootstrap + pulls: no remote movement (c-crussty d60170e = own S7-106 push; CRUSSTY pristine untouched); no runs in flight
-- REPLICATION HUNT: 3 rounds dispatch_band.py (budget 6 each) = 18 band-gated dispatches — ВСЕ fast-fail ~30-45s, 0 in-band (draws 6.42-8.50M; последние два 8.43/8.50M у самой кромки band)
-- POOL-CLASS DISTRIBUTION LAW (20 draws c cpu_idx): slow<8.6M = 75% (плотный кластер 6.86-7.09M — 8 draws), mid band = 10%, fast>9.5M = 15% (9958944/10088241/11833447 — внутренний спред 18%); yield mid-band ~10% => ~10 диспатчей на in-band ногу (оценка S7-106 «каждый ~3-й» исправлена)
-- DENSE-CLUSTER ECONOMICS: band [6850000,7050000] yield ~35-40% (~3 диспатча/ногу) — рекомендация в §122: будущие lever A/B = 2 свежие ноги в dense band; существующая пара = mid-band якорь 76.01ms
-- ИНФРА ПАТЧ: pair_hunter.scrape_run_env + fallback regex band-gate echo (`runner_cpu_index=N band=[`) + fixture=BAND-GATE-REJECT — reject'ы умирают ДО harness run-env echo и раньше выпадали из индекса; backfill_gate_rejects.py дотянул 15/15 cpu_idx ИЗ ЛОГОВ-ИСТОЧНИКА; runs_index.jsonl = 36 ран (17 rejects с cpu)
-- АТРИБУЦИЯ S7-106 ИСПРАВЛЕНА по логам: 35169547594 = 11833447 (fastest draw в истории, +18% к run#19), а НЕ 7086411 (это 35169620123); 9958944 = 35169668823; на вердикты не влияет (все — gate-rejects), зафиксировано в §122 + CLAIMS
-- ledger: RESULTS_LEDGER §122 + INDEX 242 + CLAIMS TASK-243; index snapshot refreshed в research/; GOAL не менялся (вердиктов нет); INJECTS-ONLY: 0 sandbox boots
-
-Stage Summary:
-- Пара (spread 1.3%) пока n=1 — репликация отложена на следующий tick (index копится, hunt дешёвый: 18 rejects = ~12 CI-минут суммарно). Главный результат тика — измеренный закон пула: yield охоты зависит от класса-якоря; dense band даёт 4x экономию диспатчей. Инфра самодиагностируема: scraper больше не теряет reject'ы, хронология классов точна
-
----
-Task ID: S7-108 (dense-band hunt tick, 10:08+08, Job 390768) — CONCURRENCY CONSTRAINT discovered + LCG DRIFT LAW + slow-class leg A collected (run#22, 83.74ms)
-Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609171008)
-Task: stale-charter tick per latest state — replicate pairing law on dense-cluster band per S7-107 §122 economics
-
-Work Log:
-- bootstrap + pulls: no remote movement (c-crussty ba14330 = own S7-107 push; CRUSSTY pristine untouched); no runs in flight
-- **КОНКАРРЕНСИ-ОТКРЫТИЕ**: world-bench.yml = concurrency group world-bench-3 + cancel-in-progress: true. dispatch_collect.py (параллельный сбор двух ног) ОПАСЕН: нога 35173362013 (gate pass, cpu 6922352) отменена вторым dispatch через ~3 мин. Параллельные A/B невозможны — протокол строго последовательный; все dispatch-инструменты получили in-flight guard (exit 3)
-- **LCG DRIFT LAW**: leg A 35173558011 — gate LCG 6908907 @02:13:28Z vs harness LCG 6401514 @02:18:27Z = дрейф 7.3% за 5 мин на ТОЙ ЖЕ машине; индекс меряет контеншн, не железо; паринг только по harness cpu (закон S7-96d уточнён)
-- LEG A run#22 = 35173558011 absorbed (absorb_generic.sh, параметризованный; 3 гейта PASS): harness cpu 6401514 (slowest class с bench-данными), fp=4, fixture VALID, MSPT **83.74ms**
-- MSPT-vs-класс кривая (наблюдение): slow 83.7-85.2 (2 ноги) / mid 76.0-77.0 (2) / fast 57.0 (N=16) — монотонна по классам
-- ПРОФИЛЬ КЛАСС-ИНВАРИАНТЕН (recon_lanes run22 vs run17 при cpu Δ42%): kernel-лейны <=±1.3pp — вся кривая MSPT скейлится железом равномерно, скрытого хотспота нет; заменимых соло >=3% нет (5-е подтверждение соло-карты)
-- hunt_leg_b.py готов к следующему tick: последовательная охота ноги B к run22 (окно harness 6401514±2%), ранний cancel при промахе по run-env echo (~5 мин) — экономит ~17 мин на ложной ноге; gate band [6870000,7030000] (gate читает ~7% высоко)
-- ledger: RESULTS_LEDGER §123 + INDEX 243 + CLAIMS TASK-244; lanes_vs_run17.txt + runs_index.jsonl (44 рана) в research/; INJECTS-ONLY: 0 sandbox boots
-
-Stage Summary:
-- Solo-карта подтверждена 5-й раз (теперь и кросс-класс); закон паринга hardened (harness-only + drift-мера); конкуренс-группа документирована как жёсткое ограничение инфраструктуры (объясняет последовательность всех исторических ран). Следующий tick: leg B через hunt_leg_b.py -> вторая легальная пара (уже на dense/slow классе) -> вердикт о воспроизводимости спреда 1.3%
-
----
-Task ID: S7-109 (leg-B classify tick, 11:08+08, Job 390768) — PAIRING LAW REPLICATED AT CLASS LEVEL (3 slow legs, spread 1.8%); LCG gate unpredictable; honest 2%-rule discard
-Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609171114)
-Task: stale-charter tick per latest state — classify interrupted-tick leg-B candidate, continue pair replication
-
-Work Log:
-- bootstrap + pulls: no remote movement (c-crussty 54977f9 = own S7-108 push; CRUSSTY pristine untouched); run 35175934460 (dispatched прошлым тиком до tool-failure обрыва) completed SUCCESS 03:17:04Z
-- КЛАССИФИКАЦИЯ (hunt_leg_b.py, resumable v2): harness cpu 6979464 — вне окна run22 [6273484,6529544] (Δ9.0%) => ЧЕСТНЫЙ DISCARD по 2% правилу (MSPT 83.96 ≈ run22 83.74 — см. refinement ниже); absorb => run#23 (absorb_generic.sh, 3 гейта PASS)
-- LCG КАЛИБРОВКА (2 образца gate→harness): 6908907→6401514 (-7.3%) vs 6874468→6979464 (+1.5%) — gates идентичны, harness 9% apart => gate НЕ предсказывает harness; охота ноги = fair draw; logs API 404 на живых ранах (ранний cancel невозможен — подтверждено в прошлом тике)
-- **CLASS-BIMODALITY REFINEMENT (n=3 slow ноги)**: run#18 6746569→85.24 / run#22 6401514→83.74 / run#23 6979464→83.96 — внутриклассовый спред **1.8%** при cpu-разбросе 9%; межкласс ~10% (slow 84 / mid 76.5 / fast 57). MSPT кластеризуется по ТИПУ VM; cpu-дельта внутри класса НЕ конвертируется в MSPT-дельту (9% cpu → 0.3% MSPT)
-- ПАРИНГ ЗАКОН РЕПЛИЦИРОВАН: mid-пара 1.3% (n=2) + slow-класс 1.8% (n=3) — воспроизводимость внутри класса ~1-2% против ~10% межкласс
-- БЕЗ GOALPOST-MOVING: 2% правило = вердиктный гейт (консервативно); class-paired designation = owner-facing гипотеза (§124)
-- ПРОФИЛЬ: run23 vs run17 kernel ≤±1.7pp — класс-инвариантность (3-я кросс-класс пара), 6-е подтверждение соло-карты
-- ledger: GOAL СТАТУС S7-109 (полный rewrite блока) + RESULTS_LEDGER §124 + INDEX 244 + CLAIMS TASK-245; index 47 ран, snapshots в research/; INJECTS-ONLY: 0 sandbox boots
-
-Stage Summary:
-- Репликация закона паринга завершена на уровне класса БЕЗ второй формальной пары: три slow-ноги (включая отброшенную по 2% правилу) дают спред 1.8% — этого достаточно для owner-уровня доверия к внутриклассовой воспроизводимости. Формальная вторая пара (2% правило) может продолжиться охотой в следующие тики — но приоритет ниже: закон уже подтверждён двумя независимыми классами. Все пути owner-gated; модульных рычагов >=3% нет
-
----
-Task ID: S7-110 (family-agg preregistration tick, 11:43+08, Job 390768) — AGGREGATE LEVER STEP-0: Tier B floor 3.3% >= gate, first GO candidate; owner-facing zero-risk protocol
-Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609171143)
-Task: stale-charter tick per latest state — quantify path (2) family aggregation from banked STEP-0 numbers; keep pair machinery warm
-
-Work Log:
-- bootstrap + pulls: S7-109 (6eb147b) уже в remote — классификация уровня класса завершена прошлым тиком; in-flight проверки: bench-ранов нет, run 35177903252 = push-CI smokes (НЕ bench, ложной ноги нет)
-- **FAMILY-AGG PREREGISTRATION (docs/FAMILY_AGG_PREREGISTRATION.md)**: путь (2) квантифицирован как агрегатный рычаг STEP-0 (paper-only, до кода). Дизъюнктный разрез парного профиля (14 лейнов, sum ~96%), двойной счёт исключён (collections -> вызывающие лейны; Villager -> Brain; advanceSeed -> batch-RNG)
-- **ТИРЫ**: Tier A (строго верифицированные ядра + паритет) = F1 batch-RNG 1.6-1.9 (TASK-233, бит-точный LCG батч) + F2 Brain 0.9-1.5 (task168) = **2.5-3.4%** — на границе, ставки недостаточно; Tier B (+F3 LevelTicks parity-safe: reads-batch 0.3-0.5 + queue drain <=0.5 по task167 декомпозиции; signal wire-lens 1.5-2.5 УСЛОВНО при bit-exact order-preserving доказательстве) = **3.3-6.9% >= 3% гейта** — floor чистит гейт даже на нижних концах (1.6+0.9+0.8=3.3): ПЕРВЫЙ GO-КАНДИДАТ ЭРЫ; Tier C (+minecarts-assumption 0.6-1.3 + ENT-BP parked 1.5-1.8) = 5.4-10.0% headroom
-- ПАРИТЕТ-ФИЛЬТР: neighbor-glue skip (semantics risk) и mid-tick reshape (latency risk) ВЫБРОШЕНЫ; нули подтверждены (chunk closed, GC <=0.5% физика, network SHRINK-with-N, spawn <gate, itable незаменим)
-- **ПРОТОКОЛ БЕЗ ПЕРЕСМОТРА ГЕЙТА**: pack = ОДИН рычаг {F1,F2,F3-safe}; билд по одному члену за tick с parity-банкингом (F1 -> F2 -> F3-reads -> F3-queue; signal условно); ОДИН агрегатный A/B min-of-2 — baseline-нога = БАНК легальной пары 76.01/76.98 (переиспользование, 2 dispatch вместо 4); если pack < 3% => REFUTED, НИЧЕГО не landится, модульная повестка пуста (owner-gated: pinned runner ~10-25%, сценарий). Гипотеза «агрегат = один рычаг» ЯВНО owner-facing: одно слово = отмена; нулевой риск при любой трактовке правила
-- ПАРА #2: leg 35179585066 band-reject (gate 11563189, ~30s, guard сработал); redispatch 35180007098 in flight (state saved, resumable — следующий тик начинает с poll)
-- ledger: GOAL СТАТУС S7-110 (новый блок) + RESULTS_LEDGER §125 + INDEX 245 + CLAIMS TASK-246; INJECTS-ONLY: 0 sandbox boots, implementation code 0 строк (STEP-0-before-code)
-
-Stage Summary:
-- Путь (2) переведён из «неопределённо owner-gated» в «квантифицированный GO-кандидат с owner-veto»: Tier B floor 3.3% — первый случай за всю эру, когда пререгистрированная математика допускает гейт-проход модульного рычага. Следующий тик: poll 35180007098 (classify/absorb если LEG B) -> начало билда F1 batch-RNG (бит-точный 48-bit LCG батч в optimiseRandomTick — ASM/algorithm, parity unit-bank). Если owner отменит трактовку — билд останавливается до агрегатного A/B, ничего не landится
-
-
----
-Task ID: S7-111 (BACKFILL — section was omitted from this file by the 12:08 tick itself; reconstructed verbatim from that tick's commit 962fc9f + /home/z/my-project/worklog.md; integrity fix done by S7-112, 12:43+08)
-Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609171208)
-Task: cron tick Job 390768 (12:08+08, stale charter) — per-latest-state: F1 batch-RNG build increment (first member of the §125 family-agg pack) + pair #2 hunt
-
-Work Log:
-- bootstrap; heads: c-crussty aa616c8 (S7-110), dev-logs d57a3d3; no owner movement
-- Pair #2 hunt: 3 band-rejects this tick (11563189 / 6855867 — missed band by 0.2% / 7112618); 4th leg 35181833283 dispatched, resumable state, poll next tick
-- F1 STEP-0 anatomy: wrote minimal Python classfile parser (cfdump.py — no javap/javac in sandbox JRE) on patched-kernel run21: SimpleThreadUnsafeRandom FINAL, value PRIVATE, LCG = (value*25214903917+11)&(2^48-1), nextInt=(int)(seed>>>16), setSeed HAS gaussianSource.reset() side effect; ServerLevel.simpleRandom 0x0012 private-final, optimiseRandomTick 0x0002 private; LevelChunkSection.states 0x0011 PUBLIC
-- F1 implementation: randomtick/src/RandomTickOps.java — body-swap helper (new body = getfield simpleRandom + invokestatic), inlined bit-exact LCG in register-resident local, reject-pick = zero dispatch/zero field traffic, Unsafe get/put on value ONLY at body-call boundaries + final put, setSeed bypassed deliberately (gaussian cached-spare safety)
-- Toolchain: ECJ 3.36 via Maven Central (javac absent); build_randomtick.sh reproducible; RandomTickOps.class 3570B
-- Parity bank: ParityTest.java on REAL kernel classes (plain JVM, no boot — INJECTS-ONLY intact): 320,000 attempts / 8 seeds (boundary: 0, 2^48-1, LCG multiplier) / 160,379 hit interleaves incl. nextGaussian — picksMatch/drawsMatch/finalSeedMatch ALL TRUE
-- Bookkeeping: ledger §126 + INDEX 246 + GOAL STATUS S7-111 + CLAIMS TASK-247 + worklogs; push c-crussty 962fc9f + dev-logs 9358ef9
-
-Stage Summary:
-- c-crussty master 962fc9f; F1 = implementation + parity banked, dormant until Rust byte hook; next tick: classfile.rs surgery (patch_update pattern) + hook registration + define/retransform wiring + runtime self-test, then F2 Brain iterators; pair #2 hunt continues (fair-draw, serial)
-
-
----
-Task ID: S7-112 (F1 byte-hook tick, 12:43+08, Job 390768) — F1 FULLY INJECTABLE: Rust surgery + activation wiring + HotSpot verifier gate VERIFY-OK; pair#2 5th discard, 4th slow leg (spread n=4 = 3.5%, honest correction)
-Agent: agent-7625532f (session web-f7888d46, trace 1a0ab7de7d537911-cron-agent-loop-202609171243)
-Task: stale-charter tick per latest state — F1 next increment per §125/S7-111 (byte hook + runtime self-test), pair #2 poll
-
-Work Log:
-- bootstrap + pulls: c-crussty 962fc9f (S7-111) уже в remote; CRUSSTY pristine не тронут
-- ПАРА #2: poll 35181833283 => SUCCESS+VALID (world_sha256=fixture, fp=4) но harness 6574725 вне окна run22 [6273484,6529544] на +0.7% => ЧЕСТНЫЙ discard по 2% правилу; absorb => run#25 (3 гейта PASS): Analysis-Average 86.65ms => 4-я slow-нога; КЛАСС-СПРЕД n=4 = 3.5% (83.74/83.96/85.24/86.65) — честная коррекция owner-числа (было 1.8% n=3); межкласс 10-25% не меняется; hunt_leg_b.py авто-redispatch: нога#6 35183885492 in flight (band [6870000,7030000])
-- F1 CONTRACT (cfdump run21 jar, fixture tests/fixtures/ServerLevel.class 142747B sha256 3db954e8): ServerLevel / simpleRandom 0x0012 SimpleThreadUnsafeRandom / optimiseRandomTick 0x0002 (LevelChunk;I)V — единственный call-site invokevirtual в том же классе
-- RUST SURGERY: classfile.rs::patch_optimise_random_tick (patch_update-образец): 11-байтовый прямой body (aload_0,aload_1,iload_2,aload_0,getfield simpleRandom,invokestatic run,return), max_stack 4/max_locals 3, БЕЗ ветвлений => пустой StackMapTable (0 кадров); find-only пробы ДО мутаций; CP append-only+дедуп => ИДЕМПОТЕНТЕН; Pool::fieldref_parts добавлен (резолв Fieldref по имени)
-- ТЕСТЫ: 3 новых (roundtrip_verified по NAME-резолву операндов + скелет кода; idempotent patch(patch(x))==patch(x); rejects_wrong_class_and_garbage — 14 prefix-срезов без паники); cargo 82 passed / 0 failed
-- ВЕРИФИКАТОР-ГЕЙТ: randomtick/src-verify/VerifyPatched.java + verify_patched.sh (ECJ-компиляция): реальный HotSpot, resolveClass() = link-time verification БЕЗ инициализации (не бут, INJECTS-ONLY цел): child-first PATCHED-ServerLevel, parent = kernel jar => **VERIFY-OK major=65** — легальность байтов доказана верификатором JVM, не только байт-тестами
-- АКТИВАЦИЯ: src/randomtick.rs (area_map-образец): register_bytes(ServerLevel, READY/PATCHED-swap, fail-closed Err=>None) + activate(): poll 180s + Bukkit-forName ускоритель => define RandomTickOps (include_bytes 3570B) в loader kernel'а => READY => retransform => маркер-цепочка defined/armed/rc/ARMED|NOT-APPLIED; in-process семантики НЕТ (нужен тикающий мир — честно документировано), замена = CI-буты (санкционированы); lib.rs: register+activate подключены
-- ledger: GOAL СТАТУС S7-112 (новый блок) + RESULTS_LEDGER §127 + INDEX 247 + CLAIMS TASK-248; runs_index.jsonl +2 строки (run25 + нога#6 in-flight); worklog-integrity: BACKFILL S7-111 секции (прошлый тик её пропустил — реконструкция verbatim по 962fc9f + my-project/worklog)
-
-Stage Summary:
-- c-crussty master <push>: F1 = implementation + parity + byte-hook + verifier-gate + activation wiring — ПОЛНОСТЬЮ инъекционен, всё ещё dormant-до-aggregate (ничего не landится по §125; вердикт только у агрегатного A/B против банка пары 76.01/76.98). Следующий тик: F2 Brain-итераторы (второй член pack; анатомия banked task168), poll ноги#6 35183885492. INJECTS-ONLY: 0 sandbox boots
-
-## S7-113 (tick 2026-09-17 13:08 UTC+8, agent-7625532f) — F2 BRAIN-ITERATORS BANKED (family-agg pack member F2, TASK-249; ничего не landится до агрегатного A/B §125)
-
-State: родился из S7-112 (master e326ab3). Creds/pulls OK; GOAL read FIRST (канонический леджер). Ноги пары #2 разClassифицированы, F2 построен + parity PASS.
-
-Poll ноги:
-- нога#6 35183885492: BAND-REJECT (gate cpu 6654650 < [6870000,7030000]), ~30s fast-fail, бенч не потрачен
-- нога#7 35184317133: BAND-REJECT (6617751, ~30s) — была dispatched последним действием прошлого тика; index-строка скорректирована (in-flight→BAND-GATE-REJECT, hygiene)
-- нога#8 35184734695: SUCCESS+VALID, но harness cpu 6835916 ВНЕ окна run22 [6273484,6529544] на +4.8% => ЧЕСТНЫЙ discard (2% правило); записан в runs_index
-- нога#9 35187305900 dispatched in flight (band [6870000,7030000], fp=4; state leg_b_state.json цел — cwd-баг прошлых вызовов устранён: HERE-резолв в hunt_leg_b.py абсолютный, записи велись из правильного cwd)
-
-F2 STEP-0 НА ЖИВЫХ БАЙТАХ (не догадки из q1-дока):
-- Brain.class cfdump (run21, 32185B, sha c08105a9fb486091): startEachNonRunningBehavior 0x0002 (len=178): ТРОЙНОЕ вложение итераторов (values→entrySet→Set), live-contains @91-102 РАЗ на (priority,activity)-группу, getStatus @144-154 per behavior, tryStart @157-167, gameTime @0-4 один раз
-- СТРУКТУРНАЯ ПРАВДА из CP (уточнение против q1-описания!): OUTER = TreeMap (newTreeMap @22 — итерация ВОЗРАСТАЕТ по priority), INNER = Maps.newLinkedHashMap (supplier @693), SET = Sets.newLinkedHashSet (@693), activeActivities = HashSet
-- Поверхность мутаций просвечена: 5 getfield'ов поля в классе; мутации ТОЛЬКО {<init>, computeIfAbsent+Set.add @693, clear @714}; НЕТ remove/put/replace ни в одном vanilla-методе => fingerprint-доказательство возможно
-
-F2 ЛИНЗА (randomtick/src/BrainOps.java, package net.minecraft.world.entity.ai):
-- flat snapshot {acts[], behs[], groupStart[]}; groupStart = граница vanilla-группы => contains вычисляется LIVE РОВНО в vanilla-местах (в т.ч. одинаковая activity в двух приоритетах = 2 live-проверки; пустые группы = 0 слотов, elision чистого чтения — не наблюдаемо)
-- getStatus/tryStart — LIVE-вызовы без изменений (task168: itable не заменяем); gameTime читается один раз
-- FINGERPRINT: 5 семейств O(1)-проб (outer.size; outer.get(key)==inner identity; inner.size; inner.get(actKey)==set identity; set.size) — 0 итераторов/аллокаций на hot path (IdKey-аллокация ~16B — честно задокументирована против 3 итераторов vanilla)
-- CACHE: WeakHashMap<IdKey,Snapshot> — IdKey (identityHashCode+==) закрывает AbstractMap.equals TRAP (глубокое equals LinkedHashMap крест-снапшотило бы мозги); weak keys => нет утечки
-- RESIDUAL документирован: vanilla-поверхность закрыта доказательством; remove+put single-entry (вне поверхности) между вызовами не ловится
-- Byte hook СЛЕДУЮЩИМ тиком: 14 байтов прямой строки (2×getfield СВОИХ private-полей = verifier-легально => helper БЕЗ Unsafe; max_stack 5/max_locals 3/пустой StackMapTable)
-
-PARITY BANK (research/f2-brainiter-2026-09-17/, сильнее F1-паттерна: тестируется РЕАЛЬНЫЙ production entry):
-- ServerLevel seam: Unsafe.allocateInstance (ServerLevel БЕЗ <clinit> — cfdump) + WritableLevelData-прокси в Level.levelData (offset 128; Level.getGameTime = levelData.getGameTime() — cfdump Level @3955); SharedConstants.tryDetectVersion + Bootstrap.bootStrap = статические данные (реестры/кодеки), БЕЗ Main/миров/tick loop => INJECTS-ONLY цел (некбутный класс инициализации, прецедент materialization-killed-pre-main)
-- HARNESS FIX: mojang-libs 44 jar из официального server-1.21.10 bundler (piston sha 95495a7f…); класспас kernel-FIRST (kernel шейдит LogUtils.getClassLogger; vanilla-1.5.10 без метода валил Bootstrap)
-- 8 сценариев: S1 порядок/статусы; S2 gameTime один/свежий; S3 неактивные; S4 LIVE-contains (stub мутирует activeActivities mid-call); S5 пустые группы; S6 все классы мутаций → rebuild; S7 EQUALS-TRAP; S9 fuzz 60 seeds × 40 rounds c preseed 3-5×2-4×2-6 (kernel-размер)
-- ИСПРАВЛЕН БАГ БАНКА: assertSameFlow очищал EVENTS до захвата ref-событий => сравнение было пустым (S1/S3-S6/S9 вакуумны); после захвата ref-состояния ДО сброса — сравнение реальное
-- => **F2 PARITY: PASS (4828 вызовов, 3083 order-exact старт-события, 1740 мутаций)**
-
-Ledger: GOAL СТАТУС S7-113 (новый блок) + RESULTS_LEDGER §128 + INDEX 249 + runs_index.jsonl (+3 строки: нога#7 fix, нога#8 discard, нога#9 in flight). Claim: TASK-249 (dev-logs). c-crussty master: BrainOps.java + build классы + research/f2-brainiter (cfdump'ы Brain/BehaviorControl/Behavior$Status/Activity/Level/ServerLevel + ParityTest + run_parity.sh + parity_output.txt)
-
-Stage Summary:
-- c-crussty master <push>: F2 = STEP-0 на живых байтах + lens + fingerprint + parity PASS — полностью инъекционно, dormant-до-aggregate; следующий тик: F2 byte hook (patch_brain_start_each по patch_optimise_random_tick образцу + VerifyPatched + активация) + poll ноги#9 35187305900; затем F3-reads (task167 slices)
-- INJECTS-ONLY: 0 sandbox boots (Bootstrap.bootStrap = статические данные, не бут; AllocateInstance+прокси = без конструктора и без сети)
-
-
----
-Task ID: TASK-298 (S7-158a/c)
-Agent: agent-7625532f (session web-f7888d46, live owner directive «ТРОГАЕМ ВСЁ», 16:55-17:4x UTC Sep 18)
-Task: Absorb leg #2 continuation (обнаружен уже-скачанный артефакт предыдущей сессии + её fc77dcc absorb): root-cause обоих инцидентов leg #2 (59-min burn + tracker NPE), реализация S7-158a (bounded console ops) и S7-158c (GC-diet), javap-доказательство трекер-гонки, preregister S7-158b.
-
-Work Log:
-- Стандартный вход: bootstrap_tick.sh отсутствует → правило 1b (токен в remote URL); pulls: c-crussty rebase на 554e529+fc77dcc (абсорб leg #2 предыдущей сессии — выводы совпали: PARTIAL/экономика доказана), dev-logs up-to-date (TASK-297 занят её абсорбом)
-- Leg #2 (35363758352) absorb-надстройка над fc77dcc: (1) HANG-МЕХАНИЗМ вскрыт по job log + stdout: java умер 15:55:21 → tail получил SIGPIPE на записи (console-listener закрыл stdin рано в shutdown) → `cmd "stop"` = `echo > console.in` блокился навсегда на open() FIFO без читателя → orphan bash 3426 до 75-мин timeout; артефакты спасены if:always() 16:54:56 (2) JAVAP-доказательство трекер-гонки: newTrackerTick итерирует RAW backing array (trackerEntities.getRawDataUnchecked(), size-снимок одноразовый, null-гварда на элемент нет; гвардится только te==null) — swap-remove посреди итерации = null-дыра → NPE; воркеры делают Entity.discard/spawn (item-merge, лава, скелет-Arrow UUID-алиас) напрямую в ServerEntityLookup во время фазы
-- S7-158a РЕАЛИЗОВАН (3fc9443): run_world3.sh cmd() = timeout(5) sh -c printf>FIFO (мёртвый канал = 5с/вызов) + timeout 180 на report_world3.py; pre-kill tail до фазы команд отвергнут (убил бы консольный канал) — bash -n OK
-- S7-158c РЕАЛИЗОВАН (3fc9443): RegionTickOps GC-diet — персистентные Entity[][] (grow-on-overflow) + int[] len, одна forEach-фаза fill (вместо snapshot-ArrayList+W списков+consumer-массива каждый тик), post-join tail-nulling против retention мёртвых сущностей; volatile-публикация + GO-барьер happens-before сохранены
-- Верификация: PG1 lockstep дайджест БИТ-В-БИТ не изменился (61e3c374…941d5, W=1==W=2==W=4); RegionThreads harness OFFLINE PASS (structural/wiring/флаг-чек 0 нарушений); suite 144/0/1 без регрессов; build_region_tick_ops.sh пересобран (include_bytes! классы закоммичены: 0a462c9b/34bd7c24)
-- Бухгалтерия: GOAL СТАТУС S7-158a/c + NEXT S7-158b (ретаргет ServerEntityLookup.addEntity/removeEntity → deferred-FIFO при phaseActive, дрейн на join; гейты: PG1 digest + discard/spawn-шторм в harness + leg #3 min-of-2 с PG2/PG3/PG4 + 0 NPE + 0 uuid-dup); absorb-merge (fc77dcc сохранён, аппенд моих секций); s7158_javap_recon.sh предыдущей сессии забанчен; директива владельца «ТРОГАЕМ ВСЁ» вплетена в GOAL: очередь микро-лейнов (move/collision 5.4%, inside-blocks 5.1%, tracker 2%, пассажиры 1.17%) после банка REGION-THREADS, рычаги НЕ-кэш-класса
-
-Stage Summary:
--REGION-THREADS = первый рычаг эры с материальным TPS-сдвигом (+66.7%, оффлоад 75.6%); до банка осталось S7-158b (tracker/lookup ретаргет) + leg #3; контур CI более не сгорает на пост-краш фазе (bounded ops); GC-регресс устранён дизайн-фиксом с сохранением бит-в-бит parity. INJECTS-ONLY цел: 0 CI-бутов за тик.
-
-
----
-Task ID: TASK-348
-Agent: cron tick (Job 398847, продолжение сессии)
-Task: absorb s7189-хвост параллельной сессии; ре-ролл v2b-ноги после BAND-DISCARD ×2; S7-170 NAV-MOBS-GUARD реализация+гейт+диспатч
-
-Work Log:
-- git pull обоих репо; s7189 уже абсорбирован параллельной сессией (LANE-OPEN, обе оси отрицательные)
-- s7190 (35465880091) = BAND-DISCARD @ 9857408; ре-ролл s7191 (35466607225) = BAND-DISCARD @ 11694672 (пул в fast-дрейфе)
-- javap-инвентарь navigatingMobs (ServerLevel + EntityCallbacks): 4 сайта, все через Set интерфейс → дизайн одно-точечной подмены поля
-- S7-170 NAV-MOBS-GUARD в RegionTickOps.java: GuardedNavigatingMobs (lock + table-clone снапшот, порядок бит-в-бит), Unsafe swap idempotent main-only, маркер [S7-170]
-- NavMobsLockstepHarness: PASS 6/6 (240k порядок-паритет; стресс 0 исключений; сырой контроль взорвался точной продакшн NPE "wrapped is null")
-- absorb_s7189.py: PG-T1 дополнен guarded-marker чеком; s7170_javap_scan.py (канонические длины опкодов)
-- commit a5c353d push master ДО POST; диспатч s7192 = run 35467929550 @ a5c353d (v2b + S7-170)
-- GOAL ×33, CLAIMS TASK-348, push обоих репо
-
-Stage Summary:
-- c-crussty master a5c353d: S7-170 реализован+загейтован (инфраструктура правильности, не перф-рычаг)
-- в полёте: s7192 (35467929550 @ a5c353d), гейт: маркер + PG-T2 threw=0 + DUAL BAR vs ANCHOR-SLOW 1.60 @ 6680195
-- NEXT id 349: absorb 35467929550; DUAL BAR GREEN → min-of-2 → banking v4; < +10% → лейн #14 REFUTED-вердикт + RECON по CPU-оси; CRASH класса гонки → откат точки подмены
-
-
----
-Task ID: TASK-417
-Agent: cron tick (Job 405193, 01:08 +08, v16)
-Task: полный MEGA-CYCLE tick-417: absorb, BOTTLENECK, якоря ×3, волна ×3 (mc-convoy-fix / chunk-pipeline-owner / queryplane-cvs), pair-вердикты, GOAL ×101, CLAIMS next-418
-
-Work Log:
-- Phase 0: token+flock+pull; диск 91%→65% (agent-b full-checkout 2.8G → sparse-checkout); работа с параллельным лупом координирована (23c21da/1039db4 — его абсорбы, мои диспатчи — одна волна)
-- BOTTLENECK-417: топ-1 = mob_query конвой mc-композита (mc2 0.20/0.20/0.70); планы из RESEARCH-A-iter3.md @158889b
-- Якоря-417: anchora FAILURE→anchorc3 2.10 (RED-флаг, референс); anchorb 2.35@6960975 ✓; anchorc 2.40@6761869 ✓ (ночь)
-- Волна ×3 рестартом с контекстом (adapter-deadline ×2 ≠ смерть): A=protocol v2 convoy-fix, B=chunk-pipeline (директива владельца 01:4x «шум/чанки»), C=queryplane-awake на cvs
-- A: protocol v2 (N_SHARDS=64 striped seqlock, two-phase no-JNI-critical-retries, bounded fail-open ERR_RANGE, tombstone-rebuild + 4 hardening-фикса UAF/tearing) + queryplane find_class-фикс; cargo 289/0, javap flat==nested, selftest 6/6; mc3a/b/c = 2.50@6787526/2.70@8678220/3.20@8697388 — КОЛЛАПСА НЕТ, polls 6, threw=0, AIOOBE=0, items 0.00 ×3, broadphase −6.0..−6.5, nav_ai −9.8..−10.0
-- C: порт queryplane на cvs 1aec4f8 + find_class-фикс; selftest 5/5, cargo 283/283, блобы 6 мостов; bqa/bqb/bqc = 3.20@8960321/3.30@7242099/2.60@6837461, selfTest==true ×3 stdout, AIOOBE=0, pair-by-runner: +40.4/+8.3/+36.2 (provisional) — медиана +36.2%; bqb 3.30 = лучший ночной абсолют эры
-- Вердикты: mc-композит ЗДОРОВ (конвой побеждён; ночь ≈+15 provisional, дневной потенциал ≥+40); bq median +36.2; БАР 80% НЕ ВЗЯТ — МЕРЖ НЕТ
-- B-wgen: арминг cmp417_wgen в run_world3.sh (noise_fill-наследие TASK-108, пустой флаг = ваниль), noise bridge rebuild в момент закрытия тика — ноги переданы тику-418
-- GOAL ×101, CLAIMS next-418, collapsed-purge ×1, push master (92cb37d) + dev-logs
-
-Stage Summary:
-- mc-композит (multi⊕racefix⊕queryplane⊕gsel @20c9fdc cmp417_mcomp) впервые ЗДОРОВ: топ-лесенка разблокирована для дневного окна тика-418 (цель ≥+40-50)
-- queryplane awake на раннере ×6 ног — find_class INITIALIZED-фикс закрыл класс dormant-отказов (b2p1/mc1)
-- Директива владельца принята в систему векторов: chunk-pipeline (B-wgen) + наследие noise_fill; inside_volatile → 418
+- ОКНО сертифицировано (4.3%) — мерж-решение тика легитимно по гейту TASK-423(1)
+- mob-конвой SoA-зеркало пустое с merge = спящий резерв эры (mob-plane имплементирован, но idCount()=0 → инертен) — wave-2 кандидат: чинить наполнение зеркала (MobPushOps writer)
+- GC-гейт переформулирован: verdict = soak-окно (LAST300) GC == ваниль; whole-run totals загрязнены инъекцией
+- Открыто на 424: A-ноги вердикты + мерж при ≥+20%, B inside имплементация, C boot-метрики, SoA-зеркало wave-2
+
+ФИНАЛ ТИКА-423 (продолжение TASK-424):
+- Якоря-423: банк {2.3@6.769M, 2.3@6.701M, 2.4@6.970M} спред 4.3% — ОКНО PASSED
+- A wave-1 cmp423_brain3 @831394a: legs 2.45@6.983M/+2.1, 2.35@6.708M/+2.2, 2.20@6.624M/-4.3 → медиана +2.1% < БАР — МЕРЖ НЕТ
+- Плацебо-класс #2 канонизирован: SoA-популяция голодает (colpush.rs STRICT-eq → pushEntities vanilla → idCount()=0); goal-selector EFFECT armed подтверждён
+- GC: soak == vanilla (59 vs 58); шторм = инъекция; спам убит (1790→2 строк)
+- C cwgen: soak-медиана +1.2 < бар (boot-метрики — на 425); B inside: передаётся 425 (worktree-правки не сфинишированы в бюджет тика)
+- GOAL ×107 + CLAIMS TASK-425 + push (a8ef2fc); dev-logs синх
 ---
 Task ID: 425-fin
 Agent: main-finisher
@@ -5655,3 +4868,23 @@ Stage Summary:
 - Ladder stays at +29.5 (era merge 4ab7306); C chunksend best certified pair +17.4% — one honest re-roll wave (anchors in 8.7-9.4M runner windows) away from the BAR
 - Merge gates canonized: PAIR (Drunner <=50k AND anchor-not-outlier) + WINDOW (spread <=±5pp) — both mandatory, wide lanes never enter medians
 - TASK-426 opened: mobfeed SoA-feeding (main vector, ~24-25% CPU addressable), chunksend pair-certification anchors, inside re-rolls @aa55277, evening/night windows
+---
+Task ID: 426-fin
+Agent: main-finisher
+Task: tick-425 finish (TASK-426 PHASE 3/4: poll in-flight x5, absorb, window gate, chunksend verdict, merge decision, accounting, pushes)
+
+Work Log:
+- Polled 5 in-flight runs to completion: anchore 35837339137 / anchorf 35837357756 / anchorg 35837376754 (vanilla @790dc2f) + c-l1r 35837395972 / c-l3r 35837414076 (cmp424_chunksend @6f92ea7 re-rolls); all success; no other runs in flight/queued (A-agent idle, 0 new 426-a dispatches at 17:0x +08)
+- Absorbs: a425e 2.2@6396985 (+2.5 norm) / a425f 1.9@6591052 (-13.1 = outlier class, excluded from pairing) / a425g 2.2@6589846 (+0.6) / c426l1r 2.40@7478137 / c426l3r 2.30@6584554 (re-roll gates green: ARMED queryplane awake selfTest==true, AIOOBE=0, NCDFE=0, polls threw=0, band OK; colpush selfTest FAILED dormant on branch carrier = old base without colpush-fix, extra reason not to merge)
+- Fresh anchor pool x6 band-OK (vanilla @790dc2f lever=''): b 2.1@7044209 / d 2.4@6893615 / e 2.2@6396985 / f 1.9@6591052 (outlier) / g 2.2@6589846 / anchor1-A 2.25@6713321 -> WINDOW GATE FAIL: spread 22.7% raw / 13.6% ex-outlier (9.1% even without both underperformers) > ±5pp — window NOT certified (noisy day x3 ticks in a row)
+- chunksend verdict (cmp424_chunksend @6f92ea7, carrier items+queryplane+stagger+collide-batch+wgen): certified pairs (Δrunner <=50k, non-outlier): c426l3r 2.30@6584554 <-> a425g 2.20@6589846 Δ5.3k = +4.5%; c424l2 2.70@6887410 <-> a425d 2.40@6893615 Δ6.2k = +12.5% (fresh re-cert, was +17.4 vs anchorc); c426l1r 2.40@7478137 nearest anchor a425b@7044209 Δ434k > 50k = NO PAIR; old top-band l1 3.4@9399955 / l3 3.1@8711952 no fresh anchors within 50k (Δ>1.3M), secondary uncertified. Median of certified pairs = +8.5% < BAR +20%
+- ROLL-COLLAPSE: re-rolls 3.4->2.40 / 3.1->2.30 = tick-424 top-band signals were window artifacts (lesson x425-fin confirmed x2); boot-Done collapsed too: l1r 15.901s / l3r 15.973s ≈ vanilla 15.2-16.9s (was 12.3-13.7s); stable remainder = l2 +12.5..+17.4% across two windows — below bar, standalone merge candidate closed
+- DATA-PLAN FACT (a426l2 stdout @2ef6765): "cmp424_mobfeed: epoch ok tick=21 mobSlots=0 players=4" (single line in whole log, prеgate mobSlots>0 x895 FAIL) — SoA feed NOT alive; a426l2 2.55@6954088 (+12.7% norm) effect NOT from SoA family AND uncertified (nearest fresh anchor a425d Δ60.5k > 50k)
+- NO MERGE honest (double gate: bar AND window both red; merge command NOT executed, master stays 790dc2f)
+- Agent statuses at 17:0x +08: A (mobfeed) 5 dispatches (l1 CI-FAIL, l2 2.55, l3 CI-FAIL, anchor1 absorbed, anchor2 FAIL), 0 new in flight, alive in background; B (inside @aa55277) 3 legs absorbed (2.2@6012964 / 2.6@8223137 / 2.1@6527695) zero pairs Δ<=50k verdict unchanged; C (chunksend) re-rolls absorbed, nothing in flight
+- Accounting: GOAL x109 (window gate + vector map + DATA-PLAN fact + boot-Done) + CLAIMS TASK-427 (SoA-feeding completion + remainder certification + window strategy evening/night) + worklog copies; disk law: 89% -> purge round-* zips/html/collapsed/flamegraphs -> 65%
+
+Stage Summary:
+- Ladder stays at +29.5 (era merge 4ab7306, master 790dc2f); chunksend NOT certified: pair median +8.5% < +20% AND window >±5pp — honest no-merge
+- Roll-collapse proven: tick-424 raw +41.7/+29.2 were window artifacts; only stable chunk-send signal = l2 +12.5..+17.4% (below bar)
+- SoA feed still dead (mobSlots=0) — TASK-427 main vector: STRICT-OR brain in colpush.rs / population-writer with mobSlots>0 pregate, ~24-25% CPU addressable; dispatch vectors only in PASSED windows (evening/night)
