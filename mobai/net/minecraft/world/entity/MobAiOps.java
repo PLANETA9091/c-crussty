@@ -29,7 +29,10 @@ import net.minecraft.server.MinecraftServer;
  * мост делает ОДИН bulk-JNI {@code aiEpoch(tick, n, idTop, window)} — rust
  * DOD-проходом пишет коло́нку окна {@code window[denseId] = {0,1}} для ВСЕЙ
  * живой популяции (flags bit0=alive) в разделяемый java-массив; решение
- * пер-моба = O(1) чтение коло́нки по плотному id (MobPushOps.idBoxOf).
+ * пер-моба = O(1) чтение плотного стампа по ванильному entity id
+ * (TASK-427-A2 GATE-BITMAP: VAN_WIN[mob.getId()]; per-mob
+ * MobPushOps.idBoxOf/CHM.get с hot path УБИТ — профиль round-mf427l2 top-3;
+ * членство в окне публикуется эпохой ОДИН bulk-проход за тик).
  * per-entity JNI отсутствует: JNI = ОДИН bulk-вызов на тик-батч (закон 6
  * RUST-FIRST). Правило окна: {@code floorMod(GOLDEN32(id) + tick, N) == 0},
  * N = CRUSSTY_AI_N | CRUSSTY_LEVER_ARG (clamp [2..64], default 4 — Airplane
@@ -94,6 +97,30 @@ public final class MobAiOps {
     private static volatile long EPOCH_TICK = Long.MIN_VALUE;
     private static final Object EPOCH_LOCK = new Object();
 
+    // ------------------------------------------------------------------
+    // TASK-427-A2 GATE-BITMAP: плотные стампы по ВАНИЛЬНОМУ entity id,
+    // публикуемые эпохой ОДИН bulk-проход за тик (закон 6, mandate п.3).
+    // Профиль round-mf427l2: skipAi -> MobPushOps.idBoxOf -> CHM.get =
+    // per-mob hash lookup для КАЖДОГО тикнутого моба каждый тик (inclusive
+    // top-3 стека). Эпоха (уже под EPOCH_LOCK, O(idTop) java-проход по
+    // WINDOW-колонке + byId) публикует VAN_WIN[vanillaId] = {0,1,2};
+    // skipAi читает O(1) массив по mob.getId() — НИКАКИХ per-mob map
+    // lookups. Семантика бит-в-байт прежней лестницы: не-стампнут (0) = не
+    // в плоскости/вне окна → ваниль (fail-closed, был box==null / id>=len);
+    // STAMP_RUN (1) = в плоскости, окно говорит RUN (был w[id]==1);
+    // STAMP_SKIP (2) = в плоскости, окно говорит SKIP (был w[id]==0).
+    // Видимость/гонки: тот же документированный контракт ghost ≤1 тик, что
+    // у WINDOW-колонки (in-place мутируется эпохой под concurrently
+    // читателями; транзиентный 0 = ваниль на одно решение — fail-safe
+    // направление; растущий массив публикуется volatile-заменой).
+    // ------------------------------------------------------------------
+    private static final int STAMP_RUN = 1;
+    private static final int STAMP_SKIP = 2;
+    private static volatile int[] VAN_WIN = new int[4096];
+    /** Ванильные id, застампнутанные ТЕКУЩЕЙ эпохой (чистятся следующей). */
+    private static int[] touch = new int[4096];
+    private static int touchN = 0;
+
     /** One-shot ARM/effect-пруф (виден в server-stdout.log). */
     private static volatile boolean ARM_LOGGED = false;
 
@@ -152,26 +179,24 @@ public final class MobAiOps {
         if (broken) {
             return false;
         }
-        int[] box = MobPushOps.idBoxOf(mob);
-        if (box == null) {
-            return false; // моб не в SoA-плоскости (новый/не-композитный путь) — ваниль
-        }
-        int id = box[0];
         long t = MinecraftServer.getServer().getTickCount();
         maybeEpoch(t);
         if (broken) {
             return false;
         }
-        int[] w = WINDOW;
-        int len = WINDOW_LEN;
-        if (id < 0 || id >= len || id >= w.length) {
-            return false; // вне последней эпохи — ваниль (fail-closed)
+        // TASK-427-A2 GATE-BITMAP: O(1) dense read по ванильному entity id —
+        // per-mob idBoxOf (ConcurrentHashMap.get) убит с hot path; членство
+        // в окне публикуется эпохой ОДИН bulk-проход за тик.
+        int vid = mob.getId();
+        int[] vw = VAN_WIN;
+        if (vid < 0 || vid >= vw.length) {
+            return false; // не застампнут этой эпохой — не в плоскости → ваниль (fail-closed)
         }
-        boolean skip = w[id] == 0;
+        boolean skip = vw[vid] == STAMP_SKIP;
         if (skip && !ARM_LOGGED) {
             ARM_LOGGED = true;
             LOG.info("[crussty-plugin] cmp406_aibatch: mob-ai window EFFECT armed (first skip at tick "
-                    + t + ", denseId=" + id + ", n=" + windowN() + ")");
+                    + t + ", vanillaId=" + vid + ", n=" + windowN() + ")");
         }
         return skip;
     }
@@ -216,6 +241,7 @@ public final class MobAiOps {
                 // холостых эпох и спама «epoch ok» больше нет); WINDOW_LEN=0
                 // → читатели fail-closed (id >= len → vanilla).
                 WINDOW_LEN = 0;
+                publishStamps(0, WINDOW); // TASK-427-A2: стампы прошлой эпохи сняты
                 EPOCH_TICK = t;
                 return;
             }
@@ -240,6 +266,18 @@ public final class MobAiOps {
             }
             WINDOW = w;             // публикуем массив ДО длины
             WINDOW_LEN = rc;        // volatile write = publication edge для читателей
+            // TASK-427-A2 GATE-BITMAP: ОДИН bulk java-проход O(idTop) за тик —
+            // WINDOW-колонка (rust, только что записанная этим потоком) + byId
+            // → плотные стампы по ванильному id. Throwable здесь = disarm
+            // (fail-closed консервативно: никакой половинной публикации).
+            try {
+                publishStamps(rc, w);
+            } catch (Throwable th) {
+                broken = true;
+                LOG.warning("[crussty-plugin] cmp406_aibatch: gate-bitmap publish threw " + th
+                        + " — mob-ai window disarmed to vanilla");
+                return;
+            }
             EPOCH_TICK = t;
             if (!ARM_LOGGED) {
                 ARM_LOGGED = true; // TASK-424-A: one-shot на publish (не в skip)
@@ -253,6 +291,46 @@ public final class MobAiOps {
                         + " windowLen=" + rc + " tick=" + t
                         + " — SoA family FED (mobSlots>0 windowLen>0, flag=" + LABEL + ")");
             }
+        }
+    }
+
+    /**
+     * TASK-427-A2 GATE-BITMAP publisher: снять стампы прошлой эпохи (точный
+     * O(prev-epoch) проход по touch-списку), застампнуть текущую — по
+     * WINDOW-колонке + byId (dense-id юниверс MobPushOps). Вызывается ТОЛЬКО
+     * под EPOCH_LOCK из maybeEpoch (один писатель). VAN_WIN публикуется
+     * volatile-заменой при grow; ин-плейс стампы видны читателям с тем же
+     * ghost ≤1-тик контрактом, что и WINDOW-колонка.
+     */
+    private static void publishStamps(int rc, int[] w) {
+        for (int i = 0; i < touchN; i++) {
+            int vid = touch[i];
+            if (vid >= 0 && vid < VAN_WIN.length) {
+                VAN_WIN[vid] = 0;
+            }
+        }
+        touchN = 0;
+        int[] vw = VAN_WIN;
+        Entity[] byId = MobPushOps.byIdArr();
+        int m = Math.min(Math.min(rc, w.length), byId.length);
+        for (int d = 0; d < m; d++) {
+            Entity e = byId[d];
+            if (e == null) {
+                continue; // свипнутый слот — стампа нет → ваниль
+            }
+            int vid = e.getId();
+            if (vid < 0) {
+                continue;
+            }
+            if (vid >= vw.length) {
+                vw = java.util.Arrays.copyOf(vw, Math.max(vw.length * 2, vid + 1024));
+                VAN_WIN = vw; // volatile-публикация выросшего массива
+            }
+            vw[vid] = (w[d] == 0) ? STAMP_SKIP : STAMP_RUN;
+            if (touchN == touch.length) {
+                touch = java.util.Arrays.copyOf(touch, touch.length * 2);
+            }
+            touch[touchN++] = vid;
         }
     }
 }
