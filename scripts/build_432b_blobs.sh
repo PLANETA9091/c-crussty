@@ -65,6 +65,11 @@ install_nested_glob mobai/build          net/minecraft/world/entity/MobAiOps
 install_nested_glob entityinside/build   net/minecraft/world/entity/ItemEntityManager
 install_nested_glob entityinside/build   net/minecraft/world/entity/InsideSnapOps
 install_nested_glob entityinside/build   'net/minecraft/world/entity/InsideSnapOps$Snap'
+# ROUND-3 NCDFE FIX (run 35902792520): $Lane (serve-fastpath lanes) was added
+# by inside2 but never installed as a blob => kernel loader could not resolve
+# `[Lnet/.../InsideSnapOps$Lane;` => clinit NCDFE => permanently erroneous
+# class => 200k NCDFE storm. Install nested+flat and gate it below.
+install_nested_glob entityinside/build   'net/minecraft/world/entity/InsideSnapOps$Lane'
 install_nested_glob entityinside/build   net/minecraft/world/entity/InsideBlockOps
 install_nested_glob entityinside/build   'net/minecraft/world/entity/InsideBlockOps$Recorder'
 install_nested_glob entityinside/build   net/minecraft/world/entity/InsideBitmaskOps
@@ -88,9 +93,34 @@ gate_fe entitygoalquery/build net/minecraft/world/entity EntityGoalQueryOps
 gate_fe goalops/build        net/minecraft/world/entity/ai/goal GoalOps
 gate_fe queryplane/build     net/minecraft/world/entity QueryPlaneOps
 gate_fe entityinside/build   net/minecraft/world/entity 'InsideSnapOps$Snap'
+gate_fe entityinside/build   net/minecraft/world/entity 'InsideSnapOps$Lane'
 gate_fe entityinside/build   net/minecraft/world/entity 'InsideBlockOps$Recorder'
 # shellcheck disable=SC2181
 echo "flat==nested gates: OK"
+
+# ROUND-3 GATE (canon ×93-indy): InsideSnapOps <clinit> must be indy-FREE.
+# An indy bootstrap inside <clinit> resolves the call-site's descriptor types
+# EAGERLY at class-init time — any custom type there (e.g. a nested class not
+# defined in the kernel loader) permanently poisons the bridge (run 35902792520:
+# ExceptionInInitializerError @ InsideSnapOps.java:220 on
+# ThreadLocal.withInitial(InsideSnapOps::newLanes) — return type Lane[]).
+# Other bridges: advisory warn (InsideBitmaskOps clinit indy #0/#1 are
+# String-concat + primitive-array supplier — resolvable, production-proven
+# ×200+ legs — but flagged so any NEW custom-typed clinit indy gets eyes).
+JAVAP_BIN="${JAVAC:-/home/z/tools/jdk-21.0.12.1+1/bin/javac}"; JAVAP_BIN="${JAVAP_BIN%javac}javap"
+clinit_indy() { "$JAVAP_BIN" -p -c "$1" 2>/dev/null | awk '/^  static \{\};$/{flag=1; next} /^  [a-zA-Z].*\(.*\);$/{flag=0} flag' | rg -q "invokedynamic"; }
+if clinit_indy entityinside/build/net/minecraft/world/entity/InsideSnapOps.class; then
+  echo "CLINIT-INDY GATE FAIL: InsideSnapOps.class has invokedynamic in <clinit> (round-3 NCDFE hazard)" >&2
+  exit 1
+fi
+for f in \
+  entityinside/build/net/minecraft/world/entity/InsideBitmaskOps.class \
+  entityinside/build/net/minecraft/world/entity/InsideBlockOps.class; do
+  if clinit_indy "$f"; then
+    echo "CLINIT-INDY GATE WARN: $f has invokedynamic in <clinit> (resolvable today; custom-typed bootstrap targets would poison <clinit> — see run 35902792520)" >&2
+  fi
+done
+echo "clinit-indy gates: OK"
 
 # raw-byte gate: bridges must not reference LambdaMetafactory (no indy lambdas
 # on the bridge surface; selfTest bodies are plain bytecode).

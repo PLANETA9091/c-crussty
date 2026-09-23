@@ -58,11 +58,23 @@ const TARGET_CLASS: &str = "net/minecraft/world/level/chunk/LevelChunk";
 const ENTITY_CLASS: &str = "net/minecraft/world/entity/Entity";
 const OPS_CLASS: &str = "net/minecraft/world/entity/InsideSnapOps";
 const SNAP_CLASS: &str = "net/minecraft/world/entity/InsideSnapOps$Snap";
+const LANE_CLASS: &str = "net/minecraft/world/entity/InsideSnapOps$Lane";
 
 const OPS_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideSnapOps.class");
 const SNAP_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideSnapOps$Snap.class");
+// ROUND-3 NCDFE FIX (run 35902792520 root-cause): the inside2 serve-fastpath
+// added the nested class `InsideSnapOps$Lane` but the bridge-define step never
+// defined it into the kernel loader — clinit (or first resolution) of
+// InsideSnapOps hit NoClassDefFoundError: [Lnet/.../InsideSnapOps$Lane; ->
+// ExceptionInInitializerError -> the class stayed erroneous FOREVER -> every
+// composed Entity gate call threw NCDFE (200k storm, fail-closed empty world).
+// $Lane must be defined alongside $Snap (blob installed by
+// build_432b_blobs.sh, define_class here, java side also de-indy'd: no
+// Lane-typed resolution is reachable from <clinit> any more).
+const LANE_BYTES: &[u8] =
+    include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideSnapOps$Lane.class");
 
 const PROBE_MAGIC: i32 = 0x42534E50; // "BSNP"
 const ERR_STRUCT: i32 = -1;
@@ -202,7 +214,11 @@ pub fn activate() {
         })
         .flatten()
         .unwrap_or(u16::MAX);
-        for (name, bytes) in [(OPS_CLASS, OPS_BYTES), (SNAP_CLASS, SNAP_BYTES)] {
+        for (name, bytes) in [
+            (OPS_CLASS, OPS_BYTES),
+            (SNAP_CLASS, SNAP_BYTES),
+            (LANE_CLASS, LANE_BYTES),
+        ] {
             let major = crate::improved_noise::class_version(bytes)
                 .map(|(m, _)| m)
                 .unwrap_or(0);
@@ -223,16 +239,15 @@ pub fn activate() {
             return;
         }
 
-        // Define both classes into the KERNEL loader + RegisterNatives.
+        // Define all three classes into the KERNEL loader + RegisterNatives.
         let Some(gops) = define_bridge() else {
             eprintln!(
                 "[crussty-plugin] cmp432_inside2: bridge definition failed, hook stays dormant"
             );
             return;
         };
-        BRIDGE_READY.store(true, Ordering::Release);
         eprintln!(
-            "[crussty-plugin] cmp432_inside2: defined {OPS_CLASS} in kernel loader (+ Snap), natives registered"
+            "[crussty-plugin] cmp432_inside2: defined {OPS_CLASS} in kernel loader (+ Snap + Lane), natives registered"
         );
 
         // selfTest on the KEPT define_class ref (TASK-417-C find_class fix):
@@ -245,6 +260,15 @@ pub fn activate() {
             );
             return;
         }
+        // ROUND-3 CONTAINMENT (run 35902792520 second lesson): BRIDGE_READY is
+        // published ONLY after a GREEN selfTest. It used to be published right
+        // after define_bridge — so entity_compose composed the inside_snap
+        // Entity stage (retarget lambda$checkInsideBlocks$2 -> InsideSnapOps)
+        // even though the class was already erroneous from the failed clinit:
+        // the storm. With this ordering a failed selfTest leaves the stage
+        // uncomposed (fail-dominant skip, vanilla inside_snap lane) instead of
+        // arming a poisoned retarget.
+        BRIDGE_READY.store(true, Ordering::Release);
         eprintln!("[crussty-plugin] cmp432_inside2: selfTest=true BEFORE arm (probe + bpe4/bpe15 modulo-layout roundtrips)");
 
         // ARM-ORDER (TASK-424-B stale-window fix): the java gate is armed LAST —
@@ -385,6 +409,20 @@ fn define_bridge() -> Option<*mut c_void> {
         } else {
             crate::describe_exception(env);
             eprintln!("[crussty-plugin] cmp432_inside2: define_class({SNAP_CLASS}) failed");
+            env.delete_local_ref(c);
+            env.delete_local_ref(loader);
+            env.delete_local_ref(class_cls);
+            return None;
+        }
+        // Lane companion (round-3 NCDFE fix, no natives): the serve-fastpath
+        // lanes live in this nested class; it MUST be loadable from the same
+        // kernel loader as InsideSnapOps or the very first Lane[] resolution
+        // poisons InsideSnapOps permanently (run 35902792520).
+        if let Some(l) = env.define_class(LANE_CLASS, gref, LANE_BYTES) {
+            env.delete_local_ref(l);
+        } else {
+            crate::describe_exception(env);
+            eprintln!("[crussty-plugin] cmp432_inside2: define_class({LANE_CLASS}) failed");
             env.delete_local_ref(c);
             env.delete_local_ref(loader);
             env.delete_local_ref(class_cls);
