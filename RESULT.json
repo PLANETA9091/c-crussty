@@ -1,30 +1,19 @@
 {
-  "agent": "TASK-431-B",
-  "vector": "R-закон 6: inside/block-contact плоскость целиком (inside_bitmask pre-gate stage-1b + inside_snap snapshot plane stage-1c, ONE bulk-JNI per collect) на пробуждённом SoA-носителе A2 round-427-a2-mobsoa @18151a96; ветка round-430-b-inside @5a3cd38",
-  "branch": "round-430-b-inside",
-  "base": "origin/round-427-a2-mobsoa @18151a96 (код=fe4ee57, cmp424_mobfeed)",
-  "lever": "cmp430_inside",
+  "agent": "TASK-434-C (cron main tick-434, Job 406609, trace cron-agent-loop-202609240408)",
+  "vector": "chunk-pipeline R5 (law 6/8) — SUBSYSTEM SELECTED: chunk parse/serialization (whole subsystem)",
+  "branch": "round-434-c-chunkpl",
+  "base": "origin/round-433-ccefix @513c4835",
   "run_id": null,
   "tps_med": null,
   "delta_pair_pct": null,
-  "lane_before": "inside_volatile 12.18% флэт (wgen-l1 профиль, BOTTLENECK-430); адресуемо 1.3-1.6% PROFILE-B (modulo-декодер round-423-b-inside)",
-  "lane_after": null,
-  "ram_stw": null,
-  "ram_full": null,
-  "parity": "план: ARM+ЭФФЕКТ маркеры + Retargeted sites>0 (inside_bitmask stage-1b sites:1, inside_snap stage-1c sites:1, LevelChunk secWrite sites:1) + AIOOBE=0 + NCDFE=0 + selfTest==true + javap flat==nested + polls threw=0",
-  "verdict": "IN_PROGRESS: step-2 верификация пройдена, диспатч ждёт завершения round-431-* пробного батча (CI-окно главного агента)",
+  "lane": "was: parse block_states-site only (cmp420_chunk2 cache) -> became: BOTH section-decode sites (block_states ⊕ biomes parseBiomesSection) + carrier union cmp434_chunkpl on full composite",
+  "RAM": "n/a (bench in CI)",
+  "parity": "n/a yet (fail-closed STRICT lever gate; empty flag = vanilla bit-in-bit)",
+  "verdict": "IN_PROGRESS (step-0 research committed+pushed 773e08d; step-1 = cherry-pick 558fd1d biomes cache)",
   "evidence": [
-    "step-1 @5a3cd38 (запушен): STRICT-OR plumbing 24 rust gate-строк (17 файлов) + 8 java blob gates + InsideSnapOps.java 471 строка + InsideBitmaskOps.class + build_430b_blobs.sh, блобы ALL IN SYNC",
-    "step-2 верификация: cargo check --lib green; cargo test --lib 302/0 (+inside_snap modulo 4 tests); check_blobs_sync ALL IN SYNC; javap InsideSnapOps.selfTest invokestatic snapProbe NOT-a-stub; flat==nested byte-identical (InsideSnapOps + InsideBitmaskOps)",
-    "triаж round-431-a2-l8r3 (чужой пробный батч): BAND fast-fail runner_cpu_index=11110082 OUTSIDE band — pairing discard, не bench-фейл; band-гварды работают",
-    "диск-закон: cargo target удалён сразу после теста (71% hold)",
-    "ре-роллы round-431-*: a2-l8r3 требует ре-ролла после диспатча своего батча — вне моей очереди (главный агент)"
+    "RESEARCH-F.md committed: anchors parse codec 4/579k samples (parse-cache killed it), chunk-send 0.01% REFUTED x2, noise 0.03% inert (429-A alive), biomes site NEVER cached in master lineage (grep=0)",
+    "558fd1d = proven biomes-cache code (cargo test 291/0 at birth, blobs IN SYNC, javap-verified) never merged",
+    "RC6-421 canon: parse plane carries +6-8pp of carrier via GC-debt relief"
   ],
-  "what": "закон 6: вся inside/block-contact подсистема = (A) bitmask all-air pre-gate на ЕДИНСТВЕННОМ сайте applyEffectsFromBlocks->checkInsideBlocks (13 входов из RECON-33 census), (B) snapshot-плоскость per-section BlockState[4096] с ONE bulk-JNI collect + modulo-декодером в Rust и secWrite-инвалидацией; пер-сайт ретаргеты = клей миграции",
-  "steps_log": [
-    "step-0: worktree + research + диск-закон OK",
-    "step-1: имплементация выполнена, блобы пересобраны, запушено @5a3cd38",
-    "step-2: верификация (cargo 302/0, blobs ALL IN SYNC, javap NOT-a-stub) OK; dispatch_431b.py готов (3 якоря master + 3 inside-ноги cmp430_inside интерлив, банк inputs вербатим)",
-    "step-3 PENDING: диспатч после завершения round-431-*"
-  ]
+  "what": "Research done; design: port biomes-parse cache (parseBiomesSection mirror template cache) + retag cmp434_chunkpl STRICT-OR union across composite gates; then bench my legs round-434c-chk-* vs fresh anchors."
 }
