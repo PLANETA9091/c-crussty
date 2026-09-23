@@ -5,13 +5,13 @@
   "run_id": null,
   "tps_med": null,
   "delta_pair_pct": null,
-  "verdict": "S1-RECON-DONE",
+  "verdict": "S2-IMPLEMENTED (gates green)",
   "evidence": [
-    "PROFILE ROOT-CAUSE (round-mf427l2 BOTTLENECKS_3, 85049 samples): TOP-1 leaf = crussty::mobs_soa::soa_upsert 12.2% self (10339 = ~36.5s CPU/run ~120ms/tick) — base soa_upsert has NO tombstone reclaim: every cell-move leaves a tombstone key, `used` grows monotonically toward CELL_CAP=262144 under 300 ticks of mob wandering -> probe walks degenerate + permanent ERR_RANGE saturation (43us/call tail). Protocol-v2 (afbc1dc+7c7e8d4) carries exactly the fix: PROBE_CAP=128 + one-shot tombstone-reclaim rebuild_tables (fixed scratch, no buffer swap) + per-shard SVER brackets",
-    "TOP-2 leaf = EntityGoalQueryOps.snapshotQuery 3.4% (java demand chain-walk; outside my S1 slice, iter-2 candidate under law 3)",
-    "TOP-3 = per-mob MobPushOps.idBoxOf CHM.get in skipAi gate (mandate item 3: gate-bitmap)",
-    "idTop NOT 2819 steady: DATA-PLAN line logged at ramp tick21; soak idTop ~= all LivingEntities ever pushed (~40-50k) -> colpush_plane_refresh full-passes 50k rows/tick, eq/ai/sscan epochs scan 50k rows/tick",
-    "base writer paths: mob_upsert->eqsnap shard (lock-free, ok), colpush_plane_refresh (1 bulk WLOCK/tick, feeds plane), mob_remove (sweep) — global WLOCK+VERSION coupling = mandate item 4"
+    "mobs_soa.rs protocol-v2 port: N_SHARDS=64 SVER striped seqlock, PROBE_CAP=128 + tombstone-reclaim rebuild_tables (fixed rkeys/rhead scratch, in-place copy-back, no UAF), soa_upsert per-shard brackets with combined old+new move window, sharded_scan bounded reader (<=8 retries spin->yield, n0 rollback, fail-open ERR_RANGE), mob_query two-phase thread-local SCRATCH (JNI-critical = final memcpy only), mob_remove flag-clear inside shard bracket, mirror outside WLOCK",
+    "mobs_grid.rs per-shard writer Mutex port (ascending-order two-shard moves)",
+    "MobAiOps.java GATE-BITMAP: VAN_WIN dense stamps keyed by vanilla entity id, publishStamps O(idTop) once/tick under EPOCH_LOCK, touch-list exact clear, skipAi O(1) mob.getId() read; javap blob: idBoxOf refs = 0",
+    "GATES: blobs rebuilt (419a one-pass, major 65), check_blobs_sync ALL IN SYNC, javap ColpushOps.selfTest NOT-a-stab (invokestatic idCount/capacity/byIdArr live, no iconst_0 start), raw-byte cmp420_colpush+cmp424_mobfeed markers PRESENT x3 blobs, cargo test 298/0 (+2 v2 tests), cargo target purged",
+    "flag-gate: lever lists untouched — empty CRUSSTY_LEVER_FLAG = vanilla bit-for-bit (rust gates STRICT, java ENABLED STRICT-OR family preserved incl. cmp424_mobfeed)"
   ],
-  "what": "S1 recon complete. Plan: port protocol-v2 slice (mobs_soa.rs consts/SVER/probe-cap/rebuild/sharded_scan/two-phase mob_query + mobs_grid.rs per-shard writer mutex) + MobAiOps.java gate-bitmap (vanilla-id dense stamps, epoch-published, fail-safe), then blobs+cargo gates, dispatch pair vs fresh anchors."
+  "what": "S2 done @ impl commit. Next: S3 dispatch legs (lever cmp424_mobfeed, exact bank inputs) + anchors round-427-a2-anchora/b @790dc2f, poll sleep 120 + curl, absorb_round.py, pair-by-runner verdict."
 }
