@@ -127,6 +127,11 @@ fn enabled() -> bool {
             // TASK-419-A (colpush): колпаш-носитель — eq_epoch снапшот жив
             // (плоскость кормит colpush_plane_refresh).
             | Ok("cmp420_colpush")
+            // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
+            | Ok("cmp422_brain2")
+            // TASK-424-A: GC-ревизия brain3 (STRICT OR).
+            | Ok("cmp423_brain3")
+            | Ok("cmp421_brain")
     )
 }
 
@@ -144,6 +149,8 @@ fn enabled_flag_is_eqsnap() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
         Ok("cmp411_eqsnap") | Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs") | Ok("cmp417_bq")
+            // TASK-419-B (sense-plane composite): STRICT OR.
+            | Ok("cmp421_brain")
     )
 }
 
@@ -153,6 +160,27 @@ fn enabled_flag_is_eqsnapv3() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
         Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs") | Ok("cmp417_bq")
+    )
+}
+
+/// TASK-419-B (sense-plane): true under the sense composite flag only —
+/// включает достройку CSR-арены (sense_arena) сразу после eq_epoch в том же
+/// EPOCH_LOCK-окне; snapshotQuery-джава читает слайсы арены вместо цепей.
+/// TASK-422-B (iter-2): STRICT-OR — вектор-флаг несёт тот же sense-срез.
+fn enabled_flag_is_sense() -> bool {
+    matches!(
+        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
+        Ok("cmp421_brain") | Ok("cmp422_brain2")
+            // TASK-424-A: GC-ревизия brain3 (STRICT OR).
+            | Ok("cmp423_brain3")
+    )
+}
+
+/// TASK-422-B (iter-2): точная метка вектор-флага в ARM/EFFECT-маркерах.
+fn enabled_flag_is_brain2() -> bool {
+    matches!(
+        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
+        Ok("cmp422_brain2")
     )
 }
 
@@ -345,18 +373,22 @@ fn define_bridge_once(anchor: &str) -> bool {
             return false;
         };
 
-        // RegisterNatives: eqProbe (magic) + eqEpoch (bulk chain builder).
+        // RegisterNatives: eqProbe (magic) + eqEpoch (bulk chain builder) +
+        // senseArena (TASK-419-B: CSR-арена из только что построенных цепей).
         // TASK-409-E ROOT-CAUSE lesson: the registered sig must match the
         // java declaration EXACTLY. Java:
         //   eqProbe()                                    -> ()I
         //   eqEpoch(int,int,double[],int[],int[])        -> (II[D[I[I)I
+        //   senseArena(int,int,int[],int[],int[],int[])  -> (II[I[I[I[I)I
         let names = [
             CString::new("eqProbe").expect("no NUL"),
             CString::new("eqEpoch").expect("no NUL"),
+            CString::new("senseArena").expect("no NUL"),
         ];
         let sigs = [
             CString::new("()I").expect("no NUL"),
             CString::new("(II[D[I[I)I").expect("no NUL"),
+            CString::new("(II[I[I[I[I)I").expect("no NUL"),
         ];
         let natives = [
             jvmti_bindings::jni::JNINativeMethod {
@@ -368,6 +400,11 @@ fn define_bridge_once(anchor: &str) -> bool {
                 name: names[1].as_ptr(),
                 signature: sigs[1].as_ptr(),
                 fnPtr: eq_epoch as *const c_void as *mut c_void,
+            },
+            jvmti_bindings::jni::JNINativeMethod {
+                name: names[2].as_ptr(),
+                signature: sigs[2].as_ptr(),
+                fnPtr: sense_arena as *const c_void as *mut c_void,
             },
         ];
         let reg = env.register_natives(c, &natives);
@@ -575,7 +612,11 @@ pub fn activate() {
         }
 
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
-        let flag_label = if enabled_flag_is_eqsnapv3() {
+        let flag_label = if enabled_flag_is_brain2() {
+            "cmp422_brain2"
+        } else if enabled_flag_is_sense() {
+            "cmp421_brain"
+        } else if enabled_flag_is_eqsnapv3() {
             "cmp412_eqsnapv3"
         } else if enabled_flag_is_eqsnap() {
             "cmp411_eqsnap"
@@ -584,8 +625,14 @@ pub fn activate() {
         } else {
             "cmp410_eindexq"
         };
+        let sense_note = if enabled_flag_is_sense() {
+            "; TASK-419-B sense-plane: senseArena (2nd bulk JNI, same EPOCH_LOCK window) builds CSR arena from the JUST-BUILT chains — per-bucket contiguous slices in EXACT chain-walk order; java snapshotQuery walks arena[off[h]..off[h+1]) sequentially (no random next[] deref per candidate; parity oracle = rust test arena_matches_chain_walk)"
+        } else {
+            ""
+        };
         eprintln!(
-            "[crussty-plugin] {flag_label}: ARMED goal-query (NearestAttackableTargetGoal.findTarget + AvoidEntityGoal.canUse Level.getEntitiesOfClass sites -> EntityGoalQueryOps.entitiesOfClassGate; rust eqEpoch = ONE bulk JNI/tick single-pass chain build over mobs_soa SoA population -> head[65536]/next[id]/frozen x,y,z,hw,hh columns; java: cell-rect(AABB±8.0) -> chains -> frozen prune(AABB±8.0) -> byId -> live AABB.intersects + predicate = strict superset, nearest-pick order-delta documented; vanilla getNearestEntity/TargetingConditions tail untouched; zero per-entity JNI; k4soa: radius-gate 2.0/pad-2 repair + push-lane served from the SAME snapshot (pushCandidates, cell-rect dedup); eqsnap v2: per-entity upserts land in per-THREAD delta shards (0 locks/0 seqlock — cl1 post-mortem: global-WLOCK upsert storm = 24.9% CPU → 0.5 TPS), eqEpoch FIRST drains all shards into the flat columns (O(dirty), one bulk JNI/tick) THEN builds chains; empty flag = vanilla bit-for-bit)"
+            "[crussty-plugin] {flag_label}: ARMED goal-query (NearestAttackableTargetGoal.findTarget + AvoidEntityGoal.canUse Level.getEntitiesOfClass sites -> EntityGoalQueryOps.entitiesOfClassGate; rust eqEpoch = ONE bulk JNI/tick single-pass chain build over mobs_soa SoA population -> head[65536]/next[id]/frozen x,y,z,hw,hh columns; java: cell-rect(AABB±8.0) -> chains -> frozen prune(AABB±8.0) -> byId -> live AABB.intersects + predicate = strict superset, nearest-pick order-delta documented; vanilla getNearestEntity/TargetingConditions tail untouched; zero per-entity JNI{sense_note}; empty flag = vanilla bit-for-bit)",
+            sense_note = sense_note,
         );
 
         crate::kernel_policy::audit_wire(OPS_CLASS, "entitiesOfClassGate", "cmp410_eindexq v1");
@@ -767,6 +814,142 @@ pub unsafe extern "system" fn eq_epoch(
     linked
 }
 
+/// TASK-419-B (sense-plane): CSR-арена из УЖЕ построенных цепей. Заполнение
+/// буквально идёт по тем же head/next цепям в том же порядке — порядок
+/// per-bucket слайсов == chain-walk порядок по построению (паритет-оракул:
+/// тест arena_matches_chain_walk внизу). Чистая функция — переиспользуется
+/// нативом и тестами; ошибки структуры = Err (java → ваниль на этот тик).
+fn sense_arena_fill(
+    head: &[i32],
+    next: &[i32],
+    rows: usize,
+    arena: &mut [i32],
+    arena_off: &mut [i32],
+) -> Result<usize, ()> {
+    if arena_off.len() != CELLS + 1 || head.len() != CELLS {
+        return Err(());
+    }
+    let arena_cap = arena.len();
+    let mut cursor: usize = 0;
+    for h in 0..CELLS {
+        arena_off[h] = cursor as i32;
+        // Тот же обход, что java chain-walk: от головы через next; порядок
+        // элементов слайса ПОЭЛЕМЕНТНО равен порядку прохода цепи.
+        let mut link = head[h];
+        while link != 0 {
+            if link < 0 {
+                return Err(()); // повреждённая ссылка — ваниль на этот тик
+            }
+            let id = (link as usize).wrapping_sub(1);
+            if id >= rows || id >= next.len() || cursor >= arena_cap {
+                return Err(()); // дрейф/цикл-гард — ваниль на этот тик
+            }
+            arena[cursor] = id as i32;
+            cursor += 1;
+            link = next[id];
+        }
+    }
+    arena_off[CELLS] = cursor as i32;
+    Ok(cursor)
+}
+
+/// TASK-419-B (sense-plane): bulk CSR-арена — ВТОРОЙ bulk-JNI за тик, зовётся
+/// java (maybeEpoch) СРАЗУ после eq_epoch в ТОМ ЖЕ EPOCH_LOCK-окне (тот же
+/// поток-писатель; per-entity JNI по-прежнему отсутствует). Читает ТОЛЬКО
+/// ЧТО построенные цепи (head/next — те же массивы, что eq_epoch заполнил)
+/// и раскладывает id в плотную арену: arena[arena_off[h]..arena_off[h+1]) =
+/// бакет h в точности в порядке chain-walk. Java snapshotQuery под
+/// cmp421_brain читает последовательные слайсы вместо рандомного
+/// next[link-1]-deref на каждого кандидата. rc = число размещённых id;
+/// ERR_RANGE — структурный дрейф/цикл-гард (ваниль на этот тик, эпоха
+/// ретраится); ERR_STRUCT — pin failure / гейт (дизарм).
+///
+/// # Safety
+/// See eq_probe.
+#[no_mangle]
+pub unsafe extern "system" fn sense_arena(
+    env: *mut jni::JNIEnv,
+    _clazz: jni::jclass,
+    tick: jni::jint,
+    rows: jni::jint,
+    head: jni::jintArray,
+    next: jni::jintArray,
+    arena: jni::jintArray,
+    arena_off: jni::jintArray,
+) -> jni::jint {
+    // STRICT: арена обслуживает ТОЛЬКО sense-композит (чужой флаг = дизарм).
+    if !enabled_flag_is_sense()
+        || env.is_null()
+        || head.is_null()
+        || next.is_null()
+        || arena.is_null()
+        || arena_off.is_null()
+    {
+        return ERR_STRUCT;
+    }
+    if tick < 0 || rows < 0 {
+        return ERR_RANGE;
+    }
+    let vt = unsafe { &**env };
+    let head_cap = unsafe { (vt.GetArrayLength)(env, head) };
+    let next_cap = unsafe { (vt.GetArrayLength)(env, next) };
+    let arena_cap = unsafe { (vt.GetArrayLength)(env, arena) };
+    let off_cap = unsafe { (vt.GetArrayLength)(env, arena_off) };
+    if head_cap != CELLS as i32
+        || off_cap != (CELLS + 1) as i32
+        || next_cap < rows
+        || arena_cap < rows
+    {
+        return ERR_RANGE; // структурный дрейф параметров — ваниль этот тик
+    }
+
+    // Pin ladder (eq_epoch discipline): acquire head→next→arena→arena_off,
+    // release в обратном порядке. Критическая секция без JNI-вызовов.
+    let head_pin = unsafe { (vt.GetPrimitiveArrayCritical)(env, head, std::ptr::null_mut()) };
+    if head_pin.is_null() {
+        return ERR_STRUCT;
+    }
+    let next_pin = unsafe { (vt.GetPrimitiveArrayCritical)(env, next, std::ptr::null_mut()) };
+    if next_pin.is_null() {
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, head, head_pin, 0) };
+        return ERR_STRUCT;
+    }
+    let arena_pin = unsafe { (vt.GetPrimitiveArrayCritical)(env, arena, std::ptr::null_mut()) };
+    if arena_pin.is_null() {
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, next, next_pin, 0) };
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, head, head_pin, 0) };
+        return ERR_STRUCT;
+    }
+    let off_pin = unsafe { (vt.GetPrimitiveArrayCritical)(env, arena_off, std::ptr::null_mut()) };
+    if off_pin.is_null() {
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, arena, arena_pin, 0) };
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, next, next_pin, 0) };
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, head, head_pin, 0) };
+        return ERR_STRUCT;
+    }
+
+    let head_s = unsafe { std::slice::from_raw_parts(head_pin as *const jni::jint, CELLS) };
+    let next_s =
+        unsafe { std::slice::from_raw_parts(next_pin as *const jni::jint, next_cap as usize) };
+    let arena_s = unsafe {
+        std::slice::from_raw_parts_mut(arena_pin as *mut jni::jint, arena_cap as usize)
+    };
+    let off_s = unsafe {
+        std::slice::from_raw_parts_mut(off_pin as *mut jni::jint, (CELLS + 1) as usize)
+    };
+
+    let placed = sense_arena_fill(head_s, next_s, rows as usize, arena_s, off_s);
+
+    unsafe { (vt.ReleasePrimitiveArrayCritical)(env, arena_off, off_pin, 0) };
+    unsafe { (vt.ReleasePrimitiveArrayCritical)(env, arena, arena_pin, 0) };
+    unsafe { (vt.ReleasePrimitiveArrayCritical)(env, next, next_pin, 0) };
+    unsafe { (vt.ReleasePrimitiveArrayCritical)(env, head, head_pin, 0) };
+    match placed {
+        Ok(n) => n as jni::jint,
+        Err(()) => ERR_RANGE,
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Tests: the java-parity cell hash ladder, the single-pass chain soundness
 // (every id exactly one chain; walk finds all), saturation parity of the
@@ -783,6 +966,7 @@ mod tests {
             || s == "cmp411_k4soa"
             || s == "cmp411_eqsnap"
             || s == "cmp412_eqsnapv3" || s == "cmp414_cvs" || s == "cmp417_bq"
+            || s == "cmp421_brain" || s == "cmp422_brain2" || s == "cmp423_brain3"
     }
 
     #[test]
@@ -806,6 +990,10 @@ mod tests {
         assert!(!enabled_with(" cmp411_k4soa"));
         assert!(!enabled_with(" cmp411_eqsnap"));
         assert!(!enabled_with(" cmp412_eqsnapv3"));
+        // TASK-419-B (sense-plane composite).
+        assert!(enabled_with("cmp421_brain"));
+        assert!(!enabled_with("cmp421_brain_x"));
+        assert!(!enabled_with(" cmp421_brain"));
     }
 
     /// Mirror of the java EntityGoalQueryOps.cellHash operating on the same
@@ -922,6 +1110,69 @@ mod tests {
         assert_eq!(found, linked);
     }
 
+    /// TASK-419-B PARITY ORACLE: the sense-arena CSR fill must reproduce the
+    /// chain walk EXACTLY — per bucket, element-by-element (same candidate
+    /// set, same order). Simulates eq_epoch's single pass (same as the test
+    /// above), then compares sense_arena_fill slices against a direct
+    /// chain walk for every bucket, plus the global invariants (total =
+    /// linked; offsets non-decreasing; arena_off[CELLS] = total).
+    #[test]
+    fn arena_matches_chain_walk() {
+        let n = 2000usize;
+        let mut head = vec![0i32; CELLS];
+        let mut next = vec![0i32; n];
+        let mut linked = 0usize;
+        // Deterministic scattered population (mix of shared buckets).
+        for id in 0..n {
+            if id % 11 == 0 {
+                continue; // every 11th row dead
+            }
+            let x = ((id as f64) * 13.77) % 512.0 - 256.0;
+            let z = ((id as f64) * 5.19) % 512.0 - 256.0;
+            let cx = (x / CELL_SIZE).floor() as i32;
+            let cz = (z / CELL_SIZE).floor() as i32;
+            let h = cell_hash_for_test(cx, cz);
+            next[id] = head[h];
+            head[h] = (id + 1) as i32;
+            linked += 1;
+        }
+
+        let mut arena = vec![0i32; n];
+        let mut arena_off = vec![0i32; CELLS + 1];
+        let placed = sense_arena_fill(&head, &next, n, &mut arena, &mut arena_off)
+            .expect("arena fill must succeed on a sound chain structure");
+        assert_eq!(placed, linked);
+        assert_eq!(arena_off[CELLS] as usize, linked);
+
+        // Per-bucket equality with the direct chain walk (THE contract).
+        for h in 0..CELLS {
+            let st = arena_off[h] as usize;
+            let en = arena_off[h + 1] as usize;
+            assert!(st <= en && en <= linked);
+            let mut chain_ids = Vec::with_capacity(en - st);
+            let mut link = head[h];
+            let mut steps = 0usize;
+            while link != 0 {
+                assert!(steps < n + 1, "cycle in chain {h}");
+                steps += 1;
+                chain_ids.push(link - 1);
+                link = next[(link - 1) as usize];
+            }
+            let arena_ids: Vec<i32> = arena[st..en].to_vec();
+            assert_eq!(arena_ids, chain_ids, "bucket {h} order mismatch");
+        }
+
+        // Error paths: torn chain (link beyond rows) -> Err; truncated arena
+        // (cursor bound) -> Err.
+        let mut bad_next = next.clone();
+        bad_next[3] = (n + 5) as i32; // dangling link past rows
+        assert!(sense_arena_fill(&head, &bad_next, n, &mut arena, &mut arena_off).is_err());
+        let mut tiny = vec![0i32; 4];
+        assert!(sense_arena_fill(&head, &next, n, &mut tiny, &mut arena_off).is_err());
+        let mut bad_off = vec![0i32; CELLS]; // wrong offsets length
+        assert!(sense_arena_fill(&head, &next, n, &mut arena, &mut bad_off).is_err());
+    }
+
     #[test]
     fn retarget_desc_contract() {
         // Receiver-prepended static form: virtual desc ()-style args with the
@@ -1006,6 +1257,11 @@ mod entityquery_delivery_tests {
         assert!(SRC.contains("private static native int eqProbe();"));
         assert!(SRC.contains(
             "private static native int eqEpoch(int tick, int idTop, double[] soa,\n            int[] head, int[] next);"
+        ));
+        // TASK-419-B (sense-plane): the arena native must be declared and
+        // registered with the SAME shape.
+        assert!(SRC.contains(
+            "private static native int senseArena(int tick, int rows, int[] head,\n            int[] next, int[] arena, int[] arenaOff);"
         ));
         // And the rust side registers exactly those shapes.
         assert_eq!(super::PROBE_MAGIC & 0xFFFF, 0x4547);

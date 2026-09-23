@@ -295,6 +295,7 @@ fn shard_mode() -> bool {
                     || v == "cmp412_eqsnapv3" || v == "cmp414_cvs" || v == "cmp417_bq"
                     // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
                     || v == "cmp420_colpush"
+                    || v == "cmp412_eqsnapv3" || v == "cmp414_cvs" || v == "cmp417_bq" || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3"
             })
             .unwrap_or(false)
     })

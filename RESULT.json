@@ -1,14 +1,24 @@
 {
-  "agent": "TASK-420-A",
-  "vector": "colpush collide+push subsystem (Rust-first, one bulk-JNI/tick) — NCDFE fix wave",
-  "branch": "round-420-a-colpush2",
+  "agent": "B (brain iter-2, TASK-422-B)",
+  "vector": "brain iter-2 — goal-selector subsystem COMPLETE (fix placebo + tickRunningGate extension)",
+  "branch": "round-422-b-brain2",
+  "base": "origin/round-421-mega 99ffefa (mega-carrier, merge candidate)",
+  "head": "e91d021",
+  "lever": "cmp422_brain2",
   "run_id": null,
+  "run_ids": [],
   "tps_med": null,
   "delta_pair_pct": null,
-  "lane": {"before": "collide+push ~15-18% CPU (BOTTLENECK-420 lane 1)", "after": null},
-  "ram": {"stw": null, "full_gc": null},
-  "parity": null,
-  "verdict": "INFRA",
-  "evidence": ["worktree created from origin/master @41456af", "cherry-pick dc4afd9 done (artifacts dropped, code carried)"],
-  "what": "step 1/9: worktree round-420-a-colpush2 @41456af + port of cmp419 carrier; fix mandate (define-before-arm + NCDFE one-shot guard + lever cmp420_colpush) in progress"
+  "delta_pair_pcts": [],
+  "lane": {
+    "was": "nav_ai(goalsel) 8.6% + nav 2.3% + brain 1.36% (~12.3%) on mga421 profile; goal-fast-path PLAICEBO (0 GoalOps frames, NotFound at stdout:1186 — retarget scanned Mob.tick()V instead of serverAiStep()V)",
+    "now": "goal-selector slice armed: serverAiStep 2x GoalSelector.tick -> GoalOps.tickGate + 2x tickRunningGoals -> GoalOps.tickRunningGate; expected -2.5-4% CPU vs mga421"
+  },
+  "verdict": "PENDING-BENCH",
+  "evidence": [
+    "PROFILE-B2.md: mga421 (run 35806660177, @99ffefa lever=cmp421_brain, 3.20@8.82M) collapsed 109304 samples: GoalOps=0 frames vs GoalSelector.tick=8220 — b6b1146 fast-path INERT on all 421 legs",
+    "root-cause: goal_selector.rs passed FROM.1/FROM.2 ('tick','()V') as ENCLOSING method; Mob declares public void tick()V (LivingEntity.tick+updateControlFlags) with 0 goal sites; real sites (javap): serverAiStep GoalSelector.tick @161/@183, tickRunningGoals(Z) @113/@136",
+    "step1 e91d021: fix ENCL=serverAiStep + dual retarget (2+2 sites) + tickRunningGate java bridge (flat pass, live isRunning, javap 1:1) + STRICT-OR cmp422_brain2 in 17 rust + 7 java gates; blobs rebuilt, check_blobs_sync ALL IN SYNC; cargo test 296/0 incl. mob_bytes_retarget_four_sites_if_available (real kernel Mob.class -> Retargeted{2}+Retargeted{2})"
+  ],
+  "what": "step1 committed+pushed; next: dispatch 3 legs l1/l2/l3 lever=cmp422_brain2 (bank inputs EXACT), absorb, verdict vs fresh anchors-422 @57a2e67; if delta<+20% -> law-3 cycle (next slice: Brain.tick/behavior/memory/sensor or nav-path slice)"
 }

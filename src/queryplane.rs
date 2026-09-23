@@ -73,6 +73,7 @@ fn lever_flag_matches() -> bool {
                 || v.trim() == "cmp417_bq"
                 // TASK-419-A (colpush): колпаш-носитель — queryplane awake.
                 || v.trim() == "cmp420_colpush"
+                || v.trim() == "cmp421_brain" || v.trim() == "cmp422_brain2" || v == "cmp423_brain3"
         })
         .unwrap_or(false)
 }
@@ -82,7 +83,11 @@ fn lever_flag_matches() -> bool {
 fn lever_id() -> &'static str {
     match std::env::var("CRUSSTY_LEVER_FLAG").as_deref() {
         Ok("cmp420_colpush") => "cmp420_colpush",
-        Ok("cmp417_bq") => "cmp417_bq",
+        Ok("cmp417_bq")
+            // TASK-421-A (brain): свой id в ARM-маркерах.
+            | Ok("cmp421_brain") => "cmp421_brain",
+        // TASK-422-B (iter-2): свой id для вектор-ног.
+        Ok("cmp422_brain2") => "cmp422_brain2",
         Ok("cmp416_mcomp") => "cmp416_mcomp",
         Ok("cmp415_mcomp") => "cmp415_mcomp",
         _ => "cmp412_b2p1",
