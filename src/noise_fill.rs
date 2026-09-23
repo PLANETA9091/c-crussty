@@ -327,7 +327,15 @@ pub fn activate() {
                                 t.class
                             );
                         }
-                        crate::improved_noise::force_load_kernel_class(t.class);
+                        // TASK-430-A: LAZY force-load (initialize=false). The
+                        // initializing variant poisoned BuiltInRegistries when
+                        // the poll fired before Bootstrap.bootStrap() on main
+                        // (wgen-l3 run 358655409: Not bootstrapped on Thread-22
+                        // -> main NoClassDefFoundError -> SEEN_DONE=0). The
+                        // lazy define still lands pristine bytes for the
+                        // transform engine; <clinit> stays with the main
+                        // thread's post-bootStrap first use.
+                        crate::improved_noise::force_load_kernel_class_lazy(t.class);
                     }
                 }
             }
