@@ -5,12 +5,13 @@
   "run_id": null,
   "tps_med": null,
   "delta_pair_pct": null,
-  "verdict": "S0-SETUP",
+  "verdict": "S1-RECON-DONE",
   "evidence": [
-    "worktree /home/z/rounds/ROUND-427/agent-a2 @9009e05 (round-427-a2-mobsoa) created",
-    "base = round-424-a-mobfeed head: ColpushOps.selfTest javac-fold fix (long arithmetic), selfTest runtime-live",
-    "disk law enforced: gc-recon collapsed/zip/kernel purge 2.2G->97M, disposable worktrees ROUND-423/agent-a+agent-c removed; df 98%->68%",
-    "protocol-v2 source located: origin/round-417-a-mc2 afbc1dc (protocol v2) + 7c7e8d4 (hardening 4 findings)"
+    "PROFILE ROOT-CAUSE (round-mf427l2 BOTTLENECKS_3, 85049 samples): TOP-1 leaf = crussty::mobs_soa::soa_upsert 12.2% self (10339 = ~36.5s CPU/run ~120ms/tick) — base soa_upsert has NO tombstone reclaim: every cell-move leaves a tombstone key, `used` grows monotonically toward CELL_CAP=262144 under 300 ticks of mob wandering -> probe walks degenerate + permanent ERR_RANGE saturation (43us/call tail). Protocol-v2 (afbc1dc+7c7e8d4) carries exactly the fix: PROBE_CAP=128 + one-shot tombstone-reclaim rebuild_tables (fixed scratch, no buffer swap) + per-shard SVER brackets",
+    "TOP-2 leaf = EntityGoalQueryOps.snapshotQuery 3.4% (java demand chain-walk; outside my S1 slice, iter-2 candidate under law 3)",
+    "TOP-3 = per-mob MobPushOps.idBoxOf CHM.get in skipAi gate (mandate item 3: gate-bitmap)",
+    "idTop NOT 2819 steady: DATA-PLAN line logged at ramp tick21; soak idTop ~= all LivingEntities ever pushed (~40-50k) -> colpush_plane_refresh full-passes 50k rows/tick, eq/ai/sscan epochs scan 50k rows/tick",
+    "base writer paths: mob_upsert->eqsnap shard (lock-free, ok), colpush_plane_refresh (1 bulk WLOCK/tick, feeds plane), mob_remove (sweep) — global WLOCK+VERSION coupling = mandate item 4"
   ],
-  "what": "S0 setup done. Next: S1 recon diff mobs_soa*.rs/MobPushOps.java @afbc1dc->20c9fdc vs base, then port."
+  "what": "S1 recon complete. Plan: port protocol-v2 slice (mobs_soa.rs consts/SVER/probe-cap/rebuild/sharded_scan/two-phase mob_query + mobs_grid.rs per-shard writer mutex) + MobAiOps.java gate-bitmap (vanilla-id dense stamps, epoch-published, fail-safe), then blobs+cargo gates, dispatch pair vs fresh anchors."
 }
