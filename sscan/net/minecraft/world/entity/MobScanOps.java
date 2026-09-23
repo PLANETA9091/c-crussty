@@ -74,7 +74,9 @@ public final class MobScanOps {
                 // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
                 || f.trim().equals("cmp422_brain2")
                 // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-                || f.trim().equals("cmp423_brain3"));
+                || f.trim().equals("cmp423_brain3")
+                // TASK-426-A: SoA-feed carrier (STRICT OR).
+                || f.trim().equals("cmp424_mobfeed"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -106,6 +108,14 @@ public final class MobScanOps {
 
     /** One-shot ARM/effect-пруф (виден в server-stdout.log). */
     private static volatile boolean ARM_LOGGED = false;
+
+    /** Метка активного флага для ARM-строк (TASK-426-A). */
+    private static final String LABEL = label();
+
+    private static String label() {
+        String f = System.getenv("CRUSSTY_LEVER_FLAG");
+        return f == null ? "(off)" : f.trim();
+    }
 
     private MobScanOps() {}
 
@@ -251,7 +261,7 @@ public final class MobScanOps {
             EPOCH_TICK = t;         // release-edge: читатели видят консистентную тройку
             if (!ARM_LOGGED) {
                 ARM_LOGGED = true; // TASK-424-A: one-shot на publish
-                LOG.info("[crussty-plugin] cmp423_brain3: epoch ok tick=" + t
+                LOG.info("[crussty-plugin] " + LABEL + ": epoch ok tick=" + t
                         + " mobSlots=" + rc + " players=" + arr.length
                         + " (bulk JNI 1/tick over soa population)");
             }

@@ -114,7 +114,9 @@ public final class EntityGoalQueryOps {
                 // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
                 || f.trim().equals("cmp422_brain2")
                 // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-                || f.trim().equals("cmp423_brain3"));
+                || f.trim().equals("cmp423_brain3")
+                // TASK-426-A: SoA-feed carrier (STRICT OR).
+                || f.trim().equals("cmp424_mobfeed"));
     }
 
     /** TASK-411-C (k4soa): K4-режим (маркировка EFFECT-строк). */
@@ -133,6 +135,9 @@ public final class EntityGoalQueryOps {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
         // TASK-422-B (iter-2): STRICT-OR — вектор-флаг несёт тот же sense-срез.
         // TASK-424-A: brain3 (GC-ревизия) несёт тот же sense-срез.
+        // TASK-426-A: cmp424_mobfeed НЕ несёт sense-срез (сознательно: сенс-арена
+        // не входит в master-сертифицированный cmp420_colpush-мега — ближайший
+        // к сертифицированной конфигурации паритет; sense-эффект не доказан).
         return f != null && (f.trim().equals("cmp421_brain")
                 || f.trim().equals("cmp422_brain2")
                 || f.trim().equals("cmp423_brain3"));
@@ -147,16 +152,15 @@ public final class EntityGoalQueryOps {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
         // TASK-419-B (sense-plane): свой id в ARM/EFFECT-маркерах.
         // TASK-422-B (iter-2): свой id для вектор-ног.
-        FLAG_LABEL = f != null && f.trim().equals("cmp422_brain2")
-                ? "cmp422_brain2"
-                : (f != null && f.trim().equals("cmp423_brain3")
-                        ? "cmp423_brain3"
-                        : (f != null && f.trim().equals("cmp421_brain")
-                        ? "cmp421_brain"
-                        : (f != null && f.trim().equals("cmp412_eqsnapv3")
-                                ? "cmp412_eqsnapv3" // TASK-412-C (eqsnap-v3): точная метка.
-                                : (f != null && f.trim().equals("cmp411_eqsnap")
-                                        ? "cmp411_eqsnap" : (K4 ? "cmp411_k4soa" : "cmp410_eindexq")))));
+        // TASK-426-A: SoA-feed carrier id (cmp424_mobfeed).
+        String t = f == null ? "" : f.trim();
+        FLAG_LABEL = t.equals("cmp422_brain2") ? "cmp422_brain2"
+                : t.equals("cmp423_brain3") ? "cmp423_brain3"
+                : t.equals("cmp424_mobfeed") ? "cmp424_mobfeed"
+                : t.equals("cmp421_brain") ? "cmp421_brain"
+                : t.equals("cmp412_eqsnapv3") ? "cmp412_eqsnapv3" // TASK-412-C: точная метка.
+                : t.equals("cmp411_eqsnap") ? "cmp411_eqsnap"
+                : (K4 ? "cmp411_k4soa" : "cmp410_eindexq");
     }
 
     private static final int PROBE_MAGIC = 0x4547; // "EG"
@@ -199,6 +203,9 @@ public final class EntityGoalQueryOps {
     /** One-shot ARM/effect-пруфы (видны в server-stdout.log). */
     private static volatile boolean ARM_LOGGED = false;
     private static volatile boolean EPOCH_LOGGED = false;
+
+    /** TASK-426-A: one-shot DATA-PLAN-пруф goal-query (snapRows>0 — fed-состояние). */
+    private static volatile boolean DATA_PLAN_LOGGED = false;
 
     // ---- снапшот (volatile publication ladder как MobScanOps) ----
     /** Замороженные колонки [x,y,z,hw,hh] × row (stride STRIDE). */
@@ -419,6 +426,11 @@ public final class EntityGoalQueryOps {
                         + (SENSE ? " sense-arena=on (CSR contiguous slices, chain-walk order)" : "")
                         + " (bulk JNI 1/tick over mobs_soa SoA population, chain cells="
                         + CELLS + ")");
+            }
+            if (!DATA_PLAN_LOGGED && idTop > 0) {
+                DATA_PLAN_LOGGED = true; // TASK-426-A: DATA-PLAN-гейт goal-query
+                LOG.info("[crussty-plugin] mobfeed DATA-PLAN-GOALQ: snapRows=" + idTop
+                        + " tick=" + t + " — goal-query fed (snapRows>0, flag=" + FLAG_LABEL + ")");
             }
         }
     }

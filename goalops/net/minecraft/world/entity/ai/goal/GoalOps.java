@@ -71,7 +71,9 @@ public final class GoalOps {
         return f != null && (f.trim().equals("cmp421_brain")
                 || f.trim().equals("cmp422_brain2")
                 // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-                || f.trim().equals("cmp423_brain3"));
+                || f.trim().equals("cmp423_brain3")
+                // TASK-426-A: SoA-feed carrier (STRICT OR).
+                || f.trim().equals("cmp424_mobfeed"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -90,6 +92,7 @@ public final class GoalOps {
         return switch (f.trim()) {
             case "cmp422_brain2" -> "cmp422_brain2";
             case "cmp423_brain3" -> "cmp423_brain3";
+            case "cmp424_mobfeed" -> "cmp424_mobfeed"; // TASK-426-A: SoA-feed carrier.
             case "cmp421_brain" -> "cmp421_brain";
             default -> "(off)";
         };
