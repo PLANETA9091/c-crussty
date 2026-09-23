@@ -1,19 +1,20 @@
 {
   "agent": "TASK-436-B",
   "vector": "inside2-RE-RESEARCH round-2 on CLEAN base 92cd1e5 (V3 rolled back) — serve-plane closure (stage-1c V4)",
-  "branch": "round-436-b-ins6 @base 92cd1e5 (origin/round-434-b-inside4)",
-  "run_id": null,
+  "branch": "round-436-b-ins6 @f9497d7 (base 92cd1e5 = origin/round-434-b-inside4)",
+  "run_id": "dispatching: round-436b-ins-1/-2 @round-436-b-ins6 f9497d7 lever=cmp436_ins4 + own anchor round-436b-anchor-b36 @master (cold window = info-line, canon v2)",
   "tps_med": null,
   "delta_pair_pct": null,
-  "lane": "RESEARCH: profiles round-round-435-b-ins-r1..r4 (cmp432_inside2 legs, 104019 samples) — after inside2-plane the remaining price: inside_volatile 16.3-16.9% (biggest java lane; grew from 12.01 baseline), fluid ~16-17.6% (REFUTED lane, RECON-43 verdict ~13-15% unsinkable), broadphase 9.5-9.9% (entity_index/entity_query already ride it), java_util 8.3-8.5%, fastutil 6.2-7.0%, paletted 5.2-5.6%, nav_ai 3.1-3.3%. inside_volatile decomposition: InsideSnapOps.serve self 1.87% + InsideBlockOps.gate 0.92% + SNAPS CHM.get ~0.85% + ThreadLocal 0.21% + stale/cap-miss PalettedContainer.get 0.20% + LongAdder 0.16% + getSectionIndex 0.05% => ADDRESSABLE ~4.2%; traversal bookkeeping (LongOpenHashSet/BlockPos$6/AABB) = forbidden flat_traversal #9 territory; fluid refuted; snapshotQuery 3.28% = own optimized CSR body. CHOSEN LANE: stage-1c SERVE-PLANE closure V4 (law 6, same bulk-JNI store, zero new retargets, throw-free) — (1) per-claim secSnaps[]/secKnown[] lane arrays kill per-visit SNAPS.get CHM hop + register churn; (2) cap/untracked-miss closure: loaded-but-untracked section serves sec.states.get(packed) (V2-proven bit-exact getBlockStateFinal continuation) instead of null->vanilla chunk re-lookup; (3) per-claim minSecY cache, inline si=(y>>4)-minSec (javap-proven round-435-b), bounds-guarded fail->vanilla; (4) per-thread last-lane hint before 8-lane scan; (5) V2 serve() kept byte-for-byte as control, V4 flips only under lever cmp436_ins4 (rust v4() pre-selfTest, fail-closed)",
+  "lane": "IMPLEMENTED: stage-1c SERVE-PLANE CLOSURE V4 (cmp436_ins4 STRICT-OR over cmp432_inside2) — java serve4 (1) per-claim secSnaps[]/secKnown[] lane arrays: per-visit SNAPS.get CHM hop + per-visit register churn -> array index (sec->snap immutable, SNAPS never evicts); (2) UNTRACKED-MISS CLOSURE: loaded-but-untracked section (cap reached/register lost race/uncollected) serves sec.states.get(packed) = the V2-proven bit-exact LevelChunk.getBlockStateFinal non-air continuation, killing the vanilla chunk-map re-lookup on every cap-miss visit; (3) per-claim minSecY cache + inline si=(y>>4)-minSec (javap-proven round-435-b), si bounds check kept (drift => vanilla, fail-closed); (4) per-thread last-lane hint (lanes[0].hint, zero-alloc) before the 8-lane scan; V2 serve() kept BYTE-FOR-BYTE as control (V4 flag default false = V2 behavior); rust v4() flip pre-selfTest fail-closed (any flip failure => bridge dormant) — NO new probes/exception sites on the hot path (V3 post-mortem threw=26)",
   "ram": "n/a (bench server xmx 10G)",
   "parity": "pending bench",
-  "verdict": "IN_PROGRESS: worktree created, implementation starting",
+  "verdict": "IN_PROGRESS: implemented, gates green, dispatching 2 info-legs + 1 anchor",
   "evidence": [
-    "V3 post-mortem: round-435b-ins-1 CRASH-REFUTED threw=26 (T2 FAIL) — runtime 3-point parity probe/exception path is the suspect; V4 discipline = ZERO new probes/exceptions on hot path, no new nested classes, no clinit-indy",
-    "collect dirty-sweep pathology CHECKED and NOT hot: InsideSnapOps.collect subtree 408 samples (0.4%) — no fix needed",
-    "fluid_bitmask lever #16 REFUTED (RECON43_FINAL_VERDICT) — not re-folded",
-    "STRICT-OR plan: lever lists extension cmp436_ins4 in java (ItemEntityManager x3, MobScanOps, ColpushOps FLAG5, EntityGoalQueryOps, GoalOps, MobAiOps, MobPushOps x3+eqsnap label, QueryPlaneOps) + rust (chunk_parse, collide_batch, colpush, entity_query, goal_selector, inside_bitmask, inside_snap, items_index, items_manager, mobs_ai, mobs_grid, mobs_manager, mobs_soa, mobs_sscan, nav_plane, noise_fill, queryplane, stagger, tickplane)"
+    "LANE CHOICE (research on profiles round-round-435-b-ins-r1..r4, 104k samples): after inside2-plane remaining price = inside_volatile 16.3-16.9% (biggest java lane, grew from 12.01 baseline), fluid 16-17.6% (REFUTED RECON-43, ~13-15% unsinkable — skipped), broadphase 9.5-9.9% (eindex/eindexq already ride it), java_util 8.3%, fastutil 6.3%, paletted 5.2-5.6%, nav_ai 3.1-3.3%; inside_volatile addressable slice = serve self 1.87% + gate 0.92% + SNAPS CHM.get ~0.85% + ThreadLocal 0.21% + miss-path PalettedContainer 0.20% + LongAdder 0.16% + getSectionIndex 0.05% ≈ 4.2% CPU",
+    "V3 post-mortem: round-435b-ins-1 CRASH-REFUTED threw=26 (T2 FAIL) — V4 discipline = zero new throw sites, V2 kept as control body",
+    "collect dirty-sweep pathology CHECKED: collect subtree 408 samples (0.4%) — no fix needed; snapshotQuery 3.28% = already-optimized CSR body (V5 candidate); fluid_bitmask #16 REFUTED — not re-folded",
+    "GATES: build_432b_blobs OK (InsideSnapOps 14185, $Lane 941, $Snap 557; clinit-indy STRICT gate PASS; flat==nested OK); check_blobs_sync ALL IN SYNC; javap: v4/serve4 present; cargo check --lib ok (target purged); cargo test --lib inside_snap 4/4 (299 filtered)",
+    "STRICT-OR: cmp436_ins4 added to lever lists in 18 rust modules + 9 java bridges (incl ColpushOps FLAG5, eqsnap label, EntityGoalQueryOps FLAG_LABEL)"
   ],
-  "what": "phase 1: worktree ready; java V4 + rust v4-flip + lever lists + blobs gates + cargo gates next"
+  "what": "2 info-legs + 1 anchor in flight (main tick's ins-r5/r6 V2 info-legs + anchors w3..z3 pending absorb); polling ~20-25 min"
 }
