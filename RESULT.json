@@ -2,7 +2,7 @@
   "agent": "TASK-435-B",
   "vector": "inside2-DEEPEN round-4 (inside_volatile 15.9% next hot-lane) — SERVE-V3 lean fastpath",
   "branch": "round-435-b-ins5 @base 92cd1e5 (origin/round-434-b-inside4)",
-  "run_id": "pending dispatch",
+  "run_id": "dispatched 22:10 UTC: round-435b-ins-1/-2/-3 @b85a8fc2 lever=cmp435_inside3 + own anchor round-435b-anchor-b35 @master 536cf06c",
   "tps_med": null,
   "delta_pair_pct": null,
   "lane": "implemented: SERVE-V3 (cmp435_inside3 STRICT-OR over cmp432_inside2) — java V3 lean fastpath (L0 direct lane + copy-on-match, inline si (y>>4)-minSecY with runtime 3-point parity probe + itable fallback, per-claim air-mask, per-thread sampled hits lanes[0].hitSub->LongAdder/64, V2 byte-for-byte control) + rust v3() flip pre-selfTest fail-closed + resolution closure +v3 ()V + STRICT-OR lever lists (mobs_manager x3, mobs_grid, MobPushOps/GoalOps/QueryPlaneOps + eqsnap label)",
@@ -19,5 +19,5 @@
     "no-new-nested-class discipline: L0 = lanes[LANES] slot (LANES_TOTAL=9, claims masked to 8), no new ThreadLocal.withInitial, no indy in clinit (build gate strict)",
     "build_432b_blobs OK (InsideSnapOps 15063, $Lane 859, $Snap 557; clinit-indy STRICT gate PASS; flat==nested OK); check_blobs_sync ALL IN SYNC; javap: v3/serveV3/serveV2/hitV3/buildAirMask/copyLane present; cargo check --lib ok; cargo test --lib inside_snap 4/4 (299 filtered)"
   ],
-  "what": "implementing V3 serve (L0 lanes + inline si + air-mask + sampled stats) behind cmp435_inside3; legs round-435b-ins-n base=round-435-b-ins5"
+  "what": "3 V3 legs + 1 own anchor in flight (main tick's r1-r4 V2 legs + 7 anchors pending absorb); polling ~20-25 min"
 }
