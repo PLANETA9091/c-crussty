@@ -1,14 +1,22 @@
 {
-  "agent": "TASK-420-A",
-  "vector": "colpush collide+push subsystem (Rust-first, one bulk-JNI/tick) — NCDFE fix wave",
-  "branch": "round-420-a-colpush2",
-  "run_id": null,
+  "agent": "TASK-421-C",
+  "vector": "chunk-pipeline/worldgen axis (law 8): noise-fill STABILIZATION root-caused (RC1 GEN-axis inert on pregenerated fixture 0.0% soak; RC2 parse burst boot-only, polls never overlap; RC3 hit-rate plateau structural evicted=0; RC4 ramp noise +-5-8pp dominates; RC5 gate order excluded; RC6 stable +6-8pp via GC-debt relief cross-checked cp420-vs-mg) + cmp421_chunk STRICT-OR wired into all three gate sites + NEW SLICE: biomes-site parse cache + chunk-send serialization cache (PlayerChunkSender/ChunkMap slice, revision-keyed) in chunkparse crate",
+  "branch": "round-421-c-chunk",
+  "base": "2d23f45 (master, second merge of era)",
+  "step": "step-1 stabilization: gates cmp421_chunk (noise_fill.rs + chunk_parse.rs + run_world3.sh case), check_blobs_sync noise-blob coverage added (GEN-axis family was the only unaudited lever family), PROFILE-C.md + NOISEFILL_ROOTCAUSE.md, dispatch_round421_c.py",
+  "steps_done": ["worktree-base-2d23f45", "rootcause-noisefill-instability", "cmp421_chunk-strict-or-x3-sites", "blobs-gate-noise-coverage", "profile-C", "dispatch-script"],
+  "run_ids": [],
   "tps_med": null,
   "delta_pair_pct": null,
-  "lane": {"before": "collide+push ~15-18% CPU (BOTTLENECK-420 lane 1)", "after": null},
-  "ram": {"stw": null, "full_gc": null},
-  "parity": null,
-  "verdict": "INFRA",
-  "evidence": ["worktree created from origin/master @41456af", "cherry-pick dc4afd9 done (artifacts dropped, code carried)"],
-  "what": "step 1/9: worktree round-420-a-colpush2 @41456af + port of cmp419 carrier; fix mandate (define-before-arm + NCDFE one-shot guard + lever cmp420_colpush) in progress"
+  "lane_before": "chunk/worldgen lane on carrier: chunk-system 8.4% soak CPU (block-read family 7.5% REFUTED per RECON-35), chunk tick 1.8% + off-main 1.2%, tracker+send 2.0-2.2% (RECON-36), worldgen/noise 0.0% (GEN-axis inert), parse burst boot-only 33.38% alloc-burst; noise-fill legs unstable -4.5..+20.8 (ramp noise > lever effect)",
+  "lane_after": "pending dispatch round-421-c-chunk-l{1,2,3}",
+  "parity": "STRICT-OR lever gate cmp421_chunk (empty/foreign flag = vanilla bit-in-bit); parse cache identity-codec key + template.copy() HIT + pristine twin MISS (unchanged); noise-fill env OR wave/mega/round union {cmp419_chunk, cmp420_chunk2, cmp420_colpush, cmp421_chunk}; CRUSSTY_KERNEL_POLICY=off documented A/B override via run_world3 case; ARM marker 'cmp421_chunk armed: chunk-parse section-cache...' from run_world3 + effect markers 'parse-cache first hit'/'parse-cache selftest PASS'",
+  "verdict": "STEP1-STABILIZATION-DONE",
+  "evidence": [
+    "NOISEFILL_ROOTCAUSE.md: 6 root-cause items, each pinned to run artifacts (BOTTLENECKS_3 buckets, parse-cache stats lines, poll timelines, anchor banks 419/420)",
+    "PROFILE-C.md: chunk/worldgen lane decomposition on carrier; worldgen/noise = 42 samples 0.0% soak",
+    "check_blobs_sync.sh extended: noise blobs (major-52 pin + method markers) — ALL IN SYNC",
+    "anchors-421 in flight: 35800920567/35800926548/35800931828 @2d23f45"
+  ],
+  "notes": "next: commit-2 new slice (biomes-site cache + chunk-send serialization cache, chunkparse crate, zero added hot JNI), dispatch 3 legs lever=cmp421_chunk, pair vs nearest anchor-421 by runner_cpu_index, min-of-3 >= +20% else law-3 cycle with scope extension (POI/light/tracker slices)"
 }

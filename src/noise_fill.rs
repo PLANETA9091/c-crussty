@@ -152,11 +152,15 @@ const TARGETS: [Target; 3] = [
 /// CRUSSTY_NATIVE_NOISE_FILL env key OR a chunk-pipeline wave lever flag
 /// arms the batch noise-fill bridge. TASK-420-C adds cmp420_chunk2 to the
 /// lever union (stability iteration re-arms the GEN-axis). TASK-420-MEGA
-/// adds cmp420_colpush (disjoint-lane composition carrier, law 7). The
-/// chunk-parse plane itself never reads the env key, and this gate never
-/// reads lever ids outside the wave/mega ids — a STRICT union, no
-/// broadening (empty lever flag + unset env = vanilla noise,
-/// dormant-invisible).
+/// adds cmp420_colpush (disjoint-lane composition carrier, law 7).
+/// TASK-421-C adds cmp421_chunk (stabilized chunk-axis round: PROFILE-C
+/// ground truth — the GEN-axis is inert on the pregenerated fixture at
+/// 0.0% soak CPU, the union is kept for axis continuity and the boot
+/// worldgen tail; the round's effect comes from the parse plane + GC-debt
+/// relief, see NOISEFILL_ROOTCAUSE.md). The chunk-parse plane itself
+/// never reads the env key, and this gate never reads lever ids outside
+/// the wave/mega/round ids — a STRICT union, no broadening (empty lever
+/// flag + unset env = vanilla noise, dormant-invisible).
 fn enabled() -> bool {
     let env_gate = std::env::var("CRUSSTY_NATIVE_NOISE_FILL")
         .map(|v| {
@@ -167,7 +171,10 @@ fn enabled() -> bool {
     let lever_gate = std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let v = v.trim();
-            v == "cmp419_chunk" || v == "cmp420_chunk2" || v == "cmp420_colpush"
+            v == "cmp419_chunk"
+                || v == "cmp420_chunk2"
+                || v == "cmp420_colpush"
+                || v == "cmp421_chunk"
         })
         .unwrap_or(false);
     env_gate || lever_gate
