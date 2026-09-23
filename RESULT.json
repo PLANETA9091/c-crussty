@@ -5,8 +5,8 @@
   "run_id": null,
   "tps_med": null,
   "delta_pair_pct": null,
-  "lane": "sense+brain 12-14% CPU (was: sense-plane b3e0929 on old base +6.4/+8.7 x2 GREEN below bar)",
-  "verdict": "STEP1-PORT-DONE",
-  "evidence": "worktree @2d23f45; cherry-pick b3e0929 -> 40adceb; 34 conflicts union-resolved (13 rust + 6 java STRICT-OR gates: master cmp420_colpush ⊕ ported gate renamed cmp419_sense->cmp421_brain; colpush/chunk-parse files theirs=master; RESULT.json ours); blobs rebuilt via build_419a_blobs_all.sh (javac --release 21, cp=round-396-a kernel+fastutil, NOT round-j2b); check_blobs_sync.sh ALL IN SYNC incl raw-byte indy fallback; cargo check OK; cargo test --lib 291 passed 0 failed (incl arena_matches_chain_walk parity oracle)",
-  "what": "step 1/5 port complete: sense-plane CSR arena lives on 2d23f45 as cmp421_brain; next: brain-slice extension (goal priorities / Behavior lines into same crate as 2nd/3rd bulk JNI), then bench x3"
+  "lane": "sense+brain 12-14% CPU (nav_ai lane post-mega: goal priorities + Behavior lines + query walk)",
+  "verdict": "STEP2-EXTENSION-DONE-BENCH-PENDING",
+  "evidence": "step1: cherry-pick b3e0929 -> 40adceb (cmp421_brain rename, union gates, blobs ALL IN SYNC, cargo 291/0). step2: brain-slice extension b6b1146 — NEW GoalOps bridge (goalops/) replicates vanilla GoalSelector.tick() 1:1 by javap (goalCleanup -> lockedFlags purge -> goalUpdate -> goalTick) but 3x ObjectLinkedOpenHashSet traversals -> 1 traversal + flat ThreadLocal[] passes; sites = Mob.serverAiStep GoalSelector.tick x2 (javap ground truth purpur-1.21.10 @161/@183); NO_GOAL sentinel null-folded by javap equivalence; fail-closed ladder (setup-phase drift -> vanilla this call; STRICT-eq flag; zero natives — bulk JNI budget of sense+brain subsystem already eqEpoch+senseArena in same EPOCH_LOCK window); crate wiring src/goal_selector.rs composes on Mob chain after mobs_sscan checkDespawn serve; cargo test 294/0 incl blob-marker oracle + retarget contract tests; check_blobs_sync ALL IN SYNC (GoalOps javap gate + flat==nested)",
+  "what": "extension scope: sense-arena goal-query walk (ported) + goal-priorities flat fast-path (new). next: dispatch 3 legs cmp421_brain vs anchors-421 (35800920567/35800926548/35800931828), pair by runner_cpu_index, verdict >=+20% else cycle law 3"
 }
