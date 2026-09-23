@@ -73,6 +73,11 @@ check_class \
   "native int idxProbe" "static void indexAdd" "native int lifetimeDue"
 
 check_class \
+  "goalops/build/net/minecraft/world/entity/ai/goal/GoalOps.class" \
+  "cmp421_brain" "goal-selector EFFECT armed" "goalCleanup" "goalUpdate" \
+  "tickGate" "availableGoals" "lockedFlags" "goalTypes"
+
+check_class \
   "queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class" \
   "cmp417_bq" "cmp420_colpush" "cmp412_b2p1" "cmp421_brain" "selfTest" "isHardCollidingProbe"
 
@@ -124,6 +129,7 @@ for pair in \
   "entityinside/net/minecraft/world/entity/ItemEntityManager.java:entityinside/build/net/minecraft/world/entity/ItemEntityManager.class" \
   "entitygoalquery/net/minecraft/world/entity/EntityGoalQueryOps.java:entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
   "queryplane/net/minecraft/world/entity/QueryPlaneOps.java:queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class" \
+  "goalops/net/minecraft/world/entity/ai/goal/GoalOps.java:goalops/build/net/minecraft/world/entity/ai/goal/GoalOps.class" \
   "colpush/net/minecraft/world/entity/ColpushOps.java:colpush/build/net/minecraft/world/entity/ColpushOps.class" \
   "entityinside/net/minecraft/world/entity/RegionTickOps.java:entityinside/build/net/minecraft/world/entity/RegionTickOps.class"
 do
@@ -155,6 +161,7 @@ check_flat_matches_nested "mobai/build" "net/minecraft/world/entity/MobAiOps"
 check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/ItemEntityManager"
 check_flat_matches_nested "entitygoalquery/build" "net/minecraft/world/entity/EntityGoalQueryOps"
 check_flat_matches_nested "queryplane/build" "net/minecraft/world/entity/QueryPlaneOps"
+check_flat_matches_nested "goalops/build" "net/minecraft/world/entity/ai/goal/GoalOps"
 check_flat_matches_nested "colpush/build" "net/minecraft/world/entity/ColpushOps"
 check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/RegionTickOps"
 
