@@ -1,18 +1,18 @@
 {
-  "agent": "TASK-435-C (cron main tick-435, Job 406609, trace cron-agent-loop-202609240543)",
-  "vector": "chunk-pipeline R5 pair-hunt (law 8 axes): 2 chk legs @round-434-c-chunkpl (lever=cmp434_chunkpl) + 2 OWN anchors @master interleaved in ONE window",
-  "branch": "round-435-c-chunkpl2",
-  "base": "origin/round-434-c-chunkpl @a17cde0b",
-  "run_id": "BATCH-1 dispatched: round-435c-anchor-1@536cf06c, round-435c-chk-1@a17cde0b, round-435c-anchor-2@536cf06c, round-435c-chk-2@a17cde0b",
+  "agent": "TASK-436-C (cron main tick-436, Job 406609, trace cron-agent-loop-202609240647)",
+  "vector": "chunk-pipeline V3 legs (lever=cmp435_chunk3 STRICT-OR over cmp434_chunkpl) + own anchors; main-tick info-legs round-436-chk-r5/r6 @b64b189 cmp434_chunkpl NOT duplicated (absorbed for pair math)",
+  "branch": "round-436-c-chunk3",
+  "base": "origin/round-435-c-chunkpl2 @b64b189a (R6 carrier retag ×28 sites, blobs, cargo 303/0)",
+  "run_id": "pending dispatch",
   "tps_med": null,
   "delta_pair_pct": null,
-  "lane": "pair-hunt: x434 chk-3 hit +21.9 norm in high-zone 8.4-8.9M but no healthy anchor there; own anchors this round target my window; deepening step-2 = next chunk-list subsystem (POI/light/serialization/chunk-send) STRICT-OR cmp435_chunk3 over cmp434_chunkpl",
+  "lane": "V3 deepening legs target pair zone 6.60-6.75M (x435 legs 6.65-6.71M vs anchors 6.76M+ gap 55-60k); 3 legs + 2 anchors interleaved ONE window",
   "RAM": "n/a (CI bench)",
-  "parity": "pending step-2 build gates",
-  "verdict": "IN_PROGRESS (step-1 dispatch done; polls next)",
+  "parity": "VERIFIED b64b189 gates this tick: check_blobs_sync ALL IN SYNC rc=0; javap CARRIER_UNION_435=1 ChunkParseOps + FLAG5=1 ColpushOps; flat==nested byte-identity via sync script; cargo check --lib Finished (own CARGO_TARGET_DIR, purged); gate sites: 19 rust + 8 java (3 files) — cmp435_chunk3 implementation COMPLETE per RESEARCH-G §3-4 (chunk-pipeline done at law-6 granularity; no new plane, anti-placebo ×2)",
+  "verdict": "IN_PROGRESS (step-1 gates verified; step-2 dispatch next; absorb + pair verdict after; golden dispatcher = /home/z/rounds/ROUND-436/dispatch_436c_golden.py READY-NOT-RUN for tick 02:08 slot)",
   "evidence": [
-    "worktree /home/z/rounds/ROUND-435/agent-c @a17cde0b (round-434-c-chunkpl tip)",
-    "dispatch_435c.py copied from dispatch_435.py, bank inputs exact, interleaved anchor/leg/anchor/leg"
+    "worktree /home/z/rounds/ROUND-436/agent-c @b64b189 (round-435-c-chunkpl2 tip)",
+    "dispatch_436c.py: 2 anchors @master + 3 chk3 legs @round-436-c-chunk3 lever=cmp435_chunk3, bank inputs exact, interleaved"
   ],
-  "what": "poll sleep 120 + curl; while waiting: law-3 deepening (next chunk parse/serialization subsystem), blobs+cargo gates, commit+push, then BATCH-2 if window allows; absorb via absorb_round.py <run_id> <tag> + purge heavies immediately."
+  "what": "poll sleep 120 + curl; absorb via /home/z/c-crussty/scripts/bench4_recon/absorb_round.py <run_id> <tag>; per-absorb purge zip/kernel/spark/stdout/collapsed; verdict gates: band 6.0-9.5M, anchors norm >= -2%, pair-by-runner Delta<=50k, min-of-3, selfTest==true, NCDFE=0, AIOOBE=0, threw=0, ARM markers parse-cache first hit / biomes-cache first hit / chunk3 armed; Delta<+20% -> law-3 cycle to next tick."
 }
