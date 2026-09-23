@@ -176,7 +176,7 @@ fn enabled() -> bool {
                 || v == "cmp420_chunk2"
                 || v == "cmp420_colpush"
                 || v == "cmp421_chunk"
-                || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside"
+                || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp428_chunkunion" || v == "cmp429_wgen"
         })
         .unwrap_or(false);
     env_gate || lever_gate
@@ -293,6 +293,14 @@ pub fn activate() {
     std::thread::spawn(|| {
         // Phase 0: wait for BOTH targets (the ShiftNoise interface can
         // lag the Noise record by seconds; poll both).
+        // TASK-429-A early-arm stabilization: the old loop slept 10s BEFORE
+        // the first forcing attempt, so on the union carrier the bridge
+        // landed ~25-30s after boot Done (cu-l1: forcing attempts 1..6 span
+        // Done+2s..Done+15s, selftest later still) — the boot worldgen tail
+        // and any early-GEN window ran UNCOVERED. New cadence: force from
+        // the first pass with a flat 2s poll (CNFE-safe retries unchanged,
+        // force_load_kernel_class swallows not-yet-loadable classes); arm
+        // latency drops to ~force-load + define/patch time.
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(240);
         let mut forced = 0usize;
         loop {
@@ -308,21 +316,22 @@ pub fn activate() {
                 );
                 return;
             }
-            if std::time::Instant::now() > deadline - std::time::Duration::from_secs(230) {
-                forced += 1;
-                if forced <= 12 || forced % 12 == 0 {
-                    for t in TARGETS.iter() {
-                        if cplug_sdk::classes::find_class(t.class).is_none() {
+            forced += 1;
+            if forced <= 60 || forced % 12 == 0 {
+                let verbose = forced <= 12 || forced % 12 == 0;
+                for t in TARGETS.iter() {
+                    if cplug_sdk::classes::find_class(t.class).is_none() {
+                        if verbose {
                             eprintln!(
                                 "[crussty-plugin] noise_fill: forcing kernel load of {} (attempt {forced})",
                                 t.class
                             );
-                            crate::improved_noise::force_load_kernel_class(t.class);
                         }
+                        crate::improved_noise::force_load_kernel_class(t.class);
                     }
                 }
             }
-            std::thread::sleep(std::time::Duration::from_secs(if forced > 0 { 2 } else { 10 }));
+            std::thread::sleep(std::time::Duration::from_secs(2));
         }
 
         if !crate::improved_noise::wait_for_boot() {
@@ -541,6 +550,9 @@ pub fn activate() {
 
         // Phase 3: live bit-exact self-test BEFORE any bench (design gate 1).
         selftest();
+        eprintln!(
+            "[crussty-plugin] noise_fill: cmp429_wgen ARMED noise-generation stage (fillArray whole-body batch x3 targets, bulk-JNI ONE crossing per array; census line above = selftest-time)"
+        );
     });
 }
 

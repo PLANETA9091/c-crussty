@@ -157,7 +157,7 @@ public final class MobPushOps {
                     // TASK-424-A: GC-ревизия brain3 (STRICT OR).
                     || f.trim().equals("cmp423_brain3")
                     // TASK-426-A: SoA-feed carrier (STRICT OR).
-                    || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside"));
+                    || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp428_chunkunion") || f.trim().equals("cmp429_wgen"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -199,7 +199,7 @@ public final class MobPushOps {
                     // TASK-424-A: GC-ревизия brain3 (STRICT OR).
                     || f.trim().equals("cmp423_brain3")
                     // TASK-426-A: SoA-feed carrier (STRICT OR).
-                    || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside"));
+                    || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp428_chunkunion") || f.trim().equals("cmp429_wgen"));
     }
 
     private static final boolean EQSNAP = eqsnapEnabled();
@@ -214,8 +214,7 @@ public final class MobPushOps {
         // TASK-419-B (sense-plane composite): свой id в EFFECT-маркерах.
         if (f != null && f.trim().equals("cmp422_brain2")) return "cmp422_brain2";
         if (f != null && f.trim().equals("cmp423_brain3")) return "cmp423_brain3";
-        if (f != null && f.trim().equals("cmp424_mobfeed")) return "cmp424_mobfeed"; // TASK-426-A
-        if (f != null && f.trim().equals("cmp430_inside")) return "cmp430_inside"; // TASK-430-B
+        if (f != null && f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp428_chunkunion") || f.trim().equals("cmp429_wgen")) return "cmp424_mobfeed"; // TASK-426-A
         if (f != null && f.trim().equals("cmp421_brain")) return "cmp421_brain";
         return f != null && f.trim().equals("cmp412_eqsnapv3")
                 ? "cmp412_eqsnapv3" : "cmp411_eqsnap";

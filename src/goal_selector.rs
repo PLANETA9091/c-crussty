@@ -79,7 +79,7 @@ fn enabled() -> bool {
     match std::env::var("CRUSSTY_LEVER_FLAG") {
         Ok(v) => {
             let v = v.trim();
-            v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside"
+            v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp428_chunkunion" || v == "cmp429_wgen"
         }
         Err(_) => false,
     }
