@@ -2,7 +2,7 @@
   "agent": "TASK-436-B",
   "vector": "inside2-RE-RESEARCH round-2 on CLEAN base 92cd1e5 (V3 rolled back) — serve-plane closure (stage-1c V4)",
   "branch": "round-436-b-ins6 @f9497d7 (base 92cd1e5 = origin/round-434-b-inside4)",
-  "run_id": "dispatching: round-436b-ins-1/-2 @round-436-b-ins6 f9497d7 lever=cmp436_ins4 + own anchor round-436b-anchor-b36 @master (cold window = info-line, canon v2)",
+  "run_id": "in flight 23:08Z: round-436b-ins-1 (run 35932077379) + round-436b-ins-2 (run 35932098183) @round-436-b-ins6 c5d39853 lever=cmp436_ins4 + anchor round-436b-anchor-b36 (run 35932087903) @master e05994c9",
   "tps_med": null,
   "delta_pair_pct": null,
   "lane": "IMPLEMENTED: stage-1c SERVE-PLANE CLOSURE V4 (cmp436_ins4 STRICT-OR over cmp432_inside2) — java serve4 (1) per-claim secSnaps[]/secKnown[] lane arrays: per-visit SNAPS.get CHM hop + per-visit register churn -> array index (sec->snap immutable, SNAPS never evicts); (2) UNTRACKED-MISS CLOSURE: loaded-but-untracked section (cap reached/register lost race/uncollected) serves sec.states.get(packed) = the V2-proven bit-exact LevelChunk.getBlockStateFinal non-air continuation, killing the vanilla chunk-map re-lookup on every cap-miss visit; (3) per-claim minSecY cache + inline si=(y>>4)-minSec (javap-proven round-435-b), si bounds check kept (drift => vanilla, fail-closed); (4) per-thread last-lane hint (lanes[0].hint, zero-alloc) before the 8-lane scan; V2 serve() kept BYTE-FOR-BYTE as control (V4 flag default false = V2 behavior); rust v4() flip pre-selfTest fail-closed (any flip failure => bridge dormant) — NO new probes/exception sites on the hot path (V3 post-mortem threw=26)",
