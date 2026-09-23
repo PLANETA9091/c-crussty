@@ -1,0 +1,55 @@
+{
+ "agent": "TASK-430-A",
+ "vector": "wgen GEN-axis (law 8): noise-fill GEN-axis + parse/serialization slices on union carrier cmp429_wgen",
+ "branch": "round-429-a-wgen",
+ "step": "step-2 absorbed; dispatch_430a.py in flight (3 legs @a3991c2 + 3 anchors @3dea992, interleaved)",
+ "run_id": "35865655409",
+ "run_tag": "round-429-a-wgen-l3",
+ "tps_med": null,
+ "delta_pair_pct": null,
+ "lane": "CI-fail SEEN_DONE=0 -> fixed (lazy force-load)",
+ "ram_stw_full": null,
+ "parity": "n/a (boot-hang run)",
+ "verdict": "RC7 ROOT-CAUSED+FIXED: early-arm Class.forName(DensityFunctions$Noise, init=true) fired pre-Bootstrap.bootStrap -> BuiltInRegistries poisoned on poll thread (Not bootstrapped, Thread-22) -> main NoClassDefFoundError -> SEEN_DONE=0. Fix: force_load_kernel_class_lazy init=false in noise_fill phase-0; rust-only, blobs untouched, check_blobs_sync n/a. cargo check --lib PASS, cargo test --lib 302/0",
+ "evidence": "server-stdout artifact: NoClassDefFoundError at Bootstrap.bootStrap(47) caused by ExceptionInInitializerError Not bootstrapped in Thread-22 at DensityFunctions.<clinit>; gc.log activity stops 168s; last progress line = Bukkit plugins (2) 13:20:56",
+ "what": "commit a3991c2 pushed to round-429-a-wgen; alias legs round-430a-wgen-l2/l3/l4 pending dispatch after round-430-* batch completes",
+ "steps": [
+  {
+   "step": "step-2 batch complete poll + absorbs (main agent night batch)",
+   "batch": "round-430-* 11 runs: 8 success, 3 BAND fast-fail (anchor-b/d, a2-l3r2) — pool free 22:38+08",
+   "wgen_l1r": {
+    "run_id": 35873212174,
+    "branch": "round-430-wgen-l1r",
+    "head": "c70023c",
+    "tps_med": 2.6,
+    "runner": 6402349,
+    "norm_pct": 21.1,
+    "polls": 6,
+    "threw": 0,
+    "verdict": "GREEN-CANDIDATE",
+    "gc": "17.7s Full=9",
+    "pair": "NO PAIR: nearest anchor 6178708 Δ223k / 6588255 Δ186k (low-class)"
+   },
+   "anchors_round430": {
+    "a": [
+     2.1,
+     7079659
+    ],
+    "c": [
+     2.15,
+     6877022
+    ],
+    "e": [
+     2.4,
+     8754557
+    ],
+    "f": [
+     2.4,
+     8463234
+    ],
+    "note": "all RED norm (night window cooler than bank exp); within-cluster Δ>=202k — anchor-anchor pairs absent"
+   },
+   "lane_l1r": "fluid 17.10 flat / broadphase 10.14 / nav_ai 3.40 (SoA alive) / inside_volatile 13.24 / fastutil 7.00"
+  }
+ ]
+}
