@@ -1,8 +1,6 @@
 use jvmti_bindings::jni;
 use std::sync::atomic::{AtomicBool, AtomicI32, AtomicI64, AtomicUsize, Ordering};
-#[cfg(test)]
-use std::sync::Mutex;
-use std::sync::OnceLock;
+use std::sync::{Mutex, MutexGuard, OnceLock};
 
 // ---------------------------------------------------------------------------
 // Sharded grid (pattern B: items_index.rs cmp399_shard arm, verbatim shapes)
@@ -24,8 +22,16 @@ struct Shard {
     keys: [AtomicI64; SHARD_CAP],
     /// Per-slot chain head: id+1 (0 = empty chain).
     head: [AtomicI32; SHARD_CAP],
-    /// Occupied key slots (load accounting — writers only, under WLOCK).
+    /// Occupied key slots (load accounting — writers only, under the shard
+    /// writer mutex).
     used: AtomicUsize,
+    /// TASK-427-A2 (protocol v2 port, TASK-417-A): per-shard WRITER Mutex.
+    /// The mirror upsert/remove calls now run OUTSIDE the SoA global WLOCK
+    /// (no lock-group nesting — mobs_soa mob_upsert/mob_remove release their
+    /// lock before mirroring), so mirror writers serialize HERE, per shard,
+    /// locks taken in ascending shard-index order on a two-shard move
+    /// (deadlock-free).
+    wlock: Mutex<()>,
 }
 
 const K0: AtomicI64 = AtomicI64::new(0);
@@ -39,8 +45,18 @@ static SHARDS: [Shard; NSHARDS] = [const {
         keys: [K0; SHARD_CAP],
         head: [H0; SHARD_CAP],
         used: AtomicUsize::new(0),
+        wlock: Mutex::new(()),
     }
 }; NSHARDS];
+
+/// TASK-427-A2 (protocol v2): writer-side per-shard lock + version bracket —
+/// the guard serializes mirror writers of this shard; w_begin/w_end wrap the
+/// mutation while the guard is held.
+fn shard_writer(s: &'static Shard) -> MutexGuard<'static, ()> {
+    // Mirror writers are worker threads; a poisoned lock recovers (same
+    // discipline as the mobs_soa WLOCK).
+    s.wlock.lock().unwrap_or_else(|p| p.into_inner())
+}
 
 /// Per-id intrusive chain link (next id+1 in the same cell, 0 = end).
 static NEXT: [AtomicI32; MAX_IDS] = [H0; MAX_IDS];
@@ -73,6 +89,7 @@ pub(crate) fn mirror_mode() -> bool {
                     || v.trim() == "cmp412_eqsnapv3" || v.trim() == "cmp414_cvs" || v.trim() == "cmp417_bq"
                     // TASK-419-A (colpush): колпаш-носитель (mirror inert).
                     || v.trim() == "cmp420_colpush"
+                    || v.trim() == "cmp421_brain" || v.trim() == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside"
             })
             .unwrap_or(false)
     })
@@ -259,11 +276,13 @@ fn shard_unlink(id: usize) -> Result<(), ()> {
 
 /// Insert-or-move: (re)place `id` into cell `k` (idempotent per id — a stale
 /// ghost entry after a sweep race self-heals on the next owner upsert).
-/// MIRROR contract: the caller (mobs_soa::mob_upsert) already holds the
-/// global writer WLOCK and the global SoA seqlock VERSION bracket — this
-/// function takes NO mutex and only brackets the touched shard's version.
-/// Gate responsibility: the caller checks mirror_mode() (kept out of the
-/// hot path and out of the direct-plane tests).
+/// MIRROR contract (protocol v2): the caller (mobs_soa::mob_upsert) has
+/// ALREADY released the SoA writer WLOCK before calling — this function
+/// serializes on ITS OWN per-shard writer Mutex(es): one shard on a
+/// same-cell/no-op or first link, TWO shards (old + new, locked in ascending
+/// index order — deadlock-free) on a cell move. Gate responsibility: the
+/// caller checks mirror_mode() (kept out of the hot path and out of the
+/// direct-plane tests).
 pub(crate) fn mirror_upsert(id: usize, k: i64) -> i32 {
     if is_broken() {
         return ERR_STRUCT;
@@ -276,28 +295,51 @@ pub(crate) fn mirror_upsert(id: usize, k: i64) -> i32 {
         return 0; // same cell — no mutation at all (settled-population fast path)
     }
     if old != 0 {
-        let sold = &SHARDS[shard_of(old)];
-        w_begin(sold);
-        let r = shard_unlink(id);
-        w_end(sold);
-        if r.is_err() {
-            return ERR_STRUCT;
+        let sold = shard_of(old);
+        let snew = shard_of(k);
+        if sold == snew {
+            // One shard covers both the unlink and the link.
+            let s = &SHARDS[sold];
+            let g = shard_writer(s);
+            w_begin(s);
+            let r = shard_unlink(id).and_then(|_| shard_link(id, k));
+            w_end(s);
+            drop(g);
+            return if r.is_err() { ERR_STRUCT } else { 0 };
         }
+        // Two-shard move: lock in ASCENDING index order (deadlock-free),
+        // bracket both versions, mutate, publish both.
+        let (first, second) = if sold < snew { (sold, snew) } else { (snew, sold) };
+        let g1 = shard_writer(&SHARDS[first]);
+        let g2 = shard_writer(&SHARDS[second]);
+        let s_old = &SHARDS[sold];
+        let s_new = &SHARDS[snew];
+        w_begin(s_old);
+        w_begin(s_new);
+        let r = shard_unlink(id).and_then(|_| shard_link(id, k));
+        w_end(s_new);
+        w_end(s_old);
+        drop(g2);
+        drop(g1);
+        return if r.is_err() { ERR_STRUCT } else { 0 };
     }
     let s = &SHARDS[shard_of(k)];
+    let g = shard_writer(s);
     w_begin(s);
     let r = shard_link(id, k);
     w_end(s);
+    drop(g);
     if r.is_err() {
         return ERR_STRUCT;
     }
     0
 }
 
-/// Remove `id` from the mirror (graveyard sweep). MIRROR contract: caller
-/// (mobs_soa::mob_remove) already holds the global writer WLOCK. Returns 0
-/// (also when never inserted) or ERR_STRUCT on a dangling chain. Gate
-/// responsibility: the caller checks mirror_mode().
+/// Remove `id` from the mirror (graveyard sweep). MIRROR contract (protocol
+/// v2): caller (mobs_soa::mob_remove) has ALREADY released the SoA writer
+/// WLOCK — this function serializes on ITS OWN per-shard writer Mutex.
+/// Returns 0 (also when never inserted) or ERR_STRUCT on a dangling chain.
+/// Gate responsibility: the caller checks mirror_mode().
 pub(crate) fn mirror_remove(id: usize) -> i32 {
     if is_broken() {
         return ERR_STRUCT;
@@ -310,9 +352,11 @@ pub(crate) fn mirror_remove(id: usize) -> i32 {
         return 0; // never inserted — nothing to do
     }
     let sold = &SHARDS[shard_of(old)];
+    let g = shard_writer(sold);
     w_begin(sold);
     let r = shard_unlink(id);
     w_end(sold);
+    drop(g);
     if r.is_err() {
         ERR_STRUCT
     } else {

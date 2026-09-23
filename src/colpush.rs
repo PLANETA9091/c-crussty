@@ -111,9 +111,15 @@ fn bulk_state() -> &'static Mutex<BulkState> {
 }
 
 fn lever_flag_matches() -> bool {
-    // STRICT eq: ТОЛЬКО мой флаг (прошлые флаги = бит-в-байт прежнее поведение).
+    // STRICT-OR (TASK-426-A): cmp420_colpush (свой, master-сертифицированный
+    // +29.5 pair @4ab7306) ИЛИ cmp424_mobfeed (SoA-кормление — будит фид
+    // pushEntities whole-body redirect под вектор-флагом A-рестарта).
+    // Прошлые прочие флаги = бит-в-байт прежнее поведение.
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim() == "cmp420_colpush")
+        .map(|v| {
+            let t = v.trim();
+            t == "cmp420_colpush" || t == "cmp424_mobfeed" || t == "cmp430_inside"
+        })
         .unwrap_or(false)
 }
 

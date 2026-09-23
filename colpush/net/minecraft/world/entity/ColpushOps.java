@@ -68,6 +68,12 @@ public final class ColpushOps {
             java.util.logging.Logger.getLogger("crussty-plugin");
 
     private static final String FLAG = "cmp420_colpush";
+    /** TASK-426-A: SoA-feed carrier — STRICT-OR (будит java-сторону колпаша
+     * под вектор-флагом; без него ENABLED=false = спящий гейт, урок ×93). */
+    private static final String FLAG2 = "cmp424_mobfeed";
+    /** TASK-430-B: inside-plane subsystem round rides the carrier (STRICT-OR;
+     * constant-pool marker for the check_blobs_sync raw-byte gate, x93). */
+    private static final String FLAG3 = "cmp430_inside";
     private static final int ERR_STRUCT = -1;
     private static final int ERR_RANGE = -2;
 
@@ -83,7 +89,7 @@ public final class ColpushOps {
 
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return f != null && f.trim().equals(FLAG);
+        return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3));
     }
 
     /** Структурный отказ — весь рычаг дизармится навсегда (ваниль-реплика). */
@@ -403,9 +409,20 @@ public final class ColpushOps {
      * MobPushOps. Вызывается один раз из bulkTick (маркер в stdout).
      */
     public static boolean selfTest() {
+        // TASK-427 ROOT-CAUSE FIX: прежняя версия содержала
+        // `IDS_CAP * ROW_D < (1 << 31)` — в int-арифметике 1<<31 =
+        // Integer.MIN_VALUE, поэтому сравнение 6291456 < -2147483648 ЛОЖНО
+        // ещё на этапе КОМПИЛЯЦИИ; javac сворачивал всю &&-цепочку в
+        // константу false (bytecode: iconst_0) => selfTest ВСЕГДА возвращал
+        // false => colpush hook dormant fail-closed на каждом пересобранном
+        // блобе (mobfeed/chunksend) => SoA-кормление не просыпалось
+        // (mobSlots=0 x895, DATA-PLAN FAIL). Лечение: long-арифметика
+        // (1L<<31 = 2147483648) — конъюнкты становятся константно-истинными,
+        // рантайм-проверки MobPushOps остаются живыми в байткоде.
         boolean ok = ROW_D == 6 && ROW_I == 3 && FLAG_INCLUDE == 1
                 && IDS_CAP == (1 << 20)
-                && IDS_CAP * ROW_D < (1 << 31) && IDS_CAP * ROW_I < (1 << 31)
+                && (long) IDS_CAP * (long) ROW_D < (1L << 31)
+                && (long) IDS_CAP * (long) ROW_I < (1L << 31)
                 && MobPushOps.idCount() >= 0 && MobPushOps.idCapacity() > 0
                 && MobPushOps.byIdArr() != null;
         if (!ok) {
