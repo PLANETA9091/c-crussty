@@ -1,19 +1,20 @@
 {
   "agent": "TASK-434-C (cron main tick-434, Job 406609, trace cron-agent-loop-202609240408)",
-  "vector": "chunk-pipeline R5 (law 6/8) — SUBSYSTEM SELECTED: chunk parse/serialization (whole subsystem)",
+  "vector": "chunk-pipeline R5 (law 6/8) — chunk parse/serialization subsystem: biomes-parse cache port (both section-decode sites cached) + cmp434_chunkpl carrier on full composite",
   "branch": "round-434-c-chunkpl",
   "base": "origin/round-433-ccefix @513c4835",
-  "run_id": null,
+  "run_id": "BATCH-1 dispatching (7 runs interleaved)",
   "tps_med": null,
   "delta_pair_pct": null,
-  "lane": "was: parse block_states-site only (cmp420_chunk2 cache) -> became: BOTH section-decode sites (block_states ⊕ biomes parseBiomesSection) + carrier union cmp434_chunkpl on full composite",
-  "RAM": "n/a (bench in CI)",
-  "parity": "n/a yet (fail-closed STRICT lever gate; empty flag = vanilla bit-in-bit)",
-  "verdict": "IN_PROGRESS (step-0 research committed+pushed 773e08d; step-1 = cherry-pick 558fd1d biomes cache)",
+  "lane": "was: only block_states site cached (cmp420_chunk2) -> became: BOTH section lambdas cached (blocks parse$5 + biomes parse$7 mirror template caches) + carrier union cmp434_chunkpl = full composite (cmp430_inside set) + chunk parse planes",
+  "RAM": "n/a (CI bench)",
+  "parity": "build gates: BLOB-SYNC ALL IN SYNC (flat==nested), javap parseSection+parseBiomesSection descriptors OK, cargo test 303/0, fail-closed STRICT lever gate (empty flag = vanilla bit-in-bit)",
+  "verdict": "IN_PROGRESS (step-1 implemented+pushed 8cd2028; BATCH-1 = 4 anchors t4c/u4c/v4c/w4c @master + 3 chk legs @round-434-c-chunkpl, lever=cmp434_chunkpl)",
   "evidence": [
-    "RESEARCH-F.md committed: anchors parse codec 4/579k samples (parse-cache killed it), chunk-send 0.01% REFUTED x2, noise 0.03% inert (429-A alive), biomes site NEVER cached in master lineage (grep=0)",
-    "558fd1d = proven biomes-cache code (cargo test 291/0 at birth, blobs IN SYNC, javap-verified) never merged",
-    "RC6-421 canon: parse plane carries +6-8pp of carrier via GC-debt relief"
+    "commits: 773e08d (research), 8cd2028 (implementation)",
+    "19 rust + 8 java gate sites retagged (add_chunkpl_gates.py), marker maps, ColpushOps FLAG4, run_world3 arming case",
+    "cargo test 303/0 after gate-test retag; check_blobs_sync ALL IN SYNC",
+    "effect markers to grep: parse-cache first hit / parse-cache selftest PASS / biomes-cache first hit / biomes selftest PASS / run_world3 'cmp434_chunkpl armed'"
   ],
-  "what": "Research done; design: port biomes-parse cache (parseBiomesSection mirror template cache) + retag cmp434_chunkpl STRICT-OR union across composite gates; then bench my legs round-434c-chk-* vs fresh anchors."
+  "what": "BATCH-1 dispatched: poll sleep 120 + curl; absorb via absorb_round.py <run_id> <tag>; purge zips/kernel/spark/stdout immediately; pair-hunt vs anchors (Δ<=50k, min-of-3, depression gate)."
 }
