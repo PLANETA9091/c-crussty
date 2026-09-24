@@ -119,6 +119,7 @@ fn lever_flag_matches() -> bool {
         .map(|v| {
             let t = v.trim();
             t == "cmp420_colpush" || t == "cmp424_mobfeed" || t == "cmp430_inside" || t == "cmp432_inside2" || t == "cmp436_ins4"
+            || t == "cmp438_sense" // TASK-444-C: sense family union
         })
         .unwrap_or(false)
 }

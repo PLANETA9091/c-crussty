@@ -92,6 +92,7 @@ fn java_gate_matches(f: &str) -> bool {
         // (столбцы кормит colpush_plane_refresh, per-entity upsert спит).
         || f == "cmp420_colpush"
         || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside" || f == "cmp432_inside2" || f == "cmp436_ins4"
+        || f == "cmp438_sense" // TASK-444-C: sense family union
         || f == GATE_LEVER_SSCAN
         || f == "cmp410_eindexq" || f == "cmp411_k4soa" || f == "cmp411_eqsnap"
 }
