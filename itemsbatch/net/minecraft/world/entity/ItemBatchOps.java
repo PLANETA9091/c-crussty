@@ -68,6 +68,7 @@ public final class ItemBatchOps {
     private static final int PROBE_MAGIC = 0x1D46;
 
     private static final MethodHandle MH_MERGE_WITH_NEIGHBOURS; // ItemEntity private mergeWithNeighbours()V
+    private static final MethodHandle MH_IS_MERGABLE;          // ItemEntity private isMergable()Z (vanilla call-site gate, offsets 463..467)
     private static final MethodHandle MH_DESPAWN_RATE;          // ItemEntity private int despawnRate
     private static final MethodHandle MH_DESPAWN_TIME;          // Entity private final int despawnTime
 
@@ -113,11 +114,13 @@ public final class ItemBatchOps {
     static {
         boolean ok = false;
         MethodHandle merge = null;
+        MethodHandle mergable = null;
         MethodHandle rate = null;
         MethodHandle time = null;
         try {
             Lookup itemLookup = MethodHandles.privateLookupIn(ItemEntity.class, MethodHandles.lookup());
             merge = itemLookup.unreflect(ItemEntity.class.getDeclaredMethod("mergeWithNeighbours"));
+            mergable = itemLookup.unreflect(ItemEntity.class.getDeclaredMethod("isMergable"));
             rate = itemLookup.findGetter(ItemEntity.class, "despawnRate", int.class);
             Lookup entityLookup = MethodHandles.privateLookupIn(Entity.class, MethodHandles.lookup());
             time = entityLookup.findGetter(Entity.class, "despawnTime", int.class);
@@ -126,6 +129,7 @@ public final class ItemBatchOps {
             LOG.severe("[crussty-plugin] items_batch: MethodHandle resolve failed: " + t);
         }
         MH_MERGE_WITH_NEIGHBOURS = merge;
+        MH_IS_MERGABLE = mergable;
         MH_DESPAWN_RATE = rate;
         MH_DESPAWN_TIME = time;
         READY = ok;
@@ -164,9 +168,11 @@ public final class ItemBatchOps {
         int action = lookup(meta, e.getId());
         if (action == 1) {
             // REST: vanilla minimal body (counters + full despawn flow) +
-            // vanilla merge cadence for settled items (k=40, no move).
+            // vanilla merge cadence for settled items (k=40 = the vanilla
+            // unmoved branch, offsets 441..450; isMergable call-site gate
+            // offsets 463..467; the private body self-gates isMergable too).
             e.inactiveTick();
-            if (e.tickCount % 40 == 0 && !e.level().isClientSide()) {
+            if (e.tickCount % 40 == 0 && !e.level().isClientSide() && isMergable(e)) {
                 invokeVanillaMerge(e);
             }
         } else {
@@ -365,39 +371,43 @@ public final class ItemBatchOps {
                         (e.getBoundingBox().minY + e.getBoundingBox().maxY) / 2.0D, e.getZ());
             }
         }
-        // offsets 226..270: move-гейт
-        if (e.onGround() && e.getDeltaMovement().horizontalDistanceSqr() <= 9.999999747378752E-6D
-                && (e.tickCount + e.getId()) % 4 != 0) {
-            // vanilla skip-move branch
-        } else {
+        // offsets 226..375: move-гейт — КРИТИЧНО: ванильный скип (ifne 376)
+        // перепрыгивает move + applyEffectsFromBlocks + friction + bounce
+        // ЦЕЛИКОМ (ветка уходит прямо в merge-окно на 376) — реплика держит
+        // тот же блок под одним !skipMove.
+        boolean skipMove = e.onGround()
+                && e.getDeltaMovement().horizontalDistanceSqr() <= 9.999999747378752E-6D
+                && (e.tickCount + e.getId()) % 4 != 0;
+        if (!skipMove) {
             e.move(MoverType.SELF, e.getDeltaMovement());
-        }
-        // offset 272
-        e.applyEffectsFromBlocks();
-        // offsets 276..341: friction
-        float f = 0.98F;
-        if (e.frictionState == TriState.FALSE) {
-            f = 1.0F;
-        } else if (e.onGround()) {
-            f = e.level().getBlockState(e.getBlockPosBelowThatAffectsMyMovement()).getBlock()
-                    .getFriction() * 0.98F;
-        }
-        e.setDeltaMovement(e.getDeltaMovement().multiply(f, 0.9800000190734863D, f));
-        // offsets 342..375: bounce
-        if (e.onGround()) {
-            Vec3 vec31 = e.getDeltaMovement();
-            if (vec31.y < 0.0D) {
-                e.setDeltaMovement(vec31.multiply(1.0D, -0.5D, 1.0D));
+            // offset 272
+            e.applyEffectsFromBlocks();
+            // offsets 276..341: friction
+            float f = 0.98F;
+            if (e.frictionState == TriState.FALSE) {
+                f = 1.0F;
+            } else if (e.onGround()) {
+                f = e.level().getBlockState(e.getBlockPosBelowThatAffectsMyMovement()).getBlock()
+                        .getFriction() * 0.98F;
+            }
+            e.setDeltaMovement(e.getDeltaMovement().multiply(f, 0.9800000190734863D, f));
+            // offsets 342..375: bounce
+            if (e.onGround()) {
+                Vec3 vec31 = e.getDeltaMovement();
+                if (vec31.y < 0.0D) {
+                    e.setDeltaMovement(vec31.multiply(1.0D, -0.5D, 1.0D));
+                }
             }
         }
-        // offsets 376..473: merge window (k = moved ? 2 : 40; the original
-        // private mergeWithNeighbours self-gates isMergable at offset 0 —
-        // вызов напрямую = ванильное поведение)
+        // offsets 376..473: merge window (k = moved ? 2 : 40; isMergable
+        // call-site gate offsets 463..467; the original private
+        // mergeWithNeighbours self-gates isMergable at offset 0 — вызов
+        // напрямую = ванильное поведение)
         boolean moved = Mth.floor(e.xo) != Mth.floor(e.getX())
                 || Mth.floor(e.yo) != Mth.floor(e.getY())
                 || Mth.floor(e.zo) != Mth.floor(e.getZ());
         int k = moved ? 2 : 40;
-        if (e.tickCount % k == 0 && !e.level().isClientSide()) {
+        if (e.tickCount % k == 0 && !e.level().isClientSide() && isMergable(e)) {
             invokeVanillaMerge(e);
         }
         // offsets 474..498
@@ -423,17 +433,28 @@ public final class ItemBatchOps {
         }
     }
 
-    /** Реплика приватного setFluidMovement(double) (offsets 0..45). */
+    /** Реплика приватного setFluidMovement(double) (offsets 0..45).
+     *  ВНИМАНИЕ: y-инкремент в ядре = FLOAT 5.0E-4f через f2d (не 0.005!),
+     *  javap-верифицировано на живом round-396-a jar 2026-09-24. */
     private static void setFluidMovement(ItemEntity e, double mult) {
         Vec3 vec3 = e.getDeltaMovement();
         e.setDeltaMovement(vec3.x * mult,
-                vec3.y + (vec3.y < 0.05999999865889549D ? 0.004999999888241291D : 0.0D),
+                vec3.y + (vec3.y < 0.05999999865889549D ? 5.0E-4F : 0.0F),
                 vec3.z * mult);
     }
 
     private static void invokeVanillaMerge(ItemEntity e) {
         try {
             MH_MERGE_WITH_NEIGHBOURS.invokeExact(e);
+        } catch (Throwable t) {
+            broken = true;
+            throw new RuntimeException(t);
+        }
+    }
+
+    private static boolean isMergable(ItemEntity e) {
+        try {
+            return (boolean) MH_IS_MERGABLE.invokeExact(e);
         } catch (Throwable t) {
             broken = true;
             throw new RuntimeException(t);

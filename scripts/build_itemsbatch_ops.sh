@@ -39,8 +39,10 @@ mkdir -p "$OUT_DIR"
 
 echo "build output:"
 ls -la "$OUT_DIR/net/minecraft/world/entity/"
-# S7-163 guard: exactly one classfile must come out.
-N=$(find "$OUT_DIR" -name 'ItemBatchOps*' -type f | wc -l)
+# S7-163 guard: exactly one classfile must come out of javac (the flat legacy
+# sibling installed below does not count — remove stale copies first).
+rm -f "$OUT_DIR/ItemBatchOps.class"
+N=$(find "$OUT_DIR/net" -name 'ItemBatchOps*' -type f | wc -l)
 [ "$N" -eq 1 ] || { echo "nested classfile detected ($N outputs) — bridge would NCDFE" >&2; exit 1; }
 
 # Install NESTED (the path include_bytes! embeds) + FLAT (legacy sibling) and
