@@ -1,20 +1,22 @@
 {
-  "agent": "TASK-436-B",
-  "vector": "inside2-RE-RESEARCH round-2 on CLEAN base 92cd1e5 (V3 rolled back) — serve-plane closure (stage-1c V4)",
-  "branch": "round-436-b-ins6 @f9497d7 (base 92cd1e5 = origin/round-434-b-inside4)",
-  "run_id": "in flight 23:08Z: round-436b-ins-1 (run 35932077379) + round-436b-ins-2 (run 35932098183) @round-436-b-ins6 c5d39853 lever=cmp436_ins4 + anchor round-436b-anchor-b36 (run 35932087903) @master e05994c9",
+  "agent": "agent-b (ins4-diet рестарт TASK-440-B)",
+  "vector": "ins4-диета snapshotQuery поверх носителя round-436-b-ins6 (lever cmp440_ins4d = cmp436_ins4 + диета RESEARCH-439-EQW §3)",
+  "branch": "round-442-b-ins4d @ b67768fa (diet code c2ed1090)",
+  "run_id": "PENDING (ноги round-442b-ins4d-1/-2 диспатчены)",
   "tps_med": null,
-  "delta_pair_pct": null,
-  "lane": "IMPLEMENTED: stage-1c SERVE-PLANE CLOSURE V4 (cmp436_ins4 STRICT-OR over cmp432_inside2) — java serve4 (1) per-claim secSnaps[]/secKnown[] lane arrays: per-visit SNAPS.get CHM hop + per-visit register churn -> array index (sec->snap immutable, SNAPS never evicts); (2) UNTRACKED-MISS CLOSURE: loaded-but-untracked section (cap reached/register lost race/uncollected) serves sec.states.get(packed) = the V2-proven bit-exact LevelChunk.getBlockStateFinal non-air continuation, killing the vanilla chunk-map re-lookup on every cap-miss visit; (3) per-claim minSecY cache + inline si=(y>>4)-minSec (javap-proven round-435-b), si bounds check kept (drift => vanilla, fail-closed); (4) per-thread last-lane hint (lanes[0].hint, zero-alloc) before the 8-lane scan; V2 serve() kept BYTE-FOR-BYTE as control (V4 flag default false = V2 behavior); rust v4() flip pre-selfTest fail-closed (any flip failure => bridge dormant) — NO new probes/exception sites on the hot path (V3 post-mortem threw=26)",
-  "ram": "n/a (bench server xmx 10G)",
-  "parity": "pending bench",
-  "verdict": "IN_PROGRESS: implemented, gates green, dispatching 2 info-legs + 1 anchor",
+  "delta_norm_pct": null,
+  "lane": "goal-query snapshotQuery (обслуживает NearestAttackableTargetGoal.findTarget + AvoidEntityGoal.canUse через EntityGoalQueryOps.entitiesOfClassGate)",
+  "ARM-статус": "маркер-капчер по завершении ноги (ожидание: cmp440_ins4d: INS4-DIET ARMED (rust) + V4 serve body FLIPPED + selfTest=true + epoch ok + INS4-DIET diet active (java first served))",
+  "DIET-GATE-статус": "PENDING — приёмка: snapshotQuery self ≤ 2.0% (было 3.4-3.5% на ins4-ногах ×437/×438)",
+  "verdict": "PENDING-BENCH",
   "evidence": [
-    "LANE CHOICE (research on profiles round-round-435-b-ins-r1..r4, 104k samples): after inside2-plane remaining price = inside_volatile 16.3-16.9% (biggest java lane, grew from 12.01 baseline), fluid 16-17.6% (REFUTED RECON-43, ~13-15% unsinkable — skipped), broadphase 9.5-9.9% (eindex/eindexq already ride it), java_util 8.3%, fastutil 6.3%, paletted 5.2-5.6%, nav_ai 3.1-3.3%; inside_volatile addressable slice = serve self 1.87% + gate 0.92% + SNAPS CHM.get ~0.85% + ThreadLocal 0.21% + miss-path PalettedContainer 0.20% + LongAdder 0.16% + getSectionIndex 0.05% ≈ 4.2% CPU",
-    "V3 post-mortem: round-435b-ins-1 CRASH-REFUTED threw=26 (T2 FAIL) — V4 discipline = zero new throw sites, V2 kept as control body",
-    "collect dirty-sweep pathology CHECKED: collect subtree 408 samples (0.4%) — no fix needed; snapshotQuery 3.28% = already-optimized CSR body (V5 candidate); fluid_bitmask #16 REFUTED — not re-folded",
-    "GATES: build_432b_blobs OK (InsideSnapOps 14185, $Lane 941, $Snap 557; clinit-indy STRICT gate PASS; flat==nested OK); check_blobs_sync ALL IN SYNC; javap: v4/serve4 present; cargo check --lib ok (target purged); cargo test --lib inside_snap 4/4 (299 filtered)",
-    "STRICT-OR: cmp436_ins4 added to lever lists in 18 rust modules + 9 java bridges (incl ColpushOps FLAG5, eqsnap label, EntityGoalQueryOps FLAG_LABEL)"
+    "carrier: origin/round-436-b-ins6 @07078007 (lever cmp436_ins4, линия +22.8/+15.2 абсолюты, +15.6/+9.2 депресс-окна)",
+    "rust STRICT-OR x18 файлов (enabled/sense/inside_snap v4+carrier_label/queryplane labels/colpush/goal_selector/mobs_*/items_*/stagger/tickplane/chunk_parse/collide_batch/noise_fill) + INS4-DIET ARMED маркер",
+    "java STRICT-OR x8 файлов (EntityGoalQueryOps leverEnabled+SENSE+DIET+FLAG_LABEL, MobPushOps x2+label, ItemEntityManager x3, MobScanOps/QueryPlaneOps/GoalOps/MobAiOps/ColpushOps FLAG6)",
+    "diet path dietSnapshotQuery: bucket-dedup (окно ≤1024) + CSR-слайсы (DIET=>SENSE, arena_matches_chain_walk паритет) + lazy 3-стадийный прун (center r_eff<=2.0 -> точный hw -> y-prun fy±fhh±MARGIN) + OUT_SCRATCH reuse c depth-guard + sampled profiler bump=16 + INS4-DIET diet active маркер",
+    "гейты: cargo check --lib ok (7.1s); cargo test entity_query 14/14; build_430b_blobs flat==nested OK; check_blobs_sync ALL IN SYNC; javap: dietSnapshotQuery/acquireOut/releaseOut + cp-маркеры cmp440_ins4d/INS4-DIET diet active",
+    "nearest-редукция до 1 элемента ОТКЛОНЕНА javap-цензом: getNearestEntity применяет TargetingConditions ПОСЛЕ gate-pred — редукция по distance среди pred-passing рвёт паритет (pred-passing nearest может fail conditions при проходящем дальнем)",
+    "диспатч: round-442b-ins4d-1/-2 @b67768fa, world-bench-parallel.yml, INPUTS РОВНО по брифу, lever_flag=cmp440_ins4d, lever_arg=1"
   ],
-  "what": "2 info-legs + 1 anchor in flight (main tick's ins-r5/r6 V2 info-legs + anchors w3..z3 pending absorb); polling ~20-25 min"
+  "what": "W2-диета snapshotQuery на ins4-носителе: 6 механизмов из RESEARCH-439-EQW §3.2 (CSR-слайсы, lazy columns, y-прун, scratch/output-reuse, дедуп ячеек, sampled profiler bump), DIET-GATE self<=2.0%, цель = +1.4-1.7пп wall к ins4-линии для пары >=+20%"
 }
