@@ -1658,3 +1658,19 @@ TASK-433-B: inside2 перенос на ccefix-базу + RC7-lazy фикс пр
 **Сабагенты**: A sense — step-2 закоммичен+запушен @b6134c6c (SenseOps body-swap getNearestEntity, rust-guided best-first + decision-exact pruning, bulk-JNI senseEpoch, exhaustive selfTest oracle, lockstep 200k fuzz PASS); C chunk4b — @c5fe0251 pushed, гейты GREEN, ноги GREEN ×4; B diet — умер на 0 коммитах, рестарт тик 13:08 (RESEARCH-439-EQW.md W2, DIET-GATE ≤2.0%).
 
 **Карта окон**: ядро-зона 6.3-7.2M в депрессии ×2 окна (a6 −15.0), high-зона 8.4-8.8M стабильна (a7 +7.8). След. батч: якоря ЦЕЛЕННО в 6.3-7.2M (охота на здоровый якорь) + ноги интерливом. Golden 02:08 = golden_439.py (25 ранов, 7 линий) — серт-шот min-of-3.
+
+## GOAL ×124 (tick-442, 12:43-13:5x +08, Job 406609) — РЕКОРД ЭРЫ ins4-6r2 3.30TPS +23.4% + диета-носитель ins4d-2 3.20TPS +22.2 (cmp440_ins4d ARM-чистый с первого CI-батча) + chk3-2 пара +16.0пп; CERT 0 → NO MERGE (позиционная лотерея: сильнейшие ноги в зонах без свежих якорей)
+
+**Состояние**: master 335f1708 (код не изменён).
+
+**БАТЧ ×442 (якорная охота ×14, 12:47-13:0x)**: якоря a9 +3.9 @8.09M / a10 +2.1 @6.90M / a12 +0.3 @6.62M / a14 +6.5 @6.46M здоровы (ядро-зона ОЖИЛА: 3 здоровых якоря!) / a11 −6.7 / a13 −4.2 депресс. Ноги: chunk4-5 2.95TPS +11.9 @8.72M / chunk4-6 2.60 +13.9 @7.05M (GREEN ×6 суммарно) / **chk3-2 2.65 +18.1 @6.86M ↔a10 (Δ=40k): ПАРА +16.0пп** / sense-4 +7.7 / sense-3 −9.1 / pd-3r −8.6. BAND-DISCARD ×2 (ins4-5 9.69M, ins4-6 10.28M) → ре-роллы.
+
+**РЕ-РОЛЛЫ ×3 (13:28-13:46)**: **ins4-6r2 3.30TPS @8.90M +23.4% — НОВЫЙ СИЛЬНЕЙШИЙ АБСОЛЮТ ЭРЫ** (превысил ins4-2r2 3.20 +22.8 ×437), ARM-чистый (selfTest+ARMED+inside_snap), AIOOBE=0; ins4-5r2 2.40 +5.3 @7.03M; ins4d-1r2 2.50 +8.7 @7.13M. ins4d-2 (диета-носитель, первый CI-батч cmp440_ins4d): **3.20TPS @8.64M +22.2%**, ARM-цепь полная (V4 serve body FLIPPED + epoch ok tick=15 bulk JNI 1/tick + goal-query ARMED NearestAttackableTargetGoal/AvoidEntityGoal + lifetime-heap active).
+
+**ПАРЫ**: chk3-2 +16.0пп (единственная, ниже бара +20); ins4-6r2/ins4d-2/ins4-5r2/ins4d-1r2 — NO PAIR (зоны 7.0-7.2M и 8.6-8.9M без свежих здоровых якорей ≤50k; a13 исключён депрессией). min-of-3 не собран → **CERT 0 → NO MERGE честно**.
+
+**ВОЛНА ×2 (канон deadline≠смерть ×5)**: **B diet РЕСТАРТ — полный цикл за тик**: ветка round-442-b-ins4d @d9d1fb30 (диета: STRICT-OR ×18 rust + ×8 java файлов, diet path bucket-dedup + CSR-слайсы + lazy 3-стадийный прун + OUT_SCRATCH reuse + sampled profiler; nearest-редукция ОТКЛОНЕНА javap-цензом — TargetingConditions ПОСЛЕ gate-pred, сокращение рвёт паритет); гейты GREEN (cargo 7.1s + test 14/14 + blobs IN SYNC + javap); 2 ноги в CI (ins4d-2 +22.2 GREEN / ins4d-1 BAND→r2 +8.7). **D sense scope-expand** — в работе (BrainOps/brainhook/classfile правки, таргетинг-расширение, ветка не запушена — переезжает в тик 13:08+).
+
+**Карта окон**: ядро-зона ожила (3 здоровых якоря), НО ноги легли в 7.0-7.2M (a13 депресс) и 8.6-8.9M (без якорей). High-зона 8.5-9.0M = где рекорды (3.20-3.30 TPS) — golden_439.py (10 якорей) покрывает обе зоны. Банк сильных абсолютов без пар: ins4-6r2 3.30 +23.4 / ins4d-2 3.20 +22.2 / ins4-2r2 3.20 +22.8 / chk3-2 +18.1 / chunk4-3 +17.1.
+
+**Диск**: 63→70→66% (пурдж абсорбов). Маркер-капчер до пурджа соблюдён (все ARM извлечены).
