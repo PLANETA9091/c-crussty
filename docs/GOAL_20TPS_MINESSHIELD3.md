@@ -1635,3 +1635,26 @@ TASK-433-B: inside2 перенос на ccefix-базу + RC7-lazy фикс пр
 **Карта тика**: окно тёплое, но депресс-карманы мигрируют (6.92-6.95M ×439) — high-зона стабильно здорова (a2 2.70@8.54M + ss-1 BAND-снова сгорел — высокозонные ноги редки). Golden 02:08 = 25 ранов = серт-шот мин-of-3 для sscan2/pdemux/ins4/wgen4-финал/chk3/chunkpl.
 
 **Диск**: 58→70 (абсорбы)→62% (пурдж).
+
+## GOAL ×123 (tick-441, 12:08-12:5x +08, Job 406609) — АРСЕНАЛ = 4 CI-РЫЧАГА: chunk4 GREEN ×4 (+9.1/+10.1/+11.5/+17.1, закон-8 линия!), sense ПЕРВЫЕ CI-ноги ARM ×2 (+6.9/+3.1), pdemux PATCHED ×4; окно ×441: ядро-зона в депрессии 2 окна подряд → CERT 0 NO MERGE
+
+**Состояние**: master 6db49fbf (код не изменён).
+
+**БАТЧ ×440 (абсорб, окно 11:1x-11:3x ОСТЫЛО)**: якоря a4 +5.2 @7.04M / a5 +6.1 @8.51M здоровы, a2 −5.2 / a3 −14.8 депрессия ОБЕ зоны, a1 delivery-503; пары негативные (ins4-1 −7.9 ↔a5, pd-1 −8.7 ↔a4); сильные no-pair: ins4-2 +15.6 @6.89M, chk3-1 +8.8 @8.43M, ss-1 +7.3 @6.82M (Δ>50k); фейлы: pd-2 NO-TPS инстант, chk-1 pop-INVALID threw=2 = vanilla random_sequences salt (класс ×438, НЕ lever).
+
+**БАТЧ ×441 (12:1x-12:3x)**: chunk4-3 2.50@6.34M **+17.1** (сильнейший chunk4!), chk-1r 2.60@7.22M +12.1, ins4-4 2.45@6.86M +9.2, chunk4-4 2.45@6.87M +9.1, **sense-1 2.40@6.87M +6.9 (ПЕРВАЯ CI-нога sense!)**, sense-2 2.30@6.80M +3.1, pd-2r −10.9 (re-roll тоже в депресс-зоне); якоря a7 +7.8 @8.54M здоров / a8 −1.9 @8.79M бордер / a6 −15.0 @6.82M депрессия. Валидных пар нет (ядро 6.3-7.2M без здорового якоря 2 окна подряд) → CERT 0 NO MERGE честно.
+
+**🎯 ARSENAL = 4 CI-ВЕРИФИЦИРОВАННЫХ РЫЧАГА (все ARM по stdout-маркерам, AIOOBE=0)**:
+1. **chunk4** cmp437_chunk4 @c5fe0251 — GREEN ×4 (+9.1/+10.1/+11.5/+17.1), ARM ×4 (queryplane awake + ChunkSendOps kernel loader + PlayerChunkSender 9864b pristine), GC 16.7-22.7s — ЗАКОН-8 ЛИНИЯ (chunk-send snapshot, игроки видят);
+2. **pdemux** cmp436_pdemux @48362768 — ARMED+PATCHED 30967→31521 ×4 в ранах, пара +12.7пп ×439;
+3. **sscan2** cmp436_sscan2 @3f3b111f — полный ARM-цикл ×3 (selfTest→ARMED→hook serve Mob 80837b/NaturalSpawner 40437b→retransform rc=0);
+4. **sense** cmp438_sense @b6134c6c — НОВЫЙ: ARM ×2 (mobs_sense selfTest=true + STRICT-UNION soa/collide-batch/stagger), первые чтения +6.9/+3.1 (карантин-окно, не вердикт).
+Плюс banked линии: ins4 (+15.6/+9.2 в этом окне), chk3 (+8.8), chk (+12.1), w4-финал (golden).
+
+**Инфра-урок ×441**: EOF-сбой тулзов ×440 «проглотил» ответ, но абсорб-скрипт отработал — все 14 директорий были готовы; правило: после инфра-сбоя проверять artifacts ДО повторного запуска (идемпотентность не бесплатна).
+
+**Диск**: 91% (кризис) → пурдж tmp 714M + zips + kernels/flamegraphs абсорбов → 62%. Маркер-капчер ВСЕГДА до пурджа (маркеры ×440/×441 извлечены).
+
+**Сабагенты**: A sense — step-2 закоммичен+запушен @b6134c6c (SenseOps body-swap getNearestEntity, rust-guided best-first + decision-exact pruning, bulk-JNI senseEpoch, exhaustive selfTest oracle, lockstep 200k fuzz PASS); C chunk4b — @c5fe0251 pushed, гейты GREEN, ноги GREEN ×4; B diet — умер на 0 коммитах, рестарт тик 13:08 (RESEARCH-439-EQW.md W2, DIET-GATE ≤2.0%).
+
+**Карта окон**: ядро-зона 6.3-7.2M в депрессии ×2 окна (a6 −15.0), high-зона 8.4-8.8M стабильна (a7 +7.8). След. батч: якоря ЦЕЛЕННО в 6.3-7.2M (охота на здоровый якорь) + ноги интерливом. Golden 02:08 = golden_439.py (25 ранов, 7 линий) — серт-шот min-of-3.
