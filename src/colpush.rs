@@ -872,6 +872,11 @@ fn grid_slot_by(gx: i64, gz: i64, lid: i32) -> usize {
 
 // ---------------------------------------------------------------------------
 // TASK-445-A (cmp445_collide): colpushTick2 — bucket-prune wide-phase delta.
+// TASK-448-A cycle-2: тело = FUSED single-pass (buckets_fused + buckets_copy_out):
+// reach-prune и точный strict-< AABB-тест — РОВНО ОДИН раз на пару (двухпроходная
+// версия ×447 делала это дважды), ids copy-out одним memcpy, добавлен
+// ids_cap-гейт (как у сертифицированного классического тела) — pair-overflow
+// до записи в java вместо усечённого CSR.
 //
 // Контракт: та же сигнатура/CSR-семантика, что сертифицированное тело
 // colpushTick ×420 (бит-в-байт по набору пар: точный strict-< AABB-overlap,
@@ -886,7 +891,7 @@ fn grid_slot_by(gx: i64, gz: i64, lid: i32) -> usize {
 // звукен даже при нарушении гейта java-стороной).
 //
 // Оракул (cargo test, модуль ниже): brute-force O(N²) энумерация == CSR
-// bucket-ядра на рандомизированных сценах, включая граничные касания
+// fused-ядра на рандомизированных сценах, включая граничные касания
 // (strict < ⇒ касание = НЕ кандидат), y-разнос, stale/flag-off/NaN-ряды.
 // ---------------------------------------------------------------------------
 
@@ -918,11 +923,16 @@ fn bucket_slot(lid: i32, cx: f64, cz: f64) -> usize {
     bucket_slot_by((cx / BUCKET).floor() as i64, (cz / BUCKET).floor() as i64)
 }
 
-/// PASS 1-3 bucket-ядра: активные ряды + бакет-партиция + AABB-копилка +
-/// степени кандидатов (с per-(row,bucket) reach-prune) + prefix/total.
-/// Возвращает total; usize::MAX = RANGE (total > ids_cap проверяет вызывающий
-/// по своему ids_cap — сигнатура не знает java-кап).
-fn buckets_scan(
+/// PASS 1 + FUSED(2,4) bucket-ядро (TASK-448-A cycle-2, single-pass):
+/// активные ряды + бакет-партиция + AABB-копилка, затем ОДИН 9-бакетный walk
+/// на активный ряд — reach-prune и точный strict-< AABB-тест исполняются
+/// РОВНО ОДИН РАЗ на пару (двухпроходная версия делала это дважды), кандидаты
+/// пишутся в scratch-CSR с per-row сортировкой по возрастанию плотного id
+/// (бит-в-байт с двухпроходной версией и ×420). Возвращает total;
+/// usize::MAX = overflow (total > i32::MAX). ids_cap-гейт — в вызывающем
+/// (как у сертифицированного классического тела: до RANGE java ничего
+/// не читает из out-массивов).
+fn buckets_fused(
     st: &mut BulkState,
     n: usize,
     d: &[f64],
@@ -931,6 +941,7 @@ fn buckets_scan(
 ) -> usize {
     // ---- PASS 1: активные ряды + бакет-партиция + AABB бакетов ----
     st.act.clear();
+    st.csr.clear();
     // Безусловные очистки: bhead 16K + AABB-массивы (в сумме ~96K stores —
     // дешевле сертифицированного head-clear 256K классического тела).
     // Повторный вход (ERR_RANGE-ретрай java) идемпотентен.
@@ -986,10 +997,8 @@ fn buckets_scan(
         }
     }
 
-    // ---- PASS 2: степени кандидатов (точный AABB-overlap за reach-prune) ----
-    let rows = st.act.len();
-    let act_snapshot: Vec<i32> = st.act.clone();
-    for &a in act_snapshot.iter() {
+    // ---- PASS 2+4 FUSED: один walk на активный ряд ----
+    for &a in st.act.iter() {
         let a = a as usize;
         let ba = a * ROW_D;
         let cx = d[ba];
@@ -1001,9 +1010,9 @@ fn buckets_scan(
         let gbx = (cx / BUCKET).floor() as i64;
         let gbz = (cz / BUCKET).floor() as i64;
         let ra = if hx > hz { hx } else { hz };
-        let mut deg: i32 = 0;
         let mut visited = [usize::MAX; 9]; // dedup слотов (коллизия ключей ≠ дубль цепи)
         let mut nv: usize = 0;
+        let row_begin = st.csr.len();
         for dgz in -1..=1i64 {
             for dgx in -1..=1i64 {
                 let slot = bucket_slot_by(gbx + dgx, gbz + dgz);
@@ -1047,140 +1056,63 @@ fn buckets_scan(
                         && (d[bb + 2] - cz).abs() < hz + d[bb + 4]
                         && (d[bb + 1] - cy).abs() < hh + d[bb + 5]
                     {
-                        deg += 1;
+                        st.csr.push(b2 as i32);
                     }
                 }
             }
         }
-        st.cnt[a] = deg;
-    }
-
-    // ---- PASS 3: prefix-sum → total (структура бит-в-байт с ×420) ----
-    let mut total: i64 = 0;
-    st.off_scratch[0] = 0;
-    let act_len = st.act.len();
-    for (k, &a) in act_snapshot.iter().enumerate() {
-        let a = a as usize;
-        total += st.cnt[a] as i64;
-        if (k + 1) < act_len {
-            st.off_scratch[k + 1] = total as i32;
+        // Детерминизм: per-row ascending-id sort (insertion — списки малы),
+        // бит-в-байт с двухпроходной версией (порядок кандидатов = возрастание
+        // плотного id, не chain-порядок).
+        let row = &mut st.csr[row_begin..];
+        for m in 1..row.len() {
+            let key = row[m];
+            let mut p = m;
+            while p > 0 && row[p - 1] > key {
+                row[p] = row[p - 1];
+                p -= 1;
+            }
+            row[p] = key;
         }
+        st.cnt[a] = (st.csr.len() - row_begin) as i32;
     }
-    let total = total as usize;
+    let total = st.csr.len();
     if total > i32::MAX as usize {
         return usize::MAX;
     }
     total
 }
 
-/// PASS 4 bucket-ядра: заполнение CSR (off/ids) + сортировка каждого списка
-/// по возрастанию плотного id (бит-в-байт с ×420: порядок кандидатов =
-/// возрастание id, не chain-порядок). ids_cap защищает запись (после
-/// RANGE-гейта вызывающего записи всегда помещаются — гвард страховочная).
-fn buckets_fill(
-    st: &mut BulkState,
+/// Выход fused-ядра: scratch-CSR → java off/ids. csr компактен (строки
+/// подряд в порядке возрастания плотного id активных рядов) ⇒ ids копируется
+/// одним copy_from_slice, off — один O(n) проход (без hash/walk/тестов).
+/// Вызывается ТОЛЬКО после ids_cap-гейта (total ≤ ids_cap).
+fn buckets_copy_out(
+    st: &BulkState,
     n: usize,
-    d: &[f64],
-    i: &[i32],
     off: &mut [i32],
     ids: &mut [i32],
-    ids_cap: usize,
 ) {
-    let rows = st.act.len();
+    let total = st.csr.len();
+    ids[..total].copy_from_slice(&st.csr[..total]);
     let mut cursor: usize = 0;
     off[0] = 0;
     let mut ai: usize = 0; // индекс в act
+    let rows = st.act.len();
     for id in 0..n {
         let is_active = ai < rows && st.act[ai] as usize == id;
         if is_active {
-            let a = id;
-            let ba = a * ROW_D;
-            let cx = d[ba];
-            let cz = d[ba + 2];
-            let hx = d[ba + 3];
-            let hz = d[ba + 4];
-            let cy = d[ba + 1];
-            let hh = d[ba + 5];
-            let gbx = (cx / BUCKET).floor() as i64;
-            let gbz = (cz / BUCKET).floor() as i64;
-            let ra = if hx > hz { hx } else { hz };
-            let mut visited = [usize::MAX; 9];
-            let mut nv: usize = 0;
-            for dgz in -1..=1i64 {
-                for dgx in -1..=1i64 {
-                    let slot = bucket_slot_by(gbx + dgx, gbz + dgz);
-                    let mut seen = false;
-                    for k in 0..nv {
-                        if visited[k] == slot {
-                            seen = true;
-                            break;
-                        }
-                    }
-                    if seen {
-                        continue;
-                    }
-                    visited[nv] = slot;
-                    nv += 1;
-                    let mut cur = st.bhead[slot];
-                    if cur == 0 {
-                        continue;
-                    }
-                    let mh = ra + st.bmaxh[slot] + BUCKET_EPS;
-                    if st.bminx[slot] - cx >= mh
-                        || cx - st.bmaxx[slot] >= mh
-                        || st.bminz[slot] - cz >= mh
-                        || cz - st.bmaxz[slot] >= mh
-                    {
-                        continue;
-                    }
-                    while cur != 0 {
-                        let b2 = (cur - 1) as usize;
-                        cur = st.next[b2];
-                        if b2 == a {
-                            continue;
-                        }
-                        let bb = b2 * ROW_D;
-                        if (d[bb] - cx).abs() < hx + d[bb + 3]
-                            && (d[bb + 2] - cz).abs() < hz + d[bb + 4]
-                            && (d[bb + 1] - cy).abs() < hh + d[bb + 5]
-                        {
-                            // кандидаты по возрастанию плотного id: грид-проход
-                            // идёт по цепям; для детерминизма сортируем ниже.
-                            if cursor < ids_cap {
-                                ids[cursor] = b2 as i32;
-                            }
-                            cursor += 1;
-                        }
-                    }
-                }
-            }
+            cursor += st.cnt[st.act[ai] as usize] as usize;
             ai += 1;
         }
         off[id + 1] = cursor as i32;
-    }
-    // Детерминизм: сортировка каждого списка по возрастанию id (insertion —
-    // списки малы; бит-в-байт с сертифицированным телом).
-    for k in 0..n {
-        let b = off[k] as usize;
-        let e = off[k + 1] as usize;
-        if e > b {
-            let s = &mut ids[b..e];
-            for m in 1..s.len() {
-                let key = s[m];
-                let mut p = m;
-                while p > 0 && s[p - 1] > key {
-                    s[p] = s[p - 1];
-                    p -= 1;
-                }
-                s[p] = key;
-            }
-        }
     }
 }
 
 /// Ветка colpushTick2 (cmp445_collide): та же JNI-обвязка, что сертифицированный
 /// colpushTick (критические секции, ERR_RANGE/ERR_STRUCT, PASS 5 plane-refresh,
-/// LAST_ROWS/LAST_PAIRS), тело перечисления = buckets_scan/buckets_fill.
+/// LAST_ROWS/LAST_PAIRS); тело перечисления = buckets_fused (TASK-448-A
+/// single-pass) + buckets_copy_out; ids_cap-гейт как у классического тела.
 #[allow(clippy::too_many_arguments)]
 fn colpush_tick_buckets(
     env: *mut jni::JNIEnv,
@@ -1211,13 +1143,23 @@ fn colpush_tick_buckets(
     let i = unsafe { std::slice::from_raw_parts(ip as *const i32, n * ROW_I) };
     let want_tick = tick - 1; // снапшот end-of-previous-tick
 
-    let total = buckets_scan(&mut st, n, d, i, want_tick);
+    let total = buckets_fused(&mut st, n, d, i, want_tick);
     if total == usize::MAX {
         unsafe {
             (vt.ReleasePrimitiveArrayCritical)(env, in_i, ip, 0);
             (vt.ReleasePrimitiveArrayCritical)(env, in_d, dp, 0);
         }
         return ERR_RANGE; // java растит IDS и ретраит
+    }
+    // TASK-448-A: ids_cap-гейт (как у сертифицированного классического тела) —
+    // pair-overflow ДО записи в java: java растит ids и ретраит; без гейта
+    // усечённый CSR давал бы off[] за пределами ids (AIOOBE → disarm).
+    if total > ids_cap {
+        unsafe {
+            (vt.ReleasePrimitiveArrayCritical)(env, in_i, ip, 0);
+            (vt.ReleasePrimitiveArrayCritical)(env, in_d, dp, 0);
+        }
+        return ERR_RANGE;
     }
 
     let op = unsafe { (vt.GetPrimitiveArrayCritical)(env, out_off, std::ptr::null_mut()) };
@@ -1240,7 +1182,7 @@ fn colpush_tick_buckets(
     let off = unsafe { std::slice::from_raw_parts_mut(op as *mut i32, n + 1) };
     let ids = unsafe { std::slice::from_raw_parts_mut(ids_p as *mut i32, ids_cap) };
 
-    buckets_fill(&mut st, n, d, i, off, ids, ids_cap);
+    buckets_copy_out(&st, n, off, ids);
 
     unsafe {
         (vt.ReleasePrimitiveArrayCritical)(env, out_ids, ids_p, 0);
@@ -1262,7 +1204,7 @@ fn colpush_tick_buckets(
     LAST_PAIRS.store(total, Ordering::Relaxed);
     if FIRST_BULK.swap(false, Ordering::Relaxed) {
         eprintln!(
-            "[crussty-plugin] cmp445_collide: bulk EFFECT armed (colpushTick2 bucket-prune; first tick {tick}, rows {rows}, pair-slots {total}, plane-refresh {drained})"
+            "[crussty-plugin] cmp445_collide: bulk EFFECT armed (colpushTick2 bucket-prune fused-single-pass; first tick {tick}, rows {rows}, pair-slots {total}, plane-refresh {drained})"
         );
     }
     total as jni::jint
@@ -1392,11 +1334,13 @@ mod tests445 {
             bmaxz: vec![0.0; BUCKET_CAP],
             bmaxh: vec![0.0; BUCKET_CAP],
         };
-        let total = buckets_scan(&mut st, s.n, &s.d, &s.i, s.want_tick);
+        let total = buckets_fused(&mut st, s.n, &s.d, &s.i, s.want_tick);
         assert_ne!(total, usize::MAX, "scene overflowed ids_cap");
+        // wrapper-гейт: total ≤ ids_cap до copy_out (ERR_RANGE-ветка java)
+        assert!(total <= ids_cap.max(total), "ids_cap gate would trip");
         let mut off = vec![0i32; s.n + 1];
         let mut ids = vec![0i32; ids_cap.max(total)];
-        buckets_fill(&mut st, s.n, &s.d, &s.i, &mut off, &mut ids, ids_cap.max(total));
+        buckets_copy_out(&st, s.n, &mut off, &mut ids);
         (off, ids[..total].to_vec(), total)
     }
 

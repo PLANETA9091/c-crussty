@@ -1,18 +1,23 @@
 {
  "agent": "agent-a",
- "vector": "collide+broadphase+push plane (cmp445_collide = certified cmp420_colpush carrier + colpushTick2 bucket-prune delta)",
+ "vector": "collide+broadphase+push plane (cmp445_collide = certified cmp420_colpush carrier + colpushTick2 bucket-prune delta + cycle-2 fused-single-pass + constants plane)",
  "branch": "round-445-a-collide",
- "run_id": null,
- "tps_med": null,
+ "run_id": 36015052561,
+ "tps_med": 2.50,
  "delta_pair_pct": null,
- "lane": "collide+push union 32.15% wall (anchor-10) -> goal: carrier re-ride + delta",
+ "lane": "collide+push union 32.15% wall (anchor-10) -> carrier re-ride GREEN +10.2% norm; cycle-2 = fused single-pass bulk + per-(level,tick) constants plane",
  "ram_stw_full": null,
- "parity": "STRICT-OR additive: empty flag = vanilla bit-in-byte; CSR oracle-tested vs brute-force O(N^2) (4 suites, incl. exact-touch strict-< boundary, y-separation, filter garbage, retry idempotency)",
- "verdict": "IMPL-PHASE (step-2 done, leg pending)",
- "evidence": "src/colpush.rs: colpush_tick fork -> buckets_scan/buckets_fill (16.0-chunk-buckets, per-(row,bucket) reach-prune margin=ra+bmaxh[slot] eps=1e-9, slot-dedup, unconditional bhead clear = ERR_RANGE retry idempotent, PASS5 plane-refresh bit-in-byte); cargo check+test 305/0 GREEN; blobs rebuilt build_430b_blobs.sh + build_chunkparse_ops.sh; check_blobs_sync ALL IN SYNC (8 classes carry cmp445_collide in cp, flat==nested byte-identical, major 65)",
- "what": "step-2: STRICT-OR gates (rust 17 files, java 8 bridges) + colpushTick2 bucket-prune native + family ARMED marker (cmp445_collide: ARMED carrier stack) + bulk EFFECT marker (colpushTick2 bucket-prune; first tick N)",
+ "parity": "STRICT-OR additive: empty flag = vanilla bit-in-byte; CSR oracle-tested vs brute-force O(N^2) (4 suites, 305/0 incl. fused-vs-oracle edge cases + randomized scenes + retry idempotency); fused = same prune + same exact strict-< test once per pair, per-row ascending-id sort -> bit-in-byte CSR; constants plane values = exact vanilla reads keyed (level,tick), atomic publication",
+ "verdict": "LEG-1 GREEN-CANDIDATE +10.2% @2.50 TPS runner=6983622 band-OK ARM-clean (AIOOBE=0, NCDFE=0, carrier stack + colpushTick2 EFFECT + push-plane EFFECT markers); NO PAIR: nearest healthy anchor Δ>50k (anchor-2 Δ156913, anchor-3 Δ78050, anchor-1 depression -15.9 RED) -> bank",
+ "evidence": "RESEARCH-448-A-CYCLE2.md (javap-census remaining tail: GameRules.getInt map-lookup + getTickCount static chain per covered entity; Entity.push scalar confirmed 0-alloc; technique survey: grid-cell tuning/SAP/quadtree/time-slicing/dirty-sets verdicts); src/colpush.rs buckets_fused + buckets_copy_out (single-pass, ids_cap gate hardening) + ColpushOps.ConstSlot per-(level,tick) constants plane; cargo check+test 305/0 GREEN; blobs rebuild build_430b_blobs.sh; check_blobs_sync ALL IN SYNC",
+ "what": "cycle-2: research (step1-census + web survey) -> impl step3: (1) rust colpushTick2 fused single-pass — reach-prune+exact-test once per pair instead of twice, one 9-bucket walk per row, ids copy-out single memcpy, NEW ids_cap gate (pair-overflow -> ERR_RANGE retry instead of truncated CSR/AIOOBE->disarm path); (2) java per-(level,tick) ConstSlot: cramming/maxCol 1 volatile read per covered entity instead of per-entity GameRules map lookup + paperConfig chain; classic colpushTick body (cmp420_colpush certified) UNTOUCHED; markers: EFFECT line extended 'fused-single-pass' (grep prefix intact)",
  "steps_log": {
   "step1": "3dee7b01 research+design (javap-censor 5 sites, lane union 32.15%)",
-  "step2": "impl: dirty-state audit (kept: coherent WIP of interrupted session; fixed items_manager chain fork, bmaxh f32->f64 soundness, bstamp->unconditional-clear idempotency) + colpushTick2 + markers + tests + blobs; cargo 305/0; sync ALL IN SYNC"
+  "step2": "18f37d57 impl: colpushTick2 bucket-prune + markers + tests + blobs; cargo 305/0; sync ALL IN SYNC",
+  "leg-1": "36003910489 BAND-DISCARD (runner 12039520 out of band)",
+  "leg-2-r2": "36004169424 round-447a-collide-1r2: 2.40@7167951 +4.0 PARITY/LOW ARM-clean, банк (no pair, a3 депресс)",
+  "leg-3-448a": "36015052561 round-448a-collide-1 @18f37d57: GREEN-CANDIDATE 2.50@6983622 +10.2% norm, ARM-чистая (AIOOBE=0, EFFECT colpushTick2 first-tick + push-plane first gate hit, carrier stack ARMED, items 0.00% union-carrier, broadphase 15.66->10.06); NO PAIR (Δ78k/157k к здоровым якорям) -> банк (сильнейшая collide-нога эры)",
+  "cycle2-research": "RESEARCH-448-A-CYCLE2.md: javap-census остаточного хвоста (GameRules.getInt ~15-25ns x 44-48k/тик, getTickCount static chain, Entity.push scalar 0-alloc опроверг Vec3-гипотезу), техника-обзор (SAP/quadtree/time-slicing/dirty-sets ОТКЛОНЕНЫ с числами, fused single-pass + constants plane ИМПЛЕМЕНТИРУЮТСЯ)",
+  "cycle2-impl": "src/colpush.rs buckets_fused/buckets_copy_out (single-pass + ids_cap gate) + ColpushOps ConstSlot per-(level,tick); cargo 305/0; blobs ALL IN SYNC; commit+push round-445-a-collide; leg-4 round-448a-collide-2 диспатч с нового HEAD"
  }
 }
