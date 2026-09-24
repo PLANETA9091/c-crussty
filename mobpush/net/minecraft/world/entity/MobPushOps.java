@@ -159,7 +159,8 @@ public final class MobPushOps {
                     // TASK-426-A: SoA-feed carrier (STRICT OR).
                     || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside")
                     // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
-                    || f.trim().equals("cmp445_collide"));
+                    // TASK-450-A merge: + ins6-плоскость (cmp432_inside2/cmp436_ins4).
+                    || f.trim().equals("cmp445_collide") || f.trim().equals("cmp432_inside2") || f.trim().equals("cmp436_ins4"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -203,7 +204,8 @@ public final class MobPushOps {
                     // TASK-426-A: SoA-feed carrier (STRICT OR).
                     || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside")
                     // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
-                    || f.trim().equals("cmp445_collide"));
+                    // TASK-450-A merge: + ins6-плоскость (cmp432_inside2/cmp436_ins4).
+                    || f.trim().equals("cmp445_collide") || f.trim().equals("cmp432_inside2") || f.trim().equals("cmp436_ins4"));
     }
 
     private static final boolean EQSNAP = eqsnapEnabled();
@@ -220,6 +222,8 @@ public final class MobPushOps {
         if (f != null && f.trim().equals("cmp423_brain3")) return "cmp423_brain3";
         if (f != null && f.trim().equals("cmp424_mobfeed")) return "cmp424_mobfeed"; // TASK-426-A
         if (f != null && f.trim().equals("cmp430_inside")) return "cmp430_inside"; // TASK-430-B
+        if (f != null && f.trim().equals("cmp432_inside2")) return "cmp432_inside2"; // TASK-432-B
+        if (f != null && f.trim().equals("cmp436_ins4")) return "cmp436_ins4"; // TASK-436-B
         if (f != null && f.trim().equals("cmp421_brain")) return "cmp421_brain";
         return f != null && f.trim().equals("cmp412_eqsnapv3")
                 ? "cmp412_eqsnapv3" : "cmp411_eqsnap";

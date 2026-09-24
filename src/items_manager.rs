@@ -77,7 +77,8 @@ fn lever_flag_matches_for(f: &str) -> bool {
         || f == "cmp420_colpush"
         // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
         || f == "cmp445_collide"
-        || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside"
+        // TASK-450-A merge: + ins6-плоскость (cmp432_inside2/cmp436_ins4).
+        || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside" || f == "cmp432_inside2" || f == "cmp436_ins4"
 }
 
 pub fn activate() {
@@ -112,8 +113,9 @@ pub fn activate() {
         // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
         || flag == "cmp420_colpush"
         // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
-        || flag == "cmp445_collide";
-        || flag == "cmp421_brain" || flag == "cmp422_brain2" || flag == "cmp423_brain3" || flag == "cmp424_mobfeed" || flag == "cmp430_inside";
+        || flag == "cmp445_collide"
+        // TASK-450-A merge: + ins6-плоскость (cmp432_inside2/cmp436_ins4).
+        || flag == "cmp421_brain" || flag == "cmp422_brain2" || flag == "cmp423_brain3" || flag == "cmp424_mobfeed" || flag == "cmp430_inside" || flag == "cmp432_inside2" || flag == "cmp436_ins4";
     let despawn2 = flag == "cmp399_despawn2" || bfcomp || comp;
     if shard {
         // ГРОМКИЙ ARM-МАРКЕР (TASK-399-B): без этой строки нога не-armed.

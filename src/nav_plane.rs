@@ -53,8 +53,7 @@ pub fn armed() -> bool {
                 // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
                 || v.trim() == "cmp420_colpush"
                 // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
-                || v.trim() == "cmp445_collide"
-                || v.trim() == "cmp421_brain" || v.trim() == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside"
+                || v == "cmp445_collide" || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2"
         })
         .unwrap_or(false)
 }

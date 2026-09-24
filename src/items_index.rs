@@ -296,8 +296,7 @@ fn shard_mode() -> bool {
                     // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
                     || v == "cmp420_colpush"
                     // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
-                    || v == "cmp445_collide"
-                    || v == "cmp412_eqsnapv3" || v == "cmp414_cvs" || v == "cmp417_bq" || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside"
+                || v == "cmp445_collide" || v == "cmp412_eqsnapv3" || v == "cmp414_cvs" || v == "cmp417_bq" || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2" || v == "cmp436_ins4"
             })
             .unwrap_or(false)
     })

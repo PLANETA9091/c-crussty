@@ -174,8 +174,10 @@ fn lever_flag_matches() -> bool {
             let t = v.trim();
             // TASK-445-A: cmp445_collide (collide+broadphase+push plane round)
             // rides the certified colpush carrier — additive STRICT-OR (x438).
+            // TASK-450-A merge ×450: + ins6-плоскость (cmp432_inside2/cmp436_ins4,
+            // STRICT-OR гейт-реконсиляция mega-канон ×449-C).
             t == "cmp420_colpush" || t == "cmp424_mobfeed" || t == "cmp430_inside"
-                || t == "cmp445_collide"
+                || t == "cmp445_collide" || t == "cmp432_inside2" || t == "cmp436_ins4"
         })
         .unwrap_or(false)
 }
