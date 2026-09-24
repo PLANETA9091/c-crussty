@@ -15,7 +15,7 @@ BATCH = [
 ]
 
 EXPECTED_SHA = {
-    "round-450b-items": "30d80c3e",  # cycle-4 repair commit (verify: ancestry не нужен — своя ветка)
+    "round-450b-items": "5e11dbef",  # cycle-4 repair 30d80c3e + dispatch-script commit (live head)
 }
 
 INPUTS = {
