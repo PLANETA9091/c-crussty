@@ -1,30 +1,31 @@
 {
-  "agent": "TASK-431-B",
-  "vector": "R-закон 6: inside/block-contact плоскость целиком (inside_bitmask pre-gate stage-1b + inside_snap snapshot plane stage-1c, ONE bulk-JNI per collect) на пробуждённом SoA-носителе A2 round-427-a2-mobsoa @18151a96; ветка round-430-b-inside @5a3cd38",
-  "branch": "round-430-b-inside",
-  "base": "origin/round-427-a2-mobsoa @18151a96 (код=fe4ee57, cmp424_mobfeed)",
-  "lever": "cmp430_inside",
+  "agent": "TASK-447-B",
+  "vector": "cmp446_items (закон 6 RUST-FIRST: items-плоскость целиком): ItemEntity.tick()V whole-body retarget -> ItemBatchOps static bridge; rust rest-plane shards=64, ОДИН bulk JNI/тик/поток planeDecide([DI[I[J)I, recheck 1/32; REST = vanilla inactiveTick + %40 merge (MH в приватное mergeWithNeighbours), FULL = byte-parity реплика offsets 0..588; fluid 32%/inside 28%/collision 25% лейна 29.5% выполняются только на FULL-пути",
+  "branch": "round-446-items -> round-447b-items-1 (нога)",
+  "base": "origin/round-446-items @fbb7b80c (RESEARCH-B-446-ITEMS javap census)",
+  "lever": "cmp446_items",
   "run_id": null,
   "tps_med": null,
   "delta_pair_pct": null,
-  "lane_before": "inside_volatile 12.18% флэт (wgen-l1 профиль, BOTTLENECK-430); адресуемо 1.3-1.6% PROFILE-B (modulo-декодер round-423-b-inside)",
+  "lane_before": "items 29.5% LAN №1 (ItemEntity.tick-subtree; сплит: fluid 32% / inside 28% / collision 25%; merge-скан 3.7%; playerTouch 0 сэмплов)",
   "lane_after": null,
   "ram_stw": null,
   "ram_full": null,
-  "parity": "план: ARM+ЭФФЕКТ маркеры + Retargeted sites>0 (inside_bitmask stage-1b sites:1, inside_snap stage-1c sites:1, LevelChunk secWrite sites:1) + AIOOBE=0 + NCDFE=0 + selfTest==true + javap flat==nested + polls threw=0",
-  "verdict": "IN_PROGRESS: step-2 верификация пройдена, диспатч ждёт завершения round-431-* пробного батча (CI-окно главного агента)",
+  "parity": "план: ARM-маркер 'cmp446_items: ARMED rest-plane shards=64 recheck=1/32' + ЭФФЕКТ-маркер 'items_batch: EFFECT tick=... n= rest= full= rechecks=' (JUL, каждые 1200 тиков/поток) + AIOOBE=0 + NCDFE=0 + selfTest==true (до retransform, fail-closed) + band 6.0-9.5M + депресс-гейт norm>=-2 + pair Δ<=50k",
+  "verdict": "IN_PROGRESS: имплементация завершена (rust+java+blobs+tests green), диспатч готовится",
   "evidence": [
-    "step-1 @5a3cd38 (запушен): STRICT-OR plumbing 24 rust gate-строк (17 файлов) + 8 java blob gates + InsideSnapOps.java 471 строка + InsideBitmaskOps.class + build_430b_blobs.sh, блобы ALL IN SYNC",
-    "step-2 верификация: cargo check --lib green; cargo test --lib 302/0 (+inside_snap modulo 4 tests); check_blobs_sync ALL IN SYNC; javap InsideSnapOps.selfTest invokestatic snapProbe NOT-a-stub; flat==nested byte-identical (InsideSnapOps + InsideBitmaskOps)",
-    "triаж round-431-a2-l8r3 (чужой пробный батч): BAND fast-fail runner_cpu_index=11110082 OUTSIDE band — pairing discard, не bench-фейл; band-гварды работают",
-    "диск-закон: cargo target удалён сразу после теста (71% hold)",
-    "ре-роллы round-431-*: a2-l8r3 требует ре-ролла после диспатча своего батча — вне моей очереди (главный агент)"
+    "step-0 аудит: worktree fbb7b80c + dirty itemsbatch/ (ItemBatchOps.java 547 строк, compiled 13228 байт, S7-163 single-classfile) + build_itemsbatch_ops.sh — дописан rust rest-plane + wiring",
+    "step-1 src/items_batch.rs (835 строк): byte hook ItemEntity (pristine capture/serve), activate = wait boot -> define ItemBatchOps в kernel loader -> RegisterNatives planeProbe/planeDecide -> selfTest ДО retransform (fail-closed) -> ReplaceBody tick()V -> READY -> retransform -> ГРОМКИЙ ARM-маркер; plane: 64-shard Mutex<HashMap<id,(rest_seq,last_epoch)>>, eligibility = items_subsys2 planeResting реплика (onGround && pd∈{0,32767} && !water && !lava && !portal && !removed && hdSqr<=9.999999747378752E-6), rest_seq==1 landing-FULL, %32 recheck-FULL, rest_seq==0 reset; GC stale 4096 epochs каждые 1024",
+    "step-2 гейты GREEN: cargo check --lib ok; cargo test --lib 309/0 (7 новых: landing/recheck-1-32/pd-32767/ineligible-reset/push-convergence/gc-reland/blob-contract); check_blobs_sync.sh ALL IN SYNC (itemsbatch добавлен в канон-гейт: cmp446_items/selfTest/inactiveTick/mergeWithNeighbours/native int planeProbe/native int planeDecide + flat==nested); javap surface верифицирован",
+    "инфра: worktree был sparse — доставлены cplug-abi/cplug-sdk/colpush/entityquery/fluid/goalops/mobai/noise/paletted/prepare/queryplane/randomtick/sscan/stagger/area-map/tests/entitygoalquery/chunkparse; kernel-jar канон round-396-a восстановлен в /tmp/patched-kernel-396a.jar (md5 83b6f9c9 = ROUND-445/agent-a копия); диск 100%->68% (пурдж ms-playwright/puppeteer/npm-cacache 3.1G освобождено)",
+    "java-реплика vanillaTick: offsets 0..588 (javap purpur-1.21.10) — stack-empty discard, Entity.tick despawnTime-гейт + baseTick, pickupDelay-- (кроме 32767), xo/yo/zo, fluid-movement 0.99/0.9499 || applyGravity, noCollision-deflate(1e-7)/moveTowardsClosestSpace, move-гейт (onGround && hdSqr<=1e-5 && (tick+id)%4!=0), applyEffectsFromBlocks, friction 0.98/block*0.98 (TriState.FALSE->1.0), bounce *-0.5, merge-окно moved?2:40 (оригинальный приватный mergeWithNeighbours через MH), age++ (кроме -32768), updateInWaterStateAndDoFluidPushing, hasImpulse>0.01, despawn flow (ItemDespawnEvent cancel -> age=0)"
   ],
-  "what": "закон 6: вся inside/block-contact подсистема = (A) bitmask all-air pre-gate на ЕДИНСТВЕННОМ сайте applyEffectsFromBlocks->checkInsideBlocks (13 входов из RECON-33 census), (B) snapshot-плоскость per-section BlockState[4096] с ONE bulk-JNI collect + modulo-декодером в Rust и secWrite-инвалидацией; пер-сайт ретаргеты = клей миграции",
+  "what": "закон 6: подсистема ItemEntity ЦЕЛИКОМ на rust rest-plane — решении REST/FULL по примитивным снапшотам прошлого тика (stride-12 doubles, нулевой per-entity JNI), 1-тик-стейл классификация (unknown id = FULL fail-open), осмысленные отклонения задокументированы в RESEARCH-B-446-ITEMS.md §5 (fire/lava/buoyancy onset <=32 тиков, y-дрейф <=0.02, деспавн-тайминги точны — inactiveTick ванильный)",
   "steps_log": [
-    "step-0: worktree + research + диск-закон OK",
-    "step-1: имплементация выполнена, блобы пересобраны, запушено @5a3cd38",
-    "step-2: верификация (cargo 302/0, blobs ALL IN SYNC, javap NOT-a-stub) OK; dispatch_431b.py готов (3 якоря master + 3 inside-ноги cmp430_inside интерлив, банк inputs вербатим)",
-    "step-3 PENDING: диспатч после завершения round-431-*"
+    "step-0: worklog/BOTTLENECK-447 прочитаны, worktree-аудит, dirty-работа принята",
+    "step-1: rust rest-plane + wiring написаны, lib.rs подключён (mod/register/activate)",
+    "step-2: все гейты зелёные (cargo 309/0, blobs ALL IN SYNC), коммит+пуш round-446-items",
+    "step-3 PENDING: ветка round-447b-items-1 + диспатч world-bench-parallel (lever_flag=cmp446_items, lever_arg=1, inputs ровно по канону)",
+    "step-4 PENDING: полл/абсорб/пара-вердикт"
   ]
 }
