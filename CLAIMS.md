@@ -136,3 +136,11 @@ TASK-445 (tick-444 открывает, 17:4x +08):
 3. **chunk5 (закон 8 стадия-2)**: рестарт ×2 (агент-B застой) — worktree /home/z/rounds/ROUND-444/agent-b от chunk4b @c5fe0251, ветка round-444-b-chunk5 не создана; механизмы: serialize-кэш между игроками / batched packet write / light-reuse / spawn-burst. Флаг cmp444_chunk5 STRICT-OR.
 4. **Sense⊕mega цикл (закон 3)**: cmp444_sensemega @93c37845 GREEN ×2 + пара +4.2 — юнион живой; следующий виток: sense-эпоха на golden-носителе / расширение targeting-слоя; ноги round-444-c-sensemega-1/-2 абсорбированы.
 5. Каноны: ARM по stdout; stdout НЕ purge до маркеров; band 6.0-9.5M ре-ролл ≤2; депресс-гейт norm ≥−2; pair Δ≤50k pair-fresh; min-of-3; NOT-A-BENCH; абсорб-волны >10 ранов = пурдж после каждой волны (диск ×444 94%).
+
+TASK-446 (tick-445 открывает, 19:5x +08):
+0. Учёт ×445: ПАРЫ +2 ПЕРВЫЕ (ins4-1r↔a7 +16.1пп — первая пара ins4; chunk5-1↔a6 +2.2пп — первая пара chunk5); банк непарных: ins4d-2 +31.2 (7.0M-проклятие ×5), chunk4-1 3.30TPS +24.7 (high-зона без якоря), sensemega +16.8, ins4-2 +15.5, ins4d-1 +9.7, chunk5-2 +5.8; a8r фейл ×2 (лимит); CERT 0 NO MERGE.
+1. **GOLDEN 02:08 = СЕРТ-ШОТ (приоритет №1)**: python3 scripts/golden_443.py РОВНО ОДИН РАЗ (×24, 12 якорей двухзонных — единственное лекарство от лотереи зон; префлайт ancestry починен, dry-run 0 drift). Вердикты min-of-3, мерж ≥+20% немедленно --no-ff. ПАРНАЯ КАРТА: ins4d 2/3, ins4 1/3, chunk4 1/3, chunk5 1/3, sensemega 1/3, mega 3 пары.
+2. **entity-query слой (агент-C-445 рекомендация)**: 8.31%/7.80% реального хедрума, субстрат sense-семьи жив (пара +4.2) — R-вектор закона 6 для волны ×446. Носитель: sensemega-юнион или sscan2.
+3. **A-445 collide**: имплементация cmp445_collide идёт (step-1 design на сертифицированном colpush-носителе + colpushTick2 bucket-prune) — догнать, гейты, ноги round-445-a-collide-*.
+4. **B-445 items**: 0 коммитов (research) — если к ×446 пусто, РЕСТАРТ по канону застоя; лейн items 29.7% = №1, вектор не закрывать.
+5. Каноны: ARM по stdout; маркеры ДО пурджа; band 6.0-9.5M ре-ролл ≤2; депресс-гейт norm ≥−2; pair Δ≤50k pair-fresh (ближайший якорь); min-of-3; NOT-A-BENCH; stash-push при PHASE 0 = восстановление пурджа (×443-урок: rm-restore + drop немедленно); wgen-ось ЗАКРЫТА (мир прегенерирован — не тратить ноги на noise).
