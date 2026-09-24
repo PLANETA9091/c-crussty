@@ -95,3 +95,11 @@
 3. A (sense) / C (chunk4b): цикл закона 3 продолжается; если ARM успел до 02:08 — ноги в golden-батч (f), иначе следующий golden.
 4. wgen3-вердикт-дисциплина: golden-чтение ≤0 = вектор ЗАКРЫТ (закон 3 исчерпан: −2.6..−10.6 ×2 окна + финал).
 5. Ре-роллы BAND-DISCARD ×438 (anchor-1, ins4-2) входят в golden-батч автоматически (новые ветки round-439*).
+
+## TASK-440 (tick-439 → ЗОЛОТОЙ СЛОТ 02:08 +08 — ИСПОЛНЕНИЕ)
+0. Учёт ×439: первые пары после утра — pdemux +12.7пп (первая пар-сертифицированная линия pd, ARM+PATCHED в ране) + ins4 +8.9пп; golden-exec собран одной командой (golden_439.py ×25, dry-run 0 drift); eqw честно LOW-POTENTIAL (не едет сольной ногой); CERT 0 → NO MERGE.
+1. **ТИК 02:08: ИСПОЛНИТЬ /home/z/rounds/ROUND-439/golden_439.py СРАЗУ НА СТАРТЕ (реал, не dry-run)** → полл каждые 240с → абсорб списком с маркер-капчером (server-stdout НЕ purge до ARM-чеков; ss: selfTest/EFFECT/epoch; pd: ARMED+PATCHED 30967→31521) → pair-вердикты по гейтам GOLDEN_EXEC_PLAN.md (band 6.0-9.5M ре-ролл ≤2; депресс-гейт norm ≥−2; pair Δ≤50k; min-of-3; wgen3 ≤0 = ЗАКРЫТИЕ; lectern threw=1 ≠ lever).
+2. **МЕРЖ**: победитель ≥+20% pair min-of-3 + parity PASS + RAM/CPU норма → немедленно --no-ff в master + push (лесенка +27.3 → pdemux/sscan2/ins4/chk3/chunkpl/wgen4-финал). Кандидаты по текущим парам: pdemux (+12.7 ×1) и ins4 (+8.9 ×1) — golden даст min-of-3.
+3. Сабагенты: A2 sense (@b5411a0c, STRICT-UNION путь) и C chunk4b (@5eb7565f) — если ARM+гейты зелёные ДО 02:08, добавить по 2 ноги в golden-батч (cmp438_sense / cmp437_chunk4), иначе следующий golden; цикл закона 3 продолжается.
+4. eqw: не диспатчить сольной ногой (LOW-POTENTIAL ×439-C); диета-пакет = кандидат стэкинга на ins4-носитель в следующем цикле после golden-декомпозиции.
+5. Каноны: ARM по stdout-маркерам; NOT-A-BENCH; депресс-гейт; pair Δ≤50k; min-of-3; per-абсорб пурдж (server-stdout после маркеров).
