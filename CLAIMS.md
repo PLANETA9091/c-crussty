@@ -128,3 +128,11 @@ TASK-444 (tick-443 открывает, 15:4x +08):
 4. **Ре-роллы ×443**: ins4-4, anchor-10, mega-3 (CI-фейлы), chunk4-3 RED 8.73M (fast-зона дневная нестабильность — только утро/ночь).
 5. **Sense цикл (закон 3)**: a-s3 пара 0.0 — соло далеко от бара; продолжение STRICT-UNION-пути (sense⊕mega или sense-эпоха на мега-носителе), ветка round-442-d-sense2 @01dcf2aa + ноги round-443-a-s1/2/3 запушены.
 6. Каноны: ARM по stdout; stdout НЕ purge до маркеров; band 6.0-9.5M ре-ролл ≤2; депресс-гейт norm ≥−2; pair Δ≤50k pair-fresh; min-of-3; NOT-A-BENCH; якорный спред ex-outlier >±5пп = окно браковано.
+
+TASK-445 (tick-444 открывает, 17:4x +08):
+0. Учёт ×444: ПАРЫ +3 (megafix-1↔a3 +6.2, megafix-2r2↔a1 −4.2, sensemega-1↔a1 +4.2); ОКНО СЕРТИФИЦИРОВАНО (спред 3.7пп, 5 здоровых якорей) — но лотерея позиций №4 (ins4d-2 +31.6 Δ88k, ins4-1r +15.3 Δ120k, ins4d-1r +8.9 Δ68k — все мимо якорей ≤50k); мега медиана −4.3 по 3 парам (днём плоский); CERT 0 NO MERGE.
+1. **GOLDEN 02:08 = СЕРТ-ШОТ**: python3 scripts/golden_443.py РОВНО ОДИН РАЗ (×24: 12 якорей двухзонных + ins4d ×3 + ins4 ×2 + chunk4 ×2 + ss ×1 + pd ×1 + chk3 ×1 + mega ×2). Префлайт УЖЕ ПОЧИНЕН (ancestry-семантика: master-пин 4ab73061, mega-пин 5e3a36fb; dry-run 0 drift). Вердикты min-of-3, мерж победителя ≥+20% немедленно --no-ff.
+2. **Парная карта после golden**: ins4d 2/3 (нужна 1 пара), ins4 0/3 (банк +31.6/+24.3/+17.8/+15.3), chunk4 1/3 (+13.0), mega 3 пары (−4.3 медиана — golden решает: шум окна или честный негатив), sensemega 1/3 (+4.2, юнион жив).
+3. **chunk5 (закон 8 стадия-2)**: рестарт ×2 (агент-B застой) — worktree /home/z/rounds/ROUND-444/agent-b от chunk4b @c5fe0251, ветка round-444-b-chunk5 не создана; механизмы: serialize-кэш между игроками / batched packet write / light-reuse / spawn-burst. Флаг cmp444_chunk5 STRICT-OR.
+4. **Sense⊕mega цикл (закон 3)**: cmp444_sensemega @93c37845 GREEN ×2 + пара +4.2 — юнион живой; следующий виток: sense-эпоха на golden-носителе / расширение targeting-слоя; ноги round-444-c-sensemega-1/-2 абсорбированы.
+5. Каноны: ARM по stdout; stdout НЕ purge до маркеров; band 6.0-9.5M ре-ролл ≤2; депресс-гейт norm ≥−2; pair Δ≤50k pair-fresh; min-of-3; NOT-A-BENCH; абсорб-волны >10 ранов = пурдж после каждой волны (диск ×444 94%).
