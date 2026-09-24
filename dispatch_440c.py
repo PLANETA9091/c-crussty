@@ -16,7 +16,7 @@ BATCH = [
     ("chunk4-2", "round-440c-chunk4-2", "round-438-c-chunk4b", "cmp437_chunk4"),
 ]
 
-EXPECTED_BASE_SHA_PREFIX = "e93bb8c2"  # step-2 tip (impl + gates green)
+EXPECTED_BASE_SHA_PREFIX = "feb7567f"  # step-3 tip (impl + gates green + dispatcher)
 
 INPUTS = {
     "radius": "640", "seconds": "300", "fake_players": "4",
