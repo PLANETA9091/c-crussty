@@ -133,6 +133,16 @@ public final class ChunkParseOps {
     static final String CARRIER_UNION_435 = "cmp435_chunk3";
 
     /**
+     * TASK-438-C chunk-pipeline R7 carrier (law 7/8): STRICT-OR successor id
+     * ON TOP of cmp435_chunk3 — the composite now also carries the chunk-send
+     * serialization snapshot plane (PlayerChunkSender.sendChunk body redirect,
+     * unsaved-keyed packet reuse; round-id hygiene for ROUND-438-C). Kept in
+     * the constant pool for the raw-byte blob-sync gate (check_blobs_sync.sh)
+     * — x93 lesson.
+     */
+    static final String CARRIER_UNION_437 = "cmp437_chunk4";
+
+    /**
      * codec(identity) -> (tag -> pristine decoded template). The outer map
      * is synchronized ONLY for its own few-entry get/put; the inner maps are
      * ConcurrentHashMaps so the deep tag probe runs lock-free (TASK-420-C:
@@ -482,6 +492,7 @@ public final class ChunkParseOps {
                 + " selftest=" + (SELFTEST_SECTIONS - selftestLeft)
                 + " biomesSections=" + biomesSections
                 + " biomesHits=" + biomesHits + " biomesMisses=" + biomesMisses
-                + " union=" + CARRIER_UNION_423 + "/" + CARRIER_UNION_435;
+                + " union=" + CARRIER_UNION_423 + "/" + CARRIER_UNION_435
+                + "/" + CARRIER_UNION_437;
     }
 }
