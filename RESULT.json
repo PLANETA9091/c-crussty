@@ -1,48 +1,55 @@
 {
- "agent": "TASK-437-A (tick-437, Job 406609)",
- "vector": "PLAN-Б1 sscan2 = cmp436_sscan2 — despawn+spawn scan plane (MobScanOps dormant re-arm since era 406 + NEW spawn halfplane)",
- "branch": "round-437-a-sscan2",
- "base": "e4d39b13 (master, tick-436 FINAL)",
+ "agent": "TASK-437-A (tick-437, 07:43 +08, Job 406609)",
+ "vector": "PLAN-Б1 sscan2 = cmp436_sscan2 — despawn+spawn scan plane: ре-арм ПОЛНОСТЬЮ ДОРМАНТНОЙ подсистемы MobScanOps (эра 406) + НОВАЯ spawn-полуплоскость (NaturalSpawner)",
+ "branch": "round-437-a-sscan2 @2ed82846 (base e4d39b13 = master tick-436 FINAL)",
  "run_id": null,
  "tps_med": null,
  "delta_pair_pct": null,
  "lane": {
-  "was": "dormant MobScanOps (legacy cmp406_sscan only) + NaturalSpawner spawn scans vanilla",
-  "became": "sscan2: despawn bridge + spawn gate (NaturalSpawner.spawnCategoryForPosition ServerLevel.getNearestPlayer(DDDDZ) site) + soa/grid carrier STRICT-OR cmp436_sscan2"
+  "was": "MobScanOps дормантна с эры-406 (legacy STRICT eq cmp406_sscan: под пустым/новым флагом = ваниль); NaturalSpawner spawn-сканы ванильные (O(попытки×игроки) итератор+предикат+distanceToSqr на каждую spawn-попытку); SoA-носитель тоже дормантен под новым флагом",
+  "became": "cmp436_sscan2 = STRICT OR: (1) despawn-полуплоскость ре-армирована как в эру-406 (Mob.checkDespawn Level.findNearbyPlayer site -> findNearbyPlayerGate; sscanEpoch = ОДИН bulk-JNI/тик над mobs_soa SoA -> колонка nearest[denseId]); (2) НОВАЯ spawn-полуплоскость: NaturalSpawner.spawnCategoryForPosition(8-arg) invokevirtual ServerLevel.getNearestPlayer(DDDDZ) site (javap ground truth: ровно 1 сайт, bytecode offset 213, единственный в классе) -> spawnNearestPlayerGate (per-tick снапшот vanilla EntitySelector NO_SPECTATORS/NO_CREATIVE_OR_SPECTATOR по (tick,level), ванильная лестница через ту же Player.distanceToSqr, 0 per-call JNI); (3) SoA+grid носитель (mobs_manager/mobs_soa direct-write НЕ-eqsnap/mobs_grid mirror) via STRICT-OR"
  },
  "ram_stw": null,
  "ram_full": null,
- "parity": "design: empty flag = vanilla bit-in-byte; vanilla getNearestPlayer ladder + EntitySelector.NO_SPECTATORS/NO_CREATIVE_OR_SPECTATOR predicates 1:1; selfTest before ARM",
+ "parity": "пустой/чужой флаг = ваниль бит-в-байт (rust не регистрирует хуки, сайты не ретаргетятся); гейт-лестница = ТОЙ ЖЕ ванильной Player.distanceToSqr + (best == -1.0 || d < best) + фильтр distance>=0.0 && d>=distance*distance (dcmpl/dcmpg 1:1); предикаты spawn-сайта = те же статические EntitySelector-поля (javap EntityGetter.getNearestPlayer(DDDDZ): flag->NO_CREATIVE_OR_SPECTATOR:NO_SPECTATORS), применены один раз за (tick,level); selfTest()==false -> READY не флипается = ваниль",
  "verdict": "INFRA",
  "evidence": [
-  "worktree from origin/master e4d39b13",
-  "research: javap ground truth NaturalSpawner spawn site offset 221 (1 site/class), EntityGetter.getNearestPlayer(DDDDZ) ladder javap'd",
-  "profile mga421: NaturalSpawner subtree 0.68% (createState 0.46 + spawnCategoryForPosition 0.15), despawn bridge residual 0.03% on armed leg"
+  "javap ground truth: NaturalSpawner.spawnCategoryForPosition(8-arg) = ровно 1 invokevirtual ServerLevel.getNearestPlayer(DDDDZ)Player (CP-parse verification: 1 site, bytecode offset 213; во всём классе — только этот метод)",
+  "javap EntityGetter.getNearestPlayer(DDDD,Predicate) ladder: d10=-1.0 sentinel, predicate-test, distanceToSqr, фильтр distance>=0, строго-ближе-выигрывает/ничья-ранний",
+  "javap Mob.checkDespawn: findNearbyPlayer(Entity,D,PLAYER_AFFECTS_SPAWNING) — 1 сайт (despawn-полуплоскость нетронута)",
+  "profile round-round-434 mega m1 (mga421): NaturalSpawner subtree 0.68% (createState 0.46 + spawnCategoryForPosition 0.15), despawn bridge residual 0.03% на armed ноге — spawn-полуплоскость = вторая половина скан-подсистемы, despawn уже bulk",
+  "selfTest=true BEFORE arm (rust mobscan_selftest на define_class local ref; java oracle: probe magic + лестница + ничья + фильтр + отрицание-точность)"
  ],
- "what": "PHASE 0-1: worktree + research done; implementation starting",
+ "what": "Ре-арм дормантной MobScanOps-подсистемы ЦЕЛИКОМ (закон 6) + spawn-полуплоскость за флагом CRUSSTY_LEVER_FLAG=cmp436_sscan2. Гейты зелёные: build_430b_blobs.sh OK (MobScanOps.class 9537B major 65, MobPushOps.class 13226B, flat==nested OK), check_blobs_sync ALL IN SYNC, cargo check --lib green (7.6s) + cargo test --lib 304/0 (target удалён), selfTest==true до ARM. Banked dispatcher готов: dispatch_437a_sscan2.py (2 якоря @master + 3 ноги @round-437-a-sscan2 lever=cmp436_sscan2, INPUTS = банк, py_compile OK) — запуск ТОЛЬКО main (тик-437 / golden 02:08). Диспатчей из агентского контекста: 0.",
  "steps": [
   {
    "step": "phase0",
    "status": "done",
-   "note": "worktree round-437-a-sscan2 @e4d39b13 + kernel jar restored from round-436 worktree (git purged payload, untracked local restore)"
+   "note": "worktree round-437-a-sscan2 от origin/master e4d39b13; kernel round-396-a jar восстановлен локально (untracked) для javac-cp"
+  },
+  {
+   "step": "research",
+   "status": "done",
+   "note": "рисёрч: MobScanOps.java/sscan natives/lib.rs:597/блобы 6177B найдены; STRICT-OR паттерн (mobs_manager/mobs_grid/mobs_soa/MobPushOps); javap ground truth spawn-сайта + лестницы; профиль-потенциал"
   },
   {
    "step": "java-spawn-halfplane",
    "status": "done",
    "commit": "7dba6e89",
-   "note": "MobScanOps: spawnNearestPlayerGate desc (Lnet/minecraft/server/level/ServerLevel;DDDDZ)LPlayer (javap verified), maybeSpawnEpoch (tick,level)-keyed vanilla EntitySelector snapshot, selfTest() oracle; STRICT-OR cmp436_sscan2 in leverEnabled; LABEL-based markers; blobs 9537B major 65 ALL IN SYNC, flat==nested OK"
+   "note": "MobScanOps: spawnNearestPlayerGate + maybeSpawnEpoch(tick,level) + selfTest() + STRICT-OR cmp436_sscan2 + LABEL-маркеры; блобы пересобраны"
   },
   {
    "step": "rust-rearm-spawn-hook",
    "status": "done",
    "commit": "87dff997",
-   "note": "mobs_sscan.rs: STRICT-OR cmp436_sscan2 + spawn_enabled STRICT eq + retarget_spawn + NaturalSpawner hook + selfTest-before-ARM + label ARM markers; carrier STRICT-OR: mobs_manager/mobs_grid/mobs_soa (direct-write NOT eqsnap) + MobPushOps.java leverEnabled; run_world3.sh arming case; cargo check green; 304 lib tests ok; target deleted"
+   "note": "mobs_sscan.rs retarget_spawn + NaturalSpawner hook + selfTest-before-ARM + label ARM; carrier STRICT-OR mobs_manager/mobs_grid/mobs_soa/MobPushOps; run_world3.sh arming case"
+  },
+  {
+   "step": "banked-dispatcher",
+   "status": "done",
+   "commit": "2ed82846",
+   "note": "dispatch_437a_sscan2.py banked (py_compile OK); локальная верификация CP-parse: spawn site=1, despawn site=1, bash -n OK"
   }
  ],
- "gates": {
-  "build_blobs": "build_430b_blobs.sh OK, flat==nested OK, check_blobs_sync ALL IN SYNC",
-  "javap_fingerprint": "MobScanOps.class len=9537 major=65; spawnNearestPlayerGate desc (Lnet/minecraft/server/level/ServerLevel;DDDDZ)Lnet/minecraft/world/entity/player/Player; selfTest ()Z; findNearbyPlayerGate unchanged",
-  "cargo": "CARGO_TARGET_DIR=/tmp/cargo-437a cargo check --lib green (7.6s), cargo test --lib 304 passed / 0 failed, target deleted",
-  "selfTest": "selfTest()==true gate added BEFORE READY/retransform (probe magic + vanilla ladder oracle); java selfTest oracle: ladder + tie + filter + negation-exactness"
- }
+ "next": "main (тик-437 / golden 02:08) исполняет dispatch_437a_sscan2.py -> absorb -> pair-вердикт (band 6.0-9.5M, якоря norm >= -2%, pair Δ<=50k, min-of-3, >=+20% = финиш; < +20% = цикл закона 3: декомпозиция ABSORB-лейнов -> доработка spawn/despawn колонок)"
 }
