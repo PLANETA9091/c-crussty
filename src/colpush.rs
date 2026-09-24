@@ -56,8 +56,17 @@ use std::sync::{Mutex, OnceLock};
 
 const TARGET_CLASS: &str = "net/minecraft/world/entity/LivingEntity";
 const OPS_CLASS: &str = "net/minecraft/world/entity/ColpushOps";
+/// TASK-449-A (×448 collide-2 DELIVERY-FAIL root-cause): inner classes ride the
+/// SAME kernel-loader define — the blob set must cover EVERY `$`-sibling and
+/// define_bridge must deliver each one (InsideSnapOps$Snap precedent).
+/// ColpushOps$ConstSlot (56142b5e constants plane) was source-compiled but
+/// never delivered → NoClassDefFoundError ×4 at the first gateConstants hit →
+/// cmp420_colpush disarm → vanilla-fallback + young-GC storm 529.
+const CONST_SLOT_CLASS: &str = "net/minecraft/world/entity/ColpushOps$ConstSlot";
 
 const OPS_BYTES: &[u8] = include_bytes!("../colpush/build/net/minecraft/world/entity/ColpushOps.class");
+const CONST_SLOT_BYTES: &[u8] =
+    include_bytes!("../colpush/build/net/minecraft/world/entity/ColpushOps$ConstSlot.class");
 
 const PROBE_MAGIC: i32 = 0x435050; // "CP"
 const ERR_STRUCT: i32 = -1;
@@ -410,6 +419,24 @@ fn define_bridge() -> Option<*mut c_void> {
             eprintln!("[crussty-plugin] cmp420_colpush: define_class({OPS_CLASS}) failed");
             return None;
         };
+
+        // TASK-449-A ×449 recipe: inner companion classes MUST be defined into
+        // the same loader BEFORE any bridge code executes (gateConstants runs
+        // on the first covered push tick and `new ConstSlot` resolves
+        // ColpushOps$ConstSlot against THIS loader — an undelivered inner =
+        // NoClassDefFoundError ×workers → nativeProbeOnce fail-closed disarm).
+        // Snap-companion pattern (inside_snap.rs): define, drop local ref,
+        // fail-closed on error.
+        if let Some(s) = env.define_class(CONST_SLOT_CLASS, gref, CONST_SLOT_BYTES) {
+            env.delete_local_ref(s);
+        } else {
+            crate::describe_exception(env);
+            eprintln!("[crussty-plugin] cmp420_colpush: define_class({CONST_SLOT_CLASS}) failed");
+            env.delete_local_ref(c);
+            env.delete_local_ref(loader);
+            env.delete_local_ref(class_cls);
+            return None;
+        }
 
         // RegisterNatives: colpushProbe/colpushTick (impl — этот модуль).
         let names = [

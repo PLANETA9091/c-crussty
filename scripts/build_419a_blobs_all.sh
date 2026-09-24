@@ -28,6 +28,24 @@ done
 ALL_BUILD=$(mktemp -d)
 trap 'rm -rf "$ALL_BUILD"' EXIT
 
+# TASK-449-A ×449 javap-LOADABILITY gate plumbing: every installed class is
+# recorded and javap-gated at the end (missing inner blob = kernel-loader
+# NCDFE at runtime — ×448 collide-2 ColpushOps$ConstSlot DELIVERY-FAIL).
+LOADED_CLASSES=()
+
+gate_load() { # outdir slash-fqcn — javap must locate+parse the class
+  local outdir="$1" fq="$2" fq_dots
+  fq_dots="${fq//\//.}"
+  if "$JAVAP" -p -cp "$outdir" "$fq_dots" >/dev/null 2>&1; then
+    echo "javap-load OK: $fq_dots (cp=$outdir)"
+  else
+    echo "JAVAP-GATE FAIL: $fq_dots not loadable from $outdir (blob-set hole → runtime NCDFE)" >&2
+    exit 1
+  fi
+}
+JAVAP="${JAVAP:-/home/z/tools/jdk-21.0.12.1+1/bin/javap}"
+[ -x "$JAVAP" ] || JAVAP=$(command -v javap)
+
 "$JAVAC" --release 21 -nowarn -cp "$CP" -d "$ALL_BUILD" \
   colpush/net/minecraft/world/entity/ColpushOps.java \
   mobpush/net/minecraft/world/entity/MobPushOps.java \
@@ -69,6 +87,7 @@ install_nested_glob() { # outdir fqcn — nested + flat + all $-nested classes
     name=$(basename "$f")
     cp "$f" "$outdir/$dir/$name"
     cp "$f" "$outdir/$name"
+    LOADED_CLASSES+=("$outdir|$dir/${name%.class}")
     copied=$((copied + 1))
   done
   echo "blob-glob: $outdir/$cls.class (+$((copied-1)) nested) — flat copies installed"
@@ -89,3 +108,9 @@ install_nested_glob entitygoalquery/build net/minecraft/world/entity/EntityGoalQ
 install_nested_glob queryplane/build net/minecraft/world/entity/QueryPlaneOps
 
 echo "== 419a blob rebuild OK (one javac pass, cp=full, major 65) =="
+
+# TASK-449-A ×449 javap-LOADABILITY gate: every installed class (outer AND
+# inner) must load through its blobs dir BEFORE anything can dispatch.
+for entry in "${LOADED_CLASSES[@]}"; do
+  gate_load "${entry%%|*}" "${entry#*|}"
+done

@@ -102,6 +102,13 @@ check_class \
   "cmp420_colpush" "cmp430_inside" "cmp445_collide" "pushEntities" "bulkTick" "selfTest" "armed" \
   "native int colpushProbe" "native int colpushTick"
 
+# TASK-449-A ×449: inner companions are part of the delivery surface — the
+# blob must exist, parse, and carry its final fields (×448 collide-2: ConstSlot
+# never delivered → kernel-loader NCDFE ×4 → cmp420_colpush disarm).
+check_class \
+  'colpush/build/net/minecraft/world/entity/ColpushOps$ConstSlot.class' \
+  "cramming" "maxCol" "tick"
+
 check_class \
   "entityinside/build/net/minecraft/world/entity/RegionTickOps.class" \
   "COLPUSH_ON" "COLPUSH_BROKEN" "ColpushOps.bulkTick:()V"
@@ -224,7 +231,38 @@ check_flat_matches_nested "entitygoalquery/build" "net/minecraft/world/entity/En
 check_flat_matches_nested "queryplane/build" "net/minecraft/world/entity/QueryPlaneOps"
 check_flat_matches_nested "goalops/build" "net/minecraft/world/entity/ai/goal/GoalOps"
 check_flat_matches_nested "colpush/build" "net/minecraft/world/entity/ColpushOps"
+check_flat_matches_nested 'colpush/build' 'net/minecraft/world/entity/ColpushOps$ConstSlot'
 check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/RegionTickOps"
+
+# TASK-449-A ×449 javap-LOADABILITY gate: javap must locate+parse EVERY op
+# class (outer AND inner) through its blobs dir via a real classpath. This is
+# the pre-dispatch catch for blob-set holes: a class that javap cannot load
+# from the blobs dir is exactly the class the kernel loader would NCDFE on
+# (×448 collide-2 DELIVERY-FAIL: ColpushOps$ConstSlot).
+gate_load() { # dir fqcn-slash — fail if javap cannot load
+  local dir="$1" fq="$2" fq_dots
+  fq_dots="${fq//\//.}"
+  if "$JAVAP" -p -cp "$dir" "$fq_dots" >/dev/null 2>&1; then
+    note "javap-load OK: $fq_dots"
+  else
+    die "javap loadability FAIL: $fq_dots (cp=$dir) — blob missing/stale"
+  fi
+}
+gate_load entityinside/build   net/minecraft/world/entity/ItemEntityManager
+gate_load goalops/build        net/minecraft/world/entity/ai/goal/GoalOps
+gate_load queryplane/build     net/minecraft/world/entity/QueryPlaneOps
+gate_load mobai/build          net/minecraft/world/entity/MobAiOps
+gate_load sscan/build          net/minecraft/world/entity/MobScanOps
+gate_load sscan/build          net/minecraft/world/entity/MobPushOps
+gate_load mobpush/build        net/minecraft/world/entity/MobPushOps
+gate_load colpush/build        net/minecraft/world/entity/ColpushOps
+gate_load colpush/build        'net/minecraft/world/entity/ColpushOps$ConstSlot'
+gate_load entityinside/build   net/minecraft/world/entity/RegionTickOps
+gate_load entityinside/build   net/minecraft/world/entity/InsideSnapOps
+gate_load entityinside/build   'net/minecraft/world/entity/InsideSnapOps$Snap'
+gate_load entityinside/build   net/minecraft/world/entity/InsideBitmaskOps
+gate_load chunkparse/build     net/minecraft/world/level/chunk/storage/ChunkParseOps
+gate_load entitygoalquery/build net/minecraft/world/entity/EntityGoalQueryOps
 
 if [ "$FAIL" = "0" ]; then
   echo "check_blobs_sync: ALL IN SYNC"
