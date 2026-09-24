@@ -75,10 +75,12 @@ def ensure_branch(tok, branch, base):
 def main():
     args = sys.argv[1:]
     if "--help" in args or "-h" in args:
-        print("usage: dispatch_450c.py [--dry-run] [--leg name:branch:base:lever ...]")
+        print("usage: dispatch_450c.py [--dry-run] [--no-batch] [--leg name:branch:base:lever ...]")
         print("  --dry-run  preflight only, NO dispatch (always safe)")
+        print("  --no-batch skip default legs, dispatch only --leg entries")
         raise SystemExit(0)
     dry = "--dry-run" in args
+    no_batch = "--no-batch" in args
     extra = []
     args_l = list(args)
     i = 0
@@ -87,7 +89,7 @@ def main():
             extra.append(args_l[i + 1]); i += 2
         else:
             i += 1
-    legs = list(LEGS)
+    legs = [] if no_batch else list(LEGS)
     for spec in extra:
         leg, branch, base, lever = spec.split(":")
         legs.append((leg, branch, base, lever))
