@@ -125,6 +125,17 @@ struct BulkState {
     bmaxh: Vec<f64>,      // per-bucket max(hx,hz) — prune-margin (f64: margin
                           // обязан быть UPPER-BOUND'ом hx_a+hx_b, f32-округление
                           // вниз нарушило бы консервативность prune)
+    // TASK-450-A cycle-1 (RESEARCH-450-A §3): sorted-windows contact-diet —
+    // бакет-цепи заменяются на непрерывные сортированные сегменты.
+    brows: Vec<i32>,      // IDS_CAP: ряды, сгруппированные по бакету, сегмент
+                          // отсортирован по (cx: total_cmp, id) — окно ищется
+                          // бинарным поиском вместо полного прохода цепи
+    bstart: Vec<i32>,     // BUCKET_CAP: начало сегмента слота в brows
+    bcnt: Vec<i32>,       // BUCKET_CAP: счётчик/заполнение сегмента
+    bminy: Vec<f64>,      // y-полоса бакета — bucket-level y-diet (контакт-диета:
+                          // |cy_a−cy_b| < hh_a+hh_b ≤ hha+bmaxhh[слот])
+    bmaxy: Vec<f64>,
+    bmaxhh: Vec<f64>,     // per-bucket max(hh) — y-reach margin (f64, как bmaxh)
 }
 static BULK_LOCK: Mutex<()> = Mutex::new(());
 fn bulk_state() -> &'static Mutex<BulkState> {
@@ -143,6 +154,12 @@ fn bulk_state() -> &'static Mutex<BulkState> {
             bminz: vec![0.0; BUCKET_CAP],
             bmaxz: vec![0.0; BUCKET_CAP],
             bmaxh: vec![0.0; BUCKET_CAP],
+            brows: Vec::with_capacity(1 << 16),
+            bstart: vec![0; BUCKET_CAP],
+            bcnt: vec![0; BUCKET_CAP],
+            bminy: vec![0.0; BUCKET_CAP],
+            bmaxy: vec![0.0; BUCKET_CAP],
+            bmaxhh: vec![0.0; BUCKET_CAP],
         })
     })
 }
@@ -959,6 +976,18 @@ fn bucket_slot(lid: i32, cx: f64, cz: f64) -> usize {
 /// usize::MAX = overflow (total > i32::MAX). ids_cap-гейт — в вызывающем
 /// (как у сертифицированного классического тела: до RANGE java ничего
 /// не читает из out-массивов).
+///
+/// TASK-450-A cycle-1 (RESEARCH-450-A §2-3): CONTACT-DIET + AABB-СОРТ+ПРУНЬ —
+/// бакет-ЦЕПИ (bhead/next, полный проход O(m) на (ряд,бакет)) заменены на
+/// НЕПРЕРЫВНЫЕ СОРТИРОВАННЫЕ СЕГМЕНТЫ (brows, подсчётная раскладка O(n+16K) +
+/// per-segment sort по (cx: total_cmp, id)); перебор = бинарный поиск
+/// x-окна [cx−mh, cx+mh] (необходимое условие точного x-теста:
+/// |cx_a−cx_b| < hx_a+hx_b ≤ ra+bmaxh[slot]) + bucket-level Y-BAND diet
+/// (|cy_a−cy_b| < hh_a+hh_b ≤ hha+bmaxhh[slot] — y-разносные бакеты отсекаются
+/// целиком). Отсечённые строки не могут дать ни одной пары-кандидата
+/// (необходимые условия выводятся из точного strict-< теста); CSR-выход
+/// бит-в-байт с chain-версией (набор пар тот же, per-row sort по id тот же;
+/// оракул brute-force O(N²) equality в tests445 держит равенство).
 fn buckets_fused(
     st: &mut BulkState,
     n: usize,
@@ -966,18 +995,22 @@ fn buckets_fused(
     i: &[i32],
     want_tick: i32,
 ) -> usize {
-    // ---- PASS 1: активные ряды + бакет-партиция + AABB бакетов ----
+    // ---- PASS 1a: активные ряды + счёт бакетов + AABB бакетов (xz + y-полоса) ----
     st.act.clear();
     st.csr.clear();
-    // Безусловные очистки: bhead 16K + AABB-массивы (в сумме ~96K stores —
-    // дешевле сертифицированного head-clear 256K классического тела).
-    // Повторный вход (ERR_RANGE-ретрай java) идемпотентен.
+    // Безусловные очистки: bhead (legacy-контракт) + bcnt/bstart + 8 AABB-массивов
+    // (~176K stores — по-прежнему дешевле сертифицированного head-clear 256K
+    // классического тела). Повторный вход (ERR_RANGE-ретрай java) идемпотентен.
     st.bhead[..].fill(0);
+    st.bcnt[..].fill(0);
     st.bminx[..].fill(f64::INFINITY);
     st.bmaxx[..].fill(f64::NEG_INFINITY);
     st.bminz[..].fill(f64::INFINITY);
     st.bmaxz[..].fill(f64::NEG_INFINITY);
+    st.bminy[..].fill(f64::INFINITY);
+    st.bmaxy[..].fill(f64::NEG_INFINITY);
     st.bmaxh[..].fill(0.0);
+    st.bmaxhh[..].fill(0.0);
     for id in 0..n {
         let flags = i[id * ROW_I + 1];
         let fresh = i[id * ROW_I + 2];
@@ -1004,8 +1037,8 @@ fn buckets_fused(
         st.act.push(id as i32);
         st.cnt[id] = 0;
         let slot = bucket_slot(i[id * ROW_I], cx, cz);
-        st.next[id] = st.bhead[slot]; // st.next = бакет-цепи (грид этого пути не строит)
-        st.bhead[slot] = id as i32 + 1;
+        st.next[id] = slot as i32; // stash слота для PASS 1b (цепи больше не строятся)
+        st.bcnt[slot] += 1;
         if cx < st.bminx[slot] {
             st.bminx[slot] = cx;
         }
@@ -1018,13 +1051,52 @@ fn buckets_fused(
         if cz > st.bmaxz[slot] {
             st.bmaxz[slot] = cz;
         }
+        if cy < st.bminy[slot] {
+            st.bminy[slot] = cy;
+        }
+        if cy > st.bmaxy[slot] {
+            st.bmaxy[slot] = cy;
+        }
         let rh = if hx > hz { hx } else { hz };
         if rh > st.bmaxh[slot] {
             st.bmaxh[slot] = rh;
         }
+        if hh > st.bmaxhh[slot] {
+            st.bmaxhh[slot] = hh;
+        }
     }
 
-    // ---- PASS 2+4 FUSED: один walk на активный ряд ----
+    // ---- PASS 1b: префикс-сумма bstart + раскладка brows + per-segment sort ----
+    let mut run: i32 = 0;
+    for slot in 0..BUCKET_CAP {
+        st.bstart[slot] = run;
+        run += st.bcnt[slot];
+        st.bcnt[slot] = st.bstart[slot]; // переиспользуем как fill-cursor
+    }
+    st.brows.clear();
+    st.brows.resize(run as usize, 0);
+    for &a in st.act.iter() {
+        let id = a as usize;
+        let slot = st.next[id] as usize;
+        let pos = st.bcnt[slot];
+        st.brows[pos as usize] = a;
+        st.bcnt[slot] = pos + 1;
+    }
+    for slot in 0..BUCKET_CAP {
+        let b = st.bstart[slot] as usize;
+        let e = st.bcnt[slot] as usize; // после fill: конец сегмента
+        if e - b > 1 {
+            st.brows[b..e].sort_by(|&x, &y| {
+                let xa = d[(x as usize) * ROW_D];
+                let xb = d[(y as usize) * ROW_D];
+                // total_cmp = total order (NaN отфильтрованы в PASS 1a); тайбрейк
+                // по плотному id — детерминизм при равных cx.
+                xa.total_cmp(&xb).then(x.cmp(&y))
+            });
+        }
+    }
+
+    // ---- PASS 2+4 FUSED: один walk на активный ряд (sorted-window diet) ----
     for &a in st.act.iter() {
         let a = a as usize;
         let ba = a * ROW_D;
@@ -1037,7 +1109,7 @@ fn buckets_fused(
         let gbx = (cx / BUCKET).floor() as i64;
         let gbz = (cz / BUCKET).floor() as i64;
         let ra = if hx > hz { hx } else { hz };
-        let mut visited = [usize::MAX; 9]; // dedup слотов (коллизия ключей ≠ дубль цепи)
+        let mut visited = [usize::MAX; 9]; // dedup слотов (коллизия ключей ≠ дубль сегмента)
         let mut nv: usize = 0;
         let row_begin = st.csr.len();
         for dgz in -1..=1i64 {
@@ -1055,14 +1127,20 @@ fn buckets_fused(
                 }
                 visited[nv] = slot;
                 nv += 1;
-                let mut cur = st.bhead[slot];
-                if cur == 0 {
+                let seg = st.bstart[slot] as usize;
+                let seg_end = st.bcnt[slot] as usize;
+                if seg_end == seg {
                     continue;
                 }
-                // per-(row,bucket) reach-prune: если ряд a отстоит от ВСЕГО
-                // ряда-набора слота ≥ mh хотя бы по одной горизонтали — ни одна
-                // пара (a, b∈slot) не проходит точный тест. mh = ra + bmaxh[slot]
-                // ≥ hx_a + hx_b и ≥ hz_a + hz_b (bmaxh = max по рядам слота).
+                // per-(row,bucket) Y-BAND diet (×450): y-полоса слота вне
+                // y-достижимости ряда — ни одна пара (a, b∈slot) не проходит
+                // точный y-тест. my = hh_a + bmaxhh[slot] ≥ hh_a + hh_b.
+                let my = hh + st.bmaxhh[slot] + BUCKET_EPS;
+                if st.bminy[slot] - cy >= my || cy - st.bmaxy[slot] >= my {
+                    continue;
+                }
+                // per-(row,bucket) xz reach-prune (×445, fast-path до поиска):
+                // mh = ra + bmaxh[slot] ≥ hx_a + hx_b и ≥ hz_a + hz_b.
                 let mh = ra + st.bmaxh[slot] + BUCKET_EPS;
                 if st.bminx[slot] - cx >= mh
                     || cx - st.bmaxx[slot] >= mh
@@ -1071,9 +1149,15 @@ fn buckets_fused(
                 {
                     continue;
                 }
-                while cur != 0 {
-                    let b2 = (cur - 1) as usize;
-                    cur = st.next[b2];
+                // SORTED-WINDOW diet (×450): сегмент слота отсортирован по cx;
+                // кандидат обязан |cx_b − cx| < hx_a + hx_b ≤ mh ⇒ x-окно.
+                // partition_point по raw-сравнению (значения finite; total_cmp
+                // согласован с raw на non-NaN) — вне окна точный тест не нужен.
+                let segv = &st.brows[seg..seg_end];
+                let lo = segv.partition_point(|&r| d[(r as usize) * ROW_D] < cx - mh);
+                let hi = segv.partition_point(|&r| d[(r as usize) * ROW_D] <= cx + mh);
+                for &r in &segv[lo..hi] {
+                    let b2 = r as usize;
                     if b2 == a {
                         continue;
                     }
@@ -1089,8 +1173,8 @@ fn buckets_fused(
             }
         }
         // Детерминизм: per-row ascending-id sort (insertion — списки малы),
-        // бит-в-байт с двухпроходной версией (порядок кандидатов = возрастание
-        // плотного id, не chain-порядок).
+        // бит-в-байт с chain-версией (порядок кандидатов = возрастание
+        // плотного id, не порядок перебора).
         let row = &mut st.csr[row_begin..];
         for m in 1..row.len() {
             let key = row[m];
@@ -1231,7 +1315,7 @@ fn colpush_tick_buckets(
     LAST_PAIRS.store(total, Ordering::Relaxed);
     if FIRST_BULK.swap(false, Ordering::Relaxed) {
         eprintln!(
-            "[crussty-plugin] cmp445_collide: bulk EFFECT armed (colpushTick2 bucket-prune fused-single-pass; first tick {tick}, rows {rows}, pair-slots {total}, plane-refresh {drained})"
+            "[crussty-plugin] cmp445_collide: bulk EFFECT armed (colpushTick2 bucket-prune fused-single-pass sorted-windows=1 y-band-diet=1; first tick {tick}, rows {rows}, pair-slots {total}, plane-refresh {drained})"
         );
     }
     total as jni::jint
@@ -1360,6 +1444,12 @@ mod tests445 {
             bminz: vec![0.0; BUCKET_CAP],
             bmaxz: vec![0.0; BUCKET_CAP],
             bmaxh: vec![0.0; BUCKET_CAP],
+            brows: Vec::new(),
+            bstart: vec![0; BUCKET_CAP],
+            bcnt: vec![0; BUCKET_CAP],
+            bminy: vec![0.0; BUCKET_CAP],
+            bmaxy: vec![0.0; BUCKET_CAP],
+            bmaxhh: vec![0.0; BUCKET_CAP],
         };
         let total = buckets_fused(&mut st, s.n, &s.d, &s.i, s.want_tick);
         assert_ne!(total, usize::MAX, "scene overflowed ids_cap");
@@ -1497,5 +1587,70 @@ mod tests445 {
         let first = run_bucket(&s, 1 << 20);
         let second = run_bucket(&s, 1 << 20);
         assert_eq!(first, second, "retry diverged");
+    }
+
+    #[test]
+    fn dense_cluster_windows() {
+        // ×450 sorted-window stress: сотни рядов в ОДНОМ 16-бакете (плотный
+        // кластер 4×4 вокруг fake-player) + y-слои — окно и y-band diet обязаны
+        // дать бит-в-байт равенство с brute-force оракулом.
+        let mut rows: Vec<(f64, f64, f64, f64, f64, f64, i32, i32)> = Vec::new();
+        for k in 0..600 {
+            let gx = (k % 25) as f64 * 0.16; // 4×4 блока — один бакет
+            let gz = (k / 25) as f64 * 0.16;
+            let y = 64.0 + ((k % 7) as f64 - 3.0) * 1.5; // y-слои ±4.5
+            rows.push(fresh_row(gx, y, gz, 0.3 + 0.01 * (k % 9) as f64, 0.3, 0.9));
+        }
+        assert_eq_csr(&build_scene(&rows), "dense-cluster-600-single-bucket");
+        // плотный кластер НА границе бакетов (4 соседних слота одновременно)
+        let mut cross: Vec<(f64, f64, f64, f64, f64, f64, i32, i32)> = Vec::new();
+        for k in 0..240 {
+            let gx = 15.8 + (k % 20) as f64 * 0.22; // через границу 16.0
+            let gz = 15.8 + (k / 20) as f64 * 0.22;
+            cross.push(fresh_row(gx, 64.0 + 0.1 * (k % 5) as f64, gz, 0.6, 0.6, 1.8));
+        }
+        assert_eq_csr(&build_scene(&cross), "dense-cluster-cross-bucket-240");
+    }
+
+    #[test]
+    fn y_band_diet_soundness() {
+        // y-band diet: группы в одном xz-бакете с разным y — кандидаты внутри
+        // y-достижимости обязаны найтись, вне — отброшены ТОЧНЫМ тестом/бандом.
+        let mut rows: Vec<(f64, f64, f64, f64, f64, f64, i32, i32)> = Vec::new();
+        // земляной слой y≈64 + слой крыши y≈70 (вне reach 2.0+2.0) + слой y≈66
+        // (внутри reach для части пар) — все в одном бакете
+        for k in 0..80 {
+            rows.push(fresh_row(k as f64 * 0.1, 64.0, 0.0, 0.4, 0.4, 0.9));
+        }
+        for k in 0..40 {
+            rows.push(fresh_row(k as f64 * 0.1, 70.0, 0.0, 0.4, 0.4, 0.9));
+        }
+        for k in 0..40 {
+            rows.push(fresh_row(k as f64 * 0.1, 65.2, 0.0, 0.4, 0.4, 0.9));
+        }
+        assert_eq_csr(&build_scene(&rows), "y-band-groups");
+        // граничный y-контакт: hh_a+hh_b == Δy ровно (strict < ⇒ НЕ кандидат)
+        assert_eq_csr(
+            &build_scene(&[
+                fresh_row(0.0, 64.0, 0.0, 1.0, 1.0, 1.0),
+                fresh_row(0.0, 66.0, 0.0, 1.0, 1.0, 1.0),
+            ]),
+            "y-exact-touch",
+        );
+    }
+
+    #[test]
+    fn window_ties_and_sort_determinism() {
+        // Ряды с идентичным cx (тайи сортировки по (cx,id)) + обратный порядок
+        // вставки — equality оракула и идемпотентность ретрая.
+        let mut rows: Vec<(f64, f64, f64, f64, f64, f64, i32, i32)> = Vec::new();
+        for k in 0..120 {
+            rows.push(fresh_row(8.0, 64.0 + 0.05 * k as f64, k as f64 * 0.05, 0.5, 0.5, 1.2));
+        }
+        assert_eq_csr(&build_scene(&rows), "window-ties");
+        let s = build_scene(&rows);
+        let first = run_bucket(&s, 1 << 20);
+        let second = run_bucket(&s, 1 << 20);
+        assert_eq!(first, second, "ties retry diverged");
     }
 }
