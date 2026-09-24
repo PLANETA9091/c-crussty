@@ -145,8 +145,17 @@ check_class \
 # javap grep; flat-only pinned by build script '$' guard + rust delivery test).
 check_class \
   "chunksend/build/net/minecraft/server/network/ChunkSendOps.class" \
-  "cmp437_chunk4" "cmp435_chunk3" "chunk4 send-snapshot first hit" "chunk4 snapshot selftest PASS" "chunk4 stats" \
+  "cmp437_chunk4" "cmp435_chunk3" "cmp444_chunk5" "chunk4 send-snapshot first hit" "chunk4 snapshot selftest PASS" "chunk4 stats" \
   "public static void sendChunk" "public static boolean selfTest"
+
+# TASK-444-B chunk-packet encode cache (cmp444_chunk5): stage-2 bridge on top
+# of the chunk4 send plane — encode-once capture + byte[] replay per player,
+# keyed by packet instance. Flat-only pinned by build script '$' guard + rust
+# delivery test; descriptor pinned by the build script javap grep.
+check_class \
+  "chunksend/build/net/minecraft/server/network/ChunkPacketEncodeOps.class" \
+  "cmp444_chunk5" "cmp437_chunk4" "cmp435_chunk3" "chunk5 payload-cache first hit" "chunk5 payload selftest PASS" "chunk5 stats" \
+  "public static void write" "public static boolean selfTest"
 
 # TASK-421-C noise-blob coverage: the GEN-axis bridge family (noise/build,
 # NOISE_RELEASE=8 => major 52) was OUTSIDE this gate — the only lever family
