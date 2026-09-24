@@ -80,6 +80,9 @@ public final class ChunkPacketEncodeOps {
     static final String CARRIER_UNION_435 = "cmp435_chunk3";
 
     static final String CARRIER_UNION_437 = "cmp437_chunk4";
+    /** TASK-450-C union carrier (STRICT-OR; raw-cp marker for the
+     * check_blobs_sync gate). */
+    static final String CARRIER_UNION_450 = "cmp450_chunk";
 
     /** Packet instance -> its vanilla write() payload (reference keys). */
     private static final ConcurrentHashMap<ClientboundLevelChunkWithLightPacket, byte[]> PAYLOAD =

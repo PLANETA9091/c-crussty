@@ -106,6 +106,9 @@ public final class ChunkSendOps {
     /** TASK-444-B: stage-2 carrier (STRICT-OR; raw-cp marker for the
      * check_blobs_sync gate — the chunk4 plane rides the chunk5 carrier). */
     static final String CARRIER_UNION_444 = "cmp444_chunk5";
+    /** TASK-450-C union carrier (STRICT-OR; raw-cp marker for the
+     * check_blobs_sync gate). */
+    static final String CARRIER_UNION_450 = "cmp450_chunk";
 
     /** pos longKey -> current snapshot packet. Lock-free probe. */
     private static final ConcurrentHashMap<Long, ClientboundLevelChunkWithLightPacket> CACHE =
