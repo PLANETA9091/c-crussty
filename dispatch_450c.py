@@ -100,9 +100,11 @@ def main():
         live = sha_of(tok, base)[:8]
         if exp is None:
             raise SystemExit(f"NO PIN for base {base} — add EXPECTED_SHA entry (argv-guard canon)")
-        if not ancestry_ok(tok, exp, base) or not live.startswith(exp):
-            raise SystemExit(f"BASE MISMATCH: {base} live={live} pin={exp}")
-        print(f"preflight OK (ancestry+sha): {base} @ {live}", flush=True)
+        # ancestry-only canon (x440c step-3c: dispatcher commit moves the tip,
+        # self-referential sha pins always abort) — pin must be an ANCESTOR.
+        if not ancestry_ok(tok, exp, base):
+            raise SystemExit(f"ANCESTRY MISMATCH: {base} live={live} pin={exp}")
+        print(f"preflight OK (ancestry): {base} @ {live} (pin {exp})", flush=True)
     if dry:
         print("DRY-RUN OK — no dispatches", flush=True)
         return
