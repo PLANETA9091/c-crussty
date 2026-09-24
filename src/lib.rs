@@ -68,6 +68,12 @@ mod chunk_parse;
 // CRUSSTY_LEVER_FLAG == cmp437_chunk4 (STRICT eq; empty/foreign flag =
 // vanilla bit-in-bit).
 mod chunk_send;
+// CHUNK-PACKET ENCODE CACHE (TASK-444-B, lever cmp444_chunk5, law 8 stage-2):
+// byte hook on ClientboundLevelChunkWithLightPacket + ChunkPacketEncodeOps
+// encode-once/replay plane defined at activation, instance->static body
+// redirect of the private write. Dormant unless CRUSSTY_LEVER_FLAG ==
+// cmp444_chunk5 (STRICT eq; empty/foreign flag = vanilla bit-in-bit).
+mod chunk_send5;
 mod noise_fill;
 mod parse_diag;
 mod zero_cursor;
@@ -297,6 +303,13 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // activation, then ONE static body-redirect of sendChunk. Dormant unless
     // CRUSSTY_LEVER_FLAG == cmp437_chunk4 (STRICT eq).
     chunk_send::register();
+    // CHUNK-PACKET ENCODE CACHE (TASK-444-B, lever cmp444_chunk5, stage-2 of
+    // the chunk-pipeline lever): pristine capture of
+    // ClientboundLevelChunkWithLightPacket; ChunkPacketEncodeOps is defined +
+    // selfTest-oracled at activation, then ONE instance->static body-redirect
+    // of the private write (encode-once capture + byte[] replay per player).
+    // Dormant unless CRUSSTY_LEVER_FLAG == cmp444_chunk5 (STRICT eq).
+    chunk_send5::register();
     // QUERYPLANE (TASK-417-C, broadphase-query plane on the cvs carrier):
     // Level compose-on-top hook (LAST on Level — receives region_threads'
     // guardEntityTick bytes, composes getEntitiesOfClass +
@@ -642,6 +655,13 @@ fn inject_surface() {
     // -> retransform PlayerChunkSender (dormant unless
     // CRUSSTY_LEVER_FLAG == cmp437_chunk4).
     chunk_send::activate();
+    // CHUNK-PACKET ENCODE CACHE (TASK-444-B): boot quiet -> define
+    // ChunkPacketEncodeOps into the kernel loader + selfTest()Z oracle
+    // (selfTest==true до ARM) -> pristine guard -> instance->static
+    // body-redirect of the private write -> READY -> retransform
+    // ClientboundLevelChunkWithLightPacket (dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp444_chunk5).
+    chunk_send5::activate();
 }
 
 /// Define one bridge class and register all its natives.

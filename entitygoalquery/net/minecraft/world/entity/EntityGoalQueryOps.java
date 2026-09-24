@@ -116,7 +116,7 @@ public final class EntityGoalQueryOps {
                 // TASK-424-A: GC-ревизия brain3 (STRICT OR).
                 || f.trim().equals("cmp423_brain3")
                 // TASK-426-A: SoA-feed carrier (STRICT OR).
-                || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside") || f.trim().equals("cmp434_chunkpl") || f.trim().equals("cmp435_chunk3") || f.trim().equals("cmp437_chunk4"));
+                || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside") || f.trim().equals("cmp434_chunkpl") || f.trim().equals("cmp435_chunk3") || f.trim().equals("cmp437_chunk4") || f.trim().equals("cmp444_chunk5"));
     }
 
     /** TASK-411-C (k4soa): K4-режим (маркировка EFFECT-строк). */
@@ -160,6 +160,7 @@ public final class EntityGoalQueryOps {
                 : t.equals("cmp430_inside") ? "cmp430_inside"
                 : t.equals("cmp434_chunkpl") ? "cmp434_chunkpl" : t.equals("cmp435_chunk3") ? "cmp435_chunk3"
                 : t.equals("cmp437_chunk4") ? "cmp437_chunk4" // TASK-438-C: R7 carrier marker id
+                : t.equals("cmp444_chunk5") ? "cmp444_chunk5" // TASK-444-B: R8 carrier marker id (encode-cache stage-2)
                 : t.equals("cmp421_brain") ? "cmp421_brain"
                 : t.equals("cmp412_eqsnapv3") ? "cmp412_eqsnapv3" // TASK-412-C: точная метка.
                 : t.equals("cmp411_eqsnap") ? "cmp411_eqsnap"
