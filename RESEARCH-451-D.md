@@ -65,3 +65,23 @@ sense/brain целиком (SenseOps body-swap + BrainOps.tickEachRunning + sens
 - [x] Соло-потолок +2-4% реалистично / +10-14% теоретически < +20% бара
 - [x] План Б выбран по промпту (ins6-носитель), альтернативы (POI/despawn) отсечены цензом
 - [ ] Имплементация композиции + гейты + диспатч после серта ins4
+
+## 7. Дополнение ценза (javap ground truth, kernel re-materialized paperclip pass)
+
+Kernel jar восстановлен (purpur-1.21.10 paperclip pass → versions/1.21.10/purpur-1.21.10.jar, 29.4MB, ServerLevel/GoalSelector/Brain контент-тест OK) — использован для javac-гейтов блобов; javap-ценз структуры:
+
+- `GoalSelector.tick()` = 119 бк-строк + `tickRunningGoals(boolean)` 32 + `goalCanBeReplacedForAllFlags` 39 — ядро goal-лупа (gsel-закрытый слайс)
+- `Brain`: `startEachNonRunningBehavior` 63 / `getRunningBehaviors` 52 / `tickEachRunningBehavior` — Brain-срез существует, но Brain-мобов в фикстуре ≈ 0 → микро
+- `PathNavigation`: `createPath` 166 + `doStuckDetection` 136 + `followThePath` 101 + `tick` 88 — pathfinder-стек = ЧУЖОЙ вектор (~3.5-4.2 пп лейна)
+- javap подтверждает исторические цены 28956bd2/49d1a19e; декомпозиция §2-§3 остаётся в силе.
+
+## 8. Реализация плана Б (выполнено)
+
+- Ветка round-451d-senseins: master b5baf548 ⊕ round-436-b-ins6 @07078007 (66 файлов, --no-ff) ⊕ sense-семья (cherry-pick c6208a81 SenseOps + 01dcf2aa Brain-tick2; union-resolve 24 конфликт-блоков, STRICT-OR термины cmp438_sense сохранены)
+- Ретаг cmp451_senseins на КАЖДОМ гейте: rust 18 файлов (mobs_sense/brainhook/entity_query/inside_snap v4/inside_bitmask/queryplane lever-map+mobs_manager 4/site-списки/colpush/chunk_parse/...), java 10 файлов (SenseOps.leverEnabled, BrainOps TICK2_FLAGS, EntityGoalQueryOps senseMode+FLAG_LABEL, ItemEntityManager ×3, MobScanOps, QueryPlaneOps, GoalOps, MobAiOps, MobPushOps ×2, ColpushOps FLAG6)
+- Блобы: build_430b_blobs.sh (11 классов javac --release 21 против ре-materialized kernel) + BrainOps javac; flat==nested ×13 byte-identical; check_blobs_sync ALL IN SYNC (+cmp451_senseins нейдлы + NEW BrainOps block); javap-LOADABILITY gate_load ×13 OK (урок ×449)
+- cargo: check --lib 0 err; test 314 passed / 0 failed (sense f2t2 + delivery tests на юнион-носителе)
+- run_world3.sh: case cmp451_senseins (ARM-лог)
+- Пустой флаг = ваниль бит-в-байт: все гейты STRICT-OR, регистрация идемпотентна, байты классов идентичны при чужом/пустом флаге
+- Диспатч: scripts/dispatch_451d.py (argv-guard: только round-451d-*; dry-run; канон-inputs тика; golden_443.py НЕ используется)
+- Ноги: ПОСЛЕ серта ins4 (решётка главного агента; per-ref concurrency позволяет параллельный ран, но приоритет решётке)
