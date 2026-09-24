@@ -14,8 +14,10 @@ BATCH = [
     ("items-c4-1", "round-450b-items-1", "round-450b-items", "cmp446_items"),
 ]
 
-EXPECTED_SHA = {
-    "round-450b-items": "61358eb3",  # cycle-4 repair 30d80c3e + dispatch-script commit (live head)
+# Пин КОД-коммита (не головы): голова может нести docs-хвосты (канон ancestry ×444).
+# Префлайт: live-голова ветки обязана СОДЕРЖАТЬ код-коммит cycle-4 (merge-base локально).
+CODE_PIN = {
+    "round-450b-items": "30d80c3e",  # cycle-4 repair: append-every-tick + printable X-ray
 }
 
 INPUTS = {
