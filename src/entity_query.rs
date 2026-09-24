@@ -131,6 +131,7 @@ fn enabled() -> bool {
             | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
             | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4")
+            | Ok("cmp438_sense") // TASK-444-C: sense family union
             | Ok("cmp421_brain")
     )
 }
@@ -173,6 +174,7 @@ fn enabled_flag_is_sense() -> bool {
         Ok("cmp421_brain") | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
             | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4")
+            | Ok("cmp438_sense") // TASK-444-C: sense family union
     )
 }
 
@@ -967,6 +969,7 @@ mod tests {
             || s == "cmp411_eqsnap"
             || s == "cmp412_eqsnapv3" || s == "cmp414_cvs" || s == "cmp417_bq"
             || s == "cmp421_brain" || s == "cmp422_brain2" || s == "cmp423_brain3" || s == "cmp424_mobfeed" || s == "cmp430_inside" || s == "cmp432_inside2" || s == "cmp436_ins4"
+            || s == "cmp438_sense" // TASK-444-C: sense family union
     }
 
     #[test]
