@@ -1,30 +1,11 @@
 {
-  "agent": "TASK-431-B",
-  "vector": "R-закон 6: inside/block-contact плоскость целиком (inside_bitmask pre-gate stage-1b + inside_snap snapshot plane stage-1c, ONE bulk-JNI per collect) на пробуждённом SoA-носителе A2 round-427-a2-mobsoa @18151a96; ветка round-430-b-inside @5a3cd38",
-  "branch": "round-430-b-inside",
-  "base": "origin/round-427-a2-mobsoa @18151a96 (код=fe4ee57, cmp424_mobfeed)",
-  "lever": "cmp430_inside",
-  "run_id": null,
-  "tps_med": null,
-  "delta_pair_pct": null,
-  "lane_before": "inside_volatile 12.18% флэт (wgen-l1 профиль, BOTTLENECK-430); адресуемо 1.3-1.6% PROFILE-B (modulo-декодер round-423-b-inside)",
-  "lane_after": null,
-  "ram_stw": null,
-  "ram_full": null,
-  "parity": "план: ARM+ЭФФЕКТ маркеры + Retargeted sites>0 (inside_bitmask stage-1b sites:1, inside_snap stage-1c sites:1, LevelChunk secWrite sites:1) + AIOOBE=0 + NCDFE=0 + selfTest==true + javap flat==nested + polls threw=0",
-  "verdict": "IN_PROGRESS: step-2 верификация пройдена, диспатч ждёт завершения round-431-* пробного батча (CI-окно главного агента)",
-  "evidence": [
-    "step-1 @5a3cd38 (запушен): STRICT-OR plumbing 24 rust gate-строк (17 файлов) + 8 java blob gates + InsideSnapOps.java 471 строка + InsideBitmaskOps.class + build_430b_blobs.sh, блобы ALL IN SYNC",
-    "step-2 верификация: cargo check --lib green; cargo test --lib 302/0 (+inside_snap modulo 4 tests); check_blobs_sync ALL IN SYNC; javap InsideSnapOps.selfTest invokestatic snapProbe NOT-a-stub; flat==nested byte-identical (InsideSnapOps + InsideBitmaskOps)",
-    "triаж round-431-a2-l8r3 (чужой пробный батч): BAND fast-fail runner_cpu_index=11110082 OUTSIDE band — pairing discard, не bench-фейл; band-гварды работают",
-    "диск-закон: cargo target удалён сразу после теста (71% hold)",
-    "ре-роллы round-431-*: a2-l8r3 требует ре-ролла после диспатча своего батча — вне моей очереди (главный агент)"
-  ],
-  "what": "закон 6: вся inside/block-contact подсистема = (A) bitmask all-air pre-gate на ЕДИНСТВЕННОМ сайте applyEffectsFromBlocks->checkInsideBlocks (13 входов из RECON-33 census), (B) snapshot-плоскость per-section BlockState[4096] с ONE bulk-JNI collect + modulo-декодером в Rust и secWrite-инвалидацией; пер-сайт ретаргеты = клей миграции",
-  "steps_log": [
-    "step-0: worktree + research + диск-закон OK",
-    "step-1: имплементация выполнена, блобы пересобраны, запушено @5a3cd38",
-    "step-2: верификация (cargo 302/0, blobs ALL IN SYNC, javap NOT-a-stub) OK; dispatch_431b.py готов (3 якоря master + 3 inside-ноги cmp430_inside интерлив, банк inputs вербатим)",
-    "step-3 PENDING: диспатч после завершения round-431-*"
-  ]
+ "agent": "agent-a",
+ "vector": "collide+broadphase+push plane (cmp445_collide)",
+ "branch": "round-445-a-collide",
+ "run_id": null,
+ "tps_med": null,
+ "delta_pair_pct": null,
+ "verdict": "RESEARCH-PHASE",
+ "evidence": "RESEARCH-445-A.md: javap-censor 5 sites + anchor-10 lane union 32.15% (query 7.9/collide 7.75/push 4.64); design = certified cmp420_colpush carrier (x420 +29.5 pair) via additive STRICT-OR tails + NEW colpushTick2 bucket-prune native",
+ "what": "phase-1 research done"
 }
