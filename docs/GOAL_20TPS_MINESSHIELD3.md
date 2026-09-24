@@ -1770,3 +1770,19 @@ TASK-433-B: inside2 перенос на ccefix-базу + RC7-lazy фикс пр
 **GOLDEN 02:08 = СЕРТ-ШОТ (сохранён и защищён guard'ом)**: `python3 scripts/golden_443.py` РОВНО ОДИН РАЗ в окне 02:00-03:30+08 (guard теперь сам enforce'ит). ×24 = 12 якорей двухзонных + 12 ног (ins4d ×3, ins4 ×2, chunk4 ×2, ss, pd, chk3, mega ×2 OPTIONAL). Математика серта: min-of-3 свежих пар ≥+20% — ins4/chunk4/sensemega главные кандидаты.
 
 **Диск**: 68-78% колебания, пурджи после каждой волны абсорба (урок ×444 держится).
+
+## GOAL ×130 (tick-448, 22:43-23:5x +08, Job 406609) — ночная подготовка: батч ×5, ПАРЫ 0 (лотерея ×9, Δ78k×2); items-1 на ФИКСЕ чистая (threw=0, +3.6 банк); collide-1 +10.2 банк; collide-2 FUSED = NCDFE (ConstSlot не в loader) → DELIVERY-FAIL, root-cause+рецепт переданы; CERT 0 NO MERGE; golden 02:08 НЕ ТРОНУТ
+
+**Состояние**: master 97afb427 (код эпохи не изменён этим тиком).
+
+**БАТЧ ×5 (dispatch_448.py, строгие пины)**: якоря a1 2.20@8626874 −15.9 RED / a2 2.30@6826709 +2.8 / a3 2.25@6905572 −0.1 (два здоровых mid-zone); ноги: **collide-1 2.50@6983622 +10.2** GREEN-CAND ARM-clean (a3 Δ78k — мимо) / **items-1 2.30@6748364 +3.6** PARITY, threw=0, AIOOBE=0, ARMED selfTest=true — **ПЕРВАЯ ЧИСТАЯ НОГА items НА ФИКСЕ 1f73d9f8** (лейн items 31.17→25.26, −5.9пп — rest-plane работает, ноль крашей). ПАРЫ 0 (Δ78k/78k — лотерея ×9 тик). Банки: collide +10.2/+4.0 | items +3.6 | ins4 +31.0/+24.3/+19.0/+17.8/+14.8 | ins4d +31.2/+21.1/+12.6/+9.7/+4.2 | chunk4 +24.7/+7.3 | sensemega +16.8.
+
+**АГЕНТЫ (волна ×2, оба стартовали, оба умолкли после главных шагов — артефакты пережили)**:
+- **A collide cycle-2**: абсорб collide-1 +10.2 вердикт; коммит 56142b5e = colpushTick2 FUSED single-pass (reach-prune + exact test одним проходом, 9-bucket walk, ids copy-out single memcpy, ids_cap gate) + ConstSlot constants plane (cramming/maxCol 1 volatile read vs per-entity GameRules lookup) + RESEARCH-448-A-CYCLE2.md (SAP/quadtree/time-slicing/dirty-sets опровергнуты числами); диспатч collide-2. **Нога collide-2 2.00@7038312 −12.3 DELIVERY-FAIL — ROOT-CAUSE (я, тик): NCDFE ×4 = ColpushOps$ConstSlot не определён в kernel-loader** (блоб-сборка рапортовала flat==nested, но класс не загружен рантаймом) → cmp420_colpush disarm → vanilla-fallback + young-GC шторм 529 (норма ~110). ФИКС-РЕЦЕПТ ×449: ConstSlot в класс-лист блоб-сборки + javap-проверка ЗАГРУЖАЕМОСТИ (не только байт-идентичность) + ре-нога. cargo 305/0 остаётся зелёным.
+- **B items cycle-3**: research опровержений + имплементация расширения @a6648df2 (гейты cargo 311/0) — items-2 НЕ диспатчена (умолк до диспатча). Готовую имплементацию диспатчит ×449 (round-449b-items-2 от round-446-items HEAD a6648df2... verify HEAD сначала).
+
+**Карта векторов после ×448**: collide 1/3 (банк +10.2/+4.0, cycle-2 фикс ждёт) | items 0/3 (первая чистая +3.6, impl-расширение готово) | ins4 1/3 (+16.1) | ins4d 2/3 | chunk4 1/3 | chunk5 1/3 | sensemega 1/3 | mega 3 пары (−4.3) | sscan2/pdemux/chk3/w4 — ждут golden.
+
+**GOLDEN 02:08 = СЕРТ-ШОТ**: тик ×449 (00:43+08) стреляет `python3 scripts/golden_443.py` РОВНО ОДИН РАЗ в окне 02:00-03:30+08 (guard enforce'ит; --dry-run безопасен). ×24 = 12 якорей двухзонных + 12 ног. Кандидаты серта: ins4/chunk4/sensemega (банки 19-31) + collide-линия (+10.2 банк) + items (чистая нога на фиксе).
+
+**Диск**: 68%, пурджи после волн (урок держится).
