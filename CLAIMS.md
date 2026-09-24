@@ -144,3 +144,11 @@ TASK-446 (tick-445 открывает, 19:5x +08):
 3. **A-445 collide**: имплементация cmp445_collide идёт (step-1 design на сертифицированном colpush-носителе + colpushTick2 bucket-prune) — догнать, гейты, ноги round-445-a-collide-*.
 4. **B-445 items**: 0 коммитов (research) — если к ×446 пусто, РЕСТАРТ по канону застоя; лейн items 29.7% = №1, вектор не закрывать.
 5. Каноны: ARM по stdout; маркеры ДО пурджа; band 6.0-9.5M ре-ролл ≤2; депресс-гейт norm ≥−2; pair Δ≤50k pair-fresh (ближайший якорь); min-of-3; NOT-A-BENCH; stash-push при PHASE 0 = восстановление пурджа (×443-урок: rm-restore + drop немедленно); wgen-ось ЗАКРЫТА (мир прегенерирован — не тратить ноги на noise).
+
+TASK-447 (tick-446 открывает, 20:4x +08):
+0. Учёт ×446: ПАРЫ 0 (лотерея ×6); банк пополнен ins4d-1 +21.1 / ins4-1 +19.0 / ins4d-2 +12.6 / chunk4-1 +7.1; EQ-слой закрыт (хедрум на sensemega, pushEntities парити-стена); CERT 0 NO MERGE.
+1. **GOLDEN 02:08 = СЕРТ-ШОТ (ВЫСШИЙ ПРИОРИТЕТ)**: python3 scripts/golden_443.py РОВНО ОДИН РАЗ. ×24 = 12 якорей двухзонных + ins4d ×3 + ins4 ×2 + chunk4 ×2 + ss ×1 + pd ×1 + chk3 ×1 + mega ×2 (OPTIONAL-пин 5e3a36fb). Вердикты min-of-3 (пары Δ≤50k pair-fresh волны golden), мерж ≥+20% немедленно --no-ff. Математика: линию сертят ≥2 свежие пары ≥20 (ins4/chunk4/sensemega — главные кандидаты по банкам 19-31).
+2. **B-446 items**: имплементация cmp446_items идёт (research fbb7b80c: rest-plane, 1 bulk-JNI/тик/поток, recheck 1/32; лан-сплит 29.5% = fluid 32/inside 28/collision 25) — догнать гейты, ноги round-446-items-*.
+3. **A-445 collide**: 2ч на step-1 (24 dirty) — если к ×447 нет step-2/коммитов, РЕСТАРТ по канону застоя (дизайн готов в step-1: cmp445_collide на colpush-носителе + colpushTick2 bucket-prune).
+4. Волны ×447+: фокус items + collide (R-меню исчерпано в этой фиксуете: EQ закрыт, wgen закрыт, fluid/gsel мертвы); подсистемы по закону 6 = только два оставшихся крупных лейна.
+5. Каноны: ARM по stdout; маркеры ДО пурджа; band 6.0-9.5M ре-ролл ≤2; депресс-гейт norm ≥−2; pair Δ≤50k pair-fresh; min-of-3; NOT-A-BENCH; якорная лотерея не бьётся малыми батчами (×6 тик урок) — только 12-якорный golden-дизайн.
