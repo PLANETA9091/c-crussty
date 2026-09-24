@@ -80,6 +80,13 @@ public final class ColpushOps {
     /** TASK-435-C: R6 carrier (STRICT-OR; raw-cp marker for the
      * check_blobs_sync gate). */
     private static final String FLAG5 = "cmp435_chunk3";
+
+    /**
+     * TASK-438-C chunk-pipeline R7 carrier (law 7/8): STRICT-OR successor id
+     * ON TOP of cmp435_chunk3 — the composite now also carries the chunk-send
+     * serialization snapshot plane (round-id hygiene for ROUND-438-C).
+     */
+    private static final String FLAG6 = "cmp437_chunk4";
     private static final int ERR_STRUCT = -1;
     private static final int ERR_RANGE = -2;
 
@@ -95,7 +102,7 @@ public final class ColpushOps {
 
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5));
+        return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5) || f.trim().equals(FLAG6));
     }
 
     /** Структурный отказ — весь рычаг дизармится навсегда (ваниль-реплика). */
