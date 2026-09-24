@@ -114,6 +114,41 @@ public final class ChunkParseOps {
     static final String CARRIER_UNION = "cmp420_colpush";
 
     /**
+     * TASK-434-C chunk-pipeline R5 carrier union (law 7): the chunk-pipeline
+     * plane rides the cmp434_chunkpl carrier (chunk-parse deep cache ⊕
+     * biomes-parse cache ⊕ full composite union, ROUND-434-C; lineage:
+     * cmp423_wgen ROUND-423 → never merged until this port). Kept in the
+     * constant pool for the raw-byte blob-sync gate (check_blobs_sync.sh) —
+     * same discipline as CARRIER_UNION.
+     */
+    static final String CARRIER_UNION_423 = "cmp434_chunkpl";
+
+    /**
+     * TASK-435-C chunk-pipeline R6 carrier (law 7/8): STRICT-OR successor
+     * id ON TOP of cmp434_chunkpl (same planes: block_states deep cache ⊕
+     * biomes-parse cache ⊕ full composite union; no new lever — round-id
+     * hygiene for ROUND-435 certification). Kept in the constant pool for
+     * the raw-byte blob-sync gate (check_blobs_sync.sh) — x93 lesson.
+     */
+    static final String CARRIER_UNION_435 = "cmp435_chunk3";
+
+    /**
+     * TASK-438-C chunk-pipeline R7 carrier (law 7/8): STRICT-OR successor id
+     * ON TOP of cmp435_chunk3 — the composite now also carries the chunk-send
+     * serialization snapshot plane (PlayerChunkSender.sendChunk body redirect,
+     * unsaved-keyed packet reuse; round-id hygiene for ROUND-438-C). Kept in
+     * the constant pool for the raw-byte blob-sync gate (check_blobs_sync.sh)
+     * — x93 lesson.
+     */
+    static final String CARRIER_UNION_437 = "cmp437_chunk4";
+    /** TASK-444-B: R8 stage-2 carrier (STRICT-OR; raw-cp marker for the
+     * check_blobs_sync gate). */
+    static final String CARRIER_UNION_444 = "cmp444_chunk5";
+    /** TASK-450-C union carrier (STRICT-OR; raw-cp marker for the
+     * check_blobs_sync gate). */
+    static final String CARRIER_UNION_450 = "cmp450_chunk";
+
+    /**
      * codec(identity) -> (tag -> pristine decoded template). The outer map
      * is synchronized ONLY for its own few-entry get/put; the inner maps are
      * ConcurrentHashMaps so the deep tag probe runs lock-free (TASK-420-C:
@@ -127,6 +162,13 @@ public final class ChunkParseOps {
     private static long evictions = 0;
     private static int selftestLeft = SELFTEST_SECTIONS;
     private static boolean firstHitLogged = false;
+
+    /** Biomes-site counters (TASK-424-C R5c: lambda$parse$7 mirror cache). */
+    private static long biomesHits = 0;
+    private static long biomesMisses = 0;
+    private static long biomesSections = 0;
+    private static int biomesSelftestLeft = SELFTEST_SECTIONS;
+    private static boolean biomesFirstHitLogged = false;
 
     /**
      * Re-entrancy guard: the twin must be pristine vanilla; if a misconfig
@@ -168,45 +210,120 @@ public final class ChunkParseOps {
         }
         d[0]++;
         try {
-            ConcurrentHashMap<CompoundTag, PalettedContainer<?>> inner;
-            synchronized (CACHE) {
-                inner = CACHE.get(codec);
-                if (inner == null) {
-                    inner = new ConcurrentHashMap<>();
-                    CACHE.put(codec, inner);
-                }
+            return cachedDecode(codec, pos, y, tag, false);
+        } finally {
+            d[0]--;
+        }
+    }
+
+    /**
+     * TASK-424-C (R5c): redirected body of the BIOMES decode lambda
+     * ({@code SerializableChunkData.lambda$parse$7}) — the exact canonical
+     * descriptor of the blocks lambda, mirrored template cache.
+     *
+     * <p>MISS path = in-bridge reflection replica of the vanilla body
+     * ({@link #vanillaReplica}): codec.parse(NbtOps, tag).promotePartial
+     * (logErrors).getOrThrow(new ChunkReadException(msg)) — bit-in-bit
+     * vanilla semantics, no pristine twin remains (BOTH section lambdas are
+     * patched by this lever now). The blocks-site MISS still reaches the
+     * replica through the patched twin (lambda$parse$7 → this method, depth
+     * guard fires, replica) — identical body, identical semantics.</p>
+     */
+    public static PalettedContainer<?> parseBiomesSection(
+            Codec<?> codec, ChunkPos pos, int y, CompoundTag tag) {
+        int[] d = DEPTH.get();
+        if (d[0] > 0) {
+            // the blocks-site twin call lands HERE (lambda$parse$7 is patched
+            // to this method) — bypass the cache, exact vanilla replica.
+            return vanillaReplica(codec, pos, y, tag);
+        }
+        d[0]++;
+        try {
+            return cachedDecode(codec, pos, y, tag, true);
+        } finally {
+            d[0]--;
+        }
+    }
+
+    /**
+     * Shared cache-first decode (blocks AND biomes sites). The CACHE is
+     * keyed by codec IDENTITY — the biomes codec is a distinct object, so
+     * the sites never cross-hit; per-site stats stay separate via the
+     * {@code biomes} flag.
+     */
+    private static PalettedContainer<?> cachedDecode(
+            Codec<?> codec, ChunkPos pos, int y, CompoundTag tag, boolean biomes) {
+        ConcurrentHashMap<CompoundTag, PalettedContainer<?>> inner;
+        synchronized (CACHE) {
+            inner = CACHE.get(codec);
+            if (inner == null) {
+                inner = new ConcurrentHashMap<>();
+                CACHE.put(codec, inner);
             }
-            // LOCK-FREE probe: deep hashCode + equals run outside every lock.
-            PalettedContainer<?> tpl = inner.get(tag);
-            if (tpl != null) {
+        }
+        // LOCK-FREE probe: deep hashCode + equals run outside every lock.
+        PalettedContainer<?> tpl = inner.get(tag);
+        if (tpl != null) {
+            if (biomes) {
+                biomesHits++;
+                if (!biomesFirstHitLogged) {
+                    biomesFirstHitLogged = true;
+                    System.out.println(
+                            PFX + " biomes-cache first hit (chunk section reuse live, union="
+                                    + CARRIER_UNION_423 + "/" + CARRIER_UNION_435 + ")");
+                }
+            } else {
                 hits++;
                 if (!firstHitLogged) {
                     firstHitLogged = true;
                     System.out.println(
                             PFX + " parse-cache first hit (chunk section reuse live)");
                 }
-                return tpl.copy();
             }
+            return tpl.copy();
+        }
+        if (biomes) {
+            biomesMisses++;
+        } else {
             misses++;
-            PalettedContainer<?> fresh = invokeTwin(codec, pos, y, tag);
-            PalettedContainer<?> copy = fresh.copy();
-            if (inner.size() >= CACHE_CAP) {
-                // evict-half (TASK-420-C): keep the working set warm instead
-                // of the wave-419 full clear; CHM iterators are weakly
-                // consistent — no lock, at most one extra decode per entry.
-                int seen = 0;
-                Iterator<Map.Entry<CompoundTag, PalettedContainer<?>>> it =
-                        inner.entrySet().iterator();
-                while (it.hasNext()) {
-                    it.next();
-                    if ((seen & 1) == 0) {
-                        it.remove();
-                        evictions++;
-                    }
-                    seen++;
+        }
+        // MISS: exact vanilla decode. Blocks site keeps the twin hop
+        // (lambda$parse$7 — patched to parseBiomesSection, whose depth guard
+        // routes to the replica); biomes site calls the replica directly.
+        PalettedContainer<?> fresh = biomes
+                ? vanillaReplica(codec, pos, y, tag)
+                : invokeTwin(codec, pos, y, tag);
+        PalettedContainer<?> copy = fresh.copy();
+        if (inner.size() >= CACHE_CAP) {
+            // evict-half (TASK-420-C): keep the working set warm instead
+            // of the wave-419 full clear; CHM iterators are weakly
+            // consistent — no lock, at most one extra decode per entry.
+            int seen = 0;
+            Iterator<Map.Entry<CompoundTag, PalettedContainer<?>>> it =
+                    inner.entrySet().iterator();
+            while (it.hasNext()) {
+                it.next();
+                if ((seen & 1) == 0) {
+                    it.remove();
+                    evictions++;
                 }
+                seen++;
             }
-            inner.put(tag, copy);
+        }
+        inner.put(tag, copy);
+        if (biomes) {
+            biomesSections++;
+            if (biomesSelftestLeft > 0) {
+                biomesSelftestLeft--;
+                biomesSelftest(pos, y, codec, tag, fresh);
+            } else if ((biomesSections & 8191L) == 0) {
+                long total = biomesHits + biomesMisses;
+                System.out.println(PFX + " biomes-cache stats sections=" + biomesSections
+                        + " hits=" + biomesHits + " misses=" + biomesMisses
+                        + " rate=" + (total == 0 ? 0 : (biomesHits * 100 / total)) + "%"
+                        + " cap=" + CACHE_CAP);
+            }
+        } else {
             sections++;
             if (selftestLeft > 0) {
                 selftestLeft--;
@@ -218,10 +335,8 @@ public final class ChunkParseOps {
                         + " rate=" + (total == 0 ? 0 : (hits * 100 / total)) + "%"
                         + " evicted=" + evictions + " cap=" + CACHE_CAP);
             }
-            return fresh;
-        } finally {
-            d[0]--;
         }
+        return fresh;
     }
 
     /** Reflective call of the pristine twin lambda (exact vanilla body). */
@@ -301,6 +416,43 @@ public final class ChunkParseOps {
     }
 
     /**
+     * Biomes-site selftest (TASK-424-C): re-decode the SAME section through
+     * the reflection replica (exact vanilla body) and compare bit-in-bit
+     * against a fresh copy of the cached template. PASS marker = bench
+     * effect-marker for the verdict checklist.
+     */
+    private static void biomesSelftest(ChunkPos pos, int y, Object codec,
+                                       CompoundTag tag, PalettedContainer<?> fresh) {
+        try {
+            PalettedContainer<?> vanilla = vanillaReplica(codec, pos, y, tag);
+            PalettedContainer<?> cached;
+            synchronized (CACHE) {
+                cached = CACHE.get(codec).get(tag);
+            }
+            PalettedContainer<?> hit = cached.copy();
+            boolean ok = vanilla.getClass() == hit.getClass()
+                    && vanilla.bitsPerEntry() == hit.bitsPerEntry();
+            if (ok) {
+                for (int i = 0; i < 4096; i++) {
+                    if (vanilla.get(i) != hit.get(i)) {
+                        ok = false;
+                        break;
+                    }
+                }
+            }
+            if (ok) {
+                System.out.println(PFX + " biomes selftest PASS");
+            } else {
+                System.out.println(PFX + " biomes selftest FAIL");
+            }
+            System.out.println(PFX + " biomes selftest details y=" + y
+                    + " bits=" + vanilla.bitsPerEntry() + " pos=" + pos.x + "," + pos.z);
+        } catch (Throwable t) {
+            System.out.println(PFX + " biomes selftest FAIL (throwable " + t + ")");
+        }
+    }
+
+    /**
      * NEVER-PATH reflection replica of the vanilla lambda body:
      * codec.parse(NbtOps, tag).promotePartial(-> log).getOrThrow(msg -> new
      * ChunkReadException(msg)). Used only if the depth guard ever fires.
@@ -343,6 +495,10 @@ public final class ChunkParseOps {
         return PFX + " sections=" + sections + " hits=" + hits + " misses=" + misses
                 + " codecs=" + codecs + " cap=" + CACHE_CAP
                 + " evicted=" + evictions
-                + " selftest=" + (SELFTEST_SECTIONS - selftestLeft);
+                + " selftest=" + (SELFTEST_SECTIONS - selftestLeft)
+                + " biomesSections=" + biomesSections
+                + " biomesHits=" + biomesHits + " biomesMisses=" + biomesMisses
+                + " union=" + CARRIER_UNION_423 + "/" + CARRIER_UNION_435
+                + "/" + CARRIER_UNION_437;
     }
 }
