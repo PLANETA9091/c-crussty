@@ -46,6 +46,17 @@ import net.kyori.adventure.util.TriState;
  * ONLY on full-path items (moving + 1/32 recheck) — settled items cost one
  * vanilla inactiveTick + one snapshot write.
  *
+ * CYCLE-3 (TASK-448-B, RESEARCH-B-446-ITEMS.md §7): DRAIN-THROTTLE — the
+ * snapshot append + the bulk planeDecide drain happen once per
+ * {@link #DRAIN_EVERY} = 4 server ticks per region thread (meta[6]); between
+ * drains items only probe the decision hash. Decisions are 4..8 ticks stale
+ * (inside the accepted 32-tick recheck envelope, §7.5; unknown ids stay FULL
+ * fail-open; fresh drops run FULL until their first sighting). The rust
+ * recheck cadence is TICK-TRUE (tickCount − last_full_tick ≥ 32), so the
+ * cadence is invariant under the throttle. Also new: X-RAY reason counters
+ * (stats[3..7]: ground/fluid/hdsqr/pickupDelay/other) printed in the EFFECT
+ * log — the per-run answer to "why does an item run FULL" (§7.6).
+ *
  * GATE (double): ENABLED baked at compile from
  * {@code "cmp446_items".equals(getenv("CRUSSTY_LEVER_FLAG"))} AND the rust
  * side arms only on the same STRICT-eq flag. Fail-closed: MH resolve /
@@ -95,9 +106,15 @@ public final class ItemBatchOps {
     private static final int F_PORTAL = 8;
     private static final int F_REMOVED = 16;
 
+    /** CYCLE-3: snapshot append + decide run once per 4 server ticks per
+     *  region thread (the vanilla move-gate quantum); between drains items
+     *  only probe the decision hash. Decision staleness ≤ 8 ticks — inside
+     *  the accepted 32-tick recheck envelope (RESEARCH §7.5). */
+    private static final int DRAIN_EVERY = 4;
+
     // ---- per-thread plane state (no nested classes: parallel ThreadLocals) ----
     // META: [0]=batchTick, [1]=top (snap fill), [2]=hashMask, [3]=hashCount,
-    //       [4]=drainGen, [5]=lastEffectTick
+    //       [4]=drainGen, [5]=lastEffectTick, [6]=lastDrainTick (throttle)
     private static final ThreadLocal<long[]> META =
             ThreadLocal.withInitial(() -> new long[8]);
     private static final ThreadLocal<double[]> SNAP =
@@ -155,16 +172,23 @@ public final class ItemBatchOps {
         }
         long[] meta = META.get();
         long st = MinecraftServer.getServer().getTickCount();
-        if (meta[1] == 0L || st != meta[0]) {
+        // CYCLE-3 drain-throttle: append+decide once per DRAIN_EVERY ticks;
+        // between drains items only probe the decision hash. meta[6]=0 before
+        // the first drain -> the first entry always drains (empty drain is a
+        // no-op that still stamps meta[0]/meta[6]).
+        boolean drainTick = st - meta[6] >= DRAIN_EVERY;
+        if (drainTick && (meta[1] != 0L || st != meta[0])) {
             drain(meta, st);
             if (broken) {
                 vanillaTick(e);
                 return;
             }
         }
-        append(meta, e);
-        // decisions hold the PREVIOUS batch's classification (1-tick-stale;
-        // unknown ids -> FULL, the fail-open direction)
+        if (drainTick) {
+            append(meta, e);
+        }
+        // decisions hold the last drained batch's classification (up to 8
+        // ticks stale under the throttle; unknown ids -> FULL, fail-open)
         int action = lookup(meta, e.getId());
         if (action == 1) {
             // REST: vanilla minimal body (counters + full despawn flow) +
@@ -199,6 +223,7 @@ public final class ItemBatchOps {
         int nDoubles = (int) meta[1];
         meta[0] = st;
         meta[1] = 0L;
+        meta[6] = st; // throttle anchor (CYCLE-3)
         if (nDoubles <= 0) {
             return;
         }
@@ -233,10 +258,15 @@ public final class ItemBatchOps {
         buildHash(meta, snap, out, n);
         // EFFECT marker: greppable proof the plane is live (max once / 1200
         // ticks / thread; stdout is NOT purged before markers per canon).
+        // CYCLE-3: also the X-ray — why items ran FULL (stats[3..7], primary
+        // reason priority portal/removed -> fluid -> pickupDelay -> ground ->
+        // hdsqr; see RESEARCH-B-446-ITEMS.md §7.6).
         if (st - meta[5] >= 1200L) {
             meta[5] = st;
             LOG.info("[crussty-plugin] items_batch: EFFECT tick=" + st + " n=" + n
                     + " rest=" + stat[1] + " full=" + stat[0] + " rechecks=" + stat[2]
+                    + " throttle=4 ground=" + stat[3] + " fluid=" + stat[4]
+                    + " hdsqr=" + stat[5] + " pd=" + stat[6] + " other=" + stat[7]
                     + " items=" + n + " doubles=" + nDoubles);
         }
     }
@@ -561,6 +591,43 @@ public final class ItemBatchOps {
                 return false;
             }
             if (out[0] != 0) {
+                return false;
+            }
+            // E (cycle-3): throttle cadence — sightings 4 ticks apart must
+            // recheck on the TICK axis (call 8 = tickCount delta 32), NOT on
+            // the sighting count; landing FULL first, REST between.
+            int thId = base + 4;
+            long[] statE = new long[8];
+            int fulls = 0;
+            for (int k = 0; k < 10; k++) {
+                pack(s, thId, 10.5D, 64.0D, 10.5D, 0, 0, 0, 100, 0, 5000 + 4 * k,
+                        F_ON_GROUND);
+                if (planeDecide(s, 1, out, statE) != 0) {
+                    return false;
+                }
+                if (out[0] == 0) {
+                    fulls++;
+                }
+                if (k >= 1 && k <= 7 && out[0] != 1) {
+                    return false; // 4-tick-spaced sighting must be REST
+                }
+                if (k == 8 && out[0] != 0) {
+                    return false; // recheck fires at tickCount delta 32
+                }
+                if (k == 9 && out[0] != 1) {
+                    return false;
+                }
+            }
+            if (fulls != 2) {
+                return false; // exactly landing + 32-tick recheck
+            }
+            // F (cycle-3): X-ray reasons — an in-water item counts as fluid.
+            pack(s, base + 5, 10.5D, 64.0D, 10.5D, 0, 0, 0, 100, 0, 6000,
+                    F_ON_GROUND | F_IN_WATER);
+            if (planeDecide(s, 1, out, statE) != 0) {
+                return false;
+            }
+            if (out[0] != 0 || statE[4] < 1) {
                 return false;
             }
             return true;

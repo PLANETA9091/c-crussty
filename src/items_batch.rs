@@ -18,18 +18,27 @@
 //! collision 25% of the 29.5% items lane) therefore run ONLY on full-path
 //! items — settled items cost one vanilla inactiveTick + one snapshot write.
 //!
-//! RUST PLANE: sharded `Mutex<HashMap<id, (rest_seq, last_epoch)>>` (64
+//! RUST PLANE: sharded `Mutex<HashMap<id, (last_full_tick, last_epoch)>>` (64
 //! shards, one uncontended lock per item sighting). Decision per entry:
 //!   - eligibility = items_subsys2 planeResting replica: onGround &&
 //!     pickupDelay in {0, 32767} && !inWater && !inLava && !portal &&
 //!     !removed && horizontalDistanceSqr <= 9.999999747378752E-6 (the EXACT
 //!     vanilla move-gate constant, ItemEntity.tick offsets 226..270).
-//!   - ineligible -> FULL + rest_seq reset (any move/push/fluid re-converges
-//!     the next tick through the snapshot's velocity/flags).
-//!   - eligible -> rest_seq += 1; FULL on the landing tick (rest_seq == 1)
-//!     and on the faithful recheck (rest_seq % 32 == 0) — the SAME accepted
-//!     items_subsys2 REST_PLANE deviation (fluid/fire/inside onset latency
-//!     <= 32 ticks); REST otherwise.
+//!
+//! CYCLE-3 (TASK-448-B): (1) recheck cadence is TICK-TRUE — full vanilla body
+//! when `tickCount - last_full_tick >= 32` (was sighting-count rest_seq % 32)
+//! so the cadence is invariant under the java drain-throttle (append+decide
+//! once per DRAIN_EVERY=4 ticks, decisions 4..8 ticks stale — inside the
+//! accepted items_subsys2 recheck envelope, RESEARCH-B-446-ITEMS.md §7.5);
+//! (2) X-ray: stats[3..7] = primary ineligibility reason counters
+//! (ground/fluid/hdsqr/pickupDelay/other) for the java EFFECT log (§7.6).
+//!   - ineligible -> FULL + last_full_tick = MUST_LAND (any move/push/fluid
+//!     re-converges through the snapshot's velocity/flags; the next eligible
+//!     sight is a fresh landing FULL).
+//!   - eligible -> FULL on the landing tick and on the faithful recheck
+//!     (tickCount - last_full_tick >= 32) — the SAME accepted items_subsys2
+//!     REST_PLANE deviation (fluid/fire/inside onset latency <= 32 ticks);
+//!     REST otherwise.
 //! Ids are monotonic and never reused (vanilla Entity entity-id counter), so
 //! stale entries are swept lazily by last_epoch (GC every 1024 epochs, keep
 //! window 4096 epochs) — an item re-observed after a sweep just re-lands
@@ -104,8 +113,11 @@ const SHARDS: usize = 64;
 const FULL: i32 = 0;
 const REST: i32 = 1;
 /// Faithful recheck period (vanilla-equivalent full tick every 32nd resting
-/// tick; items_subsys2 REST_PLANE-identical accepted deviation).
+/// tick; items_subsys2 REST_PLANE-identical accepted deviation). Cycle-3:
+/// applied on the SNAPSHOT tickCount axis (tick-true), not sighting counts.
 const RECHECK: i64 = 32;
+/// Sentinel last_full_tick: the next eligible sighting is a LANDING (full).
+const MUST_LAND: i64 = i64::MIN;
 /// Vanilla move-gate constant (ItemEntity.tick offsets 226..270):
 /// horizontalDistanceSqr() < 9.999999747378752E-6.
 const REST_HDSQR: f64 = 9.999_999_747_378_752E-6;
@@ -118,7 +130,10 @@ const F_IN_LAVA: i32 = 4;
 const F_PORTAL: i32 = 8;
 const F_REMOVED: i32 = 16;
 
-type ItemState = (i64, i64); // (rest_seq, last_epoch)
+/// (last_full_tick, last_epoch): last_full_tick = snapshot tickCount of the
+/// last FULL issuance for the id (MUST_LAND = the next eligible sight is a
+/// landing); last_epoch = drain epoch of the last sighting (stale-GC only).
+type ItemState = (i64, i64);
 
 fn shards() -> &'static [Mutex<HashMap<i32, ItemState>>; SHARDS] {
     static S: OnceLock<[Mutex<HashMap<i32, ItemState>>; SHARDS]> = OnceLock::new();
@@ -146,9 +161,29 @@ fn eligible(flags: i32, hdsqr: f64, pd: i64) -> bool {
         && hdsqr <= REST_HDSQR
 }
 
+/// Primary ineligibility reason (X-ray, RESEARCH-B-446-ITEMS.md §7.6). One
+/// deterministic bucket per ineligible sighting; priority portal/removed ->
+/// fluid -> pickupDelay -> ground -> hdSqr. Indices = stats[3..8] slots.
+#[inline]
+fn reason_of(flags: i32, hdsqr: f64, pd: i64) -> usize {
+    if (flags & (F_PORTAL | F_REMOVED)) != 0 {
+        7
+    } else if (flags & (F_IN_WATER | F_IN_LAVA)) != 0 {
+        4
+    } else if !(pd == 0 || pd == 32767) {
+        6
+    } else if (flags & F_ON_GROUND) == 0 {
+        3
+    } else {
+        5
+    }
+}
+
 /// Batch decision core over the raw snapshot slice (pure, unit-testable).
 /// Writes out[i] in {FULL, REST}; bumps stats[0]=full, stats[1]=rest,
-/// stats[2]=recheck-fulls; returns 0 or a negative structural code.
+/// stats[2]=recheck-fulls, stats[3..8]=primary ineligibility reasons (X-ray,
+/// only when the caller's stats slice is long enough); returns 0 or a
+/// negative structural code.
 fn decide_batch(snap: &[f64], out: &mut [i32], stats: &mut [i64]) -> i32 {
     let n = out.len();
     if snap.len() < n * STRIDE {
@@ -158,6 +193,7 @@ fn decide_batch(snap: &[f64], out: &mut [i32], stats: &mut [i64]) -> i32 {
     let mut full = 0i64;
     let mut rest = 0i64;
     let mut rechecks = 0i64;
+    let mut reasons = [0i64; 5]; // stats[3..8]: ground/fluid/hdsqr/pd/other
     for i in 0..n {
         let b = i * STRIDE;
         let id = snap[b] as i64 as i32;
@@ -165,6 +201,8 @@ fn decide_batch(snap: &[f64], out: &mut [i32], stats: &mut [i64]) -> i32 {
         let vx = snap[b + 4];
         let vz = snap[b + 6];
         let pd = snap[b + 8] as i64;
+        let tick = snap[b + 9] as i64;
+        let hdsqr = vx * vx + vz * vz;
         let action = {
             let shard = &shards()[shard_of(id)];
             let mut g = match shard.lock() {
@@ -173,42 +211,55 @@ fn decide_batch(snap: &[f64], out: &mut [i32], stats: &mut [i64]) -> i32 {
             };
             match g.get_mut(&id) {
                 Some(st) => {
-                    if eligible(flags, vx * vx + vz * vz, pd) {
-                        st.0 += 1;
-                        st.1 = epoch;
-                        if st.0 == 1 {
+                    if eligible(flags, hdsqr, pd) {
+                        // CYCLE-3 tick-true cadence: the landing is the first
+                        // eligible sight after MUST_LAND (or fresh); rechecks
+                        // fire when the real tickCount moved >= 32 since the
+                        // last FULL issuance — invariant under the java
+                        // drain-throttle (sightings may be 4 ticks apart).
+                        if st.0 == MUST_LAND {
+                            st.0 = tick;
                             FULL
-                        } else if st.0 % RECHECK == 0 {
+                        } else if tick - st.0 >= RECHECK {
+                            st.0 = tick;
                             rechecks += 1;
                             FULL
                         } else {
+                            st.1 = epoch;
                             REST
                         }
                     } else {
-                        st.0 = 0;
+                        st.0 = MUST_LAND;
                         st.1 = epoch;
                         FULL
                     }
                 }
                 None => {
-                    // Fresh sighting: the landing tick (eligible, seq 1) and
-                    // the ineligible sight both classify FULL — never a REST
+                    // Fresh sighting: the landing tick (eligible) and the
+                    // ineligible sight both classify FULL — never a REST
                     // without a full-tick landing first.
-                    let seq = if eligible(flags, vx * vx + vz * vz, pd) { 1 } else { 0 };
-                    g.insert(id, (seq, epoch));
+                    let ft = if eligible(flags, hdsqr, pd) { tick } else { MUST_LAND };
+                    g.insert(id, (ft, epoch));
                     FULL
                 }
             }
         };
-        match action {
-            REST => rest += 1,
-            _ => full += 1,
+        if action == REST {
+            rest += 1;
+        } else {
+            full += 1;
+            if !eligible(flags, hdsqr, pd) {
+                reasons[reason_of(flags, hdsqr, pd) - 3] += 1;
+            }
         }
         out[i] = action;
     }
     stats[0] = full;
     stats[1] = rest;
     stats[2] = rechecks;
+    if stats.len() >= 8 {
+        stats[3..8].copy_from_slice(&reasons);
+    }
     // Lazy stale sweep: every 1024 epochs, drop entries unseen for 4096
     // epochs (~1024 ticks at 4 region threads — far beyond any live item's
     // observation gap; a swept item just re-lands with one FULL tick).
@@ -286,18 +337,25 @@ pub unsafe extern "system" fn items_batch_decide(
     let rc = {
         let src = unsafe { std::slice::from_raw_parts(pinned as *const jni::jdouble, (n as usize) * STRIDE) };
         let dst = unsafe { std::slice::from_raw_parts_mut(pinned_out as *mut jni::jint, n as usize) };
-        let mut st = [0i64; 3];
+        let mut st = [0i64; 8]; // full/rest/rechecks + X-ray reasons[3..8]
         let rc = decide_batch(src, dst, &mut st);
         unsafe {
             (vt.ReleasePrimitiveArrayCritical)(env, out, pinned_out, 0);
             (vt.ReleasePrimitiveArrayCritical)(env, snap, pinned, jni::JNI_ABORT);
         }
+        // The java side passes long[8]; guard for any other caller shape.
+        let k = stat_len.min(8) as usize;
         let sv = [
             st[0] as jni::jlong,
             st[1] as jni::jlong,
             st[2] as jni::jlong,
+            st[3] as jni::jlong,
+            st[4] as jni::jlong,
+            st[5] as jni::jlong,
+            st[6] as jni::jlong,
+            st[7] as jni::jlong,
         ];
-        unsafe { (vt.SetLongArrayRegion)(env, stats, 0, 3, sv.as_ptr()) };
+        unsafe { (vt.SetLongArrayRegion)(env, stats, 0, k as jni::jsize, sv.as_ptr()) };
         rc
     };
     rc
@@ -680,26 +738,30 @@ mod tests {
     use super::*;
 
     fn mk(snap: &mut Vec<f64>, id: i32, vx: f64, pd: i64, flags: i32) {
+        mk_tick(snap, id, vx, pd, flags, 5000.0);
+    }
+
+    fn mk_tick(snap: &mut Vec<f64>, id: i32, vx: f64, pd: i64, flags: i32, tick: f64) {
         snap.push(id as f64);
         snap.extend_from_slice(&[10.5, 64.0, 10.5]);
         snap.extend_from_slice(&[vx, 0.0, 0.0]);
         snap.push(100.0); // age
         snap.push(pd as f64);
-        snap.push(5000.0); // tickCount
+        snap.push(tick); // tickCount — the tick-true recheck axis
         snap.push(flags as f64);
         snap.push(0.0);
     }
 
-    /// Runs `calls` consecutive tick sightings of ONE id; stats are PER-CALL
-    /// in the plane contract (java EFFECT log), so decisions are accumulated
-    /// here from out[0] instead.
+    /// Runs `calls` consecutive 1-tick-apart sightings of ONE id; stats are
+    /// PER-CALL in the plane contract (java EFFECT log), so decisions are
+    /// accumulated here from out[0] instead.
     fn run_one(id: i32, calls: usize, vx: f64, pd: i64, flags: i32) -> (i64, i64, i64) {
-        let mut snap = Vec::new();
-        mk(&mut snap, id, vx, pd, flags);
+        let (mut fulls, mut rests, mut rechecks) = (0i64, 0i64, 0i64);
         let mut out = [FULL; 1];
         let mut stats = [0i64; 3];
-        let (mut fulls, mut rests, mut rechecks) = (0i64, 0i64, 0i64);
-        for _ in 0..calls {
+        for k in 0..calls {
+            let mut snap = Vec::new();
+            mk_tick(&mut snap, id, vx, pd, flags, 5000.0 + k as f64);
             assert_eq!(decide_batch(&snap, &mut out, &mut stats), 0);
             match out[0] {
                 REST => rests += 1,
@@ -711,14 +773,66 @@ mod tests {
     }
 
     /// Landing tick FULL, then REST with a faithful FULL recheck every 32nd
-    /// resting tick: 70 calls -> fulls {seq 1, 32, 64} = 3, rests = 67
-    /// (matches the java selfTest contract rest>0 && full>0 && total==70).
+    /// resting TICK (tick-true axis: fulls when tickCount - last_full >= 32):
+    /// 70 calls -> fulls {tick 5000, 5032, 5064} = 3, rests = 67 (matches the
+    /// java selfTest contract rest>0 && full>0 && total==70).
     #[test]
     fn settled_item_lands_then_rests_with_1_of_32_rechecks() {
         let (full, rest, _recheck) = run_one(0x5E17_0000, 70, 0.0, 0, F_ON_GROUND);
-        assert_eq!(full, 3, "fulls at rest_seq 1, 32, 64");
+        assert_eq!(full, 3, "fulls at tickCount 5000, 5032, 5064");
         assert_eq!(rest, 67);
         assert_eq!(full + rest, 70);
+    }
+
+    /// CYCLE-3 throttle-cadence contract: sightings 4 ticks apart (the java
+    /// drain-throttle DRAIN_EVERY=4) must NOT fire spurious rechecks on the
+    /// sighting axis — the recheck fires only when the REAL tickCount moved
+    /// >= 32 (here: call 8, tick 5032). Under the old rest_seq % 32 cadence
+    /// call 8 would be REST (seq 9) — this test fails on pre-cycle-3 blobs.
+    #[test]
+    fn throttled_sightings_keep_tick_true_recheck() {
+        let id = 0x5E17_0010i32;
+        let mut out = [FULL; 1];
+        let mut stats = [0i64; 8];
+        let mut verdicts = Vec::new();
+        for k in 0..10 {
+            let mut snap = Vec::new();
+            mk_tick(&mut snap, id, 0.0, 0, F_ON_GROUND, 5000.0 + 4.0 * k as f64);
+            assert_eq!(decide_batch(&snap, &mut out, &mut stats), 0);
+            verdicts.push(out[0]);
+        }
+        assert_eq!(verdicts[0], FULL, "landing");
+        for k in 1..8 {
+            assert_eq!(verdicts[k], REST, "4-tick-spaced sighting {} must be REST", k);
+        }
+        assert_eq!(verdicts[8], FULL, "recheck at tickCount delta 32 (call 8)");
+        assert_eq!(verdicts[9], REST);
+    }
+
+    /// X-ray: primary ineligibility reasons land in stats[3..8] (§7.6) with
+    /// the priority portal/removed -> fluid -> pickupDelay -> ground -> hdSqr.
+    #[test]
+    fn xray_reason_counters() {
+        let mut snap = Vec::new();
+        mk_tick(&mut snap, 0x5E17_0020, 0.0, 0, F_ON_GROUND | F_PORTAL, 5000.0);
+        mk_tick(&mut snap, 0x5E17_0021, 0.0, 0, F_ON_GROUND | F_IN_WATER, 5000.0);
+        mk_tick(&mut snap, 0x5E17_0022, 0.0, 10, F_ON_GROUND, 5000.0);
+        mk_tick(&mut snap, 0x5E17_0023, 0.0, 0, 0, 5000.0);
+        mk_tick(&mut snap, 0x5E17_0024, 0.01, 0, F_ON_GROUND, 5000.0);
+        mk_tick(&mut snap, 0x5E17_0025, 0.0, 0, F_ON_GROUND, 5000.0); // eligible
+        let mut out = [FULL; 6];
+        let mut stats = [0i64; 8];
+        assert_eq!(decide_batch(&snap, &mut out, &mut stats), 0);
+        assert_eq!(stats[0], 6, "all six are FULL (5 ineligible + landing)");
+        assert_eq!(stats[1], 0);
+        assert_eq!((stats[3], stats[4], stats[5], stats[6], stats[7]), (1, 1, 1, 1, 1));
+        // A short stats slice must stay legal (no reasons written).
+        let mut snap1 = Vec::new();
+        mk(&mut snap1, 0x5E17_0026, 0.0, 0, F_ON_GROUND | F_IN_WATER);
+        let mut out1 = [FULL; 1];
+        let mut stats3 = [0i64; 3];
+        assert_eq!(decide_batch(&snap1, &mut out1, &mut stats3), 0);
+        assert_eq!(stats3[0], 1);
     }
 
     #[test]
@@ -848,6 +962,10 @@ mod tests {
         // The gate's log literal is the blob-pinned proof (javac keeps string
         // literals, not comments).
         assert!(contains_bytes(b, b"stride misalignment"), "drain n-contract gate missing");
+        // TASK-448-B cycle-3: the X-ray EFFECT literals + throttle must be in
+        // the blob (stats[3..7] reason logging + DRAIN_EVERY=4 gate).
+        assert!(contains_bytes(b, b"hdsqr="), "X-ray EFFECT literals missing");
+        assert!(contains_bytes(b, b"throttle"), "drain-throttle gate missing");
         // S7-163: single classfile (no nested classes) — asserted by the build
         // script guard; here just sanity on the source-of-truth size.
         assert!(b.len() > 10_000, "blob suspiciously small: {}", b.len());

@@ -72,3 +72,70 @@ Profile evidence: `profile/anchorb422/cpu-collapsed.txt` (vanilla anchor, 116234
 ## 6. Budget of the lane vs plan
 
 Expected cut ≈ (rest-fraction) × (1 − 1/32) × (lane minus counters) — with 90% resting ≈ 0.9 × 0.97 × ~85% of 29.5% ≈ 22% of world CPU. Historical caveat: items_subsys2 (bigger scope, index+heap+rest-plane) measured +4.8% median on the old bank v5 fixture (×398, noisy legs +0.0/+12.7) — the current population_target=150000 fixture weights the item lane much heavier (29.5% with 4 stationary fake players); verdict belongs to the bench, min-of-3.
+
+## 7. CYCLE-3 (TASK-448-B, 2026-09-24): coverage audit + refutations + what ships
+
+### 7.1 The BOTTLENECK-448 "collision 25% + fluid 32% residual headroom" premise is stale for resting items
+
+The rest-plane REST path = `e.inactiveTick()` + the vanilla merge cadence — javap re-verified
+on the live round-396-a kernel 2026-09-24: `Entity.inactiveTick()V` is a no-op base (`return`),
+`ItemEntity.inactiveTick()` = pickupDelay-- / age++ / full despawn flow. ZERO fluid scans,
+ZERO collision sweeps, ZERO inside-block checks. I.e. the collision/fluid/inside sub-lanes
+are ALREADY fully cut for REST-classified items; they run only on FULL-path items
+(transients, ineligible, 1/32 rechecks). The real cycle-3 question is therefore
+"why is the FULL fraction high on the 150k fixture" (leg 1r2 lane only 31.17→24.57).
+
+### 7.2 Merge-bucket spatial hash (brief option) — REFUTED on parity grounds (law 4)
+
+Disassembly of the actual candidate enumeration (purpur-1.21.10 + Moonrise):
+`mergeWithNeighbours` → `Level.getEntitiesOfClass(ItemEntity, inflate(itemMerge, …))` →
+Moonrise `EntityLookup.getEntities` (z-region ⊗ x-region loops, ChunkSlicesRegion 32×32,
+chunks asc) → `ChunkEntitySlices.getEntities(Class…)` → `entitiesByClass` (per-class
+`EntityCollectionBySection`) → per-section entity arrays whose order includes swap-remove
+on entity removal. Both a bridge-side order replica and a count-prescreen are non-airtight:
+(a) ORDER — per-section list order mutates via unobservable add/remove (entities added or
+discarded between bridge sightings are invisible); an order-divergent enumeration changes
+which entity survives a multi-candidate merge (survivor position/age/count feed the NEXT
+merge round) = exactly the S7-140 divergence class refuted for pushEntities.
+(b) PRESCREEN (skip the scan when zero possible candidates) — the spawn-hole: entities
+added to the section storage between the last snapshot and this scan (population-topup
+drops, mob-death drops mid-tick) are vanilla candidates no bridge-side summary can count;
+a stale under-count → wrong skip = behavioral break. NOT implemented.
+
+### 7.3 Water-rest eligibility extension — REFUTED (new deviation class)
+
+Surface-bobbing is vanilla-inherent motion: setFluidMovement adds 5.0E-4f/tick while
+vy < 0.0599 (terminal rise ~0.06/tick), buoyancy push keeps re-energizing; a bobbing item
+never satisfies "settled". Freezing the bob = multi-tenths-of-a-block y divergence, far
+beyond the accepted §5 envelope (≤0.02 drift). Submerged items rise (same physics).
+
+### 7.4 Pickup-index — LOW-POTENTIAL
+
+playerTouch = 0 samples on the fixture (fake players idle); the mob-side pickup scans
+(Mob.aiStep getEntitiesOfClass(ItemEntity, pickup-reach)) live in the MOB lane, outside
+the items subsystem (eq-446 measured the whole looting residue at 0.6%).
+
+### 7.5 SHIPPED — drain-throttle ÷4 with tick-true recheck cadence
+
+- Java bridge: snapshot append + planeDecide drain happen once per DRAIN_EVERY=4 server
+  ticks per region thread (meta[6]); between drains items only probe the decision hash.
+  Decision staleness ≤ 8 ticks (batch age 4 at decide + up to 4 ticks of reuse) — inside
+  the accepted §5.1 recheck envelope (32 ticks), magnitude strictly smaller. Unknown ids
+  stay FULL fail-open; fresh drops run FULL until their first sighting.
+- Rust plane: recheck cadence switched from sighting-count (rest_seq % 32) to TICK-TRUE:
+  `tickCount − last_full_tick ≥ 32` (snapshot slot 9), so the cadence is invariant under
+  throttling; landing = first eligible sighting ever / after any ineligible sight
+  (last_full_tick = MIN sentinel); rechecks counter still marks only genuine 32-cadence
+  fulls. Stale-GC unchanged (epoch-based, now drain-epochs).
+- Why: saves ~3/4 of the per-tick snapshot append (12 double stores + ~10 field reads per
+  item) and 3/4 of the drain/buildHash invocations — on the 150k fixture ≈ 105k items ⇒
+  ~1.5-3 ms/tick.
+
+### 7.6 SHIPPED — X-ray: ineligibility reason counters (stats[3..7])
+
+Per drain the plane now also returns WHY items ran FULL: stats[3] not-on-ground,
+stats[4] fluid (water|lava), stats[5] hdSqr above the vanilla move-gate constant,
+stats[6] pickupDelay ∉ {0,32767}, stats[7] portal/removed (primary-reason priority
+portal/removed → fluid → pickupDelay → ground → hdSqr). The java EFFECT log prints them.
+This is the cycle-4 eligibility-extension compass: it turns "why is the FULL fraction
+high" from guesswork into run data.
