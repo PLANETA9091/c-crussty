@@ -80,6 +80,21 @@ public final class ColpushOps {
     private static final String FLAG5 = "cmp436_ins4";
     /** TASK-442-B: ins4-диета rides the carrier (STRICT-OR; cp marker x93). */
     private static final String FLAG6 = "cmp440_ins4d";
+    /** TASK-434-C: chunk-pipeline R5 carrier (STRICT-OR; raw-cp marker
+     * for the check_blobs_sync gate, x93). */
+    private static final String FLAG7 = "cmp434_chunkpl";
+    /** TASK-435-C: R6 carrier (STRICT-OR; raw-cp marker for the
+     * check_blobs_sync gate). */
+    private static final String FLAG8 = "cmp435_chunk3";
+
+    /**
+     * TASK-438-C chunk-pipeline R7 carrier (law 7/8): STRICT-OR successor id
+     * ON TOP of cmp435_chunk3 - the composite now also carries the chunk-send
+     * serialization snapshot plane (round-id hygiene for ROUND-438-C).
+     */
+    private static final String FLAG9 = "cmp437_chunk4";
+    /** TASK-443-B: mega-composition carrier (ins4d + chunk4 union). */
+    private static final String FLAG10 = "cmp443_mega";
     private static final int ERR_STRUCT = -1;
     private static final int ERR_RANGE = -2;
 
@@ -95,7 +110,7 @@ public final class ColpushOps {
 
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5) || f.trim().equals(FLAG6));
+        return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5) || f.trim().equals(FLAG6) || f.trim().equals(FLAG7) || f.trim().equals(FLAG8) || f.trim().equals(FLAG9) || f.trim().equals(FLAG10)); // TASK-443-B: mega union
     }
 
     /** Структурный отказ — весь рычаг дизармится навсегда (ваниль-реплика). */

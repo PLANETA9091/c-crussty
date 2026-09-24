@@ -79,7 +79,7 @@ fn enabled() -> bool {
     match std::env::var("CRUSSTY_LEVER_FLAG") {
         Ok(v) => {
             let v = v.trim();
-            v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2" || v == "cmp436_ins4" || v == "cmp440_ins4d"
+            v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2" || v == "cmp436_ins4" || v == "cmp440_ins4d" || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp443_mega" // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
         }
         Err(_) => false,
     }

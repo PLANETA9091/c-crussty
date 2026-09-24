@@ -118,7 +118,7 @@ fn lever_flag_matches() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let t = v.trim();
-            t == "cmp420_colpush" || t == "cmp424_mobfeed" || t == "cmp430_inside" || t == "cmp432_inside2" || t == "cmp436_ins4" || t == "cmp440_ins4d"
+            t == "cmp420_colpush" || t == "cmp424_mobfeed" || t == "cmp430_inside" || t == "cmp432_inside2" || t == "cmp436_ins4" || t == "cmp440_ins4d" || t == "cmp434_chunkpl" || t == "cmp435_chunk3" || t == "cmp437_chunk4" || t == "cmp443_mega" // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
         })
         .unwrap_or(false)
 }

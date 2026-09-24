@@ -130,7 +130,8 @@ fn enabled() -> bool {
             // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
             | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp440_ins4d")
+            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp440_ins4d") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4")
+            | Ok("cmp443_mega") // TASK-443-B: mega-composition carrier
             | Ok("cmp421_brain")
     )
 }
@@ -174,7 +175,8 @@ fn enabled_flag_is_sense() -> bool {
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
         Ok("cmp421_brain") | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp440_ins4d")
+            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp440_ins4d") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4")
+            | Ok("cmp443_mega") // TASK-443-B: mega-composition carrier
     )
 }
 
@@ -193,7 +195,15 @@ fn enabled_flag_is_brain2() -> bool {
 fn enabled_flag_is_ins4d() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp440_ins4d")
+        Ok("cmp440_ins4d") | Ok("cmp443_mega") // TASK-443-B: mega union carries the diet
+    )
+}
+
+/// TASK-443-B: mega-composition carrier id check (label honesty in markers).
+fn enabled_flag_is_mega() -> bool {
+    matches!(
+        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
+        Ok("cmp443_mega")
     )
 }
 
@@ -625,7 +635,9 @@ pub fn activate() {
         }
 
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
-        let flag_label = if enabled_flag_is_ins4d() {
+        let flag_label = if enabled_flag_is_mega() {
+            "cmp443_mega" // TASK-443-B: mega-composition prints its own id
+        } else if enabled_flag_is_ins4d() {
             "cmp440_ins4d"
         } else if enabled_flag_is_brain2() {
             "cmp422_brain2"
@@ -654,7 +666,7 @@ pub fn activate() {
         if enabled_flag_is_ins4d() {
             // TASK-442-B: громкий DIET-ARM-маркер (капчер ищет "INS4-DIET ARMED").
             eprintln!(
-                "[crussty-plugin] cmp440_ins4d: INS4-DIET ARMED (carrier cmp436_ins4 @07078007 + snapshotQuery diet: CSR slices on, lazy columns on, y-prun on (hh+MARGIN superset), scratch/output reuse on, cell dedup on, sampled profiler bump=16; DIET-GATE self<=2.0%)"
+                "[crussty-plugin] {flag_label}: INS4-DIET ARMED (carrier cmp436_ins4 @07078007 + snapshotQuery diet: CSR slices on, lazy columns on, y-prun on (hh+MARGIN superset), scratch/output reuse on, cell dedup on, sampled profiler bump=16; DIET-GATE self<=2.0%)"
             );
         }
         READY.store(true, Ordering::Release);
@@ -987,7 +999,7 @@ mod tests {
             || s == "cmp411_k4soa"
             || s == "cmp411_eqsnap"
             || s == "cmp412_eqsnapv3" || s == "cmp414_cvs" || s == "cmp417_bq"
-            || s == "cmp421_brain" || s == "cmp422_brain2" || s == "cmp423_brain3" || s == "cmp424_mobfeed" || s == "cmp430_inside" || s == "cmp432_inside2" || s == "cmp436_ins4"
+            || s == "cmp421_brain" || s == "cmp422_brain2" || s == "cmp423_brain3" || s == "cmp424_mobfeed" || s == "cmp430_inside" || s == "cmp432_inside2" || s == "cmp436_ins4" || s == "cmp434_chunkpl" || s == "cmp435_chunk3" || s == "cmp437_chunk4" || s == "cmp443_mega" // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
     }
 
     #[test]

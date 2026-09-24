@@ -120,7 +120,7 @@ fn lever_flag_matches() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let v = v.trim();
-            v == "cmp432_inside2" || v == "cmp430_inside" || v == "cmp436_ins4" || v == "cmp440_ins4d"
+            v == "cmp432_inside2" || v == "cmp430_inside" || v == "cmp436_ins4" || v == "cmp440_ins4d" || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp443_mega"
         })
         .unwrap_or(false)
 }
@@ -134,7 +134,8 @@ fn v4_requested() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let v = v.trim();
-            v == "cmp436_ins4" || v == "cmp440_ins4d"
+            // TASK-443-B: mega-composition carrier rides the V4 serve body.
+            v == "cmp436_ins4" || v == "cmp440_ins4d" || v == "cmp443_mega"
         })
         .unwrap_or(false)
 }
@@ -144,6 +145,7 @@ fn v4_requested() -> bool {
 fn carrier_label() -> &'static str {
     match std::env::var("CRUSSTY_LEVER_FLAG").as_deref().map(str::trim) {
         Ok("cmp440_ins4d") => "cmp440_ins4d",
+        Ok("cmp443_mega") => "cmp443_mega", // TASK-443-B: mega-composition carrier id
         _ => "cmp436_ins4",
     }
 }

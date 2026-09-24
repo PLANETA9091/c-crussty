@@ -61,6 +61,13 @@ mod mobs_sscan;
 mod nav_plane;
 mod nav_pool;
 mod chunk_parse;
+// CHUNK-SEND SERIALIZATION SNAPSHOT (TASK-438-C, lever cmp437_chunk4, law 8
+// widening): byte hook on PlayerChunkSender + ChunkSendOps snapshot-first
+// sender defined at activation, static body-redirect of sendChunk (per-player
+// packet construction -> unsaved-keyed reuse). Dormant unless
+// CRUSSTY_LEVER_FLAG == cmp437_chunk4 (STRICT eq; empty/foreign flag =
+// vanilla bit-in-bit).
+mod chunk_send;
 mod noise_fill;
 mod parse_diag;
 mod zero_cursor;
@@ -285,6 +292,11 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // CRUSSTY_LEVER_FLAG == cmp420_chunk2 (STRICT eq; empty/foreign flag =
     // vanilla bit-in-bit).
     chunk_parse::register();
+    // CHUNK-SEND SERIALIZATION SNAPSHOT (TASK-438-C): pristine capture of
+    // PlayerChunkSender; ChunkSendOps is defined + selfTest-oracled at
+    // activation, then ONE static body-redirect of sendChunk. Dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp437_chunk4 (STRICT eq).
+    chunk_send::register();
     // QUERYPLANE (TASK-417-C, broadphase-query plane on the cvs carrier):
     // Level compose-on-top hook (LAST on Level — receives region_threads'
     // guardEntityTick bytes, composes getEntitiesOfClass +
@@ -624,6 +636,12 @@ fn inject_surface() {
     // lambda$parse$5 -> READY -> retransform SerializableChunkData (dormant
     // unless CRUSSTY_LEVER_FLAG == cmp420_chunk2).
     chunk_parse::activate();
+    // CHUNK-SEND SERIALIZATION SNAPSHOT (TASK-438-C): boot quiet -> define
+    // ChunkSendOps into the kernel loader + selfTest()Z oracle (selfTest==true
+    // до ARM) -> pristine guard -> static body-redirect of sendChunk -> READY
+    // -> retransform PlayerChunkSender (dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp437_chunk4).
+    chunk_send::activate();
 }
 
 /// Define one bridge class and register all its natives.

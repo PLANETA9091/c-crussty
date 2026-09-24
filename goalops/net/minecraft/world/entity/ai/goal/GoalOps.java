@@ -74,7 +74,9 @@ public final class GoalOps {
                 || f.trim().equals("cmp423_brain3")
                 // TASK-426-A: SoA-feed carrier (STRICT OR).
                 || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside") || f.trim().equals("cmp432_inside2") || f.trim().equals("cmp436_ins4")
-                || f.trim().equals("cmp440_ins4d")); // TASK-442-B: ins4-диета STRICT OR
+                || f.trim().equals("cmp440_ins4d")
+                || f.trim().equals("cmp434_chunkpl") || f.trim().equals("cmp435_chunk3") || f.trim().equals("cmp437_chunk4")
+                || f.trim().equals("cmp443_mega")); // TASK-443-B: mega-composition carrier STRICT OR
     }
 
     private static final boolean ENABLED = leverEnabled();
