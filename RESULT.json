@@ -1,20 +1,22 @@
 {
-  "agent": "agent-b (mega-composite TASK-443-B)",
-  "vector": "mega-композиция закона 7: ins4d ⊕ chunk4 — ОДИН носитель round-443-mega, ОДИН рычаг cmp443_mega, STRICT-OR юнион (inside/goal-query-диета vs chunk-send serialization snapshot)",
-  "branch": "round-443-mega @ 5e3a36fb (merge round-442-b-ins4d @d9d1fb30 + round-438-c-chunk4b @c5fe0251)",
-  "run_id": "PENDING (ноги round-443-mega-1/2/3 диспатч след. шагом)",
+  "agent": "A2 (TASK-439-A2, рестарт застрявшего TASK-438-A)",
+  "vector": "cmp438_sense — sensing+brain плоскость: сенсорный скан (targeting/nearest-visible-player/LOS-кандидаты) + goal-selector-приоритизация одним bulk-JNI/тик над SoA-снимком (mobs_soa паттерн: flat x/y/z + seqlock=global-version, носитель-паттерн round-437-a-sscan2) + STRICT-UNION carrier семейства cmp430_inside-эры",
+  "branch": "round-439-a-sense2",
+  "run_id": null,
   "tps_med": null,
-  "delta_norm_pct": null,
-  "lane": "юнион: goal-query snapshotQuery+диета (EntityGoalQueryOps.entitiesOfClassGate) + inside-snap V4 + chunk-send serialization snapshot (ChunkSendOps.sendChunk redirect)",
-  "ARM-статус": "PENDING — ожидание маркеров ОБОИХ семейств в stdout: (ins4d) selfTest=true + inside_snap ARMED + goal-query ARMED cmp443_mega + INS4-DIET ARMED + V4 FLIPPED + INS4-DIET diet active; (chunk4) cmp437_chunk4/cmp443_mega ARMED chunk-send serialization snapshot + chunk4 snapshot selftest PASS + chunk4 send-snapshot first hit",
-  "verdict-gates": "AIOOBE=0, NCDFE=0, selfTest==true, threw=0, band 6.0-9.5M (BAND-DISCARD re-roll <=2), депресс-гейт якорь norm >= -2, pair-by-runner Delta<=50k vs round-443-anchor-1..8, min-of-3 >= +20% pair-stable (мандат)",
-  "verdict": "PENDING-BENCH",
+  "delta_pair_pct": null,
+  "lane_was_became": {
+    "sensing_self_pct_wall": "Sensing.tick 0.6 + Brain.tick 0.81 + tickEachRunningBehavior 0.20 + GoalSelector.tick 0.6 = ~2.2% (anchor-4/ss-1 BOTTLENECKS_3)",
+    "goalquery_chokepoint_pct": "getEntitiesOfClass ~2.7-3.0% (RESEARCH-C-k3) — уже в семействе cmp410_eindexq",
+    "verdict": "sensing-слайс >= 2% wall (~5-7% суммарно с targeting-тестами) — ПЕРЕКЛЮЧЕНИЕ ЛИСТА НЕ ТРЕБУЕТСЯ (порог <2% не пробит); соло-потенциал < +20% ЧЕСТНО — >= +20% только STRICT-UNION carrier (certified +27.3 эффект-линия x432) + sense-батч"
+  },
+  "ram_stw_full": null,
+  "parity": "vanilla bit-for-bit: body-swap getNearestEntity(List,TC,LE,DDD) -> SenseOps.nearestEntityGate; дистанция-обрезка `d>=bestD skip test` = кандидат не может выиграть лестницу (d==-1.0||e<d) => pick = min-dist passing, tie-keep-earlier — равен ванили при ЛЮБОЙ свежести rust-снапшота; fail-closed -> байт-точная ваниль-реплика",
+  "verdict": "INFRA",
   "evidence": [
-    "merge-conflicts: 45 UU файлов — 19 rust + 9 java = gate-union (все lever-сайты обеих сторон сохранены + cmp443_mega), ColpushOps FLAG4..6 (ins4d) + FLAG7/8/9 (chunk4) + FLAG10 mega, lever_id/label-цепи (queryplane lever_id, MobPushOps label, EntityGoalQueryOps FLAG_LABEL), check_blobs_sync needle-union, RESULT.json ours, .class rebuild",
-    "STRICT-eq хвосты дозакрыты (урок x438): EntityGoalQueryOps.dietMode/senseMode, entity_query enabled_flag_is_ins4d + flag_label + INS4-DIET ARMED (label динамический), inside_snap v4_requested + carrier_label, chunk_send enabled + cmp443_mega ARMED маркер",
-    "rust гейты: 22 файла, все lever-сайты с cmp443_mega отдельной альтернативой; cargo check --lib green 7.2s; cargo test 310/310 (0 failed)",
-    "java гейты: 9 файлов + ChunkParseOps CARRIER_UNION_443; build_430b_blobs OK (12 блобов flat==nested), build_chunkparse_ops OK, chunksend blob pristine-нетронут; check_blobs_sync ALL IN SYNC; raw-byte grep cmp443_mega в 6 ключевых блобах flat+nested; javap SENSE/DIET/FLAG_LABEL + ColpushOps FLAG4..10",
-    "чужие round-443-* ветки не читались (кроме ls-remote якорей round-443-anchor-1..8 @c9060b1f master)"
+    "TASK-438-A ветка round-438-a-sense @bcfb18fb = 0 коммитов сверх master (застой подтверждён: только untracked round-396-a jar в worktree)",
+    "javap ground truth: getNearestPlayer(TargetingConditions,...) x5 + getNearestEntity(List,...) — DEFAULT-методы ServerEntityGetter (ServerLevel НЕ переопределяет); тело chokepoint снято javap -c",
+    "worktree round-439-a-sense2 создан от origin/master afbcde61"
   ],
-  "what": "юнион-композиция двух сильнейших непарных банков эры: ins4d-база (+22.2 абс 3.20TPS) + chunk4 (+9.1..+17.1 GREEN x6) — ожидание +25-30%+ аддитивно по разным подсистемам"
+  "what": "PHASE-0/PHASE-1: worklog+GOAL x120/x121 прочитаны; lane-рисёрч по round-438 ABSORB/BOTTLENECKS + RESEARCH-A-439-SENSE.md (дизайн+ground truth); RESULT.json write-through инициализирован"
 }
