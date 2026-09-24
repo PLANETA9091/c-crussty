@@ -1,22 +1,20 @@
 {
-  "agent": "agent-b (ins4-diet рестарт TASK-440-B)",
-  "vector": "ins4-диета snapshotQuery поверх носителя round-436-b-ins6 (lever cmp440_ins4d = cmp436_ins4 + диета RESEARCH-439-EQW §3)",
-  "branch": "round-442-b-ins4d @ b67768fa (diet code c2ed1090)",
-  "run_id": "PENDING (ноги round-442b-ins4d-1/-2 диспатчены)",
+  "agent": "agent-b (mega-composite TASK-443-B)",
+  "vector": "mega-композиция закона 7: ins4d ⊕ chunk4 — ОДИН носитель round-443-mega, ОДИН рычаг cmp443_mega, STRICT-OR юнион (inside/goal-query-диета vs chunk-send serialization snapshot)",
+  "branch": "round-443-mega @ 5e3a36fb (merge round-442-b-ins4d @d9d1fb30 + round-438-c-chunk4b @c5fe0251)",
+  "run_id": "PENDING (ноги round-443-mega-1/2/3 диспатч след. шагом)",
   "tps_med": null,
   "delta_norm_pct": null,
-  "lane": "goal-query snapshotQuery (обслуживает NearestAttackableTargetGoal.findTarget + AvoidEntityGoal.canUse через EntityGoalQueryOps.entitiesOfClassGate)",
-  "ARM-статус": "маркер-капчер по завершении ноги (ожидание: cmp440_ins4d: INS4-DIET ARMED (rust) + V4 serve body FLIPPED + selfTest=true + epoch ok + INS4-DIET diet active (java first served))",
-  "DIET-GATE-статус": "PENDING — приёмка: snapshotQuery self ≤ 2.0% (было 3.4-3.5% на ins4-ногах ×437/×438)",
+  "lane": "юнион: goal-query snapshotQuery+диета (EntityGoalQueryOps.entitiesOfClassGate) + inside-snap V4 + chunk-send serialization snapshot (ChunkSendOps.sendChunk redirect)",
+  "ARM-статус": "PENDING — ожидание маркеров ОБОИХ семейств в stdout: (ins4d) selfTest=true + inside_snap ARMED + goal-query ARMED cmp443_mega + INS4-DIET ARMED + V4 FLIPPED + INS4-DIET diet active; (chunk4) cmp437_chunk4/cmp443_mega ARMED chunk-send serialization snapshot + chunk4 snapshot selftest PASS + chunk4 send-snapshot first hit",
+  "verdict-gates": "AIOOBE=0, NCDFE=0, selfTest==true, threw=0, band 6.0-9.5M (BAND-DISCARD re-roll <=2), депресс-гейт якорь norm >= -2, pair-by-runner Delta<=50k vs round-443-anchor-1..8, min-of-3 >= +20% pair-stable (мандат)",
   "verdict": "PENDING-BENCH",
   "evidence": [
-    "carrier: origin/round-436-b-ins6 @07078007 (lever cmp436_ins4, линия +22.8/+15.2 абсолюты, +15.6/+9.2 депресс-окна)",
-    "rust STRICT-OR x18 файлов (enabled/sense/inside_snap v4+carrier_label/queryplane labels/colpush/goal_selector/mobs_*/items_*/stagger/tickplane/chunk_parse/collide_batch/noise_fill) + INS4-DIET ARMED маркер",
-    "java STRICT-OR x8 файлов (EntityGoalQueryOps leverEnabled+SENSE+DIET+FLAG_LABEL, MobPushOps x2+label, ItemEntityManager x3, MobScanOps/QueryPlaneOps/GoalOps/MobAiOps/ColpushOps FLAG6)",
-    "diet path dietSnapshotQuery: bucket-dedup (окно ≤1024) + CSR-слайсы (DIET=>SENSE, arena_matches_chain_walk паритет) + lazy 3-стадийный прун (center r_eff<=2.0 -> точный hw -> y-prun fy±fhh±MARGIN) + OUT_SCRATCH reuse c depth-guard + sampled profiler bump=16 + INS4-DIET diet active маркер",
-    "гейты: cargo check --lib ok (7.1s); cargo test entity_query 14/14; build_430b_blobs flat==nested OK; check_blobs_sync ALL IN SYNC; javap: dietSnapshotQuery/acquireOut/releaseOut + cp-маркеры cmp440_ins4d/INS4-DIET diet active",
-    "nearest-редукция до 1 элемента ОТКЛОНЕНА javap-цензом: getNearestEntity применяет TargetingConditions ПОСЛЕ gate-pred — редукция по distance среди pred-passing рвёт паритет (pred-passing nearest может fail conditions при проходящем дальнем)",
-    "диспатч: round-442b-ins4d-1/-2 @b67768fa, world-bench-parallel.yml, INPUTS РОВНО по брифу, lever_flag=cmp440_ins4d, lever_arg=1"
+    "merge-conflicts: 45 UU файлов — 19 rust + 9 java = gate-union (все lever-сайты обеих сторон сохранены + cmp443_mega), ColpushOps FLAG4..6 (ins4d) + FLAG7/8/9 (chunk4) + FLAG10 mega, lever_id/label-цепи (queryplane lever_id, MobPushOps label, EntityGoalQueryOps FLAG_LABEL), check_blobs_sync needle-union, RESULT.json ours, .class rebuild",
+    "STRICT-eq хвосты дозакрыты (урок x438): EntityGoalQueryOps.dietMode/senseMode, entity_query enabled_flag_is_ins4d + flag_label + INS4-DIET ARMED (label динамический), inside_snap v4_requested + carrier_label, chunk_send enabled + cmp443_mega ARMED маркер",
+    "rust гейты: 22 файла, все lever-сайты с cmp443_mega отдельной альтернативой; cargo check --lib green 7.2s; cargo test 310/310 (0 failed)",
+    "java гейты: 9 файлов + ChunkParseOps CARRIER_UNION_443; build_430b_blobs OK (12 блобов flat==nested), build_chunkparse_ops OK, chunksend blob pristine-нетронут; check_blobs_sync ALL IN SYNC; raw-byte grep cmp443_mega в 6 ключевых блобах flat+nested; javap SENSE/DIET/FLAG_LABEL + ColpushOps FLAG4..10",
+    "чужие round-443-* ветки не читались (кроме ls-remote якорей round-443-anchor-1..8 @c9060b1f master)"
   ],
-  "what": "W2-диета snapshotQuery на ins4-носителе: 6 механизмов из RESEARCH-439-EQW §3.2 (CSR-слайсы, lazy columns, y-прун, scratch/output-reuse, дедуп ячеек, sampled profiler bump), DIET-GATE self<=2.0%, цель = +1.4-1.7пп wall к ins4-линии для пары >=+20%"
+  "what": "юнион-композиция двух сильнейших непарных банков эры: ins4d-база (+22.2 абс 3.20TPS) + chunk4 (+9.1..+17.1 GREEN x6) — ожидание +25-30%+ аддитивно по разным подсистемам"
 }
