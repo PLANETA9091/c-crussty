@@ -101,6 +101,8 @@ public final class ItemEntityManager {
                     || "cmp417_bq".equals(LEVER_FLAG)
                     // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
                     || "cmp420_colpush".equals(LEVER_FLAG)
+                    // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
+                    || "cmp445_collide".equals(LEVER_FLAG)
                     // TASK-421-A: brain-носитель (STRICT OR).
                     || "cmp421_brain".equals(LEVER_FLAG)
                     // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
@@ -151,6 +153,8 @@ public final class ItemEntityManager {
                     || "cmp417_bq".equals(LEVER_FLAG)
                     // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
                     || "cmp420_colpush".equals(LEVER_FLAG)
+                    // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
+                    || "cmp445_collide".equals(LEVER_FLAG)
                     // TASK-421-A: brain-носитель (STRICT OR).
                     || "cmp421_brain".equals(LEVER_FLAG)
                     // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
@@ -184,6 +188,8 @@ public final class ItemEntityManager {
                     || "cmp417_bq".equals(LEVER_FLAG)
                     // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
                     || "cmp420_colpush".equals(LEVER_FLAG)
+                    // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
+                    || "cmp445_collide".equals(LEVER_FLAG)
                     // TASK-421-A: brain-носитель (STRICT OR).
                     || "cmp421_brain".equals(LEVER_FLAG)
                     // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).

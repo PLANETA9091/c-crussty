@@ -84,6 +84,8 @@ fn lever_flag_matches() -> bool {
                 || v == "cmp412_eqsnapv3" || v == "cmp414_cvs" || v == "cmp417_bq"
                 // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
                 || v == "cmp420_colpush"
+                // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
+                || v == "cmp445_collide"
                 || v == "cmp412_eqsnapv3" || v == "cmp414_cvs" || v == "cmp417_bq" || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside"
         })
         .unwrap_or(false)
@@ -236,6 +238,9 @@ pub fn activate() {
                     || v == "cmp409_multi" || v == "cmp412_meganav" || v == "cmp414_cvs"
                 // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
                 || v == "cmp412_eqsnapv3" || v == "cmp414_cvs" || v == "cmp417_bq" || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside"
+                // TASK-445-A: collide+broadphase+push plane round (segment-маркер
+                // носителя; additive STRICT-OR).
+                || v == "cmp445_collide"
             })
             .unwrap_or(false)
         {

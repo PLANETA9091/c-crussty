@@ -91,6 +91,8 @@ fn java_gate_matches(f: &str) -> bool {
         // TASK-419-A (colpush): колпаш-носитель — SoA-плоскость + eqsnap
         // (столбцы кормит colpush_plane_refresh, per-entity upsert спит).
         || f == "cmp420_colpush"
+        // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
+        || f == "cmp445_collide"
         || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside"
         || f == GATE_LEVER_SSCAN
         || f == "cmp410_eindexq" || f == "cmp411_k4soa" || f == "cmp411_eqsnap"
@@ -470,10 +472,17 @@ pub fn activate() {
             eprintln!(
                 "[crussty-plugin] cmp412_eqsnapv3: ARMED meganav⊕eqsnap soa-population+push-snapshot (flat-arrays seqlock=global-version writer=global-mutex ids_cap=1048576 cell_cap=262144 cell=1.0 pad=2 radius_gate=2.0 rust_prune=coarse-hw-hh; STRICT OR: плоскости cmp412_meganav (multi⊕navplane+navpool, tickplane, ai-window, sscan, items, stagger, collide-batch) || eqsnap-плоскость; dirty-дельты: mob_upsert = append (id,alive,x,y,z,hw,hh) в пер-потоковый DeltaShard (16×8192, 0 локов/seqlock/хэша), eq_epoch СНАЧАЛА drain_eqsnap_shards O(dirty) один WLOCK, ПОТОМ full chain-build; pushEntities -> MobPushOps.pushables лестница eqsnap = снапшот → vanillaFill (cell-цепи плоскости невалидны, легаси mobQuery/grid пропущены; ai/sscan read-views = состояние ПОСЛЕ drain, ≤1-тик ghost); per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT)"
             );
-        } else if f == "cmp420_colpush" {
+        } else if f == "cmp420_colpush" || f == "cmp445_collide" {
             eprintln!(
                 "[crussty-plugin] cmp420_colpush: ARMED soa-population (flat-arrays seqlock=global-version writer=global-mutex ids_cap=1048576 cell_cap=262144 cell=1.0 pad=2 radius_gate=2.0; STRICT OR носитель cmp417_bq-эры + colpush: pushEntities whole-body redirect -> ColpushOps (per-entity mobUpsert спит), плоские колонки кормит colpush_plane_refresh одним WLOCK/тик, eq_epoch chain-build жив; per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT)"
             );
+            if f == "cmp445_collide" {
+                // TASK-445-A: семейный ARM-маркер (ARM-пруф вердикта: маркер
+                // обязан содержать 'cmp445_collide' + 'ARMED').
+                eprintln!(
+                    "[crussty-plugin] cmp445_collide: ARMED carrier stack (cmp420-certified colpush ⊕ collide-batch ⊕ queryplane ⊕ eqsnap ⊕ chunk-parse ⊕ sscan/ai/items-плоскости; ДЕЛЬТА = colpushTick2 bucket-prune wide-phase: 16.0-бакеты + per-(row,bucket) reach-prune, CSR = оракул brute-force O(N^2), cargo test 4 suites; additивный STRICT-OR — прежние флаги несут прежние точные хвосты, пустой флаг = ваниль)"
+                );
+            }
         } else {
             eprintln!(
                 "[crussty-plugin] cmp401_soa: ARMED soa=flat-arrays seqlock=global-version writer=global-mutex ids_cap=1048576 cell_cap=262144 cell=1.0 pad=1.0 radius_gate=1.0 rust_prune=coarse-hw-hh (rust mobs_soa SoA flat x/y/z/hw/hh/flags; pushEntities tail untouched vanilla; per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT)"

@@ -312,6 +312,8 @@ fn eqsnap_mode() -> bool {
         // и read-views живут; colpush_plane_refresh кормит колонки.
         || f == "cmp420_colpush"
         || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside"
+        // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
+        || f == "cmp445_collide"
 }
 
 /// Strict gate: natives work only under the exact lever flag (STRICT eq;
@@ -353,6 +355,8 @@ fn lever_mode() -> bool {
         // colpush_plane_refresh одним WLOCK/тик).
         || f == "cmp420_colpush"
         || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside"
+        // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
+        || f == "cmp445_collide"
         // TASK-410-C (eindexq): K3-пивот R2 — SoA-плоскость = источник
         // популяции для goal-query CSR-снапшота (EntityQueryOps.eqEpoch;
         // sscan-прецедент TASK-406-E).
@@ -367,6 +371,8 @@ fn lever_mode() -> bool {
         // вызывается (pushEntities whole-body redirect), плоскость кормится
         // colpush_plane_refresh; read-views sscan/ai/eq сохранены.
         || f == "cmp420_colpush"
+        // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
+        || f == "cmp445_collide"
 }
 
 // ---------------------------------------------------------------------------

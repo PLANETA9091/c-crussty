@@ -1,11 +1,18 @@
 {
  "agent": "agent-a",
- "vector": "collide+broadphase+push plane (cmp445_collide)",
+ "vector": "collide+broadphase+push plane (cmp445_collide = certified cmp420_colpush carrier + colpushTick2 bucket-prune delta)",
  "branch": "round-445-a-collide",
  "run_id": null,
  "tps_med": null,
  "delta_pair_pct": null,
- "verdict": "RESEARCH-PHASE",
- "evidence": "RESEARCH-445-A.md: javap-censor 5 sites + anchor-10 lane union 32.15% (query 7.9/collide 7.75/push 4.64); design = certified cmp420_colpush carrier (x420 +29.5 pair) via additive STRICT-OR tails + NEW colpushTick2 bucket-prune native",
- "what": "phase-1 research done"
+ "lane": "collide+push union 32.15% wall (anchor-10) -> goal: carrier re-ride + delta",
+ "ram_stw_full": null,
+ "parity": "STRICT-OR additive: empty flag = vanilla bit-in-byte; CSR oracle-tested vs brute-force O(N^2) (4 suites, incl. exact-touch strict-< boundary, y-separation, filter garbage, retry idempotency)",
+ "verdict": "IMPL-PHASE (step-2 done, leg pending)",
+ "evidence": "src/colpush.rs: colpush_tick fork -> buckets_scan/buckets_fill (16.0-chunk-buckets, per-(row,bucket) reach-prune margin=ra+bmaxh[slot] eps=1e-9, slot-dedup, unconditional bhead clear = ERR_RANGE retry idempotent, PASS5 plane-refresh bit-in-byte); cargo check+test 305/0 GREEN; blobs rebuilt build_430b_blobs.sh + build_chunkparse_ops.sh; check_blobs_sync ALL IN SYNC (8 classes carry cmp445_collide in cp, flat==nested byte-identical, major 65)",
+ "what": "step-2: STRICT-OR gates (rust 17 files, java 8 bridges) + colpushTick2 bucket-prune native + family ARMED marker (cmp445_collide: ARMED carrier stack) + bulk EFFECT marker (colpushTick2 bucket-prune; first tick N)",
+ "steps_log": {
+  "step1": "3dee7b01 research+design (javap-censor 5 sites, lane union 32.15%)",
+  "step2": "impl: dirty-state audit (kept: coherent WIP of interrupted session; fixed items_manager chain fork, bmaxh f32->f64 soundness, bstamp->unconditional-clear idempotency) + colpushTick2 + markers + tests + blobs; cargo 305/0; sync ALL IN SYNC"
+ }
 }

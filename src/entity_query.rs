@@ -127,6 +127,8 @@ fn enabled() -> bool {
             // TASK-419-A (colpush): колпаш-носитель — eq_epoch снапшот жив
             // (плоскость кормит colpush_plane_refresh).
             | Ok("cmp420_colpush")
+            // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
+            | Ok("cmp445_collide")
             // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
             | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).

@@ -73,6 +73,8 @@ fn lever_flag_matches() -> bool {
                 || v.trim() == "cmp417_bq"
                 // TASK-419-A (colpush): колпаш-носитель — queryplane awake.
                 || v.trim() == "cmp420_colpush"
+                // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
+                || v.trim() == "cmp445_collide"
                 || v.trim() == "cmp421_brain" || v.trim() == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside"
         })
         .unwrap_or(false)
@@ -83,6 +85,8 @@ fn lever_flag_matches() -> bool {
 fn lever_id() -> &'static str {
     match std::env::var("CRUSSTY_LEVER_FLAG").as_deref() {
         Ok("cmp420_colpush") => "cmp420_colpush",
+        // TASK-445-A: collide+broadphase+push plane round — свой id в EFFECT-маркерах.
+        Ok("cmp445_collide") => "cmp445_collide",
         // TASK-426-A: SoA-feed carrier — свой id в ARM/EFFECT-маркерах.
         Ok("cmp424_mobfeed") => "cmp424_mobfeed",
         // TASK-430-B: inside-plane subsystem round — свой id.
