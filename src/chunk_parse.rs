@@ -135,7 +135,7 @@ fn enabled() -> bool {
                 || v == "cmp434_chunkpl"
                 // TASK-435-C: R6 carrier (STRICT-OR successor, no broadening).
                 || v == "cmp435_chunk3"
-                || v == "cmp437_chunk4"
+                || v == "cmp437_chunk4" || v == "cmp444_chunk5"
         })
         .unwrap_or(false)
 }

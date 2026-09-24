@@ -87,6 +87,9 @@ public final class ColpushOps {
      * serialization snapshot plane (round-id hygiene for ROUND-438-C).
      */
     private static final String FLAG6 = "cmp437_chunk4";
+    /** TASK-444-B: R8 stage-2 carrier (STRICT-OR; raw-cp marker for the
+     * check_blobs_sync gate). */
+    private static final String FLAG7 = "cmp444_chunk5";
     private static final int ERR_STRUCT = -1;
     private static final int ERR_RANGE = -2;
 
@@ -102,7 +105,7 @@ public final class ColpushOps {
 
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5) || f.trim().equals(FLAG6));
+        return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5) || f.trim().equals(FLAG6) || f.trim().equals(FLAG7));
     }
 
     /** Структурный отказ — весь рычаг дизармится навсегда (ваниль-реплика). */

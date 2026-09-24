@@ -141,6 +141,9 @@ public final class ChunkParseOps {
      * — x93 lesson.
      */
     static final String CARRIER_UNION_437 = "cmp437_chunk4";
+    /** TASK-444-B: R8 stage-2 carrier (STRICT-OR; raw-cp marker for the
+     * check_blobs_sync gate). */
+    static final String CARRIER_UNION_444 = "cmp444_chunk5";
 
     /**
      * codec(identity) -> (tag -> pristine decoded template). The outer map
