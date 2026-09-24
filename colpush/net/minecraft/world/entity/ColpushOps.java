@@ -78,6 +78,7 @@ public final class ColpushOps {
     private static final String FLAG4 = "cmp432_inside2";
     /** TASK-436-B: serve-plane closure round rides the carrier (STRICT-OR). */
     private static final String FLAG5 = "cmp436_ins4";
+    private static final String FLAG6 = "cmp451_senseins";
     private static final int ERR_STRUCT = -1;
     private static final int ERR_RANGE = -2;
 
@@ -93,7 +94,7 @@ public final class ColpushOps {
 
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5));
+        return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5) || f.trim().equals(FLAG6));
     }
 
     /** Структурный отказ — весь рычаг дизармится навсегда (ваниль-реплика). */

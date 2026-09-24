@@ -84,7 +84,8 @@ public final class SenseOps {
                 || f.trim().equals("cmp414_cvs") || f.trim().equals("cmp417_bq")
                 || f.trim().equals("cmp420_colpush") || f.trim().equals("cmp421_brain")
                 || f.trim().equals("cmp422_brain2") || f.trim().equals("cmp423_brain3")
-                || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside"));
+                || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside")
+                || f.trim().equals("cmp451_senseins"));
     }
 
     private static final boolean ENABLED = leverEnabled();
