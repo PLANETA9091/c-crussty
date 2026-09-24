@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.LevelHeightAccessor;
@@ -71,6 +72,22 @@ import net.minecraft.world.level.block.state.BlockState;
  * permanent ARMED=false disarm (never a wrong serve); collection is best-effort —
  * sections the collector cannot serve just keep missing to vanilla.
  *
+ * TASK-432-B DEEPENING (lever cmp432_inside2, STRICT-OR cmp430_inside):
+ *   6. SERVE FASTPATH: per-thread, per-TICK warm lanes {level,cx,cz -> chunk,
+ *      sections, sec -> snap} — the per-visit chunk-map lookup and the
+ *      per-visit SNAPS CHM.get collapse to reference compares for the common
+ *      section-local visit bursts (lambda gate AND the inside_cache gate's
+ *      verify/replay loops routed here). Tick-stamped: a lane never outlives
+ *      the tick that warmed it (no stale-chunk serve across unload/reload).
+ *   7. STALE-MISS CONTINUATION: when a snap exists but is stale/pending, the
+ *      miss continues EXACTLY like LevelChunk.getBlockStateFinal's non-air
+ *      branch from the already-resolved section (sec.states.get(packed)) —
+ *      bit-exact vanilla continuation WITHOUT the redundant second chunk-map
+ *      lookup the old fallthrough level.getBlockState(pos) paid.
+ *   8. GATE FUSION HOOK: arm() notifies InsideBlockOps (inside_cache gate)
+ *      so the memo-verify/replay block reads route through this plane too
+ *      (one snapshot store, ONE bulk-JNI collect, two consumers).
+ *
  * INJECTS-ONLY: class defined into the kernel loader by src/inside_snap.rs
  * (register_natives for snapCollect; ARMED flipped by rust after selfTest).
  */
@@ -85,9 +102,45 @@ public final class InsideSnapOps {
     /** Flipped by rust ONLY after define+RegisterNatives+selfTest (colpush arm-order: arm is the LAST step). */
     private static volatile boolean ARMED = false;
 
+    /**
+     * TASK-436-B serve-plane closure round (lever cmp436_ins4, STRICT-OR
+     * cmp432_inside2): flipped by rust via v4() BEFORE selfTest/arm —
+     * fail-closed (V4=false keeps the V2 serve path byte-for-byte; the V2
+     * method is kept UNTOUCHED as the control body). NO new probes, NO new
+     * exception sites on the hot path (V3 post-mortem: threw=26 on
+     * round-435b-ins-1 = probe/exception machinery — never again).
+     */
+    private static volatile boolean V4 = false;
+
+    /** Rust flip (pre-selfTest): cmp436_ins4 serve-plane closure ON. */
+    public static void v4() {
+        V4 = true;
+    }
+
     public static void arm() {
         ARMED = true;
-        LOG.info("inside_snap: ARMED (snapshot gate live; single-site getBlockState retarget in Entity.lambda$checkInsideBlocks$2)");
+        try {
+            // TASK-432-B gate fusion: the inside_cache gate (InsideBlockOps,
+            // defined only when CRUSSTY_INSIDE_CACHE=1) switches its
+            // verify/replay block reads to this plane. Absent bridge (input
+            // off) => NCDFE caught => fusion simply off, snap plane unaffected.
+            InsideBlockOps.noteSnapArmed();
+        } catch (Throwable t) {
+            // Bridge may not be defined YET (define-order race between the two
+            // activation workers): one bounded daemon retry. Permanent absence
+            // (input off) stays fail-open — the snapshot plane does not depend
+            // on the cache gate.
+            Thread r = new Thread(() -> {
+                try {
+                    Thread.sleep(5_000L);
+                    InsideBlockOps.noteSnapArmed();
+                } catch (Throwable ignored) {
+                }
+            }, "inside-snap-fusion-retry");
+            r.setDaemon(true);
+            r.start();
+        }
+        LOG.info("inside_snap: ARMED (snapshot gate live; single-site getBlockState retarget in Entity.lambda$checkInsideBlocks$2; inside_cache gate fusion notified)");
     }
 
     public static boolean armed() {
@@ -122,13 +175,15 @@ public final class InsideSnapOps {
 
     static final ConcurrentHashMap<LevelChunkSection, Snap> SNAPS = new ConcurrentHashMap<>();
     static final AtomicInteger FULL_COUNT = new AtomicInteger();
-    static final AtomicLong STAT_HITS = new AtomicLong();
+    /** TASK-432-B: per-HIT counter — LongAdder (striped) kills the CAS
+     *  contention the 4 region workers paid on every served position. */
+    static final LongAdder STAT_HITS = new LongAdder();
     static final AtomicLong STAT_MISSES = new AtomicLong();
     static final AtomicLong STAT_COLLECTS = new AtomicLong();
     static final AtomicLong STAT_SECTIONS = new AtomicLong();
     static final AtomicLong STAT_INVALIDATIONS = new AtomicLong();
 
-    public static long hits() { return STAT_HITS.get(); }
+    public static long hits() { return STAT_HITS.sum(); }
     public static long misses() { return STAT_MISSES.get(); }
     public static long collects() { return STAT_COLLECTS.get(); }
     public static long sections() { return SNAPS.size(); }
@@ -141,9 +196,9 @@ public final class InsideSnapOps {
     public static BlockState snapGet(Level level, BlockPos pos) {
         if (ARMED) {
             try {
-                BlockState hit = serve(level, pos);
+                BlockState hit = V4 ? serve4(level, pos) : serve(level, pos);
                 if (hit != null) {
-                    STAT_HITS.incrementAndGet();
+                    STAT_HITS.increment();
                     if (!FIRST_HIT_LOGGED) {
                         FIRST_HIT_LOGGED = true;
                         LOG.info("inside_snap: first gate HIT served (palette[" + ((pos.getY() & 15) << 8 | (pos.getZ() & 15) << 4 | (pos.getX() & 15)) + "] from fresh section snapshot)");
@@ -157,14 +212,104 @@ public final class InsideSnapOps {
         return level.getBlockState(pos); // bit-exact vanilla continuation (miss path)
     }
 
+    // ------------------------------------------------------------------
+    // TASK-432-B SERVE FASTPATH — per-thread, per-tick warm lanes
+    // ------------------------------------------------------------------
+
+    static final int LANES = 8;
+
+    static final class Lane {
+        long tick;                 // game-time stamp of the warm pass
+        Level level;               // identity guard (multi-world cx/cz clash)
+        int cx, cz;
+        ChunkAccess ch;
+        LevelChunkSection[] secs;
+        LevelChunkSection sec;     // L2: sec-ref -> snap (sec->snap is immutable)
+        Snap snap;
+        // ---- TASK-436-B V4 fields (serve4 only; V2 serve never reads them) ----
+        /** Per-claim snap cache aligned to secs (sec->snap immutable: SNAPS never evicts). */
+        Snap[] secSnaps;
+        /** Per-claim resolve stamps (true = secSnaps[i] resolved this claim, incl. null). */
+        boolean[] secKnown;
+        /** Per-claim minSectionY cache (Integer.MIN_VALUE = unresolved); javap-proven
+         *  getSectionIndex(y)=(y>>4)-getMinSectionY() (round-435-b javap work). */
+        int minSecY = Integer.MIN_VALUE;
+        /** Per-thread last-served lane index (stored on lanes[0] — zero-alloc hint). */
+        int hint;
+    }
+
+    // NO-INDY CLINIT (round-3 NCDFE root-cause, canon ×93-indy): the previous
+    // `ThreadLocal.withInitial(InsideSnapOps::newLanes)` was a method-ref INDY
+    // whose bootstrap ran during <clinit>; linking `InsideSnapOps::newLanes`
+    // resolves the descriptor type `[Lnet/minecraft/world/entity/InsideSnapOps$Lane;`
+    // — on the kernel-loader-defined bridge that resolution went through the
+    // kernel loader, and with no InsideSnapOps$Lane blob defined there the
+    // bootstrap threw NoClassDefFoundError INSIDE <clinit> (run 35902792520:
+    // ExceptionInInitializerError @ InsideSnapOps.java:220 -> the class was
+    // permanently erroneous -> NCDFE 473412 storm -> fail-closed empty world).
+    // Fix = plain `new ThreadLocal<>()` (java.base, no nested class, no indy):
+    // nothing Lane-typed is touched until the first per-thread lanes() use on
+    // a live server thread (post-Bootstrap), and $Lane is now also DEFINED
+    // into the kernel loader by the plugin (see src/inside_snap.rs LANE_CLASS).
+    static final ThreadLocal<Lane[]> LANE_TL = new ThreadLocal<>();
+
+    /** Per-thread lanes, created on first USE (never in <clinit>). */
+    private static Lane[] lanes() {
+        Lane[] a = LANE_TL.get();
+        if (a == null) {
+            a = newLanes();
+            LANE_TL.set(a);
+        }
+        return a;
+    }
+
+    private static Lane[] newLanes() {
+        Lane[] a = new Lane[LANES];
+        for (int i = 0; i < LANES; i++) {
+            a[i] = new Lane();
+        }
+        return a;
+    }
+
+    /** Shared round-robin for the claim-on-miss slot (misses are the slow path). */
+    static final AtomicInteger LANE_CURSOR = new AtomicInteger();
+
     /** Fresh-hit serve; null => miss (caller falls through to vanilla). */
     static BlockState serve(Level level, BlockPos pos) {
         int x = pos.getX(), y = pos.getY(), z = pos.getZ();
-        ChunkAccess ch = level.getChunkSource().getChunk(x >> 4, z >> 4, ChunkStatus.FULL, false);
-        if (ch == null) {
-            return null; // not loaded: vanilla owns the load semantics
+        int cx = x >> 4, cz = z >> 4;
+        long nowTick = level.getGameTime();
+        Lane[] lanes = lanes();
+        Lane lane = null;
+        for (int i = 0; i < LANES; i++) {
+            Lane l = lanes[i];
+            if (l.tick == nowTick && l.level == level && l.cx == cx && l.cz == cz) {
+                lane = l;
+                break;
+            }
         }
-        LevelChunkSection[] secs = ch.getSections();
+        ChunkAccess ch;
+        LevelChunkSection[] secs;
+        if (lane != null) {
+            ch = lane.ch;
+            secs = lane.secs;
+        } else {
+            ch = level.getChunkSource().getChunk(cx, cz, ChunkStatus.FULL, false);
+            if (ch == null) {
+                return null; // not loaded: vanilla owns the load semantics
+            }
+            secs = ch.getSections();
+            Lane l = lanes[(LANE_CURSOR.getAndIncrement() & (LANES - 1))];
+            l.tick = nowTick;
+            l.level = level;
+            l.cx = cx;
+            l.cz = cz;
+            l.ch = ch;
+            l.secs = secs;
+            l.sec = null;
+            l.snap = null;
+            lane = l;
+        }
         int si = ((LevelHeightAccessor) ch).getSectionIndex(y);
         if (si < 0 || si >= secs.length) {
             return null; // outside storage: vanilla (VOID_AIR branch)
@@ -173,15 +318,23 @@ public final class InsideSnapOps {
         if (sec == null || sec.hasOnlyAir()) {
             return null; // vanilla AIR branch; no snapshot needed
         }
-        Snap s = SNAPS.get(sec);
-        if (s == null) {
-            register(sec);
-            maybeCollect();
-            return null;
+        Snap s;
+        if (lane.sec == sec && lane.snap != null) {
+            s = lane.snap; // sec->snap mapping is immutable (SNAPS never evicts)
+        } else {
+            s = SNAPS.get(sec);
+            if (s == null) {
+                register(sec);
+                maybeCollect();
+                return null;
+            }
+            lane.sec = sec;
+            lane.snap = s;
         }
+        int packed = ((y & 15) << 8) | ((z & 15) << 4) | (x & 15);
         BlockState[] a = s.states;
         if (a != null && s.builtAtGen == s.gen) {
-            return a[((y & 15) << 8) | ((z & 15) << 4) | (x & 15)];
+            return a[packed];
         }
         BlockState sg = s.single;
         if (sg != null && s.builtAtGen == s.gen) {
@@ -190,7 +343,148 @@ public final class InsideSnapOps {
         if (s.pending) {
             maybeCollect();
         }
-        return null;
+        // STALE-MISS: bit-exact continuation of LevelChunk.getBlockStateFinal's
+        // non-air branch from the section resolved above (same packing javap
+        // @3f6f6e6: ((y&15)<<8)|((z&15)<<4)|(x&15)) — kills the redundant second
+        // chunk-map lookup the old level.getBlockState(pos) fallthrough paid.
+        return sec.states.get(packed);
+    }
+
+    // ------------------------------------------------------------------
+    // TASK-436-B SERVE-PLANE CLOSURE (cmp436_ins4) — V4 fastpath
+    // ------------------------------------------------------------------
+
+    /**
+     * V4 serve body. Delta vs V2 serve (which stays untouched as control):
+     *   1. per-claim secSnaps[]/secKnown[] lane arrays — the per-visit
+     *      SNAPS.get CHM hop AND the per-visit register churn collapse to an
+     *      array index (sec->snap mapping is immutable: SNAPS never evicts);
+     *   2. UNTRACKED-MISS CLOSURE: a loaded-but-untracked section (cap
+     *      reached / not yet collected / register lost the race) serves
+     *      sec.states.get(packed) — the SAME bit-exact
+     *      LevelChunk.getBlockStateFinal non-air continuation the V2
+     *      stale-miss path already uses (javap @3f6f6e6 packing, non-air
+     *      precondition enforced above) — instead of falling through to
+     *      vanilla level.getBlockState which repeats the chunk-map lookup;
+     *   3. per-claim minSecY cache + inline si=(y>>4)-minSec (javap-proven
+     *      round-435-b: LevelHeightAccessor.getSectionIndex) — one virtual
+     *      getMinSectionY call per claim instead of per visit; the si bounds
+     *      check stays (any formula drift => vanilla, fail-closed);
+     *   4. per-thread last-lane hint (lanes[0].hint) — the same-chunk burst
+     *      hits its lane slot on the FIRST compare.
+     * No new Throwable sites; any Throwable is caught by snapGet exactly as
+     * in V2 (fail-dominant vanilla continuation).
+     */
+    static BlockState serve4(Level level, BlockPos pos) {
+        int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+        int cx = x >> 4, cz = z >> 4;
+        long nowTick = level.getGameTime();
+        Lane[] lanes = lanes();
+        // (4) last-served lane first (per-thread slot lives on lanes[0].hint)
+        Lane lane = null;
+        int h = lanes[0].hint;
+        if (h > 0 && h < LANES) {
+            Lane l = lanes[h];
+            if (l.tick == nowTick && l.level == level && l.cx == cx && l.cz == cz) {
+                lane = l;
+            }
+        }
+        ChunkAccess ch;
+        LevelChunkSection[] secs;
+        if (lane == null) {
+            for (int i = 0; i < LANES; i++) {
+                Lane l = lanes[i];
+                if (l.tick == nowTick && l.level == level && l.cx == cx && l.cz == cz) {
+                    lane = l;
+                    break;
+                }
+            }
+            if (lane != null) {
+                ch = lane.ch;
+                secs = lane.secs;
+            } else {
+                ch = level.getChunkSource().getChunk(cx, cz, ChunkStatus.FULL, false);
+                if (ch == null) {
+                    return null; // not loaded: vanilla owns the load semantics
+                }
+                secs = ch.getSections();
+                Lane l = lanes[(LANE_CURSOR.getAndIncrement() & (LANES - 1))];
+                l.tick = nowTick;
+                l.level = level;
+                l.cx = cx;
+                l.cz = cz;
+                l.ch = ch;
+                l.secs = secs;
+                l.sec = null;
+                l.snap = null;
+                // (1) per-claim reset — REUSE arrays at fixed section count
+                // (zero steady-state allocation; world height is per-level stable)
+                if (l.secKnown == null || l.secKnown.length != secs.length) {
+                    l.secKnown = new boolean[secs.length];
+                    l.secSnaps = new Snap[secs.length];
+                } else {
+                    java.util.Arrays.fill(l.secKnown, false);
+                }
+                l.minSecY = Integer.MIN_VALUE;
+                lane = l;
+            }
+        } else {
+            ch = lane.ch;
+            secs = lane.secs;
+        }
+        lanes[0].hint = indexOfLane(lanes, lane); // (4) refresh per-thread hint
+        // (3) per-claim minSecY cache + inline section index (bounds-guarded)
+        if (lane.minSecY == Integer.MIN_VALUE) {
+            lane.minSecY = ((LevelHeightAccessor) ch).getMinSectionY();
+        }
+        int si = (y >> 4) - lane.minSecY;
+        if (si < 0 || si >= secs.length) {
+            return null; // outside storage: vanilla (VOID_AIR branch)
+        }
+        LevelChunkSection sec = secs[si];
+        if (sec == null || sec.hasOnlyAir()) {
+            return null; // vanilla AIR branch; no snapshot needed
+        }
+        // (1) per-claim snap resolve (one CHM.get per section-index per claim)
+        if (!lane.secKnown[si]) {
+            lane.secKnown[si] = true;
+            Snap s0 = SNAPS.get(sec);
+            lane.secSnaps[si] = s0;
+            if (s0 == null) {
+                register(sec); // best-effort, ONCE per claim per section
+                maybeCollect();
+            }
+        }
+        Snap s = lane.secSnaps[si];
+        int packed = ((y & 15) << 8) | ((z & 15) << 4) | (x & 15);
+        if (s == null) {
+            // (2) UNTRACKED-MISS CLOSURE: loaded, non-air, no snap — serve
+            // the live palette read (bit-exact getBlockStateFinal continuation).
+            return sec.states.get(packed);
+        }
+        BlockState[] a = s.states;
+        if (a != null && s.builtAtGen == s.gen) {
+            return a[packed];
+        }
+        BlockState sg = s.single;
+        if (sg != null && s.builtAtGen == s.gen) {
+            return sg;
+        }
+        if (s.pending) {
+            maybeCollect();
+        }
+        // stale-miss: same V2 continuation (bit-exact, proven in legs r1-r4)
+        return sec.states.get(packed);
+    }
+
+    /** Lane identity index (per-thread array — linear scan is 8 wide). */
+    private static int indexOfLane(Lane[] lanes, Lane lane) {
+        for (int i = 0; i < LANES; i++) {
+            if (lanes[i] == lane) {
+                return i;
+            }
+        }
+        return 0;
     }
 
     static void register(LevelChunkSection sec) {
@@ -288,7 +582,12 @@ public final class InsideSnapOps {
                 continue;
             }
             PalettedContainer.Data<BlockState> d = sec.states.data; // ONE volatile read
-            BlockState[] pal = d.moonrise$getPalette();
+            // CCE-433 fix: kernel palette array is ERASED (allocated as Object[]) on this
+            // build — a call-site cast to BlockState[] threw CCE x18k/leg and the whole
+            // stage-1c plane stayed dead (fail-closed). Double-cast through Object erases
+            // the array checkcast; ELEMENTS are cast individually below (they ARE
+            // BlockState instances — only the ARRAY type is erased).
+            Object[] pal = (Object[]) (Object) d.moonrise$getPalette();
             if (pal == null) {
                 continue; // fast palette not built: keep missing to vanilla (readPaletteSlow territory)
             }
@@ -343,7 +642,7 @@ public final class InsideSnapOps {
                 continue;
             }
             if (bpe == 0) {
-                BlockState v = ((BlockState[]) PALB[k])[0];
+                BlockState v = (BlockState) ((Object[]) PALB[k])[0]; // CCE-433: element-level cast
                 if (v == null) {
                     if (++s.fails >= 3) { s.pending = false; } else { s.pending = true; leftover++; }
                     continue;
@@ -356,14 +655,14 @@ public final class InsideSnapOps {
                 s.builtAtGen = g;
             } else {
                 Object palO = PALB[k];
-                BlockState[] pal = (BlockState[]) palO;
+                Object[] pal = (Object[]) palO; // CCE-433: erased array, element casts below
                 BlockState[] arr = new BlockState[4096];
                 boolean bad = false;
                 int base = k * 4096;
                 for (int i = 0; i < 4096; i++) {
                     int idx = OUT[base + i];
                     if (idx < 0 || idx >= pal.length) { bad = true; break; }
-                    BlockState v = pal[idx];
+                    BlockState v = (BlockState) pal[idx]; // CCE-433: element-level cast
                     if (v == null) { bad = true; break; }
                     arr[i] = v;
                 }
