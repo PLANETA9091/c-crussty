@@ -93,6 +93,11 @@ check_class \
   "native"
 
 check_class \
+  "sense/build/net/minecraft/world/entity/SenseOps.class" \
+  "cmp438_sense" "cmp430_inside" "nearestEntityGate" "sense EFFECT" "selfTest" \
+  "native int senseProbe" "native int senseEpoch"
+
+check_class \
   "mobpush/build/net/minecraft/world/entity/MobPushOps.class" \
   "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" \
   "native int mobProbe" "boxFor" "colpushSweep"
@@ -192,7 +197,8 @@ for pair in \
   "queryplane/net/minecraft/world/entity/QueryPlaneOps.java:queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class" \
   "goalops/net/minecraft/world/entity/ai/goal/GoalOps.java:goalops/build/net/minecraft/world/entity/ai/goal/GoalOps.class" \
   "colpush/net/minecraft/world/entity/ColpushOps.java:colpush/build/net/minecraft/world/entity/ColpushOps.class" \
-  "entityinside/net/minecraft/world/entity/RegionTickOps.java:entityinside/build/net/minecraft/world/entity/RegionTickOps.class"
+  "entityinside/net/minecraft/world/entity/RegionTickOps.java:entityinside/build/net/minecraft/world/entity/RegionTickOps.class" \
+  "sense/net/minecraft/world/entity/SenseOps.java:sense/build/net/minecraft/world/entity/SenseOps.class"
 do
   src="${pair%%:*}"; blob="${pair##*:}"
   flags=$(grep -o '"cmp[0-9_a-z]*"' "$src" | tr -d '"' | sort -u)
@@ -225,6 +231,7 @@ check_flat_matches_nested "queryplane/build" "net/minecraft/world/entity/QueryPl
 check_flat_matches_nested "goalops/build" "net/minecraft/world/entity/ai/goal/GoalOps"
 check_flat_matches_nested "colpush/build" "net/minecraft/world/entity/ColpushOps"
 check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/RegionTickOps"
+check_flat_matches_nested "sense/build" "net/minecraft/world/entity/SenseOps"
 
 if [ "$FAIL" = "0" ]; then
   echo "check_blobs_sync: ALL IN SYNC"

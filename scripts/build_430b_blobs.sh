@@ -18,7 +18,7 @@ KERNEL="${KERNEL_JAR:-research/gc-recon-2026-09-19/round-396-a/patched-kernel.ja
 [ -f "$KERNEL" ] || KERNEL="$(find research -path '*round-396-a/patched-kernel.jar' -size +10M 2>/dev/null | head -1)"
 [ -n "$KERNEL" ] && [ -f "$KERNEL" ] || { echo "kernel jar not found" >&2; exit 1; }
 
-CP="$KERNEL:entityinside/build"
+CP="$KERNEL:entityinside/build:mobpush/build"
 for j in /home/z/tools/fastutil.jar /home/z/tools/paper-api-1.21.10.jar \
          /home/z/tools/adventure-api-4.24.0.jar /home/z/tools/adventure-key-4.24.0.jar; do
   [ -f "$j" ] && CP="$CP:$j"
@@ -37,7 +37,8 @@ trap 'rm -rf "$ALL_BUILD"' EXIT
   entityinside/net/minecraft/world/entity/InsideBitmaskOps.java \
   entitygoalquery/net/minecraft/world/entity/EntityGoalQueryOps.java \
   goalops/net/minecraft/world/entity/ai/goal/GoalOps.java \
-  queryplane/net/minecraft/world/entity/QueryPlaneOps.java
+  queryplane/net/minecraft/world/entity/QueryPlaneOps.java \
+  sense/net/minecraft/world/entity/SenseOps.java
 
 install_nested_glob() { # outdir fqcn(slash-form) — nested (include_bytes!) + flat (legacy)
   local outdir="$1" cls="$2"
@@ -62,6 +63,7 @@ install_nested_glob entityinside/build   net/minecraft/world/entity/InsideBitmas
 install_nested_glob entitygoalquery/build net/minecraft/world/entity/EntityGoalQueryOps
 install_nested_glob goalops/build        net/minecraft/world/entity/ai/goal/GoalOps
 install_nested_glob queryplane/build     net/minecraft/world/entity/QueryPlaneOps
+install_nested_glob sense/build          net/minecraft/world/entity/SenseOps
 
 # javap gate: flat==nested byte-equality (lesson ×93) for every touched class
 gate_fe() { cmp -s "$1/$3.class" "$1/$2/$3.class" || { echo "GATE FAIL: $2/$3 flat != nested" >&2; exit 1; }; }
@@ -77,6 +79,7 @@ gate_fe entitygoalquery/build net/minecraft/world/entity EntityGoalQueryOps
 gate_fe goalops/build        net/minecraft/world/entity/ai/goal GoalOps
 gate_fe queryplane/build     net/minecraft/world/entity QueryPlaneOps
 gate_fe entityinside/build   net/minecraft/world/entity 'InsideSnapOps$Snap'
+gate_fe sense/build          net/minecraft/world/entity SenseOps
 # shellcheck disable=SC2181
 echo "flat==nested gates: OK"
 

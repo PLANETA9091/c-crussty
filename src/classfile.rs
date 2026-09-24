@@ -835,6 +835,122 @@ pub fn patch_brain_start_each(bytes: &[u8]) -> Result<Vec<u8>, String> {
 }
 
 // ---------------------------------------------------------------------------
+// SENSE-PLANE body swap (TASK-438-A2, vector cmp438_sense — the F2 machine
+// applied to the targeting nearest-pick CHOKEPOINT):
+//
+//   `ServerEntityGetter.getNearestEntity(List,TargetingConditions,LivingEntity,
+//   double,double,double)` (INTERFACE default method — javap ground truth
+//   round-396-a purpur-1.21.10: ALL targeting-conditions nearest picks
+//   converge here; ServerLevel does NOT override — the four getNearestPlayer
+//   variants + getNearestEntity(Class/TagKey) all delegate to it, and
+//   NearestAttackableTargetGoal.findTarget calls it directly @84) ->
+//   14-byte straight line
+//   `aload_0; aload_1; aload_2; aload_3; dload 4; dload 6; dload 8;
+//   invokestatic SenseOps.nearestEntityGate:(Lnet/minecraft/server/level/
+//   ServerEntityGetter;Ljava/util/List;Lnet/minecraft/world/entity/ai/
+//   targeting/TargetingConditions;Lnet/minecraft/world/entity/LivingEntity;
+//   DDD)Lnet/minecraft/world/entity/LivingEntity;; areturn`.
+//
+//   The java gate replicates the vanilla ladder bit-for-bit (first passing
+//   candidate with the strictly-closer `(d==-1.0||e<d)` ladder, ties keep the
+//   earlier list element) and adds TWO decision-exact accelerations:
+//   (1) rust-guided closest-first test (identity-guarded sense epoch column),
+//   (2) distance pruning of the remaining sweep (`d >= bestD` candidates can
+//   never win the ladder, so their test is skipped — TargetingConditions.test
+//   is a pure predicate: range/invisibility/idle/selector/LOS, no
+//   RandomSource). ANY test order yields the vanilla pick; a stale epoch only
+//   degrades the WIN, never correctness (law 4).
+//
+// No branches in the new body => EMPTY StackMapTable (0 frames). max_stack 10
+// (4 refs + 3 doubles×2 slots), max_locals 10 (double arg at local 8 spans
+// 8,9). The receiver is passed as the explicit first argument, so the body
+// never touches foreign privates.
+//
+// Idempotency: patch(patch(x)) == patch(x) — dedup Pool appends nothing on
+// the second pass and the body re-emits byte-identical. Fail-closed: any
+// other class / missing method => Err before any mutation.
+pub const SENSE_GETTER_CLASS: &str = "net/minecraft/server/level/ServerEntityGetter";
+pub const SENSE_OPS_CLASS: &str = "net/minecraft/world/entity/SenseOps";
+pub(crate) const SENSE_NEAREST_DESC: &str = "(Ljava/util/List;Lnet/minecraft/world/entity/ai/targeting/TargetingConditions;Lnet/minecraft/world/entity/LivingEntity;DDD)Lnet/minecraft/world/entity/LivingEntity;";
+pub(crate) const SENSE_GATE_DESC: &str = "(Lnet/minecraft/server/level/ServerEntityGetter;Ljava/util/List;Lnet/minecraft/world/entity/ai/targeting/TargetingConditions;Lnet/minecraft/world/entity/LivingEntity;DDD)Lnet/minecraft/world/entity/LivingEntity;";
+
+pub fn patch_sense_nearest_entity(bytes: &[u8]) -> Result<Vec<u8>, String> {
+    let layout = parse_layout(bytes).ok_or("bad classfile layout")?;
+    let this_name = this_class_name(&layout).ok_or("cannot resolve this_class name")?;
+    if this_name != SENSE_GETTER_CLASS {
+        return Err(format!("unexpected class {this_name}"));
+    }
+    let mut pool = layout.pool;
+
+    // Find-only probes first (fail-closed BEFORE any pool mutation).
+    let Some(name_idx) = pool.find_utf8("getNearestEntity") else {
+        return Err("getNearestEntity not found".into());
+    };
+    let Some(desc_idx) = pool.find_utf8(SENSE_NEAREST_DESC) else {
+        return Err("getNearestEntity(List,TargetingConditions,LivingEntity,DDD) descriptor not found".into());
+    };
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)
+        .ok_or("getNearestEntity(List,...) method entry not found")?;
+
+    // ---- constant ref needed by the new body (appended when absent) ----
+    let m_gate = pool.method_ref(SENSE_OPS_CLASS, "nearestEntityGate", SENSE_GATE_DESC);
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for sense refs".into());
+    }
+
+    let mut code = Vec::with_capacity(14);
+    let u2 = |out: &mut Vec<u8>, v: u16| out.extend_from_slice(&v.to_be_bytes());
+    code.push(0x2a); // aload_0 (receiver: ServerEntityGetter this)
+    code.push(0x2b); // aload_1 (List entities)
+    code.push(0x2c); // aload_2 (TargetingConditions)
+    code.push(0x2d); // aload_3 (LivingEntity targeter)
+    code.push(0x18);
+    code.push(0x04); // dload 4 (x)
+    code.push(0x18);
+    code.push(0x06); // dload 6 (y)
+    code.push(0x18);
+    code.push(0x08); // dload 8 (z)
+    code.push(0xb8); // invokestatic SenseOps.nearestEntityGate
+    u2(&mut code, m_gate);
+    code.push(0xb0); // areturn (LivingEntity)
+    debug_assert_eq!(code.len(), 14, "emitted code is {}", code.len());
+
+    // ---- Code attribute: empty exception table + EMPTY StackMapTable ----
+    let mut code_attr = Vec::new();
+    u2(&mut code_attr, pool.utf8("Code"));
+    let mut body = Vec::new();
+    u2(&mut body, 10); // max_stack: 4 refs + 3 double slots×2
+    u2(&mut body, 10); // max_locals: receiver + 3 refs + 3 doubles (locals 8,9)
+    body.extend_from_slice(&(code.len() as u32).to_be_bytes());
+    body.extend_from_slice(&code);
+    body.extend_from_slice(&[0, 0]); // exception_table_length
+    body.extend_from_slice(&(1u16).to_be_bytes()); // attributes_count
+    u2(&mut body, pool.utf8("StackMapTable"));
+    body.extend_from_slice(&2u32.to_be_bytes()); // attribute_length
+    body.extend_from_slice(&0u16.to_be_bytes()); // number_of_entries = 0
+    code_attr.extend_from_slice(&(body.len() as u32).to_be_bytes());
+    code_attr.extend_from_slice(&body);
+
+    // ---- replacement method entry ----
+    let mut method = Vec::new();
+    u2(&mut method, m.access);
+    u2(&mut method, m.name_idx);
+    u2(&mut method, m.desc_idx);
+    u2(&mut method, 1); // attributes_count
+    method.extend_from_slice(&code_attr);
+
+    // ---- splice: header + new cp + tail with the method replaced ----
+    let mut out = Vec::with_capacity(bytes.len() + 128);
+    out.extend_from_slice(&bytes[0..8]); // magic, minor, major
+    u2(&mut out, pool.next); // new cp_count
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(&bytes[layout.cp_end..m.start]);
+    out.extend_from_slice(&method);
+    out.extend_from_slice(&bytes[m.end..]);
+    Ok(out)
+}
+
+// ---------------------------------------------------------------------------
 // F3 LEVELTICKS-READS body swaps (family-agg pack member F3, TASK-251/S7-115
 // -> S7-116; protocol: docs/FAMILY_AGG_PREREGISTRATION.md §5). The F2 machine
 // applied twice on the scheduled-tick drain pair:
@@ -8759,6 +8875,124 @@ mod navpool {
             "retransform re-sights must be idempotent (PATCHED-swap convention)"
         );
         assert_eq!(again, patched);
+    }
+
+    // ---- SENSE-PLANE (TASK-438-A2, cmp438_sense) roundtrip on the REAL
+    // ServerEntityGetter fixture — interface default-method body swap. ----
+
+    const SENSE_GETTER: &[u8] = include_bytes!("../tests/fixtures/ServerEntityGetter.class");
+
+    #[test]
+    fn sense_patch_roundtrip_verified() {
+        let patched = patch_sense_nearest_entity(SENSE_GETTER).expect("patch");
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        assert_eq!(patched[..8], SENSE_GETTER[..8], "version preserved");
+
+        // Locate getNearestEntity(List,TC,LE,DDD) in the PATCHED bytes and
+        // read its Code attribute (max_stack/max_locals precede the body).
+        let layout = parse_layout(&patched).expect("re-parse patched");
+        let name_idx = layout
+            .pool
+            .find_utf8("getNearestEntity")
+            .expect("name kept");
+        let desc_idx = layout
+            .pool
+            .find_utf8(SENSE_NEAREST_DESC)
+            .expect("desc kept");
+        let m = find_method(&patched, layout.methods_start, name_idx, desc_idx)
+            .expect("getNearestEntity(List,...) kept");
+        assert_eq!(m.access, 0x0001, "access flags preserved (public default)");
+
+        let (start, len) = find_code_attr(&patched, &layout.pool, &m).expect("Code attr");
+        let code = &patched[start..start + len];
+        assert_eq!(code.len(), 14, "straight-line body is 14 bytes");
+        let ms = u16::from_be_bytes([patched[start - 8], patched[start - 7]]);
+        let ml = u16::from_be_bytes([patched[start - 6], patched[start - 5]]);
+        assert_eq!(ms, 10, "max_stack = 4 refs + 3 doubles x2 slots");
+        assert_eq!(ml, 10, "max_locals = 4 refs + 3 double args");
+
+        // Opcode skeleton: aload_0..aload_3, dload 4/6/8, invokestatic, areturn.
+        assert_eq!(code[0], 0x2a, "aload_0 (receiver)");
+        assert_eq!(code[1], 0x2b, "aload_1 (List)");
+        assert_eq!(code[2], 0x2c, "aload_2 (TargetingConditions)");
+        assert_eq!(code[3], 0x2d, "aload_3 (LivingEntity targeter)");
+        assert_eq!(&code[4..6], &[0x18, 0x04], "dload 4 (x)");
+        assert_eq!(&code[6..8], &[0x18, 0x06], "dload 6 (y)");
+        assert_eq!(&code[8..10], &[0x18, 0x08], "dload 8 (z)");
+        assert_eq!(code[10], 0xb8, "invokestatic");
+        assert_eq!(code[13], 0xb0, "areturn");
+
+        // Operand resolution BY NAME (never by index assumption).
+        let r = layout
+            .pool
+            .methodref_parts(u16::from_be_bytes([code[11], code[12]]))
+            .expect("invokestatic operand resolves");
+        assert_eq!(
+            r,
+            (
+                SENSE_OPS_CLASS.to_string(),
+                "nearestEntityGate".to_string(),
+                SENSE_GATE_DESC.to_string()
+            )
+        );
+
+        // EMPTY StackMapTable on the swapped method (no branch targets =>
+        // attribute_length 2, number_of_entries 0).
+        let smt_idx = layout.pool.find_utf8("StackMapTable").expect("smt utf8");
+        let smt_bytes = [
+            (smt_idx >> 8) as u8,
+            (smt_idx & 0xFF) as u8,
+            0x00,
+            0x00,
+            0x00,
+            0x02,
+            0x00,
+            0x00,
+        ];
+        assert!(
+            patched[m.start..m.end]
+                .windows(smt_bytes.len())
+                .any(|w| w == smt_bytes),
+            "empty StackMapTable (len 2, 0 frames) present in method attrs"
+        );
+
+        // Dump for the runtime verifier gate (sense/verify_patched.sh: a real
+        // HotSpot link-time verification — the byte-level checks above cannot
+        // prove verifier legality, a JVM can).
+        let out = std::env::temp_dir().join("ccrussty_patched_ServerEntityGetter.class");
+        std::fs::write(&out, &patched).expect("dump patched ServerEntityGetter");
+        eprintln!("wrote {} bytes to {}", patched.len(), out.display());
+    }
+
+    /// Idempotency: patch(patch(x)) == patch(x) — the second pass appends
+    /// nothing (dedup Pool) and re-emits the identical body.
+    #[test]
+    fn sense_patch_is_idempotent() {
+        let once = patch_sense_nearest_entity(SENSE_GETTER).expect("first");
+        let twice = patch_sense_nearest_entity(&once).expect("second");
+        assert_eq!(once, twice, "double patch is byte-identical");
+    }
+
+    /// Fail-closed discipline: wrong class rejected before any mutation;
+    /// truncated/hostile bytes rejected without panic (hook-delivery audit
+    /// discipline — a panic on a class-load thread would abort the JVM).
+    #[test]
+    fn sense_patch_rejects_wrong_class_and_garbage() {
+        let e = patch_sense_nearest_entity(include_bytes!(
+            "../tests/fixtures/SingleUserAreaMap.class"
+        ))
+        .expect_err("area_map is not ServerEntityGetter");
+        assert!(e.starts_with("unexpected class"));
+
+        let e = patch_sense_nearest_entity(&SENSE_GETTER[..64]).expect_err("truncated header");
+        assert!(!e.is_empty());
+        let e = patch_sense_nearest_entity(&[0xCA, 0xFE, 0xBA, 0xBE, 0, 0, 0, 65, 0, 3, 1, 2])
+            .expect_err("garbage pool");
+        assert!(!e.is_empty());
+        // Whole-pool truncation at every prefix must never panic.
+        for cut in [10usize, 100, 1000, 5000, SENSE_GETTER.len() - 1] {
+            let _ = patch_sense_nearest_entity(&SENSE_GETTER[..cut]);
+        }
     }
 }
 // ---------------------------------------------------------------------------
