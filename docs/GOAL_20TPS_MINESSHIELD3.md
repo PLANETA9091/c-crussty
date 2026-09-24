@@ -1588,3 +1588,28 @@ TASK-433-B: inside2 перенос на ccefix-базу + RC7-lazy фикс пр
 **Уроки тика**: (1) BAND-FAIL ×5 за тик — окно утреннее калибровочно-зумное, ре-роллы обязательны; (2) server-stdout.log purged до ARM-чеков = потеря маркер-доказательств pd-inf1 — процесс исправлен (purge после извлечения маркеров); (3) карманность окна: депрессия локализована по позиции (6.6-6.8M), не глобальна — якорная плотность важнее количества.
 
 **Диск**: 58%→85% (абсорбы)→74-75% (пер-абсорб пурдж).
+
+## GOAL ×121 (tick-438, 09:08-10:2x +08, Job 406609) — инфо-тик: pdemux lever-BUG найден+исправлен (ARM теперь зелёный в CI), окно карманное (CERT 0), chunk4-research завершён; NO MERGE
+
+**Состояние**: master bcfb18fb (код не изменён — фиксы в ветках арсенала).
+
+**🔧 ГЛАВНОЕ СОБЫТИЕ: pdemux lever-BUG root-caused + fixed (TASK-438-B)**: CI-нога pd-inf1 (×437) была ДОРМАНТ-ванилью — rust lever_gate принимал только cmp434_wgen3 (остаток TASK-434-A), cmp436_pdemux не армился. threw=1 = ваниль-артефакт (LecternBlockEntity.validateBlockState на forceload chunk-load, НЕ lever — CRASH-REFUTED снят). Фикс: round-437-b-pdemux d8c8463c → 7ce4437c (STRICT-OR cmp436_pdemux|cmp434_wgen3) → 48362768. **Подтверждение в CI: round-438-pd-rev2 @48362768: PALETTED-DEMUX ARMED + PATCHED PalettedContainer (30967→31521 bytes, demux fields + fast-path get + guarded mutators), threw=0** — чтение 2.10@6661785 −4.6 (депресс-карман 6.66M) = инфо, вектор готов к golden.
+
+**БАТЧ ×12 (11 + pd-rev2)**: 10 абсорбов (все threw=0), BAND-DISCARD ×2 (anchor-1, ins4-2 — ре-роллы в golden). Якоря: a2 −2.3 (бордер), a3 +3.7, a4 +13.0, a5 +3.2. Ноги: ins4-1 2.60@6919866 +15.2 (опять сильная!); ss-1 (sscan2) 2.40@8601275 −8.1 ARM-зелёный ×2 (selfTest+EFFECT tick 30+bulk JNI ok) — карманное чтение; chk3-1 −6.4 и chk-1 −10.8 ОБА в кармане 6.856-6.857M (позиции в 75 друг от друга!); pd-rev1 (до-фикс дормант) +0.9 = ваниль-контроль кармана 7.03M. Пары невозможны (здоровые якоря вне 50k от ног; a2 −2.3 исключён депресс-гейтом) → CERT 0 → NO MERGE.
+
+**Карта карманов утра (уточнение ×437)**: депресс-зоны мигрируют по позиции: ×437 6.6-6.8M, ×438 6.66M + 6.856M + 8.6M (ss-1 −8.1 в high!). Здоровые: 6.5M (a4 +13.0), 6.27M (a3 +3.7), 6.79M (a5 +3.2). Вывод: позиционная лотерея → в golden нужна МАКСИМАЛЬНАЯ якорная плотность (8+) вокруг любых ног.
+
+**ARSENAL-СТАТУС к golden 02:08**:
+1. sscan2 @3f3b111f — ARM-зелёный ×2 в CI (banked dispatch_437a_sscan2.py) ✅✅
+2. pdemux @48362768 — ARM-зелёный ×1 в CI после фикса (маркер-чистый) ✅
+3. wgen4 @a980def — финал вектора (dispatch_436a.py banked) ✅
+4. chunkpl/chk3 — banked (dispatch_436c_golden.py: 8 якорей + 4 chk + 2 chk3) ✅
+5. ins4 @07078007 — +22.8/+15.2 сильнейшие абсолюты; ноги в golden-батч ✅
+6. chunk4 (round-438-c-chunk4b @5eb7565f) — RESEARCH ЗАВЕРШЁН: chunk-send serialization snapshot (PlayerChunkSender.sendChunk redirect, revision-keyed packet reuse zero-copy; RC6 GC-debt relief + 4x duplicate serialize/chunk при 4 fake players = выбранный лист; parse DONE ×2 / POI dead / light absent / write-serialization placebo / chunk-send refuted as soak lane only) — имплементация в процессе
+7. sense (round-438-a-sense, TASK-438-A) — рисёрч sensing+brain целиком (cmp438_sense) в процессе
+
+**Сабагенты**: B ЗАВЕРШЁН полным root-cause+фикс+CI-подтверждением; A (sense) и C (chunk4b) живы, работа продолжается в следующий тик (ветки pushнуты, артефакты переживут).
+
+**Диск**: 75→89% (критично!)→57% (глубокая чистка: старые worktrees 436/437 удалены с сохранением RESULT.json в /home/z/rounds/PRESERVED/ + tmp cargo-targets; ветки все запушены).
+
+**Уроки тика**: (1) ARM-статус читать ТОЛЬКО по plugin-маркерам stdout (run-env lever n/a = норма капчера); (2) lever-gate STRICT-eq хвосты старых тиков = источник дормант-багов — при новых cmp-флагах проверять ОБА гейта (rust + java plugin); (3) GitHub-артефакты живы после purge (world3-bench id 10784368768 восстановил stdout pd-inf1).
