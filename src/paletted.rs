@@ -65,15 +65,24 @@ fn enabled() -> bool {
     // S7-145 repro 20000-op lockstep PASS x3) is the bit-exact contract;
     // the env gate stays for standalone lab runs, the lever id arms the
     // plane on bench legs. Fail-closed: fingerprint mismatch = vanilla.
+    //
+    // TASK-438-B (root-cause run 35938808401 / pd-inf1): the gate accepted
+    // ONLY cmp434_wgen3 — the leg was dispatched as cmp436_pdemux, so the
+    // plane stayed DORMANT the whole run (stdout marker "paletted: dormant",
+    // run-env paletted_demux: 0, vanilla-shaped lane PalettedContainer.get
+    // 4.3% + readPalette 1.0%). Fix: cmp436_pdemux joins the STRICT-OR set
+    // (cmp434_wgen3 stays for the carry lineage; CRUSSTY_PALETTED_DEMUX=1
+    // remains the standalone-lab escape hatch).
     let env_gate = std::env::var("CRUSSTY_PALETTED_DEMUX")
         .map(|v| {
             let v = v.trim().to_ascii_lowercase();
             v == "1" || v == "true" || v == "on" || v == "yes"
         })
         .unwrap_or(false);
-    let lever_gate = std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim() == "cmp434_wgen3")
-        .unwrap_or(false);
+    let lever_gate = matches!(
+        std::env::var("CRUSSTY_LEVER_FLAG").as_deref().map(str::trim),
+        Ok("cmp436_pdemux") | Ok("cmp434_wgen3")
+    );
     env_gate || lever_gate
 }
 
@@ -103,7 +112,7 @@ fn fingerprint_matches(bytes: &[u8]) -> bool {
 /// Register the byte hook (call once from cplugin_init).
 pub fn register() {
     if !enabled() {
-        eprintln!("[crussty-plugin] paletted: dormant (set CRUSSTY_PALETTED_DEMUX=1 or lever cmp434_wgen3 to enable)");
+        eprintln!("[crussty-plugin] paletted: dormant (set CRUSSTY_PALETTED_DEMUX=1 or lever cmp436_pdemux|cmp434_wgen3 to enable)");
         return;
     }
     cplug_sdk::hooks::register_bytes(PALETTED_CLASS, |name, bytes| {
