@@ -3,7 +3,7 @@
   "vector": "collide+push plane in Rust (union 32.15% top-2 lane)",
   "branch": "round-449a-collide-1",
   "carrier": "origin/round-445-a-collide @56142b5e (contains 18f37d57 step2)",
-  "run_id": null,
+  "run_id": 36025175644,
   "tps_med": null,
   "delta_pair_pct": null,
   "lane": null,
@@ -16,10 +16,11 @@
     "check_blobs_sync.sh: ALL IN SYNC (exit 0), incl. ColpushOps$ConstSlot check_class + flat==nested + javap-load",
     "cargo check --lib: 0 errors; cargo test: 305 passed; 0 failed (oracle parity), target removed"
   ],
-  "what": "NCDFE root-cause fix: (1) colpush.rs now defines ColpushOps$ConstSlot into the kernel loader (InsideSnapOps$Snap pattern, fail-closed) — the actual NCDFE hole; (2) build_430b_blobs.sh install_nested_glob is now $-inner-glob based + explicit gate_fe for ConstSlot + javap-LOADABILITY gate (recipe б) over every installed class; (3) build_419a_blobs_all.sh same javap gate; (4) check_blobs_sync.sh audits the inner blob (markers cramming/maxCol/tick, flat==nested, javap-load incl. inner). Blobs rebuilt.",
+  "what": "NCDFE root-cause fix: (1) colpush.rs now defines ColpushOps$ConstSlot into the kernel loader (InsideSnapOps$Snap pattern, fail-closed) — the actual NCDFE hole; (2) build_430b_blobs.sh install_nested_glob is now $-inner-glob based + explicit gate_fe for ConstSlot + javap-LOADABILITY gate (recipe б) over every installed class; (3) build_419a_blobs_all.sh same javap gate; (4) check_blobs_sync.sh audits the inner blob (markers cramming/maxCol/tick, flat==nested, javap-load incl. inner). Blobs rebuilt. | leg DISPATCHED: run 36025175644 @7edda662 lever=cmp445_collide arg=1 (world-bench-parallel canon inputs, no travel_diet/ledger/guards)",
   "steps_log": [
     "23:5x+08 worktree round-449a-collide-1 @56142b5e created (sparse-cone, disk 97% -> 15M checkout; kernel jar symlinked from ROUND-445/agent-a worktree)",
     "research: root cause confirmed — build_430b_blobs.sh install was single-class (missed $-inner); colpush.rs define_bridge defined only outer class; InsideSnapOps$Snap precedent found in inside_snap.rs",
-    "fix implemented in 4 files; blobs rebuilt; javap-loadability gate green; check_blobs_sync ALL IN SYNC; cargo 305/0"
+    "fix implemented in 4 files; blobs rebuilt; javap-loadability gate green; check_blobs_sync ALL IN SYNC; cargo 305/0",
+    "fix committed+pushed: round-449a-collide-1 @7edda662 (7 files, +2 inner-class blobs)"
   ]
 }
