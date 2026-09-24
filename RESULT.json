@@ -1,19 +1,21 @@
 {
-  "agent": "TASK-438-C (cron main tick-438, 09:08 +08, Job 406609; restart of stalled TASK-437-C)",
-  "vector": "cmp437_chunk4 = WIDENING chunk-pipeline: chunk-send SERIALIZATION SNAPSHOT (revision-keyed packet reuse, PlayerChunkSender.sendChunk body redirect) on top of the cmp435_chunk3 carrier (block_states deep cache ⊕ biomes-parse cache ⊕ full composite union)",
+  "agent": "agent-c (chunk4b)",
+  "vector": "cmp437_chunk4 chunk-send SERIALIZATION SNAPSHOT (widening over cmp435_chunk3 carrier; law 8 chunk-loading axis)",
   "branch": "round-438-c-chunk4b",
-  "base": "round-437-c-chunk4 @7afe6d17 (= origin/round-436-c-chunk3 tip; origin/round-437-c-chunk4 does not exist on remote — branch existed only locally with 0 commits, restart per task brief from the identical base sha)",
-  "run_id": "not dispatched (DISPATCH FORBIDDEN — banked only)",
+  "run_ids": {
+    "chunk4-1": 35951314959,
+    "chunk4-2": 35951322749
+  },
+  "leg_sha": "8938afb2 (contains impl e93bb8c2, ancestor-verified)",
   "tps_med": null,
   "delta_pair_pct": null,
-  "lane": "chunk-send serialization plane (serialize half of the chunk-loading pipeline; RESEARCH-F parse codec 33.38% burst-window alloc = codec+paletted machinery mirrored by the send side; RECON-36 tracker+sendChanges 2.0-2.2% scene = the alive chunk-lane in soak; 4 fake players x view-distance overlap = up to 4x duplicate serialize per chunk in the pre-poll window) — was: parse-only coverage (both decode sites cached, x434/x435)",
-  "RAM": "n/a (CI bench)",
-  "parity": "IN PROGRESS — plan: empty lever flag = vanilla bit-in-bit (hook never registered); snapshot reuse ONLY when !chunk.isUnsaved() (any block/block-entity change markUnsaved -> invalidate -> fresh vanilla serialize); shouldModify=true (anti-xray) bypasses cache to vanilla per-player path; selfTest==true BEFORE ARM (structural oracle) + online first-2-chunks byte-equality selftest vs a second fresh vanilla build; NCDFE=0; threw=0",
-  "verdict": "IN_PROGRESS (step-0 worktree+research; java bridge next; DISPATCH FORBIDDEN — banked dispatcher only)",
+  "lane": "chunk-send sendChunk body redirect -> ChunkSendOps (unsaved-keyed packet reuse, zero-copy HIT, anti-xray bypass, online selftest, cap 2048 evict-half, 0 hot-path JNI)",
+  "arm_status": "PENDING-CI (gates local GREEN: cargo check 7.1s, cargo test 310/0 incl 7 chunksend delivery tests, build_430b OK, check_blobs_sync ALL IN SYNC, javap sendChunk descriptor+selfTest verified, chunksend blob rebuild byte-identical; ARM markers expected: 'cmp437_chunk4: ARMED chunk-send serialization snapshot' + selfTest==true pre-ARM + 'chunk4 snapshot selftest PASS' + 'chunk4 send-snapshot first hit')",
+  "verdict": "BENCH IN FLIGHT",
   "evidence": [
-    "worktree /home/z/rounds/ROUND-438/agent-c @7afe6d17 branch round-438-c-chunk4b",
-    "profile truth: round-round-437-chk3-1/ABSORB.md +18.7 norm GREEN-CANDIDATE; NOISEFILL_ROOTCAUSE.md RC6 (GC-debt relief mechanism, stable +6-8pp when reaching polls); RESEARCH-G §2 stage verdicts (parse DONE, POI dead, light absent, write-serialization placebo in soak, chunk-send refuted AS SOAK LANE x2 — but never implemented as serialize-side snapshot; task-owner vector explicitly lists chunk-serialization snapshot + markers serialized:N/sent:N)",
-    "kernel ground truth: PlayerChunkSender.sendChunk(ServerGamePacketListenerImpl, ServerLevel, LevelChunk) static, builds new ClientboundLevelChunkWithLightPacket per send (per-player); LevelChunk.isUnsaved()/markUnsaved() public; ClientboundLevelChunkPacketData.buffer private byte[] + public heightmaps; light data getters public"
+    "restored 51-file uncommitted progress from prev instances: coherent chunksend/ module + src/chunk_send.rs + classfile guards + 19 rust + 9 java gate retags; dupes deduped (retag idempotency bug); fixture sha256 == kernel jar entry 24e7a8e9",
+    "gates all green pre-dispatch",
+    "legs dispatched via dispatch_440c.py (bank inputs EXACT, no travel_diet/fluid_dirty_ledger, no concurrency guards)"
   ],
-  "what": "worktree add -b round-438-c-chunk4b @7afe6d17; RESEARCH doc written (RESEARCH-A-438C-CHUNK4.md); next: ChunkSendOps.java bridge + chunksend.rs activator + classfile guards + blob builds + cargo check + check_blobs_sync + run_world3 arming case + banked dispatch_438c_chunk4.py (py_compile); PUSH after every step; law-3 cycle until >=+20% potential"
+  "what": "TASK-440-C tick: split prev-instance progress into coherent commits (step-1 impl 414afa81, step-2 java retag+blobs e93bb8c2, step-3 dispatcher feb7567f/8938afb2/0ba3b38d), dispatched 2 verdict legs round-440c-chunk4-1/-2 @8938afb2 lever=cmp437_chunk4, absorb pending"
 }
