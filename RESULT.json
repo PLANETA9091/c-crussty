@@ -1,19 +1,22 @@
 {
-  "agent": "A (TASK-443-A, sense scope-expand, продолжение TASK-442-D)",
-  "vector": "cmp438_sense tick2-lane (BRAIN-слой): Brain.tickEachRunningBehavior -> BrainOps.tickEachRunning body-swap — плоский снимок (тот же lens/fingerprint/порядок, что F2) + per-brain переиспользуемый RUNNING-маск; убивает getRunningBehaviors() ObjectArrayList + тройной map-walk на каждый тик каждого brain-моба; STRICT-OR family cmp438_sense ∨ композит cmp439_sense_scan; oracle selfTestTickEach (exhaustive mid-loop-stop, n≤4) ДО arm",
-  "branch": "round-442-d-sense2",
-  "run_id": null,
+  "agent": "agent-C (TASK-444-C sense-mega STRICT-UNION)",
+  "vector": "закон 7 композиция: МЕГА-НОСИТЕЛЬ ⊕ SENSE-СЕМЬЯ — ОДИН носитель round-444-c-sensemega, ОДИН рычаг cmp444_sensemega (STRICT-OR юнион: ins4d inside/V4/goalquery-диета ⊕ chunk4 chunk-send snapshot ⊕ sense getNearestEntity body-swap ⊕ sense tick2 Brain.tickEachRunning body-swap)",
+  "branch": "round-444-c-sensemega @ 93c37845 (base round-443-mega ffb94e40 + cherry-pick round-442-d-sense2 01dcf2aa: b5411a0c/b6134c6c/01dcf2aa, union-resolve 20 конфликтов)",
+  "run_id": "PENDING (ноги round-444-c-sensemega-1/-2)",
   "tps_med": null,
   "delta_pair_pct": null,
-  "parity": "decision-exact: ваниль-список собирается ДО любых tickOrStop (статусы читаются на этапе списка — mid-loop stop ранним элементом НЕ исключает поздний из тика; маск реплицирует ровно это: pass-1 живые статусы, pass-2 tickOrStop по маске в flat-порядке == List-порядку); javap ground truth tickEachRunningBehavior@0-51 (gameTime @0-4 read once; getRunningBehaviors() @5-9; tickOrStop @38-43) + getRunningBehaviors (ObjectArrayList + values()/values()/iterator walk, RUNNING-фильтр @108-129) сняты с patched-kernel.jar round-396-a; порядок обхода == flat snapshot (TreeMap asc priority → LinkedHashMap → LinkedHashSet); BehaviorControl.getStatus/tickOrStop(SLE,LivingEntity,long) verified javap; fail-closed: гейт (CRUSSTY_SENSE ∨ CRUSSTY_LEVER_FLAG ∈ {cmp438_sense, cmp439_sense_scan}) ∧ TICK2_OK после selfTest — иначе tickEachRunningBehavior ваниль; пустой lever_flag = ваниль бит-в-байт (F2 baseline не тронут)",
-  "verdict": "INFRA",
+  "lane": "полный STRICT-UNION 4 подсистем на одном флаге: (1) inside-snap V4 + (2) goalquery snapshotQuery-диета (ins4d) + (3) chunk-send serialization snapshot (chunk4) + (4) sense nearestEntity bulk-JNI epoch + (5) sense tick2 flat-mask RUNNING tick",
+  "ARM-статус": "PENDING — ожидание маркеров ВСЕХ семейств в stdout при lever_flag=cmp444_sensemega: (ins4d) selfTest=true + inside_snap ARMED + V4 FLIPPED carrier_label=cmp444_sensemega + goal-query ARMED + INS4-DIET ARMED; (chunk4) cmp444_sensemega ARMED chunk-send serialization snapshot + chunk4 snapshot selftest PASS + chunk4 send-snapshot first hit; (sense) SenseOps selfTest=true → sense ARMED + senseEpoch ok; (tick2) selfTestTickEach → 'first flat tickEachRunning hit tick N'",
+  "verdict-gates": "AIOOBE=0, NCDFE=0, CCE=0, threw=0, selfTest==true, band 6.0-9.5M (BAND-DISCARD re-roll ≤2), депресс-гейт якорь norm ≥−2, pair-by-runner Δ≤50k, min-of-3 ≥ +20% pair-stable (мандат)",
+  "verdict": "PENDING-BENCH",
   "evidence": [
-    "наследие TASK-442-D принято: незакоммиченные BrainOps.java/brainhook.rs/classfile.rs изучены (git diff 523 строк) — дизайн complete, закончен compile/verify/commit контур",
-    "javap-ценз: tickEachRunningBehavior (len=52) + getRunningBehaviors (len=141) сняты; van-список снапшотится ДО тиков; ObjectArrayList fastutil аллоцируется каждый тик на каждого brain-моба",
-    "blob rebuild: javac --release 21 (jdk-21.0.12.1+1, cp=kernel round-396-a+fastutil) → BrainOps.class 5469→8942B, IdKey 661→665B, Snapshot 1458→1505B (runningMask + tickEachRunning + selfTestTickEach)",
-    "raw-byte маркеры в блобе: cmp438_sense / cmp439_sense_scan / 'sense tick2 EFFECT armed' / selfTestTickEach / tickEachRunning / behaviorSlots — ВСЕ OK",
-    "javap верификация блоба: tickEachRunning(Map,SLE,LE)V + selfTestTickEach()Z + TICK2_FLAGS present; check_blobs_sync.sh → ALL IN SYNC",
-    "cargo check --lib GREEN 7.8s; cargo test 314 passed / 0 failed / 1 ignored (включая f2t2_patch_roundtrip_verified / f2t2_patch_is_idempotent_and_preserves_f2 / f2t2_patch_rejects_wrong_class_and_garbage на РЕАЛЬНЫХ Brain-фикстурах); /tmp/cargo-443a удалён (диск-закон)"
+    "cherry-pick b5411a0c/b6134c6c/01dcf2aa поверх round-443-mega ffb94e40: 20 UU файлов разрешены UNION-семантикой (все STRICT-OR хвосты mega сохранены 1:1; урок ×438 STRICT-eq tails — альтернативы ДОБАВЛЯЮТСЯ, порядок дешёвые→дорогие)",
+    "новый композит cmp444_sensemega добавлен ОТДЕЛЬНОЙ альтернативой на КАЖДЫЙ гейт: rust 22 файла (chunk_parse/collide_batch ×2/colpush/entity_query ×5+pred+label/goal_selector/inside_bitmask/inside_snap ×3/items_index/items_manager ×2/mobs_ai/mobs_grid/mobs_manager ×3/mobs_soa ×2/mobs_sscan/nav_plane/noise_fill/queryplane ×2/stagger/tickplane/chunk_send ×3/mobs_sense/brainhook) + java 11 файлов (ColpushOps FLAG11, EntityGoalQueryOps lever+diet+senseMode+FLAG_LABEL, ItemEntityManager ×3, GoalOps/MobAiOps/MobScanOps/QueryPlaneOps, MobPushOps marker-id, ChunkParseOps CARRIER_SENSEMEGA_444, SenseOps leverEnabled, BrainOps TICK2_FLAGS)",
+    "пустой флаг = ваниль бит-в-байт; mega-ноги cmp443_mega семантика не тронута (items_manager activate() closure-quirk воспроизведён 1:1 — паритет формы)",
+    "блобы: build_430b_blobs 12 шт (flat==nested OK) + build_chunkparse_ops + BrainOps javac --release 21 (jdk-21.0.12.1+1, cp=kernel round-396-a+fastutil) 8959B raw-byte cmp444_sensemega OK",
+    "check_blobs_sync.sh: needle-юнион (SenseOps блок + cmp444_sensemega; НОВЫЙ BrainOps блок selfTestTickEach/tickEachRunning/'sense tick2 EFFECT armed') → ALL IN SYNC",
+    "cargo check --lib GREEN; cargo test 322 passed / 0 failed (310 mega + 12 sense: f2t2-патчи на РЕАЛЬНЫХ Brain/ServerEntityGetter фикстурах + sense delivery)",
+    "/tmp/cargo-444c удалён сразу после гейтов (диск-закон)"
   ],
-  "what": "step-3 TICK2-lane: скоуп-экспансия sense до Brain-слоя (F2-машина применена к tickEachRunningBehavior); compile+verify+commit+push; далее диспатч ×3 CI-ноги round-443-a-s1/s2/s3"
+  "what": "сборка композита завершена, диспатч 2 ног round-444-c-sensemega-1/-2 (lever_flag=cmp444_sensemega lever_arg=1, банк INPUTS ровно)"
 }
