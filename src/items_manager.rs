@@ -75,7 +75,7 @@ fn lever_flag_matches_for(f: &str) -> bool {
         || f == "cmp412_eqsnapv3" || f == "cmp414_cvs" || f == "cmp417_bq"
         // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
         || f == "cmp420_colpush"
-        || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside" || f == "cmp432_inside2" || f == "cmp436_ins4" || f == "cmp440_ins4d" || f == "cmp434_chunkpl" || f == "cmp435_chunk3" || f == "cmp437_chunk4" || f == "cmp443_mega" // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
+        || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside" || f == "cmp432_inside2" || f == "cmp436_ins4" || f == "cmp440_ins4d" || f == "cmp434_chunkpl" || f == "cmp435_chunk3" || f == "cmp437_chunk4" || f == "cmp449_mega4" // TASK-449-C: mega4 composite (megafix ins4d+chunk4 + items-fix + collide-step2; retag cmp443_mega/cmp445_collide/cmp446_items -> cmp449_mega4).
 }
 
 pub fn activate() {
@@ -108,8 +108,11 @@ pub fn activate() {
         // TASK-417-C: cvs-носитель ⊕ queryplane-awake композит.
         || flag == "cmp412_eqsnapv3" || flag == "cmp414_cvs" || flag == "cmp417_bq"
         // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
+        // TASK-449-C (β-гейт): mega4 НЕ в comp — comp активирует shardgrid-маркер
+        // "ARMED items shards=64" (REFUTED-легаси, запрещён в mega4) + despawn2;
+        // items-половина mega4 = multi items_oss-вариант (vanilla-merge rest-plane).
         || flag == "cmp420_colpush";
-        || flag == "cmp421_brain" || flag == "cmp422_brain2" || flag == "cmp423_brain3" || flag == "cmp424_mobfeed" || flag == "cmp430_inside" || flag == "cmp432_inside2" || flag == "cmp434_chunkpl" || flag == "cmp435_chunk3" || flag == "cmp437_chunk4" || flag == "cmp443_mega"; // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
+        || flag == "cmp421_brain" || flag == "cmp422_brain2" || flag == "cmp423_brain3" || flag == "cmp424_mobfeed" || flag == "cmp430_inside" || flag == "cmp432_inside2" || flag == "cmp434_chunkpl" || flag == "cmp435_chunk3" || flag == "cmp437_chunk4" || flag == "cmp449_mega4"; // TASK-449-C: mega4 composite (megafix ins4d+chunk4 + items-fix + collide-step2; retag cmp443_mega/cmp445_collide/cmp446_items -> cmp449_mega4).
     let despawn2 = flag == "cmp399_despawn2" || bfcomp || comp;
     if shard {
         // ГРОМКИЙ ARM-МАРКЕР (TASK-399-B): без этой строки нога не-armed.

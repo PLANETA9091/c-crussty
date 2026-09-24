@@ -64,6 +64,8 @@ public final class MobAiOps {
                 || f.trim().equals("cmp417_bq")
                 // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
                 || f.trim().equals("cmp420_colpush")
+                // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
+                || f.trim().equals("cmp445_collide")
                 // TASK-421-A: brain-носитель (STRICT OR).
                 || f.trim().equals("cmp421_brain")
                 // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).

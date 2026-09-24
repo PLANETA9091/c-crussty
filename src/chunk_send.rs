@@ -112,7 +112,7 @@ fn target() -> &'static Target {
 
 /// STRICT-OR gate (law 7 round-id hygiene): the serialize-side plane arms on
 /// its own round id cmp437_chunk4 and on the TASK-443-B mega-composition
-/// carrier cmp443_mega (ins4d ⊕ chunk4 union) — older certification ids
+/// carrier cmp449_mega4 (ins4d ⊕ chunk4 union) — older certification ids
 /// (cmp420_chunk2, cmp420_colpush, cmp421_*, cmp424_mobfeed, cmp430_inside,
 /// cmp434_chunkpl, cmp435_chunk3) MUST NOT gain this plane (their certified
 /// semantics are frozen). Empty/foreign flag = vanilla bit-in-bit.
@@ -120,7 +120,7 @@ fn enabled() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let v = v.trim();
-            v == LEVER_ID || v == "cmp443_mega"
+            v == LEVER_ID || v == "cmp449_mega4"
         })
         .unwrap_or(false)
 }
@@ -130,7 +130,7 @@ fn enabled() -> bool {
 fn lever_flag_is_mega() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp443_mega")
+        Ok("cmp449_mega4")
     )
 }
 
@@ -412,7 +412,7 @@ pub fn activate() {
         );
         if lever_flag_is_mega() {
             eprintln!(
-                "[crussty-plugin] cmp443_mega: ARMED chunk-send serialization snapshot (TASK-443-B mega-composition union carrier; chunk4 family id {LEVER_ID})"
+                "[crussty-plugin] cmp449_mega4: ARMED chunk-send serialization snapshot (TASK-443-B mega-composition union carrier; chunk4 family id {LEVER_ID})"
             );
         }
     });

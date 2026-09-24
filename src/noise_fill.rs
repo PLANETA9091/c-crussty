@@ -181,7 +181,7 @@ fn enabled() -> bool {
                 // union; the GEN-axis stays dormant via kernel-policy - the
                 // round rides the composite + parse planes, noise untouched).
                 // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
-                || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp443_mega"
+                || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp449_mega4"
         })
         .unwrap_or(false);
     env_gate || lever_gate

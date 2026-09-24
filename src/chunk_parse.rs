@@ -133,8 +133,11 @@ fn enabled() -> bool {
             v == LEVER_ID || v == "cmp420_colpush" || v == "cmp421_chunk" || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2" || v == "cmp436_ins4" || v == "cmp440_ins4d"
                 // TASK-434-C: chunk-pipeline R5 union carrier.
                 // TASK-435-C: R6 carrier (STRICT-OR successor, no broadening).
-                // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
-                || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp443_mega"
+                // TASK-449-C: mega4 composite (megafix ins4d+chunk4 + items-fix + collide-step2; retag cmp443_mega/cmp445_collide/cmp446_items -> cmp449_mega4).
+                || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp449_mega4"
+                // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR;
+                // chunk-parse = collide-смежный lane — section-cache кормит block-collision
+                // reads, двойной java-гейт ColpushOps+ChunkParseOps, закон 6 R1).
         })
         .unwrap_or(false)
 }

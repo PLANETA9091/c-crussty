@@ -84,11 +84,13 @@ fn enabled() -> bool {
             | Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs") | Ok("cmp417_bq")
             // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
             | Ok("cmp420_colpush")
+            // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
+            | Ok("cmp449_mega4")
             // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
             | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
             | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp440_ins4d") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4")
-            | Ok("cmp443_mega") // TASK-443-B: mega-composition carrier
+            | Ok("cmp449_mega4") // TASK-443-B: mega-composition carrier
             | Ok("cmp421_brain")
     )
 }

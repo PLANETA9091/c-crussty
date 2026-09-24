@@ -59,6 +59,13 @@ import net.minecraft.world.scores.Team;
  *  - cramming-count по снапшоту (граничные +-1 у порога RNG-ветки);
  *  - graveyard-sweep каденция 1/1024 bulkTick (master: 1/1024 pushables
  *    вызова ~ 47/тик) — isRemoved-строки живут в плоскости до ~51 c.
+ * TASK-448-A cycle-2: (а) rust colpushTick2 = FUSED single-pass (reach-prune +
+ * точный AABB-тест один раз на пару, ids copy-out memcpy, ids_cap-гейт как у
+ * классического тела) — бит-в-байт CSR с двухпроходной версией (oracle);
+ * (б) per-(level,tick) constants plane: cramming/maxCol читаются из атомично
+ * публикуемого слота (1 volatile read на covered entity) вместо
+ * getGameRules().getInt map-lookup + paperConfig-цепи; значения ТОЧНЫЕ
+ * ванильные (константы внутри тика, recompute при смене ключа).
  */
 public final class ColpushOps {
 
@@ -93,8 +100,15 @@ public final class ColpushOps {
      * serialization snapshot plane (round-id hygiene for ROUND-438-C).
      */
     private static final String FLAG9 = "cmp437_chunk4";
-    /** TASK-443-B: mega-composition carrier (ins4d + chunk4 union). */
-    private static final String FLAG10 = "cmp443_mega";
+    /**
+     * TASK-449-C mega4 composite: единый lever (gate-reconciliation канон ×449):
+     * megafix-носитель cmp443_mega (ins4d ⊕ chunk4) ⊕ items-фикс cmp446_items
+     * ⊕ collide-step2 cmp445_collide — все три композиционных id ретагнуты в
+     * ОДИН lever cmp449_mega4 во всех rust OR-гейтах и java сайтах.
+     * TASK-445-A: collide+broadphase+push plane round — additive STRICT-OR
+     * (certified colpush carrier base + colpushTick2 bucket-prune delta).
+     */
+    private static final String FLAG10 = "cmp449_mega4";
     private static final int ERR_STRUCT = -1;
     private static final int ERR_RANGE = -2;
 
@@ -110,7 +124,7 @@ public final class ColpushOps {
 
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5) || f.trim().equals(FLAG6) || f.trim().equals(FLAG7) || f.trim().equals(FLAG8) || f.trim().equals(FLAG9) || f.trim().equals(FLAG10)); // TASK-443-B: mega union
+        return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5) || f.trim().equals(FLAG6) || f.trim().equals(FLAG7) || f.trim().equals(FLAG8) || f.trim().equals(FLAG9) || f.trim().equals(FLAG10)); // TASK-449-C: mega4 composite (retag cmp443_mega/cmp445_collide -> cmp449_mega4)
     }
 
     /** Структурный отказ — весь рычаг дизармится навсегда (ваниль-реплика). */
@@ -130,6 +144,44 @@ public final class ColpushOps {
     private static int[] colI;
     private static int[] off;
     private static int[] ids;
+
+    // ---- TASK-448-A cycle-2: per-(level,tick) constants plane ----
+    // getCramming/maxCol КОНСТАНТЫ внутри тика (gamerules/конфиг не меняются
+    // в фазе region-tick'ов: команды main-потока вне фазы). Covered-ветка
+    // читает ОДИН volatile ref вместо getGameRules().getInt (map-lookup) +
+    // paperConfig-цепи на КАЖДОГО covered entity (~44-48k/тик). Слот
+    // публикуется атомично (volatile ref + final fields = safe publication):
+    // рассинхрон (другой уровень/другой тик) = точный recompute как ваниль
+    // (worker-гонка безвредна: 1 recompute/тик на смену ключа).
+    private static final class ConstSlot {
+        final Level level;
+        final int tick;
+        final int cramming;
+        final int maxCol;
+        ConstSlot(Level l, int t, int c, int m) {
+            this.level = l;
+            this.tick = t;
+            this.cramming = c;
+            this.maxCol = m;
+        }
+    }
+
+    private static volatile ConstSlot constSlot;
+
+    /** Точные ванильные значения (level,tick): getGameRules().getInt +
+     * paperConfig().collisions.maxEntityCollisions — bit-in-byte с ванилью
+     * (порядок чтений после isPushable/team-гейтов сохранён вызовом отсюда). */
+    private static ConstSlot gateConstants(Level level, int tick) {
+        ConstSlot s = constSlot;
+        if (s != null && s.level == level && s.tick == tick) {
+            return s;
+        }
+        int cramming = ((ServerLevel) level).getGameRules().getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
+        int maxCol = level.paperConfig().collisions.maxEntityCollisions;
+        ConstSlot ns = new ConstSlot(level, tick, cramming, maxCol);
+        constSlot = ns;
+        return ns;
+    }
 
     /** Кольцо ревалидации (EntityQueryOps/MobPushOps-паттерн: 4 слота). */
     private static final int RING_SLOTS = 4;
@@ -208,8 +260,12 @@ public final class ColpushOps {
         if (team != null && team.getCollisionRule() == Team.CollisionRule.NEVER) {
             return;
         }
-        int cramming = ((ServerLevel) level).getGameRules().getInt(GameRules.RULE_MAX_ENTITY_CRAMMING);
-        int maxCol = level.paperConfig().collisions.maxEntityCollisions;
+        // TASK-448-A cycle-2: константы тика из per-(level,tick) слота (точные
+        // ванильные значения, 1 volatile read вместо map-lookup + config-цепь).
+        int tick = (int) net.minecraft.server.MinecraftServer.getServer().getTickCount();
+        ConstSlot slot = gateConstants(level, tick);
+        int cramming = slot.cramming;
+        int maxCol = slot.maxCol;
         if (cramming <= 0 && maxCol <= 0) {
             return;
         }
@@ -242,7 +298,7 @@ public final class ColpushOps {
                     int ib = id * ROW_I;
                     ii[ib] = System.identityHashCode(level);
                     ii[ib + 1] = FLAG_INCLUDE;
-                    ii[ib + 2] = (int) net.minecraft.server.MinecraftServer.getServer().getTickCount();
+                    ii[ib + 2] = tick;
                 }
             }
         }

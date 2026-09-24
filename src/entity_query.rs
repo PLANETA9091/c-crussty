@@ -127,11 +127,13 @@ fn enabled() -> bool {
             // TASK-419-A (colpush): колпаш-носитель — eq_epoch снапшот жив
             // (плоскость кормит colpush_plane_refresh).
             | Ok("cmp420_colpush")
+            // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
+            | Ok("cmp449_mega4")
             // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
             | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
             | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp440_ins4d") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4")
-            | Ok("cmp443_mega") // TASK-443-B: mega-composition carrier
+            | Ok("cmp449_mega4") // TASK-443-B: mega-composition carrier
             | Ok("cmp421_brain")
     )
 }
@@ -176,7 +178,7 @@ fn enabled_flag_is_sense() -> bool {
         Ok("cmp421_brain") | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
             | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp440_ins4d") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4")
-            | Ok("cmp443_mega") // TASK-443-B: mega-composition carrier
+            | Ok("cmp449_mega4") // TASK-443-B: mega-composition carrier
     )
 }
 
@@ -195,7 +197,7 @@ fn enabled_flag_is_brain2() -> bool {
 fn enabled_flag_is_ins4d() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp440_ins4d") | Ok("cmp443_mega") // TASK-443-B: mega union carries the diet
+        Ok("cmp440_ins4d") | Ok("cmp449_mega4") // TASK-443-B: mega union carries the diet
     )
 }
 
@@ -203,7 +205,7 @@ fn enabled_flag_is_ins4d() -> bool {
 fn enabled_flag_is_mega() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp443_mega")
+        Ok("cmp449_mega4")
     )
 }
 
@@ -636,7 +638,7 @@ pub fn activate() {
 
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
         let flag_label = if enabled_flag_is_mega() {
-            "cmp443_mega" // TASK-443-B: mega-composition prints its own id
+            "cmp449_mega4" // TASK-443-B: mega-composition prints its own id
         } else if enabled_flag_is_ins4d() {
             "cmp440_ins4d"
         } else if enabled_flag_is_brain2() {
@@ -999,7 +1001,7 @@ mod tests {
             || s == "cmp411_k4soa"
             || s == "cmp411_eqsnap"
             || s == "cmp412_eqsnapv3" || s == "cmp414_cvs" || s == "cmp417_bq"
-            || s == "cmp421_brain" || s == "cmp422_brain2" || s == "cmp423_brain3" || s == "cmp424_mobfeed" || s == "cmp430_inside" || s == "cmp432_inside2" || s == "cmp436_ins4" || s == "cmp434_chunkpl" || s == "cmp435_chunk3" || s == "cmp437_chunk4" || s == "cmp443_mega" // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
+            || s == "cmp421_brain" || s == "cmp422_brain2" || s == "cmp423_brain3" || s == "cmp424_mobfeed" || s == "cmp430_inside" || s == "cmp432_inside2" || s == "cmp436_ins4" || s == "cmp434_chunkpl" || s == "cmp435_chunk3" || s == "cmp437_chunk4" || s == "cmp449_mega4" // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
     }
 
     #[test]

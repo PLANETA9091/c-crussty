@@ -150,14 +150,14 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // port). Pristine capture at first load; patch served after the
     // ItemMergeOps bridge lands. Dormant unless CRUSSTY_LEVER_FLAG=items_oss.
     item_merge::register();
-    // ITEMS-BATCH (TASK-446-B, cmp446_items, закон 6 подсистема): ItemEntity
+    // ITEMS-BATCH (TASK-446-B, cmp449_mega4, закон 6 подсистема): ItemEntity
     // byte hook for the WHOLE-TICK rest-plane retarget (ItemEntity.tick()V ->
     // ItemBatchOps.tick static bridge; rust rest-plane shards=64, ОДИН bulk
     // JNI/тик/поток planeDecide, faithful recheck 1/32; REST = vanilla
     // inactiveTick + %40 merge, FULL = byte-parity replica — fluid/inside/
     // collision сканы только на FULL-пути). Pristine capture at first load;
     // patch served after the bridge lands + selfTest. Dormant unless
-    // CRUSSTY_LEVER_FLAG == cmp446_items (STRICT eq; пустой флаг = ваниль
+    // CRUSSTY_LEVER_FLAG == cmp449_mega4 (STRICT eq; пустой флаг = ваниль
     // бит-в-байт).
     items_batch::register();
     // STAGGER (TASK-401-I, round-401 vector I): per-entity hashed 1/N
@@ -488,7 +488,7 @@ fn inject_surface() {
     // ITEMS-BATCH (TASK-446-B): define ItemBatchOps into the kernel loader,
     // RegisterNatives (planeProbe/planeDecide), selfTest BEFORE retransform
     // (fail-closed), compute the ItemEntity.tick whole-body patch, retransform
-    // (dormant unless CRUSSTY_LEVER_FLAG == cmp446_items).
+    // (dormant unless CRUSSTY_LEVER_FLAG == cmp449_mega4).
     items_batch::activate();
     // STAGGER (TASK-401-I): define PushStaggerOps/GoalStaggerOps into the
     // kernel loader, compute both single-site retargets, retransform (dormant

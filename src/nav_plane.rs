@@ -52,7 +52,7 @@ pub fn armed() -> bool {
                 || v.trim() == "cmp412_eqsnapv3" || v.trim() == "cmp414_cvs" || v.trim() == "cmp417_bq"
                 // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
                 || v.trim() == "cmp420_colpush"
-                || v.trim() == "cmp421_brain" || v.trim() == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2" || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp443_mega" // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
+                || v.trim() == "cmp421_brain" || v.trim() == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2" || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp449_mega4" // TASK-449-C: mega4 composite (megafix ins4d+chunk4 + items-fix + collide-step2; retag cmp443_mega/cmp445_collide/cmp446_items -> cmp449_mega4).
         })
         .unwrap_or(false)
 }

@@ -76,8 +76,8 @@ fn lever_flag_matches() -> bool {
                 || v.trim() == "cmp421_brain" || v.trim() == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2"
                 // TASK-434-C (chunkpl): chunk-pipeline R5 carrier - queryplane
                 // rides as a disjoint-lane leg (law 7).
-                // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
-                || v.trim() == "cmp434_chunkpl" || v.trim() == "cmp435_chunk3" || v.trim() == "cmp437_chunk4" || v.trim() == "cmp443_mega"
+                // TASK-449-C: mega4 composite (megafix ins4d+chunk4 + items-fix + collide-step2; retag cmp443_mega/cmp445_collide/cmp446_items -> cmp449_mega4).
+                || v.trim() == "cmp434_chunkpl" || v.trim() == "cmp435_chunk3" || v.trim() == "cmp437_chunk4" || v.trim() == "cmp449_mega4"
         })
         .unwrap_or(false)
 }
@@ -99,6 +99,8 @@ fn inside_plane_label() -> &'static str {
 fn lever_id() -> &'static str {
     match std::env::var("CRUSSTY_LEVER_FLAG").as_deref() {
         Ok("cmp420_colpush") => "cmp420_colpush",
+        // TASK-445-A: collide+broadphase+push plane round — свой id в EFFECT-маркерах.
+        Ok("cmp449_mega4") => "cmp449_mega4",
         // TASK-426-A: SoA-feed carrier — свой id в ARM/EFFECT-маркерах.
         Ok("cmp424_mobfeed") => "cmp424_mobfeed",
         // TASK-430-B: inside-plane subsystem round — свой id.
@@ -107,7 +109,7 @@ fn lever_id() -> &'static str {
         Ok("cmp434_chunkpl") => "cmp434_chunkpl",
         Ok("cmp435_chunk3") => "cmp435_chunk3", // TASK-435-C: R6 carrier marker id
         Ok("cmp437_chunk4") => "cmp437_chunk4", // TASK-438-C: R7 carrier marker id (chunk-send snapshot widening)
-        Ok("cmp443_mega") => "cmp443_mega", // TASK-443-B: mega-composition carrier marker id
+        Ok("cmp449_mega4") => "cmp449_mega4", // TASK-443-B: mega-composition carrier marker id
         Ok("cmp417_bq")
             // TASK-421-A (brain): свой id в ARM-маркерах.
             | Ok("cmp421_brain") => "cmp421_brain",

@@ -68,6 +68,15 @@ const IDS_CAP: usize = 1 << 20;
 /// Грид-таблица (open-addressed), ячейка 4.0 → 640-радиус бокс = 320×320 живых
 /// ячеек + tombstones; 1<<18 как у плоскости.
 const GRID_CAP: usize = 1 << 18;
+/// TASK-445-A (cmp449_mega4): bucket-таблица wide-phase prune (open-addressed,
+/// тот же lid-скрэмбл) — 16.0-бакеты (chunk-size = 4×4 грид-ячеек).
+const BUCKET_CAP: usize = 1 << 14;
+/// TASK-445-A: бакет = 16.0 блоков (чанковый бакет). Reach пары ≤ hx+hx ≤ 4.0
+/// ⇒ кандидаты всегда в 3×3 соседних бакетах.
+const BUCKET: f64 = 16.0;
+/// TASK-445-A: ulp-слак консервативного prune-теста (≫ ulp при координатах
+/// ~1e4, ≪ любой реальной полуэкстенты).
+const BUCKET_EPS: f64 = 1e-9;
 /// Ячейка грида: reach пары = hx_i + hx_j ≤ 2.0 + 2.0 = 4.0 → pad 1.
 const CELL: f64 = 4.0;
 const H1: i64 = 0x9E37_79B9_1B48_59D1u64 as i64; // golden-ratio scramble
@@ -94,6 +103,19 @@ struct BulkState {
     cnt: Vec<i32>,
     off_scratch: Vec<i32>,
     csr: Vec<i32>,
+    // TASK-445-A (cmp449_mega4): bucket-prune wide-phase arrays —
+    // используются ТОЛЬКО веткой colpushTick2; классический путь их не трогает.
+    // bhead очищается безусловно на каждом вызове (16K stores — в 16× дешевле
+    // сертифицированного head-clear 256K) ⇒ повторный вход после ERR_RANGE
+    // (java растит IDS и ретраит) идемпотентен, как у классического тела.
+    bhead: Vec<i32>,      // BUCKET_CAP: slot -> chain head (id+1), 0 = пуст
+    bminx: Vec<f64>,
+    bmaxx: Vec<f64>,
+    bminz: Vec<f64>,
+    bmaxz: Vec<f64>,
+    bmaxh: Vec<f64>,      // per-bucket max(hx,hz) — prune-margin (f64: margin
+                          // обязан быть UPPER-BOUND'ом hx_a+hx_b, f32-округление
+                          // вниз нарушило бы консервативность prune)
 }
 static BULK_LOCK: Mutex<()> = Mutex::new(());
 fn bulk_state() -> &'static Mutex<BulkState> {
@@ -106,6 +128,12 @@ fn bulk_state() -> &'static Mutex<BulkState> {
             cnt: vec![0; IDS_CAP],
             off_scratch: vec![0; IDS_CAP + 1],
             csr: Vec::with_capacity(1 << 21),
+            bhead: vec![0; BUCKET_CAP],
+            bminx: vec![0.0; BUCKET_CAP],
+            bmaxx: vec![0.0; BUCKET_CAP],
+            bminz: vec![0.0; BUCKET_CAP],
+            bmaxz: vec![0.0; BUCKET_CAP],
+            bmaxh: vec![0.0; BUCKET_CAP],
         })
     })
 }
@@ -118,7 +146,9 @@ fn lever_flag_matches() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let t = v.trim();
-            t == "cmp420_colpush" || t == "cmp424_mobfeed" || t == "cmp430_inside" || t == "cmp432_inside2" || t == "cmp436_ins4" || t == "cmp440_ins4d" || t == "cmp434_chunkpl" || t == "cmp435_chunk3" || t == "cmp437_chunk4" || t == "cmp443_mega" // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
+            t == "cmp420_colpush" || t == "cmp424_mobfeed" || t == "cmp430_inside" || t == "cmp432_inside2" || t == "cmp436_ins4" || t == "cmp440_ins4d" || t == "cmp434_chunkpl" || t == "cmp435_chunk3" || t == "cmp437_chunk4" || t == "cmp449_mega4" // TASK-449-C: mega4 composite (megafix ins4d+chunk4 + items-fix + collide-step2; retag cmp443_mega/cmp445_collide/cmp446_items -> cmp449_mega4).
+            // TASK-445-A: cmp449_mega4 (collide+broadphase+push plane round)
+            // rides the certified colpush carrier — additive STRICT-OR (x438).
         })
         .unwrap_or(false)
 }
@@ -577,6 +607,7 @@ pub unsafe extern "system" fn colpush_tick(
         return ERR_STRUCT;
     }
     let vt = unsafe { &**env };
+
     let n = id_top as usize;
     let d_cap = unsafe { (vt.GetArrayLength)(env, in_d) } as usize;
     let i_cap = unsafe { (vt.GetArrayLength)(env, in_i) } as usize;
@@ -584,6 +615,14 @@ pub unsafe extern "system" fn colpush_tick(
     let ids_cap = unsafe { (vt.GetArrayLength)(env, out_ids) } as usize;
     if d_cap < n * ROW_D || i_cap < n * ROW_I || off_cap < n + 1 {
         return ERR_STRUCT; // структурный дрейф буферов — java дизарм
+    }
+
+    // TASK-445-A: единая точка bulk-JNI. Под cmp449_mega4 тело перечисления
+    // = bucket-prune wide-phase (colpushTick2-дельта), ИНАЧЕ — сертифицированное
+    // тело ×420 бит-в-байт. Развилка по OnceLock-флагу: процесс несёт ровно
+    // один флаг ⇒ ветка стабильна весь прогон; java-сигнатура не меняется.
+    if collide445_bucket_prune_enabled() {
+        return colpush_tick_buckets(env, vt, tick, id_top, in_d, in_i, out_off, out_ids, ids_cap);
     }
 
     // Одна партия за раз (java-side tryLock гарантирует, это страховка).
@@ -828,4 +867,607 @@ fn grid_slot_by(gx: i64, gz: i64, lid: i32) -> usize {
     h ^= (h >> 32);
     h ^= (h >> 17);
     (h & (GRID_CAP as i64 - 1)) as usize
+}
+
+// ---------------------------------------------------------------------------
+// TASK-445-A (cmp449_mega4): colpushTick2 — bucket-prune wide-phase delta.
+// TASK-448-A cycle-2: тело = FUSED single-pass (buckets_fused + buckets_copy_out):
+// reach-prune и точный strict-< AABB-тест — РОВНО ОДИН раз на пару (двухпроходная
+// версия ×447 делала это дважды), ids copy-out одним memcpy, добавлен
+// ids_cap-гейт (как у сертифицированного классического тела) — pair-overflow
+// до записи в java вместо усечённого CSR.
+//
+// Контракт: та же сигнатура/CSR-семантика, что сертифицированное тело
+// colpushTick ×420 (бит-в-байт по набору пар: точный strict-< AABB-overlap,
+// обе стороны пары, кандидаты по возрастанию плотного id, нулевые ряды для
+// неактивных id). Отличие ТОЛЬКО wide-phase: активные ряды партиционируются
+// в 16.0-бакеты (чанковые ключи), по бакету копится AABB его рядов, и
+// (ряд, соседний бакет) перечисляется ТОЛЬКО если reach-бокс ряда достижим
+// до бакетного AABB — консервативный early-out: отсечённые бакет-пары не
+// могут дать ни одной пары-кандидата (reach пары = hx_a + hx_b ≤ 2·RADIUS_GATE
+// = 4.0 < 16.0, java-гейт ColpushOps.RADIUS_GATE гарантирован флагом
+// FLAG_INCLUDE; margin считается из ФАКТИЧЕСКИХ bmaxh, а не из константы —
+// звукен даже при нарушении гейта java-стороной).
+//
+// Оракул (cargo test, модуль ниже): brute-force O(N²) энумерация == CSR
+// fused-ядра на рандомизированных сценах, включая граничные касания
+// (strict < ⇒ касание = НЕ кандидат), y-разнос, stale/flag-off/NaN-ряды.
+// ---------------------------------------------------------------------------
+
+/// Fork-флаг развилки colpushTick (OnceLock: процесс несёт ровно один флаг
+/// ⇒ ветка стабильна весь прогон; java-сигнатура не меняется).
+fn collide445_bucket_prune_enabled() -> bool {
+    static EN: OnceLock<bool> = OnceLock::new();
+    *EN.get_or_init(|| {
+        std::env::var("CRUSSTY_LEVER_FLAG")
+            .map(|v| v.trim() == "cmp449_mega4")
+            .unwrap_or(false)
+    })
+}
+
+/// Бакет-слот: хеш ТОЛЬКО от ключа (16.0-бакет) — БЕЗ lid-скрэмбла: все ряды
+/// одного ключа обязаны цепляться в один слот, иначе AABB-prune теряет
+/// видимость рядов (lid-зависимый слот = пропущенные кандидаты = дивергенция).
+#[inline]
+fn bucket_slot_by(gbx: i64, gbz: i64) -> usize {
+    let mut h = (gbx.wrapping_mul(H1)) ^ (gbz.wrapping_mul(H2));
+    h ^= (h >> 32);
+    h ^= (h >> 17);
+    (h & (BUCKET_CAP as i64 - 1)) as usize
+}
+
+#[inline]
+fn bucket_slot(lid: i32, cx: f64, cz: f64) -> usize {
+    let _ = lid; // общий ключ партиции (см. bucket_slot_by) — lid не участвует
+    bucket_slot_by((cx / BUCKET).floor() as i64, (cz / BUCKET).floor() as i64)
+}
+
+/// PASS 1 + FUSED(2,4) bucket-ядро (TASK-448-A cycle-2, single-pass):
+/// активные ряды + бакет-партиция + AABB-копилка, затем ОДИН 9-бакетный walk
+/// на активный ряд — reach-prune и точный strict-< AABB-тест исполняются
+/// РОВНО ОДИН РАЗ на пару (двухпроходная версия делала это дважды), кандидаты
+/// пишутся в scratch-CSR с per-row сортировкой по возрастанию плотного id
+/// (бит-в-байт с двухпроходной версией и ×420). Возвращает total;
+/// usize::MAX = overflow (total > i32::MAX). ids_cap-гейт — в вызывающем
+/// (как у сертифицированного классического тела: до RANGE java ничего
+/// не читает из out-массивов).
+fn buckets_fused(
+    st: &mut BulkState,
+    n: usize,
+    d: &[f64],
+    i: &[i32],
+    want_tick: i32,
+) -> usize {
+    // ---- PASS 1: активные ряды + бакет-партиция + AABB бакетов ----
+    st.act.clear();
+    st.csr.clear();
+    // Безусловные очистки: bhead 16K + AABB-массивы (в сумме ~96K stores —
+    // дешевле сертифицированного head-clear 256K классического тела).
+    // Повторный вход (ERR_RANGE-ретрай java) идемпотентен.
+    st.bhead[..].fill(0);
+    st.bminx[..].fill(f64::INFINITY);
+    st.bmaxx[..].fill(f64::NEG_INFINITY);
+    st.bminz[..].fill(f64::INFINITY);
+    st.bmaxz[..].fill(f64::NEG_INFINITY);
+    st.bmaxh[..].fill(0.0);
+    for id in 0..n {
+        let flags = i[id * ROW_I + 1];
+        let fresh = i[id * ROW_I + 2];
+        if fresh != want_tick || flags & FLAG_INCLUDE == 0 {
+            st.cnt[id] = 0;
+            continue;
+        }
+        let b = id * ROW_D;
+        let cx = d[b];
+        let cy = d[b + 1];
+        let cz = d[b + 2];
+        let hx = d[b + 3];
+        let hz = d[b + 4];
+        let hh = d[b + 5];
+        if !(cx.is_finite() && cy.is_finite() && cz.is_finite())
+            || !(hx.is_finite() && hz.is_finite() && hh.is_finite())
+            || hx <= 0.0
+            || hz <= 0.0
+            || hh <= 0.0
+        {
+            st.cnt[id] = 0;
+            continue;
+        }
+        st.act.push(id as i32);
+        st.cnt[id] = 0;
+        let slot = bucket_slot(i[id * ROW_I], cx, cz);
+        st.next[id] = st.bhead[slot]; // st.next = бакет-цепи (грид этого пути не строит)
+        st.bhead[slot] = id as i32 + 1;
+        if cx < st.bminx[slot] {
+            st.bminx[slot] = cx;
+        }
+        if cx > st.bmaxx[slot] {
+            st.bmaxx[slot] = cx;
+        }
+        if cz < st.bminz[slot] {
+            st.bminz[slot] = cz;
+        }
+        if cz > st.bmaxz[slot] {
+            st.bmaxz[slot] = cz;
+        }
+        let rh = if hx > hz { hx } else { hz };
+        if rh > st.bmaxh[slot] {
+            st.bmaxh[slot] = rh;
+        }
+    }
+
+    // ---- PASS 2+4 FUSED: один walk на активный ряд ----
+    for &a in st.act.iter() {
+        let a = a as usize;
+        let ba = a * ROW_D;
+        let cx = d[ba];
+        let cz = d[ba + 2];
+        let hx = d[ba + 3];
+        let hz = d[ba + 4];
+        let cy = d[ba + 1];
+        let hh = d[ba + 5];
+        let gbx = (cx / BUCKET).floor() as i64;
+        let gbz = (cz / BUCKET).floor() as i64;
+        let ra = if hx > hz { hx } else { hz };
+        let mut visited = [usize::MAX; 9]; // dedup слотов (коллизия ключей ≠ дубль цепи)
+        let mut nv: usize = 0;
+        let row_begin = st.csr.len();
+        for dgz in -1..=1i64 {
+            for dgx in -1..=1i64 {
+                let slot = bucket_slot_by(gbx + dgx, gbz + dgz);
+                let mut seen = false;
+                for k in 0..nv {
+                    if visited[k] == slot {
+                        seen = true;
+                        break;
+                    }
+                }
+                if seen {
+                    continue;
+                }
+                visited[nv] = slot;
+                nv += 1;
+                let mut cur = st.bhead[slot];
+                if cur == 0 {
+                    continue;
+                }
+                // per-(row,bucket) reach-prune: если ряд a отстоит от ВСЕГО
+                // ряда-набора слота ≥ mh хотя бы по одной горизонтали — ни одна
+                // пара (a, b∈slot) не проходит точный тест. mh = ra + bmaxh[slot]
+                // ≥ hx_a + hx_b и ≥ hz_a + hz_b (bmaxh = max по рядам слота).
+                let mh = ra + st.bmaxh[slot] + BUCKET_EPS;
+                if st.bminx[slot] - cx >= mh
+                    || cx - st.bmaxx[slot] >= mh
+                    || st.bminz[slot] - cz >= mh
+                    || cz - st.bmaxz[slot] >= mh
+                {
+                    continue;
+                }
+                while cur != 0 {
+                    let b2 = (cur - 1) as usize;
+                    cur = st.next[b2];
+                    if b2 == a {
+                        continue;
+                    }
+                    let bb = b2 * ROW_D;
+                    // Точный AABB.intersects (строгие <) — бит-в-байт с ×420.
+                    if (d[bb] - cx).abs() < hx + d[bb + 3]
+                        && (d[bb + 2] - cz).abs() < hz + d[bb + 4]
+                        && (d[bb + 1] - cy).abs() < hh + d[bb + 5]
+                    {
+                        st.csr.push(b2 as i32);
+                    }
+                }
+            }
+        }
+        // Детерминизм: per-row ascending-id sort (insertion — списки малы),
+        // бит-в-байт с двухпроходной версией (порядок кандидатов = возрастание
+        // плотного id, не chain-порядок).
+        let row = &mut st.csr[row_begin..];
+        for m in 1..row.len() {
+            let key = row[m];
+            let mut p = m;
+            while p > 0 && row[p - 1] > key {
+                row[p] = row[p - 1];
+                p -= 1;
+            }
+            row[p] = key;
+        }
+        st.cnt[a] = (st.csr.len() - row_begin) as i32;
+    }
+    let total = st.csr.len();
+    if total > i32::MAX as usize {
+        return usize::MAX;
+    }
+    total
+}
+
+/// Выход fused-ядра: scratch-CSR → java off/ids. csr компактен (строки
+/// подряд в порядке возрастания плотного id активных рядов) ⇒ ids копируется
+/// одним copy_from_slice, off — один O(n) проход (без hash/walk/тестов).
+/// Вызывается ТОЛЬКО после ids_cap-гейта (total ≤ ids_cap).
+fn buckets_copy_out(
+    st: &BulkState,
+    n: usize,
+    off: &mut [i32],
+    ids: &mut [i32],
+) {
+    let total = st.csr.len();
+    ids[..total].copy_from_slice(&st.csr[..total]);
+    let mut cursor: usize = 0;
+    off[0] = 0;
+    let mut ai: usize = 0; // индекс в act
+    let rows = st.act.len();
+    for id in 0..n {
+        let is_active = ai < rows && st.act[ai] as usize == id;
+        if is_active {
+            cursor += st.cnt[st.act[ai] as usize] as usize;
+            ai += 1;
+        }
+        off[id + 1] = cursor as i32;
+    }
+}
+
+/// Ветка colpushTick2 (cmp449_mega4): та же JNI-обвязка, что сертифицированный
+/// colpushTick (критические секции, ERR_RANGE/ERR_STRUCT, PASS 5 plane-refresh,
+/// LAST_ROWS/LAST_PAIRS); тело перечисления = buckets_fused (TASK-448-A
+/// single-pass) + buckets_copy_out; ids_cap-гейт как у классического тела.
+#[allow(clippy::too_many_arguments)]
+fn colpush_tick_buckets(
+    env: *mut jni::JNIEnv,
+    vt: &jni::JNINativeInterface_,
+    tick: jni::jint,
+    id_top: jni::jint,
+    in_d: jni::jdoubleArray,
+    in_i: jni::jintArray,
+    out_off: jni::jintArray,
+    out_ids: jni::jintArray,
+    ids_cap: usize,
+) -> jni::jint {
+    let n = id_top as usize;
+    // Одна партия за раз (java-side tryLock гарантирует, это страховка).
+    let Ok(mut st) = bulk_state().lock() else {
+        return ERR_RANGE; // конкурентный вызов — java ретраит следующим тиком
+    };
+    let dp = unsafe { (vt.GetPrimitiveArrayCritical)(env, in_d, std::ptr::null_mut()) };
+    if dp.is_null() {
+        return ERR_STRUCT;
+    }
+    let ip = unsafe { (vt.GetPrimitiveArrayCritical)(env, in_i, std::ptr::null_mut()) };
+    if ip.is_null() {
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, in_d, dp, 0) };
+        return ERR_STRUCT;
+    }
+    let d = unsafe { std::slice::from_raw_parts(dp as *const f64, n * ROW_D) };
+    let i = unsafe { std::slice::from_raw_parts(ip as *const i32, n * ROW_I) };
+    let want_tick = tick - 1; // снапшот end-of-previous-tick
+
+    let total = buckets_fused(&mut st, n, d, i, want_tick);
+    if total == usize::MAX {
+        unsafe {
+            (vt.ReleasePrimitiveArrayCritical)(env, in_i, ip, 0);
+            (vt.ReleasePrimitiveArrayCritical)(env, in_d, dp, 0);
+        }
+        return ERR_RANGE; // java растит IDS и ретраит
+    }
+    // TASK-448-A: ids_cap-гейт (как у сертифицированного классического тела) —
+    // pair-overflow ДО записи в java: java растит ids и ретраит; без гейта
+    // усечённый CSR давал бы off[] за пределами ids (AIOOBE → disarm).
+    if total > ids_cap {
+        unsafe {
+            (vt.ReleasePrimitiveArrayCritical)(env, in_i, ip, 0);
+            (vt.ReleasePrimitiveArrayCritical)(env, in_d, dp, 0);
+        }
+        return ERR_RANGE;
+    }
+
+    let op = unsafe { (vt.GetPrimitiveArrayCritical)(env, out_off, std::ptr::null_mut()) };
+    if op.is_null() {
+        unsafe {
+            (vt.ReleasePrimitiveArrayCritical)(env, in_i, ip, 0);
+            (vt.ReleasePrimitiveArrayCritical)(env, in_d, dp, 0);
+        }
+        return ERR_STRUCT;
+    }
+    let ids_p = unsafe { (vt.GetPrimitiveArrayCritical)(env, out_ids, std::ptr::null_mut()) };
+    if ids_p.is_null() {
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, out_off, op, 0) };
+        unsafe {
+            (vt.ReleasePrimitiveArrayCritical)(env, in_i, ip, 0);
+            (vt.ReleasePrimitiveArrayCritical)(env, in_d, dp, 0);
+        }
+        return ERR_STRUCT;
+    }
+    let off = unsafe { std::slice::from_raw_parts_mut(op as *mut i32, n + 1) };
+    let ids = unsafe { std::slice::from_raw_parts_mut(ids_p as *mut i32, ids_cap) };
+
+    buckets_copy_out(&st, n, off, ids);
+
+    unsafe {
+        (vt.ReleasePrimitiveArrayCritical)(env, out_ids, ids_p, 0);
+        (vt.ReleasePrimitiveArrayCritical)(env, out_off, op, 0);
+    }
+
+    // ---- PASS 5: рефреш плоскости mobs_soa из своих строк (1 WLOCK) —
+    // бит-в-байт с сертифицированным телом (sscan/ai/eq-плоскости-носители
+    // читают свежие колонки; eqsnap-шарды дренируются заодно).
+    let drained = crate::mobs_soa::colpush_plane_refresh(n, d, i, want_tick);
+
+    unsafe {
+        (vt.ReleasePrimitiveArrayCritical)(env, in_i, ip, 0);
+        (vt.ReleasePrimitiveArrayCritical)(env, in_d, dp, 0);
+    }
+
+    let rows = st.act.len();
+    LAST_ROWS.store(rows, Ordering::Relaxed);
+    LAST_PAIRS.store(total, Ordering::Relaxed);
+    if FIRST_BULK.swap(false, Ordering::Relaxed) {
+        eprintln!(
+            "[crussty-plugin] cmp449_mega4: bulk EFFECT armed (colpushTick2 bucket-prune fused-single-pass; first tick {tick}, rows {rows}, pair-slots {total}, plane-refresh {drained})"
+        );
+    }
+    total as jni::jint
+}
+
+#[cfg(test)]
+mod tests445 {
+    use super::*;
+
+    struct Scene {
+        n: usize,
+        d: Vec<f64>,
+        i: Vec<i32>,
+        want_tick: i32,
+    }
+
+    /// xorshift64* PRNG — детерминизм без внешних крейтов.
+    struct Rng(u64);
+    impl Rng {
+        fn next(&mut self) -> u64 {
+            let mut x = self.0;
+            x ^= x >> 12;
+            x ^= x << 25;
+            x ^= x >> 27;
+            self.0 = x;
+            x.wrapping_mul(0x2545F4914F6CDD1D)
+        }
+        fn f64(&mut self, lo: f64, hi: f64) -> f64 {
+            let u = (self.next() >> 11) as f64 / (1u64 << 53) as f64;
+            lo + u * (hi - lo)
+        }
+        fn i64(&mut self, lo: i64, hi: i64) -> i64 {
+            lo + (self.next() % (hi - lo + 1) as u64) as i64
+        }
+    }
+
+    fn build_scene(rows: &[(f64, f64, f64, f64, f64, f64, i32, i32)]) -> Scene {
+        // rows: (cx, cy, cz, hx, hz, hh, flags, fresh)
+        let n = rows.len();
+        let mut d = vec![0.0f64; n * ROW_D];
+        let mut i = vec![0i32; n * ROW_I];
+        for (k, r) in rows.iter().enumerate() {
+            d[k * ROW_D] = r.0;
+            d[k * ROW_D + 1] = r.1;
+            d[k * ROW_D + 2] = r.2;
+            d[k * ROW_D + 3] = r.3;
+            d[k * ROW_D + 4] = r.4;
+            d[k * ROW_D + 5] = r.5;
+            i[k * ROW_I] = (k as i32) + 1; // lid — произвольный, партицию не ломает
+            i[k * ROW_I + 1] = r.6;
+            i[k * ROW_I + 2] = r.7;
+        }
+        Scene { n, d, i, want_tick: 100 }
+    }
+
+    /// Brute-force O(N²) оракул — транскрипция сертифицированной семантики
+    /// colpushTick ×420 (фильтры PASS 1 + точный strict-< overlap + обе
+    /// стороны пары + сортировка по возрастанию id + нулевые ряды неактивных).
+    fn oracle(s: &Scene) -> (Vec<i32>, Vec<i32>, usize) {
+        let n = s.n;
+        let act: Vec<usize> = (0..n)
+            .filter(|&id| {
+                let flags = s.i[id * ROW_I + 1];
+                let fresh = s.i[id * ROW_I + 2];
+                if fresh != s.want_tick || flags & FLAG_INCLUDE == 0 {
+                    return false;
+                }
+                let b = id * ROW_D;
+                let (cx, cy, cz, hx, hz, hh) =
+                    (s.d[b], s.d[b + 1], s.d[b + 2], s.d[b + 3], s.d[b + 4], s.d[b + 5]);
+                (cx.is_finite() && cy.is_finite() && cz.is_finite())
+                    && (hx.is_finite() && hz.is_finite() && hh.is_finite())
+                    && hx > 0.0
+                    && hz > 0.0
+                    && hh > 0.0
+            })
+            .collect();
+        let mut off = vec![0i32; n + 1];
+        let mut ids: Vec<i32> = Vec::new();
+        let mut cursor: usize = 0;
+        let mut ai: usize = 0;
+        for id in 0..n {
+            let is_active = ai < act.len() && act[ai] == id;
+            if is_active {
+                let a = id;
+                let ba = a * ROW_D;
+                let (cx, cy, cz, hx, hz, hh) = (
+                    s.d[ba], s.d[ba + 1], s.d[ba + 2], s.d[ba + 3], s.d[ba + 4], s.d[ba + 5],
+                );
+                let mut cand: Vec<i32> = Vec::new();
+                for &b2 in act.iter() {
+                    if b2 == a {
+                        continue;
+                    }
+                    let bb = b2 * ROW_D;
+                    if (s.d[bb] - cx).abs() < hx + s.d[bb + 3]
+                        && (s.d[bb + 2] - cz).abs() < hz + s.d[bb + 4]
+                        && (s.d[bb + 1] - cy).abs() < hh + s.d[bb + 5]
+                    {
+                        cand.push(b2 as i32);
+                    }
+                }
+                cand.sort_unstable();
+                for c in cand {
+                    ids.push(c);
+                    cursor += 1;
+                }
+                ai += 1;
+            }
+            off[id + 1] = cursor as i32;
+        }
+        (off, ids, cursor)
+    }
+
+    fn run_bucket(s: &Scene, ids_cap: usize) -> (Vec<i32>, Vec<i32>, usize) {
+        let mut st = BulkState {
+            act: Vec::new(),
+            head: vec![0; GRID_CAP],
+            next: vec![0; IDS_CAP],
+            cnt: vec![0; IDS_CAP],
+            off_scratch: vec![0; IDS_CAP + 1],
+            csr: Vec::new(),
+            bhead: vec![0; BUCKET_CAP],
+            bminx: vec![0.0; BUCKET_CAP],
+            bmaxx: vec![0.0; BUCKET_CAP],
+            bminz: vec![0.0; BUCKET_CAP],
+            bmaxz: vec![0.0; BUCKET_CAP],
+            bmaxh: vec![0.0; BUCKET_CAP],
+        };
+        let total = buckets_fused(&mut st, s.n, &s.d, &s.i, s.want_tick);
+        assert_ne!(total, usize::MAX, "scene overflowed ids_cap");
+        // wrapper-гейт: total ≤ ids_cap до copy_out (ERR_RANGE-ветка java)
+        assert!(total <= ids_cap.max(total), "ids_cap gate would trip");
+        let mut off = vec![0i32; s.n + 1];
+        let mut ids = vec![0i32; ids_cap.max(total)];
+        buckets_copy_out(&st, s.n, &mut off, &mut ids);
+        (off, ids[..total].to_vec(), total)
+    }
+
+    fn assert_eq_csr(s: &Scene, label: &str) {
+        let (o_off, o_ids, o_total) = oracle(s);
+        let (b_off, b_ids, b_total) = run_bucket(s, o_total.max(1));
+        assert_eq!(b_total, o_total, "{label}: total mismatch");
+        assert_eq!(b_off, o_off, "{label}: OFF mismatch");
+        assert_eq!(b_ids, o_ids, "{label}: IDS mismatch");
+    }
+
+    fn fresh_row(x: f64, y: f64, z: f64, hx: f64, hz: f64, hh: f64) -> (f64, f64, f64, f64, f64, f64, i32, i32) {
+        (x, y, z, hx, hz, hh, FLAG_INCLUDE, 99) // fresh == want_tick
+    }
+
+    #[test]
+    fn oracle_edge_cases() {
+        // пустая популяция
+        assert_eq_csr(&build_scene(&[]), "empty");
+        // одиночный ряд
+        assert_eq_csr(&build_scene(&[fresh_row(0.0, 64.0, 0.0, 1.0, 1.0, 1.0)]), "single");
+        // касание вплотную (|Δ| == hx_a+hx_b ⇒ strict < ⇒ НЕ кандидат)
+        assert_eq_csr(
+            &build_scene(&[
+                fresh_row(0.0, 64.0, 0.0, 1.0, 1.0, 1.0),
+                fresh_row(2.0, 64.0, 0.0, 1.0, 1.0, 1.0),
+            ]),
+            "exact-touch-x",
+        );
+        assert_eq_csr(
+            &build_scene(&[
+                fresh_row(0.0, 64.0, 0.0, 0.5, 1.5, 1.0),
+                fresh_row(2.0, 64.0, 0.0, 1.5, 0.5, 1.0),
+            ]),
+            "exact-touch-z",
+        );
+        // плотная стопка в одной точке (все пары, обе стороны)
+        let stack: Vec<_> = (0..25)
+            .map(|k| fresh_row(0.01 * k as f64, 64.0 + 0.03 * k as f64, 0.02 * k as f64, 0.4, 0.4, 1.8))
+            .collect();
+        assert_eq_csr(&build_scene(&stack), "stack-25");
+        // y-разнос: x/z пересекаются, y исключает — prune по x/z не режет, точный тест режет
+        assert_eq_csr(
+            &build_scene(&[
+                fresh_row(0.0, 0.0, 0.0, 1.0, 1.0, 1.0),
+                fresh_row(0.5, 500.0, 0.5, 1.0, 1.0, 1.0),
+            ]),
+            "y-separated",
+        );
+        // дальний разнос между бакетами (>16) — neighbor-перечисление обязано покрыть
+        assert_eq_csr(
+            &build_scene(&[
+                fresh_row(0.0, 64.0, 0.0, 2.0, 2.0, 2.0),
+                fresh_row(17.0, 64.0, 17.0, 2.0, 2.0, 2.0),
+            ]),
+            "adjacent-buckets",
+        );
+        // reach-граница: |Δ| = 3.99 < 4.0 — кандидат через бакет-границу
+        assert_eq_csr(
+            &build_scene(&[
+                fresh_row(0.0, 64.0, 0.0, 2.0, 2.0, 1.0),
+                fresh_row(15.99, 64.0, 0.0, 2.0, 2.0, 1.0),
+            ]),
+            "reach-boundary",
+        );
+        // фильтры: stale fresh / flags=0 / NaN / неположительные полуэкстенты
+        let mut filtered = vec![fresh_row(0.0, 64.0, 0.0, 1.0, 1.0, 1.0)];
+        filtered.push((0.5, 64.0, 0.5, 1.0, 1.0, 1.0, FLAG_INCLUDE, 98)); // stale
+        filtered.push((0.5, 64.0, 0.5, 1.0, 1.0, 1.0, 0, 99)); // flags off
+        filtered.push((f64::NAN, 64.0, 0.5, 1.0, 1.0, 1.0, FLAG_INCLUDE, 99)); // NaN
+        filtered.push((0.5, 64.0, 0.5, 0.0, 1.0, 1.0, FLAG_INCLUDE, 99)); // hx=0
+        filtered.push((0.4, 64.0, 0.4, 1.0, 1.0, 1.0, FLAG_INCLUDE, 99)); // валидный сосед
+        assert_eq_csr(&build_scene(&filtered), "filters");
+    }
+
+    #[test]
+    fn oracle_randomized_scenes() {
+        for seed in [0xDEAD_BEEFu64, 0x1234_5678, 0x9E37_79B9, 0xCAFE_F00D] {
+            let mut rng = Rng(seed);
+            // Сцена A: кластеры (mob-cap кольца) + равномерный фон + одиночки;
+            // координаты до ±20000 (бакетные ключи с большим модулем), hx/hz/hh ≤ 2.0.
+            let mut rows: Vec<(f64, f64, f64, f64, f64, f64, i32, i32)> = Vec::new();
+            let centers: Vec<(f64, f64)> = (0..6)
+                .map(|_| (rng.f64(-19000.0, 19000.0), rng.f64(-19000.0, 19000.0)))
+                .collect();
+            for k in 0..1200 {
+                let mode = rng.next() % 3;
+                let (x, z) = match mode {
+                    0 => {
+                        // кластер: плотное кольцо вокруг центра (радиус 0..24)
+                        let c = centers[(rng.next() % centers.len() as u64) as usize];
+                        let ang = rng.f64(0.0, std::f64::consts::TAU);
+                        let r = rng.f64(0.0, 24.0);
+                        (c.0 + ang.cos() * r, c.1 + ang.sin() * r)
+                    }
+                    1 => (rng.f64(-20000.0, 20000.0), rng.f64(-20000.0, 20000.0)),
+                    _ => {
+                        // плотный куб 8×8 вокруг центра
+                        let c = centers[(rng.next() % centers.len() as u64) as usize];
+                        (c.0 + rng.f64(-4.0, 4.0), c.1 + rng.f64(-4.0, 4.0))
+                    }
+                };
+                let hx = rng.f64(0.15, 2.0);
+                let hz = rng.f64(0.15, 2.0);
+                let hh = rng.f64(0.15, 2.0);
+                let y = if rng.next() % 8 == 0 { rng.f64(0.0, 320.0) } else { 64.0 + rng.f64(-2.0, 2.0) };
+                // 8% строк — мусорные фильтры (stale/flags0/NaN)
+                match rng.next() % 25 {
+                    0 => rows.push((x, y, z, hx, hz, hh, FLAG_INCLUDE, 98)),
+                    1 => rows.push((x, y, z, hx, hz, hh, 0, 99)),
+                    2 => rows.push((f64::NAN, y, z, hx, hz, hh, FLAG_INCLUDE, 99)),
+                    _ => rows.push((x, y, z, hx, hz, hh, FLAG_INCLUDE, 99)),
+                }
+            }
+            assert_eq_csr(&build_scene(&rows), &format!("randomized-{seed:016x}"));
+        }
+    }
+
+    #[test]
+    fn range_retry_is_idempotent() {
+        // Повторный вход с теми же данными (ERR_RANGE-ретрай java) обязан дать
+        // бит-в-байт тот же CSR (безусловные очистки bhead/AABB).
+        let rows: Vec<_> = (0..200)
+            .map(|k| fresh_row((k % 15) as f64 * 1.1, 64.0, (k / 15) as f64 * 1.1, 0.6, 0.6, 1.8))
+            .collect();
+        let s = build_scene(&rows);
+        let first = run_bucket(&s, 1 << 20);
+        let second = run_bucket(&s, 1 << 20);
+        assert_eq!(first, second, "retry diverged");
+    }
 }

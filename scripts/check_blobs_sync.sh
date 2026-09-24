@@ -69,7 +69,7 @@ echo "== javap-gate: lever bridge blobs vs ARM markers / gate flags (lever cmp41
 
 check_class \
   "entityinside/build/net/minecraft/world/entity/ItemEntityManager.class" \
-  "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp437_chunk4" "cmp432_inside2" "cmp440_ins4d" \
+  "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp437_chunk4" "cmp432_inside2" "cmp440_ins4d" "cmp449_mega4" \
   "native int idxProbe" "static void indexAdd" "native int lifetimeDue"
 
 check_class \
@@ -84,22 +84,22 @@ check_class \
 
 check_class \
   "mobai/build/net/minecraft/world/entity/MobAiOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp437_chunk4" "cmp432_inside2" "cmp440_ins4d" \
+  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp437_chunk4" "cmp432_inside2" "cmp440_ins4d" "cmp449_mega4" \
   "native"
 
 check_class \
   "sscan/build/net/minecraft/world/entity/MobScanOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp437_chunk4" "cmp432_inside2" "cmp440_ins4d" \
+  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp437_chunk4" "cmp432_inside2" "cmp440_ins4d" "cmp449_mega4" \
   "native"
 
 check_class \
   "mobpush/build/net/minecraft/world/entity/MobPushOps.class" \
-  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp437_chunk4" "cmp432_inside2" "cmp440_ins4d" \
+  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp437_chunk4" "cmp432_inside2" "cmp440_ins4d" "cmp449_mega4" \
   "native int mobProbe" "boxFor" "colpushSweep"
 
 check_class \
   "colpush/build/net/minecraft/world/entity/ColpushOps.class" \
-  "cmp420_colpush" "cmp430_inside" "cmp437_chunk4" "pushEntities" "bulkTick" "selfTest" "armed" "cmp432_inside2" "cmp440_ins4d" \
+  "cmp420_colpush" "cmp430_inside" "cmp437_chunk4" "pushEntities" "bulkTick" "selfTest" "armed" "cmp432_inside2" "cmp440_ins4d" "cmp449_mega4" \
   "native int colpushProbe" "native int colpushTick"
 
 check_class \
@@ -111,14 +111,14 @@ check_class \
   "cmp414_cvs" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp437_chunk4" "cmp432_inside2" "cmp440_ins4d" \
   "native int eqProbe" "native int senseArena" "dietSnapshotQuery" "INS4-DIET diet active"
 
-# TASK-446-B items rest-plane (cmp446_items, закон 6 подсистема): the
+# TASK-446-B items rest-plane (cmp449_mega4, закон 6 подсистема): the
 # ItemEntity.tick whole-body bridge must carry the baked double-gate string,
 # the native surface (registered rust-side via RegisterNatives) and the
 # vanilla rest-path call targets; flat==nested byte identity pins the
 # include_bytes! embed.
 check_class \
   "itemsbatch/build/net/minecraft/world/entity/ItemBatchOps.class" \
-  "cmp446_items" "selfTest" "inactiveTick" "mergeWithNeighbours" \
+  "cmp449_mega4" "selfTest" "inactiveTick" "mergeWithNeighbours" \
   "native int planeProbe" "native int planeDecide"
 
 # TASK-420-C chunk-pipeline plane (cmp420_chunk2): the bridge must carry the
@@ -163,7 +163,7 @@ check_class \
 check_class \
   "chunksend/build/net/minecraft/server/network/ChunkSendOps.class" \
   "cmp437_chunk4" "cmp435_chunk3" "chunk4 send-snapshot first hit" "chunk4 snapshot selftest PASS" "chunk4 stats" \
-  "public static void sendChunk" "public static boolean selfTest"
+  "public static void sendChunk" "public static boolean selfTest" "cmp449_mega4"
 
 # TASK-421-C noise-blob coverage: the GEN-axis bridge family (noise/build,
 # NOISE_RELEASE=8 => major 52) was OUTSIDE this gate — the only lever family

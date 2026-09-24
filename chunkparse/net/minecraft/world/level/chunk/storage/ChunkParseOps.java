@@ -148,7 +148,15 @@ public final class ChunkParseOps {
      * ROUND-443-B). Kept in the constant pool for the raw-byte blob-sync
      * gate (check_blobs_sync.sh) — x93 lesson.
      */
-    static final String CARRIER_UNION_443 = "cmp443_mega";
+    static final String CARRIER_UNION_443 = "cmp449_mega4";
+
+    /**
+     * TASK-445-A: collide+broadphase+push plane round — additive carrier id
+     * (STRICT-OR, урок ×438). Constant referenced from the init log line —
+     * kept alive in the blob constant pool for gate-flag consistency (x93).
+     * TASK-449-C: value retagged cmp445_collide -> cmp449_mega4 (единый lever).
+     */
+    static final String CARRIER_UNION2 = "cmp449_mega4";
 
     /**
      * codec(identity) -> (tag -> pristine decoded template). The outer map
@@ -193,7 +201,7 @@ public final class ChunkParseOps {
      */
     public static void init(String twin) {
         twinName = twin;
-        System.out.println(PFX + " bridge init ok (twin=" + twin + ", union=" + CARRIER_UNION + ")");
+        System.out.println(PFX + " bridge init ok (twin=" + twin + ", union=" + CARRIER_UNION + ", union2=" + CARRIER_UNION2 + ")");
     }
 
     /**

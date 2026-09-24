@@ -1,5 +1,5 @@
 //! Runtime wiring for the ITEMS-BATCH rest-plane lever (TASK-446-B, vector
-//! cmp446_items; see RESEARCH-B-446-ITEMS.md + itemsbatch/.../ItemBatchOps.java).
+//! cmp449_mega4; see RESEARCH-B-446-ITEMS.md + itemsbatch/.../ItemBatchOps.java).
 //!
 //! ARCHITECTURE (law-6 whole-subsystem): the kernel `ItemEntity.tick()V` body
 //! is whole-body replaced (item_merge.rs ReplaceBody precedent) by a single
@@ -44,7 +44,7 @@
 //! window 4096 epochs) — an item re-observed after a sweep just re-lands
 //! (one FULL tick), never a wrong classification.
 //!
-//! GATE: env `CRUSSTY_LEVER_FLAG == "cmp446_items"` (STRICT eq; the java
+//! GATE: env `CRUSSTY_LEVER_FLAG == "cmp449_mega4"` (STRICT eq; the java
 //! ENABLED gate is baked at compile into the same string — double gate).
 //! Empty/foreign flag = no hook registered, nothing defined or retransformed,
 //! the module is byte-indistinguishable from the pre-TASK-446 plugin.
@@ -76,7 +76,7 @@ const BRIDGE_DESC: &str = "(Lnet/minecraft/world/entity/item/ItemEntity;)V";
 /// env gate per the round-396 lever protocol (STRICT eq — no composite family:
 /// the items rest-plane is a standalone subsystem leg this round).
 fn enabled() -> bool {
-    matches!(std::env::var("CRUSSTY_LEVER_FLAG").as_deref(), Ok("cmp446_items"))
+    matches!(std::env::var("CRUSSTY_LEVER_FLAG").as_deref(), Ok("cmp449_mega4"))
 }
 
 static READY: AtomicBool = AtomicBool::new(false);
@@ -369,7 +369,7 @@ pub unsafe extern "system" fn items_batch_decide(
 pub fn register() {
     if !enabled() {
         eprintln!(
-            "[crussty-plugin] items_batch: dormant (lever_flag != cmp446_items, vanilla ItemEntity.tick)"
+            "[crussty-plugin] items_batch: dormant (lever_flag != cmp449_mega4, vanilla ItemEntity.tick)"
         );
         return;
     }
@@ -671,12 +671,12 @@ pub fn activate() {
         });
 
         // Phase 3: a SINGLE retransform; the callback serves the cached patch.
-        crate::kernel_policy::audit_wire(OPS_NAME, METHOD_NAME, "cmp446_items items rest-plane v1");
+        crate::kernel_policy::audit_wire(OPS_NAME, METHOD_NAME, "cmp449_mega4 items rest-plane v1");
         READY.store(true, Ordering::Release);
         let rc = cplug_sdk::retransform_class(ITEM_CLASS);
         // ГРОМКИЙ ARM-МАРКЕР (канон ARM-пруфа): без этой строки нога не-armed.
         eprintln!(
-            "[crussty-plugin] cmp446_items: ARMED rest-plane shards=64 recheck=1/32 bulk-jni=1/tick/thread selfTest=true (retransform rc={rc})"
+            "[crussty-plugin] cmp449_mega4: ARMED rest-plane shards=64 recheck=1/32 bulk-jni=1/tick/thread selfTest=true (retransform rc={rc})"
         );
     });
 }
@@ -951,7 +951,7 @@ mod tests {
     fn blob_contract() {
         let b = OPS_BYTES;
         assert_eq!((((b[6] as u16) << 8) | b[7] as u16), 65, "class major must be 65 (--release 21)");
-        assert!(contains_bytes(b, b"cmp446_items"), "java gate string missing");
+        assert!(contains_bytes(b, b"cmp449_mega4"), "java gate string missing");
         assert!(contains_bytes(b, b"planeProbe"));
         assert!(contains_bytes(b, b"planeDecide"));
         assert!(contains_bytes(b, b"selfTest"));

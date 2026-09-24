@@ -311,7 +311,7 @@ fn eqsnap_mode() -> bool {
         // TASK-419-A (colpush): колпаш-носитель — mob natives (probe/remove)
         // и read-views живут; colpush_plane_refresh кормит колонки.
         || f == "cmp420_colpush"
-        || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside" || f == "cmp432_inside2" || f == "cmp436_ins4" || f == "cmp440_ins4d" || f == "cmp434_chunkpl" || f == "cmp435_chunk3" || f == "cmp437_chunk4" || f == "cmp443_mega" // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
+        || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside" || f == "cmp432_inside2" || f == "cmp436_ins4" || f == "cmp440_ins4d" || f == "cmp434_chunkpl" || f == "cmp435_chunk3" || f == "cmp437_chunk4" || f == "cmp449_mega4" // TASK-449-C: mega4 composite (megafix ins4d+chunk4 + items-fix + collide-step2; retag cmp443_mega/cmp445_collide/cmp446_items -> cmp449_mega4).
 }
 
 /// Strict gate: natives work only under the exact lever flag (STRICT eq;
@@ -352,7 +352,7 @@ fn lever_mode() -> bool {
         // плоскость (drain шардов пуст, плоские колонки кормит
         // colpush_plane_refresh одним WLOCK/тик).
         || f == "cmp420_colpush"
-        || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside" || f == "cmp432_inside2" || f == "cmp436_ins4" || f == "cmp440_ins4d" || f == "cmp434_chunkpl" || f == "cmp435_chunk3" || f == "cmp437_chunk4" || f == "cmp443_mega" // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
+        || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside" || f == "cmp432_inside2" || f == "cmp436_ins4" || f == "cmp440_ins4d" || f == "cmp434_chunkpl" || f == "cmp435_chunk3" || f == "cmp437_chunk4" || f == "cmp449_mega4" // TASK-449-C: mega4 composite (megafix ins4d+chunk4 + items-fix + collide-step2; retag cmp443_mega/cmp445_collide/cmp446_items -> cmp449_mega4).
         // TASK-410-C (eindexq): K3-пивот R2 — SoA-плоскость = источник
         // популяции для goal-query CSR-снапшота (EntityQueryOps.eqEpoch;
         // sscan-прецедент TASK-406-E).
@@ -367,6 +367,8 @@ fn lever_mode() -> bool {
         // вызывается (pushEntities whole-body redirect), плоскость кормится
         // colpush_plane_refresh; read-views sscan/ai/eq сохранены.
         || f == "cmp420_colpush"
+        // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
+        || f == "cmp449_mega4"
 }
 
 // ---------------------------------------------------------------------------
