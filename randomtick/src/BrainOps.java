@@ -5,7 +5,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Logger;
 
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.behavior.Behavior;
@@ -130,6 +133,84 @@ public final class BrainOps {
 
     private static final WeakHashMap<IdKey, Snapshot> CACHE = new WeakHashMap<>();
 
+    // ------------------------------------------------------- tick2 (sense D)
+
+    /**
+     * SENSE tick2 lane (TASK-442-D, vector cmp438_sense family ∨ composite
+     * cmp439_sense_scan): the running-behavior tick pass. Vanilla
+     * {@code Brain.tickEachRunningBehavior} re-walks the ENTIRE
+     * availableBehaviorsByPriority map THROUGH
+     * {@code getRunningBehaviors()} — a fresh ObjectArrayList allocation plus
+     * the triple-nested iterator machinery (the same walk F2 killed for the
+     * start pass) EVERY tick per brain mob, just to collect RUNNING statuses,
+     * then calls {@code tickOrStop} per element.
+     *
+     * REPLACEMENT (decision-exact): the cached flat snapshot (same lens, same
+     * fingerprint, same order) + a PER-BRAIN reusable mask:
+     *   pass 1: mask[i] = (behs[i].getStatus() == RUNNING)   == the
+     *           getRunningBehaviors walk (statuses read LIVE at list-build
+     *           time — the vanilla list is snapshotted BEFORE any tickOrStop
+     *           runs, so a behavior stopped mid-loop by an earlier doTick is
+     *           STILL ticked later by vanilla; the mask replicates exactly
+     *           that, reading statuses live in pass 1 only);
+     *   pass 2: for i: if (mask[i]) behs[i].tickOrStop(level, entity, gameTime)
+     *           in flat order == vanilla list order.
+     * gameTime is read ONCE per call (vanilla @0-4). ZERO allocation steady
+     * state (mask lives inside the per-brain Snapshot, sized at build time;
+     * a brain is ticked by at most one region thread per tick — the mask is
+     * thread-confined per tick; worst-case race on brain migration writes
+     * the same boolean[] deterministically).
+     *
+     * FAIL-CLOSED: this method is INERT until the rust side body-swaps
+     * Brain.tickEachRunningBehavior (brainhook tick2 gate — family
+     * cmp438_sense ∨ cmp439_sense_scan, selfTestTickEach==true BEFORE arm).
+     * Vanilla stopAll keeps vanilla getRunningBehaviors (rare path).
+     */
+    public static void tickEachRunning(Map<?, ?> byPriority, ServerLevel level,
+                                       LivingEntity entity) {
+        final long gameTime = level.getGameTime();          // vanilla @0-4: read ONCE
+        final Snapshot s = snapshot(byPriority);
+        final BehaviorControl<LivingEntity>[] behs = s.behs;
+        final boolean[] mask = s.runningMask;
+        int n = 0;
+        for (int i = 0; i < behs.length; i++) {             // == getRunningBehaviors walk
+            final boolean r = behs[i].getStatus() == Behavior.Status.RUNNING;
+            mask[i] = r;
+            if (r) {
+                n++;
+            }
+        }
+        if (n == 0) {
+            return;
+        }
+        for (int i = 0; i < behs.length; i++) {             // == vanilla list order
+            if (mask[i]) {
+                behs[i].tickOrStop(level, entity, gameTime);
+                if (!TICK2_EFFECT_LOGGED.get()) {
+                    logTick2Effect(behs.length);
+                }
+            }
+        }
+    }
+
+    /** STRICT family mirror of the rust brainhook tick2 gate (TASK-442-D). */
+    static final String TICK2_FLAGS = "cmp438_sense|cmp439_sense_scan";
+
+    private static final Logger LOG = Logger.getLogger("crussty-plugin");
+    private static final AtomicBoolean TICK2_EFFECT_LOGGED = new AtomicBoolean(false);
+
+    /** One-shot EFFECT-маркер расширенного сайта (verdикты только по нему). */
+    private static void logTick2Effect(int behaviors) {
+        if (TICK2_EFFECT_LOGGED.getAndSet(true)) {
+            return;
+        }
+        String f = System.getenv("CRUSSTY_LEVER_FLAG");
+        LOG.info("[crussty-plugin] " + (f == null ? "(off)" : f.trim())
+                + ": sense tick2 EFFECT armed (first flat tickEachRunning hit tick "
+                + MinecraftServer.getServer().getTickCount()
+                + ", behaviorSlots=" + behaviors + ")");
+    }
+
     // -------------------------------------------------------------- snapshot
 
     private static final class Snapshot {
@@ -144,6 +225,8 @@ public final class BrainOps {
         final Object[] acts;            // Activity per slot, exact vanilla order
         final BehaviorControl<LivingEntity>[] behs;
         final boolean[] groupStart;     // true at each (priority, activity) entry start
+        /** Per-brain reusable RUNNING mask (tick2 lane), sized once at build. */
+        final boolean[] runningMask;
 
         @SuppressWarnings("unchecked")
         Snapshot(Object source, Integer[] keys, Object[] innerMaps, int[] innerSizes,
@@ -159,6 +242,7 @@ public final class BrainOps {
             this.acts = acts;
             this.behs = (BehaviorControl<LivingEntity>[]) rawBehs.toArray(new BehaviorControl[0]);
             this.groupStart = groupStart;
+            this.runningMask = new boolean[this.behs.length];
         }
     }
 
@@ -202,6 +286,119 @@ public final class BrainOps {
         final Snapshot fresh = build(outer);
         CACHE.put(key, fresh);
         return fresh;
+    }
+
+    // ------------------------------------------------- tick2 decision oracle
+
+    /**
+     * Ванильная реплика тика running-веток (javap Brain.tickEachRunningBehavior
+     * + getRunningBehaviors): собранный-СНАЧАЛА список RUNNING (статусы читаются
+     * на этапе списка) затем tickOrStop по элементам. Эталон оракула tick2.
+     */
+    static int[] naiveTickEach(int[] statusAtBuild, int[][] scripted) {
+        // collect list (vanilla getRunningBehaviors: statuses at build time)
+        int n = 0;
+        for (int s : statusAtBuild) {
+            if (s == 1) {
+                n++;
+            }
+        }
+        final int[] list = new int[n];
+        int j = 0;
+        for (int i = 0; i < statusAtBuild.length; i++) {
+            if (statusAtBuild[i] == 1) {
+                list[j++] = i;
+            }
+        }
+        // tick each (scripted[i] = status flips performed by tickOrStop of i)
+        final int[] seen = new int[list.length];
+        for (int k = 0; k < list.length; k++) {
+            seen[k] = list[k];
+            if (scripted[list[k]] != null) {
+                for (int f : scripted[list[k]]) {
+                    statusAtBuild[f] = 0; // mutation visible ONLY to later collects
+                }
+            }
+        }
+        return seen;
+    }
+
+    /**
+     * Ускоренное ядро tick2 (транскрипция tickEachRunning): pass 1 собирает
+     * маску живыми статусами, pass 2 зовёт tickOrStop по маске. Statuses here
+     * are MUTATED by the same scripted flips — decisions must match naive.
+     */
+    static int[] coreTickEach(int[] statusLive, int[][] scripted) {
+        final int n = statusLive.length;
+        final boolean[] mask = new boolean[n];
+        int running = 0;
+        for (int i = 0; i < n; i++) {
+            mask[i] = statusLive[i] == 1;
+            if (mask[i]) {
+                running++;
+            }
+        }
+        final int[] seen = new int[running];
+        int j = 0;
+        for (int i = 0; i < n; i++) {
+            if (mask[i]) {
+                seen[j++] = i;
+                if (scripted[i] != null) {
+                    for (int f : scripted[i]) {
+                        statusLive[f] = 0;
+                    }
+                }
+            }
+        }
+        return seen;
+    }
+
+    /**
+     * selfTestTickEach — exhaustive оракул pass-а tick2: n ≤ 4, все паттерны
+     * статусов на build + все скрипты остановок (каждый элемент списка может
+     * остановить любой ПОЗДНИЙ элемент — mid-loop stop class), core == naive.
+     * Вызывается rust-стороной ДО arm (TASK-437-A pattern); false → tick2
+     * не применяется (baseline F2 остаётся).
+     */
+    public static boolean selfTestTickEach() {
+        final int[] dists = {0, 1}; // status alphabet: STOPPED/RUNNING
+        for (int n = 0; n <= 4; n++) {
+            final int combos = 1 << n;
+            for (int pm = 0; pm < combos; pm++) {
+                // exhaustive mutation scripts: for every subset S of running
+                // slots, slot S kills every later slot (the only reachable
+                // mutation class — doTick/stop semantics of vanilla Behavior)
+                final int scripts = 1 << n;
+                for (int sm = 0; sm < scripts; sm++) {
+                    int[] build = new int[n];
+                    for (int i = 0; i < n; i++) {
+                        build[i] = ((pm >> i) & 1) != 0 ? dists[1] : dists[0];
+                    }
+                    int[][] scripted = new int[n][];
+                    for (int i = 0; i < n; i++) {
+                        if (((sm >> i) & 1) != 0) {
+                            // script: i stops every LATER slot (mask already built)
+                            int cnt = 0;
+                            for (int t = i + 1; t < n; t++) {
+                                cnt++;
+                            }
+                            final int[] flips = new int[cnt];
+                            int w = 0;
+                            for (int t = i + 1; t < n; t++) {
+                                flips[w++] = t;
+                            }
+                            scripted[i] = flips;
+                        }
+                    }
+                    final int[] a = naiveTickEach(build.clone(), scripted);
+                    final int[] b = coreTickEach(build.clone(), scripted);
+                    if (!java.util.Arrays.equals(a, b)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     /**

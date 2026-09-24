@@ -835,6 +835,113 @@ pub fn patch_brain_start_each(bytes: &[u8]) -> Result<Vec<u8>, String> {
 }
 
 // ---------------------------------------------------------------------------
+// F2-tick2 BODY SWAP (TASK-442-D sense scope-expansion, the F2 machine applied
+// to `Brain.tickEachRunningBehavior`):
+//
+//   javap ground truth (patched-kernel.jar round-396-a, purpur-1.21.10):
+//   `private void tickEachRunningBehavior(ServerLevel, LivingEntity)` =
+//     gameTime = level.getGameTime();              // @0-4, read ONCE
+//     for (bc : getRunningBehaviors())             // NEW ObjectArrayList + FULL
+//                                                  // triple-nested map walk
+//                                                  // collecting RUNNING
+//         bc.tickOrStop(level, entity, gameTime);  // @38-43
+//
+//   getRunningBehaviors() (the ONLY hot caller is tickEachRunningBehavior;
+//   stopAll is a rare teardown path) re-walks availableBehaviorsByPriority
+//   EVERY tick per brain mob and allocates a fresh fastutil ObjectArrayList.
+//   The swap re-uses the banked F2 flat snapshot (same lens/fingerprint/order)
+//   plus a per-brain reusable RUNNING mask (statuses snapshotted at list-build
+//   time == vanilla list semantics; tickOrStop per mask slot in flat order ==
+//   vanilla list order). see BrainOps.tickEachRunning javadoc.
+//
+//   The 10-byte body:
+//   aload_0; getfield availableBehaviorsByPriority:Ljava/util/Map;
+//   aload_1 (ServerLevel); aload_2 (LivingEntity);
+//   invokestatic BrainOps.tickEachRunning:(Ljava/util/Map;Lnet/minecraft/
+//     server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)V
+//   return
+//   No branches => EMPTY StackMapTable (0 frames); getfield executes inside
+//   Brain.class on its own private field (verifier-legal, F2 precedent).
+//
+//   GATED (unlike the F2 baseline): applied by brainhook ONLY under the
+//   cmp438_sense family ∨ composite cmp439_sense_scan AND only after
+//   BrainOps.selfTestTickEach()==true (TASK-437-A selfTest-before-ARM).
+//
+// Idempotency: patch(patch(x)) == patch(x). Fail-closed: any other class /
+// missing method / name-descriptor mismatch => Err before any mutation.
+pub fn patch_brain_tick_each(bytes: &[u8]) -> Result<Vec<u8>, String> {
+    let layout = parse_layout(bytes).ok_or("bad classfile layout")?;
+    let this_name = this_class_name(&layout).ok_or("cannot resolve this_class name")?;
+    if this_name != BRAIN_CLASS {
+        return Err(format!("unexpected class {this_name}"));
+    }
+    let mut pool = layout.pool;
+
+    let Some(name_idx) = pool.find_utf8("tickEachRunningBehavior") else {
+        return Err("tickEachRunningBehavior not found".into());
+    };
+    let Some(desc_idx) = pool.find_utf8(START_EACH_DESC) else {
+        return Err("tickEachRunningBehavior descriptor not found".into());
+    };
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx).ok_or(
+        "tickEachRunningBehavior(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)V not found",
+    )?;
+
+    let f_prio = pool.field_ref(&this_name, "availableBehaviorsByPriority", "Ljava/util/Map;");
+    let lens_desc = "(Ljava/util/Map;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)V";
+    let m_lens = pool.method_ref(BRAIN_OPS_CLASS, "tickEachRunning", lens_desc);
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for F2-tick2 refs".into());
+    }
+
+    let mut code = Vec::with_capacity(10);
+    let u2 = |out: &mut Vec<u8>, v: u16| out.extend_from_slice(&v.to_be_bytes());
+    code.push(0x2a); // aload_0
+    code.push(0xb4); // getfield availableBehaviorsByPriority
+    u2(&mut code, f_prio);
+    code.push(0x2b); // aload_1 (ServerLevel)
+    code.push(0x2c); // aload_2 (LivingEntity)
+    code.push(0xb8); // invokestatic BrainOps.tickEachRunning
+    u2(&mut code, m_lens);
+    code.push(0xb1); // return
+    debug_assert_eq!(code.len(), 10, "emitted code is {}", code.len());
+
+    // ---- Code attribute: empty exception table + EMPTY StackMapTable ----
+    let mut code_attr = Vec::new();
+    u2(&mut code_attr, pool.utf8("Code"));
+    let mut body = Vec::new();
+    u2(&mut body, 5); // max_stack: >= 3 slots the line needs (vanilla value kept)
+    u2(&mut body, 3); // max_locals: this, level, entity
+    body.extend_from_slice(&(code.len() as u32).to_be_bytes());
+    body.extend_from_slice(&code);
+    body.extend_from_slice(&[0, 0]); // exception_table_length
+    body.extend_from_slice(&(1u16).to_be_bytes()); // attributes_count
+    u2(&mut body, pool.utf8("StackMapTable"));
+    body.extend_from_slice(&2u32.to_be_bytes()); // attribute_length
+    body.extend_from_slice(&0u16.to_be_bytes()); // number_of_entries = 0
+    code_attr.extend_from_slice(&(body.len() as u32).to_be_bytes());
+    code_attr.extend_from_slice(&body);
+
+    // ---- replacement method entry ----
+    let mut method = Vec::new();
+    u2(&mut method, m.access);
+    u2(&mut method, m.name_idx);
+    u2(&mut method, m.desc_idx);
+    u2(&mut method, 1); // attributes_count
+    method.extend_from_slice(&code_attr);
+
+    // ---- splice: header + new cp + tail with the method replaced ----
+    let mut out = Vec::with_capacity(bytes.len() + 128);
+    out.extend_from_slice(&bytes[0..8]); // magic, minor, major
+    u2(&mut out, pool.next); // new cp_count
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(&bytes[layout.cp_end..m.start]);
+    out.extend_from_slice(&method);
+    out.extend_from_slice(&bytes[m.end..]);
+    Ok(out)
+}
+
+// ---------------------------------------------------------------------------
 // SENSE-PLANE body swap (TASK-438-A2, vector cmp438_sense — the F2 machine
 // applied to the targeting nearest-pick CHOKEPOINT):
 //
@@ -6601,6 +6708,96 @@ mod real_noise {
         let once = patch_brain_start_each(BRAIN).expect("first");
         let twice = patch_brain_start_each(&once).expect("second");
         assert_eq!(once, twice, "double patch is byte-identical");
+    }
+
+    // ---- F2-tick2 body swap (Brain.tickEachRunningBehavior, TASK-442-D) ----
+
+    /// Round-trip on the REAL Brain fixture: the swapped body is the exact
+    /// 12-byte straight-line delegation; max_stack 5 / max_locals 3; the
+    /// getfield operand resolves to Brain's own field by NAME; the
+    /// invokestatic operand resolves to BrainOps.tickEachRunning.
+    #[test]
+    fn f2t2_patch_roundtrip_verified() {
+        // COMPOSED bytes: tick2 applies ON TOP of the F2 baseline (hook order).
+        let f2 = patch_brain_start_each(BRAIN).expect("f2");
+        let patched = patch_brain_tick_each(&f2).expect("tick2");
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        assert_eq!(patched[..8], BRAIN[..8], "version preserved");
+
+        let layout = parse_layout(&patched).expect("re-parse");
+        let name_idx = layout
+            .pool
+            .find_utf8("tickEachRunningBehavior")
+            .expect("name utf8 present");
+        let desc_idx = layout
+            .pool
+            .find_utf8(START_EACH_DESC)
+            .expect("desc utf8 present");
+        let m = find_method(&patched, layout.methods_start, name_idx, desc_idx)
+            .expect("tickEachRunningBehavior present");
+        let (start, len) =
+            find_code_attr(&patched, &layout.pool, &m).expect("Code attr");
+        let code = &patched[start..start + len];
+        assert_eq!(code.len(), 10, "straight-line body is 10 bytes");
+        let ms = u16::from_be_bytes([patched[start - 8], patched[start - 7]]);
+        let ml = u16::from_be_bytes([patched[start - 6], patched[start - 5]]);
+        assert_eq!(ms, 5, "max_stack kept");
+        assert_eq!(ml, 3, "max_locals = this,level,entity");
+        let skel = [code[0], code[1], code[4], code[5], code[6], code[9]];
+        let want = [0x2a, 0xb4, 0x2b, 0x2c, 0xb8, 0xb1];
+        assert_eq!(skel, want, "opcode skeleton exact");
+        // Operand resolution BY NAME.
+        let layout2 = parse_layout(&patched).expect("re-parse 2");
+        let f1 = layout2
+            .pool
+            .fieldref_parts(u16::from_be_bytes([code[2], code[3]]))
+            .expect("getfield operand resolves");
+        assert_eq!(
+            f1,
+            (
+                BRAIN_CLASS.to_string(),
+                "availableBehaviorsByPriority".to_string(),
+                "Ljava/util/Map;".to_string()
+            )
+        );
+        let m1 = layout2
+            .pool
+            .methodref_parts(u16::from_be_bytes([code[7], code[8]]))
+            .expect("invokestatic operand resolves");
+        assert_eq!(m1.0, BRAIN_OPS_CLASS, "owner = BrainOps");
+        assert_eq!(m1.1, "tickEachRunning", "method name");
+        assert_eq!(
+            m1.2,
+            "(Ljava/util/Map;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)V",
+            "helper descriptor"
+        );
+    }
+
+    /// Idempotency + composition order: F2∘tick2 == F2∘tick2∘tick2 (and the
+    /// F2 baseline body is NOT disturbed by the tick2 pass).
+    #[test]
+    fn f2t2_patch_is_idempotent_and_preserves_f2() {
+        let f2 = patch_brain_start_each(BRAIN).expect("f2");
+        let once = patch_brain_tick_each(&f2).expect("first");
+        let twice = patch_brain_tick_each(&once).expect("second");
+        assert_eq!(once, twice, "double tick2 patch is byte-identical");
+        // F2 body intact after tick2.
+        let (ms, ml, code) = f2_code_of(&once);
+        assert_eq!(code.len(), 14, "F2 startEach body unchanged");
+        assert_eq!(ms, 5);
+        assert_eq!(ml, 3);
+    }
+
+    /// Fail-closed: wrong class / garbage rejected without panic.
+    #[test]
+    fn f2t2_patch_rejects_wrong_class_and_garbage() {
+        let e = patch_brain_tick_each(SERVER).expect_err("ServerLevel is not Brain");
+        assert!(e.starts_with("unexpected class"));
+        let e = patch_brain_tick_each(&BRAIN[..64]).expect_err("truncated header");
+        assert!(!e.is_empty());
+        for cut in [10usize, 100, 1000, 10000, BRAIN.len() - 1] {
+            let _ = patch_brain_tick_each(&BRAIN[..cut]);
+        }
     }
 
     /// Fail-closed discipline: wrong class rejected before any mutation;

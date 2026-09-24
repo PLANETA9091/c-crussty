@@ -1,22 +1,19 @@
 {
-  "agent": "A2 (TASK-439-A2, рестарт застрявшего TASK-438-A)",
-  "vector": "cmp438_sense — sensing+brain плоскость: сенсорный скан (targeting/nearest-visible-player/LOS-кандидаты) + goal-selector-приоритизация одним bulk-JNI/тик над SoA-снимком (mobs_soa паттерн: flat x/y/z + seqlock=global-version, носитель-паттерн round-437-a-sscan2) + STRICT-UNION carrier семейства cmp430_inside-эры",
-  "branch": "round-439-a-sense2",
+  "agent": "A (TASK-443-A, sense scope-expand, продолжение TASK-442-D)",
+  "vector": "cmp438_sense tick2-lane (BRAIN-слой): Brain.tickEachRunningBehavior -> BrainOps.tickEachRunning body-swap — плоский снимок (тот же lens/fingerprint/порядок, что F2) + per-brain переиспользуемый RUNNING-маск; убивает getRunningBehaviors() ObjectArrayList + тройной map-walk на каждый тик каждого brain-моба; STRICT-OR family cmp438_sense ∨ композит cmp439_sense_scan; oracle selfTestTickEach (exhaustive mid-loop-stop, n≤4) ДО arm",
+  "branch": "round-442-d-sense2",
   "run_id": null,
   "tps_med": null,
   "delta_pair_pct": null,
-  "lane_was_became": {
-    "sensing_self_pct_wall": "Sensing.tick 0.6 + Brain.tick 0.81 + tickEachRunningBehavior 0.20 + GoalSelector.tick 0.6 = ~2.2% (anchor-4/ss-1 BOTTLENECKS_3)",
-    "goalquery_chokepoint_pct": "getEntitiesOfClass ~2.7-3.0% (RESEARCH-C-k3) — уже в семействе cmp410_eindexq",
-    "verdict": "sensing-слайс >= 2% wall (~5-7% суммарно с targeting-тестами) — ПЕРЕКЛЮЧЕНИЕ ЛИСТА НЕ ТРЕБУЕТСЯ (порог <2% не пробит); соло-потенциал < +20% ЧЕСТНО — >= +20% только STRICT-UNION carrier (certified +27.3 эффект-линия x432) + sense-батч"
-  },
-  "ram_stw_full": null,
-  "parity": "vanilla bit-for-bit: body-swap getNearestEntity(List,TC,LE,DDD) -> SenseOps.nearestEntityGate; дистанция-обрезка `d>=bestD skip test` = кандидат не может выиграть лестницу (d==-1.0||e<d) => pick = min-dist passing, tie-keep-earlier — равен ванили при ЛЮБОЙ свежести rust-снапшота; fail-closed -> байт-точная ваниль-реплика",
+  "parity": "decision-exact: ваниль-список собирается ДО любых tickOrStop (статусы читаются на этапе списка — mid-loop stop ранним элементом НЕ исключает поздний из тика; маск реплицирует ровно это: pass-1 живые статусы, pass-2 tickOrStop по маске в flat-порядке == List-порядку); javap ground truth tickEachRunningBehavior@0-51 (gameTime @0-4 read once; getRunningBehaviors() @5-9; tickOrStop @38-43) + getRunningBehaviors (ObjectArrayList + values()/values()/iterator walk, RUNNING-фильтр @108-129) сняты с patched-kernel.jar round-396-a; порядок обхода == flat snapshot (TreeMap asc priority → LinkedHashMap → LinkedHashSet); BehaviorControl.getStatus/tickOrStop(SLE,LivingEntity,long) verified javap; fail-closed: гейт (CRUSSTY_SENSE ∨ CRUSSTY_LEVER_FLAG ∈ {cmp438_sense, cmp439_sense_scan}) ∧ TICK2_OK после selfTest — иначе tickEachRunningBehavior ваниль; пустой lever_flag = ваниль бит-в-байт (F2 baseline не тронут)",
   "verdict": "INFRA",
   "evidence": [
-    "TASK-438-A ветка round-438-a-sense @bcfb18fb = 0 коммитов сверх master (застой подтверждён: только untracked round-396-a jar в worktree)",
-    "javap ground truth: getNearestPlayer(TargetingConditions,...) x5 + getNearestEntity(List,...) — DEFAULT-методы ServerEntityGetter (ServerLevel НЕ переопределяет); тело chokepoint снято javap -c",
-    "worktree round-439-a-sense2 создан от origin/master afbcde61"
+    "наследие TASK-442-D принято: незакоммиченные BrainOps.java/brainhook.rs/classfile.rs изучены (git diff 523 строк) — дизайн complete, закончен compile/verify/commit контур",
+    "javap-ценз: tickEachRunningBehavior (len=52) + getRunningBehaviors (len=141) сняты; van-список снапшотится ДО тиков; ObjectArrayList fastutil аллоцируется каждый тик на каждого brain-моба",
+    "blob rebuild: javac --release 21 (jdk-21.0.12.1+1, cp=kernel round-396-a+fastutil) → BrainOps.class 5469→8942B, IdKey 661→665B, Snapshot 1458→1505B (runningMask + tickEachRunning + selfTestTickEach)",
+    "raw-byte маркеры в блобе: cmp438_sense / cmp439_sense_scan / 'sense tick2 EFFECT armed' / selfTestTickEach / tickEachRunning / behaviorSlots — ВСЕ OK",
+    "javap верификация блоба: tickEachRunning(Map,SLE,LE)V + selfTestTickEach()Z + TICK2_FLAGS present; check_blobs_sync.sh → ALL IN SYNC",
+    "cargo check --lib GREEN 7.8s; cargo test 314 passed / 0 failed / 1 ignored (включая f2t2_patch_roundtrip_verified / f2t2_patch_is_idempotent_and_preserves_f2 / f2t2_patch_rejects_wrong_class_and_garbage на РЕАЛЬНЫХ Brain-фикстурах); /tmp/cargo-443a удалён (диск-закон)"
   ],
-  "what": "PHASE-0/PHASE-1: worklog+GOAL x120/x121 прочитаны; lane-рисёрч по round-438 ABSORB/BOTTLENECKS + RESEARCH-A-439-SENSE.md (дизайн+ground truth); RESULT.json write-through инициализирован"
+  "what": "step-3 TICK2-lane: скоуп-экспансия sense до Brain-слоя (F2-машина применена к tickEachRunningBehavior); compile+verify+commit+push; далее диспатч ×3 CI-ноги round-443-a-s1/s2/s3"
 }
