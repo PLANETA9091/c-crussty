@@ -7,7 +7,8 @@
   "steps_done": [
     "step1: worktree /home/z/rounds/ROUND-449/agent-b created from origin/round-446-items @0fe38eec; disk-crisis mitigated by sparse-checkout (research/ 2.5G + profile/ excluded, lesson x445-C); disk 97%->69%->49%",
     "step2 GATES ALL GREEN: (a) blob freshness — rebuilt via scripts/build_itemsbatch_ops.sh, javac output BYTE-IDENTICAL to committed itemsbatch/build/net/minecraft/world/entity/ItemBatchOps.class (14278B, impl a6648df2); (b) check_blobs_sync.sh = ALL IN SYNC (itemsbatch markers cmp446_items/selfTest/inactiveTick/mergeWithNeighbours/planeProbe/planeDecide + flat==nested); (c) javap gate — flat==nested IDENTICAL (1599 lines, rc=0 both, kernel jar on cp), ZERO inner classes in blob (no ColpushOps$ConstSlot-class risk, lesson x448); (d) runtime loadability — Class.forName+getDeclaredMethods OK, 23 methods defined; (e) cargo check --lib GREEN 6.9s; (f) cargo test 311 passed / 0 failed / 1 ignored (CARGO_TARGET_DIR=/tmp/cargo-B449, target deleted after check, disk 49%)",
-    "step3: LEG DISPATCHED — round-449b-items-2 @a6e63cf2 via workflow_dispatch (dedicated one-off /tmp/dispatch_449b.py — anchors NOT re-dispatched); lever_flag=cmp446_items lever_arg=1; inputs = brief-exact (radius 640, seconds 300, fake_players 4, gc_tune 3, region_threads 4, population 150000/42, xmx 10G, band 6.0-9.5M)"
+    "step3: LEG DISPATCHED — round-449b-items-2 @a6e63cf2 via workflow_dispatch (dedicated one-off /tmp/dispatch_449b.py — anchors NOT re-dispatched); lever_flag=cmp446_items lever_arg=1; inputs = brief-exact (radius 640, seconds 300, fake_players 4, gc_tune 3, region_threads 4, population 150000/42, xmx 10G, band 6.0-9.5M)",
+    "step3b: run_id=36023838241 in_progress @a6e63cf2 (confirmed via API 20s after dispatch)"
   ],
   "legs_dispatched": [
     {
@@ -15,7 +16,7 @@
       "sha": "a6e63cf2",
       "lever": "cmp446_items:1",
       "dispatched_at": "2026-09-24T16:1x+08",
-      "run_id": null
+      "run_id": 36023838241
     }
   ],
   "verdict": null,
