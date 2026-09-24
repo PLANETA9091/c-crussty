@@ -16,7 +16,13 @@ BATCH = [
     ("chunk4-2", "round-440c-chunk4-2", "round-438-c-chunk4b", "cmp437_chunk4"),
 ]
 
-EXPECTED_BASE_SHA_PREFIX = "feb7567f"  # step-3 tip (impl + gates green + dispatcher)
+IMPL_SHA_PREFIX = "e93bb8c2"  # step-2 tip (impl + gates green); dispatcher commits may sit on top
+
+
+def tip_contains_impl(tok, ref):
+    """Compare API: IMPL must be an ancestor of (or equal to) the branch tip."""
+    cmp = api(tok, f"/repos/{REPO}/compare/{IMPL_SHA_PREFIX}...{ref}")
+    return cmp.get("status") in ("identical", "ahead")
 
 INPUTS = {
     "radius": "640", "seconds": "300", "fake_players": "4",
@@ -75,8 +81,8 @@ if __name__ == "__main__":
         sys.exit(0)
     tok = token_from_gh_token_file()
     base_sha = sha_of(tok, "round-438-c-chunk4b")
-    if not base_sha.startswith(EXPECTED_BASE_SHA_PREFIX):
-        raise SystemExit(f"SHA-DRIFT ABORT: round-438-c-chunk4b = {base_sha}, expected {EXPECTED_BASE_SHA_PREFIX}*")
+    if not tip_contains_impl(tok, base_sha):
+        raise SystemExit(f"SHA-DRIFT ABORT: round-438-c-chunk4b = {base_sha} does not contain IMPL {IMPL_SHA_PREFIX}*")
     for leg, branch, base, lever in BATCH:
         sha = ensure_branch(tok, branch, base)
         inputs = dict(INPUTS)
