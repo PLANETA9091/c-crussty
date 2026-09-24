@@ -1,0 +1,146 @@
+== 1. ASM patcher ==
+PalettedPatchTool: 30967 -> 31521 bytes (v3 write-path guard)
+== 2. stub jar (kernel with PalettedContainer replaced by the patched image) ==
+stub jar rewritten
+stub jar: 28M
+== 3. ECJ build PalettedContainerOps ==
+----------
+1. WARNING in /home/z/rounds/ROUND-437/agent-b/paletted/net/minecraft/world/level/chunk/PalettedContainerOps.java (at line 227)
+	&& MAX_BUILDS_PER_CONTAINER == 2;
+	   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Comparing identical expressions
+----------
+1 problem (1 warning)
+built: /home/z/rounds/ROUND-437/agent-b/paletted/build/net/minecraft/world/level/chunk/PalettedContainerOps.class (4119 B)
+== 4. JVM parity harness ==
+----------
+1. WARNING in /home/z/rounds/ROUND-437/agent-b/paletted/harness/ParityHarness.java (at line 70)
+	Path libs = kernelJar.getParent() == null ? null : kernelJar.getParent().getParent() == null ? null : kernelJar.getParent().getParent().resolve("libraries");
+	     ^^^^
+The value of the local variable libs is not used
+----------
+1 problem (1 warning)
+harness: L1 vanilla = file:/home/z/rounds/ROUND-437/agent-b/research/gc-recon-2026-09-19/round-396-a/patched-kernel.jar
+harness: L2 patched = file:/tmp/paletted.ZtZa84/stub.jar
+ERROR StatusConsoleListener Error processing element LoggerNamePatternSelector ([PatternLayout: null]): CLASS_NOT_FOUND
+ERROR StatusConsoleListener Error processing element Queue ([Appenders: null]): CLASS_NOT_FOUND
+ERROR StatusConsoleListener Error processing element LoggerNamePatternSelector ([PatternLayout: null]): CLASS_NOT_FOUND
+ERROR StatusConsoleListener Error processing element TerminalConsole ([Appenders: null]): CLASS_NOT_FOUND
+ERROR StatusConsoleListener Error processing element LoggerNamePatternSelector ([PatternLayout: null]): CLASS_NOT_FOUND
+ERROR StatusConsoleListener Unable to invoke factory method in class io.papermc.paper.logging.StacktraceDeobfuscatingRewritePolicy for element StacktraceDeobfuscatingRewritePolicy: java.lang.NoClassDefFoundError: org/objectweb/asm/ClassVisitor
+ java.lang.NoClassDefFoundError: org/objectweb/asm/ClassVisitor
+	at java.base/java.lang.Class.forName0(Native Method)
+	at java.base/java.lang.Class.forName(Class.java:423)
+	at java.base/java.lang.Class.forName(Class.java:414)
+	at io.papermc.paper.logging.StacktraceDeobfuscatingRewritePolicy.<clinit>(StacktraceDeobfuscatingRewritePolicy.java:25)
+	at java.base/jdk.internal.misc.Unsafe.ensureClassInitialized0(Native Method)
+	at java.base/jdk.internal.misc.Unsafe.ensureClassInitialized(Unsafe.java:1160)
+	at java.base/jdk.internal.reflect.MethodHandleAccessorFactory.ensureClassInitialized(MethodHandleAccessorFactory.java:301)
+	at java.base/jdk.internal.reflect.MethodHandleAccessorFactory.newMethodAccessor(MethodHandleAccessorFactory.java:72)
+	at java.base/jdk.internal.reflect.ReflectionFactory.newMethodAccessor(ReflectionFactory.java:159)
+	at java.base/java.lang.reflect.Method.acquireMethodAccessor(Method.java:726)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:577)
+	at org.apache.logging.log4j.core.config.plugins.util.PluginBuilder.build(PluginBuilder.java:142)
+	at org.apache.logging.log4j.core.config.AbstractConfiguration.createPluginObject(AbstractConfiguration.java:1162)
+	at org.apache.logging.log4j.core.config.AbstractConfiguration.createConfiguration(AbstractConfiguration.java:1083)
+	at org.apache.logging.log4j.core.config.AbstractConfiguration.createConfiguration(AbstractConfiguration.java:1075)
+	at org.apache.logging.log4j.core.config.AbstractConfiguration.createConfiguration(AbstractConfiguration.java:1075)
+	at org.apache.logging.log4j.core.config.AbstractConfiguration.doConfigure(AbstractConfiguration.java:679)
+	at org.apache.logging.log4j.core.config.AbstractConfiguration.initialize(AbstractConfiguration.java:264)
+	at org.apache.logging.log4j.core.config.AbstractConfiguration.start(AbstractConfiguration.java:313)
+	at org.apache.logging.log4j.core.LoggerContext.setConfiguration(LoggerContext.java:631)
+	at org.apache.logging.log4j.core.LoggerContext.reconfigure(LoggerContext.java:713)
+	at org.apache.logging.log4j.core.LoggerContext.reconfigure(LoggerContext.java:735)
+	at org.apache.logging.log4j.core.LoggerContext.start(LoggerContext.java:260)
+	at org.apache.logging.log4j.core.impl.Log4jContextFactory.getContext(Log4jContextFactory.java:154)
+	at org.apache.logging.log4j.core.impl.Log4jContextFactory.getContext(Log4jContextFactory.java:46)
+	at org.apache.logging.log4j.LogManager.getContext(LogManager.java:197)
+	at org.apache.logging.log4j.spi.AbstractLoggerAdapter.getContext(AbstractLoggerAdapter.java:136)
+	at org.apache.logging.slf4j.Log4jLoggerFactory.getContext(Log4jLoggerFactory.java:58)
+	at org.apache.logging.log4j.spi.AbstractLoggerAdapter.getLogger(AbstractLoggerAdapter.java:46)
+	at org.apache.logging.slf4j.Log4jLoggerFactory.getLogger(Log4jLoggerFactory.java:32)
+	at org.slf4j.LoggerFactory.getLogger(LoggerFactory.java:426)
+	at org.slf4j.LoggerFactory.getLogger(LoggerFactory.java:451)
+	at com.mojang.logging.LogUtils.getLogger(LogUtils.java:62)
+	at net.minecraft.Util.<clinit>(Util.java:90)
+	at net.minecraft.util.Mth.<clinit>(Mth.java:32)
+	at net.minecraft.world.level.chunk.Strategy.minimumBitsRequiredForDistinctValues(Strategy.java:89)
+	at net.minecraft.world.level.chunk.Strategy.<init>(Strategy.java:28)
+	at net.minecraft.world.level.chunk.Strategy$1.<init>(Strategy.java:34)
+	at net.minecraft.world.level.chunk.Strategy.createForBlockStates(Strategy.java:34)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at ParityHarness.main(ParityHarness.java:103)
+Caused by: java.lang.ClassNotFoundException: org.objectweb.asm.ClassVisitor
+	at java.base/java.net.URLClassLoader.findClass(URLClassLoader.java:445)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:593)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:526)
+	... 42 more
+ERROR StatusConsoleListener Appender TerminalConsole cannot be located. Reference ignored
+ERROR StatusConsoleListener Appender ServerGuiConsole cannot be located. Reference ignored
+ERROR StatusConsoleListener Error processing element LoggerNamePatternSelector ([PatternLayout: null]): CLASS_NOT_FOUND
+ERROR StatusConsoleListener Error processing element Queue ([Appenders: null]): CLASS_NOT_FOUND
+ERROR StatusConsoleListener Error processing element LoggerNamePatternSelector ([PatternLayout: null]): CLASS_NOT_FOUND
+ERROR StatusConsoleListener Error processing element TerminalConsole ([Appenders: null]): CLASS_NOT_FOUND
+ERROR StatusConsoleListener Error processing element LoggerNamePatternSelector ([PatternLayout: null]): CLASS_NOT_FOUND
+ERROR StatusConsoleListener Unable to invoke factory method in class io.papermc.paper.logging.StacktraceDeobfuscatingRewritePolicy for element StacktraceDeobfuscatingRewritePolicy: java.lang.NoClassDefFoundError: org/objectweb/asm/ClassVisitor
+ java.lang.NoClassDefFoundError: org/objectweb/asm/ClassVisitor
+	at java.base/java.lang.Class.forName0(Native Method)
+	at java.base/java.lang.Class.forName(Class.java:423)
+	at java.base/java.lang.Class.forName(Class.java:414)
+	at io.papermc.paper.logging.StacktraceDeobfuscatingRewritePolicy.<clinit>(StacktraceDeobfuscatingRewritePolicy.java:25)
+	at java.base/jdk.internal.misc.Unsafe.ensureClassInitialized0(Native Method)
+	at java.base/jdk.internal.misc.Unsafe.ensureClassInitialized(Unsafe.java:1160)
+	at java.base/jdk.internal.reflect.MethodHandleAccessorFactory.ensureClassInitialized(MethodHandleAccessorFactory.java:301)
+	at java.base/jdk.internal.reflect.MethodHandleAccessorFactory.newMethodAccessor(MethodHandleAccessorFactory.java:72)
+	at java.base/jdk.internal.reflect.ReflectionFactory.newMethodAccessor(ReflectionFactory.java:159)
+	at java.base/java.lang.reflect.Method.acquireMethodAccessor(Method.java:726)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:577)
+	at org.apache.logging.log4j.core.config.plugins.util.PluginBuilder.build(PluginBuilder.java:142)
+	at org.apache.logging.log4j.core.config.AbstractConfiguration.createPluginObject(AbstractConfiguration.java:1162)
+	at org.apache.logging.log4j.core.config.AbstractConfiguration.createConfiguration(AbstractConfiguration.java:1083)
+	at org.apache.logging.log4j.core.config.AbstractConfiguration.createConfiguration(AbstractConfiguration.java:1075)
+	at org.apache.logging.log4j.core.config.AbstractConfiguration.createConfiguration(AbstractConfiguration.java:1075)
+	at org.apache.logging.log4j.core.config.AbstractConfiguration.doConfigure(AbstractConfiguration.java:679)
+	at org.apache.logging.log4j.core.config.AbstractConfiguration.initialize(AbstractConfiguration.java:264)
+	at org.apache.logging.log4j.core.config.AbstractConfiguration.start(AbstractConfiguration.java:313)
+	at org.apache.logging.log4j.core.LoggerContext.setConfiguration(LoggerContext.java:631)
+	at org.apache.logging.log4j.core.LoggerContext.reconfigure(LoggerContext.java:713)
+	at org.apache.logging.log4j.core.LoggerContext.reconfigure(LoggerContext.java:735)
+	at org.apache.logging.log4j.core.LoggerContext.start(LoggerContext.java:260)
+	at org.apache.logging.log4j.core.impl.Log4jContextFactory.getContext(Log4jContextFactory.java:154)
+	at org.apache.logging.log4j.core.impl.Log4jContextFactory.getContext(Log4jContextFactory.java:46)
+	at org.apache.logging.log4j.LogManager.getContext(LogManager.java:197)
+	at org.apache.logging.log4j.spi.AbstractLoggerAdapter.getContext(AbstractLoggerAdapter.java:136)
+	at org.apache.logging.slf4j.Log4jLoggerFactory.getContext(Log4jLoggerFactory.java:58)
+	at org.apache.logging.log4j.spi.AbstractLoggerAdapter.getLogger(AbstractLoggerAdapter.java:46)
+	at org.apache.logging.slf4j.Log4jLoggerFactory.getLogger(Log4jLoggerFactory.java:32)
+	at org.slf4j.LoggerFactory.getLogger(LoggerFactory.java:426)
+	at org.slf4j.LoggerFactory.getLogger(LoggerFactory.java:451)
+	at com.mojang.logging.LogUtils.getLogger(LogUtils.java:62)
+	at net.minecraft.Util.<clinit>(Util.java:90)
+	at net.minecraft.util.Mth.<clinit>(Mth.java:32)
+	at net.minecraft.world.level.chunk.Strategy.minimumBitsRequiredForDistinctValues(Strategy.java:89)
+	at net.minecraft.world.level.chunk.Strategy.<init>(Strategy.java:28)
+	at net.minecraft.world.level.chunk.Strategy$1.<init>(Strategy.java:34)
+	at net.minecraft.world.level.chunk.Strategy.createForBlockStates(Strategy.java:34)
+	at java.base/jdk.internal.reflect.DirectMethodHandleAccessor.invoke(DirectMethodHandleAccessor.java:103)
+	at java.base/java.lang.reflect.Method.invoke(Method.java:580)
+	at ParityHarness.main(ParityHarness.java:105)
+Caused by: java.lang.ClassNotFoundException: org.objectweb.asm.ClassVisitor
+	at java.base/java.net.URLClassLoader.findClass(URLClassLoader.java:445)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:593)
+	at ParityHarness$ChildFirstClassLoader.loadClass(ParityHarness.java:50)
+	at java.base/java.lang.ClassLoader.loadClass(ClassLoader.java:526)
+	... 42 more
+ERROR StatusConsoleListener Appender TerminalConsole cannot be located. Reference ignored
+ERROR StatusConsoleListener Appender ServerGuiConsole cannot be located. Reference ignored
+harness: containers constructed (default=air)
+harness: 20000 random ops PASS (getAndSet old-values matched 4883/4883)
+harness: snap before force = [Ljava.lang.Object;@4da855dd (null until heat-driven or forced)
+harness: snapshot PUBLISHED and fresh (snapGen=883)
+harness: 1000 fast-path reads in parity with vanilla
+harness: write unmarked snapshot + released refcount (1 -> 0)
+harness: re-materialization + parity PASS
+harness: concurrency smoke PASS (3 readers + 1 writer, 500ms)
+harness: ALL PASS

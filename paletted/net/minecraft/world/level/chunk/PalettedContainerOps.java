@@ -21,9 +21,22 @@ import java.util.concurrent.atomic.AtomicLong;
  *       moonrise fast-palette array or Palette.valueFor, bounds contract)
  *       plus the per-container miss counter that lazily triggers
  *       materialization;</li>
- *   <li>{@link #onWrite} — mutator epilogue bookkeeping (snapshot refcount
- *       release).</li>
+ *   <li>{@link #onMutateStart} — mutator prologue bookkeeping (snapshot
+ *       refcount release; called through the v3 inline gate only when a
+ *       snapshot is live).</li>
  * </ul>
+ *
+ * WRITE-PATH GUARD v3 (TASK-437-B, cmp436_pdemux): the patched mutators no
+ * longer pay the 2 volatile gen++ stores per mutation on release-
+ * blacklisted containers — the synthetic crusstyWriteGate()/crusstyEpilogue()
+ * pair skips the volatile pair when snapGen==0 && crusstyEpoch>=2. For that
+ * skip to be sound, {@link #tryMaterialize} now aborts when crusstyEpoch
+ * moved since entry (epoch-transition guard): a build that started before
+ * the blacklist transition can never publish into the skip state, so "no
+ * snapshot live + none publishable" is a stable writer-observable state.
+ * Correspondingly crusstyEpoch is injected VOLATILE (v3): it graduated from
+ * heuristic to protocol participant — both the writer gate's skip condition
+ * and the epoch-transition validation below need fresh reads.
  *
  * Race protocol (see src/classfile.rs PALETTED-DEMUX header): the writers
  * bump crusstyGen to an odd value while a mutation is in flight; this class
@@ -120,9 +133,19 @@ public final class PalettedContainerOps {
         }
     }
 
-    /** Build + publish the { demux, vals } snapshot for a quiescent epoch. */
+    /** Build + publish the { demux, vals } snapshot for a quiescent epoch.
+     *
+     * v3 epoch-transition guard: epochAtStart pins the blacklist epoch the
+     * probe began at; the post-probe validation aborts when it moved. This
+     * closes the write-path-guard skip race: a materialize that started
+     * before the second (blacklisting) build completed can no longer publish
+     * into the snapGen==0 && epoch>=2 state the writer-side gate treats as
+     * "volatile pair dead" — the gate's invariant (no publish after the
+     * writer observed epoch>=2) now holds by construction. Zero cost off the
+     * write path (one extra plain read per materialize attempt). */
     static void tryMaterialize(PalettedContainer<?> self) {
         int gen = self.crusstyGen;
+        int epochAtStart = self.crusstyEpoch;
         if ((gen & 1) != 0) {
             ABORTS++; // write epoch in flight — never probe a moving target
             logThrottled();
@@ -167,9 +190,10 @@ public final class PalettedContainerOps {
             }
             vals = list.toArray();
         }
-        // Post-probe validation: epoch still even+same and data object not
-        // swapped under us (resize). Any drift aborts without publishing.
-        if (self.crusstyGen != gen || self.data != data) {
+        // Post-probe validation: epoch still even+same, blacklist epoch not
+        // transitioned under us (v3), and data object not swapped under us
+        // (resize). Any drift aborts without publishing.
+        if (self.crusstyGen != gen || self.crusstyEpoch != epochAtStart || self.data != data) {
             ABORTS++;
             logThrottled();
             return;
@@ -193,9 +217,13 @@ public final class PalettedContainerOps {
         }
     }
 
-    /** Reflective smoke: machinery is loadable and the cap math is sane. */
+    /** Reflective smoke: machinery is loadable and the cap math is sane.
+     * The v3 write-path gate (PalettedPatchTool / classfile.rs mirror) pins
+     * MAX_BUILDS_PER_CONTAINER == 2 — asserted here so a silent constant
+     * change cannot desync the bytecode-level skip condition. */
     public static boolean selfTest() {
         return LIVE.get() == 0 && CAP > 0
-            && FIRST_STRIDE_MASK > 0 && REARM_STRIDE_MASK > FIRST_STRIDE_MASK;
+            && FIRST_STRIDE_MASK > 0 && REARM_STRIDE_MASK > FIRST_STRIDE_MASK
+            && MAX_BUILDS_PER_CONTAINER == 2;
     }
 }
