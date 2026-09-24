@@ -242,6 +242,19 @@ def main():
         return
 
     # --- РЕАЛЬНЫЙ ДИСПАТЧ (тик 02:08 +08) ---
+    # ВРЕМЕННОЙ ПРЕДОХРАНИТЕЛЬ (инцидент tick-447 21:3x +08: запуск скрипта вне golden-окна
+    # случайно задиспатчил 7 ног; все 6 активных канслированы, 1 сам умер на band-gate;
+    # golden-данных 0). Реальный диспатч разрешён ТОЛЬКО в окне 02:00-03:30 +08
+    # (= 18:00-19:30 UTC), либо при GOLDEN_FORCE=1 (осознанный override главного тика).
+    from datetime import datetime, timezone, timedelta
+    now_utc = datetime.now(timezone.utc)
+    h08 = (now_utc + timedelta(hours=8))
+    in_window = h08.hour >= 2 and (h08.hour < 3 or (h08.hour == 3 and h08.minute < 30))
+    if not in_window and os.environ.get("GOLDEN_FORCE") != "1":
+        raise SystemExit(
+            f"ABORT: вне golden-окна (сейчас {h08:%H:%M}+08, окно 02:00-03:30+08). "
+            "Golden = РОВНО ОДИН выстрел на серт-слот 02:08. "
+            "Для dry-плана используй --dry-run; для осознанного override — GOLDEN_FORCE=1.")
     print(f"=== GOLDEN DISPATCH (tick-443 golden slot 02:08 +08, мандат ≥+20% pair-stable) ===",
           flush=True)
     # префлайт 1: обязательные базы — несовпадение = ОТМЕНА, не молча
