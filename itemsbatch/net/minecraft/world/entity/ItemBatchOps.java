@@ -185,12 +185,32 @@ public final class ItemBatchOps {
     // ------------------------------------------------------------------
 
     private static void drain(long[] meta, long st) {
-        int n = (int) meta[1];
+        // TASK-447-B2 (run 36004849498 crash root-cause): meta[1] is the SNAPSHOT
+        // FILL POSITION IN DOUBLES (append() adds STRIDE per item) — the
+        // planeDecide contract wants the ITEM COUNT (rust decide_batch reads
+        // n*STRIDE doubles and writes n outputs). The v1 drain passed the raw
+        // doubles count as n: for any real batch the rust structural guard
+        // (n*STRIDE > snap.len -> rc=-1) fired BEFORE any read/write (fail-closed
+        // held — no heap corruption), the plane disarmed on its first populated
+        // tick (ARM 13:30:04 -> rc=-1 13:30:05, run 36004849498) and the leg
+        // measured the vanilla-replica fallback. selfTest passed because it
+        // passes the item count (n=1) explicitly. Fixed: convert doubles ->
+        // items here, and fail-closed on stride misalignment BEFORE the native.
+        int nDoubles = (int) meta[1];
         meta[0] = st;
         meta[1] = 0L;
-        if (n <= 0) {
+        if (nDoubles <= 0) {
             return;
         }
+        if ((nDoubles % STRIDE) != 0) {
+            // Snapshot invariant broken (append is the only writer and adds
+            // whole strides) — structural break, disarm with nothing written.
+            broken = true;
+            LOG.severe("[crussty-plugin] items_batch: stride misalignment ("
+                    + nDoubles + " doubles) — plane broken, permanent vanilla-replica path");
+            return;
+        }
+        int n = nDoubles / STRIDE; // ITEM count — the planeDecide contract
         double[] snap = SNAP.get();
         int[] out = OUT.get();
         if (out.length < n) {
@@ -216,7 +236,8 @@ public final class ItemBatchOps {
         if (st - meta[5] >= 1200L) {
             meta[5] = st;
             LOG.info("[crussty-plugin] items_batch: EFFECT tick=" + st + " n=" + n
-                    + " rest=" + stat[1] + " full=" + stat[0] + " rechecks=" + stat[2]);
+                    + " rest=" + stat[1] + " full=" + stat[0] + " rechecks=" + stat[2]
+                    + " items=" + n + " doubles=" + nDoubles);
         }
     }
 

@@ -276,10 +276,13 @@ pub unsafe extern "system" fn items_batch_decide(
     }
     let pinned_out = unsafe { (vt.GetPrimitiveArrayCritical)(env, out, std::ptr::null_mut()) };
     if pinned_out.is_null() {
-        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, snap, pinned, 0) };
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, snap, pinned, jni::JNI_ABORT) };
         return -1;
     }
     // SAFETY: lengths verified above; no JNI calls inside the critical pair.
+    // TASK-447-B2 hardening: snap is READ-ONLY in decide_batch — its critical
+    // release uses JNI_ABORT (discard any write-back; the JVM skips the copy),
+    // out keeps mode 0 (the decisions must land in the java array).
     let rc = {
         let src = unsafe { std::slice::from_raw_parts(pinned as *const jni::jdouble, (n as usize) * STRIDE) };
         let dst = unsafe { std::slice::from_raw_parts_mut(pinned_out as *mut jni::jint, n as usize) };
@@ -287,7 +290,7 @@ pub unsafe extern "system" fn items_batch_decide(
         let rc = decide_batch(src, dst, &mut st);
         unsafe {
             (vt.ReleasePrimitiveArrayCritical)(env, out, pinned_out, 0);
-            (vt.ReleasePrimitiveArrayCritical)(env, snap, pinned, 0);
+            (vt.ReleasePrimitiveArrayCritical)(env, snap, pinned, jni::JNI_ABORT);
         }
         let sv = [
             st[0] as jni::jlong,
@@ -828,7 +831,8 @@ mod tests {
     }
 
     /// Delivery gate: the embedded blob must be the compiled bridge (major 65)
-    /// carrying the java gate string + native declarations + selfTest.
+    /// carrying the java gate string + native declarations + selfTest + the
+    /// TASK-447-B2 n-contract gate (doubles->items conversion in drain).
     #[test]
     fn blob_contract() {
         let b = OPS_BYTES;
@@ -839,6 +843,11 @@ mod tests {
         assert!(contains_bytes(b, b"selfTest"));
         assert!(contains_bytes(b, b"inactiveTick"), "REST path must call the vanilla inactiveTick");
         assert!(contains_bytes(b, b"mergeWithNeighbours"), "merge must use the vanilla private body");
+        // TASK-447-B2: the drain n-contract fix must be IN the blob (run
+        // 36004849498 rc=-1 root-cause: doubles count passed as the item count).
+        // The gate's log literal is the blob-pinned proof (javac keeps string
+        // literals, not comments).
+        assert!(contains_bytes(b, b"stride misalignment"), "drain n-contract gate missing");
         // S7-163: single classfile (no nested classes) — asserted by the build
         // script guard; here just sanity on the source-of-truth size.
         assert!(b.len() > 10_000, "blob suspiciously small: {}", b.len());
