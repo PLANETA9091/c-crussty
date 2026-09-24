@@ -103,3 +103,11 @@
 3. Сабагенты: A2 sense (@b5411a0c, STRICT-UNION путь) и C chunk4b (@5eb7565f) — если ARM+гейты зелёные ДО 02:08, добавить по 2 ноги в golden-батч (cmp438_sense / cmp437_chunk4), иначе следующий golden; цикл закона 3 продолжается.
 4. eqw: не диспатчить сольной ногой (LOW-POTENTIAL ×439-C); диета-пакет = кандидат стэкинга на ins4-носитель в следующем цикле после golden-декомпозиции.
 5. Каноны: ARM по stdout-маркерам; NOT-A-BENCH; депресс-гейт; pair Δ≤50k; min-of-3; per-абсорб пурдж (server-stdout после маркеров).
+
+## TASK-442 (tick-441 → тик 13:08 +08, мандат v17)
+0. Учёт ×441: арсенал = 4 CI-рычага (chunk4 GREEN ×4 +9.1..+17.1 ARM ×4; sense первые ноги ARM ×2 +6.9/+3.1; pdemux PATCHED ×4; sscan2 ARM ×3); окно ×441 ядро-зона депрессия → CERT 0 NO MERGE; B diet рестарт; диск 91→62%.
+1. **БАТЧ 13:08 (целеная якорная охота)**: якоря ×4-5 ЦЕЛЕННО в 6.3-7.2M (охота на здоровый якорь — a6 −15.0, a2 −5.2; если ядро мертво системно — признать и перевести пар-поиск в high-зону) + якоря ×2 в 8.4-8.8M + ноги: chunk4 ×2, sense ×2, ins4 ×2, pd ×1, chk3 ×1 (интерлив). Мерж ≥+20% pair min-of-3 немедленно --no-ff.
+2. **B diet РЕСТАРТ** (worktree round-440-b-ins4d пуст): RESEARCH-439-EQW.md §3 W2 — snapshotQuery диета поверх ins4-носителя, lever cmp440_ins4d STRICT-OR (cmp440_ins4d | cmp436_ins4), DIET-GATE self ≤2.0%, selfTest ДО BRIDGE_READY, 2 ноги round-440b-*.
+3. **A sense цикл закона 3**: если sense-ноги ×441 ARM-чистые (они ARM ×2) — следующий скоуп: расширение на targeting-листы (LookAt/TargetGoal семейство по javap-цензу) + композит sense⊕sscan2 (один SoA-субстрат, один bulk-JNI бюджет). Δ<+20% → новый research.
+4. **C chunk4**: пары для +17.1/+12.1 чтений; если пара ≥+20% min-of-3 — мерж немедленно; иначе добор ног в golden-батч 02:08 (golden_439.py дополнить chunk4-ногами при сборке ×443).
+5. Каноны: ARM по stdout; stdout НЕ purge до маркеров; band 6.0-9.5M ре-ролл ≤2; депресс-гейт norm ≥−2; pair Δ≤50k; min-of-3; NOT-A-BENCH; lectern/random_sequences threw ≠ lever; инфра-EOF = проверить artifacts до повторного запуска.
