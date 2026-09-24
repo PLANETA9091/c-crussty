@@ -15,7 +15,7 @@ BATCH = [
 ]
 
 EXPECTED_SHA = {
-    "round-450b-items": "67f3ffb7",  # cycle-4 repair 30d80c3e + dispatch-script commit (live head)
+    "round-450b-items": "61358eb3",  # cycle-4 repair 30d80c3e + dispatch-script commit (live head)
 }
 
 INPUTS = {
