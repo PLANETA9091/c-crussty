@@ -157,7 +157,7 @@ public final class MobPushOps {
                     // TASK-424-A: GC-ревизия brain3 (STRICT OR).
                     || f.trim().equals("cmp423_brain3")
                     // TASK-426-A: SoA-feed carrier (STRICT OR).
-                    || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside"));
+                    || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside") || f.trim().equals("cmp434_chunkpl") || f.trim().equals("cmp435_chunk3") || f.trim().equals("cmp437_chunk4") || f.trim().equals("cmp444_chunk5"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -199,7 +199,7 @@ public final class MobPushOps {
                     // TASK-424-A: GC-ревизия brain3 (STRICT OR).
                     || f.trim().equals("cmp423_brain3")
                     // TASK-426-A: SoA-feed carrier (STRICT OR).
-                    || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside"));
+                    || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside") || f.trim().equals("cmp434_chunkpl") || f.trim().equals("cmp435_chunk3") || f.trim().equals("cmp437_chunk4") || f.trim().equals("cmp444_chunk5"));
     }
 
     private static final boolean EQSNAP = eqsnapEnabled();
@@ -216,6 +216,8 @@ public final class MobPushOps {
         if (f != null && f.trim().equals("cmp423_brain3")) return "cmp423_brain3";
         if (f != null && f.trim().equals("cmp424_mobfeed")) return "cmp424_mobfeed"; // TASK-426-A
         if (f != null && f.trim().equals("cmp430_inside")) return "cmp430_inside"; // TASK-430-B
+        if (f != null && f.trim().equals("cmp437_chunk4") || f.trim().equals("cmp444_chunk5")) return "cmp437_chunk4"; // TASK-438-C: R7 carrier marker id
+        if (f != null && f.trim().equals("cmp434_chunkpl") || f.trim().equals("cmp435_chunk3")) return "cmp434_chunkpl"; // TASK-434-C
         if (f != null && f.trim().equals("cmp421_brain")) return "cmp421_brain";
         return f != null && f.trim().equals("cmp412_eqsnapv3")
                 ? "cmp412_eqsnapv3" : "cmp411_eqsnap";

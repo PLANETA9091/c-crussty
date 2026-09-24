@@ -42,7 +42,7 @@ fn enabled() -> bool {
     // The legacy CRUSSTY_INSIDE_BITMASK env stays accepted for A/B replays
     // (bank keeps it 0; lever flag is the dispatch key on the carrier).
     let lever = std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim() == "cmp430_inside")
+        .map(|v| v.trim() == "cmp430_inside" || v.trim() == "cmp434_chunkpl" || v.trim() == "cmp435_chunk3" || v.trim() == "cmp437_chunk4" || v.trim() == "cmp444_chunk5")
         .unwrap_or(false);
     if lever {
         return true;

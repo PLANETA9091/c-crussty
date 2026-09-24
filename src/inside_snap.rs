@@ -103,7 +103,7 @@ pub fn wait_bridge_ready(timeout_ms: u64) -> bool {
 fn lever_flag_matches() -> bool {
     // STRICT eq: ТОЛЬКО мой флаг (пустой/чужой = ваниль бит-в-байт).
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim() == "cmp430_inside")
+        .map(|v| v.trim() == "cmp430_inside" || v.trim() == "cmp434_chunkpl" || v.trim() == "cmp435_chunk3" || v.trim() == "cmp437_chunk4" || v.trim() == "cmp444_chunk5")
         .unwrap_or(false)
 }
 
