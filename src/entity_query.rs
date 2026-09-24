@@ -131,7 +131,8 @@ fn enabled() -> bool {
             | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
             | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp440_ins4d") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4")
-            | Ok("cmp443_mega") // TASK-443-B: mega-composition carrier
+            | Ok("cmp438_sense") // TASK-444-C: sense family union
+            | Ok("cmp443_mega") //  TASK-443-B: mega-composition carrier
             | Ok("cmp421_brain")
     )
 }
@@ -176,7 +177,8 @@ fn enabled_flag_is_sense() -> bool {
         Ok("cmp421_brain") | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
             | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp440_ins4d") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4")
-            | Ok("cmp443_mega") // TASK-443-B: mega-composition carrier
+            | Ok("cmp438_sense") // TASK-444-C: sense family union
+            | Ok("cmp443_mega") //  TASK-443-B: mega-composition carrier
     )
 }
 
@@ -1000,6 +1002,7 @@ mod tests {
             || s == "cmp411_eqsnap"
             || s == "cmp412_eqsnapv3" || s == "cmp414_cvs" || s == "cmp417_bq"
             || s == "cmp421_brain" || s == "cmp422_brain2" || s == "cmp423_brain3" || s == "cmp424_mobfeed" || s == "cmp430_inside" || s == "cmp432_inside2" || s == "cmp436_ins4" || s == "cmp434_chunkpl" || s == "cmp435_chunk3" || s == "cmp437_chunk4" || s == "cmp443_mega" // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
+                || s == "cmp438_sense" // TASK-444-C: sense family union
     }
 
     #[test]

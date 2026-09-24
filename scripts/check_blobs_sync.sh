@@ -93,6 +93,11 @@ check_class \
   "native"
 
 check_class \
+  "sense/build/net/minecraft/world/entity/SenseOps.class" \
+  "cmp438_sense" "cmp430_inside" "nearestEntityGate" "sense EFFECT" "selfTest" \
+  "native int senseProbe" "native int senseEpoch"
+
+check_class \
   "mobpush/build/net/minecraft/world/entity/MobPushOps.class" \
   "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp437_chunk4" "cmp432_inside2" "cmp440_ins4d" \
   "native int mobProbe" "boxFor" "colpushSweep"
@@ -243,6 +248,7 @@ check_flat_matches_nested "queryplane/build" "net/minecraft/world/entity/QueryPl
 check_flat_matches_nested "goalops/build" "net/minecraft/world/entity/ai/goal/GoalOps"
 check_flat_matches_nested "colpush/build" "net/minecraft/world/entity/ColpushOps"
 check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/RegionTickOps"
+check_flat_matches_nested "sense/build" "net/minecraft/world/entity/SenseOps"
 
 if [ "$FAIL" = "0" ]; then
   echo "check_blobs_sync: ALL IN SYNC"

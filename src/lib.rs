@@ -58,6 +58,7 @@ mod mobs_manager;
 mod mobs_soa;
 mod mobs_ai;
 mod mobs_sscan;
+mod mobs_sense;
 mod nav_plane;
 mod nav_pool;
 mod chunk_parse;
@@ -269,6 +270,13 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // qualifying player column). Dormant unless CRUSSTY_LEVER_FLAG ==
     // cmp406_sscan (empty flag = exact vanilla path).
     mobs_sscan::register();
+    // SENSE-PLANE (TASK-438-A2, vector cmp438_sense): body-swap of the
+    // ServerEntityGetter.getNearestEntity(List,TC,LE,DDD) default-method
+    // CHOKEPOINT (all targeting-conditions nearest picks converge there) ->
+    // SenseOps.nearestEntityGate with ONE bulk senseEpoch JNI per tick over
+    // the mobs_soa SoA population (nearest-player column). Dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp438_sense (empty flag = exact vanilla path).
+    mobs_sense::register();
     // EINDEX (TASK-405-C, vector eindex): byte hooks on EntityLookup + Entity
     // + the 4 rare setBoundingBox owners for the Rust chunk-mirror counts-skip
     // plane. Dormant unless CRUSSTY_LEVER_FLAG == cmp405_eindex (STRICT eq;
@@ -610,6 +618,11 @@ fn inject_surface() {
     // RegisterNatives (sscanProbe/sscanEpoch), flips READY and retransforms
     // Mob (dormant unless CRUSSTY_LEVER_FLAG == cmp406_sscan).
     mobs_sscan::activate();
+    // SENSE-PLANE (TASK-438-A2): waits for boot + ServerEntityGetter +
+    // MobPushOps, defines SenseOps + RegisterNatives (senseProbe/senseEpoch),
+    // selfTest==true BEFORE arm, flips READY and retransforms the interface
+    // (dormant unless CRUSSTY_LEVER_FLAG == cmp438_sense family).
+    mobs_sense::activate();
     // TICK-PLANE (TASK-403-C): сводный ARM-маркер плейна после активации
     // всех сегментов (items/push-soa+grid/stagger/collide) — coarse-stamp
     // эпохи; dormant unless CRUSSTY_LEVER_FLAG == cmp403_tickplane.

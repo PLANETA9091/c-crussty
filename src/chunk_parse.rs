@@ -135,6 +135,7 @@ fn enabled() -> bool {
                 // TASK-435-C: R6 carrier (STRICT-OR successor, no broadening).
                 // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
                 || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp443_mega"
+                || v == "cmp438_sense" // TASK-444-C: sense family union
         })
         .unwrap_or(false)
 }

@@ -46,6 +46,7 @@ fn enabled() -> bool {
             let v = v.trim();
             v == "cmp432_inside2" || v == "cmp430_inside" || v == "cmp436_ins4" || v == "cmp440_ins4d" || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp443_mega"
         })
+                || v == "cmp438_sense" // TASK-444-C: sense family union
         .unwrap_or(false);
     if lever {
         return true;

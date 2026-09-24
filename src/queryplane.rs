@@ -78,6 +78,7 @@ fn lever_flag_matches() -> bool {
                 // rides as a disjoint-lane leg (law 7).
                 // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
                 || v.trim() == "cmp434_chunkpl" || v.trim() == "cmp435_chunk3" || v.trim() == "cmp437_chunk4" || v.trim() == "cmp443_mega"
+                || v == "cmp438_sense" // TASK-444-C: sense family union
         })
         .unwrap_or(false)
 }
@@ -108,6 +109,8 @@ fn lever_id() -> &'static str {
         Ok("cmp435_chunk3") => "cmp435_chunk3", // TASK-435-C: R6 carrier marker id
         Ok("cmp437_chunk4") => "cmp437_chunk4", // TASK-438-C: R7 carrier marker id (chunk-send snapshot widening)
         Ok("cmp443_mega") => "cmp443_mega", // TASK-443-B: mega-composition carrier marker id
+        // TASK-438-A2: sense-плоскость — свой id в ARM/EFFECT-маркерах.
+        Ok("cmp438_sense") => "cmp438_sense",
         Ok("cmp417_bq")
             // TASK-421-A (brain): свой id в ARM-маркерах.
             | Ok("cmp421_brain") => "cmp421_brain",
