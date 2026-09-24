@@ -135,10 +135,21 @@ fn enabled() -> bool {
                 || v == "cmp434_chunkpl"
                 // TASK-435-C: R6 carrier (STRICT-OR successor, no broadening).
                 || v == "cmp435_chunk3"
-                || v == "cmp437_chunk4" || v == "cmp444_chunk5"
+                || v == "cmp437_chunk4" || v == "cmp444_chunk5" || v == "cmp450_chunk"
         })
         .unwrap_or(false)
 }
+
+/// TASK-450-C evidence marker: print the UNION carrier id when the env flag IS
+/// the union (cmp450_chunk legs grep "cmp450_chunk: ARMED ..."), else the
+/// plane's birth id (frozen historical markers).
+fn marker_id() -> std::borrow::Cow<'static, str> {
+    match std::env::var("CRUSSTY_LEVER_FLAG").as_deref() {
+        Ok("cmp450_chunk") => std::borrow::Cow::Owned("cmp450_chunk".to_string()),
+        _ => std::borrow::Cow::Borrowed(LEVER_ID),
+    }
+}
+
 
 /// Register the byte hook (idempotent; call once from cplugin_init).
 /// Loader-lock discipline: the callback performs NO JNI work — pristine
@@ -434,8 +445,9 @@ pub fn activate() {
         t.set_patch(Arc::from(patched));
         READY.store(true, Ordering::Release);
         let rc = cplug_sdk::retransform_class(t.name);
+        let m = marker_id();
         eprintln!(
-            "[crussty-plugin] {LEVER_ID}: ARMED chunk-parse section-cache + biomes-cache (deep: cap 16384, evict-half, lock-free CHM probe; blocks {CHUNKPARSE_BLOCKS_LAMBDA} -> ChunkParseOps.parseSection, biomes {CHUNKPARSE_TWIN_LAMBDA} -> ChunkParseOps.parseBiomesSection, identity-codec key, template.copy() HIT path, 0 added JNI; retransform rc={rc})"
+            "[crussty-plugin] {m}: ARMED chunk-parse section-cache + biomes-cache (deep: cap 16384, evict-half, lock-free CHM probe; blocks {CHUNKPARSE_BLOCKS_LAMBDA} -> ChunkParseOps.parseSection, biomes {CHUNKPARSE_TWIN_LAMBDA} -> ChunkParseOps.parseBiomesSection, identity-codec key, template.copy() HIT path, 0 added JNI; retransform rc={rc})"
         );
     });
 }

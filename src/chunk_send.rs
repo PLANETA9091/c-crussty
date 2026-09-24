@@ -121,10 +121,21 @@ fn enabled() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let v = v.trim();
-            v == LEVER_ID || v == "cmp444_chunk5"
+            v == LEVER_ID || v == "cmp444_chunk5" || v == "cmp450_chunk"
         })
         .unwrap_or(false)
 }
+
+/// TASK-450-C evidence marker: print the UNION carrier id when the env flag IS
+/// the union (cmp450_chunk legs grep "cmp450_chunk: ARMED ..."), else the
+/// plane's birth id (frozen historical markers).
+fn marker_id() -> std::borrow::Cow<'static, str> {
+    match std::env::var("CRUSSTY_LEVER_FLAG").as_deref() {
+        Ok("cmp450_chunk") => std::borrow::Cow::Owned("cmp450_chunk".to_string()),
+        _ => std::borrow::Cow::Borrowed(LEVER_ID),
+    }
+}
+
 
 /// Register the byte hook (idempotent; call once from cplugin_init).
 /// Loader-lock discipline: the callback performs NO JNI work — pristine
@@ -399,8 +410,9 @@ pub fn activate() {
         t.set_patch(Arc::from(patched));
         READY.store(true, Ordering::Release);
         let rc = cplug_sdk::retransform_class(t.name);
+        let m = marker_id();
         eprintln!(
-            "[crussty-plugin] {LEVER_ID}: ARMED chunk-send serialization snapshot (unsaved-keyed packet reuse, zero-copy HIT handoff, anti-xray bypass, per-send events preserved, cap 2048 evict-half, 0 added JNI; retransform rc={rc})"
+            "[crussty-plugin] {m}: ARMED chunk-send serialization snapshot (unsaved-keyed packet reuse, zero-copy HIT handoff, anti-xray bypass, per-send events preserved, cap 2048 evict-half, 0 added JNI; retransform rc={rc})"
         );
     });
 }
