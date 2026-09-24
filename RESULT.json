@@ -1,21 +1,23 @@
 {
-  "agent": "agent-c (chunk4b)",
-  "vector": "cmp437_chunk4 chunk-send SERIALIZATION SNAPSHOT (widening over cmp435_chunk3 carrier; law 8 chunk-loading axis)",
-  "branch": "round-438-c-chunk4b",
-  "run_ids": {
-    "chunk4-1": 35951314959,
-    "chunk4-2": 35951322749
-  },
-  "leg_sha": "8938afb2 (contains impl e93bb8c2, ancestor-verified)",
+  "agent": "TASK-450-C",
+  "vector": "chunk-pipeline (закон 8, игроки-видимая ось): parse/serialization/send slice ЦЕЛИКОМ — union carrier cmp450_chunk = chunk4 (revision-keyed send-snapshot, cmp437_chunk4) ⊕ chunk5 (packet encode-cache, cmp444_chunk5) + NEW slices (RegionFile IO-buffering, serialization batch) по research-450-C",
+  "branch": "round-450c-chunk",
+  "carrier": "cmp450_chunk (STRICT-OR: cmp437_chunk4 ∨ cmp444_chunk5 ∨ cmp450_chunk на всех 21 rust + 11 java гейт-сайтах; маркеры marker_id() печатают union id)",
+  "steps": [
+    {"step": "step-1", "sha": "634195f9", "what": "merge chunk4 (c5fe0251) ⊕ chunk5 (2a07c491) на свежий master d02a2977 — чистый авто-мердж (master код == merge-base d282985c, нулевой код-дрейф); cargo check green, check_blobs_sync ALL IN SYNC"},
+    {"step": "step-2", "sha": "7443f2c8", "what": "retag cmp450_chunk STRICT-OR ×21 rust + ×11 java + blobs rebuild (build_430b + build_chunkparse + build_438c) flat==nested OK javap-load OK; cargo test 317/0; check_blobs_sync ALL IN SYNC + needles"},
+    {"step": "step-2b/2c/2d", "sha": "942d128c", "what": "dispatch_450c.py (argv-guard, dry-run safe, ancestry-preflight; self-referential sha trap → ancestry-only canon x440c)"},
+    {"step": "batch-1 dispatch", "what": "3 ноги round-450c-chunk-1/-2/-3 @942d128c lever=cmp450_chunk lever_arg=1, inputs = банк канона (radius 640, seconds 300, fake_players 4, gc_tune 3, region_threads 4, population 150k/42, xmx 10G, band 6.0-9.5M)"}
+  ],
+  "run_id": "pending (CI очередь: батч ×17 main-агента 03:4x +08 в работе, ноги в хвосте)",
   "tps_med": null,
   "delta_pair_pct": null,
-  "lane": "chunk-send sendChunk body redirect -> ChunkSendOps (unsaved-keyed packet reuse, zero-copy HIT, anti-xray bypass, online selftest, cap 2048 evict-half, 0 hot-path JNI)",
-  "arm_status": "PENDING-CI (gates local GREEN: cargo check 7.1s, cargo test 310/0 incl 7 chunksend delivery tests, build_430b OK, check_blobs_sync ALL IN SYNC, javap sendChunk descriptor+selfTest verified, chunksend blob rebuild byte-identical; ARM markers expected: 'cmp437_chunk4: ARMED chunk-send serialization snapshot' + selfTest==true pre-ARM + 'chunk4 snapshot selftest PASS' + 'chunk4 send-snapshot first hit')",
-  "verdict": "BENCH IN FLIGHT",
-  "evidence": [
-    "restored 51-file uncommitted progress from prev instances: coherent chunksend/ module + src/chunk_send.rs + classfile guards + 19 rust + 9 java gate retags; dupes deduped (retag idempotency bug); fixture sha256 == kernel jar entry 24e7a8e9",
-    "gates all green pre-dispatch",
-    "legs dispatched via dispatch_440c.py (bank inputs EXACT, no travel_diet/fluid_dirty_ledger, no concurrency guards)"
-  ],
-  "what": "TASK-440-C tick: split prev-instance progress into coherent commits (step-1 impl 414afa81, step-2 java retag+blobs e93bb8c2, step-3 dispatcher feb7567f/8938afb2/0ba3b38d), dispatched 2 verdict legs round-440c-chunk4-1/-2 @8938afb2 lever=cmp437_chunk4, absorb pending"
+  "lane": {
+    "был": "chunk-parse/send slice: chunk system (kernel) 8.2-8.7% CPU + network 2.2-2.9% (golden ×443/×449 vanilla anchors); burst-окно parse 33.38% (codec 19.06 + paletted 13.98, RESEARCH-F)",
+    "стал": "цель = union-носитель закрывает send-дубли 4×→1× (chunk4) + re-encode на игрока (chunk5) + NEW slices; pair-вердикт по ногам batch-1/batch-2 vs round-450-anchor-* ×12"
+  },
+  "parity": "vanilla при пустом флаге бит-в-байт (хуки не регистрируются); selfTest до ARM; cargo 317/0; blobs ALL IN SYNC",
+  "verdict": "IN-FLIGHT (batch-1 в CI)",
+  "evidence": ["ARM-маркеры ждутся: cmp450_chunk: ARMED chunk-send serialization snapshot / chunk-packet encode cache / chunk-parse section-cache (union id через marker_id)", "EFFECT: chunk4 send-snapshot first hit, chunk5 payload-cache first hit, parse-cache first hit", "grep AIOOBE=0, selfTest==true, threw=0 обязателен до вердикта"],
+  "what": "цикл закона 3 продолжается: batch-2 = NEW slices (RegionFile IO-buffering + serialization batch) по RESEARCH-450-C, диспатч после зелёных гейтов"
 }
