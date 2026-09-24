@@ -1,20 +1,26 @@
 {
-  "agent": "agent-b (mega-composite TASK-443-B)",
-  "vector": "mega-композиция закона 7: ins4d ⊕ chunk4 — ОДИН носитель round-443-mega, ОДИН рычаг cmp443_mega, STRICT-OR юнион (inside/goal-query-диета vs chunk-send serialization snapshot)",
-  "branch": "round-443-mega @ 5e3a36fb (merge round-442-b-ins4d @d9d1fb30 + round-438-c-chunk4b @c5fe0251)",
-  "run_id": "PENDING (ноги round-443-mega-1/2/3 диспатч след. шагом)",
-  "tps_med": null,
-  "delta_norm_pct": null,
-  "lane": "юнион: goal-query snapshotQuery+диета (EntityGoalQueryOps.entitiesOfClassGate) + inside-snap V4 + chunk-send serialization snapshot (ChunkSendOps.sendChunk redirect)",
-  "ARM-статус": "PENDING — ожидание маркеров ОБОИХ семейств в stdout: (ins4d) selfTest=true + inside_snap ARMED + goal-query ARMED cmp443_mega + INS4-DIET ARMED + V4 FLIPPED + INS4-DIET diet active; (chunk4) cmp437_chunk4/cmp443_mega ARMED chunk-send serialization snapshot + chunk4 snapshot selftest PASS + chunk4 send-snapshot first hit",
-  "verdict-gates": "AIOOBE=0, NCDFE=0, selfTest==true, threw=0, band 6.0-9.5M (BAND-DISCARD re-roll <=2), депресс-гейт якорь norm >= -2, pair-by-runner Delta<=50k vs round-443-anchor-1..8, min-of-3 >= +20% pair-stable (мандат)",
-  "verdict": "PENDING-BENCH",
-  "evidence": [
-    "merge-conflicts: 45 UU файлов — 19 rust + 9 java = gate-union (все lever-сайты обеих сторон сохранены + cmp443_mega), ColpushOps FLAG4..6 (ins4d) + FLAG7/8/9 (chunk4) + FLAG10 mega, lever_id/label-цепи (queryplane lever_id, MobPushOps label, EntityGoalQueryOps FLAG_LABEL), check_blobs_sync needle-union, RESULT.json ours, .class rebuild",
-    "STRICT-eq хвосты дозакрыты (урок x438): EntityGoalQueryOps.dietMode/senseMode, entity_query enabled_flag_is_ins4d + flag_label + INS4-DIET ARMED (label динамический), inside_snap v4_requested + carrier_label, chunk_send enabled + cmp443_mega ARMED маркер",
-    "rust гейты: 22 файла, все lever-сайты с cmp443_mega отдельной альтернативой; cargo check --lib green 7.2s; cargo test 310/310 (0 failed)",
-    "java гейты: 9 файлов + ChunkParseOps CARRIER_UNION_443; build_430b_blobs OK (12 блобов flat==nested), build_chunkparse_ops OK, chunksend blob pristine-нетронут; check_blobs_sync ALL IN SYNC; raw-byte grep cmp443_mega в 6 ключевых блобах flat+nested; javap SENSE/DIET/FLAG_LABEL + ColpushOps FLAG4..10",
-    "чужие round-443-* ветки не читались (кроме ls-remote якорей round-443-anchor-1..8 @c9060b1f master)"
+  "agent": "subagent A (TASK-444-A megafix)",
+  "vector": "RECON union-overhead on round-443-mega (ins4d⊕chunk4) + FIX under cmp444_megafix",
+  "branch": "round-444-a-megafix",
+  "base_sha": "ffb94e40 (origin/round-443-mega; byte-identical carrier)",
+  "run_id": "recon: 35965924299 (mega-1) / 35965933668 (mega-2) / 35966462636 (mega-3r) / 35967083044 (ins4-3) / 35967103239 (ins4d-4) / 35967142237 (chunk4-3) / 35967073659 (anchor-9) / 35967113492 (anchor-11) — artifacts re-fetched from GH after local purge",
+  "status": "RECON COMPLETE: union-overhead REFUTED at profile level; hypothesis (1) window/run-noise CONFIRMED",
+  "findings": [
+    "SLOT-BY-SLOT CPU (same tick-443b window 06:50-07:14): all union-relevant sites identical mega vs isolated — EntityGoalQueryOps.dietSnapshotQuery self 3.32% (ins4d-4) vs 2.97-3.64% (mega-1/2/3r); InsideSnapOps.serve4 self 2.34% vs 1.88-2.49%; ColpushOps incl 2.42% vs 2.40-2.49%; epoch self 0.10% vs 0.10-0.11%; chunksend lane 4.23% (ins4d-4) vs 3.76-4.09% (mega = NOT higher); PlayerChunkSender.sendChunk self 0.00% in ALL runs incl chunk4-3 (snapshot reuse zero-cost at bench scale)",
+    "GATE-CHAIN/epoch-константы: java gate flags are static-final cached at class-init (EntityGoalQueryOps.ENABLED/K4/SENSE/DIET/FLAG_LABEL) — NO per-call env reads in hot path; epoch bulk-JNI count identical mega vs isolated (3× 'epoch ok tick' both); potential short-circuit/epoch-consolidation saving ≤0.1pp = below run noise, NOT a fix target",
+    "DOUBLE WORK (chunk-send snapshot vs диета OUT_SCRATCH): none — ChunkSendOps hot path = CHM.get + isUnsaved probe; alloc profiles identical (top frames Vec3/AABB/char[] ±0.5pp); GC totals mega 19.4s vs isolated 22.2s (BETTER, refutes snapshot-buffer memory pressure)",
+    "WALL lanes: ins4d-4/mega-1/mega-3r/chunk4-3 identical to 0.1pp (region_ticks 6.8%, gc_jvm 9.3%, main_server 1.85%)",
+    "NOISE PROOF (the actual cause of median +7.8 < isolated +9.4..+31.0): mega-1 (−0.8 @6742555) tracked the VANILLA anchor-9 curve poll-by-poll (1.7/2.1/2.2/2.4/2.6 vs 1.8/2.0/2.2/2.5/2.6) while sibling mega-3r (+16.6 @6796414, Δrunner 54k!) ran +0.3-0.4 TPS above at every poll and BEAT ins4d-4 (+13.5 @6668364). Same code, same inputs, same zone: 17pp spread INSIDE the lever = run-to-run runner noise (MEGA_ROUND_1 lesson 1 ±10%; tick-442 chunk4-3 −12.8 @8.73M vs tick-443 ins4-2 +24.3 @8.81M same pattern)",
+    "megafixverdict: union-overhead NOT FOUND → cmp444_megafix code-fix NOT IMPLEMENTED (a fix would target a non-existent cost; new flag = 19 rust + 9 java STRICT-OR tail edits for zero behavioral delta = regression risk per lesson ×438 with no gain)"
   ],
-  "what": "юнион-композиция двух сильнейших непарных банков эры: ins4d-база (+22.2 абс 3.20TPS) + chunk4 (+9.1..+17.1 GREEN x6) — ожидание +25-30%+ аддитивно по разным подсистемам"
+  "tps_med": "recon set: mega-1 2.20@6742555 (−0.8) / mega-2 2.80@8538580 (+7.8) / mega-3r 2.60@6796414 (+16.6) vs ins4-3 3.00@7084789 (+31.0) / ins4d-4 2.50@6668364 (+13.5) / chunk4-3 2.30@8726664 (−12.8) / anchor-9 2.20@6926784 (−2.6) / anchor-11 2.35@7170698 (+1.8)",
+  "delta_pair_pct": null,
+  "verdict": "in-progress: RECON refutes overhead; dispatching 2 confirmation legs round-444-a-megafix-1/-2 (carrier cmp443_mega — byte-identical certified carrier, honest label; restores the mega line lost to band-fail round-444-mega-1/-2) + absorbing main-batch round-444-ins4-2/ins4d-2/anchor-1..7/chunk4-1 for same-window slot comparison",
+  "evidence": [
+    "/home/z/rounds/ROUND-444/agent-a/recon/recon444_union.py (lane/frame analyzer)",
+    "/home/z/rounds/ROUND-444/agent-a/recon/recon_summary.json (8-run lane table + top-self frames)",
+    "GH artifacts re-download: /tmp/recon444a/{mega-1,mega-2,mega-3r,ins4-3,ins4d-4,chunk4-3,anchor-9,anchor-11} (heavy files purged after analysis, texts kept)",
+    "marker caps: mega legs INS4-DIET ARMED + chunk4 snapshot selftest PASS + goal-query EFFECT + inside_snap composed; AIOOBE=0"
+  ],
+  "what": "RECON slot-by-slot mega vs isolated: NO union overhead in CPU/wall/alloc/GC; median gap = run noise (mega-1 outlier refuted by sibling mega-3r at same runner zone); next: 2 own legs dispatch + main-batch absorb"
 }
