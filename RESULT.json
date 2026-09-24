@@ -1,112 +1,27 @@
 {
-  "agent": "TASK-450-C",
-  "vector": "chunk-pipeline (закон 8, игроки-видимая ось): parse/serialization/send slice ЦЕЛИКОМ — union carrier cmp450_chunk = chunk4 (revision-keyed send-snapshot, cmp437_chunk4) ⊕ chunk5 (packet encode-cache, cmp444_chunk5) + NEW slices (RegionFile IO-buffering, serialization batch) по research-450-C",
-  "branch": "round-450c-chunk",
-  "carrier": "cmp450_chunk (STRICT-OR: cmp437_chunk4 ∨ cmp444_chunk5 ∨ cmp450_chunk на всех 21 rust + 11 java гейт-сайтах; маркеры marker_id() печатают union id)",
-  "steps": [
-    {
-      "step": "step-1",
-      "sha": "634195f9",
-      "what": "merge chunk4 (c5fe0251) ⊕ chunk5 (2a07c491) на свежий master d02a2977 — чистый авто-мердж (master код == merge-base d282985c, нулевой код-дрейф); cargo check green, check_blobs_sync ALL IN SYNC"
-    },
-    {
-      "step": "step-2",
-      "sha": "7443f2c8",
-      "what": "retag cmp450_chunk STRICT-OR ×21 rust + ×11 java + blobs rebuild (build_430b + build_chunkparse + build_438c) flat==nested OK javap-load OK; cargo test 317/0; check_blobs_sync ALL IN SYNC + needles"
-    },
-    {
-      "step": "step-2b/2c/2d",
-      "sha": "942d128c",
-      "what": "dispatch_450c.py (argv-guard, dry-run safe, ancestry-preflight; self-referential sha trap → ancestry-only canon x440c)"
-    },
-    {
-      "step": "batch-1 dispatch",
-      "what": "3 ноги round-450c-chunk-1/-2/-3 @942d128c lever=cmp450_chunk lever_arg=1, inputs = банк канона (radius 640, seconds 300, fake_players 4, gc_tune 3, region_threads 4, population 150k/42, xmx 10G, band 6.0-9.5M)"
-    },
-    {
-      "step": "cycle-1 absorb+pairs",
-      "what": "4 success-ноги абсорблены (GREEN×3+PARITY×1), ARM-маркеры cmp450_chunk ×3 плоскости на каждой, threw=0, AIOOBE=0; пары: +13.0 (Δ49k) и +6.7 (Δ20k); банки +15.2 raw / −0.5; best line +13.0 < +20% — law-3 цикл продолжен"
-    }
-  ],
-  "run_id": "absorbed x4: 36053633635(chunk-1)/36053645579(chunk-2)/36053671041(chunk-2r1)/36054213318(chunk-3r1); chunk-3 36053657081 failure = band-gate self-fail (re-roll 3r1 success)",
-  "tps_med": null,
-  "delta_pair_pct": 13.0,
-  "lane": {
-    "был": "chunk system (kernel) 8.2-8.7% CPU + network 2.2-2.9% CPU (ваниль golden ×443/×449); items 31.17 / broadphase 15.66 / nav_ai 14.16 wall",
-    "стал": "на cmp450_chunk-ногах: items 0.00, broadphase 9.7-10.4, nav_ai 3.2-3.6, paletted 6.41→5.2-6.3 (parse-плоскость снимает ~1пп); ServerChunkCache 4.6-5.2% от total-сэмплов; inside_volatile +4.2-4.7 = известная цена юниона (идентична ins4-семье, не chunk-специфична)"
+  "agent": "TASK-451-C",
+  "vector": "chunk-pipeline cycle-3 (закон 3): сертифицированный юнион cmp450_chunk = chunk4 (revision-keyed send-snapshot) ⊕ chunk5 (packet encode-cache) ⊕ chunkparse (section-codec caches) — density batch-3",
+  "branch": "round-451c-chunk",
+  "head": "63ea5451",
+  "carrier": "cmp450_chunk (STRICT-OR ×21 rust + ×11 java; код = 201d9d66 бит-в-байт по kernel/блобам; master-хвост b5baf548 = docs/hygiene нулевой код-дрейф)",
+  "gates": {
+    "merge": "02426ed5 = origin/master b5baf548 ⊕ round-450c-chunk 201d9d66",
+    "check_blobs_sync": "ALL IN SYNC (flat==nested; cmp450_chunk needles ×2 явных + raw-cp ×3 ChunkSendOps/ChunkPacketEncodeOps/ChunkParseOps)",
+    "cargo": "check --lib OK; test 317/0 (CARGO_TARGET_DIR=/tmp/c451-target, target удалён немедленно)",
+    "java_edits": "нет — блоб-ребилд не требуется"
   },
-  "parity": "vanilla при пустом флаге бит-в-байт (хуки не регистрируются); selfTest до ARM; cargo 317/0; blobs ALL IN SYNC",
-  "verdict": "CYCLE-2 (закон 3): best pair +13.0 < +20% мандата — цикл продолжается; обе extension-кандидатуры (network deflate-once, serialization residues) REFUTED/LOW-POTENTIAL по цензу (research step-8), batch-2 = density-ноги сертифицированного носителя (урок ×449: лотерея бьётся плотностью; якорная решётка дозаполняется wave-3 a21-28 main-агента)",
-  "evidence": [
-    "ARM-маркеры ждутся: cmp450_chunk: ARMED chunk-send serialization snapshot / chunk-packet encode cache / chunk-parse section-cache (union id через marker_id)",
-    "EFFECT: chunk4 send-snapshot first hit, chunk5 payload-cache first hit, parse-cache first hit",
-    "grep AIOOBE=0, selfTest==true, threw=0 обязателен до вердикта"
+  "research": "RESEARCH-451-C.md: (а) send-snapshot revision-окно диета REFUTED (parity/players-visible: HIT требует !isUnsaved, расширение окна = стейл-пейлоад, пейсинг запрещён цензом), (б) encode-cache hit-rate диета REFUTED (hit-rate == chunk4 hit-rate; контент-ключ требует хэш ≈ encode; MISS-диета <1пп ≪ шум ±5-8пп = недоказуемо), (в) section-cache parse AT CEILING (обе лямбды покрыты; остаток <1-2пп; Rust-парс SerializableChunkData = подсистема ×452), (г) density ПРИНЯТА (canon ×449/×450)",
+  "pair_ceiling_math": "best leg norm +16.8 (chunk-2) vs best healthy anchor −1.5 (a44) → предельный pair текущего банка +18.3 < +20 → сертификация только через монстр-хвост; каждая нога = шанс хвоста + шанс Δ≤50k к решётке ×450 (26 валидных) + ×451",
+  "steps": [
+    {"step": "step-1", "sha": "63ea5451", "what": "RESEARCH-451-C (cycle-3 refutation/adopt) + dispatch_451c.py (argv-guard, --no-batch, ancestry pin 201d9d66); dry-run preflight OK; гейты merged-дерева зелёные ДО диспатча"},
+    {"step": "dispatch batch-3", "what": "3 ноги round-451c-chunk-6/-7/-8 ← round-451c-chunk, lever=cmp450_chunk lever_arg=1, inputs = банк-канон; ноги в хвосте CI-очереди (решётка главного агента 16 ранов ahead) — poll sleep 120+curl"}
   ],
-  "what": "batch-2: density-ноги round-450c-chunk-4 (+chunk-5 при бюджете) того же носителя cmp450_chunk; extension-нового кода НЕТ (обе кандидатуры refuted — см. RESEARCH-450-C section 8); если и batch-2 пары <+20 — честный LOW-POTENTIAL потолок среза в этой фикстуре (сохрани ban: полный Rust-парс SerializableChunkData = подсистема следующего тика)",
-  "legs": [
-    {
-      "tag": "450c-chunk-1",
-      "run": 36053633635,
-      "branch": "round-450c-chunk-1",
-      "head": "942d128c",
-      "tps_med": 2.7,
-      "runner": 7338218,
-      "norm_pct": 15.2,
-      "verdict": "GREEN-CANDIDATE BANK",
-      "pair": null,
-      "pair_delta": 176900,
-      "pair_note": "ближайший здоровый a20 +1.9@7161318 Δ176900>50k — непарно (дыра решётки 7.2-8.2M); депресс-гейт: a12 −4.8@7177820 отсечён"
-    },
-    {
-      "tag": "450c-chunk-2",
-      "run": 36053645579,
-      "branch": "round-450c-chunk-2",
-      "head": "942d128c",
-      "tps_med": 2.6,
-      "runner": 6774396,
-      "norm_pct": 16.8,
-      "verdict": "PAIR +13.0%",
-      "pair_anchor": "a4 +3.8@6725322",
-      "pair_delta": 49074,
-      "pair_pct": 13.0,
-      "pair_note": "Δ49074≤50k pair-fresh; депресс-гейт чист"
-    },
-    {
-      "tag": "450c-chunk-2r1",
-      "run": 36053671041,
-      "branch": "round-450c-chunk-2r1",
-      "head": "f53979c5",
-      "tps_med": 2.6,
-      "runner": 8608618,
-      "norm_pct": -0.5,
-      "verdict": "PARITY/LOW BANK",
-      "pair": null,
-      "pair_delta": 92743,
-      "pair_note": "a16 +6.4@8701361 Δ92743>50k — непарно; high-зона парity (окно-шум)"
-    },
-    {
-      "tag": "450c-chunk-3r1",
-      "run": 36054213318,
-      "branch": "round-450c-chunk-3r1",
-      "head": "8302586a",
-      "tps_med": 2.5,
-      "runner": 7141084,
-      "norm_pct": 8.6,
-      "verdict": "PAIR +6.7%",
-      "pair_anchor": "a20 +1.9@7161318",
-      "pair_delta": 20234,
-      "pair_pct": 6.7,
-      "pair_note": "Δ20234 — плотнейшая пара тика; депресс-отсев a9 −2.1/a12 −4.8 честно отработал"
-    }
-  ],
-  "best_line": "450c-chunk-2 +13.0 (Δ49k vs a4); вторая пара 450c-chunk-3r1 +6.7 (Δ20k vs a20); банк: chunk-1 +15.2 raw (Δ176k), 2r1 −0.5 PARITY",
-  "arm_evidence": {
-    "chunk-send serialization snapshot": "cmp450_chunk: ARMED (retransform rc=0) — ВСЕ 4 ноги",
-    "chunk-packet encode cache": "cmp450_chunk: ARMED, selfTest==true pre-ARM oracle (ChunkPacketEncodeOps в kernel loader) — ВСЕ 4 ноги",
-    "chunk-parse section-cache": "cmp450_chunk: ARMED + biomes/parse-cache first hit (chunk section reuse live) — ВСЕ 4 ноги",
-    "selfTest==true": "×3/нога (ChunkSendOps + ChunkPacketEncodeOps + QueryPlaneOps pre-ARM oracle)",
-    "AIOOBE": "0 крэшей; biomes selftest FAIL(throwable AIOOBE) = fail-closed probe внутри ChunkParseOps, идентичен прошлым ЗЕЛЁНЫМ chunk4-ногам (round-round-443g-chunk4-1: FAIL×2/PASS×1; тут FAIL×1/PASS×2 — чище)",
-    "threw": "0 на всех 4 (harness T2 PASS)",
-    "lever_note": "lever в run-env не эхоится (n/a) — факт lever=cmp450_chunk доказан ARM-маркерами marker_id (union id в строках)"
-  }
+  "run_id": null,
+  "legs": [],
+  "verdict": "IN FLIGHT — batch-3 density-ноги cmp450_chunk (cycle-3 закона 3; best pair линии +13.0 < +20)",
+  "lane": {
+    "был": "chunk system (kernel) 8.2-8.7% CPU + network 2.2-2.9% (ваниль); на cmp450_chunk-ногах: items 0.00, broadphase 9.7-10.4, nav_ai 3.2-3.6, paletted 6.41→5.2-6.3, ServerChunkCache 4.6-5.2%",
+    "стал": "cycle-3: без код-дельты (density) — лейн фиксируется как certified carrier banks +11.0..+16.8, pairs +4.4..+13.0"
+  },
+  "handoff_next_tick": "если batch-3 pair <+20: ветка round-451c-chunk + legs → ×452; подсистемы следующего тика: (1) полный Rust-парс SerializableChunkData (закон-6-чистая подсистема), (2) moonrise scheduling резервы (ServerChunkCache 4.6-5.2% сэмплов)"
 }
