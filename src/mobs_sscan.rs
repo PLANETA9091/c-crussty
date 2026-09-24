@@ -42,6 +42,24 @@
 //! sscanEpoch ERR_STRUCT → disarm forever; ERR_RANGE → vanilla this tick,
 //! epoch retried next tick; sites != 1 → hook stays dormant (fail-closed).
 //!
+//! SSCAN2-SPAWN (TASK-437-A, PLAN-Б1): lever `cmp436_sscan2` — STRICT OR
+//! member in `enabled()` arms the legacy despawn halfplane EXACTLY as before,
+//! AND the NEW spawn halfplane arms under `spawn_enabled()` (STRICT eq —
+//! legacy flags keep their exact prior behavior: no NaturalSpawner hook, no
+//! extra retransform). Spawn site (javap ground truth, round-396-a kernel):
+//! `NaturalSpawner.spawnCategoryForPosition` 8-arg — exactly ONE
+//! `invokevirtual ServerLevel.getNearestPlayer(DDDDZ)Player` site @offset 221
+//! (the only getNearestPlayer in the class); all spawn attempts funnel into
+//! the 8-arg overload (4/6/7-arg call it via invokestatic). Retargeted to the
+//! receiver-prepended static gate
+//! `MobScanOps.spawnNearestPlayerGate(ServerLevel,DDDD,Z)Player`. The spawn
+//! gate answers per call from the per-tick java snapshot (vanilla
+//! EntitySelector predicates applied ONCE per (tick,level)) — ZERO per-call
+//! JNI (law 6: the ONE bulk JNI/tick is sscanEpoch despawn column; the spawn
+//! gate is a pure java array walk over the READY snapshot). selfTest() is
+//! called AFTER define+RegisterNatives and BEFORE READY/retransform: false →
+//! the whole plane stays dormant (ваниль бит-в-байт).
+//!
 //! Mob.class is hook-free under this lever (prepare_index's Mob hook is
 //! dormant unless cmp401_offthread), so a stash-based serve is safe: pristine
 //! bytes are captured on first sighting, the retarget patches the RECEIVED
@@ -53,6 +71,8 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 const MOB_CLASS: &str = "net/minecraft/world/entity/Mob";
 const OPS_CLASS: &str = "net/minecraft/world/entity/MobScanOps";
+/// SSCAN2-SPAWN (TASK-437-A): the spawn-halfplane host class.
+const NSPAWN_CLASS: &str = "net/minecraft/world/level/NaturalSpawner";
 
 const OPS_BYTES: &[u8] =
     include_bytes!("../sscan/build/net/minecraft/world/entity/MobScanOps.class");
@@ -68,6 +88,21 @@ const FROM: (&str, &str, &str) = (
 );
 /// Receiver-prepended static form (stack-identical Level→static gate).
 const GATE_STATIC_DESC: &str = "(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/Entity;DLjava/util/function/Predicate;)Lnet/minecraft/world/entity/player/Player;";
+
+/// SSCAN2-SPAWN (TASK-437-A): the spawn site inside the 8-arg
+/// `spawnCategoryForPosition` (javap: exactly 1 `invokevirtual
+/// ServerLevel.getNearestPlayer(DDDDZ)Player` @offset 221 — the only
+/// getNearestPlayer in NaturalSpawner; 4/6/7-arg overloads funnel into the
+/// 8-arg via invokestatic).
+const SPAWN_METHOD_NAME: &str = "spawnCategoryForPosition";
+const SPAWN_METHOD_DESC: &str = "(Lnet/minecraft/world/entity/MobCategory;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/ChunkAccess;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/NaturalSpawner$SpawnPredicate;Lnet/minecraft/world/level/NaturalSpawner$AfterSpawnCallback;ILjava/util/function/Consumer;)V";
+const SPAWN_FROM: (&str, &str, &str) = (
+    "net/minecraft/server/level/ServerLevel",
+    "getNearestPlayer",
+    "(DDDDZ)Lnet/minecraft/world/entity/player/Player;",
+);
+/// Receiver-prepended static form (stack-identical ServerLevel→static gate).
+const SPAWN_GATE_DESC: &str = "(Lnet/minecraft/server/level/ServerLevel;DDDDZ)Lnet/minecraft/world/entity/player/Player;";
 
 const ERR_STRUCT: i32 = -1;
 const ERR_RANGE: i32 = -2;
@@ -89,7 +124,28 @@ fn enabled() -> bool {
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
             | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside")
             | Ok("cmp421_brain")
+            // TASK-437-A: sscan2 despawn+spawn plane (STRICT OR).
+            | Ok("cmp436_sscan2")
     )
+}
+
+/// SSCAN2-SPAWN (TASK-437-A): spawn-halfplane arming — STRICT eq, ONLY the
+/// exact round flag. Legacy members of enabled() keep their exact prior
+/// behavior (no NaturalSpawner hook, no spawn gate, no extra retransform).
+fn spawn_enabled() -> bool {
+    matches!(
+        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
+        Ok("cmp436_sscan2")
+    )
+}
+
+/// TASK-437-A: the ARM-marker label (active flag or "(off)") — evidence lines
+/// must carry the EXACT flag (a cmp406_sscan line under a cmp436_sscan2 leg
+/// would be misleading evidence).
+fn label() -> String {
+    std::env::var("CRUSSTY_LEVER_FLAG")
+        .map(|v| v.trim().to_string())
+        .unwrap_or_else(|_| "(off)".to_string())
 }
 
 static READY: AtomicBool = AtomicBool::new(false);
@@ -107,12 +163,28 @@ fn retarget_despawn(
     )
 }
 
-/// Register the byte hook on Mob (call once from cplugin_init). Dormant-
-/// invisible: with the lever flag unset/mismatched NOTHING is registered.
+/// SSCAN2-SPAWN (TASK-437-A): compute the retarget patch from the RECEIVED
+/// (pristine) NaturalSpawner bytes (spawn halfplane; STRICT eq cmp436_sscan2).
+fn retarget_spawn(
+    bytes: &[u8],
+) -> Result<(Vec<u8>, crate::classfile::RetargetOutcome), String> {
+    crate::classfile::retarget_virtual_to_static(
+        bytes,
+        SPAWN_METHOD_NAME,
+        SPAWN_METHOD_DESC,
+        SPAWN_FROM,
+        (OPS_CLASS, "spawnNearestPlayerGate", SPAWN_GATE_DESC),
+    )
+}
+
+/// Register the byte hooks: Mob (despawn, all enabled() flags) and — STRICT eq
+/// cmp436_sscan2 only — NaturalSpawner (spawn halfplane; legacy flags keep
+/// byte-vanilla NaturalSpawner). Dormant-invisible: with the lever flag
+/// unset/mismatched NOTHING is registered.
 pub fn register() {
     if !enabled() {
         eprintln!(
-            "[crussty-plugin] mobs_sscan: dormant (lever_flag != cmp406_sscan, vanilla despawn scans)"
+            "[crussty-plugin] mobs_sscan: dormant (lever_flag not in sscan family, vanilla despawn+spawn scans)"
         );
         return;
     }
@@ -152,6 +224,53 @@ pub fn register() {
                 if !ERR_LOGGED.swap(true, Ordering::Relaxed) {
                     eprintln!(
                         "[crussty-plugin] mobs_sscan: retarget rejected ({e}) — pass-through, my slice vanilla"
+                    );
+                }
+                None
+            }
+        }
+    });
+
+    // SSCAN2-SPAWN (TASK-437-A): spawn-halfplane hook — STRICT eq, NOT armed
+    // by legacy flags (byte-vanilla NaturalSpawner under cmp406_sscan family).
+    if !spawn_enabled() {
+        return;
+    }
+    cplug_sdk::hooks::register_bytes(NSPAWN_CLASS, move |_name, bytes| {
+        if !READY.load(Ordering::Acquire) {
+            // Pre-arm: pass pristine bytes through untouched.
+            return None;
+        }
+        match retarget_spawn(bytes) {
+            Ok((out, outcome)) => match outcome {
+                crate::classfile::RetargetOutcome::Retargeted { sites } if sites == 1 => {
+                    static SERVE_LOGGED: AtomicBool = AtomicBool::new(false);
+                    if !SERVE_LOGGED.swap(true, Ordering::Relaxed) {
+                        eprintln!(
+                            "[crussty-plugin] mobs_sscan: hook serve {NSPAWN_CLASS} {} bytes (spawnCategoryForPosition getNearestPlayer(DDDDZ) site, sites=1)",
+                            out.len()
+                        );
+                    }
+                    Some(out)
+                }
+                crate::classfile::RetargetOutcome::AlreadyPatched { .. } => {
+                    Some(out)
+                }
+                other => {
+                    static NF_LOGGED: AtomicBool = AtomicBool::new(false);
+                    if !NF_LOGGED.swap(true, Ordering::Relaxed) {
+                        eprintln!(
+                            "[crussty-plugin] mobs_sscan: spawn getNearestPlayer site not rewritten ({other:?}) — pass-through (fail-closed)"
+                        );
+                    }
+                    None
+                }
+            },
+            Err(e) => {
+                static ERR_LOGGED: AtomicBool = AtomicBool::new(false);
+                if !ERR_LOGGED.swap(true, Ordering::Relaxed) {
+                    eprintln!(
+                        "[crussty-plugin] mobs_sscan: spawn retarget rejected ({e}) — pass-through, spawn slice vanilla"
                     );
                 }
                 None
@@ -280,22 +399,52 @@ pub fn activate() {
                 env.delete_local_ref(class_cls);
                 return false;
             }
+            // TASK-437-A: selfTest==true ДО ARM — on the LOCAL ref from
+            // define_class (TASK-417-C find_class-fix: JVMTI-scan filters
+            // non-INITIALIZED classes; this call is the class's first active
+            // use ⇒ <clinit>). Probe magic + vanilla ladder oracle; false →
+            // dormant (ваниль бит-в-байт).
+            let st = mobscan_selftest(env, c);
             env.delete_local_ref(c);
             env.delete_local_ref(loader);
             env.delete_local_ref(class_cls);
+            if !st {
+                eprintln!(
+                    "[crussty-plugin] mobs_sscan: selfTest=false — hook stays dormant (fail-closed, vanilla bit-for-bit)"
+                );
+                return false;
+            }
+            eprintln!(
+                "[crussty-plugin] mobs_sscan: selfTest=true (probe magic + vanilla getNearestPlayer ladder oracle OK) BEFORE arm"
+            );
             true
         });
         if !defined.unwrap_or(false) {
-            eprintln!("[crussty-plugin] mobs_sscan: bridge definition failed, hook stays dormant");
+            eprintln!(
+                "[crussty-plugin] mobs_sscan: bridge definition failed or selfTest=false, hook stays dormant"
+            );
             return;
         }
 
-        // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
-        eprintln!(
-            "[crussty-plugin] cmp406_sscan: ARMED sscan-despawn (Mob.checkDespawn Level.findNearbyPlayer site -> MobScanOps.findNearbyPlayerGate; rust sscanEpoch = ONE bulk JNI/tick DOD pass over mobs_soa SoA positions -> nearest-qualifying-player column nearest[denseId]; vanilla decisions bit-for-bit: first-strictly-closer in players() order, ties keep earlier; despawn body itself untouched vanilla; zero per-entity JNI; empty flag = vanilla bit-for-bit)"
-        );
+        // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed). TASK-437-A:
+        // label = точный активный флаг (evidence-дисциплина); под
+        // cmp436_sscan2 объявляются ОБЕ полуплоскости.
+        if spawn_enabled() {
+            eprintln!(
+                "[crussty-plugin] {}: sscan armed despawn+spawn (2 sites: Mob.checkDespawn Level.findNearbyPlayer -> findNearbyPlayerGate + NaturalSpawner.spawnCategoryForPosition ServerLevel.getNearestPlayer(DDDDZ) @offset 221 -> spawnNearestPlayerGate; rust sscanEpoch = ONE bulk JNI/tick DOD pass over mobs_soa SoA positions -> nearest-qualifying-player column nearest[denseId]; spawn gate = per-tick vanilla EntitySelector snapshot (NO_SPECTATORS / NO_CREATIVE_OR_SPECTATOR by site flag) + vanilla distanceToSqr ladder, 0 per-call JNI; vanilla decisions bit-for-bit: first-strictly-closer in players() order, ties keep earlier; scan bodies untouched vanilla; empty flag = vanilla bit-for-bit)",
+                label()
+            );
+        } else {
+            eprintln!(
+                "[crussty-plugin] {}: sscan armed despawn (Mob.checkDespawn Level.findNearbyPlayer site -> MobScanOps.findNearbyPlayerGate; rust sscanEpoch = ONE bulk JNI/tick DOD pass over mobs_soa SoA positions -> nearest-qualifying-player column nearest[denseId]; vanilla decisions bit-for-bit: first-strictly-closer in players() order, ties keep earlier; despawn body itself untouched vanilla; zero per-entity JNI; empty flag = vanilla bit-for-bit)",
+                label()
+            );
+        }
 
         crate::kernel_policy::audit_wire(OPS_CLASS, "findNearbyPlayerGate", "cmp406_sscan v1");
+        if spawn_enabled() {
+            crate::kernel_policy::audit_wire(OPS_CLASS, "spawnNearestPlayerGate", "cmp436_sscan2 v1");
+        }
         READY.store(true, Ordering::Release);
         let rc = cplug_sdk::retransform_class(MOB_CLASS);
         eprintln!(
@@ -306,8 +455,43 @@ pub fn activate() {
             eprintln!(
                 "[crussty-plugin] mobs_sscan: retransform FAILED (rc={rc}) — my slice stays vanilla"
             );
+            return;
+        }
+        // SSCAN2-SPAWN (TASK-437-A): spawn halfplane retransform — STRICT eq
+        // cmp436_sscan2 only; rc != 0 → spawn slice stays vanilla (despawn
+        // stays armed: per-halfplane fail-closed).
+        if spawn_enabled() {
+            let rcs = cplug_sdk::retransform_class(NSPAWN_CLASS);
+            eprintln!(
+                "[crussty-plugin] mobs_sscan: {NSPAWN_CLASS} armed, retransform rc={rcs} (spawn halfplane)"
+            );
+            if rcs != 0 {
+                eprintln!(
+                    "[crussty-plugin] mobs_sscan: spawn retransform FAILED (rc={rcs}) — spawn slice stays vanilla"
+                );
+            }
         }
     });
+}
+
+/// TASK-437-A: selfTest on the LOCAL ref of the just-defined bridge (same
+/// pattern as colpush_selftest; TASK-417-C find_class-fix). Any pending
+/// exception is cleared and reported as failure (fail-closed).
+fn mobscan_selftest(env: &jvmti_bindings::env::JniEnv, cls: jni::jclass) -> bool {
+    let Some(mid) = env.get_static_method_id(cls, "selfTest", "()Z") else {
+        crate::clear_exception(env);
+        eprintln!("[crussty-plugin] mobs_sscan: selfTest method resolution failed");
+        return false;
+    };
+    let rc = env.call_static_int_method(cls, mid, &[]);
+    let had_exc = crate::clear_exception(env);
+    if had_exc {
+        eprintln!(
+            "[crussty-plugin] mobs_sscan: selfTest threw (late resolution) — fail-closed"
+        );
+        return false;
+    }
+    rc != 0
 }
 
 // ---------------------------------------------------------------------------
@@ -438,8 +622,9 @@ pub unsafe extern "system" fn sscan_epoch(
 // ---------------------------------------------------------------------------
 // Tests: the vanilla getNearestPlayer selection ladder oracle (first strictly
 // closer wins, ties keep the earlier player, -1.0 sentinel ladder), the
-// distanceToSqr component order, and the retarget descriptor contract
-// (receiver-prepended virtual desc — Level receiver prepended).
+// distanceToSqr component order, the retarget descriptor contracts (both
+// despawn and SSCAN2-SPAWN receiver-prepended forms), and the SSCAN2-SPAWN
+// STRICT-gate needles (cmp436_sscan2).
 // ---------------------------------------------------------------------------
 
 #[cfg(test)]
@@ -459,6 +644,61 @@ mod tests {
 
     fn enabled_with(s: &str) -> bool {
         s == "cmp406_sscan"
+    }
+
+    /// TASK-437-A needle: the SSCAN2 family — cmp436_sscan2 is a STRICT OR
+    /// member of enabled() (despawn halfplane) AND the sole spawn_enabled()
+    /// member (spawn halfplane, STRICT eq).
+    #[test]
+    fn sscan2_gates_strict_or_and_eq() {
+        // despawn halfplane: STRICT OR member.
+        assert!(enabled_members("cmp436_sscan2"));
+        assert!(!enabled_members(""));
+        assert!(!enabled_members("cmp436_sscan"));
+        assert!(!enabled_members("cmp436_sscan2_x"));
+        assert!(!enabled_members(" cmp436_sscan2"));
+        assert!(enabled_members("cmp406_sscan")); // legacy family member stays
+        // spawn halfplane: STRICT eq — ONLY the exact round flag.
+        assert!(spawn_members("cmp436_sscan2"));
+        assert!(!spawn_members(""));
+        assert!(!spawn_members("cmp406_sscan"));
+        assert!(!spawn_members("cmp409_multi"));
+        assert!(!spawn_members("cmp436_sscan2_x"));
+        assert!(!spawn_members(" cmp436_sscan2"));
+    }
+
+    fn enabled_members(s: &str) -> bool {
+        s == "cmp406_sscan" || s == "cmp409_multi" || s == "cmp412_meganav"
+            || s == "cmp412_eqsnapv3" || s == "cmp414_cvs" || s == "cmp417_bq"
+            || s == "cmp420_colpush" || s == "cmp422_brain2" || s == "cmp423_brain3"
+            || s == "cmp424_mobfeed" || s == "cmp430_inside" || s == "cmp421_brain"
+            || s == "cmp436_sscan2"
+    }
+
+    fn spawn_members(s: &str) -> bool {
+        s == "cmp436_sscan2"
+    }
+
+    /// TASK-437-A needle: the SSCAN2-SPAWN retarget descriptor contract —
+    /// site owner ServerLevel (javap: invokevirtual owner of the
+    /// spawnCategoryForPosition site), gate desc = virtual desc with the
+    /// ServerLevel receiver prepended, gate name matches the java bridge.
+    #[test]
+    fn spawn_retarget_desc_contract() {
+        assert_eq!(SPAWN_FROM.0, "net/minecraft/server/level/ServerLevel");
+        assert_eq!(SPAWN_FROM.1, "getNearestPlayer");
+        assert_eq!(SPAWN_FROM.2, "(DDDDZ)Lnet/minecraft/world/entity/player/Player;");
+        let expect_static = format!("(L{};{}", SPAWN_FROM.0, &SPAWN_FROM.2[1..]);
+        assert_eq!(SPAWN_GATE_DESC, expect_static);
+        assert_eq!(
+            SPAWN_GATE_DESC,
+            "(Lnet/minecraft/server/level/ServerLevel;DDDDZ)Lnet/minecraft/world/entity/player/Player;"
+        );
+        assert_eq!(SPAWN_METHOD_NAME, "spawnCategoryForPosition");
+        assert_eq!(
+            SPAWN_METHOD_DESC,
+            "(Lnet/minecraft/world/entity/MobCategory;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/ChunkAccess;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/NaturalSpawner$SpawnPredicate;Lnet/minecraft/world/level/NaturalSpawner$AfterSpawnCallback;ILjava/util/function/Consumer;)V"
+        );
     }
 
     /// Mirror of the vanilla `getNearestPlayer(DDDD, Predicate)` inner ladder

@@ -90,6 +90,8 @@ pub(crate) fn mirror_mode() -> bool {
                     // TASK-419-A (colpush): колпаш-носитель (mirror inert).
                     || v.trim() == "cmp420_colpush"
                     || v.trim() == "cmp421_brain" || v.trim() == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside"
+                    // TASK-437-A: sscan2 despawn+spawn plane (SoA+grid носитель).
+                    || v.trim() == "cmp436_sscan2"
             })
             .unwrap_or(false)
     })

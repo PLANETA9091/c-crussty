@@ -594,9 +594,14 @@ fn inject_surface() {
     // LivingEntity after mobs_ai — the LAST serve in the chain (dormant
     // unless CRUSSTY_LEVER_FLAG == cmp420_colpush).
     colpush::activate();
-    // SSCAN-DESPAWN (TASK-406-E): waits for boot, defines MobScanOps +
-    // RegisterNatives (sscanProbe/sscanEpoch), flips READY and retransforms
-    // Mob (dormant unless CRUSSTY_LEVER_FLAG == cmp406_sscan).
+    // SSCAN2 (TASK-437-A): waits for boot, defines MobScanOps +
+    // RegisterNatives (sscanProbe/sscanEpoch), selfTest (probe + vanilla
+    // ladder oracle) BEFORE arm, flips READY and retransforms Mob; under
+    // cmp436_sscan2 (STRICT eq spawn_enabled) ALSO registers the
+    // NaturalSpawner hook (spawn halfplane: spawnCategoryForPosition
+    // ServerLevel.getNearestPlayer(DDDDZ) site -> MobScanOps.spawnNearestPlayerGate)
+    // and retransforms NaturalSpawner. Despawn halfplane armed by the
+    // cmp406_sscan family flags (STRICT OR + cmp436_sscan2 member).
     mobs_sscan::activate();
     // TICK-PLANE (TASK-403-C): сводный ARM-маркер плейна после активации
     // всех сегментов (items/push-soa+grid/stagger/collide) — coarse-stamp

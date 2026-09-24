@@ -481,6 +481,22 @@ case "${LEVER_FLAG:-}" in
     log "${LEVER_FLAG} armed: inside-plane subsystem = inside_bitmask all-air pre-gate (median-exact, entity_compose stage-1b) + inside_snap per-section BlockState[4096] snapshots (ONE bulk-JNI per collect, event-driven secWrite invalidation, entity_compose stage-1c) + mobsoa/colpush/queryplane/goal/items carrier stack via STRICT-OR (TASK-430-B, закон 6)"
     ;;
 esac
+# TASK-437-A sscan2 despawn+spawn scan plane (cmp436_sscan2): ре-арм дормантной
+# с эры-406 MobScanOps-подсистемы ЦЕЛИКОМ (закон 6) + НОВАЯ spawn-полуплоскость:
+# despawn-сайт Mob.checkDespawn Level.findNearbyPlayer -> findNearbyPlayerGate
+# (rust sscanEpoch = ОДИН bulk-JNI/тик над mobs_soa SoA -> колонка
+# nearest-qualifying-player) + spawn-сайт NaturalSpawner.spawnCategoryForPosition
+# (8-arg, javap ground truth: ровно 1 invokevirtual
+# ServerLevel.getNearestPlayer(DDDDZ) @offset 221) -> spawnNearestPlayerGate
+# (per-tick снапшот vanilla-предикатов NO_SPECTATORS / NO_CREATIVE_OR_SPECTATOR,
+# ванильная лестница distanceToSqr, 0 per-call JNI). SoA+grid носитель
+# (mobs_manager/mobs_soa/mobs_grid) via STRICT-OR; selfTest==true ДО ARM;
+# пустой/чужой флаг = ваниль бит-в-байт.
+case "${LEVER_FLAG:-}" in
+  cmp436_sscan2)
+    log "${LEVER_FLAG} armed: sscan2 despawn+spawn scan plane (MobScanOps re-arm era-406 + NaturalSpawner spawn halfplane; sscanEpoch ONE bulk JNI/tick over mobs_soa SoA -> nearest column; spawn gate = per-tick vanilla-predicate snapshot + vanilla ladder, 0 per-call JNI; soa+grid carrier via STRICT-OR; selfTest before ARM; TASK-437-A закон 6)"
+    ;;
+esac
 # RECON_DIAG (TASK-317, instrument-гейт рычага #13 SKIP-STORE-DIET): чистая
 # наблюдаемость — 0 поведения. GC-политика/heap не трогаются (логирование ≠
 # config-win, вердикт NEXT TASK-316): remset/refine debug-логи (агрегатная

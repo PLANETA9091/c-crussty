@@ -157,7 +157,12 @@ public final class MobPushOps {
                     // TASK-424-A: GC-ревизия brain3 (STRICT OR).
                     || f.trim().equals("cmp423_brain3")
                     // TASK-426-A: SoA-feed carrier (STRICT OR).
-                    || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside"));
+                    || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside")
+                    // TASK-437-A: sscan2 despawn+spawn plane — SoA-носитель
+                    // sscan-эпохи в РЕЖИМЕ cmp406_sscan (direct-write upserts;
+                    // НЕ eqsnap/K4/COMPOSITE — eq_epoch drain живёт в
+                    // goalquery-плоскости, под sscan2 не армится).
+                    || f.trim().equals("cmp436_sscan2"));
     }
 
     private static final boolean ENABLED = leverEnabled();

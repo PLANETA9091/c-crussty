@@ -353,6 +353,12 @@ fn lever_mode() -> bool {
         // colpush_plane_refresh одним WLOCK/тик).
         || f == "cmp420_colpush"
         || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside"
+        // TASK-437-A: sscan2 despawn+spawn plane — SoA-носитель sscan-эпохи
+        // (direct-write upserts, СТРОГО БЕЗ eqsnap-режима: eq_epoch drain
+        // живёт в goalquery-плоскости, под sscan2 не армится — плоские
+        // колонки обязаны обновляться напрямую mob_upsert, иначе
+        // sscanEpoch читал бы устаревшие позиции).
+        || f == "cmp436_sscan2"
         // TASK-410-C (eindexq): K3-пивот R2 — SoA-плоскость = источник
         // популяции для goal-query CSR-снапшота (EntityQueryOps.eqEpoch;
         // sscan-прецедент TASK-406-E).
