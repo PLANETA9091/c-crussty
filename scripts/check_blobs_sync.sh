@@ -69,42 +69,47 @@ echo "== javap-gate: lever bridge blobs vs ARM markers / gate flags (lever cmp41
 
 check_class \
   "entityinside/build/net/minecraft/world/entity/ItemEntityManager.class" \
-  "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" \
+  "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" \
   "native int idxProbe" "static void indexAdd" "native int lifetimeDue"
 
 check_class \
   "goalops/build/net/minecraft/world/entity/ai/goal/GoalOps.class" \
-  "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "goal-selector EFFECT armed" "goalCleanup" "goalUpdate" \
+  "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "goal-selector EFFECT armed" "goalCleanup" "goalUpdate" \
   "goal-selector running EFFECT armed" \
   "tickGate" "tickRunningGate" "availableGoals" "lockedFlags" "goalTypes"
 
 check_class \
   "queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp412_b2p1" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "selfTest" "isHardCollidingProbe"
+  "cmp417_bq" "cmp420_colpush" "cmp412_b2p1" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "selfTest" "isHardCollidingProbe"
 
 check_class \
   "mobai/build/net/minecraft/world/entity/MobAiOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" \
+  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" \
   "native"
 
 check_class \
   "sscan/build/net/minecraft/world/entity/MobScanOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" \
+  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" \
   "native"
 
 check_class \
   "sense/build/net/minecraft/world/entity/SenseOps.class" \
-  "cmp438_sense" "cmp430_inside" "nearestEntityGate" "sense EFFECT" "selfTest" \
+  "cmp438_sense" "cmp430_inside" "cmp451_senseins" "nearestEntityGate" "sense EFFECT" "selfTest" \
   "native int senseProbe" "native int senseEpoch"
 
 check_class \
+  "randomtick/build/net/minecraft/world/entity/ai/BrainOps.class" \
+  "cmp438_sense" "cmp439_sense_scan" "cmp451_senseins" "selfTestTickEach" "tickEachRunning" \
+  "sense tick2 EFFECT armed"
+
+check_class \
   "mobpush/build/net/minecraft/world/entity/MobPushOps.class" \
-  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" \
+  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" \
   "native int mobProbe" "boxFor" "colpushSweep"
 
 check_class \
   "colpush/build/net/minecraft/world/entity/ColpushOps.class" \
-  "cmp420_colpush" "cmp430_inside" "cmp432_inside2" "pushEntities" "bulkTick" "selfTest" "armed" \
+  "cmp420_colpush" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "pushEntities" "bulkTick" "selfTest" "armed" \
   "native int colpushProbe" "native int colpushTick"
 
 check_class \
@@ -113,7 +118,7 @@ check_class \
 
 check_class \
   "entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
-  "cmp414_cvs" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" \
+  "cmp414_cvs" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" \
   "native int eqProbe" "native int senseArena"
 
 # TASK-420-C chunk-pipeline plane (cmp420_chunk2): the bridge must carry the
@@ -238,6 +243,33 @@ check_flat_matches_nested "goalops/build" "net/minecraft/world/entity/ai/goal/Go
 check_flat_matches_nested "colpush/build" "net/minecraft/world/entity/ColpushOps"
 check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/RegionTickOps"
 check_flat_matches_nested "sense/build" "net/minecraft/world/entity/SenseOps"
+
+# TASK-451-D x449-lesson javap-LOADABILITY gate: javap must locate+parse EVERY
+# op class (outer AND inner) through its blobs dir via a real classpath — the
+# pre-dispatch catch for blob-set holes (a class javap cannot load from the
+# blobs dir is exactly the class the kernel loader would NCDFE on).
+gate_load() { # dir fqcn-slash — fail if javap cannot load
+  local dir="$1" fq="$2" fq_dots
+  fq_dots="${fq//\//.}"
+  if "$JAVAP" -p -cp "$dir" "$fq_dots" >/dev/null 2>&1; then
+    note "javap-load OK: $fq_dots"
+  else
+    die "javap loadability FAIL: $fq_dots (cp=$dir) — blob missing/stale"
+  fi
+}
+gate_load entityinside/build   net/minecraft/world/entity/ItemEntityManager
+gate_load entityinside/build   net/minecraft/world/entity/InsideSnapOps
+gate_load entityinside/build   'net/minecraft/world/entity/InsideSnapOps$Snap'
+gate_load goalops/build        net/minecraft/world/entity/ai/goal/GoalOps
+gate_load queryplane/build     net/minecraft/world/entity/QueryPlaneOps
+gate_load mobai/build          net/minecraft/world/entity/MobAiOps
+gate_load sscan/build          net/minecraft/world/entity/MobScanOps
+gate_load sscan/build          net/minecraft/world/entity/MobPushOps
+gate_load mobpush/build        net/minecraft/world/entity/MobPushOps
+gate_load colpush/build        net/minecraft/world/entity/ColpushOps
+gate_load entitygoalquery/build net/minecraft/world/entity/EntityGoalQueryOps
+gate_load sense/build          net/minecraft/world/entity/SenseOps
+gate_load randomtick/build     net/minecraft/world/entity/ai/BrainOps
 
 if [ "$FAIL" = "0" ]; then
   echo "check_blobs_sync: ALL IN SYNC"

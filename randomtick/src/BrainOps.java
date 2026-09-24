@@ -194,7 +194,7 @@ public final class BrainOps {
     }
 
     /** STRICT family mirror of the rust brainhook tick2 gate (TASK-442-D). */
-    static final String TICK2_FLAGS = "cmp438_sense|cmp439_sense_scan";
+    static final String TICK2_FLAGS = "cmp438_sense|cmp439_sense_scan|cmp451_senseins";
 
     private static final Logger LOG = Logger.getLogger("crussty-plugin");
     private static final AtomicBoolean TICK2_EFFECT_LOGGED = new AtomicBoolean(false);

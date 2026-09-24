@@ -73,7 +73,7 @@ fn tick2_enabled() -> bool {
     }
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp438_sense") | Ok("cmp439_sense_scan")
+        Ok("cmp438_sense") | Ok("cmp439_sense_scan") | Ok("cmp451_senseins") // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
     )
 }
 
