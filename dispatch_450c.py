@@ -14,7 +14,7 @@ LEGS = [
     ("chunkU-3", "round-450c-chunk-3", "round-450c-chunk", "cmp450_chunk"),
 ]
 
-EXPECTED_SHA = {"round-450c-chunk": "7443f2c8"}
+EXPECTED_SHA = {"round-450c-chunk": "9997b5d6"}
 
 INPUTS = {
     "radius": "640", "seconds": "300", "fake_players": "4",
