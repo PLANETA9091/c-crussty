@@ -87,3 +87,51 @@ norm≥−2, band 6.0-9.5M). Δ<+20% → batch-2: доп. ноги того же
 <+20 — честный LOW-POTENTIAL потолок среза в этой фикстуре (в soak-окне чанк-лейн
 = 8.2-8.7% CPU, из которых юнион снимает серилизационный дубль; остаток = moonrise
 scheduling + IO-воркеры вне main) → ветка+ноги передаются следующему тику.
+
+## 8. Cycle-1 вердикты (restore, абсорб ×4) и пары — 20:3x +08
+
+| нога | run | runner | TPS | norm | вердикт | пара |
+|---|---|---|---|---|---|---|
+| 450c-chunk-1 | 36053633635 | 7338218 | 2.70 | +15.2 | GREEN-CAND | НЕТ (a20 Δ176,900 — дыра решётки 7.2-8.2M) |
+| 450c-chunk-2 | 36053645579 | 6774396 | 2.60 | +16.8 | **PAIR +13.0** | a4 +3.8@6725322 Δ49,074 |
+| 450c-chunk-2r1 | 36053671041 | 8608618 | 2.60 | −0.5 | PARITY/LOW | НЕТ (a16 Δ92,743) |
+| 450c-chunk-3r1 | 36054213318 | 7141084 | 2.50 | +8.6 | **PAIR +6.7** | a20 +1.9@7161318 Δ20,234 |
+
+(chunk-3 36053657081 failure = band-gate self-fail ДО бенча — честный фаст-файл, ре-ролл 3r1.)
+
+ARM-чистота ×4/×4: `cmp450_chunk: ARMED chunk-send serialization snapshot` +
+`ARMED chunk-packet encode cache` + `ARMED chunk-parse section-cache + biomes-cache`
+(retransform rc=0), selfTest==true ×3/нога (ChunkSendOps/ChunkPacketEncodeOps/QueryPlaneOps
+pre-ARM oracle), threw=0 (harness T2), AIOOBE-крэшей 0. `biomes selftest FAIL
+(throwable AIOOBE)` = fail-closed probe ВНУТРИ ChunkParseOps.biomesSelftest (try/catch,
+never-path) — идентичен прошлым ЗЕЛЁНЫМ chunk4-ногам (round-round-443g-chunk4-1:
+FAIL×2/PASS×1; здесь FAIL×1/PASS×2 — распределение то же, не регресс юниона).
+chunk4/chunk5 first-hit маркеры не печатаются и на прежних зелёных chunk4-ногах
+(fixture: hit-путь требует !isUnsaved во время join-бурста) — fixture-normal.
+
+Лейн-профили ног (wall): items 31.17→0.00, broadphase 15.66→9.7-10.4,
+nav_ai 14.16→3.2-3.6, paletted 6.41→5.2-6.3 (parse-плоскость ~−1пп),
+inside_volatile 12.01→16.2-16.7 (+4.2-4.7 — цена юниона, идентична ins4-семье,
+НЕ chunk-специфична). GC: Full=9 на всех ногах (банк-справка Full=7) — хвост-автосейв,
+не юнион-регресс (идентично прошлым chunk4-ногам).
+
+## 9. Cycle-2 research: extension-кандидатуры (анти-плацебо)
+
+| кандидат | вердикт | доказательство |
+|---|---|---|
+| network slice: deflate-once shared compressed payload | **REFUTED** | (a) zlib-deflate живёт в CompressionEncoder netty-конвейера = OFF-main (как RegionFile IO) — soak-TPS инертен, ест только через GC-debt; (b) лейн всего 2.2-2.9% CPU целиком (вкл. не-чанк трафик) — потолок ≤1-2пп при шуме окна ±5-8пп; (c) content-keyed кэш требует хэш входа ~размера полезной нагрузки — стоимость ≈ самому deflate (C-JNI) — реимплементация без профита; (d) parity-риск: уровень/параметры компрессии per-connection |
+| chunk-serialization residues (SerializableChunkData.read остатки: heightmaps/entity-NBT/light) | **LOW-POTENTIAL** | read() = boot-forceload бурст (9216 чанков) + под-окно: в soak-стене чанк-фреймы 0-40/61255 (section 4); paletted-плоскость (глубокий кэш секций) уже сняла свою часть (6.41→5.2-6.3); остаток heightmaps/NBT <1-2пп, полный Rust-парс = подсистема СЛЕДУЮЩЕГО тика (закон 6 запрещает per-function вектор как основной — неизменно) |
+| snapshot cap-raise | REFUTED (sec. 5, неизменно) | рабочий сет 400-600 ≪ 2048 |
+| density-ноги (canon ×449) | **ПРИНЯТО** | лотерея бьётся плотностью: best-банки сели в дыры решётки (7.33M: Δ176k до a20; 8.61M: Δ93k до a16); wave-3 main-агента (a21-28) дозаполняет решётку ПРЯМО СЕЙЧАС (a21 success, a22-28 in flight 20:58Z); каждая доп. нога = шанс Δ≤50k к растущей решётке |
+
+## 10. Решение cycle-2
+
+batch-2 = density-ноги СЕРТИФИЦИРОВАННОГО носителя cmp450_chunk (0 новых код-строк
+kernel — нулевой ре-серт риск; код @8302586a уже бежал зелёной ногой 3r1): round-450c-chunk-4
+(+chunk-5 при бюджете) через dispatch_450c.py --no-batch (argv-guard канон ×447).
+Ожидание: norm +8..+17 типично; пара ≥+20 возможна только при посадке в зону здорового
+якоря + верх окна шума. Если batch-2 тоже <+20 — честный LOW-POTENTIAL потолок среза
+в этой фикстуре (sec. 7: soak-окно чанк-лейн 8.2-8.7% CPU, юнион снял серилизационный
+дубль, остаток = moonrise scheduling + IO-воркеры off-main + boot-ось) — ветка+ноги
+передаются следующему тику вместе с полным Rust-парсом SerializableChunkData как
+отдельной подсистемой.
