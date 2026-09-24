@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# build_itemsbatch_ops.sh — cmp446_items bridge class (TASK-446-B).
+# build_itemsbatch_ops.sh — cmp449_mega4 bridge class (TASK-446-B).
 #
 # Compiles ItemBatchOps (net.minecraft.world.entity.item) against the real
 # runtime kernel jar (purpur-1.21.10, Mojang-mapped). --release 21 pins the
@@ -55,7 +55,7 @@ echo "blob: $NESTED ($(stat -c%s "$NESTED") bytes) + flat $FLAT"
 
 # Raw-byte gate: the bridge must carry the double gate + native surface +
 # vanilla rest-path bodies in its constant pool.
-for marker in cmp446_items planeProbe planeDecide selfTest inactiveTick mergeWithNeighbours; do
+for marker in cmp449_mega4 planeProbe planeDecide selfTest inactiveTick mergeWithNeighbours; do
   if ! rg -a -q "$marker" "$NESTED"; then
     echo "MARKER GATE FAIL: '$marker' missing from $NESTED" >&2
     exit 1

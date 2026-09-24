@@ -164,7 +164,7 @@ public final class MobPushOps {
                 || f.trim().equals("cmp434_chunkpl") || f.trim().equals("cmp435_chunk3") || f.trim().equals("cmp437_chunk4")
                 // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
                 // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
-                // TASK-449-C: mega4 composite — ретаг cmp443_mega/cmp445_collide -> cmp449_mega4.
+                // TASK-449-C: mega4 composite — ретаг cmp449_mega4/cmp449_mega4 -> cmp449_mega4.
                 || f.trim().equals("cmp449_mega4"));
     }
 
@@ -214,7 +214,7 @@ public final class MobPushOps {
                 || f.trim().equals("cmp434_chunkpl") || f.trim().equals("cmp435_chunk3") || f.trim().equals("cmp437_chunk4")
                 // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
                 // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
-                // TASK-449-C: mega4 composite — ретаг cmp443_mega/cmp445_collide -> cmp449_mega4.
+                // TASK-449-C: mega4 composite — ретаг cmp449_mega4/cmp449_mega4 -> cmp449_mega4.
                 || f.trim().equals("cmp449_mega4"));
     }
 
@@ -237,7 +237,7 @@ public final class MobPushOps {
         if (f != null && f.trim().equals("cmp440_ins4d")) return "cmp440_ins4d"; // TASK-442-B
         if (f != null && f.trim().equals("cmp434_chunkpl") || f.trim().equals("cmp435_chunk3")) return "cmp434_chunkpl"; // TASK-434-C
         if (f != null && f.trim().equals("cmp437_chunk4")) return "cmp437_chunk4"; // TASK-438-C: R7 carrier marker id
-        if (f != null && f.trim().equals("cmp443_mega")) return "cmp443_mega"; // TASK-443-B: mega-composition carrier marker id
+        if (f != null && f.trim().equals("cmp449_mega4")) return "cmp449_mega4"; // TASK-443-B: mega-composition carrier marker id
         if (f != null && f.trim().equals("cmp421_brain")) return "cmp421_brain";
         return f != null && f.trim().equals("cmp412_eqsnapv3")
                 ? "cmp412_eqsnapv3" : "cmp411_eqsnap";

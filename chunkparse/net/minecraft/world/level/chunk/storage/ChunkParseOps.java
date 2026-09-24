@@ -154,7 +154,7 @@ public final class ChunkParseOps {
      * TASK-445-A: collide+broadphase+push plane round — additive carrier id
      * (STRICT-OR, урок ×438). Constant referenced from the init log line —
      * kept alive in the blob constant pool for gate-flag consistency (x93).
-     * TASK-449-C: value retagged cmp445_collide -> cmp449_mega4 (единый lever).
+     * TASK-449-C: value retagged cmp449_mega4 -> cmp449_mega4 (единый lever).
      */
     static final String CARRIER_UNION2 = "cmp449_mega4";
 

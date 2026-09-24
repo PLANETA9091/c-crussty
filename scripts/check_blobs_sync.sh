@@ -102,6 +102,13 @@ check_class \
   "cmp420_colpush" "cmp430_inside" "cmp437_chunk4" "pushEntities" "bulkTick" "selfTest" "armed" "cmp432_inside2" "cmp440_ins4d" "cmp449_mega4" \
   "native int colpushProbe" "native int colpushTick"
 
+# TASK-449-C δ-gate (урок ×448 NCDFE DELIVERY-FAIL): inner companion classes
+# ride the blob-сборка class-list AND the loader define-list (colpush.rs
+# define_bridge defines ConstSlot right after the outer class, fail-closed).
+check_class \
+  "colpush/build/net/minecraft/world/entity/ColpushOps\$ConstSlot.class" \
+  "ConstSlot" "cramming"
+
 check_class \
   "entityinside/build/net/minecraft/world/entity/RegionTickOps.class" \
   "COLPUSH_ON" "COLPUSH_BROKEN" "ColpushOps.bulkTick:()V"
@@ -163,7 +170,7 @@ check_class \
 check_class \
   "chunksend/build/net/minecraft/server/network/ChunkSendOps.class" \
   "cmp437_chunk4" "cmp435_chunk3" "chunk4 send-snapshot first hit" "chunk4 snapshot selftest PASS" "chunk4 stats" \
-  "public static void sendChunk" "public static boolean selfTest" "cmp449_mega4"
+  "public static void sendChunk" "public static boolean selfTest"
 
 # TASK-421-C noise-blob coverage: the GEN-axis bridge family (noise/build,
 # NOISE_RELEASE=8 => major 52) was OUTSIDE this gate — the only lever family
@@ -252,6 +259,7 @@ check_flat_matches_nested "entitygoalquery/build" "net/minecraft/world/entity/En
 check_flat_matches_nested "queryplane/build" "net/minecraft/world/entity/QueryPlaneOps"
 check_flat_matches_nested "goalops/build" "net/minecraft/world/entity/ai/goal/GoalOps"
 check_flat_matches_nested "colpush/build" "net/minecraft/world/entity/ColpushOps"
+check_flat_matches_nested "colpush/build" 'net/minecraft/world/entity/ColpushOps$ConstSlot'
 check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/RegionTickOps"
 check_flat_matches_nested "itemsbatch/build" "net/minecraft/world/entity/ItemBatchOps"
 

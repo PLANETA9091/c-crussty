@@ -59,6 +59,16 @@ const OPS_CLASS: &str = "net/minecraft/world/entity/ColpushOps";
 
 const OPS_BYTES: &[u8] = include_bytes!("../colpush/build/net/minecraft/world/entity/ColpushOps.class");
 
+/// TASK-449-C δ-gate (урок ×448 DELIVERY-FAIL): inner classes of a bridge MUST
+/// ride the same loader — ColpushOps$ConstSlot (per-(level,tick) constants
+/// plane, TASK-448-A cycle-2) was missing from the blob-сборка class-list →
+/// NCDFE ×4 at first bulkTick → cmp420_colpush disarm → young-GC storm 529.
+/// Blob is installed (flat+nested) by build_430b_blobs.sh and defined right
+/// after the outer class in define_bridge().
+const CONSTSLOT_CLASS: &str = "net/minecraft/world/entity/ColpushOps$ConstSlot";
+const CONSTSLOT_BYTES: &[u8] =
+    include_bytes!("../colpush/build/net/minecraft/world/entity/ColpushOps$ConstSlot.class");
+
 const PROBE_MAGIC: i32 = 0x435050; // "CP"
 const ERR_STRUCT: i32 = -1;
 const ERR_RANGE: i32 = -2;
@@ -442,6 +452,21 @@ fn define_bridge() -> Option<*mut c_void> {
             env.delete_local_ref(class_cls);
             return None;
         }
+
+        // TASK-449-C δ-gate (урок ×448): inner companion class defined into the
+        // SAME loader, fail-closed (если ConstSlot не определён — весь рычаг
+        // dormant; NCDFE на первом bulkTick структурно невозможен).
+        let Some(cs) = env.define_class(CONSTSLOT_CLASS, gref, CONSTSLOT_BYTES) else {
+            crate::describe_exception(env);
+            eprintln!(
+                "[crussty-plugin] cmp420_colpush: define_class({CONSTSLOT_CLASS}) failed — hook stays dormant"
+            );
+            env.delete_local_ref(c);
+            env.delete_local_ref(loader);
+            env.delete_local_ref(class_cls);
+            return None;
+        };
+        env.delete_local_ref(cs);
 
         // Keep the bridge across the with_attached boundary (selfTest later).
         let gops = env.new_global_ref(c);

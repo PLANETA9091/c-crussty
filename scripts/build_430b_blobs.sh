@@ -51,6 +51,9 @@ install_nested_glob() { # outdir fqcn(slash-form) — nested (include_bytes!) + 
 }
 
 install_nested_glob colpush/build        net/minecraft/world/entity/ColpushOps
+# TASK-449-C δ-gate (урок ×448 NCDFE): inner classes ride the blob-сборка
+# class-list — ColpushOps$ConstSlot (TASK-448-A cycle-2 constants plane).
+install_nested_glob colpush/build        'net/minecraft/world/entity/ColpushOps$ConstSlot'
 install_nested_glob mobpush/build        net/minecraft/world/entity/MobPushOps
 install_nested_glob sscan/build          net/minecraft/world/entity/MobPushOps
 install_nested_glob sscan/build          net/minecraft/world/entity/MobScanOps
@@ -66,6 +69,7 @@ install_nested_glob queryplane/build     net/minecraft/world/entity/QueryPlaneOp
 # javap gate: flat==nested byte-equality (lesson ×93) for every touched class
 gate_fe() { cmp -s "$1/$3.class" "$1/$2/$3.class" || { echo "GATE FAIL: $2/$3 flat != nested" >&2; exit 1; }; }
 gate_fe colpush/build        net/minecraft/world/entity ColpushOps
+gate_fe colpush/build        net/minecraft/world/entity 'ColpushOps$ConstSlot'
 gate_fe mobpush/build        net/minecraft/world/entity MobPushOps
 gate_fe sscan/build          net/minecraft/world/entity MobPushOps
 gate_fe sscan/build          net/minecraft/world/entity MobScanOps

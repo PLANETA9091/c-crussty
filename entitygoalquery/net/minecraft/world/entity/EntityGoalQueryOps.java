@@ -110,7 +110,7 @@ public final class EntityGoalQueryOps {
                 // (плоскость кормит colpush_plane_refresh).
                 || f.trim().equals("cmp420_colpush")
                 // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
-                || f.trim().equals("cmp445_collide")
+                || f.trim().equals("cmp449_mega4")
                 // TASK-421-A: brain-носитель (STRICT OR).
                 || f.trim().equals("cmp421_brain")
                 // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
@@ -125,7 +125,7 @@ public final class EntityGoalQueryOps {
                 // TASK-434-C/435-C/438-C: chunk-pipeline carriers R5/R6/R7 (STRICT OR).
                 || f.trim().equals("cmp434_chunkpl") || f.trim().equals("cmp435_chunk3") || f.trim().equals("cmp437_chunk4")
                 // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
-                || f.trim().equals("cmp443_mega"));
+                || f.trim().equals("cmp449_mega4"));
     }
 
     /** TASK-411-C (k4soa): K4-режим (маркировка EFFECT-строк). */
@@ -144,7 +144,7 @@ public final class EntityGoalQueryOps {
     private static boolean dietMode() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
         // TASK-443-B: mega-composition carrier carries the diet (STRICT OR).
-        return f != null && (f.trim().equals("cmp440_ins4d") || f.trim().equals("cmp443_mega"));
+        return f != null && (f.trim().equals("cmp440_ins4d") || f.trim().equals("cmp449_mega4"));
     }
 
     /**
@@ -168,7 +168,7 @@ public final class EntityGoalQueryOps {
                 // snapshotQuery читает последовательные слайсы вместо next-цепей).
                 || f.trim().equals("cmp440_ins4d")
                 // TASK-443-B: mega-composition carrier carries the sense-срез.
-                || f.trim().equals("cmp443_mega"));
+                || f.trim().equals("cmp449_mega4"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -193,7 +193,7 @@ public final class EntityGoalQueryOps {
                 : t.equals("cmp436_ins4") ? "cmp436_ins4" // TASK-436-B
                 : t.equals("cmp434_chunkpl") ? "cmp434_chunkpl" : t.equals("cmp435_chunk3") ? "cmp435_chunk3"
                 : t.equals("cmp437_chunk4") ? "cmp437_chunk4" // TASK-438-C: R7 carrier marker id
-                : t.equals("cmp443_mega") ? "cmp443_mega" // TASK-443-B: mega-composition carrier marker id
+                : t.equals("cmp449_mega4") ? "cmp449_mega4" // TASK-443-B: mega-composition carrier marker id
                 : t.equals("cmp421_brain") ? "cmp421_brain"
                 : t.equals("cmp412_eqsnapv3") ? "cmp412_eqsnapv3" // TASK-412-C: точная метка.
                 : t.equals("cmp411_eqsnap") ? "cmp411_eqsnap"

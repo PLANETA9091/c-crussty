@@ -18,7 +18,7 @@ import net.minecraft.world.phys.Vec3;
 import net.kyori.adventure.util.TriState;
 
 /**
- * ITEMS-BATCH (TASK-446-B, vector cmp446_items): Rust rest-plane for
+ * ITEMS-BATCH (TASK-446-B, vector cmp449_mega4): Rust rest-plane for
  * ItemEntity.tick — ONE bulk JNI per tick per region thread, zero per-entity
  * JNI (law-6 whole-subsystem vector; see RESEARCH-B-446-ITEMS.md).
  *
@@ -58,7 +58,7 @@ import net.kyori.adventure.util.TriState;
  * log — the per-run answer to "why does an item run FULL" (§7.6).
  *
  * GATE (double): ENABLED baked at compile from
- * {@code "cmp446_items".equals(getenv("CRUSSTY_LEVER_FLAG"))} AND the rust
+ * {@code "cmp449_mega4".equals(getenv("CRUSSTY_LEVER_FLAG"))} AND the rust
  * side arms only on the same STRICT-eq flag. Fail-closed: MH resolve /
  * native probe / planeDecide rc&lt;0 / retransform failure -> vanilla replica
  * path (or, pre-serve, 100% vanilla class); empty/other flag = the class is
@@ -74,7 +74,7 @@ public final class ItemBatchOps {
     private static final String LEVER_FLAG = trimToEmpty(System.getenv("CRUSSTY_LEVER_FLAG"));
 
     /** Compile-time-baked java gate (double-gated with the rust env gate). */
-    private static final boolean ENABLED = "cmp446_items".equals(LEVER_FLAG);
+    private static final boolean ENABLED = "cmp449_mega4".equals(LEVER_FLAG);
 
     private static final int PROBE_MAGIC = 0x1D46;
 

@@ -102,8 +102,8 @@ public final class ColpushOps {
     private static final String FLAG9 = "cmp437_chunk4";
     /**
      * TASK-449-C mega4 composite: единый lever (gate-reconciliation канон ×449):
-     * megafix-носитель cmp443_mega (ins4d ⊕ chunk4) ⊕ items-фикс cmp446_items
-     * ⊕ collide-step2 cmp445_collide — все три композиционных id ретагнуты в
+     * megafix-носитель cmp449_mega4 (ins4d ⊕ chunk4) ⊕ items-фикс cmp449_mega4
+     * ⊕ collide-step2 cmp449_mega4 — все три композиционных id ретагнуты в
      * ОДИН lever cmp449_mega4 во всех rust OR-гейтах и java сайтах.
      * TASK-445-A: collide+broadphase+push plane round — additive STRICT-OR
      * (certified colpush carrier base + colpushTick2 bucket-prune delta).
