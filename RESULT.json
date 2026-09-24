@@ -1,19 +1,31 @@
 {
-  "agent": "TASK-450-B (general-purpose)",
-  "vector": "cmp446_items items rest-plane — root-cause + cycle-4",
-  "branch": "round-450b-items",
-  "run_id": null,
-  "tps_med": null,
-  "delta_pair_pct": null,
-  "lane_was_became": "31.17% -> pending cycle-4 leg",
-  "ram_stw_full": null,
-  "parity": "pending",
-  "verdict": "IN-PROGRESS",
+  "agent": "TASK-450-B-RESTORE (general-purpose)",
+  "vector": "cmp446_items items rest-plane — root-cause ×4 + cycle-4 fix + leg-1 verdict + honest closure",
+  "branch": "round-450b-items (head f33b865f, code-pin 30d80c3e ancestry round-446-items)",
+  "run_id": 36054213025,
+  "tps_med": 2.4,
+  "delta_pair_pct": -0.1,
+  "lane_was_became": "items 31.17% -> 25.41% (-5.76пп, в предсказанном окне -5..-7пп)",
+  "ram_stw_full": "GC young=111 Full=10 total=21.7s avg=179ms max=2344ms (банк 18.8s/162/2400/Full=7 — норма)",
+  "parity": "ARMED selfTest=true retransform rc=0; threw=0; AIOOBE=0; NCDFE=0; pop=VALID; band 6979160 OK",
+  "verdict": "LEG-1 RED (pair parity -0.1pp) -> VECTOR LOW-POTENTIAL HONEST CLOSURE (канон wgen x445/закон 8)",
+  "pair": {
+    "anchor": "round-450b-anchor-13 +5.9 @ 6964170 (healthy, депресс-гейт пройден)",
+    "delta_runners": 14990,
+    "pair_pct": "5.8 - 5.9 = -0.1pp",
+    "other_candidates": "нет в Δ≤50k (a15 Δ55.6k, a20 Δ182k)",
+    "min_of_3": "items 0/3 — не сдвинут",
+    "median_artifact_note": "a13 boot-полл 19.4<20 ВОШЁЛ в медиану (steady 2.2 -> med 2.4); нога boot 20.0 отфильтрован (med 2.4/5 поллов). Steady-state raw +9.1%, MSPT-avg 367.42 vs 403.07 = -8.9% real. Харнесс не ослаблен, вердикт по канону.",
+    "xray_summary_tick602": "drains=601/601 (append-every-tick жив, RC-A закрыт); decided=35.62M, rest=13.61M (38.2%), full=22.01M (61.8%); ineligible fluid=19.44M (54.6% всех решений, 88.3% всех FULL — парити-стена воды), ground=1.38M (3.9%), hdsqr+pd+other=0.33M (0.9%)",
+    "mandated_field_census": "pickup 0.00% CPU (2 сэмпла), merge 0.01% (15 сэмплов) — мертвы; rest-scope на потолке предиката 38.2% vs ~42-44% теор. (transition-lag ≈ +0.4пп лейна); вода = терминальная vy≈-0.36 не сходится к покою -> per-tick buoyancy обязателен по парити — fluid/collision чужие плоскости",
+    "ceiling_math": "идеальный предел rest-plane ≈ лейн 22.9пп (-2.5пп ещё) ≈ +8-10% TPS real max; append-diet overhead-diet ≈ -0.7пп total ≈ +2-3% TPS (ниже band-шума ±5пп, парой недоказуемо, риск-класс cycle-3 starvation)",
+    "conclusion": ">=+20% pair для items-вектора в этой фикстуре математически недостижим — закрытие с числами (RC-#0 regex-мираж tickOne 30.35%, RC-#A starvation вылечен, RC-#B X-ray инструмент создан (первый печатаемый за эру), RC-#C fluid-стена 54.6%)"
+  },
   "evidence": [
-    "ROOT-CAUSE #0: ins4/mega4 'items lane 0.00' = lane-regex artifact; ItemEntityManager.tickOne = 30.35% cpu-collapsed in round-443g-ins4-1 (run 36038486355) ~= vanilla 28.98-31.17% — same cost, renamed frame; no working items plane exists in ins4 lineage",
-    "ROOT-CAUSE #A: cycle-3 (a6648df2) append gated on drainTick -> only 1st ItemEntity per thread per 4 ticks appended -> hash empty -> all FULL -> vanilla replica 99.4% of tick subtree (run 36023838241), append+drain = 0.0% samples vs 1.7pp in fed plane (run 36015023714)",
-    "ROOT-CAUSE #B: EFFECT/X-ray log gate st-meta[5]>=1200 ticks unprintable in ~660-tick bench (300s @ ~2.2TPS) -> grep EFFECT = 0 in both items legs; X-ray never reported",
-    "ROOT-CAUSE #C: fed plane (1f73d9f8) decided ~all FULL: inactiveTick 0.01% samples; fixture spawns items at getHighestBlockYAt+1 = water surface on water columns (ITEM_PICKUP_DELAY=32767 accepted by predicate) -> candidate fixture-miss; X-ray on cycle-4 leg to quantify"
+    "absorb: research/gc-recon-2026-09-19/round-450b-items-1/ABSORB.md — T1 PASS, T2 PASS, GREEN-CANDIDATE norm +5.8% @6979160, items 31.17->25.41",
+    "ARM marker: 'cmp446_items: ARMED rest-plane shards=64 recheck=1/32 bulk-jni=1/tick/thread selfTest=true (retransform rc=0)'; AIOOBE grep=0; EFFECT first-drain x4 (tick=2); SUMMARY/300t CUM x12",
+    "RESEARCH-450-B.md §7-8: цикл-4 результат + цикл-5 X-ray квантификация + потолочная арифметика + closure",
+    "leg code: head f33b865f = worktree HEAD, code-pin 30d80c3e (cycle-4 fix) ancestor — диспатч-префлайт подтвердил"
   ],
-  "what": "RESEARCH-450-B.md committed; next: append-every-tick fix + printable X-ray markers (first-drain + every 300 ticks) + CUM summary; gates then dispatch lever cmp446_items"
+  "what": "нога-1 абсорблена, вердикт write-through; лейн 31.17->25.41; вектор закрыт честно (LOW-POTENTIAL, числа в RESEARCH-450-B.md §8); rest-plane готов к абсорбу ins4-носителем; leg-2 НЕ диспатчена (ожидаемое +2-3% < шума, риск-класс starvation)"
 }
