@@ -85,20 +85,24 @@ BATCH = [
 ]
 
 # Ожидаемые sha (verify prep TASK-443-C; при расхождении живого API-ша — АБОРТ диспатча,
-# НЕ молча). round-443-mega — OPTIONAL-база (None = пин не задан: ветка передаётся
-# агентом-B; нет ветки / sha ≠ пину → ноги mega SKIP с предупреждением, НЕ аборта).
-# Перед реальным запуском можно запинить: "round-443-mega": "<8-char sha>".
+# НЕ молча). round-443-mega — OPTIONAL-база: нет ветки / код-предок не содержится →
+# ноги mega SKIP с предупреждением, НЕ аборта (TASK-444 фикс префлайта).
+# TASK-444 (tick-444, 15:5x +08 2026-09-24): master-пин переведён на КОД-ПРЕДОКА:
+# docs-only хвосты тиков (GOAL/CLAIMS/scripts) валидны; изменение КОДА на master
+# (4ab7306-мерж эры перестал быть предком) = АБОРТ. mega-пин 5e3a36fb = код-предок
+# мега-носителя (книжные коммиты bca9499a/ffb94e40 поверх — валидны).
 EXPECTED_SHA = {
-    "master":               "c9060b1f",
+    "master":               "4ab73061",  # КОД-ПРЕДОК эры (ANCESTRY-семантика, не equal)
     "round-442-b-ins4d":    "d9d1fb30",
     "round-436-b-ins6":     "07078007",
     "round-438-c-chunk4b":  "c5fe0251",
     "round-437-a-sscan2":   "3f3b111f",
     "round-437-b-pdemux":   "48362768",
     "round-436-c-chunk3":   "7afe6d17",
-    "round-443-mega":       None,  # OPTIONAL (cmp443_mega, агент-B)
+    "round-443-mega":       "5e3a36fb",  # OPTIONAL, КОД-ПРЕДОК (cmp443_mega)
 }
 OPTIONAL_BASES = {"round-443-mega"}
+ANCESTRY_BASES = {"master", "round-443-mega"}  # пин = код-предок, equal не требуется
 
 # Банк INPUTS РОВНО (без travel_diet / fluid_dirty_ledger; concurrency-гвардов нет)
 INPUTS = {
@@ -169,6 +173,16 @@ def live_sha_safe(tok, ref):
         return f"<API-ERR {type(e).__name__}>"
 
 
+def ancestry_ok(tok, pin, ref):
+    """TASK-444: пин = КОД-ПРЕДОК. True если коммит пина содержится в ref
+    (docs-only хвосты валидны). False = код ref'а diverged от пина (аборт/skip)."""
+    try:
+        cmp = api(tok, f"/repos/{REPO}/compare/{pin}...{ref}")
+        return cmp.get("status") in ("ahead", "identical")
+    except Exception:
+        return False
+
+
 def optional_preflight(tok):
     """OPTIONAL-базы: ветки нет ИЛИ sha ≠ пину → (skip-set, warnings), НЕ аборта."""
     skipped, warns = set(), []
@@ -182,13 +196,20 @@ def optional_preflight(tok):
             warns.append(f"OPTIONAL SKIP: {base} отсутствует на origin ({type(e).__name__}) "
                          f"→ {n} mega-ног НЕ диспатчится (не аборт)")
             continue
-        if pin and not live.startswith(pin):
+        if pin and base in ANCESTRY_BASES and not ancestry_ok(tok, pin, base):
+            n = sum(1 for b in BATCH if b[2] == base)
+            skipped.add(base)
+            warns.append(f"OPTIONAL SKIP: {base} код diverged от пина {pin} "
+                         f"→ {n} mega-ног НЕ диспатчится (не аборт)")
+            continue
+        if pin and base not in ANCESTRY_BASES and not live.startswith(pin):
             n = sum(1 for b in BATCH if b[2] == base)
             skipped.add(base)
             warns.append(f"OPTIONAL SKIP: {base} sha {live} ≠ пин {pin} → {n} mega-ног НЕ "
                          f"диспатчится (не аборт)")
             continue
-        note = "пин не задан (ветка от агента-B принята как есть)" if pin is None else f"пин {pin} OK"
+        note = ("код-предок " + pin + " содержится — OK") if (pin and base in ANCESTRY_BASES) \
+               else ("пин не задан (ветка от агента-B принята как есть)" if pin is None else f"пин {pin} OK")
         print(f"preflight OPTIONAL OK: {base} @ {live} ({note})", flush=True)
     return skipped, warns
 
@@ -204,8 +225,11 @@ def main():
             bsha = live_sha_safe(tok, base)
             exp = EXPECTED_SHA.get(base)
             if base in OPTIONAL_BASES:
-                flag = "  [OPTIONAL-mega: нет/ша≠пин → SKIP]" if bsha.startswith("<") else \
-                       "  [OPTIONAL-mega: пин не задан → диспатч]"
+                flag = "  [OPTIONAL-mega: нет/код-diverged → SKIP]" if bsha.startswith("<") else \
+                       "  [OPTIONAL-mega: пин задан — ancestry-проверка при запуске]"
+            elif base in ANCESTRY_BASES:
+                flag = "" if (bsha.startswith("<") or exp is None) else \
+                       ("" if ancestry_ok(tok, exp, base) else "  <<ANCESTRY-DRIFT!")
             else:
                 flag = "" if (exp is None or bsha.startswith(exp) or bsha.startswith("<")) else "  <<SHA-DRIFT!"
             state = "EXISTS" if branch_exists(tok, branch) else "new (создастся)"
@@ -225,10 +249,17 @@ def main():
         if base in OPTIONAL_BASES:
             continue
         live = sha_of(tok, base)[:8]
-        if not live.startswith(exp):
+        if base in ANCESTRY_BASES:
+            if not ancestry_ok(tok, exp, base):
+                raise SystemExit(f"ANCESTRY MISMATCH: base={base} live={live} "
+                                 f"код-предок {exp} НЕ содержится — диспатч ОТМЕНЁН "
+                                 f"(код master diverged от эры)")
+            print(f"preflight OK (ancestry): {base} @ {live} содержит {exp}", flush=True)
+        elif not live.startswith(exp):
             raise SystemExit(f"SHA MISMATCH: base={base} live={live} expected={exp} "
                              f"— диспатч ОТМЕНЁН (ре-верификация ls-remote обязательна)")
-        print(f"preflight OK: {base} @ {live}", flush=True)
+        else:
+            print(f"preflight OK: {base} @ {live}", flush=True)
     # префлайт 2: OPTIONAL-базы → skip-with-warning, не аборта
     skipped, warns = optional_preflight(tok)
     for w in warns:
