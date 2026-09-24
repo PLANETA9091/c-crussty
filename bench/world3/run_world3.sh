@@ -483,6 +483,9 @@ case "${LEVER_FLAG:-}" in
   cmp432_inside2)
     log "${LEVER_FLAG} armed: inside-plane DEEPENING = inside_bitmask pre-gate + inside_snap snapshot plane with tick-stamped serve fastpath (chunk/sec memo) + inside_cache gate fused onto the snapshot plane (SNAP_ARMED reads) + slot space 2^18 (full-population memo) + mobsoa carrier stack via STRICT-OR (TASK-432-B, закон 6)"
     ;;
+  cmp440_ins4d)
+    log "${LEVER_FLAG} INS4-DIET ARMED: carrier cmp436_ins4 (inside-plane V4 serve + mobsoa/colpush/queryplane/goal/items stack via STRICT-OR) + snapshotQuery DIET = CSR slices + lazy columns + y-prun + scratch/output reuse + cell dedup + sampled profiler bump=16 (TASK-442-B, RESEARCH-439-EQW §3; DIET-GATE self<=2.0%)"
+    ;;
 esac
 # RECON_DIAG (TASK-317, instrument-гейт рычага #13 SKIP-STORE-DIET): чистая
 # наблюдаемость — 0 поведения. GC-политика/heap не трогаются (логирование ≠

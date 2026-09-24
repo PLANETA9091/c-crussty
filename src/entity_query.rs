@@ -130,7 +130,7 @@ fn enabled() -> bool {
             // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
             | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4")
+            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp440_ins4d")
             | Ok("cmp421_brain")
     )
 }
@@ -167,12 +167,14 @@ fn enabled_flag_is_eqsnapv3() -> bool {
 /// включает достройку CSR-арены (sense_arena) сразу после eq_epoch в том же
 /// EPOCH_LOCK-окне; snapshotQuery-джава читает слайсы арены вместо цепей.
 /// TASK-422-B (iter-2): STRICT-OR — вектор-флаг несёт тот же sense-срез.
+/// TASK-442-B (ins4-диета): cmp440_ins4d несёт тот же sense-срез (CSR-слайсы
+/// = диета-механизм №1 RESEARCH-439-EQW §3.2 — раньше только под sense).
 fn enabled_flag_is_sense() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
         Ok("cmp421_brain") | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4")
+            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp440_ins4d")
     )
 }
 
@@ -181,6 +183,17 @@ fn enabled_flag_is_brain2() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
         Ok("cmp422_brain2")
+    )
+}
+
+/// TASK-442-B (ins4-диета, рестарт TASK-440-B): только вектор-флаг
+/// cmp440_ins4d = носитель cmp436_ins4 + диета snapshotQuery
+/// (RESEARCH-439-EQW §3: CSR-слайсы, lazy columns, y-прун, scratch/output-
+/// reuse, дедуп ячеек, sampled profiler bump=16; DIET-GATE self ≤2.0%).
+fn enabled_flag_is_ins4d() -> bool {
+    matches!(
+        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
+        Ok("cmp440_ins4d")
     )
 }
 
@@ -612,7 +625,9 @@ pub fn activate() {
         }
 
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
-        let flag_label = if enabled_flag_is_brain2() {
+        let flag_label = if enabled_flag_is_ins4d() {
+            "cmp440_ins4d"
+        } else if enabled_flag_is_brain2() {
             "cmp422_brain2"
         } else if enabled_flag_is_sense() {
             "cmp421_brain"
@@ -636,6 +651,12 @@ pub fn activate() {
         );
 
         crate::kernel_policy::audit_wire(OPS_CLASS, "entitiesOfClassGate", "cmp410_eindexq v1");
+        if enabled_flag_is_ins4d() {
+            // TASK-442-B: громкий DIET-ARM-маркер (капчер ищет "INS4-DIET ARMED").
+            eprintln!(
+                "[crussty-plugin] cmp440_ins4d: INS4-DIET ARMED (carrier cmp436_ins4 @07078007 + snapshotQuery diet: CSR slices on, lazy columns on, y-prun on (hh+MARGIN superset), scratch/output reuse on, cell dedup on, sampled profiler bump=16; DIET-GATE self<=2.0%)"
+            );
+        }
         READY.store(true, Ordering::Release);
         for t in targets() {
             let rc = cplug_sdk::retransform_class(t.name);

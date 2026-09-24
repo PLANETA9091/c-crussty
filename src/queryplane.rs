@@ -85,6 +85,7 @@ fn inside_plane_label() -> &'static str {
     match std::env::var("CRUSSTY_LEVER_FLAG").as_deref() {
         Ok("cmp432_inside2") => "cmp432_inside2",
         Ok("cmp436_ins4") => "cmp436_ins4",
+        Ok("cmp440_ins4d") => "cmp440_ins4d", // TASK-442-B: свой id
         _ => "cmp430_inside",
     }
 }
@@ -97,7 +98,7 @@ fn lever_id() -> &'static str {
         // TASK-426-A: SoA-feed carrier — свой id в ARM/EFFECT-маркерах.
         Ok("cmp424_mobfeed") => "cmp424_mobfeed",
         // TASK-430-B: inside-plane subsystem round — свой id.
-        Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") => inside_plane_label(),
+        Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp440_ins4d") => inside_plane_label(),
         Ok("cmp417_bq")
             // TASK-421-A (brain): свой id в ARM-маркерах.
             | Ok("cmp421_brain") => "cmp421_brain",

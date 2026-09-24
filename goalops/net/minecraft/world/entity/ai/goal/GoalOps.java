@@ -73,7 +73,8 @@ public final class GoalOps {
                 // TASK-424-A: GC-ревизия brain3 (STRICT OR).
                 || f.trim().equals("cmp423_brain3")
                 // TASK-426-A: SoA-feed carrier (STRICT OR).
-                || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside") || f.trim().equals("cmp432_inside2") || f.trim().equals("cmp436_ins4"));
+                || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside") || f.trim().equals("cmp432_inside2") || f.trim().equals("cmp436_ins4")
+                || f.trim().equals("cmp440_ins4d")); // TASK-442-B: ins4-диета STRICT OR
     }
 
     private static final boolean ENABLED = leverEnabled();

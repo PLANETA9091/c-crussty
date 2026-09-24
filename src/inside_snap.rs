@@ -120,7 +120,7 @@ fn lever_flag_matches() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let v = v.trim();
-            v == "cmp432_inside2" || v == "cmp430_inside" || v == "cmp436_ins4"
+            v == "cmp432_inside2" || v == "cmp430_inside" || v == "cmp436_ins4" || v == "cmp440_ins4d"
         })
         .unwrap_or(false)
 }
@@ -128,10 +128,24 @@ fn lever_flag_matches() -> bool {
 /// TASK-436-B: cmp436_ins4 selects the V4 serve body (per-claim lane snap
 /// arrays + untracked-miss closure + cached minSecY + lane hint). The V2
 /// serve() stays byte-for-byte as the control path (V4=false default).
+/// TASK-442-B: cmp440_ins4d (ins4-dieta рестарт) rides the SAME V4 serve
+/// body — certified carrier behavior + snapshotQuery diet, STRICT-OR.
 fn v4_requested() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim() == "cmp436_ins4")
+        .map(|v| {
+            let v = v.trim();
+            v == "cmp436_ins4" || v == "cmp440_ins4d"
+        })
         .unwrap_or(false)
+}
+
+/// TASK-442-B: exact carrier label for V4 flip markers (cmp440_ins4d prints
+/// its own id; cmp436_ins4 keeps the historical label).
+fn carrier_label() -> &'static str {
+    match std::env::var("CRUSSTY_LEVER_FLAG").as_deref().map(str::trim) {
+        Ok("cmp440_ins4d") => "cmp440_ins4d",
+        _ => "cmp436_ins4",
+    }
 }
 
 /// entity_compose stage gate (pub).
@@ -268,11 +282,12 @@ pub fn activate() {
                 .unwrap_or(false);
             if !flipped {
                 eprintln!(
-                    "[crussty-plugin] cmp436_ins4: v4() flip FAILED — hook stays dormant (fail-closed)"
+                    "[crussty-plugin] {}: v4() flip FAILED — hook stays dormant (fail-closed)",
+                    carrier_label()
                 );
                 return;
             }
-            eprintln!("[crussty-plugin] cmp436_ins4: V4 serve body FLIPPED (per-claim snap arrays + untracked-miss closure + minSecY cache + lane hint)");
+            eprintln!("[crussty-plugin] {}: V4 serve body FLIPPED (per-claim snap arrays + untracked-miss closure + minSecY cache + lane hint)", carrier_label());
         }
 
         // selfTest on the KEPT define_class ref (TASK-417-C find_class fix):

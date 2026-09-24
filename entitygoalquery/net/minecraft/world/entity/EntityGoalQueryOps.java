@@ -116,13 +116,28 @@ public final class EntityGoalQueryOps {
                 // TASK-424-A: GC-ревизия brain3 (STRICT OR).
                 || f.trim().equals("cmp423_brain3")
                 // TASK-426-A: SoA-feed carrier (STRICT OR).
-                || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside") || f.trim().equals("cmp432_inside2") || f.trim().equals("cmp436_ins4"));
+                || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside") || f.trim().equals("cmp432_inside2") || f.trim().equals("cmp436_ins4")
+                // TASK-442-B: ins4-диета (рестарт TASK-440-B) — носитель cmp436_ins4
+                // + диета snapshotQuery (RESEARCH-439-EQW §3). STRICT OR.
+                || f.trim().equals("cmp440_ins4d"));
     }
 
     /** TASK-411-C (k4soa): K4-режим (маркировка EFFECT-строк). */
     private static boolean k4Mode() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
         return f != null && f.trim().equals("cmp411_k4soa");
+    }
+
+    /**
+     * TASK-442-B (ins4-диета): диета snapshotQuery — ТОЛЬКО cmp440_ins4d.
+     * RESEARCH-439-EQW §3.2: lazy columns (3-стадийный SoA-прун), y-прун
+     * (hh+MARGIN superset), scratch/output-reuse (depth-guard), дедуп ячеек,
+     * sampled profiler bump=16. CSR-слайсы (механизм №1) включаются
+     * senseMode() ниже. DIET-GATE: snapshotQuery self ≤ 2.0% (было 3.4-3.5%).
+     */
+    private static boolean dietMode() {
+        String f = System.getenv("CRUSSTY_LEVER_FLAG");
+        return f != null && f.trim().equals("cmp440_ins4d");
     }
 
     /**
@@ -140,12 +155,18 @@ public final class EntityGoalQueryOps {
         // к сертифицированной конфигурации паритет; sense-эффект не доказан).
         return f != null && (f.trim().equals("cmp421_brain")
                 || f.trim().equals("cmp422_brain2")
-                || f.trim().equals("cmp423_brain3"));
+                || f.trim().equals("cmp423_brain3")
+                // TASK-442-B (ins4-диета): CSR-слайсы = диета-механизм №1
+                // (senseArena достраивается в ТОМ ЖЕ EPOCH_LOCK-окне;
+                // snapshotQuery читает последовательные слайсы вместо next-цепей).
+                || f.trim().equals("cmp440_ins4d"));
     }
 
     private static final boolean ENABLED = leverEnabled();
     private static final boolean K4 = k4Mode();
     private static final boolean SENSE = senseMode();
+    /** TASK-442-B: диета snapshotQuery (только cmp440_ins4d). */
+    private static final boolean DIET = dietMode();
     /** Метка флага для EFFECT/диагностических строк (одна из ARM-пар). */
     private static final String FLAG_LABEL;
     static {
@@ -155,6 +176,7 @@ public final class EntityGoalQueryOps {
         // TASK-426-A: SoA-feed carrier id (cmp424_mobfeed).
         String t = f == null ? "" : f.trim();
         FLAG_LABEL = t.equals("cmp422_brain2") ? "cmp422_brain2"
+                : t.equals("cmp440_ins4d") ? "cmp440_ins4d" // TASK-442-B
                 : t.equals("cmp423_brain3") ? "cmp423_brain3"
                 : t.equals("cmp424_mobfeed") ? "cmp424_mobfeed"
                 : t.equals("cmp430_inside") ? "cmp430_inside"
@@ -210,6 +232,12 @@ public final class EntityGoalQueryOps {
     /** TASK-426-A: one-shot DATA-PLAN-пруф goal-query (snapRows>0 — fed-состояние). */
     private static volatile boolean DATA_PLAN_LOGGED = false;
 
+    /**
+     * TASK-442-B: one-shot DIET-пруф (первый served-запрос под диетой —
+     * маркер "diet active" в server-stdout.log для капчера ARM/EFFECT/DIET).
+     */
+    private static volatile boolean DIET_LOGGED = false;
+
     // ---- снапшот (volatile publication ladder как MobScanOps) ----
     /** Замороженные колонки [x,y,z,hw,hh] × row (stride STRIDE). */
     private static volatile double[] SOA = new double[0];
@@ -250,6 +278,57 @@ public final class EntityGoalQueryOps {
      */
     private static final ThreadLocal<int[]> BUCKET_SCRATCH =
             ThreadLocal.withInitial(() -> new int[64]);
+
+    /**
+     * TASK-442-B (диета §3.2 №5): дедуп бакетов прямоугольника goal-запроса
+     * до прохода цепей/слайсов (две ячейки с одним bucket = двойной проход =
+     * дубликат-кандидата; для getNearestEntity-потребителя дубликаты безвредны,
+     * но дубль = лишний intersects/pred + двойной список). Окно-гард:
+     * guard прямоугольника допускает ≤ 65×65 = 4225 ячеек; дедуп включается
+     * только при cnt ≤ 1024 (квадратичный попарный скан; типичный goal-rect
+     * 3×3..5×5). Пере-использование per-thread — 0 alloc на запрос.
+     */
+    private static final ThreadLocal<int[]> DIET_BUCKETS =
+            ThreadLocal.withInitial(() -> new int[1024]);
+
+    /**
+     * TASK-442-B (диета §3.2 №4): output-reuse — per-thread выходной список
+     * через clear() вместо new ArrayList на каждый served-запрос (потребители
+     * обоих served-сайтов НЕ ретейнят список — javap-ценз round-396-a:
+     * NearestAttackableTargetGoal.findTarget и AvoidEntityGoal.canUse сразу
+     * редуцируют через ServerLevel.getNearestEntity и теряют ссылку).
+     * Depth-guard против реентерантности (pred.test → вложенный gate-вызов
+     * получает СВЕЖИЙ список, scratch не клибится под потребителем).
+     */
+    private static final ThreadLocal<ArrayList<Entity>> OUT_SCRATCH =
+            ThreadLocal.withInitial(() -> new ArrayList<>(64));
+    private static final ThreadLocal<int[]> OUT_DEPTH =
+            ThreadLocal.withInitial(() -> new int[1]);
+
+    private static ArrayList<Entity> acquireOut() {
+        int[] d = OUT_DEPTH.get();
+        if (d[0] == 0) {
+            d[0] = 1;
+            ArrayList<Entity> out = OUT_SCRATCH.get();
+            out.clear();
+            return out;
+        }
+        d[0]++; // вложенный вызов — свежий список, scratch не трогаем
+        return new ArrayList<>(32);
+    }
+
+    private static void releaseOut() {
+        OUT_DEPTH.get()[0]--;
+    }
+
+    /**
+     * TASK-442-B (диета §3.2 №6): сэмплированный profiler-bump — счётчик
+     * "getEntities" воспроизводится СТАТИСТИЧЕСКИ (bump=16 каждый 16-й served-
+     * запрос), цена ProfilerFiller-интерфейса делится на 16. Ванильный
+     * счётчик остаётся ненулевым (прецедент MobPushOps.pushables).
+     */
+    private static final ThreadLocal<int[]> PROF_BUMP =
+            ThreadLocal.withInitial(() -> new int[1]);
 
     private EntityGoalQueryOps() {}
 
@@ -307,13 +386,30 @@ public final class EntityGoalQueryOps {
                     // Ванильное тело getEntitiesOfClass начинается с
                     // Profiler-счётчика — реплика на snapshot-пути (fallback
                     // ниже инкрементирует СВОЙ счётчик внутри ванильного тела).
-                    Profiler.get().incrementCounter("getEntities");
+                    // TASK-442-B (диета): под cmp440_ins4d счётчик сэмплирован
+                    // (bump=16 каждый 16-й served-запрос — статистически тот же
+                    // темп, цена интерфейса /16).
+                    if (DIET) {
+                        int[] c = PROF_BUMP.get();
+                        if ((++c[0] & 15) == 0) {
+                            Profiler.get().incrementCounter("getEntities", 16);
+                        }
+                    } else {
+                        Profiler.get().incrementCounter("getEntities");
+                    }
                     if (!ARM_LOGGED) {
                         ARM_LOGGED = true;
                         LOG.info("[crussty-plugin] " + FLAG_LABEL + ": goal-query EFFECT armed"
                                 + " (first gate hit at tick "
                                 + MinecraftServer.getServer().getTickCount()
                                 + ", class=" + cls.getSimpleName() + ")");
+                    }
+                    if (DIET && !DIET_LOGGED) {
+                        DIET_LOGGED = true;
+                        LOG.info("[crussty-plugin] " + FLAG_LABEL
+                                + ": INS4-DIET diet active (snapshotQuery diet: CSR slices on,"
+                                + " lazy columns on, y-prun on, scratch/output reuse on,"
+                                + " cell dedup on, sampled profiler bump=16)");
                     }
                     return out;
                 }
@@ -482,6 +578,14 @@ public final class EntityGoalQueryOps {
         if (byId == null || byId.length == 0) {
             return null;
         }
+        // TASK-442-B: диета snapshotQuery (ТОЛЬКО cmp440_ins4d) — отдельный
+        // путь: дедуп бакетов + CSR-слайсы (DIET⟹SENSE) + lazy columns
+        // (3-стадийный прун c y-пруном) + scratch/output-reuse. Структурные
+        // гварды выше ОБЩИЕ (включая arena-гварды: DIET ⟹ SENSE).
+        if (DIET) {
+            return dietSnapshotQuery(level, cls, box, pred, soa, arena, arenaOff,
+                    rows, byId, cx0, cx1, cz0, cz1);
+        }
         final double bx0 = box.minX, by0 = box.minY, bz0 = box.minZ;
         final double bx1 = box.maxX, by1 = box.maxY, bz1 = box.maxZ;
         ArrayList<Entity> out = new ArrayList<>(32);
@@ -584,6 +688,135 @@ public final class EntityGoalQueryOps {
             }
         }
         return out;
+    }
+
+    /**
+     * TASK-442-B: ДИЕТ-путь snapshotQuery — ТОЛЬКО под cmp440_ins4d
+     * (DIET ⟹ SENSE: CSR-арена построена в maybeEpoch, структурные гварды
+     * арены проверены в snapshotQuery-прологе). Механизмы RESEARCH-439-EQW
+     * §3.2 (DIET-GATE: snapshotQuery self ≤ 2.0% при ненулевых EFFECT):
+     *
+     * №1 CSR-слайсы: последовательный проход arena[off[h]..off[h+1]) вместо
+     *    рандомного deref next[link-1] (кэш-локальность; паритет порядка =
+     *    rust-тест arena_matches_chain_walk).
+     * №5 Дедуп бакетов: две ячейки прямоугольника с одним bucket = двойной
+     *    проход одной цепи = дубликат-кандидата (лишний intersects/pred).
+     * №2 Lazy columns: 3-стадийный прун — center-only (r_eff ≤ 2.0) →
+     *    точный hw-прун → y-прун; byId deref только для переживших.
+     * №3 Y-прун: замороженный центр y ± hh (половина высоты ≤ 2.0) ± MARGIN
+     *    — superset живого bb по y (вертикальный дрейф ≤ ~3.9 блока/тик <
+     *    MARGIN=8 − hh; контракт той же маржи, что x/z-прун). Bench-секции
+     *    высоки — призраки смежных по x/z вертикалей отсекаются до deref.
+     * №4 Output-reuse: per-thread scratch-список через clear() (потребители
+     * served-сайтов НЕ ретейнят список — javap-ценз: оба сходу редуцируют
+     * через ServerLevel.getNearestEntity; depth-guard против реентерантности).
+     * №6 Сэмплированный profiler-bump — в entitiesOfClassGate (bump=16).
+     *
+     * Superset-контракт НЕ тронут: финальный тест = ТОЧНЫЙ ванильный
+     * live-bb intersects + ванильный predicate; fail-closed лестница та же
+     * (дрейф арен-границ/слайса → null = ваниль на вызов).
+     */
+    private static List<Entity> dietSnapshotQuery(Level level, Class<? extends Entity> cls,
+            AABB box, Predicate<? super Entity> pred, double[] soa, int[] arena, int[] arenaOff,
+            int rows, Entity[] byId, int cx0, int cx1, int cz0, int cz1) {
+        final ArrayList<Entity> out = acquireOut();
+        try {
+            final double by0 = box.minY, by1 = box.maxY;
+            final double mx0 = box.minX - MARGIN, mx1 = box.maxX + MARGIN;
+            final double mz0 = box.minZ - MARGIN, mz1 = box.maxZ + MARGIN;
+            final long rw = (long) (cx1 - cx0) + 1L, rh = (long) (cz1 - cz0) + 1L;
+            if (rw * rh > 1024L) {
+                return null; // гигантский rect — ваниль на этот вызов (вне goal-класса)
+            }
+            // Дедуп бакетов прямоугольника (диета №5; квадратичный попарный
+            // скан — окно ≤ 1024 ячеек, типичный goal-rect 3×3..5×5).
+            final int[] buckets = DIET_BUCKETS.get();
+            int nb = 0;
+            outer:
+            for (int cz = cz0; cz <= cz1; cz++) {
+                for (int cx = cx0; cx <= cx1; cx++) {
+                    final int h = cellHash(cx, cz);
+                    for (int i = 0; i < nb; i++) {
+                        if (buckets[i] == h) {
+                            continue outer;
+                        }
+                    }
+                    buckets[nb++] = h;
+                }
+            }
+            for (int bi = 0; bi < nb; bi++) {
+                final int h = buckets[bi];
+                // Диета №1: CSR-слайс бакета h — последовательный int[] проход
+                // (та же выборка и порядок, что chain-walk).
+                final int st = arenaOff[h];
+                final int en = arenaOff[h + 1];
+                if (st < 0 || en > rows || st > en) {
+                    return null; // дрейф арен-границ — ваниль на этот вызов
+                }
+                for (int i = st; i < en; i++) {
+                    int id = arena[i];
+                    if (id < 0 || id >= rows) {
+                        return null; // дрейф слайса — ваниль на этот вызов
+                    }
+                    final int b = id * STRIDE;
+                    final double x = soa[b];
+                    final double z = soa[b + 2];
+                    // Диета №2, стадия-1: center-only x/z прун (r_eff ≤ 2.0 —
+                    // гейт плоскости) ДО чтения hw/y/hh.
+                    if (x - 2.0 >= mx1 || x + 2.0 <= mx0
+                            || z - 2.0 >= mz1 || z + 2.0 <= mz0) {
+                        continue;
+                    }
+                    final double hw = soa[b + 3];
+                    // Стадия-2: ТОЧНЫЙ исходный SoA-прун (superset живого
+                    // AABB.intersects по x/z — тот же, что в не-диетных путях).
+                    if (x - hw >= mx1 || x + hw <= mx0
+                            || z - hw >= mz1 || z + hw <= mz0) {
+                        continue;
+                    }
+                    // Диета №3, стадия-3: y-прун по замороженному центру ± hh.
+                    final double fy = soa[b + 1];
+                    final double fhh = soa[b + 4];
+                    if (fy + fhh + MARGIN <= by0 || fy - fhh - MARGIN >= by1) {
+                        continue;
+                    }
+                    Entity cand = byId[id];
+                    if (cand == null || cand.level() != level) {
+                        continue;
+                    }
+                    if (!cls.isInstance(cand)) {
+                        continue;
+                    }
+                    // ТОЧНЫЙ ванильный тест на ЖИВОМ bb — идентичен
+                    // EntityLookup.getEntities пер-кандидатному фильтру.
+                    if (!cand.getBoundingBox().intersects(box)) {
+                        continue;
+                    }
+                    if (pred.test(cand)) {
+                        out.add(cand);
+                    }
+                }
+            }
+            // Player-классы НЕ обслуживаются SoA-перечислением (level.players()
+            // — authoritative источник; ≤ fake_players+1 объектов). Фильтры те
+            // же точные ванильные, выход — тот же scratch-список.
+            if (Player.class.isAssignableFrom(cls)) {
+                for (Player p : level.players()) {
+                    if (p == null || p.level() != level || !cls.isInstance(p)) {
+                        continue;
+                    }
+                    if (!p.getBoundingBox().intersects(box)) {
+                        continue;
+                    }
+                    if (pred.test(p)) {
+                        out.add(p);
+                    }
+                }
+            }
+            return out;
+        } finally {
+            releaseOut();
+        }
     }
 
     /**
