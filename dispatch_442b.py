@@ -24,13 +24,9 @@ INPUTS = {
     "server_xmx": "10G", "server_xms": "4G",
     "cpu_band_min": "6000000", "cpu_band_max": "9500000",
 }
-# Allowed base shas: c2ed1090 = diet code, c57d2aa8/7ee580c7 = dispatcher
-# bookkeeping commits (bench-relevant content identical; diet code @c2ed1090).
-ALLOWED_BASES = {
-    "c2ed10909cf76f91d9105b8bbbdfafbed6b96ad2",
-    "c57d2aa8f308a93610cd9bace90ecab752b16175",
-    "7ee580c7b3113cc0f34ddf74f70311db9a0e3dc4",
-}
+# DIET_SHA = the diet-code commit every leg MUST contain (ancestor check —
+# stable against further bookkeeping commits on the branch).
+DIET_SHA = "c2ed10909cf76f91d9105b8bbbdfafbed6b96ad2"
 
 
 def token_from_remote():
@@ -73,8 +69,9 @@ def ensure_branch(tok, branch, base):
 
 def dispatch(tok, leg, branch, base, lever):
     sha = ensure_branch(tok, branch, base)
-    if sha not in ALLOWED_BASES:
-        raise SystemExit(f"SHA MISMATCH preflight: {branch} @ {sha[:8]} not in allowed bases")
+    if subprocess.run(["git", "-C", "/home/z/rounds/ROUND-442/agent-b", "merge-base", "--is-ancestor",
+                       DIET_SHA, sha]).returncode != 0:
+        raise SystemExit(f"SHA MISMATCH preflight: {branch} @ {sha[:8]} lacks diet sha {DIET_SHA[:8]}")
     inputs = dict(INPUTS)
     inputs["lever_flag"] = lever
     inputs["lever_arg"] = "1"
@@ -87,11 +84,10 @@ def dispatch(tok, leg, branch, base, lever):
 if __name__ == "__main__":
     tok = token_from_remote()
     live = sha_of(tok, "round-442-b-ins4d")
-    if live not in ALLOWED_BASES:
-        raise SystemExit(f"SHA MISMATCH: origin/round-442-b-ins4d @ {live[:8]} not in allowed bases")
     if subprocess.run(["git", "-C", "/home/z/rounds/ROUND-442/agent-b", "merge-base", "--is-ancestor",
-                       "c2ed10909cf76f91d9105b8bbbdfafbed6b96ad2", live]).returncode != 0:
-        raise SystemExit("diet code sha c2ed1090 is NOT an ancestor of live base — abort")
+                       DIET_SHA, live]).returncode != 0:
+        raise SystemExit(f"diet code sha {DIET_SHA[:8]} is NOT an ancestor of live base — abort")
+    print(f"preflight OK: origin/round-442-b-ins4d @ {live[:8]} contains diet sha {DIET_SHA[:8]}")
     print(f"preflight OK: origin/round-442-b-ins4d @ {live[:8]}")
     for leg, branch, base, lever in BATCH:
         dispatch(tok, leg, branch, base, lever)
