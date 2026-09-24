@@ -2,7 +2,7 @@
   "agent": "TASK-450-A (collide cycle-1 restore)",
   "vector": "collide plane expansion: sorted-windows contact-diet + y-band bucket diet in fused colpushTick2 (broadphase-contact slice), whole-subsystem carrier round-449a-collide-1",
   "branch": "round-450a-collide",
-  "head": "6b37f604",
+  "head": "2facad33",
   "run_id": 36061445187,
   "tps_med": null,
   "delta_pair_pct": null,
@@ -13,11 +13,12 @@
   "RAM": null,
   "parity": "cargo 308/0 (oracle brute-force equality incl new dense-cluster/y-band/ties suites); java blobs untouched, check_blobs_sync ALL IN SYNC incl ColpushOps$ConstSlot javap-load",
   "verdict": "INFRA",
-  "stage": "cycle-1 leg dispatched (run 36061445187 @3768c556, lever cmp445_collide=1); polling CI tail",
+  "stage": "cycle-2 MERGE done: ins6 inside-plane composed onto collide carrier (gate-reconciliation STRICT-OR, blobs rebuilt+javap-load OK, cargo 308/0); leg-1 run 36061445187 in flight; leg-2 (composition) dispatch after leg-1",
   "evidence": [
     "commit 6b37f604: src/colpush.rs buckets_fused v3 (chains -> sorted segments, x-window partition_point, y-band bucket prune), EFFECT marker sorted-windows=1 y-band-diet=1",
     "RESEARCH-450-A.md: items-collision-slice batch REFUTED (staleness parity: creeper/falling-block in-bucket; amortization ceiling ~1ms < noise; structural memo = RECON-42-class forbidden by law 5)",
     "cargo test --lib 308 passed 0 failed (305 + 3 new)",
-    "check_blobs_sync: ALL IN SYNC (no java changes; javap-load gate green)"
+    "check_blobs_sync: ALL IN SYNC (no java changes; javap-load gate green)",
+    "merge 2facad33: ins6 @07078007 composed, STRICT-OR union rust+java, inside_bitmask gate untouched (law 5 #15), check_blobs_sync ALL IN SYNC"
   ]
 }
