@@ -14,7 +14,9 @@ API = "https://api.github.com"
 WF = "world-bench-parallel.yml"
 
 BRANCH = "round-450a-collide"
-EXPECTED_SHA = "6b37f604"  # cycle-1: sorted-windows + y-band diet (prefix pin)
+# Preflight: cycle-1 delta commit 6b37f604 (sorted-windows+y-band) ОБЯЗАН быть
+# в истории живого head (compare API) — head может нести док-коммиты поверх.
+ANCESTOR_SHA = "6b37f604"
 LEVER = "cmp445_collide"
 
 INPUTS = {
@@ -57,9 +59,10 @@ def main():
     dry = "--dry-run" in sys.argv
     tok = token()
     live = api(tok, f"/repos/{REPO}/git/ref/heads/{BRANCH}")["object"]["sha"]
-    if not live.startswith(EXPECTED_SHA[:12]):
-        raise SystemExit(f"SHA MISMATCH: {BRANCH} live={live[:12]} expected={EXPECTED_SHA[:12]}")
-    print(f"preflight OK: {BRANCH} @ {live[:8]} (strict vector pin)", flush=True)
+    cmp = api(tok, f"/repos/{REPO}/compare/{ANCESTOR_SHA}...{BRANCH}")
+    if cmp.get("status") not in ("ahead", "identical"):
+        raise SystemExit(f"ANCESTOR MISMATCH: {ANCESTOR_SHA} not in history of {BRANCH} (live={live[:12]})")
+    print(f"preflight OK: {BRANCH} @ {live[:8]} contains cycle-1 {ANCESTOR_SHA[:8]} ({cmp.get('status')})", flush=True)
     if dry:
         print("DRY-RUN OK — no dispatch", flush=True)
         return
