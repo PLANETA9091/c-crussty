@@ -75,6 +75,8 @@ fn lever_flag_matches_for(f: &str) -> bool {
         || f == "cmp412_eqsnapv3" || f == "cmp414_cvs" || f == "cmp417_bq"
         // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
         || f == "cmp420_colpush"
+        // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
+        || f == "cmp445_collide"
         || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside"
 }
 
@@ -108,7 +110,9 @@ pub fn activate() {
         // TASK-417-C: cvs-носитель ⊕ queryplane-awake композит.
         || flag == "cmp412_eqsnapv3" || flag == "cmp414_cvs" || flag == "cmp417_bq"
         // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
-        || flag == "cmp420_colpush";
+        || flag == "cmp420_colpush"
+        // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR).
+        || flag == "cmp445_collide";
         || flag == "cmp421_brain" || flag == "cmp422_brain2" || flag == "cmp423_brain3" || flag == "cmp424_mobfeed" || flag == "cmp430_inside";
     let despawn2 = flag == "cmp399_despawn2" || bfcomp || comp;
     if shard {

@@ -123,7 +123,12 @@ fn enabled() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let v = v.trim();
-            v == LEVER_ID || v == "cmp420_colpush" || v == "cmp421_chunk" || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside"
+            v == LEVER_ID || v == "cmp420_colpush"
+                // TASK-445-A: collide+broadphase+push plane round (additive STRICT-OR;
+                // chunk-parse = collide-смежный lane — section-cache кормит block-collision
+                // reads, двойной java-гейт ColpushOps+ChunkParseOps, закон 6 R1).
+                || v == "cmp445_collide"
+                || v == "cmp421_chunk" || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside"
         })
         .unwrap_or(false)
 }

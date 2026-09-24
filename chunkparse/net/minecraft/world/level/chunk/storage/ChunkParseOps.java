@@ -114,6 +114,13 @@ public final class ChunkParseOps {
     static final String CARRIER_UNION = "cmp420_colpush";
 
     /**
+     * TASK-445-A: collide+broadphase+push plane round — additive carrier id
+     * (STRICT-OR, урок ×438). Constant referenced from the init log line —
+     * kept alive in the blob constant pool for gate-flag consistency (x93).
+     */
+    static final String CARRIER_UNION2 = "cmp445_collide";
+
+    /**
      * codec(identity) -> (tag -> pristine decoded template). The outer map
      * is synchronized ONLY for its own few-entry get/put; the inner maps are
      * ConcurrentHashMaps so the deep tag probe runs lock-free (TASK-420-C:
@@ -149,7 +156,7 @@ public final class ChunkParseOps {
      */
     public static void init(String twin) {
         twinName = twin;
-        System.out.println(PFX + " bridge init ok (twin=" + twin + ", union=" + CARRIER_UNION + ")");
+        System.out.println(PFX + " bridge init ok (twin=" + twin + ", union=" + CARRIER_UNION + ", union2=" + CARRIER_UNION2 + ")");
     }
 
     /**

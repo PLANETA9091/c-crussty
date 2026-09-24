@@ -27,6 +27,28 @@ done
 ALL_BUILD=$(mktemp -d)
 trap 'rm -rf "$ALL_BUILD"' EXIT
 
+# TASK-449-A ×449 (recipe б): every class installed by this script is
+# recorded here and MUST pass the javap LOADABILITY gate at the end
+# (javap -p -cp <blobs-dir> <fqcn> — gate fails if the class is not
+# locatable/parseable through a real classpath). This catches a blob-set
+# hole BEFORE dispatch: a missing inner-class blob = kernel-loader
+# NoClassDefFoundError at runtime (×448 collide-2: ColpushOps$ConstSlot
+# NCDFE ×4 → cmp420_colpush disarm → vanilla-fallback + young-GC storm 529).
+LOADED_CLASSES=()
+
+gate_load() { # outdir slash-fqcn — javap must locate+parse the class
+  local outdir="$1" fq="$2" fq_dots
+  fq_dots="${fq//\//.}"
+  if "$JAVAP" -p -cp "$outdir" "$fq_dots" >/dev/null 2>&1; then
+    echo "javap-load OK: $fq_dots (cp=$outdir)"
+  else
+    echo "JAVAP-GATE FAIL: $fq_dots not loadable from $outdir (blob-set hole → runtime NCDFE)" >&2
+    exit 1
+  fi
+}
+JAVAP="${JAVAP:-/home/z/tools/jdk-21.0.12.1+1/bin/javap}"
+[ -x "$JAVAP" ] || JAVAP=$(command -v javap)
+
 "$JAVAC" --release 21 -nowarn -cp "$CP" -d "$ALL_BUILD" \
   colpush/net/minecraft/world/entity/ColpushOps.java \
   mobpush/net/minecraft/world/entity/MobPushOps.java \
@@ -39,15 +61,26 @@ trap 'rm -rf "$ALL_BUILD"' EXIT
   goalops/net/minecraft/world/entity/ai/goal/GoalOps.java \
   queryplane/net/minecraft/world/entity/QueryPlaneOps.java
 
-install_nested_glob() { # outdir fqcn(slash-form) — nested (include_bytes!) + flat (legacy)
+install_nested_glob() { # outdir fqcn(slash-form) — nested (include_bytes!)
+                        # + flat (legacy) + ALL $-inner siblings (×449: inner
+                        # classes are part of the delivery surface — a
+                        # flat-only install leaves the kernel loader without
+                        # the companion = NCDFE on first resolution)
   local outdir="$1" cls="$2"
-  local base nested
+  local dir base f name copied=0
   base=$(basename "$cls")
-  nested="$outdir/$cls.class"
-  mkdir -p "$(dirname "$nested")"
-  cp "$ALL_BUILD/$cls.class" "$nested"
-  cp "$ALL_BUILD/$cls.class" "$outdir/$base.class"
-  echo "blob: $nested ($(stat -c%s "$nested") bytes) + flat $outdir/$base.class"
+  dir=$(dirname "$cls")
+  mkdir -p "$outdir/$dir"
+  for f in "$ALL_BUILD/$dir/$base"*.class; do
+    [ -f "$f" ] || continue
+    name=$(basename "$f")
+    cp "$f" "$outdir/$dir/$name"
+    cp "$f" "$outdir/$name"
+    LOADED_CLASSES+=("$outdir|$dir/${name%.class}")
+    copied=$((copied + 1))
+  done
+  [ "$copied" -gt 0 ] || { echo "GATE FAIL: javac produced no $base*.class under $ALL_BUILD/$dir" >&2; exit 1; }
+  echo "blob: $outdir/$cls.class (+$((copied-1)) inner) + flat copies"
 }
 
 install_nested_glob colpush/build        net/minecraft/world/entity/ColpushOps
@@ -77,8 +110,16 @@ gate_fe entitygoalquery/build net/minecraft/world/entity EntityGoalQueryOps
 gate_fe goalops/build        net/minecraft/world/entity/ai/goal GoalOps
 gate_fe queryplane/build     net/minecraft/world/entity QueryPlaneOps
 gate_fe entityinside/build   net/minecraft/world/entity 'InsideSnapOps$Snap'
+gate_fe colpush/build        net/minecraft/world/entity 'ColpushOps$ConstSlot'
 # shellcheck disable=SC2181
 echo "flat==nested gates: OK"
+
+# javap LOADABILITY gate (recipe б): every installed class — outer AND inner —
+# must be locatable+parseable through its blobs dir (javap -p -cp). A missing
+# inner blob fails HERE, not as NCDFE ×4 after dispatch.
+for entry in "${LOADED_CLASSES[@]}"; do
+  gate_load "${entry%%|*}" "${entry#*|}"
+done
 
 # raw-byte gate: bridges must not reference LambdaMetafactory (no indy lambdas
 # on the bridge surface; selfTest bodies are plain bytecode).

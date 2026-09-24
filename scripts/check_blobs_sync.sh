@@ -69,7 +69,7 @@ echo "== javap-gate: lever bridge blobs vs ARM markers / gate flags (lever cmp41
 
 check_class \
   "entityinside/build/net/minecraft/world/entity/ItemEntityManager.class" \
-  "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" \
+  "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp445_collide" \
   "native int idxProbe" "static void indexAdd" "native int lifetimeDue"
 
 check_class \
@@ -80,27 +80,34 @@ check_class \
 
 check_class \
   "queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp412_b2p1" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "selfTest" "isHardCollidingProbe"
+  "cmp417_bq" "cmp420_colpush" "cmp412_b2p1" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp445_collide" "selfTest" "isHardCollidingProbe"
 
 check_class \
   "mobai/build/net/minecraft/world/entity/MobAiOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" \
+  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp445_collide" \
   "native"
 
 check_class \
   "sscan/build/net/minecraft/world/entity/MobScanOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" \
+  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp445_collide" \
   "native"
 
 check_class \
   "mobpush/build/net/minecraft/world/entity/MobPushOps.class" \
-  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" \
+  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp445_collide" \
   "native int mobProbe" "boxFor" "colpushSweep"
 
 check_class \
   "colpush/build/net/minecraft/world/entity/ColpushOps.class" \
-  "cmp420_colpush" "cmp430_inside" "pushEntities" "bulkTick" "selfTest" "armed" \
+  "cmp420_colpush" "cmp430_inside" "cmp445_collide" "pushEntities" "bulkTick" "selfTest" "armed" \
   "native int colpushProbe" "native int colpushTick"
+
+# TASK-449-A ×449: inner companions are part of the delivery surface — the
+# blob must exist, parse, and carry its final fields (×448 collide-2: ConstSlot
+# never delivered → kernel-loader NCDFE ×4 → cmp420_colpush disarm).
+check_class \
+  'colpush/build/net/minecraft/world/entity/ColpushOps$ConstSlot.class' \
+  "cramming" "maxCol" "tick"
 
 check_class \
   "entityinside/build/net/minecraft/world/entity/RegionTickOps.class" \
@@ -108,7 +115,7 @@ check_class \
 
 check_class \
   "entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
-  "cmp414_cvs" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" \
+  "cmp414_cvs" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp445_collide" \
   "native int eqProbe" "native int senseArena"
 
 # TASK-420-C chunk-pipeline plane (cmp420_chunk2): the bridge must carry the
@@ -135,7 +142,7 @@ check_class \
 
 check_class \
   "chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class" \
-  "cmp420_chunk2" "cmp420_colpush" "parse-cache first hit" "parse-cache selftest" \
+  "cmp420_chunk2" "cmp420_colpush" "cmp445_collide" "parse-cache first hit" "parse-cache selftest" \
   "public static void init" "parseSection"
 
 # TASK-421-C noise-blob coverage: the GEN-axis bridge family (noise/build,
@@ -224,7 +231,38 @@ check_flat_matches_nested "entitygoalquery/build" "net/minecraft/world/entity/En
 check_flat_matches_nested "queryplane/build" "net/minecraft/world/entity/QueryPlaneOps"
 check_flat_matches_nested "goalops/build" "net/minecraft/world/entity/ai/goal/GoalOps"
 check_flat_matches_nested "colpush/build" "net/minecraft/world/entity/ColpushOps"
+check_flat_matches_nested 'colpush/build' 'net/minecraft/world/entity/ColpushOps$ConstSlot'
 check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/RegionTickOps"
+
+# TASK-449-A ×449 javap-LOADABILITY gate: javap must locate+parse EVERY op
+# class (outer AND inner) through its blobs dir via a real classpath. This is
+# the pre-dispatch catch for blob-set holes: a class that javap cannot load
+# from the blobs dir is exactly the class the kernel loader would NCDFE on
+# (×448 collide-2 DELIVERY-FAIL: ColpushOps$ConstSlot).
+gate_load() { # dir fqcn-slash — fail if javap cannot load
+  local dir="$1" fq="$2" fq_dots
+  fq_dots="${fq//\//.}"
+  if "$JAVAP" -p -cp "$dir" "$fq_dots" >/dev/null 2>&1; then
+    note "javap-load OK: $fq_dots"
+  else
+    die "javap loadability FAIL: $fq_dots (cp=$dir) — blob missing/stale"
+  fi
+}
+gate_load entityinside/build   net/minecraft/world/entity/ItemEntityManager
+gate_load goalops/build        net/minecraft/world/entity/ai/goal/GoalOps
+gate_load queryplane/build     net/minecraft/world/entity/QueryPlaneOps
+gate_load mobai/build          net/minecraft/world/entity/MobAiOps
+gate_load sscan/build          net/minecraft/world/entity/MobScanOps
+gate_load sscan/build          net/minecraft/world/entity/MobPushOps
+gate_load mobpush/build        net/minecraft/world/entity/MobPushOps
+gate_load colpush/build        net/minecraft/world/entity/ColpushOps
+gate_load colpush/build        'net/minecraft/world/entity/ColpushOps$ConstSlot'
+gate_load entityinside/build   net/minecraft/world/entity/RegionTickOps
+gate_load entityinside/build   net/minecraft/world/entity/InsideSnapOps
+gate_load entityinside/build   'net/minecraft/world/entity/InsideSnapOps$Snap'
+gate_load entityinside/build   net/minecraft/world/entity/InsideBitmaskOps
+gate_load chunkparse/build     net/minecraft/world/level/chunk/storage/ChunkParseOps
+gate_load entitygoalquery/build net/minecraft/world/entity/EntityGoalQueryOps
 
 if [ "$FAIL" = "0" ]; then
   echo "check_blobs_sync: ALL IN SYNC"
