@@ -25,13 +25,14 @@
 //!     !removed && horizontalDistanceSqr <= 9.999999747378752E-6 (the EXACT
 //!     vanilla move-gate constant, ItemEntity.tick offsets 226..270).
 //!
-//! CYCLE-3 (TASK-448-B): (1) recheck cadence is TICK-TRUE — full vanilla body
-//! when `tickCount - last_full_tick >= 32` (was sighting-count rest_seq % 32)
-//! so the cadence is invariant under the java drain-throttle (append+decide
-//! once per DRAIN_EVERY=4 ticks, decisions 4..8 ticks stale — inside the
-//! accepted items_subsys2 recheck envelope, RESEARCH-B-446-ITEMS.md §7.5);
-//! (2) X-ray: stats[3..7] = primary ineligibility reason counters
-//! (ground/fluid/hdsqr/pickupDelay/other) for the java EFFECT log (§7.6).
+//! CYCLE-4 (TASK-450-B): the java side appends EVERY entity EVERY tick and
+//! drains on the next tick boundary (the cycle-3 drain-throttle starved the
+//! batch — RESEARCH-450-B #A); the recheck cadence stays TICK-TRUE on the
+//! rust side (tickCount − last_full_tick ≥ 32), so it is invariant to the
+//! java feed pattern (sightings may repeat every tick or 4 apart).
+//! X-ray: stats[3..7] = primary ineligibility reason counters, now actually
+//! printable in bench runs (root-cause #B: the old 1200-tick marker gate
+//! exceeded the ~660-tick bench soak; java prints first-drain + every 300).
 //!   - ineligible -> FULL + last_full_tick = MUST_LAND (any move/push/fluid
 //!     re-converges through the snapshot's velocity/flags; the next eligible
 //!     sight is a fresh landing FULL).
@@ -962,10 +963,14 @@ mod tests {
         // The gate's log literal is the blob-pinned proof (javac keeps string
         // literals, not comments).
         assert!(contains_bytes(b, b"stride misalignment"), "drain n-contract gate missing");
-        // TASK-448-B cycle-3: the X-ray EFFECT literals + throttle must be in
-        // the blob (stats[3..7] reason logging + DRAIN_EVERY=4 gate).
+        // TASK-448-B cycle-3: the X-ray EFFECT literals must be in the blob
+        // (stats[3..7] reason logging).
         assert!(contains_bytes(b, b"hdsqr="), "X-ray EFFECT literals missing");
-        assert!(contains_bytes(b, b"throttle"), "drain-throttle gate missing");
+        // TASK-450-B cycle-4: append-every-tick repair + printable markers —
+        // the first-drain EFFECT line and the cumulative SUMMARY line must be
+        // in the blob (root-cause #A/#B, runs 36015023714/36023838241).
+        assert!(contains_bytes(b, b"SUMMARY tick="), "cycle-4 SUMMARY marker missing");
+        assert!(contains_bytes(b, b"EFFECT tick="), "cycle-4 EFFECT marker missing");
         // S7-163: single classfile (no nested classes) — asserted by the build
         // script guard; here just sanity on the source-of-truth size.
         assert!(b.len() > 10_000, "blob suspiciously small: {}", b.len());

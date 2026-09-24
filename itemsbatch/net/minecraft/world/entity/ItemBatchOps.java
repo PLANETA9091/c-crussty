@@ -46,16 +46,20 @@ import net.kyori.adventure.util.TriState;
  * ONLY on full-path items (moving + 1/32 recheck) — settled items cost one
  * vanilla inactiveTick + one snapshot write.
  *
- * CYCLE-3 (TASK-448-B, RESEARCH-B-446-ITEMS.md §7): DRAIN-THROTTLE — the
- * snapshot append + the bulk planeDecide drain happen once per
- * {@link #DRAIN_EVERY} = 4 server ticks per region thread (meta[6]); between
- * drains items only probe the decision hash. Decisions are 4..8 ticks stale
- * (inside the accepted 32-tick recheck envelope, §7.5; unknown ids stay FULL
- * fail-open; fresh drops run FULL until their first sighting). The rust
- * recheck cadence is TICK-TRUE (tickCount − last_full_tick ≥ 32), so the
- * cadence is invariant under the throttle. Also new: X-RAY reason counters
- * (stats[3..7]: ground/fluid/hdsqr/pickupDelay/other) printed in the EFFECT
- * log — the per-run answer to "why does an item run FULL" (§7.6).
+ * CYCLE-4 (TASK-450-B, RESEARCH-450-B.md): ROOT-CAUSE + REPAIR. The cycle-3
+ * DRAIN-THROTTLE gated the snapshot append on the drain tick itself — only
+ * the FIRST entity per region thread per 4 server ticks ever entered the
+ * batch (≈0.01% of the population), the decision hash stayed empty for
+ * everyone else and the leg measured a pure vanilla replica (run
+ * 36023838241: append+drain 0.0% cpu samples, lane 30.07% = vanilla).
+ * Cycle-4 restores the fed flow: append EVERY entity EVERY tick, drain the
+ * moment the snapshot holds data on a NEW server tick (the proven 1f73d9f8
+ * flow, run 36015023714). Also repaired: the EFFECT/X-ray marker gate was
+ * 1200 server ticks — a bench soak is ~660 ticks (300s at ~2.2 TPS), so the
+ * marker was unprintable in every bench leg; now the FIRST data-drain always
+ * prints plus a cumulative SUMMARY every 300 ticks (per-thread CUM counters:
+ * drains/decided/rest/full/rechecks/ineligible-buckets — the per-run answer
+ * to "why does an item run FULL", RESEARCH-450-B §3/§4).
  *
  * GATE (double): ENABLED baked at compile from
  * {@code "cmp446_items".equals(getenv("CRUSSTY_LEVER_FLAG"))} AND the rust
@@ -106,16 +110,23 @@ public final class ItemBatchOps {
     private static final int F_PORTAL = 8;
     private static final int F_REMOVED = 16;
 
-    /** CYCLE-3: snapshot append + decide run once per 4 server ticks per
-     *  region thread (the vanilla move-gate quantum); between drains items
-     *  only probe the decision hash. Decision staleness ≤ 8 ticks — inside
-     *  the accepted 32-tick recheck envelope (RESEARCH §7.5). */
-    private static final int DRAIN_EVERY = 4;
+    /** CYCLE-4: EFFECT/X-ray SUMMARY cadence in SERVER ticks. Root-cause #B
+     *  (run 36023838241/36015023714): the old gate was 1200 ticks — the bench
+     *  soak lasts ~660 server ticks (300s at ~2.2 TPS), so the marker could
+     *  never print and the X-ray reason counters never reported. New gate:
+     *  the FIRST data-drain always prints, then a cumulative SUMMARY every
+     *  SUMMARY_EVERY ticks (300 ticks ≈ 2 lines/thread per bench run). */
+    private static final int SUMMARY_EVERY = 300;
 
     // ---- per-thread plane state (no nested classes: parallel ThreadLocals) ----
     // META: [0]=batchTick, [1]=top (snap fill), [2]=hashMask, [3]=hashCount,
-    //       [4]=drainGen, [5]=lastEffectTick, [6]=lastDrainTick (throttle)
+    //       [4]=drainGen, [5]=lastEffectTick, [6]=reserved (was throttle)
     private static final ThreadLocal<long[]> META =
+            ThreadLocal.withInitial(() -> new long[8]);
+    /** CYCLE-4: cumulative per-thread stats over the whole run —
+     *  [0]=drains, [1]=items decided, [2]=full, [3]=rest, [4]=rechecks,
+     *  [5]=ineligible-ground, [6]=ineligible-fluid, [7]=ineligible-hdsqr+pd+other. */
+    private static final ThreadLocal<long[]> CUM =
             ThreadLocal.withInitial(() -> new long[8]);
     private static final ThreadLocal<double[]> SNAP =
             ThreadLocal.withInitial(() -> new double[STRIDE * 512]);
@@ -172,23 +183,27 @@ public final class ItemBatchOps {
         }
         long[] meta = META.get();
         long st = MinecraftServer.getServer().getTickCount();
-        // CYCLE-3 drain-throttle: append+decide once per DRAIN_EVERY ticks;
-        // between drains items only probe the decision hash. meta[6]=0 before
-        // the first drain -> the first entry always drains (empty drain is a
-        // no-op that still stamps meta[0]/meta[6]).
-        boolean drainTick = st - meta[6] >= DRAIN_EVERY;
-        if (drainTick && (meta[1] != 0L || st != meta[0])) {
+        // CYCLE-4 (TASK-450-B root-cause #A, run 36023838241): the cycle-3
+        // drain-throttle gated append on drainTick — only the FIRST entity
+        // per thread per DRAIN_EVERY ticks ever entered the snapshot (drain
+        // stamps meta[6]=st, so st-meta[6]=0 for the rest of the window),
+        // the batch starved to ~1 item / 4 ticks / thread (~0.01% of the
+        // population), the decision hash stayed empty for everyone else and
+        // 99.4% of the tick subtree measured vanillaTick (append+drain 0.0%
+        // cpu samples). Fix: append EVERY entity EVERY tick; drain as soon
+        // as the snapshot holds data on a NEW server tick (the proven fed
+        // flow of 1f73d9f8, run 36015023714). meta[6] remains a telemetry
+        // slot (last drain tick) for the marker gate.
+        if (meta[1] != 0L && st != meta[0]) {
             drain(meta, st);
             if (broken) {
                 vanillaTick(e);
                 return;
             }
         }
-        if (drainTick) {
-            append(meta, e);
-        }
-        // decisions hold the last drained batch's classification (up to 8
-        // ticks stale under the throttle; unknown ids -> FULL, fail-open)
+        append(meta, e);
+        // decisions hold the PREVIOUS batch's classification (1-tick-stale;
+        // unknown ids -> FULL, the fail-open direction)
         int action = lookup(meta, e.getId());
         if (action == 1) {
             // REST: vanilla minimal body (counters + full despawn flow) +
@@ -223,7 +238,6 @@ public final class ItemBatchOps {
         int nDoubles = (int) meta[1];
         meta[0] = st;
         meta[1] = 0L;
-        meta[6] = st; // throttle anchor (CYCLE-3)
         if (nDoubles <= 0) {
             return;
         }
@@ -256,18 +270,44 @@ public final class ItemBatchOps {
             return;
         }
         buildHash(meta, snap, out, n);
-        // EFFECT marker: greppable proof the plane is live (max once / 1200
-        // ticks / thread; stdout is NOT purged before markers per canon).
-        // CYCLE-3: also the X-ray — why items ran FULL (stats[3..7], primary
-        // reason priority portal/removed -> fluid -> pickupDelay -> ground ->
-        // hdsqr; see RESEARCH-B-446-ITEMS.md §7.6).
-        if (st - meta[5] >= 1200L) {
+        // CYCLE-4 cumulative per-thread accounting (RESEARCH-450-B §5c):
+        // drains / items decided / full / rest / rechecks / ineligible
+        // buckets — the per-run answer to "why does an item run FULL".
+        long[] cum = CUM.get();
+        cum[0] += 1L;
+        cum[1] += n;
+        cum[2] += stat[0];
+        cum[3] += stat[1];
+        cum[4] += stat[2];
+        // stat[3]=ground, [4]=fluid, [5]=hdsqr, [6]=pd, [7]=other — collapse
+        // the tail buckets into one cumulative slot (summary prints all).
+        cum[5] += stat[3];
+        cum[6] += stat[4];
+        cum[7] += stat[5] + stat[6] + stat[7];
+        // EFFECT/X-ray marker (root-cause #B): the old gate was 1200 server
+        // ticks — a bench soak is ~660 ticks (300s at ~2.2 TPS), so the line
+        // was UNPRINTABLE in every bench leg (grep EFFECT = 0 in runs
+        // 36015023714/36023838241). New: the FIRST data-drain always prints
+        // (meta[5]==0 sentinel), then a cumulative SUMMARY every
+        // SUMMARY_EVERY ticks. stdout is NOT purged before markers per canon.
+        boolean first = meta[5] == 0L;
+        boolean due = st - meta[5] >= SUMMARY_EVERY;
+        if (first || due) {
             meta[5] = st;
-            LOG.info("[crussty-plugin] items_batch: EFFECT tick=" + st + " n=" + n
-                    + " rest=" + stat[1] + " full=" + stat[0] + " rechecks=" + stat[2]
-                    + " throttle=4 ground=" + stat[3] + " fluid=" + stat[4]
-                    + " hdsqr=" + stat[5] + " pd=" + stat[6] + " other=" + stat[7]
-                    + " items=" + n + " doubles=" + nDoubles);
+            if (first) {
+                LOG.info("[crussty-plugin] items_batch: EFFECT tick=" + st + " n=" + n
+                        + " rest=" + stat[1] + " full=" + stat[0] + " rechecks=" + stat[2]
+                        + " ground=" + stat[3] + " fluid=" + stat[4]
+                        + " hdsqr=" + stat[5] + " pd=" + stat[6] + " other=" + stat[7]
+                        + " items=" + n + " doubles=" + nDoubles);
+            }
+            if (due) {
+                LOG.info("[crussty-plugin] items_batch: SUMMARY tick=" + st
+                        + " drains=" + cum[0] + " decided=" + cum[1]
+                        + " rest=" + cum[3] + " full=" + cum[2] + " rechecks=" + cum[4]
+                        + " ineligible: ground=" + cum[5] + " fluid=" + cum[6]
+                        + " hdsqr+pd+other=" + cum[7]);
+            }
         }
     }
 

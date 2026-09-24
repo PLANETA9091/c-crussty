@@ -1,34 +1,19 @@
 {
-  "agent": "TASK-447-B",
-  "vector": "cmp446_items (закон 6 RUST-FIRST: items-плоскость целиком): ItemEntity.tick()V whole-body retarget -> ItemBatchOps static bridge; rust rest-plane shards=64, ОДИН bulk JNI/тик/поток planeDecide([DI[I[J)I, recheck 1/32; REST = vanilla inactiveTick + %40 merge (MH в приватное mergeWithNeighbours), FULL = byte-parity реплика offsets 0..588; fluid 32%/inside 28%/collision 25% лейна 29.5% выполняются только на FULL-пути",
-  "branch": "round-446-items @1ec41288c→06d2b37c→(TASK-447-B2 fix) — нога round-447b-items-1r2",
-  "base": "origin/round-446-items @fbb7b80c (RESEARCH-B-446-ITEMS javap census)",
-  "lever": "cmp446_items",
-  "run_id": "36004849498 (1r: CRASH-REFUTED; 1r2 pending)",
-  "tps_med": 1.7,
-  "delta_pair_pct": -21.6,
-  "lane_before": "items 29.5% LAN №1 (ItemEntity.tick-subtree; сплит: fluid 32% / inside 28% / collision 25%; merge-скан 3.7%; playerTouch 0 сэмплов)",
-  "lane_after": null,
-  "ram_stw": null,
-  "ram_full": null,
-  "parity": "план: ARM-маркер 'cmp446_items: ARMED rest-plane shards=64 recheck=1/32' + ЭФФЕКТ-маркер 'items_batch: EFFECT tick=... n= rest= full= rechecks=' (JUL, каждые 1200 тиков/поток) + AIOOBE=0 + NCDFE=0 + selfTest==true (до retransform, fail-closed) + band 6.0-9.5M + депресс-гейт norm>=-2 + pair Δ<=50k",
-  "verdict": "ROOT-CAUSED+FIXED, re-dispatch pending. Нога 1r CRASH-REFUTED (run 36004849498: threw=2, поллов=2, med 1.70 TPS med-of-1, -21.6%). ROOT-CAUSE (наш, структурный): ItemBatchOps.drain() передавал в planeDecide meta[1] = ЗАПОЛНЕНИЕ СНАПШОТА В DOUBLES (append добавляет STRIDE=12/item), а контракт rust (decide_batch читает n*STRIDE, пишет n) хочет ЧИСЛО ITEMS — на первом реальном батче (>=~43 items/поток) rust-гейт n*12>snap_len дал rc=-1 ДО любого чтения/записи (fail-closed держал, ноль heap-коррупции) -> broken=true навсегда -> нога мерила vanilla-replica фолбэк; selfTest прошёл, ибо шлёт n=1 явно. ФАТАЛЬНЫЙ CRASH (NoSuchElementException BlockableEventLoop.pollTask:150, peek->remove check-then-act) = S7-157b класс гонки СЕРТИФИЦИРОВАННОГО носителя RegionTickOps (live-crash 14:10:20 задокументирован в коде), уникален за ~400 ранов; наш lever пассивен (disarmed, ноль обращений к планировщику) — НЕ наш код. Invalid-block-entity ×10 — ПРЕДСУЩЕСТВУЮЩАЯ коррупция мира фикстуры (10x в КАЖДОМ ране вкл. зелёные якоря; пик на 20с ДО ARM) — хронология брифа опровергнута.",
+  "agent": "TASK-450-B (general-purpose)",
+  "vector": "cmp446_items items rest-plane — root-cause + cycle-4",
+  "branch": "round-450b-items",
+  "run_id": null,
+  "tps_med": null,
+  "delta_pair_pct": null,
+  "lane_was_became": "31.17% -> pending cycle-4 leg",
+  "ram_stw_full": null,
+  "parity": "pending",
+  "verdict": "IN-PROGRESS",
   "evidence": [
-    "BAND-DISCARD #1: run 36004214144 branch round-447b-items-1 @1ec41288 — runner_cpu_index=10040381 OUTSIDE [6.0M,9.5M] fast-fail pre-download (pairing discard, не bench-фейл, ре-ролл ≤2 канон)",
-    "step-0 аудит: worktree fbb7b80c + dirty itemsbatch/ (ItemBatchOps.java, S7-163 single-classfile) + build_itemsbatch_ops.sh — дописан rust rest-plane + wiring",
-    "step-1 src/items_batch.rs (835 строк): byte hook ItemEntity (pristine capture/serve), activate = wait boot -> define ItemBatchOps в kernel loader -> RegisterNatives planeProbe/planeDecide -> selfTest ДО retransform (fail-closed) -> ReplaceBody tick()V -> READY -> retransform -> ГРОМКИЙ ARM-маркер; plane: 64-shard Mutex<HashMap<id,(rest_seq,last_epoch)>>, eligibility = items_subsys2 planeResting реплика (onGround && pd∈{0,32767} && !water && !lava && !portal && !removed && hdSqr<=9.999999747378752E-6), rest_seq==1 landing-FULL, %32 recheck-FULL, rest_seq==0 reset; GC stale 4096 epochs каждые 1024",
-    "step-2 гейты GREEN: cargo check --lib ok; cargo test --lib 309/0 (7 новых: landing/recheck-1-32/pd-32767/ineligible-reset/push-convergence/gc-reland/blob-contract); check_blobs_sync.sh ALL IN SYNC (itemsbatch добавлен в канон-гейт: cmp446_items/selfTest/inactiveTick/mergeWithNeighbours/native int planeProbe/native int planeDecide + flat==nested); javap surface верифицирован",
-    "инфра: worktree был sparse — доставлены cplug-abi/cplug-sdk/colpush/entityquery/fluid/goalops/mobai/noise/paletted/prepare/queryplane/randomtick/sscan/stagger/area-map/tests/entitygoalquery/chunkparse; kernel-jar канон round-396-a восстановлен в /tmp/patched-kernel-396a.jar (md5 83b6f9c9 = ROUND-445/agent-a копия); диск 100%->68% (пурдж ms-playwright/puppeteer/npm-cacache 3.1G освобождено)",
-    "java-реплика vanillaTick: offsets 0..588 (javap purpur-1.21.10) — stack-empty discard, Entity.tick despawnTime-гейт + baseTick, pickupDelay-- (кроме 32767), xo/yo/zo, fluid-movement 0.99/0.9499 || applyGravity, noCollision-deflate(1e-7)/moveTowardsClosestSpace, move-гейт (onGround && hdSqr<=1e-5 && (tick+id)%4!=0), applyEffectsFromBlocks, friction 0.98/block*0.98 (TriState.FALSE->1.0), bounce *-0.5, merge-окно moved?2:40 (оригинальный приватный mergeWithNeighbours через MH), age++ (кроме -32768), updateInWaterStateAndDoFluidPushing, hasImpulse>0.01, despawn flow (ItemDespawnEvent cancel -> age=0)"
+    "ROOT-CAUSE #0: ins4/mega4 'items lane 0.00' = lane-regex artifact; ItemEntityManager.tickOne = 30.35% cpu-collapsed in round-443g-ins4-1 (run 36038486355) ~= vanilla 28.98-31.17% — same cost, renamed frame; no working items plane exists in ins4 lineage",
+    "ROOT-CAUSE #A: cycle-3 (a6648df2) append gated on drainTick -> only 1st ItemEntity per thread per 4 ticks appended -> hash empty -> all FULL -> vanilla replica 99.4% of tick subtree (run 36023838241), append+drain = 0.0% samples vs 1.7pp in fed plane (run 36015023714)",
+    "ROOT-CAUSE #B: EFFECT/X-ray log gate st-meta[5]>=1200 ticks unprintable in ~660-tick bench (300s @ ~2.2TPS) -> grep EFFECT = 0 in both items legs; X-ray never reported",
+    "ROOT-CAUSE #C: fed plane (1f73d9f8) decided ~all FULL: inactiveTick 0.01% samples; fixture spawns items at getHighestBlockYAt+1 = water surface on water columns (ITEM_PICKUP_DELAY=32767 accepted by predicate) -> candidate fixture-miss; X-ray on cycle-4 leg to quantify"
   ],
-  "what": "закон 6: подсистема ItemEntity ЦЕЛИКОМ на rust rest-plane — решении REST/FULL по примитивным снапшотам прошлого тика (stride-12 doubles, нулевой per-entity JNI), 1-тик-стейл классификация (unknown id = FULL fail-open), осмысленные отклонения задокументированы в RESEARCH-B-446-ITEMS.md §5 (fire/lava/buoyancy onset <=32 тиков, y-дрейф <=0.02, деспавн-тайминги точны — inactiveTick ванильный)",
-  "steps_log": [
-    "step-0: worklog/BOTTLENECK-447 прочитаны, worktree-аудит, dirty-работа принята",
-    "step-1: rust rest-plane + wiring написаны, lib.rs подключён (mod/register/activate)",
-    "step-2: все гейты зелёные (cargo 309/0, blobs ALL IN SYNC), коммит 1ec41288 + пуш round-446-items",
-    "step-3: нога round-447b-items-1 @1ec41288 диспатчена → BAND-DISCARD (10.04M) → kernel javap РЕ-ВЕРИФИКАЦИЯ реплики нашла 3 парити-дефекта (skip-move блок целиком / 5.0E-4f / isMergable call-site) → фикс @06d2b37c → re-roll нога round-447b-items-1r диспатчена",
-    "step-4: нога 1r CRASH-REFUTED (run 36004849498): threw=2, TPS-поллов=2, med 1.70 @6502360, −21.6%; форензика server-stdout.log: chronology ARM 13:30:04 → planeDecide rc=-1 13:30:05 (ПЕРВЫЙ тик с популяцией) → фаталищ NoSuchElementException 13:32:21 (S7-157b race класс носителя); Invalid-block-entity ×10 = шум фикстуры (есть во ВСЕХ ранах ДО ARM) — хронология брифа (ARM→коррупция) ОПРОВЕРГНУТА",
-    "step-5 FIX (TASK-447-B2): ItemBatchOps.drain — конверсия doubles→items (n=nDoubles/STRIDE) + structural gate stride-misalignment (rc fail-closed ДО native) + EFFECT-лог теперь печатает items и doubles; rust hardening: snap critical-release → JNI_ABORT (read-only контракт); blob_contract тест расширен пином 'stride misalignment'; гейты: javac blob 13723B, check_blobs_sync ALL IN SYNC, cargo check ok, cargo test 309/0",
-    "step-6 PENDING: коммит+пуш, диспатч ноги round-447b-items-1r2, полл/абсорб/вердикт"
-  ]
+  "what": "RESEARCH-450-B.md committed; next: append-every-tick fix + printable X-ray markers (first-drain + every 300 ticks) + CUM summary; gates then dispatch lever cmp446_items"
 }
