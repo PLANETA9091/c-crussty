@@ -1,30 +1,22 @@
 {
-  "agent": "TASK-431-B",
-  "vector": "R-закон 6: inside/block-contact плоскость целиком (inside_bitmask pre-gate stage-1b + inside_snap snapshot plane stage-1c, ONE bulk-JNI per collect) на пробуждённом SoA-носителе A2 round-427-a2-mobsoa @18151a96; ветка round-430-b-inside @5a3cd38",
-  "branch": "round-430-b-inside",
-  "base": "origin/round-427-a2-mobsoa @18151a96 (код=fe4ee57, cmp424_mobfeed)",
-  "lever": "cmp430_inside",
-  "run_id": null,
-  "tps_med": null,
-  "delta_pair_pct": null,
-  "lane_before": "inside_volatile 12.18% флэт (wgen-l1 профиль, BOTTLENECK-430); адресуемо 1.3-1.6% PROFILE-B (modulo-декодер round-423-b-inside)",
-  "lane_after": null,
-  "ram_stw": null,
-  "ram_full": null,
-  "parity": "план: ARM+ЭФФЕКТ маркеры + Retargeted sites>0 (inside_bitmask stage-1b sites:1, inside_snap stage-1c sites:1, LevelChunk secWrite sites:1) + AIOOBE=0 + NCDFE=0 + selfTest==true + javap flat==nested + polls threw=0",
-  "verdict": "IN_PROGRESS: step-2 верификация пройдена, диспатч ждёт завершения round-431-* пробного батча (CI-окно главного агента)",
-  "evidence": [
-    "step-1 @5a3cd38 (запушен): STRICT-OR plumbing 24 rust gate-строк (17 файлов) + 8 java blob gates + InsideSnapOps.java 471 строка + InsideBitmaskOps.class + build_430b_blobs.sh, блобы ALL IN SYNC",
-    "step-2 верификация: cargo check --lib green; cargo test --lib 302/0 (+inside_snap modulo 4 tests); check_blobs_sync ALL IN SYNC; javap InsideSnapOps.selfTest invokestatic snapProbe NOT-a-stub; flat==nested byte-identical (InsideSnapOps + InsideBitmaskOps)",
-    "triаж round-431-a2-l8r3 (чужой пробный батч): BAND fast-fail runner_cpu_index=11110082 OUTSIDE band — pairing discard, не bench-фейл; band-гварды работают",
-    "диск-закон: cargo target удалён сразу после теста (71% hold)",
-    "ре-роллы round-431-*: a2-l8r3 требует ре-ролла после диспатча своего батча — вне моей очереди (главный агент)"
-  ],
-  "what": "закон 6: вся inside/block-contact подсистема = (A) bitmask all-air pre-gate на ЕДИНСТВЕННОМ сайте applyEffectsFromBlocks->checkInsideBlocks (13 входов из RECON-33 census), (B) snapshot-плоскость per-section BlockState[4096] с ONE bulk-JNI collect + modulo-декодером в Rust и secWrite-инвалидацией; пер-сайт ретаргеты = клей миграции",
-  "steps_log": [
-    "step-0: worktree + research + диск-закон OK",
-    "step-1: имплементация выполнена, блобы пересобраны, запушено @5a3cd38",
-    "step-2: верификация (cargo 302/0, blobs ALL IN SYNC, javap NOT-a-stub) OK; dispatch_431b.py готов (3 якоря master + 3 inside-ноги cmp430_inside интерлив, банк inputs вербатим)",
-    "step-3 PENDING: диспатч после завершения round-431-*"
-  ]
+  "agent": "TASK-451-D sense/brain",
+  "vector": "sense/brain целиком (закон 6) — ценз числами",
+  "stage": "RESEARCH census complete",
+  "branch": "round-451d-sense",
+  "census": {
+    "nav_ai_lane": "14.16% bank v4 / 13.62% fresh anchor",
+    "decomposition_wall": {"GoalSelector+goals": 85.8, "PathNavigation": 29.6, "PathFinder": 17.7, "Brain+behavior": 3.0, "targeting": 2.2, "sensing": 0.2, "move/look": 1.0},
+    "brain_mobs_in_fixture": 0,
+    "components": {
+      "gsel_bookkeeping": "CLOSED x4 iter / 9 legs (structural)",
+      "goal_logic": "law-4 irreducible",
+      "goal_query": "already merged cmp417_bq + eindexq carriers",
+      "brain_tick2": "0.4pp micro (no Brain mobs)",
+      "sensing": "0.1-0.2pp micro",
+      "pathnav": "foreign vector 3.5-4.2pp"
+    },
+    "solo_ceiling": "realistic +2-4% TPS, theoretical +10-14% — BELOW +20% bar and < ~10% criterion"
+  },
+  "verdict": "NO-GO solo impl (LOW-POTENTIAL honest, before code) -> PLAN B: cmp451_senseins STRICT-OR on ins6 carrier @07078007, legs after ins4 cert",
+  "next": ["port sense family (SenseOps + BrainOps.tick2 + sense-goalquery) onto round-436-b-ins6", "retag cmp451_senseins at every gate", "blobs+cargo+javap gates", "dispatch after ins4 cert"]
 }
