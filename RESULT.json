@@ -1,31 +1,49 @@
 {
   "agent": "agent-b",
   "vector": "cmp436_pdemux",
-  "task_id": "TASK-437-B",
+  "task_id": "TASK-437-B -> TASK-438-B (root-cause + fix)",
   "branch": "round-437-b-pdemux",
-  "sha": "aff0d1f6",
+  "sha": "7ce4437c (fix) on top of d8c8463c (v3 step-1)",
   "base": "origin/round-436-a-wgen4 @a980def",
-  "run_id": null,
-  "tps_med": null,
-  "delta_pair_pct": null,
-  "lane_went": {
-    "was": "paletted lane 7.06% -> 5.76% (DEMUX read-path, proven x435)",
-    "now": "read-path untouched (fast lane preserved); write-hot blacklisted sections stop paying 2 volatile gen++ stores + static call per mutation (v3 gate: 1 volatile load + 1 plain load)"
+  "run_id": 35938808401,
+  "run_verdict_history": {
+    "pd-inf1": "CRASH-REFUTED by absorb (threw=1, T2 FAIL) — REVERSED by this root-cause: threw=1 = vanilla artifact, run was DORMANT-vanilla (not a lever leg at all)"
   },
-  "ram_stw": null,
-  "ram_full": null,
+  "root_cause_1_threw": {
+    "exact_line": "[00:39:40 ERROR]: Failed to create block entity net.minecraft.world.level.block.entity.BlockEntityType@17f275a5 for block BlockPos{x=-54, y=62, z=122} at position Block{minecraft:orange_shulker_box}[facing=up]",
+    "exception": "java.lang.IllegalStateException: Invalid block entity minecraft:lectern // net.minecraft.world.level.block.entity.LecternBlockEntity state at BlockPos{x=-54, y=62, z=122}, got Block{minecraft:orange_shulker_box}[facing=up] at BlockEntity.validateBlockState(BlockEntity.java:65) <- SerializableChunkData.postLoadChunk <- LevelChunk.runPostLoad <- ForceLoadCommand.changeForceLoad",
+    "classification": "INFRA/VANILLA-ARTIFACT (known class: GOAL x116 ins-l2r2 identical lectern artifact); timing 00:39:40 = forceload sweep chunk-load, BEFORE benchpop inject (00:39:50); lever code dormant by construction -> cannot be lever-BUG",
+    "recovered_from": "GitHub artifact world3-bench (id 10784368768) — server-stdout.log survived locally-purged (lesson x437 methodology works)"
+  },
+  "root_cause_2_arm_miss": {
+    "classification": "LEVER-BUG (arming/plumbing) — FIXED @7ce4437c",
+    "bug": "src/paletted.rs enabled() lever_gate STRICT-eq cmp434_wgen3 ONLY (leftover TASK-434-A carry); run dispatched LEVER_FLAG=cmp436_pdemux -> gate false; CRUSSTY_PALETTED_DEMUX pinned '0' in world-bench-parallel.yml (input dropped TASK-335) -> env_gate false -> DORMANT",
+    "proof_in_run": "server-stdout.log line 8: '[crussty-plugin] paletted: dormant (set CRUSSTY_PALETTED_DEMUX=1 or lever cmp434_wgen3 to enable)'; run-env.txt paletted_demux: 0; BOTTLENECKS_3.md lane vanilla-shaped (PalettedContainer.get 4.3% + readPalette 1.0%, no fast/Ops split) — explains 'items 27.98% vanilla-level, paletted +0.43 effect invisible'",
+    "run_env_n_a_note": "run-env.txt has NO lever line at all — capture-normal (same as ss-inf1r2); ARM status must be read from plugin stdout markers, not run-env",
+    "fix": "lever_gate = matches!(CRUSSTY_LEVER_FLAG, Ok(\"cmp436_pdemux\") | Ok(\"cmp434_wgen3\")) STRICT-OR (env escape hatch kept); dormant marker message updated"
+  },
   "parity": {
-    "harness": "ALL PASS (20000-op lockstep 4883/4883, fast-path parity, refcount release, re-materialize, concurrency smoke 3R+1W)",
-    "fingerprint": "vanilla fixture len=30967 major=65 MATCH (round-396-a kernel entry byte-identical)",
-    "bank": "research/paletted-demux-2026-09-18/PARITY_BANK_437B_V3.md",
-    "gen_trace": "30009 (v2) -> 883 (v3) = designed skip fingerprint, ~97% of stream mutations stopped paying the volatile pair"
+    "harness": "ALL PASS re-run post-fix (20000-op lockstep 4883/4883 seed 424242, snapGen=883 designed v3 skip fingerprint, 1000 fast-path reads, refcount 1->0, re-materialize, concurrency smoke 3R+1W)",
+    "fingerprint": "vanilla fixture len=30967 major=65 MATCH; ASM 30967 -> 31521 (v3)",
+    "bank": "research/paletted-demux-2026-09-18/PARITY_BANK_437B_V3.md + fresh re-run identical"
   },
-  "verdict": "INFRA",
-  "stage": "step-1/3: ASM patcher v3 + Ops epoch-transition guard DONE, parity MATCH, blobs rebuilt; next: rust mirror classfile.rs v3 + lever cmp436_pdemux + cargo gates",
-  "evidence": [
-    "research/paletted-demux-2026-09-18/parity_harness_output_437b_v3.txt",
-    "paletted/build/PalettedContainer.patched.class (31521B, major 65, javap: crusstyWriteGate/crusstyEpilogue/onMutateStart present)",
-    "jvm verifier accepted the patched class (harness L2 executed it end-to-end)"
+  "gates_438b": [
+    "cargo CARGO_TARGET_DIR=/tmp/cargo-438b check --lib GREEN (7.9s; 102 pre-existing warnings, 0 errors)",
+    "cargo test paletted_patch_roundtrip 1/1 OK (on reverted clean HEAD state)",
+    "paletted/build_paletted_ops.sh full chain (ASM v3 -> stub jar -> ECJ Ops -> JVM harness) ALL PASS",
+    "javac blob build build_430b_blobs.sh OK (11 blobs, flat==nested gates OK)",
+    "check_blobs_sync.sh ALL IN SYNC",
+    "javap patched class: 5 fields (crusstySnap/SnapGen/Gen/Miss/Epoch, epoch VOLATILE) + private crusstyWriteGate()/crusstyEpilogue(int)",
+    "javap Ops: MAX_BUILDS_PER_CONTAINER iconst_2 pin + public static selfTest() (selfTest pins MAX_BUILDS==2)",
+    "runtime embed paletted/build/PalettedContainer.patched.class == fresh ASM output (cmp IDENTICAL); tests/out artifact synced 31363(v2 stale) -> 31521(v3)"
   ],
-  "what": "ASM COMPUTE_FRAMES patcher emits 5 fields (epoch now VOLATILE) + 2 synthetic private methods (gate + epilogue) + branch-free mutator wrappers with keep-flag local above original maxLocals (pre-pass captured); Ops.tryMaterialize validates epochAtStart"
+  "verdict": "CI-READY (условно): код фикса готов и запушен @7ce4437c, но верификационная нога pd-rev1 (run 35941692866) стартовала на ДО-ФИКС sha d8c8463c — будет DORMANT повторно; нужен ре-диспатч @7ce4437c (маркер-капчер обязателен)",
+  "stage": "step-1/3 DONE (438-B): root-cause ×2 + ARM fix pushed; next (main/owner): ре-диспатч pdemux-ноги на 7ce4437c с lever_flag=cmp436_pdemux + golden-маркер-капчер (server-stdout.log purge только после ARM-чеков)",
+  "evidence": [
+    "/tmp/pd-inf1.log (job log 107441876954, run 35938808401)",
+    "artifact server-stdout.log line 8 dormant marker + lectern exception lines 326-352",
+    "commit 7ce4437c round-437-b-pdemux",
+    "research/paletted-demux-2026-09-18/parity_harness_output_437b_v3.txt (re-verified)"
+  ],
+  "what": "FIX: paletted.rs lever_gate STRICT-OR + cmp436_pdemux (root-cause pd-inf1 dormant); in-flight mid-edit classfile.rs v3 offline-patcher port REVERTED as inconsistent (test asserts 4 fields vs 5 injected constants; offline patcher = dead code in runtime, ASM image is the ship path) — rust-mirror v3 port stays optional offline hygiene, не блокер CI"
 }
