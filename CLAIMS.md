@@ -79,3 +79,19 @@
 3. C-агент (chunk4): цикл закона 3 продолжается — если ветка не готова к 02:08, chunk4-ноги в следующий golden; ветка+артефакты переживают тик.
 4. pdemux-вердикт-дисциплина: локальный парити 4883/4883 MATCH, но CI-чтение CRASH-REFUTED — только маркер-чистая нога в golden, иначе вектор остаётся инфо.
 5. Резерв: eqw (entity-query K4 widening) — только после диеты snapshotQuery-цены по golden-декомпозиции (PLAN-Б2 условный).
+
+## TASK-439 (tick-438 → golden-слот 02:08 +08, мандат v17)
+0. Учёт ×438: pdemux lever-BUG root-caused+fixed+CI-подтверждён (ARM зелёный @48362768); окно карманное (пар нет, CERT 0); chunk4-research завершён (chunk-send serialization snapshot); NO MERGE.
+1. **ТИК 02:08 = ЗОЛОТОЙ СЛОТ: батч СРАЗУ НА СТАРТЕ (финальный порядок)**:
+   (a) dispatch_436c_golden.py (8 якорей двухзонных + 4 chk cmp434_chunkpl + 2 chk3 cmp435_chunk3);
+   (b) dispatch_436a.py (2 якоря + 3 w4 @a980def cmp434_wgen3 — ФИНАЛ wgen3: ≤0 = ЗАКРЫТИЕ);
+   (c) dispatch_437a_sscan2.py (2 якоря + 3 ss @3f3b111f cmp436_sscan2 — ARM ×2 подтверждён);
+   (d) 3 ins4-ноги @07078007 cmp436_ins4 (+22.8/+15.2 пики);
+   (e) 2 pd-ноги @48362768 cmp436_pdemux (ARM-зелёный после фикса, маркер-капчера обязательна);
+   (f) при готовности: chunk4-ноги @round-438-c-chunk4b cmp437_chunk4 + sense-ноги @round-438-a-sense cmp438_sense (если ARM успел);
+   (g) якорная сетка: 8+ якорей, двухзонная (ядро + high 8.4-9.3M), максимальная плотность (карман-уроки ×437/438);
+   (h) мерж победителя ≥+20% pair min-of-3 немедленно --no-ff (лесенка +27.3 → sscan2/ins4/pdemux/chk3-семейство).
+2. Каноны: депресс-гейт norm ≥−2; pair Δ≤50k; min-of-3; band 6.0-9.5M ре-ролл ≤2; ARM по stdout-маркерам (не run-env); server-stdout НЕ purge до маркеров; threw=1 ваниль-артефакт LecternBlockEntity ≠ lever-фейл.
+3. A (sense) / C (chunk4b): цикл закона 3 продолжается; если ARM успел до 02:08 — ноги в golden-батч (f), иначе следующий golden.
+4. wgen3-вердикт-дисциплина: golden-чтение ≤0 = вектор ЗАКРЫТ (закон 3 исчерпан: −2.6..−10.6 ×2 окна + финал).
+5. Ре-роллы BAND-DISCARD ×438 (anchor-1, ins4-2) входят в golden-батч автоматически (новые ветки round-439*).
