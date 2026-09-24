@@ -1,19 +1,31 @@
 {
-  "agent": "TASK-436-A",
-  "vector": "wgen3 golden-window final attempt (law-3 cycle, CLAIMS p.3): cmp434_wgen3 STRICT-OR (wgen set + PALETTED-DEMUX) carried to round-436-a-wgen4; plan-B researched for post-closure slot",
-  "branch": "round-436-a-wgen4 @8d983fb (worktree /home/z/rounds/ROUND-436/agent-a, tracks origin/round-434-a-wgen3 @062baea + gates + docs)",
-  "run_id": "pending golden-slot dispatch (NOT mine to run: tick 02:08 +08 executes dispatch_436a.py)",
+  "agent": "agent-b",
+  "vector": "cmp436_pdemux",
+  "task_id": "TASK-437-B",
+  "branch": "round-437-b-pdemux",
+  "sha": "aff0d1f6",
+  "base": "origin/round-436-a-wgen4 @a980def",
+  "run_id": null,
   "tps_med": null,
   "delta_pair_pct": null,
-  "lane": "step-2: PLAN-B research banked (research/gc-recon-2026-09-19/RESEARCH-A-436-PLAN-B.md) — B1 sscan2 despawn+spawn plane cmp436_sscan2 (owner-named, MobScanOps substrate complete+dormant, blobs ALL IN SYNC), B2 eqw cmp436_eqw conditional on golden-verdict decomposition (snapshotQuery 7.5% self cost diet first), B3 anchor-support of inside2/chunkpl lines; PALETTED-DEMUX write-path guard designed and deferred (verdict purity, dual-mirror law-6 cost)",
-  "ram_stw_full": null,
-  "parity": "re-verified this worktree: blobs IN SYNC (build_430b_blobs flat==nested OK; check_blobs_sync ALL IN SYNC), cargo check --lib green, PALETTED-DEMUX fingerprint MATCH len=30967 major=65 (banked S7-145)",
-  "verdict": "GOLDEN DISPATCH READY + PLAN-B BANKED (8d983fb); golden shot = last wgen3 attempt, <=0 closes the vector per CLAIMS p.3",
+  "lane_went": {
+    "was": "paletted lane 7.06% -> 5.76% (DEMUX read-path, proven x435)",
+    "now": "read-path untouched (fast lane preserved); write-hot blacklisted sections stop paying 2 volatile gen++ stores + static call per mutation (v3 gate: 1 volatile load + 1 plain load)"
+  },
+  "ram_stw": null,
+  "ram_full": null,
+  "parity": {
+    "harness": "ALL PASS (20000-op lockstep 4883/4883, fast-path parity, refcount release, re-materialize, concurrency smoke 3R+1W)",
+    "fingerprint": "vanilla fixture len=30967 major=65 MATCH (round-396-a kernel entry byte-identical)",
+    "bank": "research/paletted-demux-2026-09-18/PARITY_BANK_437B_V3.md",
+    "gen_trace": "30009 (v2) -> 883 (v3) = designed skip fingerprint, ~97% of stream mutations stopped paying the volatile pair"
+  },
+  "verdict": "INFRA",
+  "stage": "step-1/3: ASM patcher v3 + Ops epoch-transition guard DONE, parity MATCH, blobs rebuilt; next: rust mirror classfile.rs v3 + lever cmp436_pdemux + cargo gates",
   "evidence": [
-    "profiles: round-435a-anchor-a (master) vs round-435a-w3-1/2 (lever): paletted lane 7.06->5.76 (-1.3pp demux working), snapshotQuery 0->7.5 self = wgen-stack cost in deflated windows; nav_ai -8.2pp / items -31pp = pie shift",
-    "dispatch_436a.py READY: 2 anchors round-436a-anchor-1/2 @master lever='' + 3 legs round-436a-w4-1/2/3 @round-436-a-wgen4 lever=cmp434_wgen3, INPUTS bank exact, interleaved, py-valid",
-    "round-436 master e05994c (tick-435 FINAL); C already dispatched chk3 legs; A slot wave = wgen4 golden batch",
-    "plan-B evidence: mobs_sscan.rs complete dormant plane (lib.rs:597 activation, natives sscanProbe/sscanEpoch, blob 6177B synced); S7-140 walls respected in candidate matrix (DATA-PLAN/S7-140 closed, fluid law-5 dead, chunk-parse complete per RESEARCH-G)"
+    "research/paletted-demux-2026-09-18/parity_harness_output_437b_v3.txt",
+    "paletted/build/PalettedContainer.patched.class (31521B, major 65, javap: crusstyWriteGate/crusstyEpilogue/onMutateStart present)",
+    "jvm verifier accepted the patched class (harness L2 executed it end-to-end)"
   ],
-  "what": "step-2 done: RESEARCH-A-436-PLAN-B.md committed+pushed; next: worklog append; golden-slot tick runs dispatch_436a.py then absorb+pair verdict (band 6.0-9.5M, anchors norm >= -2%, pair Δ<=50k, min-of-3, >=+20% finish)"
+  "what": "ASM COMPUTE_FRAMES patcher emits 5 fields (epoch now VOLATILE) + 2 synthetic private methods (gate + epilogue) + branch-free mutator wrappers with keep-flag local above original maxLocals (pre-pass captured); Ops.tryMaterialize validates epochAtStart"
 }
