@@ -1,0 +1,211 @@
+﻿2026-09-24T19:47:59.5939686Z Current runner version: '2.337.0'
+2026-09-24T19:47:59.5970025Z ##[group]Runner Image Provisioner
+2026-09-24T19:47:59.5970918Z Hosted Compute Agent
+2026-09-24T19:47:59.5971651Z Version: 20260828.587
+2026-09-24T19:47:59.5972324Z Commit: abac92662cab4cc7352de4f9f9d2e2419aad9c29
+2026-09-24T19:47:59.5973131Z Build Date: 2026-08-28T16:44:25Z
+2026-09-24T19:47:59.5973868Z Worker ID: {8f31e7ab-4a9b-48db-bfb2-4e13205ec74a}
+2026-09-24T19:47:59.5974647Z Azure Region: centralus
+2026-09-24T19:47:59.5975365Z ##[endgroup]
+2026-09-24T19:47:59.5976697Z ##[group]Operating System
+2026-09-24T19:47:59.5977613Z Ubuntu
+2026-09-24T19:47:59.5978187Z 24.04.5
+2026-09-24T19:47:59.5978774Z LTS
+2026-09-24T19:47:59.5979372Z ##[endgroup]
+2026-09-24T19:47:59.5979949Z ##[group]Runner Image
+2026-09-24T19:47:59.5980545Z Image: ubuntu-24.04
+2026-09-24T19:47:59.5981205Z Version: 20260920.314.1
+2026-09-24T19:47:59.5982527Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260920.314/images/ubuntu/Ubuntu2404-Readme.md
+2026-09-24T19:47:59.5984160Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260920.314
+2026-09-24T19:47:59.5985126Z ##[endgroup]
+2026-09-24T19:47:59.5986406Z ##[group]GITHUB_TOKEN Permissions
+2026-09-24T19:47:59.5988927Z Contents: read
+2026-09-24T19:47:59.5989573Z Metadata: read
+2026-09-24T19:47:59.5990160Z ##[endgroup]
+2026-09-24T19:47:59.5992334Z Secret source: Actions
+2026-09-24T19:47:59.5993322Z Cache mode: write
+2026-09-24T19:47:59.5994495Z Prepare workflow directory
+2026-09-24T19:47:59.6332569Z Prepare all required actions
+2026-09-24T19:47:59.6380777Z Getting action download info
+2026-09-24T19:47:59.9186543Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-09-24T19:47:59.9987797Z Download action repository 'dtolnay/rust-toolchain@stable' (SHA:6bed0761d98439e5a578e2877258200ad565ba87)
+2026-09-24T19:48:00.1545055Z Download action repository 'Swatinem/rust-cache@v2' (SHA:6323deb102c322ba6fcbdcafc7e3dddab59af2b6)
+2026-09-24T19:48:00.7621681Z Download action repository 'actions/setup-java@v4' (SHA:cf277c60eb25467037889841efdb72551f06f6c3)
+2026-09-24T19:48:01.2850177Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-09-24T19:48:01.6051666Z Complete job name: world-bench
+2026-09-24T19:48:01.7038631Z ##[group]Run actions/checkout@v4
+2026-09-24T19:48:01.7039954Z with:
+2026-09-24T19:48:01.7040767Z   repository: PLANETA9091/c-crussty
+2026-09-24T19:48:01.7048706Z   token: ***
+2026-09-24T19:48:01.7049506Z   ssh-strict: true
+2026-09-24T19:48:01.7050321Z   ssh-user: git
+2026-09-24T19:48:01.7051147Z   persist-credentials: true
+2026-09-24T19:48:01.7052102Z   clean: true
+2026-09-24T19:48:01.7052932Z   sparse-checkout-cone-mode: true
+2026-09-24T19:48:01.7053899Z   fetch-depth: 1
+2026-09-24T19:48:01.7054690Z   fetch-tags: false
+2026-09-24T19:48:01.7055515Z   show-progress: true
+2026-09-24T19:48:01.7056368Z   lfs: false
+2026-09-24T19:48:01.7057130Z   submodules: false
+2026-09-24T19:48:01.7058345Z   set-safe-directory: true
+2026-09-24T19:48:01.7059305Z   allow-unsafe-pr-checkout: false
+2026-09-24T19:48:01.7060566Z ##[endgroup]
+2026-09-24T19:48:01.8144337Z Syncing repository: PLANETA9091/c-crussty
+2026-09-24T19:48:01.8148196Z ##[group]Getting Git version info
+2026-09-24T19:48:01.8150284Z Working directory is '/home/runner/work/c-crussty/c-crussty'
+2026-09-24T19:48:01.8153194Z [command]/usr/bin/git version
+2026-09-24T19:48:01.8171902Z git version 2.55.0
+2026-09-24T19:48:01.8192139Z ##[endgroup]
+2026-09-24T19:48:01.8206758Z Temporarily overriding HOME='/home/runner/work/_temp/21c7a704-ee5c-435f-8abf-8dbb4e13e8af' before making global git config changes
+2026-09-24T19:48:01.8211155Z Adding repository directory to the temporary git global config as a safe directory
+2026-09-24T19:48:01.8214520Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/c-crussty/c-crussty
+2026-09-24T19:48:01.8262645Z Deleting the contents of '/home/runner/work/c-crussty/c-crussty'
+2026-09-24T19:48:01.8283699Z ##[group]Initializing the repository
+2026-09-24T19:48:01.8289440Z [command]/usr/bin/git init /home/runner/work/c-crussty/c-crussty
+2026-09-24T19:48:01.8403576Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-09-24T19:48:01.8405507Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-09-24T19:48:01.8407389Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-09-24T19:48:01.8408793Z hint: call:
+2026-09-24T19:48:01.8409790Z hint:
+2026-09-24T19:48:01.8410728Z hint: 	git config --global init.defaultBranch <name>
+2026-09-24T19:48:01.8411888Z hint:
+2026-09-24T19:48:01.8412971Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-09-24T19:48:01.8414722Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-09-24T19:48:01.8416119Z hint:
+2026-09-24T19:48:01.8416889Z hint: 	git branch -m <name>
+2026-09-24T19:48:01.8417874Z hint:
+2026-09-24T19:48:01.8419062Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-09-24T19:48:01.8425055Z Initialized empty Git repository in /home/runner/work/c-crussty/c-crussty/.git/
+2026-09-24T19:48:01.8437166Z [command]/usr/bin/git remote add origin https://github.com/PLANETA9091/c-crussty
+2026-09-24T19:48:01.8489309Z ##[endgroup]
+2026-09-24T19:48:01.8493797Z ##[group]Disabling automatic garbage collection
+2026-09-24T19:48:01.8495107Z [command]/usr/bin/git config --local gc.auto 0
+2026-09-24T19:48:01.8529663Z ##[endgroup]
+2026-09-24T19:48:01.8531086Z ##[group]Setting up auth
+2026-09-24T19:48:01.8536335Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-09-24T19:48:01.8572863Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-09-24T19:48:01.8955116Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-09-24T19:48:01.8998134Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-09-24T19:48:01.9251854Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-09-24T19:48:01.9292069Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-09-24T19:48:01.9534517Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-09-24T19:48:01.9576351Z ##[endgroup]
+2026-09-24T19:48:01.9578009Z ##[group]Fetching the repository
+2026-09-24T19:48:01.9586756Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +d02a29777eda74eb9e9d48430ee382baa59147e3:refs/remotes/origin/round-450-anchor-6
+2026-09-24T19:48:14.9925670Z From https://github.com/PLANETA9091/c-crussty
+2026-09-24T19:48:14.9926474Z  * [new ref]         d02a29777eda74eb9e9d48430ee382baa59147e3 -> origin/round-450-anchor-6
+2026-09-24T19:48:14.9929735Z ##[endgroup]
+2026-09-24T19:48:14.9930370Z ##[group]Determining the checkout info
+2026-09-24T19:48:14.9932972Z ##[endgroup]
+2026-09-24T19:48:14.9941642Z [command]/usr/bin/git sparse-checkout disable
+2026-09-24T19:48:15.0000531Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-09-24T19:48:15.0057801Z ##[group]Checking out the ref
+2026-09-24T19:48:15.0058877Z [command]/usr/bin/git checkout --progress --force -B round-450-anchor-6 refs/remotes/origin/round-450-anchor-6
+2026-09-24T19:48:16.0595025Z Updating files:  80% (3349/4164)
+2026-09-24T19:48:16.1458127Z Updating files:  81% (3373/4164)
+2026-09-24T19:48:16.1768367Z Updating files:  82% (3415/4164)
+2026-09-24T19:48:16.2189852Z Updating files:  83% (3457/4164)
+2026-09-24T19:48:16.2421492Z Updating files:  84% (3498/4164)
+2026-09-24T19:48:16.2770031Z Updating files:  85% (3540/4164)
+2026-09-24T19:48:16.4520931Z Updating files:  86% (3582/4164)
+2026-09-24T19:48:16.4749841Z Updating files:  87% (3623/4164)
+2026-09-24T19:48:16.4775481Z Updating files:  88% (3665/4164)
+2026-09-24T19:48:16.4826475Z Updating files:  89% (3706/4164)
+2026-09-24T19:48:16.4854392Z Updating files:  90% (3748/4164)
+2026-09-24T19:48:16.4875443Z Updating files:  91% (3790/4164)
+2026-09-24T19:48:16.4897925Z Updating files:  92% (3831/4164)
+2026-09-24T19:48:16.4925335Z Updating files:  93% (3873/4164)
+2026-09-24T19:48:16.4951203Z Updating files:  94% (3915/4164)
+2026-09-24T19:48:16.4977669Z Updating files:  95% (3956/4164)
+2026-09-24T19:48:16.5036723Z Updating files:  96% (3998/4164)
+2026-09-24T19:48:16.5089887Z Updating files:  97% (4040/4164)
+2026-09-24T19:48:16.5144941Z Updating files:  98% (4081/4164)
+2026-09-24T19:48:16.5273145Z Updating files:  99% (4123/4164)
+2026-09-24T19:48:16.5273552Z Updating files: 100% (4164/4164)
+2026-09-24T19:48:16.5273943Z Updating files: 100% (4164/4164), done.
+2026-09-24T19:48:16.5340124Z Switched to a new branch 'round-450-anchor-6'
+2026-09-24T19:48:16.5345928Z branch 'round-450-anchor-6' set up to track 'origin/round-450-anchor-6'.
+2026-09-24T19:48:16.5385857Z ##[endgroup]
+2026-09-24T19:48:16.5438646Z [command]/usr/bin/git log -1 --format=%H
+2026-09-24T19:48:16.5468919Z d02a29777eda74eb9e9d48430ee382baa59147e3
+2026-09-24T19:48:16.5749231Z ##[group]Run set -euo pipefail
+2026-09-24T19:48:16.5749608Z [36;1mset -euo pipefail[0m
+2026-09-24T19:48:16.5749897Z [36;1mIDX=$(python3 -c '[0m
+2026-09-24T19:48:16.5750151Z [36;1mimport time[0m
+2026-09-24T19:48:16.5750379Z [36;1mt=time.time(); x=1[0m
+2026-09-24T19:48:16.5750631Z [36;1mfor _ in range(6000000):[0m
+2026-09-24T19:48:16.5750925Z [36;1m    x=(x*1103515245+12345)&0x7fffffff[0m
+2026-09-24T19:48:16.5751267Z [36;1mprint(f"{6000000/(time.time()-t):.0f}")')[0m
+2026-09-24T19:48:16.5751632Z [36;1mecho "runner_cpu_index=$IDX band=[6000000,9500000]"[0m
+2026-09-24T19:48:16.5752032Z [36;1mif [ "$IDX" -lt "6000000" ] || [ "$IDX" -gt "9500000" ]; then[0m
+2026-09-24T19:48:16.5752680Z [36;1m  echo "::notice::runner_cpu_index=$IDX OUTSIDE band — fast-fail pre-download (pairing discard, not a bench failure)"[0m
+2026-09-24T19:48:16.5753224Z [36;1m  exit 1[0m
+2026-09-24T19:48:16.5753434Z [36;1mfi[0m
+2026-09-24T19:48:16.6020464Z shell: /usr/bin/bash -e {0}
+2026-09-24T19:48:16.6020825Z ##[endgroup]
+2026-09-24T19:48:17.6370742Z runner_cpu_index=5965589 band=[6000000,9500000]
+2026-09-24T19:48:17.6392210Z ##[notice]runner_cpu_index=5965589 OUTSIDE band — fast-fail pre-download (pairing discard, not a bench failure)
+2026-09-24T19:48:17.6403386Z ##[error]Process completed with exit code 1.
+2026-09-24T19:48:17.6518050Z ##[group]Run actions/upload-artifact@v4
+2026-09-24T19:48:17.6518362Z with:
+2026-09-24T19:48:17.6518575Z   name: world3-bench
+2026-09-24T19:48:17.6520164Z   path: world3-run/BOTTLENECKS_3.md
+world3-run/cpu-collapsed.txt
+world3-run/wall-collapsed.txt
+world3-run/alloc-collapsed.txt
+world3-run/cpu-flamegraph.html
+world3-run/server-stdout.log
+world3-run/gc.log
+world3-run/remset.log
+world3-run/refine.log
+world3-run/recon.jfr
+world3-run/ap.log
+world3-run/run-env.txt
+world3-run/pclip-materialize.log
+world3-run/chunk-parse-diag.txt
+world3-run/entity-recon.txt
+world3-run/patched-kernel.jar
+world3-run/spark-report/
+
+2026-09-24T19:48:17.6521823Z   if-no-files-found: warn
+2026-09-24T19:48:17.6522079Z   compression-level: 6
+2026-09-24T19:48:17.6522314Z   overwrite: false
+2026-09-24T19:48:17.6522551Z   include-hidden-files: false
+2026-09-24T19:48:17.6522804Z ##[endgroup]
+2026-09-24T19:48:17.8173283Z (node:2387) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-09-24T19:48:17.8174620Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-09-24T19:48:17.8241033Z Multiple search paths detected. Calculating the least common ancestor of all paths
+2026-09-24T19:48:17.8250627Z The least common ancestor is /home/runner/work/c-crussty/c-crussty/world3-run. This will be the root directory of the artifact
+2026-09-24T19:48:17.8259092Z ##[warning]No files were found with the provided path: world3-run/BOTTLENECKS_3.md
+world3-run/cpu-collapsed.txt
+world3-run/wall-collapsed.txt
+world3-run/alloc-collapsed.txt
+world3-run/cpu-flamegraph.html
+world3-run/server-stdout.log
+world3-run/gc.log
+world3-run/remset.log
+world3-run/refine.log
+world3-run/recon.jfr
+world3-run/ap.log
+world3-run/run-env.txt
+world3-run/pclip-materialize.log
+world3-run/chunk-parse-diag.txt
+world3-run/entity-recon.txt
+world3-run/patched-kernel.jar
+world3-run/spark-report/. No artifacts will be uploaded.
+2026-09-24T19:48:17.8486877Z Post job cleanup.
+2026-09-24T19:48:17.9358248Z [command]/usr/bin/git version
+2026-09-24T19:48:17.9399747Z git version 2.55.0
+2026-09-24T19:48:17.9439012Z Temporarily overriding HOME='/home/runner/work/_temp/47de45ee-40b2-4733-a560-8eda306b8e7d' before making global git config changes
+2026-09-24T19:48:17.9440620Z Adding repository directory to the temporary git global config as a safe directory
+2026-09-24T19:48:17.9444529Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/c-crussty/c-crussty
+2026-09-24T19:48:17.9484836Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-09-24T19:48:17.9522764Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-09-24T19:48:17.9795236Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-09-24T19:48:17.9826788Z http.https://github.com/.extraheader
+2026-09-24T19:48:17.9838509Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-09-24T19:48:17.9876822Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-09-24T19:48:18.0182966Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-09-24T19:48:18.0229011Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-09-24T19:48:18.0632674Z Cleaning up orphan processes
+2026-09-24T19:48:18.0909261Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

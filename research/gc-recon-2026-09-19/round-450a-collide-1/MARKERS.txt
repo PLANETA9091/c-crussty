@@ -1,0 +1,3 @@
+[crussty-plugin] cmp445_collide: ARMED items shards=64 seqlock-reads=per-cell-version writer=global-mutex shard_cap=16384 max_ids=1048576 heap=lifetime-minheap(rust,vec) push=batch(1/tick) due-poll=1/tick despawn-flow=vanilla (composite shardgrid+heap leg; soa+grid armed in mobs_manager)
+[crussty-plugin] cmp403_tickplane: PLANE ARMED segments=["items-plane", "mob-push-soa", "mob-push-grid", "mob-stagger", "collide-batch"] epoch=1 (gate=STRICT-eq cmp403_tickplane; empty flag = vanilla bit-for-bit; per-segment fail-closed isolation ERR_STRUCT->disarm)
+[crussty-plugin] randomtick: F1 ARMED (optimiseRandomTick -> RandomTickOps.run, bit-exact LCG batch)
