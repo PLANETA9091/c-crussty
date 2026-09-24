@@ -73,7 +73,7 @@ fn tick2_enabled() -> bool {
     }
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp438_sense") | Ok("cmp439_sense_scan")
+        Ok("cmp438_sense") | Ok("cmp439_sense_scan") | Ok("cmp444_sensemega") // TASK-444-C: sensemega composite carrier
     )
 }
 

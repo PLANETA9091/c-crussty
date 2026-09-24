@@ -163,7 +163,7 @@ public final class MobPushOps {
                 // TASK-434-C/435-C/438-C: chunk-pipeline carriers R5/R6/R7 (STRICT OR).
                 || f.trim().equals("cmp434_chunkpl") || f.trim().equals("cmp435_chunk3") || f.trim().equals("cmp437_chunk4")
                 // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
-                || f.trim().equals("cmp443_mega"));
+                || f.trim().equals("cmp443_mega") || f.trim().equals("cmp444_sensemega"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -211,7 +211,7 @@ public final class MobPushOps {
                 // TASK-434-C/435-C/438-C: chunk-pipeline carriers R5/R6/R7 (STRICT OR).
                 || f.trim().equals("cmp434_chunkpl") || f.trim().equals("cmp435_chunk3") || f.trim().equals("cmp437_chunk4")
                 // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
-                || f.trim().equals("cmp443_mega"));
+                || f.trim().equals("cmp443_mega") || f.trim().equals("cmp444_sensemega"));
     }
 
     private static final boolean EQSNAP = eqsnapEnabled();
@@ -234,6 +234,7 @@ public final class MobPushOps {
         if (f != null && f.trim().equals("cmp434_chunkpl") || f.trim().equals("cmp435_chunk3")) return "cmp434_chunkpl"; // TASK-434-C
         if (f != null && f.trim().equals("cmp437_chunk4")) return "cmp437_chunk4"; // TASK-438-C: R7 carrier marker id
         if (f != null && f.trim().equals("cmp443_mega")) return "cmp443_mega"; // TASK-443-B: mega-composition carrier marker id
+        if (f != null && f.trim().equals("cmp444_sensemega")) return "cmp444_sensemega"; // TASK-444-C: sensemega composite carrier (STRICT OR)
         if (f != null && f.trim().equals("cmp421_brain")) return "cmp421_brain";
         return f != null && f.trim().equals("cmp412_eqsnapv3")
                 ? "cmp412_eqsnapv3" : "cmp411_eqsnap";

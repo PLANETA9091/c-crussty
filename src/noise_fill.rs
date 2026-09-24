@@ -182,6 +182,7 @@ fn enabled() -> bool {
                 // round rides the composite + parse planes, noise untouched).
                 // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
                 || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp443_mega"
+                || v == "cmp444_sensemega" // TASK-444-C: sensemega composite carrier (STRICT OR)
                 || v == "cmp438_sense" // TASK-444-C: sense family union
         })
         .unwrap_or(false);

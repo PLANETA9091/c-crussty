@@ -80,6 +80,7 @@ fn enabled() -> bool {
             | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp440_ins4d") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4")
             | Ok("cmp438_sense") // TASK-444-C: sense family union
             | Ok("cmp443_mega") //  TASK-443-B: mega-composition carrier
+            | Ok("cmp444_sensemega") // TASK-444-C: sensemega composite carrier (STRICT OR)
             | Ok("cmp421_brain")
     )
 }

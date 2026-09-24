@@ -120,7 +120,7 @@ fn enabled() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let v = v.trim();
-            v == LEVER_ID || v == "cmp443_mega"
+            v == LEVER_ID || v == "cmp443_mega" || v == "cmp444_sensemega" // TASK-444-C: sensemega composite carrier (STRICT OR)
         })
         .unwrap_or(false)
 }
@@ -130,7 +130,7 @@ fn enabled() -> bool {
 fn lever_flag_is_mega() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp443_mega")
+        Ok("cmp443_mega") | Ok("cmp444_sensemega") // TASK-444-C: sensemega composite carrier
     )
 }
 
@@ -411,8 +411,9 @@ pub fn activate() {
             "[crussty-plugin] {LEVER_ID}: ARMED chunk-send serialization snapshot (unsaved-keyed packet reuse, zero-copy HIT handoff, anti-xray bypass, per-send events preserved, cap 2048 evict-half, 0 added JNI; retransform rc={rc})"
         );
         if lever_flag_is_mega() {
+            let mega_id = if std::env::var("CRUSSTY_LEVER_FLAG").as_deref().map(str::trim) == Ok("cmp444_sensemega") { "cmp444_sensemega" } else { "cmp443_mega" };
             eprintln!(
-                "[crussty-plugin] cmp443_mega: ARMED chunk-send serialization snapshot (TASK-443-B mega-composition union carrier; chunk4 family id {LEVER_ID})"
+                "[crussty-plugin] {mega_id}: ARMED chunk-send serialization snapshot (mega-composition union carrier; chunk4 family id {LEVER_ID})"
             );
         }
     });

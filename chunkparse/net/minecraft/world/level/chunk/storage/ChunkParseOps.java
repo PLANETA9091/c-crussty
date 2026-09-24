@@ -149,6 +149,8 @@ public final class ChunkParseOps {
      * gate (check_blobs_sync.sh) — x93 lesson.
      */
     static final String CARRIER_UNION_443 = "cmp443_mega";
+    /** TASK-444-C: sensemega composite carrier (mega + sense STRICT-UNION). */
+    static final String CARRIER_SENSEMEGA_444 = "cmp444_sensemega";
 
     /**
      * codec(identity) -> (tag -> pristine decoded template). The outer map

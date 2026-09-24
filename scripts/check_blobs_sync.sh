@@ -94,8 +94,15 @@ check_class \
 
 check_class \
   "sense/build/net/minecraft/world/entity/SenseOps.class" \
-  "cmp438_sense" "cmp430_inside" "nearestEntityGate" "sense EFFECT" "selfTest" \
+  "cmp438_sense" "cmp430_inside" "cmp444_sensemega" "nearestEntityGate" "sense EFFECT" "selfTest" \
   "native int senseProbe" "native int senseEpoch"
+
+# TASK-444-C: sense tick2 lane (TASK-442-D port) — BrainOps blob carries the
+# tick2 body-swap + the STRICT family flags (incl. the sensemega composite).
+check_class \
+  "randomtick/build/net/minecraft/world/entity/ai/BrainOps.class" \
+  "cmp438_sense" "cmp439_sense_scan" "cmp444_sensemega" "selfTestTickEach" "tickEachRunning" \
+  "sense tick2 EFFECT armed"
 
 check_class \
   "mobpush/build/net/minecraft/world/entity/MobPushOps.class" \

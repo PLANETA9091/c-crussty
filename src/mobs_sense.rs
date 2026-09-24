@@ -93,6 +93,8 @@ fn enabled() -> bool {
             | Ok("cmp423_brain3")
             | Ok("cmp424_mobfeed")
             | Ok("cmp430_inside")
+            // TASK-444-C: sensemega composite carrier (mega + sense STRICT-UNION)
+            | Ok("cmp444_sensemega")
     )
 }
 

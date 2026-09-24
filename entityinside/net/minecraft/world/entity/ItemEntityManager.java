@@ -108,7 +108,8 @@ public final class ItemEntityManager {
                     // TASK-424-A: GC-ревизия brain3 (STRICT OR).
                     || "cmp423_brain3".equals(LEVER_FLAG) || "cmp424_mobfeed".equals(LEVER_FLAG) || "cmp430_inside".equals(LEVER_FLAG) || "cmp432_inside2".equals(LEVER_FLAG) || "cmp436_ins4".equals(LEVER_FLAG) || "cmp440_ins4d".equals(LEVER_FLAG) // TASK-442-B: ins4-диета STRICT OR
                     || "cmp434_chunkpl".equals(LEVER_FLAG) || "cmp435_chunk3".equals(LEVER_FLAG) || "cmp437_chunk4".equals(LEVER_FLAG)
-                    || "cmp443_mega".equals(LEVER_FLAG); // TASK-443-B: mega-composition carrier STRICT OR
+                    || "cmp443_mega".equals(LEVER_FLAG)
+                    || "cmp444_sensemega".equals(LEVER_FLAG); // TASK-443-B: mega-composition carrier STRICT OR
 
     /**
      * TASK-403-C2 ITEM-PLANE RESTING (точный флаг cmp403_tickplane, STRICT eq;
@@ -160,7 +161,8 @@ public final class ItemEntityManager {
                     // TASK-424-A: GC-ревизия brain3 (STRICT OR).
                     || "cmp423_brain3".equals(LEVER_FLAG) || "cmp424_mobfeed".equals(LEVER_FLAG) || "cmp430_inside".equals(LEVER_FLAG) || "cmp432_inside2".equals(LEVER_FLAG) || "cmp436_ins4".equals(LEVER_FLAG) || "cmp440_ins4d".equals(LEVER_FLAG) // TASK-442-B: ins4-диета STRICT OR
                     || "cmp434_chunkpl".equals(LEVER_FLAG) || "cmp435_chunk3".equals(LEVER_FLAG) || "cmp437_chunk4".equals(LEVER_FLAG)
-                    || "cmp443_mega".equals(LEVER_FLAG); // TASK-443-B: mega-composition carrier STRICT OR
+                    || "cmp443_mega".equals(LEVER_FLAG)
+                    || "cmp444_sensemega".equals(LEVER_FLAG); // TASK-443-B: mega-composition carrier STRICT OR
 
     /** TASK-399-F despawnv2: rust lifetime-heap + батч-деспавн (точный флаг).
      *  TASK-400-A: составной флаг cmp399_bfcomp (B+F) включает despawnv2
@@ -195,7 +197,8 @@ public final class ItemEntityManager {
                     // TASK-426-A: SoA-feed carrier — деспавн-срез сертифицированного
                     // cmp420_colpush-меги (DESPAWN2 был в меге, brain3 его не нёс).
                     || "cmp434_chunkpl".equals(LEVER_FLAG) || "cmp435_chunk3".equals(LEVER_FLAG) || "cmp437_chunk4".equals(LEVER_FLAG)
-                    || "cmp443_mega".equals(LEVER_FLAG); // TASK-443-B: mega-composition carrier STRICT OR
+                    || "cmp443_mega".equals(LEVER_FLAG)
+                    || "cmp444_sensemega".equals(LEVER_FLAG); // TASK-443-B: mega-composition carrier STRICT OR
 
     private static final int PROBE_MAGIC = 0x1D3A;
 

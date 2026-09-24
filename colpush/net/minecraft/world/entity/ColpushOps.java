@@ -95,6 +95,8 @@ public final class ColpushOps {
     private static final String FLAG9 = "cmp437_chunk4";
     /** TASK-443-B: mega-composition carrier (ins4d + chunk4 union). */
     private static final String FLAG10 = "cmp443_mega";
+    /** TASK-444-C: sensemega composite carrier (mega + sense STRICT-UNION). */
+    private static final String FLAG11 = "cmp444_sensemega";
     private static final int ERR_STRUCT = -1;
     private static final int ERR_RANGE = -2;
 
@@ -110,7 +112,7 @@ public final class ColpushOps {
 
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5) || f.trim().equals(FLAG6) || f.trim().equals(FLAG7) || f.trim().equals(FLAG8) || f.trim().equals(FLAG9) || f.trim().equals(FLAG10)); // TASK-443-B: mega union
+        return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5) || f.trim().equals(FLAG6) || f.trim().equals(FLAG7) || f.trim().equals(FLAG8) || f.trim().equals(FLAG9) || f.trim().equals(FLAG10) || f.trim().equals(FLAG11)); // TASK-443-B mega union + TASK-444-C sensemega composite
     }
 
     /** Структурный отказ — весь рычаг дизармится навсегда (ваниль-реплика). */

@@ -312,6 +312,7 @@ fn eqsnap_mode() -> bool {
         // и read-views живут; colpush_plane_refresh кормит колонки.
         || f == "cmp420_colpush"
         || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside" || f == "cmp432_inside2" || f == "cmp436_ins4" || f == "cmp440_ins4d" || f == "cmp434_chunkpl" || f == "cmp435_chunk3" || f == "cmp437_chunk4" || f == "cmp443_mega" // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
+        || f == "cmp444_sensemega" // TASK-444-C: sensemega composite carrier (STRICT OR)
                 || f == "cmp438_sense" // TASK-444-C: sense family union
 }
 
@@ -354,6 +355,7 @@ fn lever_mode() -> bool {
         // colpush_plane_refresh одним WLOCK/тик).
         || f == "cmp420_colpush"
         || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside" || f == "cmp432_inside2" || f == "cmp436_ins4" || f == "cmp440_ins4d" || f == "cmp434_chunkpl" || f == "cmp435_chunk3" || f == "cmp437_chunk4" || f == "cmp443_mega" // TASK-443-B: mega-composition carrier (ins4d + chunk4 union).
+        || f == "cmp444_sensemega" // TASK-444-C: sensemega composite carrier (STRICT OR)
                 || f == "cmp438_sense" // TASK-444-C: sense family union
         // TASK-410-C (eindexq): K3-пивот R2 — SoA-плоскость = источник
         // популяции для goal-query CSR-снапшота (EntityQueryOps.eqEpoch;
