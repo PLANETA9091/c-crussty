@@ -111,6 +111,16 @@ check_class \
   "cmp414_cvs" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp437_chunk4" "cmp432_inside2" "cmp440_ins4d" \
   "native int eqProbe" "native int senseArena" "dietSnapshotQuery" "INS4-DIET diet active"
 
+# TASK-446-B items rest-plane (cmp446_items, закон 6 подсистема): the
+# ItemEntity.tick whole-body bridge must carry the baked double-gate string,
+# the native surface (registered rust-side via RegisterNatives) and the
+# vanilla rest-path call targets; flat==nested byte identity pins the
+# include_bytes! embed.
+check_class \
+  "itemsbatch/build/net/minecraft/world/entity/ItemBatchOps.class" \
+  "cmp446_items" "selfTest" "inactiveTick" "mergeWithNeighbours" \
+  "native int planeProbe" "native int planeDecide"
+
 # TASK-420-C chunk-pipeline plane (cmp420_chunk2): the bridge must carry the
 # lever marker + the parse-cache effect strings in its constant pool, and
 # declare the redirect entry points (descriptor pinned by build script javap
@@ -243,6 +253,7 @@ check_flat_matches_nested "queryplane/build" "net/minecraft/world/entity/QueryPl
 check_flat_matches_nested "goalops/build" "net/minecraft/world/entity/ai/goal/GoalOps"
 check_flat_matches_nested "colpush/build" "net/minecraft/world/entity/ColpushOps"
 check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/RegionTickOps"
+check_flat_matches_nested "itemsbatch/build" "net/minecraft/world/entity/ItemBatchOps"
 
 if [ "$FAIL" = "0" ]; then
   echo "check_blobs_sync: ALL IN SYNC"

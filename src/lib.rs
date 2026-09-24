@@ -47,6 +47,7 @@ mod inside_cache;
 mod inside_diet;
 mod inside_snap;
 mod item_merge;
+mod items_batch;
 mod items_index;
 mod items_lifetime;
 mod items_manager;
@@ -149,6 +150,16 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // port). Pristine capture at first load; patch served after the
     // ItemMergeOps bridge lands. Dormant unless CRUSSTY_LEVER_FLAG=items_oss.
     item_merge::register();
+    // ITEMS-BATCH (TASK-446-B, cmp446_items, закон 6 подсистема): ItemEntity
+    // byte hook for the WHOLE-TICK rest-plane retarget (ItemEntity.tick()V ->
+    // ItemBatchOps.tick static bridge; rust rest-plane shards=64, ОДИН bulk
+    // JNI/тик/поток planeDecide, faithful recheck 1/32; REST = vanilla
+    // inactiveTick + %40 merge, FULL = byte-parity replica — fluid/inside/
+    // collision сканы только на FULL-пути). Pristine capture at first load;
+    // patch served after the bridge lands + selfTest. Dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp446_items (STRICT eq; пустой флаг = ваниль
+    // бит-в-байт).
+    items_batch::register();
     // STAGGER (TASK-401-I, round-401 vector I): per-entity hashed 1/N
     // staggering of per-tick un-gated heavy checks — LivingEntity.pushEntities
     // broadphase neighbor scan + GoalSelector non-visible canUse polls
@@ -474,6 +485,11 @@ fn inject_surface() {
     // compute the mergeWithNeighbours whole-body patch, retransform (dormant
     // unless CRUSSTY_LEVER_FLAG=items_oss).
     item_merge::activate();
+    // ITEMS-BATCH (TASK-446-B): define ItemBatchOps into the kernel loader,
+    // RegisterNatives (planeProbe/planeDecide), selfTest BEFORE retransform
+    // (fail-closed), compute the ItemEntity.tick whole-body patch, retransform
+    // (dormant unless CRUSSTY_LEVER_FLAG == cmp446_items).
+    items_batch::activate();
     // STAGGER (TASK-401-I): define PushStaggerOps/GoalStaggerOps into the
     // kernel loader, compute both single-site retargets, retransform (dormant
     // unless CRUSSTY_LEVER_FLAG=cmp401_stagger).
