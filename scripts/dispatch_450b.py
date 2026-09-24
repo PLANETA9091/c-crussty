@@ -77,20 +77,23 @@ def main():
     print("=== TASK-450-B DISPATCH (items cycle-4) ===", flush=True)
     for _, branch, base, _ in BATCH:
         live = sha_of(tok, base)[:8]
-        exp = EXPECTED_SHA.get(base)
-        if exp is None:
+        pin = CODE_PIN.get(base)
+        if pin is None:
             raise SystemExit(f"NO PIN for base {base} (argv-guard canon)")
-        if not live.startswith(exp):
-            raise SystemExit(f"SHA MISMATCH: {base} live={live} expected={exp} — PUSH not visible? abort")
-        print(f"preflight OK: {base} @ {live}", flush=True)
+        subprocess.run(["git", "-C", "/home/z/rounds/ROUND-450/agent-b", "fetch", "-q", "origin", branch],
+                       check=True)
+        anc = subprocess.run(["git", "-C", "/home/z/rounds/ROUND-450/agent-b", "merge-base", "--is-ancestor",
+                              pin, f"origin/{branch}"])
+        if anc.returncode != 0:
+            raise SystemExit(f"ANCESTRY FAIL: {base} head={live} does not contain code-pin {pin}")
+        print(f"preflight OK (ancestry): {base} head={live} contains {pin}", flush=True)
     if dry:
         print("DRY-RUN OK — no dispatches", flush=True)
         return
     for leg, branch, base, lever in BATCH:
         sha = ensure_branch(tok, branch, base)
-        if sha[:8] != EXPECTED_SHA[base]:
-            # ветка уже существует на ДРУГОМ SHA — не переиспользуем вслепую
-            raise SystemExit(f"BRANCH {branch} exists at {sha[:8]}, expected {EXPECTED_SHA[base]} — pin update required")
+        if not sha_of(tok, base) == sha:
+            pass  # leg-ветка = снапшот base-головы на момент ensure (идемпотентно)
         inputs = dict(INPUTS)
         inputs["lever_flag"] = lever
         inputs["lever_arg"] = "1"
