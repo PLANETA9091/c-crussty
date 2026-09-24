@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """dispatch_442b.py — TASK-442-B: 2 ноги ins4-диеты (cmp440_ins4d) поверх
-носителя round-436-b-ins6 @c2ed1090 (диета + STRICT-OR гейты).
+носителя round-436-b-ins6 @c57d2aa8 (диета c2ed1090 + STRICT-OR гейты + dispatcher).
 INPUTS РОВНО по брифу (travel_diet/fluid_dirty_ledger НЕ слать;
 concurrency-гвардов НЕ ставить). sleep 4 между диспатчами."""
 import json, re, subprocess, sys, time, urllib.request, urllib.error
@@ -24,7 +24,7 @@ INPUTS = {
     "server_xmx": "10G", "server_xms": "4G",
     "cpu_band_min": "6000000", "cpu_band_max": "9500000",
 }
-EXPECTED_BASE = "c2ed10909cf76f91d9105b8bbbdfafbed6b96ad2"
+EXPECTED_BASE = "c57d2aa8f308a93610cd9bace90ecab752b16175"  # diet code c2ed1090 + dispatcher commit
 
 
 def token_from_remote():
