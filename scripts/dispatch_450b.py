@@ -82,10 +82,10 @@ def main():
         pin = CODE_PIN.get(base)
         if pin is None:
             raise SystemExit(f"NO PIN for base {base} (argv-guard canon)")
-        subprocess.run(["git", "-C", "/home/z/rounds/ROUND-450/agent-b", "fetch", "-q", "origin", branch],
+        subprocess.run(["git", "-C", "/home/z/rounds/ROUND-450/agent-b", "fetch", "-q", "origin", base],
                        check=True)
         anc = subprocess.run(["git", "-C", "/home/z/rounds/ROUND-450/agent-b", "merge-base", "--is-ancestor",
-                              pin, f"origin/{branch}"])
+                              pin, f"origin/{base}"])
         if anc.returncode != 0:
             raise SystemExit(f"ANCESTRY FAIL: {base} head={live} does not contain code-pin {pin}")
         print(f"preflight OK (ancestry): {base} head={live} contains {pin}", flush=True)
