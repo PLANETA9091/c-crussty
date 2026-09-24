@@ -288,7 +288,12 @@ public final class InsideSnapOps {
                 continue;
             }
             PalettedContainer.Data<BlockState> d = sec.states.data; // ONE volatile read
-            BlockState[] pal = d.moonrise$getPalette();
+            // CCE-433 fix: kernel palette array is ERASED (allocated as Object[]) on this
+            // build — a call-site cast to BlockState[] threw CCE x18k/leg and the whole
+            // stage-1c plane stayed dead (fail-closed). Double-cast through Object erases
+            // the array checkcast; ELEMENTS are cast individually below (they ARE
+            // BlockState instances — only the ARRAY type is erased).
+            Object[] pal = (Object[]) (Object) d.moonrise$getPalette();
             if (pal == null) {
                 continue; // fast palette not built: keep missing to vanilla (readPaletteSlow territory)
             }
@@ -343,7 +348,7 @@ public final class InsideSnapOps {
                 continue;
             }
             if (bpe == 0) {
-                BlockState v = ((BlockState[]) PALB[k])[0];
+                BlockState v = (BlockState) ((Object[]) PALB[k])[0]; // CCE-433: element-level cast
                 if (v == null) {
                     if (++s.fails >= 3) { s.pending = false; } else { s.pending = true; leftover++; }
                     continue;
@@ -356,14 +361,14 @@ public final class InsideSnapOps {
                 s.builtAtGen = g;
             } else {
                 Object palO = PALB[k];
-                BlockState[] pal = (BlockState[]) palO;
+                Object[] pal = (Object[]) palO; // CCE-433: erased array, element casts below
                 BlockState[] arr = new BlockState[4096];
                 boolean bad = false;
                 int base = k * 4096;
                 for (int i = 0; i < 4096; i++) {
                     int idx = OUT[base + i];
                     if (idx < 0 || idx >= pal.length) { bad = true; break; }
-                    BlockState v = pal[idx];
+                    BlockState v = (BlockState) pal[idx]; // CCE-433: element-level cast
                     if (v == null) { bad = true; break; }
                     arr[i] = v;
                 }
