@@ -53,3 +53,16 @@
 - Диск: маркеры ДО пурджа; joml.jar вне пурдж-зон (Maven Central восстановление); sparse-worktree ~30-40MB (worktree add без --no-checkout валится при соседях 3×932M); git gc 1.4G→850M.
 - sha:literal в --leg ломал split ":" (фикс ×458); absorb-кэш склеивает одинаковые артефакты — проверять tag-vs-run_id.
 - INFRA-DUP: артефакт-коллизия двух ранов одного коммита (a35) — разносить ре-роллы по хешам/коммитам.
+
+## ТИК-459 СВОДКА ЛАБЫ (v18.3 первый мега-тик; полные доки: research/round-459/ + RESEARCH-459-L*.md)
+- L01 P31 INSIDE-BATCH: lane 15.36% × захват 66% → Δ +10.2пп, потолок +14.1пп; THRESH=512/bucket, buildPlan-порт CollideBatchOps.
+- L02 P22 chunk-sched: +1.4пп; КЛИМБ-ПУТЬ БАРА: chk-14 +21.7 ⊕P31 (+5-8) ⊕P32/P36 (+1.5-2.5) → нога +29.6…+33.7 → пара с a26 +12.4@8671791 = +20.2…+21.3 ≥+20 ✓.
+- L03 POI-ценз: лейн сухой 0.15-0.23% CPU → потолок +0.23пп; сила poi = юнион-widening (mean +6.1пп diet-vs-poi n=8); живая пара poi456-4+a24-456w2 −10.4@8928192 = +25.8 (нужны ещё 2 якоря ≤−4.6 окна D); a35=фантом-склейка, a36/a37 не-ваниль (compose armed) — из pair-пула.
+- L04 eqsnap2+H03 ЗАКРЫТО: медианная пара +6.0 < 20 (потолок +4.3пп) — закон 13a honest.
+- L05/L09 GC-КАНОН НОВЫЙ: STW-slope −4.96пп/с ОПРОВЕРГНУТ (n=33: −1.09пп/с, 95%CI −3.11..+0.93 ns, R²=0.04); soak-STW потолок 2.78пп; Full=9 = 5×CodeCache+4×Metadata ДЕТЕРМИНИЗМ (не аллокация); депресс-кластер chk-11/12 = миф; G3-STW гейт: STW>23.0s ИЛИ avg>200ms → INVALID-STW-HOST (ре-ролл бесплатно), STW-CLEAN-RED, census-поля scavAvg/soakFull; STW-жертвы: a33/roar-2/chk-11 (якоря a33 — out pair-пула).
+- L06 paldelta-климб: P32+P36 +1.0-1.5пп; pair-maker P31+P34 → нога ≥18.7-19.2 ↔ a4 −0.8@6737702 (Δ7.7k, pair-fresh).
+- L07 chunk-send: joins-burst +1.5пп (потолок 1.75), на монстр-soak lane 0.00 — НЕ диспатчить на chk-оси; смежный entity-sync +0.9пп.
+- L08 navmath: P44-ядро +0.83-1.28пп (потолок +3.2); ПОЛНАЯ IEEE754-таблица Mth (sin=SIN[65536]-таблица, atan2=fastInvSqrt 6910469410427058090L, FRAC_BIAS) — имплементация MovePlaneOps готова к вайрингу.
+- L10 P24 noise PARK честно: Full GC 0×AllocFailure ×4 ног; октав-циклы javap 0×new; GC-носители → Vec3/AABB entity-чурн (28-29% alloc).
+- L11 papaya H05: +0.8-1.4пп (reader-core потолок +4.1пп); офлайн lockstep 0/300×3 бит-в-байт GREEN — swing-слой климба chk-14: P31⊕P32/P36⊕PapayaReadOps → нога 29.0-33.6 → пара 16.6-21.2.
+- L12 P35 DDA-v2: root-cause DDA-1 = inline-clip поверхность (0/200,736 verbatim-clip; брикет класса 0..21.5%); v2: vanilla-walk=истина + shadow feed + 1/200 верификатор P(no-detect/5мин)=1.9e-12, 0.18% MSPT; capture feed +1.19пп; пара-база +22.7↔a26.
