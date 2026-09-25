@@ -1,12 +1,29 @@
 {
-  "agent": "general-purpose (subagent TASK-452-A)",
-  "vector": "cmp451_senseins = sense/brain family (SenseOps body-swap + BrainOps.tickEachRunning tick2 + EntityGoalQueryOps senseMode) STRICT-OR over ins4-carrier",
-  "branch": "round-452a-sense (worktree /home/z/rounds/ROUND-452/agent-a)",
-  "base": "origin/round-451d-senseins @ ff1c0b95; fix HEAD pending push",
-  "run_id": 36076710490,
-  "tps_med": 2.7,
+  "agent": "TASK-454-C (diet cycle-3 subagent)",
+  "vector": "diet-composite cmp453_diet rebaze-2 on senseins-master (chunk4-send-snapshot ⊕ chunkparse-codec STRICT-OR)",
+  "branch": "round-454c-diet",
+  "base": "origin/master ccfa6f04 (code 05c6da1b = ins4 ⊕ senseins)",
+  "merged": "origin/round-453c-diet cdaec469",
+  "run_id": null,
+  "tps_med": null,
   "delta_pair_pct": null,
-  "verdict": "INFRA",
-  "evidence": "legs senseins-1 (run 36076710490: med 2.70 @6712673, norm +22.0%) and senseins-3 (run 36076729354: med 2.50 @7153255, norm +8.4%) BOTH DELIVERY-FAIL: NCDFE=65536 (32768 exceptions x2 lines) net/minecraft/world/entity/EntityGoalQueryOps at MobPushOps.pushables(MobPushOps.java:463); threw=0 (vanilla entity-exception handler), pop=VALID, band OK",
-  "what": "ROOT-CAUSE (x449 ConstSlot pattern): agent-D retagged TEST-mirror + label fns with cmp451_senseins but MISSED PRODUCTION rust gates -> entity_query::enabled() FALSE (module dormant, EntityGoalQueryOps NEVER defined), mobs_sense::enabled() FALSE (SenseOps body-swap DEAD - core of vector), mobs_ai/mobs_sscan/stagger dormant (carrier-parity slices dead). MobPushOps blob EQSNAP branch (java-side accepts cmp451_senseins) references EntityGoalQueryOps -> NCDFE storm, push lane dead. mobs_manager fail-closed guard did not fire because entity_query::lever_matches()==enabled() was false. FIX: 6 production gates retagged (entity_query enabled+enabled_flag_is_sense, mobs_sense enabled, mobs_ai/mobs_sscan/stagger enabled) + entity_query gate refactored to PURE flag_enabled(Option<&str>) pinned by tests (no mirror drift possible) + STRICT-eq regression asserts. cargo check --lib 0 err, cargo test 314/0. No .java edits -> blobs untouched (ALL IN SYNC preserved). Markers retained (MARKERS.txt x2), zips/jar/collapsed purged to 128K per dir."
+  "lane_was": {
+    "nav_ai": "2.85-3.19% (senseins-master)",
+    "chunk_parse_alloc_burst": "33.38% (×419 recon, codec axis)",
+    "server_chunk_cache_sched": "4.6-5.2%"
+  },
+  "lane_now": null,
+  "ram_stw_full": null,
+  "parity": null,
+  "verdict": "IN_PROGRESS",
+  "stage": "PHASE-1 merge complete (STRICT-OR), cargo check next",
+  "evidence": [
+    "worktree /home/z/rounds/ROUND-454/agent-c = origin/master + merge origin/round-453c-diet",
+    "STRICT-OR: all production gates (entity_query/mobs_sense/mobs_ai/mobs_sscan/stagger/brainhook/items/mobs/nav/queryplane/tickplane/colpush/collide_batch/goal_selector/inside_*/noise_fill) reverted to master verbatim (cmp451_senseins needle untouched, mirror-drift lesson x451/x452)",
+    "cmp453_diet carried ONLY on chunkparse-codec plane (src/chunk_parse.rs gate = master list ∪ {cmp453_diet}, marker_id cmp453_diet) + dead-code chunk_send.rs (orphan, not compiled, as-run in certified diet-4)",
+    "cut tails dormant: chunk_send5.rs (encode-cache) has NO cmp453_diet; brainhook tick2 = master verbatim (no cmp452_mega retag)",
+    "classfile.rs delta = diet biomes method const + resolution closure only",
+    "check_blobs_sync.sh = ALL IN SYNC (flat==nested byte-identical, javap loads OK) — no .java edited"
+  ],
+  "what": "union-merge round-453c-diet into new master per STRICT-OR; diet degenerates to master(05c6da1b) ⊕ chunk4-send-snapshot(dead-as-run) ⊕ chunkparse-codec(biomes-cache)"
 }
