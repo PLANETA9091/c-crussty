@@ -101,11 +101,13 @@ def main():
 
     tok = token_from_remote()
     print(f"=== TASK-457-B POI CARRIER DISPATCH (pin {BASE_SHA[:8]}, lever={LEVER}) ===", flush=True)
-    base = "round-456b-poi"
-    live = sha_of(tok, base)
-    if live != BASE_SHA:
-        raise SystemExit(f"SHA MISMATCH: {base} live={live} expected={BASE_SHA}")
-    print(f"preflight OK: {base} @ {live[:8]} (exact pin)", flush=True)
+    # Pin = COMMIT 5ecd841a (NCDFE fix), not branch head: brief says legs are
+    # created EXACTLY at 5ecd841a (round-456b-poi head 0fa13d72 adds only
+    # pre-flight script; canon = legs on bare fix commit).
+    c = api(tok, f"/repos/{REPO}/commits/{BASE_SHA}")
+    if c.get("sha") != BASE_SHA:
+        raise SystemExit(f"PIN COMMIT NOT FOUND: {BASE_SHA}")
+    print(f"preflight OK: pin commit {c['sha'][:8]} exists ({c['commit']['message'][:60]!r})", flush=True)
     if "--dry-run" in args:
         for leg, branch, _, _ in batch:
             print(f"DRY-RUN would dispatch {leg}: {branch} @ {BASE_SHA[:8]}", flush=True)
