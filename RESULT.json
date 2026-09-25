@@ -1,14 +1,38 @@
 {
- "agent": "TASK-455-B (chunk-pipeline, law 8)",
- "vector": "chunk-union rebaze-3: 47ea8b20 (diet carrier) ⊕ 797ae4f0 (chunk4⊕chunk5⊕chunkparse union), lever cmp450_chunk; + GEN-axis arming restore (run_world3 KERNEL_POLICY=off case for cmp450_chunk)",
- "branch": "round-455b-chunk @ 74461386",
- "run_id": null,
- "tps_med": null,
- "delta_pair_pct": null,
- "lane": "chunk/worldgen: parse+send+send5+noise GEN + ins4-carrier stack; GEN-axis was dead since round-422 (policy case missing) — restored",
- "ram": null,
- "parity": "cargo test 329/0; check_blobs_sync ALL IN SYNC (javap flat==nested x16); gate needle audit ALL PRESERVED (rust union + java diet-superset)",
- "verdict": "IN_PROGRESS",
- "evidence": "merge commit 74461386 pushed; legs round-455b-chunk-1/2 dispatched HTTP 204 (refs created @74461386); inputs canon exact; dispatch_455b.py argv-guard+pin",
- "what": "step-3: law-3 cycle-2 committed (cmp450_chunk = diet-profile union); leg-3 dispatch pending"
+  "agent": "458-P",
+  "task": "TASK-458-P law-11 idea packages 2-4 (тик-458, 22:08 +08 2026-09-25)",
+  "verdict": "PACKAGES_OK — 3 пакета, 21 идея-кандидат (6-8/пакет), каждая с механикой, файлами-сайтами, parity-планом, прогнозом Δ, риском и интернет-сорсом; anti-duplication карта соблюдена (не дублируют agent-M дельта-сериализацию, agent-N paldelta demux, agent-D noisesimd fill-family, H01-H07 broadphase); запрещённые лейны (inside_bitmask/alloc_diet/zero_alloc/ZGC/...) не воскрешались; golden_443.py не использовался; CLAIMS/GOAL не тронуты",
+  "packages": {
+    "PACKET-2_chunk_worldgen_axis_law8": {
+      "ids": ["P21", "P22", "P23", "P24", "P25", "P26", "P27"],
+      "count": 7,
+      "highlights": "P21 parse-cache widen biomes+light (развитие cmp420_chunk2, twin lambda$parse$7 без кэша); P22 chunk-tick eligibility flat-плоскость — единственный ЖИВОЙ на soak закон-8 сайт (GEN инертен 0.0% ×421-C, помечено); P24/P25 noise-идеи ТОЛЬКО как GC-debt relief carriers; P26 send-coalescing — развитие chunk4/chunk5, НЕ дублирует дельты agent-M"
+    },
+    "PACKET-3_inside_volatile_16.6_growth_plus_java_util_9": {
+      "ids": ["P31", "P32", "P33", "P34", "P35", "P36", "P37"],
+      "count": 7,
+      "absorb_analysis": "chkmono457-11/12: inside_volatile 12.01→16.63/16.30 (+4.62пп доли, +22-25% АБСОЛЮТНО 13890→17322/16994 сэмплов; контроль: fluid −13% абс — рост НЕ механический); java_util 7.01→8.96/8.73 (+12-15% абс); гипотеза B invalidation-driven: chunk6-sched всплески setBlockState → secWrite-бампы ген-эпох inside_snap → ванильный volatile MISS-путь чаще, CHM.get кормит java_util; GC Full=9 vs банк 7, total 22.1s vs 18.8s",
+      "highlights": "P31 INSIDE-BATCH bulk-JNI discovery (candidate-superset + strict java tail, паттерн nav_plane/collide_batch) +5-8пп к ноге; P32+P36 CHM→флет-реестр + epoch fast-gate (70% кода существует в inside_snap); P33 VarHandle.getAcquire volatile-demotion (JMM-канон); P34 квант-гейт развитие inside_cache; P35 DDA-v2 гибрид с разбором провала 21/350k; P37 async-profiler attribution probe"
+    },
+    "PACKET-4_nav_ai_residual_plus_goalops_brain": {
+      "ids": ["P41", "P42", "P43", "P44", "P45", "P46", "P47"],
+      "count": 7,
+      "highlights": "P41 path-node neighbor cache (Lithium nether-pathfinding); P42 goal canUse sense-memo; P43 brain flat-memory registry (развитие goal_selector iter-2 паттерна); P44 MoveControl navmath bulk-JNI (IEEE754 javap-транскрипция канон nav_plane); P45 ПОХИЩЕНО у agent-K ID-H04 roaring-occupancy → navigatingMobs pre-gate; P46 tick-deadband; P47 GoalSelector transition-diff iter-3"
+    }
+  },
+  "top3": [
+    {"rank": 1, "id": "ID-P31 INSIDE-BATCH plane", "delta_to_leg": "+5-8пп", "why": "TOP-1 остаток компо-носителя 16.6пп, живой лейн (абс. рост +25% на обеих RED-ногах); candidate-superset parity-паттерн канон (3 прецедента); chunkmono ноги +11.5/+9.1 → нога 16-19.5пп; пара с a15 +9.7@6813110 / a26 +12.4@8671791 (Δ≤50k) → ≥+20 прямой путь волны"},
+    {"rank": 2, "id": "ID-P32+P36 SNAP sidecar-реестр + epoch fast-gate", "delta_to_leg": "+1.5-2.5пп суммарно", "why": "бьёт java_util РОСТ (CHM-часть) + inside HIT-путь; 70% кода существует; минимальный parity-риск (fail-closed CHM fallback); поверх P31 доводит ногу к 19-21пп"},
+    {"rank": 3, "id": "ID-P22 chunk-tick eligibility flat-плоскость", "delta_to_leg": "+1.2-2пп", "why": "единственный живой на soak закон-8 сайт вне GEN (ServerChunkCache scheduling 4.6-5.2пп); Moonrise-подтверждение важности; второй базис пары на chunkmono-оси"}
+  ],
+  "evidence": {
+    "branch": "round-458p-ideas @96cc2704 pushed (github.com/PLANETA9091/c-crussty)",
+    "research_doc": "RESEARCH-458-P.md (worktree round-458p-ideas) + BLACKBOARD ROUND-458 пакеты 2-4 выложены",
+    "absorb": "research/gc-recon-2026-09-19/round-chkmono457-11/ABSORB.md + round-chkmono457-12/ABSORB.md прочитаны целиком",
+    "web_research": "22 запроса z-ai web_search, сырые JSON /tmp/458p/q01-q22*.json; сорсы: github.com/CaffeineMC/lithium/issues/125, bugs.mojang.com MC-260743/MC-310372, gee.cs.oswego.edu/dl/html/j9mm.html, brooker.co.za volatile, jpbempel.github.io, github.com/Tuinity/Moonrise, github.com/RelativityMC/C2ME-fabric, github.com/Steveplays28/noisium, github.com/CaffeineMC/krypton, github.com/real-logic/agrona, docs.pufferfish.host, modrinth.com/mod/lithium, foojay.io, github.com/mojang/datafixerupper, wiki.vg/Region_File_format, github.com/jvm-profiling-tools/async-profiler, docs.rs/roaring",
+    "blackboard": "/home/z/rounds/ROUND-458/BLACKBOARD.md append (ПАКЕТ-2/3/4 + §БЕЗУМИЕ-ТОП + лента 22:5x)",
+    "board": "/home/z/rounds/ROUND-458/BOARD.md heartbeat row appended",
+    "constraints": "gen_443 не тронут; CLAIMS/GOAL не тронуты; commit+push каждый шаг ветки round-458p-ideas"
+  },
+  "next_actions": "main/рой: похищение P31 как R-плейн на chunkmono-носитель (цель ноги ≥+18 → пара ≥+20 с a15/a26); P37 probe перед P32/P42 адресным таргетингом; P22 — в очередь закон-8 волны"
 }
