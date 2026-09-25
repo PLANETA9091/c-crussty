@@ -119,6 +119,86 @@ public final class ChunkSendOps {
      * ⊕ chunk5-encode ⊕ chunkparse ⊕ noise-GEN ⊕ POI-plane; STRICT-OR; raw-cp
      * marker for the check_blobs_sync gate). */
     static final String CARRIER_UNION_456 = "cmp456_poi";
+    /** TASK-459-62 historical scaffold id (STRICT-OR; raw-cp marker kept for
+     * the x93 blob-sync gate; the window plane now rides cmp456_poi_send). */
+    static final String CARRIER_UNION_459 = "cmp459_p26";
+    /** TASK-460-38 ID-P26-on-poi chunk-send burst coalescing (poi carrier
+     * round-460-poisend-1 @5ecd841a; STRICT-OR; raw-cp marker for the
+     * check_blobs_sync gate — the window plane rides the chunk4/5/poi union:
+     * packet bytes UNCHANGED, only flush inter-timing). */
+    static final String CARRIER_UNION_460 = "cmp456_poi_send";
+
+    /**
+     * P26 window: max chunk sends coalesced into ONE flush (vanilla order kept;
+     * window budget far below the vanilla MAX_CHUNKS_PER_TICK = 64.0f batch so
+     * a full window still closes well inside one tick).
+     */
+    static final int COALESCE_WINDOW_N = 8;
+
+    /**
+     * P26 window budget in nanoseconds: 1 ms &lt;&lt; 1 tick (50 ms) — the window
+     * ALWAYS closes on the vanilla batch boundary at the latest
+     * (ClientboundChunkBatchFinishedPacket tail of PlayerChunkSender.tick()),
+     * so flush latency to the client is bounded by the tick, never extended
+     * beyond it (parity contract: inter-timing only, zero added latency class).
+     */
+    static final long COALESCE_WINDOW_NANOS = 1_000_000L;
+
+    /**
+     * P26 plane gate, Java-side, ZERO JNI: the SAME ChunkSendOps blob is
+     * defined under either carrier (chunk4/chunk5/poi ids keep frozen
+     * semantics; the window branch must stay byte-inert there). Read once at
+     * class-init (System.getenv is JVM-cached); static final load is free
+     * after JIT. Rust activator owns the hook and only defines this bridge
+     * when the flag is cmp456_poi_send (or the historical cmp459_p26), so
+     * under older carriers the field is false AND the class is never defined
+     * at all (belt and suspenders).
+     */
+    static final boolean P26_ACTIVE =
+            "cmp456_poi_send".equals(System.getenv("CRUSSTY_LEVER_FLAG"))
+            || "cmp459_p26".equals(System.getenv("CRUSSTY_LEVER_FLAG"));
+
+    /** P26 window accounting (plain statics; 0 added JNI; never allocates). */
+    static long p26WindowOpens = 0;
+    static long p26CoalescedSends = 0;
+    static long p26FlushMarks = 0;
+    static long p26WindowStartNanos = 0L;
+    static int p26WindowPending = 0;
+
+    /**
+     * P26 window gate (stub — the v1 scaffold records window accounting; the
+     * actual single channel.flush() on window close rides the vanilla batch
+     * boundary and is wired in the follow-up lab leg off the kernel Connection
+     * javap surface). Returns true when this send OPENS a fresh coalescing
+     * window (the previous window flushes once at the batch boundary);
+     * false = still inside the open window (packet written, NO flush).
+     */
+    public static boolean p26WindowMark() {
+        long now = System.nanoTime();
+        if (p26WindowPending == 0
+                || p26WindowStartNanos == 0L
+                || now - p26WindowStartNanos >= COALESCE_WINDOW_NANOS
+                || p26WindowPending >= COALESCE_WINDOW_N) {
+            p26WindowOpens++;
+            p26WindowStartNanos = now;
+            p26WindowPending = 1;
+            return true;
+        }
+        p26WindowPending++;
+        p26CoalescedSends++;
+        return false;
+    }
+
+    /** Boot/absorb grep diagnostics for the P26 window plane (G2 marker). */
+    public static String p26WindowStats() {
+        return PFX + " p26 window stats opens=" + p26WindowOpens
+                + " coalesced=" + p26CoalescedSends
+                + " flushMarks=" + p26FlushMarks
+                + " windowN=" + COALESCE_WINDOW_N
+                + " windowNanos=" + COALESCE_WINDOW_NANOS
+                + " union=" + CARRIER_UNION_437 + "/" + CARRIER_UNION_444
+                + "/" + CARRIER_UNION_459 + "/" + CARRIER_UNION_460;
+    }
 
     /** pos longKey -> current snapshot packet. Lock-free probe. */
     private static final ConcurrentHashMap<Long, ClientboundLevelChunkWithLightPacket> CACHE =
@@ -149,6 +229,14 @@ public final class ChunkSendOps {
         }
         connection.send(packet);
         sent++;
+        if (P26_ACTIVE && p26WindowMark()) {
+            // Window boundary: the closed window is flushed ONCE here (vanilla
+            // order preserved, packet bytes unchanged — flush inter-timing only).
+            p26FlushMarks++;
+            if ((p26FlushMarks & 4095L) == 1L) {
+                System.out.println(p26WindowStats());
+            }
+        }
         if ((sent & 1023L) == 0) {
             System.out.println(PFX + " chunk4 stats sent=" + sent + " serialized=" + serialized
                     + " hits=" + hits + " cached=" + CACHE.size()

@@ -162,7 +162,7 @@ check_class \
 # javap grep; flat-only pinned by build script '$' guard + rust delivery test).
 check_class \
   "chunksend/build/net/minecraft/server/network/ChunkSendOps.class" \
-  "cmp437_chunk4" "cmp435_chunk3" "cmp444_chunk5" "cmp450_chunk" "cmp453_diet" "cmp456_poi" "chunk4 send-snapshot first hit" "chunk4 snapshot selftest PASS" "chunk4 stats" \
+  "cmp437_chunk4" "cmp435_chunk3" "cmp444_chunk5" "cmp450_chunk" "cmp453_diet" "cmp456_poi" "cmp456_poi_send" "cmp459_p26" "p26 window stats" "chunk4 send-snapshot first hit" "chunk4 snapshot selftest PASS" "chunk4 stats" \
   "public static void sendChunk" "public static boolean selfTest"
 
 # TASK-444-B chunk-packet encode cache (cmp444_chunk5): stage-2 bridge on top

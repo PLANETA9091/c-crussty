@@ -75,6 +75,17 @@ mod chunk_send;
 // redirect of the private write. Dormant unless CRUSSTY_LEVER_FLAG ==
 // cmp444_chunk5 (STRICT eq; empty/foreign flag = vanilla bit-in-bit).
 mod chunk_send5;
+// CHUNK-SEND BURST COALESCING (TASK-459-62 -> TASK-460-38, ID-P26, law-11
+// WILD): byte hook on PlayerChunkSender + window-coalescing plane in the SAME
+// ChunkSendOps blob (rebuilt: raw-cp markers cmp456_poi_send + all frozen
+// unions incl. cmp456_poi) — N sends of one vanilla batch = ONE flush at the
+// window boundary; packet bytes UNCHANGED, send order = vanilla queue order,
+// flush latency <= 1 tick. STRICT-OR: dormant unless CRUSSTY_LEVER_FLAG ==
+// cmp456_poi_send (historical cmp459_p26 kept in the Java gate union); on
+// that flag chunk_send.rs does NOT register (disjoint enabled() gates —
+// exactly one bytes hook per target class). POI carrier: round-460-poisend-1
+// @5ecd841a (send-lane alive — ledger L07: joins-burst +1.5пп, НЕ chk-оси).
+mod chunk_send6;
 mod noise_fill;
 mod parse_diag;
 mod poi_plane;
@@ -319,6 +330,9 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // of the private write (encode-once capture + byte[] replay per player).
     // Dormant unless CRUSSTY_LEVER_FLAG == cmp444_chunk5 (STRICT eq).
     chunk_send5::register();
+    // P26 window coalescing plane (TASK-460-38): owns PlayerChunkSender ONLY
+    // under cmp456_poi_send (STRICT-OR disjoint from chunk_send above).
+    chunk_send6::register();
     queryplane::register();
     // POI-PLANE (TASK-456-B, закон-6 подсистема POI целиком — lever
     // cmp456_poi): LAST hooks on Level + ChunkMap — composes the
@@ -683,6 +697,9 @@ fn inject_surface() {
     // ClientboundLevelChunkWithLightPacket (dormant unless
     // CRUSSTY_LEVER_FLAG == cmp444_chunk5).
     chunk_send5::activate();
+    // P26 window coalescing activation (dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp456_poi_send).
+    chunk_send6::activate();
 }
 
 /// Define one bridge class and register all its natives.
