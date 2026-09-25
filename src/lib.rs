@@ -46,6 +46,7 @@ mod improved_noise;
 mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
+mod inside_epoch_gate;
 mod inside_snap;
 mod item_merge;
 mod items_index;
@@ -205,6 +206,13 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // load; patch served via retransform after the InsideBlockOps bridge
     // lands). Dormant unless CRUSSTY_INSIDE_CACHE=1.
     inside_cache::register();
+    // INSIDE-EPOCH GATE (ID-P36, TASK-459-58 scaffold): дешёвый пре-гейт
+    // перед полным путём inside-snapshot serve (флет-массив эпох, bump уже
+    // live в secWrite). Register идёт рядом с inside_cache; define — ранний
+    // arm-hook (NCDFE-канон), ретаргет-вставка — wiring-фаза. Dormant unless
+    // CRUSSTY_INSIDE_EPOCH_GATE=1 (и до приземления блоба — честный
+    // scaffold-stop в activate).
+    inside_epoch_gate::register();
     // INSIDE-BITMASK (TASK-357): bridge owner registration (dormant unless
     // CRUSSTY_INSIDE_BITMASK=1).
     inside_bitmask::register();
@@ -544,6 +552,12 @@ fn inject_surface() {
     // arm, then the LevelChunk secWrite retarget + retransform (gate идёт
     // через entity_compose stage 1c; dormant unless lever_flag=cmp424_inside).
     inside_snap::activate();
+    // INSIDE-EPOCH GATE (ID-P36, TASK-459-58 scaffold): РАННИЙ arm-hook —
+    // define InsideEpochGate в kernel loader + selfTest hit-инварианта ДО
+    // публикации BRIDGE_READY (секвенция inside_cache; NCDFE-канон: класс
+    // определён до первого gated-вызова). Dormant unless
+    // CRUSSTY_INSIDE_EPOCH_GATE=1; scaffold-stop, пока блоб не встроен.
+    inside_epoch_gate::activate();
     // FLUID-DIRTY (S7-151): define FluidPushOps into the kernel loader,
     // compute the secWrite retarget for LevelChunk, arm the inside_chain
     // bridge (dormant unless CRUSSTY_FLUID_DIRTY=1).
