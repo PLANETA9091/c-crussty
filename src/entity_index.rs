@@ -432,15 +432,20 @@ fn mix64(mut z: u64) -> u64 {
     z ^ (z >> 31)
 }
 
-/// k=4 word indices for a chunk key (deterministic double-hash family).
+/// k=4 (word, bit) slots for a chunk key — deterministic splitmix64
+/// double-hash family: h_i = h1 + i*h2; word = h_i & 511, bit = (h_i >> 9) & 63
+/// (the bit MUST vary per hash function — a fixed bit collapses the filter to
+/// fpr ≈ (1-e^(-n/512))^4 ≈ 99% at n=3k; per-hash bits restore the classic
+/// ε = (1-e^(-kn/m))^k = 0.88% @ n=3000, m=32768, k=4).
 #[inline]
-fn bloom_idx(key: i64) -> [usize; BLOOM_K] {
+fn bloom_slots(key: i64) -> [(usize, u64); BLOOM_K] {
     let h = mix64(key as u64 ^ 0xD1B5_4A32_D192_ED03);
     let h2 = (h >> 27) | 1; // odd stride
-    let mut out = [0usize; BLOOM_K];
+    let mut out = [(0usize, 0u64); BLOOM_K];
     let mut i = 0;
     while i < BLOOM_K {
-        out[i] = (h.wrapping_add((i as u64).wrapping_mul(h2)) as usize) & BLOOM_MASK;
+        let hi = h.wrapping_add((i as u64).wrapping_mul(h2));
+        out[i] = ((hi as usize) & BLOOM_MASK, 1u64 << ((hi >> 9) & 63));
         i += 1;
     }
     out
@@ -449,8 +454,7 @@ fn bloom_idx(key: i64) -> [usize; BLOOM_K] {
 /// (WLOCK, before publish) mark a chunk key ever-occupied.
 #[inline]
 fn bloom_add(key: i64) {
-    for w in bloom_idx(key) {
-        let bit = 1u64 << (key as u64 % 64);
+    for (w, bit) in bloom_slots(key) {
         BLOOM[w].fetch_or(bit, Ordering::Release);
     }
 }
@@ -459,8 +463,7 @@ fn bloom_add(key: i64) {
 /// the exact path; the querying thread always observes its own inserts).
 #[inline]
 fn bloom_probe(key: i64) -> bool {
-    let bit = 1u64 << (key as u64 % 64);
-    for w in bloom_idx(key) {
+    for (w, bit) in bloom_slots(key) {
         if BLOOM[w].load(Ordering::Relaxed) & bit == 0 {
             return false;
         }
