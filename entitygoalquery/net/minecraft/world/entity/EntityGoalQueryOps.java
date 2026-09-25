@@ -141,7 +141,7 @@ public final class EntityGoalQueryOps {
         return f != null && (f.trim().equals("cmp421_brain")
                 || f.trim().equals("cmp422_brain2")
                 || f.trim().equals("cmp423_brain3")
-                || f.trim().equals("cmp451_senseins") || f.trim().equals("cmp452_mega") || f.trim().equals("cmp453_diet"));
+                || f.trim().equals("cmp451_senseins") || f.trim().equals("cmp452_mega") || f.trim().equals("cmp453_diet") || f.trim().equals("cmp450_chunk"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -166,7 +166,7 @@ public final class EntityGoalQueryOps {
                 : t.equals("cmp444_chunk5") ? "cmp444_chunk5" // TASK-444-B: R8 carrier marker id (encode-cache stage-2)
                 : t.equals("cmp450_chunk") ? "cmp450_chunk" // TASK-450-C: union carrier marker id (chunk4+chunk5+slices)
                 : t.equals("cmp452_mega") ? "cmp452_mega" // TASK-452-C mega-composite marker id
-                : t.equals("cmp453_diet") ? "cmp453_diet" // TASK-453-C diet composite marker id
+                : t.equals("cmp453_diet") || f.trim().equals("cmp450_chunk") ? "cmp453_diet" // TASK-453-C diet composite marker id
                 : t.equals("cmp421_brain") ? "cmp421_brain"
                 : t.equals("cmp412_eqsnapv3") ? "cmp412_eqsnapv3" // TASK-412-C: точная метка.
                 : t.equals("cmp411_eqsnap") ? "cmp411_eqsnap"
