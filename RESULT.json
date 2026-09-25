@@ -1,14 +1,14 @@
 {
  "agent": "TASK-455-B (chunk-pipeline, law 8)",
- "vector": "chunk-union rebaze-3: 47ea8b20 (diet carrier) ⊕ 797ae4f0 (chunk4⊕chunk5⊕chunkparse union), lever cmp450_chunk; + GEN-axis arming restore (run_world3 KERNEL_POLICY=off case for cmp450_chunk)",
- "branch": "round-455b-chunk @ 74461386",
+ "vector": "chunk-union rebaze-3 + law-3 cycle-2: cmp450_chunk = diet-profile union (ins4 ⊕ sense-core ⊕ chunkparse-codec ⊕ chunk4-send ⊕ chunk5-encode ⊕ noise GEN) on diet carrier 47ea8b20 ⊕ chunk-union 797ae4f0",
+ "branch": "round-455b-chunk (legs pinned @c551f7fa = cycle-2 tree)",
  "run_id": null,
  "tps_med": null,
  "delta_pair_pct": null,
- "lane": "chunk/worldgen: parse+send+send5+noise GEN + ins4-carrier stack; GEN-axis was dead since round-422 (policy case missing) — restored",
+ "lane": "chunk/worldgen law-8: GEN-axis restored (was dead since round-422), full diet∪chunk composition",
  "ram": null,
- "parity": "cargo test 329/0; check_blobs_sync ALL IN SYNC (javap flat==nested x16); gate needle audit ALL PRESERVED (rust union + java diet-superset)",
- "verdict": "IN_PROGRESS",
- "evidence": "merge commit 74461386 pushed; legs round-455b-chunk-1/2 dispatched HTTP 204 (refs created @74461386); inputs canon exact; dispatch_455b.py argv-guard+pin",
- "what": "step-3: law-3 cycle-2 committed (cmp450_chunk = diet-profile union); leg-3 dispatch pending"
+ "parity": "cargo test 329/0; check_blobs_sync ALL IN SYNC; gate needle audit ALL PRESERVED",
+ "verdict": "IN_PROGRESS — 3 legs in flight (round-455b-chunk-1/2 re-roll + leg-3)",
+ "evidence": "legs 1/2 attempt-1 BAND-n/a: CI build FAIL root-caused (74461386 staged pre-fix rust — union_resolve auto-staged broken versions, manual fixes unstaged; canon fix = stage-audit before push). Re-roll #1 on verified tree c551f7fa (local cargo 329/0 + blobs sync). leg-3 dispatched on same tree.",
+ "what": "step-4: 3 legs in flight @c551f7fa, lever cmp450_chunk, canon inputs"
 }
