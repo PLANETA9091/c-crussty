@@ -69,47 +69,47 @@ echo "== javap-gate: lever bridge blobs vs ARM markers / gate flags (lever cmp41
 
 check_class \
   "entityinside/build/net/minecraft/world/entity/ItemEntityManager.class" \
-  "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp456_poi" \
+  "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp456_poi" "cmp456_poi_wide" \
   "native int idxProbe" "static void indexAdd" "native int lifetimeDue"
 
 check_class \
   "goalops/build/net/minecraft/world/entity/ai/goal/GoalOps.class" \
-  "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp456_poi" "goal-selector EFFECT armed" "goalCleanup" "goalUpdate" \
+  "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp456_poi" "cmp456_poi_wide" "goal-selector EFFECT armed" "goalCleanup" "goalUpdate" \
   "goal-selector running EFFECT armed" \
   "tickGate" "tickRunningGate" "availableGoals" "lockedFlags" "goalTypes"
 
 check_class \
   "queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp412_b2p1" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp456_poi" "selfTest" "isHardCollidingProbe"
+  "cmp417_bq" "cmp420_colpush" "cmp412_b2p1" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp456_poi" "cmp456_poi_wide" "selfTest" "isHardCollidingProbe"
 
 check_class \
   "mobai/build/net/minecraft/world/entity/MobAiOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp456_poi" \
+  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp456_poi" "cmp456_poi_wide" \
   "native"
 
 check_class \
   "sscan/build/net/minecraft/world/entity/MobScanOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp456_poi" \
+  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp456_poi" "cmp456_poi_wide" \
   "native"
 
 check_class \
   "sense/build/net/minecraft/world/entity/SenseOps.class" \
-  "cmp438_sense" "cmp430_inside" "cmp451_senseins" "cmp452_mega" "cmp453_diet" "nearestEntityGate" "sense EFFECT" "selfTest" \
+  "cmp438_sense" "cmp430_inside" "cmp451_senseins" "cmp452_mega" "cmp453_diet" "cmp456_poi" "cmp456_poi_wide" "nearestEntityGate" "sense EFFECT" "selfTest" \
   "native int senseProbe" "native int senseEpoch"
 
 check_class \
   "randomtick/build/net/minecraft/world/entity/ai/BrainOps.class" \
-  "cmp438_sense" "cmp439_sense_scan" "cmp451_senseins" "cmp452_mega" "selfTestTickEach" "tickEachRunning" \
+  "cmp438_sense" "cmp439_sense_scan" "cmp451_senseins" "cmp452_mega" "cmp456_poi_wide" "selfTestTickEach" "tickEachRunning" \
   "sense tick2 EFFECT armed"
 
 check_class \
   "mobpush/build/net/minecraft/world/entity/MobPushOps.class" \
-  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp456_poi" \
+  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp456_poi" "cmp456_poi_wide" \
   "native int mobProbe" "boxFor" "colpushSweep"
 
 check_class \
   "colpush/build/net/minecraft/world/entity/ColpushOps.class" \
-  "cmp420_colpush" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp456_poi" "pushEntities" "bulkTick" "selfTest" "armed" \
+  "cmp420_colpush" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp456_poi" "cmp456_poi_wide" "pushEntities" "bulkTick" "selfTest" "armed" \
   "native int colpushProbe" "native int colpushTick"
 
 check_class \
@@ -118,7 +118,7 @@ check_class \
 
 check_class \
   "entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
-  "cmp414_cvs" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp456_poi" \
+  "cmp414_cvs" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp456_poi" "cmp456_poi_wide" \
   "native int eqProbe" "native int senseArena"
 
 # TASK-420-C chunk-pipeline plane (cmp420_chunk2): the bridge must carry the

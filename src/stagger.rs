@@ -83,9 +83,9 @@ fn enabled() -> bool {
             | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4")
             | Ok("cmp438_sense") // TASK-444-C: sense family union
             | Ok("cmp451_senseins") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR) — production gate retag for carrier-parity
-            | Ok("cmp453_diet") | Ok("cmp456_poi") | Ok("cmp450_chunk") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
+            | Ok("cmp453_diet") | Ok("cmp456_poi") | Ok("cmp456_poi_wide") | Ok("cmp450_chunk") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
             | Ok("cmp421_brain")
-            | Ok("cmp421_brain") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") | Ok("cmp456_poi")
+            | Ok("cmp421_brain") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") | Ok("cmp456_poi") | Ok("cmp456_poi_wide")
     )
 }
 

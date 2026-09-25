@@ -73,7 +73,7 @@ fn tick2_enabled() -> bool {
     }
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp438_sense") | Ok("cmp439_sense_scan") | Ok("cmp451_senseins") // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+        Ok("cmp438_sense") | Ok("cmp439_sense_scan") | Ok("cmp451_senseins") | Ok("cmp456_poi_wide") // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR) // TASK-460-06: poiw widen — tick2 rides the wide round id (mobs_sense mirror canon)
     )
 }
 

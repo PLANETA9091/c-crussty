@@ -153,7 +153,7 @@ fn flag_enabled(flag: Option<&str>) -> bool {
             // resolves a never-defined class (NCDFE cached per cp entry,
             // ×6014 poi456-2). poi_widen.py missed the `Some(..)` pattern
             // (only Ok(..)/f==-style were widened) — x452 mirror-drift class.
-            | Some("cmp456_poi")
+            | Some("cmp456_poi") | Some("cmp456_poi_wide")
             | Some("cmp421_brain")
             | Some("cmp421_brain") | Some("cmp434_chunkpl") | Some("cmp435_chunk3") | Some("cmp437_chunk4") | Some("cmp444_chunk5") | Some("cmp450_chunk")
     )
@@ -199,8 +199,8 @@ fn enabled_flag_is_sense() -> bool {
             | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4")
             | Ok("cmp438_sense") // TASK-444-C: sense family union
             | Ok("cmp451_senseins") // TASK-452-A: senseins composite — sense-arena slice must arm (production gate retag)
-            | Ok("cmp453_diet") | Ok("cmp456_poi") | Ok("cmp450_chunk") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
-            | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") | Ok("cmp456_poi") // TASK-454-B/455-B: chunk union carrier rides the sense gate (STRICT OR, rebaze-3 union)
+            | Ok("cmp453_diet") | Ok("cmp456_poi") | Ok("cmp456_poi_wide") | Ok("cmp450_chunk") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
+            | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") | Ok("cmp456_poi") | Ok("cmp456_poi_wide") // TASK-454-B/455-B: chunk union carrier rides the sense gate (STRICT OR, rebaze-3 union)
     )
 }
 
@@ -1257,6 +1257,7 @@ mod entityquery_delivery_tests {
         // Pinned: cmp456_poi ⊕ its law-7 synonyms cmp450_chunk/cmp453_diet;
         // foreign/empty flags stay vanilla.
         assert!(super::flag_enabled(Some("cmp456_poi")));
+        assert!(super::flag_enabled(Some("cmp456_poi_wide"))); // TASK-460-06: poiw widen — same EARLY-define canon
         assert!(super::flag_enabled(Some("cmp450_chunk")));
         assert!(super::flag_enabled(Some("cmp453_diet")));
         // And the java blob side carries the same needle (javap ground truth
