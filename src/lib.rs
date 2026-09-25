@@ -45,6 +45,7 @@ mod improved_noise;
 mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
+mod inside_quantum_gate;
 mod inside_snap;
 mod item_merge;
 mod items_index;
@@ -207,6 +208,12 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // INSIDE-BITMASK (TASK-357): bridge owner registration (dormant unless
     // CRUSSTY_INSIDE_BITMASK=1).
     inside_bitmask::register();
+    // INSIDE-QUANTUM-GATE (ID-P34, TASK-459-74): quantum-rest classifier
+    // (0 < |delta| < eps for K ticks -> flat-slot serve with incremental
+    // replay of vanilla effect calls). DORMANT scaffold: model-only, no
+    // byte hook, no define_class (10k-scenario oracle gate; lever
+    // cmp459_p34 / CRUSSTY_INSIDE_QUANTUM).
+    inside_quantum_gate::register();
     // FLUSH-DIET (S7-137): byte hook on the StepBasedCollector (pristine
     // capture; patch served via retransform after the FlushOps bridge lands).
     // Dormant unless CRUSSTY_FLUSH_DIET=1.
@@ -515,6 +522,9 @@ fn inject_surface() {
     // loader, probe-then-patch, Entity stage composes via entity_compose
     // (dormant unless CRUSSTY_INSIDE_BITMASK=1).
     inside_bitmask::activate();
+    // INSIDE-QUANTUM-GATE (ID-P34): dormant no-op in v1 (model selftest only
+    // when the gate env is set; nothing is defined into the kernel loader).
+    inside_quantum_gate::activate();
     // FLUSH-DIET (S7-137): define FlushOps into the kernel loader, compute
     // the length-preserving patch, retransform (dormant unless
     // CRUSSTY_FLUSH_DIET=1).
