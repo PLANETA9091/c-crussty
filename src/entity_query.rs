@@ -165,6 +165,25 @@ fn enabled_flag_is_eqsnap() -> bool {
         Ok("cmp411_eqsnap") | Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs") | Ok("cmp417_bq")
             // TASK-419-B (sense-plane composite): STRICT OR.
             | Ok("cmp421_brain")
+            // TASK-460-34 (swar ARM-ремонт): cmp458_swar несёт eqsnap-плоскость
+            // (mobs_soa::eqsnap_mode() включает cmp458_swar → mob_upsert пишет
+            // в пер-потоковые DeltaShard), НО этот drain-переключатель флага НЕ
+            // знал → drain_eqsnap_shards() ни разу не зовётся → шарды 16×8192
+            // = 131072 строк сатуруют <1 тика при 150k → mob_upsert ERR_RANGE
+            // (per-call vanilla) + колонки stale → eq-цепи rc=0 → pushCandidates
+            // = false → push = 100% ваниль. КРИТ-ФАКТ cmp458_swar-ноги
+            // (131k upsert = 100% ваниль). STRICT OR: только точный флаг.
+            | Ok("cmp458_swar")
+    )
+}
+
+/// TASK-460-34: точная метка cmp458_swar в drain/ARM-маркерах (снапшот
+/// EFFECT-строк: leg-лог должен грепаться однозначно, не подлезать под
+/// cmp421_brain-метку sense-семьи).
+fn enabled_flag_is_swar() -> bool {
+    matches!(
+        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
+        Ok("cmp458_swar")
     )
 }
 
@@ -630,7 +649,9 @@ pub fn activate() {
         }
 
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
-        let flag_label = if enabled_flag_is_brain2() {
+        let flag_label = if enabled_flag_is_swar() {
+            "cmp458_swar" // TASK-460-34: точная метка (sense-список шире — проверять раньше)
+        } else if enabled_flag_is_brain2() {
             "cmp422_brain2"
         } else if enabled_flag_is_sense() {
             "cmp421_brain"
@@ -748,7 +769,9 @@ pub unsafe extern "system" fn eq_epoch(
     };
     static DRAIN_LOGGED: AtomicBool = AtomicBool::new(false);
     if drained > 0 && !DRAIN_LOGGED.swap(true, Ordering::Relaxed) {
-        let drain_label = if enabled_flag_is_eqsnapv3() {
+        let drain_label = if enabled_flag_is_swar() {
+            "cmp458_swar" // TASK-460-34: точная метка флага ноги
+        } else if enabled_flag_is_eqsnapv3() {
             "cmp412_eqsnapv3"
         } else {
             "cmp411_eqsnap"
@@ -1017,6 +1040,31 @@ mod tests {
         assert!(!enabled_with("cmp451_senseins_x"));
         assert!(!enabled_with(" cmp451_senseins"));
         assert!(!enabled_with("cmp451_senseins "));
+    }
+
+    /// TASK-460-34: pin the shard-drain switch (x452 lesson — the OTHER
+    /// production gate: enabled_flag_is_eqsnap routes drain_eqsnap_shards in
+    /// eq_epoch; the cmp458_swar miss was the 131k-upsert saturation
+    /// root-cause). STRICT eq, no prefix/suffix tolerance.
+    #[test]
+    fn eqsnap_drain_switch_pins() {
+        assert!(enabled_flag_is_eqsnap() == false); // no env in tests
+        for f in [
+            "cmp411_eqsnap",
+            "cmp412_eqsnapv3",
+            "cmp414_cvs",
+            "cmp417_bq",
+            "cmp421_brain",
+            "cmp458_swar",
+        ] {
+            std::env::set_var("CRUSSTY_LEVER_FLAG", f);
+            assert!(enabled_flag_is_eqsnap(), "{f} must drain");
+        }
+        for f in ["", "cmp458_swar_x", " cmp458_swar", "cmp457_paldelta", "cmp436_ins4"] {
+            std::env::set_var("CRUSSTY_LEVER_FLAG", f);
+            assert!(!enabled_flag_is_eqsnap(), "'{f}' must NOT drain");
+        }
+        std::env::remove_var("CRUSSTY_LEVER_FLAG");
     }
 
     /// Mirror of the java EntityGoalQueryOps.cellHash operating on the same
