@@ -15,8 +15,8 @@
   "lane_now": null,
   "ram_stw_full": null,
   "parity": null,
-  "verdict": "IN_PROGRESS",
-  "stage": "PHASE-1 merge complete (STRICT-OR), cargo check next",
+  "verdict": "POLLING",
+  "stage": "PHASE-3 legs dispatched (diet454-1/2/3 @451c4e41, lever cmp453_diet)",
   "evidence": [
     "worktree /home/z/rounds/ROUND-454/agent-c = origin/master + merge origin/round-453c-diet",
     "STRICT-OR: all production gates (entity_query/mobs_sense/mobs_ai/mobs_sscan/stagger/brainhook/items/mobs/nav/queryplane/tickplane/colpush/collide_batch/goal_selector/inside_*/noise_fill) reverted to master verbatim (cmp451_senseins needle untouched, mirror-drift lesson x451/x452)",
@@ -25,5 +25,5 @@
     "classfile.rs delta = diet biomes method const + resolution closure only",
     "check_blobs_sync.sh = ALL IN SYNC (flat==nested byte-identical, javap loads OK) — no .java edited"
   ],
-  "what": "union-merge round-453c-diet into new master per STRICT-OR; diet degenerates to master(05c6da1b) ⊕ chunk4-send-snapshot(dead-as-run) ⊕ chunkparse-codec(biomes-cache)"
+  "what": "union-merge round-453c-diet into new master per STRICT-OR; diet degenerates to master(05c6da1b) ⊕ chunk4-send-snapshot(dead-as-run) ⊕ chunkparse-codec(biomes-cache); legs diet454-1/2/3 dispatched via dispatch_454.py --no-batch (ancestry pin 598901f3 OK)"
 }
