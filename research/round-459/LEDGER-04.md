@@ -1,0 +1,7 @@
+# LEDGER-04 — eqsnap2+H03 композиция (TASK-459-L04)
+
+1. Слайсы под Hilbert-порядок (leg-1 chkmono457-11, 104163 сэмплов): энумерация `EntityCollectionBySection.getEntities` 964 (0.93%) + `getHardCollidingEntities` 800 (0.77%) = лейн **1.70пп**; `AABB.intersects` 727 (0.70%) НЕ забирается — strict-хвост пари (javap: intersects(DDDDDD) = 6×dcmpg, вызывается из арена-хвоста как из ваниль-цикла).
+2. Capture-матем: Δ-прогноз H03 = 1.70 × 40-60% = +0.7-1.0пп; потолок H03 = 1.70 × 100% = +1.7пп; нога-композиция = 2.6 (eqsnap2 leg-1) + 0.7-1.0 = **+3.3-3.6пп**, АБСОЛЮТНЫЙ потолок ноги **+4.3пп** (ценз 2.3% × захват 0% = 0, REFUTED_CENS).
+3. Пара: якорь ≤ leg−20 = −16.4..−15.7; банк ×459 (12) — ≤−16 только poi-14 −18.1@7223047 (1/12=8.3%); a33 −11.8 даёт max +16.1 < 20 даже при потолке ноги; медианная пара пула ≈ **+5.7-6.0пп**; лотерея poi-14: P ≈ 0.24%/ролл, EV 0.07 попадания при ≥30 роллах, min-of-3 EV ≈ 1e-4.
+4. ВЕРДИКТ: **потолок композиции eqsnap2+H03 < 20пп — ЗАКРЫТИЕ (закон 13a, REFUTED_CENS-класс)**; H07/Hilbert остаётся микроридером +0.7-1.0пп (cargo-ready @round-458j-hilbert), не пара-анлокером; ≥+20 пути — окна B/E монстров chk-14/chk-19, независимо от этой оси.
+5. Глубина: 3 javap-контракта (ChunkEntitySlices 4 перегрузки getEntities+getHardColliding; EntityCollectionBySection.getEntities байткод aaload→getBoundingBox→intersects→Predicate; AABB.intersects) / 11 профильных чисел / 5 источников (Moonrise, Lithium, geo-index/flatbush, rstar, C2ME/Pufferfish-негатив).
