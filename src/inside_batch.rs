@@ -47,6 +47,14 @@ static KERNEL_LOADER: std::sync::atomic::AtomicUsize = std::sync::atomic::Atomic
 
 pub const BRIDGE_CLASS: &str = "net/minecraft/world/entity/InsideBatchOps";
 
+/// TASK-462-61 (chkclimb-12 cert-fix, LEDGER-24 ×461): the serve path
+/// (sweepServe → `new QuantumVisitor(...)`) lazily resolves the nested class
+/// through the DEFINING loader — the kernel loader must hold the visitor
+/// blob too, or the first REST-classified entity NCDFEs (run 36174354289:
+/// 38 boats, storm, INVALID). Multi-define canon inside_snap.rs (+ Snap +
+/// Lane).
+pub const QUANTUM_VISITOR_CLASS: &str = "net/minecraft/world/entity/InsideBatchOps$QuantumVisitor";
+
 /// insideBatchMask(n, maxsec, eids[n], xyz[n*3], bb[n*6], secKeys[n*maxsec],
 /// nsec[n], dirty[n], out[n]) -> 0 | ERR (<0).
 pub const BATCH_MASK_SIG: &str =
@@ -90,6 +98,13 @@ pub fn enabled() -> bool {
 /// сборка scripts/build_inside_batch_ops.sh, flat==nested gate).
 const BRIDGE_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideBatchOps.class");
+
+/// TASK-462-61: nested visitor blob (was 0 bytes in the repo @9d4f7341 — the
+/// packaging hole; rebuilt by scripts/build_inside_batch_ops.sh glob canon,
+/// flat==nested gate per file).
+const QUANTUM_VISITOR_BYTES: &[u8] = include_bytes!(
+    "../entityinside/build/net/minecraft/world/entity/InsideBatchOps$QuantumVisitor.class"
+);
 
 /// Gate-видимость для entity_compose stage (S7-162 supersede-дисциплина).
 pub fn enabled_pub() -> bool {
@@ -195,9 +210,28 @@ pub fn activate() {
         let major = crate::improved_noise::class_version(BRIDGE_BYTES)
             .map(|(m, _)| m)
             .unwrap_or(0);
+        let visitor_major = crate::improved_noise::class_version(QUANTUM_VISITOR_BYTES)
+            .map(|(m, _)| m)
+            .unwrap_or(0);
+        let major = major.max(visitor_major);
         if major > jvm_major {
             eprintln!(
-                "[crussty-plugin] inside_batch: {BRIDGE_CLASS} is class major {major} but JVM supports up to {jvm_major} — rebuild entityinside/ via scripts/build_inside_batch_ops.sh; hook stays dormant"
+                "[crussty-plugin] inside_batch: bridge/visitor class major {major} but JVM supports up to {jvm_major} — rebuild entityinside/ via scripts/build_inside_batch_ops.sh; hook stays dormant"
+            );
+            return;
+        }
+
+        // 3.5 TASK-462-61 cert-fix (LEDGER-24 ×461): STRUCTURAL resolution-
+        // closure gate BEFORE define (analog inside_snap_resolution_closure,
+        // fail-closed dormant): every member rust touches + the visitor
+        // contract + the ops-CP visitor ref must hold, or the serve path
+        // would NCDFE on the first REST entity regardless of the green
+        // invariants-only quantumSelfTest.
+        if let Err(e) =
+            crate::classfile::inside_batch_resolution_closure(BRIDGE_BYTES, QUANTUM_VISITOR_BYTES)
+        {
+            eprintln!(
+                "[crussty-plugin] inside_batch: resolution closure FAILED ({e}) — hook stays dormant (fail-closed)"
             );
             return;
         }
@@ -240,6 +274,22 @@ pub fn activate() {
             eprintln!(
                 "[crussty-plugin] inside_batch: defined {BRIDGE_CLASS} in kernel loader"
             );
+            // TASK-462-61: define the NESTED visitor in the SAME loader BEFORE
+            // any arm step (multi-define canon inside_snap.rs «+ Snap + Lane»);
+            // lazy resolution at first sweepServe must hit the defined blob,
+            // not a ClassNotFoundException in the kernel loader.
+            if let Some(v) = env.define_class(QUANTUM_VISITOR_CLASS, gref, QUANTUM_VISITOR_BYTES) {
+                env.delete_local_ref(v);
+                eprintln!(
+                    "[crussty-plugin] inside_batch: defined {QUANTUM_VISITOR_CLASS} in kernel loader (+ QuantumVisitor)"
+                );
+            } else {
+                crate::describe_exception(env);
+                eprintln!(
+                    "[crussty-plugin] inside_batch: define_class({QUANTUM_VISITOR_CLASS}) failed — hook stays dormant (fail-closed, NCDFE-canon)"
+                );
+                return false;
+            }
             // RegisterNatives ДО flips/READY: первый armed batchGate-вызов обязан
             // иметь связку (arm-order контракт моста: define+natives+arm).
             let natives_ok = register_native(env, c);
@@ -568,5 +618,27 @@ mod tests {
         assert!(!armed.contains(&"cmp456_chunkmono_p31quant_x"));
         assert!(!armed.contains(&"cmp456_chunkmono"));
         assert!(!armed.contains(&""));
+    }
+
+    /// TASK-462-61 (cert-fix, LEDGER-24 ×461): the embedded bridge+visitor
+    /// blobs satisfy the structural resolution closure (members rust touches,
+    /// visitor contract, ops-CP visitor ref) — the run-36174354289 defect
+    /// class is structurally impossible on this artifact set.
+    #[test]
+    fn inside_batch_resolution_closure_accepts_embedded_bridges() {
+        crate::classfile::inside_batch_resolution_closure(BRIDGE_BYTES, QUANTUM_VISITOR_BYTES)
+            .expect("embedded inside_batch blobs must close");
+    }
+
+    /// The visitor blob must be non-trivial AND byte-equal to its flat legacy
+    /// copy (lesson ×93: flat AND nested paths both installed).
+    #[test]
+    fn visitor_blob_matches_flat_copy() {
+        let flat = include_bytes!("../entityinside/build/InsideBatchOps$QuantumVisitor.class");
+        assert!(!QUANTUM_VISITOR_BYTES.is_empty());
+        assert_eq!(QUANTUM_VISITOR_BYTES.len(), flat.len());
+        assert!(QUANTUM_VISITOR_BYTES == flat);
+        // CAFEBABE magic — a 0-byte stub would fail here (LEDGER-24 hole).
+        assert_eq!(&QUANTUM_VISITOR_BYTES[..4], &[0xCA, 0xFE, 0xBA, 0xBE]);
     }
 }

@@ -5617,6 +5617,72 @@ pub fn inside_snap_resolution_closure(ops: &[u8]) -> Result<(), String> {
     )
 }
 
+/// INSIDE-BATCH bridge target (TASK-460-01, ID-P31): the receiver-first
+/// static `InsideBatchOps.batchGate(Entity)Z` the entity_compose stage-1
+/// redirect resolves (see `patch_inside_batch`).
+pub fn inside_batch_resolution_closure(ops: &[u8], visitor: &[u8]) -> Result<(), String> {
+    // TASK-462-61 (chkclimb-12 cert-fix, LEDGER-24 ×461): run 36174354289
+    // shipped a bridge whose CP references the nested
+    // `InsideBatchOps$QuantumVisitor` (CP #140-142) while the blob itself was
+    // never packaged/defined — lazy resolution at the first quantum SERVE
+    // detonated NCDFE ×38 (boats) and the run went INVALID despite a green
+    // invariants-only selfTest. This gate pins the WHOLE serve-path contract
+    // structurally, fail-closed BEFORE define: every method rust touches
+    // (redirect target, native pair, arm hooks) must be declared by the ops
+    // blob, the visitor blob must exist with the vanilla-visitor contract
+    // methods, and the ops CP must actually reference the visitor (so a
+    // single-class re-ship can never pass while the serve path stays broken).
+    const GATE_DESC: &str = "(Lnet/minecraft/world/entity/Entity;)Z";
+    const NATIVE_SIG: &str = "(II[J[D[D[I[I[I[I)I";
+    check_members(
+        ops,
+        &[
+            ("class", "net/minecraft/world/entity/InsideBatchOps", "batchGate", GATE_DESC),
+            (
+                "class",
+                "net/minecraft/world/entity/InsideBatchOps",
+                "insideBatchMask",
+                NATIVE_SIG,
+            ),
+            ("class", "net/minecraft/world/entity/InsideBatchOps", "noteBatchArmed", "()V"),
+            ("class", "net/minecraft/world/entity/InsideBatchOps", "quantumSelfTest", "()I"),
+            ("class", "net/minecraft/world/entity/InsideBatchOps", "noteQuantumArmed", "()V"),
+        ],
+    )?;
+    check_members(
+        visitor,
+        &[
+            (
+                "class",
+                "net/minecraft/world/entity/InsideBatchOps$QuantumVisitor",
+                "visit",
+                "(Lnet/minecraft/core/BlockPos;I)Z",
+            ),
+            (
+                "class",
+                "net/minecraft/world/entity/InsideBatchOps$QuantumVisitor",
+                "<init>",
+                "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/AABB;)V",
+            ),
+        ],
+    )?;
+    let Some(layout) = parse_layout(ops) else {
+        return Err("inside_batch ops classfile unparseable".into());
+    };
+    if layout
+        .pool
+        .find_utf8("net/minecraft/world/entity/InsideBatchOps$QuantumVisitor")
+        .is_none()
+    {
+        return Err(
+            "inside_batch ops CP misses InsideBatchOps$QuantumVisitor ref — serve path would \
+             NCDFE on first sweepServe (LEDGER-24 packaging hole)"
+                .into(),
+        );
+    }
+    Ok(())
+}
+
 // --- REGION-THREADS (S7-156, TASK-295) -------------------------------------
 
 const REGION_TICK_OPS_CLASS: &str = "net/minecraft/world/entity/RegionTickOps";
