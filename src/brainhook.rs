@@ -52,6 +52,31 @@ const SNAPSHOT_BYTES: &[u8] =
 static READY: AtomicBool = AtomicBool::new(false);
 static PATCHED: AtomicBool = AtomicBool::new(false);
 
+/// TASK-442-D (sense scope-expansion, round 2): TICK2 lane state — set by
+/// activate() AFTER BrainOps.selfTestTickEach()==true in the kernel loader
+/// (TASK-437-A pattern: selfTest BEFORE arm), read by the Brain hook when
+/// composing the F2 baseline + tick2 body swap.
+static TICK2_OK: AtomicBool = AtomicBool::new(false);
+static TICK2_DECIDED: AtomicBool = AtomicBool::new(false);
+
+/// STRICT-OR tick2 gate (round-400 lever protocol): CRUSSTY_SENSE env-hatch
+/// (мандат cmp438_sense) ∨ вектор-флаг cmp438_sense ∨ КОМПОЗИТ
+/// cmp439_sense_scan (sense⊕sscan2 STRICT-UNION носитель). ЗЕРКАЛО
+/// mobs_sense.rs enabled() (расхождение = дормант-мисс ARM). Пустой/чужой
+/// флаг = только F2-базлайн (ваниль tickEachRunningBehavior).
+fn tick2_enabled() -> bool {
+    if let Ok(h) = std::env::var("CRUSSTY_SENSE") {
+        let h = h.trim().to_ascii_lowercase();
+        if h == "1" || h == "true" || h == "on" || h == "yes" {
+            return true;
+        }
+    }
+    matches!(
+        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
+        Ok("cmp438_sense") | Ok("cmp439_sense_scan") | Ok("cmp451_senseins") // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+    )
+}
+
 /// Register the byte hook (idempotent; call once from cplugin_init).
 pub fn register() {
     cplug_sdk::hooks::register_bytes(BRAIN_CLASS, |name, bytes| {
@@ -61,21 +86,53 @@ pub fn register() {
         if PATCHED.swap(true, Ordering::SeqCst) {
             return None;
         }
-        match classfile::patch_brain_start_each(bytes) {
-            Ok(b) => {
-                eprintln!(
-                    "[crussty-plugin] brainhook: patched {name} startEachNonRunningBehavior() ({} -> {} bytes)",
-                    bytes.len(),
-                    b.len()
-                );
-                Some(b)
-            }
+        // F2 baseline (always-on family-agg pack member) — unchanged bytes.
+        let mut composed = match classfile::patch_brain_start_each(bytes) {
+            Ok(b) => b,
             Err(e) => {
                 PATCHED.store(false, Ordering::SeqCst);
                 eprintln!("[crussty-plugin] brainhook: patch failed: {e}");
-                None
+                return None;
+            }
+        };
+        // TASK-442-D tick2 lane (gated): Brain.tickEachRunningBehavior ->
+        // BrainOps.tickEachRunning, ONLY when the sense gate is active AND the
+        // tick2 oracle passed in the kernel loader. Failure here NEVER disturbs
+        // the F2 baseline (composed already carries it) — fail-closed.
+        let tick2 = TICK2_OK.load(Ordering::Acquire);
+        let want = TICK2_DECIDED.load(Ordering::Acquire) && tick2_enabled();
+        if want {
+            match classfile::patch_brain_tick_each(&composed) {
+                Ok(b) => {
+                    composed = b;
+                    eprintln!(
+                        "[crussty-plugin] brainhook: tick2 patched {name} tickEachRunningBehavior() ({} -> {} bytes; BrainOps.tickEachRunning flat mask lens; selfTestTickEach=true)",
+                        bytes.len(),
+                        composed.len()
+                    );
+                }
+                Err(e) => {
+                    eprintln!(
+                        "[crussty-plugin] brainhook: tick2 patch rejected ({e}) — F2 stays, tickEachRunningBehavior vanilla"
+                    );
+                }
+            }
+        } else {
+            static T2_OFF: AtomicBool = AtomicBool::new(false);
+            if !T2_OFF.swap(true, Ordering::Relaxed) {
+                eprintln!(
+                    "[crussty-plugin] brainhook: tick2 dormant (gate={}; oracle={}) — tickEachRunningBehavior vanilla",
+                    tick2_enabled(),
+                    tick2
+                );
             }
         }
+        eprintln!(
+            "[crussty-plugin] brainhook: patched {name} startEachNonRunningBehavior() ({} -> {} bytes)",
+            bytes.len(),
+            composed.len()
+        );
+        Some(composed)
     });
 }
 
@@ -141,6 +198,7 @@ pub fn activate() {
             // defining loader would otherwise hit the kernel classpath and
             // NoClassDefFoundError on first snapshot()).
             let mut ok = true;
+            let mut ops_cls: Option<jni::jclass> = None;
             for (nm, bytes) in [
                 (format!("{OPS_NAME}$IdKey"), IDKEY_BYTES),
                 (format!("{OPS_NAME}$Snapshot"), SNAPSHOT_BYTES),
@@ -148,7 +206,11 @@ pub fn activate() {
             ] {
                 match env.define_class(&nm, loader, bytes) {
                     Some(c) => {
-                        env.delete_local_ref(c);
+                        if nm == OPS_NAME {
+                            ops_cls = Some(c); // keep for the tick2 selfTest call
+                        } else {
+                            env.delete_local_ref(c);
+                        }
                         eprintln!("[crussty-plugin] brainhook: defined {nm} in Brain loader");
                     }
                     None => {
@@ -158,6 +220,29 @@ pub fn activate() {
                         break;
                     }
                 }
+            }
+            // TASK-442-D tick2 lane: selfTestTickEach BEFORE arm (TASK-437-A
+            // pattern — first active use of the just-defined class). The tick2
+            // body swap is applied by the hook ONLY when this returned true
+            // AND the sense gate is on. Fail-closed: false → lane vanilla.
+            TICK2_DECIDED.store(true, Ordering::Release);
+            if ok {
+                if let Some(c) = ops_cls {
+                    let ok2 = tick2_selftest(env, c);
+                    TICK2_OK.store(ok2, Ordering::Release);
+                    if ok2 {
+                        eprintln!(
+                            "[crussty-plugin] brainhook: tick2 selfTestTickEach=true (exhaustive mid-loop-stop oracle) BEFORE arm"
+                        );
+                    } else {
+                        eprintln!(
+                            "[crussty-plugin] brainhook: tick2 selfTestTickEach=false — tickEachRunningBehavior stays vanilla (fail-closed)"
+                        );
+                    }
+                }
+            }
+            if let Some(c) = ops_cls {
+                env.delete_local_ref(c);
             }
             env.delete_local_ref(loader);
             env.delete_local_ref(class_cls);
@@ -183,7 +268,40 @@ pub fn activate() {
                 "[crussty-plugin] brainhook: F2 NOT APPLIED after retransform (see patch-failed line above; kernel build mismatch?)"
             );
         }
+        if tick2_enabled() {
+            if TICK2_OK.load(Ordering::Acquire) {
+                eprintln!(
+                    "[crussty-plugin] {} : brain-tick2 ARMED (Brain.tickEachRunningBehavior -> BrainOps.tickEachRunning, per-brain RUNNING mask + flat snapshot, kills getRunningBehaviors ObjectArrayList+map walk; EFFECT marker 'sense tick2 EFFECT armed' on first gate hit)",
+                    std::env::var("CRUSSTY_LEVER_FLAG")
+                        .unwrap_or_else(|_| "(off)".to_string())
+                        .trim()
+                );
+            } else {
+                eprintln!(
+                    "[crussty-plugin] brainhook: brain-tick2 NOT ARMED (selfTestTickEach=false or unverified) — lane vanilla"
+                );
+            }
+        }
     });
+}
+
+/// tick2 oracle on the LOCAL ref of the just-defined BrainOps (mobs_sense.rs
+/// sense_selftest pattern). Any pending exception = failure (fail-closed).
+fn tick2_selftest(env: &jvmti_bindings::env::JniEnv, cls: jni::jclass) -> bool {
+    let Some(mid) = env.get_static_method_id(cls, "selfTestTickEach", "()Z") else {
+        crate::clear_exception(env);
+        eprintln!("[crussty-plugin] brainhook: selfTestTickEach method resolution failed");
+        return false;
+    };
+    let rc = env.call_static_int_method(cls, mid, &[]);
+    let had_exc = crate::clear_exception(env);
+    if had_exc {
+        eprintln!(
+            "[crussty-plugin] brainhook: selfTestTickEach threw (late resolution) — fail-closed"
+        );
+        return false;
+    }
+    rc != 0
 }
 
 /// Force-load Brain through the kernel loader (Bukkit-seeded forName),

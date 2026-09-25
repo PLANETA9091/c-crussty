@@ -483,6 +483,9 @@ case "${LEVER_FLAG:-}" in
   cmp432_inside2)
     log "${LEVER_FLAG} armed: inside-plane DEEPENING = inside_bitmask pre-gate + inside_snap snapshot plane with tick-stamped serve fastpath (chunk/sec memo) + inside_cache gate fused onto the snapshot plane (SNAP_ARMED reads) + slot space 2^18 (full-population memo) + mobsoa carrier stack via STRICT-OR (TASK-432-B, закон 6)"
     ;;
+  cmp451_senseins)
+    log "${LEVER_FLAG} armed: senseins composite = ins4-carrier (inside_snap v4 serve-plane closure + goalquery sense-arena + SoA/colpush/cvs/bq stack STRICT-OR) + sense/brain family (SenseOps getNearestEntity body-swap + BrainOps.tickEachRunning tick2 + goal-selector ops) — law-6 subsystem migration on the merge-carrier (TASK-451-D, закон 7)"
+    ;;
 esac
 # RECON_DIAG (TASK-317, instrument-гейт рычага #13 SKIP-STORE-DIET): чистая
 # наблюдаемость — 0 поведения. GC-политика/heap не трогаются (логирование ≠
