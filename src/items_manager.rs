@@ -76,9 +76,9 @@ fn lever_flag_matches_for(f: &str) -> bool {
         // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
         || f == "cmp420_colpush"
         || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside" || f == "cmp432_inside2" || f == "cmp436_ins4"
-        || f == "cmp451_senseins" || f == "cmp453_diet" || f == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+        || f == "cmp451_senseins" || f == "cmp453_diet" || f == "cmp450_chunk" || f == "cmp456_chunkmono" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
         || f == "cmp438_sense" // TASK-444-C: sense family union
-        || f == "cmp451_senseins" || f == "cmp453_diet" || f == "cmp434_chunkpl" || f == "cmp435_chunk3" || f == "cmp437_chunk4" || f == "cmp444_chunk5" || f == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+        || f == "cmp451_senseins" || f == "cmp453_diet" || f == "cmp434_chunkpl" || f == "cmp435_chunk3" || f == "cmp437_chunk4" || f == "cmp444_chunk5" || f == "cmp450_chunk" || f == "cmp456_chunkmono" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
 }
 
 pub fn activate() {
@@ -112,7 +112,7 @@ pub fn activate() {
         || flag == "cmp412_eqsnapv3" || flag == "cmp414_cvs" || flag == "cmp417_bq"
         // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
         || flag == "cmp420_colpush";
-        || flag == "cmp421_brain" || flag == "cmp422_brain2" || flag == "cmp423_brain3" || flag == "cmp424_mobfeed" || flag == "cmp430_inside" || flag == "cmp434_chunkpl" || flag == "cmp435_chunk3" || flag == "cmp437_chunk4" || flag == "cmp444_chunk5" || flag == "cmp450_chunk" || flag == "cmp432_inside2";    let despawn2 = flag == "cmp399_despawn2" || bfcomp || comp;
+        || flag == "cmp421_brain" || flag == "cmp422_brain2" || flag == "cmp423_brain3" || flag == "cmp424_mobfeed" || flag == "cmp430_inside" || flag == "cmp434_chunkpl" || flag == "cmp435_chunk3" || flag == "cmp437_chunk4" || flag == "cmp444_chunk5" || flag == "cmp450_chunk" || flag == "cmp456_chunkmono" || flag == "cmp432_inside2";    let despawn2 = flag == "cmp399_despawn2" || bfcomp || comp;
     if shard {
         // ГРОМКИЙ ARM-МАРКЕР (TASK-399-B): без этой строки нога не-armed.
         eprintln!(
