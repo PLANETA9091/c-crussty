@@ -21,6 +21,7 @@
 - Ноги эры: 11 валид (−0.8..+11.5), МОНСТР chk-14 +21.7@8687055 (band OK, NCDFE=0) — пара max +9.3↔a26 +12.4@8671791. Суб-бар → КЛИМБ: P31/P32+P36 поверх носителя (прогноз нога 16-21пп).
 - Ген (worldgen) инертен на soak ×421-C (0.0%) — живой закон-8 сайт = chunk-tick eligibility (ID-P22: плоские предикаты тика чанков → один bulk-JNI → битмаска → строгий java хвост; +1.2-2пп; Moonrise/MC-310372).
 - Окна-прицелы: [8637055,8737055] якорь norm ≤+1.7 → пара ≥+20 с chk-14.
+- ЛАБ ×459 L02 (RESEARCH-459-L02.md, javap K1-K8 @patched-kernel chk-19 jar): лейн на chk-14 = 4.3-4.9% остатка (ваниль 4.6-5.2%, C2 снял ~0.5пп; видимые листья getChunkNow 0.7%/738 + CLLRCHT.getNode 0.7%/763 + off-main 1.2%/1260 из 103062); eligibility = ReferenceList raw-array (iterateTickingChunksFaster K3, collectSpawningChunks K6) + per-section isRandomlyTickingBlocks (K5) + hasAnyNearbyNarrow (K7); setFullChunk = единственный feed-пойнт (K2). Capture-матем: Δ=4.6%×30%≈+1.4пп (1.1-2.0), ПОТОЛОК +4.6пп < +20 → P22 = ТОЛЬКО стековый слой. Климб chk-14 числами: P22+P31(+5-8)+P32/P36(+1.5-2.5) → нога +29.6…+33.7 → порог якоря ≤+13.7 → a26 +12.4 (Δ15k) проходит → пара +20.2…+21.3 ≥+20 ✓. Гейты G1-G6 preregistered (ARM+schedProbe>0, flat==nested drift=0, young≤128/Full≤9, pop+items, pair min-of-3, fail-closed BROKEN).
 
 ## ПОДСИСТЕМА: POI (носитель cmp456_poi @5ecd841a)
 - Ноги: max +16.9 (валид), poi-12 +18.5 BAND-OUT@9.83M. Пары до +10.9. Потолок пары требует якорь ≤−3.1 рядом — окна [8907260,9007260] ≤−4.6 (poi456-4 +15.4).
