@@ -1,14 +1,18 @@
 {
- "agent": "TASK-455-B (chunk-pipeline, law 8)",
- "vector": "chunk-union rebaze-3: 47ea8b20 (diet carrier) ⊕ 797ae4f0 (chunk4⊕chunk5⊕chunkparse union), lever cmp450_chunk; + GEN-axis arming restore (run_world3 KERNEL_POLICY=off case for cmp450_chunk)",
- "branch": "round-455b-chunk @ 74461386",
- "run_id": null,
- "tps_med": null,
- "delta_pair_pct": null,
- "lane": "chunk/worldgen: parse+send+send5+noise GEN + ins4-carrier stack; GEN-axis was dead since round-422 (policy case missing) — restored",
- "ram": null,
- "parity": "cargo test 329/0; check_blobs_sync ALL IN SYNC (javap flat==nested x16); gate needle audit ALL PRESERVED (rust union + java diet-superset)",
- "verdict": "IN_PROGRESS",
- "evidence": "merge commit 74461386 pushed; legs round-455b-chunk-1/2 dispatched HTTP 204 (refs created @74461386); inputs canon exact; dispatch_455b.py argv-guard+pin",
- "what": "step-3: law-3 cycle-2 committed (cmp450_chunk = diet-profile union); leg-3 dispatch pending"
+  "agent": "C2 (TASK-456-C chunk mono-plane margin audit)",
+  "vector": "chunk6-sched: ServerChunkCache scheduling mono-plane (getChunkNow fast-path + Rust key-mirror) on master cert stack, STRICT-OR carrier cmp456_chunkmono",
+  "branch": "round-456c-chunkmono",
+  "run_id": "PENDING",
+  "tps_med": null,
+  "delta_pair_pct": null,
+  "lane": "chunk system (kernel) 8.0-8.5% vanilla -> target 7.2-7.6% (scheduling slice 4.6-5.2% -> ~3-4%)",
+  "RAM": "expected parity (no alloc change; ParallelGC bank)",
+  "parity": "PENDING (vanilla bit-in-byte empty lever; body-redirect via redirect_method_body_to_static precedent)",
+  "verdict": "GO-IMPLEMENTING (mono-plane solos REFUTED sub-additive; scheduling-plane positive margin +0.7-1.5pp; STRICT-composition carrier = canon x455)",
+  "evidence": {
+    "plane_margins": {"chunk4-send": "+0.5-1.5pp", "chunk5-encode": "~0 REFUTED", "chunkparse": "+1-3pp AT CEILING in master", "noise-GEN": "0 soak / boot-only"},
+    "scheduling_profile": "chunk system (kernel) 8.0-8.5% vanilla anchors (a3/a7/a13/a25/a32) -> 7.6% chk455-2 leg; getChunkNow 0.6-0.8 + getNode 1.2 shared + lambda 0.8-1.0 + off-main 0.9-1.4 = 4.6-5.2%",
+    "cert_ladder": "master f44a831e +20.0 min-of-3 {+20.4,+20.4,+20.0} borderline; margin pusher target +20.5-22 pairs"
+  },
+  "what": "RESEARCH-456-C.md written; worktree round-456c-chunkmono @fd790a17; implementing ChunkSchedOps + chunk_sched.rs + STRICT-OR needles"
 }
