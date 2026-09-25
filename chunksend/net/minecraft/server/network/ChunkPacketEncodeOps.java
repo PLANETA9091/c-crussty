@@ -86,6 +86,10 @@ public final class ChunkPacketEncodeOps {
     /** TASK-452-C mega-composite (senseins ⊕ chunk union; STRICT-OR; raw-cp
      * marker for the check_blobs_sync gate). */
     static final String CARRIER_UNION_452 = "cmp452_mega";
+    /** TASK-456-B POI-subsystem FULL era carrier (rides the cmp450_chunk union
+     * incl. this encode plane; STRICT-OR; raw-cp marker for the
+     * check_blobs_sync gate). */
+    static final String CARRIER_UNION_456 = "cmp456_poi";
 
     /** Packet instance -> its vanilla write() payload (reference keys). */
     private static final ConcurrentHashMap<ClientboundLevelChunkWithLightPacket, byte[]> PAYLOAD =

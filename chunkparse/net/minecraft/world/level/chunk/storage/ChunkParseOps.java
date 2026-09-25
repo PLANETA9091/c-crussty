@@ -153,6 +153,10 @@ public final class ChunkParseOps {
     /** TASK-453-C diet composite (section-codec kept: NOT overlapped by chunk4
      * [parse=disk-load path vs send=player path]; raw-cp marker). */
     static final String CARRIER_UNION_453 = "cmp453_diet";
+    /** TASK-456-B POI-subsystem FULL era carrier (ins4 ⊕ senseins ⊕ chunk4-send
+     * ⊕ chunk5-encode ⊕ chunkparse ⊕ noise-GEN ⊕ POI-plane; STRICT-OR; raw-cp
+     * marker for the check_blobs_sync gate). */
+    static final String CARRIER_UNION_456 = "cmp456_poi";
 
     /**
      * codec(identity) -> (tag -> pristine decoded template). The outer map

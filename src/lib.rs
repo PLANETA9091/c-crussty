@@ -77,6 +77,7 @@ mod chunk_send;
 mod chunk_send5;
 mod noise_fill;
 mod parse_diag;
+mod poi_plane;
 mod zero_cursor;
 mod palette_gather;
 mod paletted;
@@ -318,14 +319,16 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // of the private write (encode-once capture + byte[] replay per player).
     // Dormant unless CRUSSTY_LEVER_FLAG == cmp444_chunk5 (STRICT eq).
     chunk_send5::register();
-    // QUERYPLANE (TASK-417-C, broadphase-query plane on the cvs carrier):
-    // Level compose-on-top hook (LAST on Level — receives region_threads'
-    // guardEntityTick bytes, composes getEntitiesOfClass +
-    // moonrise$getHardCollidingEntities whole-body redirects on top;
-    // mobs_ai precedent) + ChunkEntitySlices stash/serve (collide_batch
-    // pattern). Dormant unless CRUSSTY_LEVER_FLAG == cmp417_bq (STRICT OR
-    // with legacy b2p1/mcomp ids; empty/foreign flag = vanilla bit-in-bit).
     queryplane::register();
+    // POI-PLANE (TASK-456-B, закон-6 подсистема POI целиком — lever
+    // cmp456_poi): LAST hooks on Level + ChunkMap — composes the
+    // notifyAndUpdatePhysics updatePOIOnBlockStateChange site retarget ONTO
+    // the received chain bytes (queryplane/region_threads rewrites preserved)
+    // and the ChunkMap.tick PoiManager.tick site retarget (region_threads'
+    // tick()V site is method-orthogonal). Rust PoiStore mirror via ONE bulk
+    // poiEpoch JNI per tick (flush at the ChunkMap site). Dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp456_poi (empty flag = vanilla bit-in-byte).
+    poi_plane::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -656,6 +659,11 @@ fn inject_surface() {
     // was filtered -> selfTest false on runner) -> compute patches -> READY
     // -> retransform Level + ChunkEntitySlices. Dormant unless cmp417_bq.
     queryplane::activate();
+    // POI-PLANE (TASK-456-B): define PoiOps into the kernel loader,
+    // RegisterNatives (poiProbe/poiBindMask/poiEpoch), selfTest==true oracle
+    // (mask build+bind at boot), retransform Level + ChunkMap (dormant unless
+    // lever_flag=cmp456_poi).
+    poi_plane::activate();
     // CHUNK-PARSE SECTION-CACHE (TASK-419-C): boot quiet -> define
     // ChunkParseOps into the kernel loader + init(twin) on the LOCAL ref ->
     // pristine guard (javap-verified shape) -> static body-redirect of

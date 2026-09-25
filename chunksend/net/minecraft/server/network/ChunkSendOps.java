@@ -115,6 +115,10 @@ public final class ChunkSendOps {
     /** TASK-453-C diet composite (sense-core + chunk4 + ins4 carrier; STRICT-OR;
      * raw-cp marker for the check_blobs_sync gate). */
     static final String CARRIER_UNION_453 = "cmp453_diet";
+    /** TASK-456-B POI-subsystem FULL era carrier (ins4 ⊕ senseins ⊕ chunk4-send
+     * ⊕ chunk5-encode ⊕ chunkparse ⊕ noise-GEN ⊕ POI-plane; STRICT-OR; raw-cp
+     * marker for the check_blobs_sync gate). */
+    static final String CARRIER_UNION_456 = "cmp456_poi";
 
     /** pos longKey -> current snapshot packet. Lock-free probe. */
     private static final ConcurrentHashMap<Long, ClientboundLevelChunkWithLightPacket> CACHE =
