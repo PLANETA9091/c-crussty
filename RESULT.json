@@ -1,21 +1,13 @@
 {
-  "agent": "TASK-451-D sense/brain",
-  "vector": "sense/brain целиком (закон 6) -> план Б: композиция cmp451_senseins на ins6-носителе",
-  "stage": "composition implemented, gates green, awaiting ins4 cert for legs",
-  "branch": "round-451d-senseins (code) / round-451d-sense (research)",
-  "census_verdict": "NO-GO solo (ceiling realistic +2-4% TPS < +20% bar; gsel CLOSED x4, goalquery covered by merged bq, Brain-mobs=0 in fixture) -> PLAN B per prompt",
-  "composition": {
-    "base": "master b5baf548 + round-436-b-ins6 @07078007 (merge-carrier, 66 files) + sense family (c6208a81 + 01dcf2aa cherry-picks)",
-    "lever": "cmp451_senseins STRICT-OR at every gate: rust 18 files / java 10 files / run_world3.sh case",
-    "planes": "ins4 inside_snap v4 + goalquery sense-arena + SoA/colpush/cvs/bq stack + SenseOps getNearestEntity body-swap + BrainOps.tickEachRunning tick2"
-  },
-  "gates": {
-    "javac": "build_430b_blobs.sh (11 classes) + BrainOps javac --release 21, kernel jar re-materialized (paperclip pass) as round-396-a/patched-kernel.jar",
-    "blobs": "flat==nested byte-identical x13, check_blobs_sync ALL IN SYNC incl cmp451_senseins needles",
-    "javap_load": "javap-LOADABILITY gate_load x13 OK (x449 lesson)",
-    "cargo": "check --lib 0 err; test 314/0",
-    "vanilla": "empty lever flag = vanilla bit-in-byte (all gates STRICT-OR, registration idempotent)"
-  },
-  "expected_effect": "residual nav_ai slice under carrier ~0.7-1.3pp lane ~ +1-3% TPS add-on; completes law-6 subsystem family on merge-carrier",
-  "next": ["push", "poll ins4 lattice cert", "dispatch 2-3 legs lever=cmp451_senseins after cert", "absorb+verdict pair-by-runner"]
+  "agent": "general-purpose (subagent TASK-452-A)",
+  "vector": "cmp451_senseins = sense/brain family (SenseOps body-swap + BrainOps.tickEachRunning tick2 + EntityGoalQueryOps senseMode) STRICT-OR over ins4-carrier",
+  "branch": "round-452a-sense @ ff1c0b95 (worktree /home/z/rounds/ROUND-452/agent-a)",
+  "base": "origin/round-451d-senseins @ ff1c0b95, master @ fba80c41",
+  "legs_dispatched_by_main": "round-452-senseins-1/-2/-3 (base ff1c0b95, lever cmp451_senseins) + round-452-anchor-1..12 (base master fba80c41, lever='') — in CI at task start",
+  "run_id": null,
+  "tps_med": null,
+  "delta_pair_pct": null,
+  "verdict": "INFRA",
+  "evidence": "poll#1 00:20Z: senseins-1/3 in_progress, senseins-2 completed failure = BAND-DISCARD fast-fail (job log: runner_cpu_index=11084694 OUTSIDE band, 19s job, pre-download); anchor-11 same (runner_cpu_index=10017756); anchors 1-10,12 in_progress",
+  "what": "re-rolls #1 dispatched via copy /tmp/dispatch_452a.py (argv-guarded, dry-run first): senseins-2r1 round-452-senseins-2r1 <- round-451d-senseins lever=cmp451_senseins + anchor-11r1 round-452-anchor-11r1 <- master lever='' (re-roll count: 1/2 each)"
 }
