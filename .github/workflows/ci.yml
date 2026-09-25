@@ -6,6 +6,12 @@
 name: ci
 
 on:
+  # TASK-459-56 (branch-local CI wiring): the committed trigger block arrived
+  # mangled on master (branches: aster] — no workflow_dispatch), so push-based
+  # CI never fires on round branches. workflow_dispatch added HERE ONLY so
+  # dispatch_459b.py ci <branch> can run this pipeline on round-459-p31;
+  # master stays untouched.
+  workflow_dispatch:
   push:
     branches: [master]
   pull_request:
