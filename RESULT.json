@@ -1,14 +1,14 @@
 {
- "agent": "TASK-456-A (spawn-carrier cmp455_spawn cycle-2 rebaze)",
+ "agent": "TASK-456-A2-restart (spawn-carrier cmp455_spawn cycle-2 verdict)",
  "vector": "R4-носитель: despawn sscan-плейн (Rust bulk) на ребейзе мастера-юниона (ins4⊕senseins⊕chunk4-send⊕chunk5-encode⊕chunkparse⊕noise-GEN), STRICT-OR, lever cmp455_spawn",
- "branch": "round-456a-spawn",
- "run_id": "round-456a-spawn-1/2 in flight",
- "tps_med": null,
- "delta_pair_pct": null,
- "lane": "был (×455): despawn 0.31-0.35% CPU плейн поверх ins4⊕senseins @ccfa6f04-эпохи; стал (×456): тот же плейн поверх ПОЛНОГО мастера-юниона f44a831e (chunk-union несётся lever'ом) — лейн-цель items 0.00 / nav_ai ~3.3 / broadphase ~9.8",
+ "branch": "round-456a-spawn @2c839a3b",
+ "run_id": "36113995075 (spawn456-1) / 36114000472 (spawn456-2), обе completed @c228e058",
+ "tps_med": "2.65 / 2.40",
+ "delta_pair_pct": 14.8,
+ "lane": "spawn456-1: items 0.00 / nav_ai 3.16 / broadphase 9.55; spawn456-2: items 0.00 / nav_ai 3.21 / broadphase 9.32; selfTest==true, AIOOBE=0, GC Full=9 (20.4s/21.5s) — лейн-сигнатура ИДЕНТИЧНА сертным ногам, код здоров",
  "ram": null,
- "parity": "пустой флаг = ваниль бит-в-байт; STRICT-OR union игл (rust+java синхронно, needles verbatim); блобы rebuild flat==nested; усиление (а) NaturalSpawner+ActivationRange = NO-GO ценз (паритет-риск/бюджет, RESEARCH-456-A §2); добавка маржинальна — носитель как есть (§3)",
- "verdict": "LEGS_IN_FLIGHT",
- "evidence": "RESEARCH-456-A.md §1 форензика: лейн/GC spawn455-1/2 ИДЕНТИЧНЫ сертным chk455-2/diet455-3 — код не болен, шум семьи (диета-семья 8 ног −0.8..+28.3); §3 субаддитивность: premium despawn-плейна ~+0.2пп в шуме, конфликтов с chunk-юнионом нет (новых java-сайтов нет)",
- "what": "step-2 DONE: refs round-456a-spawn-1/2 @c228e058 created; 2 ноги ДИСПАТЧЕНЫ world-bench-parallel.yml (HTTP 204 x2, lever_flag=cmp455_spawn, lever_arg=1, canon inputs radius 640/300s/fp 4/gc_tune 3/band 6.0-9.5M/pop 150k:42); dispatcher committed f70402ec master"
+ "parity": "пустой флаг = ваниль бит-в-байт; STRICT-OR union игл verbatim; spawn/activation слайсы NaturalSpawner+ActivationRange в c228e058 ОТСУТСТВУЮТ (git show --stat проверен: c228e058 RESULT-only, merge fe7e7120 без Spawner/Activation-файлов) — и ДОБАВЛЯТЬ их запрещено: закон 4 (bit-exact NaturalSpawner требует getNoiseBiome+blockstate+entity-obstruction миграции), закон 6 (ActivationRange java-побочки + per-entity JNI ban), 2-4ч > бюджета",
+ "verdict": "REFUTED_CENS",
+ "evidence": "Δ-прогноз мандата: нетронутый spawn-axis остаток NaturalSpawner 0.50-0.94% + ActivationRange 0.62-0.83% = +1.12-1.77пп АБСОЛЮТНЫЙ МАКСИМУМ (корень 75233c2b: весь R4-потолок ~+1.5-2%, despawn 0.31-0.35% уже в носителе). Идеальный захват 100% (недостижим): leg-потолок 14.0+1.77 = +15.77 < +18; пара-потолок +2.0 депресс-якорь = +17.77 < +20. Реалистичный (субаддитивность ×3, захват 50-70%): нога 14.6-14.9, пара 16.6-16.9. Порог ЛЮБОЙ пары ≥+20 = leg ≥+18.0 (депресс-гейт −2 фиксирован). Ноги: spawn456-1 +14.0@7247637 (луч. пара +14.8 ↔ a6×453 −0.8@7211960 Δ35,677), spawn456-2 +7.5@6806602 (луч. +9.2); семья 4 ноги −6.3/+2.0/+14.0/+7.5, 0/4 ≥+18. Ре-роллы отклонены (dice-rolling на шуме, субаддитивность сжимает хвост). Цикл закона 3 закрыт честным цензом",
+ "what": "REFUTED_CENS записан: RESEARCH-456-A.md §6 (ноги/пары/Δ-прогноз/ценз), RESULT.json write-through, commit+push ветки. ДИСПАТЧ ОТСУТСТВУЕТ (мандат: потолок с добавками < +18 → СТОП). Носитель остаётся на ветке (код здоров, STRICT-OR каноничен); будущий путь — ActivationRange-подсистема целиком отдельным раундом (RESEARCH-456-A §4.3)"
 }
