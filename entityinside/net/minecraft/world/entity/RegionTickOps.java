@@ -297,8 +297,8 @@ public final class RegionTickOps {
      */
     private static final boolean STEAL = parseSteal();
 
-    /** Entities per stolen chunk: tail imbalance <= STEAL_CHUNK (~0.34% of 150k). */
-    private static final int STEAL_CHUNK = 512;
+    /** Entities per stolen chunk: tail imbalance <= STEAL_CHUNK (~0.26% of 150k). TASK-461-64 chkclimb-9 THRESH-scan leg: 512 -> 384 (lower scan point). */
+    private static final int STEAL_CHUNK = 384;
 
     private static boolean parseSteal() {
         try {
