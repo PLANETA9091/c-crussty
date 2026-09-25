@@ -50,6 +50,15 @@ pub const ERR_RANGE: i32 = -2;
 /// swept-боксом от==to: максимум 2×2×2 = 8 при дефляции 9.999999747378752E-6).
 pub const MAXSEC: usize = 8;
 
+/// THRESH — батч-бюджет INSIDE-BATCH (сущностей на один insideBatchMask-вызов).
+/// Лаб-база THRESH-скана = 512 (RESEARCH-459-P31 план «n=512/bucket», L01
+/// capture-матем: захват 66% @512 → 74-80% верхняя полоса). TASK-461-63
+/// chkclimb-8: ВЕРХНЯЯ ТОЧКА СКАНА THRESH=1024 (матрица 256/384/512/768/1024).
+/// Контракт armed-пути (закон 6, parity): n > THRESH ⇒ all-ones на весь батч
+/// (fail-open superset — тот же класс, что nsec==0/переполнение MAXSEC;
+/// ванильный хвост обслуживает все сущности, lost-effect невозможен).
+pub const THRESH: usize = 1024;
+
 /// Джавап-дефляция ванильного traversal-бокса (superset-расширение секций).
 pub const DEFLATE_EPS: f64 = 9.999999747378752E-6;
 
@@ -389,6 +398,16 @@ pub unsafe extern "system" fn inside_batch_mask(
     let n_us = n as usize;
     let ms = maxsec as usize;
     let vt = unsafe { &*(*env) };
+    // THRESH-бюджет (TASK-461-63 chkclimb-8): батч сверх THRESH ⇒ all-ones на
+    // весь вызов (fail-open superset, ванильный хвост обслужит всё) ДО чтения
+    // входных массивов — та же дисциплина fail-open, что nsec==0/MAXSEC-ромх.
+    if n_us > THRESH {
+        let ones = vec![u32::MAX as i32; n_us];
+        unsafe {
+            (vt.SetIntArrayRegion)(env, out, 0, n, ones.as_ptr());
+        }
+        return 0;
+    }
     let len_eids = (vt.GetArrayLength)(env, eids);
     let len_xyz = (vt.GetArrayLength)(env, xyz);
     let len_bb = (vt.GetArrayLength)(env, bb);
@@ -496,5 +515,14 @@ mod tests {
     fn gate_is_strict() {
         assert_ne!("", "CRUSSTY_INSIDE_BATCH");
         assert_eq!("1", "1");
+    }
+
+    /// TASK-461-63 chkclimb-8: THRESH=1024 — верхняя точка скана, контракт
+    /// батч-бюджета (≥ MAXSEC, внутри jint-домена; лаб-база скана = 512).
+    #[test]
+    fn thresh_budget_contract() {
+        assert_eq!(THRESH, 1024);
+        assert!(THRESH >= MAXSEC);
+        assert!(THRESH <= i32::MAX as usize);
     }
 }
