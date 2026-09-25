@@ -60,6 +60,10 @@ mod mobs_ai;
 mod mobs_sscan;
 mod mobs_sense;
 mod nav_plane;
+// NAV-CHUNK PRE-GATE (TASK-459-70, ID-P45): chunk→navigatingMobs occupancy
+// mirror + O(1) pregate before the NavPlaneOps collect pass (scaffold;
+// lever cmp459_p45 STRICT eq — see RESEARCH-459-P45.md).
+mod nav_chunk_pregate;
 mod nav_pool;
 mod chunk_parse;
 // CHUNK-SEND SERIALIZATION SNAPSHOT (TASK-438-C, lever cmp437_chunk4, law 8
