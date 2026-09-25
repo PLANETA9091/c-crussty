@@ -3124,6 +3124,12 @@ const MUTABLE_POS_CLASS: &str = "net/minecraft/core/BlockPos$MutableBlockPos";
 /// (S7-135 / TASK-271 INSIDE-CACHE lever).
 pub const INSIDE_OPS_CLASS: &str = "net/minecraft/world/entity/InsideBlockOps";
 
+/// Sibling bridge class for the INSIDE-BATCH plane (TASK-459-56, ID-P31):
+/// defined into the kernel loader by inside_batch.rs; supersedes InsideBlockOps
+/// on the checkInsideBlocks method-entry site when its lever is armed
+/// (S7-162 single-owner discipline).
+pub const INSIDE_BATCH_OPS_CLASS: &str = "net/minecraft/world/entity/InsideBatchOps";
+
 /// javap-контракт: единственный `isAffectedByBlocks` сайт внутри
 /// `Entity.checkInsideBlocks(List, StepBasedCollector)` (offset 1).
 const CHECK_INSIDE_DESC: &str =
@@ -5234,6 +5240,32 @@ pub fn patch_inside_cache(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), St
             "()Z",
         ),
         (INSIDE_OPS_CLASS, "gate", GATE_DESC),
+    )?;
+    Ok((out, outcome))
+}
+
+/// Entity stage for the INSIDE-BATCH plane (TASK-459-56, ID-P31): the same
+/// method-entry `isAffectedByBlocks` site in `checkInsideBlocks` retargeted to
+/// the static `InsideBatchOps.batchGate(Entity)Z` (receiver-first, 3B→3B,
+/// length-preserving). S7-162 supersede discipline: the entity_compose chain
+/// installs exactly ONE owner of the site — inside_batch when its lever is
+/// armed, inside_cache otherwise. Same fail-closed guards as
+/// `patch_inside_cache` (Unsafe field-name probe, strict single site).
+pub fn patch_inside_batch(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    if layout.pool.find_utf8("insideEffectCollector").is_none() {
+        return Err("insideEffectCollector field absent from pool (kernel rename?)".into());
+    }
+    let (out, outcome) = retarget_virtual_to_static(
+        bytes,
+        "checkInsideBlocks",
+        CHECK_INSIDE_DESC,
+        (
+            "net/minecraft/world/entity/Entity",
+            "isAffectedByBlocks",
+            "()Z",
+        ),
+        (INSIDE_BATCH_OPS_CLASS, "batchGate", GATE_DESC),
     )?;
     if let RetargetOutcome::Retargeted { sites } = &outcome {
         if *sites != 1 {
@@ -7353,6 +7385,69 @@ mod inside_cache {
         let (entity, _) = patch_inside_cache(ENTITY).expect("patch");
         std::fs::create_dir_all("tests/out").unwrap();
         std::fs::write("tests/out/Entity.patched.class", &entity).unwrap();
+    }
+}
+
+#[cfg(test)]
+mod inside_batch {
+    // TASK-459-56 (ID-P31): same REAL kernel Entity fixture as inside_cache —
+    // the batch plane retargets the SAME single method-entry site.
+    const ENTITY: &[u8] = include_bytes!("../tests/fixtures/Entity_real.class");
+
+    use crate::classfile::*;
+
+    #[test]
+    fn inside_batch_retargets_exactly_one_site() {
+        let (patched, outcome) = patch_inside_batch(ENTITY).expect("patch");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "exactly one isAffectedByBlocks site in checkInsideBlocks(List,Collector)"
+        );
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        assert!(patched.len() >= ENTITY.len());
+    }
+
+    #[test]
+    fn inside_batch_site_resolves_to_batch_bridge() {
+        let (patched, _) = patch_inside_batch(ENTITY).expect("patch");
+        let cp_count = u16::from_be_bytes([patched[8], patched[9]]);
+        let (pool, _end) = Pool::parse(&patched, 10, cp_count).expect("cp parse");
+        let triples: Vec<_> = (1..pool.next)
+            .filter_map(|i| pool.methodref_parts(i))
+            .collect();
+        assert!(
+            triples.iter().any(|t| t.0 == "net/minecraft/world/entity/InsideBatchOps"
+                && t.1 == "batchGate"
+                && t.2 == "(Lnet/minecraft/world/entity/Entity;)Z"),
+            "batchGate Methodref appended"
+        );
+        // The collector-field guard precondition (bridge Unsafe resolution).
+        assert!(pool.find_utf8("insideEffectCollector").is_some());
+    }
+
+    #[test]
+    fn inside_batch_idempotent() {
+        let (patched, _) = patch_inside_batch(ENTITY).expect("patch");
+        let (again, outcome) = patch_inside_batch(&patched).expect("repatch");
+        assert_eq!(outcome, RetargetOutcome::AlreadyPatched { sites: 1 });
+        assert_eq!(again, patched, "repatch must be byte-identical");
+    }
+
+    #[test]
+    fn inside_batch_wrong_class_fails_closed() {
+        match patch_inside_batch(include_bytes!(
+            "../tests/fixtures/PalettedContainer.class"
+        )) {
+            Err(e) => assert!(e.contains("insideEffectCollector"), "{e}"),
+            Ok((out, outcome)) => {
+                assert_eq!(outcome, RetargetOutcome::NotFound);
+                assert_eq!(
+                    out,
+                    include_bytes!("../tests/fixtures/PalettedContainer.class").to_vec()
+                );
+            }
+        }
     }
 }
 

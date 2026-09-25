@@ -84,7 +84,7 @@ const PROBE_MAGIC: i32 = 0x5049; // "PI"
 fn enabled() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref().map(str::trim),
-        Ok("cmp456_poi") | Ok("cmp409_multi") | Ok("cmp412_meganav") | Ok("cmp412_eqsnapv3")
+        Ok("cmp456_poi") | Ok("cmp456_poi_p31snap") | Ok("cmp409_multi") | Ok("cmp412_meganav") | Ok("cmp412_eqsnapv3")
             | Ok("cmp414_cvs") | Ok("cmp417_bq") | Ok("cmp420_colpush") | Ok("cmp421_brain")
             | Ok("cmp422_brain2") | Ok("cmp423_brain3") | Ok("cmp424_mobfeed")
             | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp438_sense")

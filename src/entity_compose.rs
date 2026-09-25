@@ -118,6 +118,7 @@ fn target() -> &'static Target {
 
 fn stage_enabled() -> bool {
     crate::inside_cache::enabled_pub()
+        || crate::inside_batch::enabled_pub() // TASK-460-01 (ID-P31): stage-1 sibling/supersede
         || crate::fluid_free::enabled_pub()
         || crate::fluid_dirty::enabled_pub()
         || crate::region_threads::workers_from_env_pub().is_some()
@@ -268,8 +269,41 @@ pub fn activate() {
             .unwrap_or(0);
         let mut chain: Vec<&str> = Vec::new();
 
-        // ---- STAGE 1: inside_cache (discovery gate retarget) ----
-        if crate::inside_cache::enabled_pub() {
+        // ---- STAGE 1: inside_cache | inside_batch (discovery gate retarget) ----
+        // TASK-460-01 (ID-P31): S7-162 supersede discipline — the site has
+        // EXACTLY ONE owner: armed inside_batch supersedes inside_cache
+        // (batchGate bridge); otherwise inside_cache owns the site as before.
+        if crate::inside_batch::enabled_pub() {
+            if crate::inside_batch::wait_bridge_ready(180_000) {
+                match crate::classfile::patch_inside_batch(&bytes) {
+                    Ok((p, outcome)) if matches!(
+                        outcome,
+                        crate::classfile::RetargetOutcome::Retargeted { .. }
+                            | crate::classfile::RetargetOutcome::AlreadyPatched { .. }
+                    ) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_batch composed (supersede inside_cache, {outcome:?})"
+                        );
+                        bytes = p;
+                        chain.push("inside_batch");
+                    }
+                    Ok((_p, outcome)) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_batch strict check violated ({outcome:?}), chain continues WITHOUT inside (fail-dominant)"
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_batch patch rejected ({e}), chain continues WITHOUT inside (fail-dominant)"
+                        );
+                    }
+                }
+            } else {
+                eprintln!(
+                    "[crussty-plugin] entity_compose: inside_batch bridge missed its window, chain continues WITHOUT inside (fail-dominant)"
+                );
+            }
+        } else if crate::inside_cache::enabled_pub() {
             if crate::inside_cache::wait_bridge_ready(180_000) {
                 match crate::classfile::patch_inside_cache(&bytes) {
                     Ok((p, outcome)) if matches!(
