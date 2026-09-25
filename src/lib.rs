@@ -61,6 +61,9 @@ mod mobs_sscan;
 mod mobs_sense;
 mod nav_plane;
 mod nav_pool;
+// NAV-DEADBAND (TASK-459-71, ID-P46, lever cmp459_p46 — STRICT eq; dormant
+// до v1 wiring: чистое std-ядро транскрипции doStuckDetection, см. RESEARCH-459-P46.md).
+mod nav_deadband;
 mod chunk_parse;
 // CHUNK-SEND SERIALIZATION SNAPSHOT (TASK-438-C, lever cmp437_chunk4, law 8
 // widening): byte hook on PlayerChunkSender + ChunkSendOps snapshot-first
