@@ -84,6 +84,7 @@ mod promote_wire;
 mod proto_blend_cache;
 mod randomtick;
 mod region_threads;
+mod spawn_cohort_bitset;
 mod skip_store;
 mod stagger;
 mod tickhook;
