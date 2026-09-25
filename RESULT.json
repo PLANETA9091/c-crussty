@@ -1,18 +1,26 @@
 {
-  "agent": "C2 (TASK-456-C chunk mono-plane margin audit)",
-  "vector": "chunk6-sched: ServerChunkCache scheduling mono-plane (getChunkNow fast-path + Rust key-mirror) on master cert stack, STRICT-OR carrier cmp456_chunkmono",
+  "agent": "C2 (TASK-456-C restart — chunkmono finish)",
+  "vector": "chunk6-sched: ServerChunkCache scheduling mono-plane (getChunkNow fast-path + moonrise$setFullChunk shadow feed + rust L2 key-mirror) on master cert stack, STRICT-OR carrier cmp456_chunkmono",
   "branch": "round-456c-chunkmono",
   "run_id": "PENDING",
+  "legs": {"round-456c-chunkmono-1": "PENDING", "round-456c-chunkmono-2": "PENDING"},
   "tps_med": null,
   "delta_pair_pct": null,
   "lane": "chunk system (kernel) 8.0-8.5% vanilla -> target 7.2-7.6% (scheduling slice 4.6-5.2% -> ~3-4%)",
   "RAM": "expected parity (no alloc change; ParallelGC bank)",
-  "parity": "PENDING (vanilla bit-in-byte empty lever; body-redirect via redirect_method_body_to_static precedent)",
-  "verdict": "GO-IMPLEMENTING (mono-plane solos REFUTED sub-additive; scheduling-plane positive margin +0.7-1.5pp; STRICT-composition carrier = canon x455)",
+  "parity": "IMPLEMENTED (empty lever = vanilla bit-in-byte; BOTH-or-none redirect_method_body_to_static x2; resolution closure (JZ)Z fixed vs blob; selfTest + arm-last arm-order)",
+  "verdict": "IMPLEMENTED-DISPATCHING (mono-plane solos REFUTED sub-additive; scheduling-plane positive margin +0.7-1.5pp; STRICT-composition carrier = canon x455; mandate >= +20% pair-stable)",
+  "implementation": {
+    "new_files": ["chunksched/net/minecraft/server/level/ChunkSchedOps.java", "src/chunk_sched.rs", "chunksched/concurrentutil-stub/...", "scripts/build_chunksched_ops.sh"],
+    "needles": "cmp456_chunkmono added wherever cmp453_diet lived (21 rust gates + 9 java Ops gates + chunkparse/chunksend/chunkencode CARRIER_UNION_456 cp markers) + check_blobs_sync lists + run_world3.sh carrier case (CRUSSTY_KERNEL_POLICY=off, noise-GEN carries, cmp450_chunk canon)",
+    "fixes": "classfile.rs resolution closure mirrorEvent (JZ)V->(JZ)Z (would have failed closed = dormant leg); rust mirror drift double-count removed",
+    "blobs": "rebuilt 430b set (9 needle blobs) + chunkparse + chunksend/chunkencode + NEW chunksched; check_blobs_sync ALL IN SYNC exit 0 (261 OK)",
+    "rust_tests": "cargo check --lib OK; cargo test 333 passed / 0 failed (4 NEW chunksched_delivery_tests incl resolution-closure pin)"
+  },
   "evidence": {
     "plane_margins": {"chunk4-send": "+0.5-1.5pp", "chunk5-encode": "~0 REFUTED", "chunkparse": "+1-3pp AT CEILING in master", "noise-GEN": "0 soak / boot-only"},
     "scheduling_profile": "chunk system (kernel) 8.0-8.5% vanilla anchors (a3/a7/a13/a25/a32) -> 7.6% chk455-2 leg; getChunkNow 0.6-0.8 + getNode 1.2 shared + lambda 0.8-1.0 + off-main 0.9-1.4 = 4.6-5.2%",
-    "cert_ladder": "master f44a831e +20.0 min-of-3 {+20.4,+20.4,+20.0} borderline; margin pusher target +20.5-22 pairs"
+    "cert_ladder": "master f44a831e +20.0 min-of-3 {+20.4,+20.4,+20.0} borderline; margin pusher target +20.5-22 pairs; javap kernel: getChunkNow(II)LevelChunk + moonrise$setFullChunk(IILevelChunk)V both present in /home/z/tools/patched-kernel.jar"
   },
-  "what": "RESEARCH-456-C.md written; worktree round-456c-chunkmono @fd790a17; implementing ChunkSchedOps + chunk_sched.rs + STRICT-OR needles"
+  "what": "ChunkSchedOps + chunk_sched.rs FINISHED, blobs ALL IN SYNC, cargo 333/0, dispatching legs round-456c-chunkmono-1/2 (canon inputs, lever cmp456_chunkmono, band 6.0-9.5M)"
 }

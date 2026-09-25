@@ -507,6 +507,18 @@ case "${LEVER_FLAG:-}" in
   cmp453_diet)
     log "${LEVER_FLAG} armed: DIET-COMPOSITE cmp453_diet = ins4-carrier (inside_snap v4 + SoA/colpush/cvs/bq/items stack STRICT-OR) ⊕ sense-ядро (SenseOps getNearestEntity body-swap + goalquery sense-arena/entity_query senseMode) ⊕ chunk4 send-snapshot — БЕЗ хвостов: chunk5 encode-cache ВЫРЕЗАН (players_packets lane 0.00-0.01% FLAT ×452 = нулевая маржа, MISS-диета), BrainOps tick2 ВЫРЕЗАН (Brain-mobs=0 в фикстуре, срез мёртв), section-codec chunkparse ОСТАВЛЕН (не перекрыт chunk4: parse=disk-load vs send=player path, часть серта) — закон 7 субаддитивность: диета против склейки (TASK-453-C)"
     ;;
+  cmp456_chunkmono)
+    # TASK-456-C chunkmono carrier: STRICT-композиция-носитель = master cert
+    # stack (ins4 ⊕ senseins ⊕ diet ⊕ chunk4 ⊕ chunk5 ⊕ chunkparse ⊕ noise-GEN)
+    # ⊕ NEW chunk6-sched scheduling mono-plane (getChunkNow fast-path over the
+    # direct-mapped L1 shadow fed by moonrise$setFullChunk + rust L2 key-mirror,
+    # chunk-granular JNI events — law 6 legal; scheduling slice 4.6-5.2% wall).
+    # noise-GEN carries with the master stack => CRUSSTY_KERNEL_POLICY=off
+    # (documented TASK-108 A/B override, cmp450_chunk canon; fillFromNoise 0.0%
+    # in soak — boot-parity only). Empty flag = vanilla bit-in-byte.
+    export CRUSSTY_KERNEL_POLICY="off"
+    log "${LEVER_FLAG} armed: CHUNKMONO-CARRIER cmp456_chunkmono = master cert stack (ins4 ⊕ senseins ⊕ diet ⊕ chunk4 send-snapshot ⊕ chunk5 encode-cache ⊕ chunkparse section/biomes codec caches ⊕ noise-GEN GEN-axis; STRICT-OR) ⊕ chunk6-sched scheduling mono-plane (getChunkNow -> ChunkSchedOps.getNow fast-path + moonrise\$setFullChunk shadow feed + rust L2 key-mirror; BOTH-or-none; scheduling slice 4.6-5.2% in scope) — закон 7 субаддитивность на серт-носителе f44a831e (TASK-456-C, RESEARCH-456-C GO)"
+    ;;
 esac
 # RECON_DIAG (TASK-317, instrument-гейт рычага #13 SKIP-STORE-DIET): чистая
 # наблюдаемость — 0 поведения. GC-политика/heap не трогаются (логирование ≠
