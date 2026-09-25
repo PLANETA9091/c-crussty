@@ -16,9 +16,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 /**
- * TASK-405-C (vector eindex — lever cmp405_eindex): bulk-synced Rust mirror
- * of the moonrise chunk-system entity storage, used as the candidate plane
- * for EntityLookup.getEntities*.
+ * TASK-405-C (vector eindex — levers cmp405_eindex | cmp458_roar): bulk-synced
+ * Rust mirror of the moonrise chunk-system entity storage, used as the
+ * candidate plane for EntityLookup.getEntities*.
+ *
+ * TASK-458-K (ID-H04 + ID-H06, lever cmp458_roar): the rust plane gains
+ * PER-SECTION (16³) occupancy — the note stream already carries the vanilla
+ * sectionY (addEntity/removeEntity/moveEntity sites pass the exact value
+ * vanilla uses: javap-verified clamp(blockY>>4, minSection, maxSection), the
+ * same formula seedAll applies — so the section gate cannot false-negative by
+ * construction) and a 4KB insert-only bloom of ever-occupied chunks pre-gates
+ * each rect-chunk count inside the SAME single fused bulk JNI (no java
+ * allocations, one bulk call per tick — the counts semantics of this class
+ * are UNCHANGED: java still only skips chunks whose count is 0).
  *
  * CONTRACT (javap, patched-kernel.jar round-j2b, verified 2026-09-21):
  *  - EntityLookup.getEntities(Entity,AABB,List,Predicate) walks
@@ -74,7 +84,10 @@ public final class EntityIndexOps {
     // ------------------------------------------------------------------
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return "cmp405_eindex".equals(f == null ? "" : f.trim());
+        String v = f == null ? "" : f.trim();
+        // TASK-458-K: cmp458_roar arms the SAME subsystem (roaring section
+        // occupancy + bloom live inside the rust mirror; law 6).
+        return "cmp405_eindex".equals(v) || "cmp458_roar".equals(v);
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -232,7 +245,9 @@ public final class EntityIndexOps {
     /** ChunkEntitySlices.removeEntity(Entity,int)Z call sites inside EntityLookup. */
     public static boolean noteRemove(ChunkEntitySlices slices, Entity e, int sectionY) {
         if (ENABLED) {
-            record(T_BUF.get(), OP_REMOVE, e, 0, 0, 0, null);
+            // TASK-458-K: pass the vanilla sectionY through (informational —
+            // the rust mirror keeps its own authoritative s_sec per slot).
+            record(T_BUF.get(), OP_REMOVE, e, slices.chunkX, slices.chunkZ, sectionY, null);
         }
         return slices.removeEntity(e, sectionY);
     }
