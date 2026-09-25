@@ -143,7 +143,6 @@ fn flag_enabled(flag: Option<&str>) -> bool {
             | Some("cmp423_brain3") | Some("cmp424_mobfeed") | Some("cmp430_inside") | Some("cmp432_inside2") | Some("cmp436_ins4") | Some("cmp455_spawn")
             | Some("cmp438_sense") // TASK-444-C: sense family union
             | Some("cmp451_senseins") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
-            | Ok("cmp455_spawn") // TASK-444-C: sense family union
             | Some("cmp453_diet") //  TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
             | Some("cmp421_brain")
             | Some("cmp421_brain") | Some("cmp434_chunkpl") | Some("cmp435_chunk3") | Some("cmp437_chunk4") | Some("cmp444_chunk5") | Some("cmp450_chunk")
