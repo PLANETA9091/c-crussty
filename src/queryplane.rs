@@ -75,7 +75,7 @@ fn lever_flag_matches() -> bool {
                 || v.trim() == "cmp420_colpush"
                 || v.trim() == "cmp421_brain" || v.trim() == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2"
         || v == "cmp438_sense" // TASK-444-C: sense family union
-        || v == "cmp451_senseins" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+        || v == "cmp451_senseins" || v == "cmp453_diet" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
         })
         .unwrap_or(false)
 }
@@ -88,6 +88,7 @@ fn inside_plane_label() -> &'static str {
         Ok("cmp432_inside2") => "cmp432_inside2",
         Ok("cmp436_ins4") => "cmp436_ins4",
         Ok("cmp451_senseins") => "cmp451_senseins", // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+        Ok("cmp453_diet") => "cmp453_diet", // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
         _ => "cmp430_inside",
     }
 }
@@ -103,6 +104,7 @@ fn lever_id() -> &'static str {
         Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") => inside_plane_label(),
         Ok("cmp438_sense") => "cmp438_sense",
         Ok("cmp451_senseins") => "cmp451_senseins", // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+        Ok("cmp453_diet") => "cmp453_diet", // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
         Ok("cmp417_bq")
             // TASK-421-A (brain): свой id в ARM-маркерах.
             | Ok("cmp421_brain") => "cmp421_brain",
