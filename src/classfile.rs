@@ -8873,6 +8873,9 @@ pub const CHUNKPARSE_TARGET_CLASS: &str =
 pub const CHUNKPARSE_OPS_CLASS: &str = "net/minecraft/world/level/chunk/storage/ChunkParseOps";
 pub const CHUNKPARSE_BLOCKS_LAMBDA: &str = "lambda$parse$5";
 pub const CHUNKPARSE_TWIN_LAMBDA: &str = "lambda$parse$7";
+/// TASK-424-C (R5c): the bridge entry point for the BIOMES site — the twin
+/// lambda itself is now redirected here (both section lambdas patched).
+pub const CHUNKPARSE_BIOMES_OPS_METHOD: &str = "parseBiomesSection";
 pub const CHUNKPARSE_SECTION_LAMBDA_DESC: &str = "(Lcom/mojang/serialization/Codec;Lnet/minecraft/world/level/ChunkPos;ILnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/chunk/PalettedContainer;";
 
 /// Resolution closure for the ChunkParseOps bridge: the bridge must declare
@@ -8887,6 +8890,14 @@ pub fn chunkparse_resolution_closure(ops: &[u8]) -> Result<(), String> {
             "class",
             CHUNKPARSE_OPS_CLASS,
             "parseSection",
+            CHUNKPARSE_SECTION_LAMBDA_DESC,
+        ),
+        (
+            "class",
+            CHUNKPARSE_OPS_CLASS,
+            // TASK-424-C (R5c): biomes mirror cache entry point — same
+            // canonical descriptor (redirect stack-shape contract).
+            CHUNKPARSE_BIOMES_OPS_METHOD,
             CHUNKPARSE_SECTION_LAMBDA_DESC,
         ),
         ("class", CHUNKPARSE_OPS_CLASS, "init", "(Ljava/lang/String;)V"),

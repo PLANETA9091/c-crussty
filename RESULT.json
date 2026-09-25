@@ -1,21 +1,23 @@
 {
-  "agent": "TASK-451-D sense/brain",
-  "vector": "sense/brain целиком (закон 6) -> план Б: композиция cmp451_senseins на ins6-носителе",
-  "stage": "composition implemented, gates green, awaiting ins4 cert for legs",
-  "branch": "round-451d-senseins (code) / round-451d-sense (research)",
-  "census_verdict": "NO-GO solo (ceiling realistic +2-4% TPS < +20% bar; gsel CLOSED x4, goalquery covered by merged bq, Brain-mobs=0 in fixture) -> PLAN B per prompt",
+  "agent": "TASK-452-C (general-purpose subagent)",
+  "vector": "ЗАКОН 7 МЕГА-КОМПОЗИЦИЯ: cmp452_mega = master(ins4-серт) ⊕ sense/brain семья (cmp451_senseins) ⊕ chunk-юнион (cmp450_chunk) — STRICT-OR мульти-семейный композит, лесенка эры вверх",
+  "branch": "round-452-mega",
+  "base": "origin/round-451d-senseins @ff1c0b95 (ins6-носитель + SenseOps + BrainOps.tick2 + EntityGoalQueryOps senseMode) ⊕ origin/round-451c-chunk @29ac6481 (chunk4⊕chunk5⊕chunkparse юнион)",
   "composition": {
-    "base": "master b5baf548 + round-436-b-ins6 @07078007 (merge-carrier, 66 files) + sense family (c6208a81 + 01dcf2aa cherry-picks)",
-    "lever": "cmp451_senseins STRICT-OR at every gate: rust 18 files / java 10 files / run_world3.sh case",
-    "planes": "ins4 inside_snap v4 + goalquery sense-arena + SoA/colpush/cvs/bq stack + SenseOps getNearestEntity body-swap + BrainOps.tickEachRunning tick2"
+    "lever": "cmp452_mega STRICT-OR на КАЖДОМ гейте обеих семей: rust ×23 файла, java ×11 классов (ColpushOps FLAG_MEGA/FLAG10-14, EntityGoalQueryOps, ItemEntityManager ×3, GoalOps, MobAiOps, MobPushOps + eqsnapFlagLabel/маркер-карты, QueryPlaneOps, MobScanOps, SenseOps, BrainOps TICK2_FLAGS, ChunkParseOps/ChunkSendOps/ChunkPacketEncodeOps CARRIER_UNION_452), run_world3.sh кейс",
+    "conflicts": "STRICT-OR разрешены: обе семьи живут (rust-гейты = union lever-листов, java-гейты = union, ColpushOps FLAG-константы перенумерованы, маркер-карты = обе ветки + свой mega-id, classfile.rs = biomes-константы chunk-семьи портированы, check_blobs_sync = union игл + gate_load/flat==nested для chunkparse/chunksend)",
+    "vanilla_contract": "пустой lever_flag = ваниль бит-в-байт (все гейты — equality-чеки, регистрация идемпотентна)"
   },
   "gates": {
-    "javac": "build_430b_blobs.sh (11 classes) + BrainOps javac --release 21, kernel jar re-materialized (paperclip pass) as round-396-a/patched-kernel.jar",
-    "blobs": "flat==nested byte-identical x13, check_blobs_sync ALL IN SYNC incl cmp451_senseins needles",
-    "javap_load": "javap-LOADABILITY gate_load x13 OK (x449 lesson)",
-    "cargo": "check --lib 0 err; test 314/0",
-    "vanilla": "empty lever flag = vanilla bit-in-byte (all gates STRICT-OR, registration idempotent)"
+    "cargo_check": "check --lib OK (0 err)",
+    "cargo_test": "315 passed / 0 failed (CARGO_TARGET_DIR=/tmp/c452-target, target удалён)",
+    "blobs": "check_blobs_sync ALL IN SYNC: javap-иглы (ARM/EFFECT/флаги) + flat==nested ×16 + gate-flag consistency + cmp452_mega иглы ×обе семьи",
+    "javac": "build_430b_blobs (13 классов) + BrainOps + chunksend + chunkparse, javac --release 21, kernel round-396-a + fastutil (НЕ round-j2b)",
+    "javap_load": "gate_load ×17 OK (урок ×449 NCDFE ConstSlot)"
   },
-  "expected_effect": "residual nav_ai slice under carrier ~0.7-1.3pp lane ~ +1-3% TPS add-on; completes law-6 subsystem family on merge-carrier",
-  "next": ["push", "poll ins4 lattice cert", "dispatch 2-3 legs lever=cmp451_senseins after cert", "absorb+verdict pair-by-runner"]
+  "run_id": null,
+  "tps_med": null,
+  "delta_pair_pct": null,
+  "verdict": "PENDING-DISPATCH",
+  "next": ["push round-452-mega", "dispatch legs mega-1/2/3 (dispatch_452c.py --no-batch, EXPECTED_SHA pin)", "poll sleep 120 + curl", "absorb + вердикты по канону (ARM ОБЕ семьи, EFFECT sense tick2 + chunk, AIOOBE=0, threw=0, band 6.0-9.5M, депресс-гейт norm≥−2, pair Δ≤50k, min-of-3)"]
 }
