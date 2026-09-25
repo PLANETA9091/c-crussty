@@ -6,6 +6,10 @@
 name: ci
 
 on:
+  # TASK-459-81 (C-X2, 422-fallback по прецеденту TASK-459-70/p45): master
+  # ci.yml без workflow_dispatch (push-триггер только на aster]) — диспатч
+  # на round-ветки даёт 422. Триггер добавлен ТОЛЬКО в ветке round-459-cx2.
+  workflow_dispatch:
   push:
     branches: [master]
   pull_request:
