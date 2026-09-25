@@ -25,6 +25,9 @@ BATCH = [
 
 EXPECTED_SHA = {
     "master": "05c6da1b",  # senseins-серт мердж (ancestry-семантика; docs поверх кода)
+    # TASK-454-C: диета-носитель (master 05c6da1b ⊕ round-453c-diet, STRICT-OR;
+    # обновлять пин на каждом цикле закона 3 после push)
+    "round-454c-diet": "598901f3",
 }
 
 ANCESTRY_BASES = {"master"}
