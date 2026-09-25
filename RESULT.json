@@ -10,13 +10,19 @@
     "ncdfe_fix_validated": "x4 re-rolls NCDFE=0 (x456 canon)"
   },
   "legs": [
-    {"leg": 6, "run_id": 36131753219, "branch": "round-456c-chunkmono-6", "status": "in_flight", "dispatched_by": "main"},
-    {"leg": 7, "run_id": 36131765237, "branch": "round-456c-chunkmono-7", "status": "BAND-FAST-FAIL-INFRA", "verdict": "NOT-A-VERDICT (runner calibration band gate fast-fail, 22s runtime; re-roll <=2)", "dispatched_by": "main"},
-    {"leg": 8, "run_id": 36131776794, "branch": "round-456c-chunkmono-8", "status": "in_flight", "dispatched_by": "main"}
+    {"leg": 6, "run_id": 36131753219, "branch": "round-456c-chunkmono-6", "verdict": "GREEN-CANDIDATE-VALID", "norm": 11.5, "runner_cpu_index": 6423955, "tps_med": 2.40, "tps_exp": 2.15, "gates": {"NCDFE": 0, "ARM": true, "EFFECT": true, "selfTest": true, "AIOOBE": "0 runtime (2x cmp420_chunk2 biomes selftest FAIL = fixture-shum canon)", "threw": 0, "dep_gate": true}, "lanes": {"items": 0.00, "nav_ai": 3.00, "broadphase": 9.36, "inside": 16.28}, "notes": "drift fail-open latch after first hits = canonical (identical on chkmono456-4/5)"},
+    {"leg": 7, "run_id": 36131765237, "branch": "round-456c-chunkmono-7", "verdict": "BAND-FAST-FAIL-INFRA", "norm": null, "notes": "runner calibration band gate fast-fail @22s; NOT-A-VERDICT (canon x456 a17/a18); re-roll -> leg 9"},
+    {"leg": 8, "run_id": 36131776794, "branch": "round-456c-chunkmono-8", "verdict": "GREEN-CANDIDATE-VALID", "norm": 9.1, "runner_cpu_index": 7084301, "tps_med": 2.50, "tps_exp": 2.29, "gates": {"NCDFE": 0, "ARM": true, "EFFECT": true, "selfTest": true, "AIOOBE": "0 runtime (2x selftest fixture-shum)", "threw": 0, "dep_gate": true}, "lanes": {"items": 0.00, "nav_ai": 2.96, "broadphase": 9.81, "inside": 16.30}},
+    {"leg": 9, "branch": "round-456c-chunkmono-9", "verdict": "DISPATCHED (re-roll of leg-7 band fast-fail slot)", "dispatch_ts": "2026-09-25T12:20Z"},
+    {"leg": 10, "branch": "round-456c-chunkmono-10", "verdict": "DISPATCHED", "dispatch_ts": "2026-09-25T12:20Z"}
   ],
-  "pairs": [],
-  "verdict": "CYCLE-1-POLLING",
+  "pairs": [
+    {"leg": 8, "anchor": "a29-x456", "anchor_norm": 2.9, "anchor_runner": 7051107, "delta": 33194, "pair_norm": 6.2, "fresh": true}
+  ],
+  "pairs_note": "leg 6 @6423955: NO x456-bank anchor within delta<=50k (nearest a34@6520174 delta 96k) — UNPAIRED until x457 wave anchors absorb (check ANCHORS.md each cycle)",
+  "verdict": "CYCLE-1-ABSORBED: 2 valid legs (+11.5/+9.1), 0 monsters >=+18, 1 sub-bar pair +6.2; legs 9/10 dispatched, polling",
   "steps": [
-    {"step": 1, "ts": "2026-09-25T11:59Z", "action": "worktree round-457a-chunkmono sparse-created; dispatch_457a.py written+preflight; legs 6/7/8 poll; leg7 = band fast-fail infra"}
+    {"step": 1, "ts": "2026-09-25T11:59Z", "action": "worktree+dispatcher preflight; leg7 band fast-fail infra"},
+    {"step": 2, "ts": "2026-09-25T12:22Z", "action": "absorbed legs 6/8 (markers pre-purge, zips purged); dispatch 9/10; disk 75%"}
   ]
 }

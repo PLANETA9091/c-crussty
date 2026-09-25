@@ -44,6 +44,25 @@ min-of-3 пар ≥+20. Цикл закона 3 до ≥+20 или честно�
   preflight --dry-run OK.
 - Диспатч ре-роллов держим до абсорба 6/8 (одно окно диспатча за цикл).
 
+### Cycle-1 абсорб (12:20-12:22Z)
+- **leg 6** run 36131753219: GREEN-CANDIDATE **+11.5 norm @6423955** (TPS 2.40 vs
+  exp 2.15). T1 PASS (NCDFE=0, band OK, pop VALID), threw=0. ARM-маркер
+  («chunk-sched mono-plane live» + PATCHED getChunkNow Retargeted{2}), ЭФФЕКТ
+  («first getChunkNow fast-path hit»), selfTest=true (schedProbe+shadow+native),
+  AIOOBE=0 runtime (2× cmp420_chunk2 biomes selftest FAIL = fixture-шум канон ×454).
+  Лейны: items 0.00, nav 3.00, broad 9.36, inside 16.28. drift fail-open latch
+  после первых хитов = КАНОН (идентично на chkmono456-4/5). zips/collapsed пурдж.
+- **leg 7** run 36131765237: BAND-FAST-FAIL инфра @22s — НЕ ВЕРДИКТ; ре-ролл = leg 9.
+- **leg 8** run 36131776794: GREEN-CANDIDATE **+9.1 norm @7084301** (TPS 2.50 vs
+  2.29). Все гейты PASS, selfTest=true, лейны items 0.00 / nav 2.96 / broad 9.81.
+- **Пары**: leg 8 ↔ a29×456 (+2.9@7051107, Δ33,194) = **+6.2** (суб-бар). leg 6
+  @6423955 — в ×456-банке НЕТ якоря Δ≤50k (ближайший a34@6520174 Δ96k) —
+  UNPAIRED, ждём ×457-якоря (ANCHORS.md ещё нет, wave-1 16 ранов завершилась
+  12:08-12:10Z — main абсорбирует).
+- **Диспатч**: legs 9 (ре-ролл слота 7) + 10 @d73758a3, HTTP 204 ×2, 12:20Z.
+- Монстров ≥+18 нет: семейный профиль +9..+12 повторяет ×456 (−0.8/+7.9) —
+  дисперсия носителя, продолжаем цикл (осталось 2 диспатча до 6 ног).
+
 ## 4. Вердикт-гейты (все обязательны, канон ×456/×457)
 1. NCDFE=0 (T1, НОВЫЙ) — иначе DELIVERY-FAIL.
 2. ARM-маркер cmp456_chunkmono + ЭФФЕКТ-маркер.
