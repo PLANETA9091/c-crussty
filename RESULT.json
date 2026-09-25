@@ -1,14 +1,30 @@
 {
- "agent": "TASK-455-B (chunk-pipeline, law 8)",
- "vector": "chunk-union rebaze-3: 47ea8b20 (diet carrier) ⊕ 797ae4f0 (chunk4⊕chunk5⊕chunkparse union), lever cmp450_chunk; + GEN-axis arming restore (run_world3 KERNEL_POLICY=off case for cmp450_chunk)",
- "branch": "round-455b-chunk @ 74461386",
- "run_id": null,
- "tps_med": null,
- "delta_pair_pct": null,
- "lane": "chunk/worldgen: parse+send+send5+noise GEN + ins4-carrier stack; GEN-axis was dead since round-422 (policy case missing) — restored",
- "ram": null,
- "parity": "cargo test 329/0; check_blobs_sync ALL IN SYNC (javap flat==nested x16); gate needle audit ALL PRESERVED (rust union + java diet-superset)",
- "verdict": "IN_PROGRESS",
- "evidence": "merge commit 74461386 pushed; legs round-455b-chunk-1/2 dispatched HTTP 204 (refs created @74461386); inputs canon exact; dispatch_455b.py argv-guard+pin",
- "what": "step-3: law-3 cycle-2 committed (cmp450_chunk = diet-profile union); leg-3 dispatch pending"
+  "agent": "agent-b (TASK-457-B)",
+  "vector": "cmp456_poi — POI-подсистема целиком в Rust (закон 6) на серт-носителе; sha-pin 5ecd841a ЖЁСТКО",
+  "carrier": {
+    "fix_commit": "5ecd841a128aa97c633e8b005479c5dcf09781aa",
+    "branch": "round-456b-poi",
+    "head": "0fa13d72",
+    "lever": "cmp456_poi"
+  },
+  "legs": [
+    {"leg": "poi456-1", "norm": "+16.9", "idx": 6765332, "verdict": "bank (clean, pre-race; max pair +17.6 sub-bar)", "tick": 456},
+    {"leg": "poi456-2", "verdict": "NCDFE DELIVERY-FAIL (не вердикт)", "tick": 456},
+    {"leg": "poi456-3", "norm": "-0.5", "idx": 7181470, "verdict": "bank", "tick": 456},
+    {"leg": "poi456-4", "norm": "+15.4", "idx": 8957260, "verdict": "bank (3.10 TPS, unpaired — зона 8.9-9.0M редкая)", "tick": 456},
+    {"leg": "poi457-5", "run": 36131787478, "verdict": "BAND-DISCARD fast-fail (Runner calibration band gate) — не вердикт, ре-ролл ≤2", "tick": 457},
+    {"leg": "poi457-6", "run": 36131797497, "verdict": "in flight", "tick": 457},
+    {"leg": "poi457-7", "run": 36131807435, "verdict": "in flight", "tick": 457}
+  ],
+  "pairs": [],
+  "anchor_pool_x456": [
+    "a1 +4.4@8935474", "a7 +7.4@7264766", "a8 -0.7@6731200", "a9 +5.2@6590823",
+    "a10 -2.0@6865200", "a12 +8.1@6966170", "a15 +8.0@6756575", "a19 +7.5@6803823",
+    "a22 +4.4@6899724", "a23 +6.0@6958213", "a27 +10.1@6125089", "a29 +2.9@7051107",
+    "a31 +3.7@6740240", "a34 +5.9@6520174"
+  ],
+  "anchor_pool_x457": "см. /home/z/rounds/ROUND-457/ANCHORS.md (main; проверять каждый цикл)",
+  "verdict": "IN_PROGRESS (цикл закона 3; цель ≥3 ноги ≥+18 norm с парами ≥+20 min-of-3)",
+  "gates": "NCDFE=0 T1, ARM cmp456_poi + ЭФФЕКТ, AIOOBE=0, selfTest==true, items 0.00/nav ~3.2/broad ~9.8-10.9, band 6.0-9.5M, threw=1=REFUTED, dep-гейт norm≥-2",
+  "updated_utc": "2026-09-25T12:05:00Z"
 }
