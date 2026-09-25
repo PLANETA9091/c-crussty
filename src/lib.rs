@@ -60,6 +60,9 @@ mod mobs_ai;
 mod mobs_sscan;
 mod mobs_sense;
 mod nav_plane;
+// NAVMATH-FLAT (TASK-459-69, ID-P44, lever cmp459_navmath — STRICT eq; dormant
+// до v1 wiring: чистое std-ядро транскрипции MoveControl.tick, см. RESEARCH-459-P44.md).
+mod navmath_flat;
 mod nav_pool;
 mod chunk_parse;
 // CHUNK-SEND SERIALIZATION SNAPSHOT (TASK-438-C, lever cmp437_chunk4, law 8
