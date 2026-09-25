@@ -45,6 +45,7 @@ mod improved_noise;
 mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
+mod inside_dda_v2;
 mod inside_snap;
 mod item_merge;
 mod items_index;
@@ -570,6 +571,10 @@ fn inject_surface() {
     // composes through the entity_compose chain stage 9; dormant unless
     // CRUSSTY_INSIDE_DIET=1 AND region_threads>=2).
     inside_diet::activate();
+    // ID-P35 DDA-v2 HYBRID shadow verifier (TASK-459-75): dormant unless
+    // CRUSSTY_INSIDE_DDA_V2=1 — offline model + one-shot disarm latch only,
+    // NO class defines/retargets/natives while dormant (NCDFE-canon).
+    inside_dda_v2::activate();
     // TRAVEL-DIET v2a COLLIDE-DIET (RECON-21, lever #14): define
     // TravelDietOps into the kernel loader (define-only; the Entity.collide
     // body-redirect composes through the entity_compose chain; dormant
