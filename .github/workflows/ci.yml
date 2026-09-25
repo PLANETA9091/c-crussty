@@ -6,6 +6,12 @@
 name: ci
 
 on:
+  # TASK-459-61 (branch-local CI wiring, TASK-459-56 precedent): the committed
+  # trigger block is push-filtered to the default branch only, so CI never
+  # fires on round branches. workflow_dispatch added HERE ONLY so
+  # dispatch_459b.py ci <branch> can run this pipeline on round-459-p23;
+  # default branch stays untouched.
+  workflow_dispatch:
   push:
     branches: [master]
   pull_request:
