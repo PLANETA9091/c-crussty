@@ -8,6 +8,16 @@ public final class net.minecraft.server.network.ChunkSendOps {
   static final java.lang.String CARRIER_UNION_444;
   static final java.lang.String CARRIER_UNION_450;
   static final java.lang.String CARRIER_UNION_452;
+  static final java.lang.String CARRIER_UNION_453;
+  static final java.lang.String CARRIER_UNION_459;
+  static final int COALESCE_WINDOW_N;
+  static final long COALESCE_WINDOW_NANOS;
+  static final boolean P26_ACTIVE;
+  static long p26WindowOpens;
+  static long p26CoalescedSends;
+  static long p26FlushMarks;
+  static long p26WindowStartNanos;
+  static int p26WindowPending;
   private static final java.util.concurrent.ConcurrentHashMap<java.lang.Long, net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket> CACHE;
   private static long sent;
   private static long serialized;
@@ -16,6 +26,8 @@ public final class net.minecraft.server.network.ChunkSendOps {
   private static int selftestLeft;
   private static boolean firstHitLogged;
   private net.minecraft.server.network.ChunkSendOps();
+  public static boolean p26WindowMark();
+  public static java.lang.String p26WindowStats();
   public static void sendChunk(net.minecraft.server.network.ServerGamePacketListenerImpl, net.minecraft.server.level.ServerLevel, net.minecraft.world.level.chunk.LevelChunk);
   private static net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket snapshotOrBuild(net.minecraft.server.level.ServerLevel, net.minecraft.world.level.chunk.LevelChunk);
   public static boolean selfTest();

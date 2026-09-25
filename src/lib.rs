@@ -75,6 +75,15 @@ mod chunk_send;
 // redirect of the private write. Dormant unless CRUSSTY_LEVER_FLAG ==
 // cmp444_chunk5 (STRICT eq; empty/foreign flag = vanilla bit-in-bit).
 mod chunk_send5;
+// CHUNK-SEND BURST COALESCING (TASK-459-62, ID-P26, law-11 WILD): byte hook
+// on PlayerChunkSender + window-coalescing plane in the SAME ChunkSendOps
+// blob (rebuilt: raw-cp markers cmp459_p26 + all frozen unions) — N sends of
+// one vanilla batch = ONE flush at the window boundary; packet bytes
+// UNCHANGED, send order = vanilla queue order, flush latency <= 1 tick.
+// STRICT-OR: dormant unless CRUSSTY_LEVER_FLAG == cmp459_p26; on that flag
+// chunk_send.rs does NOT register (disjoint enabled() gates — exactly one
+// bytes hook per target class).
+mod chunk_send6;
 mod noise_fill;
 mod parse_diag;
 mod zero_cursor;
@@ -318,6 +327,9 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // of the private write (encode-once capture + byte[] replay per player).
     // Dormant unless CRUSSTY_LEVER_FLAG == cmp444_chunk5 (STRICT eq).
     chunk_send5::register();
+    // P26 window coalescing plane (TASK-459-62): owns PlayerChunkSender ONLY
+    // under cmp459_p26 (STRICT-OR disjoint from chunk_send above).
+    chunk_send6::register();
     // QUERYPLANE (TASK-417-C, broadphase-query plane on the cvs carrier):
     // Level compose-on-top hook (LAST on Level — receives region_threads'
     // guardEntityTick bytes, composes getEntitiesOfClass +
@@ -675,6 +687,9 @@ fn inject_surface() {
     // ClientboundLevelChunkWithLightPacket (dormant unless
     // CRUSSTY_LEVER_FLAG == cmp444_chunk5).
     chunk_send5::activate();
+    // P26 window coalescing activation (dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp459_p26).
+    chunk_send6::activate();
 }
 
 /// Define one bridge class and register all its natives.
