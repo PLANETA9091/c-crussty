@@ -40,6 +40,16 @@
 //! Markers: "paletted: PATCHED" (hook served), "paletted: pristine sighting"
 //! (class loaded pre-READY — dormant, vanilla), "paletted: PALETTED-DEMUX
 //! ARMED" (final one-line state), "paletted: dormant".
+//!
+//! TASK-457-G (закон 11г — completing the dormant lever onto the modern era
+//! carrier): lever cmp457_paldelta carries this plane STRICT-OR on top of the
+//! certified stack (ins4 ⊕ senseins ⊕ chunk-comp) — the plane arm gate
+//! accepts CRUSSTY_LEVER_FLAG=cmp457_paldelta IN ADDITION to the historical
+//! CRUSSTY_PALETTED_DEMUX=1 key. Bench evidence (research/gc-recon-2026-09-19/
+//! round-a32-457 cpu-collapsed): PalettedContainer.get 4.48% +
+//! SimpleBitStorage.get 1.50% = the ~6% paletted lane at vanilla; on cert-stack
+//! legs (round-chkmono457-8 BOTTLENECKS_3) PalettedContainer.get is the TOP-1
+//! leaf at 3.7%. Empty lever = vanilla bit-in-byte (hook never registers).
 
 use jvmti_bindings::prelude::*;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -59,13 +69,30 @@ static READY: AtomicBool = AtomicBool::new(false);
 static PATCHED: AtomicBool = AtomicBool::new(false);
 
 /// env gate (off by default — dormant-invisible discipline).
+/// TASK-457-G STRICT-OR union: historical CRUSSTY_PALETTED_DEMUX=1 key kept
+/// verbatim ∪ {lever_flag == cmp457_paldelta} (the carrier arm — no other
+/// lever id gains this plane; foreign/empty flag = vanilla bit-in-byte).
 fn enabled() -> bool {
-    std::env::var("CRUSSTY_PALETTED_DEMUX")
+    if std::env::var("CRUSSTY_PALETTED_DEMUX")
         .map(|v| {
             let v = v.trim().to_ascii_lowercase();
             v == "1" || v == "true" || v == "on" || v == "yes"
         })
         .unwrap_or(false)
+    {
+        return true;
+    }
+    std::env::var("CRUSSTY_LEVER_FLAG").map(|v| v.trim() == "cmp457_paldelta").unwrap_or(false)
+}
+
+/// TASK-457-G evidence marker: lever-scoped ARM id (grep anchor "cmp457_paldelta")
+/// while the plane's birth markers stay frozen historical strings.
+fn lever_tag() -> &'static str {
+    if std::env::var("CRUSSTY_LEVER_FLAG").map(|v| v.trim() == "cmp457_paldelta").unwrap_or(false) {
+        "cmp457_paldelta"
+    } else {
+        "paletted"
+    }
 }
 
 /// Fingerprint of the pinned kernel image: length + header + cp probes.
@@ -94,13 +121,14 @@ fn fingerprint_matches(bytes: &[u8]) -> bool {
 /// Register the byte hook (call once from cplugin_init).
 pub fn register() {
     if !enabled() {
-        eprintln!("[crussty-plugin] paletted: dormant (set CRUSSTY_PALETTED_DEMUX=1 to enable)");
+        eprintln!("[crussty-plugin] paletted: dormant (set CRUSSTY_PALETTED_DEMUX=1 or lever_flag=cmp457_paldelta to enable)");
         return;
     }
     cplug_sdk::hooks::register_bytes(PALETTED_CLASS, |name, bytes| {
         if !READY.load(Ordering::Acquire) {
             eprintln!(
-                "[crussty-plugin] paletted: pristine sighting {name} ({} bytes) — Ops not defined yet, staying vanilla",
+                "[crussty-plugin] {}: pristine sighting {name} ({} bytes) — Ops not defined yet, staying vanilla",
+                lever_tag(),
                 bytes.len()
             );
             return None;
@@ -117,7 +145,8 @@ pub fn register() {
             return None;
         }
         eprintln!(
-            "[crussty-plugin] paletted: PATCHED {name} ({} -> {} bytes, demux fields + fast-path get + guarded mutators)",
+            "[crussty-plugin] {}: PATCHED {name} ({} -> {} bytes, demux fields + fast-path get + guarded mutators; paldelta EFFECT armed)",
+            lever_tag(),
             bytes.len(),
             PATCHED_BYTES.len()
         );
@@ -201,7 +230,8 @@ pub fn activate() {
         }
         READY.store(true, Ordering::Release);
         eprintln!(
-            "[crussty-plugin] paletted: PALETTED-DEMUX ARMED (ready to serve the patched {} at first load; {} Ops bytes)",
+            "[crussty-plugin] {}: ARMED paletted-delta (PALETTED-DEMUX completion, ready to serve the patched {} at first load; {} Ops bytes)",
+            lever_tag(),
             PALETTED_CLASS,
             OPS_BYTES.len()
         );

@@ -482,6 +482,19 @@ case "${LEVER_FLAG:-}" in
     export CRUSSTY_KERNEL_POLICY="off"
     log "${LEVER_FLAG} armed: CHUNK-UNION rebaze-3 = chunk4 send-snapshot ⊕ chunk5 packet-encode cache ⊕ chunkparse section/biomes codec caches ⊕ noise-fill GEN-axis (CRUSSTY_KERNEL_POLICY=off — documented two-key A/B override) ⊕ ins4-carrier mob stack STRICT-OR (TASK-455-B, закон 6+8)"
     ;;
+  cmp457_paldelta)
+    # TASK-457-G (закон 11, закон 8-ось): paletted-delta вектор — ЗАВЕРШЕНИЕ
+    # спящего lever #1 (PALETTED-DEMUX S7-131, закон 11г «идеи-на-похищение»)
+    # НА современном сертифицированном носителе: demux read-snapshot
+    # PalettedContainer.get (топ-1 leaf на cert-ногах 3.7%, ~6% lane ванили)
+    # STRICT-OR поверх cert-стека (ins4 ⊕ senseins ⊕ chunk-comp; гейты
+    # расширены add_paldelta_gates_457.py, NCDFE-канон flag_enabled).
+    # Wire-формат НЕ меняется: демукс — read-only снапшот внутри серверной
+    # стадии, наружу бит-в-байт. GEN-axis two-key override как cmp450_chunk.
+    export CRUSSTY_PALETTED_DEMUX="1"
+    export CRUSSTY_KERNEL_POLICY="off"
+    log "${LEVER_FLAG} armed: PALDELTA = PALETTED-DEMUX completion (per-container demux read fast-path, write-gen invalidation) на cert-стек носителе ⊕ noise-fill GEN-axis (CRUSSTY_KERNEL_POLICY=off) — paletted lane ~6% ванили, top-1 leaf 3.7% на cert-ногах (TASK-457-G, закон 11г)"
+    ;;
 esac
 # TASK-430-B inside-plane subsystem (cmp430_inside) + TASK-434-C chunk-pipeline
 # R5 (cmp434_chunkpl): inside_bitmask pre-gate (RECON-33 option-B flagman,

@@ -93,7 +93,7 @@ fn enabled() -> bool {
             | Ok("cmp423_brain3")
             | Ok("cmp424_mobfeed")
             | Ok("cmp430_inside")
-            | Ok("cmp451_senseins") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR) — PRODUCTION gate retag (x452: dormant -> SenseOps never defined, core of vector dead)
+            | Ok("cmp451_senseins") | Ok("cmp457_paldelta") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR) — PRODUCTION gate retag (x452: dormant -> SenseOps never defined, core of vector dead)
             | Ok("cmp453_diet") | Ok("cmp450_chunk") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
     )
 }
@@ -485,7 +485,7 @@ mod tests {
     }
 
     fn enabled_with(s: &str) -> bool {
-        s == "cmp438_sense" || s == "cmp439_sense_scan" || s == "cmp451_senseins" || s == "cmp453_diet" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+        s == "cmp438_sense" || s == "cmp439_sense_scan" || s == "cmp451_senseins" || s == "cmp457_paldelta" || s == "cmp453_diet" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
     }
 
     /// Mirror of the vanilla `getNearestEntity(List,TC,LE,DDD)` inner ladder

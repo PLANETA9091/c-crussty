@@ -118,10 +118,10 @@ fn lever_flag_matches() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let t = v.trim();
-            t == "cmp420_colpush" || t == "cmp424_mobfeed" || t == "cmp430_inside" || t == "cmp432_inside2" || t == "cmp436_ins4"
-            || t == "cmp451_senseins" || t == "cmp453_diet" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+            t == "cmp420_colpush" || t == "cmp424_mobfeed" || t == "cmp430_inside" || t == "cmp432_inside2" || t == "cmp436_ins4" || t == "cmp457_paldelta"
+            || t == "cmp451_senseins" || t == "cmp457_paldelta" || t == "cmp453_diet" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
             || t == "cmp438_sense" // TASK-444-C: sense family union
-            || t == "cmp451_senseins" || t == "cmp453_diet" || t == "cmp434_chunkpl" || t == "cmp435_chunk3" || t == "cmp437_chunk4" || t == "cmp444_chunk5" || t == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+            || t == "cmp451_senseins" || t == "cmp457_paldelta" || t == "cmp453_diet" || t == "cmp434_chunkpl" || t == "cmp435_chunk3" || t == "cmp437_chunk4" || t == "cmp444_chunk5" || t == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
         })
         .unwrap_or(false)
 }
