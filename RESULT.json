@@ -1,14 +1,14 @@
 {
-  "agent": "TASK-455-A (R4 despawn+spawn+activation scans subsystem)",
-  "vector": "R4: despawn+spawn+activation сканы целиком в Rust (закон 6 подсистемный вектор), флаг-гейт CRUSSTY_LEVER_FLAG=cmp455_spawn",
-  "branch": "round-455a-spawn",
-  "run_id": null,
-  "tps_med": null,
-  "delta_pair_pct": null,
-  "lane": "despawn 0.31-0.35% CPU, NaturalSpawner 0.50-0.94%, ActivationRange 0.62-0.83% (сумма ~1.5-2.1%) -> план: despawn = Rust bulk sscanEpoch (готов, армится флагом), spawn/activation = задокументированный ванильный остаток (паритет-риск снят в RESEARCH §1)",
-  "ram": null,
-  "parity": "пустой флаг = ваниль бит-в-байт; STRICT-OR union (rust+java синхронно); иглы cmp436_ins4/cmp451_senseins сохранены (mirror-drift ×451/×452/×454)",
-  "verdict": "IN_PROGRESS",
-  "evidence": "RESEARCH-455-A.md: ценз REFUTED для стандолон-подсистемы (~+1.5-2% потолок < +15% ценза); стратегия = R4-носитель по канону ×454-C диеты (union несёт сертифицированные ins4⊕senseins +20.0/+21.9, ноги-прецеденты +21.7/+28.3 norm)",
-  "what": "step-1: research завершён (сайты javap/профили ×452-×454, честный GO/NO-GO ценз REFUTED-standalone, стратегия носителя зафиксирована); далее: union wiring cmp455_spawn 21 rust + 11 java сайтов, пересборка блобов, cargo, диспатч 2 ног round-455a-spawn-1/2"
+ "agent": "TASK-455-A (R4 despawn+spawn+activation scans subsystem)",
+ "vector": "R4: despawn+spawn+activation сканы целиком в Rust (закон 6 подсистемный вектор), флаг-гейт CRUSSTY_LEVER_FLAG=cmp455_spawn",
+ "branch": "round-455a-spawn",
+ "run_id": null,
+ "tps_med": null,
+ "delta_pair_pct": null,
+ "lane": "despawn 0.31-0.35% CPU, NaturalSpawner 0.50-0.94%, ActivationRange 0.62-0.83% (сумма ~1.5-2.1%) -> план: despawn = Rust bulk sscanEpoch (готов, армится флагом), spawn/activation = задокументированный ванильный остаток (паритет-риск снят в RESEARCH §1)",
+ "ram": null,
+ "parity": "пустой флаг = ваниль бит-в-байт; STRICT-OR union (rust+java синхронно); иглы cmp436_ins4/cmp451_senseins сохранены (mirror-drift ×451/×452/×454)",
+ "verdict": "LEGS_IN_FLIGHT",
+ "evidence": "RESEARCH-455-A.md: ценз REFUTED для стандолон-подсистемы (~+1.5-2% потолок < +15% ценза); стратегия = R4-носитель по канону ×454-C диеты (union несёт сертифицированные ins4⊕senseins +20.0/+21.9, ноги-прецеденты +21.7/+28.3 norm)",
+ "what": "step-2+3: union cmp455_spawn wired (21 rust + 10 java, needles verbatim), blobs rebuilt (major 65, flat==nested, raw-cp grep OK ×10), check_blobs_sync ALL IN SYNC + javap-load OK, cargo check 0 err / cargo test 314/0+1ign, target purged, pushed c25782b4; refs round-455a-spawn-1/2 created @c25782b4; 2 ноги ДИСПАТЧЕНЫ world-bench-parallel.yml (HTTP 204 ×2, lever_flag=cmp455_spawn, lever_arg=1, radius 640/seconds 300/fp 4/gc_tune 3/pt 150k/seed 42/band 6.0-9.5M)"
 }
