@@ -641,13 +641,19 @@ fn apply_ops(ops: &[Op]) -> i32 {
                         bump_odd!(cshard);
                         let csh = &SHARDS[cshard];
                         if let Some(ki) = chunk_find(csh, old_cell) {
-                            let os = (slot - 1) as usize;
-                            let old_b = csh.s_sec[os].load(Ordering::Acquire);
-                            if unlink_slot(csh, ki, old_b, os, id_key(op.id) as i32) {
-                                csh.s_id[os].store(0, Ordering::Relaxed);
-                                csh.s_sec[os].store(0, Ordering::Relaxed);
+                            // TASK-460-04 crash-fix: id_probe already returns the
+                            // 0-based slot ((raw-1).max(-1)); the old (slot-1)
+                            // re-decrement hit raw==1 (pool slot 0 — the FIRST
+                            // slot every shard allocates) -> os underflowed to
+                            // usize::MAX -> s_sec[usize::MAX] panic -> SIGABRT
+                            // mid-x150k-injection (run 36164519911,
+                            // entity_index.rs:645:41, len 8192 idx 2^64-1).
+                            let old_b = csh.s_sec[slot].load(Ordering::Acquire);
+                            if unlink_slot(csh, ki, old_b, slot, id_key(op.id) as i32) {
+                                csh.s_id[slot].store(0, Ordering::Relaxed);
+                                csh.s_sec[slot].store(0, Ordering::Relaxed);
                                 csh.chain_len[ki].fetch_sub(1, Ordering::Relaxed);
-                                st.free[cshard].push(os as i32);
+                                st.free[cshard].push(slot as i32);
                             }
                         }
                     }
@@ -1062,4 +1068,49 @@ pub unsafe extern "system" fn eidx_flush_query(
     }
     unsafe { (vt.ReleasePrimitiveArrayCritical)(env, out_counts, pinned, 0) };
     err
+}
+
+#[cfg(test)]
+mod roar_slot0_tests {
+    use super::*;
+
+    /// TASK-460-04 regression (run 36164519911): REMOVE of an entity that
+    /// lives in pool slot 0 (raw i_slot == 1) panicked at
+    /// s_sec[usize::MAX] (len 8192, idx 2^64-1) because the REMOVE arm
+    /// re-decremented id_probe's ALREADY 0-based slot -> SIGABRT killed the
+    /// JVM mid-x150k-injection. First alloc of any virgin shard lands on
+    /// slot 0, so the crash fired within seconds of population churn.
+    #[test]
+    fn remove_slot0_no_underflow() {
+        // pick a chunk whose shard pool is virgin (hi == 0) -> the ADD below
+        // is guaranteed pool slot 0 (the exact crash precondition).
+        let mut target = None;
+        'outer: for cx in 1000..4000i32 {
+            let k = chunk_key(cx, 424_242);
+            let s = shard_of(k);
+            if WSTATE.lock().unwrap().hi[s] == 0 {
+                for s2 in 0..NSHARDS {
+                    if s2 != s && WSTATE.lock().unwrap().hi[s2] == 0 {
+                        continue;
+                    }
+                }
+                target = Some((cx, k, s));
+                break 'outer;
+            }
+        }
+        let (cx, _k, cs) = target.expect("no virgin shard");
+        let id: i32 = 0x4600_0001;
+        let rc_add = apply_ops(&[Op { op: 1, id, cx, cz: 424_242, sec: -4, bb: [0.0; 6] }]);
+        assert_eq!(rc_add, 0, "ADD rc={rc_add}");
+        assert_eq!(WSTATE.lock().unwrap().hi[cs], 1, "first alloc must be slot 0");
+        let rc_rm = apply_ops(&[Op { op: 2, id, cx, cz: 424_242, sec: -4, bb: [0.0; 6] }]);
+        assert_eq!(rc_rm, 0, "REMOVE of slot-0 entity underflowed (pre-fix SIGABRT)");
+        assert!(
+            WSTATE.lock().unwrap().free[cs].contains(&0),
+            "slot 0 not returned to free stack"
+        );
+        // re-ADD must revive into the freed slot 0 (free-stack path).
+        let rc2 = apply_ops(&[Op { op: 1, id, cx, cz: 424_242, sec: -4, bb: [0.0; 6] }]);
+        assert_eq!(rc2, 0);
+    }
 }
