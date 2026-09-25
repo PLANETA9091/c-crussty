@@ -75,6 +75,14 @@ mod chunk_send;
 // redirect of the private write. Dormant unless CRUSSTY_LEVER_FLAG ==
 // cmp444_chunk5 (STRICT eq; empty/foreign flag = vanilla bit-in-bit).
 mod chunk_send5;
+// PER-SECTION CHUNK DELTA PLANE (TASK-459-79, lever cmp459_m2chdelta, law-11
+// WILD revisit of RESEARCH-458-M ID-M2): scaffold of the rust bulk-JNI delta
+// engine — pristine hook on ClientboundLevelChunkPacketData (2-arg
+// extractChunkData = trivial delegate, sites:1) + ChunkDeltaM2Ops java stub.
+// STEP-1 DORMANT: strict-gated AND serves vanilla unconditionally until the
+// step-2 blob delivery passes selfTest (NCDFE-canon define-before-touch;
+// card RESEARCH-459-M2.md, Δ +1.2пп, ceiling 1.75пп).
+mod chunk_delta_m2;
 mod noise_fill;
 mod parse_diag;
 mod zero_cursor;
@@ -318,6 +326,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // of the private write (encode-once capture + byte[] replay per player).
     // Dormant unless CRUSSTY_LEVER_FLAG == cmp444_chunk5 (STRICT eq).
     chunk_send5::register();
+    // CHUNK DELTA M2 (TASK-459-79): dormant scaffold — with the lever flag
+    // ON it only stashes the pristine target bytes and serves vanilla (the
+    // redirect body lands in step-2 after ChunkDeltaM2Ops define+selfTest).
+    chunk_delta_m2::register();
     // QUERYPLANE (TASK-417-C, broadphase-query plane on the cvs carrier):
     // Level compose-on-top hook (LAST on Level — receives region_threads'
     // guardEntityTick bytes, composes getEntitiesOfClass +
@@ -675,6 +687,10 @@ fn inject_surface() {
     // ClientboundLevelChunkWithLightPacket (dormant unless
     // CRUSSTY_LEVER_FLAG == cmp444_chunk5).
     chunk_send5::activate();
+    // CHUNK DELTA M2 (TASK-459-79): step-1 scaffold no-op with an honest
+    // marker; the NCDFE-canon step-2 order (define -> selfTest -> closure ->
+    // redirect -> ARM) is pinned in chunk_delta_m2::activate docs.
+    chunk_delta_m2::activate();
 }
 
 /// Define one bridge class and register all its natives.
