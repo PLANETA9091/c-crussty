@@ -1,0 +1,29 @@
+Compiled from "ChunkSendOps.java"
+public final class net.minecraft.server.network.ChunkSendOps {
+  static final int CACHE_CAP;
+  static final int SELFTEST_CHUNKS;
+  static final java.lang.String PFX;
+  static final java.lang.String CARRIER_UNION_435;
+  static final java.lang.String CARRIER_UNION_437;
+  static final java.lang.String CARRIER_UNION_444;
+  static final java.lang.String CARRIER_UNION_450;
+  private static final java.util.concurrent.ConcurrentHashMap<java.lang.Long, net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket> CACHE;
+  private static long sent;
+  private static long serialized;
+  private static long hits;
+  private static long evictions;
+  private static int selftestLeft;
+  private static boolean firstHitLogged;
+  private net.minecraft.server.network.ChunkSendOps();
+  public static void sendChunk(net.minecraft.server.network.ServerGamePacketListenerImpl, net.minecraft.server.level.ServerLevel, net.minecraft.world.level.chunk.LevelChunk);
+  private static net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket snapshotOrBuild(net.minecraft.server.level.ServerLevel, net.minecraft.world.level.chunk.LevelChunk);
+  public static boolean selfTest();
+  private static void onlineSelftest(net.minecraft.world.level.chunk.LevelChunk, net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket);
+  private static boolean bufferEquals(net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket, net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket) throws java.lang.ReflectiveOperationException;
+  private static java.lang.Object packetDataOf(net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket) throws java.lang.ReflectiveOperationException;
+  private static boolean heightmapsEquals(net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket, net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket) throws java.lang.ReflectiveOperationException;
+  private static boolean lightEquals(net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket, net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket) throws java.lang.ReflectiveOperationException;
+  private static boolean byteListsEqual(java.util.List<byte[]>, java.util.List<byte[]>);
+  public static java.lang.String stats();
+  static {};
+}
