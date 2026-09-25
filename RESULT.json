@@ -147,8 +147,26 @@
       "leg": 13,
       "run_id": 36143877485,
       "branch": "round-456c-chunkmono-13",
-      "verdict": "DISPATCHED",
-      "dispatch_ts": "2026-09-25T13:53Z"
+      "verdict": "GREEN-CANDIDATE-VALID",
+      "dispatch_ts": "2026-09-25T13:53Z",
+      "norm": 2.8,
+      "runner_cpu_index": 6831587,
+      "gates": {
+        "NCDFE": 0,
+        "ARM": true,
+        "EFFECT": true,
+        "selfTest": true,
+        "AIOOBE": "0 runtime (2x cmp420_chunk2 biomes selftest FAIL = fixture-shum canon)",
+        "threw": 0,
+        "dep_gate": true
+      },
+      "lanes": {
+        "items": 0.0,
+        "nav_ai": 3.44,
+        "broadphase": 9.67,
+        "inside": 16.53
+      },
+      "notes": "PARITY/LOW +2.8; GC Full=9 window continues; pairs: a16 -1.8@6843586 delta 12.0k -> +4.6 (sub-bar), a18 +2.9@6817414 delta 14.2k -> -0.1"
     }
   ],
   "pairs": [
@@ -163,7 +181,7 @@
     }
   ],
   "pairs_note": "leg 6 @6423955: NO x456-bank anchor within delta<=50k (nearest a34@6520174 delta 96k) — UNPAIRED until x457 wave anchors absorb (check ANCHORS.md each cycle); x457 wave-2 anchors absorbed by main: a18 +2.9@6817414, a25 +5.0@7060169, a28 -0.8@6982027, a26 +12.4@8671791, a32 +0.7@6579335",
-  "verdict": "CYCLE-2: legs 11/12 absorbed DEPRESSION (-3.6@7040413 / -3.7@7053858, both NCDFE=0 ARM=1 threw=0 band-OK, GC Full=9 window); leg 13 in flight; family 8 valid legs max +11.5, 0 monsters >=+18",
+  "verdict": "CYCLE-2 ABSORBED: 3/3 legs (−3.6@7040413 DEPRESSION / −3.7@7053858 DEPRESSION / +2.8@6831587 PARITY), 0 monsters, best new pair +4.6 ↔ a16; family 9 valid legs max +11.5; law-3 continues within budget: wave-3 (legs 14/15/16) dispatching",
   "steps": [
     {
       "step": 1,
@@ -184,6 +202,11 @@
       "step": 4,
       "ts": "2026-09-25T14:12Z",
       "action": "absorbed legs 11/12 (markers pre-purge, zips/collapsed/jar/spark purged both); disk 56%; leg 13 polling"
+    },
+    {
+      "step": 5,
+      "ts": "2026-09-25T14:21Z",
+      "action": "absorbed leg 13 (+2.8@6831587, markers pre-purge); pairs a16 +4.6 / a18 -0.1; disk 56%"
     }
   ]
 }
