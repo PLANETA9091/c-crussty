@@ -27,6 +27,7 @@ mod brainhook;
 mod bridge_class;
 mod goal_selector;
 mod classfile;
+mod slices_lcg_epoch;
 mod collide_batch;
 mod colpush;
 #[cfg(test)]
