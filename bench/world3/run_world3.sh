@@ -483,6 +483,9 @@ case "${LEVER_FLAG:-}" in
   cmp430_inside|cmp434_chunkpl)
     log "${LEVER_FLAG} armed: inside-plane subsystem = inside_bitmask all-air pre-gate (median-exact, entity_compose stage-1b) + inside_snap per-section BlockState[4096] snapshots (ONE bulk-JNI per collect, event-driven secWrite invalidation, entity_compose stage-1c) + mobsoa/colpush/queryplane/goal/items carrier stack via STRICT-OR (TASK-430-B, закон 6); cmp434_chunkpl adds chunk-parse deep cache + biomes-parse cache (TASK-434-C R5, both section lambdas)"
     ;;
+  cmp432_inside2)
+    log "${LEVER_FLAG} armed: inside-plane DEEPENING = inside_bitmask pre-gate + inside_snap snapshot plane with tick-stamped serve fastpath (chunk/sec memo) + inside_cache gate fused onto the snapshot plane (SNAP_ARMED reads) + slot space 2^18 (full-population memo) + mobsoa carrier stack via STRICT-OR (TASK-432-B, закон 6)"
+    ;;
 esac
 # RECON_DIAG (TASK-317, instrument-гейт рычага #13 SKIP-STORE-DIET): чистая
 # наблюдаемость — 0 поведения. GC-политика/heap не трогаются (логирование ≠

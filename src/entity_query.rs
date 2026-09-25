@@ -130,8 +130,7 @@ fn enabled() -> bool {
             // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
             | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk")
-            | Ok("cmp421_brain")
+            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") | Ok("cmp432_inside2") | Ok("cmp436_ins4")            | Ok("cmp421_brain")
     )
 }
 
@@ -172,8 +171,7 @@ fn enabled_flag_is_sense() -> bool {
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
         Ok("cmp421_brain") | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk")
-    )
+            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") | Ok("cmp432_inside2") | Ok("cmp436_ins4")    )
 }
 
 /// TASK-422-B (iter-2): точная метка вектор-флага в ARM/EFFECT-маркерах.
@@ -966,8 +964,7 @@ mod tests {
             || s == "cmp411_k4soa"
             || s == "cmp411_eqsnap"
             || s == "cmp412_eqsnapv3" || s == "cmp414_cvs" || s == "cmp417_bq"
-            || s == "cmp421_brain" || s == "cmp422_brain2" || s == "cmp423_brain3" || s == "cmp424_mobfeed" || s == "cmp430_inside" || s == "cmp434_chunkpl" || s == "cmp435_chunk3" || s == "cmp437_chunk4" || s == "cmp444_chunk5" || s == "cmp450_chunk"
-    }
+            || s == "cmp421_brain" || s == "cmp422_brain2" || s == "cmp423_brain3" || s == "cmp424_mobfeed" || s == "cmp430_inside" || s == "cmp434_chunkpl" || s == "cmp435_chunk3" || s == "cmp437_chunk4" || s == "cmp444_chunk5" || s == "cmp450_chunk" || s == "cmp432_inside2" || s == "cmp436_ins4"    }
 
     #[test]
     fn strict_gate_matches() {
