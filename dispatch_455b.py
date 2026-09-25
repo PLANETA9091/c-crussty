@@ -16,7 +16,7 @@ import time
 import urllib.request
 
 BRANCH = "round-455b-chunk"
-EXPECTED_SHA = "74461386"  # rebaze-3 merge head (ancestry: code carrier 47ea8b20 ⊕ 797ae4f0)
+EXPECTED_SHA = "c551f7fa"  # rebaze-3 merge head (ancestry: code carrier 47ea8b20 ⊕ 797ae4f0)
 ANCESTRY_NOTE = "base 47ea8b20 (diet carrier) + merge 797ae4f0 (chunk union) + run_world3 GEN-axis case"
 
 INPUTS = {
@@ -57,7 +57,7 @@ def api(method, path, payload=None, tok=""):
 def main():
     args = [a for a in sys.argv[1:] if a != "--dry"]
     dry = "--dry" in sys.argv
-    if not args or args[0] not in ("1", "2", "both"):
+    if not args or args[0] not in ("1", "2", "3", "both"):
         print(__doc__)
         sys.exit(1)
     which = args[0]
