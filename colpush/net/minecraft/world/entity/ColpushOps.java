@@ -81,6 +81,8 @@ public final class ColpushOps {
     private static final String FLAG6 = "cmp451_senseins";
     /** TASK-457-G: paletted-delta demux completion carrier (STRICT-OR). */
     private static final String FLAG15 = "cmp457_paldelta";
+    /** TASK-455-A: R4 despawn/spawn/activation scans carrier (STRICT-OR). */
+    private static final String FLAG7 = "cmp457_eqsnap2";
     /** TASK-452-C mega-composite (senseins ⊕ chunk union, STRICT-OR). */
     private static final String FLAG_MEGA = "cmp452_mega";
     /** TASK-453-C diet composite (sense-core + chunk4 + ins4 carrier; STRICT-OR). */
