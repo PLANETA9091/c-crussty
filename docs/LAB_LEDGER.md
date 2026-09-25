@@ -38,6 +38,7 @@
 
 ## ПОДСИСТЕМА: chunk-send / serialization (law-8 видимый лейн)
 - agent-M cmp458_chdelta: ID-M1 GO (пер-секционная дельта extractChunkData, isUnsaved oracle; send lane 1.75%, serialize 0.00% на soak — carrier-зависимо). P26 send-burst coalescing (+0.3-0.8пп netty burst, krypton). P27 scratch-arena (GC-debt carrier).
+- Аудит ×459-L07: ветка round-458m-delta @d13eb80a = RESEARCH-ONLY (0 кода, шаги 1-6 NOT STARTED), cmp458_chdelta strings в блобах 0/всё. chkmono457-14 wall 63661: chunk-send serialize лейн 0.00%, entity-sync send лейн 0.68% wall / 2.6% CPU-окна (sendChanges 1.1% + SynchedEntityData 3.0%). Capture-матем: монстр-нога ID-M1 = +0.0пп (потолок +0.0, НЕ диспатчить); joins-burst 1.75%×85% = +1.5пп (потолок +1.75); P26 2.6%×35% = +0.9пп (потолок +2.6). javap 4 контракта: 2-arg redirect sites:1, 3-arg чистый section-loop+ISE writerIndex==capacity, LevelChunkSection.write самодостаточен (bit-in-byte по построению), ChunkSendOps.sendChunk = chunk4 hook ниже whole-packet CACHE cap-2048. Диспатч = world-bench-parallel, не монстр-soak.
 
 ## ПОДСИСТЕМА: noise / worldgen (ген инертен на soak — только GC-debt carriers)
 - cmp457_noisesimd @c8156a69 (agent-D: lever-scoped arm NormalNoiseBatchOps C1a; SIMD-варианты: incubator=NCDFE-риск). P24 octave scratch-pool / P25 2D-router cache — ТОЛЬКО GC-debt relief механика, не прямые Δ.
