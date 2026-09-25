@@ -485,7 +485,9 @@ mod tests {
     }
 
     fn enabled_with(s: &str) -> bool {
-        s == "cmp438_sense" || s == "cmp439_sense_scan" || s == "cmp451_senseins" || s == "cmp453_diet" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+        // TASK-456-B: test mirror MUST track the prod gate (x452 mirror-drift
+        // lesson) — prod (enabled_flag_is_sense) carries cmp456_poi.
+        s == "cmp438_sense" || s == "cmp439_sense_scan" || s == "cmp451_senseins" || s == "cmp453_diet" || s == "cmp456_poi" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
     }
 
     /// Mirror of the vanilla `getNearestEntity(List,TC,LE,DDD)` inner ladder
