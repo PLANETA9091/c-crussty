@@ -2,13 +2,13 @@
  "agent": "TASK-456-A (spawn-carrier cmp455_spawn cycle-2 rebaze)",
  "vector": "R4-носитель: despawn sscan-плейн (Rust bulk) на ребейзе мастера-юниона (ins4⊕senseins⊕chunk4-send⊕chunk5-encode⊕chunkparse⊕noise-GEN), STRICT-OR, lever cmp455_spawn",
  "branch": "round-456a-spawn",
- "run_id": null,
+ "run_id": "round-456a-spawn-1/2 in flight",
  "tps_med": null,
  "delta_pair_pct": null,
  "lane": "был (×455): despawn 0.31-0.35% CPU плейн поверх ins4⊕senseins @ccfa6f04-эпохи; стал (×456): тот же плейн поверх ПОЛНОГО мастера-юниона f44a831e (chunk-union несётся lever'ом) — лейн-цель items 0.00 / nav_ai ~3.3 / broadphase ~9.8",
  "ram": null,
  "parity": "пустой флаг = ваниль бит-в-байт; STRICT-OR union игл (rust+java синхронно, needles verbatim); блобы rebuild flat==nested; усиление (а) NaturalSpawner+ActivationRange = NO-GO ценз (паритет-риск/бюджет, RESEARCH-456-A §2); добавка маржинальна — носитель как есть (§3)",
- "verdict": "READY_TO_DISPATCH",
+ "verdict": "LEGS_IN_FLIGHT",
  "evidence": "RESEARCH-456-A.md §1 форензика: лейн/GC spawn455-1/2 ИДЕНТИЧНЫ сертным chk455-2/diet455-3 — код не болен, шум семьи (диета-семья 8 ног −0.8..+28.3); §3 субаддитивность: premium despawn-плейна ~+0.2пп в шуме, конфликтов с chunk-юнионом нет (новых java-сайтов нет)",
- "what": "step-1+1b DONE: merge fe7e7120 (STRICT-OR union 20 rust + 10 java + check_blobs_sync; blobs rebuilt raw-cp cmp455_spawn x10, ALL IN SYNC, javap flat==nested) + rust syntax fixes a41d182c; cargo check --lib 0 err / cargo test 329/0+1ign; target purged; pushed"
+ "what": "step-2 DONE: refs round-456a-spawn-1/2 @c228e058 created; 2 ноги ДИСПАТЧЕНЫ world-bench-parallel.yml (HTTP 204 x2, lever_flag=cmp455_spawn, lever_arg=1, canon inputs radius 640/300s/fp 4/gc_tune 3/band 6.0-9.5M/pop 150k:42); dispatcher committed f70402ec master"
 }
