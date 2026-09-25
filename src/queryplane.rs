@@ -73,12 +73,23 @@ fn lever_flag_matches() -> bool {
                 || v.trim() == "cmp417_bq"
                 // TASK-419-A (colpush): колпаш-носитель — queryplane awake.
                 || v.trim() == "cmp420_colpush"
-                || v.trim() == "cmp421_brain" || v.trim() == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside"
+                || v.trim() == "cmp421_brain" || v.trim() == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2"
                 // TASK-434-C (chunkpl): chunk-pipeline R5 carrier — queryplane
                 // rides as a disjoint-lane leg (law 7).
-                || v.trim() == "cmp434_chunkpl" || v.trim() == "cmp435_chunk3" || v.trim() == "cmp437_chunk4" || v.trim() == "cmp444_chunk5" || v.trim() == "cmp450_chunk" || v.trim() == "cmp437_chunk4"
+                || v.trim() == "cmp434_chunkpl" || v.trim() == "cmp435_chunk3" || v.trim() == "cmp437_chunk4" || v.trim() == "cmp444_chunk5" || v.trim() == "cmp450_chunk"
         })
         .unwrap_or(false)
+}
+
+
+/// TASK-432-B: honest lever-id for the inside-plane composite (either the
+/// round-432 flag or the round-430 carrier flag arms the same stages).
+fn inside_plane_label() -> &'static str {
+    match std::env::var("CRUSSTY_LEVER_FLAG").as_deref() {
+        Ok("cmp432_inside2") => "cmp432_inside2",
+        Ok("cmp436_ins4") => "cmp436_ins4",
+        _ => "cmp430_inside",
+    }
 }
 
 /// Lever id for boot markers (TASK-416-A: единый lever-id композита эры в
@@ -89,13 +100,12 @@ fn lever_id() -> &'static str {
         // TASK-426-A: SoA-feed carrier — свой id в ARM/EFFECT-маркерах.
         Ok("cmp424_mobfeed") => "cmp424_mobfeed",
         // TASK-430-B: inside-plane subsystem round — свой id.
-        Ok("cmp430_inside") => "cmp430_inside",
+        Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") => inside_plane_label(),
         // TASK-434-C: chunk-pipeline R5 carrier — свой id в ARM-маркерах.
         Ok("cmp434_chunkpl") => "cmp434_chunkpl",
         Ok("cmp435_chunk3") => "cmp435_chunk3", // TASK-435-C: R6 carrier marker id
         Ok("cmp437_chunk4") => "cmp437_chunk4", // TASK-438-C: R7 carrier marker id (chunk-send snapshot widening)
         Ok("cmp444_chunk5") => "cmp444_chunk5", // TASK-444-B: R8 carrier marker id (encode-cache stage-2)
-        Ok("cmp450_chunk") => "cmp450_chunk", // TASK-450-C: union carrier marker id (chunk4⊕chunk5⊕slices)
         Ok("cmp450_chunk") => "cmp450_chunk", // TASK-450-C: union carrier marker id (chunk4⊕chunk5⊕slices)
         Ok("cmp417_bq")
             // TASK-421-A (brain): свой id в ARM-маркерах.

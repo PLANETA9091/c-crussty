@@ -89,8 +89,7 @@ pub(crate) fn mirror_mode() -> bool {
                     || v.trim() == "cmp412_eqsnapv3" || v.trim() == "cmp414_cvs" || v.trim() == "cmp417_bq"
                     // TASK-419-A (colpush): колпаш-носитель (mirror inert).
                     || v.trim() == "cmp420_colpush"
-                    || v.trim() == "cmp421_brain" || v.trim() == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp444_chunk5" || v == "cmp450_chunk"
-            })
+                    || v.trim() == "cmp421_brain" || v.trim() == "cmp422_brain2" || v.trim() == "cmp423_brain3" || v.trim() == "cmp424_mobfeed" || v.trim() == "cmp430_inside" || v.trim() == "cmp434_chunkpl" || v.trim() == "cmp435_chunk3" || v.trim() == "cmp437_chunk4" || v.trim() == "cmp444_chunk5" || v.trim() == "cmp450_chunk" || v.trim() == "cmp432_inside2"            })
             .unwrap_or(false)
     })
 }
