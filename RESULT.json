@@ -1,12 +1,16 @@
 {
-  "agent": "general-purpose (subagent TASK-452-A)",
-  "vector": "cmp451_senseins = sense/brain family (SenseOps body-swap + BrainOps.tickEachRunning tick2 + EntityGoalQueryOps senseMode) STRICT-OR over ins4-carrier",
-  "branch": "round-452a-sense (worktree /home/z/rounds/ROUND-452/agent-a)",
-  "base": "origin/round-451d-senseins @ ff1c0b95; fix HEAD pending push",
-  "run_id": 36076710490,
-  "tps_med": 2.7,
-  "delta_pair_pct": null,
-  "verdict": "INFRA",
-  "evidence": "legs senseins-1 (run 36076710490: med 2.70 @6712673, norm +22.0%) and senseins-3 (run 36076729354: med 2.50 @7153255, norm +8.4%) BOTH DELIVERY-FAIL: NCDFE=65536 (32768 exceptions x2 lines) net/minecraft/world/entity/EntityGoalQueryOps at MobPushOps.pushables(MobPushOps.java:463); threw=0 (vanilla entity-exception handler), pop=VALID, band OK",
-  "what": "ROOT-CAUSE (x449 ConstSlot pattern): agent-D retagged TEST-mirror + label fns with cmp451_senseins but MISSED PRODUCTION rust gates -> entity_query::enabled() FALSE (module dormant, EntityGoalQueryOps NEVER defined), mobs_sense::enabled() FALSE (SenseOps body-swap DEAD - core of vector), mobs_ai/mobs_sscan/stagger dormant (carrier-parity slices dead). MobPushOps blob EQSNAP branch (java-side accepts cmp451_senseins) references EntityGoalQueryOps -> NCDFE storm, push lane dead. mobs_manager fail-closed guard did not fire because entity_query::lever_matches()==enabled() was false. FIX: 6 production gates retagged (entity_query enabled+enabled_flag_is_sense, mobs_sense enabled, mobs_ai/mobs_sscan/stagger enabled) + entity_query gate refactored to PURE flag_enabled(Option<&str>) pinned by tests (no mirror drift possible) + STRICT-eq regression asserts. cargo check --lib 0 err, cargo test 314/0. No .java edits -> blobs untouched (ALL IN SYNC preserved). Markers retained (MARKERS.txt x2), zips/jar/collapsed purged to 128K per dir."
+  "agent": "TASK-454-B",
+  "vector": "chunk rebaze-2 (cmp450_chunk union on senseins-master)",
+  "branch": "round-454b-chunk",
+  "status": "STEP-1 in progress",
+  "steps": {
+    "step1_worktree_merge": "in_progress",
+    "step2_build": "pending",
+    "step3_dispatch": "pending",
+    "step4_poll_absorb": "pending",
+    "step5_result": "pending"
+  },
+  "runs": [],
+  "verdicts": [],
+  "log": []
 }
