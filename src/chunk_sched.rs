@@ -63,6 +63,10 @@ fn lever_flag_matches() -> bool {
                 || v == "cmp452_mega"
                 || v == "cmp455_spawn"
                 || v == "cmp456_poi"
+                // TASK-460-01 climb-compo (P31 INSIDE-BATCH + P32 snapreg
+                // sidecar on THIS chunkmono carrier): same carrier semantics,
+                // only the id is added (STRICT-OR canon, carriers unchanged).
+                || v == "cmp456_chunkmono_p31snap"
         }
         Err(_) => false,
     }
