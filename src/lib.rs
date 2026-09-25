@@ -75,6 +75,9 @@ mod chunk_send;
 // redirect of the private write. Dormant unless CRUSSTY_LEVER_FLAG ==
 // cmp444_chunk5 (STRICT eq; empty/foreign flag = vanilla bit-in-bit).
 mod chunk_send5;
+// P25 TASK-459-65: noise-router 2D-cache prototype (dormant unless
+// CRUSSTY_NATIVE_NOISE2D_CACHE; observation-only, PATCH_ENABLED=false).
+mod noise2d_cache;
 mod noise_fill;
 mod parse_diag;
 mod zero_cursor;
@@ -234,6 +237,9 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // Dormant unless at least one Entity-stage lever is enabled.
     entity_compose::register();
     proto_blend_cache::register();
+    // P25 NOISE2D-CACHE (TASK-459-65): NoiseChunk byte hook — gate OFF => no-op
+    // (dormant discipline 3a270ee); gate ON => pristine-bytes capture only.
+    noise2d_cache::register();
     // F1 BATCH-RNG (family-agg pack member, S7-112): ServerLevel body-swap hook.
     randomtick::register();
     // F2 BRAIN-ITERATORS (family-agg pack member, S7-114): Brain body-swap hook.
@@ -587,6 +593,9 @@ fn inject_surface() {
     entity_compose::activate();
     // Dormant unless CRUSSTY_NATIVE_BLEND_CACHE is set (see docs/HOOK_BLEND_CACHE.md).
     proto_blend_cache::activate();
+    // P25 NOISE2D-CACHE (TASK-459-65): dormant unless CRUSSTY_NATIVE_NOISE2D_CACHE
+    // — memo bit-exact self-test + candidate probe only, no class definitions.
+    noise2d_cache::activate();
     // F1 BATCH-RNG (S7-112): define RandomTickOps into the ServerLevel loader,
     // then retransform for the optimiseRandomTick body swap (area_map pattern).
     randomtick::activate();
