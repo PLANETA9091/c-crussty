@@ -214,7 +214,7 @@ jobs:
           SUMMON_SWEEPS: '0' # legacy (pre-150k era), always 0 since S7-129; input dropped TASK-327 (25-input limit)
           FAKE_PLAYERS: ${{ inputs.fake_players || '0' }}
           FLUID_GUARD: ${{ inputs.fluid_guard || '1' }}
-          PALETTED_DEMUX: '0' # input dropped TASK-335 (25-input limit; lever dormant)
+          PALETTED_DEMUX: '1' # TASK-462 env-leg paletted-demux #1: branch-pin (input dropped TASK-335 25-input limit → dispatch 422 "Unexpected inputs"); demux read fast-path в paletted.rs (lever_tag cmp458_swar‖cmp457_paldelta), карrier swarx-1 +18.0
           GC_TUNE: ${{ inputs.gc_tune || '0' }}
           INSIDE_CACHE: ${{ inputs.inside_cache || '0' }}
           FLUSH_DIET: ${{ inputs.flush_diet || '0' }}
