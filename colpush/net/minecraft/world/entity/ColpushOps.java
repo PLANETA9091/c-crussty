@@ -79,6 +79,26 @@ public final class ColpushOps {
     /** TASK-436-B: serve-plane closure round rides the carrier (STRICT-OR). */
     private static final String FLAG5 = "cmp436_ins4";
     private static final String FLAG6 = "cmp451_senseins";
+    /** TASK-452-C mega-composite (senseins ⊕ chunk union, STRICT-OR). */
+    private static final String FLAG_MEGA = "cmp452_mega";
+    /** TASK-434-C: chunk-pipeline R5 carrier (STRICT-OR; raw-cp marker
+     * for the check_blobs_sync gate, x93). */
+    private static final String FLAG10 = "cmp434_chunkpl";
+    /** TASK-435-C: R6 carrier (STRICT-OR; raw-cp marker for the
+     * check_blobs_sync gate). */
+    private static final String FLAG11 = "cmp435_chunk3";
+
+    /**
+     * TASK-438-C chunk-pipeline R7 carrier (law 7/8): STRICT-OR successor id
+     * ON TOP of cmp435_chunk3 — the composite now also carries the chunk-send
+     * serialization snapshot plane (round-id hygiene for ROUND-438-C).
+     */
+    private static final String FLAG12 = "cmp437_chunk4";
+    /** TASK-444-B: R8 stage-2 carrier (STRICT-OR; raw-cp marker for the
+     * check_blobs_sync gate). */
+    private static final String FLAG13 = "cmp444_chunk5";
+    /** TASK-450-C union carrier (chunk4⊕chunk5⊕slices). */
+    private static final String FLAG14 = "cmp450_chunk";
     private static final int ERR_STRUCT = -1;
     private static final int ERR_RANGE = -2;
 
@@ -94,7 +114,7 @@ public final class ColpushOps {
 
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5) || f.trim().equals(FLAG6));
+return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5) || f.trim().equals(FLAG6) || f.trim().equals(FLAG10) || f.trim().equals(FLAG11) || f.trim().equals(FLAG12) || f.trim().equals(FLAG13) || f.trim().equals(FLAG14) || f.trim().equals(FLAG_MEGA));
     }
 
     /** Структурный отказ — весь рычаг дизармится навсегда (ваниль-реплика). */

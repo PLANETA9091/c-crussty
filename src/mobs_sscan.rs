@@ -89,6 +89,7 @@ fn enabled() -> bool {
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
             | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4")
             | Ok("cmp438_sense") // TASK-444-C: sense family union
+            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") | Ok("cmp452_mega")
             | Ok("cmp421_brain")
     )
 }

@@ -483,7 +483,7 @@ mod tests {
     }
 
     fn enabled_with(s: &str) -> bool {
-        s == "cmp438_sense" || s == "cmp439_sense_scan" || s == "cmp451_senseins" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+        s == "cmp438_sense" || s == "cmp452_mega" || s == "cmp439_sense_scan" || s == "cmp451_senseins" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
     }
 
     /// Mirror of the vanilla `getNearestEntity(List,TC,LE,DDD)` inner ladder

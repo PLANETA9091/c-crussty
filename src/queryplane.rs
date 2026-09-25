@@ -75,7 +75,10 @@ fn lever_flag_matches() -> bool {
                 || v.trim() == "cmp420_colpush"
                 || v.trim() == "cmp421_brain" || v.trim() == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2"
         || v == "cmp438_sense" // TASK-444-C: sense family union
-        || v == "cmp451_senseins" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+        || v == "cmp451_senseins" || v == "cmp452_mega" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+                // TASK-434-C (chunkpl): chunk-pipeline R5 carrier — queryplane
+                // rides as a disjoint-lane leg (law 7).
+                || v.trim() == "cmp434_chunkpl" || v.trim() == "cmp452_mega" || v.trim() == "cmp435_chunk3" || v.trim() == "cmp437_chunk4" || v.trim() == "cmp444_chunk5" || v.trim() == "cmp450_chunk" || v.trim() == "cmp437_chunk4"
         })
         .unwrap_or(false)
 }
@@ -88,6 +91,7 @@ fn inside_plane_label() -> &'static str {
         Ok("cmp432_inside2") => "cmp432_inside2",
         Ok("cmp436_ins4") => "cmp436_ins4",
         Ok("cmp451_senseins") => "cmp451_senseins", // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+        Ok("cmp452_mega") => "cmp452_mega", // TASK-452-C mega-composite (senseins ⊕ chunk union, STRICT-OR)
         _ => "cmp430_inside",
     }
 }
@@ -103,6 +107,16 @@ fn lever_id() -> &'static str {
         Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") => inside_plane_label(),
         Ok("cmp438_sense") => "cmp438_sense",
         Ok("cmp451_senseins") => "cmp451_senseins", // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+        Ok("cmp452_mega") => "cmp452_mega", // TASK-452-C mega-composite (senseins ⊕ chunk union, STRICT-OR)
+        Ok("cmp430_inside") => "cmp430_inside",
+        // TASK-434-C: chunk-pipeline R5 carrier — свой id в ARM-маркерах.
+        Ok("cmp434_chunkpl") => "cmp434_chunkpl",
+        Ok("cmp435_chunk3") => "cmp435_chunk3", // TASK-435-C: R6 carrier marker id
+        Ok("cmp437_chunk4") => "cmp437_chunk4", // TASK-438-C: R7 carrier marker id (chunk-send snapshot widening)
+        Ok("cmp444_chunk5") => "cmp444_chunk5", // TASK-444-B: R8 carrier marker id (encode-cache stage-2)
+        Ok("cmp450_chunk") => "cmp450_chunk", // TASK-450-C: union carrier marker id (chunk4⊕chunk5⊕slices)
+        Ok("cmp452_mega") => "cmp452_mega", // TASK-452-C mega-composite (senseins ⊕ chunk union, STRICT-OR)
+        Ok("cmp452_mega") => "cmp452_mega", // TASK-452-C mega-composite marker id (senseins ⊕ chunk union)
         Ok("cmp417_bq")
             // TASK-421-A (brain): свой id в ARM-маркерах.
             | Ok("cmp421_brain") => "cmp421_brain",
@@ -110,6 +124,8 @@ fn lever_id() -> &'static str {
         Ok("cmp422_brain2") => "cmp422_brain2",
         Ok("cmp416_mcomp") => "cmp416_mcomp",
         Ok("cmp415_mcomp") => "cmp415_mcomp",
+        // TASK-424-C (wgen): ROUND-423 chunk-pipeline carrier.
+        Ok("cmp423_wgen") => "cmp423_wgen",
         _ => "cmp412_b2p1",
     }
 }
