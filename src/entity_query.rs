@@ -143,7 +143,7 @@ fn flag_enabled(flag: Option<&str>) -> bool {
             | Some("cmp423_brain3") | Some("cmp424_mobfeed") | Some("cmp430_inside") | Some("cmp432_inside2") | Some("cmp436_ins4")
             | Some("cmp438_sense") // TASK-444-C: sense family union
             | Some("cmp451_senseins") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
-            | Some("cmp421_brain")
+            | Some("cmp421_brain" | Some("cmp434_chunkpl" | Some("cmp435_chunk3" | Some("cmp437_chunk4" | Some("cmp444_chunk5" | Some("cmp450_chunk")
     )
 }
 
@@ -186,7 +186,7 @@ fn enabled_flag_is_sense() -> bool {
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
             | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4")
             | Ok("cmp438_sense") // TASK-444-C: sense family union
-            | Ok("cmp451_senseins") // TASK-452-A: senseins composite — sense-arena slice must arm (production gate retag)
+            | Ok("cmp451_senseins" | Ok("cmp434_chunkpl" | Ok("cmp435_chunk3" | Ok("cmp437_chunk4" | Ok("cmp444_chunk5" | Ok("cmp450_chunk") // TASK-452-A: senseins composite — sense-arena slice must arm (production gate retag)
     )
 }
 

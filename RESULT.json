@@ -1,4 +1,5 @@
 {
+<<<<<<< HEAD
   "agent": "TASK-454-B",
   "vector": "chunk rebaze-2 (cmp450_chunk union on senseins-master)",
   "branch": "round-454b-chunk",
@@ -14,3 +15,33 @@
   "verdicts": [],
   "log": []
 }
+=======
+  "agent": "TASK-452-B",
+  "vector": "chunk-pipeline cycle-4 (закон 3, закон 8 — видимая игрокам ось chunk-loading/worldgen): сертифицированный юнион cmp450_chunk (chunk4 send-snapshot ⊕ chunk5 encode-cache ⊕ chunkparse section-codec caches) РЕБЕЙЗ на новый ins4-master",
+  "branch": "round-452c-chunk",
+  "head": "d186cb92",
+  "carrier": "cmp450_chunk (STRICT-OR ×21 rust + ×11 java) на НОВОМ носителе = master fba80c41 (код 3b6d13ac, ins4-плоскость InsideSnapOps live) ⊕ round-451c-chunk 29ac6481",
+  "gates": {
+    "merge": "d186cb92 = origin/master fba80c41 ⊕ round-451c-chunk 29ac6481; конфликтов 47 (46 код/блобы + RESULT.json) — все STRICT-OR (lever-гейты: chunk-семья ⊕ inside2/ins4; v4_requested остался строго cmp436_ins4; queryplane marker-arms union; ColpushOps FLAG9/10)",
+    "check_blobs_sync": "ALL IN SYNC (flat==nested; блобы ребилдены build_430b из merged-источников: ColpushOps 11680, MobPushOps 13627, ItemEntityManager 21118, InsideSnapOps 14185 = канон ×436, InsideSnapOps$Snap 557, EntityGoalQueryOps 12143, GoalOps 9391, QueryPlaneOps 5291; INDY WARN только advisory)",
+    "cargo": "check --lib OK; test 317/0 (CARGO_TARGET_DIR=/tmp/b452-target, target удалён немедленно)",
+    "javap": "check_blobs_sync javap-гейты ×9 классов PASS (урок ×449 NCDFE: nested+flat установлен до гейта)",
+    "empty_flag": "все union-хунки = строгие eq-цепочки lever-имён, пустой флаг матчит ничего = ваниль бит-в-байт"
+  },
+  "absorb_batch3": {
+    "mapping_correction": "брифинговый сет 36073681000..36073728031 (23:37-38Z) = round-451-anchor-23/24 + round-451-ins4-5..8 (решётка главного агента ×451), НЕ chunk-ноги. Реальные chunk-6/7/8 = 36070481536/36070495370/36070508326 (23:00Z, head_branch round-451c-chunk-6/-7/-8 @29ac648) — ВСЕ ТРИ SUCCESS",
+    "chunk-6": "run 36070481536, 2.50 TPS @6751706, norm +12.6, threw=0, ARM ×3 chunk-плоскости retransform rc=0, parse first-hit live, encode hits 1011; ПАРА +9.0 <-> round-451a-anchor-11 (+3.6 @6752503, Δ7,970)",
+    "chunk-7": "run 36070495370, 3.20 TPS @8923320, norm +19.5 ЛУЧШИЙ НОРМ ЛИНИИ (монстр-хвост существует!), threw=0, encode hits 9813; БАНК — a14 (−3.0 @8931072, Δ7.7k) отсечён депресс-гейтом norm>=−2 (без гейта было бы +22.5 — гейт честен)",
+    "chunk-8": "run 36070508326, 2.50 TPS @7018843, norm +9.8, threw=0, encode hits 41425; БАНК (ближайшие якоря: a22 −7.5 депресс Δ33k, a15 +0.9 Δ89k)",
+    "failure_rootcause": "2 failure из брифингового сета: round-451-anchor-23 (36073681000) = BAND-DISCARD runner_cpu_index=10270679 > 9.5M (fast-fail pre-download, не бенч-фейл); round-451-ins4-6 (36073707844) = INFRA-DELIVERY-FAIL: benchpop x150k инъекция зависла (DONE marker не увиден за 900s) -> FIXTURE-VALIDITY INVALID -> java Killed. Оба — чужие ноги главного агента ×451, ре-роллы на его усмотрение"
+  },
+  "dispatch": "dispatch_452b.py (argv-guard + EXPECTED_SHA pin round-452c-chunk=d186cb92 + --no-batch): chunk-1/2/3 = round-452c-chunk-1/-2/-3 <- round-452c-chunk, lever=cmp450_chunk lever_arg=1, inputs = банк-канон",
+  "run_id": null,
+  "legs": [],
+  "verdict": "IN FLIGHT — cycle-4 ноги на НОВОМ ins4-носителе; пары против round-452-anchor-* (12 решётка master в полёте), Δ≤50k pair-fresh, депресс-гейт norm>=−2, band 6.0-9.5M",
+  "lane": {
+    "стал": "chunk system (kernel) 8.2-8.7% + paletted 5.3-6.0 + broadphase 9.3-9.8 + nav_ai 2.9-3.2 + items 0.00 (ins4-master) — чистый chunk-юнион поверх сертифицированного ins4"
+  },
+  "handoff_next_tick": "если cycle-4 pair <+20: подсистемы (1) полный Rust-парс SerializableChunkData (закон-6-чистая), (2) moonrise scheduling резервы (ServerChunkCache 4.6-5.2%); банки линии уже +11.0..+19.5"
+}
+>>>>>>> origin/round-452c-chunk
