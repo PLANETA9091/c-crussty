@@ -57,6 +57,13 @@ const TAG_METHODREF: u8 = 10;
 /// patching.
 const TAG_INTERFACEMETHODREF: u8 = 11;
 const TAG_NAMEANDTYPE: u8 = 12;
+/// TASK-459-60 P21: CONSTANT_MethodHandle — the LIGHT retarget swaps the
+/// bootstrap impl handle (newInvokeSpecial DataLayer.<init>) for a
+/// REF_invokeStatic handle to ChunkParseOps.parseLight.
+const TAG_METHODHANDLE: u8 = 15;
+/// TASK-459-60 P21: CONSTANT_InvokeDynamic — used to count the call sites
+/// (BlockLight + SkyLight) referencing the retargeted bootstrap entry.
+const TAG_INVOKEDYNAMIC: u8 = 18;
 
 pub const OPS_CLASS: &str = "ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps";
 pub const MAP_CLASS: &str = "ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap";
@@ -204,6 +211,42 @@ impl Pool {
         payload.extend_from_slice(&nat.to_be_bytes());
         self.find(TAG_METHODREF, &payload)
             .unwrap_or_else(|| self.push(TAG_METHODREF, payload, 1))
+    }
+
+    /// TASK-459-60 P21: append-or-reuse a CONSTANT_MethodHandle (3-byte
+    /// payload: reference_kind(1) + reference_index(2), JVMS 4.4.8).
+    fn method_handle(&mut self, kind: u8, ref_idx: u16) -> u16 {
+        let mut payload = Vec::with_capacity(3);
+        payload.push(kind);
+        payload.extend_from_slice(&ref_idx.to_be_bytes());
+        self.find(TAG_METHODHANDLE, &payload)
+            .unwrap_or_else(|| self.push(TAG_METHODHANDLE, payload, 1))
+    }
+
+    /// TASK-459-60 P21: resolve a MethodHandle index to its
+    /// `(reference_kind, class, name, descriptor)` quad (mirrors
+    /// methodref_parts; kind 8 = REF_newInvokeSpecial, kind 6 =
+    /// REF_invokeStatic — JVMS 4.4.8 / 5.4.3.5).
+    fn method_handle_parts(&self, idx: u16) -> Option<(u8, String, String, String)> {
+        let (_, tag, payload) = self.entries.iter().find(|(i, _, _)| *i == idx)?;
+        if *tag != TAG_METHODHANDLE || payload.len() < 3 {
+            return None;
+        }
+        let kind = payload[0];
+        let ref_idx = u16::from_be_bytes([payload[1], payload[2]]);
+        let (class, name, desc) = self.methodref_parts(ref_idx)?;
+        Some((kind, class, name, desc))
+    }
+
+    /// TASK-459-60 P21: resolve a CONSTANT_InvokeDynamic index to its
+    /// bootstrap_method_attr_index (JVMS 4.4.10 payload: bootstrap index(2)
+    /// + name_and_type(2)).
+    fn bootstrap_index_of(&self, idx: u16) -> Option<u16> {
+        let (_, tag, payload) = self.entries.iter().find(|(i, _, _)| *i == idx)?;
+        if *tag != TAG_INVOKEDYNAMIC || payload.len() < 2 {
+            return None;
+        }
+        Some(u16::from_be_bytes([payload[0], payload[1]]))
     }
 
     fn utf8_value(&self, idx: u16) -> Option<String> {
@@ -8877,6 +8920,18 @@ pub const CHUNKPARSE_TWIN_LAMBDA: &str = "lambda$parse$7";
 /// lambda itself is now redirected here (both section lambdas patched).
 pub const CHUNKPARSE_BIOMES_OPS_METHOD: &str = "parseBiomesSection";
 pub const CHUNKPARSE_SECTION_LAMBDA_DESC: &str = "(Lcom/mojang/serialization/Codec;Lnet/minecraft/world/level/ChunkPos;ILnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/chunk/PalettedContainer;";
+/// TASK-459-60 P21 widen: the LIGHT decode bootstrap — vanilla impl handle is
+/// `REF_newInvokeSpecial DataLayer."<init>":([B)V` (javap -v fixture,
+/// BootstrapMethods#8, instantiated type `([B)Lnet/minecraft/world/level/
+/// chunk/DataLayer;`, applied to BOTH the "BlockLight" and "SkyLight" arrays
+/// of every section). The retarget swaps ONLY the impl handle for a
+/// REF_invokeStatic handle to ChunkParseOps.parseLight with the SAME
+/// descriptor (stack shape contract) — the call sites are untouched.
+pub const CHUNKPARSE_LIGHT_CTOR_CLASS: &str = "net/minecraft/world/level/chunk/DataLayer";
+pub const CHUNKPARSE_LIGHT_CTOR_NAME: &str = "<init>";
+pub const CHUNKPARSE_LIGHT_CTOR_DESC: &str = "([B)V";
+pub const CHUNKPARSE_LIGHT_OPS_METHOD: &str = "parseLight";
+pub const CHUNKPARSE_LIGHT_TARGET_DESC: &str = "([B)Lnet/minecraft/world/level/chunk/DataLayer;";
 
 /// Resolution closure for the ChunkParseOps bridge: the bridge must declare
 /// `parseSection` with the EXACT vanilla lambda descriptor (redirect
@@ -8899,6 +8954,15 @@ pub fn chunkparse_resolution_closure(ops: &[u8]) -> Result<(), String> {
             // canonical descriptor (redirect stack-shape contract).
             CHUNKPARSE_BIOMES_OPS_METHOD,
             CHUNKPARSE_SECTION_LAMBDA_DESC,
+        ),
+        (
+            "class",
+            CHUNKPARSE_OPS_CLASS,
+            // TASK-459-60 P21: LIGHT cache entry point — the bootstrap retarget
+            // swaps the impl handle for this static; the descriptor must be the
+            // EXACT instantiated type of the vanilla newInvokeSpecial handle.
+            CHUNKPARSE_LIGHT_OPS_METHOD,
+            CHUNKPARSE_LIGHT_TARGET_DESC,
         ),
         ("class", CHUNKPARSE_OPS_CLASS, "init", "(Ljava/lang/String;)V"),
     ];
@@ -8982,6 +9046,204 @@ pub fn chunkparse_pristine_guard(bytes: &[u8]) -> Result<(), String> {
     }
     Ok(())
 }
+
+/// TASK-459-60 P21: absolute offset of the class-level attributes table
+/// (the attributes_count field AFTER the method table ends).
+fn class_attributes_start(bytes: &[u8], methods_start: usize) -> Option<usize> {
+    let mut p = methods_start;
+    let count = usize::from(u16_at(bytes, p)?);
+    p = p.checked_add(2)?;
+    for _ in 0..count {
+        let attr_count = usize::from(u16_at(bytes, p.checked_add(6)?)?);
+        p = p.checked_add(8)?;
+        for _ in 0..attr_count {
+            let len = u32_at(bytes, p.checked_add(2)?)? as usize;
+            p = p.checked_add(6)?.checked_add(len)?;
+        }
+    }
+    Some(p)
+}
+
+/// TASK-459-60 P21: locate the BootstrapMethods class attribute; returns
+/// (absolute offset of num_bootstrap_methods, attribute data length).
+fn find_bootstrap_methods(
+    bytes: &[u8],
+    pool: &Pool,
+    methods_start: usize,
+) -> Option<(usize, usize)> {
+    let p = class_attributes_start(bytes, methods_start)?;
+    let count = usize::from(u16_at(bytes, p)?);
+    let mut q = p.checked_add(2)?;
+    for _ in 0..count {
+        let name_idx = u16_at(bytes, q)?;
+        let len = u32_at(bytes, q.checked_add(2)?)? as usize;
+        let data = q.checked_add(6)?;
+        if pool.utf8_value(name_idx).as_deref() == Some("BootstrapMethods") {
+            return Some((data, len));
+        }
+        q = data.checked_add(len)?;
+    }
+    None
+}
+
+/// TASK-459-60 P21: count invokedynamic call sites (across ALL method Code
+/// attributes) whose InvokeDynamic constant references `entry_ord`. Mirrors
+/// scan_invokestatics: bounded, panic-free walk (opcode_extra handles the
+/// variable-width opcodes; invokedynamic itself carries 4 operand bytes).
+fn count_invokedynamic_sites(
+    bytes: &[u8],
+    pool: &Pool,
+    methods_start: usize,
+    entry_ord: u16,
+) -> Result<usize, String> {
+    let mut sites = 0usize;
+    for (code_start, code_len) in collect_code_spans(bytes, pool, methods_start)? {
+        let code_end = code_start
+            .checked_add(code_len)
+            .ok_or_else(|| "code span overflow".to_string())?;
+        let code = bytes
+            .get(code_start..code_end)
+            .ok_or_else(|| "code region truncated".to_string())?;
+        let mut pc = 0usize;
+        while pc < code.len() {
+            let op = code[pc];
+            if op == 0xBA {
+                let idx = u16_at(code, pc.checked_add(1).ok_or("indy operand oob")?)
+                    .ok_or("indy cp index truncated")?;
+                if pool.bootstrap_index_of(idx) == Some(entry_ord) {
+                    sites += 1;
+                }
+            }
+            let extra = opcode_extra(op, code, pc)?;
+            pc = pc.checked_add(1).ok_or("pc overflow")?.checked_add(extra).ok_or("pc overflow")?;
+        }
+    }
+    Ok(sites)
+}
+
+/// TASK-459-60 P21 (lever cmp459_p21, law 8 chunk-parse WIDEN): retarget the
+/// LIGHT decode bootstrap's impl handle. Ground truth (javap -v on the
+/// kernel fixture): `SerializableChunkData.parse` applies the bootstrap#8
+/// Function (`REF_newInvokeSpecial DataLayer."<init>":([B)V`, instantiated
+/// type `([B)Lnet/minecraft/world/level/chunk/DataLayer;`) to BOTH the
+/// "BlockLight" and "SkyLight" arrays of every section. The retarget swaps
+/// ONLY that impl handle for `REF_invokeStatic ChunkParseOps.parseLight`
+/// with the SAME descriptor — the two call sites, the call-site descriptor
+/// and the instantiated type are untouched (stack shape contract).
+///
+/// Guards (fail-closed, dormant on any defect):
+///   * exactly ONE bootstrap argument carries the vanilla newInvokeSpecial
+///     DataLayer([B)V handle (a second one means kernel drift);
+///   * the retargeted entry is referenced by >= 1 invokedynamic site (the
+///     fixture pins exactly 2: BlockLight + SkyLight);
+///   * CP overflow guard.
+/// Idempotent: re-sighting the retargeted handle is AlreadyPatched.
+pub fn retarget_light_bootstrap_to_static(
+    bytes: &[u8],
+    ctor_class: &str,
+    ctor_name: &str,
+    ctor_desc: &str,
+    target_class: &str,
+    target_name: &str,
+    target_static_desc: &str,
+) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    let mut pool = layout.pool;
+
+    let (bs_start, bs_len) = find_bootstrap_methods(bytes, &pool, layout.methods_start)
+        .ok_or_else(|| "BootstrapMethods attribute not found".to_string())?;
+    let bs_end = bs_start
+        .checked_add(bs_len)
+        .ok_or_else(|| "BootstrapMethods length overflow".to_string())?;
+
+    // Walk the bootstrap entries; classify the light impl handle.
+    let entries = usize::from(u16_at(bytes, bs_start).ok_or("bootstrap count truncated")?);
+    let mut p = bs_start
+        .checked_add(2)
+        .ok_or_else(|| "bootstrap table truncated".to_string())?;
+    let mut vanilla_arg_off: Option<usize> = None;
+    let mut already_arg_off: Option<usize> = None;
+    let mut entry_ord: u16 = 0;
+    for ord in 0..entries {
+        let n_args = usize::from(u16_at(bytes, p.checked_add(2).ok_or("bootstrap entry oob")?)
+            .ok_or("bootstrap arg count truncated")?);
+        p = p.checked_add(4).ok_or_else(|| "bootstrap entry oob".to_string())?;
+        for _ in 0..n_args {
+            let arg_off = p;
+            let idx = u16_at(bytes, p).ok_or("bootstrap arg truncated")?;
+            p = p.checked_add(2).ok_or_else(|| "bootstrap arg oob".to_string())?;
+            if let Some((kind, class, name, desc)) = pool.method_handle_parts(idx) {
+                if kind == 8 && class == ctor_class && name == ctor_name && desc == ctor_desc {
+                    if vanilla_arg_off.is_some() || already_arg_off.is_some() {
+                        return Err(
+                            "multiple light impl handles in BootstrapMethods — kernel drift"
+                                .to_string(),
+                        );
+                    }
+                    vanilla_arg_off = Some(arg_off);
+                    entry_ord = ord as u16;
+                } else if kind == 6
+                    && class == target_class
+                    && name == target_name
+                    && desc == target_static_desc
+                {
+                    if vanilla_arg_off.is_some() || already_arg_off.is_some() {
+                        return Err(
+                            "multiple light impl handles in BootstrapMethods — kernel drift"
+                                .to_string(),
+                        );
+                    }
+                    already_arg_off = Some(arg_off);
+                    entry_ord = ord as u16;
+                }
+            }
+        }
+    }
+    if p != bs_end {
+        return Err(format!(
+            "BootstrapMethods walk ended at {p}, attribute ends at {bs_end} — corrupt layout"
+        ));
+    }
+    if vanilla_arg_off.is_none() && already_arg_off.is_none() {
+        return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+    }
+    let sites = count_invokedynamic_sites(bytes, &pool, layout.methods_start, entry_ord)?;
+    if sites == 0 {
+        return Err(format!(
+            "light bootstrap entry #{entry_ord} referenced by 0 invokedynamic sites — kernel drift"
+        ));
+    }
+    if let Some(off) = already_arg_off {
+        let _ = off; // bytes unchanged; sites recorded for the anti-placebo gate
+        return Ok((bytes.to_vec(), RetargetOutcome::AlreadyPatched { sites }));
+    }
+
+    // Append (dedup) the invokestatic handle to ChunkParseOps.parseLight.
+    let mref = pool.method_ref(target_class, target_name, target_static_desc);
+    let mh = pool.method_handle(6, mref); // 6 = REF_invokeStatic (JVMS 4.4.8)
+    if pool.next > u16::MAX - 16 {
+        return Err("constant pool overflow: no index space left for light handle".into());
+    }
+
+    // Splice: header + grown pool + tail with ONLY the 2-byte impl-handle arg
+    // index rewritten (length-preserving patch inside the tail).
+    let arg_off = vanilla_arg_off.ok_or("light impl handle offset missing")?;
+    let rel = arg_off - layout.cp_end;
+    let mut tail = bytes[layout.cp_end..].to_vec();
+    if rel + 1 >= tail.len() {
+        return Err("light arg index outside class tail (corrupt layout?)".into());
+    }
+    let want = mh.to_be_bytes();
+    tail[rel] = want[0];
+    tail[rel + 1] = want[1];
+    let mut out = Vec::with_capacity(bytes.len() + 32);
+    out.extend_from_slice(&bytes[0..8]); // magic, minor, major
+    out.extend_from_slice(&pool.next.to_be_bytes()); // new cp_count
+    out.extend_from_slice(&pool.serialize());
+    out.extend_from_slice(&tail);
+    Ok((out, RetargetOutcome::Retargeted { sites }))
+}
+
 
 // ---------------------------------------------------------------------------
 // CHUNK-SEND SERIALIZATION SNAPSHOT (TASK-438-C, lever cmp437_chunk4, law 8

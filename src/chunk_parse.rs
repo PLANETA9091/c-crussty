@@ -140,6 +140,7 @@ fn enabled() -> bool {
             || v == "cmp451_senseins" || v == "cmp457_paldelta" || v == "cmp453_diet" || v == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
             || v == "cmp453_diet" || v == "cmp450_chunk" // TASK-453-C: diet composite (chunkparse-codec plane, STRICT OR — master ∪ {cmp453_diet} only)
             || v == "cmp451_senseins" || v == "cmp457_paldelta"|| v == "cmp434_chunkpl"|| v == "cmp435_chunk3"|| v == "cmp437_chunk4"|| v == "cmp444_chunk5"|| v == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+            || v == "cmp459_p21" // TASK-459-60: P21 parse-cache WIDEN (light plane + fast twin-fallback, STRICT OR — master ∪ {cmp459_p21} only)
         })
         .unwrap_or(false)
 }
@@ -155,6 +156,7 @@ fn marker_id() -> std::borrow::Cow<'static, str> {
 /// the union (cmp450_chunk legs grep "cmp450_chunk: ARMED ..."), else the
 /// plane's birth id (frozen historical markers).
         Ok("cmp450_chunk") => std::borrow::Cow::Owned("cmp450_chunk".to_string()),
+        Ok("cmp459_p21") => std::borrow::Cow::Owned("cmp459_p21".to_string()), // TASK-459-60: P21 widen evidence marker
         _ => std::borrow::Cow::Borrowed(LEVER_ID),
     }
 }
@@ -445,18 +447,52 @@ pub fn activate() {
             );
             return;
         }
+        // TASK-459-60 P21 WIDEN (third stage, on the doubly-patched bytes):
+        // the LIGHT decode bootstrap impl handle (vanilla: newInvokeSpecial
+        // DataLayer.<init>([B)V) is swapped for ChunkParseOps.parseLight with
+        // the SAME descriptor — only the 2-byte bootstrap arg index changes.
+        // The fixture pins exactly 2 indy sites (BlockLight + SkyLight);
+        // sites>0 is the anti-placebo gate.
+        let (patched_light, outcome_light) = match crate::classfile::retarget_light_bootstrap_to_static(
+            &patched,
+            crate::classfile::CHUNKPARSE_LIGHT_CTOR_CLASS,
+            crate::classfile::CHUNKPARSE_LIGHT_CTOR_NAME,
+            crate::classfile::CHUNKPARSE_LIGHT_CTOR_DESC,
+            CHUNKPARSE_OPS_CLASS,
+            crate::classfile::CHUNKPARSE_LIGHT_OPS_METHOD,
+            crate::classfile::CHUNKPARSE_LIGHT_TARGET_DESC,
+        ) {
+            Ok(pair) => pair,
+            Err(e) => {
+                eprintln!(
+                    "[crussty-plugin] {LEVER_ID}: light retarget rejected ({e}), hook stays dormant"
+                );
+                return;
+            }
+        };
+        let light_ok = matches!(
+            outcome_light,
+            crate::classfile::RetargetOutcome::Retargeted { .. }
+                | crate::classfile::RetargetOutcome::AlreadyPatched { .. }
+        );
+        if !light_ok {
+            eprintln!(
+                "[crussty-plugin] {LEVER_ID}: unexpected light outcome ({outcome_light:?}), hook stays dormant"
+            );
+            return;
+        }
         eprintln!(
-            "[crussty-plugin] {LEVER_ID}: computed redirects for {} ({} -> {} bytes, blocks={outcome_blocks:?}, biomes={outcome_biomes:?})",
+            "[crussty-plugin] {LEVER_ID}: computed redirects for {} ({} -> {} bytes, blocks={outcome_blocks:?}, biomes={outcome_biomes:?}, light={outcome_light:?})",
             t.name,
             original.len(),
-            patched.len()
+            patched_light.len()
         );
-        t.set_patch(Arc::from(patched));
+        t.set_patch(Arc::from(patched_light));
         READY.store(true, Ordering::Release);
         let rc = cplug_sdk::retransform_class(t.name);
         let m = marker_id();
         eprintln!(
-            "[crussty-plugin] {m}: ARMED chunk-parse section-cache + biomes-cache (deep: cap 16384, evict-half, lock-free CHM probe; blocks {CHUNKPARSE_BLOCKS_LAMBDA} -> ChunkParseOps.parseSection, biomes {CHUNKPARSE_TWIN_LAMBDA} -> ChunkParseOps.parseBiomesSection, identity-codec key, template.copy() HIT path, 0 added JNI; retransform rc={rc})"
+            "[crussty-plugin] {m}: ARMED chunk-parse section-cache + biomes-cache + light-cache (deep: cap 16384, evict-half, lock-free CHM probe; blocks {CHUNKPARSE_BLOCKS_LAMBDA} -> ChunkParseOps.parseSection, biomes {CHUNKPARSE_TWIN_LAMBDA} -> ChunkParseOps.parseBiomesSection, light bootstrap#8 -> ChunkParseOps.parseLight (probe len+hash, Arrays.equals cert), identity-codec key, template.copy() HIT path, 0 added JNI; retransform rc={rc})"
         );
     });
 }
@@ -601,6 +637,73 @@ mod chunkparse_delivery_tests {
         assert_eq!(again2, patched2);
     }
 
+    /// TASK-459-60 P21 gate: the LIGHT bootstrap retarget must land on the
+    /// kernel fixture chained after BOTH section-lambda redirects — exactly
+    /// 2 sites (BlockLight + SkyLight), idempotent on re-sight, and the
+    /// triple-patched bytes must be a stable fixpoint.
+    #[test]
+    fn chunkparse_light_retarget_applies_to_kernel_fixture() {
+        use crate::classfile::{
+            redirect_static_method_body_to_static, retarget_light_bootstrap_to_static,
+            CHUNKPARSE_LIGHT_CTOR_CLASS, CHUNKPARSE_LIGHT_CTOR_DESC, CHUNKPARSE_LIGHT_CTOR_NAME,
+            CHUNKPARSE_LIGHT_OPS_METHOD, CHUNKPARSE_LIGHT_TARGET_DESC,
+        };
+        let fixture = include_bytes!("../tests/fixtures/SerializableChunkData.class");
+        // Chain: blocks body -> biomes body -> light bootstrap (the exact
+        // activate() order; each stage runs on the previous bytes).
+        let (patched, _) = redirect_static_method_body_to_static(
+            fixture,
+            crate::classfile::CHUNKPARSE_BLOCKS_LAMBDA,
+            CHUNKPARSE_SECTION_LAMBDA_DESC,
+            CHUNKPARSE_OPS_CLASS,
+            "parseSection",
+            CHUNKPARSE_SECTION_LAMBDA_DESC,
+        )
+        .expect("blocks redirect must compute");
+        let (patched, _) = redirect_static_method_body_to_static(
+            &patched,
+            crate::classfile::CHUNKPARSE_TWIN_LAMBDA,
+            CHUNKPARSE_SECTION_LAMBDA_DESC,
+            CHUNKPARSE_OPS_CLASS,
+            crate::classfile::CHUNKPARSE_BIOMES_OPS_METHOD,
+            CHUNKPARSE_SECTION_LAMBDA_DESC,
+        )
+        .expect("biomes redirect must compute");
+        let (final_bytes, outcome_light) = retarget_light_bootstrap_to_static(
+            &patched,
+            CHUNKPARSE_LIGHT_CTOR_CLASS,
+            CHUNKPARSE_LIGHT_CTOR_NAME,
+            CHUNKPARSE_LIGHT_CTOR_DESC,
+            CHUNKPARSE_OPS_CLASS,
+            CHUNKPARSE_LIGHT_OPS_METHOD,
+            CHUNKPARSE_LIGHT_TARGET_DESC,
+        )
+        .expect("light retarget must compute on the chained bytes");
+        assert_eq!(
+            outcome_light,
+            crate::classfile::RetargetOutcome::Retargeted { sites: 2 },
+            "exactly the BlockLight+SkyLight indy sites must reference the retargeted bootstrap"
+        );
+        // Idempotency: re-sighting the FINAL bytes must be AlreadyPatched x2
+        // with byte-identical output (stable fixpoint).
+        let (again, outcome_again) = retarget_light_bootstrap_to_static(
+            &final_bytes,
+            CHUNKPARSE_LIGHT_CTOR_CLASS,
+            CHUNKPARSE_LIGHT_CTOR_NAME,
+            CHUNKPARSE_LIGHT_CTOR_DESC,
+            CHUNKPARSE_OPS_CLASS,
+            CHUNKPARSE_LIGHT_OPS_METHOD,
+            CHUNKPARSE_LIGHT_TARGET_DESC,
+        )
+        .expect("re-retarget must compute");
+        assert_eq!(
+            outcome_again,
+            crate::classfile::RetargetOutcome::AlreadyPatched { sites: 2 },
+            "light re-sight must be idempotent"
+        );
+        assert_eq!(again, final_bytes, "no bytes may change on re-sight");
+    }
+
     /// TASK-424-C gate consistency + TASK-434-C retag: the chunk-pipeline
     /// carrier ids must be accepted by the chunk-parse gate (STRICT-OR, no
     /// broadening). The cmp423_wgen era id retired to cmp434_chunkpl when
@@ -629,6 +732,18 @@ mod chunkparse_delivery_tests {
         assert!(
             blob.windows(needle2.len()).any(|w| w == needle2),
             "blob must declare the biomes entry point"
+        );
+        // TASK-459-60 P21: the widen carrier + the light entry point must ride
+        // the blob constant pool (raw-byte gate, x93 lesson).
+        let needle5 = b"cmp459_p21";
+        assert!(
+            blob.windows(needle5.len()).any(|w| w == needle5),
+            "blob constant pool must carry the cmp459_p21 P21 widen carrier"
+        );
+        let needle6 = b"parseLight";
+        assert!(
+            blob.windows(needle6.len()).any(|w| w == needle6),
+            "blob must declare the light entry point"
         );
     }
 }

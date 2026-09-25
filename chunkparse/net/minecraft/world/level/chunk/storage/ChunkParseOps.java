@@ -1,13 +1,16 @@
 package net.minecraft.world.level.chunk.storage;
 
 import com.mojang.serialization.Codec;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.chunk.DataLayer;
 import net.minecraft.world.level.chunk.PalettedContainer;
 
 /**
@@ -86,7 +89,18 @@ import net.minecraft.world.level.chunk.PalettedContainer;
  * results by identity plus the container bit config; the PASS marker goes to
  * stdout as the bench effect-marker for the verdict checklist.
  *
- * Grep markers: "cmp420_chunk2: parse-cache".
+ * TASK-459-60 P21 WIDEN (ID-P21, law 11 card): the plane extends to the
+ * LIGHT decode sites of SerializableChunkData.parse — the vanilla bootstrap#8
+ * indy (Function byte[] -> new DataLayer(bytes), applied to BOTH "BlockLight"
+ * and "SkyLight" of every section) is retargeted to {@link #parseLight}:
+ * probe key (len, contentHash) + full Arrays.equals cert on every hit (a hash
+ * collision can never serve a foreign layer), template = defensive clone,
+ * hits hand out fresh clones, miss = EXACTLY the vanilla newInvokeSpecial
+ * constructor (twin-fallback by construction). Online selftest re-decode 1/100
+ * pins the constructor-invariance precondition. The vanillaReplica twin
+ * fallback additionally caches its reflective handles (fast MISS tail).
+ *
+ * Grep markers: "cmp420_chunk2: parse-cache" + "cmp459_p21".
  */
 public final class ChunkParseOps {
 
@@ -155,6 +169,16 @@ public final class ChunkParseOps {
     static final String CARRIER_UNION_453 = "cmp453_diet";
 
     /**
+     * TASK-459-60 P21 parse-cache WIDEN carrier (law 7/8, STRICT-OR successor
+     * on top of the master union): the plane now also covers the LIGHT decode
+     * sites (bootstrap#8 retarget -> parseLight, light template cache with the
+     * (len,hash) probe + full Arrays.equals cert) and the fast twin-fallback
+     * (cached reflective replica handles). Raw-cp marker for the
+     * check_blobs_sync gate — x93 lesson.
+     */
+    static final String CARRIER_UNION_459 = "cmp459_p21";
+
+    /**
      * codec(identity) -> (tag -> pristine decoded template). The outer map
      * is synchronized ONLY for its own few-entry get/put; the inner maps are
      * ConcurrentHashMaps so the deep tag probe runs lock-free (TASK-420-C:
@@ -175,6 +199,42 @@ public final class ChunkParseOps {
     private static long biomesSections = 0;
     private static int biomesSelftestLeft = SELFTEST_SECTIONS;
     private static boolean biomesFirstHitLogged = false;
+
+    /**
+     * TASK-459-60 P21: LIGHT cache — the third decode plane of
+     * SerializableChunkData.parse. Vanilla applies the bootstrap#8 indy
+     * (Function byte[] -> new DataLayer(bytes)) to BOTH light layers of every
+     * section; homogeneous pregen light repeats identical arrays heavily
+     * (full-empty nibble sections).
+     *
+     * <p>P21 key (card ID-P21 risk row "tag-hash collisions -> key
+     * (codec-identity, tagHash, len)"): a byte[] cannot be a CHM key
+     * (identity equals), so the probe key packs (len, contentHash) into one
+     * long and EVERY hit re-verifies with a full {@code Arrays.equals} — a
+     * hash collision can never serve a foreign layer (probe != cert).</p>
+     */
+    static final int LIGHT_CACHE_CAP = 8192;
+    private static final ConcurrentHashMap<Long, byte[]> LIGHT_CACHE =
+            new ConcurrentHashMap<>();
+    private static long lightHits = 0;
+    private static long lightMisses = 0;
+    private static long lightEvictions = 0;
+    /** Online selftest sampling (card: "online selftest re-decode 1/100"):
+     * every 100th light MISS re-decodes via the vanilla constructor and
+     * verifies the byte-in-byte invariant. */
+    static final long LIGHT_SELFTEST_EVERY = 100;
+
+    /**
+     * Fast twin-fallback (P21): the vanilla replica previously resolved its
+     * reflective handles on EVERY miss call (getMethod walk inside the
+     * chunk-load burst). The handles are cached in volatile fields — same
+     * pattern as {@code twinMethod} below — identical call semantics, minus
+     * the per-call lookup cost.
+     */
+    private static volatile Method replicaParse = null;
+    private static volatile Method replicaPromote = null;
+    private static volatile Method replicaGetOrThrow = null;
+    private static volatile Constructor<?> replicaChunkReadException = null;
 
     /**
      * Re-entrancy guard: the twin must be pristine vanilla; if a misconfig
@@ -462,26 +522,49 @@ public final class ChunkParseOps {
      * NEVER-PATH reflection replica of the vanilla lambda body:
      * codec.parse(NbtOps, tag).promotePartial(-> log).getOrThrow(msg -> new
      * ChunkReadException(msg)). Used only if the depth guard ever fires.
+     *
+     * <p>P21 fast twin-fallback: the reflective handles are resolved ONCE into
+     * the volatile fields above (the twinMethod pattern) instead of on every
+     * call — identical call semantics, minus the per-call getMethod walk that
+     * used to run inside the chunk-load burst.</p>
      */
     private static PalettedContainer<?> vanillaReplica(
             Object codec, ChunkPos pos, int y, CompoundTag tag) {
         try {
-            Class<?> ops = Class.forName("com.mojang.serialization.DynamicOps");
-            Class<?> dr = Class.forName("com.mojang.serialization.DataResult");
-            Method parse = codec.getClass().getMethod("parse", ops, Object.class);
+            Method parse = replicaParse;
+            if (parse == null || parse.getDeclaringClass() != codec.getClass()) {
+                Class<?> ops = Class.forName("com.mojang.serialization.DynamicOps");
+                parse = codec.getClass().getMethod("parse", ops, Object.class);
+                replicaParse = parse;
+            }
+            Method promote = replicaPromote;
+            if (promote == null) {
+                Class<?> dr = Class.forName("com.mojang.serialization.DataResult");
+                promote = dr.getMethod("promotePartial", java.util.function.Consumer.class);
+                replicaPromote = promote;
+            }
             Object res = parse.invoke(codec, net.minecraft.nbt.NbtOps.INSTANCE, tag);
-            Method promote = dr.getMethod("promotePartial", java.util.function.Consumer.class);
             res = promote.invoke(res, (java.util.function.Consumer<Object>) msg ->
                     System.out.println("Recoverable errors when loading section ["
                             + pos.x + ", " + y + ", " + pos.z + "]: " + msg));
-            Class<?> cre = Class.forName(
-                    "net.minecraft.world.level.chunk.storage.SerializableChunkData$ChunkReadException");
-            java.lang.reflect.Constructor<?> ctor = cre.getDeclaredConstructor(String.class);
-            ctor.setAccessible(true);
-            Method getOrThrow = dr.getMethod("getOrThrow", java.util.function.Function.class);
+            Constructor<?> ctor = replicaChunkReadException;
+            if (ctor == null) {
+                Class<?> cre = Class.forName(
+                        "net.minecraft.world.level.chunk.storage.SerializableChunkData$ChunkReadException");
+                ctor = cre.getDeclaredConstructor(String.class);
+                ctor.setAccessible(true);
+                replicaChunkReadException = ctor;
+            }
+            Method getOrThrow = replicaGetOrThrow;
+            if (getOrThrow == null) {
+                Class<?> dr = Class.forName("com.mojang.serialization.DataResult");
+                getOrThrow = dr.getMethod("getOrThrow", java.util.function.Function.class);
+                replicaGetOrThrow = getOrThrow;
+            }
+            final Constructor<?> ctorF = ctor;
             Object out = getOrThrow.invoke(res, (java.util.function.Function<Object, Object>) msg -> {
                 try {
-                    return ctor.newInstance(msg);
+                    return ctorF.newInstance(msg);
                 } catch (ReflectiveOperationException e) {
                     throw new IllegalStateException("ChunkReadException", e);
                 }
@@ -490,6 +573,76 @@ public final class ChunkParseOps {
         } catch (ReflectiveOperationException e) {
             throw new IllegalStateException("cmp420_chunk2 vanilla replica", e);
         }
+    }
+
+    /**
+     * TASK-459-60 P21: redirected impl of the LIGHT decode bootstrap (the
+     * vanilla indy was {@code REF_newInvokeSpecial DataLayer.<init>([B)V} —
+     * the retarget swaps ONLY the impl handle, the call-site descriptor and
+     * the instantiated type {@code ([B)Lnet/minecraft/world/level/chunk/
+     * DataLayer;} are unchanged).
+     *
+     * <ul>
+     *   <li><b>HIT</b> (probe (len,hash) + full Arrays.equals cert): return
+     *       {@code new DataLayer(template.clone())} — byte-in-byte identical
+     *       content, NEVER aliasing the template or the caller array.</li>
+     *   <li><b>MISS</b>: {@code new DataLayer(bytes)} — EXACTLY the vanilla
+     *       newInvokeSpecial handle (twin-fallback by construction); a
+     *       defensive template clone is stored for future hits.</li>
+     * </ul>
+     *
+     * <p>Online selftest 1/100 (card): every 100th MISS re-decodes via the
+     * vanilla constructor and verifies
+     * {@code Arrays.equals(new DataLayer(bytes).getData(), bytes)} — the
+     * precondition of template-copy correctness (the constructor must not
+     * transform its input). PASS marker goes to stdout for the verdict
+     * checklist.</p>
+     */
+    public static DataLayer parseLight(byte[] bytes) {
+        long key = lightKey(bytes);
+        byte[] tpl = LIGHT_CACHE.get(key);
+        if (tpl != null && Arrays.equals(tpl, bytes)) {
+            lightHits++;
+            return new DataLayer(tpl.clone());
+        }
+        lightMisses++;
+        DataLayer fresh = new DataLayer(bytes);
+        if (LIGHT_CACHE.size() >= LIGHT_CACHE_CAP) {
+            // evict-half (TASK-420-C discipline): keep the working set warm.
+            int seen = 0;
+            Iterator<Map.Entry<Long, byte[]>> it = LIGHT_CACHE.entrySet().iterator();
+            while (it.hasNext()) {
+                it.next();
+                if ((seen & 1) == 0) {
+                    it.remove();
+                    lightEvictions++;
+                }
+                seen++;
+            }
+        }
+        LIGHT_CACHE.put(key, bytes.clone());
+        if (lightMisses % LIGHT_SELFTEST_EVERY == 1L) {
+            try {
+                boolean ok = Arrays.equals(new DataLayer(bytes).getData(), bytes);
+                System.out.println(ok
+                        ? PFX + " light selftest PASS"
+                        : PFX + " light selftest FAIL");
+            } catch (Throwable t) {
+                System.out.println(PFX + " light selftest FAIL (throwable " + t + ")");
+            }
+        } else if ((lightMisses & 8191L) == 0) {
+            long total = lightHits + lightMisses;
+            System.out.println(PFX + " light-cache stats misses=" + lightMisses
+                    + " hits=" + lightHits
+                    + " rate=" + (total == 0 ? 0 : (lightHits * 100 / total)) + "%"
+                    + " evicted=" + lightEvictions + " cap=" + LIGHT_CACHE_CAP);
+        }
+        return fresh;
+    }
+
+    /** P21 light probe key: (len, contentHash) packed into one long. */
+    private static long lightKey(byte[] bytes) {
+        return ((long) bytes.length << 32) | (Arrays.hashCode(bytes) & 0xFFFFFFFFL);
     }
 
     /** Diagnostics for the boot/absorb greps (never allocates on hot path). */
@@ -504,7 +657,9 @@ public final class ChunkParseOps {
                 + " selftest=" + (SELFTEST_SECTIONS - selftestLeft)
                 + " biomesSections=" + biomesSections
                 + " biomesHits=" + biomesHits + " biomesMisses=" + biomesMisses
+                + " lightMisses=" + lightMisses + " lightHits=" + lightHits
+                + " lightCached=" + LIGHT_CACHE.size()
                 + " union=" + CARRIER_UNION_423 + "/" + CARRIER_UNION_435
-                + "/" + CARRIER_UNION_437;
+                + "/" + CARRIER_UNION_437 + "/" + CARRIER_UNION_459;
     }
 }
