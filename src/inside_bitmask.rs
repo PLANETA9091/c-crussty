@@ -46,7 +46,7 @@ fn enabled() -> bool {
             let v = v.trim();
             v == "cmp432_inside2" || v == "cmp430_inside" || v == "cmp436_ins4"
             || v == "cmp438_sense" // TASK-444-C: sense family union
-            || v == "cmp451_senseins" || v == "cmp453_diet" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+            || v == "cmp451_senseins" || v == "cmp453_diet" || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp444_chunk5" || v == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
         })
         .unwrap_or(false);
     if lever {

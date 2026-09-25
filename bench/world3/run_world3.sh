@@ -470,6 +470,18 @@ case "${LEVER_FLAG:-}" in
     export CRUSSTY_KERNEL_POLICY="off"
     log "${LEVER_FLAG} armed: chunk-parse section-cache (deep: cap 16384, evict-half, lock-free probe) + noise-fill GEN-axis (CRUSSTY_KERNEL_POLICY=off — documented two-key A/B override; noiseFillArrayWholeBody not in PROVEN_WINS); cmp421_chunk = TASK-421-C stabilized chunk-axis round (NOISEFILL_ROOTCAUSE.md)"
     ;;
+  cmp450_chunk)
+    # TASK-455-B rebaze-3: cmp450_chunk arms chunk4 send-snapshot + chunk5
+    # packet-encode cache + chunkparse section/biomes codec caches + the
+    # ins4-carrier mob stack (STRICT-OR union of round-454b/454c gate lists).
+    # GEN-axis (noise_fill.rs) restored: cmp434/435/437/444/450 ids were
+    # missing from this policy case since round-422 = the noise plane never
+    # fired on chunk legs (research RESEARCH-455-B.md finding #1). The
+    # documented TASK-108 A/B override (kernel_policy.rs: off = benchmarking
+    # only) applies to the lever-armed GEN leg; empty flag = vanilla bit-in-bit.
+    export CRUSSTY_KERNEL_POLICY="off"
+    log "${LEVER_FLAG} armed: CHUNK-UNION rebaze-3 = chunk4 send-snapshot ⊕ chunk5 packet-encode cache ⊕ chunkparse section/biomes codec caches ⊕ noise-fill GEN-axis (CRUSSTY_KERNEL_POLICY=off — documented two-key A/B override) ⊕ ins4-carrier mob stack STRICT-OR (TASK-455-B, закон 6+8)"
+    ;;
 esac
 # TASK-430-B inside-plane subsystem (cmp430_inside) + TASK-434-C chunk-pipeline
 # R5 (cmp434_chunkpl): inside_bitmask pre-gate (RECON-33 option-B flagman,

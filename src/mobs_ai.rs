@@ -82,6 +82,7 @@ fn enabled() -> bool {
             | Ok("cmp451_senseins") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR) — production gate retag for carrier-parity
             | Ok("cmp453_diet") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
             | Ok("cmp421_brain")
+            | Ok("cmp421_brain") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk")
     )
 }
 

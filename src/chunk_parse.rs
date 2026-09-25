@@ -126,6 +126,10 @@ fn target() -> &'static Target {
 /// master's list UNTOUCHED ∪ {cmp453_diet} (diet composite lever, ONLY this
 /// chunkparse-codec plane; historical union ids NOT carried — mirror-drift
 /// lesson ×451/×452, gate lists must match the certified canon).
+/// TASK-434-C adds "cmp434_chunkpl" (chunk-pipeline R5 carrier: full
+/// composite union ⊕ block_states cache ⊕ biomes-parse cache, law 7/8).
+/// TASK-435-C adds "cmp435_chunk3" (R6 carrier: STRICT-OR successor id ON
+/// TOP of cmp434_chunkpl — same planes, round-id hygiene for ROUND-435).
 fn enabled() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
@@ -135,6 +139,7 @@ fn enabled() -> bool {
             || v == "cmp438_sense" // TASK-444-C: sense family union
             || v == "cmp451_senseins" || v == "cmp453_diet" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
             || v == "cmp453_diet" // TASK-453-C: diet composite (chunkparse-codec plane, STRICT OR — master ∪ {cmp453_diet} only)
+            || v == "cmp451_senseins"|| v == "cmp434_chunkpl"|| v == "cmp435_chunk3"|| v == "cmp437_chunk4"|| v == "cmp444_chunk5"|| v == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
         })
         .unwrap_or(false)
 }
@@ -146,6 +151,10 @@ fn enabled() -> bool {
 fn marker_id() -> std::borrow::Cow<'static, str> {
     match std::env::var("CRUSSTY_LEVER_FLAG").as_deref() {
         Ok("cmp453_diet") => std::borrow::Cow::Owned("cmp453_diet".to_string()), // TASK-453-C diet composite
+/// TASK-450-C evidence marker: print the UNION carrier id when the env flag IS
+/// the union (cmp450_chunk legs grep "cmp450_chunk: ARMED ..."), else the
+/// plane's birth id (frozen historical markers).
+        Ok("cmp450_chunk") => std::borrow::Cow::Owned("cmp450_chunk".to_string()),
         _ => std::borrow::Cow::Borrowed(LEVER_ID),
     }
 }
