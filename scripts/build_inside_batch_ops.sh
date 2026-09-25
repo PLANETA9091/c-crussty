@@ -19,7 +19,7 @@ KERNEL="${KERNEL_JAR:-research/gc-recon-2026-09-19/round-396-a/patched-kernel.ja
 [ -f "$KERNEL" ] || { echo "kernel jar not found" >&2; exit 1; }
 
 CP="$KERNEL:entityinside/build"
-for j in /home/z/tools/fastutil.jar /home/z/tools/paper-api-1.21.10.jar \
+for j in /home/z/tools/fastutil.jar /home/z/tools/joml-1.10.7.jar /home/z/tools/paper-api-1.21.10.jar \
          /home/z/tools/adventure-api-4.24.0.jar /home/z/tools/adventure-key-4.24.0.jar; do
   [ -f "$j" ] && CP="$CP:$j"
 done

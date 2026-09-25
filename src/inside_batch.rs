@@ -1,8 +1,17 @@
 //! INSIDE-BATCH (TASK-459-56, ID-P31 — закон 11 WILD, bulk-JNI discovery plane).
 //! Lever `CRUSSTY_INSIDE_BATCH` (env-gate) ИЛИ составной lever_flag
-//! `cmp456_chunkmono_p31snap` (STRICT eq — TASK-460-01 climb-вайринг P31 на
-//! носитель cmp456_chunkmono): флаг не стоит ⇒ класс не определяется, ретаргет
-//! не компонуется, хук не регистрируется ⇒ ваниль бит-в-байт.
+//! `cmp456_chunkmono_p31snap` (TASK-460-01) / `cmp456_chunkmono_p31quant`
+//! (TASK-460-40 — квант-гейт P34 поверх INSIDE-BATCH; STRICT-OR канон
+//! носителя): флаг не стоит ⇒ класс не определяется, ретаргет не компонуется,
+//! хук не регистрируется ⇒ ваниль бит-в-байт.
+//!
+//! TASK-460-40 (P34, квант-REST): при `inside_quantum_gate::enabled_pub()`
+//! arm-хук ДОПОЛНИТЕЛЬНО прогоняет bridge-самотест quantumSelfTest и ставит
+//! noteQuantumArmed (arm-order: define → natives → noteBatchArmed →
+//! quantumSelfTest → noteQuantumArmed → BRIDGE_READY). Java-сайдкар моста
+//! (InsideBatchOps.quantumServe) пропускает re-check сущностям в K-тиках
+//! покоя (0<|Δ|<ε), переигрывая дрейф-сегмент свежим swept-обходом
+//! (dirty-мутанты пере-чекаются структурно: живые состояния каждый visit).
 //!
 //! Лейн: inside_volatile 16.6пп (TOP-1 остаток компо-носителя chunkmono).
 //! Дизайн (карточка ID-P31, RESEARCH-459-P31.md): java-мост InsideBatchOps
@@ -54,11 +63,15 @@ pub const MAXSEC: usize = 8;
 pub const DEFLATE_EPS: f64 = 9.999999747378752E-6;
 
 /// Lever gate (env-gate ИЛИ составной carrier-флаг; чтение на каждый вызов —
-/// как inside_cache::enabled). TASK-460-01: `cmp456_chunkmono_p31snap` —
-/// STRICT eq (климб-компо P31+P32/P36 sidecar на носителе cmp456_chunkmono).
+/// как inside_cache::enabled). TASK-460-01: `cmp456_chunkmono_p31snap`;
+/// TASK-460-40: `cmp456_chunkmono_p31quant` (P34 квант-гейт поверх P31 —
+/// тот же носитель cmp456_chunkmono, STRICT-OR канон).
 pub fn enabled() -> bool {
     if std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim() == "cmp456_chunkmono_p31snap")
+        .map(|v| {
+            let v = v.trim();
+            v == "cmp456_chunkmono_p31snap" || v == "cmp456_chunkmono_p31quant"
+        })
         .unwrap_or(false)
     {
         return true;
@@ -84,6 +97,15 @@ pub fn enabled_pub() -> bool {
 }
 
 static BRIDGE_READY: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// P34 квант-сайдкар армится ВМЕСТЕ с мостом (TASK-460-40) — видимость для
+/// диагностики/тестов; false = квант не армился (гейт выключен/самотест фейл).
+static QUANT_ARMED: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
+
+/// Pollable видимость квант-сайдкара (после BRIDGE_READY).
+pub fn quantum_armed() -> bool {
+    QUANT_ARMED.load(std::sync::atomic::Ordering::Acquire)
+}
 
 /// Pollable gate для entity_compose stage (сиблинг inside_cache::wait_bridge_ready).
 /// Scaffold: возвращает false, пока мост не определён (fail-closed).
@@ -238,6 +260,37 @@ pub fn activate() {
                 return false;
             };
             env.call_static_void_method(cgr, arm_mid, &[]);
+            // TASK-460-40 (P34 квант-гейт поверх INSIDE-BATCH): самотест
+            // классификатора на мосте, затем QUANTUM_ARMED (arm-order:
+            // selfTest==1 строго ДО noteQuantumArmed; фейл ⇒ квант не армится,
+            // P31 остаётся — fail-closed).
+            let mut quant = false;
+            if crate::inside_quantum_gate::enabled_pub() {
+                match env.get_static_method_id(cgr, "quantumSelfTest", "()I") {
+                    Some(st_mid) => {
+                        let rc = env.call_static_int_method(cgr, st_mid, &[]);
+                        if rc == 1 {
+                            if let Some(q_mid) = env.get_static_method_id(cgr, "noteQuantumArmed", "()V") {
+                                env.call_static_void_method(cgr, q_mid, &[]);
+                                quant = true;
+                            } else {
+                                crate::clear_exception(env);
+                            }
+                        } else {
+                            eprintln!(
+                                "[crussty-plugin] inside_batch: quantumSelfTest rc={rc} — QUANTUM stays disarmed (fail-closed, P31 unaffected)"
+                            );
+                        }
+                    }
+                    None => {
+                        crate::clear_exception(env);
+                        eprintln!(
+                            "[crussty-plugin] inside_batch: quantumSelfTest unresolved — QUANTUM stays disarmed (fail-closed, P31 unaffected)"
+                        );
+                    }
+                }
+            }
+            QUANT_ARMED.store(quant, Ordering::Release);
             true
         });
         if !defined.unwrap_or(false) {
@@ -247,9 +300,16 @@ pub fn activate() {
             return;
         }
         BRIDGE_READY.store(true, Ordering::Release);
-        crate::kernel_policy::audit_wire(BRIDGE_CLASS, "batchGate", "inside_batch v1 (ID-P31 bulk-JNI; entity_compose stage 1 supersede inside_cache)");
+        let quant = QUANT_ARMED.load(Ordering::Acquire);
+        crate::kernel_policy::audit_wire(BRIDGE_CLASS, "batchGate", if quant {
+            "inside_batch v1 + P34 quantum-rest (ID-P31 bulk-JNI + K-tick skip; entity_compose stage 1 supersede inside_cache)"
+        } else {
+            "inside_batch v1 (ID-P31 bulk-JNI; entity_compose stage 1 supersede inside_cache)"
+        });
         eprintln!(
-            "[crussty-plugin] cmp456_chunkmono_p31snap: ARMED (inside_batch bridge defined+natives+noteBatchArmed; strict vanilla tail)"
+            "[crussty-plugin] lever_flag={} ARMED (inside_batch bridge defined+natives+noteBatchArmed{})",
+            std::env::var("CRUSSTY_LEVER_FLAG").unwrap_or_default(),
+            if quant { "+quantum-rest K-tick skip (dirty-mutants mandatory: fresh-state sweep serve)" } else { "; strict vanilla tail" }
         );
     });
 }
@@ -496,5 +556,17 @@ mod tests {
     fn gate_is_strict() {
         assert_ne!("", "CRUSSTY_INSIDE_BATCH");
         assert_eq!("1", "1");
+    }
+
+    /// TASK-460-40: составной флаг квант-ноги rides the SAME carrier
+    /// (STRICT-OR канон: p31snap | p31quant); чужие суффиксы/пустой — нет.
+    #[test]
+    fn quant_flag_rides_carrier() {
+        let armed = ["cmp456_chunkmono_p31snap", "cmp456_chunkmono_p31quant"];
+        assert!(armed.contains(&"cmp456_chunkmono_p31snap"));
+        assert!(armed.contains(&"cmp456_chunkmono_p31quant"));
+        assert!(!armed.contains(&"cmp456_chunkmono_p31quant_x"));
+        assert!(!armed.contains(&"cmp456_chunkmono"));
+        assert!(!armed.contains(&""));
     }
 }

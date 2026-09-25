@@ -51,6 +51,12 @@ mod inside_cache;
 mod inside_batch;
 mod inside_diet;
 mod inside_epoch_gate;
+// INSIDE-QUANTUM-GATE (ID-P34, TASK-459-74 → TASK-460-40 wired): quantum-rest
+// classifier (0 < |Δ| < ε sustained K ticks -> K-tick re-check skip served by
+// the INSIDE-BATCH bridge with a fresh swept-segment traversal; dirty-mutants
+// mandatory). Dormant unless CRUSSTY_INSIDE_QUANTUM=1 or lever
+// cmp456_chunkmono_p31quant (STRICT eq).
+mod inside_quantum_gate;
 mod inside_snap;
 mod inside_snap_registry;
 mod item_merge;
@@ -231,6 +237,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // INSIDE-BITMASK (TASK-357): bridge owner registration (dormant unless
     // CRUSSTY_INSIDE_BITMASK=1).
     inside_bitmask::register();
+    // INSIDE-QUANTUM-GATE (ID-P34, TASK-460-40): quantum-rest classifier —
+    // arm/skip исполняет inside_batch bridge (activate ниже); здесь только
+    // gate-лог + ссылка на модель. Dormant unless lever/env.
+    inside_quantum_gate::register();
     // FLUSH-DIET (S7-137): byte hook on the StepBasedCollector (pristine
     // capture; patch served via retransform after the FlushOps bridge lands).
     // Dormant unless CRUSSTY_FLUSH_DIET=1.
@@ -544,6 +554,9 @@ fn inject_surface() {
     // early arm-hook (NCDFE-канон d73758a3/5ecd841a) — scaffold stays dormant
     // until the bridge bytes are built (scripts/build_inside_batch_ops.sh).
     inside_batch::activate();
+    // INSIDE-QUANTUM-GATE (ID-P34, TASK-460-40): model self-test (контракт
+    // классификатора в логе); in-process арм выполняет inside_batch::activate.
+    inside_quantum_gate::activate();
     // INSIDE-BITMASK (TASK-357): define InsideBitmaskOps into the kernel
     // loader, probe-then-patch, Entity stage composes via entity_compose
     // (dormant unless CRUSSTY_INSIDE_BITMASK=1).

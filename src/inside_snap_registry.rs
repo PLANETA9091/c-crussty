@@ -88,6 +88,7 @@ fn enabled() -> bool {
         .map(|v| {
             let v = v.trim();
             v == "cmp459_snapreg" || v == "cmp456_chunkmono_p31snap"
+                || v == "cmp456_chunkmono_p31quant"
         })
         .unwrap_or(false);
     if lever {
