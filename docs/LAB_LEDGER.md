@@ -79,3 +79,41 @@
 - G3-STW LIVE-эффект: a19 −28.8@8883590 INVALID-STW-HOST (24.4s/203.3ms) — без гейта дал бы фейковую пару +44.7; a10 VOID (23.0s); канон подтверждён на живых кейсах ×2.
 - ПАР-СОСТОЯНИЕ ×460 (все кандидаты 2/3): chk-19 +12.8@6733439 {a22 +22.5, a53 +22.6}; chkclimb-1 +15.9@8904014 {a24-456w2 +26.3, a20 +26.5}; poi456-4 +15.4@8957260 {a24-456w2 +25.8, a20 +26.0}; eqsnap2-3 +12.0@6805816 {a28 +22.6, a41 +26.9}; swarx-1 +18.0@8682604 {0/1: нужен ≤−2.0 в B}.
 - Волна-2 (закон 15a): chkclimb-5, swarx-2, eqsnap2-4, якоря 81-88 диспатчены; next-tick абсорб.
+
+## ТИК-461 СВОДКА ЛАБЫ (v18.3; полные вердикты: /home/z/rounds/ROUND-461/LEDGER-*.md + ABSORB-WILD.jsonl ×122)
+- Л21 P31 THRESH-скан: THRESH=512 в живом блобе 0 вхождений (javap 4215B @4bcabb2f, 6/6 jar один md5); матрица T∈[128,1024] ≤1.5пп@c=3µs — миф «+2..4пп» рефютирован; T=512 праймери (74 вызова/воркер/тик, dispatch 0.44пп); прогноз chkclimb-6-реинкарнации 25.4 (23.0-29.3) поверх +15.6.
+- Л22 snapreg P32: capture-гейты flatHits/fallbacks ≥95/5, NCDFE=0, вердикт-бар +0.5пп; прогноз chkclimb-5⊕P32 +16.5-17.6; v1-носители = parity-леги Δ≈0, capture решает v2-lockstep 10⁶×3.
+- Л23 getAcquire-demotion: 4 сайта демот-таблицы (serve/serve4, PalettedContainer.data, crusstySnap×3); бар +0.6пп; chkclimb-10 (P33⊕P32-план) = +16.2-16.8.
+- Л24 cert-fix root-cause: chkquant-1 (×460) INVALID = NCDFE=38/threw=38 @ARMED p31quant, pop 160493 VALID — P34 требует серт-пересборку блобов (рецепт в L24); selfF=1 у cmp412_b2p1 — чужой спящий рычаг.
+- Л25 DDA-v2: shadow feed capture +1.19пп, P(no-detect/5мин)=1.9e-12 @0.18% MSPT; компо-вертикаль P31+v2+P32+P36 = нога 35.1 / пара +22.7↔a26 (консерв +20.9).
+- Л26 chunk-sched: NewChunkHolder 66291B vs ServerChunkCache 39350B; маска 6561 чанков = 824B/тик zero-alloc; P22 capture = срезы 1.5-2.5% (due-ness + queue + Long2Ref 2.21%).
+- Л27 attribution probe: NOT-A-BENCH-инструмент (факторные оценки пар-шума, интерфейс к ABSORB-WILD.jsonl).
+- Л30 swar drain-gate после ARM-repair: ЖИВОЙ (EFFECT-маркер +18.0@8682604), контракты 8/8 in sync, потолок swarx-семьи +24±1; компо-план swarx-3 = graft 89f90d50 + add_swar_gates_458.py.
+- Л31 navmath IEEE754 re-verified (10/10 констант вербатим, FRAC_BIAS=2^44); MovePlaneOps ready-to-wire; ядро +0.50-0.90, семья +0.83-1.28, потолок +2.24/+3.2.
+- Л32 pathnode-cache: харнесс 10^4 путей×3, path bit-in-bit + superset ≤10%, hit 20-30%; Δ +0.6-1.0пп.
+- Л33 goal sense-memo: единственный parity-чистый путь (DAB/every-other-tick REJECT ×2 по behavior-видимости); +0.4-0.8пп (Sensing 0.6%).
+- Л34 brain flat-memory: mutation-site единственный @693, изоляция от cmp421/422; +0.3-0.5пп. Л35 navgate roaring: 636 LOC 336/336 тестов, блокер iter-2 = javac-rebuild блоба; roar-3 сначала bloom-фикс.
+- Л36 tick-deadband REFUTED-as-carded: потолок +0.011пп (лейн 0.0105% CPU, INTERVAL=100 ваниль) — слот 81 не тратить.
+- Л37 parse-cache widen: twin λ$parse$7 байт-идентичен, 3/4 сайтов без кэша; мерить только на reload/INJECT-сцене (на soak parse-лейн ≈0).
+- Л38 POI union-widening: НЕ capture-лейн (POI 0.23пп потолок); poi456-5 −26.4 = compose-дилуция −11.7..−31 → в пары не брать, ре-ролл R17 с recal.
+- Л39 paldelta-diff: InsideBatchOps 4215→5529B (+31%), batchGate TRUE-ветвь = quantum без JNI → damage = wiring; P31 не переносим без P32/P36; bank-bias −4.67пп обязателен в нормах.
+- Л40 hard-colliding census: item_frame×2714 (94.1% idle) стабилен → HARD_ADDS>0 перманентно, empty fast-path мёртв (capture 0/2.3%); фикс = per-region occupancy-ключ (SHIFT=5).
+- Л41 банк-v4 рекалибровка: гипотеза HOST-шума не опровергнута, n=5 в банк не вшить; нужно stw-поля в ABSORB-пайплайн (стык с TASK-461-92) → CLEAN-only банк; slope-bias −4.67пп в окне 6.5-9.3M.
+- Л43 Moonrise/MC-310372 скан: baseline уже == Moonrise; гейт MC-310372 ordering-hash обязателен; DRAIN_ORDER неприкосновенен; 8 гейтов preregistered, носитель = chk-ось.
+- Л44 C2ME/Lithium скан: новая нога P48 cmp461_colllazy +0.5-1.2пп (потолок 2.2, young-gen −2.8-3.7пп), композ с P31 → +12.4-15.2пп.
+- Л45 Paper/Pufferfish broadphase: H05⊕H07 = единый lever cmp461_papaya_hilbert (суб-аддитивность 0.6); swarx-5 drain-batch +2-4пп = приоритетный carrier; Krypton/flush/async-tracker = 0 capture на банке.
+- Л46 pop-165k: flips VALID↔INVALID = 0 под v4/v5a/v5b → сертификат живучести банка 140-165k.
+- Л47 brain MEM-квантование: гейт-бар +0.5пп (закон 13a), составной lever-id канон. Л48 chunk-tick budget decay: P8-бар +1.2пп → chk-14⊕P22-композиция окна B/E.
+- Л49 sense interval-tree R3: REFUTED ×2 = закон-5 мертвец, не воскрешается. Л50 paletted demux: ар-existence ДА, конфликтов НЕТ; стол +2.3-3.4пп = крупнейшая env-дельта эры, очередь после swarx-3.
+- Л51 young-gen: Full==9 бит-в-бит инвариант (5×CodeCache+4×Metadata); цель young −5-8.5% (108-112), alloc-дельта ≤+0.3%.
+- Л52 idle-goal suppression: plane ОТКРЫТА — единственный не-REFUTED ≥3%-семейный кандидат (cmp461_idlesleep, композиция с P31/P32 ортогональна).
+- Л53 JFR-pipeline GO Secondary (замена spark-report, 0 CI-диспатчей). Л54 blockentity budget: hopper-mirror REFUTED числами, соло-рычаг <1.5пп — слот не открывать.
+- Л55 pathfinding stream-соло REFUTED (SUB-BAR); GO только как carrier в закон-6 подсистеме. Л56 Vec3/AABB 28-29% alloc decomposed (4 плеча) — соло REFUTED GC-физикой, Tier-B агрегат.
+- Л57 capture-cadence ЗДОРОВА: добавляется дисциплина (пре-цензус, STW-CLEAN-окна only, alloc-окна депресс-ранов выбраковывать).
+- Л58 entity-lookup safe = S1 enumeration + S2 caller-decimation (+2.4-4.4пп CPU → norm +5-12 при k≈1.5-3); кэш-класс RECON-39/40 по построению неприменим.
+- Л59 netty watermark: REFUTED_CENS если syscall-хвост <0.1% wall — реальный capture только на ЦЕЛЬ-ДЕПЛОЙ профиле (RECON-43 player-concurrency).
+- Л60 Int2Object layout: ровно одна горячая цель ChunkMap.entityMap (13 getfield-сайтов, tracker 4.6%) — dense-window flat + CHM-overflow; потолок оси +0.4-1.1пп CPU (norm +0.6-1.6), carrier-класс.
+- КЛИМБ тика: chkclimb-5 +15.6@6477199; chkclimb-6 A/A +8.4@7160059 (плацебо-реплика @0061cc52 — дисперсия канон-банка −7.2пп, THRESH-ручек нет, L61); chkclimb-7 −2.8@6468251; chkclimb-9 +0.6@6593727.
+- swarx-2b NO-ARTIFACT (infra), swarx-3 не диспатчена (компо-план готов), swarx-4 INVALID AIOOBE=1 (4× дубль lever → канон одиночного id); eqsnap2-4b NO-ARTIFACT (infra); poi456-5 −26.4@7169524 REFUTED (parity-лега, дилуция); paldelta-13/14 — слоты 70/71 живы, судьба = iter-2 после reload-дрилла/серта P34, диспатчей тика 0.
+- roar-3 −1.9@8786643 VALID (блум-фикс ≈паритет, +2-8пп не подтверждён; ран #1 36189945821 fixture-flake); chdelta-2 +9.1@7518771 — вторая нога тика (send-lane ID-M1).
+- МАСТЕР-ИНЦИДЕНТ: merge eqsnap2-3 887c4641 (21:01:58Z) вставил 61 битую union-строку (` || `-префиксы/`|| ||`/`|| |`) в 21 src/*.rs → rustc unexpected-token (queryplane.rs:106, mobs_manager.rs:213), 0/34 зелёных (якоря 71-102 CI-red 21:02-21:07Z); ремонт 9df38ba1 (pre-merge гейт-строки + eqsnap2-union правильными термами, verified 1:1:61, token-delta {cmp457_eqsnap2:61}×21, cargo check -p crussty PASS, canary 36191158970 green). УРОК-КАНОН: cargo check на merge-коммите ОБЯЗАТЕЛЕН до push.
