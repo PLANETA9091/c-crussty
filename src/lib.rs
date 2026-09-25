@@ -76,6 +76,7 @@ mod chunk_send;
 // cmp444_chunk5 (STRICT eq; empty/foreign flag = vanilla bit-in-bit).
 mod chunk_send5;
 mod noise_fill;
+mod noise_scratch_pool;
 mod parse_diag;
 mod zero_cursor;
 mod palette_gather;
@@ -150,6 +151,12 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     improved_noise::register();
     perlin_noise::register();
     noise_fill::register();
+    // P24 NOISE SCRATCH-POOL (TASK-459-64, idea ID-P24): thread-лок пул
+    // флет-аккумуляторов октав ImprovedNoise/PerlinNoise/NormalNoise —
+    // GC-debt carrier на ген-сценах (НЕ дублирует noisesimd = compute,
+    // НЕ трогает fill-family). v0 observation-only: пул + alloc-профиль,
+    // java-поверхности нет. Dormant unless CRUSSTY_NOISE_SCRATCH_POOL=1.
+    noise_scratch_pool::register();
     fluid_guard::register();
     // ITEMS-OSS (TASK-396-H, round-396 vector H): ItemEntity byte hook for the
     // mergeWithNeighbours whole-body retarget (Lithium item_entity_merging
@@ -487,6 +494,10 @@ fn inject_surface() {
     improved_noise::activate();
     perlin_noise::activate();
     noise_fill::activate();
+    // P24 (TASK-459-64): v0 activate — no-op при гейте, no-op worker при
+    // гейте (observation-only; фаза-2 = EARLY-define ops-бриджа по NCDFE
+    // канону после живого alloc-профиля прегены).
+    noise_scratch_pool::activate();
     // RECON-43 lever #16: ops pair defined BEFORE the hook (fluid_bitmask
     // consult lives inside FluidPushGuardHook; ordering kills the NCDFE window).
     fluid_bitmask::activate();

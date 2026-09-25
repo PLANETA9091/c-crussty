@@ -37,6 +37,27 @@
 //!    JNI) over a synthetic 256-byte permutation: assert the handle builds,
 //!    samples are finite and deterministic, and the handle frees cleanly.
 //!    This exercises bridge registration + JNI marshalling + native sampling.
+//!
+//! P24 INTEGRATION STUB (TASK-459-64, idea ID-P24 noise octave scratch-pool):
+//! точка переиспользования октавных аккумуляторов фазы-2 живёт ЗА текущим
+//! bridge-путём. v0 НЕ меняет ни байта логики; арм — только после живого
+//! alloc-профиля (noise_scratch_pool::stats() на прегене). Фаза-2:
+//!   * per-column октавные скретч-буферы берутся из thread-лок пула
+//!     (noise_scratch_pool::acquire_f64) в сэмплинг-пути
+//!     ImprovedNoiseNativeOps/nativeNoise — ОДИН буфер переиспользуется
+//!     МЕЖДУ ОКТАВАМИ/КОЛОНКАМИ NoiseChunk-колонки вместо свежих массивов
+//!     на каждый вызов;
+//!   * бит-в-байт паритет: переиспользуемый буфер ПЕРЕПИСЫВАЕТСЯ ЦЕЛИКОМ до
+//!     первого чтения (пул не обнуляет память; full-overwrite-before-read —
+//!     контракт значений ID-P24);
+//!   * NCDFE-канон: любые java ops-классы определяются EARLY на этом тихом
+//!     activation-worker (define → patch → ОДИН retransform), никогда внутри
+//!     byte-hook callback (COMPUTE_FRAMES deadlock);
+//!   * композиция: пул меняет ГДЕ живёт аккумулятор, а не ЧТО вычисляется —
+//!     совместим с bridge-ретаргетом выше; с noise_fill fillArray whole-body
+//!     свопами не пересекается (семейство fill не трогается).
+//! Гейт `CRUSSTY_NOISE_SCRATCH_POOL` (OFF by default) независим от
+//! CRUSSTY_NATIVE_IMPROVED_NOISE; оба выключены = ваниль бит-в-байт.
 
 use jvmti_bindings::prelude::*;
 use std::sync::atomic::{AtomicBool, AtomicUsize, Ordering};
