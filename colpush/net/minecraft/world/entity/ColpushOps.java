@@ -101,6 +101,8 @@ public final class ColpushOps {
     private static final String FLAG13 = "cmp444_chunk5";
     /** TASK-450-C union carrier (chunk4⊕chunk5⊕slices). */
     private static final String FLAG14 = "cmp450_chunk";
+    /** TASK-455-A: R4 despawn/spawn/activation scans carrier (STRICT-OR; raw-cp marker). */
+    private static final String FLAG7 = "cmp455_spawn";
     private static final int ERR_STRUCT = -1;
     private static final int ERR_RANGE = -2;
 
@@ -116,7 +118,7 @@ public final class ColpushOps {
 
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5) || f.trim().equals(FLAG6) || f.trim().equals(FLAG10) || f.trim().equals(FLAG11) || f.trim().equals(FLAG12) || f.trim().equals(FLAG13) || f.trim().equals(FLAG14) || f.trim().equals(FLAG_MEGA) || f.trim().equals(FLAG_DIET));
+return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5) || f.trim().equals(FLAG6) || f.trim().equals(FLAG10) || f.trim().equals(FLAG11) || f.trim().equals(FLAG12) || f.trim().equals(FLAG13) || f.trim().equals(FLAG14) || f.trim().equals(FLAG_MEGA) || f.trim().equals(FLAG_DIET) || f.trim().equals(FLAG7));
     }
 
     /** Структурный отказ — весь рычаг дизармится навсегда (ваниль-реплика). */

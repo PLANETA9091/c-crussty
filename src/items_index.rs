@@ -299,6 +299,7 @@ fn shard_mode() -> bool {
                     || v == "cmp451_senseins" || v == "cmp453_diet" || v == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
                     || v == "cmp438_sense" // TASK-444-C: sense family union
                     || v == "cmp451_senseins" || v == "cmp453_diet" || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp444_chunk5" || v == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+                || v == "cmp455_spawn" // TASK-444-C: sense family union
             })
             .unwrap_or(false)
     })
