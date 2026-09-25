@@ -62,6 +62,13 @@ mod mobs_sense;
 mod nav_plane;
 mod nav_pool;
 mod chunk_parse;
+// CHUNK-TICK ELIGIBILITY FLAT (TASK-459-59, idea ID-P22 scaffold, lever
+// cmp459_chunksched-mask, law 8 chunk/worldgen axis): flat chunk-tick
+// eligibility predicates -> ONE bulk JNI -> eligible bitmask -> strict
+// vanilla-order java tail; v1 = distance-gate only. Dormant unless
+// CRUSSTY_LEVER_FLAG == cmp459_chunksched-mask (STRICT eq; empty/foreign
+// flag = vanilla bit-in-bit).
+mod chunk_sched_flat;
 // CHUNK-SEND SERIALIZATION SNAPSHOT (TASK-438-C, lever cmp437_chunk4, law 8
 // widening): byte hook on PlayerChunkSender + ChunkSendOps snapshot-first
 // sender defined at activation, static body-redirect of sendChunk (per-player
@@ -318,6 +325,12 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // of the private write (encode-once capture + byte[] replay per player).
     // Dormant unless CRUSSTY_LEVER_FLAG == cmp444_chunk5 (STRICT eq).
     chunk_send5::register();
+    // CHUNK-TICK ELIGIBILITY FLAT (TASK-459-59, ID-P22 scaffold): early
+    // arm-hook (NCDFE canon) — ChunkSchedOps define happens HERE, before any
+    // retarget and before the first tick; lever dormant = defined + unused,
+    // vanilla bit-in-bit. Dormant unless CRUSSTY_LEVER_FLAG ==
+    // cmp459_chunksched-mask (STRICT eq).
+    chunk_sched_flat::register();
     // QUERYPLANE (TASK-417-C, broadphase-query plane on the cvs carrier):
     // Level compose-on-top hook (LAST on Level — receives region_threads'
     // guardEntityTick bytes, composes getEntitiesOfClass +

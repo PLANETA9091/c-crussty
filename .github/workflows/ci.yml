@@ -6,6 +6,7 @@
 name: ci
 
 on:
+  workflow_dispatch:
   push:
     branches: [master]
   pull_request:
@@ -78,12 +79,24 @@ jobs:
             area-map/ca/spottedleaf/moonrise/common/misc/RuntimeStubs.java \
             area-map/ca/spottedleaf/moonrise/common/misc/SingleUserAreaMapOps.java
 
+      # chunksched/ bridge (ChunkSchedOps -> include_bytes!'d by
+      # src/chunk_sched_flat.rs at the wiring stage) scaffold compile check —
+      # --release 8 (major 52) pin matches the area-map discipline; the stub
+      # must stay kernel-independent (no kernel classes on the compile line).
+      - name: compile chunksched bridge stub (P22 scaffold)
+        run: |
+          mkdir -p chunksched/build
+          javac --release 8 -Xlint:-options \
+            -d chunksched/build \
+            chunksched/net/minecraft/server/level/ChunkSchedOps.java
+
       - uses: actions/upload-artifact@v4
         with:
           name: java-bridge-classes
           path: |
             noise/build/
             area-map/build/
+            chunksched/build/
           if-no-files-found: error
 
   # Informational P500 smoke: the closed-source kernel .so files ARE committed
