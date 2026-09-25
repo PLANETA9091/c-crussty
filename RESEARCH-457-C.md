@@ -88,3 +88,36 @@ a34 +5.9@6520174; депресс-хвост a10 −2.0@6865200, a6×453 −0.8@7
 4. cargo check --lib + cargo test (CARGO_TARGET_DIR=<tmp>, target УДАЛИТЬ сразу).
 5. RESULT.json write-through; диспатч leg-1 world-bench-parallel.yml (канон-инпуты,
    lever_flag=cmp457_eqsnap2, lever_arg=1); полл → абсорб → вердикт → пары; цикл закона 3.
+
+## 4. ABSORB leg-1 eqsnap2-1 (run 36134758772, @9d71b461, window @6619122, TASK-457-C2 restart-absorb)
+
+Доставка: run success, PARITY/LOW **+2.6 norm** @6619122, MSPT avg 399.41ms (TPS polls [19.2, 1.8, 2.1, 2.0, 2.6, 2.4]), GC 105 pauses (5 Full, avg 118ms), heap hi-water 8086MB. Wall-профиль вырожден (libc sleep 81.8% — TPS-голод фикстуры), лейны снимались по CPU self-time (канон агрегации BOTTLENECKS_3).
+
+### 4.1 Маркеры ARM/EFFECT (все канон-гейты)
+- NCDFE=0 (0× NoClassDefFoundError за ран); `entity_query: bridge EARLY define ok (anchor=NearestAttackableTargetGoal)` — EARLY-define канон ×456 держит, push-lane NCDFE window closed.
+- `cmp412_b2p1: ARMED queryplane` (Level.getEntitiesOfClass + moonrise$getHardCollidingEntities whole-body redirects ⊕ ChunkEntitySlices.addEntity hard-probe; retransform rc Level=0 Slices=0) + `hook serve Level 98310 bytes (composed: getEntitiesOfClass sites:1, hardColliding sites:1)` + `PATCHED Slices.addEntity (22225→22381, moonrise$isHardColliding → isHardCollidingProbe + 2nop)`.
+- EFFECT: `first gate hit: players fast path (0 candidates)` — player fast-path жив (O(4) players()), hard-colliding empty fast-path: HARD_ADDS=0 только на arm-времени; после популяции item_frame×2714 (hard-colliding) → probe>0 → перманентный ваниль-фолбэк (парити-гвардия точная = capture 0 на этом фикстуре).
+- eqsnap-плейн: `ARMED soa=flat-arrays seqlock=global-version` + `epoch ok tick=9/10 mobSlots=274 players=4` + `sense epoch ok tick=94 senseSlots=38540` — bulk-JNI 1/тик жив.
+- Latches/fail-dominant: 0. AIOOBE=1 = cmp420_chunk2 biomes selftest FAIL — pre-existing fail-closed green marker (канон 201d9d66), не lever.
+
+### 4.2 Лейны были→стало (CPU self-time; «было» = серт-нога spawn456-1 §2.1)
+| лейн | было | стало | capture |
+|---|---|---|---|
+| items | 0.00 (ins4 спит-armed) | 0.00 ваниль; serve4 1.9% own-cost — гвард держит | — |
+| nav | ~3.2 остаток pathfinder | NavPlaneOps.handle 1.3% own-cost (серт-плейн) | — |
+| eqsnap own | snapshotQuery 2.7% | 3.0% (serving senseSlots=38540) | — |
+| broad: ChunkEntitySlices.getEntities | 0.9% | **0.9%** | **0** |
+| broad: EntityLookup.getHardCollidingEntities | 0.7% | **0.7%** | **0** |
+| broad: AABB.intersects | 0.7% | **0.9%** | **0** |
+| broad: getEntitiesOfClass non-goal сайты | в срезе 1.6-2.5% | QueryPlaneOps body = 3 сэмпла (<0.01%) — сайтов в top-40 НЕТ | **0** |
+
+### 4.3 Пары leg-1 ↔ якорный пул ×457 (Δ≤50k)
+| якорь | norm@idx | Δ | пара |
+|---|---|---|---|
+| a12 | +5.0@6606571 | 2551 | **−2.4** |
+| a32 | +0.7@6579335 | 39787 | **+1.9** |
+
+Обе суб-бар. Монстр-нога ≥+18 — НЕТ. Пара ≥+20 — НЕТ.
+
+### 4.4 ВЕРДИКТ: REFUTED_CENS + BANK (захвата НЕТ, leg-2 не диспатчена)
+Ценз-гипотеза «движительно-коллизионный entity-query срез 1.6-2.5% capturable 60-80%» на фикстуре 150k REFUTED лейнами: broad-лейны НЕ упали (0.9/0.7/0.9 были→стало, capture=0/2.3%), +2.6 norm = window-шум, не эффект. Механизмы delivery-чистые, но плоскость на фикстуре пуста: player-запросы редки/пусты (0 candidates), hard-colliding fast-path парити-заблокирован 2714 item_frames (гвард работает как спроектирован), non-goal query-сайты <0.01%. Расширение плоскости (другие классы / targeting-слайс) захватило бы <0.6-1.3% — суб-шум, leg-2 экономически мертва (правило цикла). НОСИТЕЛЬ round-457c-eqsnap2 @9d71b461 остаётся на ветке — доставка валидна для будущих композиций: (а) H03 interval-tree targeting R3 (BLACKBOARD ID-H03: «ноги eqsnap2 + это → пара ≥+20»), (б) сценарии с реальным player-трафиком (players fast-path) и fixture без hard-colliding-массы (hard fast-path). Банк: 2 пары суб-бар (−2.4/+1.9) + чистая NCDFE-доставка в канон.

@@ -1,10 +1,12 @@
 {
-  "agent": "TASK-457-C (agent-c, R-вектор подсистемный)",
-  "vector": "PIVOT: ценз ActivationRange+NaturalSpawner NO-GO (§1 RESEARCH-457-C, числа ×456-A подтверждены по файлам: слайсы не в 01688ad2, остаток +1.12-1.77пп, leg-потолок +15.77<+18, пара-потолок +17.77<+20) -> подсистема закона 6 (а) R2 entity-query слой целиком (queryplane cmp417_bq dormant + eqsnap) на новом носителе round-457c-eqsnap2",
+  "agent": "TASK-457-C2 (agent-c-restart, R-вектор подсистемный)",
+  "vector": "PIVOT: ценз ActivationRange+NaturalSpawner NO-GO (§1 RESEARCH-457-C) -> подсистема закона 6 (а) R2 entity-query слой целиком (queryplane cmp417_bq dormant + eqsnap) на носителе round-457c-eqsnap2 @9d71b461",
   "branch": "round-457c-eqsnap2",
   "lever": "cmp457_eqsnap2",
-  "stage": "leg-1 DISPATCHED: ref round-457c-eqsnap2-1 @9d71b461, HTTP 204, lever cmp457_eqsnap2, canon inputs (25)",
-  "run_id": "pending-poll",
-  "evidence": "RESEARCH-457-C.md §1-§3; cert-leg lane table spawn456-1 (broad vanilla-query residual 1.6-2.5% wall = цель); queryplane HARD_ADDS probe = точная hard-collider парити-гвардия",
-  "ncdfe": "канон ×456 перенесён: cmp457_eqsnap2 в entity_query::flag_enabled (EARLY define EntityGoalQueryOps до первого диспатча pushables; mirror-drift иглы синхронно rust+java)"
+  "stage": "VERDICT leg-1: REFUTED_CENS + BANK (захвата нет по лейнам, leg-2 НЕ диспатчена, носитель остаётся на ветке для будущих композиций)",
+  "run_id": "36134758772 (round-457c-eqsnap2-1, success, PARITY/LOW +2.6 norm @6619122)",
+  "evidence": "RESEARCH-457-C.md §4: маркеры ARM/EFFECT все (NCDFE=0, EARLY-define ok, cmp412_b2p1 ARMED queryplane retransform rc=0/0, EFFECT players fast path 0 candidates, eqsnap epoch ok mobSlots=274→senseSlots=38540, latches 0); лейны были→стало broad БЕЗ падения: getEntities 0.9→0.9, getHardCollidingEntities 0.7→0.7, AABB.intersects 0.7→0.9, non-goal сайты <0.01% — capture 0/2.3%; причины: players=4 запросы пусты, hard-colliding fast-path парити-заблокирован item_frame×2714 (HARD_ADDS>0 = гвард точная), wall-профиль вырожден (libc 81.8%)",
+  "pairs": "leg-1 +2.6@6619122 ↔ пул ×457 Δ≤50k: a12 +5.0@6606571 (Δ2551) → −2.4; a32 +0.7@6579335 (Δ39787) → +1.9; обе суб-бар, монстр-нога ≥+18 НЕТ, пара ≥+20 НЕТ",
+  "verdict": "REFUTED_CENS: ценз-гипотеза «срез 1.6-2.5% capturable 60-80%» на фикстуре 150k опровергнута лейнами; +2.6 = window-шум; расширение плоскости (другие классы / targeting) захватывает <0.6-1.3% = суб-шум, leg-2 экономически мертва. BANK: доставка валидна (ARM+EFFECT+NCDFE=0, STRICT-OR 21 rust + 10 java, cargo 0, blobs ALL IN SYNC) — носитель на ветке для H03 targeting-slice R3 / player-traffic сценариев",
+  "ncdfe": "канон ×456 подтверждён в бою: cmp457_eqsnap2 в entity_query::flag_enabled, EARLY define EntityGoalQueryOps сработал (anchor=NearestAttackableTargetGoal), 0 NoClassDef за весь ран"
 }
