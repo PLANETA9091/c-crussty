@@ -93,6 +93,7 @@ fn enabled() -> bool {
             | Ok("cmp423_brain3")
             | Ok("cmp424_mobfeed")
             | Ok("cmp430_inside")
+            | Ok("cmp451_senseins") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR) — PRODUCTION gate retag (x452: dormant -> SenseOps never defined, core of vector dead)
     )
 }
 
