@@ -75,6 +75,9 @@ mod chunk_send;
 // redirect of the private write. Dormant unless CRUSSTY_LEVER_FLAG ==
 // cmp444_chunk5 (STRICT eq; empty/foreign flag = vanilla bit-in-bit).
 mod chunk_send5;
+// C-X5 TASK-459-84: paletted zero-copy reader-view prototype (dormant unless
+// CRUSSTY_LEVER_FLAG == cmp459_cx5 STRICT eq; observation-only phase-1).
+mod paletted_reader_views;
 mod noise_fill;
 mod parse_diag;
 mod zero_cursor;
@@ -234,6 +237,9 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // Dormant unless at least one Entity-stage lever is enabled.
     entity_compose::register();
     proto_blend_cache::register();
+    // C-X5 READER VIEWS (TASK-459-84): paletted batch read-view — gate OFF =>
+    // no-op (STRICT eq cmp459_cx5; dormant discipline 3a270ee).
+    paletted_reader_views::register();
     // F1 BATCH-RNG (family-agg pack member, S7-112): ServerLevel body-swap hook.
     randomtick::register();
     // F2 BRAIN-ITERATORS (family-agg pack member, S7-114): Brain body-swap hook.
@@ -587,6 +593,9 @@ fn inject_surface() {
     entity_compose::activate();
     // Dormant unless CRUSSTY_NATIVE_BLEND_CACHE is set (see docs/HOOK_BLEND_CACHE.md).
     proto_blend_cache::activate();
+    // C-X5 READER VIEWS (TASK-459-84): observation-only — parity selftest +
+    // counters, no class definitions (NCDFE canon; wiring wave-2).
+    paletted_reader_views::activate();
     // F1 BATCH-RNG (S7-112): define RandomTickOps into the ServerLevel loader,
     // then retransform for the optimiseRandomTick body swap (area_map pattern).
     randomtick::activate();
