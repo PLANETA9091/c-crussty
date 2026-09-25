@@ -492,6 +492,9 @@ case "${LEVER_FLAG:-}" in
   cmp452_mega)
     log "${LEVER_FLAG} armed: MEGA-COMPOSITION cmp452_mega = cmp451_senseins (ins4-carrier inside_snap v4 + SoA/colpush/cvs/bq stack + SenseOps body-swap + BrainOps tick2 + goalquery sense-arena) ⊕ cmp450_chunk (chunk4 send-snapshot ⊕ chunk5 packet encode-cache ⊕ chunkparse section/biomes codec caches) — STRICT-OR мульти-семейный композит: ОБЕ семьи живут на каждом гейте, пустой флаг = ваниль бит-в-байт (TASK-452-C, закон 7, лесенка эры вверх)"
     ;;
+  cmp453_diet)
+    log "${LEVER_FLAG} armed: DIET-COMPOSITE cmp453_diet = ins4-carrier (inside_snap v4 + SoA/colpush/cvs/bq/items stack STRICT-OR) ⊕ sense-ядро (SenseOps getNearestEntity body-swap + goalquery sense-arena/entity_query senseMode) ⊕ chunk4 send-snapshot — БЕЗ хвостов: chunk5 encode-cache ВЫРЕЗАН (players_packets lane 0.00-0.01% FLAT ×452 = нулевая маржа, MISS-диета), BrainOps tick2 ВЫРЕЗАН (Brain-mobs=0 в фикстуре, срез мёртв), section-codec chunkparse ОСТАВЛЕН (не перекрыт chunk4: parse=disk-load vs send=player path, часть серта) — закон 7 субаддитивность: диета против склейки (TASK-453-C)"
+    ;;
 esac
 # RECON_DIAG (TASK-317, instrument-гейт рычага #13 SKIP-STORE-DIET): чистая
 # наблюдаемость — 0 поведения. GC-политика/heap не трогаются (логирование ≠

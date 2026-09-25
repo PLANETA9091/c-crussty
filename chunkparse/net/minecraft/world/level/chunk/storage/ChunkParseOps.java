@@ -150,6 +150,9 @@ public final class ChunkParseOps {
     /** TASK-452-C mega-composite (senseins ⊕ chunk union; STRICT-OR; raw-cp
      * marker for the check_blobs_sync gate). */
     static final String CARRIER_UNION_452 = "cmp452_mega";
+    /** TASK-453-C diet composite (section-codec kept: NOT overlapped by chunk4
+     * [parse=disk-load path vs send=player path]; raw-cp marker). */
+    static final String CARRIER_UNION_453 = "cmp453_diet";
 
     /**
      * codec(identity) -> (tag -> pristine decoded template). The outer map

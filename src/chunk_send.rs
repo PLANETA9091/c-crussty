@@ -121,7 +121,7 @@ fn enabled() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let v = v.trim();
-            v == LEVER_ID || v == "cmp444_chunk5" || v == "cmp452_mega" || v == "cmp450_chunk"
+            v == LEVER_ID || v == "cmp444_chunk5" || v == "cmp452_mega" || v == "cmp450_chunk" || v == "cmp453_diet"
         })
         .unwrap_or(false)
 }
@@ -133,6 +133,7 @@ fn marker_id() -> std::borrow::Cow<'static, str> {
     match std::env::var("CRUSSTY_LEVER_FLAG").as_deref() {
         Ok("cmp450_chunk") => std::borrow::Cow::Owned("cmp450_chunk".to_string()),
         Ok("cmp452_mega") => std::borrow::Cow::Owned("cmp452_mega".to_string()), // TASK-452-C mega-composite
+        Ok("cmp453_diet") => std::borrow::Cow::Owned("cmp453_diet".to_string()), // TASK-453-C diet composite
         _ => std::borrow::Cow::Borrowed(LEVER_ID),
     }
 }

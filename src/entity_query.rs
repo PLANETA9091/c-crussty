@@ -132,7 +132,7 @@ fn enabled() -> bool {
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
             | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4")
             | Ok("cmp438_sense") // TASK-444-C: sense family union
-            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") | Ok("cmp452_mega")
+            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") | Ok("cmp452_mega") | Ok("cmp453_diet")
             | Ok("cmp421_brain")
     )
 }
@@ -176,7 +176,7 @@ fn enabled_flag_is_sense() -> bool {
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
             | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4")
             | Ok("cmp438_sense") // TASK-444-C: sense family union
-            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") | Ok("cmp452_mega")
+            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") | Ok("cmp452_mega") | Ok("cmp453_diet")
     )
 }
 
@@ -971,9 +971,9 @@ mod tests {
             || s == "cmp411_eqsnap"
             || s == "cmp412_eqsnapv3" || s == "cmp414_cvs" || s == "cmp417_bq"
             || s == "cmp421_brain" || s == "cmp422_brain2" || s == "cmp423_brain3" || s == "cmp424_mobfeed" || s == "cmp430_inside" || s == "cmp432_inside2" || s == "cmp436_ins4"
-            || s == "cmp451_senseins" || s == "cmp452_mega" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+            || s == "cmp451_senseins" || s == "cmp452_mega" || s == "cmp453_diet" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
             || s == "cmp438_sense" // TASK-444-C: sense family union
-            || s == "cmp421_brain" || s == "cmp452_mega" || s == "cmp422_brain2" || s == "cmp423_brain3" || s == "cmp424_mobfeed" || s == "cmp430_inside" || s == "cmp434_chunkpl" || s == "cmp435_chunk3" || s == "cmp437_chunk4" || s == "cmp444_chunk5" || s == "cmp450_chunk"
+            || s == "cmp421_brain" || s == "cmp452_mega" || s == "cmp422_brain2" || s == "cmp423_brain3" || s == "cmp424_mobfeed" || s == "cmp430_inside" || s == "cmp434_chunkpl" || s == "cmp435_chunk3" || s == "cmp437_chunk4" || s == "cmp444_chunk5" || s == "cmp450_chunk" || s == "cmp453_diet"
     }
 
     #[test]
