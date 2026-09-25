@@ -46,6 +46,12 @@ mod inside_bitmask;
 mod inside_cache;
 mod inside_diet;
 mod inside_snap;
+// INSIDE-SNAP REGISTRY SIDECAR (TASK-459-57, ID-P32; paldelta-14 =
+// TASK-461-71): флет-реестр Snap[] по стабильным per-section int-индексам +
+// epoch одним int-cmp; miss -> fail-closed CHM fallback (InsideSnapOps).
+// v1 DORMANT scaffold: класс-мост определяется и армится (selfTest), но
+// ретаргет-сайтов НЕТ — нога = carrier-parity по конструкции.
+mod inside_snap_registry;
 mod item_merge;
 mod items_index;
 mod items_lifetime;
@@ -200,6 +206,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // entity_compose. Dormant unless CRUSSTY_LEVER_FLAG == cmp424_inside
     // (STRICT eq; пустой флаг = ваниль бит-в-байт).
     inside_snap::register();
+    // INSIDE-SNAP REGISTRY SIDECAR (ID-P32, TASK-461-71 paldelta-14): rides
+    // the paldelta carrier id (STRICT eq, gate в enabled()); define-race с
+    // CHM-плоскостью сериализован через inside_snap::wait_bridge_ready.
+    inside_snap_registry::register();
     // INSIDE-CACHE (S7-135): byte hook on Entity (pristine capture at first
     // load; patch served via retransform after the InsideBlockOps bridge
     // lands). Dormant unless CRUSSTY_INSIDE_CACHE=1.
@@ -537,6 +547,11 @@ fn inject_surface() {
     // arm, then the LevelChunk secWrite retarget + retransform (gate идёт
     // через entity_compose stage 1c; dormant unless lever_flag=cmp424_inside).
     inside_snap::activate();
+    // INSIDE-SNAP REGISTRY SIDECAR (ID-P32, TASK-461-71 paldelta-14): define
+    // $Snap->$Lane(или reuse от CHM-плоскости)->sidecar, selfTest probe, arm;
+    // NO byte hook in v1 (dormant unless lever_flag ∈ {cmp459_snapreg,
+    // cmp456_chunkmono_p31snap, cmp457_paldelta}).
+    inside_snap_registry::activate();
     // FLUID-DIRTY (S7-151): define FluidPushOps into the kernel loader,
     // compute the secWrite retarget for LevelChunk, arm the inside_chain
     // bridge (dormant unless CRUSSTY_FLUID_DIRTY=1).
