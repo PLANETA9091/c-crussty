@@ -25,11 +25,11 @@ BATCH = [
 
 EXPECTED_SHA = {
     "master": "05c6da1b",  # senseins-серт мердж (ancestry-семантика; docs поверх кода)
-    # TASK-454-B: chunk rebaze-2 union (merдж ccfa6f04 ⊕ b83c19e0; обновлять при каждом пуше!)
+    # TASK-454-B: chunk rebaze-2 union (merдж ccfa6f04 ⊕ b83c19e0); ancestry-семантика — код-носитель ded8f650, docs-коммиты поверх разрешены
     "round-454b-chunk": "ded8f650",
 }
 
-ANCESTRY_BASES = {"master"}
+ANCESTRY_BASES = {"master", "round-454b-chunk"}
 
 INPUTS = {
     "radius": "640", "seconds": "300", "fake_players": "4",
