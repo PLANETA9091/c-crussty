@@ -80,6 +80,9 @@ mod parse_diag;
 mod zero_cursor;
 mod palette_gather;
 mod paletted;
+// ID-H05 papaya-lockfree shard-readers scaffold (round-459-h05) — STRICT
+// DORMANT: compiled for CI only, no hot-path caller (RESEARCH-459-H05.md).
+mod papaya_shard_readers;
 mod promote_wire;
 mod proto_blend_cache;
 mod randomtick;
