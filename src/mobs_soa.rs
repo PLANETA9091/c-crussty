@@ -314,7 +314,7 @@ fn eqsnap_mode() -> bool {
         || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside" || f == "cmp432_inside2" || f == "cmp436_ins4"
         || f == "cmp451_senseins" || f == "cmp453_diet" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
         || f == "cmp438_sense" // TASK-444-C: sense family union
-        || f == "cmp451_senseins" || f == "cmp453_diet" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+        || f == "cmp451_senseins" || f == "cmp453_diet" || f == "cmp434_chunkpl" || f == "cmp435_chunk3" || f == "cmp437_chunk4" || f == "cmp444_chunk5" || f == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
 }
 
 /// Strict gate: natives work only under the exact lever flag (STRICT eq;
@@ -358,7 +358,7 @@ fn lever_mode() -> bool {
         || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside" || f == "cmp432_inside2" || f == "cmp436_ins4"
         || f == "cmp451_senseins" || f == "cmp453_diet" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
         || f == "cmp438_sense" // TASK-444-C: sense family union
-        || f == "cmp451_senseins" || f == "cmp453_diet" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+        || f == "cmp451_senseins" || f == "cmp453_diet" || f == "cmp434_chunkpl" || f == "cmp435_chunk3" || f == "cmp437_chunk4" || f == "cmp444_chunk5" || f == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
         // TASK-410-C (eindexq): K3-пивот R2 — SoA-плоскость = источник
         // популяции для goal-query CSR-снапшота (EntityQueryOps.eqEpoch;
         // sscan-прецедент TASK-406-E).
