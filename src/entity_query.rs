@@ -119,19 +119,31 @@ const H2: i32 = 0x85EB_CA77u32 as i32;
 /// одним bulk-drain (O(dirty)) и только потом строит цепи (cl1 35691270899:
 /// per-entity WLOCK-мутации = 24.9% CPU → 0.5 TPS; eq chain build = 0.025%).
 fn enabled() -> bool {
+    flag_enabled(std::env::var("CRUSSTY_LEVER_FLAG").as_deref().ok().as_deref())
+}
+
+/// TASK-452-A: PURE production gate list (no env read) — the test module pins
+/// THIS function directly (x452 lesson: the test-mirror `enabled_with` was
+/// retagged for cmp451_senseins while the production `enabled()` was not →
+/// dormant plane → EntityGoalQueryOps never defined → MobPushOps.pushables
+/// NCDFE ×32768 on the first senseins legs, DELIVERY-FAIL). One source of
+/// truth, no mirror drift possible.
+fn flag_enabled(flag: Option<&str>) -> bool {
     matches!(
-        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp410_eindexq") | Ok("cmp411_k4soa") | Ok("cmp411_eqsnap")
+        flag,
+        Some("cmp410_eindexq") | Some("cmp411_k4soa") | Some("cmp411_eqsnap")
             // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
-            | Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs") | Ok("cmp417_bq")
+            | Some("cmp412_eqsnapv3") | Some("cmp414_cvs") | Some("cmp417_bq")
             // TASK-419-A (colpush): колпаш-носитель — eq_epoch снапшот жив
             // (плоскость кормит colpush_plane_refresh).
-            | Ok("cmp420_colpush")
+            | Some("cmp420_colpush")
             // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
-            | Ok("cmp422_brain2")
+            | Some("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4")
-            | Ok("cmp421_brain")
+            | Some("cmp423_brain3") | Some("cmp424_mobfeed") | Some("cmp430_inside") | Some("cmp432_inside2") | Some("cmp436_ins4")
+            | Some("cmp438_sense") // TASK-444-C: sense family union
+            | Some("cmp451_senseins") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+            | Some("cmp421_brain")
     )
 }
 
@@ -173,6 +185,8 @@ fn enabled_flag_is_sense() -> bool {
         Ok("cmp421_brain") | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
             | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4")
+            | Ok("cmp438_sense") // TASK-444-C: sense family union
+            | Ok("cmp451_senseins") // TASK-452-A: senseins composite — sense-arena slice must arm (production gate retag)
     )
 }
 
@@ -962,11 +976,9 @@ mod tests {
     use super::*;
 
     fn enabled_with(s: &str) -> bool {
-        s == "cmp410_eindexq"
-            || s == "cmp411_k4soa"
-            || s == "cmp411_eqsnap"
-            || s == "cmp412_eqsnapv3" || s == "cmp414_cvs" || s == "cmp417_bq"
-            || s == "cmp421_brain" || s == "cmp422_brain2" || s == "cmp423_brain3" || s == "cmp424_mobfeed" || s == "cmp430_inside" || s == "cmp432_inside2" || s == "cmp436_ins4"
+        // TASK-452-A: pin the PRODUCTION gate list (flag_enabled) — not a
+        // hand-maintained mirror. Mirror drift is the x452 NCDFE root-cause.
+        flag_enabled(Some(s))
     }
 
     #[test]
@@ -994,6 +1006,13 @@ mod tests {
         assert!(enabled_with("cmp421_brain"));
         assert!(!enabled_with("cmp421_brain_x"));
         assert!(!enabled_with(" cmp421_brain"));
+        // TASK-452-A: senseins composite — STRICT eq, no prefix/suffix tolerance
+        // (production gate pinned via flag_enabled; x452 NCDFE regression guard).
+        assert!(enabled_with("cmp451_senseins"));
+        assert!(!enabled_with(""));
+        assert!(!enabled_with("cmp451_senseins_x"));
+        assert!(!enabled_with(" cmp451_senseins"));
+        assert!(!enabled_with("cmp451_senseins "));
     }
 
     /// Mirror of the java EntityGoalQueryOps.cellHash operating on the same
