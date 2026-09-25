@@ -60,6 +60,11 @@ mod mobs_ai;
 mod mobs_sscan;
 mod mobs_sense;
 mod nav_plane;
+// CHUNK-SERIAL LRU DECOMPRESS-ARENA (TASK-459-82, идея C-X3): per-thread
+// LRU-арена разжатых секций при серийном чтении чанков, повторные чтения
+// без re-decompress, CRC32-контроль байт (scaffold; lever cmp459_cx3
+// STRICT eq — см. RESEARCH-459-CX3.md).
+mod chunk_serial_arena;
 mod nav_pool;
 mod chunk_parse;
 // CHUNK-SEND SERIALIZATION SNAPSHOT (TASK-438-C, lever cmp437_chunk4, law 8
