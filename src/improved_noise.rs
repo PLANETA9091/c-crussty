@@ -73,14 +73,23 @@ const BATCH_OPS_BYTES: &[u8] = include_bytes!(
 const BRIDGE_NOISE_DESC: &str =
     "(Lnet/minecraft/world/level/levelgen/synth/ImprovedNoise;[BDDDDDDDD)D";
 
-/// env-gate (off by default), read once at register time
+/// env-gate (off by default), read once at register time.
+/// TASK-457-D (C1 SIMD-noise carrier, law-8 GEN axis): the round lever
+/// `cmp457_noisesimd` ALSO arms the native ImprovedNoise plane (the
+/// PaperNativeImprovedNoise kernels are `live`-verified in PROVEN_WINS, so
+/// the two-key rule passes on the lever arm). Empty lever + unset env =
+/// vanilla bit-in-byte (unchanged dormant default).
 fn enabled() -> bool {
-    std::env::var("CRUSSTY_NATIVE_IMPROVED_NOISE")
+    let env_gate = std::env::var("CRUSSTY_NATIVE_IMPROVED_NOISE")
         .map(|v| {
             let v = v.trim().to_ascii_lowercase();
             v == "1" || v == "true" || v == "on" || v == "yes"
         })
-        .unwrap_or(false)
+        .unwrap_or(false);
+    let lever_gate = std::env::var("CRUSSTY_LEVER_FLAG")
+        .map(|v| v.trim() == "cmp457_noisesimd")
+        .unwrap_or(false);
+    env_gate || lever_gate
 }
 
 /// Kernel-policy key for the arming decision (TASK-86): the registry entry

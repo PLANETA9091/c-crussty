@@ -145,7 +145,7 @@ fn flag_enabled(flag: Option<&str>) -> bool {
             | Some("cmp451_senseins") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
             | Some("cmp453_diet") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
             | Some("cmp421_brain")
-            | Some("cmp421_brain") | Some("cmp434_chunkpl") | Some("cmp435_chunk3") | Some("cmp437_chunk4") | Some("cmp444_chunk5") | Some("cmp450_chunk")
+            | Some("cmp421_brain") | Some("cmp434_chunkpl") | Some("cmp435_chunk3") | Some("cmp437_chunk4") | Some("cmp444_chunk5") | Some("cmp450_chunk") | Some("cmp457_noisesimd")
     )
 }
 
@@ -189,8 +189,8 @@ fn enabled_flag_is_sense() -> bool {
             | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4")
             | Ok("cmp438_sense") // TASK-444-C: sense family union
             | Ok("cmp451_senseins") // TASK-452-A: senseins composite — sense-arena slice must arm (production gate retag)
-            | Ok("cmp453_diet") | Ok("cmp450_chunk") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
-            | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") // TASK-454-B/455-B: chunk union carrier rides the sense gate (STRICT OR, rebaze-3 union)
+            | Ok("cmp453_diet") | Ok("cmp450_chunk") | Ok("cmp457_noisesimd") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
+            | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") | Ok("cmp457_noisesimd") // TASK-454-B/455-B: chunk union carrier rides the sense gate (STRICT OR, rebaze-3 union)
     )
 }
 

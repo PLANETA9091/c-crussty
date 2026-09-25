@@ -93,6 +93,11 @@ public final class ChunkSendOps {
     /** Marker/log prefix (matches the rust ARM marker). */
     static final String PFX = "[crussty-plugin] cmp437_chunk4:";
 
+    /** Prefixed line with the ACTIVE carrier label (TASK-457-D evidence). */
+    static String pfx() {
+        return "[crussty-plugin] " + LABEL + ":";
+    }
+
     /**
      * Chunk-pipeline R7 carrier union (law 7): this serialize-side plane rides
      * the cmp437_chunk4 carrier ON TOP of cmp435_chunk3 (block_states deep
@@ -109,12 +114,79 @@ public final class ChunkSendOps {
     /** TASK-450-C union carrier (STRICT-OR; raw-cp marker for the
      * check_blobs_sync gate). */
     static final String CARRIER_UNION_450 = "cmp450_chunk";
+    /** TASK-457-D noise-SIMD carrier (STRICT-OR; raw-cp needle). */
+    static final String CARRIER_UNION_457D = "cmp457_noisesimd";
     /** TASK-452-C mega-composite (senseins ⊕ chunk union; STRICT-OR; raw-cp
      * marker for the check_blobs_sync gate). */
     static final String CARRIER_UNION_452 = "cmp452_mega";
     /** TASK-453-C diet composite (sense-core + chunk4 + ins4 carrier; STRICT-OR;
      * raw-cp marker for the check_blobs_sync gate). */
     static final String CARRIER_UNION_453 = "cmp453_diet";
+    /** TASK-457-D chunk-send/serialization delta carrier (STRICT-OR; raw-cp
+     * marker for the check_blobs_sync gate). */
+    static final String CARRIER_457D = "cmp457_chunksend";
+
+    /**
+     * TASK-457-D TWIN plane (lever cmp457_chunksend, law 8 delta on the
+     * certified chunk4 snapshot): same-tick construction dedup.
+     *
+     * Kernel ground truth (fixture-normal on the certified legs): during the
+     * BENCH-4 join burst every sent chunk is UNSAVED (population inject marks
+     * chunks dirty), so the certified chunk4 HIT gate
+     * {@code snap != null && !chunk.isUnsaved()} NEVER fires — each of the 4
+     * overlapping fake players constructs a FRESH
+     * ClientboundLevelChunkWithLightPacket for the SAME chunk state within the
+     * SAME main-thread tick (PlayerChunkSender.sendNextChunks runs per-player
+     * from the network phase, after all level mutations of that tick).
+     *
+     * Parity (law 4, EXACT for the reuse window): two sends of the same chunk
+     * pos in the SAME server tick observe the same chunk state — no block /
+     * block-entity mutation can interleave on the single main thread between
+     * the network-phase sends of one tick (level ticks run before the network
+     * phase in MinecraftServer.tickChildren). The packet is a pure function of
+     * the chunk state (anti-xray disabled; certified chunk4 ground truth).
+     * Documented residual (same class as the certified chunk4 light residual):
+     * the async light thread may advance between the reused sends — vanilla
+     * itself never re-serializes a chunk packet on light change; clients
+     * converge via the same subsequent light delta packets.
+     *
+     * Gate: TWIN is true ONLY under the lever flag cmp457_chunksend (exact
+     * env match); under every certified flag (cmp437_chunk4 / cmp444_chunk5 /
+     * cmp450_chunk / cmp452_mega / cmp453_diet / ...) the twin path is inert
+     * and the blob behaves bit-identically to the certified chunk4 plane.
+     */
+    static boolean twinEnabled() {
+        String f = System.getenv("CRUSSTY_LEVER_FLAG");
+        return f != null && f.trim().equals(CARRIER_457D);
+    }
+
+    /** TWIN gate (cached once; the lever flag is fixed for the process life). */
+    static final boolean TWIN = twinEnabled();
+
+    /**
+     * Evidence label: the active carrier id in EFFECT markers (server-stdout
+     * greps); cmp457_chunksend legs grep their own id, certified flags keep
+     * the frozen cmp437_chunk4 markers byte-for-byte.
+     */
+    static String flagLabel() {
+        String f = System.getenv("CRUSSTY_LEVER_FLAG");
+        return f != null && f.trim().equals(CARRIER_457D) ? CARRIER_457D : "cmp437_chunk4";
+    }
+
+    static final String LABEL = flagLabel();
+
+    /** pos -> server tick when the current snapshot was BUILT (TWIN only). */
+    private static final ConcurrentHashMap<Long, Long> BUILD_TICK =
+            new ConcurrentHashMap<>();
+
+    private static long twinHits = 0;
+    private static boolean twinFirstHitLogged = false;
+
+    /** Same-tick exact reuse probe (TWIN only): the snapshot was built this tick. */
+    private static boolean builtThisTick(long key, long tick) {
+        Long bt = BUILD_TICK.get(key);
+        return bt != null && bt.longValue() == tick;
+    }
 
     /** pos longKey -> current snapshot packet. Lock-free probe. */
     private static final ConcurrentHashMap<Long, ClientboundLevelChunkWithLightPacket> CACHE =
@@ -146,9 +218,10 @@ public final class ChunkSendOps {
         connection.send(packet);
         sent++;
         if ((sent & 1023L) == 0) {
-            System.out.println(PFX + " chunk4 stats sent=" + sent + " serialized=" + serialized
-                    + " hits=" + hits + " cached=" + CACHE.size()
-                    + " cap=" + CACHE_CAP + " union=" + CARRIER_UNION_437);
+            System.out.println(pfx() + " chunk4 stats sent=" + sent + " serialized=" + serialized
+                    + " hits=" + hits + " twin=" + twinHits + " cached=" + CACHE.size()
+                    + " cap=" + CACHE_CAP + " union=" + CARRIER_UNION_437
+                    + (TWIN ? "/" + CARRIER_457D : ""));
         }
         if (PlayerChunkLoadEvent.getHandlerList().getRegisteredListeners().length > 0) {
             new PlayerChunkLoadEvent(new CraftChunk(chunk),
@@ -157,13 +230,25 @@ public final class ChunkSendOps {
         level.debugSynchronizers().startTrackingChunk(connection.player, chunk.getPos());
     }
 
-    /** Snapshot-first packet source for the non-anti-xray path. */
+    /** Snapshot-first packet source for the non-anti-xray path.
+     * TASK-457-D: plus the same-tick TWIN probe (exact same-tick reuse for
+     * unsaved chunks — the join-burst window the certified isUnsaved gate
+     * never covers). Under certified flags TWIN=false: bit-identical path. */
     private static ClientboundLevelChunkWithLightPacket snapshotOrBuild(
             ServerLevel level, LevelChunk chunk) {
         long key = chunk.getPos().toLong();
+        long tick = TWIN ? level.getServer().getTickCount() : -1L;
         ClientboundLevelChunkWithLightPacket snap = CACHE.get(key);
-        if (snap != null && !chunk.isUnsaved()) {
+        if (snap != null && (!chunk.isUnsaved() || (TWIN && builtThisTick(key, tick)))) {
             hits++;
+            if (TWIN && chunk.isUnsaved()) {
+                twinHits++;
+                if (!twinFirstHitLogged) {
+                    twinFirstHitLogged = true;
+                    System.out.println(pfx() + " chunkd twin first hit"
+                            + " (same-tick construction dedup live, carrier=" + CARRIER_457D + ")");
+                }
+            }
             if (!firstHitLogged) {
                 firstHitLogged = true;
                 System.out.println(PFX + " chunk4 send-snapshot first hit"
@@ -186,8 +271,9 @@ public final class ChunkSendOps {
             Iterator<Map.Entry<Long, ClientboundLevelChunkWithLightPacket>> it =
                     CACHE.entrySet().iterator();
             while (it.hasNext()) {
-                it.next();
+                Map.Entry<Long, ClientboundLevelChunkWithLightPacket> e = it.next();
                 if ((seen & 1) == 0) {
+                    BUILD_TICK.remove(e.getKey());
                     it.remove();
                     evictions++;
                 }
@@ -195,6 +281,12 @@ public final class ChunkSendOps {
             }
         }
         CACHE.put(key, fresh);
+        if (TWIN) {
+            if (BUILD_TICK.size() >= CACHE_CAP) {
+                BUILD_TICK.clear();
+            }
+            BUILD_TICK.put(key, Long.valueOf(tick));
+        }
         return fresh;
     }
 
@@ -208,6 +300,13 @@ public final class ChunkSendOps {
         try {
             LevelChunk.class.getMethod("isUnsaved");
             ChunkPos.class.getMethod("toLong");
+            if (TWIN) {
+                // TASK-457-D twin oracle: same-tick reuse plumbing must exist
+                // on the pristine kernel (public surface, no reflection).
+                ServerLevel.class.getMethod("getServer");
+                Class.forName("net.minecraft.server.MinecraftServer")
+                        .getMethod("getTickCount");
+            }
             ServerLevel.class.getMethod("getLightEngine");
             ServerGamePacketListenerImpl.class.getMethod("send", Packet.class);
             Level.class.getField("chunkPacketBlockController");
@@ -335,10 +434,12 @@ public final class ChunkSendOps {
 
     /** Diagnostics for the boot/absorb greps (never allocates on hot path). */
     public static String stats() {
-        return PFX + " sent=" + sent + " serialized=" + serialized + " hits=" + hits
+        return pfx() + " sent=" + sent + " serialized=" + serialized + " hits=" + hits
+                + " twin=" + twinHits
                 + " cached=" + CACHE.size() + " cap=" + CACHE_CAP
                 + " evicted=" + evictions
                 + " selftest=" + (SELFTEST_CHUNKS - selftestLeft)
-                + " union=" + CARRIER_UNION_435 + "/" + CARRIER_UNION_437;
+                + " union=" + CARRIER_UNION_435 + "/" + CARRIER_UNION_437
+                + (TWIN ? "/" + CARRIER_457D : "");
     }
 }

@@ -75,7 +75,7 @@ fn lever_flag_matches() -> bool {
                 || v.trim() == "cmp420_colpush"
                 || v.trim() == "cmp421_brain" || v.trim() == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2"
         || v == "cmp438_sense" // TASK-444-C: sense family union
-        || v == "cmp451_senseins" || v == "cmp453_diet" || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp444_chunk5" || v == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+        || v == "cmp451_senseins" || v == "cmp453_diet" || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp444_chunk5" || v == "cmp450_chunk" || v == "cmp457_noisesimd" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
         })
         .unwrap_or(false)
 }
@@ -111,6 +111,7 @@ fn lever_id() -> &'static str {
         Ok("cmp437_chunk4") => "cmp437_chunk4", // TASK-438-C: R7 carrier marker id (chunk-send snapshot widening)
         Ok("cmp444_chunk5") => "cmp444_chunk5", // TASK-444-B: R8 carrier marker id (encode-cache stage-2)
         Ok("cmp450_chunk") => "cmp450_chunk", // TASK-450-C: union carrier marker id (chunk4⊕chunk5⊕slices)
+        Ok("cmp457_noisesimd") => "cmp457_noisesimd", // TASK-450-C: union carrier marker id (chunk4⊕chunk5⊕slices)
         Ok("cmp417_bq")
             // TASK-421-A (brain): свой id в ARM-маркерах.
             | Ok("cmp421_brain") => "cmp421_brain",

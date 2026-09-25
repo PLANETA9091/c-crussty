@@ -135,11 +135,11 @@ fn enabled() -> bool {
         .map(|v| {
             let v = v.trim();
             v == LEVER_ID || v == "cmp420_colpush" || v == "cmp421_chunk" || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2" || v == "cmp436_ins4"
-            || v == "cmp451_senseins" || v == "cmp453_diet" || v == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+            || v == "cmp451_senseins" || v == "cmp453_diet" || v == "cmp450_chunk" || v == "cmp457_noisesimd" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
             || v == "cmp438_sense" // TASK-444-C: sense family union
-            || v == "cmp451_senseins" || v == "cmp453_diet" || v == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
-            || v == "cmp453_diet" || v == "cmp450_chunk" // TASK-453-C: diet composite (chunkparse-codec plane, STRICT OR — master ∪ {cmp453_diet} only)
-            || v == "cmp451_senseins"|| v == "cmp434_chunkpl"|| v == "cmp435_chunk3"|| v == "cmp437_chunk4"|| v == "cmp444_chunk5"|| v == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+            || v == "cmp451_senseins" || v == "cmp453_diet" || v == "cmp450_chunk" || v == "cmp457_noisesimd" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+            || v == "cmp453_diet" || v == "cmp450_chunk" || v == "cmp457_noisesimd" // TASK-453-C: diet composite (chunkparse-codec plane, STRICT OR — master ∪ {cmp453_diet} only)
+            || v == "cmp451_senseins"|| v == "cmp434_chunkpl"|| v == "cmp435_chunk3"|| v == "cmp437_chunk4"|| v == "cmp444_chunk5"|| v == "cmp450_chunk" || v == "cmp457_noisesimd" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
         })
         .unwrap_or(false)
 }
@@ -155,6 +155,7 @@ fn marker_id() -> std::borrow::Cow<'static, str> {
 /// the union (cmp450_chunk legs grep "cmp450_chunk: ARMED ..."), else the
 /// plane's birth id (frozen historical markers).
         Ok("cmp450_chunk") => std::borrow::Cow::Owned("cmp450_chunk".to_string()),
+        Ok("cmp457_noisesimd") => std::borrow::Cow::Owned("cmp457_noisesimd".to_string()),
         _ => std::borrow::Cow::Borrowed(LEVER_ID),
     }
 }

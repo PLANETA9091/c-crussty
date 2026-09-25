@@ -121,7 +121,7 @@ fn enabled() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let v = v.trim();
-            v == LEVER_ID || v == "cmp444_chunk5" || v == "cmp452_mega" || v == "cmp450_chunk" || v == "cmp453_diet"
+            v == LEVER_ID || v == "cmp444_chunk5" || v == "cmp452_mega" || v == "cmp450_chunk" || v == "cmp457_noisesimd" || v == "cmp453_diet"
         })
         .unwrap_or(false)
 }
@@ -132,10 +132,20 @@ fn enabled() -> bool {
 fn marker_id() -> std::borrow::Cow<'static, str> {
     match std::env::var("CRUSSTY_LEVER_FLAG").as_deref() {
         Ok("cmp450_chunk") => std::borrow::Cow::Owned("cmp450_chunk".to_string()),
+        Ok("cmp457_noisesimd") => std::borrow::Cow::Owned("cmp457_noisesimd".to_string()),
         Ok("cmp452_mega") => std::borrow::Cow::Owned("cmp452_mega".to_string()), // TASK-452-C mega-composite
         Ok("cmp453_diet") => std::borrow::Cow::Owned("cmp453_diet".to_string()), // TASK-453-C diet composite
+        Ok("cmp457_chunksend") => std::borrow::Cow::Owned("cmp457_chunksend".to_string()), // TASK-457-D chunk-send delta
         _ => std::borrow::Cow::Borrowed(LEVER_ID),
     }
+}
+
+/// TASK-457-D: true iff the lever flag is the chunk-send delta carrier
+/// (the java TWIN same-tick construction dedup is live inside ChunkSendOps).
+fn twin_armed() -> bool {
+    std::env::var("CRUSSTY_LEVER_FLAG")
+        .map(|v| v.trim() == "cmp457_chunksend")
+        .unwrap_or(false)
 }
 
 
@@ -413,8 +423,13 @@ pub fn activate() {
         READY.store(true, Ordering::Release);
         let rc = cplug_sdk::retransform_class(t.name);
         let m = marker_id();
+        let twin_note = if twin_armed() {
+            " + chunkd same-tick twin construction dedup (join-burst x4 -> x1, exact same-tick keying)"
+        } else {
+            ""
+        };
         eprintln!(
-            "[crussty-plugin] {m}: ARMED chunk-send serialization snapshot (unsaved-keyed packet reuse, zero-copy HIT handoff, anti-xray bypass, per-send events preserved, cap 2048 evict-half, 0 added JNI; retransform rc={rc})"
+            "[crussty-plugin] {m}: ARMED chunk-send serialization snapshot (unsaved-keyed packet reuse, zero-copy HIT handoff, anti-xray bypass, per-send events preserved, cap 2048 evict-half, 0 added JNI; retransform rc={rc}){twin_note}"
         );
     });
 }

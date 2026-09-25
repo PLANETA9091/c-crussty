@@ -7,7 +7,15 @@ public final class net.minecraft.server.network.ChunkSendOps {
   static final java.lang.String CARRIER_UNION_437;
   static final java.lang.String CARRIER_UNION_444;
   static final java.lang.String CARRIER_UNION_450;
+  static final java.lang.String CARRIER_UNION_457D;
   static final java.lang.String CARRIER_UNION_452;
+  static final java.lang.String CARRIER_UNION_453;
+  static final java.lang.String CARRIER_457D;
+  static final boolean TWIN;
+  static final java.lang.String LABEL;
+  private static final java.util.concurrent.ConcurrentHashMap<java.lang.Long, java.lang.Long> BUILD_TICK;
+  private static long twinHits;
+  private static boolean twinFirstHitLogged;
   private static final java.util.concurrent.ConcurrentHashMap<java.lang.Long, net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket> CACHE;
   private static long sent;
   private static long serialized;
@@ -16,6 +24,10 @@ public final class net.minecraft.server.network.ChunkSendOps {
   private static int selftestLeft;
   private static boolean firstHitLogged;
   private net.minecraft.server.network.ChunkSendOps();
+  static java.lang.String pfx();
+  static boolean twinEnabled();
+  static java.lang.String flagLabel();
+  private static boolean builtThisTick(long, long);
   public static void sendChunk(net.minecraft.server.network.ServerGamePacketListenerImpl, net.minecraft.server.level.ServerLevel, net.minecraft.world.level.chunk.LevelChunk);
   private static net.minecraft.network.protocol.game.ClientboundLevelChunkWithLightPacket snapshotOrBuild(net.minecraft.server.level.ServerLevel, net.minecraft.world.level.chunk.LevelChunk);
   public static boolean selfTest();

@@ -83,6 +83,8 @@ public final class ChunkPacketEncodeOps {
     /** TASK-450-C union carrier (STRICT-OR; raw-cp marker for the
      * check_blobs_sync gate). */
     static final String CARRIER_UNION_450 = "cmp450_chunk";
+    /** TASK-457-D noise-SIMD carrier (STRICT-OR; raw-cp needle). */
+    static final String CARRIER_UNION_457D = "cmp457_noisesimd";
     /** TASK-452-C mega-composite (senseins ⊕ chunk union; STRICT-OR; raw-cp
      * marker for the check_blobs_sync gate). */
     static final String CARRIER_UNION_452 = "cmp452_mega";

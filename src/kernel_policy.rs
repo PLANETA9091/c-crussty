@@ -501,6 +501,35 @@ pub fn proven_entry(class: &str, kernel: &str) -> Option<&'static ProvenKernel> 
         .find(|p| short_class(p.class) == class && p.kernel == kernel)
 }
 
+/// TASK-457-D (C1 SIMD-noise carrier, law-8 GEN axis): LEVER-SCOPED Allow
+/// for the noise batch FILL family. Deliberately narrower than the `Off`
+/// override: fires ONLY while the round lever `cmp457_noisesimd` is armed
+/// AND only for the three fill-family (class, kernel) keys wired by
+/// `noise_fill.rs` (DensityFunctions$Noise / $ShiftNoise fillArray +
+/// NoiseChunk$NoiseInterpolator interpFillArray -> NormalNoiseBatchOps
+/// bulk-JNI bridge, ONE native crossing per slice = the law-6 bulk shape).
+/// Parity case: the bridge is parity-by-construction (recording pass through
+/// the provider's own vanilla fillAllDirectly, then the G-ABI-2 bit-exact
+/// native fill) and refuses to serve patches on SELFTEST FAIL (raw-bits
+/// equality gate, noise_fill::selftest / NOISEFILL_ROOTCAUSE.md). Empty or
+/// foreign lever = this fn is false -> default KeepJava (vanilla bit-in-byte).
+fn lever_scoped_allow(class: &str, kernel: &str) -> bool {
+    const FILL_FAMILY_KERNEL: &str = "noiseFillArrayWholeBody";
+    const FILL_FAMILY_CLASSES: &[&str] = &[
+        "net/minecraft/world/level/levelgen/DensityFunctions$Noise",
+        "net/minecraft/world/level/levelgen/DensityFunctions$ShiftNoise",
+        "net/minecraft/world/level/levelgen/NoiseChunk$NoiseInterpolator",
+    ];
+    if kernel != FILL_FAMILY_KERNEL
+        || !FILL_FAMILY_CLASSES.iter().any(|c| class.ends_with(c))
+    {
+        return false;
+    }
+    std::env::var("CRUSSTY_LEVER_FLAG")
+        .map(|v| v.trim() == "cmp457_noisesimd")
+        .unwrap_or(false)
+}
+
 /// The decision function under an explicit mode (pure; used by tests and by
 /// `decide`). No allocation, no locks (mode is passed in).
 pub fn decide_in(mode: PolicyMode, class: &str, kernel: &str) -> Decision {
@@ -514,6 +543,9 @@ pub fn decide_in(mode: PolicyMode, class: &str, kernel: &str) -> Decision {
         };
     }
     if proven_entry(class, kernel).is_some() {
+        return Decision::Allow;
+    }
+    if lever_scoped_allow(class, kernel) {
         return Decision::Allow;
     }
     // Default-safe: unknown / unproven kernels stay on the Java side until a

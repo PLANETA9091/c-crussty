@@ -128,6 +128,7 @@ fn enabled() -> bool {
 fn marker_id() -> std::borrow::Cow<'static, str> {
     match std::env::var("CRUSSTY_LEVER_FLAG").as_deref() {
         Ok("cmp450_chunk") => std::borrow::Cow::Owned("cmp450_chunk".to_string()),
+        Ok("cmp457_noisesimd") => std::borrow::Cow::Owned("cmp457_noisesimd".to_string()),
         Ok("cmp452_mega") => std::borrow::Cow::Owned("cmp452_mega".to_string()), // TASK-452-C mega-composite
         _ => std::borrow::Cow::Borrowed(LEVER_ID),
     }
