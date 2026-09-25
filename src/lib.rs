@@ -16,6 +16,7 @@
 //! byte hooks on top of this surface — see the project docs.
 
 mod alloc_diet;
+mod ai_dag_snapshot;
 mod area_map;
 mod emap;
 mod perlin_noise;
