@@ -1,12 +1,14 @@
 {
-  "agent": "general-purpose (subagent TASK-452-A)",
-  "vector": "cmp451_senseins = sense/brain family (SenseOps body-swap + BrainOps.tickEachRunning tick2 + EntityGoalQueryOps senseMode) STRICT-OR over ins4-carrier",
-  "branch": "round-452a-sense (worktree /home/z/rounds/ROUND-452/agent-a)",
-  "base": "origin/round-451d-senseins @ ff1c0b95; fix HEAD pending push",
-  "run_id": 36076710490,
-  "tps_med": 2.7,
-  "delta_pair_pct": null,
-  "verdict": "INFRA",
-  "evidence": "legs senseins-1 (run 36076710490: med 2.70 @6712673, norm +22.0%) and senseins-3 (run 36076729354: med 2.50 @7153255, norm +8.4%) BOTH DELIVERY-FAIL: NCDFE=65536 (32768 exceptions x2 lines) net/minecraft/world/entity/EntityGoalQueryOps at MobPushOps.pushables(MobPushOps.java:463); threw=0 (vanilla entity-exception handler), pop=VALID, band OK",
-  "what": "ROOT-CAUSE (x449 ConstSlot pattern): agent-D retagged TEST-mirror + label fns with cmp451_senseins but MISSED PRODUCTION rust gates -> entity_query::enabled() FALSE (module dormant, EntityGoalQueryOps NEVER defined), mobs_sense::enabled() FALSE (SenseOps body-swap DEAD - core of vector), mobs_ai/mobs_sscan/stagger dormant (carrier-parity slices dead). MobPushOps blob EQSNAP branch (java-side accepts cmp451_senseins) references EntityGoalQueryOps -> NCDFE storm, push lane dead. mobs_manager fail-closed guard did not fire because entity_query::lever_matches()==enabled() was false. FIX: 6 production gates retagged (entity_query enabled+enabled_flag_is_sense, mobs_sense enabled, mobs_ai/mobs_sscan/stagger enabled) + entity_query gate refactored to PURE flag_enabled(Option<&str>) pinned by tests (no mirror drift possible) + STRICT-eq regression asserts. cargo check --lib 0 err, cargo test 314/0. No .java edits -> blobs untouched (ALL IN SYNC preserved). Markers retained (MARKERS.txt x2), zips/jar/collapsed purged to 128K per dir."
+ "agent": "TASK-455-B (chunk-pipeline, law 8)",
+ "vector": "chunk-union rebaze-3: 47ea8b20 (diet carrier) ⊕ 797ae4f0 (chunk4⊕chunk5⊕chunkparse union), lever cmp450_chunk; + GEN-axis arming restore (run_world3 KERNEL_POLICY=off case for cmp450_chunk)",
+ "branch": "round-455b-chunk @ 74461386",
+ "run_id": null,
+ "tps_med": null,
+ "delta_pair_pct": null,
+ "lane": "chunk/worldgen: parse+send+send5+noise GEN + ins4-carrier stack; GEN-axis was dead since round-422 (policy case missing) — restored",
+ "ram": null,
+ "parity": "cargo test 329/0; check_blobs_sync ALL IN SYNC (javap flat==nested x16); gate needle audit ALL PRESERVED (rust union + java diet-superset)",
+ "verdict": "IN_PROGRESS",
+ "evidence": "merge commit 74461386 pushed; legs round-455b-chunk-1/2 dispatched HTTP 204 (refs created @74461386); inputs canon exact; dispatch_455b.py argv-guard+pin",
+ "what": "step-3: law-3 cycle-2 committed (cmp450_chunk = diet-profile union); leg-3 dispatch pending"
 }

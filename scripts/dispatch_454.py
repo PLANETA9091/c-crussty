@@ -25,9 +25,12 @@ BATCH = [
 
 EXPECTED_SHA = {
     "master": "05c6da1b",  # senseins-серт мердж (ancestry-семантика; docs поверх кода)
+    # TASK-454-C: диета-носитель (merge 598901f3 = STRICT-OR carrier;
+    # ancestry-семантика: любые step-коммиты поверх остаются ahead пина)
+    "round-454c-diet": "598901f3",
 }
 
-ANCESTRY_BASES = {"master"}
+ANCESTRY_BASES = {"master", "round-454c-diet"}
 
 INPUTS = {
     "radius": "640", "seconds": "300", "fake_players": "4",

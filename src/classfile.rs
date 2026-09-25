@@ -8873,6 +8873,9 @@ pub const CHUNKPARSE_TARGET_CLASS: &str =
 pub const CHUNKPARSE_OPS_CLASS: &str = "net/minecraft/world/level/chunk/storage/ChunkParseOps";
 pub const CHUNKPARSE_BLOCKS_LAMBDA: &str = "lambda$parse$5";
 pub const CHUNKPARSE_TWIN_LAMBDA: &str = "lambda$parse$7";
+/// TASK-424-C (R5c): the bridge entry point for the BIOMES site — the twin
+/// lambda itself is now redirected here (both section lambdas patched).
+pub const CHUNKPARSE_BIOMES_OPS_METHOD: &str = "parseBiomesSection";
 pub const CHUNKPARSE_SECTION_LAMBDA_DESC: &str = "(Lcom/mojang/serialization/Codec;Lnet/minecraft/world/level/ChunkPos;ILnet/minecraft/nbt/CompoundTag;)Lnet/minecraft/world/level/chunk/PalettedContainer;";
 
 /// Resolution closure for the ChunkParseOps bridge: the bridge must declare
@@ -8887,6 +8890,14 @@ pub fn chunkparse_resolution_closure(ops: &[u8]) -> Result<(), String> {
             "class",
             CHUNKPARSE_OPS_CLASS,
             "parseSection",
+            CHUNKPARSE_SECTION_LAMBDA_DESC,
+        ),
+        (
+            "class",
+            CHUNKPARSE_OPS_CLASS,
+            // TASK-424-C (R5c): biomes mirror cache entry point — same
+            // canonical descriptor (redirect stack-shape contract).
+            CHUNKPARSE_BIOMES_OPS_METHOD,
             CHUNKPARSE_SECTION_LAMBDA_DESC,
         ),
         ("class", CHUNKPARSE_OPS_CLASS, "init", "(Ljava/lang/String;)V"),
@@ -8968,6 +8979,211 @@ pub fn chunkparse_pristine_guard(bytes: &[u8]) -> Result<(), String> {
             "canonical section-lambda descriptor carried by {} methods, expected exactly 2 — name->role mapping untrustworthy",
             section_lambdas.len()
         ));
+    }
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// CHUNK-SEND SERIALIZATION SNAPSHOT (TASK-438-C, lever cmp437_chunk4, law 8
+// chunk-loading axis WIDENING). Ground truth: kernel javap (round-396-a
+// patched-kernel.jar, purpur 1.21.10) — net/minecraft/server/network/
+// PlayerChunkSender declares the static
+//   sendChunk(ServerGamePacketListenerImpl, ServerLevel, LevelChunk)V
+// whose body constructs a fresh ClientboundLevelChunkWithLightPacket PER SEND
+// (per player): the serialize-side mirror of the parse codec machinery
+// (RESEARCH-F: parse codec 33.38% burst-window alloc) with NO per-player input
+// when anti-xray is off (shouldModify == false). The redirect swaps that body
+// for ChunkSendOps.sendChunk (snapshot-first: revision/unsaved-keyed packet
+// reuse, zero-copy handoff; isUnsaved() invalidation; anti-xray bypass;
+// per-send events preserved). Static->static stack shape is a pass-through.
+// ---------------------------------------------------------------------------
+pub const CHUNKSEND_TARGET_CLASS: &str = "net/minecraft/server/network/PlayerChunkSender";
+pub const CHUNKSEND_OPS_CLASS: &str = "net/minecraft/server/network/ChunkSendOps";
+pub const CHUNKSEND_METHOD: &str = "sendChunk";
+pub const CHUNKSEND_DESC: &str = "(Lnet/minecraft/server/network/ServerGamePacketListenerImpl;Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/level/chunk/LevelChunk;)V";
+
+/// Resolution closure for the ChunkSendOps bridge: the bridge must declare
+/// `sendChunk` with the EXACT vanilla static descriptor (redirect stack-shape
+/// contract) and `selfTest()Z` (pre-ARM oracle), and must be FLAT (zero nested
+/// classes — the classfile is defined alone into the kernel loader).
+pub fn chunksend_resolution_closure(ops: &[u8]) -> Result<(), String> {
+    let targets: &[(&str, &str, &str, &str)] = &[
+        (
+            "class",
+            CHUNKSEND_OPS_CLASS,
+            CHUNKSEND_METHOD,
+            CHUNKSEND_DESC,
+        ),
+        ("class", CHUNKSEND_OPS_CLASS, "selfTest", "()Z"),
+    ];
+    check_members(ops, targets)?;
+    // Flat delivery guard: a nested class would surface as a
+    // "ChunkSendOps$..." Class reference somewhere in the pool.
+    if find_nested_class_ref(ops, "ChunkSendOps$") {
+        return Err("bridge declares/references a nested ChunkSendOps$ class — flat-only delivery contract".into());
+    }
+    Ok(())
+}
+
+/// Pristine guard for the ORIGINAL PlayerChunkSender bytes (called on the
+/// captured bytes BEFORE any patch is computed; a kernel shape drift must
+/// leave the hook dormant instead of serving a blind redirect):
+///   * `sendChunk(ServerGamePacketListenerImpl, ServerLevel, LevelChunk)V`
+///     exists, is STATIC (ACC_STATIC 0x0008) and is the ONLY such method;
+///   * the class references ClientboundLevelChunkWithLightPacket (the packet
+///     construction site the redirect replaces — validates the shape).
+pub fn chunksend_pristine_guard(bytes: &[u8]) -> Result<(), String> {
+    const ACC_STATIC: u16 = 0x0008;
+    let layout = parse_layout(bytes).ok_or("bad classfile layout".to_string())?;
+    let mut p = layout.methods_start;
+    let count = usize::from(u16_at(bytes, p).ok_or("truncated method count")?);
+    p = p.checked_add(2).ok_or("truncated method table")?;
+    let mut send_chunk: Option<u16> = None;
+    for _ in 0..count {
+        let access = u16_at(bytes, p).ok_or("truncated method access")?;
+        let n_idx = u16_at(bytes, p.checked_add(2).ok_or("truncated method")?)
+            .ok_or("truncated method name")?;
+        let d_idx = u16_at(bytes, p.checked_add(4).ok_or("truncated method")?)
+            .ok_or("truncated method desc")?;
+        let attr_count = usize::from(
+            u16_at(bytes, p.checked_add(6).ok_or("truncated method")?)
+                .ok_or("truncated method attrs")?,
+        );
+        p = p.checked_add(8).ok_or("truncated method table")?;
+        for _ in 0..attr_count {
+            let len = u32_at(bytes, p.checked_add(2).ok_or("truncated attr")?)
+                .ok_or("truncated attr")? as usize;
+            p = p
+                .checked_add(6)
+                .ok_or("truncated attr")?
+                .checked_add(len)
+                .ok_or("truncated attr")?;
+        }
+        let name = layout.pool.utf8_value(n_idx).ok_or("bad name idx")?;
+        let desc = layout.pool.utf8_value(d_idx).ok_or("bad desc idx")?;
+        if name == CHUNKSEND_METHOD && desc == CHUNKSEND_DESC {
+            if send_chunk.is_some() {
+                return Err("duplicate sendChunk declaration — name->role mapping untrustworthy".into());
+            }
+            send_chunk = Some(access);
+        }
+    }
+    match send_chunk {
+        None => {
+            return Err("sendChunk(ServerGamePacketListenerImpl, ServerLevel, LevelChunk)V not found — kernel shape drift".into());
+        }
+        Some(access) if access & ACC_STATIC == 0 => {
+            return Err(
+                "sendChunk is not static — static->static redirect contract violated".into(),
+            );
+        }
+        Some(_) => {}
+    }
+    // The redirect target packet must be the construction site of THIS body.
+    if !find_nested_class_ref(bytes, "ClientboundLevelChunkWithLightPacket") {
+        return Err(
+            "sendChunk body does not reference ClientboundLevelChunkWithLightPacket — kernel shape drift"
+                .into(),
+        );
+    }
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// CHUNK-PACKET ENCODE CACHE (TASK-444-B, lever cmp444_chunk5, law 8 stage-2):
+// the private ClientboundLevelChunkWithLightPacket.write(RegistryFriendlyByteBuf)
+// body is javap-verified as writeInt(x)/writeInt(z)/chunkData.write/lightData
+// .write — a pure function of the packet instance. The instance->static
+// redirect (receiver prepended) swaps that body for ChunkPacketEncodeOps.write:
+// encode-once (scratch capture) then byte[]-replay per player, keyed by packet
+// instance. Instance shape contract: virtual desc with the METHOD OWNER class
+// prepended (redirect_method_body_to_static).
+// ---------------------------------------------------------------------------
+pub const CHUNKPACKET_TARGET_CLASS: &str =
+    "net/minecraft/network/protocol/game/ClientboundLevelChunkWithLightPacket";
+pub const CHUNKPACKET_OPS_CLASS: &str = "net/minecraft/server/network/ChunkPacketEncodeOps";
+pub const CHUNKPACKET_METHOD: &str = "write";
+pub const CHUNKPACKET_VIRTUAL_DESC: &str = "(Lnet/minecraft/network/RegistryFriendlyByteBuf;)V";
+pub const CHUNKPACKET_STATIC_DESC: &str = "(Lnet/minecraft/network/protocol/game/ClientboundLevelChunkWithLightPacket;Lnet/minecraft/network/RegistryFriendlyByteBuf;)V";
+
+/// Resolution closure for the ChunkPacketEncodeOps bridge: the bridge must
+/// declare `write` with the EXACT receiver-prepended static descriptor
+/// (redirect stack-shape contract) and `selfTest()Z` (pre-ARM oracle), and
+/// must be FLAT (zero nested classes).
+pub fn chunkpacket_resolution_closure(ops: &[u8]) -> Result<(), String> {
+    let targets: &[(&str, &str, &str, &str)] = &[
+        (
+            "class",
+            CHUNKPACKET_OPS_CLASS,
+            CHUNKPACKET_METHOD,
+            CHUNKPACKET_STATIC_DESC,
+        ),
+        ("class", CHUNKPACKET_OPS_CLASS, "selfTest", "()Z"),
+    ];
+    check_members(ops, targets)?;
+    if find_nested_class_ref(ops, "ChunkPacketEncodeOps$") {
+        return Err("bridge declares/references a nested ChunkPacketEncodeOps$ class — flat-only delivery contract".into());
+    }
+    Ok(())
+}
+
+/// Pristine guard for the ORIGINAL ClientboundLevelChunkWithLightPacket bytes:
+///   * the private `write(RegistryFriendlyByteBuf)V` exists (instance method)
+///     and is the ONLY such method;
+///   * the class declares getChunkData/getLightData (the vanilla-equivalent
+///     encode surface the bridge replays).
+pub fn chunkpacket_pristine_guard(bytes: &[u8]) -> Result<(), String> {
+    let layout = parse_layout(bytes).ok_or("bad classfile layout".to_string())?;
+    let mut p = layout.methods_start;
+    let count = usize::from(u16_at(bytes, p).ok_or("truncated method count")?);
+    p = p.checked_add(2).ok_or("truncated method table")?;
+    let mut write_method: Option<u16> = None;
+    for _ in 0..count {
+        let access = u16_at(bytes, p).ok_or("truncated method access")?;
+        let n_idx = u16_at(bytes, p.checked_add(2).ok_or("truncated method")?)
+            .ok_or("truncated method name")?;
+        let d_idx = u16_at(bytes, p.checked_add(4).ok_or("truncated method")?)
+            .ok_or("truncated method desc")?;
+        let attr_count = usize::from(
+            u16_at(bytes, p.checked_add(6).ok_or("truncated method")?)
+                .ok_or("truncated method attrs")?,
+        );
+        p = p.checked_add(8).ok_or("truncated method table")?;
+        for _ in 0..attr_count {
+            let len = u32_at(bytes, p.checked_add(2).ok_or("truncated attr")?)
+                .ok_or("truncated attr")? as usize;
+            p = p
+                .checked_add(6)
+                .ok_or("truncated attr")?
+                .checked_add(len)
+                .ok_or("truncated attr")?;
+        }
+        let name = layout.pool.utf8_value(n_idx).ok_or("bad name idx")?;
+        let desc = layout.pool.utf8_value(d_idx).ok_or("bad desc idx")?;
+        if name == CHUNKPACKET_METHOD && desc == CHUNKPACKET_VIRTUAL_DESC {
+            if write_method.is_some() {
+                return Err("duplicate write(RegistryFriendlyByteBuf) declaration — name->role mapping untrustworthy".into());
+            }
+            write_method = Some(access);
+        }
+    }
+    match write_method {
+        None => {
+            return Err("write(RegistryFriendlyByteBuf)V not found — kernel shape drift".into());
+        }
+        Some(access) if access & 0x0002 == 0 => {
+            // ACC_PRIVATE (0x0002): the vanilla body is private — a public
+            // write would be a different shape (the codec contract).
+            return Err("write(RegistryFriendlyByteBuf)V is not private — kernel shape drift".into());
+        }
+        Some(_) => {}
+    }
+    for getter in ["getChunkData", "getLightData", "getX", "getZ"] {
+        if !find_nested_class_ref(bytes, getter) {
+            return Err(format!(
+                "ClientboundLevelChunkWithLightPacket does not declare {getter} — kernel shape drift"
+            ));
+        }
     }
     Ok(())
 }
