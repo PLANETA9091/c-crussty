@@ -26,6 +26,11 @@ mod batch_table;
 mod brainhook;
 mod bridge_class;
 mod goal_selector;
+// HILBERT STORAGE ORDER (ID-H07, TASK-459-77, STRICT dormant): пре-сортировка
+// индексов entity-слотов ВНУТРИ секции в Hilbert-порядке (x,z) — реордер
+// ХРАНЕНИЯ, НЕ выдачи (порядок выдачи = ваниль; перестановка = биекция тех
+// же слотов). Dormant unless CRUSSTY_HILBERT_STORAGE=1.
+mod hilbert_storage_order;
 mod classfile;
 mod collide_batch;
 mod colpush;
@@ -242,6 +247,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // serverAiStep GoalSelector.tick x2 -> GoalOps.tickGate; composes on the
     // Mob chain after mobs_sscan's checkDespawn serve). cmp421_brain only.
     goal_selector::register();
+    // HILBERT STORAGE ORDER (ID-H07, TASK-459-77 scaffold): register-only —
+    // dormant-notice; НЕТ define/JNI/хуков (scaffold-stop, реордер-лестница
+    // и lockstep-цеза приземляются в wiring-фазе). STRICT dormant.
+    hilbert_storage_order::register();
     // F3 LEVELTICKS-READS (family-agg pack member, S7-116): LevelTicks +
     // ServerLevel body-swap hooks (the ServerLevel one composes with F1).
     tickhook::register();

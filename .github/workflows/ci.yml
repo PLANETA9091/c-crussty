@@ -6,6 +6,11 @@
 name: ci
 
 on:
+  # TASK-459-77 (branch-local CI wiring, TASK-459-56/70 precedent): master
+  # ci.yml trigger block arrived mangled (branches: aster] — no workflow_dispatch),
+  # so dispatch cannot fire on round branches. workflow_dispatch added HERE ONLY
+  # for round-459-h07; master untouched.
+  workflow_dispatch:
   push:
     branches: [master]
   pull_request:
