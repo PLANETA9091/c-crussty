@@ -159,7 +159,7 @@ fn flag_enabled(flag: Option<&str>) -> bool {
             // register natives → probe → publish BEFORE the push lane (arm AFTER
             // define+selfTest — NCDFE structurally impossible, ColpushOps-marker
             // canon). cmp456_chunkmono ≡ cmp450_chunk planes ⊕ chunk6-sched.
-            | Some("cmp456_chunkmono")
+            | Some("cmp456_chunkmono") | Some("cmp456_chunkmono_p31snap")
     )
 }
 
@@ -203,8 +203,8 @@ fn enabled_flag_is_sense() -> bool {
             | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4")
             | Ok("cmp438_sense") // TASK-444-C: sense family union
             | Ok("cmp451_senseins") // TASK-452-A: senseins composite — sense-arena slice must arm (production gate retag)
-            | Ok("cmp453_diet") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
-            | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") // TASK-454-B/455-B: chunk union carrier rides the sense gate (STRICT OR, rebaze-3 union)
+            | Ok("cmp453_diet") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono_p31snap") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
+            | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono_p31snap") // TASK-454-B/455-B: chunk union carrier rides the sense gate (STRICT OR, rebaze-3 union)
     )
 }
 
@@ -1037,9 +1037,15 @@ mod tests {
         // MobPushOps.pushables:467 resolves an undefined bridge (chkmono456-1/2
         // DELIVERY-FAIL: NCDFE ×1462/×24158).
         assert!(enabled_with("cmp456_chunkmono"));
+        // TASK-460-01: the climb-compo id rides the SAME carrier planes
+        // (P31 INSIDE-BATCH + P32 snapreg sidecar on chunkmono) — the
+        // define-gate must match the java blob gate or the composite leg
+        // loses the EQSNAP plane (mirror-drift ×452 canon).
+        assert!(enabled_with("cmp456_chunkmono_p31snap"));
         assert!(!enabled_with("cmp456_chunkmono_x"));
         assert!(!enabled_with(" cmp456_chunkmono"));
         assert!(!enabled_with("cmp456_chunkmono "));
+        assert!(!enabled_with("cmp456_chunkmono_p31snap_x"));
     }
 
     /// Mirror of the java EntityGoalQueryOps.cellHash operating on the same

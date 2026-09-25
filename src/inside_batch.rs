@@ -1,7 +1,8 @@
 //! INSIDE-BATCH (TASK-459-56, ID-P31 — закон 11 WILD, bulk-JNI discovery plane).
-//! Lever `CRUSSTY_INSIDE_BATCH` (env-gate, dormant default — дисциплина
-//! inside_cache/fluid_guard: флаг не стоит ⇒ класс не определяется, ретаргет
-//! не компонуется, хук не регистрируется ⇒ ваниль бит-в-байт по построению).
+//! Lever `CRUSSTY_INSIDE_BATCH` (env-gate) ИЛИ составной lever_flag
+//! `cmp456_chunkmono_p31snap` (STRICT eq — TASK-460-01 climb-вайринг P31 на
+//! носитель cmp456_chunkmono): флаг не стоит ⇒ класс не определяется, ретаргет
+//! не компонуется, хук не регистрируется ⇒ ваниль бит-в-байт.
 //!
 //! Лейн: inside_volatile 16.6пп (TOP-1 остаток компо-носителя chunkmono).
 //! Дизайн (карточка ID-P31, RESEARCH-459-P31.md): java-мост InsideBatchOps
@@ -29,6 +30,11 @@ use jvmti_bindings::jni;
 use jvmti_bindings::prelude::JniEnv;
 use std::ffi::CString;
 use std::os::raw::c_void;
+use std::sync::atomic::Ordering;
+
+const ENTITY_CLASS: &str = "net/minecraft/world/entity/Entity";
+/// Global ref to the kernel classloader, captured at activation (0 = none).
+static KERNEL_LOADER: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
 
 pub const BRIDGE_CLASS: &str = "net/minecraft/world/entity/InsideBatchOps";
 
@@ -47,8 +53,16 @@ pub const MAXSEC: usize = 8;
 /// Джавап-дефляция ванильного traversal-бокса (superset-расширение секций).
 pub const DEFLATE_EPS: f64 = 9.999999747378752E-6;
 
-/// Lever gate (env-gate, чтение на каждый вызов — как inside_cache::enabled).
+/// Lever gate (env-gate ИЛИ составной carrier-флаг; чтение на каждый вызов —
+/// как inside_cache::enabled). TASK-460-01: `cmp456_chunkmono_p31snap` —
+/// STRICT eq (климб-компо P31+P32/P36 sidecar на носителе cmp456_chunkmono).
 pub fn enabled() -> bool {
+    if std::env::var("CRUSSTY_LEVER_FLAG")
+        .map(|v| v.trim() == "cmp456_chunkmono_p31snap")
+        .unwrap_or(false)
+    {
+        return true;
+    }
     std::env::var("CRUSSTY_INSIDE_BATCH")
         .map(|v| {
             let v = v.trim().to_ascii_lowercase();
@@ -57,10 +71,17 @@ pub fn enabled() -> bool {
         .unwrap_or(false)
 }
 
-/// Bridge-байты: появляются после первого прогона scripts/build_inside_batch_ops.sh
-/// (scaffold: None — activate обязан оставаться dormant).
-#[allow(dead_code)]
-pub const BRIDGE_BYTES: Option<&[u8]> = None;
+/// Bridge-байты: встроенный blob (TASK-460-01: пересобран и закоммичен —
+/// урок-408/425, lever в SOURCES без пересборки tracked-блобов = ПЛАЦЕБО;
+/// источник: entityinside/net/minecraft/world/entity/InsideBatchOps.java,
+/// сборка scripts/build_inside_batch_ops.sh, flat==nested gate).
+const BRIDGE_BYTES: &[u8] =
+    include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideBatchOps.class");
+
+/// Gate-видимость для entity_compose stage (S7-162 supersede-дисциплина).
+pub fn enabled_pub() -> bool {
+    enabled()
+}
 
 static BRIDGE_READY: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
@@ -95,18 +116,142 @@ pub fn register() {
     );
 }
 
-/// Background activation (scaffold): BRIDGE_BYTES == None ⇒ dormant-fail-closed.
+/// Background activation (TASK-460-01 wiring): РАННИЙ arm-хук (NCDFE-канон
+/// d73758a3/5ecd841a, ARM-AFTER-DEFINE fa9054d9) — ждать kernel Entity,
+/// boot-маркер, guard major, define InsideBatchOps в kernel loader,
+/// RegisterNatives(insideBatchMask) ДО flips, java noteBatchArmed, затем
+/// BRIDGE_READY. Entity-stage патч компонует entity_compose (stage 1,
+/// supersede inside_cache на сайте isAffectedByBlocks — S7-162: ОДИН владелец).
 pub fn activate() {
     if !enabled() {
         return;
     }
-    let Some(bytes) = BRIDGE_BYTES else {
+    std::thread::spawn(|| {
+        // 1. Ждать kernel-класс Entity (точка захвата kernel loader).
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(180);
+        loop {
+            if cplug_sdk::classes::find_class(ENTITY_CLASS).is_some() {
+                break;
+            }
+            if std::time::Instant::now() > deadline {
+                eprintln!(
+                    "[crussty-plugin] inside_batch: {ENTITY_CLASS} not loaded within 180s, bridge stays undefined"
+                );
+                return;
+            }
+            if std::time::Instant::now() > deadline - std::time::Duration::from_secs(170) {
+                eprintln!(
+                    "[crussty-plugin] inside_batch: forcing kernel load of {ENTITY_CLASS}"
+                );
+                crate::improved_noise::force_load_kernel_class(ENTITY_CLASS);
+            }
+            let sighted = cplug_sdk::classes::is_sighted(ENTITY_CLASS);
+            std::thread::sleep(std::time::Duration::from_millis(if sighted {
+                2_000
+            } else {
+                10_000
+            }));
+        }
+
+        // 2. Kernel loader затих до define (boot-storm дисциплина TASK-80).
+        if !crate::improved_noise::wait_for_boot() {
+            eprintln!("[crussty-plugin] inside_batch: boot marker not seen, hook stays dormant");
+            return;
+        }
+        std::thread::sleep(std::time::Duration::from_secs(20));
         eprintln!(
-            "[crussty-plugin] inside_batch: bridge bytes pending (scripts/build_inside_batch_ops.sh) — hook stays dormant"
+            "[crussty-plugin] inside_batch: server booted, defining bridge into kernel loader"
         );
-        return;
-    };
-    debug_assert!(!bytes.is_empty());
+
+        // 3. Guard: встроенный блоб не новее JVM (major 65 vs живая JVM).
+        let jvm_major = cplug_sdk::jni_util::with_attached(|env| {
+            crate::improved_noise::jvm_class_major(env)
+                .or_else(|| crate::improved_noise::jvm_max_class_major(env))
+        })
+        .flatten()
+        .unwrap_or(u16::MAX);
+        let major = crate::improved_noise::class_version(BRIDGE_BYTES)
+            .map(|(m, _)| m)
+            .unwrap_or(0);
+        if major > jvm_major {
+            eprintln!(
+                "[crussty-plugin] inside_batch: {BRIDGE_CLASS} is class major {major} but JVM supports up to {jvm_major} — rebuild entityinside/ via scripts/build_inside_batch_ops.sh; hook stays dormant"
+            );
+            return;
+        }
+
+        // 4. Захват kernel loader от Entity + define + RegisterNatives + arm.
+        let defined = cplug_sdk::jni_util::with_attached(|env| {
+            let Some(cls) = cplug_sdk::classes::find_class(ENTITY_CLASS) else {
+                return false;
+            };
+            let Some(class_cls) = env.find_class("java/lang/Class") else {
+                crate::clear_exception(env);
+                return false;
+            };
+            let Some(loader) = env
+                .get_method_id(class_cls, "getClassLoader", "()Ljava/lang/ClassLoader;")
+                .and_then(|mid| {
+                    let l = env.call_object_method(cls.as_jclass(), mid, &[]);
+                    (l as usize != 0).then_some(l)
+                })
+            else {
+                crate::clear_exception(env);
+                env.delete_local_ref(class_cls);
+                return false;
+            };
+            let gref = env.new_global_ref(loader);
+            if gref.is_null() {
+                crate::describe_exception(env);
+                env.delete_local_ref(loader);
+                env.delete_local_ref(class_cls);
+                return false;
+            }
+            KERNEL_LOADER.store(gref as usize, Ordering::SeqCst);
+            let Some(c) = env.define_class(BRIDGE_CLASS, gref, BRIDGE_BYTES) else {
+                crate::describe_exception(env);
+                eprintln!(
+                    "[crussty-plugin] inside_batch: define_class({BRIDGE_CLASS}) failed — hook stays dormant"
+                );
+                return false;
+            };
+            eprintln!(
+                "[crussty-plugin] inside_batch: defined {BRIDGE_CLASS} in kernel loader"
+            );
+            // RegisterNatives ДО flips/READY: первый armed batchGate-вызов обязан
+            // иметь связку (arm-order контракт моста: define+natives+arm).
+            let natives_ok = register_native(env, c);
+            // Global ref BEFORE delete_local_ref (asm.rs canon): the JNI-defined
+            // class is NOT reachable via find_class on an attached native thread
+            // (noise_fill.rs smoke-1) — the define's own ref is the only handle.
+            let cgr = env.new_global_ref(c);
+            env.delete_local_ref(c);
+            if !natives_ok {
+                return false;
+            }
+            // Arm-order финал: BATCH_ARMED=true ТОЛЬКО после define+natives.
+            let Some(arm_mid) = env.get_static_method_id(cgr, "noteBatchArmed", "()V") else {
+                crate::clear_exception(env);
+                eprintln!(
+                    "[crussty-plugin] inside_batch: noteBatchArmed unresolved — bridge stays disarmed (fail-closed)"
+                );
+                return false;
+            };
+            env.call_static_void_method(cgr, arm_mid, &[]);
+            true
+        });
+        if !defined.unwrap_or(false) {
+            eprintln!(
+                "[crussty-plugin] inside_batch: bridge definition aborted, hook stays dormant (fail-closed)"
+            );
+            return;
+        }
+        BRIDGE_READY.store(true, Ordering::Release);
+        crate::kernel_policy::audit_wire(BRIDGE_CLASS, "batchGate", "inside_batch v1 (ID-P31 bulk-JNI; entity_compose stage 1 supersede inside_cache)");
+        eprintln!(
+            "[crussty-plugin] cmp456_chunkmono_p31snap: ARMED (inside_batch bridge defined+natives+noteBatchArmed; strict vanilla tail)"
+        );
+    });
 }
 
 // ---------------------------------------------------------------------------

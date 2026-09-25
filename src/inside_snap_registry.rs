@@ -56,7 +56,8 @@
 //!   "inside_snapreg: ARMED (flat registry sidecar live; ...)"
 //!   (v2, после widen: entity_compose stage marker + "first FLAT serve")
 //!
-//! ФЛАГ-ГЕЙТ: CRUSSTY_LEVER_FLAG STRICT eq `cmp459_snapreg` (пустой/чужой =
+//! ФЛАГ-ГЕЙТ: CRUSSTY_LEVER_FLAG STRICT eq `cmp459_snapreg` ИЛИ составной
+//! climb-флаг `cmp456_chunkmono_p31snap` (TASK-460-01; пустой/чужой =
 //! ваниль бит-в-байт: класс не определяется, хуков нет). Legacy env
 //! CRUSSTY_SNAPREG=1 принимается для A/B-реплеев (канон inside_bitmask).
 //! Прогноз (карточка ID-P32): java_util −40-60% CHM-части => +0.8-1.2пп.
@@ -80,10 +81,14 @@ const LANE_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideSnapOps$Lane.class");
 
 fn enabled() -> bool {
-    // ID-P32 rides STRICT eq on its OWN lever id; legacy env accepted for
-    // A/B replays (канон inside_bitmask::enabled).
+    // ID-P32 rides STRICT eq on its OWN lever id; TASK-460-01 climb-compo
+    // `cmp456_chunkmono_p31snap` accepted on the chunkmono carrier; legacy env
+    // accepted for A/B replays (канон inside_bitmask::enabled).
     let lever = std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim() == "cmp459_snapreg")
+        .map(|v| {
+            let v = v.trim();
+            v == "cmp459_snapreg" || v == "cmp456_chunkmono_p31snap"
+        })
         .unwrap_or(false);
     if lever {
         return true;
@@ -346,6 +351,9 @@ pub fn activate() {
 
         BRIDGE_READY.store(true, Ordering::Release);
         crate::kernel_policy::audit_wire(OPS_CLASS, "snapGet", "inside_snapreg v1 (ID-P32 sidecar; no retarget sites in scaffold)");
+        eprintln!(
+            "[crussty-plugin] cmp456_chunkmono_p31snap: ARMED snapreg sidecar (flat registry defined+selfTest+armed; v1: no retarget sites, fail-closed CHM fallback)"
+        );
         eprintln!(
             "[crussty-plugin] inside_snapreg: bridge defined+selfTest+armed, BRIDGE_READY (v2: section-creation + wide-gate retargets)"
         );
