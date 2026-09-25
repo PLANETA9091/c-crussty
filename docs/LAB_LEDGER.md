@@ -53,3 +53,9 @@
 - Диск: маркеры ДО пурджа; joml.jar вне пурдж-зон (Maven Central восстановление); sparse-worktree ~30-40MB (worktree add без --no-checkout валится при соседях 3×932M); git gc 1.4G→850M.
 - sha:literal в --leg ломал split ":" (фикс ×458); absorb-кэш склеивает одинаковые артефакты — проверять tag-vs-run_id.
 - INFRA-DUP: артефакт-коллизия двух ранов одного коммита (a35) — разносить ре-роллы по хешам/коммитам.
+
+## ПОДСИСТЕМА: region_threads / ticking-bucket (lever #7/#13, s7169 blob)
+- CX6-карта (TASK-459-85): w=4 mapping = checkerboard ((rx&1)<<1)|(rz&1) по 8-чанк регионам — P(same worker|orthogonal neighbor)=0; RECON-15: 478/651/2432 сэмплов, parallelism 3.74/4=93%, main-park 13.4% (imbalance страдает статикой); broadphase лейн 8.8-10.9% — рабочий сет воркера = разреженная пыль с шагом 16 чанков → секции/чанк-рефы cold каждый тик.
+- ОТКРЫТАЯ гипотеза C-X6 (scaffold round-459-cx6, STRICT dormant lever cmp459_cx6): affinity-shuffle = 2x2 блоки регионов (16x16-чанк тайл/воркер), соседние регионы на одном воркере P=1/2; membership-only (intra-bucket порядок = ваниль, оракул G2 в src/bucket_affinity.rs, 7 тестов GREEN). CAPTURE-МАТЕМ: Δ = 9% lane × 0.6-0.8 miss × 0.3-0.5 capture × 0.93 eff ≈ +1.5-3.8пп (прогноз +2пп); потолок 10.9%×0.8 ≈ +8.7пп < +20 → закон-13a: ТОЛЬКО композиционный климб-кандидат (поверх cmp456_chunkmono + P31), самостоятельный мерж невозможен.
+- Риск (пререгистред (preregistered)): тайл-швы 16x16 переводят push/merge партнёров границы в межворкерные — S7-155 parity-класс уже принимает interleave; G1-эффект-маркер ≥10% mapping-delta (mapping_delta_report); гейт-дельта против steal-mode (S7-167) — сравнивать на СТАТИЧЕСКОМ пути (steal off).
+- Инфра-урок ×459-CX6: /tmp пурджится внешним процессом между scaffold и commit (worktree prunable) — артефакты бэкапить в /home/z/rounds/ROUND-459/<agent>-artifacts/ и коммитить немедленно.

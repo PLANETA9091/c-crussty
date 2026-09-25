@@ -81,6 +81,13 @@ mod zero_cursor;
 mod palette_gather;
 mod paletted;
 mod promote_wire;
+// BUCKET-AFFINITY (TASK-459-CX6, WILD law-11 idea C-X6): ticking-bucket
+// locality shuffle for RegionTickOps w=4 — adjacent 8-chunk regions -> one
+// worker (16x16-chunk tile) for broadphase cache locality; membership-only
+// shuffle, intra-bucket order bit-for-bit. STRICT dormant unless
+// CRUSSTY_LEVER_FLAG == cmp459_cx6 AND region_threads>=2; scaffold
+// registers ZERO byte hooks (lesson-408 fail-closed).
+mod bucket_affinity;
 mod proto_blend_cache;
 mod randomtick;
 mod region_threads;
@@ -249,6 +256,11 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // EntityCallbacks guard sites, composed on top of F1/F3 bytes (LAST in
     // the byte-hook chain). Dormant unless CRUSSTY_REGION_THREADS>=2.
     region_threads::register();
+    // BUCKET-AFFINITY (TASK-459-CX6): fail-closed scaffold registration —
+    // composes ON the region lever (requires region_threads>=2); dormant
+    // unless CRUSSTY_LEVER_FLAG == cmp459_cx6; registers 0 byte hooks
+    // until the tracked blob rebuild lands (lesson-408).
+    bucket_affinity::register();
     // MOB-SOA (TASK-401-E, vector soa): LivingEntity byte hook for the
     // getPushableEntities→MobPushOps.pushables retarget — pristine capture at
     // first load, patch served after the MobPushOps bridge lands in the
@@ -546,6 +558,9 @@ fn inject_surface() {
     // EntityCallbacks, retransform both (dormant unless
     // CRUSSTY_REGION_THREADS>=2).
     region_threads::activate();
+    // BUCKET-AFFINITY (TASK-459-CX6): activation = same fail-closed
+    // no-op contract as register() (0 defines/0 retransforms in scaffold).
+    bucket_affinity::activate();
     // BATCH-COLLECTOR (S7-160): define BatchCollector into the kernel
     // loader (define-only; the per-entity lazy swap happens in
     // RegionTickOps.tickBucket; dormant unless CRUSSTY_BATCH_COLLECTOR=1
