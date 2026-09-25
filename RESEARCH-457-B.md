@@ -33,7 +33,20 @@
 ## 4. Логи тика ×457 (append-only)
 - PHASE 0: worktree создан на 1838ae1d, dispatch_457b.py написан (пин exact), RESULT.json write-through.
 - **poi457-5 (run 36131787478, ветка round-456b-poi-5): completed failure на шаге «Runner calibration band gate (pair-hunter fast-fail, S7-96d pairing law)» = BAND fast-fail инфра → НЕ ВЕРДИКТ, ре-ролл ≤2 (канон).**
-- poi457-6 (36131797497) / poi457-7 (36131807435) в полёте.
+- step-2: диспетчер уточнён — пин = КОММИТ 5ecd841a (не head ветки round-456b-poi 0fa13d72, который добавляет только пи-эфай-скрипт; канон = ноги на голом фикс-коммите). Диспатч: poi457-5r2 (ре-ролл band-фейла) + poi457-8, позднее poi457-9. Все @5ecd841a exact.
+- **poi457-6 (36131797497) АБСОРБ → GREEN-CANDIDATE +12.2 norm @6997574 (TPS 2.55 vs exp 2.27)**: NCDFE=0, ARM cmp456_poi poi-plane + updatePOI EFFECT armed (tick 25) + epoch ok (bulk JNI 1/tick), selfTest==true ×3, threw=0, лейны items 0.00/nav 3.12/broad 9.56 (сертный лейн-гейт держит); AIOOBE ×2 в stdout = `cmp420_chunk2: biomes selftest FAIL (caught)` fixture-шум (не ungated AIOOBE, T2 threw=0). Пары: окно [6947574,7047574] → a23 +6.0@6958213 Δ39k → **+6.2 max** (a12 +8.1@6966170 Δ31k → +4.1; a29 Δ53.5k — мимо) — суб-бар, БАНК.
+- **poi457-7 (36131807435) АБСОРБ → GREEN-CANDIDATE +9.1 norm @7523645 (TPS 2.60 vs exp 2.38)**: NCDFE=0, ARM+ЭФФЕКТ (tick 15) + epoch ok, selfTest==true ×3, threw=0, лейны items 0.00/nav 3.46/broad 9.62. Пары: окно [7473645,7573645] пусто в ×456-банке; истор. a25 +8.8@7551035 Δ27k → **+0.3 max** — суб-бар, БАНК.
+- Пурдж: зипы/коллапсед/флеймграфы/spark/kernel-jar удалены сразу после извлечения маркеров (MARKERS.txt в round-poi457-6/7); диск 83→75%.
+
+### Банк тика (после абсорба 6/7)
+| leg | norm | idx | лучший pair |
+|---|---|---|---|
+| poi456-1 | +16.9 | 6765332 | +17.6 (↔a8) |
+| poi456-4 | +15.4 | 8957260 | — (unpaired) |
+| poi457-6 | +12.2 | 6997574 | +6.2 (↔a23) |
+| poi457-7 | +9.1 | 7523645 | +0.3 |
+| poi456-3 | −0.5 | 7181470 | — |
+В полёте: poi457-5r2, poi457-8, poi457-9.
 
 ## 5. Вердикт (финал тика)
 - ≥3 ноги ≥+18 norm с парами ≥+20 (min-of-3) → RESULT.json verdict=CERT_READY (мержит main, сам НЕ мержу).

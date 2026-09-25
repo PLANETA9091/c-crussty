@@ -13,10 +13,16 @@
     {"leg": "poi456-3", "norm": "-0.5", "idx": 7181470, "verdict": "bank", "tick": 456},
     {"leg": "poi456-4", "norm": "+15.4", "idx": 8957260, "verdict": "bank (3.10 TPS, unpaired — зона 8.9-9.0M редкая)", "tick": 456},
     {"leg": "poi457-5", "run": 36131787478, "verdict": "BAND-DISCARD fast-fail (Runner calibration band gate) — не вердикт, ре-ролл ≤2", "tick": 457},
-    {"leg": "poi457-6", "run": 36131797497, "verdict": "in flight", "tick": 457},
-    {"leg": "poi457-7", "run": 36131807435, "verdict": "in flight", "tick": 457}
+    {"leg": "poi457-6", "run": 36131797497, "norm": "+12.2", "idx": 6997574, "tps_med": 2.55, "verdict": "GREEN-CANDIDATE: NCDFE=0, ARM+ЭФФЕКТ+epoch, selfTest==true x3, threw=0, лейны items 0.00/nav 3.12/broad 9.56; AIOOBE x2 = cmp420_chunk2 biomes selftest fixture-шум (caught); max pair +6.2 (↔a23@6958213 Δ39k) — банк", "tick": 457},
+    {"leg": "poi457-7", "run": 36131807435, "norm": "+9.1", "idx": 7523645, "tps_med": 2.60, "verdict": "GREEN-CANDIDATE: NCDFE=0, ARM+ЭФФЕКТ+epoch, selfTest==true x3, threw=0, лейны items 0.00/nav 3.46/broad 9.62; max pair +0.3 (↔a25×истор. @7551035 Δ27k) — банк", "tick": 457},
+    {"leg": "poi457-5r2", "run": 36132360006, "verdict": "in flight", "tick": 457},
+    {"leg": "poi457-8", "run": 36132385298, "verdict": "in flight", "tick": 457},
+    {"leg": "poi457-9", "run": null, "branch": "round-456b-poi-9", "verdict": "dispatched", "tick": 457}
   ],
-  "pairs": [],
+  "pairs": [
+    {"leg": "poi457-6 +12.2@6997574", "best": "↔a23 +6.0@6958213 = +6.2 (Δ39361)"},
+    {"leg": "poi457-7 +9.1@7523645", "best": "↔a25(hist) +8.8@7551035 = +0.3 (Δ27390)"}
+  ],
   "anchor_pool_x456": [
     "a1 +4.4@8935474", "a7 +7.4@7264766", "a8 -0.7@6731200", "a9 +5.2@6590823",
     "a10 -2.0@6865200", "a12 +8.1@6966170", "a15 +8.0@6756575", "a19 +7.5@6803823",
@@ -24,7 +30,7 @@
     "a31 +3.7@6740240", "a34 +5.9@6520174"
   ],
   "anchor_pool_x457": "см. /home/z/rounds/ROUND-457/ANCHORS.md (main; проверять каждый цикл)",
-  "verdict": "IN_PROGRESS (цикл закона 3; цель ≥3 ноги ≥+18 norm с парами ≥+20 min-of-3)",
+  "verdict": "IN_PROGRESS (цикл закона 3; 2 ноги абсорбированы GREEN: +12.2@6997574, +9.1@7523645 — обе суб-бар/суб-парные; 3 в полёте 5r2/8/9)",
   "gates": "NCDFE=0 T1, ARM cmp456_poi + ЭФФЕКТ, AIOOBE=0, selfTest==true, items 0.00/nav ~3.2/broad ~9.8-10.9, band 6.0-9.5M, threw=1=REFUTED, dep-гейт norm≥-2",
-  "updated_utc": "2026-09-25T12:05:00Z"
+  "updated_utc": "2026-09-25T12:22:00Z"
 }
