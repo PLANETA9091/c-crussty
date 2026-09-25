@@ -1,6 +1,6 @@
 {
   "agent": "agent-a",
-  "task_id": "TASK-457-A",
+  "task_id": "TASK-457-A2 (restart, continuing TASK-457-A)",
   "vector": "cmp456_chunkmono monster-hunt (ServerChunkCache scheduling mono-plane chunk6-sched, law-8 axis, STRICT-OR, carrier sha-pin d73758a3)",
   "carrier": {
     "branch": "round-456c-chunkmono",
@@ -13,16 +13,20 @@
     {"leg": 6, "run_id": 36131753219, "branch": "round-456c-chunkmono-6", "verdict": "GREEN-CANDIDATE-VALID", "norm": 11.5, "runner_cpu_index": 6423955, "tps_med": 2.40, "tps_exp": 2.15, "gates": {"NCDFE": 0, "ARM": true, "EFFECT": true, "selfTest": true, "AIOOBE": "0 runtime (2x cmp420_chunk2 biomes selftest FAIL = fixture-shum canon)", "threw": 0, "dep_gate": true}, "lanes": {"items": 0.00, "nav_ai": 3.00, "broadphase": 9.36, "inside": 16.28}, "notes": "drift fail-open latch after first hits = canonical (identical on chkmono456-4/5)"},
     {"leg": 7, "run_id": 36131765237, "branch": "round-456c-chunkmono-7", "verdict": "BAND-FAST-FAIL-INFRA", "norm": null, "notes": "runner calibration band gate fast-fail @22s; NOT-A-VERDICT (canon x456 a17/a18); re-roll -> leg 9"},
     {"leg": 8, "run_id": 36131776794, "branch": "round-456c-chunkmono-8", "verdict": "GREEN-CANDIDATE-VALID", "norm": 9.1, "runner_cpu_index": 7084301, "tps_med": 2.50, "tps_exp": 2.29, "gates": {"NCDFE": 0, "ARM": true, "EFFECT": true, "selfTest": true, "AIOOBE": "0 runtime (2x selftest fixture-shum)", "threw": 0, "dep_gate": true}, "lanes": {"items": 0.00, "nav_ai": 2.96, "broadphase": 9.81, "inside": 16.30}},
-    {"leg": 9, "branch": "round-456c-chunkmono-9", "verdict": "DISPATCHED (re-roll of leg-7 band fast-fail slot)", "dispatch_ts": "2026-09-25T12:20Z"},
-    {"leg": 10, "branch": "round-456c-chunkmono-10", "verdict": "DISPATCHED", "dispatch_ts": "2026-09-25T12:20Z"}
+    {"leg": 9, "run_id": null, "branch": "round-456c-chunkmono-9", "verdict": "GREEN-CANDIDATE-VALID (main peek-absorb)", "norm": 1.3, "runner_cpu_index": 6983211, "gates": {"NCDFE": 0}, "notes": "sub-bar; absorbed by main tick-457 21:10+08"},
+    {"leg": 10, "run_id": null, "branch": "round-456c-chunkmono-10", "verdict": "GREEN-CANDIDATE-VALID (main peek-absorb)", "norm": -0.9, "runner_cpu_index": 7229897, "gates": {"NCDFE": 0}, "notes": "sub-bar; absorbed by main tick-457 21:10+08"},
+    {"leg": 11, "run_id": 36143848689, "branch": "round-456c-chunkmono-11", "verdict": "DISPATCHED", "dispatch_ts": "2026-09-25T13:53Z"},
+    {"leg": 12, "run_id": 36143863797, "branch": "round-456c-chunkmono-12", "verdict": "DISPATCHED", "dispatch_ts": "2026-09-25T13:53Z"},
+    {"leg": 13, "run_id": 36143877485, "branch": "round-456c-chunkmono-13", "verdict": "DISPATCHED", "dispatch_ts": "2026-09-25T13:53Z"}
   ],
   "pairs": [
     {"leg": 8, "anchor": "a29-x456", "anchor_norm": 2.9, "anchor_runner": 7051107, "delta": 33194, "pair_norm": 6.2, "fresh": true}
   ],
-  "pairs_note": "leg 6 @6423955: NO x456-bank anchor within delta<=50k (nearest a34@6520174 delta 96k) — UNPAIRED until x457 wave anchors absorb (check ANCHORS.md each cycle)",
-  "verdict": "CYCLE-1-ABSORBED: 2 valid legs (+11.5/+9.1), 0 monsters >=+18, 1 sub-bar pair +6.2; legs 9/10 dispatched, polling",
+  "pairs_note": "leg 6 @6423955: NO x456-bank anchor within delta<=50k (nearest a34@6520174 delta 96k) — UNPAIRED until x457 wave anchors absorb (check ANCHORS.md each cycle); x457 wave-2 anchors absorbed by main: a18 +2.9@6817414, a25 +5.0@7060169, a28 -0.8@6982027, a26 +12.4@8671791, a32 +0.7@6579335",
+  "verdict": "CYCLE-2 IN FLIGHT: family 6 valid legs (max +11.5), 0 monsters >=+18; legs 11/12/13 dispatched @13:53Z, polling q5min",
   "steps": [
     {"step": 1, "ts": "2026-09-25T11:59Z", "action": "worktree+dispatcher preflight; leg7 band fast-fail infra"},
-    {"step": 2, "ts": "2026-09-25T12:22Z", "action": "absorbed legs 6/8 (markers pre-purge, zips purged); dispatch 9/10; disk 75%"}
+    {"step": 2, "ts": "2026-09-25T12:22Z", "action": "absorbed legs 6/8 (markers pre-purge, zips purged); dispatch 9/10; disk 75%"},
+    {"step": 3, "ts": "2026-09-25T13:54Z", "action": "restart TASK-457-A2: legs 9/10 confirmed absorbed by main (+1.3@6983211 / -0.9@7229897, both NCDFE=0 sub-bar); legs 11/12/13 dispatched @d73758a3 (run_ids 36143848689/36143863797/36143877485); disk 55%"}
   ]
 }
