@@ -389,6 +389,16 @@ const SHARD_CAP: usize = 1 << 13;
 /// 16 fixed shards; threads claim one each (sequential, ~5 live threads) —
 /// no hashing, no cross-thread contention on a shard.
 const SHARD_N: usize = 16;
+/// TASK-462-65 (swarx-5, drain-batch N-скан): rows applied per ONE WLOCK
+/// hold. The unbatched drain swept ALL published rows (LAB-30: 32768 = 25%
+/// of 131072 on the first live drain) under a single long global-WLOCK hold
+/// — every mob_remove caller arriving mid-sweep parked behind the whole
+/// batch. A 512-row hold keeps each critical section short: removers
+/// interleave BETWEEN batches instead of parking behind one 32k-row sweep
+/// (hypothesis: fewer WLOCK convoy context switches → +0.5-1.5пп к ноге).
+/// The drain loops WLOCK-bounded batches until every generation is fully
+/// drained — O(dirty) rows applied is UNCHANGED, only the hold schedule.
+const DRAIN_BATCH: usize = 512;
 
 struct DeltaShard {
     /// Reservation cursor (fetch_add) — writers claim slots.
@@ -396,6 +406,11 @@ struct DeltaShard {
     /// Published watermark: rows [0..published) are complete (Release after
     /// the row write; consumer reads Acquire). Single consumer per tick.
     published: AtomicUsize,
+    /// TASK-462-65 (swarx-5): rows [0..drained) of the CURRENT generation
+    /// already applied to the flat columns. Single consumer (eq_epoch) only;
+    /// Relaxed order suffices — the cursor never races writers (they append
+    /// at reserve ≥ published, strictly beyond any drained position).
+    drained: AtomicUsize,
     /// Row storage (fixed, zero-alloc steady state).
     rows: Vec<f64>,
 }
@@ -432,19 +447,25 @@ impl DeltaShard {
         true
     }
 
-    /// Single-consumer drain: apply rows [0..published) to the plane's FLAT
+    /// Single-consumer drain: apply rows [drained..end) to the plane's FLAT
     /// columns ONLY (id → x/y/z/hw/hh + alive bit). NO cell-chain maintenance
     /// under eqsnap (mobQuery unreachable — java ladder fail-closes to
     /// vanilla). Rows for ids ≥ the chain-build `bound` stay in the columns
-    /// and link on the NEXT epoch (1-tick delay, ghost contract). Resets the
-    /// cursors AFTER processing; a straggler writer racing the reset loses
-    /// its row (or re-writes it — idempotent) = the documented ≤1-tick ghost,
-    /// bounded by the 8-block java margin.
+    /// and link on the NEXT epoch (1-tick delay, ghost contract). TASK-462-65
+    /// (swarx-5): the pass is bounded by `budget` — it applies at most
+    /// `*budget` rows and returns; the generation's cursors reset ONLY when
+    /// fully drained (end ≥ published — the SAME after-processing reset
+    /// contract as the unbatched drain; a straggler writer racing the reset
+    /// loses its row, or re-writes it — idempotent = the documented ≤1-tick
+    /// ghost, bounded by the 8-block java margin). A partial batch pins its
+    /// progress in `drained` and resumes on the next WLOCK hold.
     /// Returns the number of applied rows.
-    fn drain_into(&self, d: &mut Soa) -> usize {
+    fn drain_into(&self, d: &mut Soa, budget: &mut usize) -> usize {
         let n = self.published.load(Ordering::Acquire).min(SHARD_CAP);
+        let start = self.drained.load(Ordering::Relaxed).min(n);
+        let end = (start + *budget).min(n);
         let mut applied = 0usize;
-        for p in 0..n {
+        for p in start..end {
             let b = p * SHARD_ROW;
             // SAFETY: n ≤ SHARD_CAP and rows sized SHARD_CAP*SHARD_ROW.
             let row = unsafe { self.rows.get_unchecked(b..b + SHARD_ROW) };
@@ -469,9 +490,18 @@ impl DeltaShard {
             d.flags[id] |= 1;
             applied += 1;
         }
-        // Reset AFTER processing (SeqCst): fresh generation next tick.
-        self.reserve.store(0, Ordering::SeqCst);
-        self.published.store(0, Ordering::SeqCst);
+        *budget -= end - start;
+        if end >= n {
+            // Generation fully drained — reset AFTER processing (SeqCst):
+            // fresh generation next tick (unbatched-drain contract).
+            self.reserve.store(0, Ordering::SeqCst);
+            self.published.store(0, Ordering::SeqCst);
+            self.drained.store(0, Ordering::Relaxed);
+        } else {
+            // Partial batch — rows [end..n) stay pinned by the drained
+            // cursor and resume on the next WLOCK hold (single consumer).
+            self.drained.store(end, Ordering::Relaxed);
+        }
         applied
     }
 }
@@ -492,6 +522,7 @@ fn shards() -> &'static [DeltaShard] {
             .map(|_| DeltaShard {
                 reserve: AtomicUsize::new(0),
                 published: AtomicUsize::new(0),
+                drained: AtomicUsize::new(0),
                 rows: vec![0.0; SHARD_CAP * SHARD_ROW],
             })
             .collect()
@@ -520,12 +551,26 @@ pub(crate) fn drain_eqsnap_shards() -> usize {
     if !eqsnap_mode() {
         return 0; // legacy flags: shards never written — no-op
     }
-    let _g = WLOCK.lock().unwrap_or_else(|p| p.into_inner());
-    ensure_plane();
-    let d = data_mut();
+    // TASK-462-65 (swarx-5): WLOCK-bounded batch loop — each hold applies at
+    // most DRAIN_BATCH rows total across shards, then RELEASES the lock so
+    // mob_remove/removers interleave instead of parking behind one 32k-row
+    // sweep. Rows applied is unchanged (O(dirty)); only the hold schedule
+    // differs. A batch that leaves budget unspent means every generation is
+    // fully drained (cursors reset inside drain_into) — done for this tick.
     let mut total = 0usize;
-    for s in shards() {
-        total += s.drain_into(d);
+    loop {
+        let mut budget = DRAIN_BATCH;
+        {
+            let _g = WLOCK.lock().unwrap_or_else(|p| p.into_inner());
+            ensure_plane();
+            let d = data_mut();
+            for s in shards() {
+                total += s.drain_into(d, &mut budget);
+            }
+        }
+        if budget > 0 {
+            break;
+        }
     }
     total
 }
@@ -1575,6 +1620,7 @@ mod tests {
         let shard = DeltaShard {
             reserve: AtomicUsize::new(0),
             published: AtomicUsize::new(0),
+            drained: AtomicUsize::new(0),
             rows: vec![0.0; SHARD_CAP * SHARD_ROW],
         };
         let mut d = Soa::new();
@@ -1584,8 +1630,11 @@ mod tests {
         assert!(shard.push(11, true, 2.5, 64.0, -2.5, 0.3, 0.9)); // move
         assert!(shard.push(IDS_CAP + 5, true, 0.0, 0.0, 0.0, 0.1, 0.1)); // OOR id
         assert!(shard.push(13, true, f64::NAN, 0.0, 0.0, 0.1, 0.1)); // torn guard
-        let applied = shard.drain_into(&mut d);
+        let mut budget = DRAIN_BATCH;
+        let applied = shard.drain_into(&mut d, &mut budget);
         assert_eq!(applied, 3, "3 valid rows applied (11, 12, 11-move)");
+        // Budget is charged per ATTEMPTED row (5 published, skips included).
+        assert_eq!(budget, DRAIN_BATCH - 5, "budget charged per attempted row");
         assert_eq!(d.flags[11] & 1, 1);
         assert_eq!(d.flags[12] & 1, 1);
         assert_eq!(d.flags[13] & 1, 0, "non-finite row skipped");
@@ -1598,11 +1647,29 @@ mod tests {
         assert_eq!(d.cell[11], 0);
         assert_eq!(d.cell[12], 0);
         // Generation reset: second drain is empty (fresh tick).
-        assert_eq!(shard.drain_into(&mut d), 0);
+        let mut b2 = DRAIN_BATCH;
+        assert_eq!(shard.drain_into(&mut d, &mut b2), 0);
+        // TASK-462-65 (swarx-5): partial-batch contract — a budget below the
+        // published count drains a PREFIX, pins `drained`, and a follow-up
+        // batch resumes exactly where the prefix stopped; the generation
+        // resets only after the tail.
+        shard.push(21, true, 5.5, 64.0, 6.5, 0.3, 0.9);
+        shard.push(22, true, 7.5, 64.0, 8.5, 0.4, 1.0);
+        let mut b3 = 1usize;
+        assert_eq!(shard.drain_into(&mut d, &mut b3), 1, "prefix batch: 1 row");
+        assert_eq!(d.x[21], 5.5, "prefix drained the FIRST row (id 21)");
+        assert_eq!(d.flags[22] & 1, 0, "tail row NOT yet applied");
+        let mut b4 = DRAIN_BATCH;
+        assert_eq!(shard.drain_into(&mut d, &mut b4), 1, "residual batch: tail");
+        assert_eq!(d.flags[22] & 1, 1, "tail applied on resume");
+        assert_eq!(d.x[22], 7.5);
+        let mut b5 = DRAIN_BATCH;
+        assert_eq!(shard.drain_into(&mut d, &mut b5), 0, "generation reset");
         // Capacity pressure: SHARD_CAP-th push fails → ERR_RANGE contract.
         let full = DeltaShard {
             reserve: AtomicUsize::new(SHARD_CAP),
             published: AtomicUsize::new(0),
+            drained: AtomicUsize::new(0),
             rows: vec![0.0; SHARD_CAP * SHARD_ROW],
         };
         assert!(!full.push(1, true, 0.0, 0.0, 0.0, 0.1, 0.1));
