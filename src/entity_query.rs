@@ -140,9 +140,9 @@ fn flag_enabled(flag: Option<&str>) -> bool {
             // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
             | Some("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-            | Some("cmp423_brain3") | Some("cmp424_mobfeed") | Some("cmp430_inside") | Some("cmp432_inside2") | Some("cmp436_ins4") | Some("cmp458_swar") | Some("cmp457_paldelta")
+            | Some("cmp423_brain3") | Some("cmp424_mobfeed") | Some("cmp430_inside") | Some("cmp432_inside2") | Some("cmp436_ins4") | Some("cmp458_swar") | Some("cmp458_swar_papaya") | Some("cmp457_paldelta")
             | Some("cmp438_sense") // TASK-444-C: sense family union
-            | Some("cmp451_senseins") | Some("cmp458_swar") | Some("cmp457_paldelta") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+            | Some("cmp451_senseins") | Some("cmp458_swar") | Some("cmp458_swar_papaya") | Some("cmp457_paldelta") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
             | Some("cmp453_diet") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
             | Some("cmp421_brain")
             | Some("cmp421_brain") | Some("cmp434_chunkpl") | Some("cmp435_chunk3") | Some("cmp437_chunk4") | Some("cmp444_chunk5") | Some("cmp450_chunk")
@@ -173,7 +173,7 @@ fn enabled_flag_is_eqsnap() -> bool {
             // (per-call vanilla) + колонки stale → eq-цепи rc=0 → pushCandidates
             // = false → push = 100% ваниль. КРИТ-ФАКТ cmp458_swar-ноги
             // (131k upsert = 100% ваниль). STRICT OR: только точный флаг.
-            | Ok("cmp458_swar")
+            | Ok("cmp458_swar") | Ok("cmp458_swar_papaya")
     )
 }
 
@@ -183,7 +183,10 @@ fn enabled_flag_is_eqsnap() -> bool {
 fn enabled_flag_is_swar() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp458_swar")
+        // TASK-462-62: композит cmp458_swar_papaya несёт тот же swar-лейн
+        // (drain/ARM-маркер остаётся семейством cmp458_swar — leg-лог
+        // грепается однозначно; STRICT-OR изоляция сохранена).
+        Ok("cmp458_swar") | Ok("cmp458_swar_papaya")
     )
 }
 
@@ -205,9 +208,9 @@ fn enabled_flag_is_sense() -> bool {
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
         Ok("cmp421_brain") | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp458_swar") | Ok("cmp457_paldelta")
+            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp458_swar") | Ok("cmp458_swar_papaya") | Ok("cmp457_paldelta")
             | Ok("cmp438_sense") // TASK-444-C: sense family union
-            | Ok("cmp451_senseins") | Ok("cmp458_swar") | Ok("cmp457_paldelta") // TASK-452-A: senseins composite — sense-arena slice must arm (production gate retag)
+            | Ok("cmp451_senseins") | Ok("cmp458_swar") | Ok("cmp458_swar_papaya") | Ok("cmp457_paldelta") // TASK-452-A: senseins composite — sense-arena slice must arm (production gate retag)
             | Ok("cmp453_diet") | Ok("cmp450_chunk") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
             | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") // TASK-454-B/455-B: chunk union carrier rides the sense gate (STRICT OR, rebaze-3 union)
     )
@@ -781,6 +784,17 @@ pub unsafe extern "system" fn eq_epoch(
         );
     }
 
+    // TASK-462-62 papaya swing layer (cmp458_swar_papaya, graft of chkswing-1
+    // 89f90d50): the diagnostic shadow-ledger drives the lock-free machinery
+    // on the real per-tick broadphase epoch stream (swarx-3 analog of the
+    // chkswing chunk-mirror event — the epoch JNI heartbeat IS the swar
+    // carrier stream). STRICTLY additive — results are discarded, the drain
+    // production path above is untouched (parity bit-exact vanilla;
+    // fail-closed by design: engage opens only after boot quiet + arm).
+    if crate::papaya_arm::engage_live() {
+        crate::papaya_arm::engage(tick as u64, drained != 0);
+    }
+
     let bound = (id_top as usize)
         .min((soa_cap as usize) / STRIDE)
         .min(next_cap as usize)
@@ -1056,6 +1070,7 @@ mod tests {
             "cmp417_bq",
             "cmp421_brain",
             "cmp458_swar",
+            "cmp458_swar_papaya", // TASK-462-62: композит обязан дренировать
         ] {
             std::env::set_var("CRUSSTY_LEVER_FLAG", f);
             assert!(enabled_flag_is_eqsnap(), "{f} must drain");

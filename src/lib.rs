@@ -24,6 +24,11 @@ mod batch_collector;
 mod batch_desc;
 mod batch_table;
 mod brainhook;
+// TASK-462-62 (swarx-3): papaya-lockfree shard-readers sidecar grafted from
+// round-460-chkswing-1 89f90d50 onto the round-460-swarx-1 swar carrier —
+// composite lever cmp458_swar_papaya (ОДИН id, урок ×461: 4× дубль = AIOOBE).
+mod papaya_arm;
+mod papaya_shard_readers;
 mod bridge_class;
 mod goal_selector;
 mod classfile;
@@ -523,6 +528,15 @@ fn inject_surface() {
     // loader, compute the ldc-anchored retarget of parse, retransform
     // (dormant unless CRUSSTY_PARSE_DIAG=1).
     parse_diag::activate();
+    // PAPAYA SHARD-READERS sidecar (TASK-462-62, swarx-3 composite: graft of
+    // round-460-chkswing-1 89f90d50 onto the cmp458_swar carrier): EARLY-define
+    // the NCDFE-канон sidecar into the kernel loader (T1 gate: define BEFORE
+    // the first broadphase query), selfTest -> armNow -> ARMED marker, then
+    // open the diagnostic shadow-ledger engagement on the SoA shard-drain
+    // stream (dormant unless CRUSSTY_LEVER_FLAG == cmp458_swar_papaya; the
+    // swar push-plane sub-lanes stay LIVE via STRICT-OR gate widening —
+    // add_swar_gates_458.py canon).
+    papaya_arm::activate();
     // ZERO-CURSOR (lever #11 v1, TASK-330): define ZeroCursorIter+Ops into
     // the kernel loader, static body-redirect of
     // lambda$betweenCornersInDirection$8, retransform (dormant unless

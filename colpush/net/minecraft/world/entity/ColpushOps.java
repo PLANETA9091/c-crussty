@@ -85,6 +85,8 @@ public final class ColpushOps {
      * union-widen d22835bd appended this constant ×3 (compile error, blobs
      * unrebuildable) — deduped to ONE definition, single equals in gate. */
     private static final String FLAG16 = "cmp458_swar";
+    /** TASK-462-62: swar⊕papaya composite (STRICT-OR, ОДИН id). */
+    private static final String FLAG17 = "cmp458_swar_papaya";
     /** TASK-452-C mega-composite (senseins ⊕ chunk union, STRICT-OR). */
     private static final String FLAG_MEGA = "cmp452_mega";
     /** TASK-453-C diet composite (sense-core + chunk4 + ins4 carrier; STRICT-OR). */
@@ -122,7 +124,7 @@ public final class ColpushOps {
 
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5) || f.trim().equals(FLAG6) || f.trim().equals(FLAG15) || f.trim().equals(FLAG16) || f.trim().equals(FLAG10) || f.trim().equals(FLAG11) || f.trim().equals(FLAG12) || f.trim().equals(FLAG13) || f.trim().equals(FLAG14) || f.trim().equals(FLAG_MEGA) || f.trim().equals(FLAG_DIET));
+return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5) || f.trim().equals(FLAG6) || f.trim().equals(FLAG15) || f.trim().equals(FLAG16) || f.trim().equals(FLAG17) || f.trim().equals(FLAG10) || f.trim().equals(FLAG11) || f.trim().equals(FLAG12) || f.trim().equals(FLAG13) || f.trim().equals(FLAG14) || f.trim().equals(FLAG_MEGA) || f.trim().equals(FLAG_DIET));
     }
 
     /** Структурный отказ — весь рычаг дизармится навсегда (ваниль-реплика). */
