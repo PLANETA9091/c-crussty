@@ -1,0 +1,69 @@
+=== РЕГРЕССИЯ norm = a + b*STW_s ===
+ALL n=33: slope=-1.09±2.02пп/с(95CI) intercept=+29.2 r=-0.187 R2=0.04
+t=-1.06 (n=33), slope 95%CI=[-3.11,+0.93]
+x457(chkmono+poi)          n=22: slope=+0.48пп/с r=+0.082 R2=0.01
+x458(anchor/roar/paldelta) n= 7: slope=-3.69пп/с r=-0.618 R2=0.38
+S4 14:23-14:30 co-run      n= 8: slope=-2.48пп/с r=-0.618 R2=0.38
+S5 15:03-15:07 co-run      n= 7: slope=+4.34пп/с r=+0.523 R2=0.27
+вторичные:
+  norm ~ Full count       n=33: slope=+1.766 r=+0.078 R2=0.01
+  norm ~ avg pause ms     n=33: slope=-0.172 r=-0.314 R2=0.10
+  norm ~ max pause ms     n=33: slope=+0.003 r=+0.087 R2=0.01
+  norm ~ co-run size      n=31: slope=-0.697 r=-0.190 R2=0.04
+  norm ~ runner_cpu_index n=33: slope=+0.000 r=+0.103 R2=0.01
+L05-подвыборка n=5: slope=-4.98пп/с r=-0.965 (selection-байас: хвосты STW)
+norm ~ scavAvg(pre-census, n=31): slope=-0.280пп/ms r=-0.392 R2=0.15
+
+leg                           STW_s Full    norm    pred   resid co start             verdict         
+round-chkmono457-6            22.00    9   +11.5    +5.2    +6.3  3 2026-09-25T11:59:30Z GREEN-CANDIDATE 
+round-chkmono457-8            19.00    9    +9.1    +8.5    +0.6  3 2026-09-25T11:59:42Z GREEN-CANDIDATE 
+round-chkmono457-11           22.10    9    -3.6    +5.1    -8.7  4 2026-09-25T13:59:00Z RED             
+round-chkmono457-12           19.80    9    -3.7    +7.6   -11.3  4 2026-09-25T13:58:47Z RED             
+round-chkmono457-13           19.60    9    +2.8    +7.8    -5.0  4 2026-09-25T14:02:29Z PARITY/LOW      
+round-chkmono457-14           17.70    9   +21.7    +9.9   +11.8  7 2026-09-25T14:29:22Z GREEN-CANDIDATE 
+round-chkmono457-15           18.50    9   +13.9    +9.0    +4.9  7 2026-09-25T14:26:27Z GREEN-CANDIDATE 
+round-chkmono457-16           20.50    9   +12.7    +6.8    +5.9  7 2026-09-25T14:26:47Z GREEN-CANDIDATE 
+round-chkmono457-17           19.36    8    +5.2    +8.1    -2.9  8 2026-09-25T15:04:05Z VALID           
+round-chkmono457-18           19.91   10    +0.3    +7.5    -7.2  8 2026-09-25T15:04:41Z VALID           
+round-chkmono457-19           22.32    9   +12.8    +4.8    +8.0  8 2026-09-25T15:03:57Z VALID           
+round-poi456-1                19.80    9   +16.9    +7.6    +9.3  1 2026-09-25T10:10:08Z GREEN-CANDIDATE 
+round-poi456-2                22.20    9   +17.0    +5.0   +12.0  1 2026-09-25T10:19:16Z DELIVERY-FAIL   
+round-poi456-3                19.70    9    -0.5    +7.7    -8.2  1 2026-09-25T11:02:35Z PARITY/LOW      
+round-poi456-4                19.80   10   +15.4    +7.6    +7.8  1 2026-09-25T11:03:56Z GREEN-CANDIDATE 
+round-poi457-5r2              20.70    9    -5.3    +6.6   -11.9  3 2026-09-25T12:07:50Z RED             
+round-poi457-6                20.10    9   +12.2    +7.2    +5.0 None None GREEN-CANDIDATE 
+round-poi457-7                22.90    9    +9.1    +4.2    +4.9 None None GREEN-CANDIDATE 
+round-poi457-8                19.90    9   +13.5    +7.5    +6.0  3 2026-09-25T12:07:12Z GREEN-CANDIDATE 
+round-poi457-9                19.40    9    +5.1    +8.0    -2.9  0 2026-09-25T12:25:15Z GREEN-CANDIDATE 
+round-poi457-10               20.30    9   +12.9    +7.0    +5.9  4 2026-09-25T14:03:43Z GREEN-CANDIDATE 
+round-poi457-11               20.10    9    +3.8    +7.2    -3.4  4 2026-09-25T14:00:48Z PARITY/LOW      
+round-poi457-12               24.10   10   +18.5    +2.9   +15.6  7 2026-09-25T14:24:04Z GREEN-CANDIDATE 
+round-poi457-13               21.60    9   +13.6    +5.6    +8.0  7 2026-09-25T14:23:23Z GREEN-CANDIDATE 
+round-poi457-14               19.71    9   -18.1    +7.7   -25.8  8 2026-09-25T15:05:13Z VALID           
+round-poi457-15               22.04    9    +5.3    +5.1    +0.2  8 2026-09-25T15:06:19Z VALID           
+round-anchor458-33            25.20    9   -11.8    +1.7   -13.5  7 2026-09-25T14:23:04Z RED             
+round-anchor458-34            22.00    9   +15.9    +5.2   +10.7  7 2026-09-25T14:25:22Z GREEN-CANDIDATE 
+round-anchor458-35            21.60    9   +13.6    +5.6    +8.0  7 2026-09-25T14:23:23Z GREEN-CANDIDATE 
+round-anchor458-36            21.25    8    -5.0    +6.0   -11.0  8 2026-09-25T15:04:38Z VALID           
+round-anchor458-37            21.24    9    +0.7    +6.0    -5.3  8 2026-09-25T15:04:56Z VALID           
+round-roar458-2               23.55   10   -10.7    +3.5   -14.2  8 2026-09-25T14:52:09Z INVALID         
+round-paldelta458-3           19.23    9    +8.3    +8.2    +0.1  8 2026-09-25T15:00:08Z VALID           
+
+=== перцентили популяции 33 ног (для гейта) ===
+total STW s   : p25=   19.7 p50=   20.3 p75=   22.0 p90=   22.8 min=   17.7 max=   25.2
+Full          : p25=    9.0 p50=    9.0 p75=    9.0 p90=    9.8 min=    8.0 max=   10.0
+avg pause ms  : p25=  171.0 p50=  176.0 p75=  185.0 p90=  195.8 min=  129.0 max=  219.0
+max pause ms  : p25= 2494.0 p50= 2631.0 p75= 2782.0 p90= 3010.0 min= 1955.0 max= 3213.0
+young count   : p25=  104.0 p50=  106.0 p75=  113.0 p90=  122.6 min=   96.0 max=  130.0
+STW>23.0s: 3/33; avg>200ms: 2/33; Full>=11: 0/33; Full=9: 27/33
+
+=== STW-ЖЕРТВЫ по гейту (norm<+8 И [STW>23.0s ИЛИ avg>200ms]) ===
+  VICTIM round-chkmono457-11          norm=-3.6 STW=22.1s avg=211ms Full=9
+  VICTIM round-anchor458-33           norm=-11.8 STW=25.2s avg=219ms Full=9
+  VICTIM round-roar458-2              norm=-10.7 STW=23.55s avg=184ms Full=10
+=== НЕ-жертвы: norm<0 с чистым GC-паспортом (true-RED) ===
+  TRUE-RED round-chkmono457-12        norm=-3.7 STW=19.8s avg=180ms Full=9
+  TRUE-RED round-poi456-3             norm=-0.5 STW=19.7s avg=177ms Full=9
+  TRUE-RED round-poi457-5r2           norm=-5.3 STW=20.7s avg=182ms Full=9
+  TRUE-RED round-poi457-14            norm=-18.1 STW=19.71s avg=173ms Full=9
+  TRUE-RED round-anchor458-36         norm=-5.0 STW=21.25s avg=180ms Full=8
