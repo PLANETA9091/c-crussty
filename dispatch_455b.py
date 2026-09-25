@@ -16,7 +16,7 @@ import time
 import urllib.request
 
 BRANCH = "round-455b-chunk"
-EXPECTED_SHA = "c551f7fa"  # rebaze-3 merge head (ancestry: code carrier 47ea8b20 ⊕ 797ae4f0)
+EXPECTED_SHA = "0e97839b"  # rebaze-3 merge head (ancestry: code carrier 47ea8b20 ⊕ 797ae4f0)
 ANCESTRY_NOTE = "base 47ea8b20 (diet carrier) + merge 797ae4f0 (chunk union) + run_world3 GEN-axis case"
 
 INPUTS = {
