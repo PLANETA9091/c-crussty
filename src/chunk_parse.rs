@@ -131,13 +131,13 @@ fn enabled() -> bool {
         .map(|v| {
             let v = v.trim();
             v == LEVER_ID || v == "cmp420_colpush" || v == "cmp421_chunk" || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2" || v == "cmp436_ins4"
-            || v == "cmp451_senseins" || v == "cmp452_mega" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+            || v == "cmp451_senseins" || v == "cmp452_mega" || v == "cmp453_diet" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
             || v == "cmp438_sense" // TASK-444-C: sense family union
                 // TASK-434-C: chunk-pipeline R5 union carrier.
                 || v == "cmp434_chunkpl"
                 // TASK-435-C: R6 carrier (STRICT-OR successor, no broadening).
                 || v == "cmp435_chunk3"
-                || v == "cmp437_chunk4" || v == "cmp452_mega" || v == "cmp444_chunk5" || v == "cmp450_chunk"
+                || v == "cmp437_chunk4" || v == "cmp452_mega" || v == "cmp444_chunk5" || v == "cmp450_chunk" || v == "cmp453_diet"
         })
         .unwrap_or(false)
 }
@@ -149,6 +149,7 @@ fn marker_id() -> std::borrow::Cow<'static, str> {
     match std::env::var("CRUSSTY_LEVER_FLAG").as_deref() {
         Ok("cmp450_chunk") => std::borrow::Cow::Owned("cmp450_chunk".to_string()),
         Ok("cmp452_mega") => std::borrow::Cow::Owned("cmp452_mega".to_string()), // TASK-452-C mega-composite
+        Ok("cmp453_diet") => std::borrow::Cow::Owned("cmp453_diet".to_string()), // TASK-453-C diet composite
         _ => std::borrow::Cow::Borrowed(LEVER_ID),
     }
 }

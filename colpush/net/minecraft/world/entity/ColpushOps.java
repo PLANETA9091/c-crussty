@@ -81,6 +81,8 @@ public final class ColpushOps {
     private static final String FLAG6 = "cmp451_senseins";
     /** TASK-452-C mega-composite (senseins ⊕ chunk union, STRICT-OR). */
     private static final String FLAG_MEGA = "cmp452_mega";
+    /** TASK-453-C diet composite (sense-core + chunk4 + ins4 carrier; STRICT-OR). */
+    private static final String FLAG_DIET = "cmp453_diet";
     /** TASK-434-C: chunk-pipeline R5 carrier (STRICT-OR; raw-cp marker
      * for the check_blobs_sync gate, x93). */
     private static final String FLAG10 = "cmp434_chunkpl";
@@ -114,7 +116,7 @@ public final class ColpushOps {
 
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5) || f.trim().equals(FLAG6) || f.trim().equals(FLAG10) || f.trim().equals(FLAG11) || f.trim().equals(FLAG12) || f.trim().equals(FLAG13) || f.trim().equals(FLAG14) || f.trim().equals(FLAG_MEGA));
+return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5) || f.trim().equals(FLAG6) || f.trim().equals(FLAG10) || f.trim().equals(FLAG11) || f.trim().equals(FLAG12) || f.trim().equals(FLAG13) || f.trim().equals(FLAG14) || f.trim().equals(FLAG_MEGA) || f.trim().equals(FLAG_DIET));
     }
 
     /** Структурный отказ — весь рычаг дизармится навсегда (ваниль-реплика). */
