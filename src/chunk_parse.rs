@@ -123,10 +123,10 @@ fn enabled() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let v = v.trim();
-            v == LEVER_ID || v == "cmp420_colpush" || v == "cmp421_chunk" || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2" || v == "cmp436_ins4"
-            || v == "cmp451_senseins" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+            v == LEVER_ID || v == "cmp420_colpush" || v == "cmp421_chunk" || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2" || v == "cmp436_ins4" || v == "cmp455_spawn"
+            || v == "cmp451_senseins" || v == "cmp455_spawn" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
             || v == "cmp438_sense" // TASK-444-C: sense family union
-            || v == "cmp451_senseins" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+            || v == "cmp451_senseins" || v == "cmp455_spawn" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
         })
         .unwrap_or(false)
 }

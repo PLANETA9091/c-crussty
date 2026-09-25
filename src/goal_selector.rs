@@ -79,10 +79,10 @@ fn enabled() -> bool {
     match std::env::var("CRUSSTY_LEVER_FLAG") {
         Ok(v) => {
             let v = v.trim();
-            v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2" || v == "cmp436_ins4"
-            || v == "cmp451_senseins" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+            v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2" || v == "cmp436_ins4" || v == "cmp455_spawn"
+            || v == "cmp451_senseins" || v == "cmp455_spawn" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
             || v == "cmp438_sense" // TASK-444-C: sense family union
-            || v == "cmp451_senseins" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+            || v == "cmp451_senseins" || v == "cmp455_spawn" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
         }
         Err(_) => false,
     }

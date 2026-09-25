@@ -140,9 +140,9 @@ fn flag_enabled(flag: Option<&str>) -> bool {
             // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
             | Some("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-            | Some("cmp423_brain3") | Some("cmp424_mobfeed") | Some("cmp430_inside") | Some("cmp432_inside2") | Some("cmp436_ins4")
+            | Some("cmp423_brain3") | Some("cmp424_mobfeed") | Some("cmp430_inside") | Some("cmp432_inside2") | Some("cmp436_ins4") | Some("cmp455_spawn")
             | Some("cmp438_sense") // TASK-444-C: sense family union
-            | Some("cmp451_senseins") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+            | Some("cmp451_senseins") | Some("cmp455_spawn") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
             | Some("cmp421_brain")
     )
 }
@@ -184,9 +184,9 @@ fn enabled_flag_is_sense() -> bool {
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
         Ok("cmp421_brain") | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4")
+            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp455_spawn")
             | Ok("cmp438_sense") // TASK-444-C: sense family union
-            | Ok("cmp451_senseins") // TASK-452-A: senseins composite — sense-arena slice must arm (production gate retag)
+            | Ok("cmp451_senseins") | Ok("cmp455_spawn") // TASK-452-A: senseins composite — sense-arena slice must arm (production gate retag)
     )
 }
 

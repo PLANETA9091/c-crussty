@@ -80,9 +80,9 @@ fn enabled() -> bool {
             // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
             | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4")
+            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp455_spawn")
             | Ok("cmp438_sense") // TASK-444-C: sense family union
-            | Ok("cmp451_senseins") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR) — production gate retag for carrier-parity
+            | Ok("cmp451_senseins") | Ok("cmp455_spawn") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR) — production gate retag for carrier-parity
             | Ok("cmp421_brain")
     )
 }
