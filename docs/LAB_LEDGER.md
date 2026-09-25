@@ -22,8 +22,14 @@
 - Ген (worldgen) инертен на soak ×421-C (0.0%) — живой закон-8 сайт = chunk-tick eligibility (ID-P22: плоские предикаты тика чанков → один bulk-JNI → битмаска → строгий java хвост; +1.2-2пп; Moonrise/MC-310372).
 - Окна-прицелы: [8637055,8737055] якорь norm ≤+1.7 → пара ≥+20 с chk-14.
 
-## ПОДСИСТЕМА: POI (носитель cmp456_poi @5ecd841a)
-- Ноги: max +16.9 (валид), poi-12 +18.5 BAND-OUT@9.83M. Пары до +10.9. Потолок пары требует якорь ≤−3.1 рядом — окна [8907260,9007260] ≤−4.6 (poi456-4 +15.4).
+## ПОДСИСТЕМА: POI (носитель cmp456_poi @5ecd841a) — L03 ×459
+- Ноги (15 ранов): max валид +16.9@6765332 (poi456-1); poi457-12 +18.5 BAND-OUT@9.83M; in-band чистые n=10: mean +8.3, median +10.6, std 7.3 (−5.3..+16.9).
+- ДИСПЕРСИЯ НЕ ЛЕЙНОВАЯ: лейны константны (inside 15.7-17.9%, broadphase 8.9-10.9%, nav 2.9-3.7%); причины = квантизация медианы 0.1 TPS (±1.7-2.3пп) + раннер-лотерея (r=+0.30) + GC Full=9-10 у всех. Вердикты <+12.9 недостоверны без min-of-3.
+- CAPTURE-МАТЕМ: POI-лейн = 0.15-0.23% CPU (223/240/174 из 105-116k сэмплов), 0.05-0.06% alloc → ПОТОЛОК POI-плоскости +0.23пп « +20 — чисто-POI вектора honest-REFUTED; javap-контракты: PoiOps.updatePoiGate fast-path (MASK isPoi×2 → vanilla-skip), сайты Level/ChunkMap 1/1 уникальны; POI-IO уже off-main (moonrise ChunkSystemPoiManager).
+- СИЛА НОСИТЕЛЯ = юнион-widening (chunkparse/chunksend/encode CARRIER_UNION_456): matched diet-vs-poi Δrunner≤25k n=8 → mean +6.1пп, median +9.9пп (размах −18.3..+18.2). R17: A/B cmp453_diet×3 vs cmp456_poi×3 на одном коммите — изолировать.
+- ПАРА СУЩЕСТВУЕТ: a24-456w2 (run 36116759710, ваниль, items 29.82%) −10.4@8928192, Δ=29k, pair-fresh → pair +25.8 с poi456-4 +15.4. Окно D [8907260,9007260]: P(якорь ≤−3.1)=25% (1/4), глобально 40% (43/108, mean −2.2±7.4). Добить: min-of-3 ноги @8.93-8.98M + 3 свежих якоря в окно (P≥58%).
+- БАНК-ГИГИЕНА: a35 — ФАНТОМ (T5 бит-идентичен poi457-13, items 0.00% на якоре — absorb-склейка tag-vs-run_id, второй случай) — исключить; a36/a37 — entity_compose+region_threads armed=ДА, НЕ ваниль-якоря. Compose поверх poi = дилution −11.7..−31.0пп (matched) — запретить poi+compose.
+- R16-18 (гипотезы-дельты): R16 high-runner poi @8.90-9.50M (прогноз 15-19пп); R17 union-A/B; R18 pair-lock min-of-3. Полный разбор: research/round-459/RESEARCH-459-L03.md.
 
 ## ПОДСИСТЕМА: entity-query / eqsnap2 (носитель round-457c-eqsnap2 @9d71b461)
 - REFUTED_CENS ×457-C2: захват 0/2.3% среза (players fast-path пуст на фикстуре 4; hard-colliding → ваниль-фолбэк). НОСИТЕЛЬ ЖИВ для композиций: H03 interval-tree targeting R3 ( Hilbert, agent-J ×458) — гипотеза «eqsnap2-ноги + H03 → пара ≥+20».
