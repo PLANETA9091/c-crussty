@@ -61,6 +61,12 @@ mod mobs_sscan;
 mod mobs_sense;
 mod nav_plane;
 mod nav_pool;
+// NAV-PATH-CACHE (TASK-459-66, ID-P41, lever cmp459_p41 — STRICT eq, OFF до
+// оракула 10k путей): NodeEvaluator neighbor cache, флет-таблица
+// posKey(i64) -> neighborMask(u8), miss = ваниль; инвалидация по
+// chunk-ревизии. Scaffold: движок + JNI-контракт + selfTest (см.
+// navpath/.../PathOps.java, RESEARCH-459-P41.md).
+mod nav_path_cache;
 mod chunk_parse;
 // CHUNK-SEND SERIALIZATION SNAPSHOT (TASK-438-C, lever cmp437_chunk4, law 8
 // widening): byte hook on PlayerChunkSender + ChunkSendOps snapshot-first
