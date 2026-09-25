@@ -6,6 +6,11 @@
 name: ci
 
 on:
+  # TASK-460-03 (branch-local CI wiring): the committed trigger block filters
+  # push to master only, so push-based CI never fires on round branches.
+  # workflow_dispatch added HERE ONLY so the climb leg round-460-pdclimb-1 has
+  # a live CI path; master stays untouched.
+  workflow_dispatch:
   push:
     branches: [master]
   pull_request:

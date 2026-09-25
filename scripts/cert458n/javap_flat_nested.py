@@ -25,6 +25,8 @@ CLASSES = [
     ("net.minecraft.world.entity.ai.BrainOps",        "randomtick/build"),
     ("net.minecraft.world.entity.SenseOps",           "sense/build"),
     ("net.minecraft.world.entity.MobScanOps",         "sscan/build"),
+    # TASK-460-03 climb (round-460-pdclimb-1): 11th pair — P31 INSIDE-BATCH bridge
+    ("net.minecraft.world.entity.InsideBatchOps",     "entityinside/build"),
 ]
 
 LEVER_SURFACE = re.compile(

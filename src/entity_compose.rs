@@ -126,6 +126,7 @@ fn stage_enabled() -> bool {
         || crate::zero_alloc::enabled_pub()
         || crate::skip_store::enabled_pub()
         || crate::inside_snap::enabled_pub()
+    || crate::inside_batch::enabled_pub() // TASK-460-03 climb: P31 INSIDE-BATCH site owner
 }
 
 /// Register the single Entity byte hook (idempotent; call once from
@@ -268,8 +269,50 @@ pub fn activate() {
             .unwrap_or(0);
         let mut chain: Vec<&str> = Vec::new();
 
-        // ---- STAGE 1: inside_cache (discovery gate retarget) ----
-        if crate::inside_cache::enabled_pub() {
+        // ---- STAGE 1: inside site owner (S7-162 single owner) ----
+        // TASK-460-03 climb: inside_batch (P31 INSIDE-BATCH) SUPERSEDES
+        // inside_cache on the isAffectedByBlocks@offset-1 site when BOTH
+        // bridges are ready (the armed java branch delegates the static lane
+        // to InsideBlockOps.gate — bit-identical to inside_cache ownership;
+        // dynamic lane stays vanilla until the oracle-gated pruned tail).
+        // Any bridge miss => fail-dominant back to the inside_cache stage.
+        let batch_owner = crate::inside_batch::enabled_pub()
+            && crate::inside_cache::enabled_pub()
+            && crate::inside_batch::wait_bridge_ready(180_000)
+            && crate::inside_cache::wait_bridge_ready(180_000);
+        if !batch_owner && crate::inside_batch::enabled_pub() {
+            eprintln!(
+                "[crussty-plugin] entity_compose: inside_batch bridge/cache-sibling window missed, chain continues WITH inside_cache (fail-dominant)"
+            );
+        }
+        let inside_owner_is_batch = batch_owner;
+        if inside_owner_is_batch {
+            match crate::classfile::patch_inside_batch(&bytes) {
+                Ok((p, outcome)) if matches!(
+                    outcome,
+                    crate::classfile::RetargetOutcome::Retargeted { .. }
+                        | crate::classfile::RetargetOutcome::AlreadyPatched { .. }
+                ) => {
+                    eprintln!(
+                        "[crussty-plugin] entity_compose: stage inside_batch composed (SUPERSEDE inside_cache, {outcome:?})"
+                    );
+                    bytes = p;
+                    chain.push("inside_batch");
+                }
+                Ok((_p, outcome)) => {
+                    eprintln!(
+                        "[crussty-plugin] entity_compose: stage inside_batch strict check violated ({outcome:?}), chain continues WITHOUT inside_batch (fail-dominant)"
+                    );
+                }
+                Err(e) => {
+                    eprintln!(
+                        "[crussty-plugin] entity_compose: stage inside_batch patch rejected ({e}), chain continues WITHOUT inside_batch (fail-dominant)"
+                    );
+                }
+            }
+        }
+        // ---- STAGE 1 (legacy owner): inside_cache (discovery gate retarget) ----
+        if !inside_owner_is_batch && crate::inside_cache::enabled_pub() {
             if crate::inside_cache::wait_bridge_ready(180_000) {
                 match crate::classfile::patch_inside_cache(&bytes) {
                     Ok((p, outcome)) if matches!(
