@@ -41,6 +41,7 @@
 
 ## ПОДСИСТЕМА: noise / worldgen (ген инертен на soak — только GC-debt carriers)
 - cmp457_noisesimd @c8156a69 (agent-D: lever-scoped arm NormalNoiseBatchOps C1a; SIMD-варианты: incubator=NCDFE-риск). P24 octave scratch-pool / P25 2D-router cache — ТОЛЬКО GC-debt relief механика, не прямые Δ.
+- ×459-L10 PARK P24: гипотеза «noise-alloc бустит Full» REFUTED числами — Full GC = 9 = 5 CodeCache + 4 Metadata на 4/4 прогонах (chk-14/-16/-11, anchor-33), AllocFailure-Full = 0; noise-lane soak 0.020-0.026% CPU (21-30/103062-115503); alloc-окно: 0 октавных фреймов (единственный noise = Reaper-инфра noisesimd 0.28-0.36% scaled, чужой носитель). javap (kernel round-396-a): PerlinNoise.getValue октав-цикл 0×new (аккум=dstore-12 локал), NormalNoise.getValue 0×new, ImprovedNoise.noise 0×new — аллокации только ctor/boot. Capture supermax +0.39пп << +20 → ре-роллы P24 запрещены; GC-носители искать в Vec3/AABB entity-чурне (28-29% alloc), не в шуме. Урок: wall-профиль Census/Reaper-потоков noisesimd (2402 sleep-сэмпла, CPU=0) не считать за cost в T5.
 
 ## ПОДСИСТЕМА: nav_ai / goalops / brain (остаток 2.75-3.2%)
 - P41 path-node neighbor cache (+0.6-1пп); P42 goal canUse sense-memo (+0.4-0.8); P43 brain flat-memory (+0.3-0.5); P44 MoveControl navmath bulk-JNI (+0.8-1.2, javap-транскрипция IEEE754 канон); P45 navigatingMobs pre-gate (roaring, +0.3-0.6); P46 tick-deadband; P47 GoalSelector transition-diff iter-3.
