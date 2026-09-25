@@ -51,3 +51,13 @@
 ## 5. Вердикт (финал тика)
 - ≥3 ноги ≥+18 norm с парами ≥+20 (min-of-3) → RESULT.json verdict=CERT_READY (мержит main, сам НЕ мержу).
 - Иначе после 6 ног — честный банк verdict=BANK.
+
+## 6. Логи TASK-457-B2 (рестарт после инфра-обрыва; append-only)
+- PHASE 0 (рестарт): worktree/ветка живы (d53f138d); диск 55%; 5r2/8/9 были completion-успешны, но НЕ абсорблены обрывом → дог.абсорб всех трёх с маркерами ДО пурджа:
+  - **poi457-5r2 (36132360006) RED −5.3@6733336**: T1 PASS (NCDFE=0, pop VALID, band OK 6.73M), T2 threw=0, items 0.00/nav 3.15/broad 9.90, selfTest==true ×3, ARM poi-plane+soa; GC Full=9 total 20.7s. Код здоров, эффект отрицательный — банк.
+  - **poi457-8 (36132385298) BAND-DISCARD подтверждён**: runner 10425941 ВНЕ band (T1 PASS NCDFE=0 threw=0, items 0.00; норм.+13.5 @10.4M ненадёжна — интерполяция вне опорных точек) — НЕ ВЕРДИКТ → ре-ролл ≤2.
+  - **poi457-9 (36134005127) GREEN +5.1@7054948**: band OK, NCDFE=0, threw=0, GC Full=9 — суб-бар банк.
+- РЕ-РОЛЛ слота 8: dispatch_457b2.py (argv-guard, пин=коммит 5ecd841a exact, git/refs POST) — poi457-10 (36144102915) + poi457-11 (36144116531) @5ecd841a, канон-инпуты ×456/×457 (travel_diet/fluid_dirty_ledger НЕ сланы).
+- **poi457-11 АБСОРБ → PARITY/LOW +3.8@6953086**: band OK, NCDFE=0, threw=0, items 0.00/nav 3.21/broad 9.57, selfTest==true ×3, ARM poi-plane+soa+collide; AIOOBE ×2 = cmp420_chunk2 fixture-шум (caught). Пары (окно [6903086,7003086]): a3 +3.6@6977973 Δ25k → +0.2; a14 +1.3@6986856 Δ34k → +2.5; **a28 −0.8@6982027 Δ29k → +4.6 max** — суб-бар, БАНК. Квота ре-ролла слота 8: 1/2.
+- **poi457-10 АБСОРБ → GREEN +12.9@7143835**: band OK, NCDFE=0, threw=0, items 0.00/nav 3.11/broad 9.80, selfTest==true, ARM poi-plane+soa+collide; GC Full=9. Пары: окно [7093835,7193835] в ×457-пуле ПУСТО (a25 +5.0@7060169 Δ84k мимо) — unpaired, суб-бар, БАНК. Слот 8 закрыт: 10 +12.9 / 11 +3.8 (band-discard +13.5 не реанимирован).
+- 3-я нога (последний цикл закона 3 в бюджете): poi457-12 (36146171396) @5ecd841a — в полёте.
