@@ -507,4 +507,45 @@ public final class ChunkParseOps {
                 + " union=" + CARRIER_UNION_423 + "/" + CARRIER_UNION_435
                 + "/" + CARRIER_UNION_437;
     }
+
+    // =========================================================================
+    // REGION-IO SECTOR POOL + READ-AHEAD (ID-P23, TASK-459-61) — STUB HOOK.
+    //
+    // Card: "java читает из пула, miss -> ванильный FileChannel"; entry point
+    // = this class (chunkparse plane, law-7 union with the chunk axis). The
+    // rust control-plane lives in src/region_io.rs (4KiB sector pool,
+    // read-ahead plan over the 8KiB region header, len+CRC parity verifier;
+    // lever cmp459_p23). Wave 2 wires the JNI bulk surface
+    // (regionioPlan/regionioHandout/regionioRelease — descriptors pinned in
+    // the region_io.rs javadoc) and flips p23PoolReady.
+    //
+    // v1 (this scaffold): DORMANT — this method is never called by patched
+    // kernel code, holds NO state and allocates NOTHING; the vanilla
+    // FileChannel path stays bit-identical. NCDFE канон: ZERO nested classes
+    // (the wave-2 bridge must stay nested-free too).
+    // =========================================================================
+
+    /** Lever id (raw-byte gate discipline: must live in the constant pool). */
+    static final String P23_LEVER = "cmp459_p23";
+
+    /** Statuses of {@link #regionSectorPoolGet}. */
+    static final int P23_HIT = 1;   // body served from the pool (len+CRC verified)
+    static final int P23_MISS = 0;  // miss -> caller reads via vanilla FileChannel
+    static final int P23_ERR = -1;  // fail-closed -> caller reads via vanilla FileChannel
+
+    /** Flipped by the wave-2 native surface after pool ARM (never from here). */
+    static volatile boolean p23PoolReady = false;
+
+    /**
+     * STUB (wave-2 contract): sector-pool read of one chunk body.
+     *
+     * @param regionKey   packed region key (java-side; fd ownership stays java)
+     * @param chunkIndex  (chunkX &amp; 31) + 32 * (chunkZ &amp; 31)
+     * @param dst         caller-owned buffer, filled on HIT only (one copy
+     *                    per handout — the pool never aliases its buffers)
+     * @return {@link #P23_HIT} / {@link #P23_MISS} / {@link #P23_ERR}
+     */
+    public static int regionSectorPoolGet(long regionKey, int chunkIndex, byte[] dst) {
+        return P23_MISS; // v1 scaffold: pool not wired — always MISS -> vanilla
+    }
 }

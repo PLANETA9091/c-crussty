@@ -10,6 +10,7 @@ public final class net.minecraft.world.level.chunk.storage.ChunkParseOps {
   static final java.lang.String CARRIER_UNION_444;
   static final java.lang.String CARRIER_UNION_450;
   static final java.lang.String CARRIER_UNION_452;
+  static final java.lang.String CARRIER_UNION_453;
   private static final java.util.Map<java.lang.Object, java.util.concurrent.ConcurrentHashMap<net.minecraft.nbt.CompoundTag, net.minecraft.world.level.chunk.PalettedContainer<?>>> CACHE;
   private static long hits;
   private static long misses;
@@ -25,6 +26,11 @@ public final class net.minecraft.world.level.chunk.storage.ChunkParseOps {
   private static final java.lang.ThreadLocal<int[]> DEPTH;
   private static volatile java.lang.String twinName;
   private static volatile java.lang.reflect.Method twinMethod;
+  static final java.lang.String P23_LEVER;
+  static final int P23_HIT;
+  static final int P23_MISS;
+  static final int P23_ERR;
+  static volatile boolean p23PoolReady;
   private net.minecraft.world.level.chunk.storage.ChunkParseOps();
   public static void init(java.lang.String);
   public static net.minecraft.world.level.chunk.PalettedContainer<?> parseSection(com.mojang.serialization.Codec<?>, net.minecraft.world.level.ChunkPos, int, net.minecraft.nbt.CompoundTag);
@@ -35,6 +41,7 @@ public final class net.minecraft.world.level.chunk.storage.ChunkParseOps {
   private static void biomesSelftest(net.minecraft.world.level.ChunkPos, int, java.lang.Object, net.minecraft.nbt.CompoundTag, net.minecraft.world.level.chunk.PalettedContainer<?>);
   private static net.minecraft.world.level.chunk.PalettedContainer<?> vanillaReplica(java.lang.Object, net.minecraft.world.level.ChunkPos, int, net.minecraft.nbt.CompoundTag);
   public static java.lang.String stats();
+  public static int regionSectorPoolGet(long, int, byte[]);
   private static java.lang.Object lambda$vanillaReplica$2(java.lang.reflect.Constructor, java.lang.Object);
   private static void lambda$vanillaReplica$1(net.minecraft.world.level.ChunkPos, int, java.lang.Object);
   private static int[] lambda$static$0();

@@ -83,6 +83,7 @@ mod paletted;
 mod promote_wire;
 mod proto_blend_cache;
 mod randomtick;
+mod region_io;
 mod region_threads;
 mod skip_store;
 mod stagger;
@@ -318,6 +319,13 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // of the private write (encode-once capture + byte[] replay per player).
     // Dormant unless CRUSSTY_LEVER_FLAG == cmp444_chunk5 (STRICT eq).
     chunk_send5::register();
+    // REGION-IO SECTOR POOL (ID-P23, TASK-459-61, lever cmp459_p23): v1
+    // control-plane (region header model + read-ahead plan + 4KiB sector
+    // pool + len/CRC parity verifier; NO fd/FileChannel in native — java
+    // owns all fds, miss -> vanilla FileChannel). JNI bulk surface = wave 2.
+    // Dormant unless CRUSSTY_LEVER_FLAG == cmp459_p23 (STRICT eq; empty
+    // flag = vanilla bit-in-bit).
+    region_io::register();
     // QUERYPLANE (TASK-417-C, broadphase-query plane on the cvs carrier):
     // Level compose-on-top hook (LAST on Level — receives region_threads'
     // guardEntityTick bytes, composes getEntitiesOfClass +
