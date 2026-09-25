@@ -59,6 +59,15 @@ public final class InsideBatchOps {
     /** Бюджет батча на тик (переполнение ⇒ all-ones для хвоста — ваниль). */
     static final int MAXBATCH = 4096;
 
+    /**
+     * THRESH (chkclimb-7, TASK-461-62): минимальный размер бакета-кандидатов
+     * тика, при котором armed-путь берёт натив-батч; бакеты мельче THRESH
+     * отсекаются ⇒ per-entity ваниль (контракт n=0 ниже). THRESH-матрица
+     * L01 (512/256/384/768/1024): точка 768 (гипотеза-дельта +1..+3пп к ноге
+     * chkclimb +15.6: меньше мелких бакетов в натив-переходе).
+     */
+    static final int THRESH = 768;
+
     // ThreadLocal плоские буферы батча (ноль аллокаций на тик после прогрева;
     // никакой ооп-массив в hot-пути — урок §153/§155).
     static final ThreadLocal<long[]> TL_EIDS = ThreadLocal.withInitial(() -> new long[MAXBATCH]);
@@ -88,6 +97,9 @@ public final class InsideBatchOps {
      * Возвращает число сущностей в батче; ошибки структуры ⇒ 0 (ваниль).
      */
     static int collectBatch(java.util.List<Entity> candidates, Level level) {
+        if (candidates.size() < THRESH) {
+            return 0; // бакет ниже THRESH отсечён: caller обслуживает per-entity ваниль (контракт n=0)
+        }
         int n = Math.min(candidates.size(), MAXBATCH);
         long[] eids = TL_EIDS.get();
         double[] xyz = TL_XYZ.get();
