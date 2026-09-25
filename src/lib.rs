@@ -26,6 +26,9 @@ mod batch_table;
 mod brainhook;
 mod bridge_class;
 mod goal_selector;
+// TASK-459-67 P42: goal canUse sense-memo pre-gate (ID-P42; dormant scaffold,
+// STRICT cmp459_p42 — изолированный флаг, vanilla bit-in-bit при любом другом).
+mod goal_sense_memo;
 mod classfile;
 mod collide_batch;
 mod colpush;
@@ -242,6 +245,8 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // serverAiStep GoalSelector.tick x2 -> GoalOps.tickGate; composes on the
     // Mob chain after mobs_sscan's checkDespawn serve). cmp421_brain only.
     goal_selector::register();
+    // TASK-459-67 P42 sense-memo scaffold: dormant unless cmp459_p42.
+    goal_sense_memo::register();
     // F3 LEVELTICKS-READS (family-agg pack member, S7-116): LevelTicks +
     // ServerLevel body-swap hooks (the ServerLevel one composes with F1).
     tickhook::register();

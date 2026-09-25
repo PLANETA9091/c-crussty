@@ -401,4 +401,99 @@ public final class GoalOps {
         return true;
     }
 
+
+    // =====================================================================
+    // TASK-459-67 P42 (idea ID-P42): GOAL canUse PRE-GATE — SENSE-MEMO
+    // (scaffold, DORMANT: ретаргет-сайтов ещё нет; STRICT-флаг cmp459_p42,
+    // гейт живёт на rust-стороне src/goal_sense_memo.rs).
+    //
+    // Идея: memo-хэш требуемых сенсов на goal; фаза goalUpdate пропускает
+    // g.canUse(), если sense-сигнатура не менялась с последней оценки
+    // (SUPerset-инвалидация по sense-событиям: ВСЕ пишущие сайты сенсов
+    // перехвачены sense-плоскостью — SenseOps.nearestEntityGate chokepoint
+    // + bulk senseEpoch JNI, поднимающий глобальный VERSION-seqlock;
+    // «эпоха не двигалась» ⊇ «canUse-входы не менялись»).
+    // ЛОЖНЫЙ-ОТРИЦАТЕЛЬНЫЙ ЗАПРЕЩЁН: скрытые мутации сенсов вне плоскости
+    // ловит selfTest (1/N-тик форс-реоценка поверх memo; расхождение →
+    // disarm навсегда). STRICT-off до оракула-харнеса GoalOps.
+    // Итерация-0 (этот коммит): canUseMemoGate = fail-closedPassthrough —
+    // ВСЕГДА реальная оценка g.canUse() (байт-в-байт семантика ванили
+    // даже при случайном ретаргете). tickGate/tickRunningGate не тронуты.
+    // =====================================================================
+
+    /** STRICT-флаг P42 (зеркало goal_sense_memo::enabled; расхождение = dormant). */
+    static final String MEMO_FLAG = "cmp459_p42";
+
+    /** FNV-1a 64 — арифметика байт-в-байт с goal_sense_memo::fnv1a (rust-тест ↔ java). */
+    static final long FNV_OFFSET = 0xcbf29ce484222325L;
+    static final long FNV_PRIME = 0x100000001b3L;
+
+    /** Seed сигнатур "SENSEMO1" (совпадает с rust-тестом). */
+    static final long SENSEMO_SEED = 0x53454e53454d4f31L;
+
+    /** Sense-версия плоскости (источник событий = senseEpoch bulk-JNI / SenseOps). */
+    private static volatile long senseVersion;
+
+    /** Evidence: число selfTest-расхождений memo ↔ canUse (у живой ноги = 0). */
+    private static volatile long selfTestMismatches;
+
+    /** FNV-1a 64 (wrapping-арифметика long = rust wrapping_mul, LSB-first байты). */
+    static long fnv1a(long seed, long word) {
+        long h = seed;
+        for (int i = 0; i < 8; i++) {
+            h ^= (word >>> (i << 3)) & 0xffL;
+            h *= FNV_PRIME;
+        }
+        return h;
+    }
+
+    /**
+     * Сигнатура требуемых сенсов цели (v1: плоский массив домен-эпох от
+     * сенс-плоскости; порядок доменов канонизирован — как в rust-зеркале).
+     */
+    static long senseSignature(long[] domainEpochs) {
+        long h = SENSEMO_SEED;
+        if (domainEpochs != null) {
+            for (long e : domainEpochs) {
+                h = fnv1a(h, e);
+            }
+        }
+        return h;
+    }
+
+    /** Текущая sense-версия (для сигнатур/оракул-тестов). */
+    static long senseVersion() {
+        return senseVersion;
+    }
+
+    /**
+     * Hook под sense-плоскость: событие записи сенсов (bump версии ⇒ все
+     * memo-сигнатуры этого домена дрейфуют ⇒ следующая goalUpdate ре-оценит
+     * canUse). НЕТ событий — НЕТ инвалидаций (superset-гейт).
+     */
+    public static void noteSenseEvent(long version) {
+        if (version > senseVersion) {
+            senseVersion = version;
+        }
+    }
+
+    /**
+     * ПРЕ-ГЕЙТ goalUpdate (итерация-1 сайт: {@code invokevirtual Goal.canUse()Z}
+     * внутри {@code GoalSelector.tick()V}, receiver-prepended static desc
+     * (Lnet/minecraft/world/entity/ai/goal/WrappedGoal;)Z — stack-identical).
+     * Итерация-0 (scaffold): fail-closedPassthrough — реальная оценка canUse.
+     * TODO(P42 iter-1): sig = senseSignature(requiredSenses(g));
+     * слот warm && slot.sig == sig → вернуть slot.memoUse (canUse пропущен);
+     * иначе v = g.canUse(), записать слот; selfTest 1/N-тик реоценка,
+     * расхождение → disarm навсегда + WARN (ложный-отрицательный запрещён).
+     */
+    public static boolean canUseMemoGate(WrappedGoal g) {
+        return g.canUse();
+    }
+
+    /** Evidence-геттер selfTest-расхождений (маркер для вердикта ноги). */
+    static long selfTestMismatches() {
+        return selfTestMismatches;
+    }
+
 }
