@@ -1,7 +1,8 @@
 //! Runtime wiring for the ENTITY-INDEX lever (TASK-405-C, vector eindex —
-//! lever cmp405_eindex; bridge entityquery/net/minecraft/world/entity/
-//! EntityIndexOps.java, shard mirror src/entity_index.rs, retargets
-//! src/classfile.rs patch_eindex_*).
+//! levers cmp405_eindex | cmp458_roar (TASK-458-K: ID-H04 roaring section
+//! occupancy + ID-H06 bloom, same bridge, same mirror); bridge
+//! entityquery/net/minecraft/world/entity/EntityIndexOps.java, shard mirror
+//! src/entity_index.rs, retargets src/classfile.rs patch_eindex_*).
 //!
 //! DELIVERY (mobs_manager pattern): byte hooks on the 6 target classes
 //! (EntityLookup + Entity + the 4 rare setBoundingBox funnel owners) capture
@@ -18,8 +19,8 @@
 //! fails CLOSED: java broken=true → exact vanilla replication forever (an
 //! un-noted bb site could under-count → bit-for-bit violation risk).
 //!
-//! Fail-closed: flag != "cmp405_eindex" → nothing registered (byte-
-//! indistinguishable from vanilla); define/registration/probe/seed/patch
+//! Fail-closed: flag not in {cmp405_eindex, cmp458_roar} → nothing registered
+//! (byte-indistinguishable from vanilla); define/registration/probe/seed/patch
 //! failure → READY stays false → vanilla; native ERR_STRUCT → the bridge
 //! disarms permanently (vanillaReplica); ERR_RANGE → per-call fallback.
 
@@ -73,6 +74,19 @@ const OPS_BUF_BYTES: &[u8] =
     include_bytes!("../entityquery/build/net/minecraft/world/entity/EntityIndexOps$Buf.class");
 
 const GATE_LEVER: &str = "cmp405_eindex";
+/// TASK-458-K: the roaring/bloom carrier rides the SAME eindex subsystem
+/// (law 6: one subsystem, one bulk-JNI/тик) — both flags arm it.
+const GATE_LEVER2: &str = "cmp458_roar";
+/// TASK-461-66: swarx-1 super-carrier union-widen (STRICT-OR, law 4). Audit
+/// fact: swar (push-plane: mobs_soa SoA + eqEpoch + EntityGoalQueryOps/MobPushOps)
+/// and roar (per-sec occupancy chains + bloom pre-gate: EntityIndexOps/EntityLookup)
+/// have ZERO code-file overlap (git diff 96cc2704..33939931 vs ..eb47e869) —
+/// orthogonal broadphase sub-lanes => one flag arms BOTH.
+const GATE_LEVER3: &str = "cmp458_swar";
+
+fn lever_matches(f: &str) -> bool {
+    f == GATE_LEVER || f == GATE_LEVER2 || f == GATE_LEVER3
+}
 
 fn lever_flag() -> String {
     std::env::var("CRUSSTY_LEVER_FLAG")
@@ -181,9 +195,9 @@ fn fail_closed_disarm() {
 /// stays byte-indistinguishable from vanilla for this vector.
 pub fn register() {
     let f = lever_flag();
-    if f != GATE_LEVER {
+    if !lever_matches(&f) {
         eprintln!(
-            "[crussty-plugin] eindex: dormant (set CRUSSTY_LEVER_FLAG={GATE_LEVER} to enable)"
+            "[crussty-plugin] eindex: dormant (set CRUSSTY_LEVER_FLAG={GATE_LEVER}|{GATE_LEVER2} to enable)"
         );
         return;
     }
@@ -265,7 +279,7 @@ pub fn register() {
 /// Background activation (mobs_manager pattern).
 pub fn activate() {
     let f = lever_flag();
-    if f != GATE_LEVER {
+    if !lever_matches(&f) {
         return;
     }
     std::thread::spawn(move || {
@@ -538,7 +552,7 @@ pub fn activate() {
         }
 
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
-        crate::kernel_policy::audit_wire(OPS_CLASS, "eidx", "eindex v1");
+        crate::kernel_policy::audit_wire(OPS_CLASS, "eidx", "eindex v2 roar");
         READY.store(true, Ordering::Release);
         let rc1 = cplug_sdk::retransform_class(lookup().name);
         let rc2 = cplug_sdk::retransform_class(entity().name);
@@ -550,7 +564,7 @@ pub fn activate() {
             }
         }
         eprintln!(
-            "[crussty-plugin] {GATE_LEVER}: ARMED shards=64 shard_cells=4096 shard_slots=8192 shard_ids=8192 seqlock=per-shard writer=global-mutex sync=threadlocal-buffers+cross-drain jni=fused-flushquery query=counts-skip-rect rect_cap=64x64 fallback=vanillaReplica (rust entity_index chunk-mirror; EntityLookup 4 redirects + 4 note sites + Entity/4rare bb sites; vanilla tail untouched; per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT) retransform rc={rc1}/{rc2}"
+            "[crussty-plugin] {f}: ARMED shards=64 shard_cells=4096 shard_slots=8192 shard_ids=8192 seqlock=per-shard writer=global-mutex sync=threadlocal-buffers+cross-drain jni=fused-flushquery query=counts-skip-rect rect_cap=64x64 sections=64-window+overflow secbits=monotone-u64 bloom=4KB-k4-insertonly-fp<2%-<=3k-chunks selftest=chain_len-vs-walk+sec-consistency+bloomFN@every100q fallback=vanillaReplica (rust entity_index chunk-mirror v2 roar: EntityLookup 4 redirects + 4 note sites + Entity/4rare bb sites; vanilla tail untouched; per-call vanilla fallback ERR_RANGE, disarm ERR_STRUCT/selftest-fail) retransform rc={rc1}/{rc2}"
         );
     });
 }
