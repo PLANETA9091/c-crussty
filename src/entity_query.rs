@@ -146,6 +146,20 @@ fn flag_enabled(flag: Option<&str>) -> bool {
             | Some("cmp453_diet") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
             | Some("cmp421_brain")
             | Some("cmp421_brain") | Some("cmp434_chunkpl") | Some("cmp435_chunk3") | Some("cmp437_chunk4") | Some("cmp444_chunk5") | Some("cmp450_chunk")
+            // TASK-456-C NCDFE fix (×451/×452 precedent fa9054d9): the chunk6-sched
+            // mono-plane carrier rides the MASTER-CARRIER planes — add_456c_needles.py
+            // retagged every java blob gate (MobPushOps.eqsnapEnabled etc, anchored on
+            // cmp450_chunk) + every `| Ok(...)`/`== "..."` rust gate, but MISSED this
+            // matches!-Some gate (the ONLY Some("cmp450_chunk") style in the tree).
+            // Asymmetry = DELIVERY-FAIL chkmono456-1/2 (36122381392/36122391639):
+            // EQSNAP=true in the blob → MobPushOps.pushables:467 resolves
+            // EntityGoalQueryOps from the FIRST push, while lever_matches()==false
+            // skipped the mobs_manager HARD publish gate (ensure_bridge_early) →
+            // NCDFE ×1462, HotSpot caches per cp entry. Symmetric gate → define →
+            // register natives → probe → publish BEFORE the push lane (arm AFTER
+            // define+selfTest — NCDFE structurally impossible, ColpushOps-marker
+            // canon). cmp456_chunkmono ≡ cmp450_chunk planes ⊕ chunk6-sched.
+            | Some("cmp456_chunkmono")
     )
 }
 
@@ -1017,6 +1031,15 @@ mod tests {
         assert!(!enabled_with("cmp451_senseins_x"));
         assert!(!enabled_with(" cmp451_senseins"));
         assert!(!enabled_with("cmp451_senseins "));
+        // TASK-456-C NCDFE fix (fa9054d9 canon): chunkmono carrier MUST carry the
+        // define-gate — java MobPushOps blob EQSNAP gate includes cmp456_chunkmono
+        // (add_456c_needles.py), so the rust define-gate must match or
+        // MobPushOps.pushables:467 resolves an undefined bridge (chkmono456-1/2
+        // DELIVERY-FAIL: NCDFE ×1462/×24158).
+        assert!(enabled_with("cmp456_chunkmono"));
+        assert!(!enabled_with("cmp456_chunkmono_x"));
+        assert!(!enabled_with(" cmp456_chunkmono"));
+        assert!(!enabled_with("cmp456_chunkmono "));
     }
 
     /// Mirror of the java EntityGoalQueryOps.cellHash operating on the same
