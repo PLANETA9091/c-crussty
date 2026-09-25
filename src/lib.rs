@@ -78,6 +78,12 @@ mod chunk_send5;
 mod noise_fill;
 mod parse_diag;
 mod zero_cursor;
+// SERIALIZATION SCRATCH-ARENA (ID-P27, TASK-459-63, law-11 WILD — SCAFFOLD):
+// per-thread arena-pool engine for the chunk4/5 MISS-path scratch objects
+// (section buffers + heightmap-NBT) instead of fresh byte[]/NBT per encode.
+// Std-only protocol model + cargo parity tests; NOTHING on the hot path
+// references this module until the P27 activation cycle (RESEARCH-459-P27).
+mod scratch_arena;
 mod palette_gather;
 mod paletted;
 mod promote_wire;

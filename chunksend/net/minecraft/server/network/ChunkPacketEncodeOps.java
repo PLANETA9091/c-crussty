@@ -87,6 +87,71 @@ public final class ChunkPacketEncodeOps {
      * marker for the check_blobs_sync gate). */
     static final String CARRIER_UNION_452 = "cmp452_mega";
 
+    // ------------------------------------------------------------------
+    // P27 SERIALIZATION SCRATCH-ARENA — SCAFFOLD STUB (ID-P27, TASK-459-63,
+    // law-11 WILD; research: RESEARCH-459-P27.md; rust engine model:
+    // src/scratch_arena.rs).
+    //
+    // Target: the MISS path ABOVE (encodePayload) allocates a fresh
+    // Unpooled.buffer(256) (netty doubling cascade) + a fresh new byte[len]
+    // per MISS encode; P27 replaces BOTH with a per-thread arena pool
+    // (section buffers + heightmap-NBT scratch) under three invariants:
+    //   1. FULL OVERWRITE per session — every handed-off byte in
+    //      [0, write_len) was written by THIS encode (never a partial
+    //      append over the previous lifetime's bytes);
+    //   2. LENGTH CONTROL — write_len + capacity gate + expected-length
+    //      seal from the re-encode selftest (no stale-slot tails);
+    //   3. ONE PROTECTIVE COPY ON HANDOFF — the codec/channel may hold the
+    //      payload reference beyond the encode, so the slot never leaks
+    //      (foojay canon: reused objects must be copied before persisting).
+    // Parity (law 4): the arena changes ONLY the allocator, never the
+    // encoding — "байты те же"; the re-encode selftest gains the
+    // vanilla-vs-arena bit-in-bit meaning on activation.
+    //
+    // SCAFFOLD DISCIPLINE (x93 lesson): the shipped blob
+    // chunksend/build/net/minecraft/server/network/ChunkPacketEncodeOps.class
+    // is deliberately NOT rebuilt in this commit — the cmp444_chunk5 plane
+    // stays bit-in-bit as certified (hot methods untouched below). Any P27
+    // activation cycle MUST rebuild the blob (--release 21, kernel-jar cp,
+    // javap flat==nested) AND re-run check_blobs_sync.sh BEFORE arming, and
+    // MUST follow the NCDFE canon (early define before first retransform,
+    // pattern d73758a3/5ecd841a; NCDFE=0 до вердикта; grep AIOOBE=0).
+    //
+    // Grep markers: "P27", "cmp459_scratcharena".
+    // ------------------------------------------------------------------
+
+    /** P27 scratch-arena round id (raw-cp marker for the next cycle's
+     * check_blobs_sync gate; NOT part of the shipped cmp444_chunk5 blob). */
+    static final String CARRIER_UNION_P27 = "cmp459_scratcharena";
+
+    /** Hard arena-slot capacity (light-chunk bound; requests beyond this are
+     * served vanilla — fail-closed, matches ScratchArena::SLOT_CAP). */
+    static final int P27_SLOT_CAP = 1 << 20;
+
+    /** Bounded hot-slot pool per thread (region_threads=4 scene; matches
+     * ScratchArena::SLOTS_PER_THREAD). Overflow -> vanilla path. */
+    static final int P27_SLOTS_PER_THREAD = 8;
+
+    /**
+     * P27 length-control seal (SCAFFOLD — dormant: no hot-path caller).
+     * Returns the sealed slot length or -1 when the request must fall back
+     * to the vanilla allocator: len &lt; 0, or len beyond the hard slot cap
+     * (grow protocol = a NEW slot, never an in-place resize; requests above
+     * P27_SLOT_CAP never pool). The full-overwrite discipline lives in the
+     * rust engine model (src/scratch_arena.rs) and lands here verbatim at
+     * activation: reset before every session, seal against the fresh
+     * baseline length, one protective copy on handoff.
+     *
+     * @param requestedLen encode payload length (fresh baseline)
+     * @return sealed slot length, or -1 = vanilla fallback (fail-closed)
+     */
+    static int p27ArenaSlotLen(int requestedLen) {
+        if (requestedLen < 0 || requestedLen > P27_SLOT_CAP) {
+            return -1;
+        }
+        return requestedLen;
+    }
+
     /** Packet instance -> its vanilla write() payload (reference keys). */
     private static final ConcurrentHashMap<ClientboundLevelChunkWithLightPacket, byte[]> PAYLOAD =
             new ConcurrentHashMap<>();
