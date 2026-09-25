@@ -6,6 +6,11 @@
 name: ci
 
 on:
+  # TASK-459-85 C-X6 (branch-local CI wiring, TASK-459-56/-61/-70 precedent):
+  # master ci.yml has no workflow_dispatch trigger (push filter runs on
+  # "aster]" only), so the dispatch returns 422 on round branches.
+  # workflow_dispatch added HERE ONLY for round-459-cx6; master untouched.
+  workflow_dispatch:
   push:
     branches: [master]
   pull_request:
