@@ -223,16 +223,21 @@ public final class InsideSnapRegistryOps {
         }
         // EPOCH одним int-cmp: mismatch => stale => fallback. NEVER a wrong
         // serve: the fresh anchor below is always the long gen re-check.
-        if (REG_EPOCH[idx] != (int) s.gen) {
+        // P33 demotion (TASK-461-67, chkclimb-10): the gate gen read is
+        // ACQUIRE — it orders every subsequent read of this visit, so the
+        // plain REG/REG_EPOCH element mirrors lean on a real happens-before
+        // edge (x86: acquire read == plain mov; card ID-P33: getAcquire, NOT
+        // opaque, NOT plain, v1; write plane untouched).
+        if (REG_EPOCH[idx] != (int) InsideSnapOps.Snap.genAcquire(s)) {
             return null;
         }
         int packed = ((pos.getY() & 15) << 8) | ((pos.getZ() & 15) << 4) | (pos.getX() & 15);
-        BlockState[] a = s.states;
-        if (a != null && s.builtAtGen == s.gen) {
+        BlockState[] a = InsideSnapOps.Snap.statesAcquire(s);
+        if (a != null && InsideSnapOps.Snap.builtAcquire(s) == InsideSnapOps.Snap.genAcquire(s)) {
             return a[packed]; // SAME object the palette holds (CHM-serve parity)
         }
-        BlockState sg = s.single;
-        if (sg != null && s.builtAtGen == s.gen) {
+        BlockState sg = InsideSnapOps.Snap.singleAcquire(s);
+        if (sg != null && InsideSnapOps.Snap.builtAcquire(s) == InsideSnapOps.Snap.genAcquire(s)) {
             return sg;
         }
         return null; // pending/stale: CHM fallback owns collect triggering

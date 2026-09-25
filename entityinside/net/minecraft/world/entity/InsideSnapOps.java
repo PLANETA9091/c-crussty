@@ -1,6 +1,8 @@
 package net.minecraft.world.entity;
 
 import ca.spottedleaf.moonrise.patches.fast_palette.FastPaletteData;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.VarHandle;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -171,6 +173,46 @@ public final class InsideSnapOps {
         volatile BlockState single;   // single mode: one-object serve (bpe==0)
         volatile boolean pending;     // needs (re)build
         volatile int fails;           // consecutive publish failures (spin guard)
+
+        // ----------------------------------------------------------------
+        // P33 ACQUIRE-DEMOTION (TASK-461-67, chkclimb-10, idea ID-P33):
+        // serve-path READS go through VarHandle.getAcquire — JMM-acquire is
+        // the read half of the volatile reads they replace (x86: both are a
+        // plain mov; the win is C2 load-commoning inside one visit + relaxed
+        // scheduling around the anchor compares). WRITE plane (secWrite
+        // gen++ / collect publish) keeps volatile/release semantics — the
+        // invalidation contract is NOT touched. The builtAtGen==gen anchor
+        // keeps per-branch acquire re-reads (fail-closed: any staleness =>
+        // fallback, never a wrong serve) and the section is a single-writer
+        // region (card ID-P33: getAcquire, NOT opaque, NOT plain, v1).
+        // Handles live INSIDE $Snap: no new nested types (NCDFE canon — rust
+        // defines $Snap before any serve runs), no indy (findVarHandle is a
+        // direct API), <clinit> resolves only this class + JDK MethodHandles.
+        // ----------------------------------------------------------------
+        static final VarHandle VH_GEN;
+        static final VarHandle VH_BUILT;
+        static final VarHandle VH_STATES;
+        static final VarHandle VH_SINGLE;
+        static final VarHandle VH_PENDING;
+        static {
+            try {
+                MethodHandles.Lookup l = MethodHandles.lookup();
+                VH_GEN = l.findVarHandle(Snap.class, "gen", long.class);
+                VH_BUILT = l.findVarHandle(Snap.class, "builtAtGen", long.class);
+                VH_STATES = l.findVarHandle(Snap.class, "states", BlockState[].class);
+                VH_SINGLE = l.findVarHandle(Snap.class, "single", BlockState.class);
+                VH_PENDING = l.findVarHandle(Snap.class, "pending", boolean.class);
+            } catch (ReflectiveOperationException e) {
+                throw new ExceptionInInitializerError(e); // fail-closed: probe never arms
+            }
+        }
+
+        /** Acquire-mode readers (serve path only; writes stay volatile). */
+        static long genAcquire(Snap s) { return (long) VH_GEN.getAcquire(s); }
+        static long builtAcquire(Snap s) { return (long) VH_BUILT.getAcquire(s); }
+        static BlockState[] statesAcquire(Snap s) { return (BlockState[]) VH_STATES.getAcquire(s); }
+        static BlockState singleAcquire(Snap s) { return (BlockState) VH_SINGLE.getAcquire(s); }
+        static boolean pendingAcquire(Snap s) { return (boolean) VH_PENDING.getAcquire(s); }
     }
 
     static final ConcurrentHashMap<LevelChunkSection, Snap> SNAPS = new ConcurrentHashMap<>();
@@ -332,15 +374,17 @@ public final class InsideSnapOps {
             lane.snap = s;
         }
         int packed = ((y & 15) << 8) | ((z & 15) << 4) | (x & 15);
-        BlockState[] a = s.states;
-        if (a != null && s.builtAtGen == s.gen) {
+        // P33 demotion (TASK-461-67): 1:1 volatile-read -> getAcquire on the
+        // serve fence-tail; anchor structure and fallback direction unchanged.
+        BlockState[] a = Snap.statesAcquire(s);
+        if (a != null && Snap.builtAcquire(s) == Snap.genAcquire(s)) {
             return a[packed];
         }
-        BlockState sg = s.single;
-        if (sg != null && s.builtAtGen == s.gen) {
+        BlockState sg = Snap.singleAcquire(s);
+        if (sg != null && Snap.builtAcquire(s) == Snap.genAcquire(s)) {
             return sg;
         }
-        if (s.pending) {
+        if (Snap.pendingAcquire(s)) {
             maybeCollect();
         }
         // STALE-MISS: bit-exact continuation of LevelChunk.getBlockStateFinal's
@@ -462,15 +506,16 @@ public final class InsideSnapOps {
             // the live palette read (bit-exact getBlockStateFinal continuation).
             return sec.states.get(packed);
         }
-        BlockState[] a = s.states;
-        if (a != null && s.builtAtGen == s.gen) {
+        // P33 demotion (TASK-461-67): same 1:1 acquire wire as the V2 body.
+        BlockState[] a = Snap.statesAcquire(s);
+        if (a != null && Snap.builtAcquire(s) == Snap.genAcquire(s)) {
             return a[packed];
         }
-        BlockState sg = s.single;
-        if (sg != null && s.builtAtGen == s.gen) {
+        BlockState sg = Snap.singleAcquire(s);
+        if (sg != null && Snap.builtAcquire(s) == Snap.genAcquire(s)) {
             return sg;
         }
-        if (s.pending) {
+        if (Snap.pendingAcquire(s)) {
             maybeCollect();
         }
         // stale-miss: same V2 continuation (bit-exact, proven in legs r1-r4)
