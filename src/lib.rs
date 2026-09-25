@@ -43,6 +43,7 @@ mod fluid_free;
 mod flush_diet;
 mod improved_noise;
 mod inside_bitmask;
+mod inside_acquire;
 mod inside_cache;
 mod inside_diet;
 mod inside_snap;
@@ -204,6 +205,15 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // load; patch served via retransform after the InsideBlockOps bridge
     // lands). Dormant unless CRUSSTY_INSIDE_CACHE=1.
     inside_cache::register();
+    // INSIDE-ACQUIRE (ID-P33, TASK-459-73 scaffold): volatile-demotion
+    // остаточных volatile-чтений MISS-хвоста inside-лейна (retarget-тело
+    // snapGet/serve + PalettedContainerOps) на VarHandle.getAcquire — JMM-
+    // эквивалент volatile-read (x86=plain load, C2-перестановки контролируемы).
+    // Register рядом с inside_cache; define — ранний arm-hook (NCDFE-канон:
+    // getAcquire = signature-polymorphic invokevirtual, НЕ indy), перепись
+    // читателей — wiring-фаза. Dormant unless CRUSSTY_INSIDE_ACQUIRE=1 (и до
+    // приземления блоба — честный scaffold-stop в activate).
+    inside_acquire::register();
     // INSIDE-BITMASK (TASK-357): bridge owner registration (dormant unless
     // CRUSSTY_INSIDE_BITMASK=1).
     inside_bitmask::register();
@@ -537,6 +547,12 @@ fn inject_surface() {
     // arm, then the LevelChunk secWrite retarget + retransform (gate идёт
     // через entity_compose stage 1c; dormant unless lever_flag=cmp424_inside).
     inside_snap::activate();
+    // INSIDE-ACQUIRE (ID-P33, TASK-459-73 scaffold): РАННИЙ arm-hook — define
+    // InsideAcquireOps в kernel loader + selfTest single-writer наблюдаемости
+    // ДО публикации BRIDGE_READY (секвенция inside_epoch_gate/inside_cache;
+    // NCDFE-канон: класс определён до первого gated-вызова). Dormant unless
+    // CRUSSTY_INSIDE_ACQUIRE=1; scaffold-stop, пока блоб не встроен.
+    inside_acquire::activate();
     // FLUID-DIRTY (S7-151): define FluidPushOps into the kernel loader,
     // compute the secWrite retarget for LevelChunk, arm the inside_chain
     // bridge (dormant unless CRUSSTY_FLUID_DIRTY=1).
