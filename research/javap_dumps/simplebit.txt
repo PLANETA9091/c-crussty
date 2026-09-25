@@ -1,0 +1,1550 @@
+Compiled from "SimpleBitStorage.java"
+public class net.minecraft.util.SimpleBitStorage implements net.minecraft.util.BitStorage {
+  private static final int[] MAGIC;
+
+  private final long[] data;
+
+  private final int bits;
+
+  private final long mask;
+
+  private final int size;
+
+  private final int valuesPerLong;
+
+  private final int divideMul;
+
+  private final long divideMulUnsigned;
+
+  private final int divideAdd;
+
+  private final long divideAddUnsigned;
+
+  private final int divideShift;
+
+  private static final int[] BETTER_MAGIC;
+
+  private final int magic;
+
+  private final int mulBits;
+
+  public net.minecraft.util.SimpleBitStorage(int, int, int[]);
+    Code:
+       0: aload_0
+       1: iload_1
+       2: iload_2
+       3: invokespecial #38                 // Method "<init>":(II)V
+       6: iconst_0
+       7: istore        4
+       9: iconst_0
+      10: istore        5
+      12: iload         5
+      14: iload_2
+      15: aload_0
+      16: getfield      #41                 // Field valuesPerLong:I
+      19: isub
+      20: if_icmpgt     93
+      23: lconst_0
+      24: lstore        6
+      26: aload_0
+      27: getfield      #41                 // Field valuesPerLong:I
+      30: iconst_1
+      31: isub
+      32: istore        8
+      34: iload         8
+      36: iflt          69
+      39: lload         6
+      41: iload_1
+      42: lshl
+      43: lstore        6
+      45: lload         6
+      47: aload_3
+      48: iload         5
+      50: iload         8
+      52: iadd
+      53: iaload
+      54: i2l
+      55: aload_0
+      56: getfield      #43                 // Field mask:J
+      59: land
+      60: lor
+      61: lstore        6
+      63: iinc          8, -1
+      66: goto          34
+      69: aload_0
+      70: getfield      #45                 // Field data:[J
+      73: iload         4
+      75: iinc          4, 1
+      78: lload         6
+      80: lastore
+      81: iload         5
+      83: aload_0
+      84: getfield      #41                 // Field valuesPerLong:I
+      87: iadd
+      88: istore        5
+      90: goto          12
+      93: iload_2
+      94: iload         5
+      96: isub
+      97: istore        6
+      99: iload         6
+     101: ifle          157
+     104: lconst_0
+     105: lstore        7
+     107: iload         6
+     109: iconst_1
+     110: isub
+     111: istore        9
+     113: iload         9
+     115: iflt          148
+     118: lload         7
+     120: iload_1
+     121: lshl
+     122: lstore        7
+     124: lload         7
+     126: aload_3
+     127: iload         5
+     129: iload         9
+     131: iadd
+     132: iaload
+     133: i2l
+     134: aload_0
+     135: getfield      #43                 // Field mask:J
+     138: land
+     139: lor
+     140: lstore        7
+     142: iinc          9, -1
+     145: goto          113
+     148: aload_0
+     149: getfield      #45                 // Field data:[J
+     152: iload         4
+     154: lload         7
+     156: lastore
+     157: return
+
+  public net.minecraft.util.SimpleBitStorage(int, int);
+    Code:
+       0: aload_0
+       1: iload_1
+       2: iload_2
+       3: aconst_null
+       4: checkcast     #55                 // class "[J"
+       7: invokespecial #58                 // Method "<init>":(II[J)V
+      10: return
+
+  public net.minecraft.util.SimpleBitStorage(int, int, long[]);
+    Code:
+       0: aload_0
+       1: invokespecial #62                 // Method java/lang/Object."<init>":()V
+       4: lconst_1
+       5: ldc2_w        #63                 // long 32l
+       8: iload_1
+       9: i2l
+      10: invokestatic  #70                 // Method org/apache/commons/lang3/Validate.inclusiveBetween:(JJJ)V
+      13: aload_0
+      14: iload_2
+      15: putfield      #72                 // Field size:I
+      18: aload_0
+      19: iload_1
+      20: putfield      #74                 // Field bits:I
+      23: aload_0
+      24: lconst_1
+      25: iload_1
+      26: lshl
+      27: lconst_1
+      28: lsub
+      29: putfield      #43                 // Field mask:J
+      32: aload_0
+      33: bipush        64
+      35: iload_1
+      36: idiv
+      37: i2c
+      38: putfield      #41                 // Field valuesPerLong:I
+      41: iconst_3
+      42: aload_0
+      43: getfield      #41                 // Field valuesPerLong:I
+      46: iconst_1
+      47: isub
+      48: imul
+      49: istore        4
+      51: aload_0
+      52: getstatic     #76                 // Field MAGIC:[I
+      55: iload         4
+      57: iconst_0
+      58: iadd
+      59: iaload
+      60: putfield      #78                 // Field divideMul:I
+      63: aload_0
+      64: aload_0
+      65: getfield      #78                 // Field divideMul:I
+      68: invokestatic  #84                 // Method java/lang/Integer.toUnsignedLong:(I)J
+      71: putfield      #86                 // Field divideMulUnsigned:J
+      74: aload_0
+      75: getstatic     #76                 // Field MAGIC:[I
+      78: iload         4
+      80: iconst_1
+      81: iadd
+      82: iaload
+      83: putfield      #88                 // Field divideAdd:I
+      86: aload_0
+      87: aload_0
+      88: getfield      #88                 // Field divideAdd:I
+      91: invokestatic  #84                 // Method java/lang/Integer.toUnsignedLong:(I)J
+      94: putfield      #90                 // Field divideAddUnsigned:J
+      97: aload_0
+      98: getstatic     #76                 // Field MAGIC:[I
+     101: iload         4
+     103: iconst_2
+     104: iadd
+     105: iaload
+     106: putfield      #92                 // Field divideShift:I
+     109: iload_2
+     110: aload_0
+     111: getfield      #41                 // Field valuesPerLong:I
+     114: iadd
+     115: iconst_1
+     116: isub
+     117: aload_0
+     118: getfield      #41                 // Field valuesPerLong:I
+     121: idiv
+     122: istore        5
+     124: aload_3
+     125: ifnull        160
+     128: aload_3
+     129: arraylength
+     130: iload         5
+     132: if_icmpeq     152
+     135: new           #9                  // class net/minecraft/util/SimpleBitStorage$InitializationException
+     138: dup
+     139: aload_3
+     140: arraylength
+     141: iload         5
+     143: invokedynamic #104,  0            // InvokeDynamic #0:makeConcatWithConstants:(II)Ljava/lang/String;
+     148: invokespecial #107                // Method net/minecraft/util/SimpleBitStorage$InitializationException."<init>":(Ljava/lang/String;)V
+     151: athrow
+     152: aload_0
+     153: aload_3
+     154: putfield      #45                 // Field data:[J
+     157: goto          168
+     160: aload_0
+     161: iload         5
+     163: newarray       long
+     165: putfield      #45                 // Field data:[J
+     168: aload_0
+     169: getstatic     #109                // Field BETTER_MAGIC:[I
+     172: aload_0
+     173: getfield      #74                 // Field bits:I
+     176: iaload
+     177: putfield      #111                // Field magic:I
+     180: aload_0
+     181: bipush        64
+     183: aload_0
+     184: getfield      #74                 // Field bits:I
+     187: idiv
+     188: aload_0
+     189: getfield      #74                 // Field bits:I
+     192: imul
+     193: putfield      #113                // Field mulBits:I
+     196: aload_0
+     197: getfield      #72                 // Field size:I
+     200: sipush        4096
+     203: if_icmple     216
+     206: new           #115                // class java/lang/IllegalStateException
+     209: dup
+     210: ldc           #117                // String Size > 4096 not supported
+     212: invokespecial #118                // Method java/lang/IllegalStateException."<init>":(Ljava/lang/String;)V
+     215: athrow
+     216: return
+
+  private int cellIndex(int);
+    Code:
+       0: iload_1
+       1: i2l
+       2: aload_0
+       3: getfield      #86                 // Field divideMulUnsigned:J
+       6: lmul
+       7: aload_0
+       8: getfield      #90                 // Field divideAddUnsigned:J
+      11: ladd
+      12: bipush        32
+      14: lshr
+      15: aload_0
+      16: getfield      #92                 // Field divideShift:I
+      19: lshr
+      20: l2i
+      21: ireturn
+
+  public final int getAndSet(int, int);
+    Code:
+       0: aload_0
+       1: getfield      #111                // Field magic:I
+       4: iload_1
+       5: imul
+       6: istore_3
+       7: iload_3
+       8: bipush        20
+      10: iushr
+      11: istore        4
+      13: iload_3
+      14: ldc           #124                // int 1048575
+      16: iand
+      17: aload_0
+      18: getfield      #113                // Field mulBits:I
+      21: imul
+      22: bipush        20
+      24: iushr
+      25: istore        5
+      27: aload_0
+      28: getfield      #45                 // Field data:[J
+      31: astore        6
+      33: aload         6
+      35: iload         4
+      37: laload
+      38: lstore        7
+      40: aload_0
+      41: getfield      #43                 // Field mask:J
+      44: lstore        9
+      46: lload         7
+      48: lload         9
+      50: iload         5
+      52: lshl
+      53: ldc2_w        #125                // long -1l
+      56: lxor
+      57: land
+      58: iload_2
+      59: i2l
+      60: lload         9
+      62: land
+      63: iload         5
+      65: lshl
+      66: lor
+      67: lstore        11
+      69: aload         6
+      71: iload         4
+      73: lload         11
+      75: lastore
+      76: lload         7
+      78: iload         5
+      80: lushr
+      81: lload         9
+      83: land
+      84: l2i
+      85: ireturn
+
+  public final void set(int, int);
+    Code:
+       0: aload_0
+       1: getfield      #111                // Field magic:I
+       4: iload_1
+       5: imul
+       6: istore_3
+       7: iload_3
+       8: bipush        20
+      10: iushr
+      11: istore        4
+      13: iload_3
+      14: ldc           #124                // int 1048575
+      16: iand
+      17: aload_0
+      18: getfield      #113                // Field mulBits:I
+      21: imul
+      22: bipush        20
+      24: iushr
+      25: istore        5
+      27: aload_0
+      28: getfield      #45                 // Field data:[J
+      31: astore        6
+      33: aload         6
+      35: iload         4
+      37: laload
+      38: lstore        7
+      40: aload_0
+      41: getfield      #43                 // Field mask:J
+      44: lstore        9
+      46: lload         7
+      48: lload         9
+      50: iload         5
+      52: lshl
+      53: ldc2_w        #125                // long -1l
+      56: lxor
+      57: land
+      58: iload_2
+      59: i2l
+      60: lload         9
+      62: land
+      63: iload         5
+      65: lshl
+      66: lor
+      67: lstore        11
+      69: aload         6
+      71: iload         4
+      73: lload         11
+      75: lastore
+      76: return
+
+  public final int get(int);
+    Code:
+       0: aload_0
+       1: getfield      #111                // Field magic:I
+       4: iload_1
+       5: imul
+       6: istore_2
+       7: iload_2
+       8: bipush        20
+      10: iushr
+      11: istore_3
+      12: iload_2
+      13: ldc           #124                // int 1048575
+      15: iand
+      16: aload_0
+      17: getfield      #113                // Field mulBits:I
+      20: imul
+      21: bipush        20
+      23: iushr
+      24: istore        4
+      26: aload_0
+      27: getfield      #45                 // Field data:[J
+      30: iload_3
+      31: laload
+      32: iload         4
+      34: lushr
+      35: aload_0
+      36: getfield      #43                 // Field mask:J
+      39: land
+      40: l2i
+      41: ireturn
+
+  public long[] getRaw();
+    Code:
+       0: aload_0
+       1: getfield      #45                 // Field data:[J
+       4: areturn
+
+  public int getSize();
+    Code:
+       0: aload_0
+       1: getfield      #72                 // Field size:I
+       4: ireturn
+
+  public int getBits();
+    Code:
+       0: aload_0
+       1: getfield      #74                 // Field bits:I
+       4: ireturn
+
+  public void getAll(java.util.function.IntConsumer);
+    Code:
+       0: iconst_0
+       1: istore_2
+       2: aload_0
+       3: getfield      #45                 // Field data:[J
+       6: astore_3
+       7: aload_3
+       8: arraylength
+       9: istore        4
+      11: iconst_0
+      12: istore        5
+      14: iload         5
+      16: iload         4
+      18: if_icmpge     86
+      21: aload_3
+      22: iload         5
+      24: laload
+      25: lstore        6
+      27: iconst_0
+      28: istore        8
+      30: iload         8
+      32: aload_0
+      33: getfield      #41                 // Field valuesPerLong:I
+      36: if_icmpge     80
+      39: aload_1
+      40: lload         6
+      42: aload_0
+      43: getfield      #43                 // Field mask:J
+      46: land
+      47: l2i
+      48: invokeinterface #147,  2          // InterfaceMethod java/util/function/IntConsumer.accept:(I)V
+      53: lload         6
+      55: aload_0
+      56: getfield      #74                 // Field bits:I
+      59: lshr
+      60: lstore        6
+      62: iinc          2, 1
+      65: iload_2
+      66: aload_0
+      67: getfield      #72                 // Field size:I
+      70: if_icmplt     74
+      73: return
+      74: iinc          8, 1
+      77: goto          30
+      80: iinc          5, 1
+      83: goto          14
+      86: return
+
+  public void unpack(int[]);
+    Code:
+       0: aload_0
+       1: getfield      #45                 // Field data:[J
+       4: arraylength
+       5: istore_2
+       6: iconst_0
+       7: istore_3
+       8: iconst_0
+       9: istore        4
+      11: iload         4
+      13: iload_2
+      14: iconst_1
+      15: isub
+      16: if_icmpge     82
+      19: aload_0
+      20: getfield      #45                 // Field data:[J
+      23: iload         4
+      25: laload
+      26: lstore        5
+      28: iconst_0
+      29: istore        7
+      31: iload         7
+      33: aload_0
+      34: getfield      #41                 // Field valuesPerLong:I
+      37: if_icmpge     69
+      40: aload_1
+      41: iload_3
+      42: iload         7
+      44: iadd
+      45: lload         5
+      47: aload_0
+      48: getfield      #43                 // Field mask:J
+      51: land
+      52: l2i
+      53: iastore
+      54: lload         5
+      56: aload_0
+      57: getfield      #74                 // Field bits:I
+      60: lshr
+      61: lstore        5
+      63: iinc          7, 1
+      66: goto          31
+      69: iload_3
+      70: aload_0
+      71: getfield      #41                 // Field valuesPerLong:I
+      74: iadd
+      75: istore_3
+      76: iinc          4, 1
+      79: goto          11
+      82: aload_0
+      83: getfield      #72                 // Field size:I
+      86: iload_3
+      87: isub
+      88: istore        4
+      90: iload         4
+      92: ifle          144
+      95: aload_0
+      96: getfield      #45                 // Field data:[J
+      99: iload_2
+     100: iconst_1
+     101: isub
+     102: laload
+     103: lstore        5
+     105: iconst_0
+     106: istore        7
+     108: iload         7
+     110: iload         4
+     112: if_icmpge     144
+     115: aload_1
+     116: iload_3
+     117: iload         7
+     119: iadd
+     120: lload         5
+     122: aload_0
+     123: getfield      #43                 // Field mask:J
+     126: land
+     127: l2i
+     128: iastore
+     129: lload         5
+     131: aload_0
+     132: getfield      #74                 // Field bits:I
+     135: lshr
+     136: lstore        5
+     138: iinc          7, 1
+     141: goto          108
+     144: return
+
+  public net.minecraft.util.BitStorage copy();
+    Code:
+       0: new           #2                  // class net/minecraft/util/SimpleBitStorage
+       3: dup
+       4: aload_0
+       5: getfield      #74                 // Field bits:I
+       8: aload_0
+       9: getfield      #72                 // Field size:I
+      12: aload_0
+      13: getfield      #45                 // Field data:[J
+      16: invokevirtual #158                // Method "[J".clone:()Ljava/lang/Object;
+      19: checkcast     #55                 // class "[J"
+      22: invokespecial #58                 // Method "<init>":(II[J)V
+      25: areturn
+
+  public final it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap<it.unimi.dsi.fastutil.shorts.ShortArrayList> moonrise$countEntries();
+    Code:
+       0: aload_0
+       1: getfield      #41                 // Field valuesPerLong:I
+       4: istore_1
+       5: aload_0
+       6: getfield      #74                 // Field bits:I
+       9: istore_2
+      10: lconst_1
+      11: iload_2
+      12: lshl
+      13: lconst_1
+      14: lsub
+      15: lstore_3
+      16: aload_0
+      17: getfield      #72                 // Field size:I
+      20: istore        5
+      22: iload_2
+      23: bipush        6
+      25: if_icmpgt     190
+      28: iconst_1
+      29: iload_2
+      30: ishl
+      31: anewarray     #163                // class it/unimi/dsi/fastutil/shorts/ShortArrayList
+      34: astore        6
+      36: new           #165                // class it/unimi/dsi/fastutil/ints/Int2ObjectOpenHashMap
+      39: dup
+      40: iconst_1
+      41: iload_2
+      42: ishl
+      43: invokespecial #167                // Method it/unimi/dsi/fastutil/ints/Int2ObjectOpenHashMap."<init>":(I)V
+      46: astore        7
+      48: iconst_0
+      49: istore        8
+      51: aload_0
+      52: getfield      #45                 // Field data:[J
+      55: astore        9
+      57: aload         9
+      59: arraylength
+      60: istore        10
+      62: iconst_0
+      63: istore        11
+      65: iload         11
+      67: iload         10
+      69: if_icmpge     187
+      72: aload         9
+      74: iload         11
+      76: laload
+      77: lstore        12
+      79: iconst_0
+      80: istore        14
+      82: lload         12
+      84: lload_3
+      85: land
+      86: l2i
+      87: istore        15
+      89: lload         12
+      91: iload_2
+      92: lshr
+      93: lstore        12
+      95: iinc          14, 1
+      98: aload         6
+     100: iload         15
+     102: aaload
+     103: astore        16
+     105: aload         16
+     107: ifnull        125
+     110: aload         16
+     112: iload         8
+     114: iinc          8, 1
+     117: i2s
+     118: invokevirtual #173                // Method it/unimi/dsi/fastutil/shorts/ShortArrayList.add:(S)Z
+     121: pop
+     122: goto          168
+     125: new           #163                // class it/unimi/dsi/fastutil/shorts/ShortArrayList
+     128: dup
+     129: bipush        64
+     131: invokespecial #174                // Method it/unimi/dsi/fastutil/shorts/ShortArrayList."<init>":(I)V
+     134: astore        17
+     136: aload         6
+     138: iload         15
+     140: aload         17
+     142: aastore
+     143: aload         17
+     145: iload         8
+     147: iinc          8, 1
+     150: i2s
+     151: invokevirtual #173                // Method it/unimi/dsi/fastutil/shorts/ShortArrayList.add:(S)Z
+     154: pop
+     155: aload         7
+     157: iload         15
+     159: aload         17
+     161: invokevirtual #178                // Method it/unimi/dsi/fastutil/ints/Int2ObjectOpenHashMap.put:(ILjava/lang/Object;)Ljava/lang/Object;
+     164: pop
+     165: goto          168
+     168: iload         14
+     170: iload_1
+     171: if_icmpge     181
+     174: iload         8
+     176: iload         5
+     178: if_icmplt     82
+     181: iinc          11, 1
+     184: goto          65
+     187: aload         7
+     189: areturn
+     190: new           #165                // class it/unimi/dsi/fastutil/ints/Int2ObjectOpenHashMap
+     193: dup
+     194: bipush        64
+     196: invokespecial #167                // Method it/unimi/dsi/fastutil/ints/Int2ObjectOpenHashMap."<init>":(I)V
+     199: astore        6
+     201: iconst_0
+     202: istore        7
+     204: aload_0
+     205: getfield      #45                 // Field data:[J
+     208: astore        8
+     210: aload         8
+     212: arraylength
+     213: istore        9
+     215: iconst_0
+     216: istore        10
+     218: iload         10
+     220: iload         9
+     222: if_icmpge     295
+     225: aload         8
+     227: iload         10
+     229: laload
+     230: lstore        11
+     232: iconst_0
+     233: istore        13
+     235: lload         11
+     237: lload_3
+     238: land
+     239: l2i
+     240: istore        14
+     242: lload         11
+     244: iload_2
+     245: lshr
+     246: lstore        11
+     248: iinc          13, 1
+     251: aload         6
+     253: iload         14
+     255: invokedynamic #196,  0            // InvokeDynamic #1:get:()Lit/unimi/dsi/fastutil/ints/Int2ObjectFunction;
+     260: invokevirtual #200                // Method it/unimi/dsi/fastutil/ints/Int2ObjectOpenHashMap.computeIfAbsent:(ILit/unimi/dsi/fastutil/ints/Int2ObjectFunction;)Ljava/lang/Object;
+     263: checkcast     #163                // class it/unimi/dsi/fastutil/shorts/ShortArrayList
+     266: iload         7
+     268: iinc          7, 1
+     271: i2s
+     272: invokevirtual #173                // Method it/unimi/dsi/fastutil/shorts/ShortArrayList.add:(S)Z
+     275: pop
+     276: iload         13
+     278: iload_1
+     279: if_icmpge     289
+     282: iload         7
+     284: iload         5
+     286: if_icmplt     235
+     289: iinc          10, 1
+     292: goto          218
+     295: aload         6
+     297: areturn
+
+  private static it.unimi.dsi.fastutil.shorts.ShortArrayList lambda$moonrise$countEntries$0(int);
+    Code:
+       0: new           #163                // class it/unimi/dsi/fastutil/shorts/ShortArrayList
+       3: dup
+       4: bipush        64
+       6: invokespecial #174                // Method it/unimi/dsi/fastutil/shorts/ShortArrayList."<init>":(I)V
+       9: areturn
+
+  static {};
+    Code:
+       0: sipush        192
+       3: newarray       int
+       5: dup
+       6: iconst_0
+       7: iconst_m1
+       8: iastore
+       9: dup
+      10: iconst_1
+      11: iconst_m1
+      12: iastore
+      13: dup
+      14: iconst_2
+      15: iconst_0
+      16: iastore
+      17: dup
+      18: iconst_3
+      19: ldc           #212                // int -2147483648
+      21: iastore
+      22: dup
+      23: iconst_4
+      24: iconst_0
+      25: iastore
+      26: dup
+      27: iconst_5
+      28: iconst_0
+      29: iastore
+      30: dup
+      31: bipush        6
+      33: ldc           #213                // int 1431655765
+      35: iastore
+      36: dup
+      37: bipush        7
+      39: ldc           #213                // int 1431655765
+      41: iastore
+      42: dup
+      43: bipush        8
+      45: iconst_0
+      46: iastore
+      47: dup
+      48: bipush        9
+      50: ldc           #212                // int -2147483648
+      52: iastore
+      53: dup
+      54: bipush        10
+      56: iconst_0
+      57: iastore
+      58: dup
+      59: bipush        11
+      61: iconst_1
+      62: iastore
+      63: dup
+      64: bipush        12
+      66: ldc           #214                // int 858993459
+      68: iastore
+      69: dup
+      70: bipush        13
+      72: ldc           #214                // int 858993459
+      74: iastore
+      75: dup
+      76: bipush        14
+      78: iconst_0
+      79: iastore
+      80: dup
+      81: bipush        15
+      83: ldc           #215                // int 715827882
+      85: iastore
+      86: dup
+      87: bipush        16
+      89: ldc           #215                // int 715827882
+      91: iastore
+      92: dup
+      93: bipush        17
+      95: iconst_0
+      96: iastore
+      97: dup
+      98: bipush        18
+     100: ldc           #216                // int 613566756
+     102: iastore
+     103: dup
+     104: bipush        19
+     106: ldc           #216                // int 613566756
+     108: iastore
+     109: dup
+     110: bipush        20
+     112: iconst_0
+     113: iastore
+     114: dup
+     115: bipush        21
+     117: ldc           #212                // int -2147483648
+     119: iastore
+     120: dup
+     121: bipush        22
+     123: iconst_0
+     124: iastore
+     125: dup
+     126: bipush        23
+     128: iconst_2
+     129: iastore
+     130: dup
+     131: bipush        24
+     133: ldc           #217                // int 477218588
+     135: iastore
+     136: dup
+     137: bipush        25
+     139: ldc           #217                // int 477218588
+     141: iastore
+     142: dup
+     143: bipush        26
+     145: iconst_0
+     146: iastore
+     147: dup
+     148: bipush        27
+     150: ldc           #218                // int 429496729
+     152: iastore
+     153: dup
+     154: bipush        28
+     156: ldc           #218                // int 429496729
+     158: iastore
+     159: dup
+     160: bipush        29
+     162: iconst_0
+     163: iastore
+     164: dup
+     165: bipush        30
+     167: ldc           #219                // int 390451572
+     169: iastore
+     170: dup
+     171: bipush        31
+     173: ldc           #219                // int 390451572
+     175: iastore
+     176: dup
+     177: bipush        32
+     179: iconst_0
+     180: iastore
+     181: dup
+     182: bipush        33
+     184: ldc           #220                // int 357913941
+     186: iastore
+     187: dup
+     188: bipush        34
+     190: ldc           #220                // int 357913941
+     192: iastore
+     193: dup
+     194: bipush        35
+     196: iconst_0
+     197: iastore
+     198: dup
+     199: bipush        36
+     201: ldc           #221                // int 330382099
+     203: iastore
+     204: dup
+     205: bipush        37
+     207: ldc           #221                // int 330382099
+     209: iastore
+     210: dup
+     211: bipush        38
+     213: iconst_0
+     214: iastore
+     215: dup
+     216: bipush        39
+     218: ldc           #222                // int 306783378
+     220: iastore
+     221: dup
+     222: bipush        40
+     224: ldc           #222                // int 306783378
+     226: iastore
+     227: dup
+     228: bipush        41
+     230: iconst_0
+     231: iastore
+     232: dup
+     233: bipush        42
+     235: ldc           #223                // int 286331153
+     237: iastore
+     238: dup
+     239: bipush        43
+     241: ldc           #223                // int 286331153
+     243: iastore
+     244: dup
+     245: bipush        44
+     247: iconst_0
+     248: iastore
+     249: dup
+     250: bipush        45
+     252: ldc           #212                // int -2147483648
+     254: iastore
+     255: dup
+     256: bipush        46
+     258: iconst_0
+     259: iastore
+     260: dup
+     261: bipush        47
+     263: iconst_3
+     264: iastore
+     265: dup
+     266: bipush        48
+     268: ldc           #224                // int 252645135
+     270: iastore
+     271: dup
+     272: bipush        49
+     274: ldc           #224                // int 252645135
+     276: iastore
+     277: dup
+     278: bipush        50
+     280: iconst_0
+     281: iastore
+     282: dup
+     283: bipush        51
+     285: ldc           #225                // int 238609294
+     287: iastore
+     288: dup
+     289: bipush        52
+     291: ldc           #225                // int 238609294
+     293: iastore
+     294: dup
+     295: bipush        53
+     297: iconst_0
+     298: iastore
+     299: dup
+     300: bipush        54
+     302: ldc           #226                // int 226050910
+     304: iastore
+     305: dup
+     306: bipush        55
+     308: ldc           #226                // int 226050910
+     310: iastore
+     311: dup
+     312: bipush        56
+     314: iconst_0
+     315: iastore
+     316: dup
+     317: bipush        57
+     319: ldc           #227                // int 214748364
+     321: iastore
+     322: dup
+     323: bipush        58
+     325: ldc           #227                // int 214748364
+     327: iastore
+     328: dup
+     329: bipush        59
+     331: iconst_0
+     332: iastore
+     333: dup
+     334: bipush        60
+     336: ldc           #228                // int 204522252
+     338: iastore
+     339: dup
+     340: bipush        61
+     342: ldc           #228                // int 204522252
+     344: iastore
+     345: dup
+     346: bipush        62
+     348: iconst_0
+     349: iastore
+     350: dup
+     351: bipush        63
+     353: ldc           #229                // int 195225786
+     355: iastore
+     356: dup
+     357: bipush        64
+     359: ldc           #229                // int 195225786
+     361: iastore
+     362: dup
+     363: bipush        65
+     365: iconst_0
+     366: iastore
+     367: dup
+     368: bipush        66
+     370: ldc           #230                // int 186737708
+     372: iastore
+     373: dup
+     374: bipush        67
+     376: ldc           #230                // int 186737708
+     378: iastore
+     379: dup
+     380: bipush        68
+     382: iconst_0
+     383: iastore
+     384: dup
+     385: bipush        69
+     387: ldc           #231                // int 178956970
+     389: iastore
+     390: dup
+     391: bipush        70
+     393: ldc           #231                // int 178956970
+     395: iastore
+     396: dup
+     397: bipush        71
+     399: iconst_0
+     400: iastore
+     401: dup
+     402: bipush        72
+     404: ldc           #232                // int 171798691
+     406: iastore
+     407: dup
+     408: bipush        73
+     410: ldc           #232                // int 171798691
+     412: iastore
+     413: dup
+     414: bipush        74
+     416: iconst_0
+     417: iastore
+     418: dup
+     419: bipush        75
+     421: ldc           #233                // int 165191049
+     423: iastore
+     424: dup
+     425: bipush        76
+     427: ldc           #233                // int 165191049
+     429: iastore
+     430: dup
+     431: bipush        77
+     433: iconst_0
+     434: iastore
+     435: dup
+     436: bipush        78
+     438: ldc           #234                // int 159072862
+     440: iastore
+     441: dup
+     442: bipush        79
+     444: ldc           #234                // int 159072862
+     446: iastore
+     447: dup
+     448: bipush        80
+     450: iconst_0
+     451: iastore
+     452: dup
+     453: bipush        81
+     455: ldc           #235                // int 153391689
+     457: iastore
+     458: dup
+     459: bipush        82
+     461: ldc           #235                // int 153391689
+     463: iastore
+     464: dup
+     465: bipush        83
+     467: iconst_0
+     468: iastore
+     469: dup
+     470: bipush        84
+     472: ldc           #236                // int 148102320
+     474: iastore
+     475: dup
+     476: bipush        85
+     478: ldc           #236                // int 148102320
+     480: iastore
+     481: dup
+     482: bipush        86
+     484: iconst_0
+     485: iastore
+     486: dup
+     487: bipush        87
+     489: ldc           #237                // int 143165576
+     491: iastore
+     492: dup
+     493: bipush        88
+     495: ldc           #237                // int 143165576
+     497: iastore
+     498: dup
+     499: bipush        89
+     501: iconst_0
+     502: iastore
+     503: dup
+     504: bipush        90
+     506: ldc           #238                // int 138547332
+     508: iastore
+     509: dup
+     510: bipush        91
+     512: ldc           #238                // int 138547332
+     514: iastore
+     515: dup
+     516: bipush        92
+     518: iconst_0
+     519: iastore
+     520: dup
+     521: bipush        93
+     523: ldc           #212                // int -2147483648
+     525: iastore
+     526: dup
+     527: bipush        94
+     529: iconst_0
+     530: iastore
+     531: dup
+     532: bipush        95
+     534: iconst_4
+     535: iastore
+     536: dup
+     537: bipush        96
+     539: ldc           #239                // int 130150524
+     541: iastore
+     542: dup
+     543: bipush        97
+     545: ldc           #239                // int 130150524
+     547: iastore
+     548: dup
+     549: bipush        98
+     551: iconst_0
+     552: iastore
+     553: dup
+     554: bipush        99
+     556: ldc           #240                // int 126322567
+     558: iastore
+     559: dup
+     560: bipush        100
+     562: ldc           #240                // int 126322567
+     564: iastore
+     565: dup
+     566: bipush        101
+     568: iconst_0
+     569: iastore
+     570: dup
+     571: bipush        102
+     573: ldc           #241                // int 122713351
+     575: iastore
+     576: dup
+     577: bipush        103
+     579: ldc           #241                // int 122713351
+     581: iastore
+     582: dup
+     583: bipush        104
+     585: iconst_0
+     586: iastore
+     587: dup
+     588: bipush        105
+     590: ldc           #242                // int 119304647
+     592: iastore
+     593: dup
+     594: bipush        106
+     596: ldc           #242                // int 119304647
+     598: iastore
+     599: dup
+     600: bipush        107
+     602: iconst_0
+     603: iastore
+     604: dup
+     605: bipush        108
+     607: ldc           #243                // int 116080197
+     609: iastore
+     610: dup
+     611: bipush        109
+     613: ldc           #243                // int 116080197
+     615: iastore
+     616: dup
+     617: bipush        110
+     619: iconst_0
+     620: iastore
+     621: dup
+     622: bipush        111
+     624: ldc           #244                // int 113025455
+     626: iastore
+     627: dup
+     628: bipush        112
+     630: ldc           #244                // int 113025455
+     632: iastore
+     633: dup
+     634: bipush        113
+     636: iconst_0
+     637: iastore
+     638: dup
+     639: bipush        114
+     641: ldc           #245                // int 110127366
+     643: iastore
+     644: dup
+     645: bipush        115
+     647: ldc           #245                // int 110127366
+     649: iastore
+     650: dup
+     651: bipush        116
+     653: iconst_0
+     654: iastore
+     655: dup
+     656: bipush        117
+     658: ldc           #246                // int 107374182
+     660: iastore
+     661: dup
+     662: bipush        118
+     664: ldc           #246                // int 107374182
+     666: iastore
+     667: dup
+     668: bipush        119
+     670: iconst_0
+     671: iastore
+     672: dup
+     673: bipush        120
+     675: ldc           #247                // int 104755299
+     677: iastore
+     678: dup
+     679: bipush        121
+     681: ldc           #247                // int 104755299
+     683: iastore
+     684: dup
+     685: bipush        122
+     687: iconst_0
+     688: iastore
+     689: dup
+     690: bipush        123
+     692: ldc           #248                // int 102261126
+     694: iastore
+     695: dup
+     696: bipush        124
+     698: ldc           #248                // int 102261126
+     700: iastore
+     701: dup
+     702: bipush        125
+     704: iconst_0
+     705: iastore
+     706: dup
+     707: bipush        126
+     709: ldc           #249                // int 99882960
+     711: iastore
+     712: dup
+     713: bipush        127
+     715: ldc           #249                // int 99882960
+     717: iastore
+     718: dup
+     719: sipush        128
+     722: iconst_0
+     723: iastore
+     724: dup
+     725: sipush        129
+     728: ldc           #250                // int 97612893
+     730: iastore
+     731: dup
+     732: sipush        130
+     735: ldc           #250                // int 97612893
+     737: iastore
+     738: dup
+     739: sipush        131
+     742: iconst_0
+     743: iastore
+     744: dup
+     745: sipush        132
+     748: ldc           #251                // int 95443717
+     750: iastore
+     751: dup
+     752: sipush        133
+     755: ldc           #251                // int 95443717
+     757: iastore
+     758: dup
+     759: sipush        134
+     762: iconst_0
+     763: iastore
+     764: dup
+     765: sipush        135
+     768: ldc           #252                // int 93368854
+     770: iastore
+     771: dup
+     772: sipush        136
+     775: ldc           #252                // int 93368854
+     777: iastore
+     778: dup
+     779: sipush        137
+     782: iconst_0
+     783: iastore
+     784: dup
+     785: sipush        138
+     788: ldc           #253                // int 91382282
+     790: iastore
+     791: dup
+     792: sipush        139
+     795: ldc           #253                // int 91382282
+     797: iastore
+     798: dup
+     799: sipush        140
+     802: iconst_0
+     803: iastore
+     804: dup
+     805: sipush        141
+     808: ldc           #254                // int 89478485
+     810: iastore
+     811: dup
+     812: sipush        142
+     815: ldc           #254                // int 89478485
+     817: iastore
+     818: dup
+     819: sipush        143
+     822: iconst_0
+     823: iastore
+     824: dup
+     825: sipush        144
+     828: ldc           #255                // int 87652393
+     830: iastore
+     831: dup
+     832: sipush        145
+     835: ldc           #255                // int 87652393
+     837: iastore
+     838: dup
+     839: sipush        146
+     842: iconst_0
+     843: iastore
+     844: dup
+     845: sipush        147
+     848: ldc_w         #256                // int 85899345
+     851: iastore
+     852: dup
+     853: sipush        148
+     856: ldc_w         #256                // int 85899345
+     859: iastore
+     860: dup
+     861: sipush        149
+     864: iconst_0
+     865: iastore
+     866: dup
+     867: sipush        150
+     870: ldc_w         #257                // int 84215045
+     873: iastore
+     874: dup
+     875: sipush        151
+     878: ldc_w         #257                // int 84215045
+     881: iastore
+     882: dup
+     883: sipush        152
+     886: iconst_0
+     887: iastore
+     888: dup
+     889: sipush        153
+     892: ldc_w         #258                // int 82595524
+     895: iastore
+     896: dup
+     897: sipush        154
+     900: ldc_w         #258                // int 82595524
+     903: iastore
+     904: dup
+     905: sipush        155
+     908: iconst_0
+     909: iastore
+     910: dup
+     911: sipush        156
+     914: ldc_w         #259                // int 81037118
+     917: iastore
+     918: dup
+     919: sipush        157
+     922: ldc_w         #259                // int 81037118
+     925: iastore
+     926: dup
+     927: sipush        158
+     930: iconst_0
+     931: iastore
+     932: dup
+     933: sipush        159
+     936: ldc_w         #260                // int 79536431
+     939: iastore
+     940: dup
+     941: sipush        160
+     944: ldc_w         #260                // int 79536431
+     947: iastore
+     948: dup
+     949: sipush        161
+     952: iconst_0
+     953: iastore
+     954: dup
+     955: sipush        162
+     958: ldc_w         #261                // int 78090314
+     961: iastore
+     962: dup
+     963: sipush        163
+     966: ldc_w         #261                // int 78090314
+     969: iastore
+     970: dup
+     971: sipush        164
+     974: iconst_0
+     975: iastore
+     976: dup
+     977: sipush        165
+     980: ldc_w         #262                // int 76695844
+     983: iastore
+     984: dup
+     985: sipush        166
+     988: ldc_w         #262                // int 76695844
+     991: iastore
+     992: dup
+     993: sipush        167
+     996: iconst_0
+     997: iastore
+     998: dup
+     999: sipush        168
+    1002: ldc_w         #263                // int 75350303
+    1005: iastore
+    1006: dup
+    1007: sipush        169
+    1010: ldc_w         #263                // int 75350303
+    1013: iastore
+    1014: dup
+    1015: sipush        170
+    1018: iconst_0
+    1019: iastore
+    1020: dup
+    1021: sipush        171
+    1024: ldc_w         #264                // int 74051160
+    1027: iastore
+    1028: dup
+    1029: sipush        172
+    1032: ldc_w         #264                // int 74051160
+    1035: iastore
+    1036: dup
+    1037: sipush        173
+    1040: iconst_0
+    1041: iastore
+    1042: dup
+    1043: sipush        174
+    1046: ldc_w         #265                // int 72796055
+    1049: iastore
+    1050: dup
+    1051: sipush        175
+    1054: ldc_w         #265                // int 72796055
+    1057: iastore
+    1058: dup
+    1059: sipush        176
+    1062: iconst_0
+    1063: iastore
+    1064: dup
+    1065: sipush        177
+    1068: ldc_w         #266                // int 71582788
+    1071: iastore
+    1072: dup
+    1073: sipush        178
+    1076: ldc_w         #266                // int 71582788
+    1079: iastore
+    1080: dup
+    1081: sipush        179
+    1084: iconst_0
+    1085: iastore
+    1086: dup
+    1087: sipush        180
+    1090: ldc_w         #267                // int 70409299
+    1093: iastore
+    1094: dup
+    1095: sipush        181
+    1098: ldc_w         #267                // int 70409299
+    1101: iastore
+    1102: dup
+    1103: sipush        182
+    1106: iconst_0
+    1107: iastore
+    1108: dup
+    1109: sipush        183
+    1112: ldc_w         #268                // int 69273666
+    1115: iastore
+    1116: dup
+    1117: sipush        184
+    1120: ldc_w         #268                // int 69273666
+    1123: iastore
+    1124: dup
+    1125: sipush        185
+    1128: iconst_0
+    1129: iastore
+    1130: dup
+    1131: sipush        186
+    1134: ldc_w         #269                // int 68174084
+    1137: iastore
+    1138: dup
+    1139: sipush        187
+    1142: ldc_w         #269                // int 68174084
+    1145: iastore
+    1146: dup
+    1147: sipush        188
+    1150: iconst_0
+    1151: iastore
+    1152: dup
+    1153: sipush        189
+    1156: ldc           #212                // int -2147483648
+    1158: iastore
+    1159: dup
+    1160: sipush        190
+    1163: iconst_0
+    1164: iastore
+    1165: dup
+    1166: sipush        191
+    1169: iconst_5
+    1170: iastore
+    1171: putstatic     #76                 // Field MAGIC:[I
+    1174: bipush        33
+    1176: newarray       int
+    1178: putstatic     #109                // Field BETTER_MAGIC:[I
+    1181: iconst_1
+    1182: istore_0
+    1183: iload_0
+    1184: getstatic     #109                // Field BETTER_MAGIC:[I
+    1187: arraylength
+    1188: if_icmpge     1214
+    1191: getstatic     #109                // Field BETTER_MAGIC:[I
+    1194: iload_0
+    1195: ldc2_w        #270                // long 64l
+    1198: iload_0
+    1199: i2l
+    1200: ldiv
+    1201: bipush        20
+    1203: invokestatic  #277                // Method ca/spottedleaf/concurrentutil/util/IntegerUtil.getUnsignedDivisorMagic:(JI)J
+    1206: l2i
+    1207: iastore
+    1208: iinc          0, 1
+    1211: goto          1183
+    1214: return
+}
