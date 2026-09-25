@@ -125,22 +125,19 @@ pub fn crc32_ieee(data: &[u8]) -> u32 {
 
 // ------------------------------------------------------------------- LRU
 
-/// Ключ слота: pack(cx: i32, cz: i32, sy: i32) → u64 (sy ∈ [0, 255] — секции
-/// выше 255 не существуют в ванильных мирах; cx/cz — полный i32).
+/// Ключ слота: точная тройка (cx, cz, sy). 32+32+8=72 бита не влезают в u64
+/// без потерь, поэтому НЕ пакуем — слот хранит тройку целиком, сравнение
+/// точное (12 слотов × линейный скан — копейки). sy ∈ [0, 255] — секции выше
+/// не существуют в ванильных мирах; вне диапазона → MISS (не кэшируем).
 #[inline]
-fn pack_key(cx: i32, cz: i32, sy: i32) -> Option<u64> {
-    if !(0..=255).contains(&sy) {
-        return None;
-    }
-    Some(
-        ((cx as u32 as u64) << 40)
-            | ((cz as u32 as u64) << 8)
-            | ((sy as u64) & 0xFF),
-    )
+fn valid_section(sy: i32) -> bool {
+    (0..=255).contains(&sy)
 }
 
 struct ArenaSlot {
-    key: u64,
+    cx: i32,
+    cz: i32,
+    sy: i32,
     valid: bool,
     epoch: u64,
     crc: u32,
@@ -150,7 +147,7 @@ struct ArenaSlot {
 
 impl ArenaSlot {
     fn new() -> Self {
-        ArenaSlot { key: 0, valid: false, epoch: 0, crc: 0, stamp: 0, buf: Vec::new() }
+        ArenaSlot { cx: 0, cz: 0, sy: 0, valid: false, epoch: 0, crc: 0, stamp: 0, buf: Vec::new() }
     }
 }
 
@@ -169,8 +166,8 @@ thread_local! {
 }
 
 #[inline]
-fn key_matches(slot: &ArenaSlot, key: u64, epoch: u64) -> bool {
-    slot.valid && slot.key == key && slot.epoch == epoch
+fn key_matches(slot: &ArenaSlot, cx: i32, cz: i32, sy: i32, epoch: u64) -> bool {
+    slot.valid && slot.cx == cx && slot.cz == cz && slot.sy == sy && slot.epoch == epoch
 }
 
 /// GET: HIT → копирует payload в out, возвращает len (i32); MISS → 0;
@@ -180,15 +177,15 @@ fn arena_get_inner(cx: i32, cz: i32, sy: i32, epoch: u64, out: &mut [u8]) -> i32
     if broken() {
         return ARENA_MISS;
     }
-    let Some(key) = pack_key(cx, cz, sy) else {
+    if !valid_section(sy) {
         MISSES.fetch_add(1, Ordering::Relaxed);
         return ARENA_MISS;
-    };
+    }
     ARENA.with(|a| {
         let mut arena = a.borrow_mut();
         arena.clock = arena.clock.wrapping_add(1);
         let clock = arena.clock;
-        let Some(idx) = arena.slots.iter().position(|s| key_matches(s, key, epoch)) else {
+        let Some(idx) = arena.slots.iter().position(|s| key_matches(s, cx, cz, sy, epoch)) else {
             MISSES.fetch_add(1, Ordering::Relaxed);
             return ARENA_MISS;
         };
@@ -221,9 +218,9 @@ fn arena_put_inner(cx: i32, cz: i32, sy: i32, epoch: u64, data: &[u8]) -> i32 {
     if broken() || data.is_empty() {
         return ARENA_MISS;
     }
-    let Some(key) = pack_key(cx, cz, sy) else {
+    if !valid_section(sy) {
         return ARENA_MISS;
-    };
+    }
     if data.len() > SLOT_SKIP {
         CAP_DROPPED.fetch_add(1, Ordering::Relaxed);
         return ARENA_MISS;
@@ -235,15 +232,17 @@ fn arena_put_inner(cx: i32, cz: i32, sy: i32, epoch: u64, data: &[u8]) -> i32 {
         let crc = crc32_ieee(data);
 
         // Обновить существующий слот, если ключ уже в арене.
-        if let Some(idx) = arena.slots.iter().position(|s| s.valid && s.key == key) {
+        if let Some(idx) = arena.slots.iter().position(|s| s.valid && s.cx == cx && s.cz == cz && s.sy == sy) {
+            let old_len = arena.slots[idx].buf.len();
             let slot = &mut arena.slots[idx];
-            arena.live_bytes = arena.live_bytes + data.len() - slot.buf.len();
             slot.buf.clear();
             slot.buf.extend_from_slice(data);
             slot.crc = crc;
             slot.epoch = epoch;
             slot.stamp = clock;
             slot.valid = true;
+            drop(slot);
+            arena.live_bytes += data.len().saturating_sub(old_len);
             PUTS.fetch_add(1, Ordering::Relaxed);
             return ARENA_HIT;
         }
@@ -270,7 +269,9 @@ fn arena_put_inner(cx: i32, cz: i32, sy: i32, epoch: u64, data: &[u8]) -> i32 {
         let slot = &mut arena.slots[idx];
         slot.buf.clear();
         slot.buf.extend_from_slice(data);
-        slot.key = key;
+        slot.cx = cx;
+        slot.cz = cz;
+        slot.sy = sy;
         slot.epoch = epoch;
         slot.crc = crc;
         slot.stamp = clock;
@@ -378,7 +379,7 @@ pub unsafe extern "system" fn chunk_serial_arena_get(
     if env.is_null() {
         return ERR_STRUCT;
     }
-    let env = unsafe { &*env };
+    let _env = unsafe { JniEnv::from_raw(env) };
     GETS.fetch_add(1, Ordering::Relaxed);
     if broken() {
         return ARENA_MISS;
@@ -405,7 +406,7 @@ pub unsafe extern "system" fn chunk_serial_arena_put(
     if env.is_null() {
         return ERR_STRUCT;
     }
-    let env = unsafe { &*env };
+    let env = unsafe { JniEnv::from_raw(env) };
     if data.is_null() {
         return ARENA_MISS;
     }
@@ -490,14 +491,15 @@ mod tests {
     }
 
     #[test]
-    fn pack_key_roundtrip_and_reject() {
-        let k = pack_key(-7, 11, 33).unwrap();
-        let cx = (k >> 40) as u32 as i32;
-        let cz = ((k >> 8) & 0xFFFF_FFFF) as u32 as i32;
-        let sy = (k & 0xFF) as i32;
-        assert_eq!((cx, cz, sy), (-7, 11, 33));
-        assert!(pack_key(0, 0, 256).is_none());
-        assert!(pack_key(0, 0, -1).is_none());
+    fn section_range_guard() {
+        assert!(valid_section(0));
+        assert!(valid_section(255));
+        assert!(!valid_section(256));
+        assert!(!valid_section(-1));
+        // Вне диапазона get/put = MISS (не кэшируем).
+        let mut out = vec![0u8; 16];
+        assert_eq!(arena_get_inner(0, 0, 256, 1, &mut out), ARENA_MISS);
+        assert_eq!(arena_put_inner(0, 0, -1, 1, &[1u8]), ARENA_MISS);
     }
 
     #[test]
