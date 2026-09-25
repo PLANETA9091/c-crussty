@@ -44,6 +44,11 @@ fn lever_flag_matches() -> bool {
         Ok(v) => {
             let v = v.trim();
             v == LEVER_ID
+            // TASK-460-02 swing carrier (round-460-chkswing-1): the papaya
+            // H05 swing layer COMPOSES on this carrier — the chunkmono
+            // plane stays LIVE on its swing lever id (mirror-drift lesson
+            // ×452: prod gates and swing levers move synchronously).
+            || v == "cmp456_chunkmono_papaya"
                 || v == "cmp420_colpush"
                 || v == "cmp421_chunk"
                 || v == "cmp421_brain"
@@ -475,6 +480,14 @@ pub unsafe extern "system" fn mirror_event(
         MIRROR_DRIFT.fetch_add(1, Ordering::AcqRel);
     }
     drop(m);
+    // TASK-460-02 papaya swing layer (cmp456_chunkmono_papaya): the
+    // diagnostic shadow-ledger drives the lock-free machinery on the real
+    // chunk-event stream. STRICTLY additive — results discarded, the drift
+    // verdict above is computed ENTIRELY from the mutex mirror (parity
+    // bit-exact regardless of any papaya outcome; fail-closed by design).
+    if crate::papaya_arm::engage_live() {
+        crate::papaya_arm::engage(k, add != 0);
+    }
     if drift {
         MIRROR_DRIFT.fetch_add(1, Ordering::AcqRel);
     }

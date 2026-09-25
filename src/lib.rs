@@ -25,6 +25,8 @@ mod batch_desc;
 mod batch_table;
 mod brainhook;
 mod chunk_sched;
+mod papaya_arm;
+mod papaya_shard_readers;
 mod bridge_class;
 mod goal_selector;
 mod classfile;
@@ -530,6 +532,14 @@ fn inject_surface() {
     // (dormant unless CRUSSTY_PARSE_DIAG=1).
     parse_diag::activate();
     chunk_sched::activate();
+    // PAPAYA SHARD-READERS sidecar (TASK-460-02, round-460-chkswing-1,
+    // swing layer H05 on the cmp456_chunkmono carrier): EARLY-define the
+    // NCDFE-канон sidecar into the kernel loader (T1 gate: define BEFORE
+    // the first broadphase query), selfTest -> armNow -> ARMED marker, then
+    // open the diagnostic shadow-ledger engagement on the chunk-mirror
+    // event stream (dormant unless CRUSSTY_LEVER_FLAG ==
+    // cmp456_chunkmono_papaya; carrier plane above composes via STRICT-OR).
+    papaya_arm::activate();
     // ZERO-CURSOR (lever #11 v1, TASK-330): define ZeroCursorIter+Ops into
     // the kernel loader, static body-redirect of
     // lambda$betweenCornersInDirection$8, retransform (dormant unless
