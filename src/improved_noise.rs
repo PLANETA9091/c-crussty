@@ -766,6 +766,27 @@ pub(crate) fn wait_for_boot() -> bool {
 /// Force-load a kernel class through Bukkit's loader (shared with
 /// perlin_noise: same seed class, parameterized target).
 pub(crate) fn force_load_kernel_class(target: &str) {
+    force_load_kernel_class_opt(target, true);
+}
+
+/// Lazy (initialize=false) variant — RC7 canon port (TASK-430-A root-cause
+/// fix @a3991c2, re-applied by TASK-433-B): the early-arm poll's initializing
+/// `Class.forName(target, true)` can fire BEFORE the main thread reaches
+/// `Bootstrap.bootStrap()`. The <clinit> chain then fails with "Not
+/// bootstrapped" on the POLL thread, permanently poisoning
+/// BuiltInRegistries (ExceptionInInitializerError); the main thread's
+/// bootStrap() afterwards dies with NoClassDefFoundError and the world stays
+/// empty (inside2 run 35894909390: NCDFE=473412, "selfTest resolution failed",
+/// TPS 16.7 empty world, hook fail-closed dormant). The lazy variant only
+/// DEFINEs the class (ClassFileLoadHook still fires — pristine bytes are
+/// captured, phase-0 find_class succeeds) but never runs <clinit>: the JVM's
+/// own first real use on the main thread initializes it safely after
+/// bootStrap(). Zero-race by construction.
+pub(crate) fn force_load_kernel_class_lazy(target: &str) {
+    force_load_kernel_class_opt(target, false);
+}
+
+fn force_load_kernel_class_opt(target: &str, initialize: bool) {
     let _ = cplug_sdk::jni_util::with_attached(|env| {
         let Some(seed) = cplug_sdk::classes::find_class("org/bukkit/Bukkit") else {
             eprintln!("[crussty-plugin] improved_noise: force load: Bukkit not found");
@@ -808,18 +829,20 @@ pub(crate) fn force_load_kernel_class(target: &str) {
             forname,
             &[
                 jni::jvalue { l: name },
-                jni::jvalue { z: 1 /* true */ },
+                jni::jvalue {
+                    z: if initialize { 1 } else { 0 },
+                },
                 jni::jvalue { l: loader },
             ],
         );
         let had_exc = crate::clear_exception(env);
         if loaded.is_null() {
             eprintln!(
-                "[crussty-plugin] improved_noise: Class.forName({target}) failed (exc={had_exc})"
+                "[crussty-plugin] improved_noise: Class.forName({target}, init={initialize}) failed (exc={had_exc})"
             );
         } else {
             eprintln!(
-                "[crussty-plugin] improved_noise: Class.forName({target}) succeeded"
+                "[crussty-plugin] improved_noise: Class.forName({target}, init={initialize}) succeeded"
             );
         }
         env.delete_local_ref(loaded);
