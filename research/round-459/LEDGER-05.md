@@ -1,0 +1,6 @@
+# LEDGER-05 (TASK-459-L05) — root-cause roar-2 −10.7@8960455
+1. roar-2 (36149782264 @eb47e869) = PLACEBO: gate lever_matches ПРОЙДЕН (нет dormant-печати), probe OK (нативы живы), но seedAll()==0 → stdout:947 «eindex: seed failed (0)» → hook dormant → 0 roar/bloom/EntityIndexOps-фреймов в cpu (112915 сэмплов)/wall (61212)/alloc; treatment-вклад 0.00пп.
+2. seed(0) ⟺ java-Throwable (глотается, offset 368-370) или eidxFlush<0 (ERR_STRUCT); ёмкости 8192/шард при ~200-280/шард — переполнение исключено → кандидат #1 Throwable в цикле seedAll. Фикс = инструментирование rc/exception + re-seed после инжекта; ребилд блобов НЕ нужен (поправка к BOTTLENECK ×459).
+3. RED −10.7 объяснён STW-кластером co-рана: Full=10 (банк 7), STW 23.55s vs chk-14 17.66s; большие Full 2249ms@172s + 2277ms@410s; регрессия norm↔STW по 5 ногам r≈−0.93, slope ≈ −5пп/s.
+4. Ложный ARM-маркер: absorb-словарь дал {"cmp457_paldelta": "MARKER"} из dormant-подсказки (подстрока lever-id) — парсер анкерить на полный ARMED-маркер; jar-артефакт bайт-в-байт равен базе (ops-классы инжектятся агентом — «плоский jar» ≠ спящий гейт).
+5. Capture-матем лейна: broadphase 9.90% presence/5.06% self → потолок +12.5пп (при 1.26 norm-пп/lane-пп); реалистичный Δ +4..+7пп → СУБ-БАР, компоновка с P31 (+5-8пп) обязательна; захват <30% на инструмент-ре-ролле = закрытие рычага.
