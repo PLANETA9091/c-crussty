@@ -10,23 +10,180 @@
     "ncdfe_fix_validated": "x4 re-rolls NCDFE=0 (x456 canon)"
   },
   "legs": [
-    {"leg": 6, "run_id": 36131753219, "branch": "round-456c-chunkmono-6", "verdict": "GREEN-CANDIDATE-VALID", "norm": 11.5, "runner_cpu_index": 6423955, "tps_med": 2.40, "tps_exp": 2.15, "gates": {"NCDFE": 0, "ARM": true, "EFFECT": true, "selfTest": true, "AIOOBE": "0 runtime (2x cmp420_chunk2 biomes selftest FAIL = fixture-shum canon)", "threw": 0, "dep_gate": true}, "lanes": {"items": 0.00, "nav_ai": 3.00, "broadphase": 9.36, "inside": 16.28}, "notes": "drift fail-open latch after first hits = canonical (identical on chkmono456-4/5)"},
-    {"leg": 7, "run_id": 36131765237, "branch": "round-456c-chunkmono-7", "verdict": "BAND-FAST-FAIL-INFRA", "norm": null, "notes": "runner calibration band gate fast-fail @22s; NOT-A-VERDICT (canon x456 a17/a18); re-roll -> leg 9"},
-    {"leg": 8, "run_id": 36131776794, "branch": "round-456c-chunkmono-8", "verdict": "GREEN-CANDIDATE-VALID", "norm": 9.1, "runner_cpu_index": 7084301, "tps_med": 2.50, "tps_exp": 2.29, "gates": {"NCDFE": 0, "ARM": true, "EFFECT": true, "selfTest": true, "AIOOBE": "0 runtime (2x selftest fixture-shum)", "threw": 0, "dep_gate": true}, "lanes": {"items": 0.00, "nav_ai": 2.96, "broadphase": 9.81, "inside": 16.30}},
-    {"leg": 9, "run_id": null, "branch": "round-456c-chunkmono-9", "verdict": "GREEN-CANDIDATE-VALID (main peek-absorb)", "norm": 1.3, "runner_cpu_index": 6983211, "gates": {"NCDFE": 0}, "notes": "sub-bar; absorbed by main tick-457 21:10+08"},
-    {"leg": 10, "run_id": null, "branch": "round-456c-chunkmono-10", "verdict": "GREEN-CANDIDATE-VALID (main peek-absorb)", "norm": -0.9, "runner_cpu_index": 7229897, "gates": {"NCDFE": 0}, "notes": "sub-bar; absorbed by main tick-457 21:10+08"},
-    {"leg": 11, "run_id": 36143848689, "branch": "round-456c-chunkmono-11", "verdict": "DISPATCHED", "dispatch_ts": "2026-09-25T13:53Z"},
-    {"leg": 12, "run_id": 36143863797, "branch": "round-456c-chunkmono-12", "verdict": "DISPATCHED", "dispatch_ts": "2026-09-25T13:53Z"},
-    {"leg": 13, "run_id": 36143877485, "branch": "round-456c-chunkmono-13", "verdict": "DISPATCHED", "dispatch_ts": "2026-09-25T13:53Z"}
+    {
+      "leg": 6,
+      "run_id": 36131753219,
+      "branch": "round-456c-chunkmono-6",
+      "verdict": "GREEN-CANDIDATE-VALID",
+      "norm": 11.5,
+      "runner_cpu_index": 6423955,
+      "tps_med": 2.4,
+      "tps_exp": 2.15,
+      "gates": {
+        "NCDFE": 0,
+        "ARM": true,
+        "EFFECT": true,
+        "selfTest": true,
+        "AIOOBE": "0 runtime (2x cmp420_chunk2 biomes selftest FAIL = fixture-shum canon)",
+        "threw": 0,
+        "dep_gate": true
+      },
+      "lanes": {
+        "items": 0.0,
+        "nav_ai": 3.0,
+        "broadphase": 9.36,
+        "inside": 16.28
+      },
+      "notes": "drift fail-open latch after first hits = canonical (identical on chkmono456-4/5)"
+    },
+    {
+      "leg": 7,
+      "run_id": 36131765237,
+      "branch": "round-456c-chunkmono-7",
+      "verdict": "BAND-FAST-FAIL-INFRA",
+      "norm": null,
+      "notes": "runner calibration band gate fast-fail @22s; NOT-A-VERDICT (canon x456 a17/a18); re-roll -> leg 9"
+    },
+    {
+      "leg": 8,
+      "run_id": 36131776794,
+      "branch": "round-456c-chunkmono-8",
+      "verdict": "GREEN-CANDIDATE-VALID",
+      "norm": 9.1,
+      "runner_cpu_index": 7084301,
+      "tps_med": 2.5,
+      "tps_exp": 2.29,
+      "gates": {
+        "NCDFE": 0,
+        "ARM": true,
+        "EFFECT": true,
+        "selfTest": true,
+        "AIOOBE": "0 runtime (2x selftest fixture-shum)",
+        "threw": 0,
+        "dep_gate": true
+      },
+      "lanes": {
+        "items": 0.0,
+        "nav_ai": 2.96,
+        "broadphase": 9.81,
+        "inside": 16.3
+      }
+    },
+    {
+      "leg": 9,
+      "run_id": null,
+      "branch": "round-456c-chunkmono-9",
+      "verdict": "GREEN-CANDIDATE-VALID (main peek-absorb)",
+      "norm": 1.3,
+      "runner_cpu_index": 6983211,
+      "gates": {
+        "NCDFE": 0
+      },
+      "notes": "sub-bar; absorbed by main tick-457 21:10+08"
+    },
+    {
+      "leg": 10,
+      "run_id": null,
+      "branch": "round-456c-chunkmono-10",
+      "verdict": "GREEN-CANDIDATE-VALID (main peek-absorb)",
+      "norm": -0.9,
+      "runner_cpu_index": 7229897,
+      "gates": {
+        "NCDFE": 0
+      },
+      "notes": "sub-bar; absorbed by main tick-457 21:10+08"
+    },
+    {
+      "leg": 11,
+      "run_id": 36143848689,
+      "branch": "round-456c-chunkmono-11",
+      "verdict": "GREEN-CANDIDATE-VALID-DEPRESSION",
+      "dispatch_ts": "2026-09-25T13:53Z",
+      "norm": -3.6,
+      "runner_cpu_index": 7040413,
+      "gates": {
+        "NCDFE": 0,
+        "ARM": true,
+        "EFFECT": true,
+        "selfTest": true,
+        "AIOOBE": "0 runtime (2x cmp420_chunk2 biomes selftest FAIL = fixture-shum canon)",
+        "threw": 0,
+        "dep_gate": false
+      },
+      "lanes": {
+        "items": 0.0,
+        "nav_ai": 2.75,
+        "broadphase": 8.82,
+        "inside": 16.63
+      },
+      "notes": "GC-pressured: Full=9 total=22.1s (bank 18.8s/Full=7); norm -3.6 < dep-gate -2 = DEPRESSION sample, not pair-material"
+    },
+    {
+      "leg": 12,
+      "run_id": 36143863797,
+      "branch": "round-456c-chunkmono-12",
+      "verdict": "GREEN-CANDIDATE-VALID-DEPRESSION",
+      "dispatch_ts": "2026-09-25T13:53Z",
+      "norm": -3.7,
+      "runner_cpu_index": 7053858,
+      "gates": {
+        "NCDFE": 0,
+        "ARM": true,
+        "EFFECT": true,
+        "selfTest": true,
+        "AIOOBE": "0 runtime (2x cmp420_chunk2 biomes selftest FAIL = fixture-shum canon)",
+        "threw": 0,
+        "dep_gate": false
+      },
+      "lanes": {
+        "items": 0.0,
+        "nav_ai": 3.3,
+        "broadphase": 9.73,
+        "inside": 16.3
+      },
+      "notes": "GC-pressured: Full=9 total=19.8s; norm -3.7 < dep-gate -2 = DEPRESSION; runner-window cluster with leg 11 (7040413/7053858, delta 13.4k, both -3.6/-3.7 = systematic window depression)"
+    },
+    {
+      "leg": 13,
+      "run_id": 36143877485,
+      "branch": "round-456c-chunkmono-13",
+      "verdict": "DISPATCHED",
+      "dispatch_ts": "2026-09-25T13:53Z"
+    }
   ],
   "pairs": [
-    {"leg": 8, "anchor": "a29-x456", "anchor_norm": 2.9, "anchor_runner": 7051107, "delta": 33194, "pair_norm": 6.2, "fresh": true}
+    {
+      "leg": 8,
+      "anchor": "a29-x456",
+      "anchor_norm": 2.9,
+      "anchor_runner": 7051107,
+      "delta": 33194,
+      "pair_norm": 6.2,
+      "fresh": true
+    }
   ],
   "pairs_note": "leg 6 @6423955: NO x456-bank anchor within delta<=50k (nearest a34@6520174 delta 96k) — UNPAIRED until x457 wave anchors absorb (check ANCHORS.md each cycle); x457 wave-2 anchors absorbed by main: a18 +2.9@6817414, a25 +5.0@7060169, a28 -0.8@6982027, a26 +12.4@8671791, a32 +0.7@6579335",
-  "verdict": "CYCLE-2 IN FLIGHT: family 6 valid legs (max +11.5), 0 monsters >=+18; legs 11/12/13 dispatched @13:53Z, polling q5min",
+  "verdict": "CYCLE-2: legs 11/12 absorbed DEPRESSION (-3.6@7040413 / -3.7@7053858, both NCDFE=0 ARM=1 threw=0 band-OK, GC Full=9 window); leg 13 in flight; family 8 valid legs max +11.5, 0 monsters >=+18",
   "steps": [
-    {"step": 1, "ts": "2026-09-25T11:59Z", "action": "worktree+dispatcher preflight; leg7 band fast-fail infra"},
-    {"step": 2, "ts": "2026-09-25T12:22Z", "action": "absorbed legs 6/8 (markers pre-purge, zips purged); dispatch 9/10; disk 75%"},
-    {"step": 3, "ts": "2026-09-25T13:54Z", "action": "restart TASK-457-A2: legs 9/10 confirmed absorbed by main (+1.3@6983211 / -0.9@7229897, both NCDFE=0 sub-bar); legs 11/12/13 dispatched @d73758a3 (run_ids 36143848689/36143863797/36143877485); disk 55%"}
+    {
+      "step": 1,
+      "ts": "2026-09-25T11:59Z",
+      "action": "worktree+dispatcher preflight; leg7 band fast-fail infra"
+    },
+    {
+      "step": 2,
+      "ts": "2026-09-25T12:22Z",
+      "action": "absorbed legs 6/8 (markers pre-purge, zips purged); dispatch 9/10; disk 75%"
+    },
+    {
+      "step": 3,
+      "ts": "2026-09-25T13:54Z",
+      "action": "restart TASK-457-A2: legs 9/10 confirmed absorbed by main (+1.3@6983211 / -0.9@7229897, both NCDFE=0 sub-bar); legs 11/12/13 dispatched @d73758a3 (run_ids 36143848689/36143863797/36143877485); disk 55%"
+    },
+    {
+      "step": 4,
+      "ts": "2026-09-25T14:12Z",
+      "action": "absorbed legs 11/12 (markers pre-purge, zips/collapsed/jar/spark purged both); disk 56%; leg 13 polling"
+    }
   ]
 }
