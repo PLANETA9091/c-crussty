@@ -24,6 +24,11 @@ mod batch_collector;
 mod batch_desc;
 mod batch_table;
 mod brainhook;
+// PAPAYA SHARD-READERS sidecar (TASK-461-65, swarx-3: swar⊕papaya-read
+// composition; verbatim transfer from round-460-chkswing-1 89f90d50 =
+// round-459-h05 scaffold). EARLY arm-hook + lock-free reader core.
+mod papaya_arm;
+mod papaya_shard_readers;
 mod bridge_class;
 mod goal_selector;
 mod classfile;
@@ -523,6 +528,17 @@ fn inject_surface() {
     // loader, compute the ldc-anchored retarget of parse, retransform
     // (dormant unless CRUSSTY_PARSE_DIAG=1).
     parse_diag::activate();
+    // PAPAYA SHARD-READERS sidecar (TASK-461-65, swarx-3): EARLY-define the
+    // NCDFE-канон sidecar into the kernel loader (T1 gate: define BEFORE the
+    // first broadphase query), selfTest -> armNow -> ARMED marker. STRICT-OR
+    // gate: own id cmp456_chunkmono_papaya OR the swarx composite carrier
+    // cmp458_swar (the whole swarx stack rides the same id — union-widen
+    // canon d22835bd). NOTE (law-14f): the diagnostic shadow-ledger ENGAGEMENT
+    // (chunk_sched::mirror_event caller on the chkswing lineage) has NO host
+    // on the swarx base — the chunk-mirror event stream does not exist here,
+    // so the sidecar runs arm+selfTest+markers; the engagement wiring is the
+    // documented next-step (EntityLookup retarget / chunk-mirror port).
+    papaya_arm::activate();
     // ZERO-CURSOR (lever #11 v1, TASK-330): define ZeroCursorIter+Ops into
     // the kernel loader, static body-redirect of
     // lambda$betweenCornersInDirection$8, retransform (dormant unless
