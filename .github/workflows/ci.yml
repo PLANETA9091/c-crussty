@@ -6,6 +6,11 @@
 name: ci
 
 on:
+  # TASK-459-92 (branch-local CI wiring, TASK-459-56/70 precedent): master
+  # ci.yml has no workflow_dispatch trigger (push runs on aster] only),
+  # so dispatch_459b.py ci <branch> returns HTTP 422 on round branches.
+  # workflow_dispatch added HERE ONLY for round-459-ideas2; master untouched.
+  workflow_dispatch:
   push:
     branches: [master]
   pull_request:
