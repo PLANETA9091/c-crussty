@@ -24,6 +24,10 @@ mod batch_collector;
 mod batch_desc;
 mod batch_table;
 mod brainhook;
+// P43 BRAIN FLAT-MEMORY REGISTRY (TASK-459-68, идея ID-P43): rust-носитель
+// реестра Memories (ordinal→флет-слоты; Map=истина, флет=read-зеркало после
+// мутаций). SCAFFOLD: STRICT-off до оракула — без байт-хуков (закон 11).
+mod brain_flat_registry;
 mod bridge_class;
 mod goal_selector;
 mod classfile;
@@ -238,6 +242,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     randomtick::register();
     // F2 BRAIN-ITERATORS (family-agg pack member, S7-114): Brain body-swap hook.
     brainhook::register();
+    // P43 BRAIN FLAT-MEMORY REGISTRY (TASK-459-68): scaffold-фаза — модель
+    // реестра + disarm-латч, STRICT-off (только lever cmp459_p43; без байт-
+    // хуков: vanilla bytes не трогаются до оракула, закон 11).
+    brain_flat_registry::register();
     // TASK-421-A brain-slice: goal-selector flat priority fast-path (Mob
     // serverAiStep GoalSelector.tick x2 -> GoalOps.tickGate; composes on the
     // Mob chain after mobs_sscan's checkDespawn serve). cmp421_brain only.
