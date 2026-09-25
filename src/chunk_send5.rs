@@ -118,7 +118,7 @@ fn target() -> &'static Target {
 /// semantics are frozen). Empty/foreign flag = vanilla bit-in-bit.
 fn enabled() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim() == LEVER_ID || v.trim() == "cmp450_chunk" || v.trim() == "cmp452_mega")
+        .map(|v| v.trim() == LEVER_ID || v.trim() == "cmp450_chunk" || v.trim() == "cmp456_poi" || v.trim() == "cmp452_mega")
         .unwrap_or(false)
 }
 

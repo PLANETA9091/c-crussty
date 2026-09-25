@@ -507,6 +507,15 @@ case "${LEVER_FLAG:-}" in
   cmp453_diet)
     log "${LEVER_FLAG} armed: DIET-COMPOSITE cmp453_diet = ins4-carrier (inside_snap v4 + SoA/colpush/cvs/bq/items stack STRICT-OR) ⊕ sense-ядро (SenseOps getNearestEntity body-swap + goalquery sense-arena/entity_query senseMode) ⊕ chunk4 send-snapshot — БЕЗ хвостов: chunk5 encode-cache ВЫРЕЗАН (players_packets lane 0.00-0.01% FLAT ×452 = нулевая маржа, MISS-диета), BrainOps tick2 ВЫРЕЗАН (Brain-mobs=0 в фикстуре, срез мёртв), section-codec chunkparse ОСТАВЛЕН (не перекрыт chunk4: parse=disk-load vs send=player path, часть серта) — закон 7 субаддитивность: диета против склейки (TASK-453-C)"
     ;;
+  cmp456_poi)
+    # TASK-456-B: POI подсистема целиком (закон 6) ⊕ ПОЛНЫЙ НОСИТЕЛЬ ЭРЫ
+    # (STRICT-OR union of the certified master composite). GEN-axis
+    # (noise_fill.rs) needs the documented kernel-policy A/B override — same
+    # two-key rule as cmp450_chunk legs (RESEARCH-455-B finding #1). Empty
+    # flag = vanilla bit-in-bit, no policy change.
+    export CRUSSTY_KERNEL_POLICY="off"
+    log "${LEVER_FLAG} armed: POI-SUBSYSTEM = POI-плоскость целиком в Rust (Level.notifyAndUpdatePhysics updatePOIOnBlockStateChange site -> PoiOps.updatePoiGate POI-mask fast-path; ChunkMap.tick PoiManager.tick site -> PoiOps.poiTickGate epoch flush; rust PoiStore mirror via ONE bulk poiEpoch JNI/tick) ⊕ ПОЛНЫЙ НОСИТЕЛЬ ЭРЫ cmp456_poi STRICT-OR (ins4 ⊕ senseins ⊕ chunk4-send ⊕ chunk5-encode ⊕ chunkparse ⊕ noise-GEN, KERNEL_POLICY=off documented A/B override) — TASK-456-B, закон 6+7+8"
+    ;;
 esac
 # RECON_DIAG (TASK-317, instrument-гейт рычага #13 SKIP-STORE-DIET): чистая
 # наблюдаемость — 0 поведения. GC-политика/heap не трогаются (логирование ≠
