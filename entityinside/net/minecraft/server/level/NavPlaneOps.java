@@ -54,6 +54,16 @@ import net.minecraft.world.phys.shapes.Shapes;
  * body is never retargeted (gate in src/region_threads.rs composes the
  * redirect only when CRUSSTY_LEVER_FLAG eq cmp405_navplane) -> vanilla
  * bit-in-byte by construction. Different flag values are rejected too.
+ *
+ * P45 PRE-GATE (TASK-459-70, ID-P45 scaffold): O(1) chunk-keyed
+ * navigatingMobs occupancy gate BEFORE the collect pass —
+ * src/nav_chunk_pregate.rs (lever cmp459_p45 STRICT eq). The pregate native
+ * is reachable ONLY after rust RegisterNatives + pregateArmed() (one-shot
+ * guard, define-before-arm NCDFE canon); empty/other lever => pregateOk
+ * stays false => bit-in-byte vanilla by construction.
+ * SCAFFOLD NOTE: this source is AHEAD of the committed
+ * entityinside/build/.../NavPlaneOps.class — javac rebuild + javap verify
+ * (major 65, zero nested) is the FIRST step of the next leg before any arm.
  */
 public final class NavPlaneOps {
     private NavPlaneOps() {}
@@ -94,6 +104,27 @@ public final class NavPlaneOps {
     /** One-shot disarm latch: any ERR/throwable falls back to java math. */
     private static volatile boolean batchOk = true;
 
+    // ------------------------------------------------------------------
+    // P45 pre-gate (TASK-459-70, ID-P45): O(1) chunk-keyed navigatingMobs
+    // occupancy gate. Contract: 0 = EMPTY (no live navigating mob decision
+    // sphere covers this chunk -> the vanilla full pass is provably a no-op
+    // -> skip), 1 = MAYBE (run the vanilla collect + navDecide as today),
+    // negative = ERR (one-shot disarm -> full vanilla pass forever).
+    // Superset gate: EMPTY => shouldRecomputePath(pos) == false for EVERY
+    // mob, so skipping the collect pass is observationally identical to
+    // vanilla (parity contract of src/entity_index.rs count==0).
+    // ------------------------------------------------------------------
+    /** O(1) pregate kernel (Rust). 0 EMPTY / 1 MAYBE / negative ERR. */
+    public static native int navPregate(int cx, int cz);
+
+    /** One-shot arm latch: set ONLY by rust registration (pregateArmed). */
+    private static volatile boolean pregateOk = false;
+
+    /** Called by src/nav_chunk_pregate.rs AFTER RegisterNatives succeeds. */
+    public static void pregateArmed() {
+        pregateOk = true;
+    }
+
     /** Receiver-prepended entry the classfile.rs retarget emits. */
     public static void handle(ServerLevel level, BlockPos pos, BlockState oldS,
                               BlockState newS, int flags) {
@@ -115,6 +146,26 @@ public final class NavPlaneOps {
                 newS.getCollisionShape(level, pos),
                 BooleanOp.NOT_SAME)) {
             return;
+        }
+
+        // P45 pre-gate: zero-work when no navigating-mob decision sphere
+        // covers this chunk (superset gate, see class doc). Any ERR or
+        // throwable disarms the gate permanently (fail-closed -> the full
+        // vanilla pass below, never a behavior change).
+        if (pregateOk) {
+            int rc;
+            try {
+                rc = navPregate(pos.getX() >> 4, pos.getZ() >> 4);
+            } catch (Throwable t) {
+                pregateOk = false;
+                rc = 1;
+            }
+            if (rc == 0) {
+                return;
+            }
+            if (rc < 0) {
+                pregateOk = false;
+            }
         }
 
         // Collect pass: SET ORDER, exact shouldRecomputePath inputs.
