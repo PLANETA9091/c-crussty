@@ -401,4 +401,59 @@ public final class GoalOps {
         return true;
     }
 
+
+    // ==================================================================
+    // P47 iter-3 STUB (TASK-459-72, dormant): GOAL-SELECTOR TRANSITION-
+    // DIFF BATCH — stop/start переходы собираются в дифф-батч
+    // (insertion-order сохранён), пересчёт флагов управления отложен и
+    // выполняется 1 раз/тик вместо per-goal (модель + тесты:
+    // src/goal_transition_diff.rs; рисёрч: RESEARCH-459-P47.md).
+    //
+    // NCDFE-канон: эти статики существуют в блобе ДО ретаргета сайтов
+    // (rust-сторона сканирует маркеры "cmp459_p47"/"transitionDiffGate"/
+    // "transitionDiffRunningGate" в include_bytes!; нет маркеров = сайты
+    // НЕ трогаются). Гейт STRICT-eq cmp459_p47 НЕ пересекается со
+    // STRICT-OR iter-2 (cmp421_brain/cmp422_brain2) — двойное
+    // define/retransform GoalOps невозможно.
+    //
+    // FAIL-INERT: стаб зовёт ВАНИЛЬ (тот же insertion-order stop/start);
+    // EFFECT-маркер "p47 transition-diff" кладётся на первом вызове при
+    // живом флаге — вердикты только по EFFECT-маркерам (урок 409).
+    // ==================================================================
+
+    static final String P47_LEVER = "cmp459_p47";
+    private static volatile boolean p47Logged = false;
+
+    /** STRICT-eq гейт iter-3 (пустой/чужой флаг = ваниль бит-в-байт). */
+    static boolean p47Enabled() {
+        String v = System.getenv("CRUSSTY_LEVER_FLAG");
+        return v != null && P47_LEVER.equals(v.trim());
+    }
+
+    /**
+     * iter-3 сайт-замена {@code invokevirtual GoalSelector.tick()V}
+     * (чётные тики, 2 сайта в serverAiStep). STUB: ваниль 1:1 —
+     * insertion-order stop/start сохранён; батч-дифф + отложенный
+     * пересчёт флагов управления (1/тик) вайрится следующей ногой.
+     */
+    public static void transitionDiffGate(GoalSelector sel) {
+        if (!p47Enabled()) {
+            sel.tick(); // ваниль бит-в-байт
+            return;
+        }
+        if (!p47Logged) {
+            p47Logged = true;
+            LOG.info("[crussty-plugin] p47 transition-diff EFFECT armed (stub: vanilla order, deferred-flag batch model in rust)");
+        }
+        sel.tick();
+    }
+
+    /**
+     * iter-3 сайт-замена {@code invokevirtual GoalSelector.tickRunningGoals(Z)V}
+     * (нечётные тики Paper-сплит, 2 сайта, оба аргумента false). STUB:
+     * ваниль 1:1 (parity tickRunningGoals — регрессия-гейт чёт/нечёт).
+     */
+    public static void transitionDiffRunningGate(GoalSelector sel, boolean stopAll) {
+        sel.tickRunningGoals(stopAll);
+    }
 }

@@ -6,6 +6,8 @@
 name: ci
 
 on:
+  # branch-local dispatch lane (precedent TASK-459-56/-61/-23; master untouched)
+  workflow_dispatch:
   push:
     branches: [master]
   pull_request:

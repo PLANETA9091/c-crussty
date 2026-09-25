@@ -26,6 +26,7 @@ mod batch_table;
 mod brainhook;
 mod bridge_class;
 mod goal_selector;
+mod goal_transition_diff;
 mod classfile;
 mod collide_batch;
 mod colpush;
@@ -242,6 +243,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // serverAiStep GoalSelector.tick x2 -> GoalOps.tickGate; composes on the
     // Mob chain after mobs_sscan's checkDespawn serve). cmp421_brain only.
     goal_selector::register();
+    // TASK-459-72 (P47 iter-3 scaffold, dormant): goal-selector transition-diff
+    // batch — stop/start батчами, 1 пересчёт флагов/тик, insertion-order
+    // сохранён. STRICT-eq cmp459_p47 (дискретен от iter-2 STRICT-OR).
+    goal_transition_diff::register();
     // F3 LEVELTICKS-READS (family-agg pack member, S7-116): LevelTicks +
     // ServerLevel body-swap hooks (the ServerLevel one composes with F1).
     tickhook::register();
@@ -596,6 +601,9 @@ fn inject_surface() {
     // TASK-421-A brain-slice: define GoalOps into the kernel loader, then
     // retransform Mob for the goal-selector flat fast-path (cmp421_brain).
     goal_selector::activate();
+    // TASK-459-72 (P47): NCDFE-канон — define GoalOps ДО READY, class-major
+    // guard, блоб-гейт маркеров iter-3; dormant без cmp459_p47.
+    goal_transition_diff::activate();
     // F3 LEVELTICKS-READS (S7-116): define TickBlockOps into the kernel
     // loader, then retransform LevelTicks + ServerLevel (tickBlock hook
     // re-composes the F1 optimiseRandomTick swap; MUST run after
