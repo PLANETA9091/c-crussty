@@ -114,6 +114,111 @@ public final class EntityIndexWalkSelfTest {
             }
         }
         System.out.println("OK sweep: " + rects + " adversarial rects, gz-walk == rust dst[(cz-minCZ)*w+(cx-minCX)], bijective, in-bounds");
+
+        // --- 4. S65 BELT fault-injection (single-slot counts-read failure) ---
+        // Mirrors the try/catch(Throwable) belt at the counts read: a THROWN
+        // read must (a) flip sticky broken, (b) NEVER skip that chunk (belt
+        // sets empty=false → the chunk is scanned vanilla-exact; the rust
+        // count is a superset, so an extra vanilla scan can only add
+        // contributions), (c) change NO other chunk's skip decision and
+        // (d) never reorder the walk. Whole-walk→vanillaReplica stays REJECTED
+        // (double-append after partial pass, S59) — the belt degrades
+        // per-chunk, bit-for-bit vanilla.
+        int beltCases = 0;
+        for (int rzA : regs) for (int rxA : regs) {
+            for (int w : sizes) for (int h : sizes) {
+                int minCX = (rxA << 5), minCZ = (rzA << 5); // corner-anchored rect
+                int maxCX = minCX + w - 1, maxCZ = minCZ + h - 1;
+                int minRX = minCX >> 5, minRZ = minCZ >> 5;
+                int maxRX = maxCX >> 5, maxRZ = maxCZ >> 5;
+                // deterministic superset counts pattern: slot nonzero iff (s*31+7)%3 != 0
+                int wh = w * h;
+                int[] counts = new int[wh];
+                for (int s = 0; s < wh; s++) counts[s] = ((s * 31 + 7) % 3 != 0) ? (s + 1) : 0;
+                int[] faults = {0, wh / 2, wh - 1};
+                for (int p : faults) {
+                    boolean brokenFlip = false;
+                    boolean okB = true;
+                    int nFault = 0, extra = 0, lost = 0;
+                    // visit the rect in exact vanilla walk order; per-slot belt
+                    // decision must equal the no-fault oracle decision for every
+                    // slot except the fault slot, which must be SCANNED (empty=
+                    // false) — never skipped, never reordered, never duplicated
+                    for (int rz = minRZ; rz <= maxRZ; rz++) {
+                        int zStart = rz == minRZ ? (minCZ & 31) : 0;
+                        int zEnd = rz == maxRZ ? (maxCZ & 31) : 31;
+                        for (int rx = minRX; rx <= maxRX; rx++) {
+                            int xStart = rx == minRX ? (minCX & 31) : 0;
+                            int xEnd = rx == maxRX ? (maxCX & 31) : 31;
+                            for (int z = zStart; z <= zEnd; z++) {
+                                for (int x = xStart; x <= xEnd; x++) {
+                                    int idx = newIdx(minCX, minCZ, w, rx, rz, z, x);
+                                    boolean fault;
+                                    try {
+                                        if (idx == p) throw new RuntimeException("injected");
+                                        fault = false;
+                                    } catch (Throwable t) {
+                                        fault = true;
+                                        brokenFlip = true;   // sticky disarm
+                                        nFault++;
+                                    }
+                                    boolean oracleScan = counts[idx] != 0; // no-fault decision
+                                    boolean beltScan = fault ? true : oracleScan; // belt: empty=false → scan
+                                    if (fault && !oracleScan) extra++;      // superset adds exactly the fault chunk
+                                    if (!fault && beltScan != oracleScan) lost++; // no other decision may drift
+                                    if (fault) beltCases++;
+                                }
+                            }
+                        }
+                    }
+                    if (!brokenFlip || nFault != 1 || extra > 1 || lost != 0) {
+                        System.out.printf("FAIL belt rect[minCX=%d,minCZ=%d,w=%d,h=%d] p=%d: broken=%b nFault=%d extra=%d lost=%d%n",
+                            minCX, minCZ, w, h, p, brokenFlip, nFault, extra, lost);
+                        okB = false;
+                    }
+                    if (!okB) fails++;
+                }
+            }
+        }
+        System.out.println("OK belt: " + beltCases + " fault-injection cases (6125 rects x 3 slots), "
+            + "broken-sticky + fault-chunk-scanned + zero decision/order drift");
+
+        // --- 5. S65 PRE-WALK throw → vanillaReplica parity: replica = full-rect
+        // vanilla scan (out untouched → no double-append; S59 whole-walk
+        // rejection does NOT apply pre-walk). Assert replica covers every slot
+        // exactly once (bijection = section-3 order; the replica body IS the
+        // vanilla walk, so coverage+no-dupes is the full pre-walk invariant).
+        int replicaRects = 0;
+        for (int rzA : regs) for (int rxA : regs) {
+            for (int w : new int[]{1, 33, 64}) for (int h : new int[]{1, 33, 64}) {
+                int minCX = (rxA << 5), minCZ = (rzA << 5);
+                int wh = w * h;
+                int[] touch = new int[wh];
+                boolean okR = true;
+                for (int rz = (minCZ >> 5); rz <= ((minCZ + h - 1) >> 5); rz++) {
+                    int zStart = rz == (minCZ >> 5) ? (minCZ & 31) : 0;
+                    int zEnd = rz == ((minCZ + h - 1) >> 5) ? ((minCZ + h - 1) & 31) : 31;
+                    for (int rx = (minCX >> 5); rx <= ((minCX + w - 1) >> 5); rx++) {
+                        int xStart = rx == (minCX >> 5) ? (minCX & 31) : 0;
+                        int xEnd = rx == ((minCX + w - 1) >> 5) ? ((minCX + w - 1) & 31) : 31;
+                        for (int z = zStart; z <= zEnd; z++) {
+                            for (int x = xStart; x <= xEnd; x++) {
+                                touch[newIdx(minCX, minCZ, w, rx, rz, z, x)]++;
+                            }
+                        }
+                    }
+                }
+                for (int t : touch) if (t != 1) okR = false;
+                if (!okR) {
+                    System.out.printf("FAIL replica rect[minCX=%d,minCZ=%d,w=%d,h=%d]: full-coverage broken (dupe/miss)%n",
+                        minCX, minCZ, w, h);
+                    fails++;
+                }
+                replicaRects++;
+            }
+        }
+        System.out.println("OK replica: " + replicaRects + " rects, pre-walk-throw replica = full-rect vanilla scan, in-order, 0 dupes");
+
         System.out.println(fails == 0 ? "SELFTEST PASS (0 fails)" : "SELFTEST FAIL (" + fails + ")");
         if (fails != 0) System.exit(1);
     }

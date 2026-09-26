@@ -175,9 +175,23 @@ public final class EntityIndexOps {
         if (n == 0) {
             return;
         }
-        int rc = eidxFlush(n, b.id, b.op, b.bb, b.cell);
+        int rc;
+        try {
+            rc = eidxFlush(n, b.id, b.op, b.bb, b.cell);
+        } catch (Throwable t) {
+            // S65 belt: a THROWN flush (UnsatisfiedLinkError if the manager died
+            // before RegisterNatives, OOM, ...) means these ops are LOST — the
+            // mirror can under-count afterwards (superset-contract violation =
+            // silent entity misses). Sticky disarm + drop the buffer. This also
+            // guards the note path: record() → flushOps runs on the entity
+            // add/remove hot path, an uncaught throw there would break vanilla
+            // addEntity/removeEntity (law-4 violation).
+            broken = true;
+            b.n.set(0);
+            return;
+        }
         b.n.set(0);
-        if (rc < 0 && rc == ERR_STRUCT) {
+        if (rc == ERR_STRUCT) {
             // Mirror maintenance failed: the plane is no longer trustworthy.
             // Queries keep serving exact vanilla; counts become irrelevant.
             broken = true;
@@ -357,7 +371,6 @@ public final class EntityIndexOps {
             vanillaReplica(lookup, except, box, out, pred, mode, type, cls);
             return;
         }
-        Buf b = T_BUF.get();
         int minCX = (Mth.floor(box.minX) - 2) >> 4;
         int minCZ = (Mth.floor(box.minZ) - 2) >> 4;
         int maxCX = (Mth.floor(box.maxX) + 2) >> 4;
@@ -369,17 +382,39 @@ public final class EntityIndexOps {
             vanillaReplica(lookup, except, box, out, pred, mode, type, cls);
             return;
         }
-        if (b.counts.length < w * h) {
-            b.counts = new int[Math.max(w * h, Integer.highestOneBit(w * h - 1) << 1)];
+        // S65 belt (pre-walk counts PRODUCTION): T_BUF.get (≈0.5MB Buf alloc),
+        // counts grow, drainOthers (native eidxFlush inside), WorldUtil section
+        // reads, and the fused eidxFlushQuery JNI. The negative-rc branch below
+        // handled ERR_STRUCT/ERR_RANGE, but a THROWN failure (UnsatisfiedLinkError
+        // if natives died, OOM, a rust-side JNI defect writing outCounts) used to
+        // propagate out of the redirected EntityLookup bodies and crash the tick.
+        // On any Throwable the mirror is untrustworthy (ops possibly lost /
+        // outCounts unknown) → sticky disarm. The out list is UNTOUCHED here (no
+        // chunk appended yet), so vanillaReplica is safe — the mid-walk
+        // double-append reason S59 rejected a coarse walk belt does NOT apply
+        // pre-walk. The walk itself stays belted per-chunk at the counts read
+        // (the only rust-influenced decision point; every other walk site is
+        // bit-identical to the vanilla body and must keep vanilla behavior).
+        final Buf b;
+        int minSec, maxSec, rc;
+        try {
+            b = T_BUF.get();
+            if (b.counts.length < w * h) {
+                b.counts = new int[Math.max(w * h, Integer.highestOneBit(w * h - 1) << 1)];
+            }
+            // One fused JNI: flush own + foreign published ops, then per-chunk
+            // candidate counts for the rect.
+            drainOthers(b);
+            minSec = WorldUtil.getMinSection(lookup.world);
+            maxSec = WorldUtil.getMaxSection(lookup.world);
+            rc = eidxFlushQuery(b.n.getAcquire(), b.id, b.op, b.bb, b.cell,
+                    box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ,
+                    minCX, minCZ, maxCX, maxCZ, minSec, maxSec, b.counts);
+        } catch (Throwable t) {
+            broken = true;
+            vanillaReplica(lookup, except, box, out, pred, mode, type, cls);
+            return;
         }
-        // One fused JNI: flush own + foreign published ops, then per-chunk
-        // candidate counts for the rect.
-        drainOthers(b);
-        int minSec = WorldUtil.getMinSection(lookup.world);
-        int maxSec = WorldUtil.getMaxSection(lookup.world);
-        int rc = eidxFlushQuery(b.n.getAcquire(), b.id, b.op, b.bb, b.cell,
-                box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ,
-                minCX, minCZ, maxCX, maxCZ, minSec, maxSec, b.counts);
         b.n.set(0);
         if (rc < 0) {
             if (rc == ERR_STRUCT) {
