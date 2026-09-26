@@ -66,6 +66,14 @@ import java.util.function.BiPredicate;
  *     boolean consumers (checkOnly/noCollision/collided) are order-free;
  *     axis order X->Y->Z and the hit-path allocations (new AABB /
  *     shape.move) are the vanilla ones;
+ *   - TASK-466-C17 SOLID path (OFF_SOLID): a section whose palette is a
+ *     singleton (PalettedContainer.bitsPerEntry()==0, vanilla ZeroBitStorage)
+ *     and whose single state has a constant single AABB of exactly [0,1]^3
+ *     (and is not special) yields the SAME window box set as the vanilla
+ *     fragment by construction — see walkSolid; uniform non-collidable
+ *     sections (empty context shape) yield an empty plan, the same set the
+ *     sweep would produce; the per-tick epoch gate bounds staleness exactly
+ *     like the shipped plan path;
  *   - DYNAMIC entries re-resolve per query through the vanilla context
  *     chain (state.getCollisionShape / LazyEntityCollisionContext), so
  *     fluid shapes never go stale even inside a tick;
@@ -105,6 +113,59 @@ public final class CollideBatchOps {
     // plan offset sentinels
     private static final int OFF_NONE = -1;       // no plan yet (counting)
     private static final int OFF_VANILLA = -2;    // dense/failed: vanilla only this tick
+    private static final int OFF_SOLID = -3;      // TASK-466-C17: uniform full-cube section
+
+    // TASK-466-C17 UNIT full cube: walkSolid intersects/move parity anchor — the
+    // vanilla single-AABB path for a full-cube state is exactly
+    // single.move(x,y,z) with single == [0,1]^3 (moonrise
+    // $getSingleAABBRepresentation), so sharing one immutable instance keeps
+    // the same doubles bit-for-bit (0.0 + x == x, 1.0 + x == x + 1.0 exactly).
+    private static final AABB UNIT_CUBE =
+        new AABB(0.0D, 0.0D, 0.0D, 1.0D, 1.0D, 1.0D);
+
+    // TASK-466-C17 path diag (fail-safe: DIAG is an env-gated JIT constant —
+    // dead-stripped when CRUSSTY_LEVER_ARG lacks "collidediag"; counters are
+    // plain diagnostics, lost updates across workers are acceptable).
+    private static final boolean DIAG;
+    private static final java.util.concurrent.atomic.AtomicLongArray DIAG_C;
+    private static volatile long diagLastTick;
+
+    static {
+        boolean d = false;
+        String la = null;
+        try {
+            la = System.getenv("CRUSSTY_LEVER_ARG");
+        } catch (final Throwable t) {
+            la = null;
+        }
+        if (la != null && la.indexOf("collidediag") >= 0) {
+            d = true;
+        }
+        DIAG = d;
+        DIAG_C = d ? new java.util.concurrent.atomic.AtomicLongArray(8) : null;
+    }
+
+    // diag slots: 0 q_subthreshold, 1 q_offvanilla, 2 q_walk, 3 q_solid,
+    // 4 builds, 5 solidPlans, 6 emptyPlans, 7 vanillaFragmentCells
+    private static void diagAdd(final int slot, final long v) {
+        if (DIAG) {
+            DIAG_C.addAndGet(slot, v);
+        }
+    }
+
+    private static void diagMaybePrint(final long now) {
+        if (DIAG && now != diagLastTick && now % 600L == 0L) {
+            diagLastTick = now;
+            System.out.println("[c17diag] t=" + now
+                + " subthr=" + DIAG_C.get(0)
+                + " offvan=" + DIAG_C.get(1)
+                + " walk=" + DIAG_C.get(2)
+                + " solid=" + DIAG_C.get(3)
+                + " builds=" + DIAG_C.get(4)
+                + " solidPlans=" + DIAG_C.get(5)
+                + " emptyPlans=" + DIAG_C.get(6));
+        }
+    }
 
     // worker state slots (single classfile law: Object[], no holder class)
     // 0 long[] hkey, 1 int[] vCx, 2 int[] vCz, 3 int[] vCy, 4 int[] vLid,
@@ -221,6 +282,7 @@ public final class CollideBatchOps {
         final int[] planOff = arr(ws, 7);
         final long now = level.getGameTime();
         final int lid = System.identityHashCode(level);
+        diagMaybePrint(now);
 
         // off 289..1066: chunkZ -> chunkX -> sectionY (order fixed)
         for (int cz = cz0; cz <= cz1; ++cz) {
@@ -290,6 +352,7 @@ public final class CollideBatchOps {
                     }
                     final int po = planOff[slot];
                     if (po == OFF_VANILLA) {
+                        diagAdd(1, 1L);
                         collided |= scanSectionVanilla(level, section, cx, cy, cz, box,
                             shapesVoxel, boxesAABB, checkOnly, filter, minScanX, maxScanX,
                             minScanY, maxScanY, minScanZ, maxScanZ, cx0, cx1, cy0, cy1,
@@ -299,7 +362,20 @@ public final class CollideBatchOps {
                         }
                         continue;
                     }
+                    if (po == OFF_SOLID) {
+                        // TASK-466-C17: uniform full-cube section — the query is
+                        // answered from window geometry alone (see walkSolid).
+                        diagAdd(3, 1L);
+                        collided |= walkSolid(section, cx, cy, cz, box, boxesAABB,
+                            checkOnly, filter, minScanX, maxScanX, minScanY, maxScanY,
+                            minScanZ, maxScanZ, cx0, cx1, cy0, cy1, cz0, cz1);
+                        if (checkOnly && collided) {
+                            return true;
+                        }
+                        continue;
+                    }
                     if (po >= 0) {
+                        diagAdd(2, 1L);
                         collided |= walkPlan(ws, slot, level, cx, cy, cz, box, shapesVoxel,
                             boxesAABB, checkOnly, filter, minScanX, maxScanX, minScanY, maxScanY,
                             minScanZ, maxScanZ, cx0, cx1, cy0, cy1, cz0, cz1, context,
@@ -310,6 +386,7 @@ public final class CollideBatchOps {
                         continue;
                     }
                     // below threshold: verbatim vanilla fragment + count
+                    diagAdd(0, 1L);
                     collided |= scanSectionVanilla(level, section, cx, cy, cz, box,
                         shapesVoxel, boxesAABB, checkOnly, filter, minScanX, maxScanX,
                         minScanY, maxScanY, minScanZ, maxScanZ, cx0, cx1, cy0, cy1,
@@ -319,6 +396,7 @@ public final class CollideBatchOps {
                     }
                     qcount[slot]++;
                     if (qcount[slot] >= THRESH) {
+                        diagAdd(4, 1L);
                         buildPlan(ws, slot, section, cx, cy, cz);
                     }
                 }
@@ -405,6 +483,46 @@ public final class CollideBatchOps {
         final PalettedContainer<BlockState> states = section.states;
         final boolean special =
             ((BlockCountingChunkSection) section).moonrise$hasSpecialCollidingBlocks();
+        // TASK-466-C17 singleton-palette pre-gate: bitsPerEntry()==0 means a
+        // ZeroBitStorage (vanilla: bits()=0) — every palette lookup resolves to
+        // palette[0], so ALL 4096 cells hold exactly one state. Proven uniform
+        // without any sweep. Parity envelope identical to the shipped
+        // KIND_SINGLE plan path: constant shapes are pre-resolved at build time
+        // and consumers are order-free; full-cube singles are context-
+        // independent (LazyEntityCollisionContext only reshapes non-cube
+        // states), the envelope cmp401_collide shipped with.
+        if (states.bitsPerEntry() == 0 && !special) {
+            final BlockState u = states.get(0);
+            if (((CollisionBlockState) u).moonrise$emptyContextCollisionShape()) {
+                // uniform non-collidable section (ocean/lava/leaves-none): an
+                // empty plan answers every query with the same (empty) set the
+                // sweep would produce, without sweeping 4096 cells.
+                planOff[slot] = start;
+                planLen[slot] = 0;
+                specialArr[slot] = (byte) 0;
+                diagAdd(6, 1L);
+                return;
+            }
+            final VoxelShape uConst =
+                ((CollisionBlockState) u).moonrise$getConstantContextCollisionShape();
+            if (uConst != null) {
+                final AABB uSingle =
+                    ((CollisionVoxelShape) uConst).moonrise$getSingleAABBRepresentation();
+                if (uSingle != null
+                        && uSingle.minX == 0.0D && uSingle.minY == 0.0D && uSingle.minZ == 0.0D
+                        && uSingle.maxX == 1.0D && uSingle.maxY == 1.0D && uSingle.maxZ == 1.0D) {
+                    // uniform FULL-CUBE section (stone/deepslate/bedrock bulk):
+                    // no plan entries, walkSolid answers from window geometry.
+                    planOff[slot] = OFF_SOLID;
+                    planLen[slot] = 0;
+                    specialArr[slot] = (byte) 0;
+                    diagAdd(5, 1L);
+                    return;
+                }
+            }
+            // uniform but not eligible (partial/contextual shape): fall through
+            // to the verbatim sweep — dense bail unchanged.
+        }
         final int bx = cx << 4;
         final int by = cy << 4;
         final int bz = cz << 4;
@@ -679,6 +797,71 @@ public final class CollideBatchOps {
                         }
                     }
                     e++;
+                }
+            }
+        }
+        return collided;
+    }
+
+    // ------------------------------------------------------------------
+    // TASK-466-C17 SOLID WALK: uniform full-cube section (singleton palette).
+    // The section holds exactly ONE state whose constant single AABB is exactly
+    // [0,1]^3, and it is NOT special (no oversized/piston states => the vanilla
+    // ring filters never apply => window bounds use the noSpecial +1/-1 shifts,
+    // identical formulas to the vanilla fragment). For any query the vanilla
+    // fragment yields exactly: every window cell whose unit cube (moved by the
+    // cell coords) intersects the box, filtered by the same filter chain, with
+    // new AABB(x, y, z, x+1, y+1, z+1) boxes (bit-identical to single.move for
+    // [0,1]^3). This walk reproduces that set without any palette reads.
+    // ------------------------------------------------------------------
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private static boolean walkSolid(final LevelChunkSection section,
+                                     final int cx, final int cy, final int cz, final AABB box,
+                                     final List boxesAABB, final boolean checkOnly,
+                                     final BiPredicate<BlockState, BlockPos> filter,
+                                     final int minScanX, final int maxScanX,
+                                     final int minScanY, final int maxScanY,
+                                     final int minScanZ, final int maxScanZ,
+                                     final int cx0, final int cx1, final int cy0, final int cy1,
+                                     final int cz0, final int cz1) {
+        // noSpecial window shifts (solid sections are never special by gate)
+        final int lx0 = (cx == cx0) ? ((minScanX & 15) + 1) : 0;
+        final int lx1 = (cx == cx1) ? ((maxScanX & 15) - 1) : 15;
+        final int lz0 = (cz == cz0) ? ((minScanZ & 15) + 1) : 0;
+        final int lz1 = (cz == cz1) ? ((maxScanZ & 15) - 1) : 15;
+        final int ly0 = (cy == cy0) ? ((minScanY & 15) + 1) : 0;
+        final int ly1 = (cy == cy1) ? ((maxScanY & 15) - 1) : 15;
+        if (lx0 > lx1 || lz0 > lz1 || ly0 > ly1) {
+            return false;
+        }
+        // O(1) re-read of the uniform state (singleton palette: any index maps
+        // to palette[0]; the per-tick epoch gate bounds staleness exactly like
+        // the shipped plan path).
+        final BlockState solid = section.states.get(0);
+        final BlockPos.MutableBlockPos pos = (filter == null) ? null : new BlockPos.MutableBlockPos();
+        boolean collided = false;
+        final int bx = cx << 4;
+        final int by = cy << 4;
+        final int bz = cz << 4;
+        for (int ly = ly0; ly <= ly1; ++ly) {
+            final int y = by | ly;
+            for (int lz = lz0; lz <= lz1; ++lz) {
+                final int z = bz | lz;
+                for (int lx = lx0; lx <= lx1; ++lx) {
+                    final int x = bx | lx;
+                    if (!intersectsMoved(box, UNIT_CUBE, x, y, z)) {
+                        continue;
+                    }
+                    if (filter != null && !filter.test(solid, pos.set(x, y, z))) {
+                        continue;
+                    }
+                    if (checkOnly) {
+                        return true;
+                    }
+                    collided = true;
+                    // bit-identical to AABB.move of the [0,1]^3 single
+                    boxesAABB.add(new AABB((double) x, (double) y, (double) z,
+                        (double) x + 1.0D, (double) y + 1.0D, (double) z + 1.0D));
                 }
             }
         }
