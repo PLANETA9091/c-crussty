@@ -55,6 +55,7 @@ mod inside_snap;
 mod inside_snap_registry;
 mod item_merge;
 mod items_index;
+mod light_plane;
 mod items_lifetime;
 mod items_manager;
 mod jni_table;
@@ -306,6 +307,13 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // qualifying player column). Dormant unless CRUSSTY_LEVER_FLAG ==
     // cmp406_sscan (empty flag = exact vanilla path).
     mobs_sscan::register();
+    // LIGHT-PLANE CENSUS (round-466 C21, закон 8 chunk/worldgen ось): whole-body
+    // redirect Monster.updateNoActionTime -> LightOps.muaNoActionTime (bit-exact
+    // vanilla body + [c21-light-cens] stderr counters = live capture numbers for
+    // the light-READ lane, 1.40% all-CPU on the navmath1 150k profile). Dormant
+    // unless CRUSSTY_LEVER_FLAG == cmp466_light (STRICT eq; empty flag = vanilla
+    // bit-in-byte, no hook registered).
+    light_plane::register();
     // SENSE-PLANE (TASK-438-A2, vector cmp438_sense): body-swap of the
     // ServerEntityGetter.getNearestEntity(List,TC,LE,DDD) default-method
     // CHOKEPOINT (all targeting-conditions nearest picks converge there) ->
@@ -678,6 +686,10 @@ fn inject_surface() {
     // RegisterNatives (sscanProbe/sscanEpoch), flips READY and retransforms
     // Mob (dormant unless CRUSSTY_LEVER_FLAG == cmp406_sscan).
     mobs_sscan::activate();
+    // LIGHT-PLANE CENSUS (round-466 C21): waits for Monster, defines LightOps
+    // into the kernel loader, computes the whole-body redirect, flips READY and
+    // retransforms Monster (dormant unless CRUSSTY_LEVER_FLAG == cmp466_light).
+    light_plane::activate();
     // SENSE-PLANE (TASK-438-A2): waits for boot + ServerEntityGetter +
     // MobPushOps, defines SenseOps + RegisterNatives (senseProbe/senseEpoch),
     // selfTest==true BEFORE arm, flips READY and retransforms the interface

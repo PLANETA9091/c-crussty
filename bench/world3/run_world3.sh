@@ -539,6 +539,16 @@ case "${LEVER_FLAG:-}" in
     export CRUSSTY_KERNEL_POLICY="off"
     log "${LEVER_FLAG} armed: POI-SUBSYSTEM = POI-плоскость целиком в Rust (Level.notifyAndUpdatePhysics updatePOIOnBlockStateChange site -> PoiOps.updatePoiGate POI-mask fast-path; ChunkMap.tick PoiManager.tick site -> PoiOps.poiTickGate epoch flush; rust PoiStore mirror via ONE bulk poiEpoch JNI/tick) ⊕ ПОЛНЫЙ НОСИТЕЛЬ ЭРЫ cmp456_poi STRICT-OR (ins4 ⊕ senseins ⊕ chunk4-send ⊕ chunk5-encode ⊕ chunkparse ⊕ noise-GEN, KERNEL_POLICY=off documented A/B override) — TASK-456-B, закон 6+7+8"
     ;;
+  cmp466_light)
+    # ROUND-466 C21 light-engine plane census leg (NOT-A-BENCH телеметрия,
+    # прецедент C20 F3-LevelTicks): whole-body redirect Monster.updateNoActionTime
+    # -> LightOps.muaNoActionTime — bit-exact vanilla body + [c21-light-cens]
+    # stderr counters (calls/calls_per_s/hits_per_s = live capture числа
+    # свет-READ лейна; потолок плоскости 1.57% CPU → REFUTED_CENS-матем закон
+    # 13b). Byte redirect, 0 natives, 0 kernel-policy change; empty flag =
+    # vanilla bit-in-byte.
+    log "${LEVER_FLAG} armed: LIGHT-PLANE CENSUS cmp466_light = Monster.updateNoActionTime whole-body redirect -> LightOps.muaNoActionTime (bit-exact vanilla body + [c21-light-cens] counters; read-lane 1.40% CPU navmath1, light-threads 0.07% — потолок +1.6пп = REFUTED_CENS-класс ×12.7 ниже бара; NOT-A-BENCH leg, gate |norm|<=1.0) — round-466-C21, закон 8 chunk/worldgen ось"
+    ;;
 esac
 # RECON_DIAG (TASK-317, instrument-гейт рычага #13 SKIP-STORE-DIET): чистая
 # наблюдаемость — 0 поведения. GC-политика/heap не трогаются (логирование ≠

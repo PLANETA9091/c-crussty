@@ -216,6 +216,14 @@ noise_check_class \
   "noise/build/net/minecraft/world/level/levelgen/synth/PerlinNoiseNativeOps.class" \
   "native"
 
+# ROUND-466 C21 light-engine plane census bridge (lever cmp466_light):
+# bit-exact Monster.updateNoActionTime census bridge — lever id + census tag
+# must live in the constant pool (rust gate is rust-side STRICT eq).
+check_class \
+  "light/build/net/minecraft/world/entity/LightOps.class" \
+  "cmp466_light" "c21-light-cens" "muaNoActionTime" "getLightLevelDependentMagicValue"
+check_flat_matches_nested "light/build" "net/minecraft/world/entity/LightOps"
+
 # gate-flag consistency: every flag string accepted by the SOURCE gate must
 # also be present in the BLOB constant pool (covers the ×93 rebuild lesson).
 for pair in \
