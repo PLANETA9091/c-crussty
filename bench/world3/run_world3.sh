@@ -538,6 +538,15 @@ case "${LEVER_FLAG:-}" in
     # flag = vanilla bit-in-bit, no policy change.
     export CRUSSTY_KERNEL_POLICY="off"
     log "${LEVER_FLAG} armed: POI-SUBSYSTEM = POI-плоскость целиком в Rust (Level.notifyAndUpdatePhysics updatePOIOnBlockStateChange site -> PoiOps.updatePoiGate POI-mask fast-path; ChunkMap.tick PoiManager.tick site -> PoiOps.poiTickGate epoch flush; rust PoiStore mirror via ONE bulk poiEpoch JNI/tick) ⊕ ПОЛНЫЙ НОСИТЕЛЬ ЭРЫ cmp456_poi STRICT-OR (ins4 ⊕ senseins ⊕ chunk4-send ⊕ chunk5-encode ⊕ chunkparse ⊕ noise-GEN, KERNEL_POLICY=off documented A/B override) — TASK-456-B, закон 6+7+8"
+    ;; # P0-fix x466-C02: MERGE #9 line-union ate the case-arm terminator — bash -n FAIL line 532, canary-405 36226176808 failure @07:21:11Z
+  cmp466_c97)
+    # WILD-3D census (round-466 C97, NOT-A-BENCH leg — прецедент C21
+    # cmp466_light / C20 F3): whole-body census redirect of
+    # LevelChunk.getBlockStateFinal -> WildOps.gbsf (bit-exact vanilla body
+    # + [c97-wild-cens] reuse-ratio counters). Byte redirect only — ZERO
+    # natives routed, so NO kernel-policy key (byte-redirect канон C21).
+    # Empty flag = vanilla bit-in-bit.
+    log "${LEVER_FLAG} armed: WILD-3D reuse-ratio census (LevelChunk.getBlockStateFinal whole-body census bridge; paletted lane 7.52% all-CPU M15, 96.9% tick-threads; hypothesis R=calls/distinct >= 4 -> decode-once flat integer plane +1.4-2.2пп ceiling; NOT-A-BENCH, 0 natives) — C97, закон 11"
     ;;
 esac
 # RECON_DIAG (TASK-317, instrument-гейт рычага #13 SKIP-STORE-DIET): чистая

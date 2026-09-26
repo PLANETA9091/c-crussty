@@ -98,6 +98,7 @@ mod tickhook;
 mod tickplane;
 mod travel_diet;
 mod traversal;
+mod wild_reuse;
 mod zero_alloc;
 
 use cplug_abi::{CPluginApi, JavaVmPtr};
@@ -358,6 +359,13 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // poiEpoch JNI per tick (flush at the ChunkMap site). Dormant unless
     // CRUSSTY_LEVER_FLAG == cmp456_poi (empty flag = vanilla bit-in-byte).
     poi_plane::register();
+    // WILD-3D census (round-466 C97): whole-body redirect of
+    // LevelChunk.getBlockStateFinal -> WildOps.gbsf — NOT-A-BENCH reuse-ratio
+    // census on the tick-thread block-state READ lane (dormant unless
+    // CRUSSTY_LEVER_FLAG=cmp466_c97). LevelChunk is touched by no other
+    // byte-hook plane (paletted hooks PalettedContainer; fluid_dirty/inside
+    // hook the secWrite wrapper) — isolated hook site, LAST hook.
+    wild_reuse::register();
     std::thread::spawn(inject_surface);
     0
 }
@@ -727,6 +735,11 @@ fn inject_surface() {
     // ClientboundLevelChunkWithLightPacket (dormant unless
     // CRUSSTY_LEVER_FLAG == cmp444_chunk5).
     chunk_send5::activate();
+    // WILD-3D census (round-466 C97, NOT-A-BENCH leg): define WildOps into
+    // the kernel loader, compute the whole-body redirect of
+    // LevelChunk.getBlockStateFinal, retransform (dormant unless
+    // CRUSSTY_LEVER_FLAG=cmp466_c97).
+    wild_reuse::activate();
 }
 
 /// Define one bridge class and register all its natives.

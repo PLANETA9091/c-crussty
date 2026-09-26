@@ -322,6 +322,16 @@ gate_load chunkparse/build     net/minecraft/world/level/chunk/storage/ChunkPars
 gate_load chunksend/build      net/minecraft/server/network/ChunkSendOps
 gate_load chunksend/build      net/minecraft/server/network/ChunkPacketEncodeOps
 
+# TASK-466-C97 WILD-3D census bridge (cmp466_c97): LevelChunk
+# getBlockStateFinal whole-body census — lever id + census tag in the cp,
+# native-free entry point, flat==nested byte identity, javap-loadability.
+check_class \
+  "wild/build/net/minecraft/world/level/chunk/WildOps.class" \
+  "cmp466_c97" "c97-wild-cens" "gbsf" \
+  "public static net.minecraft.world.level.block.state.BlockState gbsf"
+check_flat_matches_nested "wild/build" "net/minecraft/world/level/chunk/WildOps"
+gate_load wild/build           net/minecraft/world/level/chunk/WildOps
+
 if [ "$FAIL" = "0" ]; then
   echo "check_blobs_sync: ALL IN SYNC"
   exit 0
