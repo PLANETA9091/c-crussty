@@ -266,6 +266,32 @@ check_flat_matches_nested "sense/build" "net/minecraft/world/entity/SenseOps"
 check_flat_matches_nested "chunksend/build" "net/minecraft/server/network/ChunkSendOps"
 check_flat_matches_nested "chunksend/build" "net/minecraft/server/network/ChunkPacketEncodeOps"
 
+# TASK-463-88a CP-EXACT gate (lessons ×461/×463): merge 887c4641 union-glued
+# "cmp457_paldelta|cmp457_eqsnap2" INSIDE single equals() strings at 11 java
+# gate sites — a plain substring-grep for the flag token passes while the gate
+# never matches a real flag (7/10 java gate classes slept, NCDFE landmine).
+# Gate 1: NO classfile in the repo may carry the exact merge-glue utf8 entry
+# (pipe-joined paldelta+eqsnap2 pair; list-style pipe lists are exempt).
+# Gate 2: every equals-style gate blob must carry BOTH standalone constants
+# (the ItemEntityManager ground-truth shape); BrainOps is list-style
+# (TICK2_FLAGS, rust-mirror arming) and is deliberately out of gate 2.
+python3 scripts/check_cp_exact.py || die "cp-exact repo scan: merge-glue pipe literal present (see above)"
+for blob in \
+  entityinside/build/net/minecraft/world/entity/ItemEntityManager.class \
+  colpush/build/net/minecraft/world/entity/ColpushOps.class \
+  mobpush/build/net/minecraft/world/entity/MobPushOps.class \
+  sscan/build/net/minecraft/world/entity/MobPushOps.class \
+  entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class \
+  queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class \
+  sscan/build/net/minecraft/world/entity/MobScanOps.class \
+  sense/build/net/minecraft/world/entity/SenseOps.class \
+  mobai/build/net/minecraft/world/entity/MobAiOps.class \
+  goalops/build/net/minecraft/world/entity/ai/goal/GoalOps.class
+do
+  python3 scripts/check_cp_exact.py --require-standalone "$blob" || \
+    die "cp-exact standalone FAIL: $blob"
+done
+
 # TASK-451-D x449-lesson javap-LOADABILITY gate: javap must locate+parse EVERY
 # op class (outer AND inner) through its blobs dir via a real classpath — the
 # pre-dispatch catch for blob-set holes (a class javap cannot load from the

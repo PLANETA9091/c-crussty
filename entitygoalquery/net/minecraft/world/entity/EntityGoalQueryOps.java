@@ -116,7 +116,7 @@ public final class EntityGoalQueryOps {
                 // TASK-424-A: GC-ревизия brain3 (STRICT OR).
                 || f.trim().equals("cmp423_brain3")
                 // TASK-426-A: SoA-feed carrier (STRICT OR).
-                || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside") || f.trim().equals("cmp432_inside2") || f.trim().equals("cmp436_ins4") || f.trim().equals("cmp458_swar") || f.trim().equals("cmp457_paldelta|cmp457_eqsnap2") || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside") || f.trim().equals("cmp434_chunkpl") || f.trim().equals("cmp435_chunk3") || f.trim().equals("cmp437_chunk4") || f.trim().equals("cmp444_chunk5") || f.trim().equals("cmp450_chunk") || f.trim().equals("cmp456_chunkmono") || f.trim().equals("cmp456_chunkmono_p31snap") || f.trim().equals("cmp452_mega") || f.trim().equals("cmp453_diet"));
+                || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside") || f.trim().equals("cmp432_inside2") || f.trim().equals("cmp436_ins4") || f.trim().equals("cmp458_swar") || f.trim().equals("cmp457_paldelta") || f.trim().equals("cmp457_eqsnap2") || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside") || f.trim().equals("cmp434_chunkpl") || f.trim().equals("cmp435_chunk3") || f.trim().equals("cmp437_chunk4") || f.trim().equals("cmp444_chunk5") || f.trim().equals("cmp450_chunk") || f.trim().equals("cmp456_chunkmono") || f.trim().equals("cmp456_chunkmono_p31snap") || f.trim().equals("cmp452_mega") || f.trim().equals("cmp453_diet"));
     }
 
     /** TASK-411-C (k4soa): K4-режим (маркировка EFFECT-строк). */
@@ -141,7 +141,7 @@ public final class EntityGoalQueryOps {
         return f != null && (f.trim().equals("cmp421_brain")
                 || f.trim().equals("cmp422_brain2")
                 || f.trim().equals("cmp423_brain3")
-                || f.trim().equals("cmp451_senseins") || f.trim().equals("cmp458_swar") || f.trim().equals("cmp457_paldelta|cmp457_eqsnap2") || f.trim().equals("cmp452_mega") || f.trim().equals("cmp453_diet") || f.trim().equals("cmp450_chunk") || f.trim().equals("cmp456_chunkmono") || f.trim().equals("cmp456_chunkmono_p31snap"));
+                || f.trim().equals("cmp451_senseins") || f.trim().equals("cmp458_swar") || f.trim().equals("cmp457_paldelta") || f.trim().equals("cmp457_eqsnap2") || f.trim().equals("cmp452_mega") || f.trim().equals("cmp453_diet") || f.trim().equals("cmp450_chunk") || f.trim().equals("cmp456_chunkmono") || f.trim().equals("cmp456_chunkmono_p31snap"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -160,7 +160,7 @@ public final class EntityGoalQueryOps {
                 : t.equals("cmp424_mobfeed") ? "cmp424_mobfeed"
                 : t.equals("cmp430_inside") ? "cmp430_inside"
                 : t.equals("cmp432_inside2") ? "cmp432_inside2"
-                : t.equals("cmp436_ins4") || t.equals("cmp451_senseins") || t.equals("cmp458_swar") || t.equals("cmp457_paldelta|cmp457_eqsnap2") ? "cmp436_ins4" // TASK-436-B
+                : t.equals("cmp436_ins4") || t.equals("cmp451_senseins") || t.equals("cmp458_swar") || t.equals("cmp457_paldelta") || t.equals("cmp457_eqsnap2") ? "cmp436_ins4" // TASK-436-B
                 : t.equals("cmp434_chunkpl") ? "cmp434_chunkpl" : t.equals("cmp435_chunk3") ? "cmp435_chunk3"
                 : t.equals("cmp437_chunk4") ? "cmp437_chunk4" // TASK-438-C: R7 carrier marker id
                 : t.equals("cmp444_chunk5") ? "cmp444_chunk5" // TASK-444-B: R8 carrier marker id (encode-cache stage-2)
