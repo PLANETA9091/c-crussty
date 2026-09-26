@@ -83,6 +83,16 @@ pub fn enabled_pub() -> bool {
     enabled()
 }
 
+/// P31-RESTORE (ROUND-468 S17, Л180d/S55): встроенный BRIDGE_BYTES —
+/// pass-through scaffold (batchGate = 2× invokevirtual isAffectedByBlocks,
+/// 0 других invoke, 0 вызовов collectBatch/insideBatchMask)? true ⇒ armed
+/// inside_batch НЕ даёт ничего на сайте и должен УСТУПИТЬ его inside_cache
+/// (scaffold-yield); false ⇒ полный v1 — строгий supersede как раньше.
+/// Fail-closed: любая структурная неожиданность = false (supersede-status-quo).
+pub fn bridge_is_scaffold() -> bool {
+    crate::classfile::batch_blob_is_scaffold(BRIDGE_BYTES)
+}
+
 static BRIDGE_READY: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
 /// Pollable gate для entity_compose stage (сиблинг inside_cache::wait_bridge_ready).
@@ -496,5 +506,18 @@ mod tests {
     fn gate_is_strict() {
         assert_ne!("", "CRUSSTY_INSIDE_BATCH");
         assert_eq!("1", "1");
+    }
+}
+
+#[cfg(test)]
+mod p31_restore_tests {
+    use super::*;
+
+    /// P31-RESTORE (Л180d/S55): встроенный блоб эры cmp456/cmp466 —
+    /// pass-through scaffold (batchGate 2× iv isAffectedByBlocks, 0 других
+    /// invoke); scaffold-yield в entity_compose обязан сработать.
+    #[test]
+    fn bridge_blob_is_pass_through_scaffold() {
+        assert!(bridge_is_scaffold());
     }
 }

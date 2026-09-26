@@ -5285,6 +5285,122 @@ pub fn patch_inside_batch(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), St
 }
 
 // ---------------------------------------------------------------------------
+// P31-RESTORE (ROUND-468 S17, Л180d/S55 — scaffold-yield discriminator).
+//
+// The INSIDE-BATCH bridge blob (entityinside/build/.../InsideBatchOps.class)
+// is, as of the cmp456/cmp466 era, a PASS-THROUGH SCAFFOLD: javap census
+// (verified 2026-09-26, blob 4215 B / md5 9c774b672a1d81b16c2cfe46aadb5b44)
+// shows `batchGate` = 8 instructions whose ONLY invokes are 2× invokevirtual
+// `Entity.isAffectedByBlocks()Z` (offsets 7 and 12) — both branches return
+// the vanilla gate verdict, `collectBatch`/`insideBatchMask` have ZERO call
+// sites in the class. Meanwhile the S7-162 supersede discipline
+// (entity_compose stage-1) lets an armed inside_batch TAKE the
+// isAffectedByBlocks retarget site, silently killing the banked
+// inside_cache=1 lever on every P31-lineage leg (anchor runs with the live
+// cache, leg without — pair handicap; restore ceiling +3.5-8.3пп).
+//
+// The discriminator scans a bridge-blob class image and reports whether
+// `batchGate` is the pass-through scaffold. entity_compose then YIELDS site
+// ownership to inside_cache while the scaffold lives, and automatically
+// resumes strict supersede once a full batch v1 blob (collectBatch caller /
+// insideBatchMask invoke in batchGate) is shipped — self-eliminating, 0 java
+// lines, 0 blob rebuilds.
+// ---------------------------------------------------------------------------
+
+/// Exact census of the invoke opcodes inside `batchGate` of a class image.
+pub struct BatchGateCensus {
+    /// (opcode, owner, name, desc) per invoke site, in pc order. `owner`
+    /// for invokedynamic is a synthetic marker (a scaffold never has one).
+    pub sites: Vec<(u8, String, String, String)>,
+}
+
+impl BatchGateCensus {
+    /// Pass-through scaffold ⇔ exactly two invokes, both invokevirtual
+    /// (0xB6) resolving to (Entity, isAffectedByBlocks, ()Z), and no other
+    /// invoke opcode (0xB7 invokespecial / 0xB8 invokestatic / 0xB9
+    /// invokeinterface / 0xBA invokedynamic) anywhere in the body.
+    pub fn is_pass_through_scaffold(&self) -> bool {
+        if self.sites.len() != 2 {
+            return false;
+        }
+        self.sites.iter().all(|(op, c, n, d)| {
+            *op == 0xB6
+                && c == "net/minecraft/world/entity/Entity"
+                && n == "isAffectedByBlocks"
+                && d == "()Z"
+        })
+    }
+}
+
+/// Walk `batchGate(Lnet/minecraft/world/entity/Entity;)Z` in a bridge-blob
+/// class image and census its invoke sites (exact opcode walk via
+/// `opcode_extra` — unknown opcodes fail closed, same discipline as the
+/// retarget scan).
+pub fn batch_gate_invoke_census(bytes: &[u8]) -> Result<BatchGateCensus, String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    let pool = layout.pool;
+    let name_idx = pool
+        .find_utf8("batchGate")
+        .ok_or_else(|| "batchGate utf8 absent from pool".to_string())?;
+    let desc_idx = pool
+        .find_utf8(GATE_DESC)
+        .ok_or_else(|| "batchGate descriptor utf8 absent from pool".to_string())?;
+    let m = find_method(bytes, layout.methods_start, name_idx, desc_idx)
+        .ok_or_else(|| "batchGate(Lnet/minecraft/world/entity/Entity;)Z not found".to_string())?;
+    let (code_start, code_len) = find_code_attr(bytes, &pool, &m)
+        .ok_or_else(|| "batchGate has no Code attribute".to_string())?;
+    let code_end = code_start
+        .checked_add(code_len)
+        .ok_or_else(|| "code length overflow".to_string())?;
+    let code = bytes
+        .get(code_start..code_end)
+        .ok_or_else(|| "code region truncated".to_string())?;
+    let mut sites = Vec::new();
+    let mut pc = 0usize;
+    while pc < code.len() {
+        let op = code[pc];
+        if matches!(op, 0xB6 | 0xB7 | 0xB8 | 0xB9 | 0xBA) {
+            let b = code
+                .get(pc + 1..pc + 3)
+                .ok_or_else(|| "invoke operand truncated".to_string())?;
+            let idx = u16::from_be_bytes([b[0], b[1]]);
+            let parts = if op == 0xBA {
+                (
+                    "<invokedynamic>".to_string(),
+                    format!("cp#{idx}"),
+                    String::new(),
+                )
+            } else {
+                pool.methodref_parts(idx)
+                    .ok_or_else(|| format!("invoke cp#{idx} unresolved in batchGate"))?
+            };
+            sites.push((op, parts.0, parts.1, parts.2));
+            pc += 3;
+            continue;
+        }
+        let extra = opcode_extra(op, code, pc)?;
+        pc = pc
+            .checked_add(1 + extra)
+            .ok_or_else(|| "code walk overflow".to_string())?;
+        if pc > code.len() {
+            return Err("truncated code (walk past end)".into());
+        }
+    }
+    Ok(BatchGateCensus { sites })
+}
+
+/// True iff the class image is the pass-through INSIDE-BATCH scaffold
+/// (see module docs). ANY structural surprise (bad layout, missing
+/// batchGate, unresolved refs) is `false` — the discriminator must never
+/// yield a site to inside_cache on unproven ground (fail-closed toward the
+/// S7-162 supersede status quo).
+pub fn batch_blob_is_scaffold(bytes: &[u8]) -> bool {
+    batch_gate_invoke_census(bytes)
+        .map(|c| c.is_pass_through_scaffold())
+        .unwrap_or(false)
+}
+
+// ---------------------------------------------------------------------------
 // FLUSH-DIET (S7-137, ARCH-ATTACK lever #4 — the StepBasedCollector.flushStep
 // allocation lane).
 //
@@ -9756,4 +9872,49 @@ pub fn chunk_sched_resolution_closure(ops_bytes: &[u8]) -> Result<(), String> {
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod p31_restore_tests {
+    use super::*;
+
+    const BATCH_BLOB: &[u8] =
+        include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideBatchOps.class");
+    const OPS_BLOB: &[u8] =
+        include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideBlockOps.class");
+
+    /// P31-RESTORE (Л180d/S55): живой блоб эры cmp456/cmp466 = pass-through
+    /// scaffold — дискриминатор обязан это доказать байткодом.
+    #[test]
+    fn p31_scaffold_blob_detected() {
+        assert!(batch_blob_is_scaffold(BATCH_BLOB));
+    }
+
+    /// Ценз точный: ровно 2 invoke, оба invokevirtual
+    /// (Entity, isAffectedByBlocks, ()Z) — других invoke-опкодов в batchGate нет.
+    #[test]
+    fn p31_census_exact_two_gate_invokes() {
+        let c = batch_gate_invoke_census(BATCH_BLOB).expect("census");
+        assert_eq!(c.sites.len(), 2);
+        for (op, cls, name, desc) in &c.sites {
+            assert_eq!(*op, 0xB6);
+            assert_eq!(cls, "net/minecraft/world/entity/Entity");
+            assert_eq!(name, "isAffectedByBlocks");
+            assert_eq!(desc, "()Z");
+        }
+        assert!(c.is_pass_through_scaffold());
+    }
+
+    /// Чужой мост (inside_cache InsideBlockOps) не scaffold — fail-closed false.
+    #[test]
+    fn p31_other_bridge_is_not_scaffold() {
+        assert!(!batch_blob_is_scaffold(OPS_BLOB));
+    }
+
+    /// Мусор/пустой образ — fail-closed false (yield только на доказанном).
+    #[test]
+    fn p31_garbage_image_is_not_scaffold() {
+        assert!(!batch_blob_is_scaffold(&[0u8; 16]));
+        assert!(!batch_blob_is_scaffold(&[]));
+    }
 }

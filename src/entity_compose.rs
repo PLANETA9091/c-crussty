@@ -273,7 +273,17 @@ pub fn activate() {
         // TASK-460-01 (ID-P31): S7-162 supersede discipline — the site has
         // EXACTLY ONE owner: armed inside_batch supersedes inside_cache
         // (batchGate bridge); otherwise inside_cache owns the site as before.
-        if crate::inside_batch::enabled_pub() {
+        // ROUND-468 S17 (Л180d/S55) P31-RESTORE: an armed inside_batch whose
+        // bridge blob is the PASS-THROUGH SCAFFOLD (batchGate = 2× invokevirtual
+        // isAffectedByBlocks, no other invoke, collectBatch/insideBatchMask
+        // uncalled) owns the site but contributes NOTHING — both branches are
+        // the vanilla gate — so it YIELDS ownership to inside_cache (the banked
+        // inside_cache=1 lever stays live on P31-lineage legs; restore ceiling
+        // +3.5-8.3пп). A full batch v1 blob flips the discriminator false →
+        // strict supersede resumes, self-eliminating.
+        let batch_scaffold =
+            crate::inside_batch::enabled_pub() && crate::inside_batch::bridge_is_scaffold();
+        if crate::inside_batch::enabled_pub() && !batch_scaffold {
             if crate::inside_batch::wait_bridge_ready(180_000) {
                 match crate::classfile::patch_inside_batch(&bytes) {
                     Ok((p, outcome)) if matches!(
@@ -282,7 +292,7 @@ pub fn activate() {
                             | crate::classfile::RetargetOutcome::AlreadyPatched { .. }
                     ) => {
                         eprintln!(
-                            "[crussty-plugin] entity_compose: stage inside_batch composed (supersede inside_cache, {outcome:?})"
+                            "[crussty-plugin] entity_compose: stage inside_batch composed (full v1, supersede inside_cache, {outcome:?})"
                         );
                         bytes = p;
                         chain.push("inside_batch");
@@ -304,6 +314,11 @@ pub fn activate() {
                 );
             }
         } else if crate::inside_cache::enabled_pub() {
+            if batch_scaffold {
+                eprintln!(
+                    "[crussty-plugin] entity_compose: inside_batch blob is pass-through scaffold (2x iv isAffectedByBlocks, 0 other invokes) — scaffold-yield: inside_cache owns the site (P31-restore lane Л180d)"
+                );
+            }
             if crate::inside_cache::wait_bridge_ready(180_000) {
                 match crate::classfile::patch_inside_cache(&bytes) {
                     Ok((p, outcome)) if matches!(
@@ -312,7 +327,8 @@ pub fn activate() {
                             | crate::classfile::RetargetOutcome::AlreadyPatched { .. }
                     ) => {
                         eprintln!(
-                            "[crussty-plugin] entity_compose: stage inside_cache composed ({outcome:?})"
+                            "[crussty-plugin] entity_compose: stage inside_cache composed ({outcome:?}{})",
+                            if batch_scaffold { "; batch scaffold-yield" } else { "" }
                         );
                         bytes = p;
                         chain.push("inside");
@@ -331,6 +347,34 @@ pub fn activate() {
             } else {
                 eprintln!(
                     "[crussty-plugin] entity_compose: inside_cache bridge missed its window, chain continues WITHOUT inside (fail-dominant)"
+                );
+            }
+        } else if batch_scaffold {
+            // Scaffold armed but inside_cache off: keep today's pass-through
+            // retarget (vanilla-equivalent site owner, pre-S17 carrier
+            // behavior; the ≤0.05пп overhead stands only by explicit lever).
+            if crate::inside_batch::wait_bridge_ready(180_000) {
+                match crate::classfile::patch_inside_batch(&bytes) {
+                    Ok((p, outcome)) if matches!(
+                        outcome,
+                        crate::classfile::RetargetOutcome::Retargeted { .. }
+                            | crate::classfile::RetargetOutcome::AlreadyPatched { .. }
+                    ) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_batch composed (pass-through scaffold, inside_cache off, {outcome:?})"
+                        );
+                        bytes = p;
+                        chain.push("inside_batch");
+                    }
+                    _ => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_batch scaffold retarget rejected, chain continues WITHOUT inside (fail-dominant)"
+                        );
+                    }
+                }
+            } else {
+                eprintln!(
+                    "[crussty-plugin] entity_compose: inside_batch bridge missed its window, chain continues WITHOUT inside (fail-dominant)"
                 );
             }
         }
