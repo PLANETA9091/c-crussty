@@ -67,7 +67,7 @@ public final class BenchPopulationPlugin extends JavaPlugin {
     private static final int ITEM_PICKUP_DELAY = 32767;  // short-max: never picked up
     private static final int TOPUP_PERIOD_TICKS = 120;   // S7-148: 6 s @20TPS (было 600 — урок leg #2'': при 900+ тиках leg-ранов один скан не успевал)
     private static final int TOPUP_PER_TICK = 20;        // S7-147: min per-tick refill budget (~14ms/tick, profile-invisible)
-    private static final int TOPUP_PER_TICK_MAX = 100;   // S7-148: cap дефицит-драйвена (~70ms/тик worst-case при TPS 3+)
+    private static final int TOPUP_PER_TICK_MAX = 300;   // R468-S81: cap 100→300 (энт-лестница 19b @300k: cap не биндится при λ_d≤100/tick, страх-хвост λ_d>100; ~210ms/тик worst-case только в disaster-режиме)
     private static final int TOPUP_DRAIN_HORIZON = 50;   // S7-148: тиков на добор дефицита (deficit/HORIZON база бюджета)
     private static final int ITEM_LIFETIME_TICKS = 6000; // vanilla ItemEntity age
     private static final int TICK_BUDGET = 1500;         // entities injected per tick
