@@ -83,6 +83,15 @@ pub fn enabled_pub() -> bool {
     enabled()
 }
 
+/// S55-PREREG scaffold-yield discriminator (round-468-S19): true iff the
+/// embedded BRIDGE_BYTES are the byte-exact pass-through scaffold
+/// (batchGate = 16-byte dual-branch isAffectedByBlocks, collectBatch
+/// unreachable). Full v1 blobs / drift / layout failure => false (batch
+/// keeps the site — fail-dominant toward the pre-yield owner).
+pub fn is_scaffold() -> bool {
+    crate::classfile::inside_batch_is_scaffold(BRIDGE_BYTES)
+}
+
 static BRIDGE_READY: std::sync::atomic::AtomicBool = std::sync::atomic::AtomicBool::new(false);
 
 /// Pollable gate для entity_compose stage (сиблинг inside_cache::wait_bridge_ready).

@@ -5284,6 +5284,132 @@ pub fn patch_inside_batch(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), St
     Ok((out, outcome))
 }
 
+/// Resolve a CONSTANT_Methodref / CONSTANT_InterfaceMethodref cp index to
+/// (class_name, name, desc). Find-only — no pool mutation.
+fn methodref_parts(pool: &Pool, idx: u16) -> Option<(String, String, String)> {
+    let (_, tag, payload) = pool.entries.iter().find(|(i, _, _)| *i == idx)?;
+    if *tag != TAG_METHODREF && *tag != TAG_INTERFACEMETHODREF || payload.len() < 4 {
+        return None;
+    }
+    let class_idx = u16::from_be_bytes([payload[0], payload[1]]);
+    let nat_idx = u16::from_be_bytes([payload[2], payload[3]]);
+    let (_, ctag, cpayload) = pool.entries.iter().find(|(i, _, _)| *i == class_idx)?;
+    if *ctag != TAG_CLASS || cpayload.len() < 2 {
+        return None;
+    }
+    let cname_idx = u16::from_be_bytes([cpayload[0], cpayload[1]]);
+    let (_, ntag, npayload) = pool.entries.iter().find(|(i, _, _)| *i == nat_idx)?;
+    if *ntag != TAG_NAMEANDTYPE || npayload.len() < 4 {
+        return None;
+    }
+    let mname_idx = u16::from_be_bytes([npayload[0], npayload[1]]);
+    let mdesc_idx = u16::from_be_bytes([npayload[2], npayload[3]]);
+    Some((
+        pool.utf8_value(cname_idx)?,
+        pool.utf8_value(mname_idx)?,
+        pool.utf8_value(mdesc_idx)?,
+    ))
+}
+
+/// S55-PREREG (round-467/S55 §3A) scaffold-yield discriminator, ladder R468-S19.
+///
+/// The LIVE InsideBatchOps blob is a pass-through scaffold: javap batchGate =
+/// 8 instr / 16 code bytes, BOTH branches return Entity.isAffectedByBlocks:()Z,
+/// collectBatch has zero callers, the insideBatchMask native is declared but
+/// never invoked. Arming this blob on carrier legs (cmp456_chunkmono_p31snap /
+/// cmp466_c98ai) supersedes a banked inside_cache (CRUSSTY_INSIDE_CACHE=1)
+/// while delivering ZERO batch effect — the anchor (lever_flag="") keeps a
+/// live inside_cache while the leg loses it: the systematic anchor-vs-leg
+/// inside-plane handicap (invisible to check_blobs_sync / ncdfe_guard, both
+/// green on a dead plane).
+///
+/// Byte-EXACT test: batchGate's Code attribute must be exactly the 16-byte
+/// dual-branch pass-through (getstatic BATCH_ARMED / ifne 11 / aload_0 /
+/// invokevirtual isAffectedByBlocks / ireturn / aload_0 / invokevirtual /
+/// ireturn) with both invokevirtual operands resolving to
+/// net/minecraft/world/entity/Entity.isAffectedByBlocks:()Z. Any other code
+/// (full v1 collectBatch wiring, drifted rebuild) or any layout/attribute
+/// failure => false => inside_batch keeps the site (fail-dominant toward the
+/// pre-yield owner). 16 bytes of exact opcode skeleton leave no room for a
+/// hidden extra invoke (S55: "2x invokevirtual isAffectedByBlocks, 0 others").
+pub fn inside_batch_is_scaffold(bytes: &[u8]) -> bool {
+    const SCAFFOLD_LEN: usize = 16;
+    let Some(layout) = parse_layout(bytes) else {
+        return false;
+    };
+    let Some(n_idx) = layout.pool.find_utf8("batchGate") else {
+        return false;
+    };
+    let Some(d_idx) = layout.pool.find_utf8(GATE_DESC) else {
+        return false;
+    };
+    let Some(m) = find_method(bytes, layout.methods_start, n_idx, d_idx) else {
+        return false;
+    };
+    let Some(code_idx) = layout.pool.find_utf8("Code") else {
+        return false;
+    };
+    // Walk the method attribute table: access(2) name(2) desc(2) count(2)...
+    let Some(attr_count) = u16_at(bytes, m.start.checked_add(6).unwrap_or(usize::MAX)) else {
+        return false;
+    };
+    let mut p = m.start + 8;
+    let mut code: &[u8] = &[];
+    for _ in 0..attr_count {
+        let Some(a_name) = u16_at(bytes, p) else {
+            return false;
+        };
+        let Some(a_len) = u32_at(bytes, p.checked_add(2).unwrap_or(usize::MAX)) else {
+            return false;
+        };
+        let Some(body) = p.checked_add(6) else {
+            return false;
+        };
+        if a_name == code_idx {
+            // Code: max_stack(2) max_locals(2) code_len(4) code[code_len]
+            let Some(clen) = u32_at(bytes, body.checked_add(4).unwrap_or(usize::MAX)) else {
+                return false;
+            };
+            let Some(start) = body.checked_add(8) else {
+                return false;
+            };
+            match bytes.get(start..start.checked_add(clen as usize).unwrap_or(usize::MAX)) {
+                Some(slice) => code = slice,
+                None => return false,
+            }
+            break;
+        }
+        p = match body.checked_add(a_len as usize) {
+            Some(v) => v,
+            None => return false,
+        };
+    }
+    if code.len() != SCAFFOLD_LEN {
+        return false;
+    }
+    // getstatic / ifne / aload_0 / invokevirtual / ireturn / aload_0 /
+    // invokevirtual / ireturn
+    let skeleton = [
+        code[0], code[3], code[6], code[7], code[10], code[11], code[12], code[15],
+    ];
+    if skeleton != [0xB2, 0x9A, 0x2A, 0xB6, 0xAC, 0x2A, 0xB6, 0xAC] {
+        return false;
+    }
+    let v1 = u16::from_be_bytes([code[8], code[9]]);
+    let v2 = u16::from_be_bytes([code[13], code[14]]);
+    if v1 != v2 {
+        return false;
+    }
+    match methodref_parts(&layout.pool, v1) {
+        Some((cls, name, desc)) => {
+            cls == "net/minecraft/world/entity/Entity"
+                && name == "isAffectedByBlocks"
+                && desc == "()Z"
+        }
+        None => false,
+    }
+}
+
 // ---------------------------------------------------------------------------
 // FLUSH-DIET (S7-137, ARCH-ATTACK lever #4 — the StepBasedCollector.flushStep
 // allocation lane).
@@ -9756,4 +9882,21 @@ pub fn chunk_sched_resolution_closure(ops_bytes: &[u8]) -> Result<(), String> {
         }
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod s19_scaffold_tests {
+    /// S55-PREREG / R468-S19: the LIVE tracked blob must be recognized as the
+    /// pass-through scaffold byte-exactly (a stale or v1 rebuild flips this).
+    #[test]
+    fn live_inside_batch_blob_is_scaffold() {
+        let b: &[u8] = include_bytes!("../entityinside/build/net/minecraft/world/entity/InsideBatchOps.class");
+        assert!(super::inside_batch_is_scaffold(b), "live blob must be the 16B pass-through scaffold");
+    }
+
+    #[test]
+    fn garbage_is_not_scaffold() {
+        assert!(!super::inside_batch_is_scaffold(b"not a classfile at all"));
+        assert!(!super::inside_batch_is_scaffold(&[]));
+    }
 }

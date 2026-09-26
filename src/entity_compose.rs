@@ -273,7 +273,23 @@ pub fn activate() {
         // TASK-460-01 (ID-P31): S7-162 supersede discipline — the site has
         // EXACTLY ONE owner: armed inside_batch supersedes inside_cache
         // (batchGate bridge); otherwise inside_cache owns the site as before.
-        if crate::inside_batch::enabled_pub() {
+        //
+        // S55-PREREG scaffold-yield (round-467/S55 §3A, ladder R468-S19): an
+        // ARMED inside_batch whose embedded blob is the byte-exact pass-through
+        // scaffold (batchGate 16B dual-branch isAffectedByBlocks, collectBatch
+        // unreachable) delivers ZERO effect while superseding a banked
+        // inside_cache (CRUSSTY_INSIDE_CACHE=1) — the anchor (lever_flag="")
+        // keeps a live inside_cache, the leg loses it (pair handicap). Yield
+        // stage-1 to inside_cache on that exact case; any other blob (full v1
+        // wiring, drift) keeps batch ownership (fail-dominant).
+        let batch_yield_scaffold =
+            crate::inside_batch::enabled_pub() && crate::inside_batch::is_scaffold();
+        if batch_yield_scaffold {
+            eprintln!(
+                "[crussty-plugin] entity_compose: stage-1 owner=inside_cache (batch scaffold-yield; InsideBatchOps.batchGate = pass-through scaffold)"
+            );
+        }
+        if crate::inside_batch::enabled_pub() && !batch_yield_scaffold {
             if crate::inside_batch::wait_bridge_ready(180_000) {
                 match crate::classfile::patch_inside_batch(&bytes) {
                     Ok((p, outcome)) if matches!(
