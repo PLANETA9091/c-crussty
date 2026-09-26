@@ -139,6 +139,23 @@ check_class \
   'entityinside/build/net/minecraft/world/entity/InsideSnapOps$Snap.class' \
   "builtAtGen"
 
+# TASK-463-65a (chkclimb-13): close the ×462-22 hole — $Lane and
+# InsideSnapRegistryOps were OUTSIDE the blob-sync gate (LEDGER-26 §5.1);
+# P31 bridge InsideBatchOps gains its first gate (C2/C5b): batchGate +
+# selfTest (arm-order C5b) + the bulk-JNI native with the base-offset
+# signature (C4 — bucket T=512 без копий).
+check_class \
+  "entityinside/build/net/minecraft/world/entity/InsideSnapRegistryOps.class" \
+  "selfTest" "serveFlat" "snapGet"
+
+check_class \
+  'entityinside/build/net/minecraft/world/entity/InsideSnapOps$Lane.class' \
+  "tick" "level"
+
+check_class \
+  "entityinside/build/net/minecraft/world/entity/InsideBatchOps.class" \
+  "batchGate" "selfTest" "noteBatchArmed" "native int insideBatchMask"
+
 check_class \
   "entityinside/build/net/minecraft/world/entity/InsideBitmaskOps.class" \
   "checkInsideBlocksGated" "armState" "sweptHullInto"
@@ -266,6 +283,11 @@ check_flat_matches_nested "sense/build" "net/minecraft/world/entity/SenseOps"
 check_flat_matches_nested "chunksend/build" "net/minecraft/server/network/ChunkSendOps"
 check_flat_matches_nested "chunksend/build" "net/minecraft/server/network/ChunkPacketEncodeOps"
 
+# ×462-22 hole (LEDGER-26 §5.1) — $Lane + Registry under the gate; P31 bridge C2:
+check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/InsideBatchOps"
+check_flat_matches_nested "entityinside/build" 'net/minecraft/world/entity/InsideSnapOps$Lane'
+check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/InsideSnapRegistryOps"
+
 # TASK-463-88a CP-EXACT gate (lessons ×461/×463): merge 887c4641 union-glued
 # "cmp457_paldelta|cmp457_eqsnap2" INSIDE single equals() strings at 11 java
 # gate sites — a plain substring-grep for the flag token passes while the gate
@@ -308,6 +330,9 @@ gate_load() { # dir fqcn-slash — fail if javap cannot load
 gate_load entityinside/build   net/minecraft/world/entity/ItemEntityManager
 gate_load entityinside/build   net/minecraft/world/entity/InsideSnapOps
 gate_load entityinside/build   'net/minecraft/world/entity/InsideSnapOps$Snap'
+gate_load entityinside/build   'net/minecraft/world/entity/InsideSnapOps$Lane'
+gate_load entityinside/build   net/minecraft/world/entity/InsideSnapRegistryOps
+gate_load entityinside/build   net/minecraft/world/entity/InsideBatchOps
 gate_load goalops/build        net/minecraft/world/entity/ai/goal/GoalOps
 gate_load queryplane/build     net/minecraft/world/entity/QueryPlaneOps
 gate_load mobai/build          net/minecraft/world/entity/MobAiOps

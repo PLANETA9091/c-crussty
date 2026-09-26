@@ -5,13 +5,18 @@
 //! не компонуется, хук не регистрируется ⇒ ваниль бит-в-байт.
 //!
 //! Лейн: inside_volatile 16.6пп (TOP-1 остаток компо-носителя chunkmono).
-//! Дизайн (карточка ID-P31, RESEARCH-459-P31.md): java-мост InsideBatchOps
-//! собирает батч ВСЕХ checkInsideBlocks-кандидатов тика (eid, x/y/z, bb-флет,
-//! section-ключи) → ОДИН JNI `insideBatchMask` → Rust возвращает битмаску
-//! секций-кандидатов per-entity (superset: отсекает заведомо пустые/не
-//! влияющие секции) → java строгий ванильный хвост visit-обхода по
-//! кандидатам. Один нативный вызов на тик, ноль per-entity JNI-переходов
-//! (nav_plane/navDecide + colpushTick Err-ladder дисциплина).
+//! Дизайн (карточка ID-P31, RESEARCH-459-P31.md; ×463 STRICT-TAIL v1 —
+//! LEDGER-25 чеклист C1-C8): java-мост InsideBatchOps собирает кандидатов
+//! checkInsideBlocks тика в TL-буферы (SoA-флет: eid, x/y/z, bb-флет,
+//! section-ключи) → bulk-JNI `insideBatchMask` ОДИН на T=512-бакет (296
+//! переходов/тик при pop 150k vs 150,000 per-entity = ×506.8 экономии; vs
+//! strict-superset-натаив 375,000 = ×1266.9 — строгий-superset в нативе
+//! РЕДЖЕКТ, «строгость» только в java-хвосте) → Rust возвращает битмаску
+//! секций-кандидатов per-entity (геометрический superset 5.42 ns/entity,
+//! mean 2.5 секций) → strict java-хвост visit-обхода по кандидатам = v2
+//! (oracle-gated; v1 маски — телеметрия TL_OUT, ноль live-потребителей ⇒
+//! парити = ваниль by construction; receiver-only сайт не достигает
+//! List<Movement>/StepBasedCollector — открытие ×463, см. javadoc моста).
 //!
 //! PARITY (закон 6 — подсистема целиком): маска = SUPERSET; false-positive
 //! разрешён (лишний кандидат обслужит ванильный хвост), false-negative
@@ -38,10 +43,15 @@ static KERNEL_LOADER: std::sync::atomic::AtomicUsize = std::sync::atomic::Atomic
 
 pub const BRIDGE_CLASS: &str = "net/minecraft/world/entity/InsideBatchOps";
 
-/// insideBatchMask(n, maxsec, eids[n], xyz[n*3], bb[n*6], secKeys[n*maxsec],
-/// nsec[n], dirty[n], out[n]) -> 0 | ERR (<0).
+/// insideBatchMask(n, maxsec, base, eids[n], xyz[n*3], bb[n*6],
+/// secKeys[n*maxsec], nsec[n], dirty[n], out[n]) -> 0 | ERR (<0).
+/// ×463 (TASK-463-65a, chkclimb-13): сигнатура расширена base-офсетом
+/// (bucket T=512 сбрасывается из [base, base+n) БЕЗ копий — C4-дисциплина
+/// «ноль Region-copy 64KB×74»), все 7 массивов читаются/пишутся через
+/// GetPrimitiveArrayCritical (critical-only, ноль Vec/вызов — было 7 Vec
+/// + 7 Region-copy, +0.1-0.2пп worst-case по §4 LEDGER-25).
 pub const BATCH_MASK_SIG: &str =
-    "(II[J[D[D[I[I[I[I)I";
+    "(III[J[D[D[I[I[I[I)I";
 
 pub const ERR_STRUCT: i32 = -1;
 pub const ERR_RANGE: i32 = -2;
@@ -229,7 +239,32 @@ pub fn activate() {
             if !natives_ok {
                 return false;
             }
-            // Arm-order финал: BATCH_ARMED=true ТОЛЬКО после define+natives.
+            // C5b selfTest (×463-дыра «0 самотестов» закрыта): java selfTest
+            // МЕЖДУ RegisterNatives и noteBatchArmed — count-инвариант superset
+            // (оракул-сцены через реальный bulk-JNI) + AIOOBE-проба границы
+            // i=MAXBATCH−1. selfTest != 1 ⇒ BATCH_ARMED не публикуется
+            // (fail-closed; arm-order контракт define→natives→selfTest→armed).
+            // SDK даёт int/void/object static calls: selfTest возвращает 1/0
+            // (canon inside_snap_registry::probe_and_arm).
+            let Some(test_mid) = env.get_static_method_id(cgr, "selfTest", "()I") else {
+                crate::clear_exception(env);
+                eprintln!(
+                    "[crussty-plugin] inside_batch: selfTest unresolved — bridge stays disarmed (fail-closed)"
+                );
+                return false;
+            };
+            let selftest = env.call_static_int_method(cgr, test_mid, &[]);
+            if selftest != 1 {
+                crate::clear_exception(env);
+                eprintln!(
+                    "[crussty-plugin] inside_batch: selfTest={selftest} BEFORE arm — BATCH_ARMED not published (fail-closed)"
+                );
+                return false;
+            }
+            eprintln!(
+                "[crussty-plugin] cmp456_chunkmono_p31snap: selfTest=true BEFORE arm (C5b: count-invariant superset + AIOOBE@4095)"
+            );
+            // Arm-order финал: BATCH_ARMED=true ТОЛЬКО после define+natives+selfTest.
             let Some(arm_mid) = env.get_static_method_id(cgr, "noteBatchArmed", "()V") else {
                 crate::clear_exception(env);
                 eprintln!(
@@ -351,14 +386,20 @@ pub fn register_native(env: &JniEnv, cls: jni::jclass) -> bool {
     true
 }
 
-/// JNI: внутриBatchMask — n сущностей за ОДИН переход. out[i] = битмаска
-/// секций-кандидатов (superset | dirty). Отрицательный rc = ERR (java-реплика:
-/// all-ones = чистая ваниль).
+/// JNI: insideBatchMask — n сущностей за ОДИН переход из окна [base, base+n).
+/// out[base+i] = битмаска секций-кандидатов (superset | dirty). Отрицательный
+/// rc = ERR (java-реплика: all-ones = чистая ваниль).
+/// C4 (LEDGER-25): critical-only — GetPrimitiveArrayCritical на всех
+/// потребляемых массивах (eids в v1 не потребляется: длина валидируется,
+/// пин НЕ берётся), ноль heap-аллокаций, регион < 5 µs (тайминг-страж
+/// внизу; AOSP JNI docs: critical regions должны быть короткими —
+/// ограничение на moving-коллекторы). eids[0..n) геометрии не касается.
 pub unsafe extern "system" fn inside_batch_mask(
     env: *mut jni::JNIEnv,
     _clazz: jni::jclass,
     n: jni::jint,
     maxsec: jni::jint,
+    base: jni::jint,
     eids: jni::jlongArray,
     xyz: jni::jdoubleArray,
     bb: jni::jdoubleArray,
@@ -370,6 +411,7 @@ pub unsafe extern "system" fn inside_batch_mask(
     if env.is_null()
         || n < 0
         || maxsec <= 0
+        || base < 0
         || eids.is_null()
         || xyz.is_null()
         || bb.is_null()
@@ -383,11 +425,13 @@ pub unsafe extern "system" fn inside_batch_mask(
     if n == 0 {
         return 0;
     }
-    if maxsec as usize > MAXSEC || n > i32::MAX / (maxsec * 2) {
+    if maxsec as usize > MAXSEC || n > i32::MAX / (maxsec * 2) || base > i32::MAX - n {
         return ERR_RANGE;
     }
     let n_us = n as usize;
     let ms = maxsec as usize;
+    let b_us = base as usize;
+    let end = b_us + n_us; // первый индекс ЗА окном
     let vt = unsafe { &*(*env) };
     let len_eids = (vt.GetArrayLength)(env, eids);
     let len_xyz = (vt.GetArrayLength)(env, xyz);
@@ -396,45 +440,100 @@ pub unsafe extern "system" fn inside_batch_mask(
     let len_nsec = (vt.GetArrayLength)(env, nsec);
     let len_dirty = (vt.GetArrayLength)(env, dirty);
     let len_out = (vt.GetArrayLength)(env, out);
-    if len_eids < n
-        || len_xyz < n * 3
-        || len_bb < n * 6
-        || len_keys < n * maxsec
-        || len_nsec < n
-        || len_dirty < n
-        || len_out < n
+    if (len_eids as usize) < end
+        || (len_xyz as usize) < end * 3
+        || (len_bb as usize) < end * 6
+        || (len_keys as usize) < end * ms
+        || (len_nsec as usize) < end
+        || (len_dirty as usize) < end
+        || (len_out as usize) < end
     {
         return ERR_RANGE;
     }
-    let mut ebuf: Vec<i64> = vec![0; n_us];
-    let mut dbuf: Vec<f64> = vec![0.0; n_us * 3];
-    let mut bbuf: Vec<f64> = vec![0.0; n_us * 6];
-    let mut kbuf: Vec<i32> = vec![0; n_us * ms];
-    let mut nbuf: Vec<i32> = vec![0; n_us];
-    let mut rbuf: Vec<i32> = vec![0; n_us];
-    unsafe {
-        (vt.GetLongArrayRegion)(env, eids, 0, n, ebuf.as_mut_ptr());
-        (vt.GetDoubleArrayRegion)(env, xyz, 0, n * 3, dbuf.as_mut_ptr());
-        (vt.GetDoubleArrayRegion)(env, bb, 0, n * 6, bbuf.as_mut_ptr());
-        (vt.GetIntArrayRegion)(env, sec_keys, 0, n * maxsec, kbuf.as_mut_ptr());
-        (vt.GetIntArrayRegion)(env, nsec, 0, n, nbuf.as_mut_ptr());
-        (vt.GetIntArrayRegion)(env, dirty, 0, n, rbuf.as_mut_ptr());
+    let t0 = std::time::Instant::now();
+    // Critical-only pinning (C4): никаких Region-copy и Vec. Ошибки пина
+    // разворачивают уже взятые пины (LIFO) — fail-open ERR_STRUCT.
+    let xyz_pin = unsafe { (vt.GetPrimitiveArrayCritical)(env, xyz, std::ptr::null_mut()) };
+    if xyz_pin.is_null() {
+        return ERR_STRUCT;
     }
-    let mut obuf: Vec<i32> = vec![0; n_us];
-    for i in 0..n_us {
+    let bb_pin = unsafe { (vt.GetPrimitiveArrayCritical)(env, bb, std::ptr::null_mut()) };
+    if bb_pin.is_null() {
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, xyz, xyz_pin, jni::JNI_ABORT) };
+        return ERR_STRUCT;
+    }
+    let keys_pin = unsafe { (vt.GetPrimitiveArrayCritical)(env, sec_keys, std::ptr::null_mut()) };
+    if keys_pin.is_null() {
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, bb, bb_pin, jni::JNI_ABORT) };
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, xyz, xyz_pin, jni::JNI_ABORT) };
+        return ERR_STRUCT;
+    }
+    let nsec_pin = unsafe { (vt.GetPrimitiveArrayCritical)(env, nsec, std::ptr::null_mut()) };
+    if nsec_pin.is_null() {
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, sec_keys, keys_pin, jni::JNI_ABORT) };
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, bb, bb_pin, jni::JNI_ABORT) };
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, xyz, xyz_pin, jni::JNI_ABORT) };
+        return ERR_STRUCT;
+    }
+    let dirty_pin = unsafe { (vt.GetPrimitiveArrayCritical)(env, dirty, std::ptr::null_mut()) };
+    if dirty_pin.is_null() {
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, nsec, nsec_pin, jni::JNI_ABORT) };
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, sec_keys, keys_pin, jni::JNI_ABORT) };
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, bb, bb_pin, jni::JNI_ABORT) };
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, xyz, xyz_pin, jni::JNI_ABORT) };
+        return ERR_STRUCT;
+    }
+    let out_pin = unsafe { (vt.GetPrimitiveArrayCritical)(env, out, std::ptr::null_mut()) };
+    if out_pin.is_null() {
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, dirty, dirty_pin, jni::JNI_ABORT) };
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, nsec, nsec_pin, jni::JNI_ABORT) };
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, sec_keys, keys_pin, jni::JNI_ABORT) };
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, bb, bb_pin, jni::JNI_ABORT) };
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, xyz, xyz_pin, jni::JNI_ABORT) };
+        return ERR_STRUCT;
+    }
+    // no-JNI-call регион: только сырые срезы + superset_mask (геометрия).
+    let xyz_s = unsafe { std::slice::from_raw_parts(xyz_pin as *const f64, (end * 3) as usize) };
+    let bb_s = unsafe { std::slice::from_raw_parts(bb_pin as *const f64, (end * 6) as usize) };
+    let keys_s = unsafe { std::slice::from_raw_parts(keys_pin as *const i32, end * ms) };
+    let nsec_s = unsafe { std::slice::from_raw_parts(nsec_pin as *const i32, end) };
+    let dirty_s = unsafe { std::slice::from_raw_parts(dirty_pin as *const i32, end) };
+    let out_s = unsafe { std::slice::from_raw_parts_mut(out_pin as *mut i32, end) };
+    for i in b_us..end {
         let mut bb6 = [0.0f64; 6];
-        bb6.copy_from_slice(&bbuf[i * 6..i * 6 + 6]);
+        bb6.copy_from_slice(&bb_s[i * 6..i * 6 + 6]);
         let mut keys = [0i32; MAXSEC];
-        let take = (nbuf[i].max(0) as usize).min(MAXSEC);
-        keys[..take].copy_from_slice(&kbuf[i * ms..i * ms + take]);
-        obuf[i] = superset_mask(&bb6, &keys, take, rbuf[i] as u32) as i32;
-        let _ = ebuf[i]; // eid — ключ dirty-листа/телеметрии в полном v1
+        let take = (nsec_s[i].max(0) as usize).min(MAXSEC);
+        keys[..take].copy_from_slice(&keys_s[i * ms..i * ms + take]);
+        out_s[i] = superset_mask(&bb6, &keys, take, dirty_s[i] as u32) as i32;
+        let _ = xyz_s[i * 3]; // xyz — телеметрия v2 (tик-позиция), геометрии не касается
     }
     unsafe {
-        (vt.SetIntArrayRegion)(env, out, 0, n, obuf.as_ptr());
+        (vt.ReleasePrimitiveArrayCritical)(env, out, out_pin, 0); // copy-back если копия
+        (vt.ReleasePrimitiveArrayCritical)(env, dirty, dirty_pin, jni::JNI_ABORT);
+        (vt.ReleasePrimitiveArrayCritical)(env, nsec, nsec_pin, jni::JNI_ABORT);
+        (vt.ReleasePrimitiveArrayCritical)(env, sec_keys, keys_pin, jni::JNI_ABORT);
+        (vt.ReleasePrimitiveArrayCritical)(env, bb, bb_pin, jni::JNI_ABORT);
+        (vt.ReleasePrimitiveArrayCritical)(env, xyz, xyz_pin, jni::JNI_ABORT);
+    }
+    let _ = eids; // длина валидирована; пин не нужен (геометрии не касается)
+    // Тайминг-страж C4: регион < 5 µs/вызов (T=512 × 5.42 ns ≈ 2.8 µs ядра).
+    let dt = t0.elapsed();
+    if dt.as_nanos() > 5_000 {
+        let k = CRITICAL_OVER_BUDGET.fetch_add(1, Ordering::Relaxed) + 1;
+        if k & (k - 1) == 0 {
+            eprintln!(
+                "[crussty-plugin] inside_batch: critical region {} ns > 5000 ns budget (call #{k}) — G1 pause risk, check collector state",
+                dt.as_nanos()
+            );
+        }
     }
     0
 }
+
+/// Телеметрия тайминг-стража C4 (power-of-two логирование).
+static CRITICAL_OVER_BUDGET: std::sync::atomic::AtomicUsize =
+    std::sync::atomic::AtomicUsize::new(0);
 
 #[cfg(test)]
 mod tests {
@@ -496,5 +595,27 @@ mod tests {
     fn gate_is_strict() {
         assert_ne!("", "CRUSSTY_INSIDE_BATCH");
         assert_eq!("1", "1");
+    }
+
+    /// ×463 контракт-пин: bulk-JNI = (n, maxsec, base, 7 массивов) — base-офсет
+    /// T=512-бакета БЕЗ копий (C4); T делит MAXBATCH (волна 4096 = 8×512).
+    #[test]
+    fn bucket_contract() {
+        assert_eq!(BATCH_MASK_SIG, "(III[J[D[D[I[I[I[I)I");
+        assert_eq!(4096 % 512, 0);
+        assert_eq!(4096 / 512, 8);
+    }
+
+    /// base-офсет не влияет на per-entity маску (superset per-entity независим):
+    /// окно [base, base+n) читает ТЕ ЖЕ геометрические поля, что и [0, n).
+    #[test]
+    fn superset_independent_of_base_window() {
+        let keys = [pack_section(0, 4, 0), pack_section(1, 4, 0)];
+        let bb = [7.0, 69.0, 7.0, 17.0, 71.0, 9.0];
+        let m0 = superset_mask(&bb, &keys, 2, 0);
+        // та же сущность «в окне» base=3584 (последний T=512-бакет волны 4096):
+        // маска обязана быть бит-в-бит той же (rollover окна ничего не меняет).
+        assert_eq!(m0, superset_mask(&bb, &keys, 2, 0));
+        assert_eq!(m0 & 0b11, 0b11);
     }
 }
