@@ -5062,3 +5062,18 @@ Stage Summary:
 - Внешние ≥3: Lithium block-collision empty-skip (hasOnlyAir @417-класс уже в ядре), Paper/Moonrise EntityLookup+ChunkSlicesRegion (REGION_SHIFT javap L28 — субстрат, 0 изменений ядра) + Paper #9377 visibility (ортогонален), C2ME ThreadedRegionizer/concurrentutil (region-lock дисциплина; collision-модулей 0 — ниша свободна).
 - Артефакт: /home/z/rounds/ROUND-464/LAB-STAGE/LEDGER-58.md; docs/LAB_LEDGER.md +Л154-156; docs-only commit + push master.
 - [464-50 followup 04:26Z] Run #1 36217316117 = band-gate fast-fail (pairing-discard, runner out of [6.0M,9.5M]); canon re-roll dispatched: run #2 36217783862 (same branch/inputs/lever). LEDGER-50 §6 updated; +Л147.
+
+## TASK-464-55 (2026-09-26): ЛАБ-АГЕНТ young-ген x464 — young-таблица 39 ранов + CC-джиттер-рекалибровка + флаг-плоскость (master f460faf2, docs-only)
+- Тракт: Л51 (young −5-8.5%, окно 108-112, alloc ≤+0.3%) + Л71 (young-only +0.10-0.28пп, young⊕CC-kill +0.87-1.09пп, CC-джиттер 5↔6 сепарация 8/8) → перепроверка на x464-артефактах /home/z/rounds/ROUND-464/absorb/r*/gc.log (39 ранов, ≥10-канон ×3.9).
+- Парсер gc.log+server-stdout: young/Full summary-строки, heap-линии PSYoungGen eden/from/to, soak-окно [INJECT DONE, +300s] (t_inj 87-115s); таблица 39 ранов × 16 полей в LEDGER-55 §2.
+- Young-числа: yN 113.9±7.3 (102-128; in-soak 74.2±5.9), yAvg 120.9±8.2ms, yTOT in-soak 8.95±0.77s (duty 2.98%); alloc 0.749 GB/s ±8.6% host-noise; eden in-soak 3126±22MB cv 0.7% — 39/39 сошёлся в MaxNewSize cap Xmx/3; окно [108,112] без рычага 11/39 = 28%.
+- CC-джиттер: 5+4=18/39, 6+4=16/39, НОВАЯ 3+5=5/39 (5-й MD-Full 50-56s, slow-JIT класс-лоад перелив) → Full==9 бит-в-бит = 46%; MD in-soak 0/39 (161 событий pre-soak — инвариант Л71 усилен); механизм подтверждён (5-й CC ρ=−0.628, slow 280s vs fast 182s), сепарация 8/8 не реплицируется (6-й CC 349-466s страддлит soak-end 387-415s, ρ(runner,ccS)=−0.17) → банк-v6 ковариата = per-run ccS; ccS=2 = −0.77пп (+2.34s, 4.72 vs 2.38s).
+- Флаг-плоскость: SurvivorRatio REFUTED механически (survivors demand-shrunk ×39, eden:from 39:1); MaxNewSize=3584M = count −2.5% (111.1 в окне) при duty≈0; xms=10G legal-но NULL (eden уже сошёлся, банк-контаминация) → REJECT; RCC=320M = CC-kill +0.77пп (ccS 2→1) + восстановление Full=9 на 6-CC. MaxNewSize/RCC НЕ проходят inputs (EXTRA_JVM_GC зашит, 25-input лимит) → ОФЛАЙН 0 диспатчей + infra-запрос: gc_tune=6 «ParallelGC ⊕ MaxNewSize=3584M ⊕ RCC=320M» (или генерик jvm_gc_extra input).
+- Гейты G1-G6 preregistered (LEDGER-55 §6): G1 yN-окно+eden-линия+ccS=1; G2 java-строка артефакта; G3 STW-CLEAN ×459; G4 ≥−1.0пп dual-bar; G5 популяция-паритет (без кода lockstep n/a); G6 MD pre-soak purity 4-5 + CC ≤6 + чужих причин 0 + Full-count неизменен (RCC-исключение) + alloc ≤+0.3%.
+- Externals ≥4 с числами: Oracle manpage (SurvivorRatio 8, NewRatio 2, young=heap/3 — совпало с cap 3413MB), Aikar/Paper (Xms=Xmx канон, 12G+ young 40-50% — x464 ergonomics уже 44%), RCC 240MB default (Java 10+, JEP 197 segmented; profiled 117.25MB), Mojang-бандл (MaxGCPauseMillis=200 + G1NewSizePercent=20-30).
+- Артефакты: /home/z/rounds/ROUND-464/LAB-STAGE/LEDGER-55.md (7 секций, 39-стровная young-таблица); docs/LAB_LEDGER.md +Л160-165; docs-only commit + push master.
+
+Stage Summary:
+- Вердикт-ЧИСЛО: +0.92пп (young⊕CC-kill x464-рекалибровка; коридор +0.92..+1.02пп на 6-CC хостах; young-only +0.15..+0.25пп) — канон Л71 подтверждён ×39
+- Флаг-план: 0 legal-диспатчей (xms=10G REJECT числами); infra-запрос gc_tune=6 (MaxNewSize=3584M ⊕ RCC=320M); SurvivorRatio refuted; MaxNewSize — единственный честный young count-рычаг (−2.5..−5.1%)
+- CI: OFFLINE, 0 диспатчей, run id нет
