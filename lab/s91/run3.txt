@@ -1,0 +1,18 @@
+== S91 deadline-vs-FIFO harness (budget/tick=400ms, cap=65536) ==
+
+--- Scenario A: blockEvents FIFO vs EDF-heap (все deadline=now, N=65536) ---
+A1 FIFO(ArrayDeque)  drain+dispatch:    0.312 ms  (   4.8 ns/event)  lane=0.078% тика
+A2 EDF(PriorityQueue+seqid):     18.848 ms  ( 287.6 ns/event)  lane=4.712% тика, x60.33 к FIFO
+A3 EDF без seqid: инверсий порядка 65533/65536 (99.995%) — реордер ломает insertion-семантику
+A4 потолок выигрыша = lane(EDF-FIFO): 4.634пп от тика (EDF МЕДЛЕННЕЕ — дедлайн-планировщик тут только добавляет)
+
+--- Scenario B: scheduled-ticks стрим (Парето-дедлайны, 200 тиков, N=65536) ---
+B1 vanilla-EDF heap: management    0.159 ms/тик ( 486.2 ns/event) = 0.0398% бюджета 400ms
+B2 FIFO-гипотеза: wrong-tick исполнений 65536/65536 (100.00%) — FIFO семантически невалиден, дедлайн-порядок обязателен
+B3 вывод: дедлайн-планирование в LevelTicks УЖЕ есть (DRAIN_ORDER javap) — заменять нечего
+
+--- Scenario C: capture-потолок 'deadline вместо FIFO' ---
+C1 worst-case: 2×65536 событий/тик, FIFO management 1.694 ms/тик
+C2 lane% = 0.4235% тика (400ms)@бенч-стенде
+C3 потолок = lane% × max-capture%(66.7%=x3) = 0.282пп << 20пп
+C4 даже при x100 ускорении management: 0.419пп < 20пп (выигрыш <= lane%, management ≠ хендлеры)
