@@ -169,7 +169,7 @@ fn flag_enabled(flag: Option<&str>) -> bool {
             // register natives → probe → publish BEFORE the push lane (arm AFTER
             // define+selfTest — NCDFE structurally impossible, ColpushOps-marker
             // canon). cmp456_chunkmono ≡ cmp450_chunk planes ⊕ chunk6-sched.
-            | Some("cmp456_chunkmono") | Some("cmp456_chunkmono_p31snap") | Some("cmp466_c98ai")
+            | Some("cmp456_chunkmono") | Some("cmp456_chunkmono_p31snap") | Some("cmp466_c98ai") | Some("cmp468_c98ai_m1")
     )
 }
 
@@ -216,7 +216,7 @@ fn enabled_flag_is_sense() -> bool {
             | Ok("cmp453_diet") | Ok("cmp450_chunk") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
             | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") // TASK-454-B/455-B: chunk union carrier rides the sense gate (STRICT OR, rebaze-3 union)
             | Ok("cmp451_senseins") | Ok("cmp458_swar") // TASK-452-A: senseins composite — sense-arena slice must arm (production gate retag)
-            | Ok("cmp453_diet") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp466_c98ai") | Ok("cmp456_poi") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
+            | Ok("cmp453_diet") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp466_c98ai") | Ok("cmp468_c98ai_m1") | Ok("cmp456_poi") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
 )
 }
 

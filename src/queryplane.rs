@@ -75,7 +75,7 @@ fn lever_flag_matches() -> bool {
                 || v.trim() == "cmp420_colpush"
                 || v.trim() == "cmp421_brain" || v.trim() == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2"
         || v == "cmp438_sense" // TASK-444-C: sense family union
-        || v == "cmp451_senseins" || v == "cmp458_swar" || v == "cmp457_paldelta" || v == "cmp457_eqsnap2" || v == "cmp456_chunkmono" || v == "cmp456_chunkmono_p31snap" || v == "cmp466_c98ai" || v == "cmp453_diet" || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp444_chunk5" || v == "cmp450_chunk" || v == "cmp456_poi" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+        || v == "cmp451_senseins" || v == "cmp458_swar" || v == "cmp457_paldelta" || v == "cmp457_eqsnap2" || v == "cmp456_chunkmono" || v == "cmp456_chunkmono_p31snap" || v == "cmp466_c98ai" || v == "cmp468_c98ai_m1" || v == "cmp453_diet" || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp444_chunk5" || v == "cmp450_chunk" || v == "cmp456_poi" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
 })
         .unwrap_or(false)
 }

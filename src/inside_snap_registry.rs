@@ -87,7 +87,7 @@ fn enabled() -> bool {
     let lever = std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let v = v.trim();
-            v == "cmp459_snapreg" || v == "cmp456_chunkmono_p31snap" || v == "cmp466_c98ai"
+            v == "cmp459_snapreg" || v == "cmp456_chunkmono_p31snap" || v == "cmp466_c98ai" || v == "cmp468_c98ai_m1"
         })
         .unwrap_or(false);
     if lever {
