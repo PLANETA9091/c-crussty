@@ -83,6 +83,50 @@ import net.minecraft.core.BlockPos;
  * ("batch_collector: telemetry tick=N instances=M workers=W") — it
  * answers whether ctors come from live-scene spawn flow or from a
  * hidden per-tick loop.
+ *
+ * P48-V2 (round-465, LEDGER-45 GO-candidate) — two zero-risk hot-path
+ * micro-skips on the SAME blob, NO new lever flag: the class is only
+ * defined when the carrier arm path (batch_collector=1 under the
+ * composite cmp456_chunkmono_p31snap, STRICT-OR) defines it, so the
+ * skis ride the existing arm; no separate toggle, no env guard (an
+ * off-by-default guard would placebo the branch-level A/B leg; the
+ * branch IS the toggle):
+ *   (a) flushStep empty-skip — `if (!dirty) return;` before the ORDER
+ *       walk. Vanilla-parity proof (javap -c StepBasedCollector,
+ *       patched-kernel 1.21.10): flushStep = 136B/59 instr walking
+ *       APPLY_ORDER x 3 maps; on an all-empty state every operation is
+ *       observably inert — makeEnumMap-prepopulated before/after lists:
+ *       addAll(empty) returns false WITHOUT growth (ArrayList.addAll
+ *       no-ops on len 0, only transient Object[0] garbage), clear() on
+ *       empty removes nothing (removeRange(0,0) no-op, modCount
+ *       untouched), effectsInStep.remove(absent) -> null -> no add;
+ *       finalEffects and all three maps end bit-identical. The early-out
+ *       is that walk's fixed point, minus the garbage.
+ *   (b) advanceStep short-circuit — on a step transition, skip the
+ *       flushStep() INVOKE (not the bookkeeping) when nothing is
+ *       pending. lastStep=step stays UNCONDITIONAL (bit-identical
+ *       vanilla advanceStep = 23B/9 instr: putfield currentBlockPos;
+ *       lastStep!=step -> putfield lastStep; invokevirtual flushStep):
+ *       dropping the lastStep write would let a same-step duplicate
+ *       advanceStep flush mid-step and break the EnumMap.put last-wins
+ *       contract (duplicate effect entries in the queue). With dirty
+ *       tracked, `if (dirty) flushStep()` == unconditional flushStep()
+ *       on empty, exactly.
+ *   dirty invariant: set by the three record entry points (apply /
+ *   runBefore / runAfter — the ONLY writers of stepHas/before/after),
+ *   cleared by flushStep (its walk consumes ALL step state). Therefore
+ *   dirty==false <=> stepHas all false ^ before/after all empty, and
+ *   the flag can never desynchronize from the observable step state.
+ *   The op QUEUE (nOps) is intentionally NOT part of dirty: it is
+ *   playback state, not step state (applyAndClear plays it regardless).
+ *   javap delta (this class, measured): flushStep 162B -> 175B (+guard),
+ *   advanceStep 26B -> 33B (+guard; putfield/putfield prefix byte-faithful
+ *   to the vanilla 23B body), apply 23B -> 28B, runBefore/runAfter
+ *   15B -> 20B; applyAndClear 141B, appendConsumer 47B, appendEffect 58B,
+ *   grow 101B untouched; vanilla-replica methods stay byte-faithful
+ *   in ORDER and grouping. BatchCollectorHarness (semantic diff vs
+ *   vanilla flushStep queues, randomized advanceStep/apply/runBefore/
+ *   runAfter scenarios) is the behavioral gate.
  */
 public final class BatchCollector extends InsideBlockEffectApplier.StepBasedCollector {
 
@@ -103,6 +147,9 @@ public final class BatchCollector extends InsideBlockEffectApplier.StepBasedColl
     private final long[] stepPos = new long[NT];
     private long currentPacked; // javap #92 currentBlockPos (packed bits)
     private int lastStep = -1;  // javap #90
+
+    // P48-v2: pending-work flag over stepHas/before/after (see header).
+    private boolean dirty;
 
     // ---- before/after consumer lists (built once, reused via clear()) ----
     @SuppressWarnings("unchecked")
@@ -130,8 +177,10 @@ public final class BatchCollector extends InsideBlockEffectApplier.StepBasedColl
     public void advanceStep(int step, BlockPos pos) {
         this.currentPacked = pos.asLong();
         if (this.lastStep != step) {
-            this.lastStep = step;
-            this.flushStep();
+            this.lastStep = step; // unconditional: vanilla 23B body, last-wins contract
+            if (this.dirty) {     // P48-v2 (b): skip the invoke on an empty step
+                this.flushStep();
+            }
         }
     }
 
@@ -140,20 +189,26 @@ public final class BatchCollector extends InsideBlockEffectApplier.StepBasedColl
         int o = type.ordinal();
         this.stepPos[o] = this.currentPacked;
         this.stepHas[o] = true;
+        this.dirty = true;
     }
 
     @Override
     public void runBefore(InsideBlockEffectType type, Consumer<Entity> c) {
         this.before[type.ordinal()].add(c);
+        this.dirty = true;
     }
 
     @Override
     public void runAfter(InsideBlockEffectType type, Consumer<Entity> c) {
         this.after[type.ordinal()].add(c);
+        this.dirty = true;
     }
 
     /** Flat replica of the vanilla flushStep (same ORDER, same grouping). */
     private void flushStep() {
+        if (!this.dirty) { // P48-v2 (a): vanilla empty walk = bit-identical fixed point
+            return;
+        }
         for (int o = 0; o < NT; o++) {
             List<Consumer<Entity>> b = this.before[o];
             if (!b.isEmpty()) {
@@ -174,6 +229,7 @@ public final class BatchCollector extends InsideBlockEffectApplier.StepBasedColl
                 a.clear();
             }
         }
+        this.dirty = false; // the walk consumed ALL step state
     }
 
     private void appendConsumer(Consumer<Entity> c) {
