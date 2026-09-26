@@ -48,3 +48,9 @@ research/gc-recon-2026-09-19/run-s7176-crash/*.jar
 research/gc-recon-2026-09-19/run-s7176-crash/*.zip
 research/gc-recon-2026-09-19/run-s7176-crash/spark-report/
 cargo-target/
+
+# R468-S21 (Л180h quiet-drift root-cause fix): unanchored `target/` swallowed
+# the stagger goal-target SOURCE tree — GoalStaggerOps.java never reached master
+# while its .class rode include_bytes since 48475af3 (force-add era). Negation
+# restores visibility: plain git add works, no force needed.
+!**/ai/goal/target/
