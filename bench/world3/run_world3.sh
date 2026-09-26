@@ -634,6 +634,32 @@ log "SEEN_DONE=$SEEN_DONE"
 # Same bound applies to report_world3.py (last unbounded op before exit).
 cmd() { timeout 5 sh -c 'printf "%s\n" "$1" > "$2"' _ "$*" "$WORK/console.in" 2>/dev/null || true; }
 
+# S41 slice-census (R468-S41 lazy-alloc ChunkEntitySlices): OUT-OF-WINDOW,
+# observer-only live class histogram (jcmd GC.class_histogram) pinning the
+# entity-slice structure population + exact bytes: ChunkEntitySlices (entity
+# chunks), EntityCollectionBySection (per-chunk base x2 + per-type latent),
+# BasicEntityList (occupied section lists — "sections really holding entities"),
+# EntityList (1/slices sanity). Full-GC STW cost lands BEFORE the TPS window
+# (pre) / AFTER the soak (post) — window median polls untouched. 0 code delta,
+# 0 behavior delta (external observer канон: jcmd GC.heap_info/GC.n).
+slice_census() { # slice_census <pre|post>
+  local JC JOUT N
+  JC="$(command -v jcmd 2>/dev/null || true)"
+  if [ -z "$JC" ] && [ -n "${JAVA_HOME:-}" ] && [ -x "$JAVA_HOME/bin/jcmd" ]; then JC="$JAVA_HOME/bin/jcmd"; fi
+  if [ -z "$JC" ] || ! kill -0 "$SERVER_PID" 2>/dev/null; then
+    log "slice-census[$1]: jcmd/server unavailable — skipped"; return 0
+  fi
+  JOUT="$WORK/slice_census_$1.txt"
+  log "slice-census[$1]: live class histogram via $JC (out-of-window)..."
+  if timeout 180 "$JC" "$SERVER_PID" GC.class_histogram > "$JOUT" 2>&1; then
+    N=$(grep -cE "ChunkEntitySlices|BasicEntityList|EntityCollectionBySection|EntityList|world\.entity\.(item\.ItemEntity|monster\.|passive\.)" "$JOUT" || true)
+    log "slice-census[$1]: OK rows=$N artifact=slice_census_$1.txt"
+    grep -E "ChunkEntitySlices|BasicEntityList|EntityCollectionBySection|moonrise\.common\.list\.EntityList" "$JOUT" | sed 's/^/[slice-census] /' || true
+  else
+    log "slice-census[$1]: FAILED (timeout/attach) — server alive: $(kill -0 "$SERVER_PID" 2>/dev/null && echo yes || echo no)"
+  fi
+}
+
 if [ "$SEEN_DONE" = "1" ]; then
   # --- 5. forceload sweep (overworld tiles of 16x16 chunks <= 256/command) --
   STEP=256
@@ -677,6 +703,10 @@ if [ "$SEEN_DONE" = "1" ]; then
     grep "POPULATION FIXTURE-VALIDITY" "$WORK/server-stdout.log" | tail -1 || true
     sleep 5  # settle injection tail before profilers attach
   fi
+
+  # S41 slice-census PRE (before the TPS window opens): steady post-inject
+  # structure counts. Full-GC STW here is outside every measured poll.
+  slice_census pre
 
   # --- 6. profilers (v3: stop-based sequential windows) --------------------
   # run#9 lesson: asprof v4.x allows ONE active session per target — so the
@@ -783,6 +813,9 @@ if [ "$SEEN_DONE" = "1" ]; then
     "$ASPROF" stop -o flamegraph -f "$WORK/cpu-flamegraph.html" "$SERVER_PID" >>"$WORK/ap.log" 2>&1 || true
   fi
   cmd "spark profiler --stop"
+  # S41 slice-census POST (soak window CLOSED by alloc stop above): end-state
+  # structure counts. Full-GC STW here is outside every measured poll.
+  slice_census post
   sleep 15
   # spark stores raw .sparkprofile blobs under plugins/spark; /paper debug
   # chunks dumps tables under debug/ — collect BOTH trees (both small)
