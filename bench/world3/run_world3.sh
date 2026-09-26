@@ -456,6 +456,28 @@ export CRUSSTY_BU_DEFER="$BU_DEFER"
 # read these at registration time to ARM their architecture lever.
 export CRUSSTY_LEVER_FLAG="${LEVER_FLAG:-}"
 export CRUSSTY_LEVER_ARG="${LEVER_ARG:-}"
+# --- S87 SPARK-ONFLAME knobs (bench-harness layer; agent-arg канон) --------
+# lever_arg tokens (comma/space separated): 'sparkoff' = skip spark profiler
+# start + spark gc; 'apoff' = skip all asprof windows (ASPROF cleared -> the
+# existing UNAVAILABLE path; report_world3.py handles absent collapsed files);
+# 'sparktm=<ms>' = absolute tick-duration threshold for tickmonitor
+# (--threshold-tick, verified in spark-paper 1.10.152 bytecode; the legacy
+# '--threshold 50' is a PERCENT-increase threshold, still armed alongside).
+# CANON-SAFETY: lever_flag stays '' -> module vanilla path; a non-numeric
+# lever_arg is identity for both javap-confirmed CRUSSTY_LEVER_ARG consumers
+# (MobAiOps.windowN / PushStaggerOps.readN: parseInt in try/catch -> default 4,
+# Л167) — zero module delta. Empty lever_arg = bit-exact canon behavior.
+SPARK_PROFILE=1
+S87_TOKS="${LEVER_ARG:-}"
+for tok in ${S87_TOKS//,/ }; do
+  case "$tok" in
+    sparkoff) SPARK_PROFILE=0 ;;
+    apoff) ASPROF=""; log "S87: asprof windows DISABLED (apoff token)" ;;
+    sparktm=*) S87_TM="--threshold-tick ${tok#sparktm=}"; SPARK_TM_ARGS="${SPARK_TM_ARGS:-} $S87_TM" ;;
+  esac
+done
+[ "$SPARK_PROFILE" = "1" ] || log "S87: spark profiler DISABLED (sparkoff token)"
+[ -n "${SPARK_TM_ARGS:-}" ] && log "S87: tickmonitor absolute threshold armed:${SPARK_TM_ARGS}"
 # cmp420_chunk2 arming (TASK-420-C stability iteration; wave-419 base
 # cmp419_chunk, chunk-pipeline law 8): the noise-fill GEN-axis
 # (noise_fill.rs STRICT-OR gate) is NOT in PROVEN_WINS, so the
@@ -718,7 +740,15 @@ if [ "$SEEN_DONE" = "1" ]; then
   if [ -n "$ASPROF" ]; then
     asprof_guard_start -e cpu,interval=5ms
   fi
-  cmd "spark profiler start --timeout $RUN_SECONDS"
+  # S87: profiler start gated by sparkoff token (default = canon, always on)
+  [ "$SPARK_PROFILE" = "1" ] && cmd "spark profiler start --timeout $RUN_SECONDS"
+  # S87 tickmonitor ONCE-arm (toggle-bug fix): re-issuing 'spark tickmonitor'
+  # on every 60s poll DISABLED the active monitor every other minute (stdout
+  # 36228910649: started 08:18:32 -> disabled 08:19:32 -> started 08:20:32
+  # ...) = 50% duty. Arm once here (+ optional --threshold-tick via sparktm=
+  # token); final toggle-off at soak end prints the Analysis Max/Min/Average
+  # block report_world3.py parses. TPS-neutral (passive tick listener).
+  cmd "spark tickmonitor --threshold 50 ${SPARK_TM_ARGS:-}"
 
   while [ $SECONDS -lt $END ]; do
     if server_died; then log "FATAL: server process died mid-soak — ending soak early (crash artifacts preserved)"; break; fi
@@ -732,7 +762,6 @@ if [ "$SEEN_DONE" = "1" ]; then
     # run#12 root-cause (S7-96b): `paper entity list` needs filter+worldName,
     # bare call returned Usage-error every poll since run#10 (0 entity data)
     cmd "paper entity list * world"
-    cmd "spark tickmonitor --threshold 50"
     if [ "$SUMMON_SWEEPS" = "1" ]; then
       for k in 1 2 3 4 5; do
         X=$(( (RANDOM % (2 * R)) - R )); Z=$(( (RANDOM % (2 * R)) - R ))
@@ -772,7 +801,7 @@ if [ "$SEEN_DONE" = "1" ]; then
 
   # --- 7. final captures + shutdown ---------------------------------------
   cmd "paper debug chunks"
-  cmd "spark gc"
+  [ "$SPARK_PROFILE" = "1" ] && cmd "spark gc" # S87: gated (sparkoff)
   if [ -n "$ASPROF" ]; then
     # v3: the session active at soak end is ALLOC (windows above) — stopping
     # it into alloc-collapsed.txt (weights = BYTES). Then a SHORT fresh cpu
@@ -782,6 +811,7 @@ if [ "$SEEN_DONE" = "1" ]; then
     sleep 20   # give the flamegraph window real samples (v2 got an orphan re-dump here)
     "$ASPROF" stop -o flamegraph -f "$WORK/cpu-flamegraph.html" "$SERVER_PID" >>"$WORK/ap.log" 2>&1 || true
   fi
+  cmd "spark tickmonitor" # S87: toggle-off -> final Analysis Max/Min/Average print
   cmd "spark profiler --stop"
   sleep 15
   # spark stores raw .sparkprofile blobs under plugins/spark; /paper debug
