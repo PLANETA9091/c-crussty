@@ -125,6 +125,27 @@ die() { # die <msg> — still emit a diagnostic report so artifacts ship (eviden
 }
 mkdir -p "$WORK" "$SERVER"
 
+# --- S86-PROBE (ROUND-468): host utilization covariates (procstat) ----------
+# Scope R468-S86 (WILD): gate-time runner_cpu_index (LCG, pre-download) drifts
+# vs bench-window load (Л180e: gate<->bench median 188k, P(bench in window|
+# gate in window)~0.38), and asprof sees the JVM PID ONLY — host-wide CPU
+# (other processes, hypervisor steal, idle cores) is invisible to every lane
+# the report carries. Append raw /proc/stat cpu-line + loadavg snapshots to
+# run-env.txt: (gate) at run-env write, (soak_start) right before the cpu
+# profiler window, (cpu_end) at its stop. busy% over the window = dBusy/
+# dTotal between the two raw cpu_lines (jiffies cumulative, no sleeps on the
+# bench path). Pure diagnostics: every read guarded — NEVER fails the bench.
+procstat_probe() { # procstat_probe <label>
+  local LBL="$1" CL CT L PR PB
+  CL="$(grep -m1 '^cpu ' /proc/stat 2>/dev/null || true)"
+  CT="$(awk '/^ctxt/{print $2; exit}' /proc/stat 2>/dev/null || true)"
+  L="$(cut -d' ' -f1 /proc/loadavg 2>/dev/null || true)"
+  PR="$(awk '{print $4}' /proc/loadavg 2>/dev/null || true)"
+  PB="$(awk '{print $5}' /proc/loadavg 2>/dev/null || true)"
+  echo "procstat_$LBL: load1=${L:-unknown} procs_running=${PR:-unknown} procs_blocked=${PB:-unknown} ctxt=${CT:-unknown} cpu_line='$CL'" >> "$WORK/run-env.txt" 2>/dev/null || true
+  log "procstat_$LBL: load1=${L:-?} running=${PR:-?} blocked=${PB:-?}"
+}
+
 # --- 0. disk reclaim (standard GH-runner trick, ~25 GB back) ---------------
 if [ -d /usr/local/lib/android ]; then sudo rm -rf /usr/local/lib/android; fi
 if [ -d /usr/share/dotnet ]; then sudo rm -rf /usr/share/dotnet; fi
@@ -202,6 +223,7 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "seconds: $RUN_SECONDS (soak window; profiler windows cpu 0-55% / wall 55-80% / alloc 80-100%, S7-134)"
 } > "$WORK/run-env.txt"
 log "run-env: world_sha256=$WORLD_SHA runner_cpu_index=$RUNNER_CPU_IDX fake_players=$FAKE_PLAYERS"
+procstat_probe gate
 log "extracting world"
 # Run #1 lesson (world-bench-3 run 35106393250): the MineShield-3 zip IS the world
 # directory itself (level.dat/region//DIM-1//DIM1/ at zip ROOT, no wrapper folder) —
@@ -715,6 +737,7 @@ if [ "$SEEN_DONE" = "1" ]; then
     [ -s "$file" ] && log "$label: $(wc -l < "$file") stacks" || log "WARN: $file EMPTY"
   }
 
+  procstat_probe soak_start # S86-PROBE: host state at the cpu-window edge
   if [ -n "$ASPROF" ]; then
     asprof_guard_start -e cpu,interval=5ms
   fi
@@ -741,6 +764,7 @@ if [ "$SEEN_DONE" = "1" ]; then
     fi
     if [ "$PROF_PHASE" = "cpu" ] && [ $SECONDS -ge $CPU_END ]; then
       PROF_PHASE=wall
+      procstat_probe cpu_end # S86-PROBE: d vs soak_start = window busy% (offline)
       if [ -n "$ASPROF" ]; then
         asprof_stop_dump "$WORK/cpu-collapsed.txt" collapsed "cpu-collapsed"
         # RECON-36 P2-pre-gate (TASK-363): the wall session runs THREADED (-t)
