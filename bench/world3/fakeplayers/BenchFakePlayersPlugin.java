@@ -114,8 +114,31 @@ public final class BenchFakePlayersPlugin extends JavaPlugin {
         }
 
         // N players on a ring around world origin inside the force-load zone.
-        // N=4 with R=640 -> (±320, ±320): one per quadrant, covers the zone.
-        double ringR = radiusBlocks / 2.0;
+        // N=4 with R=640 -> (±320, 0)/(0, ±320): one per axis quadrant, covers the zone.
+        //
+        // S94 WORLD-BORDER stress leg (round-468-s94-wborder): the ring radius is
+        // radiusBlocks * RING_SCALE. THIS branch defaults 1.20 => ringR = 640*1.2 =
+        // 768 = the forceload-square EDGE (run_world3.sh §5 sweeps 6x6 tiles of
+        // 256-block forceload commands => square [-768, 767] blocks = 96x96 chunks
+        // = 9216 chunks; verified "forceload 36/9216" in run 36229065940 logs,
+        // Л-466-C90.1). Players stand AT the loaded/unloaded chunk boundary:
+        // every 128-block natural-spawn disc and the 160-block view ring
+        // (server.properties view-distance=10) hang ~half BEYOND the forced
+        // square => ~920 extra loaded/ticking chunks outside the 9216-canon set
+        // (+10.0% loaded set), one-time chunk emission (packet encode) for the
+        // fresh ring, and natural spawn surface over fresh terrain. Canon
+        // anchors (0-delta branches) keep the 0.5 center-ring fixture; env
+        // BENCH_FAKE_RING_SCALE overrides (ladder 0.5 center / 1.2 edge / 1.45 void).
+        double ringScale = 1.20;
+        try {
+            String scaleEnv = System.getenv("BENCH_FAKE_RING_SCALE");
+            if (scaleEnv != null && !scaleEnv.trim().isEmpty()) {
+                ringScale = Double.parseDouble(scaleEnv.trim());
+            }
+        } catch (NumberFormatException e) {
+            getLogger().warning("BENCH_FAKE_RING_SCALE unparsable — keeping branch default " + ringScale);
+        }
+        double ringR = radiusBlocks * ringScale;
 
         for (int i = 0; i < fakeCount; i++) {
             String name = "BenchFake-" + i;
