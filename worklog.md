@@ -4888,3 +4888,13 @@ Stage Summary:
 - Ladder stays at +29.5 (era merge 4ab7306, master 790dc2f); chunksend NOT certified: pair median +8.5% < +20% AND window >±5pp — honest no-merge
 - Roll-collapse proven: tick-424 raw +41.7/+29.2 were window artifacts; only stable chunk-send signal = l2 +12.5..+17.4% (below bar)
 - SoA feed still dead (mobSlots=0) — TASK-427 main vector: STRICT-OR brain in colpush.rs / population-writer with mobSlots>0 pregate, ~24-25% CPU addressable; dispatch vectors only in PASSED windows (evening/night)
+
+## TASK-464-48 (2026-09-26): ЛАБ-АГЕНТ paletted-demux RE-AUDIT WALL>=3.0% (master f460faf2, офлайн RESEARCH)
+- Tract: absorb/r*-collapsed НЕ сохранились (39/39 spark-report/tmp пусты; дайджесты BOTTLENECKS_3 живы) -> raw-collapsed единственного выжившего x464-сета navmath1 (=run 36211663003, PLACEBO = чистая vanilla-база; cpu_total 116,469 = дайджесту, трасса подтверждена) + cross-run 39 дайджестов.
+- Лейны PalettedContainer x464: CPU self 4.857% (5,657) / incl 6.095% (7,099); WALL self 0.256% (157) / incl 0.328% (201); биом-тракт BiomeManager CPU incl 0.063% / WALL incl 0.007% (BiomeContainer-класса в 1.21.10-профиле нет = PalettedContainer<Biome> под общей шляпой); PalettedContainerOps-кадры 0 (lever OFF — паритет чист).
+- Cross-run 39/39: PalettedContainer.get CPU 3.1-4.8% медиана 4.0% (cpu>=3.0% = 39/39), WALL 0.1-0.3% медиана 0.2% (wall>=3.0% = 0/39).
+- Бёрст-фактор cpu/wall: 18.97x self / 18.58x incl при базовом тотал-ратио 1.90x — лейн бёрст-экстракласса (~10x над базой): CPU-присутствие невидимо wall-сэмплеру, wall-нить-разрез ровный (workers 57/52/39 + server 53 сэмпла, ни одной нити >=0.1%).
+- Гейты: WALL>=3.0% FAIL (дефицит 9.1x incl / 11.7x self); javap-флаг ЖИВ (check_blobs_sync ALL IN SYNC: standalone cmp457_paldelta в 9 гейт-классах, pipe-литерал 0/335 cp-exact, Rust-гейт paletted.rs:85); банк-v5 порог ноги <=leg-20 недостижим; закон-13a бар 0.5пп > wall-потолка 0.33пп.
+- Внешние (>=3): Lithium chunk_palette (порт-прецедент items_oss ROUND-396-H merged), C2ME BiomeContainer-тракты (зона worldgen — на x464 тик-лейн пуст 0.063%), Paper/Purpur data-palette (уже в ядре 1.21.10; wire-эталон RESULTS_LEDGER:974 жив).
+- ВЕРДИКТ: REFUTED-guard (офлайн) — WALL-страж закрыл demux-закон на x464-мастере; стол +2.3-3.4пп = CPU-норма (CPU-лейн даже вырос: 4.9-6.1%), wall-конверсия <=0.33пп = 7-10x инфляция стола; диспатч round-464-lab48-v1 НЕ производится; рычаг спит до wall-сигнала >=3.0% (на 150k-банке недостижим: медиана 0.2%, max 0.3%).
+- Артефакты: /home/z/rounds/ROUND-464/LAB-STAGE/LEDGER-48.md + pal48_lane.py (raw-калькулятор лейнов); docs/LAB_LEDGER.md +Л102; docs-only commit.
