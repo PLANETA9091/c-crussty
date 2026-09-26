@@ -5077,3 +5077,18 @@ Stage Summary:
 - Вердикт-ЧИСЛО: +0.92пп (young⊕CC-kill x464-рекалибровка; коридор +0.92..+1.02пп на 6-CC хостах; young-only +0.15..+0.25пп) — канон Л71 подтверждён ×39
 - Флаг-план: 0 legal-диспатчей (xms=10G REJECT числами); infra-запрос gc_tune=6 (MaxNewSize=3584M ⊕ RCC=320M); SurvivorRatio refuted; MaxNewSize — единственный честный young count-рычаг (−2.5..−5.1%)
 - CI: OFFLINE, 0 диспатчей, run id нет
+
+Task ID: TASK-464-47
+Agent: lab-agent-47 (general-purpose)
+Task: ЛАБ P33 getAcquire-demotion — javap -v инвентарь ACC_VOLATILE, x86-семантика C2 acq-vs-vol, гейты G1-G6, вердикт + docs commit/push
+
+Work Log:
+- javap -v/-c (JDK 21.0.12.1) по 4 классам демот-поверхности: 13 ACC_VOLATILE полей / 4 класса (live 10/3 — InsideSnapOps ARMED/V4/FIRST_HIT_LOGGED + Snap gen/builtAtGen/states/single/pending/fails + PalettedContainer.data; офлайн-артефакт PalettedContainer.patched 31363B (+396B) добавляет crusstySnap/crusstySnapGen/crusstyGen). PalettedContainer$Data = 0 volatile (final-рекорд, JLS 17.5).
+- Метод-ценз: serve 218/459 и serve4 314/667 по 7 volatile GETFIELD (у serve4 4 из 7 = seqlock ре-валидация builtAtGen==gen — семантически несжимаемы); snapGet 49/96 = 3 GETSTATIC-флага; secWrite 37/74; collect 391/821 = 10; PC get(int) 11/data×1, count 35/4, getAll 23/2, getAndSet 21/2, set 14/2, maybeHas 6/1, bitsPerEntry 5/1. VarHandle байт-сайтов в src/ = 0.
+- Kernel-jars md5-ценз: tools/patched-kernel.jar = absorb/navmath1 = gc-recon round-396-a (83b6f9c9) — PalettedContainer 30967B, 0 crussty-полей → crusstySnap мёртв 0/N живых jars (консистентно Л64 0/4).
+- C2-первоисточники (openjdk/jdk21 fetch): x86_64.ad:6832 membar_acquire size(0) «empty encoding»; :6885 единственный реальный барьер StoreLoad = lock addl [rsp+0],0 (volatile STORE-only); assembler_x86.cpp:208 «We only have to handle StoreLoad»; parse3.cpp:141/212 is_vol→MO_SEQ_CST; memnode.hpp MemOrd; bug-семья JDK-8057884 (volatile load ≡ acquire-модель C2).
+- Локальный микробенч ×3 (200M/100M iter, best-of-7): acq-vs-vol Δ≤2.3% (2.16 vs 2.21 ns/4-loads); RLE-фолдинг opaque-повторов НЕТ ×2 (16-load: 4.21 vs 3.82-4.36; 8-load instance: 1.95-2.02 vs 1.44-1.88, ожидание −60%); volatile-load sustained 0.254ns/load ≈ 1 load/cycle — folklore-налог 1-3 цикла/read не воспроизводится.
+- Вердикт: REFUTED-as-solo-x86 — Л64-механизмы (C2-фолдинг «4→2» = семантически запрещён seqlock'ом + синтетически отсутствует; C2-налог = 0 на TSO) рефютированы; честный live-capture +0.05-0.25пп (центр +0.15) << бар +0.6пп; paldelta-инкремент P33-доли ≈0 на x86; chkclimb-10⊕P32 прогноз неизменен. ARM64-страж: LDAR≈20-25 циклов × 6-7 reads/visit → P33 = живой lever при ARM-деплое (re-audit; JDK-8390149 LRCPC3-линия). JMM-пруф: 2 acquire-якоря (gen SW-edge от secWrite gen++ :510; crusstySnapGen fail-closed) + opaque-контент + final-freeze — демот безопасен, но бесполезен на TSO.
+- CI: OFFLINE, 0 диспатчей (инкремент к paldelta = отдельная ветка/серт — не успеть честно; соло-диспатч = сгоревший run с центром +0.15 << бар). Экономия 1-2 runs.
+- Внешние ≥3 (fetch-верифицированы): JEP-193 + JDK21 VarHandle javadoc (getAcquire/getOpaque формулировки), Lea j9mm («On TSO... Volatile-read and Acquire-read may have the same implementation»), C2-исходники ×4 файла + bug-база REST (8057884/8390149/8341146), Agrona UnsafeBuffer getLongAcquire :420, LMAX Disruptor Sequence acquireFence/releaseFence :82-102.
+- Артефакты: /home/z/rounds/ROUND-464/LAB-STAGE/LEDGER-47.md (§0-§5, ~40 чисел); /tmp/p33bench/P33Tax{,2,3,4}.java; docs/LAB_LEDGER.md +Л113; docs-only commit e0a20955 push master (origin fast-forward ac645695..e0a20955).
