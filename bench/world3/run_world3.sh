@@ -529,6 +529,7 @@ case "${LEVER_FLAG:-}" in
     # in soak — boot-parity only). Empty flag = vanilla bit-in-byte.
     export CRUSSTY_KERNEL_POLICY="off"
     log "${LEVER_FLAG} armed: CHUNKMONO-CARRIER cmp456_chunkmono = master cert stack (ins4 ⊕ senseins ⊕ diet ⊕ chunk4 send-snapshot ⊕ chunk5 encode-cache ⊕ chunkparse section/biomes codec caches ⊕ noise-GEN GEN-axis; STRICT-OR) ⊕ chunk6-sched scheduling mono-plane (getChunkNow -> ChunkSchedOps.getNow fast-path + moonrise\$setFullChunk shadow feed + rust L2 key-mirror; BOTH-or-none; scheduling slice 4.6-5.2% in scope) — закон 7 субаддитивность на серт-носителе f44a831e (TASK-456-C, RESEARCH-456-C GO)"
+    ;; # TASK-466-C09: case-terminator repair (x466 P0-алерт C02: MERGE №9 line-union съел ';;' — canary-405 bench-step killer; база b79b516b несёт landmine, без ';;' bash -n FAIL и ЛЮБОЙ диспатч от этой базы горит 100%)
   cmp456_poi)
     # TASK-456-B: POI подсистема целиком (закон 6) ⊕ ПОЛНЫЙ НОСИТЕЛЬ ЭРЫ
     # (STRICT-OR union of the certified master composite). GEN-axis
