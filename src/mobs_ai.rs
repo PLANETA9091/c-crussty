@@ -347,7 +347,7 @@ pub fn activate() {
 
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
         eprintln!(
-            "[crussty-plugin] cmp406_aibatch: ARMED mob-ai-window (LivingEntity.aiStep serverAiStep site -> MobAiOps.serverAiStepGate; golden-phase skip (N-1)/N, N from env CRUSSTY_AI_N/LEVER_ARG default 4; rust aiEpoch = ONE bulk JNI/tick over mobs_soa SoA population, window column shared via int[] mirror; zero per-entity JNI; empty flag = vanilla bit-for-bit)"
+            "[crussty-plugin] cmp406_aibatch: ARMED mob-ai-window (LivingEntity.aiStep serverAiStep site -> MobAiOps.serverAiStepGate; golden-phase skip (N-1)/N, N from env CRUSSTY_AI_N/LEVER_ARG default 16; rust aiEpoch = ONE bulk JNI/tick over mobs_soa SoA population, window column shared via int[] mirror; zero per-entity JNI; empty flag = vanilla bit-for-bit)"
         );
 
         crate::kernel_policy::audit_wire(OPS_CLASS, "serverAiStepGate", "cmp406_aibatch v1");

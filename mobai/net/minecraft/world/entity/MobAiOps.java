@@ -35,7 +35,7 @@ import net.minecraft.server.MinecraftServer;
  * членство в окне публикуется эпохой ОДИН bulk-проход за тик).
  * per-entity JNI отсутствует: JNI = ОДИН bulk-вызов на тик-батч (закон 6
  * RUST-FIRST). Правило окна: {@code floorMod(GOLDEN32(id) + tick, N) == 0},
- * N = CRUSSTY_AI_N | CRUSSTY_LEVER_ARG (clamp [2..64], default 4 — Airplane
+ * N = CRUSSTY_AI_N | CRUSSTY_LEVER_ARG (clamp [2..64], default 16 — Airplane
  * DEAR tier N=4).
  *
  * FAIL-CLOSED: ENABLED STRICT-eq "cmp406_aibatch" (пустой/чужой флаг — сайт
@@ -201,7 +201,7 @@ public final class MobAiOps {
         return skip;
     }
 
-    /** N окна (та же лестница, что у rust: AI_N | LEVER_ARG, clamp [2..64], default 4). */
+    /** N окна (та же лестница, что у rust: AI_N | LEVER_ARG, clamp [2..64], default 16). */
     static int windowN() {
         String s = System.getenv("CRUSSTY_AI_N");
         if (s == null || s.isBlank()) {
@@ -217,7 +217,7 @@ public final class MobAiOps {
                 // fall through to default
             }
         }
-        return 4;
+        return 16;
     }
 
     /**
