@@ -20,6 +20,24 @@
 //! переключает. P24/P25/P27 — заглушки (мёртвый код без вайринга); живые
 //! вайринги — TASK-463-74 (nav-плоскость), TASK-463-79 (P27 send-плоскость),
 //! TASK-463-95 (P24/P25 noise GC-debt relief).
+//!
+//! V2 (TASK-464-54): чистый fail-closed ARM-предикат [`kernel_arm_allowed`] —
+//! допуск kernel-arm-пути по бюджету плоскости (бюджет — учёт, не сборщик;
+//! ARM — привилегия, не право). План интеграции — 6 сайтов kernel-arm-пути
+//! (LEDGER-54, ROUND-464/LAB-STAGE):
+//!   S1 src/kernel_policy.rs:728  registration_promotion — chokepoint:
+//!      fail-closed бюджет плоскости пары => WIN-символ НЕ выдаётся;
+//!   S2 src/kernel_policy.rs:736  promotion_armed — armed == false, когда
+//!      ВСЕ плоскости пар в over_budget;
+//!   S3 src/kernel_policy.rs:743  log_armed_pairs — boot-дамп добавляет
+//!      (budget, consumed, over) тройку плоскости пары;
+//!   S4 src/promote_wire.rs:80    selftest_if_armed — self-test пропускает
+//!      пару при fail-closed бюджете (без FAIL-шума в selfTest-каноне);
+//!   S5 src/lib.rs:443            boot-маркер: armed-строка печатает
+//!      бюджет-состояние (0 аллокаций, РАЗ/бут);
+//!   S6 src/lib.rs:752/762        JNI-регистрация: conservative-fallback
+//!      (безопасное направление) старше promotion, promotion старше бюджета.
+//! До вайрингов 74/79/95 предикат СПЯЩИЙ (dormant-invisible канон 14f).
 
 // dormant-invisible канон: весь модуль — скелет до вайрингов 74/79/95,
 // dead_code здесь = спящий гейт, не рычаг (урок ×425/×458-F1).
@@ -212,6 +230,17 @@ impl PlaneBudget for P27SendScratchBudget {
     }
 }
 
+/// V2 (TASK-464-54) fail-closed ARM-предикат kernel-пути: чистая функция,
+/// 0 аллокаций, 0 JNI, паника невозможна (Copy-аргументы). Допуск arm-пути
+/// плоскости: бюджет ВЫДАН (≠0) И метроном тика в пределах бюджета. Любая
+/// деградация входа (бюджет 0 = не выдан, потеря данных) => false: плоскость
+/// остаётся на zero-alloc scratch/arena пути (fail-closed, default-deny).
+/// Инвариант обратен [`PlaneBudget::over_budget`] (тот же is_over-предикат).
+#[inline]
+pub fn kernel_arm_allowed(budget_bytes_per_tick: u32, consumed_this_tick: u64) -> bool {
+    budget_bytes_per_tick != 0 && consumed_this_tick <= budget_bytes_per_tick as u64
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -282,6 +311,48 @@ mod tests {
         p27.tick_reset();
         assert!(!p27.over_budget(plane::P27_SEND_SCRATCH));
         assert_eq!(p27.run_env_fields().2, 0);
+    }
+
+    // --- v2 (TASK-464-54): kernel-arm fail-closed гейт ----------------------
+
+    #[test]
+    fn kernel_arm_gate_fail_closed_on_zero_budget() {
+        // Бюджет не выдан => arm-путь закрыт даже при нулевом потреблении.
+        assert!(!kernel_arm_allowed(0, 0));
+        assert!(!kernel_arm_allowed(0, 1));
+        assert!(!kernel_arm_allowed(0, u64::MAX));
+    }
+
+    #[test]
+    fn kernel_arm_gate_admits_boundary_and_blocks_over() {
+        assert!(kernel_arm_allowed(100, 0));
+        assert!(kernel_arm_allowed(100, 100)); // ровно в бюджет — допуск
+        assert!(!kernel_arm_allowed(100, 101)); // 101 > 100 — fail-closed
+        assert!(!kernel_arm_allowed(1, 2));
+    }
+
+    #[test]
+    fn kernel_arm_gate_saturating_inputs_no_panic_flip() {
+        // Насыщенный/максимальный метроном не разворачивает предикат в допуск.
+        assert!(!kernel_arm_allowed(u32::MAX, u64::MAX));
+        assert!(kernel_arm_allowed(u32::MAX, u32::MAX as u64));
+    }
+
+    #[test]
+    fn kernel_arm_gate_agrees_with_plane_over_budget() {
+        // Предикат консистентен с is_over-инвариантом плоскости (P25-стаб).
+        let p25 = P25Router2DBudget::new(64);
+        p25.consume(plane::P25_2D_ROUTER, 64);
+        assert_eq!(
+            kernel_arm_allowed(64, 64),
+            !p25.over_budget(plane::P25_2D_ROUTER)
+        );
+        p25.consume(plane::P25_2D_ROUTER, 1);
+        assert_eq!(
+            kernel_arm_allowed(64, 65),
+            !p25.over_budget(plane::P25_2D_ROUTER)
+        );
+        assert!(!kernel_arm_allowed(0, 0)); // нулевой бюджет = всегда закрыто
     }
 
     #[test]
