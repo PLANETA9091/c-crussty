@@ -8,6 +8,8 @@
 |---|---|---|---|
 | canary-470 | 36268086369 | MAIN | norm∈[−6,+6] = MERGE №11 VERIFIED |
 | n16def-verify | 36268090827 | MAIN | epoch ok **n=16** при пустом LEVER_ARG = пин работает |
+| s15-parity-aa1 | 36269639744 | S15 | артефакт → P6-пара; ждём |Δcpu|≤50k |
+| s15-parity-aa2 | 36269641046 | S15 | пара к aa1: PER-TYPE ≤~2% = PARITY-OK №11 (9/9) |
 | s09-poirearm-a | 36269640851 | S09 | lever cmp456_chunkmono_p31snap + POI re-arm: census site1_calls>0 (ARM-пруф) + пара vs мастер-носитель ≈+14.53пп (Л210) |
 
 ## СТРЕСС-ЛЕСТНИЦЫ (закон 19)
@@ -34,17 +36,17 @@
 | S02 | ЛАБ-mobai | n16-бейслайн паритет-пара на b3853246 | done: PARITY-OK 8/8 |
 | S03 | ЛАБ-javap | javap-контракт MobAiOps N=16 vs 4 (конст-дифф) | run |
 | S04 | ЛАБ-gc | P0-floor разложение: скан-корни 85% — capture-матем | run |
-| S05 | ЛАБ-gc | old-cap pinning: live-set инвентарь 300k@12G | **REFUTED_CENS ≤+7.3пп супремум (Л211)** |
+| S05 | ЛАБ-gc | old-cap pinning: live-set инвентарь 300k@12G | **REFUTED_CENS ≤+7.3пп супремум (Л214)** |
 | S06 | ЛАБ-chunk | r480a/b разброс: холодный старт vs плато — повтор | run |
 | S07 | ЛАБ-chunk | protocol-wall sweepfix-лестница 0.02/0 (S58/S60 канон) | run |
 | S08 | ЛАБ-noise | C2ME PerlinNoiseSampler.fill bulk-JNI P0: контракты | REFUTED_CENS (Л211: потолок +4.1..+7.9пп, банк 0.0%) |
 | S09 | ЛАБ-poi | POI re-arm ход (S20-класс) для cmp456_chunkmono/_p31snap | DISPATCHED run 36269640851 (ветка round-470-s09-poirearm@9d02b133, Л210) |
 | S10 | ЛАБ-items | Paper #13783 weak-chunk: 260k items-канон контракты | REFUTED_CENS (Л210: weak-universe=0@150k, потолок ≤+0.01пп) |
 | S11 | ЛАБ-ai | Lithium ai.pathing: пересечение с n16-лейном | REFUTED_CENS (Л203: потолок ×1/16 = ≤0.2пп) |
-| S12 | ЛАБ-structgen | Moonrise #192 structure-integrity гейт-дизайн | run |
+| S12 | ЛАБ-structgen | Moonrise #192 structure-integrity гейт-дизайн | стаб 74140041: G-S1..S5 preregistered, selftest 8/8 |
 | S13 | ЛАБ-bank | в-точки тика (s63anchor+6.33, lightcap+0.42, u4+2.77) в банк §3 | done |
 | S14 | ЛАБ-bank | Л201-локальный узел: пересчёт истории 7.0M-кластера | финал |
-| S15 | ЛАБ-parity | world_diff_parity_v2 на master: P6-прогон на canary | run |
+| S15 | ЛАБ-parity | world_diff_parity_v2 master: selftest 17/17; P6 на canary-470×n16def = 8 гейтов OK (seed-чек-суммы ✓), PER-TYPE RED = Δcpu-экспозиция (2.09M); aa1/aa2 добор DISPATCHED | DISPATCHED |
 | S16 | ЛАБ-ncdfe | ncdfe_guard спящий-сайт-скан по новым блобам №11 | run |
 | S17 | ЛАБ-voxel | VoxelShape interning 200k: sweepNow() post-arm вайринг | run |
 | S18 | ЛАБ-eindex | ID_CAP 1<<14 smoke 36264754336 разбор | run |
@@ -55,7 +57,7 @@
 | S23 | ЛАБ-flame | leg3 cpu-flamegraph: топ-сегменты 150k | REFUTED_CENS (Л209/210) |
 | S24 | ЛАБ-alloc | alloc-collapsed leg3: топ-аллок-сайты n16 | done: REFUTED_CENS Л212 |
 | S25 | ЛАБ-entity | entity-recon leg3: census 150k структура | run |
-| S26 | ЛАБ-jfr | jfr 36265378558: stream-конtracts | run |
+| S26 | ЛАБ-jfr | jfr 36265378558: stream-конtracts | REFUTED_CENS: file-тап 0/9 vs stream 49/49 live (Л215) |
 | S27 | ЛАБ-netty | netty 0/612k wall: почему мёртв — финальная фиксация | REFUTED_CENS Л210 |
 | S28 | ЛАБ-scheduler | deadline-scheduler EDF REFUTED (0.28пп): пост-мортем | DONE→REFUTED_CENS |
 | S29 | ЛАБ-chunksched | chunk-sched P22: +0.87-1.55пп — компо-план chk-14⊕P22 | run |
@@ -117,9 +119,11 @@
 ## ЛЕНТА
 - 19:47Z MAIN: МЕРЖ №11 b3853246 push верифицирован; canary-470 + n16def-verify в полёте.
 - 19:55Z MAIN: абсорб 34 ранов: N-кривая, gc7/y1/y2 REFUTED, якоря в §4 BOTTLENECK.
+- 20:30Z S12: struct-integrity гейт preregistered (169-слотовый семантический chunk-hash + structure-markers + seed-identity + детерминизм-контроль G-S1..S5, P7-STRUCT после P6); world-sha/raw гейт REFUTED_CENS — бенигн-reorder 169/169 ложных RED, 0 бит локализации (Paper #14125 канон подтверждён фикс-числами); ветка round-470-s12-structgate @74140041, RESEARCH-S12.md.
+- 20:40Z S26: jfr-stream 36265378558 — канон «JFR-tap сухой» REFUTED (file 0/9 vs stream 49/49, GC 124/124 Δ+0.03%); live-tap без рестарта 5/5 событий сертифицирован (attach+agentmain, Л215)); Full-GC CodeCache ×6 = 40.2% STW → СТЗ.
 - 21:05Z S14: 7.0M-узел пересчитан (Л213/RESEARCH-S14-7.0M-node.md): Δ=median×1.605пп (+3.42 в центре = Л201 ✓); флор −5→−1.4, депресс chkmono-11/12 −3.6/−3.7→+0.3, canary-406 −13.32→−10.77, canary-407 −0.96→+3.32 коридор-флип; №9/№10-пары и climb5-пороги 0 флипов (шахта 6.76-6.84M вне окна); канон банк-фид: полным band + пост-хок idx-фильтр; гейт canary-470 обязан есть узел 2.1293 (±3.2-3.7пп бюджет).
 - 20:30Z S23 ЛАБ-flame: cpu-census leg3 @6344146 (103,203 сmp): топ-2 self >3% = PalettedContainer.get 4.37% + updateFluidPushing 3.01% — оба mob-push/inside-план armed-носителя (71.9% звонков paletted = fluid); uncovered max = setOldPos 1.28% <3%; poi-строки 0.99% мёртв; wall ×18-24 burst (Л102 подтверждён: 0.30-0.86% wall) → потолок ≤+2.6..+7.8 ≪+20 → REFUTED_CENS (Л209/210).
-- 20:29Z S05: live-set инвентарь u6 36264470241 (300k@12G): churn 51% / chunks-level 32% / entity SoA 17% (3.7KB/entity); pause pop-floor-bound (регрессия slope −78.5мс/G, corr −0.51) → сжатие live-set режет только число GC; супремум канала +7.3пп (zero-STW), реализуемые ≤+1пп → REFUTED_CENS (Л211), диспатч запрещён.
+- 20:29Z S05: live-set инвентарь u6 36264470241 (300k@12G): churn 51% / chunks-level 32% / entity SoA 17% (3.7KB/entity); pause pop-floor-bound (регрессия slope −78.5мс/G, corr −0.51) → сжатие live-set режет только число GC; супремум канала +7.3пп (zero-STW), реализуемые ≤+1пп → REFUTED_CENS (Л214), диспатч запрещён.
 - 21:0xZ S08: C2ME fill bulk-JNI REFUTED_CENS — 44.4%×noise 32.4-37.5%×capture ≤×2 → +4.1..+7.9пп << +20 (бар −12пп); банк GEN 0.0%; контракты+ценз LEDGER Л211; GEN-рычаг = rt8 Amdahl +23.7 (S52).
 - 20:25Z S13: банк v5 191→194, 3/3 BANK-ADMIT по §3 (s63anchor +6.33@6738099, lightcap +0.42@6599733, u4/r256c +2.77@6596851: armed=null, STW-ценз CLEAN 20.84/15.53/17.03s≤23s, avg 115/97/109≤200ms, band 6.0-9.5M ✓, |norm|<10.1 → в фиты); ABSORB-WILD.jsonl возрождён (3 строки); LOO-плечо 8.5-9.3M Δ=0.00пп — оконная геометрия: max-якорь 6738099, зазор до окна 1,761,901>1.5M (достигает лишь 8238099<8500000) → 8.7M-кластер n=32 канон §1 нетронут, плотность приоритет-окна этим тиком не поднята (S37 остаётся); 3 якоря входят в окна [5.1,8.24]M → хэндофф S14 (Л201-узел рефит).
 - S30: матрица оракулов №11-блобов (leg3/n12 stdout): MobAiOps 3/5 (ARM/epoch-ok n=16-эхо/DATA-PLAN ✅; first-skip EFFECT dead-по-построению — ARM_LOGGED съеден maybeEpoch :283 до skip-чека :196; 0 selfTest), PushStaggerOps 1/4 (rust-ARM ✅; java: 0 selfTest/0 EFFECT/0 N-эхо, ARM-текст stale default 4 vs readN 16) → 2 дыры, фиксы в Л205; selfTest-лейн ранов жив (8 чужих = true).
@@ -133,3 +137,4 @@
 - 20:38Z S10: Paper #13783 (260k items weak-chunk) → контракты в items-план (W1 universe-гейт items_index, W2 enmass-indexAdd, W3 lifetime-re-push+ABA-окно DESPAWN2, W4 активационный merge-шторм); ценз 150k: weak-universe=0 (forceload 36/9216, Л-466-C90.1), merge-lane 0.006% CPU (Л145) → потолок ≤+0.01пп, супремум GEC ≤+1.4пп (k=0.57 чужой лейн) << +20; ёмкость 260k OK (MAX_IDS 1<<20 = 24.8% vs eindex 99%@300k); REFUTED_CENS, диспатч round-470-s10-* НЕ производится. Л210.
 - 20:55Z S24: alloc-census n16 leg3 REFUTED_CENS — закон-5-зоны = 58.0% серверных сэмплов (collision-scratch 20.3 / vec3-fluid 13.0 / inside 10.7 / iterable 8.4 / zero_cursor 4.9 / skip-store 0.7) НЕ воскрешать; живой young-лейн 42% (chunk-sched 13.1, mob-ai 7.4, items 2.9, loot 1.9); GC-ось окна: 11 young/60s, ΣSTW 1362ms = 2.27% wall @605MB/s, Full=0 → потолок полного элимина +1.8пп, лучший лейн ≤+0.30пп ≪ +20 (конвергентно Л55/Л142). DISPATCH 0. Л212.
 - 20:3xZ S09 ЛАБ-poi: POI re-arm leg ЗАДИСПАТЧЕНА — run **36269640851**, ветка round-470-s09-poirearm@9d02b133 (master+cherry 87c9ccf7), lever cmp456_chunkmono_p31snap, band [6.0,9.5]M gc6. Матрица: POI-плоскость = единственная certified, молчащая на пост-456 (двойной гейт poi_plane.rs+PoiOps.leverEnabled заморожен cmp453-эрой); capture-матем +14.53пп → chunkmono/c98ai компо +29.87, p31snap +8.46. Гейты: blobs ALL IN SYNC, NCDFE T1=0, case_arm 0 FAIL, cargo 0 err. Л212.
+- 20:35Z S15: parity-v2 selftest 17/17 на мастере; P6-прогон canary-470×n16def (артефакт готов): 8 гейтов OK (seed-чек-суммы 289×5==289×5, forceload 9216), PER-TYPE RED husk+8.23/drowned+7.76/spider−6.61 = Δcpu 2.09M tick-exposure (не код; конвергентно Л206 S02 worst 1.86% при Δcpu 4365); канон: parity-пары CPU-matched ≤50k, P6 кормить trio-входом; DISPATCHED aa1 36269639744 + aa2 36269641046 @b3853246 → тик-471 P6-финал 9/9.
