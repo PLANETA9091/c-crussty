@@ -15,6 +15,7 @@
 //! The kernel hot-path wirings (area_map update batching etc.) are separate
 //! byte hooks on top of this surface — see the project docs.
 
+mod alloc_budget;
 mod alloc_diet;
 mod area_map;
 mod emap;
