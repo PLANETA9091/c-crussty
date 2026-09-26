@@ -2,7 +2,9 @@
 """dispatch_456c_reroll.py — TASK-456-C NCDFE-fix re-roll (C2): legs 3/4 of the
 chunkmono carrier round-456c-chunkmono (chunk6-sched scheduling mono-plane on
 the master cert stack, STRICT-OR). Previous legs chkmono456-1/2 = DELIVERY-FAIL
-(NCDFE 2924/24158 @ MobPushOps.pushables:467 — define-gate mirror-drift, fixed
+(NCDFE 2924/24158 @ MobPushOps.pushables → EntityGoalQueryOps.pushCandidates —
+symbol-pin canon S43: pushables(Level,Entity,AABB)->List, line-pin ":467"
+исторический ×456 (decl 446), НЕ канон — decl уехала 446→448, LNT-touch 469@pc96; fixed
 @097def9d fa9054d9 canon). Canon dispatch_456c.py shape: argv-guard, ancestry
 sha pin, ensure_branch, world-bench-parallel.yml inputs canon.
 Usage: scripts/dispatch_456c_reroll.py [--dry-run]"""
