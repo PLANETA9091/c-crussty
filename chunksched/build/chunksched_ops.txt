@@ -1,0 +1,39 @@
+Compiled from "ChunkSchedOps.java"
+public final class net.minecraft.server.level.ChunkSchedOps {
+  static final java.util.logging.Logger LOG;
+  static final java.util.concurrent.atomic.AtomicBoolean ARMED;
+  static volatile boolean FAST;
+  static final java.util.concurrent.atomic.AtomicBoolean BROKEN;
+  static final java.util.concurrent.atomic.AtomicLong STAT_HITS;
+  static final java.util.concurrent.atomic.AtomicLong STAT_FALLBACKS;
+  static final java.util.concurrent.atomic.AtomicLong STAT_EVENTS;
+  static volatile boolean FIRST_HIT_LOGGED;
+  static final long PROBE_MAGIC_EXPECT;
+  static final int SHIFT;
+  static final int SIZE;
+  static final int MASK;
+  static final long[] K;
+  static final net.minecraft.world.level.chunk.LevelChunk[] V;
+  static final java.lang.invoke.VarHandle KH;
+  static final java.lang.invoke.VarHandle VH;
+  static int slot(long);
+  static void shadowPut(long, net.minecraft.world.level.chunk.LevelChunk);
+  static void shadowDel(long);
+  static net.minecraft.world.level.chunk.LevelChunk fastProbe(long);
+  public static void onSetFullChunk(net.minecraft.server.level.ServerChunkCache, int, int, net.minecraft.world.level.chunk.LevelChunk);
+  public static net.minecraft.world.level.chunk.LevelChunk getNow(net.minecraft.server.level.ServerChunkCache, int, int);
+  static net.minecraft.world.level.chunk.LevelChunk vanillaNow(net.minecraft.server.level.ServerChunkCache, int, int);
+  private static native boolean mirrorEvent(long, boolean);
+  private static native long schedProbe();
+  static void noteDrift(long);
+  public static long hits();
+  public static long fallbacks();
+  public static long events();
+  public static boolean broken();
+  public static boolean armed();
+  public static void arm();
+  public static void disarm();
+  public static boolean selfTest();
+  private net.minecraft.server.level.ChunkSchedOps();
+  static {};
+}

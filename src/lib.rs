@@ -24,6 +24,7 @@ mod batch_collector;
 mod batch_desc;
 mod batch_table;
 mod brainhook;
+mod chunk_sched;
 mod bridge_class;
 mod goal_selector;
 mod classfile;
@@ -215,6 +216,11 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // (pristine capture; patch served via retransform after the
     // ChunkParseDiagOps bridge lands). Dormant unless CRUSSTY_PARSE_DIAG=1.
     parse_diag::register();
+    // CHUNK6-SCHED (TASK-456-C, cmp456_chunkmono): byte hook on ServerChunkCache
+    // (pristine capture; BOTH-or-none retarget of getChunkNow + moonrise$setFullChunk
+    // served via retransform after the ChunkSchedOps bridge lands). Dormant unless
+    // CRUSSTY_LEVER_FLAG carries the chunk-sched carrier (STRICT-OR canon).
+    chunk_sched::register();
     // ZERO-CURSOR (lever #11 v1, TASK-330): byte hook on BlockPos (pristine
     // capture; pooled-iterator redirect served via retransform after the
     // ZeroCursorIter/ZeroCursorOps bridges land). Dormant unless
@@ -523,6 +529,7 @@ fn inject_surface() {
     // loader, compute the ldc-anchored retarget of parse, retransform
     // (dormant unless CRUSSTY_PARSE_DIAG=1).
     parse_diag::activate();
+    chunk_sched::activate();
     // ZERO-CURSOR (lever #11 v1, TASK-330): define ZeroCursorIter+Ops into
     // the kernel loader, static body-redirect of
     // lambda$betweenCornersInDirection$8, retransform (dormant unless
