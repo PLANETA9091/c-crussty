@@ -232,7 +232,11 @@ jobs:
           FLUSH_DIET: ${{ inputs.flush_diet || '0' }}
           FLUID_FREE: '0' # input dropped TASK-330 (requires paletted_demux=1; lever dormant)
           FLUID_DIRTY: '0' # input removed (S67/round-467): 25-input limit; banned lever #6 pinned '0'
-          COMMAND_SLEEP: ${{ inputs.command_sleep || '0.4' }}
+          # S58/round-468: plain mapping — the input default '0.4' is declared above, so
+          # `|| '0.4'` was redundant AND a footgun for command_sleep='0' (GH expression
+          # engine may cast the string '0' as falsy → silent 0.4 instead of the 0-rung).
+          # run_world3.sh keeps its own ${COMMAND_SLEEP:-0.4} fallback: empty value still = canon.
+          COMMAND_SLEEP: ${{ inputs.command_sleep }}
           FLUID_DIRTY_LEDGER: '0' # input dropped TASK-395 (25-input limit; ledger-only mode #16 REFUTED)
           FLUID_BITMASK: ${{ inputs.fluid_bitmask || '0' }}
           REGION_THREADS: ${{ inputs.region_threads || '0' }}
