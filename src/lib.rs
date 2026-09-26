@@ -67,6 +67,11 @@ mod mobs_ai;
 mod mobs_sscan;
 mod mobs_sense;
 mod nav_plane;
+// MOVE-PLANE (TASK-463-69a, lever cmp463_move): P44 navmath bridge —
+// MoveControl.tick whole-body redirect to MovePlaneOps.handle (javap-verbatim
+// vanilla body, fast trig at sin@93/cos@108/atan2@290), EARLY bridge define
+// (entity_query BRIDGE_DEFINED-блок) + RegisterNatives(moveDecide).
+mod move_plane;
 mod nav_pool;
 mod chunk_parse;
 // CHUNK-SEND SERIALIZATION SNAPSHOT (TASK-438-C, lever cmp437_chunk4, law 8
@@ -327,6 +332,12 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // flag — upper-agent tick-410 mandate: only the query plane, no
     // add/remove/move accounting hooks (cleg5b AIOOBE root-cause).
     entity_query::register();
+    // MOVE-PLANE (TASK-463-69a, lever cmp463_move): byte hook on MoveControl
+    // (pristine capture → MovePlaneOps.handle retarget serve after the EARLY
+    // bridge define + selfTest probe; fast trig at the 2 per-mob math points,
+    // zero JNI hot path). Dormant unless CRUSSTY_LEVER_FLAG == cmp463_move
+    // (STRICT eq; empty flag = vanilla bit-in-bit).
+    move_plane::register();
     // CHUNK-PARSE SECTION-CACHE (TASK-419-C base, TASK-420-C deepening,
     // lever cmp420_chunk2, law 8 chunk-loading axis): byte hook on
     // SerializableChunkData (pristine capture), ChunkParseOps cache-first

@@ -216,6 +216,14 @@ noise_check_class \
   "noise/build/net/minecraft/world/level/levelgen/synth/PerlinNoiseNativeOps.class" \
   "native"
 
+# TASK-463-69a (move-plane, cmp463_move): the navmath bridge must carry the
+# lever id, the ARM marker and the native decl; the retarget entry is pinned
+# by the build script javap grep + the rust delivery test (real fixture).
+check_class \
+  "moveplane/build/net/minecraft/world/entity/ai/control/MovePlaneOps.class" \
+  "cmp463_move" "move_plane ARMED cmp463_move" "move_plane selfTest PASS" \
+  "native int moveDecide" "public static void handle" "public static boolean selfTest"
+
 # gate-flag consistency: every flag string accepted by the SOURCE gate must
 # also be present in the BLOB constant pool (covers the ×93 rebuild lesson).
 for pair in \
@@ -261,6 +269,7 @@ check_flat_matches_nested "entitygoalquery/build" "net/minecraft/world/entity/En
 check_flat_matches_nested "queryplane/build" "net/minecraft/world/entity/QueryPlaneOps"
 check_flat_matches_nested "goalops/build" "net/minecraft/world/entity/ai/goal/GoalOps"
 check_flat_matches_nested "colpush/build" "net/minecraft/world/entity/ColpushOps"
+check_flat_matches_nested "moveplane/build" "net/minecraft/world/entity/ai/control/MovePlaneOps"
 check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/RegionTickOps"
 check_flat_matches_nested "sense/build" "net/minecraft/world/entity/SenseOps"
 check_flat_matches_nested "chunksend/build" "net/minecraft/server/network/ChunkSendOps"
