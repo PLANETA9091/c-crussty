@@ -73,7 +73,7 @@ public final class PushStaggerOps {
         } catch (Throwable ignored) {
             // env-мусор → дефолт
         }
-        return 4;
+        return 16;
     }
 
     /**

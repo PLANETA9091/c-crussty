@@ -387,7 +387,7 @@ pub fn activate() {
                 .trim()
                 .to_string();
             eprintln!(
-                "[crussty-plugin] {flag}: ARMED stagger (push=retargeted 1 site, goal=retargeted 1 site, N from env CRUSSTY_STAGGER_N/LEVER_ARG default 4)"
+                "[crussty-plugin] {flag}: ARMED stagger (push=retargeted 1 site, goal=retargeted 1 site, N from env CRUSSTY_STAGGER_N/LEVER_ARG default 16)"
             );
         } else {
             eprintln!(
