@@ -116,7 +116,7 @@ public final class EntityGoalQueryOps {
                 // TASK-424-A: GC-ревизия brain3 (STRICT OR).
                 || f.trim().equals("cmp423_brain3")
                 // TASK-426-A: SoA-feed carrier (STRICT OR).
-                || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside") || f.trim().equals("cmp432_inside2") || f.trim().equals("cmp436_ins4") || f.trim().equals("cmp458_swar") || f.trim().equals("cmp457_paldelta") || f.trim().equals("cmp457_eqsnap2") || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside") || f.trim().equals("cmp434_chunkpl") || f.trim().equals("cmp435_chunk3") || f.trim().equals("cmp437_chunk4") || f.trim().equals("cmp444_chunk5") || f.trim().equals("cmp450_chunk") || f.trim().equals("cmp456_chunkmono") || f.trim().equals("cmp456_chunkmono_p31snap") || f.trim().equals("cmp452_mega") || f.trim().equals("cmp453_diet"));
+                || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside") || f.trim().equals("cmp432_inside2") || f.trim().equals("cmp436_ins4") || f.trim().equals("cmp458_swar") || f.trim().equals("cmp463_swar_hilbert") || f.trim().equals("cmp457_paldelta") || f.trim().equals("cmp457_eqsnap2") || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside") || f.trim().equals("cmp434_chunkpl") || f.trim().equals("cmp435_chunk3") || f.trim().equals("cmp437_chunk4") || f.trim().equals("cmp444_chunk5") || f.trim().equals("cmp450_chunk") || f.trim().equals("cmp456_chunkmono") || f.trim().equals("cmp456_chunkmono_p31snap") || f.trim().equals("cmp452_mega") || f.trim().equals("cmp453_diet"));
     }
 
     /** TASK-411-C (k4soa): K4-режим (маркировка EFFECT-строк). */
@@ -141,7 +141,7 @@ public final class EntityGoalQueryOps {
         return f != null && (f.trim().equals("cmp421_brain")
                 || f.trim().equals("cmp422_brain2")
                 || f.trim().equals("cmp423_brain3")
-                || f.trim().equals("cmp451_senseins") || f.trim().equals("cmp458_swar") || f.trim().equals("cmp457_paldelta") || f.trim().equals("cmp457_eqsnap2") || f.trim().equals("cmp452_mega") || f.trim().equals("cmp453_diet") || f.trim().equals("cmp450_chunk") || f.trim().equals("cmp456_chunkmono") || f.trim().equals("cmp456_chunkmono_p31snap"));
+                || f.trim().equals("cmp451_senseins") || f.trim().equals("cmp458_swar") || f.trim().equals("cmp463_swar_hilbert") || f.trim().equals("cmp457_paldelta") || f.trim().equals("cmp457_eqsnap2") || f.trim().equals("cmp452_mega") || f.trim().equals("cmp453_diet") || f.trim().equals("cmp450_chunk") || f.trim().equals("cmp456_chunkmono") || f.trim().equals("cmp456_chunkmono_p31snap"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -155,7 +155,8 @@ public final class EntityGoalQueryOps {
         // TASK-422-B (iter-2): свой id для вектор-ног.
         // TASK-426-A: SoA-feed carrier id (cmp424_mobfeed).
         String t = f == null ? "" : f.trim();
-        FLAG_LABEL = t.equals("cmp422_brain2") ? "cmp422_brain2"
+        FLAG_LABEL = t.equals("cmp463_swar_hilbert") ? "cmp463_swar_hilbert" // TASK-463-68a: branch-local swarx-6 id
+                : t.equals("cmp422_brain2") ? "cmp422_brain2"
                 : t.equals("cmp423_brain3") ? "cmp423_brain3"
                 : t.equals("cmp424_mobfeed") ? "cmp424_mobfeed"
                 : t.equals("cmp430_inside") ? "cmp430_inside"
@@ -200,7 +201,17 @@ public final class EntityGoalQueryOps {
      * id-шники бакета h В ТОЧНОСТИ в порядке chain-walk (паритет по
      * построению — заполнение буквально идёт по тем же head/next цепям).
      * Per-query java читает последовательный int[]-слайс вместо рандомного
-     * deref next[link-1] на каждого кандидата. rc = число размещённых id;
+     * deref next[link-1] на каждого кандидата.
+     *
+     * TASK-463-68a (swarx-6, H07 HILBERT-ISSUE — ДОКУМЕНТИРОВАННЫЙ delta-class,
+     * прецедент entity_query.rs ×409 chain/bucket order): под ветка-локальным
+     * lever cmp463_swar_hilbert rust заполняет каждый per-bucket слайс в
+     * порядке возрастания Hilbert-ключа (key = hilbert2D(subx,subz,bits=4) <<
+     * 4 | (yband&0xF); двойники сохраняют chain-walk порядок). Порядок ВЫДАЧИ
+     * кандидатов goal-query легален только здесь: потребители = getNearestEntity
+     * nearest-picks (order-independent кроме точных двойников — tie-gate),
+     * push/item-плоскости читают ЦЕПИ (не арену) и остаются бит-в-байт.
+     * rc = число размещённых id;
      * ERR_RANGE — структурный дрейф/цикл-гард (ваниль на этот тик);
      * ERR_STRUCT — pin failure/гейт (дизарм).
      */
@@ -452,11 +463,14 @@ public final class EntityGoalQueryOps {
      *
      * TASK-419-B (sense-plane): под SENSE перечисление идёт по CSR-арене —
      * последовательный проход arena[arenaOff[h]..arenaOff[h+1]) вместо
-     * рандомных deref next[link-1]. Порядок кандидатов ИДЕНТИЧЕН chain-пути:
-     * арена заполняется проходом по ТЕМ ЖЕ цепям в том же порядке (оракул
-     * паритета — rust-тест arena_matches_chain_walk). Дрейф арен-границ —
-     * ваниль на этот вызов (return null, fail-closed консервативнее
-     * chain-пути: границы слайса — инвариант всего снапшота).
+     * рандомных deref next[link-1]. Порядок кандидатов = chain-путь (оракул
+     * паритета — rust-тест arena_matches_chain_walk: мульти-множество +
+     * границы слайсов) ИЛИ H07 Hilbert-issue под cmp463_swar_hilbert
+     * (ДОКУМЕНТИРОВАННЫЙ delta-class: перестановка внутри слайса по
+     * Hilbert-ключу; биекция/мульти-множество/двойники/0-дельта-вызовы —
+     * гейды rust-тестов). Дрейф арен-границ — ваниль на этот вызов
+     * (return null, fail-closed консервативнее chain-пути: границы слайса —
+     * инвариант всего снапшота).
      */
     private static List<Entity> snapshotQuery(Level level, Class<? extends Entity> cls,
             AABB box, Predicate<? super Entity> pred) {

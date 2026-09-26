@@ -109,6 +109,8 @@ public final class ColpushOps {
     private static final String FLAG_CM = "cmp456_chunkmono";
     private static final String FLAG16 = "cmp456_chunkmono_p31snap"; // TASK-460-01 climb-compo (P31+snapreg on chunkmono carrier)
     private static final String FLAG17 = "cmp458_swar"; // TASK-460-34 swar push-plane (merge x463)
+    /** TASK-463-68a: H07 Hilbert-issue swarx-6 (STRICT-OR, branch-local lever). */
+    private static final String FLAG18 = "cmp463_swar_hilbert";
     private static final int ERR_STRUCT = -1;
     private static final int ERR_RANGE = -2;
 
@@ -124,7 +126,7 @@ public final class ColpushOps {
 
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5) || f.trim().equals(FLAG6) || f.trim().equals(FLAG15) || f.trim().equals(FLAG_CM) || f.trim().equals(FLAG10) || f.trim().equals(FLAG11) || f.trim().equals(FLAG12) || f.trim().equals(FLAG13) || f.trim().equals(FLAG14) || f.trim().equals(FLAG_MEGA) || f.trim().equals(FLAG_DIET) || f.trim().equals("cmp456_chunkmono_p31snap") || f.trim().equals("cmp456_chunkmono") || f.trim().equals(FLAG17));
+return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5) || f.trim().equals(FLAG6) || f.trim().equals(FLAG15) || f.trim().equals(FLAG_CM) || f.trim().equals(FLAG10) || f.trim().equals(FLAG11) || f.trim().equals(FLAG12) || f.trim().equals(FLAG13) || f.trim().equals(FLAG14) || f.trim().equals(FLAG_MEGA) || f.trim().equals(FLAG_DIET) || f.trim().equals("cmp456_chunkmono_p31snap") || f.trim().equals("cmp456_chunkmono") || f.trim().equals(FLAG17) || f.trim().equals(FLAG18));
     }
 
     /** Структурный отказ — весь рычаг дизармится навсегда (ваниль-реплика). */

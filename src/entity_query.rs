@@ -140,9 +140,9 @@ fn flag_enabled(flag: Option<&str>) -> bool {
             // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
             | Some("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-            | Some("cmp423_brain3") | Some("cmp424_mobfeed") | Some("cmp430_inside") | Some("cmp432_inside2") | Some("cmp436_ins4") | Some("cmp458_swar") | Some("cmp457_paldelta") | Some("cmp457_eqsnap2")
+            | Some("cmp423_brain3") | Some("cmp424_mobfeed") | Some("cmp430_inside") | Some("cmp432_inside2") | Some("cmp436_ins4") | Some("cmp458_swar") | Some("cmp463_swar_hilbert") | Some("cmp457_paldelta") | Some("cmp457_eqsnap2")
             | Some("cmp438_sense") // TASK-444-C: sense family union
-            | Some("cmp451_senseins") | Some("cmp458_swar") | Some("cmp457_paldelta") | Some("cmp457_eqsnap2") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+            | Some("cmp451_senseins") | Some("cmp458_swar") | Some("cmp463_swar_hilbert") | Some("cmp457_paldelta") | Some("cmp457_eqsnap2") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
             | Some("cmp453_diet") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
             | Some("cmp421_brain")
             | Some("cmp421_brain") | Some("cmp434_chunkpl") | Some("cmp435_chunk3") | Some("cmp437_chunk4") | Some("cmp444_chunk5") | Some("cmp450_chunk")
@@ -160,6 +160,11 @@ fn flag_enabled(flag: Option<&str>) -> bool {
             // define+selfTest — NCDFE structurally impossible, ColpushOps-marker
             // canon). cmp456_chunkmono ≡ cmp450_chunk planes ⊕ chunk6-sched.
             | Some("cmp456_chunkmono") | Some("cmp456_chunkmono_p31snap")
+            // TASK-463-69a (navmath CLIMB): move-plane carrier — MovePlaneOps
+            // EARLY define rides THIS gate (mirror-drift lesson x452: ONE
+            // production gate list; a second hand-maintained move-gate would
+            // re-create the dormant-plane NCDFE asymmetry). STRICT eq.
+            | Some("cmp463_move")
     )
 }
 
@@ -173,12 +178,42 @@ fn enabled_flag_is_k4() -> bool {
 
 /// TASK-411-C (eqsnap, v2): true under the eqsnap flag only (marker labelling
 /// + the shard-drain switch inside eq_epoch).
+/// TASK-463-68a (merge-drop REPAIR, restores TASK-460-34 lost in union
+/// 85aea399): cmp458_swar/cmp463_swar_hilbert несут eqsnap-плоскость
+/// (mobs_soa::eqsnap_mode() включает оба → mob_upsert пишет в пер-потоковые
+/// DeltaShard), НО этот drain-переключатель флага после мержа №8 НЕ знал про
+/// cmp458_swar → drain_eqsnap_shards() ни разу не зовётся → шарды 16×8192 =
+/// 131072 строк сатуруют <1 тика при 150k → mob_upsert ERR_RANGE (per-call
+/// vanilla) + колонки stale → eq-цепи rc=0 → pushCandidates = false →
+/// push = 100% ваниль, всё swar-плоскость мёртва (КРИТ-ФАКТ cmp458_swar-ноги,
+/// 131k upsert = 100% ваниль). STRICT OR: только точный флаг.
 fn enabled_flag_is_eqsnap() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
         Ok("cmp411_eqsnap") | Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs") | Ok("cmp417_bq")
             // TASK-419-B (sense-plane composite): STRICT OR.
             | Ok("cmp421_brain")
+            | Ok("cmp458_swar") | Ok("cmp463_swar_hilbert")
+    )
+}
+
+/// TASK-463-68a (swarx-6, H07): Hilbert-issue gate — ТОЛЬКО ветка-локальный
+/// lever. Легаси sense-флаги сохраняют бит-в-байт chain-walk порядок арены
+/// (мастер-сертифицированные cmp421_brain/… не переупорядочиваются).
+fn hilbert_issue_mode() -> bool {
+    matches!(
+        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
+        Ok("cmp463_swar_hilbert")
+    )
+}
+
+/// TASK-460-34/463-68a: точная метка swar-семьи в drain/ARM-маркерах
+/// (снапшот EFFECT-строк: leg-лог должен грепаться однозначно, не подлезать
+/// под cmp421_brain-метку sense-семьи).
+fn enabled_flag_is_swar() -> bool {
+    matches!(
+        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
+        Ok("cmp458_swar") | Ok("cmp463_swar_hilbert")
     )
 }
 
@@ -200,12 +235,12 @@ fn enabled_flag_is_sense() -> bool {
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
         Ok("cmp421_brain") | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp458_swar") | Ok("cmp457_paldelta") | Ok("cmp457_eqsnap2")
+            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp458_swar") | Ok("cmp463_swar_hilbert") | Ok("cmp457_paldelta") | Ok("cmp457_eqsnap2")
             | Ok("cmp438_sense") // TASK-444-C: sense family union
-            | Ok("cmp451_senseins") | Ok("cmp458_swar") | Ok("cmp457_paldelta") | Ok("cmp457_eqsnap2") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono") // TASK-452-A: senseins composite — sense-arena slice must arm (production gate retag)
+            | Ok("cmp451_senseins") | Ok("cmp458_swar") | Ok("cmp463_swar_hilbert") | Ok("cmp457_paldelta") | Ok("cmp457_eqsnap2") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono") // TASK-452-A: senseins composite — sense-arena slice must arm (production gate retag)
             | Ok("cmp453_diet") | Ok("cmp450_chunk") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
             | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") // TASK-454-B/455-B: chunk union carrier rides the sense gate (STRICT OR, rebaze-3 union)
-            | Ok("cmp451_senseins") | Ok("cmp458_swar") // TASK-452-A: senseins composite — sense-arena slice must arm (production gate retag)
+            | Ok("cmp451_senseins") | Ok("cmp458_swar") | Ok("cmp463_swar_hilbert") // TASK-452-A: senseins composite — sense-arena slice must arm (production gate retag)
             | Ok("cmp453_diet") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp456_chunkmono_p31snap") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
     )
 }
@@ -490,6 +525,115 @@ pub fn ensure_bridge_early() -> bool {
     false
 }
 
+/// TASK-463-69a (move-plane bridge, BRIDGE_DEFINED-блок канон §317-465):
+/// MovePlaneOps EARLY define + RegisterNatives(moveDecide). Идемпотент
+/// (двойной чек под MOVE_BRIDGE_LOCK — два воркера могут состязаться);
+/// якорь = первый загруженный из EARLY_ANCHORS (LivingEntity грузится на
+/// буте и несёт ТОТ ЖЕ kernel loader, куда MoveControl резолвит мост).
+/// define → register natives → probe ARMED → publish (закон 6 v16);
+/// move_plane::activate ждёт этот гейт как HARD publish gate.
+static MOVE_BRIDGE_DEFINED: AtomicBool = AtomicBool::new(false);
+static MOVE_BRIDGE_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+pub fn ensure_move_bridge_early() -> bool {
+    if MOVE_BRIDGE_DEFINED.load(Ordering::Acquire) {
+        return true;
+    }
+    if !flag_enabled(std::env::var("CRUSSTY_LEVER_FLAG").as_deref().ok().as_deref()) {
+        return false;
+    }
+    let _guard = match MOVE_BRIDGE_LOCK.lock() {
+        Ok(g) => g,
+        Err(_) => return false,
+    };
+    if MOVE_BRIDGE_DEFINED.load(Ordering::Acquire) {
+        return true;
+    }
+    let mut ok = false;
+    for anchor in EARLY_ANCHORS {
+        if cplug_sdk::classes::find_class(anchor).is_some() {
+            ok = define_move_bridge_once(anchor);
+            break;
+        }
+    }
+    if ok {
+        MOVE_BRIDGE_DEFINED.store(true, Ordering::Release);
+    }
+    ok
+}
+
+fn define_move_bridge_once(anchor: &str) -> bool {
+    let ok = cplug_sdk::jni_util::with_attached(|env| {
+        let Some(cls) = cplug_sdk::classes::find_class(anchor) else {
+            return false;
+        };
+        let Some(class_cls) = env.find_class("java/lang/Class") else {
+            crate::clear_exception(env);
+            return false;
+        };
+        let Some(loader) = env
+            .get_method_id(class_cls, "getClassLoader", "()Ljava/lang/ClassLoader;")
+            .and_then(|mid| {
+                let l = env.call_object_method(cls.as_jclass(), mid, &[]);
+                (l as usize != 0).then_some(l)
+            })
+        else {
+            crate::clear_exception(env);
+            env.delete_local_ref(class_cls);
+            return false;
+        };
+        let gref = env.new_global_ref(loader);
+        if gref.is_null() {
+            crate::describe_exception(env);
+            env.delete_local_ref(loader);
+            env.delete_local_ref(class_cls);
+            return false;
+        }
+        let Some(c) = env.define_class(crate::classfile::MOVE_OPS_CLASS, gref, crate::move_plane::MOVE_BYTES)
+        else {
+            crate::describe_exception(env);
+            eprintln!(
+                "[crussty-plugin] entity_query: define_class({}) failed",
+                crate::classfile::MOVE_OPS_CLASS
+            );
+            return false;
+        };
+
+        // RegisterNatives: moveDecide (батч-trig-kernel; sig = java decl
+        // EXACTLY — TASK-409-E lesson): moveDecide(int,int[],double[],double[],int[]) -> (I[I[D[D[I)I
+        let names = [CString::new("moveDecide").expect("no NUL")];
+        let sigs = [CString::new("(I[I[D[D[I)I").expect("no NUL")];
+        let natives = [jvmti_bindings::jni::JNINativeMethod {
+            name: names[0].as_ptr(),
+            signature: sigs[0].as_ptr(),
+            fnPtr: crate::move_plane::move_decide as *const c_void as *mut c_void,
+        }];
+        let reg = env.register_natives(c, &natives);
+        if let Err(code) = reg {
+            crate::describe_exception(env);
+            env.exception_clear();
+            eprintln!(
+                "[crussty-plugin] entity_query: moveDecide register_natives failed (code {code}) — move hook stays dormant"
+            );
+            env.delete_local_ref(c);
+            env.delete_local_ref(loader);
+            env.delete_local_ref(class_cls);
+            return false;
+        }
+        env.delete_local_ref(c);
+        env.delete_local_ref(loader);
+        env.delete_local_ref(class_cls);
+        true
+    });
+    let ok = ok.unwrap_or(false);
+    if ok {
+        eprintln!(
+            "[crussty-plugin] entity_query: move bridge EARLY define ok (anchor={anchor}) — MoveControl NCDFE window closed"
+        );
+    }
+    ok
+}
+
 /// Background activation: wait for the target classes + boot quiet, define
 /// the EntityGoalQueryOps bridge into the kernel loader + RegisterNatives
 /// (eqProbe/eqEpoch), compute both retargets from the pristine bytes, flip
@@ -513,6 +657,21 @@ pub fn activate() {
                 if std::time::Instant::now() > early_deadline {
                     eprintln!(
                         "[crussty-plugin] entity_query: EARLY bridge define did not land within 180s — push lane will fail-closed at mobs_manager"
+                    );
+                    break;
+                }
+                std::thread::sleep(std::time::Duration::from_millis(2_000));
+            }
+            // TASK-463-69a: the move-plane bridge rides the SAME early phase
+            // (define-before-arm канон; move_plane::activate ждёт свой гейт).
+            let move_deadline = std::time::Instant::now() + std::time::Duration::from_secs(180);
+            loop {
+                if ensure_move_bridge_early() {
+                    break;
+                }
+                if std::time::Instant::now() > move_deadline {
+                    eprintln!(
+                        "[crussty-plugin] entity_query: move bridge EARLY define did not land within 180s — move hook will fail-closed"
                     );
                     break;
                 }
@@ -646,7 +805,11 @@ pub fn activate() {
         }
 
         // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
-        let flag_label = if enabled_flag_is_brain2() {
+        let flag_label = if hilbert_issue_mode() {
+            "cmp463_swar_hilbert"
+        } else if enabled_flag_is_swar() {
+            "cmp458_swar"
+        } else if enabled_flag_is_brain2() {
             "cmp422_brain2"
         } else if enabled_flag_is_sense() {
             "cmp421_brain"
@@ -659,8 +822,19 @@ pub fn activate() {
         } else {
             "cmp410_eindexq"
         };
+        // TASK-463-68a G1: ОДИН boot-маркер ветки (grep-канон единственного
+        // lever-id; stраж против спящих гейтов ×425/×458).
+        if hilbert_issue_mode() {
+            eprintln!(
+                "[crussty-plugin] swarx6_hilbert ARMED (cmp463_swar_hilbert: H07 Hilbert-issue on CSR-arena slices, push/item planes untouched)"
+            );
+        }
         let sense_note = if enabled_flag_is_sense() {
-            "; TASK-419-B sense-plane: senseArena (2nd bulk JNI, same EPOCH_LOCK window) builds CSR arena from the JUST-BUILT chains — per-bucket contiguous slices in EXACT chain-walk order; java snapshotQuery walks arena[off[h]..off[h+1]) sequentially (no random next[] deref per candidate; parity oracle = rust test arena_matches_chain_walk)"
+            if hilbert_issue_mode() {
+                "; TASK-419-B sense-plane ⊕ TASK-463-68a H07: senseArena builds CSR arena slices in HILBERT order (key=hilbert2D(subx,subz,bits=4)<<4|(yband&0xF), stable ties = chain-walk order — DOCUMENTED delta-class, emit-order only; push/item/count-only planes bit-in-byte untouched; guards: bijection/multiset/double-stability/0-delta-calls = rust tests)"
+            } else {
+                "; TASK-419-B sense-plane: senseArena (2nd bulk JNI, same EPOCH_LOCK window) builds CSR arena from the JUST-BUILT chains — per-bucket contiguous slices in EXACT chain-walk order; java snapshotQuery walks arena[off[h]..off[h+1]) sequentially (no random next[] deref per candidate; parity oracle = rust test arena_matches_chain_walk)"
+            }
         } else {
             ""
         };
@@ -764,7 +938,9 @@ pub unsafe extern "system" fn eq_epoch(
     };
     static DRAIN_LOGGED: AtomicBool = AtomicBool::new(false);
     if drained > 0 && !DRAIN_LOGGED.swap(true, Ordering::Relaxed) {
-        let drain_label = if enabled_flag_is_eqsnapv3() {
+        let drain_label = if enabled_flag_is_swar() {
+            "cmp458_swar-family"
+        } else if enabled_flag_is_eqsnapv3() {
             "cmp412_eqsnapv3"
         } else {
             "cmp411_eqsnap"
@@ -853,12 +1029,25 @@ pub unsafe extern "system" fn eq_epoch(
 /// per-bucket слайсов == chain-walk порядок по построению (паритет-оракул:
 /// тест arena_matches_chain_walk внизу). Чистая функция — переиспользуется
 /// нативом и тестами; ошибки структуры = Err (java → ваниль на этот тик).
+///
+/// TASK-463-68a (swarx-6, H07 Hilbert-issue): под `hilbert_issue_mode()`
+/// (ТОЛЬКО ветка-локальный cmp463_swar_hilbert) каждый per-bucket слайс
+/// ЗАПОЛНЯЕТСЯ в порядке возрастания Hilbert-ключа (LEDGER-42 канон:
+/// key = hilbert2D(subx,subz,bits=4) << 4 | (yband & 0xF)); сортировка
+/// СТАБИЛЬНАЯ по ключу с исходным порядком = chain-walk, поэтому равные
+/// ключи (двойники) сохраняют цепной порядок (гейд стабильности двойников).
+/// МНОЖЕСТВО id слайса == chain-walk множество (биекция/мульти-множество —
+/// та же выборка, переупорядоченная). Легаси-флаги: keys = None →
+/// бит-в-байт chain-walk порядок (мастер-сертифицированные ветки нетронуты).
+/// Push/item-плоскости читают ЦЕПИ, не арену — порядок не наблюдаем там.
 fn sense_arena_fill(
     head: &[i32],
     next: &[i32],
     rows: usize,
     arena: &mut [i32],
     arena_off: &mut [i32],
+    keys: Option<&[u64]>,
+    scratch: &mut Vec<u32>,
 ) -> Result<usize, ()> {
     if arena_off.len() != CELLS + 1 || head.len() != CELLS {
         return Err(());
@@ -867,24 +1056,113 @@ fn sense_arena_fill(
     let mut cursor: usize = 0;
     for h in 0..CELLS {
         arena_off[h] = cursor as i32;
-        // Тот же обход, что java chain-walk: от головы через next; порядок
-        // элементов слайса ПОЭЛЕМЕНТНО равен порядку прохода цепи.
+        // Тот же обход, что java chain-walk: от головы через next (сбор —
+        // порядок сбора = chain-walk порядок, стабилен для сортировки).
         let mut link = head[h];
+        scratch.clear();
         while link != 0 {
             if link < 0 {
                 return Err(()); // повреждённая ссылка — ваниль на этот тик
             }
             let id = (link as usize).wrapping_sub(1);
-            if id >= rows || id >= next.len() || cursor >= arena_cap {
+            if id >= rows || id >= next.len() {
                 return Err(()); // дрейф/цикл-гард — ваниль на этот тик
+            }
+            scratch.push(id as u32);
+            link = next[id];
+        }
+        if let Some(ks) = keys {
+            // H07 issue-ось: СТАБИЛЬНАЯ сортировка (Vec::sort_by — stable
+            // merge sort) по Hilbert-ключу; исходный порядок = chain-walk →
+            // двойники (равные ключи) сохраняют цепной порядок.
+            scratch.sort_by(|&a, &b| ks[a as usize].cmp(&ks[b as usize]));
+        }
+        for &id in scratch.iter() {
+            if cursor >= arena_cap {
+                return Err(()); // дрейф ёмкости — ваниль на этот тик
             }
             arena[cursor] = id as i32;
             cursor += 1;
-            link = next[id];
         }
     }
     arena_off[CELLS] = cursor as i32;
     Ok(cursor)
+}
+
+/// TASK-463-68a: переиспользуемый scratch (0 steady-state alloc): Hilbert-
+/// ключи rows×u64 + per-bucket сборка. Single consumer (EPOCH_LOCK-поток).
+struct ArenaScratch {
+    keys: Vec<u64>,
+    fill: Vec<u32>,
+}
+
+static SCRATCH: std::sync::Mutex<ArenaScratch> = std::sync::Mutex::new(ArenaScratch {
+    keys: Vec::new(),
+    fill: Vec::new(),
+});
+
+/// TASK-463-68a: единый release+ERR_RANGE выход pin-лестницы (fail-closed:
+/// java ваниль этот тик, эпоха ретраится).
+#[allow(clippy::too_many_arguments)]
+unsafe fn release_err_range(
+    env: *mut jni::JNIEnv,
+    vt: &jni::JNINativeInterface_,
+    head: jni::jintArray,
+    head_pin: *mut c_void,
+    next: jni::jintArray,
+    next_pin: *mut c_void,
+    arena: jni::jintArray,
+    arena_pin: *mut c_void,
+    arena_off: jni::jintArray,
+    off_pin: *mut c_void,
+) -> jni::jint {
+    unsafe { (vt.ReleasePrimitiveArrayCritical)(env, arena_off, off_pin, 0) };
+    unsafe { (vt.ReleasePrimitiveArrayCritical)(env, arena, arena_pin, 0) };
+    unsafe { (vt.ReleasePrimitiveArrayCritical)(env, next, next_pin, 0) };
+    unsafe { (vt.ReleasePrimitiveArrayCritical)(env, head, head_pin, 0) };
+    ERR_RANGE
+}
+
+/// TASK-463-68a (H07, LEDGER-42 канон): Hilbert-ключ выдачи
+/// key = hilbert2D(x,z,bits=4) << 4 | (yband & 0xF), где subx/subz — 4-битные
+/// под-блоки 16-блочной ячейки (floor(x)&15), yband = floor(y/16)&0xF.
+/// Дельта-класс: порядок ВЫДАЧИ кандидатов goal-query (entity_query.rs
+/// chain/bucket order ×409 канон); push/item-плоскости не читают арену.
+#[inline]
+fn hilbert_issue_key(x: f64, y: f64, z: f64) -> u64 {
+    let subx = (x.floor() as i64) & 15; // saturating cast + two's-complement mod
+    let subz = (z.floor() as i64) & 15;
+    let yband = ((y / 16.0).floor() as i64) & 15;
+    let d = hilbert_xy2d(4, subx as u32, subz as u32) as u64;
+    (d << 4) | ((yband as u64) & 0xF)
+}
+
+/// Classic Hilbert curve xy2d (Skilling/Skien): transpose-iterative,
+/// bits = порядок кривой (4 → 16×16 = 256 листьев). Чистая функция,
+/// детерминированная — тест-модуль пиннит монотонность вдоль кривой.
+#[inline]
+fn hilbert_xy2d(bits: u32, mut x: u32, mut y: u32) -> u32 {
+    let n = 1u32 << bits;
+    debug_assert!(x < n && y < n);
+    let mut d: u32 = 0;
+    let mut s = n / 2;
+    while s > 0 {
+        let rx = ((x & s) > 0) as u32;
+        let ry = ((y & s) > 0) as u32;
+        d += s * s * ((3 * rx) ^ ry);
+        // rot(n, &x, &y, rx, ry)
+        if ry == 0 {
+            if rx == 1 {
+                x = (n - 1) - x;
+                y = (n - 1) - y;
+            }
+            let t = x;
+            x = y;
+            y = t;
+        }
+        s /= 2;
+    }
+    d
 }
 
 /// TASK-419-B (sense-plane): bulk CSR-арена — ВТОРОЙ bulk-JNI за тик, зовётся
@@ -892,11 +1170,15 @@ fn sense_arena_fill(
 /// поток-писатель; per-entity JNI по-прежнему отсутствует). Читает ТОЛЬКО
 /// ЧТО построенные цепи (head/next — те же массивы, что eq_epoch заполнил)
 /// и раскладывает id в плотную арену: arena[arena_off[h]..arena_off[h+1]) =
-/// бакет h в точности в порядке chain-walk. Java snapshotQuery под
-/// cmp421_brain читает последовательные слайсы вместо рандомного
-/// next[link-1]-deref на каждого кандидата. rc = число размещённых id;
-/// ERR_RANGE — структурный дрейф/цикл-гард (ваниль на этот тик, эпоха
-/// ретраится); ERR_STRUCT — pin failure / гейт (дизарм).
+/// бакет h в порядке chain-walk (легаси) ИЛИ в H07 Hilbert-порядке (под
+/// cmp463_swar_hilbert — ключи из плоских колонок eq_snapshot(), которые
+/// eq_epoch только что дреном записал в ТОМ ЖЕ EPOCH_LOCK-окне — тот же
+/// поток-писатель, single-consumer discipline; concurrent mobRemove =
+/// ≤1-тик ghost, покрытый контрактом). Java snapshotQuery под sense-флагом
+/// читает последовательные слайсы вместо рандомного next[link-1]-deref на
+/// каждого кандидата. rc = число размещённых id; ERR_RANGE — структурный
+/// дрейф/цикл-гард (ваниль на этот тик, эпоха ретраится); ERR_STRUCT — pin
+/// failure / гейт (дизарм).
 ///
 /// # Safety
 /// See eq_probe.
@@ -972,7 +1254,50 @@ pub unsafe extern "system" fn sense_arena(
         std::slice::from_raw_parts_mut(off_pin as *mut jni::jint, (CELLS + 1) as usize)
     };
 
-    let placed = sense_arena_fill(head_s, next_s, rows as usize, arena_s, off_s);
+    // TASK-463-68a (H07): Hilbert-ключи из плоских колонок (same EPOCH_LOCK
+    // окно, single-consumer). Any drift (cold tables / short columns) =
+    // ERR_RANGE → java ваниль этот тик (fail-closed, leg повторяет эпоху).
+    if hilbert_issue_mode() {
+        let (xs, ys, zs) = match crate::mobs_soa::eq_snapshot() {
+            Some((xs, ys, zs, _hws, _hhs, _flags, _ver)) => (xs, ys, zs),
+            None => return release_err_range(env, vt, head, head_pin, next, next_pin, arena, arena_pin, arena_off, off_pin),
+        };
+        let n = rows as usize;
+        if xs.len() < n || ys.len() < n || zs.len() < n {
+            return release_err_range(env, vt, head, head_pin, next, next_pin, arena, arena_pin, arena_off, off_pin);
+        }
+        let rc = match SCRATCH.lock() {
+            Ok(mut sc) => {
+                let ArenaScratch { keys, fill } = &mut *sc;
+                keys.clear();
+                let cap = keys.capacity();
+                if cap < n {
+                    keys.reserve(n - cap);
+                }
+                for id in 0..n {
+                    keys.push(hilbert_issue_key(xs[id], ys[id], zs[id]));
+                }
+                match sense_arena_fill(head_s, next_s, n, arena_s, off_s, Some(keys.as_slice()), fill) {
+                    Ok(cnt) => cnt as jni::jint,
+                    Err(()) => ERR_RANGE,
+                }
+            }
+            Err(_) => ERR_RANGE, // poisoned scratch — fail-closed, vanilla this tick
+        };
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, arena_off, off_pin, 0) };
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, arena, arena_pin, 0) };
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, next, next_pin, 0) };
+        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, head, head_pin, 0) };
+        return rc;
+    }
+
+    let placed = match SCRATCH.lock() {
+        Ok(mut sc) => {
+            let ArenaScratch { keys, fill } = &mut *sc;
+            sense_arena_fill(head_s, next_s, rows as usize, arena_s, off_s, None, fill)
+        }
+        Err(_) => Err(()), // poisoned scratch — fail-closed, vanilla this tick
+    };
 
     unsafe { (vt.ReleasePrimitiveArrayCritical)(env, arena_off, off_pin, 0) };
     unsafe { (vt.ReleasePrimitiveArrayCritical)(env, arena, arena_pin, 0) };
@@ -1048,6 +1373,34 @@ mod tests {
         assert!(!enabled_with(" cmp456_chunkmono"));
         assert!(!enabled_with("cmp456_chunkmono "));
         assert!(!enabled_with("cmp456_chunkmono_p31snap_x"));
+        // TASK-463-68a: ветка-локальный lever arm-ит ВСЕ плоскости носителя
+        // (goal-query + sense-arena + hilbert-issue) — STRICT eq, no tolerance.
+        assert!(enabled_with("cmp463_swar_hilbert"));
+        assert!(!enabled_with("cmp463_swar_hilbert_x"));
+        assert!(!enabled_with(" cmp463_swar_hilbert"));
+        assert!(!enabled_with("cmp463_swar_hilbert "));
+    }
+
+    /// TASK-460-34/463-68a drain-gate pin: production gate
+    /// enabled_flag_is_eqsnap routes drain_eqsnap_shards in eq_epoch; the
+    /// cmp458_swar miss was the 131k-upsert saturation root-cause on the
+    /// swarx-1 branch (TASK-460-34 ARM-repair) and was LOST in merge #8
+    /// (85aea399) — this pin makes the merge-drop structurally impossible.
+    #[test]
+    fn drain_gate_pins_swar_family() {
+        if std::env::var("CRUSSTY_LEVER_FLAG").is_ok() {
+            // another test owns the var in this window — skip quietly
+            return;
+        }
+        for f in ["cmp411_eqsnap", "cmp458_swar", "cmp463_swar_hilbert"] {
+            std::env::set_var("CRUSSTY_LEVER_FLAG", f);
+            assert!(enabled_flag_is_eqsnap(), "{f} must drain");
+        }
+        for f in ["", "cmp458_swar_x", " cmp458_swar", "cmp463_swar_hilbert_x", "cmp457_paldelta", "cmp436_ins4"] {
+            std::env::set_var("CRUSSTY_LEVER_FLAG", f);
+            assert!(!enabled_flag_is_eqsnap(), "'{f}' must NOT drain");
+        }
+        std::env::remove_var("CRUSSTY_LEVER_FLAG");
     }
 
     /// Mirror of the java EntityGoalQueryOps.cellHash operating on the same
@@ -1193,7 +1546,8 @@ mod tests {
 
         let mut arena = vec![0i32; n];
         let mut arena_off = vec![0i32; CELLS + 1];
-        let placed = sense_arena_fill(&head, &next, n, &mut arena, &mut arena_off)
+        let mut sc_fill = Vec::new();
+        let placed = sense_arena_fill(&head, &next, n, &mut arena, &mut arena_off, None, &mut sc_fill)
             .expect("arena fill must succeed on a sound chain structure");
         assert_eq!(placed, linked);
         assert_eq!(arena_off[CELLS] as usize, linked);
@@ -1220,11 +1574,197 @@ mod tests {
         // (cursor bound) -> Err.
         let mut bad_next = next.clone();
         bad_next[3] = (n + 5) as i32; // dangling link past rows
-        assert!(sense_arena_fill(&head, &bad_next, n, &mut arena, &mut arena_off).is_err());
+        assert!(sense_arena_fill(&head, &bad_next, n, &mut arena, &mut arena_off, None, &mut sc_fill).is_err());
         let mut tiny = vec![0i32; 4];
-        assert!(sense_arena_fill(&head, &next, n, &mut tiny, &mut arena_off).is_err());
+        assert!(sense_arena_fill(&head, &next, n, &mut tiny, &mut arena_off, None, &mut sc_fill).is_err());
         let mut bad_off = vec![0i32; CELLS]; // wrong offsets length
-        assert!(sense_arena_fill(&head, &next, n, &mut arena, &mut bad_off).is_err());
+        assert!(sense_arena_fill(&head, &next, n, &mut arena, &mut bad_off, None, &mut sc_fill).is_err());
+    }
+
+    // -----------------------------------------------------------------------
+    // TASK-463-68a (swarx-6, H07 Hilbert-issue): гейды ×4 + кривая.
+    // -----------------------------------------------------------------------
+
+    /// H07 canon: hilbert_xy2d must be a BIJECTION on [0, n²) (256 leaves at
+    /// bits=4), start at d(0,0)=0, and be deterministic. A non-bijective key
+    /// would silently change the issue-order distribution (and the guard
+    /// semantics of the total order).
+    #[test]
+    fn hilbert_curve_is_bijection() {
+        let bits = 4u32;
+        let n = 1u32 << bits;
+        let mut seen = vec![false; (n * n) as usize];
+        for x in 0..n {
+            for y in 0..n {
+                let d = hilbert_xy2d(bits, x, y);
+                assert!((d as usize) < seen.len(), "d out of range at ({x},{y})");
+                assert!(!seen[d as usize], "duplicate d={d} at ({x},{y})");
+                seen[d as usize] = true;
+            }
+        }
+        assert_eq!(hilbert_xy2d(bits, 0, 0), 0, "curve must start at (0,0)");
+        assert!(seen.iter().all(|&s| s), "curve must cover all 256 leaves");
+        // Determinism.
+        assert_eq!(hilbert_xy2d(bits, 7, 13), hilbert_xy2d(bits, 7, 13));
+        // Key packing: same sub-cell, different y-band → strictly ordered by
+        // band (key = d<<4 | band).
+        let k0 = hilbert_issue_key(0.0, 0.0, 0.0);
+        let k1 = hilbert_issue_key(0.0, 16.0, 0.0);
+        assert_eq!(k1, k0 + 1, "yband+1 must add exactly 1 to the key at fixed d");
+        // Negative coords: two's-complement mod keeps sub-blocks in [0,16).
+        let kx = hilbert_issue_key(-1.0, 0.0, -1.0);
+        let dneg = kx >> 4;
+        assert!(dneg < 256);
+    }
+
+    /// H07-ГЕЙД №1 (биекция): под ключами слайс арены — ПЕРЕСТАНОВКА цепных
+    /// id того же бакета (каждый id ровно один раз; без потерь/дублей).
+    #[test]
+    fn arena_hilbert_bijection() {
+        let (head, next, n, linked, xs, ys, zs) = hilbert_test_fixture();
+        let keys: Vec<u64> = (0..n).map(|id| hilbert_issue_key(xs[id], ys[id], zs[id])).collect();
+        let mut arena = vec![0i32; n];
+        let mut arena_off = vec![0i32; CELLS + 1];
+        let mut scratch = Vec::new();
+        let placed = sense_arena_fill(&head, &next, n, &mut arena, &mut arena_off, Some(&keys), &mut scratch)
+            .expect("hilbert fill must succeed");
+        assert_eq!(placed, linked, "placed must equal linked (0-дельта вызовов)");
+        for h in 0..CELLS {
+            let st = arena_off[h] as usize;
+            let en = arena_off[h + 1] as usize;
+            let mut chain_ids = Vec::new();
+            let mut link = head[h];
+            while link != 0 {
+                chain_ids.push(link - 1);
+                link = next[(link - 1) as usize];
+            }
+            let mut arena_ids = arena[st..en].to_vec();
+            arena_ids.sort_unstable();
+            chain_ids.sort_unstable();
+            assert_eq!(arena_ids, chain_ids, "bucket {h}: arena slice != chain permutation");
+        }
+    }
+
+    /// H07-ГЕЙД №2 (мульти-множество): мульти-множество Hilbert-ключей
+    /// слайса == мульти-множество ключей chain-walk того же бакета.
+    #[test]
+    fn arena_hilbert_multiset_keys() {
+        let (head, next, n, _linked, xs, ys, zs) = hilbert_test_fixture();
+        let keys: Vec<u64> = (0..n).map(|id| hilbert_issue_key(xs[id], ys[id], zs[id])).collect();
+        let mut arena = vec![0i32; n];
+        let mut arena_off = vec![0i32; CELLS + 1];
+        let mut scratch = Vec::new();
+        sense_arena_fill(&head, &next, n, &mut arena, &mut arena_off, Some(&keys), &mut scratch)
+            .expect("hilbert fill must succeed");
+        for h in 0..CELLS {
+            let st = arena_off[h] as usize;
+            let en = arena_off[h + 1] as usize;
+            let mut chain_keys = Vec::new();
+            let mut link = head[h];
+            while link != 0 {
+                chain_keys.push(keys[(link - 1) as usize]);
+                link = next[(link - 1) as usize];
+            }
+            // Порядок слайса КАК ЕСТЬ: неубывающие Hilbert-ключи (issue-ось).
+            let arena_keys: Vec<u64> = arena[st..en].iter().map(|&id| keys[id as usize]).collect();
+            let mut last = 0u64;
+            for &k in arena_keys.iter() {
+                assert!(k >= last, "bucket {h}: hilbert issue order broken");
+                last = k;
+            }
+            // Мульти-множество: отсортированные копии совпадают с цепью.
+            let mut arena_sorted = arena_keys.clone();
+            arena_sorted.sort_unstable();
+            chain_keys.sort_unstable();
+            assert_eq!(arena_sorted, chain_keys, "bucket {h}: key multiset drift");
+        }
+    }
+
+    /// H07-ГЕЙД №3 (стабильность двойников): равные ключи (те же координаты)
+    /// сохраняют chain-walk относительный порядок в слайсе.
+    #[test]
+    fn arena_hilbert_double_stability() {
+        // All rows share ONE cell and IDENTICAL coords → all keys equal →
+        // hilbert fill must reproduce the chain-walk order EXACTLY.
+        let n = 64usize;
+        let mut head = vec![0i32; CELLS];
+        let mut next = vec![0i32; n];
+        let xs = vec![10.5f64; n];
+        let ys = vec![64.0f64; n];
+        let zs = vec![20.5f64; n];
+        for id in 0..n {
+            let h = cell_hash_for_test(0, 1);
+            next[id] = head[h];
+            head[h] = (id + 1) as i32;
+        }
+        let keys: Vec<u64> = (0..n).map(|id| hilbert_issue_key(xs[id], ys[id], zs[id])).collect();
+        let mut arena = vec![0i32; n];
+        let mut arena_off = vec![0i32; CELLS + 1];
+        let mut scratch = Vec::new();
+        sense_arena_fill(&head, &next, n, &mut arena, &mut arena_off, Some(&keys), &mut scratch)
+            .expect("hilbert fill must succeed");
+        let h = cell_hash_for_test(0, 1);
+        let st = arena_off[h] as usize;
+        let en = arena_off[h + 1] as usize;
+        let mut chain_ids = Vec::new();
+        let mut link = head[h];
+        while link != 0 {
+            chain_ids.push(link - 1);
+            link = next[(link - 1) as usize];
+        }
+        assert_eq!(en - st, chain_ids.len());
+        assert_eq!(&arena[st..en], &chain_ids[..], "doubles must keep chain-walk order");
+    }
+
+    /// H07-ГЕЙД №4 (0-дельта вызовов): rc, границы слайсов и число id на
+    /// бакет идентичны легаси-fill; меняется ТОЛЬКО порядок внутри слайса
+    /// (порядок выдачи — документированный delta-class).
+    #[test]
+    fn arena_hilbert_zero_delta_call_surface() {
+        let (head, next, n, linked, xs, ys, zs) = hilbert_test_fixture();
+        let keys: Vec<u64> = (0..n).map(|id| hilbert_issue_key(xs[id], ys[id], zs[id])).collect();
+        let mut arena_l = vec![0i32; n];
+        let mut arena_h = vec![0i32; n];
+        let mut off_l = vec![0i32; CELLS + 1];
+        let mut off_h = vec![0i32; CELLS + 1];
+        let mut scratch = Vec::new();
+        let rc_l = sense_arena_fill(&head, &next, n, &mut arena_l, &mut off_l, None, &mut scratch).unwrap();
+        let rc_h = sense_arena_fill(&head, &next, n, &mut arena_h, &mut off_h, Some(&keys), &mut scratch).unwrap();
+        assert_eq!(rc_l, rc_h, "rc must be identical (0-дельта)");
+        assert_eq!(rc_l, linked);
+        assert_eq!(off_l, off_h, "slice boundaries must be identical (0-дельта вызовов)");
+        // Дельта ЕСТЬ в порядке (иначе тест ничего не ловит на этой фикстуре).
+        assert_ne!(arena_l[..linked], arena_h[..linked], "fixture must reorder under hilbert keys");
+    }
+
+    /// Детерминированная фикстура: 2000 строк, рассеянные координаты (как
+    /// arena_matches_chain_walk), возвращает (head, next, n, linked, xs, ys, zs).
+    fn hilbert_test_fixture() -> (Vec<i32>, Vec<i32>, usize, usize, Vec<f64>, Vec<f64>, Vec<f64>) {
+        let n = 2000usize;
+        let mut head = vec![0i32; CELLS];
+        let mut next = vec![0i32; n];
+        let mut xs = vec![0f64; n];
+        let mut ys = vec![0f64; n];
+        let mut zs = vec![0f64; n];
+        let mut linked = 0usize;
+        for id in 0..n {
+            if id % 11 == 0 {
+                continue;
+            }
+            let x = ((id as f64) * 13.77) % 512.0 - 256.0;
+            let z = ((id as f64) * 5.19) % 512.0 - 256.0;
+            let y = ((id as f64) * 3.31) % 96.0;
+            xs[id] = x;
+            ys[id] = y;
+            zs[id] = z;
+            let cx = (x / CELL_SIZE).floor() as i32;
+            let cz = (z / CELL_SIZE).floor() as i32;
+            let h = cell_hash_for_test(cx, cz);
+            next[id] = head[h];
+            head[h] = (id + 1) as i32;
+            linked += 1;
+        }
+        (head, next, n, linked, xs, ys, zs)
     }
 
     #[test]
