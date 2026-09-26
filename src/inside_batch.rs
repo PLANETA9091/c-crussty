@@ -58,7 +58,7 @@ pub const DEFLATE_EPS: f64 = 9.999999747378752E-6;
 /// STRICT eq (климб-компо P31+P32/P36 sidecar на носителе cmp456_chunkmono).
 pub fn enabled() -> bool {
     if std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim() == "cmp456_chunkmono_p31snap" || v.trim() == "cmp466_c98ai")
+        .map(|v| v.trim() == "cmp456_chunkmono_p31snap" || v.trim() == "cmp466_c98ai" || v.trim() == "cmp468_s18fluid")
         .unwrap_or(false)
     {
         return true;

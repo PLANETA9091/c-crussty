@@ -92,9 +92,9 @@ fn enabled() -> bool {
             | Ok("cmp451_senseins") | Ok("cmp458_swar") | Ok("cmp457_paldelta") | Ok("cmp457_eqsnap2") | Ok("cmp456_chunkmono") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR) — production gate retag for carrier-parity
             | Ok("cmp453_diet") | Ok("cmp450_chunk") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
             | Ok("cmp451_senseins") | Ok("cmp458_swar") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR) — production gate retag for carrier-parity
-            | Ok("cmp453_diet") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp466_c98ai") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
+            | Ok("cmp453_diet") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp466_c98ai") | Ok("cmp468_s18fluid") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
             | Ok("cmp421_brain")
-            | Ok("cmp421_brain") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp466_c98ai") | Ok("cmp456_poi")
+            | Ok("cmp421_brain") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp466_c98ai") | Ok("cmp468_s18fluid") | Ok("cmp456_poi")
 )
 }
 

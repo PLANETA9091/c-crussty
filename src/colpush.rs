@@ -121,7 +121,7 @@ fn lever_flag_matches() -> bool {
             t == "cmp420_colpush" || t == "cmp424_mobfeed" || t == "cmp430_inside" || t == "cmp432_inside2" || t == "cmp436_ins4" || t == "cmp458_swar" || t == "cmp457_paldelta" || t == "cmp457_eqsnap2"
             || t == "cmp451_senseins" || t == "cmp458_swar" || t == "cmp457_paldelta" || t == "cmp457_eqsnap2" || t == "cmp453_diet" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
             || t == "cmp438_sense" // TASK-444-C: sense family union
-            || t == "cmp451_senseins" || t == "cmp458_swar" || t == "cmp457_paldelta" || t == "cmp457_eqsnap2" || t == "cmp456_chunkmono" || t == "cmp456_chunkmono_p31snap" || t == "cmp466_c98ai" || t == "cmp453_diet" || t == "cmp434_chunkpl" || t == "cmp435_chunk3" || t == "cmp437_chunk4" || t == "cmp444_chunk5" || t == "cmp450_chunk" || t == "cmp456_poi" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+            || t == "cmp451_senseins" || t == "cmp458_swar" || t == "cmp457_paldelta" || t == "cmp457_eqsnap2" || t == "cmp456_chunkmono" || t == "cmp456_chunkmono_p31snap" || t == "cmp466_c98ai" || t == "cmp468_s18fluid" || t == "cmp453_diet" || t == "cmp434_chunkpl" || t == "cmp435_chunk3" || t == "cmp437_chunk4" || t == "cmp444_chunk5" || t == "cmp450_chunk" || t == "cmp456_poi" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
 })
         .unwrap_or(false)
 }

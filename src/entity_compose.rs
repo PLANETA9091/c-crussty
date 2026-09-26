@@ -403,6 +403,44 @@ pub fn activate() {
             }
         }
 
+        // ---- STAGE 1d: inside_fluid (R468-S18 fluid-empty fastpath) ----
+        // THE single collidedWithFluid site in lambda$checkInsideBlocks$2 ->
+        // InsideFluidOps.gate (receiver-first 3B->3B). Disjoint from the
+        // stage-1 gate site (inside_cache/inside_batch supersede pair) and
+        // from the stage-1c getBlockState site (inside_snap) — three owners,
+        // three sites, one compose chain (S7-162 discipline).
+        if crate::inside_fluid::enabled_pub() {
+            if crate::inside_fluid::wait_bridge_ready(60_000) {
+                match crate::classfile::patch_inside_fluid(&bytes) {
+                    Ok((p, outcome)) if matches!(
+                        outcome,
+                        crate::classfile::RetargetOutcome::Retargeted { sites: 1 }
+                            | crate::classfile::RetargetOutcome::AlreadyPatched { sites: 1 }
+                    ) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_fluid composed ({outcome:?})"
+                        );
+                        bytes = p;
+                        chain.push("inside_fluid");
+                    }
+                    Ok((_p, outcome)) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_fluid strict check violated ({outcome:?}), chain continues WITHOUT inside_fluid (fail-dominant)"
+                        );
+                    }
+                    Err(e) => {
+                        eprintln!(
+                            "[crussty-plugin] entity_compose: stage inside_fluid patch rejected ({e}), chain continues WITHOUT inside_fluid (fail-dominant)"
+                        );
+                    }
+                }
+            } else {
+                eprintln!(
+                    "[crussty-plugin] entity_compose: inside_fluid bridge missed its window, chain continues WITHOUT inside_fluid (fail-dominant)"
+                );
+            }
+        }
+
         // ---- STAGE 2: fluid_free (fgate wrapper retarget) ----
         if crate::fluid_free::enabled_pub() {
             if crate::fluid_free::wait_bridge_ready(60_000) {

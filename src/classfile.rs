@@ -5524,6 +5524,22 @@ pub const INSIDE_SNAP_GATE_CALLER: (&str, &str) = (
     "lambda$checkInsideBlocks$2",
     "(ILjava/util/concurrent/atomic/AtomicInteger;ZLnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;Lit/unimi/dsi/fastutil/longs/LongSet;ZLnet/minecraft/world/phys/AABB;Lnet/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector;Lnet/minecraft/core/BlockPos;I)Z",
 );
+/// ROUND-468-S18 INSIDE-FLUID retarget contract: FROM = the single
+/// Entity.collidedWithFluid virtual in lambda$checkInsideBlocks$2, TO = the
+/// receiver-first static InsideFluidOps.gate (Entity,FluidState,BlockPos,
+/// Vec3,Vec3)Z. Caller name/desc reused from INSIDE_SNAP_GATE_CALLER (the
+/// same lambda method).
+pub const INSIDE_FLUID_GATE_FROM: (&str, &str, &str) = (
+    "net/minecraft/world/entity/Entity",
+    "collidedWithFluid",
+    "(Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;)Z",
+);
+pub const INSIDE_FLUID_GATE_TO: (&str, &str, &str) = (
+    "net/minecraft/world/entity/InsideFluidOps",
+    "gate",
+    "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;)Z",
+);
+
 pub const INSIDE_SNAP_GATE_FROM: (&str, &str, &str) = (
     "net/minecraft/world/level/Level",
     "getBlockState",
@@ -5560,6 +5576,48 @@ pub fn patch_inside_snap_gate(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome)
     }
     let (name, desc) = INSIDE_SNAP_GATE_CALLER;
     retarget_virtual_to_static(bytes, name, desc, INSIDE_SNAP_GATE_FROM, INSIDE_SNAP_GATE_TO)
+}
+
+/// Entity bytes: retarget the single Entity.collidedWithFluid site inside
+/// lambda$checkInsideBlocks$2 to the static InsideFluidOps.gate (receiver-
+/// first, 3B->3B, length-preserving). ROUND-468-S18 fluid-empty fastpath:
+/// javap contract (patched kernel) — Fluid.getAABB is
+/// `isEmpty() ? aconst_null : ...` and Entity.collidedWithFluid maps the null
+/// AABB to false, so `!fluid.isEmpty() && collidedWithFluid(...)` reproduces
+/// the vanilla observable for EVERY input while skipping the dead null path
+/// (1671 RECON-4 samples = 32.6% of the visit-lambda body / 1.31% CPU — the
+/// top un-owned vanilla sub-lane of the inside-blocks decomposition).
+/// Strict: exactly ONE matching site (javap census: the lambda has exactly
+/// one invokevirtual collidedWithFluid; the to-to second walk and the fluid
+/// entityInside branch route through the same single call site).
+pub fn patch_inside_fluid(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or_else(|| "bad classfile layout".to_string())?;
+    for probe in [
+        "checkInsideBlocks",
+        "collidedWithFluid",
+        "net/minecraft/world/level/material/FluidState",
+        "net/minecraft/core/BlockPos",
+    ] {
+        if layout.pool.find_utf8(probe).is_none() {
+            return Err(format!("{probe} absent from pool (kernel rename?)"));
+        }
+    }
+    let expect_static = format!(
+        "(L{};{}",
+        INSIDE_FLUID_GATE_FROM.0,
+        &INSIDE_FLUID_GATE_FROM.2[1..]
+    );
+    if INSIDE_FLUID_GATE_TO.2 != expect_static {
+        return Err("insideFluid gate descriptor is not the receiver-prepended target form".into());
+    }
+    let (name, desc) = INSIDE_SNAP_GATE_CALLER; // same lambda$checkInsideBlocks$2 caller
+    retarget_virtual_to_static(
+        bytes,
+        name,
+        desc,
+        INSIDE_FLUID_GATE_FROM,
+        INSIDE_FLUID_GATE_TO,
+    )
 }
 
 /// LevelChunk bytes: retarget the single LevelChunkSection.setBlockState site
@@ -7396,6 +7454,56 @@ mod inside_cache {
 }
 
 #[cfg(test)]
+mod inside_fluid {
+    // R468-S18: REAL kernel Entity.class (purpur-1.21.10.jar, hook-byte
+    // identical; same fixture as inside_cache/inside_batch) — the lambda
+    // census javap'd offline: exactly ONE invokevirtual collidedWithFluid
+    // inside lambda$checkInsideBlocks$2 (offset 135, cp #6271).
+    const ENTITY: &[u8] = include_bytes!("../tests/fixtures/Entity_real.class");
+
+    use crate::classfile::*;
+
+    #[test]
+    fn inside_fluid_retargets_exactly_one_site() {
+        let (patched, outcome) = patch_inside_fluid(ENTITY).expect("patch");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 1 },
+            "exactly one collidedWithFluid site in lambda$checkInsideBlocks$2"
+        );
+        assert!(patched.starts_with(&[0xCA, 0xFE, 0xBA, 0xBE]));
+        assert!(patched.len() >= ENTITY.len());
+    }
+
+    #[test]
+    fn inside_fluid_site_resolves_to_ops_bridge() {
+        let (patched, _) = patch_inside_fluid(ENTITY).expect("patch");
+        let cp_count = u16::from_be_bytes([patched[8], patched[9]]);
+        let (pool, _end) = Pool::parse(&patched, 10, cp_count).expect("cp parse");
+        assert!(
+            (1..pool.next)
+                .filter_map(|i| pool.methodref_parts(i))
+                .any(|t| t.0 == "net/minecraft/world/entity/InsideFluidOps"
+                    && t.1 == "gate"
+                    && t.2 == "(Lnet/minecraft/world/entity/Entity;Lnet/minecraft/world/level/material/FluidState;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/phys/Vec3;Lnet/minecraft/world/phys/Vec3;)Z"),
+            "gate Methodref appended"
+        );
+    }
+
+    #[test]
+    fn inside_fluid_does_not_touch_gate_site_owners() {
+        // Compose-order independence: patching inside_fluid FIRST must not
+        // disturb the inside_cache gate-site or inside_snap getBlockState-site
+        // retargets (three disjoint sites, one method family).
+        let (a, o1) = patch_inside_fluid(ENTITY).expect("fluid patch");
+        assert_eq!(o1, RetargetOutcome::Retargeted { sites: 1 });
+        let (_, o2) = patch_inside_cache(&a).expect("cache patch on fluid-patched bytes");
+        assert_eq!(o2, RetargetOutcome::Retargeted { sites: 1 });
+        let (_, o3) = patch_inside_snap_gate(&a).expect("snap patch on fluid-patched bytes");
+        assert_eq!(o3, RetargetOutcome::Retargeted { sites: 1 });
+    }
+}
+
 mod inside_batch {
     // TASK-459-56 (ID-P31): same REAL kernel Entity fixture as inside_cache —
     // the batch plane retargets the SAME single method-entry site.

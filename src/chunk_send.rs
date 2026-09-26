@@ -121,7 +121,7 @@ fn enabled() -> bool {
     std::env::var("CRUSSTY_LEVER_FLAG")
         .map(|v| {
             let v = v.trim();
-            v == LEVER_ID || v == "cmp444_chunk5" || v == "cmp452_mega" || v == "cmp450_chunk" || v == "cmp456_chunkmono" || v == "cmp456_chunkmono_p31snap" || v == "cmp466_c98ai" || v == "cmp453_diet" || v == "cmp456_poi"
+            v == LEVER_ID || v == "cmp444_chunk5" || v == "cmp452_mega" || v == "cmp450_chunk" || v == "cmp456_chunkmono" || v == "cmp456_chunkmono_p31snap" || v == "cmp466_c98ai" || v == "cmp468_s18fluid" || v == "cmp453_diet" || v == "cmp456_poi"
 })
         .unwrap_or(false)
 }

@@ -51,6 +51,7 @@ mod inside_cache;
 mod inside_batch;
 mod inside_diet;
 mod inside_epoch_gate;
+mod inside_fluid;
 mod inside_snap;
 mod inside_snap_registry;
 mod item_merge;
@@ -229,6 +230,11 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // checkInsideBlocks method-entry site (supersede via entity_compose when
     // armed). Dormant unless CRUSSTY_INSIDE_BATCH=1.
     inside_batch::register();
+    // INSIDE-FLUID (R468-S18): bridge owner of the fluid-empty fastpath on
+    // the checkInsideBlocks visit lambda; Entity retarget composes via
+    // entity_compose stage 1d — so register BEFORE entity_compose. Dormant
+    // unless CRUSSTY_INSIDE_FLUID=1 or lever_flag=cmp468_s18fluid.
+    inside_fluid::register();
     // INSIDE-BITMASK (TASK-357): bridge owner registration (dormant unless
     // CRUSSTY_INSIDE_BITMASK=1).
     inside_bitmask::register();
@@ -627,8 +633,13 @@ fn inject_surface() {
     // CollisionUtil.getCollisionsForBlocksOrWorldBorder, retransform
     // (dormant unless CRUSSTY_LEVER_FLAG=cmp401_collide).
     collide_batch::activate();
+    // INSIDE-FLUID (R468-S18): define InsideFluidOps into the kernel loader
+    // (define-only; the collidedWithFluid visit-lambda retarget composes
+    // through the entity_compose chain stage 1d; dormant unless
+    // CRUSSTY_INSIDE_FLUID=1 or lever_flag=cmp468_s18fluid).
+    inside_fluid::activate();
     // ENTITY-COMPOSE (S7-162): apply the single compose chain on Entity
-    // (inside → fluid_free → fluid_dirty → rng → batch → traversal → zeroin → sbb → inside_diet),
+    // (inside → inside_fluid → fluid_free → fluid_dirty → rng → batch → traversal → zeroin → sbb → inside_diet),
     // publish the rng verdict for region_threads, retransform Entity
     // exactly once.
     entity_compose::activate();
