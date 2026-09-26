@@ -177,7 +177,7 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "fluid_guard: $FLUID_GUARD (CRUSSTY_FLUID_PUSH_GUARD; 1 = same-state fluid-push guard ARMED, TASK-80/S7-128)"
   echo "paletted_demux: $PALETTED_DEMUX (CRUSSTY_PALETTED_DEMUX; 1 = PALETTED-DEMUX ARCH-ATTACK lever #1, S7-131)"
   echo "alloc_diet: $ALLOC_DIET (CRUSSTY_ALLOC_DIET; input dropped TASK-375, lever #2 REFUTED x2 — pinned 0)"
-  echo "gc_tune: $GC_TUNE (GC-TUNE TASK-375/376/380/384; 1 = MaxGCPauseMillis=40 + IHOP=35 + G1HeapRegionSize=8m + AlwaysPreTouch; 2 = IHOP=35 + 8m + AlwaysPreTouch без pause-target [s7199: pause-target токсичен]; 3 = COLLECTOR ParallelGC [БАНК v4]; 4 = COLLECTOR ZGC generational; 5 = ParallelGC + TransparentHugePages + AlwaysPreTouch — JVM-level, vanilla-parity)"
+  echo "gc_tune: $GC_TUNE (GC-TUNE TASK-375/376/380/384 + S99-gcw ROUND-468-S15 + S45-RCC1G ROUND-468-S45; 1 = MaxGCPauseMillis=40 + IHOP=35 + G1HeapRegionSize=8m + AlwaysPreTouch; 2 = IHOP=35 + 8m + AlwaysPreTouch без pause-target [s7199: pause-target токсичен]; 3 = COLLECTOR ParallelGC [БАНК v4]; 4 = COLLECTOR ZGC generational; 5 = ParallelGC + TransparentHugePages + AlwaysPreTouch — JVM-level, vanilla-parity; 6 = ParallelGC + MetaspaceSize=256M + ReservedCodeCacheSize=512M — threshold-cascade kill, javap-neutral [S15]; 7 = ParallelGC + MetaspaceSize=256M + ReservedCodeCacheSize=1024M — RCC-dose escalation: CC-Full 2→0 (gc6-остаток 3.2s @150k), pre-soak STW 30→~6%, javap-neutral 0 Java [S45])"
   echo "inside_cache: $INSIDE_CACHE (CRUSSTY_INSIDE_CACHE; 1 = INSIDE-CACHE ARCH-ATTACK lever #3: static-entity inside-blocks discovery memoization, S7-135/TASK-271)"
   echo "flush_diet: $FLUSH_DIET (CRUSSTY_FLUSH_DIET; 1 = FLUSH-DIET ARCH-ATTACK lever #4: StepBasedCollector.flushStep zero-waste addAll via FlushOps, S7-137)"
   echo "fluid_free: $FLUID_FREE (CRUSSTY_FLUID_FREE; 1 = FLUID-FREE-SECTION ARCH-ATTACK lever #5: fluid-ff verdict cache via FluidOps.fgate, requires paletted_demux=1, S7-143)"
@@ -584,6 +584,13 @@ elif [ "${GC_TUNE:-0}" = "4" ]; then
 elif [ "${GC_TUNE:-0}" = "5" ]; then
   GC_COLLECTOR=("-XX:+UseParallelGC" "-XX:+UseTransparentHugePages" "-XX:+AlwaysPreTouch")
   log "gc_tune=5: ParallelGC + THP + AlwaysPreTouch (TASK-384 autonomous A/B: RECON-41 — профиль memory-bound [PalettedContainer.get 4.3% + SimpleBitStorage 1.7% воркеров, HashMap.getNode], THP режет TLB-miss и в сцене и в GC-copy 4.35GB/s)"
+elif [ "${GC_TUNE:-0}" = "7" ]; then
+  GC_COLLECTOR=("-XX:+UseParallelGC")
+  EXTRA_JVM_GC=(
+    "-XX:MetaspaceSize=256M"
+    "-XX:ReservedCodeCacheSize=1024M"
+  )
+  log "gc_tune=7: ParallelGC + MetaspaceSize=256M + ReservedCodeCacheSize=1024M (S45-RCC1G/ROUND-468-S45: gc6-остаток = 2x CodeCache GC Threshold Full 1153+2058ms (150k) / 6x ~11.9s (200k-class); RCC dose 240M→6-8 CC-Full, 512M→2, 1024M→0 по dose-response; pre-soak STW 29.9→~6% бюджета, HOST-ценз 200k-class 30.08s→~17.5s CLEAN; young/heap не тронуты, javap-neutral 0 Java)"
 fi
 if [ "${RECON_DIAG:-0}" = "1" ]; then
   EXTRA_JVM_DIAG=(
