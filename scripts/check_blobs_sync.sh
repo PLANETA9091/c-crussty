@@ -69,32 +69,32 @@ echo "== javap-gate: lever bridge blobs vs ARM markers / gate flags (lever cmp41
 
 check_class \
   "entityinside/build/net/minecraft/world/entity/ItemEntityManager.class" \
-  "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" \
+  "cmp466_c98ai" "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" \
   "native int idxProbe" "static void indexAdd" "native int lifetimeDue"
 
 check_class \
   "goalops/build/net/minecraft/world/entity/ai/goal/GoalOps.class" \
-  "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "goal-selector EFFECT armed" "goalCleanup" "goalUpdate" "cmp456_poi" \
+  "cmp466_c98ai" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "goal-selector EFFECT armed" "goalCleanup" "goalUpdate" "cmp456_poi" \
   "goal-selector running EFFECT armed" \
   "tickGate" "tickRunningGate" "availableGoals" "lockedFlags" "goalTypes"
 
 check_class \
   "queryplane/build/net/minecraft/world/entity/QueryPlaneOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp412_b2p1" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "selfTest" "isHardCollidingProbe"
+  "cmp466_c98ai" "cmp417_bq" "cmp420_colpush" "cmp412_b2p1" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "selfTest" "isHardCollidingProbe"
 
 check_class \
   "mobai/build/net/minecraft/world/entity/MobAiOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp456_poi" \
+  "cmp466_c98ai" "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp456_poi" \
   "native"
 
 check_class \
   "sscan/build/net/minecraft/world/entity/MobScanOps.class" \
-  "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp456_poi" \
+  "cmp466_c98ai" "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp456_poi" \
   "native"
 
 check_class \
   "sense/build/net/minecraft/world/entity/SenseOps.class" \
-  "cmp438_sense" "cmp430_inside" "cmp451_senseins" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "nearestEntityGate" "sense EFFECT" "selfTest" \
+  "cmp466_c98ai" "cmp456_poi" "cmp438_sense" "cmp430_inside" "cmp451_senseins" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "nearestEntityGate" "sense EFFECT" "selfTest" \
   "native int senseProbe" "native int senseEpoch"
 
 check_class \
@@ -104,12 +104,12 @@ check_class \
 
 check_class \
   "mobpush/build/net/minecraft/world/entity/MobPushOps.class" \
-  "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp456_poi" \
+  "cmp466_c98ai" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp456_poi" \
   "native int mobProbe" "boxFor" "colpushSweep"
 
 check_class \
   "colpush/build/net/minecraft/world/entity/ColpushOps.class" \
-  "cmp420_colpush" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "pushEntities" "bulkTick" "selfTest" "armed" "cmp456_poi" \
+  "cmp466_c98ai" "cmp420_colpush" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "pushEntities" "bulkTick" "selfTest" "armed" "cmp456_poi" \
   "native int colpushProbe" "native int colpushTick"
 
 check_class \
@@ -118,7 +118,7 @@ check_class \
 
 check_class \
   "entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class" \
-  "cmp414_cvs" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp456_poi" \
+  "cmp466_c98ai" "cmp414_cvs" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp456_poi" \
   "native int eqProbe" "native int senseArena"
 
 # TASK-420-C chunk-pipeline plane (cmp420_chunk2): the bridge must carry the
@@ -155,6 +155,64 @@ check_class \
   "cmp420_chunk2" "cmp420_colpush" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp453_diet" "parse-cache first hit" "parse-cache selftest" "cmp456_poi" \
   "biomes-cache first hit" "biomes selftest" \
   "public static void init" "parseSection" "parseBiomesSection"
+
+# ROUND-468 S56 hole-closure (x425 sleeping-gate lesson): 9 build dirs / 20
+# tracked blobs lived OUTSIDE this gate while LIVE-wired — fluid_guard=1 is
+# in EVERY bank-v5 dispatch (fluid/build), poi/chunksched/entityquery are
+# era-carrier lanes (cmp456_poi / chunkmono acceptors), paletted patches the
+# kernel classfile, stagger/items are armed-or-dormant planes. redstone/
+# and area-map probe outputs are UNTRACKED lab artifacts on c1196321 (no
+# include_bytes! site in src) — deliberately NOT gated.
+# Also: the ERA CARRIER cmp466_c98ai (MERGE #10) was pinned in ZERO
+# check_class lists above — the source-flag loop covered only 8/10 carriers
+# (sense/SenseOps.class carried cmp466_c98ai with NO gate site at all).
+check_class \
+  "poi/build/net/minecraft/world/entity/ai/village/poi/PoiOps.class" \
+  "cmp456_poi" "updatePoiGate" "poiTickGate" "selfTest" "CRUSSTY_LEVER_FLAG" \
+  "native"
+
+check_class \
+  "chunksched/build/net/minecraft/server/level/ChunkSchedOps.class" \
+  "cmp456_chunkmono" "ARMED chunk-sched" "selfTest" \
+  "native"
+
+check_class \
+  "fluid/build/net/minecraft/world/entity/FluidPushGuardHook.class" \
+  "CRUSSTY_FLUID_BITMASK" "selfTest"
+
+check_class \
+  'fluid/build/net/minecraft/world/entity/FluidPushGuardHook$GuardEntry.class'
+
+check_class \
+  "fluid/build/net/minecraft/world/entity/FluidBitmaskOps.class" \
+  "clean" "CACHE_CAP" "BUILDS_PER_TICK" "selfTest"
+
+check_class \
+  'fluid/build/net/minecraft/world/entity/FluidBitmaskOps$Entry.class'
+
+check_class \
+  "stagger/build/net/minecraft/world/entity/PushStaggerOps.class" \
+  "CRUSSTY_STAGGER_N" "CRUSSTY_LEVER_ARG" "pushables"
+
+check_class \
+  "stagger/build/net/minecraft/world/entity/ai/goal/target/GoalStaggerOps.class" \
+  "canUseGate" "CRUSSTY_STAGGER_N" "CRUSSTY_LEVER_ARG"
+
+check_class \
+  "entityquery/build/net/minecraft/world/entity/EntityQueryOps.class" \
+  "pushables" "newPushRing"
+
+check_class \
+  "entityquery/build/net/minecraft/world/entity/EntityIndexOps.class" \
+  "cmp405_eindex" "ARMED" "ERR_STRUCT" \
+  "native"
+
+check_class \
+  'entityquery/build/net/minecraft/world/entity/EntityIndexOps$Buf.class'
+
+check_class \
+  "paletted/build/net/minecraft/world/level/chunk/PalettedContainerOps.class" \
+  "ABORTS" "CAPPED" "selfTest"
 
 # TASK-438-C chunk-send serialization snapshot (cmp437_chunk4): the bridge
 # must carry the lever + carrier ids and the effect-marker strings, and
@@ -229,7 +287,12 @@ for pair in \
   "goalops/net/minecraft/world/entity/ai/goal/GoalOps.java:goalops/build/net/minecraft/world/entity/ai/goal/GoalOps.class" \
   "colpush/net/minecraft/world/entity/ColpushOps.java:colpush/build/net/minecraft/world/entity/ColpushOps.class" \
   "entityinside/net/minecraft/world/entity/RegionTickOps.java:entityinside/build/net/minecraft/world/entity/RegionTickOps.class" \
-  "chunkparse/net/minecraft/world/level/chunk/storage/ChunkParseOps.java:chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class"
+  "chunkparse/net/minecraft/world/level/chunk/storage/ChunkParseOps.java:chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class" \
+  "sense/net/minecraft/world/entity/SenseOps.java:sense/build/net/minecraft/world/entity/SenseOps.class" \
+  "chunksend/net/minecraft/server/network/ChunkSendOps.java:chunksend/build/net/minecraft/server/network/ChunkSendOps.class" \
+  "chunksend/net/minecraft/server/network/ChunkPacketEncodeOps.java:chunksend/build/net/minecraft/server/network/ChunkPacketEncodeOps.class" \
+  "poi/net/minecraft/world/entity/ai/village/poi/PoiOps.java:poi/build/net/minecraft/world/entity/ai/village/poi/PoiOps.class" \
+  "entityquery/net/minecraft/world/entity/EntityIndexOps.java:entityquery/build/net/minecraft/world/entity/EntityIndexOps.class"
 do
   src="${pair%%:*}"; blob="${pair##*:}"
   flags=$(grep -o '"cmp[0-9_a-z]*"' "$src" | tr -d '"' | sort -u)
@@ -265,6 +328,7 @@ check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/Regio
 check_flat_matches_nested "sense/build" "net/minecraft/world/entity/SenseOps"
 check_flat_matches_nested "chunksend/build" "net/minecraft/server/network/ChunkSendOps"
 check_flat_matches_nested "chunksend/build" "net/minecraft/server/network/ChunkPacketEncodeOps"
+check_flat_matches_nested "poi/build" "net/minecraft/world/entity/ai/village/poi/PoiOps"
 
 # TASK-463-88a CP-EXACT gate (lessons ×461/×463): merge 887c4641 union-glued
 # "cmp457_paldelta|cmp457_eqsnap2" INSIDE single equals() strings at 11 java
@@ -321,6 +385,41 @@ gate_load randomtick/build     net/minecraft/world/entity/ai/BrainOps
 gate_load chunkparse/build     net/minecraft/world/level/chunk/storage/ChunkParseOps
 gate_load chunksend/build      net/minecraft/server/network/ChunkSendOps
 gate_load chunksend/build      net/minecraft/server/network/ChunkPacketEncodeOps
+gate_load poi/build            net/minecraft/world/entity/ai/village/poi/PoiOps
+gate_load chunksched/build     net/minecraft/server/level/ChunkSchedOps
+gate_load fluid/build          net/minecraft/world/entity/FluidPushGuardHook
+gate_load fluid/build          'net/minecraft/world/entity/FluidPushGuardHook$GuardEntry'
+gate_load fluid/build          net/minecraft/world/entity/FluidBitmaskOps
+gate_load entityquery/build    net/minecraft/world/entity/EntityQueryOps
+gate_load entityquery/build    net/minecraft/world/entity/EntityIndexOps
+gate_load stagger/build        net/minecraft/world/entity/PushStaggerOps
+gate_load stagger/build        net/minecraft/world/entity/ai/goal/target/GoalStaggerOps
+gate_load paletted/build       net/minecraft/world/level/chunk/PalettedContainerOps
+
+# ROUND-468 S56 dangling-embed guard (x425 adjacent class): an include_bytes!
+# path inside a DECLARED module (src/lib.rs|src/main.rs `mod X`) that is
+# missing from the tree breaks cargo late or NCDFEs at arm time with the
+# blobs gate green. Declared modules only — undeclared lab files (e.g.
+# prepare_manager.rs on c1196321, no `mod` site) are intentionally skipped.
+python3 - <<'PYEOF' || die "dangling include_bytes! inside a DECLARED module (see stderr)"
+import os, re, sys
+mods = set()
+for f in ("src/lib.rs", "src/main.rs"):
+    if os.path.exists(f):
+        mods |= set(re.findall(r'^\s*(?:pub\s+)?mod\s+([a-z0-9_]+)\s*;', open(f).read(), re.M))
+bad = []
+for m in sorted(mods):
+    p = "src/%s.rs" % m
+    if not os.path.exists(p):
+        continue
+    for path in re.findall(r'include_bytes!\("([^"]+)"\)', open(p).read()):
+        full = os.path.normpath(os.path.join("src", path))
+        if not os.path.exists(full):
+            bad.append("%s: %s" % (p, path))
+for b in bad:
+    print("DANGLING:", b, file=sys.stderr)
+sys.exit(1 if bad else 0)
+PYEOF
 
 if [ "$FAIL" = "0" ]; then
   echo "check_blobs_sync: ALL IN SYNC"
