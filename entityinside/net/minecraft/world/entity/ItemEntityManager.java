@@ -214,7 +214,9 @@ public final class ItemEntityManager {
             double qx1, double qy1, double qz1, int lid, int[] out);
 
     // ---- natives (impl: src/items_lifetime.rs, TASK-399-F despawnv2) ----
-    /** Батч-пуш дедлайнов: long = id<<32 | due&0xFFFFFFFF; возвращает 0/err. */
+    /** Батч-пуш дедлайнов: long = tag<<32 | due&0xFFFFFFFF, где
+     *  tag = (id&0xFFFFF)<<12 | (epoch&0xFFF) — ABA-страж (round-468-s25);
+     *  возвращает 0/err. */
     private static native int lifetimePush(long[] batch, int n);
     /** Drain всех due <= nowTick; -total для grow-retry (записи ждут в staging). */
     private static native int lifetimeDue(long nowTick, long[] out);
@@ -240,6 +242,14 @@ public final class ItemEntityManager {
     private static int idTop = 0;
     private static int[] freeIds = new int[256];
     private static int freeTop = 0;
+    /** ABA-страж (round-468-s25, Л180l/S38): поколение слота. Инкремент при
+     *  indexRemove (смерть item) — стейл-lifetime-запись мёртвого id на drain
+     *  отличается по epoch и молча скипается (= точная ваниль: мёртвый id не
+     *  генерирует ItemDespawnEvent и не деспавнит нового occupant'а слота).
+     *  Grow синхронно с byId под ID_LOCK. 12 бит в проводе = 4096 поколений:
+     *  худший реальный цикл переиспользования 37 тик (hopper-loop) × 4096 =
+     *  151,552 тик ≫ стейл-окно 6000 (деспавн-рейт) — запас ×25. */
+    private static int[] epochBySlot = new int[1024];
     /** entity → id-box. Пишется только на main между фазами; читается воркерами. */
     private static final ConcurrentHashMap<ItemEntity, int[]> idMap = new ConcurrentHashMap<>();
     private static final Object ID_LOCK = new Object();
@@ -360,8 +370,22 @@ public final class ItemEntityManager {
         LOG.info("[crussty-plugin] " + LEVER_FLAG + ": lifetime-heap active (enmass=" + n + ")");
     }
 
+    /** Пакет ABA-стража: tag = (id&0xFFFFF)<<12 | (epoch&0xFFF); провод =
+     *  tag<<32 | due&0xFFFFFFFF. id ≥ 2^20 физически не влезает в 20 бит —
+     *  fail-closed (indexBroken → весь despawn-путь в ваниль), канон капа
+     *  1,048,576 (items_index.rs MAX_IDS). */
     private static long packLifetime(int id, long due) {
-        return ((long) id << 32) | (due & 0xFFFFFFFFL);
+        if (id < 0 || id >= (1 << 20)) {
+            indexBroken = true; // fail-closed: masked id = тихий ABA — недопустимо
+            // poison-запись: tag=0xFFFFFFFF (id=0xFFFFF, epoch=0xFFF), due=-1 —
+            // на drain гарантированно скипается по bounds/epoch, не задевая slot 0.
+            return -1L;
+        }
+        int[] epochs = epochBySlot;
+        int epoch = (id < epochs.length ? epochs[id] : 0) & 0xFFF;
+        // tag как 32-битный паттерн (id<<12 может иметь bit31 — не знаково-расширять):
+        int tag = (id << 12) | epoch;
+        return ((tag & 0xFFFFFFFFL) << 32) | (due & 0xFFFFFFFFL);
     }
 
     /** Flush буфера indexAdd-ов: due считается от КОНЦА текущего тика (age
@@ -447,10 +471,17 @@ public final class ItemEntityManager {
         }
         for (int i = 0; i < n; i++) {
             long l = due[i];
-            int id = (int) (l >> 32);
+            int tag = (int) (l >>> 32);
+            int id = tag >>> 12;          // 20 бит id
+            int epoch = tag & 0xFFF;      // 12 бит поколения
             ItemEntity[] table = byId;
-            if (id < 0 || id >= table.length) {
+            int[] epochs = epochBySlot;
+            if (id < 0 || id >= table.length || id >= epochs.length) {
                 continue;
+            }
+            if ((epochs[id] & 0xFFF) != epoch) {
+                continue; // ABA-страж: слот освобождён/перевыдан после пуша —
+                          // запись о мёртвом id: ваниль = тишина (без event)
             }
             ItemEntity e = table[id];
             if (e == null || e.isRemoved()) {
@@ -498,7 +529,9 @@ public final class ItemEntityManager {
                 id = freeIds[--freeTop];
             } else {
                 if (idTop == byId.length) {
-                    byId = java.util.Arrays.copyOf(byId, byId.length * 2);
+                    int newLen = byId.length * 2;
+                    byId = java.util.Arrays.copyOf(byId, newLen);
+                    epochBySlot = java.util.Arrays.copyOf(epochBySlot, newLen);
                 }
                 id = idTop++;
             }
@@ -524,6 +557,11 @@ public final class ItemEntityManager {
         int rc = idxRemove(id);
         byId[id] = null;
         synchronized (ID_LOCK) {
+            // ABA-страж: смерть item = новое поколение слота ДО возврата в
+            // free-list — все стейл-lifetime-записи этого id станут miss.
+            if (id >= 0 && id < epochBySlot.length) {
+                epochBySlot[id]++;
+            }
             if (freeTop == freeIds.length) {
                 freeIds = java.util.Arrays.copyOf(freeIds, Math.max(16, freeTop * 2));
             }

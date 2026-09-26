@@ -23,21 +23,33 @@
 //! куча живёт в rust, JNI-трафик = 2 вызова/тик (батч-пуш + drain) независимо
 //! от населения.
 //!
+//! ABA-СТРАЖ (round-468-s25, Л180l/S38): провод = `tag<<32 | due&0xFFFFFFFF`,
+//! где `tag = (id & 0xFFFFF) << 12 | (epoch & 0xFFF)`. Java инкрементирует
+//! epochBySlot[slot] при indexRemove (смерть item) — стейл-запись мёртвого id
+//! на drain'e не совпадёт по epoch и java МОЛЧА скипнет её (= точная ваниль
+//! для мёртвого id: ни ItemDespawnEvent, ни досрочного discard нового
+//! occupant'а слота). LIFO free-list переиспользует слот немедленно — без
+//! epoch стейл-запись била по НОВОМУ occupant'у (S38: ранний деспавн на
+//! Δ=reuse-лаг + ItemDespawnEvent не тому identity + cancel age=0 свежему).
+//! Запас: 4096 поколений × худший реальный цикл 37 тик (hopper-loop,
+//! pickupDelay 10) = 151,552 тик ≫ стейл-окно 6000 — ×25.
+//!
 //! THREADING: все вызовы — main-поток (RegionTickOps.forEach после join фазы;
 //! буфер indexAdd наполняется и воркерами через lazy indexAdd — java-сторона
 //! синхронизирует буфер). Mutex внутри — от слова совсем.
 //!
 //! FAIL-CLOSED: любой Throwable на java-стороне гасит despawn2Active →
 //! ванильная despawn-ветка tickBody возвращается; недренированные записи
-//! подчищаются последующими поллами (верификация отсекает мёртвые id).
+//! подчищаются последующими поллами (верификация+epoch отсекают мёртвые id).
 
 use jvmti_bindings::jni;
 
-/// Плоская binary min-heap по `(due, id)`. Корень — минимальный due.
+/// Плоская binary min-heap по `(due, tag)`. Корень — минимальный due.
+/// tag = (id & 0xFFFFF) << 12 | (epoch & 0xFFF) — ABA-страж (см. шапку).
 struct HeapState {
-    v: Vec<(i64, i32)>,
+    v: Vec<(i64, u32)>,
     /// Недоставленные due-id прошлого drain-вызова (grow-retry паттерн idxQuery).
-    staging: Vec<(i64, i32)>,
+    staging: Vec<(i64, u32)>,
 }
 
 impl HeapState {
@@ -46,10 +58,10 @@ impl HeapState {
     }
 
     #[inline]
-    fn push(&mut self, due: i64, id: i32) {
+    fn push(&mut self, due: i64, tag: u32) {
         let v = &mut self.v;
         let mut i = v.len();
-        v.push((due, id));
+        v.push((due, tag));
         // sift-up
         while i > 0 {
             let p = (i - 1) / 2;
@@ -63,7 +75,7 @@ impl HeapState {
 
     /// Снять корень (минимум) — предполагает !v.is_empty().
     #[inline]
-    fn pop_min(&mut self) -> (i64, i32) {
+    fn pop_min(&mut self) -> (i64, u32) {
         let v = &mut self.v;
         let last = v.len() - 1;
         v.swap(0, last);
@@ -102,7 +114,9 @@ fn heap() -> std::sync::MutexGuard<'static, HeapState> {
 
 const ERR_STRUCT: i32 = -1;
 
-/// Батч-пуш дедлайнов. Каждый long: `(id as i64) << 32 | (due & 0xFFFFFFFF)`.
+/// Батч-пуш дедлайнов. Каждый long:
+/// `(tag as i64) << 32 | (due & 0xFFFFFFFF)`,
+/// `tag = (id & 0xFFFFF) << 12 | (epoch & 0xFFF)` — ABA-страж (см. шапку).
 /// due — абсолютный тик (MinecraftServer.currentTick + remaining), шкала java.
 ///
 /// # Safety
@@ -131,12 +145,9 @@ pub unsafe extern "system" fn lifetime_push(
     {
         let mut g = heap();
         for &l in src {
-            let id = (l >> 32) as i32;
+            let tag = (l >> 32) as u32; // id|epoch — java гарантирует id ∈ [0, 2^20)
             let due = (l as i32) as i64; // младшие 32 бита, знаковое расширение
-            if id < 0 {
-                continue; // мусорная запись — java не присылает такое
-            }
-            g.push(due, id);
+            g.push(due, tag);
         }
     }
     unsafe { (vt.ReleasePrimitiveArrayCritical)(env, batch, pinned, 0) };
@@ -191,8 +202,8 @@ pub unsafe extern "system" fn lifetime_due(
             return ERR_STRUCT;
         }
         let dst = unsafe { std::slice::from_raw_parts_mut(pinned as *mut jni::jlong, cap) };
-        for (i, &(due, id)) in g.staging.iter().enumerate() {
-            dst[i] = ((id as i64) << 32) | ((due & 0xFFFF_FFFF) as i64);
+        for (i, &(due, tag)) in g.staging.iter().enumerate() {
+            dst[i] = ((tag as i64) << 32) | ((due & 0xFFFF_FFFF) as i64);
         }
         unsafe { (vt.ReleasePrimitiveArrayCritical)(env, out, pinned, 0) };
         g.staging.clear();
