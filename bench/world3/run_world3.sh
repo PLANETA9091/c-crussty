@@ -539,6 +539,36 @@ case "${LEVER_FLAG:-}" in
     export CRUSSTY_KERNEL_POLICY="off"
     log "${LEVER_FLAG} armed: POI-SUBSYSTEM = POI-плоскость целиком в Rust (Level.notifyAndUpdatePhysics updatePOIOnBlockStateChange site -> PoiOps.updatePoiGate POI-mask fast-path; ChunkMap.tick PoiManager.tick site -> PoiOps.poiTickGate epoch flush; rust PoiStore mirror via ONE bulk poiEpoch JNI/tick) ⊕ ПОЛНЫЙ НОСИТЕЛЬ ЭРЫ cmp456_poi STRICT-OR (ins4 ⊕ senseins ⊕ chunk4-send ⊕ chunk5-encode ⊕ chunkparse ⊕ noise-GEN, KERNEL_POLICY=off documented A/B override) — TASK-456-B, закон 6+7+8"
     ;;
+  cmp468_s90_lane)
+    # R468-S90 WILD-probe (light-pipeline re-check, ROUND-468): Moonrise
+    # chunk-system lanes = 1 worker / 1 I/O on the 4-core CI runner — javap
+    # MoonriseCommon.adjustWorkerThreads: ap/2<=3 -> 1 (ap<=6), generated
+    # paper-global.yml has worker-threads: -1, CI logs x3 "[MoonriseCommon]
+    # Paper is using 1 n, 1 I/O threads" (s33/empty boot-v2+boot-empty
+    # 16:21/16:16Z, s63logs/art1 12:45Z, 2026-09-26). ChunkStatus.LIGHT tasks
+    # (javap ChunkLightTask$LightTask -> StarLightInterface.lightChunk /
+    # forceLoadInChunk+checkChunkEdges fast-path) share that ONE pre-window
+    # lane with load/gen during the 9216-chunk forceload sweep. Raw 1-lane
+    # baseline (s63 e2.log 2026-09-26, canon world afb3a0b3, r640): sweep
+    # 15:15:23Z -> 15:23:50Z = 507s wall = 18.2 c/s -> sweep is WALL-bound
+    # (53ms/chunk >> 0.4s sleep/256-tile). Probe: worker+io lanes 1 ->
+    # LEVER_ARG (default 2) via PRE-BOOT $SERVER/config/paper-global.yml =
+    # full generated defaults (paper-global.defaults.yml, _version 31,
+    # s33-empty md5 9224cd66) with ONLY chunk-system counts patched. Zero
+    # Java delta, zero blob delta, zero law-5 surface (platform threading =
+    # gc_tune-class knob). Harvest: sweep wall + boot wall + "[MoonriseCommon]
+    # Paper is using" echo + norm tail. Norm delta PRE-REGISTERED ~0 (window
+    # = post-forceload soak; fake players static at +-320 inside pre-lit
+    # r640; in-window light = reads 0.17-0.21% entity-phase S7160 +
+    # blockChange off random ticks) — NOT a +20 leg, 19a ladder wall probe.
+    export CRUSSTY_S90_LANES="${LEVER_ARG:-2}"
+    mkdir -p "$SERVER/config"
+    sed "s/^  worker-threads: -1\$/  worker-threads: ${LEVER_ARG:-2}/; s/^  io-threads: -1\$/  io-threads: ${LEVER_ARG:-2}/" \
+      "$SCRIPT_DIR/paper-global.defaults.yml" > "$SERVER/config/paper-global.yml" \
+      || die "cmp468_s90_lane: paper-global.yml write failed"
+    rg -q "worker-threads: ${LEVER_ARG:-2}" "$SERVER/config/paper-global.yml" || die "cmp468_s90_lane: config patch did not land"
+    log "${LEVER_FLAG} armed: chunk-system lanes worker=${LEVER_ARG:-2} io=${LEVER_ARG:-2} (pre-boot paper-global.yml, config-only delta; 1-lane baseline sweep 507s/18.2c/s e2.log; javap MoonriseCommon ap<=6->1; expect boot log 'Paper is using ${LEVER_ARG:-2} n, ${LEVER_ARG:-2} I/O threads')"
+    ;;
 esac
 # RECON_DIAG (TASK-317, instrument-гейт рычага #13 SKIP-STORE-DIET): чистая
 # наблюдаемость — 0 поведения. GC-политика/heap не трогаются (логирование ≠
