@@ -177,7 +177,7 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "fluid_guard: $FLUID_GUARD (CRUSSTY_FLUID_PUSH_GUARD; 1 = same-state fluid-push guard ARMED, TASK-80/S7-128)"
   echo "paletted_demux: $PALETTED_DEMUX (CRUSSTY_PALETTED_DEMUX; 1 = PALETTED-DEMUX ARCH-ATTACK lever #1, S7-131)"
   echo "alloc_diet: $ALLOC_DIET (CRUSSTY_ALLOC_DIET; input dropped TASK-375, lever #2 REFUTED x2 — pinned 0)"
-  echo "gc_tune: $GC_TUNE (GC-TUNE TASK-375/376/380/384; 1 = MaxGCPauseMillis=40 + IHOP=35 + G1HeapRegionSize=8m + AlwaysPreTouch; 2 = IHOP=35 + 8m + AlwaysPreTouch без pause-target [s7199: pause-target токсичен]; 3 = COLLECTOR ParallelGC [БАНК v4]; 4 = COLLECTOR ZGC generational; 5 = ParallelGC + TransparentHugePages + AlwaysPreTouch — JVM-level, vanilla-parity)"
+  echo "gc_tune: $GC_TUNE (GC-TUNE TASK-375/376/380/384/466-C10; 1 = MaxGCPauseMillis=40 + IHOP=35 + G1HeapRegionSize=8m + AlwaysPreTouch; 2 = IHOP=35 + 8m + AlwaysPreTouch без pause-target [s7199: pause-target токсичен]; 3 = COLLECTOR ParallelGC [БАНК v4]; 4 = COLLECTOR ZGC generational; 5 = ParallelGC + TransparentHugePages + AlwaysPreTouch — JVM-level, vanilla-parity; 6 = ParallelGC + MaxNewSize=3584m + ReservedCodeCacheSize=320m [young-cap + CC-kill, Л164/Л165 canon TASK-464-55])"
   echo "inside_cache: $INSIDE_CACHE (CRUSSTY_INSIDE_CACHE; 1 = INSIDE-CACHE ARCH-ATTACK lever #3: static-entity inside-blocks discovery memoization, S7-135/TASK-271)"
   echo "flush_diet: $FLUSH_DIET (CRUSSTY_FLUSH_DIET; 1 = FLUSH-DIET ARCH-ATTACK lever #4: StepBasedCollector.flushStep zero-waste addAll via FlushOps, S7-137)"
   echo "fluid_free: $FLUID_FREE (CRUSSTY_FLUID_FREE; 1 = FLUID-FREE-SECTION ARCH-ATTACK lever #5: fluid-ff verdict cache via FluidOps.fgate, requires paletted_demux=1, S7-143)"
@@ -529,6 +529,7 @@ case "${LEVER_FLAG:-}" in
     # in soak — boot-parity only). Empty flag = vanilla bit-in-byte.
     export CRUSSTY_KERNEL_POLICY="off"
     log "${LEVER_FLAG} armed: CHUNKMONO-CARRIER cmp456_chunkmono = master cert stack (ins4 ⊕ senseins ⊕ diet ⊕ chunk4 send-snapshot ⊕ chunk5 encode-cache ⊕ chunkparse section/biomes codec caches ⊕ noise-GEN GEN-axis; STRICT-OR) ⊕ chunk6-sched scheduling mono-plane (getChunkNow -> ChunkSchedOps.getNow fast-path + moonrise\$setFullChunk shadow feed + rust L2 key-mirror; BOTH-or-none; scheduling slice 4.6-5.2% in scope) — закон 7 субаддитивность на серт-носителе f44a831e (TASK-456-C, RESEARCH-456-C GO)"
+    ;;
   cmp456_poi)
     # TASK-456-B: POI подсистема целиком (закон 6) ⊕ ПОЛНЫЙ НОСИТЕЛЬ ЭРЫ
     # (STRICT-OR union of the certified master composite). GEN-axis
@@ -583,7 +584,24 @@ elif [ "${GC_TUNE:-0}" = "4" ]; then
 elif [ "${GC_TUNE:-0}" = "5" ]; then
   GC_COLLECTOR=("-XX:+UseParallelGC" "-XX:+UseTransparentHugePages" "-XX:+AlwaysPreTouch")
   log "gc_tune=5: ParallelGC + THP + AlwaysPreTouch (TASK-384 autonomous A/B: RECON-41 — профиль memory-bound [PalettedContainer.get 4.3% + SimpleBitStorage 1.7% воркеров, HashMap.getNode], THP режет TLB-miss и в сцене и в GC-copy 4.35GB/s)"
+elif [ "${GC_TUNE:-0}" = "6" ]; then
+  # TASK-466-C10: Л164/Л165 infra-request (TASK-464-55, LEDGER-55) — единственные
+  # два легальных young/CC-плеча BANK-V6: (a) MaxNewSize=3584m = честный young
+  # count-рычаг (eden cap 3413M Xmx/3 → yN −2.5% = 111.1 в окне [108,112],
+  # duty 0.0-0.02пп — alloc/copy-throughput инвариант к eden); (b)
+  # ReservedCodeCacheSize=320m = CC-kill (default 240M, profiled 117.25MB →
+  # интервалы код-кэш-unload ×1.33 → 6-й CC-Full за soak-end → ccS 2→1 =
+  # −2.34s in-soak STW = +0.77пп; Full-count 10→9 = восстановление канона 5+4).
+  # НЕ ZGC (закон 5), НЕ THP. Ванильность тривиальна: JVM-уровень, семантика
+  # игры не трогается. Гейты G1-G6 preregistered (Л165).
+  GC_COLLECTOR=("-XX:+UseParallelGC")
+  EXTRA_JVM_GC=("-XX:MaxNewSize=3584m" "-XX:ReservedCodeCacheSize=320m")
+  log "gc_tune=6: ParallelGC + MaxNewSize=3584m (young-cap, yN −2.5% → окно [108,112]) + ReservedCodeCacheSize=320m (CC-kill: интервалы unload ×1.33, 6-й CC-Full за soak-end, ccS 2→1 = −2.34s = +0.77пп; Л164/Л165 TASK-466-C10)"
 fi
+# G2-гейт TASK-466-C10 (флаги в артефакте): фактическая java-командная строка
+# (GC_COLLECTOR + EXTRA_JVM_GC) дописывается в run-env.txt ПОСЛЕ сборки массивов —
+# механическая проверка флагов без ручного чтения build-лога.
+{ echo "gc_collector: ${GC_COLLECTOR[*]}"; echo "extra_jvm_gc: ${EXTRA_JVM_GC[*]:-} (empty = vanilla-GC args)"; } >> "$WORK/run-env.txt" 2>/dev/null || true
 if [ "${RECON_DIAG:-0}" = "1" ]; then
   EXTRA_JVM_DIAG=(
     "-Xlog:gc+remset=debug:file=$WORK/remset.log:time,uptime,level,tags"
