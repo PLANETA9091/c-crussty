@@ -126,11 +126,11 @@ pub fn fast_inv_sqrt(x: f64) -> f64 {
 /// K1/K2/K3: 10430.378f, 65535 iand, f2i-сатурация (`as i32` == JVM f2i:
 /// NaN→0, ±inf→±MAX), cos offset 16384.0f в f32 ДО f2i.
 pub fn fast_sin(a: f32) -> f32 {
-    sin_table()[((a * 10430.378f32) as i32) & 0xFFFF as i32] 
+    sin_table()[(((a * 10430.378f32) as i32) & 0xFFFF) as usize]
 }
 
 pub fn fast_cos(a: f32) -> f32 {
-    sin_table()[((a * 10430.378f32 + 16384.0f32) as i32) & 0xFFFF as i32]
+    sin_table()[(((a * 10430.378f32 + 16384.0f32) as i32) & 0xFFFF) as usize]
 }
 
 /// Полная транскрипция Mth.atan2 (javap 0..219; oracle 10^5/10^5 bit-in-bit).
@@ -297,7 +297,7 @@ pub fn activate() {
                 crate::clear_exception(env);
                 return false;
             };
-            let Some(mid) = env.get_static_method_id(cls, "selfTest", "()Z") else {
+            let Some(mid) = env.get_static_method_id(cls.as_jclass(), "selfTest", "()Z") else {
                 crate::clear_exception(env);
                 return false;
             };

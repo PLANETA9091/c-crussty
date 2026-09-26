@@ -66,6 +66,12 @@ mod mobs_soa;
 mod mobs_ai;
 mod mobs_sscan;
 mod mobs_sense;
+// MOVE-PLANE (TASK-463-69a, CLIMB navmath-1): P44 navmath bridge — lever
+// `cmp463_move`, STRICT eq. MoveControl.tick retarget → MovePlaneOps.handle
+// (fast Mth replicas: SIN[65536] + fastInvSqrt + FRAC_BIAS); оракул sin/cos/
+// atan2 bit-in-bit. define+RegisterNatives rides entity_query EARLY
+// BRIDGE_DEFINED-блок; fail-dominant (чужой флаг = ваниль MoveControl).
+mod move_plane;
 mod nav_plane;
 mod nav_pool;
 mod chunk_parse;
@@ -178,6 +184,11 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // маркер + coarse-stamp эпохи. Dormant unless CRUSSTY_LEVER_FLAG ==
     // cmp403_tickplane (пустой флаг = ваниль бит-в-бит).
     tickplane::register();
+    // MOVE-PLANE (TASK-463-69a): MoveControl byte hook (pristine stash до
+    // READY, cached serve после). define+RegisterNatives ride the entity_query
+    // EARLY BRIDGE_DEFINED-блок (закон 6 v16: define → register natives →
+    // probe ARMED → publish). Dormant unless CRUSSTY_LEVER_FLAG == cmp463_move.
+    move_plane::register();
     // PALETTED-DEMUX (S7-131, ARCH-ATTACK lever #1): PalettedContainer
     // first-load demux patch (field injection + fast-path get + guarded
     // mutators). MUST register before any kernel class loads (onstart).
@@ -694,6 +705,11 @@ fn inject_surface() {
     // cmp410_eindexq). Runs AFTER mobs_manager::activate: the goal-query
     // epoch reads the SAME SoA plane the push bridge populates.
     entity_query::activate();
+    // MOVE-PLANE (TASK-463-69a): probe ARMED (selfTest против реального Mth,
+    // 10^5×3 bit-in-bit) → publish → retransform MoveControl. Ждёт EARLY
+    // move-bridge гейт из entity_query (HARD publish gate). Dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp463_move (чужой флаг — ваниль MoveControl).
+    move_plane::activate();
     // QUERYPLANE (TASK-417-C): boot quiet -> define QueryPlaneOps into the
     // kernel loader + selfTest on the LOCAL ref from define_class (find_class
     // fix: JVMTI-scan filters non-INITIALIZED classes, just-defined bridge
