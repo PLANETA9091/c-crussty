@@ -151,3 +151,11 @@
 - Л91/92 WILD structure/loot REFUTED: structure 0 сайтов в kernel-src, 0.000% ×14; loot 62% = LootParams.Builder.create (аллокационная цель), ролл 11.6%.
 - Л93/94 WILD advancement/redstone: advtick 2/2.35M сэмплов (11,760× ниже гейта); НО lt_drain 2.08% main / 2.89% tick-thread, 94.1% ∩ CollectingNeighborUpdater — фикс-мир несёт живые redstone-схемы (deploy-порог lt_drain tick-thread ≥3.0%).
 - Л95/96 WILD random-tick/sleep REFUTED: bulk-JNI убыль (sync 215ns/хит > лейн); sleep-check уже кернел (SleepStatus event-driven); thread-разрез дисциплина: all-CPU занижает main-лейны ×2.2 в эру region-воркеров.
+
+## ТИК-464 АБСОРБ (28 ранов волны-2 ×463 + добор; ключевые вердикты)
+- navmath-1 (36211663003): PLACEBO — lever_flag=cmp463_move не дошёл до inputs (run-env без lever, ARM-маркер 0, норма −0.2 v4/+2.31 v5 = A/A). УРОК: диспатч-скрипт обязан верифицировать lever в inputs ДО запуска; ре-диспатч navmath-2 с lever.
+- chkclimb-12 (36201153518): VALID ARMED cmp456_chunkmono_p31quant, +14.97 v4 / +17.64 v5 @8183686 (в K12), NCDFE=0, STW 20.0s/151ms CLEAN; AIOOBE=1 = biomes-selftest-throwable (bits=0 pos=-5,3 пустая секция) = fixture-шум канона «selfTest ×1-2 FAIL», НЕ hard-гейт. Суб-бар → CLIMB ⊕P32.
+- swarx-3 (36200685322): ARMED-VALID swar_papaya компо (papaya shard-readers + brain-tick2 + soa + collide-batch + stagger + goal-query), +7.51 v4 / +10.48 v5 @6806616, STW 19.9s/175ms CLEAN. Суб-бар → CLIMB H07/drain-batch (+2-4пп, потолок семьи +24±1 Л30).
+- canary-403 (36211037572): INVALID-STW-HOST 23.8s>23.0 (гейт G3), +3.97 v4 — вне ±2 паритета; canary-404 ре-диспатч.
+- Якоря волны-2 (641-663): пар-хитов 0; E-окно свежие a643 +6.86/a645 +0.56 v5 — мимо порога ≤−1.60; POI a660 +7.08 v5 мимо ≤−1.99; K12 якорей 0; band-out a656/a659/a662 (12.1M/10.5M/10.6M). Вывод: глубокие хвосты в ±50k-окнах ~3-5%/диспатч → CLIMB-стратегия подъёма ног до shallow-якорного порога.
+- Механика ABSORB: lever-детект из run-env строк "lever_flag:" ненадёжен (ARMED ноги с lever в stdout-маркерах) → детект по "lever_flag=X ARMED" в server-stdout; AIOOBE-счётчик должен исключать "selftest FAIL (throwable" строки.
