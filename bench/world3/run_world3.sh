@@ -227,6 +227,27 @@ rm -rf "$WORK/worldx"
 LEVEL_NAME="world"
 log "world dir: $LEVEL_NAME (from $WORLD_SRC)"
 
+# --- S20/ROUND-467 genfix (B-ген-с-нуля boot-wall root cause) ---------------
+# world466-stress-v1.zip (sha256 0fd4c132...) ships a hand-made 231-B level.dat
+# whose world-version compound {Id,Name,Snapshot} sits under the LOWERCASE
+# `version` key. Purpur 1.21.10 reads the level-FORMAT version as an INT there
+# (LevelVersion.parse: dynamic.get("version").asInt(0); makeLevelSummary then
+# demands 19132/19133) -> 0 -> NbtFormatException "Unknown data version: 0" ->
+# "World files may be corrupted. Shutting down." at t+9s (local repro + CI runs
+# 36231691167 / 36231698851: SEEN_DONE=0 @600s in 2/2 — the "gen wall" was
+# NEVER worldgen, the JVM just refused to die after Main returned).
+# This leg IS generation-from-scratch: a MISSING level.dat is the vanilla
+# fresh-world path (server regenerates it; empty region dirs + datapacks stay).
+# SHA-gated -> MineShield A-leg (afb3a0b3) and all other worlds untouched.
+case "$WORLD_SHA" in
+  0fd4c132*)
+    if [ -f "$SERVER/world/level.dat" ]; then
+      log "genfix: stress world 0fd4c132 ships level.dat rejected by 1.21.10 (NbtFormatException: Unknown data version: 0; CI 36231691167/36231698851) — moving to level.dat.stale, server generates fresh (gen-from-scratch)"
+      mv "$SERVER/world/level.dat" "$SERVER/world/level.dat.stale"
+    fi
+    ;;
+esac
+
 NATIVES_MODE="module-hotpatch-only"
 if [ -n "$NATIVES_TGZ" ] && fetch "$NATIVES_TGZ" "$WORK/natives.tar.gz"; then
   tar xzf "$WORK/natives.tar.gz" -C "$WORK" 2>/dev/null || true
@@ -620,7 +641,7 @@ log "server pid $SERVER_PID (console tail pid $TAIL_PID) — waiting for Done (<
 SEEN_DONE=0
 for i in $(seq 1 "$BOOT_TIMEOUT"); do
   if grep -qF "Done (" "$WORK/server-stdout.log" 2>/dev/null; then SEEN_DONE=1; break; fi
-  if grep -qiE "Failed to start|Exception in thread .main." "$WORK/server-stdout.log" 2>/dev/null; then break; fi
+  if grep -qiE "Failed to start|Exception in thread .main.|World files may be corrupted" "$WORK/server-stdout.log" 2>/dev/null; then log "FATAL: world-data rejection during boot (corrupt/foreign level.dat) — fail fast instead of burning the 600s gate"; break; fi
   if server_died; then log "FATAL: server process died during boot — aborting waits (crash artifacts preserved)"; break; fi
   sleep 1
 done
