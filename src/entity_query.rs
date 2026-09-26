@@ -170,6 +170,11 @@ fn flag_enabled(flag: Option<&str>) -> bool {
             // define+selfTest — NCDFE structurally impossible, ColpushOps-marker
             // canon). cmp456_chunkmono ≡ cmp450_chunk planes ⊕ chunk6-sched.
             | Some("cmp456_chunkmono") | Some("cmp456_chunkmono_p31snap")
+            // TASK-463-69a (navmath CLIMB): move-plane carrier — MovePlaneOps
+            // EARLY define rides THIS gate (mirror-drift lesson x452: ONE
+            // production gate list; a second hand-maintained move-gate would
+            // re-create the dormant-plane NCDFE asymmetry). STRICT eq.
+            | Some("cmp463_move")
     )
 }
 
@@ -500,6 +505,117 @@ pub fn ensure_bridge_early() -> bool {
     false
 }
 
+/// TASK-463-69a (move-plane bridge, BRIDGE_DEFINED-блок канон §317-465):
+/// MovePlaneOps EARLY define + RegisterNatives(moveDecide). Идемпотент
+/// (двойной чек под MOVE_BRIDGE_LOCK — два воркера могут состязаться);
+/// якорь = первый загруженный из EARLY_ANCHORS (LivingEntity грузится на
+/// буте и несёт ТОТ ЖЕ kernel loader, куда MoveControl резолвит мост).
+/// define → register natives → probe ARMED → publish (закон 6 v16);
+/// move_plane::activate ждёт этот гейт как HARD publish gate.
+static MOVE_BRIDGE_DEFINED: AtomicBool = AtomicBool::new(false);
+static MOVE_BRIDGE_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
+pub fn ensure_move_bridge_early() -> bool {
+    if MOVE_BRIDGE_DEFINED.load(Ordering::Acquire) {
+        return true;
+    }
+    if !enabled() {
+        return false;
+    }
+    let _guard = match MOVE_BRIDGE_LOCK.lock() {
+        Ok(g) => g,
+        Err(_) => return false,
+    };
+    if MOVE_BRIDGE_DEFINED.load(Ordering::Acquire) {
+        return true;
+    }
+    let mut ok = false;
+    for anchor in EARLY_ANCHORS {
+        if cplug_sdk::classes::find_class(anchor).is_some() {
+            ok = define_move_bridge_once(anchor);
+            break;
+        }
+    }
+    if ok {
+        MOVE_BRIDGE_DEFINED.store(true, Ordering::Release);
+    }
+    ok
+}
+
+fn define_move_bridge_once(anchor: &str) -> bool {
+    let ok = cplug_sdk::jni_util::with_attached(|env| {
+        let Some(cls) = cplug_sdk::classes::find_class(anchor) else {
+            return false;
+        };
+        let Some(class_cls) = env.find_class("java/lang/Class") else {
+            crate::clear_exception(env);
+            return false;
+        };
+        let Some(loader) = env
+            .get_method_id(class_cls, "getClassLoader", "()Ljava/lang/ClassLoader;")
+            .and_then(|mid| {
+                let l = env.call_object_method(cls.as_jclass(), mid, &[]);
+                (l as usize != 0).then_some(l)
+            })
+        else {
+            crate::clear_exception(env);
+            env.delete_local_ref(class_cls);
+            return false;
+        };
+        let gref = env.new_global_ref(loader);
+        if gref.is_null() {
+            crate::describe_exception(env);
+            env.delete_local_ref(loader);
+            env.delete_local_ref(class_cls);
+            return false;
+        }
+        let Some(c) =
+            env.define_class(crate::classfile::MOVE_OPS_CLASS, gref, crate::move_plane::MOVE_BYTES)
+        else {
+            crate::describe_exception(env);
+            eprintln!(
+                "[crussty-plugin] entity_query: define_class({}) failed",
+                crate::classfile::MOVE_OPS_CLASS
+            );
+            return false;
+        };
+
+        // RegisterNatives: moveDecide (батч-trig-kernel; sig = java decl
+        // EXACTLY — TASK-409-E lesson):
+        //   moveDecide(int,int[],double[],double[],int[]) -> (I[I[D[D[I)I
+        let names = [CString::new("moveDecide").expect("no NUL")];
+        let sigs = [CString::new("(I[I[D[D[I)I").expect("no NUL")];
+        let natives = [jvmti_bindings::jni::JNINativeMethod {
+            name: names[0].as_ptr(),
+            signature: sigs[0].as_ptr(),
+            fnPtr: crate::move_plane::move_decide as *const c_void as *mut c_void,
+        }];
+        let reg = env.register_natives(c, &natives);
+        if let Err(code) = reg {
+            crate::describe_exception(env);
+            env.exception_clear();
+            eprintln!(
+                "[crussty-plugin] entity_query: moveDecide register_natives failed (code {code}) — move hook stays dormant"
+            );
+            env.delete_local_ref(c);
+            env.delete_local_ref(loader);
+            env.delete_local_ref(class_cls);
+            return false;
+        }
+        env.delete_local_ref(c);
+        env.delete_local_ref(loader);
+        env.delete_local_ref(class_cls);
+        true
+    });
+    let ok = ok.unwrap_or(false);
+    if ok {
+        eprintln!(
+            "[crussty-plugin] entity_query: move bridge EARLY define ok (anchor={anchor}) — MoveControl NCDFE window closed"
+        );
+    }
+    ok
+}
+
 /// Background activation: wait for the target classes + boot quiet, define
 /// the EntityGoalQueryOps bridge into the kernel loader + RegisterNatives
 /// (eqProbe/eqEpoch), compute both retargets from the pristine bytes, flip
@@ -523,6 +639,21 @@ pub fn activate() {
                 if std::time::Instant::now() > early_deadline {
                     eprintln!(
                         "[crussty-plugin] entity_query: EARLY bridge define did not land within 180s — push lane will fail-closed at mobs_manager"
+                    );
+                    break;
+                }
+                std::thread::sleep(std::time::Duration::from_millis(2_000));
+            }
+            // TASK-463-69a: the move-plane bridge rides the SAME early phase
+            // (define-before-arm канон; move_plane::activate ждёт свой гейт).
+            let move_deadline = std::time::Instant::now() + std::time::Duration::from_secs(180);
+            loop {
+                if ensure_move_bridge_early() {
+                    break;
+                }
+                if std::time::Instant::now() > move_deadline {
+                    eprintln!(
+                        "[crussty-plugin] entity_query: move bridge EARLY define did not land within 180s — move hook will fail-closed"
                     );
                     break;
                 }
@@ -1058,6 +1189,14 @@ mod tests {
         assert!(!enabled_with(" cmp456_chunkmono"));
         assert!(!enabled_with("cmp456_chunkmono "));
         assert!(!enabled_with("cmp456_chunkmono_p31snap_x"));
+        // TASK-463-69a: move-plane carrier — STRICT eq, no prefix/suffix
+        // tolerance (MovePlaneOps EARLY define gate; пустой флаг = класс
+        // не дефайнится, спящий-гейт-профилактика урок-408).
+        assert!(enabled_with("cmp463_move"));
+        assert!(!enabled_with(""));
+        assert!(!enabled_with("cmp463_move_x"));
+        assert!(!enabled_with(" cmp463_move"));
+        assert!(!enabled_with("cmp463_move "));
     }
 
     /// Mirror of the java EntityGoalQueryOps.cellHash operating on the same

@@ -4767,6 +4767,49 @@ pub fn patch_serverlevel_send_block_updated_navplane(
     }
 }
 
+/// MOVE-PLANE (TASK-463-69a, cmp463_move): MoveControl.tick whole-body
+/// redirect to MovePlaneOps.handle — the javap-verbatim vanilla body
+/// (295 instructions, offsets 0..585) with the two per-mob trig points
+/// replaced by the fast Mth replicas (STRAFE sin@93+cos@108, MOVE_TO
+/// atan2@290; Mth.sqrt@50 stays vanilla). The bridge lives in the SAME
+/// package (net.minecraft.world.entity.ai.control) so protected fields and
+/// rotlerp are package-accessible; the private isWalkable is replicated.
+/// Composed only when the lever flag is armed (move_plane.rs).
+pub const MOVE_OPS_CLASS: &str = "net/minecraft/world/entity/ai/control/MovePlaneOps";
+
+pub const MOVE_CONTROL_CLASS: &str = "net/minecraft/world/entity/ai/control/MoveControl";
+
+pub const MOVE_REDIRECT_TARGETS: [(&str, &str, &str, &str); 1] = [(
+    "tick",
+    "()V",
+    "handle",
+    "(Lnet/minecraft/world/entity/ai/control/MoveControl;)V",
+)];
+
+pub fn patch_movecontrol_tick(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let (name, desc, tname, tdesc) = MOVE_REDIRECT_TARGETS[0];
+    let (p, outcome) = redirect_method_body_to_static(
+        bytes,
+        name,
+        desc,
+        MOVE_CONTROL_CLASS,
+        MOVE_OPS_CLASS,
+        tname,
+        tdesc,
+    )?;
+    match outcome {
+        RetargetOutcome::Retargeted { .. } => Ok((p, RetargetOutcome::Retargeted { sites: 1 })),
+        RetargetOutcome::AlreadyPatched { .. } => {
+            Ok((p, RetargetOutcome::AlreadyPatched { sites: 1 }))
+        }
+        RetargetOutcome::NotFound => Ok((bytes.to_vec(), RetargetOutcome::NotFound)),
+    }
+}
+
+pub fn moveplane_resolution_closure(bridge: &[u8]) -> Result<(), String> {
+    redirect_targets_resolution_closure(bridge, &MOVE_REDIRECT_TARGETS)
+}
+
 /// NAV-POOL (TASK-410-A k5, cmp405_navplane STRICT eq): the A* node-pool —
 /// NodeEvaluator.prepare body-redirected to NavPoolOps.prepare (vanilla
 /// body with nodes.clear() REPLACED by the fresh-shape laundering) and
