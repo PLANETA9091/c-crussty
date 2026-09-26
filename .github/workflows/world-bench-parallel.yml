@@ -23,6 +23,13 @@
 # (world-bench-3 has a global single-run group and would cancel siblings).
 # Absorb-compatible with world-bench-3 (same env/artifacts) + generic
 # LEVER_FLAG/LEVER_ARG inputs (freed slots: fluid_dirty_ledger, travel_diet — both pinned '0').
+#
+# x466-C58 CHKCLIMB-5 E-WINDOW CANON: input defaults below = BANK-V5 canon vector
+# (640/300s/fp4/gc3/ic1/fd1/rt4/bc1/pop150k/seed42/10G/xms4G) + era band
+# 6.0-9.5M. Dispatch POST {ref} with NO inputs => canon guaranteed by this
+# file (lesson x466-C73: workflow defaults are a merge surface; stale
+# defaults != bank-v5 comparable canary). Vanilla lever_flag=""/lever_arg="".
+# Target: 3rd anchor chkclimb-5, E-window [6427199,6527199], norm_v5 <= -1.60.
 name: world-bench-round
 
 on:
@@ -39,11 +46,11 @@ on:
       seconds:
         description: 'No-player run window in seconds'
         required: false
-        default: '900'
+        default: '300' # x466-C58 bank canon (300s)
       fake_players:
         description: 'BENCH-4 fake players N (0 = bench-3 no-player mode; 4 = owner-scenario fixture)'
         required: false
-        default: '0'
+        default: '4' # x466-C58 bank canon (fp4)
       fluid_guard:
         description: 'GUARD-WAVE wave-1 same-state fluid-push guard (1 = ARMED, TASK-80/S7-128; 0 = pre-guard A/B leg)'
         required: false
@@ -59,15 +66,15 @@ on:
       gc_tune:
         description: 'GC-TUNE TASK-375/376/380 (1 = G1 flags MaxGCPauseMillis=40 + IHOP=35 + 8m + AlwaysPreTouch; 2 = G1 IHOP=35 + 8m + AlwaysPreTouch NO pause-target; 3 = COLLECTOR SWAP ParallelGC; 4 = COLLECTOR SWAP ZGC generational; 0 = vanilla-GC A/B leg)'
         required: false
-        default: '0'
+        default: '3' # x466-C58 bank canon (gc3 = ParallelGC swap)
       inside_cache:
         description: 'INSIDE-CACHE S7-135/TASK-271 ARCH-ATTACK lever #3 (1 = ARMED: inside-blocks/fluid discovery memoization via InsideBlockOps gate for static entities; 0 = vanilla-discovery A/B leg)'
         required: false
-        default: '0'
+        default: '1' # x466-C58 bank canon (ic1)
       flush_diet:
         description: 'FLUSH-DIET S7-137 ARCH-ATTACK lever #4 (1 = ARMED: StepBasedCollector.flushStep zero-waste addAll via FlushOps.fladd — kills new Object[0] garbage per empty effect step; 0 = vanilla-flush A/B leg)'
         required: false
-        default: '0'
+        default: '1' # x466-C58 bank canon (fd1)
       fluid_dirty:
         description: 'FLUID-DIRTY S7-151/TASK-290 ARCH-ATTACK lever #6 (1 = ARMED: fluid-scan memoization via FluidPushOps.scan + event-driven dirty-stamp ledger on LevelChunk.setBlockState; composes through inside_cache chain; 0 = vanilla-scan A/B leg)'
         required: false
@@ -87,11 +94,11 @@ on:
       region_threads:
         description: 'REGION-THREADS S7-156/TASK-295 ARCH-ATTACK lever #7 (integer >= 2 = ARMED: region-threaded entity ticking via RegionTickOps — W spatial buckets, W-1 TickThread helpers + main, deferred EntityCallbacks FIFO; 1/0 = vanilla passthrough leg)'
         required: false
-        default: '0'
+        default: '4' # x466-C58 bank canon (rt4)
       batch_collector:
         description: 'BATCH-COLLECTOR S7-160 ARCH-ATTACK lever #8 (1 = ARMED: zero-map flat StepBasedCollector replacement via BatchCollector.ensure lazy swap in RegionTickOps.tickBucket — requires region_threads>=2; 0 = vanilla collector A/B leg)'
         required: false
-        default: '0'
+        default: '1' # x466-C58 bank canon (bc1)
       # flat_traversal input REMOVED (TASK-342): the 25-input GitHub limit;
       # lever #9 was REFUTED (FAIL PG4a) long ago and rolled back — the flag
       # is pinned to '0' below; bridge classes remain infrastructure.
@@ -125,7 +132,7 @@ on:
       population_target:
         description: 'BENCH-X150K living-scene population injection (0 = off; 10000 = smoke; 150000 = prime scale, S7-129)'
         required: false
-        default: '0'
+        default: '150000' # x466-C58 bank canon (pop150k)
       population_seed:
         description: 'Deterministic injection replay seed (BenchPopulationPlugin)'
         required: false
@@ -133,7 +140,7 @@ on:
       server_xmx:
         description: 'Server JVM max heap (S7-130; 6G = historical default, 150k-scale prime runs use 10G)'
         required: false
-        default: '6G'
+        default: '10G' # x466-C58 bank canon (10G)
       server_xms:
         description: 'Server JVM initial heap (TASK-321 FREE-HOST track; MUST be <= server_xmx; default 4G preserves all historical legs bit-exact)'
         required: false
@@ -141,11 +148,11 @@ on:
       cpu_band_min:
         description: 'Pair-hunter fast-fail: min runner_cpu_index band (empty = no gate; S7-96d law pairing infra)'
         required: false
-        default: ''
+        default: '6000000' # x466-C58 era canon band 6.0-9.5M
       cpu_band_max:
         description: 'Pair-hunter fast-fail: max runner_cpu_index band (empty = no gate)'
         required: false
-        default: ''
+        default: '9500000' # x466-C58 era canon band 6.0-9.5M
       natives_url:
         description: 'Closed-source natives tar.gz (empty = hotpatch-only mode)'
         required: false
