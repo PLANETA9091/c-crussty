@@ -87,6 +87,7 @@ public final class ColpushOps {
     private static final String FLAG_MEGA = "cmp452_mega";
     /** TASK-453-C diet composite (sense-core + chunk4 + ins4 carrier; STRICT-OR). */
     private static final String FLAG_DIET = "cmp453_diet";
+    private static final String FLAG_POI = "cmp456_poi"; // TASK-456-B carrier (STRICT OR)
     /** TASK-434-C: chunk-pipeline R5 carrier (STRICT-OR; raw-cp marker
      * for the check_blobs_sync gate, x93). */
     private static final String FLAG10 = "cmp434_chunkpl";

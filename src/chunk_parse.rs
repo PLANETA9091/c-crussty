@@ -139,8 +139,8 @@ fn enabled() -> bool {
             || v == "cmp438_sense" // TASK-444-C: sense family union
             || v == "cmp451_senseins" || v == "cmp458_swar" || v == "cmp457_paldelta" || v == "cmp457_eqsnap2" || v == "cmp453_diet" || v == "cmp450_chunk" || v == "cmp456_chunkmono" || v == "cmp456_chunkmono_p31snap" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
             || v == "cmp453_diet" || v == "cmp450_chunk" // TASK-453-C: diet composite (chunkparse-codec plane, STRICT OR — master ∪ {cmp453_diet} only)
-            || v == "cmp451_senseins" || v == "cmp458_swar" || v == "cmp457_paldelta" || v == "cmp457_eqsnap2"|| v == "cmp434_chunkpl"|| v == "cmp435_chunk3"|| v == "cmp437_chunk4"|| v == "cmp444_chunk5"|| v == "cmp450_chunk" || v == "cmp456_chunkmono" || v == "cmp456_chunkmono_p31snap" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
-        })
+            || v == "cmp451_senseins" || v == "cmp458_swar" || v == "cmp457_paldelta" || v == "cmp457_eqsnap2"|| v == "cmp434_chunkpl"|| v == "cmp435_chunk3"|| v == "cmp437_chunk4"|| v == "cmp444_chunk5"|| v == "cmp450_chunk" || v == "cmp456_chunkmono" || v == "cmp456_chunkmono_p31snap" || t == "cmp456_poi" || t == "cmp456_poi" || t == "cmp456_poi" || t == "cmp456_poi" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+origin/round-464-poi-p22-1        })
         .unwrap_or(false)
 }
 

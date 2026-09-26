@@ -119,6 +119,7 @@ public final class ChunkSendOps {
      * scheduling mono-plane; STRICT-OR; raw-cp marker for the
      * check_blobs_sync gate). */
     static final String CARRIER_UNION_456 = "cmp456_chunkmono";
+    static final String CARRIER_UNION_456 = "cmp456_poi";
 
     /** pos longKey -> current snapshot packet. Lock-free probe. */
     private static final ConcurrentHashMap<Long, ClientboundLevelChunkWithLightPacket> CACHE =

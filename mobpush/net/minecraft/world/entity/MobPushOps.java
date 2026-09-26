@@ -222,6 +222,8 @@ public final class MobPushOps {
         if (f != null && (f.trim().equals("cmp434_chunkpl") || f.trim().equals("cmp435_chunk3"))) return "cmp434_chunkpl"; // TASK-434-C
         if (f != null && f.trim().equals("cmp452_mega")) return "cmp452_mega"; // TASK-452-C mega-composite marker id
         if (f != null && f.trim().equals("cmp453_diet") || f.trim().equals("cmp450_chunk") || f.trim().equals("cmp456_chunkmono") || f.trim().equals("cmp456_chunkmono_p31snap")) return "cmp453_diet"; // TASK-453-C diet composite marker id
+        if (f != null && (f.trim().equals("cmp437_chunk4") || f.trim().equals("cmp444_chunk5") || f.trim().equals("cmp450_chunk") || f.trim().equals("cmp456_poi"))) return "cmp437_chunk4"; // TASK-438-C R7 marker id (452c: precedence fixed vs 451c)
+        if (f != null && f.trim().equals("cmp453_diet") || f.trim().equals("cmp456_poi") || f.trim().equals("cmp450_chunk")) return "cmp453_diet"; // TASK-453-C diet composite marker id
         if (f != null && f.trim().equals("cmp421_brain")) return "cmp421_brain";
         return f != null && f.trim().equals("cmp412_eqsnapv3")
                 ? "cmp412_eqsnapv3" : "cmp411_eqsnap";

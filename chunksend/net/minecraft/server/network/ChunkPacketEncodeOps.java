@@ -90,6 +90,7 @@ public final class ChunkPacketEncodeOps {
      * scheduling mono-plane; STRICT-OR; raw-cp marker for the
      * check_blobs_sync gate). */
     static final String CARRIER_UNION_456 = "cmp456_chunkmono";
+    static final String CARRIER_UNION_456 = "cmp456_poi";
 
     /** Packet instance -> its vanilla write() payload (reference keys). */
     private static final ConcurrentHashMap<ClientboundLevelChunkWithLightPacket, byte[]> PAYLOAD =

@@ -144,6 +144,16 @@ fn flag_enabled(flag: Option<&str>) -> bool {
             | Some("cmp438_sense") // TASK-444-C: sense family union
             | Some("cmp451_senseins") | Some("cmp458_swar") | Some("cmp457_paldelta") | Some("cmp457_eqsnap2") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
             | Some("cmp453_diet") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
+            // TASK-456-B (NCDFE fix, run 36122777112): cmp456_poi = FULL era
+            // carrier (law-7 synonym of cmp450_chunk ⊕ cmp453_diet + POI
+            // plane). The java MobPushOps blob's `if (K4 || EQSNAP)` branch is
+            // LIVE under cmp456_poi (step-2 java widen) and executes
+            // `EntityGoalQueryOps.pushCandidates` from the FIRST pushables
+            // call — the bridge define MUST be gated on this flag or the site
+            // resolves a never-defined class (NCDFE cached per cp entry,
+            // ×6014 poi456-2). poi_widen.py missed the `Some(..)` pattern
+            // (only Ok(..)/f==-style were widened) — x452 mirror-drift class.
+            | Some("cmp456_poi")
             | Some("cmp421_brain")
             | Some("cmp421_brain") | Some("cmp434_chunkpl") | Some("cmp435_chunk3") | Some("cmp437_chunk4") | Some("cmp444_chunk5") | Some("cmp450_chunk")
             // TASK-456-C NCDFE fix (×451/×452 precedent fa9054d9): the chunk6-sched
@@ -206,8 +216,8 @@ fn enabled_flag_is_sense() -> bool {
             | Ok("cmp453_diet") | Ok("cmp450_chunk") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
             | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") // TASK-454-B/455-B: chunk union carrier rides the sense gate (STRICT OR, rebaze-3 union)
             | Ok("cmp451_senseins") | Ok("cmp458_swar") // TASK-452-A: senseins composite — sense-arena slice must arm (production gate retag)
-            | Ok("cmp453_diet") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp456_chunkmono_p31snap") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
-    )
+            | Ok("cmp453_diet") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp456_chunkmono_p31snap") || t == "cmp456_poi" || t == "cmp456_poi" // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
+origin/round-464-poi-p22-1    )
 }
 
 /// TASK-422-B (iter-2): точная метка вектор-флага в ARM/EFFECT-маркерах.
@@ -1267,6 +1277,29 @@ mod tests {
 mod entityquery_delivery_tests {
     const SRC: &str = include_str!("../entitygoalquery/net/minecraft/world/entity/EntityGoalQueryOps.java");
     const BLOB: &str = "entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class";
+
+    #[test]
+    fn entityquery_lever_gate_carries_full_era_union() {
+        // TASK-456-B (NCDFE run 36122777112): the DEFINE gate must carry the
+        // FULL era carrier union — the java MobPushOps blob executes
+        // EntityGoalQueryOps.pushCandidates under every flag listed here, so
+        // a missing needle = define never runs = NCDFE cached per cp entry
+        // (x452 mirror-drift class: poi_widen.py missed Some(..) patterns).
+        // Pinned: cmp456_poi ⊕ its law-7 synonyms cmp450_chunk/cmp453_diet;
+        // foreign/empty flags stay vanilla.
+        assert!(super::flag_enabled(Some("cmp456_poi")));
+        assert!(super::flag_enabled(Some("cmp450_chunk")));
+        assert!(super::flag_enabled(Some("cmp453_diet")));
+        // And the java blob side carries the same needle (javap ground truth
+        // enforced by scripts/check_blobs_sync.sh marker list).
+        assert!(SRC.contains("cmp456_poi"), "EntityGoalQueryOps.java lost the cmp456_poi gate");
+        assert!(
+            super::flag_enabled(Some("cmp456_poi_x")) == false
+                && super::flag_enabled(Some("")) == false
+                && super::flag_enabled(None) == false,
+            "STRICT eq violated: foreign/empty flag must stay dormant"
+        );
+    }
 
     #[test]
     fn entityquery_embedded_bytes_match_build_dir() {

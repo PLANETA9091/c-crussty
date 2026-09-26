@@ -167,6 +167,8 @@ public final class EntityGoalQueryOps {
                 : t.equals("cmp450_chunk") || t.equals("cmp456_chunkmono") || t.equals("cmp456_chunkmono_p31snap") ? "cmp450_chunk" // TASK-450-C: union carrier marker id (chunk4+chunk5+slices)
                 : t.equals("cmp452_mega") ? "cmp452_mega" // TASK-452-C mega-composite marker id
                 : t.equals("cmp453_diet") || f.trim().equals("cmp450_chunk") || f.trim().equals("cmp456_chunkmono") || f.trim().equals("cmp456_chunkmono_p31snap") ? "cmp453_diet" // TASK-453-C diet composite marker id
+                : t.equals("cmp450_chunk") || f.trim().equals("cmp456_poi") ? "cmp450_chunk" // TASK-450-C: union carrier marker id (chunk4+chunk5+slices)
+                : t.equals("cmp453_diet") || f.trim().equals("cmp456_poi") || f.trim().equals("cmp450_chunk") ? "cmp453_diet" // TASK-453-C diet composite marker id
                 : t.equals("cmp421_brain") ? "cmp421_brain"
                 : t.equals("cmp412_eqsnapv3") ? "cmp412_eqsnapv3" // TASK-412-C: точная метка.
                 : t.equals("cmp411_eqsnap") ? "cmp411_eqsnap"
