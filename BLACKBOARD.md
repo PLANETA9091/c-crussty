@@ -8,16 +8,20 @@
 |---|---|---|---|
 | canary-470 | 36268086369 | MAIN | norm∈[−6,+6] = MERGE №11 VERIFIED |
 | n16def-verify | 36268090827 | MAIN | epoch ok **n=16** при пустом LEVER_ARG = пин работает |
+| s19-stag4 | 36269800653 | S19 | PUSH-лейн N16-vs-N4 (AI=16 pin, stagger=4) vs n16def-verify: |Δ|<2пп = пин не-несущий |
 | s15-parity-aa1 | 36269639744 | S15 | артефакт → P6-пара; ждём |Δcpu|≤50k |
 | s15-parity-aa2 | 36269641046 | S15 | пара к aa1: PER-TYPE ≤~2% = PARITY-OK №11 (9/9) |
 | s09-poirearm-a | 36269640851 | S09 | lever cmp456_chunkmono_p31snap + POI re-arm: census site1_calls>0 (ARM-пруф) + пара vs мастер-носитель ≈+14.53пп (Л210) |
+| s01-n12 legs | 36269815197/36269816953/36269818289/36269956059 | S01 | n12-носитель 52fdf942 (b3853246+pin 16→12, блобы ребилд, blobgate ALL IN SYNC): пары vs a16 (N-верdict: n12−n16 ≈+2.8пп за MAE?) и vs a00 (бар ≥+20) |
+| s01-a16 legs | 36269819859/36269821542/36269823416/36269957481 | S01 | якорь n16 = чистый b3853246, flag=cmp466_c98ai, arg пуст (пин 16); дельта к leg ТОЛЬКО пин-константа |
+| s01-a00 legs | 36269825168/36269826651/36269959172 | S01 | якорь ваниль = чистый b3853246, flag пуст; 36269828306 band-dead 1-выброс |
 
 ## СТРЕСС-ЛЕСТНИЦЫ (закон 19)
 - **19a chunk-gen**: база T0-стенд = gen-from-scratch (genfix 92a7b66b); r480=44.4% плоскости; rt8 band-dead ×1,
   rt8p −33.49, rt4 band-dead — ре-роллы нужны; протокол-стенд 19.9 TPS без датапака = арифметика мёртвого стенда (S47).
 - **19b entities**: 300k-стенка = old-cap pinning + P0-floor 199-215ms (85% скан-корни); gc7/y1/y2 REFUTED
   (STW 27.5-49.8s vs прогноз 22-25s — модель S16 закрыта); живой канал = VoxelShape interning 200k-разценз (sweepNow post-arm!),
-  eindex ID_CAP 1<<14 (smoke 36264754336); 400k@12G требует TOPUP300+live-set -эвакуацию.
+  eindex ID_CAP 1<<14 = резерв +10.00MiB nm-пруф (smoke 36264754336 = CRASH java-AIOOBE EntityIndexOps:411, S18); 400k@12G требует TOPUP300+live-set-эвакуацию.
 - **19c datapack**: стресс-миры v1/mech/brutal/terr задиспатчены тиком-469 (в полёте/часть FAIL — level.dat-класс);
   BACAP = event-архитектура: 10.1 cmd/тик = 0.1%, давление = селектор-сканы ×pop; parity-гейт = world_diff_parity_v2
   (ТЕПЕРЬ В МАСТЕРЕ — b3853246) + seed-идентичные чек-суммы.
@@ -32,13 +36,13 @@
 ## РОСТЕР 100 (v20 flat: 100 сабов одним батчем; ЛАБ 40 / ЯКОРЯ 16 / КЛИМБ 20 / ИМПЛ 12 / СТРЕСС 8 / WILD 4)
 | ID | плоскость | claim | статус |
 |---|---|---|---|
-| S01 | ЛАБ-mobai | n12 A/B повтор + N-кривая pair-математика | run |
+| S01 | ЛАБ-mobai | n12 A/B повтор + N-кривая pair-математика | dispatched (13 ног, тик-471 абсорб) |
 | S02 | ЛАБ-mobai | n16-бейслайн паритет-пара на b3853246 | done: PARITY-OK 8/8 |
 | S03 | ЛАБ-javap | javap-контракт MobAiOps N=16 vs 4 (конст-дифф) | run |
 | S04 | ЛАБ-gc | P0-floor разложение: скан-корни 85% — capture-матем | run |
 | S05 | ЛАБ-gc | old-cap pinning: live-set инвентарь 300k@12G | **REFUTED_CENS ≤+7.3пп супремум (Л214)** |
-| S06 | ЛАБ-chunk | r480a/b разброс: холодный старт vs плато — повтор | run |
-| S07 | ЛАБ-chunk | protocol-wall sweepfix-лестница 0.02/0 (S58/S60 канон) | run |
+| S06 | ЛАБ-chunk | r480a/b разброс: холодный старт vs плато — повтор | **DISPATCHED 36269776506+36269778143** |
+| S07 | ЛАБ-chunk | protocol-wall sweepfix-лестница 0.02/0 (S58/S60 канон) | dispatched 6 legs @1a3e7320 (Л220: 0.02=36269908934/10820/12598, 0=36269914213/5746/17567, гейт min-of-3 c/s ≥708) |
 | S08 | ЛАБ-noise | C2ME PerlinNoiseSampler.fill bulk-JNI P0: контракты | REFUTED_CENS (Л211: потолок +4.1..+7.9пп, банк 0.0%) |
 | S09 | ЛАБ-poi | POI re-arm ход (S20-класс) для cmp456_chunkmono/_p31snap | DISPATCHED run 36269640851 (ветка round-470-s09-poirearm@9d02b133, Л210) |
 | S10 | ЛАБ-items | Paper #13783 weak-chunk: 260k items-канон контракты | REFUTED_CENS (Л210: weak-universe=0@150k, потолок ≤+0.01пп) |
@@ -49,11 +53,11 @@
 | S15 | ЛАБ-parity | world_diff_parity_v2 master: selftest 17/17; P6 на canary-470×n16def = 8 гейтов OK (seed-чек-суммы ✓), PER-TYPE RED = Δcpu-экспозиция (2.09M); aa1/aa2 добор DISPATCHED | DISPATCHED |
 | S16 | ЛАБ-ncdfe | ncdfe_guard спящий-сайт-скан по новым блобам №11 | run |
 | S17 | ЛАБ-voxel | VoxelShape interning 200k: sweepNow() post-arm вайринг | run |
-| S18 | ЛАБ-eindex | ID_CAP 1<<14 smoke 36264754336 разбор | run |
-| S19 | ЛАБ-stagger | PushStaggerOps N=16: stagger-lane пин-эффект изоляция | run |
+| S18 | ЛАБ-eindex | ID_CAP 1<<14 smoke разбор — **REFUTED_CENS: потолок +0.9-2.7пп (лейн 8.93%×capture 10-30%), ≥+20 недостижим; ID_CAP=резерв (nm Δ+10.00MiB, 600k); smoke=CRASH java-AIOOBE EntityIndexOps:411 (region-z rowBase: rz≥1 крэш / rz≤−1 тихий miss) — S59 fix-first** | done |
+| S19 | ЛАБ-stagger | PushStaggerOps N=16: stagger-lane пин-эффект изоляция | DISPATCHED 36269800653 (Л216) |
 | S20 | ЛАБ-c98ai | c98ai re-arm композит: POI⊕p31snap⊕n16 математика | run |
 | S21 | ЛАБ-gclog | gc.log-парсер: Full boot-MD vs bench-CC разделение канон | run |
-| S22 | ЛАБ-host | HOST-ценз-серия: STW 27-54s кластер 300k разложение | run |
+| S22 | ЛАБ-host | HOST-ценз-серия: STW 27-54s кластер 300k разложение | done (Л217) |
 | S23 | ЛАБ-flame | leg3 cpu-flamegraph: топ-сегменты 150k | REFUTED_CENS (Л209/210) |
 | S24 | ЛАБ-alloc | alloc-collapsed leg3: топ-аллок-сайты n16 | done: REFUTED_CENS Л212 |
 | S25 | ЛАБ-entity | entity-recon leg3: census 150k структура | run |
@@ -116,9 +120,16 @@
 | S82 | WILD | pop-канал клэмп-ревизия: 150k→160k разница канон | run |
 | S83-S100 | ЛАБ-резерв | распределение по board-ленте после волны-1 (claims открыты) | reserved |
 
+## GC6-РЕ-РОЛЛЫ 19b (S22 Л217 — кластер 26.29-53.95s = 32 Fulls 54.3s/19.6% [13 MD+18 CC+1 Erg@400k] + young-полка; порог ценза 27.0s: @10G default ≈210k, @10G+gc6 = heap-стена 346k, @12G default ≤200k, @12G+gc6 ≈295k — 10G+gc6 ДОМИНАНТЕН, 12G young-штраф +23-30% от old-cap pinning)
+- ДИСПАТЧ-ЛИСТ (все gc_tune=6 @10G, прогноз STW): s10base 150k → 17.3-18.1s; pgc200k/gc7b/g1def(G1→ParallelGC) 200k → ~20s; gc7a/u6/y1/y2 300k → 22.3-25.4s = ПЕРВЫЙ легальный 300k-канал; Xmn5120m-ноги НЕ возобновлять (анти-паттерн +63..+100%); НЕ ре-роллить: u7/400k (young-полка 40.21s > 27.0+13.2s — REFUTED_CENS, канал = alloc-диета) и 12G-ноги как 12G.
+
 ## ЛЕНТА
 - 19:47Z MAIN: МЕРЖ №11 b3853246 push верифицирован; canary-470 + n16def-verify в полёте.
 - 19:55Z MAIN: абсорб 34 ранов: N-кривая, gc7/y1/y2 REFUTED, якоря в §4 BOTTLENECK.
+- 20:35Z S07: sweepfix-лестница ступень на b3853246 — ветка round-470-s07-sweepfix@1a3e7320 (b3853246+59cadfc5+532e5d95, 0 Java, lineunion 53/53), H-S07 preregister (0.02∈[700,790]/0∈[740,794] c/s, гейт ≥708 min-of-3), 6 диспатчей (Л220).
+- 20:45Z S18: smoke 36264754336 разобран — сервер-крэш на inject-start: java-AIOOBE −32 @EntityIndexOps.query:411 (rowBase=region-local z, баг 8766501b, НЕ ID_CAP; diff rust-only); nm-пруф ΔBSS=+10.00MiB (SHARDS 55,575,040→66,060,800B); потолок лейна +0.9-2.7пп@150k/+2.4-7.1@400k → REFUTED_CENS, ID_CAP=600k-резерв; S59 блокирован java-фиксом (gz=(rz<<5)|z, 2 строки) — Л230-Л232.
+- 20:31Z S19 ЛАБ-stagger: stagger-пин ИЗОЛИРОВАН — javap-матрица 3 N-лейнов @b3853246: MobAiOps blob=16 (cert Л196), PushStaggerOps blob=16 (пин f3582d6f БЕЗ сертификата — cert шёл с lever_arg=16, глобальным для windowN+readN), GoalStaggerOps blob=4 (iconst_4, пин blob не ребилдил) ⇒ n16def empty-arg = AI16/PUSH16/GOAL4 ≠ cert(16,16,16); yml-проброс: ai_n/stagger_n инпутов НЕТ (25-инпут капт), lever_arg = глобальный N-бегунок (не изолятор) ⇒ per-lane env только branch-scoped; ИЗОЛИРУЮЩАЯ НОГА **DISPATCHED run 36269800653** round-470-s19-stag4@ad39b415 (b3853246 + env-only 23 строки: CRUSSTY_AI_N='16' + CRUSSTY_STAGGER_N='4', lever cmp466_c98ai/arg пуст, канон-вектор band 6.0-9.5M) — Δ vs 36268090827 = чистый PUSH N16-vs-N4; критерий тик-471: |Δ|<2пп = cert-перенос легален, ≥2пп = push-16 нужна своя строка серта + ребилд GoalStaggerOps. Л216.
+- 20:35Z S06: r480a/b разброс = GC-артефакт, НЕ стратум: r480b шел на G1 (gc6-дыра, база 4c1c05a9 без case-6, фикс ac0dbad9 19:33Z ПОЗЖЕ рана); стратум-контроль s01r3@7078562 gc3 = −6.07 vs r480b −38.95 (Δcpu 0.08%); rt8p −33.49 и t1 −26.76 тоже G1-загрязнены (ре-грейн §2/§5). Решающий повтор: r480c gc6-живой run 36269776506 + r480d gc3 run 36269778143 (база 40068dbe, r480/300s/fp4/150k/seed42, band 6.0-9.5M). LEDGER Л-470-S06.1-.5.
 - 20:30Z S12: struct-integrity гейт preregistered (169-слотовый семантический chunk-hash + structure-markers + seed-identity + детерминизм-контроль G-S1..S5, P7-STRUCT после P6); world-sha/raw гейт REFUTED_CENS — бенигн-reorder 169/169 ложных RED, 0 бит локализации (Paper #14125 канон подтверждён фикс-числами); ветка round-470-s12-structgate @74140041, RESEARCH-S12.md.
 - 20:40Z S26: jfr-stream 36265378558 — канон «JFR-tap сухой» REFUTED (file 0/9 vs stream 49/49, GC 124/124 Δ+0.03%); live-tap без рестарта 5/5 событий сертифицирован (attach+agentmain, Л215)); Full-GC CodeCache ×6 = 40.2% STW → СТЗ.
 - 21:05Z S14: 7.0M-узел пересчитан (Л213/RESEARCH-S14-7.0M-node.md): Δ=median×1.605пп (+3.42 в центре = Л201 ✓); флор −5→−1.4, депресс chkmono-11/12 −3.6/−3.7→+0.3, canary-406 −13.32→−10.77, canary-407 −0.96→+3.32 коридор-флип; №9/№10-пары и climb5-пороги 0 флипов (шахта 6.76-6.84M вне окна); канон банк-фид: полным band + пост-хок idx-фильтр; гейт canary-470 обязан есть узел 2.1293 (±3.2-3.7пп бюджет).
@@ -137,4 +148,6 @@
 - 20:38Z S10: Paper #13783 (260k items weak-chunk) → контракты в items-план (W1 universe-гейт items_index, W2 enmass-indexAdd, W3 lifetime-re-push+ABA-окно DESPAWN2, W4 активационный merge-шторм); ценз 150k: weak-universe=0 (forceload 36/9216, Л-466-C90.1), merge-lane 0.006% CPU (Л145) → потолок ≤+0.01пп, супремум GEC ≤+1.4пп (k=0.57 чужой лейн) << +20; ёмкость 260k OK (MAX_IDS 1<<20 = 24.8% vs eindex 99%@300k); REFUTED_CENS, диспатч round-470-s10-* НЕ производится. Л210.
 - 20:55Z S24: alloc-census n16 leg3 REFUTED_CENS — закон-5-зоны = 58.0% серверных сэмплов (collision-scratch 20.3 / vec3-fluid 13.0 / inside 10.7 / iterable 8.4 / zero_cursor 4.9 / skip-store 0.7) НЕ воскрешать; живой young-лейн 42% (chunk-sched 13.1, mob-ai 7.4, items 2.9, loot 1.9); GC-ось окна: 11 young/60s, ΣSTW 1362ms = 2.27% wall @605MB/s, Full=0 → потолок полного элимина +1.8пп, лучший лейн ≤+0.30пп ≪ +20 (конвергентно Л55/Л142). DISPATCH 0. Л212.
 - 20:3xZ S09 ЛАБ-poi: POI re-arm leg ЗАДИСПАТЧЕНА — run **36269640851**, ветка round-470-s09-poirearm@9d02b133 (master+cherry 87c9ccf7), lever cmp456_chunkmono_p31snap, band [6.0,9.5]M gc6. Матрица: POI-плоскость = единственная certified, молчащая на пост-456 (двойной гейт poi_plane.rs+PoiOps.leverEnabled заморожен cmp453-эрой); capture-матем +14.53пп → chunkmono/c98ai компо +29.87, p31snap +8.46. Гейты: blobs ALL IN SYNC, NCDFE T1=0, case_arm 0 FAIL, cargo 0 err. Л212.
+- 21:1xZ S22: HOST-ценз-кластер 26.29-53.95s (8 ранов) разложен по gc.log: Full = 13 MD (Σ3.43s) + 18 CC (Σ44.04s) + 1 Ergonomics 6.85s @400k (ЕДИНСТВЕННЫЙ аллокационный; счёт Full не зависит от pop 8-10 @150-300k, масса растёт с heap); young_avg +0.6ms/1k (124→309), young_total 15.7→16.9→24.1→40.2s (150/200/300/400k); 400k REFUTED_CENS (young 40.21 > 27.0 +13.2s при 0 Full); порог ценза 27.0s @10G+gc6 = heap-стена 346k (300k прогноз 22.3-25.4 CLEAN), @12G+gc6 ≈295k — 10G+gc6 доминирует; Xmn5120m REFUTED числами (27.45@200k +63% к адаптиву 16.87, 49.76@300k 293 паузы); RCC1024M режет CC 6→1 не до нуля; MD256M=0 MD-Full ✓. РЕ-РОЛЛЫ gc6@10G: см. секцию GC6-РЕ-РОЛЛЫ. Л217.
 - 20:35Z S15: parity-v2 selftest 17/17 на мастере; P6-прогон canary-470×n16def (артефакт готов): 8 гейтов OK (seed-чек-суммы 289×5==289×5, forceload 9216), PER-TYPE RED husk+8.23/drowned+7.76/spider−6.61 = Δcpu 2.09M tick-exposure (не код; конвергентно Л206 S02 worst 1.86% при Δcpu 4365); канон: parity-пары CPU-matched ≤50k, P6 кормить trio-входом; DISPATCHED aa1 36269639744 + aa2 36269641046 @b3853246 → тик-471 P6-финал 9/9.
+- 20:5xZ S01 ЛАБ-mobai: РЕШАЮЩИЙ A/B N-кривой ЗАДИСПАТЧЕН (13 ног, 10 веток round-470-s01-*). n12-носитель **52fdf942** = чистый мастер b3853246 + пин MobAiOps.windowN/PushStaggerOps.readN default 16→**12** (0 иных дельт; блобы ребилд javac --release 21 flat==nested, check_blobs_sync ALL IN SYNC, ARM-баннеры default 12; javap-контракт: windowN bipush12@58/ireturn59, readN bipush12@53 — симметрично S03-цензу). ЛЕГА: n12 = ветки n12(a/b/c/d)@52fdf942, flag=cmp466_c98ai, arg ПУСТОЙ (пин решает — канон n16def-verify, S80-приоритет исключён) = 36269815197/36269816953/36269818289/36269956059 (36269813633 band-dead 11.76M — free, ре-ролл n12d); ЯКОРЬ-n16 = чистый b3853246 flag=cmp466_c98ai arg пуст = 36269819859/36269821542/36269823416/36269957481; ЯКОРЬ-ваниль = чистый b3853246 flag пуст = 36269825168/36269826651/36269959172 (36269828306 band-dead). Конфиг-атрибуция: (AI12,PUSH12,GOAL4) vs (AI16,PUSH16,GOAL4) vs ваниль — GOAL4 обе стороны (Л216 GoalStaggerOps blob вне пина) → A/B изолирует ровно тот же пин-дельта, что МЕРЖ №11; кросс-чек атрибуции push-пассажира = S19-isolator 36269800653. Вердикты тик-471 (Л195 cpu по run-env, Δcpu≤50k, min-of-3): (1) N-verdict = n12−n16 пара: >0 за MAE 5.91 → кривая решена в пользу N12 (ожидание +2.8пп), ≤0 → N-кривая плоская 12-16, n16 остаётся; (2) merge-бар = n12−ваниль ≥+20 (закон 18). Норм-подсчёт tps_exp_v5; окно [6.9,7.2]M — Л201-локальный узел 2.1293. n12a build+band PASS, bench in_progress. Л223.
