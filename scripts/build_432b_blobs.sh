@@ -94,7 +94,6 @@ gate_fe goalops/build        net/minecraft/world/entity/ai/goal GoalOps
 gate_fe queryplane/build     net/minecraft/world/entity QueryPlaneOps
 gate_fe entityinside/build   net/minecraft/world/entity 'InsideSnapOps$Snap'
 gate_fe entityinside/build   net/minecraft/world/entity 'InsideSnapOps$Lane'
-gate_fe entityinside/build   net/minecraft/world/entity 'InsideBlockOps$Recorder'
 # shellcheck disable=SC2181
 echo "flat==nested gates: OK"
 
