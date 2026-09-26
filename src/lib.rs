@@ -45,8 +45,14 @@ mod flush_diet;
 mod improved_noise;
 mod inside_bitmask;
 mod inside_cache;
+// INSIDE-BATCH (TASK-459-56, ID-P31): bulk-JNI discovery plane for the
+// checkInsideBlocks lane (один батч-натив на тик; superset-маска секций +
+// strict ванильный хвост). Dormant unless CRUSSTY_INSIDE_BATCH=1.
+mod inside_batch;
 mod inside_diet;
+mod inside_epoch_gate;
 mod inside_snap;
+mod inside_snap_registry;
 mod item_merge;
 mod items_index;
 mod items_lifetime;
@@ -201,10 +207,27 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // entity_compose. Dormant unless CRUSSTY_LEVER_FLAG == cmp424_inside
     // (STRICT eq; пустой флаг = ваниль бит-в-байт).
     inside_snap::register();
+    // INSIDE-SNAP REGISTRY SIDECAR (TASK-459-57, ID-P32, закон 11 тик-459):
+    // флет-реестр Snap[] по стабильным per-section int-индексам + epoch
+    // одним int-cmp; miss -> fail-closed CHM fallback (InsideSnapOps).
+    // DORMANT scaffold: класс-мост не определяется и хуков нет, пока
+    // CRUSSTY_LEVER_FLAG != cmp459_snapreg (STRICT eq).
+    inside_snap_registry::register();
     // INSIDE-CACHE (S7-135): byte hook on Entity (pristine capture at first
     // load; patch served via retransform after the InsideBlockOps bridge
     // lands). Dormant unless CRUSSTY_INSIDE_CACHE=1.
     inside_cache::register();
+    // INSIDE-EPOCH GATE (ID-P36, TASK-459-58 scaffold): дешёвый пре-гейт
+    // перед полным путём inside-snapshot serve (флет-массив эпох, bump уже
+    // live в secWrite). Register идёт рядом с inside_cache; define — ранний
+    // arm-hook (NCDFE-канон), ретаргет-вставка — wiring-фаза. Dormant unless
+    // CRUSSTY_INSIDE_EPOCH_GATE=1 (и до приземления блоба — честный
+    // scaffold-stop в activate).
+    inside_epoch_gate::register();
+    // INSIDE-BATCH (TASK-459-56, ID-P31): sibling owner of the same
+    // checkInsideBlocks method-entry site (supersede via entity_compose when
+    // armed). Dormant unless CRUSSTY_INSIDE_BATCH=1.
+    inside_batch::register();
     // INSIDE-BITMASK (TASK-357): bridge owner registration (dormant unless
     // CRUSSTY_INSIDE_BITMASK=1).
     inside_bitmask::register();
@@ -517,6 +540,10 @@ fn inject_surface() {
     // compute the length-preserving patch, retransform (dormant unless
     // CRUSSTY_INSIDE_CACHE=1).
     inside_cache::activate();
+    // INSIDE-BATCH (TASK-459-56, ID-P31): arm the InsideBatchOps bridge in the
+    // early arm-hook (NCDFE-канон d73758a3/5ecd841a) — scaffold stays dormant
+    // until the bridge bytes are built (scripts/build_inside_batch_ops.sh).
+    inside_batch::activate();
     // INSIDE-BITMASK (TASK-357): define InsideBitmaskOps into the kernel
     // loader, probe-then-patch, Entity stage composes via entity_compose
     // (dormant unless CRUSSTY_INSIDE_BITMASK=1).
@@ -544,6 +571,16 @@ fn inject_surface() {
     // arm, then the LevelChunk secWrite retarget + retransform (gate идёт
     // через entity_compose stage 1c; dormant unless lever_flag=cmp424_inside).
     inside_snap::activate();
+    // INSIDE-EPOCH GATE (ID-P36, TASK-459-58 scaffold): РАННИЙ arm-hook —
+    // define InsideEpochGate в kernel loader + selfTest hit-инварианта ДО
+    // публикации BRIDGE_READY (секвенция inside_cache; NCDFE-канон: класс
+    // определён до первого gated-вызова). Dormant unless
+    // CRUSSTY_INSIDE_EPOCH_GATE=1; scaffold-stop, пока блоб не встроен.
+    inside_epoch_gate::activate();
+    // INSIDE-SNAP REGISTRY SIDECAR (ID-P32): define $Snap->$Lane->sidecar
+    // (NCDFE define-order), selfTest probe, arm; NO byte hook in v1
+    // (dormant unless lever_flag=cmp459_snapreg).
+    inside_snap_registry::activate();
     // FLUID-DIRTY (S7-151): define FluidPushOps into the kernel loader,
     // compute the secWrite retarget for LevelChunk, arm the inside_chain
     // bridge (dormant unless CRUSSTY_FLUID_DIRTY=1).
