@@ -9560,3 +9560,98 @@ pub fn patch_eindex_bb_site(
         (EIDX_OPS_CLASS, "noteBB", note_bb_desc),
     )
 }
+
+// ---------------------------------------------------------------------------
+// CHUNK6-SCHED (TASK-456-C, cmp456_chunkmono): ServerChunkCache scheduling
+// mono-plane — BOTH sites or none (composite fail-dominant, NAVPOOL canon):
+//   1. getChunkNow(II)Lnet/minecraft/world/level/chunk/LevelChunk;
+//      -> ChunkSchedOps.getNow(ServerChunkCache,II)LevelChunk
+//   2. moonrise$setFullChunk(IILnet/minecraft/world/level/chunk/LevelChunk;)V
+//      -> ChunkSchedOps.onSetFullChunk(ServerChunkCache,IILevelChunk)V
+// The bridge is defined into the kernel loader BEFORE the patch is computed;
+// the redirect helper enforces the receiver-prepended descriptor contract.
+// ---------------------------------------------------------------------------
+
+pub const CHUNKSCHED_OPS_CLASS: &str = "net/minecraft/server/level/ChunkSchedOps";
+pub const SERVER_CHUNK_CACHE_CLASS: &str = "net/minecraft/server/level/ServerChunkCache";
+
+pub const CHUNKSCHED_REDIRECT_TARGETS: [(&str, &str, &str, &str); 2] = [
+    (
+        "getChunkNow",
+        "(II)Lnet/minecraft/world/level/chunk/LevelChunk;",
+        "getNow",
+        "(Lnet/minecraft/server/level/ServerChunkCache;II)Lnet/minecraft/world/level/chunk/LevelChunk;",
+    ),
+    (
+        "moonrise$setFullChunk",
+        "(IILnet/minecraft/world/level/chunk/LevelChunk;)V",
+        "onSetFullChunk",
+        "(Lnet/minecraft/server/level/ServerChunkCache;IILnet/minecraft/world/level/chunk/LevelChunk;)V",
+    ),
+];
+
+pub fn patch_server_chunk_cache_sched(
+    bytes: &[u8],
+) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let mut cur = bytes.to_vec();
+    let mut retargeted = 0usize;
+    let mut already = 0usize;
+    for (name, desc, tname, tdesc) in CHUNKSCHED_REDIRECT_TARGETS {
+        let (p, outcome) = redirect_method_body_to_static(
+            &cur,
+            name,
+            desc,
+            SERVER_CHUNK_CACHE_CLASS,
+            CHUNKSCHED_OPS_CLASS,
+            tname,
+            tdesc,
+        )?;
+        cur = p;
+        match outcome {
+            RetargetOutcome::Retargeted { .. } => retargeted += 1,
+            RetargetOutcome::AlreadyPatched { .. } => already += 1,
+            RetargetOutcome::NotFound => {
+                return Err(format!("chunk-sched site {name} not found (fail-dominant)"));
+            }
+        }
+    }
+    if retargeted == CHUNKSCHED_REDIRECT_TARGETS.len() {
+        Ok((cur, RetargetOutcome::Retargeted { sites: retargeted }))
+    } else if retargeted == 0 && already == CHUNKSCHED_REDIRECT_TARGETS.len() {
+        Ok((cur, RetargetOutcome::AlreadyPatched { sites: already }))
+    } else {
+        Err(format!(
+            "chunk-sched partial patch rejected (retargeted={retargeted}, already={already}; BOTH-or-none)"
+        ))
+    }
+}
+
+/// Resolution closure (parse_diag precedent): the embedded bridge MUST declare
+/// the two retarget receiver-prepended statics + the native names, otherwise
+/// the first getChunkNow/ setFullChunk detonates a NoSuchMethodError.
+pub fn chunk_sched_resolution_closure(ops_bytes: &[u8]) -> Result<(), String> {
+    let layout = parse_layout(ops_bytes).ok_or_else(|| "bad ops classfile layout".to_string())?;
+    let pool = layout.pool;
+    let need: [(&str, &str); 5] = [
+        ("getNow", "(Lnet/minecraft/server/level/ServerChunkCache;II)Lnet/minecraft/world/level/chunk/LevelChunk;"),
+        (
+            "onSetFullChunk",
+            "(Lnet/minecraft/server/level/ServerChunkCache;IILnet/minecraft/world/level/chunk/LevelChunk;)V",
+        ),
+        ("mirrorEvent", "(JZ)Z"),
+        ("schedProbe", "()J"),
+        ("arm", "()V"),
+    ];
+    for (n, d) in need {
+        let Some(ni) = pool.find_utf8(n) else {
+            return Err(format!("ops pool missing name {n}"));
+        };
+        let Some(di) = pool.find_utf8(d) else {
+            return Err(format!("ops pool missing desc {d}"));
+        };
+        if find_method(ops_bytes, layout.methods_start, ni, di).is_none() {
+            return Err(format!("ops missing method {n}{d}"));
+        }
+    }
+    Ok(())
+}
