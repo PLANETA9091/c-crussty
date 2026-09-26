@@ -30,6 +30,7 @@ mod goal_selector;
 mod classfile;
 mod collide_batch;
 mod colpush;
+mod dp_stress;
 #[cfg(test)]
 mod entity_mirror;
 mod entity_compose;
@@ -245,6 +246,13 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // served via retransform after the ChunkSchedOps bridge lands). Dormant unless
     // CRUSSTY_LEVER_FLAG carries the chunk-sched carrier (STRICT-OR canon).
     chunk_sched::register();
+    // C100 DATAPACK-STRESS CENSUS (TASK-466-C100, mega-goal 19c, lever
+    // cmp466_dpstress, NOT-A-BENCH): byte hook on ServerFunctionManager
+    // (single whole-body redirect of executeTagFunctions -> DpStressOps.execTag
+    // served via retransform after the bridge define). Dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp466_dpstress (strict eq; empty/foreign flag =
+    // vanilla bit-in-byte).
+    dp_stress::register();
     // ZERO-CURSOR (lever #11 v1, TASK-330): byte hook on BlockPos (pristine
     // capture; pooled-iterator redirect served via retransform after the
     // ZeroCursorIter/ZeroCursorOps bridges land). Dormant unless
@@ -560,6 +568,10 @@ fn inject_surface() {
     // (dormant unless CRUSSTY_PARSE_DIAG=1).
     parse_diag::activate();
     chunk_sched::activate();
+    // C100 DATAPACK-STRESS CENSUS (TASK-466-C100): wait for the kernel
+    // ServerFunctionManager, define DpStressOps into its loader, selfTest,
+    // READY + retransform (dormant unless lever cmp466_dpstress).
+    dp_stress::activate();
     // ZERO-CURSOR (lever #11 v1, TASK-330): define ZeroCursorIter+Ops into
     // the kernel loader, static body-redirect of
     // lambda$betweenCornersInDirection$8, retransform (dormant unless

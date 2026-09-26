@@ -539,6 +539,16 @@ case "${LEVER_FLAG:-}" in
     export CRUSSTY_KERNEL_POLICY="off"
     log "${LEVER_FLAG} armed: POI-SUBSYSTEM = POI-плоскость целиком в Rust (Level.notifyAndUpdatePhysics updatePOIOnBlockStateChange site -> PoiOps.updatePoiGate POI-mask fast-path; ChunkMap.tick PoiManager.tick site -> PoiOps.poiTickGate epoch flush; rust PoiStore mirror via ONE bulk poiEpoch JNI/tick) ⊕ ПОЛНЫЙ НОСИТЕЛЬ ЭРЫ cmp456_poi STRICT-OR (ins4 ⊕ senseins ⊕ chunk4-send ⊕ chunk5-encode ⊕ chunkparse ⊕ noise-GEN, KERNEL_POLICY=off documented A/B override) — TASK-456-B, закон 6+7+8"
     ;;
+  cmp466_dpstress)
+    # C100 x466 DATAPACK-STRESS CENSUS (мега-цель 19c, NOT-A-BENCH —
+    # observation-only telemetry): whole-body redirect
+    # ServerFunctionManager.executeTagFunctions -> DpStressOps.execTag
+    # (bit-exact vanilla transcription over the public surface + LongAdder
+    # fns/ns telemetry, stderr [c466-dpstress] INIT/every-1200/FINAL).
+    # STRICT-eq gate in rust; empty/foreign flag = vanilla bit-in-byte.
+    # No env overrides — census carries no kernel-policy/GC changes.
+    log "${LEVER_FLAG} armed: datapack-stress census plane (function-pipeline fns/ns gauge on the stress world; NOT-A-BENCH; G-D1 first number)"
+    ;;
 esac
 # RECON_DIAG (TASK-317, instrument-гейт рычага #13 SKIP-STORE-DIET): чистая
 # наблюдаемость — 0 поведения. GC-политика/heap не трогаются (логирование ≠

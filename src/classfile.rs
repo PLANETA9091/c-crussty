@@ -2597,6 +2597,69 @@ mod tests {
         assert!(err.contains("receiver"), "{err}");
     }
 
+    /// C100 DATAPACK-STRESS CENSUS: the redirect must land on the REAL
+    /// kernel ServerFunctionManager fixture (sha256 4294af84… = round-396-a
+    /// patched-kernel.jar entry): exactly one site (the whole
+    /// executeTagFunctions body), receiver-prepended invokestatic, idempotent
+    /// on re-sight (AlreadyPatched must not touch bytes).
+    #[test]
+    fn dpstress_redirect_applies_to_kernel_fixture() {
+        let real_sfm = include_bytes!("../tests/fixtures/ServerFunctionManager.class");
+        let (patched, outcome) = patch_sfmanager_dpstress(real_sfm).expect("patch");
+        assert_eq!(outcome, RetargetOutcome::Retargeted { sites: 1 });
+        assert_ne!(patched.as_slice(), real_sfm, "redirect must change bytes");
+
+        let layout = parse_layout(&patched).expect("layout");
+        let ni = layout.pool.find_utf8("executeTagFunctions").expect("name");
+        let di = layout
+            .pool
+            .find_utf8("(Ljava/util/Collection;Lnet/minecraft/resources/ResourceLocation;)V")
+            .expect("desc");
+        let m = find_method(&patched, layout.methods_start, ni, di).expect("method survives");
+        let (start, len) = find_code_attr(&patched, &layout.pool, &m).expect("code attr");
+        let code = &patched[start..start + len];
+        // shape: aload_0 (receiver) + aload_1 (Collection) + aload_2 (tag)
+        // + invokestatic + vreturn
+        assert_eq!(code[0], 0x2a, "executeTagFunctions: aload_0 receiver");
+        assert_eq!(code[1], 0x2b, "aload_1 collection");
+        assert_eq!(code[2], 0x2c, "aload_2 tag");
+        let ret_pos = code.len() - 1;
+        assert_eq!(code[ret_pos], 0xb1, "void method -> vreturn");
+        assert_eq!(code[ret_pos - 3], 0xb8, "invokestatic");
+        let cp_idx = u16::from_be_bytes([code[ret_pos - 2], code[ret_pos - 1]]);
+        let parts = layout.pool.methodref_parts(cp_idx).expect("resolve target");
+        assert_eq!(parts.0, DPS_OPS_CLASS, "target owner");
+        assert_eq!(parts.1, "execTag", "target name");
+        assert_eq!(
+            parts.2,
+            "(Lnet/minecraft/server/ServerFunctionManager;Ljava/util/Collection;Lnet/minecraft/resources/ResourceLocation;)V",
+            "receiver-prepended desc"
+        );
+
+        // idempotency: re-sight must be a no-op byte-identical AlreadyPatched
+        let (again, outcome2) = patch_sfmanager_dpstress(&patched).expect("second");
+        assert_eq!(outcome2, RetargetOutcome::AlreadyPatched { sites: 1 });
+        assert_eq!(patched, again, "AlreadyPatched must not touch bytes");
+
+        // Harness bridge: with CRUSSTY_EMIT_PATCHED_SFM=<path> set, the
+        // patched ServerFunctionManager.class is written to disk so the
+        // offline HotSpot link-check can defineClass it (verify gate).
+        if let Ok(path) = std::env::var("CRUSSTY_EMIT_PATCHED_SFM") {
+            if !path.trim().is_empty() {
+                std::fs::write(&path, &patched).expect("emit patched SFM");
+            }
+        }
+    }
+
+    /// C100 census bridge resolution closure: the embedded blob must declare
+    /// the receiver-prepended census static + the selfTest/armState oracles
+    /// (NoSuchMethodError fail-closed gate).
+    #[test]
+    fn dpstress_bridge_resolution_closure_holds() {
+        let blob = include_bytes!("../dpstress/build/net/minecraft/server/DpStressOps.class");
+        dpstress_resolution_closure(blob).expect("closure");
+    }
+
     /// Harness bridge: with CRUSSTY_EMIT_PATCHED_ENTITY=<path> set, the
     /// fully redirected Entity.class is written to disk so the offline
     /// lockstep harness can defineClass it (HotSpot verifies the generated
@@ -9743,6 +9806,72 @@ pub fn chunk_sched_resolution_closure(ops_bytes: &[u8]) -> Result<(), String> {
         ("mirrorEvent", "(JZ)Z"),
         ("schedProbe", "()J"),
         ("arm", "()V"),
+    ];
+    for (n, d) in need {
+        let Some(ni) = pool.find_utf8(n) else {
+            return Err(format!("ops pool missing name {n}"));
+        };
+        let Some(di) = pool.find_utf8(d) else {
+            return Err(format!("ops pool missing desc {d}"));
+        };
+        if find_method(ops_bytes, layout.methods_start, ni, di).is_none() {
+            return Err(format!("ops missing method {n}{d}"));
+        }
+    }
+    Ok(())
+}
+
+// ---------------------------------------------------------------------------
+// C100 DATAPACK-STRESS CENSUS (TASK-466-C100, mega-goal 19c; lever
+// cmp466_dpstress, NOT-A-BENCH): single whole-body redirect of the private
+// ServerFunctionManager.executeTagFunctions — the per-tick datapack function
+// burst choke point (tick tag every tick, load tag on postReload) — to the
+// census bridge DpStressOps.execTag (bit-exact vanilla transcription +
+// LongAdder fns/ns telemetry). javap ground truth (round-396-a
+// patched-kernel.jar, purpur 1.21.10, sha256 4294af84… fixture):
+//   private void executeTagFunctions(java.util.Collection, net.minecraft.resources.ResourceLocation);
+// NOT-A-BENCH: counters post-pop; the verdict expectation is norm ≈ 0.
+// ---------------------------------------------------------------------------
+
+pub const DPS_SFM_CLASS: &str = "net/minecraft/server/ServerFunctionManager";
+pub const DPS_OPS_CLASS: &str = "net/minecraft/server/DpStressOps";
+
+const DPS_EXEC_TAG_DESC: &str =
+    "(Ljava/util/Collection;Lnet/minecraft/resources/ResourceLocation;)V";
+const DPS_EXEC_TAG_OPS_DESC: &str =
+    "(Lnet/minecraft/server/ServerFunctionManager;Ljava/util/Collection;Lnet/minecraft/resources/ResourceLocation;)V";
+
+/// Whole-body redirect of the ONE census site (single-site census, redstone
+/// cohabitation-free: no other plane touches ServerFunctionManager). The
+/// generic redirect helper enforces the receiver-prepended shape contract and
+/// the AlreadyPatched probe (idempotent re-sight).
+pub fn patch_sfmanager_dpstress(bytes: &[u8]) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let layout = parse_layout(bytes).ok_or("bad classfile layout")?;
+    let this_name = this_class_name(&layout).ok_or("cannot resolve this_class name")?;
+    if this_name != DPS_SFM_CLASS {
+        return Err(format!("unexpected class {this_name}"));
+    }
+    redirect_method_body_to_static(
+        bytes,
+        "executeTagFunctions",
+        DPS_EXEC_TAG_DESC,
+        DPS_SFM_CLASS,
+        DPS_OPS_CLASS,
+        "execTag",
+        DPS_EXEC_TAG_OPS_DESC,
+    )
+}
+
+/// Resolution closure (chunk_sched precedent): the embedded bridge MUST
+/// declare the receiver-prepended census static + the selfTest oracle,
+/// otherwise the first tick tag burst would detonate a NoSuchMethodError.
+pub fn dpstress_resolution_closure(ops_bytes: &[u8]) -> Result<(), String> {
+    let layout = parse_layout(ops_bytes).ok_or_else(|| "bad ops classfile layout".to_string())?;
+    let pool = layout.pool;
+    let need: [(&str, &str); 3] = [
+        ("execTag", DPS_EXEC_TAG_OPS_DESC),
+        ("selfTest", "()Z"),
+        ("armState", "()Ljava/lang/String;"),
     ];
     for (n, d) in need {
         let Some(ni) = pool.find_utf8(n) else {
