@@ -98,6 +98,14 @@ fn java_gate_matches(f: &str) -> bool {
         || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside" || f == "cmp432_inside2" || f == "cmp436_ins4" || f == "cmp458_swar" || f == "cmp456_poi"
 || f == GATE_LEVER_SSCAN
         || f == "cmp410_eindexq" || f == "cmp411_k4soa" || f == "cmp411_eqsnap"
+        // ROUND-468-S24: cmp452_mega gate symmetry — the java blob's
+        // eqsnapEnabled() is LIVE under mega (RADIUS_GATE folds to 2.0 there),
+        // so if mega is EVER re-armed the push lane and the EARLY bridge define
+        // must move together (x456 symmetric-gate canon: define -> natives ->
+        // probe -> publish BEFORE the first pushables call). Entry is dead code
+        // under every legal flag: mega is a banned lever (law 5), never
+        // dispatched; this is delivery-mechanics hardening, NOT resurrection.
+        || f == "cmp452_mega"
 }
 
 static READY: AtomicBool = AtomicBool::new(false);

@@ -170,6 +170,15 @@ fn flag_enabled(flag: Option<&str>) -> bool {
             // define+selfTest — NCDFE structurally impossible, ColpushOps-marker
             // canon). cmp456_chunkmono ≡ cmp450_chunk planes ⊕ chunk6-sched.
             | Some("cmp456_chunkmono") | Some("cmp456_chunkmono_p31snap") | Some("cmp466_c98ai")
+            // ROUND-468-S24 (NCDFE canon, x456 mirror-drift class): cmp452_mega is
+            // java-LIVE in the blob (MobPushOps.eqsnapEnabled = true) but was
+            // rust-inert (absent here AND in mobs_manager arm gate) — asymmetric
+            // landmine: a future mega re-arm that touches only mobs_manager would
+            // resolve EntityGoalQueryOps from the FIRST pushables call with the
+            // bridge undefined (HotSpot caches NCDFE per cp entry, x456 = NCDFE
+            // x1462, x6014). Define-gate symmetry: ensure_bridge_early MUST fire
+            // before the push lane. Dormant under every legal flag (exact match).
+            | Some("cmp452_mega")
     )
 }
 
