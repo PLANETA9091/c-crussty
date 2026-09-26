@@ -1,0 +1,28 @@
+# linepin_allowlist.txt — гейт scripts/linepin_audit.py (канон S43/Л180i, R468-S52)
+# Формат: <path>:<lineno>:<PATTERN>:<reason>
+# Каждая запись = живая line-координата в тулинге с планом конверсии.
+# STALE-детект: запись, под которой паттерна больше нет, репортится STALE-ALLOW —
+# сигнал убрать запись (конверсия выполнена) или починить lineno.
+# ПРАВИЛО КОНВЕРСИИ: при следующем касании файла координата заменяется на
+# symbol-pin форму Owner.method(paramTypes)->retType (гейт ncdfe_guard.sh --pin).
+# Две записи ниже умирают автоматически при мерже round-467-s43-pin@a15a2d91
+# (git mv ncdfe_guard_tmp.sh -> scripts/ncdfe_guard.sh + docstring re-pin).
+ncdfe_guard_tmp.sh:7:P2:superseded-by round-467-s43-pin@a15a2d91 (symbol-pin mode scripts/ncdfe_guard.sh) — drop on merge
+scripts/dispatch_456c_reroll.py:5:P2:superseded-by round-467-s43-pin@a15a2d91 (docstring re-pinned symbol) — drop on merge
+scripts/bench4_recon/dispatch_s7158.py:11:P1:historical crash-ref upstream ChunkMap.java:1017 — convert-on-touch S52-plan §2
+scripts/bench4_recon/dispatch_s7182.py:6:P2:historical javap-attribution chain — convert-on-touch S52-plan §2
+scripts/bench4_recon/dispatch_s7182.py:6:P2B:historical javap-attribution chain — convert-on-touch S52-plan §2
+scripts/bench4_recon/dispatch_s7183.py:6:P2:historical javap-attribution chain — convert-on-touch S52-plan §2
+scripts/bench4_recon/dispatch_s7183.py:6:P2B:historical javap-attribution chain — convert-on-touch S52-plan §2
+scripts/bench4_recon/dispatch_s7184.py:6:P2:historical javap-attribution chain — convert-on-touch S52-plan §2
+scripts/bench4_recon/dispatch_s7184.py:6:P2B:historical javap-attribution chain — convert-on-touch S52-plan §2
+scripts/bench4_recon/dispatch_s7185.py:6:P2:historical javap-attribution chain — convert-on-touch S52-plan §2
+scripts/bench4_recon/dispatch_s7185.py:6:P2B:historical javap-attribution chain — convert-on-touch S52-plan §2
+scripts/bench4_recon/dispatch_s7186.py:6:P2:historical javap-attribution chain — convert-on-touch S52-plan §2
+scripts/bench4_recon/dispatch_s7186.py:6:P2B:historical javap-attribution chain — convert-on-touch S52-plan §2
+scripts/bench4_recon/dispatch_s7187.py:6:P2:historical javap-attribution chain — convert-on-touch S52-plan §2
+scripts/bench4_recon/dispatch_s7187.py:6:P2B:historical javap-attribution chain — convert-on-touch S52-plan §2
+scripts/bench4_recon/dispatch_s7188.py:6:P2:historical javap-attribution chain — convert-on-touch S52-plan §2
+scripts/bench4_recon/dispatch_s7188.py:6:P2B:historical javap-attribution chain — convert-on-touch S52-plan §2
+scripts/build_432b_blobs.sh:105:P1:historical crash-ref InsideSnapOps.java:220 — convert-on-touch S52-plan §2
+scripts/build_432b_blobs.sh:105:P2:historical crash-ref InsideSnapOps.java:220 — convert-on-touch S52-plan §2
