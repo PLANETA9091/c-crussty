@@ -177,7 +177,7 @@ print(f"{6000000/(time.time()-t):.0f}")' 2>/dev/null || echo unknown)"
   echo "fluid_guard: $FLUID_GUARD (CRUSSTY_FLUID_PUSH_GUARD; 1 = same-state fluid-push guard ARMED, TASK-80/S7-128)"
   echo "paletted_demux: $PALETTED_DEMUX (CRUSSTY_PALETTED_DEMUX; 1 = PALETTED-DEMUX ARCH-ATTACK lever #1, S7-131)"
   echo "alloc_diet: $ALLOC_DIET (CRUSSTY_ALLOC_DIET; input dropped TASK-375, lever #2 REFUTED x2 — pinned 0)"
-  echo "gc_tune: $GC_TUNE (GC-TUNE TASK-375/376/380/384; 1 = MaxGCPauseMillis=40 + IHOP=35 + G1HeapRegionSize=8m + AlwaysPreTouch; 2 = IHOP=35 + 8m + AlwaysPreTouch без pause-target [s7199: pause-target токсичен]; 3 = COLLECTOR ParallelGC [БАНК v4]; 4 = COLLECTOR ZGC generational; 5 = ParallelGC + TransparentHugePages + AlwaysPreTouch — JVM-level, vanilla-parity)"
+  echo "gc_tune: $GC_TUNE (GC-TUNE TASK-375/376/380/384 + S93-WARM; 1 = MaxGCPauseMillis=40 + IHOP=35 + G1HeapRegionSize=8m + AlwaysPreTouch; 2 = IHOP=35 + 8m + AlwaysPreTouch без pause-target [s7199: pause-target токсичен]; 3 = COLLECTOR ParallelGC [БАНК v4]; 4 = COLLECTOR ZGC generational; 5 = ParallelGC + TransparentHugePages + AlwaysPreTouch; 7 = ParallelGC + RCC=512M + MetaspaceSize=256M + CICompilerCount=4 [S93 JIT-warm, JVM-level vanilla-parity])"
   echo "inside_cache: $INSIDE_CACHE (CRUSSTY_INSIDE_CACHE; 1 = INSIDE-CACHE ARCH-ATTACK lever #3: static-entity inside-blocks discovery memoization, S7-135/TASK-271)"
   echo "flush_diet: $FLUSH_DIET (CRUSSTY_FLUSH_DIET; 1 = FLUSH-DIET ARCH-ATTACK lever #4: StepBasedCollector.flushStep zero-waste addAll via FlushOps, S7-137)"
   echo "fluid_free: $FLUID_FREE (CRUSSTY_FLUID_FREE; 1 = FLUID-FREE-SECTION ARCH-ATTACK lever #5: fluid-ff verdict cache via FluidOps.fgate, requires paletted_demux=1, S7-143)"
@@ -584,6 +584,28 @@ elif [ "${GC_TUNE:-0}" = "4" ]; then
 elif [ "${GC_TUNE:-0}" = "5" ]; then
   GC_COLLECTOR=("-XX:+UseParallelGC" "-XX:+UseTransparentHugePages" "-XX:+AlwaysPreTouch")
   log "gc_tune=5: ParallelGC + THP + AlwaysPreTouch (TASK-384 autonomous A/B: RECON-41 — профиль memory-bound [PalettedContainer.get 4.3% + SimpleBitStorage 1.7% воркеров, HashMap.getNode], THP режет TLB-miss и в сцене и в GC-copy 4.35GB/s)"
+elif [ "${GC_TUNE:-0}" = "7" ]; then
+  # S93 WARM-PRESET (round-468-s93-warm): JIT/класс-лоадинг cold-path warm —
+  # сжигает JIT-долг ИНЖЕКТ-фазой (вне bench-окна) вместо первых 2-4 поллов окна.
+  # Эвиденс p200k2 (run 36246688082, профили артефакта): compiler-треды 3.88%
+  # CPU cpu-окна (4589/118173 сэмплов, saturated — 2 park-сэмпла), vtable/itable
+  # 3.12% + VarHandle 2.15%, CodeCache-Threshold Full 3089.5ms ВНУТРИ окна
+  # (uptime 328s, сразу перед poll-3); дрейф TPS-поллов 1.6->2.6 (+62.5%) на
+  # всех трёх ванилях 150k-канона (36243328859/36247345449/36240411214).
+  # Флаги ТОЛЬКО JVM-уровня — семантика игры не трогается (parity бит-в-бит);
+  # RCC/Metaspace — канон Л180q:
+  #  - ReservedCodeCacheSize=512M: code cache не переполняется -> CodeCache GC
+  #    Threshold-события (6 пар в p200k2, Full max 3.09s) исчезают;
+  #  - MetaspaceSize=256M: Metadata-Full'ы умирают (Л180q: 8 из 10 Full);
+  #  - CICompilerCount=4: x2 compile-throughput на 4-ядерном раннере во время
+  #    инжекта (85.8s@200k / ~64s@150k, вне окна) -> окно открывается прогретым.
+  GC_COLLECTOR=("-XX:+UseParallelGC")
+  EXTRA_JVM_GC=(
+    "-XX:ReservedCodeCacheSize=512M"
+    "-XX:MetaspaceSize=256M"
+    "-XX:CICompilerCount=4"
+  )
+  log "gc_tune=7: ParallelGC + RCC=512M + MetaspaceSize=256M + CICompilerCount=4 (S93 WARM: JIT-долг сжигается инжект-фазой вне окна; CodeCache/Metadata Full GC-килл; канон Л180q)"
 fi
 if [ "${RECON_DIAG:-0}" = "1" ]; then
   EXTRA_JVM_DIAG=(
