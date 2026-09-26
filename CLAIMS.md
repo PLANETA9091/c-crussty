@@ -241,3 +241,11 @@ TASK-457 (tick-456 закрывает, открывает ×457, 20:0x +08):
 - canary-406 (36227848892): ваниль-верификация МЕРЖ №9 после ';;'-фикса 66a57c02
 
 | TASK-467 | 2026-09-26 | v20.0 FLAT SWARM: 🏆 МЕРЖ №10 c98-compo master dbbffef9 (04d58e6c): cmp466_c98ai leg +28.51 v5 @6766376, min-of-3 W8 +26.88/E2 +22.24/W10 +35.91 все Δ≤50k uncensored; canary-468 dispatched; рой 100→97 финалов, 34+ MAIN-диспатча, REBRAND-2 1170/1170; стресс-19c v1 REFUTED-INFRA (level.dat) → v2-план | dbbffef9 | ROUND-467/ |
+
+## CLAIMS x467-B (MAIN тик 19:43+08, v20 flat swarm — консолидация сессии)
+- МЕРЖ №10 c98-compo: гейты полные (cargo 0 err + 351/0 tests S88 + blobs ALL IN SYNC + ncdfe_guard 11/11 + case-arm scan S89), canary-406 −13.32пп (z=−1.83σ, run 36240411214) → ваниль-база в доборе (canary-407/408 диспатч)
+- ERRATA №9: M15-пара Δ360611>50k не легальна → №9 = 2/3 (S84, CERT-вопрос)
+- climb5-p32-1: 2/3 навсегда частотно-мёртвое окно C (S34 ≥1/2500) — CERT через носителя (p31snap уже в master)
+- RE-GRAIN тика: S06 n16 ×3, S11 ai4/ai32 ×4, S63 200k, S64 r1280, S65 dp-stress, S67 sweepfix, canary-468 = ≥11 ранов in-flight на след. тик
+- Рой: 100 скоупов → 99/100 доков (S10 мёртв), 85 финалов in-session, 167 CI-ранов с 10:40Z
+- Ветки-носители follow-up: round-467-s36-gatev2 (gate_v2), round-467-s43-pin (symbol-pin), round-467-s89-casearm (needles c98ai), round-467-s67-sweepfix (COMMAND_SLEEP)
