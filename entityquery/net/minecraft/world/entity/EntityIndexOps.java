@@ -405,10 +405,38 @@ public final class EntityIndexOps {
                 int xStart = rx == minRX ? (minCX & 31) : 0;
                 int xEnd = rx == maxRX ? (maxCX & 31) : 31;
                 for (int z = zStart; z <= zEnd; z++) {
-                    int rowBase = (z - minCZ) * w - minCX;
+                    // S59 FIX (AIOOBE -32 @EntityIndexOps.query:411, run 36264754336):
+                    // the counts row must be indexed by the GLOBAL chunk z — the
+                    // region-LOCAL loop var z broke every row for rz != 0:
+                    // rz >= +1 → negative rowBase → AIOOBE (Index -32, exactly
+                    // rz=1/w=1/first row on the default int[256] Buf.counts);
+                    // rz <= -1 → silent wrong-row read = superset-contract
+                    // violation WITHOUT a crash. gz=(rz<<5)|z is the vanilla
+                    // chunk-z decomposition (two's complement, same shape as
+                    // the already-correct (rx<<5)|x column).
+                    int gz = (rz << 5) | z;
+                    int rowBase = (gz - minCZ) * w - minCX;
                     for (int x = xStart; x <= xEnd; x++) {
                         int cx = (rx << 5) | x;
-                        if (counts[rowBase + cx] == 0) {
+                        // S59 belt (fail-closed): the counts read is the ONLY
+                        // non-vanilla throwing site in this walk. Any Throwable
+                        // here = counts-contract defect → sticky disarm
+                        // (broken=true → every future query takes
+                        // vanillaReplica) and THIS chunk is scanned
+                        // vanilla-exact (the rust count is a superset: scanning
+                        // a chunk the count would have skipped can only add
+                        // vanilla contributions) — bit-for-bit vanilla for the
+                        // whole call even after a mid-walk failure (a coarse
+                        // whole-walk catch → vanillaReplica would DOUBLE-APPEND
+                        // entities already collected from earlier chunks).
+                        boolean empty;
+                        try {
+                            empty = counts[rowBase + cx] == 0;
+                        } catch (Throwable t) {
+                            broken = true;
+                            empty = false;
+                        }
+                        if (empty) {
                             continue; // rust superset says: nothing here for sure
                         }
                         ChunkEntitySlices slices = region.get(x | (z << 5));

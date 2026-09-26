@@ -32,7 +32,7 @@ API = "https://api.github.com"
 WF = "world-bench-parallel.yml"
 
 BRANCH = "round-470-s59-eindexfix"
-PIN_SHA = "b6d016f515cb73f6784980f05b7ed021806145fb"
+PIN_SHA = ""  # filled at commit time (S59 fix sha)
 
 INPUTS = {
     "radius": "640", "seconds": "300", "fake_players": "4",
