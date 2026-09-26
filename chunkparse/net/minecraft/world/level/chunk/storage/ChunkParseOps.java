@@ -156,7 +156,7 @@ public final class ChunkParseOps {
     /** TASK-456-C chunkmono carrier (master cert stack + chunk6-sched
      * scheduling mono-plane; STRICT-OR; raw-cp marker). */
     static final String CARRIER_UNION_456 = "cmp456_chunkmono";
-    static final String CARRIER_UNION_456 = "cmp456_poi";
+    static final String CARRIER_UNION_456_POI = "cmp456_poi";
 
     /**
      * codec(identity) -> (tag -> pristine decoded template). The outer map
