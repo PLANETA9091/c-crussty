@@ -57,6 +57,18 @@
 //! non-ticking items are not candidates; bench populations live in active
 //! chunks). Level scoping is carried by the key (identityHashCode of the
 //! Level) AND re-checked Java-side (`other.level() == self.level()`).
+//!
+//! S10 WEAK-CHUNK КОНТРАКТ (ROUND-470, Paper #13783: 260k items weak-chunk
+//! 1000+ MSPT → вердикт REFUTED_CENS, Л210). Сайт W1 = universe-гейт выше:
+//! loaded-but-non-ticking (weak-chunk) items НЕ входят в grid; флип чанка в
+//! ticking = burst idxInsert стада. Ёмкость 260k держит: MAX_IDS 1<<20 →
+//! 260k = 24.8% капа; 64 шардa × 16384 ключей → ~4.2k/shard = 25.6% load
+//! (< 62.5% grow) — контраст eindex 524288: 300k=99% / 400k=132% ERR_STRUCT
+//! (Л180l). Сайт W4 = idxQuery: merge-кандидаты ≤64 клеток 4×4×4 —
+//! активационный merge-шторм #13783 схлопывается в grid-запросы, но только
+//! для grid-universe. ЦЕНЗ 150k + item-стадо 100,353 (67% сцены, C90.1):
+//! weak-universe = 0, merge-lane 0.006% CPU (Л145) → потолок ≤+0.01пп,
+//! супремум по всему GEC 4.09% incl — mob-owned (k=0.57, Л68) ≤+1.4пп << +20.
 
 use jvmti_bindings::jni;
 use std::sync::atomic::{AtomicI32, AtomicI64, AtomicUsize, Ordering};

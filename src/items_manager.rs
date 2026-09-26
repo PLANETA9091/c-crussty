@@ -20,6 +20,16 @@
 //!
 //! Fail-closed: define/registration failure -> armed()=false -> ванильный
 //! путь; пустой/чужой CRUSSTY_LEVER_FLAG -> ванильный путь по построению.
+//!
+//! S10 WEAK-CHUNK КОНТРАКТ (ROUND-470, Paper #13783: 260k items weak-chunk
+//! 1000+ MSPT → вердикт REFUTED_CENS, Л210). Сайт W2 = ITEM-SUBSYS2 block в
+//! RegionTickOps.tickBucket: enmass-батч indexAdd при активации носителя —
+//! единственный burst-путь массового insert стада (weak-chunk→ticking флип).
+//! На банке-v5/150k путь МОЛЧИТ: forceload 36/9216, вся популяция в активных
+//! чанках (Л-466-C90.1), herd-фазы мимо 300s-окна (Л145: ItemEntity.merge
+//! ≈ 6-7 сэмплов/116,469 CPU = 0.006%) → флип-событий 0. Файл не содержит
+//! других weak-сайтов: армирование fail-closed, 0 java-дельт, NCDFE T1=0,
+//! диспатч round-470-s10-* НЕ производится (потолок ≤+0.01пп << +20).
 
 use std::ffi::c_void;
 use std::ffi::CString;
