@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# =============================================================================
-# Benchmark 3.0 — REAL-WORLD no-player load benchmark in GitHub CI
+# ======================================================================# Benchmark 3.0 — REAL-WORLD no-player load benchmark in GitHub CI
 # (owner directive, 2026-09-16: MineShield-3 world, forceload everything,
 # farms/mobs/entities tick, zero players, detailed bottleneck output).
 #
@@ -25,8 +24,7 @@
 #
 # Disk economy: reclaim preinstalled toolchains first, delete the zip right
 # after extraction, keep only report artifacts.
-# =============================================================================
-set -uo pipefail
+# ======================================================================set -uo pipefail
 
 WORLD_URL="${WORLD_URL:-https://storage.shield.land/public.php/dav/files/twzsxN3HkBQtyED/Season%203/MineShield-3__Min--Normal.zip}"
 RUN_SECONDS="${RUN_SECONDS:-900}"
@@ -531,6 +529,14 @@ case "${LEVER_FLAG:-}" in
     # in soak — boot-parity only). Empty flag = vanilla bit-in-byte.
     export CRUSSTY_KERNEL_POLICY="off"
     log "${LEVER_FLAG} armed: CHUNKMONO-CARRIER cmp456_chunkmono = master cert stack (ins4 ⊕ senseins ⊕ diet ⊕ chunk4 send-snapshot ⊕ chunk5 encode-cache ⊕ chunkparse section/biomes codec caches ⊕ noise-GEN GEN-axis; STRICT-OR) ⊕ chunk6-sched scheduling mono-plane (getChunkNow -> ChunkSchedOps.getNow fast-path + moonrise\$setFullChunk shadow feed + rust L2 key-mirror; BOTH-or-none; scheduling slice 4.6-5.2% in scope) — закон 7 субаддитивность на серт-носителе f44a831e (TASK-456-C, RESEARCH-456-C GO)"
+  cmp456_poi)
+    # TASK-456-B: POI подсистема целиком (закон 6) ⊕ ПОЛНЫЙ НОСИТЕЛЬ ЭРЫ
+    # (STRICT-OR union of the certified master composite). GEN-axis
+    # (noise_fill.rs) needs the documented kernel-policy A/B override — same
+    # two-key rule as cmp450_chunk legs (RESEARCH-455-B finding #1). Empty
+    # flag = vanilla bit-in-bit, no policy change.
+    export CRUSSTY_KERNEL_POLICY="off"
+    log "${LEVER_FLAG} armed: POI-SUBSYSTEM = POI-плоскость целиком в Rust (Level.notifyAndUpdatePhysics updatePOIOnBlockStateChange site -> PoiOps.updatePoiGate POI-mask fast-path; ChunkMap.tick PoiManager.tick site -> PoiOps.poiTickGate epoch flush; rust PoiStore mirror via ONE bulk poiEpoch JNI/tick) ⊕ ПОЛНЫЙ НОСИТЕЛЬ ЭРЫ cmp456_poi STRICT-OR (ins4 ⊕ senseins ⊕ chunk4-send ⊕ chunk5-encode ⊕ chunkparse ⊕ noise-GEN, KERNEL_POLICY=off documented A/B override) — TASK-456-B, закон 6+7+8"
     ;;
 esac
 # RECON_DIAG (TASK-317, instrument-гейт рычага #13 SKIP-STORE-DIET): чистая
