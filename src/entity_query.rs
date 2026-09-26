@@ -624,6 +624,22 @@ pub fn activate() {
     if !enabled() {
         return;
     }
+    // TASK-466-C09 PURE-MOVE DELTA GUARD (x465 wiring fix): cmp463_move rides
+    // flag_enabled ONLY as the MovePlaneOps EARLY-define gate (mirror-drift
+    // lesson x452 — ONE production gate list). The goal-query retarget phase
+    // itself must stay dormant under the pure move lever, otherwise the armed
+    // delta vs the vanilla anchor = move-plane + goal-query-plane (contaminated
+    // leg). The move bridge define is owned by move_plane::activate()'s own
+    // ensure_move_bridge_early() loop — this worker is not needed for it.
+    if std::env::var("CRUSSTY_LEVER_FLAG")
+        .map(|v| v.trim() == "cmp463_move")
+        .unwrap_or(false)
+    {
+        eprintln!(
+            "[crussty-plugin] entity_query: cmp463_move = move-plane-only carrier — goal-query retarget stays dormant (pure-move delta guard)"
+        );
+        return;
+    }
     std::thread::spawn(|| {
         // TASK-413-C EARLY PHASE: define the bridge as soon as the loader is
         // quiet and ANY anchor is up (LivingEntity at boot; goal classes may
@@ -1197,6 +1213,20 @@ mod tests {
         assert!(!enabled_with("cmp463_move_x"));
         assert!(!enabled_with(" cmp463_move"));
         assert!(!enabled_with("cmp463_move "));
+    }
+
+    /// TASK-466-C09 (x465 wiring fix): the move lever is a PURE-move carrier —
+    /// flag_enabled arms ONLY the MovePlaneOps EARLY-define gate (consumed by
+    /// move_plane::activate's ensure_move_bridge_early loop); the goal-query
+    /// retarget phase in activate() must stay dormant under it (armed delta
+    /// vs vanilla anchor = move-plane only). Pinned: the lever literal and the
+    /// guard live on the same gate list — if either drifts, this test fails.
+    #[test]
+    fn move_lever_is_pure_move_carrier() {
+        assert!(flag_enabled(Some("cmp463_move")));
+        // foreign lookalikes never arm the define gate
+        assert!(!flag_enabled(Some("cmp463_moves")));
+        assert!(!flag_enabled(Some("CMP463_MOVE")));
     }
 
     /// Mirror of the java EntityGoalQueryOps.cellHash operating on the same

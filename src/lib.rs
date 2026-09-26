@@ -708,6 +708,17 @@ fn inject_surface() {
     // cmp410_eindexq). Runs AFTER mobs_manager::activate: the goal-query
     // epoch reads the SAME SoA plane the push bridge populates.
     entity_query::activate();
+    // MOVE-PLANE ACTIVATE WIRING (TASK-466-C09, x465 находка): the register()
+    // byte hook alone was DEAD — move_plane::activate() was never called in
+    // lib.rs, so every navmath leg of the era (cmp463_move) stayed A/A noise:
+    // the MoveControl pristine bytes were stashed, but no EARLY bridge define,
+    // no selfTest probe, no READY flip, no retransform ever ran. This call is
+    // the whole free vector: boot-quiet -> EARLY MovePlaneOps define (entity_query
+    // BRIDGE_DEFINED канон, NCDFE T1=0) -> selfTest 10^5x3 probe -> ARM marker
+    // -> MoveControl.tick -> MovePlaneOps.handle retransform. Dormant unless
+    // CRUSSTY_LEVER_FLAG == cmp463_move (STRICT eq; empty flag = vanilla
+    // bit-in-bit; pure-move delta guard lives in entity_query::activate).
+    move_plane::activate();
     // QUERYPLANE (TASK-417-C): boot quiet -> define QueryPlaneOps into the
     // kernel loader + selfTest on the LOCAL ref from define_class (find_class
     // fix: JVMTI-scan filters non-INITIALIZED classes, just-defined bridge
