@@ -125,7 +125,7 @@ public final class ColpushOps {
 
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5) || f.trim().equals(FLAG6) || f.trim().equals(FLAG15) || f.trim().equals(FLAG_CM) || f.trim().equals(FLAG10) || f.trim().equals(FLAG11) || f.trim().equals(FLAG12) || f.trim().equals(FLAG13) || f.trim().equals(FLAG14) || f.trim().equals(FLAG_MEGA) || f.trim().equals(FLAG_DIET) || f.trim().equals("cmp456_chunkmono_p31snap") || f.trim().equals("cmp456_chunkmono") || f.trim().equals(FLAG17));
+return f != null && (f.trim().equals(FLAG) || f.trim().equals(FLAG2) || f.trim().equals(FLAG3) || f.trim().equals(FLAG4) || f.trim().equals(FLAG5) || f.trim().equals(FLAG6) || f.trim().equals(FLAG15) || f.trim().equals(FLAG_CM) || f.trim().equals(FLAG10) || f.trim().equals(FLAG11) || f.trim().equals(FLAG12) || f.trim().equals(FLAG13) || f.trim().equals(FLAG14) || f.trim().equals(FLAG_MEGA) || f.trim().equals(FLAG_DIET) || f.trim().equals("cmp456_chunkmono_p31snap") || f.trim().equals("cmp466_c98ai") || f.trim().equals("cmp456_chunkmono") || f.trim().equals(FLAG17));
     }
 
     /** Структурный отказ — весь рычаг дизармится навсегда (ваниль-реплика). */
