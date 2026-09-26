@@ -139,7 +139,7 @@ fn enabled() -> bool {
             || v == "cmp438_sense" // TASK-444-C: sense family union
             || v == "cmp451_senseins" || v == "cmp458_swar" || v == "cmp457_paldelta" || v == "cmp457_eqsnap2" || v == "cmp466_poiun" || v == "cmp453_diet" || v == "cmp450_chunk" || v == "cmp456_chunkmono" || v == "cmp456_chunkmono_p31snap" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
             || v == "cmp453_diet" || v == "cmp450_chunk" // TASK-453-C: diet composite (chunkparse-codec plane, STRICT OR — master ∪ {cmp453_diet} only)
-            || v == "cmp451_senseins" || v == "cmp458_swar" || v == "cmp457_paldelta" || v == "cmp457_eqsnap2" || v == "cmp466_poiun"|| v == "cmp434_chunkpl"|| v == "cmp435_chunk3"|| v == "cmp437_chunk4"|| v == "cmp444_chunk5"|| v == "cmp450_chunk" || v == "cmp456_chunkmono" || v == "cmp456_chunkmono_p31snap" || v == "cmp456_poi" || v == "cmp456_poi" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+            || v == "cmp451_senseins" || v == "cmp458_swar" || v == "cmp457_paldelta" || v == "cmp457_eqsnap2" || v == "cmp466_poiun"|| v == "cmp434_chunkpl"|| v == "cmp435_chunk3"|| v == "cmp437_chunk4"|| v == "cmp444_chunk5"|| v == "cmp450_chunk" || v == "cmp456_chunkmono" || v == "cmp456_chunkmono_p31snap" || v == "cmp456_poi" || v == "cmp452_mega" // TASK-451-D + x466-C02 mega-drift fix (cmp452_mega contract: run_world3 §cmp452_mega + CARRIER_UNION_452 cp-pin + 4/6 siblings; codec caches were silently dormant on mega legs); cmp456_poi dup deduped (union-glue Л141-УРОК-3)
 })
         .unwrap_or(false)
 }

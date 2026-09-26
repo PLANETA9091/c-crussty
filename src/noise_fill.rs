@@ -176,11 +176,12 @@ fn enabled() -> bool {
                 || v == "cmp420_chunk2"
                 || v == "cmp420_colpush"
                 || v == "cmp421_chunk"
-                || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2" || v == "cmp436_ins4" || v == "cmp458_swar" || v == "cmp457_paldelta" || v == "cmp457_eqsnap2" || v == "cmp466_poiun" || v == "cmp456_chunkmono" || v == "cmp456_chunkmono" || v == "cmp456_chunkmono_p31snap" || v == "cmp456_chunkmono_p31snap"
+                || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2" || v == "cmp436_ins4" || v == "cmp458_swar" || v == "cmp457_paldelta" || v == "cmp457_eqsnap2" || v == "cmp466_poiun" || v == "cmp456_chunkmono" || v == "cmp456_chunkmono_p31snap"
                 || v == "cmp451_senseins" || v == "cmp458_swar" || v == "cmp457_paldelta" || v == "cmp457_eqsnap2" || v == "cmp466_poiun" || v == "cmp453_diet" || v == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
                 || v == "cmp438_sense" // TASK-444-C: sense family union
                 || v == "cmp451_senseins" || v == "cmp458_swar" || v == "cmp457_paldelta" || v == "cmp457_eqsnap2" || v == "cmp466_poiun" || v == "cmp453_diet" || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp444_chunk5" || v == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
                 || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2" || v == "cmp436_ins4" || v == "cmp458_swar" || v == "cmp456_poi" || v == "cmp466_poiun"
+                || v == "cmp452_mega" // x466-C02 mega-drift fix: GEN-axis promised by run_world3 §cmp452_mega (noise-GEN rides mega carrier), 4/6 siblings armed
 })
         .unwrap_or(false);
     env_gate || lever_gate
