@@ -201,13 +201,32 @@ public final class MobAiOps {
         return skip;
     }
 
-    /** N окна (та же лестница, что у rust: AI_N | LEVER_ARG, clamp [2..64], default 4). */
+    /** R468-S14 AI-depth AUTO: один эхо-маркер на новое значение n (ladder-trace в stdout). */
+    private static final java.util.Set<Integer> AUTO_SEEN = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    /** N окна (та же лестница, что у rust: AI_N | LEVER_ARG, clamp [2..64], default 4);
+     *  R468-S14: lever_arg 'auto' = N от плотности популяции (Л180n/S22/S96):
+     *  N(pop) = clamp(round(pop/18750), 2, 64) — N(150k)=8 (тождество банка
+     *  cmp466_c98ai lever_arg=8), N(200k)=11, N(300k)=16; инвариант pop/N ≈ 18.75k
+     *  AI/тик — фикс-стена N=8 на плотности снята, на лёгкой популяции skip мягче
+     *  (больше ваниль-покровия). Вызов 1×/тик под EPOCH_LOCK (maybeEpoch) → n
+     *  пинуется на всю эпоху (правило exact-1-in-N валидно между сменами; смена =
+     *  одноразовый фазовый сдвиг, rate-инвариант). Гистерезис не нужен: round-бэнд
+     *  N=8 = pop [140625,159375] = ±6.25% (S96 §3). */
     static int windowN() {
         String s = System.getenv("CRUSSTY_AI_N");
         if (s == null || s.isBlank()) {
             s = System.getenv("CRUSSTY_LEVER_ARG");
         }
         if (s != null && !s.isBlank()) {
+            if ("auto".equalsIgnoreCase(s.trim())) { // R468-S14: 'auto' раньше тихо падало в плацебо N=4 (parseInt→catch Throwable)
+                int pop = MobPushOps.idCount();
+                int n = Math.max(2, Math.min(64, Math.round(pop / 18750f)));
+                if (AUTO_SEEN.add(n)) {
+                    LOG.info("[crussty-plugin] cmp406_aibatch: windowN AUTO pop=" + pop + " -> n=" + n);
+                }
+                return n;
+            }
             try {
                 int v = Integer.parseInt(s.trim());
                 if (v >= 2) {
