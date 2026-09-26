@@ -30,7 +30,7 @@
 | ID | плоскость | claim | статус |
 |---|---|---|---|
 | S01 | ЛАБ-mobai | n12 A/B повтор + N-кривая pair-математика | run |
-| S02 | ЛАБ-mobai | n16-бейслайн паритет-пара на b3853246 | run |
+| S02 | ЛАБ-mobai | n16-бейслайн паритет-пара на b3853246 | done: PARITY-OK 8/8 |
 | S03 | ЛАБ-javap | javap-контракт MobAiOps N=16 vs 4 (конст-дифф) | run |
 | S04 | ЛАБ-gc | P0-floor разложение: скан-корни 85% — capture-матем | run |
 | S05 | ЛАБ-gc | old-cap pinning: live-set инвентарь 300k@12G | run |
@@ -39,7 +39,7 @@
 | S08 | ЛАБ-noise | C2ME PerlinNoiseSampler.fill bulk-JNI P0: контракты | run |
 | S09 | ЛАБ-poi | POI re-arm ход (S20-класс) для cmp456_chunkmono/_p31snap | run |
 | S10 | ЛАБ-items | Paper #13783 weak-chunk: 260k items-канон контракты | run |
-| S11 | ЛАБ-ai | Lithium ai.pathing: пересечение с n16-лейном | run |
+| S11 | ЛАБ-ai | Lithium ai.pathing: пересечение с n16-лейном | REFUTED_CENS (Л203: потолок ×1/16 = ≤0.2пп) |
 | S12 | ЛАБ-structgen | Moonrise #192 structure-integrity гейт-дизайн | run |
 | S13 | ЛАБ-bank | в-точки тика (s63anchor+6.33, lightcap+0.42, u4+2.77) в банк §3 | run |
 | S14 | ЛАБ-bank | Л201-локальный узел: пересчёт истории 7.0M-кластера | run |
@@ -56,9 +56,9 @@
 | S25 | ЛАБ-entity | entity-recon leg3: census 150k структура | run |
 | S26 | ЛАБ-jfr | jfr 36265378558: stream-конtracts | run |
 | S27 | ЛАБ-netty | netty 0/612k wall: почему мёртв — финальная фиксация | run |
-| S28 | ЛАБ-scheduler | deadline-scheduler EDF REFUTED (0.28пп): пост-мортем | run |
+| S28 | ЛАБ-scheduler | deadline-scheduler EDF REFUTED (0.28пп): пост-мортем | DONE→REFUTED_CENS |
 | S29 | ЛАБ-chunksched | chunk-sched P22: +0.87-1.55пп — компо-план chk-14⊕P22 | run |
-| S30 | ЛАБ-brain | brainhook selfTest-оракулы: покрытие новых блобов | run |
+| S30 | ЛАБ-brain | brainhook selfTest-оракулы: покрытие новых блобов | финал: 4/9, 2 дыры (Л205) |
 | S31 | ЯКОРЯ | ре-ролл окна climb5 [8734563,8834563] порог ≤+2.77 (gc6) | run |
 | S32 | ЯКОРЯ | ре-ролл окна POI [8907260,9007260] порог ≤−1.99 | run |
 | S33 | ЯКОРЯ | ре-ролл окна K12 [8133686,8233686] порог ≤−2.57 | run |
@@ -116,3 +116,9 @@
 ## ЛЕНТА
 - 19:47Z MAIN: МЕРЖ №11 b3853246 push верифицирован; canary-470 + n16def-verify в полёте.
 - 19:55Z MAIN: абсорб 34 ранов: N-кривая, gc7/y1/y2 REFUTED, якоря в §4 BOTTLENECK.
+- S30: матрица оракулов №11-блобов (leg3/n12 stdout): MobAiOps 3/5 (ARM/epoch-ok n=16-эхо/DATA-PLAN ✅; first-skip EFFECT dead-по-построению — ARM_LOGGED съеден maybeEpoch :283 до skip-чека :196; 0 selfTest), PushStaggerOps 1/4 (rust-ARM ✅; java: 0 selfTest/0 EFFECT/0 N-эхо, ARM-текст stale default 4 vs readN 16) → 2 дыры, фиксы в Л205; selfTest-лейн ранов жив (8 чужих = true).
+- 20:25Z S03: javap-контракт MobAiOps N=16 VERIFIED (b3853246 vs HEAD~2 66e65004): windowN @58 iconst_4→bipush 16, ireturn 59→60, класс 6699→6700B (+1 code, CP #313 стабилен); 0 скрытых 4-констант (ARM-путь + sibling PushStaggerOps.readN iconst_4@53→bipush 16@53); flat==nested cmp OK оба пути; пин не плацебо — leg1 +24.33/leg3 +28.55 (Л207).
+- S11 ЛАБ-ai: ai.pathing⊕n16 REFUTED_CENS — pathing-сайты (navigation 3.29% CPU, createPath 81-83% класса; GoalSelector 4 сайта) целиком внутри serverAiStep-гейта → Lithium-ускорение действует только на on-window 1/16; потолок +3.27пп(Л102)×1/16 ≈ ≤0.2пп (кросс-чек N-кривой: ≤1.8 norm-пп) << +20. Диспатча нет, n16-носитель без головы. Л203.
+- 20:1xZ S28: EDF-пост-мортем док /home/z/rounds/ROUND-470/RESEARCH-S28-EDF.md (5+ чисел: x37.5-60.3 heap-tax, 99.995% инверсий, lane 0.42%, потолок 0.28пп/супремум 0.84пп, break-even НЕ существует) + условия оживления R1-R4 (lane>1% мониторинг / тик<5.6ms / O(1)-структура / семантика легализована). LEDGER Л204. REFUTED_CENS финал.
+- 20:35Z S02: n16-бейслайн паритет-пара 36253791632×36262317204 (канон S31, world3-bench-артефакты) → world_diff_parity_v2 master-версия **VERDICT: WORLD-PARITY-OK 8/8** (FIXTURE/WORLD/SEED/CHUNK-CHECKSUMS/POP-TOTALS/PER-TYPE/TICK-BEHIND/FAKE-PLAYERS all OK; worst-drift spider +1.86%, Δcpu 4365 in-band). world-диспатч НЕ нужен (log-режим достаточен). Попутно crash-fix parity-v2 (IndexError spa[0] на stdout-only входе) → ветка round-470-s02-parityfix @0c8e981f (selftest 17/17).
+- 20:26Z S16(ЛАБ-ncdfe): ncdfe_guard скан блобов №11 (мастер b3853246): selftest PASS 4/0/0; mobai+stagger 8 блобов 0 FAIL/0 SKIP (MobAiOps touch=4 arm-gated→MobPushOps, clinit чист, flat==nested; PushStagger/GoalStagger touch=0); crossOps за lever-веткой + EARLY-define HARD gate подтверждён (entity_query.rs:172→mobs_manager.rs:436-451, EARLY_ANCHORS :368). 3 новых риск-сайта → LAB_LEDGER Л208: (R1) mobs_ai.rs:264 fail-open 120s «arming anyway» = единственный NCDFE-остаток (define MobAiOps без probe MobPushOps); (R2) mirror-drift: cmp466_c98ai руками в 4 rust-листах+2 блоба = 6 точек синхронизации; (R3) спящие топ-левел дубли блобов ×3 sha256-EQUAL, rust не читает. Вердикт: №11 NCDFE-чиста, 0 FAIL, 3 риск-сайта числами.
