@@ -385,6 +385,27 @@ gate_load randomtick/build     net/minecraft/world/entity/ai/BrainOps
 gate_load chunkparse/build     net/minecraft/world/level/chunk/storage/ChunkParseOps
 gate_load chunksend/build      net/minecraft/server/network/ChunkSendOps
 gate_load chunksend/build      net/minecraft/server/network/ChunkPacketEncodeOps
+
+# R468-S21 Л180h anti-drift gate: every stagger/build blob must have a
+# committed .java SOURCE sibling. Л180h lesson — GoalStaggerOps.class rode
+# master since 48475af3 (TASK-401-I, 2026-09-21) with its .java silently
+# orphaned on round-403-a-* branches: rebuild from source became impossible
+# (javac input missing) while the 2076B blob stayed include_bytes-live in
+# src/stagger.rs:48 for 5 days across cmp401_stagger..cmp466_c98ai carriers.
+# Contract: source loss = silent drift; this gate turns it into a FAIL.
+# S67 (round-470) merge onto post-S56 blobgate v2 + errata: PushStaggerOps
+# sibling arg was '.java' under build/ (never exists => gate no-op for Push);
+# corrected to the .class blob path so the gate actually guards both.
+gate_source_sibling() { # blob_path src_path
+  if [ -f "$1" ] && [ ! -f "$2" ]; then
+    die "source-sibling FAIL: blob '$1' has no committed source '$2' (Л180h quiet-drift class)"
+  fi
+  note "source-sibling OK: $2"
+}
+gate_source_sibling stagger/build/net/minecraft/world/entity/PushStaggerOps.class \
+                   stagger/net/minecraft/world/entity/PushStaggerOps.java
+gate_source_sibling stagger/build/net/minecraft/world/entity/ai/goal/target/GoalStaggerOps.class \
+                   stagger/net/minecraft/world/entity/ai/goal/target/GoalStaggerOps.java
 gate_load poi/build            net/minecraft/world/entity/ai/village/poi/PoiOps
 gate_load chunksched/build     net/minecraft/server/level/ChunkSchedOps
 gate_load fluid/build          net/minecraft/world/entity/FluidPushGuardHook
