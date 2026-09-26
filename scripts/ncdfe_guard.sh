@@ -95,7 +95,7 @@ check_class() { # $1 = path ; verdict lines; returns 0 OK / 1 FAIL / 2 SKIP
   # C2/C3/C4: javap -p -c parse
   local jp
   jp="$("$JAVAP" -p -c "$path" 2>&1)"
-  if [ $? -ne 0 ] || [[ "$jp" == *"Error:"* || "$jp" == *"Exception:"* ]]; then
+  if [ $? -ne 0 ] || [[ "$jp" == Error:* || "$jp" == Exception:* ]]; then
     say "[FAIL] $path — javap не смог разобрать класс (битый/corrupt constant pool)"; return 1
   fi
   # own simple name: last class declaration header "public|final|abstract class|interface ... <Name> {"
