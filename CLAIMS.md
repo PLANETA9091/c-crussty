@@ -239,3 +239,5 @@ TASK-457 (tick-456 закрывает, открывает ×457, 20:0x +08):
 - МЕГА-19b: base 0.70 TPS @150k → ent200 (36230467798) → ent300 пре-флайт
 - МЕГА-19c: стресс-стенд готов (BACAP 5230 fn), ждёт хостинг-хук world_url
 - canary-406 (36227848892): ваниль-верификация МЕРЖ №9 после ';;'-фикса 66a57c02
+
+| TASK-467 | 2026-09-26 | v20.0 FLAT SWARM: 🏆 МЕРЖ №10 c98-compo master dbbffef9 (04d58e6c): cmp466_c98ai leg +28.51 v5 @6766376, min-of-3 W8 +26.88/E2 +22.24/W10 +35.91 все Δ≤50k uncensored; canary-468 dispatched; рой 100→97 финалов, 34+ MAIN-диспатча, REBRAND-2 1170/1170; стресс-19c v1 REFUTED-INFRA (level.dat) → v2-план | dbbffef9 | ROUND-467/ |
