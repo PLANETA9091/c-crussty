@@ -4955,7 +4955,7 @@ Stage Summary:
 - Прогноз (G6): полный захват −188..−200 MB/s / young-STW −3.45..−4.58s (1.15-1.53% wall); честный агрегат −35..−76 MB/s / −0.64..−1.73s; Q1 −8..−12 MB/s / −0.15..−0.29s. TPS-конверсия запрещена (GC-SHAPE-1, Л71).
 - Внешние (≥3): Lithium allocation-diet REFUTED-уроки (pooling отвергнут — CME/state-leak; диета = замена структур), JMH GCProfiler (gc.alloc.rate.norm + пара -XX:-DoEscapeAnalysis = формализация C2-EA-урока), JOL-лэйауты (Vec3 40B / AABB 64B / BlockPos 24B; final layout-инвариантен, JLS 17.5.1).
 - ВЕРДИКТ-60: число **4** = TIER-B-АГРЕГАТ GO-КАНДИКАТ (GC-debt relief only); плечо-очередь: **Iterable-дети** (whitelist). Диспатчей 0, CI 0 (офлайн).
-- Артефакты: /home/z/rounds/ROUND-464/LAB-STAGE/LEDGER-60.md (7 секций: re-anchor, декомпозиция, очередь, G1-G6, прогноз, внешние, финал); docs/LAB_LEDGER.md +Л120/121/122; docs-only commit + push master.
+- Артефакты: /home/z/rounds/ROUND-464/LAB-STAGE/LEDGER-60.md (7 секций: re-anchor, декомпозиция, очередь, G1-G6, прогноз, внешние, финал); docs/LAB_LEDGER.md +Л123/124/125 (renumber: первичные Л120-122 столкнулись с concurrent lab-42 0288cf51 — прецедент a15d1f00/94d3b82a re-append; ренумерация ушла в снимок b018645c); docs-only commit + push master.
 ---
 Task ID: 464-43
 Agent: lab-43 (ЛАБ-АГЕНТ, P43 brain write-through flat-memory iter-2)
