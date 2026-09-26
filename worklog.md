@@ -4975,3 +4975,24 @@ Stage Summary:
 - Вставка зеркала решена числами: НЕ tickEachRunning (локалы 11/11), а BrainFlatOps через 5 body-swap (1 писатель Map.put@51 + 4 читателя), tickEachRunning байт-стабилен
 - Канон ×463 усилен (Map.remove=0, единственный map-escape read-only ⇒ 100% write-through покрытие), но Object[60]-сценарий стал УСЛОВНЫМ: MemoryModuleType = class-реестр 110 без ordinal ⇒ компакт-id (converged N ≤ 62) обязателен, иначе резидент 20.9MB над гейтом; scaffold Enum.ordinal-мост рефютирован
 - iter-2 готов к вайрингу без новых исследований: все 5 сайтов оффсет-верифицированы, гейты G1-G6 пререгистрированы, STRICT-строка FLATMEM_FLAGS="cmp464_flatmem" отдельно от TICK2_FLAGS, arm-цепочка EARLY-define → selfTest → P1/P2 → blob-cp
+
+## TASK-464-56 (2026-09-26): ЛАБ-АГЕНТ WILD lt_drain redstone-квант — CNU-поверхность javap + квантизация-дрен behavior-разбор + G1-G6/оракул (master f460faf2→94d3b82a, офлайн RESEARCH)
+Task ID: 464-56
+Agent: lab-agent (general-purpose, OFFLINE)
+Task: TASK-464-56 WILD: DiodeBlock redstone-квант lt_drain гейт (Л94) — javap/gреп CNU-поверхности, лейн-греп x464-профилей, behavior-эквивалентность квантизации, внешние ≥3, гейты G1-G6 + behavior-oracle, прогноз/потолок; LEDGER-56 + LAB_LEDGER append + commit/push docs
+
+Work Log:
+- База: f460faf2 → за сессию dosземмичен до 94d3b82a параллельными агентами (TASK-464-51/53/44/46); pull --rebase канон, файлы не пересекаются
+- javap-ценз (kernel purpur-1.21.10, jdk-21.0.12.1): redstone-пакет 16 class-файлов / 15 классов / 70,258 B; CNU 5,813 B / 10 членов / 215 инстр (runUpdates 82, addAndRun 57), records 16,157 B; NeighborUpdater iface 8,712 B / 8 сигнатур; InstantNeighborUpdater мёртв (0 сайтов выбора — CNU строится безусловно Level.<init> @420-430); DiodeBlock 13,363 B / 25 методов; RedStoneWireBlock 31,321 B / 40; кап maxChainedNeighborUpdates = behavior-видимый квантователь (addAndRun @13-36 + «Too many chained neighbor updates»)
+- Лейн-греп x464: collapsed сохранён только navmath1 (36211663003, 116,469 сэмплов) — redstone-any inclusive 0.8414% all-CPU (main 99.3%), CNU 0.8397%, DiodeBlock 0.7684%; r*-бины 39 ранов = spark-report пусты + ap.log пуст (async-profiler не активирован) → leaf-ценз BOTTLENECKS_3: 2,031/4,503,097 = 0.0451% (max 0.10%), DiodeBlock/CNU в top-40 leaf = 0 ×39 — leaf занижает inclusive ×19; канон Л62 (2.081% main / 2.89% tick-thread / 94.1% ∩ CNU) подтверждён, Δ <1%
+- Квантизация-дрен: ваниль УЖЕ слой-батчит (count>0 = layer, count==0 = sync-дрен; depth-first + FIFO reverse-push + дрен-до-пуста); дефер-квантизация = behavior-VISIBLE ×5 сайтов (S1 wire-промежуточные same-tick, S2 DiodeBlock scheduleTick-фазы, S3 observer/event-порядок, S4 read-modify-write не коммутативен, S5 cross-tick инверсия + sendBlockUpdated); НЕ-наблюдаемо: record-идентичность/debugListener/ёмкость; легальные остатки: record-pooling (alloc 5.71% стеков, закон-5-страж) + wire-eval lens (LEDGER-62)
+- Внешние ≥5: PaperMC docs redstone-implementation (VANILLA/ALTERNATE_CURRENT/EXPERIMENTAL = behavior-alternative не parity), Paper 1.19 announcement + #6975 (Eigencraft/AC дебаты = opt-in не дефолт), Alternate Current (order-config = порядок публично observable; parity ≠ 100%), ваниль 1.21.5 Evaluator-rework (Default/Experimental за feature-flag), maxChainedNeighborUpdates
+- Гейты G1-G6 preregistered: G1 деплой-JFR ≥3.0% И ∩CNU ≥90% И wireeval ≥1.5%; G2 behavior-oracle бит-в-байт (24-48 схем ×3 реплея, state+event/packet hash, снапшоты 10gt, S1-S5); G3 delivery-канон; G4 mid-tick святость + STW-CLEAN M1; G5 закон-5; G6 0 диспатчей до G1 + placebo-канон
+- CI закон-11: реестр CRUSSTY_ флагов = 0 redstone/neighbor; javap -v ядра 0 lever-строк; 37 LevelTicks-сайтов = F3-read реплики; диспатч с невайрённым flag = PLACEBO (×425/×458/navmath-1) → ОФЛАЙН, 0 диспатчей, run id нет; wiring-объём 5 файлов ≈1,000-1,500 строк / 6 классов (classfile.rs +150-200, tickhook.rs +40-60, lib.rs +15-25, RedstoneCensusOps.java NEW +200-350, parity-оракул +500-800, workflow 0)
+- Потолок: банк 100%-capture norm +5.8-7.8 (SUB-PAIR ×2.6), реалистичный 30-40% +1.7-3.1 банк / +1.8-5.2 деплой; деплой 4.78% tick-thread → +9.6-12.9 — carrier-ингредиент ⊕-компо, не pair-maker
+- LEDGER-56 записан: /home/z/rounds/ROUND-464/LAB-STAGE/LEDGER-56.md (8 секций, ~45 чисел); LAB_LEDGER.md +Л120-Л124; docs-only commit + push master
+
+Stage Summary:
+- Вердикт-ЧИСЛО: −0.11пп (2.89% tick-thread vs гейт 3.0%) = GATE-SUB; CI ОФЛАЙН 0 диспатчей
+- Квантизация-дрен закрыта для parity-плоскости (behavior-VISIBLE ×5 сайтов); ось живёт только как G1-гейт + G2-оракул + carrier-плечо (wire-eval lens, record-pooling)
+- Потолок соло ≤+7.8 norm = SUB-PAIR; деплой-гейт вероятен (банд straddles 2.99-4.78), активация только через G1 деплой-JFR
