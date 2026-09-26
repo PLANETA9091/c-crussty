@@ -58,7 +58,14 @@ public final class PoiOps {
                 || f.trim().equals("cmp437_chunk4") || f.trim().equals("cmp444_chunk5")
                 || f.trim().equals("cmp450_chunk") || f.trim().equals("cmp452_mega")
                 || f.trim().equals("cmp453_diet") || f.trim().equals("cmp436_ins4")
-                || f.trim().equals("cmp451_senseins") || f.trim().equals("cmp438_sense"));
+                || f.trim().equals("cmp451_senseins") || f.trim().equals("cmp438_sense")
+                // R468-S39 drift-fix: post-456 era carriers (chunkmono family,
+                // MERGE #9 lineage, MERGE #10 c98ai) must keep the certified
+                // POI plane alive — the list above was frozen at the cmp453 era
+                // (quiet-drift class, LEDGER Л180h: certified plane silently
+                // dormant under newer levers).
+                || f.trim().equals("cmp456_chunkmono") || f.trim().equals("cmp456_chunkmono_p31snap")
+                || f.trim().equals("cmp466_c98ai"));
     }
 
     private static final boolean ENABLED = leverEnabled();
@@ -84,6 +91,14 @@ public final class PoiOps {
     /** Батч POI-событий: 5 int на событие (levelHash, posLo, posHi, oldId, newId). */
     private static int[] EV = new int[5 * 64];
     private static int EV_COUNT = 0; // число СОБЫТИЙ (не int'ов)
+
+    // R468-S39 census: site-1 (updatePOIOnBlockStateChange) call counter +
+    // cumulative POI-relevant event counter. Server-thread only (same thread
+    // as updatePoiGate/maybeEpoch); flushed to the log every CENSUS_EVERY
+    // ticks — first direct measurement of the POI-poll plane on the bench.
+    private static final long CENSUS_EVERY = 100L;
+    private static long GATE_CALLS = 0L;
+    private static long EV_TOTAL = 0L;
 
     /** Серверный тик последней успешной эпохи (flush-once-per-tick). */
     private static volatile long EPOCH_TICK = Long.MIN_VALUE;
@@ -198,6 +213,7 @@ public final class PoiOps {
                 }
                 slot = EV_COUNT;
                 EV_COUNT++;
+                EV_TOTAL++;
                 EV[slot * 5] = lh;
                 EV[slot * 5 + 1] = lo;
                 EV[slot * 5 + 2] = hi;
@@ -224,6 +240,7 @@ public final class PoiOps {
      */
     public static void updatePoiGate(Level level, BlockPos pos, BlockState oldState, BlockState newState) {
         if (ENABLED && !broken) {
+            GATE_CALLS++;
             long[] m = MASK;
             if (m == null && !MASK_BOUND) {
                 ensureMask();
@@ -259,6 +276,11 @@ public final class PoiOps {
         long t = net.minecraft.server.MinecraftServer.getServer().getTickCount();
         if (EPOCH_TICK == t) {
             return; // горячий путь: один volatile-read
+        }
+        if (t % CENSUS_EVERY == 0L) {
+            LOG.info("[crussty-plugin] " + LABEL + ": poi census tick=" + t
+                    + " site1_calls=" + GATE_CALLS + " poi_events_total=" + EV_TOTAL
+                    + " (site1=updatePOIOnBlockStateChange gate calls, poi_events=POI-relevant subset)");
         }
         synchronized (PoiOps.class) {
             if (EPOCH_TICK == t || broken) {

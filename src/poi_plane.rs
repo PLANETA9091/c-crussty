@@ -91,6 +91,10 @@ fn enabled() -> bool {
             | Ok("cmp451_senseins") | Ok("cmp453_diet") | Ok("cmp452_mega")
             | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4")
             | Ok("cmp444_chunk5") | Ok("cmp450_chunk")
+            // R468-S39 drift-fix: post-456 era carriers keep the certified POI
+            // plane alive (strict-OR canon "all certified master planes live on
+            // every gate"; quiet-drift class, LEDGER Л180h).
+            | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp466_c98ai")
     )
 }
 
@@ -131,7 +135,7 @@ fn retarget_poi_tick(bytes: &[u8]) -> Result<(Vec<u8>, crate::classfile::Retarge
 pub fn register() {
     if !enabled() {
         eprintln!(
-            "[crussty-plugin] poi_plane: dormant (lever_flag != cmp456_poi, vanilla POI plane)"
+            "[crussty-plugin] poi_plane: dormant (lever_flag not in poi strict-OR family, vanilla POI plane)"
         );
         return;
     }
