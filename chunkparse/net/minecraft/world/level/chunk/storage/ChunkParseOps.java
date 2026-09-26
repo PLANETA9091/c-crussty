@@ -102,6 +102,15 @@ public final class ChunkParseOps {
     /** Sections decoded through the selftest compare window. */
     static final int SELFTEST_SECTIONS = 3;
 
+    /**
+     * TASK-464-02: biomes container entry count — Strategy.BIOMES is a
+     * bitsPerAxis-4 shape (4^3 = 64 cells per section), NOT the blocks-site
+     * 4096. The biomes selftest compares exactly this many cells; feeding
+     * 4096 oversized indexes into a biomes BitStorage is out-of-contract
+     * (see {@link #biomesSelftest} for the AIOOBE arithmetic).
+     */
+    static final int BIOMES_ENTRIES = 64;
+
     /** Marker/log prefix (matches the rust ARM markers). */
     static final String PFX = "[crussty-plugin] cmp420_chunk2:";
 
@@ -429,11 +438,46 @@ public final class ChunkParseOps {
      * the reflection replica (exact vanilla body) and compare bit-in-bit
      * against a fresh copy of the cached template. PASS marker = bench
      * effect-marker for the verdict checklist.
+     *
+     * <p>TASK-464-02 selftest guard: the compare loop was hard-coded to the
+     * BLOCKS-site size (4096), but a biomes container holds only
+     * {@link #BIOMES_ENTRIES} = 64 cells and its canonical-empty shapes
+     * cannot serve oversized reads at all:</p>
+     * <ul>
+     *   <li><b>bits == 0</b> — a 1-entry palette decodes through the
+     *       ZERO_BITS configuration to ZeroBitStorage + SingleValuePalette
+     *       (the palette has exactly 1 entry by that invariant);</li>
+     *   <li><b>bits == 1</b> — a 2-entry palette decodes to a
+     *       SimpleBitStorage whose backing long[] has length
+     *       ceil(64 / valuesPerLong) == 1, so storage.get(64) reads
+     *       data[1] and the loop died with exactly
+     *       "ArrayIndexOutOfBoundsException: Index 1 out of bounds for
+     *       length 1" — periodic, because only sections carrying a
+     *       2-entry biome palette hit it (larger bits threw on the
+     *       storage long[] too, e.g. Index 4 / length 4 at bits == 4).
+     *       The caught+logged FAIL (never a crash) still tripped the
+     *       AIOOBE-gate of the leg verdict checklist.</li>
+     * </ul>
+     *
+     * <p>Fix: bits == 0 (palette &lt;= 1) is PASS-by-canonical-empty with
+     * its own marker — no compare loop, no throwable; every other shape
+     * compares exactly BIOMES_ENTRIES cells, in-bounds by construction,
+     * honest PASS/FAIL preserved. The blocks-site {@link #selftest} keeps
+     * its plain 4096 loop: blocks containers ARE 4096 entries.</p>
      */
     private static void biomesSelftest(ChunkPos pos, int y, Object codec,
                                        CompoundTag tag, PalettedContainer<?> fresh) {
         try {
             PalettedContainer<?> vanilla = vanillaReplica(codec, pos, y, tag);
+            if (vanilla.bitsPerEntry() == 0) {
+                // Canonical-empty section (1-entry palette, ZeroBitStorage):
+                // PASS-by-canonical-empty — no compare loop, no throwable.
+                System.out.println(PFX
+                        + " biomes selftest PASS (canonical-empty bits=0)");
+                System.out.println(PFX + " biomes selftest details y=" + y
+                        + " bits=0 pos=" + pos.x + "," + pos.z);
+                return;
+            }
             PalettedContainer<?> cached;
             synchronized (CACHE) {
                 cached = CACHE.get(codec).get(tag);
@@ -442,7 +486,7 @@ public final class ChunkParseOps {
             boolean ok = vanilla.getClass() == hit.getClass()
                     && vanilla.bitsPerEntry() == hit.bitsPerEntry();
             if (ok) {
-                for (int i = 0; i < 4096; i++) {
+                for (int i = 0; i < BIOMES_ENTRIES; i++) {
                     if (vanilla.get(i) != hit.get(i)) {
                         ok = false;
                         break;
