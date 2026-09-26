@@ -69,6 +69,15 @@ mod mobs_sense;
 mod nav_plane;
 mod nav_pool;
 mod chunk_parse;
+// CHUNK-TICK ELIGIBILITY FLAT (ID-P22 re-mine R468-S61, scaffold from
+// round-459-p22@0e7f5861, lever cmp459_chunksched-mask, law 8 chunk/worldgen
+// axis): flat chunk-tick eligibility predicates -> ONE bulk JNI -> eligible
+// bitmask -> strict vanilla-order java tail; v1 = distance-gate only.
+// Dormant unless CRUSSTY_LEVER_FLAG == cmp459_chunksched-mask (STRICT eq;
+// empty/foreign flag = vanilla bit-in-bit). WIRING-STAGE-1: fail-closed
+// scaffold (no define, no hook) — ARMED stage waits for the due-ness mask
+// wiring (Л65/Л26 numbers).
+mod chunk_sched_flat;
 // CHUNK-SEND SERIALIZATION SNAPSHOT (TASK-438-C, lever cmp437_chunk4, law 8
 // widening): byte hook on PlayerChunkSender + ChunkSendOps snapshot-first
 // sender defined at activation, static body-redirect of sendChunk (per-player
@@ -348,6 +357,12 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // of the private write (encode-once capture + byte[] replay per player).
     // Dormant unless CRUSSTY_LEVER_FLAG == cmp444_chunk5 (STRICT eq).
     chunk_send5::register();
+    // CHUNK-TICK ELIGIBILITY FLAT (ID-P22 re-mine R468-S61): early arm-hook
+    // (NCDFE canon) — the ChunkSchedOps define path lives HERE, before any
+    // retarget and before the first tick; wiring-stage-1 = fail-closed
+    // scaffold (blob empty, no define, loud WARN on lever match), vanilla
+    // bit-in-bit in every state.
+    chunk_sched_flat::register();
     queryplane::register();
     // POI-PLANE (TASK-456-B, закон-6 подсистема POI целиком — lever
     // cmp456_poi): LAST hooks on Level + ChunkMap — composes the
