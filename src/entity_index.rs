@@ -40,7 +40,7 @@
 //! ERR codes never change the result list, only skip-or-fallback decisions.
 
 use jvmti_bindings::jni;
-use std::sync::atomic::{AtomicI32, AtomicI64, AtomicU64, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicBool, AtomicI32, AtomicI64, AtomicU64, AtomicUsize, Ordering};
 use std::sync::Mutex;
 
 // ---------------------------------------------------------------------------
@@ -62,6 +62,17 @@ const K0: AtomicI64 = AtomicI64::new(0);
 const U0: AtomicU64 = AtomicU64::new(0);
 const I0: AtomicI32 = AtomicI32::new(0);
 const V0: AtomicUsize = AtomicUsize::new(0);
+
+// S26 cliff-census (ROUND-468): the id table NEVER frees keys (REMOVE =
+// i_slot.store(0), key kept — vanilla ENTITY_COUNTER ids are monotonic and
+// unreusable), so N_IDS is a monotone distinct-ids-ever counter. Its curve
+// over a run directly measures the S38 interpolation (99% @300k) and gives
+// a pre-cliff warning well before id_insert runs out of zero slots.
+static N_IDS: AtomicUsize = AtomicUsize::new(0);
+/// Next occupancy log mark (2%-of-id-cap steps; WSTATE-serialized).
+static NEXT_MARK: AtomicUsize = AtomicUsize::new(NSHARDS * ID_CAP / 50);
+/// One-shot ERR_STRUCT stderr marker (Java flips broken=true on the same rc).
+static STRUCT_MARKED: AtomicBool = AtomicBool::new(false);
 /// Unset aggregate marker (quiet NaN bits) — fails every ordered f64
 /// comparison, so an unset aggregate reads as "no overlap" (safe: unset
 /// means the chunk entry has no members yet → count 0 is exact).
@@ -197,6 +208,7 @@ fn id_insert(sh: &Shard, id: i32) -> Result<usize, i32> {
                 sh.i_key[p].store(k, Ordering::Release);
                 sh.i_cell[p].store(0, Ordering::Relaxed);
                 sh.i_slot[p].store(0, Ordering::Relaxed);
+                N_IDS.fetch_add(1, Ordering::Relaxed);
                 return Ok(p);
             }
             cur if cur == k => return Ok(p),
@@ -324,6 +336,16 @@ struct Op {
     bb: [f64; 6],
 }
 
+/// S26: one-shot stderr marker on the structural-full event. The bridge
+/// flips broken=true on the same ERR_STRUCT rc → every later query takes
+/// vanillaReplica (bit-for-bit vanilla, fail-closed; law 4 intact) — this
+/// line is the log-visible timestamp of the disarm.
+fn mark_struct(what: &str) {
+    if !STRUCT_MARKED.swap(true, Ordering::Relaxed) {
+        eprintln!("[eidx] ERR_STRUCT ({what}) — sticky broken=true, vanillaReplica forever");
+    }
+}
+
 fn apply_ops(ops: &[Op]) -> i32 {
     if ops.is_empty() {
         // k2: queries with no pending notes (the common case) must not pay
@@ -371,6 +393,7 @@ fn apply_ops(ops: &[Op]) -> i32 {
                     None => match id_insert(ish, op.id) {
                         Ok(ei) => (ei, true),
                         Err(e) => {
+                            mark_struct("id-table-full");
                             rc = e;
                             break;
                         }
@@ -398,6 +421,7 @@ fn apply_ops(ops: &[Op]) -> i32 {
                     let ki = match chunk_entry(csh, ckey) {
                         Ok(k) => k,
                         Err(e) => {
+                            mark_struct("chunk-table-full");
                             rc = e;
                             break;
                         }
@@ -405,6 +429,7 @@ fn apply_ops(ops: &[Op]) -> i32 {
                     let slot = match slot_alloc(&mut st, cshard) {
                         Ok(s) => s,
                         Err(e) => {
+                            mark_struct("slot-pool-full");
                             rc = e;
                             break;
                         }
@@ -457,6 +482,16 @@ fn apply_ops(ops: &[Op]) -> i32 {
         let s = m.trailing_zeros() as usize;
         SHARDS[s].ver.fetch_add(1, Ordering::Release); // odd → even
         m &= m - 1;
+    }
+    // S26 census: log the distinct-id occupancy curve at 2%-of-cap steps
+    // (one line per crossing; measures the S38 churn model in vivo — the
+    // check is two relaxed loads per flush, WSTATE-serialized).
+    let occ = N_IDS.load(Ordering::Relaxed);
+    if occ >= NEXT_MARK.load(Ordering::Relaxed) {
+        let total = NSHARDS * ID_CAP;
+        let step = total / 50;
+        NEXT_MARK.store((occ / step + 1) * step, Ordering::Relaxed);
+        eprintln!("[eidx] occ: {occ} distinct ids = {}% of cap {total}", occ * 100 / total);
     }
     rc
 }
