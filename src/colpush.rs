@@ -86,6 +86,52 @@ static FIRST_BULK: AtomicBool = AtomicBool::new(true);
 pub static LAST_ROWS: AtomicUsize = AtomicUsize::new(0);
 pub static LAST_PAIRS: AtomicUsize = AtomicUsize::new(0);
 
+// ---------------------------------------------------------------------------
+// C12 THRESH-канон (round-466-c12-jni): critical-only + тайминг-страж.
+//
+// СТАРЫЙ контракт (нарушение канона, найдено ×466-C12): 2 крит-секции
+// GetPrimitiveArrayCritical(in_d/in_i) держались ЧЕРЕЗ весь compute —
+// PASS1-4, act_snapshot clone-аллокацию и mobs_soa WLOCK-refresh
+// (блокировка мьютекса ВНУТРИ крит-секции = удлинение GC-locker hold
+// до ms-масштаба каждый тик), плюс 2 крит-секции out поверх = до 4
+// одновременных. GC-locker блокирует старт GC → TTSP/STW-удлинение.
+//
+// НОВЫЙ контракт:
+//   (a) ин-стейджинг Get<X>ArrayRegion — внутренний pin-or-copy ВНУТРИ
+//       вызова, 0 пользовательских крит-секций на ин-пути;
+//   (b) compute целиком на grow-once scratch, 0 крит-секций;
+//   (c) аут = ЕДИНСТВЕННЫЕ крит-секции, чистые memcpy-блиты (off, ids),
+//       каждый под тайминг-стражем (max-hold µs + over-THRESH счётчик);
+//   (d) mobs_soa WLOCK-refresh ПОСЛЕ всех релизов (читает scratch);
+//   (e) act_snapshot clone-аллокация удалена (read-only borrow).
+// ---------------------------------------------------------------------------
+
+/// Бюджет крит-окна (µs): memcpy-блит out_ids ограничен capacity CSR
+/// (1<<21 × 4B = 8MB ≈ 0.8ms @ 10GB/s) — THRESH 1024µs ловит регрессию
+/// канона (что-то кроме memcpy попало в крит-секцию).
+const CRIT_THRESH_US: u64 = 1024;
+/// Тайминг-страж: max hold крит-окна за жизнь процесса (µs).
+static CRIT_MAX_US: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+/// Тайминг-страж: сколько окон превысило THRESH.
+static CRIT_OVER: std::sync::atomic::AtomicU32 = std::sync::atomic::AtomicU32::new(0);
+/// One-shot warn (stdout не спамить).
+static CRIT_WARNED: AtomicBool = AtomicBool::new(false);
+/// Страж ин-стейджинга: max копирование in-массивов (µs).
+static IN_STAGE_MAX_US: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+
+fn crit_guard(hold_ns: u64) {
+    let us = hold_ns / 1000;
+    CRIT_MAX_US.fetch_max(us, std::sync::atomic::Ordering::Relaxed);
+    if us > CRIT_THRESH_US {
+        let over = CRIT_OVER.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        if !CRIT_WARNED.swap(true, std::sync::atomic::Ordering::Relaxed) {
+            eprintln!(
+                "[crussty-plugin] cmp420_colpush: CRIT-страж окно {us}µs > {CRIT_THRESH_US}µs (over #{over}) — крит-секция перестала быть memcpy-only"
+            );
+        }
+    }
+}
+
 struct BulkState {
     /// grow-once scratch: активные id, грид-цепи, CSR.
     act: Vec<i32>,
@@ -94,6 +140,12 @@ struct BulkState {
     cnt: Vec<i32>,
     off_scratch: Vec<i32>,
     csr: Vec<i32>,
+    /// C12 (round-466): ин-стейджинг in_d/in_i (цель Get<X>ArrayRegion).
+    /// grow-once; после взятия указателя НЕ ресайзится.
+    d_stage: Vec<f64>,
+    i_stage: Vec<i32>,
+    /// C12: аут-стейджинг CSR offsets (блит в out_off под крит-секцией).
+    off_out: Vec<i32>,
 }
 static BULK_LOCK: Mutex<()> = Mutex::new(());
 fn bulk_state() -> &'static Mutex<BulkState> {
@@ -106,6 +158,9 @@ fn bulk_state() -> &'static Mutex<BulkState> {
             cnt: vec![0; IDS_CAP],
             off_scratch: vec![0; IDS_CAP + 1],
             csr: Vec::with_capacity(1 << 21),
+            d_stage: Vec::new(),
+            i_stage: Vec::new(),
+            off_out: Vec::new(),
         })
     })
 }
@@ -593,31 +648,51 @@ pub unsafe extern "system" fn colpush_tick(
     let Ok(mut st) = bulk_state().lock() else {
         return ERR_RANGE; // конкурентный вызов — java ретраит следующим тиком
     };
+    // C12: разовая деструктуризация state в локальные ссылки — disjoint-
+    // борроу полей без DerefMut-конфликтов через MutexGuard.
+    let BulkState { act, head, next, cnt, off_scratch, csr, d_stage, i_stage, off_out } =
+        &mut *st;
 
-    let dp = unsafe { (vt.GetPrimitiveArrayCritical)(env, in_d, std::ptr::null_mut()) };
-    if dp.is_null() {
+    // ---- (a) ИН-СТЕЙДЖИНГ: 0 крит-секций (Get<X>ArrayRegion = внутренний
+    // pin-or-copy ВНУТРИ вызова, GC-locker между вызовами не держится) ----
+    let t_stage = std::time::Instant::now();
+    if d_stage.len() < n * ROW_D {
+        d_stage.resize(n * ROW_D, 0.0);
+    }
+    if i_stage.len() < n * ROW_I {
+        i_stage.resize(n * ROW_I, 0);
+    }
+    let dp0 = d_stage.as_mut_ptr();
+    let ip0 = i_stage.as_mut_ptr();
+    unsafe {
+        (vt.GetDoubleArrayRegion)(env, in_d, 0, (n * ROW_D) as jni::jsize, dp0);
+        (vt.GetIntArrayRegion)(env, in_i, 0, (n * ROW_I) as jni::jsize, ip0);
+    }
+    if unsafe { (vt.ExceptionCheck)(env) } != 0 {
+        unsafe { (vt.ExceptionClear)(env) };
         return ERR_STRUCT;
     }
-    let ip = unsafe { (vt.GetPrimitiveArrayCritical)(env, in_i, std::ptr::null_mut()) };
-    if ip.is_null() {
-        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, in_d, dp, 0) };
-        return ERR_STRUCT;
-    }
-    let d = unsafe { std::slice::from_raw_parts(dp as *const f64, n * ROW_D) };
-    let i = unsafe { std::slice::from_raw_parts(ip as *const i32, n * ROW_I) };
+    IN_STAGE_MAX_US.fetch_max(
+        (t_stage.elapsed().as_nanos() as u64) / 1000,
+        Ordering::Relaxed,
+    );
+    // Указатели валидны до конца вызова: ресайзов после взятия нет; scratch
+    // жив под lock-guard'ом st (bulk сериализован).
+    let d = unsafe { std::slice::from_raw_parts(dp0, n * ROW_D) };
+    let i = unsafe { std::slice::from_raw_parts(ip0, n * ROW_I) };
 
     let want_tick = tick - 1; // снапшот end-of-previous-tick
 
     // ---- PASS 1: активные ряды + грид ----
-    st.act.clear();
-    for slot in &mut st.head[..] {
+    act.clear();
+    for slot in &mut head[..] {
         *slot = 0;
     }
     for id in 0..n {
         let flags = i[id * ROW_I + 1];
         let fresh = i[id * ROW_I + 2];
         if fresh != want_tick || flags & FLAG_INCLUDE == 0 {
-            st.cnt[id] = 0;
+            cnt[id] = 0;
             continue;
         }
         let b = id * ROW_D;
@@ -633,19 +708,19 @@ pub unsafe extern "system" fn colpush_tick(
             || hz <= 0.0
             || hh <= 0.0
         {
-            st.cnt[id] = 0;
+            cnt[id] = 0;
             continue;
         }
-        st.act.push(id as i32);
-        st.cnt[id] = 0;
+        act.push(id as i32);
+        cnt[id] = 0;
         let g = grid_slot(i[id * ROW_I], cx, cz);
-        st.next[id] = st.head[g];
-        st.head[g] = id as i32 + 1;
+        next[id] = head[g];
+        head[g] = id as i32 + 1;
     }
 
     // ---- PASS 2: степени кандидатов (точный AABB-overlap) ----
-    let rows = st.act.len();
-    let act_snapshot: Vec<i32> = st.act.clone();
+    let rows = act.len();
+    let act_snapshot: &[i32] = &*act; // C12(e): borrow вместо clone-аллокации
     for &a in act_snapshot.iter() {
         let a = a as usize;
         let ba = a * ROW_D;
@@ -661,10 +736,10 @@ pub unsafe extern "system" fn colpush_tick(
         for gz in (gza - 1)..=(gza + 1) {
             for gx in (gxa - 1)..=(gxa + 1) {
                 let g = grid_slot_by(gx, gz, i[a * ROW_I]);
-                let mut cur = st.head[g];
+                let mut cur = head[g];
                 while cur != 0 {
                     let b2 = (cur - 1) as usize;
-                    cur = st.next[b2];
+                    cur = next[b2];
                     if b2 == a {
                         continue;
                     }
@@ -679,20 +754,20 @@ pub unsafe extern "system" fn colpush_tick(
                 }
             }
         }
-        st.cnt[a] = deg;
+        cnt[a] = deg;
     }
 
     // ---- PASS 3: prefix-sum → OFF ----
     let mut total: i64 = 0;
     // OFF в java-массиве пишем на финальном проходе; тут считаем total и
     // наполняем off_scratch.
-    st.off_scratch[0] = 0;
-    let act_len = st.act.len();
+    off_scratch[0] = 0;
+    let act_len = act.len();
     for (k, &a) in act_snapshot.iter().enumerate() {
         let a = a as usize;
-        total += st.cnt[a] as i64;
+        total += cnt[a] as i64;
         if (k + 1) < act_len {
-            st.off_scratch[k + 1] = total as i32;
+            off_scratch[k + 1] = total as i32;
         }
     }
     let total = total as usize;
@@ -702,39 +777,23 @@ pub unsafe extern "system" fn colpush_tick(
     // Для простоты: OFF[id+1]-OFF[id] == cnt[id] (0 для неактивных), а OFF[id]
     // для неактивных = префикс на момент id. Строим один проход по id.
     if total > ids_cap || total > i32::MAX as usize {
-        unsafe {
-            (vt.ReleasePrimitiveArrayCritical)(env, in_i, ip, 0);
-            (vt.ReleasePrimitiveArrayCritical)(env, in_d, dp, 0);
-        }
-        return ERR_RANGE; // java растит IDS и ретраит
+        return ERR_RANGE; // java растит IDS и ретраит (крит-секций не держим)
     }
-
-    let op = unsafe { (vt.GetPrimitiveArrayCritical)(env, out_off, std::ptr::null_mut()) };
-    if op.is_null() {
-        unsafe {
-            (vt.ReleasePrimitiveArrayCritical)(env, in_i, ip, 0);
-            (vt.ReleasePrimitiveArrayCritical)(env, in_d, dp, 0);
-        }
-        return ERR_STRUCT;
+    if csr.len() < total {
+        csr.resize(total, 0);
     }
-    let ids_p = unsafe { (vt.GetPrimitiveArrayCritical)(env, out_ids, std::ptr::null_mut()) };
-    if ids_p.is_null() {
-        unsafe { (vt.ReleasePrimitiveArrayCritical)(env, out_off, op, 0) };
-        unsafe {
-            (vt.ReleasePrimitiveArrayCritical)(env, in_i, ip, 0);
-            (vt.ReleasePrimitiveArrayCritical)(env, in_d, dp, 0);
-        }
-        return ERR_STRUCT;
+    if off_out.len() < n + 1 {
+        off_out.resize(n + 1, 0);
     }
-    let off = unsafe { std::slice::from_raw_parts_mut(op as *mut i32, n + 1) };
-    let ids = unsafe { std::slice::from_raw_parts_mut(ids_p as *mut i32, ids_cap) };
+    let off = &mut off_out[..n + 1];
+    let ids = &mut csr[..total];
 
     // ---- PASS 4: заполнение CSR ----
     let mut cursor: usize = 0;
     off[0] = 0;
     let mut ai: usize = 0; // индекс в act
     for id in 0..n {
-        let is_active = ai < rows && st.act[ai] as usize == id;
+        let is_active = ai < rows && act[ai] as usize == id;
         if is_active {
             let a = id;
             let ba = a * ROW_D;
@@ -749,10 +808,10 @@ pub unsafe extern "system" fn colpush_tick(
             for gz in (gza - 1)..=(gza + 1) {
                 for gx in (gxa - 1)..=(gxa + 1) {
                     let g = grid_slot_by(gx, gz, i[a * ROW_I]);
-                    let mut cur = st.head[g];
+                    let mut cur = head[g];
                     while cur != 0 {
                         let b2 = (cur - 1) as usize;
-                        cur = st.next[b2];
+                        cur = next[b2];
                         if b2 == a {
                             continue;
                         }
@@ -763,7 +822,7 @@ pub unsafe extern "system" fn colpush_tick(
                         {
                             // кандидаты по возрастанию плотного id: грид-проход
                             // идёт по цепям; для детерминизма сортируем ниже.
-                            if cursor < ids_cap {
+                            if cursor < total {
                                 ids[cursor] = b2 as i32;
                             }
                             cursor += 1;
@@ -795,26 +854,43 @@ pub unsafe extern "system" fn colpush_tick(
         }
     }
 
+    // ---- (c) АУТ-БЛИТЫ: ЕДИНСТВЕННЫЕ крит-секции, чистый memcpy, каждый
+    // под тайминг-стражем (critical-only по построению) ----
+    let t0 = std::time::Instant::now();
+    let op = unsafe { (vt.GetPrimitiveArrayCritical)(env, out_off, std::ptr::null_mut()) };
+    if op.is_null() {
+        return ERR_STRUCT;
+    }
     unsafe {
-        (vt.ReleasePrimitiveArrayCritical)(env, out_ids, ids_p, 0);
+        std::ptr::copy_nonoverlapping(off.as_ptr(), op as *mut jni::jint, n + 1);
         (vt.ReleasePrimitiveArrayCritical)(env, out_off, op, 0);
     }
+    crit_guard(t0.elapsed().as_nanos() as u64);
+
+    let t1 = std::time::Instant::now();
+    let ids_p = unsafe { (vt.GetPrimitiveArrayCritical)(env, out_ids, std::ptr::null_mut()) };
+    if ids_p.is_null() {
+        return ERR_STRUCT;
+    }
+    unsafe {
+        std::ptr::copy_nonoverlapping(ids.as_ptr(), ids_p as *mut jni::jint, total);
+        (vt.ReleasePrimitiveArrayCritical)(env, out_ids, ids_p, 0);
+    }
+    crit_guard(t1.elapsed().as_nanos() as u64);
 
     // ---- PASS 5: рефреш плоскости mobs_soa из своих строк (1 WLOCK) ----
     // (sscan/ai-плоскости-носители читают свежие колонки; eqsnap-шарды
-    // дренируются заодно.)
+    // дренируются заодно.) C12(d): выполняется ПОСЛЕ всех крит-секций —
+    // WLOCK-блокировка больше не удерживает GC-locker (читает scratch).
     let drained = crate::mobs_soa::colpush_plane_refresh(n, d, i, want_tick);
-
-    unsafe {
-        (vt.ReleasePrimitiveArrayCritical)(env, in_i, ip, 0);
-        (vt.ReleasePrimitiveArrayCritical)(env, in_d, dp, 0);
-    }
 
     LAST_ROWS.store(rows, Ordering::Relaxed);
     LAST_PAIRS.store(total, Ordering::Relaxed);
     if FIRST_BULK.swap(false, Ordering::Relaxed) {
         eprintln!(
-            "[crussty-plugin] cmp420_colpush: bulk EFFECT armed (first tick {tick}, rows {rows}, pair-slots {total}, plane-refresh {drained})"
+            "[crussty-plugin] cmp420_colpush: bulk EFFECT armed (first tick {tick}, rows {rows}, pair-slots {total}, plane-refresh {drained}; C12 crit-hold max {}µs, in-stage max {}µs)",
+            CRIT_MAX_US.load(Ordering::Relaxed),
+            IN_STAGE_MAX_US.load(Ordering::Relaxed)
         );
     }
     total as i32
