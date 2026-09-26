@@ -4908,3 +4908,24 @@ Stage Summary:
 - МЕРЖ-СТРАЖ: ИНФРА-инструмент, НЕ TPS-рычаг — вердикт-мерж заблокирован законом 7 (рефакторинг-лицензия 14f, dormant-invisible) до вайрингов TASK-463-74/79/95; недостаёт B_i-номиналы, живой arena-путь для G3 (≤+0.3%), parity-оракул G4.
 - ВЕРДИКТ: число 5 = VALID-ЛАБ — v2 доведена и запушена: ветка round-464-alloc-budget-v2 @8d02fa38 (от 18ca090e, worktree /home/z/wt-464-allocv2, только src/alloc_budget.rs), push origin OK.
 - Артефакты: /home/z/rounds/ROUND-464/LAB-STAGE/LEDGER-54.md (5 секций: забор/осмотр, v2-план 6 сайтов, внешние 3+, гейты-числа, v2-коммит); docs/LAB_LEDGER.md +Л103/104/105; docs-only commit + push master.
+---
+Task ID: 464-46
+Agent: lab-agent (general-purpose, OFFLINE)
+Task: TASK-464-46 ЛАБ-АГЕНТ P35 DDA-v2 shadow-feed компо (P35): точный wiring-план скелета + офлайн-харнесс + биномиальные гейты G1-G6 + потолок вертикали с P36-dormant; LEDGER-46 + LAB_LEDGER append + commit/push docs
+
+Work Log:
+- База: master f460faf2 (в процессе тика локально доземмичен 42093d02 = TASK-464-48 Л102, параллельный агент, файлы не пересекаются); pull --rebase канон
+- Grep-ценз: dda_v2 = 0/71 src-файлов, InsideShadowOps.java = 0, "shadow" в src = 8 строк-комментариев (0 релевантных) — факт x464-40 подтверждён; DDA-v2 существует только как валидированная модель (Л12 x459 root-cause, Л25 x461 дизайн, Л25 x462 модель 1/200)
+- Wiring-план посчитан по каркасам-прецедентам (inside_batch.rs 500 стр ARMED-scaffold, inside_epoch_gate.rs 180 стр scaffold honest-stop, InsideBatchOps.java 151/InsideDietOps.java 60/InsideDietVisitor.java 107): прод-скелет 431 строка (401-476) = 6 файлов (InsideShadowOps.java NEW +235, InsideDietVisitor +22, InsideDietOps +10, InsideBatchOps +26, src/inside_shadow.rs NEW +135, lib.rs +3); полный пакет 839 строк (+ харнесс DDAv2ShadowLockstepHarness.java 360, runner 27, build-скрипт 21); 7 site-врезок с точными координатами; 0 новых JNI-нативов (контракт insideBatchMask не меняется — меняется содержимое secKeys тайт-сетом 0.80 vs 0.575), 0 строк entity_compose.rs, 0 касаний ColpushOps.leverEnabled
+- Офлайн-харнесс проект: коррелятор на фикс-сцене 8x8x8 чанков (seed-фикс, 128³), адверсарий-панель L12 F1-F7 = 736 + 200k random -> 0/1,000,000 (G2); инжекции латентности 10x100 trials x p̂ {6e-5, 1e-3, 1e-2} в 95%-CI; Monte-Carlo 10⁶ тик-реплик сэмплера; инфра = паттерн run_inside_bitmask_lockstep.sh (paperclip install-only)
+- Биномиальные гейты выведены заново: μ=750/тик, σ=27.32, 3σ=81.96≈82 -> окно [668,832]; per-thread 11-12±1; P_det p=6e-5 -> 4.40%/тик (медиана 15, p95 66); соак (1-6e-5)^450000 = e^-27.0 = 1.9e-12 @ 0.18% MSPT; цена 750x24x50ns = 0.9ms/тик, гейт ≤0.3%
+- Гейты G1-G6 preregistered (продолжение Л25 x461 §4): G1 ARM/маркеры+selfTest-в-блобе (анти-C5b), G2 lockstep 0/1M (superset-замена равенству ЗАПРЕЩЕНА), G3 стоимость/GC, G4 статика 750±82, G5 вертикальный стык (capture ≥0.80, нога ≥+1.0пп, монолит v2->P31), G6 fail-closed one-shot BATCH_OK
+- Потолок вертикали пересчитан честно: канон 35.1/+22.7 построен на leg 21.7 + живом P36; на мастере leg 18.40 v5 (leg-gap -3.30) + P36 dormant env-only blob-not-embedded (вклад 0, -0.75 канон-доли) -> честный потолок нога 31.1 (макс 33.1, консерв 27.8), пара +18.7 (макс +20.7, консерв +15.4) — канон ниже бара +20 на -1.3пп; дефицит канона -4.05пп; бар закрывается P36 include_bytes-вайрингом (+0.5-1.0) или leg re-anchor ≥20.0; полная ветка 34.1 -> пара +21.7 внутри канон-потолка ≤+25.4 — ПЕРВЫЙ численный случай dormant-скаффолд меняет вертикальный вердикт
+- Внешние ≥3: Lithium block-tracking fail-open (vanilla-walk=истина), Paper collision-loops (порядок визитов неприкосновенен), Krypton flush-консолидация (1 bulk-переход/тик + drift-гейт), +C2ME ThreadLocal-сэмплер
+- CI: диспатч 0 честно (BLOCKED-SKELETON — несобранный lever = PLACEBO-канон navmath-1); харнесс собирается без ядра (java-only), G2/G4/G6-инжекции валидируются офлайн ДО первого диспатча
+- LEDGER-46 записан: /home/z/rounds/ROUND-464/LAB-STAGE/LEDGER-46.md (9 секций, ~40 чисел); LAB_LEDGER.md +Л103-Л108; commit docs-only + push master
+
+Stage Summary:
+- DDA-v2 скелета в src/ НЕТ (0 попаданий) — вердикт-число 0 диспатчей; честный CI = OFFLINE BLOCKED-SKELETON
+- Wiring-план готов до строки: 431 прод / 839 полный, 7 врезок, 0 новых JNI, 0 compose-строк — монолитность v2->P31 архитектурно подтверждена (фид не живёт без P31-батча)
+- Вертикальный потолок с P36-dormant: нога 31.1 / пара +18.7 vs бар +20 — P36 include_bytes-вайринг (один include_bytes, каркас уже в inside_epoch_gate.rs) или leg re-anchor ≥20.0 обязательны для бара
