@@ -82,13 +82,13 @@ fn enabled() -> bool {
     {
         return true;
     }
-    std::env::var("CRUSSTY_LEVER_FLAG").map(|v| v.trim() == "cmp457_paldelta" || v.trim() == "cmp458_swar").unwrap_or(false)
+    std::env::var("CRUSSTY_LEVER_FLAG").map(|v| v.trim() == "cmp457_paldelta" || v.trim() == "cmp466_poiun" || v.trim() == "cmp458_swar").unwrap_or(false)
 }
 
 /// TASK-457-G evidence marker: lever-scoped ARM id (grep anchor "cmp457_paldelta")
 /// while the plane's birth markers stay frozen historical strings.
 fn lever_tag() -> &'static str {
-    if std::env::var("CRUSSTY_LEVER_FLAG").map(|v| v.trim() == "cmp457_paldelta" || v.trim() == "cmp458_swar").unwrap_or(false) {
+    if std::env::var("CRUSSTY_LEVER_FLAG").map(|v| v.trim() == "cmp457_paldelta" || v.trim() == "cmp466_poiun" || v.trim() == "cmp458_swar").unwrap_or(false) {
         "cmp457_paldelta"
     } else {
         "paletted"

@@ -140,9 +140,9 @@ fn flag_enabled(flag: Option<&str>) -> bool {
             // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
             | Some("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-            | Some("cmp423_brain3") | Some("cmp424_mobfeed") | Some("cmp430_inside") | Some("cmp432_inside2") | Some("cmp436_ins4") | Some("cmp458_swar") | Some("cmp457_paldelta") | Some("cmp457_eqsnap2")
+            | Some("cmp423_brain3") | Some("cmp424_mobfeed") | Some("cmp430_inside") | Some("cmp432_inside2") | Some("cmp436_ins4") | Some("cmp458_swar") | Some("cmp457_paldelta") | Some("cmp457_eqsnap2") | Some("cmp466_poiun")
             | Some("cmp438_sense") // TASK-444-C: sense family union
-            | Some("cmp451_senseins") | Some("cmp458_swar") | Some("cmp457_paldelta") | Some("cmp457_eqsnap2") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+            | Some("cmp451_senseins") | Some("cmp458_swar") | Some("cmp457_paldelta") | Some("cmp457_eqsnap2") | Some("cmp466_poiun") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
             | Some("cmp453_diet") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
             // TASK-456-B (NCDFE fix, run 36122777112): cmp456_poi = FULL era
             // carrier (law-7 synonym of cmp450_chunk ⊕ cmp453_diet + POI
@@ -153,7 +153,7 @@ fn flag_enabled(flag: Option<&str>) -> bool {
             // resolves a never-defined class (NCDFE cached per cp entry,
             // ×6014 poi456-2). poi_widen.py missed the `Some(..)` pattern
             // (only Ok(..)/f==-style were widened) — x452 mirror-drift class.
-            | Some("cmp456_poi")
+            | Some("cmp456_poi") | Some("cmp466_poiun")
             | Some("cmp421_brain")
             | Some("cmp421_brain") | Some("cmp434_chunkpl") | Some("cmp435_chunk3") | Some("cmp437_chunk4") | Some("cmp444_chunk5") | Some("cmp450_chunk")
             // TASK-456-C NCDFE fix (×451/×452 precedent fa9054d9): the chunk6-sched
@@ -210,13 +210,13 @@ fn enabled_flag_is_sense() -> bool {
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
         Ok("cmp421_brain") | Ok("cmp422_brain2")
             // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp458_swar") | Ok("cmp457_paldelta") | Ok("cmp457_eqsnap2")
+            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp458_swar") | Ok("cmp457_paldelta") | Ok("cmp457_eqsnap2") | Ok("cmp466_poiun")
             | Ok("cmp438_sense") // TASK-444-C: sense family union
-            | Ok("cmp451_senseins") | Ok("cmp458_swar") | Ok("cmp457_paldelta") | Ok("cmp457_eqsnap2") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono") // TASK-452-A: senseins composite — sense-arena slice must arm (production gate retag)
+            | Ok("cmp451_senseins") | Ok("cmp458_swar") | Ok("cmp457_paldelta") | Ok("cmp457_eqsnap2") | Ok("cmp466_poiun") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono") // TASK-452-A: senseins composite — sense-arena slice must arm (production gate retag)
             | Ok("cmp453_diet") | Ok("cmp450_chunk") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
             | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") // TASK-454-B/455-B: chunk union carrier rides the sense gate (STRICT OR, rebaze-3 union)
             | Ok("cmp451_senseins") | Ok("cmp458_swar") // TASK-452-A: senseins composite — sense-arena slice must arm (production gate retag)
-            | Ok("cmp453_diet") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp456_poi") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
+            | Ok("cmp453_diet") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp456_poi") | Ok("cmp466_poiun") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
 )
 }
 

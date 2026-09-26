@@ -93,10 +93,10 @@ fn enabled() -> bool {
             | Ok("cmp423_brain3")
             | Ok("cmp424_mobfeed")
             | Ok("cmp430_inside")
-            | Ok("cmp451_senseins") | Ok("cmp458_swar") | Ok("cmp457_paldelta") | Ok("cmp457_eqsnap2") | Ok("cmp456_chunkmono") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR) — PRODUCTION gate retag (x452: dormant -> SenseOps never defined, core of vector dead)
+            | Ok("cmp451_senseins") | Ok("cmp458_swar") | Ok("cmp457_paldelta") | Ok("cmp457_eqsnap2") | Ok("cmp466_poiun") | Ok("cmp456_chunkmono") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR) — PRODUCTION gate retag (x452: dormant -> SenseOps never defined, core of vector dead)
             | Ok("cmp453_diet") | Ok("cmp450_chunk") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
             | Ok("cmp451_senseins") | Ok("cmp458_swar") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR) — PRODUCTION gate retag (x452: dormant -> SenseOps never defined, core of vector dead)
-            | Ok("cmp453_diet") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp456_poi") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
+            | Ok("cmp453_diet") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp456_poi") | Ok("cmp466_poiun") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
 )
 }
 
@@ -487,7 +487,7 @@ mod tests {
     }
 
     fn enabled_with(s: &str) -> bool {
-        s == "cmp438_sense" || s == "cmp439_sense_scan" || s == "cmp451_senseins" || s == "cmp458_swar" || s == "cmp457_paldelta" || s == "cmp457_eqsnap2" || s == "cmp453_diet" || s == "cmp456_poi" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
+        s == "cmp438_sense" || s == "cmp439_sense_scan" || s == "cmp451_senseins" || s == "cmp458_swar" || s == "cmp457_paldelta" || s == "cmp457_eqsnap2" || s == "cmp466_poiun" || s == "cmp453_diet" || s == "cmp456_poi" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
 }
 
     /// Mirror of the vanilla `getNearestEntity(List,TC,LE,DDD)` inner ladder

@@ -45,7 +45,7 @@ public final class PoiOps {
 
     private static boolean leverEnabled() {
         String f = System.getenv("CRUSSTY_LEVER_FLAG");
-        return f != null && (f.trim().equals("cmp456_poi")
+        return f != null && (f.trim().equals("cmp456_poi") || f.trim().equals("cmp466_poiun")
                 // TASK-456-B: полный носитель эры (STRICT OR) — все сертифи-
                 // цированные плоскости мастера живут на каждом гейте.
                 || f.trim().equals("cmp409_multi") || f.trim().equals("cmp412_meganav")

@@ -84,7 +84,10 @@ const PROBE_MAGIC: i32 = 0x5049; // "PI"
 fn enabled() -> bool {
     matches!(
         std::env::var("CRUSSTY_LEVER_FLAG").as_deref().map(str::trim),
-        Ok("cmp456_poi") | Ok("cmp409_multi") | Ok("cmp412_meganav") | Ok("cmp412_eqsnapv3")
+        // TASK-466-C08: cmp466_poiun = UNION carrier (cmp456_poi ⊕ paldelta ⊕
+        // eqsnap2) — arms every plane the three carriers arm, per-plane
+        // behavior identical to the carrier whose gate list it joined.
+        Ok("cmp456_poi") | Ok("cmp466_poiun") | Ok("cmp409_multi") | Ok("cmp412_meganav") | Ok("cmp412_eqsnapv3")
             | Ok("cmp414_cvs") | Ok("cmp417_bq") | Ok("cmp420_colpush") | Ok("cmp421_brain")
             | Ok("cmp422_brain2") | Ok("cmp423_brain3") | Ok("cmp424_mobfeed")
             | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp438_sense")
@@ -371,9 +374,13 @@ pub fn activate() {
             return;
         }
 
-        // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed).
+        // ГРОМКИЙ ARM-МАРКЕР (без этой строки нога не-armed). Маркер несёт
+        // ФАКТИЧЕСКИЙ lever id (канон absorb: "lever_flag=X ARMED" в stdout).
+        let lever_id = std::env::var("CRUSSTY_LEVER_FLAG")
+            .map(|v| v.trim().to_string())
+            .unwrap_or_else(|_| "cmp456_poi".to_string());
         eprintln!(
-            "[crussty-plugin] cmp456_poi: ARMED poi-plane (Level.notifyAndUpdatePhysics updatePOIOnBlockStateChange site -> PoiOps.updatePoiGate POI-mask fast-path + ChunkMap.tick PoiManager.tick site -> PoiOps.poiTickGate epoch flush; rust PoiStore mirror via ONE bulk poiEpoch JNI/tick; vanilla decisions bit-for-bit: both-non-POI = vanilla no-op early-out, slow path = full untouched vanilla virtual call; zero per-block JNI; empty flag = vanilla bit-for-bit)"
+            "[crussty-plugin] {lever_id}: ARMED poi-plane (Level.notifyAndUpdatePhysics updatePOIOnBlockStateChange site -> PoiOps.updatePoiGate POI-mask fast-path + ChunkMap.tick PoiManager.tick site -> PoiOps.poiTickGate epoch flush; rust PoiStore mirror via ONE bulk poiEpoch JNI/tick; vanilla decisions bit-for-bit: both-non-POI = vanilla no-op early-out, slow path = full untouched vanilla virtual call; zero per-block JNI; empty flag = vanilla bit-for-bit)"
         );
 
         crate::kernel_policy::audit_wire(OPS_CLASS, "updatePoiGate", "cmp456_poi v1");
@@ -539,12 +546,13 @@ mod tests {
     use super::*;
 
     fn enabled_with(s: &str) -> bool {
-        s == "cmp456_poi"
+        s == "cmp456_poi" || s == "cmp466_poiun"
     }
 
     #[test]
     fn lever_constant_strict() {
         assert!(enabled_with("cmp456_poi"));
+        assert!(enabled_with("cmp466_poiun")); // TASK-466-C08 union carrier
         assert!(!enabled_with(""));
         assert!(!enabled_with("cmp455_spawn"));
         assert!(!enabled_with("cmp456_poi_x"));
