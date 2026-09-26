@@ -1,0 +1,38 @@
+--- /tmp/s50_gatev2.sh	2026-09-26 17:24:29.869186074 +0000
++++ /tmp/s50_gatev2_p6.sh	2026-09-26 17:39:52.133577968 +0000
+@@ -245,6 +245,35 @@
+ echo "P5 маркер-ценз: tracked ${P5_TOTAL} file(s) (префильтр-кандидаты ${P5_FILES}), конфликт-маркеры ${P5_CM}, branch-glue ${P5_GLUE}, ${P5_MS}ms"
+ json_phase "P5-marker" "$P5_MS" "$P5_STATUS" "tracked=${P5_TOTAL} candidates=${P5_FILES} conflict=${P5_CM} glue=${P5_GLUE}"
+ 
++# ============================== P6: PARITY (world-diff арбитр v2, S50) ======================
++# Закон 4/20d: паритет пары логов (vanilla vs leg) на тяжёлом стенде. Артефакты пары есть
++# только при вердикте -> SKIP по умолчанию; ARM: PAIR_VAN/PAIR_LEG (списки файлов через пробел).
++T0=$(now_ms)
++if [ "${GATE_SKIP_PARITY:-0}" = "1" ]; then
++  echo "P6 parity: SKIP (fast/GATE_SKIP_PARITY)"; json_phase "P6-parity" 0 "SKIP" "fast"
++elif [ -z "${PAIR_VAN:-}" ] || [ -z "${PAIR_LEG:-}" ]; then
++  echo "P6 parity: SKIP (PAIR_VAN/PAIR_LEG не заданы — артефакты пары отсутствуют)"
++  json_phase "P6-parity" 0 "SKIP" "no-pair-artifacts"
++elif [ ! -f scripts/world_diff_parity_v2.py ]; then
++  phase_fail "P6 parity: scripts/world_diff_parity_v2.py отсутствует (арбитр v2 не в дереве)"
++  json_phase "P6-parity" 0 "FAIL" "arbiter-missing"
++else
++  P6_OUT="$(PAIR_VAN="$PAIR_VAN" PAIR_LEG="$PAIR_LEG" \
++    python3 scripts/world_diff_parity_v2.py --gate2 --env-pair \
++    --json "$LOG_DIR/p6_parity_$TS.json" 2>&1)"; P6_RC=$?
++  P6_MS=$(( ($(now_ms) - T0) / 1000 ))
++  P6_LAST="$(printf '%s\n' "$P6_OUT" | tail -1)"
++  if [ "$P6_RC" -eq 0 ]; then
++    echo "P6 parity: $P6_LAST, ${P6_MS}ms"
++    json_phase "P6-parity" "$P6_MS" "OK" "$(printf '%s' "$P6_LAST" | cut -c1-380)"
++  else
++    printf '%s\n' "$P6_OUT" | tail -5
++    phase_fail "P6 parity: WORLD-PARITY-FAIL (закон 4/20d — поведенческий дрейф пары)"
++    json_phase "P6-parity" "$P6_MS" "FAIL" "$(printf '%s' "$P6_LAST" | cut -c1-380)"
++  fi
++fi
++
++
+ # ============================== ВЕРДИКТ ======================================
+ TOTAL_MS=$(( ($(now_ms) - G_T0) / 1000 ))
+ echo "== гейт-вердикт v2: $([ "$FAILED" = "0" ] && echo GREEN || echo RED) (FAIL=$FAILED WARN=$WARNED, total ${TOTAL_MS}ms) =="
