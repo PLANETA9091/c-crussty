@@ -4923,7 +4923,7 @@ Work Log:
 - Потолок вертикали пересчитан честно: канон 35.1/+22.7 построен на leg 21.7 + живом P36; на мастере leg 18.40 v5 (leg-gap -3.30) + P36 dormant env-only blob-not-embedded (вклад 0, -0.75 канон-доли) -> честный потолок нога 31.1 (макс 33.1, консерв 27.8), пара +18.7 (макс +20.7, консерв +15.4) — канон ниже бара +20 на -1.3пп; дефицит канона -4.05пп; бар закрывается P36 include_bytes-вайрингом (+0.5-1.0) или leg re-anchor ≥20.0; полная ветка 34.1 -> пара +21.7 внутри канон-потолка ≤+25.4 — ПЕРВЫЙ численный случай dormant-скаффолд меняет вертикальный вердикт
 - Внешние ≥3: Lithium block-tracking fail-open (vanilla-walk=истина), Paper collision-loops (порядок визитов неприкосновенен), Krypton flush-консолидация (1 bulk-переход/тик + drift-гейт), +C2ME ThreadLocal-сэмплер
 - CI: диспатч 0 честно (BLOCKED-SKELETON — несобранный lever = PLACEBO-канон navmath-1); харнесс собирается без ядра (java-only), G2/G4/G6-инжекции валидируются офлайн ДО первого диспатча
-- LEDGER-46 записан: /home/z/rounds/ROUND-464/LAB-STAGE/LEDGER-46.md (9 секций, ~40 чисел); LAB_LEDGER.md +Л103-Л108; commit docs-only + push master
+- LEDGER-46 записан: /home/z/rounds/ROUND-464/LAB-STAGE/LEDGER-46.md (9 секций, ~40 чисел); LAB_LEDGER.md +Л109-Л114 (renumber по прецеденту ×464-54: Л103-Л107 заняты параллельными агентами); commit docs-only + push master
 
 Stage Summary:
 - DDA-v2 скелета в src/ НЕТ (0 попаданий) — вердикт-число 0 диспатчей; честный CI = OFFLINE BLOCKED-SKELETON
