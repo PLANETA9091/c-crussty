@@ -676,6 +676,37 @@ if [ "$SEEN_DONE" = "1" ]; then
   R="$FORCELOAD_RADIUS"
   TILES=$(( (R + STEP - 1) / STEP ))
   log "forceload sweep: radius ${R} blocks, $((2*TILES))x$((2*TILES)) tiles"
+  # --- S31/ROUND-468 GENWIN slice (19a noise/worldgen per-stage profile) -----
+  # Profilers otherwise start ONLY after the population inject (section 6), so
+  # the worldgen window (forceload sweep of the stratum) was NEVER CPU-sampled
+  # on CI: R1/R2/R3 whole-session worldgen/noise shares (0.0% bank / 2.6-3.2%
+  # gen fixture) are window-dilution, not poll-time attribution (S31 absorb,
+  # runs 36255210227/36255240523/36255266862). One asprof cpu session spans
+  # sweep+settle; stopped into genwin-collapsed.txt BEFORE section 6 (v3
+  # stop-based windows: one active session per target; a stuck session is
+  # rescued by section 6's asprof_guard_start into orphan-collapsed.txt).
+  # Observe-only: no Java/Rust deltas, vanilla semantics untouched.
+  # Stage buckets (preregistered substrings, S31 scope naming):
+  #   shape=NoiseChunk/DensityFunction/noise samplers/interpolators/lerp/fillArray/Beardifier
+  #   surface=SurfaceSystem/SurfaceRules/MaterialRuleList; coverage=Climate/RTree
+  #   aquifer=Aquifer; features=Feature/Placement/WorldgenRegion/decorate; carve=Carver
+  #   io_parse=SerializableChunkData/RegionFile/PalettedContainer/NbtIo/ChunkSerializer
+  GENWIN_T0=$(date +%s)
+  GENWIN_STAMP0=$(date -u +%FT%T.%3NZ)
+  GENWIN_CHUNKS=$(( (32 * TILES) * (32 * TILES) ))
+  log "GENWIN_START $GENWIN_STAMP0 radius=${R} tiles=${TILES} chunks=${GENWIN_CHUNKS}"
+  if [ -n "$ASPROF" ]; then
+    GENWIN_OUT="$("$ASPROF" start -e cpu,interval=5ms "$SERVER_PID" 2>&1)" || true
+    if echo "$GENWIN_OUT" | grep -qi "error"; then
+      log "asprof: genwin pre-start orphan - rescuing into genwin-orphan-collapsed.txt"
+      "$ASPROF" stop -o collapsed -f "$WORK/genwin-orphan-collapsed.txt" "$SERVER_PID" >>"$WORK/ap.log" 2>&1 || true
+      GENWIN_OUT="$("$ASPROF" start -e cpu,interval=5ms "$SERVER_PID" 2>&1)" || true
+    fi
+    echo "$GENWIN_OUT" >>"$WORK/ap.log"
+    log "GENWIN_PROF started (cpu,interval=5ms)"
+  else
+    log "GENWIN_PROF skipped (no asprof)"
+  fi
   for tx in $(seq $(( -TILES * STEP )) "$STEP" $(( (TILES - 1) * STEP ))); do
     for tz in $(seq $(( -TILES * STEP )) "$STEP" $(( (TILES - 1) * STEP ))); do
       cmd "forceload add $tx $tz $((tx + STEP - 1)) $((tz + STEP - 1))"
@@ -685,6 +716,35 @@ if [ "$SEEN_DONE" = "1" ]; then
   cmd "tps"
   cmd "paper debug chunks"
   sleep 10
+
+  # --- S31 GENWIN stop: dump + per-stage decomposition before section 6 ------
+  GENWIN_T1=$(date +%s)
+  GENWIN_STAMP1=$(date -u +%FT%T.%3NZ)
+  GENWIN_WALL=$((GENWIN_T1 - GENWIN_T0))
+  if [ "$GENWIN_WALL" -lt 1 ]; then GENWIN_WALL=1; fi
+  log "GENWIN_END $GENWIN_STAMP1 wall=${GENWIN_WALL}s chunks=${GENWIN_CHUNKS} c/s=$(( GENWIN_CHUNKS / GENWIN_WALL ))"
+  if [ -n "$ASPROF" ] && [ -s "$WORK/genwin-collapsed.txt" ]; then
+    GENWIN_SAMPLES=$(awk '{s+=$1} END{print s+0}' "$WORK/genwin-collapsed.txt")
+    log "genwin-collapsed: $(wc -l < "$WORK/genwin-collapsed.txt") stacks / ${GENWIN_SAMPLES} samples"
+    log "GENWIN_TOTAL ${GENWIN_SAMPLES}"
+    sort -k1,1 -nr "$WORK/genwin-collapsed.txt" | head -25 | while read -r n rest; do
+      log "GENWIN_TOP ${n} ${rest}"
+    done
+    genwin_stage() { # genwin_stage <label> <ERE> - substring attribution (weights = samples)
+      local tot
+      tot=$(grep -E "$2" "$WORK/genwin-collapsed.txt" 2>/dev/null | awk '{s+=$1} END{print s+0}')
+      log "GENWIN_STAGE $1 ${tot}"
+    }
+    genwin_stage shape 'NoiseChunk|DensityFunction|ImprovedNoise|PerlinNoise|NormalNoise|BlendedNoise|NoiseInterpolator|SimplexNoise|Mth\.lerp|fillArray|Beardifier'
+    genwin_stage surface 'SurfaceSystem|SurfaceRules|MaterialRuleList|SurfaceBuilder'
+    genwin_stage coverage 'Climate|RTree'
+    genwin_stage aquifer 'Aquifer'
+    genwin_stage features 'Feature|Placement|WorldgenRegion|decorate|Decoration'
+    genwin_stage carve 'Carver'
+    genwin_stage io_parse 'SerializableChunkData|RegionFile|PalettedContainer|NbtIo|ChunkSerializer|SimpleBitStorage'
+  else
+    log "WARN: genwin-collapsed.txt absent/empty (asprof missing or stop failed)"
+  fi
 
   # --- 5b. BENCH-X150K population injection (S7-129) -------------------------
   # The living-scene fixture injects BEFORE any profiler starts: the harness
