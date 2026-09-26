@@ -44,13 +44,22 @@ use std::sync::atomic::{AtomicBool, AtomicI32, AtomicI64, AtomicU64, AtomicUsize
 use std::sync::Mutex;
 
 // ---------------------------------------------------------------------------
-// Capacities (fixed statics — zero-filled, NEVER reallocated; BSS ~43 MB).
+// Capacities (fixed statics — zero-filled, NEVER reallocated; BSS ~91 MB).
+// S26 cap-extension (ROUND-468): SLOT_CAP and ID_CAP doubled 8192→16384 per
+// shard. Old caps: 524,288 total slots/ids — the ID side is a LIFETIME cap
+// (keys never freed, vanilla ENTITY_COUNTER ids unreusable) and the S38
+// interpolation put 300k-pop distinct-ids at 99% of it (ERR_STRUCT mid-run,
+// sticky vanillaReplica disarm). New caps: 1,048,576 slots/ids total —
+// 400k-pop lands at ~66% (S38: 690k ids), 500k-pop at ~82% even under the
+// aggressive ×1.73 churn model. Cost: +38.0 MiB demand-paged BSS (native
+// RSS — Java heap untouched), zero init cost (zero pages), shorter probe
+// chains at any given occupancy (load factor halves).
 // ---------------------------------------------------------------------------
 
 pub const NSHARDS: usize = 64;
 const CHUNK_CAP: usize = 1 << 12; // chunk-key slots/shard → 262k chunks total
-const SLOT_CAP: usize = 1 << 13;  // entity slots/shard → 512k total (150k pop)
-const ID_CAP: usize = 1 << 13;    // id-table entries/shard → 512k distinct ids
+const SLOT_CAP: usize = 1 << 14;  // entity slots/shard → 1,048,576 total (S26: was 8192/512k)
+const ID_CAP: usize = 1 << 14;    // id-table entries/shard → 1,048,576 distinct ids (S26: was 8192/512k)
 const QRETRY: u32 = 256;          // per-chunk seqlock retry budget → ERR_RANGE
 const PROBE_MAX: usize = 128;     // open-addressing probe budget → ERR_STRUCT
 
