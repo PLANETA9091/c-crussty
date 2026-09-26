@@ -643,7 +643,13 @@ if [ "$SEEN_DONE" = "1" ]; then
   for tx in $(seq $(( -TILES * STEP )) "$STEP" $(( (TILES - 1) * STEP ))); do
     for tz in $(seq $(( -TILES * STEP )) "$STEP" $(( (TILES - 1) * STEP ))); do
       cmd "forceload add $tx $tz $((tx + STEP - 1)) $((tz + STEP - 1))"
-      sleep 0.4
+      # S67 (round-467): sweep-protocol knob. Canon 0.4 = A-r640 afb3a0b3
+      # bit-exact (wall 26.0s = 36*0.4 floor + 11.6s server gen => 354 c/s).
+      # Floor N*sleep dominates wall: sleep 0.05 -> 687 c/s additive /
+      # 748 c/s overlap-model vs BAR 708 (S67 model, /tmp/s67/model.py).
+      # STEP stays 256: (128,64) shrink coverage 9216->6400 and multiply
+      # the floor (400 cmds @ STEP=64) — strictly dominated at any sleep.
+      sleep "${COMMAND_SLEEP:-0.4}"
     done
   done
   cmd "tps"

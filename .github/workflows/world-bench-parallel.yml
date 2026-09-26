@@ -76,10 +76,14 @@ on:
         description: 'FLUSH-DIET S7-137 ARCH-ATTACK lever #4 (1 = ARMED: StepBasedCollector.flushStep zero-waste addAll via FlushOps.fladd — kills new Object[0] garbage per empty effect step; 0 = vanilla-flush A/B leg)'
         required: false
         default: '1' # x466-C98 bank canon (fd1)
-      fluid_dirty:
-        description: 'FLUID-DIRTY S7-151/TASK-290 ARCH-ATTACK lever #6 (1 = ARMED: fluid-scan memoization via FluidPushOps.scan + event-driven dirty-stamp ledger on LevelChunk.setBlockState; composes through inside_cache chain; 0 = vanilla-scan A/B leg)'
+      # fluid_dirty input REMOVED (S67/round-467): the 25-input GitHub limit;
+      # lever #6 (fluid-dirty memo) is on the banned list (zakon 5), never
+      # banked, default was '0' — flag pinned '0' below. Slot given to
+      # command_sleep (19a sweep-protocol knob, S67: wall = 36*sleep + 11.6s).
+      command_sleep:
+        description: '19a forceload sweep inter-command sleep seconds (default 0.4 = canon afb3a0b3 bit-exact; S67 model: floor N*sleep dominates A-r640 wall, 0.05 -> 687 c/s additive / 748 c/s overlap vs BAR 708)'
         required: false
-        default: '0'
+        default: '0.4'
       lever_flag:
         description: 'MEGA-ROUND generic lever id (empty = vanilla path). Exported as CRUSSTY_LEVER_FLAG, read by branch bridge/loader (e.g. items_sweep, items_index). TASK-395'
         required: false
@@ -227,7 +231,8 @@ jobs:
           INSIDE_CACHE: ${{ inputs.inside_cache || '0' }}
           FLUSH_DIET: ${{ inputs.flush_diet || '0' }}
           FLUID_FREE: '0' # input dropped TASK-330 (requires paletted_demux=1; lever dormant)
-          FLUID_DIRTY: ${{ inputs.fluid_dirty || '0' }}
+          FLUID_DIRTY: '0' # input removed (S67/round-467): 25-input limit; banned lever #6 pinned '0'
+          COMMAND_SLEEP: ${{ inputs.command_sleep || '0.4' }}
           FLUID_DIRTY_LEDGER: '0' # input dropped TASK-395 (25-input limit; ledger-only mode #16 REFUTED)
           FLUID_BITMASK: ${{ inputs.fluid_bitmask || '0' }}
           REGION_THREADS: ${{ inputs.region_threads || '0' }}
