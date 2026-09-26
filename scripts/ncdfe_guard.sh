@@ -4,7 +4,10 @@
 # =============================================================================
 # КАНОН (docs/LAB_LEDGER.md L6, закон v18.3/19.0):
 #   Перед вердиктом ЛЮБОГО носителя T1 NCDFE=0 ОБЯЗАТЕЛЬНО.
-#   Гонка arm/define EntityGoalQueryOps @ MobPushOps.pushables:467:
+#   Гонка arm/define EntityGoalQueryOps @ MobPushOps.pushables (пин СИМВОЛЬНЫЙ,
+#   резолвится из источника на каждом прогоне — см. symbolic_pin() ниже;
+#   M01/round-467: исторический строковый пин ":467" протух, когда pushables
+#   сместился на :448 — строковый пин больше не используется):
 #   JVM резолвит чужой Ops-класс через определяющий loader ПОСЛЕ arm'а lever'а
 #   → NoClassDefFoundError, и HotSpot КЭШИРУЕТ NCDFE per-constant-pool-entry
 #   (ошибка повторяется ×N весь ран даже после позднего define).
@@ -72,6 +75,22 @@ fi
 
 OK=0; FAIL=0; SKIP=0
 say()  { printf '%s\n' "$*"; }
+
+# --- символический пин точки гонки (M01, round-467) ---------------------------
+# Строковый пин ":467" в документации канона протух: источник сдвинулся и
+# pushables теперь :448. Пин стал СИМВОЛИЧЕСКИМ — строка декларации pushables
+# резолвится из MobPushOps.java на каждом прогоне (mirror-drift иммунитет:
+# сдвиг источника больше не делает пин ложью). История: :467 (×456/×466) →
+# :448 (M01). Источник вне дерева => "pushables:?" (INFO, не FAIL — страж
+# работает и в blob-only контекстах).
+PUSHABLES_SRC="mobpush/net/minecraft/world/entity/MobPushOps.java"
+symbolic_pin() { # stdout: "pushables:<line>" | "pushables:?"
+  local f="$ROOT/$PUSHABLES_SRC" n=""
+  if [ -f "$f" ]; then
+    n=$(grep -nE 'public static List<Entity> pushables[[:space:]]*\(' "$f" 2>/dev/null | head -1 | cut -d: -f1)
+  fi
+  printf 'pushables:%s' "${n:-?}"
+}
 
 # --- check one .class blob ---------------------------------------------------
 check_class() { # $1 = path ; verdict lines; returns 0 OK / 1 FAIL / 2 SKIP
@@ -207,7 +226,9 @@ check_java() { # $1 = path
   if [ -n "${touches// /}" ] && [ "${handlers:-0}" -eq 0 ]; then
     say "[FAIL] $path — throwable-маркеры отсутствуют: cross-Ops touch'и (${touches}), а catch (Throwable ни одного — нет fail-closed фолбэка"; return 1
   fi
-  say "[OK]   $path — crossOps:${touches:- none} catch(Throwable)=${handlers:-0} static-init чист"
+  local pin=""
+  [ "$(basename "$path")" = "MobPushOps.java" ] && pin=" $(symbolic_pin)"
+  say "[OK]   $path — crossOps:${touches:- none} catch(Throwable)=${handlers:-0} static-init чист${pin}"
   return 0
 }
 
@@ -236,7 +257,7 @@ SELFTEST_BLOBS=(
   "chunksched/build/net/minecraft/server/level/ChunkSchedOps.class"
 )
 run_selftest() {
-  say "NCDFE-GUARD SELFTEST (T1 NCDFE=0 канон, LAB_LEDGER L6) — блобы мастера:"
+  say "NCDFE-GUARD SELFTEST (T1 NCDFE=0 канон, LAB_LEDGER L6) — блобы мастера; символьный пин: $(symbolic_pin) (@$PUSHABLES_SRC):"
   local b
   for b in "${SELFTEST_BLOBS[@]}"; do
     if [ -f "$ROOT/$b" ]; then check_one "$ROOT/$b"
@@ -271,7 +292,7 @@ if [ "$1" = "--selftest" ]; then run_selftest; exit $?; fi
 if [ "$1" = "--negative-test" ]; then run_negative_test; exit $?; fi
 
 for f in "$@"; do check_one "$f"; done
-say "NCDFE-GUARD SUMMARY: ok=$OK fail=$FAIL skip=$SKIP (exit 0/1/2 = OK/FAIL/SKIP; канон LAB_LEDGER L6: T1 NCDFE=0 до вердикта)"
+say "NCDFE-GUARD SUMMARY: ok=$OK fail=$FAIL skip=$SKIP pin=$(symbolic_pin) (exit 0/1/2 = OK/FAIL/SKIP; пин символический @$PUSHABLES_SRC, канон LAB_LEDGER L6: T1 NCDFE=0 до вердикта)"
 if [ "$FAIL" -gt 0 ]; then exit 1; fi
 if [ "$SKIP" -gt 0 ]; then exit 2; fi
 exit 0
