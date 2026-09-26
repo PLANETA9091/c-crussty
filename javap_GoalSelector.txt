@@ -1,0 +1,414 @@
+Compiled from "GoalSelector.java"
+public class net.minecraft.world.entity.ai.goal.GoalSelector {
+  private static final net.minecraft.world.entity.ai.goal.WrappedGoal NO_GOAL;
+
+  private final java.util.Map<net.minecraft.world.entity.ai.goal.Goal$Flag, net.minecraft.world.entity.ai.goal.WrappedGoal> lockedFlags;
+
+  private final java.util.Set<net.minecraft.world.entity.ai.goal.WrappedGoal> availableGoals;
+
+  private static final net.minecraft.world.entity.ai.goal.Goal$Flag[] GOAL_FLAG_VALUES;
+
+  private final ca.spottedleaf.moonrise.common.set.OptimizedSmallEnumSet<net.minecraft.world.entity.ai.goal.Goal$Flag> goalTypes;
+
+  private int curRate;
+
+  public net.minecraft.world.entity.ai.goal.GoalSelector();
+    Code:
+       0: aload_0
+       1: invokespecial #43                 // Method java/lang/Object."<init>":()V
+       4: aload_0
+       5: new           #45                 // class java/util/EnumMap
+       8: dup
+       9: ldc           #11                 // class net/minecraft/world/entity/ai/goal/Goal$Flag
+      11: invokespecial #48                 // Method java/util/EnumMap."<init>":(Ljava/lang/Class;)V
+      14: putfield      #50                 // Field lockedFlags:Ljava/util/Map;
+      17: aload_0
+      18: new           #52                 // class it/unimi/dsi/fastutil/objects/ObjectLinkedOpenHashSet
+      21: dup
+      22: invokespecial #53                 // Method it/unimi/dsi/fastutil/objects/ObjectLinkedOpenHashSet."<init>":()V
+      25: putfield      #55                 // Field availableGoals:Ljava/util/Set;
+      28: aload_0
+      29: new           #57                 // class ca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet
+      32: dup
+      33: ldc           #11                 // class net/minecraft/world/entity/ai/goal/Goal$Flag
+      35: invokespecial #58                 // Method ca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet."<init>":(Ljava/lang/Class;)V
+      38: putfield      #60                 // Field goalTypes:Lca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet;
+      41: return
+
+  public void addGoal(int, net.minecraft.world.entity.ai.goal.Goal);
+    Code:
+       0: aload_0
+       1: getfield      #55                 // Field availableGoals:Ljava/util/Set;
+       4: new           #66                 // class net/minecraft/world/entity/ai/goal/WrappedGoal
+       7: dup
+       8: iload_1
+       9: aload_2
+      10: invokespecial #68                 // Method net/minecraft/world/entity/ai/goal/WrappedGoal."<init>":(ILnet/minecraft/world/entity/ai/goal/Goal;)V
+      13: invokeinterface #74,  2           // InterfaceMethod java/util/Set.add:(Ljava/lang/Object;)Z
+      18: pop
+      19: return
+
+  public void removeAllGoals(java.util.function.Predicate<net.minecraft.world.entity.ai.goal.Goal>);
+    Code:
+       0: aload_0
+       1: getfield      #55                 // Field availableGoals:Ljava/util/Set;
+       4: aload_1
+       5: invokedynamic #99,  0             // InvokeDynamic #0:test:(Ljava/util/function/Predicate;)Ljava/util/function/Predicate;
+      10: invokeinterface #103,  2          // InterfaceMethod java/util/Set.removeIf:(Ljava/util/function/Predicate;)Z
+      15: pop
+      16: return
+
+  public boolean inactiveTick();
+    Code:
+       0: aload_0
+       1: dup
+       2: getfield      #110                // Field curRate:I
+       5: iconst_1
+       6: iadd
+       7: putfield      #110                // Field curRate:I
+      10: aload_0
+      11: getfield      #110                // Field curRate:I
+      14: iconst_3
+      15: irem
+      16: ifne          23
+      19: iconst_1
+      20: goto          24
+      23: iconst_0
+      24: ireturn
+
+  public boolean hasTasks();
+    Code:
+       0: aload_0
+       1: getfield      #55                 // Field availableGoals:Ljava/util/Set;
+       4: invokeinterface #115,  1          // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+       9: astore_1
+      10: aload_1
+      11: invokeinterface #120,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      16: ifeq          41
+      19: aload_1
+      20: invokeinterface #124,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      25: checkcast     #66                 // class net/minecraft/world/entity/ai/goal/WrappedGoal
+      28: astore_2
+      29: aload_2
+      30: invokevirtual #127                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.isRunning:()Z
+      33: ifeq          38
+      36: iconst_1
+      37: ireturn
+      38: goto          10
+      41: iconst_0
+      42: ireturn
+
+  public void removeGoal(net.minecraft.world.entity.ai.goal.Goal);
+    Code:
+       0: aload_0
+       1: getfield      #55                 // Field availableGoals:Ljava/util/Set;
+       4: invokeinterface #115,  1          // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+       9: astore_2
+      10: aload_2
+      11: invokeinterface #120,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      16: ifeq          51
+      19: aload_2
+      20: invokeinterface #124,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      25: checkcast     #66                 // class net/minecraft/world/entity/ai/goal/WrappedGoal
+      28: astore_3
+      29: aload_3
+      30: invokevirtual #134                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.getGoal:()Lnet/minecraft/world/entity/ai/goal/Goal;
+      33: aload_1
+      34: if_acmpne     48
+      37: aload_3
+      38: invokevirtual #127                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.isRunning:()Z
+      41: ifeq          48
+      44: aload_3
+      45: invokevirtual #137                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.stop:()V
+      48: goto          10
+      51: aload_0
+      52: getfield      #55                 // Field availableGoals:Ljava/util/Set;
+      55: aload_1
+      56: invokedynamic #145,  0            // InvokeDynamic #1:test:(Lnet/minecraft/world/entity/ai/goal/Goal;)Ljava/util/function/Predicate;
+      61: invokeinterface #103,  2          // InterfaceMethod java/util/Set.removeIf:(Ljava/util/function/Predicate;)Z
+      66: pop
+      67: return
+
+  private static boolean goalContainsAnyFlags(net.minecraft.world.entity.ai.goal.WrappedGoal, ca.spottedleaf.moonrise.common.set.OptimizedSmallEnumSet<net.minecraft.world.entity.ai.goal.Goal$Flag>);
+    Code:
+       0: aload_0
+       1: invokevirtual #153                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.getFlags:()Lca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet;
+       4: aload_1
+       5: invokevirtual #157                // Method ca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet.hasCommonElements:(Lca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet;)Z
+       8: ireturn
+
+  private static boolean goalCanBeReplacedForAllFlags(net.minecraft.world.entity.ai.goal.WrappedGoal, java.util.Map<net.minecraft.world.entity.ai.goal.Goal$Flag, net.minecraft.world.entity.ai.goal.WrappedGoal>);
+    Code:
+       0: aload_0
+       1: invokevirtual #153                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.getFlags:()Lca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet;
+       4: invokevirtual #165                // Method ca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet.getBackingSet:()J
+       7: lstore_2
+       8: aload_0
+       9: invokevirtual #153                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.getFlags:()Lca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet;
+      12: invokevirtual #169                // Method ca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet.size:()I
+      15: istore        4
+      17: iconst_0
+      18: istore        5
+      20: iload         5
+      22: iload         4
+      24: if_icmpge     73
+      27: getstatic     #171                // Field GOAL_FLAG_VALUES:[Lnet/minecraft/world/entity/ai/goal/Goal$Flag;
+      30: lload_2
+      31: invokestatic  #177                // Method java/lang/Long.numberOfTrailingZeros:(J)I
+      34: aaload
+      35: astore        6
+      37: lload_2
+      38: lload_2
+      39: invokestatic  #183                // Method ca/spottedleaf/concurrentutil/util/IntegerUtil.getTrailingBit:(J)J
+      42: lxor
+      43: lstore_2
+      44: aload_1
+      45: aload         6
+      47: getstatic     #185                // Field NO_GOAL:Lnet/minecraft/world/entity/ai/goal/WrappedGoal;
+      50: invokeinterface #189,  3          // InterfaceMethod java/util/Map.getOrDefault:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+      55: checkcast     #66                 // class net/minecraft/world/entity/ai/goal/WrappedGoal
+      58: aload_0
+      59: invokevirtual #192                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.canBeReplacedBy:(Lnet/minecraft/world/entity/ai/goal/WrappedGoal;)Z
+      62: ifne          67
+      65: iconst_0
+      66: ireturn
+      67: iinc          5, 1
+      70: goto          20
+      73: iconst_1
+      74: ireturn
+
+  public void tick();
+    Code:
+       0: invokestatic  #206                // Method net/minecraft/util/profiling/Profiler.get:()Lnet/minecraft/util/profiling/ProfilerFiller;
+       3: astore_1
+       4: aload_1
+       5: ldc           #208                // String goalCleanup
+       7: invokeinterface #214,  2          // InterfaceMethod net/minecraft/util/profiling/ProfilerFiller.push:(Ljava/lang/String;)V
+      12: aload_0
+      13: getfield      #55                 // Field availableGoals:Ljava/util/Set;
+      16: invokeinterface #115,  1          // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+      21: astore_2
+      22: aload_2
+      23: invokeinterface #120,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      28: ifeq          73
+      31: aload_2
+      32: invokeinterface #124,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      37: checkcast     #66                 // class net/minecraft/world/entity/ai/goal/WrappedGoal
+      40: astore_3
+      41: aload_3
+      42: invokevirtual #127                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.isRunning:()Z
+      45: ifeq          70
+      48: aload_3
+      49: aload_0
+      50: getfield      #60                 // Field goalTypes:Lca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet;
+      53: invokestatic  #216                // Method goalContainsAnyFlags:(Lnet/minecraft/world/entity/ai/goal/WrappedGoal;Lca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet;)Z
+      56: ifne          66
+      59: aload_3
+      60: invokevirtual #219                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.canContinueToUse:()Z
+      63: ifne          70
+      66: aload_3
+      67: invokevirtual #137                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.stop:()V
+      70: goto          22
+      73: aload_0
+      74: getfield      #50                 // Field lockedFlags:Ljava/util/Map;
+      77: invokeinterface #223,  1          // InterfaceMethod java/util/Map.entrySet:()Ljava/util/Set;
+      82: invokedynamic #232,  0            // InvokeDynamic #2:test:()Ljava/util/function/Predicate;
+      87: invokeinterface #103,  2          // InterfaceMethod java/util/Set.removeIf:(Ljava/util/function/Predicate;)Z
+      92: pop
+      93: aload_1
+      94: invokeinterface #235,  1          // InterfaceMethod net/minecraft/util/profiling/ProfilerFiller.pop:()V
+      99: aload_1
+     100: ldc           #237                // String goalUpdate
+     102: invokeinterface #214,  2          // InterfaceMethod net/minecraft/util/profiling/ProfilerFiller.push:(Ljava/lang/String;)V
+     107: aload_0
+     108: getfield      #55                 // Field availableGoals:Ljava/util/Set;
+     111: invokeinterface #115,  1          // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+     116: astore_2
+     117: aload_2
+     118: invokeinterface #120,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+     123: ifeq          271
+     126: aload_2
+     127: invokeinterface #124,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+     132: checkcast     #66                 // class net/minecraft/world/entity/ai/goal/WrappedGoal
+     135: astore_3
+     136: aload_3
+     137: invokevirtual #127                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.isRunning:()Z
+     140: ifne          268
+     143: aload_3
+     144: aload_0
+     145: getfield      #60                 // Field goalTypes:Lca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet;
+     148: invokestatic  #216                // Method goalContainsAnyFlags:(Lnet/minecraft/world/entity/ai/goal/WrappedGoal;Lca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet;)Z
+     151: ifne          268
+     154: aload_3
+     155: aload_0
+     156: getfield      #50                 // Field lockedFlags:Ljava/util/Map;
+     159: invokestatic  #239                // Method goalCanBeReplacedForAllFlags:(Lnet/minecraft/world/entity/ai/goal/WrappedGoal;Ljava/util/Map;)Z
+     162: ifeq          268
+     165: aload_3
+     166: invokevirtual #242                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.canUse:()Z
+     169: ifeq          268
+     172: aload_3
+     173: invokevirtual #153                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.getFlags:()Lca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet;
+     176: invokevirtual #165                // Method ca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet.getBackingSet:()J
+     179: lstore        4
+     181: aload_3
+     182: invokevirtual #153                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.getFlags:()Lca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet;
+     185: invokevirtual #169                // Method ca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet.size:()I
+     188: istore        6
+     190: iconst_0
+     191: istore        7
+     193: iload         7
+     195: iload         6
+     197: if_icmpge     264
+     200: getstatic     #171                // Field GOAL_FLAG_VALUES:[Lnet/minecraft/world/entity/ai/goal/Goal$Flag;
+     203: lload         4
+     205: invokestatic  #177                // Method java/lang/Long.numberOfTrailingZeros:(J)I
+     208: aaload
+     209: astore        8
+     211: lload         4
+     213: lload         4
+     215: invokestatic  #183                // Method ca/spottedleaf/concurrentutil/util/IntegerUtil.getTrailingBit:(J)J
+     218: lxor
+     219: lstore        4
+     221: aload_0
+     222: getfield      #50                 // Field lockedFlags:Ljava/util/Map;
+     225: aload         8
+     227: getstatic     #185                // Field NO_GOAL:Lnet/minecraft/world/entity/ai/goal/WrappedGoal;
+     230: invokeinterface #189,  3          // InterfaceMethod java/util/Map.getOrDefault:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     235: checkcast     #66                 // class net/minecraft/world/entity/ai/goal/WrappedGoal
+     238: astore        9
+     240: aload         9
+     242: invokevirtual #137                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.stop:()V
+     245: aload_0
+     246: getfield      #50                 // Field lockedFlags:Ljava/util/Map;
+     249: aload         8
+     251: aload_3
+     252: invokeinterface #245,  3          // InterfaceMethod java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+     257: pop
+     258: iinc          7, 1
+     261: goto          193
+     264: aload_3
+     265: invokevirtual #248                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.start:()V
+     268: goto          117
+     271: aload_1
+     272: invokeinterface #235,  1          // InterfaceMethod net/minecraft/util/profiling/ProfilerFiller.pop:()V
+     277: aload_0
+     278: iconst_1
+     279: invokevirtual #252                // Method tickRunningGoals:(Z)V
+     282: return
+
+  public void tickRunningGoals(boolean);
+    Code:
+       0: invokestatic  #206                // Method net/minecraft/util/profiling/Profiler.get:()Lnet/minecraft/util/profiling/ProfilerFiller;
+       3: astore_2
+       4: aload_2
+       5: ldc_w         #258                // String goalTick
+       8: invokeinterface #214,  2          // InterfaceMethod net/minecraft/util/profiling/ProfilerFiller.push:(Ljava/lang/String;)V
+      13: aload_0
+      14: getfield      #55                 // Field availableGoals:Ljava/util/Set;
+      17: invokeinterface #115,  1          // InterfaceMethod java/util/Set.iterator:()Ljava/util/Iterator;
+      22: astore_3
+      23: aload_3
+      24: invokeinterface #120,  1          // InterfaceMethod java/util/Iterator.hasNext:()Z
+      29: ifeq          71
+      32: aload_3
+      33: invokeinterface #124,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      38: checkcast     #66                 // class net/minecraft/world/entity/ai/goal/WrappedGoal
+      41: astore        4
+      43: aload         4
+      45: invokevirtual #127                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.isRunning:()Z
+      48: ifeq          68
+      51: iload_1
+      52: ifne          63
+      55: aload         4
+      57: invokevirtual #261                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.requiresUpdateEveryTick:()Z
+      60: ifeq          68
+      63: aload         4
+      65: invokevirtual #263                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.tick:()V
+      68: goto          23
+      71: aload_2
+      72: invokeinterface #235,  1          // InterfaceMethod net/minecraft/util/profiling/ProfilerFiller.pop:()V
+      77: return
+
+  public java.util.Set<net.minecraft.world.entity.ai.goal.WrappedGoal> getAvailableGoals();
+    Code:
+       0: aload_0
+       1: getfield      #55                 // Field availableGoals:Ljava/util/Set;
+       4: areturn
+
+  public void disableControlFlag(net.minecraft.world.entity.ai.goal.Goal$Flag);
+    Code:
+       0: aload_0
+       1: getfield      #60                 // Field goalTypes:Lca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet;
+       4: aload_1
+       5: invokevirtual #273                // Method ca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet.addUnchecked:(Ljava/lang/Enum;)Z
+       8: pop
+       9: return
+
+  public void enableControlFlag(net.minecraft.world.entity.ai.goal.Goal$Flag);
+    Code:
+       0: aload_0
+       1: getfield      #60                 // Field goalTypes:Lca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet;
+       4: aload_1
+       5: invokevirtual #277                // Method ca/spottedleaf/moonrise/common/set/OptimizedSmallEnumSet.removeUnchecked:(Ljava/lang/Enum;)Z
+       8: pop
+       9: return
+
+  public void setControlFlag(net.minecraft.world.entity.ai.goal.Goal$Flag, boolean);
+    Code:
+       0: iload_2
+       1: ifeq          12
+       4: aload_0
+       5: aload_1
+       6: invokevirtual #281                // Method enableControlFlag:(Lnet/minecraft/world/entity/ai/goal/Goal$Flag;)V
+       9: goto          17
+      12: aload_0
+      13: aload_1
+      14: invokevirtual #283                // Method disableControlFlag:(Lnet/minecraft/world/entity/ai/goal/Goal$Flag;)V
+      17: return
+
+  private static boolean lambda$tick$2(java.util.Map$Entry);
+    Code:
+       0: aload_0
+       1: invokeinterface #287,  1          // InterfaceMethod java/util/Map$Entry.getValue:()Ljava/lang/Object;
+       6: checkcast     #66                 // class net/minecraft/world/entity/ai/goal/WrappedGoal
+       9: invokevirtual #127                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.isRunning:()Z
+      12: ifne          19
+      15: iconst_1
+      16: goto          20
+      19: iconst_0
+      20: ireturn
+
+  private static boolean lambda$removeGoal$1(net.minecraft.world.entity.ai.goal.Goal, net.minecraft.world.entity.ai.goal.WrappedGoal);
+    Code:
+       0: aload_1
+       1: invokevirtual #134                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.getGoal:()Lnet/minecraft/world/entity/ai/goal/Goal;
+       4: aload_0
+       5: if_acmpne     12
+       8: iconst_1
+       9: goto          13
+      12: iconst_0
+      13: ireturn
+
+  private static boolean lambda$removeAllGoals$0(java.util.function.Predicate, net.minecraft.world.entity.ai.goal.WrappedGoal);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: invokevirtual #134                // Method net/minecraft/world/entity/ai/goal/WrappedGoal.getGoal:()Lnet/minecraft/world/entity/ai/goal/Goal;
+       5: invokeinterface #293,  2          // InterfaceMethod java/util/function/Predicate.test:(Ljava/lang/Object;)Z
+      10: ireturn
+
+  static {};
+    Code:
+       0: new           #7                  // class net/minecraft/world/entity/ai/goal/GoalSelector$2
+       3: dup
+       4: ldc_w         #295                // int 2147483647
+       7: new           #9                  // class net/minecraft/world/entity/ai/goal/GoalSelector$1
+      10: dup
+      11: invokespecial #296                // Method net/minecraft/world/entity/ai/goal/GoalSelector$1."<init>":()V
+      14: invokespecial #297                // Method net/minecraft/world/entity/ai/goal/GoalSelector$2."<init>":(ILnet/minecraft/world/entity/ai/goal/Goal;)V
+      17: putstatic     #185                // Field NO_GOAL:Lnet/minecraft/world/entity/ai/goal/WrappedGoal;
+      20: invokestatic  #301                // Method net/minecraft/world/entity/ai/goal/Goal$Flag.values:()[Lnet/minecraft/world/entity/ai/goal/Goal$Flag;
+      23: putstatic     #171                // Field GOAL_FLAG_VALUES:[Lnet/minecraft/world/entity/ai/goal/Goal$Flag;
+      26: return
+}

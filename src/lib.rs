@@ -27,6 +27,10 @@ mod brainhook;
 mod chunk_sched;
 mod bridge_class;
 mod goal_selector;
+// ROUND-468 S88: branch-predicate probe пасс-тру на GoalSelector (canUse x1
+// + canBeReplacedBy x1 -> GoalProbeOps счётчики исходов; lever
+// cmp468_s88probe STRICT-eq; WILD/ЛАБ RESEARCH-нога, НЕ оптимизация).
+mod goal_probe;
 mod classfile;
 mod collide_batch;
 mod colpush;
@@ -272,6 +276,10 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // serverAiStep GoalSelector.tick x2 -> GoalOps.tickGate; composes on the
     // Mob chain after mobs_sscan's checkDespawn serve). cmp421_brain only.
     goal_selector::register();
+    // ROUND-468 S88: branch-predicate probe (GoalSelector class chain,
+    // pass-through counters; cmp468_s88probe only; не конфликтует с
+    // goal_selector — lever взаимоисключающий, классы/мосты разные).
+    goal_probe::register();
     // F3 LEVELTICKS-READS (family-agg pack member, S7-116): LevelTicks +
     // ServerLevel body-swap hooks (the ServerLevel one composes with F1).
     tickhook::register();
@@ -643,6 +651,11 @@ fn inject_surface() {
     // TASK-421-A brain-slice: define GoalOps into the kernel loader, then
     // retransform Mob for the goal-selector flat fast-path (cmp421_brain).
     goal_selector::activate();
+    // ROUND-468 S88: define GoalProbeOps into the kernel loader, then
+    // retransform GoalSelector for the branch-predicate probe
+    // (cmp468_s88probe; must run after goal_selector::activate — same
+    // wait_for_boot/quiet discipline).
+    goal_probe::activate();
     // F3 LEVELTICKS-READS (S7-116): define TickBlockOps into the kernel
     // loader, then retransform LevelTicks + ServerLevel (tickBlock hook
     // re-composes the F1 optimiseRandomTick swap; MUST run after
