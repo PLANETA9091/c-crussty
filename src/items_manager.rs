@@ -40,11 +40,9 @@ const IM_BYTES: &[u8] =
 const GATE_LEGACY: &str = "items_subsys2";
 const GATE_CMP: &str = "cmp399_shard";
 
-fn lever_flag() -> String {
-    std::env::var("CRUSSTY_LEVER_FLAG")
-        .unwrap_or_default()
-        .trim()
-        .to_string()
+fn lever_flag() -> &'static str {
+    // x466-C99: кэшированный флаг (было String-alloc на каждый вызов).
+    crate::lever::flag()
 }
 
 fn lever_flag_matches() -> bool {
@@ -61,25 +59,10 @@ fn lever_flag_matches_for(f: &str) -> bool {
     // TASK-402-B: главный композит cmp402_comp (shardgrid ⊕ mobpush ⊕ E-soa)
     // включает ОБА item-суб-механизма (shard-grid + lifetime-heap) наряду с
     // мобовыми soa+grid — единый гейт раунда.
-    f == "items_subsys2" || f.starts_with("cmp399_") || f == "cmp402_comp"
-        || f == "cmp402_stagcomp" || f == "cmp403_tickplane"
-        || f == "cmp405_stagtick"
-        // TASK-406-D: композит раунда-406 включает оба item-суб-механизма.
-        || f == "cmp406_aibatch"
-        || f == "cmp409_multi"
-        || f == "cmp405_stagtick" || f == "cmp406_sscan"
-        || f == "cmp409_multi" || f == "cmp412_meganav" || f == "cmp414_cvs"
-        // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
-        // TASK-417-C: cvs-носитель ⊕ queryplane-awake композит (STRICT OR;
-        // legacy id-шники нетронуты — другие носители не затронуты).
-        || f == "cmp412_eqsnapv3" || f == "cmp414_cvs" || f == "cmp417_bq"
-        // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
-        || f == "cmp420_colpush"
-        || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside" || f == "cmp432_inside2" || f == "cmp436_ins4" || f == "cmp458_swar" || f == "cmp457_paldelta" || f == "cmp457_eqsnap2" || f == "cmp456_chunkmono" || f == "cmp456_chunkmono" || f == "cmp456_chunkmono_p31snap" || f == "cmp456_chunkmono_p31snap"
-        || f == "cmp451_senseins" || f == "cmp458_swar" || f == "cmp457_paldelta" || f == "cmp457_eqsnap2" || f == "cmp453_diet" || f == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
-        || f == "cmp438_sense" // TASK-444-C: sense family union
-        || f == "cmp451_senseins" || f == "cmp458_swar" || f == "cmp457_paldelta" || f == "cmp457_eqsnap2" || f == "cmp453_diet" || f == "cmp434_chunkpl" || f == "cmp435_chunk3" || f == "cmp437_chunk4" || f == "cmp444_chunk5" || f == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
-        || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside" || f == "cmp432_inside2" || f == "cmp436_ins4" || f == "cmp458_swar" || f == "cmp456_poi"
+    // TASK-399-B: префикс-семья cmp399_* остаётся префикс-проверкой (canon).
+    // x466-C99: точные id свернуты в маску M_ITEMS (состав pinned тестом
+    // lever::parity_collide_soa_items против старой цепи с дублями ×4).
+    f.starts_with("cmp399_") || crate::lever::armed_flag(f, crate::lever::M_ITEMS)
 }
 
 pub fn activate() {
@@ -98,22 +81,19 @@ pub fn activate() {
     let flag = lever_flag();
     let shard = flag == "cmp399_shard";
     let bfcomp = flag == "cmp399_bfcomp";
-    let comp = flag == "cmp402_comp"
-        || flag == "cmp402_stagcomp"
-        || flag == "cmp403_tickplane"
-        || flag == "cmp405_stagtick"
-        // TASK-406-D: композит раунда-406.
-        || flag == "cmp406_aibatch"
-        // TASK-406-E: композит раунда-406.
-        || flag == "cmp406_sscan"
-        // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
-        || flag == "cmp409_multi" || flag == "cmp412_meganav" || flag == "cmp414_cvs"
-        // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
-        // TASK-417-C: cvs-носитель ⊕ queryplane-awake композит.
-        || flag == "cmp412_eqsnapv3" || flag == "cmp414_cvs" || flag == "cmp417_bq"
-        // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
-        || flag == "cmp420_colpush";
-        || flag == "cmp421_brain" || flag == "cmp422_brain2" || flag == "cmp423_brain3" || flag == "cmp424_mobfeed" || flag == "cmp430_inside" || flag == "cmp434_chunkpl" || flag == "cmp435_chunk3" || flag == "cmp437_chunk4" || flag == "cmp444_chunk5" || flag == "cmp450_chunk" || flag == "cmp456_chunkmono" || flag == "cmp456_chunkmono_p31snap" || flag == "cmp432_inside2";    let despawn2 = flag == "cmp399_despawn2" || bfcomp || comp;
+    // x466-C99 (ИНВЕРСИЯ, never-hit ветка): хвост этого OR-списка на мастере
+    // 9bb43fe9 БИТ — после `|| flag == "cmp420_colpush";` стояла вторая цепь
+    // `|| flag == "cmp421_brain" || ... || flag == "cmp432_inside2";`,
+    // которая парсится как ПУСТОЙ КЛОЖУР (unused_must_use warning) и
+    // НИКОГДА не выполняется. comp сегодня молча обрезан на cmp420_colpush
+    // (хвостовые id'ы — cmp421_brain..cmp432_inside2 — в comp НЕ входят,
+    // значит despawn2 на мастер-носителях = false). Восстановление хвоста —
+    // смена поведения java-гейта DESPAWN2 → отдельная нога (BOARD
+    // REF C99-DEADTAIL). Здесь семантика мастера зафиксирована бит-в-бит:
+    // M_ITEMS_COMP = ровно обрезанный список (пин lever::parity_items_comp).
+    let comp = crate::lever::armed_flag(flag, crate::lever::M_ITEMS_COMP);
+    let despawn2 =
+        crate::lever::armed_flag(flag, crate::lever::M_ITEMS_DESPAWN2) || bfcomp || comp;
     if shard {
         // ГРОМКИЙ ARM-МАРКЕР (TASK-399-B): без этой строки нога не-armed.
         eprintln!(

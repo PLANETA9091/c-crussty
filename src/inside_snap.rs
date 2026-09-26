@@ -117,26 +117,18 @@ fn lever_flag_matches() -> bool {
     // ИЛИ несущий round-430 (cmp430_inside, A/B ре-плей); пустой/чужой = ваниль
     // бит-в-байт. TASK-436-B: serve-plane closure round (cmp436_ins4) rides
     // STRICT-OR поверх cmp432_inside2.
-    std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| {
-            let v = v.trim();
-            v == "cmp432_inside2" || v == "cmp430_inside" || v == "cmp436_ins4" || v == "cmp458_swar" || v == "cmp457_paldelta" || v == "cmp457_eqsnap2"
-            || v == "cmp438_sense" // TASK-444-C: sense family union
-            || v == "cmp451_senseins" || v == "cmp458_swar" || v == "cmp457_paldelta" || v == "cmp457_eqsnap2" || v == "cmp456_chunkmono" || v == "cmp456_chunkmono_p31snap" || v == "cmp453_diet" || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp444_chunk5" || v == "cmp450_chunk" || v == "cmp456_poi" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
-})
-        .unwrap_or(false)
+    // x466-C99: маска M_INSIDE_SNAP (состав pinned lever::parity_inside_snap) —
+    // было env::var + 17+-eq цепь с дублями на каждый вызов.
+    crate::lever::armed(crate::lever::M_INSIDE_SNAP)
 }
 
 /// TASK-436-B: cmp436_ins4 selects the V4 serve body (per-claim lane snap
 /// arrays + untracked-miss closure + cached minSecY + lane hint). The V2
 /// serve() stays byte-for-byte as the control path (V4=false default).
 fn v4_requested() -> bool {
-    std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| {
-            let v = v.trim();
-            v == "cmp436_ins4" || v == "cmp451_senseins" || v == "cmp458_swar" || v == "cmp457_paldelta" || v == "cmp457_eqsnap2" || v == "cmp456_chunkmono" || v == "cmp456_chunkmono_p31snap" || v == "cmp453_diet" || v == "cmp450_chunk" || v == "cmp456_poi" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
-})
-        .unwrap_or(false)
+    // x466-C99: маска M_INSIDE_V4 (состав pinned lever::parity_inside_snap) —
+    // было env::var + 10-eq цепь на каждый вызов.
+    crate::lever::armed(crate::lever::M_INSIDE_V4)
 }
 
 /// entity_compose stage gate (pub).

@@ -57,6 +57,13 @@ mod item_merge;
 mod items_index;
 mod items_lifetime;
 mod items_manager;
+// LEVER DISPATCHER (x466-C99): single-pass bitmask of armed lever families —
+// один env-чтение CRUSSTY_LEVER_FLAG на процесс, один проход по реестру
+// идентификаторов, каждый гейт = одна битовая операция (was: per-call
+// env::var + String-alloc + цепочки 5..40 строковых `==` с дублями).
+// ГЕЙТ-КАНОН: состав каждого гейта pinned тестом паритета (бит-в-бит
+// против старых OR-цепей master 9bb43fe9).
+mod lever;
 mod jni_table;
 mod kernel_policy;
 mod loader;
@@ -152,6 +159,9 @@ pub unsafe extern "C" fn cplugin_init(
 
 unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *const c_char) -> i32 {
     cplug_sdk::init(api, vm);
+    // x466-C99: прогрев lever-диспатчера ДО лестницы регистраций — один
+    // env-чтение + один проход реестра, дальше все гейты = 1 AND.
+    lever::bits();
     cplug_sdk::classes::spawn_stats_dumper(); // TASK-45: gated on CRUSSTY_SDK_STATS (off by default)
     eprintln!("[crussty-plugin] cplugin_init: injecting Crussty CE native surface in background");
     area_map::register();

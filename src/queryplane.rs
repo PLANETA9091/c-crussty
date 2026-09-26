@@ -65,19 +65,9 @@ static READY: AtomicBool = AtomicBool::new(false);
 /// round-417-C cmp417_bq = cvs-носитель (meganav⊕eqsnap-v3⊕race-fix⊕blob-sync)
 /// ⊕ queryplane AWAKE (find_class fix — см. activate()).
 fn lever_flag_matches() -> bool {
-    std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| {
-            v.trim() == "cmp412_b2p1"
-                || v.trim() == "cmp415_mcomp"
-                || v.trim() == "cmp416_mcomp"
-                || v.trim() == "cmp417_bq"
-                // TASK-419-A (colpush): колпаш-носитель — queryplane awake.
-                || v.trim() == "cmp420_colpush"
-                || v.trim() == "cmp421_brain" || v.trim() == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2"
-        || v == "cmp438_sense" // TASK-444-C: sense family union
-        || v == "cmp451_senseins" || v == "cmp458_swar" || v == "cmp457_paldelta" || v == "cmp457_eqsnap2" || v == "cmp456_chunkmono" || v == "cmp456_chunkmono_p31snap" || v == "cmp453_diet" || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp444_chunk5" || v == "cmp450_chunk" || v == "cmp456_poi" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
-})
-        .unwrap_or(false)
+    // x466-C99: маска M_QUERYPLANE (состав pinned lever::parity_chunksched_queryplane)
+    // — было env::var + 25+-eq цепь с дублями на каждый вызов.
+    crate::lever::armed(crate::lever::M_QUERYPLANE)
 }
 
 
@@ -782,11 +772,28 @@ mod queryplane_delivery_tests {
     /// {b2p1, mcomp, cmp417_bq}, см. lever_flag_matches).
     #[test]
     fn meganav_planes_accept_both_flags_strict_or() {
+        // x466-C99: collide_batch/mobs_manager гейты свернуты в lever-маски —
+        // carrier-arms пинюутся БИТОВО (эквивалент строкового грепа, закон 4).
+        for (mask, name) in [
+            (crate::lever::M_COLLIDE, "M_COLLIDE"),
+            (crate::lever::M_SOA, "M_SOA"),
+        ] {
+            assert!(
+                crate::lever::armed_flag("cmp414_cvs", mask),
+                "{name} lost the cvs-carrier arm (cmp414_cvs)"
+            );
+            assert!(
+                crate::lever::armed_flag("cmp417_bq", mask),
+                "{name} lost the TASK-417-C composite arm (cmp417_bq)"
+            );
+            assert!(
+                crate::lever::armed_flag("cmp412_meganav", mask),
+                "{name} lost its own flag"
+            );
+        }
         for src in [
             include_str!("../src/nav_plane.rs"),
             include_str!("../src/tickplane.rs"),
-            include_str!("../src/collide_batch.rs"),
-            include_str!("../src/mobs_manager.rs"),
             include_str!("../src/stagger.rs"),
         ] {
             assert!(

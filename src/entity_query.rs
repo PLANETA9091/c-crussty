@@ -119,7 +119,11 @@ const H2: i32 = 0x85EB_CA77u32 as i32;
 /// одним bulk-drain (O(dirty)) и только потом строит цепи (cl1 35691270899:
 /// per-entity WLOCK-мутации = 24.9% CPU → 0.5 TPS; eq chain build = 0.025%).
 fn enabled() -> bool {
-    flag_enabled(std::env::var("CRUSSTY_LEVER_FLAG").as_deref().ok().as_deref())
+    // x466-C99 single-pass dispatcher: один env-чтение/процесс + одна битовая
+    // операция (было: env::var + String-alloc + ~40-eq цепь с дублями на
+    // КАЖДЫЙ вызов — eq_epoch 1/тик). Состав списка pinned тестом паритета
+    // lever::parity_entity_query против старой OR-цепи master 9bb43fe9.
+    crate::lever::armed(crate::lever::M_EQ)
 }
 
 /// TASK-452-A: PURE production gate list (no env read) — the test module pins
@@ -129,103 +133,41 @@ fn enabled() -> bool {
 /// NCDFE ×32768 on the first senseins legs, DELIVERY-FAIL). One source of
 /// truth, no mirror drift possible.
 fn flag_enabled(flag: Option<&str>) -> bool {
-    matches!(
-        flag,
-        Some("cmp410_eindexq") | Some("cmp411_k4soa") | Some("cmp411_eqsnap")
-            // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
-            | Some("cmp412_eqsnapv3") | Some("cmp414_cvs") | Some("cmp417_bq")
-            // TASK-419-A (colpush): колпаш-носитель — eq_epoch снапшот жив
-            // (плоскость кормит colpush_plane_refresh).
-            | Some("cmp420_colpush")
-            // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
-            | Some("cmp422_brain2")
-            // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-            | Some("cmp423_brain3") | Some("cmp424_mobfeed") | Some("cmp430_inside") | Some("cmp432_inside2") | Some("cmp436_ins4") | Some("cmp458_swar") | Some("cmp457_paldelta") | Some("cmp457_eqsnap2")
-            | Some("cmp438_sense") // TASK-444-C: sense family union
-            | Some("cmp451_senseins") | Some("cmp458_swar") | Some("cmp457_paldelta") | Some("cmp457_eqsnap2") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
-            | Some("cmp453_diet") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
-            // TASK-456-B (NCDFE fix, run 36122777112): cmp456_poi = FULL era
-            // carrier (law-7 synonym of cmp450_chunk ⊕ cmp453_diet + POI
-            // plane). The java MobPushOps blob's `if (K4 || EQSNAP)` branch is
-            // LIVE under cmp456_poi (step-2 java widen) and executes
-            // `EntityGoalQueryOps.pushCandidates` from the FIRST pushables
-            // call — the bridge define MUST be gated on this flag or the site
-            // resolves a never-defined class (NCDFE cached per cp entry,
-            // ×6014 poi456-2). poi_widen.py missed the `Some(..)` pattern
-            // (only Ok(..)/f==-style were widened) — x452 mirror-drift class.
-            | Some("cmp456_poi")
-            | Some("cmp421_brain")
-            | Some("cmp421_brain") | Some("cmp434_chunkpl") | Some("cmp435_chunk3") | Some("cmp437_chunk4") | Some("cmp444_chunk5") | Some("cmp450_chunk")
-            // TASK-456-C NCDFE fix (×451/×452 precedent fa9054d9): the chunk6-sched
-            // mono-plane carrier rides the MASTER-CARRIER planes — add_456c_needles.py
-            // retagged every java blob gate (MobPushOps.eqsnapEnabled etc, anchored on
-            // cmp450_chunk) + every `| Ok(...)`/`== "..."` rust gate, but MISSED this
-            // matches!-Some gate (the ONLY Some("cmp450_chunk") style in the tree).
-            // Asymmetry = DELIVERY-FAIL chkmono456-1/2 (36122381392/36122391639):
-            // EQSNAP=true in the blob → MobPushOps.pushables:467 resolves
-            // EntityGoalQueryOps from the FIRST push, while lever_matches()==false
-            // skipped the mobs_manager HARD publish gate (ensure_bridge_early) →
-            // NCDFE ×1462, HotSpot caches per cp entry. Symmetric gate → define →
-            // register natives → probe → publish BEFORE the push lane (arm AFTER
-            // define+selfTest — NCDFE structurally impossible, ColpushOps-marker
-            // canon). cmp456_chunkmono ≡ cmp450_chunk planes ⊕ chunk6-sched.
-            | Some("cmp456_chunkmono") | Some("cmp456_chunkmono_p31snap")
-    )
+    // x466-C99: прежний список (см. M_EQ) свернут в маску; Option<&str> =
+    // None (env unset) → пустая строка → 0 битов (was: false). Пин: тесты
+    // enabled_with ниже + lever::parity_entity_query.
+    crate::lever::armed_flag(flag.unwrap_or(""), crate::lever::M_EQ)
 }
 
 /// TASK-411-C (k4soa): true under the K4 flag only (ARM-marker labelling).
 fn enabled_flag_is_k4() -> bool {
-    matches!(
-        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp411_k4soa")
-    )
+    crate::lever::armed(crate::lever::M_K4)
 }
 
 /// TASK-411-C (eqsnap, v2): true under the eqsnap flag only (marker labelling
 /// + the shard-drain switch inside eq_epoch).
 fn enabled_flag_is_eqsnap() -> bool {
-    matches!(
-        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp411_eqsnap") | Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs") | Ok("cmp417_bq")
-            // TASK-419-B (sense-plane composite): STRICT OR.
-            | Ok("cmp421_brain")
-    )
+    crate::lever::armed(crate::lever::M_EQSNAP)
 }
 
 /// TASK-412-C (eqsnap-v3): true under the v3 composite flag only
 /// (ARM-marker labelling — точная метка флага в EFFECT-строках).
 fn enabled_flag_is_eqsnapv3() -> bool {
-    matches!(
-        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs") | Ok("cmp417_bq")
-    )
+    crate::lever::armed(crate::lever::M_EQSNAPV3)
 }
 
 /// TASK-419-B (sense-plane): true under the sense composite flag only —
 /// включает достройку CSR-арены (sense_arena) сразу после eq_epoch в том же
 /// EPOCH_LOCK-окне; snapshotQuery-джава читает слайсы арены вместо цепей.
 /// TASK-422-B (iter-2): STRICT-OR — вектор-флаг несёт тот же sense-срез.
+/// x466-C99: маска M_SENSEQ (состав pinned lever::parity_sense_arena_carrier).
 fn enabled_flag_is_sense() -> bool {
-    matches!(
-        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp421_brain") | Ok("cmp422_brain2")
-            // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp458_swar") | Ok("cmp457_paldelta") | Ok("cmp457_eqsnap2")
-            | Ok("cmp438_sense") // TASK-444-C: sense family union
-            | Ok("cmp451_senseins") | Ok("cmp458_swar") | Ok("cmp457_paldelta") | Ok("cmp457_eqsnap2") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono") // TASK-452-A: senseins composite — sense-arena slice must arm (production gate retag)
-            | Ok("cmp453_diet") | Ok("cmp450_chunk") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
-            | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") // TASK-454-B/455-B: chunk union carrier rides the sense gate (STRICT OR, rebaze-3 union)
-            | Ok("cmp451_senseins") | Ok("cmp458_swar") // TASK-452-A: senseins composite — sense-arena slice must arm (production gate retag)
-            | Ok("cmp453_diet") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp456_poi") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
-)
+    crate::lever::armed(crate::lever::M_SENSEQ)
 }
 
 /// TASK-422-B (iter-2): точная метка вектор-флага в ARM/EFFECT-маркерах.
 fn enabled_flag_is_brain2() -> bool {
-    matches!(
-        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp422_brain2")
-    )
+    crate::lever::armed(crate::lever::M_BRAIN2)
 }
 
 static READY: AtomicBool = AtomicBool::new(false);

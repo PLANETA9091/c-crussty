@@ -72,32 +72,15 @@ const QRETRY: u32 = 128;
 /// ЗЕРКАЛО sense/net/minecraft/world/entity/SenseOps.java leverEnabled —
 /// расхождение = дормант-мисс ARM). Пустой/чужой флаг = ваниль бит-в-байт.
 fn enabled() -> bool {
-    if let Ok(h) = std::env::var("CRUSSTY_SENSE") {
-        let h = h.trim().to_ascii_lowercase();
-        if h == "1" || h == "true" || h == "on" || h == "yes" {
-            return true;
-        }
+    // Люк CRUSSTY_SENSE (канон x437) — кэшированный truthy-свитч (x466-C99:
+    // было env::var на каждый вызов; env статичен с момента старта JVM).
+    if crate::lever::env_switch_cached("CRUSSTY_SENSE") {
+        return true;
     }
-    matches!(
-        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp438_sense")
-            | Ok("cmp406_sscan")
-            | Ok("cmp409_multi")
-            | Ok("cmp412_meganav")
-            | Ok("cmp412_eqsnapv3")
-            | Ok("cmp414_cvs")
-            | Ok("cmp417_bq")
-            | Ok("cmp420_colpush")
-            | Ok("cmp421_brain")
-            | Ok("cmp422_brain2")
-            | Ok("cmp423_brain3")
-            | Ok("cmp424_mobfeed")
-            | Ok("cmp430_inside")
-            | Ok("cmp451_senseins") | Ok("cmp458_swar") | Ok("cmp457_paldelta") | Ok("cmp457_eqsnap2") | Ok("cmp456_chunkmono") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR) — PRODUCTION gate retag (x452: dormant -> SenseOps never defined, core of vector dead)
-            | Ok("cmp453_diet") | Ok("cmp450_chunk") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
-            | Ok("cmp451_senseins") | Ok("cmp458_swar") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR) — PRODUCTION gate retag (x452: dormant -> SenseOps never defined, core of vector dead)
-            | Ok("cmp453_diet") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp456_poi") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
-)
+    // x466-C99: маска M_SENSEPLANE (состав pinned lever::parity_sscan_sense_inside)
+    // — было env::var + String-alloc + ~22-eq цепь с дублями на КАЖДЫЙ вызов
+    // (sense_probe/sense_epoch). STRICT-OR канон не тронут.
+    crate::lever::armed(crate::lever::M_SENSEPLANE)
 }
 
 static READY: AtomicBool = AtomicBool::new(false);

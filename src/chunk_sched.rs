@@ -40,36 +40,9 @@ const LEVER_ID: &str = "cmp456_chunkmono";
 /// the list UNCHANGED; cmp456_chunkmono is the ONLY addition (mirror-drift
 /// lesson ×452: prod gates and test helpers move synchronously).
 fn lever_flag_matches() -> bool {
-    match std::env::var("CRUSSTY_LEVER_FLAG") {
-        Ok(v) => {
-            let v = v.trim();
-            v == LEVER_ID
-                || v == "cmp420_colpush"
-                || v == "cmp421_chunk"
-                || v == "cmp421_brain"
-                || v == "cmp422_brain2"
-                || v == "cmp423_brain3"
-                || v == "cmp424_mobfeed"
-                || v == "cmp430_inside"
-                || v == "cmp432_inside2"
-                || v == "cmp436_ins4" || v == "cmp458_swar"
-                || v == "cmp451_senseins" || v == "cmp458_swar"
-                || v == "cmp453_diet"
-                || v == "cmp450_chunk"
-                || v == "cmp434_chunkpl"
-                || v == "cmp435_chunk3"
-                || v == "cmp437_chunk4"
-                || v == "cmp444_chunk5"
-                || v == "cmp452_mega"
-                || v == "cmp455_spawn"
-                || v == "cmp456_poi"
-                // TASK-460-01 climb-compo (P31 INSIDE-BATCH + P32 snapreg
-                // sidecar on THIS chunkmono carrier): same carrier semantics,
-                // only the id is added (STRICT-OR canon, carriers unchanged).
-                || v == "cmp456_chunkmono_p31snap"
-        }
-        Err(_) => false,
-    }
+    // x466-C99: маска M_CHUNKSCHED (состав pinned lever::parity_chunksched_queryplane)
+    // — было env::var + 24+-eq цепь с дублями на каждый вызов.
+    crate::lever::armed(crate::lever::M_CHUNKSCHED)
 }
 
 static READY: AtomicBool = AtomicBool::new(false);

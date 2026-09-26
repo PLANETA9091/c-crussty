@@ -77,25 +77,10 @@ const QRETRY: u32 = 128;
 /// STRICT-eq gate (round-400 lever protocol; полу-armed мост = невалидная
 /// нога, TASK-402-F). Пустой/чужой флаг = ваниль бит-в-байт.
 fn enabled() -> bool {
-    matches!(
-        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp406_sscan") | Ok("cmp409_multi") | Ok("cmp412_meganav") | Ok("cmp414_cvs")
-            // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
-            | Ok("cmp412_eqsnapv3") | Ok("cmp414_cvs") | Ok("cmp417_bq")
-            // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
-            | Ok("cmp420_colpush")
-            // TASK-422-B: brain iter-2 вектор-флаг (STRICT OR).
-            | Ok("cmp422_brain2")
-            // TASK-424-A: GC-ревизия brain3 (STRICT OR).
-            | Ok("cmp423_brain3") | Ok("cmp424_mobfeed") | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp458_swar") | Ok("cmp457_paldelta") | Ok("cmp457_eqsnap2")
-            | Ok("cmp438_sense") // TASK-444-C: sense family union
-            | Ok("cmp451_senseins") | Ok("cmp458_swar") | Ok("cmp457_paldelta") | Ok("cmp457_eqsnap2") | Ok("cmp456_chunkmono") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR) — production gate retag for carrier-parity
-            | Ok("cmp453_diet") | Ok("cmp450_chunk") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
-            | Ok("cmp451_senseins") | Ok("cmp458_swar") // TASK-452-A: senseins composite (carrier ins4 + sense/brain family, STRICT OR) — production gate retag for carrier-parity
-            | Ok("cmp453_diet") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono_p31snap") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
-            | Ok("cmp421_brain")
-            | Ok("cmp421_brain") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp456_poi")
-)
+    // x466-C99: маска M_SSCAN (состав pinned lever::parity_sscan_sense_inside)
+    // — было env::var + String-alloc + ~35-eq цепь с дублями на КАЖДЫЙ вызов
+    // (sscan_probe/sscan_epoch). STRICT-OR канон не тронут.
+    crate::lever::armed(crate::lever::M_SSCAN)
 }
 
 static READY: AtomicBool = AtomicBool::new(false);

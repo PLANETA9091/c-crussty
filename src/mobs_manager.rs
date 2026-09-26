@@ -64,42 +64,17 @@ const GATE_LEVER_MULTI: &str = "cmp409_multi";
 /// primary push broadphase + популяция для sscanEpoch (despawn-scan column).
 const GATE_LEVER_SSCAN: &str = "cmp406_sscan";
 
-fn lever_flag() -> String {
-    std::env::var("CRUSSTY_LEVER_FLAG")
-        .unwrap_or_default()
-        .trim()
-        .to_string()
+fn lever_flag() -> &'static str {
+    // x466-C99: кэшированный флаг (было String-alloc на каждый вызов).
+    crate::lever::flag()
 }
 
 /// TASK-402-B: the hook arms under the legacy soa flag AND the composite.
+/// x466-C99: маска M_SOA (состав pinned lever::parity_collide_soa_items) —
+/// было ~60-eq цепь с дублями (×4 retag-серии) на каждый вызов.
 fn java_gate_matches(f: &str) -> bool {
-    // TASK-410-C (eindexq): SoA-плоскость = источник популяции goal-query
-    // CSR-снапшота (EntityQueryOps; sscan-прецедент TASK-406-E).
-    // TASK-411-C (k4soa): K4 — радиус-ремонт (gate 2.0 / pad 2) + push-лейн
-    // из chain-снапшота (MobPushOps.pushCandidates path).
-    // TASK-411-C (eqsnap, v2): dirty-дельты (DeltaShard 16×8192, drain
-    // O(dirty) один bulk JNI/тик).
-    f == GATE_LEVER
-        || f == GATE_LEVER_COMP
-        || f == GATE_LEVER_STAGCOMP
-        || f == GATE_LEVER_TICKPLANE
-        || f == GATE_LEVER_STAGTICK
-        || f == GATE_LEVER_AIBATCH
-        || f == GATE_LEVER_MULTI || f == "cmp412_meganav" || f == "cmp414_cvs"
-        // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
-        || f == "cmp412_eqsnapv3" || f == "cmp414_cvs" || f == "cmp417_bq"
-        // TASK-419-A (colpush): колпаш-носитель — SoA-плоскость + eqsnap
-        // (столбцы кормит colpush_plane_refresh, per-entity upsert спит).
-        || f == "cmp420_colpush"
-        || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside" || f == "cmp432_inside2" || f == "cmp436_ins4" || f == "cmp458_swar" || f == "cmp457_paldelta" || f == "cmp457_eqsnap2" || f == "cmp456_chunkmono" || f == "cmp456_chunkmono" || f == "cmp456_chunkmono_p31snap" || f == "cmp456_chunkmono_p31snap"
-        || f == "cmp451_senseins" || f == "cmp458_swar" || f == "cmp457_paldelta" || f == "cmp457_eqsnap2" || f == "cmp453_diet" || f == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
-        || f == "cmp438_sense" // TASK-444-C: sense family union
-        || f == "cmp451_senseins" || f == "cmp458_swar" || f == "cmp457_paldelta" || f == "cmp457_eqsnap2" || f == "cmp453_diet" || f == "cmp434_chunkpl" || f == "cmp435_chunk3" || f == "cmp437_chunk4" || f == "cmp444_chunk5" || f == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
-        || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside" || f == "cmp432_inside2" || f == "cmp436_ins4" || f == "cmp458_swar" || f == "cmp456_poi"
-|| f == GATE_LEVER_SSCAN
-        || f == "cmp410_eindexq" || f == "cmp411_k4soa" || f == "cmp411_eqsnap"
+    crate::lever::armed_flag(f, crate::lever::M_SOA)
 }
-
 static READY: AtomicBool = AtomicBool::new(false);
 
 struct PatchCache {
@@ -167,7 +142,7 @@ fn target() -> &'static Target {
 /// stays byte-indistinguishable from vanilla for this vector.
 pub fn register() {
     let f = lever_flag();
-    if !java_gate_matches(&f) {
+    if !java_gate_matches(f) {
         eprintln!(
             "[crussty-plugin] mobs_soa: dormant (set CRUSSTY_LEVER_FLAG={GATE_LEVER} or {GATE_LEVER_COMP} to enable)"
         );
@@ -206,7 +181,7 @@ pub fn register() {
 /// single-site retarget from the pristine bytes, flip READY, retransform.
 pub fn activate() {
     let f = lever_flag();
-    if !java_gate_matches(&f) {
+    if !java_gate_matches(f) {
         return;
     }
     std::thread::spawn(move || {

@@ -81,17 +81,10 @@ const PROBE_MAGIC: i32 = 0x5049; // "PI"
 
 /// STRICT-OR carrier gate (x454-C MAIN FIX canon: the round lever arms the
 /// FULL era composite; empty/foreign flag = vanilla bit-for-bit).
+/// x466-C99: маска M_POI (состав pinned lever::parity_poi_plane) — было
+/// env::var + String-alloc + 23-eq цепь на КАЖДЫЙ вызов (poi_epoch 1/тик).
 fn enabled() -> bool {
-    matches!(
-        std::env::var("CRUSSTY_LEVER_FLAG").as_deref().map(str::trim),
-        Ok("cmp456_poi") | Ok("cmp409_multi") | Ok("cmp412_meganav") | Ok("cmp412_eqsnapv3")
-            | Ok("cmp414_cvs") | Ok("cmp417_bq") | Ok("cmp420_colpush") | Ok("cmp421_brain")
-            | Ok("cmp422_brain2") | Ok("cmp423_brain3") | Ok("cmp424_mobfeed")
-            | Ok("cmp430_inside") | Ok("cmp432_inside2") | Ok("cmp436_ins4") | Ok("cmp438_sense")
-            | Ok("cmp451_senseins") | Ok("cmp453_diet") | Ok("cmp452_mega")
-            | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4")
-            | Ok("cmp444_chunk5") | Ok("cmp450_chunk")
-    )
+    crate::lever::armed(crate::lever::M_POI)
 }
 
 static READY: AtomicBool = AtomicBool::new(false);

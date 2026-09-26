@@ -70,27 +70,9 @@ fn stash_orig(bytes: &[u8]) {
 
 fn lever_flag_matches() -> bool {
     // TASK-403-C: tickplane включает collide-сегмент плейна (STRICT eq).
-    std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| {
-            let v = v.trim();
-            v == "cmp401_collide" || v == "cmp403_tickplane" || v == "cmp405_stagtick"
-                // TASK-406-D: композит раунда-406 включает collide-сегмент.
-                || v == "cmp406_aibatch"
-                // TASK-406-E: композит раунда-406 включает collide-сегмент.
-                || v == "cmp406_sscan"
-                // TASK-409: мультикомпозит comp⊕aibatch⊕sscan.
-                || v == "cmp409_multi" || v == "cmp412_meganav" || v == "cmp414_cvs"
-                // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
-                || v == "cmp412_eqsnapv3" || v == "cmp414_cvs" || v == "cmp417_bq"
-                // TASK-419-A (colpush): колпаш-носитель (STRICT OR).
-                || v == "cmp420_colpush"
-                || v == "cmp412_eqsnapv3" || v == "cmp414_cvs" || v == "cmp417_bq" || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2" || v == "cmp436_ins4" || v == "cmp458_swar" || v == "cmp457_paldelta" || v == "cmp457_eqsnap2" || v == "cmp456_chunkmono" || v == "cmp456_chunkmono" || v == "cmp456_chunkmono_p31snap" || v == "cmp456_chunkmono_p31snap"
-                || v == "cmp451_senseins" || v == "cmp458_swar" || v == "cmp457_paldelta" || v == "cmp457_eqsnap2" || v == "cmp453_diet" || v == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
-                || v == "cmp438_sense" // TASK-444-C: sense family union
-                || v == "cmp451_senseins" || v == "cmp458_swar" || v == "cmp457_paldelta" || v == "cmp457_eqsnap2" || v == "cmp453_diet" || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp444_chunk5" || v == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
-                || v == "cmp412_eqsnapv3" || v == "cmp414_cvs" || v == "cmp417_bq" || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2" || v == "cmp436_ins4" || v == "cmp458_swar" || v == "cmp456_poi"
-})
-        .unwrap_or(false)
+    // x466-C99: маска M_COLLIDE (состав pinned lever::parity_collide_soa_items)
+    // — было env::var + String-alloc + ~32-eq цепь с дублями (×3 серии retag).
+    crate::lever::armed(crate::lever::M_COLLIDE)
 }
 
 /// Register the byte hook (idempotent; call once from cplugin_init).
@@ -228,28 +210,10 @@ pub fn activate() {
             "[crussty-plugin] cmp401_collide: ARMED (section-plan batch-merge; retransform rc={rc})"
         );
         // TASK-403-C: сегментный маркер плейна с фактическим флагом раунда.
-        if std::env::var("CRUSSTY_LEVER_FLAG")
-            .map(|v| {
-                let v = v.trim();
-                v == "cmp403_tickplane" || v == "cmp405_stagtick"
-                    // TASK-406-D: композит раунда-406 (сегментный маркер).
-                    || v == "cmp406_aibatch"
-                    // TASK-406-E: композит раунда-406 (сегментный маркер).
-                    || v == "cmp406_sscan"
-                    // TASK-409: мультикомпозит.
-                    || v == "cmp409_multi" || v == "cmp412_meganav" || v == "cmp414_cvs"
-                // TASK-412-C (eqsnap-v3): meganav ⊕ eqsnap — STRICT OR.
-                || v == "cmp412_eqsnapv3" || v == "cmp414_cvs" || v == "cmp417_bq" || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2" || v == "cmp436_ins4" || v == "cmp458_swar" || v == "cmp457_paldelta" || v == "cmp457_eqsnap2" || v == "cmp456_chunkmono" || v == "cmp456_chunkmono" || v == "cmp456_chunkmono_p31snap" || v == "cmp456_chunkmono_p31snap"
-                || v == "cmp451_senseins" || v == "cmp458_swar" || v == "cmp457_paldelta" || v == "cmp457_eqsnap2" || v == "cmp453_diet" || v == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
-                || v == "cmp438_sense" // TASK-444-C: sense family union
-                || v == "cmp451_senseins" || v == "cmp458_swar" || v == "cmp457_paldelta" || v == "cmp457_eqsnap2" || v == "cmp453_diet" || v == "cmp434_chunkpl" || v == "cmp435_chunk3" || v == "cmp437_chunk4" || v == "cmp444_chunk5" || v == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
-                || v == "cmp412_eqsnapv3" || v == "cmp414_cvs" || v == "cmp417_bq" || v == "cmp421_brain" || v == "cmp422_brain2" || v == "cmp423_brain3" || v == "cmp424_mobfeed" || v == "cmp430_inside" || v == "cmp432_inside2" || v == "cmp436_ins4" || v == "cmp458_swar" || v == "cmp456_poi"
-})
-            .unwrap_or(false)
-        {
+        if crate::lever::armed(crate::lever::M_COLLIDE_MARKER) {
             eprintln!(
                 "[crussty-plugin] {} segment collide-batch ARMED (retransform rc={rc})",
-                std::env::var("CRUSSTY_LEVER_FLAG").unwrap_or_default().trim()
+                crate::lever::flag()
             );
         }
         std::thread::sleep(std::time::Duration::from_millis(250));

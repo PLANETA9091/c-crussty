@@ -82,7 +82,9 @@ fn enabled() -> bool {
     {
         return true;
     }
-    std::env::var("CRUSSTY_LEVER_FLAG").map(|v| v.trim() == "cmp457_paldelta" || v.trim() == "cmp458_swar").unwrap_or(false)
+    // x466-C99: маска M_PALDELTA (состав pinned lever::parity_sscan_sense_inside)
+    // — было env::var + 2-eq цепь на каждый вызов гейта.
+    crate::lever::armed(crate::lever::M_PALDELTA)
 }
 
 /// TASK-457-G evidence marker: lever-scoped ARM id (grep anchor "cmp457_paldelta")

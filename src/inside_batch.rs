@@ -57,18 +57,11 @@ pub const DEFLATE_EPS: f64 = 9.999999747378752E-6;
 /// как inside_cache::enabled). TASK-460-01: `cmp456_chunkmono_p31snap` —
 /// STRICT eq (климб-компо P31+P32/P36 sidecar на носителе cmp456_chunkmono).
 pub fn enabled() -> bool {
-    if std::env::var("CRUSSTY_LEVER_FLAG")
-        .map(|v| v.trim() == "cmp456_chunkmono_p31snap")
-        .unwrap_or(false)
-    {
-        return true;
-    }
-    std::env::var("CRUSSTY_INSIDE_BATCH")
-        .map(|v| {
-            let v = v.trim().to_ascii_lowercase();
-            v == "1" || v == "true" || v == "on" || v == "yes"
-        })
-        .unwrap_or(false)
+    // x466-C99: STRICT-eq ветка = маска M_INSIDE_BATCH; люк CRUSSTY_INSIDE_BATCH
+    // = кэшированный truthy-свитч (одно env-чтение на процесс; было 2×env::var
+    // на каждый вызов — inside_batch_mask 1/тик на P31-носителе).
+    crate::lever::armed(crate::lever::M_INSIDE_BATCH)
+        || crate::lever::env_switch_cached("CRUSSTY_INSIDE_BATCH")
 }
 
 /// Bridge-байты: встроенный blob (TASK-460-01: пересобран и закоммичен —
