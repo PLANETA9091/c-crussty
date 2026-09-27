@@ -500,9 +500,15 @@ PYEOF
 # (declared module, non-cfg-test include_bytes!, active-lever planes) had ZERO
 # gate sites while shipping in the kernel binary — x425 dormant-blob class.
 # Existence + major-65 + javap-parse gate here; marker pins land with each
-# plane's next rebuild. GAP_REGISTER below machine-tracks the remaining 21.
+# plane's next rebuild. GAP_REGISTER below machine-tracks the remaining gaps
+# (21 -> 19 on C44: InsideBatchOps/TravelDietOps pinned S62-canon above).
 check_class "entityinside/build/net/minecraft/world/entity/BatchCollector.class"
-check_class "entityinside/build/net/minecraft/world/entity/CollideBatchOps.class" "public static boolean blockCollisions(net.minecraft.world.level.Level, net.minecraft.world.entity.Entity, net.minecraft.world.phys.AABB, java.util.List, java.util.List, int, java.util.function.BiPredicate<net.minecraft.world.level.block.state.BlockState, net.minecraft.core.BlockPos>)" "private static long mix64(long)" "private static void resetTable(java.lang.Object[])"
+# ROUND-474 C44 PIN-47 tail: KIND-branch entry signatures + kernel delegation.
+# Kernel-side bit-canon (javap -p -cp patched-kernel.jar, 2026-09-27):
+#   ca.spottedleaf.moonrise.patches.collisions.CollisionUtil
+#     .getCollisionsForBlocksOrWorldBorder(Level,Entity,AABB,List,List,int,BiPredicate)  <- blockCollisions mirror
+#     .voxelShapeIntersectNoEmpty(VoxelShape,AABB)                                        <- KIND_VOXEL delegate
+check_class "entityinside/build/net/minecraft/world/entity/CollideBatchOps.class" "public static boolean blockCollisions(net.minecraft.world.level.Level, net.minecraft.world.entity.Entity, net.minecraft.world.phys.AABB, java.util.List, java.util.List, int, java.util.function.BiPredicate<net.minecraft.world.level.block.state.BlockState, net.minecraft.core.BlockPos>)" "private static long mix64(long)" "private static void resetTable(java.lang.Object[])" "private static long mixKey(int, int, int, int)" "private static int findSlot(long[], long)" "private static int insertSlot(java.lang.Object[], long)" "POOL_CAP" "DENSE_LIMIT" "KIND_VOXEL" "voxelShapeIntersectNoEmpty" "private static boolean walkPlan" "LazyEntityCollisionContext" # C44: S62-canon 6 + KIND-tail + kernel-delegate
 check_class "entityinside/build/net/minecraft/world/entity/FlushOps.class"
 check_class "entityinside/build/net/minecraft/server/level/NavPlaneOps.class" "public static native int navDecide(int, int, int, int, int[], int[], double[], byte[])" "private static boolean decideJava(int, int, int, int, int, double, double, double, int, int, int)" "public static void handle(net.minecraft.server.level.ServerLevel, net.minecraft.core.BlockPos, net.minecraft.world.level.block.state.BlockState, net.minecraft.world.level.block.state.BlockState, int)"
 check_class "entityinside/build/net/minecraft/world/level/pathfinder/NavPoolOps.class" "public static native void navPoolTick(int, long, long, long)" "public static void prepare(net.minecraft.world.level.pathfinder.NodeEvaluator, net.minecraft.world.level.PathNavigationRegion, net.minecraft.world.entity.Mob)" "public static net.minecraft.world.level.pathfinder.Node getNode(net.minecraft.world.level.pathfinder.NodeEvaluator, int, int, int)"
@@ -522,6 +528,67 @@ noise_check_class 'noise/build/net/minecraft/world/level/levelgen/synth/PerlinNo
 check_class 'randomtick/build/net/minecraft/world/entity/ai/BrainOps$IdKey.class' 'net.minecraft.world.entity.ai.BrainOps$IdKey(java.lang.Object)' 'final java.lang.Object ref' # S34 tail-pin B
 check_class 'randomtick/build/net/minecraft/world/entity/ai/BrainOps$Snapshot.class' 'final java.lang.Integer[] keys' 'final net.minecraft.world.entity.ai.behavior.BehaviorControl<net.minecraft.world.entity.LivingEntity>[] behs' 'final boolean[] groupStart' # S34 tail-pin B
 
+# ==========================================================================
+# ROUND-474 C44 — collision-трио entry-сигнатурные маркеры (S62-канон:
+# anti-stale якоря = сигнатуры entry-точек + приватные поля-константы;
+# 0 lever-String-констант — measured // String ldc: Collide 0, Inside 0,
+# Travel 7 (Unsafe field-name lookups), Voxel 7 (Unsafe/field lookups) —
+# ни одного lever-флага). blob_inventory: trio bytes на master = S62-canonical
+#   CollideBatchOps 18515B 78d2d56e / InsideBatchOps 4215B b2368044 /
+#   TravelDietOps 10191B 9f7ea1bd — javac-21 rebuild byte-identical (S62).
+# VoxelShapeInternOps (сигнатурный класс, PIN-51 R2-landing): blob+source+
+# build-script с канона round-471-s64-pinbatch6 (4392B, 14 маркеров 14/14,
+# single-classfile S7-163, 4 invokestatic internOne call-sites J1).
+# Kernel-side bit-canon (javap -cp patched-kernel.jar 2026-09-27):
+#   ca.spottedleaf.moonrise.patches.collisions.shape.CachedShapeData.class —
+#   INTERN-ключ VoxelShapeInternOps, присутствует в kernel (javap-load OK).
+# PIN != ARM (закон 5): 0 lever-ов; voxel INERT (нет rust-проводки на
+# мастере = закон-4); inside_bitmask #15 / fluid_bitmask #16 не затронуты.
+# ==========================================================================
+check_voxel_single_classfile() { # dir prefix — S7-163: exactly ONE classfile
+  local n
+  n=$(find "$1" -maxdepth 1 -name "$2*" -type f | wc -l)
+  [ "$n" -eq 1 ] || die "$1/$2*: $n classfiles != 1 (nested classfile would NCDFE, S7-163)"
+  note "voxel single-classfile OK ($n)"
+}
+check_voxel_single_classfile entityinside/build/net/minecraft/world/level/block/state VoxelShapeInternOps
+
+check_class \
+  "entityinside/build/net/minecraft/world/level/block/state/VoxelShapeInternOps.class" \
+  "sweepNow" "internOne" "cachedData" \
+  "lastShapesSeen" "lastForced" "lastInterned" \
+  "OFF_CSD" "OFF_CACHE" "OFF_CONST" "OFF_OCC" "OFF_OCC_ARR" \
+  "public static int sweepNow()" \
+  "private static int internOne(net.minecraft.world.phys.shapes.VoxelShape)" \
+  "cachedData(net.minecraft.world.phys.shapes.VoxelShape)" # C44: S64 voxel PRE-PIN canon x14
+
+gate_source_sibling entityinside/build/net/minecraft/world/level/block/state/VoxelShapeInternOps.class \
+                   entityinside/net/minecraft/world/level/block/state/VoxelShapeInternOps.java
+gate_load entityinside/build   net/minecraft/world/level/block/state/VoxelShapeInternOps
+
+check_flat_matches_nested entityinside/build net/minecraft/world/entity/InsideBatchOps
+check_class \
+  "entityinside/build/net/minecraft/world/entity/InsideBatchOps.class" \
+  "public static boolean batchGate" "static int collectBatch" \
+  "private static native int insideBatchMask" "public static void noteBatchArmed" \
+  "BATCH_ARMED" "MAXSEC" # C44: S62 pinbatch4 canon x6 (flat==nested x93 выше)
+
+gate_source_sibling entityinside/build/net/minecraft/world/entity/InsideBatchOps.class \
+                   entityinside/net/minecraft/world/entity/InsideBatchOps.java
+gate_load entityinside/build   net/minecraft/world/entity/InsideBatchOps
+
+check_class \
+  "entityinside/build/net/minecraft/world/entity/TravelDietOps.class" \
+  "public static net.minecraft.world.phys.Vec3 collide" \
+  "public static void travelInFluid" \
+  "private static float[] calculateStepHeights" \
+  "public static net.minecraft.world.phys.Vec3 getInputVector" \
+  "SCRATCH_SIZE" # C44: S62 pinbatch4 canon x5 (nested-only, flat N/A)
+
+gate_source_sibling entityinside/build/net/minecraft/world/entity/TravelDietOps.class \
+                   entityinside/net/minecraft/world/entity/TravelDietOps.java
+gate_load entityinside/build   net/minecraft/world/entity/TravelDietOps
+
 # S16 live-embed closure scanner: every non-test include_bytes! path of a
 # DECLARED module must be gated somewhere in THIS script or registered below
 # as a known gap (else die). Untracked dangling embeds (prepare_manager.rs
@@ -532,13 +599,11 @@ entityinside/build/net/minecraft/core/ZeroCursorOps.class
 entityinside/build/net/minecraft/world/entity/FluidOps.class
 entityinside/build/net/minecraft/world/entity/FluidPushOps.class
 entityinside/build/net/minecraft/world/entity/FluidPushOps$ScanOut.class
-entityinside/build/net/minecraft/world/entity/InsideBatchOps.class
 entityinside/build/net/minecraft/world/entity/InsideBlockOps$Recorder.class
 entityinside/build/net/minecraft/world/entity/InsideDietOps.class
 entityinside/build/net/minecraft/world/entity/InsideDietVisitor.class
 entityinside/build/net/minecraft/world/entity/InsideSnapOps$Lane.class
 entityinside/build/net/minecraft/world/entity/InsideSnapRegistryOps.class
-entityinside/build/net/minecraft/world/entity/TravelDietOps.class
 entityinside/build/net/minecraft/world/level/SkipStoreOps.class
 entityinside/build/net/minecraft/world/level/TraverseOps.class
 entityinside/build/net/minecraft/world/level/ZeroAllocOps.class
