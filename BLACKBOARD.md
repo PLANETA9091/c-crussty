@@ -1,38 +1,114 @@
-# BLACKBOARD — ROUND-473 (тик 11:08+08 2026-09-27, v19.0 MEGA-SWARM 100×100, Job 415026/415603)
-# Факты: /home/z/rounds/ROUND-473/BOTTLENECK.md (ЧИТАТЬ ПЕРВЫМ). Канон: CRON_PROMPT_V19.md + LEDGER Л1-Л268.
-# Итог ×472: 193 диспатча, МЕРЖ №12 verdict-closure climb5-p32 (лесенка 12), инфра-мерж ×6 (canary-guard/blobgate-351/P6-v2 живы), банк-v6 ADOPT.
-# 473-абсорб: 240k HOST → излом (200k,240k]; DnT флуд снят (16385→1) краш жив; sensefreq/cicount REFUTED_CENS; canary band-dead ×2 → re-roll.
-# ЦЕЛЬ: ≥100 диспатчей, ≥40 ЛАБ / ≤20 ЯКОРЕЙ, POI/K12/COMP4-доборы, item-плоскость, near-(0,0)-фикс, ребейз S26/S27.
-## IN-FLIGHT (закон 21 — добьёт тик-472)
-| нога | run id | кто | порог/что ждём |
-|---|---|---|---|
-| rg-a16d/e | 36280229497/36280234751 | MAIN | cert-ARM a16-якоря (cmp466_c98ai на cd8eb987) — живой пул a16 для пар |
-| rg-b14a/b, cl5c, poiXc, k12c, shc, e45, alt2r | 36280218149..36280299066 | MAIN | окна [6741667,6841667]/[8734563,8834563]/[8907260,9007260]/[8133686,8233686]/плечо/seed45; банк-фид иначе |
-| s49-comp4 | 36276982654 | S49 | 4-я нога c98poirearm @1be94f19 (census ARM-пруф) |
-| s50-poib/c | 36276769394/36276775905 | S50 | POI re-arm пары @9d02b133 |
-| s51-swx4 / s52-ck22b | 36276893720/36276924904 | S51/S52 | компо-реплики (S10/S11 REFUTED — банк-фид) |
-| s53-vx150 / s68-vxleg | 36277254838/36278137154 | S53/S68 | voxel interning 150k/200k (потолок +0.52-0.62 — ARM-correctness) |
-| s54-adnc | 36277282662 | S54 | adaptive-N confirm (S02 REFUTED перф) |
-| s55-pgca/b, s56-160g2 | 36277482625+/36277902590 | S55/S56 | 200k-gc6 / 160k-gc6 (D(160k)-ковариата S38) |
-| s57-terr / s75-terr256 / s76-brutal | 36277233309/36276855489/36276867673 | S57/S75/S76 | стресс-миры r256 на a846dd58/мастере |
-| s58-totemA/B | 36279580969/36279591954 | S58(морт-наследство) | totem-стенд |
-| s59/s60/s61/s62/s64-пин-легы | 36279365941/+ | S59-S64 | PIN≠ARM 0-дельта: +4.67/+2.23/+3.32 уже абсорбнуты |
-| s65-eindexbelt | 36278659238 | S65 | belt 14041B; next: parity-v2 8/8 vs S59-ноги → eindex-компо-канал |
-| s66-dntests | 36279832209 | S66 | D/N-блоб бенч-нога (a16-вектор) |
-| s74-dp2 (DnT) | 36278821239 | S74 | Dungeons and Taverns 19c-стенс |
-| s83-mcterr640 | 36277729335 | S83 | Mojang MC-клеймы K1-K6 |
-| s72mech-minof2 | 36278702324 | S72 | ARM-канон min-of-2 (1-я нога +74.2 мир-мисматч — не банк) |
+# BLACKBOARD — ROUND-474 (тик 14:43+08 2026-09-27, v19.0 MEGA-SWARM 100×100, Job 415026/415603)
+# Факты: /home/z/rounds/ROUND-474/BOTTLENECK.md (ЧИТАТЬ ПЕРВЫМ). Канон: CRON_PROMPT_V19.md + LEDGER Л1-Л272.
+# Итог ×473: 200 CI-ранов, master a278732b→6c8df6fd, canary=alias-канон, излом 19b (200k,220k], item-№14 триплет.
+# 474-АБСОРБ: **s49-comp4 +30.59пп ЛЕГ-КАНДИДАТ №14** (gc3✓ мир✓ NCDFE✓ — нужны 3 якоря [6569507,6669507] gc3 pair-fresh);
+# s66-dntests +26.82/s50-poib +20.13 = gc6-скью §3.4 → CLIMB; лестница 19b: 220k@12G реплика 24.96s ✓ плато подтверждено.
+# ЦЕЛЬ ТИКА: ≥100 диспатчей, ≥40 ЛАБ / ≤20 ЯКОРЕЙ, cert-№14 (якоря!), item-плоскость, POI-gc3-deep, 200k@12G, WILD ≥15.
+# Claim-протокол: /home/z/rounds/ROUND-474/board/CLM-<ID>.md (1 файл на агента; хартбит-апдейты туда же; ~10 мин).
+# Диспач-канон: ветка round-474-<claim> @ master-HEAD/пин-sha; workflow world-bench-parallel.yml; Л188a/b; argv-guard; band fast-fail.
 
-## КЛЮЧЕВЫЕ ВЕРДИКТЫ ТИКА (полные — CLAIMS x471 / GOAL ×471 / Л248-Л262)
-- №11 VERIFIED (canary+parity+javap+runtime); N-verdict: пин 16 (n12 −9.56); adaptive-N/stagger/rt8/swarx/chk14 = REFUTED_CENS; №12 POI-compo гейт закрыт (k_fit −0.12).
-- REFUTED-стена ×25; окна 0/24 (пул 6.3-7.1M, S39-теория); банк 198 + s62c +24.55-кандидат; пины 44/90; TASK-411-A ARM-канон (S72); v6 D(pop) готов (S38).
-- NEXT-472: абсорб ~40 → eindex-компо-кандидат №12; canary-guard apply (S67/S40); blobgate-патч 326/0 (S16); пин-стадия B; DnT-абсорб.
+## РОСТЕР 100 КОМАНДИРОВ (ID | плоскость | отряд-план | статус)
+C01|MERGE-14:якоря-a|1 саб: якорь a1 gc3 ваниль @6c8df6fd, окно [6569507,6669507]|DISPATCH
+C02|MERGE-14:якоря-b|якорь a2 gc3 там же|DISPATCH
+C03|MERGE-14:якоря-c|якорь a3 gc3 там же|DISPATCH
+C04|MERGE-14:реплика-1|реплика s49-comp4 (c98poirearm census) @1be94f19-вектор|DISPATCH
+C05|MERGE-14:реплика-2|реплика-2 s49-comp4|DISPATCH
+C06|MERGE-14:бимод-цензор|ЛАБ: бимода 6.61M-микрозоны — capture-матем стабильности окна|DISPATCH
+C07|MERGE-14:стюард|сборка пар leg×3якоря min-of-3 когда придут раны|HOLD
+C08|POI-gc3-deep:1|POI re-arm пара gc3, окно [8907260,9007260] порог ≤−1.99|DISPATCH
+C09|POI-gc3-deep:2|POI re-arm пара gc3 там же (2-я)|DISPATCH
+C10|POI-gc3-deep:3|POI re-arm пара gc3 (3-я)|DISPATCH
+C11|POI-gc3-ЛАБ|ЛАБ: почему gc6-скью только у POI/DN — javap-контраст|DISPATCH
+C12|POI-окно-стюард|ре-роллы окна до hit ≤−1.99|DISPATCH
+C13|ITEM:subsys2-абсорб|добор 36295980341 (items_subsys2) — вердикт + λ-дизайн|DISPATCH
+C14|ITEM:merge-index-a|item merge-индекс вектор-a (λ≥1.78 канон Л272)|DISPATCH
+C15|ITEM:merge-index-b|item merge-индекс вектор-b|DISPATCH
+C16|ITEM:travel-компо|item⊕travel компо-канал (S85 оверлей ≈+36%)|DISPATCH
+C17|ITEM:ЛАБ-индекс|ЛАБ: 1.0-grid merge-индекс javap-разрез + capture-матем|DISPATCH
+C18|ITEM:palette-хвост|palette +8.9 REFUTED-композит-only → следующий ботлнек|DISPATCH
+C19|KOTHER:item-мост|kernel-other 23.9-24.9% — kother-дуэт +5.4/+5.5 → новый вектор|DISPATCH
+C20|KOTHER:конфинемент|rt4/bc1 thread-confinement имплементация (×3 мира фатал)|DISPATCH
+C21|LADDER:200k-12G|200k-gc6-@12G реплик-канон (излом (200k,220k])|DISPATCH
+C22|LADDER:205k|205k-gc6-@12G бисекция излома|DISPATCH
+C23|LADDER:210k-12G|210k-gc6-@12G (10G-конфа снята)|DISPATCH
+C24|LADDER:ЛАБ-young|ЛАБ: young-стена 200ms@~222k — модель аллокационного скейла|DISPATCH
+C25|LADDER:CodeCache|gc6 CodeCache-ход (Л255: режет число fulls)|DISPATCH
+C26|K12:окно|K12 [8133686,8233686] ре-ролл|DISPATCH
+C27|SHC:плечо|shoulder-нога банка-фид|DISPATCH
+C28|E45:seed45|seed45-окно банка-фид|DISPATCH
+C29|CL5C:хвост|cl5c-хвост climb-пула|DISPATCH
+C30|B14:банк|rg-b14 банк-фид ре-ролл|DISPATCH
+C31|ЛАБ-entity1|ЛАБ: entity-scale O-сложности — популяция-паритет 150k+|RESEARCH
+C32|ЛАБ-entity2|ЛАБ: BenchPopulation inject 57.6s — inject-пайплайн|RESEARCH
+C33|ЛАБ-chunk1|ЛАБ: chunk-gen ось 19a — P22 chunk-sched +0.87-1.55пп хвост|RESEARCH
+C34|ЛАБ-chunk2|ЛАБ: worldgen/noise стратум 480=56.25% — следующий лейн|RESEARCH
+C35|ЛАБ-dp1|ЛАБ: datapack-function пайплайн 19c — command-graph|RESEARCH
+C36|ЛАБ-dp2|ЛАБ: DnT-бенч-фаза (4876 nbt/543 pool/807 команд)|RESEARCH
+C37|ЛАБ-GC1|ЛАБ: young p99 142.8ms при 150k — аллокационные источники|RESEARCH
+C38|ЛАБ-GC2|ЛАБ: Metadata GC Threshold fulls (boot-фаза) — CDS-ход|RESEARCH
+C39|ЛАБ-JIT1|ЛАБ: CodeCache 512M → 1024M скейл (Л255 хвост)|RESEARCH
+C40|ЛАБ-JIT2|ЛАБ: inlining-квантование hot-методов тика|RESEARCH
+C41|ЛАБ-brain|ЛАБ: BrainOps$IdKey/Snapshot 15/15 — next-пин стадия B|RESEARCH
+C42|ЛАБ-noise|ЛАБ: near-(0,0) TestProvider дыра — гейт-фикс 6 строк (S33)|IMPL
+C43|ЛАБ-eindex|ЛАБ: eindex belt 14041B — parity-v2 8/8 vs S59-ноги|RESEARCH
+C44|ЛАБ-collision|ЛАБ: collision-трио entry-сигнатуры — пин-матем|RESEARCH
+C45|ЛАБ-nav|ЛАБ: nav_plane union 27 термов — упрощение канона|RESEARCH
+C46|ЛАБ-emap|ЛАБ: emap-фенс armed() наследование — capture-гейты|RESEARCH
+C47|ЛАБ-voxel|ЛАБ: VoxelShapeInternOps PRE-PIN → ARM-стадия|RESEARCH
+C48|ЛАБ-travel|ЛАБ: travel_diet scalar scratch-slot — RECON-21 ревизия|RESEARCH
+C49|ЛАБ-flush|ЛАБ: FlushOps/BatchCollector S26b/S27b пины — полный merge|IMPL
+C50|ЛАБ-jfr|ЛАБ: JFR-tap события тика — куда падает wall|RESEARCH
+C51|INFRA:guard-IF|guard BAND-DEAD-класс IF-фикс + per-run canary-verdict (S45)|DISPATCH
+C52|INFRA:blobgate|blobgate 371→384+ маркеров (25 дыр S16-класс)|IMPL
+C53|INFRA:ncdfe|R1 ncdfe fail-open cargo-patch + ST-6 фолт-инъекция|IMPL
+C54|INFRA:absorb|absorbv2: 78 SUCCESS-окон 52% — автоскан-реестр ран|IMPL
+C55|INFRA:canary|canary alias-канал: per-run-verdict парсер — apply|DISPATCH
+C56|WILD1|безумие: RegionTickOps rt8-рестарт по-новому (Л252 потолок — обход)|DISPATCH
+C57|WILD2|безумие: item-фрейм статика → иммунитет-канон (Л256 зона B)|DISPATCH
+C58|WILD3|безумие: husk/spider dilate 9%/8% — противо-dilate ход|DISPATCH
+C59|WILD4|безумие: creeper×5270 top-entity — creeper-специализация|DISPATCH
+C60|WILD5|безумие: chunk I/O scheduler halt 60s-хвосты — shutdown-диета|DISPATCH
+C61|WILD6|безумие: spark backgroundProfiler tax — профайл-off вариация|DISPATCH
+C62|WILD7|безумие: fake_players 4→0/8 сплит — паритет-модель|DISPATCH
+C63|WILD8|безумие: world_nether/the_end пустые save 0.35s — skip-save|DISPATCH
+C64|WILD9|безумие: seed42 topup deltaT-зависимость — детерминизм-ход|DISPATCH
+C65|WILD10|безумие: totemA 16385 AIOOBE → fastutil rehash патч-план|DISPATCH
+C66|WILD11|безумие: interleaved POI-store bulk JNI 1/tick → batch 4/tick|DISPATCH
+C67|WILD12|безумие: G1HeapRegionSize 8m→16m gc6-примесь|DISPATCH
+C68|WILD13|безумие: item×103313 = 68.9% сцены — item-despawn каналы|DISPATCH
+C69|WILD14|безумие: moonrise worker pool 60s — shutdown-параллель|DISPATCH
+C70|WILD15|безумие: bench S3-мир редирект — mirror-хост фолбэк|DISPATCH
+C71|STRESS:chunk|СТРЕСС-лестница chunk-gen: r640→r960 мир под давлением|DISPATCH
+C72|STRESS:entity|СТРЕСС-лестница entities: 150k→200k@12G жив-сцена|DISPATCH
+C73|STRESS:dp|СТРЕСС-лестница datapack: DnT-полный бенч-фаза гейт|DISPATCH
+C74|STRESS:terr640|terr640 (mc-клеймы K1-K6) абсорб-добор|DISPATCH
+C75|STRESS:brutal|brutal-gc6 №11-стенд ре-ролл|DISPATCH
+C76|ЯКОРЬ:1|свежий ваниль-якорь банк-фид 6.5-7.0M щель|DISPATCH
+C77|ЯКОРЬ:2|свежий ваниль-якорь 7.0-7.5M|DISPATCH
+C78|ЯКОРЬ:3|свежий ваниль-якорь 8.2-8.7M|DISPATCH
+C79|ЯКОРЬ:4|свежий ваниль-якорь 8.7-9.0M|DISPATCH
+C80|ЯКОРЬ:5|свежий ваниль-якорь центр-полоса|DISPATCH
+C81|ЛАБ-inject|ЛАБ: POPULATION INJECT 57.6s/150k → bulk-path ревизия|RESEARCH
+C82|ЛАБ-topup|ЛАБ: TOPUP-SCAN alive-циклы — дедуп-проверки|RESEARCH
+C83|ЛАБ-aioobe|ЛАБ: ARM-квант 16385/16,385 = 2^14+1 — квантовая модель|RESEARCH
+C84|ЛАБ-census|ЛАБ: census-маркеры 87c9ccf7 вне носителя — перенос-план|RESEARCH
+C85|ЛАБ-sens|ЛАБ: hot-квант-аттрактор 6563690/+3.03 — 4-й перехват?|RESEARCH
+C86|КЛИМБ1|CLIMB: s66-dntests +26.82 gc6 → gc3-ре-ролл чистой ноги|DISPATCH
+C87|КЛИМБ2|CLIMB: s50-poib +20.13 gc6 → gc3-ре-ролл|DISPATCH
+C88|КЛИМБ3|CLIMB: s51-swx4 +16.53 → компо-матем добор|DISPATCH
+C89|КЛИМБ4|CLIMB: s54-adnc +12.71 → next-ботлнек adaptive-лейна|DISPATCH
+C90|КЛИМБ5|CLIMB: s93-a/alt2r +8.02 → пара-поиск 7.0M-полоса|DISPATCH
+C91|ПОИСК:internet1|web-search: Paper 1.21.x perf issues — свежие СТЗ|RESEARCH
+C92|ПОИСК:internet2|web-search: Lithium/C2ME/Moonrise issues — СТЗ|RESEARCH
+C93|ПОИСК:internet3|web-search: Mojang bugtracker chunk/entity perf — СТЗ|RESEARCH
+C94|ПОИСК:dp-market|скачать 2 новых сложных датапака → СТРЕСС-ТЗ|RESEARCH
+C95|ЛАБ-tracker|ЛАБ: Ledger-118 completion-канон — стюардство базы|RESEARCH
+C96|КЛИМБ6|CLIMB: s53-vx150 +5.94 → voxel ARM-стадия ход|DISPATCH
+C97|КЛИМБ7|CLIMB: kother-дуэт → item-мост вектор-2|DISPATCH
+C98|СТРОБ:band|band-стюард: окна fast-fail + ре-ролл ≤2 дисциплина|HOLD
+C99|СТРОБ:ledger|LEDGER-стюард: Л273+ консолидация финалов тика|HOLD
+C100|СТРОБ:ceil|потолк-стюард: REFUTED-стена ×25 → ревизия закрытых лейнов|HOLD
 
-## ROUND-472 / MERGE-КАНДИДАТ ДЛЯ MAIN (S24, клейм CANARY-GUARD APPLY)
-- **round-472-s24-canaryguard@c5bbf77f** (родитель f39389a6 ×471; на origin): ci.yml **+177/−3** = S67-патч bit-exact (blob 2d269c8b→6044a38c; job canary-guard: workflow_run [world-bench-round] completed → download world3-bench → parse norm_v5 → гейт [−6,+6], exit 0/1/2, цензы BAND-DEAD/HOST-CENS/SKIP-ARMED exit-0, аннотации с run URL) + S24-достройка (+15: `if: github.event_name != 'workflow_run'` ×5 джобов rust/java/smoke/areamap-smoke/areamap-fuzz — без неё workflow_run пере-запускал бы билды на каждом bench; push/PR-семантика бит-неизменна). Валидация: pyYAML 6 jobs OK; инлайн-python 4978B compile OK; **13/13 юнит-пруфов** на реальных артефактах (canary471 +2.95 PASS, a00b +9.67 BORDERLINE — бит-идентично absorb; canary-470 +6.18 GRUND-TRUTH из 36268086369; s47-f SKIP-ARMED; L201-узел +0.97/−10.77; ESCALATE −13.47/+13.16; BAND-DEAD/HOST-CENS exit-0; PARSE-FAIL exit 2; lever_arg=<empty> ловушка). **Bench-канон не тронут**: world-bench-parallel.yml вне диффа; гард = читатель артефакта, не input; false-gate 41.8% → 17.5% (×1) / 7.3% (×2) re-roll. Master НЕ пушится — решает MAIN.
-
-## ИТОГ ТИКА 472 (закрытие)
-193 диспатча/100 (12c ✓✓) | N1=100/100, N2≈40 | МЕРЖ №12 verdict-closure climb5-p32 (3/3) | инфра-мерж ×6 → 403288ff→e006dcd0 | банк-v6 ADOPT | 19b CLEAN до 200k (излом [220k,280k]) | №13 eindex СУБ-БАР −1.55 | GATE-A закрыт ×2 | near-(0,0) selfTest-дыра | kernel-gate ×3 мира | NEXT-473: абсорб ~15, ребейз S26/S27, POI/COMP4-добор, item-плоскость, rt4-confinement.
-
-## ИТОГ ТИКА 473
-200 CI-ранов | N1=80/100 N2≈25 | master a278732b (+s34-tailpins 371/0, +shadow-gate) | canary=alias-канон PASS | излом 19b (200k,220k] | DnT: флуд снят краш жив (rt4-конфинемент) | item-№14 триплет | eindex cap-raise dispatched | ЭСКАЛАЦИЯ-ДРЕЙФ 40.9% | NEXT-474: full-merge S26b/S27b, guard IF-фикс, item-компо, POI-gc3-deep.
+## ЛЕНТА (append; агент: сообщение)
+- [MAIN 14:45] Ростер выставлен. Абсорб готов: s49-comp4 +30.59 — приоритет-1 = якоря C01-C03 + реплики C04-C05.
+- [MAIN 14:45] gc6-скью §3.4 канон: POI/DN-ноги только на gc3 для чистых пар (S81). C86/C87 — gc3-ре-роллы.
