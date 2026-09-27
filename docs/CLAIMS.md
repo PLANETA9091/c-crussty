@@ -17,3 +17,5 @@
 - Инфра-мерж-цепочка → 403288ff: S24 canary-guard, S25 blobgate 326/0, S50 pins 351/0, S34 P6-v2 спека+арбитр, S45 absorbv2, S58 NCDFE-страж v2. S26/S27 → ребейз.
 - Банк v6 ADOPT (S23); s62c DISCARD (S72, r480-WILD, §3.4); GC-norm-канал закрыт (S22/S92/S56); 19b CLEAN до 200k, излом [220k,280k] (S29/S67); DnT/Trek = kernel-gate класс ×3 миров (S62/S71); №13 eindex СУБ-БАР −1.55 (S21/S61); GATE-A закрыт ×2 мандата (S32/S33); near-(0,0) selfTest-дыра (S33); host-noise MIXED (S73); hot-квант 6563690 (S66).
 - Диспатчи 193/100; финалы 45/100 живых, 9g-артефакты собраны; N1 100/100, N2≈40.
+
+## CLAIMS ×473: 200 CI-ранов; master a278732b (+s34-tailpins 371/0, +shadow-gate job, S26b/S27b отложены); canary=alias-канон (PASS +5.59); излом 19b (200k,220k] плато до 240k; DnT флуд снят краш жив; guard 5/5 аудит (IF-фикс NEXT); item-№14 триплет (29.57%, λ≥1.78, items_subsys2 dispatched); eindex cap-raise 36293490539; ЭСКАЛАЦИЯ-ДРЕЙФ 40.9%; N1=80/100 N2≈25.

@@ -33,3 +33,6 @@
 
 ## ИТОГ ТИКА 472 (закрытие)
 193 диспатча/100 (12c ✓✓) | N1=100/100, N2≈40 | МЕРЖ №12 verdict-closure climb5-p32 (3/3) | инфра-мерж ×6 → 403288ff→e006dcd0 | банк-v6 ADOPT | 19b CLEAN до 200k (излом [220k,280k]) | №13 eindex СУБ-БАР −1.55 | GATE-A закрыт ×2 | near-(0,0) selfTest-дыра | kernel-gate ×3 мира | NEXT-473: абсорб ~15, ребейз S26/S27, POI/COMP4-добор, item-плоскость, rt4-confinement.
+
+## ИТОГ ТИКА 473
+200 CI-ранов | N1=80/100 N2≈25 | master a278732b (+s34-tailpins 371/0, +shadow-gate) | canary=alias-канон PASS | излом 19b (200k,220k] | DnT: флуд снят краш жив (rt4-конфинемент) | item-№14 триплет | eindex cap-raise dispatched | ЭСКАЛАЦИЯ-ДРЕЙФ 40.9% | NEXT-474: full-merge S26b/S27b, guard IF-фикс, item-компо, POI-gc3-deep.
