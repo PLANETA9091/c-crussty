@@ -1,0 +1,67 @@
+# R471-S13 ncdfe R1 fail-closed closure — DRAFT patch (needs cargo check 0 err before any merge)
+# Scope: LAB_LEDGER Л208 R1 (mobs_ai.rs:253-271 fail-open 120s "arming anyway", S16 x470 finding).
+# Contract: timeout -> presence-probe MobPushOps in kernel loader -> absent = arm ABORT (vanilla),
+# present = probe-pass arming. Mirrors mobs_manager.rs:436-451 probe-then-patch fail-closed canon.
+# Selftest contract (ST-6, log-gate): SUCCESS run stdout must contain 0x "arming anyway";
+# fault-injected (SOA_SERVED blocked + probe fails) stdout must contain "arm ABORT" and 0 defines.
+--- a/src/mobs_ai.rs
++++ b/src/mobs_ai.rs
+@@ -252,22 +252,52 @@
+ 
+         // Ordering: wait for the soa/stagger LivingEntity serves (their
+         // stash-based serves would REPLACE my composed bytes if they ran
+-        // after my retransform). Timeout = proceed anyway (fail-open on
+-        // ordering only, composition itself stays fail-closed).
++        // after my retransform). R2 (ROUND-471-S13, LAB_LEDGER Л208-R1):
++        // timeout is NO LONGER fail-open ("arming anyway" removed). If
++        // upstream define_class(MobPushOps) failed (mobs_manager.rs:302-305
++        // -> SOA_SERVED never set), blind arming here resolves
++        // MobPushOps.idCount from the first MobAiOps epoch -> NCDFE cached
++        // per-constant-pool-entry for the whole run (canon cv3-1 x3938).
++        // Closure = probe-then-define (mirrors mobs_manager.rs:436-451):
++        // on timeout probe the upstream blob in the kernel loader;
++        // absent -> arm ABORT (hook dormant, vanilla path, fail-closed);
++        // present -> probe-pass arming (composed bytes include upstream).
+         let order_deadline = std::time::Instant::now() + std::time::Duration::from_secs(120);
++        let mut order_ok = false;
+         loop {
+             let soa = SOA_SERVED.load(Ordering::Acquire);
+             let stag = STAGGER_SERVED.load(Ordering::Acquire);
+             if soa && stag {
++                order_ok = true;
+                 break;
+             }
+             if std::time::Instant::now() > order_deadline {
++                break;
++            }
++            std::thread::sleep(std::time::Duration::from_millis(500));
++        }
++        if !order_ok {
++            let soa = SOA_SERVED.load(Ordering::Acquire);
++            let stag = STAGGER_SERVED.load(Ordering::Acquire);
++            let probed = cplug_sdk::jni_util::with_attached(|env| {
++                // presence-probe: upstream MobPushOps must already live in
++                // the kernel loader before MobAiOps is defined here.
++                let c = env.find_class("net/minecraft/world/entity/MobPushOps");
++                if c.is_none() {
++                    crate::clear_exception(env);
++                }
++                c.is_some()
++            })
++            .unwrap_or(false);
++            if !probed {
+                 eprintln!(
+-                    "[crussty-plugin] mobs_ai: LIVING serve signals timeout (soa={soa} stagger={stag}) — arming anyway, chain composes current bytes"
++                    "[crussty-plugin] mobs_ai: LIVING serve signals timeout (soa={soa} stagger={stag}) and MobPushOps absent in kernel loader — arm ABORT (fail-closed, NCDFE guard R2; hook stays dormant, vanilla path)"
+                 );
+-                break;
+-            }
+-            std::thread::sleep(std::time::Duration::from_millis(500));
++                return;
++            }
++            eprintln!(
++                "[crussty-plugin] mobs_ai: LIVING serve signals timeout (soa={soa} stagger={stag}) but MobPushOps present in kernel loader — probe-pass, arming (chain composes current bytes)"
++            );
+         }
+ 
+         // Define the bridge + RegisterNatives in the kernel loader.

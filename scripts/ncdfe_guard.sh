@@ -1,67 +1,43 @@
 #!/usr/bin/env bash
 # =============================================================================
-# ncdfe_guard.sh — NCDFE-страж авто (TASK-466-C84)
+# ncdfe_guard.sh — NCDFE-страж авто (TASK-466-C84; R2 fail-closed ROUND-471-S13)
 # =============================================================================
-# КАНОН (docs/LAB_LEDGER.md L6, закон v18.3/19.0):
+# R2 (S13 ROUND-471) закрывает fail-open пути R1-класса (Л208 S16 x470):
+#   FO-1 javap-нет/блоб-нет -> SKIP exit 2 = зелёный у наивных колл-сайтов
+#        -> NCDFE_STRICT=1: SKIP считается FAIL (exit 1) в гейт-контексте;
+#   FO-2 слепой парсер: пустой/усечённый javap-выход -> touch=0 -> [OK] exit 0
+#        (демо: NCDFE_JAVAP=stub на MobPushOps дал [OK] touch=0, exit 0)
+#        -> C0 parse-floor: 0 инструкций/0 заголовков методов = FAIL, не OK;
+#   FO-3 selftest раньше покрывал только 4 хороших блоба + магию-негатив —
+#        C2/C3/J1/J2-детекторы были непокрыты -> режим --vectors: 5 векторов,
+#        все обязаны отработать как ожидалось, иначе вектор-FAIL.
+# КАНОН (docs/LAB_LEDGER.md L6, закон v18.3/19.0/v20):
 #   Перед вердиктом ЛЮБОГО носителя T1 NCDFE=0 ОБЯЗАТЕЛЬНО.
 #   Гонка arm/define EntityGoalQueryOps @ MobPushOps.pushables:467:
 #   JVM резолвит чужой Ops-класс через определяющий loader ПОСЛЕ arm'а lever'а
-#   → NoClassDefFoundError, и HotSpot КЭШИРУЕТ NCDFE per-constant-pool-entry
-#   (ошибка повторяется ×N весь ран даже после позднего define).
-#   Фикс-паттерн = EARLY-define в раннем arm-хуке (ensure_bridge_early,
-#   EARLY_ANCHORS в src/entity_query.rs) + mirror-drift иглы.
-#   NCDFE>0 = DELIVERY-FAIL, пара аннулируется (отравленные +20.1/+41.3 ×456).
+#   -> NoClassDefFoundError, HotSpot КЭШИРУЕТ NCDFE per-constant-pool-entry
+#   (ошибка повторяется ×N весь ран даже после позднего define; cv3-1 ×3938).
+#   Фикс-паттерн = EARLY-define (ensure_bridge_early, EARLY_ANCHORS
+#   src/entity_query.rs) + probe-then-define (mobs_manager.rs:436-451).
 #
-# ЧТО ПРОВЕРЯЕТ (javap, без запуска JVM-кода):
-#   .class-блоб:
-#     C1 CAFEBABE + class-file major == 65 (--release 21 = kernel JVM; src
-#        отказывается армить при major > живой JVM — stale-блоб = мертвая плоскость);
-#     C2 define-порядок: <clinit> НЕ должен ссылаться на чужие *Ops классы —
-#        cross-Ops резолв в clinit = разрешение чужого моста в момент define
-#        этого класса = тот самый arm/define рейс (EARLY-define нарушен);
-#     C3 throwable-маркеры: если blob трогает чужие *Ops классы — в классе
-#        должен быть хотя бы один Exception-table handler
-#        `Class java/lang/Throwable` / `any` (fail-closed маркер дисциплины
-#        ваниль-фолбэка); отсутствие = FAIL;
-#     C4 INFO: cross-Ops touch'и, не покрытые Throwable-хендлером, помечаются
-#        "arm-gated" — канон ×456: такой touch обязан стоять за лениво
-#        резолвимой lever-веткой + HARD publish gate ensure_bridge_early на
-#        arm-слое (Rust). Это INFO, не FAIL (мобильно-каноничная форма).
-#   .java-исходник (зеркало на уровне исходников):
-#     J1 cross-Ops ссылки в static{} блоке / static-field инициализаторах = FAIL;
-#     J2 если есть cross-Ops touch'и и НЕТ ни одного `catch (Throwable` = FAIL.
-#
-# EXIT-КОДЫ: 0 = OK (все входы чисты), 1 = FAIL (NCDFE-риск/битый класс),
-#            2 = SKIP/usage (файл отсутствует, тип не поддержан, javap недоступен).
-# Любой FAIL >> 1; без FAIL, но с SKIP >> 2; все OK >> 0.
-#
-# ИНТЕГРАЦИЯ В MERGE-СКРИПТЫ (куда вставлять):
-#   ... после rebuild блобов (scripts/build_*_ops.sh), ДО ledger-push/вердикта:
-#     # --- GATE: NCDFE-страж (canon LAB_LEDGER L6: T1 NCDFE=0 до вердикта) ---
-#     if ! bash scripts/ncdfe_guard.sh \
-#            mobpush/build/net/minecraft/world/entity/MobPushOps.class \
-#            entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class; then
-#       echo "MERGE ABORT: NCDFE-GUARD FAIL = DELIVERY-FAIL (отравленные пары ×456)" >&2
-#       exit 1
-#     fi
-#   ... пассивный дым-гейт в начале гейт-стадии: bash scripts/ncdfe_guard.sh --selftest
-#   ... самодостаточный негатив-контроль стенда: bash scripts/ncdfe_guard.sh --negative-test
-#
+# ПРОВЕРКИ .class (javap, без запуска JVM-кода):
+#   C0 parse-floor (R2): javap-выход обязан содержать >=1 инструкцию/заголовок;
+#   C1 CAFEBABE + major==65; C2 <clinit> без cross-Ops; C3 throwable-маркеры;
+#   C4 INFO: uncovered/arm-gated touch'и (канон ×456: lever-ветка + HARD gate).
+# ПРОВЕРКИ .java: J1 static-init cross-Ops; J2 catch(Throwable) при touch'ах.
+# EXIT-КОДЫ: 0=OK, 1=FAIL (в т.ч. SKIP при NCDFE_STRICT=1), 2=SKIP/usage.
 # USAGE:
 #   scripts/ncdfe_guard.sh <файл.class|файл.java> [еще...]
-#   scripts/ncdfe_guard.sh --selftest         # 4 известных блоба мастера, 0 FAIL
-#   scripts/ncdfe_guard.sh --negative-test    # битый класс обязан дать exit 1
-#
-# ОКРУЖЕНИЕ: NCDFE_JAVAP — путь к javap; иначе /tmp/jdk21/bin/javap,
-#            /home/z/tools/jdk-21.0.12.1+1/bin/javap, `command -v javap`
-#            (поднять стенд: bash scripts/ensure_javap.sh).
+#   scripts/ncdfe_guard.sh --selftest         # 4 блоба мастера, 0 FAIL
+#   scripts/ncdfe_guard.sh --vectors          # R2: 5 fail-open векторов
+#   scripts/ncdfe_guard.sh --negative-test    # битый класс обязан exit 1
+# ОКРУЖЕНИЕ: NCDFE_JAVAP, NCDFE_JAVAC (для --vectors), NCDFE_STRICT=1.
 # =============================================================================
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-# --- javap resolution --------------------------------------------------------
 JAVAP="${NCDFE_JAVAP:-}"
 if [ -z "$JAVAP" ]; then
   for c in /tmp/jdk21/bin/javap /home/z/tools/jdk-21.0.12.1+1/bin/javap; do
@@ -69,12 +45,14 @@ if [ -z "$JAVAP" ]; then
   done
 fi
 [ -n "$JAVAP" ] || JAVAP="$(command -v javap 2>/dev/null || true)"
+JAVAC="${NCDFE_JAVAC:-}"
+if [ -z "$JAVAC" ] && [ -n "$JAVAP" ]; then JAVAC="$(dirname "$JAVAP")/javac"; fi
 
+STRICT="${NCDFE_STRICT:-0}"
 OK=0; FAIL=0; SKIP=0
 say()  { printf '%s\n' "$*"; }
 
-# --- check one .class blob ---------------------------------------------------
-check_class() { # $1 = path ; verdict lines; returns 0 OK / 1 FAIL / 2 SKIP
+check_class() { # $1 = path ; returns 0 OK / 1 FAIL / 2 SKIP
   local path="$1"
   if [ ! -f "$path" ]; then
     say "[SKIP] $path — файл отсутствует"; return 2
@@ -82,7 +60,6 @@ check_class() { # $1 = path ; verdict lines; returns 0 OK / 1 FAIL / 2 SKIP
   if [ -z "$JAVAP" ] || [ ! -x "$JAVAP" ]; then
     say "[SKIP] $path — javap недоступен (подними стенд: bash scripts/ensure_javap.sh)"; return 2
   fi
-  # C1: magic + major (bytes 0-3 magic, 6-7 major, big-endian)
   local magic major
   magic=$(od -An -tx1 -j0 -N4 "$path" | tr -d ' \n')
   if [ "$magic" != "cafebabe" ]; then
@@ -92,28 +69,31 @@ check_class() { # $1 = path ; verdict lines; returns 0 OK / 1 FAIL / 2 SKIP
   if [ "$major" != "65" ]; then
     say "[FAIL] $path — major $major != 65 (пересобери --release 21: kernel JVM, arm-слой отказывает major>живой JVM)"; return 1
   fi
-  # C2/C3/C4: javap -p -c parse
   local jp
   jp="$("$JAVAP" -p -c "$path" 2>&1)"
   if [ $? -ne 0 ] || [[ "$jp" == Error:* || "$jp" == Exception:* ]]; then
     say "[FAIL] $path — javap не смог разобрать класс (битый/corrupt constant pool)"; return 1
   fi
-  # own simple name: last class declaration header "public|final|abstract class|interface ... <Name> {"
+  # C0 (R2): parse-floor — слепой парсер не имеет права давать [OK]
+  local floor
+  floor=$(printf '%s\n' "$jp" | grep -Ec '^[[:space:]]*[0-9]+: |^  [^ ].*[;{]$' || true)
+  if [ "${floor:-0}" -eq 0 ]; then
+    say "[FAIL] $path — parse-floor: javap-выход пуст/не распознан (инструкций=0; слепой парсер = fail-open R2 закрыт)"; return 1
+  fi
   local own
   own=$(printf '%s\n' "$jp" | awk '/^ (public |final |abstract )*(class|interface) /{n=$(NF-1)} END{print n}')
   [ -n "$own" ] || own="$(basename "$path" .class)"
   own="${own%%\$*}"
-  # Walk javap: per method collect cross-Ops touch PCs; per method Exception table.
   local analysis
   analysis=$(printf '%s\n' "$jp" | awk -v own="$own" '
-    function opssimple(s, t) {           # extract "XxxOps" token from javap comment
+    function opssimple(s, t) {
       if (match(s, /[A-Za-z_][A-Za-z0-9_]*Ops[.:;]/)) {
         t = substr(s, RSTART, RLENGTH); t = substr(t, 1, length(t)-1)
         if (t != own) return t
       }
       return ""
     }
-    function flushm() {                  # coverage of this method touches
+    function flushm() {
       for (i in TPC) {
         cov = 0
         for (j = 1; j <= EN; j++)
@@ -124,7 +104,6 @@ check_class() { # $1 = path ; verdict lines; returns 0 OK / 1 FAIL / 2 SKIP
       }
       delete TPC; delete EF; delete ETYPE; EN = 0
     }
-    # new method header (2-space indent, ends with ";", not an instruction/comment/table row)
     /^  [^ ].*[;{]$/ && !/^    / && $0 !~ /Exception table/ {
       if ($0 ~ /^  static \{\}/) { flushm(); M = "<clinit>" }
       else { flushm(); M = $0; sub(/^  /, "", M) }
@@ -135,7 +114,7 @@ check_class() { # $1 = path ; verdict lines; returns 0 OK / 1 FAIL / 2 SKIP
       EN++; EF[EN] = $1; ET[EN] = $2; ETYPE[EN] = $NF; next
     }
     TABLE && !/^ +[0-9]+/ { TABLE = 0 }
-    /^[[:space:]]*[0-9]+: / {             # instruction line
+    /^[[:space:]]*[0-9]+: / {
       if (match($0, /\/\/ .*/)) {
         t = opssimple(substr($0, RSTART))
         if (t != "") {
@@ -162,14 +141,12 @@ check_class() { # $1 = path ; verdict lines; returns 0 OK / 1 FAIL / 2 SKIP
   return 0
 }
 
-# --- check one .java source --------------------------------------------------
 check_java() { # $1 = path
   local path="$1"
   if [ ! -f "$path" ]; then
     say "[SKIP] $path — файл отсутствует"; return 2
   fi
   local own; own="$(basename "$path" .java)"
-  # J1: cross-Ops refs в static{} блоках и static-field инициализаторах
   local clinit_hits
   clinit_hits=$(awk -v own="$own" '
     function opshits(line,   t, out, s) {
@@ -196,7 +173,6 @@ check_java() { # $1 = path
     }
     END { print HIT }
   ' "$path")
-  # cross-Ops touch sites + throwable markers
   local touches handlers
   touches=$(grep -oE '[A-Za-z_][A-Za-z0-9_]*Ops[.:]' "$path" 2>/dev/null \
             | sed 's/[.:]$//' | grep -v "^$own\$" | sort -u | tr '\n' ' ')
@@ -211,7 +187,6 @@ check_java() { # $1 = path
   return 0
 }
 
-# --- dispatch one input ------------------------------------------------------
 check_one() {
   local path="$1" rc=0
   case "$path" in
@@ -224,11 +199,11 @@ check_one() {
         say "[SKIP] $path — файл отсутствует"; rc=2
       fi ;;
   esac
-  case "$rc" in 0) OK=$((OK+1)) ;; 1) FAIL=$((FAIL+1)) ;; *) SKIP=$((SKIP+1)) ;; esac
+  case "$rc" in 0) OK=$((OK+1)) ;; 1) FAIL=$((FAIL+1)) ;; *) SKIP=$((SKIP+1)) ;;
+  esac
   return "$rc"
 }
 
-# --- self-test on known master blobs -----------------------------------------
 SELFTEST_BLOBS=(
   "mobpush/build/net/minecraft/world/entity/MobPushOps.class"
   "entitygoalquery/build/net/minecraft/world/entity/EntityGoalQueryOps.class"
@@ -249,10 +224,9 @@ run_selftest() {
   say "T1-NCDFE-SELFTEST FAIL (требование канона: 0 FAIL на известных блобах)"; return 1
 }
 
-# --- negative test: corrupt class must FAIL with exit 1 ----------------------
 run_negative_test() {
   local tmp rc
-  tmp="$(mktemp /tmp/ncdfe_negative_XXXXXX.class)"
+  tmp="$(mktemp "${TMPDIR:-/tmp}/ncdfe_negative_XXXXXX.class")"
   printf 'NOT-CA-FE-BA-BE garbage %s' "$(head -c 200 /dev/urandom | base64 -w0 2>/dev/null)" > "$tmp"
   say "NCDFE-GUARD NEGATIVE-TEST: битый класс $tmp"
   check_one "$tmp"; rc=$?
@@ -261,17 +235,75 @@ run_negative_test() {
   say "NEGATIVE-TEST FAIL (ожидался exit 1, получен $rc)"; return 1
 }
 
-# --- main --------------------------------------------------------------------
+# --- R2 vectors: 5 fail-open closures, each must behave as expected -----------
+run_vectors() { # returns 0 iff all vectors PASS
+  local vp=0 vf=0 tmpd rc out
+  tmpd="$(mktemp -d "${TMPDIR:-/tmp}/ncdfe_vectors_XXXXXX")"
+  say "NCDFE-GUARD VECTORS (R2 fail-closed, ROUND-471-S13):"
+  # V1 blind-parser: пустой javap-выход обязан дать parse-floor FAIL (R1-аналог)
+  if [ -f "$ROOT/${SELFTEST_BLOBS[0]}" ]; then
+    printf '#!/bin/sh\nexit 0\n' > "$tmpd/blindjavap"; chmod +x "$tmpd/blindjavap"
+    out="$(NCDFE_JAVAP="$tmpd/blindjavap" bash "$0" "$ROOT/${SELFTEST_BLOBS[0]}" 2>&1)"; rc=$?
+    if [ "$rc" -eq 1 ] && printf '%s' "$out" | grep -q 'parse-floor'; then
+      say "V1 blind-parser->parse-floor FAIL: PASS"; vp=$((vp+1))
+    else say "V1 blind-parser->parse-floor FAIL: FAIL (rc=$rc)"; vf=$((vf+1)); fi
+  else say "V1: FAIL (нет ${SELFTEST_BLOBS[0]})"; vf=$((vf+1)); fi
+  # V2 clinit-touch vector обязан FAIL C2; V3 touch-no-handler обязан FAIL C3;
+  # V4 touch+handler обязан OK (вектор-пары компилируются javac на месте)
+  if [ -n "$JAVAC" ] && [ -x "$JAVAC" ]; then
+    cat > "$tmpd/OtherOps.java" <<'EOF'
+public class OtherOps { public static int idCount = 7; }
+EOF
+    cat > "$tmpd/ClinitTouchOps.java" <<'EOF'
+public class ClinitTouchOps { static { int x = OtherOps.idCount; } static int X; public static int get() { return X; } }
+EOF
+    cat > "$tmpd/TouchNoHandlerOps.java" <<'EOF'
+public class TouchNoHandlerOps { public int f(OtherOps o) { return o.idCount; } }
+EOF
+    cat > "$tmpd/TouchHandlerOps.java" <<'EOF'
+public class TouchHandlerOps { public int f(OtherOps o) { try { return o.idCount; } catch (Throwable t) { return -1; } } }
+EOF
+    "$JAVAC" -d "$tmpd" "$tmpd"/OtherOps.java "$tmpd"/ClinitTouchOps.java "$tmpd"/TouchNoHandlerOps.java "$tmpd"/TouchHandlerOps.java >/dev/null 2>&1
+    out="$(bash "$0" "$tmpd/ClinitTouchOps.class" 2>&1)"; rc=$?
+    if [ "$rc" -eq 1 ] && printf '%s' "$out" | grep -q 'define-порядок'; then
+      say "V2 clinit-touch->FAIL C2: PASS"; vp=$((vp+1))
+    else say "V2 clinit-touch->FAIL C2: FAIL (rc=$rc)"; vf=$((vf+1)); fi
+    out="$(bash "$0" "$tmpd/TouchNoHandlerOps.class" 2>&1)"; rc=$?
+    if [ "$rc" -eq 1 ] && printf '%s' "$out" | grep -q 'throwable-маркеры отсутствуют'; then
+      say "V3 touch-no-handler->FAIL C3: PASS"; vp=$((vp+1))
+    else say "V3 touch-no-handler->FAIL C3: FAIL (rc=$rc)"; vf=$((vf+1)); fi
+    out="$(bash "$0" "$tmpd/TouchHandlerOps.class" 2>&1)"; rc=$?
+    if [ "$rc" -eq 0 ]; then
+      say "V4 touch+handler->OK: PASS"; vp=$((vp+1))
+    else say "V4 touch+handler->OK: FAIL (rc=$rc)"; vf=$((vf+1)); fi
+  else
+    say "V2-V4: FAIL (javac недоступен: задай NCDFE_JAVAC)"; vf=$((vf+3))
+  fi
+  # V5 strict-skip: NCDFE_STRICT=1 превращает SKIP в FAIL (fail-closed гейт)
+  out="$(NCDFE_STRICT=1 bash "$0" "$tmpd/NoSuchGhostOps.class" 2>&1)"; rc=$?
+  if [ "$rc" -eq 1 ]; then
+    say "V5 strict-skip->exit1: PASS"; vp=$((vp+1))
+  else say "V5 strict-skip->exit1: FAIL (rc=$rc)"; vf=$((vf+1)); fi
+  rm -rf "$tmpd"
+  say "NCDFE-VECTORS: pass=$vp fail=$vf (of 5)"
+  if [ "$vf" -eq 0 ]; then say "NCDFE-VECTORS PASS"; return 0; fi
+  say "NCDFE-VECTORS FAIL"; return 1
+}
+
 if [ $# -eq 0 ]; then
-  say "usage: $0 <file.class|file.java>... | --selftest | --negative-test"
-  say "exit: 0=OK 1=FAIL 2=SKIP/usage"
+  say "usage: $0 <file.class|file.java>... | --selftest | --vectors | --negative-test"
+  say "exit: 0=OK 1=FAIL (в т.ч. SKIP при NCDFE_STRICT=1) 2=SKIP/usage"
   exit 2
 fi
 if [ "$1" = "--selftest" ]; then run_selftest; exit $?; fi
+if [ "$1" = "--vectors" ]; then run_vectors; exit $?; fi
 if [ "$1" = "--negative-test" ]; then run_negative_test; exit $?; fi
 
 for f in "$@"; do check_one "$f"; done
 say "NCDFE-GUARD SUMMARY: ok=$OK fail=$FAIL skip=$SKIP (exit 0/1/2 = OK/FAIL/SKIP; канон LAB_LEDGER L6: T1 NCDFE=0 до вердикта)"
 if [ "$FAIL" -gt 0 ]; then exit 1; fi
-if [ "$SKIP" -gt 0 ]; then exit 2; fi
+if [ "$SKIP" -gt 0 ]; then
+  if [ "$STRICT" = "1" ]; then say "NCDFE_STRICT=1: SKIP->$FAIL (fail-closed R2)"; exit 1; fi
+  exit 2
+fi
 exit 0
