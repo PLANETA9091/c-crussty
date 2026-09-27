@@ -456,6 +456,12 @@ export CRUSSTY_BU_DEFER="$BU_DEFER"
 # read these at registration time to ARM their architecture lever.
 export CRUSSTY_LEVER_FLAG="${LEVER_FLAG:-}"
 export CRUSSTY_LEVER_ARG="${LEVER_ARG:-}"
+# C28 MC-312010 guard-a (ROUND-475; poi_plane.rs mc312a watchdog): OFF by
+# default (флаг-канон); arm via dispatch --arg "mc312a=1" (LEVER_ARG free-form
+# canon) or an explicit CRUSSTY_MC312A_GUARD env. OFF proof = zero "mc312a"
+# lines in server-stdout.log.
+MC312A_FROM_ARG="$(printf '%s' "${LEVER_ARG:-}" | tr ',;' '\n\n' | sed -n 's/^mc312a=//p' | head -n1)"
+export CRUSSTY_MC312A_GUARD="${CRUSSTY_MC312A_GUARD:-${MC312A_FROM_ARG:-0}}"
 # cmp420_chunk2 arming (TASK-420-C stability iteration; wave-419 base
 # cmp419_chunk, chunk-pipeline law 8): the noise-fill GEN-axis
 # (noise_fill.rs STRICT-OR gate) is NOT in PROVEN_WINS, so the

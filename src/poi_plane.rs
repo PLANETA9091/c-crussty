@@ -44,8 +44,8 @@
 
 use jvmti_bindings::jni;
 use std::ffi::{c_void, CString};
-use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
-use std::sync::Mutex;
+use std::sync::atomic::{AtomicBool, AtomicU64, AtomicU8, Ordering};
+use std::sync::{Mutex, PoisonError};
 
 const LEVEL_CLASS: &str = "net/minecraft/world/level/Level";
 const CHUNKMAP_CLASS: &str = "net/minecraft/server/level/ChunkMap";
@@ -107,6 +107,146 @@ static READY_CM: AtomicBool = AtomicBool::new(false);
 static POI_STORE: Mutex<Vec<[i32; 5]>> = Mutex::new(Vec::new());
 static POI_STORE_TOTAL: AtomicU64 = AtomicU64::new(0);
 static MASK_WWORDS: Mutex<Vec<u64>> = Mutex::new(Vec::new());
+
+// --- C28 MC-312010 guard-a (ROUND-475) -------------------------------------
+// Mojang MC-312010 class (Server-СТЗ C93/×474 top item; POI/chunk store
+// out-of-order re-dirty records — same ordering family as MC-310372): the
+// rust PoiStore mirror is the observation point. WATCHDOG, telemetry-only:
+// per-epoch ORDERING-HASH over the batch (1 hash per POI batch — the
+// PoiOps.maybeEpoch amortization, POI_BATCH=4 in master) + STRICT tick
+// monotonicity of the epoch stream (equal/decreasing epoch tick = non-
+// monotonic record write). Detection ONLY: ingestion stays bit-for-bit,
+// nothing disarms (a guard is not a lever; закон-5 канон).
+//
+// Preregister (C28):
+//  - OFF by default (флаг-канон): env CRUSSTY_MC312A_GUARD = 1/true/on/yes;
+//    cached once → the OFF hot path is ONE atomic load per poiEpoch call
+//    (1 per POI_BATCH=4 ticks), zero measurable CPU;
+//  - overhead ≤0.1% JNI-переходов: the hash is computed INSIDE the existing
+//    bulk poiEpoch crossing (zero extra JNI transitions, like POI_BATCH);
+//    ~1 FNV round per event int, sub-µs per batch;
+//  - NCDFE-канон: no new Java classes / natives / retargets / blob rebuilds
+//    → NoClassDefFoundError impossible by construction (pure rust, live
+//    inside the already-registered poiEpoch native);
+//  - ARM-пруф по артефакту (Л-475): first observed batch logs the ARMED
+//    marker and violations log capped markers — both to stderr →
+//    server-stdout.log; OFF-run proof = ZERO "mc312a" lines in the artifact.
+static MC312A_FLAG: AtomicU8 = AtomicU8::new(0); // 0 unknown, 1 off, 2 on
+static MC312A_ARM: AtomicBool = AtomicBool::new(false);
+static MC312A_VIOL_LOGS: AtomicU64 = AtomicU64::new(0);
+
+/// env-канон гейта (fluid_guard pattern): unset/garbage = OFF.
+fn guard_flag_from(v: Option<&str>) -> bool {
+    v.map(|v| {
+        let v = v.trim().to_ascii_lowercase();
+        v == "1" || v == "true" || v == "on" || v == "yes"
+    })
+    .unwrap_or(false)
+}
+
+/// Cached gate read: env consulted once, then a plain atomic load.
+fn guard_enabled() -> bool {
+    match MC312A_FLAG.load(Ordering::Acquire) {
+        1 => false,
+        2 => true,
+        _ => {
+            let on = guard_flag_from(std::env::var("CRUSSTY_MC312A_GUARD").ok().as_deref());
+            MC312A_FLAG.store(if on { 2 } else { 1 }, Ordering::Release);
+            on
+        }
+    }
+}
+
+const FNV_OFFSET: u64 = 0xcbf2_9ce4_8422_2325;
+const FNV_PRIME: u64 = 0x0000_0100_0000_01b3;
+
+/// One FNV-1a round over a u32 word (order-sensitive mixing).
+fn fnv1a_word(hash: u64, w: u32) -> u64 {
+    (hash ^ (w as u64)).wrapping_mul(FNV_PRIME)
+}
+
+/// Ordering-hash of one POI epoch batch: the epoch tick, then the event
+/// tuples (levelHash, posLo, posHi, oldId, newId) in ARRIVAL order. Chainable
+/// across epochs (prev hash feeds the next) → any reordering/re-dirty of the
+/// record stream changes the rolling hash.
+fn ordering_hash(prev: u64, tick: i32, events: &[[i32; 5]]) -> u64 {
+    let mut h = fnv1a_word(prev, tick as u32);
+    for e in events {
+        for w in e {
+            h = fnv1a_word(h, *w as u32);
+        }
+    }
+    h
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+enum GuardVerdict {
+    Monotonic,
+    NonMonotonic { prev_tick: i32 },
+}
+
+/// Watchdog state. Writer = the server thread inside poiEpoch (already
+/// serialized by PoiOps.maybeEpoch's EPOCH_TICK discipline); Mutex only for
+/// test/tooling access.
+struct OrderingGuard {
+    last_tick: Option<i32>,
+    rolling: u64,
+    batches: u64,
+    violations: u64,
+}
+
+impl OrderingGuard {
+    const fn new() -> Self {
+        Self {
+            last_tick: None,
+            rolling: FNV_OFFSET,
+            batches: 0,
+            violations: 0,
+        }
+    }
+
+    /// Observe one epoch: extend the ordering-hash chain, enforce strict tick
+    /// monotonicity. First batch initializes (no prior → monotonic).
+    fn observe(&mut self, tick: i32, events: &[[i32; 5]]) -> GuardVerdict {
+        let verdict = match self.last_tick {
+            Some(prev) if tick <= prev => GuardVerdict::NonMonotonic { prev_tick: prev },
+            _ => GuardVerdict::Monotonic,
+        };
+        self.rolling = ordering_hash(self.rolling, tick, events);
+        self.last_tick = Some(tick);
+        self.batches += 1;
+        if matches!(verdict, GuardVerdict::NonMonotonic { .. }) {
+            self.violations += 1;
+        }
+        verdict
+    }
+}
+
+static MC312A_GUARD: Mutex<OrderingGuard> = Mutex::new(OrderingGuard::new());
+
+/// Post-ingest watchdog call (telemetry-only, never fails ingestion).
+fn mc312a_observe(tick: i32, events: &[[i32; 5]]) {
+    let mut g = match MC312A_GUARD.lock() {
+        Ok(g) => g,
+        Err(p) => PoisonError::into_inner(p), // poison-recovery canon (TASK-46)
+    };
+    if !MC312A_ARM.swap(true, Ordering::Release) {
+        // ARM-пруф: lands in server-stdout.log (Л-475: artifact is the only proof).
+        eprintln!(
+            "[crussty-plugin] mc312a-guard: ARMED tick={tick} events={} (per-batch ordering-hash + strict tick monotonicity over the PoiStore epoch stream; env CRUSSTY_MC312A_GUARD, off by default)",
+            events.len()
+        );
+    }
+    if let GuardVerdict::NonMonotonic { prev_tick } = g.observe(tick, events) {
+        let n = MC312A_VIOL_LOGS.fetch_add(1, Ordering::Relaxed);
+        if n < 8 || n % 16 == 0 {
+            eprintln!(
+                "[crussty-plugin] mc312a-guard: POI-STORE ORDERING VIOLATION tick={tick} prev_tick={prev_tick} epoch_seq={} rolling_hash={:016x} violations={} (MC-312010 class: non-monotonic POI/chunk record write)",
+                g.batches, g.rolling, g.violations
+            );
+        }
+    }
+}
 
 fn retarget_poi_update(bytes: &[u8]) -> Result<(Vec<u8>, crate::classfile::RetargetOutcome), String> {
     crate::classfile::retarget_virtual_to_static(
@@ -521,6 +661,14 @@ pub unsafe extern "system" fn poi_epoch(
     drop(store);
     POI_STORE_TOTAL.store(total, Ordering::Relaxed);
 
+    // C28 MC-312010 guard-a: post-ingest ordering watchdog (telemetry-only,
+    // off by default — env CRUSSTY_MC312A_GUARD). Computed INSIDE this JNI
+    // crossing: zero extra JNI transitions (≤0.1% переход-бюджет, как
+    // POI_BATCH). Ingestion path above is untouched.
+    if guard_enabled() {
+        mc312a_observe(tick, &events);
+    }
+
     let pinned_out = unsafe { (vt.GetPrimitiveArrayCritical)(env, out, std::ptr::null_mut()) };
     if pinned_out.is_null() {
         return ERR_STRUCT;
@@ -621,5 +769,68 @@ mod tests {
         // Site 2: receiver-prepended PoiManager static form.
         let expect2 = format!("(L{};{}", FROM_POI_TICK.0, &FROM_POI_TICK.2[1..]);
         assert_eq!(POI_TICK_GATE_STATIC_DESC, expect2);
+    }
+
+    // --- C28 MC-312010 guard-a ---------------------------------------------
+
+    #[test]
+    fn mc312a_env_canon_off_by_default() {
+        // Флаг-канон: unset/garbage = OFF; only 1/true/on/yes (trim+case) = ON.
+        assert!(!guard_flag_from(None));
+        assert!(!guard_flag_from(Some("")));
+        assert!(!guard_flag_from(Some("0")));
+        assert!(!guard_flag_from(Some("off")));
+        assert!(!guard_flag_from(Some("cmp456_poi")));
+        assert!(guard_flag_from(Some("1")));
+        assert!(guard_flag_from(Some("true")));
+        assert!(guard_flag_from(Some("on")));
+        assert!(guard_flag_from(Some(" yes ")));
+        assert!(guard_flag_from(Some("TRUE")));
+    }
+
+    #[test]
+    fn mc312a_hash_order_and_tick_sensitive() {
+        let a = [[1, 10, 20, 300, 301], [2, 11, 21, 400, 401]];
+        let b = [[2, 11, 21, 400, 401], [1, 10, 20, 300, 301]]; // event pairs swapped
+        let h_a = ordering_hash(FNV_OFFSET, 100, &a);
+        assert_ne!(h_a, ordering_hash(FNV_OFFSET, 100, &b), "reordering events must change the ordering-hash");
+        assert_ne!(h_a, ordering_hash(FNV_OFFSET, 101, &a), "different epoch tick must change the ordering-hash");
+        assert_eq!(h_a, ordering_hash(FNV_OFFSET, 100, &a), "same order+tick → deterministic");
+        // intra-tuple word order matters too (oldId/newId swap detectable)
+        let c = [[1, 10, 20, 301, 300]];
+        assert_ne!(ordering_hash(FNV_OFFSET, 100, &[a[0]]), ordering_hash(FNV_OFFSET, 100, &c));
+        // empty batch still mixes the tick (epoch chain stays tick-sensitive)
+        assert_ne!(ordering_hash(FNV_OFFSET, 100, &[]), ordering_hash(FNV_OFFSET, 104, &[]));
+    }
+
+    #[test]
+    fn mc312a_monotonic_ladder_detects_nonmonotonic_writes() {
+        let mut g = OrderingGuard::new();
+        assert_eq!(g.observe(100, &[[1, 0, 0, 5, 6]]), GuardVerdict::Monotonic); // init
+        assert_eq!(g.observe(104, &[]), GuardVerdict::Monotonic); // POI_BATCH=4 step, empty epoch ok
+        assert_eq!(g.observe(108, &[[2, 1, 1, 7, 8]]), GuardVerdict::Monotonic);
+        assert_eq!(g.observe(108, &[]), GuardVerdict::NonMonotonic { prev_tick: 108 }); // equal epoch
+        assert_eq!(g.observe(106, &[]), GuardVerdict::NonMonotonic { prev_tick: 108 }); // decreasing epoch
+        assert_eq!(g.observe(112, &[]), GuardVerdict::Monotonic); // stream continues
+        assert_eq!(g.violations, 2);
+        assert_eq!(g.batches, 6);
+        assert_eq!(g.last_tick, Some(112));
+    }
+
+    #[test]
+    fn mc312a_rolling_hash_chains_across_epochs() {
+        let e1 = [[1, 0, 0, 5, 6]];
+        let e2 = [[2, 1, 1, 7, 8]];
+        let mut g = OrderingGuard::new();
+        g.observe(4, &e1);
+        g.observe(8, &e2);
+        // chain == feeding each batch hash into the next
+        let direct = ordering_hash(ordering_hash(FNV_OFFSET, 4, &e1), 8, &e2);
+        assert_eq!(g.rolling, direct);
+        // epoch order swap → different chain (record-stream serialization)
+        let mut g2 = OrderingGuard::new();
+        g2.observe(8, &e2);
+        g2.observe(9, &e1);
+        assert_ne!(g2.rolling, g.rolling);
     }
 }
