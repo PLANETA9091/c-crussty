@@ -41,7 +41,8 @@ world_diff_parity_v2.py — world-diff bit-parity АРБИТР v2 (ROUND-468 / S
           [--entity-abs-floor 64] [--strict-entities] [--ignore-world] [--quiet]
           [--json J] [--gate2] [--out MD]
   авто: оба аргумента-каталога = world; иначе logs. Самотест: --self-test (герметичный,
-  12/12: синтетический Anvil + синтетическая пара логов + негатив-мутации всех гейтов).
+  22/22: синтетический Anvil + синтетическая пара логов + негатив-мутации всех гейтов
+  + зоны Δcpu P6-спеки v2 (S34: зона A plain-OK / зона B dilate+EXPOSED / зона C FAIL-UNPAIRED).
 
 C2ME-канон строки: "%d/%d chunks, %d block differences (%.4f%%)".
 Гейт world: на ваниль-парах blocks-diff == 0.0000% (bit-mismatch на leg-паре = блок
@@ -75,6 +76,32 @@ U64 = 0xFFFFFFFFFFFFFFFF
 ENTITY_TOLERANCE = 0.05
 ENTITY_ABS_FLOOR = 64
 CPU_BAND = (6_000_000, 9_500_000)  # канон band 6.0-9.5M
+
+# ---- P6-спека v2: ЗОНЫ Δcpu (S34 ROUND-472, клейм PARITY-P6-v2; калибровка S14 ROUND-471) ----
+# Зона A: Δcpu ≤ 184154 — канон tol=5%/floor=64, plain WORLD-PARITY-OK допустим
+#   (same-stand дрейф ≤1.47% @Δcpu=184k, headroom 3.4×; калибровка: aa1↔aa2 105k→2.04%, S88 184k→1.47%)
+# Зона B: 184154 < Δcpu ≤ 2290829 — per-type DILATE по типам-носителям (churn-мобы husk/spider);
+#   plain OK ЗАПРЕЩЁН → вердикт только WORLD-PARITY-OK-EXPOSED; lever-дрейф ≥12.7% обязан ловиться
+# Зона C: Δcpu > 2290829 — FAIL-UNPAIRED, exit 1 (за потолком калибровки пара не верифицируема)
+# Прекондиция dilate: WORLD sha equal + POP-TOTALS equal + CHUNK-CHECKSUMS OK (урок u5: forceload
+#   1024≠9216 давал ложные −83.53% на item_frame — порядок гейтов критичен).
+CPU_ZONE_A_CEILING = 184_154
+CPU_ZONE_B_CEILING = 2_290_829
+ZONE_B_DILATE = {"minecraft:husk": 0.09, "minecraft:spider": 0.08}  # носители churn-циклов (S14 §4)
+ZONE_PRECONDITION_GATES = ("WORLD", "CHUNK-CHECKSUMS", "POP-TOTALS")
+
+
+def cpu_zone_of(van, leg) -> Tuple[str, Optional[int]]:
+    """Зона Δcpu-экспозиции пары по runner_cpu_index ('A'|'B'|'C', delta). Нет данных -> ('A', None)."""
+    a, b = getattr(van, "runner_cpu_index", None), getattr(leg, "runner_cpu_index", None)
+    if a is None or b is None:
+        return "A", None
+    d = abs(int(a) - int(b))
+    if d <= CPU_ZONE_A_CEILING:
+        return "A", d
+    if d <= CPU_ZONE_B_CEILING:
+        return "B", d
+    return "C", d
 
 
 class RegionError(Exception):
@@ -649,15 +676,17 @@ def _band(a: int, b: int, tol: float, floor: int) -> Tuple[bool, float]:
 
 
 def entity_band_report(A: Dict[str, int], B: Dict[str, int], tol: float,
-                       floor: int, strict: bool = False) -> dict:
+                       floor: int, strict: bool = False,
+                       per_type_tol: Optional[Dict[str, float]] = None) -> dict:
     shared = sorted(set(A) & set(B))
     one_side = sorted(set(A) ^ set(B))
     rows, bad, worst = [], [], (0.0, "—")
     for t in shared:
         a, b = A[t], B[t]
-        in_band, pct = _band(a, b, 0.0 if strict else tol, 0 if strict else floor)
+        t_tol = (per_type_tol or {}).get(t, tol)   # zone-B dilate по типам-носителям (P6-спека v2)
+        in_band, pct = _band(a, b, 0.0 if strict else t_tol, 0 if strict else floor)
         rows.append({"type": t, "a": a, "b": b, "drift_pct": round(pct, 4),
-                     "in_band": in_band})
+                     "tol_pct": round(t_tol * 100.0, 2), "in_band": in_band})
         if pct > worst[0]:
             worst = (pct, t)
         if not in_band:
@@ -669,7 +698,7 @@ def entity_band_report(A: Dict[str, int], B: Dict[str, int], tol: float,
             "tol": tol, "floor": floor, "strict": strict}
 
 
-OK, FAIL, SKIP, INFO = "OK", "FAIL", "SKIP", "INFO"
+OK, FAIL, SKIP, INFO, WARN = "OK", "FAIL", "SKIP", "INFO", "WARN"
 
 
 class GateResult:
@@ -683,6 +712,7 @@ class GateResult:
 def compare_logs(van: LogFacts, leg: LogFacts, tol: float, floor: int,
                  strict_entities: bool = False, ignore_world: bool = False) -> List[GateResult]:
     out: List[GateResult] = []
+    zone, delta_cpu = cpu_zone_of(van, leg)   # P6-спека v2: зоны Δcpu (S34 ROUND-472)
 
     def both(getter):
         a, b = getter(van), getter(leg)
@@ -785,22 +815,34 @@ def compare_logs(van: LogFacts, leg: LogFacts, tol: float, floor: int,
         out.append(GateResult("POP-TOTALS", FAIL,
                               "POPULATION INJECT DONE не найден ни на одной стороне — pop-totals не верифицируем"))
 
-    # W6 PER-TYPE-POPULATION
+    # W6 PER-TYPE-POPULATION (+ zone-B dilate по типам-носителям, P6-спека v2)
     if not van.entity_types or not leg.entity_types:
         out.append(GateResult("PER-TYPE-POPULATION", FAIL,
                               f"per-type данные не найдены (vanilla={len(van.entity_types)} типов,"
                               f" leg={len(leg.entity_types)} типов)"))
     else:
-        rep = entity_band_report(van.entity_types, leg.entity_types, tol, floor, strict_entities)
+        # прекондиция dilate (урок u5): WORLD sha equal + CHUNK-CHECKSUMS OK + POP-TOTALS equal
+        pre_ok = all(g.status == OK for g in out if g.gate in ZONE_PRECONDITION_GATES)
+        per_tol = None
+        zb_note = ""
+        if zone == "B" and pre_ok:
+            per_tol = {t: ZONE_B_DILATE.get(t, tol)
+                       for t in set(van.entity_types) & set(leg.entity_types)}
+            zb_note = f"; zone-B dilate husk=9%/spider=8% (Δcpu={delta_cpu}, P6-спека v2)"
+        elif zone == "B":
+            zb_note = (f"; zone-B Δcpu={delta_cpu} НО прекондиция WORLD/CHUNK/POP не OK —"
+                       " dilate ЗАПРЕЩЁН (урок u5)")
+        rep = entity_band_report(van.entity_types, leg.entity_types, tol, floor, strict_entities,
+                                 per_type_tol=per_tol)
         if rep["violations"]:
             out.append(GateResult("PER-TYPE-POPULATION", FAIL,
                                   f"{len(rep['violations'])} нарушений из {rep['shared']} общих типов: "
-                                  + "; ".join(rep["violations"][:8])))
+                                  + "; ".join(rep["violations"][:8]) + zb_note))
         else:
             note = (f"; односторонние {len(rep['one_side'])} типов" if rep["one_side"] else "")
             out.append(GateResult("PER-TYPE-POPULATION", OK,
                                   f"{rep['shared']} общих типов в банде (tol={tol:.2%}, floor={floor}),"
-                                  f" макс-дрейф {rep['worst_drift_pct']:.2f}% ({rep['worst_type']}){note}"))
+                                  f" макс-дрейф {rep['worst_drift_pct']:.2f}% ({rep['worst_type']}){note}{zb_note}"))
 
     # W7 TICK-BEHIND (канон 0) + кросс-чек raw-скан vs md-срез на каждой стороне
     pair, a, b = both(lambda f: f.tick_behind)
@@ -835,7 +877,7 @@ def compare_logs(van: LogFacts, leg: LogFacts, tol: float, floor: int,
     else:
         out.append(GateResult("FAKE-PLAYERS", SKIP, "fake_players не найден с обеих сторон"))
 
-    # W9 CPU-BAND (инфо: парность по runner_cpu_index; вне-банда = pairing-проблема)
+    # W9 CPU-BAND + ЗОНЫ Δcpu (P6-спека v2: ≤184k INFO → (184k,2.29M] WARN-EXPOSED → >2.29M FAIL-UNPAIRED)
     pair, a, b = both(lambda f: f.runner_cpu_index)
     if pair is None:
         out.append(GateResult("CPU-BAND", SKIP, "runner_cpu_index не найден"))
@@ -843,9 +885,19 @@ def compare_logs(van: LogFacts, leg: LogFacts, tol: float, floor: int,
         ia, ib = int(a), int(b)
         inb = CPU_BAND[0] <= ia <= CPU_BAND[1] and CPU_BAND[0] <= ib <= CPU_BAND[1]
         delta = abs(ia - ib)
-        out.append(GateResult("CPU-BAND", INFO if inb else FAIL,
-                              f"van={ia} leg={ib} Δcpu={delta} "
-                              f"({'in-band 6.0-9.5M' if inb else 'OUT-OF-BAND 6.0-9.5M'})"))
+        oob = "" if inb else "; OUT-OF-BAND 6.0-9.5M"
+        if zone == "C":
+            out.append(GateResult("CPU-BAND", FAIL,
+                                  f"van={ia} leg={ib} Δcpu={delta} ZONE-C FAIL-UNPAIRED "
+                                  f"(>2,290,829 — за потолком калибровки, пара не верифицируема){oob}"))
+        elif zone == "B":
+            out.append(GateResult("CPU-BAND", WARN,
+                                  f"van={ia} leg={ib} Δcpu={delta} ZONE-B-EXPOSED "
+                                  f"(dilate husk=9%/spider=8%; plain-OK запрещён){oob}"))
+        else:
+            out.append(GateResult("CPU-BAND", INFO if inb else FAIL,
+                                  f"van={ia} leg={ib} Δcpu={delta} "
+                                  f"({'in-band 6.0-9.5M zone-A' if inb else 'OUT-OF-BAND 6.0-9.5M'})"))
 
     return out
 
@@ -857,10 +909,15 @@ def evaluate_logs(van_paths: List[str], leg_paths: List[str], tol: float, floor:
     gates = compare_logs(van, leg, tol, floor, strict_entities, ignore_world)
     failed = [g for g in gates if g.status == FAIL]
     evaluated = [g for g in gates if g.status != SKIP]
+    zone, delta = cpu_zone_of(van, leg)
     if not evaluated:
         v, reasons = "WORLD-PARITY-FAIL", ["ни один гейт не вычислен — вход пуст/неопознан"]
     elif failed:
-        v, reasons = "WORLD-PARITY-FAIL", [f"{g.gate}: {g.detail}" for g in failed]
+        v = "WORLD-PARITY-FAIL-UNPAIRED" if zone == "C" else "WORLD-PARITY-FAIL"
+        reasons = [f"{g.gate}: {g.detail}" for g in failed]
+    elif zone == "B":
+        v = "WORLD-PARITY-OK-EXPOSED"   # plain OK в зоне B ЗАПРЕЩЁН (P6-спека v2, S34)
+        reasons = [f"ZONE-B Δcpu={delta}: dilate husk=9%/spider=8% применён — экспозиция явная"]
     else:
         v, reasons = "WORLD-PARITY-OK", []
     return v, reasons, gates, van, leg
@@ -908,7 +965,7 @@ def render_logs_md(v, reasons, gates, van: LogFacts, leg: LogFacts,
          f" (runner={leg.runner_cpu_index}, seed={leg.pop_seed}, tps_med={leg.tps_median}, stw={leg.stw_total})",
          "", "| статус | гейт | деталь |", "|---|---|---|"]
     L += [f"| {g.status} | {g.gate} | {g.detail} |" for g in gates]
-    tail = f" [{'; '.join(reasons)}]" if reasons and v.endswith("FAIL") else ""
+    tail = f" [{'; '.join(reasons)}]" if reasons and (v.endswith("FAIL") or v.endswith("EXPOSED")) else ""
     L += ["", f"**VERDICT: {v}{tail}**"]
     if rep:
         L += ["", "## per-type population diff (top по дрейфу)", "",
@@ -937,23 +994,34 @@ def gate_world(r: dict, gate_chunks: float, gate_blocks: float,
 # gate_v2 P6-PARITY интеграция
 # ----------------------------------------------------------------------------
 
+def _verdict_pass(v: str) -> bool:
+    """PASS-класс вердикта (exit 0): plain OK + OK-EXPOSED (зона B, тег обязателен)."""
+    return v in ("WORLD-PARITY-OK", "WORLD-PARITY-OK-EXPOSED")
+
+
 def gate2_line(verdict: str, gates: List[GateResult], ms: int) -> str:
     failed = [g for g in gates if g.status == FAIL]
-    status = "OK" if verdict.endswith("OK") else "FAIL"
+    if verdict == "WORLD-PARITY-OK-EXPOSED":
+        status = "OK-EXPOSED"           # зона B: merge не блокирует, но тег виден
+    else:
+        status = "OK" if _verdict_pass(verdict) else "FAIL"
     det = "; ".join(f"{g.gate}:{g.status}" for g in gates)
     return f"P6-parity: {status} ({verdict}, FAIL={len(failed)}, {ms}ms) {det}"
 
 
 def gate2_json_phase(verdict: str, gates: List[GateResult], ms: int) -> dict:
     failed = [g for g in gates if g.status == FAIL]
-    status = "OK" if verdict.endswith("OK") else "FAIL"
+    if verdict == "WORLD-PARITY-OK-EXPOSED":
+        status = "OK-EXPOSED"
+    else:
+        status = "OK" if _verdict_pass(verdict) else "FAIL"
     det = f"{verdict} FAIL={len(failed)} " + "; ".join(
         f"{g.gate}:{g.status}" for g in gates if g.status != INFO)
     return {"phase": "P6-parity", "ms": ms, "status": status, "detail": det[:400]}
 
 
 # ----------------------------------------------------------------------------
-# самотест v2: герметичный (синтетика) — 12 чеков
+# самотест v2: герметичный (синтетика) — 22 чека (T1-T12 канон + T13-T17 зоны Δcpu P6-спеки v2)
 # ----------------------------------------------------------------------------
 
 def _w_payload(tag: int, val) -> bytes:
@@ -1160,6 +1228,47 @@ def self_test() -> int:
             line.startswith("P6-parity: OK") and j["phase"] == "P6-parity"
             and j["status"] == "OK"), line[:80]))
 
+        # ---- T13..T17: ЗОНЫ Δcpu P6-спеки v2 (S34 ROUND-472; калибровка S14 ROUND-471) ----
+        # T13 зона A: Δcpu=100k ≤184154 → plain OK (без EXPOSED-тега), CPU-BAND INFO
+        plA = synth_log(os.path.join(td, "zA"), "leg.log",
+                        [("runner_cpu_index: 6800000", "runner_cpu_index: 6900000")])
+        vA, _rA, gA, _va, _la = evaluate_logs([pv], [plA], tol, floor)
+        nA = {g.gate: g for g in gA}
+        checks.append(("T13 zone-A Δcpu=100k -> plain WORLD-PARITY-OK + CPU-BAND INFO", (
+            vA == "WORLD-PARITY-OK" and nA["CPU-BAND"].status == INFO
+            and "zone-A" in nA["CPU-BAND"].detail), vA))
+        # T14 зона B: Δcpu=2107395 (=11.4× потолка), husk +6.9% >tol5% ≤dilate9% → OK-EXPOSED + WARN
+        plB = synth_log(os.path.join(td, "zB"), "leg.log", [
+            ("runner_cpu_index: 6800000", "runner_cpu_index: 8907395"),
+            ("minecraft:husk×5178", "minecraft:husk×5562")])
+        vB, rB, gB, _vb, _lb = evaluate_logs([pv], [plB], tol, floor)
+        nB = {g.gate: g for g in gB}
+        checks.append(("T14 zone-B Δcpu=2107395 husk+6.9% -> OK-EXPOSED + CPU-BAND WARN", (
+            vB == "WORLD-PARITY-OK-EXPOSED" and nB["CPU-BAND"].status == WARN
+            and nB["PER-TYPE-POPULATION"].status == OK
+            and "zone-B dilate" in nB["PER-TYPE-POPULATION"].detail), "; ".join(rB)[:120]))
+        # T15 зона B lever-дрейф: spider −14.4% |Δ|>dilate8% → обязан FAIL (гейт ловит lever)
+        plB2 = synth_log(os.path.join(td, "zB2"), "leg.log", [
+            ("runner_cpu_index: 6800000", "runner_cpu_index: 8907395"),
+            ("minecraft:spider×4792", "minecraft:spider×4103")])
+        vB2, _rB2, gB2, _vb2, _lb2 = evaluate_logs([pv], [plB2], tol, floor)
+        nB2 = {g.gate: g for g in gB2}
+        checks.append(("T15 zone-B spider+14.4%>dilate8% -> FAIL(PER-TYPE)", (
+            vB2 == "WORLD-PARITY-FAIL" and nB2["PER-TYPE-POPULATION"].status == FAIL), vB2))
+        # T16 зона C: Δcpu=2500000 >2290829 → FAIL-UNPAIRED (CPU-BAND FAIL) даже при 0 дрейфа
+        plC = synth_log(os.path.join(td, "zC"), "leg.log",
+                        [("runner_cpu_index: 6800000", "runner_cpu_index: 9300000")])
+        vC, _rC, gC, _vc, _lc = evaluate_logs([pv], [plC], tol, floor)
+        nC = {g.gate: g for g in gC}
+        checks.append(("T16 zone-C Δcpu=2500000 -> FAIL-UNPAIRED(CPU-BAND)", (
+            vC == "WORLD-PARITY-FAIL-UNPAIRED" and nC["CPU-BAND"].status == FAIL), vC))
+        # T17 gate2 EXPOSED-строка: status OK-EXPOSED, PASS-класс (exit 0)
+        lineE = gate2_line("WORLD-PARITY-OK-EXPOSED", gB, 7)
+        jE = gate2_json_phase("WORLD-PARITY-OK-EXPOSED", gB, 7)
+        checks.append(("T17 gate2 EXPOSED: OK-EXPOSED строка + PASS-класс", (
+            lineE.startswith("P6-parity: OK-EXPOSED") and _verdict_pass("WORLD-PARITY-OK-EXPOSED")
+            and jE["status"] == "OK-EXPOSED"), lineE[:80]))
+
     for name, ok, extra in checks:
         print(f"  {'PASS' if ok else 'FAIL'}  {name}" + (f"   [{extra}]" if (extra and not ok) else ""))
     bad = [n for n, ok, _ in checks if not ok]
@@ -1335,7 +1444,7 @@ def main(argv: Optional[List[str]] = None) -> int:
             f.write(render_logs_md(v, reasons, gates, van, leg, args["van"], args["leg"], rep))
     if args["gate2"]:
         print(gate2_line(v, gates, ms))
-        return 0 if v.endswith("OK") else 1
+        return 0 if _verdict_pass(v) else 1
     lines = []
     if not args["quiet"]:
         lines.append("== WORLD-DIFF PARITY ARBITER v2 (закон 4 + 20d, ROUND-468/S50) ==")
@@ -1350,10 +1459,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         lines.append("  info | PER-TYPE top-3     | "
                      + "; ".join(f"{r['type']} {r['a']}→{r['b']} ({r['drift_pct']:+.2f}%)"
                                  for r in rep["rows"][:3]))
-    tail = f" [{'; '.join(reasons)}]" if reasons and v.endswith("FAIL") else ""
+    tail = f" [{'; '.join(reasons)}]" if reasons and (v.endswith("FAIL") or v.endswith("EXPOSED")) else ""
     lines.append(f"VERDICT: {v}{tail}")
     print("\n".join(lines))
-    return 0 if v.endswith("OK") else 1
+    return 0 if _verdict_pass(v) else 1
 
 
 if __name__ == "__main__":
