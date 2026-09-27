@@ -151,6 +151,30 @@ check_class \
   "entityinside/build/net/minecraft/world/entity/InsideBlockOps.class" \
   "noteSnapArmed" "snapGet" "bstate" "SNAP_ARMED" "mirror"
 
+# ROUND-472 S27 pin-stage B-2 (Л258/S59-S64 canon): BATCH-COLLECTOR family.
+# BatchCollector = zero-map ctor-retarget bridge; src/batch_collector.rs:42
+# include_bytes!'s the NESTED blob (flat sibling is legacy-copy only).
+# FlushOps = the flushStep addAll retarget target (S7-137 flush-diet);
+# src/flush_diet.rs:49 embeds the NESTED blob — no flat sibling was ever
+# shipped (nested-only class; flat==nested n/a by design).
+# anti-Л216 bit-pin: javac --release 21 rebuild byte-identity proven x2
+# (BatchCollector 04ce702f, FlushOps 60fa4c55) BEFORE this gate landed.
+# PIN!=ARM (закон 5): gate-only delta, 0 runtime bytes, vanilla leg 0-delta.
+check_class \
+  "entityinside/build/net/minecraft/world/entity/BatchCollector.class" \
+  "public void advanceStep(int, net.minecraft.core.BlockPos)" \
+  "public void apply(net.minecraft.world.entity.InsideBlockEffectType)" \
+  "public void applyAndClear(net.minecraft.world.entity.Entity)" \
+  "private void flushStep()" \
+  "public static long instances()" \
+  "runBefore" "runAfter" "appendEffect" "grow" \
+  "INSTANCES"
+
+check_class \
+  "entityinside/build/net/minecraft/world/entity/FlushOps.class" \
+  "public static boolean fladd(java.util.List, java.util.Collection)" \
+  "isEmpty" "addAll"
+
 check_class \
   "chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class" \
   "cmp420_chunk2" "cmp420_colpush" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp453_diet" "parse-cache first hit" "parse-cache selftest" "cmp456_poi" \
@@ -326,6 +350,7 @@ check_flat_matches_nested "queryplane/build" "net/minecraft/world/entity/QueryPl
 check_flat_matches_nested "goalops/build" "net/minecraft/world/entity/ai/goal/GoalOps"
 check_flat_matches_nested "colpush/build" "net/minecraft/world/entity/ColpushOps"
 check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/RegionTickOps"
+check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/BatchCollector" # S27 pin-stage B-2 (flat = legacy copy, embed = nested)
 check_flat_matches_nested "sense/build" "net/minecraft/world/entity/SenseOps"
 check_flat_matches_nested "chunksend/build" "net/minecraft/server/network/ChunkSendOps"
 check_flat_matches_nested "chunksend/build" "net/minecraft/server/network/ChunkPacketEncodeOps"
@@ -373,6 +398,8 @@ gate_load() { # dir fqcn-slash — fail if javap cannot load
 gate_load entityinside/build   net/minecraft/world/entity/ItemEntityManager
 gate_load entityinside/build   net/minecraft/world/entity/InsideSnapOps
 gate_load entityinside/build   'net/minecraft/world/entity/InsideSnapOps$Snap'
+gate_load entityinside/build   net/minecraft/world/entity/BatchCollector # S27 pin-stage B-2
+gate_load entityinside/build   net/minecraft/world/entity/FlushOps       # S27 pin-stage B-2
 gate_load goalops/build        net/minecraft/world/entity/ai/goal/GoalOps
 gate_load queryplane/build     net/minecraft/world/entity/QueryPlaneOps
 gate_load mobai/build          net/minecraft/world/entity/MobAiOps
@@ -407,6 +434,11 @@ gate_source_sibling stagger/build/net/minecraft/world/entity/PushStaggerOps.clas
                    stagger/net/minecraft/world/entity/PushStaggerOps.java
 gate_source_sibling stagger/build/net/minecraft/world/entity/ai/goal/target/GoalStaggerOps.class \
                    stagger/net/minecraft/world/entity/ai/goal/target/GoalStaggerOps.java
+# S27 pin-stage B-2: BatchCollector family source-siblings (Л180h anti-drift).
+gate_source_sibling entityinside/build/net/minecraft/world/entity/BatchCollector.class \
+                   entityinside/net/minecraft/world/entity/BatchCollector.java
+gate_source_sibling entityinside/build/net/minecraft/world/entity/FlushOps.class \
+                   entityinside/net/minecraft/world/entity/FlushOps.java
 gate_load poi/build            net/minecraft/world/entity/ai/village/poi/PoiOps
 gate_load chunksched/build     net/minecraft/server/level/ChunkSchedOps
 gate_load fluid/build          net/minecraft/world/entity/FluidPushGuardHook
