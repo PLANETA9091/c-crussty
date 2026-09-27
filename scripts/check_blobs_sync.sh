@@ -450,21 +450,21 @@ PYEOF
 # Existence + major-65 + javap-parse gate here; marker pins land with each
 # plane's next rebuild. GAP_REGISTER below machine-tracks the remaining 21.
 check_class "entityinside/build/net/minecraft/world/entity/BatchCollector.class"
-check_class "entityinside/build/net/minecraft/world/entity/CollideBatchOps.class"
+check_class "entityinside/build/net/minecraft/world/entity/CollideBatchOps.class" "public static boolean blockCollisions(net.minecraft.world.level.Level, net.minecraft.world.entity.Entity, net.minecraft.world.phys.AABB, java.util.List, java.util.List, int, java.util.function.BiPredicate<net.minecraft.world.level.block.state.BlockState, net.minecraft.core.BlockPos>)" "private static long mix64(long)" "private static void resetTable(java.lang.Object[])"
 check_class "entityinside/build/net/minecraft/world/entity/FlushOps.class"
-check_class "entityinside/build/net/minecraft/server/level/NavPlaneOps.class"
-check_class "entityinside/build/net/minecraft/world/level/pathfinder/NavPoolOps.class"
-check_class "entityinside/build/net/minecraft/server/level/EntityMapOps.class"
+check_class "entityinside/build/net/minecraft/server/level/NavPlaneOps.class" "public static native int navDecide(int, int, int, int, int[], int[], double[], byte[])" "private static boolean decideJava(int, int, int, int, int, double, double, double, int, int, int)" "public static void handle(net.minecraft.server.level.ServerLevel, net.minecraft.core.BlockPos, net.minecraft.world.level.block.state.BlockState, net.minecraft.world.level.block.state.BlockState, int)"
+check_class "entityinside/build/net/minecraft/world/level/pathfinder/NavPoolOps.class" "public static native void navPoolTick(int, long, long, long)" "public static void prepare(net.minecraft.world.level.pathfinder.NodeEvaluator, net.minecraft.world.level.PathNavigationRegion, net.minecraft.world.entity.Mob)" "public static net.minecraft.world.level.pathfinder.Node getNode(net.minecraft.world.level.pathfinder.NodeEvaluator, int, int, int)"
+check_class "entityinside/build/net/minecraft/server/level/EntityMapOps.class" "public static java.lang.String armState()" "public static boolean containsKey(it.unimi.dsi.fastutil.ints.Int2ObjectMap, int)" "public static boolean refListAdd(ca.spottedleaf.moonrise.common.list.ReferenceList, java.lang.Object)"
 check_class "entityinside/build/net/minecraft/server/level/EntityMapSafeItr.class"
 check_class "entityinside/build/net/minecraft/server/level/EntityMapSafeValues.class"
-check_class "entityinside/build/net/minecraft/server/level/TrackerTickOps.class"
-check_class "entityinside/build/net/minecraft/util/RngOps.class"
-check_class "entityinside/build/net/minecraft/server/level/BlockUpdateOps.class"
-check_class 'entityinside/build/net/minecraft/world/entity/RegionTickOps$Mut.class'
-check_class 'entityquery/build/net/minecraft/world/entity/EntityIndexOps$Buf.class'
+check_class "entityinside/build/net/minecraft/server/level/TrackerTickOps.class" "public static void newTrackerTick(net.minecraft.server.level.ChunkMap)" "public static void sweep(ca.spottedleaf.moonrise.patches.chunk_system.level.entity.server.ServerEntityLookup)"
+check_class "entityinside/build/net/minecraft/util/RngOps.class" "public static java.util.UUID createInsecureUUID(net.minecraft.util.RandomSource)"
+check_class "entityinside/build/net/minecraft/server/level/BlockUpdateOps.class" "public static void vanilla(net.minecraft.server.level.ServerLevel, net.minecraft.core.BlockPos, net.minecraft.world.level.block.state.BlockState, net.minecraft.world.level.block.state.BlockState, int)" "private static net.minecraft.world.level.pathfinder.PathTypeCache pathTypes(net.minecraft.server.level.ServerLevel)"
+check_class 'entityinside/build/net/minecraft/world/entity/RegionTickOps$Mut.class' 'net.minecraft.world.entity.RegionTickOps$Mut(boolean, net.minecraft.world.entity.Entity)' "final net.minecraft.world.entity.Entity entity;"
+check_class 'entityquery/build/net/minecraft/world/entity/EntityIndexOps$Buf.class' 'net.minecraft.world.entity.EntityIndexOps$Buf()' "final java.util.concurrent.atomic.AtomicBoolean busy;" "final double[] bb;"
 check_class "randomtick/build/net/minecraft/server/level/TickBlockOps.class"
 check_class "randomtick/build/net/minecraft/server/level/RandomTickOps.class"
-check_class "paletted/build/PalettedContainer.patched.class"
+check_class "paletted/build/PalettedContainer.patched.class" "public volatile transient java.lang.Object[] crusstySnap;" "public volatile int crusstySnapGen;" "public volatile int crusstyGen;"
 noise_check_class 'noise/build/net/minecraft/world/level/levelgen/synth/PerlinNoiseNativeOps$Handle.class'
 noise_check_class 'noise/build/net/minecraft/world/level/levelgen/synth/PerlinNoiseNativeOps$Reaper.class'
 check_class 'randomtick/build/net/minecraft/world/entity/ai/BrainOps$IdKey.class'
