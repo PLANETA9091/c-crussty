@@ -799,10 +799,46 @@ if [ "$SEEN_DONE" = "1" ]; then
   log "spark/debug artifacts: $(find "$WORK/spark-report" "$WORK/debug-dumps" -type f 2>/dev/null | wc -l)"
 fi
 cmd "stop"
-sleep 30
-kill "$SERVER_PID" 2>/dev/null || true
-sleep 10
-kill -9 "$SERVER_PID" 2>/dev/null || true
+# --- C60/WILD-5 shutdown-diet (round-474-c60-shut10) ------------------------
+# CONFIG-LEVEL DELTA (no kernel code): the Moonrise halt timeouts are
+# HARDCODED 60s in bytecode — NO flag exists to set them to 10s:
+#   * ChunkHolderManager cpool literals: "Waiting 60s for chunk system to
+#     halt for world '<w>'" / "Waiting 60s for chunk I/O to halt ..." (the
+#     only format arg is the world NAME);
+#   * MoonriseCommon.haltExecutors: ldc2_w 60l + TimeUnit.SECONDS.toMillis
+#     (javap of the booted patched jar,
+#     research/bench4-recon-2026-09-17/run-packleg2/entity-recon.txt).
+# Empirical tick-473 stdouts (absorb-s15 v1/s15a): every "Waiting 60s" line
+# completes SAME-SECOND (bounded-loop LABEL, not wall time); the real
+# post-bench tail is THIS harness's blind sleeps: sleep 30 + TERM + sleep 10
+# + KILL-9 = fixed 42s, while the JVM typically exits at ~26-30s (the 25s
+# 10k-chunk save dominates and is REAL work — data, not a timeout).
+# Diet: blind sleeps -> EXIT-BOUNDED polls. Same worst-case budget
+# (30+10+KILL-9), typically −12..−16s/job, strictly safer (KILL-9 never
+# lands while a graceful shutdown is still progressing).
+# FLAGS (dispatch channel, no new workflow input — 25-input limit):
+#   SHUTDOWN_WAIT  (default 30)  lever_flag=shut10 + lever_arg=<N sec> maps here
+#   SHUTDOWN_GRACE (default 10)  TERM->KILL-9 grace, exit-bounded
+SHUTDOWN_WAIT="${SHUTDOWN_WAIT:-30}"
+SHUTDOWN_GRACE="${SHUTDOWN_GRACE:-10}"
+if [ "${LEVER_FLAG:-}" = "shut10" ] && [ -n "${LEVER_ARG:-}" ] && [ -z "${LEVER_ARG//[0-9]/}" ]; then
+  SHUTDOWN_WAIT="$LEVER_ARG" # WILD-5 aggressive leg (owner-dispatched, save>wait risk documented)
+fi
+_sd=0
+while kill -0 "$SERVER_PID" 2>/dev/null && [ "$_sd" -lt "$SHUTDOWN_WAIT" ]; do
+  sleep 1; _sd=$((_sd+1))
+done
+if kill -0 "$SERVER_PID" 2>/dev/null; then
+  log "shutdown-diet: no graceful exit in ${SHUTDOWN_WAIT}s — TERM, grace ${SHUTDOWN_GRACE}s"
+  kill "$SERVER_PID" 2>/dev/null || true
+  _sd=0
+  while kill -0 "$SERVER_PID" 2>/dev/null && [ "$_sd" -lt "$SHUTDOWN_GRACE" ]; do
+    sleep 1; _sd=$((_sd+1))
+  done
+  kill -9 "$SERVER_PID" 2>/dev/null || true
+else
+  log "shutdown-diet: graceful exit after ${_sd}s post-stop (blind tail was 42s)"
+fi
 kill "$TAIL_PID" 2>/dev/null || true
 sleep 2
 kill -9 "$TAIL_PID" 2>/dev/null || true
