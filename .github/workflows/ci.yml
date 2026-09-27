@@ -253,7 +253,12 @@ jobs:
   # Both annotations carry the bench run URL. Exit codes: 0 PASS/skip,
   # 1 gate breach, 2 parse-fail. Censures (never gate, always exit 0):
   # BAND-DEAD (cpu outside [6.0,9.5]M — free discard), HOST-CENS (STW>23s or
-  # young_avg>200ms), SKIP-ARMED (lever_flag token — non-vanilla A/B leg).
+  # young_avg>200ms), SKIP-ARMED (lever_flag token — non-vanilla A/B leg),
+  # BENCH-CANCELLED (master-ref concurrency cancel, S45 — canary = alias-канал).
+  # PER-RUN VERDICT (C51/S45): fires on ANY bench conclusion, stamps every
+  # verdict with bench_run_id/head_branch/head_sha and uploads it as
+  # canary-gate-verdict-<bench_run_id> — one addressable verdict per bench run,
+  # no newest-wins aggregate.
   canary-guard:
     name: canary gate [-6,+6] (norm_v5 vs bank v5)
     runs-on: ubuntu-latest
@@ -284,6 +289,10 @@ jobs:
           BENCH_RUN_URL: ${{ github.event.workflow_run.html_url }}
           BENCH_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
           BENCH_RUN_ID: ${{ github.event.workflow_run.id }}
+          # C51 per-run attribution (S45 fix / S86-473 field canon): readers key
+          # on bench_run_id inside the verdict JSON — never on artifact freshness.
+          BENCH_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          BENCH_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
@@ -302,6 +311,17 @@ jobs:
           ESCAL = GATE + MAE              # |norm| > 11.91 -> ESCALATE
           verd = {"gate": [-GATE, GATE], "mae": MAE, "sigma": round(SIG, 4),
                   "escalate": ESCAL, "run_url": URL}
+          # C51 (S45 per-run-verdict fix / S86-473 field canon): every verdict
+          # names the bench run it belongs to. S45 lesson: one constant-named
+          # artifact per batch let the newest completed bench hijack the
+          # cross-check (s44-a attributed over s45-canary). Attribution is now
+          # in-band: bench_run_id / bench_head_branch (alias-канан: head_branch
+          # = атрибуция 1:1, Л244) / bench_head_sha / guard ci_run_id.
+          RID = os.environ.get("BENCH_RUN_ID", "")
+          verd["bench_run_id"] = int(RID) if RID.isdigit() else RID
+          verd["bench_head_branch"] = os.environ.get("BENCH_HEAD_BRANCH", "")
+          verd["bench_head_sha"] = os.environ.get("BENCH_HEAD_SHA", "")
+          verd["ci_run_id"] = int(os.environ.get("GITHUB_RUN_ID", "0") or 0)
           def dump():
               json.dump(verd, open("canary-gate-verdict.json", "w"), indent=1)
           # S100 (S31-audit fix): failure benches fast-fail at bench step-3
@@ -427,11 +447,16 @@ jobs:
           raise SystemExit(1)
           PY
 
-      - name: upload canary gate verdict
+      - name: upload canary gate verdict (per-run name — C51/S45 fix)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: canary-gate-verdict
+          # Per-run artifact identity: `canary-gate-verdict-<bench_run_id>`.
+          # A constant name made repo-wide listing an aggregate (newest-wins —
+          # S45: one verdict per batch, s44-a hijacked s45-canary cross-check);
+          # with the bench run id in the name every bench run owns exactly one
+          # addressable verdict artifact (per-run canon, no freshness race).
+          name: canary-gate-verdict-${{ github.event.workflow_run.id }}
           path: canary-gate-verdict.json
           if-no-files-found: ignore
           retention-days: 30
