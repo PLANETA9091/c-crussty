@@ -639,13 +639,16 @@ public final class NormalNoiseBatchOps {
             }
         }
         public int blockX() {
-            return 1000 + this.cur * 3;
+            // Л267-fix: head i<16 walks an origin diagonal (X=Y=t, Z=-t,
+            // t=cur-8): X/Z guaranteed zero-transitions with the exact
+            // contract-boundary point (0,0,0) at i=8; i>=16 = legacy ramp.
+            return this.cur < 16 ? this.cur - 8 : 1000 + this.cur * 3;
         }
         public int blockY() {
-            return -64 + this.cur;
+            return this.cur < 16 ? this.cur - 8 : -64 + this.cur;
         }
         public int blockZ() {
-            return 2000 - this.cur * 2;
+            return this.cur < 16 ? 8 - this.cur : 2000 - this.cur * 2;
         }
         void reset() {
             this.cur = -1;
