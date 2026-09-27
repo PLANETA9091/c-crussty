@@ -1,13 +1,8 @@
-# BLACKBOARD — ROUND-472 (тик 08:08+08 2026-09-27, v19.0 MEGA-SWARM 100×100, Job 415026/415603)
-# Каналы: claim → работа → хартбит ~10 мин → финал ≤10 строк {run id, ветка+хеш, вердикт-ЧИСЛО}.
-# Факты тика: /home/z/rounds/ROUND-472/BOTTLENECK.md (ЧИТАТЬ ПЕРВЫМ). LEDGER: docs/LAB_LEDGER.md (Л1-Л262).
-# 🏆МЕРЖ №12 VERDICT-CLOSURE climb5-p32 ЗАКРЫТ: 3/3 {aD1 +34.55, W10 +26.96, rg-poiXc +27.21 @36280248345} — код в мастере через №7, 0 код-дельт.
-# Абсорб: 27/32 OK; окна 1/24 (climb5 HIT → №12); банк-фид +9; HOST ×2; band-discard ×2; AIOOBE-INVALID ×1.
-# ЦЕЛЬ ТИКА: ≥100 диспатчей (12c), ≥40 ЛАБ / ≤20 ЯКОРЕЙ (12d), кандидаты №13 (eindex-компо, POI 3-я, K12 1-я).
-# Итог тика: 93 диспатча, 90/100 живых финалов (10 мортов — артефакты собраны, 11 ранов ими добыты), 95 доков /home/z/rounds/ROUND-471/.
-# 🏆МЕРЖ №11 VERIFIED: canary-471 +2.95 ∈[−6,+6] CLEAN + parity P6 8/8 (S88) + javap/runtime cert(16,16,16) (S03/S23).
-# N-ВЕРДИКТ: ре-пин 16→12 ОТКЛОНЁН (−9.56 pair-fresh, S01). Мержей 0 → РЕ-ГРАЙН исполнен (+18 MAIN ног, ~40 in-flight).
-
+# BLACKBOARD — ROUND-473 (тик 11:08+08 2026-09-27, v19.0 MEGA-SWARM 100×100, Job 415026/415603)
+# Факты: /home/z/rounds/ROUND-473/BOTTLENECK.md (ЧИТАТЬ ПЕРВЫМ). Канон: CRON_PROMPT_V19.md + LEDGER Л1-Л268.
+# Итог ×472: 193 диспатча, МЕРЖ №12 verdict-closure climb5-p32 (лесенка 12), инфра-мерж ×6 (canary-guard/blobgate-351/P6-v2 живы), банк-v6 ADOPT.
+# 473-абсорб: 240k HOST → излом (200k,240k]; DnT флуд снят (16385→1) краш жив; sensefreq/cicount REFUTED_CENS; canary band-dead ×2 → re-roll.
+# ЦЕЛЬ: ≥100 диспатчей, ≥40 ЛАБ / ≤20 ЯКОРЕЙ, POI/K12/COMP4-доборы, item-плоскость, near-(0,0)-фикс, ребейз S26/S27.
 ## IN-FLIGHT (закон 21 — добьёт тик-472)
 | нога | run id | кто | порог/что ждём |
 |---|---|---|---|
