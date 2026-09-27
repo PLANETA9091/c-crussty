@@ -670,11 +670,44 @@ if [ "$SEEN_DONE" = "1" ]; then
   # «инъекция до старта окна замера»). Item topups DURING the window are
   # part of the scene model (continuous item lanes), not window pollution.
   if [ "$POPULATION_TARGET" -gt 0 ]; then
-    POP_TIMEOUT="${POP_INJECT_TIMEOUT:-900}"
+    # C61 (dp2 36346148733 post-mortem): the DONE-wait clock used to burn the
+    # whole 900s cap while the console FIFO was still draining forceload
+    # commands (dp2: sweep executed 19:59:08→20:05:10, INJECT START only at
+    # 20:05:11) and the injection itself wedged in a spawn-failure storm.
+    # Cap raised to 1800s (task C61: cap >= 1800s); fail-fast on the ABORTED
+    # marker below; measurement semantics untouched (inject < profiler window).
+    POP_TIMEOUT="${POP_INJECT_TIMEOUT:-1800}"
+    # C61 start-gate: every forceload command of the sweep must have EXECUTED
+    # ("Marked N chunks" printed) before `benchpop inject` is sent, and the
+    # plugin gets BENCH_POPULATION_MIN_LOADED for its own loadedChunks gate.
+    EXPECT_CMDS=$(( (2 * TILES) * (2 * TILES) ))
+    POP_MIN_LOADED=$(( EXPECT_CMDS * 256 ))
+    export BENCH_POPULATION_MIN_LOADED="$POP_MIN_LOADED"
+    log "x150k: start-gate: waiting <=300s for $EXPECT_CMDS forceload cmds (minLoadedChunks=$POP_MIN_LOADED)"
+    GATE_WAITED=0
+    GATE_OK=1
+    while :; do
+      marked="$(grep -c "Marked [0-9]* chunks" "$WORK/server-stdout.log" 2>/dev/null)"
+      [ -z "$marked" ] && marked=0
+      [ "$marked" -ge "$EXPECT_CMDS" ] && break
+      if server_died; then log "FATAL: server process died during forceload start-gate — aborting waits"; SEEN_DONE=0; GATE_OK=0; break; fi
+      if [ "$GATE_WAITED" -ge 300 ]; then
+        log "WARN: forceload start-gate timeout after ${GATE_WAITED}s (marked=$marked/$EXPECT_CMDS) — sending inject anyway (plugin gate re-checks)"
+        GATE_OK=0
+        break
+      fi
+      sleep 10
+      GATE_WAITED=$((GATE_WAITED + 10))
+    done
+    [ "$GATE_OK" = "1" ] && log "x150k: start-gate passed (${GATE_WAITED}s, marked=$EXPECT_CMDS/$EXPECT_CMDS)"
     log "x150k: benchpop inject target=$POPULATION_TARGET seed=$POPULATION_SEED (waiting <= ${POP_TIMEOUT}s for DONE marker)"
     cmd "benchpop inject $POPULATION_TARGET $POPULATION_SEED"
     POP_WAITED=0
     while ! grep -q "POPULATION INJECT DONE" "$WORK/server-stdout.log" 2>/dev/null; do
+      if grep -q "POPULATION INJECT ABORTED" "$WORK/server-stdout.log" 2>/dev/null; then
+        log "FATAL: x150k injection ABORTED by plugin corruption-guard (C61: C30-class rt4-vs-inject fastutil corruption) — failing fast instead of burning ${POP_TIMEOUT}s"
+        break
+      fi
       if [ "$POP_WAITED" -ge "$POP_TIMEOUT" ]; then
         log "WARN: x150k injection DONE marker NOT seen in ${POP_TIMEOUT}s — continuing (fixture gate will fail the run)"
         break
@@ -687,6 +720,7 @@ if [ "$SEEN_DONE" = "1" ]; then
       fi
     done
     grep "POPULATION INJECT DONE" "$WORK/server-stdout.log" | tail -1 || true
+    grep "POPULATION INJECT ABORTED\|POPULATION INJECT RE-ARM" "$WORK/server-stdout.log" | tail -2 || true
     grep "POPULATION FIXTURE-VALIDITY" "$WORK/server-stdout.log" | tail -1 || true
     sleep 5  # settle injection tail before profilers attach
   fi

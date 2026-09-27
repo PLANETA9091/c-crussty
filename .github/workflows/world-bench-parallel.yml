@@ -326,7 +326,7 @@ jobs:
           # (>= 90% of target), else the living-scene evidence is unusable.
           if [ "${{ inputs.population_target || '0' }}" != "0" ]; then
             grep -q "POPULATION INJECT DONE" world3-run/server-stdout.log \
-              || { echo "::error::X150K POPULATION INJECT DONE marker missing — injection never completed"; exit 1; }
+              || { if grep -q "POPULATION INJECT ABORTED" world3-run/server-stdout.log; then echo "::error::X150K POPULATION INJECT ABORTED — plugin corruption-guard fired (C61: C30-class rt4-vs-inject fastutil corruption, see CLM-C61)"; else echo "::error::X150K POPULATION INJECT DONE marker missing — injection never completed"; fi; exit 1; }
             grep -q "POPULATION FIXTURE-VALIDITY: VALID" world3-run/server-stdout.log \
               || { echo "::error::X150K POPULATION FIXTURE-VALIDITY: INVALID (injected < 90% of target)"; exit 1; }
           fi

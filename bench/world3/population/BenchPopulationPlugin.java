@@ -35,6 +35,30 @@ package bench.population;
 //   - ~60% of items concentrate in "farm clusters" (5% of loaded chunks,
 //     min 16), the rest spread uniformly — mirrors concentrated farm output
 //
+// C61 (ROUND-477, POP-gate re-dispatch fix ×3 worlds dp2/totemA/Trek — runs
+// 36346148733/36346160464/36346174230): the heavy-world legs wedged in the
+// injection phase. Post-mortem of dp2 36346148733: INJECT START at
+// loadedChunks=9786 raced 0→42000 in 18s, then 16385 consecutive
+// "spawn failed ... ArrayIndexOutOfBoundsException: Index -1 length 65537"
+// (fastutil Int2ObjectOpenHashMap n=65536 state, mask=-1 — the SAME C30-475
+// corruption class as the S62 DnT fatals: concurrent rt4-worker fastutil
+// mutation vs main-thread access, here on the ChunkMap.entityMap surface).
+// After the first storm the per-tick inject loop `while (placed < budget)`
+// never reached budget again (0 successes) and SPUN the server thread until
+// the JVM kill (183 watchdog dumps in ChunkMap.addEntity→containsKey:349,
+// 23% addEntity + 32% containsKey CPU) — the DONE marker never printed and
+// the run burned the full 900s as a zombie. C54-fact: the SAME plugin
+// completes 150k in 56.5s on the canon world → the injector logic is sound,
+// the HARNESS must (a) bound per-tick attempts so the server thread ALWAYS
+// returns (wedge-kill), (b) abort the arm loudly on a consecutive-failure
+// storm and re-arm once from the live deficit, (c) gate the start on the
+// full force-loaded chunk set (shell counts "Marked" forceload lines and
+// exports BENCH_POPULATION_MIN_LOADED), (d) cap the DONE-wait at 1800s
+// (run_world3.sh) and fail FAST on the ABORTED marker instead of burning
+// the cap. Measurement semantics untouched: injection still completes
+// strictly before the profiler window; determinism (target, seed,
+// loaded-chunk-set) preserved on the happy path (re-arm logs its deviation).
+//
 // NOT FOR PRODUCTION. Bench harness only (world-bench-3 CI, sanctioned boots).
 // ============================================================================
 
@@ -53,6 +77,7 @@ import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -71,6 +96,13 @@ public final class BenchPopulationPlugin extends JavaPlugin {
     private static final int TOPUP_DRAIN_HORIZON = 50;   // S7-148: тиков на добор дефицита (deficit/HORIZON база бюджета)
     private static final int ITEM_LIFETIME_TICKS = 6000; // vanilla ItemEntity age
     private static final int TICK_BUDGET = 1500;         // entities injected per tick
+    // --- C61 harness hardening (POP-gate ×3-world re-dispatch) ----------------
+    private static final int ATTEMPT_CAP_SLACK = 128;    // C61: max spawn attempts/tick = budget*2 + slack (wedge-kill)
+    private static final int STALL_FAIL_ABORT = 512;     // C61: consecutive spawn failures → abort this arm
+    private static final int MAX_INJECT_ARMS = 2;        // C61: initial arm + 1 re-arm, then loud latch
+    private static final int REARM_DELAY_TICKS = 100;    // C61: 5 s settle between arms
+    private static final int GATE_POLL_TICKS = 40;       // C61: start-gate re-poll period (2 s)
+    private static final int GATE_MAX_POLLS = 300;       // C61: start-gate hard wall (300 polls = 10 min) — never deadlock
     private static final double SHARE_ITEMS = 0.70;
     private static final double SHARE_HOSTILES = 0.20;   // rest = passives
     private static final double CLUSTER_ITEM_SHARE = 0.60;
@@ -103,6 +135,15 @@ public final class BenchPopulationPlugin extends JavaPlugin {
     private int lastProgress = 0;
     private int stallWarn = 0;
     private long startNanos = 0;
+    // C61 state: start-gate + corruption-guard + failure telemetry
+    private int minLoadedChunks = 0;      // BENCH_POPULATION_MIN_LOADED; 0 = gate off
+    private BukkitTask gateTask = null;   // C61: start-gate poller handle (self-cancelling)
+    private int armsUsed = 0;             // injection arms consumed (initial + re-arms)
+    private boolean abortLatched = false; // catastrophic corruption latch (no more arms)
+    private int consecutiveFails = 0;     // spawn failures since last success (persists across ticks)
+    private long attemptTotal = 0;        // spawn attempts (success + failure), cumulative
+    private long failTotal = 0;           // spawn failures, cumulative
+    private long failLogged = 0;          // failure WARNs emitted (throttle counter)
     private long t0FullTime = 0;    // fullTime at injection finish (topup replay anchor, S7-130)
     private int itemsThisSlice = 0; // items spawned by the current injection tick (spawn-log entry per tick)
 
@@ -138,11 +179,18 @@ public final class BenchPopulationPlugin extends JavaPlugin {
         } catch (NumberFormatException e) {
             seed = 42L;
         }
+        String mEnv = System.getenv("BENCH_POPULATION_MIN_LOADED");
+        try {
+            minLoadedChunks = mEnv == null ? 0 : Integer.parseInt(mEnv.trim());
+        } catch (NumberFormatException e) {
+            minLoadedChunks = 0;
+        }
         if (target <= 0) {
             getLogger().info(MARK + " BENCH_POPULATION_TARGET<=0 -> fixture idle (no injection)");
             return;
         }
         getLogger().info(MARK + " armed: target=" + target + " seed=" + seed
+                + " minLoadedChunks=" + minLoadedChunks
                 + " — waiting for console command `benchpop inject`");
     }
 
@@ -173,6 +221,10 @@ public final class BenchPopulationPlugin extends JavaPlugin {
     }
 
     private synchronized void startInjection(int t, long s) {
+        if (abortLatched) {
+            getLogger().severe(MARK + " injection request ignored — corruption-guard latched (see POPULATION INJECT ABORTED)");
+            return;
+        }
         if (injecting) {
             getLogger().warning(MARK + " injection already in flight — ignored");
             return;
@@ -181,7 +233,56 @@ public final class BenchPopulationPlugin extends JavaPlugin {
             getLogger().warning(MARK + " inject target<=0 — ignored");
             return;
         }
+        // C61 start-gate: do not race the force-load tail. The harness exports
+        // BENCH_POPULATION_MIN_LOADED = full sweep chunk count; injection arms
+        // only once getLoadedChunks() reaches it (re-poll every GATE_POLL_TICKS,
+        // hard wall GATE_MAX_POLLS — the gate can never deadlock the run).
+        if (minLoadedChunks > 0) {
+            World w0 = Bukkit.getWorlds().get(0);
+            int loadedNow = w0.getLoadedChunks().length;
+            if (loadedNow < minLoadedChunks) {
+                getLogger().warning(MARK + " POPULATION INJECT GATE-WAIT loadedChunks=" + loadedNow
+                        + " need>=" + minLoadedChunks + " — deferring arm (poll " + GATE_POLL_TICKS + "t)");
+                final int gt = t;
+                final long gs = s;
+                gateTask = Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
+                    private int polls = 0;
+                    @Override
+                    public void run() {
+                        polls++;
+                        int l = Bukkit.getWorlds().get(0).getLoadedChunks().length;
+                        if (l >= minLoadedChunks) {
+                            if (gateTask != null) {
+                                gateTask.cancel();
+                                gateTask = null;
+                            }
+                            getLogger().info(MARK + " POPULATION INJECT GATE-PASS loadedChunks=" + l
+                                    + " (polls=" + polls + ") — arming injection");
+                            beginInjection(gt, gs);
+                        } else if (polls >= GATE_MAX_POLLS) {
+                            if (gateTask != null) {
+                                gateTask.cancel();
+                                gateTask = null;
+                            }
+                            getLogger().warning(MARK + " POPULATION INJECT GATE-TIMEOUT loadedChunks=" + l
+                                    + " need>=" + minLoadedChunks + " after " + polls + " polls — arming anyway (never deadlock)");
+                            beginInjection(gt, gs);
+                        } else if (polls % 50 == 0) {
+                            getLogger().warning(MARK + " POPULATION INJECT GATE-WAIT loadedChunks=" + l
+                                    + " need>=" + minLoadedChunks + " (polls=" + polls + ")");
+                        }
+                    }
+                }, GATE_POLL_TICKS, GATE_POLL_TICKS);
+                return;
+            }
+        }
+        beginInjection(t, s);
+    }
+
+    /** C61: the actual arm — full state reset, snapshot, plan, per-tick timer. */
+    private synchronized void beginInjection(int t, long s) {
         injecting = true;
+        armsUsed++;
         target = t;
         seed = s;
         injectedTotal = injectedItems = injectedHostiles = injectedPassives = 0;
@@ -223,9 +324,55 @@ public final class BenchPopulationPlugin extends JavaPlugin {
         // spread the addEntity pressure across ticks: a fixed per-tick budget
         // avoids a single giant freeze while finishing well before the window
         // (10k ~= 7 ticks, 150k ~= 100 ticks at 1500/tick)
+        armInjectTimer();
+    }
+
+    /** C61: single re-arm — keep injected counters (resume from the live
+     *  scene), re-snapshot the loaded-chunk set, reset the per-arm guards.
+     *  Deviation vs the happy-path replay is logged and confined to the
+     *  corruption path (canon worlds never hit it). */
+    private synchronized void reArm() {
+        if (abortLatched || injecting) {
+            return;
+        }
+        World w = Bukkit.getWorlds().get(0);
+        Chunk[] loaded = w.getLoadedChunks();
+        chunkOrder = new ArrayList<>(loaded.length);
+        chunkOrder.addAll(Arrays.asList(loaded));
+        chunkOrder.sort((a, b) -> {
+            long ka = ((long) a.getX() << 32) | (a.getZ() & 0xffffffffL);
+            long kb = ((long) b.getX() << 32) | (b.getZ() & 0xffffffffL);
+            return Long.compare(ka, kb);
+        });
+        Random rng = new Random(seed);
+        int clusterN = Math.max(CLUSTER_MIN_CHUNKS,
+                (int) (chunkOrder.size() * CLUSTER_CHUNK_SHARE));
+        farmClusters = new ArrayList<>(clusterN);
+        for (int i = 0; i < clusterN && !chunkOrder.isEmpty(); i++) {
+            farmClusters.add(chunkOrder.get(rng.nextInt(chunkOrder.size())));
+        }
+        cursor = 0;
+        clusterCursor = 0;
+        consecutiveFails = 0;
+        injecting = true;
+        armsUsed++;
+        getLogger().info(MARK + " POPULATION INJECT RE-ARM-START arms=" + armsUsed
+                + " loadedChunks=" + chunkOrder.size()
+                + " farmClusters=" + farmClusters.size()
+                + " resuming injected=" + injectedTotal + "/" + target
+                + " (seed replay deviates on the re-snapshot — corruption path only)");
+        armInjectTimer();
+    }
+
+    /** C61: the per-tick injection timer (extracted so beginInjection and
+     *  reArm share one implementation). */
+    private void armInjectTimer() {
         Bukkit.getScheduler().runTaskTimer(this, new Runnable() {
             @Override
             public void run() {
+                if (abortLatched || !injecting) {
+                    return;
+                }
                 itemsThisSlice = 0;
                 int budget = TICK_BUDGET;
                 while (budget > 0 && injectedTotal < target) {
@@ -235,10 +382,6 @@ public final class BenchPopulationPlugin extends JavaPlugin {
                     }
                     budget -= placed;
                 }
-                // S7-130: log this tick's item spawns with their own fullTime so the
-                // topup alive-estimate covers the initial injection exactly (vanilla
-                // despawn removes these items at fullTime + 6000, same as the purge
-                // horizon in startTopupTask)
                 if (itemsThisSlice > 0) {
                     long now = Bukkit.getWorlds().get(0).getFullTime();
                     itemSpawnLog.addLast(new long[]{now, itemsThisSlice});
@@ -247,12 +390,37 @@ public final class BenchPopulationPlugin extends JavaPlugin {
                     finishInjection();
                     Bukkit.getScheduler().cancelTasks(BenchPopulationPlugin.this);
                     startTopupTask();
+                    return;
+                }
+                if (consecutiveFails >= STALL_FAIL_ABORT) {
+                    Bukkit.getScheduler().cancelTasks(BenchPopulationPlugin.this);
+                    injecting = false;
+                    int injectedSoFar = injectedTotal;
+                    long failsSoFar = failTotal;
+                    if (armsUsed >= MAX_INJECT_ARMS) {
+                        abortLatched = true;
+                        getLogger().severe(MARK + " POPULATION INJECT ABORTED corruption-guard arms=" + armsUsed
+                                + " injected=" + injectedSoFar + "/" + target
+                                + " fails=" + failsSoFar
+                                + " — entity-tracker fastutil state corrupted (C30-class rt4 race, AIOOBE Index -1); fixture INVALID, failing fast");
+                    } else {
+                        getLogger().severe(MARK + " POPULATION INJECT RE-ARM corruption-guard arms=" + armsUsed
+                                + " injected=" + injectedSoFar + "/" + target
+                                + " fails=" + failsSoFar
+                                + " — re-snapshotting chunks, resuming from live deficit in " + REARM_DELAY_TICKS + "t");
+                        Bukkit.getScheduler().runTaskLater(BenchPopulationPlugin.this,
+                                () -> reArm(), REARM_DELAY_TICKS);
+                    }
                 }
             }
         }, 1L, 1L);
     }
 
-    /** Injects up to {@code budget} entities; returns the placed count. */
+    /** Injects up to {@code budget} entities; returns the placed count.
+     *  C61 wedge-kill: attempts are hard-capped at budget*2 + ATTEMPT_CAP_SLACK
+     *  per tick. dp2 36346148733 proved the uncapped loop can spin FOREVER
+     *  (0-success spawn storm keeps placed at 0 while the while-condition
+     *  stays true) — the server thread must ALWAYS return from a tick. */
     private int injectSlice(int budget) {
         World w = Bukkit.getWorlds().get(0);
         // per-slice RNG seeded by (seed, injectedTotal): the slice boundaries
@@ -260,8 +428,18 @@ public final class BenchPopulationPlugin extends JavaPlugin {
         // injection replay is deterministic given (target, seed, chunk set)
         Random rng = new Random(seed ^ (injectedTotal * 1_000_003L));
         int placed = 0;
+        int attempts = 0;
+        int attemptCap = budget * 2 + ATTEMPT_CAP_SLACK;
         int missStreak = 0; // S7-130b: loud diagnostics instead of a silent freeze
         while (placed < budget && injectedTotal < target) {
+            if (++attempts > attemptCap) {
+                getLogger().warning(MARK + " INJECT ATTEMPT-CAP attempts=" + attempts
+                        + " (cap=" + attemptCap + ") placed=" + placed
+                        + " injected=" + injectedTotal + "/" + target
+                        + " consecutiveFails=" + consecutiveFails
+                        + " — yielding tick (C61 wedge-kill)");
+                break;
+            }
             Chunk ch = nextChunk(rng);
             if (ch == null) {
                 if (++missStreak == 1) {
@@ -379,9 +557,10 @@ public final class BenchPopulationPlugin extends JavaPlugin {
         try {
             Item it = w.dropItem(loc, new ItemStack(mat));
             it.setPickupDelay(ITEM_PICKUP_DELAY);
+            noteSpawnSuccess();
             return true;
         } catch (Throwable t) {
-            getLogger().warning(MARK + " item spawn failed at " + loc + ": " + t);
+            noteSpawnFailure("item", loc, t);
             return false;
         }
     }
@@ -393,11 +572,30 @@ public final class BenchPopulationPlugin extends JavaPlugin {
                 le.setPersistent(true);         // farm-stock baseline (see header)
                 le.setRemoveWhenFarAway(false); // explicit: no player-distance-despawn
             }
+            noteSpawnSuccess();
             return true;
         } catch (Throwable t) {
-            getLogger().warning(MARK + " mob spawn failed at " + loc + ": " + t);
+            noteSpawnFailure("mob", loc, t);
             return false;
         }
+    }
+
+    /** C61: failure telemetry + throttled logging. The full failure log of
+     *  dp2 36346148733 (16385 identical WARNs) is log-noise; the guard needs
+     *  the first few, then a periodic heartbeat. */
+    private void noteSpawnFailure(String kind, Location loc, Throwable t) {
+        consecutiveFails++;
+        failTotal++;
+        failLogged++;
+        if (failLogged <= 3 || failLogged % 256 == 0) {
+            getLogger().warning(MARK + " " + kind + " spawn failed (" + failLogged
+                    + ") at " + loc + ": " + t);
+        }
+    }
+
+    private void noteSpawnSuccess() {
+        consecutiveFails = 0;
+        attemptTotal++;
     }
 
     private void finishInjection() {
@@ -529,6 +727,9 @@ public final class BenchPopulationPlugin extends JavaPlugin {
                     continue;
                 }
                 missStreak = 0;
+                if (consecutiveFails >= STALL_FAIL_ABORT) {
+                    break; // C61: corruption-guard — drain task yields, inject timer decides
+                }
                 boolean ok;
                 if (lane == 0) {
                     ok = spawnItem(w, jitter(base, rng), ITEM_POOL[rng.nextInt(ITEM_POOL.length)]);
