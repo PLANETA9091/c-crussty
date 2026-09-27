@@ -1,7 +1,9 @@
-# c-crussty CI — Rust cdylib build + Java bridge compilation + P500 smoke.
+# c-crussty CI — Rust cdylib build + Java bridge compilation + P500 smoke
+# + canary gate [-6,+6] (ROUND-471-S67 DRAFT — draft-diff, not merged).
 #
-# Permissions are minimal (contents: read). No secrets are used anywhere:
-# checkout uses the default read-only GITHUB_TOKEN.
+# Permissions are minimal (contents: read + actions: read for the canary-guard
+# job, which downloads the world3-bench artifact of the triggering bench run).
+# No secrets are used anywhere: checkout uses the default read-only GITHUB_TOKEN.
 
 name: ci
 
@@ -10,12 +12,21 @@ on:
     branches: [master]
   pull_request:
     branches: [master]
+  # canary-guard: fire after every completed world-bench-round bench run
+  # (the dispatch-canon workflow) and gate its norm_v5 against [-6,+6].
+  workflow_run:
+    workflows: [world-bench-round]
+    types: [completed]
 
 permissions:
   contents: read
+  actions: read # canary-guard: fetch artifacts of the triggering run
 
 jobs:
   rust:
+    # S24: the 5 build/smoke jobs keep push/PR-only semantics — workflow_run
+    # events (world-bench-round completion) are owned by canary-guard alone.
+    if: github.event_name != 'workflow_run'
     name: rust build (libcrussty.so)
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -39,6 +50,9 @@ jobs:
           if-no-files-found: error
 
   java:
+    # S24: the 5 build/smoke jobs keep push/PR-only semantics — workflow_run
+    # events (world-bench-round completion) are owned by canary-guard alone.
+    if: github.event_name != 'workflow_run'
     name: java bridge classes
     runs-on: ubuntu-latest
     timeout-minutes: 15
@@ -93,6 +107,9 @@ jobs:
   # than ubuntu-latest ships. Therefore: 60s cap, any exit code tolerated,
   # continue-on-error — this job reports, it never blocks CI.
   smoke:
+    # S24: the 5 build/smoke jobs keep push/PR-only semantics — workflow_run
+    # events (world-bench-round completion) are owned by canary-guard alone.
+    if: github.event_name != 'workflow_run'
     name: smoke (informational)
     runs-on: ubuntu-latest
     continue-on-error: true
@@ -146,6 +163,9 @@ jobs:
   #     patch_tool.py byte-mirror of classfile.rs::patch_update, full JVM
   #     verification, same-state fast path + Scratch init + naive parity.
   areamap-smoke:
+    # S24: the 5 build/smoke jobs keep push/PR-only semantics — workflow_run
+    # events (world-bench-round completion) are owned by canary-guard alone.
+    if: github.event_name != 'workflow_run'
     name: area-map smokes (informational)
     runs-on: ubuntu-latest
     continue-on-error: true
@@ -171,6 +191,9 @@ jobs:
   # informational smokes above, a failure here is a REAL parity bug in the
   # shipped fast-path model and must fail CI loudly.
   areamap-fuzz:
+    # S24: the 5 build/smoke jobs keep push/PR-only semantics — workflow_run
+    # events (world-bench-round completion) are owned by canary-guard alone.
+    if: github.event_name != 'workflow_run'
     name: area-map-fuzz differential parity (seeded, loud)
     runs-on: ubuntu-latest
     continue-on-error: false
@@ -206,3 +229,154 @@ jobs:
           path: area-map-fuzz/fuzz-test.log
           retention-days: 14
           if-no-files-found: ignore
+  # CANARY-GUARD [-6,+6] (ROUND-471-S67 draft; S40/S43 lane).
+  #
+  # After each world-bench-round run completes: download its world3-bench
+  # artifact, parse norm_v5 from the bench summary
+  #   norm_v5 = 100*(tail-median(TPS)/tps_exp - 1)
+  #   tail    = sub-15 TPS polls of server-stdout.log (warm-up 20.x dropped)
+  #   tps_exp = bank v5 piecewise-linear interp (BANK below) with the L201
+  #             local node 2.1293 for runner_cpu_index in [6.9,7.2]M (L213:
+  #             the gate MUST carry the local node, +-3.2-3.7pp error budget),
+  # and FAIL THIS JOB when |norm| breaches the [-6,+6] gate.
+  #
+  # Breach semantics: a red gate is a RE-ROLL / MAIN-ARBITRATION signal, NOT a
+  # revert. CI never reverts master — revert authority = MAIN + min-of-8 base
+  # (L182 canon). Single-run false-gate rate at bank MAE 5.91 = 41.8%
+  # (sigma = MAE*sqrt(pi/2) = 7.407pp; P(|e|>6|0) = 2*(1-Phi(6/7.407))), so:
+  #   BREACH-BORDERLINE (6 < |norm| <= 11.91) -> ::warning + re-roll x1
+  #     (cumulative false-gate 17.5%; re-roll x2 -> 7.3%);
+  #   BREACH-ESCALATE (|norm| > 11.91)        -> ::error + MAIN arbitration.
+  # Both annotations carry the bench run URL. Exit codes: 0 PASS/skip,
+  # 1 gate breach, 2 parse-fail. Censures (never gate, always exit 0):
+  # BAND-DEAD (cpu outside [6.0,9.5]M — free discard), HOST-CENS (STW>23s or
+  # young_avg>200ms), SKIP-ARMED (lever_flag token — non-vanilla A/B leg).
+  canary-guard:
+    name: canary gate [-6,+6] (norm_v5 vs bank v5)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: fetch bench summary of triggering world-bench-round run
+        uses: actions/download-artifact@v4
+        with:
+          name: world3-bench
+          path: canary-input
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: parse norm_v5 + gate [-6,+6] (fail on breach, annotate run URL)
+        env:
+          BENCH_RUN_URL: ${{ github.event.workflow_run.html_url }}
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json, math, os, re, statistics
+          D = "canary-input"
+          URL = os.environ.get("BENCH_RUN_URL", "(run URL unavailable)")
+          # bank v5 FREEZE sec.2: cpu_index -> expected TPS (piecewise-linear)
+          BANK = [(6.5e6, 2.1252), (7.0e6, 2.2047), (7.5e6, 2.3271),
+                  (8.2e6, 2.4732), (8.7e6, 2.5981), (9.0e6, 2.6280)]
+          L201 = (6.9e6, 7.2e6, 2.1293)   # L201 local node (L213 gate law)
+          BAND = (6.0e6, 9.5e6)           # runner_cpu_index band (canon)
+          GATE = 6.0                      # gate window [-6,+6] pp
+          MAE = 5.91                      # bank v5 FREEZE sec.4 (191 pts, RMSE 7.44)
+          SIG = MAE * math.sqrt(math.pi / 2.0)  # 7.407 pp
+          ESCAL = GATE + MAE              # |norm| > 11.91 -> ESCALATE
+          verd = {"gate": [-GATE, GATE], "mae": MAE, "sigma": round(SIG, 4),
+                  "escalate": ESCAL, "run_url": URL}
+          def dump():
+              json.dump(verd, open("canary-gate-verdict.json", "w"), indent=1)
+          txt = ""
+          if os.path.exists(D + "/run-env.txt"):
+              txt = open(D + "/run-env.txt", encoding="utf-8", errors="replace").read()
+          kv = {}
+          for ln in txt.splitlines():
+              m = re.match(r'^([a-z_0-9]+):\s*(.*?)(?:\s*\(|\s*$)', ln.strip())
+              if m and m.group(1) not in kv:
+                  kv[m.group(1)] = m.group(2).strip()
+          # SKIP-ARMED: armed legs write a label line "<tag>: ... lever_flag=<tok>
+          # lever_arg=<tok>"; vanilla run-env has NO such token (absence = vanilla
+          # default). Token-boundary regex + '<empty>' filter (naive regex eats
+          # lever_arg=<empty> as the value — S40 lesson).
+          armed = None
+          for m in re.finditer(r'\blever_flag=([^\s()]+)', txt):
+              if m.group(1) != "<empty>":
+                  armed = m.group(1)
+                  break
+          if armed:
+              print(f"::notice::canary-gate SKIP-ARMED lever_flag={armed} — non-vanilla A/B leg, gate not applicable (run: {URL})")
+              verd.update(verdict="SKIP-ARMED", lever_flag=armed); dump(); raise SystemExit(0)
+          c = re.match(r'^(\d+)', kv.get("runner_cpu_index", ""))
+          if not c:
+              print("::error::canary-gate PARSE-FAIL: runner_cpu_index missing from run-env.txt")
+              verd["verdict"] = "PARSE-FAIL"; dump(); raise SystemExit(2)
+          cpu = int(c.group(1)); verd["cpu"] = cpu
+          if not (BAND[0] <= cpu <= BAND[1]):
+              print(f"::notice::canary-gate BAND-DEAD runner_cpu_index={cpu} outside [{BAND[0]:.0f},{BAND[1]:.0f}] — free discard (canon), gate not applied (run: {URL})")
+              verd["verdict"] = "BAND-DEAD"; dump(); raise SystemExit(0)
+          if L201[0] <= cpu <= L201[1]:
+              tps_exp, tag = L201[2], "node-L201"
+          elif cpu < BANK[0][0]:
+              s = (BANK[1][1] - BANK[0][1]) / (BANK[1][0] - BANK[0][0])
+              tps_exp, tag = BANK[0][1] + s * (cpu - BANK[0][0]), "extrap-low"
+          elif cpu > BANK[-1][0]:
+              s = (BANK[-1][1] - BANK[-2][1]) / (BANK[-1][0] - BANK[-2][0])
+              tps_exp, tag = BANK[-1][1] + s * (cpu - BANK[-1][0]), "extrap-high"
+          else:
+              tps_exp, tag = None, None
+              for (c0, t0), (c1, t1) in zip(BANK, BANK[1:]):
+                  if c0 <= cpu <= c1:
+                      tps_exp, tag = t0 + (t1 - t0) * (cpu - c0) / (c1 - c0), "interp"
+                      break
+          polls = []
+          if os.path.exists(D + "/server-stdout.log"):
+              for ln in open(D + "/server-stdout.log", encoding="utf-8", errors="replace"):
+                  m = re.search(r'TPS from last 5s, 1m, 5m, 15m:\s*([\d.]+)', ln)
+                  if m: polls.append(float(m.group(1)))
+          tail = [p for p in polls if p < 15.0]
+          if not tail:
+              print(f"::error::canary-gate PARSE-FAIL: no sub-15 TPS polls (polls_seen={len(polls)}) (run: {URL})")
+              verd.update(verdict="PARSE-FAIL", polls_seen=len(polls)); dump(); raise SystemExit(2)
+          med = statistics.median(tail)
+          norm = 100.0 * (med / tps_exp - 1.0)
+          z = norm / SIG
+          verd.update(median=med, tps_exp=round(tps_exp, 4), exp_tag=tag,
+                      tps_tail=tail, norm=round(norm, 2), z=round(z, 3))
+          cens = None
+          if os.path.exists(D + "/gc.log"):
+              y, ys, tot = 0, 0.0, 0.0
+              for ln in open(D + "/gc.log", encoding="utf-8", errors="replace"):
+                  if "[gc,start" in ln: continue
+                  m = re.search(r'Pause (Young|Full).*?(\d+\.\d+)ms\s*$', ln)
+                  if m:
+                      ms = float(m.group(2)); tot += ms / 1000.0
+                      if m.group(1) == "Young": y += 1; ys += ms
+              ya = (ys / y) if y else 0.0
+              verd.update(young_n=y, young_avg_ms=round(ya, 1), stw_total_s=round(tot, 2))
+              if tot > 23.0 or ya > 200.0:
+                  cens = f"HOST-CENS stw={tot:.2f}s young_avg={ya:.1f}ms"
+          zone = "PASS" if abs(norm) <= GATE else ("BREACH-BORDERLINE" if abs(norm) <= ESCAL else "BREACH-ESCALATE")
+          verd["verdict"] = (cens + "+" + zone) if cens else zone
+          dump()
+          print(f"canary-gate: cpu={cpu} median={med} tps_exp={tps_exp:.4f} ({tag}) norm={norm:+.2f}pp z={z:+.3f} zone={zone} censure={cens}")
+          if cens:
+              print(f"::warning::canary-gate {cens} — censure, not a gate (exit-0 canon)")
+          if zone == "PASS":
+              print(f"::notice::canary-gate PASS norm={norm:+.2f}pp in [-6,+6] — bench-run: {URL}")
+              raise SystemExit(0)
+          lvl = "warning" if zone == "BREACH-BORDERLINE" else "error"
+          print(f"::{lvl}::canary-gate {zone} norm={norm:+.2f}pp z={z:+.3f} breaches [-6,+6] (borderline=re-roll x1; escalate=MAIN arbitration) — bench-run: {URL}")
+          raise SystemExit(1)
+          PY
+
+      - name: upload canary gate verdict
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: canary-gate-verdict
+          path: canary-gate-verdict.json
+          if-no-files-found: ignore
+          retention-days: 30
