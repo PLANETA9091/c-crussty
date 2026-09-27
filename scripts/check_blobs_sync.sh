@@ -16,6 +16,7 @@
 #
 # Usage: scripts/check_blobs_sync.sh   (exit 0 = in sync)
 set -uo pipefail
+S16_SELF="$(readlink -f "$0")"
 cd "$(dirname "$0")/.."
 
 JAVAP=/home/z/tools/jdk-21.0.12.1+1/bin/javap
@@ -192,11 +193,11 @@ check_class \
 
 check_class \
   "stagger/build/net/minecraft/world/entity/PushStaggerOps.class" \
-  "CRUSSTY_STAGGER_N" "CRUSSTY_LEVER_ARG" "pushables"
+  "CRUSSTY_STAGGER_N" "CRUSSTY_LEVER_ARG" "pushables" "bipush        16"
 
 check_class \
   "stagger/build/net/minecraft/world/entity/ai/goal/target/GoalStaggerOps.class" \
-  "canUseGate" "CRUSSTY_STAGGER_N" "CRUSSTY_LEVER_ARG"
+  "canUseGate" "CRUSSTY_STAGGER_N" "CRUSSTY_LEVER_ARG" "bipush        16"
 
 check_class \
   "entityquery/build/net/minecraft/world/entity/EntityQueryOps.class" \
@@ -441,6 +442,93 @@ for b in bad:
     print("DANGLING:", b, file=sys.stderr)
 sys.exit(1 if bad else 0)
 PYEOF
+
+
+# S16 ROUND-471 gap-scan closure (S56-errata-v2): 20 tier-1 LIVE-embed blobs
+# (declared module, non-cfg-test include_bytes!, active-lever planes) had ZERO
+# gate sites while shipping in the kernel binary — x425 dormant-blob class.
+# Existence + major-65 + javap-parse gate here; marker pins land with each
+# plane's next rebuild. GAP_REGISTER below machine-tracks the remaining 21.
+check_class "entityinside/build/net/minecraft/world/entity/BatchCollector.class"
+check_class "entityinside/build/net/minecraft/world/entity/CollideBatchOps.class"
+check_class "entityinside/build/net/minecraft/world/entity/FlushOps.class"
+check_class "entityinside/build/net/minecraft/server/level/NavPlaneOps.class"
+check_class "entityinside/build/net/minecraft/world/level/pathfinder/NavPoolOps.class"
+check_class "entityinside/build/net/minecraft/server/level/EntityMapOps.class"
+check_class "entityinside/build/net/minecraft/server/level/EntityMapSafeItr.class"
+check_class "entityinside/build/net/minecraft/server/level/EntityMapSafeValues.class"
+check_class "entityinside/build/net/minecraft/server/level/TrackerTickOps.class"
+check_class "entityinside/build/net/minecraft/util/RngOps.class"
+check_class "entityinside/build/net/minecraft/server/level/BlockUpdateOps.class"
+check_class 'entityinside/build/net/minecraft/world/entity/RegionTickOps$Mut.class'
+check_class 'entityquery/build/net/minecraft/world/entity/EntityIndexOps$Buf.class'
+check_class "randomtick/build/net/minecraft/server/level/TickBlockOps.class"
+check_class "randomtick/build/net/minecraft/server/level/RandomTickOps.class"
+check_class "paletted/build/PalettedContainer.patched.class"
+noise_check_class 'noise/build/net/minecraft/world/level/levelgen/synth/PerlinNoiseNativeOps$Handle.class'
+noise_check_class 'noise/build/net/minecraft/world/level/levelgen/synth/PerlinNoiseNativeOps$Reaper.class'
+check_class 'randomtick/build/net/minecraft/world/entity/ai/BrainOps$IdKey.class'
+check_class 'randomtick/build/net/minecraft/world/entity/ai/BrainOps$Snapshot.class'
+
+# S16 live-embed closure scanner: every non-test include_bytes! path of a
+# DECLARED module must be gated somewhere in THIS script or registered below
+# as a known gap (else die). Untracked dangling embeds (prepare_manager.rs
+# PrepareOps.class) stay excluded per S56 doctrine (undeclared module).
+GAP_REGISTER=$(cat <<'S16GAPS'
+entityinside/build/net/minecraft/core/ZeroCursorIter.class
+entityinside/build/net/minecraft/core/ZeroCursorOps.class
+entityinside/build/net/minecraft/world/entity/FluidOps.class
+entityinside/build/net/minecraft/world/entity/FluidPushOps.class
+entityinside/build/net/minecraft/world/entity/FluidPushOps$ScanOut.class
+entityinside/build/net/minecraft/world/entity/InsideBatchOps.class
+entityinside/build/net/minecraft/world/entity/InsideBlockOps$Recorder.class
+entityinside/build/net/minecraft/world/entity/InsideDietOps.class
+entityinside/build/net/minecraft/world/entity/InsideDietVisitor.class
+entityinside/build/net/minecraft/world/entity/InsideSnapOps$Lane.class
+entityinside/build/net/minecraft/world/entity/InsideSnapRegistryOps.class
+entityinside/build/net/minecraft/world/entity/TravelDietOps.class
+entityinside/build/net/minecraft/world/level/SkipStoreOps.class
+entityinside/build/net/minecraft/world/level/TraverseOps.class
+entityinside/build/net/minecraft/world/level/ZeroAllocOps.class
+fluid/build/net/minecraft/world/entity/FluidBitmaskOps$Entry.class
+items/build/net/minecraft/world/entity/item/ItemMergeOps.class
+area-map/build-probe/dev/crussty/areamapprobe/AreaMapProbe.class
+area-map/build-probe/dev/crussty/areamapprobe/AreaMapProbe$RecMap.class
+tests/fixtures/SerializableChunkData.class
+tests/fixtures/SingleUserAreaMap.class
+S16GAPS
+)
+python3 - "$GAP_REGISTER" "$S16_SELF" <<'PYEOF2' || die "live-embed gap not gated and not in GAP_REGISTER (see stderr)"
+import os, re, sys
+script = open(sys.argv[2]).read()
+register = set(l for l in sys.argv[1].splitlines() if l.strip())
+lib = open("src/lib.rs").read()
+mods = set(re.findall(r'^\s*(?:pub\s+)?mod\s+([a-z0-9_]+)\s*;', lib, re.M))
+live = set()
+for root, d, files in os.walk("src"):
+    for f in files:
+        if not f.endswith(".rs"): continue
+        if f[:-3] not in mods: continue
+        p = os.path.join(root, f); txt = open(p).read()
+        for m in re.finditer(r'include_bytes!\("(\.[^"]+)"\)', txt):
+            pre = txt[:m.start()]
+            t = txt[m.end():]
+            seg_t = txt[:m.start()]
+            inside_test = False
+            for tm in re.finditer(r'#\[cfg\(test\)\]', txt[:m.start()]):
+                seg = txt[tm.end():m.start()]
+                if seg.count('{') > seg.count('}'): inside_test = True
+            if inside_test: continue
+            live.add(os.path.normpath(os.path.join(root, m.group(1))))
+bad = []
+for path in sorted(live):
+    quoted = '"%s"' % path
+    if quoted in script or ("'%s'" % path) in script: continue
+    if path in register: continue
+    bad.append(path)
+for b in bad: print("UNGATED LIVE-EMBED:", b, file=sys.stderr)
+sys.exit(1 if bad else 0)
+PYEOF2
 
 if [ "$FAIL" = "0" ]; then
   echo "check_blobs_sync: ALL IN SYNC"
