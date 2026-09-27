@@ -87,6 +87,18 @@ const BLOCKUPD_CLASS: &str = "net/minecraft/server/level/BlockUpdateOps";
 const BLOCKUPD_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/server/level/BlockUpdateOps.class");
 
+/// SCHED-DEFER (C30, ROUND-475 — rt4/bc1 thread-confinement SITE-A, lever
+/// cmp475_c30conf STRICT eq): canalization of the per-Level scheduled-tick
+/// carrier (LevelTicks/LevelChunkTicks fastutil — S5/S7 of the S24 spec).
+/// The four ScheduledTickAccess.scheduleTick default bodies redirect to
+/// BlockScheduleOps: workers DEFER the record (per-worker TL queue), main
+/// replays FIFO in phase-4c; main path = vanilla bit-for-bit; one-shot
+/// DISARM → direct-vanilla fail-safe (no bridge panic, ever).
+const SCHED_OPS_CLASS: &str = "net/minecraft/world/level/BlockScheduleOps";
+const SCHED_BYTES: &[u8] =
+    include_bytes!("../entityinside/build/net/minecraft/world/level/BlockScheduleOps.class");
+const SCHEDULED_TICK_ACCESS_CLASS: &str = "net/minecraft/world/level/ScheduledTickAccess";
+
 /// NAV-POOL (TASK-410-A k5, cmp405_navplane STRICT eq): A* node-pool bridge
 /// — prepare launders the node map to the fresh shape instead of clearing,
 /// getNode drops the per-call lambda (get + position check + new-on-miss).
@@ -125,6 +137,21 @@ fn bu_defer_enabled() -> bool {
             v == "1" || v == "true" || v == "on" || v == "yes"
         })
         .unwrap_or(false)
+}
+
+/// SCHED-DEFER (C30, ROUND-475) arming gate: lever cmp475_c30conf STRICT eq
+/// (nav_plane/emap discipline) AND region_threads >= 2 — the canalization is
+/// meaningless without phase-3 workers (fail-closed: empty lever = vanilla).
+fn sched_defer_enabled() -> bool {
+    let lever = std::env::var("CRUSSTY_LEVER_FLAG")
+        .map(|v| v.trim() == "cmp475_c30conf")
+        .unwrap_or(false);
+    lever && enabled()
+}
+
+/// Pollable arming probe (telemetry/tests).
+pub fn sched_defer_armed() -> bool {
+    sched_defer_enabled()
 }
 
 fn workers_from_env() -> Option<i64> {
@@ -206,6 +233,9 @@ static TARGET_LV: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
 static TARGET_CM: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
 // TASK-410-A k5: NodeEvaluator target (navpool compose owner; fail-open).
 static TARGET_NE: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
+// C30 SITE-A: ScheduledTickAccess target (sched-defer compose owner;
+// fail-dominant — capture/patch failure leaves the schedule surface vanilla).
+static TARGET_STA: std::sync::OnceLock<Target> = std::sync::OnceLock::new();
 // TASK-412-A: the seven ReferenceList fence targets (refsync compose).
 static TARGET_RS: std::sync::OnceLock<Vec<Target>> = std::sync::OnceLock::new();
 
@@ -229,6 +259,9 @@ fn cm_target() -> &'static Target {
 }
 fn ne_target() -> &'static Target {
     TARGET_NE.get_or_init(|| Target::new(NODE_EVALUATOR_CLASS))
+}
+fn sta_target() -> &'static Target {
+    TARGET_STA.get_or_init(|| Target::new(SCHEDULED_TICK_ACCESS_CLASS))
 }
 
 pub fn bridge_ready() -> bool {
@@ -492,6 +525,9 @@ pub fn activate() {
             if bu_defer_enabled() {
                 list.push((BLOCKUPD_CLASS, BLOCKUPD_BYTES));
             }
+            if sched_defer_enabled() {
+                list.push((SCHED_OPS_CLASS, SCHED_BYTES));
+            }
             if crate::nav_pool::armed() {
                 list.push((NAVPOOL_CLASS, NAVPOOL_BYTES));
             }
@@ -552,6 +588,12 @@ pub fn activate() {
             ];
             if bu_defer_enabled() {
                 bridge_list.push((BLOCKUPD_CLASS, BLOCKUPD_BYTES));
+            }
+            // SCHED-DEFER (C30, cmp475_c30conf): define the BlockScheduleOps
+            // bridge ONLY when armed; empty flag = not defined, not retargeted
+            // -> vanilla schedule surface bit-in-byte.
+            if sched_defer_enabled() {
+                bridge_list.push((SCHED_OPS_CLASS, SCHED_BYTES));
             }
             // NAV-PLANE (TASK-405-A, cmp405_navplane STRICT eq): define the
             // NavPlaneOps bridge ONLY when armed; empty flag = not defined,
@@ -1075,6 +1117,71 @@ pub fn activate() {
             )
         };
 
+        // SCHED-DEFER compose (C30, ROUND-475, cmp475_c30conf STRICT eq):
+        // rt4/bc1 thread-confinement SITE-A — the four ScheduledTickAccess
+        // scheduleTick default bodies redirect to BlockScheduleOps (workers
+        // defer, main replays phase-4c). STRICT 4:4; fail-dominant per target
+        // (capture/patch/census failure leaves the schedule surface vanilla
+        // this boot — the S25 gates would then catch the storm, no panic).
+        let mut sched_patched = false;
+        if sched_defer_enabled() {
+            let sta = sta_target();
+            'sched: {
+                if !sta.orig_is_some() {
+                    eprintln!(
+                        "[crussty-plugin] sched: {} not sighted yet, forcing kernel load",
+                        sta.name
+                    );
+                    crate::improved_noise::force_load_kernel_class(sta.name);
+                    for _attempt in 1..=3 {
+                        let _ = cplug_sdk::retransform_class(sta.name);
+                        if sta.orig_is_some() {
+                            break;
+                        }
+                        std::thread::sleep(std::time::Duration::from_millis(250));
+                    }
+                }
+                let Some(sta_orig) = sta.take_orig() else {
+                    eprintln!(
+                        "[crussty-plugin] sched: ScheduledTickAccess not capturable, canalization stays vanilla this boot"
+                    );
+                    break 'sched;
+                };
+                let (sp, sched_outcome) =
+                    match crate::classfile::patch_scheduled_tick_access_schedule(&sta_orig) {
+                        Ok(pair) => pair,
+                        Err(e) => {
+                            eprintln!(
+                                "[crussty-plugin] sched: ScheduledTickAccess patch rejected ({e}), canalization stays vanilla"
+                            );
+                            break 'sched;
+                        }
+                    };
+                if !matches!(
+                    sched_outcome,
+                    crate::classfile::RetargetOutcome::Retargeted { sites: 4 }
+                ) {
+                    eprintln!(
+                        "[crussty-plugin] sched: strict site-count violated ({sched_outcome:?}), canalization stays vanilla"
+                    );
+                    break 'sched;
+                }
+                let sta_major = crate::improved_noise::class_version(&sta_orig)
+                    .map(|(m, _)| m)
+                    .unwrap_or(0);
+                eprintln!(
+                    "[crussty-plugin] sched: [S24-confinement] ScheduledTickAccess composed ({} -> {} bytes {sched_outcome:?}) — workers defer scheduleTick, main replays phase-4c",
+                    sta_orig.len(),
+                    sp.len()
+                );
+                sta.set_patch(PatchCache {
+                    bytes: Arc::from(sp),
+                    major: sta_major,
+                });
+                sched_patched = true;
+            }
+        }
+
         // S7-162: the Entity rng patch (S7-158d) and the batch collector
         // ctor retarget (S7-161) moved to entity_compose — the single
         // compose-chain owner (hooks on one class supersede each other:
@@ -1106,6 +1213,13 @@ pub fn activate() {
                 "nav_pool v1",
             );
         }
+        if sched_patched {
+            crate::kernel_policy::audit_wire(
+                SCHED_OPS_CLASS,
+                "scheduleTick x4 (SITE-A canalization: worker defer -> main phase-4c replay)",
+                "sched_defer v1",
+            );
+        }
         if refsync_armed > 0 {
             crate::kernel_policy::audit_wire(
                 crate::emap::EMAP_OPS_CLASS,
@@ -1130,6 +1244,11 @@ pub fn activate() {
         } else {
             -1
         };
+        let rc_sta = if sched_patched {
+            cplug_sdk::retransform_class(sta_target().name)
+        } else {
+            -1
+        };
         let mut rc_rs = String::new();
         for t in rs_targets() {
             if t.patch_bytes().is_some() {
@@ -1138,8 +1257,9 @@ pub fn activate() {
             }
         }
         eprintln!(
-            "[crussty-plugin] region_threads: ARMED, retransform rc ServerLevel={rc_sl} EntityCallbacks={rc_cb} Level={rc_lv} ChunkMap={rc_cm} NodeEvaluator={rc_ne} (Entity via entity_compose; navpool {}; emap {emap_status}; refsync {refsync_status}; retransform:{rc_rs})",
-            if ne_patched { "ARMED" } else { "vanilla" }
+            "[crussty-plugin] region_threads: ARMED, retransform rc ServerLevel={rc_sl} EntityCallbacks={rc_cb} Level={rc_lv} ChunkMap={rc_cm} NodeEvaluator={rc_ne} ScheduledTickAccess={rc_sta} (Entity via entity_compose; navpool {}; sched {}; emap {emap_status}; refsync {refsync_status}; retransform:{rc_rs})",
+            if ne_patched { "ARMED" } else { "vanilla" },
+            if sched_patched { "ARMED [S24-confinement]" } else { "vanilla" }
         );
     });
 }
@@ -1370,6 +1490,129 @@ mod navpool_delivery_tests {
         assert!(
             src.contains("nodes.clear()"),
             "MAP_CAP overflow path must fall back to the vanilla clear"
+        );
+    }
+}
+
+#[cfg(test)]
+mod sched_delivery_tests {
+    /// C30 (ROUND-475) delivery-graph guard (mirror of blockupd/navpool
+    /// discipline): BlockScheduleOps.java MUST declare ZERO nested classes —
+    /// the bridge compiles to exactly one classfile, defined alone into the
+    /// kernel loader.
+    #[test]
+    fn sched_ops_source_declares_no_nested_classes() {
+        let src =
+            include_str!("../entityinside/net/minecraft/world/level/BlockScheduleOps.java");
+        let mut declared: Vec<String> = Vec::new();
+        for line in src.lines() {
+            let t = line.trim();
+            for pat in ["class ", "interface ", "enum ", "record "] {
+                if let Some(i) = t.find(pat) {
+                    let before = &t[..i];
+                    if before.contains("static") && !before.contains("//") {
+                        let rest = &t[i + pat.len()..];
+                        let name: String = rest
+                            .chars()
+                            .take_while(|c| c.is_alphanumeric() || *c == '_')
+                            .collect();
+                        if !name.is_empty() {
+                            declared.push(name);
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        assert!(
+            declared.is_empty(),
+            "BlockScheduleOps.java declares nested classes {declared:?} — kernel-loader \
+             delivery defines exactly ONE classfile (S7-163 leg#1 TECH-DUD lesson)"
+        );
+    }
+
+    /// Build-dir mirror: exactly one BlockScheduleOps classfile exists.
+    #[test]
+    fn sched_build_dir_has_exactly_one_classfile() {
+        let dir = "entityinside/build/net/minecraft/world/level";
+        let mut count = 0;
+        let rd = std::fs::read_dir(dir).expect("build dir present");
+        for e in rd.flatten() {
+            let p = e.path().to_string_lossy().to_string();
+            if p.contains("BlockScheduleOps") && p.ends_with(".class") {
+                count += 1;
+            }
+        }
+        assert_eq!(
+            count, 1,
+            "BlockScheduleOps classfile set drifted — must compile to exactly ONE classfile"
+        );
+    }
+
+    /// The embedded bytes ARE the built classfile (no stale embed).
+    #[test]
+    fn sched_embedded_bytes_match_build_dir() {
+        let on_disk = std::fs::read(
+            "entityinside/build/net/minecraft/world/level/BlockScheduleOps.class",
+        )
+        .expect("built classfile present");
+        assert_eq!(
+            on_disk,
+            super::SCHED_BYTES,
+            "embedded BlockScheduleOps.class is stale — rerun the bridge build"
+        );
+    }
+
+    /// Resolution closure: the embedded bridge declares ALL FOUR receiver-
+    /// prepended targets the ScheduledTickAccess retarget emits.
+    #[test]
+    fn sched_embedded_declares_all_redirect_targets() {
+        if let Err(e) = crate::classfile::sched_resolution_closure(super::SCHED_BYTES) {
+            panic!("RESOLUTION CLOSURE FAILED: {e} — rebuild the BlockScheduleOps bridge");
+        }
+    }
+
+    /// Scope lock: EXACTLY the four scheduleTick defaults (the whole schedule
+    /// surface — 3-arg overloads forward via createTick, never via the 4-arg
+    /// overload, so all four bodies must be canalized).
+    #[test]
+    fn sched_redirect_table_is_exactly_four_defaults() {
+        let targets = crate::classfile::SCHED_REDIRECT_TARGETS;
+        assert_eq!(targets.len(), 4, "C30 SITE-A is a FOUR-SITE lever");
+        for t in targets {
+            assert_eq!(t.0, "scheduleTick");
+            assert!(t.2.starts_with("schedule"));
+            assert!(t.3.starts_with(
+                "(Lnet/minecraft/world/level/ScheduledTickAccess;Lnet/minecraft/core/BlockPos;"
+            ));
+        }
+    }
+
+    /// Fail-safe ladder pinned in source: worker+ServerLevel defer, main
+    /// vanilla, disarm -> direct vanilla (no panic path exists).
+    #[test]
+    fn sched_bridge_fail_safe_ladder_in_source() {
+        let src =
+            include_str!("../entityinside/net/minecraft/world/level/BlockScheduleOps.java");
+        assert!(src.contains("isWorker()"), "worker gate must exist");
+        assert!(
+            src.contains("instanceof net.minecraft.server.level.ServerLevel"),
+            "receiver must be confined to ServerLevel carriers"
+        );
+        assert!(
+            src.contains("scheduleDisarmed()"),
+            "disarm fail-safe must gate the defer path"
+        );
+        let rt = include_str!("../entityinside/net/minecraft/world/entity/RegionTickOps.java");
+        assert!(
+            rt.contains("drainScheduledTicks") && rt.contains("schedDisarmed = true"),
+            "phase-4c replay + one-shot disarm must exist in RegionTickOps"
+        );
+        // BOTH phase paths replay the schedule queue.
+        let n = rt.matches("drainScheduledTicks();").count();
+        assert_eq!(
+            n, 2,
+            "phase-4c drain must be wired into BOTH join paths (steal + static)"
         );
     }
 }

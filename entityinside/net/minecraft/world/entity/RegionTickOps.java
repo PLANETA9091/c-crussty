@@ -159,6 +159,93 @@ public final class RegionTickOps {
         }
     }
 
+    /**
+     * SCHED-DEFER (C30, ROUND-475 — rt4/bc1 thread-confinement SITE-A):
+     * deferred ScheduledTickAccess.scheduleTick records from workers (receiver
+     * is ServerLevel — the per-Level LevelTicks carrier mutates MAIN-ONLY
+     * again). Records are [self, pos, type, delay, priority|NULL, isFluid];
+     * the main thread replays them FIFO in phase-4c (after the phase-4b BU
+     * drain, before the workerError rethrow) through
+     * BlockScheduleOps.block/fluid(.NoPriority) — the javap-verbatim vanilla
+     * bodies. Fail-closed: queue overflow or Throwable in replay = ONE-SHOT
+     * DISARM forever (workers fall back to the direct vanilla body = the
+     * vanilla race instead of any bridge panic; spec S24 §2).
+     */
+    private static final java.util.List<java.util.ArrayList<Object[]>> SCHED_REG =
+            new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static final ThreadLocal<java.util.ArrayList<Object[]>> SCHED_TL =
+            ThreadLocal.withInitial(java.util.ArrayList::new);
+    private static final ThreadLocal<Boolean> SCHED_REGGED =
+            ThreadLocal.withInitial(() -> Boolean.FALSE);
+    private static volatile boolean schedDisarmed = false;
+    private static final int SCHED_CAP = 131072;
+
+    /** True once the schedule canalization has one-shot disarmed. */
+    public static boolean scheduleDisarmed() {
+        return schedDisarmed;
+    }
+
+    /** Worker entry (called by BlockScheduleOps.schedule* for worker threads). */
+    public static void deferSchedule(Object self, Object pos, Object type,
+                                     int delay, Object priority, boolean isBlock) {
+        java.util.ArrayList<Object[]> q = SCHED_TL.get();
+        q.add(new Object[]{self, pos, type, delay, priority, isBlock});
+        if (q.size() > SCHED_CAP) {
+            schedDisarmed = true; // overflow → direct-vanilla fail-safe
+            System.out.println("[crussty-plugin] [S24-confinement] sched DISARM (overflow >"
+                    + SCHED_CAP + ")");
+        }
+        if (!SCHED_REGGED.get()) {
+            SCHED_REG.add(q);
+            SCHED_REGGED.set(Boolean.TRUE);
+        }
+    }
+
+    /** Main-thread phase-4c replay: FIFO across per-worker queues. */
+    public static void drainScheduledTicks() {
+        if (SCHED_REG.isEmpty() || schedDisarmed) {
+            return;
+        }
+        try {
+            for (java.util.ArrayList<Object[]> q : SCHED_REG) {
+                while (!q.isEmpty()) {
+                    Object[] rec = q.remove(0);
+                    net.minecraft.world.level.ScheduledTickAccess self =
+                            (net.minecraft.world.level.ScheduledTickAccess) rec[0];
+                    net.minecraft.core.BlockPos pos = (net.minecraft.core.BlockPos) rec[1];
+                    int delay = (Integer) rec[3];
+                    boolean isBlock = (Boolean) rec[5];
+                    if (isBlock) {
+                        net.minecraft.world.level.block.Block block =
+                                (net.minecraft.world.level.block.Block) rec[2];
+                        if (rec[4] != null) {
+                            net.minecraft.world.level.BlockScheduleOps.block(self, pos,
+                                    block, delay,
+                                    (net.minecraft.world.ticks.TickPriority) rec[4]);
+                        } else {
+                            net.minecraft.world.level.BlockScheduleOps.blockNoPriority(
+                                    self, pos, block, delay);
+                        }
+                    } else {
+                        net.minecraft.world.level.material.Fluid fluid =
+                                (net.minecraft.world.level.material.Fluid) rec[2];
+                        if (rec[4] != null) {
+                            net.minecraft.world.level.BlockScheduleOps.fluid(self, pos,
+                                    fluid, delay,
+                                    (net.minecraft.world.ticks.TickPriority) rec[4]);
+                        } else {
+                            net.minecraft.world.level.BlockScheduleOps.fluidNoPriority(
+                                    self, pos, fluid, delay);
+                        }
+                    }
+                }
+            }
+        } catch (Throwable t) {
+            schedDisarmed = true; // one-shot: vanilla-direct fail-safe forever
+            System.out.println("[crussty-plugin] [S24-confinement] sched DISARM (replay " + t);
+        }
+    }
+
     /** Main-thread phase-4 replay: FIFO across per-worker queues. */
     public static void drainDeferredBlockUpdates() {
         if (BU_REG.isEmpty()) {
@@ -502,6 +589,11 @@ public final class RegionTickOps {
         // navigate-passes (STEAL v2 defect-fix) — main-only, after join.
         drainDeferredBlockUpdates();
 
+        // Phase 4c (serial, C30 SITE-A): replay deferred scheduled ticks —
+        // the LevelTicks carrier mutates main-only again; BEFORE the
+        // workerError rethrow so the storm of this tick is not lost on crash.
+        drainScheduledTicks();
+
         Throwable err = workerError;
         if (err != null) {
             if (err instanceof RuntimeException) throw (RuntimeException) err;
@@ -690,6 +782,10 @@ public final class RegionTickOps {
         // Phase 4b (serial, S7-168): replay deferred sendBlockUpdated
         // navigate-passes (STEAL v2 defect-fix) — main-only, after join.
         drainDeferredBlockUpdates();
+
+        // Phase 4c (serial, C30 SITE-A): replay deferred scheduled ticks
+        // (see the steal-mode phase-4c note above).
+        drainScheduledTicks();
 
         Throwable err = workerError;
         if (err != null) {
