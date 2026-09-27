@@ -305,3 +305,12 @@ TASK-457 (tick-456 закрывает, открывает ×457, 20:0x +08):
 - Тик-475: диспатчи 107/100 (band-dead 11), N1=100/100, N2=0; МЕРЖ нет (ре-грайн исполнен): №15 c98ai РЕПЛИКАЦИЯ-ФЕЙЛ (пары −9.06/−13.36, потолок 7-13пп C19), POI-legB p31snap +26.15 raw ждёт окно-фид [6544303,6644303] (волны-6 32 фида + C01-C08); golden ×8 → банк (кластер [6.94,7.2]M, Л201-ревизия подтверждена); itemidle cmp475_itemidle мерж-кандидат (прег +20.8пп @λ1.78, run 36328507320); dntests honest +20.25 gc3-ре-ролл (36331009448); MAIN-батч PR#2-#6 смержен → 7497578a, PR#7 shut10 открыт; конфайнмент SITE-A SCHED-DEFER @203d1351 (DnT-dp2 root-cause решён, cargo 364/364); blobgate 441; стена ×36; 22 СТЗ; 2 датапака sha-pinned; урок Л-475 ARM-пруф по артефакту.
 
 | ROUND-476 | 2026-09-28 | **МЕРЖ №16 p31snap-l9: master fdb04335** (--no-ff) — лег 36323433349 +26.16@6594303 gc3 ARM×4 artifact-proof (STW 19.48 CLEAN); пары min-of-3 +23.36 (chkclimb-9 36185308698 / u4 36264482874 / lightcap 36263762949 — все Δ≤50k, gc3, CLEAN, порог ≤+6.15); cargo 0 err ×2 + blobs ALL IN SYNC; canary-476 = HOST-dirty (не регрессия). Абсорб ×50: dntests gc3 REFUTED (−2.54), poib мёртв (+8.02 узел), terr640 прошёл (+3.32). SWARM N1=100/100, 102 диспатча (12c ✓), N2=0; itemidle-прег ревизован +5.2пп (λ-collapse C22); collision PIN-47 диспатчен (+4.2 центр); case-7 = терминальная ступень RCC (fulls 2→1 пост-оконный); confinement carrier @9f6c784b ×3 мира — МЕРЖ-кандидат №17; 200k бимод решён 19.98 CLEAN; стена ×54; 23 СТЗ разведки; Л201 n=15 → дефицит 15; sensn16 1/3 (пара +22.97 у s1-d). NEXT: herd λ2.29, confinement абсорб, окна, Л201-рефит | round-476-p31snap-16 → master fdb04335 | /home/z/rounds/ROUND-476/ |
+
+## ×477 CLAIMS-ИТОГ (тик 04:43+08)
+- МЕРЖ №17 confinement: FAILED×3 fixture (PER-WORLD инъекция, C54) → фикс C61/C03, РЕ-ДИСПАТЧ ×3 in flight (S25 ×3 → мерж 478).
+- МЕРЖ №18 окна: 2/3 ×3 держится; выстрелы тика 0/5 + W2 ×18 in flight (компенсация дрейфа +581k).
+- sensn16 пара-пул №17/18: якоря 3/3 READY (mxa-08/mxa-12 canon) — ждёт leg ≥+20.
+- itemidle №17: ЗАКРЫТ (herd predicate-starved −1.39пп, C59).
+- collision dedup: C01 код в полёте (a0485033), PIN-47 climb −1.00пп REFUTED, компо C60 in flight.
+- Л201-рефит: дефицит 13 (n=17), hit-rate 27% → ~48 ранов; волны W1/C34/RES5/RES6 продолжают.
+- 22 лейна REFUTED_CENS с потолочными числами (см. GOAL ×477); 4-й класс спящих lever'ов «predicate-starved».
