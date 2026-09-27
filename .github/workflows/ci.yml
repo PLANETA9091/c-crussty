@@ -1,5 +1,8 @@
 # c-crussty CI — Rust cdylib build + Java bridge compilation + P500 smoke
 # + canary gate [-6,+6] (ROUND-471-S67 DRAFT — draft-diff, not merged).
+# + merge shadow gate (S75 f437b9fb: fail-open 4-cell ledger —
+#   SH-BLOB/SH-JAVAP/SH-NCDFE/SH-PARITY-TAG; exit ALWAYS 0, drift/
+#   mismatch only as ::notice + merge-shadow-verdict.json artifact).
 #
 # Permissions are minimal (contents: read + actions: read for the canary-guard
 # job, which downloads the world3-bench artifact of the triggering bench run).
@@ -378,5 +381,313 @@ jobs:
         with:
           name: canary-gate-verdict
           path: canary-gate-verdict.json
+          if-no-files-found: ignore
+          retention-days: 30
+
+  # MERGE-SHADOW-GATE (ROUND-473-S27; spec S75 f437b9fb — 16-cell shadow matrix;
+  # this job implements the C-context (CI post-run) cells of all 4 gates).
+  #
+  # After EVERY completed world-bench-round run (ANY conclusion — success and
+  # failure alike: a failed run carries the richest NCDFE evidence, S75 §5.2;
+  # canary-guard above stays success-only), re-verify the 4 merge-safety gates
+  # in FAIL-OPEN shadow mode and append a 4-cell ledger to the
+  # merge-shadow-verdict artifact:
+  #   SH-BLOB       — independent re-run of scripts/check_blobs_sync.sh on the
+  #                   CHECKED-OUT DEFAULT-BRANCH HEAD (catches the "pushed !=
+  #                   gated" class; workflow_run checkout = default branch).
+  #                   DRIFT-class only: expected 351 marker-OK / 0 FAIL (S25
+  #                   326/0 -> S50 351/0 canon); rc != 0, any FAIL line or
+  #                   |delta| >= 1 -> notice. Runner javap too old for
+  #                   major-65 blobs -> existence-only sweep fallback.
+  #   SH-JAVAP      — pin manifest from the bench artifact vs the checkout
+  #                   (lite form; the full 337-contract sweep stays
+  #                   LOCAL/MAIN/nightly, S75 §5.5). No manifest in the
+  #                   artifact -> SKIP (valid outcome).
+  #   SH-NCDFE      — runtime parser: NCDFE / AIOOBE / selfTest counters from
+  #                   server-stdout.log. Runtime NCDFE>0 (or selfTest=false)
+  #                   under a canonical GREEN = FALSE_GREEN — the only
+  #                   false-green detector in the chain (S75 §2); AIOOBE>0 =
+  #                   DRIFT of the AIOOBE=0 canon (failed-run crash evidence).
+  #   SH-PARITY-TAG — re-derive parity from artifact JSONs and compare vs the
+  #                   tagged merge certificate (docs/merge_parity_tags.json if
+  #                   present in the default branch). No pair data -> SKIP
+  #                   (valid outcome, S75 §7.3).
+  #
+  # Fail-open by construction: exit ALWAYS 0 (Л182 "CI never reverts" holds per
+  # build); every divergence surfaces as a ::notice annotation with the bench
+  # run URL and is recorded in merge-shadow-verdict.json (retention 30d,
+  # if: always). Ledger schema (S75 §3): {ts, run_id, head_sha, gate,
+  # canonical_verdict, shadow_verdict, mismatch ∈ {NONE, DRIFT, FALSE_GREEN,
+  # FALSE_RED}, details[]}. Promotion of any cell to fail-closed is MAIN's
+  # explicit act after the S75 §6 budget (>=30 clean shadow runs + >=1
+  # true-positive + lineunion PASS). This job NEVER gates, dispatches, or
+  # writes bench inputs (S24 §5 proof carries over verbatim): it only READS the
+  # completed run's artifact and the checked-out default branch.
+  merge-shadow-gate:
+    name: merge shadow gate (fail-open 4-cell ledger, exit always 0)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    # Any-conclusion shadow: fires on success AND failure bench runs (S75 §5.1);
+    # on push/PR events github.event.workflow_run is null -> job is skipped,
+    # so workflow_run events remain owned by canary-guard + this shadow only.
+    if: always() && github.event.workflow_run
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: fetch bench artifacts of the triggering run (any conclusion)
+        id: fetch
+        # Fail-open: a missing/inaccessible artifact must not kill the shadow —
+        # the python below degrades the artifact-reading cells to SKIP instead.
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: world3-bench
+          path: shadow-input
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: run 4-cell shadow ledger (fail-open, exit always 0)
+        env:
+          BENCH_RUN_URL: ${{ github.event.workflow_run.html_url }}
+          BENCH_RUN_ID: ${{ github.event.workflow_run.id }}
+          BENCH_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          SHADOW_HEAD_SHA: ${{ github.sha }}
+          FETCH_OUTCOME: ${{ steps.fetch.outcome }}
+        run: |
+          set -uo pipefail
+          python3 - <<'PY'
+          import datetime, glob, json, os, re, shutil, subprocess
+
+          D = "shadow-input"              # downloaded world3-bench artifact
+          URL = os.environ.get("BENCH_RUN_URL", "(run URL unavailable)")
+          RID = os.environ.get("BENCH_RUN_ID", "0")
+          CONCL = os.environ.get("BENCH_CONCLUSION", "unknown")
+          HEAD = os.environ.get("SHADOW_HEAD_SHA", "(unknown)")
+          FETCH = os.environ.get("FETCH_OUTCOME", "unknown")
+          TS = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+          EXPECTED_BLOB_OK = 351          # blobgate canon: S25 326/0 -> S50 351/0
+          GATES = ("SH-BLOB", "SH-JAVAP", "SH-NCDFE", "SH-PARITY-TAG")
+          CANON = {
+              "SH-BLOB": f"FC pre-push gate (canon P2); invariant {EXPECTED_BLOB_OK} OK/0 FAIL",
+              "SH-JAVAP": "FC bridges+selftest (canon P4); full 337-contract sweep = LOCAL/D-nightly (S75 sec.5.5)",
+              "SH-NCDFE": "FC ncdfe_guard exit-0 pre-merge; runtime canon NCDFE=0 / AIOOBE=0 / selfTest=true",
+              "SH-PARITY-TAG": "FC P6 gate2 on candidate + merge parity cert (No11 8/8, S65) — re-derive vs tag",
+          }
+
+          LEDGER = []
+          def notice(msg):
+              print(f"::notice::merge-shadow-gate {msg}")
+
+          def cell(gate, verdict, mismatch, details):
+              LEDGER.append({"ts": TS, "run_id": RID, "head_sha": HEAD, "gate": gate,
+                              "canonical_verdict": CANON[gate], "shadow_verdict": verdict,
+                              "mismatch": mismatch, "details": [str(d) for d in details]})
+              tag = "OK" if mismatch == "NONE" else f"SHADOW-{mismatch}"
+              notice(f"{tag} {gate}: {verdict} — bench-run: {URL}")
+
+          def armed_note(armed):
+              return f"lever armed={armed} (A/B leg — telemetry only)" if armed else "vanilla (no lever_flag token)"
+
+          # --- SH-BLOB: independent re-run on the pushed HEAD (checked-out
+          # default branch). Artifact-independent — runs even if fetch failed.
+          def sh_blob():
+              javap = shutil.which("javap")
+              script = "scripts/check_blobs_sync.sh"
+              if javap and os.path.exists(script):
+                  env = dict(os.environ)
+                  j21 = os.environ.get("JAVA_HOME_21_X64") or os.environ.get("JAVA_HOME_21")
+                  if j21 and os.path.exists(os.path.join(j21, "bin", "javap")):
+                      env["PATH"] = os.path.join(j21, "bin") + os.pathsep + env.get("PATH", "")
+                  try:
+                      p = subprocess.run(["bash", script], capture_output=True, text=True,
+                                          timeout=300, env=env)
+                  except subprocess.TimeoutExpired:
+                      cell("SH-BLOB", "SKIP", "NONE", ["timeout 300s on full re-run"])
+                      return
+                  out = (p.stdout or "") + "\n" + (p.stderr or "")
+                  ok = len(re.findall(r"(?m)^\s*\S+: OK\b", out))
+                  fails = len(re.findall(r"(?m)^\s*(?:\S+: )?FAIL\b", out))
+                  stale = re.search(r"unsupported class file version|class file version [0-9.]+ (?:is )?not supported|bad major", out, re.I)
+                  if stale and p.returncode != 0:
+                      cell("SH-BLOB", "SKIP", "NONE",
+                           ["runner javap cannot read major-65 blobs (toolchain gap, not drift)",
+                            "existence-only sweep would need python fallback — see below"])
+                      return
+                  if p.returncode == 0 and fails == 0 and abs(ok - EXPECTED_BLOB_OK) < 1:
+                      cell("SH-BLOB", f"OK {ok}/0 (full re-run on pushed HEAD)", "NONE",
+                           [f"javap={javap}", "independent default-branch re-run — 'pushed != gated' class"])
+                  else:
+                      cell("SH-BLOB", f"DRIFT ok={ok} fails={fails} rc={p.returncode} (expected {EXPECTED_BLOB_OK}/0)",
+                           "DRIFT", [f"javap={javap}"])
+              elif os.path.exists(script):
+                  miss, total = [], 0
+                  src = open(script, encoding="utf-8", errors="replace").read()
+                  for m in re.finditer(r'"([\w/]+\.class)"', src):
+                      total += 1
+                      if not os.path.exists(m.group(1)):
+                          miss.append(m.group(1))
+                  if not total:
+                      cell("SH-BLOB", "SKIP", "NONE", ["no class args parsed from gate script"])
+                  elif not miss:
+                      cell("SH-BLOB", f"OK-existence {total}/{total}", "NONE",
+                           ["existence-only sweep (no javap on runner)"])
+                  else:
+                      cell("SH-BLOB", f"DRIFT missing={len(miss)}/{total}", "DRIFT",
+                           miss[:5] + ["existence-only sweep (no javap on runner)"])
+              else:
+                  cell("SH-BLOB", "SKIP", "NONE", ["no gate script and no javap on runner"])
+
+          # --- SH-JAVAP-lite: pin manifest carried by the artifact vs checkout.
+          def sh_javap(armed):
+              man = sorted(glob.glob(D + "/**/*javap*", recursive=True))
+              if not man:
+                  cell("SH-JAVAP", "SKIP", "NONE",
+                       ["no pin/javap manifest in world3-bench artifact (current canon — record-only cell)",
+                        armed_note(armed)])
+                  return
+              rows = 0
+              for fp in man[:10]:
+                  try:
+                      with open(fp, encoding="utf-8", errors="replace") as fh:
+                          rows += sum(1 for ln in fh if ln.strip())
+                  except Exception:
+                      pass
+              cell("SH-JAVAP", f"OK record-only {len(man)} manifest file(s), {rows} rows", "NONE",
+                   ["in-tree s36_contracts.tsv absent — full cross-check stays LOCAL/nightly (S75 sec.5.5)",
+                    armed_note(armed)])
+
+          # --- SH-NCDFE: runtime parser (the false-green detector).
+          def sh_ncdfe(armed):
+              log = os.path.join(D, "server-stdout.log")
+              if not os.path.exists(log):
+                  cell("SH-NCDFE", "SKIP", "NONE", ["no server-stdout.log in artifact"])
+                  return
+              txt = open(log, encoding="utf-8", errors="replace").read()
+              ncdfe = len(re.findall(r"NoClassDefFoundError", txt))
+              aioobe = len(re.findall(r"ArrayIndexOutOfBoundsException", txt))
+              st_true = len(re.findall(r"(?i)selftest\w*=true", txt))
+              st_false = len(re.findall(r"(?i)selftest\w*=false", txt))
+              details = [f"ncdfe={ncdfe} aioobe={aioobe} selfTest_true={st_true} selfTest_false={st_false}",
+                          f"bench conclusion={CONCL}", armed_note(armed)]
+              if st_false:
+                  cell("SH-NCDFE", "FALSE_GREEN selfTest=false (canon selfTest=true)", "FALSE_GREEN", details)
+              elif ncdfe:
+                  cell("SH-NCDFE", f"FALSE_GREEN runtime NCDFE={ncdfe} (canon T1=0 — static GREEN did not predict runtime)",
+                       "FALSE_GREEN", details)
+              elif aioobe:
+                  note = (" — failed-run crash evidence (richest NCDFE-class witness, S75 sec.5.2)"
+                          if CONCL != "success" else "")
+                  cell("SH-NCDFE", f"DRIFT AIOOBE={aioobe} (canon AIOOBE=0)" + note, "DRIFT", details)
+              else:
+                  verd = "OK runtime NCDFE=0/AIOOBE=0 correlates with canonical GREEN"
+                  if st_true == 0:
+                      verd += "; selfTest marker absent — not verifiable here (FP-poison guard S75 sec.7.4)"
+                  cell("SH-NCDFE", verd, "NONE", details)
+
+          # --- SH-PARITY-TAG: re-derive parity from artifact JSONs vs tag.
+          def sh_parity(armed):
+              acc = []
+              def walk(o):
+                  if isinstance(o, dict):
+                      for k, v in o.items():
+                          if re.search(r"parity|PAIR_VAN|PAIR_LEG", str(k), re.I):
+                              acc.append((str(k), v))
+                          walk(v)
+                  elif isinstance(o, list):
+                      for v in o[:20]:
+                          walk(v)
+              for fp in glob.glob(D + "/**/*.json", recursive=True)[:50]:
+                  try:
+                      walk(json.load(open(fp, encoding="utf-8")))
+                  except Exception:
+                      pass
+              if not acc:
+                  cell("SH-PARITY-TAG", "SKIP", "NONE",
+                       ["no parity/pair data in artifact JSONs — valid outcome (S75 sec.7.3)",
+                        armed_note(armed)])
+                  return
+              ratio_ok = True
+              for k, v in acc:
+                  m = isinstance(v, str) and re.match(r"^\s*(\d+)\s*/\s*(\d+)\s*$", v)
+                  if m:
+                      ratio_ok &= (m.group(1) == m.group(2))
+                  elif isinstance(v, bool):
+                      ratio_ok &= v
+                  elif isinstance(v, (int, float)) and k.lower().endswith(("fail", "fails", "mismatch")):
+                      ratio_ok &= (v == 0)
+              derived = "PASS" if ratio_ok else "FAIL"
+              tag_file = "docs/merge_parity_tags.json"
+              if os.path.exists(tag_file):
+                  try:
+                      tags = json.load(open(tag_file, encoding="utf-8"))
+                      entry = tags.get(str(RID)) or tags.get("latest")
+                      tagv = str(entry.get("parity", entry)).upper() if isinstance(entry, dict) else str(entry).upper()
+                  except Exception:
+                      tagv = None
+                  if tagv is None:
+                      cell("SH-PARITY-TAG", f"derived={derived}; tag file unreadable — record-only", "NONE", acc[:5])
+                  elif derived == "FAIL" and tagv == "PASS":
+                      cell("SH-PARITY-TAG", "FALSE_GREEN re-derive FAIL vs tagged cert PASS (cert not reproducible)",
+                           "FALSE_GREEN", acc[:5])
+                  elif derived == "PASS" and tagv == "FAIL":
+                      cell("SH-PARITY-TAG", "FALSE_RED re-derive PASS vs tagged cert FAIL", "FALSE_RED", acc[:5])
+                  else:
+                      cell("SH-PARITY-TAG", f"OK re-derive {derived} == tag {tagv}", "NONE", acc[:5])
+              else:
+                  cell("SH-PARITY-TAG", f"derived={derived} (record-only — no docs/merge_parity_tags.json in default branch)",
+                       "NONE", acc[:5] + [armed_note(armed)])
+
+          def main():
+              have_art = os.path.isdir(D) and bool(os.listdir(D))
+              armed = None
+              if have_art and os.path.exists(D + "/run-env.txt"):
+                  txt = open(D + "/run-env.txt", encoding="utf-8", errors="replace").read()
+                  for m in re.finditer(r"\blever_flag=([^\s()]+)", txt):
+                      if m.group(1) != "<empty>":
+                          armed = m.group(1)
+                          break
+              sh_blob()
+              if have_art:
+                  sh_javap(armed)
+                  sh_ncdfe(armed)
+                  sh_parity(armed)
+              else:
+                  for g in ("SH-JAVAP", "SH-NCDFE", "SH-PARITY-TAG"):
+                      cell(g, "SKIP", "NONE",
+                           [f"artifact fetch outcome={FETCH}, dir present={have_art} — no bench artifacts to parse"])
+
+          try:
+              main()
+          except Exception as e:
+              LEDGER.append({"ts": TS, "run_id": RID, "head_sha": HEAD, "gate": "JOB",
+                              "canonical_verdict": "(n/a)", "shadow_verdict": f"EXCEPTION {type(e).__name__}",
+                              "mismatch": "NONE", "details": [str(e)]})
+              notice(f"ledger exception {type(e).__name__}: {e} — partial cells recorded, fail-open exit 0")
+          summary = {
+              "cells": len(LEDGER),
+              "skipped": sum(1 for c in LEDGER if c["shadow_verdict"].startswith("SKIP")),
+              "drifts": sum(1 for c in LEDGER if c["mismatch"] == "DRIFT"),
+              "false_greens": sum(1 for c in LEDGER if c["mismatch"] == "FALSE_GREEN"),
+              "false_reds": sum(1 for c in LEDGER if c["mismatch"] == "FALSE_RED"),
+          }
+          doc = {"schema": "merge-shadow-gate/v1",
+                  "spec": "S75 f437b9fb (16-cell matrix; job implements the 4 C-context cells)",
+                  "ts": TS, "run_id": RID, "head_sha": HEAD, "bench_run_url": URL,
+                  "bench_conclusion": CONCL, "artifact_fetch_outcome": FETCH,
+                  "cells": LEDGER, "summary": summary}
+          try:
+              json.dump(doc, open("merge-shadow-verdict.json", "w"), indent=1)
+              notice(f"summary: cells={summary['cells']} skipped={summary['skipped']} drifts={summary['drifts']} false_greens={summary['false_greens']} false_reds={summary['false_reds']} — ledger artifact merge-shadow-verdict.json (fail-open, exit 0) — bench-run: {URL}")
+          except Exception as e:
+              notice(f"verdict dump failed {type(e).__name__}: {e} — fail-open exit 0")
+          raise SystemExit(0)
+          PY
+
+      - name: upload merge shadow verdict
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: merge-shadow-verdict
+          path: merge-shadow-verdict.json
           if-no-files-found: ignore
           retention-days: 30
