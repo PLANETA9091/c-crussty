@@ -40,7 +40,14 @@
 //! vanilla). FAIL-CLOSED ladder: not-Mob/not-in-plane → vanilla this call;
 //! aiProbe mismatch / aiEpoch ERR_STRUCT → disarm forever; ERR_RANGE →
 //! vanilla this tick, window retried next tick; sites != 1 → hook stays
-//! dormant (fail-closed).
+//! dormant (fail-closed); ORDERING timeout + upstream MobPushOps probe
+//! absent → arm ABORT, hook dormant (R1 fail-closed closure, Л208-R1
+//! ROUND-471-S13 draft; landed ROUND-474-C53 — the "arming-anyway" (log
+//! marker is space-separated; written hyphenated here so the ST-6
+//! forbidden-marker include_str! selftest stays truthful)
+//! fail-open is gone: blind arming would resolve MobPushOps.idCount from
+//! the first MobAiOps epoch → NCDFE cached per-constant-pool-entry, canon
+//! cv3-1 ×3938).
 
 use jvmti_bindings::jni;
 use std::ffi::{c_void, CString};
@@ -48,6 +55,11 @@ use std::sync::atomic::{AtomicBool, Ordering};
 
 const LIVING_CLASS: &str = "net/minecraft/world/entity/LivingEntity";
 const OPS_CLASS: &str = "net/minecraft/world/entity/MobAiOps";
+/// R1 fail-closed ordering gate (ROUND-474-C53): the upstream push bridge
+/// that MUST already live in the JVM before MobAiOps is defined here —
+/// MobAiOps.epoch() reads MobPushOps.idCount() (MobAiOps.java:237), so a
+/// define-here-first resolve is the arm/define NCDFE race (canon ×456).
+const UPSTREAM_PUSH_CLASS: &str = "net/minecraft/world/entity/MobPushOps";
 
 const OPS_BYTES: &[u8] =
     include_bytes!("../mobai/build/net/minecraft/world/entity/MobAiOps.class");
@@ -118,6 +130,37 @@ pub fn stagger_served() -> bool {
 
 pub fn ai_ready() -> bool {
     READY.load(Ordering::Acquire)
+}
+
+/// R1 fail-closed ordering gate — pure decision core (Л208-R1; the ST-6
+/// test surface — the JNI presence-probe itself stays at the call site).
+/// `served` = the soa+stagger LIVING serve signals arrived in time;
+/// `upstream_probe` = None (probe errored — no evidence) / Some(present) —
+/// the upstream push bridge is already defined in the live JVM (any
+/// loader, JVMTI sweep).
+///
+/// Ordered — signals green, arm exactly as before. ProbePass — timeout,
+/// but the upstream bridge IS present: the composed chain carries the
+/// upstream serve, arming stays safe (probe-pass arming, S13 contract).
+/// Abort — no signals AND no evidence of the upstream bridge → arm ABORT
+/// (fail-closed: hook dormant, vanilla path — a blind arm here is the
+/// cv3-1 NCDFE storm per-constant-pool-entry).
+enum R1Gate {
+    Ordered,
+    ProbePass,
+    Abort,
+}
+
+fn r1_order_gate(served: bool, upstream_probe: Option<bool>) -> R1Gate {
+    if served {
+        return R1Gate::Ordered;
+    }
+    match upstream_probe {
+        Some(true) => R1Gate::ProbePass,
+        // Some(false) = probe says absent; None = probe failed/never ran —
+        // no evidence is treated exactly like absence (fail-closed).
+        _ => R1Gate::Abort,
+    }
 }
 
 
@@ -252,22 +295,47 @@ pub fn activate() {
 
         // Ordering: wait for the soa/stagger LivingEntity serves (their
         // stash-based serves would REPLACE my composed bytes if they ran
-        // after my retransform). Timeout = proceed anyway (fail-open on
-        // ordering only, composition itself stays fail-closed).
+        // after my retransform). R1 fail-closed closure (Л208-R1, ROUND-471-S13
+        // draft; landed ROUND-474-C53): timeout is NO LONGER fail-open — the
+        // "arming-anyway" path is REMOVED. If the upstream
+        // define_class(MobPushOps) failed (mobs_manager.rs publish gate →
+        // SOA_SERVED never set), blind arming here resolves
+        // MobPushOps.idCount from the first MobAiOps epoch → NCDFE cached
+        // per-constant-pool-entry for the whole run (canon cv3-1 ×3938).
+        // Closure = probe-then-arm (mirrors the mobs_manager probe-then-patch
+        // canon): on timeout probe the upstream bridge in the LIVE JVM
+        // (JVMTI all-loaders sweep — env.find_class would only see the
+        // system loader); absent/unknown → arm ABORT (hook dormant, vanilla
+        // path); present → probe-pass arming.
         let order_deadline = std::time::Instant::now() + std::time::Duration::from_secs(120);
+        let mut served = false;
         loop {
-            let soa = SOA_SERVED.load(Ordering::Acquire);
-            let stag = STAGGER_SERVED.load(Ordering::Acquire);
-            if soa && stag {
+            if SOA_SERVED.load(Ordering::Acquire) && STAGGER_SERVED.load(Ordering::Acquire) {
+                served = true;
                 break;
             }
             if std::time::Instant::now() > order_deadline {
-                eprintln!(
-                    "[crussty-plugin] mobs_ai: LIVING serve signals timeout (soa={soa} stagger={stag}) — arming anyway, chain composes current bytes"
-                );
                 break;
             }
             std::thread::sleep(std::time::Duration::from_millis(500));
+        }
+        if !served {
+            let soa = SOA_SERVED.load(Ordering::Acquire);
+            let stag = STAGGER_SERVED.load(Ordering::Acquire);
+            let probed = cplug_sdk::classes::find_class(UPSTREAM_PUSH_CLASS).is_some();
+            match r1_order_gate(false, Some(probed)) {
+                R1Gate::ProbePass => {
+                    eprintln!(
+                        "[crussty-plugin] mobs_ai: LIVING serve signals timeout (soa={soa} stagger={stag}) but {UPSTREAM_PUSH_CLASS} present in live JVM — probe-pass, arming (chain composes current bytes)"
+                    );
+                }
+                _ => {
+                    eprintln!(
+                        "[crussty-plugin] mobs_ai: LIVING serve signals timeout (soa={soa} stagger={stag}) and {UPSTREAM_PUSH_CLASS} absent in live JVM — arm ABORT (fail-closed, NCDFE R1 Л208; hook stays dormant, vanilla path)"
+                    );
+                    return;
+                }
+            }
         }
 
         // Define the bridge + RegisterNatives in the kernel loader.
@@ -535,5 +603,59 @@ mod tests {
         assert!(!(2..=64).contains(&1));
         assert!((2..=64).contains(&4));
         assert!(!(2..=64).contains(&65));
+    }
+
+    // ---------------- ST-6 фолт-инъекция (ROUND-474-C53) ----------------
+    // Л208-R1 / Л270: fail-open "arming-anyway" (log: space-separated
+    // "arming" + "anyway") обязан быть мёртв. Фолт =
+    // serve-сигналы не пришли (SOA_SERVED blocked — upstream define_class
+    // (MobPushOps) упал) + исход presence-probe; гейт обязан Abort на любом
+    // отсутствии/ошибке доказательств и arm только на зелёных сигналах или
+    // позитивном probe.
+    #[test]
+    fn st6_signals_green_arms_ordered() {
+        assert!(matches!(r1_order_gate(true, None), R1Gate::Ordered));
+        assert!(matches!(r1_order_gate(true, Some(false)), R1Gate::Ordered));
+        assert!(matches!(r1_order_gate(true, Some(true)), R1Gate::Ordered));
+    }
+
+    #[test]
+    fn st6_timeout_probe_absent_must_abort() {
+        // fault injection: сигналов нет, MobPushOps в JVM отсутствует —
+        // слепой arm здесь = NCDFE-шторм cv3-1; обязан Abort.
+        assert!(matches!(r1_order_gate(false, Some(false)), R1Gate::Abort));
+    }
+
+    #[test]
+    fn st6_timeout_probe_error_must_abort() {
+        // fault injection: сам probe упал (attach/read error) — нет
+        // доказательств = нет арма (fail-closed, не fail-open).
+        assert!(matches!(r1_order_gate(false, None), R1Gate::Abort));
+    }
+
+    #[test]
+    fn st6_timeout_probe_present_probe_pass() {
+        assert!(matches!(r1_order_gate(false, Some(true)), R1Gate::ProbePass));
+    }
+
+    #[test]
+    fn st6_forbidden_failopen_marker_extinct() {
+        // ST-6 log-gate контракт (S13): SUCCESS- stdout обязан иметь 0x
+        // "arming" + "anyway" (space-join ниже — единственное вхождение
+        // точного лог-маркера в файле, и то только как assert-аргумент;
+        // include_str! видит этот же файл, поэтому маркер собирается
+        // конкатенацией, чтобы тест не ловил сам себя);
+        // юнит-суррогат — исходник не содержит forbidden
+        // маркер и содержит fail-closed ABORT-маркер.
+        let src = include_str!("mobs_ai.rs");
+        let forbidden = concat!("arming", " anyway");
+        assert!(
+            !src.contains(forbidden),
+            "forbidden fail-open marker вернулся в mobs_ai.rs"
+        );
+        assert!(
+            src.contains("arm ABORT (fail-closed"),
+            "fail-closed ABORT-маркер отсутствует"
+        );
     }
 }

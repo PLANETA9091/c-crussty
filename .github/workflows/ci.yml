@@ -560,7 +560,19 @@ jobs:
           def sh_ncdfe(armed):
               log = os.path.join(D, "server-stdout.log")
               if not os.path.exists(log):
-                  cell("SH-NCDFE", "SKIP", "NONE", ["no server-stdout.log in artifact"])
+                  # R3 (ROUND-474-C53): a missing log used to degrade to a
+                  # silent SKIP/NONE cell — the only false-green detector in
+                  # the chain went blind exactly on a log-read error, i.e. it
+                  # could miss runtime NCDFE>0. The ledger stays fail-open
+                  # (exit ALWAYS 0, S75/Л182 — promotion to fail-closed is
+                  # MAIN's act), but the cell is now LOUD: DELIVERY-FAIL /
+                  # FALSE_RED — the NCDFE evidence chain is broken, the
+                  # canonical GREEN is unverifiable for this run.
+                  cell("SH-NCDFE",
+                       "DELIVERY-FAIL server-stdout.log unreadable (ncdfe evidence chain broken — false-green detector blind on log-read error, R3 C53)",
+                       "FALSE_RED",
+                       [f"artifact fetch outcome={FETCH}", f"bench conclusion={CONCL}",
+                        armed_note(armed)])
                   return
               txt = open(log, encoding="utf-8", errors="replace").read()
               ncdfe = len(re.findall(r"NoClassDefFoundError", txt))
