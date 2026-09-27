@@ -253,16 +253,30 @@ jobs:
   # Both annotations carry the bench run URL. Exit codes: 0 PASS/skip,
   # 1 gate breach, 2 parse-fail. Censures (never gate, always exit 0):
   # BAND-DEAD (cpu outside [6.0,9.5]M — free discard), HOST-CENS (STW>23s or
-  # young_avg>200ms), SKIP-ARMED (lever_flag token — non-vanilla A/B leg).
+  # young_avg>200ms), SKIP-ARMED (lever_flag token — non-vanilla A/B leg),
+  # BENCH-CANCELLED (master-ref concurrency cancel, S45 — canary = alias-канал).
+  # PER-RUN VERDICT (C51/S45): fires on ANY bench conclusion, stamps every
+  # verdict with bench_run_id/head_branch/head_sha and uploads it as
+  # canary-gate-verdict-<bench_run_id> — one addressable verdict per bench run,
+  # no newest-wins aggregate.
   canary-guard:
     name: canary gate [-6,+6] (norm_v5 vs bank v5)
     runs-on: ubuntu-latest
     timeout-minutes: 10
-    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion == 'success'
+    # S100/ROUND-473 (S31-audit fix, option 1): fire on ANY completed bench.
+    # success-only filter made BAND-DEAD/SKIP-ARMED/HOST-CENS censor classes
+    # unreachable runtime code (S31: 0 guard runs saw failure benches;
+    # 5/13 spec rules dead; band-dead canaries left without guard annotation).
+    if: github.event_name == 'workflow_run'
     steps:
       - uses: actions/checkout@v4
 
       - name: fetch bench summary of triggering world-bench-round run
+        id: fetch_bench
+        # S100: failure benches (band-dead fast-fail @ step-3 calibration gate)
+        # upload no world3-bench artifact — fetch outcome is recorded and the
+        # classifier below routes to BAND-DEAD via jobs API instead of dying.
+        continue-on-error: true
         uses: actions/download-artifact@v4
         with:
           name: world3-bench
@@ -273,6 +287,13 @@ jobs:
       - name: parse norm_v5 + gate [-6,+6] (fail on breach, annotate run URL)
         env:
           BENCH_RUN_URL: ${{ github.event.workflow_run.html_url }}
+          BENCH_CONCLUSION: ${{ github.event.workflow_run.conclusion }}
+          BENCH_RUN_ID: ${{ github.event.workflow_run.id }}
+          # C51 per-run attribution (S45 fix / S86-473 field canon): readers key
+          # on bench_run_id inside the verdict JSON — never on artifact freshness.
+          BENCH_HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
+          BENCH_HEAD_SHA: ${{ github.event.workflow_run.head_sha }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -290,8 +311,59 @@ jobs:
           ESCAL = GATE + MAE              # |norm| > 11.91 -> ESCALATE
           verd = {"gate": [-GATE, GATE], "mae": MAE, "sigma": round(SIG, 4),
                   "escalate": ESCAL, "run_url": URL}
+          # C51 (S45 per-run-verdict fix / S86-473 field canon): every verdict
+          # names the bench run it belongs to. S45 lesson: one constant-named
+          # artifact per batch let the newest completed bench hijack the
+          # cross-check (s44-a attributed over s45-canary). Attribution is now
+          # in-band: bench_run_id / bench_head_branch (alias-канан: head_branch
+          # = атрибуция 1:1, Л244) / bench_head_sha / guard ci_run_id.
+          RID = os.environ.get("BENCH_RUN_ID", "")
+          verd["bench_run_id"] = int(RID) if RID.isdigit() else RID
+          verd["bench_head_branch"] = os.environ.get("BENCH_HEAD_BRANCH", "")
+          verd["bench_head_sha"] = os.environ.get("BENCH_HEAD_SHA", "")
+          verd["ci_run_id"] = int(os.environ.get("GITHUB_RUN_ID", "0") or 0)
           def dump():
               json.dump(verd, open("canary-gate-verdict.json", "w"), indent=1)
+          # S100 (S31-audit fix): failure benches fast-fail at bench step-3
+          # ("Runner calibration band gate", S7-96d pairing law) BEFORE any
+          # artifact upload -> run-env.txt absent. Classify via jobs API
+          # (actions: read): failed band-gate step => BAND-DEAD censor (exit-0
+          # canon, free discard); cancelled bench => BENCH-CANCELLED notice
+          # (exit-0, concurrency class, S45 precedent); anything else without
+          # artifact => PARSE-FAIL exit-2 (loud — never silently censored).
+          # Success benches with artifact: this branch is not taken, parse
+          # below is bit-identical to the success-only predecessor.
+          if not os.path.exists(D + "/run-env.txt"):
+              concl = os.environ.get("BENCH_CONCLUSION", "")
+              if concl == "cancelled":
+                  print(f"::notice::canary-gate BENCH-CANCELLED (per-ref concurrency / manual cancel) — gate not applicable (run: {URL})")
+                  verd["verdict"] = "BENCH-CANCELLED"; dump(); raise SystemExit(0)
+              if concl == "failure":
+                  import urllib.request
+                  api = ("https://api.github.com/repos/" + os.environ.get("GITHUB_REPOSITORY", "")
+                         + "/actions/runs/" + os.environ.get("BENCH_RUN_ID", "") + "/jobs?per_page=100")
+                  band_step = None
+                  try:
+                      req = urllib.request.Request(api, headers={
+                          "Authorization": "Bearer " + os.environ.get("GH_TOKEN", ""),
+                          "Accept": "application/vnd.github+json"})
+                      jobs = json.load(urllib.request.urlopen(req, timeout=30)).get("jobs", [])
+                      for j in jobs:
+                          for st in j.get("steps", []):
+                              if st.get("conclusion") == "failure" and "band gate" in (st.get("name") or "").lower():
+                                  band_step = st.get("name"); break
+                          if band_step: break
+                  except Exception as e:
+                      print(f"::error::canary-gate PARSE-FAIL: artifact missing and jobs API probe error: {e} (run: {URL})")
+                      verd["verdict"] = "PARSE-FAIL"; dump(); raise SystemExit(2)
+                  if band_step:
+                      print(f"::notice::canary-gate BAND-DEAD via bench step-3 '{band_step}' (no artifact by design — fast-fail before upload) — free discard canon, gate not applied (run: {URL})")
+                      verd["verdict"] = "BAND-DEAD"
+                      verd["classified_via"] = "bench-step3-jobs-api"
+                      verd["failed_step"] = band_step
+                      dump(); raise SystemExit(0)
+              print(f"::error::canary-gate PARSE-FAIL: world3-bench artifact missing (conclusion={concl}) (run: {URL})")
+              verd["verdict"] = "PARSE-FAIL"; dump(); raise SystemExit(2)
           txt = ""
           if os.path.exists(D + "/run-env.txt"):
               txt = open(D + "/run-env.txt", encoding="utf-8", errors="replace").read()
@@ -375,11 +447,16 @@ jobs:
           raise SystemExit(1)
           PY
 
-      - name: upload canary gate verdict
+      - name: upload canary gate verdict (per-run name — C51/S45 fix)
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: canary-gate-verdict
+          # Per-run artifact identity: `canary-gate-verdict-<bench_run_id>`.
+          # A constant name made repo-wide listing an aggregate (newest-wins —
+          # S45: one verdict per batch, s44-a hijacked s45-canary cross-check);
+          # with the bench run id in the name every bench run owns exactly one
+          # addressable verdict artifact (per-run canon, no freshness race).
+          name: canary-gate-verdict-${{ github.event.workflow_run.id }}
           path: canary-gate-verdict.json
           if-no-files-found: ignore
           retention-days: 30
