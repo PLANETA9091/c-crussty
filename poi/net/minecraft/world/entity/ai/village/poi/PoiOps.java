@@ -25,9 +25,11 @@ import net.minecraft.world.level.block.state.BlockState;
  * (stateId → isPoi, построенная ОДИН раз из PoiTypes.hasPoi по
  * Block.BLOCK_STATE_REGISTRY) байндится в rust-сторону (poiBindMask) — DOD
  * данные POI-плоскости живут в Rust; батч POI-событий (levelHash, posLo,
- * posHi, oldId, newId) уходит в Rust-зеркало PoiStore ОДНИМ bulk-JNI на тик
- * (poiEpoch, flush на сайте 2; пустой тик = 0 JNI). per-block JNI
- * отсутствует (закон 6: один bulk-вызов на подсистему на тик).
+ * posHi, oldId, newId) уходит в Rust-зеркало PoiStore ОДНИМ bulk-JNI раз в
+ * POI_BATCH тиков (poiEpoch, flush на сайте 2; пустой батч = 0 JNI).
+ * WILD-11/Task-474-C66: JNI-переход-налог ≈0.1-0.3% CPU → интервал 4 тика
+ * сжимает переходы 4× (дефолт POI_BATCH=4; env CRUSSTY_POI_BATCH 1..=64
+ * переопределяет). per-block JNI отсутствует (закон 6).
  *
  * ВАНИЛЬНОСТЬ БИТ-В-БАЙТ: fast-path возвращает early-out ТОЛЬКО когда ОБА
  * состояния не-POI — ваниль в этом случае: forState×2 → оба Optional.empty →
@@ -100,8 +102,23 @@ public final class PoiOps {
     private static long GATE_CALLS = 0L;
     private static long EV_TOTAL = 0L;
 
-    /** Серверный тик последней успешной эпохи (flush-once-per-tick). */
+    /** Серверный тик последней успешной эпохи (flush-once-per-батч-окно). */
     private static volatile long EPOCH_TICK = Long.MIN_VALUE;
+
+    /** WILD-11 батч-интервал эпохи в тиках (дефолт 4; env 1..=64). */
+    private static final int POI_BATCH = batchInterval();
+
+    private static int batchInterval() {
+        try {
+            int n = Integer.parseInt(System.getenv("CRUSSTY_POI_BATCH").trim());
+            if (n >= 1 && n <= 64) {
+                return n;
+            }
+        } catch (Throwable ignored) {
+            // unset / не-число / вне диапазона → канон-дефолт WILD-11
+        }
+        return 4;
+    }
 
     /** One-shot ARM/effect-пруф (виден в server-stdout.log). */
     private static volatile boolean ARM_LOGGED = false;
@@ -271,9 +288,12 @@ public final class PoiOps {
         pm.tick(hasTimeLeft);
     }
 
-    /** Одна эпоха flush на серверный тик (double-checked по EPOCH_TICK). */
+    /** Одна эпоха flush на POI_BATCH-й серверный тик (double-checked по EPOCH_TICK). */
     private static void maybeEpoch() {
         long t = net.minecraft.server.MinecraftServer.getServer().getTickCount();
+        if (t % POI_BATCH != 0L) {
+            return; // WILD-11: накопление батча, JNI-flush на каждом POI_BATCH-м тике
+        }
         if (EPOCH_TICK == t) {
             return; // горячий путь: один volatile-read
         }
@@ -318,7 +338,7 @@ public final class PoiOps {
                 EPOCH_LOGGED = true;
                 LOG.info("[crussty-plugin] " + LABEL + ": epoch ok tick=" + t
                         + " events=" + rc + " mirrorTotal=" + out[0]
-                        + " (bulk JNI 1/tick into rust PoiStore)");
+                        + " (bulk JNI 1/" + POI_BATCH + "-tick batch into rust PoiStore)");
             }
         }
     }
