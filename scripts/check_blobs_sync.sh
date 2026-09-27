@@ -151,6 +151,31 @@ check_class \
   "entityinside/build/net/minecraft/world/entity/InsideBlockOps.class" \
   "noteSnapArmed" "snapGet" "bstate" "SNAP_ARMED" "mirror"
 
+# ROUND-472 S26 pin-stage B-1 (Л258/S59-S64 canon): FLUSH-DIET bridge FlushOps
+# (pin 45/90) — the S7-137 retarget target for both flushStep addAll sites
+# (flush_diet.rs:49 include_bytes!'s the NESTED blob; the FLAT sibling is the
+# legacy gate copy, added byte-identical by this pin). Entry-signature markers
+# per S62 canon: the bridge carries ZERO String constants, so the pin is
+# signature/descriptor-level (the erased descriptor lives only in the raw
+# constant pool — raw-byte cp grep path). javap STEP-0 contract (purpur
+# 1.21.10 kernel, major 65, blob sha256 60fa4c55…): fladd = emptiness gate
+# (Collection.isEmpty) hoisted BEFORE the List.addAll delegate — the vanilla
+# ArrayList.addAll wasted toArray(Object[0]) alloc is what the bridge kills;
+# empty→false, non-empty→same List.addAll. anti-Л216: the bridge holds no
+# N-constant (javap census: 0 iconst_4, 0 constants) — bit-pin ladder
+# env→clamp→fallback sites live in MobAiOps/PushStaggerOps/GoalStaggerOps and
+# are pinned separately (bipush16, iconst_4 ЗАПРЕЩЁН). javac --release 21
+# rebuild byte-identity proven pre-pin: rebuilt blob == committed blob ==
+# 60fa4c55d7f98555cb938fe3b7f80eccb8fa8387d95463d4a8a398eb2a27fbde (0-drift).
+# PIN≠ARM (закон 5): gate-only delta, 0 runtime bytes — vanilla leg 0-delta
+# (lever empty ⇒ flush_diet armed by bank-canon fd1 only, bridge bytes
+# untouched).
+check_class \
+  "entityinside/build/net/minecraft/world/entity/FlushOps.class" \
+  "public static boolean fladd(java.util.List, java.util.Collection)" \
+  "isEmpty" "addAll" \
+  "(Ljava/util/List;Ljava/util/Collection;)Z"
+
 check_class \
   "chunkparse/build/net/minecraft/world/level/chunk/storage/ChunkParseOps.class" \
   "cmp420_chunk2" "cmp420_colpush" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp453_diet" "parse-cache first hit" "parse-cache selftest" "cmp456_poi" \
@@ -326,6 +351,7 @@ check_flat_matches_nested "queryplane/build" "net/minecraft/world/entity/QueryPl
 check_flat_matches_nested "goalops/build" "net/minecraft/world/entity/ai/goal/GoalOps"
 check_flat_matches_nested "colpush/build" "net/minecraft/world/entity/ColpushOps"
 check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/RegionTickOps"
+check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/FlushOps" # S26 pin-stage B-1 (flat = legacy copy, embed = nested)
 check_flat_matches_nested "sense/build" "net/minecraft/world/entity/SenseOps"
 check_flat_matches_nested "chunksend/build" "net/minecraft/server/network/ChunkSendOps"
 check_flat_matches_nested "chunksend/build" "net/minecraft/server/network/ChunkPacketEncodeOps"
@@ -373,6 +399,7 @@ gate_load() { # dir fqcn-slash — fail if javap cannot load
 gate_load entityinside/build   net/minecraft/world/entity/ItemEntityManager
 gate_load entityinside/build   net/minecraft/world/entity/InsideSnapOps
 gate_load entityinside/build   'net/minecraft/world/entity/InsideSnapOps$Snap'
+gate_load entityinside/build   net/minecraft/world/entity/FlushOps # S26 pin-stage B-1
 gate_load goalops/build        net/minecraft/world/entity/ai/goal/GoalOps
 gate_load queryplane/build     net/minecraft/world/entity/QueryPlaneOps
 gate_load mobai/build          net/minecraft/world/entity/MobAiOps
@@ -407,6 +434,10 @@ gate_source_sibling stagger/build/net/minecraft/world/entity/PushStaggerOps.clas
                    stagger/net/minecraft/world/entity/PushStaggerOps.java
 gate_source_sibling stagger/build/net/minecraft/world/entity/ai/goal/target/GoalStaggerOps.class \
                    stagger/net/minecraft/world/entity/ai/goal/target/GoalStaggerOps.java
+# S26 pin-stage B-1: FlushOps source-sibling (Л180h anti-drift — source loss
+# would make the 474B blob unrebuildable, x93 orphan class).
+gate_source_sibling entityinside/build/net/minecraft/world/entity/FlushOps.class \
+                   entityinside/net/minecraft/world/entity/FlushOps.java
 gate_load poi/build            net/minecraft/world/entity/ai/village/poi/PoiOps
 gate_load chunksched/build     net/minecraft/server/level/ChunkSchedOps
 gate_load fluid/build          net/minecraft/world/entity/FluidPushGuardHook
