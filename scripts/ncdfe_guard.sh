@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # =============================================================================
-# ncdfe_guard.sh — NCDFE-страж авто (TASK-466-C84; R2 fail-closed ROUND-471-S13)
+# ncdfe_guard.sh — NCDFE-страж авто (TASK-466-C84; R2 fail-closed ROUND-471-S13;
+# R3 DELIVERY-FAIL + ST-6 фолт-инъекция ROUND-474-C53)
 # =============================================================================
 # R2 (S13 ROUND-471) закрывает fail-open пути R1-класса (Л208 S16 x470):
 #   FO-1 javap-нет/блоб-нет -> SKIP exit 2 = зелёный у наивных колл-сайтов
@@ -11,6 +12,18 @@
 #   FO-3 selftest раньше покрывал только 4 хороших блоба + магию-негатив —
 #        C2/C3/J1/J2-детекторы были непокрыты -> режим --vectors: 5 векторов,
 #        все обязаны отработать как ожидалось, иначе вектор-FAIL.
+# R3 (ROUND-474-C53, NEXT-474-3 остаток Л268/Л270):
+#   FO-4 SKIP-семантика = DELIVERY-FAIL: SKIP (файл/чтение/инструмент
+#        недоступны) — это НЕ зелёный исход: страж не прочитал доказательства,
+#        значит NCDFE>0 мог пройти незамеченным. exit 2 теперь loud-класс
+#        DELIVERY-FAIL (summary печатает маркер); NCDFE_STRICT=1 — exit 1;
+#        наивные колл-сайты ОБЯЗАНЫ трактовать любой rc!=0 как FAIL.
+#   FO-5 R1 (mobs_ai.rs ordering fail-open) закрыт в рантайме: timeout +
+#        absence-probe MobPushOps -> arm ABORT (vanilla path) — см. r1_order_gate;
+#        режим --st6 = ST-6 фолт-инъекция: искусственные NCDFE-носители
+#        (.java всегда, .class при javac) ОБЯЗАНЫ ловиться детекторами,
+#        иначе страж мёртв (урок Л270: fail-closed-гейт, который не может
+#        доказать fail-closedность, — не канон).
 # КАНОН (docs/LAB_LEDGER.md L6, закон v18.3/19.0/v20):
 #   Перед вердиктом ЛЮБОГО носителя T1 NCDFE=0 ОБЯЗАТЕЛЬНО.
 #   Гонка arm/define EntityGoalQueryOps @ MobPushOps.pushables:467:
@@ -25,13 +38,16 @@
 #   C1 CAFEBABE + major==65; C2 <clinit> без cross-Ops; C3 throwable-маркеры;
 #   C4 INFO: uncovered/arm-gated touch'и (канон ×456: lever-ветка + HARD gate).
 # ПРОВЕРКИ .java: J1 static-init cross-Ops; J2 catch(Throwable) при touch'ах.
-# EXIT-КОДЫ: 0=OK, 1=FAIL (в т.ч. SKIP при NCDFE_STRICT=1), 2=SKIP/usage.
+# EXIT-КОДЫ: 0=OK, 1=FAIL (в т.ч. SKIP при NCDFE_STRICT=1),
+#            2=SKIP/usage = DELIVERY-FAIL-класс (R3: доказательства не прочитаны
+#            — НЕ зелёный; колл-сайты: rc!=0 => FAIL).
 # USAGE:
 #   scripts/ncdfe_guard.sh <файл.class|файл.java> [еще...]
 #   scripts/ncdfe_guard.sh --selftest         # 4 блоба мастера, 0 FAIL
 #   scripts/ncdfe_guard.sh --vectors          # R2: 5 fail-open векторов
+#   scripts/ncdfe_guard.sh --st6              # R3: ST-6 фолт-инъекция (C53)
 #   scripts/ncdfe_guard.sh --negative-test    # битый класс обязан exit 1
-# ОКРУЖЕНИЕ: NCDFE_JAVAP, NCDFE_JAVAC (для --vectors), NCDFE_STRICT=1.
+# ОКРУЖЕНИЕ: NCDFE_JAVAP, NCDFE_JAVAC (для --vectors/--st6 .class), NCDFE_STRICT=1.
 # =============================================================================
 set -uo pipefail
 
@@ -290,13 +306,69 @@ EOF
   say "NCDFE-VECTORS FAIL"; return 1
 }
 
+# --- R3 ST-6: фолт-инъекция — искусственные NCDFE-носители, страж обязан FAIL
+# (ROUND-474-C53; урок Л270: детектор обязан доказывать живучесть на
+# искусственном дефекте, иначе он мёртв; .java-носители чисто текстовые —
+# работают без javac, .class-носители — при доступном javac) ------------
+run_st6() { # returns 0 iff every injected NCDFE carrier is caught
+  local sp=0 sf=0 tmpd rc out
+  tmpd="$(mktemp -d "${TMPDIR:-/tmp}/ncdfe_st6_XXXXXX")"
+  say "NCDFE-GUARD ST-6 FAULT-INJECTION (R3, ROUND-474-C53): искусственные NCDFE-носители — страж обязан FAIL:"
+  cat > "$tmpd/St6OtherOps.java" <<'EOF'
+public class St6OtherOps { public static int idCount = 7; }
+EOF
+  # ST6-1 (.java, без javac): static-init cross-Ops touch — детектор J1
+  cat > "$tmpd/St6ClinitTouchOps.java" <<'EOF'
+public class St6ClinitTouchOps { static { int x = St6OtherOps.idCount; } static int X; public static int get() { return X; } }
+EOF
+  out="$(bash "$0" "$tmpd/St6ClinitTouchOps.java" 2>&1)"; rc=$?
+  if [ "$rc" -eq 1 ] && printf '%s' "$out" | grep -q 'define-порядок'; then
+    say "ST6-1 artificial static-init cross-Ops .java -> FAIL: PASS"; sp=$((sp+1))
+  else say "ST6-1 artificial static-init cross-Ops .java -> FAIL: FAIL (rc=$rc)"; sf=$((sf+1)); fi
+  # ST6-2 (.java, без javac): cross-Ops touch БЕЗ catch(Throwable) — детектор J2
+  # (фикстура обязана содержать статическую форму Ops.<member> — именно её
+  # ловит J2; голый параметр-тип 'St6OtherOps o' не резолвится жадно и не NCDFE-хаза)
+  cat > "$tmpd/St6NoHandlerOps.java" <<'EOF'
+public class St6NoHandlerOps { public int f() { return St6OtherOps.idCount; } }
+EOF
+  out="$(bash "$0" "$tmpd/St6NoHandlerOps.java" 2>&1)"; rc=$?
+  if [ "$rc" -eq 1 ] && printf '%s' "$out" | grep -q 'throwable-маркеры отсутствуют'; then
+    say "ST6-2 artificial touch-no-handler .java -> FAIL: PASS"; sp=$((sp+1))
+  else say "ST6-2 artificial touch-no-handler .java -> FAIL: FAIL (rc=$rc)"; sf=$((sf+1)); fi
+  # ST6-3/4 (.class, при javac): компилированные NCDFE-блобы — детекторы C2/C3
+  if [ -n "$JAVAC" ] && [ -x "$JAVAC" ]; then
+    "$JAVAC" -d "$tmpd" "$tmpd"/St6OtherOps.java "$tmpd"/St6ClinitTouchOps.java "$tmpd"/St6NoHandlerOps.java >/dev/null 2>&1
+    out="$(bash "$0" "$tmpd/St6ClinitTouchOps.class" 2>&1)"; rc=$?
+    if [ "$rc" -eq 1 ] && printf '%s' "$out" | grep -q 'define-порядок'; then
+      say "ST6-3 artificial clinit-touch .class -> FAIL C2: PASS"; sp=$((sp+1))
+    else say "ST6-3 artificial clinit-touch .class -> FAIL C2: FAIL (rc=$rc)"; sf=$((sf+1)); fi
+    out="$(bash "$0" "$tmpd/St6NoHandlerOps.class" 2>&1)"; rc=$?
+    if [ "$rc" -eq 1 ] && printf '%s' "$out" | grep -q 'throwable-маркеры отсутствуют'; then
+      say "ST6-4 artificial touch-no-handler .class -> FAIL C3: PASS"; sp=$((sp+1))
+    else say "ST6-4 artificial touch-no-handler .class -> FAIL C3: FAIL (rc=$rc)"; sf=$((sf+1)); fi
+  else
+    say "ST6-3/4 (.class): SKIP (javac недоступен: задай NCDFE_JAVAC) — .java-фолты держат контракт"
+  fi
+  # ST6-5: DELIVERY-FAIL-семантика: недоступный носитель при NCDFE_STRICT=1
+  # обязан быть exit 1 (fail-closed), а не тихо-зелёным skip
+  out="$(NCDFE_STRICT=1 bash "$0" "$tmpd/St6GhostOps.class" 2>&1)"; rc=$?
+  if [ "$rc" -eq 1 ]; then
+    say "ST6-5 strict-delivery (STRICT=1 + отсутствующий носитель) -> exit 1: PASS"; sp=$((sp+1))
+  else say "ST6-5 strict-delivery -> exit 1: FAIL (rc=$rc)"; sf=$((sf+1)); fi
+  rm -rf "$tmpd"
+  say "NCDFE-ST6: pass=$sp fail=$sf"
+  if [ "$sf" -eq 0 ]; then say "NCDFE-ST6 PASS (страж ловит все injected NCDFE-носители)"; return 0; fi
+  say "NCDFE-ST6 FAIL (страж мёртв: injected NCDFE прошёл)"; return 1
+}
+
 if [ $# -eq 0 ]; then
-  say "usage: $0 <file.class|file.java>... | --selftest | --vectors | --negative-test"
-  say "exit: 0=OK 1=FAIL (в т.ч. SKIP при NCDFE_STRICT=1) 2=SKIP/usage"
+  say "usage: $0 <file.class|file.java>... | --selftest | --vectors | --st6 | --negative-test"
+  say "exit: 0=OK 1=FAIL (в т.ч. SKIP при NCDFE_STRICT=1) 2=SKIP/usage = DELIVERY-FAIL (R3 C53)"
   exit 2
 fi
 if [ "$1" = "--selftest" ]; then run_selftest; exit $?; fi
 if [ "$1" = "--vectors" ]; then run_vectors; exit $?; fi
+if [ "$1" = "--st6" ]; then run_st6; exit $?; fi
 if [ "$1" = "--negative-test" ]; then run_negative_test; exit $?; fi
 
 for f in "$@"; do check_one "$f"; done
@@ -304,6 +376,7 @@ say "NCDFE-GUARD SUMMARY: ok=$OK fail=$FAIL skip=$SKIP (exit 0/1/2 = OK/FAIL/SKI
 if [ "$FAIL" -gt 0 ]; then exit 1; fi
 if [ "$SKIP" -gt 0 ]; then
   if [ "$STRICT" = "1" ]; then say "NCDFE_STRICT=1: SKIP->$FAIL (fail-closed R2)"; exit 1; fi
+  say "NCDFE-GUARD DELIVERY-FAIL (skip=$SKIP — доказательства не прочитаны: файл/чтение/инструмент; страж мог пропустить NCDFE>0) — exit 2 = DELIVERY-FAIL-класс (R3 C53), НЕ зелёный"
   exit 2
 fi
 exit 0
