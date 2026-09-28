@@ -246,3 +246,46 @@ N1=100/100 N2≈15 | абсорб ×25 | 60+ диспатчей | МЕРЖ НЕ 
 ## ×479 ABSORB-ЛЕНТА (тик 11:08+08, trace ...202609281113)
 [479-ABS] МЕРЖ №17 ВЫПОЛНЕН ТИК-АГЕНТОМ: --no-ff master **f66feb1b** — conf union-носитель round-478-a2-conf @1185959a (G3.1 quiesce e97e8167 + emap-superset 9f949b1b + harness); S25 ×3 PASS по артефактам: dp2 36367745677 @7,095,552 med 2.7 (quiesce-base 2.6 @Δcpu 17.7k, ΔMSPT +1.3%) / totem 36367994605 @6,878,146 med 2.0 (=base) / trek 36367810959 @6,357,808 med 2.8; boot Done ×3, AIOOBE=0 ×3, rehash 0 ×3, ARM ×3; cargo 0 err + blobs ALL IN SYNC; canary 204 (гейт [−6,+6] читает след. тик). МЕРЖ-СЧЁТ ЭРЫ: №18 → **№19**: см. [479-MERGE-NUM]: нумерация эры — confinement фикс = №17-кандидат по GOAL ×477; фактически это МЕРЖ №17 (счёт GOAL ×477 сохранён). Эра: №9 poi-p22, №16 p31snap-l9, №18 climb5-p32-1, **№17 confinement** (номер по плану ×477).
 [479-INFLIGHT] Абсорб normtool ×8: gc2a −35.57 REFUTED канон-канал / RCC ×2 Δcpu 236k не-пара (узел-дрейф) / W7 600s плато 2.6 @poll9-11 (t_stab подтверждён) / swarx Δ208k не-пара / STRICT s2 7,075,581 ✓ + s3 7,089,214 ✓ (STW-check след.) / s6 мимо зоны. canary-479 №17 + вердикт R0/PIN-28 — см. ростер.
+
+## ×479 ROSTER 50 КОМАНДИРОВ (12a, ростер-ядро ×478 унаследован; добор до 100 — волны 4-5)
+ID | класс | claim | ветка-алиас
+479-A1 | ЛАБ | canary-479 чтение (МЕРЖ №17 f66feb1b): run world-bench-parallel на master после 03:3xZ → cpu/norm/CLEAN → гейт [−6,+6] vs per-world-базис → CANARY-PASS/FAIL на board | round-479-a1-canary
+479-A2 | ЛАБ | R0 пост-мерж верификация: leg canon 640/300s lever cmp452_mega на master 70d64190 → TICK2_FLAGS 7==7 in-vivo + PIN-28 ARM-пруф + norm [−8,+1.5] | round-479-a2-r0
+479-A3 | ЛАБ | chkclimb-5 фид-волна c9..c12 (A19-рецепт: дрейф играет в окно) + зонд-дроу ×2 без гейта → ценз пула на board | round-479-a3-chk5
+479-A4 | ЛАБ | STRICT-добивка: s2 36362740256/s3 36362354569 STW-проверка (gc.log) → VALID/ценз + волна ×6 в [6.9,7.2]M → банк к 30 | round-479-a4-strict
+479-A5 | ЛАБ | sensn16 leg-волна ×3 (пара-пул №17/18, mxa-якоря; leg-k урок: M1 STW≤23 жёстко) | round-479-a5-sensn16
+479-A6 | ЛАБ | RCC same-node ре-ролл ×2 (512M vs 1024M, мишень Δcpu≤50k, гейты G3 ΔSTW≤−1.5s / G4 Δnorm≥+0.1) | round-479-a6-rcc
+479-A7 | ЛАБ | poi456-4 окно фиды ×4 [8907260,9007260] порог ≤−1.99 (b2-диагноз: нужны fast-раннеры) | round-479-a7-poi
+479-A8 | ЛАБ | 19b бисекция W11-добивка: 201k/202k диспатчи (canon 10G, M1-гейт) — young-колено верификация | round-479-a8-pop
+479-A9 | ЛАБ | F9 пост-мортем bn-стенд 36371358886 FAILURE → фикс-класс → BN 6.9.8 retry на №17-мастере (quiesce resident) | round-479-a9-bn
+479-A10 | ЛАБ | СТЗ-фикстуры (F6-наследие): материализовать stress/MANIFEST.md — сцена 260k-дропов (Paper #13783) sha-pinned → диспатч-алиас | round-479-a10-stz
+479-B1 | КЛИМБ | climb5-p32-1 пост-№18 пара-контроль: leg-рун свежего master + fresh-якорь Δ≤50k → повторная пара ≥+20 | round-479-b1-climb5
+479-B2 | КЛИМБ | chk-14 re-верификация в frozen-leg окне [8637055,8737055] (B3-диагноз: fast-кластер нужен) | round-479-b2-chk14
+479-B3 | КЛИМБ | collision E2 dedup (C01 @a0485033): пара-класс ре-ролл (прошлый Δrci 54.5k — целить same-node) | round-479-b3-coll
+479-B4 | ИМПЛ | 19c dp-ось: function-пайплайн census на №17-мастере (dpfull-стенд с quiesce-resident) → 0.0000% перепроверка | round-479-b4-dp
+479-B5 | ИМПЛ | synthetic 150k-сцена валидность: №17 quiesce+emap на канон-мире → POP VALID + AIOOBE=0 контроль | round-479-b5-valid
+479-W1 | WILD | безумие: gc7-канал (RCC1024) на стресс-окне 600s/640 (gc2 канон-REFUTED, но стресс-канал открыт A4) | round-479-w1-gc7
+479-W2 | WILD | безумие: boot-Done разброс 12.3-17.5s — boot-профиль декомпозиция ×3 рана | round-479-w2-boot
+479-W3 | WILD | безумие: polls-ramp форма (1.7→2.6) — warmup-модель TPS-поллов, косяк C55-канона? | round-479-w3-ramp
+479-W4 | WILD | безумие: W7-плато 2.6 @600s vs x9 2.6 @300s — идентичность плато (сцена-насыщение) → гипотеза | round-479-w4-plateau
+479-W5 | WILD | безумие: fastutil mask=-1 инвариант-тест офлайн (C30-класс) — юнит-харнесс на Int2ObjectOpenHashMap | round-479-w5-futil
+479-F1 | ЛАБ | свободная: cpu-collapsed canary-479 артефакта → топ-стеки свежего master | round-479-f1-free
+479-F2 | ЛАБ | свободная: web-разведка Lithium/C2ME issue → СТРЕСС-ТЗ ×2 | round-479-f2-web
+479-F3 | ЛАБ | свободная: javap-контраст №17-блобов (RegionTickOps/BlockScheduleOps) — контракт-ревизия | round-479-f3-javap
+479-F4 | ЛАБ | свободная: wall-collapsed dp2-артефакта ×479 (338.88ms avg) — что жмёт conf-мир | round-479-f4-wall
+479-F5 | КЛИМБ | свободная: itemidle predicate-starved класс — соседние голодные предикаты ×3 (×478-F15 незакрыт) | round-479-f5-pred
+479-Y1 | ЯКОРЬ | ваниль-якорь ~7.0M (STRICT-зона, дефицит 4→30) | round-479-y1-anchor
+479-Y2 | ЯКОРЬ | ваниль-якорь ~7.1M | round-479-y2-anchor
+479-Y3 | ЯКОРЬ | ваниль-якорь ~8.9M (POI-окно) | round-479-y3-anchor
+479-Y4 | ЯКОРЬ | ваниль-якорь ~6.5M (chkclimb-5 зона) | round-479-y4-anchor
+479-Y5 | ЯКОРЬ | ваниль-якорь ~8.8M | round-479-y5-anchor
+479-Y6 | ЯКОРЬ | ваниль-якорь ~6.9M | round-479-y6-anchor
+479-Y7 | ЯКОРЬ | ваниль-якорь ~7.2M (граница STRICT) | round-479-y7-anchor
+479-Y8 | ЯКОРЬ | ваниль-якорь ~9.0M | round-479-y8-anchor
+479-G1 | ЛАБ | normtool adoption: gc.log m1_clean-парс допилка (s2/s3 STW-check блокирован) + selftest | round-479-g1-normtool
+479-G2 | ЛАБ | LEDGER-ревизия Л-478-блока ×41 — консолидация дельт в сводку | round-479-g2-ledger
+479-G3 | ИМПЛ | blob-cp проверка №17+R0 блобов (RegionTickOps/BlockScheduleOps/BrainOps) — pre-push аудит | round-479-g3-blobs
+479-G4 | КЛИМБ | стена ×54 ре-декорация: что осталось из стена-класса на №17-мастере | round-479-g4-wall
+479-G5 | ЛАБ | дрейф-монитор: cal→run-env повторный замер (было +581k) — свежий коэффициент | round-479-g5-drift
+479-G6 | ЛАБ | region_steal слот (G6-ось от A15/W3): STEAL=1+bu_defer=1 in-band ре-ролл x6-класса | round-479-g6-steal
+КВОТЫ: ЛАБ=18 ЯКОРЬ=8 КЛИМБ=5 ИМПЛ=3 WILD=5 — ядро 39/100; правила финала/канонов как ×478
