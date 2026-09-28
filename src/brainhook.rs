@@ -64,6 +64,28 @@ static TICK2_DECIDED: AtomicBool = AtomicBool::new(false);
 /// cmp439_sense_scan (sense⊕sscan2 STRICT-UNION носитель). ЗЕРКАЛО
 /// mobs_sense.rs enabled() (расхождение = дормант-мисс ARM). Пустой/чужой
 /// флаг = только F2-базлайн (ваниль tickEachRunningBehavior).
+///
+/// R0-фикс (×478-A10, Л-475-C51 дыра-5): cmp452_mega mega-композит
+/// (TASK-452-C sense⊕chunk STRICT-носитель) был добавлен в java-зеркало
+/// BrainOps.TICK2_FLAGS (7 флагов), но rust-гейт остался на 6 — на
+/// cmp452_mega-ноге BrainOps дефайнится + selfTest пробегает, а tick2-лейн
+/// молча дормант (класс x466-C02 «codec caches silently dormant on mega
+/// legs»). STRICT eq без trim (TASK-402-F урок): список = ОБЪЕДИНЕНИЕ обеих
+/// сторон (RESEARCH-455-B), дрейф ловит тест tick2_flags_mirror_java ниже.
+const TICK2_FLAGS_RUST: [&str; 7] = [
+    "cmp438_sense",
+    "cmp439_sense_scan",
+    "cmp451_senseins",
+    "cmp452_mega", // R0-фикс: mega-носитель вернул tick2-лейн (java-зеркало 7/7)
+    "cmp457_paldelta",
+    "cmp457_eqsnap2",
+    "cmp458_swar",
+];
+
+fn tick2_flag_enabled(flag: &str) -> bool {
+    TICK2_FLAGS_RUST.contains(&flag)
+}
+
 fn tick2_enabled() -> bool {
     if let Ok(h) = std::env::var("CRUSSTY_SENSE") {
         let h = h.trim().to_ascii_lowercase();
@@ -71,10 +93,10 @@ fn tick2_enabled() -> bool {
             return true;
         }
     }
-    matches!(
-        std::env::var("CRUSSTY_LEVER_FLAG").as_deref(),
-        Ok("cmp438_sense") | Ok("cmp439_sense_scan") | Ok("cmp451_senseins") | Ok("cmp458_swar") | Ok("cmp457_paldelta") | Ok("cmp457_eqsnap2") // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
-    )
+    std::env::var("CRUSSTY_LEVER_FLAG")
+        .as_deref()
+        .map(tick2_flag_enabled)
+        .unwrap_or(false)
 }
 
 /// Register the byte hook (idempotent; call once from cplugin_init).
@@ -360,4 +382,58 @@ fn force_load_brain() {
         env.delete_local_ref(class_cls);
         Some(())
     });
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// GB4 mirror-страж (C51 §4, C35-P3 паттерн): rust tick2-гейт обязан быть
+    /// СТРОГИМ зеркалом java BrainOps.TICK2_FLAGS (randomtick/src/BrainOps.java
+    /// — include_str! = пересборка теста при дрейфе .java). Дрейф в ЛЮБУЮ
+    /// сторону (rust-флаг ∉ java || java-флаг ∉ rust) = дормант-мисс ARM на
+    /// леге — тот же класс, что x466-C02 / Л-475-C51 дыра-5 (java-7≠rust-6).
+    #[test]
+    fn tick2_flags_mirror_java() {
+        const BRAIN_OPS_JAVA: &str = include_str!("../randomtick/src/BrainOps.java");
+        let line = BRAIN_OPS_JAVA
+            .lines()
+            .find(|l| l.contains("static final String TICK2_FLAGS"))
+            .expect("BrainOps.java: TICK2_FLAGS constant vanished — java mirror contract broken");
+        let list = line.split('"').nth(1).expect("TICK2_FLAGS: no quoted literal");
+        let java_flags: Vec<&str> = list.split('|').map(|f| f.trim()).collect();
+        assert!(
+            !java_flags.is_empty() && java_flags.iter().all(|f| !f.is_empty()),
+            "TICK2_FLAGS: empty/blank flag in java mirror ({list})"
+        );
+        // every java flag must be accepted by the rust gate (ARM-miss guard)
+        for f in &java_flags {
+            assert!(
+                tick2_flag_enabled(f),
+                "R0-drift: java TICK2_FLAGS flag '{f}' NOT in rust tick2 gate — tick2 lane silently dormant on that leg"
+            );
+        }
+        // reverse: no rust-only flags (invisible-ARM guard, STRICT both ways)
+        for f in TICK2_FLAGS_RUST {
+            assert!(
+                java_flags.contains(&f),
+                "mirror-drift: rust tick2 gate flag '{f}' NOT in java TICK2_FLAGS"
+            );
+        }
+        assert_eq!(java_flags.len(), TICK2_FLAGS_RUST.len());
+    }
+
+    /// STRICT eq lesson (TASK-402-F): no prefix/suffix tolerance, foreign/empty
+    /// flag = vanilla; the CRUSSTY_SENSE=1 env-hatch bypasses the flag list.
+    #[test]
+    fn tick2_flag_strict_eq() {
+        for f in TICK2_FLAGS_RUST {
+            assert!(tick2_flag_enabled(f));
+            assert!(!tick2_flag_enabled(&format!("{f}_x")));
+            assert!(!tick2_flag_enabled(&format!(" {f}")));
+        }
+        assert!(!tick2_flag_enabled(""));
+        assert!(!tick2_flag_enabled("cmp452_meg"));
+        assert!(tick2_flag_enabled("cmp452_mega")); // R0-фикс: mega-носитель
+    }
 }

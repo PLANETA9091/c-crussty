@@ -101,7 +101,8 @@ check_class \
 check_class \
   "randomtick/build/net/minecraft/world/entity/ai/BrainOps.class" \
   "cmp438_sense" "cmp439_sense_scan" "cmp451_senseins" "cmp452_mega" "selfTestTickEach" "tickEachRunning" \
-  "sense tick2 EFFECT armed"
+  "sense tick2 EFFECT armed" \
+  "snapshot(java.util.Map<?, ?>)" "matches" "build" "naiveTickEach" "WeakHashMap" # ×478-A10 PIN-B1 CACHE-пул (C51 GB3): snapshot/matches/build/naiveTickEach сигнатуры + WeakHashMap raw-cp (снос/замена пула blobgate обязан ловить)
 
 check_class \
   "mobpush/build/net/minecraft/world/entity/MobPushOps.class" \
@@ -373,6 +374,10 @@ check_flat_matches_nested "sense/build" "net/minecraft/world/entity/SenseOps"
 check_flat_matches_nested "chunksend/build" "net/minecraft/server/network/ChunkSendOps"
 check_flat_matches_nested "chunksend/build" "net/minecraft/server/network/ChunkPacketEncodeOps"
 check_flat_matches_nested "poi/build" "net/minecraft/world/entity/ai/village/poi/PoiOps"
+# ×478-A10 PIN-B- surplus: BrainOps-trio flat==nested (×93: nested = то, что include_bytes! реально емитит; trio brainhook.rs:45-50)
+check_flat_matches_nested "randomtick/build" "net/minecraft/world/entity/ai/BrainOps"
+check_flat_matches_nested "randomtick/build" 'net/minecraft/world/entity/ai/BrainOps$IdKey'
+check_flat_matches_nested "randomtick/build" 'net/minecraft/world/entity/ai/BrainOps$Snapshot'
 
 # TASK-463-88a CP-EXACT gate (lessons ×461/×463): merge 887c4641 union-glued
 # "cmp457_paldelta|cmp457_eqsnap2" INSIDE single equals() strings at 11 java
@@ -428,6 +433,8 @@ gate_load colpush/build        net/minecraft/world/entity/ColpushOps
 gate_load entitygoalquery/build net/minecraft/world/entity/EntityGoalQueryOps
 gate_load sense/build          net/minecraft/world/entity/SenseOps
 gate_load randomtick/build     net/minecraft/world/entity/ai/BrainOps
+gate_load randomtick/build     'net/minecraft/world/entity/ai/BrainOps$IdKey' # ×478-A10 PIN-B4 gate_load nested (C51 GB2: blob-hole = ровно класс kernel-loader NCDFE, прецедент InsideSnapOps$Snap)
+gate_load randomtick/build     'net/minecraft/world/entity/ai/BrainOps$Snapshot' # ×478-A10 PIN-B4 (nested-first define IdKey→Snapshot→Ops, brainhook.rs :197-206)
 gate_load chunkparse/build     net/minecraft/world/level/chunk/storage/ChunkParseOps
 gate_load chunksend/build      net/minecraft/server/network/ChunkSendOps
 gate_load chunksend/build      net/minecraft/server/network/ChunkPacketEncodeOps
@@ -525,8 +532,8 @@ check_class "randomtick/build/net/minecraft/server/level/RandomTickOps.class" 'p
 check_class "paletted/build/PalettedContainer.patched.class" "public volatile transient java.lang.Object[] crusstySnap;" "public volatile int crusstySnapGen;" "public volatile int crusstyGen;"
 noise_check_class 'noise/build/net/minecraft/world/level/levelgen/synth/PerlinNoiseNativeOps$Handle.class' 'net.minecraft.world.level.levelgen.synth.PerlinNoiseNativeOps$Handle(net.minecraft.world.level.levelgen.synth.PerlinNoise, long, net.minecraft.world.level.levelgen.synth.ImprovedNoise[], double[], double, double)' 'final java.util.concurrent.atomic.AtomicBoolean freed' # S34 tail-pin B
 noise_check_class 'noise/build/net/minecraft/world/level/levelgen/synth/PerlinNoiseNativeOps$Reaper.class' 'final class net.minecraft.world.level.levelgen.synth.PerlinNoiseNativeOps$Reaper implements java.lang.Runnable' 'public void run()' # S34 tail-pin B
-check_class 'randomtick/build/net/minecraft/world/entity/ai/BrainOps$IdKey.class' 'net.minecraft.world.entity.ai.BrainOps$IdKey(java.lang.Object)' 'final java.lang.Object ref' # S34 tail-pin B
-check_class 'randomtick/build/net/minecraft/world/entity/ai/BrainOps$Snapshot.class' 'final java.lang.Integer[] keys' 'final net.minecraft.world.entity.ai.behavior.BehaviorControl<net.minecraft.world.entity.LivingEntity>[] behs' 'final boolean[] groupStart' # S34 tail-pin B
+check_class 'randomtick/build/net/minecraft/world/entity/ai/BrainOps$IdKey.class' 'net.minecraft.world.entity.ai.BrainOps$IdKey(java.lang.Object)' 'final java.lang.Object ref' 'System.identityHashCode' # S34 tail-pin B + ×478-A10 PIN-B2 identity-контракт (анти value-equals: javap -c hashCode обязан нести System.identityHashCode — value-equals «оптимизация» = ядовитый кросс-брейн reuse)
+check_class 'randomtick/build/net/minecraft/world/entity/ai/BrainOps$Snapshot.class' 'final java.lang.Integer[] keys' 'final net.minecraft.world.entity.ai.behavior.BehaviorControl<net.minecraft.world.entity.LivingEntity>[] behs' 'final boolean[] groupStart' 'final java.lang.Object source' 'final java.lang.Object[] innerMaps' 'final int[] innerSizes' 'final boolean[] runningMask' # S34 tail-pin B + ×478-A10 PIN-B3: +4 поля tick2-лейн носителя (runningMask/source/innerMaps/innerSizes)
 
 # ==========================================================================
 # ROUND-474 C44 — collision-трио entry-сигнатурные маркеры (S62-канон:
