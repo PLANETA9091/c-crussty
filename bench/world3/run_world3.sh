@@ -112,6 +112,10 @@ PURPUR_URL="${PURPUR_URL:-https://api.purpurmc.org/v2/purpur/1.21.10/latest/down
 WORK="${WORK:-$PWD/world3-run}"
 SERVER="$WORK/server"
 BOOT_TIMEOUT="${BOOT_TIMEOUT:-600}"
+# LIMBO-GATE (СТЗ-21 P1, x485 materialization; spec x484-N5 / C2ME-nf#96+#97):
+# N=600s stall threshold (spec number), 30s poll => 20 consecutive frozen samples.
+LIMBO_STALL_S="${LIMBO_STALL_S:-600}"
+LIMBO_POLL_S="${LIMBO_POLL_S:-30}"
 NATIVES_MODE="unknown"
 # Resolve script dir BEFORE any cd (run #3 lesson: cd $SERVER broke
 # relative "$(dirname "$0")" lookups for report_world3.py / module.json)
@@ -647,6 +651,45 @@ java \
   > "$WORK/server-stdout.log" 2>&1 &
 SERVER_PID=$!
 server_died() { ! kill -0 "$SERVER_PID" 2>/dev/null; }
+
+# --- LIMBO-GATE: parked-limbo detector (СТЗ-21 P1) ---------------------------
+# Classifies C2ME-nf#97 DIED-vs-LIMBO: dead pid = DIED (expected-behavior,
+# monitor stands down — existing FATAL paths own it); loop ALIVE + frozen
+# progress = LIMBO (chunk parked in erroneous status-limbo transition).
+# Signals, threshold N=${LIMBO_STALL_S}s, poll ${LIMBO_POLL_S}s:
+#   A mark — (loop alive) ∧ Δ«Marked N chunks»=0 ≥600s, armed from first
+#     "Marked" line until soak start ("spark profiler start" in log); during
+#     soak the counter is legitimately static (forceload done) so disarmed.
+#   B log — Δ(server-stdout.log size)=0 ≥600s, any phase: full console
+#     silence; normal soak grows every 60s (tps/mobcaps/tickmonitor polls).
+# Trip → log evidence + SIGQUIT (thread dump lands in server-stdout.log
+# artifact) + LIMBO-DETECTED flag; main harness exits 1 after artifact
+# shutdown (fail-fast instead of burning the 70-min step cap).
+limbo_monitor() {
+  local base_m=0 base_s=0 stall_m=0 stall_s=0 now_m now_s soak sig
+  while ! server_died; do
+    sleep "$LIMBO_POLL_S"
+    server_died && return 0   # DIED class — not limbo, stand down
+    now_m="$(grep -c "Marked [0-9]* chunks" "$WORK/server-stdout.log" 2>/dev/null)"; now_m="${now_m:-0}"
+    now_s="$(stat -c %s "$WORK/server-stdout.log" 2>/dev/null)"; now_s="${now_s:-0}"
+    if [ "$now_m" -eq "$base_m" ]; then stall_m=$((stall_m + LIMBO_POLL_S)); else stall_m=0; base_m="$now_m"; fi
+    if [ "$now_s" -eq "$base_s" ]; then stall_s=$((stall_s + LIMBO_POLL_S)); else stall_s=0; base_s="$now_s"; fi
+    soak=0; grep -q "spark profiler start" "$WORK/server-stdout.log" 2>/dev/null && soak=1
+    if { [ "$stall_m" -ge "$LIMBO_STALL_S" ] && [ "$soak" -eq 0 ] && [ "$base_m" -gt 0 ]; } || [ "$stall_s" -ge "$LIMBO_STALL_S" ]; then
+      sig="log"; [ "$stall_m" -ge "$LIMBO_STALL_S" ] && [ "$soak" -eq 0 ] && [ "$base_m" -gt 0 ] && sig="mark+log"
+      log "LIMBO-DETECTED signal=$sig stall_mark=${stall_m}s stall_log=${stall_s}s marked=$base_m log_size=$base_s — SIGQUIT (thread dump) + fail-fast"
+      grep "Marked [0-9]* chunks" "$WORK/server-stdout.log" 2>/dev/null | tail -1 | sed 's/^/[limbo] last-marked: /'
+      tail -5 "$WORK/server-stdout.log" 2>/dev/null | sed 's/^/[limbo] tail: /'
+      kill -QUIT "$SERVER_PID" 2>/dev/null || true
+      sleep 12  # thread-dump flush window into server-stdout.log
+      echo "signal=$sig stall_mark=${stall_m} stall_log=${stall_s} marked=$base_m log_size=$base_s" > "$WORK/LIMBO-DETECTED"
+      return 0
+    fi
+  done
+}
+limbo_monitor &
+LIMBO_MON_PID=$!
+log "limbo-gate armed: stall>=${LIMBO_STALL_S}s poll=${LIMBO_POLL_S}s (signals: mark[pre-soak] + log-silence[any]) monitor pid $LIMBO_MON_PID"
 log "server pid $SERVER_PID (console tail pid $TAIL_PID) — waiting for Done (<=${BOOT_TIMEOUT}s)"
 
 SEEN_DONE=0
@@ -709,6 +752,7 @@ if [ "$SEEN_DONE" = "1" ]; then
       marked="$(grep -c "Marked [0-9]* chunks" "$WORK/server-stdout.log" 2>/dev/null)"
       [ -z "$marked" ] && marked=0
       [ "$marked" -ge "$EXPECT_CMDS" ] && break
+      if [ -f "$WORK/LIMBO-DETECTED" ]; then log "LIMBO-GATE: flag seen during forceload start-gate — aborting waits (fail-fast)"; SEEN_DONE=0; GATE_OK=0; break; fi
       if server_died; then log "FATAL: server process died during forceload start-gate — aborting waits"; SEEN_DONE=0; GATE_OK=0; break; fi
       if [ "$GATE_WAITED" -ge 300 ]; then
         log "WARN: forceload start-gate timeout after ${GATE_WAITED}s (marked=$marked/$EXPECT_CMDS) — sending inject anyway (plugin gate re-checks)"
@@ -727,6 +771,7 @@ if [ "$SEEN_DONE" = "1" ]; then
         log "FATAL: x150k injection ABORTED by plugin corruption-guard (C61: C30-class rt4-vs-inject fastutil corruption) — failing fast instead of burning ${POP_TIMEOUT}s"
         break
       fi
+      if [ -f "$WORK/LIMBO-DETECTED" ]; then log "LIMBO-GATE: flag seen during population injection — aborting waits (fail-fast)"; SEEN_DONE=0; break; fi
       if [ "$POP_WAITED" -ge "$POP_TIMEOUT" ]; then
         log "WARN: x150k injection DONE marker NOT seen in ${POP_TIMEOUT}s — continuing (fixture gate will fail the run)"
         break
@@ -788,6 +833,7 @@ if [ "$SEEN_DONE" = "1" ]; then
 
   while [ $SECONDS -lt $END ]; do
     if server_died; then log "FATAL: server process died mid-soak — ending soak early (crash artifacts preserved)"; break; fi
+    if [ -f "$WORK/LIMBO-DETECTED" ]; then log "LIMBO-GATE: flag seen mid-soak — ending soak early (fail-fast, artifacts preserved)"; break; fi
     sleep 60
     cmd "tps"
     # run#12 root-cause (S7-96b): `paper mspt` does NOT exist on Purpur 1.21.10
@@ -859,6 +905,7 @@ if [ "$SEEN_DONE" = "1" ]; then
 fi
 cmd "stop"
 sleep 30
+kill "$LIMBO_MON_PID" 2>/dev/null || true   # limbo-gate stands down before forced shutdown (no false trip)
 kill "$SERVER_PID" 2>/dev/null || true
 sleep 10
 kill -9 "$SERVER_PID" 2>/dev/null || true
@@ -873,4 +920,10 @@ if [ "$SEEN_DONE" != "1" ]; then
 fi
 timeout 180 python3 "$SCRIPT_DIR/report_world3.py" "$WORK" "$NATIVES_MODE" "$SEEN_DONE" || true
 log "harness complete; artifacts in $WORK"
+# --- LIMBO-GATE verdict (СТЗ-21 P1) ------------------------------------------
+if [ -f "$WORK/LIMBO-DETECTED" ]; then
+  log "VERDICT: LIMBO-DETECTED — $(cat "$WORK/LIMBO-DETECTED") (SIGQUIT thread dump in server-stdout.log; DIED-vs-LIMBO классификация C2ME-nf#97: loop жив, прогресс заморожен)"
+  tail -80 "$WORK/server-stdout.log" 2>/dev/null | sed 's/^/[srv] /'
+  exit 1
+fi
 exit 0
