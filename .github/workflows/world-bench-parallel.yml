@@ -215,10 +215,16 @@ jobs:
           touch "$RUNNER_TEMP/.built"
 
       - name: Run Benchmark 3.0 (world + forceload + no players + profile)
+        # C95 wedge-guard: job-level timeout-75 cancels the WHOLE job — the
+        # if:always() upload step never runs, all artifacts are lost (C61-class
+        # 15-min server zombie showed the wedge mode). Step-level cap converts
+        # that into a failed step with partial artifacts preserved. 70 leaves
+        # ~5 min for recon + gates + upload under the 75 job ceiling.
+        timeout-minutes: 70
         env:
           WORLD_URL: ${{ inputs.world_url || 'https://storage.shield.land/public.php/dav/files/twzsxN3HkBQtyED/Season%203/MineShield-3__Min--Normal.zip' }}
           FORCELOAD_RADIUS: ${{ inputs.radius || '640' }}
-          RUN_SECONDS: ${{ inputs.seconds || '900' }}
+          RUN_SECONDS: ${{ inputs.seconds || '300' }} # C95: fallback aligned to x466-C98 canon 300s (legacy 900 was a 3x-window trap on empty-string API dispatch; canon POSTs always pass seconds=300 so this line is dead there)
           SUMMON_SWEEPS: '0' # legacy (pre-150k era), always 0 since S7-129; input dropped TASK-327 (25-input limit)
           FAKE_PLAYERS: ${{ inputs.fake_players || '0' }}
           FLUID_GUARD: ${{ inputs.fluid_guard || '1' }}
@@ -335,6 +341,10 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
+          # C95: on band fast-fail (step 2, pre-download discard) world3-run/
+          # does not exist yet — upload must be a clean no-op, not a step-fail
+          # noise line on an already-failed pairing-discard job.
+          if-no-files-found: ignore
           name: world3-bench
           path: |
             world3-run/BOTTLENECKS_3.md
