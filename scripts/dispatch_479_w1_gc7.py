@@ -38,7 +38,7 @@ API = "https://api.github.com"
 WF = "world-bench-parallel.yml"
 ALIAS = "round-479-w1-gc7"
 BASE_RUN = 36369278270          # W7 gc3 600s/640 база (плато 2.6, STW из артефакта)
-PIN_SHA = "REPLACED_BY_COMMIT"  # заполняется коммитом prereg (закон 14a/16)
+PIN_SHA = "065aa6dab78bd2da72ef690b420aae6fd3722fc4"  # заполняется коммитом prereg (закон 14a/16)
 
 INPUTS = {
     "world_url": "https://storage.shield.land/public.php/dav/files/twzsxN3HkBQtyED/Season%203/MineShield-3__Min--Normal.zip",
