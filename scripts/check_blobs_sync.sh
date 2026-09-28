@@ -607,6 +607,7 @@ entityinside/build/net/minecraft/world/entity/InsideSnapRegistryOps.class
 entityinside/build/net/minecraft/world/level/SkipStoreOps.class
 entityinside/build/net/minecraft/world/level/TraverseOps.class
 entityinside/build/net/minecraft/world/level/ZeroAllocOps.class
+entityinside/build/net/minecraft/world/level/BlockScheduleOps.class
 fluid/build/net/minecraft/world/entity/FluidBitmaskOps$Entry.class
 items/build/net/minecraft/world/entity/item/ItemMergeOps.class
 area-map/build-probe/dev/crussty/areamapprobe/AreaMapProbe.class

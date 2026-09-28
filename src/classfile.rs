@@ -4767,6 +4767,78 @@ pub fn patch_serverlevel_send_block_updated_navplane(
     }
 }
 
+/// SCHED-DEFER (C30, ROUND-475 — rt4/bc1 thread-confinement SITE-A, spec
+/// docs/RT4_CONFINEMENT_SPEC.md §4): the four `ScheduledTickAccess.scheduleTick`
+/// default bodies (in this kernel the ONLY schedule surface — ServerLevel
+/// declares no overrides; patched-kernel census) redirect to
+/// BlockScheduleOps.schedule*: workers defer the record to the per-worker TL
+/// queue (phase-4c main replay, carrier mutates MAIN-ONLY), main reproduces
+/// the vanilla default body bit-for-bit. STRICT 4:4 — all sites or none.
+pub const SCHED_OPS_CLASS: &str = "net/minecraft/world/level/BlockScheduleOps";
+
+pub const SCHED_REDIRECT_TARGETS: [(&str, &str, &str, &str); 4] = [
+    (
+        "scheduleTick",
+        "(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/Block;ILnet/minecraft/world/ticks/TickPriority;)V",
+        "scheduleBlock",
+        "(Lnet/minecraft/world/level/ScheduledTickAccess;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/Block;ILnet/minecraft/world/ticks/TickPriority;)V",
+    ),
+    (
+        "scheduleTick",
+        "(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/material/Fluid;ILnet/minecraft/world/ticks/TickPriority;)V",
+        "scheduleFluid",
+        "(Lnet/minecraft/world/level/ScheduledTickAccess;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/material/Fluid;ILnet/minecraft/world/ticks/TickPriority;)V",
+    ),
+    (
+        "scheduleTick",
+        "(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/Block;I)V",
+        "scheduleBlockNoPriority",
+        "(Lnet/minecraft/world/level/ScheduledTickAccess;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/block/Block;I)V",
+    ),
+    (
+        "scheduleTick",
+        "(Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/material/Fluid;I)V",
+        "scheduleFluidNoPriority",
+        "(Lnet/minecraft/world/level/ScheduledTickAccess;Lnet/minecraft/core/BlockPos;Lnet/minecraft/world/level/material/Fluid;I)V",
+    ),
+];
+
+pub fn sched_resolution_closure(bridge: &[u8]) -> Result<(), String> {
+    redirect_targets_resolution_closure(bridge, &SCHED_REDIRECT_TARGETS)
+}
+
+pub fn patch_scheduled_tick_access_schedule(
+    bytes: &[u8],
+) -> Result<(Vec<u8>, RetargetOutcome), String> {
+    let mut cur = bytes.to_vec();
+    let mut ret = 0usize;
+    let mut already = 0usize;
+    for (name, desc, tname, tdesc) in SCHED_REDIRECT_TARGETS {
+        let (p, outcome) = redirect_method_body_to_static(
+            &cur,
+            name,
+            desc,
+            "net/minecraft/world/level/ScheduledTickAccess",
+            SCHED_OPS_CLASS,
+            tname,
+            tdesc,
+        )?;
+        cur = p;
+        match outcome {
+            RetargetOutcome::Retargeted { .. } => ret += 1,
+            RetargetOutcome::AlreadyPatched { .. } => already += 1,
+            RetargetOutcome::NotFound => {
+                return Ok((bytes.to_vec(), RetargetOutcome::NotFound));
+            }
+        }
+    }
+    if ret == 4 {
+        Ok((cur, RetargetOutcome::Retargeted { sites: 4 }))
+    } else {
+        Ok((cur, RetargetOutcome::AlreadyPatched { sites: 4 }))
+    }
+}
+
 /// NAV-POOL (TASK-410-A k5, cmp405_navplane STRICT eq): the A* node-pool —
 /// NodeEvaluator.prepare body-redirected to NavPoolOps.prepare (vanilla
 /// body with nodes.clear() REPLACED by the fresh-shape laundering) and
@@ -9360,6 +9432,86 @@ pub fn patch_utf8_gate(bytes: &[u8], from: &str, to: &str) -> Result<Vec<u8>, St
         return Err("gate utf8 not swapped".to_string());
     }
     Ok(out)
+}
+
+#[cfg(test)]
+mod sched_confine {
+    // C30 (ROUND-475): REAL kernel fixture — ScheduledTickAccess carries the
+    // four scheduleTick default bodies (the ONLY schedule surface in this
+    // kernel; ServerLevel has no overrides — patched-kernel census).
+    const SCHEDULED_TICK_ACCESS: &[u8] =
+        include_bytes!("../tests/fixtures/ScheduledTickAccess_real.class");
+
+    use crate::classfile::*;
+
+    /// The REAL ScheduledTickAccess's four scheduleTick default bodies
+    /// redirect to BlockScheduleOps EXACTLY 4 sites (strict composite).
+    #[test]
+    fn scheduled_tick_access_retargets_exactly_four_sites() {
+        let (patched, outcome) =
+            patch_scheduled_tick_access_schedule(SCHEDULED_TICK_ACCESS).expect("patch");
+        assert_eq!(
+            outcome,
+            RetargetOutcome::Retargeted { sites: 4 },
+            "C30 contract: all four scheduleTick defaults must retarget — a NotFound or \
+             partial outcome means the kernel shape drifted and the canalization must \
+             stay vanilla (S24 fail-closed matrix)"
+        );
+        assert_ne!(patched, SCHEDULED_TICK_ACCESS);
+        // Idempotent re-sight: second pass is AlreadyPatched{4}.
+        let (again, outcome2) =
+            patch_scheduled_tick_access_schedule(&patched).expect("re-patch");
+        assert_eq!(outcome2, RetargetOutcome::AlreadyPatched { sites: 4 });
+        assert_eq!(again, patched);
+    }
+
+    /// Every redirected body is the straight-line receiver-prepended
+    /// invokestatic shape and resolves to the BlockScheduleOps bridge BY NAME.
+    #[test]
+    fn sched_redirects_resolve_to_block_schedule_ops() {
+        let (patched, _) =
+            patch_scheduled_tick_access_schedule(SCHEDULED_TICK_ACCESS).expect("patch");
+        let layout = parse_layout(&patched).expect("re-parse patched");
+        for (name, desc, tname, tdesc) in SCHED_REDIRECT_TARGETS {
+            let name_idx = layout.pool.find_utf8(name).expect("name kept");
+            let desc_idx = layout.pool.find_utf8(desc).expect("desc kept");
+            let m = find_method(&patched, layout.methods_start, name_idx, desc_idx)
+                .expect("redirected method kept");
+            let (start, len) =
+                find_code_attr(&patched, &layout.pool, &m).expect("Code attr");
+            let code = &patched[start..start + len];
+            assert_eq!(code[0], 0x2a, "aload_0 (receiver first) for {name}{desc}");
+            assert_eq!(code[len - 1], 0xb1, "void return for {name}{desc}");
+            let invoke = code.len() - 4;
+            assert_eq!(code[invoke], 0xb8, "invokestatic for {name}{desc}");
+            let r = layout
+                .pool
+                .methodref_parts(u16::from_be_bytes([code[invoke + 1], code[invoke + 2]]))
+                .expect("invokestatic resolves");
+            assert_eq!(
+                r,
+                (
+                    SCHED_OPS_CLASS.to_string(),
+                    tname.to_string(),
+                    tdesc.to_string()
+                ),
+                "redirect target mismatch for {name}{desc}"
+            );
+        }
+    }
+
+    /// Resolution closure on the REAL embedded bridge bytes (delivery graph).
+    #[test]
+    fn sched_bridge_declares_all_redirect_targets() {
+        // The bridge is embedded in region_threads (private consts) — mirror
+        // the build output here to keep the closure check self-contained.
+        let bridge = include_bytes!(
+            "../entityinside/build/net/minecraft/world/level/BlockScheduleOps.class"
+        );
+        if let Err(e) = sched_resolution_closure(bridge) {
+            panic!("RESOLUTION CLOSURE FAILED: {e} — rebuild entityinside/ bridges");
+        }
+    }
 }
 
 #[cfg(test)]
