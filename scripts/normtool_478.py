@@ -8,7 +8,19 @@
 report-only) → norm_v5 = 100*(median/tps_exp_v5(cpu)−1) → HOST-ценз M1
 (STW_total ≤23.0s ∧ young_avg ≤200ms из gc.log completion-строк без gc,phases;
 гейт-поле m1_clean top-level: fail-closed, gc.log не распарсен → False — [479-G1]
-урок: потребители читают m1_clean/stw, None-класс = STW-check блокирован) → JSON.
+урок: потребители читают m1_clean/stw, None-класс = STW-check блокирован;
+[482-C03.1] TRI-STATE m1_state CLEAN/CENS/UNKNOWN: UNKNOWN = gc.log нет/0
+completion-строк/young_n==0 при stw_total>0 → m1_clean=False ∧ verdict
+M1-UNKNOWN (НЕ PASS — Л-481-C22 fail-open дыра «gc.log есть ∧ 0 строк →
+m1_clean=True» закрыта) → JSON.
+
+[482-C03.2] biomes-exempt: CLI-флаг --biomes-exempt — биом-AIOOBE класс
+(строка «biomes selftest FAIL (throwable …AIOOBE…» = fail-closed probe
+ChunkParseOps.biomesSelftest, прецедент Л-474-C88.2: AIOOBE=2 selftest-проба
+не гейт) exempt из FIXTURE-гейта; явные маркеры в JSON: aioobe_biome /
+aioobe_other / biomes_exempt / biomes_exempt_applied. Без флага поведение
+×481 бит-точное (любой AIOOBE → FIXTURE-INVALID). Реальные (не-probe) AIOOBE
+exempt'ом НЕ снимаются (redstone/entity-классы → FIXTURE-INVALID как раньше).
 
 Уроки-каноны (НЕ нарушать):
   A1.2a percentile-медианы НЕТ в артефактах (spark печатает Max/Min/Average only) —
@@ -20,8 +32,9 @@ report-only) → norm_v5 = 100*(median/tps_exp_v5(cpu)−1) → HOST-ценз M1
 
 Пороги/окна BANK_V5_FREEZE §2 v5-FROZEN — только report-only, НЕ двигать (§5).
 Usage:
-  normtool_478.py --run-id ID [--run-id ID ...] [--workdir DIR]
-  normtool_478.py --selftest [--workdir DIR]   # 3 бит-точные STW/verdict-реконструкции [479-G1]
+  normtool_478.py --run-id ID [--run-id ID ...] [--workdir DIR] [--biomes-exempt]
+  normtool_478.py --selftest [--workdir DIR]   # 3 канон-реконструкции [479-G1]
+                                               # + 9 offline-фикстур [482-C03]
 """
 import argparse, json, os, re, statistics, subprocess, zipfile
 
@@ -45,6 +58,9 @@ RE_IDX = re.compile(r"runner_cpu_index[:=]\s*(\d+)")
 RE_SPARK = re.compile(r"spark tick-monitor MSPT: avg \*?\*?([\d.]+)ms")
 RE_GC_TOTAL = re.compile(r"total pause: \*?\*?([\d.]+) ms")
 PAUSE_COMPL = re.compile(r"GC\(\d+\) Pause .* (\d+\.\d+)ms$")
+# [482-C03.2] биом-AIOOBE класс: fail-closed probe ChunkParseOps.biomesSelftest
+# печатает one-line toString Throwable без стека → сигнатура одной строки.
+RE_BIOME_AIOOBE = re.compile(r"biomes selftest FAIL \(throwable .*ArrayIndexOutOfBounds")
 
 
 def tps_exp_v5(idx, local_node=False):
@@ -97,39 +113,9 @@ def gc_canon(text):
     return stw
 
 
-def fetch_artifact(run_id, workdir):
-    """Артефакт world3-bench → кэш-zip (download skip если уже есть)."""
-    tok = open("/tmp/gh_token").read().strip()
-    base = f"https://api.github.com/repos/{REPO}"
-    os.makedirs(workdir, exist_ok=True)
-    zpath = os.path.join(workdir, f"art_{run_id}.zip")
-    if os.path.exists(zpath):
-        return zpath
-    out = subprocess.run(["curl", "-s", "-H", f"Authorization: token {tok}",
-                          f"{base}/actions/runs/{run_id}/artifacts"],
-                         capture_output=True, text=True).stdout
-    art = next((a for a in json.loads(out).get("artifacts", [])
-                if a["name"] == "world3-bench"), None)
-    if not art:
-        return None
-    subprocess.run(["curl", "-sL", "-H", f"Authorization: token {tok}",
-                    "-o", zpath, art["archive_download_url"]], check=True)
-    return zpath
-
-
-def norm_run(run_id, workdir):
-    """Полный A1-конвейер одного run id → JSON-дикт (raw-поллы хранить обязательно)."""
-    zpath = fetch_artifact(run_id, workdir)
-    if not zpath:
-        return {"run_id": run_id, "verdict": "NO-ARTIFACT"}
-    with zipfile.ZipFile(zpath) as z:
-        names = z.namelist()
-        env = z.read("run-env.txt").decode(errors="replace")
-        log = z.read("server-stdout.log").decode(errors="replace")
-        bot = z.read("BOTTLENECKS_3.md").decode(errors="replace") if "BOTTLENECKS_3.md" in names else ""
-        gcn = next((n for n in names if n.endswith("gc.log")), None)
-        gclog = z.read(gcn).decode(errors="replace") if gcn else ""
-
+def parse_bundle(run_id, env, log, bot, gclog, biomes_exempt=False):
+    """A1-конвейер поверх уже-распакованного бандла (offline-тестируемо, урок B3).
+    norm_run = fetch-zip + parse_bundle; fixtures зовут parse_bundle напрямую."""
     idx_m = RE_IDX.search(env)
     idx = int(idx_m.group(1)) if idx_m else 0
 
@@ -165,25 +151,48 @@ def norm_run(run_id, workdir):
     all_avg = (s["total_ms"] / n) if s and n else 0.0
     host = bool(s) and (s["total_ms"] > STW_MAX_S * 1000 or
                         (s["young"] and young_avg > YOUNG_MAX_MS))
-    # --- M1-ГЕЙТ [479-G1]: STW-total ≤23.0s ∧ young_avg ≤200ms (канон completion-only
-    # строки без gc,phases); fail-closed: gc.log нет/не распарсен → m1_clean=False ---
-    m1_clean = bool(s) and s["total_ms"] <= STW_MAX_S * 1000.0 and \
-        (s["young_sum_ms"] / s["young"] <= YOUNG_MAX_MS if s["young"] else True)
+    # --- M1-ГЕЙТ [479-G1] + [482-C03.1] TRI-STATE fail-closed ---
+    # CENS: порог нарушен. UNKNOWN: gc.log нет / 0 completion-строк (Л-481-C22
+    # fail-open дыра «gc.log есть ∧ 0 строк → m1_clean=True») / young_n==0 при
+    # распарсенных паузах ≤23s (young-гейт неверифицируем — young_n==0 при
+    # stw_total>0 НЕ может PASS по умолчанию). CLEAN: оба гейта проверены.
+    # m1_clean остаётся boolean (потребители [479-G1]): UNKNOWN → False.
+    if not s or s["pauses"] == 0:
+        m1_state = "UNKNOWN"
+    elif s["total_ms"] > STW_MAX_S * 1000.0:
+        m1_state = "CENS"
+    elif s["young"] == 0:
+        m1_state = "UNKNOWN"
+    elif s["young_sum_ms"] / s["young"] > YOUNG_MAX_MS:
+        m1_state = "CENS"
+    else:
+        m1_state = "CLEAN"
+    m1_clean = m1_state == "CLEAN"
     bot_total = float(RE_GC_TOTAL.search(bot).group(1)) if RE_GC_TOTAL.search(bot) else None
 
     valid = "FIXTURE-VALIDITY: VALID" in bot
     ncdfe = "NoClassDefFoundError" in log
-    aioobe = "ArrayIndexOutOfBoundsException" in log
+    # --- [482-C03.2] AIOOBE-гейт c биом-exempt (прецедент Л-474-C88.2) ---
+    aioobe_lines = [l for l in log.splitlines() if "ArrayIndexOutOfBoundsException" in l]
+    aioobe_n = sum(l.count("ArrayIndexOutOfBoundsException") for l in aioobe_lines)
+    aioobe_biome = sum(l.count("ArrayIndexOutOfBoundsException") for l in aioobe_lines
+                       if RE_BIOME_AIOOBE.search(l))
+    aioobe_other = aioobe_n - aioobe_biome
+    aioobe = bool(aioobe_n)                      # compat-поле: полный AIOOBE-факт
+    aioobe_gate = aioobe_other if biomes_exempt else aioobe
+    biomes_exempt_applied = bool(biomes_exempt and aioobe_biome and not aioobe_other)
     in_band = BAND[0] <= idx <= BAND[1]
 
     if not in_band:
         verdict = "BAND-DEAD"
     elif not polls:
         verdict = "NO-TPS"
-    elif not valid or ncdfe or aioobe:
+    elif not valid or ncdfe or aioobe_gate:
         verdict = "FIXTURE-INVALID"
     elif host:
         verdict = "HOST-CENSORED"          # в-точка VALID, из фитов CLEAN-first §3.3
+    elif m1_state == "UNKNOWN":
+        verdict = "M1-UNKNOWN"             # [482-C03.1] fail-closed: НЕ PASS
     else:
         verdict = "NORM-COMPUTED"          # norm-число готово; пороги — вне скоупа тулзы
 
@@ -197,7 +206,8 @@ def norm_run(run_id, workdir):
 
     return {
         "run_id": run_id, "tool": "normtool_478", "verdict": verdict,
-        "m1_clean": m1_clean,                   # ГЕЙТ [479-G1]: STW≤23 ∧ young≤200
+        "m1_clean": m1_clean,                   # ГЕЙТ [479-G1]+[482-C03.1]: UNKNOWN→False
+        "m1_state": m1_state,                   # [482-C03.1] CLEAN/CENS/UNKNOWN
         "cpu_index": idx, "in_band": in_band,
         "poll_source": source, "polls_captured": n_captured,
         "raw_polls_bottlenecks": raw_bot,          # A1.2: raw-поллы хранить
@@ -222,10 +232,48 @@ def norm_run(run_id, workdir):
                     "full_cc": s["full_cc"] if s else 0,
                     "full_md": s["full_md"] if s else 0,
                     "bottlenecks_total_pause_ms": bot_total,
-                    "m1_clean": m1_clean, "host": host},
+                    "m1_clean": m1_clean, "host": host, "m1_state": m1_state},
         "fixture_valid": valid, "ncdfe": ncdfe, "aioobe": aioobe,
+        "aioobe_biome": aioobe_biome, "aioobe_other": aioobe_other,
+        "biomes_exempt": bool(biomes_exempt),
+        "biomes_exempt_applied": biomes_exempt_applied,   # [482-C03.2] маркер
         "frozen_windows_report_only": win_report,
     }
+
+
+def fetch_artifact(run_id, workdir):
+    """Артефакт world3-bench → кэш-zip (download skip если уже есть)."""
+    tok = open("/tmp/gh_token").read().strip()
+    base = f"https://api.github.com/repos/{REPO}"
+    os.makedirs(workdir, exist_ok=True)
+    zpath = os.path.join(workdir, f"art_{run_id}.zip")
+    if os.path.exists(zpath):
+        return zpath
+    out = subprocess.run(["curl", "-s", "-H", f"Authorization: token {tok}",
+                          f"{base}/actions/runs/{run_id}/artifacts"],
+                         capture_output=True, text=True).stdout
+    art = next((a for a in json.loads(out).get("artifacts", [])
+                if a["name"] == "world3-bench"), None)
+    if not art:
+        return None
+    subprocess.run(["curl", "-sL", "-H", f"Authorization: token {tok}",
+                    "-o", zpath, art["archive_download_url"]], check=True)
+    return zpath
+
+
+def norm_run(run_id, workdir, biomes_exempt=False):
+    """Полный A1-конвейер одного run id → JSON-дикт (raw-поллы хранить обязательно)."""
+    zpath = fetch_artifact(run_id, workdir)
+    if not zpath:
+        return {"run_id": run_id, "verdict": "NO-ARTIFACT"}
+    with zipfile.ZipFile(zpath) as z:
+        names = z.namelist()
+        env = z.read("run-env.txt").decode(errors="replace")
+        log = z.read("server-stdout.log").decode(errors="replace")
+        bot = z.read("BOTTLENECKS_3.md").decode(errors="replace") if "BOTTLENECKS_3.md" in names else ""
+        gcn = next((n for n in names if n.endswith("gc.log")), None)
+        gclog = z.read(gcn).decode(errors="replace") if gcn else ""
+    return parse_bundle(run_id, env, log, bot, gclog, biomes_exempt=biomes_exempt)
 
 
 SELFTEST = [
@@ -250,7 +298,8 @@ def _get(d, path):
 
 
 def selftest(workdir):
-    """Бит-точная реконструкция 3 канон-ранов (урок B3: selftest перед вердиктом)."""
+    """Бит-точная реконструкция 3 канон-ранов + 9 offline-фикстур [482-C03]
+    (урок B3: selftest перед вердиктом; фикстуры не требуют сети)."""
     ok = 0
     for run_id, tag, expect in SELFTEST:
         r = norm_run(run_id, workdir)
@@ -268,9 +317,60 @@ def selftest(workdir):
         print(f"[selftest] {tag} {run_id}: norm_v5={r['norm_v5']} med={r['tps_med']} "
               f"exp={r['tps_exp_v5']} -> {status}", file=__import__("sys").stderr)
         print(json.dumps(r, ensure_ascii=False))
+    fx_ok, fx_n = _fixture_check()
     print(json.dumps({"selftest": f"{ok}/{len(SELFTEST)}",
-                      "bit_exact": ok == len(SELFTEST)}, ensure_ascii=False))
-    return ok == len(SELFTEST)
+                      "bit_exact": ok == len(SELFTEST),
+                      "fixtures": f"{fx_ok}/{fx_n}",
+                      "fixtures_ok": fx_ok == fx_n}, ensure_ascii=False))
+    return ok == len(SELFTEST) and fx_ok == fx_n
+
+
+# [482-C03] offline-фикстуры (урок B3: selftest без сети; env/bot канон-минимум:
+# cpu 7.0M in-band + FIXTURE-VALIDITY VALID, TPS-полл 2.2 → stdout_fallback).
+FX_ENV = "runner_cpu_index: 7000000\nworld_sha256: afb3a0b3"
+FX_BOT = "FIXTURE-VALIDITY: VALID"
+FX_LOG = "TPS from last 5s, 1m, 5m, 15m: 2.2, 2.2, 2.2, 2.2,\n"
+FIXTURES = [
+    # (tag, gclog, extra_log, biomes_exempt, {ожидания})
+    ("fx-clean", "GC(3) Pause Young (Normal) 100.00ms\nGC(7) Pause Young (Normal) 110.00ms\n",
+     "", False, {"verdict": "NORM-COMPUTED", "m1_state": "CLEAN", "m1_clean": True}),
+    ("fx-no-gclog", "", "", False,
+     {"verdict": "M1-UNKNOWN", "m1_state": "UNKNOWN", "m1_clean": False}),
+    ("fx-zeropause", "[info][gc] Using G1\n", "", False,   # Л-481-C22 fail-open дыра
+     {"verdict": "M1-UNKNOWN", "m1_state": "UNKNOWN", "m1_clean": False}),
+    ("fx-full-only", "GC(9) Pause Full (CodeCache) 500.00ms\n", "", False,  # young_n==0 при stw_total>0
+     {"verdict": "M1-UNKNOWN", "m1_state": "UNKNOWN", "m1_clean": False}),
+    ("fx-stw-over", "GC(9) Pause Full (Metadata) 24000.00ms\n", "", False,
+     {"verdict": "HOST-CENSORED", "m1_state": "CENS", "m1_clean": False}),
+    ("fx-young-over", "GC(3) Pause Young (Normal) 250.00ms\nGC(7) Pause Young (Normal) 260.00ms\n",
+     "", False, {"verdict": "HOST-CENSORED", "m1_state": "CENS", "m1_clean": False}),
+    ("fx-biome-aioobe-noexempt", "GC(3) Pause Young (Normal) 100.00ms\n",
+     "cmp420_chunk2: biomes selftest FAIL (throwable java.lang.ArrayIndexOutOfBoundsException: Index 1)\n",
+     False, {"verdict": "FIXTURE-INVALID", "aioobe_biome": 1, "aioobe_other": 0,
+             "biomes_exempt_applied": False}),
+    ("fx-biome-aioobe-exempt", "GC(3) Pause Young (Normal) 100.00ms\n",
+     "cmp420_chunk2: biomes selftest FAIL (throwable java.lang.ArrayIndexOutOfBoundsException: Index 1)\n",
+     True, {"verdict": "NORM-COMPUTED", "aioobe_biome": 1, "aioobe_other": 0,
+            "biomes_exempt_applied": True}),
+    ("fx-real-aioobe-exempt", "GC(3) Pause Young (Normal) 100.00ms\n",
+     "java.lang.ArrayIndexOutOfBoundsException: Index 6 out of bounds for length 6\n"
+     "\tat net.minecraft.world.level.redstone.CollectingNeighborUpdater$MultiNeighborUpdate.runNext(CollectingNeighborUpdater.java:137)\n",
+     True, {"verdict": "FIXTURE-INVALID", "aioobe_biome": 0, "aioobe_other": 1,
+            "biomes_exempt_applied": False}),
+]
+
+
+def _fixture_check():
+    """[482-C03] 9 offline-фикстур: tri-state m1 + biomes-exempt гейт без сети."""
+    ok = 0
+    for tag, gclog, extra, exempt, expect in FIXTURES:
+        r = parse_bundle(0, FX_ENV, FX_LOG + extra, FX_BOT, gclog, biomes_exempt=exempt)
+        fails = [f"{k}: got {r.get(k)} want {v}" for k, v in expect.items() if r.get(k) != v]
+        ok += not fails
+        print(f"[selftest-fx] {tag}{' +exempt' if exempt else ''}: {r['verdict']}/{r['m1_state']} -> "
+              + ("PASS" if not fails else "FAIL " + "; ".join(fails)),
+              file=__import__("sys").stderr)
+    return ok, len(FIXTURES)
 
 
 if __name__ == "__main__":
@@ -278,10 +378,12 @@ if __name__ == "__main__":
     ap.add_argument("--run-id", type=int, action="append")
     ap.add_argument("--workdir", default="/home/z/rounds/ROUND-478/G24/art")
     ap.add_argument("--selftest", action="store_true")
+    ap.add_argument("--biomes-exempt", action="store_true")   # [482-C03.2]
     a = ap.parse_args()
     if a.selftest:
         raise SystemExit(0 if selftest(a.workdir) else 1)
     if not a.run_id:
         ap.error("--run-id required (or --selftest)")
     for rid in a.run_id:
-        print(json.dumps(norm_run(rid, a.workdir), ensure_ascii=False))
+        print(json.dumps(norm_run(rid, a.workdir, biomes_exempt=a.biomes_exempt),
+                         ensure_ascii=False))
