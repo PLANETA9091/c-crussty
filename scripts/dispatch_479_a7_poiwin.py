@@ -94,6 +94,10 @@ def main():
     dry = "--dry-run" in args
     tok = token()
 
+    if cmd == "poll":
+        do_poll(tok)
+        return
+
     master = api(tok, f"/repos/{REPO}/git/ref/heads/master")["object"]["sha"]
     print(f"origin/master={master[:8]} pin={PIN_SHA[:8]} match={master == PIN_SHA}", flush=True)
     if master != PIN_SHA:
@@ -117,9 +121,6 @@ def main():
     print(f"inputs: {json.dumps(INPUTS)}", flush=True)
     if dry:
         print("DRY-RUN OK — no dispatches", flush=True)
-        return
-    if cmd == "poll":
-        do_poll(tok)
         return
 
     for br in BRANCHES:
