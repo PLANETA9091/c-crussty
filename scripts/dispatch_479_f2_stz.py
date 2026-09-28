@@ -28,7 +28,10 @@ REFUTED_CENS сцены), MSPT-профиль vs канон 392.89/415.84; band-
 (сцена добавляет CPU = claim), не ре-ролл-триггер (Л201). Runs >15 мин → DISPATCHED run-id
 (закон 18-iii). Закон-5: пороги/окна v5-FROZEN не тронуты, lever ∅, ваниль-команды only.
 
-Usage: dispatch_479_f2_stz.py [--dry-run]
+Usage: dispatch_479_f2_stz.py [--dry-run] [--pin <sha>]
+
+--pin: явный пин мастер-HEAD (урок 479-F2: shared-clone HEAD-гонка — несколько агентов
+  коммитят/чекаутят в одном клоне; пин берётся из аргумента, а не из volatile HEAD клона).
 """
 import json, subprocess, sys, time, urllib.request, urllib.error
 
@@ -79,11 +82,17 @@ def api(tok, url, method="GET", data=None):
 
 def main():
     dry = "--dry-run" in sys.argv
+    pin = None
+    if "--pin" in sys.argv:
+        pin = sys.argv[sys.argv.index("--pin") + 1]
     tok = token()
 
-    # 0) пин = локальный HEAD; гард против HEAD-гонок: origin/master должен совпасть
-    local = subprocess.run(["git", "-C", "/home/z/c-crussty", "rev-parse", "HEAD"],
-                           capture_output=True, text=True).stdout.strip()
+    # 0) пин = --pin (shared-clone-гонка) или локальный HEAD; origin/master должен совпасть
+    if pin:
+        local = pin
+    else:
+        local = subprocess.run(["git", "-C", "/home/z/c-crussty", "rev-parse", "HEAD"],
+                               capture_output=True, text=True).stdout.strip()
     master = api(tok, f"/repos/{REPO}/commits/master")["sha"]
     assert master == local, f"origin/master {master} != local HEAD {local} — push не доехал/дрейф"
     print(f"master pin OK {master[:8]} (docs/stress/scripts-only дельта, 0 код-дельт)")
