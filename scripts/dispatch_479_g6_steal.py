@@ -39,7 +39,7 @@ API = "https://api.github.com"
 WF = "world-bench-parallel.yml"
 
 BRANCH = "round-479-g6-steal"
-PIN = "5d724fa0cbf6eaa0f3468be83ab9a2c6d40c4a50"   # origin/master live (board 479-A5)
+PIN = "55c04f4d7b98eac741379d342a921a66e3ad7700"   # origin/master live: prereg 55c04f4d (этот скрипт) поверх 065aa6da (W1-prereg) поверх board 479-A5
 BASE_CLAIM = "1a0fb21d"                             # база клейма командира
 
 # canon x466-C98 ЯВНЫМ JSON (урок C66-C72) + G6-ось: region_steal=1, bu_defer=1
