@@ -5092,3 +5092,12 @@ Work Log:
 - CI: OFFLINE, 0 диспатчей (инкремент к paldelta = отдельная ветка/серт — не успеть честно; соло-диспатч = сгоревший run с центром +0.15 << бар). Экономия 1-2 runs.
 - Внешние ≥3 (fetch-верифицированы): JEP-193 + JDK21 VarHandle javadoc (getAcquire/getOpaque формулировки), Lea j9mm («On TSO... Volatile-read and Acquire-read may have the same implementation»), C2-исходники ×4 файла + bug-база REST (8057884/8390149/8341146), Agrona UnsafeBuffer getLongAcquire :420, LMAX Disruptor Sequence acquireFence/releaseFence :82-102.
 - Артефакты: /home/z/rounds/ROUND-464/LAB-STAGE/LEDGER-47.md (§0-§5, ~40 чисел); /tmp/p33bench/P33Tax{,2,3,4}.java; docs/LAB_LEDGER.md +Л113; docs-only commit e0a20955 push master (origin fast-forward ac645695..e0a20955).
+
+## ROUND-478 (тик 2026-09-28 07:43+08, trace 1a0dc7e6662ff26d-cron-agent-loop-202609280743)
+- PHASE 0: токен → flock 9 → master d24ba5fd+drift / dev-logs e6a57a8; worklog восстановлен из dev-logs (5094→9778); диск 62%→92% (агенты) → purge 2.0G.
+- PHASE 1 абсорб: 82/82 ранов ×477 волн (cpu_index через artifacts API, 3 чанка × 8 воркеров); ключевые: W3-c5 8,925,412 ∈ POI / W3-c8+W1-s7 ∈ climb5 / STRICT +9 хитов; conf ×3 fail повторно; BOTTLENECK.md ×478.
+- **МЕРЖ №18**: 478-A1 norm-вердикт → climb5-p32-1 3/3 min-of-3 +26.96; носитель dormant-resident (блобы master==carrier); branch round-478-merge18 + dispatch_478_merge18.py; гейты cargo 0 err + blobs ALL IN SYNC; push **2d84ede9**; canary 204 → **−3.48 PASS** (B1 run 36364206523).
+- PHASE 2 SWARM: ростер 100 на board; 5 волн Task = 60 командиров (дедлайны ~40%, рестарты); N2=0 честно; диспатчи 118/100.
+- PHASE 3 вердикты: chk-19 23.2 СЕРТИФИЦИРОВАН; sensn16 sub-bar → цикл; REFUTED_CENS ×12 с потолками; РЕ-ГРАЙН не требуется (мерж есть), волна-2 диспатчена (15b ✓), очередь in-flight ≥8 ранов.
+- PHASE 4: GOAL/CLAIMS ×478 + LEDGER Л-478-блок (командиры пушали сами ×35) + worklog; копия dev-logs; push обоих.
+- Артефакты: /home/z/rounds/ROUND-478/ (BOTTLENECK.md, lab/*, a16/a9/Y1/Y5 verdicts); master cd532372→+консолидация.
