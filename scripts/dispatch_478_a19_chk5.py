@@ -85,8 +85,15 @@ def ensure_ref(tok, br):
         if e.code == 422:
             cur = api(tok, f"/repos/{REPO}/git/ref/heads/{br}")["object"]["sha"]
             if cur != PIN_SHA:
-                raise SystemExit(f"REF CONFLICT: {br} @ {cur[:8]} != PIN")
-            print(f"ref EXISTS-OK: {br} @ {cur[:8]}", flush=True)
+                if runs_on_branch(tok, br):
+                    raise SystemExit(f"REF CONFLICT + runs exist: {br} @ {cur[:8]}")
+                # wave-1 висячий реф (0 runs, 1 реф=1 диспатч не потрачен):
+                # выравнивание на PIN (master @диспатч) — PATCH + GET-пруф
+                api(tok, f"/repos/{REPO}/git/refs/heads/{br}", method="PATCH",
+                    data={"sha": PIN_SHA, "force": True})
+                print(f"ref ALIGNED: {br} {cur[:8]} -> {PIN_SHA[:8]} (wave-1 no-run)", flush=True)
+            else:
+                print(f"ref EXISTS-OK: {br} @ {cur[:8]}", flush=True)
         else:
             raise
     live = api(tok, f"/repos/{REPO}/git/ref/heads/{br}")["object"]["sha"]
