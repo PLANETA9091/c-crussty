@@ -357,6 +357,132 @@ PY
   note "$src <-> $blob: $(printf '%s\n' "$flags" | wc -l) gate flags in sync"
 done
 
+# ==========================================================================
+# ROUND-480 C97 cp-SNAPSHOT GATE — constant-pool lever-id presence,
+# repo-wide (C07 §5 lever-census made permanent; ×425 sleeping-gate class;
+# mechanical subset of C07's §5 method). The 16-pair loop above is a HAND
+# list — C07's repo audit (CLM-C07 §5) showed the real lever census is
+# ×3.7 larger: 60 rust-accepted ids, 47 java-side accounting units,
+# 12 rust-only zero-blob. This gate re-derives that census MECHANICALLY on
+# every run, so a source-edit-without-rebuild (×93/×461) or a placebo arm
+# (×425) fails here even while every hand-written line above stays green:
+#   G1 java→blob: every lever-id literal (comment-stripped source) consumed
+#      by a java gate-site file must be present in the constant pool of
+#      EVERY same-FQCN compiled blob copy (nested + flat + cross-dir) —
+#      raw-byte cp grep (TASK-420-A indy-recipe lesson). The per-blob
+#      lever-id SET is the cp-snapshot: partial cp loss fails even when
+#      each surviving id still javap-greens.
+#   G2 rust closure: every rust-accepted lever id (string literal of a
+#      DECLARED lib.rs module; *_x / truncated negative-control probes
+#      excluded) is either blob-carried or rust-only-zero-blob (C07's 12:
+#      java consumes none of them — placebo impossible). java-consumed ∧
+#      zero-blob = dormant gate = DRIFT.
+#   G3 blob→rust: every lever id inside a blob cp must be rust-accepted or
+#      java-consumed; a java-consumed id rust never accepts = placebo arm
+#      = FAIL; a blob id with no consumer at all = retired (note only,
+#      rust STRICT-eq cannot arm it — закон 5: no false alarm).
+# ==========================================================================
+cp_snapshot_gate() {
+  python3 - <<'C97PY' || die "cp-snapshot gate: lever-id presence drift (see C97 FAIL lines above)"
+import glob, os, re, sys
+
+fail = []
+
+def strip_comments(t):
+    t = re.sub(r'//[^\n]*', '', t)
+    return re.sub(r'/\*.*?\*/', '', t, flags=re.S)
+
+# rust lever census: DECLARED modules only (lib.rs `mod`), string literals
+lib = open('src/lib.rs').read()
+mods = set(re.findall(r'^\s*(?:pub\s+)?mod\s+([a-z0-9_]+)\s*;', lib, re.M))
+tok = re.compile(r'"(cmp[0-9][0-9_a-z]*)"')
+rust_toks = {}
+for m in sorted(mods):
+    p = 'src/%s.rs' % m
+    if not os.path.exists(p):
+        continue
+    for t in tok.findall(strip_comments(open(p, errors='replace').read())):
+        rust_toks.setdefault(t, set()).add(m)
+# negative-control probes (*_x) + truncated decoys are rust anti-flags,
+# never real lever ids (C07 §5: 60 real = 77 literals - 17 probes)
+def is_probe(t):
+    return t.endswith('_x') or t in ('cmp452_meg', 'cmp399_other')
+real = {t for t in rust_toks if not is_probe(t)}
+probes = len(rust_toks) - len(real)
+
+# java gate-site census (lever module dirs, comments stripped)
+EXCL = {'target', 'src', 'scripts', 'docs', 'bench', 'tests', 'logs', 'reports',
+        'research', 'stress', 'profile', 'ROUND-480', 'native', 'cplug-abi',
+        'cplug-sdk', 'area-map-fuzz', 'allocdiet'}
+java_flags = {}
+for jp in sorted(glob.glob('*/**/*.java', recursive=True)):
+    parts = jp.split(os.sep)
+    if 'build' in parts or parts[0] in EXCL:
+        continue
+    if '/selftest/' in jp or '/harness/' in jp:
+        continue  # lab harness mains: never include_bytes!'d, not gate sites
+    fl = set(tok.findall(strip_comments(open(jp, errors='replace').read())))
+    if fl:
+        java_flags[jp] = fl
+
+# blob cp snapshots (raw bytes = cp truth, indy-recipe lesson)
+blob_flags = {}
+for bp in sorted(glob.glob('*/build/**/*.class', recursive=True)):
+    if bp.startswith(('target/', 'tests/')):
+        continue
+    data = open(bp, 'rb').read()
+    fl = set(m.group(0).decode() for m in re.finditer(rb'cmp[0-9][0-9_a-z]{2,}', data))
+    if fl:
+        blob_flags[bp] = fl
+
+# G1: java→blob lever-id presence over EVERY same-FQCN blob copy
+pairs = checks = 0
+for jp, fl in sorted(java_flags.items()):
+    base = os.path.basename(jp)[:-5]
+    copies = sorted(b for b in blob_flags if b.endswith(os.sep + base + '.class'))
+    if not copies:
+        armable = fl & real
+        if armable:
+            fail.append("G1 %s: lever ids %s consumed but NO compiled blob copy exists" % (jp, sorted(armable)))
+        continue
+    for b in copies:
+        pairs += 1
+        checks += len(fl)
+        miss = sorted(fl - blob_flags[b])
+        for t in miss:
+            fail.append("G1 %s <-> %s: lever id '%s' missing from blob cp — REBUILD (x93/x461)" % (jp, b, t))
+        print("  C97 G1 %s <-> %s: %d lever ids in sync" % (jp, b, len(fl)))
+
+blob_ids = set().union(*blob_flags.values()) if blob_flags else set()
+java_ids = set().union(*java_flags.values()) if java_flags else set()
+
+# G2: rust closure — an armable id java consumes must live in some blob cp
+zero_blob = sorted(t for t in real if t not in blob_ids)
+rust_only = sorted(t for t in zero_blob if t not in java_ids)
+for t in zero_blob:
+    if t in java_ids:
+        fail.append("G2 rust-accepted lever id '%s': zero blob carriers but java consumes it — dormant gate (x425)" % t)
+
+# G3: blob→rust — no placebo arm, no foreign id in any cp
+for t in sorted(blob_ids):
+    if t in rust_toks:
+        continue
+    if t in java_ids:
+        fail.append("G3 blob-carried lever id '%s': java consumes it but rust never accepts — placebo arm" % t)
+retired = sorted(t for t in blob_ids if t not in rust_toks and t not in java_ids)
+
+print("C97 cp-snapshot census: rust %d real lever ids (+%d probes) | java %d gate-site files / %d ids | blob cp %d files / %d ids"
+      % (len(real), probes, len(java_flags), len(java_ids), len(blob_flags), len(blob_ids)))
+print("C97 G1 java->blob: %d pairs / %d flag-checks | G2 rust-only zero-blob: %d %s | G3 retired: %d | drifts: %d"
+      % (pairs, checks, len(rust_only), rust_only if rust_only else "[]", len(retired), len(fail)))
+for f in fail:
+    print("C97 FAIL: %s" % f, file=sys.stderr)
+sys.exit(1 if fail else 0)
+C97PY
+}
+
+cp_snapshot_gate
+
 # flat-vs-nested byte identity (round-415 rebuild-script bug root-cause)
 check_flat_matches_nested "mobpush/build" "net/minecraft/world/entity/MobPushOps"
 check_flat_matches_nested "sscan/build" "net/minecraft/world/entity/MobScanOps"
