@@ -69,3 +69,62 @@ sha256 pin + download-верификация обязательны, преги�
 История: round-477-c94c97-stress — внешние паки (Terralith/tectonic/Structory/towers,
 20a-ось worldgen); round-478-f9-bn — BN 6.9.8 стенд (v3-DOA → v4 dirs-0755 фикс, Л-478-F9);
 ×479-A10 — СТЗ-1 item-ось (этот реестр).
+
+---
+
+## СТЗ-2: chunk-load churn «scheduler×TPS-coupling» (C2ME #457) — forceload 4096-чанковый цикл
+
+- CLAIM (веб-разведка ×479-F2, закон 20b): chunk-loading привязан к TPS/скедулеру — C2ME #457
+  (closed, 10c, 2025-07-18): loading rate растёт при `/tick sprint` при том же I/O ⇒ чанк-лоад
+  привязан к tick-бюджету, при деградации TPS лоад-рейт падает (feedback-петля). In-vivo:
+  периодический load/unload churn сильной загрузки → MSPT-профиль vs канон pop150k
+  (canon spark-avg ≈ 392.89 Y5 / 415.84 Y1 @6.9–7.6M).
+- Репро-класс: **chunk-load-churn/scheduler** (ось chunk_sched × worldgen-io) — отличен от
+  СТЗ ×478 ×3 (weak-chunks item-drops / Folia global-lock / villagers POI) и от СТЗ-1
+  (item-ось). Runner-up того же класса: C2ME #423 «Extreme Slowdown with High Chunk
+  Loading» (spread-players) — покрыт той же сценой консервативно (без spread).
+- Фикстура: `world479-f2-stz-v1.zip` — sha256
+  `9b3a3f091941e90dbd22cbf4fc34ee3a2345e2655f108b2c1c14e29fc4c0bb9f` (19861 B),
+  релиз `v479-f2-stz-world` (asset world479-f2-stz-v1.zip), download-верифицирован (sha match).
+- База: level.dat из v479-a10-stz-world (d88978f1, download-verified) — server-born
+  DataVersion 4556/1.21.10, seed 42, region/ ПУСТОЙ → полный r640 fresh-gen; DIM-1/DIM1
+  пустые; datapacks/bukkit/pack.mcmeta сохранены.
+- Датапак `datapacks/stz2/` (namespace stz2; pack.mcmeta dual-declaration 48+[48,88] —
+  C61-урок; stz1 УДАЛЕН из зипа — one-scene-per-run, иначе MSPT не атрибутировать):
+  - `load` → `stz2:init`: scoreboard stz2 + `summon marker` Tags:["stz2_probe"] в world spawn
+    (fail-safe A10-класса: маркер мёртв → шторм молчит → ран = canon-pop150k, не FAILURE).
+  - `tick` → `stz2:tick`: gametime → `#stz2_t`; фаза `#stz2_p = (#stz2_t − 300) % 600`.
+  - `stz2:dispatch` (p∈[0,119], маркер жив): 64 ячейки 8×8 чанков, ячейка k при p∈{2k,2k+1}
+    → `forceload add <x0> <z0> <x0+7> <z0+7>`; координаты k: ix=k%8, iz=k//8,
+    x0=ix*8−32, z0=iz*8−32 (сетка ±32 чанк-коорд = ±512 блоков ⊂ r640 — сгенерировано,
+    НЕ worldgen-ось); каждая команда 64 чанка < 256-лимит, forceload idempotent.
+  - p=120: `forceload remove all` ( unload 4096 чанков → save/unload-чурн);
+    p∈[121,599]: idle 480 тиков (макс. фазовая длина 600 < bench-окно ~723 тика @canon
+    MSPT 415 → ≥1 полный цикл в 300s-окне гарантирован).
+- Числа сцены: 4096 чанков сильной загрузки на цикл (64×64-чанковая сетка вокруг спавна),
+  load-burst 120 тиков (≈34 чанка/тик пик), период 600 тиков. Ваниль-команды only
+  (forceload = штатная ваниль-механика strong-loading,datapack-функции исполняются с perm lvl 2).
+- Zip-гигиена (A9-урок): dirs `0o40755<<16`, files `0o100664<<16`, testzip CLEAN, 86 энтрии.
+- Диспатч (прегист закон 14a/16: `scripts/dispatch_479_f2_stz.py`): алиас `round-479-f2-stz`
+  = HEAD мастера на тик (дельта docs/stress/scripts-only, 0 src/Java/Rust), canon x466-C98
+  ЯВНЫМ JSON (640/300s/fp4/gc3/ic1/fd1/rt4/bc1/**pop150k**/seed42/10G/xms4G), band [6.0,9.5]M
+  fast-fail, lever ∅ (нагрузка = сцена), `world_url` = релиз-ассет v479-f2-stz-world.
+- Гейты чтения: FIXTURE-VALID, NCDFE=0, AIOOBE=0, маркер жив + forceload-след в stdout
+  (0 → fail-safe canon-ран → REFUTED_CENS сцены), MSPT-профиль vs канон 392.89/415.84;
+  band-miss workload-cpu ожидаем (сцена = claim), не ре-ролл-триггер (Л201).
+  Wall >15 мин → DISPATCHED run-id (закон 18-iii).
+
+## СТЗ-3: redstone×chunk-load (Lithium #37) — materialization-pending (одна сцена на ран)
+
+- CLAIM (веб-разведка ×479-F2): Lithium #37 (closed, 16c, P-high/S-confirmed/A-vanilla-issue,
+  2020-05-01): heavy mechanisms (72k ice-farm) при нагрузке ломают чанк-лоадинг в том же
+  измерении — грузятся только близкие к игрокам чанки, соседние выгружаются. Репро-класс:
+  **redstone-mechanism-mass × chunk-load-coupling** (ось blockupd × chunk_sched, lever
+  BlockUpdateOps/chunk_sched — оба в master). Командный класс (setblock-наброс observer-часов
+  в load-функции + forceload-цикл СТЗ-2 как чанк-катализатор), НО самостоятельная сцена —
+  отдельный zip след. тиком (смешение со СТЗ-2 в одном ране запрет one-scene-per-run).
+- Moonrise-сноска (mandate «Moonrise Optimized TPS»): серверных TPS-конвертируемых issue нет —
+  #27 lag-spikes = client-render (не сервер-ось), #44 section-status entity-removal (2c,
+  thin), #182 spectator chunk-load (фикстура без игроков неприменима). Топ-2 ⇒ C2ME #457 +
+  Lithium #37; C2ME #464 lighting-desync (38c, топ по комментариям) — parity-класс, не
+  стресс-ось (вне формата СТЗ, фикс-тура тяжёлая) — задокументирован здесь как runner-up.
