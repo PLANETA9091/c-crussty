@@ -108,7 +108,10 @@ const NAVPOOL_BYTES: &[u8] =
     include_bytes!("../entityinside/build/net/minecraft/world/level/pathfinder/NavPoolOps.class");
 const NODE_EVALUATOR_CLASS: &str = "net/minecraft/world/level/pathfinder/NodeEvaluator";
 
-/// REFSYNC (TASK-412-A, cmp405_navplane lane via crate::emap::armed()): the
+/// REFSYNC (TASK-412-A, cmp405_navplane lane via crate::emap::armed(); the
+/// gate = nav_plane union 27uniq OR the fresh-gen emap superset
+/// [cmp405_eindex, cmp475_itemidle, cmp475_c30conf] — Л-475-C52.1 canon,
+/// ROUND-478-A11 delegation fix): the
 /// SEVEN additional ReferenceList mutator-fence targets (ServerLevel is
 /// composed separately in the sl compose chain; ChunkMap itself carries no
 /// add/remove/contains sites — only its inner TrackedEntity, listed here).
