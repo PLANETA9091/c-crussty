@@ -485,6 +485,37 @@ public final class RegionTickOps {
     static volatile boolean COLPUSH_ON = false;
     static volatile boolean COLPUSH_BROKEN = false;
 
+    /**
+     * G3.0-fixture (478-A2) INJECT-QUIESCE: пока BenchPopulation готовит
+     * фикстуру (main-thread addEntity при живых worker-бакетах), confinement
+     * воркеры ПАРКОВАНЫ и тик идёт vanilla-serial путём. Экономика: инъектор
+     * мутирует ChunkMap entity-tracking (fastutil open-addressing)
+     * конкурентно с worker-thread entity-callbacks (onTrackingEnd/removeEntity)
+     * и worker-side block-обновлениями — наблюдённый класс
+     * AIOOBE Index -1/len 65537|131073 (dp2 36357022841 / trek 36356982268 /
+     * totem 36357157202) + CollectingNeighborUpdater Index 6/6.
+     * Инъекция = fixture-prep, НЕ измеряемое окно: serial-путь бит-точный
+     * vanilla (тот же list.forEach, что при w<=1), рычаг ре-армится в
+     * измеряемом окне без изменений (fix=0 на окно). Флаг флипает
+     * BenchPopulationPlugin рефлексией: set на GATE-PASS/INJECT START,
+     * clear на DONE/ABORT/STALL-final/onDisable.
+     */
+    static volatile boolean INJECT_QUIESCE = false;
+
+    /** G3.0-fixture: park/unpark region workers for the injection window. */
+    public static void setInjectQuiesce(boolean on) {
+        if (INJECT_QUIESCE != on) {
+            INJECT_QUIESCE = on;
+            System.out.println("[crussty-plugin] [G3.0-fixture] inject-quiesce -> " + on
+                    + " (region workers parked; vanilla-serial fixture window)");
+        }
+    }
+
+    /** G3.0-fixture telemetry probe. */
+    public static boolean injectQuiesce() {
+        return INJECT_QUIESCE;
+    }
+
     /** Retarget of the single ServerLevel.tick forEach call site (1:1 stack). */
     public static void forEach(EntityTickList list, Consumer<Entity> consumer) {
         // TASK-419-A (colpush): ОДИН bulk colpushTick JNI за тик, main-поток,
@@ -514,6 +545,12 @@ public final class RegionTickOps {
                     + " workers=" + WORKERS);
         }
         int w = WORKERS;
+        if (INJECT_QUIESCE) {
+            // G3.0-fixture (478-A2): vanilla-serial during fixture injection —
+            // bit-identical to the w<=1 tail; workers never see the injector.
+            list.forEach(consumer);
+            return;
+        }
         if (w <= 1) {
             list.forEach(consumer); // vanilla bit-identical
             return;

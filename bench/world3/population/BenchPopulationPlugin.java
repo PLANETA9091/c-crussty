@@ -195,6 +195,41 @@ public final class BenchPopulationPlugin extends JavaPlugin {
     }
 
     @Override
+    public void onDisable() {
+        // G3.0-fixture (478-A2): never leave the region workers parked if the
+        // plugin unloads mid-injection (bench window must run the lever).
+        hookInjectQuiesce(false);
+    }
+
+    // --- G3.0-fixture (478-A2): INJECT-QUIESCE hook -----------------------
+    // While the fixture is being injected, the region-confinement workers are
+    // parked (RegionTickOps.forEach takes the vanilla-serial list.forEach
+    // tail). Evidence class: dp2 36357022841 / trek 36356982268 / totem
+    // 36357157202 — fastutil entityMap AIOOBE Index -1 (len 65537|131073)
+    // from main-thread addEntity racing worker-thread entity callbacks.
+    // Injection is fixture-prep, NOT the measured window: the serial path is
+    // bit-exact vanilla and the lever re-arms at INJECT DONE (fix=0 on the
+    // window; C54 PER-WORLD refuted — same world sha a13b353a SUCCEEDED on
+    // c30febfb and FAILED on the 640926e9 carrier).
+    private boolean quiesceHookBroken = false;
+
+    private void hookInjectQuiesce(boolean on) {
+        if (quiesceHookBroken) {
+            return;
+        }
+        try {
+            Class<?> ops = Class.forName("net.minecraft.world.entity.RegionTickOps");
+            ops.getMethod("setInjectQuiesce", boolean.class).invoke(null, on);
+        } catch (Throwable t) {
+            // Non-carrier runtime (no RegionTickOps): quiesce structurally
+            // unavailable — vanilla serial is already the only path.
+            quiesceHookBroken = true;
+            getLogger().warning(MARK + " inject-quiesce hook unavailable ("
+                    + t.getClass().getSimpleName() + ") — continuing without park");
+        }
+    }
+
+    @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
         if (!"benchpop".equals(cmd.getName())) {
             return false;
@@ -258,6 +293,7 @@ public final class BenchPopulationPlugin extends JavaPlugin {
                             }
                             getLogger().info(MARK + " POPULATION INJECT GATE-PASS loadedChunks=" + l
                                     + " (polls=" + polls + ") — arming injection");
+                            hookInjectQuiesce(true); // G3.0-fixture: park workers for the injection window
                             beginInjection(gt, gs);
                         } else if (polls >= GATE_MAX_POLLS) {
                             if (gateTask != null) {
@@ -266,6 +302,7 @@ public final class BenchPopulationPlugin extends JavaPlugin {
                             }
                             getLogger().warning(MARK + " POPULATION INJECT GATE-TIMEOUT loadedChunks=" + l
                                     + " need>=" + minLoadedChunks + " after " + polls + " polls — arming anyway (never deadlock)");
+                            hookInjectQuiesce(true); // G3.0-fixture: park workers for the injection window
                             beginInjection(gt, gs);
                         } else if (polls % 50 == 0) {
                             getLogger().warning(MARK + " POPULATION INJECT GATE-WAIT loadedChunks=" + l
@@ -399,6 +436,7 @@ public final class BenchPopulationPlugin extends JavaPlugin {
                     long failsSoFar = failTotal;
                     if (armsUsed >= MAX_INJECT_ARMS) {
                         abortLatched = true;
+                        hookInjectQuiesce(false); // G3.0-fixture: re-arm the lever, window must stay measured
                         getLogger().severe(MARK + " POPULATION INJECT ABORTED corruption-guard arms=" + armsUsed
                                 + " injected=" + injectedSoFar + "/" + target
                                 + " fails=" + failsSoFar
@@ -599,6 +637,7 @@ public final class BenchPopulationPlugin extends JavaPlugin {
     }
 
     private void finishInjection() {
+        hookInjectQuiesce(false); // G3.0-fixture: DONE — unpark workers, measured window runs the lever
         long elapsedMs = (System.nanoTime() - startNanos) / 1_000_000L;
         t0FullTime = Bukkit.getWorlds().get(0).getFullTime(); // topup replay anchor (S7-130)
         boolean valid = injectedTotal >= Math.round(target * 0.9);
