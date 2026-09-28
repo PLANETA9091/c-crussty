@@ -3,6 +3,11 @@
 round-482-c03-normtool @f86b240c: TRI-STATE M1-UNKNOWN + biomes-exempt) +
 флаг-чекеры normtool-фиксов ×480 (plateau C06 @6a60c868 / adoption C22 @0305e71c /
 mid-inject C87 @7ee4a0b8) + C05 full_n>9 M1-расширение (acc 84%).
+[483-B11] RAMP-ГЕЙТ (report-only): shape-ковариата ramp/plateau/neither (C87.2 —
+в гейт-семантику НЕ ставить); fixed-shape ×1.18 ТОЛЬКО по ramp-shape-детекту, не по
+n>6 (C87.3: overshoot +4.80пп на plateau-форме; C89: plateau-фикс нужен только cap≤6);
+shadow ×1.16 (C89: эмпирия gain ×1.1448/×1.1591, ×1.18 = +2.5пп перелёт);
+mid-inject TP/FP-счётчики в сводке (пререгистрация FP ≤1/20 банк-фидов, TP ≥1).
 
 АРХИТЕКТУРА (additive/report-only — вердикты и пороги normtool v5-FROZEN НЕ тронуты):
   parse   = normtool_478.parse_bundle()  — базовый A1-конвейер (verdict/m1/norm);
@@ -38,24 +43,66 @@ def normtool_health():
 PLATEAU_CAP, PLATEAU_MIN_N, PLATEAU_FIXED_SHAPE = 6, 2, 1.18
 PLATEAU_RESIDUAL_BAND_PP = 2.0   # канон C06: известный residual ≤±2пп → >2пп = сигнал
 
+# ---- [483-B11] ramp-гейт константы (канон C87/C89) ----
+RAMP_FIXED_SHAPE_SHADOW = 1.16   # [482-C89] gain эмпирия ×1.1448/×1.1591; ×1.18 = +2.5пп перелёт
+RAMP_TAU_HINT = 0.76             # [482-C89] τ̂ банк 0.695 → окно 0.72 → ×482 0.76 (ковариата)
+SHAPE_QUANT_TPS = 0.1            # [482-C87.2] plateau = |Δ last-2| < 0.1 TPS (2×2-канон)
+RAMP_SHAPE_RISE_TPS = 0.2        # [482-C86/C87.4] soft-rise ≥0.2 TPS (банк 23/23)
+
+
+def shape_class(polls_valid):
+    """[483-B11][482-C87.2] shape-ковариата ramp/plateau/neither — REPORT-ONLY,
+    в гейт-семантику НЕ включать (порогочувствительность 26.5%↔69.9% при Δ0.1)."""
+    p = polls_valid or []
+    if len(p) < 2:
+        return None
+    if abs(p[-1] - p[-2]) < SHAPE_QUANT_TPS:
+        return "plateau"
+    if (all(p[i + 1] > p[i] for i in range(len(p) - 1))
+            and (p[-1] - p[0]) >= RAMP_SHAPE_RISE_TPS):
+        return "ramp"
+    return "neither"
+
+
 def plateau_checker(polls_valid, med, exp, norm_v5):
     n = len(polls_valid or [])
+    sc = shape_class(polls_valid)
     if not n or not exp or not med:
         return {"computed": False, "norm_plateau": None, "method": None,
-                "plateau_low_n": None, "divergence_pp": None, "div_gt2pp": None}
+                "plateau_low_n": None, "divergence_pp": None, "div_gt2pp": None,
+                "shape_class": sc, "gain_l2_over_med": None,
+                "norm_fixed_shape_x118": None, "norm_fixed_shape_x116": None,
+                "tau_hint": RAMP_TAU_HINT}
     if n <= PLATEAU_CAP:
         if n < PLATEAU_MIN_N:
             return {"computed": False, "norm_plateau": None, "method": "fail_closed",
-                    "plateau_low_n": True, "divergence_pp": None, "div_gt2pp": None}
+                    "plateau_low_n": True, "divergence_pp": None, "div_gt2pp": None,
+                    "shape_class": sc, "gain_l2_over_med": None,
+                    "norm_fixed_shape_x118": None, "norm_fixed_shape_x116": None,
+                    "tau_hint": RAMP_TAU_HINT}
         tps_pl, method = statistics.median(polls_valid[-2:]), "last2_median"
     else:
-        tps_pl, method = med * PLATEAU_FIXED_SHAPE, "fixed_shape_x1.18"
+        # [483-B11][482-C87.3] ×1.18 ТОЛЬКО по ramp-shape-детекту (plateau-форма
+        # overshoot +4.80пп); n>6 median-of-all рампу уже проходит (C89 bias·n 68.7→18.9).
+        if sc == "ramp":
+            tps_pl, method = med * PLATEAU_FIXED_SHAPE, "fixed_shape_x1.18"
+        else:
+            tps_pl, method = med, "med_all_no_shape_fix"
     norm_pl = 100 * (tps_pl / exp - 1)
     div = round(norm_pl - norm_v5, 2) if norm_v5 is not None else None
+    l2 = statistics.median(polls_valid[-2:]) if n >= 2 else None
+    gain = round(l2 / med, 4) if (l2 and med) else None
     return {"computed": True, "norm_plateau": round(norm_pl, 2), "method": method,
             "plateau_low_n": bool(method == "last2_median" and n < 4),
             "divergence_pp": div,
-            "div_gt2pp": bool(div is not None and abs(div) > PLATEAU_RESIDUAL_BAND_PP)}
+            "div_gt2pp": bool(div is not None and abs(div) > PLATEAU_RESIDUAL_BAND_PP),
+            "shape_class": sc,           # [482-C87.2] report-only ковариата, НЕ гейт
+            "gain_l2_over_med": gain,    # [482-C89] канон ×1.145-1.159
+            "tau_hint": RAMP_TAU_HINT,   # [482-C89] report-only
+            "norm_fixed_shape_x118": round(100 * (med * PLATEAU_FIXED_SHAPE / exp - 1), 2)
+                                      if sc == "ramp" else None,
+            "norm_fixed_shape_x116": round(100 * (med * RAMP_FIXED_SHAPE_SHADOW / exp - 1), 2)
+                                      if sc == "ramp" else None}
 
 # ================= [480-C22] G2 ADOPTION (report-only port) =================
 SPARK_DIV_CANON = (11.0, 25.0)   # G24-канон дивергенции (Л-480-C22, честный флаг)
@@ -137,6 +184,15 @@ def m1_ext_checker(full_n, m1_state):
             "m1_state_actual": m1_state,
             "agrees_with_cens": (pred == (m1_state == "CENS"))}
 
+
+# ================= [483-B11] RAMP-ГЕЙТ: пререгистрация гейтов патча =================
+B11_GATES = {"ramp_detect_acc_min": 0.95,    # accuracy ≥95% на корпусе ×482-113 (C87)
+             "midinject_fp_rate_max": 0.05,  # FP ≤1/20 банк-фидов; эвиденс TP1/1 FP0/18 ×480 ∧ 0/23 ×482
+             "midinject_tp_min": 1,          # TP ≥1 (×480-корпус)
+             "selftest_min": "8/8",          # офлайн-фикстуры absorbv2
+             "corpus": "/home/z/rounds/ROUND-482/c87_plateau/verdict_482_c87.json",
+             "mode": "report-only; v5-FROZEN не тронуты; NO-GO живой-gate (C87.6)"}
+
 # ================= пайплайн одной директории-рана =================
 RUN_ENV = "run-env.txt"
 
@@ -215,7 +271,15 @@ def scan_dir(root, biomes_exempt=False, compare_absorb=None):
             "strict_window_hit": cnt(lambda r: r["g_adoption"]["strict_window_hit"]),
             "spark_div_canon_band": cnt(lambda r: r["g_adoption"]["spark_div_canon_band"]),
             "biomes_exempt_applied": cnt(lambda r: r["biomes_exempt_applied"]),
-            "m1_unknown": cnt(lambda r: r["m1_state"] == "UNKNOWN")},
+            "m1_unknown": cnt(lambda r: r["m1_state"] == "UNKNOWN"),
+            # [483-B11] ramp-гейт / mid-inject TP-FP учёт (report-only)
+            "ramp_shape_ramp": cnt(lambda r: r["g_plateau"]["shape_class"] == "ramp"),
+            "ramp_shape_plateau": cnt(lambda r: r["g_plateau"]["shape_class"] == "plateau"),
+            "ramp_shape_neither": cnt(lambda r: r["g_plateau"]["shape_class"] == "neither"),
+            "ramp_fixed_shape_applied": cnt(lambda r: r["g_plateau"]["method"] == "fixed_shape_x1.18"),
+            "mid_inject_suspect_bank": cnt(lambda r: r["g_midinject"]["suspect"]
+                                           and r["verdict"] == "NORM-COMPUTED")},
+        "b11_gate_spec": B11_GATES,
         "runs": runs}
     return summary
 
@@ -250,6 +314,10 @@ def selftest():
            "cmp420_chunk2: biomes selftest FAIL (throwable java.lang.ArrayIndexOutOfBoundsException: Index 1)\n",
            FX_BOT, GC_CLEAN)
     _mkfix(base, "r1005", FX_ENV, TPS_LINE, FX_BOT, "[info][gc] Using G1\n")
+    _mkfix(base, "r1006", FX_ENV,
+           "".join(f"[00:40:0{i}]: TPS from last 5s, 1m, 5m, 15m: {2.0 + 0.15*i:.2f}, 2.2, 2.2, 2.2,\n"
+                   for i in range(5)), FX_BOT, GC_CLEAN)        # [483-B11] ramp-форма (монотонный рост)
+    _mkfix(base, "r1007", FX_ENV, TPS_LINE, FX_BOT, GC_CLEAN)   # [483-B11] plateau-форма (flat)
 
     s = scan_dir(base)
     by = {r["dir"]: r for r in s["runs"]}
@@ -277,6 +345,13 @@ def selftest():
         ("fx-tristate-zeropause", by["r1005"]["verdict"] == "M1-UNKNOWN"
          and by["r1005"]["m1_state"] == "UNKNOWN"
          and by["r1005"]["g_adoption"]["m1_unknown_reason"] == "zero-pause"),
+        ("fx-b11-ramp-shape", by["r1006"]["g_plateau"]["shape_class"] == "ramp"
+         and by["r1006"]["g_plateau"]["method"] == "last2_median"
+         and by["r1006"]["g_plateau"]["gain_l2_over_med"] > 1.0
+         and by["r1006"]["g_plateau"]["norm_fixed_shape_x118"] is not None),
+        ("fx-b11-plateau-shape", by["r1007"]["g_plateau"]["shape_class"] == "plateau"
+         and by["r1007"]["g_plateau"]["norm_fixed_shape_x118"] is None
+         and by["r1007"]["g_plateau"]["gain_l2_over_med"] == 1.0),
     ]
     # biomes-exempt пере-прогон r1004: биом-AIOOBE probe снимается exempt'ом
     s2 = scan_dir(base, biomes_exempt=True)
