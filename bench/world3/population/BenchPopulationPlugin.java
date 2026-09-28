@@ -318,6 +318,18 @@ public final class BenchPopulationPlugin extends JavaPlugin {
 
     /** C61: the actual arm — full state reset, snapshot, plan, per-tick timer. */
     private synchronized void beginInjection(int t, long s) {
+        // G3.1-fixture (478-A2): arm INJECT-QUIESCE on EVERY arm path, not only
+        // inside the GATE-WAIT branch. Evidence trek 36363232962: dispatch ran
+        // minLoadedChunks=0 -> startInjection fell straight through to
+        // beginInjection and the quiesce flag was NEVER set ("inject-quiesce"
+        // absent from server-stdout.log) -> rt4 workers ticked FallingBlockEntity
+        // against the main thread through the whole inject window -> shared
+        // CollectingNeighborUpdater (NoSuchElementException storms, swallowed)
+        // and LevelChunkTicks ObjectOpenCustomHashSet concurrent add -> fatal
+        // AIOOBE Index -1 len 33 in rehash at 54k/150k. setInjectQuiesce is
+        // change-gated (idempotent), so flipping here is a no-op when the
+        // GATE-PASS/GATE-TIMEOUT path already armed it.
+        hookInjectQuiesce(true);
         injecting = true;
         armsUsed++;
         target = t;
