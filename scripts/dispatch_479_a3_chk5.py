@@ -150,13 +150,35 @@ def do_dispatch(dry, branches):
               f"status={h[1] if h else '-'} concl={h[2] if h else '-'} ===", flush=True)
 
 
+class NoAuthRedirect(urllib.request.HTTPRedirectHandler):
+    """Логи ин-флайт джоб = 302 на Azure blob: НЕ пересылать Bearer на чужой хост."""
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if "Authorization" in req.headers:
+            del req.headers["Authorization"]
+        req.headers.pop("Authorization", None)
+        return urllib.request.HTTPRedirectHandler.redirect_request(
+            self, req, fp, code, msg, headers, newurl)
+
+
+_opener = urllib.request.build_opener(NoAuthRedirect)
+
+
+def job_log_raw(tok, job_id):
+    req = urllib.request.Request(
+        f"{API}/repos/{REPO}/actions/jobs/{job_id}/logs",
+        headers={"Authorization": f"Bearer {tok}",
+                 "Accept": "application/vnd.github+json"})
+    with _opener.open(req, timeout=120) as r:
+        return r.read()
+
+
 def census_from_logs(tok, run_id):
     """Ин-флайт ценз: runner_cpu_index из джоб-лога (run_world3.sh пишет
     'run-env: ... runner_cpu_index=' до завершения рана)."""
     try:
         jobs = api(tok, f"/repos/{REPO}/actions/runs/{run_id}/jobs")["jobs"]
         for j in jobs:
-            log = api(tok, f"/repos/{REPO}/actions/jobs/{j['id']}/logs", raw=True)
+            log = job_log_raw(tok, j["id"])
             m = re.search(rb"runner_cpu_index[:=]\s*(\d+)", log)
             if m:
                 return int(m.group(1))
