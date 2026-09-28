@@ -1,0 +1,52 @@
+# C57 gate-census @686f2258 (HEAD a372b883) — 2026-09-28T07:34:14Z
+# axis-1: rust-файлы с cmp450_chunk и наличием cmp466_c98ai (master-носитель №10)
+src/chunk_parse.rs cmp450_chunkx6 c98aix4
+src/chunk_sched.rs cmp450_chunkx1 c98aix1
+src/chunk_send.rs cmp450_chunkx3 c98aix1
+src/chunk_send5.rs cmp450_chunkx4 c98aix0
+src/collide_batch.rs cmp450_chunkx4 c98aix2
+src/colpush.rs cmp450_chunkx1 c98aix1
+src/entity_query.rs cmp450_chunkx10 c98aix2
+src/goal_selector.rs cmp450_chunkx2 c98aix3
+src/inside_bitmask.rs cmp450_chunkx1 c98aix1
+src/inside_snap.rs cmp450_chunkx2 c98aix2
+src/items_index.rs cmp450_chunkx2 c98aix1
+src/items_manager.rs cmp450_chunkx3 c98aix2
+src/mobs_ai.rs cmp450_chunkx3 c98aix2
+src/mobs_grid.rs cmp450_chunkx1 c98aix1
+src/mobs_manager.rs cmp450_chunkx4 c98aix3
+src/mobs_sense.rs cmp450_chunkx2 c98aix1
+src/mobs_soa.rs cmp450_chunkx4 c98aix2
+src/mobs_sscan.rs cmp450_chunkx3 c98aix2
+src/nav_plane.rs cmp450_chunkx1 c98aix1
+src/noise_fill.rs cmp450_chunkx2 c98aix1
+src/poi_plane.rs cmp450_chunkx1 c98aix1
+src/queryplane.rs cmp450_chunkx2 c98aix1
+src/stagger.rs cmp450_chunkx3 c98aix2
+src/tickplane.rs cmp450_chunkx2 c98aix1
+# files-with-450: 24 / files-450-with-c98ai: 23
+
+# axis-2: git -S cmp466_c98ai -- src/chunk_send5.rs (widening history)
+(empty = c98ai никогда не добавлялся в encode-гейт)
+
+# axis-3: encode-гейт точные строки
+/// semantics are frozen). Empty/foreign flag = vanilla bit-in-bit.
+fn enabled() -> bool {
+    std::env::var("CRUSSTY_LEVER_FLAG")
+        .map(|v| v.trim() == LEVER_ID || v.trim() == "cmp450_chunk" || v.trim() == "cmp456_poi" || v.trim() == "cmp452_mega")
+        .unwrap_or(false)
+}
+
+
+# axis-4: java-блобы chunksend — c98ai в источниках
+chunksend/net/minecraft/server/network/ChunkSendOps.java c98ai_count=0 carrier450=1
+chunksend/net/minecraft/server/network/ChunkPacketEncodeOps.java c98ai_count=0 carrier450=1
+chunkparse/net/minecraft/world/level/chunk/storage/ChunkParseOps.java c98ai_count=0 carrier450=1
+
+# axis-5: blob-нидлы chunksend (check_blobs_sync.sh, не-гейт маркеры)
+73:  "cmp466_c98ai" "items_restplane ARMED" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" \
+78:  "cmp466_c98ai" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "goal-selector EFFECT armed" "goalCleanup" "goalUpdate" "cmp456_poi" \
+84:  "cmp466_c98ai" "cmp417_bq" "cmp420_colpush" "cmp412_b2p1" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "selfTest" "isHardCollidingProbe"
+88:  "cmp466_c98ai" "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp456_poi" \
+93:  "cmp466_c98ai" "cmp417_bq" "cmp420_colpush" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp456_poi" \
+109:  "cmp466_c98ai" "cmp417_bq" "cmp414_cvs" "cmp412_meganav" "cmp412_eqsnapv3" "cmp420_colpush" "cmp421_brain" "cmp422_brain2" "cmp430_inside" "cmp432_inside2" "cmp451_senseins" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp434_chunkpl" "cmp435_chunk3" "cmp437_chunk4" "cmp444_chunk5" "cmp450_chunk" "cmp452_mega" "cmp453_diet" "cmp457_eqsnap2" "cmp456_chunkmono" "cmp456_chunkmono_p31snap" "cmp456_poi" \

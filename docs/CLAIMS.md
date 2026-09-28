@@ -19,3 +19,10 @@
 - Диспатчи 193/100; финалы 45/100 живых, 9g-артефакты собраны; N1 100/100, N2≈40.
 
 ## CLAIMS ×473: 200 CI-ранов; master a278732b (+s34-tailpins 371/0, +shadow-gate job, S26b/S27b отложены); canary=alias-канон (PASS +5.59); излом 19b (200k,220k] плато до 240k; DnT флуд снят краш жив; guard 5/5 аудит (IF-фикс NEXT); item-№14 триплет (29.57%, λ≥1.78, items_subsys2 dispatched); eindex cap-raise 36293490539; ЭСКАЛАЦИЯ-ДРЕЙФ 40.9%; N1=80/100 N2≈25.
+
+## CLAIMS ×481 (тик 17:43+08, v19.0 100×100)
+- **МЕРЖ №19**: c98ai-компо → master 3666a793 --no-ff, min-of-5 пар +22.75..+23.29 (Δ≤50k), БАНК 31/30; canary-481 +4.88 PASS; canary post-merge 36411459754 in-flight; лесенка эры 9 ступеней.
+- REFUTED_CENS ×9: eindex (0.00пп) / item legal (1.34пп) / collide-компо (11.29 <20) / light cert ×5 (≤0.46) / region+barrier (классы закрыты: 1.57-1.63 / 0.546-0.572) / palette (0.36) / branch-pred (≤0.50) / alloc (1.96 full-union) / r480-стратум (G1-артефакт) — все с потолочной математикой и следующим ботлнеком.
+- Канон-обогащение: пул бимод (микрозон нет), дрейф +650k REFUTED (−108k/ч), f6-lh ramp-артефакт, full-GC второй STW-драйвер, 19b-канон = STW-секунды gc6@12G, W-ось wall-метрика бит-сходится, парити-оракул 8/8, normtool ×2 EDGE (fail-open hole + biomes-флаг).
+- СТЗ ×13 (+10..13 fresh: Lithium #783 HIGH heap-leak / C2ME #603 seam / Moonrise #203 / Paper #14313); СТЗ-3 фиксстура пуста — materialize дверь.
+- Диспатчи ~100/100 (командирские 27 + burst 73); N1=38/100, N2=0 (платформа); in-flight ~95 ранов → абсорб ×482; canary-gate RED = инфра input-selection дефект (мастер здоров: ваниль +4.88).
