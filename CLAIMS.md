@@ -341,3 +341,12 @@ TASK-457 (tick-456 закрывает, открывает ×457, 20:0x +08):
 - Банк Л201 n=27/30; RAMP-дефект C55 подтверждён (bias −12.53пп — фикс ×480); RCC-ось закрыта ×2 (young-масса = след. STW-ботлнек); sensn16 0/6 пар (leg-l1 +32.01 NO-PAIR); 19b: 202k DIRTY min-of-2; окно chkclimb-5 2/3, POI 2/3 держатся.
 - In-flight ×480: V1 ×12 STRICT + V2 ×12 окна + V3 ×12 якоря + V4 ×12 безумия + s1-s4 + bn-retry 36374776545 + СТЗ-2 36379253638 — normtool-абсорб.
 - Инфра-уроки: мёртвые вызовы живут (V2 ×24 ранов); band-OFF нереализуем пустыми полями; shared-checkout HEAD-гонки ×3 (stash+commit-tree-протоколы работают).
+
+## ×480 CLAIMS-ИТОГ (тик 13:43+08)
+- БАНК Л201 **29/30** (s07 −1.01@7,072,497 / ta-y2 −0.15@6,991,231; §3-фиды ×7: a4-s2/s06/s11/y07/y09/y10/r07; HOST-CENS ×18 все STW-only; breach ×13); дефицит 1; joint 5.0%; P(30/30)=70.8%.
+- canary-480 **−2.44 PASS** (36384769001 M1 CLEAN); 200k ×3 канон 20.91 (21.81 серая-верх C33); DISPATчей **115/100 API-верифицировано**; N1=53/100, N2=0 (честно).
+- МЕРЖ №19-кандидат MERGE-READY-SPEC: STRICT-OR 40/40 (cmp466_c98ai/16 один флаг = climb5⊕sensn16⊕collide), floor +26.96 cert, прогноз +22.68..+35.71; 6 легов in flight; МЕРЖ при pair ≥+20 min-of-3 Δ≤50k.
+- In-flight к ×481: f6-пул ×20 (8 leg cmp466_c98ai/16 + 8 STRICT + 4 якоря), W5M ×12 STRICT, компо1/l1a-c/c71-l1-l2, 201k ×2, 205k/210k, h10/h14, g2/g5, fresh-gen, c05-mdonly ×3, POI-фиды ×2, chkclimb-5 ×3, chk19-fast ×2, w1-w4+r2 ×6, C09/C24-хвосты, та-y1-y3, V1-s04.
+- REFUTED_CENS ×19 (RegionTickOps 1.47 / barrier 0.523 / компо-union 11.39 / light 0.46 / eindex 0.47 / item 1.34 / palette 0.37 / alloc 1.21 / branch-pred 0.157 / rt2 −33.97 / rt8+steal +15.25 / dp 0.0000 / gen-inj 0.00 / sched 0.0009 / sync 0.09 / getEntities 0.74 / AABB 0.19 / setOldPos 0.018 / lambda 0.13) + PASS_CENS ×7 (ins4/poi-p22/goalSel/fluid/persist/census-150k/POP-гейт).
+- Тулинг: normtool plateau (C06) + adoption 4/4 (C22) + mid-inject-гейт (C87) — все report-only @ветки; blobgate-автоматизация полная (C07+C66+C96+C97 — hole-класс пинится в CI); workflow ×3-фикса (C95); triaxis W>S>P (C89).
+- СТЗ fresh ×5 (C40): Lithium #787 / Moonrise #191 structure-race (приоритет-1) / Folia #505 / C2ME #592 / Paper #14219; СТЗ-2 абсорбнут плато-классом (dp 0.0000% драйвером шторма 107,450 строк/окно).
