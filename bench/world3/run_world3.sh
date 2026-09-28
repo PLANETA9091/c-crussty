@@ -228,6 +228,24 @@ rm -rf "$WORK/worldx"
 LEVEL_NAME="world"
 log "world dir: $LEVEL_NAME (from $WORLD_SRC)"
 
+# DP-DOOR C38/C13 (x484-N2): optional datapack install BEFORE server boot —
+# packs in <world>/datapacks/ are enabled automatically on world load.
+# Empty DATAPACK_URL = bit-in-bit legacy path (law 4). C38 input-swap note:
+# on the lab branch the inside_bitmask input slot carries datapack_url;
+# INSIDE_BITMASK falls back to its shell default 0 (line 88) — dormant lever.
+if [ -n "${DATAPACK_URL:-}" ]; then
+  log "datapack: fetching $DATAPACK_URL"
+  fetch "$DATAPACK_URL" "$WORK/datapack.zip" || die "datapack download failed from $DATAPACK_URL"
+  DP_SHA="$(sha256sum "$WORK/datapack.zip" | cut -d' ' -f1)"
+  DP_DIR="$SERVER/world/datapacks/stz3v2"
+  mkdir -p "$DP_DIR" && unzip -q -o "$WORK/datapack.zip" -d "$DP_DIR" || die "datapack unzip failed (dir=$DP_DIR)"
+  echo "DP-INSTALLED sha256=$DP_SHA files=$(find "$DP_DIR" -type f | wc -l) dir=$DP_DIR" | tee -a "$WORK/run-env.txt"
+  log "DP-INSTALLED sha256=$DP_SHA"
+  rm -f "$WORK/datapack.zip"
+else
+  log "datapack: none (vanilla bit-in-bit parity leg)"
+fi
+
 NATIVES_MODE="module-hotpatch-only"
 if [ -n "$NATIVES_TGZ" ] && fetch "$NATIVES_TGZ" "$WORK/natives.tar.gz"; then
   tar xzf "$WORK/natives.tar.gz" -C "$WORK" 2>/dev/null || true
