@@ -327,3 +327,9 @@ TASK-457 (tick-456 закрывает, открывает ×457, 20:0x +08):
 ## CLAIMS 479-A5 (тик 04:03+08 2026-09-28)
 - sensn16 leg ×2 (round-479-a5-l1/l2 @master 70d64190, canon x466-C98 ЯВНЫМ JSON fp4, lever cmp466_c98ai/16): ОБА SUCCESS CLEAN-legal — все фрозен-гейты PASS (band IN, M1 STW 22.08/15.48 ≤23, ARM-пруф «cmp466_c98ai: ARMED» из артефакта server-stdout.log, NCDFE 0, AIOOBE 0, FIXTURE-VALIDITY VALID): l1 run 36374296144 norm_v5 +32.01@7,601,999 (первый all-gates-CLEAN лег серии с norm ≥+20) / l2 run 36374322768 +15.71@6,722,365.
 - Pair-матем leg_norm − anchor_norm (Δcpu ≤50k, min-of-3, якоря mxa-08 −3.70@6,849,418 / mxa-12 +3.32@6,905,659 / s1-d +0.59@6,888,701): 0/6 пар — l1 bin-miss Δ753k/696k/713k, l2 Δ127k/183k/166k; вердикт **REFUTED_CENS**: пара-пул №17/18 остаётся 0 legal ≥+20 (серия a..l ×478/×479 = 13 легов, best pair-кандидат leg-c +13.51); CLAIM sensn16 ≥+20 на уровне ПАРЫ не подтверждён, пороги v5-FROZEN не тронуты. NEXT ×480: ре-ролл-волна ×3 в окно якорей [6.80,6.96]M (l2 Δ127k — ближайший).
+
+
+## CLAIMS 479-G1 (тик 04:10+08 2026-09-28)
+- normtool m1_clean-допилка (ЛАБ, 0 диспатчей): ТУЛИНГ-VALID — scripts/normtool_478.py M1-гейт top-level `m1_clean` (STW-total ≤23.0s ∧ young_avg ≤200ms из gc.log completion-строк без gc,phases; fail-closed: нет gc.log → False) устранил None-класс m1_clean/stw, блокировавший STW-check s2/s3 на потребителе.
+- Selftest 3/3 bit-exact ×478-вердиктам: W1-s7 36357571554 STW 21.8517s CLEAN (m1_clean=True, −8.06) / W3-c8 36357644226 STW 23.2377s CENS (m1_clean=False, −7.79) / canary 36373375157 STW 25.2884s CENS (m1_clean=False, −1.6).
+- s2/s3 перепроверка → ПОДТВЕРЖДЕНИЕ A4 (0 опровержений): s2 36362740256 STW 20.91 ≤23.0 ∧ young 118.0 ≤200, norm −1.04 → VALID CLEAN в-точка (банк 27/30 стоит); s3 36362354569 STW 24.91 >23.0 → HOST-CENSORED (norm −5.68). Пороги v5-FROZEN не тронуты.

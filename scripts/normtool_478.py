@@ -6,7 +6,9 @@
 поллы <15.0 — pre-inject пустой мир 20.0-26.4 отсекается) → tps_exp_v5 interp
 (BANK_V5_FREEZE §2 сэмплы 6.5M→2.1252 … 9.0M→2.6280 + Л201 robust-узел [6.9,7.2]M=2.1293,
 report-only) → norm_v5 = 100*(median/tps_exp_v5(cpu)−1) → HOST-ценз M1
-(STW_total ≤23.0s ∧ young_avg ≤200ms из gc.log completion-строк без gc,phases) → JSON.
+(STW_total ≤23.0s ∧ young_avg ≤200ms из gc.log completion-строк без gc,phases;
+гейт-поле m1_clean top-level: fail-closed, gc.log не распарсен → False — [479-G1]
+урок: потребители читают m1_clean/stw, None-класс = STW-check блокирован) → JSON.
 
 Уроки-каноны (НЕ нарушать):
   A1.2a percentile-медианы НЕТ в артефактах (spark печатает Max/Min/Average only) —
@@ -19,7 +21,7 @@ report-only) → norm_v5 = 100*(median/tps_exp_v5(cpu)−1) → HOST-ценз M1
 Пороги/окна BANK_V5_FREEZE §2 v5-FROZEN — только report-only, НЕ двигать (§5).
 Usage:
   normtool_478.py --run-id ID [--run-id ID ...] [--workdir DIR]
-  normtool_478.py --selftest [--workdir DIR]   # 3 бит-точные реконструкции
+  normtool_478.py --selftest [--workdir DIR]   # 3 бит-точные STW/verdict-реконструкции [479-G1]
 """
 import argparse, json, os, re, statistics, subprocess, zipfile
 
@@ -163,6 +165,10 @@ def norm_run(run_id, workdir):
     all_avg = (s["total_ms"] / n) if s and n else 0.0
     host = bool(s) and (s["total_ms"] > STW_MAX_S * 1000 or
                         (s["young"] and young_avg > YOUNG_MAX_MS))
+    # --- M1-ГЕЙТ [479-G1]: STW-total ≤23.0s ∧ young_avg ≤200ms (канон completion-only
+    # строки без gc,phases); fail-closed: gc.log нет/не распарсен → m1_clean=False ---
+    m1_clean = bool(s) and s["total_ms"] <= STW_MAX_S * 1000.0 and \
+        (s["young_sum_ms"] / s["young"] <= YOUNG_MAX_MS if s["young"] else True)
     bot_total = float(RE_GC_TOTAL.search(bot).group(1)) if RE_GC_TOTAL.search(bot) else None
 
     valid = "FIXTURE-VALIDITY: VALID" in bot
@@ -191,6 +197,7 @@ def norm_run(run_id, workdir):
 
     return {
         "run_id": run_id, "tool": "normtool_478", "verdict": verdict,
+        "m1_clean": m1_clean,                   # ГЕЙТ [479-G1]: STW≤23 ∧ young≤200
         "cpu_index": idx, "in_band": in_band,
         "poll_source": source, "polls_captured": n_captured,
         "raw_polls_bottlenecks": raw_bot,          # A1.2: raw-поллы хранить
@@ -215,20 +222,24 @@ def norm_run(run_id, workdir):
                     "full_cc": s["full_cc"] if s else 0,
                     "full_md": s["full_md"] if s else 0,
                     "bottlenecks_total_pause_ms": bot_total,
-                    "host": host},
+                    "m1_clean": m1_clean, "host": host},
         "fixture_valid": valid, "ncdfe": ncdfe, "aioobe": aioobe,
         "frozen_windows_report_only": win_report,
     }
 
 
 SELFTEST = [
-    # (run_id, tag, {поля = бит-точные канон-числа Л-478-A1.1 / Л-478-B1 / Л-478-B3})
+    # (run_id, tag, {поля = бит-точные канон-числа Л-478-A1.1 / [478-A1] W3-c8 /
+    #  [479-A1] canary; STW/M1-вердикты ×478-канон [479-G1]: CLEAN/CENS/CENS})
     (36357571554, "W1-s7", {"cpu_index": 8824280, "tps_med": 2.4, "tps_exp_v5": 2.61049,
-                            "norm_v5": -8.06, "host_M1": {"stw_total_s": 21.8517, "young_avg_ms": 108.0}}),
-    (36357571844, "W3-c5", {"cpu_index": 8925412, "tps_med": 2.8, "tps_exp_v5": 2.62057,
-                            "norm_v5": 6.85}),
-    (36364206523, "canary", {"cpu_index": 6818039, "tps_med": 2.1, "tps_exp_v5": 2.17577,
-                             "norm_v5": -3.48}),
+                            "norm_v5": -8.06, "verdict": "NORM-COMPUTED", "m1_clean": True,
+                            "host_M1": {"stw_total_s": 21.8517, "young_avg_ms": 108.0}}),
+    (36357644226, "W3-c8", {"cpu_index": 8747610, "tps_med": 2.4, "tps_exp_v5": 2.60285,
+                            "norm_v5": -7.79, "verdict": "HOST-CENSORED", "m1_clean": False,
+                            "host_M1": {"stw_total_s": 23.2377, "young_avg_ms": 123.3}}),
+    (36373375157, "canary", {"cpu_index": 7127362, "tps_med": 2.2, "tps_exp_v5": 2.23588,
+                             "norm_v5": -1.6, "verdict": "HOST-CENSORED", "m1_clean": False,
+                             "host_M1": {"stw_total_s": 25.2884, "young_avg_ms": 131.0}}),
 ]
 
 
