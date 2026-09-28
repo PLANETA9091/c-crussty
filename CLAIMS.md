@@ -319,6 +319,7 @@ TASK-457 (tick-456 закрывает, открывает ×457, 20:0x +08):
 - **МЕРЖ №18 climb5-p32-1 → master 2d84ede9** (--no-ff, dormant-resident; pair min-of-3 +26.96 = aD1 +34.55/W10 +26.96/W1-s7 +31.05; cargo 0 err + blobs ALL IN SYNC до push; canary-478 −3.48 PASS run 36364206523). Мерж-счёт эры №18.
 - МЕРЖ №17 confinement: union-носитель round-478-a2-conf @1185959a (G3.1 quiesce e97e8167 + emap-superset 9f949b1b) ×3 in-band in flight (dp2 36367745677/totem 36367994605/trek 36367810959) — S25 ×3 читает ×479; quiesce-предшественник 2/2 SUCCESS.
 - МЕРЖ-кандидаты ×479: emap-superset 9f949b1b (ARM 34/34 run 36362730331) + R0/PIN-28 (run 36362943927 7==7) — verdict-мерж после canary.
+- R0 пост-мерж leg 36374633603 (round-479-a2-r0): wiring ALL-PASS (ARM-пруф 4/4, PIN-маркеры, 7==7 STRICT, NCDFE 0, M1 CLEAN, tick2-квота 0.16%) — мерж-кандидат R0 жив на master; norm +5.52 вне [−8,+1.5] → REFUTED_CENS/инфра-ценз, банк-фид excl (Л-479-A2).
 - Вердикты: chk-19 fresh-pair 23.2 СЕРТИФИЦИРОВАН (B5); sensn16 0 legal ≥+20 (best +13.51, пара-пул №17/18 открыт); STRICT-банк n=26/30 (дефицит 4); RCC-1024 DISPATCHED ×2 (36362232752/36362234021); gc2-канал 1/2 (36369035105 SUCCESS).
 - REFUTED_CENS ×12 с числами (CES +2.24 / NavPlaneOps +5.59 / r960-компо +1.92 / park ≤+0.60 / SBB1 0.09 / rt8 prio 1.5-2.2 / inlining split ≤0.2 / F1 стоп-5 <2 / chk-14 slow −0.16 / dp 0.0000% / gen_work 9.6% / chkclimb-5 0/8).
 - Диспатчи 118/100 (12c ✓); N1=60/100 Task-деплой (35 финалов, дедлайны ~40%); N2=0 (честно).
