@@ -57,8 +57,14 @@ WF = "world-bench-parallel.yml"
 BRANCH = "round-478-f9-bn"
 PIN_SHA = "1185959afa0b287c977df4c5b0329a6db90885d0"  # A2-носитель union (quiesce+emap-superset), FULL sha
 
+# v4 fixture-fix (run 36371358886 post-mortem): v3-зип DOA — ВСЕ каталог-энтрии
+# в зипе mode 0o600 (нет x-бита) → unzip даёт нетраверсибельные dir → FATAL
+# «level.dat parent has no region/» (find Permission denied ×4). v4 = re-pack,
+# dirs 0755, file-байты бит-идентичны (7/7 content parity, zip test clean).
+# sha256 510c8be3b5e645560244aeb9f2e60f5cb6f42097b3d771aa37c02ac83c6162c1
+# (7073243 B), релиз v478-f9-bn-world, download-верифицирован.
 BN_V3_URL = ("https://github.com/PLANETA9091/c-crussty/releases/download/"
-             "v470-s55/world466-bn-stress-v3.zip")
+             "v478-f9-bn-world/world478-bn-stress-v4.zip")
 
 # canon x466-C98 ЯВНЫМ JSON (урок C66-C72): дефолты yml = merge-поверхность
 INPUTS = {
