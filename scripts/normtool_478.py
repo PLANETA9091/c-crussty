@@ -1,0 +1,276 @@
+#!/usr/bin/env python3
+"""normtool_478.py — [478-G24] norm-скрипт автоматизации (A1-метод canon, MEGA-SWARM v19.0).
+
+Вход {run id} → GitHub API артефакт world3-bench → in-place zip parse (Л-478-A1.2d,
+диск 94%: без unzip) → BOTTLENECKS_3.md first-of-window polls → медиана (канон C55:
+поллы <15.0 — pre-inject пустой мир 20.0-26.4 отсекается) → tps_exp_v5 interp
+(BANK_V5_FREEZE §2 сэмплы 6.5M→2.1252 … 9.0M→2.6280 + Л201 robust-узел [6.9,7.2]M=2.1293,
+report-only) → norm_v5 = 100*(median/tps_exp_v5(cpu)−1) → HOST-ценз M1
+(STW_total ≤23.0s ∧ young_avg ≤200ms из gc.log completion-строк без gc,phases) → JSON.
+
+Уроки-каноны (НЕ нарушать):
+  A1.2a percentile-медианы НЕТ в артефактах (spark печатает Max/Min/Average only) —
+       рабочая прокси = медиана TPS-polls;
+  A1.2b polls-vs-spark дивергенция до 24.9пп — raw-поллы ОБЯЗАНЫ храниться в JSON
+       (raw_polls_stdout / polls_first_of_window / polls_valid_c55) + spark-кросс-чек;
+  B3   exp-юнит-баг (cpu/1e6 vs узлы-герцы) ловится selftest — selftest обязателен
+       перед каждым вердиктом.
+
+Пороги/окна BANK_V5_FREEZE §2 v5-FROZEN — только report-only, НЕ двигать (§5).
+Usage:
+  normtool_478.py --run-id ID [--run-id ID ...] [--workdir DIR]
+  normtool_478.py --selftest [--workdir DIR]   # 3 бит-точные реконструкции
+"""
+import argparse, json, os, re, statistics, subprocess, zipfile
+
+REPO = "PLANETA9091/c-crussty"
+# BANK_V5_FREEZE §2 tps_exp_v5 сэмплы (FROZEN, не пересматривать)
+V5 = [(6.5e6, 2.1252), (7.0e6, 2.2047), (7.5e6, 2.3271), (8.2e6, 2.4732),
+      (8.7e6, 2.5981), (9.0e6, 2.6280)]
+BAND = (6.0e6, 9.5e6)                                # GLOB 6.0-9.5M
+LOCAL_70, LOCAL_LO, LOCAL_HI = 2.1293, 6.9e6, 7.2e6  # Л201 robust-узел (report-only)
+TPS_MAX_VALID = 15.0                                 # канон C55
+STW_MAX_S, YOUNG_MAX_MS = 23.0, 200.0                # HOST-ценз M1
+# v5-FROZEN окна (report-only; BANK §2/§5 — пороги не двигать)
+FROZEN_WINDOWS = {
+    "climb5[8734563,8834563]": {"range": (8_734_563, 8_834_563), "thresh": 2.99},
+    "POI[8907260,9007260]": {"range": (8_907_260, 9_007_260), "thresh": -1.99},
+}
+
+RE_POLLS_BOT = re.compile(r"TPS polls captured: (\d+), first-of-window values: \[([^\]]*)\]")
+RE_TPS = re.compile(r"TPS from last 5s.*?: ([\d.]+),")
+RE_IDX = re.compile(r"runner_cpu_index[:=]\s*(\d+)")
+RE_SPARK = re.compile(r"spark tick-monitor MSPT: avg \*?\*?([\d.]+)ms")
+RE_GC_TOTAL = re.compile(r"total pause: \*?\*?([\d.]+) ms")
+PAUSE_COMPL = re.compile(r"GC\(\d+\) Pause .* (\d+\.\d+)ms$")
+
+
+def tps_exp_v5(idx, local_node=False):
+    """Линейная интерполяция узлов §2; вне узлов — линейная экстраполяция крайними
+    (канон c42). ЮНИТЫ: idx и узлы в герцах (урок B3: cpu/1e6-баг = selftest-отлов)."""
+    if local_node and LOCAL_LO <= idx <= LOCAL_HI:
+        return LOCAL_70
+
+    def interp(lo, hi, idx):
+        f = (idx - lo[0]) / (hi[0] - lo[0])
+        return lo[1] + f * (hi[1] - lo[1])
+
+    if idx < V5[0][0]:
+        return interp(V5[0], V5[1], idx)
+    if idx > V5[-1][0]:
+        return interp(V5[-2], V5[-1], idx)
+    for i in range(len(V5) - 1):
+        if V5[i][0] <= idx <= V5[i + 1][0]:
+            return interp(V5[i], V5[i + 1], idx)
+    return V5[-1][1]
+
+
+def gc_canon(text):
+    """M1-канон: completion-строки 'GC(n) Pause ... X.Xms' без [gc,phases]."""
+    stw = {"total_ms": 0.0, "max_ms": 0.0, "pauses": 0, "full": 0, "young": 0,
+           "full_cc": 0, "full_md": 0, "full_other": 0,
+           "full_sum_ms": 0.0, "young_sum_ms": 0.0}
+    for line in text.splitlines():
+        if "Pause" not in line:
+            continue
+        m = PAUSE_COMPL.search(line)
+        if not m or "[gc,phases" in line:
+            continue
+        dur = float(m.group(1))
+        stw["total_ms"] += dur
+        stw["pauses"] += 1
+        stw["max_ms"] = max(stw["max_ms"], dur)
+        if "Pause Full" in line:
+            stw["full"] += 1
+            stw["full_sum_ms"] += dur
+            if "CodeCache" in line:
+                stw["full_cc"] += 1
+            elif "Metadata" in line:
+                stw["full_md"] += 1
+            else:
+                stw["full_other"] += 1
+        else:
+            stw["young"] += 1
+            stw["young_sum_ms"] += dur
+    return stw
+
+
+def fetch_artifact(run_id, workdir):
+    """Артефакт world3-bench → кэш-zip (download skip если уже есть)."""
+    tok = open("/tmp/gh_token").read().strip()
+    base = f"https://api.github.com/repos/{REPO}"
+    os.makedirs(workdir, exist_ok=True)
+    zpath = os.path.join(workdir, f"art_{run_id}.zip")
+    if os.path.exists(zpath):
+        return zpath
+    out = subprocess.run(["curl", "-s", "-H", f"Authorization: token {tok}",
+                          f"{base}/actions/runs/{run_id}/artifacts"],
+                         capture_output=True, text=True).stdout
+    art = next((a for a in json.loads(out).get("artifacts", [])
+                if a["name"] == "world3-bench"), None)
+    if not art:
+        return None
+    subprocess.run(["curl", "-sL", "-H", f"Authorization: token {tok}",
+                    "-o", zpath, art["archive_download_url"]], check=True)
+    return zpath
+
+
+def norm_run(run_id, workdir):
+    """Полный A1-конвейер одного run id → JSON-дикт (raw-поллы хранить обязательно)."""
+    zpath = fetch_artifact(run_id, workdir)
+    if not zpath:
+        return {"run_id": run_id, "verdict": "NO-ARTIFACT"}
+    with zipfile.ZipFile(zpath) as z:
+        names = z.namelist()
+        env = z.read("run-env.txt").decode(errors="replace")
+        log = z.read("server-stdout.log").decode(errors="replace")
+        bot = z.read("BOTTLENECKS_3.md").decode(errors="replace") if "BOTTLENECKS_3.md" in names else ""
+        gcn = next((n for n in names if n.endswith("gc.log")), None)
+        gclog = z.read(gcn).decode(errors="replace") if gcn else ""
+
+    idx_m = RE_IDX.search(env)
+    idx = int(idx_m.group(1)) if idx_m else 0
+
+    # --- polls: BOTTLENECKS first-of-window (первичный источник по CLAIM) ---
+    raw_bot = []
+    n_captured = None
+    mb = RE_POLLS_BOT.search(bot)
+    if mb:
+        n_captured = int(mb.group(1))
+        raw_bot = [float(x) for x in mb.group(2).split(",") if x.strip()]
+    # --- raw-поллы из server-stdout (A1.2: хранить обязательно) ---
+    raw_stdout = [float(x) for x in RE_TPS.findall(log)]
+    source = "bottlenecks_first_of_window" if raw_bot else "stdout_fallback"
+    raw_polls = raw_bot if raw_bot else raw_stdout
+    polls = [x for x in raw_polls if x < TPS_MAX_VALID]  # канон C55
+    med = statistics.median(polls) if polls else 0.0
+
+    exp = tps_exp_v5(idx)
+    exp_c42 = tps_exp_v5(idx, local_node=True)
+    norm = 100 * (med / exp - 1) if med else None
+    norm_c42 = 100 * (med / exp_c42 - 1) if med else None
+
+    # --- spark-кросс-чек (дивергенция до 24.9пп — A1.2b) ---
+    spark_mspt = float(RE_SPARK.search(bot).group(1)) if RE_SPARK.search(bot) else None
+    spark_tps = round(1000.0 / spark_mspt, 4) if spark_mspt else None
+    norm_spark = round(100 * (spark_tps / exp - 1), 2) if spark_tps and med else None
+    div = round(norm_spark - norm, 2) if norm_spark is not None and norm is not None else None
+
+    # --- HOST-ценз M1 (gc.log primary; BOTTLENECKS total-pause кросс-чек) ---
+    s = gc_canon(gclog) if gclog else None
+    n = s["pauses"] if s else 0
+    young_avg = (s["young_sum_ms"] / s["young"]) if s and s["young"] else 0.0
+    all_avg = (s["total_ms"] / n) if s and n else 0.0
+    host = bool(s) and (s["total_ms"] > STW_MAX_S * 1000 or
+                        (s["young"] and young_avg > YOUNG_MAX_MS))
+    bot_total = float(RE_GC_TOTAL.search(bot).group(1)) if RE_GC_TOTAL.search(bot) else None
+
+    valid = "FIXTURE-VALIDITY: VALID" in bot
+    ncdfe = "NoClassDefFoundError" in log
+    aioobe = "ArrayIndexOutOfBoundsException" in log
+    in_band = BAND[0] <= idx <= BAND[1]
+
+    if not in_band:
+        verdict = "BAND-DEAD"
+    elif not polls:
+        verdict = "NO-TPS"
+    elif not valid or ncdfe or aioobe:
+        verdict = "FIXTURE-INVALID"
+    elif host:
+        verdict = "HOST-CENSORED"          # в-точка VALID, из фитов CLEAN-first §3.3
+    else:
+        verdict = "NORM-COMPUTED"          # norm-число готово; пороги — вне скоупа тулзы
+
+    # --- v5-FROZEN окна report-only (НЕ двигать) ---
+    win_report = {}
+    if med:
+        for name, w in FROZEN_WINDOWS.items():
+            if w["range"][0] <= idx <= w["range"][1]:
+                win_report[name] = {"norm_v5": round(norm, 2), "thresh_frozen": w["thresh"],
+                                    "hit": norm <= w["thresh"]}
+
+    return {
+        "run_id": run_id, "tool": "normtool_478", "verdict": verdict,
+        "cpu_index": idx, "in_band": in_band,
+        "poll_source": source, "polls_captured": n_captured,
+        "raw_polls_bottlenecks": raw_bot,          # A1.2: raw-поллы хранить
+        "raw_polls_stdout": raw_stdout,            # A1.2: raw-поллы хранить
+        "polls_valid_c55": polls,                  # после фильтра <15.0
+        "n_polls_valid": len(polls),
+        "tps_med": round(med, 4),
+        "tps_exp_v5": round(exp, 5),
+        "tps_exp_c42_robust": round(exp_c42, 4),
+        "norm_v5": round(norm, 2) if norm is not None else None,
+        "norm_c42_robust": round(norm_c42, 2) if norm_c42 is not None else None,
+        "spark_crosscheck": {"mspt_avg": spark_mspt, "tps_avg": spark_tps,
+                             "norm_spark": norm_spark, "divergence_pp": div},
+        "host_M1": {"stw_total_s": round(s["total_ms"] / 1000, 4) if s else None,
+                    "stw_limit_s": STW_MAX_S,
+                    "all_avg_ms": round(all_avg, 1),
+                    "young_avg_ms": round(young_avg, 1),
+                    "young_limit_ms": YOUNG_MAX_MS,
+                    "max_pause_ms": round(s["max_ms"], 1) if s else None,
+                    "young_n": s["young"] if s else 0,
+                    "full_n": s["full"] if s else 0,
+                    "full_cc": s["full_cc"] if s else 0,
+                    "full_md": s["full_md"] if s else 0,
+                    "bottlenecks_total_pause_ms": bot_total,
+                    "host": host},
+        "fixture_valid": valid, "ncdfe": ncdfe, "aioobe": aioobe,
+        "frozen_windows_report_only": win_report,
+    }
+
+
+SELFTEST = [
+    # (run_id, tag, {поля = бит-точные канон-числа Л-478-A1.1 / Л-478-B1 / Л-478-B3})
+    (36357571554, "W1-s7", {"cpu_index": 8824280, "tps_med": 2.4, "tps_exp_v5": 2.61049,
+                            "norm_v5": -8.06, "host_M1": {"stw_total_s": 21.8517, "young_avg_ms": 108.0}}),
+    (36357571844, "W3-c5", {"cpu_index": 8925412, "tps_med": 2.8, "tps_exp_v5": 2.62057,
+                            "norm_v5": 6.85}),
+    (36364206523, "canary", {"cpu_index": 6818039, "tps_med": 2.1, "tps_exp_v5": 2.17577,
+                             "norm_v5": -3.48}),
+]
+
+
+def _get(d, path):
+    for p in path.split("."):
+        d = d[p]
+    return d
+
+
+def selftest(workdir):
+    """Бит-точная реконструкция 3 канон-ранов (урок B3: selftest перед вердиктом)."""
+    ok = 0
+    for run_id, tag, expect in SELFTEST:
+        r = norm_run(run_id, workdir)
+        fails = []
+        for k, v in expect.items():
+            got = _get(r, k)
+            if isinstance(v, dict):
+                for kk, vv in v.items():
+                    if abs(_get(r, f"{k}.{kk}") - vv) > 1e-9:
+                        fails.append(f"{k}.{kk}: got {got[kk]} want {vv}")
+            elif got != v:
+                fails.append(f"{k}: got {got} want {v}")
+        status = "PASS" if not fails else "FAIL " + "; ".join(fails)
+        ok += not fails
+        print(f"[selftest] {tag} {run_id}: norm_v5={r['norm_v5']} med={r['tps_med']} "
+              f"exp={r['tps_exp_v5']} -> {status}", file=__import__("sys").stderr)
+        print(json.dumps(r, ensure_ascii=False))
+    print(json.dumps({"selftest": f"{ok}/{len(SELFTEST)}",
+                      "bit_exact": ok == len(SELFTEST)}, ensure_ascii=False))
+    return ok == len(SELFTEST)
+
+
+if __name__ == "__main__":
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--run-id", type=int, action="append")
+    ap.add_argument("--workdir", default="/home/z/rounds/ROUND-478/G24/art")
+    ap.add_argument("--selftest", action="store_true")
+    a = ap.parse_args()
+    if a.selftest:
+        raise SystemExit(0 if selftest(a.workdir) else 1)
+    if not a.run_id:
+        ap.error("--run-id required (or --selftest)")
+    for rid in a.run_id:
+        print(json.dumps(norm_run(rid, a.workdir), ensure_ascii=False))
