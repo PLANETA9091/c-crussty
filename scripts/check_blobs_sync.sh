@@ -386,6 +386,25 @@ check_flat_matches_nested "randomtick/build" "net/minecraft/world/entity/ai/Brai
 check_flat_matches_nested "randomtick/build" 'net/minecraft/world/entity/ai/BrainOps$IdKey'
 check_flat_matches_nested "randomtick/build" 'net/minecraft/world/entity/ai/BrainOps$Snapshot'
 
+# ×480-C07 flat/nested hole-closure (Л-479-F3 precedent: an UNGATED pair drifts
+# silently during a merge while the gate stays green — ×93 byte-canon broken).
+# Repo-wide audit on master (348 tracked blobs, javap-FQCN pairing): 12 more
+# live-build flat/nested pairs had NO check_flat_matches_nested line; all 12
+# byte-IDENTICAL at pin time (sha8 in claim CLM-C07) — gate-only delta, 0
+# Java/Rust code deltas, vanilla leg bit-identical (закон 5 чист).
+check_flat_matches_nested "chunkparse/build"  "net/minecraft/world/level/chunk/storage/ChunkParseOps"
+check_flat_matches_nested "chunksched/build"  "net/minecraft/server/level/ChunkSchedOps"
+check_flat_matches_nested "entityinside/build" "net/minecraft/server/level/BlockUpdateOps"
+check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/InsideBitmaskOps"
+check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/InsideBlockOps"
+check_flat_matches_nested "entityinside/build" 'net/minecraft/world/entity/InsideBlockOps$Recorder'
+check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/InsideSnapOps"
+check_flat_matches_nested "entityinside/build" 'net/minecraft/world/entity/InsideSnapOps$Snap'
+check_flat_matches_nested "entityinside/build" 'net/minecraft/world/entity/InsideSnapOps$Lane'
+check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/InsideSnapRegistryOps"
+check_flat_matches_nested "entityinside/build" "net/minecraft/util/RngOps"
+check_flat_matches_nested "entityinside/build" "net/minecraft/server/level/TrackerTickOps"
+
 # TASK-463-88a CP-EXACT gate (lessons ×461/×463): merge 887c4641 union-glued
 # "cmp457_paldelta|cmp457_eqsnap2" INSIDE single equals() strings at 11 java
 # gate sites — a plain substring-grep for the flag token passes while the gate
