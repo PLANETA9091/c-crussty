@@ -26,3 +26,10 @@
 - Канон-обогащение: пул бимод (микрозон нет), дрейф +650k REFUTED (−108k/ч), f6-lh ramp-артефакт, full-GC второй STW-драйвер, 19b-канон = STW-секунды gc6@12G, W-ось wall-метрика бит-сходится, парити-оракул 8/8, normtool ×2 EDGE (fail-open hole + biomes-флаг).
 - СТЗ ×13 (+10..13 fresh: Lithium #783 HIGH heap-leak / C2ME #603 seam / Moonrise #203 / Paper #14313); СТЗ-3 фиксстура пуста — materialize дверь.
 - Диспатчи ~100/100 (командирские 27 + burst 73); N1=38/100, N2=0 (платформа); in-flight ~95 ранов → абсорб ×482; canary-gate RED = инфра input-selection дефект (мастер здоров: ваниль +4.88).
+
+## CLAIMS ×483 (тик 23:08+08, v19.0 100×100)
+- **ИНФРА-МЕРЖ: canary-gate фикс → master 5fcaa7ff --no-ff + порт :300 → c32286d2** (YAML-only, A19-ценз PASS, push-CI 36452718213 SKIP-верификация in-flight); C95-desync опровергнут (already-ancestor).
+- **A17 W8⊕c98ai+bu1 +44.36 M1-CLEAN pair≈+47 (1/3, w8c-r2 in-flight → №20 ×484)**; REFUTED_CENS: 150s-спринт 8.33пп-gap, ic0 −17.9пп-цена, gc6@12G 0/4 шумовой, 165k@gc3 ×3 flaky, xms8 труп№5, RCC ×3.
+- SWARM: N1=23/100 (28 диспатчей, дедлайны 5), N2=0 (×8 тик платформа); диспатчи 101/100 (71 свип + 4 РЕ-ГРАЙН + 26 якорь-добор); БАНК 49/30 (пот. 59/30).
+- Мега-цели: 19a Tectonic-мир → tect1 in-flight; 19b POP 90% ≈205k gc6@12G (клиф 207.3k), 165k-gc6-мост leg in-flight (прогноз 18.2s P≈0.99), p500-брикет 52-116s; 19c СТЗ-3v2 fixture v2 sha 16fa1a32 готов к диспатчу; СТЗ ×24 (+fresh ×8: Li#787/C2ME-nf#97/C2ME-nf#96/Async#205/Paper#14306/MR#201).
+- Инфра-уроки: reset-on-wrong-branch; sed-in-expr ломает ${{ }}; merge-base-first; band-пул двугорбый → окна-клэймы требуют страт-проб (BAND-DEAD ×18).
