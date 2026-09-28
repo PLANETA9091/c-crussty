@@ -108,10 +108,10 @@ on:
       # lever #10 REFUTED (s7177: TPS -12.5% counter-effect) and rolled back
       # long ago — the flag is pinned to '0' below; ZeroAllocOps bridges
       # remain verified infrastructure.
-      inside_bitmask:
-        description: 'INSIDE-BITMASK RECON-33 ARCH-ATTACK lever #15 (1 = ARMED: section all-air pre-gate for Entity.checkInsideBlocks via InsideBitmaskOps sweptHullInto + hasOnlyAir sections — median-exact short-circuit before ANY observable action; requires region_threads>=2; 0 = vanilla discovery A/B leg). OPTION-B FLAGMAN: activate only on owner sanction (protocol min-MSPT)'
+      datapack_url:
+        description: 'DP-DOOR C38 (x484-N2 lab-branch input-swap inside_bitmask->datapack_url; 25-input limit; INSIDE_BITMASK dormant-0 via shell-default run_world3.sh:88): datapack zip URL (empty = vanilla bit-in-bit); installed into <world>/datapacks/ pre-boot, log marker DP-INSTALLED <sha256>'
         required: false
-        default: '0'
+        default: ''
       # zero_cursor input REMOVED (TASK-332): the 25-input GitHub limit; lever
       # #11 v1 was REFUTED (s7173 harm -22% TPS) and rolled back — the flag is
       # pinned to '0' below; bridge classes remain infrastructure.
@@ -241,7 +241,7 @@ jobs:
           FLAT_TRAVERSAL: '0' # input dropped TASK-342 (25-input limit; lever #9 REFUTED FAIL PG4a)
           TRAVEL_DIET: '0' # input dropped TASK-395 (lever #14 dormant-0)
           ZERO_ALLOC: '0' # input dropped TASK-360 (25-input limit; lever #10 REFUTED s7177)
-          INSIDE_BITMASK: ${{ inputs.inside_bitmask || '0' }}
+          DATAPACK_URL: ${{ inputs.datapack_url || '' }} # DP-DOOR C38 (x484-N2): empty = vanilla bit-in-bit; INSIDE_BITMASK shell-default 0 in run_world3.sh:88 (dormant lever, bit-identical)
           ZERO_CURSOR: '0'
           SKIP_STORE_BB: ${{ inputs.skip_store_bb || '0' }}
           REGION_STEAL: ${{ inputs.region_steal || '0' }}
