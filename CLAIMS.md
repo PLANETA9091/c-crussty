@@ -323,3 +323,7 @@ TASK-457 (tick-456 закрывает, открывает ×457, 20:0x +08):
 - REFUTED_CENS ×12 с числами (CES +2.24 / NavPlaneOps +5.59 / r960-компо +1.92 / park ≤+0.60 / SBB1 0.09 / rt8 prio 1.5-2.2 / inlining split ≤0.2 / F1 стоп-5 <2 / chk-14 slow −0.16 / dp 0.0000% / gen_work 9.6% / chkclimb-5 0/8).
 - Диспатчи 118/100 (12c ✓); N1=60/100 Task-деплой (35 финалов, дедлайны ~40%); N2=0 (честно).
 - SWARM-дисциплина: board-аппенды ×35 командиров, LEDGER Л-478-A1..A19/B1-B6/W1-W7/F1-F12/G24/Y1/Y4/Y5 — пуш master; инцидент force-push (A19 прег) зафиксирован; normtool_478.py TOOL-READY selftest 3/3.
+
+## CLAIMS 479-A5 (тик 04:03+08 2026-09-28)
+- sensn16 leg ×2 (round-479-a5-l1/l2 @master 70d64190, canon x466-C98 ЯВНЫМ JSON fp4, lever cmp466_c98ai/16): ОБА SUCCESS CLEAN-legal — все фрозен-гейты PASS (band IN, M1 STW 22.08/15.48 ≤23, ARM-пруф «cmp466_c98ai: ARMED» из артефакта server-stdout.log, NCDFE 0, AIOOBE 0, FIXTURE-VALIDITY VALID): l1 run 36374296144 norm_v5 +32.01@7,601,999 (первый all-gates-CLEAN лег серии с norm ≥+20) / l2 run 36374322768 +15.71@6,722,365.
+- Pair-матем leg_norm − anchor_norm (Δcpu ≤50k, min-of-3, якоря mxa-08 −3.70@6,849,418 / mxa-12 +3.32@6,905,659 / s1-d +0.59@6,888,701): 0/6 пар — l1 bin-miss Δ753k/696k/713k, l2 Δ127k/183k/166k; вердикт **REFUTED_CENS**: пара-пул №17/18 остаётся 0 legal ≥+20 (серия a..l ×478/×479 = 13 легов, best pair-кандидат leg-c +13.51); CLAIM sensn16 ≥+20 на уровне ПАРЫ не подтверждён, пороги v5-FROZEN не тронуты. NEXT ×480: ре-ролл-волна ×3 в окно якорей [6.80,6.96]M (l2 Δ127k — ближайший).
