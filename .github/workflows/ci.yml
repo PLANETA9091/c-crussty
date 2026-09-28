@@ -324,6 +324,21 @@ jobs:
           verd["ci_run_id"] = int(os.environ.get("GITHUB_RUN_ID", "0") or 0)
           def dump():
               json.dump(verd, open("canary-gate-verdict.json", "w"), indent=1)
+          # C85 (ROUND-482 gatefix): the [-6,+6] gate owns ONLY the
+          # vanilla-canary input — the master-health canary dispatched on a
+          # round-*-canary* branch (legacy canary-N form included). Every
+          # other world-bench-round completion (burst feeds, research probes,
+          # anchor waves, armed A/B legs) is judged by the STRICT-pairing /
+          # min-of-3 canon, NOT by this gate. Letting them through was the
+          # RED storm x55 since 08:54Z (C85: gate RED on burst/f6-leg runs).
+          # The branch filter is authoritative because run-env.txt carries NO
+          # lever marker — SKIP-ARMED below was dead code (run_world3.sh never
+          # wrote lever_flag into run-env.txt; gatefix also restores that line
+          # as a 2nd layer).
+          HB = os.environ.get("BENCH_HEAD_BRANCH", "")
+          if not re.match(r'^(?:canary-\d+|round-\d+.*canary)', HB):
+              print(f"::notice::canary-gate SKIP-NON-CANARY head_branch='{HB}' — gate owns only round-*-canary* inputs, C85 gatefix (run: {URL})")
+              verd["verdict"] = "SKIP-NON-CANARY"; dump(); raise SystemExit(0)
           # S100 (S31-audit fix): failure benches fast-fail at bench step-3
           # ("Runner calibration band gate", S7-96d pairing law) BEFORE any
           # artifact upload -> run-env.txt absent. Classify via jobs API
