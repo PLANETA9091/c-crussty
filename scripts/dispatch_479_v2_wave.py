@@ -81,6 +81,13 @@ def api(tok, url, method="GET", data=None):
 class NoAuthRedirect(urllib.request.HTTPRedirectHandler):
     """Джоб-логи ин-флайт = 302 на Azure blob: НЕ пересылать Bearer (урок A3)."""
 
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        if "Authorization" in req.headers:
+            del req.headers["Authorization"]
+        req.headers.pop("Authorization", None)
+        return urllib.request.HTTPRedirectHandler.redirect_request(
+            self, req, fp, code, msg, headers, newurl)
+
 
 _opener = urllib.request.build_opener(NoAuthRedirect)
 

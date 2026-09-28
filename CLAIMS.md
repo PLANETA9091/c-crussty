@@ -334,3 +334,10 @@ TASK-457 (tick-456 закрывает, открывает ×457, 20:0x +08):
 - normtool m1_clean-допилка (ЛАБ, 0 диспатчей): ТУЛИНГ-VALID — scripts/normtool_478.py M1-гейт top-level `m1_clean` (STW-total ≤23.0s ∧ young_avg ≤200ms из gc.log completion-строк без gc,phases; fail-closed: нет gc.log → False) устранил None-класс m1_clean/stw, блокировавший STW-check s2/s3 на потребителе.
 - Selftest 3/3 bit-exact ×478-вердиктам: W1-s7 36357571554 STW 21.8517s CLEAN (m1_clean=True, −8.06) / W3-c8 36357644226 STW 23.2377s CENS (m1_clean=False, −7.79) / canary 36373375157 STW 25.2884s CENS (m1_clean=False, −1.6).
 - s2/s3 перепроверка → ПОДТВЕРЖДЕНИЕ A4 (0 опровержений): s2 36362740256 STW 20.91 ≤23.0 ∧ young 118.0 ≤200, norm −1.04 → VALID CLEAN в-точка (банк 27/30 стоит); s3 36362354569 STW 24.91 >23.0 → HOST-CENSORED (norm −5.68). Пороги v5-FROZEN не тронуты.
+
+## ×479 CLAIMS-ИТОГ (тик 11:08+08)
+- **МЕРЖ №17 confinement → master f66feb1b** (S25 ×3 PASS per-world A/B: dp2/totem/trek, AIOOBE=0 ×3, canary −1.6 PASS) + **R0/PIN-28 → 70d64190** (7==7, пост-мерж leg 36364633603 вериф) + **F3 ×93-фикс → e503160c** (flat==nested trio BYTE-IDENTICAL). Три мержа тика.
+- Диспатчи **101/100** (12c ✓, фидер-волны V1-V4 48+командирские 36+canary+та): N1=34/100 (22 финалов), N2=0.
+- Банк Л201 n=27/30; RAMP-дефект C55 подтверждён (bias −12.53пп — фикс ×480); RCC-ось закрыта ×2 (young-масса = след. STW-ботлнек); sensn16 0/6 пар (leg-l1 +32.01 NO-PAIR); 19b: 202k DIRTY min-of-2; окно chkclimb-5 2/3, POI 2/3 держатся.
+- In-flight ×480: V1 ×12 STRICT + V2 ×12 окна + V3 ×12 якоря + V4 ×12 безумия + s1-s4 + bn-retry 36374776545 + СТЗ-2 36379253638 — normtool-абсорб.
+- Инфра-уроки: мёртвые вызовы живут (V2 ×24 ранов); band-OFF нереализуем пустыми полями; shared-checkout HEAD-гонки ×3 (stash+commit-tree-протоколы работают).

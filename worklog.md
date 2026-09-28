@@ -5101,3 +5101,11 @@ Work Log:
 - PHASE 3 вердикты: chk-19 23.2 СЕРТИФИЦИРОВАН; sensn16 sub-bar → цикл; REFUTED_CENS ×12 с потолками; РЕ-ГРАЙН не требуется (мерж есть), волна-2 диспатчена (15b ✓), очередь in-flight ≥8 ранов.
 - PHASE 4: GOAL/CLAIMS ×478 + LEDGER Л-478-блок (командиры пушали сами ×35) + worklog; копия dev-logs; push обоих.
 - Артефакты: /home/z/rounds/ROUND-478/ (BOTTLENECK.md, lab/*, a16/a9/Y1/Y5 verdicts); master cd532372→+консолидация.
+
+## ROUND-479 (тик 2026-09-28 11:08+08, trace 1a0dc7e6662ff26d-cron-agent-loop-202609281113)
+- PHASE 0: токен → flock → master 805cf971 / dev-logs cc1c4ef; диск 100%→65% (purge 3.3G: A4-art 1.3G, /tmp 1.2G).
+- PHASE 1 абсорб: conf ×3 SUCCESS → S25 ×3 PASS (per-world A/B vs quiesce-базлайны) → **МЕРЖ №17 f66feb1b** (cargo 0 err + blobs IN SYNC, canary 204); normtool-абсорб ×8 (gc2 −35.57 REFUTED / RCC не-пара / W7 плато 2.6 / STRICT s2+s3).
+- Мержи: **R0/PIN-28 → 70d64190** (cherry-pick 21f67725, пост-мерж вериф 36374633603: 7==7, квота 0.16%) + **F3 ×93-фикс → e503160c** (flat GuardedNavigatingMobs + hole-closure).
+- PHASE 2-3: ростер-ядро 39; 5 волн Task = 34 командиров (22 финалов, дедлайны ~35%); фидер-волны V1-V4 = 48 диспатчей (V2 мёртв но 24 ранов живы); та-якоря ×4; диспатчи **101/100**.
+- Вердикты: банк 27/30; RAMP-дефект C55 −12.53пп подтверждён (W3); RCC закрыт ×2; sensn16 0/6; 19b 202k DIRTY; F5 класс закрыт; F2 СТЗ ×2 + диспатч.
+- PHASE 4: GOAL/CLAIMS ×479 + LEDGER Л-479-блок + worklog; копия dev-logs; push обоих.
