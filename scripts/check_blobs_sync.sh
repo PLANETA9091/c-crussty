@@ -368,6 +368,13 @@ check_flat_matches_nested "queryplane/build" "net/minecraft/world/entity/QueryPl
 check_flat_matches_nested "goalops/build" "net/minecraft/world/entity/ai/goal/GoalOps"
 check_flat_matches_nested "colpush/build" "net/minecraft/world/entity/ColpushOps"
 check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/RegionTickOps"
+# ×479-F3 hole-closure (×478-A10 BrainOps-trio precedent): the merge-17
+# RegionTickOps trio flat==nested — the $GuardedNavigatingMobs flat legacy
+# copy drifted (line-tables only, javap-EQUAL) during merge-17 and the pair
+# was UNGATED; refreshed fresh-wins (nested is what include_bytes! embeds)
+# and both inner units are pinned from here on.
+check_flat_matches_nested "entityinside/build" 'net/minecraft/world/entity/RegionTickOps$Mut'
+check_flat_matches_nested "entityinside/build" 'net/minecraft/world/entity/RegionTickOps$GuardedNavigatingMobs'
 check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/FlushOps" # S26 pin-stage B-1 (flat = legacy copy, embed = nested)
 check_flat_matches_nested "entityinside/build" "net/minecraft/world/entity/BatchCollector" # S27 pin-stage B-2 (flat = legacy copy, embed = nested)
 check_flat_matches_nested "sense/build" "net/minecraft/world/entity/SenseOps"
