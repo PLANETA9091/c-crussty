@@ -204,7 +204,7 @@ jobs:
         env:
           WORLD_URL: ${{ inputs.world_url || 'https://storage.shield.land/public.php/dav/files/twzsxN3HkBQtyED/Season%203/MineShield-3__Min--Normal.zip' }}
           FORCELOAD_RADIUS: ${{ inputs.radius || '640' }}
-          RUN_SECONDS: ${{ inputs.seconds || '900' }}
+          RUN_SECONDS: ${{ inputs.seconds || '300' }} # C95-port: legacy 3x-window trap aligned to x466-C98 canon 300s (Л-483-B05 фикс 3/3)
           SUMMON_SWEEPS: '0' # legacy (pre-150k era), always 0 since S7-129; input dropped TASK-327 (25-input limit)
           FAKE_PLAYERS: ${{ inputs.fake_players || '0' }}
           FLUID_GUARD: ${{ inputs.fluid_guard || '1' }}
