@@ -299,4 +299,4 @@ Sibling-шум: топ-сайт WrappedGoal.getFlags 344=0.29пп, далее Se
 Ваниль-паритет: s13a (skip_store_bb=0) vtable 2,912=2.4% / bucket 2.9% vs x1 (skip_store_bb=1) 2.5%/3.0% — дельта +0.14пп = раннер-шум, SBB1 не порождает стабы.
 Следующий ботлнек: PalettedContainer.get 4.0% self (4,625) → Entity.updateFluidHeightAndDoFluidPushing 2.8% (3,314) → AABB.intersects 2.6% (3,026) → ChunkEntitySlices$EntityCollectionBySection.getEntities 1.8%.
 0 код-дельт, NCDFE T1=0, закон-5 запреты чисты, band ✓ (cpu_index 7,158,741 ∈ [6.0,9.5]M), ваниль-паритет ✓. Источник-census: run 36358009136.
-Ветка master @4a3033a6 (дерево без код-дельт); LEDGER Л-478-W1.
+Ветка master @b8991d9e (FINAL-коммит, push 848d8f14..b8991d9e OK); LEDGER Л-478-W1.
