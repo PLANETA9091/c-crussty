@@ -1,19 +1,32 @@
 #!/usr/bin/env bash
 # =============================================================================
-# parity_phase76_marked.sh — CANARY-4 SCOPE-SPEC (Л-492-C73, ×493)
-# D4 region-плоскость скоупится к marked-набору world/data/forcedload.dat
-# (ForcedChunksSavedData); entities/scoreboard/full как v2.
+# parity_phase76_marked.sh — CANARY-4 SCOPE-SPEC (Л-492-C73, ×493; ×495 derived-fix)
+# D4 region-плоскость скоупится к marked-набору:
+#   (a) world/data/forcedload.dat (ForcedChunksSavedData) когда флашен; ЛИБО
+#   (b) DERIVED-набор (×495 Л-494-CANARY4): kill-9-стоп не флашит SavedData →
+#       marked = геометрия forceload-свипа харнесса (run_world3.sh §5):
+#       TILES=ceil(R/256), chunk-квадрат [-TILES*16 .. TILES*16-1]²,
+#       R=BENCH_FORCELOAD_RADIUS (дефолт 640 → 96×96 = 9216 чанков).
+#       fl_status="derived-r<R>", scope="marked-derived-<n>". Детерминировано и
+#       пар-сравнимо (обе ноги одной конфигурации → один и тот же набор).
 # Мотивация: v2 O(all-chunks) = 62,604×~9.4ms ≈ 588s → timeout 90/600 + 2MB-лов
 #   = UNKNOWN ×3 (canary-2v2/v3); marked-9216-only ≈ 87s / 0.94MB — единственный
 #   вариант со всеми 4 дайджестами внутри 600s-бюджета.
-# FAIL-OPEN: forcedload.dat отсутствует/битый/структура ≠ ожидаемой →
-#   region_scope="mismatch" → world_sha256=null → fp.json = UNKNOWN (НЕ parity-FAIL).
-# Сравнимость: обе ноги canary-4 сканируют один и тот же marked-набор →
-#   marked-scope world.sha бит-сравним; scope_mismatch на ОДНОЙ ноге = UNKNOWN пары.
+# FAIL-OPEN: derived-набор не полностью покрыт region-сканом → mismatch →
+#   world_sha256=null → fp.json = UNKNOWN (НЕ parity-FAIL). Ложный PASS невозможен.
+# SKIP-ОПТИМИЗАЦИЯ (×495): chunk-координаты из slot-индекса (rx*32+i%32, rz*32+i//32)
+#   ДО декомпрессии — декомпрессия только marked-слотов (9216 из ~595k ≈ 10-15s).
+#   Слот вне marked не декомпрессируется (коррапт вне скоупа D4-плоскости —
+#   детерминизм пары сохранён); slot↔xPos-расхождение → covered-гейт ловит →
+#   mismatch (fail-open, 0 ложных PASS).
+# Сравнимость: обе ноги canary-4 сканируют один и тот же marked-набор (ok ИЛИ
+#   derived, ОДИН класс scope) → world.sha бит-сравним; scope_mismatch/класс-разница
+#   на ОДНОЙ ноге = UNKNOWN пары.
 # Самотест: bash parity_phase76_marked.sh --selftest <tmpdir> (fail-closed, exit 1)
 #   Константы preregistered независимо (python3 hashlib, НЕ код сканера):
 #   WORLD_SHA_MARKED 65355c14… (фикстура CHUNK_A@(0,0), mark {(0,0)}),
-#   H2/P2 = v2-канон entity-плоскости (33ef0979…/6fe33a97…).
+#   H2/P2 = v2-канон entity-плоскости (33ef0979…/6fe33a97…),
+#   WORLD_SHA_DERIVED (×495 M12, worldD: 1024 чанков [-16..15]² stone/air-секта).
 # =============================================================================
 set -u
 H_EMPTY="01ba4719c80b6fe911b091a7c058ef8f9805daca546b0"  # placeholder, переопределяется ниже
@@ -25,6 +38,10 @@ ST_COUNTS='{"minecraft:item":1,"minecraft:zombie":1}'
 ST_WORLD_SHA="65355c14f5ea499c7c54d0f73579ce5a618df3b57365bed640df1b642658f187"
 ST_PER_SUM="12297eb904ccd670491a7d660940fea268e4ec25cacafd883ecd9c71544dafbb"
 ST_SET_SHA="34cd703e5cf56217444e7e5956c66b833cdafb45b6dc766d9ac5a54a5242e819"
+# ×495 derived-fix константы (M12: R=256 → [-16..15]², 1024 чанков, все full/stone-air)
+ST_D_R="256"
+ST_D_MARKED_N="1024"
+ST_D_WORLD_SHA="4cd5c59e901b77313ad0590fd6f4256e79d36911284f215375da03f6c1e64bfa"
 
 log() { echo "[p76] $*"; }
 
@@ -183,6 +200,25 @@ if os.path.isfile(fl_path):
 else:
     fl_status="absent"
 
+# --- ×495 derived-set fallback (Л-494-CANARY4) -------------------------------
+# kill-9-стоп харнесса не флашит SavedData → forcedload.dat отсутствует/пуст.
+# marked = геометрия forceload-свипа run_world3.sh §5 (детерминизм конфига):
+#   STEP=256, TILES=ceil(R/256), forceload add tx tz tx+255 tz+255 для
+#   tx,tz ∈ {-TILES*256 .. (TILES-1)*256 step 256} → chunk-квадрат
+#   [-TILES*16 .. TILES*16-1]². Обе ноги одной конфигурации → один набор.
+if marked is None:
+    # ВНИМАНИЕ: имена _flr/_flt — НЕ R (R = класс NBT-ридера выше; shadowing =
+    # TypeError 'int' object is not callable — пойман selftest-ом M12 ×495)
+    try:
+        _flr=int(os.environ.get("BENCH_FORCELOAD_RADIUS","") or 640)
+    except Exception:
+        _flr=640
+    if _flr<=0: _flr=640
+    _flt=(_flr+255)//256
+    _lo=-_flt*16; _hi=_flt*16
+    marked=set((cx,cz) for cx in range(_lo,_hi) for cz in range(_lo,_hi))
+    fl_status="derived-r%d"%_flr
+
 # --- region marked-scope scan (D4) ------------------------------------------
 AIR="minecraft:air"
 def palette_str(entry):
@@ -232,17 +268,49 @@ def region_iter(path,rx,rz):
         cz=int(root.get("zPos",rz*32+(i//32)))
         yield cx,cz,root
 
+def region_iter_marked(path,rx,rz,marked):
+    # ×495 SKIP-ОПТИМИЗАЦИЯ: slot-координаты ДО декомпрессии; декомпрессия
+    # только слотов-кандидатов marked. Слот вне marked не декомпрессируется.
+    # slot↔xPos-расхождение у marked-кандидата: chunk учитывается по xPos —
+    # если xPos-чанк не marked, он просто не попадёт в world_map → covered-гейт
+    # ловит недостачу → mismatch (fail-open, 0 ложных PASS).
+    with open(path,"rb") as f: raw=f.read()
+    if len(raw)<8192: return
+    for i in range(1024):
+        o=i*4
+        off_sectors=(raw[o]<<16)|(raw[o+1]<<8)|raw[o+2]
+        cnt=raw[o+3]
+        if off_sectors==0 or cnt==0: continue
+        ccx=rx*32+(i%32); ccz=rz*32+(i//32)
+        if (ccx,ccz) not in marked:
+            yield ccx,ccz,None,False
+            continue
+        start=off_sectors*4096
+        if start+5>len(raw): raise ValueError("chunk %d вне файла"%i)
+        plen=struct.unpack_from(">I",raw,start)[0]
+        comp=raw[start+4]
+        payload=raw[start+5:start+4+plen]
+        if comp==1: payload=gzip.decompress(payload)
+        elif comp==2: payload=zlib.decompress(payload)
+        elif comp!=3: raise ValueError("ctype %d (LZ4/Zstd)"%comp)
+        root=nbt_root(payload)
+        cx=int(root.get("xPos",ccx))
+        cz=int(root.get("zPos",ccz))
+        yield cx,cz,root,True
+
 world_map={}
 reg_dir=os.path.join(world,"region")
 reg_files=len([f for f in os.listdir(reg_dir) if f.endswith(".mca")]) if os.path.isdir(reg_dir) else 0
 reg_errors=0; reg_seen=0; reg_skipped=0
-if fl_status=="ok" and reg_files:
+if marked is not None and reg_files:
     for fn in sorted(f for f in os.listdir(reg_dir) if f.endswith(".mca")):
         parts=fn.split(".")
         try: rx,rz=int(parts[1]),int(parts[2])
         except (IndexError,ValueError): rx=rz=0
         try:
-            for cx,cz,root in region_iter(os.path.join(reg_dir,fn),rx,rz):
+            for cx,cz,root,slot_hit in region_iter_marked(os.path.join(reg_dir,fn),rx,rz,marked):
+                if not slot_hit:
+                    reg_skipped+=1; continue
                 reg_seen+=1
                 if (cx,cz) not in marked:
                     reg_skipped+=1; continue
@@ -260,7 +328,7 @@ reg_chunks=len(world_map)
 with open(os.path.join(tmpd,"chunk_set.tsv"),"w") as fset, \
      open(os.path.join(tmpd,"chunk_sums.tsv"),"w") as fsum, \
      open(os.path.join(tmpd,"world.sha"),"w") as fw:
-    if fl_status=="ok" and reg_errors==0 and reg_files>0 and reg_chunks>0:
+    if marked is not None and reg_errors==0 and reg_files>0 and reg_chunks>0:
         h=hashlib.sha256()
         for (cx,cz) in sorted(world_map):
             status,blob=world_map[(cx,cz)]
@@ -274,12 +342,14 @@ with open(os.path.join(tmpd,"chunk_set.tsv"),"w") as fset, \
 # marked-набор, заявленный forcedload, должен быть ПОЛНОСТЬЮ покрыт region-сканом
 covered=(marked is not None) and (reg_errors==0) and \
         (marked.issubset(set(world_map.keys())))
-if fl_status!="ok" or reg_errors>0 or not covered:
+if marked is None or reg_errors>0 or not covered:
     scope="mismatch"
 elif reg_chunks==0:
     scope="mismatch"   # mark-набор есть, но ни одного чанка не найдено
-else:
+elif fl_status=="ok":
     scope="marked-%d"%reg_chunks
+else:
+    scope="marked-derived-%d"%reg_chunks
 
 with open(os.path.join(tmpd,"meta2.txt"),"w") as m2:
     m2.write("region_status=%s\nregion_files=%s\nregion_chunks=%s\nregion_errors=%s\nregion_scope=%s\nfl_status=%s\nmarked_n=%s\nregion_seen=%s\nregion_skipped=%s\nentity_count=%s\nentity_chunks=%s\nentities_files=%s\ncorrupt_chunks=%s\n" %
@@ -463,6 +533,26 @@ mkworld("worldM-mut", CHUNK_BM, [(0,0)])               # мутант НЕ-marke
 mkworld("worldM-fl2", CHUNK_B, [(0,0),(5,3)])          # mark обоих чанков
 mkworld("worldM-nofl", CHUNK_B, [])                    # без forcedload.dat
 mkworld("worldM-badfl", CHUNK_B, [], bad_fl=True)      # битый forcedload.dat
+
+def write_worldD():
+    # ×495 M12: derived-OK фикстура. НЕТ data/forcedload.dat → fallback;
+    # R=256 (env) → TILES=1 → marked=[-16..15]² = 1024 чанков, все в 4 region-файлах.
+    wd=os.path.join(T,"worldD")
+    os.makedirs(os.path.join(wd,"entities"),exist_ok=True)
+    os.makedirs(os.path.join(wd,"region"),exist_ok=True)
+    write_mca(os.path.join(wd,"entities","r.0.0.mca"),ENTS)
+    write_ldat(os.path.join(wd,"level.dat"))
+    for rx in (-1,0):
+        for rz in (-1,0):
+            items=[]
+            for cx in range(rx*32,rx*32+32):
+                for cz in range(rz*32,rz*32+32):
+                    if -16<=cx<16 and -16<=cz<16:
+                        slot=(cz&31)*32+(cx&31)
+                        items.append((slot,rchunk(cx,cz,"minecraft:full",
+                            [sect(0,["minecraft:stone","minecraft:air"],[305419896,-305419897])])))
+            write_region_mca(os.path.join(wd,"region","r.%d.%d.mca"%(rx,rz)),items)
+write_worldD()
 PYEOF
 }
 
@@ -514,7 +604,21 @@ ok = fp.get('region_scope','').startswith('marked-') and fp.get('world_sha256','
 sys.exit(0 if ok else 1)" \
     && echo "P76-SELFTEST M10 PASS fp.json end-to-end" \
     || { echo "P76-SELFTEST M10 FAIL fp.json"; fails=$((fails+1)); }
-  if [ "$fails" -eq 0 ]; then echo "P76-SELFTEST ALL PASS (10/10)"; return 0
+  # ×495 derived-fix (Л-494-CANARY4): M11 fail-open при неполном покрытии,
+  # M12 derived-OK end-to-end (R=256 → 1024 чанков, sha preregistered независимо)
+  run_scan "$T/worldM-nofl" "$T/outD11" >/dev/null 2>&1
+  grep -q "fl_status=derived-r640" "$T/outD11/meta2.txt" && \
+  grep -q "region_scope=mismatch" "$T/outD11/meta2.txt" \
+    && echo "P76-SELFTEST M11 PASS derived-fallback-fires-failopen" \
+    || { echo "P76-SELFTEST M11 FAIL fl=\$(grep fl_status "$T/outD11/meta2.txt" 2>/dev/null) sc=\$(grep region_scope "$T/outD11/meta2.txt" 2>/dev/null)"; fails=$((fails+1)); }
+  rm -rf "$T/outD12"
+  BENCH_FORCELOAD_RADIUS="$ST_D_R" run_scan "$T/worldD" "$T/outD12" >/dev/null 2>&1
+  sc12="$(grep -oP 'region_scope=\K.*' "$T/outD12/meta2.txt" 2>/dev/null | head -1)"
+  ws12="$(cat "$T/outD12/world.sha" 2>/dev/null)"
+  [ "$sc12" = "marked-derived-$ST_D_MARKED_N" ] && [ "$ws12" = "$ST_D_WORLD_SHA" ] \
+    && echo "P76-SELFTEST M12 PASS derived-1024 sha=$ws12" \
+    || { echo "P76-SELFTEST M12 FAIL scope=$sc12 sha=$ws12 want=$ST_D_WORLD_SHA"; fails=$((fails+1)); }
+  if [ "$fails" -eq 0 ]; then echo "P76-SELFTEST ALL PASS (12/12)"; return 0
   else echo "P76-SELFTEST FAILURES=$fails"; return 1; fi
 }
 
