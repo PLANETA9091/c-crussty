@@ -41,21 +41,34 @@
 #     AI-пути <1мм не фейлит бит-в-бит цель).
 #   ВЕСЬ скрипт выполняется под LC_ALL=C LC_NUMERIC=C (анти-хостильная-локаль).
 #
-# ДЕРЕЙФЛЫ (честно, fail-open по построению):
-#   world_sha256 / chunk_checksums / chunk_set / scoreboard_sha256 — DEFERRED
-#   (след. тик: байт-в-байт выравнивание с scan_region_dir арбитра
-#   scripts/world_diff_parity_v2.py, C04 §5.2). В fp.json пишутся null+status —
-#   offline-гейт увидит deferred, а НЕ ложный дайджест.
+# v2 (round-491-c70-parv2, C70 ИМПЛЕМЕНТ поверх C76/C78): DEFERRED сняты для D4/D7
+#   (C04 ×491 стадия-1; C27 P1/P2):
+#   D4 world_sha256 + chunk_checksums — БАЙТ-В-БАЙТ канон арбитра
+#   scripts/world_diff_parity_v2.py: scan_region_dir/iter_region_chunks/section_blocks/
+#   palette_str/_canon_digest; per-chunk = sha256("".join(f"{y}:{dig}" для y sorted));
+#   world = _side_digest: "cx,cz,status;" + "y:dig;" по sorted((cx,cz)) ЧИСЛОВО, LAST-WINS
+#   на dup (cx,cz) (== арбитр dict-семантика). per-chunk карта — в ОТДЕЛЬНОМ артефакте
+#   dp-parity-fp-region.json (C27 P1: 9216 чанков ≈ 590KB ≪ 2MB; main fp.json не пухнет).
+#   region-ошибки (ctype 4+/усечение) -> region_errors>0 -> world_sha256=null (fail-open,
+#   анти-полу-дайджест: никакой digest по частичному множеству).
+#   D7 scoreboard_sha256 — канон C04 ×489 §3: sorted (objective,holder,score) ->
+#   LC_ALL=C sort -> join "\n"+"\n" -> sha256 (инвариант к HashMap-порядку NBT-списков;
+#   absent==absent -> SKIP-subfield). РАЗРЕШЕНИЕ КОНФЛИКТА C27-P2 «raw-file sha256» vs
+#   C04-канон: берётся PREREGISTERED C04-канон — raw-sha фейлит на пере-сериализации
+#   (gzip-заголовок/порядок списков) = ложный D7-FAIL = ложный REFUTED (анти-цель канона).
+#   Objectives-без-скоров D7 не видит (документированное ограничение; скоры = геймплей-
+#   видимая поверхность, определения целей покрывает D1-пин стенда/dp).
 #
 # РЕЖИМЫ:
 #   parity_phase75.sh <world_dir> <work_dir>   # скан (fail-open: всегда exit 0)
 #   parity_phase75.sh --selftest [tmpdir]      # самотест (fail-closed: exit 1
 #                                              #  при любом FAIL-кейсе)
-# Самотест: 10 кейсов на фикстурах (T-канон, клон/удаление/пере-порядок =
+# Самотест: 13 кейсов на фикстурах (T-канон, клон/удаление/пере-порядок =
 # D6-класс; hostile-locale; END-TO-END на реальных сгенерированных mca-байтах
-# entities/r.0.0.mca + level.dat; fail-open-доказательство S10).
-# Все ожидаемые sha256 — прeregistered константы, вычислены НЕЗАВИСИМОЙ
-# python3-hashlib реализацией канона (кросс-чек bash-реализации).
+# entities/r.0.0.mca + region/r.0.0.mca + scoreboard.dat + level.dat;
+# fail-open-доказательство S10; v2: T4 D4-region-мутант, T5 D7-scoreboard).
+# D4-константы — вычислены САМИМ арбитром world_diff_parity_v2.py на тех же
+# фикстурах (byte-align по построению); D7 — независимой python3-hashlib.
 # Зависимости: bash4+, coreutils (sort/sha256sum/mktemp), awk, python3 (stdlib:
 # gzip/zlib/struct) — уже есть на runner'ах (report_world3.py).
 # ==============================================================================
@@ -83,6 +96,16 @@ POS_U1="0.0005,64.0,-0.0004"; POS_U2="100.1235,65.5,2000.9995"
 # POS_%.3f ожидания (libm round-half-even): 0.0005->"0.001"; -0.0004->"-0.000";
 # 100.1235->"100.124"; 2000.9995->"2000.999"
 FIX_LEVEL_TIME=133700; FIX_DATAVERSION=4440
+# --- v2 D4/D7 preregistered константы. AUTHORITY: D4-константы вычислены САМИМ
+#     арбитром world_diff_parity_v2.py (scan_region_dir/_side_digest/_canon_digest)
+#     на фикстурах ниже = byte-align по построению; D7 — независимый python-hashlib.
+H_RBASE="1d7043335a473695bcea1ea0e891ca474c26283bca9c5aafabba614020515150"  # worldR world_sha256 (arbiter)
+H_RMUT="772f3110743fce3e7083a3795dd3a22a1d11fb59a796cac839f52bdfb9d623cc"  # worldR-mut (coarse_dirt) != H_RBASE
+H_CK00="12297eb904ccd670491a7d660940fea268e4ec25cacafd883ecd9c71544dafbb"  # per-chunk 0,0 (stone|air+2 longs, air-секция Y=-1)
+H_CK53="e027d24052e08465b2bcee63ee0e1f3823f5f2916d63dece73306adf6ca42cef"  # per-chunk 5,3 (dirt, без data)
+H_CK53M="e61fb075ef577ca0591a68bcfed64a045681c8ce88bc9c91331384c81fa4151a" # per-chunk 5,3 мутант
+H_SB="61c080e881efc00c4446b6569062f69fa38583d613bacd587b7e2ce9dac2a8fd"    # scoreboard base (Alice5/Bob3/Carol7, вставка НЕсортированная)
+H_SBMUT="66370ba404e9a83dff9302d800214741e8f95cb10bf2414dfcfaafad0e21acb9" # scoreboard мутант (Bob 3->4)
 
 LAST_TMPD=""; SELFTEST_TMPD=""
 cleanup_all() { [ -n "$LAST_TMPD" ] && rm -rf "$LAST_TMPD" 2>/dev/null; \
@@ -127,15 +150,20 @@ canon_counts_json() {
   printf '{%s}' "$body"
 }
 
+# canon_sb_sha256 <tsv: objective \t holder \t score>
+#   D7-канон (C04 ×489 §3): LC_ALL=C sort строк (канонизирует порядок NBT-списков,
+#   инвариант к HashMap-итерации) -> canon-join -> sha256. present-но-пусто -> $H_EMPTY.
+canon_sb_sha256() { LC_ALL=C sort "$1" | canon_join_sha256 /dev/stdin; }
+
 # ==============================================================================
 # NBT/MCA ЭКСТРАКТОР (python3 stdlib-only, embed; C04 §5 шаги 1+3)
 # entities/*.mca (chunk NBT: Entities[]) -> TSV uuid\ttype\tx\ty\tz (repr-float
 # round-trip) + counts.tsv + meta KV. level.dat -> Time/DataVersion.
-# region-чанк-канон (C04 §5 шаг 2) — DEFERRED: выравнивание с арбитром след. тик.
+# region-чанк-канон (C04 §5 шаг 2) — v2: МАТЕРИАЛИЗОВАН (ниже, байт-в-байт == арбитр).
 # ==============================================================================
 run_extractor() { # <world_dir> <tmpdir>
 python3 - "$1" "$2" <<'PYEOF'
-import gzip, os, struct, sys, zlib
+import gzip, hashlib, os, struct, sys, zlib
 world, tmpd = sys.argv[1], sys.argv[2]
 
 class R:
@@ -242,11 +270,124 @@ meta=[("level_time",lt),("data_version",dv),("entity_count",str(st["entities"]))
       ("entities_dir","1" if os.path.isdir(ent_dir) else "0")]
 with open(os.path.join(tmpd,"meta.txt"),"w") as m:
     for k,v in meta: m.write("%s=%s\n"%(k,v))
+
+# ---- v2 D4: region-канон, байт-в-байт == world_diff_parity_v2.py -------------
+def palette_str(entry):
+    if isinstance(entry, str): return entry
+    if not isinstance(entry, dict): return str(entry)
+    name = entry.get("Name", "?")
+    props = entry.get("Properties")
+    if isinstance(props, dict) and props:
+        return name + "[" + ",".join(k + "=" + props[k] for k in sorted(props)) + "]"
+    return name
+
+def section_blocks(sec):
+    y = int(sec.get("Y", 0))
+    bs = sec.get("block_states")
+    if not isinstance(bs, dict) or "palette" not in bs:
+        return y, [AIR], None
+    pal = [palette_str(e) for e in (bs.get("palette") or [])]
+    data = bs.get("data")
+    if isinstance(data, (bytes, bytearray)):
+        data = list(struct.unpack(">%dq" % len(data), data))
+    return y, pal, data
+
+def canon_digest(pal, data):
+    h = hashlib.sha256()
+    h.update(("|".join(pal)).encode())
+    for l in (data or []):
+        h.update(struct.pack(">q", l))
+    return h.hexdigest()
+
+def region_iter(path, rx, rz):
+    # == iter_region_chunks арбитра (yield (cx,cz,root)); raise на unsupported ctype/усечение
+    with open(path, "rb") as f: raw = f.read()
+    if len(raw) < 8192: return
+    for i in range(1024):
+        o = i * 4
+        off_sectors = (raw[o] << 16) | (raw[o + 1] << 8) | raw[o + 2]
+        cnt = raw[o + 3]
+        if off_sectors == 0 or cnt == 0: continue
+        start = off_sectors * 4096
+        if start + 5 > len(raw): raise ValueError("chunk %d вне файла" % i)
+        plen = struct.unpack_from(">I", raw, start)[0]
+        comp = raw[start + 4]
+        payload = raw[start + 5:start + 4 + plen]
+        if comp == 1: payload = gzip.decompress(payload)
+        elif comp == 2: payload = zlib.decompress(payload)
+        elif comp != 3: raise ValueError("ctype %d (LZ4/Zstd)" % comp)
+        root = nbt_root(payload)
+        cx = int(root.get("xPos", rx * 32 + (i % 32)))
+        cz = int(root.get("zPos", rz * 32 + (i // 32)))
+        yield cx, cz, root
+
+AIR = "minecraft:air"
+world_map = {}  # (cx,cz) -> (status, blob "y:dig;"); LAST-WINS == арбитр dict
+reg_dir = os.path.join(world, "region")
+reg_files = len([f for f in os.listdir(reg_dir) if f.endswith(".mca")]) if os.path.isdir(reg_dir) else 0
+reg_errors = 0
+if reg_files:
+    for fn in sorted(f for f in os.listdir(reg_dir) if f.endswith(".mca")):
+        parts = fn.split(".")
+        try: rx, rz = int(parts[1]), int(parts[2])
+        except (IndexError, ValueError): rx = rz = 0
+        try:
+            for cx, cz, root in region_iter(os.path.join(reg_dir, fn), rx, rz):
+                status = str(root.get("Status", root.get("status", "?")))
+                secs = {}
+                for sec in (root.get("sections") or []):
+                    if isinstance(sec, dict):
+                        y, pal, data = section_blocks(sec)
+                        secs[y] = (pal, data)
+                blob = "".join("%s:%s;" % (y, canon_digest(*secs[y])) for y in sorted(secs))
+                world_map[(cx, cz)] = (status, blob)
+        except Exception:
+            reg_errors += 1
+reg_chunks = len(world_map)
+with open(os.path.join(tmpd,"chunk_set.tsv"),"w") as fset, \
+     open(os.path.join(tmpd,"chunk_sums.tsv"),"w") as fsum, \
+     open(os.path.join(tmpd,"world.sha"),"w") as fw:
+    if reg_errors == 0 and reg_files > 0:
+        h = hashlib.sha256()
+        for (cx, cz) in sorted(world_map):   # числовой tuple-сорт == арбитр sorted(S)
+            status, blob = world_map[(cx, cz)]
+            h.update(("%s,%s,%s;" % (cx, cz, status)).encode())
+            h.update(blob.encode())
+            fset.write("%s,%s,%s\n" % (cx, cz, status))
+            fsum.write("%s,%s\t%s\n" % (cx, cz,
+                hashlib.sha256(blob.replace(";", "").encode()).hexdigest()))
+        fw.write(h.hexdigest())
+reg_status = "ok" if (reg_errors == 0 and reg_files > 0) else \
+             ("absent" if reg_errors == 0 else "error")
+
+# ---- v2 D7: scoreboard.dat -> scoreboard.tsv (objective\tholder\tscore) ------
+sb_status = "absent"
+sbf = os.path.join(world, "data", "scoreboard.dat")
+try:
+    if os.path.isfile(sbf):
+        sroot = nbt_root(gzip.open(sbf, "rb").read())
+        sdata = sroot.get("Data", {})
+        if not isinstance(sdata, dict): sdata = {}
+        slines = []
+        for sc in (sdata.get("PlayerScores") or []):
+            if isinstance(sc, dict):
+                slines.append("%s\t%s\t%s" % (str(sc.get("Objective", "?")),
+                                              str(sc.get("Name", "?")), int(sc.get("Score", 0))))
+        with open(os.path.join(tmpd,"scoreboard.tsv"),"w") as fsb:
+            for ln in slines: fsb.write(ln + "\n")
+        sb_status = "present"
+except Exception:
+    sb_status = "error"
+
+with open(os.path.join(tmpd,"meta2.txt"),"w") as m2:
+    m2.write("region_status=%s\nregion_files=%s\nregion_chunks=%s\nregion_errors=%s\nsb_status=%s\n" %
+             (reg_status, reg_files, reg_chunks, reg_errors, sb_status))
 PYEOF
 }
 
 # ==============================================================================
-# fp.json — поля по C04 §1 (deferred-поля честно null+status)
+# fp.json — поля по C04 §1; v2: D4/D7 материализованы, per-chunk карта — в
+# dp-parity-fp-region.json (C27 P1), main fp.json держит указатель+статусы.
 # ==============================================================================
 emit_fp_json() { # <work_dir> <uh> <ph> <counts_json> <meta> <selftest> <scan_s>
   local work="$1" uh="$2" ph="$3" cj="$4" metaf="$5" st="$6" ss="$7"
@@ -265,19 +406,26 @@ emit_fp_json() { # <work_dir> <uh> <ph> <counts_json> <meta> <selftest> <scan_s>
               | sed 's/.*sha256=\([0-9a-f]\{4,\}\).*/\1/')"
   fi
   printf '%s' "$dp_sha" | grep -Eq '^[0-9a-f]{64}$' || dp_sha="none"
+  # v2: аргументы 8-13 — D4/D7 поверхность
+  local wsha="${8:-null}" rstat="${9:-absent}" rchunks="${10:-0}" rerr="${11:-0}"
+  local sbsha="${12:-null}" sbstat="${13:-absent}"
+  [ "$wsha" = "null" ] || printf '%s' "$wsha" | grep -Eq '^[0-9a-f]{64}$' || wsha="null"
+  [ "$sbsha" = "null" ] || printf '%s' "$sbsha" | grep -Eq '^[0-9a-f]{64}$' || { sbsha="null"; sbstat="error"; }
+  [ "$wsha" = "null" ] || wsha="\"$wsha\""    # JSON-строка вместо баre-хекса
+  [ "$sbsha" = "null" ] || sbsha="\"$sbsha\""
   local tmp="$work/.p75.fp.json.tmp"
   cat > "$tmp" <<EOF
 {"schema":"dp-parity-fp@1","fp_schema_version":1,
- "world_sha256":null,
- "world_sha256_status":"deferred: chunk canon byte-align vs scan_region_dir(world_diff_parity_v2.py) next tick (C04 §5.2)",
+ "world_sha256":$wsha,
+ "world_sha256_status":"$rstat",
  "dp_sha256":"$dp_sha",
- "chunk_set":[],"chunk_checksums":{},"chunk_checksums_status":"deferred",
+ "chunk_set":[],"chunk_checksums":{},"chunk_checksums_status":"in:dp-parity-fp-region.json (D4 canon byte-aligned with world_diff_parity_v2.py; region_errors=$rerr)",
  "entity_uuid_multiset_sha256":"$uh",
  "entity_pos_digest_sha256":"$ph",
  "per_type_counts":$cj,
  "entity_count":$ecount,"entity_chunks":$echunks,"entities_files":$efiles,
- "region_files":$rfiles,"corrupt_chunks":$corr,
- "scoreboard_sha256":null,"scoreboard_sha256_status":"deferred",
+ "region_files":$rfiles,"corrupt_chunks":$corr,"region_chunks":$rchunks,"region_errors":$rerr,
+ "scoreboard_sha256":$sbsha,"scoreboard_sha256_status":"$sbstat",
  "level_time":"$level_time","data_version":"$data_version",
  "selftest":"$st","scan_seconds":$ss}
 EOF
@@ -287,6 +435,27 @@ EOF
     printf '{"schema":"dp-parity-fp@1","fp_schema_version":1,"error":"fp.json>2MB"}\n' > "$tmp"
   fi
   mv -f "$tmp" "$work/dp-parity-fp.json"
+}
+
+# emit_region_json <work_dir> <tmpdir> — v2 D4 per-chunk артефакт (C27 P1), ≤2MB пин
+emit_region_json() {
+  local work="$1" t="$2" wsha rstat rchunks rerr body cset tmp
+  wsha="$(cat "$t/world.sha" 2>/dev/null)"; [ -n "$wsha" ] || wsha=""
+  local wj="null"; [ -n "$wsha" ] && wj="\"$wsha\""
+  rstat="$(awk -F= '$1=="region_status"{print $2}' "$t/meta2.txt" 2>/dev/null)"
+  rchunks="$(awk -F= '$1=="region_chunks"{print $2}' "$t/meta2.txt" 2>/dev/null)"
+  rerr="$(awk -F= '$1=="region_errors"{print $2}' "$t/meta2.txt" 2>/dev/null)"
+  body="$(awk -F'\t' '{printf "%s\"%s\":\"%s\"",(NR>1?",":""),$1,$2}' "$t/chunk_sums.tsv" 2>/dev/null)"
+  cset="$(awk '{printf "%s\"%s\"",(NR>1?",":""),$0}' "$t/chunk_set.tsv" 2>/dev/null)"
+  tmp="$work/.p75.fp-region.json.tmp"
+  printf '{"schema":"dp-parity-fp-region@1","fp_schema_version":1,"world_sha256":%s,"region_status":"%s","region_chunks":%s,"region_errors":%s,"chunk_set":[%s],"chunk_checksums":{%s}}\n' \
+    "$wj" "${rstat:-absent}" "${rchunks:-0}" "${rerr:-0}" "$cset" "$body" > "$tmp" 2>/dev/null || return 0
+  if [ "$(wc -c < "$tmp")" -gt 2097152 ]; then
+    log "ERROR dp-parity-fp-region.json exceeds 2MB budget — replacing with error stub"
+    printf '{"schema":"dp-parity-fp-region@1","fp_schema_version":1,"error":"region.json>2MB"}\n' > "$tmp"
+  fi
+  mv -f "$tmp" "$work/dp-parity-fp-region.json" 2>/dev/null
+  return 0
 }
 
 emit_error_json() { # <work_dir> <reason-alnum>
@@ -324,11 +493,29 @@ main_scan() { # <world_dir> <work_dir>
   uh="$(canon_uuid_multiset_sha256 "$TMPD/entities.tsv")" || return 1
   ph="$(canon_pos_digest_sha256 "$TMPD/entities.tsv")" || return 1
   cj="$(canon_counts_json "$TMPD/counts.tsv")" || return 1
+  # v2: D4/D7 поверхность (регион+scoreboard уже извлечены run_extractor'ом)
+  local wsha rstat rchunks rerr sbsha sbstat k v
+  wsha="null"; rstat="absent"; rchunks=0; rerr=0; sbsha="null"; sbstat="absent"
+  while IFS='=' read -r k v; do
+    case "$k" in
+      region_status) rstat="$v";; region_chunks) rchunks="$v";;
+      region_errors) rerr="$v";; sb_status) sbstat="$v";;
+    esac
+  done < "$TMPD/meta2.txt"
+  [ -s "$TMPD/world.sha" ] && wsha="$(cat "$TMPD/world.sha")"
+  [ "$wsha" = "null" ] || printf '%s' "$wsha" | grep -Eq '^[0-9a-f]{64}$' || wsha="null"
+  [ "$rstat" = "ok" ] || [ "$wsha" = "null" ] || wsha="null"  # digest легален только при status=ok
+  if [ "$sbstat" = "present" ]; then
+    sbsha="$(canon_sb_sha256 "$TMPD/scoreboard.tsv")"
+    printf '%s' "$sbsha" | grep -Eq '^[0-9a-f]{64}$' || { sbsha="null"; sbstat="error"; }
+  fi
   t1=$(date +%s%3N 2>/dev/null || date +%s)
   ss="$(awk -v a="$t0" -v b="$t1" 'BEGIN{printf "%.3f",(b-a)/1000}')"
-  emit_fp_json "$work" "$uh" "$ph" "$cj" "$TMPD/meta.txt" "$st" "$ss" || return 1
+  emit_fp_json "$work" "$uh" "$ph" "$cj" "$TMPD/meta.txt" "$st" "$ss" \
+    "$wsha" "$rstat" "$rchunks" "$rerr" "$sbsha" "$sbstat" || return 1
+  emit_region_json "$work" "$TMPD" || true
   log "DP-PARITY-FP: OK uuid_multiset_sha256=$uh pos_digest_sha256=$ph entities=$(awk -F= '$1=="entity_count"{print $2}' "$TMPD/meta.txt") level_time=$(awk -F= '$1=="level_time"{print $2}' "$TMPD/meta.txt") scan_s=$ss selftest=$st"
-  log "DP-PARITY-FP: deferred-fields world_sha256/scoreboard (next-tick arbiter align)"
+  log "DP-PARITY-FP: v2 D4/D7 world_sha256=$wsha ($rstat) chunks=$rchunks region_errors=$rerr scoreboard=$sbsha ($sbstat)"
   rm -rf "$TMPD" 2>/dev/null; LAST_TMPD=""
   return 0
 }
@@ -398,6 +585,56 @@ for wname,ents in (("world",[ent(U1,"minecraft:item",POS_U1), ent(U2,"minecraft:
                               ent(U2,"minecraft:zombie",POS_U2)])):
     wd=os.path.join(T,wname); os.makedirs(os.path.join(wd,"entities"),exist_ok=True)
     write_mca(os.path.join(wd,"entities","r.0.0.mca"),ents); write_ldat(os.path.join(wd,"level.dat"))
+
+# ---- v2 fixture-расширение: region/*.mca (D4) + data/scoreboard.dat (D7) -----
+def tlongarr(xs): return struct.pack(">i",len(xs))+b"".join(struct.pack(">q",x) for x in xs)
+def sect(y,pal,data):
+    pl=b""
+    if pal is not None:
+        pl+=tg(9,"palette",tlist(8,[tstr(p) for p in pal]))
+        if data: pl+=tg(12,"data",tlongarr(data))
+    return tg(3,"Y",tint(y))+ctag("block_states",pl)+b"\x00"
+def rchunk(x,z,status,secs):
+    return ctag("", tg(3,"DataVersion",tint(4440))+tg(3,"xPos",tint(x))+tg(3,"zPos",tint(z))+
+              tg(8,"Status",tstr(status))+tg(9,"sections",tlist(10,secs)))
+def write_region_mca(path, items):
+    recs=[]
+    for slot,payload in items:
+        comp=zlib.compress(payload); rec=struct.pack(">I",len(comp)+1)+bytes([2])+comp
+        recs.append((slot,rec))
+    hdr=bytearray(8192); off=2
+    for slot,rec in recs:
+        sectors=(len(rec)+4095)//4096
+        hdr[slot*4:slot*4+3]=off.to_bytes(3,"big"); hdr[slot*4+3]=sectors
+        off+=sectors
+    with open(path,"wb") as f:
+        f.write(hdr)
+        for slot,rec in recs:
+            sectors=(len(rec)+4095)//4096
+            f.write(rec); f.write(b"\x00"*(sectors*4096-len(rec)))
+def sbdat(scores):
+    objs=[tg(8,"Name",tstr("obj_a"))+tg(8,"Criteria",tstr("dummy"))+b"\x00",
+          tg(8,"Name",tstr("obj_b"))+tg(8,"Criteria",tstr("dummy"))+b"\x00"]
+    pls=[tg(8,"Name",tstr(h))+tg(8,"Objective",tstr(o))+tg(3,"Score",tint(v))+b"\x00"
+         for (o,h,v) in scores]
+    return gzip.compress(ctag("", ctag("Data", tg(9,"Objectives",tlist(10,objs))+
+                                       tg(9,"PlayerScores",tlist(10,pls)))))
+CHUNK_A=(0,0,"minecraft:full",[sect(-1,None,None),
+         sect(0,["minecraft:stone","minecraft:air"],[305419896,-305419897])])
+CHUNK_B =(5,3,"minecraft:full",[sect(0,["minecraft:dirt"],None)])
+CHUNK_BM=(5,3,"minecraft:full",[sect(0,["minecraft:coarse_dirt"],None)])
+SB_BASE=[("obj_b","Carol",7),("obj_a","Alice",5),("obj_a","Bob",3)]  # вставка НЕсортированная
+SB_MUT =[("obj_b","Carol",7),("obj_a","Alice",5),("obj_a","Bob",4)]
+for wname,cb,sb,with_sb in (("worldR",CHUNK_B,SB_BASE,True),
+                            ("worldR-mut",CHUNK_BM,SB_BASE,True),
+                            ("worldR-sbmut",CHUNK_B,SB_MUT,True),
+                            ("worldR-nosb",CHUNK_B,SB_BASE,False)):
+    wd=os.path.join(T,wname); os.makedirs(os.path.join(wd,"region"),exist_ok=True)
+    write_region_mca(os.path.join(wd,"region","r.0.0.mca"),[(0,rchunk(*CHUNK_A)),(101,rchunk(*cb))])
+    write_ldat(os.path.join(wd,"level.dat"))
+    if with_sb:
+        os.makedirs(os.path.join(wd,"data"),exist_ok=True)
+        open(os.path.join(wd,"data","scoreboard.dat"),"wb").write(sbdat(sb))
 PYEOF
 }
 
@@ -471,6 +708,54 @@ PYCHK
     echo "P75-SELFTEST S10 PASS fail-open (rc=0 + error-fp.json)"
   else echo "P75-SELFTEST S10 FAIL fail-open rc=$s10rc"; fails=$((fails+1)); fi
 
+  # T4: D4 e2e на реальных region-байтах; константы вычислены САМИМ арбитром
+  # (world_diff_parity_v2.py scan_region_dir/_side_digest/_canon_digest) — byte-align proof
+  local w4="$T/wR4" w4m="$T/wR4m"
+  P75_SKIP_SELFTEST=1 main_scan "$T/worldR" "$w4" >/dev/null 2>&1 \
+    && P75_SKIP_SELFTEST=1 main_scan "$T/worldR-mut" "$w4m" >/dev/null 2>&1 \
+    || { echo "P75-SELFTEST T4 FAIL e2e-region-scan"; fails=$((fails+1)); }
+  if python3 - "$w4" "$w4m" <<'PYCHK4'
+import json, os, sys
+w4, w4m = sys.argv[1], sys.argv[2]
+R  = "1d7043335a473695bcea1ea0e891ca474c26283bca9c5aafabba614020515150"
+RM = "772f3110743fce3e7083a3795dd3a22a1d11fb59a796cac839f52bdfb9d623cc"
+CK53  = "e027d24052e08465b2bcee63ee0e1f3823f5f2916d63dece73306adf6ca42cef"
+CK53M = "e61fb075ef577ca0591a68bcfed64a045681c8ce88bc9c91331384c81fa4151a"
+a = json.load(open(os.path.join(w4,  "dp-parity-fp-region.json")))
+b = json.load(open(os.path.join(w4m, "dp-parity-fp-region.json")))
+fa = json.load(open(os.path.join(w4, "dp-parity-fp.json")))
+assert a["world_sha256"] == R and a["region_status"] == "ok" and a["region_chunks"] == 2, a
+assert a["chunk_checksums"]["5,3"] == CK53 and len(a["chunk_checksums"]["0,0"]) == 64, a
+assert a["chunk_set"] == ["0,0,minecraft:full", "5,3,minecraft:full"], a
+assert b["world_sha256"] == RM != R, b
+assert b["chunk_checksums"]["5,3"] == CK53M != CK53, b   # чанк-мутант ловится
+assert fa["world_sha256"] == R and fa["region_errors"] == 0, fa
+print("P75-SELFTEST-T4-JSON-OK")
+PYCHK4
+  then echo "P75-SELFTEST T4 PASS d4-region-arbiter-aligned (world==H_RBASE(=арбитр), чанк-мутант ловится)"; \
+  else echo "P75-SELFTEST T4 FAIL d4-region"; fails=$((fails+1)); fi
+
+  # T5: D7 scoreboard present/absent/mutant (канон C04 ×489 §3: sorted objective,holder,score)
+  local w5="$T/wR5" w5n="$T/wR5n" w5m="$T/wR5m"
+  P75_SKIP_SELFTEST=1 main_scan "$T/worldR" "$w5" >/dev/null 2>&1 \
+    && P75_SKIP_SELFTEST=1 main_scan "$T/worldR-nosb" "$w5n" >/dev/null 2>&1 \
+    && P75_SKIP_SELFTEST=1 main_scan "$T/worldR-sbmut" "$w5m" >/dev/null 2>&1 \
+    || { echo "P75-SELFTEST T5 FAIL e2e-sb-scan"; fails=$((fails+1)); }
+  if python3 - "$w5" "$w5n" "$w5m" <<'PYCHK5'
+import json, os, sys
+SB  = "61c080e881efc00c4446b6569062f69fa38583d613bacd587b7e2ce9dac2a8fd"
+SBM = "66370ba404e9a83dff9302d800214741e8f95cb10bf2414dfcfaafad0e21acb9"
+a = json.load(open(os.path.join(sys.argv[1], "dp-parity-fp.json")))
+n = json.load(open(os.path.join(sys.argv[2], "dp-parity-fp.json")))
+m = json.load(open(os.path.join(sys.argv[3], "dp-parity-fp.json")))
+assert a["scoreboard_sha256"] == SB and a["scoreboard_sha256_status"] == "present", a
+assert n["scoreboard_sha256"] is None and n["scoreboard_sha256_status"] == "absent", n
+assert m["scoreboard_sha256"] == SBM != SB and m["scoreboard_sha256_status"] == "present", m
+print("P75-SELFTEST-T5-JSON-OK")
+PYCHK5
+  then echo "P75-SELFTEST T5 PASS d7-scoreboard (present==H_SB, absent==absent->SKIP, мутант ловится)"; \
+  else echo "P75-SELFTEST T5 FAIL d7-scoreboard"; fails=$((fails+1)); fi
+
   t1=$(date +%s%3N 2>/dev/null || date +%s)
   local ms=$(( t1 - t0 ))
   P75_ST_FAILS=$fails; P75_ST_MS=$ms
@@ -479,10 +764,10 @@ PYCHK
 
 selftest_main() { # fail-closed режим
   SELFTEST_TMPD="${1:-$(mktemp -d "${TMPDIR:-/tmp}/p75selftest.XXXXXXXX")}"
-  echo "P75-SELFTEST: start tmp=$SELFTEST_TMPD (11 cases, preregistered constants, python-hashlib authority)"
+  echo "P75-SELFTEST: start tmp=$SELFTEST_TMPD (13 cases, preregistered constants, python-hashlib+arbiter authority)"
   selftest_core "$SELFTEST_TMPD"; local rc=$?
   if [ "$rc" -eq 0 ]; then
-    echo "P75-SELFTEST: PASS cases=11/11 fails=0 wall=${P75_ST_MS}ms"
+    echo "P75-SELFTEST: PASS cases=13/13 fails=0 wall=${P75_ST_MS}ms"
   else
     echo "P75-SELFTEST: FAIL fails=$P75_ST_FAILS wall=${P75_ST_MS}ms"
   fi
