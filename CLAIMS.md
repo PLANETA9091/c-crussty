@@ -361,3 +361,16 @@ TASK-457 (tick-456 закрывает, открывает ×457, 20:0x +08):
 - c98ai-армер: ЯВНЫЙ lever_flag/lever_arg инпут (C41; ARM-маркер в-ран C85/C88); tag-предикат уже до AABB (C93 won-by-bytecode); entityById = ConcurrentLong2ReferenceChainedHashTable (C92); NCDFE dp риск-0 (C44); travel_diet инпут выбит (422 C66); СТЗ ×32 (+28..32 fresh).
 - БАНК Л201 **66/30 (+36)**; ×17 vanilla-draw SUCCESS ждут норм-абсорб ×486 (потенциал 80+/30); STRICT-воронка st5/st6 in-flight; dp-якорь-конверт 5+.
 - NEXT ×486: якорь-волна [7.5,7.7]M → sensn16-пара (МЕРЖ-канал №21); bu1 min-of-3; bulk-JNI Selector код-нога; dp@50k; v3-фикстура; стенды LIMBO/Li#787/MR#191; RAMP-абсорб.
+
+## ТИК ×487 КОНСОЛИДАЦИЯ (08:43+08 2026-09-29, Job 415026/415603)
+# master 85a06f2f (0 Java/Rust дельт). SWARM N1=100/100 N2=0; диспатчи 103/100 API-верифицировано.
+# МЕРЖА НЕТ (пар ≥+20 нет). РЕ-ГРАЙН 15a исполнен. Вердикты: REFUTED_CENS 12 / CONFIRMED 5 / SPEC-READY 9 / DISPATCHED 44 ранов.
+
+### ВЕРДИКТЫ ×487 (полные числа в CLM ×100: /home/z/rounds/ROUND-487/board/)
+- REFUTED_CENS (потолки < бара): C03 tryCast-S2 7.36пп ALL | C07 bitset-соло 4.8-14.3пп | C09 dense-соло (мутатор ×14.3) | C10 coalescing 0.02пп | C18 r480-стратум (макс 4.25% < 6.82%) | C25 collision-компоненты | C27 CommandGraph 0.04пп | C28 fn-пайплайн 0.03пп | C29 predicate-reorder 0.11пп | C35 chunk-sched@dp 0.59% | C81 дельта-парсер 0.00 | C82 lazy-NBT 0.0016% | C84 instantiate 0.00 (реанимация ≥250 macro-miss/тик) | C85 segment-swap-соло +6.2-7.3 | C86 noise-SIMD +0.03пп | C88 re-chain 0.049пп | C90 chunk-gc-мост ≤19% клифа | C97 радиус-фактор спека-не-рычаг.
+- CONFIRMED: C23+C91 dp-GC-фон = ваниль-класс (full 9=5CC+4MD, young 113.44 vs 113.9ms, −5.0s = young-частота) | C33 ARM-канал 4/4 (dp-ARM ×10 Δ0 = плацебо, lever обязателен) | C56 210k CENS ×3 (23.45/23.67/24.33, v6-veto full_avg 2332ms) | C96 fp-фактор ПЛОСКИЙ 0.0пп/fp [0,8] | C24 плато tps_exp_dp 0.30±0.1 [6.67,8.84]M.
+- SPEC-READY ×9: C04 DP-PARITY 7 гейтов | C06 Δcpu-спека (58.9pp = +20-эквивалент) | C69 СТЗ-33 zombie-border сцена | C83 СТЗ-34 EO-digest W10 | C92 fixture-v4 70.4% оп-кап | C93 wall per-thread-нормировка | C94 band-карта ×488-окна | C95 per-world-банк v6 | C89 финальная dp-метрика.
+- АНОМАЛИЯ C07 (0.5 vs 0.3): wiring ИСКЛЮЧЁН (C01), квант REFUTED (C34) → {runner/slot} 2-квантовый off-режим (C24 z+6.9σ); арбитр base-rep 36506102482.
+- Wiring-ветки (dormant, cargo 0 err, STRICT cmp487_*): c02-bitset @879606ae | c65-sbulk1 @0f3ee570 (R1-контракт) | c66-biroar @9854f5b9 (компо 31.6-43.9% ALL = 0.54-0.75× бара) | c67-roar1 @6dd483bb.
+- Band-лотерея ×487: STRICT/окна 46/46 band-dead (st7 0/6+3, [6.3-6.5] 0/9, [6.8-6.9] 0/9, [8.5-8.8] 0/6, [9.2-9.5] 0/6, bu1 0/18, sensn16 0/26) — день-пул ядро 6.86-7.08M, ночь 11.4-12.3M (C94); bu1-окно Л142 под вопросом → RE-GRAIN [8.6,8.9]M.
+- Долг ×487→×488: абсорб 44 бенч-ног (борд IN-FLIGHT ×488); СТЗ-25 REPRO− снят; СТЗ ×36 живых; долг ×484-N4 закрыт ×486.
