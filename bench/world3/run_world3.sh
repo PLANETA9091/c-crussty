@@ -674,7 +674,7 @@ limbo_monitor() {
     now_s="$(stat -c %s "$WORK/server-stdout.log" 2>/dev/null)"; now_s="${now_s:-0}"
     if [ "$now_m" -eq "$base_m" ]; then stall_m=$((stall_m + LIMBO_POLL_S)); else stall_m=0; base_m="$now_m"; fi
     if [ "$now_s" -eq "$base_s" ]; then stall_s=$((stall_s + LIMBO_POLL_S)); else stall_s=0; base_s="$now_s"; fi
-    soak=0; grep -q "spark profiler start" "$WORK/server-stdout.log" 2>/dev/null && soak=1
+    soak=0; grep -qE "spark profiler start|Profiler is now running|POPULATION INJECT DONE" "$WORK/server-stdout.log" 2>/dev/null && soak=1
     if { [ "$stall_m" -ge "$LIMBO_STALL_S" ] && [ "$soak" -eq 0 ] && [ "$base_m" -gt 0 ]; } || [ "$stall_s" -ge "$LIMBO_STALL_S" ]; then
       sig="log"; [ "$stall_m" -ge "$LIMBO_STALL_S" ] && [ "$soak" -eq 0 ] && [ "$base_m" -gt 0 ] && sig="mark+log"
       log "LIMBO-DETECTED signal=$sig stall_mark=${stall_m}s stall_log=${stall_s}s marked=$base_m log_size=$base_s — SIGQUIT (thread dump) + fail-fast"
