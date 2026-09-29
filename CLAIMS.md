@@ -362,39 +362,8 @@ TASK-457 (tick-456 закрывает, открывает ×457, 20:0x +08):
 - БАНК Л201 **66/30 (+36)**; ×17 vanilla-draw SUCCESS ждут норм-абсорб ×486 (потенциал 80+/30); STRICT-воронка st5/st6 in-flight; dp-якорь-конверт 5+.
 - NEXT ×486: якорь-волна [7.5,7.7]M → sensn16-пара (МЕРЖ-канал №21); bu1 min-of-3; bulk-JNI Selector код-нога; dp@50k; v3-фикстура; стенды LIMBO/Li#787/MR#191; RAMP-абсорб.
 
-## ТИК ×487 КОНСОЛИДАЦИЯ (08:43+08 2026-09-29, Job 415026/415603)
-# master 85a06f2f (0 Java/Rust дельт). SWARM N1=100/100 N2=0; диспатчи 103/100 API-верифицировано.
-# МЕРЖА НЕТ (пар ≥+20 нет). РЕ-ГРАЙН 15a исполнен. Вердикты: REFUTED_CENS 12 / CONFIRMED 5 / SPEC-READY 9 / DISPATCHED 44 ранов.
-
-### ВЕРДИКТЫ ×487 (полные числа в CLM ×100: /home/z/rounds/ROUND-487/board/)
-- REFUTED_CENS (потолки < бара): C03 tryCast-S2 7.36пп ALL | C07 bitset-соло 4.8-14.3пп | C09 dense-соло (мутатор ×14.3) | C10 coalescing 0.02пп | C18 r480-стратум (макс 4.25% < 6.82%) | C25 collision-компоненты | C27 CommandGraph 0.04пп | C28 fn-пайплайн 0.03пп | C29 predicate-reorder 0.11пп | C35 chunk-sched@dp 0.59% | C81 дельта-парсер 0.00 | C82 lazy-NBT 0.0016% | C84 instantiate 0.00 (реанимация ≥250 macro-miss/тик) | C85 segment-swap-соло +6.2-7.3 | C86 noise-SIMD +0.03пп | C88 re-chain 0.049пп | C90 chunk-gc-мост ≤19% клифа | C97 радиус-фактор спека-не-рычаг.
-- CONFIRMED: C23+C91 dp-GC-фон = ваниль-класс (full 9=5CC+4MD, young 113.44 vs 113.9ms, −5.0s = young-частота) | C33 ARM-канал 4/4 (dp-ARM ×10 Δ0 = плацебо, lever обязателен) | C56 210k CENS ×3 (23.45/23.67/24.33, v6-veto full_avg 2332ms) | C96 fp-фактор ПЛОСКИЙ 0.0пп/fp [0,8] | C24 плато tps_exp_dp 0.30±0.1 [6.67,8.84]M.
-- SPEC-READY ×9: C04 DP-PARITY 7 гейтов | C06 Δcpu-спека (58.9pp = +20-эквивалент) | C69 СТЗ-33 zombie-border сцена | C83 СТЗ-34 EO-digest W10 | C92 fixture-v4 70.4% оп-кап | C93 wall per-thread-нормировка | C94 band-карта ×488-окна | C95 per-world-банк v6 | C89 финальная dp-метрика.
-- АНОМАЛИЯ C07 (0.5 vs 0.3): wiring ИСКЛЮЧЁН (C01), квант REFUTED (C34) → {runner/slot} 2-квантовый off-режим (C24 z+6.9σ); арбитр base-rep 36506102482.
-- Wiring-ветки (dormant, cargo 0 err, STRICT cmp487_*): c02-bitset @879606ae | c65-sbulk1 @0f3ee570 (R1-контракт) | c66-biroar @9854f5b9 (компо 31.6-43.9% ALL = 0.54-0.75× бара) | c67-roar1 @6dd483bb.
-- Band-лотерея ×487: STRICT/окна 46/46 band-dead (st7 0/6+3, [6.3-6.5] 0/9, [6.8-6.9] 0/9, [8.5-8.8] 0/6, [9.2-9.5] 0/6, bu1 0/18, sensn16 0/26) — день-пул ядро 6.86-7.08M, ночь 11.4-12.3M (C94); bu1-окно Л142 под вопросом → RE-GRAIN [8.6,8.9]M.
-- Долг ×487→×488: абсорб 44 бенч-ног (борд IN-FLIGHT ×488); СТЗ-25 REPRO− снят; СТЗ ×36 живых; долг ×484-N4 закрыт ×486.
-
-## CLAIMS ×488 (тик 11:08+08 2026-09-29)
-- CLAIM-488-1: wiring c65/c66/c67 ARM-CONFIRMED Δ0 дормант-канон (runs 36517282752/36517285326/36517288441); c02 рестарт; МЕРЖ-БЛОКЕР = DP-PARITY (C04) до любых wiring-мержей.
-- CLAIM-488-2: компо-носитель второй плоскости dp = bit⊕sbulk⊕roaring (79.5-91.7pp до субаддитивности; гейт оверлап-тест C03; R2 body-redirect план C02) — кандидат-нога ×489.
-- CLAIM-488-3: STRICT-кластер [7.0,7.2]M {C20 ADMIT, cnr9} — min-of-3 знаменатель для sensn16/bu1-пар; добор роллами EV 13.4%/дроу.
-- CLAIM-488-4: 19b-грид g6a-j (165-210k gc6 12G, 10 ног) — локализация клифа 207.3k v6.1-моделью (P-прогнозы 0.99/0.85/0.10).
-- CLAIM-488-5: terralith W-кривая растущая (Δnorm +34.77pp rt4-vs-rt2) — terr6/8 зонды; вершина ≥rt6 прогноз.
-- CLAIM-488-6: СТЗ-37..40 + СТЗ-29/30 зарегистрированы (web-intel C31/C32); СТЗ-39 = JDK-8340343 к нашей 5CC+4MD-сигнатуре.
-
-## CLAIMS ×489 (тик 12:43+08 2026-09-29, v19.0 MEGA-SWARM, Job 415026/415603)
-- CLAIM-489-1: **МЕРЖ-кандидат №21** — rr4 36523331329 (7.1035M, norm +16.59, M1-CLEAN) в STRICT-знаменателе min-of-4; пары +21.95/+22.09 = REPORT-ONLY до normtool-ре-серта (арбитраж C89: канон C24 устоял, min-of-legal ≠ min-of-3); 3-й якорь волна-2 an1/an2 [7.0535,7.1535]M.
-- CLAIM-489-2: компо-коррекция ×489 — «79.5-91.7pp» = двойной счёт; честно bit⊕sbulk 48.34-50.08pp (0.82-0.85×), тройка ≤54.9pp (0.93×); замыкание = selector⊕collision 58.36pp = 0.9907×; CLIMB S1⊕S2⊕S3 центр ~59.0pp.
-- CLAIM-489-3: STRICT P(hit) 36.4% устоял (E[полных пар] 0.83/6 дроу); bu1-окно [8.6,8.9]M мертво 0/44; band-карта: ядро [6.75,7.10]M 44%, hot [10.34,12.18]M; a02 = 0.6-класс @8.72M (новый бар-кандидат 41.7pp).
-- CLAIM-489-4: 19a W-плато rt4≈rt8 (terr6 −6.64/terr8 +38.97), W-классификатор F∧S канон; 19b: g6j 208k SUCCESS, 215k-детерминизм ×3 REFUTED (бимод), СТЗ-39 = JDK-8340434, JDK-ось REFUTE-as-carrier.
-- CLAIM-489-5: инструменты selftest-волна: fixture-v4 26/26 (sha c7fac94a), parity_phase75.sh 11/11 + E2E mca, dcpu_norm.py 57/57, javap_gate.sh 10/10 EXIT 0, javap-ценз drift 0 — МЕРЖ-БЛОКЕР DP-PARITY C04 харнессом готов.
-- Диспатчи **105/100** API-верифицировано (12c ✓): волна-1 8 бенч + 93 ролла; волна-2 4 бенч. N1=100/100 (5×20 Task-командиров), N2=0. МЕРЖА НЕТ → РЕ-ГРАЙН 15a исполнен (волна-2 + очередь ×490 = 14+ ранов).
-
-## CLAIMS ×493 (тик 22:43+08 2026-09-29, v19.0 MEGA-SWARM, Job 415026/415603)
-- CLAIM-493-1: **СТЗ-42 ЗАКРЫТА** — canary 36578623022 (round-492-c15-stz42r2 @eb57a9f8, 900s soak) SUCCESS: limbo-gate armed по маркеру фикса 3b15b3bb, 0 FP-килл, 150k inject, cpu_index 6,778,609 in-band; 900s-FP-класс закрыт навсегда (2 прецедента: 36507529511 FP → фикс → 36578623022 CLEAN).
-- CLAIM-493-2: **canary-4 SCOPE воплощён** — round-493-canary4 @19c212bb: parity_phase76_marked.sh (marked-only D4, fail-open, selftest 10/10, константы независимы) + run_world3.sh selector (+15/-1, game-semantics 0). Разблокирует WORLD-PARITY-OK вердикт ×494 (блокер №23) после UNKNOWN ×3 (588s/2MB-лов).
-- CLAIM-493-3: **канарейка №9 ЗАКРЫТА** — roll90r2 36579606400 med 2.40 ≥ 2.05 = дип-артефакт (флаг-ран 36542200089 повторил GC-профиль и всё равно здоровая рампа 1.8→2.9); hot-класс @9.18M судится plateau-кривой C40, norm_v5 report-only; пары-окно [6.77,6.87]M → пассивный харвест GLOB E≈10-11.
-- CLAIM-493-4: **noise-плоскость REFUTED финально** — fresh-зонд 36572262050 @9b3a3f09: worldgen/noise 0.0% (32/116,728) в окне; pregen 42/116,728 + fresh 34/113,640 — потолок ≤0.1пп на обоих классах миров, дефицит к бару ×290; 19a захват только boot-фаза (gen_work 30.4% wall, вне norm-окон).
-- CLAIM-493-5: №23-путь с числами: LEGAL-пары min-of-3 {C20,cnr9,an23} = +25.31..25.35 (margin +5.31) на честном U4-центре 58.90-58.95; blockers = canary-4 WORLD-PARITY-OK (снят dispatch'ем 19c212bb) + L1-репин (7 пинов) + identity-компенсатор +0.3-0.5pp (лестница +0.06/+0.3/+0.5/+0.85; SynchedEntityData 3.32pp = 7-й член-кандидат).
-- Диспатчи **106/100** API-верифицировано (12c ✓): волна-1 68 (60 GLOB + 8 an2b wide-gate-2), canary-4 1, волна-2 РЕ-ГРАЙН 37 (32 GLOB + stz42-900s ×2 + fresh97/98 + seed43). N1=100/100, N2=0. band-факт: an2b1/2/4/5 fast-fail ×4 (фон P=0.65), an2b6 in-band in-flight (36586143873).
+## CLAIMS ×494 (тик 23:08+08 2026-09-29, v19.0 MEGA-SWARM, Job 415026/415603)
+- CLAIM-494-1: **L1-репин МАТЕРИАЛИЗОВАН** — round-493-l1r2 @802b9361: javap_pins_verify_cmp493.sh 7/7 PASS (83b6f9c9), фантом moonrise R2 → LevelEntityGetter T/E/C тройка + R1-funnel Level 5-arg; SelectorBulkOps +4 перегрузки DORMANT vanilla-делегация; cargo 0 err, тесты 8/8, NCDFE T1=0. Блокер №23 (NotFound fail-closed) снят.
+- CLAIM-494-2: **canary-4 fail-open валидирован** — leg-A 36587716121: entity 294,187 жива (дайджесты 2701d2ef/07d9421b), region_scope=mismatch → UNKNOWN, 0 ложных PASS; marked-9216-from-forcedload REFUTED (SavedData не флашится при SIGKILL-стопе) — fix ×495 = graceful-save или derived-set.
+- CLAIM-494-3: **an2b6 пара-блок** — env 7,155,877 (gate-pass, Δ>50k к пулу) = STRICT-фид @7.156M; P(env|gate) канон 0.235-0.387 подтверждён.
+- Диспатчи **102/100** (12c ✓): l1r2 ARM-smoke + canary-4 leg-B + GLOB ×90 + an2c ×8 + seed ×2. N1=100/100, N2=0. МЕРЖ НЕТ → РЕ-ГРАЙН исполнен.

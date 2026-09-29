@@ -10373,3 +10373,18 @@ Work Log:
 Stage Summary:
 - Диспатчи 106/100; N1=100/100 N2=0; МЕРЖ НЕТ → РЕ-ГРАЙН исполнен; canary-4 UNBLOCKED (marked-9216 ≈87s против 588s-лова).
 - ×494: canary-4 WORLD-PARITY-OK → L1-репин → ARM → путь-A → №23 U4-compo + компенсатор.
+
+---
+Task ID: cron-202609292317 (tick ×494)
+Agent: tick-agent (v19.0 MEGA-SWARM, Job 415026/415603)
+Task: MEGA-SWARM тик ×494 — абсорб ×493-хвостов, L1-репин воплощение, волна ×494, учёт.
+
+Work Log:
+- PHASE 0: mutex, диск 82%, fetch master 2453d111 + dev-logs.
+- Абсорб: canary-4 leg-A 36587716121 SUCCESS — fp.json: entity 294,187 жива (дайджесты 2701d2ef/07d9421b), region_scope=mismatch → UNKNOWN fail-open (0 ложных PASS); marked-9216-from-forcedload REFUTED (SIGKILL-стоп не флашит SavedData). an2b6 36586143873 SUCCESS — env 7,155,877 → пара-блок, STRICT-фид. an2b7 band-fail, an2b8 in-band.
+- **L1-РЕПИН**: javap-форензика на jar 83b6f9c9 → реальные 7 пинов верифицированы (R2-E/T/C LevelEntityGetter iface+impl + R1-funnel Level.getEntities 5-arg CSEL-хот); scripts/javap_pins_verify_cmp493.sh NEW (grep -F бит-точно, 7/7 PASS); carrier round-493-l1r2 @802b9361: sb_r1.rs фантом RETARGET_R2 → RETARGET_R2_T/E/C + RETARGET_R1_FUNNEL (desc-eq якоря) + SelectorBulkOps.java +4 getEntitiesGated перегрузки DORMANT vanilla-делегация; cargo 0 err/173 warn baseline, тесты 8/8; push.
+- Волна ×494: 102 диспатча (l1r2 ARM-smoke cmp487_sbulk1 + canary-4 leg-B parity_marked + GLOB ×90 + an2c ×8 + seed43b/44).
+- PHASE 4: LEDGER Л-494 ×3 канона + GOAL/CLAIMS ×494 + push обоих репо.
+
+Stage Summary:
+- Диспатчи 102/100; N1=100/100 N2=0; МЕРЖ НЕТ → РЕ-ГРАЙН исполнен; блокер №23 (L1-репин) СНЯТ; canary-4 ждёт marked-источник fix ×495.
