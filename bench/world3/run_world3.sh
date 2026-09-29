@@ -914,10 +914,19 @@ sleep 2
 kill -9 "$TAIL_PID" 2>/dev/null || true
 rm -f "$WORK/console.pipe"
 # --- 7.5 dp-parity fingerprint (off-clock, post-stop; C04 §2 / C78) ---------
+# canary-4 SCOPE-SPEC (Л-492-C73): lever_flag=parity_marked → phase76 marked-only
+# D4-скан (ForcedChunksSavedData ≈9216 чанков ≈87s ≪ 600s; fail-open на mismatch).
 PARITY_T0=$(date +%s)
-timeout 600 bash "${SCRIPT_DIR}/../../scripts/parity_phase75.sh" "$SERVER/world" "$WORK" \
-  >> "$WORK/dp-parity-fp.log" 2>&1 \
-  || log "WARN: dp-parity phase7.5 failed (non-fatal, fail-open: нет/битый fp.json = UNKNOWN, НЕ парити-FAIL)"
+if [ "${LEVER_FLAG:-}" = "parity_marked" ]; then
+  log "parity_marked armed: D4 region plane scoped to ForcedChunksSavedData marked set (canary-4 SCOPE-SPEC Л-492-C73; scanner parity_phase76_marked selftest 10/10, constants preregistered independently; post-stop инструмент, game-semantics 0)"
+  timeout 600 bash "${SCRIPT_DIR}/../../scripts/parity_phase76_marked.sh" "$SERVER/world" "$WORK" \
+    >> "$WORK/dp-parity-fp.log" 2>&1 \
+    || log "WARN: dp-parity phase7.6 failed (non-fatal, fail-open: нет/битый fp.json = UNKNOWN, НЕ парити-FAIL)"
+else
+  timeout 600 bash "${SCRIPT_DIR}/../../scripts/parity_phase75.sh" "$SERVER/world" "$WORK" \
+    >> "$WORK/dp-parity-fp.log" 2>&1 \
+    || log "WARN: dp-parity phase7.5 failed (non-fatal, fail-open: нет/битый fp.json = UNKNOWN, НЕ парити-FAIL)"
+fi
 log "dp-parity phase7.5: $(( $(date +%s) - PARITY_T0 ))s"
 # --- 8. bottleneck report ---------------------------------------------------
 if [ "$SEEN_DONE" != "1" ]; then
