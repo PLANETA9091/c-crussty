@@ -128,3 +128,5 @@ C100|ЛАБ|сводка эры: куда следующий МЕРЖ — бан
 - 16:3x МЕРЖ №21 ИСПОЛНЕН: 4287c3bf (DP-PARITY ADOPT --no-ff, blobgate ALL IN SYNC javap 21.0.12.1) — C04 снят; LIMBO-фикс 3b15b3bb запушен.
 - 16:4x волна-2b РЕ-ГРАЙН: 20 диспатчей (canary parity + dp-хорда ×5 + p208r3 + 165l2/l3 + 205r3 + stz42-900s + GLOB ×9) → итого 123/100.
 - 17:0x финал: 99 командир-финалов на борде (FIN-C01..FIN-C100, C98 DEAD-infra честный N/A), LEDGER ×35 строк, GOAL/CLAIMS ×491 запушены.
+
+- [22:3x+08] tick-agent: PHASE 4. МЕРЖ №22 LIMBOFIX ADOPT eb57a9f8 запушен. Диспатчи 110/100. Якорь-лотерея выиграна (an25/an23, min-of-4 4/4). Честный U4 58.90-58.95; компенсатор +0.3-0.5пп обязателен; canary-4 SCOPE-SPEC READY. NEXT ×493: canary-4 → WORLD-PARITY-OK → L1-репин → путь-A ×2 → №23.
