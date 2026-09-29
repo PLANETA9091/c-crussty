@@ -913,6 +913,12 @@ kill "$TAIL_PID" 2>/dev/null || true
 sleep 2
 kill -9 "$TAIL_PID" 2>/dev/null || true
 rm -f "$WORK/console.pipe"
+# --- 7.5 dp-parity fingerprint (off-clock, post-stop; C04 §2 / C78) ---------
+PARITY_T0=$(date +%s)
+timeout 90 bash "${SCRIPT_DIR}/../../scripts/parity_phase75.sh" "$SERVER/world" "$WORK" \
+  >> "$WORK/dp-parity-fp.log" 2>&1 \
+  || log "WARN: dp-parity phase7.5 failed (non-fatal, fail-open: нет/битый fp.json = UNKNOWN, НЕ парити-FAIL)"
+log "dp-parity phase7.5: $(( $(date +%s) - PARITY_T0 ))s"
 # --- 8. bottleneck report ---------------------------------------------------
 if [ "$SEEN_DONE" != "1" ]; then
   log "WARN: SEEN_DONE=0 — last 40 server lines for in-log diagnosis (no artifact archaeology):"
