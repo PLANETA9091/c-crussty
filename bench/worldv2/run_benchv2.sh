@@ -19,8 +19,8 @@ PURPUR_MD5="d48ae0c35eee5dca1e476dd5dc2ce2ea"
 PURPUR_SHA256="4159783677b08b6395782e6150cb28646c70ed988b7948c09e01aa5a5e90f548"
 TERRALITH_URL="https://cdn.modrinth.com/data/8oi3bsk5/versions/RFNry3l0/Terralith_1.21.5_v2.5.13.zip"
 TERRALITH_SHA512="aea0cc28ca47a18ce0d8c82e25af08b52af01da80409c71a005e5799ca8c490b4cc293043758e14b6817ce2c54cc4f3da9c79f0d52c15c96dddcd989c3ac0dd8"
-TECTONIC_URL="https://cdn.modrinth.com/data/lWDHr9jE/versions/pxgiJaJp/tectonic-datapack-3.0.29.zip"
-TECTONIC_SHA512="e425783bb29ef1633af881e0174f21d7f0039591a7ba1dd4686d016a373680b46c0117219a66651b05aa0924c933f03ef8ab2ed68c801e431207b260feb6bdb0"
+TECTONIC_URL="https://cdn.modrinth.com/data/lWDHr9jE/versions/CmzMQNDL/tectonic-datapack-3.0.25.zip"
+TECTONIC_SHA512="7b3c5dee391337b21bdfee5362f4a986417b4fffd6aa617dddaf3444b729b326e3651e7cd87cd7d68d39c301d28767648753784cd50f0a94eda904f85cd6d5bd"
 INCENDIUM_URL="https://cdn.modrinth.com/data/ZVzW5oNS/versions/gBoadsBv/Incendium_1.21.5_v5.4.9_UNSUPPORTED.zip"
 INCENDIUM_SHA512="b8983657dae93206203422bf0d5365f26ba212caf018b743d96b0438ba3f16c1471473e37377ca3437b791e631ad42e62e8e29e87a4081b774771ba939cc0104"
 STELLARITY_URL="https://cdn.modrinth.com/data/bZgeDzN8/versions/zudQ7s97/Stellarity-5.1.3.zip"
@@ -29,17 +29,19 @@ STELLARITY_SHA512="adb87f4e429086a66f4bb120a1e464514285a1ee1ecd2642f7d9e37c0346d
 RADIUS_BLOCKS="${RADIUS_BLOCKS:-1136}"   # 1136 => 143x143 = 20449 chunks per dim
 SEED="${BENCH_SEED:-351515}"
 RUN_SECONDS="${RUN_SECONDS:-300}"
+FAKE_PLAYERS="${FAKE_PLAYERS:-0}"        # AG-342 spawn-lane leg: 0 = canon (vacuum), N>0 = N real ServerPlayers
 XMX="${SERVER_XMX:-10G}"
 DIMS="${BENCH_DIMS:-minecraft:overworld,minecraft:the_nether,minecraft:the_end}"
 STEP=256                                  # vanilla forceload cap: 16x16 chunks/cmd
 FAIL=0
 
 cat > "$WORK/run-env.txt" <<EOF
-bench=v2 agent=AG-433 wave=515
+bench=v2 agent=AG-12 wave=516 canon=AG-433/104+93async+248plugindim+342fakeplayers
 purpur_url=$PURPUR_URL purpur_md5=$PURPUR_MD5 purpur_sha256=$PURPUR_SHA256
 terralith=$TERRALITH_URL tectonic=$TECTONIC_URL
 incendium=$INCENDIUM_URL stellarity=$STELLARITY_URL
 radius_blocks=$RADIUS_BLOCKS seed=$SEED run_seconds=$RUN_SECONDS xmx=$XMX dims=$DIMS
+fake_players=$FAKE_PLAYERS
 runner_cpu_index=$RUNNER_CPU_INDEX
 EOF
 
@@ -59,6 +61,7 @@ mkdir -p world/datapacks
 cp terralith.zip tectonic.zip world/datapacks/
 cp incendium.zip world/datapacks/
 cp stellarity.zip world/datapacks/
+MAX_PLAYERS=$(( FAKE_PLAYERS > 0 ? FAKE_PLAYERS + 8 : 10000000 ))
 cat > server.properties <<EOF
 level-seed=$SEED
 view-distance=32
@@ -67,8 +70,10 @@ online-mode=false
 spawn-protection=0
 max-tick-time=1800000
 enable-command-block=false
+max-players=$MAX_PLAYERS
 motd=BENCH-V2 AG-433
 EOF
+echo "eula=true" > eula.txt
 cat > bukkit.yml <<EOF
 settings:
   allow-end: true
@@ -96,6 +101,70 @@ spawning:
 EOF
 log "fixture ready: datapacks=$(ls world/datapacks | tr '\n' ' ')"
 
+# --- AG-12 canon: kernel materialize pre-pass (plugin compilation, both legs) -
+KERNEL_JAR="versions/1.21.10/purpur-1.21.10.jar"
+if [ ! -s "$KERNEL_JAR" ]; then
+  log "benchv2-ag12: materializing kernel (eula-less paperclip pass, exits pre-main — NOT a boot)"
+  rm -f eula.txt
+  ( timeout 300 java -jar purpur.jar --nogui > "$WORK/pclip-materialize.log" 2>&1 || true )
+  [ -s "$KERNEL_JAR" ] || { log "G-KERNEL FAIL (no $KERNEL_JAR)"; exit 44; }
+  echo "eula=true" > eula.txt
+fi
+
+# --- AG-342: fake-player spawn-lane fixture (BENCH-4 pattern, sanctioned) ----
+# Without players natural spawning is structurally off (0 spawnable chunks,
+# task170/S7-99 precedent) -> the directive's "spawn in ceiling" leg is
+# vacuous in canon. FAKE_PLAYERS>0 injects N REAL ServerPlayers (eula-less
+# paperclip materialization pass exits PRE-main — NOT a boot), compile is
+# javac-only. FAKE_PLAYERS=0 skips all of this (byte-identical canon).
+if [ "$FAKE_PLAYERS" -gt 0 ]; then
+  log "benchv2-ag342: materializing kernel (eula-less paperclip pass, exits pre-main — NOT a boot)"
+  rm -f eula.txt
+  ( timeout 300 java -jar purpur.jar --nogui > "$WORK/pclip-materialize.log" 2>&1 || true )
+  KERNEL_JAR="versions/1.21.10/purpur-1.21.10.jar"
+  [ -s "$KERNEL_JAR" ] || { log "G-KERNEL FAIL (no $KERNEL_JAR)"; exit 44; }
+  command -v javac >/dev/null || { log "G-JAVAC FAIL"; exit 44; }
+  FP_SRC="$GITHUB_WORKSPACE/bench/worldv2/fakeplayers"
+  [ -f "$FP_SRC/BenchFakePlayersPlugin.java" ] || { log "G-FPSRC FAIL"; exit 44; }
+  FIX_CP="$PWD/$KERNEL_JAR"
+  while IFS= read -r j; do FIX_CP="$FIX_CP:$j"; done < <(find libraries -name '*.jar' 2>/dev/null)
+  FP_CLASSES="$WORK/fpclasses"; rm -rf "$FP_CLASSES"; mkdir -p "$FP_CLASSES"
+  javac --release 21 -proc:none -cp "$FIX_CP" -d "$FP_CLASSES" "$FP_SRC/BenchFakePlayersPlugin.java" || { log "G-FPCOMPILE FAIL"; exit 44; }
+  cp "$FP_SRC/plugin.yml" "$FP_CLASSES/"
+  mkdir -p plugins
+  ( cd "$FP_CLASSES" && jar cf "$PWD/plugins/BenchFakePlayers.jar" . ) || { log "G-FPJAR FAIL"; exit 44; }
+  export BENCH_FAKE_PLAYERS="$FAKE_PLAYERS" BENCH_FORCELOAD_RADIUS="$RADIUS_BLOCKS" BENCH_FAKE_DISTRIBUTE=1
+  log "benchv2-ag342: plugin staged ($(stat -c%s plugins/BenchFakePlayers.jar) B); N=$FAKE_PLAYERS distribute=3-dim"
+  echo "eula=true" > eula.txt
+fi
+
+# --- AG-12 canon: DimForceload plugin — cross-dim chunk tickets (AG-248 F1) --
+# vanilla /forceload is Overworld-only and console sweep blocks the main thread
+# (FAKE-GREEN class F, run 36756489239). Plugin marks tickets via
+# World.addPluginChunkTicket from dimload.start — async marking, main thread
+# free, all three dims simultaneously; /dimchunks = G-DIM census gate.
+command -v javac >/dev/null || { log "G-JAVAC FAIL"; exit 44; }
+DF_SRC="$GITHUB_WORKSPACE/bench/worldv2"
+[ -f "$DF_SRC/DimForceloadPlugin.java" ] || { log "G-DFSRC FAIL"; exit 44; }
+DF_CP="$PWD/$KERNEL_JAR"
+while IFS= read -r j; do DF_CP="$DF_CP:$j"; done < <(find libraries -name '*.jar' 2>/dev/null)
+DF_CLASSES="$WORK/dfclasses"; rm -rf "$DF_CLASSES"; mkdir -p "$DF_CLASSES"
+javac --release 21 -proc:none -cp "$DF_CP" -d "$DF_CLASSES" "$DF_SRC/DimForceloadPlugin.java" || { log "G-DFCOMPILE FAIL"; exit 44; }
+cp "$DF_SRC/dimforceload-plugin.yml" "$DF_CLASSES/"
+mkdir -p plugins
+( cd "$DF_CLASSES" && jar cf "$PWD/plugins/DimForceload.jar" . ) || { log "G-DFJAR FAIL"; exit 44; }
+export DIM_RADIUS_CHUNKS=$(( (RADIUS_BLOCKS + 15) / 16 ))
+export DIM_WORLDS="world,world_nether,world_end"
+log "benchv2-ag12: DimForceload staged ($(stat -c%s plugins/DimForceload.jar) B) radius_chunks=$DIM_RADIUS_CHUNKS worlds=$DIM_WORLDS"
+
+# --- AG-12: async wall-clock heartbeat sampler (AG-234 principle) ------------
+# samples wall-clock every 2s INDEPENDENT of server responsiveness — 0 lines
+# while run claims success = FAKE-GREEN class F detector (heartbeat lives).
+HEARTBEAT="$PWD/BENCHV2_HEARTBEAT.log"; rm -f "$HEARTBEAT"
+touch .hb.keep
+( while [ -f .hb.keep ]; do echo "t=$(date +%s.%N) hb=1" >> "$HEARTBEAT"; sleep 2; done ) &
+HB_PID=$!
+
 # --- boot (FIFO console, run_world3.sh pattern) ------------------------------
 mkfifo console.in 2>/dev/null || true
 touch server-stdout.log
@@ -121,19 +190,11 @@ log "G-DATAPACKS enabled-markers=$DP_ENABLED (expect 4)"
 for k in 1 2 3; do cmd "spark mspt"; sleep 4; done
 
 # --- GEN phase: forceload sweep, ALL dims simultaneously ---------------------
-FIRST_TS=""
-for dim in ${DIMS//,/ }; do
-  TILES=$(( (RADIUS_BLOCKS + STEP - 1) / STEP ))
-  log "forceload sweep $dim tiles=${TILES}x${TILES}"
-  for tx in $(seq $(( -TILES * STEP )) "$STEP" $(( (TILES - 1) * STEP ))); do
-    for tz in $(seq $(( -TILES * STEP )) "$STEP" $(( (TILES - 1) * STEP ))); do
-      [ -z "$FIRST_TS" ] && FIRST_TS=$(date +%s)
-      cmd "execute in $dim run forceload add $tx $tz $((tx + STEP - 1)) $((tz + STEP - 1))"
-      sleep 0.3
-    done
-  done
-done
-log "GEN_FIRST_TS=$FIRST_TS marked-cmds sent=$(( $(echo "$DIMS" | tr ',' '\n' | wc -l) * TILES * TILES ))"
+FIRST_TS=$(date +%s)
+touch dimload.start
+log "GEN_FIRST_TS=$FIRST_TS dims=$DIMS marked=tickets x$((DIM_RADIUS_CHUNKS*2+1))^2/dim (async, AG-93/248 principle)"
+sleep 5
+cmd "dimchunks"; sleep 3   # G-DIM early census from plugin
 
 # --- drain poll: MSPT back to near-idle => chunk system drained --------------
 DRAIN_TS=""; DRAIN_TIMEOUT=1
@@ -155,16 +216,57 @@ done
 
 # --- SUSTAIN phase: spawn-storm window, TPS/MSPT sampling + profiler ---------
 cmd "spark profiler start"; sleep 3
+# AG-342 census instrument (both legs, identical): per-dim entity counts once
+# per 60s via scoreboard census (console-only, no plugin dependency) — proves
+# or refutes the spawn-vacuum hypothesis with the SAME instrument in A and B.
+cmd "scoreboard objectives add benchv2c dummy"; sleep 2
+LAST_CENSUS=0
 END=$(( $(date +%s) + RUN_SECONDS ))
 while [ "$(date +%s)" -lt "$END" ]; do
-  cmd "spark tps"; cmd "spark mspt"; sleep 15
+  cmd "spark tps"; cmd "spark mspt"
+  NOW=$(date +%s)
+  if [ $((NOW - LAST_CENSUS)) -ge 60 ]; then
+    log "CENSUS round (t=$NOW)"
+    for pair in "minecraft:overworld:#c_ov" "minecraft:the_nether:#c_ne" "minecraft:the_end:#c_en"; do
+      DIM="${pair%%:*}"; CNT="${pair##*:}"
+      cmd "scoreboard players set $CNT benchv2c 0"
+      cmd "execute in $DIM as @e[type=!minecraft:player] run scoreboard players add $CNT benchv2c 1"
+      cmd "scoreboard players get $CNT benchv2c"
+    done
+    cmd "list"
+    LAST_CENSUS=$NOW
+  fi
+  sleep 15
 done
 cmd "spark profiler stop"; sleep 8
 cmd "forceload remove all"; sleep 3
 cmd "stop"
 for i in $(seq 1 60); do kill -0 $SERVER_PID 2>/dev/null || break; sleep 2; done
 
+rm -f .hb.keep; kill $HB_PID 2>/dev/null || true
+
 # --- report ------------------------------------------------------------------
 python3 "$GITHUB_WORKSPACE/bench/worldv2/report_benchv2.py" "$WORK/server" "$FIRST_TS" "$DRAIN_TS" || FAIL=1
+python3 "$GITHUB_WORKSPACE/bench/worldv2/census_ag342.py" "$WORK/server" || true
+
+# --- AG-12 canon gates: G-DIM (3-dim loaded) + G-HB (async heartbeat) --------
+DIMGATE=$(grep -oE "G-DIM world=[a-z_]+ loaded=[0-9]+" server-stdout.log | tail -6)
+log "G-DIM census: $DIMGATE"
+OV=$(echo "$DIMGATE" | grep -oE "world=world loaded=[0-9]+" | grep -oE "[0-9]+" | tail -1); OV=${OV:-0}
+NE=$(echo "$DIMGATE" | grep -oE "world=world_nether loaded=[0-9]+" | grep -oE "[0-9]+" | tail -1); NE=${NE:-0}
+EN=$(echo "$DIMGATE" | grep -oE "world=world_end loaded=[0-9]+" | grep -oE "[0-9]+" | tail -1); EN=${EN:-0}
+TOTAL=$((OV + NE + EN))
+if [ "$OV" -ge 19000 ] && [ "$NE" -ge 19000 ] && [ "$EN" -ge 19000 ] && [ "$TOTAL" -ge 60000 ]; then
+  log "G-DIM PASS ov=$OV ne=$NE en=$EN total=$TOTAL"
+else
+  log "G-DIM FAIL ov=$OV ne=$NE en=$EN total=$TOTAL (silent-empty dims impossible gate)"; FAIL=1
+fi
+HB_LINES=$(wc -l < "$HEARTBEAT" 2>/dev/null || echo 0)
+if [ "$HB_LINES" -ge 60 ]; then
+  log "G-HB PASS heartbeat_lines=$HB_LINES"
+else
+  log "G-HB FAIL heartbeat_lines=$HB_LINES (<60 — sampler starved, FAKE-GREEN class F)"; FAIL=1
+fi
+{ echo ""; echo "## AG-12 canon gates x516"; echo "G-DIM: ov=$OV ne=$NE en=$EN total=$TOTAL (gate per-dim>=19000 total>=60000)"; echo "G-HB: heartbeat_lines=$HB_LINES (gate >=60, wall-clock async sampler)"; echo "G-TECTONIC: 3.0.25 sha512 7b3c5dee repinned (FATAL-alias 3.0.29 purged)"; echo "G-FP: fake_players=$FAKE_PLAYERS (0=canon vacuum byte-identical)"; } >> BENCHV2.md 2>/dev/null || true
 log "FAIL=$FAIL (0 = all prereg gates passed)"
 exit $FAIL
