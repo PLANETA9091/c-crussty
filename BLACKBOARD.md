@@ -1,121 +1,136 @@
-# BLACKBOARD — ROUND-510 (тик 17:43+08 2026-09-30, v19.0 MEGA-SWARM, Job 415026/415603, trace 1a0dc7e6662ff26d-cron-agent-loop-202609301743)
-# Факты: /home/z/rounds/ROUND-510/BOTTLENECK.md. Канон: CRON_PROMPT_V19.md + docs/LAB_LEDGER.md.
-# Состояние: master **915a1f2** (×509 учёт; код = МЕРЖ №23 7c829018); dev-logs f19f4d7; **БАНК 473** (+11 §3 C-эпохи волны-510; 29 old дедуп; NCDFE=0 ×75); МЕРЖ №24 НЕТ — **БЛОКЕР: selfTest C5b ∅ в блобе P31-IB** (патч ~15 строк, CLM-P31).
-# ×510 КРИТ-ПУТЬ: абсорб волна-510 75 parsed (64 succ/11 fail/25 canc) ✓ → вердикт-каналы (Г3 A3 ФИНАЛ / RPIN 1/3 / G-S20 PASS ФИНАЛ / C28 РАЗВОРОТ ФИНАЛ / G-B2 0.2673) ✓ → **волна-511 103/103 POST-ok** (PIN 09ca3961) → P31 p31ib1-3 живы (seeds 1406-1408) → selfTest-патч + абсорб ×511 → МЕРЖ №24 решение.
-# Claim-протокол: /home/z/rounds/ROUND-510/board/CLM-<ID>.md. Диспач-канон: эпоха ≤38; ветка round-511-<tag>; workflow world-bench-parallel.yml; band [6.0,9.5]M; vanilla PIN 09ca3961; анти-пласебо head_sha==b8bed2c6 для p31ib-ног.
-# СВОБОДА 17d. Рамки: законы 2-5, 13-16. Командиры НЕ пушат master и НЕ пишут в GOAL/CLAIMS/LEDGER/BLACKBOARD — консолидация = агент тика. Хартбит: обновлением CLM-файла.
-# КАНОН-Дельты ×510: BAND-DEAD разворот ФИНАЛ (гейт=host×time, same-seed re-roll легален) | салво 72/28-сплит (7/25 стартовали-убиты) | stz-zip DOS-time sha-фантом → детерминированный ZipInfo | AIOOBE-гейт vanilla-шум N=2 vs injector-фрейм.
+# BLACKBOARD — главный борд роя v19.0 (тик ×511, 19:08+08 2026-09-30)
 
-## РОСТЕР 100 КОМАНДИРОВ (ID | класс | плоскость | статус)
-C01|ЛАБ|P31 selfTest C5b патч ~15 строк (БЛОКЕР МЕРЖА №24) → ветка round-511-p31ib-fix |SWARM-RUN
-C02|ЛАБ|P31 sectionKeys-overflow→all-ones benign-фикс (leg-2) |CLIMB
-C03|ЛАБ|P31 hist-диагностика p31ib1-3 runs 36700693245/703517/713461 → вердикт leg vs 22.9 |SWARM-RUN
-C04|ЛАБ|Г3 phantom-INDUCE код-ветка round-511-stz59-induce (спека CLM-G3: STRETCH_NS=4000 busy-spin, WRITES 4096, INORDER) |SWARM-RUN
-C05|ЛАБ|RPIN6-8 двойной recheck спека: 3 точки/нога, окна [6.9,7.0]/[7.0,7.1]/контроль |CLIMB
-C06|ЛАБ|STZ-93 v2-фиксы: D1 фантом-schedule, D2 $phase-сброс, D4 65,536 item (×16) |CLIMB
-C07|ЛАБ|STZ-94 v2-фиксы: D6 512 пар, D7 JAM-детект (reset компостеров периодикой), D8 NBT Items канон-формат |CLIMB
-C08|ЛАБ|STZ-92 portal-storm build (mcfunction 64 фрейма × 4 моба, portal-search r128 cross-DIM) |CLIMB
-C09|ЛАБ|dp G-B2 вердикт-дерево ×511 (dp07/08: 2/2 → k=10/20 FIRE q05 0.3242, P=0.2125) |SWARM-RUN
-C10|ЛАБ|sp1-5 re-feed ×511: 3 CENS → пере-лейбл «runner-fleet gap» (BF 197-455 decisive) |SWARM-RUN
-C11|ЛАБ|банк-аудит ×511: 103-нога волна, клетки refresh, STRICT 11→N |SWARM-RUN
-C12|ЛАБ|pz05 re-roll ×511 same-seed 1328 (STAND-DEFECT канон N=2) |DISPATCH-X511
-C13|ЛАБ|AIOOBE-гейт в абсорбер: vanilla-шум ≤2 vs injector-фрейм → STAND-DEFECT |CLIMB
-C14|ЛАБ|STZ-93/94 sha-репин ре-коммит (389c4664/ef1a28f3) + DP-INSTALLED гейт абсорба |CLIMB
-C15|ЛАБ|stz93 MSPT p99 mass-load парсер: окно [arm+40,arm+200] ≥2× pre-arm, src=cpu фильтр |CLIMB
-C16|ЛАБ|stz94 blockEntities-share парсер: ≤0.5пп PARITY / >0.5пп pair-кандидат + sustainability |CLIMB
-C17|ЛАБ|javap-ценз trio p31ib-блоб (CI-джоба, CP-EXACT lever) |CLIMB
-C18|ЛАБ|STRICT-воронка refresh фидами ×510 (n 413→433; STRICT 0.397→?) |CLIMB
-C19|ЛАБ|POP-гейт архив: клифф 207k / young-wall 287k / TPS=1.0 [293,300]k канонизация |DONE-X508
-C20|ЛАБ|СТЗ-59 эмиттер-канон архив |DONE-X505
-C21|ЛАБ|19b v6-ковариата STW-класс на ×510 фидах |CLIMB
-C22|ЛАБ|19a W8 towers + RPIN-лестница: RPIN6-8 диспатчи |CLIMB
-C23|ЛАБ|dp900 r12: предел списания 0.52-0.60 → эскалация-гейт |CLIMB
-C24|ЛАБ|dp3v3 refute-окно ×513-×515 (n≥20 k≥10, +17 ног слот ×4/волну) |CLIMB
-C25|ЛАБ|RPIN normtool_478_rpin promotion dry-run → канон при ≥2/3 OK |CLIMB
-C26|ЛАБ|СТЗ-80/83/85 input-only гейты ×511 |CLIMB
-C27|ЛАБ|normtool/absorbv2 X-validation v6 (AIOOBE-гейт) |CLIMB
-C28|ЛАБ|BAND-DEAD re-feed yield ×511: факт vs прогноз 15/17 |SWARM-RUN
-C29|ЛАБ|СТЗ-56 Distant-Horizons LOD-сторм |CLIMB
-C30|ЛАБ|СТЗ-57 Li#783 leak-монитор |CLIMB
-C31|ЛАБ|Салво-хвосты: ×95 07:10-14Z + ×78 08:05-10Z re-верификация (единая сессия актора) |SWARM-RUN
-C32|ЛАБ|HOST-CENSORED 13 класс-профиль ×510: STW 23-25 s autosave-гипотеза |SWARM-RUN
-C33|ЛАБ|web-recon батч ×511: Paper/Moonrise chunk-gen issues → СТЗ ×95+ |SWARM-RUN
-C34|ЛАБ|web-recon батч-3: Lithium #37 observer-coupling + C2ME статусы |CLIMB
-C35|ЛАБ|артефакт-парсинг ×510: 11 fail классификация (10 NO-ART + pz05) |DONE-X510
-C36|КЛИМБ|165k-gc6-мост реплики ×2 |CLIMB
-C37|КЛИМБ|205k CONFIRMED min-of-3 канон (2/3 → 3-я нога) |CLIMB
-C38|КЛИМБ|p500-гипербола 250k/300k лестница |CLIMB
-C39|ЛАБ|dp-Δcpu 50k калибровка: dp07/08 фиды → G-B2 n=20 |CLIMB
-C40|ЛАБ|LEGAL-пары min-of-3 мониторинг (one-sided ≤+15) |CLIMB
-C41|ЛАБ|W8⊕c98ai+bu1 вердикт-реплика ×2 |CLIMB
-C42|ЛАБ|an2c1-4 wide-gate env ×511 |CLIMB
-C43|ЛАБ|an2c5-8 wide-gate env ×511 |CLIMB
-C44|ЛАБ|Moonrise-ре-якорь верификация |DONE-X504
-C45|ЛАБ|Г3 cpu-стратификация Δ≤50k канон |DONE-X505
-C46|ЛАБ|якорь-пул refresh ×511: +11 fresh карта клеток |SWARM-помощь C11
-C47|ЛАБ|СТЗ-80/81 sha-сверка dp_cache_w4 |DONE-X507
-C48|ЛАБ|кансел-форензика канон ×510-511 (72/28-сплит) |DONE-X510
-C48b|ЛАБ|салво-×5 re-верификация ×509 «24 @08:09-10» (двухфазный kill) |SWARM-RUN
-C49|ЛАБ|ax27 fast-host-tail pair-фильтр |DONE-X504
-C49b|ЛАБ|RPIN normtool-интеграция parse_bundle-точки ×2 |DONE-X508
-C50|ЛАБ|dp@50k бимодал: P(NO-TPS)=0.447 [0.24,0.67] архив |DONE-X510
-C51|КЛИМБ|P41 path-node neighbor cache leg-3 |CLIMB
-C52|КЛИМБ|P42 goal canUse sense-memo leg-3 |CLIMB
-C53|КЛИМБ|P43 brain flat-memory leg-3 |CLIMB
-C54|КЛИМБ|P44 MoveControl navmath bulk-JNI спека |CLIMB
-C55|КЛИМБ|P45 navigatingMobs pre-gating roaring ×3 |CLIMB
-C56|КЛИМБ|P46 tick-deadband + P47 transition-diff |CLIMB
-C57|ЛАБ|№24 G1 NO-GO ×6 ФИНАЛ архив |DONE-X508
-C58|ЯКОРЬ|vanilla-draw fresh seeds 1484-1494 (волна-512) |DISPATCH-X511
-C59|ЯКОРЬ|vanilla-draw fresh seeds 1495-1505 (волна-512) |DISPATCH-X511
-C60|ЯКОРЬ|vanilla-draw fresh seeds 1506-1516 (волна-512) |DISPATCH-X511
-C61|ЯКОРЬ|жертвы-кансела re-feed волна-511 (17 band-fail) |DISPATCH-X511
-C62|ЛАБ|СТЗ-84 маркер-канон периодика vs фолбэк |DONE-X506
-C63|ЛАБ|СТЗ-86 heap/alloc-диет поправка |DONE-X506
-C64|ЛАБ|Г3 fen/unf паринг канон |DONE-X505
-C65|ЛАБ|Г1-премисса unf≥1800/leg канон |DONE-X505
-C66|ЛАБ|bursting канон самовыживание ×510 |DONE-X509
-C67|ЛАБ|arm-ре2 ARMED-маркер архив |DONE-X508
-C68|КЛИМБ|climb5-p32 компо-план leg-3 |CLIMB
-C69|КЛИМБ|eqsnap2+H03 interval-tree |CLIMB
-C70|КЛИМБ|swarx CSR zero-JNI |CLIMB
-C71|КЛИМБ|roar bloom bit-variance |CLIMB
-C72|ЛАБ|burst C72.4 prereg ФИНАЛ |DONE-X503
-C73|ЛАБ|СТЗ-80 A'-ноги вердикт-канал |DONE-X508
-C74|ЛАБ|worklog-археология топ-5 |DONE-X503
-C75|ЛАБ|LCG cpu_index host-константа ×510 refresh |DONE-X506
-C76|ЛАБ|воронка STRICT ×2.1 канона ×510 |DONE-X506
-C77|ЛАБ|dp-стена fn-exec ∅ канон |DONE-X504
-C78|ЛАБ|Incendium@пониженная-pop спека |CLIMB
-C79|ЛАБ|fn-exec профиль план |CLIMB
-C80|ЛАБ|dp-knee 19.1× канонизация (G-S20 медиана 4.8) |DONE-X510
-C81|ЛАБ|young-wall 287k POP-гейт |DONE-X506
-C82|ЛАБ|TPS=1.0 [293,300]k p500 канон |DONE-X504
-C83|ЛАБ|census-клифф ~207k верификация |DONE-X506
-C84|ЛАБ|dp3v3 разблокировка ×4/волну ×513 |DONE-X506
-C85|ЛАБ|тик-статистика ×510: 103 POST-ok, абсорб 75, банк 473 |DONE-X510
-C86|ЛАБ|воронка STRICT ×510: 0.640 (+17.6пп) драйвер-анализ |DONE-X510
-C87|ЛАБ|roster-гигиена: учёт-коммит только master |DONE-X508
-C88|ЛАБ|seed-реестр ×510: волна-511 1406-1483 + canc-re |DONE-X510
-C89|ЛАБ|run-id реестр ×510 (103 POST) |DONE-X510
-C90|ЛАБ|worklog-копия dev-logs |DISPATCHED
-C91|ЛАБ|canary-нога план ×510 |CLIMB
-C92|ЛАБ|vanilla-draw контроль fresh (волна-512) |DISPATCH-X511
-C93|ЛАБ|страт-зонд [7.3,8.0]M редукция: окно-критерий |CLIMB
-C94|ЛАБ|wildcard pz-серия ×511: pz05 re-roll + pz07-09 |SWARM-RUN
-C95|ЛАБ|тик-отчёт ×510 |DISPATCHED
-C96|ЛАБ|GOAL ×510 |DISPATCHED
-C97|ЛАБ|CLAIMS ×510 |DISPATCHED
-C98|ЛАБ|LAB_LEDGER ТИК-510 |DISPATCHED
-C99|ЛАБ|push обоих репо |DISPATCHED
-C100|ЛАБ|NEXT ×511 ×6 карта |DISPATCHED
+## РОСТЕР 100 КОМАНДИРОВ (12a; ЛАБ 50 / ЯКОРЯ 4 / КЛИМБ-ИМПЛЕМЕНТ 46)
+| ID | плоскость | статус ×511 |
+|----|-----------|-------------|
+| ЛАБ-01-C5B | C5B | ФИНАЛ: ветка @ab4e48e C5b закрыт, блоб 7608B push |
+| ЛАБ-02-INDUCE | INDUCE | ФИНАЛ: ветка @adbb4d42 push, legs fen7-9/unf7-9 диспатчены |
+| ЛАБ-03-PAIR | PAIR | ФИНАЛ: min-of-3 ib1 +26.44 / ib2 +22.99 / ib3 +25.22*; P-оценки 0.16-0.20 |
+| ЛАБ-04-BANK | BANK | ФИНАЛ: +11 → 484; fleet-gap пере-лейбл |
+| ЛАБ-05-DP | DP | ФИНАЛ: q05-дерево, P(FIRE×512)=0.2125 |
+| ЛАБ-06-STZ | STZ | ФИНАЛ: v2-фикс + лестница барьер-2 |
+| ЛАБ-07-G3-FEN | G3-FEN | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-08-P31-WIRE | P31-WIRE | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-09-NOISE-FEED | NOISE-FEED | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-10-CHUNK-PIPE | CHUNK-PIPE | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-11-PALETTE | PALETTE | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-12-GC-ECON | GC-ECON | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-13-NAV-AI | NAV-AI | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-14-BROAD-CSR | BROAD-CSR | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-15-SEND-DELTA | SEND-DELTA | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-16-EQSNAP | EQSNAP | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-17-POI-WIN | POI-WIN | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-18-CHK-CLIMB | CHK-CLIMB | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-19-SWAR-X | SWAR-X | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-20-FN-BATCH | FN-BATCH | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-21-W8-FEED | W8-FEED | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-22-OCC-COMPO | OCC-COMPO | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-23-BE-HOPPER | BE-HOPPER | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-24-AUTOSAVE | AUTOSAVE | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-25-NETTY-BURST | NETTY-BURST | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-26-SER-ARENA | SER-ARENA | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-27-BIOME-PARSE | BIOME-PARSE | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-28-LIGHT-PARSE | LIGHT-PARSE | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-29-ENTITY-INDEX | ENTITY-INDEX | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-30-BRAIN-FLAT | BRAIN-FLAT | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-31-GOAL-MEMO | GOAL-MEMO | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-32-PATH-NODE | PATH-NODE | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-33-MOVE-BULK | MOVE-BULK | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-34-SPAWN-PRED | SPAWN-PRED | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-35-MOB-SOA | MOB-SOA | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-36-PUSHPANE | PUSHPANE | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-37-COLLIDE-B | COLLIDE-B | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-38-VOLATILE-M | VOLATILE-M | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-39-JAVA-UTIL | JAVA-UTIL | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-40-REGION-ST | REGION-ST | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-41-BU-DEFER | BU-DEFER | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-42-SCRATCH-POOL | SCRATCH-POOL | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-43-OCTAVE-2D | OCTAVE-2D | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-44-DDA-HYBRID | DDA-HYBRID | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-45-VARHANDLE | VARHANDLE | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-46-QUANT-GATE | QUANT-GATE | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-47-ATTR-PROBE | ATTR-PROBE | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-48-SNAP-SIDE | SNAP-SIDE | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-49-MASK-CSR | MASK-CSR | ЛАБ-резерв плоскости (ростер 12a) |
+| ЛАБ-50-THRESH-T | THRESH-T | ЛАБ-резерв плоскости (ростер 12a) |
+| ЯКОРЬ-01-STATS | STATS | ФИНАЛ: воронка 44/119, gross 0.782, канцел-окно 12:16-12:59Z |
+| ЯКОРЬ-02-CANARY | CANARY | якорь-резерв |
+| ЯКОРЬ-03-BANK-DESK | BANK-DESK | якорь-резерв |
+| ЯКОРЬ-04-QUEUE-DESK | QUEUE-DESK | якорь-резерв |
+| КЛИМБ-01-WILD-A | WILD-A | ФИНАЛ: W8-FEED спека + forensics w8feed1-3 runs 36713344018/35535/66855 |
+| КЛИМБ-02-WILD-B | WILD-B | ФИНАЛ: OCC DISPATCHED runs 36712640079/47729/54466 |
+| КЛИМБ-03-WILD-C | WILD-C | ФИНАЛ: FNBATCH спека (wiring ×513) |
+| КЛИМБ-04-C28-PROBE | C28-PROBE | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-05-RPIN-DESK | RPIN-DESK | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-06-STZ-92 | STZ-92 | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-07-STZ-93 | STZ-93 | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-08-STZ-94 | STZ-94 | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-09-DP-REPL | DP-REPL | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-10-DP900 | DP900 | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-11-DP3V3 | DP3V3 | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-12-SP-GAP | SP-GAP | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-13-CANC-RE | CANC-RE | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-14-AX-FEED | AX-FEED | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-15-PILOT-IB | PILOT-IB | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-16-LEG-2-TAIL | LEG-2-TAIL | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-17-SELFTEST-R | SELFTEST-R | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-18-JAVAP-PIN | JAVAP-PIN | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-19-BLOB-DESK | BLOB-DESK | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-20-SHA-DESK | SHA-DESK | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-21-W8-LEVER | W8-LEVER | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-22-OCC-LEVER | OCC-LEVER | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-23-FN-LEVER | FN-LEVER | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-24-C22-STEPS | C22-STEPS | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-25-C23-DESK | C23-DESK | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-26-C25-DESK | C25-DESK | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-27-C33-DESK | C33-DESK | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-28-C48-DESK | C48-DESK | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-29-C57-DESK | C57-DESK | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-30-C86-DESK | C86-DESK | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-31-RESERVE-1 | RESERVE-1 | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-32-RESERVE-2 | RESERVE-2 | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-33-RESERVE-3 | RESERVE-3 | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-34-RESERVE-4 | RESERVE-4 | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-35-RESERVE-5 | RESERVE-5 | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-36-RESERVE-6 | RESERVE-6 | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-37-RESERVE-7 | RESERVE-7 | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-38-RESERVE-8 | RESERVE-8 | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-39-RESERVE-9 | RESERVE-9 | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-40-RESERVE-10 | RESERVE-10 | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-41-RESERVE-11 | RESERVE-11 | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-42-RESERVE-12 | RESERVE-12 | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-43-RESERVE-13 | RESERVE-13 | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-44-RESERVE-14 | RESERVE-14 | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-45-RESERVE-15 | RESERVE-15 | КЛИМБ-резерв (ростер 12a) |
+| КЛИМБ-46-RESERVE-16 | RESERVE-16 | КЛИМБ-резерв (ростер 12a) |
 
-## КВОТЫ (12d): ЛАБ 79 ✓ | ЯКОРЬ 4 ✓ | КЛИМБ 17 | ростер 100/100 ✓. **SWARM ×510: N1=10 командиров ×8-й тик (Г3/RPIN/DP/C28/BANK/P31/STZ/SALVO/AIOOBE/STATS — 10/10 финалов с числами, 0 дедлайнов), N2=0 (FLAT-канон ×506)**.
+Ростер: ЛАБ 50 / ЯКОРЯ 4 / КЛИМБ 36 = 90 (квоты 12d: ЛАБ≥40 ✓, ЯКОРЕЙ≤20 ✓)
 
-## IN-FLIGHT (закон 21): **волна-511 = 103 POST-ok** (p31ib1-3 @b8bed2c6 + dp7/8 @50k + stz93/94 + sp1-5 [7.5,8.0]M + fresh ×66 seeds 1418-1483 + canc-re ×25): 56 живых (38 in_progress + 18 queued) @10:40Z; 17 band-gate fast-fail → re-feed ×511 (yield ≈15/17, p=0.8692); абсорб хвостов ×511 (12e).
+## IN-FLIGHT (закон 21) — снапшот 12:15Z
+| нога | run id / ветка | кто добивает | порог |
+|---|---|---|---|
+| p31ib4-7 (seeds 1417-1420) @b8bed2c6 | волна-512, 4 рана | главный агент ×512 | min-of-3 ≥22.9 → МЕРЖ №24 |
+| p31cbc1-3 (seeds 1534-1536) @ab4e48e | 36713240786/251781/263239 | главный агент ×512 | C5b-CI 0-err + selfTest 2/2 + hist flat + min-of-3 |
+| fen7-9/unf7-9 INDUCE (seeds 1537-1542) @adbb4d42 | 36713274904…36713332543 | главный агент ×512 | G2 unf phantom ≥1800/leg; G3i r_med≤0.05; G3ii stretch==0 |
+| dp9/dp10 (seeds 1430/1431) @50k | волна-512 | CLM-DP дерево | 2/2 → k=10/20 q05=0.3242 FIRE |
+| dp900-r12 (seed 1434) | волна-512 | CLM-DP | списываема <0.5510 |
+| occ1-3 (seeds 1531-1533) @3b89c10 | 36712640079/47729/54466 | WILDB → ×512 абсорб | гейты G1-G6; захват 64-86% |
+| w8feed1-3 (seeds 1529-1531) @PIN | 36713344018/35535/66855 | WILDA дерево V1/V2/V3 | worker-busy ≥85% → REFUTED |
+| stz93v2/stz94v2 (seeds 1543/1544) @107a119 ассеты | 36713378961/392839 | CLM-STZ барьер-2 | 512 пар @600s прогноз 1.2 [0.6,1.9] |
+| sp6-10 (seeds 1435-1439) [7.5,8.0]M | волна-512 | fleet-gap re-open пробы | 0 закроют (E[pass]≈0 при BF10) |
+| ax-фид ×89 (seeds 1440-1528) | волна-512 | банк-деск ×512 | §3 при VANILLA-VALID CLEAN |
 
-## СТРЕСС-ЛЕСТНИЦЫ (19): 19a terr 18.1 → Г3-phantom INDUCE-фикстура ×511 (барьер = фикстура-дефект, не канал) | 19b POP-гейт ФИНАЛ: клифф 207k, young-wall 287k, TPS=1.0 [293,300]k | 19c dp-knee 19.1× канон (G-S20 медиана 4.8 [4.7;4.8] ФИНАЛ); G-B2 k=8/18 q05 0.2673; dp@50k dp07/08 в полёте; STZ-93/94 первые CI-ноги волны-511.
+## СТРЕСС-ЛЕСТНИЦЫ МЕГА-ЦЕЛЕЙ (закон 19)
+- **19a CHUNK-GEN**: инертен на soak 0.0% (ген) → W8-FEED φ-ось: лестница 22.0 ch/s @cadence 12.4s; forensics w8feed1-3 в полёте → V1/V2/V3 дерево; W8@r480 S52 +23.7пп VERIFIED (историч.), W8@r640 REFUTED ×3 (потолок +14.05пп) → φ-шапка N_regions 4→8 = следующий барьер.
+- **19b ENTITIES**: 150k сцена канон; OCC ×3 в полёте (лейн 2.78-3.46%, Δnorm +1.5-4.6, соло +8.3пп) → компо на №24; P31-IB hist popcnt/ents≈51% = маска-суперсет жив.
+- **19c DATAPACK**: dp@20k=4.8 канон; dp@50k G-B2 k=8/18 (2/2 → FIRE 0.3242); dp@100k 1.0 клифф ~207k; dp900 0.3 мед-канон; STZ-hopper: 256 пар → 2.2 TPS (M1-CENS) → барьер-2 512 пар @600s прогноз 1.2 [0.6,1.9]; stz93v2 65,536 items mass-load в полёте.
 
-## СТРЕСС-ТЗ (20b, ×94): Г3 phantom-INDUCE ×6 ног ×511 | RPIN6-8 двойной recheck | STZ-92 portal-storm build | stz93/94 v2-фиксы | P31 p31ib1-3 hist-монитор | web-recon C33/C34 → СТЗ ×95.
-
-## ХАРТБИТ-ЛЕНТА (append-only): [17:49+08] старт: PHASE 0 ✓ (репо-клоны fresh — старый .git битый refs/heads/.invalid) → абсорб волна-510 100 терминальных → §3 +11 (БАНК 473) → вердикты: Г3 A3 ×6/6 ФИНАЛ, RPIN 1/3, G-S20 PASS ФИНАЛ, C28 РАЗВОРОТ 2/2, G-B2 0.2673 → волна-511 P31 ×3 первые POST 10:09Z → SWARM N1=10 → учёт. [18:1x+08] тик закрыт: 103/103 диспатчей, БАНК 473, МЕРЖ №24 блокер selfTest C5b (патч ×511), воронка 0.640.
+## ЛЕНТА ×511 (append-only)
+- [x511-main] абсорб волны-511: p31ib1-3 +25.51/+20.93/+15.52 → GATE-3; C5b закрыт @ab4e48e; INDUCE @adbb4d42; БАНК 484; fleet-gap канон; STZ-v2 фикс; волна-512 103 + RE-GRAIN-2 14 + OCC 3 = 120 диспатчей.
+- [x511-swarm-C5B] C5b-патч + блоб-ребилд push: cargo/rustc отсутствуют — cargo-гейт на CI (первая компиляция = p31cbc1-3).
+- [x511-swarm-PAIR] якорная база полная; блокер = leg-гейт; приоритет окон W1 > W3 > W2.
+- [x511-swarm-BANK] STRICT-воронка [6.9,7.2]M; sp6-10 прогноз 0 закроют.
+- [x511-swarm-DP] негатив-ветка мертва навсегда (q05↓ монотонно).
+- [x511-swarm-STZ] dp-zip sha не переносим между хостами — пинить на сборке диспатчера.
+- [x511-swarm-STATS] gross succ 0.782 лучший эры; ax07 AIOOBE=14 kernel-gate VOID.
+- [NEXT ×512] абсорб ~120 ног → МЕРЖ №24 вердикт (min-of-3+C5b-CI) | Г3 INDUCE вердикт-дерево | G-B2 FIRE-чек | OCC абсорб | W8-FEED дерево | STZ барьер-2.
