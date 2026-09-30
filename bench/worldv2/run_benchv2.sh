@@ -42,11 +42,14 @@ terralith=$TERRALITH_URL tectonic=$TECTONIC_URL
 incendium=$INCENDIUM_URL stellarity=$STELLARITY_URL
 radius_blocks=$RADIUS_BLOCKS seed=$SEED run_seconds=$RUN_SECONDS xmx=$XMX dims=$DIMS
 fake_players=$FAKE_PLAYERS
-runner_cpu_index=$RUNNER_CPU_INDEX
+runner_cpu_index=${RUNNER_CPU_INDEX:-0}
 EOF
 
 # --- G1/G2: downloads + hash pins -------------------------------------------
-dl() { curl -sS -m 300 -L -o "$2" "$1" || { log "G-DL FAIL $1"; FAIL=1; }; }
+# x519 canary RED postmortem (run-36773277359): transient CDN drop on tectonic.zip
+# killed the whole run (exit 42 before boot). Retry x3 with backoff — infra flakes
+# must not burn a bench slot in a saturated queue.
+dl() { local url="$1" out="$2" n; for n in 1 2 3; do curl -sS -m 300 -L -o "$out" "$url" && return 0; log "G-DL retry$n $url"; sleep $((n*5)); done; log "G-DL FAIL $url (3 attempts)"; FAIL=1; }
 dl "$PURPUR_URL" purpur.jar
 md5now=$(md5sum purpur.jar | cut -d' ' -f1); sha256now=$(sha256sum purpur.jar | cut -d' ' -f1)
 [ "$md5now" = "$PURPUR_MD5" ] && [ "$sha256now" = "$PURPUR_SHA256" ] && log "G-PURPUR PASS" || { log "G-PURPUR FAIL md5=$md5now sha256=$sha256now"; FAIL=1; }

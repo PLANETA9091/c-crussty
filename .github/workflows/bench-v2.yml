@@ -100,6 +100,9 @@ jobs:
         run: |
           set -euo pipefail
           test -s run/server/BENCHV2.md || { echo "::error::BENCHV2.md missing"; exit 1; }
+          # x519 dud gate (AG-15 lesson, x2 re-rolls 234/211 = green duds on old-branch harnesses):
+          # a report that says INVALID/FAIL must never be a green job.
+          if grep -q "INVALID/FAIL" run/server/BENCHV2.md; then echo "::error::BENCH-V2 INVALID/FAIL verdict in report"; exit 1; fi
           cat run/server/BENCHV2.md
 
       - name: Upload artifacts
