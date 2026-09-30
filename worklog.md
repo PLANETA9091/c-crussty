@@ -12277,3 +12277,186 @@ Work Log:
 Stage Summary:
 - ДИСПАТЧИ 100/100 (12c ✓); SWARM N1=1/100 N2=0 (соло-тик); МЕРЖ НЕТ → РЕ-ГРАЙН ✓ волной 100/100; БАНК 156 (+17); IN-FLIGHT ~267 ног CI; CLIMB: p44/p45/U5/terr-rt8/burst/Incendium-ρ в цикле закона 18 → ×501.
 - master остаётся 8d18ff72+учёт (код = МЕРЖ №23 7c829018); NEXT ×501 ×6.
+
+---
+Task ID: 509-swarm-C86
+Agent: C86-tick-stats-x509
+Work Log:
+- Прочитан dispatch_510.json: план 100 ног, эпохи A (07:36:01Z, 38×HTTP-204) и B (07:41:17Z, 38×HTTP-204) → POST-ok 76/100.
+- Состав плана-100: anchor-draw 31, салво-жертвы 55 (ep-A 24: 509:10+508:14; ep-B 31: 509:29), спец-ноги 8 (G3-fen×3, G3-unf×3, RPIN×2), ff-reroll 5, ax18-re 1.
+- Прочитан ROUND-509_census.json: волна-509 succ 38 + pz01 = 39, fail 6, canc 53 → succ-rate 39/98 = 39.8%.
+- Абсорб: 38 parsed + 24 bank-feed → банк 423→447; NCDFE = 0.
+- Записан /home/z/rounds/ROUND-509/board/CLM-C86.md (таблица 5 маркеров).
+Stage Summary:
+- ДИСПАТЧИ 76/100 (2×38 POST-ok 204); БАНК 423→447 (+24, NCDFE=0); WAVE-509 39/98=39.8% (fail 6, canc 53); САЛВО-ЖЕРТВЫ 55; СПЕЦ-НОГИ 8 → ×509.
+
+---
+Task ID: 509-swarm-C25
+Agent: C25-rpin-minof3-x509
+Task: RPIN-канал min-of-3 план ×510 (OFFLINE: 0 push / 0 CI / 0 диспатчей): гейты drift/5%/медиана + normtool-интеграция (C49b спека ФИНАЛ).
+
+Work Log:
+- Прочитано: ROUND-508/board/CLM-C25.md (метод ×508: ABSENT/NO-RECHECK/DRIFT/OK/UNKNOWN-классификация, вердикт был PENDING) + normtool_478_rpin.py ([506-C49b]-блок жив: RE_RPIN_START/RECHECK, RPIN_DRIFT_MAX=5.0, rpin-классификатор в parse_bundle с guard против §3-фида) + LAB_LEDGER RPIN-секции ×505-×508 (×508: RPIN 1/3 OK drift 1.27% → cpu 7.0007M; CENS-DRIFT 5.37% — цензор-путь верифицирован живьём; спека C49b ФИНАЛ).
+- Верифицировано dispatch_510.json: RPIN4-5 = legs 6-7, branches round-510-rpin4/rpin5, seeds 1404/1405, inputs.population_seed, @64728688 — ровно 2 недостающие OK-ноги к rpin1-OK (1/3 → 3/3).
+- Гейты ×510 сформулированы: drift = |end−start|/start из INT-полей (float advisory); порог 5.0% (CENS-RPIN-DRIFT → HOST-CENS-first, m1_clean=False, не фидится); cpu = медиана(start,recheck) для OK-ног (rpin1-канон 7.0007M, ожидание окна 6.9-7.1M = robust-узел [6.9,7.2]M); 3/3 OK (rpin1+rpin4+rpin5) → канон-принятие RPIN-cpu в стресс-лестницу 19a (замещение start-only LCG-лейбла, L-201 узел получает дрейф-подтверждённые якоря); precondition head_sha 64728688 (placebo-канон ×507); fail-ветка: ре-ролл ≤2, приоритет seeds 1406-1407 (RPIN-drift = host×time, seed-независима; same-seed легален после канон-разворота ×508).
+- Интеграция-план (один абзац в board): promotion dry-run→канон: parse_bundle rpin-ветки как есть (обычный norm_run, без спец-пути), _fixture_check +3 rpin-фикстуры (ok/drift/norecheck), selftest обязателен перед вердиктами (B3); артефакты per-leg: world3-bench → server-stdout.log маркеры START/RECHECK + run-env.txt + BOTTLENECKS_3.md + gc.log; JSON-поля: rpin_drift, rpin{state,cpu_idx_start,cpu_idx_end}, rpin_state, m1_state, verdict; код parse_bundle НЕ меняется.
+- ФИНАЛ: /home/z/rounds/ROUND-509/board/CLM-C25.md записан (гейты списком, артефакты, интеграция, статус PENDING-DISPATCH → вердикт ×511).
+
+Stage Summary:
+- OFFLINE-план готов: RPIN min-of-3 ×510 = rpin1-OK (7.0007M) + rpin4/5 (seeds 1404-1405 @64728688, plain population_seed) → гейт drift≤5% из int-полей, cpu=медиана(start,recheck), 3/3 OK → канон в 19a; normtool_478_rpin.py встраивается без код-правок parse_bundle (+3 rpin-фикстуры в selftest); артефакты: маркеры RUNNER-PIN в server-stdout.log + JSON rpin-поля; НЕ фидятся в банк §3 (guard).
+- 0 push / 0 CI / 0 диспатчей; вердикт канала ×511 (или ранний абсорб ×510).
+
+---
+Task ID: 509-swarm-C48b
+Agent: C48b-salvo-forensics-x509
+
+## Work Log
+- OFFLINE mode: только read-only GitHub API (curl + /tmp/gh_token), 0 push/CI/диспатчей.
+- Runs 06:40-07:10Z (2 стр., 171): 84 round-509-* = 39 success / 39 cancelled / 6 failure (created 06:40:40-06:44:14Z).
+- Жертвы: 6 точечных + все 39 cancelled через /jobs — 100% runner_name='' (queued-never-started), job world-bench, queue-age ~18.5-19.5 мин.
+- Выжившие ax03/ax04/pz01 (36679481499/36679485640/36679692127): 3/3 runner_name='GitHub Actions 1000027752/753/802' — running-ноги не тронуты.
+- Окно залпа: job-level 07:02:34-07:02:57Z (23 c); run-level 07:02:35-07:03:02Z. Burst по всем раундам: 50 runs (509:39, 508:10, 507:1) — briefing «53» = over-count, фактическая потеря волны-509 = 39/84 (46%).
+
+## Stage Summary
+- Гипотеза C48 ПОДТВЕРЖДЕНА ×509: актор = queue-trim гигиена (режет только runner_name=''), НЕ инфра-отказ.
+- Риск волны-510: эпохи ≤38 достаточны при старте ≤2 мин (пул ~45 раннеров, ax01-ax48 успели); queued >~19 мин — под нож следующего окна (04:42/05:31/07:02Z).
+- Канон: дискриминатор жертвы = runner_name=='' && cancelled в окне залпа; не ретраить тримнутые (кормит следующий trim); ретраить только ноги с runner_name!=''.
+- Артефакт: /home/z/rounds/ROUND-509/board/CLM-C48b.md (полный JSON: 39 dead_runs, окна, реконсиляция, канон).
+
+---
+Task ID: 509-swarm-C11
+Agent: C11-bank-audit-x509
+
+Work Log:
+- Прочитан /home/z/rounds/ROUND-509/absorb_509.json: 38 ног (24 CLEAN + 13 CENS + 1 BAND-DEAD seed1298@5.82M), counts {clean 24, bank_feed 24, cens 13, over15 0} — сверены, bank_feed=24 записи.
+- Дедуп run_id против /tmp/absorb508/absorbed_ids.json (195 id, существует) и вторично против absorb_508_final.json results (216 id): пересечений 0 → фантомов НЕТ; внутри волны 38/38 уникальны.
+- Аудит фида (24): norm_v5 median 1.74 (mean 1.52, stdev 4.09; min -8.08, p25 -1.46, p75 3.41, p90 7.04, max 9.20); LEGAL% = 24/24 = 100% (|norm|≤15, one-sided ≤+15); NCDFE 0, AIOOBE 0, in_band/fixture_valid 24/24 true.
+- Клетки 0.1M (cpu//100000): 62:1 63:1 64:1 65:1 66:1 67:3 68:1 70:2 71:3 72:2 80:1 85:1 86:1 87:1 88:3 89:1; пусто 69, 73-79, 81-84; CENS-ноги (13) легли в 63-74+89 → 73-74 закрыты только цензором.
+- Дыра 7.5-8.0M (клетки 75-79): в фиде 0 ног → НЕ закрыта, 7-й тик подряд (ожидание подтверждено).
+- Кросс-чек сидов: волна-509 seeds 1267-1314 (без дублей внутри) против фида/пула ×508 (dispatch_508.json 126 ног, seeds 601+1113-1266): пересечение 0; пулы стыкуются 1266|1267.
+- БАНК финальный: 423 + 24 = 447 подтверждён; статус AUDIT-PASS.
+
+Stage Summary:
+- Board записан: /home/z/rounds/ROUND-509/board/CLM-C11.md (аудит ×509: дедуп чист, фид LEGAL 100%, банк 447).
+- Дыра 7.5-8.0M: 7-й тик; рекомендация — страт-зонд в клетки 75-79 (5 ног на альтернативном раннере); при повторном HOST-CENSORED на границе 7.3-7.5M — пере-лейбл стратума как runner-fleet gap.
+- OFFLINE: 0 push / 0 CI / 0 диспатчей / 0 API.
+
+---
+Task ID: 509-swarm-C33
+Agent: C33-web-recon-x509
+Work Log:
+- Прочитан хвост LAB_LEDGER (СТЗ-80..86, ×91-план): дуп-чек пройден — новые классы не пересекаются с recipe/scoreboard-storm (80/81), dup-UUID (82), chunk-serial (83), autosave-STW (84), Netty-join (85), TrackedEntity (86), DH LOD-storm (56), Li#783 (57).
+- GitHub API без токена: 8/8 бюджета (Paper chunk-gen ×1, PaperMC/Folia entity ×1, Paper entities+mspt ×1, Paper datapack-tick ×1, C2ME global ×2 — один Validation Failed от неверного slug, C2ME repo-квалифаиер ×1 failed, c2me-fabric global ×1).
+- ФАКТ: C2ME ре-якорь = RelativityMC/C2ME-fabric (org C2ME-Fabric 404-валиден; slug подтверждён перекрёстной ссылкой RelativityMC/C2ME-fabric#89 в copygirl/cefpfc-1.18#1).
+- Выбраны 3 якоря с числами: Paper#9585 (nether portal 1000 MSPT, spark DHEE75WDg6), Paper#13783 (OPEN, 260k item drops в одном weakly-loaded чанке → 1000+ MSPT; companion #12986), Paper#8142 (hopper→composter per-tick семейство #976).
+- Все 3 стенда датапак-совместимы (mcfunction summon/setblock/teleport, pack_format 88 dual, П6 120/600, 0 модов — Purpur vanilla-compat).
+- Записан /home/z/rounds/ROUND-509/board/CLM-C33.md (3 СТЗ + диспатч-план world-bench-parallel.yml inputs).
+Stage Summary:
+- СТЗ-92 portal-storm: 64 портала × 4 моба cross-DIM транзит; метрика max-MSPT-шип + sync-chunk-load p99; chunk-gen/load мега-цель.
+- СТЗ-93 weak-chunk entity-storm: summon r{2..64}×4096 в weak чанк → mass-load; метрика MSPT p99 + tracker_share_pp (src=cpu); entities-мега-цель, прямая мишень Rust-моста 150k.
+- СТЗ-94 hopper-storm: 512 hopper+composter пар, 300-600s soak; метрика blockEntities-tick share; RISK: Purpur event-opt при 0 listeners → vanilla-side only, NOT-A-BENCH если <0.3пп.
+- Диспатч-план: stz92/93/94.zip в dp_cache_w4 с sha-префиксами; population_seed plain; seconds 600/600/300; каноны «1 диспатч=1 эпоха», band 6.0-9.5M.
+- OFFLINE: 0 push / 0 CI / 0 диспатчей; только file-writes + 8 read-only curl.
+
+---
+Task ID: 509-swarm-C03
+Agent: C03-p31-inside-batch-x509
+Task: P31 INSIDE-BATCH bulk-JNI — wiring-спека код-бранча (диспатч ×510/×511; OFFLINE: 0 push / 0 CI / 0 диспатчей / cargo не собирать).
+
+Work Log:
+- Прочитано: src/inside_batch.rs (500L: scaffold-контракт, enabled() STRICT-eq cmp456_chunkmono_p31snap|cmp466_c98ai|env, activate EARLY-define поток, BATCH_MASK_SIG (II[J[D[D[I[I[I[I)I, superset_mask MAXSEC=8/DEFLATE_EPS, Get*ArrayRegion-дисциплина :416, fail-open all-ones), entityinside/.../InsideBatchOps.java (151L: batchGate per-op scaffold → чистая ваниль :82, native insideBatchMask объявлен :142, MAXBATCH=4096, THRESH отсутствует в блобе — 0 вхождений, Л21), src/classfile.rs (patch_inside_batch :5333, единственный isAffectedByBlocks-сайт, CP-EXACT batchGate тест :7500), src/entity_compose.rs stage-1 (supersede inside_cache, wait_bridge_ready 180s fail-dominant), src/inside_cache.rs (сиблинг-носитель InsideBlockOps).
+- Канон из LEDGER: гонка arm/define EntityGoalQueryOps @ MobPushOps.pushables:467 (×456 NCDFE 2924/24158/6014, пары +20.1/+41.3 отравлены) → EARLY-define + ARM-AFTER-DEFINE (d73758a3/5ecd841a/9d71b461, fa9054d9) + mirror-drift (Л208 R2: 6 точек синхронизации lever-литерала) + ncdfe_guard.sh C1-C4; Л61/Л462: T=512 primary (74 выз/воркер/тик, dispatch 0.44пп), THRESH не рычаг, гистограмма плоская 100%×4 [256..2048], flip-safe T≤37,011.
+- Capture-матем (CLM-C03 ×508): lane 15.36% × capture 66% = +10.2пп (потолок +14.1); нетто +9.5пп (raw +9.8 − dispatch 0.73, Л62); нога 25.1 [22.9-27.0] ≥ req +17.80@7.20M; канон-ветка пара +18.7/макс +20.7, дефицит −1.3пп закрывает P36-splice → +21.2-21.7 (Л114).
+- Сформулирована wiring-спека: per-op surface (N×batchGate(Entity)Z редиспатчей/тик) → батч (ОДИН insideBatchMask/тик, SoA eids/xyz/bb/secKeys CSR MAXSEC=8/nsec/dirty/out, строгий ванильный хвост, THRESH=512 двухсторонний гейт java⊕rust).
+- Записана /home/z/rounds/ROUND-509/board/CLM-C03.md (создан; JNI-surface → батч, 7 файлов-точек, NCDFE-канон 5 шагов, capture-матем, статус).
+
+Stage Summary:
+- Ветка round-510-p31ib от 09ca3961; wiring ~5-7 правок: InsideBatchOps.java armed-ветка v1 (THRESH-гейт + 1 JNI + строгий хвост + selfTest C5b), ребилд+коммит блоба build_inside_batch_ops.sh (иначе плацебо, урок-408/425), src/inside_batch.rs зеркало THRESH=512 + телеметрия, classfile.rs/entity_compose.rs БЕЗ структурных правок, build-скрипт + javap-гейты (flat==nested, CP-строка lever, major 65).
+- NCDFE-канон: EARLY-define в arm-хуке ДО ретаргета; порядок define→RegisterNatives→selfTest→noteBatchArmed→BRIDGE_READY; CP-резолв натива только в armed-ветке; fail-closed (dormant = ваниль бит-в-байт); mirror-drift сверка 6 точек + check_blobs_sync.
+- Риск-центр = java armed-ветка (~150-250 LOC) + ребилд блоба (md5 9c774b672a1d/4215B сменится); ARM-маркер stdout не ломать (placebo-канон ×507).
+- 0 push / 0 CI / 0 диспатчей / cargo не запускался; спека готова к код-диспатчу ×510/×511.
+
+---
+Task ID: 509-swarm-C57b
+Agent: C57b-compensator-channel-x509
+Task: Консолидация компенсатор-канала №24 после NO-GO ×6 ФИНАЛ: сборка prereg-гейтов будущих ног P31 INSIDE-BATCH bulk-JNI (capture-матем, NCDFE/javap, band), архитектурная проверка батча и THRESH-гистограммы на фидах ×509, pair-физибилити; OFFLINE (0 push/CI/диспатчей). CLM → /home/z/rounds/ROUND-509/board/CLM-C57b.md.
+
+Work Log:
+- PHASE 0: OFFLINE-канон соблюдён — чтение CLM-C03.md (реестр 6 носителей, TOP-1 = C04/P31 INSIDE-BATCH, leg 25.1 [22.9-27.0], ceiling +14.1) + хвост LAB_LEDGER (L01/Л21/Л62/Л114/Л159/Л180/Л212/Л-482-C51 CLIMB-археология: блокер = STRICT-eq литерал, НЕ механизм; THRESH=512 двухсторонний контракт) + BOTTLENECK ×509 (bank 423→447, медиана фида +1.75, NO-GO ×6 binding) + c57_paircheck_final.json (best +15.71 = arm03×st06).
+- АРХИТЕКТУРА (по коду мастера 09ca3961): INSIDE-BATCH батч = ВСЕ checkInsideBlocks-кандидаты тика (gate Entity.isAffectedByBlocks @offset-1 → InsideBatchOps.batchGate, entity_compose stage-1 supersede inside_cache); reader_ops/EntityGoalQueryOps в батч НЕ входят (отдельная goal-query плоскость); CollideBatchOps — отдельная collide-лейн носителя. THRESH-гистограммы в absorb_509.json НЕТ (профилей 0, подтверждено парсом 38 результатов) → оценка по LEDGER ×505-508: JNI 296/тик (74/воркер ×4) vs 375k per-op superset ×1266.9, налог 63.6µs/тик 0.032пп + dispatch 0.44пп; flat 100%×4 [256..2048] flip-safe T≤37,011 → фиды ×509 (тот же vanilla-канон 150k) → ожидание flat.
+- PAIR-МАТЕМ (python-парс absorb_509.json): 24 CLEAN, медиана +1.74 (канон ×509 +1.75); leg_req@медиана = +21.75; центр leg 25.1 → якоря ≤+5.1 = 21/24 (88%) фида, pair@медиана +23.35 ✓; floor 22.9 → якоря ≤+2.9 = 14/24 (58%), 10/12 кластера [6.4,7.2]M, pair@медиана +21.15 ✓. Требование +17.80@7.20M НЕ переносится на P31-компо (выведено из соло-потолка +3.31 G1-армов cmp401_collide); pair-база = банк v5 447, one-sided ≤+15, Δ≤50k, худшее окно фида <9.0M req +24.18 (центр покрывает).
+- PREREG-ГЕЙТЫ (10 в CLM-C57b §2): ARM-маркер+head_sha==код-коммит; STRICT-eq литерал {cmp456_chunkmono_p31snap, cmp466_c98ai} или CRUSSTY_INSIDE_BATCH=1; javap flat==nested (класс flat, nested=0 — grep-пруф; блоб 4215B md5 9c774b67) ТОЛЬКО CI-джобой (локально javap отсутствует); C5b selfTest-счётчик >0 (дыра Л62); NCDFE T1=0 EARLY-define ARM-AFTER-DEFINE; superset false-negative-запрещён/all-ones→ваниль; dispatch ≤0.44пп/STW ≤23.0; batchGate double-role ∅-судья (r1 −4.04/r2 −2.55 прецедент); min-of-3 fresh seeds Δ≤50k; порог ≥22.9 capture-OK / <22.9 fallback GATE-3 (P32+P36 splice → пара +21.2-21.7 Л114).
+- NCDFE-РИСКИ: dual-loader гонка EntityGoalQueryOps (резолв через MobPushOps от первого pushables — entity_query.rs:151/331, LinkageError-класс) → EARLY-define + fail-closed; mirror-drift cellHash/MAXSEC=8/DEFLATE_EPS; javap-гейт CI-only; P31⊕paldelta REFUTED (носитель фиксировать).
+
+Stage Summary:
+- CLM-C57b.md записан (ROUND-509/board): архитектура INSIDE-BATCH подтверждена по коду, 10 prereg-гейтов, capture-матем одной строкой, pair-физибилити (leg_req +21.75 при медиане +1.75 — физибельно даже на floor 22.9), риски NCDFE/javap, готовность к код-бранчу ×510/×511 ВЫСОКАЯ (мост dormant в мастере 09ca3961; ветка = ARM-активация + selfTest + THRESH-инструментация; диспатч после волны-510, эпохи ≤38, ETA ноги 52±2 мин).
+- Вердикт-кадр: P31 INSIDE-BATCH = единственный соло-носитель pair ≥+20 min-of-3; bar-критерий ×511: leg ≥22.9 в band [6.0,9.5]M cpu<9.0M → пара с медианным якорем +21.15; ниже — capture-стена → компо GATE-3.
+- Офлайн: 0 push, 0 CI, 0 диспатчей; master 09ca3961 / МЕРЖ №23 7c829018 не тронуты; банк v5 FREEZE, законы 5/18 соблюдены.
+
+---
+Task ID: 509-swarm-C28
+Agent: C28-probes-ab-x509
+Task: BAND-DEAD канон-разворот — A/B план проб ×3 (seeds 1051/1067/1144, same-seed re-roll wave-510): найти старые norm/cpu, сформулировать A/B матрицу и критерий разворота канона, p(pass)=0.87 апдейт-план; OFFLINE (0 push/CI/диспатчей). CLM → /home/z/rounds/ROUND-509/board/CLM-C28.md.
+
+Work Log:
+- Верификация проб: dispatch_509.json legs[97-99] 06:44:38-42Z HTTP 204 (runs 36679830917/36679833602/36679836111, getverify_509 queued) → залп 07:02Z, в absorb_509.json 0 строк по сидам → легальный re-roll; re-диспатч ×510 dispatch_510.json legs[67]/[68]/[14] = ТЕ ЖЕ ветки/сиды, pin=null (код ветки head = код оригинального прогона — чистый A/B).
+- ГЛАВНЫЙ ФАКТ: собственных old-norm у 1051/1067/1144 НЕ СУЩЕСТВУЕТ — 3/3 gate-fast-fail ДО харнесса (absorb_508_final: ax10 34s / ax26 21s / ax03 16s, artifacts=0, bucket=ff; failclass_507 failstep=gate); first-pass 1051/1067 (gate SUCCESS 03:44:51/03:45:08Z) убиты окном #2 до нормы. Постановка «новый norm vs старый norm» возможна только на класс-референсах: ax10 +1.03@6,829,164 (×506) / +0.43 (×509 CENS); ax26 +4.84@6,331,081 / +9.31 (×509 CENS, Δмежвинтаж 4.47пп > 1.5пп критерия!); ax03 +3.54@8,796,179 (×509 CLEAN; в пулах ×501-506 ax03 нет).
+- A/B матрица двухуровневая: Уровень-A (гейт, ~1 мин, главный) PASS = gate SUCCESS same-seed → флот-гипотеза подтверждена на живом повторе; Уровень-B (norm, ~30 мин, только при PASS-A) PASS = |norm_v5 − класс-референс| ≤ 1.5пп → харнесс воспроизводит класс-норму; FAIL-B при PASS-A трактовать «шум» (прецедент ax26 4.47пп).
+- Критерий разворота: ≥2/3 PASS-A = канон-разворот ФИНАЛ (мажоритет; same-seed re-roll канонизируется, ban-list НЕ вводится, dead-seed реестр = мониторинг rate 9.4→12.5→17.2%); 3/3 чистый ФИНАЛ; 0/3 = единственный исход за seed-гипотезу (P(0/3|флот)=0.13³=0.0022, BF≈450) → но не возврат канона ×507 (0/3 PASS→FAIL необъясним), а заморозка + форензика гейт-кода.
+- Апдейт p(pass)=0.87 (prior 25/192 pooled): при флот-трактовке пробы = независимые повторные броски dead-сидов → P(3/3)=0.659, P(≥2/3)=0.954; pooled-апдейт 3/3→0.872 / 2/3→0.867 / 1/3→0.862 (все в WCI, E[yield]≈0.87×n не двигается); 0/3 pooled-размазывание ЗАПРЕЩЕНО (не популяционные draw'ы — метод-ошибка ×508 «19 fast-fail»).
+- Записана /home/z/rounds/ROUND-509/board/CLM-C28.md (создан: статус проб, таблица сид|старый norm|старый cpu|референс|критерий PASS, A/B матрица, критерий разворота, апдейт-план).
+
+Stage Summary:
+- Пробы ×3 re-диспатчнуты ×510 same-branch/same-seed, verdict-кадр ×510: 3 строки в абсорбе ∈ {NORM-COMPUTED, BAND-FAST-FAIL(dur)}; главный критерий = гейт-флип (FAILURE→SUCCESS), norm-критерий вторичен и класс-референсный (±1.5пп, шум-каveat ax26 4.47пп).
+- Разворот канона ×507 = ФИНАЛ при ≥2/3 PASS-A; цена пробы ~1 мин гейт / ~30 мин харнесс, банку риска 0 (STRICT-ставка не гейтом).
+- Офлайн: 0 push, 0 CI, 0 диспатчей; master 09ca3961 не тронут; чтение только локальных фидов ROUND-506/507/508/509 + /tmp/c28_*.
+
+---
+Task ID: 509-swarm-C23
+Agent: C23-dp-gates-x509
+Work Log
+- Прочитаны: LAB_LEDGER.md dp-секции (L1398-1576, incl. ×508 row 9 «G-B2 n=17 fires 8; G-S20 4.7+4.8; dp900 0.3»), CLM-C23 ×507 (метод Jeffreys Beta(k+0.5,n−k+0.5), p_lo=q05 — канон воспроизведён 1-в-1: k=9/17→0.337, k=8/17→0.285), ROUND-508/board CLM-C23.md отсутствует (форензика dp — только ledger row 9), dispatch_510.json + absorb_509.json (38 ног, 0 dp; волна-509 dp01-06 = queued-never-started salvo 07:02Z).
+- G-B2 апостериорная (scipy, Jeffreys): n=17 k=8 → Beta(8.5,9.5), точка 0.472, 95% CI [0.254,0.697], p_lo=q05 0.285 <0.30 → НЕ fire, G-B3 INDETERMINATE. Ответ «n≥20? fires≥10?»: ни то ни то — n-bar 10 перекрыт, порог q05≥0.30 = k≥9; n≥20 нужен только для G-B1-негатива (k=0), мёртвого при k=8; негатив-закрытие при k=8 требует n≈50 → канал закрыт.
+- Лестница волны-510 (seeds 1330/1331 @50k): 2/2 NO-TPS → k=10/19 q05 0.344 FIRE; 1/2 → k=9/19 q05 0.297 (передержка 0.003пп, добит 1-м fire волны-511: k=10/20 → 0.325); 0/2 → k=8/19 0.252 открыт. Поэшелонный абсорб: 1-я нога fire → n=18 k=9 → 0.316 FIRE немедленно. Предиктива: P(≥1)=0.708, P(2/2)=0.236, P(0)=0.292.
+- G-S20: leg-1b+leg-3 = 4.7+4.8 ≥4.6; медиана-матем — при любом stable leg-4 мед(4.7,4.8,x) ∈ {4.7,4.8} → наклон залочен 2 ногами; гейт leg-4 ∈ [3.5,6.0] → PASS; NO-TPS → PASS-2/3+флаг (эскалация 3×NO-TPS не триггерится); <3.5 полка-ревизия; >6.0 host-конфаунд-ценз. Добивает ровно один диспатч — dp03 seed 1332.
+- Реплики: dp900 r11 (seed 1333, seconds=900) — мед-канон 0.3 n=15, даже k=1 → q975 0.272 <0.30 списываема; dp@100k r9 (seed 1334) — точки 1.0/0.5/0.5 vs фит 1.22, клифф ~207k, NO-TPS → 50k-специфичность ↑ (P=0.899); dp3v3 r9 (seed 1335) — инверсный бимодал n=3 k=2 P=0.625, fire-файл k≥7/13 (q05 0.320), refute только n≥20, фактический n офлайн неверифицируем.
+- Вердикт-дерево ×510 (7 веток) записано в CLM-C23.md: G-B2 FIRE/передержка/открыто по k; G-S20 4 ветки leg-4; реплики-подтверждения; инфра-гейты абсорба (1 ветка=1 ран, GET-verify, head_sha==код-коммит, bench-NT=0).
+Stage Summary
+- G-B2: n=17 fires 8 → P(NO-TPS|50k)=0.472 [0.254,0.697], q05 0.285 — файл не набран (−1 fire); волна-510 закрывает FIRE с P=0.708 (поэшелон) / 0.236 (2/2 пакетно); негатив-ветка мертва навсегда (k=8 → n≈50).
+- G-S20: наклон залочен медианой 4.7-4.8; PASS при leg-4 (seed 1332) ∈ [3.5,6.0] — единственная нужная нога волны-510.
+- dp900 0.3 мед-канон (r11-реплика, списываема даже при 1 fire); dp@100k census-реплика над клиффом; dp3v3 инверсный бимодал — файл k≥7/13, refute n≥20.
+- Артефакт: /home/z/rounds/ROUND-509/board/CLM-C23.md. 0 push / 0 CI / 0 диспатчей; master не тронут.
+
+---
+Task ID: 509-swarm-C16
+Agent: C16-g3-minof3-x509
+Task: Г3-канал вердикт-план min-of-3 ×510 (офлайн: 0 push/0 CI/0 диспатчей; только локальные файлы + локальный git).
+
+Work Log:
+- PHASE 1 ЧТЕНИЕ: BOTTLENECK ×509 (Г3-канал ОТКРЫТ) + LAB_LEDGER хвост ×497-×509 (Г3-ряды: эмиттер bd054adf → вакуум reader_ops=0 → Branch-A classpath-фикс ad174a10/110e431a → re3 ×6) + CLM-C16b (ROUND-507, спека §5) + dispatch_510.json + absorb_508_final/delta (протоколы 6 re3-ног).
+- PHASE 2 ФАКТ-БАЗА: reader_ops 4.34-8.78e9 ×6/6 (G2 PASS), G1.premise PASS ×6/6, phantom_air/fluid/collects = 0 на ОБОИХ армах → G3-бар вырожден 0/0 (vacuous PASS не зачитывать); ARMATURE ✓ = stale_discards 1004/1671/1817 только fen, unf ≡0 структурно; ratio ≈1.01 = паритет без подавляющего сигнала. Локальный git-дифф fen↔unf верифицирован: ровно case cmp466_stz59fence (run_world3.sh) + InsideSnapOps FENCED-ARM −89 строк; unf = v2.1 бит-в-бит; arm самодекларируется mode=FENCED|UNFENCED.
+- PHASE 3 ВЕРДИКТ-ПЛАН: борд /home/z/rounds/ROUND-509/board/CLM-C16.md — гейты ×510 (анти-пласебо head_sha==pin + marker; G1 CONTROL-премисса; G2 reader_ops≥1e8 + NCDFE=0 + libraries-jar-count эвиденс; ARMATURE fen sd≥1 / unf sd≡0; MIN-OF-3 N_ops из 6: 6/6 адъюдикация / 5/6 добор ×511 / ≤4/6 REOPEN; G3-бар r_med≤0.05 + stretch==0 + мощность unf_med≥1800 C65-премисса, fen≈90).
+- PHASE 4 ДЕРЕВО + СПЕКА: A1 suppression CONFIRMED / A2 REFUTED финал / A3 VACUOUS-0 (наиболее вероятный) → phantom-фикстура; B добор-нога; C REOPEN → C16b-контроль re3-логов (A-class classpath-рецидив / B-class build / C-class purpur-drift); D armature-сбой lever-эхо. Phantom-фикстура = phantom-INDUCING writer-профиль (растянутая AIR-фаза secWrite ≥ copy-цикла + синхронный бурст), СИММЕТРИЧНО обоим армам, 0 vanilla-правок; гейты ×512: unf phantom ≥1800/leg @1e8 ops, r_med≤0.05, stretch==0; отказ-мод = REOPEN-CENS «нет phantom-канала».
+- УЧЁТ: worklog append (Л174).
+
+Stage Summary:
+- Борд CLM-C16.md записан: 6 гейтов, 4-веточное verdict-дерево, phantom-фикстура спека (×511 диспатч, fen7-9/unf7-9 seeds 1404-1409), прогноз чисел ног волны-510 (reader_ops 4-9e9 ×3 пары, fen sd 1000-2000, unf sd 0, phantom базово 0/0 → A3).
+- Ключевой вывод тика: ×510 PASS = подтверждение ИЗМЕРИТЕЛЬНОГО канала min-of-3, НЕ suppression; подавление решает phantom-фикстура (unf phantom=0 ⇒ G3 неопровержим на текущей фикстуре).
+- Офлайн-комплаенс: 0 push, 0 CI, 0 диспатчей, 0 код-дельт; только чтение логов/git + борд/worklog.
+
+---
+Task ID: 509
+Agent: tick-agent-x509 (main)
+Task: Тик MEGA-SWARM ×509 эры v19.0 (trace 1a0dc7e6662ff26d-cron-agent-loop-202609301508, Job 415026/415603) — полный цикл PHASE 0 → абсорб волны-509 + салво-форензика ×4 → волна-510 (3 анти-кансел-эпохи) → SWARM N1=10 → вердикт-каналы → учёт → push → отчёт
+
+Work Log:
+- PHASE 0: лок ✓, диск 68%, master 09ca3961 (=×508 учёт), CRON_PROMPT_V19 196 строк + LEDGER хвост прочитаны
+- САЛВО-×3 ФОРЕНЗИКА: волна-509 разбита залпом 07:02:34-45Z — но 39/84 legs RAN: 39 succ (38 ax + pz01) + 6 fail; 63 canary-guard каскад самодренировал; актор внешний (0 фоновых процессов, crontab пуст)
+- АБСОРБ пасс-1: normtool_478 ×38 якорей → 24 §3, 13 CENS, NCDFE=0/AIOOBE=0 → БАНК 423→447; ТРАНСПОРТ-УРОК: >1МиБ stdout вешает Bash-инструмент → нормтул-логи в файлы + rg-счётчики
+- ВОЛНА-510: dispatch_510.py 100 ног = жертвы ×55 + fresh ×31 (1356-1386) + ff-re ×6 + спец ×8 (Г3-fen4-6 @ad174a10, unf4-6 @110e431a, RPIN4-5 @64728688); КАНОН «эпоха ≤ pool» (A 38 / B 38 / C 24, bench-NT=0 гейты); баг пред-чека (proceed после 4 попыток) → эпоха-B при NT=32 → салво-×4 (08:09-10Z) забрал 24 queued; эпоха-C добита отдельным раннером при NT=4 → 100/100 POST-ok
+- АБСОРБ пасс-2: 26 succ волны-510 (24 + rpin4 + st01) → 15 §3 (rpin5 исключён — код-ветка; dp-выбросы +92/+122 = population-конфаунд) → БАНК 447→462; GH-лаг created_at ≤7 мин; API head_branch-фильтр молча не работает
+- SWARM N1=10 одним батчем — 10/10 финалов (0 дедлайнов, лёгкие промпты): C48b салво-×4 + канон-дискриминатор | C11 банк-аудит 0 фантомов LEGAL 100% мёртвая зона 7.3-8.0M | C57b pair@медиана +23.35 | C23 G-B2 q05=0.285 (1 fire до FIRE) | C16 G3-дерево + phantom-фикстура спека | C25 RPIN-гейты INT-полей | C28 A/B ≥2/3 PASS-A | C33 СТЗ-92/93/94 | C03 wiring-спека insideBatchMask ~5-7 правок | C86 тик-статы
+- Учёт: BOTTLENECK ROUND-509 + BLACKBOARD (ростер 100, ЛАБ 79/ЯКОРЬ 4/КЛИМБ 17) + GOAL ×509 + CLAIM-509-1..6 + LAB_LEDGER ТИК-509 (11 дельт) + worklog → push обоих репо
+
+Stage Summary:
+- МЕРЖ НЕТ (волна-510 = bank-feed + вердикт-каналы) → РЕ-ГРАЙН ✓ волна-510 100/100 в 3 анти-кансел-эпохах; БАНК 462 (+39, LEGAL 100%); NCDFE=0 ×64; канон «эпоха ≤ pool» + 2 API-канона (лаг created_at, head_branch игнор); P31 INSIDE-BATCH pair-физибилити +23.35@медиана — код-бранч ×510; RPIN 3/3 succ → min-of-3 ×510; Г3 ×6 в дренаже; СТЗ-92/93/94; NEXT ×510 ×6
