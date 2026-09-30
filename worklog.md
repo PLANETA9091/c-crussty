@@ -12544,3 +12544,10 @@ Stage Summary:
 - BENCH-V2 КАНОН В МАСТЕРЕ (главный итог): все 4 системных блокера ×515 закрыты (FAKE-GREEN, overworld-only, 0 игроков, FATAL-пин 3.0.29); после GREEN canary pair-math на bench-v2 разрешён.
 - Лестница: ΔS=0 (ценз, 17/17 ног queued) → REFUTED_CENS честно; путь ≥+20% = компо №24⊕SWAR-X⊕H07 (центр 22.6); W8-φ МЕРТВА ×2; pack-guard G-C FAIL → i64 CSR в полёте (12 ранов).
 - Волна-517 = 500 (×516 не чистая: трункация 50/500, SLACKER-FAIL 66/100); харвест очереди 26+ ранов, банк-путь №24 (+41.13 AG-2).
+
+## ТИК ×518 (2026-10-01 06:xx+08, cron Job 426654, эра v22.0)
+- PHASE 0: token/lock/identity PLANETA9091; pull обоих; диск 20%. PHASE 1: харвест 145 run-id ×515-517 → 120 queued (canary оба), 21 SUCCESS (5 новых), 2 in_progress (re-роллы 234/211 — первые движения bench-v2 за 3 тика).
+- PHASE 2: инфра-мёрж bench-v2-press.yml (7e66cfe, разблокировка payload AG-14); SWARM_PROMPT ×518 push 0615ac0; ВОЛНА-518: 500 Task одним сообщением → платформа исполнила 50 (инфра-лимит ×3 подряд).
+- Финалы: FIN 4 · CENS 13 · DISP 22 · DISP-INTENT 10 · FAIL 1 (AG-42, tool-outage ~21:52Z). Диспатчи 28/100 (SLACKER-FAIL; очередь сатуратед — залп целевой).
+- PHASE 3: мёржи --no-ff swarm-518-19 (seed-gate v2) / -28 / -50 + СПАСЕНИЕ ag9/ag29/ag41 файл-уровнем (0b3dee2) — plumbing-деревья 3.2M-deleted, мёрж целиком уничтожил бы master (закон 14).
+- PHASE 4: WAVE_MEMORY ×518→519 + BLACKBOARD ×518 + LAB_LEDGER ×4 строки → push 0b3dee2+. Ключевое: s1833 32.41 max банка; +57.97 s157 (атрибуция = ключ GATE-3); s170b REFUTED; fen REFUTED; юнион-угол 58.26 опровергнут (G6 = гейт S≥60.01); javap восстановлен; волна-519 = 500.
