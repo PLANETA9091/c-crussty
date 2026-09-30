@@ -1587,3 +1587,18 @@
 - | СТЗ-92 portal-storm | SPEC | Paper#9585: 64 портала × 4 моба cross-DIM, setblock+tick 120/600 | метрика max-MSPT-шип + sync-chunk-load p99 | датапак-стенд без модов | CLM-C33 |
 - | СТЗ-93 weak-chunk entity-storm | SPEC | Paper#13783: summon r{2..64}×4096 в weak чанк → mass-load; 260k items → 1000+ MSPT | метрика MSPT p99 mass-load + tracker_share_pp (src=cpu ловушка ×507) | CLM-C33 |
 - | СТЗ-94 hopper-storm | SPEC | Paper#8142 семейство #976: 512 hopper+composter пар, 300-600s soak | метрика blockEntities-tick share; гейт ≤0.5пп PARITY, >0.5пп pair-кандидат; Purpur event-opt риск при 0 listeners → vanilla-side | CLM-C33 |
+
+## ТИК ×510 (2026-09-30 17:43+08, v19.0 MEGA-SWARM, trace …-202609301743) — 11 дельт
+| # | подсистема | статус | ключевые числа | уроки | CLM |
+|---|-----------|--------|----------------|-------|-----|
+| 1 | Г3-канал | A3 VACUOUS-0 ×6/6 ФИНАЛ | fen sd 1787/1861/1721 FENCED / unf sd ≡0 ×3 / ops 4.5-7.8e9 / NCDFE=0 ×6; r_med=1787/0→∞ | armature идеальна = канал валидирован; вакуум структурный (stone↔cobble palette не материализует air; discard-ветка только под FENCE) | CLM-G3 |
+| 2 | Phantom-INDUCE спека | ГОТОВО ×511 | secWriteAirStretch: STRETCH_NS=4000 busy-spin (НЕ parkNanos: timer-slack 12-25×), WRITES 4096, INORDER=1; unf phantom ≥1800/leg; проекция 6.4e3-7e4 (запас 3.6-39×) | 0 build-скрипт изменений; 0 vanilla-правок; симметрично обоим армам | CLM-G3 |
+| 3 | RPIN min-of-3 | 1/3 НЕ-промоутед | rpin1 1.27% / rpin4 5.58% CENS / rpin5 6.83% CENS; ±0.35M@6.9M = ±5пп = весь drift-бюджет | CENS = слом узла 6.9-7.1M между двумя LCG-замерами; RPIN6-8: двойной recheck → 3 точки/нога + окна [6.9,7.0]/[7.0,7.1] | CLM-RPIN |
+| 4 | dp G-S20 | min-of-3 PASS ФИНАЛ | канон dp@20k = **4.8 [4.7;4.8]** (leg-4 4.8∈[3.5,6.0]); наклон залочен; knee 19.1× подтверждён (секанс-прогноз 6.4 внутри CI) | re-run не требуется | CLM-DP |
+| 5 | dp G-B2 | k=8/n=18 INDETERMINATE | Beta(8.5,10.5) q05=0.2673 (передержка); FIRE×511 при 2/2: k=10/20 q05=0.3242, P=0.2125; dp900 r11 0.5 списываема (q975 0.5510); dp3v3 refute ×513-×515 | dp02 fast-fail 13s = не нога | CLM-DP |
+| 6 | BAND-DEAD канон | РАЗВОРОТ ФИНАЛ | 2/2 PASS-A (ax10 −3.56 / ax03 +6.47); pooled 0.8692 [0.8186,0.9127]; re-feed yield ≈15/17; PASS-B шум-пол 4.6пп | гейт = host×time флота, НЕ сид; same-seed re-roll легален; PASS-B сравнения — только same-винтажные рефы | CLM-C28 |
+| 7 | Банк ×510 | +11 → 473 | клетки [6.5,7.0)=5 [7.0,7.5)=2 [8.5,9.0)=4; STRICT-IN-POINT 9→11; 29 old дедуп; медиана new −2.06 (CB −15.42/−16.40) | дыра [7.5,8.0) 8-й тик + sp1-5 0/5 → пере-лейбл «fleet gap» при 3 CENS (BF 197-455) | CLM-BANK |
+| 8 | P31-IB аудит | 5/7 PASS + selfTest FAIL | блоб 6678B flat==nested byte-equal c72b6da8; THRESH=512 ×4 маркера; ARM сохранён; **selfTest C5b ∅ → МЕРЖ №24 ЗАБЛОКИРОВАН** (~15 строк патч) | sectionKeys-overflow→усечение (не all-ones) benign leg-1 / чинить leg-2 | CLM-P31 |
+| 9 | STZ-93/94 фикстуры | CI-канал ОТКРЫТ | stz93 sha 9d166b8e…ae2 / stz94 cbed1530…f7e9 («121513dd» фантом = DOS-time writestr); raw-URL GitHub работает | детерминированный ZipInfo(1980-01-01) патч; v1-дефекты: stz93 4096 item факт (×16<заявки), stz94 256 пар + JAM 9-15s | CLM-STZ |
+| 10 | Салво-канон ×510 | ОПРОВЕРГНУТ частично | 5-е окно 07:40-41Z ×25: 18 queued + **7 стартовали и убиты 1.35-1.53 мин**; kill двухфазный (08:03:32-48 + 08:04:21-39); каденс 61.5 мин σ21.6 | «runner_name='' 100%» канон ×509 уточнён 72/28; экономия 1365 раннер-мин; единая сессия актора | CLM-SALVO |
+| 11 | pz05 AIOOBE=15 | STAND-DEFECT-INJECTOR | fastutil Reference2IntOpenHashMap Index −1 len 16385 (rehash-burst); inject-окно 2s; watchdog-kill; leg VOID | vanilla-шум-гейт N=2 без injector-фреймов; pz05 re-roll ×511 same-seed | CLM-AIOOBE |

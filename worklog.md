@@ -12460,3 +12460,20 @@ Work Log:
 
 Stage Summary:
 - МЕРЖ НЕТ (волна-510 = bank-feed + вердикт-каналы) → РЕ-ГРАЙН ✓ волна-510 100/100 в 3 анти-кансел-эпохах; БАНК 462 (+39, LEGAL 100%); NCDFE=0 ×64; канон «эпоха ≤ pool» + 2 API-канона (лаг created_at, head_branch игнор); P31 INSIDE-BATCH pair-физибилити +23.35@медиана — код-бранч ×510; RPIN 3/3 succ → min-of-3 ×510; Г3 ×6 в дренаже; СТЗ-92/93/94; NEXT ×510 ×6
+
+---
+Task ID: 510
+Agent: tick-agent-x510 (main)
+Task: Тик MEGA-SWARM ×510 эры v19.0 (trace 1a0dc7e6662ff26d-cron-agent-loop-202609301743, Job 415026/415603) — полный цикл PHASE 0 → абсорб волны-510 + вердикт-каналы → волна-511 103 POST-ok (P31 ×3 главный вектор) → SWARM N1=10 → учёт → push → отчёт
+
+Work Log:
+- PHASE 0: лок ✓, диск 26%, c-crussty .git БИТЫЙ (refs/heads/.invalid) → re-clone fresh → master 915a1f2; dev-logs clone → f19f4d7
+- АБСОРБ: волна-510 100 терминальных (64 succ/11 fail 11-41s/25 canc) → absorb_510_main.py 75 parsed, NCDFE=0 ×75; §3-фид 40 → +11 new (дедуп 29 old по updated_at ≤08:40Z) → БАНК 473
+- ВЕРДИКТ-КАНАЛЫ: Г3 A3 VACUOUS ×6/6 ФИНАЛ (fen sd 1787/1861/1721, unf ≡0, armature идеальна) | RPIN 1/3 OK (rpin4 5.58%/rpin5 6.83% CENS) | G-S20 min-of-3 PASS ФИНАЛ (4.8 [4.7;4.8]) | C28 РАЗВОРОТ ФИНАЛ 2/2 PASS-A (pooled 0.8692) | G-B2 k=8/18 q05 0.2673 | pz05 AIOOBE=15 = STAND-DEFECT-INJECTOR
+- ФИКСТУРЫ: stz93/94 сгенерированы (build_stz9394.py) → ветка round-511-stz-assets → raw-URL канал открыт; STZ-sha-канон: writestr DOS-time = sha-фантом → детерминированный ZipInfo патч
+- ВОЛНА-511: 103/103 POST-ok (p31ib1-3 @b8bed2c6 анти-пласебо + dp7/8 @50k + STZ-93/94 + sp1-5 [7.5,8.0]M + fresh ×66 + canc-re ×25); 56 живых @10:40Z, 17 band-fail → re-feed ×511; урок NT-гейт дедлок
+- SWARM N1=10 одним батчем ×8-й тик — 10/10 финалов: C-G3/C-RPIN/C-DP/C-C28/C-BANK/C-P31 (БЛОКЕР selfTest C5b ∅ — МЕРЖ №24 заблокирован до патча ~15 строк)/C-STZ (JAM-детект, sha-фантом)/C-SALVO (72/28-сплит ОПРОВЕРГНУТ канон ×509, kill двухфазный)/C-AIOOBE/C-STATS (воронка 0.640 +17.6пп)
+- Учёт: BOTTLENECK ROUND-510 + BLACKBOARD (ростер 100, ЛАБ 79/ЯКОРЬ 4/КЛИМБ 17) + GOAL ×510 + CLAIM-510-1..10 + LAB_LEDGER ТИК-510 (11 дельт) + worklog → push обоих репо
+
+Stage Summary:
+- МЕРЖ НЕТ (блокер C5b + vanilla-волна) → РЕ-ГРАЙН ✓ волна-511 103/103; БАНК 473 (+11); Г3-канал валидирован A3 ФИНАЛ → phantom-INDUCE ×511; G-S20 канон dp@20k=4.8; C28 same-seed re-roll легален; P31 p31ib1-3 живы → leg ≥22.9 = МЕРЖ-путь ×511; NEXT ×511 ×6
