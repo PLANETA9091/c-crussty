@@ -13,7 +13,7 @@ REPO = "PLANETA9091/c-crussty"
 API = f"https://api.github.com/repos/{REPO}"
 WF = "bench-v2.yml"
 BR = "swarm-516-12"
-SHA = "edb599bef6e848290f25562843b0bb949d5b3104"
+SHA = "78a0dfd2ac2bb0a07446dce438f4b7d44f7c6ef1"
 
 def gh(method, url, payload=None):
     cmd = ["curl", "-s", "-X", method, "-H", f"Authorization: token {TOK}",
