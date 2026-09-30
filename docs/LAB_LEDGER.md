@@ -1559,3 +1559,18 @@
 | 9 | СТЗ-80/B' ассеты | РАЗБЛОКИРОВАНО | v507-stz80 vanilla_plus_25 381770B sha 421ee720ef482 round-trip; B' 406140B 4a6be722 ✓ | «кэш потерян» без sha-резкана = не-факт (dp_cache_w4 жив); sha-префикс LEDGER = арбитр |
 | 10 | RPIN normtool-спека | ФИНАЛ | drift>5% = CENS-RPIN-DRIFT; NO-RECHECK = CENS; OK cpu = медиана(start,recheck); точки: parse_bundle/_fixture_check/selftest | код на round-506-runnerpin 64728688 (line 660/939); ноги-ре @код-ветка в волне-508 |
 | 11 | Волна-508 + очередь | 126/126 GET-verified | 100 ядро (seeds 1142-1247) + 84/86 ×6 (600s для 84) + Г3-re3 ×6 (seconds=300) + RPIN ×3 + burstA'/B' ×4 + ре ×7; одна эпоха 05:03Z; 78q+40ip+11ff | бурст 126 = 95%+ самовыживание; пред-чёк bench-NT=0 перед POST — теперь скрипт-гейт |
+
+## ТИК ×508 (2026-09-30 14:5x+08, v19.0 MEGA-SWARM, trace …-202609301312) — 11 дельт
+| # | подсистема | статус | ключевые числа | уроки |
+|---|-----------|--------|----------------|-------|
+| 1 | Восстановление ×507-учёта | FIX | 524ec47c с round-ветки → cherry-pick → master cf1fd130 + push | учёт-коммит = git branch --contains ДО push |
+| 2 | Банк-фид | +94 §3 | 329→**423**; 233 terminal (507b 122 + 508 111); 0 дублей | рекорд-прирост; дедуп run_id канон работает |
+| 3 | №24 G1 | NO-GO ×6 | arm01 +2.89 / arm03 −4.01 / arm02 CENS; best pair +15.71<20 | компенсатор-канал binding 6-й тик |
+| 4 | Г3-канал | ОТКРЫТ | reader_ops 4.34-8.78e9 ×6/6; Branch-A подтверждён | classpath-NCDFE рут-кауз закрыт фикс-ом |
+| 5 | Г3 fence | ARMATURE ✓ / suppression ✗ | stale_discards 1004-1817 только fen; ratio 1.01 | phantom-вердикт ×509: нужна phantom-inducing фикстура |
+| 6 | BAND-DEAD | КАНОН-РАЗВОРОТ | 0/3 same-seed; p(pass)=0.87; 26 сидов 0 повторов | гейт = host×time флота; same-seed re-roll легален |
+| 7 | RPIN | 1/3 OK | drift 1.27% → cpu 7.0007M; CENS-DRIFT 5.37% | спека C49b жива; normtool ×509 |
+| 8 | Кансел-форензика | ГИГИЕНА | залп 05:31:42-58Z ×15, runner_name='', 2-й тик | голова FIFO в slot-release; 0 раннер-минут |
+| 9 | dp-гейты | G-B2 n=17 | fires 8; +5 stable 3.6-5.0 tps; G-S20 4.7+4.8 | вердикт бимодала ×509; dp900 0.3 мед-канон |
+| 10 | СТЗ-84/86 | 3 CENS + 2 NORM | autosave раздувает whole-run STW 25.8-29.9 | dedicated-маркер парс ×509; src=cpu канон |
+| 11 | Волна-509 | 100/100 GET-verified | ядро 84 + ре 13 + пробы C28 ×3 @cf1fd130, одна эпоха 06:44Z | NT=0 гейт ✓; 12c ✓; 15a ✓ |
