@@ -12260,3 +12260,20 @@ Stage Summary:
 - ДИСПАТЧИ 100/100 (12c ✓); SWARM N1=1/100 N2=0 (соло-тик; отряды → ×500); МЕРЖ НЕТ → РЕ-ГРАЙН ✓ волной 100/100; CLIMB: суб-бары (p44/p45/U5/terr-rt8/burst-страты) в цикле закона 18 → ×500; IN-FLIGHT ~203 ног CI (волна-498 ×93 + волна-499 ×100 + хвосты ~10).
 - ИНЦИДЕНТ+ФИКС: cp локального worklog c-crussty (10425 строк, отставал) затёр канон dev-logs (12245) — 1896 строк ROUND-492-командиров потеряны → восстановлены из git-истории (bdfba38:worklog.md) + ре-аппенд ×499. УРОК (Л174): канон = dev-logs/worklog.md; локальную копию НЕ копировать поверх канона — только append после pull dev-logs; локальные копии синхронизировать FROM канона.
 - master остаётся 2365e87d (код = МЕРЖ №23 7c829018); банк 139; NEXT ×500 ×6 в BOTTLENECK/GOAL.
+
+---
+Task ID: x500
+Agent: tick-agent (cron 415026/415603, trace 1a0dc7e6662ff26d-cron-agent-loop-202609300808)
+Task: Тик MEGA-SWARM v19.0 ×500 (08:08+08 2026-09-30): PHASE 0 → абсорб in-flight → BOTTLENECK → ростер 100 → SWARM-волна → вердикты → РЕ-ГРАЙН → учёт+push → отчёт.
+
+Work Log:
+- PHASE 0: token ✓, flock ✓ (диск 71%), pull обоих репо up-to-date (master 8d18ff72 / dev-logs 38fbe72); канон в контексте (полное чтение ×499, дельт нет).
+- АБСОРБ ×498 (dispatch_498.json, 43/100 completed): 29 success → normtool_478-парс (527s, 29 артефактов 861MB purge) → **17 VANILLA-VALID-§3 → БАНК 139→156** + 12 HOST-CENSORED; failures 14 = 13 band-fast-fail (10-40s) + 1 NO-TPS ax26 (1870s, fixture_valid=False, инфра). Волна-499: 100 queued. Round-497 хвосты ~10.
+- BOTTLENECK ×500: /home/z/rounds/ROUND-500/BOTTLENECK.md (банк-фиды 17 чисел, класс-расклад, W-A2, мега-цели 19a/b/c, NEXT ×501 ×6).
+- РЕ-ГРАЙН (15a): волна тик-агента 100/100 — ax70 bank-feed seeds 436-505 + st06 W-A2 506-511 + pz06 512-517 + dp06 518-523 (Incendium-ρ ×2 → ×7 total, dp900-р3, dp@50k-р4, dp@100k-р2, dp3v3-р2) + w12 524-535; round-500-* @PIN 8d18ff72 (код-идентичен 2365e87d); refs 100/100, dispatch 99/100+1 phantom-500 (ax68 GET-verify ✓ → 100/100 run-ids); реестр dispatch_500.json; урок: HTTP 500 ≠ фейл, верификация по GET (Л173a-расширение).
+- УЧЁТ: BLACKBOARD ×500 (ростер 100/100: ЛАБ 45 / ЯКОРЬ 11 / КЛИМБ 22 / ИМПЛ 22; IN-FLIGHT ~267; хартбит) | GOAL ×500 + CLAIMS ×500 | LAB_LEDGER ТИК-500 | worklog (канон=dev-logs, Л174 соблюдён — append).
+- PUSH: c-crussty master + dev-logs main.
+
+Stage Summary:
+- ДИСПАТЧИ 100/100 (12c ✓); SWARM N1=1/100 N2=0 (соло-тик); МЕРЖ НЕТ → РЕ-ГРАЙН ✓ волной 100/100; БАНК 156 (+17); IN-FLIGHT ~267 ног CI; CLIMB: p44/p45/U5/terr-rt8/burst/Incendium-ρ в цикле закона 18 → ×501.
+- master остаётся 8d18ff72+учёт (код = МЕРЖ №23 7c829018); NEXT ×501 ×6.
