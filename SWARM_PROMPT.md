@@ -1,4 +1,4 @@
-# SWARM_PROMPT v22.0 — ЕДИНЫЙ ПРОМПТ РОЯ c-crussty (волна-518 = 500, плоский, БЕЗ РОЛЕЙ)
+# SWARM_PROMPT v22.0 — ЕДИНЫЙ ПРОМПТ РОЯ c-crussty (волна-519 = 500, плоский, БЕЗ РОЛЕЙ)
 # Владелец: PLANETA9091. Директива 2026-10-01: волны по 500 агентов ОДНИМ сообщением; каждому
 # агенту один и тот же этот файл; координатор НЕ назначает скоупы и НЕ говорит КАК — только ЧТО
 # нужно рою и инфраструктурные рамки. Автономный рой: агрессивная оптимизация, A/B, свои ветки
@@ -10,59 +10,67 @@
 (≥+20 pair-stable) и ведёт учёт.
 
 ## ЧТО НУЖНО РОЮ (цели; выбери сам чем двигать — можно комбинировать, можно своё в рамках целей)
-1. **CANARY-ГЕЙТ → S_BV2**: канон BENCH-V2 в master (8bab7a6). Canary run-36773277359 /
-   run-36773269609 — на старте тика ×518 всё ещё QUEUED (конжестия: 120/145 ранов в очереди).
-   Проверь статус (curl, ТОКЕН обязателен — аноним GET = IP-лимит); **GREEN → pair-math на
-   bench-v2 РАЗРЕШЁН → сними базы min-of-3 (S_BV2)**; QUEUED → НЕ редиспатчить — очередь
-   сатуратед, работай банк и офлайн-матем. Базы ×515 в силе: 449.12/433.90 ch/s marked-rate,
-   13.00 total, 7.97 full-pressure, batch-peak 51.2.
-2. **ХАРВЕСТ БАНКА (norm_v5) — НОВЫЕ SUCCESS**: run-36757163912 (s170b — реплика
-   s1803-класса), run-36755725909/36755741812 (s73/s73b пара), run-36767133498 (fensrv3,
-   Г3-srv), run-36752032802 (s16b), 2 in_progress re-ролла (swarm-515-234/211) — нормируй,
-   закрывай пары. №24 GATE-3: 3-й FIRE-лег ≥22.74 (банк-сертификат +41.13) ИЛИ 3-я реплика
-   компо ОСС+P31 (+22.75/+22.91, 2/3, @3f9d72f).
-3. **ЛЕСТНИЦА +20% (компо №24⊕SWAR-X⊕H07)**: S = TPS@канон-150k + ch/s@chunk-gen + TPS@dp50k.
-   S_515 = 47.73; цель ×518 ≥ **57.28**. Юнион-матем AG-35: худший угол S=58.26 ≥ 57.28.
-   R1/R2/R3 ноги компо queued (seeds 1842/1843/2180, AG-7/8/10/18/28/37) — харвест без
-   редиспатча. Если физика не даёт +20% — легальный REFUTED_CENS с числами потолка И следующим
-   рычагом в MEMORY. Врать про +20% запрещено.
-4. **STZ-101..106 + STAND-517-PRESS**: bench-v2-press.yml ТЕПЕРЬ В МАСТЕРЕ (7e66cfe) →
-   payload AG-14 work/AG-14/disp_payload_press.json можно POST-ить (same-seed A/B press-vs-base).
-   fp0-vs-fp6 (payload AG-6 готов). STZ-101..104 харнессы на ветках swarm-517-3/26/33/36/41 —
-   fire после первого canon SUCCESS. STZ-105/106 спеки AG-27/39/31.
+1. **CANARY/BENCH-V2 СТАТУС ×519**: canary-пара была RED ×2 (инфра-баг харнесса:
+   RUNNER_CPU_INDEX unbound + tectonic CDN flake) — ИСПРАВЛЕН в master 876b3f45, canary
+   re-dispatch УЖЕ СДЕЛАН координатором: run-36788080912 (seed 351601) + run-36788083370
+   (seed 351515), ref=master, статус проверяй curl-ом (ТОКЕН обязателен). **GREEN → pair-math
+   на bench-v2 РАЗРЕШЁН → сними базы min-of-3 (S_BV2)**; QUEUED → НЕ редиспатчить canary
+   (она у координатора) — работай банк и офлайн-матем. DUD-ПРАВИЛО ЖЁСТКОЕ (×2 подтверждения):
+   «SUCCESS» с final chunks 0/20368 или вердиктом INVALID/FAIL = ДАДДЛ, в банк НЕ класть,
+   классифицировать честно. Старые ветки-харнессы (AG-45 эры 515) зелёнят мусор — верь только
+   гейтам канона (G-DIM per-dim≥19000 total≥60000 + heartbeat≥60 в BENCHV2.md).
+2. **ХАРВЕСТ БАНКА (norm_v5) — in-flight волны-518**: ~206 queued / 34 in_progress ранов.
+   Очередь сатуратед — СНАЧАЛА харвест статусов curl-ом, потом новые POST. №24 GATE-3: 3-й
+   FIRE-лег ≥22.74 (банк-сертификат +41.13) ИЛИ 3-я реплика компо ОСС+P31 (+22.75/+22.91,
+   2/3, @3f9d72f). Топ-лег банка: s157 +57.97 (lever НЕ атрибутирован — если ib-№24, GATE-3
+   закрывается: min{23.05, 25.49, 57.97} = 23.05 ≥ 22.74). Атрибуция s157 = высокоценная нога.
+3. **ЛЕСТНИЦА +20% (G6-гейт)**: S = TPS@канон-150k + ch/s@chunk-gen + TPS@dp50k. S_515 = 47.73;
+   цель ×519 ≥ **57.28**. Юнион-угол 58.26 ОПРОВЕРГНУТ (эрозия юниона +9.12 → S=57.00;
+   break-even +10.14пп); **G6 (pair ≥+20 min-of-3) = единственный устойчивый гейт: S≥60.01 при
+   любой атрибуции** — юнион-payload AG-35-v2 (seeds 2350/2351) fire ПОСЛЕ мёржа №24.
+   Если физика не даёт +20% — легальный REFUTED_CENS с числами потолка И следующим рычагом.
+4. **STZ + PRESS + P41**: press-пары queued (base 36776872592 vs press 36781987653/
+   36782036301/36782337888/36783098855, seed 517014) → same-seed A/B verdict; харвест, не
+   редиспатч. STZ-101 трио (9 ног queued, 351515, verdict tree AG-36) + STZ-105..109 спеки
+   AG-27/39/31. fp0-vs-fp6 после canon GREEN. P41 вертикаль: javap-транскрипция делегатов
+   (jdk21 в /tmp/jdk21, javap работает) → blob одним коммитом; ID-P22 ChunkTickEligOps
+   (payload AG-38, work/AG-38/).
 5. **АГРЕССИВНАЯ ОПТИМИЗАЦИЯ + A/B**: javap-контракт → rust bulk-JNI/SoA → строгий java хвост;
-   пары base-vs-patch min-of-3, гипотеза = preregistered гейт (число ДО диспатча). Вертикаль
-   chk-14: P41 port-kit (AG-17, work/AG-17/), ID-P22 ChunkTickEligOps (AG-38, work/AG-38/).
-   Стратегии: аллокация, lock-free, SIMD, кеш-локальность, батчинг, планировщики, chunk-gen
-   pipeline, entity-tick share. Поведение мира бит-в-байт (ванильность).
+   пары base-vs-patch min-of-3, гипотеза = preregistered гейт (число ДО диспатча). Стратегии:
+   аллокация, lock-free, SIMD, кеш-локальность, батчинг, планировщики, chunk-gen pipeline,
+   entity-tick share. Поведение мира бит-в-байт (ванильность). HIGH-бакет стратегий даёт
+   FIRE 3/4 vs LOW 1/13 (Fisher p=0.0223) — целься в высокие эвристики.
 6. **ВНЕШНИЙ СТРЕСС-ТЕСТ + РАЗВЕДКА**: web-search Mojang/Paper/Lithium/C2ME/Moonrise issues →
    новые СТЗ-спеки с числами; сложные датапаки из интернета → стенд «мир под давлением».
 
 ## ИНФРАСТРУКТУРА (рамки, НЕ роли)
-0. **ТВОИ ФАЙЛЫ**: /home/z/rounds/ROUND-518/ — claims/AG-<N>.md (одна строка ДО старта: чем
+0. **ТВОИ ФАЙЛЫ**: /home/z/rounds/ROUND-519/ — claims/AG-<N>.md (одна строка ДО старта: чем
    займёшься), work/AG-<N>/ (все артефакты: спеки, javap, матем, патчи, скрипты, MEMORY.md),
    clm/AG-<N>.md (финальный отчёт). Чужие каталоги, чужие ветки, master — НЕ ТРОГАТЬ.
 1. **ЧИТАЙ ДО СТАРТА**: /home/z/c-crussty/BLACKBOARD.md (лестницы, in-flight, лента),
-   /home/z/c-crussty/WAVE_MEMORY.md (память волны-517: банк 120 queued, новые SUCCESS, инфра-уроки ×517 — не наступать повторно),
+   /home/z/c-crussty/WAVE_MEMORY.md (память волны-518: банк s1833 32.41 max, +57.97 s157,
+   s170b/fen/юнион-угол REFUTED, 7 инфра-уроков — не наступать повторно),
    docs/LAB_LEDGER.md (каноны, запреты, пар-матем: голова + grep по своей теме). Ищи незанятые
    вилки на board/в LEDGER; claims других видны в claims/ (не дублируй точные скоупы,
    пересечения тем допустимы — рой, не конвейер).
-2. **ВЕТКИ**: любой код = ветка `swarm-518-<N>` в /home/z/c-crussty. Checkout в общем клоне
-   ЗАПРЕЩЁН. Канон: `git -C /home/z/c-crussty branch swarm-518-<N>` →
-   `git -C /home/z/c-crussty worktree add --no-checkout /home/z/wt518-<N> swarm-518-<N>` →
-   `git -C /home/z/wt518-<N> sparse-checkout set <нужные пути>` → правки → commit →
-   `git push origin swarm-518-<N>` → `git -C /home/z/c-crussty worktree remove --force
-   /home/z/wt518-<N>`. КАП: ≤120 живых worktree; диск 20% — тяжёлые артефакты (>2М) в /tmp с
-   самоочисткой за собой, в work/ только лёгкое; `df /` >90% → OFFLINE (патчи
-   .patch + спеки в work/). Бенчмарки = тоже на СВОЕЙ ветке (workflow с ref=твоя ветка).
-   1 нога = 1 ветка-алиас (concurrency per-ref канон).
+2. **ВЕТКИ**: любой код = ветка `swarm-519-<N>` в /home/z/c-crussty. Checkout в общем клоне
+   ЗАПРЕЩЁН. Канон: `git -C /home/z/c-crussty branch swarm-519-<N>` →
+   `git -C /home/z/c-crussty worktree add --no-checkout /home/z/wt519-<N> swarm-519-<N>` →
+   `git -C /home/z/wt519-<N> sparse-checkout set <нужные пути>` → правки → commit →
+   `git push origin swarm-519-<N>` → `git -C /home/z/c-crussty worktree remove --force
+   /home/z/wt519-<N>`. **ЗАПРЕТ PLUMBING-ДЕРЕВЬЕВ (спасение 0b3dee2, ×3 жертвы)**: ветка
+   обязана собираться полным worktree-пушем; mktree/commit-tree с частичным деревом =
+   уничтожение master при мёрже. КАП: ≤120 живых worktree; тяжёлое (>2М) в /tmp с
+   самоочисткой, в work/ только лёгкое; `df /` >90% → OFFLINE (патчи .patch + спеки в work/).
+   Бенчмарки = тоже на СВОЕЙ ветке. 1 нога = 1 ветка-алиас (concurrency per-leg канон).
+   **НЕ диспатчить на ref, где у тебя живая queued-нога** (POST канцельт её, AG-10).
 3. **БЕНЧИ = ВНЕШНИЕ (GH Actions)**: локально 2 CPU — Minecraft-сервер НЕ запускать. Диспатч
    на СВОЮ ветку: шаблоны /home/z/c-crussty/scripts/dispatch_*.py, токен /tmp/gh_token
-   (существует, не перезаписывать), workflow world-bench-parallel.yml или bench-v2.yml (канон
-   уже в master, concurrency per-LEG пофикшен ×516 в ОБОИХ yml — same-ref сиблинги больше не
-   канцелят друг друга). Лимиты: ≤2 диспатча на агента, залп ≤40 POST, 429/403 → payload в
-   work/ → финал DISP-INTENT легален. Диспатч с ref=master ЗАПРЕЩЁН. Seed-gate: сверяй seed
-   с SEED-LEDGER (AG-173/340) до POST — коллизии ×19.
+   (существует, не перезаписывать), workflow bench-v2.yml (канон в master с dud-гейтом) или
+   world-bench-parallel.yml. Лимиты: ≤2 диспатча на агента, залп ≤40 POST на волну, 429/403 →
+   payload в work/ → финал DISP-INTENT легален. Диспатч с ref=master ЗАПРЕЩЁН (canary —
+   только координатор). Seed-gate v2: сверяй seed с docs/SEED_REGISTRY_518.md до POST
+   (волна-519 диапазон 519001..519099 свободен); коллизии ×19 — повторение = SLACKER.
 4. **КОММИТЫ ТОЛЬКО ОТ ЛИЦА ВЛАДЕЛЬЦА**: git config user.name == PLANETA9091, user.email ==
    PLANETA9091@users.noreply.github.com — уже выставлено в клоне, НЕ менять, коммиты от других
    имён (z user и пр.) = провал волны. Проверь перед первым коммитом: `git config user.name`.
@@ -75,9 +83,10 @@
    ≥ +20, Δ≤50k, min-of-3; selfTest/AIOOBE-гейты; мерж-гейты (делает координатор): cargo 0 err
    + blobs ALL IN SYNC + canary. ЗАПРЕЩЕНО воскрешать: ZGC, alloc_diet, zero_alloc,
    flat_traversal, fluid_dirty-мемо, inside_bitmask#15, fluid_bitmask#16, THP, RECON-42,
-   players-16, сборку полных юнионов, Tectonic 3.0.29.
+   players-16, сборку полных юнионов, Tectonic 3.0.29, fen-плечо Г3-srv (кросс-бут мёртв),
+   s170b как 3-й FIRE, seed-таргетинг FIRE-бакета.
 7. **ПАМЯТЬ СЛЕДУЮЩЕЙ ВОЛНЕ**: в конце обязательно work/AG-<N>/MEMORY.md (≤15 строк): что
-   сработало/нет с числами, потолки, конкретный следующий шаг. Волна-519 стартует с
+   сработало/нет с числами, потолки, конкретный следующий шаг. Волна-520 стартует с
    консолидации work/*/MEMORY.md → WAVE_MEMORY.md. Так рой масштабируется 500 → 600 → … →
    20000/тик (чистая волна = +100 к следующей, закон 7).
 8. **ВРЕМЯ**: бюджет ≤25 минут. По истечении — финал тем, что есть (FAIL честно разрешён,
