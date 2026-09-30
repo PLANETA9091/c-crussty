@@ -1631,3 +1631,17 @@
 | 10 | cmp420-порт | root-cause | SimpleBitStorage.get laload@31; BIOMES_ENTRIES=64; бросает storage data[] не палитра; фикс ×464 @acbdca0f жив на origin не смёржен | порт ≠ merge; bare-AIOOBE = OmitStackTraceInFastThrow | LAB-24 |
 | 11 | REFUTED_CENS ×~35 | потолки | сеть 0.00пп / autosave 0/93 DORM / young-GC ≤+3.98 / VOCH ≤+1.2 / палитра-resize +0.0009 / region-IO +0.025 / goal-memo ≤+0.9 / DDA +0.043 / spawn ≤+2.03 / java.util ≤+0.30 / SIMD-popcnt ≤+0.08 | capture-стены формализованы; 0 wasted-диспатчей | board ×98 |
 | 12 | инфра-каноны | 0 канцелов | волна-513 0 cancels; эпохи ≤ fleet 43-49 (не pool); kill-элигибельность (13.4,17.7] мин; started_at-слепая зона; band p(pass)=0.862; bench-stage утечка ×17 (49× band) | БАТЧ-100: 100/98/2; сабы OFFLINE 100%; 104 диспатчей ≥100 | YAK-01/03/16, CLIMB-11 |
+
+## ТИК ×515 / ВОЛНА-515 (2026-10-01, эра v22 AUTONOMOUS SWARM, директива владельца: 500/волну, единый промпт, без ролей) — 10 дельт
+| # | подсистема | статус | ключевые числа | уроки |
+|---|-----------|--------|----------------|-------|
+| 1 | ВОЛНА-515 | 100/500 | финалы 100/100 (87 DISP/8 DISP-INTENT/3 CENS/2 FAIL), 0 молчаливых; tool-блоки платформы 50→20→20→10 | рой без ролей самоорганизуется: claims/вилки/кросс-чеки; честный кап → закон 3 v22 |
+| 2 | BENCH-V2 | РОЖДЁН + БАЗА | marked ch/s Terralith 449.12 / Tectonic 433.90; full-spec TPS 6.28/MSPT 159.14; r1280×50k TPS 5.1, entity-tick 71.3% | ~25 стендов на ветках; fake-players обязательны (0 игроков = 0 спавна); per-dim гейты |
+| 3 | ботлнеки BENCH-V2 | 5 ТОПОВ | items 69% сущностей; entity-tick 70-72% CPU; spawn-off → ch/s +9..+24%; dp-tax суперлинеен (AIOOBE cliff r1280); boot-стена 600s | item-plane и spawn-decouple = главные рычаги +20% лестницы |
+| 4 | №24 GATE-3 | MERGE-CANDIDATE | leg +19.50@6817717 + mine-пары min-of-3 +25.4 ≥+20 (AG-73); новый max лег +27.85 (AG-80); sub-bar 0/2 (+10.69/+17.27) | pair-freshness → CI-гейты → canary → --no-ff волной-516; STW-censored ре-ролл бесплатен |
+| 5 | dp G-B2 | HOLD | k=8/22, q05 0.2140; dp17-22 @50k 0/4 пожаров, все STABLE (TPS 3.5-4.8); dp@50k n=5 мед 3.6 | реплики стабильной ветки двигают гейт ОТ FIRE; parity-fp fail-open ×6 — чинить |
+| 6 | Г3-srv | ПОТОЛОК | min-of-3 медиана |Δ|≈11пп < 20 (fen −9.8/unf +1.33; Δcpu 303k FAIL) | honest CENS ~10-15пп либо дешёвые пары seeds ≥1790 |
+| 7 | SWAR-X / OCC+P31 | IN-FLIGHT | re-arm 2 рана; компо 2/3 лега (occFlagArmed 1 java-строка, блоб 10228B CP-EXACT) | leg-3 seed 1671; гейты prereg |
+| 8 | W8-φ | ХАНКИ ГОТОВЫ | N_regions 4→8 + стрид-емплоймент; прогноз +18..+25пп ch/s (22.0→26.0-27.6) | блокер: toolchain снесён /tmp-cleaner — реставрация + ALL IN SYNC |
+| 9 | инфра-каноны ×5 | НОВЫЕ | branch-only 404/422 навсегда; P2-пины 32/41 FAIL; TARGET-MC-SPLIT (Tectonic 3.0.29@26.3); «Found new data pack» арбитр; console /forceload блокирует main | мёрж bench-v2.yml в master = рычаг ×25; пины одной спекой; async marking |
+| 10 | банк ×515 | +1 §3 | −6.72@6.62M (M1-CLEAN NCDFE=0); 94+ queued ранов в абсорб ×516 | band-потолок 9.5M пробит (11.6/12.3M) → рекалибровка |
