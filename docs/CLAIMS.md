@@ -49,3 +49,15 @@
 - Инфра-канон ×486: world-bench.yml ЗАПРЕЩЁН в волне (глобальный слот слот-война 5/5 CANCELLED); parallel per-ref = единственная поверхность (dp-ноги только там, vanilla-вектор ЯВНО); gate→bench дрейф +1.94%; пул двугорбый ночной миграцией 11.8-12.3M; canary-пары требуют стратум-пина; BOTTLENECKS_3 alloc-units-баг.
 - SWARM: N1=100/100 (65 финалов + 35 timeout с API-диспатчами), N2=0 (×11); диспатчи 210/100 API-верифицировано (12c ✓); WILD 10 командиров + 4 REFUTED_CENS; БАНК 66/30 + пополнение после норм-абсорб ×487 (dp n=7, 165k ×2, canary ×3, towers, r480, 50k×3, 100k).
 - NEXT ×487: sensn16-волна x466-C98 canon; dp-код-ноги абсорб (regseg/bulk-JNI/palord/bitset-код); bu1 3-й член; collide-REOPEN код-план (gCFBW broadphase); ItemEntity.tick 19b; Li#783/weak-chunk стенды; банк →80+/30; canary-пины; v6.1 CodeCache-ось.
+
+## CLAIM-512 (тик ×512, 20:43+08 2026-09-30, v19→v21)
+1. CLAIM-512-1 (МЕРЖ №24): леги ib4 +19.55/ib5 +13.61/ib6 +21.65 CLEAN; GATE-3 min 20.93<22.9 → НЕТ-МЕРЖ 2-й тик; leg_req 22.74 (запас +0.16); pair-матрица 52: 9 пар, min-of-3 1/6 (ib1). P(мерж ×513)=0.52-0.66 (CLIMB-23).
+2. CLAIM-512-2 (C5b): root-cause secKeys 1 vs 8 → ERR_RANGE −2; фикс 3fefb39 @round-513-c5bfix (блоб 7610B 2b618036); CI-верификация = cbc-re ×513.
+3. CLAIM-512-3 (Г3-INDUCE): фенс A1-suppression подтверждён (UNF 8710 vs FEN 0/0/0, r_med=0); stz59srv W1-W4 @d091f96 запушены; fen-srv1-3/unf-srv1-3 диспатч 6/6 (seeds 1654-1659).
+4. CLAIM-512-4 (БАНК): 484→525 (+41 §3, медиана −2.29, LEGAL 100%, дедуп 0); fleet-gap [7.5,8.0]M = 1 точка (sp6 −8.59); STRICT-дельты 10/41 (воронка [6.9,7.2]M, медиана +3.95); LOO-плечо 9.0M visible 7→25.
+5. CLAIM-512-5 (OCC): HOST-CENS ×3 (STW 24.73/27.42/23.26, CC-каскад gc3); re-roll gc6 → прогноз 17.3-18.1s P(CLEAN)=0.98; ARM+EFFECT hist подтверждены 3/3 (rate 24.5%); occ4-6 диспатч.
+6. CLAIM-512-6 (dp): dp9/10 = bench-step fail (НЕ band — коррекция ANCH-05); G-B2 k=8/18 заморожен 3-й тик; P(FIRE×513)=0.2584; dp900-r12 = vanilla-подмена (datapack_url=∅, fail-open parity) — инпут-гард ×513.
+7. CLAIM-512-7 (W8): V1 worker-saturation закрыт (0.05% CPU); bottleneck = MAIN-THREAD syncLoad (V2, Paper#13713, c=2.4-2.8ms/чанк); φ-шапка N_regions 4→8 спека; w8feed3 +3.92 §3.
+8. CLAIM-512-8 (STZ): барьер-2 не добит 3-й тик; v2 TPS 2.3 vs прогноз 1.2 [0.6,1.9] (REFUTED-high); pack 88 dual-дефект CI; v3 re-roll (mcmeta dual + EMITTER refills≥1 + 600s) ×514.
+9. CLAIM-512-9 (SWARM v21): батч = 100/100 вызовов, 96 финалов с числами, 4 дедлайна (добор: W4 закоммичен MAIN); квоты ЛАБ 40/ЯКОРЬ 12/КЛИМБ 25/WILD 11/STRESS 12; 12 плоскостей REFUTED_CENS числом; CRON_PROMPT_V21.md в master.
+10. CLAIM-512-10 (ВОЛНА-513): 110/110 POST-ok (104 + 6 fensrv); FULL-sha канон (422-урок short-sha); сиды 1545-1659; очередь CI ≥110 на ×513.
