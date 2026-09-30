@@ -12511,3 +12511,36 @@ Work Log:
 
 Stage Summary:
 - МЕРЖ НЕТ → РЕ-ГРАЙН исполнен (волна-514 102 + LEDGER пополнен + очередь ≥8); БАНК 568 (+43); C5b-гейт №24 ЗАКРЫТ (cbc-re 2/2) — мерж-путь = только leg-гейт, закрыватель компо OCC+P31 P≈0.81; SWAR-X desync = второй ≥+20-кандидат; dp_url-гард канон (алиас=FATAL); БАТЧ-100 v21 исполнен впервые (100/98/2); NEXT ×514 ×7
+
+---
+Task ID: tick-515 (Job 426654)
+Agent: MAIN (супер-координатор, эра v22)
+Task: Тик 2026-10-01 01:01+08 — волна-515 эры v22: 500 саб-агентов одним сообщением, единый SWARM_PROMPT, без ролей.
+
+Work Log:
+- PHASE 0: token, flock, identity PLANETA9091 оба репо, pull, диск 80%.
+- ФАЗА 1: абсорб-снип волны-514: 82/100 terminal (65✓/17✗/18⟳), полный харвест ×516.
+- ФАЗА 2: ВОЛНА-515 = 500 Task-вызовов ОДНИМ сообщением; платформа исполнила 459 (40 отрезано, AG-145 context-deadline) — инфра-лимит зафиксирован законом 3.
+- ФАЗА 3: консолидация consolidate_515.py: 459/459 финалов {DISP 387, DISP-INTENT 44, CENS 25, FAIL 3}, ~700 run-id, 0 мёржей (ни одна пара min-of-3 ≥+20 не завершилась в окне), RE-GRAIN исполнен (LEDGER+, очередь CI ≫8).
+- ФАЗА 4: WAVE_MEMORY.md (уроки ×12, базы BENCH-V2, вилки), BLACKBOARD.md (ростер, лента), LAB_LEDGER ТИК ×515, worklog; push c947196 от PLANETA9091.
+
+Stage Summary:
+- BENCH-V2 рождён волной (цель владельца): ~60 стендов, первые базы 449 marked-rate / 13.0 / 7.97 ch/s; 3 системных блокера с фиксами (async-драйвер, plugin-dim-forceload, fake-players).
+- Волна-516 = 500 (не чистая по закону 7); мёрж-кандидаты ×516: async-драйвер BENCH-V2, канон bench-v2.yml, concurrency-фикс yml (AG-217/22).
+
+---
+Task ID: tick-516 (Job 426654)
+Agent: MAIN (супер-координатор, эра v22)
+Task: Тик 2026-10-01 04:08+08 — волна-516 эры v22: 500 саб-агентов одним сообщением, канон BENCH-V2, лестница +20%.
+
+Work Log:
+- PHASE 0: token, flock, identity PLANETA9091 оба репо, pull, диск 73%.
+- ФАЗА 1: абсорб волны-515: 109 MERGE-READY-клеймов просканированы; мёрж-кандидаты верифицированы; агсорб-мёржи: swarm-515-217 (concurrency per-LEG, 4693563) + порт в bench-v2.yml (d80f0d3) + SWARM_PROMPT-516.
+- ФАЗА 2: ВОЛНА-516 = 500 Task-вызовов ОДНИМ сообщением; платформа исполнила 50 (tool-блок отрезан после 50 — инфра-лимит ×516 по закону 3); 50/50 финалов без молчания.
+- ФАЗА 3: МЁРЖ BENCH-V2 КАНОНА swarm-516-12 @adb34f7 → master 8bab7a6 (арбитраж AG-46/49 6/6 гейтов: async ticket-marking + plugin-dim 3-dim + fake-players + Tectonic 3.0.25 + seed_gate.py в master); canary run-36773277359/36773269609 queued.
+- ФАЗА 4: WAVE_MEMORY.md (50 MEMORY → консолидация), BLACKBOARD.md, LAB_LEDGER батч ×4, worklog; push master 8bab7a6 + dev-logs; все коммиты PLANETA9091.
+
+Stage Summary:
+- BENCH-V2 КАНОН В МАСТЕРЕ (главный итог): все 4 системных блокера ×515 закрыты (FAKE-GREEN, overworld-only, 0 игроков, FATAL-пин 3.0.29); после GREEN canary pair-math на bench-v2 разрешён.
+- Лестница: ΔS=0 (ценз, 17/17 ног queued) → REFUTED_CENS честно; путь ≥+20% = компо №24⊕SWAR-X⊕H07 (центр 22.6); W8-φ МЕРТВА ×2; pack-guard G-C FAIL → i64 CSR в полёте (12 ранов).
+- Волна-517 = 500 (×516 не чистая: трункация 50/500, SLACKER-FAIL 66/100); харвест очереди 26+ ранов, банк-путь №24 (+41.13 AG-2).
