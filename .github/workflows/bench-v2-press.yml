@@ -1,0 +1,119 @@
+# bench-v2-press — STAND-517-PRESS leg (AG-14, wave-517, STZ-106 preregistered).
+#
+# Identical fixture/pipeline to canon bench-v2.yml (AG-433/AG-12) PLUS one
+# optional 5th structural datapack ("world under pressure", AG-26
+# STAND-516-PRESS spec): Dungeons and Taverns v5.0.4, sha512-pinned in
+# bench/worldv2/run_benchv2.sh (pack_format 88 = server 1.21.10 exact).
+# Purpose: same-seed A/B vs canon bench-v2.yml leg (base) — both on branch
+# swarm-517-14; distinct workflow name => distinct concurrency group prefix
+# (bench-v2-press-* vs bench-v2-*) => same-seed siblings NEVER cancel each
+# other (per-LEG concurrency canon x516). All canon gates unchanged:
+# G-PURPUR/G1-G2 pins, G-KERNEL, G-DATAPACKS (expect 5 when press_pack set),
+# G-DIM (>=19000/dim, >=60000 total), G-HB (>=60), NCDFE, cpu-band 6.0-9.5M.
+name: bench-v2-press
+
+on:
+  workflow_dispatch:
+    inputs:
+      radius_blocks:
+        description: 'Forceload radius in blocks per dim (1136 = 143x143 = 20449 chunks)'
+        required: false
+        default: '1136'
+      run_seconds:
+        description: 'Sustain window seconds (spawn-storm + TPS sampling)'
+        required: false
+        default: '300'
+      seed:
+        description: 'Fixed world seed (pair with base leg bench-v2.yml, same seed)'
+        required: false
+        default: '351515'
+      server_xmx:
+        description: 'Server JVM max heap'
+        required: false
+        default: '10G'
+      bench_dims:
+        description: 'Comma-separated dims to forceload (canon = all three)'
+        required: false
+        default: 'minecraft:overworld,minecraft:the_nether,minecraft:the_end'
+      cpu_band_min:
+        description: 'Pair-hunter fast-fail: min runner_cpu_index (canon band 6.0-9.5M)'
+        required: false
+        default: '6000000'
+      cpu_band_max:
+        description: 'Pair-hunter fast-fail: max runner_cpu_index (canon band 6.0-9.5M)'
+        required: false
+        default: '9500000'
+      press_pack:
+        description: 'Press pack key: dungeons (DnT v5.0.4) | empty = canon-identical'
+        required: false
+        default: 'dungeons'
+
+permissions:
+  contents: read
+
+concurrency:
+  # per-LEG group, distinct prefix from bench-v2.yml => same-seed base/press
+  # siblings on the same ref coexist (AG-14 x517, per-LEG canon x516).
+  group: bench-v2-press-${{ github.ref }}-${{ inputs.seed || 'canon' }}-${{ inputs.radius_blocks || 'x' }}
+  cancel-in-progress: true
+
+jobs:
+  bench-v2-press:
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    steps:
+      - name: Checkout (this branch)
+        uses: actions/checkout@v4
+
+      - name: Runner calibration band gate (pair-hunter fast-fail, S7-96d)
+        if: inputs.cpu_band_min != '' && inputs.cpu_band_max != ''
+        run: |
+          set -euo pipefail
+          IDX=$(python3 -c '
+          import time
+          t=time.time(); x=1
+          for _ in range(6000000):
+              x=(x*1103515245+12345)&0x7fffffff
+          print(f"{6000000/(time.time()-t):.0f}")')
+          echo "runner_cpu_index=$IDX band=[${{ inputs.cpu_band_min }},${{ inputs.cpu_band_max }}]"
+          if [ "$IDX" -lt "${{ inputs.cpu_band_min }}" ] || [ "$IDX" -gt "${{ inputs.cpu_band_max }}" ]; then
+            echo "::notice::runner_cpu_index=$IDX OUTSIDE band — fast-fail (pairing discard)"
+            exit 1
+          fi
+
+      - name: Setup JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: BENCH-V2-PRESS run (fixture + gen + sustain + report)
+        timeout-minutes: 70
+        env:
+          RADIUS_BLOCKS: ${{ inputs.radius_blocks || '1136' }}
+          RUN_SECONDS: ${{ inputs.run_seconds || '300' }}
+          BENCH_SEED: ${{ inputs.seed || '351515' }}
+          SERVER_XMX: ${{ inputs.server_xmx || '10G' }}
+          BENCH_DIMS: ${{ inputs.bench_dims || 'minecraft:overworld,minecraft:the_nether,minecraft:the_end' }}
+          PRESS_PACK_NAME: ${{ inputs.press_pack || 'dungeons' }}
+        run: |
+          set -euo pipefail
+          bash bench/worldv2/run_benchv2.sh
+
+      - name: Report gate (BENCHV2.md must exist and pass G3/G4 + NCDFE)
+        run: |
+          set -euo pipefail
+          test -s run/server/BENCHV2.md || { echo "::error::BENCHV2.md missing"; exit 1; }
+          cat run/server/BENCHV2.md
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          if-no-files-found: ignore
+          name: benchv2-press-ag14
+          path: |
+            run/server/BENCHV2.md
+            run/server/server-stdout.log
+            run/server/run-env.txt
+            run/server/*.sparkprofile
