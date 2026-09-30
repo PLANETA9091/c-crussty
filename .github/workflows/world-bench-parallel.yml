@@ -163,7 +163,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: world-bench-round-${{ github.ref }}
+  # AG-217 port of AG-22 fix (x515 lesson): per-ref group without lever params lets a
+  # leg-B dispatch CANCEL a running leg-A sibling on the same ref (14/300 sampled runs
+  # cancelled 2026-09-30). Lever params make groups per-leg; 'canon'/'x' fallbacks
+  # reproduce old per-ref behavior for canon/reroll flows (rerolls still use alias-ref).
+  group: world-bench-round-${{ github.ref }}-${{ inputs.lever_flag || 'canon' }}-${{ inputs.lever_arg || 'x' }}
   cancel-in-progress: true
 
 jobs:
