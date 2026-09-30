@@ -1,0 +1,53 @@
+{
+ "feed": "ag16",
+ "n_legs": 4,
+ "all_clean": true,
+ "legs": [
+  {
+   "run_id": 36760406926,
+   "verdict": "NORM-COMPUTED",
+   "norm_v5": 16.85,
+   "m1_state": "CLEAN",
+   "cpu_index": 7083563,
+   "tps_med": 2.6,
+   "norm_spark": 23.29,
+   "divergence_pp": 6.44
+  },
+  {
+   "run_id": 36760415164,
+   "verdict": "NORM-COMPUTED",
+   "norm_v5": 3.15,
+   "m1_state": "CLEAN",
+   "cpu_index": 8895409,
+   "tps_med": 2.7,
+   "norm_spark": 1.22,
+   "divergence_pp": -1.93
+  },
+  {
+   "run_id": 36760450715,
+   "verdict": "NORM-COMPUTED",
+   "norm_v5": -1.87,
+   "m1_state": "CLEAN",
+   "cpu_index": 7152052,
+   "tps_med": 2.2,
+   "norm_spark": 10.86,
+   "divergence_pp": 12.73
+  },
+  {
+   "run_id": 36760454052,
+   "verdict": "NORM-COMPUTED",
+   "norm_v5": 16.6,
+   "m1_state": "CLEAN",
+   "cpu_index": 6619117,
+   "tps_med": 2.5,
+   "norm_spark": 27.38,
+   "divergence_pp": 10.78
+  }
+ ],
+ "key_findings": [
+  "s1902 same-seed spread 18.72pp (+16.85 vs -1.87, cpu 7.08M vs 7.15M) => same-seed vol ~18.7pp confirmed (AG-15 DEEP-HOST)",
+  "no leg >= 22.74 => GATE-3 #24 NOT closed by this batch",
+  "best legs +16.85/+16.60 -> pair>=+20 needs anchor_norm <= -3.15/-3.15",
+  "normed 4 of 11 non-normalized SUCCESS runs; remaining 7+2compo open for AG-4/AG-8"
+ ]
+}
