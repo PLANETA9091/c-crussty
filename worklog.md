@@ -12493,3 +12493,21 @@ Work Log:
 
 Stage Summary:
 - МЕРЖ НЕТ (GATE-3 20.93<22.9 + C5b-CI в полёте) → РЕ-ГРАЙН ✓ 110/110; БАНК 484→525 (+41, LEGAL 100%, NCDFE=0 ×92); C5b-фикс 3fefb39 (P(2/2)=0.95); stz59srv W1-W4 @d091f96 + fensrv/unf-srv в полёте; pair-база №24 полная (leg_req 22.74, P(мерж)=0.52-0.66 через компо); 12 плоскостей REFUTED_CENS числом; GC-модель cc6 (occ → 17.3-18.1s); dp-инпут-гард канон; СТРЕСС-ТЗ ×12; NEXT ×513 ×6 (cbc-re + occ4-6 развилки → компо-эпоха)
+
+---
+Task ID: 513
+Agent: tick-agent-x513 (main)
+Task: Тик MEGA-SWARM ×513 эры v21.0 (trace 1a0dc7e6662ff26d-cron-agent-loop-202609302143, Job 415026/415603) — ПЕРВЫЙ БАТЧ-100: PHASE 0 → C5b-фикс + cbc-re → абсорб волны-513 → БАТЧ 100 Task → вердикты → RE-GRAIN волна-514 → учёт → push → отчёт
+
+Work Log:
+- PHASE 0: лок ✓, диск 64%, master 7a62df9 (=×511 учёт; учёт-сессия ×512 оборвалась до push — догрузка в этом тике), dev-logs cedd487
+- КАНОН: CRON_PROMPT_V19.md прочитан целиком; обнаружен untracked CRON_PROMPT_V21.md (директива владельца 21:3x+08: FLAT SWARM, БАТЧ = РОВНО 100 одним сообщением, анти-деградационный кламп) — принят как мандат
+- C5b-ФИКС: root-cause ×512 (secKeys width 1 vs 8 → ERR_RANGE=−2) → ветка round-513-c5bfix @3fefb39 (2 java-правки + блоб-ребилд ecj stub-compile 7610B major 65 flat==nested sha 2b618036, 0 rust-правок) → push → cbc-re1/re2 ДИСПАТЧ (POST-ok 2/2)
+- АБСОРБ волны-513: 112 terminal (104 волна + 6 Г3-srv + 2 cbcre) → 81 succ → normtool 53 NORM/27 CENS/1 FIXT → БАНК 525→568 (+43 §3, медиана −3.54, LEGAL 100%); NCDFE=0 ×81 (10-й тик); dp13-16 4/4 FATAL (алиас-dp — root-cause СТРЕСС-07); Г3-srv 4/6 CLEAN; occ4-6 2/3 CLEAN
+- СВОРМ: ROSTER_100.md (ровно 100 уникальных скоупов: ЛАБ 42/ЯКОРЬ 16/WILD 12/КЛИМБ 18/СТРЕСС 8/РАЗВ 4) + SWARM_SPEC.md → БАТЧ = 100 Task general-purpose ОДНИМ сообщением → 98 финалов / 2 мёртвых вызова (ЛАБ-13, СТРЕСС-01 → очередь ×514); 98 CLM-доков; 12 WILD; OFFLINE-канон 100%
+- ВЕРДИКТЫ: МЕРЖ №24 НЕ СОСТОЯЛСЯ (3-й тик, единственный блокер leg-гейт 20.93<22.9; C5b-гейт ЗАКРЫТ cbc-re PASS 2/2); закрыватели: компо OCC+P31 (1 java-строка, P≈0.81) + SWAR-X re-arm (+11.7..+19.5); ~35 REFUTED_CENS с потолками
+- RE-GRAIN (15a): волна-514 102/102 POST-ok (96 ax seeds 1660-1755 + dp17-20 с ПОЛНЫМ URL sha 16fa1a32 + fensrvr1/unfsrvr1 @d091f96 seeds 1760/1761); +cbcre 2 = 104 диспатчей тика (12c ✓)
+- Учёт: BOTTLENECK ROUND-513 + BLACKBOARD ×513 (ростер-батч, IN-FLIGHT, лестницы, лента) + GOAL ×513 + CLAIM-513-1..8 + LAB_LEDGER (ТИК-512 догрузка 11 дельт + ТИК-513 12 дельт) + worklog → push обоих репо
+
+Stage Summary:
+- МЕРЖ НЕТ → РЕ-ГРАЙН исполнен (волна-514 102 + LEDGER пополнен + очередь ≥8); БАНК 568 (+43); C5b-гейт №24 ЗАКРЫТ (cbc-re 2/2) — мерж-путь = только leg-гейт, закрыватель компо OCC+P31 P≈0.81; SWAR-X desync = второй ≥+20-кандидат; dp_url-гард канон (алиас=FATAL); БАТЧ-100 v21 исполнен впервые (100/98/2); NEXT ×514 ×7
