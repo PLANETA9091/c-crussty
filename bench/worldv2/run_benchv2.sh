@@ -71,6 +71,7 @@ view-distance=32
 simulation-distance=32
 online-mode=false
 spawn-protection=0
+initial-enabled-packs=vanilla,file/terralith.zip,file/tectonic.zip,file/incendium.zip,file/stellarity.zip
 max-tick-time=1800000
 enable-command-block=false
 max-players=$MAX_PLAYERS
