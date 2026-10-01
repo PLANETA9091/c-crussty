@@ -225,7 +225,7 @@ cmd "dimchunks"; sleep 3   # G-DIM early census from plugin
 
 # --- drain poll: MSPT back to near-idle => chunk system drained --------------
 DRAIN_TS=""; DRAIN_TIMEOUT=1
-for i in $(seq 1 120); do           # 120 x 10s = 1200s cap
+for i in $(seq 1 "${DRAIN_CAP_POLLS:-240}"); do  # AG-400 x523 #16f: cap env-tunable via dispatch input (240x10s=2400s >= pregen 974-2272s @9-21ch/s)
   sleep 10
   cmd "spark tps"   # AG-342 fix (blocker #11): parse Tick durations med from spark tps output (spark mspt console = silent)
   ts=$(date +%s)
@@ -236,11 +236,32 @@ for i in $(seq 1 120); do           # 120 x 10s = 1200s cap
     idle=$(grep -A2 "Tick durations" server-stdout.log | grep -oE "[0-9]+\.[0-9]+/[0-9]+\.[0-9]+/[0-9]+\.[0-9]+/[0-9]+\.[0-9]+" | head -1 | cut -d/ -f2)
     idle="${idle:-5.0}"
     pass=$(python3 -c "print(1 if float('$med') < max(1.5*float('$idle'), 50.0) else 0)")
-    if [ "$pass" = "1" ]; then DRAIN_TS=$ts; DRAIN_TIMEOUT=0; log "DRAIN at +$((ts - FIRST_TS))s"; break; fi
+    # AG-400 x523 #16f-доработка (port AG-339 GEN-DONE gate, python-bug FIXED: "last.group(1)]"
+    # was invalid python -> gendone always 0 -> gate dead code, every leg burned full cap).
+    # MSPT-idle alone is false-PASS (GEN-FANOUT-STALL: mspt idle 0.3-1.3 with gen frozen).
+    # Drain PASS also requires LATEST [DF] PROGRESS of EVERY bench dim: inflight=0 AND
+    # gen_ok==marked-total (gen_ok, not marked — #16g: marked lost at gate 625-3444->0).
+    # Fail-open: plugin-silent -> gendone=0 -> old DRAIN-TIMEOUT WARN path.
+    gendone=$(grep "\[DF\] PROGRESS" server-stdout.log 2>/dev/null | python3 -c "
+import sys,re
+last={}
+for l in sys.stdin:
+    m=re.search(r'world=(\S+)',l)
+    if m: last[m.group(1)]=l
+ok=bool(last)
+for d,l in last.items():
+    mt=re.search(r'marked=(\d+)/(\d+)',l); gi=re.search(r'gen_ok=(\d+)',l); ifl=re.search(r'inflight=(\d+)',l)
+    if not (mt and gi and ifl and int(gi.group(1))==int(mt.group(2)) and int(ifl.group(1))==0):
+        ok=False
+print(1 if ok else 0)" 2>/dev/null) || gendone=0
+    if [ "$pass" = "1" ]; then
+      if [ "$gendone" = "1" ]; then DRAIN_TS=$ts; DRAIN_TIMEOUT=0; log "DRAIN at +$((ts - FIRST_TS))s (GEN-DONE gate pass)"; break; fi
+      log "DRAIN-HOLD i=$i mspt_idle_but_gen_not_done (AG-400 GEN-DONE gate: false-PASS blocked)"
+    fi
   fi
   grep -qi "Exception in thread" server-stdout.log && { log "FATAL: main-thread exception during drain"; break; }
 done
-[ "$DRAIN_TIMEOUT" = "0" ] || log "WARN DRAIN-TIMEOUT (1200s) — ch/s reported as lower bound"
+[ "$DRAIN_TIMEOUT" = "0" ] || log "WARN DRAIN-TIMEOUT ($(( ${DRAIN_CAP_POLLS:-240} * 10 ))s) — ch/s reported as lower bound (AG-400: cap env-tunable)"
 
 # --- SUSTAIN phase: spawn-storm window, TPS/MSPT sampling + profiler ---------
 cmd "spark profiler start"; sleep 3
