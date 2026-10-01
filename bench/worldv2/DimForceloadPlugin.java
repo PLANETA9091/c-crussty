@@ -86,7 +86,7 @@ public final class DimForceloadPlugin extends JavaPlugin {
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
         for (World w : Bukkit.getWorlds()) {
             getLogger().info("[DimForceload] G-DIM world=" + w.getName()
-                    + " loaded=" + w.getLoadedChunks().size());
+                    + " loaded=" + w.getLoadedChunks().length);
         }
         return true;
     }

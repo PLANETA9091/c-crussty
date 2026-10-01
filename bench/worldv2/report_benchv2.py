@@ -8,11 +8,15 @@ d, first_ts, drain_ts = sys.argv[1], sys.argv[2], sys.argv[3]
 logp = os.path.join(d, "server-stdout.log")
 lines = open(logp, encoding="utf-8", errors="replace").read().splitlines()
 
-marked = sum(int(m) for l in lines if (m := re.search(r"Marked (\d+) chunks", l)))
-mspts = [float(m.group(1)) for l in lines if (m := re.search(r"mspt", l, re.I))
-         for m in [re.search(r"[0-9]+\.[0-9]+", l.split(":", 2)[-1])] if m]
-tps = [float(m.group(1)) for l in lines if (m := re.search(r"TPS from last", l, re.I))
-       for m in [re.search(r"([0-9]+\.[0-9]+)", l.split(":", 2)[-1])] if m]
+# AG-395 fix (blocker #4): inner loop var was also the walrus target 'm' ->
+# SyntaxError: comprehension inner loop cannot rebind assignment expression target 'm'
+# (report crashed at parse time, FAIL=1, no BENCHV2 metrics — run-36794417339). Inner var
+# renamed m2; inner mspt regex given a capturing group so group(1) is valid.
+marked = sum(int(m.group(1)) for l in lines if (m := re.search(r"Marked (\d+) chunks", l)))
+mspts = [float(m2.group(1)) for l in lines if (m := re.search(r"mspt", l, re.I))
+         for m2 in [re.search(r"([0-9]+\.[0-9]+)", l.split(":", 2)[-1])] if m2]
+tps = [float(m2.group(1)) for l in lines if (m := re.search(r"TPS from last", l, re.I))
+       for m2 in [re.search(r"([0-9]+\.[0-9]+)", l.split(":", 2)[-1])] if m2]
 ncdfe = sum("NoClassDefFoundError" in l for l in lines)
 aioobe = sum("ArrayIndexOutOfBoundsException" in l for l in lines)
 
