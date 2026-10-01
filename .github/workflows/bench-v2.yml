@@ -36,13 +36,13 @@ on:
         required: false
         default: 'minecraft:overworld,minecraft:the_nether,minecraft:the_end'
       cpu_band_min:
-        description: 'Pair-hunter fast-fail: min runner_cpu_index (canon band 6.0-9.5M)'
+        description: 'Pair-hunter fast-fail: min runner_cpu_index (band recal 2026-10-01 pool 10.2-12.5M)'
         required: false
-        default: '6000000'
+        default: '10000000' # AG-318 x521: pool drift evidence run-36815094025 fast-fail @12439811
       cpu_band_max:
-        description: 'Pair-hunter fast-fail: max runner_cpu_index (canon band 6.0-9.5M)'
+        description: 'Pair-hunter fast-fail: max runner_cpu_index (band recal 2026-10-01 pool 10.2-12.5M)'
         required: false
-        default: '9500000'
+        default: '13500000' # override per-dispatch for tighter pairing (e.g. anchor windows)
 
 permissions:
   contents: read
@@ -73,6 +73,7 @@ jobs:
               x=(x*1103515245+12345)&0x7fffffff
           print(f"{6000000/(time.time()-t):.0f}")')
           echo "runner_cpu_index=$IDX band=[${{ inputs.cpu_band_min }},${{ inputs.cpu_band_max }}]"
+          echo "runner_cpu_index=$IDX" >> "$GITHUB_STEP_SUMMARY" # AG-318 x521: auto-calibration ledger
           if [ "$IDX" -lt "${{ inputs.cpu_band_min }}" ] || [ "$IDX" -gt "${{ inputs.cpu_band_max }}" ]; then
             echo "::notice::runner_cpu_index=$IDX OUTSIDE band — fast-fail (pairing discard)"
             exit 1
