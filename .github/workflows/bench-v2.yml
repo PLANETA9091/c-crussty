@@ -47,6 +47,18 @@ on:
         description: 'On runner_cpu_index outside band: warn (AG-13 x523 NEW default: record+proceed — pool is BIMODAL ~6.4-7.2M 75% / 11.4-12.5M 25% (#16d), strict default killed canary-6 REDx2 at step-3 36859428036/36859424331 before boot; comparability via RUNNER_CPU_INDEX ledger + cohort-pairing |dIdx|<=3%) | fail (pair-hunter STRICT pairing discard — pass EXPLICITLY on pair-verbs)'
         required: false
         default: 'warn'
+      dim_gen_window:
+        # AG-400 x523 (#16f window-matrix, port AG-369): DIM_GEN_WINDOW env of pregen-v3.1
+        # champion (bounded in-flight getChunkAtAsync, 7b7eeba0) — matrix 256/512/1024
+        # x r1136 WITHOUT recommit. 256 = champion canon (9.9-11 ch/s).
+        required: false
+        default: '256'
+      drain_cap_polls:
+        # AG-400 x523 (#16f кап-ап, port AG-369/333): drain poll cap (x10s). Master
+        # hardcode 120=1200s < pregen 20449ch @9-21ch/s (974-2272s) -> false DRAIN-TIMEOUT
+        # + ch/s lower-bound on canon r1136 legs. 240=2400s covers full pregen window.
+        required: false
+        default: '240'
 
 permissions:
   contents: read
@@ -61,7 +73,11 @@ concurrency:
 jobs:
   bench-v2:
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    # AG-400 x523 #16f: 75min < canon S_BV2 leg (boot ~90s + pregen 20449ch @11.2ch/s ~1830s
+    # + run_seconds=9000 ~183min). AG-339/279/253/256/330: all 9000s legs on master = DOA
+    # mid-sustain kill. 330min also covers worst-case 512-window STALL-side pregen (~2ch/s)
+    # under GH-hosted 6h hard cap.
+    timeout-minutes: 330
     steps:
       - name: Checkout (this branch)
         uses: actions/checkout@v4
@@ -95,13 +111,15 @@ jobs:
           java-version: '21'
 
       - name: BENCH-V2 run (fixture + gen + sustain + report)
-        timeout-minutes: 70
+        timeout-minutes: 320 # AG-400 x523 #16f: raised with job cap (330) for run_seconds=9000 canon
         env:
           RADIUS_BLOCKS: ${{ inputs.radius_blocks || '1136' }}
           RUN_SECONDS: ${{ inputs.run_seconds || '300' }}
           BENCH_SEED: ${{ inputs.seed || '351515' }}
           SERVER_XMX: ${{ inputs.server_xmx || '10G' }}
           BENCH_DIMS: ${{ inputs.bench_dims || 'minecraft:overworld,minecraft:the_nether,minecraft:the_end' }}
+          DIM_GEN_WINDOW: ${{ inputs.dim_gen_window || '256' }}
+          DRAIN_CAP_POLLS: ${{ inputs.drain_cap_polls || '240' }}
         run: |
           set -euo pipefail
           bash bench/worldv2/run_benchv2.sh
