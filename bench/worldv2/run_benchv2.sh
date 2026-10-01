@@ -54,7 +54,7 @@ dl "$PURPUR_URL" purpur.jar
 md5now=$(md5sum purpur.jar | cut -d' ' -f1); sha256now=$(sha256sum purpur.jar | cut -d' ' -f1)
 [ "$md5now" = "$PURPUR_MD5" ] && [ "$sha256now" = "$PURPUR_SHA256" ] && log "G-PURPUR PASS" || { log "G-PURPUR FAIL md5=$md5now sha256=$sha256now"; FAIL=1; }
 dl "$TERRALITH_URL" terralith.zip;    echo "$TERRALITH_SHA512  terralith.zip"  | sha512sum -c - || FAIL=1
-dl "$TECTONIC_URL"  tectonic.zip;     echo "$TECTONIC_SHA512   tectonic.zip"   | sha512sum -c - || FAIL=1
+dl "$TECTONIC_URL"  tectonic.zip;     echo "$TECTONIC_SHA512  tectonic.zip"   | sha512sum -c - || FAIL=1
 dl "$INCENDIUM_URL" incendium.zip;    echo "$INCENDIUM_SHA512  incendium.zip"  | sha512sum -c - || FAIL=1
 dl "$STELLARITY_URL" stellarity.zip;  echo "$STELLARITY_SHA512 stellarity.zip" | sha512sum -c - || FAIL=1
 [ "$FAIL" = "0" ] || { log "PIN-GATES FAILED — aborting before boot"; exit 42; }
