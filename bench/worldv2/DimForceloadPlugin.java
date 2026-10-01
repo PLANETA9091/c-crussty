@@ -63,6 +63,7 @@ public final class DimForceloadPlugin extends JavaPlugin {
     public void onEnable() {
         final java.util.Set<String> worlds = enabledWorlds();
         final int r = radiusChunks();
+        final java.util.Set<String> loggedWorlds = new java.util.HashSet<>();
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             if (!new File(START_FILE).exists()) {
                 return; // harness opens the GEN window by touching dimload.start
@@ -75,6 +76,14 @@ public final class DimForceloadPlugin extends JavaPlugin {
                     for (int z = -r; z <= r; z++) {
                         w.addPluginChunkTicket(x, z, (Plugin) this);
                     }
+                }
+                // AG-342 fix (blocker #9, canary-3 report 'Marked (\d+) chunks' = 0 forever:
+                // report_benchv2.py G4/ch-s parses THIS line, plugin never printed it -> G4
+                // structurally unpassable). Log ONCE per world (first sweep); keep-alive
+                // re-assertion stays silent so the sum stays 3 worlds x (2r+1)^2.
+                if (loggedWorlds.add(w.getName())) {
+                    getLogger().info("[DimForceload] Marked " + (2L * r + 1) * (2L * r + 1)
+                            + " chunks world=" + w.getName());
                 }
             }
         }, 40L, 60L);
