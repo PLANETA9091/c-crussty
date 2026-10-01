@@ -12566,3 +12566,19 @@ Stage Summary:
 - master 402dd59c (4 мёржа за тик: bc7e8722/8b61a93a/98a37e6e/ab113ff2 + учёт); волна-522 ЗАКРЫТА 500/500; волна-523 250/500 (добор обязателен до 500/500)
 - ×524 рычаг: мёрж #16f-чемпиона (120@7e54d922 или 114@54666f1e) + dims-aware G4/G-DIM гейты + drain≥4200s → canary-8 → S_BV2 r1136 min-of-3 → лестница
 - ΔS=0 (8 волн подряд) честно; цель ×524 ≥ 57.28; волна-524 = 500
+
+---
+Task ID: x523-close (Job 426654, 22:43+08)
+Agent: MAIN (Super Z, эра v23.0)
+Task: Тик 22:43 — закрыть волну-523 (добор до 500/500), мёрж #16f-чемпиона, учёт.
+
+Work Log:
+- PHASE 0: token/flock/identity PLANETA9091/pull ×2; диск 94%→69% (purge ROUND-478/519-521 work + >2M + /tmp).
+- ФАЗА 1: харвест 122 ног ×523 (98 FAIL/23 SUCCESS/1 in-flight) → ROUND-524_BANK_HARVEST.json; мёрж #16f-чемпиона swarm-523-120 @7e54d922 → 7b7eeba0; canary-8 ×2 огнены.
+- ФАЗА 2: SWARM_PROMPT 523-добор/524 push f62e1af2; ВОЛНА-523-ДОБОР: 250 вызовов (251-500) за 5 сообщений (50/50/50/50/50 — трункации добиты по закону 3) → **500/500 факт**; финалы ~485 DISP + 15 CENS; залп ~200+ S_BV2-канон-ног r1136/9000s.
+- Ключевое волны: #17-класс вскрыт консенсусом ~60 агентов — bench-v2.yml job75/step70-кап убивал канон 9000s (canary-8 RED @70m56s), pregen 20449/20449 ДОСТИГНУТ @10.5-11.5 ch/s (#16f-столла НЕТ); dim_gen_window был silent no-op; мёрж #17-чемпиона swarm-523-450 @8eb1af47 → f0fc1bcb (GEN-DONE SyntaxError исправлен); canary-9 ×2 на f0fc1bcb.
+- ФАЗА 4: WAVE_MEMORY дельта + LAB_LEDGER ×2 + BLACKBOARD + worklog; push обоих репо PLANETA9091.
+
+Stage Summary:
+- master f0fc1bcb (2 мёржа за тик: 7b7eeba0 #16f + f0fc1bcb #17); волна-523 ЗАКРЫТА 500/500 факт; canary-9 в полёте (GREEN → S_BV2 pair-math открыт)
+- ×524: харвест ~200+ ног (первые терминальные S-компоненты эры), min-of-3 S_BV2, seed-реестр 525001+, волна-524 = 500; ΔS=0 (9-я волна) честно
