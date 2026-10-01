@@ -44,9 +44,9 @@ on:
         required: false
         default: '13500000' # override per-dispatch for tighter pairing (e.g. anchor windows)
       band_gate_action:
-        description: 'On runner_cpu_index outside band: fail (canon default, pairing discard) | warn (AG-236 x522: record+proceed for canary/calibration legs — band-gate is INFO in warn mode, comparability via ledger)'
+        description: 'On runner_cpu_index outside band: warn (AG-13 x523 NEW default: record+proceed — pool is BIMODAL ~6.4-7.2M 75% / 11.4-12.5M 25% (#16d), strict default killed canary-6 REDx2 at step-3 36859428036/36859424331 before boot; comparability via RUNNER_CPU_INDEX ledger + cohort-pairing |dIdx|<=3%) | fail (pair-hunter STRICT pairing discard — pass EXPLICITLY on pair-verbs)'
         required: false
-        default: 'fail'
+        default: 'warn'
 
 permissions:
   contents: read
