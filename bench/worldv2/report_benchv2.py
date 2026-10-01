@@ -24,7 +24,18 @@ try:
             break
 except OSError:
     pass
-g4_target = int(0.95 * 3 * expect_pd)
+# AG-120 x523: dims-aware G4 (hardcoded x3 broke legal single-dim legs:
+# marked<=20449 can never reach 0.95*3*20449 even on a perfect pregen run).
+n_dims = 3
+try:
+    for _l in open(_envp, encoding="utf-8", errors="replace"):
+        _md = re.match(r"dims=([^#\n]+)", _l.strip())
+        if _md:
+            n_dims = max(1, len([x for x in _md.group(1).split(",") if x.strip()]))
+            break
+except OSError:
+    pass
+g4_target = int(0.95 * n_dims * expect_pd)
 
 # AG-395 fix (blocker #4): inner loop var was also the walrus target 'm' ->
 # SyntaxError: comprehension inner loop cannot rebind assignment expression target 'm'
@@ -70,7 +81,7 @@ g5_pass = bool(drain_ts) and drain_ts != "None"
 rep = []
 rep.append("# BENCHV2 — AG-433 wave-515 heavy stand (AG-496 x522: radius-aware gates, pregen-v3)\n")
 rep.append(f"- ch/s (drain-def: marked chunks / (drain_ts − first_ts)): **{ch_s:.2f}**" if ch_s else "- ch/s: DRAIN-TIMEOUT (lower bound only)")
-rep.append(f"- forceload-marked chunks total: **{marked}** (expect ≥{g4_target} = 0.95×3×{expect_pd}; radius-blocks side={2*((expect_pd ** 0.5) - 1) / 2 + 1:.0f})")
+rep.append(f"- forceload-marked chunks total: **{marked}** (expect ≥{g4_target} = 0.95×{n_dims}×{expect_pd}; radius-blocks side={2*((expect_pd ** 0.5) - 1) / 2 + 1:.0f})")
 rep.append(f"- MSPT: idle≈{idle}, sustain-median≈{med} (spark mspt samples n={len(mspts)})")
 rep.append(f"- TPS samples (spark tps): n={len(tps)}" + (f", min={min(tps)}, last={tps[-1]}" if tps else ""))
 rep.append(f"- entity-tick share: see sparkprofile artifact (offline analysis)")

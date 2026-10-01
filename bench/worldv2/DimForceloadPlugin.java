@@ -84,6 +84,19 @@ public final class DimForceloadPlugin extends JavaPlugin {
         }
     }
 
+    /** Bounded in-flight GEN fan-out cap (#16f remediation, AG-120 x523). */
+    private int genWindow() {
+        String v = System.getenv("DIM_GEN_WINDOW");
+        if (v == null || v.isEmpty()) {
+            return 256;
+        }
+        try {
+            return Math.max(1, Integer.parseInt(v.trim()));
+        } catch (NumberFormatException e) {
+            return 256;
+        }
+    }
+
     private boolean pregenMode() {
         String v = System.getenv("DIM_MARK_MODE");
         return v == null || v.isEmpty() || !v.equalsIgnoreCase("legacy");
@@ -106,10 +119,19 @@ public final class DimForceloadPlugin extends JavaPlugin {
         final int total = side * side;
         final long armTs = System.currentTimeMillis();
         getLogger().info("[DF] armed mode=pregen-v3 worlds=" + worlds + " radius_chunks=" + r
-                + " cells_per_world=" + total);
+                + " cells_per_world=" + total + " gen_window=" + genWindow());
+        final int gw = genWindow();
         final java.util.Set<String> genFired = new java.util.HashSet<>();
         // per-world set of cells not yet ticket-marked (removed as they are registered)
         final java.util.Map<String, java.util.Deque<int[]>> pending = new java.util.HashMap<>();
+        // cells NOT YET scheduled via getChunkAtAsync. Bounded fan-out (#16f
+        // remediation, AG-120 x523): v3 fired ALL 20449x3=61347 futures in ONE
+        // main tick -> Paper chunk queue collapsed (PROGRESS frozen at 26,
+        // 0 ch/s over 600s, 4/4 RED r1136 legs AG-8/72/110/112). The window
+        // keeps in-flight futures <= DIM_GEN_WINDOW and refills as they complete.
+        final java.util.Map<String, java.util.Deque<int[]>> unscheduled = new java.util.HashMap<>();
+        final java.util.Map<String, java.util.concurrent.atomic.AtomicInteger> inflight = new java.util.HashMap<>();
+        final java.util.Map<String, java.util.concurrent.atomic.AtomicInteger> genOk = new java.util.HashMap<>();
         final java.util.Map<String, Integer> marked = new java.util.HashMap<>();
         final java.util.Set<String> announced = new java.util.HashSet<>();
         final long[] pollCount = {0};
@@ -118,32 +140,51 @@ public final class DimForceloadPlugin extends JavaPlugin {
             if (!new File(START_FILE).exists()) {
                 return; // harness opens the GEN window by touching dimload.start
             }
-            // ---- fire GEN futures once (main thread: just scheduling, no IO) ----
+            // ---- fire GEN futures with bounded in-flight window (main thread: scheduling, no IO) ----
             for (World w : Bukkit.getWorlds()) {
-                if (!worlds.contains(w.getName()) || !genFired.add(w.getName())) {
+                final String wn = w.getName();
+                if (!worlds.contains(wn)) {
                     continue;
                 }
-                getLogger().info("[DF] WAIT start-file seen — firing GEN t=+"
-                        + ((System.currentTimeMillis() - armTs) / 1000) + "s");
-                java.util.Deque<int[]> q = new java.util.ArrayDeque<>();
-                for (int i = 0; i < total; i++) {
-                    final int x = (i / side) - r;
-                    final int z = (i % side) - r;
-                    q.add(new int[]{x, z});
-                    final String wn = w.getName();
+                if (!unscheduled.containsKey(wn)) {
+                    getLogger().info("[DF] WAIT start-file seen — arming GEN t=+"
+                            + ((System.currentTimeMillis() - armTs) / 1000) + "s");
+                    java.util.Deque<int[]> uns = new java.util.ArrayDeque<>(total);
+                    for (int i = 0; i < total; i++) {
+                        uns.add(new int[]{(i / side) - r, (i % side) - r});
+                    }
+                    unscheduled.put(wn, uns);
+                    pending.put(wn, new java.util.ArrayDeque<>());
+                    inflight.put(wn, new java.util.concurrent.atomic.AtomicInteger(0));
+                    genOk.put(wn, new java.util.concurrent.atomic.AtomicInteger(0));
+                    marked.put(wn, 0);
+                }
+                if (genFired.add(wn)) {
+                    getLogger().info("[DF] GEN-START world=" + wn + " cells=" + total
+                            + " window=" + gw);
+                }
+                // top up the in-flight window: schedule new cells as earlier ones complete
+                java.util.Deque<int[]> uns = unscheduled.get(wn);
+                java.util.Deque<int[]> pd = pending.get(wn);
+                java.util.concurrent.atomic.AtomicInteger ifl = inflight.get(wn);
+                java.util.concurrent.atomic.AtomicInteger ok = genOk.get(wn);
+                while (ifl.get() < gw && !uns.isEmpty()) {
+                    final int[] c = uns.pollFirst();
+                    ifl.incrementAndGet();
+                    pd.addLast(c);
                     // getChunkAtAsync: generation + load on worker threads.
                     // AG-475 telemetry: whenComplete MUST NOT swallow errors.
-                    w.getChunkAtAsync(x, z).whenComplete((ch, ex) -> {
+                    w.getChunkAtAsync(c[0], c[1]).whenComplete((ch, ex) -> {
+                        ifl.decrementAndGet();
                         if (ex != null) {
                             getLogger().warning("[DF] GEN-ERR world=" + wn
-                                    + " x=" + x + " z=" + z
+                                    + " x=" + c[0] + " z=" + c[1]
                                     + " err=" + ex.getClass().getName() + ": " + ex.getMessage());
+                        } else {
+                            ok.incrementAndGet();
                         }
                     });
                 }
-                pending.put(w.getName(), q);
-                marked.put(w.getName(), 0);
-                getLogger().info("[DF] GEN-START world=" + w.getName() + " cells=" + total);
             }
             // ---- MARK phase: register-only tickets on already-loaded cells ----
             for (World w : Bukkit.getWorlds()) {
@@ -169,7 +210,10 @@ public final class DimForceloadPlugin extends JavaPlugin {
                 marked.put(name, m);
                 if ((pollCount[0]++ % 2) == 0 || q.isEmpty()) { // ~every 10s of 20t-polls... poll is 10t => /1
                     getLogger().info("[DF] PROGRESS world=" + name + " marked=" + m + "/" + total
-                            + " loaded=" + w.getLoadedChunks().length);
+                            + " loaded=" + w.getLoadedChunks().length
+                            + " inflight=" + inflight.get(name).get()
+                            + " unscheduled=" + unscheduled.get(name).size()
+                            + " gen_ok=" + genOk.get(name).get());
                 }
                 if (m >= total && announced.add(name)) {
                     // v2-compatible marked emitter (report_benchv2.py parser)
