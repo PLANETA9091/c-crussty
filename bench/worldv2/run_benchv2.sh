@@ -166,7 +166,12 @@ SRV_PLUGINS="$PWD/plugins"   # AG-395: capture BEFORE cd — $PWD inside subshel
 [ -s plugins/DimForceload.jar ] || { log "G-DFJAR FAIL (jar not in server plugins/ — instrumentation would run DEAD)"; exit 44; }   # AG-395 hard gate: silent plugin absence = FAKE-GREEN class F
 jar tf plugins/DimForceload.jar | grep -qx "plugin.yml" || { log "G-DFJAR FAIL (jar lacks plugin.yml descriptor — blocker #8 class, plugin will not load)"; exit 44; }   # AG-342 hard gate #8: deterministic pre-boot detector (server-stdout line 8: DirectoryProviderSource load error)
 export DIM_RADIUS_CHUNKS=$(( (RADIUS_BLOCKS + 15) / 16 ))
-export DIM_WORLDS="world,world_nether,world_the_end"
+# AG-120 x523 (#16f remediation-a, AG-112 lesson): bench_dims must SCOPE the plugin,
+# not only gates/report — master hardcoded all 3 worlds so a "single-dim" leg still
+# armed 61347 cells (AG-72 single-dim illusion, run-36864515813). Default unchanged.
+DIM_WORLDS="$(printf '%s' "$DIMS" | sed -e 's/minecraft:overworld/world/g' -e 's/minecraft:the_nether/world_nether/g' -e 's/minecraft:the_end/world_the_end/g' -e 's/minecraft://g' -e 's/[[:space:]]//g')"
+export DIM_WORLDS
+export DIM_GEN_WINDOW="${DIM_GEN_WINDOW:-256}"   # AG-120 #16f: bounded in-flight getChunkAtAsync fan-out
 export DIM_MARK_MODE="${DIM_MARK_MODE:-pregen}"   # AG-496 x522: pregen-v3 (register-only marking) | legacy = v2 amortized-sync
 log "benchv2-ag12: DimForceload staged ($(stat -c%s plugins/DimForceload.jar) B) radius_chunks=$DIM_RADIUS_CHUNKS worlds=$DIM_WORLDS mark_mode=$DIM_MARK_MODE"
 echo "mark_mode=$DIM_MARK_MODE" >> "$WORK/run-env.txt"
@@ -285,8 +290,21 @@ TOTAL=$((OV + NE + EN))
 # ~= old 19000/60000 (same 95% prerig). min-of: per-dim >= 95% of cells, total >= 95% of 3x cells.
 MIN_PD=$(( EXP_PD * 95 / 100 ))
 MIN_TOT=$(( EXP_PD * 3 * 95 / 100 ))
-if [ "$OV" -ge "$MIN_PD" ] && [ "$NE" -ge "$MIN_PD" ] && [ "$EN" -ge "$MIN_PD" ] && [ "$TOTAL" -ge "$MIN_TOT" ]; then
-  log "G-DIM PASS ov=$OV ne=$NE en=$EN total=$TOTAL (expect_pd=$EXP_PD min_pd=$MIN_PD min_tot=$MIN_TOT)"
+# AG-120 x523: n_dims-aware G-DIM (master required ne/en >= min_pd even on
+# bench_dims=minecraft:overworld legs — impossible gate for legal single-dim legs).
+N_DIMS=$(printf '%s' "$DIMS" | awk -F',' '{print NF}')
+MIN_TOT=$(( EXP_PD * 95 / 100 * N_DIMS ))
+WANT_OV=0; WANT_NE=0; WANT_EN=0
+case ",$DIMS," in *,minecraft:overworld,*)  WANT_OV=1;; esac
+case ",$DIMS," in *,minecraft:the_nether,*) WANT_NE=1;; esac
+case ",$DIMS," in *,minecraft:the_end,*)    WANT_EN=1;; esac
+GDIM_OK=1
+[ "$WANT_OV" = "1" ] && [ "$OV" -lt "$MIN_PD" ] && GDIM_OK=0
+[ "$WANT_NE" = "1" ] && [ "$NE" -lt "$MIN_PD" ] && GDIM_OK=0
+[ "$WANT_EN" = "1" ] && [ "$EN" -lt "$MIN_PD" ] && GDIM_OK=0
+[ "$TOTAL" -lt "$MIN_TOT" ] && GDIM_OK=0
+if [ "$GDIM_OK" = "1" ]; then
+  log "G-DIM PASS ov=$OV ne=$NE en=$EN total=$TOTAL (expect_pd=$EXP_PD n_dims=$N_DIMS min_pd=$MIN_PD min_tot=$MIN_TOT)"
 else
   log "G-DIM FAIL ov=$OV ne=$NE en=$EN total=$TOTAL (expect_pd=$EXP_PD min_pd=$MIN_PD min_tot=$MIN_TOT — silent-empty dims impossible gate)"; FAIL=1
 fi
