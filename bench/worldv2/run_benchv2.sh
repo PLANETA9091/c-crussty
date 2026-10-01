@@ -135,7 +135,8 @@ if [ "$FAKE_PLAYERS" -gt 0 ]; then
   javac --release 21 -proc:none -cp "$FIX_CP" -d "$FP_CLASSES" "$FP_SRC/BenchFakePlayersPlugin.java" || { log "G-FPCOMPILE FAIL"; exit 44; }
   cp "$FP_SRC/plugin.yml" "$FP_CLASSES/"
   mkdir -p plugins
-  ( cd "$FP_CLASSES" && jar cf "$PWD/plugins/BenchFakePlayers.jar" . ) || { log "G-FPJAR FAIL"; exit 44; }
+  SRV_PLUGINS="$PWD/plugins"   # AG-395: capture BEFORE cd — $PWD inside subshell = $FP_CLASSES after cd, jar landed in fpclasses/plugins/ (blocker #5, run-36794417339: Initialized 0 plugins)
+  ( cd "$FP_CLASSES" && jar cf "$SRV_PLUGINS/BenchFakePlayers.jar" . ) || { log "G-FPJAR FAIL"; exit 44; }
   export BENCH_FAKE_PLAYERS="$FAKE_PLAYERS" BENCH_FORCELOAD_RADIUS="$RADIUS_BLOCKS" BENCH_FAKE_DISTRIBUTE=1
   log "benchv2-ag342: plugin staged ($(stat -c%s plugins/BenchFakePlayers.jar) B); N=$FAKE_PLAYERS distribute=3-dim"
   echo "eula=true" > eula.txt
@@ -155,7 +156,9 @@ DF_CLASSES="$WORK/dfclasses"; rm -rf "$DF_CLASSES"; mkdir -p "$DF_CLASSES"
 javac --release 21 -proc:none -cp "$DF_CP" -d "$DF_CLASSES" "$DF_SRC/DimForceloadPlugin.java" || { log "G-DFCOMPILE FAIL"; exit 44; }
 cp "$DF_SRC/dimforceload-plugin.yml" "$DF_CLASSES/"
 mkdir -p plugins
-( cd "$DF_CLASSES" && jar cf "$PWD/plugins/DimForceload.jar" . ) || { log "G-DFJAR FAIL"; exit 44; }
+SRV_PLUGINS="$PWD/plugins"   # AG-395: capture BEFORE cd — $PWD inside subshell = $DF_CLASSES after cd (blocker #5: jar landed in dfclasses/plugins/, stat cannot statx, Initialized 0 plugins, /dimchunks unknown -> G-DIM empty FAIL; run-36794417339)
+( cd "$DF_CLASSES" && jar cf "$SRV_PLUGINS/DimForceload.jar" . ) || { log "G-DFJAR FAIL"; exit 44; }
+[ -s plugins/DimForceload.jar ] || { log "G-DFJAR FAIL (jar not in server plugins/ — instrumentation would run DEAD)"; exit 44; }   # AG-395 hard gate: silent plugin absence = FAKE-GREEN class F
 export DIM_RADIUS_CHUNKS=$(( (RADIUS_BLOCKS + 15) / 16 ))
 export DIM_WORLDS="world,world_nether,world_end"
 log "benchv2-ag12: DimForceload staged ($(stat -c%s plugins/DimForceload.jar) B) radius_chunks=$DIM_RADIUS_CHUNKS worlds=$DIM_WORLDS"
@@ -185,7 +188,10 @@ if [ "$SEEN_DONE" != "1" ]; then cmd "stop"; sleep 10; exit 43; fi
 
 # --- G3: datapack enablement gate -------------------------------------------
 cmd "datapack list"; sleep 6
-DP_ENABLED=$(grep -cE "\[(file/)?(terralith|tectonic|incendium|stellarity)" server-stdout.log || true)
+# AG-395 fix (blocker #3): grep -c counts LINES; Paper lists all 4 packs on ONE line
+# ("There are 7 data pack(s) enabled: [vanilla], [file/bukkit], [file/terralith.zip (world)]...")
+# -> enabled-markers=1 false-fail. Count OCCURRENCES (grep -o | wc -l); run-36794417339 proof.
+DP_ENABLED=$(grep -oE "\[(file/)?(terralith|tectonic|incendium|stellarity)" server-stdout.log | wc -l)
 log "G-DATAPACKS enabled-markers=$DP_ENABLED (expect 4)"
 [ "$DP_ENABLED" -ge 4 ] || { log "G-DATAPACKS FAIL (datapacks not all enabled)"; FAIL=1; }
 
@@ -231,7 +237,7 @@ while [ "$(date +%s)" -lt "$END" ]; do
   if [ $((NOW - LAST_CENSUS)) -ge 60 ]; then
     log "CENSUS round (t=$NOW)"
     for pair in "minecraft:overworld:#c_ov" "minecraft:the_nether:#c_ne" "minecraft:the_end:#c_en"; do
-      DIM="${pair%%:*}"; CNT="${pair##*:}"
+      DIM="${pair%:*}"; CNT="${pair##*:}"   # AG-395 fix (blocker #6): %%:* cut at FIRST colon -> DIM="minecraft" -> execute in minecraft => "Unknown dimension 'minecraft:minecraft'" (run-36794417339); %:* keeps "minecraft:overworld"
       cmd "scoreboard players set $CNT benchv2c 0"
       cmd "execute in $DIM as @e[type=!minecraft:player] run scoreboard players add $CNT benchv2c 1"
       cmd "scoreboard players get $CNT benchv2c"
