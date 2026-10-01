@@ -149,11 +149,11 @@ on:
       cpu_band_min:
         description: 'Pair-hunter fast-fail: min runner_cpu_index band (empty = no gate; S7-96d law pairing infra)'
         required: false
-        default: '6000000' # x466-C98 era canon band 6.0-9.5M
+        default: '10000000' # AG-318 x521 recal: pool drift 10.2-12.5M, fast-fail @12439811 (run-36815094025)
       cpu_band_max:
         description: 'Pair-hunter fast-fail: max runner_cpu_index band (empty = no gate)'
         required: false
-        default: '9500000' # x466-C98 era canon band 6.0-9.5M
+        default: '13500000' # override per-dispatch for tighter pairing (e.g. anchor windows)
       natives_url:
         description: 'Closed-source natives tar.gz (empty = hotpatch-only mode)'
         required: false
@@ -189,6 +189,7 @@ jobs:
               x=(x*1103515245+12345)&0x7fffffff
           print(f"{6000000/(time.time()-t):.0f}")')
           echo "runner_cpu_index=$IDX band=[${{ inputs.cpu_band_min }},${{ inputs.cpu_band_max }}]"
+          echo "runner_cpu_index=$IDX" >> "$GITHUB_STEP_SUMMARY" # AG-318 x521: auto-calibration ledger
           if [ "$IDX" -lt "${{ inputs.cpu_band_min }}" ] || [ "$IDX" -gt "${{ inputs.cpu_band_max }}" ]; then
             echo "::notice::runner_cpu_index=$IDX OUTSIDE band — fast-fail pre-download (pairing discard, not a bench failure)"
             exit 1
