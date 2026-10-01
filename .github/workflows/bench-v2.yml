@@ -43,6 +43,10 @@ on:
         description: 'Pair-hunter fast-fail: max runner_cpu_index (band recal 2026-10-01 pool 10.2-12.5M)'
         required: false
         default: '13500000' # override per-dispatch for tighter pairing (e.g. anchor windows)
+      band_gate_action:
+        description: 'On runner_cpu_index outside band: fail (canon default, pairing discard) | warn (AG-236 x522: record+proceed for canary/calibration legs — band-gate is INFO in warn mode, comparability via ledger)'
+        required: false
+        default: 'fail'
 
 permissions:
   contents: read
@@ -72,11 +76,16 @@ jobs:
           for _ in range(6000000):
               x=(x*1103515245+12345)&0x7fffffff
           print(f"{6000000/(time.time()-t):.0f}")')
-          echo "runner_cpu_index=$IDX band=[${{ inputs.cpu_band_min }},${{ inputs.cpu_band_max }}]"
+          echo "runner_cpu_index=$IDX band=[${{ inputs.cpu_band_min }},${{ inputs.cpu_band_max }}] action=${{ inputs.band_gate_action }}"
           echo "runner_cpu_index=$IDX" >> "$GITHUB_STEP_SUMMARY" # AG-318 x521: auto-calibration ledger
+          echo "RUNNER_CPU_INDEX=$IDX" >> "$GITHUB_ENV" # AG-236 x522: feed norm_v5 comparability into downstream steps/artifacts
           if [ "$IDX" -lt "${{ inputs.cpu_band_min }}" ] || [ "$IDX" -gt "${{ inputs.cpu_band_max }}" ]; then
-            echo "::notice::runner_cpu_index=$IDX OUTSIDE band — fast-fail (pairing discard)"
-            exit 1
+            if [ "${{ inputs.band_gate_action }}" = "warn" ]; then
+              echo "::warning::runner_cpu_index=$IDX OUTSIDE band — WARN mode (AG-236 x522): record + proceed, do NOT use for same-band pairing"
+            else
+              echo "::notice::runner_cpu_index=$IDX OUTSIDE band — fast-fail (pairing discard)"
+              exit 1
+            fi
           fi
 
       - name: Setup JDK 21 (Temurin)
