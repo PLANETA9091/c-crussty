@@ -6,7 +6,7 @@
 # Анти-конвергенция: если по гипотезе уже ≥3 CLAIM/FAIL — тема закрыта, брать нельзя.
 # Сжатие доски — только MAIN в конце тика; FAIL не стираются никогда.
 # СИД 2026-10-02: выжато из BLACKBOARD/WAVE_MEMORY ×515-523 + харвест волны-524 (50 сабов).
-FAIL | v22 | ticket-семья: addPluginChunkTicket sync-грузит чанки marked=0/58272 watchdog kill | 15/15 ног
+FAIL | v22 | ticket-семья: addPluginChunkTicket sync-грузит чанки marked=0/58272 | 15/15 ног
 FAIL | v22 | world-level ticket c2eb16cd: announce 61347 но loaded 25/0/0 hold 0.04% | 0/2 ноги
 FAIL | v22 | async-ticket-in-callback v1: silent no-op marked=0; cap=1024 дал 2.3% | 3/3 ноги
 FAIL | v22 | batch=128: sync-load watchdog ×11-13 kill T+80-90с | 6/6 ног
@@ -22,7 +22,7 @@ FAIL | v22 | P43 brainflat as-is: patch rejected fail-closed, jar ваниль |
 FAIL | v22 | one-shot 61347 getChunkAtAsync: marked=26/20449 заморозка на r1136 | ×4
 FAIL | v22 | G4/G-DIM ×3-хардкод: impossible gate на 1-dim ногах | 91/94 FAIL
 FAIL | v22 | drain false-PASS +28s при gen 76.3% (GEN-DONE-гейт был dead code) | лечено f0fc1bcb
-FAIL | v22 | #16g marked-счётчик теряется к гейту 625-3444→0 | маркировка≠генерация
+FAIL | v22 | #16g marked-счётчик теряется к гейту 625→0 | маркировка≠генерация
 FAIL | v22 | WBP 26-й input = 422 + zombie 36862964782 | кап 25 инпутов
 FAIL | v22 | concurrency-ключ: population_seed НЕ в ключе → sibling-cancel | ×8 жертв
 FAIL | v22 | dispatch body ≠ {ref,inputs} (лишний ключ) = 422 | ×N
@@ -34,14 +34,14 @@ FAIL | v22 | seed-реестр врёт — grep claims/work+clm ДО POST | 523
 FAIL | v22 | «200 якорей за волну»: capture 20-31% | REFUTED_CENS
 FAIL | v22 | «одиночная нога ≥+20 = банк»: шум 13-25% | REFUTED
 FAIL | v22 | канон-окно [6.0,9.5]M мёртв: пул три-модален | #16c
-FAIL | v22 | cap-fix дубликаты ~48 веток bd984079 — НЕ мёржить после f0fc1bcb | AG-252..500
+FAIL | v22 | cap-fix дубликаты ~48 веток bd984079 — НЕ мёржить | AG-252..500
 FAIL | v22 | семью fe1b462f GEN-DONE SyntaxError — не брать | AG-40
 FAIL | v22 | canary-8 «RED» = FALSE-RED step-kill @70m53s (капы 75/70 на 7b7eeba0) | 36879370999
 FAIL | v22 | bench-v2 9000s DOA на не-кап-ветках до f0fc1bcb (старые капы 75/70) | 39 ног
 FAIL | v22 | STZ-132 NULL; STZ-126/127 pack_format 88 reject — только pf81 | AG-73
 FAIL | v22 | G6 «+31.89/+26.22» = A/A-ECHO (ваниль-банд 340-426) | REFUTED
 FACT | v22 | master f0fc1bcb = #16f window-256 + #17 капы 330/320 + GEN-DONE фикс | 7b7eeba0+8eb1af47
-FACT | v22 | pregen 20449/20449 ДОСТИГНУТ @10.5-11.5 ch/s, TPS 19-20 @20k — #16f на каноне нет | forensics
+FACT | v22 | pregen 20449/20449 @10.5-11.5 ch/s TPS 19-20 — #16f на каноне нет | forensics
 FACT | v22 | первый r1136-SUCCESS эры 36876901184: marked 20449/20449, TPS 18.99, NCDFE=0 | 1-dim
 FACT | v22 | r800-бисект 36869678589: marked 30603/30603, TPS 6.74 — клифф не монотонен | AG-39
 FACT | v22 | bench-v2 инпуты: +dim_gen_window(256)/drain_cap_polls(240) wired | f0fc1bcb
@@ -50,7 +50,7 @@ FACT | v22 | pair-канон: cohort |Δidx|≤3% + population_seed same + POP-G
 FACT | v22 | якоря 172 (floor 169): LOW-7.0 411.88, HIGH 362.70, poll-bridge 1.115 | AG-12/35
 FACT | v22 | P42 delivery доказан: GoalMemoOps в jar, NCDFE=0 (соло-потолок 0пп) | 10b7b46
 FACT | v22 | pair-math/S_BV2-мёрж-гейт закрыт до canary-9 GREEN | правило
-FACT | v23 | волна-524 остановлена владельцем 50/500 (42 DISP + 6 CENS, 2 мертвы) — эра v22→v23 | 2026-10-02
+FACT | v23 | волна-524 стоп владельцем 50/500: 42 DISP + 6 CENS, 2 мертвы | эра v23
 OBSERVED | v22 | canary-9 ×2 QUEUED с 16:27Z 36892140655/36892130132 — не трогать; GREEN открывает S_BV2
 OBSERVED | v22 | залп ×523-добор ~450 queued, 0 terminal full-9000s к 17:05Z; харвест ×525 | AG-13/16
 OBSERVED | v22 | очередь джам 429-454 queued, drain ~1.6/мин | AG-6/22/24
