@@ -8,6 +8,24 @@ d, first_ts, drain_ts = sys.argv[1], sys.argv[2], sys.argv[3]
 logp = os.path.join(d, "server-stdout.log")
 lines = open(logp, encoding="utf-8", errors="replace").read().splitlines()
 
+# AG-496 x522: radius-aware G4 (hardcoded 20449 broke any radius!=71 leg: perfect
+# pregen run still FAILed the 58272 gate). Read radius_blocks from run-env.txt
+# (written by run_benchv2.sh at $WORK/run-env.txt, one level above server dir).
+# Canon radius 1136 blocks => side=71 => expect=20449 (byte-identical old gate).
+expect_pd = 20449
+_envp = os.path.join(os.path.dirname(d.rstrip('/')), "run-env.txt")
+try:
+    for _l in open(_envp, encoding="utf-8", errors="replace"):
+        _m = re.match(r"radius_blocks=(\d+)", _l.strip())
+        if _m:
+            _rb = int(_m.group(1))
+            _side = (2 * ((_rb + 15) // 16) + 1)
+            expect_pd = _side * _side
+            break
+except OSError:
+    pass
+g4_target = int(0.95 * 3 * expect_pd)
+
 # AG-395 fix (blocker #4): inner loop var was also the walrus target 'm' ->
 # SyntaxError: comprehension inner loop cannot rebind assignment expression target 'm'
 # (report crashed at parse time, FAIL=1, no BENCHV2 metrics — run-36794417339). Inner var
@@ -46,13 +64,13 @@ med = sorted(sust)[len(sust) // 2] if sust else None
 # on ONE line ('There are 7 data pack(s) enabled: [file/terralith.zip (world)], ...') ->
 # counting LINES gives 1; count OCCURRENCES like the boot gate (grep -o | wc -l canon, blocker #3).
 g3 = sum(len(re.findall(r"\[(file/)?(terralith|tectonic|incendium|stellarity)", l)) for l in lines)
-g4_pass = marked >= int(0.95 * 3 * 20449)
+g4_pass = marked >= g4_target
 g5_pass = bool(drain_ts) and drain_ts != "None"
 
 rep = []
-rep.append("# BENCHV2 — AG-433 wave-515 (heavy stand, 3 dims × 20449 chunks)\n")
+rep.append("# BENCHV2 — AG-433 wave-515 heavy stand (AG-496 x522: radius-aware gates, pregen-v3)\n")
 rep.append(f"- ch/s (drain-def: marked chunks / (drain_ts − first_ts)): **{ch_s:.2f}**" if ch_s else "- ch/s: DRAIN-TIMEOUT (lower bound only)")
-rep.append(f"- forceload-marked chunks total: **{marked}** (expect ≥58272 = 0.95×3×20449)")
+rep.append(f"- forceload-marked chunks total: **{marked}** (expect ≥{g4_target} = 0.95×3×{expect_pd}; radius-blocks side={2*((expect_pd ** 0.5) - 1) / 2 + 1:.0f})")
 rep.append(f"- MSPT: idle≈{idle}, sustain-median≈{med} (spark mspt samples n={len(mspts)})")
 rep.append(f"- TPS samples (spark tps): n={len(tps)}" + (f", min={min(tps)}, last={tps[-1]}" if tps else ""))
 rep.append(f"- entity-tick share: see sparkprofile artifact (offline analysis)")

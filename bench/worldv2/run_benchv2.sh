@@ -167,7 +167,9 @@ SRV_PLUGINS="$PWD/plugins"   # AG-395: capture BEFORE cd — $PWD inside subshel
 jar tf plugins/DimForceload.jar | grep -qx "plugin.yml" || { log "G-DFJAR FAIL (jar lacks plugin.yml descriptor — blocker #8 class, plugin will not load)"; exit 44; }   # AG-342 hard gate #8: deterministic pre-boot detector (server-stdout line 8: DirectoryProviderSource load error)
 export DIM_RADIUS_CHUNKS=$(( (RADIUS_BLOCKS + 15) / 16 ))
 export DIM_WORLDS="world,world_nether,world_the_end"
-log "benchv2-ag12: DimForceload staged ($(stat -c%s plugins/DimForceload.jar) B) radius_chunks=$DIM_RADIUS_CHUNKS worlds=$DIM_WORLDS"
+export DIM_MARK_MODE="${DIM_MARK_MODE:-pregen}"   # AG-496 x522: pregen-v3 (register-only marking) | legacy = v2 amortized-sync
+log "benchv2-ag12: DimForceload staged ($(stat -c%s plugins/DimForceload.jar) B) radius_chunks=$DIM_RADIUS_CHUNKS worlds=$DIM_WORLDS mark_mode=$DIM_MARK_MODE"
+echo "mark_mode=$DIM_MARK_MODE" >> "$WORK/run-env.txt"
 
 # --- AG-12: async wall-clock heartbeat sampler (AG-234 principle) ------------
 # samples wall-clock every 2s INDEPENDENT of server responsiveness — 0 lines
@@ -210,7 +212,9 @@ for k in 1 2 3; do cmd "spark tps"; sleep 4; done
 # --- GEN phase: forceload sweep, ALL dims simultaneously ---------------------
 FIRST_TS=$(date +%s)
 touch dimload.start
-log "GEN_FIRST_TS=$FIRST_TS dims=$DIMS marked=tickets x$((DIM_RADIUS_CHUNKS*2+1))^2/dim (async, AG-93/248 principle)"
+SIDE_C=$(( 2 * DIM_RADIUS_CHUNKS + 1 ))
+EXP_PD=$(( SIDE_C * SIDE_C ))
+log "GEN_FIRST_TS=$FIRST_TS dims=$DIMS cells=x${SIDE_C}^2=${EXP_PD}/dim mark_mode=$DIM_MARK_MODE (AG-496 pregen-v3: getChunkAtAsync off-main + register-only tickets)"
 sleep 5
 cmd "dimchunks"; sleep 3   # G-DIM early census from plugin
 
@@ -276,10 +280,15 @@ OV=$(echo "$DIMGATE" | grep -oE "world=world loaded=[0-9]+" | grep -oE "[0-9]+" 
 NE=$(echo "$DIMGATE" | grep -oE "world=world_nether loaded=[0-9]+" | grep -oE "[0-9]+" | tail -1); NE=${NE:-0}
 EN=$(echo "$DIMGATE" | grep -oE "world=world_the_end loaded=[0-9]+" | grep -oE "[0-9]+" | tail -1); EN=${EN:-0}
 TOTAL=$((OV + NE + EN))
-if [ "$OV" -ge 19000 ] && [ "$NE" -ge 19000 ] && [ "$EN" -ge 19000 ] && [ "$TOTAL" -ge 60000 ]; then
-  log "G-DIM PASS ov=$OV ne=$NE en=$EN total=$TOTAL"
+# AG-496 x522: radius-aware G-DIM (hardcoded 19000/60000 broke any radius!=71 leg with
+# G-DIM FAIL even on a mechanically perfect run). Canon radius 71 => min_pd=19426/min_tot=58277
+# ~= old 19000/60000 (same 95% prerig). min-of: per-dim >= 95% of cells, total >= 95% of 3x cells.
+MIN_PD=$(( EXP_PD * 95 / 100 ))
+MIN_TOT=$(( EXP_PD * 3 * 95 / 100 ))
+if [ "$OV" -ge "$MIN_PD" ] && [ "$NE" -ge "$MIN_PD" ] && [ "$EN" -ge "$MIN_PD" ] && [ "$TOTAL" -ge "$MIN_TOT" ]; then
+  log "G-DIM PASS ov=$OV ne=$NE en=$EN total=$TOTAL (expect_pd=$EXP_PD min_pd=$MIN_PD min_tot=$MIN_TOT)"
 else
-  log "G-DIM FAIL ov=$OV ne=$NE en=$EN total=$TOTAL (silent-empty dims impossible gate)"; FAIL=1
+  log "G-DIM FAIL ov=$OV ne=$NE en=$EN total=$TOTAL (expect_pd=$EXP_PD min_pd=$MIN_PD min_tot=$MIN_TOT — silent-empty dims impossible gate)"; FAIL=1
 fi
 HB_LINES=$(wc -l < "$HEARTBEAT" 2>/dev/null || echo 0)
 if [ "$HB_LINES" -ge 60 ]; then
