@@ -20,12 +20,28 @@ import org.bukkit.plugin.java.JavaPlugin;
  *   Paper/Purpur require a plugin (Bukkit World.addPluginChunkTicket).
  *
  * WHAT IT DOES:
- *   - Every 60 ticks, IF the start-file "dimload.start" exists in the server
+ *   - Every 10 ticks, IF the start-file "dimload.start" exists in the server
  *     working dir, add plugin chunk tickets for the square region
  *     [-R..R]x[-R..R] chunks (R from env DIM_RADIUS_CHUNKS, default 71 =>
  *     143x143 = 20,449 chunks/dim) in every world named in env
- *     DIM_WORLDS (default "world_nether,world_end"). Re-asserting an existing
- *     plugin ticket is idempotent, so the loop is a cheap keep-alive.
+ *     DIM_WORLDS (default "world_nether,world_the_end").
+ *   - BATCHED MARKING (blocker #14 fix, AG-301 wave-520): CraftWorld
+ *     .addPluginChunkTicket(x,z,plugin) SYNC-LOADS the chunk on the main
+ *     thread (CraftWorld.java:582 -> getChunkAt -> ServerChunkCache.syncLoad
+ *     -> managedBlock). Adding all 20449x3 tickets in ONE tick hangs the
+ *     Server thread >60 s => Paper watchdog dumps + kills the server ~2 min
+ *     after boot (evidence: vallegs run-36805200406 / run-36805421425,
+ *     "Server thread dump" x13, Stopping server at 02:25:12). So marking is
+ *     amortized: <= dimload.batch (default 128) ticket-adds per invocation,
+ *     per-world cursor, ~160 invocations to drain 20449 => worst case ~1.3 s
+ *     of sync loads per tick, no watchdog hit.
+ *   - MARKED EMITTER (blocker #12 fix, AG-301; credit AG-70 for the design):
+ *     when a world's cursor completes, exactly ONE line
+ *     "[DimForceload] Marked 20449 chunks world=<name>" is logged; repeated
+ *     invocations are NOT re-announced, so report_benchv2.py
+ *     sum("Marked (d+) chunks") == 3 x 20449 = 61,347 >= 58,272 (G4 PASS).
+ *     Keep-alive re-asserts are skipped once a world is fully marked
+ *     (idempotent anyway, and cheaper than the old re-add-every-60t loop).
  *   - Command "/dimchunks": prints one G-DIM line per world with the loaded
  *     chunk count, e.g. "[DimForceload] G-DIM world=world_nether loaded=20449"
  *     — the bash fixture gate parses these (no silent empty dims possible).
@@ -54,15 +70,33 @@ public final class DimForceloadPlugin extends JavaPlugin {
     private java.util.Set<String> enabledWorlds() {
         String v = System.getenv("DIM_WORLDS");
         if (v == null || v.isEmpty()) {
-            v = "world_nether,world_end";
+            v = "world_nether,world_the_end";
         }
         return new java.util.HashSet<>(java.util.Arrays.asList(v.split(",")));
+    }
+
+    private int batchPerTick() {
+        String v = System.getenv("DIM_MARK_BATCH");
+        if (v == null || v.isEmpty()) {
+            return 128; // amortize sync chunk-loads, keep tick << watchdog 60 s
+        }
+        try {
+            return Math.max(1, Integer.parseInt(v.trim()));
+        } catch (NumberFormatException e) {
+            return 128;
+        }
     }
 
     @Override
     public void onEnable() {
         final java.util.Set<String> worlds = enabledWorlds();
         final int r = radiusChunks();
+        final int side = 2 * r + 1;
+        final int total = side * side;
+        final int batch = batchPerTick();
+        // per-world marking cursor: next linear index in row-major (x-major) order
+        final java.util.Map<String, Integer> cursor = new java.util.HashMap<>();
+        final java.util.Set<String> announced = new java.util.HashSet<>();
         Bukkit.getScheduler().runTaskTimer(this, () -> {
             if (!new File(START_FILE).exists()) {
                 return; // harness opens the GEN window by touching dimload.start
@@ -71,15 +105,27 @@ public final class DimForceloadPlugin extends JavaPlugin {
                 if (!worlds.contains(w.getName())) {
                     continue;
                 }
-                for (int x = -r; x <= r; x++) {
-                    for (int z = -r; z <= r; z++) {
-                        w.addPluginChunkTicket(x, z, (Plugin) this);
-                    }
+                final String name = w.getName();
+                final int done = cursor.getOrDefault(name, 0);
+                if (done >= total) {
+                    continue; // fully marked — cheap keep-alive skip (idempotent)
+                }
+                final int end = Math.min(total, done + batch);
+                for (int i = done; i < end; i++) {
+                    final int x = (i / side) - r;
+                    final int z = (i % side) - r;
+                    w.addPluginChunkTicket(x, z, (Plugin) this);
+                }
+                cursor.put(name, end);
+                if (end >= total && announced.add(name)) {
+                    // blocker #12: exactly one Marked line per world, ever
+                    getLogger().info("[DimForceload] Marked " + total
+                            + " chunks world=" + name);
                 }
             }
-        }, 40L, 60L);
+        }, 40L, 10L);
         getLogger().info("[DimForceload] armed worlds=" + worlds + " radius_chunks=" + r
-                + " start_file=" + START_FILE);
+                + " batch=" + batch + " start_file=" + START_FILE);
     }
 
     @Override

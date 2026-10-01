@@ -155,13 +155,18 @@ DF_CP="$PWD/$KERNEL_JAR"
 while IFS= read -r j; do DF_CP="$DF_CP:$j"; done < <(find libraries -name '*.jar' 2>/dev/null)
 DF_CLASSES="$WORK/dfclasses"; rm -rf "$DF_CLASSES"; mkdir -p "$DF_CLASSES"
 javac --release 21 -proc:none -cp "$DF_CP" -d "$DF_CLASSES" "$DF_SRC/DimForceloadPlugin.java" || { log "G-DFCOMPILE FAIL"; exit 44; }
-cp "$DF_SRC/dimforceload-plugin.yml" "$DF_CLASSES/"
+# AG-342 fix (blocker #8, canary-3 run-36802056368/36802054506): descriptor must be
+# named plugin.yml AT JAR ROOT. Paper error: "plugins/.paper-remapped/DimForceload.jar
+# does not contain a paper-plugin.yml or plugin.yml!" => plugin DEAD, tickets never
+# marked, G-DIM empty, census LEG-B-DEAD (server-stdout.log line 8 proof).
+cp "$DF_SRC/dimforceload-plugin.yml" "$DF_CLASSES/plugin.yml"
 mkdir -p plugins
 SRV_PLUGINS="$PWD/plugins"   # AG-395: capture BEFORE cd — $PWD inside subshell = $DF_CLASSES after cd (blocker #5: jar landed in dfclasses/plugins/, stat cannot statx, Initialized 0 plugins, /dimchunks unknown -> G-DIM empty FAIL; run-36794417339)
 ( cd "$DF_CLASSES" && jar cf "$SRV_PLUGINS/DimForceload.jar" . ) || { log "G-DFJAR FAIL"; exit 44; }
 [ -s plugins/DimForceload.jar ] || { log "G-DFJAR FAIL (jar not in server plugins/ — instrumentation would run DEAD)"; exit 44; }   # AG-395 hard gate: silent plugin absence = FAKE-GREEN class F
+jar tf plugins/DimForceload.jar | grep -qx "plugin.yml" || { log "G-DFJAR FAIL (jar lacks plugin.yml descriptor — blocker #8 class, plugin will not load)"; exit 44; }   # AG-342 hard gate #8: deterministic pre-boot detector (server-stdout line 8: DirectoryProviderSource load error)
 export DIM_RADIUS_CHUNKS=$(( (RADIUS_BLOCKS + 15) / 16 ))
-export DIM_WORLDS="world,world_nether,world_end"
+export DIM_WORLDS="world,world_nether,world_the_end"
 log "benchv2-ag12: DimForceload staged ($(stat -c%s plugins/DimForceload.jar) B) radius_chunks=$DIM_RADIUS_CHUNKS worlds=$DIM_WORLDS"
 
 # --- AG-12: async wall-clock heartbeat sampler (AG-234 principle) ------------
@@ -197,7 +202,10 @@ log "G-DATAPACKS enabled-markers=$DP_ENABLED (expect 4)"
 [ "$DP_ENABLED" -ge 4 ] || { log "G-DATAPACKS FAIL (datapacks not all enabled)"; FAIL=1; }
 
 # --- idle baseline -----------------------------------------------------------
-for k in 1 2 3; do cmd "spark mspt"; sleep 4; done
+# AG-342 fix (blocker #11, canary-3 233KB log: 0 lines match 'mspt'): console
+# 'spark mspt' is SILENT on Purpur 1.21.10 bundled spark; 'spark tps' prints the
+# TPS row + 'Tick durations (min/med/95%ile/max ms)' row (log lines 4143-4250 proof).
+for k in 1 2 3; do cmd "spark tps"; sleep 4; done
 
 # --- GEN phase: forceload sweep, ALL dims simultaneously ---------------------
 FIRST_TS=$(date +%s)
@@ -210,12 +218,13 @@ cmd "dimchunks"; sleep 3   # G-DIM early census from plugin
 DRAIN_TS=""; DRAIN_TIMEOUT=1
 for i in $(seq 1 120); do           # 120 x 10s = 1200s cap
   sleep 10
-  cmd "spark mspt"
+  cmd "spark tps"   # AG-342 fix (blocker #11): parse Tick durations med from spark tps output (spark mspt console = silent)
   ts=$(date +%s)
-  med=$(tail -n 25 server-stdout.log | grep -iE "mspt" | tail -1 | grep -oE "[0-9]+\.[0-9]+" | head -1)
+  med=$(tail -n 25 server-stdout.log | grep -A2 "Tick durations" | grep -oE "[0-9]+\.[0-9]+/[0-9]+\.[0-9]+/[0-9]+\.[0-9]+/[0-9]+\.[0-9]+" | head -1 | cut -d/ -f2)
   if [ -n "$med" ] && [ -n "$FIRST_TS" ]; then
     log "DRAIN_POLL i=$i mspt_median=$med elapsed=$((ts - FIRST_TS))s"
-    idle=$(grep -iE "mspt" server-stdout.log | head -1 | grep -oE "[0-9]+\.[0-9]+" | head -1)
+    # AG-342: idle = FIRST Tick-durations med ever seen (pre-GEN idle baseline window); 5.0 fallback keeps prereg threshold
+    idle=$(grep -A2 "Tick durations" server-stdout.log | grep -oE "[0-9]+\.[0-9]+/[0-9]+\.[0-9]+/[0-9]+\.[0-9]+/[0-9]+\.[0-9]+" | head -1 | cut -d/ -f2)
     idle="${idle:-5.0}"
     pass=$(python3 -c "print(1 if float('$med') < max(1.5*float('$idle'), 50.0) else 0)")
     if [ "$pass" = "1" ]; then DRAIN_TS=$ts; DRAIN_TIMEOUT=0; log "DRAIN at +$((ts - FIRST_TS))s"; break; fi
@@ -249,6 +258,7 @@ while [ "$(date +%s)" -lt "$END" ]; do
   sleep 15
 done
 cmd "spark profiler stop"; sleep 8
+cmd "dimchunks"; sleep 3   # AG-342 fix (blocker #12): G-DIM gate reads tail -6 of G-DIM lines; the ONLY call was +5s after GEN start (counts ~0) -> gate FAIL even with plugin alive. Final call after drain -> tail -6 = drained per-dim counts
 cmd "forceload remove all"; sleep 3
 cmd "stop"
 for i in $(seq 1 60); do kill -0 $SERVER_PID 2>/dev/null || break; sleep 2; done
@@ -264,7 +274,7 @@ DIMGATE=$(grep -oE "G-DIM world=[a-z_]+ loaded=[0-9]+" server-stdout.log | tail 
 log "G-DIM census: $DIMGATE"
 OV=$(echo "$DIMGATE" | grep -oE "world=world loaded=[0-9]+" | grep -oE "[0-9]+" | tail -1); OV=${OV:-0}
 NE=$(echo "$DIMGATE" | grep -oE "world=world_nether loaded=[0-9]+" | grep -oE "[0-9]+" | tail -1); NE=${NE:-0}
-EN=$(echo "$DIMGATE" | grep -oE "world=world_end loaded=[0-9]+" | grep -oE "[0-9]+" | tail -1); EN=${EN:-0}
+EN=$(echo "$DIMGATE" | grep -oE "world=world_the_end loaded=[0-9]+" | grep -oE "[0-9]+" | tail -1); EN=${EN:-0}
 TOTAL=$((OV + NE + EN))
 if [ "$OV" -ge 19000 ] && [ "$NE" -ge 19000 ] && [ "$EN" -ge 19000 ] && [ "$TOTAL" -ge 60000 ]; then
   log "G-DIM PASS ov=$OV ne=$NE en=$EN total=$TOTAL"

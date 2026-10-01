@@ -12,11 +12,25 @@ lines = open(logp, encoding="utf-8", errors="replace").read().splitlines()
 # SyntaxError: comprehension inner loop cannot rebind assignment expression target 'm'
 # (report crashed at parse time, FAIL=1, no BENCHV2 metrics — run-36794417339). Inner var
 # renamed m2; inner mspt regex given a capturing group so group(1) is valid.
+# AG-342 fix (blocker #11 parse, canary-3 233KB log: 0 'mspt' lines, n=0 samples):
+# console spark on Purpur 1.21.10 prints 'TPS from last 5s, 10s, 1m, 5m, 15m:' with the
+# float row on the NEXT line ('[⚡]  20.0, 20.0, ...') and 'Tick durations
+# (min/med/95%ile/max ms) from last 10s, 1m:' with values 'min/med/95/max; min/med/95/max'
+# on the NEXT spark line (log lines 4143-4250 proof). Parse next-line formats.
 marked = sum(int(m.group(1)) for l in lines if (m := re.search(r"Marked (\d+) chunks", l)))
-mspts = [float(m2.group(1)) for l in lines if (m := re.search(r"mspt", l, re.I))
-         for m2 in [re.search(r"([0-9]+\.[0-9]+)", l.split(":", 2)[-1])] if m2]
-tps = [float(m2.group(1)) for l in lines if (m := re.search(r"TPS from last", l, re.I))
-       for m2 in [re.search(r"([0-9]+\.[0-9]+)", l.split(":", 2)[-1])] if m2]
+tps = []
+mspts = []
+for _i, _l in enumerate(lines):
+    if "TPS from last" in _l and _i + 1 < len(lines):
+        _m = re.search(r"([0-9]+\.[0-9]+)", lines[_i + 1])
+        if _m:
+            tps.append(float(_m.group(1)))
+    if "Tick durations" in _l:
+        for _j in range(_i + 1, min(_i + 4, len(lines))):
+            _m = re.search(r"([0-9.]+)/([0-9.]+)/([0-9.]+)/([0-9.]+)", lines[_j])
+            if _m:
+                mspts.append(float(_m.group(2)))   # med ms, last-10s group
+                break
 ncdfe = sum("NoClassDefFoundError" in l for l in lines)
 aioobe = sum("ArrayIndexOutOfBoundsException" in l for l in lines)
 
@@ -28,7 +42,10 @@ idle = mspts[0] if mspts else None
 sust = mspts[-12:] if len(mspts) > 3 else mspts
 med = sorted(sust)[len(sust) // 2] if sust else None
 
-g3 = sum(1 for l in lines if re.search(r"\[(file/)?(terralith|tectonic|incendium|stellarity)", l))
+# AG-342 fix (blocker #10, canary-3 BENCHV2.md G3=1/4 false-fail): Paper lists all 4 packs
+# on ONE line ('There are 7 data pack(s) enabled: [file/terralith.zip (world)], ...') ->
+# counting LINES gives 1; count OCCURRENCES like the boot gate (grep -o | wc -l canon, blocker #3).
+g3 = sum(len(re.findall(r"\[(file/)?(terralith|tectonic|incendium|stellarity)", l)) for l in lines)
 g4_pass = marked >= int(0.95 * 3 * 20449)
 g5_pass = bool(drain_ts) and drain_ts != "None"
 
