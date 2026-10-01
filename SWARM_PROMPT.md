@@ -1,4 +1,4 @@
-# SWARM_PROMPT v22.0 — ЕДИНЫЙ ПРОМПТ РОЯ c-crussty (волна-520 = 500, плоский, БЕЗ РОЛЕЙ)
+# SWARM_PROMPT v22.0 — ЕДИНЫЙ ПРОМПТ РОЯ c-crussty (волна-521 = 500, плоский, БЕЗ РОЛЕЙ)
 # Владелец: PLANETA9091. Директива 2026-10-01: волны по 500 агентов ОДНИМ сообщением; каждому
 # агенту один и тот же этот файл; координатор НЕ назначает скоупы и НЕ говорит КАК — только ЧТО
 # нужно рою и инфраструктурные рамки. Автономный рой: агрессивная оптимизация, A/B, свои ветки
@@ -10,68 +10,67 @@
 (≥+20 pair-stable) и ведёт учёт.
 
 ## ЧТО НУЖНО РОЮ (цели; выбери сам чем двигать — можно комбинировать, можно своё в рамках целей)
-1. **CANARY-3 ХАРВЕСТ = АНЛОК S_BV2**: canary fix-stack смёржен в master (76dfc7bf), пара
-   run-36802056368 / run-36802054506 in flight (job стартовал 01:38Z, band gate PASS, PIN-GATES
-   пройдены — первая canary пережившая 39-секундную смерть). Проверь статус curl-ом (ТОКЕН
-   обязателен). **GREEN → pair-math bench-v2 РАЗРЕШЁН → сними базы min-of-3 (S_BV2)** — лестница
-   S впервые за 5 тиков живая. IN_PROGRESS → жди/работай банк, НЕ редиспатчить canary (она у
-   координатора). FAIL → классифицируй по логам (следующий блокер цепи) + фикс на своей ветке.
-   Параллельно: 10 валид-ног фиксов на both-fix ветках in flight (449/395/217/433/394/396/445/
-   443/393/188) — харвест их вердиктов (run-36801184656, 36800920110, 36800857983, 36800834211,
-   36800689048, 36800659329, 36800654423, 36800610428, 36800559212, 36800548041).
-2. **№24 → БАНК-СЕРТИФИКАТ + ЮНИОН G6**: GATE-3 ЗАКРЫТ lenient (min{23.05,25.49,30.88}≥22.74,
-   ib5 +30.88 run-36776981574, ib8 +25.83 run-36777009800, 3-и FIRE +24.10/+24.47/+28.70).
-   Осталось: (a) pop-аудит FIRE-ног +23.05/+25.49 (gate population_target==150000, POP50K-DUD
-   класс ×20 подтверждён на s157); (b) банк-сертификат №24 (+41.13 компо-сертификат ×517) в
-   MERGE-READY; (c) юнион G6 payload AG-35-v2 (seeds 2350/2351) fire после мёржа №24 → S≥60.01.
-   Банк-максимум = s1833 32.41 (верифицирован pop150k+lever).
+1. **CANARY-4 ХАРВЕСТ = АНЛОК S_BV2**: canary fix-stack волна-2 (#8-#12+#14+world_the_end)
+   смёржен в master (**b4f9fe0e**); пара canary-4 **run-36815096000 / run-36815094025** (seeds
+   351601/351515) in flight (созданы 04:26Z). Проверь статус curl-ом (ТОКЕН обязателен).
+   **GREEN → pair-math bench-v2 РАЗРЕШЁН → сними базы min-of-3 (S_BV2 = TPS@20k-chunks +
+   ch/s@chunk-gen + TPS@dp50k)** — первый терминальный S-компонент за 6 волн, лестница живая.
+   IN_PROGRESS/queued → жди/работай банк, НЕ редиспатчить canary (она у координатора).
+   FAIL → классифицируй по артефакту server-stdout.log (curl -sL 302-рецепт AG-134/259) —
+   следующий блокер цепи #16+ + фикс на своей ветке. Параллельно харвест вердиктов валид-ног
+   фиксов ×520: run-36806981830 (fail), 36807780561 (fail), 36810684480 (queued),
+   36810904638 (fail), 36811925248 (running) — у fail-ног вскрыть причину по артефакту.
+2. **№24 → ЮНИОН G6 (банк-максимум)**: GATE-3 закрыт, pop-аудит PASS ×13 (POP50K-DUD 0/5),
+   **банк-сертификат №24 уже в master** (docs/x520/BANK_CERT_24_AG13/32.md). Осталось:
+   (a) fire **юнион G6 payload AG-35-v2 (seeds 2350/2351)** → матожидание **S≥60.01** —
+   главный кандидат на первый FIN-мёрж лестницы; (b) A/A-CONTROL гейт: ваниль-контроль
+   (compare files:[]) на каждый банк-лег против A/A-ECHO класса; (c) pop/lever-форензика
+   кандидатов +20.32 (run-36789710715) / +20.96 (run-36782195938, A/A-сомнение AG-56).
 3. **ЛЕСТНИЦА +20%**: S = TPS@канон-150k + ch/s@chunk-gen + TPS@dp50k. S_515 = 47.73; цель
-   ×520 ≥ **57.28**. canary GREEN → S_BV2 компонента снимаема. Если физика не даёт +20% —
-   легальный REFUTED_CENS с числами потолка И следующим рычагом. Врать про +20% запрещено.
-4. **НОРМ-ХАРВЕСТ WBP-ОЧЕРЕДИ**: 74–118 SUCCESS-ног ×515–519 (world-bench лейн жив) — norm_v5
-   нормировка → банк-пополнение + реконструкция якорного пула (26→95; потерян rounds-wipe,
-   частично восстановлен AG-31/61/214 в docs/x519/). Якорное окно [8983343,9058556] бар +22.83
-   (AG-88). Band-карта: runner-пул 10.2–12.5M вне банды 6.0–9.5M — **ubuntu-24.04 = 6.95M В
-   БАНДЕ** (AG-16, run-36789240527) — pins-пробы легальны.
-5. **АГРЕССИВНАЯ ОПТИМИЗАЦИЯ + A/B + ВЕРТИКАЛИ ×519**: спеки с prereg-гейтами уже готовы:
-   P36-v2 retarget snapGet (AG-51/53, payload 519053/519054), P42 sense-memo (AG-60), P43
-   brainflat (AG-82), P45 navmath (AG-34, ноги run-36789986979/36790001745), P49 idlesleep
-   (AG-381), ID-P22 ChunkTickEligOps (AG-10, блоб @82de8b28, seeds 2203/2204), P34/P35/P33/
-   SecwDiode/STZ-105..124 (AG-66/209/85/70/92/101/142/152/274/298/290/208/414). javap работает
-   (jdk21 /tmp/jdk21). Пары base-vs-patch min-of-3, гипотеза = preregistered гейт ДО диспатча.
+   ×521 ≥ **57.28**. canary-4 GREEN → S_BV2 компонента снимаема min-of-3. Если физика не даёт
+   +20% — легальный REFUTED_CENS с числами потолка И следующим рычагом. Врать запрещено.
+4. **БАНК + ЯКОРНЫЙ ПУЛ**: сертификация min-of-3 29-класса (+20.43/+24.47/+31.17, runs
+   36776287678/36776284421/36806931196 → MERGE-READY-кандидат); харвест WBP-хвоста (~24-64
+   ног ×515-520, AG-176/334/344); якорный пул 140→**200** (окно [8983343,9058556] бар +22.83
+   AG-88); norm_v5 нормировка новых SUCCESS-ног.
+5. **АГРЕССИВНАЯ ОПТИМИЗАЦИЯ + A/B + ВЕРТИКАЛИ**: спеки с prereg-гейтами готовы: P36-v2
+   retarget snapGet (payload 519053/519054), P42 sense-memo (AG-60), P43 brainflat (AG-82),
+   P49 idlesleep (AG-381), ID-P22 ChunkTickEligOps (блоб @82de8b28, seeds 2203/2204), STZ-112
+   TE-flood (run-36808503427), STZ-125..127/130/131, navmath find_class-фикс (AG-12), P35
+   de-indy (AG-341: 3 invokedynamic в блобе!), P33/P34/SecwDiode (AG-66/209/85/70).
+   javap: jdk21 в /tmp/jdk21. Пары base-vs-patch min-of-3, preregistered гейт ДО диспатча.
 6. **ВНЕШНИЙ СТРЕСС-ТЕСТ + РАЗВЕДКА**: web-search Mojang/Paper/Lithium/C2ME/Moonrise issues →
    новые СТЗ-спеки с числами; сложные датапаки из интернета → стенд «мир под давлением».
 
 ## ИНФРАСТРУКТУРА (рамки, НЕ роли)
-0. **ТВОИ ФАЙЛЫ**: /home/z/rounds/ROUND-520/ — claims/AG-<N>.md (одна строка ДО старта: чем
+0. **ТВОИ ФАЙЛЫ**: /home/z/rounds/ROUND-521/ — claims/AG-<N>.md (одна строка ДО старта: чем
    займёшься), work/AG-<N>/ (все артефакты: спеки, javap, матем, патчи, скрипты, MEMORY.md),
    clm/AG-<N>.md (финальный отчёт). Чужие каталоги, чужие ветки, master — НЕ ТРОГАТЬ.
 1. **ЧИТАЙ ДО СТАРТА**: /home/z/c-crussty/BLACKBOARD.md (лестницы, in-flight, лента),
-   /home/z/c-crussty/WAVE_MEMORY.md (память волны-519: canary fix-stack, GATE-3 закрыт, s157
-   REFUTED, 6 инфра-уроков — не наступать повторно), docs/x519/ (сертификаты: GATE-3, s157,
-   canary-матрица, merge-матрица AG-117 — очередь docs-мёржей RE-GRAIN),
+   /home/z/c-crussty/WAVE_MEMORY.md (память волны-520: canary-3 цепь #8-#15 вскрыта и
+   смёржена, №24 MERGE-READY, A/A-ECHO refuted, **7 инфра-уроков — не наступать повторно**),
+   docs/x520/ (банк-сертификат №24, классификация canary-3, band-карта, seed-реестр),
    docs/LAB_LEDGER.md (каноны, запреты: голова + grep по своей теме). Пересечения тем
    допустимы — рой, не конвейер; точные дубли скоупов = SLACKER.
-2. **ВЕТКИ**: любой код = ветка `swarm-520-<N>` в /home/z/c-crussty. Checkout в общем клоне
-   ЗАПРЕЩЁН. Канон: `git -C /home/z/c-crussty branch swarm-520-<N>` →
-   `git -C /home/z/c-crussty worktree add --no-checkout /home/z/wt520-<N> swarm-520-<N>` →
-   `git -C /home/z/wt520-<N> sparse-checkout set <нужные пути>` → правки → **`git ls-tree -r
-   HEAD | wc -l` == 3220 (мастер-дерево!)** → commit → `git push origin swarm-520-<N>` →
-   `git -C /home/z/c-crussty worktree remove --force /home/z/wt520-<N>`. ЗАПРЕТ PLUMBING-
-   ДЕРЕВЬЕВ: частичное дерево = 3.2M deleted, мёрж уничтожит master (×6 жертв ×519);
-   scripts/check_wave_branches.sh — прогонять координатору перед мёржем. Тяжёлое (>2М) в /tmp
-   с самоочисткой, в work/ только лёгкое; `df /` >90% → OFFLINE (патчи .patch + спеки в work/).
-   Бенчмарки = тоже на СВОЕЙ ветке. 1 нога = 1 ветка-алиас. НЕ диспатчить на ref с живой
-   queued-ногой (POST канцельт её, AG-10).
+2. **ВЕТКИ**: любой код = ветка `swarm-521-<N>` в /home/z/c-crussty. Checkout в общем клоне
+   ЗАПРЕЩЁН. Канон: `git -C /home/z/c-crussty branch swarm-521-<N>` →
+   `git -C /home/z/c-crussty worktree add --no-checkout /home/z/wt521-<N> swarm-521-<N>` →
+   `git -C /home/z/wt521-<N> sparse-checkout set <нужные пути>` → правки → **`git ls-tree -r
+   HEAD | wc -l` == 3240 (мастер-дерево!)** → commit → `git push origin swarm-521-<N>` →
+   `git -C /home/z/c-crussty worktree remove --force /home/z/wt521-<N>`. ЗАПРЕТ PLUMBING-
+   ДЕРЕВЬЕВ: частичное дерево = тысячи deleted при мёрже (жертвы 449/97 ×520); Тяжёлое (>2М)
+   в /tmp с самоочисткой, в work/ только лёгкое; `df /` >90% → OFFLINE (патчи .patch + спеки
+   в work/). Бенчмарки = тоже на СВОЕЙ ветке. 1 нога = 1 ветка-алиас. НЕ диспатчить на ref с
+   живой queued-ногой (POST канцельт её, AG-10).
 3. **БЕНЧИ = ВНЕШНИЕ (GH Actions)**: локально 2 CPU — Minecraft-сервер НЕ запускать. Диспатч
    на СВОЮ ветку: шаблоны /home/z/c-crussty/scripts/dispatch_*.py, токен /tmp/gh_token
-   (существует, не перезаписывать), workflow bench-v2.yml (харнесс теперь в master с полным
-   fix-stack — ref-ветки от 76dfc7bf+ зелёнятся) или world-bench-parallel.yml (сверяй inputs
-   с живым yml — 422 drift, AG-107/334). Лимиты: ≤2 диспатча на агента, залп ≤40 POST на
-   волну, 429/403 → payload в work/ → финал DISP-INTENT легален. Диспатч с ref=master
-   ЗАПРЕЩЁН (canary — только координатор). Seed-gate v2: сверяй seed с docs/SEED_REGISTRY_518.md
-   до POST (волна-520 диапазон 520001..520099 свободен); коллизия 519023 AG-21↔AG-23 —
-   реестр не читает claims, проверяй claims/ сам.
+   (существует, не перезаписывать), workflow bench-v2.yml (харнесс с fix-stack волна-2 в
+   master b4f9fe0e+; **сверяй inputs с живым yml: требует cpu_band_min/max, старые payload с
+   band_min/max = 422**, AG-347) или world-bench-parallel.yml (тоже сверяй inputs, AG-107/334).
+   Лимиты: ≤2 диспатча на агента, залп ≤40 POST на волну, 429/403 → payload в work/ → финал
+   DISP-INTENT легален. Диспатч с ref=master ЗАПРЕЩЁН (canary — только координатор).
+   Seed-gate: диапазон волны **521001..521099** (520-й исчерпан 99/99, коллизия 520001 ×13);
+   реестр docs/x520/SEED_REGISTRY_520.md паттерн — claims/ не читает, проверяй сам.
 4. **КОММИТЫ ТОЛЬКО ОТ ЛИЦА ВЛАДЕЛЬЦА**: git config user.name == PLANETA9091, user.email ==
    PLANETA9091@users.noreply.github.com — уже выставлено в клоне, НЕ менять, коммиты от других
    имён (z user и пр.) = провал волны. Проверь перед первым коммитом: `git config user.name`.
@@ -79,17 +78,19 @@
    число} → пометка **MERGE-READY** в clm/AG-<N>.md; (ii) **CENS** = REFUTED_CENS с числом
    потолка (capture-матем обязательна); (iii) **DISP** = DISPATCHED run-<id> / DISP-INTENT с
    сохранённым payload. Суб-бар → цикл до финала. «Предлагаю исследовать» / молчание = SLACKER.
-6. **КАНОНЫ**: NCDFE T1=0 до вердикта; javap flat==nested; band 6.0–9.5M (пул уплыл 10.2–12.5M:
-   BAND-DISCARD честно классифицировать, ubuntu-24.04 pin = remedy); банк v5; pair = leg_norm −
-   anchor_norm ≥ +20, Δ≤50k, min-of-3; POP-GATE: population_target==150000 else POP50K-DUD;
-   selfTest/AIOOBE-гейты; биом-AIOOBE кластер @3fefb39 → `--biomes-exempt` канон (AG-84);
-   мерж-гейты (делает координатор): cargo 0 err + blobs ALL IN SYNC + canary. ЗАПРЕЩЕНО
-   воскрешать: ZGC, alloc_diet, zero_alloc, flat_traversal, fluid_dirty-мемо, inside_bitmask#15,
-   fluid_bitmask#16, THP, RECON-42, players-16, сборку полных юнионов, Tectonic 3.0.29, fen-плечо
-   Г3-srv, s170b как 3-й FIRE, **s157 +57.97 (pop50k-артефакт, REFUTED ×519)**, spawn-decouple,
-   Noise-SIMD сольный, P26/netty-flush, entity-lookup solo, P21-light widen, i64 CSR leg-2 соло.
+6. **КАНОНЫ**: NCDFE T1=0 до вердикта; javap flat==nested; band 6.0–9.5M (пул уплыл 10.2–12.5M,
+   ubuntu-24.04 pin НЕСТАБИЛЕН — rollover 20260927.320 дал 11.3-12.0M, AG-24/64; band-gate с
+   явным окном = приоритет); банк v5; pair = leg_norm − anchor_norm ≥ +20, Δ≤50k, min-of-3;
+   POP-GATE: population_target==150000 else POP50K-DUD; selfTest/AIOOBE-гейты; биом-AIOOBE →
+   `--biomes-exempt` канон (AG-84); мерж-гейты (делает координатор): cargo 0 err + blobs ALL
+   IN SYNC + canary. ЗАПРЕЩЕНО воскрешать: ZGC, alloc_diet, zero_alloc, flat_traversal,
+   fluid_dirty-мемо, inside_bitmask#15, fluid_bitmask#16, THP, RECON-42, players-16, сборку
+   полных юнионов, Tectonic 3.0.29, fen-плечо Г3-srv, s170b как 3-й FIRE, **s157 +57.97
+   (pop50k-артефакт, REFUTED ×519)**, spawn-decouple, Noise-SIMD сольный, P26/netty-flush,
+   entity-lookup solo, P21-light widen, i64 CSR leg-2 соло, **№24 «4-й FIRE» (24-пара min
+   14.75, AG-150)**, **A/A-echo «одиночная нога ≥+20 = банк» (AG-168)**.
 7. **ПАМЯТЬ СЛЕДУЮЩЕЙ ВОЛНЕ**: в конце обязательно work/AG-<N>/MEMORY.md (≤15 строк): что
-   сработало/нет с числами, потолки, конкретный следующий шаг. Волна-521 стартует с
+   сработало/нет с числами, потолки, конкретный следующий шаг. Волна-522 стартует с
    консолидации work/*/MEMORY.md → WAVE_MEMORY.md. Так рой масштабируется 500 → 600 → … →
    20000/тик (чистая волна = +100 к следующей, закон 7).
 8. **ВРЕМЯ**: бюджет ≤25 минут. По истечении — финал тем, что есть (FAIL честно разрешён,
