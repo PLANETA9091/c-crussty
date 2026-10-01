@@ -166,7 +166,7 @@ SRV_PLUGINS="$PWD/plugins"   # AG-395: capture BEFORE cd — $PWD inside subshel
 [ -s plugins/DimForceload.jar ] || { log "G-DFJAR FAIL (jar not in server plugins/ — instrumentation would run DEAD)"; exit 44; }   # AG-395 hard gate: silent plugin absence = FAKE-GREEN class F
 jar tf plugins/DimForceload.jar | grep -qx "plugin.yml" || { log "G-DFJAR FAIL (jar lacks plugin.yml descriptor — blocker #8 class, plugin will not load)"; exit 44; }   # AG-342 hard gate #8: deterministic pre-boot detector (server-stdout line 8: DirectoryProviderSource load error)
 export DIM_RADIUS_CHUNKS=$(( (RADIUS_BLOCKS + 15) / 16 ))
-export DIM_WORLDS="world,world_nether,world_end"
+export DIM_WORLDS="world,world_nether,world_the_end"
 log "benchv2-ag12: DimForceload staged ($(stat -c%s plugins/DimForceload.jar) B) radius_chunks=$DIM_RADIUS_CHUNKS worlds=$DIM_WORLDS"
 
 # --- AG-12: async wall-clock heartbeat sampler (AG-234 principle) ------------
@@ -274,7 +274,7 @@ DIMGATE=$(grep -oE "G-DIM world=[a-z_]+ loaded=[0-9]+" server-stdout.log | tail 
 log "G-DIM census: $DIMGATE"
 OV=$(echo "$DIMGATE" | grep -oE "world=world loaded=[0-9]+" | grep -oE "[0-9]+" | tail -1); OV=${OV:-0}
 NE=$(echo "$DIMGATE" | grep -oE "world=world_nether loaded=[0-9]+" | grep -oE "[0-9]+" | tail -1); NE=${NE:-0}
-EN=$(echo "$DIMGATE" | grep -oE "world=world_end loaded=[0-9]+" | grep -oE "[0-9]+" | tail -1); EN=${EN:-0}
+EN=$(echo "$DIMGATE" | grep -oE "world=world_the_end loaded=[0-9]+" | grep -oE "[0-9]+" | tail -1); EN=${EN:-0}
 TOTAL=$((OV + NE + EN))
 if [ "$OV" -ge 19000 ] && [ "$NE" -ge 19000 ] && [ "$EN" -ge 19000 ] && [ "$TOTAL" -ge 60000 ]; then
   log "G-DIM PASS ov=$OV ne=$NE en=$EN total=$TOTAL"
