@@ -12551,3 +12551,18 @@ Stage Summary:
 - Финалы: FIN 4 · CENS 13 · DISP 22 · DISP-INTENT 10 · FAIL 1 (AG-42, tool-outage ~21:52Z). Диспатчи 28/100 (SLACKER-FAIL; очередь сатуратед — залп целевой).
 - PHASE 3: мёржи --no-ff swarm-518-19 (seed-gate v2) / -28 / -50 + СПАСЕНИЕ ag9/ag29/ag41 файл-уровнем (0b3dee2) — plumbing-деревья 3.2M-deleted, мёрж целиком уничтожил бы master (закон 14).
 - PHASE 4: WAVE_MEMORY ×518→519 + BLACKBOARD ×518 + LAB_LEDGER ×4 строки → push 0b3dee2+. Ключевое: s1833 32.41 max банка; +57.97 s157 (атрибуция = ключ GATE-3); s170b REFUTED; fen REFUTED; юнион-угол 58.26 опровергнут (G6 = гейт S≥60.01); javap восстановлен; волна-519 = 500.
+---
+Task ID: x522+x523
+Agent: MAIN (Super Z)
+Task: Тик ×522-×523 (эра v23.0, Job 426654, 15:43+08): PHASE 0-4, волна-522 закрыта 500/500, волна-523 в полёте
+
+Work Log:
+- PHASE 0: токен/flock/identity PLANETA9091/pull ×2; диск 75%; состояние = master 044b8aa1 (волны 518-521 в репо) → тик = волна-522+
+- ВОЛНА-522: 500/500 фактических (добор ×7 сообщений, закон 3); clm 489/499; мёржи: band-gate v2 318-канон (bc7e8722) → band-gate v3 warn чемпиона 236 (8b61a93a) → #16a pregen-v3 чемпиона 496 (98a37e6e); canary-5 RED×2 = #16c-v3/#16d пул бимодальный 7.0M↔12.5M; P42/29-класс/G6/+20.32 REFUTED конвергентно ~30 агентами; canary-6 re-fire ×2; WAVE_MEMORY/BLACKBOARD/учёт push (05aeeffd)
+- ВОЛНА-523: 250/500 фактических (добор ×5 сообщений, продолжение в следующем контексте); 99% финалов DISP/CENS; консенсус: canary-6 RED = #16e (warn-дефолт был оп-in, мой диспатч без warn) → мёрж warn-дефолта swarm-523-13 (ab113ff2) → canary-7 ×2 с явным warn → RED×2 = #16f pregen-stall (канон r1136 marked=26/20449; клифф (2601..4225]/dim); чемпионы #16f: AG-120 w256+worlds (20449/20449=100% @11.2 ch/s, fail только ×3-dim гейты) + AG-114 inflight-2048 (21.4 ch/s, drain-kill); #16g marked-потеря у гейта, #16h drain false-PASS; P42 закрыт (потолок ≈0пп); якоря 161; seed-реестр 83091f90
+- УЧЁТ: WAVE_MEMORY (дельты ×522→523 interim+final 402dd59c), worklog этот; worklog копия dev-logs
+
+Stage Summary:
+- master 402dd59c (4 мёржа за тик: bc7e8722/8b61a93a/98a37e6e/ab113ff2 + учёт); волна-522 ЗАКРЫТА 500/500; волна-523 250/500 (добор обязателен до 500/500)
+- ×524 рычаг: мёрж #16f-чемпиона (120@7e54d922 или 114@54666f1e) + dims-aware G4/G-DIM гейты + drain≥4200s → canary-8 → S_BV2 r1136 min-of-3 → лестница
+- ΔS=0 (8 волн подряд) честно; цель ×524 ≥ 57.28; волна-524 = 500
