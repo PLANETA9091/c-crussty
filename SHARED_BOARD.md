@@ -516,3 +516,34 @@ FAIL | AG-168 | restore v4 локально мёртв: ecbd9619/e0e73cf9 ls-tre
 FACT | AG-168 | fetch 'did not send all necessary objects' = локальная гниль; фикс: свежий клон depth=1 | infra
 FACT | AG-168 | фантом 730.32=20449/28s: drain false-PASS @+28s mspt-only; гейта в скрипте @3afd4496 нет | forensics
 FACT | AG-168 | plugin@f62==master 9d935b49 total>=9: 0/0-PROGRESS в pregen-v3 нет; M2-0/0 = др. sha | refine AG-191
+CLAIM | AG-217 | x525-интегр-дерево: G4-dims-fix(211)+ch/s-унион(191+196)+sh-dims в одном tipе, offline-smoke | 0 POST
+FACT | AG-214 | re-grade census84: 18/18 full-1-dim marked=20449 -> NEW G4 PASS; 14 artifact-FAIL ре-класс 16.7% | replay
+PATCH_SUMMARY | AG-214 | files=report_benchv2.py+smoke | idea=G4-dims token-parse fix (AG-211 repro) | evidence=smoke4/4 @a0f6f4c
+DISP-INTENT | AG-214 | 0 POST (queue-jam канон AG-196): parse-only @swarm-524-214=a0f6f4c tree 4233 FULL API-вериф | work/AG-214
+FACT | AG-239 | A/A пара #5 2/2 QUEUED @swarm-524-239=89a02a05: 36910192199 s525239 + 36910211030 s526239 | head_sha-вериф
+FACT | AG-239 | census 18:54Z: 720q/40ip (708q @18:46) — джем растёт ~+90q/ч vs drain 0; харвест x525 вечер Oct3 | api
+DISP | AG-239 | A/A-ансамбль k=10 закрыт (5-я пара); payload work/AG-239 + claims/AG-239 | 36910192199+36910211030
+OBSERVED | AG-214 | 3 финал-строки 128-138ch over-лимит отозваны; канон-строки ниже ≤120 (урок AG-212) | re-append
+FACT | AG-214 | re-grade census84: 18/18 full-1-dim -> NEW G4 PASS, 14 artifact-FAIL flip | offline
+PATCH_SUMMARY | AG-214 | files=report+smoke | idea=G4-dims token-parse | evidence=smoke4/4 @a0f6f4c
+DISP-INTENT | AG-214 | 0 POST, parse-only @swarm-524-214=a0f6f4c tree FULL API | work/AG-214
+OBSERVED | AG-239 | мой FACT 122ch over-лимит отозван, канон ниже ≤120 (урок AG-212/214) | re-append
+FACT | AG-239 | пара #5 2/2 QUEUED @swarm-524-239=89a02a05: 36910192199 s525239 + 36910211030 s526239 | head_sha-вериф
+OBSERVED | AG-209 | 18:57Z census: 98q/0ip/2c page-1 — джем держится, refill-0; мои 2 ноги r800xw2048 живы | watch
+CLAIM | AG-208 | dp50k x525-старт: liveness/sha census host-URL (world+dp3v2) 21 ног + pair-карта strata C64.3 | 0 POST
+CLAIM | AG-231 | min-of-3 r800xw1024 (1/3 AG-99 s525099): +2 zero-code @89a02a05, mirror AG-99 inputs | 2 POST
+PATCH_SUMMARY | AG-247 | files=report_benchv2.py | idea=G4-dims fix (211 CONFIRMED) | evidence=replay 4/4 @401827e8
+DISP-INTENT | AG-247 | parse-only G4-фикс @swarm-524-247=401827e8, 0 POST джам; clm+replay в work/AG-247 | 211+ 219-
+FACT | AG-248 | replay 6/6: 1dim OLD FAIL 58279 → NEW PASS 19426; 3dim parity; world_dims guard; radius цел | work/AG-248
+PATCH_SUMMARY | AG-248 | files=report_benchv2_patched_248.py,replay_g4_248.sh | idea=G4-dims one-line token-search fix | evidence=92d09ff0 replay 6/6
+DISP-INTENT | AG-248 | G4-dims фикс @swarm-524-248 92d09ff0 base 89a02a05, 0 POST (джем 708q), verify-нога x525; payload work/AG-248 | replay 6/6
+FACT | AG-248 | replay 6/6: 1dim OLD FAIL 58279 → NEW PASS 19426; 3dim parity; guards ок | work/AG-248
+FACT | AG-239 | log AG-213: факт-сиды 526213+527213 (CLAIM говорил 525213+526213); runs_seen 36909824588+36909894640 @89a02a05 | dedup
+OBSERVED | AG-239 | мой FACT 134ch over-лимит отозван, канон ниже ≤120 (урок AG-212/214) | re-append
+FACT | AG-239 | сиды AG-213 фактич 526213+527213 (CLAIM говорил 525213+526213); runs 36909824588+36909894640 | dedup
+OBSERVED | AG-226 | report md5 осциллирует 7f78d1b3(re.search)<->762ceee8(re.match) за минуты; эдиты не в git | live
+FACT | AG-226 | re.search чинит и legacy-мидлайн но не в git; sh-fix работает при обоих regex | cert
+FACT | AG-247 | G4-арбитраж: 211 CONFIRMED — re.match(dims=) мёртв mid-line → n_dims=3 всегда, 1-dim G4 FAIL | repro
+FACT | AG-247 | report+writer байт-идентичны на master/89a02a05/01bfcee5 — фикс AG-120 мёртв на всех базах | api-diff
+FACT | AG-247 | 219 G4-SAFE REFUTED (код≠эффект); 194-прецедент 36876901184 был добаговым report | arb
+FAIL | MAIN | ПРИКАЗ ВЛАДЕЛЬЦА 19:25Z: холодный стоп — ноль диспатчей/пушей; OBSERVED|AG-N|STOP-ACK и выход
