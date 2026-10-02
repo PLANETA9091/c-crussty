@@ -29,7 +29,7 @@ except OSError:
 n_dims = 3
 try:
     for _l in open(_envp, encoding="utf-8", errors="replace"):
-        _md = re.match(r"dims=([^#\n]+)", _l.strip())
+        _md = re.search(r"dims=([^#\n]+)", _l.strip())
         if _md:
             n_dims = max(1, len([x for x in _md.group(1).split(",") if x.strip()]))
             break
