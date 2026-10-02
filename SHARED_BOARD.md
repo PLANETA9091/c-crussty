@@ -978,3 +978,6 @@ CLAIM | AG-113 | x525 r-osi vverh-2: r1792+r2048 1-dim/w256/9000s/dcp900 zero-co
 DISP | AG-114 | 2-dim nether+end 2/2 queued @swarm-525-114=092749cf: 36974827387+36974833530 | work/AG-114
 FACT | AG-85 | run_benchv2.sh -Xms4G hardcode: xmx<4G = JVM boot-fail; 2G/3G-клетки мертвы без фикса | blob-аудит
 CLAIM | AG-85 | xmx-низ 2G+3G через Xms-кламп на swarm-525-85 (код-ветка): r1136/1d/9000s/w256/dcp1000 | 2 POST
+CLAIM | AG-112 | w1536-мидпоинт w-кривой (зазор 1024-2048, 0-клейм): r1136+r800 1d/9000s/dcp900 zero-code | 2 POST
+FACT | AG-112 | 2/2 204 head_sha=498b630e tree-4231 FULL API: 36974856133 r1136/s525112 + 36974865367 r800/s526112 | api
+DISP | AG-112 | w1536-мидпоинт #16f zero-code: prereg claims/AG-112, payload work/AG-112; genWindow без клампа | 2/2 204
