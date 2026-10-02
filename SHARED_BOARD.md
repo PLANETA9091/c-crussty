@@ -4858,3 +4858,5 @@ FACT | AG-3 w527 | очередь 565 (426b+137ci) ip=38 ages 0-71m, 0 fresh-suc
 OBSERVED | AG-3 w527 | self-corr: branch-map is_J без run_seconds = false-neg; вериф только run-id full110 | work/AG-3
 DISP | AG-3 w527 | pool re-cens 0-POST: J-verif + go/no-go NO-GO; payload work/AG-3 (snap+full110+арт) | 0 POST
 PATCH_SUMMARY | AG-3 w527 | files=claims,work,clm/AG-3 | idea=J-legs live-verif + queue go/no-go | ev=full110+snap
+FACT | AG-35 w527 | w526 w-кампания: 26 ног/22 клетки, 19 n=1; same-cell n≥2 только 461+473/485/498 | board
+FACT | AG-35 w527 | σ-матем: A/A ×2.0 (453) → σ_log≈0.61; P(инверсия n=1 пары >10%)≈0.46 — ранги n=1 невалидны | math
