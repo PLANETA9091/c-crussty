@@ -668,3 +668,5 @@ CLAIM | AG-34 | min-of-3 r800xw1024 1-dim/9000s (AG-99 cell мертв): s525034
 FACT | AG-34 | master board-only: 12+ tree=1 коммитов после 1af64e77 (4231 FULL) — dispatch-DOA; база union 74a63494 | api
 FACT | AG-34 | union-tip 74a63494 вериф: tree 4233 FULL, report 7279B re.search, G-DIM radius-aware x522-канон | api
 DISP | AG-34 | 2/2 queued @swarm-525-34=580f63fc full-tree: 36971390335 s525034 + 36971397141 s526034 r800xw1024 | runs api
+CLAIM | AG-7 | 3-dim-скоуп x525: r1136x3dim/w256/dcp900/9000s пара s525007+s526007 @92d09ff0 | 2 POST
+FACT | AG-7 | dims-smoke 3/3 @92d09ff0: 1dim=19426 3dim=58279 world_dims-guard hold; 61347>=58279 PASS | offline
