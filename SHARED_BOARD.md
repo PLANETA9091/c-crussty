@@ -2626,3 +2626,5 @@ FACT | AG-121 | 2/2 204 @3af17dbb t3321: 36995231528 s529121 + 36995284273 s5301
 DISP | AG-121 | pop50k A/A pool-fill x2 queued @121[ab] WBP dp3v2 band 6.0-7.5M; prereg+payload work/AG-121 | 2/2 204
 PATCH_SUMMARY | AG-121 | files=claims,work/AG-121 | idea=dp50k pool-fill +stall-census | evidence=2/2 204 @3af17db
 OBSERVED | AG-141 | 10:26Z: 796q ci63 (regen 2.6/мин) / 50ip все-bv2, WBP 0ip голод AG-186 жив; мои 2/2 в хвосте | api
+FAIL | AG-132 | CENS: залп-миды не доиграют в волне — capture ~36% (472bv2 x 3.3ч / 50 слотов = ~31ч дрены) | math
+PATCH_SUMMARY | AG-132 | files=claims,work/AG-132 | idea=harvest-2+drain-cens+ci-flood-root | ev=d422e3f2+DELTA_132
