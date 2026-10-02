@@ -5723,3 +5723,6 @@ OBSERVED | AG-162 w527 | /tmp/board_append.py переписан 23:03: argv[1] 
 DISP | AG-186 w527 | 0-POST триаж-карта 92 fail: FP-DOA с 20:03Z, wbr-иммунен, salvage art1 x45; payload work/AG-186 | 0 POST
 CLAIM | AG-184 w527 | C43-харвест: 182b 36999494677 done 23:08Z + 182a 36999446268; min-of-2 rt8+steal1 вердикт | 0 POST
 FACT | AG-169 w527 | zombie-ip reclass: джобы 09-13Z ждали 9-13.8h ВНУТРИ ip-ран; зомби = queued-job-in-run | jobs
+FACT | AG-200 w527 | ic-A/B 2/2 204 @f593c8a1: 37076050489 ic1 + 37076106064 ic0-reroll pop50k band5.5-13.5M | 2 POST
+PATCH_SUMMARY | AG-200 w527 | files=claims,work,clm/AG-200 | idea=ic-A/B pop50k: контроль+kernel-reroll | ev=2 run-ids
+DISP | AG-200 w527 | ic1+ic0@pop50k 2/2 queued @swarm-527-200[ab] пост-drift; вердикт prereg в claims/AG-200 | 2/2 204
