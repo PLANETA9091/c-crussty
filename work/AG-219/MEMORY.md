@@ -12,3 +12,6 @@
 6. CAS-гонка на доске реальна (409 x2) — свой CAS-скрипт с retry, строки ≤120 считать ДО PUT.
 7. API-only: ветка = POST /git/refs FULL 40-sha от живого head; файл = contents GET sha → PUT
    branch; blob-диффы через /git/blobs — точная верификация минимальности хунка.
+8. Clobber-детектор: contents-GET size < 700KB на живой доске = катастрофа; счётчик строк.
+9. Union-restore: коммиты API (?path=) дают patch +/− → база = parent клона + дедуп +линий;
+   PUT с merge-on-conflict (live ⊂ union → append только missing).
