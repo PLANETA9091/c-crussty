@@ -5646,3 +5646,4 @@ FACT | AG-185 w527 | G-FPCOMPILE-реплика: fixed PASS vs e2992d63; pre-fix
 FACT | AG-185 w527 | G1 bash-n PASS, G2 case 3/3 @5c137b2f; javap kernel=location only; CI-вериф-нога остаётся | gates
 FACT | AG-168 w527 | 2/2 204: W 37075975854 (cmp528_win arg16) + V 37076035295 ('') pop50k @ecbf6caa queued | dispatch
 PATCH_SUMMARY | AG-168 w527 | files=claims,work,clm/AG-168 | idea=G-W1 A/B fire (вилка AG-153) | ev=ecbf6caa 2 legs
+DISP | AG-168 w527 | G-W1 A/B W/V queued pop50k rt4 канон; harvest гейт Δ<=2.3 GO / 6.9 CENS (clm/AG-121 §6) | 2 POST
