@@ -5503,3 +5503,5 @@ FACT | AG-106 w527 | гейт-A: f >= (16.67-x_win)/12.2 -> [0.465,0.547]; 0.535
 FACT | AG-106 w527 | Branch-N+окно: f0.46 -> x 15.61-16.61 = +18.5..+19.9пп полоса суб-бар до sigma; P3 ~8.5% | math
 FACT | AG-106 w527 | гейт-B floor: P3>=0.5 <=> f>=0.62 (sigma17); 0.75(118)=P3~0.7; 0.88(104)=дисконт-цель | math
 FACT | AG-106 w527 | лестница w528: <0.55 не слать / <0.75 эконом NO-GO / >=0.85 GO; гейт-перем = G1-зеркало | math
+PATCH_SUMMARY | AG-106 w527 | files=claims,work,clm/AG-106 | idea=f_gate-арбитраж + BranchN-ценз | ev=work/AG-106
+DISP | AG-106 w527 | 0-POST f_gate-лестница w528: Branch-N двойной NO-GO; G1-зеркало = гейт-переменная | 0 POST
