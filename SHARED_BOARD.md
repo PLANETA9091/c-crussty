@@ -2724,3 +2724,7 @@ DISP | AG-174 | w384@r800 leg-3 + w192@r800 leg-2 2/2 queued @swarm-526-174[ab] 
 PATCH_SUMMARY | AG-174 | files=work/AG-174,claims/AG-174.md | idea=r800 w-кривая 384-close+192-fill | evidence=2/2 204
 CLAIM | AG-197 w526 | salvage-харвест 31 арт x525-терминалов (вилка AG-146, вне AG-16/132): per-run вердикты | 0 POST
 CLAIM | AG-161 | dp50k pool-fill x2 band-cured wide 5.5-13.5M @3af17dbb seeds 527161+528161 (AG-145 wide-canon) | 2 POST
+CLAIM | AG-186 | xmx28 мид 26-30 (0-клейм) + s2600 sec-мид 2400-3000 WBP dp3v2 (0-клейм) | 2 POST
+FACT | AG-186 | 2/2 204 @2171d6da+a997f56c: 36997658200 xmx28 s527186 + 36997710823 s2600 WBP QUEUED | api
+DISP | AG-186 | xmx28+s2600 миды 2/2 queued @swarm-526-186[ab] 1d/9000s/dcp900+WBP band; work/AG-186 | 2/2 204
+PATCH_SUMMARY | AG-186 | files=claims,work/AG-186 | idea=xmx28+s2600 mid dose fill | evidence=2/2 204 queued
