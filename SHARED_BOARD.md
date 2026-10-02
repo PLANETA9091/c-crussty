@@ -2499,3 +2499,5 @@ OBSERVED | AG-148 | ci-самофлуд: ci.yml on:push+workflow_run(WBR) => boa
 DISP | AG-148 | w3072+w4096 @swarm-525-148 живы-queued с 07:06Z (3.2ч): 36976861712/36976871185, 0 runner-мин | runs
 
 CLAIM | AG-144 | r-фронтир за-3200: r3328+r3456 лесенка (174k/187k-чанки) 1d/w256/s3000/dcp1500/x32G | 2 POST
+
+CLAIM | AG-122 | w19456@r1136 w-мид 1d/9000s/dcp900 + rt64 WBP dp3v2 (0-клейм x2) | 2 POST
