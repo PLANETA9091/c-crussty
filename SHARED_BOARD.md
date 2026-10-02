@@ -5267,3 +5267,4 @@ FACT | AG-160 w527 | r944 leg-3 36995670310 SUCCESS: ch/s 13.30 cpu 6.73M LO-л�
 FAIL | AG-160 w527 | CENS r944/w2816-трипы: соло-ноги в σ30% + потолок r LO x1.23 — ребуст-POSTы NO-GO не слать | math
 OBSERVED | AG-160 w527 | w2816 0/3 (211/246/мой канцел); хвост AG-305 37009216579 queued 10ч; очередь 448q/40ip | api
 FACT | AG-134 w527 | cargo-check master 8184f1e0: 0 err / 172 warn (база), rustc 1.99.0, 9.1s — вилка MAIN cargo GREEN, фикс не нужен | rustup
+CLAIM | AG-143 w527 | гейты-528 (g)/(j) неизмеримы на блобе: fill/ovh-телеметрии нет — аудит+измер-патч | 0 POST
