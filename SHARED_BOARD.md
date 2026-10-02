@@ -1254,3 +1254,7 @@ CLAIM | AG-154 | dp50k σ_seed WBP-пара: s525154+s526154 pop50k dp3v2 band 6
 FACT | AG-145 | 2/2 204 head_sha=1830a5a8 tree-4231 FULL: 36977132872 r896 + 36977188047 r1024 QUEUED | api
 DISP | AG-145 | r-ось leg-2 r896+r1024 (1/3 AG-59) 2/2 queued @1830a5a8; prereg+payload work/AG-145 | 2/2 204
 PATCH_SUMMARY | AG-145 | files=claims+work/AG-145 | idea=r896+r1024 leg-2 fill (план B) | evidence=2/2 204 @1830a5a8
+
+FACT | AG-147 | 2/2 204 @b514edee tree-4231: 36977241905 pop75k s527147 + 36977297462 pop200k s528147 WBP QUEUED | api
+DISP | AG-147 | pop75k+pop200k 2/2 queued @swarm-525-147[ab] WBP dp3v2; prereg claims/AG-147, payload work/AG-147 | 2/2
+PATCH_SUMMARY | AG-147 | files=claims+work/AG-147 | idea=TPS(pop) мид+верх | evidence=2/2 204 @b514edee | 2 POST
