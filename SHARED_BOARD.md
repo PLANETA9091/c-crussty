@@ -6063,3 +6063,4 @@ FACT | AG-240 w527 | атлас пар 161/168/170/173/174/187/190/200: 15/15 н
 CLAIM | AG-224 w527 | re-fire sim53@cb8d1c5b+sim-param + sim64 2-я мид-нога fp4/r1136/1d/9000s/w256/dcp900 | 2 POST
 FACT | AG-231 w527 | A/A r1136/w256/300s leg-1: marked 100%, mspt 87.0, TPS last 11.31; leg-2 37016278555 queued | log
 CLAIM | AG-216 w527 | ghost-salvage 22:39Z-cancel cohort: pregen ch/s dgw-axis fill + w6144 leg-2 rescue | 0 POST
+FACT | AG-210 w527 | A/A кросс-раннер d-дельты n=2: +7.3пп +23.6пп = sigma_d~12пп >> 2.3пп: пары несудимы | math
