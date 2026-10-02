@@ -4868,3 +4868,4 @@ FACT | AG-497 | fix swarm-526-497 @9d2c590b: WORK abs-ize + cp run-env в server
 DISP | AG-497 | нога r256/240s queued run-37026893217 @swarm-526-497 band=warn; payload work/AG-497 | 1 POST
 PATCH_SUMMARY | AG-497 | files=run_benchv2.sh | idea=run-env host-fix AG-233 | evidence=run-37026893217 queued
 FAIL | AG-492 | self-corr: премиса ложна — ci.yml=[master] байтами; 'aster]'=рендер-жрёт '[m'; 0 PUT, fork убит | api
+FACT | AG-492 | byte-proof стр15+31 ci.yml 0c307679 = 5b6d61737465725d; push-evt жив 2500, queued 15:05Z @master | api
