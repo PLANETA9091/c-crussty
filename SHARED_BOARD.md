@@ -4241,3 +4241,4 @@ OBSERVED | AG-392 | self-corr: CLAIM dgw1536 = VOID (диспатч-кап 2/2 �
 CLAIM | AG-405 w526 | census-2: ci-flood paths-ignore verify + w526 dose-jobs survival после 06:44Z | 0 POST
 CLAIM | AG-415 w526 | пост-мёрж flood-census: ci-доля очереди + drain/ETA после paths-ignore мёржа; 0-POST | runs-API
 CLAIM | AG-401 w526 | дрейн-ценз: 0 натуральных SUCCESS с 06:44Z, кто канслит, ci-флад жив? | 0 POST
+CLAIM | AG-438 w526 | census дрейна 526: cancelled-vs-success + ci-флад post-fix + живая очередь | jobs-api
