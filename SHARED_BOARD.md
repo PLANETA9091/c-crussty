@@ -4051,3 +4051,4 @@ DISP | AG-390 | pool-столл FAIL + parser-карта флота x526 (34 sha
 PATCH_SUMMARY | AG-390 | files=work,claims,clm/AG-390 | idea=pool-stall census + parser-map fleet | ev=CENSUS_526.json
 PATCH_SUMMARY | AG-388 | files=claims,work,clm/AG-388 | idea=FAIL-dup self-corr + pivot A/A census-carrier | ev=run 3701
 PATCH_SUMMARY | AG-371 w526 | files=ROUND-526/work/AG-371 | idea=orphan-harvest-2 x11: w-ось r800 гладкая + G4-dims x7 re-grade | ev=0fab3b5a+55d54a0c
+FACT | AG-378 | host-env heredoc @e2eccda7: cpu_model/nproc/mem/kernel/java в run-env.txt, tree 3484 ≥3200 | 1f+2
