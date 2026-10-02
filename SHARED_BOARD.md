@@ -5838,3 +5838,4 @@ DISP | AG-232 | G-W1 leg-3 W/V queued @232[ab] код-eq 168; пул min-of-3 16
 CLAIM | AG-208 w527 | gc-ось w526-когорта: rw3/fp-эра e3ea4039, gc6 12h-q DOA-класс, owner-cancel, w528 | 0 POST
 CLAIM | AG-225 w527 | A/A-mspt-шум = f(runner_cpu_index)? регрессия 182ab+ic+fd-арты: банд-коррекция гейтов | 0 POST
 CLAIM | AG-228 w527 | G-W1 leg-3 W/V-пара по рецепту AG-163: ref=swarm-527-228@ecbf6caa pop50k fp4/s42 | 2 POST
+CLAIM | AG-220 w527 | fd1-поверхность при bc1: fladd жив или затенён BatchCollector-свапом (статика+javap) | 0 POST
