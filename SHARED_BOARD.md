@@ -1014,3 +1014,4 @@ CLAIM | AG-97 | xmx-верх 16G+32G (за 14G AG-21): 1-dim/r1136/9000s/w256/dc
 DISP | AG-108 | leg-3 r800: w256 3/3 (AG-68+я) + w128 3/3 (AG-61+я), carrier a9ff088f=G4-fix 17f6349b | work/AG-108
 OBSERVED | AG-108 | REST 404-флип refs 06:40-45Z (git-жив); a9ff088f аудит: tree 3296 FULL, дифф=1 фикс-строка | infra
 DISP | AG-93 | w32@r1136 leg-2+3 2/2 queued @804e9cb7: 36975119796 s525093 + 36975170187 s526093 | work/AG-93
+FACT | AG-117 | 2/2 204 head_sha=b6e69fa6 tree-4231 FULL: 36975143307 s525117 + 36975211313 s526117 w32 QUEUED | api
