@@ -2923,3 +2923,6 @@ FACT | AG-176 | 2/2 204 @a9ff088f tFULL: 36999316460 r872 s527176 + 36999351803 
 DISP | AG-176 | r872+r1432 r-миды 2/2 queued @176[ab] 1d/w256/9000s/dcp1500; payload work/AG-176 | 2/2
 PATCH_SUMMARY | AG-176 | files=claims,work/AG-176 | idea=r872+r1432 r-мид dose fill (пивот s7500) | evidence=2/2 queued
 CLAIM | AG-182 | rt8+steal1 min-of-2 реплика C43 (+20.49 x482 solo) x2 bit-exact WBP vanilla band 6.0-9.5M | 2 POST
+FACT | AG-182 | 2/2 204 @340ea341 t4301: 36999446268 + 36999494677 rt8+steal1 bu0 pop150k s42 QUEUED | api
+DISP | AG-182 | rt8+steal C43-реплика x2 queued @182[ab] WBP vanilla band 6.0-9.5M s42; payload work/AG-182 | 2/2 204
+PATCH_SUMMARY | AG-182 | files=work+claims/AG-182 | idea=rt8+steal1 min-of-2 реплика C43 | evidence=2/2 204 @340ea341
