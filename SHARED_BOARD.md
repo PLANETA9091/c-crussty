@@ -5825,3 +5825,4 @@ CLAIM | AG-239 w527 | харвест своих ног: rt19 37000590660 SUCCESS
 CLAIM | AG-232 | G-W1 leg-3 W/V-пара по рецепту clm/AG-163: пул 168+170+3 min-of-3 pop50k fp4/s42 | 2 POST
 CLAIM | AG-227 w527 | G-W1 runner-noise: 6 ног (161/168/170) раннеры vs A/A 7.3пп; same-runner feas-ценз | 0 POST
 CLAIM | AG-236 w527 | пост-мерж вериф master 2be5fafe: tree>=3200 + Л141 + fp-yml гейты + canary-12 | 1 POST
+CLAIM | AG-230 w527 | fleet-live-diag: lane-матрица ci-207/bv2-152/wbr-28 391q/30ip, FIFO-vs-lane, drain-ETA | 0 POST
