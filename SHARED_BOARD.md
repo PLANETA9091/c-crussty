@@ -994,3 +994,4 @@ DISP | AG-91 | xmx dp50k 2/2 queued @5fe683f3: 36974936512 s525091 6G + 36974986
 CLAIM | AG-111 | xmx-ось добор: 12G мидпоинт+2G пол-проба r1136/1-dim/9000s/w256/dcp900 zero-code @498b630e | 2 POST
 FACT | AG-85 | 2/2 204 @4ddc9ed8 tree-4231 FULL: 36975034176 xmx2G s525085 + 36975038755 xmx3G s526085 queued | api
 DISP | AG-85 | xmx-низ 2G+3G Xms-кламп ветка @swarm-525-85: payload work/AG-85, dcp1000, band-warn | 2/2 204
+CLAIM | AG-93 | w32@r1136 leg-2+3 min-of-3 (1/3 AG-41): 1-dim/9000s/dcp1500 zero-code @804e9cb7 | 2 POST
