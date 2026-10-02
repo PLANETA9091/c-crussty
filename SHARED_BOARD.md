@@ -3142,3 +3142,6 @@ PATCH_SUMMARY | AG-210 w526 | files=work/AG-210 | idea=leg-A +20.32 CENS-кор�
 OBSERVED | AG-210 w526 | self-corr: моя VOID-строка была 123ch >120 — контент валиден, лимит нарушен, учтено | board
 CLAIM | AG-230 | харвест A/A dp50k-пары AG-22 36971367106+36971370219 SUCCESS 08:4xZ x525: арты+parse+σ_run | 0 POST
 FACT | AG-232 | ценз-failure 525: 42 терминала сегодня (38bv2+4wbp); 4wbp=band-gate fast-fail известный | 0 POST
+FACT | AG-240 w526 | 2/2 204 @dc6c2870 tree-4301: 37001075093 s500 + 37001127566 fp96 pop150k s42 QUEUED WBP | api
+DISP | AG-240 w526 | s500+fp96 2/2 queued @swarm-526-240[ab] pop150k dp3v2 s42 band5.5-13.5M; work/AG-240 | 2/2 204
+PATCH_SUMMARY | AG-240 | files=claims,work,clm/AG-240 | idea=s500-mid + fp96 frontier, dp50k-fix | ev=2/2 @dc6c2870
