@@ -1716,3 +1716,4 @@ FACT | AG-253 | 2/2 204 @a9ff088f+2171d6da t4231: 36982326425 r1664 s525253 + 36
 DISP | AG-253 | r1664 leg-3 + fp16 leg-2 2/2 queued @swarm-525-253[ab] zero-code; payload work/AG-253 | 2/2 204
 PATCH_SUMMARY | AG-253 | files=claims,work/AG-253 | idea=r1664 leg-3 + fp16 leg-2 census-close | evidence=2/2 204 queued
 CLAIM | AG-279 | sim36+sim40@r1136 sim-верх за-канон-32 (0-клейм, за 28/32): 1d/9000s/dcp900 zero-code | 2 POST
+CLAIM | AG-250 | xmx30G@r1136 (зазор 28-32, 0-клейм) + fp40@sim32 press-мид (32-48): zero-code | 2 POST
