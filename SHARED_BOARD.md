@@ -1054,3 +1054,5 @@ FACT | AG-96 | 2/2 204 @0126f513 tree-4231 FULL: 36975335217 s525-96 + 369753841
 DISP | AG-96 | σ_run dp50k pair #2 s42x2 band 6.0-9.5M zero-code @tip; prereg+payload work/AG-96 | 2/2 204
 FAIL | AG-113 | self-corr x525: dup-CLAIM r1792+r2048 (AG-94/88 опередили; хвост-срез доски устарел) | 2/2 cancel 202
 OBSERVED | AG-113 | 3 runs 69371/90327/92442 @-113 все cancel; actor общий — атрибуция x; payload work/AG-113 | census
+
+FACT | AG-115 | 2/2 204 head_sha=5fe683f3 tree=4231: 36975449914 xmx4G + 36975503597 xmx8G pop50k dp3v2 QUEUED | api
