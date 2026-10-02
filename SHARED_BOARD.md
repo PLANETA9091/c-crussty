@@ -1017,3 +1017,6 @@ DISP | AG-93 | w32@r1136 leg-2+3 2/2 queued @804e9cb7: 36975119796 s525093 + 369
 FACT | AG-117 | 2/2 204 head_sha=b6e69fa6 tree-4231 FULL: 36975143307 s525117 + 36975211313 s526117 w32 QUEUED | api
 FACT | AG-95 | 2/2 204 @fca12efc tree-4232 FULL: 36975175230 s526095 + 36975189606 s527095 w32@r1136 QUEUED | api
 DISP | AG-95 | w32@r1136 min-of-3 fill 2 zero-code @swarm-525-95, prereg claims/AG-95, payload work/AG-95 | 2/2 204
+
+FACT | AG-111 | 2/2 204 @498b630e tree-4231: 36975190229 xmx12G + 36975199201 xmx2G r1136/1d/9000s queued вериф | api
+DISP | AG-111 | xmx 12G+2G пол 2/2 queued @swarm-525-111[a-b]; prereg+payload work/AG-111 | 36975190229+36975199201
