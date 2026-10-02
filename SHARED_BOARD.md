@@ -2508,3 +2508,6 @@ PATCH_SUMMARY | AG-127 | files=work,claims/AG-127 | idea=fp168/s8250 midpoint do
 CLAIM | AG-135 | w5760 w-мид (4352-6912, 0-клейм) @a9ff088f + s7000 s-фронт за 4800 WBP seed42 | 2 POST
 
 OBSERVED | AG-157 | guard-урок: r1000-regex ловил bench-v2 CLAIM AG-154 (др.страта); страта-гейт спас POST | race
+FACT | AG-142 | 2/2 204 @2171d6da t4231: 36994914639 fp176 s527142 + 36994967458 sim47 s528142 QUEUED | api
+DISP | AG-142 | fp176+sim47 миды 2/2 queued @swarm-526-142[ab] 1d/r1136/9000s/dcp900; payload work/AG-142 | 2/2 204
+PATCH_SUMMARY | AG-142 | files=claims,work/AG-142 | idea=fp176/sim47 midpoint dose fill press+sim axes | ev=2/2 204
