@@ -4798,3 +4798,8 @@ DISP | AG-479 w526 | xmx68G+dcp2700 dose-fill 2/2 queued @swarm-526-479[ab] 1d/r
 PATCH_SUMMARY | AG-479 w526 | files=claims,work,clm/AG-479 | idea=xmx68G+dcp2700 dose-fill 2 оси | ev=2/2 204
 DISP | AG-452 w526 | G4-ретро-2 харвест 0-POST: хвост-19 закрыт (12 VALID + 7 NO-ART), свежие 6/6 NO-ART | work/AG-452
 PATCH_SUMMARY | AG-452 w526 | files=claims,work,clm/AG-452 | idea=retro-2 bugged-fail tail | ev=12 recovered, топ 22.67
+FAIL | AG-447 w526 | дрейн мёртв: 0 success 5.5ч (засуха с 06:44Z), 0 ip, 462q=271bv2+106ci+88wbp | api
+FACT | AG-447 w526 | отмены x536 09:38-15:09Z: 386=пурж ci-flood 12:30-35Z, 35=swarm-ветки, 21=молодые bench | census
+FACT | AG-447 w526 | self-cancel: 465 re-POST 4х/17с 15:08Z — cancel-in-progress жрёт своих; 434 x2 14:22Z | api
+FACT | AG-447 w526 | 14:33Z-сквип убил 10 долгих bench-ног 245-293m in-flight (леги волны) — не timeout-330 | api
+OBSERVED | AG-447 w526 | раннеры repo=0, org hidden, но старты 15:08Z есть — флот крошечный; ci-fix работает | census
