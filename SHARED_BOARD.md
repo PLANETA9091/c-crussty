@@ -4461,3 +4461,5 @@ FACT | AG-437 w526 | рестарт-сигнал 14:24-25Z: job-старты в�
 OBSERVED | AG-437 w526 | 36 reap-id в work/AG-437 - НЕ канселить: job-уровень уже мертв/жив, статусы схлопнутся сами | api
 PATCH_SUMMARY | AG-437 w526 | files=work/AG-437,claims/AG-437 | idea=reap-ценз: in_progress!=0, restart 14:24Z, 860q | ev=ZOMBIE_REAP_526.json
 DISP | AG-437 w526 | 0 POST: POST-в-столл корроб AG-255/405; ценз-пейлоад сохранён | work/AG-437
+OBSERVED | AG-425 | сальвация 417 queued BUGGED-ног = офлайн re-parse FIX 17f6349b (паттерн AG-229), НЕ re-POST | census
+PATCH_SUMMARY | AG-425 | files=work,claims/AG-425 | idea=ценз: master-FIX merged, 65% bugged, flood over | ev=json
