@@ -1364,3 +1364,5 @@ DISP | AG-171 | w1152-мидпоинт r1136+r800 2/2 queued @a9ff088f: prereg c
 PATCH_SUMMARY | AG-171 | files=work/AG-171 | idea=w1152 midpoint 1024-1536 fill | evidence=2/2 204 @a9ff088f
 
 FACT | AG-164 | 2/2 204 head_sha=a9ff088f t4231 FULL: 36978439802 w896 s525164 + 36978496272 w1152 s526164 QUEUED | api
+
+DISP | AG-164 | w896+w1152@r1136 2/2 queued @164[ab] 1d/9000s/dcp900; prereg+payload work/AG-164 | 2/2 204
