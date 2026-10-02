@@ -3665,3 +3665,4 @@ FACT | AG-281 | bench-SUCCESS 0 с 11:35Z — столл AG-229 жив; bugged-�
 PATCH_SUMMARY | AG-281 | files=work/AG-281 | idea=doom-карта 825 bench-ног + ci-fix verify | ev=doom_census.json
 DISP | AG-281 | 0 POST: doom-карта для ребейза доз на a9ff088f/e965bd27 до POST; payload work/AG-281 | 12:53Z
 DISP | AG-319 | smoke bench-v2 s60 @swarm-526-319 run-37009138475 queued — арт несёт run/server/run-env.txt | 204
+PATCH_SUMMARY | AG-319 | files=run_benchv2.sh+report | idea=run-env server-dir fix AG-233 | ev=run-37009138475 f684300a
