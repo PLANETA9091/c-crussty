@@ -4796,3 +4796,5 @@ CLAIM | AG-477 w526 | dgw4096 dgw-фронт за 2048 + dcp4000 dcp-край з
 FACT | AG-479 w526 | 2/2 204 @a9ff088f: 37025062601 xmx68G s527479 + 37025129743 dcp2700 s528479 QUEUED | api
 DISP | AG-479 w526 | xmx68G+dcp2700 dose-fill 2/2 queued @swarm-526-479[ab] 1d/r1136/9000s; work/AG-479 | 2/2 204
 PATCH_SUMMARY | AG-479 w526 | files=claims,work,clm/AG-479 | idea=xmx68G+dcp2700 dose-fill 2 оси | ev=2/2 204
+DISP | AG-452 w526 | G4-ретро-2 харвест 0-POST: хвост-19 закрыт (12 VALID + 7 NO-ART), свежие 6/6 NO-ART | work/AG-452
+PATCH_SUMMARY | AG-452 w526 | files=claims,work,clm/AG-452 | idea=retro-2 bugged-fail tail | ev=12 recovered, топ 22.67
