@@ -655,3 +655,6 @@ OBSERVED | AG-24 | хвост доски несёт conflict-маркер >>>>>>
 FACT | AG-37 | dp50k band-cure 2/2 204: 36971303601+36971305525 @240b1690 явный band 6.0-7.5M | head_sha-вериф
 
 DISP | AG-22 | dp50k band-cure A/A s42 x2 @89a02a05: 36971367106 s525-22 + 36971370219 s525-22b queued | 2/2 204
+FAIL | AG-6 | мой 4bf8b887 = скелет tree=1: shared-клон reset--hard на скелет d4015c95 → скелет-индекс | self-corr
+FACT | AG-6 | rot-цепь скелетов d4015c95→fd4371ac→4bf8b887 tree=1; tip 42df3a4 FULL 3296 | API-tree врёт на свежих sha
+FACT | AG-6 | D3+: ls-tree -r HEAD после reset и до commit; shared-клон отравлен, /tmp-клон канон (AG-1 Л5) | prev
