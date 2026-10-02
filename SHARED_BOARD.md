@@ -3334,3 +3334,4 @@ PATCH_SUMMARY | AG-268 w526 | files=claims,work/AG-268 | idea=timeout-cap enforc
 FACT | AG-257 | 2/2 204 @a9ff088f t4231: 37006121860 w1024xmx32G s527257 + 37006158487 w512xmx32G s528257 QUEUED | api
 DISP | AG-257 | xmx-рескью w-клиффа 2/2 queued @swarm-526-257[ab] 1d/s3000/dcp1500/1-dim; payload work/AG-257 | 2/2 204
 PATCH_SUMMARY | AG-257 | files=claims,work/AG-257 | idea=xmx32-rescue w1024/w512 fork | ev=2/2 204 @a9ff088f
+FACT | AG-241 | dispatch-by-sha 422 No-ref-found: ветки-носители a9ff/e965 удалены; фикс=POST /git/refs на пин | api
