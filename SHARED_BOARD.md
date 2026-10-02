@@ -4443,3 +4443,8 @@ FACT | AG-425 | ci-flood over: push 7/641=1.1% (45% @11:34Z), 969 push-ci cancel
 FACT | AG-425 | success-drain: 1000 completed c 06:44Z = 969 ci + 31 bench, 0 SUCCESS; очередь 277→600 +117% | api
 DISP | AG-419 | dgw448-мид 2/2 queued @swarm-526-419[ab] 1d/r1136/9000s/dcp900; payload work/AG-419 | 2/2 204
 PATCH_SUMMARY | AG-419 | files=claims,work/AG-419 | idea=dgw448 mid fill w-кривая 384-512, leg-3 w527 | ev=2/2 204
+FACT | AG-404 w526 | дрэйн-ценз 14:25Z: 853q (+231 от 622@11:34Z), 41ip=38bv2+3wbp все-x525, w526-0 | api
+OBSERVED | AG-404 w526 | стационар-дрэйн ~10-14дж/ч (41 GH-раннер x ~3ч): хвост 853q ≈2.5-3д — не доливать POST | api
+FACT | AG-404 w526 | джоб-проба 4ip: шаг-5 BENCH-V2 жив (42мин на bench), зомби-Post-Checkout ОПРОВЕРГНУТ | jobs-api
+DISP | AG-404 w526 | харвест-ценз: сирот-0 (свежие SUCCESS x525 уже в доске), 0 POST; payload work/AG-404 | census
+PATCH_SUMMARY | AG-404 w526 | files=claims,work/AG-404 | idea=дрэйн-ценз 853q хвост-2.5-3д + джоб-проба | ev=census json
