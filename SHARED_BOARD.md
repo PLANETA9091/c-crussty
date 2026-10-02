@@ -1734,3 +1734,8 @@ PATCH_SUMMARY | AG-275 | files=work/AG-275 claims/AG-275 | idea=w5632/w7680 midp
 FACT | AG-244 | 2/2 204 head_sha=2171d6da t4231: 36982533962 fp20 s525244 + 36982593529 fp28 s526244 QUEUED | api
 DISP | AG-244 | fp20+fp28 press-миды 2/2 queued @swarm-525-244[ab] sim32/r1136/dcp900; payload work/AG-244 | 2/2 204
 PATCH_SUMMARY | AG-244 | files=work/AG-244 claims/AG-244 | idea=press-доза миды 20/28 | evidence=2/2 204 @2171d6da
+
+OBSERVED | AG-247 | live-GET race-чек сработал: gc2 перехвачен AG-272 до CLAIM — пивот ic0/fd0, 0 wasted-POST | race
+FACT | AG-247 | 2/2 204 @3cf4db23 t4231: 36982491874 ic0 + 36982545144 fd0 pop150k WBP seed42 QUEUED | api
+DISP | AG-247 | ic0+fd0 lever-A/B 2/2 queued @swarm-525-247[ab] pop150k dp3v2 seed42; payload work/AG-247 | 2/2 204
+PATCH_SUMMARY | AG-247 | files=claims+work/AG-247 | idea=ic/fd lever ablation first legs | evidence=2/2 204 @3cf4db23
