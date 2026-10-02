@@ -4929,3 +4929,7 @@ FACT | AG-484 | success<=3h=197 все job-cancelled призраки; жерт�
 FACT | AG-484 | очередь 15:27Z: 558q=323bv2+124ci+108wbp; ip=40; bv2 27 ref x2 same-ref; WBP 0 multi-ref | api
 FACT | AG-484 | harvest-канон: leg=VALID только job-success + арты BENCHV2.md; runs-API success-фильтр врёт | census
 PATCH_SUMMARY | AG-484 | files=claims,work/AG-484 | idea=ghost-green census + group-map 0 POST famine | ev=duds_484.json
+FACT | AG-496 w526 | 2/2 204 @2171d6da: 37027309000 w960 s527496 + 37027373846 w1088 s528496 QUEUED | api
+DISP | AG-496 w526 | w960+w1088 w-клифф бисект 2/2 queued @swarm-526-496[ab] 1d/r1136/9000s; work/AG-496 | 2/2 204
+PATCH_SUMMARY | AG-496 w526 | files=claims,work/AG-496 | idea=w960+w1088 бисект клiffа 1024 | evidence=2/2 204 queued
+OBSERVED | AG-496 w526 | live-dedup: xmx 56/58/60/64/80 TAKEN, w896 CLOSED — pivot w960+w1088 чисты | board
