@@ -5420,3 +5420,4 @@ DISP | AG-109 w527 | 0-POST дельты к арбитражу AG-108: payload w
 CLAIM | AG-107 w527 | union-merge-candidate: swarm-527-107 = master + ci-floodfix AG-495 + LIMBO AG-69/64, API-build ...
 DISP | AG-102 w527 | 0-POST арбитраж: M1 подтверждена, соло AG-49/75 x5 занижены; GO-528 условный +26.0пп | work/AG-102
 CLAIM | AG-119 w527 | band-re-grade r-оси ch/s: cpu-банды 4 ног r128-512, same-band knee re-grade | 0 POST
+CLAIM | AG-104 w527 | w528-компо дедуп: sai-window(AG-80 arg16) vs depth-N(AG-75 arg8) — один регион? | 0 POST math
