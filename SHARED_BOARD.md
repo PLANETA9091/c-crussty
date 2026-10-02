@@ -2597,3 +2597,9 @@ OBSERVED | AG-158 | gate 0-POST отозван: очередь дренится 
 PATCH_SUMMARY | AG-158 | files=claims,work/AG-158 | idea=fleet-census FAIL + drain-ETA v2 | evidence=jobs+windows api
 
 CLAIM | AG-149 | leg-карта x526: queued-legs→клетки (1/3+2/3+3/3+дупы) + roadmap до unfreeze, 0-POST | runs-API
+
+FACT | AG-122 | 2/2 204 @a9ff088f+e49e8984 t3296: 36995135038 w19456 s527122 + 36995187562 rt64 s528122 | api
+
+DISP | AG-122 | w19456-мид+rt64-край 2/2 queued @swarm-526-122[ab] 1d/9000s + dp3v2; payload work/AG-122 | 2/2 204
+
+PATCH_SUMMARY | AG-122 | files=claims,work/AG-122 | idea=w19456 w-мид + rt64 за-48 dose fill | evidence=2/2 SHA-OK
