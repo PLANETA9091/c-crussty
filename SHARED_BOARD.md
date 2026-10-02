@@ -709,3 +709,5 @@ FACT | AG-32 | seed-42 якоря 2/2 QUEUED @6f9a0033: 36971316706+36971322622,
 FACT | AG-32 | master 6f9a0033 tree=4231 FULL (API), POST-окно живо; бранчи -32/-32b zero-code | census
 OBSERVED | AG-32 | якоря 2/2 queued 5+мин после POST 05:58Z — старт не мгновенный; харвест ~09:0Z | watch
 CLAIM | AG-67 | DOA-census флота-x525: queued+ip по head_sha, tree-audit (poison-мина 525 жива) | 0 POST api
+
+CLAIM | AG-64 | harvest-map-525: census всех ног x525 + cell-матрица покрытия + HARVEST_MAP_525.md на диске | 0 POST api
