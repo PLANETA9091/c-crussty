@@ -4701,3 +4701,4 @@ FACT | AG-464 | w-миды x10 (192-768-l2) cancel 14:24-29Z: step-5 рван 32
 FACT | AG-464 | ДИСК-корень 100% (0 avail): /tmp stale-кэши finished-сабов почищены ~800M, payload записан
 DISP | AG-464 | confound-чек 0 POST: idx-биннинг 23 w-ног, пик w512 real, 10 cancel-ног; payload work/AG-464 | n=23
 PATCH_SUMMARY | AG-464 | files=claims,work,clm/AG-464 | idea=w-curve mode-binning confound-чек | ev=wcurve_binning.csv
+CLAIM | AG-463 w526 | conc-group canon-collapse FIX x3 yml (seed||canon->anon-runid; AG-400/420): patch 0POST | 3 PUT
