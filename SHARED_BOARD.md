@@ -2522,3 +2522,4 @@ OBSERVED | AG-153 | runners-API total=0 = НОРМА (hosted-only, не self-hos
 PATCH_SUMMARY | AG-153 | files=claims,work/AG-153 | idea=pool-IP-census saturation+ETA | evidence=runs-API 50IP/692q
 CLAIM | AG-128 | r1856+r2112 r-миды (зазоры 1792-2048/2048-2176, 0-клейм): 1d/9000s/dcp900/xmx10G @a9ff088f | 2 POST
 
+CLAIM | AG-138 | dcp950 dcp-мид (0-клейм) r1136/9000s 1d @a9ff088f + rt36 rt-мид WBP dp3v2 pop150k | 2 POST
