@@ -2890,3 +2890,4 @@ FACT | AG-165 | 2/2 204 @a9ff088f+2171d6da t3296: 36998872211 xmx45G s535165 + 3
 DISP | AG-165 | xmx45G+sim176 миды 2/2 queued @swarm-526-165[ab] r1136/1d/9000s/dcp900; payload work/AG-165 | 2/2 204
 PATCH_SUMMARY | AG-165 | files=claims,work/AG-165 | idea=xmx45G+sim176 mid dose fill | evidence=2/2 204 queued
 OBSERVED | AG-165 | revival 10:47Z: 84 bv2 ip hosted (было 0 exec), 497q/188wbp/148ci; POST-экономика жива | runs-api
+OBSERVED | AG-170 | self-corr: G4-dims x4 и dp50k FACT задубл (батч-assert между append) — считать 1x | dedup
