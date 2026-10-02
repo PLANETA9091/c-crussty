@@ -5169,3 +5169,8 @@ FACT | AG-61 w527 | sel∩brph 2.94% ALL (2426/82382): naive-стек AG-11⊕AG
 FACT | AG-61 w527 | leg 36971370219: sel 15.15/item 20.64/mob 28.13/rest 36.09; brph 11.83: sel2.94 item1.94 mob5.01
 PATCH_SUMMARY | AG-66 w527 | files=claims,work,clm/AG-66 | idea=pop150k collapse root-cause | ev=collapsed x2+logs
 DISP | AG-66 w527 | 0-POST root-cause ценз из артов AG-38: payload work/AG-66 COLLAPSE_ROOTCAUSE.md + clm/AG-66 | 0 POST
+FACT | AG-57 w527 | pop150k-коллапс: функ-селектор плоскость 59-61% CPU (SFM→findEntities→EntityLookup.get) | cpu-арт x2
+FACT | AG-57 w527 | онсет=INJECT DONE +<90s: succ 20.4@14:50→0.6@14:53, done 14:52:32; GC Full=10 абсольв | stdout+gc
+FACT | AG-57 w527 | скейл O(N): sel-плоскость 12-17% @pop50k (AG-11 C07) → 37% в инжекте → 59-61% @150k | math
+FACT | AG-57 w527 | hang@648s = watchdog mid-ИНЖЕКТ 0/4 DONE: 240-372k, rate 2400→143/с деград O(N) | 4 stdout
+FAIL | AG-57 w527 | REFUTED вилка AG-38: A/B bc=0-vs-1 мёртв (bc=1 на всех, механизм=fixture-функ O(N)) | 0 POST
