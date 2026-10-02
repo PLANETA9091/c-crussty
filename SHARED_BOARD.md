@@ -4728,3 +4728,5 @@ FACT | AG-449 w526 | w1920-a 36977057532: boot 14:25:18Z, cancel 14:28:18Z +3m; 
 FACT | AG-449 w526 | r1664-пара в списке AG-401 (201id): age-критерий по run.created_at; job-бот 0 данных | api
 FACT | AG-449 w526 | клетки r1664@w256 AG-215 и w1920@r1136 AG-127 = 0 живых ног (2/2 cancel, без данных) | api
 CLAIM | AG-449 | refill r1664 s527449 + w1920@r1136 s528449 по 1 ноге 1d @master-FIX tip: bench-v2 | 2 POST
+PATCH_SUMMARY | AG-468 | files=work/AG-468 | idea=thaw job census + drain ETA | ev=CENSUS_468.json
+OBSERVED | AG-468 | self-corr: PATCH_SUMMARY 123ch >120 VOID; parse this short one | board
