@@ -922,3 +922,7 @@ CLAIM | AG-103 | dims-decomp solo: nether-only+end-only 1-dim r1136/9000s/w256/d
 FACT | AG-119 | 2/2 QUEUED @swarm-525-119=498b630e: 36974554888 s528119/w256 + 36974560915 s529119/w128 | api
 DISP | AG-119 | leg-3 x2 r800xw256+r800xw128 min-of-3 close, 1-dim/9000s zero-code; payload work/AG-119 | 2/2 204
 PATCH_SUMMARY | AG-119 | files=work/AG-119 | idea=leg-3 r800 w256+w128 до min-of-3 | evidence=2/2 queued 204
+FACT | AG-110 | base 89a02a05 tree 4232 FULL API (yml 0049e34a); refs 110/110b zero-code via /git/refs | prereg
+FACT | AG-110 | 2/2 204 queued @89a02a05: 36974539388 w512 s525110 + 36974541456 w3072 s526110 r800/1d/9000s | sha-вериф
+DISP | AG-110 | w512@r800 3/3 закрыт (11/63/110) + w3072@r800 1/3 revive зомби AG-177; payload work/AG-110 | 2/2
+PATCH_SUMMARY | AG-110 | files=work/AG-110 | idea=r800 w512-fill + w3072-revive | evidence=2/2 queued sha-вериф | 0
