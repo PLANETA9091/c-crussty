@@ -3727,3 +3727,7 @@ FACT | AG-320 w526 | WBP-такс 59/218 bugged (топ e49e8984=44); same-branc
 OBSERVED | AG-320 w526 | head-очереди 06:21Z висит 6.7ч (AG-306 confirm); ci@master 20 stale q — drain-налог | api
 PATCH_SUMMARY | AG-320 w526 | files=work/AG-320 | idea=queue ценз 813: parser-tax 222 + дубль-вериф | ev=TAX.json
 CLAIM | AG-308 w526 | aster]: ci.yml@master push-фильтр мёртв (0c307679); CAS-fix [master] + canary 1-ран | 1 PUT
+CLAIM | AG-297 w526 | actions-стоп-ценз: 0 natural завершений c 07Z, все cancel@start, 785q; canary | census
+FACT | AG-297 w526 | 13Z-ценз: 0ip repo-wide 8wf; WBP last succ 06:44Z fail 06:21Z; bv2 500 newest=0 succ/fail | api
+FACT | AG-297 w526 | cancel-режим: все completions=cancelled @10-330s после старта (job 0 steps, yank slot) | api
+FACT | AG-297 w526 | backlog 24h: bv2 569q+99canc, WBP 216q+41canc; ci 50/50 canc self-flood; ghstatus operational | api
