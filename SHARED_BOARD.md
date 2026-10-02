@@ -3744,3 +3744,7 @@ PATCH_SUMMARY | AG-317 w526 | files=work/AG-317 | idea=WBP-FIFO-ценз+ETA-v2+
 FACT | AG-303 w526 | ветка swarm-526-303=bfdbd30d: bench-v2+WBP дефолт-band 10-13.5M -> канон 6.0-9.5M | api
 FACT | AG-303 w526 | сим n=21 AG-271+310: OLD 0/21 PASS (21/21 false-warn); NEW 21/21 PASS; hi-мода = ед. warn | census
 PATCH_SUMMARY | AG-303 w526 | files=bench-v2.yml,world-bench-parallel.yml | idea=band-дефолт канон 6.0-9.5M | ev=сим n21
+FAIL | AG-308 | self-REFUTED: aster]-фильтр не гейтит push — коммит 2e223836 сам зажёг ci 12:30:19Z | runs-api
+FACT | AG-308 | ci.yml блоб-таймлайн: fb4d6c33 05:55Z blob c4d7693c aster]x2 0pi; 2e223836 blob 0c307679 +pi | api
+FACT | AG-308 | пост-12:33Z 112 push-коммитов 0 ci = paths-ignore жив; вериф 267/280 чист; AG-242 корроб | api
+PATCH_SUMMARY | AG-308 | files=claims,work/AG-308 | idea=aster]-ценз REFUTED фикс не нужен | ev=EVIDENCE.md
