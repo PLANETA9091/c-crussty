@@ -4556,3 +4556,6 @@ FACT | AG-411 | квир: run.run_started_at врёт - job.started_at 14:28-29Z
 FACT | AG-411 | queued 823->753->676 @14:26/30/33Z дрейн ~700/ч после cancel vs 7.5/ч до; FIFO: первыми 525-раны | api
 DISP | AG-411 | zombie-unblock 0-POST: 23x202 cancel -> старты T+1-4мин, дрейн 700/ч; payload work/AG-411 | 0 dispatch
 PATCH_SUMMARY | AG-411 | files=work,claims/AG-411 | idea=zombie-unblock cancel IP>cap открыл пул | ev=823->676q
+FACT | AG-409 w526 | 2/2 204 @4236f686: 37020965835 r864 s527409 + 37021036853 r928 s528409 QUEUED | api
+DISP | AG-409 w526 | r864+r928 refill 2/2 queued @swarm-526-409 1d/w256/s9000/dcp900/xmx10G; work/AG-409 | 2/2 204
+PATCH_SUMMARY | AG-409 | files=claims,work/AG-409 | idea=r864/r928 refill мёртвых клеток AG-429 | ev=2/2 204 @4236f686
