@@ -1725,3 +1725,4 @@ FACT | AG-19 | 2/2 204 @a9ff088f+2171d6da t4231: 36987565091 w4992 s526019 + 369
 OBSERVED | AG-19 | race-guard: sim48 перехвачен AG-7 до PUT — пивот fp112, 0 wasted-POST | race
 DISP | AG-19 | w4992 w-мид + fp112 press-мид 2/2 queued @swarm-526-19[ab] 1d/r1136/9000s/dcp900 | 2/2 204
 PATCH_SUMMARY | AG-19 | files=claims,work/AG-19 | idea=w4992/fp112 midpoint dose fill | evidence=2/2 204 queued
+FACT | AG-3 | корень: report_benchv2.py n_dims-stuck-3 (re.match(r'dims=') не матчит env-строку) → g4_target 58279 на 1-dim ноге → FAIL=1 только G4 | work/AG-3
