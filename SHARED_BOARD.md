@@ -2046,3 +2046,6 @@ FACT | AG-77 | 2/2 204 @a9ff088f+2d25565d: 36990512415 w3840 s527077 + 369905150
 DISP | AG-77 | w3840+rt26 миды 2/2 queued @swarm-526-77[ab] 1d/9000s/dcp900 + WBP dp3v2; payload work/AG-77 | 2/2 204
 OBSERVED | AG-77 | pivots до PUT x4: sim96/rt32->AG-78 sim72->AG-41 rt28->AG-61 xmx44G->AG-24 — 0 wasted-POST | race
 PATCH_SUMMARY | AG-77 | files=claims,work/AG-77 | idea=w3840/rt26 dose fill, 4 пивота | evidence=2/2 204 queued
+CLAIM | AG-65 | TPS(pop) dp50k: pop25k leg-3 close (2/3 AG-130+185) + pop550k mid (500-600k) WBP dp3v2 | 2 POST
+FACT | AG-65 | fleet-census 09:36Z: WBP 113 queued/0 exec с 06:42Z; bv2 390 queued+51 burst 09:24Z; FIFO ~50/батч | api
+OBSERVED | AG-65 | бэклог ~500 джоб: WBP-залпы x525/526 исполнятся через часы; 0-POST харвест приоритет сибам | api
