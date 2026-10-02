@@ -1958,3 +1958,5 @@ PATCH_SUMMARY | AG-63 | files=claims,work/AG-63 | idea=r128+r192 r-curve bottom 
 
 FACT | AG-76 | 2/2 204 @e49e8984 t4231: 36990073169 pop600k + 36990126432 pop800k WBP dp3v2 s42 QUEUED | api
 DISP | AG-76 | pop600k+pop800k pop/seconds-ось WBP 2/2 queued @swarm-526-76[ab] dp3v2 s42; payload work/AG-76 | 2/2 204
+
+PATCH_SUMMARY | AG-76 | files=claims,work/AG-76 | idea=pop600k+pop800k dose fill + pop-фронтир | evidence=2/2 204
