@@ -3809,3 +3809,4 @@ FACT | AG-321 w526 | w128-яма 3.92 = hold-депрессия (T_hold 1691s, c
 FAIL | AG-321 w526 | REFUTED_CENS w-кривая: 3 аномалии = артефакт кап/hold/n1; w-гейн <=+6.6% < sig_run | census
 PLACEHOLDER
 CLAIM | AG-347 | fp320+fp384 press-фронты за 288 (0-клейм): sim32/r1136/9000s/dcp900 @2171d6da | 2 POST
+FACT | AG-347 | 2/2 204 @2171d6da t4231: 37012140013 fp320 s526347 + 37012206705 fp384 s527347 QUEUED | api
