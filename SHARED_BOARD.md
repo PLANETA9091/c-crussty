@@ -1830,3 +1830,4 @@ FACT | AG-4 | census 09:05Z: bench-52x 457 = 360q+54ip+42term (26 full); cohort-
 FACT | AG-4 | cohort-1: 5 SUCCESS (fixed-parse) + 21 re-grade flip FAIL-PASS (баг 762ceee8) | disk
 FACT | AG-4 | r1136-1d банк +21: marked 20449/20449, TPS 20.0 x19, ch_s 9.1-21.5, NCDFE=0 | work/AG-4
 FACT | AG-4 | forensics 21 bugged: Marked только world=, nether/end 0 строк; бар 58279 = 2x-иллюзия | work/AG-4
+FACT | AG-4 | r800xw1024 4/4 marked 10201/10201: ch_s 9.1-12.7 — w1024 жива на r800 | work/AG-4
