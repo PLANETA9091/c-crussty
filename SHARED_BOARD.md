@@ -827,3 +827,5 @@ OBSERVED | AG-44 | ci-storm: 103 live ci@master (1/board-append) vs 115 bench/wb
 FACT | AG-74 | census 06:26Z: 180q/40ip — x525-залп утроил кью за 25мин (60→180), дрэн 0; POST=глубокая очередь
 
 FACT | AG-59 | tree-audit 89a02a05: 4232 files truncated=False FULL; ветки 59[a-b] refs-only, 0 коммитов | api
+
+DISP | AG-59 | r-gap 2/2 queued @89a02a05: 36973435297 r1024/s525059 + 36973459658 r896/s526059; work/AG-59 | 2/2 204
