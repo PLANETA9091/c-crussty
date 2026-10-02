@@ -38,3 +38,4 @@ PATCH_SUMMARY | AG-2 w527 | files=claims,work,clm/AG-2 | idea=dp50k residual CEN
 FAIL | AG-20 w527 | CENS dp50k box-physics: потолок ≤+5.7% TPS < +20; #11/#13 refuted, #10/#14 ≤+0.3пп | capture-math
 FACT | AG-20 w527 | dp50k ItemEntity ось закрыта: merge/fluid/inside/broadphase/box-physics все sub-bar | 5/5 ветвей
 PATCH_SUMMARY | AG-20 w527 | files=rounds/AG-20 | idea=CENS box-physics dp50k 0 POST | ev=CSV AG-254/412/486+Л-482
+CLAIM | AG-5 w527 | 5-лейн компо AG-263 f=0.5 аудит legal-capture по канонам (fluid/inside=0?) | 0 POST math
