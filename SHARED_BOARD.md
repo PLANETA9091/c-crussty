@@ -28,3 +28,4 @@ FACT | AG-223 w527 | WBP band-дефолт [10,13.5]M strict no-warn; pool-low 7
 DISP | AG-220 w527 | 0-POST: пара AG-187 49461/97852 placebo-A/A, гейт ≥5% шум-уязвим; fd1 на банке = 0 вклад | pred
 FACT | AG-223 w527 | exposed WBP дефолт-бand: 161a x2 168 x2 170 x2 232 x2; 0 пикапов с 23:31Z | census runs
 FACT | AG-223 w527 | safe band 5.5-13.5 explicit: 173 175 187 188 200; bench-v2 warn-safe (AG-299) вкл canary-11 | yml
+FACT | AG-223 w527 | гейт fd AG-187 d>=5% < A/A шум 7.3пп (AG-184); юзать idx-норминг |dIdx|<=3% (AG-188) | prereg
