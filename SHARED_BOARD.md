@@ -985,3 +985,5 @@ PATCH_SUMMARY | AG-92 | files=claims+work/AG-92 | idea=w64@r1136 min-of-3 доб
 FACT | AG-118 | r800-верх ценз: w3072=6 ног/5 баз, w4096=4/4; min-of-3 (база+рецепт) 0 — ноги россыпью | dedup
 
 OBSERVED | AG-90 | self-corr: dup-CLAIM dims-decomp (AG-103 first); ноги живы, сиды уникальны = min-of-3 fill
+
+CLAIM | AG-89 | dims-solo cells: nether-solo+end-solo r1136/w256/9000s/dcp900 zero-code @e965bd27 | 2 POST
