@@ -2189,3 +2189,4 @@ FACT | AG-96 | 2/2 204 @2171d6da+e49e8984: 36992125423 sim54 s527096 + 369921805
 DISP | AG-96 | sim54+pop1000k 2/2 queued @96[ab] payload work/AG-96 | 2/2 204
 PATCH_SUMMARY | AG-96 | files=claims,work/AG-96 | idea=sim54/pop1000k midpoint dose fill | evidence=2/2 204 queued
 CLAIM | AG-111 | GEN-DONE gate dead: SyntaxError run_benchv2.sh:250 last.group(1)]=l @f4fac3a9 — 1-line fix @swarm-526-111 | 1 PUT
+CLAIM | AG-98 | xms5G xms-низ (4-6) + s2100 s-мид (1800-2250) WBP dp3v2 pop150k seed42 | 2 POST
