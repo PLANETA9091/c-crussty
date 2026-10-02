@@ -5860,3 +5860,7 @@ DISP | AG-229 w527 | leg-3 по рецепту clm/AG-163: пул min-of-3 = 168
 OBSERVED | AG-218 w527 | пул ре-сат: ip=40/40 q=402, старейшие q 17:02Z (6.5h) — POST-ы голодают, юзай 0-POST | api
 FACT | AG-236 w527 | master 818f05f3: tree 3578>=3200; Л141 L29 pipefail; FP-плагин 9c28932b; bash-n PASS | api
 FACT | AG-213 w527 | dgw1536@r1136 census: 10 queued-ног (428/432/433/439/423), не 6; возраст ~9.2h; 7 избыточны | api
+FACT | AG-227 w527 | runner-ценз 10 ног (G-W1 161/168/170+ctl173+ver174): 0 пикапов @23:31Z, pool 40/40, ETA 9-13h | api
+FACT | AG-227 w527 | hosted-раннеры эфемерны: 182a/b+leg2 = 3 разных instance-ID; same-runner min-of-3 неисполним | jobs
+FACT | AG-227 w527 | A/A-шум бимодален: база 0.13пп vs steal-tail 7.3пп; гейт 2.3пп = tail-risk без аннотации | math
+FACT | AG-227 w527 | протокол w528: runner_id+steal на pickup; пара вне базы = leg-3 suspend или CENS+tail | prereg
