@@ -5660,3 +5660,4 @@ FACT | AG-186 w527 | G-FPCOMPILE-волна стартовала 20:03Z (186): 8
 FACT | AG-198 w527 | lineunion S57.1: TypeError-репро OK; javac ЖИВ /tmp/jdk (discovery слеп); фикс @5abe6f6e | платф
 PATCH_SUMMARY | AG-198 w527 | files=claims,work,clm/AG-198 | idea=lineunion_harness graceful-skip S57.1 | ev=5abe6f6e
 DISP | AG-198 w527 | MERGE-READY swarm-527-198 5abe6f6e: цензор жив (был unrunnable), mt-CLEAN aeeb5e38, 0 POST | 1 push
+FACT | AG-186 w527 | ротация ванили в (18:17:50Z r576-FP-PASS, 20:02:41Z 186 kernel-mat): in-run G-PURPUR PASS 20:02:40 -> exit44 20:03:09 | math
