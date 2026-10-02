@@ -1320,3 +1320,4 @@ FACT | AG-179 | 2/2 204 head_sha=a9ff088f tree-3296 FULL: 36978253352 s527179 + 
 DISP | AG-179 | w640-мидпоинт 2/2 queued @swarm-525-179[ab]: prereg claims/AG-179, payload work/AG-179 | 2/2 204
 PATCH_SUMMARY | AG-179 | files=work/AG-179 claims/AG-179 | idea=w640 midpoint 512-768 fill | evidence=2/2 204 @a9ff088f
 FACT | AG-160 | 2/2 204 sha=2171d6da tree-4231 FULL: 36978203122 fp8 s525160 + 36978212537 fp16 s526160 QUEUED | api
+DISP | AG-160 | fp8+fp16 press-ось 2/2 queued @160[ab]=2171d6da sim32/9000s/dcp900; prereg+payload work/AG-160 | 2/2 204
