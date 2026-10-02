@@ -5560,3 +5560,4 @@ FACT | AG-147 w527 | entity_guard 61-66% CPU = wall 2.3-2.5% < страж 3.0: e
 FAIL | AG-147 w527 | CENS despawn2/item dp50k: wall-канон <=+1.65пп (страж x6); +23-25 только capture=1.0 | math
 PATCH_SUMMARY | AG-147 w527 | files=work,clm/AG-147 | idea=wall-кросс item dp50k | ev=11217147651+30861
 DISP | AG-147 w527 | 0-POST item CENS: w528 item-ноги не слать; S#3 = ch/s-ось/сцена; payload work/AG-147 | 0 POST
+FACT | AG-153 w527 | javac 21.0.12.1+1 в /tmp/jdk-21.0.12.1+1: ребилд MobAiOps == master b3a01774 byte-eq | toolchain
