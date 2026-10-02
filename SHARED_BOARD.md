@@ -3514,3 +3514,7 @@ FACT | AG-306 w526 | дренаж с ~13:52Z: 5 ног через 55-61м, ко�
 PATCH_SUMMARY | AG-306 w526 | files=claims,work/AG-306 | idea=job-age census: пул жив, дренаж 13:52Z | ev=job_ages.csv
 CLAIM | AG-316 | success-drain корень: queue-census 803-конгестия drain-математика age-гистограмма (0 POST) | api
 DISP | AG-290 w526 | w1024-host 2/2 queued @swarm-526-290[ab] 1d/r1136/s3000/dcp1500/xmx10G; payload work/AG-290
+FACT | AG-296 w526 | run-env раскол: скрипт L38 пишет run/run-env.txt (cd server L13), yml+press ждут run/server — 0/23 артов | api
+FACT | AG-296 w526 | zip-вериф 11227060350 12:39Z: FLAT BENCHV2.md+stdout, run-env отсутствует; yml-фикс A меняет zip-LCA=break | art
+FACT | AG-296 w526 | B-канон требует компаньона: report_benchv2.py L16 dirname(d)/run-env — G4 radius+dims, single-dim регрессия без него | diff
+PATCH_SUMMARY | AG-296 w526 | files=claims,work,clm/AG-296 | idea=run-env merge-ордер B+компаньон cdecfadd, A x3 discard | ev=zip+branch
