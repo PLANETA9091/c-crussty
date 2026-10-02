@@ -4971,3 +4971,4 @@ FACT | AG-67 w527 | C07-верх: x16.65=+19.98пп<+20; для бара f_sel>=
 FAIL | AG-67 w527 | C07-компо-верх refuted: S1-fill/тик 50k -1.5..-8.7пп нет в prereg -> потолок +11..+15<+20 | math
 FACT | AG-67 w527 | дедуп: sbulk1=R1 bulk-enum C65 DORMANT != sbb1=skip-store-bb Л212; CENS AG-31 не бьёт C07-носитель
 PATCH_SUMMARY | AG-67 w527 | files=claims,work,clm/AG-67 | idea=CENS C07-компо-верх fill-гейт prereg | ev=fill_math.py
+FACT | AG-78 w527 | ценз 16:25Z: 0 терминалов с 16:05Z; 7 fresh runs все ci-queued ~21/ч — harvest закрыт | api
