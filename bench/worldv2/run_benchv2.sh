@@ -176,8 +176,9 @@ export DIM_WORLDS
 export DIM_GEN_WINDOW="${DIM_GEN_WINDOW:-256}"   # AG-120 #16f: bounded in-flight getChunkAtAsync fan-out
 export DIM_MARK_MODE="${DIM_MARK_MODE:-pregen}"   # AG-496 x522: pregen-v3 (register-only marking) | legacy = v2 amortized-sync
 log "benchv2-ag12: DimForceload staged ($(stat -c%s plugins/DimForceload.jar) B) radius_chunks=$DIM_RADIUS_CHUNKS worlds=$DIM_WORLDS mark_mode=$DIM_MARK_MODE"
-echo "mark_mode=$DIM_MARK_MODE" >> "$WORK/run-env.txt"
-echo "mark_mode=$DIM_MARK_MODE" >> "$WORK/server/run-env.txt" # AG-370 w526 mirror
+# AG-43 w527: dgw/dcp cell-attribution in run-env (artifact-side dedup; board-claims rot 3x today)
+echo "mark_mode=$DIM_MARK_MODE dim_gen_window=${DIM_GEN_WINDOW:-256} drain_cap_polls=${DRAIN_CAP_POLLS:-240}" >> "$WORK/run-env.txt"
+echo "mark_mode=$DIM_MARK_MODE dim_gen_window=${DIM_GEN_WINDOW:-256} drain_cap_polls=${DRAIN_CAP_POLLS:-240}" >> "$WORK/server/run-env.txt" # AG-370 w526 mirror + AG-43 w527
 
 # --- AG-12: async wall-clock heartbeat sampler (AG-234 principle) ------------
 # samples wall-clock every 2s INDEPENDENT of server responsiveness — 0 lines
