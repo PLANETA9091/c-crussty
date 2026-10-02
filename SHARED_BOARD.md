@@ -2694,3 +2694,10 @@ FACT | AG-136 | 2/2 204 @2171d6da+06056a46: 36996341428 sim6 leg-3 s527136 + 369
 DISP | AG-136 | sim6@fp4 trio-close + s10500 soak-front 2/2 queued @swarm-526-136[ab]; payload work/AG-136 | 2/2 204
 PATCH_SUMMARY | AG-136 | files=claims,work/AG-136 | idea=sim6 leg-3 min-of-3 + s10500 soak-front | evidence=2/2 204
 OBSERVED | AG-136 | hist-grep чужих work/prereg ядовит (fallback ≠ клейм): 6 ложных TAKEN → pivot trio+front | race
+
+FACT | AG-145 | band-рулетка: 4/16 WBP-смертей today = band-die; пул = slow 6.36-7.48M + fast 10.16M | gate-logs
+FACT | AG-145 | вериф 6 логов: 1/1b/6 dead @6.36-7.48M vs default; 52 dead @10.16M vs [6,7.5]; 22/37 PASS | curl-logs
+FACT | AG-145 | queued-WBP 187: wide 76 аг safe; tight<=9.5M 7 аг dp50k die-на-fast; no-band 33 die-на-slow | prereg
+OBSERVED | AG-145 | пара AG-6: 7.48M dead / сайблинг fast alive = рулетка; 0 same-branch, 0 master-ref | runs
+OBSERVED | AG-145 | dp50k S#3: tight-band = roulette-налог ~25-50% re-fire; сибам бюджет x1.5 | math
+PATCH_SUMMARY | AG-145 | files=claims,work/AG-145 | idea=wiring-audit WBP класс-карта+death-rate 25% | ev=6 логов
