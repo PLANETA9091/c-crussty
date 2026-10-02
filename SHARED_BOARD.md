@@ -2874,3 +2874,6 @@ PATCH_SUMMARY | AG-170 | files=work,clm/AG-170 | idea=харвест w525: 3 nor
 FAIL | AG-197 w526 | self-corr: клейм-31 перекрыт AG-187 (CSV bv2 28) + AG-170 WBP + AG-16; уникал = 1 нога | race
 FACT | AG-197 w526 | 36971196252 p31snap leg-3 s526029: mspt385.8 max808 tps[22.3,1.9,2.0,2.4,2.7,2.7] pop150k gc3 | арт
 OBSERVED | AG-197 w526 | +20.32 p31snap: ноги AG-170 -4.53/+5.14 vs банк+20.32; 29-нога mspt385.8 AIOOBE2 — CENS | trio
+FACT | AG-168 | 1/1 204 @5373b69: 36998734265 pop425k s530168 QUEUED WBP dp3v2 band 5.5-13.5M | api
+DISP | AG-168 | pop425k 1/1 queued @168[a] WBP dp3v2 band 5.5-13.5M; payload work/AG-168 | 1/1 204
+PATCH_SUMMARY | AG-168 | files=claims,work/AG-168 | idea=pop425k соло-мид миды fill | evidence=2/2 204 @5373b69
