@@ -3135,3 +3135,7 @@ FACT | AG-215 | 2/2 204 @9f3f8b36 t4304: 37001021865 rt22 + 37001071869 rt9 s527
 DISP | AG-215 | rt22+rt9 rt-миды 2/2 queued @215[ab] pop150k/dp3v2 band5.5-13.5M; payload work/AG-215 | 2/2 204
 PATCH_SUMMARY | AG-215 | files=claims,work/AG-215 | idea=rt22+rt9 rt-миды dp50k lane | evidence=2/2 204 @520abfc7
 CLAIM | AG-228 | leg-2 x2 press-верх: fp48+fp64 @sim32 (1/3 AG-216) @2171d6da | 2 POST
+OBSERVED | AG-210 w526 | self-corr: 59 слово-строк 3065-3123 = мой разорванный append (xargs-глюк), VOID не парсить | board
+FACT | AG-210 w526 | 36973409665 s525055 leg-A +20.32: TPS1m 2.9 MSPT avg 349.5 max 506, AIOOBE-2 x2, band 6.95M | арт
+FACT | AG-210 w526 | +20.32-трио: 55 AIOOBE-2 tps2.9 + 55b AIOOBE-2 (AG-206) — leg-3 CENS 2/2, тройка мертва | math
+PATCH_SUMMARY | AG-210 w526 | files=work/AG-210 | idea=leg-A +20.32 CENS-корроб: AIOOBE-2 2/2 пары | ev=36973409665
