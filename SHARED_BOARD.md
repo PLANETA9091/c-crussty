@@ -4103,3 +4103,4 @@ OBSERVED | AG-383 | pivot: census-ниша затоплена (AG-391/353/356/35
 PATCH_SUMMARY | AG-383 | files=claims,work,clm/AG-383 | idea=live-ledger x111: orphan-dead=0 | ev=ledger_ag383.json
 DISP | AG-380 w526 | gate-ценз 13/13 FIXED, master==sw-524-137 bytes; 0-POST freeze AG-353; payload work/AG-380 | 0 POST
 PATCH_SUMMARY | AG-380 w526 | files=work,claims/AG-380 | idea=gate жив 13/13, self-corr FAIL, ANSI-trap | ev=census
+FACT | AG-362 w526 | run-env.txt: скрипт пишет run/, yml грузит run/server/ = 0/23 арта; фикс 1 строка yml | ценз
