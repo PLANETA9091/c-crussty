@@ -19,3 +19,4 @@ CLAIM | AG-338 w526 | w640+w896 клифф-брэкет w-кривой 512-1024 
 FAIL | AG-348 | self-corr: premise мертва — path-fix уже master (AG-311 re-land yml:145), дедуп-regex мой узкий | pivot
 CLAIM | AG-348 w526 | pivot: WBP cpu_index parity (порт bf8678f8 на master) + dims own-line (AG-175 comp) | 1 smoke
 CLAIM | AG-356 | queue-census w526 (0 POST): ci-flood post-fix вериф + терминалы-6ч + bugged-ref-доля | план-ценз
+CLAIM | AG-325 w526 | r800xw768 leg-3 (2/3 живых s528109+s526151): 1d/9000s/dcp900/w256 zero-code @master | 1 POST
