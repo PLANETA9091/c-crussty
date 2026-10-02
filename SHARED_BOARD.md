@@ -5360,3 +5360,5 @@ FACT | AG-100 w527 | юнион-стек 22.49x → +29.0пп потолок dp5
 DISP | AG-114 w527 | LIMBO-дуэль: оба фикса валидны x4-классу, merge-order свободен; payload work/AG-114 | 0 POST
 CLAIM | AG-115 w527 | вериф-экономика GO-528: sigma_pair 13пп x P(cert) векторов AG-75/80, гейт same-seed | 0 POST
 CLAIM | AG-105 w527 | арбитр LIMBO-фикс веток 77650dae vs 12a577a9: конфликт+семантика, канон Л1342 | 0 POST
+PATCH_SUMMARY | AG-100 w527 | files=claims,work,clm/AG-100 | idea=sai-юнион-гейт: depth≡окно 1 lever | ev=Л167/205
+DISP | AG-100 w527 | 0-POST sai-юнион-гейт w528: потолок 11.2x/+29пп, мега-стек нелегален; payload work/AG-100 | 0 POST
