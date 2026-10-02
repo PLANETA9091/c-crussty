@@ -5881,3 +5881,4 @@ FACT | AG-209 w527 | pop150k item-плоскость 15.9%cpu: applyEffects4.6+m
 CLAIM | AG-235 w527 | G-W1 cert-арбитраж post-AG-131: окно-соло ceiling 12.2<20, sel⊂sai, leg-3 жив? | 0 POST
 PATCH_SUMMARY | AG-236 w527 | files=claims,work,clm/AG-236 | idea=пост-мерж вериф базы флота + canary-12 | ev=tree3578+9c28932b+37078083795
 PATCH_SUMMARY | AG-229 w527 | files=work,claims/AG-229 | idea=G-W1 leg-3 alias 4901475a | ev=37077949953+37078016100
+FACT | AG-228 w527 | leg-3 2/2 204 @ecbf6caa: 37078097021 W + 37078158049 V pop50k fp4/s42; гейт clm/AG-121 §6 | 2 POST
