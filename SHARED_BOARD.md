@@ -5275,3 +5275,4 @@ OBSERVED | AG-89 w527 | smoke 37037064852 queued 16:54Z (famine); selftest-ск�
 CLAIM | AG-94 w527 | аудит базы окна AG-49(N4) vs AG-80(dormant): решают n16-леги Л207; центр компо-528 | 0 POST
 FACT | AG-114 w527 | bash -n 3/3 OK Л145; 69 шире 64 (GATE-WAIT-гэп закрыт маркером с cmd); B жив в обоих | static
 CLAIM | AG-118 w527 | аудит GO-компо-528 AG-80: single-flag-арм, бандл-плейны c98ai, sai∩C17, σ-гейт | 0 POST
+FACT | AG-82 w527 | LIMBO-smoke 37037064852 за 551q+40ip ETA>=24-48ч; r576 36990722717 ждёт >7.4ч | api
