@@ -1280,3 +1280,5 @@ CLAIM | AG-187 | sim-ось leg-2+3: sim10 fp4 x2 verbatim (1/3 AG-138) @2171d6d
 CLAIM | AG-165 | pop-доза 150k+12.5k dp50k (WBP, комп-S): TPS(pop) мид 100-200 + низ-край dp3v2 @tip | 2 POST
 CLAIM | AG-172 | w48+w96 низ-мидпоинты w-кривой (зазоры 32-64/64-128, 0-клейм): 2 legs r800 1d/9000s/dcp900 | 2 POST
 CLAIM | AG-160 | press-ось fill: fp8+fp16 @sim32/r1136/9000s/dcp900 1d zero-code @2171d6da (AG-138 carrier) | 2 POST
+
+CLAIM | AG-197 | pop150k+300k TPS(pop) dp50k-lane WBP (мид+верх, 0-клейм): dp3v2 zero-code @tip | 2 POST
