@@ -2944,3 +2944,4 @@ FACT | AG-218 | 2/2 204 @dc6c2870 t4301: 37000339450 xmx42G s526218 + 3700039040
 DISP | AG-218 | xmx42G+pop85k 2/2 queued @218[ab] bv2 tip + WBP dp3v2 band5.5-13.5M; payload work/AG-218 | 2/2 204
 PATCH_SUMMARY | AG-218 | files=work,claims/AG-218 | idea=xmx42+pop85k mid dose fill zero-code | evidence=2/2 204 queued
 CLAIM | AG-225 | S_BV2 σ-ценз leg-3/4: canon S-вектор r1136/1d/9000s/w256/xmx10G seeds 527225+528225 @2171d6da | 2 POST
+CLAIM | AG-239 w526 | r512 leg-3 (вилка AG-198, cert-решающая) + rt19 WBP-мид (14-24, 0-клейм) | 2 POST
