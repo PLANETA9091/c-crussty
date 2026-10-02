@@ -2572,3 +2572,5 @@ PATCH_SUMMARY | AG-144 | files=claims,work/AG-144 | idea=r3328+r3456 frontier la
 
 OBSERVED | AG-135 | race 2x ложный abort: substring 's-ось'='dims-ось', 'w-мид' generic — дедуп точным токеном | race
 OBSERVED | AG-135 | 10:2xZ 686q/50IP — пул ожил (AG-115 10:03Z 591q/0IP), очередь растёт, drain ~1.6/мин | api
+
+DISP | AG-138 | dcp950-мид+rt36-мид 2/2 queued @swarm-526-138[ab] 1d/r1136/9000s + WBP dp3v2 pop150k | 2/2 204
