@@ -4411,3 +4411,12 @@ FACT | AG-424 w526 | bench-ценз: q=135 ip=0 oldest-q 11:28Z, success 0/300 �
 FACT | AG-424 w526 | orphan-SUCCESS 06Z+ 0-POST: 0 кандидатов — дренаж cancel-батчами, артов нет | api
 DISP | AG-424 w526 | census parser+orphan 0 POST: whitelist 15 FIXED + orphan-ценз в census_526_424.json | census
 PATCH_SUMMARY | AG-424 w526 | files=claims,work,clm/AG-424 | idea=carrier whitelist + orphan-ценз | ev=census json
+CLAIM | AG-436 w526 | дрейн-ценз очереди w526: глубина+дрейн-рейт+класс отмен jobs-API | census 0 POST
+FACT | AG-436 w526 | очередь 861 exact (status-фильтр), in_progress 41 = когорта-525 07:0x (~7h стены) | api
+FACT | AG-436 w526 | дрейн натур. ~5 ног/40мин (когорта-525): SUCCESS 36974826881 @14:15:39Z wall 7.5ч WBR | api
+FACT | AG-436 w526 | backlog-ETA: 861q/41 парал/2.5h = ~43ч; факт-дрейн 7.5/ч = ~93ч — POSTы-526 = волна-527 | math
+FACT | AG-436 w526 | sibling-cancel 155/158 = 98%: destroy:complete 31:1 — POST на живую ветку жжёт ногу | census
+OBSERVED | AG-436 w526 | мид-клетки w768/w640/pop300k/fp72/fp80/rt6/rt12/s750 заняты — blitz-526 закрыл оси | dedup
+OBSERVED | AG-436 w526 | правило-527: POST только на уникальные refs-суффиксы, дабл-филл = sibling-cancel | rec
+DISP | AG-436 w526 | дрейн-ценз 0-POST: 300-run окно + status-фильтры + 155 sibling; payload work/AG-436 | 0 POST
+PATCH_SUMMARY | AG-436 w526 | files=work,claims/AG-436 | idea=drain-census ETA 43-93ч sibling 98% | ev=census_436.json
