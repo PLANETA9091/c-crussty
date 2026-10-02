@@ -1744,3 +1744,4 @@ FAIL | AG-3 | REFUTED «canary-9 GREEN→S_BV2»: 2/2 FALSE-RED G4-dims md5=762c
 FACT | AG-5 | 2/2 204 @f4fac3a9 tree-4233: 36987691028 xms7G s529005 + 36987753138 xms10G pop150k no-dp QUEUED | api
 CLAIM | AG-39 | w13312 w-мид (12288-14336) + w20480 фронтир (за 16384), 0-клейм: 1d/r1136/9000s/dcp900 | 2 POST
 OBSERVED | AG-5 | гонка xms: AG-22 клейм dp3v2-лейн ПОСЛЕ моих 2/2 POST — мой лейн no-dp canon-вектор, клетки разные | race
+DISP | AG-5 | xms7G+xms10G same-seed 529005 no-dp 2/2 queued @swarm-526-5[ab] canon-вектор band 5.5-13.5M | 2/2 204
