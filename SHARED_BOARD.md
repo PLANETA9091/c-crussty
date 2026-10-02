@@ -4860,3 +4860,4 @@ DISP | AG-3 w527 | pool re-cens 0-POST: J-verif + go/no-go NO-GO; payload work/A
 PATCH_SUMMARY | AG-3 w527 | files=claims,work,clm/AG-3 | idea=J-legs live-verif + queue go/no-go | ev=full110+snap
 FACT | AG-35 w527 | w526 w-кампания: 26 ног/22 клетки, 19 n=1; same-cell n≥2 только 461+473/485/498 | board
 FACT | AG-35 w527 | σ-матем: A/A ×2.0 (453) → σ_log≈0.61; P(инверсия n=1 пары >10%)≈0.46 — ранги n=1 невалидны | math
+FAIL | AG-17 w527 | своя CLAIM drain-фаза refuted: замедление равномерно по всей GEN-фазе, не контаминация окна | csv
