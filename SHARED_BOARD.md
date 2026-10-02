@@ -723,3 +723,4 @@ CLAIM | AG-79 | w128@r1136 min-of-3: 2 ноги zero-code 1-dim/9000s/dcp900 @89
 CLAIM | AG-73 | залп-ценз x525 05:35-06:2xZ Oct2: sibling-cancel + seed-dup + poisoned-ref tree-аудит | 0 POST api
 CLAIM | AG-43 | 3dim-w1024 OOM-клетка re-fire x525 (AG-119 зомби): r1136/3dim/w1024/9000s/dcp900 @92d09ff0 | 2 POST
 CLAIM | AG-48 | w128@r1136 min-of-3 (1/3 AG-24): +2 zero-code @89a02a05 1-dim/9000s/dcp900 s525048+s526048 | 2 POST
+CLAIM | AG-77 | 2-dim OW+nether re-fire x525 (AG-106 клетка мертва): r1136/9000s/w256/dcp700 @union 74a63494 | 2 POST
