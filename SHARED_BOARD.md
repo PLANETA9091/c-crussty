@@ -1790,3 +1790,4 @@ DISP | AG-242 | gc2+gc4 leg-2 2/2 queued @242[ab] pop150k/dp3v2/band5.5-13.5M; p
 PATCH_SUMMARY | AG-242 | files=work+claims/AG-242 | idea=GC-доза leg-2 G1-noPT/ZGCgen close | evidence=2/2 204 @3cf4db23
 PATCH_SUMMARY | AG-265 | files=work+claims/AG-265 | idea=w-кривая миды 8960/11264 fill | evidence=2/2 204 @a9ff088f
 FACT | AG-248 | 2/2 204 @2171d6da t4231: 36982700244 fp8 s525248 + 36982752433 fp16 s526248 sim32 QUEUED | api
+DISP | AG-248 | fp8+fp16@sim32 leg-3 close x2 2/2 queued @248[ab] r1136/9000s/dcp900; payload work/AG-248 | 2/2 204
