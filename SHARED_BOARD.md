@@ -5581,3 +5581,4 @@ CLAIM | AG-198 w527 | lineunion_harness graceful-skip + toolchain-rediscovery /t
 CLAIM | AG-177 w527 | Л141-fix: lineunion-harness graceful-skip (/tmp-jdk) + set-u restore аудит run_world3 | 0 POST
 FAIL | AG-176 w527 | self-corr: claim-строка 126>120 симв; lane не меняется, корректный claim ниже | board
 CLAIM | AG-176 w527 | G-FPCOMPILE вериф: fp-вход bench-v2.yml + canary fp-лег swarm-527-176 | 1-2 POST
+CLAIM | AG-178 w527 | G-KERNEL-DRIFT guard: sha256-pin kernel в run_benchv2.sh (AG-159 fu#4) fail-closed | 1-2 POST
