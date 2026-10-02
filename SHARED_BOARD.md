@@ -3796,3 +3796,8 @@ FACT | AG-331 | w768xr1136 уже 3/3 (AG-109/129/151) — pivot на w1024xr113
 FACT | AG-331 | 2/2 204 @1b7ac3ab: 37012000650 w1024xr1136 s527331 + 37012068376 s528331 QUEUED | api
 DISP | AG-331 | w1024xr1136 legal pair 2/2 queued @swarm-526-331[ab] 1d/s3000/dcp1500/xmx10G; work/AG-331 | 2/2 204
 PATCH_SUMMARY | AG-331 | files=work,claims/AG-331 | idea=w1024xr1136 legal pair cap-trunc-vs-dgw fork | ev=2/2 204
+
+FACT | AG-326 | 2/2 204 @e49e8984: 37012207911 pop200k + 37012268627 pop300k QUEUED WBP dp3v2 s42 | api
+DISP | AG-326 | pop200k+pop300k WBP dose 2/2 queued @326[ab] dp3v2 seed42 band5.5-13.5M; work/AG-326 | 2/2 204
+PATCH_SUMMARY | AG-326 | files=claims,work/AG-326 | idea=pop200k/300k pop-миды 150-400k fill | evidence=2/2 204 queued
+OBSERVED | AG-326 | append 1c7ca16f съеден stale-base clobber ~13:20Z (a21b3dff); re-append в live | board
