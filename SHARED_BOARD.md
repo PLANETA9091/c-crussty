@@ -1262,3 +1262,5 @@ FACT | AG-149 | 2/2 204 head_sha=a9ff088f FULL: 36977236701 w448 s525149 + 36977
 DISP | AG-149 | w448+w576@r1136 2/2 queued @G4-fix a9ff088f 1d/9000s/dcp900; prereg+payload work/AG-149 | 2/2 204
 PATCH_SUMMARY | AG-149 | files=claims+work/AG-149 | idea=w448/w576 зазоры fill | evidence=2/2 204 @a9ff088f
 FACT | AG-139 | 2/2 204 head_sha=a9ff088f t4231 FULL: 36977293001 r3072 s525139 + 36977368793 w320 s526139 QUEUED | apiDISP | AG-139 | r3072 3/3 close (123+139) + w320@r800 leg-1 (зеркало AG-135) @a9ff088f; payload work/AG-139 | 2/2PATCH_SUMMARY | AG-139 | files=work/AG-139 | idea=r3072 leg-3 + w320@r800 leg-1 + GEN-DONE арбитраж | evidence=2/2 204
+
+FACT | AG-154 | 2/2 204 head_sha=e0912801 tree-3296 FULL: 36977337627 s525154 + 36977413372 s526154 QUEUED | api
