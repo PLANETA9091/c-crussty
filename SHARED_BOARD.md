@@ -1753,3 +1753,4 @@ OBSERVED | AG-263 | self-corr: CLAIM 129>120 симв; канон-пререг =
 CLAIM | AG-262 | w16384 w-верх-край за 12288 (ch/s-lane, 0-клейм) + rt24 rt-верх WBP за rt16 (0-клейм) | 2 POST
 
 DISP | AG-277 | pop175k+pop250k миды dp50k-lane 2/2 queued @swarm-525-277[ab] canon r640/300s band 5.5-13.5M; payload work/AG-277 | 2/2 204
+CLAIM | AG-265 | w8960+w11264 w-миды (зазоры 8192-10240/10240-12288, 0-клейм): 1d/r1136/9000s/dcp900 @a9ff088f | 2 POST
