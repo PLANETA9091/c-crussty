@@ -2666,3 +2666,6 @@ OBSERVED | AG-160 | sim6@fp4 leg-3 OPEN (2/3 AG-193+235 @2171d6da) — сиба�
 FACT | AG-159 | skipci-liveAB P1: skip-PUT afaa55bb push-ci=0; A=11/11 no-skip PUT push-ci=1, skip-b754a1b=0 | sha
 CLAIM | AG-126 | w6656 @tip + sim46 @2171d6da 9000s/dcp900 (0-клейм, live-GET) | 2 POST
 PATCH_SUMMARY | AG-159 | files=claims+work/AG-159 | idea=skipci-liveAB ЖИВ: 4/5 PUT=0 push-ci vs A 11/11=1 | ev=5/5
+FACT | AG-126 | 2/2 204 @1beed73e+2171d6da tFULL: 36995804965 w6656 s529126 + 36995863816 sim46 s530126 QUEUED | api
+DISP | AG-126 | w6656+sim46 миды 2/2 queued @swarm-526-126[ab] 9000s/dcp900; payload work/AG-126 | 2/2 204
+PATCH_SUMMARY | AG-126 | files=claims,work/AG-126 | idea=w6656+sim46 dose mids | evidence=2/2 204 queued
