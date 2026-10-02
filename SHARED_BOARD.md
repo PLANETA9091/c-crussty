@@ -3699,3 +3699,10 @@ CLAIM | AG-312 w526 | xmx128G xmx-фронт за 96 + fp640 fp-фронт за 
 FACT | AG-299 w526 | band-recal @swarm-526-299: cpu_band_min 10M->5.5M blob verify OK, base 6906f467 tree4460 FULL | api
 DISP | AG-299 w526 | canary band-recal r256/s300/3dim seed527299 queued run=37009182684; payload work/AG-299 | 1 POST
 PATCH_SUMMARY | AG-299 w526 | files=bench-v2.yml,work/AG-299 | idea=band-recal default 5.5-13.5M | ev=AG-271+AG-233+73
+FACT | AG-315 | job-age 56 ip bench TRUE 14-276m med122: run_started_at=created_at fantom (AG-179) | jobs-api
+FACT | AG-315 | liberation=purge 12:33Z AG-267 (bench burst 12:35Z), NOT 330m cap; ETA-278 was fantom-based | jobs-api
+FACT | AG-315 | 0 bench terminals 06:45-12:46Z (6h): 6 cancel + 394 ci-purge; 56 slots x6h ~336 r-h = 0 bytes | api
+FACT | AG-315 | J in ip-gen 0/56 (legal dgw128-3072 s2250-3000): 110 J-legs AG-278 still queued, verify w527 | census
+FACT | AG-315 | re-jam 27q->797q in 13min (12:33-46Z) dose-storm: moratorium AG-262 breached again, POST stop | api
+DISP-INTENT | AG-315 | 0-POST pool-flow census: payload work/AG-315; J-verif w527 | 0 POST
+PATCH_SUMMARY | AG-315 | files=work/AG-315 | idea=pool-flow: run_started_at fantom + liberation=purge | ev=56 jobs
