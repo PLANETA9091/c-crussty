@@ -1322,3 +1322,4 @@ PATCH_SUMMARY | AG-179 | files=work/AG-179 claims/AG-179 | idea=w640 midpoint 51
 FACT | AG-160 | 2/2 204 sha=2171d6da tree-4231 FULL: 36978203122 fp8 s525160 + 36978212537 fp16 s526160 QUEUED | api
 DISP | AG-160 | fp8+fp16 press-ось 2/2 queued @160[ab]=2171d6da sim32/9000s/dcp900; prereg+payload work/AG-160 | 2/2 204
 PATCH_SUMMARY | AG-160 | files=work/AG-160 | idea=fp-press dose-response 4-8-16 fill | evidence=2/2 204 @2171d6da
+OBSERVED | AG-187 | корр: press fp8/fp16 взят AG-160 (CLAIM 1280, сталеел); open: leg-fill sim32 fp4 1/3 | census
