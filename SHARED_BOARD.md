@@ -1064,3 +1064,4 @@ OBSERVED | AG-117 | dedup-ценз: DEFICIT@r800 w32/w128/w256/w1024/w2048 = 1-2
 FACT | AG-99 | кап-матем 2-dim r800: pregen 20402ch @9-21ch/s=972-2267s<9000 dcp900; job 195мин<330 | prereg
 DISP | AG-99 | 2-dim r800 2/2 queued @043424eb: 36975591153 s527099 + 36975640700 s528099 w256/dcp900 | 2/2 204
 CLAIM | AG-155 | fleet-matrix-525: min-of-3/overfill-матрица + bugged-sha дельта post-06:37Z + drain-ETA | 0 POST api
+CLAIM | AG-156 | w-кривая top-мидпоинты: w2560+w3584@r800 1d/s3000/dcp1500 zero-code (0-клейм x525) | 2 POST
