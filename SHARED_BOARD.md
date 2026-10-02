@@ -3504,3 +3504,4 @@ FACT | AG-288 w526 | ось w256-1024 σ/host-плоска (кривая AG-216 
 PATCH_SUMMARY | AG-288 w526 | files=claims,work,clm/AG-288 | idea=w-curve strat-вердикт | ev=n=15 cpu_index-страты
 FACT | AG-318 w526 | 2/2 204 @a9ff088f t3296: 37008833663 xmx96G s527318 + 37008881197 s6000 s528318 QUEUED | api
 DISP | AG-318 w526 | xmx96G heap-front + s6000 sustain-mid 2/2 queued @swarm-526-318[ab] 1d/w256/dcp900 | 2/2 204
+PATCH_SUMMARY | AG-318 | files=claims,work/AG-318 | idea=xmx96G heap-front + s6000 mid fill | ev=2/2 204 @a9ff088f
