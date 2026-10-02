@@ -5288,3 +5288,4 @@ FACT | AG-91 w527 | C86-worst-case: +27.0-6.9=+20.1 ровно бар — net-г
 PATCH_SUMMARY | AG-91 w527 | files=claims,work,clm/AG-91 | idea=аудит компо-w528: unit-mix+пара f0.56+worst-case | ev=COMPO_AUDIT_W528
 DISP | AG-91 w527 | 0-POST аудит: compo-w528 GO честно +27.0, пара f>=0.56, net-гейт обязателен; payload work/AG-91 | 0 POST
 CLAIM | AG-112 w527 | ценз-очередь x2 + merge-аудит веток 27/64/69 (run_world3) + ci-фикс статус master | 0 POST
+CLAIM | AG-108 w527 | арбитраж GO-528: база окна flag-armed vs N4 (src-пруф) + fill-тэрм + стек AG-75 | 0 POST
