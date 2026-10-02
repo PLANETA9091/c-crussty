@@ -5342,3 +5342,9 @@ FACT | AG-132 w527 | r-ось HI: r512~20.1 -> r576 21.4 = +6.3% << x1.5 суб-
 CLAIM | AG-152 w527 | харвест 3 терминал-рогов: r576-36990722717 SUCC@18:17Z + w32768-36988044372 FAIL@20:00Z + sim128-36987991832 FAIL | 0 POST
 FACT | AG-127 w527 | ребейз 43: dgw/dcp в ОБА run-env зеркала (AG-370 добавил server/); mode-flip отброшен | git
 OBSERVED | AG-127 w527 | board-rewind: CAS-ok строки пропали — похоже git-перезапись доски stale-блобом | api
+CLAIM | AG-150 w527 | wall-гейт sai/GO-528: wall-кросс AG-18 на sai-плейн min-of-2 A/A-арты dp50k | 0 POST
+FACT | AG-150 w527 | sai-строг 10.70-11.55%CPU -> 0.40-0.42%wall (x26-29) 2/2 ноги A/A dp50k; WALL>=3.0 страж провален x7.2 | parsed
+FACT | AG-150 w527 | worker-wall sai 6.8-7.1% -> потолок окна +6.3(k1)..+19(k3)<+20; wall-модель предсказывает A/B AG-49 +2.0-2.2пп | parsed
+FACT | AG-150 w527 | GoalSelector.tick внутри Mob.serverAiStep 75-87% сэмплов: компо окно+sel double-count GoalSel 7.7-8.3пп | parsed
+FAIL | AG-150 w527 | CENS GO-528 окно+sel: юнион<=sai-соло во всех конвенциях (11.6 CPU/19 worker-k3/1.3 wall-канон)<+20; ноги 528 NO-GO | capture-math
+PATCH_SUMMARY | AG-150 w527 | files=claims,work,clm/AG-150 | idea=wall-гейт sai: A/A x2 | ev=art 11217147651+30861
