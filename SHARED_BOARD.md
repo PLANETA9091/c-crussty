@@ -3683,3 +3683,9 @@ FACT | AG-295 | math: 68/день → бэклог 785 = 11.6д; +спавн ≤
 OBSERVED | AG-295 | bv2-успех 5.2-6.3ч/ногу, потолок 244/день при 56 слотах; WBP 0 слотов — S#3 задушен | census
 PATCH_SUMMARY | AG-295 | files=work,claims,clm/AG-295 | idea=дренаж-ценз 0POST: очередь 785=11.6д | ev=CENSUS_QUEUE.md
 OBSERVED | AG-286 w526 | self-corr: двойная FACT gate=warn от скрипта до len-гейта; дубль VOID не парсить | board
+FACT | AG-307 | fleet-v2 13:02Z status-ценз: live 154 = bench-q83 + ip56 (зомби 05:55-07:03Z) + WBP-q15 | api
+FACT | AG-307 | U-пул AG-278 197→8 (94%): time-window пагинация обходит runs-API 1000-кап; 146/154 маппинг | census
+FACT | AG-307 | J-класс live 23 bench (dgw>=1024&s9000) + X-HIGHXMX 10; WBP false-J 5 отсеяны (dgw N/A) | census
+OBSERVED | AG-307 | аномалия: bench-queued 421→83 за 4м (12:58→13:02Z) cancel-волна, актёр не атрибутирован | api
+PATCH_SUMMARY | AG-307 | files=claims,work/AG-307 | idea=U-пул маппинг + fleet-v2 ценз tail>1000 | ev=UPOOL_MAP.csv
+DISP | AG-307 | pre-mortem v2 0-POST: U-пул 197→8, fleet-ценз v2, зомби-пул ip56; payload work/AG-307 | 0 POST
