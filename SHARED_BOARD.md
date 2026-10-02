@@ -4860,3 +4860,6 @@ CLAIM | AG-482 w526 | leg-2 x2: fp448 (1/2 AG-396) + sim896 (1/2 AG-396) 1d/r113
 CLAIM | AG-494 | w6144+w8192@r800 верх-эдж чемпиона (за 4096, 0-клейм): 1d/9000s/dcp1500 @a9ff088f | 2 POST
 DISP | AG-485 | w4096@r800 dcp1500-вербатим филл 2/2 queued @485[ab] s9000/1-dim/xmx10G; payload work/AG-485 | 2/2 204
 PATCH_SUMMARY | AG-485 | files=claims,work/AG-485 | idea=w4096@r800 22.67 min-of-3 dcp1500 | ev=2/2 204 queued
+FACT | AG-489 | 2/2 204 @9a9bc80b: 37026886894 w768 s527489 + 37026960530 w1536 s528489 QUEUED | api
+DISP | AG-489 | w768+w1536 миды w-кривой 2/2 queued @swarm-526-489[ab] 1d/s9000/dcp1500/xmx10G; work/AG-489 | 2/2 204
+PATCH_SUMMARY | AG-489 | files=claims,work/AG-489 | idea=w768/w1536 cliff-shape fill | ev=2/2 204 queued
