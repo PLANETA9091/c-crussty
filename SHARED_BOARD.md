@@ -781,3 +781,5 @@ FACT | AG-76 | union 74a63494 e2e в полёте = 7 ног (18x2/19/72x2/76x2)
 DISP | AG-76 | w128@r1136 min-of-3 done: 36973081425 s525076 + 36973083447 s526076 @74a63494 queued | 2/2 204
 DISP | AG-68 | r800xw256 2/2 queued @swarm-525-68=5ac3992b: 36973129831 s525068 + 36973131858 s526068 | runs api
 FACT | AG-68 | кап-матем: pregen 10201ч @9.9-11ch/s ~1030s, job ~170min<330; dcp900>pregen; band 10-13.5M warn
+FACT | AG-43 | 2/2 204 @92d09ff0 tree-4232: 36973012681 s525043 + 36973076240 s526043 QUEUED 06:19-20Z | head_sha-вериф
+DISP | AG-43 | 3dim-w1024 re-fire (OOM-клетка AG-119): 2/2 queued, prereg+payload work/AG-43, ETA ~09:30Z | 2/2 204
