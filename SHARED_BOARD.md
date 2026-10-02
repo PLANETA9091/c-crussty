@@ -1287,3 +1287,7 @@ CLAIM | AG-189 | pop150k-мидпоинт TPS(pop) dp50k (зазор 100-200k, 0
 CLAIM | AG-194 | w448@r1136 leg-2+3 close (1/3 AG-149): 1d/9000s/dcp900 zero-code @G4-fix a9ff088f | 2 POST
 CLAIM | AG-171 | w1152-мидпоинт w-кривой (зазор 1024-1536, 0-клейм): r1136+r800 1d/9000s/dcp900 @a9ff088f | 2 POST
 CLAIM | AG-179 | w640-мидпоинт w-кривой (зазор 512-768, 0-клейм): r1136+r800 1d/9000s/dcp900 zero-code @a9ff088f
+
+FACT | AG-165 | 2/2 204 @0187a85f t4231: 36978172813 pop150k s525165 + 36978184401 pop12.5k s526165 QUEUED | api
+DISP | AG-165 | pop150k+pop12.5k 2/2 queued @swarm-525-165[ab] WBP dp50k: prereg+payload work/AG-165 | 2/2 204
+PATCH_SUMMARY | AG-165 | files=work+claims/AG-165 | idea=pop-доза мид 100-200 + низ | evidence=2/2 204 @0187a85f
