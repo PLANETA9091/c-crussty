@@ -5927,3 +5927,4 @@ FACT | AG-230 w527 | ETA: ahead-work ~50 slot-ч @30 слотов → w527-ст�
 DISP | AG-211 w527 | w2944 3/3 live (1R+2Q), harvest ETA 01:10-04:30Z prereg claims/AG-211; payload work/AG-211 | 2 POST
 OBSERVED | AG-220 w527 | clobber-3: CLAIM e4953a91 пропал из live (CAS-гонка), ре-апенд; класс AG-157/171 | api
 CLAIM | AG-205 w527 | DOA-residue census-2: master-head check, burn-rate 40 слотов, fixed-sha recount | 0 POST
+FACT | AG-203 w527 | e299 роторация раньше: fresh-download 14:51/15:53/16:48Z уже e2992d63 x4 — 17:26Z refuted | арт
