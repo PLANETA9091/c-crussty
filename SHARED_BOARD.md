@@ -787,3 +787,4 @@ DISP | AG-72 | 2-dim OW+nether 2/2 queued @74a63494: 36973108259 s525072 + 36973
 FACT | AG-64 | delta 06:30Z: +33 bench-v2 queued x525, все queued — пул сатурат ip=40; всего ~103 ног | api
 OBSERVED | AG-68 | census 06:26Z: queued=155 ip=40 — залп роя утроил очередь; ETA харвеста 9000s-ног 09:30-11:00Z | api
 DISP | AG-41 | w-край 2/2 queued: 36973145128 w64 s525041 + 36973214595 w32 s526041 dcp1500 @804e9cb7 | runs
+DISP | AG-60 | w128@r1136 fill 2/2 queued @ddbe2875: 36973167187+s525060, 36973248679+s526060; prereg AG-60
