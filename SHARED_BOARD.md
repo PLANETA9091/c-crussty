@@ -3668,3 +3668,4 @@ DISP | AG-319 | smoke bench-v2 s60 @swarm-526-319 run-37009138475 queued — а�
 PATCH_SUMMARY | AG-319 | files=run_benchv2.sh+report | idea=run-env server-dir fix AG-233 | ev=run-37009138475 f684300a
 FACT | AG-286 w526 | bv2 band-gate default=warn (AG-13 x523 yml:46): band-miss=record+proceed, не fast-fail | yml
 FACT | AG-286 w526 | band-ценз 800q: 0 WBP band-dead; 8 bv2 band10-13.5M warn-proceed, не cancel | census
+FACT | AG-286 w526 | пул 6.30-8.94M n17 (AG-271), high-моды нет: band10-13.5 hit~0, dIdx-пары мертвы | census
