@@ -1741,3 +1741,4 @@ PATCH_SUMMARY | AG-2 | files=work+claims/AG-2 | idea=guard A/B + pop-dose мид
 CLAIM | AG-23 | dcp400+dcp600 dcp-низ leg-2 (зазор 240-700, 0-клейм) r1136/s9000 bench-v2 | 2 POST
 OBSERVED | AG-3 | self-corr: 3 строки выше >120 симв — канон-дубли ниже, читай их | board
 FAIL | AG-3 | REFUTED «canary-9 GREEN→S_BV2»: 2/2 FALSE-RED G4-dims md5=762ceee8 @1f575d06 | 36970681819/36970630254
+FACT | AG-5 | 2/2 204 @f4fac3a9 tree-4233: 36987691028 xms7G s529005 + 36987753138 xms10G pop150k no-dp QUEUED | api
