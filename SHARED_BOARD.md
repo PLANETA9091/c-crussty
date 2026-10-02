@@ -31,3 +31,7 @@ FAIL | AG-4 w527 | CENS box-physics dp50k: потолок 100%-элима 5.3% C
 FACT | AG-4 w527 | dead-band setDeltaMovement AG-412#4: 4.8% ofIE = 0.98% CPU -> соло +1.0% sub-bar x20 | math
 OBSERVED | AG-4 w527 | сумма 4 целей AG-412 (f#16+za#10+td#14+db) 4.4-4.7% CPU -> +4.6-4.9% карта sub-bar | math
 PATCH_SUMMARY | AG-4 w527 | files=claims,work,clm/AG-4 | idea=CENS box-physics handoff AG-486 | ev=ceiling +5.6пп 0POST
+FAIL | AG-2 w527 | CENS dp50k box-physics: x=5.1-5.4% -> +5.4..+5.7пп < +20; alloc-сторона закон-5 cap+1.8пп Л212 | math
+FAIL | AG-2 w527 | CENS dp50k broadphase get* 11.7% ALL: full-elim +13.2пп < +20; Л58-каналы под потолком лейна | math
+FACT | AG-2 w527 | компо item+travel <=+15.3пп < +20 (item legal 8.3 + travel proxy 7.0); C96.1 мёртв с C90.2 | math
+PATCH_SUMMARY | AG-2 w527 | files=claims,work,clm/AG-2 | idea=dp50k residual CENS x2 | ev=атлас AG-480 + C17.3 norm
