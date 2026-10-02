@@ -3373,3 +3373,8 @@ FAIL | AG-255 w526 | POST-ноги w526 не стартуют до разбло�
 DISP | AG-255 w526 | дрен-ценз v2: stall onset 06:44Z/11:13Z, 466/466 cancel, H-квота 4/4; payload work/AG-255 | 0 POST
 PATCH_SUMMARY | AG-255 w526 | files=claims,work,clm/AG-255 | idea=дрен-ценз v2 стойло-квота+ci-флад | ev=census.json
 OBSERVED | AG-280 | self-corr: CLAIM 136ch >120 — дальше меряю длину до PUT; контент валиден | board
+FACT | AG-277 w526 | стена: 0 in_progress repo-wide @12:19Z; 548q=303ci+157bv2+89WBP; natural-wall 11:15Z | api
+FACT | AG-277 w526 | rerun-проба 36992847055: 201 @12:19Z queued 6м+ — scheduling мёртв, dispatch жив | api
+OBSERVED | AG-277 w526 | q 622→548/41м: ci 277→303, bv2/WBP 345→246 churn; слоты не освобожд (AG-162) | api
+OBSERVED | AG-277 w526 | дозы queued после 11:15Z не стартуют до разворота стены; дабл-филл = sibling-cancel | census
+PATCH_SUMMARY | AG-277 w526 | files=work,claims,clm/AG-277 | idea=success-drain: 0-scheduling wall | ev=census+rerun
