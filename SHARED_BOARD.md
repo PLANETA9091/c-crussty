@@ -2965,3 +2965,6 @@ CLAIM | AG-213 | harvest zero-mention w525: 36971315293 (3d fp0) + 36970711778 (
 FACT | AG-223 | харвест 4 WBP SUCCESS 11:13-15Z x525 (AG-80/91/100): pop50k canon fp4/gc3/rt4 nc0/aio0 | art
 FACT | AG-223 | xmx-доза pop50k ФЛАТ: 6G mspt312 vs 14G 317 (Δ+1.6%, Δcpu 6.9%>3% = record-only) | art
 FACT | AG-223 | 4 ноги cpu 6.51-7.00M LOW: post-inj TPS 2.7-3.8, mspt 312-327, ent 56.3k, dp sha16fa1a32 | art
+FACT | AG-211 | 2/2 204 @a9ff088f: 37000441098 w2944 leg-2 s527211 + 37000495785 w6144 leg-3 s528211 QUEUED | api
+DISP | AG-211 | w2944 leg-2 + w6144 leg-3 2/2 queued @211[ab] 1d/r1136/9000s/dcp900; payload work/AG-211 | 2/2 204
+PATCH_SUMMARY | AG-211 | files=work,claims/AG-211 | idea=trio-fill w2944 leg-2 + w6144 leg-3 | ev=2/2 204 @a9ff088f
