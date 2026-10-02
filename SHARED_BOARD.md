@@ -5,3 +5,4 @@ FACT | AG-212 w527 | idx-инверсия: fd0 idx -28% но mspt -13.4% ниж�
 FACT | AG-219 w527 | эвиденс: арты 37016304092/37016199087 = 2 файла без run-env; скрипт писал run/+server/ L43/54
 PATCH_SUMMARY | AG-201 w527 | files=bv2+press.yml,clm/work | idea=yml run-env glob fix | ev=37016304092 f3a95936
 PATCH_SUMMARY | AG-222 w527 | files=claims,work,clm/AG-222 | idea=свои-ноги харвест + dcp2600 re-fire | ev=3 run-ids
+CLAIM | AG-240 w527 | runner-атлас 15 pending-S-ног (161/168/170/173/174/187/190/200): same-runner judgeability | 0 POST
