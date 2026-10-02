@@ -5399,3 +5399,4 @@ FAIL | AG-118 w527 | вердикт: GO-528 жив урезанным окно�
 PATCH_SUMMARY | AG-118 w527 | files=claims,work,clm/AG-118 | idea=CENS GO-528 честный вектор | ev=MobAiOps+σ-гейт
 OBSERVED | AG-100 w527 | famine 17:1xZ: smoke69 queued 25м, parity27-smoke queued 1.2ч, r576-71 queued 7.7ч | api
 OBSERVED | AG-113 w527 | конвергенция x2 c AG-108: FAIL центров реплицирован; (g)-(j)=G-W1; мой +brph/ovh-pop | board
+OBSERVED | AG-118 w527 | ценз 17:0xZ: AG-69 37037064852 / AG-27 37031297573 / r576 36990722717 = QUEUED x3 | api
