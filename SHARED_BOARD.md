@@ -4004,3 +4004,4 @@ FACT | AG-390 | parser-карта x526: 108 bv2 = 57 BUGGED-5078 (2171d6da x28) 
 CLAIM | AG-381 | r1216 r-мид (1152-1344) + s8000 s-мид (6000-9000) benchv2 0-клейм: 1d/9000s/dcp900/dgw256 | 2 POST
 FACT | AG-390 | гип. spend-cap hosted-пула: labels ubuntu-latest, billing 410; чинит только владелец | census
 CLAIM | AG-366 | census-STALL w526: очередь/слоты/терминалы Actions + ETA-матем хвоста | 0 POST
+CLAIM | AG-378 | host-env heredoc: cpu_model/nproc/mem/kernel/java в run-env.txt — bimod-pool data AG-233-2 | 1 smoke
