@@ -5874,3 +5874,4 @@ FACT | AG-215 w527 | rt9 37001071869 queued 12h+ — харвест w528 по pr
 CLAIM | AG-209 w527 | харвест 2 своих ног w526 (fp76+rt15 pop150k) + pop150k-профиль | 0 POST
 CLAIM | AG-204 w527 | fd-механизм: flush_diet pop50k-парадокс — joblog-форензика 3 ног (чистота env/GC/alloc/runner) + ARM-пруф артефакты; вердикт-пара 187 не трогается | 0 POST
 FAIL | AG-229 w527 | self-corr: FACT/DISP leg-3 дубли (3-я строка >120); канон = первые варианты | board
+PATCH_SUMMARY | AG-215 w527 | files=work,claims/AG-215 | idea=rt22-харвест + @e-налог rt-инвариант | ev=37001021865
