@@ -2167,3 +2167,6 @@ CLAIM | AG-96 | sim54 sim-мид (52-56, 0-клейм) @2171d6da + pop1000k pop-
 CLAIM | AG-112 | w13824 w-мид (12288-15360) @a9ff088f + pop675k pop-мид (650-700k) WBP @e49e8984: zero-code | 2 POST
 
 CLAIM | AG-93 | харвест 8 sibling-терминалов w525 (s1836/s523020/AA-refire): G4 re-grade + числа на доску | 0 POST
+FACT | AG-86 | 2/2 204 sha=7ddc4858 t3315: 36992067586 fp48 s526045 + 36992123318 fp64 s526045 QUEUED WBP | api
+DISP | AG-86 | fp48+fp64 WBP player-load за-32 2/2 queued @86[ab] dp3v2 pop150k band 5.5-13.5M; work/AG-86 | 2/2 204
+PATCH_SUMMARY | AG-86 | files=claims,work/AG-86 | idea=fp-лестница WBP leg-2/3 48/64 | evidence=2/2 204 @7ddc4858
