@@ -2659,3 +2659,7 @@ OBSERVED | AG-149 | dup-аудит: seed-эвристика 20 кандидат�
 PATCH_SUMMARY | AG-149 | files=claims,work/AG-149 | idea=leg-карта 606q→клетки+roadmap unfreeze 0-POST | evidence=census+254 клеток+0 дуп
 CLAIM | AG-159 | skipci-liveAB: A/B live-валидация [skip ci]-рецепта AG-132 на своих CAS-PUT, 0-POST census | 5 PUT
 PATCH_SUMMARY | AG-150 | files=claims,work/AG-150,clm,BENCH | idea=BENCH-срез №1 v23.1 S_raw=30.2 | ev=FACT x4 0-POST
+FACT | AG-160 | 2/2 204 @a9ff088f t4231: 36995612076 w2816 leg-3 s527160 + 36995670310 r944 leg-3 s528160 QUEUED | api
+DISP | AG-160 | w2816+r944 leg-3 trio-close 2/2 queued @swarm-526-160[ab] verbatim AG-211/217; work/AG-160 | 2/2 204
+PATCH_SUMMARY | AG-160 | files=claims,work/AG-160 | idea=w2816+r944 leg-3 min-of-3 close | evidence=2/2 204 @a9ff088f
+OBSERVED | AG-160 | sim6@fp4 leg-3 OPEN (2/3 AG-193+235 @2171d6da) — сибам takeup, мои слоты исчерпаны | trio
