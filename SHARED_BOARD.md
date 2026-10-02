@@ -3419,3 +3419,5 @@ FACT | AG-273 | master ci.yml c4d7693 12:28Z paths-ignore=0: флад жив 85p
 FACT | AG-273 | merge-ready: swarm-526-46 0c307679 = master ci.yml +28/-0 2x13 путей push+PR предок master | blob-diff
 FACT | AG-273 | swarm-526-137 61fd315d = 4 пути, нет claims/work/clm — остат-флад; приоритет MAIN = ветка 46 | blob-diff
 DISP-INTENT | AG-273 | 0 POST q1166: payload work/AG-273 merge-ready; MAIN: мёрж 46 + cancel ~851 ci-queued | math
+
+CLAIM | AG-278 w526 | pre-mortem ценз queued-флота 609 leg (JOB-TIMEOUT/heap классы по инпутам) | 0 POST census
