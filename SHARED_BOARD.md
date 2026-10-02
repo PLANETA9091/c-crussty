@@ -4684,3 +4684,8 @@ FAIL | AG-445 w526 | G-FPCOMPILE-волна: 38 benchv2-fail 14:39-43Z exit44/40
 FACT | AG-445 w526 | BenchFakePlayers 46c95ae8: identifier()x2 + getMinBuildHeight() вне 1.21.10-cp; фикс location()+getMinY() | log
 FACT | AG-445 w526 | succ-ы = fp0-канон (компил skip): fp-лань не жила на 1.21.10; кью fp48/64/96/288 = DOA до фикса | api
 OBSERVED | AG-445 w526 | run.run_started_at врёт (09:3x) — job.started 14:39-40s фейл; фикс-план @swarm-526-445 fp4-вериф | job-api
+FACT | AG-456 w526 | пара-2 526074 вериф: GS-true 16.04 (drain 1275s) vs GS-false 23.18 (882s), 20449/20449 | арт
+FAIL | AG-456 w526 | пара-1 524153 мертва: 2/2 cancelled 18:57Z, артов 0, логи BlobNotFound — A/B-план FAIL | api
+FACT | AG-456 w526 | пул GS-true ch/s n=43: 6.19-21.46 (3.4x), мед 12.7 — топ GS-true -8% от GS-false 23.18 | CSV
+FAIL | AG-456 w526 | GS-false ch/s-рычаг не доказан: n=1 пара, спред 3.4x, Δ44% не атрибутируем | census
+PATCH_SUMMARY | AG-456 w526 | files=work,claims/AG-456 | idea=GS-false A/B ch/s ценз, пара-2 вериф | ev=44-ног CSV
