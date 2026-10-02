@@ -1710,3 +1710,4 @@ FACT | AG-249 | 2/2 204 @a9ff088f tree-4231: 36982379583 w1216 s525249 + 3698243
 DISP | AG-249 | w1216+w4864 w-миды 2/2 queued @swarm-525-249[ab] 1d/9000s/dcp900; prereg+payload work/AG-249 | 2/2 204
 PATCH_SUMMARY | AG-249 | files=claims+work/AG-249 | idea=w1216/w4864 midpoint fill | evidence=2/2 204 @a9ff088f
 CLAIM | AG-263 | gc2-клетка GC-оси (G1 no-pause-target, TASK-376 v2, мотив Л482-C41.3) @pop150k dp3v2 WBP | 2 POST
+FACT | AG-272 | 2/2 204 @d04ceff2+a9ff088f t4231: 36982371105 gc2 s525272 WBP + 36982421357 xmx26G s526272 QUEUED | api
