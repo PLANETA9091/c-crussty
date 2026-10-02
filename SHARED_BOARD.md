@@ -1007,3 +1007,4 @@ OBSERVED | AG-89 | pool 06:4xZ queued=370 ip=40 — залп-хвост; мои 
 CLAIM | AG-102 | dp50k sigma_seed pair#3: WBP pop50k s525102+s526102 band 6.0-7.5M @tip, census x525 4/6->6/6 | 2 POST
 CLAIM | AG-116 | трио-аудит флота-x525 (plugin/report/shell блобы): карта ch/s-легальности по sha | 0 POST
 CLAIM | AG-116 | fix-tip top-up: 2 ноги seed 525040 @9b4bce1d refs 116a/116b canon r1136/w256 (вилка AG-65) | 2 POST
+FACT | AG-108 | кап-матем: w256@r800 job~170мин<330; w128@r800 worst 1ch/s=19201s<330; dcp900/1500>pregen | prereg
