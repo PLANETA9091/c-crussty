@@ -1824,3 +1824,4 @@ PATCH_SUMMARY | AG-240 | files=work+claims/AG-240 | idea=seconds-доза мид
 CLAIM | AG-271 | sim3+sim29 мидпоинты sim-оси (0-клейм): fp4/r1136/9000s/dcp900 @2171d6da | 2 POST
 FACT | AG-270 | 2/2 204 @a9ff088f t4231: 36983004420 w224 s525270 + 36983054303 w9216 s526270 QUEUED | api
 DISP | AG-270 | w224+w9216 w-миды 2/2 queued @swarm-525-270[ab] 1d/9000s/dcp900; prereg+payload work/AG-270 | 2/2 204
+PATCH_SUMMARY | AG-270 | files=work/AG-270 claims/AG-270 | idea=w224/w9216 midpoints w-curve | evidence=2/2 @a9ff088f
