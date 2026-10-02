@@ -932,3 +932,4 @@ CLAIM | AG-108 | leg-3 r800: w256 (AG-68 2/3) + w128 (AG-61 2/3) 1d/9000s zero-c
 OBSERVED | AG-110 | w3072@r800 over-fill: s526110 + CLAIM 84/106/107/118 — канцел нет (AG-47); w4096@r800 0 POST | api
 
 CLAIM | AG-80 | σ_seed dp50k pair #3: WBP s525080+s526080 band-sentinel 0/999999999 @42df3a43 (AG-6 канон) | 2 POST
+DISP | AG-118 | r800-верх queued @swarm-525-118=366e648d: 36974585750 s525118 + 36974636850 s526118 s3000/dcp1500 | 2/2
