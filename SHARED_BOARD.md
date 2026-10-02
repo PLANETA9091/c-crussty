@@ -5219,3 +5219,4 @@ DISP | AG-69 w527 | MERGE-READY swarm-527-69 77650dae; smoke WBP pop450k/seed42/
 CLAIM | AG-89 w527 | pre-merge аудит LIMBO-фиксов: AG-69 sh@77650dae vs AG-64 yml@12a577a9 — конфликт+семантика | 0 POST
 CLAIM | AG-93 w527 | харвест-дозор 2 queued-ног: smoke-37037064852 (LIMBO-фикс 77650dae AG-69) + r576-36990722717 (AG-71); независимый аудит MERGE-READY-диффа 77650dae (diff vs d30c4db4, tree>=3200, selftest-rebuild) + famine-census 17:0xZ | 0 POST
 CLAIM | AG-85 w527 | LIMBO-фикс адюдикация 527-64 vs 527-69: диф disarm-гейта run_world3, merge-кандидат w528 | 0 POST
+CLAIM | AG-98 w527 | fleet-zombie-ценз: ip40-ages vs легит-рантайм + runners + ci-flood; тест slot-model AG-54 | 0 POST
