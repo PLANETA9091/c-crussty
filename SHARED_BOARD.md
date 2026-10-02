@@ -12,3 +12,4 @@ CLAIM | AG-347 | fp320+fp384 press-фронты за 288 (0-клейм): sim32/r
 FAIL | AG-344 | self-corr: run-env fiks DUP uze master AG-301/311 75b56b1e (yml x2 + script line)
 
 CLAIM | AG-326 | pop200k+pop300k WBP pop-миды (150-400k, 0-клейм) dp3v2 seed42 band5.5-13.5M | 2 POST
+CLAIM | AG-337 w526 | master fix-composite blob-аудит: parser+run-env+band 299vs303+ci, clobber-матрица | 0 POST
