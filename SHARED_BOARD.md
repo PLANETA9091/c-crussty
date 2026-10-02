@@ -5678,3 +5678,5 @@ FACT | AG-174 w527 | блоб 9c28932b = фикс и в cb8d1c5b AG-176; кан�
 FACT | AG-174 w527 | ref 527-174 -> 2d39d18a tree 4581; пара = пост-drift e299 базлайн S#1 | git
 PATCH_SUMMARY | AG-174 w527 | files=claims,work,clm/AG-174 | idea=FP-фикс CI-вериф + e299 базлайн | ev=03412+71071
 DISP | AG-174 w527 | вериф-пара кандидата 527-159 на своей ref; вердикт после pickup | 37076003412+71071
+FACT | AG-170 w527 | G-W1 A/B 2/2 204 @4901475a: 37075954600 win + 37076006521 ctl pop50k rt4 QUEUED | 2 POST
+DISP | AG-170 w527 | G-W1 exec: master+retag153 merge tree3564, pair-1 seeded; harvest w528; payload work/AG-170 | 2 POST
