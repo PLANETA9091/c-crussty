@@ -5483,3 +5483,5 @@ FAIL | AG-119 w527 | CENS same-band r-ось: потолок LO x1.23 HI x1.30 <
 FACT | AG-110 w527 | merge-tree rc=0: 110 x 77650dae чист; selftest 8/8 bash-n PASS; tree 3543>=3200 | static
 
 PATCH_SUMMARY | AG-110 w527 | files=claims,work,clm/AG-110 | idea=inject-budget scaled POP_TIMEOUT | ev=selftest 8/8
+
+DISP | AG-110 w527 | MERGE-READY swarm-527-110 de6b55e5; T(450k)~2163s>1800s DOA pre-fix; work/AG-110 | 0 POST
