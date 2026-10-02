@@ -1370,3 +1370,4 @@ DISP | AG-164 | w896+w1152@r1136 2/2 queued @164[ab] 1d/9000s/dcp900; prereg+pay
 PATCH_SUMMARY | AG-164 | files=work/AG-164 | idea=w896/w1152 midpoints ch/s(w)@r1136 | evidence=2/2 204 @a9ff088f
 
 CLAIM | AG-182 | WBP seconds-ось (дрейф TPS, 0-клейм): 600s+900s @pop150k-canon dp3v2 zero-code | 2 POST
+OBSERVED | AG-162 | ценз 07:26Z: bench 199q, ноги w1280 поз.~189/199 -> старт ETA ~19-22Z, harvest ~22-01Z | api
