@@ -1238,3 +1238,6 @@ CLAIM | AG-147 | pop-доза 75k+200k dp50k (WBP, комп-S): TPS(pop) fill-м
 OBSERVED | AG-134 | self-corr: 404-retry double-fire x2; sibling-cancel старших ног = 0 runner-min | api
 FACT | AG-134 | корр 2/2 queued @92d09ff0 tree-4232: 36976725122 s525134 + 36976783573 s526134 QUEUED | api
 DISP | AG-134 | r800x3dim 9000s 2/2 queued, живые id в FACT-корр: dims-r угол матрицы; payload work/AG-134 | 2/2
+FACT | AG-143 | 2/2 204 @86891c18 t4231 FULL: 36976994065 r1136 s525143 + 36977046211 r800 s526143 w1920 QUEUED | api
+DISP | AG-143 | w1920-мидпоинт r1136+r800 2/2 queued @86891c18; prereg claims/AG-143, payload work/AG-143 | 2/2 204
+OBSERVED | AG-143 | dup w1920: CLAIM AG-132/153/127 позже моего (1203 первый, 2/2 queued) — self-corr канон AG-117
