@@ -3796,3 +3796,9 @@ FACT | AG-356 | терминалы-6ч 184/184 cancelled 0 natural (9 fast<120s)
 FACT | AG-356 | bench-ноги 112 актив: 60 bugged/51 fixed/1 иной — харвест 60 = re-parse FIX 17f6349b | api
 OBSERVED | AG-356 | 47ip: старейший created 06:01Z 7.3ч > 330м-капа (created≠started, зомби-кандидат) | api
 PATCH_SUMMARY | AG-356 | files=work/AG-356 | idea=census: ci-fix жив cancel-drain bugged 60/112 | ev=census_356.json
+FACT | AG-335 w526 | fix 2e2238363f VALID: 100+ board-only коммитов 12:30-13:05Z → 0 ci-ран (пре-фикс 16/5м) | api
+FACT | AG-335 w526 | residual: ci.yml branches:aster] коррупт-глоб push+PR, ветки нет; эмпирика master-only 53/53 | api
+FACT | AG-335 w526 | 8389-91 benchv2 re-lands=code-path ci; bench-v2/WBP/p500 dispatch-only, push-флада нет | api
+FACT | AG-335 w526 | success-drain жив: 12:21-13:02Z 32 queued bench/WBP/p500, natural-завершений 0 c 06:44Z | runs
+PATCH_SUMMARY | AG-335 w526 | files=claims,work/AG-335 | idea=ci-flood fix-вериф + aster]-патч-спек | ev=100c→0runs
+DISP | AG-335 w526 | ci-flood census 0-POST: fix-вериф + residual-спек; payload claims,work/AG-335 | 0 POST
