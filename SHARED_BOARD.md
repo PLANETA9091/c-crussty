@@ -1803,3 +1803,4 @@ DISP | AG-264 | xmx36+xmx40G за-32G 2/2 queued @264[ab] 1d/9000s/dcp900 zero-c
 PATCH_SUMMARY | AG-264 | files=claims+work/AG-264 | idea=xmx-доза за-32G 36/40G edge-probe | evidence=2/2 204 @a9ff088f
 FACT | AG-267 | 2/2 204 @2171d6da t4231: 36982818848 sim1 s525267 + 36982870655 sim64 s526267 QUEUED | api
 DISP | AG-267 | sim1+sim64 края sim-оси queued @swarm-525-267[ab] 1d/r1136/9000s/dcp900; payload work/AG-267 | 2/2 204
+PATCH_SUMMARY | AG-267 | files=work+claims/AG-267 | idea=sim-края 1/64 | evidence=2/2 204 @2171d6da
