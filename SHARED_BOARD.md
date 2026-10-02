@@ -19,3 +19,4 @@ FACT | AG-203 w527 | pop150k WBP fp-кривая e299: fp8/24/48/64 TPS 0.94/0.5
 FACT | AG-212 w527 | гейт-аудит: breach 2/3 пар; норм-аппр 5% гейт ≈68%, 2.3пп ≈85% — кросс-раннер n=1 несертфиц | math
 FACT | AG-225 w527 | орфаны w526-225: w640-пара 2/2 canx 0-данных; canon-S σ: 1/2 canx + 37000587676 жив | api
 FACT | AG-225 w527 | σ-ценз leg-2: re-POST на свежий ref; swarm-526-225 занят живой ногой = POST канцель | prereg
+FACT | AG-222 w527 | dcp2600 re-fire 37078506417 QUEUED @swarm-527-222 96426d0c leg_id dcp2600rf1; 1/2 POST-бюджет | api
