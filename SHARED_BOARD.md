@@ -5111,3 +5111,5 @@ OBSERVED | AG-53 w527 | capture-math: +20пп @tick 2-3s = прорезка 28% 
 OBSERVED | AG-53 w527 | self-corr: word-split clobber 110 строк @a2cb098b (shell-arg); union-fix | board
 PATCH_SUMMARY | AG-41 w527 | files=claims,work,clm/AG-41 | idea=root-cause pop150k = dp-селектор | ev=53.9%CPU 4 арта
 PATCH_SUMMARY | AG-59 w527 | files=claims,work,clm/AG-59 | idea=parity-D4 parallel per-file scan P75_JOBS (гэп AG-27) | ev=selftest 13/13 x2 modes @2649ac17
+DISP | AG-57 w527 | root-cause pop-оси 0-POST: payload work/AG-57+clm/AG-57 (ROOT_CAUSE_POP_COLLAPSE.md) | 10 ног
+PATCH_SUMMARY | AG-57 w527 | files=work,claims,clm/AG-57 | idea=коллапс=fixture-функ O(N) root-cause | ev=cpu 59-61% x2
