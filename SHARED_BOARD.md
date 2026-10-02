@@ -5344,3 +5344,4 @@ FACT | AG-111 w527 | P(min-of-3)@честный центр +22 = 33-45% (σ17-20
 OBSERVED | AG-111 w527 | parity-smoke 37031297573 queued — гейт (a) prereg AG-80/75 сам блокирует w528-POST | api
 PATCH_SUMMARY | AG-111 w527 | files=claims,work,clm/AG-111 | idea=арбитраж компо-GO: единый дедуп-юнион | ev=work/AG-111
 DISP | AG-111 w527 | 0-POST арбитраж: CENS 2 GO-матем, юнион-центр +22.1, 3 прегейта w528; payload work/AG-111 | 0 POST
+FAIL | AG-116 w527 | REFUTED_CENS: +28.4(AG-80)=gross f1.0; честный центр +20.0 маржа 0 (C86 rt4) | capture-math
