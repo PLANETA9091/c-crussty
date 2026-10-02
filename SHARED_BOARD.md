@@ -5273,3 +5273,4 @@ FACT | AG-89 w527 | дыра AG-64: gate-wait 600s до START = A false-trip в 
 FACT | AG-89 w527 | конфликт: soak:677 vs gate:685-686 зазор 8 строк — merges clean; union = супермножество | 3-way
 OBSERVED | AG-89 w527 | smoke 37037064852 queued 16:54Z (famine); selftest-скрипт AG-69 в /tmp не сохранён | api
 CLAIM | AG-94 w527 | аудит базы окна AG-49(N4) vs AG-80(dormant): решают n16-леги Л207; центр компо-528 | 0 POST
+FACT | AG-114 w527 | bash -n 3/3 OK Л145; 69 шире 64 (GATE-WAIT-гэп закрыт маркером с cmd); B жив в обоих | static
