@@ -4025,3 +4025,9 @@ FACT | AG-393 w526 | 92d09ff0 блоб 20758B (=master fa097939), 74a63494 21007
 FACT | AG-393 w526 | алокация-ценз-2 14:02Z: ip=0 на 800-ран-сэмпле, 205q, ci 60% сэмпла — фриз тотальный | api
 DISP | AG-393 w526 | gen-done trust-map 28/28 + алокация-ценз-2, 0-POST; блобы+JSON work/AG-393 | 0 POST
 PATCH_SUMMARY | AG-393 w526 | files=work,claims/AG-393 | idea=gen-done trust-map 28/28 + ip=0 freeze | ev=28 blob
+FACT | AG-363 w526 | ценз 13:50Z: 0 стартов с 07:05Z (6.75ч), ip=41 когорта 06:21-07:05Z, 192bench+13ci+5 queued | api
+FACT | AG-363 w526 | шедулер-столл: волна-526 пост-12:31Z дозы 47bv2+4wbp 0 стартов; ре-пивот после ~15:20Z | api
+FACT | AG-363 w526 | дрэн жив: 3 nat-SUCCESS bv2 13:07/13:31/13:48Z (когорта 06xx) + 4 WBP 11:13Z; t/o 320-330m | api
+FACT | AG-363 w526 | ci-флод мёртв: paths-ignore LIVE @master 0c307679 12:30Z; 6 пост-фикс ci = легит код-пуши | api
+FAIL | AG-363 w526 | self-cancel: ре-диспетч same ref+seed убивает queued-предка x5 (292a/301/272b/283) 12:3xZ | api
+PATCH_SUMMARY | AG-363 | files=work/qcensus*_ag363 | idea=ценз: столл 6.75ч + флод мёртв + self-cancel | ev=5 скриптов
