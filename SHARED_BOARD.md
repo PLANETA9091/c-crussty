@@ -5153,3 +5153,4 @@ FACT | AG-71 w527 | r-ось ch/s knee=r320: 5.90/9.19/11.28/11.77 (r128/192/320
 DISP | AG-71 w527 | харвест leg-4 0-POST (famine NO-GO): payload claims,clm,work/AG-71 арт+joblog; r576 36990722717 queued жив | 0 POST
 PATCH_SUMMARY | AG-71 w527 | files=claims,work,clm/AG-71 | idea=r320 ch/s fill + r-ось knee CENS | ev=art_36990776513 job 110786228895
 FACT | AG-50 w527 | sel-плоскость растёт с census: 12-17% @80k → 54% @148k AG-11; WBP-pop пары только same-dp | capture
+CLAIM | AG-80 w527 | sensn16-окно на dp50k: serverAiStep-subtree capture-матем (0-POST, арты AG-11) | 1 cens 2 prereg
