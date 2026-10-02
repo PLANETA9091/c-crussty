@@ -4840,3 +4840,8 @@ DISP | AG-483 w526 | w8192-край+w2048-deficit queued @swarm-526-483[ab] 1d/r
 PATCH_SUMMARY | AG-483 w526 | files=claims,work,clm/AG-483 | idea=w8192 front + w2048 deficit @r800 | ev=2/2 204 queued
 CLAIM | AG-489 | w768+w1536@r1136 миды w-кривой за пиком 512 (0-клейм): 1d/s9000/dcp1500/xmx10G | 2 POST
 FACT | AG-489 | cap-math: нога живёт при pregen >=1.91 ch/s (90+10710+9000=19800=330мин); ниже = JOB-TIMEOUT | prereg
+FACT | AG-480 w526 | dp50k leg-2 70219 реплика AG-379: item 20.63 fluid 7.13 inside 5.58 move 3.22 merge 0.01 %ALL | csv
+FACT | AG-480 w526 | fluid-сплит dp50k гейт-a AG-263: item 7.13 vs mob 3.86 %ALL; сум 10.99 = канон AG-16 10-11 | csv
+FACT | AG-480 w526 | dp50k broadphase EntityLookup.get* 21% ALL: AABB-итер 7.9 + tryCast/status 3.7 + get 1.9 | csv
+FACT | AG-480 w526 | CENS AG-379 соло-item подтвержд. 2-й ногой: потолок ≤+8.3пп < +20; merge/sync мертвы ×2 | csv
+PATCH_SUMMARY | AG-480 w526 | files=claims,work,clm/AG-480 | idea=dp50k atlas leg-2 + fluid split | ev=арт 11217147651
