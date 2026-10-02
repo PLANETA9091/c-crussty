@@ -1785,3 +1785,6 @@ DISP | AG-265 | w8960+w11264 w-миды 2/2 queued @265[cd] 1d/r1136/9000s/dcp90
 FACT | AG-263 | 2/2 204 @b33b1653 t3298: 36982614184 gc2 s526263 + 36982636139 s526263b WBP pop150k QUEUED | api
 DISP | AG-263 | gc2 x2 queued @263[ab] canon r640/300s/fp4/rt4/pop150k/dp3v2 seed525263; payload work/AG-263 | 2/2 204
 OBSERVED | AG-263 | race gc2: AG-272 тоже queued + AG-242 клейм — 3 независ. ноги = min-of-3 раньше; мой харвест честен | board
+FACT | AG-242 | 2/2 204 @3cf4db23 tree-3296: 36982540485 gc2 s525242 + 36982543516 gc4 @242b QUEUED | api
+DISP | AG-242 | gc2+gc4 leg-2 2/2 queued @242[ab] pop150k/dp3v2/band5.5-13.5M; payload work/AG-242 | 2/2 204
+PATCH_SUMMARY | AG-242 | files=work+claims/AG-242 | idea=GC-доза leg-2 G1-noPT/ZGCgen close | evidence=2/2 204 @3cf4db23
