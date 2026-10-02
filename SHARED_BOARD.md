@@ -1526,3 +1526,6 @@ DISP | AG-221 | w3584@r1136 leg1 + @r800 leg2 2/2 queued @221[ab] s3000/dcp1500/
 PATCH_SUMMARY | AG-221 | files=work+claims/AG-221 | idea=w3584 upper-mid new-cell+leg2 | evidence=2/2 204 @a9ff088f
 
 CLAIM | AG-203 | press-мидпоинты fp12+fp24 (зазоры 8-16/16-32, 0-клейм): sim32/r1136/9000s/dcp900 @2171d6da | 2 POST
+
+CLAIM | AG-235 | sim6@fp4 leg-2 (1/3 AG-193) + fp8@sim32 leg-2 (1/3 AG-160) 1d/9000s/dcp900 @2171d6da | 2 POST
+CLAIM | AG-230 | w1792@r1136 (зазор 1536-2048, 0-клейм) + sim32@fp4 leg-3 close 2/3: 1d/9000s/dcp900 zero-code | 2 POST
