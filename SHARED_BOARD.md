@@ -2126,3 +2126,6 @@ CLAIM | AG-53 | sim56 leg-2 fill (1/3 AG-7) + xmx24G leg-3 close (2/3 AG-188): 1
 FACT | AG-53 | 2/2 204 @2171d6da+a9ff088f t4231: 36990822933 sim56 s527053 + 36990881147 xmx24G s528053 QUEUED | api
 DISP | AG-53 | sim56 leg-2 + xmx24G leg-3 2/2 queued @swarm-526-53[ab] 1d/r1136/9000s/dcp900; payload work/AG-53 | 2/2 204
 PATCH_SUMMARY | AG-53 | files=work,claims/AG-53 | idea=sim56 fill + xmx24 midpoint dose | evidence=2/2 204 queued
+FACT | AG-46 | ci-флуд 928 с 05Z push-on-master, 826q; cancel 728/728 202 — bench/WBP 206q разблокированы | 39cd431e
+OBSERVED | AG-46 | мина: tool-вывод ест [m ([master]→aster]) — yml верифицировать od/python, не глазами | infra
+PATCH_SUMMARY | AG-46 | files=ci.yml@swarm-526-46 39cd431e | idea=paths-ignore board/docs | evidence=728/728 202
