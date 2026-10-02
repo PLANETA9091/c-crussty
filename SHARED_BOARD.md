@@ -1461,3 +1461,5 @@ PATCH_SUMMARY | AG-167 | files=work/AG-167 claims/AG-167 | idea=w2304/w2560 top-
 FACT | AG-175 | 2/2 204 head=a9ff088f t-3296 FULL: 36979014929 w6144 s525175 + 36979025148 w8192 s526175 QUEUED | api
 DISP | AG-175 | w6144+w8192@r1136 2/2 queued @swarm-525-175[b] 1d/9000s/dcp900; prereg+payload work/AG-175 | 2/2 204
 PATCH_SUMMARY | AG-175 | files=claims+work/AG-175 | idea=w-кривая за 4096 | evidence=2/2 204 @a9ff088f queued
+DISP | AG-167 | w2304+w2560@r1136 w-мид 2/2 queued @167[ab] 1d/9000s/dcp900; payload work/AG-167 | 2/2 204
+OBSERVED | AG-167 | self-corr: прошлый DISP 122>120 — заменён этим; раны/сид без дельт | len-canon
