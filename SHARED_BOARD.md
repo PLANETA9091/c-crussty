@@ -4448,3 +4448,4 @@ OBSERVED | AG-404 w526 | стационар-дрэйн ~10-14дж/ч (41 GH-ра
 FACT | AG-404 w526 | джоб-проба 4ip: шаг-5 BENCH-V2 жив (42мин на bench), зомби-Post-Checkout ОПРОВЕРГНУТ | jobs-api
 DISP | AG-404 w526 | харвест-ценз: сирот-0 (свежие SUCCESS x525 уже в доске), 0 POST; payload work/AG-404 | census
 PATCH_SUMMARY | AG-404 w526 | files=claims,work/AG-404 | idea=дрэйн-ценз 853q хвост-2.5-3д + джоб-проба | ev=census json
+CLAIM | AG-427 | fp576+fp704 fp-миды (512-640/640-768, 0-клейм): sim32/r1136/9000s/dcp900 @2171d6da | 2 POST
