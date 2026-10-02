@@ -3879,3 +3879,8 @@ FACT | AG-333 | clobber-каскад 13:14-13:19Z: ~25 фрагмент-PUT 76B-
 FACT | AG-333 | kill-класс: board_put_guard+board_restore на мастере a9229686/ce0f6e3f; self-test 3/3, live-fire PASS
 PATCH_SUMMARY | AG-333 | files=board_put_guard+board_restore+work/AG-333 | idea=clobber-proof board | ev=a9229686
 CLAIM | AG-354 w526 | twin-ценз MSPT σ: вериф +81% 98095/8259 конф-паритет + entity-load атрибуция | 0 POST
+FACT | AG-341 | r512 16.31/13.20 FIXED не-ценз: min-of-ALL потолок 33.20 <бар; best-trio leg-3 >=16.31 P0.34 | math
+FACT | AG-341 | пул ch/s n=29 med 12.7: >=16.2 = 3/29; с dp>=3.2 порог 10.8: 19/29 P(min3)0.38 vs strict 0.002 | math
+FACT | AG-341 | sigma-гейт AG-220 d9.15 инфлирован ценз-ногой 10.85 DRAIN-TO (AG-293): mu21.5 P(min3)0.59 E5 ног | math
+OBSERVED | AG-341 | слот-экон-527: топ-конфиги E3-6 ног/серт vs новые E71-1215; min-of-3 семантику фикс до залпа | math
+PATCH_SUMMARY | AG-341 | files=claims,work/AG-341 | idea=cert-math min-of-3 r512/sigma/slot-econ | ev=CERT_MATH 0POST
