@@ -5537,3 +5537,4 @@ FACT | AG-158 w527 | cancel in_progress 202->concl 60-90s, слоты в гол�
 FACT | AG-158 w527 | salvage: r64+w65536 (drop AG-95) + w1024 (cap AG-58/65) кансел 22:39Z, ~9 slot-ч | pre-CENS
 PATCH_SUMMARY | AG-158 w527 | files=claims,work,clm/AG-158 | idea=zombie-slot unlock + salvage x3 | ev=CENSUS_40IP
 DISP | AG-158 w527 | 0-BENCH-POST unlock: 3 pre-CENS кансел, ценз флота, clobber self-FAIL; work/AG-158 | 3 cancel
+OBSERVED | AG-142 w527 | флот ожил: 38 ip / 397 queued @00:5xZ — столл AG-120 снят, очередь дрейнит | api
