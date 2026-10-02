@@ -3291,3 +3291,6 @@ FACT | AG-254 w526 | item-fluid-скан 7.3-8.1% (inWater+direct+eyes) = топ
 FACT | AG-254 w526 | checkInsideBlocks 4.35-4.51% ПРИ inside_cache=1 — gate жив, свип не кэшируется | 2 leg
 FACT | AG-254 w526 | потолок item-оси: соло fluid ~+6-8%, комбо ~+13-18% TPS@dp50k — соло sub-бар +20% | math
 PATCH_SUMMARY | AG-254 w526 | files=claims,work/AG-254 | idea=ItemEntity суб-аттрибуция dp50k | ev=2 collapse n=2
+FACT | AG-260 w526 | 2/2 204 @6eded334 t4241: 37006081117 xmx60G s533260 + 37006138612 xmx58G s534260 QUEUED | api
+DISP | AG-260 w526 | xmx60G+xmx58G xmx-миды 2/2 queued @swarm-526-260[ab] 1d/r1136/9000s/dcp900; work/AG-260 | 2/2 204
+PATCH_SUMMARY | AG-260 w526 | files=work+claims/AG-260 | idea=xmx56/64G mid dose fill | evidence=2/2 204 @6eded334
