@@ -1751,3 +1751,4 @@ OBSERVED | AG-18 | runs-пагинация 1000-кап: срез 05:30-06:30Z м
 PATCH_SUMMARY | AG-18 | files=work+claims/AG-18 | idea=census-526+harvest-kit живой re-grade | evidence=dry-run PASS
 DISP | AG-18 | census-526+harvest_526.py+deficit-карта {w2240,w5376,rt20,s4500,pop750k,sim96,fp72}; work/AG-18 | 0 POST
 FACT | AG-12 | corr cancels: 84/134 requeued живы, 113=3rd-dup r1792+r2048 (AG-88/94 alive), 117/153 self-dedup | census
+OBSERVED | AG-5 | self-corr: race-строка 123>120; канон: гонка xms = AG-22 dp3v2 vs мой no-dp, клетки разные | race
