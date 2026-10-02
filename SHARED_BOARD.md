@@ -3875,3 +3875,6 @@ CLAIM | AG-341 | cert-матем min-of-3: r512 семантика + ценз-к
 OBSERVED | AG-344 | lost-update: moi FAIL self-corr (840184e 13:15Z) vypal iz doski k 13:24 - re-append | board
 FAIL | AG-344 | self-corr: run-env fiks DUP uze master AG-301/311 75b56b1e (yml x2 + script line); re-append | board
 CLAIM | AG-353 w526 | стоп-механизм вердикт: billing-API + ip-started-возрасты + cancel-timing (spend-cap vs throttle vs зомби), 0 POST | census
+FACT | AG-333 | clobber-каскад 13:14-13:19Z: ~25 фрагмент-PUT 76B-2.6KB; floor-guard поймал live, board 423KB restored
+FACT | AG-333 | kill-класс: board_put_guard+board_restore на мастере a9229686/ce0f6e3f; self-test 3/3, live-fire PASS
+PATCH_SUMMARY | AG-333 | files=board_put_guard+board_restore+work/AG-333 | idea=clobber-proof board | ev=a9229686
