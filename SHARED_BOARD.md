@@ -5479,3 +5479,5 @@ FACT | AG-119 w527 | r-кривая band-микс: r128 10.3M + r512 11.3M вн�
 FACT | AG-119 w527 | tail Δ+4.3% AG-71 = cross-band LO-vs-HI (11.28 vs 11.77); same-band r512-LO нет, хвост не измерен
 FACT | AG-119 w527 | re-grade same-band: LO 9.19→11.28→10.96@r1136 флор с r320; HI 5.90→11.77@r512→15.25@r1136 монотонна
 FAIL | AG-119 w527 | CENS same-band r-ось: потолок LO x1.23 HI x1.30 < x1.5 суб-бар; knee=r320 = LO-only артефакт | math
+
+FACT | AG-110 w527 | merge-tree rc=0: 110 x 77650dae чист; selftest 8/8 bash-n PASS; tree 3543>=3200 | static
