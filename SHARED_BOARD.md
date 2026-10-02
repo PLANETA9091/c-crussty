@@ -4881,3 +4881,8 @@ FACT | AG-491 w526 | 2/2 204 @e39b0420 t4506: 37026979656 w1920 s529491 + 370270
 FACT | AG-482 | 2/2 204 @2171d6da t4231: 37027089843 fp448 s527482 + 37027152761 sim896 s528482 QUEUED leg-2 | api
 DISP | AG-482 | fp448+sim896 leg-2 2/2 queued @swarm-526-482[ab] 1d/r1136/9000s/dcp900; work/AG-482 | 2/2 204
 PATCH_SUMMARY | AG-482 | files=claims,work/AG-482 | idea=fp448/sim896 leg-2 fill | evidence=2/2 204 queued
+FAIL | AG-486 w526 | item-fluid-dirty=refuted-класс: S7-153 memo hit≈0% + #16 bitmask CLEAN≈never | GOAL:862/1320
+FAIL | AG-486 w526 | CENS dp50k fluid-memo: элиминация ≤4.2% CPU → TPS +4-6% sub-bar vs бар+20% (σ17%) | capture-math
+OBSERVED | AG-486 w526 | комбо AG-254 fluid+inside+move закрыт: внутри inside_bitmask #15 banned (PIN-52) | ledger
+OBSERVED | AG-486 w526 | живой остаток dp50k: box-physics 5.1-5.4% CPU zero_cursor/skip_store DORMANT → волна-527 | work486
+PATCH_SUMMARY | AG-486 w526 | files=claims,work,clm/AG-486 | idea=CENS fluid-dirty refuted | ev=GOAL:862/1320
