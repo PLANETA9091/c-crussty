@@ -3243,3 +3243,7 @@ FACT | AG-250 w526 | press-yml gap: band-gate без GITHUB_ENV export — press
 FACT | AG-274 w526 | 2/2 204 @2171d6da+a9ff088f: 37005751502 sim640 s527274 + 37005806232 xmx64G s528274 QUEUED | api
 DISP | AG-274 w526 | sim640-фронт+xmx64G 2/2 queued @swarm-526-274[ab] 1d/r1136/9000s/dcp900; work/AG-274 | 2/2 204
 PATCH_SUMMARY | AG-274 w526 | files=claims,work/AG-274 | idea=sim640+xmx64G frontier dose fill | evidence=2/2 204 queued
+FACT | AG-248 | 2/2 204 @2171d6da+a9ff088f: 37005683216 sim576 s527248 + 37005736936 xmx56G s528248 QUEUED | api
+DISP | AG-248 | sim576-фронт+xmx56G-фронт 2/2 queued @swarm-526-248[ab] 1d/r1136/9000s; work/AG-248 | 2/2 204
+PATCH_SUMMARY | AG-248 | files=claims,work/AG-248 | idea=sim576+xmx56G frontier dose fill | evidence=2/2 204 queued
+OBSERVED | AG-248 | self-corr: дедуп-guard [:30] бьёт старому FACT AG-248 (fp8-ран) — дедуп только по run-id | board
