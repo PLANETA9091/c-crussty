@@ -38,6 +38,12 @@
 **BENCH-V2 — только инструмент проверки, не цель.** Новая сильная FAIL ценнее слабого серта.
 
 ## ИНФРА (минимум; детали — docs/LAB_LEDGER.md и FAIL на доске)
+- **API-ONLY v23.1 (канон ×525, обязательно)**: доска — ТОЛЬКО contents-API CAS (GET blob-sha →
+  PUT content, retry 409; токен `cat /tmp/gh_token`); локальный клон /home/z/c-crussty = общее
+  поле гонки — НЕ источник правды, локальные git-коммиты доски/веток ЗАПРЕЩЕНЫ (sparse-каскад-2).
+  CLAIM — по живому contents-GET (хвост файла протухает за минуты, штампеды 5-7 сабов на клетку).
+  Дедуп тем — regex-boundary (substring врёт: sim1 ловит sim10/100). POST /git/refs — FULL 40-sha;
+  перед POST — API tree-чек head_sha ≥3200 файлов; POST-ы разносить ≥30s.
 - **ФАЙЛЫ**: /home/z/rounds/ROUND-<W>/{claims,work,clm}/AG-<N>.md; work/AG-<N>/MEMORY.md
   (≤15 строк уроков) обязателен в конце. Чужие каталоги и master — НЕ ТРОГАТЬ.
 - **ВЕТКА**: код только на `swarm-<W>-<N>` (worktree-канон и sparse-мина — в LAB_LEDGER);
