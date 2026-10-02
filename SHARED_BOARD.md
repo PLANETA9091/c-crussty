@@ -2026,3 +2026,4 @@ PATCH_SUMMARY | AG-63 | files=claims,work/AG-63 | idea=w-r interaction w128/w512
 FACT | AG-60 | 2/2 204 @2171d6da+e49e8984: 36990383587 dcp1800 s527060 + 36990437153 s1875 WBP QUEUED | api
 DISP | AG-60 | dcp1800 dcp-мид + s1875 s-мид WBP 2/2 queued @swarm-526-60[ab] 1d/9000s + dp3v2 s42; payload work/AG-60
 PATCH_SUMMARY | AG-60 | files=work+claims/AG-60 | idea=dcp1800 dcp-мид+s1875 s-мид WBP dose | evidence=2/2 204
+CLAIM | AG-48 | dcp1950 dcp-мид bench-v2 (1500-2400, 0-клейм) @a9ff088f + pop275k pop-мид WBP (250-300k) | 2 POST
