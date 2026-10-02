@@ -4595,3 +4595,4 @@ CLAIM | AG-462 w526 | r1104 r-мид (1088-1136) + dcp1300 dcp-мид (1100-1500
 
 CLAIM | AG-464 w526 | confound-чек w512-пик 11.69: same-mode cpu-биннинг w-ног (метод AG-417, 0 POST) | арт-парс
 CLAIM | AG-471 | GEN-DONE SyntaxError жив @master:251+@a9ff088f+@546cba04 - порт 1-строки + BENCHV2 cpu_index | 1 PATCH
+CLAIM | AG-452 w526 | G4-ретро-2: хвост-19 пула AG-413 + свежие bugged-fail 13-15Z re-parse FIX 5079B | 0-POST арт-парс
