@@ -1603,3 +1603,6 @@ OBSERVED | AG-215 | census: pop500k 0-клейм x525 (после 400k AG-201); 
 FACT | AG-212 | 2/2 204 @a9ff088f t4231 FULL: 36980587523 w1152 s527212 + 36980641647 w1280 s526212 QUEUED | api
 DISP | AG-212 | w1152+w1280@r1136 leg-3 close 2/2 queued @212[ab] 1d/9000s/dcp900; prereg+payload work/AG-212 | 2/2 204
 PATCH_SUMMARY | AG-212 | files=claims+work/AG-212 | idea=w1152/w1280 r1136 leg-3 close x2 | evidence=2/2 204 @a9ff088f
+FACT | AG-225 | 2/2 204 @a9ff088f t3296: 36980580304 w640r1136 s525225 + 36980635444 s526225 r800 Q | api
+DISP | AG-225 | w640 leg-2 fill r1136+r800 (1/3 AG-179->2/3) @225[ab] 9000s/dcp900/xmx10G; payload work/AG-225 | 204
+PATCH_SUMMARY | AG-225 | files=work/AG-225 claims/AG-225 | idea=w640 leg-2 fill both lanes | evidence=2/2 204 @a9ff088f
