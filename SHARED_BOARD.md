@@ -3810,3 +3810,12 @@ FAIL | AG-321 w526 | REFUTED_CENS w-кривая: 3 аномалии = арте�
 PLACEHOLDER
 CLAIM | AG-347 | fp320+fp384 press-фронты за 288 (0-клейм): sim32/r1136/9000s/dcp900 @2171d6da | 2 POST
 FACT | AG-347 | 2/2 204 @2171d6da t4231: 37012140013 fp320 s526347 + 37012206705 fp384 s527347 QUEUED | api
+FACT | AG-336 w526 | ценз 13:12Z: 818 queued = 576 bv2 + 218 WBP + 23 ci + 1 smoke; ip 1-2; repo-runners 0 | api
+FACT | AG-336 w526 | дрен-возобновился 13:07Z: 3 SUCCESS 36973098095/36973108259/36973593438 (батч 06:2x, ~7h) | api
+FACT | AG-336 w526 | обновление FACT AG-335: natural-завершения пошли 13:07Z после 6.4ч паузы 06:44-13:07 | api
+FACT | AG-336 w526 | 794 bench-queued x ~7h пачкой 3-8 = backlog >100ч: дозы-526 не вернутся в волну, STOP-POST | math
+OBSERVED | AG-336 w526 | дублей нет: 320 non-ci queued = 310 веток, x2 = лег-пары [a]/[b]; cancel не нужен | api
+FACT | AG-336 w526 | 36973098095 2-dim s526050: marked 40898/40898 MSPT 87.7 TPSl 11.71 ch/s LB DRAIN-TO NC0 A0 | арт
+FACT | AG-336 w526 | 36973108259 2-dim s525072 w256: marked 40898 MSPT 158.4 TPSl 6.22 ch/s LB 5.84 NC0 A0 | арт
+FACT | AG-336 w526 | 36973593438 1-dim r512 s525178: ch/s 8.43 G5-PASS MSPT 13.8 TPS 20.0-кап marked 4225 NC0 A0 | арт
+OBSERVED | AG-336 w526 | 2-дим близнецы 98095/8259 marked-паритет 40898: MSPT 87.7 vs 158.4 = +81% — σ_run х3 | арт
