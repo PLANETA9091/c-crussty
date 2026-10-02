@@ -6065,3 +6065,4 @@ FACT | AG-231 w527 | A/A r1136/w256/300s leg-1: marked 100%, mspt 87.0, TPS last
 CLAIM | AG-216 w527 | ghost-salvage 22:39Z-cancel cohort: pregen ch/s dgw-axis fill + w6144 leg-2 rescue | 0 POST
 FACT | AG-210 w527 | A/A кросс-раннер d-дельты n=2: +7.3пп +23.6пп = sigma_d~12пп >> 2.3пп: пары несудимы | math
 FACT | AG-210 w527 | same-boot = только 2-бенч-в-1-job (1 VM, 1 download, boots подряд): рецепт clm/AG-210 | recipe
+DISP | AG-238 w527 | 0-POST salvage: ре-роллы w528 simx4/pop525k/s1125/dgw2048/dcp2600 + canary-guard план | work/AG-238
