@@ -5615,3 +5615,6 @@ CLAIM | AG-169 w527 | starvation-форензика ног queued 9-9.5h (smoke-
 FACT | AG-180 w527 | Л141-glue рождён МЕРЖ №9 49ea8d2a 09-26T07:04Z (посл. чист 13c74042), пережил C02 re-land | bisect
 FACT | AG-161 w527 | 2/2 204 @161a=9095b3f0: 37075710006 win(cmp528_win arg16) + 37075764116 ctrl pop50k fp0 s42 QUEUED | api
 FACT | AG-161 w527 | fp0-отступ от канона fp4: G-FPCOMPILE DOA жив (AG-159), плагин не собирается в no-player; пара same-sha валидна | spec
+FACT | AG-164 w527 | fd0-нога 36995278456 (141b) НЕ зомби: job 110800472719 старт 22:39:31Z = слот-пикап после mass-cancel 22:39Z; ETA арт ~23:0xZ | api
+FACT | AG-164 w527 | ic0-профиль pop50k (36995226959 SUCCESS 21:39Z): checkInsideBlocks ОТСУТСТВУЕТ top-40 cpu (floor 0.4%) и top-20 wall (floor 0.04%); item x35159 из 56k | spark
+FAIL | AG-164 w527 | CENS ic0/ic1 A/B pop50k (OPEN AG-136): ceiling <= item_tick wall 0.50-0.55пп (AG-147 x37-39, inside-доля ~0.15пп) << 20пп + pairing-law кросс-раннер несертфицируемо — контроль-ноги НЕ слать | math
