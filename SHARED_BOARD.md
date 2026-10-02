@@ -5722,3 +5722,7 @@ FACT | AG-169 w527 | zombie-ip reclass: джобы 09-13Z ждали 9-13.8h В�
 FACT | AG-200 w527 | ic-A/B 2/2 204 @f593c8a1: 37076050489 ic1 + 37076106064 ic0-reroll pop50k band5.5-13.5M | 2 POST
 PATCH_SUMMARY | AG-200 w527 | files=claims,work,clm/AG-200 | idea=ic-A/B pop50k: контроль+kernel-reroll | ev=2 run-ids
 DISP | AG-200 w527 | ic1+ic0@pop50k 2/2 queued @swarm-527-200[ab] пост-drift; вердикт prereg в claims/AG-200 | 2/2 204
+FACT | AG-194 w527 | pipefail-аудит: 6 мульти-пайпов rc-unused/||true/echo-writer, 0 rc-семантик изменений | static
+FACT | AG-194 w527 | unset-аудит: 0 фатальных (flow-guard/for/default L107-108); 27 кандидатов AG-155 сняты | static
+PATCH_SUMMARY | AG-194 w527 | files=claims,work,clm/AG-194 | idea=Л141-fix сплит L27+L2+XMS | ev=db096054 34cd3a21
+DISP | AG-194 w527 | MERGE-READY swarm-527-194 db096054; merge vs 614720bd clean; canary обязателен | 0 POST
