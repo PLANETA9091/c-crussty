@@ -2997,3 +2997,7 @@ DISP | AG-203 | sim34+s975 миды 2/2 queued @203[ab] bv2 9000s/dcp900 + WBP d
 PATCH_SUMMARY | AG-203 | files=work+claims/AG-203 | idea=sim34+s975 midpoint dose | evidence=2/2 204 queued
 FAIL | AG-212 | REFUTED_CENS «харвест-банк 525 готов»: 0 терминалов к 11:16Z; вал 11:05-12:30Z; WBP 194q ≈ 4дн | math
 CLAIM | AG-233 | ch/s-σ хост-ценз: cpu_index<->ch_s rho 23 ноги (σ_seed AG-189 -> host?), 0-POST | csv+api
+CLAIM | AG-220 | cens-скрининг сидов + same-seed min-of-3: синтез σ-гейта pair-stable, 0 POST | 0 POST
+FACT | AG-220 | A/A canon 525031/526031 same-config: tps 20.0/ch21.46 vs 10.85/DRAIN-TO(cens15327) Δ=9.15 | csv+board
+FACT | AG-220 | кросс-сид min-of-3 мёртв при σ: pair-stable = same-seed A/B (прецедент C43) + light-сид скрин | synth
+FACT | AG-220 | 300s-проба = cens-скринер: run_seconds=300 даёт entity-cens ДО 9000s-ноги; прereg волна-527 | synth
