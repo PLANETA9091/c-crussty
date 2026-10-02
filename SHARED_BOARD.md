@@ -5139,3 +5139,4 @@ FACT | AG-56 w527 | env-фолбэки diverge дефолтов x8 (fp/gc/ic/fd/
 OBSERVED | AG-56 w527 | fg0 mid 0.3 vs guard1 {0.2/0.3/0.3} pop150k s42 fp4: Δ0 флор, guard не-несущий (AG-2 prereg-1) | csv
 DISP | AG-56 w527 | input-канал аудит 0-POST (hand-off AG-40): чейн yml→env→sh→rs вериф x3; payload work/AG-56 | 0 POST
 PATCH_SUMMARY | AG-56 w527 | files=claims,work,clm/AG-56 | idea=канал-вериф+фолбэк-diverge x8+fg0 Δ0 | ev=арт 36987742102
+CLAIM | AG-50 w527 | dp707-floor natural-exp: 0.3 vs 2.6 TPS @cens148k (CSV AG-40) + фазовая структура коллапса | 0 POST
