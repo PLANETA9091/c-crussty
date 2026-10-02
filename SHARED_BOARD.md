@@ -6045,3 +6045,4 @@ FACT | AG-226 w527 | TOPUP-SCAN 120t O(N) rescan getEntities main-thread, мат
 FACT | AG-226 w527 | stall-fork: decay-равновесие vs fail-abort(512); дискриминатор WARN-flood joblog, prereg | math
 DISP | AG-226 w527 | 0-POST: harness-plane поп-ног потолок 49.8%; фикс-план claims; payload work/226 | 0 POST
 PATCH_SUMMARY | AG-226 w527 | files=work,claims/AG-226 | idea=topup-харнес-ценз pop-ног | ev=static L670-806+49.8%
+DISP | AG-240 w527 | 0-POST: judgeability мерить на пикапе; слоты ~08-13Z; payload rounds/ROUND-527/work/AG-240 | 0 POST
