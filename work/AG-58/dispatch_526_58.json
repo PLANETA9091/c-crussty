@@ -1,0 +1,58 @@
+{
+ "pinA": "a9ff088fd31f3f7d791bfdcab5760790c3fc463c",
+ "treeA": 4231,
+ "pinB": "e49e89845108c0b3d00022dfbace91777bacb01e",
+ "treeB": 4231,
+ "claim": "CLAIM | AG-58 | s6000 s-мид bench-v2 (3000-9000, 0-клейм) @a9ff088f + pop1M pop-край WBP (за 750k) seed527058 | 2 POST",
+ "seed": "527058",
+ "runs": {
+  "swarm-526-58b": 36990468298,
+  "swarm-526-58": 36990416780
+ },
+ "legs": [
+  {
+   "branch": "swarm-526-58",
+   "wf": "bench-v2.yml",
+   "cell": "s6000",
+   "inputs": {
+    "radius_blocks": "1136",
+    "run_seconds": "6000",
+    "server_xmx": "10G",
+    "bench_dims": "minecraft:overworld",
+    "dim_gen_window": "256",
+    "drain_cap_polls": "900",
+    "seed": "527058"
+   }
+  },
+  {
+   "branch": "swarm-526-58b",
+   "wf": "world-bench-parallel.yml",
+   "cell": "pop1M",
+   "inputs": {
+    "radius": "640",
+    "seconds": "300",
+    "fake_players": "4",
+    "fluid_guard": "1",
+    "gc_tune": "3",
+    "inside_cache": "1",
+    "flush_diet": "1",
+    "fluid_dirty": "0",
+    "fluid_bitmask": "0",
+    "region_threads": "4",
+    "batch_collector": "1",
+    "skip_store_bb": "0",
+    "region_steal": "0",
+    "bu_defer": "0",
+    "population_target": "1000000",
+    "population_seed": "42",
+    "server_xmx": "10G",
+    "server_xms": "4G",
+    "cpu_band_min": "5500000",
+    "cpu_band_max": "13500000",
+    "datapack_url": "https://github.com/PLANETA9091/c-crussty/releases/download/v484-dp3v2/stz3v2-fixture.zip",
+    "lever_flag": "",
+    "lever_arg": ""
+   }
+  }
+ ]
+}

@@ -1,0 +1,68 @@
+{
+ "pin_bv2": "2171d6da775975c4bee94748f549ad16f02074e1",
+ "pin_wbp": "e49e89845108c0b3d00022dfbace91777bacb01e",
+ "tree_files": [
+  4231,
+  4231
+ ],
+ "claim": "CLAIM | AG-51 | sim104 sim-верх за 64 (0-клейм) @2171d6da + rt40 WBP за 24 dp3v2 @e49e8984 | 2 POST",
+ "cells": [
+  "sim104",
+  "rt40"
+ ],
+ "runs": {
+  "swarm-526-51b": 36990102003,
+  "swarm-526-51": 36990048908
+ },
+ "legs": [
+  {
+   "branch": "swarm-526-51",
+   "wf": "bench-v2.yml",
+   "cell": "sim104",
+   "seed": "527051",
+   "inputs": {
+    "radius_blocks": "1136",
+    "run_seconds": "9000",
+    "server_xmx": "10G",
+    "bench_dims": "minecraft:overworld",
+    "dim_gen_window": "256",
+    "drain_cap_polls": "900",
+    "fake_players": "4",
+    "simulation_distance": "104",
+    "seed": "527051"
+   }
+  },
+  {
+   "branch": "swarm-526-51b",
+   "wf": "world-bench-parallel.yml",
+   "cell": "rt40",
+   "pop_seed": "531051",
+   "inputs": {
+    "radius": "640",
+    "seconds": "300",
+    "fake_players": "4",
+    "fluid_guard": "1",
+    "gc_tune": "3",
+    "inside_cache": "1",
+    "flush_diet": "1",
+    "fluid_dirty": "0",
+    "fluid_bitmask": "0",
+    "region_threads": "40",
+    "batch_collector": "1",
+    "skip_store_bb": "0",
+    "region_steal": "0",
+    "bu_defer": "0",
+    "population_target": "150000",
+    "population_seed": "531051",
+    "server_xmx": "10G",
+    "server_xms": "4G",
+    "cpu_band_min": "5500000",
+    "cpu_band_max": "13500000",
+    "datapack_url": "https://github.com/PLANETA9091/c-crussty/releases/download/v484-dp3v2/stz3v2-fixture.zip",
+    "lever_flag": "",
+    "lever_arg": ""
+   }
+  }
+ ],
+ "dp3v2": "https://github.com/PLANETA9091/c-crussty/releases/download/v484-dp3v2/stz3v2-fixture.zip"
+}
