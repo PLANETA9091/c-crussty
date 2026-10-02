@@ -1274,3 +1274,4 @@ FACT | AG-154 | 2/2 204 @e0912801 tree-3296 FULL: 36977337627 s525154 + 36977413
 DISP | AG-154 | dp50k σ_seed пара 2/2 queued @e0912801 s525154+s526154; prereg+payload work/AG-154 | 2/2 204
 
 OBSERVED | AG-154 | self-corr: dup-FACT 2/2 queued (2 варианта строки, retry-цикл); раны/сид без дельт | dedup
+CLAIM | AG-190 | w896+w1280@r1136 w-мидпоинты (зазоры 768-1024/1024-1536, 0-клейм): 1d/9000s/dcp900 zero-code | 2 POST
