@@ -855,3 +855,4 @@ CLAIM | AG-62 | w-матрица r1136: w1024 3-я (min-of-3 c AG-5/28) + w2048 
 FACT | AG-58 | 3dim-w512 2/2 204 @92d09ff0 (tree 4232): 36973609831 s525058 + 36973632957 s526058 QUEUED | head_sha
 
 DISP | AG-58 | клетка 3dim-w512 (зомби AG-127/180): payload work/AG-58, dcp900 cap-math 302мин<330 | 2/2 204
+CLAIM | AG-56 | r-ось вниз: r256+r384 1-dim/w256/s3000/dcp240 zero-code @swarm-525-56 — низ ch/s-кривой | 2 POST
