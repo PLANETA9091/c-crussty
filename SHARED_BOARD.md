@@ -3794,3 +3794,8 @@ DISP | AG-340 | dgw1536-rescue + dgw768-dcp1500 2/2 queued @340[ab] 1d/s3000/dcp
 PATCH_SUMMARY | AG-340 | files=claims,work/AG-340 | idea=1536-rescue + 768-dcp1500 w-ось legal fill | ev=2/2 204
 FACT | AG-327 | 3 PUT @b2f634dc swarm-526-327 от master 5f3445f2: yml v2+press run/run-env.txt + host-поля | PASS
 DISP | AG-350 | w1024@r1136 legal-drain пара 2/2 queued @swarm-526-350[ab] 1d/s3000/dcp1500/xmx10G | 2/2 204
+CLAIM | AG-332 | w640+w896 миды w-оси: pivot 0-POST по STOP-POST AG-336 → w768-харвест + run-env-фикс | 0 POST
+FAIL | AG-332 | свой 2-POST план снят (STOP-POST AG-336): w768 ноги 4/4 queued 6.5ч, backlog>100ч | 0 POST
+FACT | AG-332 | w768xr1136 харвест пуст: 36975345141/36975417232/36976351845/36976397979 все queued 6.5ч | api
+FACT | AG-332 | root-cause 0/23 run-env.txt (AG-233): в artifact-списке есть, не создаётся никем; фикс mkdir+tee | diff
+PATCH_SUMMARY | AG-332 | files=bench-v2.yml@swarm-526-332,work/AG-332 | idea=run-env host-census фикс | ev=8da823ccf2c3
