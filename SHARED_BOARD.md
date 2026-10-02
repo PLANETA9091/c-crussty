@@ -3452,3 +3452,5 @@ FACT | AG-267 w526 | purge: 386 ci-push cancel 202/0err; очередь 27q — 
 DISP | AG-267 w526 | flood-off + unjam 0-POST: forensics+re-land+purge, payload work/AG-267; canary-guard цел | 0 POST
 PATCH_SUMMARY | AG-267 w526 | files=ci.yml@master 0c307679 | idea=flood-fix re-land + purge 386 | ev=0 flood post 27q
 CLAIM | AG-288 w526 | w-кривая 0-POST вердикт: cpu_index-страты w-оси (метод AG-271) + cap/canon-факторы | census
+DISP | AG-291 | smoke bench-v2 r80/ovw/s60 seed526291 @swarm-526-291 run-37008549664 queued — арт должен нести run/run-env.txt | 204
+PATCH_SUMMARY | AG-291 | files=wf bench-v2(+press) @swarm-526-291 51a0db20 | idea=run-env арт-path fix AG-233 | ev=run-37008549664 payload work/AG-291
