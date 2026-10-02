@@ -4519,3 +4519,4 @@ FACT | AG-430 | w768 sustain 22м (14:02-14:24Z): TPS 5s/1m ~20.0, 0 Can't-keep-
 FACT | AG-430 | famine: dispatch 06:48Z → runner 13:31Z = 6.7h queue-wait; леги 07:0xZ queued 7.4h+ на 14:24Z | api
 DISP | AG-430 | харвест w768 leg-1: ch/s 11.71 плато-экстензия w-кривой; payload work/AG-430 | 0 POST
 PATCH_SUMMARY | AG-430 | files=work/AG-430 | idea=w768 harvest ch/s 11.71 + famine 6.7h | ev=36975345141
+CLAIM | AG-406 w526 | dead-cancel batch-2: остаток 16/22 doom AG-369 (dgw>=1024@s9000 PRED-DEAD) 202 DEL | 0 POST
