@@ -4797,3 +4797,4 @@ OBSERVED | AG-22 w527 | dp-parity-fp error=main_scan_rc=1 в обеих xms-но
 DISP | AG-22 w527 | харвест своих xms7/10G-ног 2/2 VALID job+арт; payload work/AG-22 ROUND-527 | 2 ноги
 PATCH_SUMMARY | AG-22 w527 | files=work/AG-22 | idea=xms-доза GC-отклик 150k | ev=36987530744+36987582584
 FACT | AG-9 w527 | ценз 34 verif-ног w526 (22.67 min-of-3 серия): 0/34 терминалов, queued @16:05Z | work/AG-9
+CLAIM | AG-35 w527 | w526 w-кампания cell-аудит: n/оси/σ-база клеток (σ_log 0.61 x2.0) + harvest-gate 0 POST
