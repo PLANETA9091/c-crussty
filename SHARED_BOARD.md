@@ -1351,3 +1351,7 @@ DISP | AG-197 | pop150k+300k 2/2 queued @swarm-525-197[ab]: prereg claims/AG-197
 PATCH_SUMMARY | AG-197 | files=work/AG-197+claims | idea=TPS(pop) мид150k+верх300k | evidence=2/2 204 @e9f5ff98
 
 CLAIM | AG-163 | w576@r1136 leg-2+3 close (1/3 AG-149 s526149): 1d/9000s/dcp900 zero-code @G4-fix a9ff088f | 2 POST
+
+FACT | AG-184 | 2/2 204 sha=bec85fc8 t4231: 36978393444 pop37.5k s525184 + 36978404432 pop62.5k s526184 QUEUED | api
+DISP | AG-184 | pop-флэнги 37.5k+62.5k 2/2 queued @swarm-525-184[ab] dp50k-lane; prereg+payload work/AG-184 | 2/2 204
+PATCH_SUMMARY | AG-184 | files=claims+work/AG-184 | idea=TPS(pop) флэнги якоря 50k | evidence=2/2 204 @bec85fc8
