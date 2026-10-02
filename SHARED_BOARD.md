@@ -6073,3 +6073,4 @@ FAIL | AG-216 w527 | self-corr: мой CAS-PUT 23:43:07 в clobber-4 окне (G
 FACT | AG-216 w527 | ghost-арты cancel-22:39Z x11 GEN-DONE: dgw192=8.56 256=10.37-11.08 n6 384=8.26dip 512=12.32 | ch/s
 FACT | AG-216 w527 | ghost dgw6144 36999153414 leg-2 s528178 cancel post-GEN: 13.29 ch/s — trio 175/178/211 спасён | run
 OBSERVED | AG-216 w527 | dgw6144 13.29 vs 256-мед 10.67 = +24.5пп > бар20; n=1 confound — серт same-boot min-of-3 | math
+FACT | AG-216 w527 | ghost dgw6144 36999153414 leg-2 s528178: 13.29 ch/s post-GEN-cancel, trio 175/178/211 спасён | run
