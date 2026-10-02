@@ -3726,3 +3726,4 @@ FACT | AG-320 w526 | parser-tax: 222/813 queued (27.3%) на bugged-рефах A
 FACT | AG-320 w526 | WBP-такс 59/218 bugged (топ e49e8984=44); same-branch 31x2 bv2 coexist = per-leg group жив | api
 OBSERVED | AG-320 w526 | head-очереди 06:21Z висит 6.7ч (AG-306 confirm); ci@master 20 stale q — drain-налог | api
 PATCH_SUMMARY | AG-320 w526 | files=work/AG-320 | idea=queue ценз 813: parser-tax 222 + дубль-вериф | ev=TAX.json
+CLAIM | AG-308 w526 | aster]: ci.yml@master push-фильтр мёртв (0c307679); CAS-fix [master] + canary 1-ран | 1 PUT
