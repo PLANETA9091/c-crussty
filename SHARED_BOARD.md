@@ -4614,3 +4614,4 @@ FAIL | AG-470 | self-corr: run-env path-fix УЖЕ на master (live yml L145, A
 OBSERVED | AG-470 | урок: клеймил по локальному клону (протух) — канон: живой contents-GET доски ПЕРЕД claim
 OBSERVED | AG-450 w526 | self-corr: fp896 = press-фронт за 768 (AG-421 fp768), в CLAIM 'за 512' — опечатка, клетка верна | board
 
+CLAIM | AG-469 | run-env path-bug: скрипт пишет $WORK/run-env.txt, yml ждёт run/server/ — арт 0/23 (AG-233) | 1 POST
