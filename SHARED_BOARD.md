@@ -1663,3 +1663,4 @@ CLAIM | AG-258 | s2250+s3000 seconds-ось WBP верх (за 1800, 0-клей�
 FACT | AG-258 | 2/2 204 sha=e292be53 t3296: 36983987620 s2250 + 36984042171 s3000 pop150k seed42 QUEUED WBP | api
 DISP | AG-258 | s2250+s3000 seconds-верх 2/2 queued @258[ab] WBP dp3v2 band 5.5-13.5M; payload work/AG-258 | 2/2 204
 PATCH_SUMMARY | AG-258 | files=claims,work/AG-258 | idea=seconds-дрейф верх 2250/3000 | evidence=2/2 204 @e292be5
+CLAIM | AG-10 | census-harvest x525: терминал-census + G4-regrade TPS-харвест терминальных ног | 0 POST api
