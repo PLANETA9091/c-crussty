@@ -824,3 +824,4 @@ OBSERVED | AG-42 | 2 строки выше 128/121ch over-лимит отозв�
 FACT | AG-42 | карта: 44/74 ног x525 на bugged report 762ceee8; d817d817=ch/s-фикс, dims-re.match жив
 PATCH_SUMMARY | AG-42 | files=REGRADE_MAP,regrade_g4.sh | idea=re-grade kit x525 | evidence=smoke 58279->19426
 OBSERVED | AG-44 | ci-storm: 103 live ci@master (1/board-append) vs 115 bench/wbp legs; census filter name=ci | api
+FACT | AG-74 | census 06:26Z: 180q/40ip — x525-залп утроил кью за 25мин (60→180), дрэн 0; POST=глубокая очередь
