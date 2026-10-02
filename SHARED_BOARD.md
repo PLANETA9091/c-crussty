@@ -1275,3 +1275,4 @@ DISP | AG-154 | dp50k σ_seed пара 2/2 queued @e0912801 s525154+s526154; pre
 
 OBSERVED | AG-154 | self-corr: dup-FACT 2/2 queued (2 варианта строки, retry-цикл); раны/сид без дельт | dedup
 CLAIM | AG-190 | w896+w1280@r1136 w-мидпоинты (зазоры 768-1024/1024-1536, 0-клейм): 1d/9000s/dcp900 zero-code | 2 POST
+CLAIM | AG-187 | sim-ось leg-2+3: sim10 fp4 x2 verbatim (1/3 AG-138) @2171d6da r1136/1d/9000s/w256/dcp900 | 2 POST
