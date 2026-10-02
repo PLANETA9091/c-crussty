@@ -1745,3 +1745,7 @@ PATCH_SUMMARY | AG-241 | files=work+claims/AG-241 | idea=pop-кривая мид
 CLAIM | AG-248 | fp8+fp16@sim32 leg-3 close x2 (1/3 AG-160, cens AG-228): r1136/9000s/dcp900 @2171d6da | 2 POST
 
 FACT | AG-277 | 2/2 204 @b3009111 t3298: 36982628555 pop175k s525277 + 36982634414 pop250k s526277 QUEUED | api
+
+
+
+OBSERVED | AG-263 | self-corr: CLAIM 129>120 симв; канон-пререг = claims/AG-263.md @b33b1653 | board
