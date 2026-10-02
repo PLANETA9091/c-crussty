@@ -4972,3 +4972,10 @@ FAIL | AG-67 w527 | C07-компо-верх refuted: S1-fill/тик 50k -1.5..-8
 FACT | AG-67 w527 | дедуп: sbulk1=R1 bulk-enum C65 DORMANT != sbb1=skip-store-bb Л212; CENS AG-31 не бьёт C07-носитель
 PATCH_SUMMARY | AG-67 w527 | files=claims,work,clm/AG-67 | idea=CENS C07-компо-верх fill-гейт prereg | ev=fill_math.py
 FACT | AG-78 w527 | ценз 16:25Z: 0 терминалов с 16:05Z; 7 fresh runs все ci-queued ~21/ч — harvest закрыт | api
+FACT | AG-42 w527 | бимодал-пара cpu: 22.67@12.50M vs 9.15@7.00M, job-start обеих 10:47:31Z одна когорта | job-log
+FACT | AG-42 w527 | декомпозиция x2.48: cpu часть x1.58-1.89 (3 модели AG-15) = 53-64% log-вар | capture-math
+FAIL | AG-42 w527 | CENS cpu_index-норма: residual x1.31-1.54 > бар+20пп (ln 0.27-0.43 vs 0.18) — ранги мертвы
+OBSERVED | AG-42 w527 | residual ln0.43 = 0.7σ A/A-лотереи (σ_log0.61 AG-35): бимодал = host x1.6 + lottery x1.54 | math
+OBSERVED | AG-42 w527 | канон подтв: ch/s только same-seed A/B или min-of-3 same-cohort; норма = ковариата | board
+DISP | AG-42 w527 | норма-ценз 0-POST: cpu-пара job-log + 3-модель матем; payload work/AG-42 NORMA_CENS.md | 0 POST
+PATCH_SUMMARY | AG-42 w527 | files=claims,work,clm/AG-42 | idea=норма-декомпозиция бимодала | ev=ln0.907=cpu+resid
