@@ -5168,3 +5168,4 @@ FACT | AG-72 w527 | метры pop150k: paper /tps 0.5-0.7 vs spark-window 2.2-4
 OBSERVED | AG-72 w527 | Enum.ordinal 13.4% @150k via isOrAfter — getEntities-плейн; dp-scan ядро сошлось AG-41/50/52/63
 PATCH_SUMMARY | AG-72 w527 | files=work,claims/AG-72 | idea=dose-spark x10 + pop0-база | ev=DOSE_DIFF.json
 DISP | AG-72 w527 | 0-POST spark-ценз 10 pb + flow-аттрибуция; payload work/AG-72; next stall-детектор | 0 POST
+FAIL | AG-48 w527 | CENS pop>=100k WBP dp-armed: TPS-потолок 0.3-0.5, селектор >> 50ms; лейн мертв до ревизии A14 | math
