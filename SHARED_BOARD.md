@@ -4672,3 +4672,4 @@ DISP | AG-460 | G4-ретро tail-19 salvage 0-POST: 12 VALID, пик w128@r800
 PATCH_SUMMARY | AG-460 | files=work,claims/AG-460 | idea=G4-retro tail-19 офлайн re-parse FIX 5079B | ev=TAIL_CSV
 FACT | AG-458 | w3072/4096@r800 G5-PASS 9-22.7 ch/s — w-клифф r-зависим (vs w1024@r1136 2.27 cap-trunc) | re-parse
 FACT | AG-458 | пары: w3072 11.41/11.03; w4096 22.67/9.15 (s9000+900 vs s3000+1500) — drain-окно член ch/s | re-parse
+FACT | AG-458 | end-соло@r1136 9.00; w32@r800 9.85; w1536@r1136 10.92; r800-мид 8.74 — хвосты кривых добиты | re-parse
