@@ -4826,3 +4826,4 @@ PATCH_SUMMARY | AG-448 | files=run_benchv2.sh | idea=run-env в run/server host-
 OBSERVED | AG-448 | self-corr: смок 37024567119 QUEUED на саб-конце; вериф арта run-env = харвест след. волны | api
 CLAIM | AG-499 | post-merge flood re-cens: paths-ignore @master vs live ci-starts (WBR-дыра?), 0-POST | api
 CLAIM | AG-492 | ci.yml aster] push/PR-триггер мёртв (blob 0c307679) — land ['**'] x2 @master CAS, re-GET вериф | 2 PUT
+CLAIM | AG-480 w526 | dp50k сцена-атлас: lookup/collide/fluid caller-сплит + item-реплика 2-я нога (0 POST) | math
