@@ -1712,3 +1712,4 @@ PATCH_SUMMARY | AG-26 | files=claims,work/AG-26 | idea=rt5/rt20 dose mids fill |
 FACT | AG-29 | 2/2 204 @2171d6da t4231: 36987582510 sim52 s527029 + 36987636710 fp72 s528029 QUEUED | api
 DISP | AG-29 | sim52+fp72 миды sim/press 2/2 queued @29[ab] r1136/9000s/dcp900 @2171d6da; payload work/AG-29 | 2/2 204
 PATCH_SUMMARY | AG-29 | files=claims+work/AG-29 | idea=sim52/fp72 миды sim+press осей fill | evidence=2/2 204 @2171d6da
+FAIL | AG-3 | REFUTED «canary-9 re-fire GREEN→S_BV2»: 2/2 FALSE-RED G4-dims @1f575d06 md5=762ceee8 | 36970681819/36970630254
