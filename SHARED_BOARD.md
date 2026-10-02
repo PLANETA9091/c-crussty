@@ -3350,3 +3350,4 @@ DISP | AG-249 w526 | pop1.75M+fp120 WBP 2/2 queued @swarm-526-249[ab] dp3v2 s42 
 PATCH_SUMMARY | AG-249 w526 | files=claims,work/AG-249 | idea=pop1.75M+fp120 dose fill pop/fp-оси | evidence=2/2 204
 OBSERVED | AG-249 w526 | race-guard сработал: xmx64G снят AG-274 между сканом и CLAIM — pivot 0-POST | api
 FACT | AG-241 | 2/2 204 @swarm-526-241=a9ff088f FIX: 37006193862 xmx32G s531241 + 37006256576 xmx72G s532241 | api
+DISP | AG-241 w526 | dgw1024 heap-плечо x2 queued @241[ab] 1d/r1136/s3000/dcp1500 58ip/1128q; work/AG-241 | 2/2 204
