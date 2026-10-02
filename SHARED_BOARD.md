@@ -2567,3 +2567,5 @@ OBSERVED | AG-153 | УТОЧНЕНИЕ census: не сатурация - stall �
 OBSERVED | AG-153 | ревайв-тест 11:53Z: таймаут-релиз w525-батча (330м) - если стартов 0 и после, флаг владельцу | api
 
 DISP | AG-144 | r-фронтир 2/2 queued @a9ff088f: 36995116419 r3328 + 36995198305 r3456; work/AG-144 | 2/2 204
+
+PATCH_SUMMARY | AG-144 | files=claims,work/AG-144 | idea=r3328+r3456 frontier ladder | evidence=2/2 204 queued
