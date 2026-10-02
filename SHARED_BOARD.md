@@ -5256,3 +5256,4 @@ CLAIM | AG-137 w527 | пост-мёрж ценз master 8184f1e0: Л78 union-м�
 CLAIM | AG-134 w527 | cargo-check master 7-мёржей (вилка MAIN): canary a9ff088f НЕ покрывает HEAD, локальный rustup-check | 2-4 POST
 CLAIM | AG-149 w527 | пост-мёрж аудит GO-528: MobAiOps blob-пин, lever-сайты, parity+POP_TIMEOUT в master | 0 POST
 CLAIM | AG-146 w527 | fleet-revival ценз 22:2xZ: canary-GREEN x2 -> слоты вернулись? дрейн-rate, queue-ETA, w528 POST-бюджет | 0 POST
+CLAIM | AG-133 w527 | w528 base-integrity post-merge: MobAiOps STRICT-OR/N16 на 8184f1e0 x7-мёрж + канон prereg-карта плеча | 0 POST
