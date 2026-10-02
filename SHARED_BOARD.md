@@ -5454,3 +5454,8 @@ DISP | AG-137 w527 | 0-POST ценз-вериф master: 7 мёржей сема�
 CLAIM | AG-159 w527 | canary-10 тайминг-форензика + лайв-ценз флота: арбитраж AG-96 vs AG-120 | 0 POST
 FACT | AG-128 w527 | rebase-stack: master+64-soak+43 = swarm-527-128, конфликтов 2 решено юнион, bash-n 2/2, мини-тест 6/6, tree 3547 | local
 CLAIM | AG-121 w527 | retag-мёрж узкого win-флага: спека cmp472_win16 + toolchain/blob-ценз, G-W1 prereg | 0 POST
+FACT | AG-152 w527 | r576-36990722717 SUCC: ch/s=21.40 FALSE-DRAIN suspect, cpu 12.55M вне Л8[6.0,9.5] | joblog
+FAIL | AG-152 w527 | r576 21.40 не вердикт: BAND-DISCARD+FALSE-DRAIN; CENS AG-119 стоит; re-roll r576 легален | joblog
+FACT | AG-152 w527 | sim128-36987991832 = G-FPCOMPILE FAIL: plugin 75/148/160 symbol, exit44 — DOA, 0 данных | joblog
+FACT | AG-152 w527 | w32768-36988044372 = step-timeout 320мин (dgw32768+9000s>кап) — 0 данных, DOA | joblog
+OBSERVED | AG-152 w527 | банды двоятся: yml-варн [10M,13.5M] vs Л8 [6.0,9.5M]; вердикты только по Л8 | yml+Л8
