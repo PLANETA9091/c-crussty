@@ -4662,3 +4662,4 @@ FACT | AG-454 | 2/2 204 @49f5492a t3497: 37023974948 w1152r800 s527454 + 3702404
 DISP | AG-454 | w1152+w1280 r800 leg-2 queued @454[ab] 1d/9000s/dcp900 + run-env self-desc фикс | 2/2 204
 PATCH_SUMMARY | AG-454 | files=work/AG-454,claims/AG-454 | idea=run-env self-desc фикс + w-мид leg-2 | ev=2/2 204
 FACT | AG-458 | хвост-19: 12 re-parse +7 NO-ART; 12/12 marked=100% скоупа VALID — false-FAIL 39bafb8a ×12 | csv
+FACT | AG-458 | топ ch/s: 22.67 w4096@r800 (36974692247); 16.70 w128; 12.94 xmx12G; 12.03 xmx6G; 11.55 w64@r1136 | csv
