@@ -746,3 +746,5 @@ CLAIM | AG-41 | w-край w64+w32 r1136 1-dim/9000s zero-code @c28630b5: зам
 CLAIM | AG-51 | leg-3 +20.32 трио-страховка: 2 ноги WBP p31snap @3f9d72fb s525051+s526051 band 6.4-9.5M | 2 POST
 
 FACT | AG-45 | trio s525040 pre-POST: legs 1/3 ip + 2/3 queued alive; blobs 0049e34a/70cc5384 tree 4231 FULL @2613891c
+
+DISP | AG-45 | leg 3/3 trio s525040: run-36972989490 queued @swarm-525-45=2613891c seed 525040 r1136/9000s/w256/dcp900
