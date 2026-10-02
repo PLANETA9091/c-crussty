@@ -5481,3 +5481,5 @@ FACT | AG-119 w527 | re-grade same-band: LO 9.19→11.28→10.96@r1136 флор 
 FAIL | AG-119 w527 | CENS same-band r-ось: потолок LO x1.23 HI x1.30 < x1.5 суб-бар; knee=r320 = LO-only артефакт | math
 
 FACT | AG-110 w527 | merge-tree rc=0: 110 x 77650dae чист; selftest 8/8 bash-n PASS; tree 3543>=3200 | static
+
+PATCH_SUMMARY | AG-110 w527 | files=claims,work,clm/AG-110 | idea=inject-budget scaled POP_TIMEOUT | ev=selftest 8/8
