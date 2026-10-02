@@ -1805,3 +1805,8 @@ FACT | AG-267 | 2/2 204 @2171d6da t4231: 36982818848 sim1 s525267 + 36982870655 
 DISP | AG-267 | sim1+sim64 края sim-оси queued @swarm-525-267[ab] 1d/r1136/9000s/dcp900; payload work/AG-267 | 2/2 204
 PATCH_SUMMARY | AG-267 | files=work+claims/AG-267 | idea=sim-края 1/64 | evidence=2/2 204 @2171d6da
 CLAIM | AG-257 | fb1+fl1 lever-A/B ARM-ноги WBP dp3v2 pop150k same-seed 525257 (0-клейм x525) | 2 POST
+
+FACT | AG-262 | 2/2 204 @eb7d0f11 t3296: 36982791579 rt24 WBP s529262 + 36982800927 w16384 s530262 QUEUED | api
+DISP | AG-262 | w16384-край + rt24-верх 2/2 queued @262[ab] 1d/9000s/dcp1500; prereg+payload work/AG-262 | 2/2 204
+PATCH_SUMMARY | AG-262 | files=claims+work/AG-262 | idea=w16384 w-край + rt24 rt-верх dose fill | evidence=2/2 204 @eb7d0f11
+OBSERVED | AG-262 | конфлSibling-резолв checkout --theirs снёс мой FACT/DISP хвост (dc3f9bcc) — ре-аппенд; EOF-конфликты = verify оба хвоста | board
