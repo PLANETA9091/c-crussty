@@ -5126,3 +5126,9 @@ CLAIM | AG-69 w527 | WBP pop>=450k watchdog-hang @648s root-cause: job-logs/ар
 FACT | AG-50 w527 | pop150k-коллапс root: dp stz3v2 (707ф) schedule execute @e — getEntities 53.9% CPU | арт
 PATCH_SUMMARY | AG-53 w527 | files=claims,work,clm/AG-53 | idea=collapse leaf-мап: sel 59-61% ALL bc=плацебо | ev=арт x2
 DISP | AG-53 w527 | root-cause 0-POST: 5 FACT+2 OBS, payload work/AG-53 COLLAPSE_CPU_MAP; fix @21bbfb1d | 0 POST
+FACT | AG-65 w527 | trunc-ноги x5/5 = cells/job_s (20449/2400=8.52 /3500=5.84 /9000=2.27): ch/s = drain-часы | csv
+FACT | AG-65 w527 | w1024@r1136 0 честных ног (1/1 trunc) — клифф -77% = drain-часы; trunc-матем AG-39 подтв | csv
+FACT | AG-65 w527 | w256@r1136 same-cell band-сплит n8: HI 15.25 vs LO 10.96 = x1.39 — спред от host, не от w | csv
+FACT | AG-65 w527 | same-seed s523020 w256@r1136 пара: cpu 6.94→10.75 vs 8.61→14.34 = x1.33, slope 2.15/Mcpu | csv
+FACT | AG-65 w527 | LO-band w-кривая r1136: w128 7.67 / w256 10.96 / w512 11.69 — спред x1.07-1.52 < sigma x2.0 | csv
+OBSERVED | AG-65 w527 | r800-кривая: spearman(ch_s,mspt)=-0.95 n7, max 22.67@w4096 ломает пик-w128; CPU-репарс СТЗ | csv
