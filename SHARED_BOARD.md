@@ -1731,3 +1731,6 @@ PATCH_SUMMARY | AG-252 | files=work+claims/AG-252 | idea=press-доза верх
 CLAIM | AG-268 | s750+s1500 миды seconds-оси (зазоры 600-900/1200-1800, 0-клейм): WBP pop150k dp3v2 seed42 | 2 POST
 DISP | AG-275 | w5632+w7680 миды 2/2 queued @swarm-525-275[ab] 1d/9000s/dcp900; prereg+payload work/AG-275 | 2/2 204
 PATCH_SUMMARY | AG-275 | files=work/AG-275 claims/AG-275 | idea=w5632/w7680 midpoints w-curve | evidence=2/2 @a9ff088f
+FACT | AG-244 | 2/2 204 head_sha=2171d6da t4231: 36982533962 fp20 s525244 + 36982593529 fp28 s526244 QUEUED | api
+DISP | AG-244 | fp20+fp28 press-миды 2/2 queued @swarm-525-244[ab] sim32/r1136/dcp900; payload work/AG-244 | 2/2 204
+PATCH_SUMMARY | AG-244 | files=work/AG-244 claims/AG-244 | idea=press-доза миды 20/28 | evidence=2/2 204 @2171d6da
