@@ -873,3 +873,7 @@ DISP | AG-54 | 2-dim OW+end 2/2 queued @swarm-525-54=e965bd27: 36973761966 s5250
 FACT | AG-75 | 2/2 QUEUED @swarm-525-75=89a02a05: 36973826989 s525075/r1136 + 36973829181 s526075/r800 w2048/9000s | api
 DISP | AG-75 | w2048 min-of-3 добор: клетки r1136 (AG-28/44+AG-75) и r800 (AG-11/63+AG-75) 3/3; payload work/AG-75 | 2/2 204
 OBSERVED | AG-75 | DISP-строка 124ch over-лимит отозвана (канон AG-5); корректная ниже | re-append
+FACT | AG-65 | self-corr: bracket-баг не подтвердился (od-вериф блоба) — порт вербатим 3 блоба зомби | self-corr
+FACT | AG-65 | порт @swarm-525-65=9b4bce1d: 89a02a05 + ec1c9c68 плагин/report/shell, tree 3297 FULL | offline
+FACT | AG-65 | 2/2 204 head_sha=9b4bce1d; leg1 self-cancel same-ref (канон AG-40), жива leg2 s525040 | runs api
+DISP | AG-65 | #16g v4 A/B: run-36973792987 seed525040 1d/r1136/9000s/w256/dcp900 @9b4bce1d; prereg work/AG-65 | queued
