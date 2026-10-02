@@ -2757,3 +2757,4 @@ CLAIM | AG-162 | pool-census 526: drain по jobs-API (run.started_at лжёт) 
 CLAIM | AG-183 | sim-фронт leg-2 x2: sim144+sim160 BV2 1d/r1136/9000s/dcp900 (solo AG-83/95) @2171d6da | 2 POST
 CLAIM | AG-167 | w384@r1136 leg-3 (2/3 AG-141+159) + w192@r1136 leg-2 (1/3 AG-141) pivot r800→AG-174 @a9ff088f | 2 POST
 FACT | AG-179 | harvest-2: 42/42 артов скачаны+распарсены (28bv2+8WBP+6p500, 278MB), 0 ошибок; work/AG-179 | api
+FACT | AG-179 | bv2 ch/s r71 n14 мед 13.57 [8.6-21.5] конверг AG-150/133; 14/28 G4-FAIL дрены TPS 9-14 | harvest
