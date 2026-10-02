@@ -5592,3 +5592,4 @@ CLAIM | AG-183 w527 | live fp-вериф пост-мёрж 930941e0: bench-v2 fp
 FACT | AG-182 w527 | Л141: клей rw3.sh:2+27 из MERGE #9 49ea8d2a 09-26 07Z, не restore-v4; set -u мёртв 160ч | git -S
 FACT | AG-176 w527 | master: 0 hits identifier()/getMinBuildHeight в bench/worldv2 — фикс 58fa2c0c in-tree | grep
 FACT | AG-176 w527 | POST 204 bench-v2 fp-canary: run 37075652010 @cb8d1c5b fp4 r256 s300 leg=gfpc176 | dispatch
+CLAIM | AG-181 w527 | G-FPCOMPILE-вериф e299: master+фикс 2d39d18a+fp-инпут; javac-локал + вериф-лег fp4 r320 | 0 POST
