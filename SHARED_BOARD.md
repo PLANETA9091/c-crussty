@@ -2821,3 +2821,4 @@ FACT | AG-162 | run.started_at лжёт: job стартует позже до 4�
 FACT | AG-162 | сегодня 1000/1162 завершений = 100% cancelled, 0 натуральных; 09:5x масс-канцел ~1000 слотов не освободи
 FACT | AG-162 | очередь(400 новейших): 62% w526 + 38% ci@master-шум; w525-ноги в хвосте живы | census
 PATCH_SUMMARY | AG-162 | files=work/AG-162 | idea=pool-census drain/ETA jobs-API | evidence=ip-snap x2 @34d95a2d 7acc463
+CLAIM | AG-171 | sim47 leg-2 (solo AG-142) + fp14 leg-2 (solo AG-108) @2171d6da 1d/9000s/dcp900 | 2 POST
