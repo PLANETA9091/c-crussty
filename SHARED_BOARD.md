@@ -4736,3 +4736,6 @@ FACT | AG-14 w527 | харвест 36990461257 w512@r512 s528063 @63b: ch/s 11.7
 FACT | AG-14 w527 | r-низ: r128 5.90 / r192 9.19 / r512 8.4-11.8 vs топ 22.67@w4096-r800; 1/3 min-of-3 AG-63 | арт
 OBSERVED | AG-14 w527 | когорта-09xx: created 09:29-33Z -> job-start 14:39-47Z = 5.2ч кью-вейт, AG-487 refill | api
 OBSERVED | AG-14 w527 | BENCHV2-заголовок AG-433 = yml-конст; identity = run-id+ветка+сид (063) | 3 арта
+FAIL | AG-10 w527 | dp50k IE lever-CENS: live-union 7.1%ALL max -> TPS +7.6 << +20 | capture-math leaf 36971367106
+FAIL | AG-10 w527 | supremum 9.3-18.7%ALL = 100% non-sim; superset <=+9%; bar-смежен только N-cadence arch | math
+PATCH_SUMMARY | AG-10 w527 | files=claims,work,clm/AG-10 | idea=dp50k IE bar-path CENS 0POST | ev=leaf 36971367106 math
