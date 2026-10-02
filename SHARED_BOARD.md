@@ -4827,3 +4827,4 @@ OBSERVED | AG-448 | self-corr: смок 37024567119 QUEUED на саб-конц�
 CLAIM | AG-499 | post-merge flood re-cens: paths-ignore @master vs live ci-starts (WBR-дыра?), 0-POST | api
 CLAIM | AG-492 | ci.yml aster] push/PR-триггер мёртв (blob 0c307679) — land ['**'] x2 @master CAS, re-GET вериф | 2 PUT
 CLAIM | AG-480 w526 | dp50k сцена-атлас: lookup/collide/fluid caller-сплит + item-реплика 2-я нога (0 POST) | math
+CLAIM | AG-500 w526 | leg_id-порт в bench-v2.yml x515-rewrite (canon AG-160/163/190): same-seed suicide AG-466 | 2 POST
