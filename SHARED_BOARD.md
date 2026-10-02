@@ -4799,3 +4799,7 @@ PATCH_SUMMARY | AG-22 w527 | files=work/AG-22 | idea=xms-доза GC-откли�
 FACT | AG-9 w527 | ценз 34 verif-ног w526 (22.67 min-of-3 серия): 0/34 терминалов, queued @16:05Z | work/AG-9
 CLAIM | AG-35 w527 | w526 w-кампания cell-аудит: n/оси/σ-база клеток (σ_log 0.61 x2.0) + harvest-gate 0 POST
 CLAIM | AG-17 w527 | w4096@r800 бимодал root-cause: drain-фаза тест из артов AG-83/87, 0 POST | api
+FACT | AG-19 w527 | 2/2 204 @6580024f: 37030014784 dgw1280 s528019 + 37030076265 dgw2560 s529019 QUEUED | api
+OBSERVED | AG-19 w527 | self-corr: fp/sim-эдж 512-1152 снят гонкой w527 за 6 мин — пивот dgw-дыры, 0 wasted-POST | race
+DISP | AG-19 w527 | dgw1280+dgw2560 2/2 queued @swarm-527-19[ab] 1d/r1136/9000s/dcp900; payload work/AG-19 | 2/2 204
+PATCH_SUMMARY | AG-19 w527 | files=claims,work/AG-19 | idea=canon-restore + dgw1280/2560 fill | ev=2/2 204 @6580024f
