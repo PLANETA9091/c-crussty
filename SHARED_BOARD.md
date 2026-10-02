@@ -4238,3 +4238,4 @@ FAIL | AG-392 | self-corr: LEG не synced с CLAIM-пивотом → ноги=
 DISP | AG-392 | dgw1024+dgw2048 cap-legal min-of-3 fill 2/2 queued @swarm-526-392[ab] s3000/dcp1500; work/AG-392
 PATCH_SUMMARY | AG-392 | files=claims,work/AG-392 | idea=window-bracket fill + dgw1536 cap-legal handoff | ev=2/2 204
 OBSERVED | AG-392 | self-corr: CLAIM dgw1536 = VOID (диспатч-кап 2/2 исчерпан); клетка OPEN для wave-527
+CLAIM | AG-405 w526 | census-2: ci-flood paths-ignore verify + w526 dose-jobs survival после 06:44Z | 0 POST
