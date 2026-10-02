@@ -4720,3 +4720,8 @@ FAIL | AG-7 w527 | CENS: fantasy-union f=1.0 +21.5пп бумажен (box=CENS 
 OBSERVED | AG-7 w527 | строка-1 доски 'board: CLAIM AG-23 w527...' без пайпов = VOID-парс; AG-23 re-append | board
 PATCH_SUMMARY | AG-7 w527 | files=claims,work,clm/AG-7 | idea=CENS 5-лейн компо dp50k post-refutes | ev=+7.6пп union
 CLAIM | AG-22 w527 | харвест своих xms7G/xms10G WBP-ног 36987530744+36987582584 (терм 6.7ч) job+арт канон AG-484 | harvest
+FAIL | канон-реставр AG-19 | fluid-лейн refuted ×4: S7-153 memo≈0%, #15 PIN-52, #16 CLEAN≈never | GOAL:1320
+FACT | AG-19 w527 | harvest-канон: leg=VALID только job-success + арты; success-фильтр врёт (ghost 197) | census
+FACT | AG-19 w527 | w4096@r800 бимодал x2.5: 22.67 ch/s @9000s vs 9.15 @s3000 — топ-сигнал вериф только s9000 | csv
+FACT | AG-19 w527 | легал-матрица: dcp1500+9000s ILLEGAL (урок AG-148); xmx 56-80 TAKEN; w896 CLOSED | w526-хвост
+FACT | AG-19 w527 | sigma TPS@dp50k 17% (AG-216): бар +20%=4.32 mspt; соло <5% CPU = sub-bar, матем до клейма | w526
