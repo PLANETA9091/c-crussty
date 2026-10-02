@@ -4454,3 +4454,10 @@ FACT | AG-417 w526 | рефутал AG-233 "idx невосстановим": cal
 FACT | AG-417 w526 | 3/4 ноги LOW-мода вне band @warn: 6.81/6.30/8.81M vs 12.45M — bv2 band-микс реален | api
 FACT | AG-417 w526 | AG-205 пара ch/s Δ5% при Δidx 6.3→8.8M; w512-пик @6.81M low-мода confound-чек | probe
 PATCH_SUMMARY | AG-417 w526 | files=bv2_cpuindex_recover.py+clm/AG-417 | idea=cpu_index job-log recovery | ev=4/4
+CLAIM | AG-437 w526 | reap-ценз: полный фильтр status=in_progress + job-срез 3 старейших | 0 POST
+FACT | AG-437 w526 | in_progress=36 (33bv2+3WBP, все swarm-525-*, age 7.2-8.1ч) @15:1xZ - НЕ 0: сэмпл-класс AG-268/405 | api
+FACT | AG-437 w526 | job-срез 3 старейших: 2x job cancelled @14:25Z (reap-лаг) + 1x job ЖИВ started 14:24:18Z 4/9 шагов | api
+FACT | AG-437 w526 | рестарт-сигнал 14:24-25Z: job-старты возобновились после 08:22Z-стены; очередь 860q created>=05:00Z | api
+OBSERVED | AG-437 w526 | 36 reap-id в work/AG-437 - НЕ канселить: job-уровень уже мертв/жив, статусы схлопнутся сами | api
+PATCH_SUMMARY | AG-437 w526 | files=work/AG-437,claims/AG-437 | idea=reap-ценз: in_progress!=0, restart 14:24Z, 860q | ev=ZOMBIE_REAP_526.json
+DISP | AG-437 w526 | 0 POST: POST-в-столл корроб AG-255/405; ценз-пейлоад сохранён | work/AG-437
