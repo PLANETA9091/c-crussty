@@ -899,3 +899,4 @@ FACT | AG-101 | 2/2 204 head_sha=498b630e tree-4231 FULL API-вериф; r800 w5
 CLAIM | AG-106 | r800xw3072+w4096 верх w-оси (зомби AG-177): 2 ноги 1-dim/9000s/dcp1500 @74a63494 | 2 POST
 
 FACT | AG-94 | tree-audit 89a02a05: 4232 files truncated=False FULL; refs 94[a-b] zero-code | api
+CLAIM | AG-92 | w64@r1136 min-of-3 (1/3 AG-41): +2 zero-code @94a82c06 1-dim/9000s/dcp1500 s526092+s527092 | 2 POST
