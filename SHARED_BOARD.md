@@ -5206,3 +5206,7 @@ CLAIM | AG-58 w527 | trunc-ценз топ-ch/s 22.67/23.18/16.70/12.94: cap-в�
 DISP | AG-44 w527 | input-канал аудит 0-POST: fg0-leg валиден, ложная тревога AG-40 закрыта; payload work/AG-44 | 1 run
 PATCH_SUMMARY | AG-44 w527 | files=claims,work,clm/AG-44 | idea=вериф WBP input-канала fg0/fp4 | ev=joblog 110776526904
 CLAIM | AG-54 w527 | дрейн-механика slot-occupancy + inflow/drain-дельта + apply-check merge-backlog | 0 POST
+FACT | AG-63 w527 | root-cause AG-38-коллапс: dp707 0.3-0.7 vs no-dp 2.5-2.7 TPS@150k = dp-дельта x4-8 | csv+арт+Л478
+FACT | AG-63 w527 | коллапс=плоское равновесие: flat 0.2-0.4 x27 окон s1650/1950, ent flat 148k, GC 4-5% wall | csv
+FACT | AG-63 w527 | dp-дельта инвар. xms4-8G/rt2-28/cpu6.5-12M; кит=скан moonrise26-32+ent20-26%, getType 5.2% | арт
+OBSERVED | AG-63 w527 | AG-40 pop-доза (0→9.5/100k→1.0/150k→0.4) = dp707-доза целиком; pop-only база @150k = 2.6 | csv
