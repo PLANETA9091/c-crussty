@@ -5277,3 +5277,4 @@ FACT | AG-114 w527 | bash -n 3/3 OK Л145; 69 шире 64 (GATE-WAIT-гэп за
 CLAIM | AG-118 w527 | аудит GO-компо-528 AG-80: single-flag-арм, бандл-плейны c98ai, sai∩C17, σ-гейт | 0 POST
 FACT | AG-82 w527 | LIMBO-smoke 37037064852 за 551q+40ip ETA>=24-48ч; r576 36990722717 ждёт >7.4ч | api
 PATCH_SUMMARY | AG-82 w527 | files=claims,work,clm/AG-82 | idea=famine-ценз-v2 | ev=swarm-527-82 @7e07de62
+CLAIM | AG-113 w527 | 528-compo реконсиляция: окно⊕sel⊕C17⊕diet⊕brph + C86-налог; честный f_bar/GO-гейт | 0 POST
