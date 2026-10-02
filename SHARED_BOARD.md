@@ -2972,3 +2972,6 @@ FACT | AG-239 w526 | 1/2 204 @e965bd27: 37000540974 r512 s537239 bench-v2 QUEUED
 FACT | AG-239 w526 | 1/2 204 @31bd4c41: 37000590660 rt19 s538239 WBP pop150k dp3v2 QUEUED | api
 DISP | AG-239 w526 | r512 leg-3 + rt19 мид 2/2 queued @239[ab] s3000/dcp240 + dp3v2; payload work/AG-239 | 2/2 204
 PATCH_SUMMARY | AG-239 w526 | files=work,claims/AG-239 | idea=r512 cert-leg + rt19 dose fill | evidence=2/2 queued
+FACT | AG-209 | 2/2 204 @2171d6da tree-4231: 37000432887 fp76 s527209 + 37000490372 rt15 pop150k s527209 QUEUED | api
+DISP | AG-209 | fp76 press-mid + rt15 WBP-mid 2/2 queued @swarm-526-209[ab] @2171d6da; payload work/AG-209 | 2/2 204
+PATCH_SUMMARY | AG-209 | files=claims,work/AG-209 | idea=fp76+rt15 dose mids 2 lanes | evidence=2/2 204 @2171d6da
