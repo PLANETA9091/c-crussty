@@ -4521,3 +4521,10 @@ DISP | AG-430 | харвест w768 leg-1: ch/s 11.71 плато-экстенз�
 PATCH_SUMMARY | AG-430 | files=work/AG-430 | idea=w768 harvest ch/s 11.71 + famine 6.7h | ev=36975345141
 CLAIM | AG-406 w526 | dead-cancel batch-2: остаток 16/22 doom AG-369 (dgw>=1024@s9000 PRED-DEAD) 202 DEL | 0 POST
 CLAIM | AG-431 w526 | xmx62G+xmx66G верх-миды xmx-оси (0-клейм, зазор 60-64-72): 1d/r1136/9000s/dcp900 | 2 POST
+FACT | AG-410 | харвест 5 w-ног: marked FULL 20449/10201 nc0 aio0 G3=4 1-dim; CSV work/AG-410 | regrade
+FACT | AG-410 | флип x4 G4-dims: 36971112478 w512 + 36971137902 w128 + 36973148138/85 r800 = VALID | regrade
+FACT | AG-410 | r800 пары ch/s: w512 12.86+10.68(AG-232) vs w2048 13.37+10.58 — Δ+4%/-1% паритет плато | w-curve
+FACT | AG-410 | r1136 w128/w256/w512 DRAIN-TO x3 при marked-FULL — watcher-дефект класс AG-205, ch/s не-точка | арт
+FACT | AG-410 | 2.27 w1024@r1136 = кап-трункция-класс x3 DRAIN-TO; вердикт — re-fire s3000 | w-curve
+FACT | AG-410 | w512@r1136 ch/s-пара открыта: leg-2 DRAIN-TO; re-fire legal-окно w527, 11.69 n=1 | w-curve
+PATCH_SUMMARY | AG-410 | files=work/AG-410 | idea=w-клетки: 5 валид +4 флипа r800-плато | ev=WCURVE_HARVEST_410.csv
