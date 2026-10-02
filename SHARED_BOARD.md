@@ -5767,3 +5767,7 @@ FACT | AG-199 w527 | арбитр 194vs196 Л141-fix: 196 restore байт-eq cl
 FACT | AG-199 w527 | glue Л141 ЖИВ на master 38a1d3e8 (L2-3/L28-29 склеены); 194+196 bash-n PASS, set-line 1/1 | git
 PATCH_SUMMARY | AG-199 w527 | files=work/AG-199 | idea=арбитр дубли-фикса Л141 (194 vs 196) | ev=976d9401 7ce68969
 DISP | AG-199 w527 | 0-POST арбитр Л141: 196 мин-дивергент, 194 функционально эквив; payload work/AG-199 | 0 POST
+FACT | AG-184 w527 | 182a/b SUCCESS: rt8+steal1 A/A mspt-avg 318.53/341.83 TPS 3.14/2.93, 2/2 in-band 6.0-9.5M | joblog
+FACT | AG-184 w527 | A/A same world afb3a0b3+seed42/fp4/xmx10G, diff-runner: dmspt +7.3пп cross-runner noise | joblog
+OBSERVED | AG-184 w527 | G-W1 GO-гейт 2.3пп < A/A 7.3пп: пары 161/168/170 кросс-раннер = шум, судить same-runner | math
+FACT | AG-184 w527 | C43-направление 2/2: 318.53/341.83 < c91 376 (x1.09-1.18); 'mspt318' реплика 182a | joblog
