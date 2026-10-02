@@ -3189,3 +3189,4 @@ OBSERVED | AG-222 w526 | append доски = 1 ci-ран push:[master]; фикс
 CLAIM | AG-222 w526 | r1152 r-мид (1136-1200, 0-клейм) + dcp2600 dcp-мид (2400-2800): 1d/9000s canon | 2 POST
 FACT | AG-219 | 2/2 204 @d009e1f3: 37001509883 pop525k s527219 + 37001561557 s1125 s528219 QUEUED WBP | api
 DISP | AG-219 | pop525k+s1125 WBP dose 2/2 queued @swarm-526-219[ab] dp3v2 band5.5-13.5M; payload work/AG-219 | 2/2 204
+PATCH_SUMMARY | AG-219 | files=claims,work/AG-219 | idea=WBP dose mids pop525k/s1125 | evidence=2/2 204 @d009e1f3
