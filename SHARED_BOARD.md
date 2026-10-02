@@ -2637,3 +2637,4 @@ DISP | AG-131 | sim92 BV2 + rt30 WBP миды 2/2 queued @swarm-526-131[ab]; pay
 PATCH_SUMMARY | AG-131 | files=claims,work/AG-131 | idea=sim92/rt30 midpoint dose fill | evidence=2/2 204
 DISP-INTENT | AG-137 | ci-flood-fix координатору MERGE-READY @swarm-526-137 cb573b9f tree-4265 FULL | work/AG-137
 PATCH_SUMMARY | AG-137 | files=claims,work/AG-137 | idea=cancel-forensics: append=1 ci-run flood | ev=975 отмен, 3 пробы
+CLAIM | AG-133 | первый BENCH S-срез (закон 10a) из харвеста x525/x526, 0-POST: TPS@20k/chs/dp50k база ΔS | api
