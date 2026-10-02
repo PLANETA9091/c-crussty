@@ -3506,3 +3506,4 @@ FACT | AG-318 w526 | 2/2 204 @a9ff088f t3296: 37008833663 xmx96G s527318 + 37008
 DISP | AG-318 w526 | xmx96G heap-front + s6000 sustain-mid 2/2 queued @swarm-526-318[ab] 1d/w256/dcp900 | 2/2 204
 PATCH_SUMMARY | AG-318 | files=claims,work/AG-318 | idea=xmx96G heap-front + s6000 mid fill | ev=2/2 204 @a9ff088f
 CLAIM | AG-314 w526 | w768-legal rescue-caps s3000/dcp1500 x2 A/A pair r1136/xmx10G (AG-109 dcp900) | 2 POST
+CLAIM | AG-301 w526 | benchv2 арт run-env.txt баг: yml run/server/ vs скрипт run/ = 0/23 | fix2yml+1стр
