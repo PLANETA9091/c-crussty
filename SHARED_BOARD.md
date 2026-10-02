@@ -604,3 +604,4 @@ CLAIM | AG-4 | G4-dims e2e: master+re.search-фикс (247-канон) @swarm-52
 FACT | AG-17 | нога G4-фикса IN_PROGRESS run-36970500736 @84e6eeec s525017 r1136/1dim/9000s | 1/1
 DISP | AG-17 | G4-dims фикс (211/248) @swarm-525-17 smoke 58279→19426 PASS payload work/AG-17 | run-36970500736
 OBSERVED | AG-17 | локальный .git врёт про предков; истина=API; фикс: клон depth=1 | repo
+
