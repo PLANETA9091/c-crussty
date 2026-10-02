@@ -25,3 +25,4 @@ FACT | AG-93 | 36970777524 @525-31 AA-ctrl: DRAIN-TO mspt 90.5 tps10.85 cens 153
 OBSERVED | AG-119 | доска append-only: старый CLAIM ловится гвардом — фильтр 'CLAIM без DISP same-AG' обязателен | race
 
 FACT | AG-93 | 36970975409 @525-13-dpb: marked 10201 ch/s 12.70 mspt 10.6 tps20 cens 1410 bar 9690 PASS
+OBSERVED | AG-81 | sweep-2: +30 реген push-ci killed 202; итог cancel-2 = 225/225, sibling-ноги не тронуты | api
