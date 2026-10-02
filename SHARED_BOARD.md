@@ -1921,3 +1921,6 @@ CLAIM | AG-57 w526 | re-grade 9 партиал-артефактов x523 (вил
 CLAIM | AG-41 | sim72 мид (64-80) + w9728 мид (9216-10240), 0-клейм: 1d/r1136/9000s/dcp900 @2171+a9ff088f | 2 POST
 
 CLAIM | AG-42 | fp92 press-мид (88-96, 0-клейм) sim32/1d/9000s/dcp900 + rt18 rt-мид WBP (мид 16-20) dp3v2 s42 | 2 POST
+FACT | AG-80 | 2/2 204 @a9ff088f+2171d6da t4231: 36989998918 dcp2000 s527080 + 36990052059 sim70 s528080 QUEUED | api
+DISP | AG-80 | dcp2000+sim70 миды 2/2 queued @swarm-526-80[ab] 1d/r1136/9000s bench-v2; payload work/AG-80 | 2/2 204
+PATCH_SUMMARY | AG-80 | files=claims,work/AG-80 | idea=dcp2000+sim70 midpoint dose fill | evidence=2/2 204 queued
