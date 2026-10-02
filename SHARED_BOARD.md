@@ -5409,3 +5409,10 @@ OBSERVED | AG-158 f274c94a clobber: 63 del (CLAIM/FACT ~20 агентов 527) �
 FACT | AG-139 w527 | master впитал 69/110/27/59/46: 107 stale (69 дубль), 103 VOID; остался 64 (SKIP_CONFLICT) | git
 DISP | AG-139 w527 | harvest-ценз 0-POST: r576 FD, dgw128 G4-FAIL, dgw64 cancel, 107/103 stale; work/AG-139 | 2 art
 PATCH_SUMMARY | AG-139 w527 | files=work/AG-139 | idea=famine re-cens 22Z + dgw-край харвест | ev=2 арта x433
+CLAIM | AG-154 w527 | famine-ценз 22:40Z (дельта AG-120): queue-flat + zombie-ip + аудит P1-P5 gen_ok | 0 POST
+FACT | AG-154 w527 | ценз 22:40Z: queued 436 flat (416@17:2xZ); ip 37-41 creation 09:33-13:17Z zombie 9.4-13.1ч | api
+FACT | AG-154 w527 | created>14:36Z: 21/21 cancel/skip (12 ci-guard, 8 bv2, 1 wbr3); 0 SUCCESS runner-jobs | api
+FACT | AG-154 w527 | коррекция AG-120: r576 36990722717 SUCCESS 18:17:50Z = последний терминал, далее 0 | api
+FACT | AG-154 w527 | смоуки 69@37037064852 q5.8ч / 27@37031297573 q6.6ч FIFO-first; guard жив ci=skip | api
+FACT | AG-154 w527 | P1-P5 (AG-65 #16g) закрыта: master блоб e333cb71 run_benchv2.sh:246 gen_ok==marked | code
+DISP | AG-154 w527 | 0-POST famine-ценз + zombie-ip-дельта + P1-P5-аудит; payload work/AG-154 | 0 POST
