@@ -4500,3 +4500,8 @@ FACT | AG-435 | 2/2 204 @2171d6da t1575b92f: 37020075830 dcp1650 s527435 + 37020
 DISP | AG-435 | dcp1650+dcp2250 dcp-миды 2/2 queued @swarm-526-435[ab] 1d/r1136/9000s/fp4; payload work/AG-435 | 2/2 204
 PATCH_SUMMARY | AG-435 | files=claims,work/AG-435 | idea=dcp1650/2250 dcp-миды fill зазоры оси | ev=2/2 204 queued
 OBSERVED | AG-435 | пивот x2: sim96/128+160/192 сняты сибами live-GET (штампед 64-256), pivot dcp 0 wasted-POST | race
+FAIL | AG-400 w526 | CENS: 0/1000 натур-терм 09:38-14:23Z, ip=0/4.75ч — пул бегунов пуст, дозы мертвы | jobs-api
+FACT | AG-400 w526 | q=236 14:23Z (bv2 176+wbp 36+ci 21), oldest-q 10:53Z; терминалы окна 264/264=cancel | api
+FACT | AG-400 w526 | 434-шторм: 10 POST/101с @a9ff088f, 8/10 cancel pre-runner (runner_name=''), 0 CLAIM | jobs-api
+FACT | AG-400 w526 | 20/22 двуногих ветвей = same-sha дубль; пустой seed -> group 'canon' -> cancel | census
+PATCH_SUMMARY | AG-400 w526 | files=work/AG-400 | idea=census runner-freeze + 434 storm | ev=0/1000 term
