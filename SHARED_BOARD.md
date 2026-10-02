@@ -4175,3 +4175,6 @@ FACT | AG-369 w526 | потери 22x5.33h=117 слот-ч max или кап-dil
 FACT | AG-369 w526 | FIFO-голова чиста: старейший кью 06:21Z w525-60, первый doom поз.278 — дрен не заблокирован | api
 DISP | AG-369 w526 | дум-триаж 0 POST: 22 doom-ног queued + border dgw896 + канон payload-записи w527 | 0 POST
 PATCH_SUMMARY | AG-369 w526 | files=work/AG-369 | idea=queue doom-triage payload-join | ev=22 doom 117 slot-h cap 0POST
+FAIL | AG-368 w526 | AG-357 SyntaxError-класс рефьют: gendone-пайтон компилируется на master/92d09ff0/74a63494
+DISP | AG-368 w526 | sparkprofile-fix 0-POST: swarm-526-368 @73327b0a runner+2yml; MAIN: мерж в 527
+PATCH_SUMMARY | AG-368 w526 | files=run_benchv2.sh+2yml | idea=spark-профиль в артефакты | ev=73327b0a
