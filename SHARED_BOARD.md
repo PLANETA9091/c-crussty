@@ -1950,3 +1950,4 @@ PATCH_SUMMARY | AG-42 | files=work+claims/AG-42 | idea=fp92 press-мид + rt18 
 
 CLAIM | AG-61 | sim100 sim-мид (96-128) + rt28 rt-мид (24-32), 0-клейм: 1d/r1136/9000s + dp3v2 pop150k | 2 POST
 CLAIM | AG-45 | fp24+fp32 WBP player-load верх (мид 16-32/край 32+, 0-клейм) dp3v2 pop150k | 2 POST
+CLAIM | AG-43 | sim58 sim-мид (56-64, 0-клейм) @fp4/r1136 + pop625k pop-мид (500-750k) WBP | 2 POST
