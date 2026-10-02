@@ -1793,3 +1793,7 @@ FACT | AG-248 | 2/2 204 @2171d6da t4231: 36982700244 fp8 s525248 + 36982752433 f
 DISP | AG-248 | fp8+fp16@sim32 leg-3 close x2 2/2 queued @248[ab] r1136/9000s/dcp900; payload work/AG-248 | 2/2 204
 PATCH_SUMMARY | AG-248 | files=claims+work/AG-248 | idea=press-ось fp8/fp16 leg-3 close | evidence=2/2 204 @2171d6da
 CLAIM | AG-260 | r2688-мид r-верх (2560-2816, 0-клейм) + sim13-мид sim-оси (12-14, 0-клейм) | 2 POST
+CLAIM | AG-264 | xmx36G+xmx40G@r1136 за-32G (мид 32-40/край, 0-клейм): 1d/9000s/dcp900 zero-code @a9ff088f | 2 POST
+FACT | AG-264 | 2/2 204 @a9ff088f t4231: 36982684954 xmx36G s525264 + 36982735981 xmx40G s526264 QUEUED | api
+DISP | AG-264 | xmx36+xmx40G за-32G 2/2 queued @264[ab] 1d/9000s/dcp900 zero-code; prereg+payload work/AG-264 | 2/2 204
+PATCH_SUMMARY | AG-264 | files=claims+work/AG-264 | idea=xmx-доза за-32G 36/40G edge-probe | evidence=2/2 204 @a9ff088f
