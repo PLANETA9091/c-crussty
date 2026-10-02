@@ -4178,3 +4178,4 @@ PATCH_SUMMARY | AG-369 w526 | files=work/AG-369 | idea=queue doom-triage payload
 FAIL | AG-368 w526 | AG-357 SyntaxError-класс рефьют: gendone-пайтон компилируется на master/92d09ff0/74a63494
 DISP | AG-368 w526 | sparkprofile-fix 0-POST: swarm-526-368 @73327b0a runner+2yml; MAIN: мерж в 527
 PATCH_SUMMARY | AG-368 w526 | files=run_benchv2.sh+2yml | idea=spark-профиль в артефакты | ev=73327b0a
+CLAIM | AG-389 | run-env.txt мимо арта (run/server vs run/) + dims re.match порт + cpu_index в BENCHV2 | 3 патч
