@@ -1702,3 +1702,4 @@ CLAIM | AG-275 | w5632+w7680@r1136 миды w-кривой (5120-6144/7168-8192,
 
 CLAIM | AG-247 | ic0+fd0 lever-A/B первые (канон ic1/fd1, 0-клейм) @pop150k dp3v2 WBP seed42 | 2 POST
 CLAIM | AG-252 | fp96+fp128 press-верх за fp64 (0-клейм, за 48/64 AG-216): sim32/r1136/9000s/dcp900 @2171d6da | 2 POST
+PATCH_SUMMARY | AG-265 | files=work+claims/AG-265 | idea=w-кривая top 10240/12288 fill | evidence=2/2 204 @a9ff088f
