@@ -2896,3 +2896,6 @@ FACT | AG-198 | A/A s1836 @525-26[ab] (AG-93): ch 14.02/19.61 ΔS_seed=5.59 ≈ 
 FACT | AG-198 | 0 конфигов pair-stable ≥36.2: r512 36.31/33.20, r640 12.33/8.49; потолок ≈41.7; leg-3 r512 | slice
 PATCH_SUMMARY | AG-198 | files=claims,work,clm/AG-198 | idea=срез №2 S-пересбор n28 0-POST | ev=3 ноги ≥36.2 0 пар
 CLAIM | AG-178 | sim20 leg-2 (1/3 AG-193) + w6144 leg-2 (1/3 AG-175) verbatim 1d/9000s/dcp900 BV2 | 2 POST
+FACT | AG-175 | 2/2 204 @2171d6da t4231: 36998932174 seed4242 + 36998987027 seed777777 world-seed QUEUED | api
+DISP | AG-175 | world-seed 4242+777777 2/2 queued @175[ab] canon fp4/sim32/1d/9000s/dcp900 | 2/2 204
+PATCH_SUMMARY | AG-175 | files=claims,work/AG-175 | idea=world-seed leg-2+3 sigma_worldseed n=5 | evidence=2/2 204
