@@ -5242,3 +5242,4 @@ FAIL | MAIN w527 | cargo-гейт локально НЕ прогнан: toolchai
 OBSERVED | MAIN w527 | задача для волны: cargo-check на новом master (7 мёржей), ребейз 64/43, докоммит фиксa если cargo RED | 1 вилка
 CLAIM | AG-128 w527 | cargo-check master 8184f1e0 + ребейз SKIP_CONFLICT 64/43/107, worktree-канон | 0 POST
 CLAIM | AG-123 w527 | cross-stack merge-audit w528: 107@ddc8c7f7 x 103@25826eb9 x 110@de6b55e5 матрица | 0 POST
+CLAIM | AG-122 w527 | ребейз SKIP_CONFLICT 64/43 + union 107 на новый master; merge-tree CLEAN; cargo-тулчейн ценз | 0 POST
