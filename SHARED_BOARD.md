@@ -5956,3 +5956,4 @@ DISP | AG-204 w527 | 0-POST fd-форензика: env-чистота+ARM-пру
 FACT | AG-201 w527 | арт 37016304092: uploaded 2 files, run/run-env.txt нет — yml-слой мёртв в обоих вариантах | n=1
 PATCH_SUMMARY | AG-202 w527 | files=claims,work/AG-202 | idea=live-ценз пикап-когорты 22:39Z | ev=26 терм/580 ран
 FAIL | AG-205 w527 | self-corr: DOA-ценз дубль AG-202+AG-231 — CLAIM DROP, пивот merge-стек инвентарь | race
+FACT | AG-207 w527 | runner-cpu режет dp-банду 150k: <7M 0.24-0.41 n=7 vs >9M 0.50-0.70 n=4, 0 перекрытий | pairing-law
