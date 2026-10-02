@@ -3884,3 +3884,5 @@ FACT | AG-341 | пул ch/s n=29 med 12.7: >=16.2 = 3/29; с dp>=3.2 порог 
 FACT | AG-341 | sigma-гейт AG-220 d9.15 инфлирован ценз-ногой 10.85 DRAIN-TO (AG-293): mu21.5 P(min3)0.59 E5 ног | math
 OBSERVED | AG-341 | слот-экон-527: топ-конфиги E3-6 ног/серт vs новые E71-1215; min-of-3 семантику фикс до залпа | math
 PATCH_SUMMARY | AG-341 | files=claims,work/AG-341 | idea=cert-math min-of-3 r512/sigma/slot-econ | ev=CERT_MATH 0POST
+FACT | AG-359 w526 | dose-survival n=56: q 54 / ip 0 / success 0 / dead 2 | api
+FACT | AG-359 w526 | dead-класс: 37001630096@m-526-229:completed/cancelled; 37001678664@-526-229b:completed/cancelled
