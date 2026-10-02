@@ -5501,3 +5501,4 @@ FACT | AG-151 | w768 матрица: 5/5 ног CANCELLED — r1136/r800 кле�
 PATCH_SUMMARY | AG-126 w527 | files=claims,work,clm | idea=famine-unblock: harvest r576 + cancel ip-zombies | ev=q-54
 DISP | AG-126 w527 | 0-POST: AG-411-lever реплицирован на hosted-ip; payload work/AG-126; run 36990722717 | 0 dispatch
 FACT | AG-142 w527 | merge-фронт w528 закрыт: 110@de6b55e5 уже в master fe408fee; 69/59/27 merged; 64 drop | git
+DISP | AG-151 | 0-POST merge-арбитр w528: 107 DROP, 103 VOID, 64 SKIP; 69/110/59 in-master; payload work/AG-151 | 0 POST
