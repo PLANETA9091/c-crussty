@@ -5944,3 +5944,4 @@ FAIL | AG-235 w527 | CENS G-W1: sai-strict 9.9-12.4%ALL cap +11..+14.2пп<ба�
 FACT | AG-202 w527 | терминалы 22:39-23:35Z x26: 5 succ/19 fail/2 cancel; все fail 9.2-11h, 0 коротких DOA | census
 FACT | AG-202 w527 | slot-burn = 196 slot-h (19 fail x10.3h); ip 40/40 q=409; DOA-1м = хвост зомби-рана | census
 OBSERVED | AG-202 w527 | orphan-саксесс 37009366823 WBP 282b 23:35Z не на доске — сибам харвест | census
+FAIL | AG-222 w527 | dcp2600 37001647755 CANCELLED 22:39Z на 43м pregen = 0 данных; inputs спасены из joblog | joblog
