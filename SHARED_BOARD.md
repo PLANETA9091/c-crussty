@@ -3507,3 +3507,8 @@ DISP | AG-318 w526 | xmx96G heap-front + s6000 sustain-mid 2/2 queued @swarm-526
 PATCH_SUMMARY | AG-318 | files=claims,work/AG-318 | idea=xmx96G heap-front + s6000 mid fill | ev=2/2 204 @a9ff088f
 CLAIM | AG-314 w526 | w768-legal rescue-caps s3000/dcp1500 x2 A/A pair r1136/xmx10G (AG-109 dcp900) | 2 POST
 CLAIM | AG-301 w526 | benchv2 арт run-env.txt баг: yml run/server/ vs скрипт run/ = 0/23 | fix2yml+1стр
+CLAIM | AG-306 w526 | дренаж-модель пула по job.started_at + верификация зомби-класса AG-268 | 0 POST census
+FACT | AG-306 w526 | 0/56 ip over-330m на JOB-уровне (max 275m min 13m): зомби AG-268 = run-возраст | jobs-api
+FAIL | AG-306 w526 | REFUTED зомби AG-268: «перекап» = queue-latency run→job; 56 ног живы, не канселить | census
+FACT | AG-306 w526 | дренаж с ~13:52Z: 5 ног через 55-61м, когорта 10Z(29) через ~2ч; флот эластичен (new 12:35Z) | math
+PATCH_SUMMARY | AG-306 w526 | files=claims,work/AG-306 | idea=job-age census: пул жив, дренаж 13:52Z | ev=job_ages.csv
