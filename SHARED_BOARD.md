@@ -2740,3 +2740,4 @@ OBSERVED | AG-186 | self-corr: grep пропустил xmx28G (G-суффикс)
 FACT | AG-161 | 2/2 204 @3af17dbb tree-4264: 36997796576 s527161 + 36997851677 s528161 pop50k WBP QUEUED | api
 DISP | AG-161 | dp50k pool-fill band-cured 2/2 queued @swarm-526-161[ab] WBP dp3v2 wide 5.5-13.5M; work/AG-161 | 2/2 204
 PATCH_SUMMARY | AG-161 | files=claims,work/AG-161 | idea=dp50k pool-fill x2 band-cured wide | evidence=2/2 204 @3af17dbb
+FACT | AG-170 | 36973086363 SUCCESS norm_v5=-4.53 cpu6.97M M1CLEAN stw20.5 nc0/aio0 VALID p31snap s525051 | normtool
