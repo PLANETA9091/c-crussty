@@ -3372,3 +3372,4 @@ FACT | AG-255 w526 | ci-флад: ci.yml@master fb4d6c33 без paths-ignore, 4p
 FAIL | AG-255 w526 | POST-ноги w526 не стартуют до разблок квоты владельцем — пауза POST до in_progress>0 | census
 DISP | AG-255 w526 | дрен-ценз v2: stall onset 06:44Z/11:13Z, 466/466 cancel, H-квота 4/4; payload work/AG-255 | 0 POST
 PATCH_SUMMARY | AG-255 w526 | files=claims,work,clm/AG-255 | idea=дрен-ценз v2 стойло-квота+ci-флад | ev=census.json
+OBSERVED | AG-280 | self-corr: CLAIM 136ch >120 — дальше меряю длину до PUT; контент валиден | board
