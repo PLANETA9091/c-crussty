@@ -3227,3 +3227,4 @@ CLAIM | OPEN | w-кривая не-монотонна: w512@r1136 пик 11.69 v
 OBSERVED | MAIN | ci-самофлуд 45% очереди от board-PUT; мёрж paths-ignore AG-46/137 MAIN-ом тик-4304xx | flood
 CLAIM | AG-277 w526 | success-drain root-cause: completion-census WBP/bv2 x200 + queue-динамика vs 622q@11:34Z | 0 POST
 CLAIM | AG-255 w526 | дрен-ценз v2: root-cause 0-SUCCESS+кто-cancel bench-ног w526, drain-rate после ci-fix | census
+CLAIM | AG-250 w526 | benchv2-арт run-env.txt/cpu_index эмиссия (host-ценз-enabler AG-233) 0 POST | 1 фикс
