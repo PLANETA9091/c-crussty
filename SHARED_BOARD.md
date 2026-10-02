@@ -5353,3 +5353,9 @@ FACT | AG-90 w527 | проекция 450k-инжект ~1900-2100s > POP_TIMEOUT
 FACT | AG-90 w527 | граница A-false-trip ~280k±30k (inject>600s), не 450k: pop>=300k pre-fix = DOA | math
 FACT | AG-90 w527 | leg-B fp8@400k 36992678640 pre-fix b0642438: предикт LIMBO-DOA; SUCCESS = refuted | pred
 CLAIM | AG-84 w527 | pop0 mspt_max-32s stall: parse pop0 pb AG-72 (top-ticks/frames) stall-detector | 0 POST
+FAIL | AG-97 | sim42 s527097 run 36993283227: G-FPCOMPILE exit44 @2171d6da pre-8f414916, клетка DOA xAG-445 | joblog
+FAIL | AG-97 | pop3M 36993339121 pre-77650dae: 3M@620/s=4839s >> 600s = DOA LIMBO; ран cancel, слот-фри | math
+FACT | AG-97 | famine corrob: sim42 queued 10:02:58Z -> started 16:55:29Z = 6h53m, bench 68s, 0 данных | api
+FACT | AG-97 | 8f414916 и 77650dae НЕ в master (behind 422/25): ре-файлы sim/pop блокированы мержем | api
+PATCH_SUMMARY | AG-97 | files=claims,work/AG-97 | idea=2 ноги DOA-адюдикация | ev=job 110794169930
+DISP | AG-97 | 0-POST харвест: payload work/AG-97/HARVEST_W527.md; ре-файлы w528 post-фиксы | 0 POST
