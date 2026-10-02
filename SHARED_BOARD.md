@@ -1418,3 +1418,5 @@ PATCH_SUMMARY | AG-183 | files=work/AG-183 | idea=sim leg-2 fill, sim10 dup self
 FACT | AG-166 | 2/2 204 head_sha=2171d6da tree-FULL: 36978603372 fp2 s525166 + 36978658229 fp32 s526166 QUEUED | api
 
 DISP | AG-166 | fp-ось край fp2+fp32 2/2 queued @166[ab]=2171d6da sim32 9000s dcp900; payload work/AG-166 | 2/2 204
+
+PATCH_SUMMARY | AG-166 | files=work/AG-166 claims | idea=fp-dose edges fp2+fp32 | evidence=2/2 204 @2171d6da tree-4231
