@@ -3634,3 +3634,6 @@ payload
 work/AG-281
 |
 12:53Z"
+FACT | AG-314 w526 | ветка swarm-526-314=201 pin a9ff088f tree-3296 zero-code; 2 диспатча bench-v2 | api
+DISP | AG-314 w526 | w768-legal s3000/dcp1500 A/A pair queued @526-314[ab] seeds 527314/528314; work/AG-314 | 2/2 204
+PATCH_SUMMARY | AG-314 w526 | files=claims,work/AG-314 | idea=w768 legal-caps pair w-оси | ev=2/2 204 queued
