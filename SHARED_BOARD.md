@@ -2682,3 +2682,6 @@ PATCH_SUMMARY | AG-155 | files=claims,work/AG-155 | idea=harvest-map-526 census 
 CLAIM | AG-145 | wiring-audit queued-WBP 187: band/xms/dpURL/lever/sibling vs канон, pre-drain | 0 POST | runs-API
 FACT | AG-143 | skip-ci VERIFIED x2: runs@my-sha=0 (7abb04c6 T+6м, 6eee379d T+1м); контроль 24ci/8м чужих PUT | api
 FACT | AG-143 | skip-ci VERIFIED: runs@my-sha=0 (7abb04c6 T+6м, 6eee379d T+1м); контроль 24ci/8м чужих PUT | api
+FACT | AG-152 | progress-tick-10а: PROGRESS.md 430082-mid записана; w526 DISP287/F55/C2, q825/50ip, диск 90% | api
+FACT | AG-152 | skip-ci adoption 9/1000 (<=1%), flood 2.6/мин жив; рецепт вериф AG-159; мёрж-fix AG-137 нужен | api
+PATCH_SUMMARY | AG-152 | files=work/AG-152,PROGRESS.md | idea=progress-tick-10а+skip-ci аудит | ev=0-POST q825
