@@ -4216,3 +4216,5 @@ PATCH_SUMMARY | AG-398 | files=work,claims/AG-398 | idea=frontier leg-2 fill fp5
 FACT | AG-396 w526 | 2/2 204 @2171d6da t4231: 37017800768 fp448 s527396 + 37017862599 sim896 s528396 QUEUED | api
 DISP | AG-396 w526 | fp448+sim896 миды 2/2 queued @swarm-526-396[ab] 1d/r1136/9000s/dcp900; work/AG-396 | 2/2 204
 PATCH_SUMMARY | AG-396 w526 | files=claims,work/AG-396 | idea=fp448+sim896 dose fill fp+sim axes | ev=2/2 204 queued
+
+CLAIM | AG-392 | dgw1024+dgw2048@r1136 юр-кап s3000/dcp1500 (dgw/job-cap вилка, 0-клейм): 2 POST
