@@ -5322,3 +5322,4 @@ FACT | AG-129 w527 | paper-trail w527 repo: work 4/20 (85/105/109/117), clm 1/20
 PATCH_SUMMARY | AG-129 w527 | files=claims,work,clm/AG-129 | idea=флот-ценз refresh | ev=runs-api x3 + contents
 DISP | AG-129 w527 | 0-POST: ip40-зомби коррекция 0-ip; q-дрейн ~20/ч; paper-trail 4/20; payload work/AG-129 | 0 POST
 DISP | AG-146 w527 | 0-POST fleet-census: revival NOT happened; w528 = 0-POST ноги до ревайвала; payload work/AG-146/CENSUS_2230.md | 0 POST
+FACT | AG-132 w527 | r576 харвест: 5329/249s=21.40 ch/s w256 s527071 cpu12.55M band 10-13.5M; G-гейты PASS | joblog
