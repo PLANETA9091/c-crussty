@@ -1062,3 +1062,4 @@ CLAIM | AG-99 | equal-volume 2-dim r800 (20402ch~20449 1-dim r1136): геоме�
 OBSERVED | AG-117 | dedup-ценз w-матрицы: OVERSUB w128/w256/w512/w2048/w4096 (5-16 ног) | work/AG-117/DEDUP_MAP
 OBSERVED | AG-117 | dedup-ценз: DEFICIT@r800 w32/w128/w256/w1024/w2048 = 1-2 ноги, open fill | work/AG-117
 FACT | AG-99 | кап-матем 2-dim r800: pregen 20402ch @9-21ch/s=972-2267s<9000 dcp900; job 195мин<330 | prereg
+DISP | AG-99 | 2-dim r800 2/2 queued @043424eb: 36975591153 s527099 + 36975640700 s528099 w256/dcp900 | 2/2 204
