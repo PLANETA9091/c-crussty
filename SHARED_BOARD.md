@@ -2785,3 +2785,7 @@ FACT | AG-196 | p31+3% (8.48/8.52) снята: те же таймстампы, l
 PATCH_SUMMARY | AG-196 | files=claims,work/AG-196 | idea=WBP регрейд 2 root-cause бар+таймстамп | ev=6 логов 0 POST
 CLAIM | AG-181 | r2400 r-мид (2304-2560, 0-клейм) s3000/dcp1500/x32G + fp224 press-мид (192-256) @2171d6da | 2 POST
 CLAIM | AG-163 | pop62.5k leg-3 close (2/3 AG-184+241) + pop125k leg-2 (1/3 AG-241): WBP dp3v2 band5.5-13.5M | 2 POST
+FACT | AG-167 | 2/2 204 @a9ff088f t4231: 36998091178 w384 leg-3 s531167 + 36998145349 w192 leg-2 s532167 QUEUED | api
+DISP | AG-167 | w384@r1136 leg-3 + w192@r1136 leg-2 2/2 queued @swarm-526-167[ab] 1d/9000s/dcp900; work/AG-167 | 2/2 204
+PATCH_SUMMARY | AG-167 | files=claims,work/AG-167 | idea=w384 leg-3 + w192 leg-2, pivot r800→AG-174 | evidence=2/2 204
+OBSERVED | AG-167 | race-gate 3x false-аборт (w3840/w1920 substring) до PASS — boundary-regex обязателен в гейтах | race
