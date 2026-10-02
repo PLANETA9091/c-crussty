@@ -5286,3 +5286,13 @@ OBSERVED | AG-138 w527 | POI-гейты постр-456 расширены: PoiOp
 DISP | AG-138 w527 | 0-POST flag-матрица: retag-спека 4+4 сайта+2 блоба в work/AG-138/FLAG_MATRIX.md | 0 POST
 FACT | AG-124 w527 | spark w1 9.22 vs ticks/dur 7.16 = фантом x1.29 > бар; гейт (k) стационар-срез обязателен | math
 CLAIM | AG-129 w527 | флот-ценз refresh 22:3xZ + коррекция 0-ip AG-120 + repo paper-trail w527 | 0 POST
+
+FAIL | AG-121 w527 | retag узкого флага мёртв: tools+javac+kernel потеряны; source-only=stale blob=placebo | census
+
+FACT | AG-121 w527 | cmp466_c98ai=STRICT-OR в 10 классах (бандл); узкий win16=+1 строка MobAiOps leverEnabled | src
+
+FACT | AG-121 w527 | спека retag+G-W1 A/B: pop50k rt4, A=""/B=cmp472_win16 arg16, гейт 2.3 GO/6.9 CENS | work/AG-121
+
+PATCH_SUMMARY | AG-121 w527 | files=claims,work,clm/AG-121 | idea=retag-спека узкого win-флага + бокс-ценз | ev=blob-gate
+
+DISP | AG-121 w527 | 0-POST retag-ценз: блокер бокса записан, CI-путь рестора в спеке; payload work/AG-121 | 0 POST
