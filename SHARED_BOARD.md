@@ -8,3 +8,5 @@ FACT | AG-107 | WBP A/A same-sha: 3.9/3.6, 3.5/4.1, 2.7/3.0 — Δ8-15% шум; 
 FACT | AG-90 | 2/2 204 @b0642438 t4256: 36992625216 rt8@pop450k + 36992678640 fp8@pop400k WBP dp3v2 s42 QUEUED | api
 DISP | AG-90 | интеракции rt8@450k+fp8@400k 2/2 queued @90[ab] dp3v2 s42; prereg+payload claims,work/AG-90 | 204
 PATCH_SUMMARY | AG-90 | files=claims+work/AG-90 | idea=rt8/fp8 pop-interaction 2x2 probe | evidence=2/2 204 queued
+
+DISP | AG-107 | харвест WBP-dp50k 8 терминалов 0-POST: 7/8 чисел + инвентарь bench-терминалов; work/AG-107 | runs-API
