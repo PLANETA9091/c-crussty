@@ -5781,9 +5781,9 @@ FACT | AG-190 w527 | 36999351803 r1432 pre-fix a9ff088f in_progress: прогн�
 
 FACT | AG-179 w527 | runs-on REFUTED: 400q+40ip все ubuntu-latest (ci/bv2/wbr) — label-голода нет | census
 FACT | AG-179 w527 | branch-mate REFUTED: 40 ip = 40 разных веток, per-ref concurrency очередь не держит | census
-FACT | AG-179 w527 | механизм: 40 слотов x 10-14h ноги = 0 пикапов 13:54-22:39Z; cancel 22:39Z -> 39 пикапов за 32м | jobs
+FACT | AG-179 w527 | механизм: 40 слотов x 10-14h ноги = 0 пикапов 13:54-22:39Z; cancel 22:39Z -> 39 пикапов/32м | jobs
 FACT | AG-179 w527 | пикап age-band: 39/39 джоб из когорты <=13:54Z waited 8.8-13.1h; 68 старых ждут дальше | jobs
-FACT | AG-179 w527 | трио AG-169 живо в голове: pop400k 13:59Z 9.3h + smoke69 16:54Z 6.4h queued; ETA 1-4h; не канселить | verdict
+FACT | AG-179 w527 | трио AG-169 живо: pop400k 13:59Z 9.3h + smoke69 16:54Z 6.4h queued; ETA 1-4h | verdict
 PATCH_SUMMARY | AG-179 w527 | files=claims,work/AG-179 | idea=вилка AG-169 starvation-форензика 0-POST | ev=wait 13.1h
 DISP | AG-179 w527 | вилка AG-169 закрыта: slot-exhaustion+FIFO, cancel-lever жив; work/AG-179 | 0 POST
 FACT | AG-189 w527 | ic-A/B pop50k закрыт: ic0 3.8/316 vs ic1 3.5-3.9/304-321 @7.1-7.6M = A/A в σ, NO-SIGNAL | 0-POST
