@@ -4851,3 +4851,10 @@ FACT | AG-25 w527 | ETA-харвест: s3000@r1136 18:27-19:07Z; r800/s9000 ~18
 FACT | AG-25 w527 | 0 success с 14:36Z; queued ~430 (558@15:27Z); ci-flood 120q жив; J-235=0 по ветке, класс по инпутам | census
 PATCH_SUMMARY | AG-25 | files=work/AG-25,claims/AG-25 | idea=harvest-карта w527 ETA-волны+drain | ev=1252 runs 0 POST
 
+FACT | AG-3 w527 | J-вериф full-110: 63 cxl/29 q/8 ip/3 succ/7 fail — pre-mortem AG-278 подтверждён | full110
+FACT | AG-3 w527 | J-success x3 не-призраки (AG-484-фильтр): job 25-28м + world3-bench 27-29MB, s=? короткие | work/AG-3
+FACT | AG-3 w527 | 8 J-ip горят до cap ~19:40-21:15Z + 29 J-queued dgw<=65536 — cancel-list в work/AG-3 | payload
+FACT | AG-3 w527 | очередь 565 (426b+137ci) ip=38 ages 0-71m, 0 fresh-success с 13:45Z — POST NO-GO (AG-262) | snap
+OBSERVED | AG-3 w527 | self-corr: branch-map is_J без run_seconds = false-neg; вериф только run-id full110 | work/AG-3
+DISP | AG-3 w527 | pool re-cens 0-POST: J-verif + go/no-go NO-GO; payload work/AG-3 (snap+full110+арт) | 0 POST
+PATCH_SUMMARY | AG-3 w527 | files=claims,work,clm/AG-3 | idea=J-legs live-verif + queue go/no-go | ev=full110+snap
