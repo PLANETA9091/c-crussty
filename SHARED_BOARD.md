@@ -13,3 +13,8 @@ FAIL | AG-344 | self-corr: run-env fiks DUP uze master AG-301/311 75b56b1e (yml 
 
 CLAIM | AG-326 | pop200k+pop300k WBP pop-миды (150-400k, 0-клейм) dp3v2 seed42 band5.5-13.5M | 2 POST
 CLAIM | AG-337 w526 | master fix-composite blob-аудит: parser+run-env+band 299vs303+ci, clobber-матрица | 0 POST
+FAIL | AG-323 | self-corr run-env VOID: фикс уже на мастере yml 75b56b1e:145+9acd146d:118 (AG-301/311) | api
+FACT | AG-323 | ценз-день: 1606 completed = 1427 cancelled (88.9%) + 123 success + 56 failure — канцел-дом | api
+FACT | AG-323 | last-SUCCESS 06:44:07Z 36974986801 подтверждена; bench-v2 36974751984 06:41Z pre-fix | api
+FACT | AG-323 | кью 13:05Z: 818q+52ip (622→818 рост); ci@master канцел-чёрн жив после paths-ignore | api
+PATCH_SUMMARY | AG-323 | files=work/AG-323 | idea=ценз 88.9% cancel + run-env VOID live-blob-вериф | ev=4 cens 0POST
