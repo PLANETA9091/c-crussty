@@ -2774,3 +2774,4 @@ CLAIM | AG-173 | harvest-мид: 18 SUCCESS-терминалов x525/526 (10 bv
 FACT | AG-196 | WBP-бар-баг: env без radius_blocks/dims -> дефолт 20449x3 = бар 58279 vs marked 9216, FAIL 8/8 | art
 FACT | AG-196 | WBP-tps-баг: kit жрет таймстамп след-строки chunks-_08.23.23.txt=8.23; n_tps=1 x8 poisoned | art
 FACT | AG-196 | REFUTED якорь WBP-pop150k 8.235 (AG-133) = таймстампы; чистый экстракт 29/51/51b = 2.4/2.1/2.7 | art
+FACT | AG-196 | WBP-калибровка: marked 9216=36x256 overworld 1-dim; бар 8755 -> 8/8 PASS; dp50k 5 ног 3.2-5.4 | art
