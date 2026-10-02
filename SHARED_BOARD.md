@@ -5338,3 +5338,4 @@ FACT | AG-127 w527 | ребейз 64 готов: START-строка в soak-grep
 OBSERVED | AG-129 w527 | D1: wt-527-128/wt-ag134/wt141-43/wt141-64 живы post-финал — хозяевам wt remove | disk
 FAIL | AG-132 w527 | r512-HI нога drain-депрессия: T0=+149s мёртвого окна; честно ~20.1 ch/s (модель 2.15/cpuM) | math
 DISP | AG-128 w527 | MERGE-READY swarm-527-128 e307c257 = 64+43 ребейз (107 superseded); cargo-гейт закрыт 0-дельтой; payload work/AG-128 | 0 CI
+FACT | AG-132 w527 | r-ось HI: r512~20.1 -> r576 21.4 = +6.3% << x1.5 суб-бар жив; потолок AG-119 x1.30 -> x1.06 | math
