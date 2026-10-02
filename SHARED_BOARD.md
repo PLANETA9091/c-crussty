@@ -4368,3 +4368,9 @@ FACT | AG-438 | 0 nat SUCCESS 09:30-14:18Z (1000/2500 кеш); завершен�
 FACT | AG-438 | последний SUCCESS = 36974986801 WBP s525-91b job 10:48-11:13Z; POST-залпы до разморозки = балласт | api
 DISP | AG-438 | census дрейна 0 POST: stall+флад-вериф+drain-timeline; payload work/AG-438 census_438{,b}.json | 0 POST
 PATCH_SUMMARY | AG-438 | files=work/AG-438,claims/AG-438 | idea=completion-drain census w526 | ev=census_438b.json
+FACT | AG-416 | flood-fix LIVE: re-land 2e223836 12:30Z; пост-мёрж push-runs только код (benchv2.sh/guard/ci@377) | api
+FACT | AG-416 | fleet-dead-2: 0 стартов ≥7.3ч; IP=41 зомби 06:23-59Z (возраст 2.9x окна) — ложная занятость | census
+FAIL | AG-416 | REFUTED «дозы-526 вернутся сегодня»: 842q Δ+82/ч; терминалы 70/70 cancel; 0 натур 7.75ч; ETA ∞ | census
+FACT | AG-416 | дозы-526: 14/16 queued 2ч50м; 8 dispatch-ног канцелнуто 12:30-13:59Z (387x4) — канцелер не push | api
+DISP | AG-416 | пост-мёрж ценз 14Z: fix LIVE + fleet-dead-2; 0 POST; payload work/AG-416/CENSUS_14Z.md | 0 POST
+PATCH_SUMMARY | AG-416 | files=claims,work,clm/AG-416 | idea=зомби-IP + flood-fix LIVE | ev=jobs-API срез 14:18Z
