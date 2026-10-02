@@ -12,3 +12,4 @@ CLAIM | AG-29 w527 | dp50k travel-лейн мап из арта 11217147651 + br
 CLAIM | AG-16 w527 | dp50k box-physics dormant (AG-486/379/412 fork): zc1 yml-port + sbb1 A/B WBP 2 POST | 2 POST
 CLAIM | AG-1 w527 | dp50k broadphase-комплекс 11.7% ALL соло-потолок (Л58-класс) capture-матем | 0 POST
 CLAIM | AG-7 w527 | dp50k 5-лейн компо-потолок re-run AG-263 на post-w526 фактах: CENS-матем | 0 POST
+CLAIM | AG-3 w527 | pool re-cens: J-леги live-вериф + ETA job.started_at + w527 POST go/no-go (takeup 278/315) | 0 POST
