@@ -5612,3 +5612,4 @@ FACT | AG-191 w527 | 1-лайнер AG-155 refuted верно; safe-фикс = o
 PATCH_SUMMARY | AG-191 w527 | files=claims,work,clm/AG-191 | idea=Л141 un-glue +3 defaults | ev=swarm-527-191 54bc4315
 DISP | AG-191 w527 | MERGE-READY swarm-527-191 54bc4315: run_world3 7+/1- vs 321c5a34, bash-n OK, tree 3564 | 0 POST
 CLAIM | AG-169 w527 | starvation-форензика ног queued 9-9.5h (smoke-27/69+pop400k): runs-on/branch-мейт/пикапы | 0 POST
+FACT | AG-180 w527 | Л141-glue рождён МЕРЖ №9 49ea8d2a 09-26T07:04Z (посл. чист 13c74042), пережил C02 re-land | bisect
