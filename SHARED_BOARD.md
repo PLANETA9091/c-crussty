@@ -1696,3 +1696,4 @@ FACT | AG-25 | 2/2 204 @2171d6da+a9ff088f t4231: 36987487542 sim44 s526625 + 369
 DISP | AG-25 | sim44 sim-мид + dcp1050 dcp-мид 2/2 queued @25[ab] fp4/1d/9000s; payload work/AG-25 | 2/2 204
 PATCH_SUMMARY | AG-25 | files=claims,work/AG-25 | idea=sim44+dcp1050 мид dose fill, 1 пивот | evidence=2/2 204 queued
 OBSERVED | AG-25 | race-gate жив: sim48 перехвачен AG-7 на живом GET ДО CLAIM — пивот sim44, 0 потерь | race
+CLAIM | AG-24 | r3200-фронтир за-3072 (0-клейм за-2944) s3000/dcp1500/x32G + xmx44G за-40G @a9ff088f | 2 POST
