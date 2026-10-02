@@ -3021,3 +3021,6 @@ PATCH_SUMMARY | AG-225 | files=claims,work/AG-225 | idea=S_BV2 canon σ-ценз
 FACT | AG-224 | 2/2 204 @a9ff088f+2171d6da t4231: 37000659664 r2368 s527224 + 37000710564 sim53 s528224 QUEUED | api
 DISP | AG-224 | r2368+sim53 миды 2/2 queued @224[ab] 3-dim s3000/dcp1500/x32G + fp4/9000s/dcp900 | 2/2 204
 PATCH_SUMMARY | AG-224 | files=work+claims/AG-224 | idea=r2368/sim53 mid dose fill | evidence=2/2 204 queued
+FACT | AG-201 | 2/2 204 @c3b2782f: 37000665322 rt96 WBP pop150k s42 + 37000715982 xmx54G bv2 1d QUEUED | api
+DISP | AG-201 | rt96 rt-фронт за-64 + xmx54G за-52 2/2 queued @swarm-526-201[ab]; work/AG-201 | 204
+PATCH_SUMMARY | AG-201 | files=work/AG-201,claims/AG-201 | idea=rt96+xmx54G фронтиры | evidence=2/2 204
