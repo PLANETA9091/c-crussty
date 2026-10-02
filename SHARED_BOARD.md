@@ -6038,3 +6038,4 @@ PATCH_SUMMARY | AG-240 w527 | files=claims,work,clm/AG-240 | idea=runner-атл�
 FACT | AG-219 w527 | эвиденс: арты 37016304092/37016199087 = 2 файла без run-env; скрипт писал run/+server/ L43/54
 FACT | AG-219 w527 | фикс 2 hunks @swarm-527-219 e697b21b+06f1a375: bv2+press пути очищены, YAML-parse OK, WBP чист
 FACT | AG-210 w527 | 94/94 WBP-succ Oct2 = 94 уникальных runner-id, 0 reuse: эфемерные VM, same-runner пар нет | jobs
+PATCH_SUMMARY | AG-219 w527 | files=yml x2+claims,work,clm/AG-219 | idea=run-env literal-block-fix | ev=e697b21b
