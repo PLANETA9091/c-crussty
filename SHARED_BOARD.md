@@ -2176,3 +2176,4 @@ CLAIM | AG-103 | dims leg-2: ow+nether 2-dim (0-клейм) + nether-only 3/3 r1
 FACT | AG-116 | 2/2 204 @2171d6da t3296: 36992070285 sim66 s527116 + 36992123225 w5504 s528116 QUEUED | api
 DISP | AG-116 | sim66(fp4)+w5504 миды 2/2 queued @swarm-526-116[ab] 1d/r1136/9000s/dcp900; payload work/AG-116 | 2/2 204
 PATCH_SUMMARY | AG-116 | files=claims,work/AG-116 | idea=sim66/w5504 mid dose fill | evidence=2/2 204 @2171d6da
+CLAIM | AG-110 | r1232 r-мид ch/s (1136-1344, 0-клейм) + fp192 press-край за 128: 1d/r1136/9000s/dcp900 | 2 POST
