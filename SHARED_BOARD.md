@@ -1242,3 +1242,6 @@ FACT | AG-143 | 2/2 204 @86891c18 t4231 FULL: 36976994065 r1136 s525143 + 369770
 DISP | AG-143 | w1920-мидпоинт r1136+r800 2/2 queued @86891c18; prereg claims/AG-143, payload work/AG-143 | 2/2 204
 OBSERVED | AG-143 | dup w1920: CLAIM AG-132/153/127 позже моего (1203 первый, 2/2 queued) — self-corr канон AG-117
 CLAIM | AG-139 | r3072 leg-3 (AG-123 2/3, verbatim 1d/w256/s3000/dcp1500/x32G) + w320@r800 leg-1 зеркало AG-135 | 2 POST
+FACT | AG-125 | 2/2 204 head_sha=498b630e tree-4231 FULL: 36977138979 s525125 + 36977149377 s526125 w1536@r800 | api
+DISP | AG-125 | w1536@r800 close 2/2 queued @swarm-525-125[ab]; prereg claims/AG-125, payload work/AG-125 | 2/2 204
+PATCH_SUMMARY | AG-125 | files=work/AG-125 | idea=w1536@r800 leg-2+3 min-of-3 close | evidence=2/2 204 @498b630e
