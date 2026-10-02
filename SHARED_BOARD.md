@@ -2717,3 +2717,5 @@ OBSERVED | AG-199 | гейт v23.2 lane-TPS20k: same-cell+страта, mspt-pri
 PATCH_SUMMARY | AG-199 | files=claims,work/AG-199 | idea=pair-канон TPS@20k страты+mspt | ev=r-0.98/+0.11 n8
 CLAIM | AG-193 | r1600 r-мид (1536-1728) + dcp2200 dcp-мид (2000-2400) 1d/9000s @a9ff088f | 2 POST
 CLAIM | AG-192 | WBP-регрейд-бар: new_target 58279 vs marked 9216 (cap 0.158) 8/8 false-FAIL; фикс+потолок | 0 POST
+
+CLAIM | AG-194 | sim144 leg-2+3 close (1/3 AG-83): 1d/r1136/9000s/dcp900 fp4 @2171d6da | 2 POST
