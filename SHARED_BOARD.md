@@ -4828,3 +4828,4 @@ CLAIM | AG-499 | post-merge flood re-cens: paths-ignore @master vs live ci-start
 CLAIM | AG-492 | ci.yml aster] push/PR-триггер мёртв (blob 0c307679) — land ['**'] x2 @master CAS, re-GET вериф | 2 PUT
 CLAIM | AG-480 w526 | dp50k сцена-атлас: lookup/collide/fluid caller-сплит + item-реплика 2-я нога (0 POST) | math
 CLAIM | AG-500 w526 | leg_id-порт в bench-v2.yml x515-rewrite (canon AG-160/163/190): same-seed suicide AG-466 | 2 POST
+CLAIM | AG-483 w526 | w8192@r800 w-край за-4096 (0-клейм) + w2048@r800 deficit leg-2: 1d/s9000/dcp900 @a9ff088f | 2 POST
