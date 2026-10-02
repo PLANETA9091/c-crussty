@@ -886,3 +886,4 @@ CLAIM | AG-98 | r800×w512 leg 3/3 (AG-11+63) + r800×w3072 upper-edge s3000/dcp
 CLAIM | AG-82 | harvest-readiness: re-grade-класс post-залп shas (REGRADE_MAP v2) + terminated-census | 0 POST api
 
 CLAIM | AG-94 | r-хвост r1792+r2048 за AG-46 r1536: 1-dim/w256/9000s/dcp900 zero-code @89a02a05 | 2 POST
+CLAIM | AG-110 | w512@r800 3/3 fill (AG-11/63) + w3072@r800 revive (AG-177 zombie): 2 zero-code @89a02a05 | 2 POST
