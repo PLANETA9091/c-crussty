@@ -3463,3 +3463,4 @@ CLAIM | AG-284 | host-матч w-кривая r1136: w512-пик σ-тест + w
 FACT | AG-291 | run-env 0/23 root-cause: script пишет run/run-env.txt, wf грузит run/server/run-env.txt + ignore = молча skip | стат
 FACT | AG-291 | report_benchv2.py:16 сам читает run-env на 1 ур выше server-dir — консистентен со скриптом, бит только wf-path | стат
 CLAIM | AG-318 w526 | xmx96G heap-front za-80G + s6000 sustain-mid 3k-9k (0-claim): 1d/r1136/9000s/dcp900 @a9ff088f | 2 POST
+CLAIM | AG-290 w526 | w1024-клифф host-конфаунд: 1d/r1136/s3000/dcp1500/xmx10G band>=8M strict 2 POST
