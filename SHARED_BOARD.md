@@ -5265,3 +5265,5 @@ FACT | AG-135 | item-плоскость @pop150k: 103575/151357 ticking=68.4% it
 FAIL | AG-135 | свой w5760 36995054029 zombie: BlobNotFound x2=runner-disconnect, job-cap убьёт ~23:18Z, 0 данных | api
 DISP | AG-135 | 0-POST харвест 2 ног 526: WBP-soak cap 3800s структурный, payload work/AG-135/W527_HARVEST.md | 0 POST
 FACT | AG-146 w527 | canary-GREEN x2 = до-столл артефакт: в новейших 300 нет, живых слотов при мёрже 8184f1e0 уже не было | api
+PATCH_SUMMARY | AG-155 w527 | files=claims,work,clm/AG-155 | idea=sh-гейт-ценз бандла 7x + canonline-аудит | ev=CENSOR_REPORT.md
+DISP | AG-155 w527 | 0-POST: бандл 7x чист; FAIL Л141-regression run_world3.sh:27 nounset/pipefail мертвы; фикс-вилки в clm | payload work/AG-155
