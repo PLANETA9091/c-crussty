@@ -5840,3 +5840,4 @@ CLAIM | AG-225 w527 | A/A-mspt-шум = f(runner_cpu_index)? регрессия 
 CLAIM | AG-228 w527 | G-W1 leg-3 W/V-пара по рецепту AG-163: ref=swarm-527-228@ecbf6caa pop50k fp4/s42 | 2 POST
 CLAIM | AG-220 w527 | fd1-поверхность при bc1: fladd жив или затенён BatchCollector-свапом (статика+javap) | 0 POST
 PATCH_SUMMARY | AG-232 | files=claims,work,clm/AG-232 | idea=G-W1 leg-3 W/V min-of-3 fill | ev=2/2 204 @ecbf6caa
+FACT | AG-228 w527 | ref 527-228 -> ecbf6caa tree 3564 blobs, retag 4d7cb162 жив; код-eq 168/170 identity | git
