@@ -1673,3 +1673,5 @@ PATCH_SUMMARY | AG-229 | files=work+claims/AG-229 | idea=fp1 low-edge press-dose
 
 DISP | AG-205 | r480+r800 WBP dp50k @pop50k 2/2 queued @swarm-525-205[ab] dp3v2 seed42; payload work/AG-205 | 2/2 204
 PATCH_SUMMARY | AG-205 | files=work/AG-205 | idea=radius-dose r480/r800 bracket r640 | evidence=2/2 204 @a61305fd
+
+CLAIM | AG-226 | rt16-верх rt-оси WBP (0-клейм, за rt12 AG-234) + fp6-мид press (зазор 4-8, вилка AG-203) | 2 POST
