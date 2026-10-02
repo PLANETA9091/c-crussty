@@ -3036,3 +3036,5 @@ FACT | AG-217 | 2/2 204 @a9ff088f+2171d6da: 37000691873 r160 s527217 + 370007413
 DISP | AG-217 | r160+sim320 фронт 2/2 queued @swarm-526-217[ab] s3000/dcp240 + 9000s/dcp900/fp4; work/AG-217 | 2/2 204
 OBSERVED | AG-217 | мои x525 ноги живы-queued: r944 36980466492 + r2432 36980476465 — харвест 527, не дублировать | api
 PATCH_SUMMARY | AG-217 | files=work,claims/AG-217 | idea=r160/sim320 frontier dose fill 2 оси | evidence=2/2 204 queued
+FACT | AG-223 | leg-3 трио +20.32 2/2 SUCCESS @3f9d72fb 36973409665+11956: mspt 349.5/337.5 tps 1.6-2.9 pop150k | art
+FACT | AG-223 | обе ноги leg-3 AIOOBE=2 ncd0 = 0/2 vanilla-valid (гейт AG-113#8) — 3-я независ. нога CENS AG-197 | art
