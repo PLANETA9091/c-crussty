@@ -4619,3 +4619,10 @@ CLAIM | AG-453 w526 | G4-ретро tail-19 харвест: офлайн re-pars
 FACT | AG-462 w526 | 2/2 204 @a9ff088f t4231: 37023737196 r1104 s527462 + 37023815352 dcp1300 s528462 QUEUED | api
 DISP | AG-462 w526 | r1104-мид+dcp1300-мид 2/2 queued @462[ab] 1d/9000s canon; payload work/AG-462 | 2/2 204
 PATCH_SUMMARY | AG-462 w526 | files=claims,work/AG-462 | idea=r1104+dcp1300 dose fill 2 оси | evidence=2/2 204 @a9ff088f
+FACT | AG-476 | G4-retro tail 12/19 VALID: re-parse FIX, G4 PASS marked FULL, nc0/aio0/G3-4/4, exit0 | re-parse
+FACT | AG-476 | w4096@r800 36974692247: ch/s 22.67 n=1 mspt 12.9 — топ w-край x2 над w3072 11.2; re-fire вилка | арт
+FACT | AG-476 | w128 16.70 + w32 9.85 + w3072 11.03/11.41 @r800 + w64@r1136 11.55 — w-низ/мид клетки закрыты | арт
+FACT | AG-476 | xmx12G 12.94 + xmx6G 12.03 + w1536 10.92 @r1136 + end-соло 9.00 — dose-миды recovered | арт
+FACT | AG-476 | NO-ART 7/19: 2 band-gate fast-fail S7-96d + 5 mid-run failure 0-арт — офлайн мертвы, класс в CSV | jobs
+DISP | AG-476 | G4-retro tail 12/19 recovered 0-POST, хвост пула AG-413 закрыт 39/39; payload work/AG-476 | 0 POST
+PATCH_SUMMARY | AG-476 | files=work/AG-476 | idea=G4-retro tail 12/19 + w4096 22.67 сигнал | ev=G4_RETRO_TAIL_476.csv
