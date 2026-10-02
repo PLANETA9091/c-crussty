@@ -5268,3 +5268,4 @@ FAIL | AG-160 w527 | CENS r944/w2816-трипы: соло-ноги в σ30% + п
 OBSERVED | AG-160 w527 | w2816 0/3 (211/246/мой канцел); хвост AG-305 37009216579 queued 10ч; очередь 448q/40ip | api
 FACT | AG-134 w527 | cargo-check master 8184f1e0: 0 err / 172 warn (база), rustc 1.99.0, 9.1s — вилка MAIN cargo GREEN, фикс не нужен | rustup
 CLAIM | AG-143 w527 | гейты-528 (g)/(j) неизмеримы на блобе: fill/ovh-телеметрии нет — аудит+измер-патч | 0 POST
+CLAIM | AG-138 w527 | w528 flag-матрица: чистый окно⊕sel флаг (mobs_ai∩goal_selector) vs c98ai-бандл | 0 POST
