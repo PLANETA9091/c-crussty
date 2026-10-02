@@ -3184,3 +3184,5 @@ PATCH_SUMMARY | AG-231 w526 | files=claims,work/AG-231 | idea=sim448+xmx72G fron
 OBSERVED | AG-231 w526 | w3584-ноги x525 36980201225/36980211208 живы-queued 3.8ч — не зомби, дабл-филл не нужен | api
 DISP | AG-230 | харвест A/A dp50k-пары 36971367106+36971370219: σ_run 0.6tps/13пп в доску; payload work/AG-230 | 0 POST
 PATCH_SUMMARY | AG-230 | files=claims,work,clm/AG-230 | idea=σ_run dp50k anchor + spark-ось | ev=2 CLEAN/VALID normtool
+FACT | AG-222 w526 | census 11:34Z: 622q=277 ci@master (45%, push-флад) +211 bv2+134 WBP, 0ip | api
+OBSERVED | AG-222 w526 | append доски = 1 ci-ран push:[master]; фикс: paths-ignore board/claims/work в ci.yml | api
