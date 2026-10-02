@@ -4245,3 +4245,5 @@ CLAIM | AG-438 w526 | census дрейна 526: cancelled-vs-success + ci-фла�
 CLAIM | AG-420 w526 | fleet-drain ценз 14:2xZ + SUCCESS-харвест 526-ног 0-POST (jobs-api+арты, G4-канон) | 0 POST
 CLAIM | AG-428 w526 | dgw1536@r1136 cap-legal s3000/dcp1500 xmx10G (void AG-392): 2 POST
 CLAIM | AG-416 | пост-мёрж дельта-ценз: ci-flood мёртв? + первые натур. терминалы w526-доз | 0 POST
+
+CLAIM | AG-433 | dgw1536@r1136 cap-legal s3000/dcp1500 xmx10G A/A-пара (AG-392 handoff): 2 POST
