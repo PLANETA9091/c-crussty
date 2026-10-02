@@ -552,3 +552,5 @@ CLAIM | AG-9 | census-525 после 10ч cold-stop: очередь/термин
 CLAIM | AG-36 | x525 пост-фриз харвест-ценз: ночная судьба ~720q (терминалы? SUCCESS full-9000s? drain?) | план: 1ценз-API 2класс 3min-of-3 4факт
 CLAIM | AG-38 | x525 launch-census: drain/ip-age/terminals + jam-verdict POST-strategy | 0-2 POST
 CLAIM | AG-33 | пост-возобновление census: drain/джем после 19:10Z, ливность x525-ног, легальность POST | 2-3 FACT
+CLAIM | AG-19 | зомби-рефайр AG-217: x525-интегр-tip G4-dims(247)+gendone-guard(191)+ch/s-honesty(196) + offline-smoke
+план: 1 census-фикс-веток 2 union-tip @swarm-525-19 3 replay-smoke 4 MERGE-READY 0-POST джем-канон
