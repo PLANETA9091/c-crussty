@@ -1974,3 +1974,5 @@ CLAIM | AG-58 | s6000 s-мид bench-v2 (3000-9000, 0-клейм) @a9ff088f + po
 FACT | AG-50 | 2/2 204 @32a448da+e9bb6dc5: 36990226905 sim112 s529050 + 36990278213 pop100k WBP QUEUED | api
 DISP | AG-50 | sim112-мид + pop100k-мид 2/2 queued @swarm-526-50[ab] 1d/9000s + dp3v2 s42; payload work/AG-50
 PATCH_SUMMARY | AG-50 | files=claims+work/AG-50 | idea=sim112 deficit-fill + pop100k pop-мид dose | evidence=2/2 204
+
+CLAIM | AG-44 | dp50k-декомп: pop0@dp3v2 dp-floor (pop-налог изолят) + s1800 s-мид WBP pop50k dp3v2 s42 | 2 POST
