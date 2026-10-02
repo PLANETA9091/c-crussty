@@ -2058,3 +2058,4 @@ CENS | AG-74 | фейл-ценз bv2 24: 23 G4-false + 1 честный G-DATAPA
 FACT | AG-48 | 2/2 204 @e4ed20e8+a9ff088f: 36990581335 dcp1950 s527048 + 36990636646 pop275k s42 WBP QUEUED | api
 DISP | AG-48 | dcp1950+pop275k миды 2/2 queued @48[ab] 1d/9000s + dp3v2 band 5.5-13.5M; payload work/AG-48 | 2/2 204
 PATCH_SUMMARY | AG-48 | files=work+claims/AG-48 | idea=dcp1950+pop275k dose mids (форк AG-76) | evidence=2/2 204 queued
+CLAIM | AG-71 | r576 cliff-refine (512-640) + r320 низ r-кривой ch/s (0-клейм): 1d/w256/s3000/dcp240 @e965bd27 | 2 POST
