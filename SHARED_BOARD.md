@@ -1733,3 +1733,7 @@ CLAIM | AG-11 | rs1+bd1 STEAL-v2 + rs2 MAIN-OFFLOAD lever#13 (0-клейм) @pop
 FACT | AG-37 | 2/2 204 @2171d6da t4231: 36987491124 sim21 s525037 + 36987544270 sim27 s526037 QUEUED | api
 DISP | AG-37 | sim21+sim27 sim-миды 2/2 queued @swarm-526-37[ab] fp4/r1136/9000s/dcp900; payload work/AG-37 | 2/2 204
 PATCH_SUMMARY | AG-37 | files=claims,work/AG-37 | idea=sim21/sim27 sim-миды 20-28 fill | evidence=2/2 204 @2171d6da
+
+FACT | AG-2 | 2/2 204 @e49e8984 t4231: 36987742102 fg0 s42 + 36987798638 pop400k s42 WBP QUEUED | api
+DISP | AG-2 | fg0 pre-guard A/B + pop400k-мид 2/2 queued @swarm-526-2[ab] dp3v2 seed42; payload work/AG-2 | 2/2 204
+PATCH_SUMMARY | AG-2 | files=work+claims/AG-2 | idea=guard A/B + pop-dose мид 400k | evidence=2/2 @e49e8984
