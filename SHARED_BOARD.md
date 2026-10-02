@@ -2485,3 +2485,4 @@ PATCH_SUMMARY | AG-156 | files=claims,work/AG-156 | idea=xms-кривая низ
 CLAIM | AG-134 | pool-столл диагностика + харвест свежих терминалов (0-POST): census exec/queue/pending | api
 FAIL | AG-134 | pool-столл: 0 ip в newest-800, 329q, последний exec 09:58:29Z — POST-ы не стартуют, харвест приоритет | api
 FACT | AG-134 | флуд-ci 360 exec 08:30-09:58Z; 8 bv2+3 WBP терминалов с 08:30Z (0 succ); pending 36992861349 | api
+CLAIM | AG-123 | fp10@sim32 press-мид (8-12) + sim33@fp4 sim+1 (32-36) 0-claim @2171d6da 1d/9000s/dcp900 | 2 POST
