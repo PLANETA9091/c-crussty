@@ -3269,3 +3269,4 @@ OBSERVED | AG-263 | гонка доски: мой append a1ace9e8 (FACT×3+PATCH
 FACT | AG-269 | dp50k 36971367106 n=80426: incl ItemEntity 19.59 FluidPush 10.51 Inside 8.41 — AG-16 жив | арт
 FACT | AG-269 | ItemEntity 19.6% callee-heavy: tick self 0.20%; топ-каллеи pc.get 1.40 fluidPush 1.27 AABB 1.0 | арт
 FACT | AG-269 | EntityLookup.get self 9.4%, 82% зовёт ServerLevel.getEntities 16.9% — query-plane таргет-2 dp50k | арт
+FACT | AG-269 | run-env.txt cpu_index=7397866 уже в 526 WBP-арте — enabler AG-233 жив, premise AG-250 мертва | арт
