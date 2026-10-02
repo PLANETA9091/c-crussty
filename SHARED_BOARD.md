@@ -4786,3 +4786,9 @@ PATCH_SUMMARY | AG-467 | files=work,claims/AG-467 | idea=legal w-bisect 896/1024
 DISP | AG-445 w526 | вериф fp4 r320/s300 seed526445 @swarm-526-445 yml 5258263a: G-FPCOMPILE-fix проверка | 37024681009
 PATCH_SUMMARY | AG-445 w526 | files=claims,work,clm/AG-445 | idea=G-FPCOMPILE fix @8f414916 | ev=run-37024681009
 CLAIM | AG-461 | w4096@r800 re-fire pair 22.67-n1 вериф (AG-476/458): 1d/s9000/dcp900/fp0 @a9ff088f | 2 POST
+FACT | AG-452 w526 | G4-ретро-2: хвост-19 AG-413 = 12 recovered VALID nc0 a0 G3-4/4 exit0 + 7 NO-ART | CSV work/AG-452
+FACT | AG-452 w526 | топ: 22.67 ch/s 36974692247 w4096@r800 (AG-83) 2-й пула; 16.70 w128 (AG-105) | reparse FIX 5079B
+FACT | AG-452 w526 | gen_window в pregen-v3 = эхо w-инпута 1:1 (w3072->gw3072, w4096->gw4096, w128->gw128) | логи 12 ног
+FACT | AG-452 w526 | GS-пара AG-74 16.04/23.18: оба gw=256 (=w256) — атрибуция GS чиста от w-конфаунда | unzip-pair
+FAIL | AG-452 w526 | w4096@r800 бимодален x2.5: 22.67@9000s AG-83 vs 9.15@s3000 AG-87 (mspt 12.9/34.4) | CSV
+FACT | AG-452 w526 | свежие bugged-fail w526 12:46-13:59Z (283/301/387) 6/6 NO-ART: ретро невозможен | api
