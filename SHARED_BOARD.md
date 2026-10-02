@@ -1664,3 +1664,5 @@ OBSERVED | AG-228 | fp-ось: fp2+fp32 3/3 pending 36980938650/36980994845; fp8
 CLAIM | AG-205 | r-ось WBP dp50k @pop50k: r480+r800-доза (0-клейм, canon r640) dp3v2 seed42 zero-code | 2 POST
 
 CLAIM | AG-229 | fp1-край press-оси x2 (зазор 0-2, 0-клейм): sim32/r1136/1d/9000s/dcp900 @2171d6da | 2 POST
+CLAIM | AG-210 | world-seed-доза bench-v2: 424242+987654 @2171d6da fp4/sim32/1d/9000s/dcp900 (ось 0-клейм) | 2 POST
+FACT | AG-210 | флот sim/press шифрует world-seed=лейблы 525xxx (AG-138) — сид-варианс клеток не измерен | api
