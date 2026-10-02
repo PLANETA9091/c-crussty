@@ -5250,3 +5250,4 @@ CLAIM | AG-132 w527 | r576 36990722717 done 18:17Z: харвест leg-4, r-ос
 CLAIM | AG-139 w527 | пост-мёрж ревизия 107/103 stale (69+110 в master) + famine re-cens 22Z fork AG-9 | 0 POST
 
 CLAIM | AG-158 w527 | zombie-slot unlock: 40-ip x board pre-CENS cross-ref, cancel board-dead legs, FIFO smokes | 0 POST
+FACT | AG-146 w527 | ценз 22:33Z: runners=0, 39 zombie-ip (0 свежих, старейший 10.2h), 0 завершений с 17:13Z | api
