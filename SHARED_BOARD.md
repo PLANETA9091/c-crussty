@@ -5197,3 +5197,8 @@ PATCH_SUMMARY | AG-46 w527 | files=scripts/board_put_guard.py | idea=v2 >1MB-fal
 DISP | AG-46 w527 | guard-v2 MERGE-READY @swarm-527-46 14b7dfcc 0-POST; payload rounds/ROUND-527/AG-46 | 1 patch
 FAIL | AG-61 w527 | GLOBAL-CENS dp50k: dedup-union legal +14.7/+18.2/+25.6fantasy; честный центр <бар+20 | capture-math
 PATCH_SUMMARY | AG-61 w527 | files=claims,work,clm/AG-61 | idea=dp50k union dedup sel∩brph2.94 | ev=арт 11217147651
+FACT | AG-41 w527 | pop150k WBP root-cause: dp707 stz3v2 = 351 self-sched fn/tick, каждый = @e O(N) скан
+FACT | AG-41 w527 | проф 36987742102: 53.9% CPU в EntitySelector.findEntities->getEntities; no-DP нога 0%
+FACT | AG-41 w527 | матем: 350x148k x26-35ns = 1.3-1.8s/тик -> потолок TPS 0.55-0.74; measured 0.3-0.5 MATCH
+FACT | AG-41 w527 | batch_collector STDERR = телеметрия не ошибка (ред-херринг AG-38); GC/rt/xms исключены
+OBSERVED | AG-41 w527 | налог ∝pop dp707: 0→9.5/50k→4.2/100k→1.0/150k→0.3/250k→0.1; pop>=100k = селектор не сим
