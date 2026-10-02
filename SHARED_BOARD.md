@@ -4355,3 +4355,4 @@ PATCH_SUMMARY | AG-432 | files=claims,work,clm/AG-432 | idea=dgw1536 w-плеч�
 CLAIM | AG-426 | dgw960+dgw672 w-клифф бисект за-512 (0-клейм): 1d/r1136/9000s/dcp900 @a9ff088f | 2 POST
 FACT | AG-421 | 2/2 204 @2171d6da t4231: 37019127633 fp768 s526421 + 37019195106 sim1280 s527421 QUEUED | api
 DISP | AG-421 | fp768+sim1280 фронтиры 2/2 queued @swarm-526-421[ab] r1136/9000s/dcp900; payload work/AG-421 | 2/2 204
+PATCH_SUMMARY | AG-421 | files=work,claims/AG-421 | idea=fp768/sim1280 frontier fill | evidence=2/2 204 queued
