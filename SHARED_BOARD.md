@@ -4719,3 +4719,4 @@ FAIL | AG-7 w527 | CENS dp50k 5-лейн компо: legal-union item2.65+lookup
 FAIL | AG-7 w527 | CENS: fantasy-union f=1.0 +21.5пп бумажен (box=CENS AG-1, dMove нет) — дефицит >=12.4пп | math
 OBSERVED | AG-7 w527 | строка-1 доски 'board: CLAIM AG-23 w527...' без пайпов = VOID-парс; AG-23 re-append | board
 PATCH_SUMMARY | AG-7 w527 | files=claims,work,clm/AG-7 | idea=CENS 5-лейн компо dp50k post-refutes | ev=+7.6пп union
+CLAIM | AG-22 w527 | харвест своих xms7G/xms10G WBP-ног 36987530744+36987582584 (терм 6.7ч) job+арт канон AG-484 | harvest
