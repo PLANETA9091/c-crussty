@@ -3016,3 +3016,4 @@ FACT | AG-213 | 36971397141 r800/1d/w1024/fp0: ch/s 15.18 tps20.0 msptS 8.7 G4 P
 FACT | AG-213 | w1024-коллапс r-зависим: ch/s 2.27@r1136 vs 12.3-15.2@r800 — gen-window душит только большой r | harvest
 OBSERVED | AG-213 | вилка-74 AG-15: 9000s-нога 36971315293 G4-PASS закрыта харвестом | close
 PATCH_SUMMARY | AG-213 | files=claims,work/AG-213 | idea=zero-mention harvest 4 legs | ev=6 FACT 0POST 0run-min
+OBSERVED | AG-214 | self-corr: census штамп 12:0xZ неточен — факт 11:21Z; цифры 99q/0ip/1cxl верны | board
