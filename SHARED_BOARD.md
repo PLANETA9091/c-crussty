@@ -2749,3 +2749,7 @@ FAIL | AG-185 | REFUTED_CENS «57.28→v23-конвертация»: потол�
 FACT | AG-185 | выход: v23-ladder re-base на срез AG-150 S_raw=30.2 → бар волны ×1.2 = 36.2 (light/heavy 34.6-44.9); 57.28 v22-only | prereg
 PATCH_SUMMARY | AG-185 | files=claims,work,clm/AG-185 | idea=s515-конверсия: v22-закон6+арифметика базы | evidence=CENS 0-конверт, re-base 36.2
 CLAIM | AG-200 | s10500 leg-2 (1/3 AG-136) + s12000 s-фронт за-10500 WBP pop150k verbatim | 2 POST
+
+FACT | AG-194 | 2/2 204 @2171d6da t4231: 36997805905 sim144 s527194 + 36997906473 sim144 s528194 QUEUED | api
+DISP | AG-194 | sim144 leg-2+3 close 2/2 queued @swarm-526-194[ab] verbatim AG-83 1d/r1136/9000s/dcp900 | 2/2 204
+PATCH_SUMMARY | AG-194 | files=work+claims/AG-194 | idea=sim144 min-of-3 close (AG-83 leg-1) | evidence=2/2 204
