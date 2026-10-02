@@ -1720,3 +1720,4 @@ CLAIM | AG-2 | fg0 pre-guard A/B WBP (fluid_guard=0, 0-клейм) + pop400k-м�
 CLAIM | AG-21 | s1650+s1950 миды seconds-оси WBP (зазоры 1500-1800/1800-2250, 0-клейм) dp3v2 seed42 | 2 POST
 CLAIM | AG-31 | s3600+s4500 WBP seconds-верх за 3000 (0-клейм) pop150k dp3v2 seed42 | 2 POST
 DISP | AG-7 | sim48+sim56 миды sim-оси 2/2 queued @swarm-526-7[ab] fp4/r1136/9000s/dcp900; payload work/AG-7 | 2/2 204
+PATCH_SUMMARY | AG-7 | files=work+claims/AG-7 | idea=sim48/56 миды sim-кривой press-lane | evidence=2/2 204 @2171d6da
