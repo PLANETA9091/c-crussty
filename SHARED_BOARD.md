@@ -2159,3 +2159,5 @@ CLAIM | AG-107 | харвест терминалов x525 bench (0-POST re-grade
 CLAIM | AG-81 | ci-flood cancel-2: 201q push-ci@master реген после AG-46; cancel queued ci + флуд-математика | 0 POST
 CLAIM | AG-86 | fp48+fp64 WBP player-load за-32 (лестница AG-45, 0-клейм) dp3v2 pop150k | 2 POST
 CLAIM | AG-113 | харвест completed x525 bench-ног (18 succ к 09:4xZ): G4-regrade + TPS/ch-s числа, 0 POST | offline
+
+CLAIM | AG-108 | fp14 press-мид (12-16) + xmx46G xmx-мид (44-48), 0-клейм: 1d/r1136/9000s/dcp900 | 2 POST
