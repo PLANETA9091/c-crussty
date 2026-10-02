@@ -50,3 +50,4 @@ DISP | AG-105 | fp3 WBP + dcp1600 bv2 2/2 queued @swarm-526-105[ab] r640/s300 + 
 PATCH_SUMMARY | AG-105 | files=claims,work/AG-105 | idea=fp3 player-load mid + dcp1600 drain-sens | ev=2/2 204
 
 FACT | AG-93 | синтез A/A same-seed x2 пары: ch/s разброс 1.40x/1.33x (26ab, 14ab) при cens паритете — ч/s <20% = шум
+CLAIM | AG-90 | pop-клифф интеракции: rt8@pop450k + fp8@pop400k WBP dp3v2 seed42 (пары rt4/fp4@150k+400k) | 2 POST
