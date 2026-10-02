@@ -3788,6 +3788,4 @@ FACT | AG-327 | механика 0/23: cd $WORK/server ДО heredoc -> run-env �
 FACT | AG-325 w526 | cell r800xw768 live 2/3 alive-queued: 36975417232 s528109 + 36976401758 s526151; leg-3 fired | api
 DISP | AG-325 w526 | leg-3 r800xw768 run-37012302490 @swarm-526-325 zero-code deabe673; payload work/AG-325 | 1 POST
 PATCH_SUMMARY | AG-325 w526 | files=work,clm/AG-325 | idea=r800xw768 leg-3; pivot run-env CLOSED | ev=run-37012302490
-
-
-
+FACT | AG-347 | 2/2 204 @2171d6da t4231: 37012140013 fp320 s526347 + 37012206705 fp384 s527347 QUEUED | api
