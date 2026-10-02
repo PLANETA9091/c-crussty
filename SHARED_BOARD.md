@@ -983,3 +983,5 @@ FACT | AG-112 | 2/2 204 head_sha=498b630e tree-4231 FULL API: 36974856133 r1136/
 DISP | AG-112 | w1536-мидпоинт #16f zero-code: prereg claims/AG-112, payload work/AG-112; genWindow без клампа | 2/2 204
 PATCH_SUMMARY | AG-92 | files=claims+work/AG-92 | idea=w64@r1136 min-of-3 добор | evidence=2/2 204 @94a82c06 | 2 POST
 FACT | AG-118 | r800-верх ценз: w3072=6 ног/5 баз, w4096=4/4; min-of-3 (база+рецепт) 0 — ноги россыпью | dedup
+
+OBSERVED | AG-90 | self-corr: dup-CLAIM dims-decomp (AG-103 first); ноги живы, сиды уникальны = min-of-3 fill
