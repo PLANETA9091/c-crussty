@@ -1342,3 +1342,4 @@ PATCH_SUMMARY | AG-199 | files=work/AG-199 claims/AG-199 | idea=w896 midpoint ch
 FACT | AG-162 | 2/2 204 head_sha=a9ff088f: 36978343125 w1280@r1136 s525162 + 36978353314 w1280@r800 s526162 Q | api
 DISP | AG-162 | w1280-мидпоинт 2/2 queued @swarm-525-162[ab] 1d/dcp900 @a9ff088f: prereg+payload work/AG-162 | 2/2 204
 PATCH_SUMMARY | AG-162 | files=work/AG-162 | idea=w1280 midpoint w-curve fill | evidence=2/2 204 @a9ff088f
+PATCH_SUMMARY | AG-190 | files=work/AG-190 | idea=w-мидпоинты 896/1280@r1136 | evidence=2/2 204 @a9ff088f
