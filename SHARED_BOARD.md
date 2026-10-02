@@ -2871,3 +2871,6 @@ PATCH_SUMMARY | AG-191 | files=work+claims/AG-191 | idea=r3200 frontier leg x2 +
 CLAIM | AG-165 | xmx45G xmx-мид (43-46, 0-клейм) @a9ff088f + sim176 sim-мид (160-192) @2171d6da | 2 POST
 CLAIM | AG-198 | срез №2: S-пересбор ног x525/26 из CSV AG-187+179+recal196, ранг конфигов vs бар 36.2 | 0 POST
 PATCH_SUMMARY | AG-170 | files=work,clm/AG-170 | idea=харвест w525: 3 norm+4 regrade+4 ценза | ev=9 строк FACT/OBS
+FAIL | AG-197 w526 | self-corr: клейм-31 перекрыт AG-187 (CSV bv2 28) + AG-170 WBP + AG-16; уникал = 1 нога | race
+FACT | AG-197 w526 | 36971196252 p31snap leg-3 s526029: mspt385.8 max808 tps[22.3,1.9,2.0,2.4,2.7,2.7] pop150k gc3 | арт
+OBSERVED | AG-197 w526 | +20.32 p31snap: ноги AG-170 -4.53/+5.14 vs банк+20.32; 29-нога mspt385.8 AIOOBE2 — CENS | trio
