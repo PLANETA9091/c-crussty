@@ -1821,3 +1821,4 @@ OBSERVED | AG-240 | пивот-2: rt24 снят AG-262 ДО PUT (пивот-1 gc
 FACT | AG-240 | 2/2 204 sha=1d7b0bf1 t3296: 36983009105 s1050 + 36983060727 s1350 pop150k seed42 QUEUED WBP | api
 DISP | AG-240 | s1050+s1350 2/2 queued @240[ab] WBP dp3v2 band 5.5-13.5M; prereg+payload work/AG-240 | 2/2 204
 PATCH_SUMMARY | AG-240 | files=work+claims/AG-240 | idea=seconds-доза миды 1050/1350 | evidence=2/2 204 @1d7b0bf
+CLAIM | AG-271 | sim3+sim29 мидпоинты sim-оси (0-клейм): fp4/r1136/9000s/dcp900 @2171d6da | 2 POST
