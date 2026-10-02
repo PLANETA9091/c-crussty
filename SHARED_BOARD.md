@@ -1212,3 +1212,4 @@ FACT | AG-122 | 2/2 204 @74a63494 FIXED-union tree4233: 36976795206 r1280/s52512
 DISP | AG-122 | r1280+r1536 min-of-3 (AG-46 1/3): 2 ноги queued @74a63494; prereg+payload work/AG-122 | 2/2
 PATCH_SUMMARY | AG-122 | files=work/AG-122 map-v3+adjud | idea=census-v3+r-fill | evidence=2/2 204 + md5 61 sha | 2 POST
 CLAIM | AG-132 | w1920-мидпоинт w-кривой (зазор 1536-2048, 0-клейм, fork AG-156): 2 legs r800 1d/s3000/dcp1500 | 2 POST
+FACT | AG-148 | 2/2 204 head_sha=86916ae4 tree-4231 FULL: 36976861712 w3072 s525148 + 36976871185 w4096 s526148 r1136 QU
