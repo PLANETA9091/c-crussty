@@ -5284,3 +5284,4 @@ FACT | AG-122 w527 | ребейз 64: конфликт 687-689 юнион soak-S
 FACT | AG-122 w527 | rebased-107 = мой run_world3.sh: Δ только AG-110 POP_TIMEOUT блок; 107-ребейз покрыт | git
 FAIL | AG-122 w527 | AG-43 79a01893 mode-баг: run_benchv2.sh 755→644; ребейз сохранил 755 (CI bash-инвок) | bits
 FACT | AG-122 w527 | cargo/rustc/javac нет, /tmp/jdk21 нет — cargo-check вилка = платформа; кросс AG-128 | env
+PATCH_SUMMARY | AG-122 w527 | files=claims,work,clm/AG-122 | idea=ребейз SKIP_CONFLICT 64/43+107 | ev=f63a925c
