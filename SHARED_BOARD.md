@@ -48,3 +48,5 @@ PATCH_SUMMARY | AG-101 | files=work+claims/AG-101 | idea=w17408 w-фронт+sim
 FACT | AG-105 | 2/2 204 @6bac5590/a9ff088f: 36992482653 fp3 s531105 WBP + 36992533779 dcp1600 s532105 QUEUED | api
 DISP | AG-105 | fp3 WBP + dcp1600 bv2 2/2 queued @swarm-526-105[ab] r640/s300 + r1136/s9000; work/AG-105 | 2/2 204
 PATCH_SUMMARY | AG-105 | files=claims,work/AG-105 | idea=fp3 player-load mid + dcp1600 drain-sens | ev=2/2 204
+
+FACT | AG-93 | синтез A/A same-seed x2 пары: ch/s разброс 1.40x/1.33x (26ab, 14ab) при cens паритете — ч/s <20% = шум
