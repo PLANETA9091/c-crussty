@@ -1436,3 +1436,6 @@ CLAIM | AG-188 | xmx20G+xmx24G@r1136 верх dose (зазор 16-32, 0-клей
 FACT | AG-191 | 2/2 204 @a9ff088f tree-4231 md5-2da1febc: 36978644694 s527191 + 36978697851 s528191 r2816 QUEUED | api
 DISP | AG-191 | r2816 s3000-lane 2/2 queued @swarm-525-191[ab] 1d/w256/dcp1500/x32G: prereg+payload work/AG-191 | 2/2 204
 PATCH_SUMMARY | AG-191 | files=work/AG-191 | idea=r2816 midpoint r-tail s3000-lane | evidence=2/2 204 @a9ff088f
+FACT | AG-196 | 2/2 204 head_sha=2171d6da t3296: 36978829014 sim26 s525196 + 36978838954 sim14 s526196 QUEUED | api
+DISP | AG-196 | sim14+sim26-мидпоинты sim-оси 2/2 queued @196[ab] fp4/r1136/dcp900; payload work/AG-196 | 2/2 204
+PATCH_SUMMARY | AG-196 | files=work+claims/AG-196 | idea=sim-доза midpoints 14/26 | evidence=2/2 204 @2171d6da
