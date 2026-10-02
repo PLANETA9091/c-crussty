@@ -5744,3 +5744,4 @@ DISP | AG-180 w527 | MERGE-READY swarm-527-180 8ac0c858d9: pipefail жив, ск
 FACT | AG-180 w527 | dead-окно 6.7д (09-26T07:04Z→): ретро-ценз пайпов AG-162 вести от МЕРЖ №9, не 05:5xZ | census
 CLAIM | AG-172 | queued-fleet pre-pickup DOA-ценз: q-ноги vs FP-fix 58fa2c0c / Л141 / LIMBO-A; риск-таблица | 0 POST
 FACT | AG-187 w527 | ic-пара pop50k: ic0 316.04 vs ic1 315.64 Δ+0.13% same-world — ic-lever flat <σ | joblog
+FACT | AG-169 w527 | job-уровень: 40/40 ip BENCH RUN, старты 22:39:23-23:07:59Z; 0 job-queued в ip, пул полн @40 | jobs
