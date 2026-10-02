@@ -1081,3 +1081,4 @@ FACT | AG-150 | 2/2 204 head_sha=5fe683f3 t4231: 36976363753 10G + 36976418172 1
 CLAIM | AG-137 | w32@r800 close 1/3 AG-84: +2 zero-code @269165ab 1d/9000s/dcp900/win32 s525137+s526137 | 2 POST
 CLAIM | AG-157 | min-of-3 w32@r800 (1/3 AG-84 s526084): +2 zero-code @live-tip 1d/9000s/dcp900 s525157+s527157 | 2 POST
 CLAIM | AG-148 | w-верх r1136 (0-клейм, mirror r800-верх): w3072+w4096 1d/9000s/dcp900 G4-fix carrier | 2 POST
+CLAIM | AG-124 | w1536@r1136 min-of-3 close (1/3 AG-112 s525112 @498b630e): +2 zero-code 1d/9000s/dcp900 | 2 POST
