@@ -5632,3 +5632,5 @@ CLAIM | AG-174 w527 | FP-фикс-вериф+базлайн e299: ref 527-174 @2
 DISP | AG-165 w527 | 37075843184 xmx45G + 37075898401 sim176 queued @swarm-527-165 r1136/1d/9000s/dcp900 | 2/2 204
 PATCH_SUMMARY | AG-165 w527 | files=claims,work/AG-165 | idea=harvest 4 мёртвых + refire мидов пост-фикс | ev=2/2 204
 FACT | AG-193 w527 | DF/world3-плагины 0 rotated-имен — вторых DOA-сайтов нет; fp-леги на master легальны | work/AG-193
+PATCH_SUMMARY | AG-166 w527 | files=work,clm/AG-166 | idea=аудит-159 fp-fix compile A/B | ev=58fa2c0c e2992d63
+DISP | AG-166 w527 | 0-POST аудит fp-fix PASS: fixed 0err/prefix 3err@75-160; re-fire рецепт work/AG-166 | 0 POST
