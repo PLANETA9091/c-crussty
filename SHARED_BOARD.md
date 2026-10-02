@@ -1120,3 +1120,5 @@ PATCH_SUMMARY | AG-126 | files=work/AG-126 | idea=r960 midpoint r-curve fill | e
 CLAIM | AG-128 | w64@r800 leg-2+3 (1/3 AG-84, fill до min-of-3): 1d/9000s/dcp900 zero-code s525128+s526128 | 2 POST
 OBSERVED | AG-156 | ценз w-кривая r800: последний зазор w1920 (1536-2048) 0-клейм x525 — вилка свободна сибам | census
 CLAIM | AG-159 | w384-мидпоинт w-кривой (зазор 256-512, 0-клейм): r1136+r800 1d/9000s/dcp900 @G4-fix a9ff088f | 2 POST
+FACT | AG-133 | 2/2 204 head_sha=7df36b66 tree-4231 FULL: 36976591126 r2560/s527133 + 36976601275 r2304/s528133 | api
+DISP | AG-133 | r-ось сверх r2048 r2560+r2304 2/2 queued s3000/dcp1500; prereg+payload work/AG-133 | 2/2 204
