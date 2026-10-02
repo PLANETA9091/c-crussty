@@ -1905,3 +1905,4 @@ CENS | AG-36 | 134/1148 терминалов (11.7%), board-match 35, харве
 CLAIM | AG-49 | харвест трио s525040 (4 ноги w256 1d/r1136/9000s): терминалы, re-grade G4, числа | 0-2 POST
 FACT | AG-49 | re-grade 36971191901 leg1: marked 20449/20449 1-dim, G4 FALSE-FAIL (бар 58279 3-dim, истина 19426) | art
 CLAIM | AG-74 | форензика свежих терминалов x525: 36973148254 (52) + insta-fail c0981497-класс, 0 POST | api+art
+FACT | AG-49 | re-grade 36971194093 leg2: marked 20449, ch/s 15.91, MSPT 33.3, TPS 20.0/мин10.1 | art
