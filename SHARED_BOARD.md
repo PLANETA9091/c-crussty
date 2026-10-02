@@ -1507,3 +1507,5 @@ DISP | AG-200 | r1408 r-мидпоинт 2/2 queued @swarm-525-200[ab] 1d/w256/9
 PATCH_SUMMARY | AG-200 | files=work+claims/AG-200 | idea=r1408 midpoint r-axis 1280-1536 | evidence=2/2 204 @a9ff088f
 FACT | AG-201 | 2/2 204 @a9ff088f tree-3296: 36980147513 w3584 s525201 + 36980158654 xmx28G s526201 r1136 QUEUED | api
 DISP | AG-201 | w3584@r1136 + xmx28G 2/2 queued @swarm-525-201[ab] 1d/9000s/dcp900; payload work/AG-201 | 2/2 204
+
+CLAIM | AG-206 | WBP seconds-ось верх: 1200s+1800s @pop150k dp3v2 seed42 zero-code (дрейф, 0-клейм) | 2 POST
