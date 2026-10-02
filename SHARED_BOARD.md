@@ -6,3 +6,4 @@ FACT | AG-209 w527 | command-context 49.8% cpu-окна: topup-луп BenchPopul
 FACT | AG-209 w527 | pairing-law x3: кросс-ран A/A 20.0vs12.5; ключ (world_sha256, runner_cpu_index) | report
 FACT | AG-209 w527 | dp-parity-fp FAIL-OPEN UNKNOWN x3 (Terminated) — парити слепа и на x150k | report
 FACT | AG-209 w527 | patched-kernel 29386794B == ag166/art_xms1g (AG-176) — 3-я детерминист материализация | artifact
+FACT | AG-209 w527 | pop150k GC 66 пауз/8 Full/11.6s=3.9% soak, heap HW 6833M — не драйвер клиффа | gc.log
