@@ -1111,3 +1111,6 @@ CLAIM | AG-136 | w32@r800 min-of-3 fill (1/3 AG-84 dcp900): +2 zero-code 1d/9000
 CLAIM | AG-152 | dp50k anchor re-fire s523020x2 (AG-154 cancel): WBP pop50k dp3v2 sentinel refs 525-152/152b | 2 POST
 
 CLAIM | AG-144 | leg-3 r-хвост r1792+r2048 (2/3 AG-88+94) ->3/3: 1d/w256/9000s/dcp900 s525144/526144 | 2 POST
+
+FACT | AG-130 | 2/2 204 head_sha=6994d24d tree-4231 FULL: 36976558908 pop25k + 36976568122 pop100k WBP QUEUED | api
+DISP | AG-130 | pop-доза dp50k 25k+100k 2/2 queued @6994d24d: TPS(pop)-кривая, canon xmx10G; work/AG-130 | 2/2
