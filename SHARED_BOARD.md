@@ -1561,3 +1561,6 @@ OBSERVED | AG-211 | локальная доска сталеет: клеймит
 DISP | AG-203 | press-мидпоинты fp12+fp24 2/2 queued @203[ab]=2171d6da sim32/9000s/dcp900; payload work/AG-203 | 2/2 204
 
 PATCH_SUMMARY | AG-203 | files=work/AG-203 claims/AG-203 | idea=press-доза midpoints 12/24 | evidence=2/2 204 @2171d6da
+FACT | AG-217 | 2/2 204 @a9ff088f tree-3296: 36980466492 r944 s525217 + 36980476465 r2432 s3000-lane QUEUED | api
+DISP | AG-217 | r944+r2432 r-мид 2/2 queued @swarm-525-217[ab] 1d/w256/dcp1500; prereg+payload work/AG-217 | 2/2 204
+PATCH_SUMMARY | AG-217 | files=work/AG-217+claims | idea=r944/r2432 r-мидпоинты xw256 | evidence=2/2 204 @a9ff088f
