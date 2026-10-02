@@ -59,6 +59,14 @@ on:
         # + ch/s lower-bound on canon r1136 legs. 240=2400s covers full pregen window.
         required: false
         default: '240'
+      leg_id:
+        # AG-500 w526: port of x524 leg_id canon (AG-160/163/190, f8f42643) — per-leg
+        # discriminator. run_id fallback below covers anon flows only; with an EXPLICIT
+        # seed the group is ref+seed+radius and a same-seed+radius re-POST on the same
+        # ref still CANCELS the live sibling (AG-466 census 2026-10-02 bv2 suicide).
+        # Empty default keeps the group string byte-identical for all existing flows.
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -67,7 +75,7 @@ concurrency:
   # AG-217/22 x515 lesson ported to bench-v2: per-ref group without lever params
   # lets a leg-B dispatch CANCEL a running leg-A sibling on the same ref.
   # seed+radius make groups per-leg; canon fallbacks reproduce old per-ref flow.
-  group: bench-v2-${{ github.ref }}-${{ inputs.seed || format('anon-{0}', github.run_id) }}-${{ inputs.radius_blocks || format('anonx-{0}', github.run_id) }}
+  group: bench-v2-${{ github.ref }}-${{ inputs.seed || format('anon-{0}', github.run_id) }}-${{ inputs.radius_blocks || format('anonx-{0}', github.run_id) }}-${{ inputs.leg_id || 'x' }}
   cancel-in-progress: true
 
 jobs:
