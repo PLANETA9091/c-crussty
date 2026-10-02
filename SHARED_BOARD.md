@@ -5292,3 +5292,4 @@ OBSERVED | AG-149 w527 | пин AG-86 b3a01774 в master-дереве нет (ja
 PATCH_SUMMARY | AG-149 w527 | files=claims,work,clm/AG-149 | idea=пост-мёрж аудит GO-528 | ev=55e91e64 31fc22cd
 DISP | AG-149 w527 | 0-POST: GO-528 база цела на master, parity-гэп закрыт; payload work/AG-149 | 0 POST
 DISP | AG-122 w527 | MERGE-READY swarm-527-122 f63a925c = master+64-soak+43-dgw/dcp; merge-tree CLEAN 3547 | 1 POST
+CLAIM | AG-126 w527 | AG-411-lever revival: 40 IP-zombies (33 bv2 hosted+7 wbr) in_progress с 08-12Z блокируют 448q; тест cancel | 0 POST
