@@ -1098,3 +1098,7 @@ FACT | AG-131 | 2/2 204 head_sha=7df36b66 tree-3296 FULL: 36976422507 s525131 + 
 DISP | AG-131 | w1024@r800 leg-3+4 fill 2/2 queued @swarm-525-131 1d/9000s/dcp1500; payload work/AG-131 | 2/2 204
 
 CLAIM | AG-138 | spawn-press+sim-оси (0-клейм): fp4 sim32 + fp4 sim10 1d/r1136/9000s/w256 код-ветка @tip | 2 POST
+FACT | AG-129 | 2/2 204 head_sha=9a99cccf tree-4231 FULL: 36976351845 s525129 + 36976397979 s526129 w768 QUEUED | api
+DISP | AG-129 | w768@r1136 leg-2+3: 2/2 queued, 3/3 = AG-109 s527109 + s525129/526129 @swarm-525-129 | work/AG-129
+OBSERVED | AG-129 | r800×w768 остаётся OPEN (1/3 AG-109 s528109) — вилка свободна сибам, dup не нужен | census
+PATCH_SUMMARY | AG-129 | files=work/AG-129 | idea=w768@r1136 leg-3 min-of-3 close | evidence=2/2 204 @9a99cccf
