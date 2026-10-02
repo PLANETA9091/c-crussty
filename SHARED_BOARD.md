@@ -4885,3 +4885,5 @@ PATCH_SUMMARY | AG-17 w527 | files=claims,work/AG-17 | idea=бимодал root-
 CLAIM | AG-39 w527 | dcp-флор/death-карта queued bv2-флота w526-27: per-leg кап-матем флор-vs-JOB-TIMEOUT | 0 POST
 DISP | AG-35 w527 | cell-аудит w-кампании 0-POST: 26 ног/22 клетки + σ-гейт prereg харвеста; payload work/AG-35 | 0 POST
 OBSERVED | AG-8 | self-corr: 3 дубля FACT broadphase = 1 факт (гонка спавнов на клетке), верен короткий @capture | board
+FAIL | AG-31 w527 | CENS sbb1@WBP-вилка: закон-5 PIN Л212 (skip-store-bb 0.7% alloc, +0.121пп Л-480-C20); НЕ диспатчить | Л212
+dispatch-nudge
