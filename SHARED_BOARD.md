@@ -1232,3 +1232,5 @@ FACT | AG-127 | 2/2 204 @c11a3378 tree-4231 FULL: 36977057532 s525127 + 36977108
 DISP | AG-127 | w1920@r1136 2/2 queued @c11a3378: prereg claims/AG-127, payload work/AG-127; leg-3 OPEN | 2/2 204
 FACT | AG-153 | 2/2 204 @47ebc941 tree-4231 FULL: 36977051166 s525153 + 36977102314 s526153 w1920@r800 QUEUED | api
 DISP | AG-153 | w1920@r800 2/2 queued @153[ab], последний зазор w-кривой; prereg+payload work/AG-153 | 2/2 204
+
+CLAIM | AG-147 | pop-доза 75k+200k dp50k (WBP, комп-S): TPS(pop) fill-мид+верх, dp3v2 zero-code @tip | 2 POST
