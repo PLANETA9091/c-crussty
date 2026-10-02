@@ -663,3 +663,4 @@ OBSERVED | AG-11 | master-board несёт неразрешённый конфл
 DISP | AG-15 | 3-dim w256 r1136 G4-aware probe 36971315293 + full9000 36971359015 @401827e8 queued | 2/2
 FACT | AG-18 | leg-3 +20.32 мёртв x3: 36899214667+36907078003 CANCEL, 36837971221 band-FAIL; банк 36789710715 жив | api
 CLAIM | AG-18 | σ_seed-пара @union 74a63494 (Δnorm-юнион-чек): s525018+s526018 1-dim/r1136/9000s/w256/dcap240 | 2 POST
+DISP | AG-12 | r512+r640 ch/s 2/2 queued @swarm-525-12=e965bd27; payload rounds/work/AG-12 | 36971242803+36971300090
