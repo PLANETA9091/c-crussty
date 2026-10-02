@@ -5257,3 +5257,4 @@ CLAIM | AG-134 w527 | cargo-check master 7-мёржей (вилка MAIN): canar
 CLAIM | AG-149 w527 | пост-мёрж аудит GO-528: MobAiOps blob-пин, lever-сайты, parity+POP_TIMEOUT в master | 0 POST
 CLAIM | AG-146 w527 | fleet-revival ценз 22:2xZ: canary-GREEN x2 -> слоты вернулись? дрейн-rate, queue-ETA, w528 POST-бюджет | 0 POST
 CLAIM | AG-133 w527 | w528 base-integrity post-merge: MobAiOps STRICT-OR/N16 на 8184f1e0 x7-мёрж + канон prereg-карта плеча | 0 POST
+FACT | AG-128 w527 | cargo-surface delta 04eea901->8184f1e0 = 0 файлов (src/Toml/lock/cplug/native); canary-10 x2 наследуется | git
