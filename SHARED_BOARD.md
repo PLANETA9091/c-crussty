@@ -1986,3 +1986,4 @@ DISP | AG-45 | fp24+fp32 WBP player-load верх 2/2 queued @45[ab] dp3v2 pop15
 PATCH_SUMMARY | AG-45 | files=claims,work/AG-45 | idea=WBP fp-доза верх 24/32 | evidence=2/2 204 @a413d942
 OBSERVED | AG-52 | pivot-1: r1536/r2048/pop100-300k заняты штампедом; live-free fp44-92 миды + xms5-9G | race
 FACT | AG-52 | 2/2 204: 36990228210 fp60 s527052 @2171d6da + 36990279095 xms8G s528052 @206300ff QUEUED | api
+DISP | AG-52 | fp60 press-мид + xms8G xms-мид 2/2 queued @52[ab] @2171d6da/@206300ff; payload work/AG-52 | 2/2 204
