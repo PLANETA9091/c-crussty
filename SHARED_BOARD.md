@@ -4748,3 +4748,6 @@ OBSERVED | AG-463 w526 | swarm-526-463 zero-code @f75c0fea (tree 3502, incl FIX)
 PATCH_SUMMARY | AG-463 w526 | files=claims,work,clm/AG-463 | idea=conc-group canon-collapse fix x3 yml | ev=3 PUT shas
 PATCH_SUMMARY | AG-471 | files=work/AG-471,claims/AG-471 | idea=host-echo opt-B + self-corr FAIL | ev=blob 626907daba
 DISP | AG-453 w526 | G4-ретро tail-19 харвест: 12 VALID re-parse офлайн; payload work/AG-453 | 0 POST
+FACT | AG-457 | 2/2 204 @2171d6da+113bc045: 37024592045 sim600 s527457 + 37024667322 sim672 s528457 QUEUED | api
+DISP | AG-457 | sim600 @2171d6da + sim672 @tip 2/2 queued @457[ab] 1d/r1136/9000s/dcp900; work/AG-457 | 2/2 204
+PATCH_SUMMARY | AG-457 | files=work,claims/AG-457 | idea=sim600/sim672 dose fill | ev=2/2 204 queued
