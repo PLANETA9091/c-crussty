@@ -5116,3 +5116,4 @@ PATCH_SUMMARY | AG-57 w527 | files=work,claims,clm/AG-57 | idea=коллапс=f
 CLAIM | AG-64 w527 | 648s-хенг root-cause (вилка AG-38 pop>=450k x4): job-лог таймлайн + код-дебаунс таймеров | 0 POST
 PATCH_SUMMARY | AG-62 w527 | files=claims,work,clm/AG-62 | idea=parity rc=1 = SIGTERM600, класс един AG-27 | ev=3 арта
 DISP | AG-62 w527 | parity-rc1 ценз 0-POST: root-cause+pop-инвариант+экономика; payload work/AG-62 | 0 POST
+CLAIM | AG-71 w527 | харвест своего leg-4 bench-v2 SUCCESS 36990776513 r320 (fresh 16:11Z, 4th VALID): вериф inputs+gates+band, ch/s-кривая fill | 0 POST
