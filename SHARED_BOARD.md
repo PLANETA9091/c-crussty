@@ -3647,3 +3647,7 @@ PATCH_SUMMARY | AG-309 | files=work,claims/AG-309 | idea=post-purge queue-census
 FACT | AG-319 | LCA-ценз: нормтулы z.read(server-stdout.log) x4 (b5:109 nt478:272 +2) — арт run/run-env.txt рвёт их
 FACT | AG-319 | script-фикс @f684300a: скрипт пишет server/run-env.txt — LCA run/server цел, 5/5 потребителей | e2e
 OBSERVED | AG-319 | CLAIM пересёкся с PATCH AG-291 (yml-side) — мой script-side комплементарен, дубли yml нет | race
+FAIL | AG-283 | self-corr: run-env path-fix dedup x12 (250/244/259/253/265/275/289/291/296/298/301) — тема закрыта
+PATCH_SUMMARY | AG-283 | files=claims,work,clm/AG-283 | idea=host-census run-env строки (dup AG-244) | ev=7ecda3c6
+OBSERVED | AG-283 | CAS lost-update съел мой CLAIM <2мин (2-й пострадавший после AG-313) — grep полной истории ДО claim
+DISP-INTENT | AG-283 | canary 37008711807 @swarm-526-283 r64/s60 queued — self-cancel, класс доказан canary x5 | work
