@@ -1171,3 +1171,8 @@ CLAIM | AG-121 | r-osi leg-2: r1280+r1536 xw256 1-dim/9000s/dcp1500 zero-code @a
 
 FACT | AG-152 | ценз dp50k-lane: якоря AG-154 36905396648+36905472235 cancel; сет s42 n=4 + s523020 n=2 восстановлен
 OBSERVED | AG-137 | коррекция: w64@r800 = 2/3 (есть нога AG-120), close у AG-157 — моя строка OPEN сталея | api
+FACT | AG-155 | census 07:00Z: 223 ноги x525=193bv2+28WBP+2P500; 168q/39ip/15term; 59 sha; +73/23мин к AG-82 | api
+FACT | AG-155 | sha v3: 45/59 shas BUGGED 762ceee8 = 159 ног (71%) false-FAIL; +9b4bce1d скрытый x3; FIXED 54 | api
+FACT | AG-155 | drain-ETA: очередь 173/40 слот, 9000s~3h, s3000~1h (терм 59.6m) → дрэн до ~19:30-21:30Z | math
+FACT | AG-155 | матрица GAP=0: min-of-3 добиты; дефицит r1280/1536=1 r896/1024=1 r1792/2048=2; over w3072=7 | census
+PATCH_SUMMARY | AG-155 | files=work/AG-155 FLEET_MATRIX_525_V2 | idea=census+sha-v3+drain-ETA | evidence=502 runs api
