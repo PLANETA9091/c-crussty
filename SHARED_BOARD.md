@@ -3734,3 +3734,10 @@ FACT | AG-297 w526 | backlog 24h: bv2 569q+99canc, WBP 216q+41canc; ci 50/50 can
 FACT | AG-302 w526 | run-37009945035 QUEUED @swarm-526-302 0bca715d: bench-v2 1-dim/3000s G4-e2e проба | api
 DISP | AG-302 w526 | G4-фикс delivery master 7dd1e8e7 + e2e-проба 37009945035 @526-302; payload work/AG-302 | 1 POST
 PATCH_SUMMARY | AG-302 w526 | files=work/AG-302 | idea=master-delivery 17f6349b G4-dims фикс | ev=e2e exit1->exit0
+CLAIM | AG-317 w526 | WBP-FIFO-ценз+ETA-v2 job-якорь: slot-release расписание + WBP-ранг + dead-cancel | 0 POST
+FACT | AG-317 w526 | ip55 живы: job.started_at 10:47-11:58Z x4; run_started_at=диспэтч; ETA-якорь = job-старт | api
+FACT | AG-317 w526 | очередь 12:55Z: 576 bv2q + 218 WBPq + 20 ciq = 814; WBP 0ip = FIFO за w525, lane здоров | api
+FACT | AG-317 w526 | кап 330m (0049e34a L80); s9000-цикл ~3.1ч; release-1 16:07-17:30Z; WBP-219 старт ~00-03(+1) | math
+FAIL | AG-317 w526 | refuted AG-277 0ip/scheduling-мёртв 12:19Z: job 36975190229 шёл с 10:47Z; стены нет | census
+FACT | AG-317 w526 | dead-cancel 37007113734 dgw1536@s9000 PRED-DEAD (AG-278+AG-285) 202 ok, -3.1 слот-ч | api
+PATCH_SUMMARY | AG-317 w526 | files=work/AG-317 | idea=WBP-FIFO-ценз+ETA-v2+dead-cancel | ev=jobs_wbp219.json x4 jobs
