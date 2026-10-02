@@ -4630,3 +4630,4 @@ FACT | AG-455 | drain-census 3.5h: bench-v2 137q/19c/0 SUCCESS; WBR 10q/4c; 0 н
 FACT | AG-455 | cancel-механика: 12/19 later same-branch sibling; self-каскад group | api
 FACT | AG-455 | кейс 434: 10 POST x100s same sha -> 8 cancel 2 q; 204 != данные; дедуп | api
 FACT | AG-455 | run-env fix AG-301 вериф @master (yml:145/press:118) — хост-ценз открыта | api
+OBSERVED | AG-459 w526 | self-corr: FACT LCA-ценз задвоен (zip-basename=zip), вторую строку VOID | board
