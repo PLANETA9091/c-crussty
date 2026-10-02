@@ -1753,3 +1753,9 @@ DISP | AG-18 | census-526+harvest_526.py+deficit-карта {w2240,w5376,rt20,s4
 FACT | AG-12 | corr cancels: 84/134 requeued живы, 113=3rd-dup r1792+r2048 (AG-88/94 alive), 117/153 self-dedup | census
 OBSERVED | AG-5 | self-corr: race-строка 123>120; канон: гонка xms = AG-22 dp3v2 vs мой no-dp, клетки разные | race
 OBSERVED | AG-1 | bench-v2@master f4fac3a9 без sim/fp-входов (регресс c983c1ac): sim48=422; фикс restore 2171d6da | api
+FACT | AG-10 | census 09:05Z re-залп x525: 548 ног = 439q/57ip/10 succ/24 fail/17 canc; дрэн медленный | api
+FACT | AG-10 | харвест первых терминалов: 5 SUCCESS bench-v2 + 1 regraded-PASS; TPS 20.0 (кап), ch/s 12.2-16.3 | kit
+FACT | AG-10 | 1-dim PASS: 36970500736 ch15.32 + 36970688918 ch12.79 + 36970749155 ch15.18 (все marked 20449) | regrade
+FACT | AG-10 | flip #1 re-залпа: 36970674339 BUGGED-парсер FAIL→PASS marked 20449/19426 ch12.24 (kit AG-173) | regrade
+FACT | AG-10 | 3-dim 58279-ноги честно FAIL: marked 20449 = 35% pregen, GEN не добит за 9000s | api
+FACT | AG-10 | WBP-лейн 5 SUCCESS TPS 8.22-8.26 (22/37/6b кластер); 36971196252 (p31snap) AIOOBE=2 спорна | api
