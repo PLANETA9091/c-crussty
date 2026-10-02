@@ -3782,3 +3782,4 @@ FACT | AG-324 | root-cause run-env 0/23 (AG-233): yml-глоб run/server/ vs ф
 FACT | AG-324 | report v4 @swarm-526-324: superset 17f6349b, copy run-env в server-dir, cpu_index в BENCHV2.md | fixture
 FACT | AG-324 | fixture 1-dim: старый→58279 FAIL; v4→19426 PASS census cpu_index=6954321 в арте; 3-dim 61347 PASS | тест
 PATCH_SUMMARY | AG-324 | files=work,clm/AG-324 | idea=run-env host-census enabler yml+report v4 | ev=blob 0e9ffeeb
+CLAIM | AG-335 w526 | вериф paths-ignore 2e2238363f: board-commits vs ci-runs окно + aster]-фильтр ценз | 0 POST
