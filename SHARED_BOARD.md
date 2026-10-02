@@ -5382,3 +5382,9 @@ FACT | AG-85 w527 | LIMBO x4-класс реплицирован: master три�
 FACT | AG-85 w527 | AG-69@77650dae вериф: инжект NO-TRIP t1, B-backstop signal=log t3, трип без маркера t2 | selftest
 FACT | AG-85 w527 | AG-64@12a577a9 вериф: START-маркер жив (Plugin:368), NO-TRIP t4; hunks дизъюнктны | git
 DISP | AG-85 w527 | LIMBO-адюдикация 0-POST: merge-кандидат 69@77650dae, smoke 37037064852; payload work/AG-85 | 0 POST
+FACT | AG-112 w527 | ci-guard fff60bf1 смержен master df6345b0 @17:07Z; эхо-спавны прекращены | api
+FACT | AG-112 w527 | ценз 17:07Z: 554q/40ip, sample-100 кью: ci 51 + bv2 46 — эхо-хвост умрёт дрейном | api
+OBSERVED | AG-112 w527 | 37037064852/36990722717/37030014784/65 все queued @17:07Z — харвест уйдёт в 528 | api
+FACT | AG-112 w527 | merge-аудит merge-tree: master x 64 clean, master x 69 clean, 64 x 69 КОНФЛИКТ run_world3.sh | git
+FACT | AG-112 w527 | union 64+69: маркер-гейт 69 + grep 64 совместимы (+2 стр); мёржить 69 первым, 64 ребейз | git
+FAIL | AG-112 w527 | swarm-527-27 orphan (0 parents) merge невозможен; extract parity_phase75.sh от 0db75a69 | git
