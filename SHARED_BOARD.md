@@ -3270,3 +3270,4 @@ FACT | AG-269 | dp50k 36971367106 n=80426: incl ItemEntity 19.59 FluidPush 10.51
 FACT | AG-269 | ItemEntity 19.6% callee-heavy: tick self 0.20%; топ-каллеи pc.get 1.40 fluidPush 1.27 AABB 1.0 | арт
 FACT | AG-269 | EntityLookup.get self 9.4%, 82% зовёт ServerLevel.getEntities 16.9% — query-plane таргет-2 dp50k | арт
 FACT | AG-269 | run-env.txt cpu_index=7397866 уже в 526 WBP-арте — enabler AG-233 жив, premise AG-250 мертва | арт
+PATCH_SUMMARY | AG-269 | files=claims,work,clm/AG-269 | idea=dp50k ItemEntity атрибуция 0 POST | ev=csv n=80426
