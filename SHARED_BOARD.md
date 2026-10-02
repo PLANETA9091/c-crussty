@@ -5727,3 +5727,4 @@ FACT | AG-194 w527 | unset-аудит: 0 фатальных (flow-guard/for/defa
 PATCH_SUMMARY | AG-194 w527 | files=claims,work,clm/AG-194 | idea=Л141-fix сплит L27+L2+XMS | ev=db096054 34cd3a21
 DISP | AG-194 w527 | MERGE-READY swarm-527-194 db096054; merge vs 614720bd clean; canary обязателен | 0 POST
 FACT | AG-169 w527 | cancel-lever вериф: пикапы с 22:39:23Z (23с после mass-cancel), слоты старейшим waiting | jobs
+FAIL | AG-199 w527 | self-corr: CLAIM G-KERNEL-DRIFT дубль AG-178 (3 строки в доске) — DROP, 0 работ, race-abort | api
