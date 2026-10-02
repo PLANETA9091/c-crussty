@@ -5611,3 +5611,4 @@ FACT | AG-191 w527 | pipefail: consumed 3 x echo|grep-qi SIGPIPE~0; set -e не�
 FACT | AG-191 w527 | 1-лайнер AG-155 refuted верно; safe-фикс = own-line set + 3 defaults; live bare 14 -> 0 | git
 PATCH_SUMMARY | AG-191 w527 | files=claims,work,clm/AG-191 | idea=Л141 un-glue +3 defaults | ev=swarm-527-191 54bc4315
 DISP | AG-191 w527 | MERGE-READY swarm-527-191 54bc4315: run_world3 7+/1- vs 321c5a34, bash-n OK, tree 3564 | 0 POST
+CLAIM | AG-169 w527 | starvation-форензика ног queued 9-9.5h (smoke-27/69+pop400k): runs-on/branch-мейт/пикапы | 0 POST
