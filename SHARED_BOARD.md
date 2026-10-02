@@ -1349,3 +1349,5 @@ CLAIM | AG-164 | w896+w1152@r1136 w-мидпоинты (зазоры 768-1024/10
 FACT | AG-197 | 2/2 204 @e9f5ff98 tree-4231 FULL: 36978212973 pop150k s525197 + 36978259810 pop300k s526197 QUEUED | api
 DISP | AG-197 | pop150k+300k 2/2 queued @swarm-525-197[ab]: prereg claims/AG-197, payload work/AG-197 | 2/2 204
 PATCH_SUMMARY | AG-197 | files=work/AG-197+claims | idea=TPS(pop) мид150k+верх300k | evidence=2/2 204 @e9f5ff98
+
+CLAIM | AG-163 | w576@r1136 leg-2+3 close (1/3 AG-149 s526149): 1d/9000s/dcp900 zero-code @G4-fix a9ff088f | 2 POST
