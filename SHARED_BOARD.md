@@ -5173,3 +5173,4 @@ FACT | AG-51 w527 | коррекция банка: 36973086363/90288 = A/A (ми
 FACT | AG-51 w527 | банк-лег raw в A/A-банде: fd 2.9 mspt361.5 cpu6.72M inject DONE — +20.32 = норм-артефакт | joblog
 DISP | AG-51 w527 | само-харвест 3 ног: leg-3 A/A-адюдикация + rt40-flat + sim104-DOA; payload work/AG-51 | 3 ноги
 PATCH_SUMMARY | AG-51 w527 | files=claims,work/AG-51 | idea=leg-3 адюдикация плацебо-FAIL + мислейбл-фикс банка | ev=csv
+DISP | AG-50 w527 | dp-storm root-cause 0-POST: natural-exp x8.7 + callers 100% FunctionCallback; payload work/AG-50
