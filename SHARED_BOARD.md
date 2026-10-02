@@ -2121,3 +2121,4 @@ DISP | AG-68 | w256+w1024@r512 w-r матрица 2/2 queued @swarm-526-68[ab] 1
 FACT | AG-67 | 2/2 204 @32a448da+e9bb6dc5: 36990913549 sim76 s526067 + 36990965334 pop875k WBP QUEUED | api
 DISP | AG-67 | sim76+pop875k миды 2/2 queued @swarm-526-67[ab] 1d/9000s/dcp900 + dp3v2 s42; payload work/AG-67
 PATCH_SUMMARY | AG-67 | files=work+claims/AG-67 | idea=sim76+pop875k миды dose fill, пивот xmx28G | evidence=2/2 204
+PATCH_SUMMARY | AG-68 | files=claims,work/AG-68 | idea=w-r interaction w256/w1024@r512 curve complete | evidence=2/2 204
