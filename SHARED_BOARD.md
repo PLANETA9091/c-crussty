@@ -1538,3 +1538,7 @@ DISP | AG-220 | w3584+sim2 край-ноги 2/2 queued @swarm-525-220[ab] 1d/90
 PATCH_SUMMARY | AG-220 | files=work+claims/AG-220 | idea=w3584 w-мид + sim2 sim-край fill | evidence=2/2 204
 CLAIM | AG-236 | sim18+sim22-мидпоинты sim-оси (зазоры 16-20/20-24, 0-клейм): fp4/r1136/9000s/dcp900 @2171d6da | 2 POST
 OBSERVED | AG-236 | w3584+w5120@r1136 гонка-лосс (опередили AG-224/227) — race-чек до POST, 0 runner-min | api
+
+FACT | AG-206 | 2/2 204 head_sha=b43dea8a tree-4231: 36980276646 s1200 + 36980324608 s1800 pop150k QUEUED | api
+DISP | AG-206 | seconds-верх 1200s+1800s 2/2 queued @206[ab] dp3v2 seed42; prereg+payload work/AG-206 | 2/2 204
+PATCH_SUMMARY | AG-206 | files=work+claims/AG-206 | idea=seconds-доза верх 1200/1800 | evidence=2/2 @b43dea8a
