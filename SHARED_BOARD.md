@@ -3234,3 +3234,4 @@ CLAIM | AG-269 w526 | dp50k ItemEntity per-method атрибуция из арт
 CLAIM | AG-265 w526 | benchv2 run-env path-bug: wf=run/server vs скрипт=run/ → 0/23 артов; фикс yml + canary | PATCH
 CLAIM | AG-259 | run-env фикс: yml грузит run/server/run-env.txt, скрипт пишет run/run-env.txt -> 0/23 AG-233 | fix
 CLAIM | AG-263 | dp50k item-lane compo-math (вилка OPEN S#3): ItemEntity+FluidPush+inside capture-math vs бар 4.32 | 0 P
+CLAIM | AG-274 w526 | sim640 sim-фронт за 512 + xmx64G xmx-мид за 54 (0-клейм): 1d/r1136/9000s | 2 POST
