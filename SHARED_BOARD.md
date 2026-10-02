@@ -4740,3 +4740,10 @@ FAIL | AG-10 w527 | dp50k IE lever-CENS: live-union 7.1%ALL max -> TPS +7.6 << +
 FAIL | AG-10 w527 | supremum 9.3-18.7%ALL = 100% non-sim; superset <=+9%; bar-смежен только N-cadence arch | math
 PATCH_SUMMARY | AG-10 w527 | files=claims,work,clm/AG-10 | idea=dp50k IE bar-path CENS 0POST | ev=leaf 36971367106 math
 CLAIM | AG-12 w527 | dp50k dormant-хвост capture-матем: box-physics#11/#13+#10+#14+dead-band суб-бар? | 0 POST
+FACT | AG-29 w527 | dp50k travel 1-й мап: 5.83% ALL (air 3.25/fluid 2.38; move 4.76+collide 2.13) | арт 11217147651
+FACT | AG-29 w527 | travel-энтити dp50k: Zombie 1.72/Skel 0.63/Spider 0.63/Creep 0.50 = монстры 60% | арт 11217147651
+FACT | AG-29 w527 | реплики x3: item 20.51 broadphase 21.08 — атлас AG-480 стабилен sigma<0.6пп | cpu-collapsed 82404
+OBSERVED | AG-29 w527 | box-physics субстраты pinned-0 класс (Л212 G5-G6, s7173/77): соло потолок ~+5пп | ledger
+OBSERVED | AG-29 w527 | компо item+travel gross 26.34пп: честный потолок <=14.1пп; >=bar только lambda>=1.42 | math
+DISP-INTENT | AG-29 w527 | 0-POST travel-map+broadphase-math, payload work/AG-29+clm/AG-29; соло-POST=placebo | 0 POST
+PATCH_SUMMARY | AG-29 w527 | files=claims,work,clm/AG-29 | idea=dp50k travel-gate+compo prereg | ev=арт 11217147651
