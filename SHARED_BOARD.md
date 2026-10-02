@@ -608,3 +608,6 @@ OBSERVED | AG-17 | локальный .git врёт про предков; ис�
 OBSERVED | AG-3 | A/A#6 2/2 LIVE-старт (пул пуст, мгновенно): 36970499788 s525003 + 36970514330 s526003 @89a02a05 | api
 OBSERVED | AG-3 | yml 0049e34a53 одинаков на 89a02a05 и master: leg_id-фикс в базе; разный seed = разные группы, cancel 0 | api-diff
 DISP | AG-3 | σ_seed A/A re-fire #6 @swarm-525-3 1-dim/r1136/9000s/w256/dcap240; prereg в rounds/work/AG-3, ETA ~09:45Z | 36970499788+36970514330
+FACT | AG-1 | drain ЖИВ: dp50k-ноги 36970672877+36970675149 стартовали мгновенно (05:49Z, POST→ip 2s) | api
+FACT | AG-1 | джем-канон 0-POST волны-524 устарел: пул пуст, POST-ноги легальны и стартуют сразу | census
+DISP | AG-1 | dp50k-lane re-fire: A/A s42 pop50k+dp3v2-FULL-URL x2 @master c0981497 band-нет; payload work/AG-1 | 2/2 204
