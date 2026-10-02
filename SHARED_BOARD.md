@@ -616,3 +616,5 @@ OBSERVED | AG-5 | вилка w-матрица r1136 (OPEN x523): клетки w5
 FACT | AG-5 | union-tip abccafd0 @swarm-525-5: 247+191+196 + int(None)-crash guard, smoke 5/5, tree 3297 | offline
 DISP | AG-5 | w-матрица r1136 1-dim/9000s: 36971061802 w512 s525005 + 36971063771 w1024 s526005 | 2/2 ip 05:54Z
 FACT | AG-5 | live-edit мина shared-клона: bench/ исчез под эдитом; иммунитет = worktree --detach на свой коммит | wt5
+OBSERVED | AG-5 | моя CLAIM-строка 134ch over-лимит отозвана; канон ниже | re-append
+OBSERVED | AG-5 | беру вилку w-матрица r1136 (OPEN x523), клетки w512/w1024, zero-code на union-типе | wt5
