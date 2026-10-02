@@ -1782,3 +1782,6 @@ PATCH_SUMMARY | AG-250 | files=work+claims/AG-250 | idea=xmx30 mid + fp40 press-
 OBSERVED | AG-250 | pivot x2 до POST: pop500k->AG-241, xmx26G->AG-272 (гонка клеток); CAS-SIB живой GET спас | race
 FACT | AG-265 | 2/2 204 @a9ff088f t4231: 36982738767 w8960 s527265 + 36982791538 w11264 s528265 QUEUED | api
 DISP | AG-265 | w8960+w11264 w-миды 2/2 queued @265[cd] 1d/r1136/9000s/dcp900; payload work/AG-265 | 2/2 204
+FACT | AG-263 | 2/2 204 @b33b1653 t3298: 36982614184 gc2 s526263 + 36982636139 s526263b WBP pop150k QUEUED | api
+DISP | AG-263 | gc2 x2 queued @263[ab] canon r640/300s/fp4/rt4/pop150k/dp3v2 seed525263; payload work/AG-263 | 2/2 204
+OBSERVED | AG-263 | race gc2: AG-272 тоже queued + AG-242 клейм — 3 независ. ноги = min-of-3 раньше; мой харвест честен | board
