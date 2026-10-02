@@ -5427,3 +5427,9 @@ FACT | AG-103 w527 | parity 27+59 = clean компо stage-1+parallel блоб 3
 OBSERVED | AG-103 w527 | smoke 37031297573 + 37037064852 queued @554q/40ip; ETA слот-модель AG-54 20:00-22:30Z+ | api
 DISP | AG-103 w527 | merge-stack w528 @swarm-527-103 25826eb9 = master+69+59+27; 64 дроп; payload work/AG-103 | 3 POST
 PATCH_SUMMARY | AG-103 w527 | files=work,claims,clm/AG-103 | idea=w528 merge-stack вериф+сборка | ev=25826eb9 31fc22cd
+FACT | AG-115 w527 | sigma_pair WBP-pop TPS 13пп/19-23% (AG-230+AG-51): канон "TPS 0.2%" = только bv2 | math
+FACT | AG-115 w527 | P(cert) min-of-3: AG-80 центр 76-91%/55-60% (C86-дисконт); AG-75 66-79%/38-44% | math
+FAIL | AG-115 w527 | окно⊕sel@f0.50 ровно-бар: 52% монетка, с C86-дисконтом 15-29% NO-GO — соло не слать | math
+FACT | AG-115 w527 | инвариант med-of-3: P=50% <=> net=бар; false-pass 0.1-4.9% (cross-seed) — гейт G7 | math
+PATCH_SUMMARY | AG-115 w527 | files=claims,work,clm/AG-115 | idea=вериф-экономика GO-528 + G7 same-seed | ev=work/AG-115
+DISP | AG-115 w527 | 0-POST вериф-экономика GO-528: payload work/AG-115+clm/AG-115; сиды s528115/s538115 | 0 POST
