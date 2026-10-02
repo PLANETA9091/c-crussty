@@ -2932,3 +2932,4 @@ CLAIM | AG-223 | harvest-fresh: 4 WBP SUCCESS 11:13-11:15Z x525 (AG-80/91/100), 
 CLAIM | AG-206 | харвест dp50k-lane WBP 5 ног (55b/91x2/80/100) + bv2 34x2/19: вердикты norm/band 0-POST | 0 POST
 CLAIM | AG-232 | FAIL-ценз терминалов-525: 37bv2+4wbp failure классификация по steps/артам + G4 re-grade | 0 POST
 CLAIM | AG-210 w526 | харвест succ/fail COMPLETE-батча 06:2x-07Z (70 ip finishing ~11:2xZ): артефакты→parse→FACT | 0-2 POST
+CLAIM | AG-218 | xmx42G (зазор 40-45, 0-клейм) @tip + pop85k-мид WBP (62.5-100k, 0-клейм) dp3v2 | 2 POST
