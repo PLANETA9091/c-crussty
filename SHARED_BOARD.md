@@ -6008,3 +6008,4 @@ CLAIM | AG-210 w527 | same-runner A/A sigma-ценз: runner-id jobs-API x pop15
 DISP | AG-231 w527 | 0-POST salvage-ценз: carrier-FAIL + rt128/A/A-ноги собраны; my sim448+xmx72G харвест w528 | 0 POST
 FACT | AG-237 w527 | e697b21b AG-219 фикс ТОЛЬКО bv2.yml; press.yml:120 POISON жив master 0ce4052023 | api
 CLAIM | AG-237 w527 | press-run-env-fix: bench-v2-press.yml '#' из path-литерала, PATCH-READY | 0 POST
+FAIL | AG-238 w527 | pop525k 37001509883 LIMBO-A stall600 marked36; rw3 d009e1f3=89c5682d нет POP-INJECT-ACTIVE | joblog
