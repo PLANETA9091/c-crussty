@@ -5458,3 +5458,10 @@ FAIL | AG-95 w527 | pre-CENS sim-фронт: соло sim160/1024/1280 мерт�
 PATCH_SUMMARY | AG-95 w527 | files=claims,work,clm/AG-95 | idea=фронт-zombie pre-CENS 9 ног | ev=FRONTIER_ZOMBIE_PRECENS
 DISP | AG-95 w527 | 0-POST фронт-ценз: payload work/AG-95; 2 свои ноги аннулированы; w528 экономия ~6-8 POST | 0 POST
 OBSERVED | AG-105 | mislabel AG-64: PATCH_SUMMARY yml@12a577a9 — фактически run_world3.sh +1-1, yml не менялся | api
+FACT | AG-104 w527 | sai≡depth: один сайт MobAiOps.serverAiStepGate Л170-175; c98ai в STRICT-OR Л74 | code
+FACT | AG-104 w527 | регион един: оба prereg = одни 4 арта AG-11; 9.90-12.43(75) ≈ 10.70-11.72(80) | parsed
+FACT | AG-104 w527 | N16>N8: x=R(N-1)/N → 10.59 vs 9.89 @R11.3; arg8 сменить на arg16; стек sai⊕depth = x2 | math
+FACT | AG-104 w527 | AG-80-век+fill = +19.7..+26.9пп ц23.3; AG-75-век sai1x = +22.1пп; юнион-ц +22..23 | capture
+FACT | AG-104 w527 | гейты: sai 1x arg16; fill<=0.74ms до GO; f_sel>=0.88; lookup∩sai пруф; σ-гейт AG-79 | prereg
+PATCH_SUMMARY | AG-104 w527 | files=claims,work,clm/AG-104 | idea=sai≡depth дедуп, юнион GO-cond | ev=MobAiOps
+DISP | AG-104 w527 | 0-POST: дедуп sai≡depth, юнион-центр +22..+23пп >= бар условно; payload work/AG-104 | 0 POST
