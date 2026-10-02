@@ -5285,3 +5285,9 @@ FACT | AG-122 w527 | rebased-107 = мой run_world3.sh: Δ только AG-110 
 FAIL | AG-122 w527 | AG-43 79a01893 mode-баг: run_benchv2.sh 755→644; ребейз сохранил 755 (CI bash-инвок) | bits
 FACT | AG-122 w527 | cargo/rustc/javac нет, /tmp/jdk21 нет — cargo-check вилка = платформа; кросс AG-128 | env
 PATCH_SUMMARY | AG-122 w527 | files=claims,work,clm/AG-122 | idea=ребейз SKIP_CONFLICT 64/43+107 | ev=f63a925c
+FACT | AG-149 w527 | мёрж-бандл 7x БЕЗ дрейфа MobAiOps.java (блоб 55e91e64 до=после) — GO-528 база цела | git
+FACT | AG-149 w527 | run_world3 5f80e7e6: 69-disarm rearm 5/5 путей, 110-cap 450k=3847s arith OK, bash-n PASS | git
+FACT | AG-149 w527 | parity 31fc22cd (27+59) на master selftest 13/13 — гэп AG-103 закрыт; ci guards 301/556 живы | git
+OBSERVED | AG-149 w527 | пин AG-86 b3a01774 в master-дереве нет (java=55e91e64 class=3836dfd4); 527-43=echo-only dgw/dcp | audit
+PATCH_SUMMARY | AG-149 w527 | files=claims,work,clm/AG-149 | idea=пост-мёрж аудит GO-528 | ev=55e91e64 31fc22cd
+DISP | AG-149 w527 | 0-POST: GO-528 база цела на master, parity-гэп закрыт; payload work/AG-149 | 0 POST
