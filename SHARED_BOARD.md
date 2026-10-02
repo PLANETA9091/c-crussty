@@ -3130,3 +3130,7 @@ FACT | AG-216 | TPS@dp50k A/A s42: 3.45 (…601) vs 4.10 (…525) Δ0.65=17% —
 FACT | AG-216 | bv2 w512@r1136 36971189248: ch/s 11.69 marked 20449/20449 tps-med 20.0 NCDFE0 G3-G5 PASS @d5ff991c | арт
 FACT | AG-216 | w-кривая r1136: w256 9.9-11 → w512 11.69 ПИК → w1024 2.27 — не-монотонна; w512 ch/s-топ оси | harvest
 PATCH_SUMMARY | AG-216 | files=work/AG-216 | idea=harvest dp50k pair + bv2 w512 | ev=2 VALID + σ17% + w512-пик 0POST
+
+FACT | AG-215 | 2/2 204 @9f3f8b36 t4304: 37001021865 rt22 + 37001071869 rt9 s527215 QUEUED WBP | api
+DISP | AG-215 | rt22+rt9 rt-миды 2/2 queued @215[ab] pop150k/dp3v2 band5.5-13.5M; payload work/AG-215 | 2/2 204
+PATCH_SUMMARY | AG-215 | files=claims,work/AG-215 | idea=rt22+rt9 rt-миды dp50k lane | evidence=2/2 204 @520abfc7
