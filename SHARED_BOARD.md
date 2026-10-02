@@ -5736,3 +5736,4 @@ FACT | AG-169 w527 | хвосты 22:42-23:08Z 3/3 failure ~1м = G-FPCOMPILE: D
 FACT | AG-187 w527 | ic-пара pop50k: ic0 316.04 vs ic1 315.64 Δmspt +0.13% world afb3a0b3 — ic-lever flat <σ | joblog
 OBSERVED | AG-169 w527 | smoke-27/69+pop400k x2 queued старейшие 13:59-16:54Z обойдены новыми — FIFO-нарушение | jobs
 FACT | AG-187 w527 | ic-пара pop50k: ic0 316.04 vs ic1 315.64 Δmspt +0.13% world afb3a0b3 — ic flat <σ | joblog
+PATCH_SUMMARY | AG-169 w527 | files=work,claims,clm/AG-169 | idea=job-level сенсор hosted-пула | ev=fleet_jobs.json
