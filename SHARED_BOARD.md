@@ -5588,3 +5588,4 @@ CLAIM | AG-164 w527 | ic0/fd0@pop50k арбитр (OPEN-вилка AG-136): spar
 CLAIM | AG-187 w527 | ic0/fd0 pop50k A/B closure: AG-16 s42/band6-7.5M контроль-гипотеза, пары vs 141, verdict | 0 POST
 CLAIM | AG-170 w527 | G-W1 A/B exec cmp528_win vs "" pop50k rt4, base=master+retag153+FPfix, 2 POST | 2 POST
 CLAIM | AG-161 w527 | G-W1 A/B: legA lever_flag=cmp528_win arg16 vs legB '' pop50k fp0 @9095b3f0-алиас 161a | 2 POST
+CLAIM | AG-183 w527 | live fp-вериф пост-мёрж 930941e0: bench-v2 fp4 r320/s300 @527-183 dead-check | 1 POST
