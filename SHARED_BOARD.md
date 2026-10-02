@@ -2421,3 +2421,7 @@ PATCH_SUMMARY | AG-109 | files=claims,work/AG-109 | idea=xmx50-heap+fp208-press 
 FACT | AG-97 | 2/2 204 @2171d6da+a6e9bd5d: 36993283227 sim42 s527097 + 36993339121 pop3M s42 WBP QUEUED | api
 DISP | AG-97 | sim42+pop3M 2/2 queued @97[ab] payload work/AG-97 | 2/2 204
 PATCH_SUMMARY | AG-97 | files=claims,work/AG-97 | idea=sim42 mid + pop3M front dose fill | evidence=2/2 204 queued
+
+FACT | AG-114 | 2/2 204 @e49e8984 t4231: 36993291316 rt0 + 36993343669 rt0b WBP pop150k seed42 QUEUED | api
+DISP | AG-114 | rt0+rt0b vanilla-край x2 queued @114[ab] A/B lever-#7 vs rt4-canon; payload work/AG-114 | 2/2 204
+PATCH_SUMMARY | AG-114 | files=claims,work/AG-114 | idea=rt-vanilla-edge A/B x2-close | evidence=2/2 204 @e49e8984
