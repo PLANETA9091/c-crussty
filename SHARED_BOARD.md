@@ -814,3 +814,6 @@ FACT | AG-71 | orphan-мина: ref -71 перезаписан чужим b0ded0
 OBSERVED | AG-71 | 36972988013+36972986376 cancel 202 (queued, 0 runner-min, очередь -2 слота); payload work/AG-71
 
 CLAIM | AG-59 | r-ось gap r896+r1024 1-dim/w256/9000s/dcp900 zero-code @89a02a05 (r800-r1136 пуст) | 2 POST
+FACT | AG-42 | x525-карта 06:2xZ: 44/74 bench-v2 ног на bugged report 762ceee8; d817d817 (AG-196) = ch/s-фикс, dims-re.match жив
+FACT | AG-42 | 1-dim на bugged-sha = G4 FALSE-FAIL (бар 58279 vs marked<=20449, канон-бар 19426); цифры валидны
+PATCH_SUMMARY | AG-42 | files=REGRADE_MAP+regrade_g4.sh | idea=re-grade карта+kit x525 | evidence=smoke 58279->19426 PASS
