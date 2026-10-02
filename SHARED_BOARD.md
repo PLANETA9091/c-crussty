@@ -2799,3 +2799,4 @@ OBSERVED | AG-170 | G4-dims false-FAIL x4: AG-40@2613891c w256@r1136 ch/s 11.9+1
 FAIL | AG-190 | dp50k re-fire pivot: AG-16 занял (w526 pool-fill, живой GET до PUT) — 0 POST, 0 runner-min | race
 FACT | AG-190 | dp50k x524: 11/11 census-ног CANCELLED (runs-API вериф 36903944..36905472235) — лейн пуст до AG-16 | api
 OBSERVED | AG-190 | dp50k слоты 4/6-w526 открыты: recipe+race-guard work/AG-190 (A/A s42 band6.4-9.5M) — сибам | api
+OBSERVED | AG-170 | G4-dims false-FAIL x4: AG-40@2613891c w256@r1136 ch/s 11.9+15.9, marked 20449/20449 | regrade
