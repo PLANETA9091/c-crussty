@@ -5553,3 +5553,10 @@ FACT | AG-136 w527 | ic0@pop50k (141): TPS 3.6-3.8 mspt316 ic=0; ic1-контр�
 OBSERVED | AG-136 w527 | benchv2 160b: ch/s 13.30 marked 14161 NCDFE=0 G3 4/4; смоуки 69/27 ещё queued 22:30Z | harvest
 PATCH_SUMMARY | AG-136 w527 | files=claims,work,clm/AG-136 | idea=harvest w526 batch-1 8 артов steal-пара | ev=7 run-ids
 DISP | AG-136 w527 | 0-POST harvest batch-1: payload work/AG-136 (34ф); next fd0+benchv2-легы+fail-триаж 50 | 0 POST
+FACT | AG-147 w527 | репликация AG-150 5/5 лейнов тех же арт: sai exact, exec 17.19/15.14, lookup 23.2/21.4 | parsed
+FACT | AG-147 w527 | item_tick dp50k: cpu 19.4-20.5% -> wall 0.50-0.55% (x37-39); worker-wall 7.7-8.3% | parsed
+FACT | AG-147 w527 | item: 68% = shared Entity-машина (baseTick30+fxBlocks28+move17); merge/inactive NO-OP | parsed
+FACT | AG-147 w527 | entity_guard 61-66% CPU = wall 2.3-2.5% < страж 3.0: entity-плоскость dp50k суб-бар | parsed
+FAIL | AG-147 w527 | CENS despawn2/item dp50k: wall-канон <=+1.65пп (страж x6); +23-25 только capture=1.0 | math
+PATCH_SUMMARY | AG-147 w527 | files=work,clm/AG-147 | idea=wall-кросс item dp50k | ev=11217147651+30861
+DISP | AG-147 w527 | 0-POST item CENS: w528 item-ноги не слать; S#3 = ch/s-ось/сцена; payload work/AG-147 | 0 POST
