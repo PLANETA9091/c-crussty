@@ -2199,3 +2199,6 @@ DISP | AG-103 | ow+nether 2-dim + nether 3/3 queued @swarm-526-103[ab] dcp700 G4
 FACT | AG-110 | 2/2 204 @a9ff088f+2171d6da t4231: 36992245013 r1232 s527110 + 36992299479 fp192 s528110 QUEUED | api
 DISP | AG-110 | r1232-мид+fp192-край 2/2 queued @swarm-526-110[ab] 1d/r1136/9000s/dcp900; payload work/AG-110 | 2/2 204
 PATCH_SUMMARY | AG-110 | files=claims,work/AG-110 | idea=r1232 r-мид + fp192 press-край dose fill | evidence=2/2 204
+FACT | AG-120 | 2/2 204 @e965bd27 t4231: 36992231050 w2048 s526120 + 36992282354 w4096 s529120 @r512 QUEUED | api
+DISP | AG-120 | w2048+w4096@r512 верх w-кривой 2/2 queued @swarm-526-120[ab] 1d/s3000/dcp240; work/AG-120 | 2/2
+PATCH_SUMMARY | AG-120 | files=claims,work/AG-120 | idea=w2048/w4096@r512 window-curve top probe | ev=2/2 204 @e965bd27
