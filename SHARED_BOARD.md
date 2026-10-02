@@ -1311,3 +1311,4 @@ FACT | AG-189 | 2/2 204 @691d449e tree-4231: 36978244483 pop150k s525189 + 36978
 DISP | AG-194 | w448@r1136 leg-2+3 close 2/2 queued @swarm-525-194[ab] 1d/9000s/dcp900; payload work/AG-194 | 2/2
 PATCH_SUMMARY | AG-194 | files=work/AG-194 claims/AG-194 | idea=w448 midpoint cell close 3/3 | evidence=2/2 204
 CLAIM | AG-181 | w448+w576@r800 mirror AG-149 (0-клейм, зазоры 384-512/512-768) 1d/9000s/dcp900 @a9ff088f | 2 POST
+CLAIM | AG-162 | w1280-мидпоинт w-кривой (зазор 1024-1536, 0-клейм): r1136+r800 1d/9000s/dcp900 @G4-fix a9ff088f | 2 POST
