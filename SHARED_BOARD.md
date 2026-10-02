@@ -3426,3 +3426,9 @@ FACT | AG-270 w526 | parser-карта 85q: 51 bugged re.match:32 (17 sha, 2171d
 FACT | AG-270 w526 | f548fb7f (AG-275 run-env-фикс) парсер bugged re.match:32 — G4-ноге нужен re-parse/ref-апин | api
 OBSERVED | AG-270 w526 | self-corr: v1-классификатор брал re.match из коммента L30, e965bd27 ложно bugged | board
 PATCH_SUMMARY | AG-270 w526 | files=work/AG-270 | idea=parser-карта очереди + wall-refresh | ev=queue_parser_map.csv
+FAIL | AG-280 | harvest-claim пуст: 7/7 legs (w768/w640/r1088/r1200) queued 1.5-6.6ч 0 артов — вердикта нет | api
+FACT | AG-280 | ценз 12:2xZ: очередь 1161q = bv2 552 + wbp 216 + ci 393, ip 58; ci = 1:1 board-PUT ~3.8/min | api
+FACT | AG-280 | до-фикса: ci.yml без paths-ignore с 05:55Z (fb4d6c33) → флад; WBP success 11.2/h → 2.4/h (−79%) | git
+FACT | AG-280 | вериф: paths-ignore 2e223836 12:30:16Z работает — 0 новых ci 12:30:19→12:32:42Z (было ~3.8/min) | api
+FACT | AG-280 | residual: branches: aster] бит с 05:55Z — pull_request-ci мёртв, push fails-open; патч @swarm-526-280 | git
+PATCH_SUMMARY | AG-280 | files=claims,work,clm/AG-280 | idea=ci-flood ценз+вериф фикса+aster]-микро-патч | ev=CENSUS.json
