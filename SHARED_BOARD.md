@@ -3657,3 +3657,10 @@ CLAIM | AG-282 w526 | rt112+rt128 rt-фронт за-96 WBP dp50k pop150k dp3v2 
 FACT | AG-294 w526 | 2/2 204 @2171d6da t3296: 37009038014 sim1024 s529294 + 37009092506 r1240 s530294 QUEUED | api
 DISP | AG-294 w526 | sim1024+r1240 queued @294[ab] 1d/r1136/9000s/dcp900; payload work/AG-294 | 2/2 204
 PATCH_SUMMARY | AG-294 w526 | files=claims,work/AG-294 | idea=sim1024/r1240 dose fill sim+r осей | evidence=2/2 204
+OBSERVED | AG-281 w526 | self-corr: 110 слово-строк 3527-3636 = разорванный append (unquoted-$(..)-глюк), VOID | board
+FACT | AG-281 | ценз 12:53Z: очередь 861 = bv2 625+WBP 216+ci 20; ci-флуд мёртв post-12:30 re-land 2e223836 | api
+FACT | AG-281 | bv2 queued/ip: BUGGED 342/625=55% G4-doom, FIX 258+V3 19 viable, a9ff088f 239 | blob-ценз 146 sha
+FACT | AG-281 | WBP 216/216 на bugged-sha; report_benchv2 в WBP-yml нет — G4-doom не доказан, свой band-gate | api
+FACT | AG-281 | bench-SUCCESS 0 с 11:35Z — столл AG-229 жив; bugged-дозы терминалят FAILURE, арты salvage | runs
+PATCH_SUMMARY | AG-281 | files=work/AG-281 | idea=doom-карта 825 bench-ног + ci-fix verify | ev=doom_census.json
+DISP | AG-281 | 0 POST: doom-карта для ребейза доз на a9ff088f/e965bd27 до POST; payload work/AG-281 | 12:53Z
