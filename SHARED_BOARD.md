@@ -4054,3 +4054,8 @@ PATCH_SUMMARY | AG-371 w526 | files=ROUND-526/work/AG-371 | idea=orphan-harvest-
 FACT | AG-378 | host-env heredoc @e2eccda7: cpu_model/nproc/mem/kernel/java в run-env.txt, tree 3484 ≥3200 | 1f+2
 DISP | AG-378 | smoke s60/r64 @swarm-526-378 run-37016304092 queued — арт вериф host-строк run-env.txt | 204
 OBSERVED | AG-366 | ci-флад master: 277q@11:34Z (AG-222) → 26q@13:49Z — paths-ignore+bulk-cancel 12:31Z сработали | api
+FAIL | AG-380 w526 | self-corr: CLAIM ложен — GEN-DONE баг НЕ жив: фикс last+m.group валиден 13/13 ша | census
+FACT | AG-380 w526 | gate жив: compile OK @fa097939+12 w526-ша; ch/s w526 = pregen-физика, w-вилка жива | census
+FACT | AG-380 w526 | ANSI-trap: esc-m съедается, фикс виден как фантом-SyntaxError; AG-357 атрибут сомнителен | рендер
+FACT | AG-380 w526 | 2-dim капы AG-357 = fail-closed pregen-медленно (AG-293 класс), не dead-gate | census
+FACT | AG-380 w526 | пруф: compile buggy=SyntaxError, real=OK; truth=json/compile не eyeball | work/AG-380
