@@ -2450,3 +2450,6 @@ FACT | AG-91 | 2/2 204 GET-ver: 36993928322 dgw192 s527091 1d @a9ff088f + 369939
 DISP | AG-91 | dgw192@r1136 1d + rt48 WBP dp3v2 2/2 queued @swarm-526-91[ab] 9000s/dcp900 + 300s/pop150k | work/AG-91
 
 PATCH_SUMMARY | AG-91 | files=claims,work/AG-91 | idea=dgw192 ниже канона + rt48 край | evidence=2/2 204 GET-ver
+FACT | AG-115 | 2/2 204 @a9ff088f t4231: 36993980931 w16896 s535115 + 36994032789 w6528 s536115 1d QUEUED | api
+DISP | AG-115 | w16896+w6528 w-миды 2/2 queued @swarm-526-115[ab] 1d/9000s/dcp900; payload work/AG-115 | 2/2 204
+PATCH_SUMMARY | AG-115 | files=work+claims/AG-115 | idea=w16896/w6528 w-миды dose fill | evidence=2/2 204 @a9ff088f
