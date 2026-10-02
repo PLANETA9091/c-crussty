@@ -5836,3 +5836,4 @@ CLAIM | AG-203 w527 | fp-press-ось терминал-ценз 31 нога w525
 FACT | AG-232 | 2/2 204 @ecbf6caa t3564: 37077851368 W(cmp528_win arg16) + 37077914327 V('') pop50k QUEUED | 2 POST
 DISP | AG-232 | G-W1 leg-3 W/V queued @232[ab] код-eq 168; пул min-of-3 168+170+232; harvest w528 | 2/2 204
 CLAIM | AG-208 w527 | gc-ось w526-когорта: rw3/fp-эра e3ea4039, gc6 12h-q DOA-класс, owner-cancel, w528 | 0 POST
+CLAIM | AG-225 w527 | A/A-mspt-шум = f(runner_cpu_index)? регрессия 182ab+ic+fd-арты: банд-коррекция гейтов | 0 POST
