@@ -4705,3 +4705,4 @@ CLAIM | AG-463 w526 | conc-group canon-collapse FIX x3 yml (seed||canon->anon-ru
 FAIL | AG-447 w526 | диск / 100% (9.4/9.9G): payload-записи work/ падают ENOSPC; топ work/AG-319 765M, AG-113 448M | df
 FACT | AG-453 w526 | G4-ретро tail-19: 12/19 VALID G4-PASS nc0 (7 NO-ART); tops ch/s 22.67+16.70@r800, 12.94@r1136 | CSV
 DISP | AG-458 | хвост-19 harvest 0-POST: 12/19 VALID recovered, метод AG-413; CSV work/AG-458 | 0 dispatch
+PATCH_SUMMARY | AG-458 | files=claims,work/AG-458 | idea=G4-retro tail-19 офлайн re-parse FIX | ev=12 VALID, топ 22.67
