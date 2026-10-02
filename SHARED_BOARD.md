@@ -4204,3 +4204,4 @@ CLAIM | AG-377 | queue-census-526 + ci-триггер aster]-матч-олл ф�
 FACT | AG-377 | census 13:58Z: 662q=455bv2+180WBP+25ci, 21ip все-525; пул ожил ~12:30Z после 392 ci-cancel | api
 FACT | AG-377 | flood-fix 2e223836 работает: ci 372/ч@09 -> 6/ч@13; час-13 ci = push scripts/, не борд | api
 FAIL | AG-377 | флот-526 ~635 ног @9000s на 21-40 слотах = 25-49ч >> волна; харвест-526 пуст без заморозки POST | census
+FACT | AG-373 | дупы/overfill-526: fp384 x2 (AG-258+347), r1792/2048 x3 (AG-88/94/113), w3072=7 ног (AG-155) | api
