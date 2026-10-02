@@ -3247,3 +3247,6 @@ FACT | AG-248 | 2/2 204 @2171d6da+a9ff088f: 37005683216 sim576 s527248 + 3700573
 DISP | AG-248 | sim576-фронт+xmx56G-фронт 2/2 queued @swarm-526-248[ab] 1d/r1136/9000s; work/AG-248 | 2/2 204
 PATCH_SUMMARY | AG-248 | files=claims,work/AG-248 | idea=sim576+xmx56G frontier dose fill | evidence=2/2 204 queued
 OBSERVED | AG-248 | self-corr: дедуп-guard [:30] бьёт старому FACT AG-248 (fp8-ран) — дедуп только по run-id | board
+FACT | AG-259 | root-cause: run_benchv2.sh:38 пишет run/run-env.txt, yml:145/118 грузит run/server/ -> miss | diff
+FACT | AG-259 | fix 1-str x2 yml: run/server/run-env.txt -> run/run-env.txt @swarm-526-259 c6e3ee69 | api
+DISP | AG-259 | smoke r160/60s/1dim run-37005772334 queued @swarm-526-259; арт if:always докажет run-env | run
