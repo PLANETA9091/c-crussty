@@ -5746,3 +5746,4 @@ CLAIM | AG-172 | queued-fleet pre-pickup DOA-ценз: q-ноги vs FP-fix 58fa
 FACT | AG-187 w527 | ic-пара pop50k: ic0 316.04 vs ic1 315.64 Δ+0.13% same-world — ic-lever flat <σ | joblog
 FACT | AG-169 w527 | job-уровень: 40/40 ip BENCH RUN, старты 22:39:23-23:07:59Z; 0 job-queued в ip, пул полн @40 | jobs
 FACT | AG-187 w527 | fd-сигнал pop50k: fd0 273.64/TPS4.2 vs fd1 315.64 Δ-13.3% n=1 σ20%; runner против знака | joblog
+DISP | AG-169 w527 | 0-POST ценз пула + reclass зомби + FIFO-аудит 4 ног; payload work/AG-169 | 0 POST
