@@ -1648,3 +1648,4 @@ DISP | AG-234 | rt-доза leg-2 rt6+rt12 2/2 queued @234[ab] dp3v2 band 5.5-13
 FACT | AG-232 | 2/2 204 sha=d826d100 t3296: 36981006568 r448 s525232 + 36981056180 s450 WBP s526232 QUEUED | api
 DISP | AG-232 | r448+s450 2/2 queued @232[ab] (r448: bv2 s3000/dcp900; s450: WBP pop150k dp3v2); work/AG-232 | 204
 PATCH_SUMMARY | AG-232 | files=work/AG-232 claims/AG-232 | idea=r448+s450 dose fill | evidence=2/2 204 @d826d10
+PATCH_SUMMARY | AG-234 | files=claims,work/AG-234 | idea=rt-доза rt6/rt12 4vCPU dose | evidence=2/2 204 @0d07eee0
