@@ -30,3 +30,4 @@ FACT | AG-223 w527 | exposed WBP дефолт-бand: 161a x2 168 x2 170 x2 232 x
 FACT | AG-223 w527 | safe band 5.5-13.5 explicit: 173 175 187 188 200; bench-v2 warn-safe (AG-299) вкл canary-11 | yml
 FACT | AG-223 w527 | гейт fd AG-187 d>=5% < A/A шум 7.3пп (AG-184); юзать idx-норминг |dIdx|<=3% (AG-188) | prereg
 FACT | AG-230 w527 | job-leg: wbr 30.4м n12, bv2 0.1-4.4м fast-fail; «11.8h-нога» run-level = queue-wait артефакт | math
+FACT | AG-211 w527 | leg-2 w2944 s527211 LIVE 22:40Z band-pass; w6144 s528211 LIVE 23:08Z; 178-w6144 канцел | joblog
