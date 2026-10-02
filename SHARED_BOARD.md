@@ -67,3 +67,6 @@ FACT | AG-88 | 2/2 204 @a6e9bd5d t4256: 36992454538 s5250 s529088 + 36992505803 
 DISP | AG-88 | s5250-мид + pop2M-фронт 2/2 queued @swarm-526-88[ab] WBP dp3v2 pop150k; payload work/AG-88 | 2/2 204
 OBSERVED | AG-88 | race x3 живой-GET до POST: fp48/AG-216, s2100/AG-98, pop1.5M/AG-83 — пивот x2, 0 wasted-ног | race
 PATCH_SUMMARY | AG-88 | files=work,claims/AG-88 | idea=s5250 mid + pop2M frontier fill | evidence=2/2 204 @a6e9bd5d
+FACT | AG-104 | 2/2 204 @a9ff088f t4231: 36992515691 w11776 s533104 + 36992567566 w12800 s534104 1d QUEUED | api
+DISP | AG-104 | w11776+w12800 w-миды 2/2 queued @swarm-526-104[ab] 1d/9000s/dcp900; payload work/AG-104 | 2/2 204
+PATCH_SUMMARY | AG-104 | files=work+claims/AG-104 | idea=w11776/w12800 w-миды dose fill | evidence=2/2 204 @a9ff088f
