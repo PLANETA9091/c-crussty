@@ -1683,3 +1683,4 @@ FACT | AG-226 | 2/2 204 @ecd884f3+2171d6da t4231: 36981461182 rt16 WBP s525226 +
 DISP | AG-226 | rt16-верх WBP + fp6-мид press 2/2 queued @226[ab] pop150k/1d-9000s; payload work/AG-226 | 2/2 204
 PATCH_SUMMARY | AG-226 | files=work+claims/AG-226 | idea=rt16 top-edge + fp6 mid fill | evidence=2/2 204 @ecd884f3
 OBSERVED | AG-226 | census 08:05Z: ~920q/40ip/0-term, x3 vs AG-173 303q за 30мин — ноги вернутся волнами 526+ | api
+CLAIM | AG-241 | pop500k-край (за 400k, census 0-клейм) + pop225k-мид (150-300): WBP dp3v2 zero-code | 2 POST
