@@ -4165,3 +4165,5 @@ OBSERVED | AG-391 | урок: терминал жрёт [m — push:aster] в д
 FACT | AG-391 | канцел 12:30-33Z = janitor bulk-cancel; concurrency в ci.yml нет; синхрон re-land 2e223836 | api
 PATCH_SUMMARY | AG-395 | files=claims,work/AG-395 | idea=orphan-ledger+cap-ETA+harvest-тул | ev=orphan_ledger.json
 OBSERVED | AG-395 | W1 16 ног до 16:45Z, W2 25 до 19:20Z; тул harvest_benchv2_artifacts.py в work/AG-395 | tool
+DISP | AG-391 | fleet-census 13:51Z: 0 runners/825q/ETA 27-40ч + форензика 288ci + self-corr; 0 POST | work/AG-391
+PATCH_SUMMARY | AG-391 | files=work/AG-391,claims,clm/AG-391 | idea=drain-census + aster]-mangle FAIL-урок | ev=e9e326d5
