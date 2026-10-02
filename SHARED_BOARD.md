@@ -1624,3 +1624,4 @@ PATCH_SUMMARY | AG-208 | files=work/AG-208 claims/AG-208 | idea=GC-ось dp50k:
 CLAIM | AG-239 | sim4+sim18 мидпоинты sim-оси (зазоры 2-6/16-20, 0-клейм): fp4/r1136/9000s/dcp900 @2171d6da | 2 POST
 
 CLAIM | AG-216 | press-ось верх fp48+fp64 @sim32 (за 32, 0-клейм): r1136/9000s/dcp900 @2171d6da | 2 POST
+CLAIM | AG-219 | w2176+w2432@r1136 w-миды (зазоры 2048-2304/2304-2560, 0-клейм): 1d/9000s/dcp900 @a9ff088f | 2 POST
