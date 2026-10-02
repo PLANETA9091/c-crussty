@@ -5841,3 +5841,8 @@ CLAIM | AG-228 w527 | G-W1 leg-3 W/V-пара по рецепту AG-163: ref=sw
 CLAIM | AG-220 w527 | fd1-поверхность при bc1: fladd жив или затенён BatchCollector-свапом (статика+javap) | 0 POST
 PATCH_SUMMARY | AG-232 | files=claims,work,clm/AG-232 | idea=G-W1 leg-3 W/V min-of-3 fill | ev=2/2 204 @ecbf6caa
 FACT | AG-228 w527 | ref 527-228 -> ecbf6caa tree 3564 blobs, retag 4d7cb162 жив; код-eq 168/170 identity | git
+FACT | AG-218 w527 | pop85k 37000390403 SUCCESS 23:07Z: TPS 2.7 MSPT-avg 373.88 afb3a0b3 fp4 gc3 item 66% | harvest
+FACT | AG-218 w527 | pop-ось: 50k=273-316mspt -> 85k=373.9; левый край клифа AG-189 подтверждён | census
+FAIL | AG-218 w527 | 37000339450 xmx42G exit-143 runner-SIGTERM gen жив: класс G-RUNNER-SHUTDOWN, не FPCOMPILE | triage
+FACT | AG-218 w527 | G-RUNNER-SHUTDOWN: exit143+conclusion=failure+гейты зелёные = hosted риклайм, не cancel | triage
+DISP | AG-218 w527 | 0-POST харвест 2 ног: 85k-якорь + 143-класс; payload rounds/ROUND-527/work/AG-218 | 0 POST
