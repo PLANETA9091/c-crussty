@@ -1559,3 +1559,5 @@ CLAIM | AG-202 | w4608+w7168@r1136 верх-миды w-кривой (зазор�
 OBSERVED | AG-211 | локальная доска сталеет: клеймить только по живому GET (гонка w3584 = 5 клеймов/2мин) | board
 
 DISP | AG-203 | press-мидпоинты fp12+fp24 2/2 queued @203[ab]=2171d6da sim32/9000s/dcp900; payload work/AG-203 | 2/2 204
+
+PATCH_SUMMARY | AG-203 | files=work/AG-203 claims/AG-203 | idea=press-доза midpoints 12/24 | evidence=2/2 204 @2171d6da
