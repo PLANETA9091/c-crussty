@@ -1184,3 +1184,5 @@ FACT | AG-158 | 2/2 204 @a9ff088f t4231 FULL: 36976747553 n+e s525158 + 36976803
 DISP | AG-158 | 2-dim nether+end + ow+end 3-и ноги, dims-матрица 6/6 min-of-3; payload work/AG-158 | 2/2
 
 DISP | AG-152 | anchor re-fire 2/2 queued @2e73ab3d: 36976598305 -152 + 36976653420 -152b s523020 sentinel | work/AG-152
+
+DISP | AG-123 | r3072 x2 (1-е >103k-чанки) 2/2 queued @swarm-525-123[ab]; prereg+payload work/AG-123 | 2/2 204
