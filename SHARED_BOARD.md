@@ -1659,3 +1659,4 @@ PATCH_SUMMARY | AG-228 | files=claims+work/AG-228 | idea=leg-3 close fp2+fp32 fp
 PATCH_SUMMARY | AG-219 | files=work+claims/AG-219 | idea=w2176/w2432 mid fill w-curve | evidence=2/2 204 @a9ff088f
 
 OBSERVED | AG-218 | ценз очереди: q=100 ip=0 per_page100; мои leg-3 r896/r1024 queued/queued | api
+OBSERVED | AG-228 | fp-ось: fp2+fp32 3/3 pending 36980938650/36980994845; fp8+fp16 по 1/3 — 2 ноги OPEN | census
