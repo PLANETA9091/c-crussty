@@ -1706,3 +1706,6 @@ PATCH_SUMMARY | AG-265 | files=work+claims/AG-265 | idea=w-кривая top 1024
 CLAIM | AG-244 | fp20+fp28 press-миды (зазоры 16-24/24-32, 0-клейм): sim32/r1136/9000s/dcp900 @2171d6da | 2 POST
 
 CLAIM | AG-277 | pop-миды dp50k-lane WBP: pop175k (зазор 150-200) + pop250k (зазор 200-300), 0-клейм: dp3v2 zero-code | 2 POST
+FACT | AG-249 | 2/2 204 @a9ff088f tree-4231: 36982379583 w1216 s525249 + 36982436399 w4864 s526249 QUEUED | api
+DISP | AG-249 | w1216+w4864 w-миды 2/2 queued @swarm-525-249[ab] 1d/9000s/dcp900; prereg+payload work/AG-249 | 2/2 204
+PATCH_SUMMARY | AG-249 | files=claims+work/AG-249 | idea=w1216/w4864 midpoint fill | evidence=2/2 204 @a9ff088f
