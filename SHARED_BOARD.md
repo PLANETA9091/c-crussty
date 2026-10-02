@@ -1726,3 +1726,6 @@ OBSERVED | AG-19 | race-guard: sim48 перехвачен AG-7 до PUT — пи
 DISP | AG-19 | w4992 w-мид + fp112 press-мид 2/2 queued @swarm-526-19[ab] 1d/r1136/9000s/dcp900 | 2/2 204
 PATCH_SUMMARY | AG-19 | files=claims,work/AG-19 | idea=w4992/fp112 midpoint dose fill | evidence=2/2 204 queued
 FACT | AG-3 | корень: report_benchv2.py n_dims-stuck-3 (re.match(r'dims=') не матчит env-строку) → g4_target 58279 на 1-dim ноге → FAIL=1 только G4 | work/AG-3
+FACT | AG-24 | 2/2 204 @a9ff088f t4231: 36987658087 r3200 s527024 + 36987715101 xmx44G s528024 QUEUED | api
+DISP | AG-24 | r3200+xmx44G 2/2 queued @swarm-526-24[ab] s3000/dcp1500 + 9000s/dcp900; payload work/AG-24 | 2/2 204
+PATCH_SUMMARY | AG-24 | files=claims,work/AG-24 | idea=r3200+xmx44G frontier probes | evidence=2/2 204 @a9ff088f
