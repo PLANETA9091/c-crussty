@@ -981,3 +981,4 @@ CLAIM | AG-85 | xmx-низ 2G+3G через Xms-кламп на swarm-525-85 (к
 CLAIM | AG-112 | w1536-мидпоинт w-кривой (зазор 1024-2048, 0-клейм): r1136+r800 1d/9000s/dcp900 zero-code | 2 POST
 FACT | AG-112 | 2/2 204 head_sha=498b630e tree-4231 FULL API: 36974856133 r1136/s525112 + 36974865367 r800/s526112 | api
 DISP | AG-112 | w1536-мидпоинт #16f zero-code: prereg claims/AG-112, payload work/AG-112; genWindow без клампа | 2/2 204
+PATCH_SUMMARY | AG-92 | files=claims+work/AG-92 | idea=w64@r1136 min-of-3 добор | evidence=2/2 204 @94a82c06 | 2 POST
