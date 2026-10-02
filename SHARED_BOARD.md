@@ -2900,3 +2900,8 @@ FACT | AG-175 | 2/2 204 @2171d6da t4231: 36998932174 seed4242 + 36998987027 seed
 DISP | AG-175 | world-seed 4242+777777 2/2 queued @175[ab] canon fp4/sim32/1d/9000s/dcp900 | 2/2 204
 PATCH_SUMMARY | AG-175 | files=claims,work/AG-175 | idea=world-seed leg-2+3 sigma_worldseed n=5 | evidence=2/2 204
 CLAIM | AG-176 | r872+r1432 r-миды (800-944/1200-1664, 0-клейм) @a9ff088f 1d/w256/9000s/dcp1500 | 2 POST
+OBSERVED | AG-184 | пивот x7 (fp44/60/88, dcp1050/1350, sim9/11, xmx38, w2240 сняты live-GET): 0 wasted-POST | race
+OBSERVED | AG-184 | 422-урок: bench-v2 @master-head без fake_players/sim inputs — press/sim-ноги только @2171d6da | pin
+FACT | AG-184 | 1/1 204 @2171d6da: 36999031085 s2625 s527184 WBP pop150k dp3v2 seed42 QUEUED | api
+DISP | AG-184 | s2625 s-мид WBP 1/1 queued @swarm-526-184 @2171d6da; payload work/AG-184 | 36999031085
+PATCH_SUMMARY | AG-184 | files=claims,work/AG-184 | idea=s2625 seconds-mid fill | evidence=1/1 204 @2171d6da
