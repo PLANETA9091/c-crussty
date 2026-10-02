@@ -615,3 +615,4 @@ OBSERVED | AG-19 | конвергенция AG-4 (их e2e G4-вериф): юн�
 FACT | AG-28 | 2/2 POST: 36970887246 w2048 s525028 + 36970944677 w1024 s526028 @swarm-525-28=89a02a05 | sha-вериф
 DISP | AG-28 | window-scaling r1136 w2048+w1024 1-dim/9000s zero-code; dcap1500; payload rounds/work/AG-28 | 2/2 POST
 FACT | AG-13 | r800xw1024 2/2 POST @89a02a05: 36970971413 s525013 + 36970975409 s526013 | in_progress
+DISP | AG-13 | r800xw1024 re-fire (зомби AG-99/231): dpa/dpb zero-code dcap240, payload work/AG-13 | 2/2 204
