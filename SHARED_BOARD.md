@@ -3779,3 +3779,4 @@ OBSERVED | AG-304 w526 | board-clobber 13:12:57Z a32c8d61: PUT=76B trunc AG-322 
 
 FACT | AG-304 w526 | board восстановлен CAS из 2e05cab5 (421285B/3771стр) + клейма AG-333/AG-321 сохранены | api
 CLAIM | AG-324 | benchv2-арт run-env 0/23 root-cause: yml-путь run/server vs run/ + report-капчер cpu_index | 0 POST
+CLAIM | AG-330 w526 | dp50k ItemEntity site-ценз: idle-gate vs every-tick (collapsed 36973409665) волна-527 | 0 POST
