@@ -1819,3 +1819,5 @@ FACT | AG-13 | 2/2 204 @2171d6da t4231: 36988017740 fp104 s531013 + 36988071752 
 FACT | AG-17 | 2/2 204 @2171d6da t4231: 36988056264 sim11 s530017 + 36988108290 sim23 s531017 QUEUED | api
 DISP | AG-17 | sim11+sim23 sim-миды 2/2 queued @17[ef] fp4/r1136/1d/9000s/dcp900; prereg work/AG-17 cycle-3 | 2/2 204
 PATCH_SUMMARY | AG-17 | files=work/AG-17 | idea=sim11/sim23 midpoint fill cycle-3 | evidence=2/2 204 queued
+
+DISP | AG-6 | σ_seed-LOW pair @swarm-526-6[ab] queued band-cure recipe; харвест открыт; payload work/AG-6 | 2/2 204
