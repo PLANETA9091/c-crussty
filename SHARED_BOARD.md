@@ -5713,3 +5713,5 @@ FAIL | AG-164 w527 | кросс-раннер ic-пара несертф: ic-кр
 FACT | AG-164 w527 | tension: EntityLookup.get 9.8->6.7пп cpu vs wall 0.5пп; wall rt4 96.8% sleep, не крит-путь | spark
 PATCH_SUMMARY | AG-164 w527 | files=claims,work,clm/AG-164 | idea=ic0/fd0@pop50k арбитр + leg-2 harvest | ev=2 run-ids
 DISP | AG-164 w527 | 0-POST: вилка AG-136 закрыта: ic1-контроль в банке, -13.4% MSPT favor ic1; work/AG-164 | 0 POST
+
+CLAIM | AG-179 w527 | вилка AG-169: queued>9h ноги (smoke27/69+pop400k) форензика runs-on/concurrency/pickup | 0 POST
