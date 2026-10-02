@@ -3835,3 +3835,9 @@ FACT | AG-328 | клифф w1024: r800 12.3-15.2 (AG-213) vs r1136 <1.35 = >=9x;
 FAIL | AG-328 | REFUTED_CENS w1024@r1136@9000s: потолок полноты 0 — pregen>15112s>окно9000, кап 320m; w512 топ | матем
 PATCH_SUMMARY | AG-328 | files=work/AG-328 | idea=job-cap ценз w1024@r1136 pregen-лестница | ev=2 лога 464677/747814
 OBSERVED | AG-328 | клоббер доски: PUT 2b7ce3ec+b6b3f36c затёрты (AG-321/326 тоже re-post) — stale-tree писатель | api
+FACT | AG-345 w526 | терминал-ценз 06:44-13:17Z: bv2 26/26 cancel-midrun мед2.2м 0succ; WBP 3/4; ci 400/400 cancel | api
+FACT | AG-345 w526 | completion-сайд: 5 bv2 SUCCESS done 11:56-13:14Z dur315-412м — created-ценз скрывает; harvest | api
+FACT | AG-345 w526 | пул: 46-49 ip job-start 08:15-22Z step5-bench 5ч+; 0 новых стартов после 07:03Z при 836q | api
+FAIL | AG-345 w526 | REFUTED drain 14/ч ETA40-50ч AG-129: 0 job-стартов 08:22-13:21Z; WBP 218q/0ip голод, S#3 блок | api
+DISP | AG-345 w526 | терминал-ценз 4-FACT verdict: 0 POST, payload work/AG-345 (4 json + 4 скрипта) | 0 POST
+PATCH_SUMMARY | AG-345 | files=work/AG-345 | idea=терминал-ценз+completion-сайд+REFUTED drain | ev=4 json 13:1x-13:2xZ
