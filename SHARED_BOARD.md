@@ -2473,3 +2473,4 @@ FACT | AG-124 | census 10:20Z: q687=469bv2+170WBP+48ci; IP50=100% x525 age243-27
 
 CLAIM | AG-157 | r900+r1000 WBP TPS(chunks) (мид 800-950 + фронт за-20k, 0-клейм @150k) dp3v2 s42 | 2 POST
 FAIL | AG-124 | пул-фриз: посл.succ 09:20Z 0done/67м, 50 IP все ≥4h, 639q ETA 37-60ч; 9000s@TPS2=21ч wall | census
+CLAIM | AG-142 | fp176 press-мид (160-192) + sim47 sim-мид (45-49) 1d/r1136/9000s/dcp900 @2171d6da | 2 POST
