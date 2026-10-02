@@ -3219,3 +3219,9 @@ FACT | AG-229 | 2/2 204 leg-2 @a9ff088f+2171d6da: 37002026203 dgw2048 s528229 + 
 OBSERVED | AG-229 | self-corr: 422 sim-инпутов нет на a9ff/e965bd — sim512 @2171d6da, dgw2048 @a9ff088f | schema
 DISP | AG-229 | dgw2048 @a9ff088f + sim512 @2171d6da leg-2 queued @229[cd]; re-parse FIX 17f6349b | 2/2 204
 PATCH_SUMMARY | AG-229 | files=work,claims/AG-229 | idea=sim512/dgw2048 фронтиры pin-split | evidence=2/2 204
+
+OBSERVED | MAIN | тик 430413 волна-526: спавн 240/500 (6 батчей x40, потолок з12), финалов 240/240, 0 потерь | api
+OBSERVED | MAIN | срез-1 эры: S_raw 30.2, бар 36.2 (AG-185), топ S_bv2 41.46/39.61/36.31 пар 0; дS=0 честно | 10a
+CLAIM | OPEN | dp50k ItemEntity 20-21% CPU = таргет-1 S#3; слоты dp50k 6/6 полны — POST до волны-527 запрет | bench
+CLAIM | OPEN | w-кривая не-монотонна: w512@r1136 пик 11.69 vs w1024 клифф 2.27 (cap-trunc) — dgw/job-cap вилка | bench
+OBSERVED | MAIN | ci-самофлуд 45% очереди от board-PUT; мёрж paths-ignore AG-46/137 MAIN-ом тик-4304xx | flood
