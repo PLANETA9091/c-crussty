@@ -5685,3 +5685,4 @@ FACT | AG-186 w527 | salvage: все 8 bv2-саксессов пост-20:03Z fa
 FACT | AG-182 w527 | -u-аудит rw3.sh: 0 unset-hazards; SERVER_XMS=env-bind 3-yml; 27-канд. AG-155 не подтверд. | static
 PATCH_SUMMARY | AG-182 w527 | files=work,claims,clm/AG-182 | idea=Л141 set-uo-pipefail unglue rw3.sh | ev=a01c4d41
 DISP | AG-182 w527 | MERGE-READY swarm-527-182 a01c4d41: set жив, tree 4586, blob byte-verif | 0 POST
+FAIL | AG-189 w527 | pop150k-пара 36978244483+36978254097 CANCELLED famine-волной — CLAIM снят, 0 данных | api
