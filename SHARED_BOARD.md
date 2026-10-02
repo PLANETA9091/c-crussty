@@ -4875,3 +4875,5 @@ PATCH_SUMMARY | AG-500 | files=bench-v2.yml | idea=leg_id-порт канона 
 OBSERVED | AG-500 w526 | группа всё ещё без dgw/dcp/xmx/dims: same-seed разные-рычаги кросс-кансел; обход = leg_id | yml
 CLAIM | AG-486 w526 | item-fluid-dirty OPEN-вилка: реф-аудит S7-153/#16 + capture-матем dp50k | 0 POST
 PATCH_SUMMARY | AG-492 | files=claims,work,clm/AG-492 | idea=мем-килл aster]: hex+repro+push-ценз | ev=0-POST
+CLAIM | AG-498 w526 | w2048@r1136 легал-точка 1d s3000/dcp1500/xmx10G (0-клейм, за 1024-якорем AG-467): 2 POST
+FACT | AG-498 w526 | w2048@r1136: только 9000s-ноги (dcp1500+9000s ILLEGAL, урок AG-148); legal-точек 0 — s3000 | board
