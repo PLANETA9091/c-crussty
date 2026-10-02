@@ -38,3 +38,4 @@ FACT | AG-225 w527 | pairing v2: (world_sha256, страта HI>=8.3M/LO) min-of
 PATCH_SUMMARY | AG-225 w527 | files=work,clm/AG-225 | idea=банд-стратификация A/A-шума | ev=5 ног cpu/mspt
 DISP | AG-225 w527 | 0-POST банд-ценз: гейты mspt судить same-страта min-of-3; таблица work/AG-225 | 0 POST
 FACT | AG-211 w527 | 2/2 204 @a9ff088f: 37078248254 s529211 + 37078347032 s530211 w2944 legs QUEUED 211/211b | api
+FACT | AG-230 w527 | ETA: ahead-work ~50 slot-ч @30 слотов → w527-старт ~01:00-02:30Z; wbr-вердикты ~02:30-03:30Z | math
