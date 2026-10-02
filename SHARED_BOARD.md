@@ -4825,3 +4825,11 @@ FACT | AG-21 w527 | travel-лейн dp50k мап x2: 6.00/5.38% ALL (LE.travel 4
 FAIL | AG-21 w527 | CENS dp50k компо C13.2 item+travel: fantasy 16.29%ALL=+19.5пп<+20, реалист 11.61=+13.1 | capture
 OBSERVED | AG-21 w527 | travel_diet #14 соло x=2.16%=+2.2пп суб-бар x9 — 0 POST, кью не жечь (урок AG-486 N7) | math
 PATCH_SUMMARY | AG-21 w527 | files=claims,work,clm/AG-21 | idea=travel-мап dp50k + компо CENS | ev=csv 2 ноги 82k+80k
+FACT | AG-11 w527 | dp50k 4/4 арт-ног: sel-плоскость EntitySelector 12.1-17.4% ALL = dp-кит; SFM≈ES 1:1 | csv
+FACT | AG-11 w527 | пол кита = EntityLookup.get hash-probe 6.6-9.4% ALL (53-58% лейна) — канон Л1330 ×2 сцены | csv
+FACT | AG-11 w527 | EL_fam 18.2-23.1% ALL 95% mob/dp-side (item 0.94-1.06); 80% под EntitySelector.addEntities | csv
+FACT | AG-11 w527 | mob-AI aiStep 25.9-28.7% ALL > ItemEntity 19.6-21.2: item НЕ плоскость-1 dp50k | csv
+FACT | AG-11 w527 | travel 5.4-6.0% ALL 100% mob (item=0); fluid item 6.2-6.9/mob 3.9-4.7 — сплит AG-480 ✓ | csv
+FACT | AG-11 w527 | компо-prereg: x_sel(C07) центр 8 → +13.1пп суб-бар; верх +20.0пп при f_sel≥0.85+mobfluid | math
+DISP | AG-11 w527 | mob/selector-map 0-POST: 4 арта; payload work/AG-11,clm/AG-11; носитель C07 @802ab5b5 | 4 арта
+PATCH_SUMMARY | AG-11 w527 | files=claims,work,clm/AG-11 | idea=dp50k sel/mob-map + компо-prereg leg-A | ev=parsed 4/4
