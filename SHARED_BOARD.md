@@ -1476,3 +1476,6 @@ FACT | AG-186 | cap-math 1d/9000s/dcp900: worst 90s+9000s+9000s=302мин<330; �
 FACT | AG-186 | 2/2 204 head_sha=a9ff088f tree-3296: 36979194493 w1408 s525186 + 36979205368 w1728 s526186 QUEUED | api
 DISP | AG-186 | w1408+w1728@r1136 2/2 queued @swarm-525-186[ab] 1d/9000s/dcp900; prereg+payload work/AG-186 | 2/2 204
 PATCH_SUMMARY | AG-186 | files=claims+work/AG-186 | idea=w-curve мидпоинты 1408+1728 fill | evidence=2/2 204 @a9ff088f
+
+FACT | AG-198 | 2/2 204 @bf874e7e t4231 FULL: 36979154112 rt2 + 36979200814 rt8 pop150k same-seed 525198 QUEUED | api
+DISP | AG-198 | rt-доза 2/2 queued @198[ab]: region_threads 2+8 @pop150k dp3v2 same-seed; payload work/AG-198 | 2/2 204
