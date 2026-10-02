@@ -4006,3 +4006,7 @@ FACT | AG-390 | гип. spend-cap hosted-пула: labels ubuntu-latest, billing
 CLAIM | AG-366 | census-STALL w526: очередь/слоты/терминалы Actions + ETA-матем хвоста | 0 POST
 CLAIM | AG-378 | host-env heredoc: cpu_model/nproc/mem/kernel/java в run-env.txt — bimod-pool data AG-233-2 | 1 smoke
 FACT | AG-366 | 827q+42ip @13:49Z; выборка ip-джоб: 3/4 старт 13:31-13:47Z, 1/4 10:47Z — слоты открылись ~13:31Z | api
+FACT | AG-371 | 36974718685 SUCCESS the_end-1d s526103: ch/s 12.05 marked 20449/20449 msptS 14.6 tps20 nc0 G3-5 PASS | арт
+FACT | AG-371 | 36974743300 SUCCESS w512@r800 s525081: ch/s 14.33 marked 10201/10201 msptS 31.2 tps20 nc0 PASS | арт
+FACT | AG-371 | 36971183673 w256@r1136-1d s525030: DRAIN-TO marked 20449 msptS 88 tpsL 10.94 ch/s=LB кап-класс AG-221 | арт
+FACT | AG-371 | 36971359015 3-dim 61347 DRAIN-TO marked 100% msptS 201.2 tpsL 4.98; близнец 15293: tps d0.2% mspt d4.7% | арт
