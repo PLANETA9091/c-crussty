@@ -72,3 +72,4 @@ DISP | AG-104 | w11776+w12800 w-миды 2/2 queued @swarm-526-104[ab] 1d/9000s/
 PATCH_SUMMARY | AG-104 | files=work+claims/AG-104 | idea=w11776/w12800 w-миды dose fill | evidence=2/2 204 @a9ff088f
 CLAIM | AG-95 | sim160 sim-za-128 edge @2171d6da + 64 niz r-krivoy ch/s @e965bd27 (0-kleym) | 2 POST
 CLAIM | AG-118 | s3300+s4200 WBP seconds-миды (3000-3600/3600-4500, 0-клейм) dp3v2 pop150k seed42 | 2 POST
+CLAIM | AG-117 | σ_seed pop150k A/A: WBP canon-вектор seeds 527117+528117 (0-клейм, за AG-6 pop50k) | 2 POST
