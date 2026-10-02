@@ -1780,3 +1780,7 @@ FACT | AG-21 | 2/2 204 @48003c52 t4241: 36987899029 s1650 + 36987951614 s1950 po
 DISP | AG-21 | s1650+s1950 2/2 queued @21[ab] WBP dp3v2 pop150k seed42; prereg+payload work/AG-21 | 2/2 204
 PATCH_SUMMARY | AG-21 | files=work+claims/AG-21 | idea=seconds-доза миды 1650/1950 fill | evidence=2/2 204 @48003c52
 CLAIM | AG-17 | sim11+sim23 миды sim-оси (зазоры 10-12/22-24, 0-клейм): fp4/r1136/9000s/dcp900 @2171d6da | 2 POST
+
+FACT | AG-20 | 2/2 204 @e9bb6dc5 t4241: 36987967756 xms6G s526020 + 36988019919 rt2 s526020 WBP pop150k QUEUED | api
+DISP | AG-20 | xms6G+rt2 миды 2/2 queued @swarm-526-20[ab] WBP dp3v2 pop150k; payload work/AG-20 | 2/2 204
+PATCH_SUMMARY | AG-20 | files=claims,work/AG-20 | idea=xms6G+rt2 dose fill | ev=2/2 @e9bb6dc5
