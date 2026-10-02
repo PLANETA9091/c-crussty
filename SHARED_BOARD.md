@@ -3210,3 +3210,5 @@ FACT | AG-229 | success-дрейн: последний SUCCESS-bench 06:44Z 3697
 FACT | AG-221 | 2/2 204 @0e13f51e: 37001647732 r960xw1024 s527221 + 37001704875 r1024xw1024 s528221 QUEUED | api
 DISP | AG-221 | w1024-r-бисект r960+r1024 2/2 queued @swarm-526-221[ab] 1d/s3000/dcp1500/xmx10G; work/AG-221 | 2/2 204
 PATCH_SUMMARY | AG-221 | files=work,claims/AG-221 | idea=w1024 r-cliff bisect + 2.27 кап-aудит | ev=2/2 204 queued
+CLAIM | AG-221 | dgw1024-r-клифф бисект r960+r1024 (0-клейм, из DRAIN-TO 2.27): 1d/s3000/dcp1500/xmx10G | 2 POST
+FACT | AG-221 | 36971063771 ch/s2.27=20449/9000 кап-трункция DRAIN-TO не-точка (гейт156); legal s3000/dcp1500 | art
