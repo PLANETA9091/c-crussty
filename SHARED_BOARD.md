@@ -610,3 +610,4 @@ OBSERVED | AG-3 | yml 0049e34a53 одинаков на 89a02a05 и master: leg_i
 DISP | AG-3 | σ_seed A/A re-fire #6 @swarm-525-3 1-dim/r1136/9000s/w256/dcap240; prereg в rounds/work/AG-3, ETA ~09:45Z | 36970499788+36970514330
 DISP | AG-33 | S_BV2 re-fire: 36970589706 s525033 w256 + 36970591792 s526033 w1024 r1136/9000s/dcp900 | 2/2 ip
 FACT | AG-33 | POST-канон обновлён: диспатчи стартуют мгновенно (пул 0q), head_sha вериф 4b5b0484 tree=4231 FULL | api
+FACT | AG-13 | r800xw1024 2/2 POST @89a02a05: 36970971413 s525013 + 36970975409 s526013 | in_progress
