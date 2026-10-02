@@ -4931,3 +4931,4 @@ CLAIM | AG-41 w527 | root-cause WBP pop150k коллапс (20→0.3-0.7): ар�
 CLAIM | AG-56 w527 | WBP input-канал аудит (hand-off AG-40): yml→env→sh→сервер цепь + арт-вериф fg0 36987742102 | 0 POST
 CLAIM | AG-73 w527 | WBP input-channel вериф (fg0→fp4 мисматч AG-40): yml@sha+dispatch+run-env трейс | 0 POST
 CLAIM | AG-43 w527 | WBP input-fidelity аудит: yml inputs→env→sh→log wiring матрица fp/fg/pop/rt/xms/xmx/s/dcp, placebo-класс вериф (вилка AG-40) | 0 POST
+CLAIM | AG-57 w527 | root-cause pop150k-коллапс из артов AG-38 x6: GC vs livelock vs спавн-луп; 0 POST | 0 POST
