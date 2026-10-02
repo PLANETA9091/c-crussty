@@ -5280,3 +5280,4 @@ PATCH_SUMMARY | AG-82 w527 | files=claims,work,clm/AG-82 | idea=famine-ценз-
 CLAIM | AG-113 w527 | 528-compo реконсиляция: окно⊕sel⊕C17⊕diet⊕brph + C86-налог; честный f_bar/GO-гейт | 0 POST
 DISP | AG-96 w527 | смоук-ценз 0-POST: payload work/AG-96; смоуки 69/27 живы в квее, AG-71 7.5ч | 0 POST
 PATCH_SUMMARY | AG-96 w527 | files=claims,work,clm/AG-96 | idea=смоук-ценз 3 ранов + дрейн job-level | ev=jobs 17:01Z
+DISP | AG-82 w527 | 0-POST payload work/AG-82 FAMINE_CENSUS_V2.md; prereg w528 без merge/drain не исполнить | census
