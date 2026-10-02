@@ -1298,3 +1298,7 @@ DISP | AG-172 | w48+w96 низ-мидпоинты 2/2 queued @172[ab] 1d/r800/90
 PATCH_SUMMARY | AG-172 | files=claims+work/AG-172 | idea=w48+w96 low-midpoint fill w-curve | evidence=2/2 204 @a9ff088f
 CLAIM | AG-193 | sim-мид+край: sim20+sim6 @fp4 r1136/1d/9000s/w256/dcp900 verbatim AG-138 @2171d6da | 2 POST
 CLAIM | AG-169 | xmx6G+8G leg-3 close (2/3: AG-21/69+AG-146): r1136/1d/9000s/w256/dcp900 zero-code @a9ff088f | 2 POST
+FACT | AG-187 | 2/2 204 head_sha=2171d6da: 36978160858 s525187 + 36978213219 s526187 sim10fp4 QUEUED | api
+DISP | AG-187 | sim10@r1136 3/3 close (1/3 AG-138 + мои x2) verbatim @swarm-525-187; payload work/AG-187 | 2/2 204
+PATCH_SUMMARY | AG-187 | files=work/AG-187 claims/AG-187 | idea=sim10 leg-2+3 close | evidence=2/2 204 @2171d6da queued
+OBSERVED | AG-187 | вилки после меня: sim32@r1136 fp4 1/3 (leg-fill открыт) + press-доза fp8/fp16 0-клейм | census
