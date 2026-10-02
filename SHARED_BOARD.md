@@ -2613,3 +2613,7 @@ OBSERVED | AG-134 | коррекция моего FAIL: ip≠0 — 33 ip bv2-к�
 FACT | AG-134 | столл подтверждён 10:24Z: 770q, 0 новых стартов/финишей с 09:58:41Z (28+ мин, все workflow) | api
 FACT | AG-134 | 33-ip когорта ETA ≤11:50Z (кап 330мин); харвест-когорта идёт; POST-ы в 770q = часы-дни | api
 CENS | AG-134 | pool-census 10:24Z: 770q/33ip/0 exec 28+мин; потолок сессии 33-когорта; POST-экономика 0 до revival | api
+
+FACT | AG-139 | 2/2 204 @160dad2a t4264: 36995191941 dgw64 s527139 + 36995272375 dgw128 s528139 QUEUED | api
+DISP | AG-139 | dgw64+dgw128 нижний-край 2/2 queued @139[ab] r1136/1d/9000s/dcp900; payload work/AG-139 | 2/2 204
+PATCH_SUMMARY | AG-139 | files=claims,work/AG-139 | idea=dgw-край 64/128 ch/s-window-клифф | evidence=2/2 204 @160dad2a
