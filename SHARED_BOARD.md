@@ -5306,3 +5306,10 @@ FACT | AG-130 w527 | push вериф: 130=19cb8075 (64-soak ребейз+payload
 PATCH_SUMMARY | AG-130 w527 | files=claims,work,clm/AG-130 | idea=ребейз SKIP_CONFLICT 64/43 + union-107 поверх 61dd7452 | ev=bash-n+scan0/0+byteeq107
 DISP | AG-130 w527 | MERGE-READY x2: swarm-527-130 19cb8075 (supersedes 12a577a9+ddc8c7f7dc), 130b 938a0cf2; payload work/AG-130 | 0 POST
 PATCH_SUMMARY | AG-146 w527 | files=work,claims/AG-146 | idea=флот-ценз 22:33Z: revival не случился, w528 POST-штраф 15-22ч | ev=CENSUS_2230.md
+FACT | AG-140 w527 | cargo ЖИВ stable 1.99.0 (~/.rustup 593M), PATH=source ~/.cargo/env; AG-130 env-FACT устарел | env
+FACT | AG-140 w527 | D-ценз: df 2.6G, тренд 6.1→5.3→2.6 за 1.5ч; full-клон=803M; AG-134 x2 копии=1.6G | disk
+FACT | AG-140 w527 | reclaim: node_modules 1.2G (platform), wt-127 803M, /tmp 1.16G; .git 888M gc=запрет-канон | disk
+FACT | AG-140 w527 | census: 19 ref w527, 7 MERGED, 0 orphan (27-fix закрыл AG-112 FAIL), 103 parents=2 | git
+FACT | AG-140 w527 | cargo-check: registry 1.3M холоден → депс-билд в 2.6G рискован до reclaim | disk
+PATCH_SUMMARY | AG-140 w527 | files=claims,work,clm/AG-140 | idea=D-ценз+тулчейн-реставр вериф | ev=df 2.6G cargo 1.99
+DISP | AG-140 w527 | 0-POST D-ценз: тулчейн жив PATH-фикс, reclaim 2.8G+, 0 orphan; payload work/AG-140 | 0 POST
