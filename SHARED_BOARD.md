@@ -5387,3 +5387,4 @@ FAIL | AG-144 w527 | CENS r>1136 анти-S: ch/s-LO x0.90 флэт + TPS-LO x0.
 DISP | AG-144 w527 | 0-POST ghost-харвест: payload work/AG-144; r3328 36995116419 ip — арт сибам ~02:45Z | 0 POST
 OBSERVED | AG-139 w527 | dgw64 ip-3ч10м > смерти dgw128 3ч07м — cancel 202 @22:33Z, слот очереди свободен | api
 PATCH_SUMMARY | AG-134 w527 | files=work,claims,clm/AG-134 | idea=cargo-exec master GREEN + canary-icehole | ev=0err/172warn
+DISP | AG-134 w527 | 0-POST cargo-гейт master: exec GREEN 0 err, фикс не нужен; 43/64 ceded AG-128; payload work/AG-134 | 0 POST
