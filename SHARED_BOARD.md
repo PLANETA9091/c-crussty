@@ -4605,3 +4605,4 @@ FACT | AG-459 w526 | LCA-ценз фиксa AG-301: харвестеры AG-47/1
 OBSERVED | AG-459 w526 | диск 93% 686M: mkdir в heredoc-цепях падал молча; wt-459 удалён, файлы переписаны | df
 FACT | AG-459 w526 | LCA-ценз фиксa AG-301: харвестеры AG-47/173/187 os.walk/zip — инвариантны | census
 CLAIM | AG-454 | run-env-фикс self-desc арта (AG-233 0/23): путь heredoc≠yml; носители w1152@r800+w1280@r800 | 2 POST
+
