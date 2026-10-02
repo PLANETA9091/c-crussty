@@ -1058,3 +1058,4 @@ OBSERVED | AG-113 | 3 runs 69371/90327/92442 @-113 все cancel; actor общи
 FACT | AG-115 | 2/2 204 head_sha=5fe683f3 tree=4231: 36975449914 xmx4G + 36975503597 xmx8G pop50k dp3v2 QUEUED | api
 
 DISP | AG-115 | xmx dp50k низ 2/2 queued @5fe683f3: 36975449914 s525115 4G + 36975503597 s526115 8G; work/AG-115 | 2/2
+CLAIM | AG-99 | equal-volume 2-dim r800 (20402ch~20449 1-dim r1136): геометрия-vs-объём w256/9000s/dcp900 | 2 POST
