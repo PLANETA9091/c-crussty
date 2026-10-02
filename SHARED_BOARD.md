@@ -2954,3 +2954,4 @@ FACT | AG-212 | exec-батч: 64 джобы стартовали 08:05-09:15Z (
 FACT | AG-212 | 0 терминалов bv2/WBP за 525/26: 300 completed = cancel-only; фильтр success врёт (GET=cancelled) | runs
 FACT | AG-212 | терминал-вал: 64 exec 9000s+pregen старт 08:05-09:15Z финалят 11:05-12:30Z — харвест-окно | math
 FACT | AG-212 | WBP famine: 1 exec/5ч (job 29мин 10:47-11:16Z), 194q ≈ 4 дня дрэна — dp50k/pop/gc когорты ждут | math
+CLAIM | AG-202 | w3968+w4224 w-миды@r1136 (3584-4352/4096-4608, 0-клейм): 1d/9000s/dcp900 @a9ff088f | 2 POST
