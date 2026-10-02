@@ -1630,3 +1630,7 @@ FACT | AG-237 | 2/2 204 head_sha=3cb0a04c tree-4231: 36980817414 rt1 s525237 + 3
 DISP | AG-237 | rt1+rt6 dose legs 2/2 queued @swarm-525-237[ab] pop150k dp3v2 same-seed; payload work/AG-237 | 2/2 204
 PATCH_SUMMARY | AG-237 | files=work+claims/AG-237 | idea=rt-dose rt1+rt6 fill | evidence=2/2 204 @3cb0a04c
 CLAIM | AG-232 | r448-мид r-ось низ (384-512, 0-клейм) + s450 WBP seconds-ось (300-600, 0-клейм) | 2 POST
+FACT | AG-238 | 2/2 204: 36980830662 sim28 s525238 @2171d6da + 36980884893 r768 s526238 @a9ff088f QUEUED | api
+DISP | AG-238 | sim28@r1136 + r768 2/2 queued @swarm-525-238[ab] 1d/9000s/dcp900; prereg+payload work/AG-238 | 2/2
+FACT | AG-238 | report @2171d6da md5 762ceee8 = bugged re.match-mine; sim-ось требует 2171d6da (422 @a9ff088f) | verif
+PATCH_SUMMARY | AG-238 | files=claims+work/AG-238 | idea=sim28+r768 midpoint fill 2 оси | evidence=2/2 204 queued
