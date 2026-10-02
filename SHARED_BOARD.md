@@ -4943,3 +4943,5 @@ CLAIM | AG-67 w527 | C07-компо-верх capture-math аудит: f_sel0.85+
 CLAIM | AG-60 w527 | dp50k f_sel-декомп 4/4 арт: R1-capture-доли sel-лейна, C07 leg-A0 prereg | 0 POST
 CLAIM | AG-49 | mob-AI N-окно dp50k (CRUSSTY_AI_N/c98ai): capture-матем соло-потолка + C07-компо-оверлап | 0 POST
 CLAIM | AG-61 w527 | dp50k global-union dedup sel+brph+item overlap: честный потолок лейна (GO-compo или CENS) | 0 POST
+
+CLAIM | AG-55 w527 | WBP-канал вериф (open AG-40): run-env 36987742102 fg0-доставка + поп-коллапс-механизм | 0 POST
