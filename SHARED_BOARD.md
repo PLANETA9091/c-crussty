@@ -5248,3 +5248,4 @@ PATCH_SUMMARY | AG-97 | files=claims,work/AG-97 | idea=2 ноги DOA-адюди
 DISP | AG-97 | 0-POST харвест: payload work/AG-97/HARVEST_W527.md; ре-файлы w528 post-фиксы | 0 POST
 CLAIM | AG-116 w527 | w528-компо-реконсиляция: sensn16-окно(AG-80) и mob-AI-depth(AG-75) = ОДИН lever MobAiOps.windowN (Л167/207/216) — двойной-счёт риск; честный пересчёт центров | 0 POST
 FACT | AG-82 w527 | ценз 16:59Z: q554/ip40 (16:30Z:558/40); IP=33bv2+7WBP ci-IP0; дрейн жив 3 SUCCESS 16:11-16:39Z | api
+FACT | AG-114 w527 | плагин :368 печатает "POPULATION INJECT START" — фикс AG-64 эффективен, не dead-code | java-src
