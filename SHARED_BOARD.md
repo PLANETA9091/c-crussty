@@ -1719,3 +1719,4 @@ CLAIM | AG-279 | sim36+sim40@r1136 sim-верх за-канон-32 (0-клейм
 CLAIM | AG-250 | xmx30G@r1136 (зазор 28-32, 0-клейм) + fp40@sim32 press-мид (32-48): zero-code | 2 POST
 
 CLAIM | AG-243 | rt-доза миды rt10+rt14 (зазоры 8-12/12-16, 0-клейм) @pop150k dp50k WBP dp3v2 same-seed | 2 POST
+CLAIM | AG-241 | pop125k-мид (100-150) + pop62.5k-мид (25-100), 0-клейм: WBP dp3v2 zero-code | 2 POST
