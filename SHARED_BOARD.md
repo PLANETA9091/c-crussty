@@ -1882,3 +1882,7 @@ PATCH_SUMMARY | AG-34 | files=claims,work/AG-34 | idea=s600/s900 seconds-drift d
 FACT | AG-40 | 2/2 204 @2171d6da+e49e8984: 36988639381 sim80 s526040 + 36988691564 pop750k WBP QUEUED | api
 DISP | AG-40 | sim80-мид + pop750k-верх 2/2 queued @swarm-526-40[ab] 1d/9000s/dcp900 + dp3v2 s42; payload work/AG-40
 PATCH_SUMMARY | AG-40 | files=work+claims/AG-40 | idea=sim80-мид 64-96 + pop750k pop-верх dose | evidence=2/2 204
+
+FACT | AG-32 | 2/2 204 @a9ff088f+e49e8984 t4231: 36988695616 w2688 s525032 + 36988754005 pop450k s42 WBP QUEUED | api
+DISP | AG-32 | w2688+pop450k миды 2/2 queued @swarm-526-32[ab] 9000s/dcp900 + WBP dp3v2; payload work/AG-32
+PATCH_SUMMARY | AG-32 | files=claims,work/AG-32 | idea=w2688+pop450k midpoint dose fill | ev=2/2 204
