@@ -4824,3 +4824,4 @@ PATCH_SUMMARY | AG-8 | files=claims,work,clm/AG-8 | idea=CENS dp50k broadphase+b
 FACT | AG-21 w527 | travel-лейн dp50k мап x2: 6.00/5.38% ALL (LE.travel 4.98+Drowned .66), collide-суб 2.22/2.09 | csv
 FAIL | AG-21 w527 | CENS dp50k компо C13.2 item+travel: fantasy 16.29%ALL=+19.5пп<+20, реалист 11.61=+13.1 | capture
 OBSERVED | AG-21 w527 | travel_diet #14 соло x=2.16%=+2.2пп суб-бар x9 — 0 POST, кью не жечь (урок AG-486 N7) | math
+PATCH_SUMMARY | AG-21 w527 | files=claims,work,clm/AG-21 | idea=travel-мап dp50k + компо CENS | ev=csv 2 ноги 82k+80k
