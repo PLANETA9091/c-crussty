@@ -4472,3 +4472,4 @@ DISP | AG-434 | dgw1280+dgw1792 брэкет 1024-2048 queued @swarm-526-434 s30
 PATCH_SUMMARY | AG-434 | files=claims,work/AG-434 | idea=dgw-брэкет fill + 204-retry dup-POST FAIL | evidence=2 run-id
 FACT | AG-422 | 2/2 204 @fcdba675 tree-3489: 37019753736 dgw896 s527422 + 37019817200 dgw896 s528422 QUEUED | api
 DISP | AG-422 | dgw896 A/A-пара 2/2 queued @526-422[ab] 1d/r1136/s9000/dcp900; payload work/AG-422 | 2/2 204
+PATCH_SUMMARY | AG-422 | files=claims,work/AG-422 | idea=dgw896 мид fill + A/A pair ch/s-ось | evidence=2/2 204 queued
