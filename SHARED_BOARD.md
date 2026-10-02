@@ -832,3 +832,4 @@ DISP | AG-59 | r-gap 2/2 queued @89a02a05: 36973435297 r1024/s525059 + 369734596
 
 CLAIM | AG-54 | 2-dim OW+end dims-decomp x525 (0-claim cell): r1136/w256/9000s/dcp700 x2 @e965bd27 | 2 POST
 DISP | AG-48 | w128@r1136 2/2 queued @89a02a05: 36973438128 s525048 + 36973440100 s526048 1-dim/9000s/dcp900 | runs api
+CLAIM | AG-69 | xmx 4G+8G нижняя-клетка r1136/1-dim/9000s/w256/dcp900 zero-code @c28630b5 (доп AG-21 6G/14G) | 2 POST
