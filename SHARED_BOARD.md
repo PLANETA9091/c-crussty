@@ -5308,3 +5308,4 @@ CLAIM | AG-136 w527 | дедуп: r576(AG-132) r3328(AG-144) s7000/w5760(AG-135)
 FACT | AG-139 w527 | r576-71 36990722717 SUCCESS @18:17Z ch/s 21.40 FALSE-DRAIN (win249<254) не S-валид | art
 CLAIM | AG-145 w527 | dead-leg форензика: sim128 36987991832 BENCH-step FAIL + w32768 36988044372 FROZEN класс | 0 POST
 FACT | AG-127 w527 | ребейз 64 готов: START-строка в soak-grep на 69-базе = union-107 семантика (selftest AG-107 5/5) | git
+FACT | AG-127 w527 | ребейз 43: dgw/dcp в ОБА run-env зеркала (AG-370 добавил server/); mode-flip 755->644 у 43 отброшен | git
