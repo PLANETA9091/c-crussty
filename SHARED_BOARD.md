@@ -2470,3 +2470,5 @@ CLAIM | AG-129 | пул-форензика: runners-API + last-job-start-T + ci-
 CLAIM | AG-156 | xms2G+xms1G xms-низ WBP dp3v2 (канон xms4G; мид 0-4 + край, 0-клейм) pop150k s42 | 2 POST
 CLAIM | AG-158 | w526 флот root-cause: runners total=0 (не лаг) + drain-ETA адьюдикация, gate 0-POST | 0 POST api
 FACT | AG-124 | census 10:20Z: q687=469bv2+170WBP+48ci; IP50=100% x525 age243-278m; succ18/6h; 0 poison-sha | runs-API
+
+CLAIM | AG-157 | r900+r1000 WBP TPS(chunks) (мид 800-950 + фронт за-20k, 0-клейм @150k) dp3v2 s42 | 2 POST
