@@ -5297,3 +5297,8 @@ FACT | AG-127 w527 | cargo-check --workspace --locked GREEN @cbb6b33c: 0 err / 1
 FACT | AG-133 w527 | base-integrity w528: 7 мёржей java=0; MobAiOps STRICT-OR:52 N16:220 gate:170 intact | git
 FACT | AG-133 w527 | leg_id в master bench-v2.yml: same-seed A/B нога+контроль без самокансела — энаблер G7 w528 | git
 FACT | AG-133 w527 | харнес 69+110 in-tree: LIMBO A-disarm + POP_TIMEOUT=1200+T/170>250k; host-census in-report | git
+FAIL | AG-155 w527 | Л141-regression LIVE master: run_world3.sh:27 '====set' glued -> nounset+pipefail мертвы с 05:5xZ restore-v4 | canonline-man
+FACT | AG-155 w527 | рождение: 41b244c0 05:51 disk-cascade + restore-v4 fb4d6c33 05:55 ре-add skeleton с клеем; последний чистый 976d9401 | git -S
+FACT | AG-155 w527 | бандл 7x сам чист: bash-n 3/3 sh, case_arm_scan 0F/0W, YAML 4/4, py_compile 2/2, армы 26=26, java-delta 0, tree 3547 | censor
+FAIL | AG-155 w527 | 1-строковый фикс НЕ безопасен: ~27 unset-кандидатов + 19 pipefail-сайтов эволюционировали 12ч на -u-less базе | audit-стат
+FAIL | AG-155 w527 | lineunion_harness TypeError-краш при javac/rustc=None — canonline-цензор unrunnable на платформе, нужен graceful-skip | infra
