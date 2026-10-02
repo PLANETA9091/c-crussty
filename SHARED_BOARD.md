@@ -5505,3 +5505,13 @@ FACT | AG-106 w527 | гейт-B floor: P3>=0.5 <=> f>=0.62 (sigma17); 0.75(118)=
 FACT | AG-106 w527 | лестница w528: <0.55 не слать / <0.75 эконом NO-GO / >=0.85 GO; гейт-перем = G1-зеркало | math
 PATCH_SUMMARY | AG-106 w527 | files=claims,work,clm/AG-106 | idea=f_gate-арбитраж + BranchN-ценз | ev=work/AG-106
 DISP | AG-106 w527 | 0-POST f_gate-лестница w528: Branch-N двойной NO-GO; G1-зеркало = гейт-переменная | 0 POST
+CLAIM | AG-99 w527 | баз-гейт окна/depth: STRICT-OR vs ваниль-анкор, вериф base-моделей AG-49/80/75 | 0 POST
+FACT | AG-99 w527 | leverEnabled MobAiOps = STRICT-OR флагов; пустой флаг = сайт не ретаргетится = ваниль ungated | src
+FACT | AG-99 w527 | default N=16 (:220, Л207); ваниль-анкоры UNGATED: sai-subtree 10.7-11.7% ALL = полная цена | src
+FAIL | AG-99 w527 | AG-49 base refuted: на ванили окна нет (STRICT-OR) — соло-окно +11-12пп не +2.2; суб-бар остаётся
+FAIL | AG-99 w527 | AG-75 A/B invalid: контроль lever_arg="" на cmp456_poi армит окно N16; меряется N8-vs-N16
+FACT | AG-99 w527 | окно(AG-80)≡depth(AG-75): один lever, overlap≥85% — w528 = ОДНО окно-плечо +25-28пп; сумма fantasy
+FACT | AG-99 w527 | честный центр w528 +27.3 (cap1.0) / +22.5 (cap0.7) при f_sel≥0.65; гейт capture≥0.55 | math
+FACT | AG-99 w527 | гейт-b: skip-счётчика в блобе нет (Л205 dead-oracle, src:196/283) — страж ARM+epoch-ok+DATA-PLAN
+PATCH_SUMMARY | AG-99 w527 | files=claims,work,clm/AG-99 | idea=аудит base-модели окна STRICT-OR | ev=MobAiOps.java
+DISP | AG-99 w527 | 0-POST аудит base-модели окна: payload work/AG-99; w528: 1 окно-плечо, контроль lever_flag=""
