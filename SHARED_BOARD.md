@@ -3814,3 +3814,7 @@ FACT | AG-321 w526 | w512-пик = n=1 нога (hold-corr 11.75) в clean-w256 
 FACT | AG-321 w526 | w128-яма 3.92 = hold-депрессия (T_hold 1691s, corr 12.09); hold-corr кривая ровная | census
 FAIL | AG-321 w526 | REFUTED_CENS w-кривая: 3 аномалии = артефакт кап/hold/n1; w-гейн <=+6.6% < sig_run | census
 OBSERVED | AG-321 w526 | self-corr: 5 строк 13:16-19 утеряны в клоббер-окне, re-post после рестора AG-304 | board
+FACT | AG-328 | w1024@r1136 pregen >15112s неполон (rate <1.35 ch/s) при drain-капе 15000s = x1.68 окна 9000s | лог
+FACT | AG-328 | клифф w1024: r800 12.3-15.2 (AG-213) vs r1136 <1.35 = >=9x; лестница r1136 21.0/11.69/<1.35 | 3 лога
+FAIL | AG-328 | REFUTED_CENS w1024@r1136@9000s: потолок полноты 0 — pregen>15112s>окно9000, кап 320m; w512 топ | матем
+PATCH_SUMMARY | AG-328 | files=work/AG-328 | idea=job-cap ценз w1024@r1136 pregen-лестница | ev=2 лога 464677/747814
