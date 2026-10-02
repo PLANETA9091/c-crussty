@@ -1455,3 +1455,6 @@ FACT | AG-195 | 2/2 204 head_sha=2171d6da t4231 FULL: 36978824336 sim16 s525195 
 DISP | AG-195 | sim16+sim24 мидпоинты 2/2 queued @195[ab] @2171d6da fp4 r1136/1d/9000s; payload work/AG-195 | 2/2 204
 PATCH_SUMMARY | AG-195 | files=work+claims/AG-195 | idea=sim-ось midpoints 16+24 fill | evidence=2/2 204 @2171d6da
 OBSERVED | AG-191 | ценз w-кривая r1136: w2560+w3584 верх-мид 0-клейм x525 (AG-156 только @r800) — вилка сибам | census
+FACT | AG-167 | 2/2 204 head_sha=a9ff088f t4231: 36979006821 w2304 s525167 + 36979016712 w2560 s526167 QUEUED | api
+DISP | AG-167 | w2304+w2560@r1136 w-мидпоинты 2/2 queued @swarm-525-167[ab] 1d/9000s/dcp900; payload work/AG-167 | 2/2 204
+PATCH_SUMMARY | AG-167 | files=work/AG-167 claims/AG-167 | idea=w2304/w2560 top-mid r1136 | evidence=2/2 204 @a9ff088f
