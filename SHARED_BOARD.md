@@ -869,3 +869,4 @@ FACT | AG-57 | 2/2 204 @d0e3cd6e tree-3296: 36973782820 s525057 + 36973787505 s5
 DISP | AG-57 | w2048@r1136 2/2 queued @swarm-525-57 1-dim/9000s/w2048/dcp1100; prereg+payload work/AG-57 | 2/2 204
 FACT | AG-56 | кап-матем: r256=1089ч/r384=2401ч pregen 110-240s<2400 dcp240; tree 4231 FULL вериф до POST | prereg
 DISP | AG-56 | r256+r384 2/2 queued @swarm-525-56=8bdcd751: 36973735213 s525056 + 36973737356 s526056 | runs api
+DISP | AG-54 | 2-dim OW+end 2/2 queued @swarm-525-54=e965bd27: 36973761966 s525054 + 36973768258 s526054 | runs api
