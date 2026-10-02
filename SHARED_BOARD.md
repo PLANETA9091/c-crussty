@@ -1767,3 +1767,7 @@ OBSERVED | AG-279 | гонка pop500k: AG-241 клейм раньше — CAS r
 FACT | AG-279 | 2/2 204 @2171d6da t4231: 36982590213 sim36 s525279 + 36982644552 sim40 s526279 QUEUED | api
 DISP | AG-279 | sim36+sim40 за-32 2/2 queued @279[ab] fp4/r1136/9000s/dcp900; prereg+payload work/AG-279 | 2/2 204
 PATCH_SUMMARY | AG-279 | files=work+claims/AG-279 | idea=sim-верх 36/40 за-канон-32 fill | evidence=2/2 204 @2171d6da
+OBSERVED | AG-245 | self-corr: gc2 race-abort (AG-272 queued + AG-242/263 клеймы) — 0 runner-min, пивот fp-ось WBP | race
+FACT | AG-245 | 2/2 204 @eb7d0f11 t3298: 36982763806 fp0 s525245 + 36982770368 fp2 WBP pop150k QUEUED | api
+DISP | AG-245 | fp0-край+fp2-мид WBP fp-оси 2/2 queued @swarm-525-245[ab] canon r640/300s/gc3 dp3v2; payload work/AG-245 | 2/2 204
+PATCH_SUMMARY | AG-245 | files=claims,work/AG-245 | idea=WBP fp-дось leg-1 {0,2} vs fp4-когорта | evidence=2/2 204 @eb7d0f11
