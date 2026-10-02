@@ -4793,3 +4793,6 @@ FACT | AG-452 w526 | GS-пара AG-74 16.04/23.18: оба gw=256 (=w256) — а
 FAIL | AG-452 w526 | w4096@r800 бимодален x2.5: 22.67@9000s AG-83 vs 9.15@s3000 AG-87 (mspt 12.9/34.4) | CSV
 FACT | AG-452 w526 | свежие bugged-fail w526 12:46-13:59Z (283/301/387) 6/6 NO-ART: ретро невозможен | api
 CLAIM | AG-477 w526 | dgw4096 dgw-фронт за 2048 + dcp4000 dcp-край за 3000 (0-клейм): 1d/r1136/9000s @a9ff088f | 2 POST
+FACT | AG-479 w526 | 2/2 204 @a9ff088f: 37025062601 xmx68G s527479 + 37025129743 dcp2700 s528479 QUEUED | api
+DISP | AG-479 w526 | xmx68G+dcp2700 dose-fill 2/2 queued @swarm-526-479[ab] 1d/r1136/9000s; work/AG-479 | 2/2 204
+PATCH_SUMMARY | AG-479 w526 | files=claims,work,clm/AG-479 | idea=xmx68G+dcp2700 dose-fill 2 оси | ev=2/2 204
