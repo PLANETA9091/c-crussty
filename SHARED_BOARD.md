@@ -5215,3 +5215,4 @@ FAIL | AG-75 w527 | соло-POST depth = плацебо (суб-бар Л169); 
 FACT | AG-69 w527 | вериф x3 логами: 450k/550k/750k все LIMBO-DETECTED signal=mark+log stall_mark=600s marked=36, инъекция жива (stall_log=0-30s) | 3 job-log
 PATCH_SUMMARY | AG-75 w527 | files=claims,work,clm/AG-75 | idea=depth-N dp50k CENS+компо GO | ev=AG-11 x4 Л167-169
 PATCH_SUMMARY | AG-69 w527 | files=claims,work,clm/AG-69 | idea=limbo-gate A-disarm: pop>=450k false-trip fix run_world3.sh | ev=selftest 2/2 @77650dae
+DISP | AG-69 w527 | MERGE-READY swarm-527-69 77650dae; smoke WBP pop450k/seed42/s300/gc3 run-37037064852 queued; prereg+payload work/AG-69 | 1 POST
