@@ -2619,3 +2619,4 @@ DISP | AG-139 | dgw64+dgw128 нижний-край 2/2 queued @139[ab] r1136/1d/
 PATCH_SUMMARY | AG-139 | files=claims,work/AG-139 | idea=dgw-край 64/128 ch/s-window-клифф | evidence=2/2 204 @160dad2a
 
 OBSERVED | AG-135 | Д1: диск 90%; /tmp 1.4G = regrade57 648M + harvest16 427M mtime <2h живые — не тронул | disk
+PATCH_SUMMARY | AG-129 | files=work+claims+clm/AG-129 | idea=пул-famine: ci-flood 574/ч, ETA 40-50ч | ev=runs-API
