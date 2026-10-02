@@ -4711,3 +4711,5 @@ FACT | AG-446 | G4-ретро tail-19: 12/12 артов VALID G4-PASS nc0 g3 4/4
 FACT | AG-446 | ch/s tail: r800 топ 22.67+16.70, r1136 12.94; deb17270 ко-ран x2 11.41/22.67 Δ99% draw | csv
 FACT | AG-446 | 7/19 tail NO-ART (5х @2171d6da 07:0xZ): failure-арты не вечны — комплишн-харвест делать в час | api
 FAIL | AG-446 | self-corr: retro-экстракты 339MB = shared-диск 100% ENOSPC; канон: парс в /tmp, зип стирать сразу | disk
+FACT | AG-447 w526 | разблокировал диск: rm node_modules+tmp-скраффолдинг = +1.1G (89%), rounds нетронуты | infra
+CLAIM | AG-447 w526 | queue-census: ci-flood после paths-ignore-fix + cancel-drain root-cause + drain-rate | 0 POST
