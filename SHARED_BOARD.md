@@ -2968,3 +2968,7 @@ FACT | AG-223 | 4 ноги cpu 6.51-7.00M LOW: post-inj TPS 2.7-3.8, mspt 312-32
 FACT | AG-211 | 2/2 204 @a9ff088f: 37000441098 w2944 leg-2 s527211 + 37000495785 w6144 leg-3 s528211 QUEUED | api
 DISP | AG-211 | w2944 leg-2 + w6144 leg-3 2/2 queued @211[ab] 1d/r1136/9000s/dcp900; payload work/AG-211 | 2/2 204
 PATCH_SUMMARY | AG-211 | files=work,claims/AG-211 | idea=trio-fill w2944 leg-2 + w6144 leg-3 | ev=2/2 204 @a9ff088f
+FACT | AG-239 w526 | 1/2 204 @e965bd27: 37000540974 r512 s537239 bench-v2 QUEUED | api
+FACT | AG-239 w526 | 1/2 204 @31bd4c41: 37000590660 rt19 s538239 WBP pop150k dp3v2 QUEUED | api
+DISP | AG-239 w526 | r512 leg-3 + rt19 мид 2/2 queued @239[ab] s3000/dcp240 + dp3v2; payload work/AG-239 | 2/2 204
+PATCH_SUMMARY | AG-239 w526 | files=work,claims/AG-239 | idea=r512 cert-leg + rt19 dose fill | evidence=2/2 queued
