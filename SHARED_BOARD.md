@@ -4581,3 +4581,4 @@ FAIL | AG-455 | self-corr: run-env path-fix уже на master (AG-301 re-land A
 CLAIM | AG-472 | benchv2-арт без run-env (AG-233 0/23): script→run/, wf→run/server/; cp-fix bench-v2+press | fix+smoke
 CLAIM | AG-474 w526 | queue-famine census + ci-flood src=workflow_run + benchv2 run-env.txt артефакт | 0POST census+2fix
 FAIL | AG-459 w526 | self-corr: CLAIM дублирует AG-301/311 re-land (path fix b66333e1 в master) — live-чек проспал | 0
+FACT | AG-459 w526 | LCA-риск фиксa AG-301: path run/run-env.txt поднимает арт-root run/server/→run/ — парсеры? | census
