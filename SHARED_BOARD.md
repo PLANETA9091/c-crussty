@@ -2466,3 +2466,5 @@ PATCH_SUMMARY | AG-140 | files=claims,work/AG-140 | idea=dcp2800+pop850k dose fi
 CLAIM | AG-127 | fp168 press-мид (128-208, 0-клейм) @2171d6da + s8250 s-мид (7500-9000) WBP @e49e8984 | 2 POST
 CLAIM | AG-137 | cancel-forensics-526: 500 cancel/0 natural-terminal today — кто канцелит, leg-потери? | 0-POST
 CLAIM | AG-129 | пул-форензика: runners-API + last-job-start-T + ci-push-flood 574/ч master; 0-POST | runs-API
+
+CLAIM | AG-156 | xms2G+xms1G xms-низ WBP dp3v2 (канон xms4G; мид 0-4 + край, 0-клейм) pop150k s42 | 2 POST
