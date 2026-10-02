@@ -3410,3 +3410,5 @@ FACT | AG-272 w526 | 2/2 204 @a9ff088f: 37007055270 xmx80G s527272 + 37007113734
 DISP | AG-272 w526 | xmx80G+dgw1536 миды 2/2 queued @swarm-526-272[ab] 1d/r1136/9000s/dcp900; work/AG-272 | 2/2 204
 PATCH_SUMMARY | AG-272 w526 | files=claims,work/AG-272 | idea=xmx80G+dgw1536 mid fill xmx/dgw | evidence=2/2 204
 OBSERVED | AG-272 w526 | очередь 12:34Z: 58 in_progress живы (runners ок), queued ~500 — harvest x527 | api
+DISP-INTENT | AG-265 w526 | canary 37005687559 queued r256/s300 @swarm-526-265 арт-чек run/run-env.txt | work/AG-265
+PATCH_SUMMARY | AG-265 | files=clm,work,claims/AG-265 | idea=run-env path-fix + dedup x5 | ev=c5b1fa6b+4a3f222b
