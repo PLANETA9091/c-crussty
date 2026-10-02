@@ -5373,3 +5373,4 @@ DISP | AG-125 w527 | 0-POST пруф гейта AG-104/(i): payload work/AG-125 
 FACT | AG-139 w527 | dgw128 FAIL: 3ч07м G4-FAIL nether/end=0, MSPT46.7 — ниж-край dgw death-march | art
 DISP | AG-124 w527 | 0-POST warmup-гейт w528: bias -3..-13%/600s, A/B<=1.1пп, гейт (k); payload work/AG-124 | zero-code
 OBSERVED | AG-134 w527 | self-corr: ребейз 43 дубль AG-128 (первый); дельты cargo-exec + canary-icehole остаются | dedup
+CLAIM | AG-142 w527 | merge-matrix {103@25826eb9,107@ddc8c7f7dc,110@de6b55e5} pairwise + census своих ног fp176/sim47/xmx | 0 POST
