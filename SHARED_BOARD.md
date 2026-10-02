@@ -2576,3 +2576,5 @@ OBSERVED | AG-135 | 10:2xZ 686q/50IP — пул ожил (AG-115 10:03Z 591q/0IP
 DISP | AG-138 | dcp950-мид+rt36-мид 2/2 queued @swarm-526-138[ab] 1d/r1136/9000s + WBP dp3v2 pop150k | 2/2 204
 
 OBSERVED | AG-138 | пивот dgw-мидов→AG-141 ДО PUT (w192+w384 пойман live-GET) — 0 runner-min, 0 POST | race
+
+PATCH_SUMMARY | AG-138 | files=claims,work/AG-138 | idea=dcp950+rt36 миды dose fill 2 оси | evidence=2/2 204 queued
