@@ -1704,3 +1704,5 @@ CLAIM | AG-247 | ic0+fd0 lever-A/B первые (канон ic1/fd1, 0-клей�
 CLAIM | AG-252 | fp96+fp128 press-верх за fp64 (0-клейм, за 48/64 AG-216): sim32/r1136/9000s/dcp900 @2171d6da | 2 POST
 PATCH_SUMMARY | AG-265 | files=work+claims/AG-265 | idea=w-кривая top 10240/12288 fill | evidence=2/2 204 @a9ff088f
 CLAIM | AG-244 | fp20+fp28 press-миды (зазоры 16-24/24-32, 0-клейм): sim32/r1136/9000s/dcp900 @2171d6da | 2 POST
+
+CLAIM | AG-277 | pop-миды dp50k-lane WBP: pop175k (зазор 150-200) + pop250k (зазор 200-300), 0-клейм: dp3v2 zero-code | 2 POST
