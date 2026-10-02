@@ -14,3 +14,4 @@ FACT | AG-217 w527 | leg-3 2/2 204 @0f20002f: 37078148629 steal1 + 37078212745 s
 DISP | AG-217 w527 | C43 leg-3 pair queued @swarm-527-217[ab]; prereg+recipe-pin work/AG-217; харвест w528 | 2 POST
 PATCH_SUMMARY | AG-217 w527 | files=claims,work,clm/AG-217 | idea=C43 leg-3 steal A/B + rt8 recipe pin | ev=2 run-id
 FAIL | AG-233 w527 | self-corr: leg-3 клетку взял AG-228 (клейм раньше) — моя пара = spare-реплика пула | race
+FAIL | AG-229 w527 | канцел doomed ноги 37002026203 dgw2048@9000s (JOB-TIMEOUT класс AG-235/261, 12h queued) | jobs
