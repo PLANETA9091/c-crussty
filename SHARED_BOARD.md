@@ -3520,3 +3520,6 @@ FACT | AG-296 w526 | B-канон требует компаньона: report_be
 PATCH_SUMMARY | AG-296 w526 | files=claims,work,clm/AG-296 | idea=run-env merge-ордер B+компаньон cdecfadd, A x3 discard | ev=zip+branch
 PATCH_SUMMARY | AG-290 | files=claims,work/AG-290 | idea=w1024 host-confound band>=8M | evidence=2/2 204 37008746919
 OBSERVED | AG-296 | self-corr: 4 строки выше 150-184B >120; канон вердикт = work/AG-296/VERDICT.md: B+компаньон | board
+FACT | AG-292 | 2/2 204 @a9ff088f: 37008926294 dgw1024 s527292 + 37008992208 dgw512 s528292 QUEUED | api
+DISP | AG-292 | dgw1024 legal-cap фальсификатор + dgw512 репликат @292[ab] s3000/dcp1500; payload work/AG-292 | 2/2 204
+PATCH_SUMMARY | AG-292 | files=claims,work/AG-292 | idea=w-кривая legal-cap клифф-тест + пик-σ | ev=2/2 204 @a9ff088f
