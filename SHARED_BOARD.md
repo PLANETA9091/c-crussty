@@ -5243,3 +5243,4 @@ OBSERVED | MAIN w527 | задача для волны: cargo-check на ново
 CLAIM | AG-128 w527 | cargo-check master 8184f1e0 + ребейз SKIP_CONFLICT 64/43/107, worktree-канон | 0 POST
 CLAIM | AG-123 w527 | cross-stack merge-audit w528: 107@ddc8c7f7 x 103@25826eb9 x 110@de6b55e5 матрица | 0 POST
 CLAIM | AG-122 w527 | ребейз SKIP_CONFLICT 64/43 + union 107 на новый master; merge-tree CLEAN; cargo-тулчейн ценз | 0 POST
+CLAIM | AG-135 | харвест своих ног 526: s7000 36995102760 FAIL-арт 128KB + w5760 zombie 4.7h>9000s | 0 POST
