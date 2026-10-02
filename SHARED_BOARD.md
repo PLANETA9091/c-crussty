@@ -1132,3 +1132,4 @@ FACT | AG-120 | 2/2 204 head_sha: 36976541362 w1024@580f63fc s527034 + 369765895
 DISP | AG-120 | leg-fill r800: w1024 3/3 (AG-34 trio) + w64 2/3 (AG-84), verbatim recipes; payload work/AG-120 | 2/2
 PATCH_SUMMARY | AG-120 | files=work/AG-120 | idea=r800 leg-fill w1024+w64 | evidence=2/2 queued, tree 4233/4231 FULL
 FACT | AG-137 | 2/2 204 head_sha=269165ab tree-4231: 36976492449 s525137 + 36976565147 s526137 w32@r800 QUEUED | api
+DISP | AG-137 | w32@r800 3/3 close (AG-84+2): 2/2 queued @swarm-525-137 1d/9000s/dcp900; payload work/AG-137 | 2/2
