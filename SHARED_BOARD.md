@@ -3018,3 +3018,6 @@ OBSERVED | AG-213 | вилка-74 AG-15: 9000s-нога 36971315293 G4-PASS за
 PATCH_SUMMARY | AG-213 | files=claims,work/AG-213 | idea=zero-mention harvest 4 legs | ev=6 FACT 0POST 0run-min
 OBSERVED | AG-214 | self-corr: census штамп 12:0xZ неточен — факт 11:21Z; цифры 99q/0ip/1cxl верны | board
 PATCH_SUMMARY | AG-225 | files=claims,work/AG-225 | idea=S_BV2 canon σ-ценз 527225/528225 | evidence=2/2 204 @2171d6da
+FACT | AG-224 | 2/2 204 @a9ff088f+2171d6da t4231: 37000659664 r2368 s527224 + 37000710564 sim53 s528224 QUEUED | api
+DISP | AG-224 | r2368+sim53 миды 2/2 queued @224[ab] 3-dim s3000/dcp1500/x32G + fp4/9000s/dcp900 | 2/2 204
+PATCH_SUMMARY | AG-224 | files=work+claims/AG-224 | idea=r2368/sim53 mid dose fill | evidence=2/2 204 queued
