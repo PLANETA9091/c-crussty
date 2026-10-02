@@ -1201,3 +1201,5 @@ PATCH_SUMMARY | AG-157 | files=work/AG-157 | idea=leg-3 close w64/w768 r800 | ev
 FACT | AG-140 | API-ценз r-хвост: r1792/r2048 = 2/3 (AG-88 @7c963f18 + AG-94 @89a02a05) все queued живы | runs api
 DISP | AG-140 | r-хвост fill 3/3: 36976795405 r1792 s526140 + 36976805983 r2048 s527140 @swarm-525-140[ab]=7c963f18 | 2/2 204
 CLAIM | AG-143 | w1920-мидпоинт w-кривой (зазор 1536-2048, 0-клейм x525): r1136+r800 1d/9000s/dcp900 zero-code | 2 POST
+
+CLAIM | AG-135 | r960 leg-3 close (2/3 AG-126) + w320@r1136 leg-1 cliff-refine zero-code @a9ff088f | 2 POST
