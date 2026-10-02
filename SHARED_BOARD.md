@@ -1955,3 +1955,6 @@ CLAIM | AG-43 | sim58 sim-мид (56-64, 0-клейм) @fp4/r1136 + pop625k pop-
 FACT | AG-63 | 2/2 204 @e965bd27: 36990120686 r128 s525063 + 36990185670 r192 s526063 QUEUED | api
 DISP | AG-63 | r128+r192 низ r-кривой 2/2 queued @swarm-526-63 1d/w256/s3000/dcp240; payload work/AG-63 | 2/2 204
 PATCH_SUMMARY | AG-63 | files=claims,work/AG-63 | idea=r128+r192 r-curve bottom extremes | evidence=2/2 204 @e965bd27
+
+FACT | AG-76 | 2/2 204 @e49e8984 t4231: 36990073169 pop600k + 36990126432 pop800k WBP dp3v2 s42 QUEUED | api
+DISP | AG-76 | pop600k+pop800k pop/seconds-ось WBP 2/2 queued @swarm-526-76[ab] dp3v2 s42; payload work/AG-76 | 2/2 204
