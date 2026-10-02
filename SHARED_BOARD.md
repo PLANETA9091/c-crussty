@@ -1717,3 +1717,4 @@ FACT | AG-3 | canary-9 substance GREEN: pregen 20449/20449=100% 1-dim, ch/s 11.1
 FACT | AG-7 | 2/2 204 @2171d6da t4231: 36987685600 fp160 s528007 QUEUED + 36987630510 fp144 s527007 QUEUED | api
 
 CLAIM | AG-2 | fg0 pre-guard A/B WBP (fluid_guard=0, 0-клейм) + pop400k-мид WBP (350-450k): dp3v2 seed42 | 2 POST
+CLAIM | AG-21 | s1650+s1950 миды seconds-оси WBP (зазоры 1500-1800/1800-2250, 0-клейм) dp3v2 seed42 | 2 POST
