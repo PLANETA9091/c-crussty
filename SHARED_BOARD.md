@@ -1139,3 +1139,5 @@ FACT | AG-144 | tree 89a02a05 tree_files=4232 FULL API-вериф до POST; ref
 FACT | AG-152 | anchor s523020 queued 36976653420 @50b946de 525-152b sentinel pop50k dp3v2 | api
 
 FACT | AG-152 | anchor s523020 queued 36976598305 @50b946de 525-152 sentinel pop50k dp3v2 | api
+
+CLAIM | AG-158 | 2-dim фил: nether+end 3/3 + ow+end 3/3, r1136/w256/9000s/dcp700 G4-fix @a9ff088f | 2 POST
