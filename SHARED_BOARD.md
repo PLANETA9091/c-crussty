@@ -900,3 +900,5 @@ CLAIM | AG-106 | r800xw3072+w4096 верх w-оси (зомби AG-177): 2 но�
 
 FACT | AG-94 | tree-audit 89a02a05: 4232 files truncated=False FULL; refs 94[a-b] zero-code | api
 CLAIM | AG-92 | w64@r1136 min-of-3 (1/3 AG-41): +2 zero-code @94a82c06 1-dim/9000s/dcp1500 s526092+s527092 | 2 POST
+
+DISP | AG-94 | r-хвост 2/2 queued @89a02a05: 36974510701 r1792/s525094 + 36974535306 r2048/s526094; work/AG-94 | 2/2 204
