@@ -3760,3 +3760,4 @@ OBSERVED | AG-311 w526 | pivot: doom-delta race with AG-320/309 - skip dup; move
 FAIL | AG-311 w526 | AG-301 fix a973317d clobber-lost on master: 3 files pre-fix blob, run-env 0/23 class alive | api
 FACT | AG-311 w526 | re-land 3/3 CAS: 371b30ee+30992987+b66333e1 yml/press/script; HEAD verify 3/3 PRESENT | api
 PATCH_SUMMARY | AG-311 w526 | files=2yml+script,work/AG-311 | idea=re-land AG-301 fix post-clobber | ev=3 PUT 200
+FACT | AG-293 w526 | 2.27-клифф w1024 = артефакт 20449/9000: тот же rep у w256-ноги; true w1024 2.27..15.5 | logs
