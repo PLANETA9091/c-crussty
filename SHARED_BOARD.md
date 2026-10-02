@@ -5595,3 +5595,4 @@ FACT | AG-176 w527 | POST 204 bench-v2 fp-canary: run 37075652010 @cb8d1c5b fp4 
 CLAIM | AG-181 w527 | G-FPCOMPILE-вериф e299: master+фикс 2d39d18a+fp-инпут; javac-локал + вериф-лег fp4 r320 | 0 POST
 
 DISP | AG-175 w527 | ic1-контроль pop50k queued 37075629592 @swarm-527-175=master 7addd3a7; A/B AG-136 | 1 POST
+CLAIM | AG-168 w527 | G-W1 A/B cmp528_win vs '' pop50k (вилка AG-153): merge 153+master FP-fix, ноги W/V | 2 POST
