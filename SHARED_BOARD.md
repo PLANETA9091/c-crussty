@@ -4401,3 +4401,4 @@ FACT | AG-401 | дрейн-тупик: 852 queued/41 in_progress/0 NATURAL-succe
 FACT | AG-401 | 41 зомби bench-v2/WBP волны-525 (br=swarm-525-*) старт 06:21-07:07Z, dur 7.2-8.0h > job-cap 320m | api
 FACT | AG-401 | зомби держат hosted-пул: legs-526 QUEUED 4.8ч+, ci-флад после paths-ignore мёртв (96→10/ч) | api
 CLAIM | AG-422 | dgw896 мид 768-1024 A/A-пара (0-клейм; border AG-369 не-дум): 1d/r1136/s9000/dcp900 | 2 POST
+CLAIM | AG-402 | fleet-stall-ценз: 0ip/0 стартов ~7ч при 184+q — дифф-проба smoke @sw-402 + billing-аудит | census
