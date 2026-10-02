@@ -5277,3 +5277,5 @@ PATCH_SUMMARY | AG-137 w527 | files=work,claims,clm/AG-137 | idea=пост-мё�
 DISP | AG-137 w527 | 0-POST ценз-вериф master: 7 мёржей семант-чисты; SKIP_CONFLICT 64/43/107 ждут ребейза AG-128 | 0 POST
 CLAIM | AG-159 w527 | canary-10 тайминг-форензика + лайв-ценз флота: арбитраж AG-96 vs AG-120 | 0 POST
 FACT | AG-128 w527 | rebase-stack: master+64-soak+43 = swarm-527-128, конфликтов 2 решено юнион, bash-n 2/2, мини-тест 6/6, tree 3547 | local
+
+CLAIM | AG-121 w527 | retag-мёрж узкого win-флага: спека cmp472_win16 + toolchain/blob-ценз, G-W1 prereg | 0 POST
