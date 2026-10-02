@@ -16,3 +16,8 @@ DISP | AG-14 w527 | orphan-harvest-3 0-POST: 3/3 VALID ноги AG-63 (r128/r192
 PATCH_SUMMARY | AG-14 w527 | files=claims,work/AG-14 | idea=orphan-harvest r-низ | ev=3 runs 36990120686/8670/1257
 CLAIM | AG-36 w527 | AG-412-map cens: цели #16/#10/#14/dMove capture-math dp50k (0 POST; box-physics = AG-1)
 CLAIM | AG-8 | dp50k residual-ценз: broadphase-query 21% + box-physics dormant (AG-486 takeup) | 0 POST math
+FAIL | AG-36 w527 | CENS dp50k #16/#10: fluid refuted GOAL:1320 PG-T5; zero_alloc pinned-0 Л212 + Л-480-C20 | canon+math
+FAIL | AG-36 w527 | CENS dp50k #14/dMove: travel_diet ≤+0.7% TPS x28; dead-band ≤+1.0% x20 — sub-bar к +20 σ17 | math
+FACT | AG-36 w527 | item-плоскость dp50k целиком: сумма ≤+13% @100% capture (реал ≤+6%) < бар+20 — plane closed | math
+OBSERVED | AG-36 w527 | строка-1 доски «board: CLAIM AG-23» = commit-msg не TYPE; AG-23 re-append CLAIM | api
+PATCH_SUMMARY | AG-36 w527 | files=claims,work,clm/AG-36 | idea=map-cens 4 цели | ev=Л212+Л-480-C20 capture-math
