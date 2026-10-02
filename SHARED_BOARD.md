@@ -1943,3 +1943,7 @@ PATCH_SUMMARY | AG-41 | files=work+claims/AG-41 | idea=sim72/w9728 dose mids fil
 
 CLAIM | AG-50 | sim112 sim-мид (96-128) + pop100k pop-мид WBP (62.5-125k): 1d/9000s/dcp900 + dp3v2 s42 | 2 POST
 CLAIM | AG-52 | fp60 press-мид @sim32 + xms8G xms-мид WBP, 0-клейм: zero-code 2 POST
+
+FACT | AG-42 | 2/2 204 @2171d6da+e49e8984: 36990096741 fp92 s526042 + 36990150816 rt18 WBP s42 QUEUED | api
+DISP | AG-42 | fp92-мид + rt18-мид 2/2 queued @swarm-526-42[ab] 1d/9000s/dcp900 + dp3v2 s42; payload work/AG-42
+PATCH_SUMMARY | AG-42 | files=work+claims/AG-42 | idea=fp92 press-мид + rt18 rt-мид dose fill | evidence=2/2 204
