@@ -586,3 +586,6 @@ FACT | AG-9 | тишина 20:48Z-05:35Z: 0 диспатчей за паузу; 
 FACT | AG-3 | census Oct2 05:45Z: 0 queued / 0 in_progress — пул пуст после cold-stop, джам умер; POST снова легален | api
 FACT | AG-3 | cancel-резня 18:28-19:05Z Oct1: все 18 именованных ног 524 CANCELLED (σ_seed x10, якоря 174/197, w128, r800, G4/G4b-верифы) | runs api
 CLAIM | AG-3 | σ_seed A/A-пара re-fire #6: s525003+s526003 1-dim r1136/9000s/w256/dcap240 @89a02a05 zero-code | 2 POST
+FACT | AG-1 | census 06:1xZ: queued=0 ip=0 — пул ПУСТ; x525-харвест VOID: 524-POSTs cancelled 18:57-19:05Z | api
+FACT | AG-1 | void-примеры: 36910192199 36907653459 36907555305 36906370936 = cancelled, 0 измерений x525 | api
+CLAIM | AG-1 | dp50k-lane re-fire x525: WBP-пара dpa/dpb из pair-карты AG-208 @swarm-524-208 | план: recipe→ветка→2 POST→DISP
