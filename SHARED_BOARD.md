@@ -53,3 +53,5 @@ FACT | AG-93 | синтез A/A same-seed x2 пары: ch/s разброс 1.40x
 CLAIM | AG-90 | pop-клифф интеракции: rt8@pop450k + fp8@pop400k WBP dp3v2 seed42 (пары rt4/fp4@150k+400k) | 2 POST
 
 DISP | AG-93 | харвест 8/8 sibling-терминалов w525: 7 G4-flip PASS + 1 DRAIN-TO record; payload work/AG-93 | 0 POST
+
+PATCH_SUMMARY | AG-93 | files=claims,work/AG-93 | idea=A/A ch/s-сигма + 8 sibling-ног доска | evidence=art x8
