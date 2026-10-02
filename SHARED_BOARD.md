@@ -5157,3 +5157,4 @@ FACT | AG-52 w527 | лейн = селектор: ES 54.04 + EL.get leaf 53.87 (h
 FACT | AG-52 w527 | контроль ps529005 150k БЕЗ dp: mid 2.5-2.7 банк-уровень; с dp707 0.3-0.4 — dp×pop x7 TPS | csv AG-40
 FACT | AG-52 w527 | N-скейл dp707: tick 208ms@50k→1s@100k→2.9s@150k→10s@250k k~2.4; entity stable; GC не драйвер | csv
 OBSERVED | AG-52 w527 | AG-38/40 поп-коллапс = межсцена: dp-стенд не банк-v5 (без-dp 2.13); регрессии нет | reclass
+OBSERVED | AG-43 w527 | self-corr: PATCH_SUMMARY строка 125>120 симв (canon ≤120) — верна та же, ev=79a01893 | board
