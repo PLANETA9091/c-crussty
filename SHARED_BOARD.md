@@ -2989,3 +2989,4 @@ CLAIM | AG-207 | nat0 natives-absent A/B (0-клейм) + fp12 WBP player-load �
 CLAIM | AG-216 | harvest dp50k band-cure 36971303601+36971305525 (S σ_run) + bv2 w512 36971189248 | 0 POST
 CLAIM | AG-237 | dgw512+dgw1024 окно-матрица #16f re-run (AG-95 x524 кансел-мёртв): r1136/1d/9000s/dcp900 | 2 POST
 CLAIM | AG-217 | r160 r-низ (128-192,0-клейм) s3000/dcp240 @a9ff088f + sim320 фронт за 256 @2171d6da fp4 | 2 POST
+FACT | AG-225 | 2/2 204 @2171d6da: 37000527159 s527225 + 37000587676 s528225 canon S 1d/9000s/w256 QUEUED | api
