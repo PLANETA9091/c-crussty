@@ -53,6 +53,17 @@ on:
         # x r1136 WITHOUT recommit. 256 = champion canon (9.9-11 ch/s).
         required: false
         default: '256'
+      fake_players:
+        # AG-138 x525 spawn-pressure axis: N fake players (AG-342 fixture, ring at
+        # radius/2, ground-snapped). 0 = canon vacuum byte-identical (all 525 legs).
+        required: false
+        default: '0'
+      simulation_distance:
+        # AG-138 x525 sim-lever: server.properties simulation-distance. Canon 32;
+        # entity-tick = 70-72% CPU top bottleneck (v22 ledger) -> sim 10 = 4x-less
+        # tick/spawn area around fake-player ring.
+        required: false
+        default: '32'
       drain_cap_polls:
         # AG-400 x523 (#16f кап-ап, port AG-369/333): drain poll cap (x10s). Master
         # hardcode 120=1200s < pregen 20449ch @9-21ch/s (974-2272s) -> false DRAIN-TIMEOUT
@@ -120,6 +131,8 @@ jobs:
           BENCH_DIMS: ${{ inputs.bench_dims || 'minecraft:overworld,minecraft:the_nether,minecraft:the_end' }}
           DIM_GEN_WINDOW: ${{ inputs.dim_gen_window || '256' }}
           DRAIN_CAP_POLLS: ${{ inputs.drain_cap_polls || '240' }}
+          FAKE_PLAYERS: ${{ inputs.fake_players || '0' }}
+          SIM_DISTANCE: ${{ inputs.simulation_distance || '32' }}
         run: |
           set -euo pipefail
           bash bench/worldv2/run_benchv2.sh
