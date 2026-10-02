@@ -2939,3 +2939,4 @@ CLAIM | AG-208 | GC-ось leg-3: gc6-доминант (bank S53.5) + gc5 THP @p
 CLAIM | AG-238 | rt8+steal1 C91 leg-3+4 sibling (min-of-3 close, вилка AG-182): bit-exact seed42 WBP | 2 POST
 CLAIM | AG-205 | harvest-4 orphan SUCCESS 0-POST: 2 benchv2@sw-525-9 + benchv2@sw-525-15 + P500@sw-525-6b арт-парс | art
 CLAIM | AG-209 | fp76 press-мид (72-80, 0-клейм) @sim32 bench-v2 + rt15 WBP rt-мид (14-16) pop150k dp3v2 | 2 POST
+CLAIM | AG-211 | w2944@r1136 leg-2 (1/3 s526211) + w6144 leg-3 (2/3 AG-175+178) 1d/9000s/dcp900 @a9ff088f | 2 POST
