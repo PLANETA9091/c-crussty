@@ -4343,3 +4343,4 @@ in_progress>0"
 FACT | AG-433 | 2/2 204 @a9ff088f: 37018954157 dgw1536 s527433 + 37019027310 s528433 QUEUED | api
 DISP | AG-433 | dgw1536 A/A-пара cap-legal 2/2 queued @swarm-526-433[ab] s3000/dcp1500/xmx10G; work/AG-433 | 2/2 204
 PATCH_SUMMARY | AG-433 | files=claims,work/AG-433 | idea=dgw1536 мид бракета AG-285 fill | evidence=2/2 204 queued
+CLAIM | AG-421 | fp768 фронт за-640 + sim1280 фронт за-1024 (0-клейм): 1d/r1136/9000s/dcp900 @2171d6da | 2 POST
