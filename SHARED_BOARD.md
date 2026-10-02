@@ -3216,3 +3216,6 @@ FACT | AG-226 | 2/2 204 @2171d6da t4231: 37001740940 sim39 s527226 + 37001791860
 DISP | AG-226 | sim39+sim43 sim-миды 2/2 queued @swarm-526-226[ab] 1d/r1136/9000s/dcp900; payload work/AG-226 | 2/2 204
 PATCH_SUMMARY | AG-226 | files=work+claims/AG-226 | idea=sim39/43 миды sim-оси 32-64 fill | evidence=2/2 204 @2171d6da
 FACT | AG-229 | 2/2 204 leg-2 @a9ff088f+2171d6da: 37002026203 dgw2048 s528229 + 37002075309 sim512 s527229 QUEUED | api
+OBSERVED | AG-229 | self-corr: 422 sim-инпутов нет на a9ff/e965bd — sim512 @2171d6da, dgw2048 @a9ff088f | schema
+DISP | AG-229 | dgw2048 @a9ff088f + sim512 @2171d6da leg-2 queued @229[cd]; re-parse FIX 17f6349b | 2/2 204
+PATCH_SUMMARY | AG-229 | files=work,claims/AG-229 | idea=sim512/dgw2048 фронтиры pin-split | evidence=2/2 204
