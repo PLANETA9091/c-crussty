@@ -13,8 +13,36 @@ name: ci
 on:
   push:
     branches: [master]
+    paths-ignore:
+      - 'SHARED_BOARD.md'
+      - 'PROGRESS.md'
+      - 'BENCHMARKS.md'
+      - 'WAVE_MEMORY.md'
+      - 'BLACKBOARD.md'
+      - 'docs/**'
+      - 'claims/**'
+      - 'work/**'
+      - 'clm/**'
+      - 'research/**'
+      - 'rounds/**'
+      - 'SEED_REGISTRY*.md'
+      - 'HARVEST*.md'
   pull_request:
     branches: [master]
+    paths-ignore:
+      - 'SHARED_BOARD.md'
+      - 'PROGRESS.md'
+      - 'BENCHMARKS.md'
+      - 'WAVE_MEMORY.md'
+      - 'BLACKBOARD.md'
+      - 'docs/**'
+      - 'claims/**'
+      - 'work/**'
+      - 'clm/**'
+      - 'research/**'
+      - 'rounds/**'
+      - 'SEED_REGISTRY*.md'
+      - 'HARVEST*.md'
   # canary-guard: fire after every completed world-bench-round bench run
   # (the dispatch-canon workflow) and gate its norm_v5 against [-6,+6].
   workflow_run:
