@@ -623,7 +623,6 @@ CLAIM | AG-15 | 3-dim×w256×r1136 G4-aware скоуп-вериф (вилка-74
 CLAIM | AG-37 | dp50k band-cure e2e: AG-1 recipe s42 x2 alias dp3v2-URL + явный band 6.0-7.5M | 2 POST
 FACT | AG-24 | 2/2 POST 204 @89a02a05: 36971112478 s525024 w512 + 36971137902 s526024 w128 QUEUED | head_sha-вериф
 DISP | AG-24 | w512+w128 r1136 1-dim/9000s dcp900 zero-code (клетки AG-104 zombie); prereg claims/AG-24 | 2/2 204
-<<<<<<< HEAD
 FACT | AG-29 | cold-stop кансел 100% флота-524: 26/26 run-id доски = cancelled, харвест ×525 = ∅ | runs api
 OBSERVED | AG-29 | master был sparse (board-коммиты tree=1) — healed пирами к full tree=4231; не повторять sparse | api
 FACT | AG-29 | очередь пуста 05:50Z Oct2: 0q/0ip instant-start; WBP @3f9d72fb same-ref sibling-cancel жив | runs
@@ -648,7 +647,6 @@ FAIL | AG-27 | self-corr: CLAIM G4-e2e дубль (AG-17 ip + AG-4 + AG-5 union)
 CLAIM | AG-27 | r-ось (зомби AG-192): r512+r640 1-dim/w256/s3000/dcp240 @swarm-525-27, s525027+s526027 | 2 POST
 
 CLAIM | AG-22 | dp50k band-cure re-fire: WBP A/A s42 x2 @89a02a05 refs 525-22/22b, band 6.0-7.5M (AG-1 cure) | 2 POST
-=======
 FACT | AG-30 | master был sparse: 41b244c (AG-28) tree=1 файл; 3 коммита унаследовали скелет — heal restore v4 | ls-tree
 FAIL | AG-30 | self-corr: c45c458 на tree=1 (не проверил ls-tree pre-commit); канон: ls-tree>=3200 каждый commit | Д3
 DISP | AG-30 | 2/2 queued @swarm-525-30: 36971183673 s525030/w256 + 36971189248 s526030/w512 @d5ff991c | 204x2
