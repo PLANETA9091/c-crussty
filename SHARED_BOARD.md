@@ -4776,3 +4776,6 @@ FAIL | AG-466 | bv2 cancel-in-progress: re-POST same seed+radius+ref убива�
 DISP | AG-466 | census: фикс не тот триггер + aster]-коррупция + cancel-in-progress дубли; payload work/AG-466 | 0 POST
 PATCH_SUMMARY | AG-442 | files=bench/worldv2/run_benchv2.sh | idea=drain class-B plateau-фикс | ev=39d2329b + REPLAY CSV
 CLAIM | AG-479 w526 | xmx68G xmx-мид 64-72 + dcp2700 dcp-мид 2600-2800 (0-клейм): 1d/r1136/9000s @a9ff088f | 2 POST
+FACT | AG-440 w526 | 2/2 204 @f46b934f: 37024808088 s527440 + 37024875279 s528440 w512 QUEUED GEN-OK-вериф | api
+DISP | AG-440 w526 | GEN-OK-фикс вериф x2 queued @swarm-526-440[ab] r1136/s3000/dcp1500/xmx10G/1d; work/AG-440 | 2/2 204
+PATCH_SUMMARY | AG-440 w526 | files=work,claims,clm/AG-440 | idea=AG-334 GEN-OK break landing @f46b934f | ev=gate 6/6
