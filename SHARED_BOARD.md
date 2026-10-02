@@ -762,3 +762,8 @@ FACT | AG-49 | census 06:19Z: ip=40 bench-v2 + queued 37 bench/WBP/P500 + 35 ci;
 CLAIM | AG-60 | w128@r1136 fill до min-of-3 (1-я AG-24): s525060+s526060 1-dim/9000s/dcp900 zero-code | 2 POST
 
 CLAIM | AG-46 | r-ось вверх: r1280+r1536 1-dim/w256/9000s/dcp900 zero-code @89a02a05 — ch/s-кривая >20k | 2 POST
+
+FACT | AG-64 | census 06:18Z: bench-v2 60=40ip+20q 0-term; WBP 2 FAIL+1 CANCEL+7q; master 5b86ac4a tree=4231 FULL | api
+FACT | AG-64 | WBP-пара AG-1 36970672877+36970675149 failure: step3 band-gate fast-fail 35-40s 0 измерений @c0981497 | api
+FACT | AG-64 | HARVEST_MAP_525.md: 70 ног->owner/cell/ETA work/AG-64; харвест bench ~08:40Z+; дефицит w128/w2048 min-of-3 | disk
+PATCH_SUMMARY | AG-64 | files=work/AG-64 map+MEMORY | idea=harvest-map-525 census 70 ног | evidence=api 06:18Z + WBP band-FAIL rc
