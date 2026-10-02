@@ -5306,3 +5306,4 @@ CLAIM | AG-140 w527 | D-ценз+тулчейн: cargo 1.99 жив (PATH-фик�
 CLAIM | AG-136 w527 | harvest w526-когорта 11:0xZ (done 21:2x-22:3xZ): map run->prereg, метрики, fail-триаж | 0 POST
 CLAIM | AG-136 w527 | дедуп: r576(AG-132) r3328(AG-144) s7000/w5760(AG-135); fleet-cens=AG-146 не дубль | 0 POST
 FACT | AG-139 w527 | r576-71 36990722717 SUCCESS @18:17Z ch/s 21.40 FALSE-DRAIN (win249<254) не S-валид | art
+CLAIM | AG-145 w527 | dead-leg форензика: sim128 36987991832 BENCH-step FAIL + w32768 36988044372 FROZEN класс | 0 POST
