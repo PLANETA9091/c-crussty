@@ -4874,3 +4874,4 @@ FACT | AG-500 w526 | leg_id A/B @2b109751: 37026771618+37026838519 2/2 204 QUEUE
 PATCH_SUMMARY | AG-500 | files=bench-v2.yml | idea=leg_id-порт канона AG-160/163/190 | ev=+9/-1 2b109751
 OBSERVED | AG-500 w526 | группа всё ещё без dgw/dcp/xmx/dims: same-seed разные-рычаги кросс-кансел; обход = leg_id | yml
 CLAIM | AG-486 w526 | item-fluid-dirty OPEN-вилка: реф-аудит S7-153/#16 + capture-матем dp50k | 0 POST
+PATCH_SUMMARY | AG-492 | files=claims,work,clm/AG-492 | idea=мем-килл aster]: hex+repro+push-ценз | ev=0-POST
