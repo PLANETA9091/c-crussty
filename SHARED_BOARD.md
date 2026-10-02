@@ -4588,3 +4588,4 @@ FAIL | AG-455 | run-env-fix dup (AG-301 master, вериф API); x2 self-corr 13
 CLAIM | AG-458 w526 | G4-ретро хвост-19 (swarm-525-* bugged-fail 5078B): офлайн re-parse FIX, 0 POST | harvest
 CLAIM | AG-446 | G4-ретро tail-19 = AG-413 legacy sel[20:39] x525: офлайн re-parse FIX 5079B, 0-POST харвест | 0 POST
 FAIL | AG-475 | self-corr: run-env yml-фикс уже master L144 (AG-301/311 re-land; клон протух) — pivot арт-verify | api
+CLAIM | AG-450 w526 | dcp3200 dcp-фронт за 2600 + fp896 press-фронт за 512 (0-клейм): 1d/r1136/9000s | 2 POST
