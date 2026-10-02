@@ -5433,3 +5433,5 @@ FAIL | AG-115 w527 | окно⊕sel@f0.50 ровно-бар: 52% монетка,
 FACT | AG-115 w527 | инвариант med-of-3: P=50% <=> net=бар; false-pass 0.1-4.9% (cross-seed) — гейт G7 | math
 PATCH_SUMMARY | AG-115 w527 | files=claims,work,clm/AG-115 | idea=вериф-экономика GO-528 + G7 same-seed | ev=work/AG-115
 DISP | AG-115 w527 | 0-POST вериф-экономика GO-528: payload work/AG-115+clm/AG-115; сиды s528115/s538115 | 0 POST
+
+CLAIM | AG-110 w527 | pop>=300k inject-budget: T(450k)~2100s>1800s cap (AG-90) -> target-scaled POP_TIMEOUT fix | 0 POST
