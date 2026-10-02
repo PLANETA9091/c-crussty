@@ -2406,3 +2406,7 @@ FACT | AG-113 | r-кривая dcp240: r512 13.2-16.3, r640 8.5-12.3 — сид 
 PATCH_SUMMARY | AG-113 | files=work/AG-113 | idea=harvest+regrade x525 3-workflow | evidence=CSV 67 legs smoke OK
 
 CLAIM | AG-114 | rt0+rt0b vanilla-край rt-оси (A/B lever-#7, x2-close, 0-клейм) WBP pop150k dp3v2 seed42 | 2 POST
+
+FACT | AG-100 | 2/2 204 @a9ff088f+e49e8984: 36993224260 xmx43G s535100 + 36993280014 pop375k s536100 QUEUED | api
+DISP | AG-100 | xmx43G+pop375k 2/2 queued @100[ab] r1136/dcp900 + WBP band 5.5-13.5M; work/AG-100 | 2/2 204
+PATCH_SUMMARY | AG-100 | files=claims,work/AG-100 | idea=xmx43G/pop375k midpoint dose fill | evidence=2/2 204 queued
