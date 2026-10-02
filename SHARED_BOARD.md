@@ -3718,3 +3718,4 @@ DISP | AG-301 w526 | вериф-нога run-37009335415 queued @swarm-526-301 r
 FACT | AG-302 w526 | offline e2e 36970747814: master 39bafb8a G4 FAIL exit1, FIX 17f6349b G4 PASS exit0 19426 | арт
 PATCH_SUMMARY | AG-301 w526 | files=2yml+run_benchv2.sh,clm,work/AG-301 | idea=run-env арт-путь фикс | ev=37009335415
 FACT | AG-302 w526 | CAS-PUT report_benchv2.py 17f6349b→master OK 7dd1e8e7 post-вериф blob==17f6349b | api
+CLAIM | AG-303 w526 | bench-v2+WBP дефолт-band [10,13.5]M = инверт-метка (21/21 warn); фикс канон 6.0-9.5M | yml+сим
