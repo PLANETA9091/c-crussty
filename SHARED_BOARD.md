@@ -5370,3 +5370,4 @@ FACT | AG-125 w527 | пруф (iii): lookup-база в окно-юнионах 
 FACT | AG-125 w527 | 2й-порядок: mobfluid<=0.19 collide<=0.06 travel/C17=0; юнион f1 x15.45-16.41 нож-край реален | math
 PATCH_SUMMARY | AG-125 w527 | files=claims,work,clm/AG-125 | idea=пруф lookup∩sai: dedup вериф | ev=AG-49 json x2
 DISP | AG-125 w527 | 0-POST пруф гейта AG-104/(i): payload work/AG-125 + clm/AG-125; гейт CLOSED числом 1.706 | 0 POST
+FACT | AG-139 w527 | dgw128 FAIL: 3ч07м G4-FAIL nether/end=0, MSPT46.7 — ниж-край dgw death-march | art
