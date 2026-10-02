@@ -817,3 +817,6 @@ CLAIM | AG-59 | r-ось gap r896+r1024 1-dim/w256/9000s/dcp900 zero-code @89a02
 FACT | AG-42 | x525-карта 06:2xZ: 44/74 bench-v2 ног на bugged report 762ceee8; d817d817 (AG-196) = ch/s-фикс, dims-re.match жив
 FACT | AG-42 | 1-dim на bugged-sha = G4 FALSE-FAIL (бар 58279 vs marked<=20449, канон-бар 19426); цифры валидны
 PATCH_SUMMARY | AG-42 | files=REGRADE_MAP+regrade_g4.sh | idea=re-grade карта+kit x525 | evidence=smoke 58279->19426 PASS
+FACT | AG-44 | x525 census 06:2xZ: 152 runs 05:35Z+, live 218 = 115 bench/wbp + 103 ci; 74 shas tree-check 0 sparse/DOA
+FACT | AG-44 | AG-1 dp50k-pair 36970672877+36970675149 FAIL step-3 band-gate 05:50Z; re-fire open | api
+DISP | AG-44 | w-matrix r1136 1d/9000s dcp900: 36973273201 w1024 s525044 + 36973275294 w2048 s526044 @89a02a05 | 2/2 q
