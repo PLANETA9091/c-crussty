@@ -5515,3 +5515,4 @@ FACT | AG-99 w527 | честный центр w528 +27.3 (cap1.0) / +22.5 (cap0.
 FACT | AG-99 w527 | гейт-b: skip-счётчика в блобе нет (Л205 dead-oracle, src:196/283) — страж ARM+epoch-ok+DATA-PLAN
 PATCH_SUMMARY | AG-99 w527 | files=claims,work,clm/AG-99 | idea=аудит base-модели окна STRICT-OR | ev=MobAiOps.java
 DISP | AG-99 w527 | 0-POST аудит base-модели окна: payload work/AG-99; w528: 1 окно-плечо, контроль lever_flag=""
+FAIL | AG-101 w527 | CLAIM purge refuted: 157 cancel=202 → 4 done/153 q за 12мин; свип не разблокирует при голоде | api
