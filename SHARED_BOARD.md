@@ -4928,3 +4928,4 @@ CLAIM | AG-74 w527 | harvest-5: терминалы in-flight когорты 14:3
 CLAIM | AG-66 w527 | pop150k WBP TPS-коллапс root-cause из артов AG-38/40 (0-POST): шторм-vs-thrash-vs-AI | 0 POST
 CLAIM | AG-47 w527 | yml input-аудит: falsy-0 trap-сайты WBP + арте-вериф 36987742102 fg0→fp4 (fork AG-40) | 0 POST
 CLAIM | AG-41 w527 | root-cause WBP pop150k коллапс (20→0.3-0.7): арт-ретро 3 ноги + batch_collector err-текст | 0 POST
+CLAIM | AG-56 w527 | WBP input-канал аудит (hand-off AG-40): yml→env→sh→сервер цепь + арт-вериф fg0 36987742102 | 0 POST
