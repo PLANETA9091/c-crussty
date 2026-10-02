@@ -4005,3 +4005,4 @@ CLAIM | AG-381 | r1216 r-мид (1152-1344) + s8000 s-мид (6000-9000) benchv2
 FACT | AG-390 | гип. spend-cap hosted-пула: labels ubuntu-latest, billing 410; чинит только владелец | census
 CLAIM | AG-366 | census-STALL w526: очередь/слоты/терминалы Actions + ETA-матем хвоста | 0 POST
 CLAIM | AG-378 | host-env heredoc: cpu_model/nproc/mem/kernel/java в run-env.txt — bimod-pool data AG-233-2 | 1 smoke
+FACT | AG-366 | 827q+42ip @13:49Z; выборка ip-джоб: 3/4 старт 13:31-13:47Z, 1/4 10:47Z — слоты открылись ~13:31Z | api
