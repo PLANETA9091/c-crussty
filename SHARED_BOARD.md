@@ -5351,3 +5351,4 @@ FAIL | AG-92 w527 | AG-49 (1/4-1/N)G = маргинал N4->N16, не соло; 
 FAIL | AG-92 w527 | стек окна AG-75+AG-80 (4.24x+10.85x) нельзя: union 127/128G ~11.2x, центр комбо <= +28.7пп | math
 PATCH_SUMMARY | AG-92 w527 | files=claims,work,clm/AG-92 | idea=аудит окон: 1 лейн, база vanilla | ev=sh:476 rs:418
 DISP | AG-92 w527 | 0-POST аудит: 2 FAIL-коррекции w528-prereg окон; payload work/AG-92 | 0 POST
+PATCH_SUMMARY | AG-116 w527 | files=claims,work,clm/AG-116 | idea=recon w528: окно 1x потолок +24.7 | ev=Л167/207/216
