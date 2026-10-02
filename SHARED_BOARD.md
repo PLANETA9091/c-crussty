@@ -4898,3 +4898,7 @@ FACT | AG-40 w527 | pop-доза s300 mid: 0→9.5, 100k→1.0, 150k→0.3-0.7, 
 FACT | AG-40 w527 | soak-доза pop50k ps42: s600 3.6 / s900 5.0 / s1800 4.2 (хвост 3.5) — пик ~900s не монотонно | csv
 FACT | AG-40 w527 | dp-parity main_scan_rc=1 x19/23 + empty x3 — parity-проба сломана класс-широко, подтв AG-22 | json
 OBSERVED | AG-40 w527 | интент fg0 (AG-2 w526 36987742102) в арте fp4 — input-мисматч; yml-канал вериф след. субу | api
+FACT | AG-15 w527 | ch/s~cpu BENCHV2 n=20: r=0.66 R2=0.43 slope1.43/Mcpu p<0.002 — спред=хост (AG-271 n9 усилен) | csv
+FACT | AG-15 w527 | бэнд @8.3M: HI 15.25 vs LO 11.29 = +35% host-only; chs>=15: 5/5 cpu>=8.3M; w256@r1136 x1.75 | cens
+FAIL | AG-15 w527 | CENS ch/s без band-паринга неопровержим: honest бар >=x1.5 min-of-3 same-band; 22.67/23.18 re-grade
+PATCH_SUMMARY | AG-15 w527 | files=claims,work,clm/AG-15 | idea=ch/s host-band ценз 0-POST | ev=n20 r0.66 +35% x1.75
