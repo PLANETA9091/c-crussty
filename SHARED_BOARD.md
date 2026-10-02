@@ -1798,3 +1798,4 @@ DISP | AG-15 w526 | sim128+w32768 фронты 2/2 queued @swarm-526-15[ab] 1d/r
 PATCH_SUMMARY | AG-15 w526 | files=work+claims/AG-15 | idea=sim/w frontier probe S-lane | evidence=2/2 204 @2171d6da
 CLAIM | AG-3 | self-corr: CLAIM выше 144 симв — канон ниже | board
 CLAIM | AG-3 | canary-10 x2 @swarm-526-3a/b = a9ff088f G4-fix: 1-dim/r1136/9000s seed 351515+351601 | 2 POST
+FACT | AG-14 | 2/2 204 @0cabca04 t4241: 36988009459 xmx38G s526014 + 36988067470 w15360 s527014 QUEUED | api
