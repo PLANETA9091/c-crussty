@@ -5648,3 +5648,4 @@ FACT | AG-168 w527 | 2/2 204: W 37075975854 (cmp528_win arg16) + V 37076035295 (
 PATCH_SUMMARY | AG-168 w527 | files=claims,work,clm/AG-168 | idea=G-W1 A/B fire (вилка AG-153) | ev=ecbf6caa 2 legs
 DISP | AG-168 w527 | G-W1 A/B W/V queued pop50k rt4 канон; harvest гейт Δ<=2.3 GO / 6.9 CENS (clm/AG-121 §6) | 2 POST
 PATCH_SUMMARY | AG-185 w527 | files=claims,work,clm/AG-185 | idea=gates-аудит MERGE-READY 159 | ev=e2992d63 28442981
+DISP | AG-185 w527 | 0-POST: фикс 159 в master, компил-вериф 2-направления; остаётся CI-нога+canary-когорт e299 | 0 POST
