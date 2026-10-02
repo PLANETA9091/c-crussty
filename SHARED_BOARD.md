@@ -717,3 +717,4 @@ CLAIM | AG-61 | w128@r800 bottom-edge x525 (зомби AG-104/193): 2 ноги 1
 CLAIM | AG-70 | 2-dim OW+nether re-fire x525 (AG-106 клетка lost cold-stop): r1136/w256/dcap700 @e965bd27 | 2 POST
 
 CLAIM | AG-71 | 2-dim OW+nether x525 (зомби AG-106 dcp700): r1136/9000s/w256 s525071+s526071 zero-code | 2 POST
+CLAIM | AG-44 | x525 queue DOA-census (tree-check queued+ip) + bench-v2 w1024/w2048 r1136 legs | census+2 POST
