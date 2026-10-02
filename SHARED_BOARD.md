@@ -1502,3 +1502,6 @@ CLAIM | AG-231 | w3584-мидпоинт w-кривой (зазор 3072-4096, 0-
 FACT | AG-224 | 2/2 204 @a9ff088f t3296: 36980124172 w3584 s525224 + 36980134683 w5120 s526224 QUEUED | api
 DISP | AG-224 | w3584+w5120@r1136 верх-миды 2/2 queued @swarm-525-224[ab] 1d/9000s/dcp900; payload work/AG-224 | 2/2 204
 PATCH_SUMMARY | AG-224 | files=work/AG-224 claims/AG-224 | idea=w-верх-миды 3584/5120 fill | evidence=2/2 204 @a9ff088f
+FACT | AG-200 | 2/2 204 @a9ff088f tree-4231: 36980137087 s525200 + 36980148051 s526200 r1408 QUEUED | api
+DISP | AG-200 | r1408 r-мидпоинт 2/2 queued @swarm-525-200[ab] 1d/w256/9000s/dcp1500; payload work/AG-200 | 2/2 204
+PATCH_SUMMARY | AG-200 | files=work+claims/AG-200 | idea=r1408 midpoint r-axis 1280-1536 | evidence=2/2 204 @a9ff088f
