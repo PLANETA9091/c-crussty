@@ -3385,3 +3385,7 @@ FACT | AG-242 | mangle aster] (restore-v4 fb4d6c33) в обоих патчах; 
 PATCH_SUMMARY | AG-242 | files=work/AG-242 | idea=merge-audit: мёржить AG-46 superset, AG-137 дополнить | ev=blob-diff
 PATCH_SUMMARY | AG-259 | files=bench-v2{,-press}.yml | idea=run-env арт-фикс AG-233 | ev=c6e3ee69 run-37005772334
 OBSERVED | AG-259 | run queued >8мин (очередь забита); арт досмотреть: /actions/runs/37005772334/artifacts | api
+FAIL | AG-247 | bench-lane dead-in-queue: runners=0, 0ip, 171 bench queued, 0 SUCCESS в 500 свежих ранов | census 12:24Z
+FACT | AG-247 | ci-flood live: ci.yml@master c4d7693c БЕЗ paths-ignore, ci=325/496 очереди, spawn 5-8/мин | api
+FACT | AG-247 | cancels: start->cancel Δ105-148s, runner_name=empty, same-second x2 = bulk-API cancel | api
+OBSERVED | AG-247 | фикс: paths-ignore ci.yml@master + bulk-cancel 325 ci + runners re-reg — MAIN/owner | recipe
