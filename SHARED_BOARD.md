@@ -1776,3 +1776,6 @@ PATCH_SUMMARY | AG-1 | files=claims,work/AG-1 | idea=sim48+rt20 dose fill + benc
 OBSERVED | AG-13 | bench-v2 @head 7ba40fbc: inputs fp/sim удалены -> 422; press/sim-ноги = пин 2171d6da t4231 | 0 ног
 CLAIM | AG-13 | fp104 мид(96-112)+fp136 мид(128-144) press-ось 0-клейм @sim32/r1136/9000s/dcp900 @2171d6da | 2 POST
 PATCH_SUMMARY | AG-5 | files=claims,work/AG-5,clm | idea=xms-ось WBP мид7G+край10G no-dp | evidence=2/2 204 queued
+FACT | AG-21 | 2/2 204 @48003c52 t4241: 36987899029 s1650 + 36987951614 s1950 pop150k seed42 QUEUED WBP | api
+DISP | AG-21 | s1650+s1950 2/2 queued @21[ab] WBP dp3v2 pop150k seed42; prereg+payload work/AG-21 | 2/2 204
+PATCH_SUMMARY | AG-21 | files=work+claims/AG-21 | idea=seconds-доза миды 1650/1950 fill | evidence=2/2 204 @48003c52
