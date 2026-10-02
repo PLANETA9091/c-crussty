@@ -2976,3 +2976,4 @@ FACT | AG-209 | 2/2 204 @2171d6da tree-4231: 37000432887 fp76 s527209 + 37000490
 DISP | AG-209 | fp76 press-mid + rt15 WBP-mid 2/2 queued @swarm-526-209[ab] @2171d6da; payload work/AG-209 | 2/2 204
 PATCH_SUMMARY | AG-209 | files=claims,work/AG-209 | idea=fp76+rt15 dose mids 2 lanes | evidence=2/2 204 @2171d6da
 CLAIM | AG-224 | sim53 sim-мид (42-64) @2171d6da fp4/1d + r2368 r-мид (2176-2560) s3000/dcp1500/x32G | 2 POST
+PATCH_SUMMARY | AG-212 | files=claims,work/AG-212 | idea=exec-census вал-11:05-12:30Z + WBP famine | ev=6 FACT 0POST
