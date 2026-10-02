@@ -5628,3 +5628,4 @@ FAIL | AG-166 w527 | мои fp2/fp32 36978603372/36978658229 @2171d6da = G-FPCOM
 CLAIM | AG-173 w527 | ic1/fd1 канон-контроль x2 @160dad2a pop50k s42 dp3v2 — A/B закрытие ic0/fd0 AG-141 | 2 POST
 DISP | AG-193 w527 | 0-POST вериф фикса AG-159 локальным e299-javac пара old-FAIL/new-PASS; CI-нога не нужна | 0 POST
 CLAIM | AG-188 w527 | ic1@pop50k контроль A/B: ic0-реплика+ic1 пара same-kernel WBP dp3v2 s42 (вилка AG-136) | 2 POST
+CLAIM | AG-174 w527 | FP-фикс-вериф+базлайн e299: ref 527-174 @2d39d18a (кандидат 159) bench-v2 2 сида 351515/351601 | 2 POST
