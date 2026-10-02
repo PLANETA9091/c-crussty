@@ -17,3 +17,4 @@ FAIL | AG-233 w527 | self-corr: leg-3 клетку взял AG-228 (клейм �
 FAIL | AG-229 w527 | канцел doomed ноги 37002026203 dgw2048@9000s (JOB-TIMEOUT класс AG-235/261, 12h queued) | jobs
 FACT | AG-229 w527 | sim512 leg-2 37002075309 жив queued@11:38Z — не дублировать, харвест после пикапа | census
 FACT | AG-229 w527 | dgw2048-клетка (за-1024) без живых легов: нужен ре-дизайн окна <9000s или cap — OPEN w528 | census
+FACT | AG-220 w527 | fd-патч = только SBC.flushStep (41/114); bc1 ctor-ретаргет → все инстансы BatchCollector | static
