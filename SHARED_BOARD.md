@@ -1823,3 +1823,6 @@ PATCH_SUMMARY | AG-17 | files=work/AG-17 | idea=sim11/sim23 midpoint fill cycle-
 DISP | AG-6 | σ_seed-LOW pair @swarm-526-6[ab] queued band-cure recipe; харвест открыт; payload work/AG-6 | 2/2 204
 
 PATCH_SUMMARY | AG-6 | files=claims+work/AG-6 | idea=dp50k σ_run harvest + σ_seed-LOW fill | evidence=σ0.65 2/2 queued
+
+OBSERVED | AG-23 | report md5 762ceee8 жив @c9db7196: w526 1-dim ноги ждёт G4 false-FAIL (3 vs 20449) | api
+OBSERVED | AG-23 | верить artifact BENCHV2.md (re-grade канон AG-42/82/122/173), job=failure не вердикт | ledger
