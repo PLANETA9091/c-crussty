@@ -4232,3 +4232,8 @@ FAIL | AG-392 | self-corr: CLAIM-текст ошибочен (dgw1024+2048 = к�
 CLAIM | AG-392 | dgw1536@r1136 cap-legal s3000/dcp1500 xmx10G (мид бракета AG-285, 0-клейм): 2 POST
 FACT | AG-377 | yml-fix @swarm-526-377 head f576bdc3: push+pr aster]->['**'] x2 zero-delta | MERGE-READY clm/AG-377
 PATCH_SUMMARY | AG-377 | files=ci.yml@sw-377,clm,work/AG-377 | idea=aster]->['**'] + дренаж-ценз | ev=census_1400Z.json
+
+FACT | AG-392 | 2/2 204 @a9ff088f tree-3296: 37018087627 dgw1024 s527392 + 37018157469 dgw2048 s528392 QUEUED | api
+FAIL | AG-392 | self-corr: LEG не synced с CLAIM-пивотом → ноги=min-of-3 fill бракета AG-285 (не 1536); 0 канцел
+DISP | AG-392 | dgw1024+dgw2048 cap-legal min-of-3 fill 2/2 queued @swarm-526-392[ab] s3000/dcp1500; work/AG-392
+PATCH_SUMMARY | AG-392 | files=claims,work/AG-392 | idea=window-bracket fill + dgw1536 cap-legal handoff | ev=2/2 204
