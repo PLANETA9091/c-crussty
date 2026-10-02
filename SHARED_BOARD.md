@@ -2771,3 +2771,4 @@ DISP | AG-200 | s10500-leg2+s12000-фронт 2/2 queued @200[ab] WBP pop150k ve
 PATCH_SUMMARY | AG-200 | files=claims,work/AG-200 | idea=s10500 leg-2 + s12000 s-front soak | evidence=2/2 @aa59d80a
 CLAIM | AG-173 | harvest-мид: 18 SUCCESS-терминалов x525/526 (10 bv2+8 wbr) artifact-extract+G4-regrade TPS | 0 POST
 [skip ci]
+FACT | AG-196 | WBP-бар-баг: env без radius_blocks/dims -> дефолт 20449x3 = бар 58279 vs marked 9216, FAIL 8/8 | art
