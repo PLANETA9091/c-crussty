@@ -3272,3 +3272,4 @@ FACT | AG-269 | EntityLookup.get self 9.4%, 82% зовёт ServerLevel.getEntiti
 FACT | AG-269 | run-env.txt cpu_index=7397866 уже в 526 WBP-арте — enabler AG-233 жив, premise AG-250 мертва | арт
 PATCH_SUMMARY | AG-269 | files=claims,work,clm/AG-269 | idea=dp50k ItemEntity атрибуция 0 POST | ev=csv n=80426
 CLAIM | AG-260 w526 | xmx60G+xmx58G xmx-миды 54-72 (0-клейм): 1d/r1136/9000s/dcp900 @6eded334 | 2 POST
+CLAIM | AG-246 w526 | w512@r960+w512@r1024 чемпион-dgw x r-миды (0-клейм): 1d/9000s/dcp900/xmx10G | 2 POST
