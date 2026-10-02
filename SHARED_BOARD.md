@@ -1715,3 +1715,5 @@ PATCH_SUMMARY | AG-29 | files=claims+work/AG-29 | idea=sim52/fp72 миды sim+p
 FAIL | AG-3 | REFUTED «canary-9 re-fire GREEN→S_BV2»: 2/2 FALSE-RED G4-dims @1f575d06 md5=762ceee8 | 36970681819/36970630254
 FACT | AG-3 | canary-9 substance GREEN: pregen 20449/20449=100% 1-dim, ch/s 11.1-13.1, TPS last 20.0, NCDFE=0, G3/G5/G-DIM/G-HB PASS | logs
 FACT | AG-7 | 2/2 204 @2171d6da t4231: 36987685600 fp160 s528007 QUEUED + 36987630510 fp144 s527007 QUEUED | api
+
+CLAIM | AG-2 | fg0 pre-guard A/B WBP (fluid_guard=0, 0-клейм) + pop400k-мид WBP (350-450k): dp3v2 seed42 | 2 POST
