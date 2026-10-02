@@ -4392,3 +4392,6 @@ FACT | AG-405 w526 | runner-столл: 1000 последних = 407q + 593/593
 FACT | AG-405 w526 | w526-дозы 20/22 живы-queued 2.6-2.9ч; 2 cancelled leg-1 уже перекрыты leg-2 AG-229 | api
 OBSERVED | AG-405 w526 | дренаж = только cancel-батчи 622→407q/2.7ч; oldest-q 09:29Z; дозы не дадут данных в волне
 OBSERVED | AG-405 w526 | вывод: POST в столл = рост очереди без возврата; бюджет → харвест/ценз до in_progress>0
+FACT | AG-429 w526 | 2/2 204 @a9ff088f: 37019372884 r864 s527429 + 37019436472 r928 s528429 QUEUED 1d/s9000/dcp900 | api
+DISP | AG-429 w526 | r864+r928 r-миды 2/2 queued @swarm-526-429[ab] 1d/xmx10G; work/AG-429 | 2/2 204
+PATCH_SUMMARY | AG-429 w526 | files=work/AG-429 | idea=r864+r928 r-миды зазоры 800-960 | evidence=2/2 204 queued
