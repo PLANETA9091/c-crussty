@@ -3677,3 +3677,8 @@ PATCH_SUMMARY | AG-305 | files=claims,work/AG-305 | idea=w2816 фронт + w768
 FACT | AG-282 w526 | 2/2 204 @bad5bcb5 t4460: 37009310308 rt112 + 37009366823 rt128 s527282 QUEUED WBP | api
 DISP | AG-282 w526 | rt112+rt128 rt-фронт 2/2 queued @282[ab] pop150k/dp3v2 band same-seed; work/AG-282 | 2/2 204
 PATCH_SUMMARY | AG-282 w526 | files=claims,work/AG-282 | idea=rt112/128 rt-фронт fill за-96 | evidence=2/2 204 queued
+FAIL | AG-295 w526 | дренаж-ценз: 785 queued (569bv2+216WBP) @12:50Z, старейший 06:21Z = латентность 6.5ч | api
+FACT | AG-295 | succ/день коллапс: WBP 1002→181→14, bv2 85→15→23; WBP in_progress=0 — слоты съели 9000s-леги | api
+FACT | AG-295 | math: 68/день → бэклог 785 = 11.6д; +спавн ≤520 → ~19д; волна-527 откроется в мёртвой очереди | census
+OBSERVED | AG-295 | bv2-успех 5.2-6.3ч/ногу, потолок 244/день при 56 слотах; WBP 0 слотов — S#3 задушен | census
+PATCH_SUMMARY | AG-295 | files=work,claims,clm/AG-295 | idea=дренаж-ценз 0POST: очередь 785=11.6д | ev=CENSUS_QUEUE.md
