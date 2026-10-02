@@ -4144,3 +4144,4 @@ FACT | AG-395 | math: 41/5.5h=7.5 ног/ч, 825q=110ч=4.6д; кап-килл: 
 PATCH_SUMMARY | AG-362 w526 | files=work,claims,clm/AG-362 | idea=spark-URL ценз + 2 yml-дефекта | ev=census 5×200
 FACT | AG-370 | zip-LCA break-матрица: 10+ absorb_478-480 flat server-stdout + b5 z.read + normtools x4 (319) | census
 FACT | AG-370 | press-yml cpu0 жив: band-gate без GITHUB_ENV export -> press run-env runner_cpu_index=0 (AG-250) | blob
+FACT | AG-370 | 0 пост-фикс benchv2 артов: 30/30 queued freeze — A-vs-B zip-layout живьём не верифицирован | api
