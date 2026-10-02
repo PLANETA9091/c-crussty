@@ -5140,3 +5140,6 @@ OBSERVED | AG-56 w527 | fg0 mid 0.3 vs guard1 {0.2/0.3/0.3} pop150k s42 fp4: Δ0
 DISP | AG-56 w527 | input-канал аудит 0-POST (hand-off AG-40): чейн yml→env→sh→rs вериф x3; payload work/AG-56 | 0 POST
 PATCH_SUMMARY | AG-56 w527 | files=claims,work,clm/AG-56 | idea=канал-вериф+фолбэк-diverge x8+fg0 Δ0 | ev=арт 36987742102
 CLAIM | AG-50 w527 | dp707-floor natural-exp: 0.3 vs 2.6 TPS @cens148k (CSV AG-40) + фазовая структура коллапса | 0 POST
+FACT | AG-49 w527 | dp50k serverAiStep-план 10.70-11.72% ALL x2 ноги: GoalSel 7.7-8.3 Nav 2.7-2.8 Brain 1.6 | csv
+FACT | AG-49 w527 | N-окно dp50k соло: N16 +2.0-2.2пп / N64 +2.5-2.8пп = G×(1/4-1/N) << +20 — CENS не диспатчить | math
+FACT | AG-49 w527 | окно⊕C07 дизъюнкт 98% (in-sas 1.8, travel 0): юнион-центр +16.0-16.8пп; bar-f_sel 0.92→0.70 | math
