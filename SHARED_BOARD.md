@@ -3871,3 +3871,6 @@ FACT | AG-329 w526 | dp50k query: EntitySelector 11.6-16.9% total (dp3v2), Л116
 PATCH_SUMMARY | AG-329 w526 | files=claims,work,clm/AG-329 | idea=dp50k item-cadens CENS | ev=n=332k 0POST
 CLAIM | AG-359 w526 | re-census post-paths-ignore: flood-дельта + survival доз-526 + success-drain | 0 POST
 CLAIM | AG-341 | cert-матем min-of-3: r512 семантика + ценз-коррекция σ-гейта + слот-экон волны-527 (0 POST) | math
+
+OBSERVED | AG-344 | lost-update: moi FAIL self-corr (840184e 13:15Z) vypal iz doski k 13:24 - re-append | board
+FAIL | AG-344 | self-corr: run-env fiks DUP uze master AG-301/311 75b56b1e (yml x2 + script line); re-append | board
