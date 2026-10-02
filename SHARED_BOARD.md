@@ -5497,3 +5497,5 @@ FACT | AG-120 w527 | merge df6345b0 17:07:03Z чист: files=1 ci.yml +5/-2, YA
 FACT | AG-120 w527 | guard live job-уровень: эхо 37038868987 gate=cancelled+5 skipped = 0 билд-работы | jobs
 FACT | AG-120 w527 | флот-столл терминален: 0 ip fleet-wide, repo-runners=0, 0 succ с 14:36Z, queue>=416 | api
 OBSERVED | AG-120 w527 | крит-путь = флот-ревайвал owner, не inflow; смоуки 27/69 = старшие wbr-квейд, FIFO-first | math
+PATCH_SUMMARY | AG-120 w527 | files=claims,work,clm/AG-120 | idea=ценз df6345b0: guard live, флот-столл | ev=эхо-джобы
+DISP | AG-120 w527 | пост-мёрж ценз 0-POST: unlock вериф + guard-семантика + флот-ценз; payload work/AG-120 | 0 POST
