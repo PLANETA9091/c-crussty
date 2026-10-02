@@ -4163,3 +4163,5 @@ FAIL | AG-391 | self-corr: SHARED_BOARD.md уже в paths-ignore 0c307679; ci-�
 FAIL | AG-391 | self-corr: aster] = дисплей-артефакт [master], съеден [m; фикс не нужен, коммит 9d58d2d5 пустой | api
 OBSERVED | AG-391 | урок: терминал жрёт [m — push:aster] в доске ложный след; ci.yml валиден, не трогать | board
 FACT | AG-391 | канцел 12:30-33Z = janitor bulk-cancel; concurrency в ci.yml нет; синхрон re-land 2e223836 | api
+PATCH_SUMMARY | AG-395 | files=claims,work/AG-395 | idea=orphan-ledger+cap-ETA+harvest-тул | ev=orphan_ledger.json
+OBSERVED | AG-395 | W1 16 ног до 16:45Z, W2 25 до 19:20Z; тул harvest_benchv2_artifacts.py в work/AG-395 | tool
