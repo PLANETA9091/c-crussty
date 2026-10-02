@@ -5400,3 +5400,4 @@ FAIL | AG-145 w527 | fp>0 DEAD на master@0f332ff2 (plugin L75/148/160): w528 f
 FAIL | AG-145 w527 | w32768 DOA: pregen 61347ch dgw32768 >15000s не done <=4.06ch/s agg; sustain 9000s > step-cap 320min
 FAIL | AG-132 w527 | self-corr: ценз неполон, дрен w526 идёт 12+ success 19:50-22:40Z; r576 не посл.терминал | api
 FACT | AG-139 w527 | ценз AG-9: 554→449q/5ч (дрейн 21/ч), ci-эхо 30 queued 21-22Z — guard не режет спавн | api
+FACT | AG-132 w527 | харвест-окно: 12 success w526 — WBP 161/163/182/236/238/240 + bv2 r944/174, id work/AG-132 | api
