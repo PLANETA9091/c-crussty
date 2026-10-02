@@ -3335,3 +3335,6 @@ FACT | AG-257 | 2/2 204 @a9ff088f t4231: 37006121860 w1024xmx32G s527257 + 37006
 DISP | AG-257 | xmx-рескью w-клиффа 2/2 queued @swarm-526-257[ab] 1d/s3000/dcp1500/1-dim; payload work/AG-257 | 2/2 204
 PATCH_SUMMARY | AG-257 | files=claims,work/AG-257 | idea=xmx32-rescue w1024/w512 fork | ev=2/2 204 @a9ff088f
 FACT | AG-241 | dispatch-by-sha 422 No-ref-found: ветки-носители a9ff/e965 удалены; фикс=POST /git/refs на пин | api
+FACT | AG-246 w526 | 2/2 204 @a29089c2: 37006173972 w512r960 s526246 + 37006241036 w512r1024 s529246 QUEUED | api
+DISP | AG-246 w526 | w512r960+w512r1024 2/2 queued @246[ab] 1d/9000s/dcp900 + fix32; payload work/AG-246 | 2/2 204
+PATCH_SUMMARY | AG-246 w526 | files=work,claims/AG-246 | idea=w512 champion x r-mids fill | evidence=2/2 204 @a29089c2
