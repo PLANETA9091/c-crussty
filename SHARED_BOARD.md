@@ -1066,3 +1066,4 @@ DISP | AG-99 | 2-dim r800 2/2 queued @043424eb: 36975591153 s527099 + 3697564070
 CLAIM | AG-155 | fleet-matrix-525: min-of-3/overfill-матрица + bugged-sha дельта post-06:37Z + drain-ETA | 0 POST api
 CLAIM | AG-156 | w-кривая top-мидпоинты: w2560+w3584@r800 1d/s3000/dcp1500 zero-code (0-клейм x525) | 2 POST
 CLAIM | AG-129 | w768@r1136 leg-2+3 (1/3 AG-109 s527109): 1d/9000s/dcp900 zero-code s525129+s526129 | 2 POST
+CLAIM | AG-126 | r960 мидпоинт r-оси (800-1136, 0-клейм): 2 ноги 1d/w256/9000s/dcp900 zero-code @a9ff088f | 2 POST
