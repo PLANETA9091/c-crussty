@@ -72,7 +72,7 @@ public final class BenchFakePlayersPlugin extends JavaPlugin {
         for (ServerLevel lvl : levels()) {
             int n = 0;
             for (net.minecraft.world.entity.Entity e : lvl.getAllEntities()) n++;
-            getLogger().info("[BenchV2Census] dim=" + lvl.dimension().identifier() + " entities=" + n
+            getLogger().info("[BenchV2Census] dim=" + lvl.dimension().location() + " entities=" + n
                     + " players=" + lvl.players().size()); // benchv2-census
         }
         getLogger().info("[BenchFakePlayers] alive-check: injected=" + injected.size());
@@ -145,7 +145,7 @@ public final class BenchFakePlayersPlugin extends JavaPlugin {
             if (level.dimension() == net.minecraft.world.level.Level.NETHER) {
                 y = 64;
             } else {
-                y = Math.max(level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z) + 1, level.getMinBuildHeight() + 8);
+                y = Math.max(level.getHeight(Heightmap.Types.MOTION_BLOCKING, x, z) + 1, level.getMinY() + 8);
             }
             player.teleportTo(level, x + 0.5, y, z + 0.5,
                     java.util.Set.of(), 0.0F, 0.0F,
@@ -157,7 +157,7 @@ public final class BenchFakePlayersPlugin extends JavaPlugin {
 
             injected.add(player);
             getLogger().info("[BenchFakePlayers] registered " + name
-                    + " uuid=" + uuid + " dim=" + level.dimension().identifier() + " at (" + x + "," + y + "," + z + ")");
+                    + " uuid=" + uuid + " dim=" + level.dimension().location() + " at (" + x + "," + y + "," + z + ")");
         }
         getLogger().info("[BenchFakePlayers] DONE: injected=" + injected.size() + " distribute=" + distribute);
     }
