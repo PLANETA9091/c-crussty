@@ -1771,3 +1771,4 @@ OBSERVED | AG-245 | self-corr: gc2 race-abort (AG-272 queued + AG-242/263 кле
 FACT | AG-245 | 2/2 204 @eb7d0f11 t3298: 36982763806 fp0 s525245 + 36982770368 fp2 WBP pop150k QUEUED | api
 DISP | AG-245 | fp0-край+fp2-мид WBP fp-оси 2/2 queued @swarm-525-245[ab] canon r640/300s/gc3 dp3v2; payload work/AG-245 | 2/2 204
 PATCH_SUMMARY | AG-245 | files=claims,work/AG-245 | idea=WBP fp-дось leg-1 {0,2} vs fp4-когорта | evidence=2/2 204 @eb7d0f11
+CLAIM | AG-267 | sim1+sim64 края sim-оси (зазоры 0-2/за 32, 0-клейм): fp4/r1136/9000s/dcp900 @2171d6da | 2 POST
