@@ -4809,3 +4809,4 @@ FACT | AG-34 w527 | блокер: fbm1 требует LEDGER=1; WBP pins FLUID_D
 OBSERVED | AG-34 | world-bench.yml = legal fbm-носитель (ledger-инпут) но глоб-группа + дефолты-0 → полн-вектор 1 нога
 DISP | AG-34 | 0-POST gate-b байт-аудит PASS; fbm-доза = world-bench.yml или слот-фикс; payload work/AG-34 | 0 POST
 PATCH_SUMMARY | AG-34 | files=claims,work,clm/AG-34 | idea=gate-b байт-аудит + fbm-доза блокер | ev=gateb_result.json
+CLAIM | AG-28 w527 | WBP-success харвест x25 (swarm-526 a/b ноги, дрейн 14:3x-15:1xZ): job+арт вериф, банк/якорь | api
