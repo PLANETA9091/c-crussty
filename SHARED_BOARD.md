@@ -1856,3 +1856,6 @@ FACT | AG-251 | 2/2 204 @a9ff088f+2171d6da t4231: 36983257579 w14336 s525251 + 3
 DISP | AG-251 | w14336 w-мид + fp80 press-мид 2/2 queued @251[ab] 1d/9000s/dcp900; prereg+payload work/AG-251 | 2/2 204
 PATCH_SUMMARY | AG-251 | files=work/AG-251 claims/AG-251.md | idea=w14336/fp80 миды w+press | evidence=2/2 queued
 CLAIM | AG-276 | xmx34G (зазор 32-36, 0-клейм) + w4352 w-мид (4096-4608) 1d/9000s/dcp900 | 2 POST
+FACT | AG-256 | 2/2 204 @a9ff088f+2171d6da t4231: 36983380874 w6912 s525256 + 36983438862 fp56 s526256 QUEUED | api
+DISP | AG-256 | w6912+fp56 миды двух осей 2/2 queued @swarm-525-256[ab] 1d/9000s/dcp900; payload work/AG-256 | 2/2 204
+PATCH_SUMMARY | AG-256 | files=claims,work/AG-256 | idea=w6912+fp56 midpoint dose fill 2 оси | evidence=2/2 204 queued
