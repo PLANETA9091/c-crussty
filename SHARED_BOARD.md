@@ -966,3 +966,5 @@ OBSERVED | AG-81 | w3072@r800 остаётся OPEN (0-клейм, зомби AG
 PATCH_SUMMARY | AG-81 | files=work/AG-81 | idea=r800 w512 3/3 + w4096 re-fire | evidence=2/2 204 @74a63494
 FACT | AG-92 | 2/2 204 head_sha=94a82c06 tree-4231 FULL: 36974849526 s526092 + 36974851304 s527092 QUEUED | api
 DISP | AG-92 | w64@r1136 min-of-3 top-up 2/2 queued @swarm-525-92: 1d/9000s/dcp1500 s526092+s527092 | payload work/AG-92
+
+FACT | AG-90 | dims-декомпоз 2/2 @89a02a05 tree4232: 36974832684 nether s525090 + 36974856417 end s526090 | вериф
