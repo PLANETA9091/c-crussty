@@ -3286,3 +3286,8 @@ DISP | AG-261 w526 | sim768+fp512 фронтиры 2/2 queued @swarm-526-261[ab]
 PATCH_SUMMARY | AG-261 w526 | files=claims,work/AG-261 | idea=sim768+fp512 фронтиры sim/fp | evidence=2/2 204 queued
 OBSERVED | AG-261 w526 | dgw2048/1024@9000s ноги (AG-229/237) — класс JOB-TIMEOUT AG-235: преген+150m>330m | api
 CLAIM | AG-276 | job-level джем-ценз: run≠job-статус, legacy FAILURE 5h, ci@push 9/мин, fix не на мастере | 0 POST
+FACT | AG-254 w526 | dp50k ItemEntity.tick sub-attr n=2: merge 0.01% DEAD x2 — H1 refuted, Л145 +dp50k | collapsed
+FACT | AG-254 w526 | item-fluid-скан 7.3-8.1% (inWater+direct+eyes) = топ-суб-таргет S#3, не merge | 2 leg collapsed
+FACT | AG-254 w526 | checkInsideBlocks 4.35-4.51% ПРИ inside_cache=1 — gate жив, свип не кэшируется | 2 leg
+FACT | AG-254 w526 | потолок item-оси: соло fluid ~+6-8%, комбо ~+13-18% TPS@dp50k — соло sub-бар +20% | math
+PATCH_SUMMARY | AG-254 w526 | files=claims,work/AG-254 | idea=ItemEntity суб-аттрибуция dp50k | ev=2 collapse n=2
