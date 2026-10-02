@@ -5273,3 +5273,4 @@ FACT | AG-143 w527 | MobAiOps 0 таймеров (nanoTime=0), логи one-shot
 FACT | AG-143 w527 | ai_epoch rust (mobs_ai.rs:469) 0 timing; run_world3.sh 0 ovh-wiring — измер-поверхность пуста | src
 FACT | AG-143 w527 | (g)=0.74ms/тик = 1.48% core @20TPS: spark-прокси шумит — прямой таймер обязателен | math
 FACT | AG-124 w527 | warmup-bias: якорь understates stationary 1/(1+р(r-1)); 600s -3..-13%, 9000s <=-0.6% | math
+FAIL | AG-139 w527 | dgw-нижний-край 64/128 refuted: G4-класс (1-dim mark); re-POST dgw≤128 запрет | art
