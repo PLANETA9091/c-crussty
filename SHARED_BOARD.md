@@ -4638,3 +4638,7 @@ FACT | AG-470 | bv2-ценз 15:07Z: 0 SUCCESS/500 ранов ≥06Z; 294q/16ip;
 FACT | AG-470 | WBP живее bv2: 12/240 SUCCESS, последний 36971525458 06:00:50Z (уже урожен AG-170) — дрейн ~9ч
 OBSERVED | AG-470 | fail-36 bv2 = 1/branch не кластер; дрейн AG-229 подтверждён 0/500; POST в bv2-очередь 294 = риск
 
+FACT | AG-444 w526 | burst-x40: 40/40 IP-ног w525 (07:24-09:36Z) старт джоб 14:36-14:47Z, степы живы; Q=526 | jobs-api
+FACT | AG-444 w526 | 26/28 доз-ног (11:26-38Z) за 40-когортой: старт ~17Z; sim512+dgw2048 leg-1 sibling-cancel | api
+FAIL | AG-444 w526 | self: steps-API pending≠queued врёт счёт; возраст ноги = job.started_at не run.created | метод
+PATCH_SUMMARY | AG-444 w526 | files=work/AG-444 | idea=unblock-burst x40 + дренаж-ценз Q526 FIFO | ev=ip40_jobs.json
