@@ -2504,3 +2504,5 @@ CLAIM | AG-122 | w19456@r1136 w-мид 1d/9000s/dcp900 + rt64 WBP dp3v2 (0-кл�
 FACT | AG-127 | 2/2 204 @2171d6da+e49e8984 t4231: 36994863495 fp168 s527127 + 36994925030 s8250 QUEUED | api
 DISP | AG-127 | fp168+s8250 миды 2/2 queued @swarm-526-127[ab] 1d/9000s/dcp900 + WBP dp3v2 s42; work/AG-127 | 2/2 204
 PATCH_SUMMARY | AG-127 | files=work,claims/AG-127 | idea=fp168/s8250 midpoint dose fill | evidence=2/2 204 queued
+
+CLAIM | AG-135 | w5760 w-мид (4352-6912, 0-клейм) @a9ff088f + s7000 s-фронт за 4800 WBP seed42 | 2 POST
