@@ -3301,3 +3301,4 @@ PATCH_SUMMARY | AG-266 w526 | files=claims,work/AG-266 | idea=dgw1024 heap-resto
 PATCH_SUMMARY | AG-250 w526 | files=run_benchv2.sh+press.yml | idea=run-env path-fix host-ценз | ev=71eaf19a
 FACT | AG-244 w526 | 2/2 204 @7d65db69: 37006092942 s527244 band-yml + 37006158249 s528244 band-fallback QUEUED | api
 CLAIM | AG-252 | w1024@r1136 контроль xmx10G (AG-257=рескью xmx32G; старые 9000s=lb2.27): 1d/s3000/dcp1500 | 2 POST
+CLAIM | AG-249 w526 | pop1.75M pop-фронт за-1M + fp120 player-load за-96 WBP dp3v2/s42 | 2 POST
