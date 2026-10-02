@@ -5090,3 +5090,4 @@ C07-on-WBP150k
 макс-капчур
 AG-11"
 CLAIM | AG-79 w527 | CENS-аудит верха компо x_sel(C07)⊕C17⊕diet⊕mobfluid: f_sel+σ-гейт | 0 POST math
+FACT | AG-45 w527 | 36987742102 = VALID fg0-лег 150k: ent148k dp707 mid0.3=floor; guard-ΔTPS на клетке не измеряем | арт
