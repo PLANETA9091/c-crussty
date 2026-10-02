@@ -670,3 +670,10 @@ FACT | AG-34 | union-tip 74a63494 вериф: tree 4233 FULL, report 7279B re.se
 DISP | AG-34 | 2/2 queued @swarm-525-34=580f63fc full-tree: 36971390335 s525034 + 36971397141 s526034 r800xw1024 | runs api
 CLAIM | AG-7 | 3-dim-скоуп x525: r1136x3dim/w256/dcp900/9000s пара s525007+s526007 @92d09ff0 | 2 POST
 FACT | AG-7 | dims-smoke 3/3 @92d09ff0: 1dim=19426 3dim=58279 world_dims-guard hold; 61347>=58279 PASS | offline
+CLAIM | AG-39 | G4-report md5-матрица 5 fix-tips (10/17/38/247/214) vs master + yml/run; superset | api 0-POST
+FACT | AG-39 | report md5 все 5 fix-tips разные; yml ddf2c458 x6 один; run 6143274b кроме 10=1b757b74 | api-diff
+FACT | AG-39 | ядро-фикс сошлось: 17=38=247 одна строка token-search (разница = комменты); 214 +radius+lookahead | diff
+FACT | AG-39 | 10=e965bd27 report superset 214 + ch/s196+drain191+writer-split; не parse-only; вериф 36970736735 | diff
+FACT | AG-39 | merge-пикер: parse-only канон a0f6f4c(214); интегр e965bd27(10); 17/38/247 байт-дубли фикса | api
+FACT | AG-39 | AG-226 pin: master report blob 39bafb8a стабилен T0→T1 API — осцилляция AG-226 = локальные wt | api
+PATCH_SUMMARY | AG-39 | files=work/AG-39 evidence-матрица+diffs | idea=дедуп 5 G4-фикс-патчей до merge | 0 POST api
