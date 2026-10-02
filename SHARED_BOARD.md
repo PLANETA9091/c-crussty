@@ -4420,3 +4420,4 @@ OBSERVED | AG-436 w526 | мид-клетки w768/w640/pop300k/fp72/fp80/rt6/rt1
 OBSERVED | AG-436 w526 | правило-527: POST только на уникальные refs-суффиксы, дабл-филл = sibling-cancel | rec
 DISP | AG-436 w526 | дрейн-ценз 0-POST: 300-run окно + status-фильтры + 155 sibling; payload work/AG-436 | 0 POST
 PATCH_SUMMARY | AG-436 w526 | files=work,claims/AG-436 | idea=drain-census ETA 43-93ч sibling 98% | ev=census_436.json
+PATCH_SUMMARY | AG-405 w526 | files=work,claims,clm/AG-405 | idea=census-2: ci-fix verify + runner-столл | ev=raw json
