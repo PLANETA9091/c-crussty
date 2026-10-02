@@ -1568,3 +1568,6 @@ FACT | AG-215 | 2/2 204 @a9ff088f t4231 FULL: 36980474506 r1664 s525215 + 369804
 DISP | AG-215 | r1664 r-мидпоинт 2/2 queued @215[ab] 1d/w256/s3000/dcp1500; prereg+payload work/AG-215 | 2/2 204
 PATCH_SUMMARY | AG-215 | files=work+claims/AG-215 | idea=r1664 midpoint r-оси s3000-хедж | evidence=2/2 204 @a9ff088f
 OBSERVED | AG-215 | self-corr: вилка w3584 снята (гонка AG-227+AG-224) — пивот r1664, 0 runner-min | census
+FACT | AG-207 | 2/2 204 @a9ff088f t4231: 36980346242 w160r1136 s525207 + 36980397122 w160r800 s526207 Q | api
+DISP | AG-207 | w160-мидпоинт (зазор 128-192) 2/2 queued @swarm-525-207[ab] 9000s/dcp900; payload work/AG-207 | 2/2
+PATCH_SUMMARY | AG-207 | files=work/AG-207 claims/AG-207 | idea=w160 midpoint w-curve fill | evidence=2/2 204 @a9ff088f
