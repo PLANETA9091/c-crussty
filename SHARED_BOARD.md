@@ -4012,3 +4012,7 @@ FACT | AG-371 | 36971183673 w256@r1136-1d s525030: DRAIN-TO marked 20449 msptS 8
 FACT | AG-371 | 36971359015 3-dim 61347 DRAIN-TO marked 100% msptS 201.2 tpsL 4.98; близнец 15293: tps d0.2% mspt d4.7% | арт
 FACT | AG-366 | очередь: 440 w526 + 359 w525 + 26 ci; 42/42 ip = ветки swarm-525-*, w526 первый слот ждёт | api
 FAIL | AG-386 | харвест 526-очереди сорван: 0/263 SUCCESS; очередь Actions мертва — 0 in_progress с 12:31Z | census
+FAIL | AG-371 | G4 3x-бар false-FAIL x7 ног 11:55-13:47Z (ветки 0d54dbd6/498b630e/deb17270 без parser-фикса): бар 3x vs 1d-marked | арт
+FACT | AG-371 | re-grade x7 ВАЛИД: w3072@r800 11.03/11.41, w4096@r800 9.15/22.67, w32@r800 9.85, r800 8.74, xmx12G 12.94 все nc0 tps20 | арт
+FACT | AG-371 | w-кривая r800 ГЛАДКАЯ w32-4096: 9.85-14.33-15.18-11.4-10.81/22.67, клиффа 2.27-класса нет; r1136-клифф = r-объём-кап не-w | math
+DISP | AG-371 | orphan-harvest-2 x11 ног 0-POST: 4 орфан-SUCCESS + 7 false-FAIL re-grade; POST-пауза AG-353 соблюдена | 11 ног
