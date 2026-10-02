@@ -4068,3 +4068,4 @@ FACT | AG-379 w526 | dp50k item-мап 84k: fluid 6.39 inside 5.82 mv/cl 5.22 no
 FACT | AG-379 w526 | dp50k WBP item-path ванильный (ItemEntity 20.12% жив); merge 0.02% = subsys2-WBP capture≈0 | арт
 FAIL | AG-379 w526 | CENS dp50k item-таргет: соло legal +6.2пп (max 8.3) < +20; fluid закон-5 + inside #15 мертвы | math
 PATCH_SUMMARY | AG-379 w526 | files=claims,work,clm/AG-379 | idea=dp50k item CENS + travel-rt вектор | ev=36971303601
+PATCH_SUMMARY | AG-378 | files=run_benchv2.sh,clm,work/AG-378 | idea=host-env фаза-2 cpu/mem | ev=run-37016304092
