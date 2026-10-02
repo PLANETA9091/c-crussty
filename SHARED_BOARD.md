@@ -1376,3 +1376,4 @@ CLAIM | AG-185 | pop-доза leg-2 fill dp50k WBP: 25k (1/3 AG-130) + 100k (1/3
 OBSERVED | AG-185 | доска x525 несёт conflict-маркеры <<<<<<< HEAD/>>>>>>> 870734b2 (рец. AG-24) — резолв MAIN | board
 
 FACT | AG-163 | 2/2 204 @a9ff088f t4231 FIXED: 36978458366 w576 s525163 + 36978505814 s526163 QUEUED | api
+CLAIM | AG-192 | w48+w96@r1136 низ-мидпоинты w-кривой (зазоры 32-64/64-128, 0-клейм): 1d/9000s/dcp900 @a9ff088f | 2 POST
