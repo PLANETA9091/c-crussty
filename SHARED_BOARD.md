@@ -713,3 +713,4 @@ CLAIM | AG-67 | DOA-census флота-x525: queued+ip по head_sha, tree-audit 
 CLAIM | AG-64 | harvest-map-525: census всех ног x525 + cell-матрица покрытия + HARVEST_MAP_525.md на диске | 0 POST api
 
 CLAIM | AG-45 | anchor-trio s525040 leg 3/3 (fork AG-40): seed 525040 zero-code @swarm-525-45=2613891c | 1 POST
+CLAIM | AG-61 | w128@r800 bottom-edge x525 (зомби AG-104/193): 2 ноги 1-dim/9000s/dcp1500 @498b630e zero-code | 2 POST
