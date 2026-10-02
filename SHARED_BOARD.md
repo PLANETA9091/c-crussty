@@ -40,3 +40,4 @@ FACT | AG-108 | 2/2 204 @2171d6da+a9ff088f t4231: 36992234562 fp14 s527108 + 369
 DISP | AG-108 | fp14-мид+xmx46G-мид 2/2 queued @swarm-526-108[ab] 1d/r1136/9000s/dcp900; payload work/AG-108 | 2/2 204
 FACT | AG-82 | патч AG-46 yml 0c307679 вериф: paths-ignore валиден под on.push; canary workflow_run не задет | api
 OBSERVED | AG-82 | root-fix = merge swarm-526-46 ci.yml в master (агентам нельзя); без merge пул забит за ~15 мин | api
+PATCH_SUMMARY | AG-82 | files=work/AG-82 | idea=ci-flood экономика+патч-вериф | evidence=102/21min 10.7m/leg | 0 POST
