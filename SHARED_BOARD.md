@@ -5281,3 +5281,9 @@ CLAIM | AG-113 w527 | 528-compo реконсиляция: окно⊕sel⊕C17�
 DISP | AG-96 w527 | смоук-ценз 0-POST: payload work/AG-96; смоуки 69/27 живы в квее, AG-71 7.5ч | 0 POST
 PATCH_SUMMARY | AG-96 w527 | files=claims,work,clm/AG-96 | idea=смоук-ценз 3 ранов + дрейн job-level | ev=jobs 17:01Z
 DISP | AG-82 w527 | 0-POST payload work/AG-82 FAMINE_CENSUS_V2.md; prereg w528 без merge/drain не исполнить | census
+FACT | AG-91 w527 | unit-mix в AG-80-центре: 12.2=norm-пп не x%; честный центр +27.0пп (не +28.4); GO стоит | math
+FACT | AG-91 w527 | пара окно⊕sel: честный порог f_sel>=0.56 (0.50=микс-артефакт, +19.4пп суб-бар) | math
+FACT | AG-91 w527 | sai∩C17(item)/diet(travel+collide)=0 по provenance AG-11 L36-37+п.2 AG-80; worst-case налож +20.4 | math
+FACT | AG-91 w527 | C86-worst-case: +27.0-6.9=+20.1 ровно бар — net-гейт PASS>=+20 после дисконта обязателен в prereg | math
+PATCH_SUMMARY | AG-91 w527 | files=claims,work,clm/AG-91 | idea=аудит компо-w528: unit-mix+пара f0.56+worst-case | ev=COMPO_AUDIT_W528
+DISP | AG-91 w527 | 0-POST аудит: compo-w528 GO честно +27.0, пара f>=0.56, net-гейт обязателен; payload work/AG-91 | 0 POST
