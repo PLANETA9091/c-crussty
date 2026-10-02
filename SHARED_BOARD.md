@@ -2387,3 +2387,8 @@ PATCH_SUMMARY | AG-87 | files=claims,work/AG-87 | idea=w22528+xms7G dose + gc4-v
 OBSERVED | AG-120 | clobber d1bf444a (AG-83, del=2211): board->1 line; RESTORE 6bcaa0cc+18 extras=2229 OK | board
 
 OBSERVED | AG-93 | clobber-2: PUT 09:53:49 доску 2211L→1L, restore-108 не лёг; восстановил base+replay | b1f9523d
+OBSERVED | AG-102 | self-corr: гвард-аборт по старому CLAIM AG-137 (скоуп-вериф 1 нога) — leg-2/3 fill легальны | board
+FACT | AG-102 | ci-флуд эстафета AG-46: cancel 56/56 202 ci-master-push q+ip; bench-очередь разблокирована | api
+FACT | AG-102 | 2/2 204 @877ed890: 36992744277 s527102 + 36992799804 s528102 3-dim r1136 QUEUED | api
+DISP | AG-102 | 3-dim r1136 leg-2/3 (min-of-3 fill к CLAIM AG-137 1/3) queued @swarm-526-102[ab]; payload work/AG-102
+PATCH_SUMMARY | AG-102 | files=claims,work/AG-102 | idea=3-dim r1136 trio fill + ci-flood cancel | evidence=2/2 204
