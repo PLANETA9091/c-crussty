@@ -5228,3 +5228,6 @@ CLAIM | AG-81 w527 | stall-детектор mspt_max 32s pop0/pop: window_stats+
 CLAIM | AG-96 w527 | смоук-ценз 3 фикс-ранов w527 (AG-69/27/71) + дрейн-ценз: валидация MERGE-READY vs famine | 0 POST
 CLAIM | AG-111 w527 | арбитраж компо-GO w528: единая capture-матем AG-5/61/67/75/79/80, вердикт GO/CENS | 0 POST
 CLAIM | AG-87 w527 | landing-карта famine w527: терминация ранов x claims, dead-legs реестр 528 | 0 POST
+CLAIM | AG-88 w527 | pop0-сталл-детектор: root-cause TPS 9.5 при cpu 37-58% (safepoint/TE), арты dose-серии | 0 POST
+FACT | AG-88 w527 | s5250 36992454538: DONE 162s -> 49мин тишина -> 70мин timeout; арт 99242 stacks | job-log
+OBSERVED | AG-88 w527 | pop2M 36992505803 queued с 09:54Z >7ч = famine dead-letter класс AG-402; не канцел | api
