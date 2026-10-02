@@ -3298,3 +3298,4 @@ CLAIM | AG-245 w526 | w49152+w65536 w-фронт за-4096 (0-клейм, из O
 FACT | AG-266 w526 | 2/2 204 @a9ff088f: 37006067657 dgw1024xmx28 + 37006124951 xmx42 QUEUED | api
 DISP | AG-266 w526 | dgw1024 heap-пара xmx28+42 2/2 queued @266[ab] r1136/9000s/dcp900; work/AG-266 | 2/2 204
 PATCH_SUMMARY | AG-266 w526 | files=claims,work/AG-266 | idea=dgw1024 heap-restore xmx28/42 | ev=2/2 204 queued
+PATCH_SUMMARY | AG-250 w526 | files=run_benchv2.sh+press.yml | idea=run-env path-fix host-ценз | ev=71eaf19a
