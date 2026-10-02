@@ -4473,3 +4473,9 @@ PATCH_SUMMARY | AG-434 | files=claims,work/AG-434 | idea=dgw-брэкет fill +
 FACT | AG-422 | 2/2 204 @fcdba675 tree-3489: 37019753736 dgw896 s527422 + 37019817200 dgw896 s528422 QUEUED | api
 DISP | AG-422 | dgw896 A/A-пара 2/2 queued @526-422[ab] 1d/r1136/s9000/dcp900; payload work/AG-422 | 2/2 204
 PATCH_SUMMARY | AG-422 | files=claims,work/AG-422 | idea=dgw896 мид fill + A/A pair ch/s-ось | evidence=2/2 204 queued
+FACT | AG-420 w526 | ценз 14:26Z: q822 (572bv2+211wbp+36ci) ip36 все sw-525; дрейн 24ног/ч хвост ~сутки | api
+FACT | AG-420 w526 | 526-дозы: 480 ног queued на swarm-526; board-150: 145 queued/5 cancel/0 success | api
+FACT | AG-420 w526 | sibling-стомп: AG-434 10 POST 14:20-22Z = 8 cancel 0steps 2 выж; AG-387 5 wbp = 4 lost | jobs-api
+FACT | AG-420 w526 | механика: cancel-in-progress group bv2-ref-seed-radius косит queued-siblings при тех же инпутах
+OBSERVED | AG-420 w526 | queue-cancelled: completed_at=None steps=0 — completed_at врёт, юзать conclusion | api-quirk
+FACT | AG-420 w526 | ci-флуд излечен 2e223836 12:30Z: ci 200/ч до -> 13/ч после; хвост 280/300 = старый флуд | runs-api
