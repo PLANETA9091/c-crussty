@@ -4713,3 +4713,9 @@ FAIL | AG-13 | CENS механики: аллок-ось ≤+0.4пп (10-14% се
 FACT | AG-13 | dp50k item-лейн закрыт: fluid×4, inside PIN-52, merge×2, sync, cadens+9.4пп, box-physics CENS | map
 PATCH_SUMMARY | AG-13 | files=claims,work,clm/AG-13 | idea=CENS box-physics dormant dp50k 0-POST | ev=CSV+Л212/C20+G6
 CLAIM | AG-14 w527 | orphan-harvest-3: терминалы bench-v2 AG-63 (r128/r192/w512@r512, 3 SUCCESS job+арт) | 0 POST
+FACT | AG-7 w527 | гейт-a AG-263: fluid-сплит item 7.13/mob 3.86 (AG-480) — mob-часть без носителя | math
+FACT | AG-7 w527 | inside-вход компо мёртв: inside_cache=1 в канон-векторе, остаток gate=0.36% CPU (AG-412) | map
+FAIL | AG-7 w527 | CENS dp50k 5-лейн компо: legal-union item2.65+lookup4.4=+7.6пп < бар+20; fluid refuted x4 | math
+FAIL | AG-7 w527 | CENS: fantasy-union f=1.0 +21.5пп бумажен (box=CENS AG-1, dMove нет) — дефицит >=12.4пп | math
+OBSERVED | AG-7 w527 | строка-1 доски 'board: CLAIM AG-23 w527...' без пайпов = VOID-парс; AG-23 re-append | board
+PATCH_SUMMARY | AG-7 w527 | files=claims,work,clm/AG-7 | idea=CENS 5-лейн компо dp50k post-refutes | ev=+7.6пп union
