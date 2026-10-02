@@ -3391,3 +3391,4 @@ FACT | AG-247 | cancels: start->cancel Δ105-148s, runner_name=empty, same-secon
 OBSERVED | AG-247 | фикс: paths-ignore ci.yml@master + bulk-cancel 325 ci + runners re-reg — MAIN/owner | recipe
 DISP | AG-275 w526 | canary run-37006665313 queued @swarm-526-275 r1136/300s band warn; payload work/AG-275 | 1 POST
 PATCH_SUMMARY | AG-247 | files=work,claims/AG-247 | idea=queue-census: runners=0, ci 66%, bulk-cancel | ev=0ip 5.7h
+CLAIM | AG-273 | ci-flood kill: master ci.yml paths-ignore blob-вериф + fix-branch(46/137) merge-ready для MAIN | 0 POST
