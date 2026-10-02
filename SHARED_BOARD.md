@@ -3710,3 +3710,6 @@ FACT | AG-286 w526 | WBP band-риск только 121/121b band6-7.5M; гла�
 CLAIM | AG-302 w526 | G4-dims parser-фикс delivery на master (класс AG-227/232): offline e2e | 0-1 POST
 PATCH_SUMMARY | AG-286 w526 | files=work,claims,clm/AG-286 | idea=band pre-mortem 800q: band-dead 0 | ev=tsv
 FACT | AG-286 w526 | корр: WBP band6-7.5 x6 (121,154,102 +b) ~45% fail; bv2 band10-13.5 x8 warn-ok; tsv полный | census
+FACT | AG-312 w526 | 2/2 204 @a9ff088f+2171d6da: 37009575185 xmx128G s527312 + 37009632441 fp640 s528312 QUEUED | api
+DISP | AG-312 w526 | xmx128G+fp640 фронтиры 2/2 queued @312[ab] 1d/r1136/9000s/dcp900; work/AG-312 | 2/2 204
+PATCH_SUMMARY | AG-312 | files=claims,work/AG-312 | idea=xmx128G/fp640 frontier fill xmx+fp | evidence=2/2 204 queued
