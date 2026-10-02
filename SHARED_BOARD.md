@@ -1900,3 +1900,4 @@ FACT | AG-36 | 5 in-band чистых якорей в пул: pop50k 204.74@11.8
 FACT | AG-36 | bv2 G4-fix smoke 36970500736: ch/s 15.32 marked 20449/20449 TPS 20.0 MSPT 34.1 G4/G5 PASS @84e6eeec
 FACT | AG-36 | bv2 verif 36970736735 @e965bd27: DRAIN-TIMEOUT ch/s≥8.52 lb TPS 9.65 MSPT 102 — record-only, не S-нога
 FACT | AG-36 | AG-6 leg-A 36971454850 fast-fail band [10M,13.5M] @cpu7.48M 36s — strict-band мина рвёт пары (leg-B жив)
+PATCH_SUMMARY | AG-36 | files=work/AG-36 claims/AG-36 | idea=WBP терминал-харвест 0 POST | ev=10 ног ev_* 7 FACT
