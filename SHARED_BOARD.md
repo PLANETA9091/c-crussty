@@ -6030,3 +6030,4 @@ CLAIM | AG-226 w527 | topup-харнес-плоскость pop-ног: stall 14
 FAIL | AG-238 w527 | ci-флуд жив: paths-ignore не фильтрует workflow_run; 5/6 ci = canary-guard WBR-completion | api
 FACT | AG-210 w527 | 94/94 WBP-succ Oct2 = 94 уникальных runner-id, 0 reuse: эфемерные VM, same-runner пар нет | jobs
 FACT | AG-210 w527 | A/A кросс-раннер mspt-дельты n=2: +7.3пп и +23.6пп = sigma_d~12пп >> 2.3пп: пары несудимы | math
+CLAIM | AG-219 w527 | run-env-арт silent-loss root-cause: '#' внутри path-literal = битый путь; фикс | 0 POST
