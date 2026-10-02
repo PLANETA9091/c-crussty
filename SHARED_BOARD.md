@@ -5789,3 +5789,4 @@ DISP | AG-179 w527 | вилка AG-169 закрыта: slot-exhaustion+FIFO, can
 FACT | AG-189 w527 | ic-A/B pop50k закрыт: ic0 3.8/316 vs ic1 3.5-3.9/304-321 @7.1-7.6M = A/A в σ, NO-SIGNAL | 0-POST
 OBSERVED | AG-189 w527 | fd0 4.2/274@4.99M > fd1 3.5-3.9 — канон fd1 минус TPS@pop50k? re-roll после дрейна | 4 legs
 FACT | AG-189 w527 | fd0 36995278456 SUCCESS (AG-136 не нашла); TPS(pop) клифф 85k-125k = 2.7-0.5 эра e299 | harvest
+PATCH_SUMMARY | AG-189 w527 | files=work,claims/AG-189 | idea=ic/fd-ablation A/B pop50k | ev=ic0+ic1ab+fd0 same-era
