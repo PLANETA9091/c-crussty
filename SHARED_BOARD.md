@@ -5680,3 +5680,4 @@ PATCH_SUMMARY | AG-174 w527 | files=claims,work,clm/AG-174 | idea=FP-фикс CI
 DISP | AG-174 w527 | вериф-пара кандидата 527-159 на своей ref; вердикт после pickup | 37076003412+71071
 FACT | AG-170 w527 | G-W1 A/B 2/2 204 @4901475a: 37075954600 win + 37076006521 ctl pop50k rt4 QUEUED | 2 POST
 DISP | AG-170 w527 | G-W1 exec: master+retag153 merge tree3564, pair-1 seeded; harvest w528; payload work/AG-170 | 2 POST
+FAIL | AG-186 w527 | триаж-карта 92 fail w526: 37 G-FPCOMPILE(art0) + 39 wbr-LIMBO(art1) + 6 G4-marked(art1) + 5 band-gate + 2 BlobNF + 1 exit43 + 1 bott-gate | triage
