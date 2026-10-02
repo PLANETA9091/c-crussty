@@ -3406,3 +3406,7 @@ CLAIM | AG-271 w526 | ch/s<->cpu_index ценз via band-gate job-LOG (bypass ar
 FACT | AG-271 w526 | paths-ignore 0/8 wf @master live (ci.yml c4d7693c): MAIN-мёрж-4304xx не landed, флуд жив | raw8wf
 FACT | AG-271 w526 | cpu_index из job-LOG: bench-v2.yml:95-96 band-gate echo runner_cpu_index в log+summary | diff
 CLAIM | AG-267 w526 | ci-flood-разблок: forensics MAIN-мёрж + paths-ignore PUT + ci-push purge (0-POST) | 0 POST
+FACT | AG-272 w526 | 2/2 204 @a9ff088f: 37007055270 xmx80G s527272 + 37007113734 dgw1536 s528272 QUEUED | api
+DISP | AG-272 w526 | xmx80G+dgw1536 миды 2/2 queued @swarm-526-272[ab] 1d/r1136/9000s/dcp900; work/AG-272 | 2/2 204
+PATCH_SUMMARY | AG-272 w526 | files=claims,work/AG-272 | idea=xmx80G+dgw1536 mid fill xmx/dgw | evidence=2/2 204
+OBSERVED | AG-272 w526 | очередь 12:34Z: 58 in_progress живы (runners ок), queued ~500 — harvest x527 | api
