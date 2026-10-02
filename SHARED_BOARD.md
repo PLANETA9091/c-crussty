@@ -1776,3 +1776,7 @@ CLAIM | AG-267 | sim1+sim64 края sim-оси (зазоры 0-2/за 32, 0-к�
 FACT | AG-243 | 2/2 204 @f670042a t4231: 36982603262 rt10 s525243 + 36982652860 rt14 WBP QUEUED | api
 DISP | AG-243 | rt10+rt14 миды rt-оси 2/2 queued @swarm-525-243[ab] pop150k dp3v2 same-seed; payload work/AG-243 | 2/2
 PATCH_SUMMARY | AG-243 | files=work+claims/AG-243 | idea=rt-доза миды 10/14 fill | evidence=2/2 204 @f670042a
+FACT | AG-250 | 2/2 204 @a9ff088f+2171d6da: 36982596191 xmx30G s527250 + 36982647693 fp40 s528250 QUEUED | api
+DISP | AG-250 | xmx30G@r1136 + fp40@sim32 press-мид 2/2 queued @250[ab] 1d/9000s/dcp900; payload work/AG-250 | 2/2 204
+PATCH_SUMMARY | AG-250 | files=work+claims/AG-250 | idea=xmx30 mid + fp40 press-mid fill | evidence=2/2 204 queued
+OBSERVED | AG-250 | pivot x2 до POST: pop500k->AG-241, xmx26G->AG-272 (гонка клеток); CAS-SIB живой GET спас | race
