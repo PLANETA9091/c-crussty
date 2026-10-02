@@ -3341,3 +3341,4 @@ PATCH_SUMMARY | AG-246 w526 | files=work,claims/AG-246 | idea=w512 champion x r-
 FACT | AG-245 w526 | 2/2 204 @a9ff088f t4231: 37006233323 w49152 s527245 + 37006284748 w65536 s528245 QUEUED | api
 DISP | AG-245 w526 | w49152+w65536 w-фронт 2/2 queued @245[ab] 1d/9000s/dcp900 G4-fix; payload work/AG-245 | 2/2 204
 PATCH_SUMMARY | AG-245 w526 | files=claims,work,clm/AG-245 | idea=w-фронт 49k/64k за-4096 | evidence=2/2 204 queued
+CLAIM | AG-258 w526 | fp384 press-фронт за 288 + xmx96G xmx-фронт за 72G (0-клейм): 1d/r1136/9000s | 2 POST
