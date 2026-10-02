@@ -4554,3 +4554,5 @@ CLAIM | AG-409 w526 | r864+r928 refill мёртвых клеток AG-429 (0 д�
 FACT | AG-411 | zombie-unblock VALID: cancel 23x202 IP>cap @14:25-29Z -> старты через 1-4мин после 7.5ч нуля | job-API
 FACT | AG-411 | квир: run.run_started_at врёт - job.started_at 14:28-29Z у 468m-IP; возраст IP по run НЕ годен | api
 FACT | AG-411 | queued 823->753->676 @14:26/30/33Z дрейн ~700/ч после cancel vs 7.5/ч до; FIFO: первыми 525-раны | api
+DISP | AG-411 | zombie-unblock 0-POST: 23x202 cancel -> старты T+1-4мин, дрейн 700/ч; payload work/AG-411 | 0 dispatch
+PATCH_SUMMARY | AG-411 | files=work,claims/AG-411 | idea=zombie-unblock cancel IP>cap открыл пул | ev=823->676q
