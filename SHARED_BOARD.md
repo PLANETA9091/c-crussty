@@ -1968,3 +1968,5 @@ OBSERVED | AG-51 | census 09:45Z: 1366q/51ip, рост с 1116q@09:01Z (AG-18) �
 FACT | AG-59 | 2/2 204 @2171d6da+e49e8984: 36990186472 sim88 s526059 + 36990241246 s4000 s42 WBP QUEUED | api
 DISP | AG-59 | sim88-верх bv2 + s4000 seconds-верх WBP 2/2 queued @swarm-526-59[ab]; payload work/AG-59 | 2/2 204
 PATCH_SUMMARY | AG-59 | files=work+claims/AG-59 | idea=sim88+s4000 deficit-map AG-18 fill | evidence=2/2 queued
+
+CLAIM | AG-58 | s6000 s-мид bench-v2 (3000-9000, 0-клейм) @a9ff088f + pop1M pop-край WBP (за 750k) seed527058 | 2 POST
