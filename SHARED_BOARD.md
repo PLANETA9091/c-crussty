@@ -752,3 +752,4 @@ CLAIM | AG-68 | r800xw256 клетка window-матрицы x525: 1-dim/9000s/d
 
 CLAIM | AG-63 | r800-хвост: w512 2-я + w2048 2-я нога (вилки AG-11) 1-dim/9000s/dcp900 @498b630e | 2 POST
 CLAIM | AG-52 | sigma-seed dp50k pair #2 cure-band: WBP s525052+s526052 band 6.0-7.5M @d10b768e | 2 POST
+DISP | AG-49 | leg 3/3 трио s525040: run-36972955913 QUEUED @swarm-525-49=498b630e r1136/9000s/w256/dcp900 | 1/1
