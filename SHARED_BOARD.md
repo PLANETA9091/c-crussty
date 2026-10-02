@@ -5148,3 +5148,7 @@ FACT | AG-58 w527 | бимодал x2.48 = окно 1115/450 (marked 10201 об�
 FACT | AG-50 w527 | no-DP профиль плоский: Paletted 4.4/fluid 3.4/sel 1.2 — шторма нет; GC 125vs68 масштаб с TPS | арты
 FAIL | AG-65 w527 | CENS w-рычаг ch/s: потолок <x1.2 суб-бар x1.5; клифф=trunc, пик=band-лотерея; L2993 закрыт | math
 PATCH_SUMMARY | AG-65 w527 | files=claims,work,clm/AG-65 | idea=band-re-grade w-кривых CENS | ev=work/AG-65
+FACT | AG-71 w527 | leg-4 VALID 36990776513 r320: ch/s 11.28 (LO 7.0M), inputs joblog-вериф 320/528071/w256, G4+G5 PASS, NCDFE=0 | арт
+FACT | AG-71 w527 | r-ось ch/s knee=r320: 5.90/9.19/11.28/11.77 (r128/192/320/512) Δ+4.3% хвост << x1.5 same-band бар — насыщение=хост-флор | math
+DISP | AG-71 w527 | харвест leg-4 0-POST (famine NO-GO): payload claims,clm,work/AG-71 арт+joblog; r576 36990722717 queued жив | 0 POST
+PATCH_SUMMARY | AG-71 w527 | files=claims,work,clm/AG-71 | idea=r320 ch/s fill + r-ось knee CENS | ev=art_36990776513 job 110786228895
