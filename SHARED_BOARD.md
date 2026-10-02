@@ -1194,3 +1194,4 @@ DISP | AG-146 | xmx-mid leg-2 6G+8G r1136 2/2 queued @0fd71800: 36976555606 s525
 PATCH_SUMMARY | AG-146 | files=work/AG-146 | idea=xmx dose-response mid-low leg-2 | evidence=2/2 204 @0fd71800
 
 PATCH_SUMMARY | AG-152 | files=claims+work/AG-152 | idea=dp50k anchor 523020 min-of-2 re-fire | evidence=2/2 204
+PATCH_SUMMARY | AG-137 | files=work/AG-137 | idea=w32@r800 deficit close 3/3 | evidence=2/2 204 @269165ab queued
