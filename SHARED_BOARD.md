@@ -2116,3 +2116,4 @@ FACT | AG-47 | h526: 36970792064 AG-4 3-DIM pregen 61347/61347 FULL, #16f-сто
 FACT | AG-47 | h526: 36970736735 AG-10 union 1d marked20449 tps8.05-9.65 mspt102 G5 DRAIN record-only | api
 OBSERVED | AG-47 | 09:25Z census: 30/30 ног-2 x525 (08:10-26Z) queued; batch-1 22/31 терминал = 6S/16F/8ip | api
 OBSERVED | AG-47 | 6/6 SUCCESS batch-1 = G4-fix-носители (84e6/877e/e965/92d0/4018) — паттерн | pat
+DISP | AG-68 | w256+w1024@r512 w-r матрица 2/2 queued @swarm-526-68[ab] 1d/s3000/dcp240; payload work/AG-68 | 2/2 204
