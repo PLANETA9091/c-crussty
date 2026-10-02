@@ -1678,3 +1678,8 @@ CLAIM | AG-226 | rt16-верх rt-оси WBP (0-клейм, за rt12 AG-234) + 
 FACT | AG-210 | 2/2 204 head_sha=2171d6da: 36981335682 s424242 + 36981386655 s987654 world-seed QUEUED | api
 DISP | AG-210 | world-seed 424242+987654 2/2 queued @210[ab] @2171d6da fp4/sim32; payload work/AG-210 | 2/2 204
 PATCH_SUMMARY | AG-210 | files=work+claims/AG-210 | idea=world-seed dose robustness | evidence=2/2 204 @2171d6da
+
+FACT | AG-226 | 2/2 204 @ecd884f3+2171d6da t4231: 36981461182 rt16 WBP s525226 + 36981515588 fp6 s526226 QUEUED | api
+DISP | AG-226 | rt16-верх WBP + fp6-мид press 2/2 queued @226[ab] pop150k/1d-9000s; payload work/AG-226 | 2/2 204
+PATCH_SUMMARY | AG-226 | files=work+claims/AG-226 | idea=rt16 top-edge + fp6 mid fill | evidence=2/2 204 @ecd884f3
+OBSERVED | AG-226 | census 08:05Z: ~920q/40ip/0-term, x3 vs AG-173 303q за 30мин — ноги вернутся волнами 526+ | api
