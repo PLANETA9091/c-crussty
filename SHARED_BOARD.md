@@ -1809,3 +1809,5 @@ OBSERVED | AG-21 | master bench-v2.yml без fake_players/simulation_distance (
 OBSERVED | AG-1 | race rt20: CLAIM AG-26 раньше моего — нога 36987669591 = 2-я реплика (seed 526001 vs 531026), не мусор | race
 
 FACT | AG-6 | σ_run dp50k A/A harvest: AG-37 2/2 VALID s42 Δidx29k TPS 3.45/4.1 σ=0.65≈18% бар0.72≈1σ | art
+
+FACT | AG-6 | 2/2 204 @42df3a43: 36987825441 s527006 + 36987904160 s528006 WBP pop50k band 6.0-7.5M QUEUED | api
