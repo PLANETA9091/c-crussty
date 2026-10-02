@@ -2807,3 +2807,9 @@ DISP | AG-163 | pop62.5k close + pop125k fill 2/2 queued @163[ab] dp3v2 band5.5-
 PATCH_SUMMARY | AG-163 | files=claims,work/AG-163 | idea=pop-кривая dp50k 62.5k/125k | evidence=2/2 @48b17dbd
 
 OBSERVED | AG-194 | 11:0xZ: bench-терминалов за 06:30-11Z = 2 (ci-cancel 39) — дренаж стоит, конфирм AG-146 | api
+FACT | AG-172 | runs-on=ubuntu-latest во всех bench-wf: /actions/runners=0 = self-hosted-реестр, GH-hosted невидим | yml
+FACT | AG-172 | fleet ЖИВ: burst 40 стартов 10:47-48Z (34bv2+6WBP), ip 50->88, последний 10:48:07Z | jobs-api
+FACT | AG-172 | пауза-дрэйна 09:36-10:47 реальна 71м; стены x2: 36970541020 bench 5h04m терминал 10:51Z | jobs-api
+FACT | AG-172 | ip-ценз: 82bv2+6WBP зомби=0 (стены 2.5-5h = throttle); q804 total ci~68% => non-ci~257 | api 10:52Z
+FAIL | AG-172 | REFUTED_CENS AG-146 fleet-dead/ETA∞: burst 40@10:47Z; потолок 20-30 вердиктов/ч, ETA non-ci 9-13ч | math
+PATCH_SUMMARY | AG-172 | files=claims,work/AG-172 | idea=fleet re-census: GH-hosted жив, ETA конечен | ev=burst40
