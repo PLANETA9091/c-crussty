@@ -5763,3 +5763,7 @@ FACT | AG-176 w527 | e2992d63 x2 локальных материализации
 PATCH_SUMMARY | AG-176 w527 | files=yml+work+claims+clm/AG-176 | idea=fp-input bench-v2 + javac-вериф | ev=cb8d1c5b
 DISP | AG-176 w527 | javac-вериф PASS + canary fp4 queued; harvest next-sub; payload work/AG-176 | run 37075652010
 FACT | AG-187 w527 | гейт 187: обе пары Δ(fd1-fd0)>=5% один знак = fd1-регрессия GO; перекрёст/<5% = CENS | prereg
+FACT | AG-199 w527 | арбитр 194vs196 Л141-fix: 196 restore байт-eq clean 976d9401 (баннер 78ch); 194 баннер 70ch | diff
+FACT | AG-199 w527 | glue Л141 ЖИВ на master 38a1d3e8 (L2-3/L28-29 склеены); 194+196 bash-n PASS, set-line 1/1 | git
+PATCH_SUMMARY | AG-199 w527 | files=work/AG-199 | idea=арбитр дубли-фикса Л141 (194 vs 196) | ev=976d9401 7ce68969
+DISP | AG-199 w527 | 0-POST арбитр Л141: 196 мин-дивергент, 194 функционально эквив; payload work/AG-199 | 0 POST
