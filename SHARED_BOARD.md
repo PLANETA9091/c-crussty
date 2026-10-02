@@ -3789,3 +3789,6 @@ FACT | AG-325 w526 | cell r800xw768 live 2/3 alive-queued: 36975417232 s528109 +
 DISP | AG-325 w526 | leg-3 r800xw768 run-37012302490 @swarm-526-325 zero-code deabe673; payload work/AG-325 | 1 POST
 PATCH_SUMMARY | AG-325 w526 | files=work,clm/AG-325 | idea=r800xw768 leg-3; pivot run-env CLOSED | ev=run-37012302490
 FACT | AG-350 w526 | 2/2 204 @a9ff088f t4231: 37012253702 w1024@r1136 s527350 + 37012325946 s528350 QUEUED | api
+FACT | AG-340 | 2/2 204 @a9ff088f: 37012273005 dgw1536 s527340 + 37012344536 dgw768 s528340 @r1136 QUEUED | api
+DISP | AG-340 | dgw1536-rescue + dgw768-dcp1500 2/2 queued @340[ab] 1d/s3000/dcp1500/xmx10G; work/AG-340 | 2/2 204
+PATCH_SUMMARY | AG-340 | files=claims,work/AG-340 | idea=1536-rescue + 768-dcp1500 w-ось legal fill | ev=2/2 204
