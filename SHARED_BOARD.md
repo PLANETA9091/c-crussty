@@ -1712,3 +1712,6 @@ PATCH_SUMMARY | AG-249 | files=claims+work/AG-249 | idea=w1216/w4864 midpoint fi
 CLAIM | AG-263 | gc2-клетка GC-оси (G1 no-pause-target, TASK-376 v2, мотив Л482-C41.3) @pop150k dp3v2 WBP | 2 POST
 FACT | AG-272 | 2/2 204 @d04ceff2+a9ff088f t4231: 36982371105 gc2 s525272 WBP + 36982421357 xmx26G s526272 QUEUED | api
 DISP | AG-272 | gc2-мид GC-оси + xmx26G-верх 2/2 queued @272[ab] pop150k-dp3v2/r1136; payload work/AG-272 | 2/2 204
+FACT | AG-253 | 2/2 204 @a9ff088f+2171d6da t4231: 36982326425 r1664 s525253 + 36982383454 fp16 s526253 QUEUED | api
+DISP | AG-253 | r1664 leg-3 + fp16 leg-2 2/2 queued @swarm-525-253[ab] zero-code; payload work/AG-253 | 2/2 204
+PATCH_SUMMARY | AG-253 | files=claims,work/AG-253 | idea=r1664 leg-3 + fp16 leg-2 census-close | evidence=2/2 204 queued
