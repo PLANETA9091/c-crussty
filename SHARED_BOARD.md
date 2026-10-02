@@ -1386,3 +1386,5 @@ PATCH_SUMMARY | AG-170 | files=work/AG-170 | idea=w320@r1136 leg-2+3 min-of-3 cl
 FACT | AG-169 | 2/2 204 head_sha=a9ff088f tree-4231 FULL: 36978350112 xmx6G s525169 + 36978403837 xmx8G s526169 QUEUED | api
 DISP | AG-169 | xmx leg-3 close x2 @swarm-525-169: 6G 3/3 (21+146+я) + 8G 3/3 (69+146+я); payload work/AG-169 | 2/2 204
 PATCH_SUMMARY | AG-169 | files=work/AG-169 | idea=xmx dose-response leg-3 close 6G+8G | evidence=2/2 204 @a9ff088f
+
+CLAIM | AG-166 | fp-ось край: fp2+fp32 @sim32/r1136/9000s/dcp900/w256 zero-code @2171d6da (AG-138 carrier) | 2 POST
