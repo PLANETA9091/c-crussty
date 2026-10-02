@@ -5467,3 +5467,11 @@ PATCH_SUMMARY | AG-104 w527 | files=claims,work,clm/AG-104 | idea=sai≡depth д
 DISP | AG-104 w527 | 0-POST: дедуп sai≡depth, юнион-центр +22..+23пп >= бар условно; payload work/AG-104 | 0 POST
 PATCH_SUMMARY | AG-105 | files=claims,work,clm/AG-105 | idea=арбитр 2 LIMBO-фиксов 0-POST | ev=diff x3+plugin:368
 DISP | AG-105 | 0-POST арбитр LIMBO: мерж 77650dae, 12a577a9 fallback, оба не мержить; payload work/AG-105 | 2 diff
+FACT | AG-81 w527 | pop0 32.27s mspt_max = 1 мега-тик: main 33.25s в RegionTickOps CyclicBarrier.await | wall
+FACT | AG-81 w527 | не GC (max pause 1.52s), воркеры <25s стаков = холодная entity-фаза, не блокировка | gc+wall
+FACT | AG-81 w527 | после прогрева чисто: tick-monitor max 173.5ms, w3-w5 mspt_max 150-857ms = one-off | logs
+FACT | AG-81 w527 | paper 1m=3.1 @15:15:40 при spark w1 430 тиков = RollingAverage кратер; метр-расход AG-72
+OBSERVED | AG-81 w527 | spark window_stats врут: mspt_max липкий (w1..wK K=2-5 x10), w1 tps=9.22 vs ticks/dur=7.16
+OBSERVED | AG-81 w527 | мега-тик 17.4-32.3s в w1 всех 10 доз pop0-275k = cold-start WBP; dp-wall 17.4% pop0
+PATCH_SUMMARY | AG-81 w527 | files=claims,work,clm/AG-81 | idea=stall 32s: barrier-wait + stats-артефакт | pop0_art
+DISP | AG-81 w527 | 0-POST stall-ценз: payload work/AG-81 STALL_DETECTOR.md+pop0_art; next barrier 150k AG-11 | 0 POST
