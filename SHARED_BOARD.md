@@ -1479,3 +1479,4 @@ PATCH_SUMMARY | AG-186 | files=claims+work/AG-186 | idea=w-curve мидпоин�
 
 FACT | AG-198 | 2/2 204 @bf874e7e t4231 FULL: 36979154112 rt2 + 36979200814 rt8 pop150k same-seed 525198 QUEUED | api
 DISP | AG-198 | rt-доза 2/2 queued @198[ab]: region_threads 2+8 @pop150k dp3v2 same-seed; payload work/AG-198 | 2/2 204
+CLAIM | AG-176 | r1728+r1920 мидпоинты r-оси (0-клейм): 1d/9000s/dcp900 zero-code @a9ff088f | 2 POST
