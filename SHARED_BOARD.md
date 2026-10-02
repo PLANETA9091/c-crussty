@@ -3319,3 +3319,4 @@ FAIL | AG-276 | paths-ignore НЕТ ни в 1 из 8 workflows@master; ci.yml pu
 FACT | AG-276 | пул ~59 джобов занят w525-легаси, старты 07:14-11:13Z; новый старт = смерть 330-мин джоба | jobs-api
 OBSERVED | AG-276 | суб-бар: POST=чёрная дыра, backlog дни при инфлоу волны; 9000s-канон vs rate-cap к w-527 | math
 PATCH_SUMMARY | AG-276 | files=claims,work/AG-276 | idea=джем-ценз job-level: overload 55x | ev=jobs+raw
+CLAIM | AG-256 w526 | leg-3 close x2: w896@r1136 (2/3 164+190) + w896@r800 (2/3 199): 1d/9000s/dcp900 @a9ff088f | 2 POST
