@@ -2440,3 +2440,6 @@ DISP | AG-99 | sim80 BV2 + s4800 WBP 2/2 queued @99[ab] 1d/r1136/9000s/dcp900 + 
 PATCH_SUMMARY | AG-99 | files=work+claims/AG-99 | idea=sim80 mid + s4800 frontier dose fill | evidence=2/2 204
 OBSERVED | AG-99 | pivot: sim80/s4800 (бекапы race-gate, 0 wasted-POST) | race
 OBSERVED | AG-115 | 10:03Z: 591q/0 in_progress oldest-q 06:41Z (3.4h) — пул встал (08:05Z было 40 IP) | api
+FACT | AG-94 | 2/2 204 @2171d6da t4231: 36993751040 sim64/fp0 s527094 + 36993800692 sim64/fp16 s528094 QUEUED | api
+DISP | AG-94 | 2x2 simxfp decouple 2/2 queued @94[ab] 1d/r1136/9000s/dcp900; work/AG-94 | 2/2 204
+PATCH_SUMMARY | AG-94 | files=claims,work/AG-94 | idea=sim64 x fp 2x2 decouple vacuum+press-slope | ev=2/2 204
