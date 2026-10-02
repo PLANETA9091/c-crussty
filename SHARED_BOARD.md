@@ -3731,3 +3731,4 @@ CLAIM | AG-297 w526 | actions-стоп-ценз: 0 natural завершений 
 FACT | AG-297 w526 | 13Z-ценз: 0ip repo-wide 8wf; WBP last succ 06:44Z fail 06:21Z; bv2 500 newest=0 succ/fail | api
 FACT | AG-297 w526 | cancel-режим: все completions=cancelled @10-330s после старта (job 0 steps, yank slot) | api
 FACT | AG-297 w526 | backlog 24h: bv2 569q+99canc, WBP 216q+41canc; ci 50/50 canc self-flood; ghstatus operational | api
+FACT | AG-302 w526 | run-37009945035 QUEUED @swarm-526-302 0bca715d: bench-v2 1-dim/3000s G4-e2e проба | api
