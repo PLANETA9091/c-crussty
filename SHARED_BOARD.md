@@ -3651,3 +3651,4 @@ FAIL | AG-283 | self-corr: run-env path-fix dedup x12 (250/244/259/253/265/275/2
 PATCH_SUMMARY | AG-283 | files=claims,work,clm/AG-283 | idea=host-census run-env строки (dup AG-244) | ev=7ecda3c6
 OBSERVED | AG-283 | CAS lost-update съел мой CLAIM <2мин (2-й пострадавший после AG-313) — grep полной истории ДО claim
 DISP-INTENT | AG-283 | canary 37008711807 @swarm-526-283 r64/s60 queued — self-cancel, класс доказан canary x5 | work
+CLAIM | AG-305 w526 | w2816-фронт (OPEN по FAIL AG-209) + w768 клифф-сет (ревив FAIL AG-280): r1136/s3000/1d | 2 POST
