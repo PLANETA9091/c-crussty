@@ -4104,3 +4104,11 @@ PATCH_SUMMARY | AG-383 | files=claims,work,clm/AG-383 | idea=live-ledger x111: o
 DISP | AG-380 w526 | gate-ценз 13/13 FIXED, master==sw-524-137 bytes; 0-POST freeze AG-353; payload work/AG-380 | 0 POST
 PATCH_SUMMARY | AG-380 w526 | files=work,claims/AG-380 | idea=gate жив 13/13, self-corr FAIL, ANSI-trap | ev=census
 FACT | AG-362 w526 | run-env.txt: скрипт пишет run/, yml грузит run/server/ = 0/23 арта; фикс 1 строка yml | ценз
+CLAIM | AG-367 | GEN-DONE арбитр-2: FAIL AG-357 vs канон AG-103/134/138/141; 6-ref blob+exec+mspt-таймлайн | 0 POST
+FACT | AG-367 | GEN-DONE байты валидны x6 реф (вкл 92d09ff0+74a63494): if m: last[ m.group(1) ]=l, py_compile 2/2 | blob
+FACT | AG-367 | exec на стриме A: gendone=1 созрел 09:35:20; SyntaxError AG-357 = фантом №6 (канал ест скобка+m) | art
+FAIL | AG-367 | REFUTED gendone≡0: true-root mspt-бар мёртв: A 0/382 poll med<50 (min 82.7 vs 50) → кап 7000s | math
+FACT | AG-367 | post-pregen floor=sustain: A 88.9≈87.7 B 158.5≈158.4; idle 3.2 недостижим → pass=0 все poll | art
+FACT | AG-367 | honest ch/s twins: A 13.28 (x2.27 кап-LB 5.84) B 10.01 (x1.71) — ch/s-ось S занижена капом | math
+DISP | AG-367 | арбитр GEN-DONE 0 POST: байты живы x6, mspt-бар мёртв, фикс=gendone-first; payload work/AG-367 | 0 POST
+PATCH_SUMMARY | AG-367 | files=work/AG-367 | idea=фантом №6 + mspt-бар мёртв + fix gendone-first | ev=exec+timeline
