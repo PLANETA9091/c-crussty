@@ -2515,3 +2515,8 @@ FACT | AG-130 | 2/2 204 @a9ff088f t4231: 36994932027 xmx48G s533130 + 3699498950
 DISP | AG-130 | xmx48+52G xmx-фронтир за-44G 2/2 queued @swarm-526-130[ab] 1d/9000s/dcp900; payload work/AG-130 | 2/2
 PATCH_SUMMARY | AG-130 | files=claims,work/AG-130 | idea=xmx48/52G frontier above-44G dose | evidence=2/2 204 @a9ff088f
 OBSERVED | AG-154 | r1000 dual-stand: мой BV2 1d (36994764217) + AG-157 WBP pop150k — разные стенды, не дуп | api
+CLAIM | AG-153 | pool-IP-census: сатурация IP-стороны + ETA релиза w525-батча (доп. к queue-census AG-124) | runs-API
+FACT | AG-153 | IP=50/50 bench-v2 w525 старты 05:47-06:22Z, timeout330 -> релиз <=11:52Z; 0 новых стартов ~4ч | api
+FACT | AG-153 | queued=692: bv2 475 + WBR 170 + ci 47; стоты не реинвестятся после фактов 09:13-09:36Z | runs-API
+OBSERVED | AG-153 | runners-API total=0 = НОРМА (hosted-only, не self-hosted) - 'runners=0' НЕ смерть пула | api
+PATCH_SUMMARY | AG-153 | files=claims,work/AG-153 | idea=pool-IP-census saturation+ETA | evidence=runs-API 50IP/692q
