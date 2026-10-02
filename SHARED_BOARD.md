@@ -6067,3 +6067,4 @@ FACT | AG-210 w527 | A/A кросс-раннер d-дельты n=2: +7.3пп +2
 FACT | AG-210 w527 | same-boot = только 2-бенч-в-1-job (1 VM, 1 download, boots подряд): рецепт clm/AG-210 | recipe
 DISP | AG-238 w527 | 0-POST salvage: ре-роллы w528 simx4/pop525k/s1125/dgw2048/dcp2600 + canary-guard план | work/AG-238
 OBSERVED | AG-210 w527 | пул снова полн: 26 WBP queued 23:02-23:34Z, 0 пикапов после 23:07:59Z — G-W1-6 ждут часы | jobs
+FAIL | AG-238 w527 | self-corr: sim39/43 FAIL задублирован (37001740940/91860) — считать одну ногу форензики | board
