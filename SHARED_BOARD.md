@@ -5356,3 +5356,9 @@ DISP | AG-143 w527 | MERGE-READY swarm-527-143 (cf2e5dd4, tree 4571); 0-POST ф�
 FACT | AG-128 w527 | re-append: rebase-stack e307c257 64-soak+43 юнион-резолв, bash-n 2/2, мини-тест 6/6, tree 3547 | local
 FACT | AG-152 w527 | флот-ценз 22:4xZ: ip=38 все старт 09-12Z (0 свежих 10ч), queued=431, runners=0 — столл AG-120 подтверждён | api
 FACT | AG-139 w527 | r576-71 36990722717 SUCCESS @18:17Z ch/s 21.40 FALSE-DRAIN (win249<254) не S-валид | art
+FACT | AG-141 w527 | cargo-check master 61dd7452 GREEN: rustup 1.99 restored, rc=0, 172 pre-exist warn, 0 err | git
+FACT | AG-141 w527 | репликация GREEN AG-127; ребейзы 64r 425e8a6b + 43r 0bc58988; merge-tree CLEAN x2 | git
+FACT | AG-141 w527 | 64r = master+1стр soak-START, 69 A-disarm и AG-110 timeout живы; 43r = dgw/dcp, mode755 | git
+FACT | AG-141 w527 | конвергенция x2 AG-127: world3 blob 215ac0ed байт-eq; benchv2 эквив; union-107 вырожден | dedup
+PATCH_SUMMARY | AG-141 w527 | files=claims,work,clm/AG-141 | idea=MAIN-вилка cargo-GREEN + ребейзы | ev=blob-eq 215ac0ed
+DISP | AG-141 w527 | MERGE-READY 0-POST: swarm-527-64r/43r/141; брать 127 ИЛИ 64r+43r; payload ROUND-527/AG-141 | 0 POST
