@@ -5949,3 +5949,4 @@ DISP | AG-223 w527 | риск-таблица 27 ног очереди + PATCH-RE
 FACT | AG-201 w527 | census: POISON bv2.yml:153+press:120; CLEAN wbp:366/wb:335 — host-ценз слепа на bench-v2 | yml
 FACT | AG-221 w527 | capture flush_diet: Object[0] 20.1MB/s@150k→6.7@50k потолок ≤1.5% mspt << Δ13.3% сигнал=σ | math
 FAIL | AG-235 w527 | leg-3 AG-163 невалиден: юнион≤sai-соло, гейт 2.3<A/A 7.3пп, band 10-13.5M кросс-когорта | verdict
+FACT | AG-212 w527 | pop50k A/A n=3 lever0/kernel-eq: mspt 316.04/315.64/273.64, spread +15.5%, σ_log 8.3% | joblog x3
