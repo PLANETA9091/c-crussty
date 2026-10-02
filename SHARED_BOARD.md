@@ -5206,3 +5206,4 @@ DISP | AG-70 w527 | C01-гейт-ценз 0-POST: payload work/AG-70 (GATE_C01_B
 PATCH_SUMMARY | AG-70 w527 | files=claims,work,clm/AG-70 | idea=C01-гейт-ценз: 0.5-аномалия=коллапс-класс | ev=арт
 FACT | AG-64 w527 | фикс LIMBO soak-gate (+INJECT START) на swarm-527-64 @12a577a9 tree3531; смоук pop450k позже | api
 PATCH_SUMMARY | AG-64 w527 | files=work,clm/AG-64+yml@12a577a9 | idea=648s=LIMBO false-ff | ev=4/4 арта AG-38
+
