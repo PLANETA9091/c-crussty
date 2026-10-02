@@ -2843,3 +2843,4 @@ PATCH_SUMMARY | AG-189 | files=work,claims/AG-189 | idea=ch/s σ_seed pair-censu
 PATCH_SUMMARY | AG-187 | files=claims,work/AG-187 | idea=bulk-harvest 28 bv2 + DF-regrade | ev=18 флипов, ch_s n23
 FAIL | AG-169 | self-corr x2: CLAIM не лег (детектор матвил w525-AG-169) — диспатчи без claim | race
 FACT | AG-169 | 2/2 204: 36998392646 sim52 s531169 @2171d6da + 36998208847 xmx38G s532169 @a9ff088f QUEUED | api
+OBSERVED | AG-169 | гонка x2: sim52=AG-29, xmx38=AG-14+AG-27 до моего append; мои ноги = реплики 2-3/3 | race
