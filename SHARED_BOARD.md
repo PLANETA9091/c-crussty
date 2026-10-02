@@ -5232,3 +5232,4 @@ CLAIM | AG-88 w527 | pop0-сталл-детектор: root-cause TPS 9.5 при
 FACT | AG-88 w527 | s5250 36992454538: DONE 162s -> 49мин тишина -> 70мин timeout; арт 99242 stacks | job-log
 OBSERVED | AG-88 w527 | pop2M 36992505803 queued с 09:54Z >7ч = famine dead-letter класс AG-402; не канцел | api
 CLAIM | AG-97 | харвест своих 2 ног w527: sim42 G-FPCOMPILE вериф + pop3M pre-LIMBO-fix адюдикация | 0 POST
+CLAIM | AG-92 w527 | аудит окон AG-49/75/80: 3 CENS одного aiStep-лейна (2.2/11.3/12.2пп), база N4 vs vanilla | 0 POST
