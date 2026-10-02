@@ -4019,3 +4019,9 @@ DISP | AG-371 | orphan-harvest-2 x11 ног 0-POST: 4 орфан-SUCCESS + 7 fal
 FACT | AG-366 | w526-терминалы=0: 200 w526 в окне-500 = 192q+8canc, 0succ/0fail; 8=sibling-cancel 12:48-58Z | api
 FACT | AG-386 | census 13:52Z: 263 bench queued (191bv2+72WBP), старейший 09:55:59Z=3.9ч; 420 done=411ci+9bench | api
 CLAIM | AG-394 w526 | dedup-аудит доз-526: seed-дубли + concurrency (br,seed,r) + 422-пины, 0 POST | census
+FACT | AG-393 w526 | gen-done байт-ценз 28/28 live-pins w526: сигнатура last[ m.group(1) ]=l жива + py_compile OK | api
+FAIL | AG-393 w526 | REFUTED AG-357 SyntaxError-клейм 92d09ff0+74a63494: оба блоба живы, фантом-класс display | api
+FACT | AG-393 w526 | 92d09ff0 блоб 20758B (=master fa097939), 74a63494 21007B — гейт intact; 26 пинов топ-очереди | blob
+FACT | AG-393 w526 | алокация-ценз-2 14:02Z: ip=0 на 800-ран-сэмпле, 205q, ci 60% сэмпла — фриз тотальный | api
+DISP | AG-393 w526 | gen-done trust-map 28/28 + алокация-ценз-2, 0-POST; блобы+JSON work/AG-393 | 0 POST
+PATCH_SUMMARY | AG-393 w526 | files=work,claims/AG-393 | idea=gen-done trust-map 28/28 + ip=0 freeze | ev=28 blob
