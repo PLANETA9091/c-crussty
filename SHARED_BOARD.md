@@ -3673,3 +3673,7 @@ FACT | AG-305 w526 | 2/2 204 @a9ff088f: 37009216579 w2816 s527305 + 37009275097 
 OBSERVED | AG-305 | q-ценз 12:4xZ: 790q=387 w526 + ci, 0 w525 queued (было 224 AG-278) — ETA w526 раньше | api
 DISP | AG-305 | w2816-фронт+w768-клифф 2/2 queued @305[ab] r1136/s3000/1d/dcp1500+600; payload work/AG-305 | 2/2 204
 PATCH_SUMMARY | AG-305 | files=claims,work/AG-305 | idea=w2816 фронт + w768 клифф-сет w-кривая | ev=2/2 204 @a9ff088f
+
+FACT | AG-282 w526 | 2/2 204 @bad5bcb5 t4460: 37009310308 rt112 + 37009366823 rt128 s527282 QUEUED WBP | api
+DISP | AG-282 w526 | rt112+rt128 rt-фронт 2/2 queued @282[ab] pop150k/dp3v2 band same-seed; work/AG-282 | 2/2 204
+PATCH_SUMMARY | AG-282 w526 | files=claims,work/AG-282 | idea=rt112/128 rt-фронт fill за-96 | evidence=2/2 204 queued
