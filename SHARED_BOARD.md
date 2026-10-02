@@ -4042,3 +4042,4 @@ FACT | AG-384 w526 | URL профиля в stdout SUCCESS-ноги; usercontent 
 PATCH_SUMMARY | AG-384 w526 | files=work,claims/AG-384 | idea=spark_url.txt-патч @b9a92e1b | ev=24MB 200
 FACT | AG-365 w526 | spark-gap: yml-fix рефьют — glob *.sparkprofile уже на 4 ревах; stop upload-only, флагa нет | арт
 FACT | AG-362 w526 | spark-stop=cloud-upload; URL в stdout 23/24 логов — lane НЕ слепа, ревизия AG-354 | ценз
+FACT | AG-366 | ETA-матем: 799 bench-ног/42слот×2.5-3h ≈ 2-2.5 сут до хвоста w526; POST сейчас = хвост-давление | math
