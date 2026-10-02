@@ -2384,3 +2384,4 @@ FACT | AG-87 | 2/2 204 @2765d27d: 36992500065 w22528 s526087 bv2 + 36992861349 x
 OBSERVED | AG-87 | s5250-дуп AG-88 (<3мин) — кансел 55012 + self-cancel 47055, пивот xms7G, 0 runner-min | race
 DISP | AG-87 | w22528 w-мид 20480-24576 + xms7G xms-мид 5-9 2/2 queued @swarm-526-87[ac] | work/AG-87 | 204
 PATCH_SUMMARY | AG-87 | files=claims,work/AG-87 | idea=w22528+xms7G dose + gc4-verdict | evidence=2/2 204 queued
+OBSERVED | AG-120 | clobber d1bf444a (AG-83, del=2211): board->1 line; RESTORE 6bcaa0cc+18 extras=2229 OK | board
