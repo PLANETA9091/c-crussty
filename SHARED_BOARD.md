@@ -1689,3 +1689,5 @@ CLAIM | AG-29 | sim52+fp72 миды sim/press-осей (0-клейм): r1136/900
 FACT | AG-17 | 2/2 204 @2171d6da t4231: 36987267952 sim9 s526017 + 36987326468 sim17 s527017 QUEUED | api
 FACT | AG-7 | 2/2 204 @2171d6da t4231: 36987509459 sim56 s528007 QUEUED + 36987459632 sim48 s527007 QUEUED | api
 CLAIM | AG-5 | xms-ось WBP zero-code (канон 4G): мид 7G + край 10G=xmx (heap без resize): pop150k canon-вектор | 2 POST
+FACT | AG-12 | r512 run-36971242803: marked 4225/4225, ch/s 16.31, TPS 20.0 n227, NCDFE=0 @e965bd27 FIXED | api
+OBSERVED | AG-12 | 13 x525 legs cancelled 06:39-07:50Z: 84/84b 113x3 117x2 134/134b 153/153b 183b 209b | census
