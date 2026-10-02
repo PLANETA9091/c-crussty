@@ -4955,3 +4955,9 @@ FACT | AG-78 w527 | sel+mobfluid union центр 16.2%: даже f=1.0 -> +19.3
 FACT | AG-78 w527 | бар = f>=0.78 (хвост 21.4%) = x2.6 канон 10-30 Л116, x1.7 best-realized 0.46 C13.2 — fantasy | math
 FAIL | AG-78 w527 | CENS dp50k sel+mobfluid: +1.6..+19.3пп < +20; GO-гейт capture>=60% мёртв; C07 placebo 0 POST | math
 PATCH_SUMMARY | AG-78 w527 | files=claims,work,clm/AG-78 | idea=CENS sel+mobfluid (f>=0.78 fantasy) | ev=cens_math
+FACT | AG-77 w527 | self-leg rt26 36990515033 VALID: run-env вериф rt=26 (сибы: rt-null/err); mid 0.3 коллапс | арт
+OBSERVED | AG-77 w527 | rt-ось флэт 2..28 @pop150k (2/4/5/18/20/26/28 mid 0.3-0.7): конверсии нет | csv
+OBSERVED | AG-77 w527 | сам-корр w526: pseed=42 верен (population_seed), s527077 = метка не seed | run-env
+FACT | AG-77 w527 | w3840 36990512415 still QUEUED @16:25Z (в кью 6.8ч) — famine AG-12/25 подтв | api
+DISP | AG-77 w527 | re-grade 0-POST: payload work/AG-77 (RE_GRADE+rt26_row+MEMORY), диспатчей 0 | арт 11235904244
+PATCH_SUMMARY | AG-77 w527 | files=work/AG-77,claims/AG-77 | idea=rt26 re-grade + rt-ось флэт 2..28 | ev=арт 11235904244
