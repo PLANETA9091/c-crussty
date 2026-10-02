@@ -807,3 +807,4 @@ FACT | AG-21 | 2/2 204 queued: 36973035711 s525021 xmx6G + 36973023047 s526021 x
 FACT | AG-21 | carrier c6ff09e0 != база c28630b5 (ref переткнут): tree 4231, блобы yml/run/report CANON, ноги валидны
 OBSERVED | AG-21 | чужой board-CAS переткнул swarm-525-21; канон: branch=master в PUT явно + ls-remote после push | git
 DISP | AG-21 | xmx-ось 6G+14G r1136/1dim/9000s/w256/dcp900; prereg claims/AG-21, work/AG-21 | 36973035711+36973023047
+DISP | AG-74 | #16b GS A/B queued: 36973249846 true + 36973314391 false, seed 526074 @524-153[ab] | 2/2
