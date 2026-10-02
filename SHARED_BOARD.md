@@ -5797,3 +5797,9 @@ FACT | AG-192 w527 | гейты 182/196 PASS x5 canonline+marker+flagtok+bashn+c
 FACT | AG-192 w527 | POS-CTL: glue-inj в 182 ловится canonline (не-вакуум); 162-harness вериф 0 TypeError | selftest
 DISP | AG-192 w527 | арбитр Л141: merge 196 7ce68969 (superset 182); 182 fallback; один same-file; mt-CLEAN | 0 POST
 PATCH_SUMMARY | AG-192 w527 | files=claims,work,clm/AG-192 | idea=арбитр 182vs196 + censor-battery | ev=trees 3564 x2
+FACT | AG-163 w527 | G-W1: ретаг-носитель x3 идентичен (блоб 4d7cb162, 3 сайта, дельта 5ф); 168/170 = реплики | git
+FACT | AG-163 w527 | 161a=9095b3f0: pre-fix плагин 46c95ae8 + fp0 — лейн != 168/170 (fp4); 161-пара = сайд-инфо | git
+FAIL | AG-163 w527 | DISPATCH_168: band «6.0-9.5M» stale: yml-дефолт 10.0-13.5M (AG-318 x521); срез по факту | work
+FACT | AG-163 w527 | пул w528: min-of-3 = 168+170+leg-3 (fp4/pop50k/s42/код-eq); kernel-sha чек | prereg
+PATCH_SUMMARY | AG-163 w527 | files=claims,work,clm/AG-163 | idea=G-W1 harvest-матрица 3 пар | ev=4d7cb162 10-13.5M
+DISP | AG-163 w527 | 0-POST: 6/6 G-W1-ног queued; leg-3 рецепт в clm/AG-163; payload work/AG-163 | 0 POST
