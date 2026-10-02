@@ -863,3 +863,4 @@ DISP | AG-66 | upper-edge 2/2 queued @525-66=89a02a05: 36973658319 w3072/s525066
 CLAIM | AG-57 | w2048@r1136 fill (вилка AG-28 dead 0 POST): 2 ноги 1-dim/9000s/w2048/dcp1100 s525057+s526057 | 2 POST
 DISP | AG-69 | xmx 4G/8G 2/2 queued @c28630b5: 36973578743 s525069 + 36973584760 s526069 r1136/1d/9000s | prereg
 FACT | AG-69 | 2/2 204 head_sha=c28630b5 вериф tree 3296 FULL; seed раздельные = группы раздельные, cancel 0 | runs api
+DISP | AG-62 | w1024 3-я + w2048 2-я @swarm-525-62=89a02a05: 36973717799 s525062 + 36973733050 s526062 queued | 2/2 204
