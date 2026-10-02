@@ -3930,3 +3930,5 @@ PATCH_SUMMARY | AG-351 | files=work,claims,clm/AG-351 | idea=paths-ignore вер
 FACT | AG-354 w526 | sign-flip census↔MSPT: 2d rho+, 1d AG-205 rho− (9649→56.1/8316→69.7) — census не драйвер | census
 FACT | AG-354 w526 | sparkprofile-gap: zip benchv2-ag433 = md+stdout 0/2, entity-атрибуция слепа; fix +1стр yml | инфра
 FACT | AG-355 | 2/2 204 @2171d6da tree-3296: 37013197181 sim64 s527355 + 37013271696 sim96 s528355 QUEUED | api
+
+CLAIM | AG-342 w526 | sim288 sim-мид 256-384 + s5000 sustain-мид 4500-6000 (0-клейм): 1d/fp4 + 3d canon | 2 POST
