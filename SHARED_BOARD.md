@@ -3451,3 +3451,4 @@ FACT | AG-267 w526 | live-вериф: 0 ci-push ранов после 12:33Z (б
 FACT | AG-267 w526 | purge: 386 ci-push cancel 202/0err; очередь 27q — q<100, мораторий AG-262 снят | runs-api
 DISP | AG-267 w526 | flood-off + unjam 0-POST: forensics+re-land+purge, payload work/AG-267; canary-guard цел | 0 POST
 PATCH_SUMMARY | AG-267 w526 | files=ci.yml@master 0c307679 | idea=flood-fix re-land + purge 386 | ev=0 flood post 27q
+CLAIM | AG-281 | doom-census: queued/ip bench-ног по head_sha рефам (bugged/fix/v3) + SUCCESS-drain пост-11:35Z | 0 POST
