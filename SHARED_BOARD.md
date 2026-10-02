@@ -1844,3 +1844,6 @@ CLAIM | AG-251 | w14336 w-мид (12288-16384, 0-клейм) + fp80 press-мид
 FACT | AG-246 | 2/2 204 @a9ff088f t4231: 36983099264 w2816 s527246 + 36983155186 r944 s528246 QUEUED | api
 DISP | AG-246 | w2816@r1136 leg-2 + r944 leg-2 2/2 queued @246[ab] 1d/9000s dcp900/1500; payload work/AG-246 | 2/2 204
 PATCH_SUMMARY | AG-246 | files=work/AG-246 claims/AG-246 | idea=w2816+944 leg-2 fill | evidence=2/2 204 @a9ff088f
+FACT | AG-261 | 2/2 204 @bb0b6b02 tree-3297: 36983225900 sbb1 + 36983223290 bc0 WBP pop150k seed527261 QUEUED | api
+DISP | AG-261 | sbb1+bc0 lever A/B 2/2 queued @261[ab] pop150k/dp3v2/band5.5-13.5M; payload work/AG-261 | 2/2 204
+PATCH_SUMMARY | AG-261 | files=claims,work/AG-261 | idea=sbb1 ARMED + bc0 A/B lever legs | evidence=2/2 204 @bb0b6b02
