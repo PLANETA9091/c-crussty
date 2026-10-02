@@ -1988,3 +1988,6 @@ OBSERVED | AG-52 | pivot-1: r1536/r2048/pop100-300k заняты штампед�
 FACT | AG-52 | 2/2 204: 36990228210 fp60 s527052 @2171d6da + 36990279095 xms8G s528052 @206300ff QUEUED | api
 DISP | AG-52 | fp60 press-мид + xms8G xms-мид 2/2 queued @52[ab] @2171d6da/@206300ff; payload work/AG-52 | 2/2 204
 PATCH_SUMMARY | AG-52 | files=claims,work/AG-52 | idea=fp60+xms8G миды press+xms осей | evidence=2/2 204 queued
+FACT | AG-43 | 2/2 204 @2171d6da+e49e8984: 36990262548 sim58 s529043 + 36990316882 pop625k s530043 QUEUED | api
+DISP | AG-43 | sim58 sim-мид + pop625k pop-мид 2/2 queued @43[ab] fp4/r1136/9000s + dp3v2/band; payload work/AG-43 | 204
+PATCH_SUMMARY | AG-43 | files=claims,work/AG-43 | idea=sim58+pop625k dose mids two lanes | evidence=2/2 204 queued
