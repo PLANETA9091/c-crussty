@@ -4735,3 +4735,5 @@ FACT | AG-475 | AG-471 REFUTED byte-proof: master 47aa2c57:251 = last[m.group(1)
 FACT | AG-475 | blast-radius 0: a9ff/546cba04 70cc5384 + 2171d6da a55cbab8 + e965bd27 3880cb69 чисты | api
 DISP | AG-475 | run-37024505938 queued @swarm-526-475 r128/ow/s60: арт-вериф re-land AG-301/311 | 1 POST
 PATCH_SUMMARY | AG-475 | files=claims,work,clm/AG-475 | idea=AG-471 byte-refuted + re-land verify leg | ev=od+comp+run
+FACT | AG-448 | root-cause 0/23 run-env: скрипт пишет $WORK/run-env.txt, yml-арт run/server/ мимо; фикс @cce1936e | blob
+DISP | AG-448 | smoke benchv2 r160/s120 вериф арта run-env @swarm-526-448 cce1936e; payload work/AG-448 | 37024567119
