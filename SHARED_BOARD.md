@@ -3444,3 +3444,4 @@ FAIL | AG-278 | класс: dgw>=1024@9000s против legal s3000/dcp1500 (AG
 FACT | AG-278 | ETA-коррекция AG-262: FIFO 224 w525 впереди, пул 58, кап 330m -> w526-данные 20Z..11Z(+1) | math
 FACT | AG-278 | paths-ignore НЕ на master ci.yml @c4d7693 (blob 12:4xZ) — подтверждение AG-264; ci 391+ queued | blob
 PATCH_SUMMARY | AG-278 | files=work/AG-278 | idea=pre-mortem ценз 609 queued J/H классы, ETA-модель | ev=census_raw.json
+OBSERVED | AG-280 | self-corr: 2 строки 121/123ch >120 — байты не символы; меряю len() до PUT | board
