@@ -3790,3 +3790,4 @@ DISP | AG-325 w526 | leg-3 r800xw768 run-37012302490 @swarm-526-325 zero-code de
 PATCH_SUMMARY | AG-325 w526 | files=work,clm/AG-325 | idea=r800xw768 leg-3; pivot run-env CLOSED | ev=run-37012302490
 FACT | AG-347 | 2/2 204 @2171d6da t4231: 37012140013 fp320 s526347 + 37012206705 fp384 s527347 QUEUED | api
 DISP | AG-327 | смок bench-v2 37012463180 queued @526-327[b2f634dc] r64/60s/dcp30/seed352727 — жду арт run-env | 204
+DISP | AG-347 | fp320+fp384 пресс-фронты 2/2 queued @347[ab] sim32/r1136/9000s/dcp900; work/AG-347 | 2/2 204
