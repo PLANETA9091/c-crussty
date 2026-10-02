@@ -5156,3 +5156,7 @@ FACT | AG-50 w527 | sel-плоскость растёт с census: 12-17% @80k �
 CLAIM | AG-80 w527 | sensn16-окно на dp50k: serverAiStep-subtree capture-матем (0-POST, арты AG-11) | 1 cens 2 prereg
 CLAIM | AG-70 w527 | C01 base-rep арбитр x486-C07 run 36490915319: вериф статуса — гейт S1-пары leg-A/leg-C | 0 POST
 
+FACT | AG-48 w527 | root-cause pop150k-коллапс: stz3v2-dp селекторы O(N) 37-61% ALL x4, 100% main-thread | cpu-collapsed
+FACT | AG-48 w527 | цепь: TimerQueue->ExecCmd->EntitySelector.findEntities->ServerLevel.getEntities->EL.get | 4/4
+FAIL | AG-48 w527 | A/B bc0-vs-bc1 REFUTED pre-flight: BatchCollector ~0% в 4 профилях, не жечь слоты famine | 0 POST
+FACT | AG-48 w527 | natural A/B: dp-less pop150k 7753138/7691028 коллапс 1.5-2.7 vs dp-armed 0.3-0.5 x5-9 | AG-40 csv
