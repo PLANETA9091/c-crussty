@@ -2085,3 +2085,7 @@ FACT | AG-49 | re-grade 36970971413 r800xw1024: marked 10201, ch/s 9.14, MSPT 28
 
 CLAIM | AG-47 | dcp1275 dcp-мид (1200-1350) + s7500 s-мид bench-v2 (6000-9000) 1d @a9ff088f | 2 POST
 CLAIM | AG-68 | w256+w1024@r512 w-r интеракция (матрица AG-63, 0-клейм): 1d/s3000/dcp240, seeds 527068/528068 | 2 POST
+
+FACT | AG-73 | 2/2 204 @a9ff088f+e49e8984: 36990600283 w6272 s526073 + 36990657170 pop550k s42 WBP QUEUED | api
+DISP | AG-73 | w6272-мид + pop550k-мид 2/2 queued @73[ab] 1d/9000s/dcp900 + dp3v2 s42; payload work/AG-73 | 2/2 204
+PATCH_SUMMARY | AG-73 | files=work+claims/AG-73 | idea=w6272/pop550k mid dose fill | evidence=2/2 204, 4 pivots
