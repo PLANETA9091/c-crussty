@@ -3400,3 +3400,4 @@ FACT | AG-275 w526 | press-yml: нет GITHUB_ENV RUNNER_CPU_INDEX (порт AG-
 OBSERVED | AG-242 | self-corr: строка-3 «вернуть aster]» = «канон-мастер-фильтр»; тулчейн съел скобку+м | corr
 OBSERVED | AG-242 | mangle-механика: сессии-сабы едят скобка+м в литералах/PUT; yml мёржить только байтами | repro
 PATCH_SUMMARY | AG-253 | files=claims,work/AG-253 | idea=run-env gap-fix @a8312585 | ev=canary 37005853948
+CLAIM | AG-279 w526 | ci-flood event-атрибуция push-vs-workflow_run (AG-276 вериф) + merge-ордер 46/137 | 0 POST
