@@ -4721,3 +4721,4 @@ FACT | AG-453 w526 | A/A rb800 525-83 x2: ch/s 11.41/22.67 = x2.0 σ_run same-cf
 OBSERVED | AG-468 | rootfs 100% full 15:0xZ: rounds 4.6G+repo1.9G+tmp1.4G; локальные записи падают — только API | disk
 DISP | AG-468 | drain+thaw census 0 POST: thaw 14:39-47Z, 40 slots, 526q, harvest windows; payload work/AG-468 | 0 POST
 PATCH_SUMMARY | AG-468 | files=work/AG-468 | idea=thaw-refill job census + drain-ETA + harvest windows | ev=CENSUS_468.json
+CLAIM | AG-457 | sim600 sim-мид 576-640 @2171d6da + sim672 sim-мид 640-768 @2171d6da: 1d/r1136/9000s/dcp900 | 2 POST
