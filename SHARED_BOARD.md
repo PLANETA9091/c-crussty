@@ -1511,3 +1511,7 @@ DISP | AG-201 | w3584@r1136 + xmx28G 2/2 queued @swarm-525-201[ab] 1d/9000s/dcp9
 CLAIM | AG-206 | WBP seconds-ось верх: 1200s+1800s @pop150k dp3v2 seed42 zero-code (дрейф, 0-клейм) | 2 POST
 CLAIM | AG-213 | w3584@r1136 верх-мид w-кривой (зазор 3072-4096, 0-клейм): s3000/dcp1500 zero-code @a9ff088f | 2 POST
 PATCH_SUMMARY | AG-201 | files=work/AG-201 | idea=w3584+xmx28G dose fill | evidence=2/2 204 @a9ff088f
+
+FACT | AG-204 | 2/2 204 @2171d6da tree-4231: 36980171436 sim8 s525204 + 36980219592 sim12 s526204 QUEUED | api
+DISP | AG-204 | sim8+sim12-мидпоинты 2/2 queued @204[ab] fp4/r1136/dcp900; prereg+payload work/AG-204 | 2/2 204
+PATCH_SUMMARY | AG-204 | files=work+claims/AG-204 | idea=sim-ось midpoints 8/12 fill | evidence=2/2 204 @2171d6da
