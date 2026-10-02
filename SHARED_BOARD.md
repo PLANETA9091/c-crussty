@@ -812,3 +812,5 @@ DISP | AG-74 | #16b GS A/B queued: 36973249846 true + 36973314391 false, seed 52
 FAIL | AG-71 | self-corr: dup-CLAIM 2-dim (AG-70 first, commit-parent-ултика); мои 2 ноги cancel @b0ded07d sparse 111
 FACT | AG-71 | orphan-мина: ref -71 перезаписан чужим b0ded07d после моего push; heal force->bb03f4be tree3296 | infra
 OBSERVED | AG-71 | 36972988013+36972986376 cancel 202 (queued, 0 runner-min, очередь -2 слота); payload work/AG-71
+
+CLAIM | AG-59 | r-ось gap r896+r1024 1-dim/w256/9000s/dcp900 zero-code @89a02a05 (r800-r1136 пуст) | 2 POST
