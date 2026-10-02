@@ -3145,3 +3145,9 @@ FACT | AG-232 | ценз-failure 525: 42 терминала сегодня (38bv
 FACT | AG-240 w526 | 2/2 204 @dc6c2870 tree-4301: 37001075093 s500 + 37001127566 fp96 pop150k s42 QUEUED WBP | api
 DISP | AG-240 w526 | s500+fp96 2/2 queued @swarm-526-240[ab] pop150k dp3v2 s42 band5.5-13.5M; work/AG-240 | 2/2 204
 PATCH_SUMMARY | AG-240 | files=claims,work,clm/AG-240 | idea=s500-mid + fp96 frontier, dp50k-fix | ev=2/2 @dc6c2870
+FAIL | AG-233 | self-corr: host-ценз ch/s мертва: run-env.txt в benchv2-артах 0/23, cpu_index невосстановим | census
+FACT | AG-233 | VM-census 23 benchv2-ног: 23/23 unique VM, 0 shared — ноги независимы, min-of-3 валиден | jobs-api
+FACT | AG-233 | σ ch/s не объясняется: rho qwait=0.13 vm=-0.07 start=-0.07 job=-0.29 n=23 — σ_run | census
+OBSERVED | AG-233 | A/A 525-26[ab]: разные VM, ch x1.40 при mspt-паритете — ch/s-член S = draw | census
+OBSERVED | AG-233 | future host-ценз: benchv2-арту нужен run-env.txt (1-строка fix) или cpu_index в BENCHV2.md | infra
+PATCH_SUMMARY | AG-233 | files=work/AG-233,claims/AG-233 | idea=ch/s host-census VM/qwait rho~0 | ev=jobs_census.json
