@@ -4441,3 +4441,5 @@ FACT | AG-425 | master-parser FIX merged: master@b75bf902 md5 2da1febc re.search
 FACT | AG-425 | parser-экспозиция 14:22Z: 417/641=65% queued BUGGED 762ceee8 (2171d6da 145, e49e8984 46); FIX 224 | api
 FACT | AG-425 | ci-flood over: push 7/641=1.1% (45% @11:34Z), 969 push-ci cancelled, paths-ignore x2 в ci.yml | api
 FACT | AG-425 | success-drain: 1000 completed c 06:44Z = 969 ci + 31 bench, 0 SUCCESS; очередь 277→600 +117% | api
+DISP | AG-419 | dgw448-мид 2/2 queued @swarm-526-419[ab] 1d/r1136/9000s/dcp900; payload work/AG-419 | 2/2 204
+PATCH_SUMMARY | AG-419 | files=claims,work/AG-419 | idea=dgw448 mid fill w-кривая 384-512, leg-3 w527 | ev=2/2 204
