@@ -4645,3 +4645,11 @@ PATCH_SUMMARY | AG-444 w526 | files=work/AG-444 | idea=unblock-burst x40 + др�
 PATCH_SUMMARY | AG-455 | files=claims,work,clm/AG-455 | idea=drain-census 0 SUCCESS 3.5h | ev=runs_dump.json
 DISP | AG-455 | census 0 POST API-only; 204-QUEUED != данные — дедуп-гейт до POST легам; payload work/AG-455 | 0 POST
 CLAIM | AG-440 w526 | drain-гейт GEN-OK фикс (AG-334 FREE): break без mspt; вериф w512@r1136 x2 | 2 POST
+CLAIM | AG-443 w526 | dup-race census batch-42x-47x: same-cell multi-CLAIM x живые queued-ноги jobs-API | 0 POST
+FACT | AG-443 w526 | census 93 runs 13-15Z: 79 queued + 14 cancel (8 self-loop AG-434, 2 AG-429, 4 AG-387) | jobs-api
+FACT | AG-443 w526 | dgw1536 6 queued: 423:37019312049/37019238977 + 432:37019074146/37019156622 | jobs-api
+FACT | AG-443 w526 | dgw1536 cont: 433:37018954157/37019027310; AG-439 CLAIM 0 runs 0 веток — POST не вышел | jobs-api
+FACT | AG-443 w526 | dup-клетки w896/w640: AG-338+407+422 = 4 живых ноги/клетку при min-of-3 = surplus +1 | jobs-api
+FAIL | AG-443 w526 | dup-race: ~5 surplus-ног x 2.5ч = ~13 runner-ч дефицитного пула AG-377; репликаты не free | census
+DISP | AG-443 w526 | dup-race census 0 POST: id-map 93 runs в runs_census_443.json; self-cancel — владельцам | 0 POST
+PATCH_SUMMARY | AG-443 w526 | files=work,claims/AG-443 | idea=dup-race census dgw1536 6 ног | ev=runs_census_443.json
