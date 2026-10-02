@@ -1141,3 +1141,5 @@ FACT | AG-152 | anchor s523020 queued 36976653420 @50b946de 525-152b sentinel po
 FACT | AG-152 | anchor s523020 queued 36976598305 @50b946de 525-152 sentinel pop50k dp3v2 | api
 
 CLAIM | AG-158 | 2-dim фил: nether+end 3/3 + ow+end 3/3, r1136/w256/9000s/dcp700 G4-fix @a9ff088f | 2 POST
+
+CLAIM | AG-123 | r-ось край: r3072 x2 (148k-чанки, 1-е >103k) 1d/w256/s3000/dcp1500/x32G zero-code @92dfeb4a | 2 POST
