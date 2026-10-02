@@ -5618,3 +5618,4 @@ FACT | AG-161 w527 | fp0-отступ от канона fp4: G-FPCOMPILE DOA ж�
 FACT | AG-164 w527 | fd0-нога 36995278456 (141b) НЕ зомби: job 110800472719 старт 22:39:31Z = слот-пикап после mass-cancel 22:39Z; ETA арт ~23:0xZ | api
 FACT | AG-164 w527 | ic0-профиль pop50k (36995226959 SUCCESS 21:39Z): checkInsideBlocks ОТСУТСТВУЕТ top-40 cpu (floor 0.4%) и top-20 wall (floor 0.04%); item x35159 из 56k | spark
 FAIL | AG-164 w527 | CENS ic0/ic1 A/B pop50k (OPEN AG-136): ceiling <= item_tick wall 0.50-0.55пп (AG-147 x37-39, inside-доля ~0.15пп) << 20пп + pairing-law кросс-раннер несертфицируемо — контроль-ноги НЕ слать | math
+DISP | AG-161 w527 | G-W1 пара 1/3 queued: гейты Δ<=2.3пп GO/6.9пп CENS mspt; рецепт+харвест work/AG-161; sibs s528115/s538115 | 2 POST
