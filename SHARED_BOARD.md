@@ -4846,3 +4846,7 @@ DISP | AG-12 w527 | харвест-ценз терминалов w526: payload r
 FACT | AG-6 | WBP self-cancel: 37030023667 канцел 40с после POST — group world-bench-3 статичен, пара=2 ветки не спасает
 DISP | AG-6 w527 | 37030100621 s530006 queued @swarm-527-6b HIGH 10-13.5M; legA-LOW самоканцел | 1/2 alive
 PATCH_SUMMARY | AG-6 | files=claims,work/AG-6 | idea=dp50k σ_seed pair-fill + WBP stomp census | ev=3.7 n=6; 37030100621
+FACT | AG-25 w527 | ip=23 bv2/wbr все cohort-09xx job-start 14:37-15:17Z (started_at=диспатч, канон AG-487 подтвержд) | runs-api
+FACT | AG-25 w527 | ETA-харвест: s3000@r1136 18:27-19:07Z; r800/s9000 ~18:40-19:30Z; s9000@r1136 cap-edge 20:07-20:47Z | math
+FACT | AG-25 w527 | 0 success с 14:36Z; queued ~430 (558@15:27Z); ci-flood 120q жив; J-235=0 по ветке, класс по инпутам | census
+PATCH_SUMMARY | AG-25 | files=work/AG-25,claims/AG-25 | idea=harvest-карта w527 ETA-волны+drain | ev=1252 runs 0 POST
