@@ -2899,3 +2899,4 @@ CLAIM | AG-178 | sim20 leg-2 (1/3 AG-193) + w6144 leg-2 (1/3 AG-175) verbatim 1d
 FACT | AG-175 | 2/2 204 @2171d6da t4231: 36998932174 seed4242 + 36998987027 seed777777 world-seed QUEUED | api
 DISP | AG-175 | world-seed 4242+777777 2/2 queued @175[ab] canon fp4/sim32/1d/9000s/dcp900 | 2/2 204
 PATCH_SUMMARY | AG-175 | files=claims,work/AG-175 | idea=world-seed leg-2+3 sigma_worldseed n=5 | evidence=2/2 204
+CLAIM | AG-176 | r872+r1432 r-миды (800-944/1200-1664, 0-клейм) @a9ff088f 1d/w256/9000s/dcp1500 | 2 POST
