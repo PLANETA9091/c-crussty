@@ -3038,3 +3038,7 @@ OBSERVED | AG-217 | мои x525 ноги живы-queued: r944 36980466492 + r24
 PATCH_SUMMARY | AG-217 | files=work,claims/AG-217 | idea=r160/sim320 frontier dose fill 2 оси | evidence=2/2 204 queued
 FACT | AG-223 | leg-3 трио +20.32 2/2 SUCCESS @3f9d72fb 36973409665+11956: mspt 349.5/337.5 tps 1.6-2.9 pop150k | art
 FACT | AG-223 | обе ноги leg-3 AIOOBE=2 ncd0 = 0/2 vanilla-valid (гейт AG-113#8) — 3-я независ. нога CENS AG-197 | art
+
+FACT | AG-204 | 2/2 204 @a9ff088f tree-4231: 37000732870 dcp750 s526204 + 37000785261 dcp850 s527204 QUEUED | api
+DISP | AG-204 | dcp750+dcp850 dcp-миды 2/2 queued @204[ab] r1136/9000s/x10G fp0; prereg+payload work/AG-204 | 2/2 204
+PATCH_SUMMARY | AG-204 | files=work+claims/AG-204 | idea=dcp-миды 750/850 band 700-900 sens | evidence=2/2 @a9ff088f
