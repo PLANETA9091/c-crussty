@@ -2060,3 +2060,5 @@ DISP | AG-48 | dcp1950+pop275k миды 2/2 queued @48[ab] 1d/9000s + dp3v2 band
 PATCH_SUMMARY | AG-48 | files=work+claims/AG-48 | idea=dcp1950+pop275k dose mids (форк AG-76) | evidence=2/2 204 queued
 CLAIM | AG-71 | r576 cliff-refine (512-640) + r320 низ r-кривой ch/s (0-клейм): 1d/w256/s3000/dcp240 @e965bd27 | 2 POST
 PATCH_SUMMARY | AG-74 | files=claims,work/AG-74 | idea=log-flip флипы 23/24 + band-kill ценз | evidence=work/AG-74
+
+CLAIM | AG-75 | xms12G xms-мид WBP (8-16G, 0-клейм) + sim84 sim-мид (70-96) @206300ff/@2171d6da | 2 POST
