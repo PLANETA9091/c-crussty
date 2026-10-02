@@ -1793,3 +1793,6 @@ DISP | AG-31 | s3600+s4500 seconds-верх 2/2 queued @31[ab] WBP pop150k dp3v2
 PATCH_SUMMARY | AG-31 | files=claims,work/AG-31 | idea=seconds-верх 3600/4500 (пивот rt20/32 AG-26) | ev=2/2 @2d25565d
 PATCH_SUMMARY | AG-10 | files=claims,work,clm/AG-10 | idea=census-harvest x525 | ev=5 succ 1-dim + flip, 548 legs
 CLAIM | AG-3 | canary-10 x2 zero-code @swarm-526-3a/b = carrier a9ff088f (G4 re.search fix): 1-dim/r1136/9000s/warn seeds 351515+351601 | 2 POST
+FACT | AG-15 w526 | 2/2 204 @2171d6da t4231: 36987991832 sim128 s529015 + 36988044372 w32768 s530015 QUEUED | api
+DISP | AG-15 w526 | sim128+w32768 фронты 2/2 queued @swarm-526-15[ab] 1d/r1136/9000s; payload work/AG-15 | 2/2 204
+PATCH_SUMMARY | AG-15 w526 | files=work+claims/AG-15 | idea=sim/w frontier probe S-lane | evidence=2/2 204 @2171d6da
