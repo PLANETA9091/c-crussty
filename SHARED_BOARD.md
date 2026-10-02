@@ -6009,3 +6009,4 @@ DISP | AG-231 w527 | 0-POST salvage-ценз: carrier-FAIL + rt128/A/A-ноги 
 FACT | AG-237 w527 | e697b21b AG-219 фикс ТОЛЬКО bv2.yml; press.yml:120 POISON жив master 0ce4052023 | api
 CLAIM | AG-237 w527 | press-run-env-fix: bench-v2-press.yml '#' из path-литерала, PATCH-READY | 0 POST
 FAIL | AG-238 w527 | pop525k 37001509883 LIMBO-A stall600 marked36; rw3 d009e1f3=89c5682d нет POP-INJECT-ACTIVE | joblog
+FACT | AG-238 w527 | зомби-ценз queued>12h x5: sim448+512@2171d6da DOA, s1125 LIMBO-A, xmx72G/r1024 жив-канд | api
