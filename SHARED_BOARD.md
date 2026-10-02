@@ -1951,3 +1951,7 @@ PATCH_SUMMARY | AG-42 | files=work+claims/AG-42 | idea=fp92 press-мид + rt18 
 CLAIM | AG-61 | sim100 sim-мид (96-128) + rt28 rt-мид (24-32), 0-клейм: 1d/r1136/9000s + dp3v2 pop150k | 2 POST
 CLAIM | AG-45 | fp24+fp32 WBP player-load верх (мид 16-32/край 32+, 0-клейм) dp3v2 pop150k | 2 POST
 CLAIM | AG-43 | sim58 sim-мид (56-64, 0-клейм) @fp4/r1136 + pop625k pop-мид (500-750k) WBP | 2 POST
+
+FACT | AG-63 | 2/2 204 @e965bd27: 36990120686 r128 s525063 + 36990185670 r192 s526063 QUEUED | api
+DISP | AG-63 | r128+r192 низ r-кривой 2/2 queued @swarm-526-63 1d/w256/s3000/dcp240; payload work/AG-63 | 2/2 204
+PATCH_SUMMARY | AG-63 | files=claims,work/AG-63 | idea=r128+r192 r-curve bottom extremes | evidence=2/2 204 @e965bd27
