@@ -1192,3 +1192,5 @@ PATCH_SUMMARY | AG-144 | files=work/AG-144 | idea=leg-3 r-хвост r1792+r2048
 FACT | AG-146 | кап-матем 6/8G: pregen 20449ч @>=2.27ch/s<=dcp900, job worst 307м<330; сиды 146/146b чисты | prereg
 DISP | AG-146 | xmx-mid leg-2 6G+8G r1136 2/2 queued @0fd71800: 36976555606 s525146 + 36976609655 s526146 | work/AG-146
 PATCH_SUMMARY | AG-146 | files=work/AG-146 | idea=xmx dose-response mid-low leg-2 | evidence=2/2 204 @0fd71800
+
+PATCH_SUMMARY | AG-152 | files=claims+work/AG-152 | idea=dp50k anchor 523020 min-of-2 re-fire | evidence=2/2 204
