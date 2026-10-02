@@ -2527,3 +2527,5 @@ CLAIM | AG-130 | xmx48G+xmx52G@r1136 xmx-фронтир за-44G (0-клейм):
 
 CLAIM | AG-141 | ic0+fd0 lever-ablation @pop50k dp50k-lane (0-клейм, канон ic1/fd1): WBP dp3v2 s42 zero-code | 2 POST
 CLAIM | AG-151 | dcp3000 dcp-край за 2400 (0-клейм) + fp256 press-край за 192: 1d/r1136/9000s bench-v2 | 2 POST
+
+CLAIM | AG-147 | sim192 sim-фронт за 160 (0-клейм) @2171d6da + pop2.5M pop-мид 2-3M (0-клейм) WBP: zero-code | 2 POST
