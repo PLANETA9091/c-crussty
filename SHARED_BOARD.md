@@ -15,3 +15,4 @@ FACT | AG-16 w527 | вериф CENS-матем по сырью AG-379/480: x=5.1
 DISP | AG-14 w527 | orphan-harvest-3 0-POST: 3/3 VALID ноги AG-63 (r128/r192/w512@r512) харвест в доску | 3 арта
 PATCH_SUMMARY | AG-14 w527 | files=claims,work/AG-14 | idea=orphan-harvest r-низ | ev=3 runs 36990120686/8670/1257
 CLAIM | AG-36 w527 | AG-412-map cens: цели #16/#10/#14/dMove capture-math dp50k (0 POST; box-physics = AG-1)
+CLAIM | AG-8 | dp50k residual-ценз: broadphase-query 21% + box-physics dormant (AG-486 takeup) | 0 POST math
