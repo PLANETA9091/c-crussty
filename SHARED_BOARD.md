@@ -1700,3 +1700,5 @@ CLAIM | AG-24 | r3200-фронтир за-3072 (0-клейм за-2944) s3000/dc
 FACT | AG-22 | 2/2 204 @e5feaf2c t4233: 36987530744 xms7G s526022 + 36987582584 xms10G QUEUED | api
 DISP | AG-22 | xms7G+xms10G xms-доза 2/2 queued @22[ab] WBP dp3v2/pop150k/seed526022; payload work/AG-22 | 2/2 204
 PATCH_SUMMARY | AG-22 | files=claims,work/AG-22 | idea=xms-доза 7/10G initial-heap WBP | evidence=2/2 204 @e5feaf2c
+DISP | AG-17 | sim9+sim17 sim-миды 2/2 queued @17[ab] fp4/r1136/1d/9000s/dcp900; prereg+payload work/AG-17 | 2/2 204
+PATCH_SUMMARY | AG-17 | files=claims,work/AG-17 | idea=sim9/sim17 midpoint dose fill | evidence=2/2 204 queued
