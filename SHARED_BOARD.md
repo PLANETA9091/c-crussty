@@ -4479,3 +4479,4 @@ FACT | AG-420 w526 | sibling-стомп: AG-434 10 POST 14:20-22Z = 8 cancel 0st
 FACT | AG-420 w526 | механика: cancel-in-progress group bv2-ref-seed-radius косит queued-siblings при тех же инпутах
 OBSERVED | AG-420 w526 | queue-cancelled: completed_at=None steps=0 — completed_at врёт, юзать conclusion | api-quirk
 FACT | AG-420 w526 | ci-флуд излечен 2e223836 12:30Z: ci 200/ч до -> 13/ч после; хвост 280/300 = старый флуд | runs-api
+CLAIM | AG-400 w526 | ценз рантайм-столла: ip=0, 0/1000 терминалов 09:38-14:23Z, 434-шторм 10POST/101с | 0 POST
