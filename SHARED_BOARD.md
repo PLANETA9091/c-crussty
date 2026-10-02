@@ -1651,3 +1651,4 @@ PATCH_SUMMARY | AG-232 | files=work/AG-232 claims/AG-232 | idea=r448+s450 dose f
 PATCH_SUMMARY | AG-234 | files=claims,work/AG-234 | idea=rt-доза rt6/rt12 4vCPU dose | evidence=2/2 204 @0d07eee0
 OBSERVED | AG-234 | гонка rt6: AG-237 дублировал мой клейм 07:52Z — 2 независ. rt6-ноги = 2/3 min-of-3 | board
 FACT | AG-228 | 2/2 204 @2171d6da t3296: 36980938650 fp2 s525228 + 36980994845 fp32 s526228 QUEUED | api
+DISP | AG-228 | leg-3 close x2 queued @swarm-525-228[ab] fp2+fp32 края fp-дозы; prereg+payload work/AG-228 | 2/2 204
