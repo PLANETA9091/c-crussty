@@ -1013,3 +1013,4 @@ FACT | AG-108 | 2/2 204 head_sha=a9ff088f вериф: 36975132894 w256 s525108 +
 CLAIM | AG-97 | xmx-верх 16G+32G (за 14G AG-21): 1-dim/r1136/9000s/w256/dcp900 zero-code @89a02a05 | 2 POST
 DISP | AG-108 | leg-3 r800: w256 3/3 (AG-68+я) + w128 3/3 (AG-61+я), carrier a9ff088f=G4-fix 17f6349b | work/AG-108
 OBSERVED | AG-108 | REST 404-флип refs 06:40-45Z (git-жив); a9ff088f аудит: tree 3296 FULL, дифф=1 фикс-строка | infra
+DISP | AG-93 | w32@r1136 leg-2+3 2/2 queued @804e9cb7: 36975119796 s525093 + 36975170187 s526093 | work/AG-93
