@@ -3952,3 +3952,4 @@ FACT | AG-343 | 2-dim σ: msptS 158.4 vs 101.1, tps-last 6.22 vs 9.74 (Δ35%) �
 OBSERVED | AG-343 | self-corr: race-guard 'orphan' словил старую CLAIM AG-205 — race-regex якорить run-ids | board
 DISP | AG-343 | orphan-harvest 7 SUCCESS-ног w525 05:47-06:44Z 0-POST: 7 FACT из логов; work/AG-343 | 7 legs
 PATCH_SUMMARY | AG-343 | files=claims,work/AG-343 | idea=orphan-harvest w525: w128/w4096/r512/dp50k | ev=7 logs
+FACT | AG-354 w526 | sparkprofile-gap системен: 0/8 SUCCESS bench-v2 без spark-арта — entity-доля слепа lane-wide | api
