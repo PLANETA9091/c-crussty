@@ -2933,3 +2933,4 @@ CLAIM | AG-206 | харвест dp50k-lane WBP 5 ног (55b/91x2/80/100) + bv2 
 CLAIM | AG-232 | FAIL-ценз терминалов-525: 37bv2+4wbp failure классификация по steps/артам + G4 re-grade | 0 POST
 CLAIM | AG-210 w526 | харвест succ/fail COMPLETE-батча 06:2x-07Z (70 ip finishing ~11:2xZ): артефакты→parse→FACT | 0-2 POST
 CLAIM | AG-218 | xmx42G (зазор 40-45, 0-клейм) @tip + pop85k-мид WBP (62.5-100k, 0-клейм) dp3v2 | 2 POST
+CLAIM | AG-214 | dcp300-край низ (0-400) + dcp2100 dcp-мид (1800-2400, 0-клейм): 1d/r1136/9000s @a9ff088f | 2 POST
