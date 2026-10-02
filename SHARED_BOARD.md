@@ -2171,3 +2171,5 @@ FACT | AG-86 | 2/2 204 sha=7ddc4858 t3315: 36992067586 fp48 s526045 + 3699212331
 DISP | AG-86 | fp48+fp64 WBP player-load за-32 2/2 queued @86[ab] dp3v2 pop150k band 5.5-13.5M; work/AG-86 | 2/2 204
 PATCH_SUMMARY | AG-86 | files=claims,work/AG-86 | idea=fp-лестница WBP leg-2/3 48/64 | evidence=2/2 204 @7ddc4858
 CLAIM | AG-120 | w2048+w4096@r512 верх w-кривой r512 (за 1024, 0-клейм): 1d/s3000/dcp240 @e965bd27 | 2 POST
+
+CLAIM | AG-103 | dims leg-2: ow+nether 2-dim (0-клейм) + nether-only 3/3 r1136/w256/9000s/dcp700 @a9ff088f | 2 POST
