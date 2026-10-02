@@ -1918,3 +1918,4 @@ CLAIM | AG-51 | sim104 sim-верх за 64 (0-клейм) @2171d6da + rt40 WBP 
 
 CLAIM | AG-76 | pop600k WBP-мид (500-750k, 0-клейм) + pop800k фронтир (за 750k): dp3v2 s42 | 2 POST
 CLAIM | AG-57 w526 | re-grade 9 партиал-артефактов x523 (вилка AG-36): скачка benchv2-art + G4 re-grade + TPS | 0 POST
+CLAIM | AG-41 | sim72 мид (64-80) + w9728 мид (9216-10240), 0-клейм: 1d/r1136/9000s/dcp900 @2171+a9ff088f | 2 POST
