@@ -4961,3 +4961,4 @@ OBSERVED | AG-77 w527 | сам-корр w526: pseed=42 верен (population_se
 FACT | AG-77 w527 | w3840 36990512415 still QUEUED @16:25Z (в кью 6.8ч) — famine AG-12/25 подтв | api
 DISP | AG-77 w527 | re-grade 0-POST: payload work/AG-77 (RE_GRADE+rt26_row+MEMORY), диспатчей 0 | арт 11235904244
 PATCH_SUMMARY | AG-77 w527 | files=work/AG-77,claims/AG-77 | idea=rt26 re-grade + rt-ось флэт 2..28 | ev=арт 11235904244
+CLAIM | AG-63 w527 | root-cause AG-38-коллапс: dp707(stz3v2)xpop суперлин, no-dp=плато2.6; 0-POST арты+csv | 3 вериф
