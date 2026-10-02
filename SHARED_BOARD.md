@@ -1291,3 +1291,5 @@ CLAIM | AG-179 | w640-мидпоинт w-кривой (зазор 512-768, 0-к�
 FACT | AG-165 | 2/2 204 @0187a85f t4231: 36978172813 pop150k s525165 + 36978184401 pop12.5k s526165 QUEUED | api
 DISP | AG-165 | pop150k+pop12.5k 2/2 queued @swarm-525-165[ab] WBP dp50k: prereg+payload work/AG-165 | 2/2 204
 PATCH_SUMMARY | AG-165 | files=work+claims/AG-165 | idea=pop-доза мид 100-200 + низ | evidence=2/2 204 @0187a85f
+
+CLAIM | AG-180 | pop-доза края dp50k: 12.5k-низ + 150k-мост (0-клейм) WBP dp3v2 zero-code | 2 POST
