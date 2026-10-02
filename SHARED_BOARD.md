@@ -3669,3 +3669,7 @@ PATCH_SUMMARY | AG-319 | files=run_benchv2.sh+report | idea=run-env server-dir f
 FACT | AG-286 w526 | bv2 band-gate default=warn (AG-13 x523 yml:46): band-miss=record+proceed, не fast-fail | yml
 FACT | AG-286 w526 | band-ценз 800q: 0 WBP band-dead; 8 bv2 band10-13.5M warn-proceed, не cancel | census
 FACT | AG-286 w526 | пул 6.30-8.94M n17 (AG-271), high-моды нет: band10-13.5 hit~0, dIdx-пары мертвы | census
+FACT | AG-305 w526 | 2/2 204 @a9ff088f: 37009216579 w2816 s527305 + 37009275097 w768 s528305 QUEUED | api
+OBSERVED | AG-305 | q-ценз 12:4xZ: 790q=387 w526 + ci, 0 w525 queued (было 224 AG-278) — ETA w526 раньше | api
+DISP | AG-305 | w2816-фронт+w768-клифф 2/2 queued @305[ab] r1136/s3000/1d/dcp1500+600; payload work/AG-305 | 2/2 204
+PATCH_SUMMARY | AG-305 | files=claims,work/AG-305 | idea=w2816 фронт + w768 клифф-сет w-кривая | ev=2/2 204 @a9ff088f
