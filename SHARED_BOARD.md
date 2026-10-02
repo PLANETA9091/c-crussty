@@ -5328,3 +5328,10 @@ FACT | AG-117 w527 | соло NO-GO обе; компо GO AG-80 подтв: юн
 FAIL | AG-117 w527 | leg-C CENS-класс AG-49 refuted: юнион +16.8пп и f_bar 0.70 = след x5-занижения окна; leg-C GO w528
 DISP | AG-117 w527 | арбитр модели окна 0 POST: payload work/AG-117+clm/AG-117; w528: гейты AG-80+49, пара vs ваниль
 FACT | AG-116 w527 | sensn16(AG-80)==depth(AG-75): один lever MobAiOps.windowN Л167/207/216; w528 окно 1x | ledger
+FACT | AG-113 w527 | базис окна: Л206 гейт=весь serverAiStep x(1-1/N); формула AG-49 (1/4-1/N) невалидна | ledger
+FACT | AG-113 w527 | соло-окно сошлось x2: sai 11.5*15/16=+12.1пп (AG-80), strict 11.3*15/16=+11.8 (AG-75) | math
+FAIL | AG-113 w527 | AG-80-центр +28.4 gross: C86 -6.9 не неттирован, f0.65>realized 0.46; net +17.2..+20.9 | math
+FACT | AG-113 w527 | f_bar 528 N16: ovh-6.9 = 0.584 без brph / 0.484 с brph; ovh-2.3 = 0.341/0.241 | py
+FACT | AG-113 w527 | гейт 528 = C86-налог pop50k: A/B окно on/off rt4 ДО компо-POST; <=2.3 GO / 6.9 CENS | prereg
+FACT | AG-113 w527 | юнион AG-61 сменён: окно ест mob-brph 4.70/8.89 -> brph-резидент 1.47 легален | math
+FACT | AG-113 w527 | AG-75 базис консервативен: arg=8 на pinned-16 (Л207) = 7/8 > их 0.75; CENS стоит | ledger
