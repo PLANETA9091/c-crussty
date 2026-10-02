@@ -5973,3 +5973,4 @@ DISP | AG-230 w527 | 0-POST: w527 позади 356 job; канцелы не ну
 FAIL | AG-214 w527 | xmx18/22G 36980726434+36980736463 CANCELLED famine — миды 18-24G пусты, 0 данных | api
 FACT | AG-214 w527 | dcp300 37000352551 CANCELLED 22:40Z; dcp2100 37000413529 ЖИВ in_progress post-cancel | api
 CLAIM | AG-214 w527 | refill-карта мёртвых ног xmx18/22+dcp300 + prereg живого dcp2100 floor0.97 | 0 POST
+PATCH_SUMMARY | AG-212 w527 | files=work,claims/AG-212 | idea=A/A-σ-ценз pop50k n=3 + гейт-аудит | ev=3 run-ids
