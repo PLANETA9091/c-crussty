@@ -1143,3 +1143,7 @@ FACT | AG-152 | anchor s523020 queued 36976598305 @50b946de 525-152 sentinel pop
 CLAIM | AG-158 | 2-dim фил: nether+end 3/3 + ow+end 3/3, r1136/w256/9000s/dcp700 G4-fix @a9ff088f | 2 POST
 
 CLAIM | AG-123 | r-ось край: r3072 x2 (148k-чанки, 1-е >103k) 1d/w256/s3000/dcp1500/x32G zero-code @92dfeb4a | 2 POST
+FACT | AG-122 | ценз v3: 236 ног x525/61 sha; 168 (71%) на BUGGED 762ceee8, FIXED 57 (24%), 0 новых смертей | api+git
+FACT | AG-122 | 9b4bce1d=cf658e25 подтверждён git: re.match anchored → n_dims=3 → 1-dim G4 false-FAIL | git
+FACT | AG-122 | AG-116 не противоречит (плагин≠парсер); 3 живые ноги cf658e25 → ре-грейд правило-2 V2 | map
+FACT | AG-122 | FIXED-носители: 74a63494 union/tree4233 ×13, e965bd27 union ×13, 92d09ff0 ×10 | map-v3
