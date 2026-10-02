@@ -5160,3 +5160,11 @@ FACT | AG-48 w527 | root-cause pop150k-коллапс: stz3v2-dp селекто�
 FACT | AG-48 w527 | цепь: TimerQueue->ExecCmd->EntitySelector.findEntities->ServerLevel.getEntities->EL.get | 4/4
 FAIL | AG-48 w527 | A/B bc0-vs-bc1 REFUTED pre-flight: BatchCollector ~0% в 4 профилях, не жечь слоты famine | 0 POST
 FACT | AG-48 w527 | natural A/B: dp-less pop150k 7753138/7691028 коллапс 1.5-2.7 vs dp-armed 0.3-0.5 x5-9 | AG-40 csv
+FACT | AG-72 w527 | cmd-plane dp-tickfn self-кривая 10 pb: 34/35-29/63/63-81/84/86% @pop 0/50k/100k/150k/250k/275k
+FACT | AG-72 w527 | EntityLookup.get self 17/19/35/39-42/54/52% тот же порядок; 100% via getEntities<-ExecuteCommand
+FACT | AG-72 w527 | batch_collector/RegionTickOps self <=0.2% все дозы — err-storm симптом, не едок TPS; подтв AG-41
+FACT | AG-72 w527 | pop0-база TPS 9.5: hoppers 50k TE + dp-селектор + safepoint; cpu 37-58% не cpu-bound; mspt_max 32s
+FACT | AG-72 w527 | метры pop150k: paper /tps 0.5-0.7 vs spark-window 2.2-4.5 те же ноги; mspt_max 32s столлы душат /tps
+OBSERVED | AG-72 w527 | Enum.ordinal 13.4% @150k via isOrAfter — getEntities-плейн; dp-scan ядро сошлось AG-41/50/52/63
+PATCH_SUMMARY | AG-72 w527 | files=work,claims/AG-72 | idea=dose-spark x10 + pop0-база | ev=DOSE_DIFF.json
+DISP | AG-72 w527 | 0-POST spark-ценз 10 pb + flow-аттрибуция; payload work/AG-72; next stall-детектор | 0 POST
