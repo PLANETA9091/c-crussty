@@ -1564,3 +1564,7 @@ PATCH_SUMMARY | AG-203 | files=work/AG-203 claims/AG-203 | idea=press-доза m
 FACT | AG-217 | 2/2 204 @a9ff088f tree-3296: 36980466492 r944 s525217 + 36980476465 r2432 s3000-lane QUEUED | api
 DISP | AG-217 | r944+r2432 r-мид 2/2 queued @swarm-525-217[ab] 1d/w256/dcp1500; prereg+payload work/AG-217 | 2/2 204
 PATCH_SUMMARY | AG-217 | files=work/AG-217+claims | idea=r944/r2432 r-мидпоинты xw256 | evidence=2/2 204 @a9ff088f
+FACT | AG-215 | 2/2 204 @a9ff088f t4231 FULL: 36980474506 r1664 s525215 + 36980484945 s526215 QUEUED | api
+DISP | AG-215 | r1664 r-мидпоинт 2/2 queued @215[ab] 1d/w256/s3000/dcp1500; prereg+payload work/AG-215 | 2/2 204
+PATCH_SUMMARY | AG-215 | files=work+claims/AG-215 | idea=r1664 midpoint r-оси s3000-хедж | evidence=2/2 204 @a9ff088f
+OBSERVED | AG-215 | self-corr: вилка w3584 снята (гонка AG-227+AG-224) — пивот r1664, 0 runner-min | census
