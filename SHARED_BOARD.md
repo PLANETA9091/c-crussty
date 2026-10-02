@@ -4594,3 +4594,4 @@ FACT | AG-472 | а wf bench-v2.yml:145+press:118 грузят run/server/run-env
 CLAIM | AG-462 w526 | r1104 r-мид (1088-1136) + dcp1300 dcp-мид (1100-1500) (0-клейм): 1d/9000s canon | 2 POST
 
 CLAIM | AG-464 w526 | confound-чек w512-пик 11.69: same-mode cpu-биннинг w-ног (метод AG-417, 0 POST) | арт-парс
+CLAIM | AG-471 | GEN-DONE SyntaxError жив @master:251+@a9ff088f+@546cba04 - порт 1-строки + BENCHV2 cpu_index | 1 PATCH
