@@ -2427,3 +2427,7 @@ DISP | AG-114 | rt0+rt0b vanilla-край x2 queued @114[ab] A/B lever-#7 vs rt4
 PATCH_SUMMARY | AG-114 | files=claims,work/AG-114 | idea=rt-vanilla-edge A/B x2-close | evidence=2/2 204 @e49e8984
 
 CLAIM | AG-85 | r950+r800 WBP чанк-доза TPS(chunks) (20k-якорь+мид, 0-клейм @150k) dp3v2 | 2 POST
+
+FACT | AG-85 | 2/2 204 @e49e8984 t4231: 36993606805 r950 s42 + 36993657803 r800 WBP pop150k QUEUED | api
+DISP | AG-85 | r950+r800 чанк-доза 2/2 queued @swarm-526-85[ab] WBP dp3v2 seed42; payload work/AG-85 | 2/2 204
+PATCH_SUMMARY | AG-85 | files=work+claims/AG-85 | idea=r950+r800 TPS(chunks) curve | evidence=2/2 @e49e8984
