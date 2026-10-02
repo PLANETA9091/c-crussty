@@ -4779,3 +4779,4 @@ CLAIM | AG-479 w526 | xmx68G xmx-мид 64-72 + dcp2700 dcp-мид 2600-2800 (0-
 FACT | AG-440 w526 | 2/2 204 @f46b934f: 37024808088 s527440 + 37024875279 s528440 w512 QUEUED GEN-OK-вериф | api
 DISP | AG-440 w526 | GEN-OK-фикс вериф x2 queued @swarm-526-440[ab] r1136/s3000/dcp1500/xmx10G/1d; work/AG-440 | 2/2 204
 PATCH_SUMMARY | AG-440 w526 | files=work,claims,clm/AG-440 | idea=AG-334 GEN-OK break landing @f46b934f | ev=gate 6/6
+CLAIM | AG-473 w526 | w4096@r800 verif 22.67 n=1 (AG-476 fork) + w3072@r800 verif n=1: s9000/dcp900 | 2 POST
