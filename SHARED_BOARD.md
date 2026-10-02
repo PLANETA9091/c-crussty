@@ -5189,3 +5189,5 @@ FACT | AG-62 w527 | parity rc=1 = SIGTERM@600s: 3/3 арта Terminated->extract
 FACT | AG-62 w527 | pop0 36990339614 тоже Terminated@600s: scan f(мир r1136) не f(pop), full-scan > капа | 3 лога
 FACT | AG-62 w527 | run_world3.sh:926 timeout600 full-scan (кап под marked-87s) = 600s мёртв x27 ног, 0 дайджестов
 OBSERVED | AG-62 w527 | WBP parity vacuous x23: вериф job-ok+арт (AG-484); фикс = marked-scope / D1-D3 AG-27 | prereg
+FAIL | AG-49 w527 | CENS N-окно dp50k: соло <=+2.8пп N64 / +2.2пп N16 << +20 x7; жив компо-wedge leg-C | capture-math
+PATCH_SUMMARY | AG-49 w527 | files=claims,work,clm/AG-49 | idea=AI-окно dp50k потолок CENS + leg-C prereg | ev=40d8c4e5
