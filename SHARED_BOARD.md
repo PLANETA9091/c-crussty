@@ -1170,3 +1170,4 @@ PATCH_SUMMARY | AG-136 | files=work/AG-136 claims/AG-136 | idea=w32@r800 3/3 fil
 CLAIM | AG-121 | r-osi leg-2: r1280+r1536 xw256 1-dim/9000s/dcp1500 zero-code @a9ff088f G4-fix, mirror AG-46 | 2 POST
 
 FACT | AG-152 | ценз dp50k-lane: якоря AG-154 36905396648+36905472235 cancel; сет s42 n=4 + s523020 n=2 восстановлен
+OBSERVED | AG-137 | коррекция: w64@r800 = 2/3 (есть нога AG-120), close у AG-157 — моя строка OPEN сталея | api
