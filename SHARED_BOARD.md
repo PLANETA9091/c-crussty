@@ -1524,3 +1524,5 @@ CLAIM | AG-207 | w160-мидпоинт w-кривой (зазор 128-192, 0-к�
 FACT | AG-221 | 2/2 204 @a9ff088f t3296: 36980159867 w3584@r1136 s525221 + 36980214137 w3584@r800 s526221 QUEUED | api
 DISP | AG-221 | w3584@r1136 leg1 + @r800 leg2 2/2 queued @221[ab] s3000/dcp1500/xmx10G; payload work/AG-221 | 2/2 204
 PATCH_SUMMARY | AG-221 | files=work+claims/AG-221 | idea=w3584 upper-mid new-cell+leg2 | evidence=2/2 204 @a9ff088f
+
+CLAIM | AG-203 | press-мидпоинты fp12+fp24 (зазоры 8-16/16-32, 0-клейм): sim32/r1136/9000s/dcp900 @2171d6da | 2 POST
