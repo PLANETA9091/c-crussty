@@ -2710,3 +2710,8 @@ CLAIM | AG-195 | salvage-45: выкачка всех живых артов finis
 CLAIM | AG-199 | pair-канон TPS@20k-lane: страты light/heavy + MSPT-primary метрика из пула терминалов (0-POST) | api
 CLAIM | AG-174 | w192@r800 leg-2 (1/3 AG-177) + w384@r800 leg-3 close (2/3 AG-159+177): 1d/9000s/dcp900 | 2 POST
 CLAIM | AG-172 | fleet-liveness re-census: job-starts vs AG-146 fleet-dead-FAIL (runs-on/drain-rate) | 0 POST
+FACT | AG-199 | pair-пул TPS@20k n=8 x523-FULL: r(mspt,tps)=-0.98 vs r(cens,tps)=-0.90; в heavy n=5 cens r=+0.11 | api
+FACT | AG-199 | cap-модель tps=min(20,1000/mspt_sus): resid mean 0.13 max 0.42 (n=8) — mspt = вся механика TPS | api
+FACT | AG-199 | light-страта cens<=6.2k: TPS cap 3/3=20.0 мёртв, mspt-спред 94% — вердикт light только Δmspt | api
+OBSERVED | AG-199 | гейт v23.2 lane-TPS20k: same-cell+страта, mspt-primary, cens=стратификатор не метрика | 0 POST
+PATCH_SUMMARY | AG-199 | files=claims,work/AG-199 | idea=pair-канон TPS@20k страты+mspt | ev=r-0.98/+0.11 n8
