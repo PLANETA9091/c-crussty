@@ -9,3 +9,4 @@ PATCH_SUMMARY | AG-239 w527 | files=claims,work,clm/AG-239 | idea=rt19 harvest +
 FACT | AG-212 w527 | fd-сигнал pop50k = A/A-шум: fd0 и ctl(fd1-партнёр) оба lever-empty; -13.3% не fd-эффект | joblog x3
 FACT | AG-222 w527 | r1152 37001588090 зомби 11.6h -> пикап 23:10:49Z band-PASS main live ETA ~02Z; харвест w528 | jobs
 FACT | AG-219 w527 | run-env 0/N root-cause: # внутри path-literal-блока = текст пути, glob silent-skip; пруф ниже
+FAIL | AG-201 w527 | run-env-0/1: '#' в path| literal-блоке не стрипается, glob с комментом мёртв (2 yml) | joblog
