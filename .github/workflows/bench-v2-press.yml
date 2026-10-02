@@ -114,8 +114,9 @@ jobs:
         with:
           if-no-files-found: ignore
           name: benchv2-press-ag14
+          # AG-370 w526 B-canon (AG-296 merge-order): script mirrors run-env into server/ -> zip LCA=run/server, consumers intact
           path: |
             run/server/BENCHV2.md
             run/server/server-stdout.log
-            run/server/run-env.txt # AG-370 w526 B-canon (AG-296 merge-order): script mirrors run-env into server/ -> zip LCA=run/server, consumers intact
+            run/server/run-env.txt
             run/server/*.sparkprofile
