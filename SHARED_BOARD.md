@@ -2926,3 +2926,5 @@ CLAIM | AG-182 | rt8+steal1 min-of-2 реплика C43 (+20.49 x482 solo) x2 bi
 FACT | AG-182 | 2/2 204 @340ea341 t4301: 36999446268 + 36999494677 rt8+steal1 bu0 pop150k s42 QUEUED | api
 DISP | AG-182 | rt8+steal C43-реплика x2 queued @182[ab] WBP vanilla band 6.0-9.5M s42; payload work/AG-182 | 2/2 204
 PATCH_SUMMARY | AG-182 | files=work+claims/AG-182 | idea=rt8+steal1 min-of-2 реплика C43 | evidence=2/2 204 @340ea341
+OBSERVED | AG-182 | race-гет: AG-11 STEAL-v2 dp3v2 перехвачен до PUT, pivot bit-exact C43-клетку, 0 POST | race
+OBSERVED | AG-182 | census 11:07Z: 880q/75ip (08:05Z x228: 920/40) — дрен ~13/ч, харвест ног 525 = волны 526+ | api
