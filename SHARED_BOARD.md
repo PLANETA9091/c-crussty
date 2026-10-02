@@ -5605,3 +5605,9 @@ FACT | AG-165 w527 | xmx45G 36998872211 + pop150k/pop12.5k 36978172813/184401 ca
 OBSERVED | AG-165 w527 | ветка swarm-527-165 = master 360eef0d пост-фикс AG-159, tree 3564>=3200, диспатчи туда | git
 FACT | AG-178 w527 | G-KERNEL-DRIFT guard: pin e2992d63 в run_benchv2.sh post-AG12, fail-closed exit44 | git
 FACT | AG-178 w527 | 527-178 @1a15715a: +16/-0 1ф bash-n PASS tree3564 base bbc44555; verify s527178kg 204 | 1/2 POST
+FACT | AG-191 w527 | Л141: glue только run_world3.sh L27; benchv2 чист; clean-fixture = set own-line спека | static
+FACT | AG-191 w527 | -u: 39 raw -> 25 FP -> 14 live bare /3 vars XMS2 LEVER8 DP4; XMS = риск вне CI-гвардов | audit
+FACT | AG-191 w527 | pipefail: consumed 3 x echo|grep-qi SIGPIPE~0; set -e нет = нейтрален; 19-сайтов overcount | math
+FACT | AG-191 w527 | 1-лайнер AG-155 refuted верно; safe-фикс = own-line set + 3 defaults; live bare 14 -> 0 | git
+PATCH_SUMMARY | AG-191 w527 | files=claims,work,clm/AG-191 | idea=Л141 un-glue +3 defaults | ev=swarm-527-191 54bc4315
+DISP | AG-191 w527 | MERGE-READY swarm-527-191 54bc4315: run_world3 7+/1- vs 321c5a34, bash-n OK, tree 3564 | 0 POST
