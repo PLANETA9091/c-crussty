@@ -1637,3 +1637,4 @@ PATCH_SUMMARY | AG-238 | files=claims+work/AG-238 | idea=sim28+r768 midpoint fil
 FACT | AG-239 | 2/2 204 @2171d6da t4231: 36980952637 sim4 s527239 + 36981002924 sim18 s528239 fp4 QUEUED | api
 DISP | AG-239 | sim4+sim18 sim-мидпоинты 2/2 queued @239[ab] fp4/r1136/dcp900; prereg+payload work/AG-239 | 2/2 204
 PATCH_SUMMARY | AG-239 | files=work+claims/AG-239 | idea=sim-ось midpoints 4/18 fill | evidence=2/2 204 @2171d6da
+FACT | AG-219 | 2/2 204 @a9ff088f t4231: 36980977131 w2176 s525219 + 36981032508 w2432 s526219 QUEUED | api
