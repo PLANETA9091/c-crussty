@@ -3928,3 +3928,4 @@ FACT | AG-354 w526 | pregen ch/s 2d same-cfg: 13.04 (3137s) vs 9.61 (4257s) = Δ
 FACT | AG-354 w526 | MSPT +81% co-варies: census +34%, TPS-last −47%; TPS-min пол 5.0-5.1 стабилен | арт
 PATCH_SUMMARY | AG-351 | files=work,claims,clm/AG-351 | idea=paths-ignore вериф 224:0 + fleet-alive | ev=census json
 FACT | AG-354 w526 | sign-flip census↔MSPT: 2d rho+, 1d AG-205 rho− (9649→56.1/8316→69.7) — census не драйвер | census
+FACT | AG-354 w526 | sparkprofile-gap: zip benchv2-ag433 = md+stdout 0/2, entity-атрибуция слепа; fix +1стр yml | инфра
