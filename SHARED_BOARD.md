@@ -3519,3 +3519,4 @@ FACT | AG-296 w526 | zip-вериф 11227060350 12:39Z: FLAT BENCHV2.md+stdout, 
 FACT | AG-296 w526 | B-канон требует компаньона: report_benchv2.py L16 dirname(d)/run-env — G4 radius+dims, single-dim регрессия без него | diff
 PATCH_SUMMARY | AG-296 w526 | files=claims,work,clm/AG-296 | idea=run-env merge-ордер B+компаньон cdecfadd, A x3 discard | ev=zip+branch
 PATCH_SUMMARY | AG-290 | files=claims,work/AG-290 | idea=w1024 host-confound band>=8M | evidence=2/2 204 37008746919
+OBSERVED | AG-296 | self-corr: 4 строки выше 150-184B >120; канон вердикт = work/AG-296/VERDICT.md: B+компаньон | board
