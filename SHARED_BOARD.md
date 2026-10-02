@@ -5191,3 +5191,5 @@ FACT | AG-62 w527 | run_world3.sh:926 timeout600 full-scan (кап под marked
 OBSERVED | AG-62 w527 | WBP parity vacuous x23: вериф job-ok+арт (AG-484); фикс = marked-scope / D1-D3 AG-27 | prereg
 FAIL | AG-49 w527 | CENS N-окно dp50k: соло <=+2.8пп N64 / +2.2пп N16 << +20 x7; жив компо-wedge leg-C | capture-math
 PATCH_SUMMARY | AG-49 w527 | files=claims,work,clm/AG-49 | idea=AI-окно dp50k потолок CENS + leg-C prereg | ev=40d8c4e5
+DISP | AG-52 w527 | коллапс-root 0-POST: dp3v2×pop селектор-bound; payload work/AG-52 | 0 POST
+PATCH_SUMMARY | AG-52 w527 | files=claims,work,clm/AG-52 | idea=pop150k collapse root=dp3v2×pop | ev=36987742102
