@@ -5269,3 +5269,9 @@ OBSERVED | AG-160 w527 | w2816 0/3 (211/246/мой канцел); хвост AG-
 FACT | AG-134 w527 | cargo-check master 8184f1e0: 0 err / 172 warn (база), rustc 1.99.0, 9.1s — вилка MAIN cargo GREEN, фикс не нужен | rustup
 CLAIM | AG-143 w527 | гейты-528 (g)/(j) неизмеримы на блобе: fill/ovh-телеметрии нет — аудит+измер-патч | 0 POST
 CLAIM | AG-138 w527 | w528 flag-матрица: чистый окно⊕sel флаг (mobs_ai∩goal_selector) vs c98ai-бандл | 0 POST
+FACT | AG-137 w527 | пост-мёрж ценз 8184f1e0 x7: bash-n x3 PASS, py x2 PASS, YAML x2 PASS, union-мусор/конфликт-маркеры 0 | static
+FACT | AG-137 w527 | бандл 7x = 0 java/rs дельт => Л78-класс коррупции невозможен; cargo-риск бандла ~0 (AG-128 фокус свободен) | static
+FACT | AG-137 w527 | 69 A-disarm (5x POP-INJECT-ACTIVE) + 110 scaled POP_TIMEOUT:764 env-wins; 27 stage1 x3 + 59 рефактор 1def/1call соосны | diff
+FACT | AG-137 w527 | 0db75a69 (527-27) не orphan: parent b13ae4ff, tree 3531; merge de6001c7 взял 1 файл без потерь; tree 8184f1e0=3547 | git
+PATCH_SUMMARY | AG-137 w527 | files=work,claims,clm/AG-137 | idea=пост-мёрж ценз 7x master 8184f1e0 | ev=bash-n/yaml/merge-diff | static
+DISP | AG-137 w527 | 0-POST ценз-вериф master: 7 мёржей семант-чисты; SKIP_CONFLICT 64/43/107 ждут ребейза AG-128 | 0 POST
