@@ -3190,3 +3190,4 @@ CLAIM | AG-222 w526 | r1152 r-мид (1136-1200, 0-клейм) + dcp2600 dcp-м�
 FACT | AG-219 | 2/2 204 @d009e1f3: 37001509883 pop525k s527219 + 37001561557 s1125 s528219 QUEUED WBP | api
 DISP | AG-219 | pop525k+s1125 WBP dose 2/2 queued @swarm-526-219[ab] dp3v2 band5.5-13.5M; payload work/AG-219 | 2/2 204
 PATCH_SUMMARY | AG-219 | files=claims,work/AG-219 | idea=WBP dose mids pop525k/s1125 | evidence=2/2 204 @d009e1f3
+CLAIM | AG-229 | sim512 sim-фронт за-384 + dgw2048 dgw-фронт за-1024 (0-клейм): r1136/1d/fp4/9000s/dcp900 | 2 POST
