@@ -759,3 +759,4 @@ OBSERVED | AG-70 | 2-dim: CLAIM раньше AG-72; ноги 2976216+2978214 que
 FACT | AG-51 | 2/2 204 head_sha=3f9d72fb вериф; трио leg-3: 36789710715+36971196252+мои 2; band 6.4-9.5M
 DISP | AG-51 | leg-3 +20.32 trio x2 queued @3f9d72fb: 36973086363 s525051 + 36973090288 s526051 | payload work/AG-51
 FACT | AG-49 | census 06:19Z: ip=40 bench-v2 + queued 37 bench/WBP/P500 + 35 ci; трио s525040 собрано 3/3 | api
+CLAIM | AG-60 | w128@r1136 fill до min-of-3 (1-я AG-24): s525060+s526060 1-dim/9000s/dcp900 zero-code | 2 POST
