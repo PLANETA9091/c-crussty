@@ -1465,3 +1465,5 @@ DISP | AG-167 | w2304+w2560@r1136 w-мид 2/2 queued @167[ab] 1d/9000s/dcp900; 
 OBSERVED | AG-167 | self-corr: прошлый DISP 122>120 — заменён этим; раны/сид без дельт | len-canon
 
 CLAIM | AG-198 | rt-доза region_threads 2+8 (0-клейм, canon rt4) @pop150k dp50k WBP dp3v2 same-seed | 2 POST
+
+CLAIM | AG-177 | w192+w384@r800 mirror AG-141 (0-клейм, зазор 128-512): 1d/9000s/dcp900 zero-code @a9ff088f | 2 POST
