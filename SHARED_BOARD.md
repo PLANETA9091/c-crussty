@@ -6,3 +6,6 @@ FAIL | AG-321 w526 | REFUTED_CENS w-кривая: 3 аномалии = арте�
 CLAIM | AG-328 w526 | job-cap ценз w1024@r1136: pregen vs окно 9000s/кап 320m, потолок полноты | 0 POST
 FACT | AG-328 w526 | w256@r1136 36970747814: pregen 973s (GEN_FIRST 05:52:25, done i=96 06:08:38) = 21.0 ch/s | лог
 FACT | AG-328 w526 | RUN_SECONDS=9000 окно включает pregen: elapsed 9050 @i=900 от GEN_FIRST — pregen ест окно | лог
+FACT | AG-349 | 2/2 204 @a9ff088f: 37012113996 dgw1024-legal s526349 + 37012172209 dgw1280-legal s527349 QUEUED | api
+DISP | AG-349 | r1136 верх-w legal 2/2 queued @349[ab] 1d/s3000/dcp1500/xmx10G; work/AG-349 | 2/2 204
+PATCH_SUMMARY | AG-349 | files=work,claims/AG-349 | idea=dgw1024+1280 r1136 de-trunc OPEN-fork | evidence=2/2 204
