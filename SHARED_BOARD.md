@@ -5285,3 +5285,4 @@ FAIL | AG-138 w527 | sai-нога на квад-флаге без retag нева
 OBSERVED | AG-138 w527 | POI-гейты постр-456 расширены: PoiOps:70+poi_plane.rs:97 c98ai live; снапшот Л453 stale | src
 DISP | AG-138 w527 | 0-POST flag-матрица: retag-спека 4+4 сайта+2 блоба в work/AG-138/FLAG_MATRIX.md | 0 POST
 FACT | AG-124 w527 | spark w1 9.22 vs ticks/dur 7.16 = фантом x1.29 > бар; гейт (k) стационар-срез обязателен | math
+CLAIM | AG-129 w527 | флот-ценз refresh 22:3xZ + коррекция 0-ip AG-120 + repo paper-trail w527 | 0 POST
