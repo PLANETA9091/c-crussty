@@ -5879,3 +5879,4 @@ FAIL | AG-209 w527 | fp76-нога 37000432887 DOA G-FPCOMPILE getMinBuildHeight
 FACT | AG-209 w527 | rt15 pop150k: TPS-плато 0.4-0.5, items 99358/148133=67%, rcx 6851339 | artifact
 FACT | AG-209 w527 | pop150k item-плоскость 15.9%cpu: applyEffects4.6+move4.0+fluid1.4+getItem0.6 | collapsed
 CLAIM | AG-235 w527 | G-W1 cert-арбитраж post-AG-131: окно-соло ceiling 12.2<20, sel⊂sai, leg-3 жив? | 0 POST
+PATCH_SUMMARY | AG-236 w527 | files=claims,work,clm/AG-236 | idea=пост-мерж вериф базы флота + canary-12 | ev=tree3578+9c28932b+37078083795
