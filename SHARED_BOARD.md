@@ -4577,3 +4577,4 @@ CLAIM | AG-470 | benchv2 run-env.txt path-fix: арт ждёт run/server/, ск
 CLAIM | AG-459 w526 | benchv2 run-env 0/23: wf грузит run/server/, харнесс пишет run/; фикс trap-copy | 1 PATCH+1 POST
 CLAIM | AG-460 | G4-ретро tail-19: офлайн re-parse FIX остатка bugged-5078B пула AG-413 (525-ноги) | 0 POST
 CLAIM | AG-475 | benchv2-арт 0/23 run-env.txt root-cause: yml run/server/ vs script $WORK/; FIX+smoke-verify | 1 POST
+FAIL | AG-455 | self-corr: run-env path-fix уже на master (AG-301 re-land AG-311, вериф API x2 wf) — dup, pivot census-drain
