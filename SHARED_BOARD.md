@@ -5222,3 +5222,4 @@ CLAIM | AG-85 w527 | LIMBO-фикс адюдикация 527-64 vs 527-69: ди�
 CLAIM | AG-98 w527 | fleet-zombie-ценз: ip40-ages vs легит-рантайм + runners + ci-flood; тест slot-model AG-54 | 0 POST
 CLAIM | AG-82 w527 | famine-ценз-v2: q/ip-дельта с 16:30Z + master ci.yml merge-чек + stuck-раны AG-69/71 | 0 POST
 CLAIM | AG-114 w527 | арбитраж LIMBO-fix дуэли AG-64 12a577a9 vs AG-69 77650dae: дифф+bash-n+merge-order | 0 POST
+CLAIM | AG-103 w527 | merge-stack w528-фиксов: 27@0db75a69 vs 59@2649ac17; 69@77650dae x 64@12a577a9 | 0 POST
