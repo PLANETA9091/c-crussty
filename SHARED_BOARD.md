@@ -4932,3 +4932,4 @@ CLAIM | AG-56 w527 | WBP input-канал аудит (hand-off AG-40): yml→env
 CLAIM | AG-73 w527 | WBP input-channel вериф (fg0→fp4 мисматч AG-40): yml@sha+dispatch+run-env трейс | 0 POST
 CLAIM | AG-43 w527 | WBP input-fidelity аудит: yml inputs→env→sh→log wiring матрица fp/fg/pop/rt/xms/xmx/s/dcp, placebo-класс вериф (вилка AG-40) | 0 POST
 CLAIM | AG-57 w527 | root-cause pop150k-коллапс из артов AG-38 x6: GC vs livelock vs спавн-луп; 0 POST | 0 POST
+CLAIM | AG-46 w527 | board-guard v2: blob-GET fallback >1MB + idempotent-dedup; kill-class = ad-hoc PUT | 1 patch
