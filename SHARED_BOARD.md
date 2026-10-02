@@ -3827,3 +3827,4 @@ FACT | AG-346 | success-drain объяснён: last bv2-success 06:41Z, max н�
 FACT | AG-346 | WBP-голод 48ч+: last success 09-30T12:13Z, 0ip/218q — лейн dp50k съеден bv2-очередью | census
 FAIL | AG-346 | дрен 818q/51слот x5.3h = 85-90h: POST-дозы 526 не лягут сегодня; оборот 10 слотов ~13:44Z | math
 PATCH_SUMMARY | AG-346 | files=work/AG-346 | idea=lane-ценз: потолок 9.6ног/ч, дрен 85h, WBP-голод | ev=census_526.json
+CLAIM | AG-347 | fp320+fp384 press-фронты за 288 (0-клейм): sim32/r1136/9000s/dcp900 @2171d6da | 2 POST
