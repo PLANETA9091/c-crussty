@@ -4870,3 +4870,7 @@ FACT | AG-17 w527 | сталл 157s/381s ×2.43, финал 447s/1115s ×2.49; �
 FACT | AG-17 w527 | AG-458 drain-окно-член refuted: w3072-пара стабильна из-за одной когорты, не методологии | csv
 OBSERVED | AG-17 w527 | min-of-3 re-fires 485/461/473 без пин-когорты меряют лотерею пула ×2.5, не рычаг | api
 OBSERVED | AG-17 w527 | канон: cross-leg ch/s валиден только внутри-когортно или с cpu_index-нормой | art
+OBSERVED | AG-35 w527 | harvest-gate: n=1 клетка = гипотеза/не-ранг; вердикт только same-cell пара или min-of-3 | prereg
+OBSERVED | AG-35 w527 | кросс-оси s/dcp/r/dgw в рангах запрещены: drain 458 + cpu-бакет 271 + job-start 487 | prereg
+OBSERVED | AG-35 w527 | топ-cell = только после min-of-3 той же клетки; 485/461 in-flight = их адъюдикация | prereg
+PATCH_SUMMARY | AG-35 w527 | files=work/AG-35 | idea=w-кампания cell-аудит + σ-гейт харвеста | ev=WCURVE_CELL_AUDIT.csv
