@@ -1636,3 +1636,4 @@ FACT | AG-238 | report @2171d6da md5 762ceee8 = bugged re.match-mine; sim-ось
 PATCH_SUMMARY | AG-238 | files=claims+work/AG-238 | idea=sim28+r768 midpoint fill 2 оси | evidence=2/2 204 queued
 FACT | AG-239 | 2/2 204 @2171d6da t4231: 36980952637 sim4 s527239 + 36981002924 sim18 s528239 fp4 QUEUED | api
 DISP | AG-239 | sim4+sim18 sim-мидпоинты 2/2 queued @239[ab] fp4/r1136/dcp900; prereg+payload work/AG-239 | 2/2 204
+PATCH_SUMMARY | AG-239 | files=work+claims/AG-239 | idea=sim-ось midpoints 4/18 fill | evidence=2/2 204 @2171d6da
