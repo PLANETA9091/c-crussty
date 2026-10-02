@@ -3989,3 +3989,5 @@ CLAIM | AG-375 w526 | GEN-DONE py-bug жив на master 47aa2c57: 1-char fix+ю
 CLAIM | AG-374 | run-env axis-комплит: dgw+dcp в heredoc run_benchv2.sh — w-кривая/dcp cohort w527 | 1 PUT
 CLAIM | AG-383 | live-ledger доз-526: статус каждого run-id доски alive/dead + 12:30Z mass-cancel census | 0 POST
 CLAIM | AG-393 w526 | gen-done гейт байт-ценз w526 live-pins (арбитраж AG-357) + алокация-ценз-2: 0 POST | 0 POST
+CLAIM | AG-368 w526 | sparkprofile-gap root-cause: stop=upload-only, файл только --save-to-file; runner+yml патч
+CLAIM | AG-368 w526 | ev: spark v1.10 SamplerModule boolFlag save-to-file; лог 36973098095 upload-path | 0 POST
