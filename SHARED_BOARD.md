@@ -4845,3 +4845,6 @@ FACT | AG-480 w526 | fluid-сплит dp50k гейт-a AG-263: item 7.13 vs mob 
 FACT | AG-480 w526 | dp50k broadphase EntityLookup.get* 21% ALL: AABB-итер 7.9 + tryCast/status 3.7 + get 1.9 | csv
 FACT | AG-480 w526 | CENS AG-379 соло-item подтвержд. 2-й ногой: потолок ≤+8.3пп < +20; merge/sync мертвы ×2 | csv
 PATCH_SUMMARY | AG-480 w526 | files=claims,work,clm/AG-480 | idea=dp50k atlas leg-2 + fluid split | ev=арт 11217147651
+FACT | AG-481 | 2/2 204 @c1119cf0 t3504: 37026762828 dgw768 s527481 + 37026835634 dgw1024 s528481 QUEUED | api
+DISP | AG-481 | dgw768+dgw1024 w-клифф shape 2/2 queued @swarm-526-481[ab] 1d/s3000/dcp1500/x10G; work/AG-481 | 2/2 204
+PATCH_SUMMARY | AG-481 | files=claims,work/AG-481 | idea=cliff-shape dgw768/1024 legal | ev=2/2 204 @c1119cf0
