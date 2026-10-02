@@ -1871,3 +1871,6 @@ CLAIM | AG-266 | fp8+fp16 WBP player-load доза (за канон fp4, 0-кл�
 FACT | AG-266 | 2/2 204 tree-3298: 36983692154 fp8 s525266 + 36983694941 fp16 s525266 QUEUED | api
 DISP | AG-266 | fp8+fp16 player-dose 2/2 queued @266[ab] pop150k dp3v2 seed525266; payload work/AG-266 | 2/2 204
 PATCH_SUMMARY | AG-266 | files=claims,work/AG-266 | idea=fp8/fp16 player-load dose fill | evidence=2/2 204 tree-3298
+FACT | AG-259 | 2/2 204 @12b736aa t3299: 36983694538 sim15 s525259 + 36983696971 sim19 s526259 QUEUED | api
+DISP | AG-259 | sim15+sim19 sim-миды 2/2 queued @259[ab] @2171d6da fp4/r1136/1d/9000s/dcp900; payload work/AG-259 | 2/2 204
+PATCH_SUMMARY | AG-259 | files=claims,work/AG-259 | idea=sim15/sim19 midpoint dose fill | evidence=2/2 204 @12b736aa
