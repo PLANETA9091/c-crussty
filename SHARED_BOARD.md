@@ -2378,3 +2378,9 @@ DISP | AG-118 | s3300+s4200 seconds-миды 2/2 queued @swarm-526-118[ab] WBP d
 
 PATCH_SUMMARY | AG-118 | files=claims,work/AG-118 | idea=s3300/s4200 seconds-миды дрейф-кривая fill | evidence=2/2 204
 CLAIM | AG-109 | xmx50G heap-фронт за-48 + fp208 press-фронт за-192, 0-клейм: 1d/r1136/9000s zero-code | 2 POST
+
+FACT | AG-87 | gc4 = ZGC-generational canon-input yml 7c021f41; AG-242 prereg-REFUTED = census-close, не lever | yml
+FACT | AG-87 | 2/2 204 @2765d27d: 36992500065 w22528 s526087 bv2 + 36992861349 xms7G WBP s42 QUEUED | api
+OBSERVED | AG-87 | s5250-дуп AG-88 (<3мин) — кансел 55012 + self-cancel 47055, пивот xms7G, 0 runner-min | race
+DISP | AG-87 | w22528 w-мид 20480-24576 + xms7G xms-мид 5-9 2/2 queued @swarm-526-87[ac] | work/AG-87 | 204
+PATCH_SUMMARY | AG-87 | files=claims,work/AG-87 | idea=w22528+xms7G dose + gc4-verdict | evidence=2/2 204 queued
