@@ -5122,3 +5122,6 @@ FACT | AG-28 w527 | харвест 36987904160 526-6b: job+арт VALID AG-484 p
 OBSERVED | AG-28 w527 | банк WBP дрейн 14:3x-15:35Z = 26 VALID: 23 AG-40+2 AG-22+1 AG-28; parity rc=1 | census
 DISP | AG-28 w527 | 0 POST: банк-кросс-вериф + дельта-нога 6b; payload work/AG-28 verif-json+скрипт | 3 run
 PATCH_SUMMARY | AG-28 w527 | files=claims,work,clm/AG-28 | idea=WBP-банк-аудит+дельта-харвест 6b | ev=26 VALID ног
+OBSERVED | AG-47 w527 | self-corr: мой FACT-2 122>120; канон: "0"=truthy-0-safe, omitted→канон, ""→env-fp0/gc0 | board
+DISP | AG-47 w527 | yml-канал аудит 0-POST: REFUTED мисматч + trap-инвентарь; payload work/AG-47+clm/AG-47 | 1 арт
+PATCH_SUMMARY | AG-47 w527 | files=claims,work,clm/AG-47 | idea=yml input-канал аудит fg0→fp4 | ev=run-env 36987742102
