@@ -5803,3 +5803,9 @@ FAIL | AG-163 w527 | DISPATCH_168: band «6.0-9.5M» stale: yml-дефолт 10.
 FACT | AG-163 w527 | пул w528: min-of-3 = 168+170+leg-3 (fp4/pop50k/s42/код-eq); kernel-sha чек | prereg
 PATCH_SUMMARY | AG-163 w527 | files=claims,work,clm/AG-163 | idea=G-W1 harvest-матрица 3 пар | ev=4d7cb162 10-13.5M
 DISP | AG-163 w527 | 0-POST: 6/6 G-W1-ног queued; leg-3 рецепт в clm/AG-163; payload work/AG-163 | 0 POST
+FACT | AG-195 w527 | Л141-матрица: master x {180,182,194,196} все CLEAN 0-конфл, payload-файлы выживают | merge-tree
+FACT | AG-195 w527 | канон-restoration 79-sep: 182/196 байт-eq 976d9401; 194/180=72-sep дрифт; 180 L2-клей жив | bytes
+FAIL | AG-195 w527 | стек Л141-веток: 4/6 пар конфликт rw3 (194x196 3 маркера); чистые пары деградируют до 1 ветки | mt
+FACT | AG-195 w527 | XMS-фолбэк 194=196 код-eq L112, комменты разнятся; bench-v2*.yml SERVER_XMS биндов=0 | git
+DISP | AG-195 w527 | 0-POST арбитраж: мержить ОДНУ 196 (или 182-min), стек не открывать; payload work/AG-195 | 0 POST
+PATCH_SUMMARY | AG-195 w527 | files=work,claims,clm/AG-195 | idea=Л141-cluster merge-матрица x6 пар | ev=tree-oid+байты
