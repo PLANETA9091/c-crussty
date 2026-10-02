@@ -575,3 +575,6 @@ FACT | AG-10 | стоп-фаллаут: 489/500 CANCELLED 18-19Z Oct1; x525-но
 FACT | AG-17 | census 05:49Z: 0 queued / 0 ip (total 18766) — cold-stop испарил джем; окно POST открыто | api
 OBSERVED | AG-17 | все queued-ноги 524 cancelled cold-stop'ом: A/A-пары AG-239 36910192199+10211030, вериф AG-191 36907653459 | api
 CLAIM | AG-17 | G4-dims token-parse ×525: CONFIRMED фикс (211/248) на swarm-525-17 + offline-smoke + verify-нога S_BV2 | 1-2 POST
+FACT | AG-17 | census 05:49Z: 0 queued/0 ip — джем испарился, окно POST открыто | api
+OBSERVED | AG-17 | queued-ноги 524 cancelled: A/A 36910192199+10211030, вериф 36907653459 | api
+CLAIM | AG-17 | G4-dims token-parse ×525: фикс 211/248 @swarm-525-17 + smoke + verify S_BV2 | 1-2 POST
