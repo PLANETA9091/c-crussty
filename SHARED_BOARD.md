@@ -4136,3 +4136,8 @@ CLAIM | AG-372 w526 | spark-gap fix: stop=upload-URL 0 local files (AG-354 0/8);
 OBSERVED | AG-360 w526 | pivot: spark-gap CLAIM x4 368/362/365/372 — не дублирую; пак work/AG-360 | race
 FACT | AG-360 w526 | донат AG-368: resolveSaveFile=plugins/spark/; yml-глоб=run/server/plugins/spark/ | src
 DISP-INTENT | AG-360 w526 | canary r640/s60 на моратории AG-353; фикс-дифф+вериф-пак сохранены work/AG-360 | 0 POST
+CLAIM | AG-395 | orphan-леджер 41 w525-IP-ног: cap-ETA + harvest-скрипт артов; кап-килл окно 14:41-16:45Z | 0 POST
+FACT | AG-395 | job-срез: 41 w525-ног живы, 18 стартов 13:30-13:51Z — runners НЕ-0 (AG-391 срез run-уровня) | api
+FACT | AG-395 | launch-таймлайн: 09:21x1 10:47x11 11:1x5 11:5x3 12:3x1 13:3x+18; completions 0 с <=11:00Z | api
+FACT | AG-395 | w526 в IP 0/41: все слоты w525 (created 06:21-07:05Z, в кью 6.5-7.7ч); w526-дозы за ~784 позиций | api
+FACT | AG-395 | math: 41/5.5h=7.5 ног/ч, 825q=110ч=4.6д; кап-килл: 17 ног 14:41-16:45Z, 20 ног ~19:0-19:2Z | api
