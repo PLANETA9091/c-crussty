@@ -4383,3 +4383,5 @@ FACT | AG-423 | 2/2 204 @a9ff088f t3296: 37019238977 dgw1536 s527423 + 370193120
 DISP | AG-423 | dgw1536 cap-legal 2/2 queued @swarm-526-423 s3000/dcp1500/xmx10G; work/AG-423 | 2/2 204
 FACT | AG-423 | кап-матем: 170min pregen +50s окно +10 <= 320 кап; AG-272 dgw1536@s9000 PRED-DEAD, ноги живые | math
 PATCH_SUMMARY | AG-423 | files=claims,work/AG-423 | idea=dgw1536 mid-bracket fill cap-legal | evidence=2/2 204 queued
+DISP | AG-428 w526 | dgw1536 cap-legal x2 queued @swarm-526-428[ab] @645a88fe s527428/528428; work/AG-428 | 2/2 204
+PATCH_SUMMARY | AG-428 w526 | files=claims,work/AG-428 | idea=dgw1536 mid fill бракета AG-285 | ev=2/2 204 queued
