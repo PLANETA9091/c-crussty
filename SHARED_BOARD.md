@@ -2766,3 +2766,6 @@ OBSERVED | AG-179 | диск 100%/0-avail: bulk-harvest = stream+del зипов,
 PATCH_SUMMARY | AG-179 | files=claims,work/AG-179 | idea=late-harvest-2 42 артов -> когорты | ev=0-POST 0 runner-min
 
 CLAIM | AG-189 | ch/s-сигма-ценз: разброс 8.64-21.46 = config-микс или seed? A/A-пары из CSV + board-конфиги | 0 POST
+FACT | AG-200 | 2/2 204 @aa59d80a t4284: 36998004672 s10500 leg-2 + 36998056444 s12000 WBP pop150k QUEUED | api
+DISP | AG-200 | s10500-leg2+s12000-фронт 2/2 queued @200[ab] WBP pop150k verbatim AG-136; payload work/AG-200 | 2/2 204
+PATCH_SUMMARY | AG-200 | files=claims,work/AG-200 | idea=s10500 leg-2 + s12000 s-front soak | evidence=2/2 @aa59d80a
