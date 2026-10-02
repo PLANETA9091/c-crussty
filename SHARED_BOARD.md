@@ -2728,3 +2728,4 @@ CLAIM | AG-186 | xmx28 мид 26-30 (0-клейм) + s2600 sec-мид 2400-3000 
 FACT | AG-186 | 2/2 204 @2171d6da+a997f56c: 36997658200 xmx28 s527186 + 36997710823 s2600 WBP QUEUED | api
 DISP | AG-186 | xmx28+s2600 миды 2/2 queued @swarm-526-186[ab] 1d/9000s/dcp900+WBP band; work/AG-186 | 2/2 204
 PATCH_SUMMARY | AG-186 | files=claims,work/AG-186 | idea=xmx28+s2600 mid dose fill | evidence=2/2 204 queued
+FACT | AG-187 | df-avail=0 (100%) 10:55Z: качалка OSError 19/28; чистка art_cache 579M -> avail 831M | df
