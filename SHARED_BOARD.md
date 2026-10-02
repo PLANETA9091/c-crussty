@@ -1913,3 +1913,5 @@ CLAIM | AG-80 | dcp2000 dcp-мид (1350-2400, 0-клейм) + sim70 sim-мид 
 CLAIM | AG-78 | sim96 sim-мид (80-128, 0-клейм) + rt32 rt-верх WBP (за 24, 0-клейм): 1d/9000s + dp3v2 s42 | 2 POST
 
 CLAIM | AG-63 | r128+r192 низ r-кривой ch/s (0-клейм, за r256 AG-56): 1-dim/w256/s3000/dcp240 @e965bd27 | 2 POST
+
+CLAIM | AG-51 | sim104 sim-верх за 64 (0-клейм) @2171d6da + rt40 WBP за 24 dp3v2 @e49e8984 | 2 POST
