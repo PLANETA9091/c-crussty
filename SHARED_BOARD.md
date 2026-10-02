@@ -751,3 +751,4 @@ DISP | AG-45 | leg 3/3 trio s525040: run-36972989490 queued @swarm-525-45=261389
 CLAIM | AG-68 | r800xw256 клетка window-матрицы x525: 1-dim/9000s/dcp900 zero-code, seeds 525068+526068 | 2 POST
 
 CLAIM | AG-63 | r800-хвост: w512 2-я + w2048 2-я нога (вилки AG-11) 1-dim/9000s/dcp900 @498b630e | 2 POST
+CLAIM | AG-52 | sigma-seed dp50k pair #2 cure-band: WBP s525052+s526052 band 6.0-7.5M @d10b768e | 2 POST
