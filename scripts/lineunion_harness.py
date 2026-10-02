@@ -47,13 +47,17 @@ Usage:
   python3 scripts/lineunion_harness.py --selftest      # 6-file mini corpus, fast
   python3 scripts/lineunion_harness.py --corpus-dir D [--keep] [--json R.json]
 
-Exit 0 iff: every defect detected by >=1 expected censor, zero censor hits
+Exit 0 iff: every defect detected by >=1 expected censor OR explicitly
+SKIPPED (toolchain absent — graceful-skip, Л141-вилка-2), zero censor hits
 on clean corpus, both historical fixtures behave as recorded.
+Partial coverage prints VERDICT: PASS-PARTIAL(skip=<censors>) and still
+exits 0 — sh-классы (canonline/C2b-гейт) остаются runnable без javac/rustc.
 Deterministic: fixed injection enumeration, no RNG.
 """
 import argparse
 import hashlib
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -65,8 +69,22 @@ REPO = Path(__file__).resolve().parent.parent
 CASE_ARM_SCAN = Path(__file__).resolve().parent / "case_arm_scan.py"
 
 JDK = Path("/home/z/tools/jdk-21.0.12.1+1/bin")
-JAVAC = str(JDK / "javac") if (JDK / "javac").exists() else shutil.which("javac")
-RUSTC = str(Path.home() / ".cargo/bin/rustc") if (Path.home() / ".cargo/bin/rustc").exists() else shutil.which("rustc")
+JAVAC = (os.environ.get("LINEUNION_JAVAC")
+         or (str(JDK / "javac") if (JDK / "javac").exists() else shutil.which("javac")))
+RUSTC = (os.environ.get("LINEUNION_RUSTC")
+         or (str(Path.home() / ".cargo/bin/rustc") if (Path.home() / ".cargo/bin/rustc").exists()
+             else shutil.which("rustc")))
+HAVE_JAVAC = bool(JAVAC) and Path(JAVAC).exists()
+HAVE_RUSTC = bool(RUSTC) and Path(RUSTC).exists()
+# Л141-вилка-2 graceful-skip (AG-155 FAIL 2026-10-02): при потере тулчейна
+# (jdk-21 рецикл, ~/.cargo/bin/rustc отсутствует) harness ранее падал TypeError
+# (subprocess.run executable=None) => canonline-гейт Л200 был UNRUNNABLE и
+# пропустил C2b line_glue на master. Теперь toolchain-зависимые цензоры
+# СКИПАЮТСЯ с явной отчётностью, а sh-классы (bash_n, case_arm_scan,
+# marker_grep, flagtok, canonline) остаются runnable — C2b-гейт выживает
+# без javac/rustc. Переопределение тулчейна: LINEUNION_JAVAC/LINEUNION_RUSTC.
+JAVAC_FAMILY = {"javac", "cp_corrupt", "cp_standalone", "cp_marker", "sync_gate"}
+SKIPPED_CENSORS = (set() if HAVE_JAVAC else set(JAVAC_FAMILY)) | (set() if HAVE_RUSTC else {"rustc"})
 
 FIXTURES = {
     "broken_bee2b585": (REPO / "tests/lineunion/fixtures/run_world3_broken_bee2b585.sh",
@@ -220,6 +238,8 @@ CP_GLUE_RE = re.compile(r"cmp[0-9a-z_]+\|cmp[0-9a-z_]+")
 
 # ----------------------------------------------------------- censor prims
 def run_cmd(cmd, timeout=120):
+    if not cmd or not cmd[0]:
+        return None, "SKIP: toolchain absent"  # TypeError-proof (Л141-вилка-2)
     p = subprocess.run(cmd, capture_output=True, text=True, timeout=timeout)
     return p.returncode, (p.stdout + p.stderr)
 
@@ -239,6 +259,8 @@ def c_case_arm_scan(path):
     return ["case_arm_scan:WARN %s" % ln.split(": WARN ", 1)[1][:90] for ln in warns]
 
 def c_javac(path, outdir):
+    if not HAVE_JAVAC:
+        return None  # graceful-skip: javac absent
     rc, out = run_cmd([JAVAC, "-d", str(outdir), str(path)])
     if rc == 0:
         return []
@@ -246,6 +268,8 @@ def c_javac(path, outdir):
     return ["javac: %s" % first[:110]]
 
 def c_rustc(path, outdir):
+    if not HAVE_RUSTC:
+        return None  # graceful-skip: rustc absent
     rc, out = run_cmd([RUSTC, "--edition", "2021", "--crate-type", "lib",
                        "--emit=metadata", "--out-dir", str(outdir), str(path)])
     if rc == 0:
@@ -357,11 +381,16 @@ def entry_for(lang, clsid, kind, family=None, sub=None, extra=None):
 def verify_file(path, entry, outdir):
     lang = {"sh": "sh", "java": "java", "rs": "rs"}[str(path).rsplit(".", 1)[1]]
     hits = []  # (censor, detail)
+    skips = []  # censors that could not run on this platform (graceful-skip)
     if lang == "sh":
         hits += [("bash_n", h.split(": ", 1)[-1]) for h in c_bash_n(path)]
         hits += [("case_arm_scan", h.split(": ", 1)[-1]) for h in c_case_arm_scan(path)]
     if lang == "rs":
-        hits += [("rustc", h.split(": ", 1)[-1]) for h in c_rustc(path, outdir)]
+        rh = c_rustc(path, outdir)
+        if rh is None:
+            skips.append("rustc")
+        else:
+            hits += [("rustc", h.split(": ", 1)[-1]) for h in rh]
     if lang == "java":
         prebuilt = entry.get("prebuilt_class")
         cls = None
@@ -369,10 +398,13 @@ def verify_file(path, entry, outdir):
             cls = Path(prebuilt)  # stale-blob simulation: javac never re-runs
         else:
             jh = c_javac(path, outdir)
-            hits += [("javac", h.split(": ", 1)[-1]) for h in jh]
-            if not jh:
-                cand = outdir / ("%s.class" % entry["clsid"])
-                cls = cand if cand.exists() else None
+            if jh is None:
+                skips.append("javac")  # graceful-skip, no TypeError
+            else:
+                hits += [("javac", h.split(": ", 1)[-1]) for h in jh]
+                if not jh:
+                    cand = outdir / ("%s.class" % entry["clsid"])
+                    cls = cand if cand.exists() else None
         if cls and cls.exists():
             for h in cp_scan_class(cls, entry.get("require_standalone", [])):
                 cc, det = h.split(": ", 1)
@@ -383,7 +415,7 @@ def verify_file(path, entry, outdir):
     hits += [("marker_grep", h.split(":", 1)[-1]) for h in c_marker_grep(path)]
     hits += [("flagtok", h.split(": ", 1)[-1]) for h in c_flagtok(path)]
     hits += [("canonline", h.split(": ", 1)[-1]) for h in c_canonline(path, entry.get("canonline", []))]
-    return hits
+    return hits, skips
 
 def main():
     ap = argparse.ArgumentParser()
@@ -398,7 +430,7 @@ def main():
     clean_spec, defect_spec = build_spec(args.selftest)
     tmpl = {"sh": SH_TMPL, "java": JAVA_TMPL, "rs": RS_TMPL}
 
-    report = {"clean": [], "defects": [], "fixtures": [], "totals": {}}
+    report = {"clean": [], "defects": [], "fixtures": [], "skipped_files": [], "totals": {}}
     matrix, clean_fp = {}, []
 
     def fname(stem, lang):
@@ -414,6 +446,11 @@ def main():
     defect_files = {}
     for d in defect_spec:
         fam, sub, lang, idx = d
+        if fam == "stale" and not HAVE_JAVAC:
+            # stale-blob synthesis needs javac baseline — graceful-skip the family
+            report["skipped_files"].append({"family": fam, "sub": sub, "lang": lang, "idx": idx,
+                                            "reason": "javac absent (graceful-skip)"})
+            continue
         stem = "def_%s%s_%s%d" % (fam, "_" + sub if sub else "", lang, idx)
         fn = fname(stem, lang)
         base = tmpl[lang].format(idx="%s%d" % (lang, idx), clsid=stem)
@@ -441,35 +478,39 @@ def main():
     # ---- verify clean (FP baseline; also builds sha baselines for sync) ----
     for fn, entry in clean_files.items():
         outdir = root / ("out_" + fn.stem); outdir.mkdir(exist_ok=True)
-        if fn.suffix == ".java":
+        if fn.suffix == ".java" and HAVE_JAVAC:
             assert not c_javac(fn, outdir), "CLEAN java failed to compile: %s" % fn
             cls = outdir / ("%s.class" % entry["clsid"])
             entry["baseline"] = {"src_sha": hashlib.sha256(fn.read_bytes()).hexdigest(),
                                  "cls_sha": hashlib.sha256(cls.read_bytes()).hexdigest()}
-        hits = verify_file(fn, entry, outdir)
+        hits, _ = verify_file(fn, entry, outdir)
         report["clean"].append({"file": fn.name, "censors": sorted({h[0] for h in hits})})
         clean_fp += [{"file": fn.name, "censor": cn, "detail": det[:120]} for cn, det in hits]
 
     # ---- verify defects ----
     for fn, entry in defect_files.items():
         outdir = root / ("out_" + fn.stem); outdir.mkdir(exist_ok=True)
-        hits = verify_file(fn, entry, outdir)
+        hits, skips = verify_file(fn, entry, outdir)
         censors = sorted({h[0] for h in hits})
         expected = EXPECT[entry["family"]][fn.suffix[1:] if fn.suffix != ".sh" else "sh"]
         detected = any(cn in expected for cn in censors)
+        runnable_expected = [c for c in expected if c not in SKIPPED_CENSORS]
+        skipped_entry = (not detected) and not runnable_expected
         matrix.setdefault(entry["family"] + (":" + entry["sub"] if entry["sub"] else ""), {}) \
               .setdefault(fn.suffix[1:], []).append(
-                  {"file": fn.name, "detected": detected, "censors": censors, "expected": expected})
+                  {"file": fn.name, "detected": detected, "skipped": skipped_entry,
+                   "censors": censors, "expected": expected})
         report["defects"].append({"file": fn.name, "family": entry["family"], "sub": entry["sub"],
-                                  "lang": fn.suffix[1:], "detected": detected, "censors": censors,
-                                  "expected": expected,
+                                  "lang": fn.suffix[1:], "detected": detected,
+                                  "skipped": skipped_entry, "skipped_censors": skips,
+                                  "censors": censors, "expected": expected,
                                   "details": ["%s: %s" % (cn, det[:96]) for cn, det in hits]})
 
     # ---- historical fixtures (real git history) ----
     for key, (fpath, expect) in FIXTURES.items():
         outdir = root / ("out_fix_%s" % key); outdir.mkdir(exist_ok=True)
         entry = {"clsid": key, "canonline": CANON_FIXTURE_LINES, "require_standalone": []}
-        hits = verify_file(fpath, entry, outdir)
+        hits, _ = verify_file(fpath, entry, outdir)
         censors = sorted({h[0] for h in hits})
         ok = (any(cn in expect for cn in censors) if expect else len(censors) == 0)
         report["fixtures"].append({"file": fpath.name, "expect": expect, "censors": censors, "ok": ok,
@@ -477,9 +518,14 @@ def main():
 
     # ---- score ----
     n_def = len(report["defects"]); n_det = sum(1 for x in report["defects"] if x["detected"])
+    n_skip = sum(1 for x in report["defects"] if x["skipped"])
+    n_miss = n_def - n_det - n_skip
     n_fix_ok = sum(1 for x in report["fixtures"] if x["ok"])
     report["totals"] = {"clean_files": len(report["clean"]), "clean_fp": len(clean_fp),
-                        "defects": n_def, "detected": n_det, "censors_in_chain": 11,
+                        "defects": n_def, "detected": n_det, "skipped": n_skip, "missed": n_miss,
+                        "skipped_censors": sorted(SKIPPED_CENSORS),
+                        "skipped_files": len(report["skipped_files"]),
+                        "censors_in_chain": 11,
                         "fixtures_ok": "%d/%d" % (n_fix_ok, len(report["fixtures"]))}
 
     print("=" * 78)
@@ -491,8 +537,10 @@ def main():
     for fam, langs in sorted(matrix.items()):
         for lang, items in sorted(langs.items()):
             det = sum(1 for i in items if i["detected"])
+            sk = sum(1 for i in items if i.get("skipped"))
             cens = sorted({c for i in items for c in i["censors"]})
-            print("  %-24s %-4s %d/%d  caught by: %s" % (fam, lang, det, len(items), ",".join(cens) or "-"))
+            print("  %-24s %-4s %d/%d caught, %d skipped  by: %s" %
+                  (fam, lang, det, len(items), sk, ",".join(cens) or "-"))
     print("\n-- clean corpus FP --")
     print("  %d clean files, %d false positives" % (len(report["clean"]), len(clean_fp)))
     for fp in clean_fp:
@@ -504,15 +552,25 @@ def main():
         if not f["ok"]:
             for d in f["details"]:
                 print("      %s" % d)
-    print("\nTOTAL: defects %d/%d detected (%.1f%%), clean FP %d, fixtures %s" %
-          (n_det, n_def, 100.0 * n_det / max(n_def, 1), len(clean_fp), report["totals"]["fixtures_ok"]))
+    if SKIPPED_CENSORS or report["skipped_files"]:
+        print("\nGRACEFUL-SKIP: censors=%s skipped_files=%d (toolchain absent; sh-классы live)" %
+              (",".join(sorted(SKIPPED_CENSORS)) or "-", len(report["skipped_files"])))
+    print("\nTOTAL: defects %d/%d detected (%.1f%%), %d skipped, clean FP %d, fixtures %s" %
+          (n_det, n_def, 100.0 * n_det / max(n_def, 1), n_skip, len(clean_fp),
+           report["totals"]["fixtures_ok"]))
     jpath = Path(args.json) if args.json else root / "report.json"
     jpath.write_text(json.dumps(report, indent=1, ensure_ascii=False))
     print("report: %s" % jpath)
-    ok = (n_det == n_def and not clean_fp and n_fix_ok == len(report["fixtures"]))
+    ok = (n_det + n_skip == n_def and not clean_fp and n_fix_ok == len(report["fixtures"]))
     if not args.keep and not args.corpus_dir:
         shutil.rmtree(root, ignore_errors=True)
-    print("VERDICT: %s" % ("PASS" if ok else "FAIL"))
+    if not ok:
+        verdict = "FAIL"
+    elif n_skip or report["skipped_files"]:
+        verdict = "PASS-PARTIAL(skip=%s)" % ",".join(sorted(SKIPPED_CENSORS) or ["stale-synth"])
+    else:
+        verdict = "PASS"
+    print("VERDICT: %s" % verdict)
     return 0 if ok else 1
 
 if __name__ == "__main__":
