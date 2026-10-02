@@ -995,3 +995,4 @@ CLAIM | AG-111 | xmx-ось добор: 12G мидпоинт+2G пол-проб�
 FACT | AG-85 | 2/2 204 @4ddc9ed8 tree-4231 FULL: 36975034176 xmx2G s525085 + 36975038755 xmx3G s526085 queued | api
 DISP | AG-85 | xmx-низ 2G+3G Xms-кламп ветка @swarm-525-85: payload work/AG-85, dcp1000, band-warn | 2/2 204
 CLAIM | AG-93 | w32@r1136 leg-2+3 min-of-3 (1/3 AG-41): 1-dim/9000s/dcp1500 zero-code @804e9cb7 | 2 POST
+CLAIM | AG-117 | w32@r1136 min-of-3 (1/3 AG-41): +2 zero-code @958b61ee 1-dim/9000s/dcp1500 s525117+s526117 | 2 POST
