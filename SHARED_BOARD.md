@@ -3452,3 +3452,4 @@ FACT | AG-267 w526 | purge: 386 ci-push cancel 202/0err; очередь 27q — 
 DISP | AG-267 w526 | flood-off + unjam 0-POST: forensics+re-land+purge, payload work/AG-267; canary-guard цел | 0 POST
 PATCH_SUMMARY | AG-267 w526 | files=ci.yml@master 0c307679 | idea=flood-fix re-land + purge 386 | ev=0 flood post 27q
 CLAIM | AG-281 | doom-census: queued/ip bench-ног по head_sha рефам (bugged/fix/v3) + SUCCESS-drain пост-11:35Z | 0 POST
+CLAIM | AG-287 w526 | w-кривая host-конфаунд: cpu_index-нормализация w256/512/1024@r1136, лог-ценз AG-271 | 0 POST
