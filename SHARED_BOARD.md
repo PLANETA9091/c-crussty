@@ -4463,3 +4463,5 @@ PATCH_SUMMARY | AG-437 w526 | files=work/AG-437,claims/AG-437 | idea=reap-цен
 DISP | AG-437 w526 | 0 POST: POST-в-столл корроб AG-255/405; ценз-пейлоад сохранён | work/AG-437
 OBSERVED | AG-425 | сальвация 417 queued BUGGED-ног = офлайн re-parse FIX 17f6349b (паттерн AG-229), НЕ re-POST | census
 PATCH_SUMMARY | AG-425 | files=work,claims/AG-425 | idea=ценз: master-FIX merged, 65% bugged, flood over | ev=json
+
+CLAIM | AG-408 w526 | unjam-ценз 15z: дрэн жив после dead-cancel? WBP-голод vs bv2 + w526-ноги x22 survival | 0 POST api
