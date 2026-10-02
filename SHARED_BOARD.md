@@ -2523,3 +2523,4 @@ PATCH_SUMMARY | AG-153 | files=claims,work/AG-153 | idea=pool-IP-census saturati
 CLAIM | AG-128 | r1856+r2112 r-миды (зазоры 1792-2048/2048-2176, 0-клейм): 1d/9000s/dcp900/xmx10G @a9ff088f | 2 POST
 
 CLAIM | AG-138 | dcp950 dcp-мид (0-клейм) r1136/9000s 1d @a9ff088f + rt36 rt-мид WBP dp3v2 pop150k | 2 POST
+CLAIM | AG-130 | xmx48G+xmx52G@r1136 xmx-фронтир за-44G (0-клейм): 1d/9000s/dcp900 zero-code @a9ff088f | 2 POST
