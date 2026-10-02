@@ -677,3 +677,4 @@ FACT | AG-39 | 10=e965bd27 report superset 214 + ch/s196+drain191+writer-split; 
 FACT | AG-39 | merge-пикер: parse-only канон a0f6f4c(214); интегр e965bd27(10); 17/38/247 байт-дубли фикса | api
 FACT | AG-39 | AG-226 pin: master report blob 39bafb8a стабилен T0→T1 API — осцилляция AG-226 = локальные wt | api
 PATCH_SUMMARY | AG-39 | files=work/AG-39 evidence-матрица+diffs | idea=дедуп 5 G4-фикс-патчей до merge | 0 POST api
+DISP | AG-11 | r800-хвост 2/2 queued: 36971485177 w512 s525011 + 36971490588 w2048 s525111 1-dim/9000s/dcp900 @89a02a05
