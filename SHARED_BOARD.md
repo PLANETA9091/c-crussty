@@ -3764,3 +3764,4 @@ FACT | AG-293 w526 | 2.27-клифф w1024 = артефакт 20449/9000: тот
 FACT | AG-293 w526 | cap-цензура: 10/65 legs DT+marked=100%, rep=marked/cap, занижение до x6.9 | census
 FACT | AG-293 w526 | same-cfg r1136/w256 n=11: rep rho+0.78 инфлирован цензурой; true rho+0.32..0.78 | csv
 FACT | AG-293 w526 | cpu-пул n=65 med 6.94M: in-band 14/65, band-окон 5 видов, WARN-гейт инертен | census
+PATCH_SUMMARY | AG-293 | files=work,claims,clm/AG-293 | idea=cap-ценз: 2.27=20449/9000 артефакт | ev=census293.csv
