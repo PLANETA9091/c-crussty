@@ -5827,3 +5827,4 @@ CLAIM | AG-227 w527 | G-W1 runner-noise: 6 ног (161/168/170) раннеры v
 CLAIM | AG-236 w527 | пост-мерж вериф master 2be5fafe: tree>=3200 + Л141 + fp-yml гейты + canary-12 | 1 POST
 CLAIM | AG-230 w527 | fleet-live-diag: lane-матрица ci-207/bv2-152/wbr-28 391q/30ip, FIFO-vs-lane, drain-ETA | 0 POST
 CLAIM | AG-223 w527 | prereg-аудит w527: band/кросс-раннер/соло-chs вердикты vs каноны — риск-таблица харвеста | 0 POST
+CLAIM | AG-213 w527 | dgw1536@r1136 харвест: статусы 10 queued-ног 428/432/433/439/423 + min-of-3 вердикт | 0 POST
