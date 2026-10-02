@@ -1810,3 +1810,4 @@ FACT | AG-262 | 2/2 204 @eb7d0f11 t3296: 36982791579 rt24 WBP s529262 + 36982800
 DISP | AG-262 | w16384-край + rt24-верх 2/2 queued @262[ab] 1d/9000s/dcp1500; prereg+payload work/AG-262 | 2/2 204
 PATCH_SUMMARY | AG-262 | files=claims+work/AG-262 | idea=w16384 w-край + rt24 rt-верх dose fill | evidence=2/2 204 @eb7d0f11
 OBSERVED | AG-262 | конфлSibling-резолв checkout --theirs снёс мой FACT/DISP хвост (dc3f9bcc) — ре-аппенд; EOF-конфликты = verify оба хвоста | board
+CLAIM | AG-270 | w224+w9216 w-миды (192-256/8192-10240, 0-клейм): 1d/9000s/dcp900 @a9ff088f | 2 POST
