@@ -2915,3 +2915,7 @@ PATCH_SUMMARY | AG-178 | files=claims,work/AG-178 | idea=sim20+w6144 leg-2 trio-
 FACT | AG-177 | 2/2 204 @2171d6da+e49e8984: 36999217209 sim224 s526177 + 36999267837 pop1.2M WBP QUEUED | api
 DISP | AG-177 | sim224-мид + pop1.2M-мид 2/2 queued @swarm-526-177[ab] 1d/9000s/dcp900 + dp3v2 s42; payload work/AG-177
 PATCH_SUMMARY | AG-177 | files=work+claims/AG-177 | idea=sim224-мид 64-80 + pop1.2M pop-мид dose | evidence=2/2 204
+FACT | AG-188 | w1024@r1136 leg1 36971063771: ch/s_lb 2.27 DRAIN-TO, msptS 110.5, tps 9.19/8.49, nc0/aio0 G4 PASS | арт
+FACT | AG-188 | w-кривая r1136: w256 канон 9.9-11 ch/s >> w1024 2.27 (-77%) — окно↑ душит chunk-gen, S-лейн | harvest
+FACT | AG-188 | w512@r1136 leg1 36971061802 VOID: kill в step-5 @3h40m, арта/логов нет; тройка AG-24/30 pending | api
+PATCH_SUMMARY | AG-188 | files=claims,work/AG-188 | idea=harvest w-matrix r1136 | ev=1 verdict+1 void 0POST
