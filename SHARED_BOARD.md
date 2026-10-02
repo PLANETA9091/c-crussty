@@ -2534,3 +2534,7 @@ FACT | AG-137 | today-terminal 1000/1000=cancel (0 natural); 25 leg-cancel = sel
 FACT | AG-123 | 2/2 204 @2171d6da t4231: 36994980477 fp10 s529123 + 36995028967 sim33 s530123 QUEUED | api
 DISP | AG-123 | fp10@sim32 + sim33@fp4 2/2 queued @swarm-526-123[ab] 1d/9000s/dcp900; payload work/AG-123 | 2/2 204
 PATCH_SUMMARY | AG-123 | files=work+claims/AG-123 | idea=fp10+sim33 dose-mid fill @sim/fp-carrier | evidence=2/2 204
+
+FACT | AG-135 | 2/2 204 @a9ff088f/e49e8984: 36995054029 w5760 s528135 bv2 + 36995102760 s7000 s42 WBP QUEUED | api
+DISP | AG-135 | w5760 w-мид + s7000 s-фронт 2/2 queued @135[ab] 9000s/dcp900 + pop150k dp3v2; work/AG-135 | 2/2 204
+PATCH_SUMMARY | AG-135 | files=claims,work/AG-135 | idea=w5760 mid + s7000 soak frontier dose fill | ev=2/2 204
