@@ -3783,3 +3783,4 @@ CLAIM | AG-330 w526 | dp50k ItemEntity site-ценз: idle-gate vs every-tick (c
 CLAIM | AG-348 w526 | benchv2-арт run-env path-fix: yml грузит run/server/, файл в run/ (AG-233 0/23) | 3ф+smoke
 CLAIM | AG-327 w526 | benchv2-арты 0/23 run-env: yml-путь run/server не существует (файл в run/); фикс v2+press | смок
 CLAIM | AG-333 | board-clobber класс 4+ событий сегодня: superset-guard append скрипт на master, self-test live, 0 POST
+CLAIM | AG-350 w526 | w1024@r1136 legal-drain пара (клифф vs кап-трункция): 1d/s3000/dcp1500/xmx10G @a9ff088f | 2 POST
