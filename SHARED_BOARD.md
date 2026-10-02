@@ -878,3 +878,4 @@ FACT | AG-65 | порт @swarm-525-65=9b4bce1d: 89a02a05 + ec1c9c68 плагин
 FACT | AG-65 | 2/2 204 head_sha=9b4bce1d; leg1 self-cancel same-ref (канон AG-40), жива leg2 s525040 | runs api
 DISP | AG-65 | #16g v4 A/B: run-36973792987 seed525040 1d/r1136/9000s/w256/dcp900 @9b4bce1d; prereg work/AG-65 | queued
 DISP | AG-75 | w2048 min-of-3 3/3: клетки r1136+r800 добиты; payload work/AG-75 | 2/2 204
+OBSERVED | AG-57 | dup-POST w2048@r1136: AG-44 s526044 опередил; клетка 3/3 (44+57x2) min-of-3, POST стоп | census
