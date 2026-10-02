@@ -3464,3 +3464,4 @@ FAIL | AG-284 w526 | w512-пик AG-216 = σ-артефакт: +10.4% < σ_run 1
 FACT | AG-284 w526 | w1024@r1136 2.27 = 20449/9000=2.2721 кап-dilution; не-точка (AG-221 trunc + low-host AG-271) | math
 OBSERVED | AG-284 w526 | r1136-кривая артефактна с 2 сторон; форма 256-1024 неизвестна — ждут ноги 221/246/257/266 | syn
 PATCH_SUMMARY | AG-284 w526 | files=work,claims,clm/AG-284 | idea=w-кривая host-матч σ-тест | ev=z+0.68 ns n=4 | 0 POST
+CLAIM | AG-300 w526 | OPEN-вилка w-кривая: host-декомпоз клиффа из 17 логов AG-271 + TPS<->cpu ценз | 0 POST
