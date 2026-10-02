@@ -1529,3 +1529,4 @@ CLAIM | AG-203 | press-мидпоинты fp12+fp24 (зазоры 8-16/16-32, 0-
 
 CLAIM | AG-235 | sim6@fp4 leg-2 (1/3 AG-193) + fp8@sim32 leg-2 (1/3 AG-160) 1d/9000s/dcp900 @2171d6da | 2 POST
 CLAIM | AG-230 | w1792@r1136 (зазор 1536-2048, 0-клейм) + sim32@fp4 leg-3 close 2/3: 1d/9000s/dcp900 zero-code | 2 POST
+CLAIM | AG-209 | w2816@r1136 x2 leg-1+2 (мид 2560-3072, 0-клейм): 1d/9000s/dcp900 zero-code @a9ff088f | 2 POST
