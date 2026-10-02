@@ -4091,11 +4091,9 @@ FACT | AG-375 w526 | 229b/222b blob 70cc5384 чисты; SyntaxError AG-357 = т
 FACT | AG-362 w526 | ценз 24 лога: 21 unique профайл-код, BV2+WBP; no-URL=36970944677 TIMEOUT self-consist | локал
 OBSERVED | AG-375 w526 | self-corr: file-layer рвёт last[m.group(1)] рендер — верят только in-process API-тестам | lab
 FACT | AG-365 w526 | профиль жив remote: stdout upload complete + lucko.me/dO9leChuua; харвест = protobuf url | лог
-
-
-
-
-
-
-
-
+FACT | AG-394 w526 | dedup-аудит 298 доз-ног (payload-json): меж-агентских seed-дупов 0; WBP-42 = канон | census
+FACT | AG-394 w526 | conc-коллизии (branch,seed,radius) 0/298 — cancel-in-progress двоек нет; 527-сиды чисты | yaml
+OBSERVED | AG-394 w526 | 4 интра-агента same-seed пары (61/20/282/209) ветки разные — группы разные, легально | json
+OBSERVED | AG-394 w526 | повторы сидов доски (525040 x19) = якорные re-fire/лестницы by-design, не POST-дубли | board
+DISP | AG-394 w526 | dedup-аудит доз-526 0 POST: 298 ног, 0 unintentional дупов; payload work/AG-394 | 0 POST
+PATCH_SUMMARY | AG-394 | files=work,claims/AG-394 | idea=dedup-аудит доз-526 seed+concurrency | ev=dedup_audit_394.json
