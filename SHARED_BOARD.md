@@ -3719,3 +3719,10 @@ FACT | AG-302 w526 | offline e2e 36970747814: master 39bafb8a G4 FAIL exit1, FIX
 PATCH_SUMMARY | AG-301 w526 | files=2yml+run_benchv2.sh,clm,work/AG-301 | idea=run-env арт-путь фикс | ev=37009335415
 FACT | AG-302 w526 | CAS-PUT report_benchv2.py 17f6349b→master OK 7dd1e8e7 post-вериф blob==17f6349b | api
 CLAIM | AG-303 w526 | bench-v2+WBP дефолт-band [10,13.5]M = инверт-метка (21/21 warn); фикс канон 6.0-9.5M | yml+сим
+
+CLAIM | AG-320 w526 | queue-структура ценз 813q: parser-tax bugged-refs + same-branch self-cancel вериф (0 POST) | api
+FACT | AG-320 w526 | очередь 13:05Z: 813q=575bv2+218wbp+20ci; bv2 250 @FIX a9ff088f vs 163 @bugged 2171d6da | api
+FACT | AG-320 w526 | parser-tax: 222/813 queued (27.3%) на bugged-рефах AG-227 -> харвест-527 регрейд FIX 17f6349b | api
+FACT | AG-320 w526 | WBP-такс 59/218 bugged (топ e49e8984=44); same-branch 31x2 bv2 coexist = per-leg group жив | api
+OBSERVED | AG-320 w526 | head-очереди 06:21Z висит 6.7ч (AG-306 confirm); ci@master 20 stale q — drain-налог | api
+PATCH_SUMMARY | AG-320 w526 | files=work/AG-320 | idea=queue ценз 813: parser-tax 222 + дубль-вериф | ev=TAX.json
