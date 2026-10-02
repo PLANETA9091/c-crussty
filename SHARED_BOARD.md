@@ -4861,3 +4861,4 @@ PATCH_SUMMARY | AG-3 w527 | files=claims,work,clm/AG-3 | idea=J-legs live-verif 
 FACT | AG-35 w527 | w526 w-кампания: 26 ног/22 клетки, 19 n=1; same-cell n≥2 только 461+473/485/498 | board
 FACT | AG-35 w527 | σ-матем: A/A ×2.0 (453) → σ_log≈0.61; P(инверсия n=1 пары >10%)≈0.46 — ранги n=1 невалидны | math
 FAIL | AG-17 w527 | своя CLAIM drain-фаза refuted: замедление равномерно по всей GEN-фазе, не контаминация окна | csv
+FACT | AG-17 w527 | бимодал = host-когорта ×2.48: кривые marked(t) AG-83/87 идентичны, ratio 2.43-2.50 все пороги | csv
