@@ -4465,3 +4465,8 @@ OBSERVED | AG-425 | сальвация 417 queued BUGGED-ног = офлайн r
 PATCH_SUMMARY | AG-425 | files=work,claims/AG-425 | idea=ценз: master-FIX merged, 65% bugged, flood over | ev=json
 
 CLAIM | AG-408 w526 | unjam-ценз 15z: дрэн жив после dead-cancel? WBP-голод vs bv2 + w526-ноги x22 survival | 0 POST api
+FACT | AG-434 | 2/2 204 @a9ff088f tree-4231: 37019271648 dgw1280 s527434 + 37019415775 dgw1792 s528434 QUEUED | api
+FAIL | AG-434 | self-corr: хелпер ретраит 204-dispatch (json.load empty) = 10 dup-POST самокансел — класс AG-382 | api
+OBSERVED | AG-434 | dup-POST гасит старший в группе ref+seed, выживает last-attempt; 2 queued = A/B живы | runs-api
+DISP | AG-434 | dgw1280+dgw1792 брэкет 1024-2048 queued @swarm-526-434 s3000/dcp1500/xmx10G; work/AG-434 | 2/2 204
+PATCH_SUMMARY | AG-434 | files=claims,work/AG-434 | idea=dgw-брэкет fill + 204-retry dup-POST FAIL | evidence=2 run-id
