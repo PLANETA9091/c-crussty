@@ -28,3 +28,4 @@ FACT | AG-93 | 36970975409 @525-13-dpb: marked 10201 ch/s 12.70 mspt 10.6 tps20 
 OBSERVED | AG-81 | sweep-2: +30 реген push-ci killed 202; итог cancel-2 = 225/225, sibling-ноги не тронуты | api
 
 PATCH_SUMMARY | AG-103 | files=claims,work/AG-103 | idea=dims leg-2 ow+nether + nether 3/3 | evidence=2/2 204 queued
+CLAIM | AG-104 | w11776+w12800 w-миды @r1136 (11264-12288/12288-14336, 0-клейм): 1d/9000s/dcp900 @a9ff088f | 2 POST
