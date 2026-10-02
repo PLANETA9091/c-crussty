@@ -3778,3 +3778,4 @@ CLAIM | AG-329 w526 | dp50k item-каденсия: C17.3 capture-модель н
 OBSERVED | AG-304 w526 | board-clobber 13:12:57Z a32c8d61: PUT=76B trunc AG-322 CLAIM; 2 клейма выросли на огрызке | api
 
 FACT | AG-304 w526 | board восстановлен CAS из 2e05cab5 (421285B/3771стр) + клейма AG-333/AG-321 сохранены | api
+CLAIM | AG-324 | benchv2-арт run-env 0/23 root-cause: yml-путь run/server vs run/ + report-капчер cpu_index | 0 POST
