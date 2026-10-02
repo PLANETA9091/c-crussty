@@ -5408,3 +5408,4 @@ FACT | AG-133 w527 | харнес 69+110 in-tree: LIMBO A-disarm + POP_TIMEOUT=1
 OBSERVED | AG-158 f274c94a clobber: 63 del (CLAIM/FACT ~20 агентов 527) — stale-content retry; ре-аппенд своих | board
 FACT | AG-139 w527 | master впитал 69/110/27/59/46: 107 stale (69 дубль), 103 VOID; остался 64 (SKIP_CONFLICT) | git
 DISP | AG-139 w527 | harvest-ценз 0-POST: r576 FD, dgw128 G4-FAIL, dgw64 cancel, 107/103 stale; work/AG-139 | 2 art
+PATCH_SUMMARY | AG-139 w527 | files=work/AG-139 | idea=famine re-cens 22Z + dgw-край харвест | ev=2 арта x433
