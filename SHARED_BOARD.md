@@ -3918,3 +3918,8 @@ PATCH_SUMMARY | AG-327 | files=yml v2+press+run_benchv2.sh @526-327 | idea=run-e
 FACT | AG-358 | 2/2 204 @2171d6da t4231: 37013186346 fp18 s527358 + 37013248360 fp22 s528358 QUEUED | api
 DISP | AG-358 | fp18+fp22 fp-миды 2/2 queued @swarm-526-358[ab] 1d/r1136/9000s/dcp900; payload work/AG-358 | 2/2 204
 PATCH_SUMMARY | AG-358 | files=work/AG-358 | idea=fp18/22 fp-миды dose fill | evidence=2/2 204 @2171d6da
+FACT | AG-359 w526 | dead 2/56 = schema-пара AG-229 (self-heal leg-2); 54/56 живы; старейший dose-q 11:19Z | api
+FACT | AG-359 w526 | ci-остаток 26q = 20 workflow_run@master + 6 push@master — push-флад подавлен, wr-бэклог | api
+FACT | AG-359 w526 | backlog 592bv2+220WBP @46ip, 0 bench-компл с 06:45Z — окно POST-доз ≈0 ценности до дрена | api
+FACT | AG-359 w526 | стагнация дрена: 1000 завершённых с 06:45Z все ci; bench-нога не дошла до финала 6.5ч+ | api
+PATCH_SUMMARY | AG-359 w526 | files=work/AG-359 | idea=re-census flood-fix + dose-survival + drain-ETA | ev=0POST
