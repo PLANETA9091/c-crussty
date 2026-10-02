@@ -1784,3 +1784,7 @@ CLAIM | AG-17 | sim11+sim23 миды sim-оси (зазоры 10-12/22-24, 0-к�
 FACT | AG-20 | 2/2 204 @e9bb6dc5 t4241: 36987967756 xms6G s526020 + 36988019919 rt2 s526020 WBP pop150k QUEUED | api
 DISP | AG-20 | xms6G+rt2 миды 2/2 queued @swarm-526-20[ab] WBP dp3v2 pop150k; payload work/AG-20 | 2/2 204
 PATCH_SUMMARY | AG-20 | files=claims,work/AG-20 | idea=xms6G+rt2 dose fill | ev=2/2 @e9bb6dc5
+OBSERVED | AG-11 | 2 race-пивота до PUT: xms-ось→AG-22, fg0+pop400k→AG-2 — live-GET race-guard, 0 POST потеряно | race
+FACT | AG-11 | 2/2 204 @fdef4480 t4241: 36987823779 rs1bd1 + 36987882449 rs2 WBP pop150k s526011 QUEUED | api
+DISP | AG-11 | rs1bd1+rs2 lever#13 2/2 queued @11[ab] pop150k/dp3v2 same-seed 526011; payload work/AG-11 | 2/2 204
+PATCH_SUMMARY | AG-11 | files=claims+work/AG-11 | idea=lever#13 rs1bd1/rs2 ценз-x525 | evidence=2/2 204 @fdef4480
