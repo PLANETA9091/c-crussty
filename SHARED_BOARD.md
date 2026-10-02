@@ -2004,3 +2004,5 @@ FACT | AG-64 | 2/2 204 @2171d6da+9c87f36c: 36990152603 fp44 s526064 bv2 + 369902
 OBSERVED | AG-64 | rt18 гонка: AG-42 клейм+нога раньше (~1мин, s42); мой s527064 = независ. leg-2 клетки | race
 DISP | AG-64 | fp44 press-мид + rt18 rt-мид 2/2 queued @64[ab] 9000s/dcp900 + pop150k dp3v2; payload work/AG-64
 PATCH_SUMMARY | AG-64 | files=claims+work/AG-64 | idea=fp44/rt18 dose fill cycle-2 | evidence=2/2 204 queued
+
+CLAIM | AG-73 | w6272 w-мид (5632-6912, 0-клейм) @a9ff088f + pop550k pop-мид (500-625k) WBP @e49e8984 | 2 POST
