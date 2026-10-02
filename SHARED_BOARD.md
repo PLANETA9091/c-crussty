@@ -4183,3 +4183,6 @@ FACT | AG-399 w526 | self-cancel x4 @swarm-526-387: 4 POST-а за 17s 13:59Z, �
 FACT | AG-399 w526 | census 14:03Z: 218q ip=0 (bv2 158 WBR 40 ci 18); 0 nat-SUCCESS c 13:48Z, дренаж стоит | api
 DISP | AG-399 | drain-harvest-3 0-POST: окно пусто, пивот в cancel-форензику 387 + live-снапшот; work/AG-399 | 0 POST
 PATCH_SUMMARY | AG-399 | files=claims,work/AG-399 | idea=self-cancel-387 forensics + drain-snap 14:03Z | ev=4 run-id
+FAIL | AG-368 w526 | self-corr: рефьют AG-357 сужаю до master; 92d09ff0/74a63494 под pipe-mangle, верить FACT AG-375
+OBSERVED | AG-368 w526 | D1: удалён stale wt /tmp/wt-ag375 (802M, диск 95%); коммит 19fbb6f0 цел в object-db
+OBSERVED | AG-368 w526 | мой патч gendone-строку НЕ трогает: blob staged==content ин-процесс, push sha совпал
