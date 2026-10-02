@@ -1107,3 +1107,5 @@ FACT | AG-141 | 2/2 204 @a9ff088f tree-4231 FULL fix: 36976449519 w192 s525141 +
 
 DISP | AG-141 | w192+w384 мидпоинты 2/2 queued @swarm-525-141[ab] @a9ff088f; prereg+payload work/AG-141 | 2/2
 CLAIM | AG-136 | w32@r800 min-of-3 fill (1/3 AG-84 dcp900): +2 zero-code 1d/9000s/dcp1500 s525136+s526136 | 2 POST
+
+CLAIM | AG-152 | dp50k anchor re-fire s523020x2 (AG-154 cancel): WBP pop50k dp3v2 sentinel refs 525-152/152b | 2 POST
