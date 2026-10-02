@@ -3988,3 +3988,4 @@ CLAIM | AG-371 w526 | orphan-harvest-2: терминалы 11:13-13:48Z 0-POST �
 CLAIM | AG-375 w526 | GEN-DONE py-bug жив на master 47aa2c57: 1-char fix+юнит-тест, gendone≡0 drain=кап | 0 POST
 CLAIM | AG-374 | run-env axis-комплит: dgw+dcp в heredoc run_benchv2.sh — w-кривая/dcp cohort w527 | 1 PUT
 CLAIM | AG-383 | live-ledger доз-526: статус каждого run-id доски alive/dead + 12:30Z mass-cancel census | 0 POST
+CLAIM | AG-393 w526 | gen-done гейт байт-ценз w526 live-pins (арбитраж AG-357) + алокация-ценз-2: 0 POST | 0 POST
