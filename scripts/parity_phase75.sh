@@ -271,6 +271,14 @@ meta=[("level_time",lt),("data_version",dv),("entity_count",str(st["entities"]))
 with open(os.path.join(tmpd,"meta.txt"),"w") as m:
     for k,v in meta: m.write("%s=%s\n"%(k,v))
 
+# ---- stage-1 early-exit (AG-27 w527 anti-blind): бюджет-килл скана на 150k
+# убивал экстрактор в D4 => терялись даже дешёвые D1-D3 дайджесты (error-стаб).
+# P75_STAGE1=1: entities+counts+meta+meta2-stub и выход ДО дорогого D4.
+if os.environ.get("P75_STAGE1") == "1":
+    with open(os.path.join(tmpd,"meta2.txt"),"w") as m2:
+        m2.write("region_status=stage1-skipped\nregion_files=%s\nregion_chunks=0\nregion_errors=0\nsb_status=stage1-skipped\n" % reg_n)
+    sys.exit(0)
+
 # ---- v2 D4: region-канон, байт-в-байт == world_diff_parity_v2.py -------------
 def palette_str(entry):
     if isinstance(entry, str): return entry
@@ -409,13 +417,14 @@ emit_fp_json() { # <work_dir> <uh> <ph> <counts_json> <meta> <selftest> <scan_s>
   # v2: аргументы 8-13 — D4/D7 поверхность
   local wsha="${8:-null}" rstat="${9:-absent}" rchunks="${10:-0}" rerr="${11:-0}"
   local sbsha="${12:-null}" sbstat="${13:-absent}"
+  local stage="${14:-2}"   # 1 = анти-слепая preflight-эмиссия, 2 = полный скан
   [ "$wsha" = "null" ] || printf '%s' "$wsha" | grep -Eq '^[0-9a-f]{64}$' || wsha="null"
   [ "$sbsha" = "null" ] || printf '%s' "$sbsha" | grep -Eq '^[0-9a-f]{64}$' || { sbsha="null"; sbstat="error"; }
   [ "$wsha" = "null" ] || wsha="\"$wsha\""    # JSON-строка вместо баre-хекса
   [ "$sbsha" = "null" ] || sbsha="\"$sbsha\""
   local tmp="$work/.p75.fp.json.tmp"
   cat > "$tmp" <<EOF
-{"schema":"dp-parity-fp@1","fp_schema_version":1,
+{"schema":"dp-parity-fp@1","fp_schema_version":1,"stage":"$stage",
  "world_sha256":$wsha,
  "world_sha256_status":"$rstat",
  "dp_sha256":"$dp_sha",
@@ -487,6 +496,28 @@ main_scan() { # <world_dir> <work_dir>
       st="FAIL"; log "WARN: selftest pre-flight FAIL — digests marked untrusted in fp.json"
     fi
   else st="SKIPPED"; fi
+
+  # --- stage-1 anti-blind preflight (AG-27 w527): урок 150k — SIGTERM в D4
+  # стоил ВСЕХ дайджестов (job-log leg-A AG-22: «phase7.5: 600s" => error-стаб).
+  # Дешёвые D1-D3 (uuid/pos/counts) эмитируются ДО дорогого D4 и переживают килл.
+  if [ "${P75_DISABLE_STAGE1:-0}" != "1" ]; then
+    local s1t0 s1t1 s1ss u1 p1 c1
+    s1t0=$(date +%s%3N 2>/dev/null || date +%s)
+    P75_STAGE1=1 run_extractor "$world" "$TMPD" \
+      || log "WARN: stage1 extractor rc!=0 (полная фаза продолжит)"
+    u1=""
+    if [ -s "$TMPD/entities.tsv" ]; then
+      u1="$(canon_uuid_multiset_sha256 "$TMPD/entities.tsv")" \
+        && p1="$(canon_pos_digest_sha256 "$TMPD/entities.tsv")" \
+        && c1="$(canon_counts_json "$TMPD/counts.tsv")" \
+        && { s1t1=$(date +%s%3N 2>/dev/null || date +%s); \
+             s1ss="$(awk -v a="$s1t0" -v b="$s1t1" 'BEGIN{printf "%.3f",(b-a)/1000}')"; \
+             emit_fp_json "$work" "$u1" "$p1" "$c1" "$TMPD/meta.txt" "$st" "$s1ss" \
+               null stage1-skipped 0 0 null stage1-skipped 1; \
+             log "DP-PARITY-FP: stage-1 emitted (D1-D3 live; полный D4/D7 продолжает)"; } \
+        || log "WARN: stage-1 canon не удался — только полный скан"
+    fi
+  fi
 
   run_extractor "$world" "$TMPD" || { log "ERROR extractor failed"; return 1; }
   local uh ph cj
