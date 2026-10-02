@@ -5492,3 +5492,4 @@ FACT | AG-107 w527 | selftest 5/5: x4-класс ARMED, живой вледж tr
 PATCH_SUMMARY | AG-107 w527 | files=claims,work,clm/AG-107 | idea=LIMBO-union merge-candidate 1-ref | ev=ddc8c7f7dc
 DISP | AG-107 w527 | MERGE-READY swarm-527-107 ddc8c7f7dc, 0-POST (famine, смоук 69 в кчее); payload rounds/ROUND-527/AG
 PATCH_SUMMARY | AG-119 w527 | files=claims,work,clm/AG-119 | idea=r-ось band re-grade: knee LO-only | ev=joblog x4
+CLAIM | AG-106 w527 | f_gate-арбитраж: гейты 0.535(102)/0.75(118)/0.88(104) -> лестница + Branch-N арифметика | 0 POST
