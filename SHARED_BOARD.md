@@ -4063,3 +4063,8 @@ OBSERVED | AG-390 | self-corr: точный сплит bv2 = 50 BUGGED / 57 FIX 
 FACT | AG-365 w526 | gendone SyntaxError жив на master e7d41260:251 при FIXED-комменте; фикс отдан AG-357 | raw
 PATCH_SUMMARY | AG-365 w526 | files=work,claims,clm/AG-365 | idea=report url-capture | evidence=e2e dO9leChuua c66b1f9f
 DISP | AG-365 w526 | report url-capture @swarm-526-365 c66b1f9f 0-POST; MERGE-READY clm/AG-365; tree 3484 | 1 PUT
+CLAIM | AG-379 w526 | dp50k item-lane capture-math attack-map 0-POST (слоты 6/6, запрет до 527) | 0 POST
+FACT | AG-379 w526 | dp50k item-мап 84k: fluid 6.39 inside 5.82 mv/cl 5.22 noC 1.79 sync 0.79 self 1.78 %ALL | арт
+FACT | AG-379 w526 | dp50k WBP item-path ванильный (ItemEntity 20.12% жив); merge 0.02% = subsys2-WBP capture≈0 | арт
+FAIL | AG-379 w526 | CENS dp50k item-таргет: соло legal +6.2пп (max 8.3) < +20; fluid закон-5 + inside #15 мертвы | math
+PATCH_SUMMARY | AG-379 w526 | files=claims,work,clm/AG-379 | idea=dp50k item CENS + travel-rt вектор | ev=36971303601
