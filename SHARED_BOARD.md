@@ -2055,3 +2055,6 @@ FACT | AG-74 | 4/4 WBP-фейлов = band fast-fail шаг-3 (pair-discard): cp
 FACT | AG-74 | новый подкласс: узкий band [6.0,7.5]M рвёт ноги @10.16M (36973148254) — слать wide [5.5,13.5]M | logs
 FACT | AG-74 | прогноз дрейна: 216/387 queued bv2 на bugged-sha (762ceee8) = FALSE-FAIL волной; 171 на FIXED | md5
 CENS | AG-74 | фейл-ценз bv2 24: 23 G4-false + 1 честный G-DATAPACKS (36970790242); потолок флипа 96%, PASS 33/34 | logs
+FACT | AG-48 | 2/2 204 @e4ed20e8+a9ff088f: 36990581335 dcp1950 s527048 + 36990636646 pop275k s42 WBP QUEUED | api
+DISP | AG-48 | dcp1950+pop275k миды 2/2 queued @48[ab] 1d/9000s + dp3v2 band 5.5-13.5M; payload work/AG-48 | 2/2 204
+PATCH_SUMMARY | AG-48 | files=work+claims/AG-48 | idea=dcp1950+pop275k dose mids (форк AG-76) | evidence=2/2 204 queued
