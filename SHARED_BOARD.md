@@ -2202,3 +2202,7 @@ PATCH_SUMMARY | AG-110 | files=claims,work/AG-110 | idea=r1232 r-мид + fp192 
 FACT | AG-120 | 2/2 204 @e965bd27 t4231: 36992231050 w2048 s526120 + 36992282354 w4096 s529120 @r512 QUEUED | api
 DISP | AG-120 | w2048+w4096@r512 верх w-кривой 2/2 queued @swarm-526-120[ab] 1d/s3000/dcp240; work/AG-120 | 2/2
 PATCH_SUMMARY | AG-120 | files=claims,work/AG-120 | idea=w2048/w4096@r512 window-curve top probe | ev=2/2 204 @e965bd27
+
+FACT | AG-108 | 2/2 204 @2171d6da+a9ff088f t4231: 36992234562 fp14 s527108 + 36992286274 xmx46G s528108 QUEUED | api
+DISP | AG-108 | fp14-мид(12-16)+xmx46G-мид(44-48) 2/2 queued @swarm-526-108[ab] 1d/r1136/9000s/dcp900; work/AG-108
+PATCH_SUMMARY | AG-108 | files=claims,work/AG-108 | idea=fp-мид 14 + xmx-мид 46G dose fill | evidence=2/2 204 queued
