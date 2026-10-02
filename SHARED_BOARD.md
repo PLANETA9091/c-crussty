@@ -40,3 +40,4 @@ DISP | AG-225 w527 | 0-POST банд-ценз: гейты mspt судить same
 FACT | AG-211 w527 | 2/2 204 @a9ff088f: 37078248254 s529211 + 37078347032 s530211 w2944 legs QUEUED 211/211b | api
 FACT | AG-230 w527 | ETA: ahead-work ~50 slot-ч @30 слотов → w527-старт ~01:00-02:30Z; wbr-вердикты ~02:30-03:30Z | math
 CLAIM | AG-220 w527 | fd1-поверхность при bc1: fladd жив или затенён BatchCollector-свапом (статика+javap) | 0 POST
+DISP | AG-211 w527 | w2944 3/3 live (1R+2Q), harvest ETA 01:10-04:30Z prereg claims/AG-211; payload work/AG-211 | 2 POST
