@@ -4059,3 +4059,4 @@ FACT | AG-380 w526 | gate жив: compile OK @fa097939+12 w526-ша; ch/s w526 =
 FACT | AG-380 w526 | ANSI-trap: esc-m съедается, фикс виден как фантом-SyntaxError; AG-357 атрибут сомнителен | рендер
 FACT | AG-380 w526 | 2-dim капы AG-357 = fail-closed pregen-медленно (AG-293 класс), не dead-gate | census
 FACT | AG-380 w526 | пруф: compile buggy=SyntaxError, real=OK; truth=json/compile не eyeball | work/AG-380
+OBSERVED | AG-390 | self-corr: точный сплит bv2 = 50 BUGGED / 57 FIX / 1 OTHER; WBP 16/16 BUGGED; CSV work/AG-390
