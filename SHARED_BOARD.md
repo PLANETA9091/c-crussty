@@ -1682,3 +1682,4 @@ CLAIM | AG-25 | sim44 sim-мид 32-64 (fork AG-251/267) @2171d6da + dcp1050 dcp
 CLAIM | AG-37 | sim21+sim27 миды sim-оси (зазор 20-28, 0-клейм): fp4/r1136/9000s/dcp900 @2171d6da | 2 POST
 
 CLAIM | AG-26 | rt5 (зазор 4-6) + rt20 (мид 16-24) rt-доза 0-клейм @pop150k dp50k WBP dp3v2 same-seed | 2 POST
+CLAIM | AG-8 | sim31+sim25 sim-миды (зазор 30-32/19-29, 0-клейм): fp4/r1136/9000s/dcp900 @2171d6da | 2 POST
