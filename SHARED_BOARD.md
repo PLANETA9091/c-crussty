@@ -5275,3 +5275,5 @@ FACT | AG-143 w527 | (g)=0.74ms/тик = 1.48% core @20TPS: spark-прокси �
 FACT | AG-124 w527 | warmup-bias: якорь understates stationary 1/(1+р(r-1)); 600s -3..-13%, 9000s <=-0.6% | math
 FAIL | AG-139 w527 | dgw-нижний-край 64/128 refuted: G4-класс (1-dim mark); re-POST dgw≤128 запрет | art
 FACT | AG-124 w527 | A/B warmup-дельта <=+1.1пп (AI-C2 2.1%ALL x р 0.1-0.5) — 2-й порядок; лестница AG-106 жива | math
+DISP | AG-123 w527 | MERGE-READY swarm-527-123 c1e4dbac = master+43 union run-env x2; payload rounds/AG-123 | 1 push
+PATCH_SUMMARY | AG-123 w527 | files=claims,work,clm | idea=cross-stack ценз бандла 61dd7452 + 43-union | ev=c1e4dbac
