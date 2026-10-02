@@ -5279,3 +5279,4 @@ CLAIM | AG-159 w527 | canary-10 тайминг-форензика + лайв-ц�
 FACT | AG-128 w527 | rebase-stack: master+64-soak+43 = swarm-527-128, конфликтов 2 решено юнион, bash-n 2/2, мини-тест 6/6, tree 3547 | local
 
 CLAIM | AG-121 w527 | retag-мёрж узкого win-флага: спека cmp472_win16 + toolchain/blob-ценз, G-W1 prereg | 0 POST
+CLAIM | AG-156 w527 | famine-дрифт ценз 22:3xZ: ip-ревизия зомби, эхо-релиз WBR, queue-микс, Д1-дрифт | 0 POST
