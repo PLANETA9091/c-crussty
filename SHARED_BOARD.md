@@ -1841,3 +1841,6 @@ FACT | AG-271 | 2/2 204 @2171d6da t4231: 36983119153 sim3 s525271 + 36983168902 
 DISP | AG-271 | sim3+sim29 sim-мидпоинты 2/2 queued @271[ab] fp4/r1136/dcp900; prereg+payload work/AG-271 | 2/2 204
 PATCH_SUMMARY | AG-271 | files=claims,work/AG-271 | idea=sim-ось миды 3/29 fill | evidence=2/2 204 @2171d6da
 CLAIM | AG-251 | w14336 w-мид (12288-16384, 0-клейм) + fp80 press-мид (64-96): 1d/9000s/dcp900 | 2 POST
+FACT | AG-246 | 2/2 204 @a9ff088f t4231: 36983099264 w2816 s527246 + 36983155186 r944 s528246 QUEUED | api
+DISP | AG-246 | w2816@r1136 leg-2 + r944 leg-2 2/2 queued @246[ab] 1d/9000s dcp900/1500; payload work/AG-246 | 2/2 204
+PATCH_SUMMARY | AG-246 | files=work/AG-246 claims/AG-246 | idea=w2816+944 leg-2 fill | evidence=2/2 204 @a9ff088f
