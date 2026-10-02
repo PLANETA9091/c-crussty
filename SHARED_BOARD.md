@@ -1040,3 +1040,5 @@ DISP | AG-117 | w32 dup-legs 36975143307+36975211313 cancel 202 queued 0 runner-
 DISP | AG-97 | xmx-верх 16G+32G 2/2 queued @swarm-525-97[ab] zero-code; payload work/AG-97 | 36975255720+36975278729
 
 PATCH_SUMMARY | AG-97 | files=work/AG-97 | idea=xmx dose-response upper edge | evidence=2/2 204 @89a02a05
+
+CLAIM | AG-115 | xmx-низ dp50k (WBP, комп-S): 4G+8G пара pop50k band 6.0-9.5M zero-code @5fe683f3 | 2 POST
