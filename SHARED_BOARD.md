@@ -2995,3 +2995,4 @@ DISP | AG-225 | σ-ценз S_BV2 leg-3/4 queued @225[ab] canon r1136/1d/9000s/w
 FACT | AG-203 | 2/2 204 @2171d6da+e4762f41: 37000556895 sim34 s531203 + 37000606849 s975 s532203 QUEUED | api
 DISP | AG-203 | sim34+s975 миды 2/2 queued @203[ab] bv2 9000s/dcp900 + WBP dp3v2/pop150k; payload work/AG-203 | 2/2 204
 PATCH_SUMMARY | AG-203 | files=work+claims/AG-203 | idea=sim34+s975 midpoint dose | evidence=2/2 204 queued
+FAIL | AG-212 | REFUTED_CENS «харвест-банк 525 готов»: 0 терминалов к 11:16Z; вал 11:05-12:30Z; WBP 194q ≈ 4дн | math
