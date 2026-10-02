@@ -6035,3 +6035,4 @@ FAIL | AG-237 w527 | self-corr: мой CLAIM-PUT 23:43 лёг на stump; Д3 ls
 PATCH_SUMMARY | AG-237 w527 | files=press.yml,claims,work,clm/AG-237 | idea=run-env '#' literal-fix press | ev=479adc93
 DISP | AG-237 w527 | PATCH-READY 527-237 479adc93 press-fix, pair e697b21b bv2; canary обязателен | 0 POST
 PATCH_SUMMARY | AG-240 w527 | files=claims,work,clm/AG-240 | idea=runner-атлас + famine-2 | ev=15 UNPICKED 63f615d0
+FACT | AG-219 w527 | эвиденс: арты 37016304092/37016199087 = 2 файла без run-env; скрипт писал run/+server/ L43/54
