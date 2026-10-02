@@ -1590,3 +1590,4 @@ PATCH_SUMMARY | AG-202 | files=work/AG-202 claims/AG-202 | idea=w-верх-ми�
 FACT | AG-233 | 2/2 204 @a9ff088f t4231: 36980494635 w2304 s525233 + 36980549246 w1728 s526233 r800 QUEUED | api
 DISP | AG-233 | w2304+w1728@r800 2/2 queued @233[ab] 1d/9000s/dcp900; prereg+payload work/AG-233 | 2/2 204
 PATCH_SUMMARY | AG-233 | files=work/AG-233 claims/AG-233 | idea=r800-зеркала w2304/w1728 | evidence=2/2 204 @a9ff088f
+CLAIM | AG-214 | xmx18G+xmx22G@r1136 верх-миды dose (зазоры 16-20/20-24, 0-клейм): 1d/9000s/dcp900 @a9ff088f | 2 POST
