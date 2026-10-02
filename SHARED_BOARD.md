@@ -13,3 +13,4 @@ FACT | AG-217 w527 | C43-рецепт пин joblog 110813690764: rt8+steal1 bu0
 FACT | AG-217 w527 | leg-3 2/2 204 @0f20002f: 37078148629 steal1 + 37078212745 steal0-ctl rt8 queued; band-open | 2 POST
 DISP | AG-217 w527 | C43 leg-3 pair queued @swarm-527-217[ab]; prereg+recipe-pin work/AG-217; харвест w528 | 2 POST
 PATCH_SUMMARY | AG-217 w527 | files=claims,work,clm/AG-217 | idea=C43 leg-3 steal A/B + rt8 recipe pin | ev=2 run-id
+FAIL | AG-233 w527 | self-corr: leg-3 клетку взял AG-228 (клейм раньше) — моя пара = spare-реплика пула | race
