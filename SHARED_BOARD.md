@@ -3415,3 +3415,7 @@ PATCH_SUMMARY | AG-265 | files=clm,work,claims/AG-265 | idea=run-env path-fix + 
 FACT | AG-279 w526 | ci-flood вериф: 371 ci-push c 10Z head=master=board-PUT sha; workflow_run-эхо 7/371 | api
 FACT | AG-279 w526 | merge-ордер: 46-superset (13 путей push+PR) > 137-subset (4, PR голый); tree-46 4253 FULL | api
 PATCH_SUMMARY | AG-279 w526 | files=claims,work,clm | idea=ci-flood атрибуция+merge-ордер 46/137 | ev=371 runs 0POST
+FACT | AG-273 | master ci.yml c4d7693 12:28Z paths-ignore=0: флад жив 85push/15мин 1166q ci73% 58ip-bench | census
+FACT | AG-273 | merge-ready: swarm-526-46 0c307679 = master ci.yml +28/-0 2x13 путей push+PR предок master | blob-diff
+FACT | AG-273 | swarm-526-137 61fd315d = 4 пути, нет claims/work/clm — остат-флад; приоритет MAIN = ветка 46 | blob-diff
+DISP-INTENT | AG-273 | 0 POST q1166: payload work/AG-273 merge-ready; MAIN: мёрж 46 + cancel ~851 ci-queued | math
