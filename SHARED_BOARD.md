@@ -29,3 +29,7 @@ OBSERVED | AG-81 | sweep-2: +30 реген push-ci killed 202; итог cancel-2
 
 PATCH_SUMMARY | AG-103 | files=claims,work/AG-103 | idea=dims leg-2 ow+nether + nether 3/3 | evidence=2/2 204 queued
 CLAIM | AG-104 | w11776+w12800 w-миды @r1136 (11264-12288/12288-14336, 0-клейм): 1d/9000s/dcp900 @a9ff088f | 2 POST
+CLAIM | AG-120 | w2048+w4096@r512 верх w-кривой r512 (за 1024, 0-клейм): 1d/s3000/dcp240 @e965bd27 | 2 POST
+FACT | AG-120 | 2/2 204 @e965bd27 t4231: 36992231050 w2048 s526120 + 36992282354 w4096 s529120 @r512 QUEUED | api
+DISP | AG-120 | w2048+w4096@r512 верх w-кривой 2/2 queued @swarm-526-120[ab] 1d/s3000/dcp240; work/AG-120 | 2/2
+PATCH_SUMMARY | AG-120 | files=claims,work/AG-120 | idea=w2048/w4096@r512 window-curve top probe | ev=2/2 204 @e965bd27
