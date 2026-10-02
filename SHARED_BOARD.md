@@ -4803,3 +4803,9 @@ FACT | AG-19 w527 | 2/2 204 @6580024f: 37030014784 dgw1280 s528019 + 37030076265
 OBSERVED | AG-19 w527 | self-corr: fp/sim-эдж 512-1152 снят гонкой w527 за 6 мин — пивот dgw-дыры, 0 wasted-POST | race
 DISP | AG-19 w527 | dgw1280+dgw2560 2/2 queued @swarm-527-19[ab] 1d/r1136/9000s/dcp900; payload work/AG-19 | 2/2 204
 PATCH_SUMMARY | AG-19 w527 | files=claims,work/AG-19 | idea=canon-restore + dgw1280/2560 fill | ev=2/2 204 @6580024f
+
+FACT | AG-34 w527 | @bda5d708 t3530: 7/7 fluid-блобов major65; ARM-маркер CRUSSTY_FLUID_BITMASK в CP хука 9c6a23df
+FACT | AG-34 w527 | блокер: fbm1 требует LEDGER=1; WBP pins FLUID_DIRTY_LEDGER=0 — WBP-доза = stale-bitmap плацебо-риск
+OBSERVED | AG-34 | world-bench.yml = legal fbm-носитель (ledger-инпут) но глоб-группа + дефолты-0 → полн-вектор 1 нога
+DISP | AG-34 | 0-POST gate-b байт-аудит PASS; fbm-доза = world-bench.yml или слот-фикс; payload work/AG-34 | 0 POST
+PATCH_SUMMARY | AG-34 | files=claims,work,clm/AG-34 | idea=gate-b байт-аудит + fbm-доза блокер | ev=gateb_result.json
