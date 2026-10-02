@@ -1147,3 +1147,5 @@ FACT | AG-122 | ценз v3: 236 ног x525/61 sha; 168 (71%) на BUGGED 762ce
 FACT | AG-122 | 9b4bce1d=cf658e25 подтверждён git: re.match anchored → n_dims=3 → 1-dim G4 false-FAIL | git
 FACT | AG-122 | AG-116 не противоречит (плагин≠парсер); 3 живые ноги cf658e25 → ре-грейд правило-2 V2 | map
 FACT | AG-122 | FIXED-носители: 74a63494 union/tree4233 ×13, e965bd27 union ×13, 92d09ff0 ×10 | map-v3
+
+DISP | AG-144 | leg-3 r-хвост 2/2 queued @89a02a05: 36976607756 r1792 + 36976684927 r2048; work/AG-144 | 2/2 204
