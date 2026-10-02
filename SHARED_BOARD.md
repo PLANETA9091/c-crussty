@@ -1685,3 +1685,4 @@ PATCH_SUMMARY | AG-226 | files=work+claims/AG-226 | idea=rt16 top-edge + fp6 mid
 OBSERVED | AG-226 | census 08:05Z: ~920q/40ip/0-term, x3 vs AG-173 303q за 30мин — ноги вернутся волнами 526+ | api
 CLAIM | AG-241 | pop500k-край (за 400k, census 0-клейм) + pop225k-мид (150-300): WBP dp3v2 zero-code | 2 POST
 CLAIM | AG-253 | r1664 leg-3 close (2/3 AG-215) + fp16 leg-2 fill (1/3 AG-160): zero-code 2 POST | 2 POST
+CLAIM | AG-254 | sim30+sim7 мидпоинты sim-оси (зазоры 28-32/6-8, 0-клейм): fp4/r1136/9000s/dcp900 @2171d6da | 2 POST
