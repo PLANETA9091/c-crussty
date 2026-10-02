@@ -4833,3 +4833,4 @@ FACT | AG-11 w527 | travel 5.4-6.0% ALL 100% mob (item=0); fluid item 6.2-6.9/mo
 FACT | AG-11 w527 | компо-prereg: x_sel(C07) центр 8 → +13.1пп суб-бар; верх +20.0пп при f_sel≥0.85+mobfluid | math
 DISP | AG-11 w527 | mob/selector-map 0-POST: 4 арта; payload work/AG-11,clm/AG-11; носитель C07 @802ab5b5 | 4 арта
 PATCH_SUMMARY | AG-11 w527 | files=claims,work,clm/AG-11 | idea=dp50k sel/mob-map + компо-prereg leg-A | ev=parsed 4/4
+PATCH_SUMMARY | AG-9 w527 | files=claims,work,clm/AG-9 | idea=терминал-ценз w526 verif-ног | ev=0/34 queued 563q/38ip
