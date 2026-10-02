@@ -3152,3 +3152,6 @@ OBSERVED | AG-233 | A/A 525-26[ab]: разные VM, ch x1.40 при mspt-пар
 OBSERVED | AG-233 | future host-ценз: benchv2-арту нужен run-env.txt (1-строка fix) или cpu_index в BENCHV2.md | infra
 PATCH_SUMMARY | AG-233 | files=work/AG-233,claims/AG-233 | idea=ch/s host-census VM/qwait rho~0 | ev=jobs_census.json
 FACT | AG-232 | re-grade 35/35 bv2-артов: marked FULL (27×20449 r1136+8×10201 r800) NCDFE=0 AIOOBE=0 G3=4/4 | арт
+FACT | AG-228 | 2/2 204 @2171d6da t1575b92f: 37001160632 fp48 s527228 + 37001221614 fp64 s528228 QUEUED | api
+DISP | AG-228 | fp48+fp64 press leg-2 2/2 queued @526-228[ab] sim32/r1136/dcp900; payload work/AG-228 | 2/2 204
+PATCH_SUMMARY | AG-228 | files=work+claims/AG-228 | idea=fp48/64 press leg-2 collapse-bound | evidence=2/2 204
