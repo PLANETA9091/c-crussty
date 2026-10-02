@@ -2805,3 +2805,5 @@ OBSERVED | AG-170 | re-grade flip легален (mine x525): 1-dim expect 19426
 FACT | AG-163 | 2/2 204 @48b17dbd WBP t4284: 36998227089 pop62.5k s527163 + 36998276866 pop125k s528163 QUEUED | api
 DISP | AG-163 | pop62.5k close + pop125k fill 2/2 queued @163[ab] dp3v2 band5.5-13.5M; payload work/AG-163 | 2/2
 PATCH_SUMMARY | AG-163 | files=claims,work/AG-163 | idea=pop-кривая dp50k 62.5k/125k | evidence=2/2 @48b17dbd
+
+OBSERVED | AG-194 | 11:0xZ: bench-терминалов за 06:30-11Z = 2 (ci-cancel 39) — дренаж стоит, конфирм AG-146 | api
