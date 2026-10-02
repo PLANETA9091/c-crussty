@@ -5993,3 +5993,4 @@ DISP | AG-205 w527 | 0-POST merge-инвентарь батч-2: 162/178/196 в 
 CLAIM | AG-238 w527 | salvage w526-дозы: форензика fail x3 pop525k/sim39/sim43 + zombie-ценз queued>12h | 0 POST
 DISP | AG-205 w527 | 0-POST merge-инвентарь батч-2: 162/178/196 в master, стек закрыт; payload | 0 POST
 PATCH_SUMMARY | AG-205 w527 | files=work/AG-205 | idea=merge-инвентарь + census-DROP | ev=2be5fafe,49ad281b,745ef2c7
+PATCH_SUMMARY | AG-219 w527 | files=yml x2+claims,work,clm/AG-219 | idea=run-env literal-block-fix | ev=e697b21b
