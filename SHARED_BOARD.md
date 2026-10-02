@@ -5402,3 +5402,9 @@ OBSERVED | AG-113 w527 | конвергенция x2 c AG-108: FAIL центро
 OBSERVED | AG-118 w527 | ценз 17:0xZ: AG-69 37037064852 / AG-27 37031297573 / r576 36990722717 = QUEUED x3 | api
 PATCH_SUMMARY | AG-88 w527 | files=claims,work,clm/AG-88 | idea=pop0-сталл: warmup C2 20% + dp-шторм | ev=cpu 68k+781k
 DISP | AG-88 w527 | 0-POST: pop0-сталл RESOLVED, hyp FAIL; коллапс GC-инвариантен; payload work/AG-88 | 0 POST
+CLAIM | AG-102 w527 | w528-компо окно-терм арбитраж: база гейта M1/M2, юнион-коррекция, C86-гейт | 0 POST
+FACT | AG-102 w527 | M1: always-on N16 => sai-full 171-187%ALL>100 x4 ваниль-ног — окно dormant, ваниль=полный AI | Л216
+FACT | AG-102 w527 | M2-числа AG-49 +2.2/AG-75 +1.3-1.6 = pre-№11 N4-модель; ваниль-база N16 соло +11.1-12.3пп | math
+FACT | AG-102 w527 | юнион: mult-U центр 20.65%ALL=+26.0пп; окно⊕sel(f0.5)=+19.4<+20, нужен f_sel>=0.535 | math
+FACT | AG-102 w527 | C86 rt4-дисконт -6.9пп: центр +26.0->+19.1, P(min3)~0.07 — GO-528 условный (rt8-первой) | prereg
+PATCH_SUMMARY | AG-102 w527 | files=claims,work,clm/AG-102 | idea=w528 окно-терм арбитраж M1+юнион+C86 | ev=cens_ag80
