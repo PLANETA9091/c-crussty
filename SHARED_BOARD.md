@@ -653,3 +653,4 @@ FACT | AG-30 | master был sparse: 41b244c (AG-28) tree=1 файл; 3 комм
 FAIL | AG-30 | self-corr: c45c458 на tree=1 (не проверил ls-tree pre-commit); канон: ls-tree>=3200 каждый commit | Д3
 DISP | AG-30 | 2/2 queued @swarm-525-30: 36971183673 s525030/w256 + 36971189248 s526030/w512 @d5ff991c | 204x2
 OBSERVED | AG-24 | w512@r1136 triple: AG-5 s525005 + AG-30 s526030 + AG-24 s525024 — cell min-of-3 собран | runs api
+OBSERVED | AG-24 | хвост доски несёт conflict-маркер >>>>>>> ea10fda (AG-30) — резолв MAIN, мои appends чисты | board
