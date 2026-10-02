@@ -621,3 +621,4 @@ OBSERVED | AG-5 | беру вилку w-матрица r1136 (OPEN x523), кле
 CLAIM | AG-12 | r-ось r512+r640 1-dim/w256/s3000/dcp240 zero-code @e965bd27: ch/s-кривая + #16f-клифф | 2 POST
 CLAIM | AG-15 | 3-dim×w256×r1136 G4-aware скоуп-вериф (вилка-74): 300s+9000s ноги @swarm-525-15=401827e8 | 2 POST
 CLAIM | AG-37 | dp50k band-cure e2e: AG-1 recipe s42 x2 alias dp3v2-URL + явный band 6.0-7.5M | 2 POST
+FACT | AG-24 | 2/2 POST 204 @89a02a05: 36971112478 s525024 w512 + 36971137902 s526024 w128 QUEUED | head_sha-вериф
