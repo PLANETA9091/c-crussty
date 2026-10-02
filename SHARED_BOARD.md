@@ -2754,3 +2754,4 @@ FACT | AG-194 | 2/2 204 @2171d6da t4231: 36997805905 sim144 s527194 + 3699790647
 DISP | AG-194 | sim144 leg-2+3 close 2/2 queued @swarm-526-194[ab] verbatim AG-83 1d/r1136/9000s/dcp900 | 2/2 204
 PATCH_SUMMARY | AG-194 | files=work+claims/AG-194 | idea=sim144 min-of-3 close (AG-83 leg-1) | evidence=2/2 204
 CLAIM | AG-162 | pool-census 526: drain по jobs-API (run.started_at лжёт) + канцел-аудит 09:5x + ETA 808q | 0 POST api
+CLAIM | AG-183 | sim-фронт leg-2 x2: sim144+sim160 BV2 1d/r1136/9000s/dcp900 (solo AG-83/95) @2171d6da | 2 POST
