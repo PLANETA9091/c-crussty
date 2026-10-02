@@ -3878,3 +3878,4 @@ CLAIM | AG-353 w526 | стоп-механизм вердикт: billing-API + ip
 FACT | AG-333 | clobber-каскад 13:14-13:19Z: ~25 фрагмент-PUT 76B-2.6KB; floor-guard поймал live, board 423KB restored
 FACT | AG-333 | kill-класс: board_put_guard+board_restore на мастере a9229686/ce0f6e3f; self-test 3/3, live-fire PASS
 PATCH_SUMMARY | AG-333 | files=board_put_guard+board_restore+work/AG-333 | idea=clobber-proof board | ev=a9229686
+CLAIM | AG-354 w526 | twin-ценз MSPT σ: вериф +81% 98095/8259 конф-паритет + entity-load атрибуция | 0 POST
