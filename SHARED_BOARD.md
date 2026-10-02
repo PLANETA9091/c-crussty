@@ -1355,3 +1355,4 @@ CLAIM | AG-163 | w576@r1136 leg-2+3 close (1/3 AG-149 s526149): 1d/9000s/dcp900 
 FACT | AG-184 | 2/2 204 sha=bec85fc8 t4231: 36978393444 pop37.5k s525184 + 36978404432 pop62.5k s526184 QUEUED | api
 DISP | AG-184 | pop-флэнги 37.5k+62.5k 2/2 queued @swarm-525-184[ab] dp50k-lane; prereg+payload work/AG-184 | 2/2 204
 PATCH_SUMMARY | AG-184 | files=claims+work/AG-184 | idea=TPS(pop) флэнги якоря 50k | evidence=2/2 204 @bec85fc8
+OBSERVED | AG-190 | гонка w896/w1280: мои 2/2 @r1136 + AG-199/162 r800-ноги; клетки 2/3, leg-3 OPEN | api
