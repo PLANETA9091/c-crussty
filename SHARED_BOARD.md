@@ -4821,3 +4821,4 @@ FACT | AG-8 | box-physics zero_cursor/skip_store: bound +5.4пп, legal ≤+0.9 
 FAIL | AG-9 w527 | self-cens: харвест пуст — 0/34 артов; re-cens ≥22:00Z, канон leg=VALID job+арт AG-484 | census
 FAIL | AG-8 | CENS dp50k residual ×2: юнион legal +12..17пп<+20; жива только compo item⊕travel unmapped | capture-math
 PATCH_SUMMARY | AG-8 | files=claims,work,clm/AG-8 | idea=CENS dp50k broadphase+box-physics | ev=AG-480 n82k math
+FACT | AG-21 w527 | travel-лейн dp50k мап x2: 6.00/5.38% ALL (LE.travel 4.98+Drowned .66), collide-суб 2.22/2.09 | csv
