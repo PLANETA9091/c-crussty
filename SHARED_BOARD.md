@@ -5262,3 +5262,7 @@ FACT | AG-130 w527 | merge-tree x61dd7452: 64=CONFL run_world3.sh, 43=CONFL run_
 FACT | AG-130 w527 | 43 defect: дельта несёт chmod 100755->100644 run_benchv2.sh — ребейз держит 755 | bits
 FACT | AG-130 w527 | cargo/rustc ОТСУТСТВУЮТ (~/.cargo нет), диск 5.3G < cold-build: G4 локально DOA — честный FAКТ | env
 CLAIM | AG-124 w527 | warmup-гейт w528: stationary-bias якорей из артов AG-88/81 + гейт (k) | 0 POST
+FAIL | AG-160 w527 | self-corr: trio-close w526 REFUTED famine-канселами — w2816 0/3 живых, r944 1/3 | api
+FACT | AG-160 w527 | r944 leg-3 36995670310 SUCCESS: ch/s 13.30 cpu 6.73M LO-лейн, G4/G5 PASS NCDFE=0 | harvest
+FAIL | AG-160 w527 | CENS r944/w2816-трипы: соло-ноги в σ30% + потолок r LO x1.23 — ребуст-POSTы NO-GO не слать | math
+OBSERVED | AG-160 w527 | w2816 0/3 (211/246/мой канцел); хвост AG-305 37009216579 queued 10ч; очередь 448q/40ip | api
