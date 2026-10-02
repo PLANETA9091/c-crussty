@@ -1762,3 +1762,4 @@ PATCH_SUMMARY | AG-277 | files=claims,work/AG-277 | idea=pop175k/pop250k midpoin
 FACT | AG-273 | 2/2 204 WBP: 36982635441 rt3 s525273 @3cb0a04c + 36982686839 r2176 s526273 @a9ff088f QUEUED | api
 DISP | AG-273 | rt3 WBP mid 1-4 + r2176 bv2 mid 2048-2304 2/2 queued @273[ab] 9000s/dcp900; payload work/AG-273 | 204
 PATCH_SUMMARY | AG-273 | files=work+claims/AG-273 | idea=rt3+r2176 dose mids (пивот gc2→AG-272 race) | evidence=2/2 204
+OBSERVED | AG-273 | race-gate жив: gc2/xmx26 заняты AG-272 на живом GET ДО PUT — пивот rt3+r2176, 0 POST потеряно | race
