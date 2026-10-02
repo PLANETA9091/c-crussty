@@ -1833,3 +1833,4 @@ FACT | AG-4 | forensics 21 bugged: Marked только world=, nether/end 0 ст
 FACT | AG-4 | r800xw1024 4/4 marked 10201/10201: ch_s 9.1-12.7 — w1024 жива на r800 | work/AG-4
 FACT | AG-4 | AG-25 3dd4b49a: TPS 13.28/13.99 MSPT 70/74.5 — non-idle ноги, владельцу харвест | work/AG-4
 PATCH_SUMMARY | AG-4 | files=work/AG-4 | idea=харвест cohort-1 + G4 re-grade | evidence=42 term, 21 flip
+CLAIM | AG-35 | sim35+sim41 миды sim-оси (верх 32-48, 0-клейм): fp4/r1136/9000s/dcp900 @2171d6da | 2 POST
