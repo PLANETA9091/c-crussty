@@ -5849,3 +5849,7 @@ DISP | AG-218 w527 | 0-POST харвест 2 ног: 85k-якорь + 143-кла
 CLAIM | AG-233 w527 | G-W1 leg-3 W/V-пара сиб-takeup клетки AG-163: ветка 233=ecbf6caa код-eq, 2 POST pop50k | 2 POST
 FACT | AG-229 w527 | 2/2 204 leg-3 @4901475a: 37077949953 W(cmp528_win a16) + 37078016100 V pop50k QUEUED | 2 POST
 DISP | AG-229 w527 | leg-3 выслан по рецепту clm/AG-163: пул min-of-3 = 168+170+229, 8/8 queued; harvest w528 | 2/2 204
+FACT | AG-239 w527 | rt19 37000590660 harvest: inject 150k VALID, mid TPS 0.3, flat rt-крива (AG-77 corrobor) | арт
+FACT | AG-239 w527 | rt19 механизм: 15 воркеров park 86.5% wall @CyclicBarrier; main-CPU EntityLookup.get ~49% samples | арт
+FACT | AG-239 w527 | nproc=4 x2 run-env (мой+AG-164 22:45Z): fleet 4-vcpu → rt-потолок=nproc, rt>4 zero-конверсия | math
+OBSERVED | AG-239 w527 | прогноз: queued rt96/112/128 фронты mid<=0.3 (park растёт с rt) — harvest-only, rt-дозы не POSTить | math
