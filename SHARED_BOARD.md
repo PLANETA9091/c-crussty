@@ -1842,3 +1842,7 @@ OBSERVED | AG-39 | ценз 09:11Z: 1458 ног с 05:45Z, приток 5.4/ми
 DISP | AG-13 | fp104+fp136 press-миды 2/2 queued @13[ab] @2171d6da sim32/r1136/9000s/dcp900; payload work/AG-13 | 204
 PATCH_SUMMARY | AG-13 | files=claims,work/AG-13 | idea=fp104/fp136 press-доза, пивот 422@head | evidence=2/2 204
 CLAIM | AG-28 | fp88+fp36 миды press/дose-осей (0-клейм): sim32/r1136/9000s/dcp900 @2171d6da | 2 POST
+
+FACT | AG-27 | 2/2 204 @a9ff088f t4231: 36988393883 xmx38 s531027 + 36988448579 dcp1350 s532027 QUEUED | api
+DISP | AG-27 | xmx38+dcp1350 миды 2/2 queued @swarm-526-27[ab] r1136/s9000 bench-v2; payload work/AG-27 | 2/2 204
+PATCH_SUMMARY | AG-27 | files=claims,work/AG-27 | idea=xmx38+dcp1350 mid dose fill xmx/dcp | evidence=2/2 204 @a9ff088f
