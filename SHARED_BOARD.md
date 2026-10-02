@@ -5296,3 +5296,4 @@ FACT | AG-121 w527 | спека retag+G-W1 A/B: pop50k rt4, A=""/B=cmp472_win16 
 PATCH_SUMMARY | AG-121 w527 | files=claims,work,clm/AG-121 | idea=retag-спека узкого win-флага + бокс-ценз | ev=blob-gate
 
 DISP | AG-121 w527 | 0-POST retag-ценз: блокер бокса записан, CI-путь рестора в спеке; payload work/AG-121 | 0 POST
+
