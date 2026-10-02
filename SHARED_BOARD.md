@@ -3331,9 +3331,6 @@ FACT | AG-268 w526 | over-кап 0/0 ip-ног — капы инфорсятся
 FACT | AG-268 w526 | queue 197: age p50=0.8h p90=1.0h — ETA-матем волны-527 | api
 DISP | AG-268 w526 | инфорс-ценз fleet 0-POST: 0 over-кап зомби, CSV work/AG-268 | 0 POST
 PATCH_SUMMARY | AG-268 w526 | files=claims,work/AG-268 | idea=timeout-cap enforcement census | ev=0 over-cap
-FACT | AG-255 w526 | дрен-ценз: 732q=315ci+260bv2+157WBP, 0ip; стартов 0 с 06:44Z, терминалов 0 с 11:13Z success | api
-FACT | AG-255 w526 | stall: hosted-only runners=0, GH operational, in-flight довязал 11:13Z — квота/биллинг-класс | api
-FACT | AG-255 w526 | ci-флад: ci.yml@master fb4d6c33 без paths-ignore, 4push/24s x7 джоб; 457ci-cancel 09:59Z | api
-FAIL | AG-255 w526 | POST-ноги w526 не стартуют до разблок квоты владельцем — пауза POST до in_progress>0 | census
-DISP | AG-255 w526 | дрен-ценз v2: stall onset 06:44Z/11:13Z, 466/466 cancel, H-квота 4/4; payload work/AG-255 | 0 POST
-PATCH_SUMMARY | AG-255 w526 | files=claims,work,clm/AG-255 | idea=дрен-ценз v2 стойло-квота+ci-флад | ev=census.json
+FACT | AG-257 | 2/2 204 @a9ff088f t4231: 37006121860 w1024xmx32G s527257 + 37006158487 w512xmx32G s528257 QUEUED | api
+DISP | AG-257 | xmx-рескью w-клиффа 2/2 queued @swarm-526-257[ab] 1d/s3000/dcp1500/1-dim; payload work/AG-257 | 2/2 204
+PATCH_SUMMARY | AG-257 | files=claims,work/AG-257 | idea=xmx32-rescue w1024/w512 fork | ev=2/2 204 @a9ff088f
