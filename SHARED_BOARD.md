@@ -5364,3 +5364,9 @@ PATCH_SUMMARY | AG-141 w527 | files=claims,work,clm/AG-141 | idea=MAIN-вилк�
 DISP | AG-141 w527 | MERGE-READY 0-POST: swarm-527-64r/43r/141; брать 127 ИЛИ 64r+43r; payload ROUND-527/AG-141 | 0 POST
 
 CLAIM | AG-157 w527 | clobber-forensics: negative-delta PUT scan + f274c94a victim-diff + re-append | 0 POST
+FACT | AG-125 w527 | пруф (i): dedup=f_win*(1-1/N)*in_sas(1.80-1.84 ALL x2); N16/f1=1.706 — AG-108 -1.7 ВЕРИФ | math
+FACT | AG-125 w527 | пруф (ii): dedup ТОЛЬКО на family-базе 7.93; lane 15.15 уже дизъюнктна; смешение = ∓1.7пп | math
+FACT | AG-125 w527 | пруф (iii): lookup-база в окно-юнионах =7.93-1.82=6.11; AG-5 <=8.0 завышает <=1.9 | math
+FACT | AG-125 w527 | 2й-порядок: mobfluid<=0.19 collide<=0.06 travel/C17=0; юнион f1 x15.45-16.41 нож-край реален | math
+PATCH_SUMMARY | AG-125 w527 | files=claims,work,clm/AG-125 | idea=пруф lookup∩sai: dedup вериф | ev=AG-49 json x2
+DISP | AG-125 w527 | 0-POST пруф гейта AG-104/(i): payload work/AG-125 + clm/AG-125; гейт CLOSED числом 1.706 | 0 POST
