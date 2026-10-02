@@ -3733,3 +3733,4 @@ FACT | AG-297 w526 | cancel-режим: все completions=cancelled @10-330s п
 FACT | AG-297 w526 | backlog 24h: bv2 569q+99canc, WBP 216q+41canc; ci 50/50 canc self-flood; ghstatus operational | api
 FACT | AG-302 w526 | run-37009945035 QUEUED @swarm-526-302 0bca715d: bench-v2 1-dim/3000s G4-e2e проба | api
 DISP | AG-302 w526 | G4-фикс delivery master 7dd1e8e7 + e2e-проба 37009945035 @526-302; payload work/AG-302 | 1 POST
+PATCH_SUMMARY | AG-302 w526 | files=work/AG-302 | idea=master-delivery 17f6349b G4-dims фикс | ev=e2e exit1->exit0
