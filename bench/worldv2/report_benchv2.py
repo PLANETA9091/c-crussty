@@ -13,7 +13,9 @@ lines = open(logp, encoding="utf-8", errors="replace").read().splitlines()
 # (written by run_benchv2.sh at $WORK/run-env.txt, one level above server dir).
 # Canon radius 1136 blocks => side=71 => expect=20449 (byte-identical old gate).
 expect_pd = 20449
-_envp = os.path.join(os.path.dirname(d.rstrip('/')), "run-env.txt")
+_envp = os.path.join(d.rstrip('/'), "run-env.txt")  # AG-370 w526 B-canon: run-env also in server dir (artifact-canonical) - read FIRST
+if not os.path.exists(_envp):  # legacy/A-variant fallback: work-dir copy one level above
+    _envp = os.path.join(os.path.dirname(d.rstrip('/')), "run-env.txt")
 try:
     for _l in open(_envp, encoding="utf-8", errors="replace"):
         _m = re.match(r"radius_blocks=(\d+)", _l.strip())
@@ -89,6 +91,15 @@ rep.append(f"- NCDFE={ncdfe} (canon T1=0 gate: {'PASS' if ncdfe == 0 else 'FAIL'
 rep.append(f"- G3 datapacks-enabled markers: {g3}/4 ({'PASS' if g3 >= 4 else 'FAIL'})")
 rep.append(f"- G4 marked≥95%: {'PASS' if g4_pass else 'FAIL'}; G5 drain: {'PASS' if g5_pass else 'DRAIN-TIMEOUT'}")
 rep.append(f"- drain window: first_ts={first_ts} drain_ts={drain_ts}")
+_host = ""
+if os.path.exists(_envp):
+    _kv = {}
+    for _l in open(_envp, encoding="utf-8", errors="replace"):
+        for _m in re.finditer(r"([a-z_]+)=(\S+)", _l.strip()):  # AG-370: finditer - heredoc packs several k=v on one line
+            if _m.group(1) not in _kv: _kv[_m.group(1)] = _m.group(2)
+    _host = " ".join(f"{k}={_kv[k]}" for k in ("runner_cpu_index","runner_name","run_id","attempt") if k in _kv)
+if _host:
+    rep.append(f"- host: {_host} (AG-370 w526: AG-233 host-census enabler, cpu_index in-report; AG-324 v4 idea)")
 open(os.path.join(d, "BENCHV2.md"), "w").write("\n".join(rep) + "\n")
 print("\n".join(rep))
 if ncdfe > 0 or g3 < 4 or not g4_pass:
