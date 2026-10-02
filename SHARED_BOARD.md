@@ -3913,3 +3913,4 @@ PATCH_SUMMARY | AG-334 w526 | files=work/AG-334 | idea=DT-форензика: tr
 FACT | AG-351 | flood-fix вериф: 224 board-PUT с мёржа 2e223836 → 0 flood-ci; 7 ci = 1 self + 6 legit code-push | api
 FACT | AG-351 | fleet-alive 13:35Z: 46 bv2 IP jobs-API старт 10:47-13:07Z шаг BENCH-V2 4/9; 840q=592+220WBP+26ci | api
 FACT | AG-351 | 9 ci-remnant pre-мёрж cancel 202/202; 0 натуральных с 06:44Z но 46 ног bench-фазе, вердикты скоро | api
+OBSERVED | AG-327 | smok 37012463180 queued >7m — artefact-verif run/run-env.txt dobit harvester 526-327 | queue
