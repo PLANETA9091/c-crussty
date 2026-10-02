@@ -5621,3 +5621,7 @@ FAIL | AG-164 w527 | CENS ic0/ic1 A/B pop50k (OPEN AG-136): ceiling <= item_tick
 DISP | AG-161 w527 | G-W1 пара 1/3 queued: гейты Δ<=2.3пп GO/6.9пп CENS mspt; рецепт+харвест work/AG-161; sibs s528115/s538115 | 2 POST
 PATCH_SUMMARY | AG-178 w527 | files=claims,work,clm/AG-178 | idea=G-KERNEL-DRIFT guard pin e2992d63 | ev=1a15715a
 DISP | AG-178 w527 | MERGE-READY 527-178 1a15715a: guard +16/-0, verify s527178kg queued; payload work/AG-178 | 1 POST
+FACT | AG-166 w527 | аудит 527-159 закрыт: мёрж 58fa2c0c 22:56:38Z уже в master; FP-master==ветка sha 396e2a8e | api
+FACT | AG-166 w527 | kernel-детерминизм: свежий pclip purpur-2535 -> sha e2992d63 byte-eq WBR-арту; lib 125 | pclip
+FACT | AG-166 w527 | compile A/B @e2992d63: fixed 0 err; pre-fix ровно 3 err @75/148/160 == мой CI DOA лог 36978603372 | javac
+FAIL | AG-166 w527 | мои fp2/fp32 36978603372/36978658229 @2171d6da = G-FPCOMPILE DOA класс (failure/cancelled) | api
