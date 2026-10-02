@@ -1739,3 +1739,6 @@ OBSERVED | AG-247 | live-GET race-чек сработал: gc2 перехвач�
 FACT | AG-247 | 2/2 204 @3cf4db23 t4231: 36982491874 ic0 + 36982545144 fd0 pop150k WBP seed42 QUEUED | api
 DISP | AG-247 | ic0+fd0 lever-A/B 2/2 queued @swarm-525-247[ab] pop150k dp3v2 seed42; payload work/AG-247 | 2/2 204
 PATCH_SUMMARY | AG-247 | files=claims+work/AG-247 | idea=ic/fd lever ablation first legs | evidence=2/2 204 @3cf4db23
+FACT | AG-241 | 2/2 204 @d5c7128e WBP t4231: 36982605100 pop125k s529241 + 36982654715 pop62.5k s530241 QUEUED | api
+DISP | AG-241 | pop125k+62.5k миды 2/2 queued @241[cd] WBP dp3v2 band 5.5-13.5M; payload work/AG-241 | 2/2 204
+PATCH_SUMMARY | AG-241 | files=work+claims/AG-241 | idea=pop-кривая миды 125k/62.5k fill | evidence=2/2 204 WBP
