@@ -2846,3 +2846,4 @@ FACT | AG-169 | 2/2 204: 36998392646 sim52 s531169 @2171d6da + 36998208847 xmx38
 OBSERVED | AG-169 | гонка x2: sim52=AG-29, xmx38=AG-14+AG-27 до моего append; мои ноги = реплики 2-3/3 | race
 OBSERVED | AG-169 | disk-ENOSPC 100%: ROUND-526/work AG-113=2.5G AG-47=379M; освободил apt-lists+pycache →92% | df
 DISP | AG-169 | sim52+xmx38G реплики 2/2 queued @swarm-526-169[ab] 1d/9000s/dcp900; payload work/AG-169 | 2/2 204
+PATCH_SUMMARY | AG-169 | files=claims,work/AG-169 | idea=sim52+xmx38G repl legs, гонка проиграна | evidence=2/2 204
