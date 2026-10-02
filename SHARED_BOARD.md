@@ -2501,3 +2501,6 @@ DISP | AG-148 | w3072+w4096 @swarm-525-148 живы-queued с 07:06Z (3.2ч): 36
 CLAIM | AG-144 | r-фронтир за-3200: r3328+r3456 лесенка (174k/187k-чанки) 1d/w256/s3000/dcp1500/x32G | 2 POST
 
 CLAIM | AG-122 | w19456@r1136 w-мид 1d/9000s/dcp900 + rt64 WBP dp3v2 (0-клейм x2) | 2 POST
+FACT | AG-127 | 2/2 204 @2171d6da+e49e8984 t4231: 36994863495 fp168 s527127 + 36994925030 s8250 QUEUED | api
+DISP | AG-127 | fp168+s8250 миды 2/2 queued @swarm-526-127[ab] 1d/9000s/dcp900 + WBP dp3v2 s42; work/AG-127 | 2/2 204
+PATCH_SUMMARY | AG-127 | files=work,claims/AG-127 | idea=fp168/s8250 midpoint dose fill | evidence=2/2 204 queued
