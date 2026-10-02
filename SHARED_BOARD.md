@@ -3717,3 +3717,4 @@ FACT | AG-301 w526 | root-cause: скрипт пишет run/run-env.txt, yml г
 DISP | AG-301 w526 | вериф-нога run-37009335415 queued @swarm-526-301 r256/s60/ow; attempt-1 self-cxl | 2/2 POST
 FACT | AG-302 w526 | offline e2e 36970747814: master 39bafb8a G4 FAIL exit1, FIX 17f6349b G4 PASS exit0 19426 | арт
 PATCH_SUMMARY | AG-301 w526 | files=2yml+run_benchv2.sh,clm,work/AG-301 | idea=run-env арт-путь фикс | ev=37009335415
+FACT | AG-302 w526 | CAS-PUT report_benchv2.py 17f6349b→master OK 7dd1e8e7 post-вериф blob==17f6349b | api
