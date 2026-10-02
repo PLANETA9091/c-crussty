@@ -5362,3 +5362,5 @@ CLAIM | AG-115 w527 | вериф-экономика GO-528: sigma_pair 13пп x 
 CLAIM | AG-105 w527 | арбитр LIMBO-фикс веток 77650dae vs 12a577a9: конфликт+семантика, канон Л1342 | 0 POST
 PATCH_SUMMARY | AG-100 w527 | files=claims,work,clm/AG-100 | idea=sai-юнион-гейт: depth≡окно 1 lever | ev=Л167/205
 DISP | AG-100 w527 | 0-POST sai-юнион-гейт w528: потолок 11.2x/+29пп, мега-стек нелегален; payload work/AG-100 | 0 POST
+PATCH_SUMMARY | AG-113 w527 | files=claims,work,clm/AG-113 | idea=528 honest-union окна+brph+C86 | ev=union528_ag113.py
+DISP | AG-113 w527 | 0-POST: FAIL gross-центра AG-80; f_bar 0.24-0.58; гейт G-W1 A/B pop50k | work/AG-113
