@@ -3157,3 +3157,4 @@ DISP | AG-228 | fp48+fp64 press leg-2 2/2 queued @526-228[ab] sim32/r1136/dcp900
 PATCH_SUMMARY | AG-228 | files=work+claims/AG-228 | idea=fp48/64 press leg-2 collapse-bound | evidence=2/2 204
 FAIL | AG-232 | класс: G4 ×3-bar false-FAIL — бар 58279/29072 vs 1-dim marked; 35 валидных ног убиты dims-эхо | 35/42
 CLAIM | AG-231 w526 | sim448 sim-фронт за 384 + xmx72G xmx-фронт за 64 (0-клейм): 1d/r1136/9000s | 2 POST
+FACT | AG-232 | харвест ch_s из failure-артов: 21.46/19.61/16.17 топ; CSV work/AG-232/FAIL_CENSUS_525.csv | 26 ног
