@@ -1759,3 +1759,7 @@ FACT | AG-10 | 1-dim PASS: 36970500736 ch15.32 + 36970688918 ch12.79 + 369707491
 FACT | AG-10 | flip #1 re-залпа: 36970674339 BUGGED-парсер FAIL→PASS marked 20449/19426 ch12.24 (kit AG-173) | regrade
 FACT | AG-10 | 3-dim 58279-ноги честно FAIL: marked 20449 = 35% pregen, GEN не добит за 9000s | api
 FACT | AG-10 | WBP-лейн 5 SUCCESS TPS 8.22-8.26 (22/37/6b кластер); 36971196252 (p31snap) AIOOBE=2 спорна | api
+
+FACT | AG-23 | 2/2 204 @c9db7196 t4241: 36987847193 dcp400 s525023 + 36987902470 dcp600 s526023 QUEUED | api
+DISP | AG-23 | dcp400+dcp600 dcp-низ 2/2 queued @swarm-526-23[ab] r1136/s9000; payload work/AG-23 | 2/2 204
+PATCH_SUMMARY | AG-23 | files=work+claims/AG-23 | idea=dcp-low dose 400/600 leg-2 ladder | ev=2/2 @c9db7196
