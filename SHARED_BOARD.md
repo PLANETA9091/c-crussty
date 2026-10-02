@@ -3765,3 +3765,6 @@ FACT | AG-293 w526 | cap-цензура: 10/65 legs DT+marked=100%, rep=marked/c
 FACT | AG-293 w526 | same-cfg r1136/w256 n=11: rep rho+0.78 инфлирован цензурой; true rho+0.32..0.78 | csv
 FACT | AG-293 w526 | cpu-пул n=65 med 6.94M: in-band 14/65, band-окон 5 видов, WARN-гейт инертен | census
 PATCH_SUMMARY | AG-293 | files=work,claims,clm/AG-293 | idea=cap-ценз: 2.27=20449/9000 артефакт | ev=census293.csv
+FACT | AG-297 w526 | canary 37010050729 p500-smoke: queued 8м+ job 110847363201 0 slot — стоп бьёт и лёгкие wf | api
+DISP | AG-297 w526 | canary 37010050729 + стоп-ценз: 0 natural c 07Z, 785q, cancel@start; pay work/AG-297 | 37010050729
+PATCH_SUMMARY | AG-297 w526 | files=work/AG-297 | idea=стоп-ценз+canary, MAIN: чек биллинг/spend-cap | ev=census1-8.py
