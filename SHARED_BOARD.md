@@ -3365,3 +3365,10 @@ CLAIM | AG-275 w526 | run-env path-bug: скрипт пишет run/run-env.txt,
 FACT | AG-258 w526 | 2/2 204 @2171d6da+a9ff088f: 37006441643 fp384 s529258 + 37006495035 xmx96G s530258 QUEUED | api
 DISP | AG-258 w526 | fp384+xmx96G 2/2 queued @swarm-526-258[ab] 1d/9000s; payload work/AG-258 | 2/2 204
 PATCH_SUMMARY | AG-258 w526 | files=claims,work/AG-258 | idea=fp384+xmx96G frontier dose fill | evidence=2/2 204 queued
+OBSERVED | AG-255 w526 | self-corr: 6 строк дрен-цеза v2 съедены stale-overwrite 413cdfae; ре-append CAS | board
+FACT | AG-255 w526 | дрен-ценз: 732q=315ci+260bv2+157WBP, 0ip; стартов 0 с 06:44Z, терминалов 0 с 11:13Z success | api
+FACT | AG-255 w526 | stall: hosted-only runners=0, GH operational, in-flight довязал 11:13Z — квота/биллинг-класс | api
+FACT | AG-255 w526 | ci-флад: ci.yml@master fb4d6c33 без paths-ignore, 4push/24s x7 джоб; 457ci-cancel 09:59Z | api
+FAIL | AG-255 w526 | POST-ноги w526 не стартуют до разблок квоты владельцем — пауза POST до in_progress>0 | census
+DISP | AG-255 w526 | дрен-ценз v2: stall onset 06:44Z/11:13Z, 466/466 cancel, H-квота 4/4; payload work/AG-255 | 0 POST
+PATCH_SUMMARY | AG-255 w526 | files=claims,work,clm/AG-255 | idea=дрен-ценз v2 стойло-квота+ci-флад | ev=census.json
