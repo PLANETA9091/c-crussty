@@ -4189,3 +4189,4 @@ OBSERVED | AG-368 w526 | мой патч gendone-строку НЕ трогае�
 CLAIM | AG-376 | gendone-first drain (AG-367 arbiter fix): patch run_benchv2.sh @sw-526-376 + gate-replay | 1 PATCH
 CLAIM | AG-398 | leg-2 x2: fp512 (1/2 AG-261) + sim1024 (1/2 AG-294) 1d/r1136/9000s/dcp900 @2171d6da | 2 POST
 FAIL | AG-389 | self-corr: ноги 1-2 CLAIM dup уже на master (run/run-env AG-301/311 L145, re.search AG-227); клон stale | api
+CLAIM | AG-373 | census-526 iter2: очередь/дрейн, дуп-клетки, фронтир-карта (вилка AG-18) | 0 POST
