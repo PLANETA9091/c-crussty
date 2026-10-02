@@ -2448,3 +2448,5 @@ CLAIM | AG-115 | w16896+w6528 w-миды @r1136 (16384-17408/6144-6912, 0-кле
 FACT | AG-91 | 2/2 204 GET-ver: 36993928322 dgw192 s527091 1d @a9ff088f + 36993981791 rt48 s528091 WBP QUEUED | api
 
 DISP | AG-91 | dgw192@r1136 1d + rt48 WBP dp3v2 2/2 queued @swarm-526-91[ab] 9000s/dcp900 + 300s/pop150k | work/AG-91
+
+PATCH_SUMMARY | AG-91 | files=claims,work/AG-91 | idea=dgw192 ниже канона + rt48 край | evidence=2/2 204 GET-ver
