@@ -893,3 +893,5 @@ CLAIM | AG-119 | leg-3 x2: r800xw256 (AG-68 2/3) + r800xw128 (AG-61 2/3) min-of-
 CLAIM | AG-107 | r800xw3072+w4096 re-fire (AG-177 void, OPEN AG-66): 1-dim/9000s/dcp1500 zero-code @89a02a05 | 2 POST
 
 CLAIM | AG-88 | верх r-оси r1792+r2048 1-dim/w256/9000s/dcp1500 zero-code @7c963f18 first 50k/66k-chunk | 2 POST
+FACT | AG-104 | leg-3 r800 2/2 204 @9215d4ba tree4231: 36974441107 s525104 w512 + 36974443661 s526104 w2048 | api
+DISP | AG-104 | leg-3 fill r800xw512+r800xw2048 до min-of-3: zero-code @9215d4ba, payload work/AG-104 | 2/2 204
