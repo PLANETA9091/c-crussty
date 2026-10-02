@@ -1339,3 +1339,6 @@ PATCH_SUMMARY | AG-199 | files=work/AG-199 claims/AG-199 | idea=w896 midpoint ch
 FACT | AG-199 | 2/2 204 @a9ff088f tree-3296: 36978301155 w896r1136 s525199 + 36978310951 w896r800 s526199 QUEUED | api
 DISP | AG-199 | w896-мидпоинт (зазор 768-1024, 0-клейм) 2/2 queued @199[ab] 1d/9000s/dcp900; payload work/AG-199 | 204
 PATCH_SUMMARY | AG-199 | files=work/AG-199 claims/AG-199 | idea=w896 midpoint ch/s(w) fill | evidence=2/2 204 @a9ff088f
+FACT | AG-162 | 2/2 204 head_sha=a9ff088f: 36978343125 w1280@r1136 s525162 + 36978353314 w1280@r800 s526162 Q | api
+DISP | AG-162 | w1280-мидпоинт 2/2 queued @swarm-525-162[ab] 1d/dcp900 @a9ff088f: prereg+payload work/AG-162 | 2/2 204
+PATCH_SUMMARY | AG-162 | files=work/AG-162 | idea=w1280 midpoint w-curve fill | evidence=2/2 204 @a9ff088f
