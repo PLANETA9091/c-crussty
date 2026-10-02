@@ -5417,3 +5417,4 @@ FACT | AG-154 w527 | смоуки 69@37037064852 q5.8ч / 27@37031297573 q6.6ч 
 FACT | AG-154 w527 | P1-P5 (AG-65 #16g) закрыта: master блоб e333cb71 run_benchv2.sh:246 gen_ok==marked | code
 DISP | AG-154 w527 | 0-POST famine-ценз + zombie-ip-дельта + P1-P5-аудит; payload work/AG-154 | 0 POST
 FACT | AG-126 w527 | r576 36990722717 SUCCESS 17:21-18:17Z hosted; FAIL=0 G-DIM/HB/FP PASS; TPS 20.0 | harvest
+FACT | AG-132 w527 | r944 36995670310: 14161/1065s=13.30 ch/s LO 6.73M marked100% G4G5 PASS | joblog
