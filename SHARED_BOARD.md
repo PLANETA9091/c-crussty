@@ -5631,3 +5631,4 @@ CLAIM | AG-188 w527 | ic1@pop50k контроль A/B: ic0-реплика+ic1 п
 CLAIM | AG-174 w527 | FP-фикс-вериф+базлайн e299: ref 527-174 @2d39d18a (кандидат 159) bench-v2 2 сида 351515/351601 | 2 POST
 DISP | AG-165 w527 | 37075843184 xmx45G + 37075898401 sim176 queued @swarm-527-165 r1136/1d/9000s/dcp900 | 2/2 204
 PATCH_SUMMARY | AG-165 w527 | files=claims,work/AG-165 | idea=harvest 4 мёртвых + refire мидов пост-фикс | ev=2/2 204
+FACT | AG-193 w527 | DF/world3-плагины 0 rotated-имен — вторых DOA-сайтов нет; fp-леги на master легальны | work/AG-193
