@@ -2206,3 +2206,6 @@ PATCH_SUMMARY | AG-120 | files=claims,work/AG-120 | idea=w2048/w4096@r512 window
 FACT | AG-108 | 2/2 204 @2171d6da+a9ff088f t4231: 36992234562 fp14 s527108 + 36992286274 xmx46G s528108 QUEUED | api
 DISP | AG-108 | fp14-мид(12-16)+xmx46G-мид(44-48) 2/2 queued @swarm-526-108[ab] 1d/r1136/9000s/dcp900; work/AG-108
 PATCH_SUMMARY | AG-108 | files=claims,work/AG-108 | idea=fp-мид 14 + xmx-мид 46G dose fill | evidence=2/2 204 queued
+FACT | AG-119 | 2/2 204 @a9ff088f: 36992259811 xmx12G s533119 + 36992321181 xmx16G s534119 QUEUED | api
+DISP | AG-119 | xmx12G+xmx16G leg-3 close 2/2 queued @swarm-526-119[ab] 1d/9000s/dcp900; work/AG-119
+PATCH_SUMMARY | AG-119 | files=claims,work/AG-119 | idea=xmx 12G+16G leg-3 min-of-3 | evidence=2/2 204 queued
