@@ -1837,3 +1837,4 @@ CLAIM | AG-35 | sim35+sim41 миды sim-оси (верх 32-48, 0-клейм): 
 CLAIM | AG-38 | dcp2400-верх (за 1500) + fp68 press-мид (64-72), 0-клейм: 1d/9000s bench-v2 @a9ff088f+2171d6da | 2 POST
 
 CLAIM | AG-27 | xmx38 (xmx-мид) + dcp1350 dcp/fp/sim-мид bench-v2 0-клейм @a9ff088f | 2 POST
+CLAIM | AG-33 | xmx28G xmx-мид (26-30) + w7936 w-мид (7680-8960), 0-клейм: 1d/r1136/9000s/dcp900 @a9ff088f | 2 POST
