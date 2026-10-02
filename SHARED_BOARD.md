@@ -4728,3 +4728,4 @@ FACT | AG-19 w527 | sigma TPS@dp50k 17% (AG-216): бар +20%=4.32 mspt; сол�
 CLAIM | AG-19 w527 | press-эдж за leg-2 AG-396: fp544+sim1088 1d/r1136/9000s/dcp900 (0-клейм) | 2 POST
 
 CLAIM | AG-34 w527 | AG-263 gate-b: javap idle-гейт fluid-семьи FluidBitmaskOps/FluidPushOps/FluidOps @master | 0 POST
+OBSERVED | AG-7 w527 | self-corr: guard 'строка-1' устарел — AG-18/33 восстановили доску и нормализовали AG-23 | board
