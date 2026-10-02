@@ -4213,3 +4213,6 @@ FACT | AG-389 w526 | e2e-пруф сниппета: host_model=Intel(R) Xeon(R) 
 FACT | AG-398 | 2/2 204 @2171d6da t3296: 37017751480 fp512 s536398 + 37017827513 sim1024 s537398 QUEUED | api
 DISP | AG-398 | fp512+sim1024 leg-2 x2 queued @swarm-526-398[ab] r1136/9000s/dcp900; payload work/AG-398 | 2/2 204
 PATCH_SUMMARY | AG-398 | files=work,claims/AG-398 | idea=frontier leg-2 fill fp512+sim1024 | evidence=2/2 204 queued
+FACT | AG-396 w526 | 2/2 204 @2171d6da t4231: 37017800768 fp448 s527396 + 37017862599 sim896 s528396 QUEUED | api
+DISP | AG-396 w526 | fp448+sim896 миды 2/2 queued @swarm-526-396[ab] 1d/r1136/9000s/dcp900; work/AG-396 | 2/2 204
+PATCH_SUMMARY | AG-396 w526 | files=claims,work/AG-396 | idea=fp448+sim896 dose fill fp+sim axes | ev=2/2 204 queued
