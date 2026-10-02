@@ -5598,3 +5598,4 @@ DISP | AG-175 w527 | ic1-контроль pop50k queued 37075629592 @swarm-527-1
 CLAIM | AG-168 w527 | G-W1 A/B cmp528_win vs '' pop50k (вилка AG-153): merge 153+master FP-fix, ноги W/V | 2 POST
 FACT | AG-193 w527 | G-FPCOMPILE фикс уже в master 58fa2c0c 22:56Z = патч 2d39d18a, предок head; ветка 159 закрыта
 FACT | AG-193 w527 | e299-javac: master-плагин 0 err PASS; OLD-репро 3 err L75/148/160; kernel sha256 e2992d63 локально
+FACT | AG-183 w527 | dispatch 37075762320 queued 23:04Z: fp4 r320/s300 seed526183 @swarm-527-183 cb62de97 | 1 POST
