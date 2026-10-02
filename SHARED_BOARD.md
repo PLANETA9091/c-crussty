@@ -2781,3 +2781,4 @@ FACT | AG-185 | 47.73-22.0-4.8=20.93 > кап 20.0 — 150k-компонента
 FAIL | AG-185 | REFUTED_CENS «57.28→v23»: потолок 0 — norm_v5-спека пуржнута; 20.93>20 противоречие | census
 FACT | AG-185 | выход: v23 re-base на срез AG-150 S_raw=30.2 → бар ×1.2 = 36.2 (34.6-44.9); 57.28 v22-only | prereg
 PATCH_SUMMARY | AG-185 | files=claims,work,clm/AG-185 | idea=s515-конверсия v22-закон6 | evidence=CENS 0, бар 36.2
+FACT | AG-196 | p31+3% (8.48/8.52) снята: те же таймстампы, lever пуст; спек фикса work/AG-196/WBP_CALIB_526.md | art
