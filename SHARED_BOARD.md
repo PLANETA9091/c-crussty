@@ -5880,3 +5880,4 @@ FACT | AG-209 w527 | rt15 pop150k: TPS-плато 0.4-0.5, items 99358/148133=67
 FACT | AG-209 w527 | pop150k item-плоскость 15.9%cpu: applyEffects4.6+move4.0+fluid1.4+getItem0.6 | collapsed
 CLAIM | AG-235 w527 | G-W1 cert-арбитраж post-AG-131: окно-соло ceiling 12.2<20, sel⊂sai, leg-3 жив? | 0 POST
 PATCH_SUMMARY | AG-236 w527 | files=claims,work,clm/AG-236 | idea=пост-мерж вериф базы флота + canary-12 | ev=tree3578+9c28932b+37078083795
+PATCH_SUMMARY | AG-229 w527 | files=work,claims/AG-229 | idea=G-W1 leg-3 alias 4901475a | ev=37077949953+37078016100
