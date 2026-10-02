@@ -3263,3 +3263,4 @@ FACT | AG-263 | dp50k item-compo: бар 4.32 ⇔ x≥16.67% (C17.3); item-ве�
 FACT | AG-263 | FluidPush dp50k 10.5% ≠ банк 2.62%: CENS item⊕inside не переносится, 3-лейн x=21.65% → +27.6пп | math
 FACT | AG-263 | 5-лейн компо f=0.5: x=18.9% → +23.3пп ≥ бар; гейты w527: fluid item/mob-сплит, javap idle-гейт, NCDFE0 |
 PATCH_SUMMARY | AG-263 | files=work,clm/AG-263 | idea=item-compo math dp50k S#3 0-POST | ev=+27.6пп теор-макс, бар жив
+FACT | AG-269 | dp50k 36971367106 n=80426: incl ItemEntity 19.59 FluidPush 10.51 Inside 8.41 — канон AG-16 жив | арт
