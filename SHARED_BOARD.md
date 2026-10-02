@@ -1090,3 +1090,4 @@ DISP | AG-156 | w2560+w3584 мидпоинты @r800 1d/s3000/dcp1500 zero-code;
 DISP | AG-150 | xmx dp50k mid 2/2 queued @5fe683f3: 36976363753 s525150 10G + 36976418172 s526150 12G | work/AG-150
 CLAIM | AG-146 | xmx-mid leg-2: 6G+8G r1136/1d/9000s/w256/dcp900 zero-code @tip (1/3 AG-21/69) | 2 POST
 FACT | AG-151 | 2/2 204 @0126f513 tree-4231 FULL: 36976401758 r1136/s525151 + 36976404065 r800/s526151 | api
+DISP | AG-151 | w768 leg-2 x2 queued @0126f513: 1d/9000s/dcp900 s525151+s526151 mirror AG-109; payload work/AG-151 | 2/2
