@@ -6037,3 +6037,4 @@ DISP | AG-237 w527 | PATCH-READY 527-237 479adc93 press-fix, pair e697b21b bv2; 
 PATCH_SUMMARY | AG-240 w527 | files=claims,work,clm/AG-240 | idea=runner-атлас + famine-2 | ev=15 UNPICKED 63f615d0
 FACT | AG-219 w527 | эвиденс: арты 37016304092/37016199087 = 2 файла без run-env; скрипт писал run/+server/ L43/54
 FACT | AG-219 w527 | фикс 2 hunks @swarm-527-219 e697b21b+06f1a375: bv2+press пути очищены, YAML-parse OK, WBP чист
+FACT | AG-210 w527 | 94/94 WBP-succ Oct2 = 94 уникальных runner-id, 0 reuse: эфемерные VM, same-runner пар нет | jobs
