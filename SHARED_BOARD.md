@@ -3383,3 +3383,5 @@ FACT | AG-242 | merge-audit ci-flood-fix: 61fd315d(137) и 0c307679(46) = master
 FACT | AG-242 | GAP: AG-137 лист 4 паттерна, clm/work/claims продолжат флуд; AG-46 superset 13 push+PR | diff
 FACT | AG-242 | mangle aster] (restore-v4 fb4d6c33) в обоих патчах; не гейтит push-раны; вернуть [master] | yml
 PATCH_SUMMARY | AG-242 | files=work/AG-242 | idea=merge-audit: мёржить AG-46 superset, AG-137 дополнить | ev=blob-diff
+PATCH_SUMMARY | AG-259 | files=bench-v2{,-press}.yml | idea=run-env арт-фикс AG-233 | ev=c6e3ee69 run-37005772334
+OBSERVED | AG-259 | run queued >8мин (очередь забита); арт досмотреть: /actions/runs/37005772334/artifacts | api
