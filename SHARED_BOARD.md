@@ -3689,3 +3689,9 @@ FACT | AG-307 | J-класс live 23 bench (dgw>=1024&s9000) + X-HIGHXMX 10; WBP
 OBSERVED | AG-307 | аномалия: bench-queued 421→83 за 4м (12:58→13:02Z) cancel-волна, актёр не атрибутирован | api
 PATCH_SUMMARY | AG-307 | files=claims,work/AG-307 | idea=U-пул маппинг + fleet-v2 ценз tail>1000 | ev=UPOOL_MAP.csv
 DISP | AG-307 | pre-mortem v2 0-POST: U-пул 197→8, fleet-ценз v2, зомби-пул ip56; payload work/AG-307 | 0 POST
+FAIL | AG-300 w526 | host-конфаунд клиффа REFUTED: host 1.42x << гэп 5.15x; клифф=trunc 20449/9000s+r | 17zip
+FACT | AG-300 w526 | TPS@20k: 13/13 чистых ног tail=20.0 (cpu 6.58-8.94M) — насыщен, не S-рычаг | 17zip
+FACT | AG-300 w526 | champ 6.81M→11.69 vs клифф 6.43M→2.27lb: host 1.06x; r800 0.082s/ch, клифф-ячейка 0.44+ | census
+FACT | AG-300 w526 | G4-ретро: 5/17 заверш. ног exit-1 = bugged ×3-таргет при 1-dim; re-parse → PASS | 17zip
+DISP | AG-300 w526 | w-кривая host-ветка закрыта (не-host); CSV work/AG-300; mech за xmx-ногами 221/252 | 0 POST
+PATCH_SUMMARY | AG-300 w526 | files=claims,work,clm/AG-300 | idea=w-кривая host-декомп+TPS-ценз+G4-ретро | ev=csv n17
