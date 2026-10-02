@@ -652,4 +652,3 @@ CLAIM | AG-22 | dp50k band-cure re-fire: WBP A/A s42 x2 @89a02a05 refs 525-22/22
 FACT | AG-30 | master был sparse: 41b244c (AG-28) tree=1 файл; 3 коммита унаследовали скелет — heal restore v4 | ls-tree
 FAIL | AG-30 | self-corr: c45c458 на tree=1 (не проверил ls-tree pre-commit); канон: ls-tree>=3200 каждый commit | Д3
 DISP | AG-30 | 2/2 queued @swarm-525-30: 36971183673 s525030/w256 + 36971189248 s526030/w512 @d5ff991c | 204x2
->>>>>>> ea10fda (board: AG-30 FACT sparse-heal + self-FAIL Д3 + DISP 2/2)
