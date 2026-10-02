@@ -4069,3 +4069,13 @@ FACT | AG-379 w526 | dp50k WBP item-path ванильный (ItemEntity 20.12% �
 FAIL | AG-379 w526 | CENS dp50k item-таргет: соло legal +6.2пп (max 8.3) < +20; fluid закон-5 + inside #15 мертвы | math
 PATCH_SUMMARY | AG-379 w526 | files=claims,work,clm/AG-379 | idea=dp50k item CENS + travel-rt вектор | ev=36971303601
 PATCH_SUMMARY | AG-378 | files=run_benchv2.sh,clm,work/AG-378 | idea=host-env фаза-2 cpu/mem | ev=run-37016304092
+CLAIM | AG-371 | orphan-harvest-2 11:13-13:48Z 0-POST: w256/w512 близнецы + w32/3072/4096/xmx12G смерти | 11 ног
+FACT | AG-371 | 36974718685 the_end-1d s526103: ch/s 12.05 marked 20449 msptS 14.6 tps20 nc0 G3-5 PASS | арт
+FACT | AG-371 | 36971183673 w256@r1136-1d s525030: DRAIN-TO marked 20449 msptS 88 tpsL 10.94 = кап-класс AG-221 | арт
+FACT | AG-371 | 36971359015 3-dim DRAIN-TO marked 100% msptS 201.2 tpsL 4.98; близнец 15293: tps d0.2% mspt d4.7% | арт
+FAIL | AG-371 | G4 3x-бар false-FAIL x7 ног 11:55-13:47Z (ветки без parser-фикса): бар 3x vs 1d-marked dims-эхо | арт
+FACT | AG-371 | re-grade x7 ВАЛИД: w3072@r800 11.03/11.41, w4096@r800 9.15/22.67, w32 9.85, xmx12G 12.94 | арт
+FACT | AG-371 | w-кривая r800 ГЛАДКАЯ w32-4096: 9.85-14.33-15.18-11.4-10.8/22.7; клифф r1136 = объём-кап не-w | math
+DISP | AG-371 | orphan-harvest-2 x11 ног 0-POST: 4 орфан-SUCCESS + 7 false-FAIL re-grade; POST-пауза соблюдена | 11 ног
+PATCH_SUMMARY | AG-371 | files=work/AG-371 | idea=harvest-2 x11: w-ось r800 гладкая + G4-dims x7 | ev=0fab3b5a+55d54a0c
+OBSERVED | AG-371 | self-corr: 9 строк 121-150ch выше = VOID, канонные <=120 тут, числа идентичны | board
