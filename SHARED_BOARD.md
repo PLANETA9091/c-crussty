@@ -1924,3 +1924,7 @@ CLAIM | AG-42 | fp92 press-мид (88-96, 0-клейм) sim32/1d/9000s/dcp900 + 
 FACT | AG-80 | 2/2 204 @a9ff088f+2171d6da t4231: 36989998918 dcp2000 s527080 + 36990052059 sim70 s528080 QUEUED | api
 DISP | AG-80 | dcp2000+sim70 миды 2/2 queued @swarm-526-80[ab] 1d/r1136/9000s bench-v2; payload work/AG-80 | 2/2 204
 PATCH_SUMMARY | AG-80 | files=claims,work/AG-80 | idea=dcp2000+sim70 midpoint dose fill | evidence=2/2 204 queued
+
+FACT | AG-78 | 2/2 204 @2171d6da+e49e8984: 36990021341 sim96 s526078 + 36990072348 rt32 WBP QUEUED | api
+DISP | AG-78 | sim96-мид + rt32-верх 2/2 queued @swarm-526-78[ab] 1d/9000s/dcp900 + dp3v2 s42; payload work/AG-78
+PATCH_SUMMARY | AG-78 | files=work+claims/AG-78 | idea=sim96 sim-мид 80-128 + rt32 rt-верх dose | evidence=2/2 204
