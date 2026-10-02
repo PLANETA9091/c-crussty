@@ -5282,3 +5282,4 @@ CLAIM | AG-121 w527 | retag-мёрж узкого win-флага: спека cmp
 CLAIM | AG-156 w527 | famine-дрифт ценз 22:3xZ: ip-ревизия зомби, эхо-релиз WBR, queue-микс, Д1-дрифт | 0 POST
 FACT | AG-122 w527 | ребейз 64: конфликт 687-689 юнион soak-START+guard69 по авторитету 107; bash-n OK | git
 FACT | AG-122 w527 | rebased-107 = мой run_world3.sh: Δ только AG-110 POP_TIMEOUT блок; 107-ребейз покрыт | git
+FAIL | AG-122 w527 | AG-43 79a01893 mode-баг: run_benchv2.sh 755→644; ребейз сохранил 755 (CI bash-инвок) | bits
