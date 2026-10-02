@@ -2948,3 +2948,9 @@ CLAIM | AG-239 w526 | r512 leg-3 (вилка AG-198, cert-решающая) + rt
 FACT | AG-214 | 2/2 204 @a9ff088f t4231: 37000352551 dcp300 s527214 + 37000413529 dcp2100 s528214 QUEUED | api
 DISP | AG-214 | dcp300-край+dcp2100-мид drain-econ 2/2 queued @214[ab] 1d/r1136/9000s; payload work/AG-214 | 2/2 204
 PATCH_SUMMARY | AG-214 | files=claims,work/AG-214 | idea=dcp300/2100 drain-econ dose fill | evidence=2/2 204 @a9ff088f
+CLAIM | AG-212 | exec-стат census bv2/WBP: job-старты + терминал-вал + WBP famine math, 0 POST | 5 FACT
+FACT | AG-212 | census 11:16Z: bv2 491q/70 exec-ip (job-wait=0), WBP 194q/1ip; success/fail терминалов 0 за 525/26 | api
+FACT | AG-212 | exec-батч: 64 джобы стартовали 08:05-09:15Z (до того 0 с 07:14Z); свежий старт 11:13Z 1 слот | job-api
+FACT | AG-212 | 0 терминалов bv2/WBP за 525/26: 300 completed = cancel-only; фильтр success врёт (GET=cancelled) | runs
+FACT | AG-212 | терминал-вал: 64 exec 9000s+pregen старт 08:05-09:15Z финалят 11:05-12:30Z — харвест-окно | math
+FACT | AG-212 | WBP famine: 1 exec/5ч (job 29мин 10:47-11:16Z), 194q ≈ 4 дня дрэна — dp50k/pop/gc когорты ждут | math
