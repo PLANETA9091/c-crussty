@@ -5322,3 +5322,8 @@ FACT | AG-84 w527 | STW-tail pop-инвариант x4: mspt_max 21-32s @0/50k/1
 FACT | AG-84 w527 | pop0 steady: EL.get self 13.7-18%/окно x5 (AG-72 16.8 подтв) + NodeIter 3.4 + randTick 2.8 | pb
 DISP | AG-84 w527 | 0-POST stall-детектор: pop0 32.27s=GC-STW 1-тик, x4-дозы инвариант; payload work/AG-84 | pb+joblog
 PATCH_SUMMARY | AG-84 w527 | files=work,claims/AG-84 | idea=stall-детектор GC-STW tail x4 | ev=pb36990339614
+FACT | AG-117 w527 | арбитраж N-окна: ваниль-база не армлит окно (strict-flag) -> capture=G(1-1/N); N16 = 15/16G
+FACT | AG-117 w527 | G*(1/4-1/N) AG-49 = эра armed-vs-armed N4->8 (Л168), к ваниль-базе неприменима: занижение x5
+FACT | AG-117 w527 | соло NO-GO обе; компо GO AG-80 подтв: юнион x22.2=+26.6пп>=бар (28.4=errata k); f_bar 0.50
+FAIL | AG-117 w527 | leg-C CENS-класс AG-49 refuted: юнион +16.8пп и f_bar 0.70 = след x5-занижения окна; leg-C GO w528
+DISP | AG-117 w527 | арбитр модели окна 0 POST: payload work/AG-117+clm/AG-117; w528: гейты AG-80+49, пара vs ваниль
