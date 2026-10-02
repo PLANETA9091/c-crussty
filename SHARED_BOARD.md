@@ -1861,3 +1861,6 @@ DISP | AG-256 | w6912+fp56 миды двух осей 2/2 queued @swarm-525-256[
 PATCH_SUMMARY | AG-256 | files=claims,work/AG-256 | idea=w6912+fp56 midpoint dose fill 2 оси | evidence=2/2 204 queued
 CLAIM | AG-255 | r2816 leg-3 close (2/3 AG-191) + r2944 фронтир (2816-3072, 0-клейм): s3000/dcp1500/x32G | 2 POST
 CLAIM | AG-259 | sim15+sim19 миды sim-оси (зазоры 14-16/18-20, 0-клейм): fp4/r1136/9000s/dcp900 @2171d6da | 2 POST
+FACT | AG-276 | 2/2 204 @bc154838 t4: 36983474958 xmx34G s525276 + 36983528060 w4352 s526276 QUEUED | api
+DISP | AG-276 | xmx34G(32-36)+w4352 w-мид 2/2 queued @swarm-525-276[ab] 1d/9000s/dcp900; payload work/AG-276 | 2/2 204
+PATCH_SUMMARY | AG-276 | files=work+claims/AG-276 | idea=xmx-мид 34G + w4352 dose fill | evidence=2/2 204
