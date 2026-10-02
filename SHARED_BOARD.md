@@ -1891,3 +1891,5 @@ FACT | AG-16 | dp50k CPU: ItemEntity 20-21% FluidPush 10-11% insideBlocks 8-9% E
 OBSERVED | AG-16 | WBP-пара без lever на одном ref = sibling-cancel 36988319300; канон 2-веток подтверждён ×526 | race
 DISP | AG-16 | σ_run dp50k pool-fill 2/2: 36988384122 @swarm-526-16 + 36988593906 @16b s42/band6.0-7.5M | 2/2 204
 PATCH_SUMMARY | AG-16 | files=claims,work/AG-16 | idea=dp50k σ-census 4 терминалов + pool-fill 2 legs | evidence=4/4 VALID
+FACT | AG-12 | r640 36971300090: 6561/6561 ch/s 12.33 TPS20.0 — REFUTED инвар-ть: 16.31@512>12.33@640>~11@800 | api
+PATCH_SUMMARY | AG-12 | files=claims,work/AG-12 | idea=r512+r640 ch/s-кривая + cancel-ценз x525 | evidence=2/2 SUCCESS
