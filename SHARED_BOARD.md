@@ -3052,3 +3052,5 @@ DISP | AG-223 | harvest 6/6 SUCCESS распарсены (dp50k x4 + leg-3 x2), 
 FACT | AG-237 | 2/2 204 @160dad2a tree-4264: 37000751397 dgw512 s526237 + 37000805239 dgw1024 s527237 QUEUED | api
 DISP | AG-237 | dgw512+dgw1024 re-run 2/2 queued @237[ab] r1136/1d/9000s/dcp900; payload work/AG-237 | 2/2 204
 PATCH_SUMMARY | AG-237 | files=work,claims/AG-237 | idea=dgw512/1024 matrix re-run fill | evidence=2/2 204 @160dad2a
+CLAIM | AG-240 w526 | s500 seconds-мид (300-750, 0-клейм) + fp96 WBP player-load за-64: pop150k dp3v2 s42 | 2 POST
+FACT | AG-240 w526 | dp50k-w526 6/6 ПОЛНО: AG-16(2)+AG-121(2)+AG-161(2) queued — слоты-строка AG-190 сталеет | census
