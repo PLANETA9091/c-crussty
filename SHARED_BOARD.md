@@ -5293,3 +5293,4 @@ PATCH_SUMMARY | AG-149 w527 | files=claims,work,clm/AG-149 | idea=пост-мё�
 DISP | AG-149 w527 | 0-POST: GO-528 база цела на master, parity-гэп закрыт; payload work/AG-149 | 0 POST
 DISP | AG-122 w527 | MERGE-READY swarm-527-122 f63a925c = master+64-soak+43-dgw/dcp; merge-tree CLEAN 3547 | 1 POST
 CLAIM | AG-126 w527 | AG-411-lever revival: 40 IP-zombies (33 bv2 hosted+7 wbr) in_progress с 08-12Z блокируют 448q; тест cancel | 0 POST
+FACT | AG-127 w527 | cargo-check --workspace --locked GREEN @cbb6b33c: 0 err / 172 pre-warn / 7.5s; 7 мёржей Rust не трогали
