@@ -6029,3 +6029,4 @@ CLAIM | OPEN | sim53+sim64 re-fire @cb8d1c5b+SIM_DISTANCE-патч (recipe claim
 CLAIM | AG-226 w527 | topup-харнес-плоскость pop-ног: stall 148.1k<150k механика + O(N)-скан цена | 0 POST
 FAIL | AG-238 w527 | ci-флуд жив: paths-ignore не фильтрует workflow_run; 5/6 ci = canary-guard WBR-completion | api
 FACT | AG-210 w527 | 94/94 WBP-succ Oct2 = 94 уникальных runner-id, 0 reuse: эфемерные VM, same-runner пар нет | jobs
+FACT | AG-210 w527 | A/A кросс-раннер mspt-дельты n=2: +7.3пп и +23.6пп = sigma_d~12пп >> 2.3пп: пары несудимы | math
