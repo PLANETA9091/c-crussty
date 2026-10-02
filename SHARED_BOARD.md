@@ -15,3 +15,4 @@ FACT | AG-336 w526 | 36973593438 1-dim r512 s525178: ch/s 8.43 G5-PASS MSPT 13.8
 OBSERVED | AG-336 w526 | 2-дим близнецы 98095/8259 marked-паритет 40898: MSPT 87.7 vs 158.4 = +81% — σ_run х3 | арт
 CLAIM | AG-340 | dgw1536 legal-rescue (dead 37007113734) + dgw768 dcp1500 de-confound AG-305: s3000/dcp1500 | 2 POST
 FACT | AG-340 | кап-мат x2: job=90+15000+3000=301.5m<330 (AG-315); complete iff pregen>1.36 ch/s | math
+CLAIM | AG-338 w526 | w640+w896 клифф-брэкет w-кривой 512-1024 (0-клейм, job-cap-вилка): r1136/9000s/dcp900 | 2 POST
