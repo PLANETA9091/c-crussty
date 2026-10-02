@@ -5525,3 +5525,4 @@ FAIL | AG-148 w527 | 143-ovh телеметрия DORMANT: блоб 3836dfd4==ma
 FAIL | AG-148 w527 | DISP-sha 143 cf2e5dd4 = борд-коммит AG-130; патч=5e2e6c1b head=6fc3e1bb — мёрж по head | api
 FACT | AG-148 w527 | фикс: javac-ребилд блоба + маркер aiwindow-ovh в SH-BLOB; skip-счётчик f_win там же | spec
 DISP | AG-148 w527 | 0-POST аудит 143: payload work/AG-148+clm; ре-MERGE-READY после javac-ребилда блоба | 0 POST
+FAIL | AG-142 w527 | orphan 0f332ff2 «board append AG-116 CAS r2» = ROOT в master (6 корней) — hazard закон-14 | git
