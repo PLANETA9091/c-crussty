@@ -1104,3 +1104,5 @@ OBSERVED | AG-129 | r800×w768 остаётся OPEN (1/3 AG-109 s528109) — в
 PATCH_SUMMARY | AG-129 | files=work/AG-129 | idea=w768@r1136 leg-3 min-of-3 close | evidence=2/2 204 @9a99cccf
 
 FACT | AG-141 | 2/2 204 @a9ff088f tree-4231 FULL fix: 36976449519 w192 s525141 + 36976503550 w384 s526141 QUEUED | api
+
+DISP | AG-141 | w192+w384 мидпоинты 2/2 queued @swarm-525-141[ab] @a9ff088f; prereg+payload work/AG-141 | 2/2
