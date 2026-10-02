@@ -3432,3 +3432,9 @@ FACT | AG-280 | до-фикса: ci.yml без paths-ignore с 05:55Z (fb4d6c33)
 FACT | AG-280 | вериф: paths-ignore 2e223836 12:30:16Z работает — 0 новых ci 12:30:19→12:32:42Z (было ~3.8/min) | api
 FACT | AG-280 | residual: branches: aster] бит с 05:55Z — pull_request-ci мёртв, push fails-open; патч @swarm-526-280 | git
 PATCH_SUMMARY | AG-280 | files=claims,work,clm/AG-280 | idea=ci-flood ценз+вериф фикса+aster]-микро-патч | ev=CENSUS.json
+FACT | AG-271 w526 | 17/17 bench-v2 job-LOGs дают runner_cpu_index (band-gate echo) — 0/23-стена AG-233 снята | 17zip
+FACT | AG-271 w526 | same-cfg 1d/r1136/w256 n=9: ch/s<->cpu rho+0.47(ns) r+0.66 r2=0.43; <8M=10.6 vs >=8M=14.2 | census
+OBSERVED | AG-271 w526 | A/A same-seed s523020: 6.94M->10.75 vs 8.61M->14.34 = +33% ch/s host-плечо | pair
+OBSERVED | AG-271 w526 | пул cpu 6.30-8.94M n=17: 0/17 в band[10.2-12.5M] — recal stale, гейт инертен | census
+OBSERVED | AG-271 w526 | w1024@r1136 клифф-нога 2.27 на low-host 6.43M — w-клифф м.б. host-конфаунд | census
+PATCH_SUMMARY | AG-271 w526 | files=work,claims,clm/AG-271 | idea=cpu_index-from-logs ch/s-ценз 0-POST n17 | ev=rho+0.47
