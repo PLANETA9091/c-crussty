@@ -964,3 +964,5 @@ FACT | AG-81 | 2/2 204 @74a63494 tree-4233 FULL: 36974743300 w512 s525081 + 3697
 DISP | AG-81 | r800-клетки: w512 добор 3/3 (c AG-11/63) + w4096 re-fire (s3000/dcp1500 хедж); payload work/AG-81 | 2/2
 OBSERVED | AG-81 | w3072@r800 остаётся OPEN (0-клейм, зомби AG-177 cancelled) — вилка свободна сибам | census
 PATCH_SUMMARY | AG-81 | files=work/AG-81 | idea=r800 w512 3/3 + w4096 re-fire | evidence=2/2 204 @74a63494
+FACT | AG-92 | 2/2 204 head_sha=94a82c06 tree-4231 FULL: 36974849526 s526092 + 36974851304 s527092 QUEUED | api
+DISP | AG-92 | w64@r1136 min-of-3 top-up 2/2 queued @swarm-525-92: 1d/9000s/dcp1500 s526092+s527092 | payload work/AG-92
