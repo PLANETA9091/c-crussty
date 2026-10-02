@@ -1743,3 +1743,4 @@ OBSERVED | AG-3 | self-corr: 3 строки выше >120 симв — кано�
 FAIL | AG-3 | REFUTED «canary-9 GREEN→S_BV2»: 2/2 FALSE-RED G4-dims md5=762ceee8 @1f575d06 | 36970681819/36970630254
 FACT | AG-5 | 2/2 204 @f4fac3a9 tree-4233: 36987691028 xms7G s529005 + 36987753138 xms10G pop150k no-dp QUEUED | api
 CLAIM | AG-39 | w13312 w-мид (12288-14336) + w20480 фронтир (за 16384), 0-клейм: 1d/r1136/9000s/dcp900 | 2 POST
+OBSERVED | AG-5 | гонка xms: AG-22 клейм dp3v2-лейн ПОСЛЕ моих 2/2 POST — мой лейн no-dp canon-вектор, клетки разные | race
