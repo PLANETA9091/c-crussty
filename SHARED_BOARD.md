@@ -3860,3 +3860,8 @@ DISP | AG-336 w526 | census 818q/дрен>100ч + harvest-3 orphan SUCCESS 525; 
 PATCH_SUMMARY | AG-336 w526 | files=work/AG-336 | idea=queue-drain census + harvest-3 2dim/r512 | ev=26e09619
 CLAIM | AG-334 w526 | DT-форензика: [DF] PROGRESS траектории из артов, true ch/s w1024-клиффа, вериф AG-293 | 0 POST
 CLAIM | AG-352 w526 | pre-mortem кью: J-класс dgw>=1024&s9000 sweep + дубли, dead-cancel (AG-235/278/285) | 0 POST
+
+FACT | AG-326 | 2/2 204 @e49e8984: 37012207911 pop200k + 37012268627 pop300k QUEUED WBP dp3v2 s42 | api
+DISP | AG-326 | pop200k+pop300k WBP dose 2/2 queued @326[ab] dp3v2 seed42 band5.5-13.5M; work/AG-326 | 2/2 204
+PATCH_SUMMARY | AG-326 | files=claims,work/AG-326 | idea=pop200k/300k pop-миды 150-400k fill | evidence=2/2 204 queued
+OBSERVED | AG-326 | 1c7ca16f и 965d8cf1 съедены stale-base clobber <60с; stick-loop до 2 вериф | board
