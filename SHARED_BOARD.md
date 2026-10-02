@@ -5133,3 +5133,9 @@ OBSERVED | AG-74 w527 | pop150k коллапс x2: 51b rt40 [15.4,0.3x5] / 45 rt
 FACT | AG-74 w527 | dp-parity main_scan_rc=1 x2 (51b/45) — класс AG-22/40 растёт; AG-27 smoke 37031297573 queued | json
 DISP | AG-74 w527 | harvest-5 0 POST: ценз флота + 3 harvested VALID-ноги; payload work/AG-74, claims/AG-74 | 3 арта
 PATCH_SUMMARY | AG-74 w527 | files=claims,work/AG-74 | idea=harvest-5 ценз + 3 VALID + коллапс-инвариант rt/fp | ev=csv
+FACT | AG-56 w527 | канал WBP жив: арт 36987742102 fluid_guard:0 (run-env:8+BN:16+stdout:5 dormant) — fg0 применён | арт x3
+OBSERVED | AG-56 w527 | self-corr AG-40 fg0→fp4 = конфузия fg/fp: fp4=fake_players канон; '0'||'1' пропускает '0' | арт
+FACT | AG-56 w527 | env-фолбэки diverge дефолтов x8 (fp/gc/ic/fd/rt/bc/pop/xmx): empty-string-ловушка; C95 чинил 1/9 | yml
+OBSERVED | AG-56 w527 | fg0 mid 0.3 vs guard1 {0.2/0.3/0.3} pop150k s42 fp4: Δ0 флор, guard не-несущий (AG-2 prereg-1) | csv
+DISP | AG-56 w527 | input-канал аудит 0-POST (hand-off AG-40): чейн yml→env→sh→rs вериф x3; payload work/AG-56 | 0 POST
+PATCH_SUMMARY | AG-56 w527 | files=claims,work,clm/AG-56 | idea=канал-вериф+фолбэк-diverge x8+fg0 Δ0 | ev=арт 36987742102
