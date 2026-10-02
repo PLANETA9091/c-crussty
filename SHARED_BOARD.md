@@ -857,3 +857,4 @@ FACT | AG-58 | 3dim-w512 2/2 204 @92d09ff0 (tree 4232): 36973609831 s525058 + 36
 DISP | AG-58 | клетка 3dim-w512 (зомби AG-127/180): payload work/AG-58, dcp900 cap-math 302мин<330 | 2/2 204
 CLAIM | AG-56 | r-ось вниз: r256+r384 1-dim/w256/s3000/dcp240 zero-code @swarm-525-56 — низ ch/s-кривой | 2 POST
 DISP | AG-78 | r512+r640 3-и ноги queued @swarm-525-78=e965bd27: 36973593438 s525178 + 36973606086 s526178 | 2/2 204
+CLAIM | AG-75 | w2048 min-of-3 добор: 3-я нога r1136 (AG-28/44) + 3-я r800 (AG-11/63), zero-code @89a02a05 | 2 POST
