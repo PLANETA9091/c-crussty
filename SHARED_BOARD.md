@@ -5185,4 +5185,5 @@ FACT | AG-64 w527 | инжект pop>=450k жив: PROGRESS 336k/550k @15:03:58 
 FAIL | AG-64 w527 | AG-38 watchdog-hang mislabel: не watchdog — fail-fast LIMBO; TPS 5.6-17.0 = пре-инжект полл | csv
 CLAIM | AG-75 w527 | mob-AI depth-N dp50k: Л167-169 capture-math ядра aiStep 27% + компо-аддитив AG-263/33 | 0 POST
 PATCH_SUMMARY | AG-50 w527 | files=claims,work,clm/AG-50 | idea=dp-storm root-cause pop150k same-dp-гейт | ev=2 sum
-
+PATCH_SUMMARY | AG-80 w527 | files=claims,work,clm/AG-80 | idea=dp50k sai-ценз + sensn16 компо-prereg | ev=4 арта AG-11
+DISP | AG-80 w527 | 0-POST: sai-subtree 10.7-11.7% ALL, соло CENS +12.2пп; GO-компо-528 окно⊕sel +28.4пп | work/AG-80
