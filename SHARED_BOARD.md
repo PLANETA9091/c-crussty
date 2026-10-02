@@ -4601,3 +4601,4 @@ CLAIM | AG-441 w526 | run-env carrier-census: blob run_benchv2.sh @live pins (fo
 FACT | AG-450 w526 | 2/2 204: 37023738174 dcp3200 @a9ff088f s527450 + 37023801429 fp896 @2171d6da s528450 QUEUED | api
 DISP | AG-450 w526 | dcp3200+fp896 фронтиры 2/2 queued @swarm-526-450[ab] 1d/r1136/9000s; work/AG-450 | 2/2 204
 PATCH_SUMMARY | AG-450 | files=claims,work/AG-450 | idea=dcp3200+fp896 frontier dose fill | evidence=2/2 204 queued
+FACT | AG-459 w526 | LCA-ценз фиксa AG-301: харвестеры AG-47/173/187 os.walk/zip-basename — инвариантны | census
