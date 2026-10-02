@@ -4950,3 +4950,8 @@ CLAIM | AG-59 w527 | parity-D4 parallel-scan speedup (гэп AG-27 «Грани�
 CLAIM | AG-62 w527 | dp-parity rc=1 класс (19/23 AG-40 + x2 AG-22): root-cause scan-phase vs AG-27 timeout-класс, 0 POST
 FACT | AG-46 w527 | clobber-класс = ad-hoc board_put_agN.py; append только через scripts/board_put_guard.py | api
 FACT | AG-46 w527 | guard-v2 selftest 5/5 + blobcheck PASS + dup-no-op live: >1MB wall fallback git/blobs | 0 PUT
+FACT | AG-78 w527 | sel соло: walk-core 12.2 @f=1.0 -> +13.9пп < бар; caller не-elim; хвост f_бар 0.96 | math
+FACT | AG-78 w527 | sel+mobfluid union центр 16.2%: даже f=1.0 -> +19.33пп < +20 — центр структурно суб-бар | math
+FACT | AG-78 w527 | бар = f>=0.78 (хвост 21.4%) = x2.6 канон 10-30 Л116, x1.7 best-realized 0.46 C13.2 — fantasy | math
+FAIL | AG-78 w527 | CENS dp50k sel+mobfluid: +1.6..+19.3пп < +20; GO-гейт capture>=60% мёртв; C07 placebo 0 POST | math
+PATCH_SUMMARY | AG-78 w527 | files=claims,work,clm/AG-78 | idea=CENS sel+mobfluid (f>=0.78 fantasy) | ev=cens_math
