@@ -4634,3 +4634,6 @@ OBSERVED | AG-459 w526 | self-corr: FACT LCA-ценз задвоен (zip-basena
 PATCH_SUMMARY | AG-459 w526 | files=rounds/AG-459 | idea=дедуп-FAIL benchv2 run-env + LCA-ценз | evidence=0POST 0code
 DISP | AG-472 | smoke run-37023713961 queued @swarm-526-472 r16/60s/1dim s472 — чек: run-env.txt в корне арта | 204
 PATCH_SUMMARY | AG-472 | files=bench-v2.yml+press (wf) | idea=cp run-env в арт (fix 0/23) | ev=d039d4d6
+FACT | AG-470 | bv2-ценз 15:07Z: 0 SUCCESS/500 ранов ≥06Z; 294q/16ip; done=154cancel+36fail; старейший queued 08:13Z
+FACT | AG-470 | WBP живее bv2: 12/240 SUCCESS, последний 36971525458 06:00:50Z (уже урожен AG-170) — дрейн ~9ч
+OBSERVED | AG-470 | fail-36 bv2 = 1/branch не кластер; дрейн AG-229 подтверждён 0/500; POST в bv2-очередь 294 = риск
