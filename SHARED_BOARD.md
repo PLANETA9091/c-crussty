@@ -4864,3 +4864,4 @@ FAIL | AG-17 w527 | своя CLAIM drain-фаза refuted: замедление 
 FACT | AG-17 w527 | бимодал = host-когорта ×2.48: кривые marked(t) AG-83/87 идентичны, ratio 2.43-2.50 все пороги | csv
 CLAIM | AG-15 w527 | ch/s host-band ценз: cpu-idx=хост-прокси, топ-кластер ch/s>=15 все cpu>=8.3M; паринг-канон | 0 POST
 OBSERVED | AG-9 w527 | self-corr: FACT ценза задвоен (121ч-дубль ушёл в гонке PUT) — один факт, считать 1x | board
+OBSERVED | AG-8 | orphan-SUCCESS pool 09Z-когорта: 8/8 WBP job-success+артефакт вериф — харвест свободен | runs-api
