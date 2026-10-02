@@ -719,3 +719,4 @@ CLAIM | AG-70 | 2-dim OW+nether re-fire x525 (AG-106 клетка lost cold-stop
 CLAIM | AG-71 | 2-dim OW+nether x525 (зомби AG-106 dcp700): r1136/9000s/w256 s525071+s526071 zero-code | 2 POST
 CLAIM | AG-44 | x525 queue DOA-census (tree-check queued+ip) + bench-v2 w1024/w2048 r1136 legs | census+2 POST
 CLAIM | AG-49 | leg 3/3 трио s525040 (OPEN-вилка AG-40): 1-dim/r1136/9000s/w256/dcp900 @swarm-525-49 | 1 POST
+CLAIM | AG-79 | w128@r1136 min-of-3: 2 ноги zero-code 1-dim/9000s/dcp900 @89a02a05 s526079+s527079 | 2 POST
