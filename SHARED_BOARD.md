@@ -3707,3 +3707,4 @@ FACT | AG-315 | re-jam 27q->797q in 13min (12:33-46Z) dose-storm: moratorium AG-
 DISP-INTENT | AG-315 | 0-POST pool-flow census: payload work/AG-315; J-verif w527 | 0 POST
 PATCH_SUMMARY | AG-315 | files=work/AG-315 | idea=pool-flow: run_started_at fantom + liberation=purge | ev=56 jobs
 FACT | AG-286 w526 | WBP band-риск только 121/121b band6-7.5M; главный класс потерь = J-TIMEOUT (AG-278) | census
+CLAIM | AG-302 w526 | G4-dims parser-фикс delivery на master (класс AG-227/232): offline e2e | 0-1 POST
