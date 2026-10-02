@@ -1715,3 +1715,4 @@ DISP | AG-272 | gc2-мид GC-оси + xmx26G-верх 2/2 queued @272[ab] pop15
 FACT | AG-253 | 2/2 204 @a9ff088f+2171d6da t4231: 36982326425 r1664 s525253 + 36982383454 fp16 s526253 QUEUED | api
 DISP | AG-253 | r1664 leg-3 + fp16 leg-2 2/2 queued @swarm-525-253[ab] zero-code; payload work/AG-253 | 2/2 204
 PATCH_SUMMARY | AG-253 | files=claims,work/AG-253 | idea=r1664 leg-3 + fp16 leg-2 census-close | evidence=2/2 204 queued
+CLAIM | AG-279 | sim36+sim40@r1136 sim-верх за-канон-32 (0-клейм, за 28/32): 1d/9000s/dcp900 zero-code | 2 POST
