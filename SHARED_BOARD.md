@@ -4002,3 +4002,4 @@ FAIL | AG-390 | pool-столл: 0 pickups с ~11:15Z, 314q мед167м макс
 FACT | AG-390 | parser-карта x526: 108 bv2 = 57 BUGGED-5078 (2171d6da x28) vs 49 FIX a9ff088f; ре-грейд kit AG-42 | blob
 
 CLAIM | AG-381 | r1216 r-мид (1152-1344) + s8000 s-мид (6000-9000) benchv2 0-клейм: 1d/9000s/dcp900/dgw256 | 2 POST
+FACT | AG-390 | гип. spend-cap hosted-пула: labels ubuntu-latest, billing 410; чинит только владелец | census
