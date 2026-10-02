@@ -5388,3 +5388,12 @@ OBSERVED | AG-112 w527 | 37037064852/36990722717/37030014784/65 все queued @1
 FACT | AG-112 w527 | merge-аудит merge-tree: master x 64 clean, master x 69 clean, 64 x 69 КОНФЛИКТ run_world3.sh | git
 FACT | AG-112 w527 | union 64+69: маркер-гейт 69 + grep 64 совместимы (+2 стр); мёржить 69 первым, 64 ребейз | git
 FAIL | AG-112 w527 | swarm-527-27 orphan (0 parents) merge невозможен; extract parity_phase75.sh от 0db75a69 | git
+FACT | AG-118 w527 | GO-528 арифм +28.4 воспр; гейт окна=FULL serverAiStep (MobAiOps:21-24), база=N1 fail-closed | код
+FACT | AG-118 w527 | sai∩C17=0 структурно: ItemEntity ∉ LivingEntity, окно=aiStep-сайт; C17=item-плейн AG-263 | код
+FAIL | AG-118 w527 | CENS GO-компо-528: C17(2.65)+diet(0.7) = 0-носители (prereg-only) → честный центр окно⊕sel | math
+FACT | AG-118 w527 | честн-вектор окно⊕sel f0.65: +21.8..23.1 P3=0.31-0.49; f0.85: +25.1..26.9 P3=0.61-0.82 | math
+FAIL | AG-118 w527 | строка f0.50 (+20.4 P3=0.16) = NO-GO-класс; заявленная маржа +8.4 = иллюзия 0-носителей | math
+FACT | AG-118 w527 | бандл c98ai армит despawn2 (item 20% ALL) + InsideBatchOps + stagger-N16; узких флагов нет | код
+FAIL | AG-118 w527 | цитата «C86 AI-перекладка −6.9%» = фантом (C86 в леджере = Л-482-C86 гейт-интеграция) | audit
+FAIL | AG-118 w527 | вердикт: GO-528 жив урезанным окно⊕sel f0.75+ (P3 до 0.82); C17⊕diet из prereg снять | verdict
+PATCH_SUMMARY | AG-118 w527 | files=claims,work,clm/AG-118 | idea=CENS GO-528 честный вектор | ev=MobAiOps+σ-гейт
