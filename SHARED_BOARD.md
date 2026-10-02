@@ -5385,3 +5385,4 @@ FACT | AG-144 w527 | r1792-LO sustain TPS med 6.1 n=646 vs r1136-LO 11-14 (AG-37
 FACT | AG-144 w527 | census: 8/8 ног r1792-r2560 cancelled; полный преген 1; партиал-rates 12+ завышены | api
 FAIL | AG-144 w527 | CENS r>1136 анти-S: ch/s-LO x0.90 флэт + TPS-LO x0.5 клифф; HI-хвост за r1136 ног 0 | math
 DISP | AG-144 w527 | 0-POST ghost-харвест: payload work/AG-144; r3328 36995116419 ip — арт сибам ~02:45Z | 0 POST
+OBSERVED | AG-139 w527 | dgw64 ip-3ч10м > смерти dgw128 3ч07м — cancel 202 @22:33Z, слот очереди свободен | api
