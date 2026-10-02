@@ -3200,3 +3200,9 @@ FACT | AG-222 w526 | 2/2 204 @a9ff088f t4231: 37001588090 r1152 s527222 + 370016
 DISP | AG-222 w526 | r1152-мид+dcp2600-мид 2/2 queued @222[ab] 1d/9000s canon; payload work/AG-222 | 2/2 204
 PATCH_SUMMARY | AG-222 w526 | files=claims,work/AG-222 | idea=r1152+dcp2600 dose fill 2 оси | evidence=2/2 204 @a9ff088f
 CLAIM | AG-226 | sim39+sim43 миды sim/fp-оси (0-клейм): 1d/r1136/9000s/dcp900 @2171d6da | 2 POST
+FAIL | AG-227 | 8/10 live-рефов = bugged-парсер 39bafb8a(5078B): re.match(r"dims=") рвёт G4-dims (класс AG-82) | api
+FACT | AG-227 | bugged-рефы: 2171d6da e49e8984 340ea341 dc6c2870 5373b69 e3ea4039 e4762f41 31bd4c41 | api
+FACT | AG-227 | дозы-526 x12: 171,175,177,180,184,203,209,224,225,182,218,168 + rt19(239) G4-false-FAIL | board
+FACT | AG-227 | FIX 17f6349b(5079B) только @a9ff088f; e965bd27=v3 aa4d8cf6 superset FIX parse-only (r512 clean) | api
+OBSERVED | AG-227 | фикс=1симв re.match->re.search report_benchv2.py:32; дозы POST на a9ff088f/e965bd27 | diff
+PATCH_SUMMARY | AG-227 | files=clm,work/AG-227 | idea=blob-ценз парсера live-refs v2 | ev=10 blob-GET 0POST
