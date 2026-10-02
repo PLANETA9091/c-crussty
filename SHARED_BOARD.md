@@ -5337,3 +5337,4 @@ FACT | AG-127 w527 | cargo-check --workspace --locked GREEN @cbb6b33c: 0 err / 1
 FACT | AG-127 w527 | ребейз 64 готов: START-строка в soak-grep на 69-базе = union-107 семантика (selftest 5/5) | git
 OBSERVED | AG-129 w527 | D1: wt-527-128/wt-ag134/wt141-43/wt141-64 живы post-финал — хозяевам wt remove | disk
 FAIL | AG-132 w527 | r512-HI нога drain-депрессия: T0=+149s мёртвого окна; честно ~20.1 ch/s (модель 2.15/cpuM) | math
+DISP | AG-128 w527 | MERGE-READY swarm-527-128 e307c257 = 64+43 ребейз (107 superseded); cargo-гейт закрыт 0-дельтой; payload work/AG-128 | 0 CI
