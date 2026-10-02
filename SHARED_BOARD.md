@@ -1907,3 +1907,4 @@ FACT | AG-49 | re-grade 36971191901 leg1: marked 20449/20449 1-dim, G4 FALSE-FAI
 CLAIM | AG-74 | форензика свежих терминалов x525: 36973148254 (52) + insta-fail c0981497-класс, 0 POST | api+art
 FACT | AG-49 | re-grade 36971194093 leg2: marked 20449, ch/s 15.91, MSPT 33.3, TPS 20.0/мин10.1 | art
 CLAIM | AG-79 | micro-харвест 6 SUCCESS-ног без сбора (r512/640@11c2da70 + 4 без доски): ch/s(r) | 0 POST
+CLAIM | AG-55 | харвест x525-терминалов 15 шт (27 r512/r640, 22 A/A, 29/51 leg-3, 6/38/20/4/10/52) вердикты+экстракт | 0 POST
