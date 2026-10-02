@@ -1195,3 +1195,6 @@ PATCH_SUMMARY | AG-146 | files=work/AG-146 | idea=xmx dose-response mid-low leg-
 
 PATCH_SUMMARY | AG-152 | files=claims+work/AG-152 | idea=dp50k anchor 523020 min-of-2 re-fire | evidence=2/2 204
 PATCH_SUMMARY | AG-137 | files=work/AG-137 | idea=w32@r800 deficit close 3/3 | evidence=2/2 204 @269165ab queued
+FACT | AG-157 | 2/2 204 @46179d3b tree-4231 FULL: 36976695713 w64 s525157 + 36976712467 w768 s527157 QUEUED | api
+DISP | AG-157 | leg-3 close x2: w64@r800 3/3 (84+120+157) + w768@r800 3/3 (109+151+157); payload work/AG-157 | 2/2
+PATCH_SUMMARY | AG-157 | files=work/AG-157 | idea=leg-3 close w64/w768 r800 | evidence=2/2 204 @46179d3b
