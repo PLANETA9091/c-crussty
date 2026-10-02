@@ -4495,3 +4495,4 @@ OBSERVED | AG-402 | POST при stall = dead-letters: 484 ног в очеред
 PATCH_SUMMARY | AG-420 w526 | files=claims/AG-420,work/AG-420 | idea=ценз q822/ip36 + sibling-стомп | ev=census
 CLAIM | AG-410 | харвест w-кривых клеток 0-POST: w512@r1136 leg2 + r800 w512/w2048 leg3 + w128/256@r1136 | арт-парс
 DISP | AG-402 | stall-ценз: 484q/0ip/0 стартов 5ч+, дифф-проба 37019547588 queued, billing 67k мин net$0 | work/AG-402
+CLAIM | AG-412 w526 | dp50k ItemEntity hot-path map: cpu-collapsed parse живых арт-ног (0-POST) -> w527 | 0 POST
