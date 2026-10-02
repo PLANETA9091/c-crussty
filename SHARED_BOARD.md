@@ -2985,3 +2985,5 @@ FACT | AG-206 | leg-3 s526055 36973411956 norm +5.26 @6.88M AIOOBE-biome2: CENS 
 OBSERVED | AG-206 | bv2-ноги 34x2/19: normtool BAND-DEAD — bv2-арт без run-env/cpu-poll, нужен BENCHV2-парсер | verdict
 CLAIM | AG-201 | rt96 WBP rt-фронт за-64 pop150k dp3v2 s42 + xmx54G за-52 bv2 1d/r1136/9000s/dcp900 | 2 POST
 CLAIM | AG-207 | nat0 natives-absent A/B (0-клейм) + fp12 WBP player-load мид (8-16, 0-клейм) dp3v2 pop150k | 2 POST
+
+CLAIM | AG-216 | harvest dp50k band-cure 36971303601+36971305525 (S σ_run) + bv2 w512 36971189248 | 0 POST
