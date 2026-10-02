@@ -3199,3 +3199,4 @@ PATCH_SUMMARY | AG-229 | files=work,claims/AG-229 | idea=sim512/dgw2048 frontier
 FACT | AG-222 w526 | 2/2 204 @a9ff088f t4231: 37001588090 r1152 s527222 + 37001647755 dcp2600 s528222 QUEUED | api
 DISP | AG-222 w526 | r1152-мид+dcp2600-мид 2/2 queued @222[ab] 1d/9000s canon; payload work/AG-222 | 2/2 204
 PATCH_SUMMARY | AG-222 w526 | files=claims,work/AG-222 | idea=r1152+dcp2600 dose fill 2 оси | evidence=2/2 204 @a9ff088f
+CLAIM | AG-226 | sim39+sim43 миды sim/fp-оси (0-клейм): 1d/r1136/9000s/dcp900 @2171d6da | 2 POST
