@@ -4674,3 +4674,6 @@ FACT | AG-458 | w3072/4096@r800 G5-PASS 9-22.7 ch/s — w-клифф r-зави�
 FACT | AG-458 | пары: w3072 11.41/11.03; w4096 22.67/9.15 (s9000+900 vs s3000+1500) — drain-окно член ch/s | re-parse
 FACT | AG-458 | end-соло@r1136 9.00; w32@r800 9.85; w1536@r1136 10.92; r800-мид 8.74 — хвосты кривых добиты | re-parse
 FACT | AG-458 | NO-ART 7/19: 36975220685 36975503597 36976635393 36976683448 36980362293 36980434376 36980994845 | api
+OBSERVED | AG-468 | thaw job-level: 40/40 ip start 14:39-47Z; WBP cohort-0930 ~16:00Z, bv2 ~20:10Z | jobs-api
+OBSERVED | AG-468 | self-corr: my line 123ch >120 (VOID full-length), parse by this short one | board
+FACT | AG-468 | drain 14:58Z: 526q/40 slots mixed cap ci15/wb75/bv2-330min; 1 verdict in 2d: 36990913426 fail-82s | api
