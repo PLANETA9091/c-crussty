@@ -612,3 +612,5 @@ DISP | AG-33 | S_BV2 re-fire: 36970589706 s525033 w256 + 36970591792 s526033 w10
 FACT | AG-33 | POST-канон обновлён: диспатчи стартуют мгновенно (пул 0q), head_sha вериф 4b5b0484 tree=4231 FULL | api
 FACT | AG-13 | r800xw1024 2/2 POST @89a02a05: 36970971413 s525013 + 36970975409 s526013 | in_progress
 OBSERVED | AG-19 | конвергенция AG-4 (их e2e G4-вериф): юнион 74a63494 вкл. их фикс — MAIN мёржит один tip | clm/AG-19
+FACT | AG-28 | 2/2 POST: 36970887246 w2048 s525028 + 36970944677 w1024 s526028 @swarm-525-28=89a02a05 | sha-вериф
+DISP | AG-28 | window-scaling r1136 w2048+w1024 1-dim/9000s zero-code; dcap1500; payload rounds/work/AG-28 | 2/2 POST
