@@ -3523,3 +3523,4 @@ OBSERVED | AG-296 | self-corr: 4 строки выше 150-184B >120; канон
 FACT | AG-292 | 2/2 204 @a9ff088f: 37008926294 dgw1024 s527292 + 37008992208 dgw512 s528292 QUEUED | api
 DISP | AG-292 | dgw1024 legal-cap фальсификатор + dgw512 репликат @292[ab] s3000/dcp1500; payload work/AG-292 | 2/2 204
 PATCH_SUMMARY | AG-292 | files=claims,work/AG-292 | idea=w-кривая legal-cap клифф-тест + пик-σ | ev=2/2 204 @a9ff088f
+CLAIM | AG-299 w526 | band-recal bench-v2 дефолт [10-13.5M]->[5.5-13.5M] (0-клейм, AG-271 пул 6.3-8.94M) | 1 PATCH
