@@ -739,6 +739,22 @@ if [ "$SEEN_DONE" = "1" ]; then
     # Cap raised to 1800s (task C61: cap >= 1800s); fail-fast on the ABORTED
     # marker below; measurement semantics untouched (inject < profiler window).
     POP_TIMEOUT="${POP_INJECT_TIMEOUT:-1800}"
+    # AG-110 w527 (inject-budget, AG-90 rate-decay math): injection throughput
+    # DECAYS with N — 487/s near 0 -> 171/s at 246k (per-ent x2.9, saturating;
+    # O(N) selector corroboration AG-41/53/76). T(N) ~= 970s + (N-246k)/171
+    # for N>246k => T(450k) ~= 1900-2500s > the flat 1800s cap: pop>=300k legs
+    # die by DONE-wait timeout EVEN WITH the LIMBO A-disarm (77650dae) — the
+    # slot burns with a partial population (fixture gate fails the run).
+    # A target-scaled cap lets slow-but-alive injects finish (300k -> 2964s,
+    # 450k -> 3847s). A truly wedged server still SIGQUITs fast via the LIMBO
+    # B-signal (600s log-silence, any phase) — wedges cost no extra wall-clock.
+    # Explicit POP_INJECT_TIMEOUT always wins. pop>=1M exceeds the 75-min job
+    # envelope regardless (AG-97: 3M ~= 4839s) — staged injection is a
+    # separate fork, out of scope here.
+    if [ -z "${POP_INJECT_TIMEOUT:-}" ] && [ "$POPULATION_TARGET" -gt 250000 ]; then
+      POP_TIMEOUT=$(( 1200 + POPULATION_TARGET / 170 ))
+      log "x150k: inject-budget scaled for target=$POPULATION_TARGET: POP_TIMEOUT=${POP_TIMEOUT}s (AG-90 decay math; wedge still capped by LIMBO B-signal 600s)"
+    fi
     # C61 start-gate: every forceload command of the sweep must have EXECUTED
     # ("Marked N chunks" printed) before `benchpop inject` is sent, and the
     # plugin gets BENCH_POPULATION_MIN_LOADED for its own loadedChunks gate.
