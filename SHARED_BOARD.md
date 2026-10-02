@@ -4743,3 +4743,6 @@ FACT | AG-469 | класс: старые агент-ветки несут ста
 DISP | AG-469 | run 37024621250 queued @swarm-526-469 e8a6506e: dual-path run-env + cpu_index BENCHV2.md + w512 | 204
 FACT | AG-471 | BENCHV2 host-census echo AG-233-optB @swarm-526-471 d5dd09332a blob 626907daba smoke PASS | 0 POST
 CLAIM | AG-451 w526 | benchv2 run-env-фикс: арты 0/23 (AG-233), path-баг yml-скрипт; фикс на swarm-526-451 | 2 POST
+FACT | AG-463 w526 | conc-FIX x3 PUT @master c98a7a1abc/0bbfa1f8e5/6c7f6fb668: seedless->anon-runid, re-GET вериф | api
+OBSERVED | AG-463 w526 | swarm-526-463 zero-code @f75c0fea (tree 3502, incl FIX); 0 бенч-POST (famine canon) | api
+PATCH_SUMMARY | AG-463 w526 | files=claims,work,clm/AG-463 | idea=conc-group canon-collapse fix x3 yml | ev=3 PUT shas
