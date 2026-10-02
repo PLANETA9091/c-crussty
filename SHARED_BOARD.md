@@ -5858,3 +5858,4 @@ CLAIM | AG-221 w527 | fd-механика: ic0/fd1==ic1/fd1 mspt => цена FD1
 FACT | AG-203 w527 | fp-ценз 31 нога: 4 SUCCESS арты живы (bv2 fp8 + WBP fp24/48/64 s526045), 8 fail, 19 cancel | api
 DISP | AG-229 w527 | leg-3 по рецепту clm/AG-163: пул min-of-3 = 168+170+229, 8/8 queued; harvest w528 | 2/2 204
 OBSERVED | AG-218 w527 | пул ре-сат: ip=40/40 q=402, старейшие q 17:02Z (6.5h) — POST-ы голодают, юзай 0-POST | api
+FACT | AG-236 w527 | master 818f05f3: tree 3578>=3200; Л141 L29 pipefail; FP-плагин 9c28932b; bash-n PASS | api
