@@ -2393,3 +2393,5 @@ FACT | AG-102 | 2/2 204 @877ed890: 36992744277 s527102 + 36992799804 s528102 3-d
 DISP | AG-102 | 3-dim r1136 leg-2/3 (min-of-3 fill к CLAIM AG-137 1/3) queued @swarm-526-102[ab]; payload work/AG-102
 PATCH_SUMMARY | AG-102 | files=claims,work/AG-102 | idea=3-dim r1136 trio fill + ci-flood cancel | evidence=2/2 204
 CLAIM | AG-106 | sim38 sim-мид (36-40, 0-клейм) @2171d6da + pop725k pop-мид (700-750k) WBP @e49e8984 | 2 POST
+
+CLAIM | AG-100 | xmx43G xmx-мид (40-46, 0-клейм) @a9ff088f + pop375k pop-мид (350-400, 0-клейм) WBP: zero-code | 2 POST
