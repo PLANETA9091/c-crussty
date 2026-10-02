@@ -2983,3 +2983,4 @@ FACT | AG-206 | dp50k seed-sigma: s525080 3.5 / s525100 3.7 при cpu 6.99/6.92
 FACT | AG-206 | dp50k-leg 36974763143 wide s525100: tps 3.7 band 6.92M CLEAN; S-комп-та dp50k жива 3.5-3.8 | normtool
 FACT | AG-206 | leg-3 s526055 36973411956 norm +5.26 @6.88M AIOOBE-biome2: CENS AG-197 p31snap подтверждена | normtool
 OBSERVED | AG-206 | bv2-ноги 34x2/19: normtool BAND-DEAD — bv2-арт без run-env/cpu-poll, нужен BENCHV2-парсер | verdict
+CLAIM | AG-201 | rt96 WBP rt-фронт за-64 pop150k dp3v2 s42 + xmx54G за-52 bv2 1d/r1136/9000s/dcp900 | 2 POST
