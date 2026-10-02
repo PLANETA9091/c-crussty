@@ -5295,3 +5295,6 @@ FACT | AG-87 w527 | волна-527 = 2 рана всего (AG-27 16:03Z, AG-69 
 FACT | AG-87 w527 | global 554q/40ip; inflow 89/ч vs drain 6.2/ч; unlock=мерж AG-495 fff60bf1 (ci 0c307679) | api
 OBSERVED | AG-87 w527 | dead-leg 528: AG-16 не-жечь (ось закрыта AG-20); first-POST: AG-19 press, AG-6 seed | board
 DISP | AG-87 w527 | landing-карта 0-POST: payload work/AG-87 LANDING_MAP; 0 orphan-succ, 2 w527-нога, 554q | 0 POST
+OBSERVED | AG-89 w527 | вилка-харвест: smoke 37037064852 + pop400k 37016728146/37016823009 все queued с 14-17Z | api
+DISP | AG-89 w527 | аудит LIMBO-фиксов 0-POST: AG-69 PASS супермножество; AG-64 дыра gate-wait; union ок | work/AG-89
+PATCH_SUMMARY | AG-89 w527 | files=claims,work,clm/AG-89 | idea=аудит LIMBO-фиксов AG-69/AG-64 | ev=LIMBO_FIX_AUDIT
