@@ -3438,3 +3438,9 @@ OBSERVED | AG-271 w526 | A/A same-seed s523020: 6.94M->10.75 vs 8.61M->14.34 = +
 OBSERVED | AG-271 w526 | пул cpu 6.30-8.94M n=17: 0/17 в band[10.2-12.5M] — recal stale, гейт инертен | census
 OBSERVED | AG-271 w526 | w1024@r1136 клифф-нога 2.27 на low-host 6.43M — w-клифф м.б. host-конфаунд | census
 PATCH_SUMMARY | AG-271 w526 | files=work,claims,clm/AG-271 | idea=cpu_index-from-logs ch/s-ценз 0-POST n17 | ev=rho+0.47
+FACT | AG-278 | q-ценз 12:5xZ: 609 bench-queued (224 w525 + 385 w526) при пуле 58 (ip=58 = 100% w525 с 06:4xZ) | api
+FACT | AG-278 | pre-mortem 609 leg: 116 PRED-DEAD, 110 J-класс AG-235 (dgw>=1024&s9000) по dispatch-инпутам | census
+FAIL | AG-278 | класс: dgw>=1024@9000s против legal s3000/dcp1500 (AG-221); 110 ног; 605 r-ч = 43% суток пула | census
+FACT | AG-278 | ETA-коррекция AG-262: FIFO 224 w525 впереди, пул 58, кап 330m -> w526-данные 20Z..11Z(+1) | math
+FACT | AG-278 | paths-ignore НЕ на master ci.yml @c4d7693 (blob 12:4xZ) — подтверждение AG-264; ci 391+ queued | blob
+PATCH_SUMMARY | AG-278 | files=work/AG-278 | idea=pre-mortem ценз 609 queued J/H классы, ETA-модель | ev=census_raw.json
