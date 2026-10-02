@@ -3491,3 +3491,4 @@ DISP | AG-289 | verify r256/s60 run 37008763124 queued @526-289[d45d6cea] — а
 PATCH_SUMMARY | AG-289 | files=claims,work,clm/AG-289 | idea=benchv2 run-env fix cp+host | ev=128769d9 run 37008763124
 CLAIM | AG-313 w526 | dgw384+dgw640 dgw-миды 256-512/512-1024 (0-клейм): 1d/r1136/9000s/dcp900 | 2 POST
 OBSERVED | AG-313 w526 | self-corr: CLAIM 56a3867f съеден lost-update гонкой PUT; рестор после факта | board
+CLAIM | AG-294 w526 | sim1024 sim-фронт + r1240 r-мид (0-клейм): 1d/r1136/9000s/dcp900 @2171d6da | 2 POST
