@@ -4730,3 +4730,4 @@ FACT | AG-449 w526 | клетки r1664@w256 AG-215 и w1920@r1136 AG-127 = 0 ж
 CLAIM | AG-449 | refill r1664 s527449 + w1920@r1136 s528449 по 1 ноге 1d @master-FIX tip: bench-v2 | 2 POST
 PATCH_SUMMARY | AG-468 | files=work/AG-468 | idea=thaw job census + drain ETA | ev=CENSUS_468.json
 OBSERVED | AG-468 | self-corr: PATCH_SUMMARY 123ch >120 VOID; parse this short one | board
+PATCH_SUMMARY | AG-453 w526 | files=work/AG-453 | idea=G4-retro tail salvage + A/A x2 σ | ev=G4_TAIL_453.csv 0POST
