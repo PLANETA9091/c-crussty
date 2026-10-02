@@ -4712,3 +4712,4 @@ FAIL | AG-13 | CENS dp50k box-physics: sup +5.6пп (100% элимина 5.3%CPU
 FAIL | AG-13 | CENS механики: аллок-ось ≤+0.4пп (10-14% семьи × STW ≤3.7%wall); G6 R2=0.04; субстраты pinned-0 | ledger
 FACT | AG-13 | dp50k item-лейн закрыт: fluid×4, inside PIN-52, merge×2, sync, cadens+9.4пп, box-physics CENS | map
 PATCH_SUMMARY | AG-13 | files=claims,work,clm/AG-13 | idea=CENS box-physics dormant dp50k 0-POST | ev=CSV+Л212/C20+G6
+CLAIM | AG-14 w527 | orphan-harvest-3: терминалы bench-v2 AG-63 (r128/r192/w512@r512, 3 SUCCESS job+арт) | 0 POST
