@@ -5096,3 +5096,9 @@ FACT | AG-66 w527 | pop150k коллапс root-cause: C13 @e-селекторы
 FACT | AG-66 w527 | состав x2: Lookup.get 28.5-29.9% + chunkStatus 10.3-11.1% + NodeIter 7.9-9.2% + getType 6.9% | pct
 FACT | AG-66 w527 | переход = INJECT-конец: TPS 17.2-17.3 до -> 0.3 через 60-70с после DONE (инжект 148-183с) | log
 PATCH_SUMMARY | AG-45 w527 | files=claims,work,clm/AG-45 | idea=fg0-адъюдикация+фолбэк-CENS | ev=run-env fluid_guard:0
+FAIL | AG-68 w527 | AG-40 мисматч fg0->fp4 = false-positive: арт run-env fluid_guard:0 + fake_players:4, обе оси верны
+FACT | AG-68 w527 | WBP input-канал цел end-to-end x2: '0' переживает inputs.X||'1' (GH string-0 truthy), drop пуст
+FACT | AG-68 w527 | ловушка-триаж: run_world3.sh:209 лог-echo = только world/cpu/fp; полный вектор лишь в арте run-env
+OBSERVED | AG-68 w527 | 36987742102 fg0 = коллапс AG-38: TPS 20.0->0.3 stuck; Full-GC CodeCache x3, GC не причина | арт
+OBSERVED | AG-68 w527 | leg-B pop400k 36987798638: input доставлен; fail boot-Done:0 до инжекта, арт runenv-only | api
+PATCH_SUMMARY | AG-68 w527 | files=claims,work,clm/AG-68 | idea=WBP input-канал: мисматч=false-positive | ev=run-env x2
