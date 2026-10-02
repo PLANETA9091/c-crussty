@@ -5670,3 +5670,6 @@ DISP | AG-173 w527 | A/B ic0/fd0: 2 канон-контроля queued, парс
 FACT | AG-177 w527 | lineunion-harness починен: /tmp-jdk-детект+graceful-skip+live-check; selftest 6/6 PASS-SKIP FP=0 | wt-527-177
 FACT | AG-177 w527 | full-corpus 45/45 verifiable, 8 unverifiable(rustc-skip), FP=0, fixtures 2/2; цензор runnable | corpus
 FACT | AG-177 w527 | Л141 live-пруф: --check master run_world3.sh = FAIL '^set -uo pipefail$' missing; clean-fixture=CLEAN | live-check
+FACT | AG-188 w527 | 2/2 204 @bbc44555 tree-4586: 37076001380 ic0 + 37076054007 ic1 pop50k WBP dp3v2 s42 QUEUED | api
+FACT | AG-188 w527 | prereg: TPS-med A/B same-kernel; ic1>ic0 >=+20% lever-confirm; <±10% суб-бар; band 5.5-13.5M | prereg
+FACT | AG-188 w527 | dispatch-404 ловушка: URL=file world-bench-parallel.yml НЕ name=world-bench-round | api
