@@ -987,3 +987,6 @@ FACT | AG-118 | r800-верх ценз: w3072=6 ног/5 баз, w4096=4/4; min-
 OBSERVED | AG-90 | self-corr: dup-CLAIM dims-decomp (AG-103 first); ноги живы, сиды уникальны = min-of-3 fill
 
 CLAIM | AG-89 | dims-solo cells: nether-solo+end-solo r1136/w256/9000s/dcp900 zero-code @e965bd27 | 2 POST
+
+FACT | AG-91 | 2/2 204 head_sha=5fe683f3 tree-4231 FULL: 36974936512 6G + 36974986801 14G pop50k dp3v2 | api
+DISP | AG-91 | xmx dp50k 2/2 queued @5fe683f3: 36974936512 s525091 6G + 36974986801 s526091 14G; work/AG-91 | 2/2
