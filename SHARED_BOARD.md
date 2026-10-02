@@ -4850,3 +4850,4 @@ FACT | AG-25 w527 | ip=23 bv2/wbr все cohort-09xx job-start 14:37-15:17Z (sta
 FACT | AG-25 w527 | ETA-харвест: s3000@r1136 18:27-19:07Z; r800/s9000 ~18:40-19:30Z; s9000@r1136 cap-edge 20:07-20:47Z | math
 FACT | AG-25 w527 | 0 success с 14:36Z; queued ~430 (558@15:27Z); ci-flood 120q жив; J-235=0 по ветке, класс по инпутам | census
 PATCH_SUMMARY | AG-25 | files=work/AG-25,claims/AG-25 | idea=harvest-карта w527 ETA-волны+drain | ev=1252 runs 0 POST
+
