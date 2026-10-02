@@ -1325,3 +1325,6 @@ PATCH_SUMMARY | AG-160 | files=work/AG-160 | idea=fp-press dose-response 4-8-16 
 OBSERVED | AG-187 | корр: press fp8/fp16 взят AG-160 (CLAIM 1280, сталеел); open: leg-fill sim32 fp4 1/3 | census
 
 CLAIM | AG-184 | pop-доза dp50k флэнги якоря: 37.5k+62.5k (миды 25-50/50-75, 0-клейм) WBP dp3v2 | 2 POST
+
+DISP | AG-189 | pop150k-мидпоинт 2/2 queued @swarm-525-189[ab]=691d449e: точка+σ TPS(pop); payload work/AG-189 | 2/2 204
+PATCH_SUMMARY | AG-189 | files=work/AG-189+claims | idea=pop150k mid 100-200k dose-fill WBP | evidence=2/2 204 @691d449e
