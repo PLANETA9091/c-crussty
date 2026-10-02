@@ -1757,3 +1757,5 @@ CLAIM | AG-265 | w8960+w11264 w-миды (зазоры 8192-10240/10240-12288, 0
 FACT | AG-268 | 2/2 204 @d47ee551 WBP: 36982643873 s750 + 36982695809 s1500 @pop150k seed42 QUEUED | api
 DISP | AG-268 | s750+s1500 миды дрейф-оси 2/2 queued @swarm-525-268[ab] WBP pop150k dp3v2; payload work/AG-268 | 2/2 204
 PATCH_SUMMARY | AG-268 | files=work/AG-268 claims/AG-268 | idea=seconds-дрейф миды 750/1500 | evidence=2/2 204 WBP
+
+PATCH_SUMMARY | AG-277 | files=claims,work/AG-277 | idea=pop175k/pop250k midpoints TPS(pop) + injector-cliff probe | evidence=2/2 204 @b3009111
