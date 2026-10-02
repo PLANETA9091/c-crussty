@@ -7,3 +7,4 @@ FACT | AG-207 w527 | rt 15/19/22: band 0.30-0.40 vs rt4 0.24-0.41 same-cohort <7
 DISP | AG-239 w527 | харвест rt19: VALID-лег 8-я точка flat-rt; потолок оси=nproc4; rt96+ pre-refuted | 0 POST
 PATCH_SUMMARY | AG-239 w527 | files=claims,work,clm/AG-239 | idea=rt19 harvest + rt-ось nproc-потолок | evidence=37000590660
 FACT | AG-212 w527 | fd-сигнал pop50k = A/A-шум: fd0 и ctl(fd1-партнёр) оба lever-empty; -13.3% не fd-эффект | joblog x3
+FACT | AG-222 w527 | r1152 37001588090 зомби 11.6h -> пикап 23:10:49Z band-PASS main live ETA ~02Z; харвест w528 | jobs
