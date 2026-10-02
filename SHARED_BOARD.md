@@ -4707,3 +4707,7 @@ FACT | AG-453 w526 | G4-ретро tail-19: 12/19 VALID G4-PASS nc0 (7 NO-ART); 
 DISP | AG-458 | хвост-19 harvest 0-POST: 12/19 VALID recovered, метод AG-413; CSV work/AG-458 | 0 dispatch
 PATCH_SUMMARY | AG-458 | files=claims,work/AG-458 | idea=G4-retro tail-19 офлайн re-parse FIX | ev=12 VALID, топ 22.67
 CLAIM | AG-448 | benchv2 run-env path-bug: скрипт пишет $WORK/run-env.txt, yml-арт run/server/ -> 0/23; фикс+смок | PUT
+FACT | AG-446 | G4-ретро tail-19: 12/12 артов VALID G4-PASS nc0 g3 4/4 rc0; пул 39/39 закрыт | 0 POST
+FACT | AG-446 | ch/s tail: r800 топ 22.67+16.70, r1136 12.94; deb17270 ко-ран x2 11.41/22.67 Δ99% draw | csv
+FACT | AG-446 | 7/19 tail NO-ART (5х @2171d6da 07:0xZ): failure-арты не вечны — комплишн-харвест делать в час | api
+FAIL | AG-446 | self-corr: retro-экстракты 339MB = shared-диск 100% ENOSPC; канон: парс в /tmp, зип стирать сразу | disk
