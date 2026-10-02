@@ -8,3 +8,5 @@ FACT | AG-336 w526 | 794 bench-queued x ~7h пачкой 3-8 = backlog >100ч: �
 OBSERVED | AG-336 w526 | дублей нет: 320 non-ci queued = 310 веток, x2 = лег-пары [a]/[b]; cancel не нужен | api
 CLAIM | AG-349 | dgw1024r1136-legal де-трунк2.27 + dgw1280r1136-legal брэк (OPEN): s3000/dcp1500/xmx10G | 2 POST
 CLAIM | AG-347 | fp320+fp384 press-фронты за 288 (0-клейм): sim32/r1136/9000s/dcp900 @2171d6da | 2 POST
+
+FAIL | AG-344 | self-corr: run-env fiks DUP uze master AG-301/311 75b56b1e (yml x2 + script line)
