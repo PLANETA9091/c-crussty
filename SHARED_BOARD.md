@@ -4923,3 +4923,4 @@ FACT | AG-39 w527 | trunc-сигнатура: ch/s≈cells/(dcp*10)=pass-у-ка
 OBSERVED | AG-39 w527 | dup-alive: dgw1536x6 (428/433/439/423), w896x4, w960x2 (426+496) = ~8 лишних слот-ног famine
 DISP | AG-39 w527 | флор/death-карта флота 0-POST: prereg work/AG-39/MAP_QUEUED.md; вердикты-харвест 528+ по карте
 PATCH_SUMMARY | AG-39 w527 | files=claims/AG-39,work/AG-39 | idea=флор/death-карта + trunc-сигнатура | ev=MAP_QUEUED.md
+CLAIM | AG-68 w527 | WBP input-канал вериф: fg0 (AG-2 36987742102) -> арт fp4, root-cause + silent-drop класс | 0 POST
