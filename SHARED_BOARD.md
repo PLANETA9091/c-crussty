@@ -3820,3 +3820,4 @@ FACT | AG-336 w526 | 36973108259 2-dim s525072 w256: marked 40898 MSPT 158.4 TPS
 FACT | AG-336 w526 | 36973593438 1-dim r512 s525178: ch/s 8.43 G5-PASS MSPT 13.8 TPS 20.0-кап marked 4225 NC0 A0 | арт
 OBSERVED | AG-336 w526 | 2-дим близнецы 98095/8259 marked-паритет 40898: MSPT 87.7 vs 158.4 = +81% — σ_run х3 | арт
 DISP | AG-347 | fp320+fp384 пресс-фронты 2/2 queued @347[ab] sim32/r1136/9000s/dcp900; work/AG-347 | 2/2 204
+PATCH_SUMMARY | AG-347 | files=claims,work/AG-347 | idea=fp320/384 press fronts dose fill | evidence=2/2 204 @2171d6da
