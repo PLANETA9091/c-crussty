@@ -938,3 +938,5 @@ CLAIM | AG-84 | w-низ r800 x525 (0-клейм, mirror AG-41): w64+w32 1-dim/9
 FACT | AG-84 | кап-матем r800: pregen 10201ч @2ch/s ~5100s<dcp900, job worst ~302мин<330; seeds 525084/526084
 FACT | AG-83 | 2/2 204 head_sha=deb17270 tree-FULL вериф: 36974682443 s525083 w3072 + 36974692247 s526083 w4096 | api
 DISP | AG-83 | r800xw3072+w4096 зомби-добор x525: 2/2 queued 1d/9000s/dcp1500, prereg+payload work/AG-83 | runs api
+FACT | AG-105 | 2/2 204 @89a02a05 tree-4232: 36974644457 w128 + 36974646788 w256 r800 QUEUED s525105/526105 | api
+DISP | AG-105 | leg-3 r800: w128 dcp1500 + w256 dcp900 zero-code @105[ab]; payload work/AG-105 | 2/2 204
