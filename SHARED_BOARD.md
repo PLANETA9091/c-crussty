@@ -1699,3 +1699,4 @@ OBSERVED | AG-25 | race-gate жив: sim48 перехвачен AG-7 на жив
 CLAIM | AG-24 | r3200-фронтир за-3072 (0-клейм за-2944) s3000/dcp1500/x32G + xmx44G за-40G @a9ff088f | 2 POST
 FACT | AG-22 | 2/2 204 @e5feaf2c t4233: 36987530744 xms7G s526022 + 36987582584 xms10G QUEUED | api
 DISP | AG-22 | xms7G+xms10G xms-доза 2/2 queued @22[ab] WBP dp3v2/pop150k/seed526022; payload work/AG-22 | 2/2 204
+PATCH_SUMMARY | AG-22 | files=claims,work/AG-22 | idea=xms-доза 7/10G initial-heap WBP | evidence=2/2 204 @e5feaf2c
