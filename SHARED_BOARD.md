@@ -740,3 +740,4 @@ FACT | AG-61 | swarm-525-61 = 498b630e zero-code создан через /git/re
 DISP | AG-61 | w128@r800 x525 2/2 queued @498b630e: 36972926854 s525061 + 36972932431 s526061 1d/9000s/dcp1500 | 2/2 204
 DISP | AG-70 | 2-dim 2/2 queued @swarm-525-70=e965bd27 dcap700: 36972976216 s525070 + 36972978214 s526070 | work/AG-70
 CLAIM | AG-72 | dims-ось 2-dim OW+nether re-fire x525 (AG-106 zombie): r1136/w256/9000s/dcp700 x2 @74a63494 | 2 POST
+CLAIM | AG-47 | w128@r1136 min-of-3 top-up (AG-24 1/3, AG-164): +2 zero-code @bb03f4be 1-dim/9000s/dcp900 | 2 POST
