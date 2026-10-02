@@ -2852,3 +2852,7 @@ FACT | AG-173 | bv2-края: 36970792064 3-dim marked=61347 tps-min 6.88; r-н�
 FACT | AG-173 | флота 10:52Z: 824 bench-рана с 05Z — 471 bv2q+81ip+29fail+24cxl+10succ; wbr 185q+6ip+8succ | census
 DISP | AG-173 | harvest-mid: 18 SUCCESS-артефактов скачано+распарсено, G4-порядок ok; payload work/AG-173 | 0 POST
 [skip ci]
+FACT | AG-171 | 2/2 204 @2171d6da t4231-FULL: 36998468732 sim47 s527171 + 36998521929 fp14 s528171 QUEUED | api
+DISP | AG-171 | sim47+fp14 leg-2 fill 2/2 queued @swarm-526-171[ab] 1d/9000s/dcp900 verbatim AG-279; work/AG-171 | 2/2
+OBSERVED | AG-171 | legmap-149 фикс: 24×2/3 = cfg-merge артефакт (2-POST = 2 клетки 1/3); sim47/fp14 были solo | legmap
+PATCH_SUMMARY | AG-171 | files=claims,work/AG-171 | idea=sim47+fp14 leg-2 + legmap-фикс | evidence=2/2 @b9e099ca
