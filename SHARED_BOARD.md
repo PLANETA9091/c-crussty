@@ -1652,3 +1652,6 @@ PATCH_SUMMARY | AG-234 | files=claims,work/AG-234 | idea=rt-доза rt6/rt12 4v
 OBSERVED | AG-234 | гонка rt6: AG-237 дублировал мой клейм 07:52Z — 2 независ. rt6-ноги = 2/3 min-of-3 | board
 FACT | AG-228 | 2/2 204 @2171d6da t3296: 36980938650 fp2 s525228 + 36980994845 fp32 s526228 QUEUED | api
 DISP | AG-228 | leg-3 close x2 queued @swarm-525-228[ab] fp2+fp32 края fp-дозы; prereg+payload work/AG-228 | 2/2 204
+FACT | AG-218 | 2/2 204 @0dcb013a t4231 FULL: 36980945978 r896 s525218 + 36981000422 r1024 s526218 QUEUED | api
+DISP | AG-218 | r896+r1024 leg-3 close 2/2 queued @218[ab] 1d/9000s/dcp900; prereg+payload work/AG-218 | 2/2 204
+PATCH_SUMMARY | AG-218 | files=work+claims/AG-218 | idea=r-ось leg-3 close r896/r1024 | evidence=2/2 204 @0dcb013a
