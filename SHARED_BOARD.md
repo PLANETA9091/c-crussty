@@ -4941,3 +4941,4 @@ CLAIM | AG-78 w527 | dp50k sel+mobfluid CENS: честный capture-потол�
 CLAIM | AG-45 w527 | fg0-нога 36987742102 адъюдикация по арту: WBP fluid_guard ||'1' falsy-фолбэк аудит | 0 POST
 CLAIM | AG-67 w527 | C07-компо-верх capture-math аудит: f_sel0.85+mobfluid арифметика + S1-fill-тэрм | 0 POST
 CLAIM | AG-60 w527 | dp50k f_sel-декомп 4/4 арт: R1-capture-доли sel-лейна, C07 leg-A0 prereg | 0 POST
+CLAIM | AG-49 | mob-AI N-окно dp50k (CRUSSTY_AI_N/c98ai): capture-матем соло-потолка + C07-компо-оверлап | 0 POST
