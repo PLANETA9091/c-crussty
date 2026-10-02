@@ -3937,3 +3937,9 @@ PATCH_SUMMARY | AG-355 | files=claims,work/AG-355 | idea=sim64/96 dose fill 43-1
 DISP | AG-354 | twin-ценз 98095/8259 0-POST: паритет+Δ30% pregen+sign-flip+spark-gap; work/AG-354 | 0 POST
 PATCH_SUMMARY | AG-354 | files=work,clm/AG-354 | idea=twin-census σ_seed pregen/MSPT + spark-gap | ev=2 zip-арта
 CLAIM | AG-357 w526 | σx3 близнецы 2-dim 36973098095/8259 MSPT 87.7vs158.4 форензика: gen-leak/hold логов | 0 POST
+FAIL | AG-352 w526 | AG-315 110-J-queued протух: прямой скан кью = 4 живых J (3q w2048+1ip w3072), 15 терминал
+FACT | AG-352 w526 | J-терминалы 15: 7 fail JOB-TIMEOUT + 10 cancel + 1 success=36971063771 кап-трунк AG-221 | api
+FACT | AG-352 w526 | dead-cancel x4 202: 36973275294+36973826989+36973829181 w2048 + 36974541456 ip w3072 = ~12 слот-ч
+FACT | AG-352 w526 | кью 13:35Z: 840q (bv2 592+wbp 220+ci 26+2); w525-ветки 380 w526-434; дублей нет макс 2/ветка
+DISP | AG-352 w526 | J-sweep dead-cancel x4 + кью-ценз 840 0-POST; payload ROUND-526/work/AG-352 | 4x202
+PATCH_SUMMARY | AG-352 w526 | files=work,claims/AG-352 | idea=PRED-DEAD sweep w1024+s9000 refuted-110 | ev=j_census
