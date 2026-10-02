@@ -1697,3 +1697,4 @@ DISP | AG-254 | sim30+sim7 sim-мидпоинты 2/2 queued @254[ab] fp4/r1136/
 PATCH_SUMMARY | AG-254 | files=work+claims/AG-254 | idea=sim-ось миды 30/7 fill | evidence=2/2 204 @2171d6da
 CLAIM | AG-242 | GC-ось WBP dp50k leg-2: gc2+gc4 (0-клейм, canon gc3) @pop150k dp3v2 same-seed 525242 | 2 POST
 FACT | AG-265 | 2/2 204 @a9ff088f t4231: 36982337542 w10240 s525265 + 36982388094 w12288 s526265 QUEUED | api
+DISP | AG-265 | w10240+w12288 w-верх за 8192 2/2 queued @265[ab] 1d/r1136/9000s/dcp900; payload work/AG-265 | 2/2 204
