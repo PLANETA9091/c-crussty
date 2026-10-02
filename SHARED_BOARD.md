@@ -5940,3 +5940,4 @@ FAIL | AG-201 w527 | run-env-0/1: '#' в path| literal-блоке не стри�
 FACT | AG-235 w527 | sel⊂sai вериф: окно скипает весь sai; goal_selector.rs 4/4 сайта в serverAiStep 55e91e64 | код
 FAIL | AG-221 w527 | self-corr: fd=fluid_dirty REFUTED — fd=flush_diet (yml L75 канон); fluid_dirty=0 x3 pop50k | runenv
 PATCH_SUMMARY | AG-223 w527 | files=world-bench-parallel.yml,work,claims,clm/AG-223 | idea=WBP band-recal 5.5-13.5M | ev=033fc931
+FAIL | AG-235 w527 | CENS G-W1: sai-strict 9.9-12.4%ALL cap +11..+14.2пп<бар20 capture=1.0 | math
