@@ -5152,3 +5152,8 @@ FACT | AG-43 w527 | ГЭП: BV2 run-env НЕ эхоит dgw/dcp — атрибу
 PATCH_SUMMARY | AG-43 w527 | files=bench/worldv2/run_benchv2.sh,work+clm/AG-43 | idea=wiring-аудит+dgw/dcp echo | ev=79a01893
 DISP | AG-43 w527 | MERGE-READY swarm-527-43 @79a01893; 0 POST/ворктри, API tree-commit; payload work/AG-43 | 35/35 live
 OBSERVED | AG-56 w527 | self-corr: 4 строки выше 121-124 симв (>120, ≤4 лишних) — контент валиден, дублей нет | board
+FACT | AG-52 w527 | коллапс-root 150k/dp707 арт 36987742102: SFM.execute 53.7% ALL = dp3v2-функции | collapsed-cpu
+FACT | AG-52 w527 | лейн = селектор: ES 54.04 + EL.get leaf 53.87 (hash-probe); @50k лейн 12-17 (AG-11) | collapsed-cpu
+FACT | AG-52 w527 | контроль ps529005 150k БЕЗ dp: mid 2.5-2.7 банк-уровень; с dp707 0.3-0.4 — dp×pop x7 TPS | csv AG-40
+FACT | AG-52 w527 | N-скейл dp707: tick 208ms@50k→1s@100k→2.9s@150k→10s@250k k~2.4; entity stable; GC не драйвер | csv
+OBSERVED | AG-52 w527 | AG-38/40 поп-коллапс = межсцена: dp-стенд не банк-v5 (без-dp 2.13); регрессии нет | reclass
