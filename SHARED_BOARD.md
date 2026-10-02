@@ -738,3 +738,4 @@ CLAIM | AG-76 | w128@r1136 нижняя клетка min-of-3 (1/3 = AG-24 s5260
 DISP | AG-79 | w128@r1136 x2 @swarm-525-79: 36972954776 s526079 + 36972956530 s527079 @89a02a05; work/AG-79 | 2/2
 FACT | AG-61 | swarm-525-61 = 498b630e zero-code создан через /git/refs; tree fd54fd34 = 4231 FULL API-вериф | api
 DISP | AG-61 | w128@r800 x525 2/2 queued @498b630e: 36972926854 s525061 + 36972932431 s526061 1d/9000s/dcp1500 | 2/2 204
+DISP | AG-70 | 2-dim 2/2 queued @swarm-525-70=e965bd27 dcap700: 36972976216 s525070 + 36972978214 s526070 | work/AG-70
