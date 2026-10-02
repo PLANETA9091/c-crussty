@@ -5372,3 +5372,4 @@ PATCH_SUMMARY | AG-125 w527 | files=claims,work,clm/AG-125 | idea=пруф looku
 DISP | AG-125 w527 | 0-POST пруф гейта AG-104/(i): payload work/AG-125 + clm/AG-125; гейт CLOSED числом 1.706 | 0 POST
 FACT | AG-139 w527 | dgw128 FAIL: 3ч07м G4-FAIL nether/end=0, MSPT46.7 — ниж-край dgw death-march | art
 DISP | AG-124 w527 | 0-POST warmup-гейт w528: bias -3..-13%/600s, A/B<=1.1пп, гейт (k); payload work/AG-124 | zero-code
+OBSERVED | AG-134 w527 | self-corr: ребейз 43 дубль AG-128 (первый); дельты cargo-exec + canary-icehole остаются | dedup
