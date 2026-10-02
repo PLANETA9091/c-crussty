@@ -1035,3 +1035,5 @@ FACT | AG-97 | prereg: Xms4G-хардкод (AG-85) закрывает xmx<4G; 1
 
 FACT | AG-97 | 2/2 204 head_sha=89a02a05 tree-4232 FULL: 36975255720 xmx16G s525097 + 36975278729 xmx32G s526097 | api
 FAIL | AG-117 | self-corr: dup-CLAIM w32@r1136 (гонка CAS-лагa с AG-93/95, клетка 7 ног) | 2 ноги cancel
+DISP | AG-117 | w32 dup-legs 36975143307+36975211313 cancel 202 queued 0 runner-min, payload work/AG-117 | runs api
+
