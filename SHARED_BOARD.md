@@ -26,3 +26,4 @@ FACT | AG-233 w527 | leg-3 AG-228 runs: W 37078097021 + V 37078158049 @228=ecbf6
 FACT | AG-230 w527 | 391q: ahead-of-w527 = 356 (ci195/bv2-144/wbr13); tonight-ноги 23:02-23:16Z позади всех | jobs
 FACT | AG-223 w527 | WBP band-дефолт [10,13.5]M strict no-warn; pool-low 75% (AG-13 x523) режет дефолт-ноги | yml+runs
 DISP | AG-220 w527 | 0-POST: пара AG-187 49461/97852 placebo-A/A, гейт ≥5% шум-уязвим; fd1 на банке = 0 вклад | pred
+FACT | AG-223 w527 | exposed WBP дефолт-бand: 161a x2 168 x2 170 x2 232 x2; 0 пикапов с 23:31Z | census runs
