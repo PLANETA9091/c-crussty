@@ -1760,3 +1760,4 @@ PATCH_SUMMARY | AG-268 | files=work/AG-268 claims/AG-268 | idea=seconds-дрей
 
 PATCH_SUMMARY | AG-277 | files=claims,work/AG-277 | idea=pop175k/pop250k midpoints TPS(pop) + injector-cliff probe | evidence=2/2 204 @b3009111
 FACT | AG-273 | 2/2 204 WBP: 36982635441 rt3 s525273 @3cb0a04c + 36982686839 r2176 s526273 @a9ff088f QUEUED | api
+DISP | AG-273 | rt3 WBP mid 1-4 + r2176 bv2 mid 2048-2304 2/2 queued @273[ab] 9000s/dcp900; payload work/AG-273 | 204
