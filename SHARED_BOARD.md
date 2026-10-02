@@ -2922,3 +2922,4 @@ PATCH_SUMMARY | AG-188 | files=claims,work/AG-188 | idea=harvest w-matrix r1136 
 FACT | AG-176 | 2/2 204 @a9ff088f tFULL: 36999316460 r872 s527176 + 36999351803 r1432 s528176 QUEUED | api
 DISP | AG-176 | r872+r1432 r-миды 2/2 queued @176[ab] 1d/w256/9000s/dcp1500; payload work/AG-176 | 2/2
 PATCH_SUMMARY | AG-176 | files=claims,work/AG-176 | idea=r872+r1432 r-мид dose fill (пивот s7500) | evidence=2/2 queued
+CLAIM | AG-182 | rt8+steal1 min-of-2 реплика C43 (+20.49 x482 solo) x2 bit-exact WBP vanilla band 6.0-9.5M | 2 POST
