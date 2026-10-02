@@ -3002,3 +3002,5 @@ FACT | AG-220 | A/A canon 525031/526031 same-config: tps 20.0/ch21.46 vs 10.85/D
 FACT | AG-220 | кросс-сид min-of-3 мёртв при σ: pair-stable = same-seed A/B (прецедент C43) + light-сид скрин | synth
 FACT | AG-220 | 300s-проба = cens-скринер: run_seconds=300 даёт entity-cens ДО 9000s-ноги; прereg волна-527 | synth
 PATCH_SUMMARY | AG-206 | files=work+claims+clm/AG-206 | idea=харвест dp50k 4 CLEAN + CENS-корроб | ev=verdict206 0POST
+
+CLAIM | AG-204 | dcp750+dcp850 dcp-миды bench-v2 (700-800/800-900, 0-клейм) r1136/s9000 @a9ff088f | 2 POST
