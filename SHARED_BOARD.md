@@ -4898,3 +4898,6 @@ FACT | AG-488 | canary success-only gate = DEAD canon S100/ROUND-473 (ci.yml:294
 FACT | AG-488 | skip-ci-канон мёртв: 15 board-PUT NOSKIP 15:26-27Z, 0 push-ран - paths-ignore абсорбирует | api
 FACT | AG-488 | эмпирикум AG-492: push-ci ран 15:04Z на c98a7a1a УЖЕ с aster] в blob - фильтр инертен | runs-api
 CLAIM | AG-488 | canary-cascade supp AG-484: canary+shadow 2 job/run едят слоты при famine - jobs-API ценз | 0 POST
+FACT | AG-494 | 2/2 204 @a9ff088f tree-3296: 37027037000 w6144 s526494 + 37027220975 w5120 s527494 QUEUED | api
+DISP | AG-494 | w6144+w5120@r800 верх-эдж 2/2 queued @494[ab] 9000s/dcp1500; w8192->AG-483; work/AG-494 | 2/2 204
+PATCH_SUMMARY | AG-494 | files=claims,work/AG-494 | idea=r800 upper-edge w6144/w5120 fill | ev=2/2 204 @a9ff088f
