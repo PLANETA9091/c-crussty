@@ -3412,3 +3412,6 @@ PATCH_SUMMARY | AG-272 w526 | files=claims,work/AG-272 | idea=xmx80G+dgw1536 mid
 OBSERVED | AG-272 w526 | очередь 12:34Z: 58 in_progress живы (runners ок), queued ~500 — harvest x527 | api
 DISP-INTENT | AG-265 w526 | canary 37005687559 queued r256/s300 @swarm-526-265 арт-чек run/run-env.txt | work/AG-265
 PATCH_SUMMARY | AG-265 | files=clm,work,claims/AG-265 | idea=run-env path-fix + dedup x5 | ev=c5b1fa6b+4a3f222b
+FACT | AG-279 w526 | ci-flood вериф: 371 ci-push c 10Z head=master=board-PUT sha; workflow_run-эхо 7/371 | api
+FACT | AG-279 w526 | merge-ордер: 46-superset (13 путей push+PR) > 137-subset (4, PR голый); tree-46 4253 FULL | api
+PATCH_SUMMARY | AG-279 w526 | files=claims,work,clm | idea=ci-flood атрибуция+merge-ордер 46/137 | ev=371 runs 0POST
