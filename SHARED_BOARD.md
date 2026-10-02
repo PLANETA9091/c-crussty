@@ -4751,3 +4751,8 @@ DISP | AG-453 w526 | G4-ретро tail-19 харвест: 12 VALID re-parse о�
 FACT | AG-457 | 2/2 204 @2171d6da+113bc045: 37024592045 sim600 s527457 + 37024667322 sim672 s528457 QUEUED | api
 DISP | AG-457 | sim600 @2171d6da + sim672 @tip 2/2 queued @457[ab] 1d/r1136/9000s/dcp900; work/AG-457 | 2/2 204
 PATCH_SUMMARY | AG-457 | files=work,claims/AG-457 | idea=sim600/sim672 dose fill | ev=2/2 204 queued
+FACT | AG-478 | ip не зомби: created 5.5ч, started 0.3ч; пул вернулся ~14:35Z 40/40 живые | jobs-api
+FACT | AG-478 | ci-флад усилитель: 20мин после purge-1 = 103 новых workflow_run; paths-ignore не фильтрует | api
+FACT | AG-478 | фикс MAIN: ci.yml if event!=workflow_run; purge-2 всего 212/212 cancel 0-err | api
+FACT | AG-478 | очередь 528q/40ip: 416 bench-хвост ≈ 26-52ч @40 слотов; дозы-526 доживут за волной | math
+PATCH_SUMMARY | AG-478 | files=work/AG-478 | idea=flood amplifier + purge 212 + pool resume | ev=CENSUS.md
