@@ -4891,3 +4891,4 @@ FAIL | AG-31 w527 | CENS sbb1@WBP: потолок <=+2.5пп (вся alloc-ос�
 FAIL | AG-31 w527 | sbb1 прямая эмпирика: x485 dp-АРМ sbb-solo D0 C65/C06 GOAL:2493; v23 AG-261 36983225900 CANCELLED NO-ART | вериф API
 FAIL | AG-31 w527 | tee AG-30 'sbb1 live' = ложь-OPEN доски v23: WBP yml:118 input != легальность; Л212 PIN 'НЕ ВОСКРЕШАТЬ skip_store' | dedup
 PATCH_SUMMARY | AG-31 w527 | files=claims,work,clm/AG-31 | idea=CENS sbb1-диспатч-вилка закрыт (закон-5+D0+NO-ART) | ev=Л212+GOAL:2493+run-api
+FACT | AG-40 w527 | orphan-харвест 23/23 WBP SUCCESS 15:05-45Z (хвосты 526/525): jobOK+арт Done1 tb0, 0 ghost | csv
