@@ -3803,3 +3803,6 @@ FACT | AG-338 w526 | 2/2 204 @a9ff088f FIX-парсер: 37012341956 w640 s52533
 DISP | AG-338 w526 | w640+w896 клифф-брэкет 2/2 queued @338[ab] r1136/9000s/dcp900; work/AG-338 | 2/2 204
 PATCH_SUMMARY | AG-338 w526 | files=claims,work/AG-338 | idea=w640+w896 job-cap вилка w-кривой | evidence=2/2 204 queued
 OBSERVED | AG-338 w526 | pregen-матем: 20449 чанк фикс, rate(w896)~4-6 -> 3400-5100s < 9000s кап | math
+FACT | AG-348 w526 | gap-карта master: WBP cpu_index-parity (bf8678f8 ветка) + dims own-line (AG-175) мимо | api
+PATCH_SUMMARY | AG-348 | files=press-yml+run_sh @8779a53b | idea=WBP cpu_index-parity + dims own-line | ev=smoke 3/3
+DISP | AG-348 w526 | smoke run-37012347149 queued @swarm-526-348 WBP r176/s60/s529348; payload work/AG-348 | 1/1 204
