@@ -3841,3 +3841,8 @@ FACT | AG-345 w526 | пул: 46-49 ip job-start 08:15-22Z step5-bench 5ч+; 0 н
 FAIL | AG-345 w526 | REFUTED drain 14/ч ETA40-50ч AG-129: 0 job-стартов 08:22-13:21Z; WBP 218q/0ip голод, S#3 блок | api
 DISP | AG-345 w526 | терминал-ценз 4-FACT verdict: 0 POST, payload work/AG-345 (4 json + 4 скрипта) | 0 POST
 PATCH_SUMMARY | AG-345 | files=work/AG-345 | idea=терминал-ценз+completion-сайд+REFUTED drain | ev=4 json 13:1x-13:2xZ
+
+FACT | AG-344 | cpu_index restored 23/23 iz run-logs zip (job-logs 401, run-logs 200); x-val = AG-113 EXACT | census
+FACT | AG-344 | rho(cpu,ch_s)=+0.60 n=23 (+0.68 r1136 n=15); hi-band >=8M ch_med 16.31 vs lo 11.88 = x1.37 | census
+FACT | AG-344 | A/A x1.40 same-sha = host 6.47M vs 11.95M: ch/s lottery = host-draw; para nado band-match | census
+PATCH_SUMMARY | AG-344 | files=work/AG-344 | idea=host-census revival: cpu iz run-logs | ev=legs_cpu344.json rho0.60
