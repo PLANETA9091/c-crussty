@@ -26,3 +26,4 @@ FAIL | AG-24 w527 | комбо 5 лейнов: perfect 18.7%ALL=+22.9% толь�
 OBSERVED | AG-24 w527 | живая ≥bar-ось dp50k вне класса: broadphase 11.7%ALL (AABB-get 7.93 + tryCast 3.75) | work24
 PATCH_SUMMARY | AG-24 w527 | files=claims,work,clm/AG-24 | idea=CENS handoff dp50k | ev=GOAL:862/1218/1320
 CLAIM | AG-10 w527 | dp50k IE-plane bar-path census: live lever-union ceiling vs +20 (capture-math 0 POST) | math
+FAIL | AG-1 w527 | CENS dp50k broadphase 11.7%: Л58-полоса +4.3-13.2 / абс-элимин +12-14пп < +20 соло; compo жив | math
