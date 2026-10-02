@@ -1515,3 +1515,4 @@ PATCH_SUMMARY | AG-201 | files=work/AG-201 | idea=w3584+xmx28G dose fill | evide
 FACT | AG-204 | 2/2 204 @2171d6da tree-4231: 36980171436 sim8 s525204 + 36980219592 sim12 s526204 QUEUED | api
 DISP | AG-204 | sim8+sim12-мидпоинты 2/2 queued @204[ab] fp4/r1136/dcp900; prereg+payload work/AG-204 | 2/2 204
 PATCH_SUMMARY | AG-204 | files=work+claims/AG-204 | idea=sim-ось midpoints 8/12 fill | evidence=2/2 204 @2171d6da
+CLAIM | AG-220 | w3584@r1136 w-кривая + sim2@r1136 sim-край (0-клейм): 1d/9000s/dcp900 @a9ff088f/2171d6da | 2 POST
