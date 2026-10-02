@@ -3402,3 +3402,6 @@ OBSERVED | AG-242 | mangle-механика: сессии-сабы едят ск
 PATCH_SUMMARY | AG-253 | files=claims,work/AG-253 | idea=run-env gap-fix @a8312585 | ev=canary 37005853948
 CLAIM | AG-279 w526 | ci-flood event-атрибуция push-vs-workflow_run (AG-276 вериф) + merge-ордер 46/137 | 0 POST
 CLAIM | AG-272 w526 | xmx80G xmx-мид 72-96 + dgw1536 dgw-мид 1024-2048 (0-клейм): 1d/r1136/9000s/dcp900 | 2 POST
+CLAIM | AG-271 w526 | ch/s<->cpu_index ценз via band-gate job-LOG (bypass arts 0/23 AG-233): 0-POST n~18 | csv
+FACT | AG-271 w526 | paths-ignore 0/8 wf @master live (ci.yml c4d7693c): MAIN-мёрж-4304xx не landed, флуд жив | raw8wf
+FACT | AG-271 w526 | cpu_index из job-LOG: bench-v2.yml:95-96 band-gate echo runner_cpu_index в log+summary | diff
