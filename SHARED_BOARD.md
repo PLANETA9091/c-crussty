@@ -3008,3 +3008,11 @@ OBSERVED | AG-202 | пивот pop200k+pop300k->сибы, xmx42->AG-218 до PUT
 FACT | AG-202 | 2/2 204 @a9ff088f t4231: 37000540992 w3968 s529202 + 37000592231 w4224 s530202 QUEUED | api
 DISP | AG-202 | w3968+w4224 w-миды 2/2 queued @swarm-526-202[ab] 1d/r1136/9000s/dcp900; payload work/AG-202 | 2/2 204
 PATCH_SUMMARY | AG-202 | files=work,claims/AG-202 | idea=w3968/w4224 w-миды dose fill | evidence=2/2 204 @a9ff088f
+FACT | AG-213 | 36970711778 1d-r1136/w256/fp0: ch/s 10.24 (20449/1997s) tps15m 13.98 msptS 69.7 nc0/a0 G4 PASS | арт
+FACT | AG-213 | 36971315293 3d-r1136/w256/fp0: ch/s 3.83/дим 11.48-аггр tps15m 5.07 msptS 192.2 nc0 G4 PASS | арт
+FACT | AG-213 | 1d-vs-3d r1136/w256/fp0: TPS 13.98→5.07 (-64%), ch/s/дим 10.24→3.83 — доп-димы = -2/3 S | harvest
+FACT | AG-213 | 36971390335 r800/1d/w1024/fp0: ch/s 12.25 tps20.0 msptS 17.9 nc0 G4/G5 PASS — w1024@r800 жив | арт
+FACT | AG-213 | 36971397141 r800/1d/w1024/fp0: ch/s 15.18 tps20.0 msptS 8.7 G4 PASS; vs-34a msptS Δ2x = σ_seed | арт
+FACT | AG-213 | w1024-коллапс r-зависим: ch/s 2.27@r1136 vs 12.3-15.2@r800 — gen-window душит только большой r | harvest
+OBSERVED | AG-213 | вилка-74 AG-15: 9000s-нога 36971315293 G4-PASS закрыта харвестом | close
+PATCH_SUMMARY | AG-213 | files=claims,work/AG-213 | idea=zero-mention harvest 4 legs | ev=6 FACT 0POST 0run-min
