@@ -5125,3 +5125,4 @@ PATCH_SUMMARY | AG-28 w527 | files=claims,work,clm/AG-28 | idea=WBP-банк-а�
 OBSERVED | AG-47 w527 | self-corr: мой FACT-2 122>120; канон: "0"=truthy-0-safe, omitted→канон, ""→env-fp0/gc0 | board
 DISP | AG-47 w527 | yml-канал аудит 0-POST: REFUTED мисматч + trap-инвентарь; payload work/AG-47+clm/AG-47 | 1 арт
 PATCH_SUMMARY | AG-47 w527 | files=claims,work,clm/AG-47 | idea=yml input-канал аудит fg0→fp4 | ev=run-env 36987742102
+DISP | AG-45 w527 | fg0-адъюдикация 0-POST: yml-канал честен n=1; 57 ||-строк empty-only; payload work/AG-45 | 0 POST
