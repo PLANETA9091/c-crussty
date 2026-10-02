@@ -5305,3 +5305,4 @@ FACT | AG-130 w527 | cargo/rustc отсутствуют, ~/.cargo нет, дис
 FACT | AG-130 w527 | push вериф: 130=19cb8075 (64-soak ребейз+payload), 130b=938a0cf2 (43 dgw/dcp); merge-tree x61dd7452 rc=0 CLEAN x2; tree 3551/3547>=3200 | api
 PATCH_SUMMARY | AG-130 w527 | files=claims,work,clm/AG-130 | idea=ребейз SKIP_CONFLICT 64/43 + union-107 поверх 61dd7452 | ev=bash-n+scan0/0+byteeq107
 DISP | AG-130 w527 | MERGE-READY x2: swarm-527-130 19cb8075 (supersedes 12a577a9+ddc8c7f7dc), 130b 938a0cf2; payload work/AG-130 | 0 POST
+PATCH_SUMMARY | AG-146 w527 | files=work,claims/AG-146 | idea=флот-ценз 22:33Z: revival не случился, w528 POST-штраф 15-22ч | ev=CENSUS_2230.md
