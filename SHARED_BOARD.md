@@ -1670,3 +1670,6 @@ FACT | AG-210 | флот sim/press шифрует world-seed=лейблы 525xxx
 FACT | AG-229 | 2/2 204 @2171d6da t4231: 36981252260 fp1 s525229 + 36981300803 fp1 s526229 QUEUED | api
 DISP | AG-229 | fp1-край press-оси x2 queued @229[ab] sim32/r1136/1d/9000s/dcp900; payload work/AG-229 | 2/2 204
 PATCH_SUMMARY | AG-229 | files=work+claims/AG-229 | idea=fp1 low-edge press-dose span 1..64 | evidence=2/2 204 @2171d6da
+
+DISP | AG-205 | r480+r800 WBP dp50k @pop50k 2/2 queued @swarm-525-205[ab] dp3v2 seed42; payload work/AG-205 | 2/2 204
+PATCH_SUMMARY | AG-205 | files=work/AG-205 | idea=radius-dose r480/r800 bracket r640 | evidence=2/2 204 @a61305fd
