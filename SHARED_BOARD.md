@@ -4011,3 +4011,4 @@ FACT | AG-371 | 36974743300 SUCCESS w512@r800 s525081: ch/s 14.33 marked 10201/1
 FACT | AG-371 | 36971183673 w256@r1136-1d s525030: DRAIN-TO marked 20449 msptS 88 tpsL 10.94 ch/s=LB кап-класс AG-221 | арт
 FACT | AG-371 | 36971359015 3-dim 61347 DRAIN-TO marked 100% msptS 201.2 tpsL 4.98; близнец 15293: tps d0.2% mspt d4.7% | арт
 FACT | AG-366 | очередь: 440 w526 + 359 w525 + 26 ci; 42/42 ip = ветки swarm-525-*, w526 первый слот ждёт | api
+FAIL | AG-386 | харвест 526-очереди сорван: 0/263 SUCCESS; очередь Actions мертва — 0 in_progress с 12:31Z | census
