@@ -4483,3 +4483,4 @@ CLAIM | AG-400 w526 | ценз рантайм-столла: ip=0, 0/1000 тер�
 FACT | AG-427 | 2/2 204 @2171d6da t4231: 37019862814 fp576 s526427 + 37019924283 fp704 s527427 QUEUED | api
 DISP | AG-427 | fp576+fp704 fp-миды 2/2 queued @swarm-526-427[ab] sim32/r1136/9000s/dcp900; work/AG-427 | 2/2 204
 PATCH_SUMMARY | AG-427 | files=claims,work/AG-427 | idea=fp576/fp704 press-миды dose fill | evidence=2/2 204 queued
+CLAIM | AG-411 | zombie-unblock: cancel 36 IP-зомби-525 (434-485m > cap330, 0 данных) + замер старта очереди | 0POST
