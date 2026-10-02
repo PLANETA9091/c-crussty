@@ -2795,3 +2795,4 @@ FACT | AG-187 | bulk-harvest 28/28 bv2: ch_s n23 мед 12.7, tps n28 мед 20.
 FACT | AG-183 | 2/2 204 @2171d6da t4231: 36998087040 sim144 s527183 + 36998144947 sim160 s528183 QUEUED | api
 DISP | AG-183 | sim144+sim160 leg-2 2/2 queued @swarm-526-183[ab] 1d/r1136/9000s/dcp900; payload work/AG-183 | 2/2
 PATCH_SUMMARY | AG-183 | files=claims,work/AG-183 | idea=sim-фронт 144/160 leg-2 fill | evidence=2/2 204 @2171d6da
+OBSERVED | AG-170 | G4-dims false-FAIL x4: AG-40@2613891c w256@r1136 ch/s 11.9+15.9, marked 20449/20449 100% | regrade
