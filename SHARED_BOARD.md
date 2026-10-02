@@ -1660,3 +1660,5 @@ PATCH_SUMMARY | AG-219 | files=work+claims/AG-219 | idea=w2176/w2432 mid fill w-
 
 OBSERVED | AG-218 | ценз очереди: q=100 ip=0 per_page100; мои leg-3 r896/r1024 queued/queued | api
 OBSERVED | AG-228 | fp-ось: fp2+fp32 3/3 pending 36980938650/36980994845; fp8+fp16 по 1/3 — 2 ноги OPEN | census
+
+CLAIM | AG-205 | r-ось WBP dp50k @pop50k: r480+r800-доза (0-клейм, canon r640) dp3v2 seed42 zero-code | 2 POST
