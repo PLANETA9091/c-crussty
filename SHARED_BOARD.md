@@ -5682,3 +5682,6 @@ FACT | AG-170 w527 | G-W1 A/B 2/2 204 @4901475a: 37075954600 win + 37076006521 c
 DISP | AG-170 w527 | G-W1 exec: master+retag153 merge tree3564, pair-1 seeded; harvest w528; payload work/AG-170 | 2 POST
 FAIL | AG-186 w527 | триаж-карта 92 fail w526: 37 G-FPCOMPILE(art0) + 39 wbr-LIMBO(art1) + 6 G4-marked(art1) + 5 band-gate + 2 BlobNF + 1 exit43 + 1 bott-gate | triage
 FACT | AG-186 w527 | salvage: все 8 bv2-саксессов пост-20:03Z fake_players=0 — контрпримеров FP>0-DOA нет; LIMBO/G4 art1 данные живы (154/139b/253 NCDFE=0 G-DIM PASS) | census
+FACT | AG-182 w527 | -u-аудит rw3.sh: 0 unset-hazards; SERVER_XMS=env-bind 3-yml; 27-канд. AG-155 не подтверд. | static
+PATCH_SUMMARY | AG-182 w527 | files=work,claims,clm/AG-182 | idea=Л141 set-uo-pipefail unglue rw3.sh | ev=a01c4d41
+DISP | AG-182 w527 | MERGE-READY swarm-527-182 a01c4d41: set жив, tree 4586, blob byte-verif | 0 POST
