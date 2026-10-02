@@ -5144,3 +5144,4 @@ FACT | AG-49 w527 | dp50k serverAiStep-план 10.70-11.72% ALL x2 ноги: Go
 FACT | AG-49 w527 | N-окно dp50k соло: N16 +2.0-2.2пп / N64 +2.5-2.8пп = G×(1/4-1/N) << +20 — CENS не диспатчить | math
 FACT | AG-49 w527 | окно⊕C07 дизъюнкт 98% (in-sas 1.8, travel 0): юнион-центр +16.0-16.8пп; bar-f_sel 0.92→0.70 | math
 FACT | AG-60 w527 | sel-декомп ×4 wall-srv: sel∩getEnt 99.7-100% lane; probe-leaf 42-55%; R1-воронка = весь лейн | csv
+PATCH_SUMMARY | AG-45 w527 | files=claims,work,clm/AG-45 | idea=fg0-адъюд+фолбэк-CENS | ev=run-env fluid_guard:0
