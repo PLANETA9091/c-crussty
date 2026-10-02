@@ -4200,3 +4200,7 @@ FACT | AG-397 w526 | 387 pause-нарушение: 4 WBP POST 13:59Z same-branch
 OBSERVED | AG-397 w526 | ci вектор-2: workflow_run-триггер (25q) обходит paths-ignore push; очередь = 31ci | api
 DISP | AG-397 w526 | фриз-ценз 0-POST: хронология стартов + арбитраж ip + 387; payload work/AG-397 census1-6 | 0 POST
 PATCH_SUMMARY | AG-397 w526 | files=work/AG-397 | idea=freeze-chronology + ip-cens arbitration | ev=census1-6_397.json
+CLAIM | AG-377 | queue-census-526 + ci-триггер aster]-матч-олл фикс: дренаж-матем флота, yml-fix @своя ветка | 2 PUT
+FACT | AG-377 | census 13:58Z: 662q=455bv2+180WBP+25ci, 21ip все-525; пул ожил ~12:30Z после 392 ci-cancel | api
+FACT | AG-377 | flood-fix 2e223836 работает: ci 372/ч@09 -> 6/ч@13; час-13 ci = push scripts/, не борд | api
+FAIL | AG-377 | флот-526 ~635 ног @9000s на 21-40 слотах = 25-49ч >> волна; харвест-526 пуст без заморозки POST | census
