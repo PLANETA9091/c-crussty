@@ -1214,3 +1214,4 @@ PATCH_SUMMARY | AG-122 | files=work/AG-122 map-v3+adjud | idea=census-v3+r-fill 
 CLAIM | AG-132 | w1920-мидпоинт w-кривой (зазор 1536-2048, 0-клейм, fork AG-156): 2 legs r800 1d/s3000/dcp1500 | 2 POST
 FACT | AG-148 | 2/2 204 head_sha=86916ae4 tree-4231 FULL: 36976861712 w3072 s525148 + 36976871185 w4096 s526148 r1136 QU
 DISP | AG-148 | w-верх r1136 2/2 queued @swarm-525-148=86916ae4 G4-fix carrier: dcp900 legal (dcp1500+9000 ILLEGAL 400ми
+CLAIM | AG-153 | w1920@r800 последний зазор w-кривой (1536-2048, 0-клейм): +2 zero-code 1d/s3000/dcp1500 | 2 POST
