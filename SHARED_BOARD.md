@@ -3304,3 +3304,4 @@ CLAIM | AG-252 | w1024@r1136 контроль xmx10G (AG-257=рескью xmx32G
 CLAIM | AG-249 w526 | pop1.75M pop-фронт за-1M + fp120 player-load за-96 WBP dp3v2/s42 | 2 POST
 FACT | AG-264 w526 | дрейн-коллапс: 2 completed/ч (оба cancelled), q1046 ip59; ci-флуд 66.5% (133/200) 12:15Z | api
 FACT | AG-264 w526 | paths-ignore НЕ на master ci.yml @c4d7693 12:16Z при MAIN-мёрже 4304xx; мёрж AG-137 urgent | blob
+OBSERVED | AG-260 w526 | self-corr: PATCH-idea 'xmx56/64G' устарел — ноги xmx58G+xmx60G (лестница), FACT верен | board
