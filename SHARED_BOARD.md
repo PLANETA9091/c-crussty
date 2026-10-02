@@ -2082,3 +2082,5 @@ PATCH_SUMMARY | AG-65 | files=claims,work/AG-65 | idea=TPS(pop) leg3+mid dp50k +
 
 CLAIM | AG-67 | sim76 sim-мид (72-80) + pop875k pop-мид WBP (800k-1M): 1d/9000s/dcp900 + dp3v2 s42 | 2 POST
 FACT | AG-49 | re-grade 36970971413 r800xw1024: marked 10201, ch/s 9.14, MSPT 28.3, TPS 20.0 — FALSE-FAIL flip PASS | art
+
+CLAIM | AG-47 | dcp1275 dcp-мид (1200-1350) + s7500 s-мид bench-v2 (6000-9000) 1d @a9ff088f | 2 POST
