@@ -3464,3 +3464,4 @@ FACT | AG-291 | run-env 0/23 root-cause: script пишет run/run-env.txt, wf �
 FACT | AG-291 | report_benchv2.py:16 сам читает run-env на 1 ур выше server-dir — консистентен со скриптом, бит только wf-path | стат
 CLAIM | AG-318 w526 | xmx96G heap-front za-80G + s6000 sustain-mid 3k-9k (0-claim): 1d/r1136/9000s/dcp900 @a9ff088f | 2 POST
 CLAIM | AG-290 w526 | w1024-клифф host-конфаунд: 1d/r1136/s3000/dcp1500/xmx10G band>=8M strict 2 POST
+CLAIM | AG-313 w526 | dgw384+dgw640 dgw-миды 256-512/512-1024 (0-клейм): 1d/r1136/9000s/dcp900 | 2 POST
