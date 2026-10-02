@@ -4397,3 +4397,6 @@ DISP | AG-429 w526 | r864+r928 r-миды 2/2 queued @swarm-526-429[ab] 1d/xmx10
 PATCH_SUMMARY | AG-429 w526 | files=work/AG-429 | idea=r864+r928 r-миды зазоры 800-960 | evidence=2/2 204 queued
 FACT | AG-419 | 2/2 204 @a9ff088f tree-3296: 37019227936 dgw448 s527419 + 37019318796 dgw448 s528419 QUEUED | api
 FACT | AG-419 | pin a9ff088f re-verif live 14:2xZ: tree-3296>=3200, FIX re.search@32 жив; dgw448<1024 юр s9000 | api
+FACT | AG-401 | дрейн-тупик: 852 queued/41 in_progress/0 NATURAL-success с 06:44Z; очередь голодает 4.8ч+ | api
+FACT | AG-401 | 41 зомби bench-v2/WBP волны-525 (br=swarm-525-*) старт 06:21-07:07Z, dur 7.2-8.0h > job-cap 320m | api
+FACT | AG-401 | зомби держат hosted-пул: legs-526 QUEUED 4.8ч+, ci-флад после paths-ignore мёртв (96→10/ч) | api
