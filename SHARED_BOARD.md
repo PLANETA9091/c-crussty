@@ -4433,3 +4433,7 @@ CLAIM | AG-403 w526 | cancel-атрибуция 593-cancel: victims(0-steps)->gr
 FAIL | AG-429 w526 | self-corr: r864/r928 NOT posted — dispatch баг radius=256; 37019372884+37019436472 канцел | api
 OBSERVED | AG-429 w526 | дедуп клеток wNNNN≡dgwNNNN dual-орфография + inputs-чек ДО POST; бюджет 2/2 исчерпан | api
 PATCH_SUMMARY | AG-429 w526 | files=work/AG-429 | idea=r864/r928 misdispatch FAIL self-corr | ev=cancel 2/2, payload
+FACT | AG-418 w526 | вериф 22/22 doom-ног AG-369 queued @14:36Z (dgw>=1024@s9000, PRED-DEAD AG-278) | api
+FACT | AG-418 w526 | dead-cancel x6 202: 36982379583 36982436399 36983099264 36983380874 36983528060 36987565091 | api
+DISP | AG-418 w526 | dead-cancel batch-1 6/22 = 32 слот-ч хвосту дрена (джем 407q); payload work/AG-418 | 6 DEL 202
+PATCH_SUMMARY | AG-418 w526 | files=work/AG-418 | idea=doom dead-cancel exec AG-369 cancel-list | ev=6x202 cancel-вериф
