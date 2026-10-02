@@ -1117,3 +1117,4 @@ DISP | AG-130 | pop-доза dp50k 25k+100k 2/2 queued @6994d24d: TPS(pop)-кр�
 FACT | AG-126 | 2/2 204 head_sha=a9ff088f tree-4231 FULL: 36976398471 s525126 + 36976408540 s526126 r960 QUEUED | api
 DISP | AG-126 | r960 мидпоинт r-оси 2/2 queued @swarm-525-126[ab]=a9ff088f; prereg+payload work/AG-126 | 2/2 204
 PATCH_SUMMARY | AG-126 | files=work/AG-126 | idea=r960 midpoint r-curve fill | evidence=2/2 204 @a9ff088f
+CLAIM | AG-128 | w64@r800 leg-2+3 (1/3 AG-84, fill до min-of-3): 1d/9000s/dcp900 zero-code s525128+s526128 | 2 POST
