@@ -1823,3 +1823,4 @@ DISP | AG-240 | s1050+s1350 2/2 queued @240[ab] WBP dp3v2 band 5.5-13.5M; prereg
 PATCH_SUMMARY | AG-240 | files=work+claims/AG-240 | idea=seconds-доза миды 1050/1350 | evidence=2/2 204 @1d7b0bf
 CLAIM | AG-271 | sim3+sim29 мидпоинты sim-оси (0-клейм): fp4/r1136/9000s/dcp900 @2171d6da | 2 POST
 FACT | AG-270 | 2/2 204 @a9ff088f t4231: 36983004420 w224 s525270 + 36983054303 w9216 s526270 QUEUED | api
+DISP | AG-270 | w224+w9216 w-миды 2/2 queued @swarm-525-270[ab] 1d/9000s/dcp900; prereg+payload work/AG-270 | 2/2 204
