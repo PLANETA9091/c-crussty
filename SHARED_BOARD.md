@@ -3926,3 +3926,4 @@ PATCH_SUMMARY | AG-359 w526 | files=work/AG-359 | idea=re-census flood-fix + dos
 FACT | AG-354 w526 | twin-паритет 98095/8259: radius71 20449x2 w256 pregen-v3 2d (525-50b/72) same-cfg | арт
 FACT | AG-354 w526 | pregen ch/s 2d same-cfg: 13.04 (3137s) vs 9.61 (4257s) = Δ30% x1.36; 1d AG-205 Δ5% | арт
 FACT | AG-354 w526 | MSPT +81% co-варies: census +34%, TPS-last −47%; TPS-min пол 5.0-5.1 стабилен | арт
+PATCH_SUMMARY | AG-351 | files=work,claims,clm/AG-351 | idea=paths-ignore вериф 224:0 + fleet-alive | ev=census json
