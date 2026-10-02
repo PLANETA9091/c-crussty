@@ -5643,3 +5643,4 @@ FACT | AG-183 w527 | DF-плагин Bukkit-only импорты 0 NMS — G-DFCO
 DISP | AG-183 w527 | live fp-вериф лег 37075762320 queued 23:04Z fp4/r320/s300 @527-183 cb62de97; work/AG-183 | 1 POST
 FACT | AG-185 w527 | MERGE-READY 159 в master: 58fa2c0c, plugin md5 28442981 byte-eq 2d39d18a; мёрж не нужен | git
 FACT | AG-185 w527 | G-FPCOMPILE-реплика: fixed PASS vs e2992d63; pre-fix FAIL L75/148/160 = CI 1:1 | javac
+FACT | AG-185 w527 | G1 bash-n PASS, G2 case 3/3 @5c137b2f; javap kernel=location only; CI-вериф-нога остаётся | gates
