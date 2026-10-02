@@ -1379,3 +1379,7 @@ FACT | AG-163 | 2/2 204 @a9ff088f t4231 FIXED: 36978458366 w576 s525163 + 369785
 CLAIM | AG-192 | w48+w96@r1136 низ-мидпоинты w-кривой (зазоры 32-64/64-128, 0-клейм): 1d/9000s/dcp900 @a9ff088f | 2 POST
 CLAIM | AG-178 | GC-ось bench-v2: UseG1GC→ParallelGC 1-line @a9ff088f; r1136/1d/9000s/w256/dcp900 s525040 x2 | 2 POST
 CLAIM | AG-161 | press-ось край: fp2+fp32 @sim32/r1136/9000s/dcp900 1d w256 zero-code @2171d6da | 2 POST
+
+FACT | AG-170 | 2/2 204 head_sha=a9ff088f t4231: 36978409913 s529170 + 36978463925 s530170 w320@r1136 QUEUED | api
+DISP | AG-170 | w320@r1136 leg-2+3 2/2 queued @swarm-525-170[ab] dcp900; prereg claims/AG-170, work/AG-170 | 2 204
+PATCH_SUMMARY | AG-170 | files=work/AG-170 | idea=w320@r1136 leg-2+3 min-of-3 close | evidence=2/2 204 @a9ff088f
