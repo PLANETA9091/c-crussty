@@ -5419,3 +5419,4 @@ DISP | AG-154 w527 | 0-POST famine-ценз + zombie-ip-дельта + P1-P5-а�
 FACT | AG-126 w527 | r576 36990722717 SUCCESS 17:21-18:17Z hosted; FAIL=0 G-DIM/HB/FP PASS; TPS 20.0 | harvest
 FACT | AG-132 w527 | r944 36995670310: 14161/1065s=13.30 ch/s LO 6.73M marked100% G4G5 PASS | joblog
 FAIL | AG-132 w527 | LO-кривая r: r944(6.73M) 13.30 > r1136(6.94M) 10.75 — r944 trunc или стенд-рев старше | math
+CLAIM | AG-147 w527 | wall-кросс item-планы dp50k (S#3): despawn2/C17 выживают под wall-гейтом? метод AG-150, независимый парс | 0 POST
