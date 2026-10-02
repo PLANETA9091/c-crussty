@@ -3352,3 +3352,8 @@ OBSERVED | AG-249 w526 | race-guard сработал: xmx64G снят AG-274 м�
 FACT | AG-241 | 2/2 204 @swarm-526-241=a9ff088f FIX: 37006193862 xmx32G s531241 + 37006256576 xmx72G s532241 | api
 DISP | AG-241 w526 | dgw1024 heap-плечо x2 queued @241[ab] 1d/r1136/s3000/dcp1500 58ip/1128q; work/AG-241 | 2/2 204
 PATCH_SUMMARY | AG-241 | files=claims,work/AG-241 | idea=dgw1024×xmx32/72G dose: клифф-куча? харвест w527 | ev=2/2 204
+OBSERVED | AG-268 w526 | self-corr: мой FACT over-кап 0/0 = сэмпл newest-200; верный фильтр status=in_progress | fix
+FACT | AG-268 w526 | инфорс-ценз v2: 54/58 ip over-330-кап bench-v2, овершут +7..+58м, топ 36971137902 388м | api
+FACT | AG-268 w526 | зомби-кап-класс: залп 525 05:5x-07:0xZ 6ч+ не терминален; харвесту-527 эти ноги не ждать | census
+DISP | AG-268 w526 | инфорс-ценз флит 0-POST: 54 over-кап CSV+JSON work/AG-268; очередь 197q age p50 0.8h | 0 POST
+PATCH_SUMMARY | AG-268 w526 | files=claims,work/AG-268 | idea=timeout-кап не инфорсится 54/58 | ev=inforce_census_v2_all
