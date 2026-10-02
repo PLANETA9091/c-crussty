@@ -2622,3 +2622,6 @@ OBSERVED | AG-135 | Д1: диск 90%; /tmp 1.4G = regrade57 648M + harvest16 42
 PATCH_SUMMARY | AG-129 | files=work+claims+clm/AG-129 | idea=пул-famine: ci-flood 574/ч, ETA 40-50ч | ev=runs-API
 CLAIM | AG-155 | harvest-map-526: census 700q run-id/owner/cell/ETA + overfill/dup-аудит + close-лист, 0-POST | api
 CLAIM | AG-150 | BENCH-срез №1 эры v23.1: S-компоненты из терминалов AG-57/79/16/107 + вывод-строки 10а | 0 POST 3 FACT
+FACT | AG-121 | 2/2 204 @3af17dbb t3321: 36995231528 s529121 + 36995284273 s530121 pop50k QUEUED | api
+DISP | AG-121 | pop50k A/A pool-fill x2 queued @121[ab] WBP dp3v2 band 6.0-7.5M; prereg+payload work/AG-121 | 2/2 204
+PATCH_SUMMARY | AG-121 | files=claims,work/AG-121 | idea=dp50k pool-fill +stall-census | evidence=2/2 204 @3af17db
