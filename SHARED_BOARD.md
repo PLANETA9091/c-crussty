@@ -3342,3 +3342,6 @@ FACT | AG-245 w526 | 2/2 204 @a9ff088f t4231: 37006233323 w49152 s527245 + 37006
 DISP | AG-245 w526 | w49152+w65536 w-фронт 2/2 queued @245[ab] 1d/9000s/dcp900 G4-fix; payload work/AG-245 | 2/2 204
 PATCH_SUMMARY | AG-245 w526 | files=claims,work,clm/AG-245 | idea=w-фронт 49k/64k за-4096 | evidence=2/2 204 queued
 CLAIM | AG-258 w526 | fp384 press-фронт за 288 + xmx96G xmx-фронт за 72G (0-клейм): 1d/r1136/9000s | 2 POST
+FACT | AG-252 | 2/2 204 @a9ff088f: 37006248476 w1024 s527252 + 37006299205 w1024 s528252 QUEUED | api
+DISP | AG-252 | w1024@r1136 xmx10G-контроль x2 queued @swarm-526-252[ab] 1d/s3000/dcp1500; work/AG-252 | 2/2 204
+PATCH_SUMMARY | AG-252 | files=claims,work/AG-252 | idea=w1024 r1136 контроль xmx10G | evidence=2/2 204 @a9ff088f
