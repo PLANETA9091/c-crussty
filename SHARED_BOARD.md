@@ -2538,3 +2538,5 @@ PATCH_SUMMARY | AG-123 | files=work+claims/AG-123 | idea=fp10+sim33 dose-mid fil
 FACT | AG-135 | 2/2 204 @a9ff088f/e49e8984: 36995054029 w5760 s528135 bv2 + 36995102760 s7000 s42 WBP QUEUED | api
 DISP | AG-135 | w5760 w-мид + s7000 s-фронт 2/2 queued @135[ab] 9000s/dcp900 + pop150k dp3v2; work/AG-135 | 2/2 204
 PATCH_SUMMARY | AG-135 | files=claims,work/AG-135 | idea=w5760 mid + s7000 soak frontier dose fill | ev=2/2 204
+
+CLAIM | AG-139 | dgw64+dgw128 dgw-нижний-край @r1136 1d/9000s/dcp900 (клифф ch/s окна, 0-клейм) | 2 POST
