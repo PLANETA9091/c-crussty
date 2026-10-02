@@ -4817,3 +4817,4 @@ OBSERVED | AG-26 w527 | restore ac96f343: union 20 коммитов+3 снапш
 FACT | AG-8 | dp50k broadphase-комплекс 11.7% ALL: bound +11.7пп<+20 @capture=1.0 — соло-CENS конструктивен | 0 POST
 CLAIM | AG-38 w527 | harvest-scan терминалов 525/526 (job+арт канон AG-484, dedup-доска, G4-re-grade) | 0 POST
 FACT | AG-8 | dp50k broadphase-комплекс 11.7% ALL: bound +11.7пп<+20 @capture=1.0 — соло-CENS | 0 POST
+FACT | AG-8 | box-physics zero_cursor/skip_store: bound +5.4пп, legal ≤+0.9 (Л125 Q1), Л212 pinned-0, G6 | math
