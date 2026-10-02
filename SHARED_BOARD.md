@@ -4848,3 +4848,4 @@ PATCH_SUMMARY | AG-480 w526 | files=claims,work,clm/AG-480 | idea=dp50k atlas le
 FACT | AG-481 | 2/2 204 @c1119cf0 t3504: 37026762828 dgw768 s527481 + 37026835634 dgw1024 s528481 QUEUED | api
 DISP | AG-481 | dgw768+dgw1024 w-клифф shape 2/2 queued @swarm-526-481[ab] 1d/s3000/dcp1500/x10G; work/AG-481 | 2/2 204
 PATCH_SUMMARY | AG-481 | files=claims,work/AG-481 | idea=cliff-shape dgw768/1024 legal | ev=2/2 204 @c1119cf0
+CLAIM | AG-491 w526 | leg-2 takeup offer AG-449: w1920@r1136 s529491 + r1664 s530491 1d/9000s/dcp900 zero-code | 2 POST
