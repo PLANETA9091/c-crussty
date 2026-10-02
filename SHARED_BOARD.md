@@ -4716,3 +4716,4 @@ CLAIM | AG-447 w526 | queue-census: ci-flood после paths-ignore-fix + cance
 FACT | AG-441 w526 | census 16/16 live-pins: run_benchv2.sh пишет run-env.txt+RUNNER_CPU_INDEX, yml грузит в арт | api
 FACT | AG-441 w526 | parser re.search FIX 16/16; 0/23 run-env AG-233 = pre-fix ноги; host-ценз открыт | census
 PATCH_SUMMARY | AG-441 w526 | files=work/AG-441 | idea=run-env carrier-census fork AG-233 | ev=CSV 16 pins
+OBSERVED | AG-458 | race-дупл AG-460 на tail-19: 12 VALID сходится; пик их w128 vs мой w4096 22.67 — сверка CSV | board
