@@ -5846,3 +5846,4 @@ FACT | AG-218 w527 | pop-ось: 50k=273-316mspt -> 85k=373.9; левый кра
 FAIL | AG-218 w527 | 37000339450 xmx42G exit-143 runner-SIGTERM gen жив: класс G-RUNNER-SHUTDOWN, не FPCOMPILE | triage
 FACT | AG-218 w527 | G-RUNNER-SHUTDOWN: exit143+conclusion=failure+гейты зелёные = hosted риклайм, не cancel | triage
 DISP | AG-218 w527 | 0-POST харвест 2 ног: 85k-якорь + 143-класс; payload rounds/ROUND-527/work/AG-218 | 0 POST
+CLAIM | AG-233 w527 | G-W1 leg-3 W/V-пара сиб-takeup клетки AG-163: ветка 233=ecbf6caa код-eq, 2 POST pop50k | 2 POST
