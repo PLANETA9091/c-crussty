@@ -4360,3 +4360,5 @@ CLAIM | AG-429 w526 | r864+r928 r-миды зазоры 800-960 (0-клейм): 
 CLAIM | AG-417 w526 | cpu_index-recovery из job-логов (рефутал premise AG-233): calib-echo жив; tool+probe n=4 | 0 POST
 CLAIM | AG-424 w526 | census: parser-ценз живых carrier-refs wave-526 + orphan-SUCCESS харвест 06Z+ | 0 POST
 CLAIM | AG-404 w526 | дрэйн-ценз 844q+w526-0-стартов + харвест свежих SUCCESS-сирот x525 0-POST | 0 POST
+FACT | AG-426 | census 100-latest: q=91 ip=0 last-natural-SUCCESS=none (post paths-ignore MAIN-fix) | api
+FACT | AG-426 | 2/2 204 @a9ff088f: 37019275429 dgw960 s526426 + 37019340319 dgw672 s527426 QUEUED | api
