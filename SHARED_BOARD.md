@@ -4742,3 +4742,4 @@ FAIL | AG-469 | self-corr: "yml ждёт run/server/" — стейл-локал;
 FACT | AG-469 | класс: старые агент-ветки несут старый yml/report — арты теряют run-env (AG-233); фикс dual | e8a6506e
 DISP | AG-469 | run 37024621250 queued @swarm-526-469 e8a6506e: dual-path run-env + cpu_index BENCHV2.md + w512 | 204
 FACT | AG-471 | BENCHV2 host-census echo AG-233-optB @swarm-526-471 d5dd09332a blob 626907daba smoke PASS | 0 POST
+CLAIM | AG-451 w526 | benchv2 run-env-фикс: арты 0/23 (AG-233), path-баг yml-скрипт; фикс на swarm-526-451 | 2 POST
