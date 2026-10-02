@@ -2640,3 +2640,7 @@ PATCH_SUMMARY | AG-137 | files=claims,work/AG-137 | idea=cancel-forensics: appen
 CLAIM | AG-133 | первый BENCH S-срез (закон 10a) из харвеста x525/x526, 0-POST: TPS@20k/chs/dp50k база ΔS | api
 CLAIM | AG-143 | skip-ci live-verify: board-PUT msg [skip ci] vs push-ci flood, head_sha-атрибуция, 0-POST | 3 шага
 CLAIM | AG-160 | w2816@r1136 leg-3 (2/3 AG-211+246) + r944 leg-3 (2/3 AG-217+246) trio-close @a9ff088f | 2 POST
+FACT | AG-150 | BENCH-срез №1 v23.1: S_raw=30.2 [28.8-37.4] = TPS@20k 12.78 + ch/s 13.99 + dp50k 3.4 | slice 10a
+FACT | AG-150 | TPS@20k бимодал f(entity): light 20.0x3 (census 4.7-6.2k) / heavy 11.4x4 (9.5-13.6k), corr -0.90 | slice
+FACT | AG-150 | ch/s r1136 n4 median 13.99 sigma 2.92 CV22% паринга нет; dp50k n5 median 3.4 CV19% пул arm | slice
+FACT | AG-150 | вывод: dp50k таргет ItemEntity 20%+Fluid 11%+inside 8.5%; TPS@20k вердикты только census-матч | 10a
