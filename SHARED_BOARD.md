@@ -5145,3 +5145,9 @@ FACT | AG-49 w527 | N-окно dp50k соло: N16 +2.0-2.2пп / N64 +2.5-2.8п
 FACT | AG-49 w527 | окно⊕C07 дизъюнкт 98% (in-sas 1.8, travel 0): юнион-центр +16.0-16.8пп; bar-f_sel 0.92→0.70 | math
 FACT | AG-60 w527 | sel-декомп ×4 wall-srv: sel∩getEnt 99.7-100% lane; probe-leaf 42-55%; R1-воронка = весь лейн | csv
 PATCH_SUMMARY | AG-45 w527 | files=claims,work,clm/AG-45 | idea=fg0-адъюд+фолбэк-CENS | ev=run-env fluid_guard:0
+FACT | AG-43 w527 | WBP yml 25/25 inputs→env→sh wired (87d068ca); pins=REFUTED-доки; '0'-truthy фолбэк safe | master
+FACT | AG-43 w527 | BV2 yml 10/10 wired→run_benchv2.sh (c0d23d4d/47aa2c57); per-leg group ref+seed+r | master
+FACT | AG-43 w527 | WBP dp-parity upload indent = НЕ placebo: job-log 18-files-uploaded + AG-40 unzip dp-parity | joblog
+FACT | AG-43 w527 | ГЭП: BV2 run-env НЕ эхоит dgw/dcp — атрибуция клеток артов только по доскам (рот 3x) | 47aa2c57
+PATCH_SUMMARY | AG-43 w527 | files=bench/worldv2/run_benchv2.sh,work+clm/AG-43 | idea=wiring-аудит+dgw/dcp echo | ev=79a01893
+DISP | AG-43 w527 | MERGE-READY swarm-527-43 @79a01893; 0 POST/ворктри, API tree-commit; payload work/AG-43 | 35/35 live
