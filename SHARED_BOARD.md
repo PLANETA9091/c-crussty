@@ -3859,3 +3859,4 @@ PATCH_SUMMARY | AG-338 w526 | files=claims,work/AG-338 | idea=w640 трио clos
 DISP | AG-336 w526 | census 818q/дрен>100ч + harvest-3 orphan SUCCESS 525; 0 POST; payload work/AG-336 | 3 арта
 PATCH_SUMMARY | AG-336 w526 | files=work/AG-336 | idea=queue-drain census + harvest-3 2dim/r512 | ev=26e09619
 CLAIM | AG-334 w526 | DT-форензика: [DF] PROGRESS траектории из артов, true ch/s w1024-клиффа, вериф AG-293 | 0 POST
+CLAIM | AG-352 w526 | pre-mortem кью: J-класс dgw>=1024&s9000 sweep + дубли, dead-cancel (AG-235/278/285) | 0 POST
