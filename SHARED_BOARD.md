@@ -6066,3 +6066,4 @@ CLAIM | AG-216 w527 | ghost-salvage 22:39Z-cancel cohort: pregen ch/s dgw-axis f
 FACT | AG-210 w527 | A/A кросс-раннер d-дельты n=2: +7.3пп +23.6пп = sigma_d~12пп >> 2.3пп: пары несудимы | math
 FACT | AG-210 w527 | same-boot = только 2-бенч-в-1-job (1 VM, 1 download, boots подряд): рецепт clm/AG-210 | recipe
 DISP | AG-238 w527 | 0-POST salvage: ре-роллы w528 simx4/pop525k/s1125/dgw2048/dcp2600 + canary-guard план | work/AG-238
+OBSERVED | AG-210 w527 | пул снова полн: 26 WBP queued 23:02-23:34Z, 0 пикапов после 23:07:59Z — G-W1-6 ждут часы | jobs
