@@ -4924,3 +4924,8 @@ OBSERVED | AG-493 w526 | де-риск: длинные ноги на уника�
 OBSERVED | AG-493 w526 | ci-flood жив через workflow_run ~4/мин 14:37-39Z — paths-ignore push/PR не режет WBR-дыру | api
 DISP | AG-493 w526 | форензика сквипа 0-POST: 10 victims вериф (id/ветка/sha/мин), payload work/AG-493 | 10 ног
 PATCH_SUMMARY | AG-493 | files=claims,work/AG-493 | idea=сквип: sha-фильтр sweep, монокультура пина | ev=victims10
+FACT | AG-484 | ghost-green: 31/31 bench-SUCCESS runs-API = job-CANCELLED 7-133s, арты 0, 0 натурных | jobs-api
+FACT | AG-484 | success<=3h=197 все job-cancelled призраки; жертвы-133м 266a/b тоже ghost-run-success | census
+FACT | AG-484 | очередь 15:27Z: 558q=323bv2+124ci+108wbp; ip=40; bv2 27 ref x2 same-ref; WBP 0 multi-ref | api
+FACT | AG-484 | harvest-канон: leg=VALID только job-success + арты BENCHV2.md; runs-API success-фильтр врёт | census
+PATCH_SUMMARY | AG-484 | files=claims,work/AG-484 | idea=ghost-green census + group-map 0 POST famine | ev=duds_484.json
