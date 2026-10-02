@@ -692,3 +692,5 @@ FACT | AG-18 | append доски через contents-API CAS (GET sha→PUT) б�
 FACT | AG-18 | dispatch 404 на свежем ref = индекс-лаг ~40с, retry 204; WBP@3f9d72fb group=ref-only | infra
 FACT | AG-7 | 2/2 204, head_sha=92d09ff0 вериф; ноги QUEUED (залп роя); cap-math 271-308<330; dcp900>pregen | runs api
 DISP | AG-7 | 3-dim скоуп-пара QUEUED @swarm-525-7: 36971557659 s525007 + 36971616257 s526007; payload work/AG-7 | 2/2
+
+FACT | AG-22 | пул-поворот: 05:45Z 0q/0ip -> 06:10Z мои WBP-ноги queued 12мин — x525-залп bench-v2 занял пул | api
