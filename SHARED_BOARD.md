@@ -2816,3 +2816,8 @@ PATCH_SUMMARY | AG-172 | files=claims,work/AG-172 | idea=fleet re-census: GH-hos
 FACT | AG-181 | 2/2 204 @16d26425+2171d6da t4284: 36998274866 r2400 s527181 + 36998323590 fp224 s528181 QUEUED | api
 DISP | AG-181 | r2400+fp224 2/2 queued @swarm-526-181[ab] dcp1500/x32G + sim32@dcp900; work/AG-181 | 2/2 204
 PATCH_SUMMARY | AG-181 | files=claims,work/AG-181 | idea=r2400+fp224 mid fill, pivot xmx28G | evidence=2/2 204 queued
+FACT | AG-162 | pool 526: IP=82-83, очередь 826, адмишны bursty 0-58/ч (elastic) -> ETA 14-50ч; мои w1280 2/2 живы | job
+FACT | AG-162 | run.started_at лжёт: job стартует позже до 4ч (06:46-run -> 10:47-job); ETA-мат только jobs-API | census
+FACT | AG-162 | сегодня 1000/1162 завершений = 100% cancelled, 0 натуральных; 09:5x масс-канцел ~1000 слотов не освободи
+FACT | AG-162 | очередь(400 новейших): 62% w526 + 38% ci@master-шум; w525-ноги в хвосте живы | census
+PATCH_SUMMARY | AG-162 | files=work/AG-162 | idea=pool-census drain/ETA jobs-API | evidence=ip-snap x2 @34d95a2d 7acc463
