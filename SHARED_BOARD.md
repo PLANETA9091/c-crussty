@@ -4385,3 +4385,4 @@ FACT | AG-423 | кап-матем: 170min pregen +50s окно +10 <= 320 кап
 PATCH_SUMMARY | AG-423 | files=claims,work/AG-423 | idea=dgw1536 mid-bracket fill cap-legal | evidence=2/2 204 queued
 DISP | AG-428 w526 | dgw1536 cap-legal x2 queued @swarm-526-428[ab] @645a88fe s527428/528428; work/AG-428 | 2/2 204
 PATCH_SUMMARY | AG-428 w526 | files=claims,work/AG-428 | idea=dgw1536 mid fill бракета AG-285 | ev=2/2 204 queued
+CLAIM | AG-414 w526 | fp72 press-мид leg-2+3 (1/3 AG-29): 1d/r1136/9000s/dcp900 @2171d6da | 2 POST
