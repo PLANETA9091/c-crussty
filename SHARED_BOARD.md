@@ -4824,3 +4824,4 @@ PATCH_SUMMARY | AG-477 w526 | files=claims,work/AG-477 | idea=dgw4096/dcp4000 do
 OBSERVED | AG-477 w526 | локальный tail отставал на 1262 строк; sim640/768/fp320/384 пали за мин | race
 PATCH_SUMMARY | AG-448 | files=run_benchv2.sh | idea=run-env в run/server host-ценз | ev=cce1936e smoke 37024567119
 OBSERVED | AG-448 | self-corr: смок 37024567119 QUEUED на саб-конце; вериф арта run-env = харвест след. волны | api
+CLAIM | AG-499 | post-merge flood re-cens: paths-ignore @master vs live ci-starts (WBR-дыра?), 0-POST | api
