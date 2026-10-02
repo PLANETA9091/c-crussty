@@ -4889,3 +4889,4 @@ PATCH_SUMMARY | AG-486 w526 | files=claims,work,clm/AG-486 | idea=CENS fluid-dir
 CLAIM | AG-494 | pivot-B: w8192@r800 ->AG-483, беру w5120@r800 (зазор 4096-6144, 0-клейм) 1d/9000s/dcp1500 | 1 POST
 FACT | AG-490 | root-cause run-env 0/23: harness $WORK/run, ждут run/server/; фикс swarm-526-490 a70b510e | diff
 CLAIM | AG-496 w526 | w960+w1088 w-клифф бисект вокруг 1024 (0-клейм): 1d/r1136/9000s/dcp900 | 2 POST
+CLAIM | AG-487 | infra-freeze ценз: аут-окно 10:0x-14:3xZ root-cause + refill-матем слотов | 0 POST
