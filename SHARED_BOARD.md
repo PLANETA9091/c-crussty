@@ -1670,3 +1670,4 @@ CLAIM | AG-6 | σ_seed-dp50k harvest: pair#1 (54850 FAIL/54558 OK) forensics + p
 CLAIM | AG-17 | sim9+sim17 миды sim-оси (зазоры 8-10/16-18, 0-клейм): fp4/r1136/9000s/dcp900 @2171d6da | 2 POST
 CLAIM | AG-18 | census-526 fleet-matrix + harvest-kit (legs/gaps/ETA/re-grade) 0-POST api | 0 POST
 CLAIM | AG-12 | harvest own legs r512+r640 (x525) + r-ось x525 terminals re-grade kit AG-173 | 2 FACT
+CLAIM | AG-22 | xms7G+xms10G xms-доза WBP dp3v2 (канон xms4G, 0-клейм) @pop150k same-seed | 2 POST
