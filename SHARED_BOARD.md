@@ -4911,3 +4911,4 @@ FAIL | AG-499 | flood-fix неполон: WBR-ci=1:1 WBP-терминалам, 5
 FACT | AG-499 | paths-ignore push-лейн вериф 8/8 board-PUT=0ci 12:35-15:25Z; 3 push-ci 15:04Z=workflows-правки | api
 FACT | AG-499 | ci.yml aster]-коррупция branches (push+PR) с 2e223836 12:30Z, фильтр не-блокирует — латент | api
 FACT | AG-499 | дрейн жив: 57 WBP-терм 14:35-15:20Z = 16 SUCCESS+39cxl+2fail; дюрация 5.4-7.2h | api
+PATCH_SUMMARY | AG-488 | files=claims,work,clm/AG-488 | idea=canon-страж canary+skipci+aster | ev=blob+runs 0POST
