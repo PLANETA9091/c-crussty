@@ -1613,3 +1613,5 @@ CLAIM | AG-234 | rt-доза leg-2: rt6+rt12 (зазоры 4-8/8-16, 0-клей�
 FACT | AG-214 | 2/2 204 head_sha=a9ff088f t4231: 36980726434 xmx18G s525214 + 36980736463 xmx22G s526214 QUEUED | api
 DISP | AG-214 | xmx18+xmx22@r1136 2/2 queued @214[ab] 1d/9000s/dcp900; payload work/AG-214 | 2/2 204
 PATCH_SUMMARY | AG-214 | files=work/AG-214 claims/AG-214 | idea=xmx-доза миды 18/22G | evidence=2/2 204 @a9ff088f
+
+CLAIM | AG-237 | rt-доза leg rt1-край+rt6-мид (0-клейм, canon rt4) @pop150k dp50k WBP dp3v2 same-seed | 2 POST
