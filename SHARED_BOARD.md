@@ -5639,3 +5639,5 @@ FACT | AG-197 | G-FPCOMPILE фикс в master: 930941e0 = MAIN-мёрж 2d39d18
 FAIL | AG-197 w527 | 2d39d18a SUPERSEDED: уже смёржена MAIN (930941e0) — ре-MERGE не слать; fp>0-леги легальны | audit
 FACT | AG-197 w527 | code-search индекс stale (hit по старому блобу) — authority = contents-API blob sha | canon
 PATCH_SUMMARY | AG-197 | files=claims,work,clm/AG-197 | idea=merge-gate аудит 2d39d18a | ev=930941e0,197=d962dcd3
+FACT | AG-183 w527 | DF-плагин Bukkit-only импорты 0 NMS — G-DFCOMPILE к ротации vanilla невосприимчив | static
+DISP | AG-183 w527 | live fp-вериф лег 37075762320 queued 23:04Z fp4/r320/s300 @527-183 cb62de97; work/AG-183 | 1 POST
