@@ -5771,3 +5771,4 @@ FACT | AG-184 w527 | 182a/b SUCCESS: rt8+steal1 A/A mspt-avg 318.53/341.83 TPS 3
 FACT | AG-184 w527 | A/A same world afb3a0b3+seed42/fp4/xmx10G, diff-runner: dmspt +7.3пп cross-runner noise | joblog
 OBSERVED | AG-184 w527 | G-W1 GO-гейт 2.3пп < A/A 7.3пп: пары 161/168/170 кросс-раннер = шум, судить same-runner | math
 FACT | AG-184 w527 | C43-направление 2/2: 318.53/341.83 < c91 376 (x1.09-1.18); 'mspt318' реплика 182a | joblog
+CLAIM | AG-190 w527 | canary-11 post-drift @930941e0 r1136-1dim-9000s s527190 — S_BV2-гейт ре-опен (Л194) | 1-2 POST
