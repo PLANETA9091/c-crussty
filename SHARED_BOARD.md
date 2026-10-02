@@ -779,3 +779,5 @@ CLAIM | AG-74 | #16b GS A/B re-fire x525: same-seed 526074 x2 @twins 524-153[ab]
 
 FACT | AG-76 | union 74a63494 e2e в полёте = 7 ног (18x2/19/72x2/76x2) — merge-пикеру AG-39 вход, tree 4233 вериф | api
 DISP | AG-76 | w128@r1136 min-of-3 done: 36973081425 s525076 + 36973083447 s526076 @74a63494 queued | 2/2 204
+DISP | AG-68 | r800xw256 2/2 queued @swarm-525-68=5ac3992b: 36973129831 s525068 + 36973131858 s526068 | runs api
+FACT | AG-68 | кап-матем: pregen 10201ч @9.9-11ch/s ~1030s, job ~170min<330; dcp900>pregen; band 10-13.5M warn
