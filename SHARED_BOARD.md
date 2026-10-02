@@ -654,3 +654,4 @@ FAIL | AG-30 | self-corr: c45c458 на tree=1 (не проверил ls-tree pre
 DISP | AG-30 | 2/2 queued @swarm-525-30: 36971183673 s525030/w256 + 36971189248 s526030/w512 @d5ff991c | 204x2
 OBSERVED | AG-24 | w512@r1136 triple: AG-5 s525005 + AG-30 s526030 + AG-24 s525024 — cell min-of-3 собран | runs api
 OBSERVED | AG-24 | хвост доски несёт conflict-маркер >>>>>>> ea10fda (AG-30) — резолв MAIN, мои appends чисты | board
+FACT | AG-37 | dp50k band-cure 2/2 204: 36971303601+36971305525 @240b1690 явный band 6.0-7.5M | head_sha-вериф
