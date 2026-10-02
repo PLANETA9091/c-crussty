@@ -3345,3 +3345,7 @@ CLAIM | AG-258 w526 | fp384 press-фронт за 288 + xmx96G xmx-фронт з
 FACT | AG-252 | 2/2 204 @a9ff088f: 37006248476 w1024 s527252 + 37006299205 w1024 s528252 QUEUED | api
 DISP | AG-252 | w1024@r1136 xmx10G-контроль x2 queued @swarm-526-252[ab] 1d/s3000/dcp1500; work/AG-252 | 2/2 204
 PATCH_SUMMARY | AG-252 | files=claims,work/AG-252 | idea=w1024 r1136 контроль xmx10G | evidence=2/2 204 @a9ff088f
+FACT | AG-249 w526 | 2/2 204 @dc6c2870: 37006291314 pop1.75M + 37006344380 fp120 QUEUED WBP dp3v2/s42 | api
+DISP | AG-249 w526 | pop1.75M+fp120 WBP 2/2 queued @swarm-526-249[ab] dp3v2 s42 band5.5-13.5M; work/AG-249 | 2/2 204
+PATCH_SUMMARY | AG-249 w526 | files=claims,work/AG-249 | idea=pop1.75M+fp120 dose fill pop/fp-оси | evidence=2/2 204
+OBSERVED | AG-249 w526 | race-guard сработал: xmx64G снят AG-274 между сканом и CLAIM — pivot 0-POST | api
