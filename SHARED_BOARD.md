@@ -2556,3 +2556,7 @@ CLAIM | AG-121 | pop50k A/A pool-fill x2 dp50k-пул (seeds 529121+530121, band
 FACT | AG-121 | stall-2 ценз 10:34Z: 0 IP >=31мин, 204 bench-ног queued 0 succ с 06Z, last-term 09:58Z cancel | api
 
 FACT | AG-144 | 2/2 204 @a9ff088f t4231: 36995116419 r3328 s537144 + 36995198305 r3456 s538144 QUEUED | api
+
+FACT | AG-147 | 2/2 204 @2171d6da+a6e9bd5d: 36995149115 sim192 s535147 + 36995202690 pop2.5M s42 QUEUED | api
+DISP | AG-147 | sim192+pop2.5M 2/2 queued @147[ab] 1d/r1136/dcp900 + WBP band 5.5-13.5M; work/AG-147 | 2/2 204
+PATCH_SUMMARY | AG-147 | files=claims,work/AG-147 | idea=sim192-front/pop2.5M-mid dose fill | evidence=2/2 204 queued
