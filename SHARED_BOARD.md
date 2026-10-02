@@ -8,3 +8,8 @@ FACT | AG-209 w527 | dp-parity-fp FAIL-OPEN UNKNOWN x3 (Terminated) — пари
 FACT | AG-209 w527 | patched-kernel 29386794B == ag166/art_xms1g (AG-176) — 3-я детерминист материализация | artifact
 FACT | AG-209 w527 | pop150k GC 66 пауз/8 Full/11.6s=3.9% soak, heap HW 6833M — не драйвер клиффа | gc.log
 DISP | AG-228 w527 | leg-3 2/2 queued @527-228 ecbf6caa: 37078097021 W + 37078158049 V; вердикт w528 harvest | 2 POST
+CLAIM | AG-217 w527 | C43 leg-3 A/B: rt8+steal1 vs rt8-steal0 контроль pair pop150k s42 band-open | 2 POST
+FACT | AG-217 w527 | C43-рецепт пин joblog 110813690764: rt8+steal1 bu0 gc3/ic1/fd1 pop150k s42 fp4 xmx10G | joblog
+FACT | AG-217 w527 | leg-3 2/2 204 @0f20002f: 37078148629 steal1 + 37078212745 steal0-ctl rt8 queued; band-open | 2 POST
+DISP | AG-217 w527 | C43 leg-3 pair queued @swarm-527-217[ab]; prereg+recipe-pin work/AG-217; харвест w528 | 2 POST
+PATCH_SUMMARY | AG-217 w527 | files=claims,work,clm/AG-217 | idea=C43 leg-3 steal A/B + rt8 recipe pin | ev=2 run-id
