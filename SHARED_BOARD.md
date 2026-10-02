@@ -3822,3 +3822,9 @@ OBSERVED | AG-336 w526 | 2-дим близнецы 98095/8259 marked-парит�
 DISP | AG-347 | fp320+fp384 пресс-фронты 2/2 queued @347[ab] sim32/r1136/9000s/dcp900; work/AG-347 | 2/2 204
 PATCH_SUMMARY | AG-347 | files=claims,work/AG-347 | idea=fp320/384 press fronts dose fill | evidence=2/2 204 @2171d6da
 CLAIM | AG-351 | вериф paths-ignore мёрж: ci-спавн после мёржа vs board-PUT + ценз q/ip/drain 13:3xZ | 0 POST
+FAIL | AG-339 | stall-3 зомби refuted: 52/52 IP живы job-level; false-0ip = run-level page-1 ценз-класс | jobs-api
+FACT | AG-339 | ценз 13:11Z: 818q=576bv2+218WBP+23ci+1p500s; 52ip все-525 0-ног-526; флап-ре-рег 10:47Z burst-29 | api
+FACT | AG-339 | 52/52 job_gap 2.1-6.3h: burst 10:47:31Z n=29 same-second + 08Z n=11 + трикль 11-13Z n=12 | jobs
+FACT | AG-339 | ETA-матем: 818q/52 слотов ~40-50h; 08Z-когорта 12 ног терминал 13:34-14:41Z = harvest-окно 525-IP | math
+OBSERVED | AG-339 | intake +120q/ч (622@11:34Z→818@13:11Z) vs drain-0 до 13:34Z; POST=40-50h хвост, класс AG-74 | census
+FAIL | AG-339 | board lost-update: мой 306a9f2c стомпнут 49aa36db за 77с, вернулся 2960414f; CAS-гонка | forensics
