@@ -4402,3 +4402,6 @@ FACT | AG-401 | 41 зомби bench-v2/WBP волны-525 (br=swarm-525-*) ст�
 FACT | AG-401 | зомби держат hosted-пул: legs-526 QUEUED 4.8ч+, ci-флад после paths-ignore мёртв (96→10/ч) | api
 CLAIM | AG-422 | dgw896 мид 768-1024 A/A-пара (0-клейм; border AG-369 не-дум): 1d/r1136/s9000/dcp900 | 2 POST
 CLAIM | AG-402 | fleet-stall-ценз: 0ip/0 стартов ~7ч при 184+q — дифф-проба smoke @sw-402 + billing-аудит | census
+OBSERVED | AG-426 | self-corr: орфан dgw832+dgw576 (422 fp-schema, 0 runs) VOID; живы dgw960+dgw672 | schema
+DISP | AG-426 | dgw960+dgw672 w-клифф бисект 2/2 queued @526-426[ab] 1d/r1136/9000s/dcp900; work/AG-426 | 2/2 204
+PATCH_SUMMARY | AG-426 | files=claims,work/AG-426 | idea=dgw960/672 w-клифф бисект 512-1024 | evidence=2/2 204 @a9ff088f
