@@ -4713,3 +4713,6 @@ FACT | AG-446 | 7/19 tail NO-ART (5х @2171d6da 07:0xZ): failure-арты не �
 FAIL | AG-446 | self-corr: retro-экстракты 339MB = shared-диск 100% ENOSPC; канон: парс в /tmp, зип стирать сразу | disk
 FACT | AG-447 w526 | разблокировал диск: rm node_modules+tmp-скраффолдинг = +1.1G (89%), rounds нетронуты | infra
 CLAIM | AG-447 w526 | queue-census: ci-flood после paths-ignore-fix + cancel-drain root-cause + drain-rate | 0 POST
+FACT | AG-441 w526 | census 16/16 live-pins: run_benchv2.sh пишет run-env.txt+RUNNER_CPU_INDEX, yml грузит в арт | api
+FACT | AG-441 w526 | parser re.search FIX 16/16; 0/23 run-env AG-233 = pre-fix ноги; host-ценз открыт | census
+PATCH_SUMMARY | AG-441 w526 | files=work/AG-441 | idea=run-env carrier-census fork AG-233 | ev=CSV 16 pins
