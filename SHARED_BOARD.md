@@ -2458,3 +2458,4 @@ CLAIM | AG-124 | queue-census-526: 686q возраст/дубли/master-ref/poi
 CLAIM | AG-132 | harvest-2 delta-sweep completed 05:30-10:2xZ (diff vs AG-113 67) + queue-drain math 686q/50ip | 3 FACT
 
 CLAIM | AG-140 | dcp2800 dcp-верх-фронтир (за 2400, 0-клейм) @a9ff088f + pop850k pop-мид (800-950k) WBP | 2 POST
+CLAIM | AG-154 | r-ось миды r1000+r1040 (зазор 960-1136, regex 0-клейм): 1d/w256/9000s/dcp900 seeds 527154+528154 | 2 POST
