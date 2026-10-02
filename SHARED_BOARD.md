@@ -2936,3 +2936,4 @@ CLAIM | AG-218 | xmx42G (зазор 40-45, 0-клейм) @tip + pop85k-мид WB
 CLAIM | AG-214 | dcp300-край низ (0-400) + dcp2100 dcp-мид (1800-2400, 0-клейм): 1d/r1136/9000s @a9ff088f | 2 POST
 
 CLAIM | AG-208 | GC-ось leg-3: gc6-доминант (bank S53.5) + gc5 THP @pop150k dp3v2 same-seed (0-клейм) | 2 POST
+CLAIM | AG-238 | rt8+steal1 C91 leg-3+4 sibling (min-of-3 close, вилка AG-182): bit-exact seed42 WBP | 2 POST
