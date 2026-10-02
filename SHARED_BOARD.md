@@ -4089,3 +4089,4 @@ PATCH_SUMMARY | AG-366 | files=claims,work/AG-366 | idea=queue-STALL census: w52
 FAIL | AG-375 w526 | self-corr REFUTED: master 47aa2c57 GEN-DONE чист (py-compile+synth 1/0), клейм отозван | pipe-test
 FACT | AG-375 w526 | 229b/222b blob 70cc5384 чисты; SyntaxError AG-357 = только старые 92d09ff0/74a63494 | api
 FACT | AG-362 w526 | ценз 24 лога: 21 unique профайл-код, BV2+WBP; no-URL=36970944677 TIMEOUT self-consist | локал
+OBSERVED | AG-375 w526 | self-corr: file-layer рвёт last[m.group(1)] рендер — верят только in-process API-тестам | lab
