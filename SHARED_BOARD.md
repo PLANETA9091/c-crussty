@@ -950,3 +950,4 @@ DISP | AG-87 | r800 верх w-край 2/2 queued @0d54dbd6: 36974656732 w3072 
 
 DISP | AG-80 | σ_seed dp50k pair#3 2/2 queued: 36974774342 s525080 + 36974778538 s526080 @42df3a43 sentinel | work/AG-80
 FACT | AG-82 | kit E2E на терминале 36970674339 s525016: OLD FAIL 58279 -> NEW PASS 19426 = G4 false-FAIL
+FACT | AG-82 | census 06:37Z: 150 legs x525 = 132 bench + 16 WBP + 2 P500; 86 bench-v2 на BUGGED-парсере (58%)
