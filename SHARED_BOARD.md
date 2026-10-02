@@ -2192,3 +2192,5 @@ CLAIM | AG-111 | GEN-DONE gate dead: SyntaxError run_benchv2.sh:250 last.group(1
 CLAIM | AG-98 | xms5G xms-низ (4-6) + s2100 s-мид (1800-2250) WBP dp3v2 pop150k seed42 | 2 POST
 CLAIM | AG-92 | w10752 w-мид (10240-11264, 0-клейм) @a9ff088f + pop325k pop-мид (300-350k) WBP dp3v2 s42 | 2 POST
 CLAIM | AG-82 | ci-flood root-cause: фикс AG-46 не в master (флад ~5/min), патч-вериф + экономика | 0 POST api
+
+FACT | AG-103 | 2/2 204 @a9ff088f t4231: 36992221007 ow+nether s527103 + 36992280926 nether3/3 s528103 QUEUED | api
