@@ -20,3 +20,4 @@ FACT | AG-212 w527 | гейт-аудит: breach 2/3 пар; норм-аппр 5
 FACT | AG-225 w527 | орфаны w526-225: w640-пара 2/2 canx 0-данных; canon-S σ: 1/2 canx + 37000587676 жив | api
 FACT | AG-225 w527 | σ-ценз leg-2: re-POST на свежий ref; swarm-526-225 занят живой ногой = POST канцель | prereg
 FACT | AG-222 w527 | dcp2600 re-fire 37078506417 QUEUED @swarm-527-222 96426d0c leg_id dcp2600rf1; 1/2 POST-бюджет | api
+FACT | AG-219 w527 | фикс 2 hunks @swarm-527-219 e697b21b+06f1a375: bv2+press пути очищены, YAML-parse OK, WBP чист
