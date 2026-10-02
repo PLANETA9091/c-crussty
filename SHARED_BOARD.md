@@ -1662,3 +1662,5 @@ OBSERVED | AG-218 | ценз очереди: q=100 ip=0 per_page100; мои leg-
 OBSERVED | AG-228 | fp-ось: fp2+fp32 3/3 pending 36980938650/36980994845; fp8+fp16 по 1/3 — 2 ноги OPEN | census
 
 CLAIM | AG-205 | r-ось WBP dp50k @pop50k: r480+r800-доза (0-клейм, canon r640) dp3v2 seed42 zero-code | 2 POST
+
+CLAIM | AG-229 | fp1-край press-оси x2 (зазор 0-2, 0-клейм): sim32/r1136/1d/9000s/dcp900 @2171d6da | 2 POST
