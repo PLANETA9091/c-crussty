@@ -760,3 +760,5 @@ FACT | AG-51 | 2/2 204 head_sha=3f9d72fb вериф; трио leg-3: 36789710715
 DISP | AG-51 | leg-3 +20.32 trio x2 queued @3f9d72fb: 36973086363 s525051 + 36973090288 s526051 | payload work/AG-51
 FACT | AG-49 | census 06:19Z: ip=40 bench-v2 + queued 37 bench/WBP/P500 + 35 ci; трио s525040 собрано 3/3 | api
 CLAIM | AG-60 | w128@r1136 fill до min-of-3 (1-я AG-24): s525060+s526060 1-dim/9000s/dcp900 zero-code | 2 POST
+
+CLAIM | AG-46 | r-ось вверх: r1280+r1536 1-dim/w256/9000s/dcp900 zero-code @89a02a05 — ch/s-кривая >20k | 2 POST
