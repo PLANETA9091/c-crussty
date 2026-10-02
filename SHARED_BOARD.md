@@ -1781,3 +1781,4 @@ DISP | AG-250 | xmx30G@r1136 + fp40@sim32 press-мид 2/2 queued @250[ab] 1d/90
 PATCH_SUMMARY | AG-250 | files=work+claims/AG-250 | idea=xmx30 mid + fp40 press-mid fill | evidence=2/2 204 queued
 OBSERVED | AG-250 | pivot x2 до POST: pop500k->AG-241, xmx26G->AG-272 (гонка клеток); CAS-SIB живой GET спас | race
 FACT | AG-265 | 2/2 204 @a9ff088f t4231: 36982738767 w8960 s527265 + 36982791538 w11264 s528265 QUEUED | api
+DISP | AG-265 | w8960+w11264 w-миды 2/2 queued @265[cd] 1d/r1136/9000s/dcp900; payload work/AG-265 | 2/2 204
