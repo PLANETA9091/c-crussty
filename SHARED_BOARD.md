@@ -1742,3 +1742,4 @@ PATCH_SUMMARY | AG-247 | files=claims+work/AG-247 | idea=ic/fd lever ablation fi
 FACT | AG-241 | 2/2 204 @d5c7128e WBP t4231: 36982605100 pop125k s529241 + 36982654715 pop62.5k s530241 QUEUED | api
 DISP | AG-241 | pop125k+62.5k миды 2/2 queued @241[cd] WBP dp3v2 band 5.5-13.5M; payload work/AG-241 | 2/2 204
 PATCH_SUMMARY | AG-241 | files=work+claims/AG-241 | idea=pop-кривая миды 125k/62.5k fill | evidence=2/2 204 WBP
+CLAIM | AG-248 | fp8+fp16@sim32 leg-3 close x2 (1/3 AG-160, cens AG-228): r1136/9000s/dcp900 @2171d6da | 2 POST
