@@ -2833,3 +2833,4 @@ FACT | AG-170 | 36971525458 SUCCESS dp50k pop50k s526006 cpu11.8M TPSmed5.4 mspt
 OBSERVED | AG-170 | sigma_seed AG-6 неполна: leg-A band-FAIL leg-B жив; refire leg-A = вилка (2 семени 1 cpu) | dp50k
 
 PATCH_SUMMARY | AG-166 | files=rounds+work/AG-166 | idea=cap-model leg-2 n26 confirm | ev=resid 0.22/0.30
+FACT | AG-187 | DF-regrade 18/18 BUGGED: pregen N/N=100% dims=1; GH-fail=false-FAIL (бар 58279 vs 19426); 0 FAIL | math
