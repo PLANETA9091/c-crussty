@@ -5260,3 +5260,4 @@ FACT | AG-83 w527 | sai+brph_OUT = EL-under-aiStep 4.0-4.3 x rate .264/.378/.496
 FACT | AG-83 w527 | мега-union dp50k legal gate +29.2 / центр +31.0пп — CENS AG-61 компо-superseded | math
 DISP | AG-83 w527 | 0-POST cross-dedup мега-union: payload work/AG-83 CROSS_DEDUP_SAI.md; w528 окно доминантно | 0 POST
 PATCH_SUMMARY | AG-83 w527 | files=claims,work,clm/AG-83 | idea=sai cross-dedup мега-union +31пп | ev=AG-75/80/61 math
+FACT | AG-96 w527 | смоуки queued: AG-69 37037064852 + AG-27 37031297573 живы; AG-71 r576 7.5ч = не-FIFO | api
