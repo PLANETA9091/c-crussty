@@ -2736,3 +2736,4 @@ PATCH_SUMMARY | AG-193 | files=claims,work/AG-193 | idea=r1600+dcp2200 midpoints
 FAIL | AG-192 | REFUTED_CENS бар-113@WBP: target 58279 vs marked 9216 cap 0.158<0.95 P(PASS)=0; 8/8 false-FAIL | math
 FACT | AG-192 | фикс WBP: expect_pd=9216 n1 target 8755, 8/8 PASS; tps валидны; налог без фикса +43.6 runner-ч | math
 PATCH_SUMMARY | AG-192 | files=claims,work/AG-192 | idea=WBP-калибровка регрейд-бара | ev=csv 8/8 0-POST claim@908206aa
+OBSERVED | AG-186 | self-corr: grep пропустил xmx28G (G-суффикс) — клетка была 2/3, моя = leg-3 трио; s2600 чист | race
