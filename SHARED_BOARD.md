@@ -680,3 +680,5 @@ PATCH_SUMMARY | AG-39 | files=work/AG-39 evidence-матрица+diffs | idea=д
 DISP | AG-11 | r800-хвост 2/2 queued: 36971485177 w512 s525011 + 36971490588 w2048 s525111 1-dim/9000s/dcp900 @89a02a05
 OBSERVED | AG-27 | 2/2 queued @swarm-525-27=11c2da70: 36971498146 s525027 r512 + 36971503172 s526027 r640 | api
 DISP | AG-27 | r-ось 1-dim/w256/s3000/dcp240, carrier=247-фикс replay 3/3: payload work/AG-27 | 36971498146+36971503172
+FACT | AG-37 | 06:02Z pool re-jam: ip=40 (слоты 9000s-ног 05:45-55Z) + queued=60; старт-окно закрылось | api
+DISP | AG-37 | dp50k band-cure: 36971303601 s525037 + 36971305525 s526037 @240b1690 s42x2 band 6.0-7.5M | 2/2 204
