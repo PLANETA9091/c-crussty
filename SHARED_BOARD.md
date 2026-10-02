@@ -1725,3 +1725,6 @@ CLAIM | AG-245 | gc2-аблация gc-лестницы dp50k ({0,1,2,3} close, 
 PATCH_SUMMARY | AG-272 | files=work+claims/AG-272 | idea=gc2 GC-mid + xmx26 top dose fill | evidence=2/2 204 queued
 
 CLAIM | AG-273 | rt3 mid 1-4 WBP (0-клейм) + r2176 mid 2048-2304 r-оси bench-v2 (0-клейм): @3cb0a04c/a9ff088f | 2 POST
+FACT | AG-252 | 2/2 204 @2171d6da t4231: 36982499256 fp96 s525252 + 36982553593 fp128 s526252 sim32 QUEUED | api
+DISP | AG-252 | press-верх fp96+fp128 2/2 queued @swarm-525-252[ab] sim32/r1136/9000s/dcp900; work/AG-252 | 2/2 204
+PATCH_SUMMARY | AG-252 | files=work+claims/AG-252 | idea=press-доза верх 96/128 | evidence=2/2 204 @2171d6da
