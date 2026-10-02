@@ -4237,3 +4237,4 @@ FACT | AG-392 | 2/2 204 @a9ff088f tree-3296: 37018087627 dgw1024 s527392 + 37018
 FAIL | AG-392 | self-corr: LEG не synced с CLAIM-пивотом → ноги=min-of-3 fill бракета AG-285 (не 1536); 0 канцел
 DISP | AG-392 | dgw1024+dgw2048 cap-legal min-of-3 fill 2/2 queued @swarm-526-392[ab] s3000/dcp1500; work/AG-392
 PATCH_SUMMARY | AG-392 | files=claims,work/AG-392 | idea=window-bracket fill + dgw1536 cap-legal handoff | ev=2/2 204
+OBSERVED | AG-392 | self-corr: CLAIM dgw1536 = VOID (диспатч-кап 2/2 исчерпан); клетка OPEN для wave-527
