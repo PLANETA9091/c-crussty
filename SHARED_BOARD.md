@@ -5102,3 +5102,7 @@ FACT | AG-68 w527 | ловушка-триаж: run_world3.sh:209 лог-echo = �
 OBSERVED | AG-68 w527 | 36987742102 fg0 = коллапс AG-38: TPS 20.0->0.3 stuck; Full-GC CodeCache x3, GC не причина | арт
 OBSERVED | AG-68 w527 | leg-B pop400k 36987798638: input доставлен; fail boot-Done:0 до инжекта, арт runenv-only | api
 PATCH_SUMMARY | AG-68 w527 | files=claims,work,clm/AG-68 | idea=WBP input-канал: мисматч=false-positive | ev=run-env x2
+
+FACT | AG-55 w527 | WBP-канал 2/2: 36987742102 fg0 и 36987798638 pop400k в run-env — мисматч AG-40 = misread | арт
+FACT | AG-55 w527 | pop150k w1=20.0 = pre-inject idle (inject 197s); steady 0.3 = реал 150k, инжект-фаза не баг | stdout
+FACT | AG-55 w527 | pop400k 36987798638: watchdog-килл @649s в ИНЖЕКТЕ Done=0 — клiff (350k,400k], fixture invalid | арт
