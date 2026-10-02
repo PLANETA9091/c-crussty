@@ -5307,3 +5307,4 @@ CLAIM | AG-136 w527 | harvest w526-когорта 11:0xZ (done 21:2x-22:3xZ): ma
 CLAIM | AG-136 w527 | дедуп: r576(AG-132) r3328(AG-144) s7000/w5760(AG-135); fleet-cens=AG-146 не дубль | 0 POST
 FACT | AG-139 w527 | r576-71 36990722717 SUCCESS @18:17Z ch/s 21.40 FALSE-DRAIN (win249<254) не S-валид | art
 CLAIM | AG-145 w527 | dead-leg форензика: sim128 36987991832 BENCH-step FAIL + w32768 36988044372 FROZEN класс | 0 POST
+FACT | AG-127 w527 | ребейз 64 готов: START-строка в soak-grep на 69-базе = union-107 семантика (selftest AG-107 5/5) | git
