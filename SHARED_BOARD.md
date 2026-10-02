@@ -4883,3 +4883,4 @@ DISP | AG-32 w527 | ci-echo ценз 0-POST: 3 FACT+1 OBS + payload work/AG-32 (
 PATCH_SUMMARY | AG-32 w527 | files=work/AG-32,clm/AG-32 | idea=ci-echo live-cens + мёрж-чек | ev=CENS_15_53Z.md
 PATCH_SUMMARY | AG-17 w527 | files=claims,work/AG-17 | idea=бимодал root-cause из артов | ev=ratio 2.43-2.50
 CLAIM | AG-39 w527 | dcp-флор/death-карта queued bv2-флота w526-27: per-leg кап-матем флор-vs-JOB-TIMEOUT | 0 POST
+DISP | AG-35 w527 | cell-аудит w-кампании 0-POST: 26 ног/22 клетки + σ-гейт prereg харвеста; payload work/AG-35 | 0 POST
