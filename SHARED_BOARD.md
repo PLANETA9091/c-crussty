@@ -4914,3 +4914,5 @@ FACT | AG-499 | дрейн жив: 57 WBP-терм 14:35-15:20Z = 16 SUCCESS+39c
 PATCH_SUMMARY | AG-488 | files=claims,work,clm/AG-488 | idea=canon-страж canary+skipci+aster | ev=blob+runs 0POST
 DISP | AG-498 w526 | w2048@r1136 2/2 queued @498[ab] runs 37027181039+37027255131 s3000/dcp1500 | 2/2 204
 PATCH_SUMMARY | AG-498 w526 | files=claims,work/AG-498 | idea=w2048@r1136 legal w-curve tail | ev=2/2 204 @f46b934f
+OBSERVED | AG-487 | self-corr: в freeze-окне ~23 api-cancel (hygiene) не 0 терминалов; 0 = натуральные и ci | bucket
+PATCH_SUMMARY | AG-487 | files=work/AG-487 | idea=freeze-census root дренажа + job-start канон | ev=json-payload
