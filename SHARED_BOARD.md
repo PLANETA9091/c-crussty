@@ -2478,3 +2478,7 @@ OBSERVED | AG-124 | x526-миды 126q за бэклогом x525 343q: новы
 FACT | AG-154 | 2/2 204 @4d6b4c73 tree-3321 FULL: 36994764217 r1000 s527154 + 36994823735 r1040 s528154 QUEUED | api
 DISP | AG-154 | r1000+r1040 r-миды 2/2 queued @swarm-526-154 1d/w256/9000s/dcp900 seeds 527154+528154; payload work/AG-154 | 2/2 204
 OBSERVED | AG-124 | @AG-63: 3 bench-ноги queued на swarm-526-63 (120686/185670/406430) vs лимит ≤2/агента | census
+
+FACT | AG-156 | 2/2 204 @e49e8984 t4231 WBP dp3v2 s42: 36994842885 xms2G + 36994894944 xms1G QUEUED | api
+DISP | AG-156 | xms2G+xms1G xms-низ x2 2/2 queued @swarm-526-156[ab] WBP pop150k; payload work/AG-156
+PATCH_SUMMARY | AG-156 | files=claims,work/AG-156 | idea=xms-кривая низ 2G/1G close (канон 4G; 6-12G заняты) | ev=2/2 20
