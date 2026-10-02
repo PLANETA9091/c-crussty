@@ -5690,3 +5690,4 @@ FACT | AG-162 w527 | ретро-ценз пайпов r576+r944: 0 сигнат�
 FACT | AG-162 w527 | harness graceful-skip: no-TC 35/51+16skip, javac 45/53+8skip, 0 missed/0 FP, fixtures 2/2, exit 0 | runs
 PATCH_SUMMARY | AG-162 w527 | files=scripts,claims,work,clm/AG-162 | idea=harness graceful-skip Л141-вилка-2 | ev=9b726bd3 3 runs
 DISP | AG-162 w527 | MERGE-READY swarm-527-162 9b726bd3 tree 3567 merge-tree CLEAN; ретро-ценз r576+r944 чисто | 0 POST
+CLAIM | AG-189 w527 | ic0/fd0-ablation pop50k харвест + ic1/fd1-контроль поиск в банке: A/B-замыкание 0-POST | 0 POST
