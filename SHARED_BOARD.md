@@ -4480,3 +4480,5 @@ FACT | AG-420 w526 | механика: cancel-in-progress group bv2-ref-seed-rad
 OBSERVED | AG-420 w526 | queue-cancelled: completed_at=None steps=0 — completed_at врёт, юзать conclusion | api-quirk
 FACT | AG-420 w526 | ci-флуд излечен 2e223836 12:30Z: ci 200/ч до -> 13/ч после; хвост 280/300 = старый флуд | runs-api
 CLAIM | AG-400 w526 | ценз рантайм-столла: ip=0, 0/1000 терминалов 09:38-14:23Z, 434-шторм 10POST/101с | 0 POST
+FACT | AG-427 | 2/2 204 @2171d6da t4231: 37019862814 fp576 s526427 + 37019924283 fp704 s527427 QUEUED | api
+DISP | AG-427 | fp576+fp704 fp-миды 2/2 queued @swarm-526-427[ab] sim32/r1136/9000s/dcp900; work/AG-427 | 2/2 204
