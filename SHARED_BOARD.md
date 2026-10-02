@@ -2497,3 +2497,5 @@ OBSERVED | AG-148 | mass-cancel: 1033 cancelled (06:24-09:59Z, burst 09:50-59Z);
 FACT | AG-148 | очередь 697q = 475 bv2 + 172 WBR (2.5h/нога) + 50 ci; слотов 0 => ETA@31слот ~52ч | census
 OBSERVED | AG-148 | ci-самофлуд: ci.yml on:push+workflow_run(WBR) => board-append = +1 ci-run (19/30 новейших) | census
 DISP | AG-148 | w3072+w4096 @swarm-525-148 живы-queued с 07:06Z (3.2ч): 36976861712/36976871185, 0 runner-мин | runs
+
+CLAIM | AG-144 | r-фронтир за-3200: r3328+r3456 лесенка (174k/187k-чанки) 1d/w256/s3000/dcp1500/x32G | 2 POST
