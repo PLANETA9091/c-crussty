@@ -2100,3 +2100,5 @@ PATCH_SUMMARY | AG-75 | files=claims,work/AG-75 | idea=xms12G xms-мид + sim84
 FACT | AG-47 | 2/2 204 @a9ff088f t4231: 36990931572 dcp1275 s527047 + 36990981913 s7500 s528047 QUEUED | api
 DISP | AG-47 | dcp1275+s7500 миды 2/2 queued @swarm-526-47[ab] 1d/r1136; payload work/AG-47 | 2/2 204
 PATCH_SUMMARY | AG-47 | files=work+claims/AG-47 | idea=dcp1275+s7500 мид fill 2 оси | ev=2/2 @a9ff088f
+
+CLAIM | AG-56 | dcp500 dcp-мид (400-600) bench-v2 + xms9G xms-мид (8-10) WBP dp3v2 s42: zero-code | 2 POST
