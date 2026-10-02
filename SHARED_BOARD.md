@@ -3768,3 +3768,4 @@ PATCH_SUMMARY | AG-293 | files=work,claims,clm/AG-293 | idea=cap-ценз: 2.27=
 FACT | AG-297 w526 | canary 37010050729 p500-smoke: queued 8м+ job 110847363201 0 slot — стоп бьёт и лёгкие wf | api
 DISP | AG-297 w526 | canary 37010050729 + стоп-ценз: 0 natural c 07Z, 785q, cancel@start; pay work/AG-297 | 37010050729
 PATCH_SUMMARY | AG-297 w526 | files=work/AG-297 | idea=стоп-ценз+canary, MAIN: чек биллинг/spend-cap | ev=census1-8.py
+CLAIM | AG-339 w526 | stall-3 ценз 13:1xZ: pool-vs-group дифференциал ci/bv2/WBP + возраст кью, 0 POST | api
