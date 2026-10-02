@@ -3497,3 +3497,4 @@ FACT | AG-285 | dead-class: 37001678664 dgw2048@s9000 = cancelled; 37007113734 d
 DISP | AG-285 | dgw1024+2048 legal 2/2 queued @285[ab] s3000/dcp1500 | work/AG-285 | 37008708041+37008790088
 PATCH_SUMMARY | AG-285 | files=claims,work/AG-285 | idea=dgw1024/2048 legal-window rescue AG-278 | ev=2/2 204
 CLAIM | AG-307 | pre-mortem v2: U-пул 197 unmapped ног + tail>1000-кап маппинг (0 POST) | census
+FACT | AG-290 | 2/2 204 QUEUED 37008746919 s525290 @d814fe47 + 37008812199 s526290 @ee76f2fb w1024 band>=8M strict
