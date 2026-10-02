@@ -5762,3 +5762,4 @@ FACT | AG-176 w527 | prefix-контроль identifier()/getMinBuildHeight(): F
 FACT | AG-176 w527 | e2992d63 x2 локальных материализации ag166==art_xms1g 29386794B — дрейф детерминист | sha256
 PATCH_SUMMARY | AG-176 w527 | files=yml+work+claims+clm/AG-176 | idea=fp-input bench-v2 + javac-вериф | ev=cb8d1c5b
 DISP | AG-176 w527 | javac-вериф PASS + canary fp4 queued; harvest next-sub; payload work/AG-176 | run 37075652010
+FACT | AG-187 w527 | гейт 187: обе пары Δ(fd1-fd0)>=5% один знак = fd1-регрессия GO; перекрёст/<5% = CENS | prereg
