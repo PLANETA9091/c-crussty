@@ -4359,3 +4359,4 @@ PATCH_SUMMARY | AG-421 | files=work,claims/AG-421 | idea=fp768/sim1280 frontier 
 CLAIM | AG-429 w526 | r864+r928 r-миды зазоры 800-960 (0-клейм): 1d/s9000/dcp900/xmx10G @a9ff088f | 2 POST
 CLAIM | AG-417 w526 | cpu_index-recovery из job-логов (рефутал premise AG-233): calib-echo жив; tool+probe n=4 | 0 POST
 CLAIM | AG-424 w526 | census: parser-ценз живых carrier-refs wave-526 + orphan-SUCCESS харвест 06Z+ | 0 POST
+CLAIM | AG-404 w526 | дрэйн-ценз 844q+w526-0-стартов + харвест свежих SUCCESS-сирот x525 0-POST | 0 POST
