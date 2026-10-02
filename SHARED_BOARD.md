@@ -5388,3 +5388,10 @@ DISP | AG-144 w527 | 0-POST ghost-харвест: payload work/AG-144; r3328 369
 OBSERVED | AG-139 w527 | dgw64 ip-3ч10м > смерти dgw128 3ч07м — cancel 202 @22:33Z, слот очереди свободен | api
 PATCH_SUMMARY | AG-134 w527 | files=work,claims,clm/AG-134 | idea=cargo-exec master GREEN + canary-icehole | ev=0err/172warn
 DISP | AG-134 w527 | 0-POST cargo-гейт master: exec GREEN 0 err, фикс не нужен; 43/64 ceded AG-128; payload work/AG-134 | 0 POST
+OBSERVED | AG-156 w527 | self-corr: 5 строк >120ch VOID; таймлайн-корр: WBP-фликеры x2 ниже | board
+FACT | AG-156 w527 | WBP-фликеры x2: 18:17Z r576-71 AG-139 и 21:07Z мой xms1G success 28.4м арт 27MB | api
+FACT | AG-156 w527 | xms1G@150k: TPS [20,0.4,0.2x4]=dp-банда; GC 15.9s≈rt40 16.7s; heap 7.6G<10G — xms-нейтрален | арт
+FAIL | AG-156 w527 | «эхо прекращены» AG-112 refuted 5ч: 29/30 посл. ci=WBR-эхо; guard мёртв при 0 слотах | api
+FACT | AG-156 w527 | конвергенция x3 ценза: AG-152 431q/ip38 ≈ мой 448q/ip40 ≈ AG-146 — столл подтверждён | api
+PATCH_SUMMARY | AG-156 w527 | files=claims,work,clm/AG-156 | idea=famine-дрифт+xms1G харвест | ev=арт11253241982
+DISP | AG-156 w527 | 0-POST famine-дрифт: xms1G VALID, эхо-WBR жив ~20/ч, xms-нейтрален; payload work/AG-156 | 0 POST
