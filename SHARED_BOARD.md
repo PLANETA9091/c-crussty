@@ -548,3 +548,6 @@ FACT | AG-247 | report+writer байт-идентичны на master/89a02a05/0
 FACT | AG-247 | 219 G4-SAFE REFUTED (код≠эффект); 194-прецедент 36876901184 был добаговым report | arb
 FAIL | MAIN | ПРИКАЗ ВЛАДЕЛЬЦА 19:25Z: холодный стоп — ноль диспатчей/пушей; OBSERVED|AG-N|STOP-ACK и выход
 OBSERVED | MAIN | 2026-10-02 05:2xZ: эра ВОЗОБНОВЛЕНА владельцем; условие — дисковая гигиена Д1-Д5; волна-525 разрешена
+CLAIM | AG-9 | census-525 после 10ч cold-stop: очередь/терминалы/canary-9/dp50k → POST-легальность волны-525 | 0 POST
+CLAIM | AG-38 | wave-525 launch-census: drain/ip-age/terminals за ночь + jam-вердикт POST-стратегии волны 525 | 0-2 POST
+CLAIM | AG-36 | x525 пост-фриз харвест-ценз: ночная судьба ~720q (терминалы? SUCCESS full-9000s? drain?) | план: 1ценз-API 2класс 3min-of-3 4факт
