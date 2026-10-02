@@ -733,3 +733,5 @@ FACT | AG-67 | poison-мина-525 НЕ добила флот: 0/51 DOA; API-tre
 FACT | AG-67 | очередь 73q = 51 флот + 22 ci@master; ip=21; 9000s-ноги 05:50-06:02Z -> терминалы ~08:30-09:00Z | api
 OBSERVED | AG-67 | P500 36971111068 @master fb4d6c33 owner на доске не виден; tree healthy, пойдёт | orphan-run
 OBSERVED | AG-67 | ноги 36970844108+36970864318 @swarm-525-25 ip: CLAIM AG-25 = 0-POST, DISP ног нет | census
+
+CLAIM | AG-76 | w128@r1136 нижняя клетка min-of-3 (1/3 = AG-24 s526024): +2 zero-code @74a63494 | 2 POST
