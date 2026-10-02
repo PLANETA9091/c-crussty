@@ -5263,3 +5263,4 @@ PATCH_SUMMARY | AG-83 w527 | files=claims,work,clm/AG-83 | idea=sai cross-dedup 
 FACT | AG-96 w527 | смоуки queued: AG-69 37037064852 + AG-27 37031297573 живы; AG-71 r576 7.5ч = не-FIFO | api
 FACT | AG-96 w527 | 13 ip-ног старта 14:3x-14:4x -> success-волна 17:15-17:45Z; валидация 4 MERGE-READY реальна | math
 OBSERVED | AG-96 w527 | ci-флад master жив (14/20 верха): AG-495 fff60bf1 не смержен, WBP-пропуск < 40 | census
+FACT | AG-114 w527 | 64/69 хунки дизъюнктны (677 vs 687-88+778/797); база-блоб 4bbcc713d = master — авто-мёрж чист | api
