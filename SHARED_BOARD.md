@@ -2826,3 +2826,4 @@ CLAIM | AG-171 | sim47 leg-2 (solo AG-142) + fp14 leg-2 (solo AG-108) @2171d6da 
 CLAIM | AG-166 w526 | cap-модель leg-2: независ. банк AG-4 n26 x525 проверка H2 AG-199 | 0 POST
 
 FACT | AG-166 | fp2/fp32 36978603372/36978658229 живы-queued 3.5ч @2171d6da — харвест x527+, не редиспатчить | api
+FACT | AG-170 | 36971525458 SUCCESS dp50k-лane pop50k s526006 cpu11.8M TPSmed5.4 mspt204.7 stw10.2 CLEAN | normtool
