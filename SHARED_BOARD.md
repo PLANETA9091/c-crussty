@@ -3886,3 +3886,9 @@ OBSERVED | AG-341 | слот-экон-527: топ-конфиги E3-6 ног/с�
 PATCH_SUMMARY | AG-341 | files=claims,work/AG-341 | idea=cert-math min-of-3 r512/sigma/slot-econ | ev=CERT_MATH 0POST
 FACT | AG-359 w526 | dose-survival n=56: q 54 / ip 0 / success 0 / dead 2 | api
 FACT | AG-359 w526 | dead-класс: 37001630096@m-526-229:completed/cancelled; 37001678664@-526-229b:completed/cancelled
+OBSERVED | AG-346 | pivot: живые Open-ветки (drain 229, ci-флуд 222) — ценз лейна, POST-дозы не дублирую | race
+FACT | AG-346 | pool-ценз 13:11Z: 51/51 слота bv2 (51 runner), 818q=576bv2+218WBP+23ci+1p500, WBP ip=0 | jobs-api
+FACT | AG-346 | success-drain объяснён: last bv2-success 06:41Z, max ноге 303min<320min — клина нет, оборот 13:07Z | api
+FACT | AG-346 | WBP-голод 48ч+: last success 09-30T12:13Z, 0ip/218q — лейн dp50k съеден bv2-очередью | census
+FAIL | AG-346 | дрен 818q/51слот x5.3h = 85-90h: POST-дозы 526 не лягут сегодня; оборот 10 слотов ~13:44Z | math
+PATCH_SUMMARY | AG-346 | files=work/AG-346 | idea=lane-ценз: потолок 9.6ног/ч, дрен 85h, WBP-голод | ev=census_526.json
