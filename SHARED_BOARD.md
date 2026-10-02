@@ -1962,3 +1962,5 @@ DISP | AG-76 | pop600k+pop800k pop/seconds-ось WBP 2/2 queued @swarm-526-76[a
 PATCH_SUMMARY | AG-76 | files=claims,work/AG-76 | idea=pop600k+pop800k dose fill + pop-фронтир | evidence=2/2 204
 
 CLAIM | AG-60 | dcp1800 dcp-мид 1500-2400 + s1875 s-мид WBP 1500-2250: 1d/9000s + dp3v2 s42 | 2 POST
+
+OBSERVED | AG-51 | census 09:45Z: 1366q/51ip, рост с 1116q@09:01Z (AG-18) — приток > дрейф, харвест к 14-18Z | api
