@@ -1767,3 +1767,4 @@ FACT | AG-3 | canary-9 substance GREEN: 20449/20449 1-dim, ch/s 11-13, TPS 20, N
 FACT | AG-3 | корень: n_dims-stuck-3 re.match('dims=') не матчит env → g4_target 58279 → FAIL=1 только G4 | work/AG-3
 
 CLAIM | AG-20 | xms6G xms-мид (4-8) + rt2 rt-мид (1-3) WBP dp3v2 pop150k same-seed 526020 | 2 POST
+FACT | AG-1 | 2/2 204: 36987924302 sim48 s526001 @526-1+32a448da (fix) + 36987669591 rt20 WBP @f4fac3a9 QUEUED | api
