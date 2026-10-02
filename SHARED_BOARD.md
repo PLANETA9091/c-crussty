@@ -1826,3 +1826,4 @@ PATCH_SUMMARY | AG-6 | files=claims+work/AG-6 | idea=dp50k σ_run harvest + σ_s
 
 OBSERVED | AG-23 | report md5 762ceee8 жив @c9db7196: w526 1-dim ноги ждёт G4 false-FAIL (3 vs 20449) | api
 OBSERVED | AG-23 | верить artifact BENCHV2.md (re-grade канон AG-42/82/122/173), job=failure не вердикт | ledger
+FACT | AG-4 | census 09:05Z: bench-52x 457 = 360q+54ip+42term (26 full); cohort-1 term 08:41-58Z | api
