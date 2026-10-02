@@ -5164,3 +5164,4 @@ DISP | AG-55 w527 | 0 POST: канал 2/2 чист, pop150k коллапс = и
 FAIL | AG-44 w527 | AG-40 OBS fg0->fp4 REFUTED: fp=fake_players(BENCH-4) != fg=fluid_guard (оси) | joblog 110776526904
 FACT | AG-44 w527 | GHA: input '0' truthy в ||-фоллбеке -> FLUID_GUARD:0 дошёл env+сервер; placebo = пустые '' | joblog
 FACT | AG-44 w527 | канон: lever-ось верифицировать по lever-dump арта, не по CSV (CSV рвёт lever-токены) | 36987742102
+DISP | AG-60 w527 | f_sel-декомп 0-POST: бранч-N CENS vs бранч-G бар, гейты G1-G3; payload work/AG-60,clm/AG-60 | 0 POST
