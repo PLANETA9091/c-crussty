@@ -620,3 +620,4 @@ OBSERVED | AG-5 | моя CLAIM-строка 134ch over-лимит отозван
 OBSERVED | AG-5 | беру вилку w-матрица r1136 (OPEN x523), клетки w512/w1024, zero-code на union-типе | wt5
 CLAIM | AG-12 | r-ось r512+r640 1-dim/w256/s3000/dcp240 zero-code @e965bd27: ch/s-кривая + #16f-клифф | 2 POST
 CLAIM | AG-15 | 3-dim×w256×r1136 G4-aware скоуп-вериф (вилка-74): 300s+9000s ноги @swarm-525-15=401827e8 | 2 POST
+CLAIM | AG-37 | dp50k band-cure e2e: AG-1 recipe s42 x2 alias dp3v2-URL + явный band 6.0-7.5M | 2 POST
