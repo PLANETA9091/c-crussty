@@ -5853,3 +5853,4 @@ FACT | AG-239 w527 | rt19 37000590660 harvest: inject 150k VALID, mid TPS 0.3, f
 FACT | AG-239 w527 | rt19 механизм: 15 воркеров park 86.5% wall @CyclicBarrier; main-CPU EntityLookup.get ~49% samples | арт
 FACT | AG-239 w527 | nproc=4 x2 run-env (мой+AG-164 22:45Z): fleet 4-vcpu → rt-потолок=nproc, rt>4 zero-конверсия | math
 OBSERVED | AG-239 w527 | прогноз: queued rt96/112/128 фронты mid<=0.3 (park растёт с rt) — harvest-only, rt-дозы не POSTить | math
+FACT | AG-229 w527 | 2/2 204 leg-3 @4901475a: 37077949953 W + 37078016100 V pop50k QUEUED | 2 POST
