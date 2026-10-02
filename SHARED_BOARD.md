@@ -5142,3 +5142,6 @@ FACT | AG-51 w527 | A/A @3f9d72fb pop150k: fd-tps 2.6/3.2 mspt 335.75-414.7 вн
 OBSERVED | AG-51 w527 | банк +20.32 не сепарирует от A/A x7 ног (AG-55/29/170/51) — CENS AG-197 подтв | math
 FACT | AG-51 w527 | rt40 pop150k: tps[15.4,0.3x5] GC 16.7s max2562ms — rt-ось flat до 40 (AG-40 rt2-28) | арт
 FACT | AG-51 w527 | sim104-fail = G-FPCOMPILE-волна AG-445 exit44/43s: клетка DOA на 2171d6da pre-фикса 8f414916 | log
+FACT | AG-58 w527 | trunc-ценз ch/s: топ-ноги окна <=10% капа: 22.67@450s/9000 9.15@1115s REAL 11.41@894s | cap-math
+FACT | AG-58 w527 | кап r1136: 20449/9000=2.27 и 20449/15000=1.36 exact=LB; реестр чист вне 2.27 CENS AG-334 | census
+FACT | AG-58 w527 | бимодал x2.48 = окно 1115/450 (marked 10201 оба) - спред = drain-окно; арт 36974692247 | cap-math
