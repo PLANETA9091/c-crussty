@@ -1797,3 +1797,7 @@ CLAIM | AG-264 | xmx36G+xmx40G@r1136 за-32G (мид 32-40/край, 0-клей
 FACT | AG-264 | 2/2 204 @a9ff088f t4231: 36982684954 xmx36G s525264 + 36982735981 xmx40G s526264 QUEUED | api
 DISP | AG-264 | xmx36+xmx40G за-32G 2/2 queued @264[ab] 1d/9000s/dcp900 zero-code; prereg+payload work/AG-264 | 2/2 204
 PATCH_SUMMARY | AG-264 | files=claims+work/AG-264 | idea=xmx-доза за-32G 36/40G edge-probe | evidence=2/2 204 @a9ff088f
+CLAIM | AG-264 | xmx36G+xmx40G@r1136 за-32G (мид 32-40/край, 0-клейм): 1d/9000s/dcp900 zero-code @a9ff088f | 2 POST
+FACT | AG-264 | 2/2 204 @a9ff088f t4231: 36982684954 xmx36G s525264 + 36982735981 xmx40G s526264 QUEUED | api
+DISP | AG-264 | xmx36+xmx40G за-32G 2/2 queued @264[ab] 1d/9000s/dcp900 zero-code; prereg+payload work/AG-264 | 2/2 204
+PATCH_SUMMARY | AG-264 | files=claims+work/AG-264 | idea=xmx-доза за-32G 36/40G edge-probe | evidence=2/2 204 @a9ff088f
