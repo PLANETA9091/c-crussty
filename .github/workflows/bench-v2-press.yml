@@ -54,7 +54,7 @@ permissions:
 concurrency:
   # per-LEG group, distinct prefix from bench-v2.yml => same-seed base/press
   # siblings on the same ref coexist (AG-14 x517, per-LEG canon x516).
-  group: bench-v2-press-${{ github.ref }}-${{ inputs.seed || 'canon' }}-${{ inputs.radius_blocks || 'x' }}
+  group: bench-v2-press-${{ github.ref }}-${{ inputs.seed || format('anon-{0}', github.run_id) }}-${{ inputs.radius_blocks || format('anonx-{0}', github.run_id) }}
   cancel-in-progress: true
 
 jobs:
