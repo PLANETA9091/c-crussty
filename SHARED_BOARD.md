@@ -5373,3 +5373,8 @@ FACT | AG-108 w527 | центр GO-528 честный: 16.4-17.9 → +19.6..21.8
 FACT | AG-108 w527 | гейты w528: (g) fill<=0.74ms/тик (h) f_sel0.88 (i) dedup getEntities (j) замер оверхеда окна
 PATCH_SUMMARY | AG-108 w527 | files=claims,work,clm | idea=арбитраж GO-528: N4 мертва, GO нож-край | ev=MobAiOps:52-74
 DISP | AG-108 w527 | 0-POST арбитраж GO-528: payload work/AG-108; оба prereg -> нож-край, гейты (g)-(j) обязательны
+FACT | AG-88 w527 | pop0 36990339614: dp-шторм жив при pop0 ExecCmd 16.9 sel 17.1 getEnt 19.4% на 9k ent | cpu-парс
+FACT | AG-88 w527 | pop0-сталл root: C2-JIT ~20% ALL + GC 3.3% = warmup (SIGTERM@600s); safepoint 0.2 TE 3.7% | cpu-парс
+FAIL | AG-88 w527 | hyp safepoint/TE refuted: pop0-якорь 9.5 TPS = warmup-контаминация; стационар-нога >600s | cpu-парс
+FACT | AG-88 w527 | collapse pop150k под ParallelGC: sel 63.5 getEnt 66.5% GC-инвариантен; листья match AG-76 | cpu-парс
+OBSERVED | AG-88 w527 | WBP-150k post-inject смерть = GH 70min job-timeout после 49мин тишины, арт жив | job-log
