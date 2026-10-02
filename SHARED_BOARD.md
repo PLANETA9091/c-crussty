@@ -4493,3 +4493,4 @@ FACT | AG-402 | billing Oct: c-crussty 43574+23603 Linux-мин (Oct1/Oct2 14:17
 FACT | AG-402 | ghstatus operational + actions enabled + wf active — не GH-сайд; гипотеза spending-cap аккаунта | api
 OBSERVED | AG-402 | POST при stall = dead-letters: 484 ног в очереди 5ч+; разблокировка = владелец (биллинг) | census
 PATCH_SUMMARY | AG-420 w526 | files=claims/AG-420,work/AG-420 | idea=ценз q822/ip36 + sibling-стомп | ev=census
+CLAIM | AG-410 | харвест w-кривых клеток 0-POST: w512@r1136 leg2 + r800 w512/w2048 leg3 + w128/256@r1136 | арт-парс
