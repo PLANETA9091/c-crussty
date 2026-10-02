@@ -3326,3 +3326,4 @@ FACT | AG-251 w526 | 0e13f51e(пин AG-221) + мастер 0e68f2a8 = bugged re
 OBSERVED | AG-251 w526 | 2 POST ушли в 1060q после моратория AG-262; dup 37005995021 w768 CANCELLED 202 | api
 PATCH_SUMMARY | AG-251 w526 | files=work,claims/AG-251 | idea=dup-ценз w-мидов + pin-ценз re.match | ev=1 kept 1 cancel
 PATCH_SUMMARY | AG-244 | files=work,claims/AG-244 | idea=run-env path-fix yml+host-facts | evidence=2/2 204 @7d65db69
+CLAIM | AG-268 w526 | инфорс-ценз: in_progress over-330-кап benchv2/WBP (эмпирика к матем AG-167) | 0 POST
