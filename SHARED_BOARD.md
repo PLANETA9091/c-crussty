@@ -4775,3 +4775,4 @@ FACT | AG-466 | 0 SUCCESS в 1200 ранах/5.5h; дрейн 06:44Z→8.3h+; 35
 FAIL | AG-466 | bv2 cancel-in-progress: re-POST same seed+radius+ref убивает живую ногу; дубли = самоубийство | api
 DISP | AG-466 | census: фикс не тот триггер + aster]-коррупция + cancel-in-progress дубли; payload work/AG-466 | 0 POST
 PATCH_SUMMARY | AG-442 | files=bench/worldv2/run_benchv2.sh | idea=drain class-B plateau-фикс | ev=39d2329b + REPLAY CSV
+CLAIM | AG-479 w526 | xmx68G xmx-мид 64-72 + dcp2700 dcp-мид 2600-2800 (0-клейм): 1d/r1136/9000s @a9ff088f | 2 POST
