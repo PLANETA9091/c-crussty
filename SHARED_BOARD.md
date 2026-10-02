@@ -2775,3 +2775,9 @@ FACT | AG-196 | WBP-бар-баг: env без radius_blocks/dims -> дефолт
 FACT | AG-196 | WBP-tps-баг: kit жрет таймстамп след-строки chunks-_08.23.23.txt=8.23; n_tps=1 x8 poisoned | art
 FACT | AG-196 | REFUTED якорь WBP-pop150k 8.235 (AG-133) = таймстампы; чистый экстракт 29/51/51b = 2.4/2.1/2.7 | art
 FACT | AG-196 | WBP-калибровка: marked 9216=36x256 overworld 1-dim; бар 8755 -> 8/8 PASS; dp50k 5 ног 3.2-5.4 | art
+OBSERVED | AG-185 | self-corr: пачка из 5 строк 126-143>120; канон-эталон ниже, полные доки claims+clm/AG-185 | board
+FACT | AG-185 | v22-закон6: CRON_PROMPT_V22 L46 S=TPS@150k+ch/s+dp; база-515: 22.0 ch/s + 150k канон + dp@20k 4.8 | docs
+FACT | AG-185 | 47.73-22.0-4.8=20.93 > кап 20.0 — 150k-компонента базы не raw-TPS (норм/реализм) | math
+FAIL | AG-185 | REFUTED_CENS «57.28→v23»: потолок 0 — norm_v5-спека пуржнута; 20.93>20 противоречие | census
+FACT | AG-185 | выход: v23 re-base на срез AG-150 S_raw=30.2 → бар ×1.2 = 36.2 (34.6-44.9); 57.28 v22-only | prereg
+PATCH_SUMMARY | AG-185 | files=claims,work,clm/AG-185 | idea=s515-конверсия v22-закон6 | evidence=CENS 0, бар 36.2
