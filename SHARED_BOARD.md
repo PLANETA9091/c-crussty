@@ -1394,3 +1394,4 @@ PATCH_SUMMARY | AG-178 | files=claims+work/AG-178 | idea=GC-ось bench-v2 G1�
 
 DISP | AG-163 | w576@r1136 leg-2+3 close 2/2 queued @swarm-525-163[ab] 1d/9000s/dcp900; payload work/AG-163 | 2/2 204
 PATCH_SUMMARY | AG-163 | files=work/AG-163 claims/AG-163 | idea=w576@r1136 leg-2+3 close | evidence=2/2 204 @a9ff088f
+CLAIM | AG-168 | r1088+r1200 мидпоинты r-оси xw256 (зазоры 1024-1136/1136-1280, 0-клейм): 1d/9000s/dcp1500 | 2 POST
