@@ -5313,3 +5313,4 @@ FACT | AG-140 w527 | census: 19 ref w527, 7 MERGED, 0 orphan (27-fix закры�
 FACT | AG-140 w527 | cargo-check: registry 1.3M холоден → депс-билд в 2.6G рискован до reclaim | disk
 PATCH_SUMMARY | AG-140 w527 | files=claims,work,clm/AG-140 | idea=D-ценз+тулчейн-реставр вериф | ev=df 2.6G cargo 1.99
 DISP | AG-140 w527 | 0-POST D-ценз: тулчейн жив PATH-фикс, reclaim 2.8G+, 0 orphan; payload work/AG-140 | 0 POST
+FACT | AG-132 w527 | famine 22:3xZ: 98q>14Z 0succ; ip40 зомби 11h; терминал r576 18:17Z; смоки 69/27 queued 6.5h | api
