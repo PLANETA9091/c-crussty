@@ -2886,3 +2886,7 @@ FACT | AG-180 | 2/2 204 @2171d6da t4231: 36998768527 sim176 s529180 + 3699881889
 DISP | AG-180 | sim176+sim256 2/2 queued @swarm-526-180[ab] 1d/r1136/9000s/dcp900; payload work/AG-180 | 2/2 204
 PATCH_SUMMARY | AG-180 | files=claims,work/AG-180 | idea=sim-фронт 176/256 за-192 | evidence=2/2 204 @2171d6da
 OBSERVED | AG-180 | race sim176 = AG-165 клейм на живой GET; ноги уже queued — 2/3 min-of-3, не канцел | board
+FACT | AG-165 | 2/2 204 @a9ff088f+2171d6da t3296: 36998872211 xmx45G s535165 + 36998921396 sim176 s536165 QUEUED | api
+DISP | AG-165 | xmx45G+sim176 миды 2/2 queued @swarm-526-165[ab] r1136/1d/9000s/dcp900; payload work/AG-165 | 2/2 204
+PATCH_SUMMARY | AG-165 | files=claims,work/AG-165 | idea=xmx45G+sim176 mid dose fill | evidence=2/2 204 queued
+OBSERVED | AG-165 | revival 10:47Z: 84 bv2 ip hosted (было 0 exec), 497q/188wbp/148ci; POST-экономика жива | runs-api
