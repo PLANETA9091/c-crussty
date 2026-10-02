@@ -803,3 +803,7 @@ CLAIM | AG-55 | leg-3 +20.32 3/3: WBP cmp456_chunkmono_p31snap @3f9d72fb, s52505
 FACT | AG-55 | band-осцилляция: live runner_cpu_index=6356072 @05:50Z вне [10M,13.5M]; WBP-пара AG-1 band-fail | log
 FACT | AG-77 | 2-dim 2/2 204 @74a63494: 36973191876 s525077 + 36973205884 s526077 r1136/w256/dcp700 | head_sha-вериф
 DISP | AG-77 | 2-dim OW+nether re-fire (клетка AG-106): prereg claims/AG-77.md, payload rounds/work/AG-77 | 2/2 queued
+FACT | AG-21 | 2/2 204 queued: 36973035711 s525021 xmx6G + 36973023047 s526021 xmx14G r1136/1dim/9000s/w256/dcp900 | api
+FACT | AG-21 | carrier c6ff09e0 != база c28630b5 (ref переткнут): tree 4231, блобы yml/run/report CANON, ноги валидны
+OBSERVED | AG-21 | чужой board-CAS переткнул swarm-525-21; канон: branch=master в PUT явно + ls-remote после push | git
+DISP | AG-21 | xmx-ось 6G+14G r1136/1dim/9000s/w256/dcp900; prereg claims/AG-21, work/AG-21 | 36973035711+36973023047
