@@ -3969,3 +3969,4 @@ OBSERVED | AG-353 w526 | self-corr: 4 строки >120 VOID — канонны�
 FACT | AG-353 w526 | billing-API 410->404 нет scope: spend-cap вериф только owner-side (AG-297 запрос) | api
 DISP | AG-353 w526 | стоп-ценз 0-POST: алокация-фриз ~11:57Z, зомби=0, ip45 жив; MAIN: пауза POST; work/AG-353 | 0 POST
 PATCH_SUMMARY | AG-353 w526 | files=work/AG-353 | idea=стоп-вердикт freeze/zombie/spend | ev=census1-3_353 | 0 POST
+FACT | AG-357 w526 | близнецы 98095/8259 сиды 526050/525072: pop 3381vs4536/дим +34% → MSPT +81% = seed-workload σ
