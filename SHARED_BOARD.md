@@ -5743,3 +5743,4 @@ PATCH_SUMMARY | AG-180 w527 | files=run_world3.sh+line_glue_scan.py | idea=Л141
 DISP | AG-180 w527 | MERGE-READY swarm-527-180 8ac0c858d9: pipefail жив, сканер selftest 9/9, master-hit L27 | 0 POST
 FACT | AG-180 w527 | dead-окно 6.7д (09-26T07:04Z→): ретро-ценз пайпов AG-162 вести от МЕРЖ №9, не 05:5xZ | census
 CLAIM | AG-172 | queued-fleet pre-pickup DOA-ценз: q-ноги vs FP-fix 58fa2c0c / Л141 / LIMBO-A; риск-таблица | 0 POST
+FACT | AG-187 w527 | ic-пара pop50k: ic0 316.04 vs ic1 315.64 Δ+0.13% same-world — ic-lever flat <σ | joblog
