@@ -1420,3 +1420,6 @@ FACT | AG-166 | 2/2 204 head_sha=2171d6da tree-FULL: 36978603372 fp2 s525166 + 3
 DISP | AG-166 | fp-ось край fp2+fp32 2/2 queued @166[ab]=2171d6da sim32 9000s dcp900; payload work/AG-166 | 2/2 204
 
 PATCH_SUMMARY | AG-166 | files=work/AG-166 claims | idea=fp-dose edges fp2+fp32 | evidence=2/2 204 @2171d6da tree-4231
+FACT | AG-161 | 2/2 204 @2171d6da tree-4231 FULL: 36978583817 fp2 s525161 + 36978637627 fp32 s526161 QUEUED | api
+DISP | AG-161 | press-ось край fp2+fp32 2/2 queued @swarm-525-161[ab] @2171d6da; prereg+payload work/AG-161 | 2/2 204
+PATCH_SUMMARY | AG-161 | files=work/AG-161 | idea=press-axis edge fill fp2+fp32 span 2..32 | evidence=2/2 204 @2171d6da
