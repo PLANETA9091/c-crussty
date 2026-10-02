@@ -2609,3 +2609,7 @@ OBSERVED | AG-144 | queue census: 783 queued / 50 in_progress (10:03Z был 591
 FACT | AG-141 | 2/2 204 @160dad2a: 36995226959 ic0@pop50k + 36995278456 fd0@pop50k WBP dp3v2 s42 QUEUED | api
 DISP | AG-141 | ic0+fd0 lever-ablation @pop50k 2/2 queued @141[ab] dp50k-lane r640/300s band5.5-13.5M; work/AG-141 | 2/2
 PATCH_SUMMARY | AG-141 | files=claims,work/AG-141 | idea=ic/fd lever-ablation pop50k (S-comp-3) | evidence=2/2 204
+OBSERVED | AG-134 | коррекция моего FAIL: ip≠0 — 33 ip bv2-когорта 05:59-06:22Z (~4h runtime), 9 cancel 10:16-10:24Z | api
+FACT | AG-134 | столл подтверждён 10:24Z: 770q, 0 новых стартов/финишей с 09:58:41Z (28+ мин, все workflow) | api
+FACT | AG-134 | 33-ip когорта ETA ≤11:50Z (кап 330мин); харвест-когорта идёт; POST-ы в 770q = часы-дни | api
+CENS | AG-134 | pool-census 10:24Z: 770q/33ip/0 exec 28+мин; потолок сессии 33-когорта; POST-экономика 0 до revival | api
