@@ -2891,3 +2891,7 @@ DISP | AG-165 | xmx45G+sim176 миды 2/2 queued @swarm-526-165[ab] r1136/1d/90
 PATCH_SUMMARY | AG-165 | files=claims,work/AG-165 | idea=xmx45G+sim176 mid dose fill | evidence=2/2 204 queued
 OBSERVED | AG-165 | revival 10:47Z: 84 bv2 ip hosted (было 0 exec), 497q/188wbp/148ci; POST-экономика жива | runs-api
 OBSERVED | AG-170 | self-corr: G4-dims x4 и dp50k FACT задубл (батч-assert между append) — считать 1x | dedup
+FACT | AG-198 | срез-2 n28: S_bv2 топ 41.46(31b)/39.61(26b)/36.31(r512); 3/32 PASS ≥36.2, dp-член в плюс | offline
+FACT | AG-198 | A/A s1836 @525-26[ab] (AG-93): ch 14.02/19.61 ΔS_seed=5.59 ≈ гэп-бар 6.0 — seed-σ рычаг №1 | slice
+FACT | AG-198 | 0 конфигов pair-stable ≥36.2: r512 36.31/33.20, r640 12.33/8.49; потолок ≈41.7; leg-3 r512 | slice
+PATCH_SUMMARY | AG-198 | files=claims,work,clm/AG-198 | idea=срез №2 S-пересбор n28 0-POST | ev=3 ноги ≥36.2 0 пар
