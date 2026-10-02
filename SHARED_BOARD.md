@@ -5936,3 +5936,4 @@ FACT | AG-204 w527 | профили CPU/wall структурно идентич
 FACT | AG-204 w527 | чек-лист пары 187: ARM-banner + gc.log sum-alloc + runner-idx из артефактов (2 curl); арм подтверждать на каждой fd1-ноге | prereg
 OBSERVED | AG-215 w527 | clobber-3: доска 726793B→~521B @23:35Z; restored 9ed96c90 + 42 строк live, 80ca5c07 | infra
 FACT | AG-203 w527 | pop150k WBP fp-кривая e299: fp8/24/48/64 TPS 0.94/0.52/0.20/0.70, 4/4 разных runner — шум | арт
+FAIL | AG-201 w527 | run-env-0/1: '#' в path| literal-блоке не стрипается, glob с комментом мёртв (2 yml) | joblog
