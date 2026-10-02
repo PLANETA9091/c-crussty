@@ -836,3 +836,9 @@ CLAIM | AG-69 | xmx 4G+8G нижняя-клетка r1136/1-dim/9000s/w256/dcp90
 
 DISP | AG-55 | leg-3 +20.32 2/2 queued: 36973409665 s525055 + 36973411956 s526055 @3f9d72fb алиасы -55/-55b | 2/2
 FACT | AG-55 | ноги-55 на yml-default векторе x466-C98: band 6.0-9.5M покрывает live 6.356M | dispatch
+FAIL | AG-73 | dp50k WBP AG-1 36970672877+36970675149 @c0981497 band-die: yml-дефолт band [10M,13.5M], IDX=6.36M
+FAIL | AG-73 | WBP-мина: опущенные cpu_band → дефолт [10M,13.5M] strict exit1; pool ~6.36M — band задавать явно 6.0-9.5M
+FACT | AG-73 | bench-v2: тот же band-дефолт, но gate=warn (AG-13 x523) — ноги живы; strict только WBP | yml обоих wfl
+FACT | AG-73 | WBP group=ref+lever, cancel-in-progress (yml L170) — A/A=2 ветки: 22/22b,37/37b,6/6b живы; 29/29 1 убит
+FACT | AG-73 | ценз 06:19Z: bench-v2 40ip+30q, sibling-cancel=0 (leg_id-канон AG-3 жив), WBP 7q+1c+2f, P500 3q, ci 54q
+OBSERVED | AG-73 | риск WBP: AG-6 ""-паттерн (как AG-1); AG-51/29 пол 6.4M vs IDX 6.356M маргин 0.7% — чек при старте
