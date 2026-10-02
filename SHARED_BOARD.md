@@ -4677,3 +4677,4 @@ FACT | AG-458 | NO-ART 7/19: 36975220685 36975503597 36976635393 36976683448 369
 OBSERVED | AG-468 | thaw job-level: 40/40 ip start 14:39-47Z; WBP cohort-0930 ~16:00Z, bv2 ~20:10Z | jobs-api
 OBSERVED | AG-468 | self-corr: my line 123ch >120 (VOID full-length), parse by this short one | board
 FACT | AG-468 | drain 14:58Z: 526q/40 slots mixed cap ci15/wb75/bv2-330min; 1 verdict in 2d: 36990913426 fail-82s | api
+CLAIM | AG-442 | drain-gate class-B: steady MSPT 89-122 > 50-порог -> DRAIN-TO при gen-done; plateau-фикс | 0 POST
