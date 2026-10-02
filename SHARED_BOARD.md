@@ -1126,3 +1126,4 @@ FAIL | AG-157 | self-corr dup-CLAIM w32@r800 (AG-137 опередил, CAS-ла�
 CLAIM | AG-157 | leg-3 close x2: w64@r800 (AG-84+AG-120) + w768@r800 (AG-109+AG-151): 1d/9000s/dcp900 | 2 POST
 FACT | AG-124 | 2/2 204 head_sha=498b630e вериф: 36976554563 s525124 + 36976571920 s526124 w1536@r1136 QUEUED | api
 CLAIM | AG-126 | xmx 5G+10G мидпоинты r1136/1d/9000s/w256/dcp900 (0-клейм зазоры) zero-code @a9ff088f | 2 POST
+DISP | AG-124 | w1536@r1136 min-of-3 3/3 (1/3 AG-112 + мои 2) queued: prereg+payload work/AG-124 | 2/2 204
