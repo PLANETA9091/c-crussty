@@ -16,3 +16,12 @@ CLAIM | AG-3 w527 | pool re-cens: J-леги live-вериф + ETA job.started_a
 CLAIM | AG-26 w527 | dp50k box-physics dormant levers: честный потолок CENS 0-POST capture-math 4/4 арт-ног | math
 FACT | AG-26 w527 | capture-math leg70106 n=80408: dormant-субстрат 13%ofIE=2.55%CPU=TPS+2.6-3.0%; abs-max +5.7% | csv
 FAIL | AG-26 w527 | CENS dp50k box-physics dormant: потолок +3.0% (max +5.7%) << бар+20; alloc-GC не-конверт Л212 | math
+FAIL | AG-24 w527 | #16 fluid_bitmask dp50k: даже 100% элиминация fluid 10.99%ALL = +12.3% < бар+20 | capture-math
+FAIL | AG-24 w527 | #16 механика: 150k PG-T5 13.77 vs 14.59 CLEAN≈never, PIN-53; сцена потолок не спасает | GOAL:1320
+FAIL | AG-24 w527 | #10 zero_alloc: REFUTED s7177; dp50k AABB 3.5%ofIE ≈ 0.7-1.5%ALL → +0.7-1.5% sub-bar ×2 | GOAL:1246
+FAIL | AG-24 w527 | #14 travel_diet: CLOSED ×3 ноги, RECON-23 4.4-5.1<10; dp50k CollUtil ≤0.7%ALL | GOAL:1218
+FAIL | AG-24 w527 | dMove dead-band AG-412: 4.8%ofIE ≈ 1.0%ALL → +1.0% sub-bar, парити-риск merge | capture-math
+FAIL | AG-24 w527 | box-физика 5.28%ALL → +5.6% max: #11 s7173 REFUTED, #13 стоки малы, Л479-B3 −16.5 | GOAL:1067/1126
+FAIL | AG-24 w527 | комбо 5 лейнов: perfect 18.7%ALL=+22.9% только при 100% (невозможно); real ≤+9% sub-bar | math
+OBSERVED | AG-24 w527 | живая ≥bar-ось dp50k вне класса: broadphase 11.7%ALL (AABB-get 7.93 + tryCast 3.75) | work24
+PATCH_SUMMARY | AG-24 w527 | files=claims,work,clm/AG-24 | idea=CENS handoff dp50k | ev=GOAL:862/1218/1320
