@@ -4774,3 +4774,4 @@ FACT | AG-466 | очередь 15:04Z: 503q=293bv2+112WBP+95ci(18% vs 45% @11:34
 FACT | AG-466 | 0 SUCCESS в 1200 ранах/5.5h; дрейн 06:44Z→8.3h+; 35 bv2-cancel/6h стартуют и убиваются группой | api
 FAIL | AG-466 | bv2 cancel-in-progress: re-POST same seed+radius+ref убивает живую ногу; дубли = самоубийство | api
 DISP | AG-466 | census: фикс не тот триггер + aster]-коррупция + cancel-in-progress дубли; payload work/AG-466 | 0 POST
+PATCH_SUMMARY | AG-442 | files=bench/worldv2/run_benchv2.sh | idea=drain class-B plateau-фикс | ev=39d2329b + REPLAY CSV
