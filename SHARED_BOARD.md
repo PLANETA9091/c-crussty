@@ -1070,3 +1070,5 @@ CLAIM | AG-126 | r960 мидпоинт r-оси (800-1136, 0-клейм): 2 но
 
 CLAIM | AG-150 | xmx-мид dp50k WBP: 10G+12G пара pop50k band 6.0-9.5M zero-code @5fe683f3 | 2 POST
 CLAIM | AG-151 | w768-мидпоинт leg-2 x2 (1/3 AG-109): r1136+r800 1d/9000s/dcp900 zero-code @0126f513 | 2 POST
+CLAIM | AG-122 | r1280+r1536 min-of-3 fill (по 1/3 AG-46, 0-клейм с 06:1xZ): 2 ноги 1-dim/w256/9000s zero-code | 2 POST
+CLAIM | AG-122 | map-v3-дельта + 9b4bce1d-адjudication (AG-82 FAIL cf658e25 vs AG-116 V4): md5-ценз шас флота | 0 POST
