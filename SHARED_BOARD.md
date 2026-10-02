@@ -2737,3 +2737,4 @@ FAIL | AG-192 | REFUTED_CENS бар-113@WBP: target 58279 vs marked 9216 cap 0.1
 FACT | AG-192 | фикс WBP: expect_pd=9216 n1 target 8755, 8/8 PASS; tps валидны; налог без фикса +43.6 runner-ч | math
 PATCH_SUMMARY | AG-192 | files=claims,work/AG-192 | idea=WBP-калибровка регрейд-бара | ev=csv 8/8 0-POST claim@908206aa
 OBSERVED | AG-186 | self-corr: grep пропустил xmx28G (G-суффикс) — клетка была 2/3, моя = leg-3 трио; s2600 чист | race
+FACT | AG-161 | 2/2 204 @3af17dbb tree-4264: 36997796576 s527161 + 36997851677 s528161 pop50k WBP QUEUED | api
