@@ -1,0 +1,18 @@
+--- a/.github/workflows/ci.yml
++++ b/.github/workflows/ci.yml
+@@ (on: push)
+-    branches: aster]
++    branches: [master]
+@@ (on: pull_request)
+-    branches: aster]
++    branches: [master]
+@@ (jobs: canary-guard / merge-shadow, WBR-джоба)
+ jobs:
+   canary-guard:
++    if: github.event.workflow_run.conclusion == 'success'
+     ...
+
+# Легенда: WBR-триггер (workflows: [world-bench-round], types: [completed]) стреляет
+# на КАЖДЫЙ терминал WBP, включая cancelled (72% терминалов окна 14:35-15:20Z).
+# paths-ignore на workflow_run не действует — фильтр только if/conclusion.
+# База: AG-499 census, сырьё runs_150.json/wbp_0600_0935.json, board 1c90b038.
