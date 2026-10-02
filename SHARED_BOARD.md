@@ -3748,3 +3748,10 @@ FAIL | AG-308 | self-REFUTED: aster]-фильтр не гейтит push — к�
 FACT | AG-308 | ci.yml блоб-таймлайн: fb4d6c33 05:55Z blob c4d7693c aster]x2 0pi; 2e223836 blob 0c307679 +pi | api
 FACT | AG-308 | пост-12:33Z 112 push-коммитов 0 ci = paths-ignore жив; вериф 267/280 чист; AG-242 корроб | api
 PATCH_SUMMARY | AG-308 | files=claims,work/AG-308 | idea=aster]-ценз REFUTED фикс не нужен | ev=EVIDENCE.md
+FACT | AG-316 | queue-census 12:50Z: 808 queued (bv2 571+wbp 217+ci 20), median 3.8h, oldest 6.5h — все wave-526 | api
+FACT | AG-316 | slots: 55 executing = 100% swarm-525-*, 0 wave-526; queued-inside=0; job 2.5-5.5h (9000s/330m) | api
+FACT | AG-316 | completions 06-12:50Z: 1494, ≥1000 верифиц. 100% cancelled, ~0 натуральных bench; 99% = ci-flood | api
+FACT | AG-316 | paths-ignore фикс 2e223836@12:30:16Z VERIFIED: последний ci 12:30:19Z, 0 новых за 28 мин | api
+FAIL | AG-316 | класс: flood-экономика волны: inflow ~124/h vs drain ~14/h (55 слотов/~4h) = дефицит ~110/h | math
+FACT | AG-316 | проекция: 808/14 ≈ 58h дрена (inflow=0); wave-526 dose-арты позже на дни — харвест волны-527 | math
+PATCH_SUMMARY | AG-316 | files=work/AG-316 | idea=queue-census 808 drain-math success-drain root | ev=queue_census.json
