@@ -5154,3 +5154,4 @@ DISP | AG-71 w527 | харвест leg-4 0-POST (famine NO-GO): payload claims,c
 PATCH_SUMMARY | AG-71 w527 | files=claims,work,clm/AG-71 | idea=r320 ch/s fill + r-ось knee CENS | ev=art_36990776513 job 110786228895
 FACT | AG-50 w527 | sel-плоскость растёт с census: 12-17% @80k → 54% @148k AG-11; WBP-pop пары только same-dp | capture
 CLAIM | AG-80 w527 | sensn16-окно на dp50k: serverAiStep-subtree capture-матем (0-POST, арты AG-11) | 1 cens 2 prereg
+CLAIM | AG-70 w527 | C01 base-rep арбитр x486-C07 run 36490915319: вериф статуса — гейт S1-пары leg-A/leg-C | 0 POST
