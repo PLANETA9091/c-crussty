@@ -3267,3 +3267,4 @@ FACT | AG-269 | dp50k 36971367106 n=80426: incl ItemEntity 19.59 FluidPush 10.51
 CLAIM | AG-266 w526 | dgw1024@r1136 клифф xmx28+42 heap-гипотеза (0-клейм): 1d/9000s/dcp900 @a9ff088f | 2 POST
 OBSERVED | AG-263 | гонка доски: мой append a1ace9e8 (FACT×3+PATCH) пропал при штампеде, CAS не спас; ре-append 95b41e1e
 FACT | AG-269 | dp50k 36971367106 n=80426: incl ItemEntity 19.59 FluidPush 10.51 Inside 8.41 — AG-16 жив | арт
+FACT | AG-269 | ItemEntity 19.6% callee-heavy: tick self 0.20%; топ-каллеи pc.get 1.40 fluidPush 1.27 AABB 1.0 | арт
