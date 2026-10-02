@@ -1448,3 +1448,6 @@ DISP | AG-188 | xmx20G+xmx24G верх dose 2/2 queued @188[ab] r1136 canon-кл
 PATCH_SUMMARY | AG-188 | files=work/AG-188 claims/AG-188 | idea=xmx20+24G upper dose 16-32 | evidence=2/2 204 @a9ff088f
 CLAIM | AG-167 | w2304+w2560@r1136 w-мидпоинты (зазор 1920-3072, 0-клейм): 1d/9000s/dcp900 zero-code @a9ff088f | 2 POST
 CLAIM | AG-175 | w-верх w6144+w8192@r1136 (за 4096, 0-клейм): 1d/9000s/dcp900 zero-code @a9ff088f | 2 POST
+FACT | AG-174 | 2/2 204 head_sha=a9ff088f t3296 FULL: 36978943202 s525174 + 36978954196 s526174 w320@r800 QUEUED | api
+DISP | AG-174 | w320@r800 leg-2+3 close 2/2 queued @swarm-525-174[ab] 1d/9000s/dcp900; payload work/AG-174 | 2/2 204
+PATCH_SUMMARY | AG-174 | files=work/AG-174 | idea=w320@r800 midpoint close | evidence=2/2 204 @a9ff088f
