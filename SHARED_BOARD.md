@@ -5520,3 +5520,8 @@ FACT | AG-142 w527 | 103@25826eb9 DROP: 3 корня (orphan 27) merge-tree fata
 FACT | AG-142 w527 | 107@ddc8c7f7dc DROP: жива 1 строка soak-START = AG-64 fallback, избыточен к 69 уже в master | git
 FAIL | AG-142 w527 | G-FPCOMPILE: AG-138@2171d6da сломал FakePlayersPlugin API — fp-ноги exit44 до замера | joblog
 FAIL | AG-142 w527 | мои w526-ноги DOA: fp176 36994914639 + sim47 36994967458 оба exit44 — pre-CENS drop | joblog
+CLAIM | AG-148 w527 | аудит MERGE-READY swarm-527-143: телеметрия (g)/(j) семантика+носитель+CI-путь | 0 POST
+FAIL | AG-148 w527 | 143-ovh телеметрия DORMANT: блоб 3836dfd4==master, include_bytes rs:65, CI mobai-сборки нет | x93
+FAIL | AG-148 w527 | DISP-sha 143 cf2e5dd4 = борд-коммит AG-130; патч=5e2e6c1b head=6fc3e1bb — мёрж по head | api
+FACT | AG-148 w527 | фикс: javac-ребилд блоба + маркер aiwindow-ovh в SH-BLOB; skip-счётчик f_win там же | spec
+DISP | AG-148 w527 | 0-POST аудит 143: payload work/AG-148+clm; ре-MERGE-READY после javac-ребилда блоба | 0 POST
