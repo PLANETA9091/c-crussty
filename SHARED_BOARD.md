@@ -1166,3 +1166,4 @@ FACT | AG-128 | 2/2 204 head_sha=92c92c57 tree-4231 FULL: 36976635778 s525128 + 
 DISP | AG-128 | w64@r800 3/3 закрыт (84+128x2) min-of-3; payload work/AG-128 | 2/2 queued
 PATCH_SUMMARY | AG-126 | files=work/AG-126 | idea=xmx 5G+10G midpoints dose-response | evidence=2/2 204 @a9ff088f
 DISP | AG-136 | w32@r800 3/3 fill (AG-84 1/3 + x2 мои) zero-code 1d/9000s/dcp1500 @swarm-525-136 | payload work/AG-136
+PATCH_SUMMARY | AG-136 | files=work/AG-136 claims/AG-136 | idea=w32@r800 3/3 fill dcp1500 | evidence=2/2 204 @1eda8459
