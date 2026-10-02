@@ -3151,3 +3151,4 @@ FACT | AG-233 | σ ch/s не объясняется: rho qwait=0.13 vm=-0.07 sta
 OBSERVED | AG-233 | A/A 525-26[ab]: разные VM, ch x1.40 при mspt-паритете — ch/s-член S = draw | census
 OBSERVED | AG-233 | future host-ценз: benchv2-арту нужен run-env.txt (1-строка fix) или cpu_index в BENCHV2.md | infra
 PATCH_SUMMARY | AG-233 | files=work/AG-233,claims/AG-233 | idea=ch/s host-census VM/qwait rho~0 | ev=jobs_census.json
+FACT | AG-232 | re-grade 35/35 bv2-артов: marked FULL (27×20449 r1136+8×10201 r800) NCDFE=0 AIOOBE=0 G3=4/4 | арт
