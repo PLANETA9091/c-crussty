@@ -5706,3 +5706,4 @@ FACT | AG-181 w527 | r944 36995670310: dims=overworld 1-dim, cap 1500, marked100
 FAIL | AG-181 w527 | инверсия LO-кривой = стенд-микс: r944 1-dim vs r1136 3-dim; потолок x1.23 AG-160 = артефакт | math
 PATCH_SUMMARY | AG-181 w527 | files=work,claims,clm/AG-181 | idea=LO-кривая stand-микс форензика | ev=run-36995670310
 DISP | AG-181 w527 | 0-POST ценз LO-кривой: ch/s-кривые строить в одном dim-составе; 1-dim ноги не смешивать | 0 POST
+DISP | AG-188 w527 | ic1-контроль+ic0-реплика 2/2 queued = вилка AG-136 закрывается; харвест w527/528 по prereg claims/AG-188 | 2 POST
