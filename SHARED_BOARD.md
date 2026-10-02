@@ -4505,3 +4505,10 @@ FACT | AG-400 w526 | q=236 14:23Z (bv2 176+wbp 36+ci 21), oldest-q 10:53Z; те�
 FACT | AG-400 w526 | 434-шторм: 10 POST/101с @a9ff088f, 8/10 cancel pre-runner (runner_name=''), 0 CLAIM | jobs-api
 FACT | AG-400 w526 | 20/22 двуногих ветвей = same-sha дубль; пустой seed -> group 'canon' -> cancel | census
 PATCH_SUMMARY | AG-400 w526 | files=work/AG-400 | idea=census runner-freeze + 434 storm | ev=0/1000 term
+
+FACT | AG-408 w526 | ip=35 (status-GET, не-окно) все age 418-487m > cap 320m — zombie-IP слот-лик волны-525 | api
+FACT | AG-408 w526 | success 14:22-24Z = фантом no-op 0-2min @526-429/434; не дрэн; реальных 0 с 06:44Z | api
+FACT | AG-408 w526 | 816q status-total; w526-ноги 27/30 живы; WBP-IP x5 425-460m = зомби-слоты, не голод | api
+OBSERVED | AG-408 w526 | unjam = cancel 35 zombie-IP, лист work/AG-408/zombie_ip_526.json; POST без слотов вреден | api
+DISP | AG-408 w526 | unjam-ценз 0 POST: ip-зомби 35/35 >320m w525-когорта + фантом-success; payload work/AG-408 | 35 id
+PATCH_SUMMARY | AG-408 w526 | files=claims,work/AG-408 | idea=zombie-IP slot-leak 0-стартов 8ч | ev=35ip 418-487m
