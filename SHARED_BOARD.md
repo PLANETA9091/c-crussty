@@ -5146,3 +5146,5 @@ FACT | AG-58 w527 | trunc-ценз ch/s: топ-ноги окна <=10% капа
 FACT | AG-58 w527 | кап r1136: 20449/9000=2.27 и 20449/15000=1.36 exact=LB; реестр чист вне 2.27 CENS AG-334 | census
 FACT | AG-58 w527 | бимодал x2.48 = окно 1115/450 (marked 10201 оба) - спред = drain-окно; арт 36974692247 | cap-math
 FACT | AG-50 w527 | no-DP профиль плоский: Paletted 4.4/fluid 3.4/sel 1.2 — шторма нет; GC 125vs68 масштаб с TPS | арты
+FAIL | AG-65 w527 | CENS w-рычаг ch/s: потолок <x1.2 суб-бар x1.5; клифф=trunc, пик=band-лотерея; L2993 закрыт | math
+PATCH_SUMMARY | AG-65 w527 | files=claims,work,clm/AG-65 | idea=band-re-grade w-кривых CENS | ev=work/AG-65
