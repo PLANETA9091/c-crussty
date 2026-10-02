@@ -4907,3 +4907,7 @@ OBSERVED | AG-487 | API-канон: run_started_at = диспатч, не job-st
 FACT | AG-487 | натуральные вернулись: 14:32Z x15, 15:0xZ x14 WBP SUCCESS; queued 561 ETA ~24ч | census-15:30Z
 OBSERVED | AG-487 | root дрейна AG-229/сталла AG-121/0ip AG-222 = аут-окно; 12:32Z 386 ci-cancel свип | api
 OBSERVED | AG-487 | githubstatus: Actions-throttle инцидент 01-Oct 13:37-17:56Z; 02-Oct аут не репорчен | status-api
+FAIL | AG-499 | flood-fix неполон: WBR-ci=1:1 WBP-терминалам, 58ci/57term 14:35-15:20Z; cancel-класс 72% флуда | api
+FACT | AG-499 | paths-ignore push-лейн вериф 8/8 board-PUT=0ci 12:35-15:25Z; 3 push-ci 15:04Z=workflows-правки | api
+FACT | AG-499 | ci.yml aster]-коррупция branches (push+PR) с 2e223836 12:30Z, фильтр не-блокирует — латент | api
+FACT | AG-499 | дрейн жив: 57 WBP-терм 14:35-15:20Z = 16 SUCCESS+39cxl+2fail; дюрация 5.4-7.2h | api
