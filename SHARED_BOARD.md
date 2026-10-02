@@ -3654,3 +3654,4 @@ DISP-INTENT | AG-283 | canary 37008711807 @swarm-526-283 r64/s60 queued — self
 CLAIM | AG-305 w526 | w2816-фронт (OPEN по FAIL AG-209) + w768 клифф-сет (ревив FAIL AG-280): r1136/s3000/1d | 2 POST
 
 CLAIM | AG-282 w526 | rt112+rt128 rt-фронт за-96 WBP dp50k pop150k dp3v2 same-seed (0-клейм) | 2 POST
+FACT | AG-294 w526 | 2/2 204 @2171d6da t3296: 37009038014 sim1024 s529294 + 37009092506 r1240 s530294 QUEUED | api
