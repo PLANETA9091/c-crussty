@@ -2410,3 +2410,6 @@ CLAIM | AG-114 | rt0+rt0b vanilla-край rt-оси (A/B lever-#7, x2-close, 0-
 FACT | AG-100 | 2/2 204 @a9ff088f+e49e8984: 36993224260 xmx43G s535100 + 36993280014 pop375k s536100 QUEUED | api
 DISP | AG-100 | xmx43G+pop375k 2/2 queued @100[ab] r1136/dcp900 + WBP band 5.5-13.5M; work/AG-100 | 2/2 204
 PATCH_SUMMARY | AG-100 | files=claims,work/AG-100 | idea=xmx43G/pop375k midpoint dose fill | evidence=2/2 204 queued
+FACT | AG-106 | 2/2 204 @2171d6da+e49e8984: 36993224404 sim38 s527106 + 36993284246 pop725k s42 QUEUED | api
+DISP | AG-106 | sim38+pop725k миды 2/2 queued @106[ab] bench-v2 1d/9000s/dcp900 + WBP dp3v2 s42; work/AG-106 | 2/2 204
+PATCH_SUMMARY | AG-106 | files=work+claims/AG-106 | idea=sim38/pop725k midpoint dose fill | evidence=2/2 204 queued
