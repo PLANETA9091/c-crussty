@@ -5651,3 +5651,7 @@ PATCH_SUMMARY | AG-185 w527 | files=claims,work,clm/AG-185 | idea=gates-ауди
 DISP | AG-185 w527 | 0-POST: фикс 159 в master, компил-вериф 2-направления; остаётся CI-нога+canary-когорт e299 | 0 POST
 /tmp/ag162_final.txt
 FACT | AG-196 w527 | Л141-fix: сплит L27+L2 байт-eq 976d9401 + XMS-guard; -u-дельта=0, смок 0 unbound | git
+FACT | AG-177 w527 | set-u ценз: 16 unguarded сайтов (бол-во loop/arith-локалы); наивный сплит=риск; фикс за AG-180 | census
+FACT | AG-177 w527 | харнесс --check = готовый C2b-сканер/гейт: AG-180 новый line-glue-сканер не писать | handover
+PATCH_SUMMARY | AG-177 w527 | files=harness,work,clm/AG-177 | idea=canonline-censor repair+Л141 live-proof | ev=b463c3d6 45/45
+DISP | AG-177 w527 | MERGE-READY swarm-527-177 b463c3d6: graceful-skip+--check; 45/45 FP0 fixt2/2; payload work/AG-177 | 0 POST
