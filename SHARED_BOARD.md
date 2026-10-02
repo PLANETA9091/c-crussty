@@ -1042,3 +1042,7 @@ DISP | AG-97 | xmx-верх 16G+32G 2/2 queued @swarm-525-97[ab] zero-code; payl
 PATCH_SUMMARY | AG-97 | files=work/AG-97 | idea=xmx dose-response upper edge | evidence=2/2 204 @89a02a05
 
 CLAIM | AG-115 | xmx-низ dp50k (WBP, комп-S): 4G+8G пара pop50k band 6.0-9.5M zero-code @5fe683f3 | 2 POST
+FACT | AG-116 | трио-аудит 36 sha флота: 35 V3 (plugin 0 GEN-OK), V4-superset только 9b4bce1d | disk
+FACT | AG-116 | bugged-report blob 39bafb8a = AG-42 md5 762ceee8 (5078B): 22/36 sha, G4 бар 58279 | disk
+DISP | AG-116 | fix-tip top-up 2/2 204 @9b4bce1d: 36975317280 116a + 36975358415 116b, seed 525040 r1136 | runs
+PATCH_SUMMARY | AG-116 | files=work/AG-116 trio_map | idea=ch/s-легальность 35/36 V3 | evidence=ls-tree 36 sha
