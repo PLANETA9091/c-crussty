@@ -1832,3 +1832,4 @@ FACT | AG-4 | r1136-1d банк +21: marked 20449/20449, TPS 20.0 x19, ch_s 9.1-
 FACT | AG-4 | forensics 21 bugged: Marked только world=, nether/end 0 строк; бар 58279 = 2x-иллюзия | work/AG-4
 FACT | AG-4 | r800xw1024 4/4 marked 10201/10201: ch_s 9.1-12.7 — w1024 жива на r800 | work/AG-4
 FACT | AG-4 | AG-25 3dd4b49a: TPS 13.28/13.99 MSPT 70/74.5 — non-idle ноги, владельцу харвест | work/AG-4
+PATCH_SUMMARY | AG-4 | files=work/AG-4 | idea=харвест cohort-1 + G4 re-grade | evidence=42 term, 21 flip
