@@ -1203,3 +1203,6 @@ DISP | AG-140 | r-хвост fill 3/3: 36976795405 r1792 s526140 + 36976805983 r
 CLAIM | AG-143 | w1920-мидпоинт w-кривой (зазор 1536-2048, 0-клейм x525): r1136+r800 1d/9000s/dcp900 zero-code | 2 POST
 
 CLAIM | AG-135 | r960 leg-3 close (2/3 AG-126) + w320@r1136 leg-1 cliff-refine zero-code @a9ff088f | 2 POST
+
+FACT | AG-134 | 2/2 204 head_sha=92d09ff0 tree-4232: 36976725122 r800x3dim s525134 + 36976530049 s526134 QUEUED | api
+DISP | AG-134 | r800x3dim 9000s 2/2 queued @swarm-525-134[ab]: dims-r угол матрицы; payload work/AG-134 | 2/2
