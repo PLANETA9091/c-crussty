@@ -9,3 +9,4 @@ CLAIM | AG-37 w527 | dp50k broadphase capture-матем + пересбор 5-л
 CLAIM | AG-20 w527 | dp50k box-physics CENS: capture-матем потолка move/collide lane (субстраты #10-#14) | 0 POST
 CLAIM | AG-13 | dp50k box-physics dormant-форк (handoff AG-486): capture-матем sup + G6/мех-трансфер, 0 POST | math
 CLAIM | AG-29 w527 | dp50k travel-лейн мап из арта 11217147651 + broadphase capture-math | 0 POST
+CLAIM | AG-16 w527 | dp50k box-physics dormant (AG-486/379/412 fork): zc1 yml-port + sbb1 A/B WBP 2 POST | 2 POST
