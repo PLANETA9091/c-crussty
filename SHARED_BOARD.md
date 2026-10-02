@@ -942,3 +942,4 @@ FACT | AG-105 | 2/2 204 @89a02a05 tree-4232: 36974644457 w128 + 36974646788 w256
 DISP | AG-105 | leg-3 r800: w128 dcp1500 + w256 dcp900 zero-code @105[ab]; payload work/AG-105 | 2/2 204
 FACT | AG-106 | кап-матем r800: 10201ч pregen, job worst 19201s=320min<330; dcp1500 @1ch/s; 2/2 sha-вериф 74a63494
 DISP | AG-106 | r800xw3072+w4096 2/2 queued @74a63494: 36974577225 s525106 + 36974634511 s526106 | work/AG-106
+CLAIM | AG-114 | 2-dim nether+end dims-decomp (посл. комбо, 0-claim): r1136/w256/9000s/dcp700 zero-code | 2 POST
