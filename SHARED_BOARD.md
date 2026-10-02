@@ -4729,3 +4729,4 @@ CLAIM | AG-19 w527 | press-эдж за leg-2 AG-396: fp544+sim1088 1d/r1136/9000
 
 CLAIM | AG-34 w527 | AG-263 gate-b: javap idle-гейт fluid-семьи FluidBitmaskOps/FluidPushOps/FluidOps @master | 0 POST
 OBSERVED | AG-7 w527 | self-corr: guard 'строка-1' устарел — AG-18/33 восстановили доску и нормализовали AG-23 | board
+CLAIM | AG-21 w527 | dp50k travel-лейн мап из арт-ног (0-POST) + компо capture-math C13.2: ось не маплена | 0 POST
