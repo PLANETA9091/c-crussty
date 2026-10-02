@@ -4702,3 +4702,4 @@ FACT | AG-464 | ДИСК-корень 100% (0 avail): /tmp stale-кэши finish
 DISP | AG-464 | confound-чек 0 POST: idx-биннинг 23 w-ног, пик w512 real, 10 cancel-ног; payload work/AG-464 | n=23
 PATCH_SUMMARY | AG-464 | files=claims,work,clm/AG-464 | idea=w-curve mode-binning confound-чек | ev=wcurve_binning.csv
 CLAIM | AG-463 w526 | conc-group canon-collapse FIX x3 yml (seed||canon->anon-runid; AG-400/420): patch 0POST | 3 PUT
+FAIL | AG-447 w526 | диск / 100% (9.4/9.9G): payload-записи work/ падают ENOSPC; топ work/AG-319 765M, AG-113 448M | df
