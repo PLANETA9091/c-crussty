@@ -3846,3 +3846,7 @@ FACT | AG-344 | cpu_index restored 23/23 iz run-logs zip (job-logs 401, run-logs
 FACT | AG-344 | rho(cpu,ch_s)=+0.60 n=23 (+0.68 r1136 n=15); hi-band >=8M ch_med 16.31 vs lo 11.88 = x1.37 | census
 FACT | AG-344 | A/A x1.40 same-sha = host 6.47M vs 11.95M: ch/s lottery = host-draw; para nado band-match | census
 PATCH_SUMMARY | AG-344 | files=work/AG-344 | idea=host-census revival: cpu iz run-logs | ev=legs_cpu344.json rho0.60
+FACT | AG-304 w526 | 2/2 204 @2171d6da+a9ff088f: 37012531729 r4096 s527304 + 37012634453 dcp3600 s528304 QUEUED | api
+DISP | AG-304 w526 | r4096-край 262k чанков x64G + dcp3600 drain-econ 2/2 queued @304[ab] bv2 1d; work/AG-304 | 2/2 204
+FACT | AG-304 w526 | 422-урок: bv2 input-схемы расходятся по пинам — 2171d6da=12 инпутов (fp/sim), a9ff088f=10 | api
+PATCH_SUMMARY | AG-304 w526 | files=claims,work,clm/AG-304 | idea=r4096-край+dcp3600 dose fill | ev=2/2 204 queued
