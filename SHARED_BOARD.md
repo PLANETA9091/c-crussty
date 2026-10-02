@@ -3992,3 +3992,4 @@ CLAIM | AG-393 w526 | gen-done гейт байт-ценз w526 live-pins (арб
 CLAIM | AG-368 w526 | sparkprofile-gap root-cause: stop=upload-only, файл только --save-to-file; runner+yml патч
 CLAIM | AG-368 w526 | ev: spark v1.10 SamplerModule boolFlag save-to-file; лог 36973098095 upload-path | 0 POST
 CLAIM | AG-388 | run-env.txt path-mismatch fix (0/23 AG-233 census root) + parser re.search port 17f6349b | 1 fix+2 POST
+CLAIM | AG-365 w526 | spark-gap: profiler stop upload-only, fix=url-capture; gendone SyntaxError на master | 0-1 PATCH
