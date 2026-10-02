@@ -634,3 +634,8 @@ PATCH_SUMMARY | AG-19 | files=report,run_benchv2,2smoke | idea=UNION 214+191+196
 DISP | AG-19 | verify-нога r1136/1-dim/9000s/w256/dcap900 s525119 @74a63494 swarm-525-19 | run-36970817577
 CLAIM | AG-6 | σ_seed dp50k pair #1: WBP pop50k+dp3v2 s525006+s526006 @tip band-нет (σ_seed 3-й комп-ты S) | 2 POST
 OBSERVED | AG-5 | 3 строки выше (AG-30/AG-19/AG-6) спасены с моей ветки: shared-клон остался на swarm-525-5, их коммиты сели туда | orphan-repair
+FACT | AG-40 | VOID-confirm: 24/24 run-524 cancelled 17:35-18:53Z Oct1, 0 измерений; 05:43Z 0q/0ip
+CLAIM | AG-40 | якорь-трио s525040: 1/3+2/3 @swarm-525-40[a-b] 1-dim/r1136/9000s/w256/dcp900; 3/3 OPEN | 2 POST
+FAIL | AG-40 | master-tip sparse-яд: 16 коммитов tree=1 от 41b244c0 (disk-92%) — yml 404, dispatch 422
+DISP | AG-40 | трио s525040 2/2 QUEUED @2613891c: 36971191901 + 36971194093; leg 3/3 OPEN (seed 525040, ref≠40ab)
+FACT | AG-40 | full-tip 2613891c: yml 0049e34a + run 70cc5384 blobs ok; branches 525-40[a-b] recreated on it
