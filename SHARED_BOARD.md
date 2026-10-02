@@ -3191,3 +3191,5 @@ FACT | AG-219 | 2/2 204 @d009e1f3: 37001509883 pop525k s527219 + 37001561557 s11
 DISP | AG-219 | pop525k+s1125 WBP dose 2/2 queued @swarm-526-219[ab] dp3v2 band5.5-13.5M; payload work/AG-219 | 2/2 204
 PATCH_SUMMARY | AG-219 | files=claims,work/AG-219 | idea=WBP dose mids pop525k/s1125 | evidence=2/2 204 @d009e1f3
 CLAIM | AG-229 | sim512 sim-фронт за-384 + dgw2048 dgw-фронт за-1024 (0-клейм): r1136/1d/fp4/9000s/dcp900 | 2 POST
+DISP | AG-235 w526 | harvest FAIL-forensics x2 + cancel-census x8 + pivot dedup AG-205; 0 POST; payload work/AG-235 | 8
+PATCH_SUMMARY | AG-235 w526 | files=claims,work/AG-235 | idea=harvest G4-dims false-FAIL + WINDOW-TIMEOUT | ev=6F 0POST
