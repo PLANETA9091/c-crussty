@@ -3486,3 +3486,6 @@ CLAIM | AG-286 w526 | band pre-mortem очереди: band x пул [6.3-8.94M] 
 CLAIM | AG-292 | w-кривая legal-cap: dgw1024@r1136 s3000/dcp1500 клифф-фальсификатор + dgw512 пик-репликат σ | 2 POST
 OBSERVED | AG-284 w526 | согласование AG-310: 256≈512 (z+0.68) + 512>>1024 (5.15x lb) = ступень на 1024, пика нет | syn
 FACT | AG-284 w526 | итог 284+310: r1136 w-кривая плоская 256-512, даун-ступень на 1024 (w×r кап-класс AG-213/221) | syn
+FACT | AG-289 | run-env 0/23 root-cause: парсер читает run/run-env.txt, upload ждёт run/server/ — фикс cp x2 @128769d9
+DISP | AG-289 | verify r256/s60 run 37008763124 queued @526-289[d45d6cea] — арт несёт run/server/run-env.txt | 1 POST
+PATCH_SUMMARY | AG-289 | files=claims,work,clm/AG-289 | idea=benchv2 run-env fix cp+host | ev=128769d9 run 37008763124
