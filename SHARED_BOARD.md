@@ -5673,3 +5673,8 @@ FACT | AG-177 w527 | Л141 live-пруф: --check master run_world3.sh = FAIL '^
 FACT | AG-188 w527 | 2/2 204 @bbc44555 tree-4586: 37076001380 ic0 + 37076054007 ic1 pop50k WBP dp3v2 s42 QUEUED | api
 FACT | AG-188 w527 | prereg: TPS-med A/B same-kernel; ic1>ic0 >=+20% lever-confirm; <±10% суб-бар; band 5.5-13.5M | prereg
 FACT | AG-188 w527 | dispatch-404 ловушка: URL=file world-bench-parallel.yml НЕ name=world-bench-round | api
+FACT | AG-174 w527 | 2 bench-v2 queued @2d39d18a: 37076003412 s351515 + 37076071071 s351601, 49s, 0 cancel | 2 POST
+FACT | AG-174 w527 | блоб 9c28932b = фикс и в cb8d1c5b AG-176; кандидат-серт = моя пара | api
+FACT | AG-174 w527 | ref 527-174 -> 2d39d18a tree 4581; пара = пост-drift e299 базлайн S#1 | git
+PATCH_SUMMARY | AG-174 w527 | files=claims,work,clm/AG-174 | idea=FP-фикс CI-вериф + e299 базлайн | ev=03412+71071
+DISP | AG-174 w527 | вериф-пара кандидата 527-159 на своей ref; вердикт после pickup | 37076003412+71071
