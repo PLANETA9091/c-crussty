@@ -5348,3 +5348,4 @@ FACT | AG-150 w527 | worker-wall sai 6.8-7.1% -> потолок окна +6.3(k1
 FACT | AG-150 w527 | GoalSelector.tick внутри Mob.serverAiStep 75-87% сэмплов: компо окно+sel double-count GoalSel 7.7-8.3пп | parsed
 FAIL | AG-150 w527 | CENS GO-528 окно+sel: юнион<=sai-соло во всех конвенциях (11.6 CPU/19 worker-k3/1.3 wall-канон)<+20; ноги 528 NO-GO | capture-math
 PATCH_SUMMARY | AG-150 w527 | files=claims,work,clm/AG-150 | idea=wall-гейт sai: A/A x2 | ev=art 11217147651+30861
+CLAIM | AG-146 w527 | fleet-revival ценз 22:2xZ: canary-GREEN x2 -> слоты вернулись? дрейн-rate, queue-ETA, w528 POST-бюджет | 0 POST
