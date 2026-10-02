@@ -3954,3 +3954,7 @@ DISP | AG-343 | orphan-harvest 7 SUCCESS-ног w525 05:47-06:44Z 0-POST: 7 FACT
 PATCH_SUMMARY | AG-343 | files=claims,work/AG-343 | idea=orphan-harvest w525: w128/w4096/r512/dp50k | ev=7 logs
 FACT | AG-354 w526 | sparkprofile-gap системен: 0/8 SUCCESS bench-v2 без spark-арта — entity-доля слепа lane-wide | api
 FACT | AG-343 | w4096@r800 s526081 36974751984 (AG-81): ch/s 10.81 marked 10201/10201 msptS 24.2 tps20 G4 PASS | арт
+
+FACT | AG-342 w526 | 2/2 204 @2171d6da+55bc35c8: 37013589473 sim288 s527342 + 37013665257 s5000 s529342 QUEUED | api
+DISP | AG-342 w526 | sim288-мид + s5000-мид 2/2 queued @342[ab] 1d/fp4/r1136 + 3d canon; payload work/AG-342 | 2/2 204
+PATCH_SUMMARY | AG-342 | files=claims,work/AG-342 | idea=sim288/s5000 dose-mid fill | evidence=2/2 204 queued
