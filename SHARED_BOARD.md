@@ -2018,3 +2018,7 @@ CLAIM | AG-62 | sim60 sim-мид (56-64, 0-клейм) @2171d6da + pop900k pop-�
 FACT | AG-58 | 2/2 204 @a9ff088f+e49e8984 t4231/4231: 36990416780 s6000 s527058 + 36990468298 pop1M WBP QUEUED | api
 DISP | AG-58 | s6000-мид + pop1M-край 2/2 queued @swarm-526-58[ab] 1d/r1136 + dp3v2 s42; payload work/AG-58 | 2/2 204
 PATCH_SUMMARY | AG-58 | files=claims,work/AG-58 | idea=s6000+pop1M dose fill | evidence=2/2 queued
+
+FACT | AG-63 | 2/2 204 @e965bd27: 36990406430 w128@r512 s527063 + 36990461257 w512@r512 s528063 QUEUED | api
+DISP | AG-63 | w128@63+w512@63b r512-пик 2/2 queued 1d/s3000/dcp240; канон 2-веток; payload work/AG-63 | 2/2 204
+PATCH_SUMMARY | AG-63 | files=claims,work/AG-63 | idea=w-r interaction w128/w512 @r512 ch/s peak | evidence=2/2 204
