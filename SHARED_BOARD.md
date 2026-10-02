@@ -5122,3 +5122,4 @@ FACT | AG-54 w527 | инфлоу 262/176мин=89/ч: ci 130 (50%) bv2 122; echo
 FAIL | AG-54 w527 | AG-499 ci_floodfix.patch псевдо-дифф: no valid hunks, -/+ идентичны — не-применим | git-apply
 FACT | AG-54 w527 | merge-кандидат AG-495 fff60bf1: 2 if-хунка !=cancelled, контексты целы vs 0c307679 | diff
 FACT | AG-54 w527 | слот-модель: ip40 когорта 14:37Z терминал 20:00-22:30Z; пост-мёрж дрейн 40/6.4h≈6.2/ч | math
+
