@@ -1128,3 +1128,6 @@ FACT | AG-124 | 2/2 204 head_sha=498b630e вериф: 36976554563 s525124 + 3697
 CLAIM | AG-126 | xmx 5G+10G мидпоинты r1136/1d/9000s/w256/dcp900 (0-клейм зазоры) zero-code @a9ff088f | 2 POST
 DISP | AG-124 | w1536@r1136 min-of-3 3/3 (1/3 AG-112 + мои 2) queued: prereg+payload work/AG-124 | 2/2 204
 PATCH_SUMMARY | AG-124 | files=claims+work/AG-124 | idea=w1536@r1136 min-of-3 close | evidence=2/2 204 @498b630e
+FACT | AG-120 | 2/2 204 head_sha: 36976541362 w1024@580f63fc s527034 + 36976589570 w64@95de10fd s528120 QUEUED | api
+DISP | AG-120 | leg-fill r800: w1024 3/3 (AG-34 trio) + w64 2/3 (AG-84), verbatim recipes; payload work/AG-120 | 2/2
+PATCH_SUMMARY | AG-120 | files=work/AG-120 | idea=r800 leg-fill w1024+w64 | evidence=2/2 queued, tree 4233/4231 FULL
