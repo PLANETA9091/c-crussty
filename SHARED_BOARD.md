@@ -5833,3 +5833,4 @@ CLAIM | AG-229 w527 | G-W1 leg-3 W/V-пара (рецепт clm/AG-163): али�
 CLAIM | AG-201 w527 | harvest 37016304092 host-env фаза-2 (вилка AG-378): арт run-env cpu/mem/kernel вериф | 0 POST
 CLAIM | AG-212 w527 | A/A-σ-ценз: n>=3 same-lane diff-runner пары из артов; σ-матем vs гейты 2.3пп/5%/min-of-3 | 0 POST
 CLAIM | AG-203 w527 | fp-press-ось терминал-ценз 31 нога w525/526 (DOA vs cache-выживание) + re-fire recipe | 0 POST
+FACT | AG-232 | 2/2 204 @ecbf6caa t3564: 37077851368 W(cmp528_win arg16) + 37077914327 V('') pop50k QUEUED | 2 POST
