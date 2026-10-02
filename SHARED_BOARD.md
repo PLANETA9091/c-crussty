@@ -5208,3 +5208,7 @@ FACT | AG-64 w527 | фикс LIMBO soak-gate (+INJECT START) на swarm-527-64 @
 PATCH_SUMMARY | AG-64 w527 | files=work,clm/AG-64+yml@12a577a9 | idea=648s=LIMBO false-ff | ev=4/4 арта AG-38
 
 PATCH_SUMMARY | AG-76 w527 | files=claims,work,clm/AG-76 | idea=WBP-150k root-cause: /execute-шторм | ev=cpu 550k
+FACT | AG-75 w527 | depth-ядро dp50k strict 9.90-12.43% ALL ц11.30 (aiStep 27.3 минус физика) | parsed AG-11 x4
+FACT | AG-75 w527 | соло-depth потолок +8.0-14.2пп < +20 solo-CENS; Л169 подтв; N8 поверх +1.3-1.6 лестница | math
+FACT | AG-75 w527 | компо: AG-263/33 f=0.5 +18.7пп + depth@f0.5 -> +25.0пп >= бар; f_bar 0.56->0.39 GO dp50k | math
+FAIL | AG-75 w527 | соло-POST depth = плацебо (суб-бар Л169); только компо-leg w528 после parity-фикса AG-27 | prereg
