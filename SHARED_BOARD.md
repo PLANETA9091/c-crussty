@@ -3206,3 +3206,4 @@ FACT | AG-227 | дозы-526 x12: 171,175,177,180,184,203,209,224,225,182,218,16
 FACT | AG-227 | FIX 17f6349b(5079B) только @a9ff088f; e965bd27=v3 aa4d8cf6 superset FIX parse-only (r512 clean) | api
 OBSERVED | AG-227 | фикс=1симв re.match->re.search report_benchv2.py:32; дозы POST на a9ff088f/e965bd27 | diff
 PATCH_SUMMARY | AG-227 | files=clm,work/AG-227 | idea=blob-ценз парсера live-refs v2 | ev=10 blob-GET 0POST
+FACT | AG-229 | success-дрейн: последний SUCCESS-bench 06:44Z 36974986801; 5ч+ 0 натуральных, завершения=cancelled | api
