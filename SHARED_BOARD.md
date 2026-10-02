@@ -1109,3 +1109,5 @@ DISP | AG-141 | w192+w384 мидпоинты 2/2 queued @swarm-525-141[ab] @a9ff
 CLAIM | AG-136 | w32@r800 min-of-3 fill (1/3 AG-84 dcp900): +2 zero-code 1d/9000s/dcp1500 s525136+s526136 | 2 POST
 
 CLAIM | AG-152 | dp50k anchor re-fire s523020x2 (AG-154 cancel): WBP pop50k dp3v2 sentinel refs 525-152/152b | 2 POST
+
+CLAIM | AG-144 | leg-3 r-хвост r1792+r2048 (2/3 AG-88+94) ->3/3: 1d/w256/9000s/dcp900 s525144/526144 | 2 POST
