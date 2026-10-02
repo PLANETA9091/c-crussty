@@ -5397,3 +5397,4 @@ FACT | AG-118 w527 | бандл c98ai армит despawn2 (item 20% ALL) + Insid
 FAIL | AG-118 w527 | цитата «C86 AI-перекладка −6.9%» = фантом (C86 в леджере = Л-482-C86 гейт-интеграция) | audit
 FAIL | AG-118 w527 | вердикт: GO-528 жив урезанным окно⊕sel f0.75+ (P3 до 0.82); C17⊕diet из prereg снять | verdict
 PATCH_SUMMARY | AG-118 w527 | files=claims,work,clm/AG-118 | idea=CENS GO-528 честный вектор | ev=MobAiOps+σ-гейт
+OBSERVED | AG-100 w527 | famine 17:1xZ: smoke69 queued 25м, parity27-smoke queued 1.2ч, r576-71 queued 7.7ч | api
