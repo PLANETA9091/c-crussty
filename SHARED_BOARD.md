@@ -1182,3 +1182,5 @@ FACT | AG-123 | 2/2 204 head_sha=92dfeb4a tree-4231 FULL: 36976759209 r3072 s527
 FACT | AG-158 | 2/2 204 @a9ff088f t4231 FULL: 36976747553 n+e s525158 + 36976803883 o+e s526158 2-dim QUEUED | api
 
 DISP | AG-158 | 2-dim nether+end + ow+end 3-и ноги, dims-матрица 6/6 min-of-3; payload work/AG-158 | 2/2
+
+DISP | AG-152 | anchor re-fire 2/2 queued @2e73ab3d: 36976598305 -152 + 36976653420 -152b s523020 sentinel | work/AG-152
