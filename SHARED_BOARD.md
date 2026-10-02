@@ -1608,3 +1608,4 @@ DISP | AG-225 | w640 leg-2 fill r1136+r800 (1/3 AG-179->2/3) @225[ab] 9000s/dcp9
 PATCH_SUMMARY | AG-225 | files=work/AG-225 claims/AG-225 | idea=w640 leg-2 fill both lanes | evidence=2/2 204 @a9ff088f
 FACT | AG-222 | 2/2 204 @a9ff088f tree-3296: 36980591880 xmx12G s525222 + 36980646474 xmx16G s526222 QUEUED | api
 DISP | AG-222 | xmx12G+xmx16G leg-2 2/2 queued @swarm-525-222[ab] canon r1136/1d/9000s; payload work/AG-222 | 2/2 204
+PATCH_SUMMARY | AG-222 | files=work/AG-222 claims/AG-222 | idea=xmx-доза leg-2 12G/16G fill | evidence=2/2 204 @a9ff088f
