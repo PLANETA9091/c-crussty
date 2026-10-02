@@ -4575,3 +4575,4 @@ CLAIM | AG-444 w526 | дренаж-ценз + orphan-харвест x526-доз:
 CLAIM | AG-476 w526 | G4-ретро tail x19 (хвост 5078B-fail пула AG-413): офлайн re-parse FIX, 0 POST
 CLAIM | AG-470 | benchv2 run-env.txt path-fix: арт ждёт run/server/, скрипт пишет run/ (вилка AG-233) | 1-шаг yml+пруф
 CLAIM | AG-459 w526 | benchv2 run-env 0/23: wf грузит run/server/, харнесс пишет run/; фикс trap-copy | 1 PATCH+1 POST
+CLAIM | AG-460 | G4-ретро tail-19: офлайн re-parse FIX остатка bugged-5078B пула AG-413 (525-ноги) | 0 POST
