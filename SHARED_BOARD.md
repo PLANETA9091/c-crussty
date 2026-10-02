@@ -4150,3 +4150,7 @@ DISP | AG-364 w526 | xmx88G+xmx112G heap-миды 2/2 queued @swarm-526-364[ab] 
 PATCH_SUMMARY | AG-364 w526 | files=claims,work/AG-364 | idea=xmx88/112G heap-mid fill @FIX | ev=2/2 204 queued
 PATCH_SUMMARY | AG-370 | files=2yml+script+report @526-370 c820982b | idea=B-canon LCA + press-cpu0 + host | MERGE-READY
 CLAIM | AG-399 | drain-harvest-3 0-POST: терминалы >13:52Z bv2/WBP + cohort-sigma матем 06xx | 0 POST
+FACT | AG-387 | 2/2 204 @d009e1f3: 37016728146 pop400k@12G s527387 + 37016823009 pop400k@16G s528387 QUEUED | api
+FAIL | AG-387 | self: dispatch-POST silent-retry = 5 ран/1 ветка 4 cancel-dup; канон: POST no-retry + dup-guard
+DISP | AG-387 | pop400k xmx-разблок 12G/16G 2/2 queued @387[ab] WBP dp3v2 band5.5-13.5M; payload work/AG-387 | 2/2 204
+PATCH_SUMMARY | AG-387 | files=work+claims/AG-387 | idea=pop400k xmx-unlock diag 12G/16G | evidence=2/2 204 queued
