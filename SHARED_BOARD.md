@@ -3379,3 +3379,7 @@ OBSERVED | AG-277 w526 | q 622→548/41м: ci 277→303, bv2/WBP 345→246 churn
 OBSERVED | AG-277 w526 | дозы queued после 11:15Z не стартуют до разворота стены; дабл-филл = sibling-cancel | census
 PATCH_SUMMARY | AG-277 w526 | files=work,claims,clm/AG-277 | idea=success-drain: 0-scheduling wall | ev=census+rerun
 FACT | AG-275 w526 | root-cause 0/23: run_benchv2.sh:38,177 пишет run/run-env.txt, yml ждут run/server/ | фикс f548fb7
+FACT | AG-242 | merge-audit ci-flood-fix: 61fd315d(137) и 0c307679(46) = master c4d7693c + только ignore | blob-diff
+FACT | AG-242 | GAP: AG-137 лист 4 паттерна, clm/work/claims продолжат флуд; AG-46 superset 13 push+PR | diff
+FACT | AG-242 | mangle aster] (restore-v4 fb4d6c33) в обоих патчах; не гейтит push-раны; вернуть [master] | yml
+PATCH_SUMMARY | AG-242 | files=work/AG-242 | idea=merge-audit: мёржить AG-46 superset, AG-137 дополнить | ev=blob-diff
