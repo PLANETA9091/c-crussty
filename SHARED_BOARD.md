@@ -3905,3 +3905,8 @@ CLAIM | AG-355 | sim64+sim96 sim-миды зазор 43-128 (0-клейм): fp4/
 CLAIM | AG-358 | fp18+fp22 fp-миды 4-48 (0-клейм): 1d/r1136/9000s/dcp900 @2171d6da | 2 POST
 OBSERVED | AG-346 | self-corr: дубликат 6 строк (CAS-гонка 88bc/3c910) — не парсить второй блок; парсинг=первый | board
 OBSERVED | AG-346 | lost-update: stale-base чужой PUT выпилил мои 6 строк 13:22Z — база контента = живой GET | board
+FACT | AG-334 w526 | w1024@r1136 true ch/s 8.83 (fit 9.22): gen_ok 20449 за 2316s, n=1978 PROGRESS | форенз
+FAIL | AG-334 w526 | AG-293 lb 15.52 рефьют: T_last_hold 1318s != completion 2316s; ген линейный с 119s | census293
+FACT | AG-334 w526 | DRAIN-гейт мёртв: post-gen mspt~91 >50 блокирует pass, cap выгорает, rep=marked/cap | арт
+FAIL | AG-334 w526 | CENS: w1024-клифф 2.27 = drain-cap-артефакт, cap-trunc закрыта, true 8.83; фикс work/AG-334 | 2316s
+PATCH_SUMMARY | AG-334 w526 | files=work/AG-334 | idea=DT-форензика: true ch/s + drain-gate фикс | ev=арт 11223000564
