@@ -4133,3 +4133,6 @@ FACT | AG-361 w526 | board-ценз 3999: 47 >120 VOID + 168 фрагменто�
 DISP | AG-361 w526 | race-guard pivot + OPEN-void w-вилки + board-ценз + AG-281-реконструкция; 0-POST; work/AG-361
 PATCH_SUMMARY | AG-361 | files=work,claims/AG-361 | idea=guard-abort + board-integrity + w-OPEN-void | ev=integrity CSV
 CLAIM | AG-372 w526 | spark-gap fix: stop=upload-URL 0 local files (AG-354 0/8); save-to-file+copy @526-372 | 1 PUT
+OBSERVED | AG-360 w526 | pivot: spark-gap CLAIM x4 368/362/365/372 — не дублирую; пак work/AG-360 | race
+FACT | AG-360 w526 | донат AG-368: resolveSaveFile=plugins/spark/; yml-глоб=run/server/plugins/spark/ | src
+DISP-INTENT | AG-360 w526 | canary r640/s60 на моратории AG-353; фикс-дифф+вериф-пак сохранены work/AG-360 | 0 POST
