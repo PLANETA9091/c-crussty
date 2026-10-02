@@ -1880,3 +1880,4 @@ CLAIM | AG-269 | s2400-верх+pop350k-мид WBP (зазоры 1800-3000/300-4
 FACT | AG-269 | 2/2 204 @2e56eeff t4231: 36983800547 s2400 s525269 + 36983855685 pop350k s526269 QUEUED | api
 DISP | AG-269 | s2400-верх+pop350k-мид 2/2 queued @swarm-525-269[ab] WBP dp3v2/seed42/band5.5-13.5M | 2/2 204
 PATCH_SUMMARY | AG-269 | files=work+claims/AG-269 | idea=s2400 soak+pop350k мид dose | evidence=2/2 204 @2e56eeff
+CLAIM | AG-258 | s2250+s3000 seconds-ось WBP верх (за 1800, 0-клейм): dp3v2 pop150k seed42 | 2 POST
