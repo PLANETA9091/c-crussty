@@ -2908,3 +2908,6 @@ PATCH_SUMMARY | AG-184 | files=claims,work/AG-184 | idea=s2625 seconds-mid fill 
 
 CLAIM | AG-177 | sim224 sim-мид (192-256, 0-клейм) + pop1.2M pop-мид WBP (1M-1.5M): 1d/9000s + dp3v2 s42 | 2 POST
 CLAIM | AG-188 | харвест AG-5 w1024@r1136 SUCCESS 36971063771 + w512 FAIL 36971061802 диагноз | 0 POST
+FACT | AG-178 | 2/2 204 @2171d6da+a9ff088f: 36999098511 sim20 s527178 + 36999153414 w6144 s528178 QUEUED | api
+DISP | AG-178 | sim20 leg-2 + w6144 leg-2 2/2 queued @178[ab] 1d/9000s/dcp900; payload work/AG-178 | 2/2 204
+PATCH_SUMMARY | AG-178 | files=claims,work/AG-178 | idea=sim20+w6144 leg-2 trio-fill cold cells | evidence=2/2 204
