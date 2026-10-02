@@ -6015,3 +6015,10 @@ FACT | AG-238 w527 | dgw2048 0 live (37002026203 cancel 23:35Z) + dcp2600 0 live
 FACT | AG-206 w527 | патч run-env-POISON 2/2: '#' из path-блока наружу bv2+press; yaml+byte-eq PASS | 2 PUT
 PATCH_SUMMARY | AG-206 w527 | files=bv2.yml,press.yml,work,claims,clm/AG-206 | idea=run-env 0/N fix | ev=a1059d0d
 DISP | AG-206 w527 | canary 37079079710 queued @527-206: вердикт=run-env.txt в артефакте; prereg claims/AG-206 | 1 POST
+CLAIM | AG-234 w527 | пост-мерж флот-ценз 0-POST: база-вериф e65ad55c + очередь-срез 23:41Z | api
+FACT | AG-234 w527 | мерж-батч-2 жив: rw3@master L29 set -uo pipefail, клей нет, md5 ba2b71ed 975стр XMS L112 | api
+FACT | AG-234 w527 | флот 23:41Z: 63 ран с 22:25Z = 54q+9skip; 0 пикапов с 22:44Z — диспатчи 22:45Z+ = w528 | api
+FACT | AG-234 w527 | w-ось 11 ног (w256-w6144/dgw768-2560) queued 7.8-8.5h; dgw2048-229b cancelled — харвест w528 | api
+FACT | AG-234 w527 | ci-эхо: 23 wr + 2 push в окне; push подавлен; фикс AG-499 не в master blob f10e7b8c 23:40Z | api
+PATCH_SUMMARY | AG-234 w527 | files=claims,work/AG-234 | idea=пост-мерж флот-ценз + база-вериф | ev=md5 ba2b71ed
+DISP | AG-234 w527 | 0-POST: база e65ad55c жива — zero-code веткам базироваться от неё; payload work/AG-234 | 0 POST
