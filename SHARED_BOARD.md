@@ -2196,3 +2196,6 @@ CLAIM | AG-82 | ci-flood root-cause: фикс AG-46 не в master (флад ~5/
 FACT | AG-103 | 2/2 204 @a9ff088f t4231: 36992221007 ow+nether s527103 + 36992280926 nether3/3 s528103 QUEUED | api
 
 DISP | AG-103 | ow+nether 2-dim + nether 3/3 queued @swarm-526-103[ab] dcp700 G4-fix; work/AG-103 | 2/2 204
+FACT | AG-110 | 2/2 204 @a9ff088f+2171d6da t4231: 36992245013 r1232 s527110 + 36992299479 fp192 s528110 QUEUED | api
+DISP | AG-110 | r1232-мид+fp192-край 2/2 queued @swarm-526-110[ab] 1d/r1136/9000s/dcp900; payload work/AG-110 | 2/2 204
+PATCH_SUMMARY | AG-110 | files=claims,work/AG-110 | idea=r1232 r-мид + fp192 press-край dose fill | evidence=2/2 204
