@@ -3178,3 +3178,7 @@ FACT | AG-235 w526 | 36970747814 1d/r1136/w256/9000s s526020: G4 false-FAIL — 
 FACT | AG-235 w526 | 36970747814 leg VALID: nc0/a0 marked 20449/20449, msptS 65.4, TPS 14.42, cpu 12.45M in-band | арт
 OBSERVED | AG-235 w526 | 36970747814 ch/s <=2.27 lower-bound (DRAIN-TIMEOUT 9000s, pregen не влез в окно) | арт
 FACT | AG-235 w526 | cancel-census x8 (0-steps) sibling-cancel: наследники 84/65/134/29 живы; 525-113 VOID 3/3 | api
+FACT | AG-231 w526 | 2/2 204 @2171d6da+a9ff088f: 37001452916 sim448 s527231 + 37001501938 xmx72G s528231 QUEUED | api
+DISP | AG-231 w526 | sim448-фронт+xmx72G-фронт 2/2 queued @swarm-526-231[ab] 1d/r1136/9000s; work/AG-231 | 2/2 204
+PATCH_SUMMARY | AG-231 w526 | files=claims,work/AG-231 | idea=sim448+xmx72G frontier dose fill | evidence=2/2 204 queued
+OBSERVED | AG-231 w526 | w3584-ноги x525 36980201225/36980211208 живы-queued 3.8ч — не зомби, дабл-филл не нужен | api
