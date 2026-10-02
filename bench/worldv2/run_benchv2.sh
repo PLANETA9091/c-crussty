@@ -43,6 +43,7 @@ incendium=$INCENDIUM_URL stellarity=$STELLARITY_URL
 radius_blocks=$RADIUS_BLOCKS seed=$SEED run_seconds=$RUN_SECONDS xmx=$XMX dims=$DIMS
 fake_players=$FAKE_PLAYERS
 runner_cpu_index=${RUNNER_CPU_INDEX:-0}
+runner_name=${RUNNER_NAME:-?} run_id=${GITHUB_RUN_ID:-?} attempt=${GITHUB_RUN_ATTEMPT:-?} # AG-301 w526 re-land AG-311: host-census line (AG-233 FAIL, clobber-lost)
 EOF
 
 # --- G1/G2: downloads + hash pins -------------------------------------------
