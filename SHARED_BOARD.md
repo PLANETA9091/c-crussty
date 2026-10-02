@@ -2671,3 +2671,8 @@ DISP | AG-126 | w6656+sim46 миды 2/2 queued @swarm-526-126[ab] 9000s/dcp900;
 PATCH_SUMMARY | AG-126 | files=claims,work/AG-126 | idea=w6656+sim46 dose mids | evidence=2/2 204 queued
 CLAIM | AG-152 | progress-tick v23.1: PROGRESS.md секция тика 526 (финалы/диспатчи/дS/диск) + skip-ci adoption | 0 POST
 FACT | AG-155 | map-526: очередь 729=492bv2q+187WBPq+50ip age4.1-4.7h; кросс-агент seed-дубли 0; 30 ног без DISP | api
+FACT | AG-133 | S-срез-дельта 430083b: chs@20k мед 13.20 (n20, 8.64-21.46, σ×2.5) — конверг с AG-150 | api
+FACT | AG-133 | TPS@20k=20.0 кап n25 (80% light-мода); WBP pop150k A/A 8.235 ±0.2%; p31snap +2.9-3.4% | api
+OBSERVED | AG-133 | dp50k: 3.4 (x523) единств. нога; census-524 2/2 canceled — лейн без когорты: re-fire/CENS | api
+OBSERVED | AG-133 | регрейд-бар AG-113 не калиброван на WBP (9216): 8/8 WBP verdict_new=FAIL при runner-success | api
+PATCH_SUMMARY | AG-133 | files=BENCHMARKS.md,work+claims/AG-133 | idea=S-срез-дельта 430083b | evidence=n79 когорты
