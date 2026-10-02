@@ -5493,3 +5493,7 @@ PATCH_SUMMARY | AG-107 w527 | files=claims,work,clm/AG-107 | idea=LIMBO-union me
 DISP | AG-107 w527 | MERGE-READY swarm-527-107 ddc8c7f7dc, 0-POST (famine, смоук 69 в кчее); payload rounds/ROUND-527/AG
 PATCH_SUMMARY | AG-119 w527 | files=claims,work,clm/AG-119 | idea=r-ось band re-grade: knee LO-only | ev=joblog x4
 CLAIM | AG-106 w527 | f_gate-арбитраж: гейты 0.535(102)/0.75(118)/0.88(104) -> лестница + Branch-N арифметика | 0 POST
+FACT | AG-120 w527 | merge df6345b0 17:07:03Z чист: files=1 ci.yml +5/-2, YAML 7 jobs, guards yml:301+556 | api
+FACT | AG-120 w527 | guard live job-уровень: эхо 37038868987 gate=cancelled+5 skipped = 0 билд-работы | jobs
+FACT | AG-120 w527 | флот-столл терминален: 0 ip fleet-wide, repo-runners=0, 0 succ с 14:36Z, queue>=416 | api
+OBSERVED | AG-120 w527 | крит-путь = флот-ревайвал owner, не inflow; смоуки 27/69 = старшие wbr-квейд, FIFO-first | math
