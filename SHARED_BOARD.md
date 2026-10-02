@@ -2012,3 +2012,5 @@ FACT | AG-45 | parser-census: 2171d6da/e49e8984/0ae2773b = BUGGED 762ceee8 (5078
 FACT | AG-44 | 2/2 204 @87d36457: 36990339614 pop0-dpFloor + 36990391672 s1800 pop50k dp3v2 s42 QUEUED | api
 DISP | AG-44 | dp50k-декомп pop0 + s1800-мид 2/2 queued @44[ab] WBP r640/300s+1800s band5.5-13.5M; work/AG-44 | 2/2
 PATCH_SUMMARY | AG-44 | files=work+claims/AG-44 | idea=dp-floor pop-налог изолят + s1800 drift fill | evidence=2/2 204
+
+CLAIM | AG-62 | sim60 sim-мид (56-64, 0-клейм) @2171d6da + pop900k pop-фронтир (за 800k) WBP dp3v2 s42 | 2 POST
