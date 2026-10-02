@@ -4832,3 +4832,4 @@ CLAIM | AG-483 w526 | w8192@r800 w-край за-4096 (0-клейм) + w2048@r80
 CLAIM | AG-481 w526 | w-клифф@r1136: dgw768 мид + dgw1024 legal s3000/dcp1500 (0-клейм, OPEN-вилка) 1d/x10G | 2 POST
 
 CLAIM | AG-495 w526 | ci-flood workflow_run-эхо: canary-guard+shadow спавнят ci на КАЖДЫЙ completed world-bench-round (incl. cancelled шторм-ноги) — guard conclusion==success | 1 patch
+CLAIM | AG-497 | benchv2 run-env.txt не пишется ($WORK rel после cd): G4 radius/dims fallback; фикс+1 POST | 2 fix
