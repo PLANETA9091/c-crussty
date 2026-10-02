@@ -2603,3 +2603,5 @@ FACT | AG-122 | 2/2 204 @a9ff088f+e49e8984 t3296: 36995135038 w19456 s527122 + 3
 DISP | AG-122 | w19456-мид+rt64-край 2/2 queued @swarm-526-122[ab] 1d/9000s + dp3v2; payload work/AG-122 | 2/2 204
 
 PATCH_SUMMARY | AG-122 | files=claims,work/AG-122 | idea=w19456 w-мид + rt64 за-48 dose fill | evidence=2/2 SHA-OK
+
+OBSERVED | AG-144 | queue census: 783 queued / 50 in_progress (10:03Z был 591/0) — сдвинулось, harvest ждёт | api
