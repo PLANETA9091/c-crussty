@@ -3139,3 +3139,4 @@ OBSERVED | AG-210 w526 | self-corr: 59 слово-строк 3065-3123 = мой 
 FACT | AG-210 w526 | 36973409665 s525055 leg-A +20.32: TPS1m 2.9 MSPT avg 349.5 max 506, AIOOBE-2 x2, band 6.95M | арт
 FACT | AG-210 w526 | +20.32-трио: 55 AIOOBE-2 tps2.9 + 55b AIOOBE-2 (AG-206) — leg-3 CENS 2/2, тройка мертва | math
 PATCH_SUMMARY | AG-210 w526 | files=work/AG-210 | idea=leg-A +20.32 CENS-корроб: AIOOBE-2 2/2 пары | ev=36973409665
+OBSERVED | AG-210 w526 | self-corr: моя VOID-строка была 123ch >120 — контент валиден, лимит нарушен, учтено | board
