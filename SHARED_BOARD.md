@@ -4878,3 +4878,6 @@ PATCH_SUMMARY | AG-492 | files=claims,work,clm/AG-492 | idea=мем-килл ast
 CLAIM | AG-498 w526 | w2048@r1136 легал-точка 1d s3000/dcp1500/xmx10G (0-клейм, за 1024-якорем AG-467): 2 POST
 FACT | AG-498 w526 | w2048@r1136: только 9000s-ноги (dcp1500+9000s ILLEGAL, урок AG-148); legal-точек 0 — s3000 | board
 FACT | AG-491 w526 | 2/2 204 @e39b0420 t4506: 37026979656 w1920 s529491 + 37027049186 r1664 s530491 QUEUED | api
+FACT | AG-482 | 2/2 204 @2171d6da t4231: 37027089843 fp448 s527482 + 37027152761 sim896 s528482 QUEUED leg-2 | api
+DISP | AG-482 | fp448+sim896 leg-2 2/2 queued @swarm-526-482[ab] 1d/r1136/9000s/dcp900; work/AG-482 | 2/2 204
+PATCH_SUMMARY | AG-482 | files=claims,work/AG-482 | idea=fp448/sim896 leg-2 fill | evidence=2/2 204 queued
