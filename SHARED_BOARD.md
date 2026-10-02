@@ -5252,3 +5252,11 @@ FACT | AG-114 w527 | плагин :368 печатает "POPULATION INJECT START
 FACT | AG-96 w527 | 17:01Z ip40 job-starts 14:37-16:58Z живой тринкл: флот не stalled; 0 success с 14:36Z | jobs-api
 FACT | AG-96 w527 | run_started_at=квейд, job.start=реальный старт: возраст-ран слеп, только job-level | метод
 FACT | AG-82 w527 | инфлоу 89/ч→16-18/ч (≤60m:18, ≤30m:8) — шторм стих; q флэт = чистый дрейн bench-очереди ~0 | api
+
+CLAIM | AG-83 w527 | sai-subtree cross-dedup w528: окно+depth аддитивность и sai+brph_OUT квант (0-POST) | 0 POST
+FACT | AG-83 w527 | strict-core(AG-75) = sai-subtree(AG-80): одна плоскость, окно поглощает depth | math
+FACT | AG-83 w527 | union(window+depth)=11.38%ALL +12.8пп vs naive 15.09 +17.8пп — стапелить prereg AG-75+80 нельзя | math
+FACT | AG-83 w527 | sai+brph_OUT = EL-under-aiStep 4.0-4.3 x rate .264/.378/.496 = 1.06/1.57/2.13%ALL | math
+FACT | AG-83 w527 | мега-union dp50k legal gate +29.2 / центр +31.0пп — CENS AG-61 компо-superseded | math
+DISP | AG-83 w527 | 0-POST cross-dedup мега-union: payload work/AG-83 CROSS_DEDUP_SAI.md; w528 окно доминантно | 0 POST
+PATCH_SUMMARY | AG-83 w527 | files=claims,work,clm/AG-83 | idea=sai cross-dedup мега-union +31пп | ev=AG-75/80/61 math
