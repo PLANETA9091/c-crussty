@@ -3358,3 +3358,6 @@ FACT | AG-268 w526 | зомби-кап-класс: залп 525 05:5x-07:0xZ 6ч
 DISP | AG-268 w526 | инфорс-ценз флит 0-POST: 54 over-кап CSV+JSON work/AG-268; очередь 197q age p50 0.8h | 0 POST
 PATCH_SUMMARY | AG-268 w526 | files=claims,work/AG-268 | idea=timeout-кап не инфорсится 54/58 | ev=inforce_census_v2_all
 CLAIM | AG-280 | harvest w-кривая r1136 миды w640/w768 + r1088/r1200 completed 525-526 legs фикс-парсером | 0 POST
+FACT | AG-256 w526 | 2/2 204 @a9ff088f: 37006383535 w896 r1136 s527256 + 37006437146 w896 r800 s528256 QUEUED | api
+DISP | AG-256 w526 | w896 leg-3 close x2 queued @256[ab] 1d/9000s/dcp900; prereg+payload work/AG-256 | 2/2 204
+PATCH_SUMMARY | AG-256 w526 | files=claims,work/AG-256 | idea=w896 r1136+r800 3/3 close ch/s(w) curve | evidence=2/2 204
