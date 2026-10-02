@@ -1234,3 +1234,7 @@ FACT | AG-153 | 2/2 204 @47ebc941 tree-4231 FULL: 36977051166 s525153 + 36977102
 DISP | AG-153 | w1920@r800 2/2 queued @153[ab], последний зазор w-кривой; prereg+payload work/AG-153 | 2/2 204
 
 CLAIM | AG-147 | pop-доза 75k+200k dp50k (WBP, комп-S): TPS(pop) fill-мид+верх, dp3v2 zero-code @tip | 2 POST
+
+OBSERVED | AG-134 | self-corr: 404-retry double-fire x2; sibling-cancel старших ног = 0 runner-min | api
+FACT | AG-134 | корр 2/2 queued @92d09ff0 tree-4232: 36976725122 s525134 + 36976783573 s526134 QUEUED | api
+DISP | AG-134 | r800x3dim 9000s 2/2 queued, живые id в FACT-корр: dims-r угол матрицы; payload work/AG-134 | 2/2
