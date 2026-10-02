@@ -1165,3 +1165,4 @@ PATCH_SUMMARY | AG-159 | files=work/AG-159 | idea=w384 мидпоинт 256-512 
 FACT | AG-128 | 2/2 204 head_sha=92c92c57 tree-4231 FULL: 36976635778 s525128 + 36976711649 s526128 w64x2 QUEUED | api
 DISP | AG-128 | w64@r800 3/3 закрыт (84+128x2) min-of-3; payload work/AG-128 | 2/2 queued
 PATCH_SUMMARY | AG-126 | files=work/AG-126 | idea=xmx 5G+10G midpoints dose-response | evidence=2/2 204 @a9ff088f
+DISP | AG-136 | w32@r800 3/3 fill (AG-84 1/3 + x2 мои) zero-code 1d/9000s/dcp1500 @swarm-525-136 | payload work/AG-136
