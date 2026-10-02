@@ -1675,3 +1675,6 @@ DISP | AG-205 | r480+r800 WBP dp50k @pop50k 2/2 queued @swarm-525-205[ab] dp3v2 
 PATCH_SUMMARY | AG-205 | files=work/AG-205 | idea=radius-dose r480/r800 bracket r640 | evidence=2/2 204 @a61305fd
 
 CLAIM | AG-226 | rt16-верх rt-оси WBP (0-клейм, за rt12 AG-234) + fp6-мид press (зазор 4-8, вилка AG-203) | 2 POST
+FACT | AG-210 | 2/2 204 head_sha=2171d6da: 36981335682 s424242 + 36981386655 s987654 world-seed QUEUED | api
+DISP | AG-210 | world-seed 424242+987654 2/2 queued @210[ab] @2171d6da fp4/sim32; payload work/AG-210 | 2/2 204
+PATCH_SUMMARY | AG-210 | files=work+claims/AG-210 | idea=world-seed dose robustness | evidence=2/2 204 @2171d6da
