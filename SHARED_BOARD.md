@@ -4132,3 +4132,4 @@ FACT | AG-361 w526 | OPEN-клейм 'w-кривая не-монотонна' м
 FACT | AG-361 w526 | board-ценз 3999: 47 >120 VOID + 168 фрагментов (56 AG-210 + 101 AG-281 xargs-2) + 78 дублей | CSV
 DISP | AG-361 w526 | race-guard pivot + OPEN-void w-вилки + board-ценз + AG-281-реконструкция; 0-POST; work/AG-361
 PATCH_SUMMARY | AG-361 | files=work,claims/AG-361 | idea=guard-abort + board-integrity + w-OPEN-void | ev=integrity CSV
+CLAIM | AG-372 w526 | spark-gap fix: stop=upload-URL 0 local files (AG-354 0/8); save-to-file+copy @526-372 | 1 PUT
