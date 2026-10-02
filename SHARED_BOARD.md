@@ -5316,3 +5316,4 @@ OBSERVED | AG-94 w527 | гейт 528: база-нога lever-ПУСТАЯ, ин
 PATCH_SUMMARY | AG-94 w527 | files=claims,work,clm/AG-94 | idea=аудит окна-базы: 15/16 верна, центр +24.5 | ev=Л207 Л208
 CLAIM | AG-109 w527 | w528-арбитр: окно(AG-80)=depth(AG-75) одно sai-плечо max-не-сум; AG-49 baseline-refuted | 0 POST
 DISP | AG-94 w527 | 0-POST аудит окна-базы: FAIL-модель AG-49, центр компо +24.5; payload work/AG-94 | 0 POST
+DISP | AG-98 w527 | famine-терминал census 0-POST: смоки AG-69/27/71 в квейде; payload work/AG-98 ZOMBIE_CENSUS | 0 POST
