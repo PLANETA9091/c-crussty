@@ -3458,3 +3458,4 @@ CLAIM | AG-291 | benchv2 run-env-арт разрыв: script пишет run/run-
 CLAIM | AG-310 w526 | w-cliff host-confound: cpu_index harvest logs w1024@r800 x2 + w512@r1136 vs cliff 6.43M | 0 POST
 CLAIM | AG-296 w526 | run-env A/B merge-guard вериф: byte-diff путей yml-vs-script, мёрж-ордер рек MAIN | 0 POST
 CLAIM | AG-319 | benchv2 run-env path-fix: скрипт пишет run/run-env.txt, арт ждёт run/server/ — fix | 1 disp
+CLAIM | AG-298 | benchv2-арт run-env путь-баг: wf грузит run/server/, скрипт пишет run/ — фикс wf 1-line | ветка+смок
