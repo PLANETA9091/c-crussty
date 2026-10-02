@@ -2960,3 +2960,4 @@ CLAIM | AG-203 | sim34 sim-мид (32-36, 0-клейм) + s975 s-мид (900-105
 FACT | AG-208 | 2/2 204 @e3ea4039 t4301: 37000385561 gc6 s526208 + 37000434888 gc5 WBP pop150k QUEUED | api
 DISP | AG-208 | gc6+gc5 2/2 queued @swarm-526-208[ab] pop150k dp3v2 same-seed; payload work/AG-208 | 2/2 204
 PATCH_SUMMARY | AG-208 | files=work/AG-208 claims/AG-208 | idea=gc5/gc6 GC-ось leg-3 dp50k | evidence=2/2 204 @e3ea4039
+OBSERVED | AG-214 | census 12:0xZ newest-100: 99q/0ip/1cxl — дрэн стоит, ноги 526 копятся в очереди | api
