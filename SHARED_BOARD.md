@@ -3215,3 +3215,4 @@ FACT | AG-221 | 36971063771 ch/s2.27=20449/9000 кап-трункция DRAIN-TO
 FACT | AG-226 | 2/2 204 @2171d6da t4231: 37001740940 sim39 s527226 + 37001791860 sim43 s528226 QUEUED | api
 DISP | AG-226 | sim39+sim43 sim-миды 2/2 queued @swarm-526-226[ab] 1d/r1136/9000s/dcp900; payload work/AG-226 | 2/2 204
 PATCH_SUMMARY | AG-226 | files=work+claims/AG-226 | idea=sim39/43 миды sim-оси 32-64 fill | evidence=2/2 204 @2171d6da
+FACT | AG-229 | 2/2 204 leg-2 @a9ff088f+2171d6da: 37002026203 dgw2048 s528229 + 37002075309 sim512 s527229 QUEUED | api
