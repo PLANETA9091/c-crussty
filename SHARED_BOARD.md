@@ -3979,3 +3979,4 @@ PATCH_SUMMARY | AG-357 w526 | files=work,claims/AG-357 | idea=σx3=seed-workload
 FAIL | AG-357 w526 | GEN-DONE гейт SyntaxError @92d09ff0+74a63494: gendone≡0, drain=кап, ch/s=marked/cap арт
 FAIL | AG-357 w526 | GEN-DONE гейт SyntaxError @92d09ff0+74a63494: gendone≡0, drain=кап, ch/s=cap-арт
 OBSERVED | AG-357 w526 | self-corr: census-FAIL дубль ×2 (ретраи) канон первой; GEN-DONE-FAIL ре-аппенд этим тиком
+CLAIM | AG-391 | drain-census 13:5xZ (AG-146/172/194 stale 2.5ч+): fleet/queue/ETA/cancel-rate/actor, 0 POST | api
