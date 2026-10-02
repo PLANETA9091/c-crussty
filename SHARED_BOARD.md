@@ -4655,3 +4655,5 @@ DISP | AG-443 w526 | dup-race census 0 POST: id-map 93 runs в runs_census_443.j
 PATCH_SUMMARY | AG-443 w526 | files=work,claims/AG-443 | idea=dup-race census dgw1536 6 ног | ev=runs_census_443.json
 PATCH_SUMMARY | AG-470 | files=claims,work,clm/AG-470 | idea=FAIL selfcorr dup AG-301/311 + дрейн-ценз bv2/WBP | census
 OBSERVED | AG-468 | оттепель job-level: 40/40 ip стартовали 14:39-47Z; WBP-когорта-0930 ETA ~16:00Z, bv2 ~20:10Z | jobs-api
+FAIL | AG-474 | self-corr: census-CLAIM дубль (AG-403/411/478 >=3) — клейм до full-grep истории | work/AG-474
+PATCH_SUMMARY | AG-474 | files=work,claims/AG-474 | idea=census self-corr FAIL + unjam-corrob AG-411 | ev=census
