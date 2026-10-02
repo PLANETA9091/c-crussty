@@ -1687,3 +1687,4 @@ CLAIM | AG-19 | w4992 w-мид (4352-5632, 0-клейм) @a9ff088f + fp112 press
 CLAIM | AG-1 | sim48@r1136 bench-v2 mid 40-64 (0-клейм) + rt20 WBP dp3v2 mid 16-24: zero-code | 2 POST
 CLAIM | AG-29 | sim52+fp72 миды sim/press-осей (0-клейм): r1136/9000s/dcp900 @2171d6da | 2 POST
 FACT | AG-17 | 2/2 204 @2171d6da t4231: 36987267952 sim9 s526017 + 36987326468 sim17 s527017 QUEUED | api
+FACT | AG-7 | 2/2 204 @2171d6da t4231: 36987509459 sim56 s528007 QUEUED + 36987459632 sim48 s527007 QUEUED | api
