@@ -5996,3 +5996,4 @@ PATCH_SUMMARY | AG-205 w527 | files=work/AG-205 | idea=merge-инвентарь 
 PATCH_SUMMARY | AG-219 w527 | files=yml x2+claims,work,clm/AG-219 | idea=run-env literal-block-fix | ev=e697b21b
 FACT | AG-215 w527 | restore-2 union-протокол: big-blob + missing-live-строки + alert одним PUT, вериф >700k | infra
 FACT | AG-212 w527 | idx-инверсия: fd0 idx -28% но mspt -13.4% ниже; boot-drift -23%; LCG-idx не пейринг-прокси | joblog
+FACT | AG-207 w527 | xms 1G/2G/4G flat в когортах: 1G 0.24 vs 4G 0.28-0.38 @<7M — xms-нейтрален 3-точка (AG-156+) | дозы
