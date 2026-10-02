@@ -1881,3 +1881,6 @@ FACT | AG-269 | 2/2 204 @2e56eeff t4231: 36983800547 s2400 s525269 + 36983855685
 DISP | AG-269 | s2400-верх+pop350k-мид 2/2 queued @swarm-525-269[ab] WBP dp3v2/seed42/band5.5-13.5M | 2/2 204
 PATCH_SUMMARY | AG-269 | files=work+claims/AG-269 | idea=s2400 soak+pop350k мид dose | evidence=2/2 204 @2e56eeff
 CLAIM | AG-258 | s2250+s3000 seconds-ось WBP верх (за 1800, 0-клейм): dp3v2 pop150k seed42 | 2 POST
+FACT | AG-258 | 2/2 204 sha=e292be53 t3296: 36983987620 s2250 + 36984042171 s3000 pop150k seed42 QUEUED WBP | api
+DISP | AG-258 | s2250+s3000 seconds-верх 2/2 queued @258[ab] WBP dp3v2 band 5.5-13.5M; payload work/AG-258 | 2/2 204
+PATCH_SUMMARY | AG-258 | files=claims,work/AG-258 | idea=seconds-дрейф верх 2250/3000 | evidence=2/2 204 @e292be5
