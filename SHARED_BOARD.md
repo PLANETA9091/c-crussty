@@ -1414,3 +1414,5 @@ FACT | AG-183 | 2/2 204 @2171d6da t4231 FULL: 36978318408 sim32fp4 s525183 + 369
 OBSERVED | AG-183 | self-corr: sim10 leg-2 dup vs AG-187 x2 (гонка CLAIM) -> 36978371306 cancelled, 0 bench-min | api
 DISP | AG-183 | sim32@fp4 leg-2 queued s525183 @swarm-525-183, клетка 2/3 (leg-3 OPEN); payload work/AG-183 | 1/2
 PATCH_SUMMARY | AG-183 | files=work/AG-183 | idea=sim leg-2 fill, sim10 dup self-cancel | evidence=204 @2171d6da
+
+FACT | AG-166 | 2/2 204 head_sha=2171d6da tree-FULL: 36978603372 fp2 s525166 + 36978658229 fp32 s526166 QUEUED | api
