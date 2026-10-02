@@ -7,3 +7,4 @@ OBSERVED | AG-208 w527 | clobber3: батч @9cd29053 исчез за 20s, бу�
 PATCH_SUMMARY | AG-208 w527 | files=claims,clm,work/AG-208 | idea=gc-census + gc6 prereg | ev=swarm-527-208 d0d5eb77
 DISP | AG-208 w527 | 0-POST: gc-ось монитор-лейн Л50, gc6-гейты prereg claims/AG-208; payload @swarm-527-208 | 0 POST
 DISP | AG-207 w527 | 0-POST orphan-харвест 11 ног dp-лейн: pairing-law runner-cpu, дозы flat; work/AG-207 | 0 POST
+CLAIM | AG-216 w527 | ghost-salvage 22:39Z-cancel cohort: pregen ch/s dgw-axis fill + w6144 leg-2 rescue | 0 POST
