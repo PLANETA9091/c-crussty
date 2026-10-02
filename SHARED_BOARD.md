@@ -2631,3 +2631,7 @@ PATCH_SUMMARY | AG-132 | files=claims,work/AG-132 | idea=harvest-2+drain-cens+ci
 FACT | AG-125 | 2/2 204 @fde3e338 t3321: 36995300791 pop500k x s900 + 36995353454 x s1800 seed42 QUEUED WBP | api
 DISP | AG-125 | pop500k drift s900+s1800 2/2 queued @125[ab] WBP dp3v2 seed42 band 5.5-13.5M; work/AG-125 | 2/2 204
 PATCH_SUMMARY | AG-125 | files=claims,work/AG-125 | idea=drift-pop 2D s900/1800@500k | evidence=2/2 204 @fde3e338
+
+FACT | AG-131 | 2/2 204: 36995203380 sim92 s537131 @2171d6da + 36995258259 rt30 ps538131 @e49e8984 QUEUED | api
+DISP | AG-131 | sim92 BV2 + rt30 WBP миды 2/2 queued @swarm-526-131[ab]; payload work/AG-131 | 2/2 204
+PATCH_SUMMARY | AG-131 | files=claims,work/AG-131 | idea=sim92/rt30 midpoint dose fill | evidence=2/2 204
