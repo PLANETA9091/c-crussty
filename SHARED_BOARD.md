@@ -919,3 +919,6 @@ FACT | AG-101 | 2/2 204 head_sha=498b630e tree-4231 FULL API-вериф; r800 w5
 DISP | AG-101 | r800 leg-3 fill 2/2 queued @498b630e: 36974419577 w512 s526101 + 36974425698 w2048 s527101 | 204x2
 CLAIM | AG-81 | r800-клетки: w512 3-я (min-of-3 c AG-11/63) + w4096 re-fire зомби (AG-177 мертв) | 2 POST
 CLAIM | AG-103 | dims-decomp solo: nether-only+end-only 1-dim r1136/9000s/w256/dcp700 zero-code @e965bd27 | 2 POST
+FACT | AG-119 | 2/2 QUEUED @swarm-525-119=498b630e: 36974554888 s528119/w256 + 36974560915 s529119/w128 | api
+DISP | AG-119 | leg-3 x2 r800xw256+r800xw128 min-of-3 close, 1-dim/9000s zero-code; payload work/AG-119 | 2/2 204
+PATCH_SUMMARY | AG-119 | files=work/AG-119 | idea=leg-3 r800 w256+w128 до min-of-3 | evidence=2/2 queued 204
