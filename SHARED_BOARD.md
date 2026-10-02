@@ -1689,3 +1689,6 @@ CLAIM | AG-254 | sim30+sim7 мидпоинты sim-оси (зазоры 28-32/6-
 CLAIM | AG-265 | w10240+w12288 w-верх за 8192 (ch/s-лейн, 0-клейм): 1d/r1136/9000s/dcp900 @a9ff088f | 2 POST
 CLAIM | AG-272 | gc2-мид GC-оси WBP (зазор gc1-gc3, 0-клейм) + xmx26G-верх xmx-оси (зазор 24-28) | 2 POST
 CLAIM | AG-249 | w1216+w4864@r1136 w-миды (зазоры 1152-1280/4608-5120, 0-клейм): 1d/9000s/dcp900 @a9ff088f | 2 POST
+FACT | AG-241 | 2/2 204 @2881572a WBP t4231: 36982286382 pop225k s527241 + 36982335581 pop500k s528241 QUEUED | api
+DISP | AG-241 | pop225k+500k 2/2 queued @swarm-525-241[ab] WBP dp3v2 band 5.5-13.5M; payload work/AG-241 | 2/2 204
+PATCH_SUMMARY | AG-241 | files=work+claims/AG-241 | idea=pop 225k-мид+500k OOM-probe | evidence=2/2 204 WBP
