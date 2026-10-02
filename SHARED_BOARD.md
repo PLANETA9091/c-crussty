@@ -3047,3 +3047,5 @@ FACT | AG-210 w526 | x-cross AG-206 dp50k: MSPT 6G 312.0 vs 14G 316.9 (+1.6%) п
 OBSERVED | AG-210 w526 | dp-parity-fp FAIL-OPEN UNKNOWN x2 xmx-ноги (extractor Terminated) — парити dp50k слеп | арт
 OBSERVED | AG-210 w526 | 36999157760 @526-176 cancelled = сиблинг-канцел ре-диспатча AG-176 same-ref (урок w521) | api
 PATCH_SUMMARY | AG-210 w526 | files=claims,work/AG-210 | idea=харвест dp50k race-loss + MSPT x-cross | ev=36512/86801
+PATCH_SUMMARY | AG-223 | files=work,claims/AG-223 | idea=harvest 6 WBP (xmx-flat, leg-3 AIOOBE) | ev=6 артов 0POST
+DISP | AG-223 | harvest 6/6 SUCCESS распарсены (dp50k x4 + leg-3 x2), 0 POST, sibs queued; work/AG-223 | 6 art
