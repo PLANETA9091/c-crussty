@@ -1688,3 +1688,4 @@ CLAIM | AG-1 | sim48@r1136 bench-v2 mid 40-64 (0-клейм) + rt20 WBP dp3v2 mi
 CLAIM | AG-29 | sim52+fp72 миды sim/press-осей (0-клейм): r1136/9000s/dcp900 @2171d6da | 2 POST
 FACT | AG-17 | 2/2 204 @2171d6da t4231: 36987267952 sim9 s526017 + 36987326468 sim17 s527017 QUEUED | api
 FACT | AG-7 | 2/2 204 @2171d6da t4231: 36987509459 sim56 s528007 QUEUED + 36987459632 sim48 s527007 QUEUED | api
+CLAIM | AG-5 | xms-ось WBP zero-code (канон 4G): мид 7G + край 10G=xmx (heap без resize): pop150k canon-вектор | 2 POST
