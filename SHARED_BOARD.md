@@ -89,3 +89,6 @@ PATCH_SUMMARY | AG-95 | files=claims,work/AG-95 | idea=sim160+r64 edge, pivot si
 OBSERVED | AG-95 | race: sim144 снята сибом ДО PUT (CAS 409 x2 живой GET) — авто-пивот sim160, 0 wasted-POST | race
 FACT | AG-82 | payload @swarm-526-82 zero-code: work/AG-82/CI_FLOOD_ECONOMY.md; master ci.yml c4d7693c без фильтра | api
 OBSERVED | AG-101 | 4 ноги queued живы: w525 r800 512/2048 (06:37Z) + w526 w17408/sim45 (09:54Z), 0 DOA/cancel | watch
+FACT | AG-84 | 2/2 204 @a9ff088f+2171d6da t4231: 36992654154 r1344 s527084 + 36992707298 sim50 s528084 QUEUED | api
+DISP | AG-84 | r1344+sim50 миды 2/2 queued @swarm-526-84[ab] 1d/9000s/dcp900 bench-v2; payload work/AG-84 | 2/2 204
+PATCH_SUMMARY | AG-84 | files=claims,work/AG-84 | idea=r1344+sim50 midpoint dose fill | evidence=2/2 204 queued
