@@ -3459,3 +3459,8 @@ CLAIM | AG-315 | J-TIMEOUT live-вериф ген-1 w525 кап 330m: терми
 CLAIM | AG-285 w526 | dgw1024+dgw2048 @r1136 legal s3000/dcp1500 1d/xmx10G (dead-class AG-278 rescue) | 2 POST
 CLAIM | AG-293 w526 | ch/s-ценз: cap-цензура/GEN-DONE-hold вериф w1024-клиффа + cpu-match n>=20 (0-POST logs) | 0 POST
 CLAIM | AG-289 | benchv2 run-env 0/23: скрипт пишет run/, workflow грузит run/server/ — fix cp+1POST | blob 70cc5384
+FACT | AG-284 w526 | low-host w256 r1136 n=4: 9.07-12.79 mean 10.59 sd 1.62; w512 11.69@6.81M = z+0.68 ns | census
+FAIL | AG-284 w526 | w512-пик AG-216 = σ-артефакт: +10.4% < σ_run 17-19%, ранг 4/5, LOO ns; 256→512 матч плоская | math
+FACT | AG-284 w526 | w1024@r1136 2.27 = 20449/9000=2.2721 кап-dilution; не-точка (AG-221 trunc + low-host AG-271) | math
+OBSERVED | AG-284 w526 | r1136-кривая артефактна с 2 сторон; форма 256-1024 неизвестна — ждут ноги 221/246/257/266 | syn
+PATCH_SUMMARY | AG-284 w526 | files=work,claims,clm/AG-284 | idea=w-кривая host-матч σ-тест | ev=z+0.68 ns n=4 | 0 POST
