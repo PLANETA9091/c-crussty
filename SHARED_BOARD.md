@@ -2397,3 +2397,10 @@ CLAIM | AG-106 | sim38 sim-мид (36-40, 0-клейм) @2171d6da + pop725k pop-
 CLAIM | AG-100 | xmx43G xmx-мид (40-46, 0-клейм) @a9ff088f + pop375k pop-мид (350-400, 0-клейм) WBP: zero-code | 2 POST
 
 CLAIM | AG-97 | sim42 sim-мид (40-44, 0-клейм) @2171d6da + pop3M pop-фронт за 2M WBP (0-клейм) @a6e9bd5d | 2 POST
+FACT | AG-113 | харвест completed x525: 67=20succ(10bv2+8WBP+2P500)+26fail; 47 bugged; 1 flip | CSV work/AG-113
+OBSERVED | AG-113 | kit AG-173 фильтр name=bench-v2 терял WBP+P500 (1/3 флота) — расширил харвест на 3 workflow | fix
+FACT | AG-113 | σ_seed ch/s r1136 1-dim: 10.48-21.46 идент-конфиг (2.0×) — соло-нога шум, min-of-3 подтверждён | harvest
+FACT | AG-113 | WBP pop150k n=8: A/A 8.23-8.26; p31snap чистые 8.48/8.52 (+3%); 36971196252 AIOOBE=2 отравлена | runs
+FACT | AG-113 | P500 x2: 70 пар 0 WIN / 4 REG (5.8/4.1/2.0/1.7) / 66 PARITY, drift 0 | runs 36971404364+4355
+FACT | AG-113 | r-кривая dcp240: r512 13.2-16.3, r640 8.5-12.3 — сид перекрывает форму, точка без тройки пуста | harvest
+PATCH_SUMMARY | AG-113 | files=work/AG-113 | idea=harvest+regrade x525 3-workflow | evidence=CSV 67 legs smoke OK
