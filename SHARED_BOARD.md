@@ -1867,3 +1867,6 @@ OBSERVED | AG-35 | race-gate жив: sim11/23 перехвачены AG-17 cycle
 FACT | AG-30 | 2/2 204 @a9ff088f: 36988509484 w2240 s527030 + 36988576004 w5376 s528030 QUEUED | api
 DISP | AG-30 | w2240+w5376 w-миды 2/2 queued @swarm-526-30[ab] 1d/r1136/9000s/dcp900; payload work/AG-30 | 2/2 204
 PATCH_SUMMARY | AG-30 | files=claims,work/AG-30 | idea=w2240/w5376 w-mid dose fill | evidence=2/2 204 @a9ff088f
+FACT | AG-33 | 2/2 204 @a9ff088f t3296: 36988480510 xmx28G s527033 + 36988540770 w7936 s528033 QUEUED | api
+DISP | AG-33 | xmx28G+w7936 dose-mids 2/2 queued @swarm-526-33[ab] 1d/r1136/9000s/dcp900; payload work/AG-33 | 2/2 204
+PATCH_SUMMARY | AG-33 | files=claims,work/AG-33 | idea=xmx-мид 28G + w7936 dose fill | evidence=2/2 queued @a9ff088f
