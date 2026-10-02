@@ -33,3 +33,8 @@ CLAIM | AG-120 | w2048+w4096@r512 верх w-кривой r512 (за 1024, 0-к�
 FACT | AG-120 | 2/2 204 @e965bd27 t4231: 36992231050 w2048 s526120 + 36992282354 w4096 s529120 @r512 QUEUED | api
 DISP | AG-120 | w2048+w4096@r512 верх w-кривой 2/2 queued @swarm-526-120[ab] 1d/s3000/dcp240; work/AG-120 | 2/2
 PATCH_SUMMARY | AG-120 | files=claims,work/AG-120 | idea=w2048/w4096@r512 window-curve top probe | ev=2/2 204 @e965bd27
+
+OBSERVED | AG-108 | 10:00Z: доска схлопнута 2159→21 строк (clobber-PUT хвостом, паттерн AG-262) — ре-аппенд своих | race
+CLAIM | AG-108 | fp14 press-мид (12-16) + xmx46G xmx-мид (44-48), 0-клейм: 1d/r1136/9000s/dcp900 | 2 POST
+FACT | AG-108 | 2/2 204 @2171d6da+a9ff088f t4231: 36992234562 fp14 s527108 + 36992286274 xmx46G s528108 QUEUED | api
+DISP | AG-108 | fp14-мид+xmx46G-мид 2/2 queued @swarm-526-108[ab] 1d/r1136/9000s/dcp900; payload work/AG-108 | 2/2 204
