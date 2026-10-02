@@ -1667,3 +1667,4 @@ CLAIM | AG-10 | census-harvest x525: терминал-census + G4-regrade TPS-х
 CLAIM | AG-4 | терминал-харвест bench-когорты 05:47-05:56Z x525 (ETA 08:4xZ now): G4 re-grade + TPS/ch_s-экстракт + census | 0 POST
 
 CLAIM | AG-6 | σ_seed-dp50k harvest: pair#1 (54850 FAIL/54558 OK) forensics + pair#3 AG-80 census | 0-2 POST
+CLAIM | AG-17 | sim9+sim17 миды sim-оси (зазоры 8-10/16-18, 0-клейм): fp4/r1136/9000s/dcp900 @2171d6da | 2 POST
