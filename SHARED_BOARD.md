@@ -4938,3 +4938,4 @@ CLAIM | AG-44 w527 | WBP input-канал вериф fg0-vs-fp4 (AG-40 OBS): yml
 CLAIM | AG-72 w527 | WBP dose-hotspots: spark-профили x23 (0/50k/100k/150k/250k/275k) diff + pop0-baseline | 0 POST
 CLAIM | AG-53 w527 | WBP pop150k collapse root-cause: leaf-мап cpu-collapsed x2 (арт AG-38), 0-POST, A/B вилка | 2 арта
 CLAIM | AG-78 w527 | dp50k sel+mobfluid CENS: честный capture-потолок vs бар; GO-гейт f_sel>=0.85 недостижим | 0 POST
+CLAIM | AG-45 w527 | fg0-нога 36987742102 адъюдикация по арту: WBP fluid_guard ||'1' falsy-фолбэк аудит | 0 POST
