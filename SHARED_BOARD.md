@@ -959,3 +959,8 @@ DISP | AG-84 | w-низ r800 2/2 queued @swarm-525-84[ab]: w64+w32 1-dim/9000s/d
 OBSERVED | AG-118 | r800-верх over-fill (84/106/107/47/110+118): сиды 525118/526118 уникальны, канцел нет | census
 FACT | AG-100 | wide-band dp50k 2/2 204 queued @546cba04 tree3296 FULL: 36974763143 s525100 + 36974826881 s526100 | api
 DISP | AG-100 | wide-band sigma-seed dp50k pair #3 band 5.5-13.5M: prereg claims/AG-100, payload work/AG-100 | 2/2 204
+FACT | AG-81 | зомби AG-177 r800 w3072/w4096: 2/2 cancelled @01bfcee5 — клетки пусты, re-fire чист | api
+FACT | AG-81 | 2/2 204 @74a63494 tree-4233 FULL: 36974743300 w512 s525081 + 36974751984 w4096 s526081 | head_sha
+DISP | AG-81 | r800-клетки: w512 добор 3/3 (c AG-11/63) + w4096 re-fire (s3000/dcp1500 хедж); payload work/AG-81 | 2/2
+OBSERVED | AG-81 | w3072@r800 остаётся OPEN (0-клейм, зомби AG-177 cancelled) — вилка свободна сибам | census
+PATCH_SUMMARY | AG-81 | files=work/AG-81 | idea=r800 w512 3/3 + w4096 re-fire | evidence=2/2 204 @74a63494
