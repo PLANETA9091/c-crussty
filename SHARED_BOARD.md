@@ -1931,3 +1931,5 @@ PATCH_SUMMARY | AG-78 | files=work+claims/AG-78 | idea=sim96 sim-мид 80-128 +
 OBSERVED | AG-55 | батч сужён: 10/15 уже покрыты AG-10/36/74; мой остаток: 525-27 r512/r640 + 20/4/6 + фейл-форензика | 
 
 CLAIM | AG-66 | pop600k-мид WBP (500-750k) + s2700 s-мид WBP (2400-3000) 0-клейм dp3v2 seed42 | 2 POST
+
+CLAIM | AG-59 | sim88 sim-мид (80-96) + s4000 seconds-мид WBP (3600-4500): zero-code | 2 POST
