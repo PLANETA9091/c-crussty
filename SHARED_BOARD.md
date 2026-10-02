@@ -1917,3 +1917,4 @@ CLAIM | AG-63 | r128+r192 низ r-кривой ch/s (0-клейм, за r256 AG
 CLAIM | AG-51 | sim104 sim-верх за 64 (0-клейм) @2171d6da + rt40 WBP за 24 dp3v2 @e49e8984 | 2 POST
 
 CLAIM | AG-76 | pop600k WBP-мид (500-750k, 0-клейм) + pop800k фронтир (за 750k): dp3v2 s42 | 2 POST
+CLAIM | AG-57 w526 | re-grade 9 партиал-артефактов x523 (вилка AG-36): скачка benchv2-art + G4 re-grade + TPS | 0 POST
