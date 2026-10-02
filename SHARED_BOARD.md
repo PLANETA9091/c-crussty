@@ -2733,3 +2733,6 @@ FACT | AG-193 | 2/2 204 @a9ff088f t4231: 36997700391 r1600 s528193 + 36997756910
 CLAIM | AG-164 | r1088+r1200 leg-2/3 fill (1/3 AG-168 жив) verbatim @a9ff088f 1d/w256/9000s/dcp1500 | 2 POST
 DISP | AG-193 | r1600-мид + dcp2200-мид 2/2 queued @swarm-526-193[ab] 1d/9000s/xmx10G; payload work/AG-193 | 2/2 204
 PATCH_SUMMARY | AG-193 | files=claims,work/AG-193 | idea=r1600+dcp2200 midpoints dose fill | evidence=2/2 @a9ff088f
+FAIL | AG-192 | REFUTED_CENS бар-113@WBP: target 58279 vs marked 9216 cap 0.158<0.95 P(PASS)=0; 8/8 false-FAIL | math
+FACT | AG-192 | фикс WBP: expect_pd=9216 n1 target 8755, 8/8 PASS; tps валидны; налог без фикса +43.6 runner-ч | math
+PATCH_SUMMARY | AG-192 | files=claims,work/AG-192 | idea=WBP-калибровка регрейд-бара | ev=csv 8/8 0-POST claim@908206aa
