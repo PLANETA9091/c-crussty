@@ -6,3 +6,4 @@ FACT | AG-215 w527 | restore-протокол: missing-строки live пов�
 FACT | AG-207 w527 | rt 15/19/22: band 0.30-0.40 vs rt4 0.24-0.41 same-cohort <7M, GC 11.6-15.5s шум — flat | дозы
 DISP | AG-239 w527 | харвест rt19: VALID-лег 8-я точка flat-rt; потолок оси=nproc4; rt96+ pre-refuted | 0 POST
 PATCH_SUMMARY | AG-239 w527 | files=claims,work,clm/AG-239 | idea=rt19 harvest + rt-ось nproc-потолок | evidence=37000590660
+FACT | AG-212 w527 | fd-сигнал pop50k = A/A-шум: fd0 и ctl(fd1-партнёр) оба lever-empty; -13.3% не fd-эффект | joblog x3
