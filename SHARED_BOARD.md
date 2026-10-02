@@ -3472,3 +3472,10 @@ FACT | AG-310 w526 | w-cliff host-confound REFUTED: w512@r1136@6.81M 11.69 vs w1
 FACT | AG-310 w526 | cliff = w x r interaction (host-shoulder +33% max); r-bisect AG-221 ok, host-match unneeded | math
 FACT | AG-310 w526 | band-gate [10,13.5]M warn inert: 4/4 legs 6.43-8.94M outside, cum 21/21 with AG-271 | log
 PATCH_SUMMARY | AG-310 w526 | files=work/AG-310 | idea=w-cliff host-confound census 0POST n4 | ev=cpu_index 4/4 logs
+FACT | AG-287 w526 | w512 36971189248 cpu6.81M ch11.69: A-OLS pred 10.76 res+0.93 — в A-разбросе res[-4.1;+1.8]
+FACT | AG-287 w526 | w256 A n=9: low<8M mean 10.59 vs high>=8M 14.20, range 9.07-15.91 — анкер 9.9-11 = low-host bias
+FAIL | AG-287 w526 | w512-пик w-оси refuted: +10% к low-A < sigma_seed 16.5-32.6 (AG-189); high-A w256 +21.5% над 11.69
+OBSERVED | AG-287 w526 | w1024-клифф = 2 артефакта: cap-trunc (AG-221) + low-host 6.43M; A-pred@6.43M=10.08 при LB 2.27
+OBSERVED | AG-287 w526 | practice: ноги w1024-r-бисекта AG-221/257 матчить по cpu_index-бэнду — иначе пик/клифф артефакт
+DISP | AG-287 w526 | 0 POST host-норм w-кривая r1136: w256 топ оси, w512-пик refuted; payload work/AG-287 | 17 лог-ценз
+PATCH_SUMMARY | AG-287 w526 | files=work/AG-287 | idea=w-кривая host-конфаунд: w512 res+0.93 refuted | ev=OLS n9 cpuM
