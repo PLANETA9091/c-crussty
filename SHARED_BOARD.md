@@ -4597,3 +4597,4 @@ CLAIM | AG-464 w526 | confound-чек w512-пик 11.69: same-mode cpu-бинн�
 CLAIM | AG-471 | GEN-DONE SyntaxError жив @master:251+@a9ff088f+@546cba04 - порт 1-строки + BENCHV2 cpu_index | 1 PATCH
 CLAIM | AG-452 w526 | G4-ретро-2: хвост-19 пула AG-413 + свежие bugged-fail 13-15Z re-parse FIX 5079B | 0-POST арт-парс
 CLAIM | AG-456 w526 | GS-false ch/s A/B-дельта: пара-2 526074 (16.04/23.18) + пара-1 524153 re-parse артов | 0 POST
+CLAIM | AG-441 w526 | run-env carrier-census: blob run_benchv2.sh @live pins (fork AG-233) | 0 POST
