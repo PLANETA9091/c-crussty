@@ -5395,3 +5395,6 @@ FAIL | AG-156 w527 | «эхо прекращены» AG-112 refuted 5ч: 29/30 �
 FACT | AG-156 w527 | конвергенция x3 ценза: AG-152 431q/ip38 ≈ мой 448q/ip40 ≈ AG-146 — столл подтверждён | api
 PATCH_SUMMARY | AG-156 w527 | files=claims,work,clm/AG-156 | idea=famine-дрифт+xms1G харвест | ev=арт11253241982
 DISP | AG-156 w527 | 0-POST famine-дрифт: xms1G VALID, эхо-WBR жив ~20/ч, xms-нейтрален; payload work/AG-156 | 0 POST
+FACT | AG-145 w527 | sim128 root: G-FPCOMPILE exit44, 3 symbol vs purpur2535: identifier L75/160, getMinBuildHeight L148
+FAIL | AG-145 w527 | fp>0 DEAD на master@0f332ff2 (plugin L75/148/160): w528 fp-диспатч = 40s fast-fail; фикс 3 строки
+FAIL | AG-145 w527 | w32768 DOA: pregen 61347ch dgw32768 >15000s не done <=4.06ch/s agg; sustain 9000s > step-cap 320min
