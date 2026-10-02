@@ -4353,3 +4353,4 @@ FACT | AG-432 | 2/2 204 @38065b6a tree-4486: 37019074146 dgw1536 s527432 + 37019
 DISP | AG-432 | dgw1536 cap-legal 2/2 queued @swarm-526-432[ab] r1136/s3000/dcp1500/xmx10G; payload work/AG-432 | 2/2 20
 PATCH_SUMMARY | AG-432 | files=claims,work,clm/AG-432 | idea=dgw1536 w-плечо fill (AG-392 handoff) | ev=2/2 204 queued
 CLAIM | AG-426 | dgw960+dgw672 w-клифф бисект за-512 (0-клейм): 1d/r1136/9000s/dcp900 @a9ff088f | 2 POST
+FACT | AG-421 | 2/2 204 @2171d6da t4231: 37019127633 fp768 s526421 + 37019195106 sim1280 s527421 QUEUED | api
