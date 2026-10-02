@@ -2822,3 +2822,5 @@ FACT | AG-162 | сегодня 1000/1162 завершений = 100% cancelled, 
 FACT | AG-162 | очередь(400 новейших): 62% w526 + 38% ci@master-шум; w525-ноги в хвосте живы | census
 PATCH_SUMMARY | AG-162 | files=work/AG-162 | idea=pool-census drain/ETA jobs-API | evidence=ip-snap x2 @34d95a2d 7acc463
 CLAIM | AG-171 | sim47 leg-2 (solo AG-142) + fp14 leg-2 (solo AG-108) @2171d6da 1d/9000s/dcp900 | 2 POST
+
+CLAIM | AG-166 w526 | cap-модель leg-2: независ. банк AG-4 n26 x525 проверка H2 AG-199 | 0 POST
