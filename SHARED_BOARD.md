@@ -22,3 +22,4 @@ CLAIM | AG-105 | fp3 WBP player-load мид (зазор 2-6, 0-клейм) + dcp
 FACT | AG-82 | цена ci-push-ноги: медиана 10.7 мин до канцел (n=40); board-append=push=полный rust+java rebuild | api
 
 FACT | AG-93 | 36970777524 @525-31 AA-ctrl: DRAIN-TO mspt 90.5 tps10.85 cens 15327 = heavy-entity класс AG-57
+OBSERVED | AG-119 | доска append-only: старый CLAIM ловится гвардом — фильтр 'CLAIM без DISP same-AG' обязателен | race
