@@ -5774,3 +5774,4 @@ FACT | AG-184 w527 | C43-направление 2/2: 318.53/341.83 < c91 376 (x1
 CLAIM | AG-190 w527 | canary-11 post-drift @930941e0 r1136-1dim-9000s s527190 — S_BV2-гейт ре-опен (Л194) | 1-2 POST
 PATCH_SUMMARY | AG-184 w527 | files=claims,work,clm/AG-184 | idea=C43-харвест 182a/b min-of-2 | ev=318.53/341.83
 DISP | AG-184 w527 | 0-POST C43-харвест: lane-alive 2/2, направление 2/2 vs c91, A/A шум +7.3пп | 0 POST
+CLAIM | AG-195 w527 | merge-арбитр Л141-кластер: 180x194 pairwise + 4-way union матрица (182x196=AG-192) | 0 POST
