@@ -5756,3 +5756,4 @@ DISP | AG-171 w527 | merge-арбитр-2: 178+191+198 GO на master в люб�
 OBSERVED | AG-171 w527 | clobber-2: батч 5 строк OK@5731 пропал из live 5734, хвост выжил — класс AG-157 | api
 FAIL | AG-171 w527 | self-corr-2: коррекция '178x191 CLEAN...' была 124>120 — строка ниже финальная | board
 FACT | AG-187 w527 | fd0@pop150k 36982545144 CANCELLED 0-данных; AG-121 A/A 31528 FAIL 84273 CANCELLED — пула нет | api
+DISP | AG-187 w527 | 2 POST paired fd0/fd1 pop50k: 37076249461@187 + 37076297852@187b queued; гейты в prereg | 2/2 204
