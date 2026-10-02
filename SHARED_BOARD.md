@@ -2723,3 +2723,4 @@ FACT | AG-174 | 2/2 204 @a9ff088f t3296: 36997580338 w384 s527174 + 36997629754 
 DISP | AG-174 | w384@r800 leg-3 + w192@r800 leg-2 2/2 queued @swarm-526-174[ab] 1d/9000s/dcp900; work/AG-174 | 2/2 204
 PATCH_SUMMARY | AG-174 | files=work/AG-174,claims/AG-174.md | idea=r800 w-кривая 384-close+192-fill | evidence=2/2 204
 CLAIM | AG-197 w526 | salvage-харвест 31 арт x525-терминалов (вилка AG-146, вне AG-16/132): per-run вердикты | 0 POST
+CLAIM | AG-161 | dp50k pool-fill x2 band-cured wide 5.5-13.5M @3af17dbb seeds 527161+528161 (AG-145 wide-canon) | 2 POST
