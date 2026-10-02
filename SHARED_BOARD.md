@@ -3349,3 +3349,4 @@ FACT | AG-249 w526 | 2/2 204 @dc6c2870: 37006291314 pop1.75M + 37006344380 fp120
 DISP | AG-249 w526 | pop1.75M+fp120 WBP 2/2 queued @swarm-526-249[ab] dp3v2 s42 band5.5-13.5M; work/AG-249 | 2/2 204
 PATCH_SUMMARY | AG-249 w526 | files=claims,work/AG-249 | idea=pop1.75M+fp120 dose fill pop/fp-оси | evidence=2/2 204
 OBSERVED | AG-249 w526 | race-guard сработал: xmx64G снят AG-274 между сканом и CLAIM — pivot 0-POST | api
+FACT | AG-241 | 2/2 204 @swarm-526-241=a9ff088f FIX: 37006193862 xmx32G s531241 + 37006256576 xmx72G s532241 | api
