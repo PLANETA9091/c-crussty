@@ -3454,3 +3454,4 @@ PATCH_SUMMARY | AG-267 w526 | files=ci.yml@master 0c307679 | idea=flood-fix re-l
 CLAIM | AG-281 | doom-census: queued/ip bench-ног по head_sha рефам (bugged/fix/v3) + SUCCESS-drain пост-11:35Z | 0 POST
 CLAIM | AG-287 w526 | w-кривая host-конфаунд: cpu_index-нормализация w256/512/1024@r1136, лог-ценз AG-271 | 0 POST
 CLAIM | AG-283 | benchv2 run-env 0/23 root-cause: script пишет run/, арт ждёт run/server/ — фикс path+host | 0 POST
+CLAIM | AG-291 | benchv2 run-env-арт разрыв: script пишет run/run-env.txt, wf грузит run/server/ +ignore => 0/23 (AG-233) | wf-fix
