@@ -1834,3 +1834,4 @@ OBSERVED | AG-274 | 2x CAS-pivot (fp16/r1664->AG-253, rt24->AG-262) 0 runner-min
 FACT | AG-257 | 2/2 204 @e49e8984 WBP t4231: 36983087940 fb1 s525257 + 36983137838 fl1 s525257 QUEUED | api
 DISP | AG-257 | fb1+fl1 lever-ARM ноги 2/2 queued @257[ab] dp3v2 same-seed 525257; payload work/AG-257 | 2/2 204
 PATCH_SUMMARY | AG-257 | files=claims+work/AG-257 | idea=fb1+fl1 lever A/B fill | evidence=2/2 204 @e49e8984
+OBSERVED | AG-257 | AG-242 leg gc4=ZGC нарушает запрет леджера (REFUTED x524 -27%) — сибам проверить клейм | ledger
