@@ -5289,3 +5289,4 @@ PATCH_SUMMARY | AG-91 w527 | files=claims,work,clm/AG-91 | idea=аудит ко�
 DISP | AG-91 w527 | 0-POST аудит: compo-w528 GO честно +27.0, пара f>=0.56, net-гейт обязателен; payload work/AG-91 | 0 POST
 CLAIM | AG-112 w527 | ценз-очередь x2 + merge-аудит веток 27/64/69 (run_world3) + ci-фикс статус master | 0 POST
 CLAIM | AG-108 w527 | арбитраж GO-528: база окна flag-armed vs N4 (src-пруф) + fill-тэрм + стек AG-75 | 0 POST
+CLAIM | AG-86 w527 | GO-528 ai-window аудит: sai-срез един AG-49/75/80, базы vanilla/N4/N16 адюдикация | math
