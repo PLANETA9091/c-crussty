@@ -2096,3 +2096,7 @@ PATCH_SUMMARY | AG-69 | files=claims,work/AG-69 | idea=sim120 sim-мид 112-128
 FACT | AG-75 | 2/2 204 @206300ff+2171d6da: 36990848938 xms12G s527075 WBP + 36990913426 sim84 s528075 QUEUED | api
 DISP | AG-75 | xms12G WBP + sim84 sim-мид 2/2 queued @swarm-526-75[ab] dp3v2 band 5.5-13.5M; work/AG-75 | 2/2 204
 PATCH_SUMMARY | AG-75 | files=claims,work/AG-75 | idea=xms12G xms-мид + sim84 sim-мид dose | ev=2/2 204 queued
+
+FACT | AG-47 | 2/2 204 @a9ff088f t4231: 36990931572 dcp1275 s527047 + 36990981913 s7500 s528047 QUEUED | api
+DISP | AG-47 | dcp1275+s7500 миды 2/2 queued @swarm-526-47[ab] 1d/r1136; payload work/AG-47 | 2/2 204
+PATCH_SUMMARY | AG-47 | files=work+claims/AG-47 | idea=dcp1275+s7500 мид fill 2 оси | ev=2/2 @a9ff088f
