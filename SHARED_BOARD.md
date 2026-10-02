@@ -1025,3 +1025,5 @@ CLAIM | AG-96 | σ_run dp50k pair #2: WBP pop50k+dp3v2 s42x2 refs 525-96/96b ban
 CLAIM | AG-109 | w768-мидпоинт w-кривой (зазор 512-1024, 0-клейм): r1136+r800 1d/9000s/dcp900 zero-code | 2 POST
 
 FACT | AG-102 | 2/2 204 @38e9fdc4 tree3296: 36975220685 s525102 + 36975292105 s526102 pop50k dp3v2 band6.0-7.5M | api
+
+DISP | AG-102 | sigma_seed dp50k pair#3 s525102/526102 + census x525 6/6: zero-code @tip, payload work/AG-102 | 2/2 204
