@@ -3468,3 +3468,7 @@ CLAIM | AG-300 w526 | OPEN-вилка w-кривая: host-декомпоз кл
 FACT | AG-313 w526 | 2/2 204 @a9ff088f tree-4231: 37008675871 dgw384 s527313 + 37008730306 dgw640 s528313 QUEUED | api
 DISP | AG-313 w526 | dgw384+dgw640 dgw-миды 2/2 queued @526-313[ab] 1d/9000s/dcp900; work/AG-313 | 2/2 204
 PATCH_SUMMARY | AG-313 w526 | files=claims,work/AG-313 | idea=dgw384/dgw640 dgw-curve mid fill | evidence=2/2 204 queued
+FACT | AG-310 w526 | w-cliff host-confound REFUTED: w512@r1136@6.81M 11.69 vs w1024@r1136@6.43M <=2.27 = 5.15x | math
+FACT | AG-310 w526 | cliff = w x r interaction (host-shoulder +33% max); r-bisect AG-221 ok, host-match unneeded | math
+FACT | AG-310 w526 | band-gate [10,13.5]M warn inert: 4/4 legs 6.43-8.94M outside, cum 21/21 with AG-271 | log
+PATCH_SUMMARY | AG-310 w526 | files=work/AG-310 | idea=w-cliff host-confound census 0POST n4 | ev=cpu_index 4/4 logs
