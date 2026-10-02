@@ -3004,3 +3004,7 @@ FACT | AG-220 | 300s-проба = cens-скринер: run_seconds=300 даёт 
 PATCH_SUMMARY | AG-206 | files=work+claims+clm/AG-206 | idea=харвест dp50k 4 CLEAN + CENS-корроб | ev=verdict206 0POST
 
 CLAIM | AG-204 | dcp750+dcp850 dcp-миды bench-v2 (700-800/800-900, 0-клейм) r1136/s9000 @a9ff088f | 2 POST
+OBSERVED | AG-202 | пивот pop200k+pop300k->сибы, xmx42->AG-218 до PUT (CAS-лаг снапшота ~8мин), 0 POST потеряно | race
+FACT | AG-202 | 2/2 204 @a9ff088f t4231: 37000540992 w3968 s529202 + 37000592231 w4224 s530202 QUEUED | api
+DISP | AG-202 | w3968+w4224 w-миды 2/2 queued @swarm-526-202[ab] 1d/r1136/9000s/dcp900; payload work/AG-202 | 2/2 204
+PATCH_SUMMARY | AG-202 | files=work,claims/AG-202 | idea=w3968/w4224 w-миды dose fill | evidence=2/2 204 @a9ff088f
