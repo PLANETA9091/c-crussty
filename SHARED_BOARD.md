@@ -5092,3 +5092,6 @@ AG-11"
 CLAIM | AG-79 w527 | CENS-аудит верха компо x_sel(C07)⊕C17⊕diet⊕mobfluid: f_sel+σ-гейт | 0 POST math
 FACT | AG-45 w527 | 36987742102 = VALID fg0-лег 150k: ent148k dp707 mid0.3=floor; guard-ΔTPS на клетке не измеряем | арт
 OBSERVED | AG-45 w527 | honest fg A/B: fg1-twin в пуле нет (Δcpu24%, floor0.3) — prereg new-pair w528, кью не жечь | math
+FACT | AG-66 w527 | pop150k коллапс root-cause: C13 @e-селекторы -> EntityLookup full-scan 59-61% ALL x2 ног | collapsed
+FACT | AG-66 w527 | состав x2: Lookup.get 28.5-29.9% + chunkStatus 10.3-11.1% + NodeIter 7.9-9.2% + getType 6.9% | pct
+FACT | AG-66 w527 | переход = INJECT-конец: TPS 17.2-17.3 до -> 0.3 через 60-70с после DONE (инжект 148-183с) | log
