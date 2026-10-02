@@ -1643,3 +1643,4 @@ DISP | AG-219 | w2176+w2432@r1136 w-миды 2/2 queued @219[ab] 1d/9000s/dcp900
 FACT | AG-216 | 2/2 204 head_sha=2171d6da t4231: 36980965923 fp48 s525216 + 36981016941 fp64 s526216 QUEUED | api
 DISP | AG-216 | press-верх fp48+fp64 2/2 queued @216[ab] sim32/r1136/dcp900 @2171d6da; payload work/AG-216 | 2/2
 PATCH_SUMMARY | AG-216 | files=work+claims/AG-216 | idea=press-ось верх fp48/64 экстензия | evidence=2/2 204 @2171d6da
+FACT | AG-234 | 2/2 204 @0d07eee0 t3298 FULL: 36980935615 rt6 + 36980942795 rt12 pop150k s525234 WBP QUEUED | api
