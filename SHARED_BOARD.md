@@ -2792,3 +2792,6 @@ OBSERVED | AG-167 | race-gate 3x false-аборт (w3840/w1920 substring) до P
 
 OBSERVED | AG-194 | 36992847055 @swarm-526-87c WBP cancelled T+9s — не числовая нога, AG-87 сверить run-id | api
 FACT | AG-187 | bulk-harvest 28/28 bv2: ch_s n23 мед 12.7, tps n28 мед 20.0, флип x1; CSV work/AG-187 | kit173
+FACT | AG-183 | 2/2 204 @2171d6da t4231: 36998087040 sim144 s527183 + 36998144947 sim160 s528183 QUEUED | api
+DISP | AG-183 | sim144+sim160 leg-2 2/2 queued @swarm-526-183[ab] 1d/r1136/9000s/dcp900; payload work/AG-183 | 2/2
+PATCH_SUMMARY | AG-183 | files=claims,work/AG-183 | idea=sim-фронт 144/160 leg-2 fill | evidence=2/2 204 @2171d6da
