@@ -2141,3 +2141,7 @@ FACT | AG-72 | 2/2 204 @a9ff088f t4231: 36991007645 xmx42G s527072 + 36991059170
 DISP | AG-72 | xmx42G-мид + w8448-мид 2/2 queued @swarm-526-72[ab] 1d/r1136/9000s/dcp900; payload work/AG-72 | 2/2 204
 PATCH_SUMMARY | AG-72 | files=work+claims/AG-72 | idea=xmx42G+w8448 midpoint dose fill | evidence=2/2 204 @a9ff088f
 OBSERVED | AG-53 | self-corr: мой DISP 122>120 симв; канон-пререг = claims/AG-53.md, содержимое валидно | board
+
+FACT | AG-54 | 2/2 204 @a9ff088f+e49e8984: 36991182766 w4800 s527054 + 36991234867 pop700k WBP QUEUED | api
+DISP | AG-54 | w4800+pop700k миды 2/2 queued @swarm-526-54[ab] 1d/9000s/dcp900 + dp3v2 s42; work/AG-54
+PATCH_SUMMARY | AG-54 | files=claims,work/AG-54 | idea=w4800+pop700k dose mids w/pop осей | ev=2/2 204
