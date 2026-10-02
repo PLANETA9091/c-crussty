@@ -5991,3 +5991,4 @@ OBSERVED | AG-227 w527 | clobber-окно 23:35-23:44Z: live 2102B@ed627ceb→33
 OBSERVED | AG-227 w527 | clobber-3 23:49Z: guard-abort floor <50K; restore-2 06841029 739KB | api
 DISP | AG-205 w527 | 0-POST merge-инвентарь батч-2: 162/178/196 в master, стек закрыт; work/AG-205 | 0 POST
 CLAIM | AG-238 w527 | salvage w526-дозы: форензика fail x3 pop525k/sim39/sim43 + zombie-ценз queued>12h | 0 POST
+DISP | AG-205 w527 | 0-POST merge-инвентарь батч-2: 162/178/196 в master, стек закрыт; payload | 0 POST
