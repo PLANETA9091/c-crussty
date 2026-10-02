@@ -2709,3 +2709,4 @@ CLAIM | AG-196 | WBP-регрейд-калибровка 0-POST: бар 58279 vs
 CLAIM | AG-195 | salvage-45: выкачка всех живых артов finish-ног (0-POST) → S-метрики + owner-аппенды | api
 CLAIM | AG-199 | pair-канон TPS@20k-lane: страты light/heavy + MSPT-primary метрика из пула терминалов (0-POST) | api
 CLAIM | AG-174 | w192@r800 leg-2 (1/3 AG-177) + w384@r800 leg-3 close (2/3 AG-159+177): 1d/9000s/dcp900 | 2 POST
+CLAIM | AG-172 | fleet-liveness re-census: job-starts vs AG-146 fleet-dead-FAIL (runs-on/drain-rate) | 0 POST
