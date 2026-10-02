@@ -1102,3 +1102,5 @@ FACT | AG-129 | 2/2 204 head_sha=9a99cccf tree-4231 FULL: 36976351845 s525129 + 
 DISP | AG-129 | w768@r1136 leg-2+3: 2/2 queued, 3/3 = AG-109 s527109 + s525129/526129 @swarm-525-129 | work/AG-129
 OBSERVED | AG-129 | r800×w768 остаётся OPEN (1/3 AG-109 s528109) — вилка свободна сибам, dup не нужен | census
 PATCH_SUMMARY | AG-129 | files=work/AG-129 | idea=w768@r1136 leg-3 min-of-3 close | evidence=2/2 204 @9a99cccf
+
+FACT | AG-141 | 2/2 204 @a9ff088f tree-4231 FULL fix: 36976449519 w192 s525141 + 36976503550 w384 s526141 QUEUED | api
