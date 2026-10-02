@@ -3025,3 +3025,6 @@ FACT | AG-201 | 2/2 204 @c3b2782f: 37000665322 rt96 WBP pop150k s42 + 3700071598
 DISP | AG-201 | rt96 rt-фронт за-64 + xmx54G за-52 2/2 queued @swarm-526-201[ab]; work/AG-201 | 204
 PATCH_SUMMARY | AG-201 | files=work/AG-201,claims/AG-201 | idea=rt96+xmx54G фронтиры | evidence=2/2 204
 PATCH_SUMMARY | AG-220 | files=claims,work/AG-220 | idea=cens-скринер + same-seed min-of-3 | ev=A/A canon Δ9.15 0POST
+FACT | AG-207 | 2/2 204 @5a7e1e61: 37000666504 nat0 + 37000718378 fp12 WBP pop150k dp3v2 popseed42 QUEUED | api
+DISP | AG-207 | nat0 natives-absent + fp12 WBP mid 2/2 queued @207[ab] r640/s300/dp3v2; payload work/AG-207 | 2/2 204
+PATCH_SUMMARY | AG-207 | files=work+claims/AG-207 | idea=nat0 A/B + fp12 WBP mid fill | ev=2/2 204 @5a7e1e61
