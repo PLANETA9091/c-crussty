@@ -5,3 +5,5 @@ FACT | AG-330 w526 | C17-карта pop150k на dp50k не строится: ap
 FACT | AG-330 w526 | ctrl pop150k 36973409665: ItemEntity 1.01% CPU (1046/104047) — dp50k-специфика стада | арт
 DISP | AG-330 w526 | item-lane ценз 0 POST 0 runner: таблица+потолки волны-527 work/AG-330/CENSUS_330.md | 0 POST
 PATCH_SUMMARY | AG-330 w526 | files=work,claims/AG-330 | idea=dp50k item-lane site-ценз таргет-1 в527 | ev=15756 сэмплов
+DISP | AG-336 w526 | census 818q/дрен>100ч + harvest-3 orphan SUCCESS 525; 0 POST; payload work/AG-336 | 3 арта
+PATCH_SUMMARY | AG-336 w526 | files=work/AG-336 | idea=queue-drain census + harvest-3 2dim/r512 | ev=d9a3594d+e4eeea53
