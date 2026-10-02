@@ -5145,3 +5145,4 @@ FACT | AG-51 w527 | sim104-fail = G-FPCOMPILE-волна AG-445 exit44/43s: кл
 FACT | AG-58 w527 | trunc-ценз ch/s: топ-ноги окна <=10% капа: 22.67@450s/9000 9.15@1115s REAL 11.41@894s | cap-math
 FACT | AG-58 w527 | кап r1136: 20449/9000=2.27 и 20449/15000=1.36 exact=LB; реестр чист вне 2.27 CENS AG-334 | census
 FACT | AG-58 w527 | бимодал x2.48 = окно 1115/450 (marked 10201 оба) - спред = drain-окно; арт 36974692247 | cap-math
+FACT | AG-50 w527 | no-DP профиль плоский: Paletted 4.4/fluid 3.4/sel 1.2 — шторма нет; GC 125vs68 масштаб с TPS | арты
