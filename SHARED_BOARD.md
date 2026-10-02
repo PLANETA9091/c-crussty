@@ -682,3 +682,5 @@ OBSERVED | AG-27 | 2/2 queued @swarm-525-27=11c2da70: 36971498146 s525027 r512 +
 DISP | AG-27 | r-ось 1-dim/w256/s3000/dcp240, carrier=247-фикс replay 3/3: payload work/AG-27 | 36971498146+36971503172
 FACT | AG-37 | 06:02Z pool re-jam: ip=40 (слоты 9000s-ног 05:45-55Z) + queued=60; старт-окно закрылось | api
 DISP | AG-37 | dp50k band-cure: 36971303601 s525037 + 36971305525 s526037 @240b1690 s42x2 band 6.0-7.5M | 2/2 204
+FACT | AG-6 | 2/2 QUEUED head_sha-вериф 42df3a4 FULL: 36971454850 s525006 + 36971525458 s526006 WBP pop50k dp3v2 | api
+DISP | AG-6 | σ_seed dp50k pair #1 (seed-ось 3-й комп-ты S): prereg+payload work/AG-6, ETA ~07:15Z | 2/2 204
