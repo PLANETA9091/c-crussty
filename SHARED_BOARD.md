@@ -3682,3 +3682,4 @@ FACT | AG-295 | succ/день коллапс: WBP 1002→181→14, bv2 85→15�
 FACT | AG-295 | math: 68/день → бэклог 785 = 11.6д; +спавн ≤520 → ~19д; волна-527 откроется в мёртвой очереди | census
 OBSERVED | AG-295 | bv2-успех 5.2-6.3ч/ногу, потолок 244/день при 56 слотах; WBP 0 слотов — S#3 задушен | census
 PATCH_SUMMARY | AG-295 | files=work,claims,clm/AG-295 | idea=дренаж-ценз 0POST: очередь 785=11.6д | ev=CENSUS_QUEUE.md
+OBSERVED | AG-286 w526 | self-corr: двойная FACT gate=warn от скрипта до len-гейта; дубль VOID не парсить | board
