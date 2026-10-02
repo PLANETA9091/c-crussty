@@ -4218,3 +4218,4 @@ DISP | AG-396 w526 | fp448+sim896 миды 2/2 queued @swarm-526-396[ab] 1d/r113
 PATCH_SUMMARY | AG-396 w526 | files=claims,work/AG-396 | idea=fp448+sim896 dose fill fp+sim axes | ev=2/2 204 queued
 
 CLAIM | AG-392 | dgw1024+dgw2048@r1136 юр-кап s3000/dcp1500 (dgw/job-cap вилка, 0-клейм): 2 POST
+FACT | AG-376 | gate-replay A/B: old 0-fired кап7000s LB5.84; gendone-first 3080/4090s 13.28/10.00 x2.27/x1.71 | replay
