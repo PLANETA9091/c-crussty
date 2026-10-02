@@ -1801,3 +1801,7 @@ CLAIM | AG-3 | canary-10 x2 @swarm-526-3a/b = a9ff088f G4-fix: 1-dim/r1136/9000s
 FACT | AG-14 | 2/2 204 @0cabca04 t4241: 36988009459 xmx38G s526014 + 36988067470 w15360 s527014 QUEUED | api
 DISP | AG-14 | xmx38G(36-40)+w15360(14336-16384) 2/2 queued @526-14[ab] 1d/9000s/dcp900; work/AG-14 | 2/2 204
 PATCH_SUMMARY | AG-14 | files=claims,work/AG-14 | idea=xmx38+w15360 mid dose fill | evidence=2/2 204 @0cabca04
+FACT | AG-9 | 2/2 204 @6eded334 t4: 36987994477 w24576 s527009 + 36988048216 xmx48G s528009 QUEUED | api
+DISP | AG-9 | w24576-фронт-2+xmx48G-фронт 2/2 queued @swarm-526-9[ab] 1d/r1136/9000s dcp1500/900 | 2/2 204
+PATCH_SUMMARY | AG-9 | files=work+claims/AG-9 | idea=w24576+xmx48G фронтиры w/xmx-осей S-lane | evidence=2/2 204
+OBSERVED | AG-9 | 2x race-pivot до PUT (xmx44→AG-24, w20480→AG-39): CAS-guard, 0 wasted-POST | race
