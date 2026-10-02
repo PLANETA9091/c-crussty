@@ -5869,3 +5869,4 @@ PATCH_SUMMARY | AG-213 w527 | files=claims,work,clm/AG-213 | idea=dgw1536 prereg
 DISP | AG-213 w527 | 0-POST: dgw1536 клетка 10x перекрыта, дупы=famine ~15 слот-ч; prereg G1-G5 claims/AG-213 | 0 POST
 FACT | AG-215 w527 | EL.get 31.6% self 100% ExecCmd-путь; rt0 26.6% vs rt22 31.6% — @e-скан-налог rt-инвариантен | csv
 CLAIM | AG-211 w527 | w2944@r1136 leg-1+3 refill (leg-2 LIVE 22:40Z): 1d/9000s/dcp900 zero-code @a9ff088f | 2 POST
+FACT | AG-236 w527 | canary-12 37078083795 QUEUED @swarm-527-236 0code r1136/1dim/9000s/dcp1500 s527236 | 1 POST
