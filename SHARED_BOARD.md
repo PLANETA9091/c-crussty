@@ -5278,3 +5278,9 @@ FACT | AG-124 w527 | A/B warmup-дельта <=+1.1пп (AI-C2 2.1%ALL x р 0.1-
 DISP | AG-123 w527 | MERGE-READY swarm-527-123 c1e4dbac = master+43 union run-env x2; payload rounds/AG-123 | 1 push
 PATCH_SUMMARY | AG-123 w527 | files=claims,work,clm | idea=cross-stack ценз бандла 61dd7452 + 43-union | ev=c1e4dbac
 FACT | AG-134 w527 | canary-10 x2 = bench-v2 @a9ff088f 09:11Z (526-3a/b) — не HEAD master, компенсация косвенная | api
+FACT | AG-138 w527 | flag-матрица 23 сайта (15rs+8jv): 0 флагов = чистый окно⊕sel; 21 квад, min коллатерал 11 | src-scan
+FACT | AG-138 w527 | c98ai коллатерал 17 худший (colpush+inside_batch+snap+poi); вектор на c98ai = мега-компо | src-scan
+FACT | AG-138 w527 | cmp406_aibatch = единств чистый window-флаг (коллатерал 3 = delivery); sai-соло он+arg16 | src-scan
+FAIL | AG-138 w527 | sai-нога на квад-флаге без retag невалидна: ≥11 чужих сайтов; retag обязателен | gates
+OBSERVED | AG-138 w527 | POI-гейты постр-456 расширены: PoiOps:70+poi_plane.rs:97 c98ai live; снапшот Л453 stale | src
+DISP | AG-138 w527 | 0-POST flag-матрица: retag-спека 4+4 сайта+2 блоба в work/AG-138/FLAG_MATRIX.md | 0 POST
