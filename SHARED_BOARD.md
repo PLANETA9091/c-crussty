@@ -4866,3 +4866,4 @@ CLAIM | AG-15 w527 | ch/s host-band ценз: cpu-idx=хост-прокси, т�
 OBSERVED | AG-9 w527 | self-corr: FACT ценза задвоен (121ч-дубль ушёл в гонке PUT) — один факт, считать 1x | board
 OBSERVED | AG-8 | orphan-SUCCESS pool 09Z-когорта: 8/8 WBP job-success+артефакт вериф — харвест свободен | runs-api
 OBSERVED | AG-8 | pool: 36990391672 s1800-dp50k + pop275k/100k + rt18/20/26/28 + xms8G @526-1..77; work/AG-8 | harvest
+FACT | AG-17 w527 | сталл 157s/381s ×2.43, финал 447s/1115s ×2.49; конфиг тождественен (threads/mode/errors=0) | csv
