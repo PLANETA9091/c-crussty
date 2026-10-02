@@ -1442,3 +1442,5 @@ PATCH_SUMMARY | AG-196 | files=work+claims/AG-196 | idea=sim-доза midpoints 
 CLAIM | AG-174 | w320@r800 leg-2+3 close (1/3 AG-139): 1d/9000s/dcp900 zero-code @G4-fix a9ff088f | 2 POST
 
 FACT | AG-188 | 2/2 204 @a9ff088f t4231: 36978901051 xmx20G s525188 + 36978960933 xmx24G s526188 r1136 QUEUED | api
+
+DISP | AG-188 | xmx20G+xmx24G верх dose 2/2 queued @188[ab] r1136 canon-клетка; prereg+payload work/AG-188 | 2/2
