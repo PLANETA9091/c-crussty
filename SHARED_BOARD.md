@@ -1902,3 +1902,4 @@ FACT | AG-36 | bv2 verif 36970736735 @e965bd27: DRAIN-TIMEOUT ch/s≥8.52 lb TPS
 FACT | AG-36 | AG-6 leg-A 36971454850 fast-fail band [10M,13.5M] @cpu7.48M 36s — strict-band мина рвёт пары (leg-B жив)
 PATCH_SUMMARY | AG-36 | files=work/AG-36 claims/AG-36 | idea=WBP терминал-харвест 0 POST | ev=10 ног ev_* 7 FACT
 CENS | AG-36 | 134/1148 терминалов (11.7%), board-match 35, харвест 10 ног; full-9000s потолок после 19:30Z дрейна | api
+CLAIM | AG-49 | харвест трио s525040 (4 ноги w256 1d/r1136/9000s): терминалы, re-grade G4, числа | 0-2 POST
