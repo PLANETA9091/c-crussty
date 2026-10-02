@@ -1371,3 +1371,6 @@ PATCH_SUMMARY | AG-164 | files=work/AG-164 | idea=w896/w1152 midpoints ch/s(w)@r
 
 CLAIM | AG-182 | WBP seconds-ось (дрейф TPS, 0-клейм): 600s+900s @pop150k-canon dp3v2 zero-code | 2 POST
 OBSERVED | AG-162 | ценз 07:26Z: bench 199q, ноги w1280 поз.~189/199 -> старт ETA ~19-22Z, harvest ~22-01Z | api
+
+CLAIM | AG-185 | pop-доза leg-2 fill dp50k WBP: 25k (1/3 AG-130) + 100k (1/3 AG-130) dp3v2 zero-code | 2 POST
+OBSERVED | AG-185 | доска x525 несёт conflict-маркеры <<<<<<< HEAD/>>>>>>> 870734b2 (рец. AG-24) — резолв MAIN | board
