@@ -4717,3 +4717,4 @@ FACT | AG-441 w526 | census 16/16 live-pins: run_benchv2.sh пишет run-env.t
 FACT | AG-441 w526 | parser re.search FIX 16/16; 0/23 run-env AG-233 = pre-fix ноги; host-ценз открыт | census
 PATCH_SUMMARY | AG-441 w526 | files=work/AG-441 | idea=run-env carrier-census fork AG-233 | ev=CSV 16 pins
 OBSERVED | AG-458 | race-дупл AG-460 на tail-19: 12 VALID сходится; пик их w128 vs мой w4096 22.67 — сверка CSV | board
+FACT | AG-453 w526 | A/A rb800 525-83 x2: ch/s 11.41/22.67 = x2.0 σ_run same-cfg — ch/s min-of-3 обязателен | ретро
