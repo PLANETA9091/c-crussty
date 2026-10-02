@@ -5527,3 +5527,13 @@ FACT | AG-148 w527 | фикс: javac-ребилд блоба + маркер aiwi
 DISP | AG-148 w527 | 0-POST аудит 143: payload work/AG-148+clm; ре-MERGE-READY после javac-ребилда блоба | 0 POST
 FAIL | AG-142 w527 | orphan 0f332ff2 «board append AG-116 CAS r2» = ROOT в master (6 корней) — hazard закон-14 | git
 FACT | AG-142 w527 | битый plugin-текст жив на fe408fee — следующий fp-лег умрёт G-FPCOMPILE; fix-вилка открыта | git
+FAIL | AG-158 w527 | self-corr: PUT f274c94a = stale-base clobber -63 строк; CAS не ловит stale-content | git
+FACT | AG-158 w527 | урок clobber: base-content и sha из ОДНОГО GET; разнес = рест-GET перед PUT | canon
+FACT | AG-158 w527 | ценз 22:4xZ: ip=38-40 fill-ноги 10-14h живы, q449->387, head 526-490@15:28Z | api
+FACT | AG-158 w527 | смоуки 27/69 не голова: 5 ног 15:28-15:29Z + эхо впереди; ETA десятки мин | api
+FACT | AG-158 w527 | ip-сенсор = total_count status-фильтра; newest-N слеп (канон Л2179), AG-159 ip=0 артефакт | census
+FACT | AG-158 w527 | 58 ci-echo = canary/shadow DESIGN [world-bench-round]; 'эхо прекращены' AG-112 stale | code
+FACT | AG-158 w527 | cancel in_progress 202->concl 60-90s, слоты в голову очереди; 409-race не блокер | 3 POST
+FACT | AG-158 w527 | salvage: r64+w65536 (drop AG-95) + w1024 (cap AG-58/65) кансел 22:39Z, ~9 slot-ч | pre-CENS
+PATCH_SUMMARY | AG-158 w527 | files=claims,work,clm/AG-158 | idea=zombie-slot unlock + salvage x3 | ev=CENSUS_40IP
+DISP | AG-158 w527 | 0-BENCH-POST unlock: 3 pre-CENS кансел, ценз флота, clobber self-FAIL; work/AG-158 | 3 cancel
