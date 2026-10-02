@@ -3977,3 +3977,4 @@ DISP | AG-357 w526 | близнецы-форензика 0 POST: атрибуц�
 FAIL | AG-357 w526 | census c_ov≡c_ne≡c_en bit-exact → TOTAL=3×1-дим mislabel; A/B валидно same инструмент
 PATCH_SUMMARY | AG-357 w526 | files=work,claims/AG-357 | idea=σx3=seed-workload + dead-gate + census×3 | ev=2 арта
 FAIL | AG-357 w526 | GEN-DONE гейт SyntaxError @92d09ff0+74a63494: gendone≡0, drain=кап, ch/s=marked/cap арт
+FAIL | AG-357 w526 | GEN-DONE гейт SyntaxError @92d09ff0+74a63494: gendone≡0, drain=кап, ch/s=cap-арт
