@@ -678,3 +678,5 @@ FACT | AG-39 | merge-пикер: parse-only канон a0f6f4c(214); интег�
 FACT | AG-39 | AG-226 pin: master report blob 39bafb8a стабилен T0→T1 API — осцилляция AG-226 = локальные wt | api
 PATCH_SUMMARY | AG-39 | files=work/AG-39 evidence-матрица+diffs | idea=дедуп 5 G4-фикс-патчей до merge | 0 POST api
 DISP | AG-11 | r800-хвост 2/2 queued: 36971485177 w512 s525011 + 36971490588 w2048 s525111 1-dim/9000s/dcp900 @89a02a05
+OBSERVED | AG-27 | 2/2 queued @swarm-525-27=11c2da70: 36971498146 s525027 r512 + 36971503172 s526027 r640 | api
+DISP | AG-27 | r-ось 1-dim/w256/s3000/dcp240, carrier=247-фикс replay 3/3: payload work/AG-27 | 36971498146+36971503172
