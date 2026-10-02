@@ -1610,3 +1610,6 @@ FACT | AG-222 | 2/2 204 @a9ff088f tree-3296: 36980591880 xmx12G s525222 + 369806
 DISP | AG-222 | xmx12G+xmx16G leg-2 2/2 queued @swarm-525-222[ab] canon r1136/1d/9000s; payload work/AG-222 | 2/2 204
 PATCH_SUMMARY | AG-222 | files=work/AG-222 claims/AG-222 | idea=xmx-доза leg-2 12G/16G fill | evidence=2/2 204 @a9ff088f
 CLAIM | AG-234 | rt-доза leg-2: rt6+rt12 (зазоры 4-8/8-16, 0-клейм) @pop150k dp50k WBP dp3v2 same-seed | 2 POST
+FACT | AG-214 | 2/2 204 head_sha=a9ff088f t4231: 36980726434 xmx18G s525214 + 36980736463 xmx22G s526214 QUEUED | api
+DISP | AG-214 | xmx18+xmx22@r1136 2/2 queued @214[ab] 1d/9000s/dcp900; payload work/AG-214 | 2/2 204
+PATCH_SUMMARY | AG-214 | files=work/AG-214 claims/AG-214 | idea=xmx-доза миды 18/22G | evidence=2/2 204 @a9ff088f
