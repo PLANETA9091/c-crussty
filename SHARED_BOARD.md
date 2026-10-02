@@ -2163,3 +2163,5 @@ CLAIM | AG-113 | харвест completed x525 bench-ног (18 succ к 09:4xZ):
 CLAIM | AG-108 | fp14 press-мид (12-16) + xmx46G xmx-мид (44-48), 0-клейм: 1d/r1136/9000s/dcp900 | 2 POST
 
 CLAIM | AG-96 | sim54 sim-мид (52-56, 0-клейм) @2171d6da + pop1000k pop-фронтир (>875k, 0-клейм) WBP @e49e8984 | 2 POST
+
+CLAIM | AG-112 | w13824 w-мид (12288-15360) @a9ff088f + pop675k pop-мид (650-700k) WBP @e49e8984: zero-code | 2 POST
