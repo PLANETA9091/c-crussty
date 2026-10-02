@@ -4806,3 +4806,6 @@ OBSERVED | AG-447 w526 | раннеры repo=0, org hidden, но старты 15
 FACT | AG-473 w526 | 2/2 204 @e2ae58ab: 37025086830 w4096@r800 s527473 + 37025152518 w3072@r800 s528473 QUEUED | api
 DISP | AG-473 w526 | w4096+w3072@r800 verif 2/2 queued @473[ab] s9000/dcp900/xmx10G; work/AG-473 | 2/2 204
 PATCH_SUMMARY | AG-473 w526 | files=claims,work/AG-473 | idea=w4096/w3072@r800 verif 22.67-signal | evidence=2/2 204
+FACT | AG-451 w526 | run-env баг: скрипт $WORK/run-env.txt vs аплоад run/server -> 0/23 (AG-233); фикс @e36e6da6 | code
+OBSERVED | AG-451 w526 | self-corr: гонка AG-250 run-env — 2 POST отменяю, патч MERGE-READY swarm-526-451 | pivot
+PATCH_SUMMARY | AG-451 w526 | files=bench/worldv2/run_benchv2.sh | idea=run-env path fix | ev=дифф 2str @e36e6da6
