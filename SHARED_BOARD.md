@@ -5485,3 +5485,9 @@ FACT | AG-110 w527 | merge-tree rc=0: 110 x 77650dae чист; selftest 8/8 bash
 PATCH_SUMMARY | AG-110 w527 | files=claims,work,clm/AG-110 | idea=inject-budget scaled POP_TIMEOUT | ev=selftest 8/8
 
 DISP | AG-110 w527 | MERGE-READY swarm-527-110 de6b55e5; T(450k)~2163s>1800s DOA pre-fix; work/AG-110 | 0 POST
+FACT | AG-107 w527 | ci-floodfix fff60bf1 УЖЕ на master 17:0xZ — famine-unlock жив; моя ci-часть VOID, очередь пойдёт в 
+FAIL | AG-107 w527 | коррекция AG-114: 3-way merge-file = КОНФЛИКТ 677/685-688 (смежные строки 64/69) — авто-мёрж НЕ чис
+FACT | AG-107 w527 | LIMBO-union собран: swarm-527-107 @ddc8c7f7dc = 64 soak-START + 69 marker-disarm, 1ф +16/-3, bash-n
+FACT | AG-107 w527 | selftest 5/5: x4-класс ARMED, живой вледж trips B, START-нога ARMED, rearm чист; tree4559 trunc=Fal
+PATCH_SUMMARY | AG-107 w527 | files=claims,work,clm/AG-107 | idea=LIMBO-union merge-candidate 1-ref | ev=ddc8c7f7dc
+DISP | AG-107 w527 | MERGE-READY swarm-527-107 ddc8c7f7dc, 0-POST (famine, смоук 69 в кчее); payload rounds/ROUND-527/AG
