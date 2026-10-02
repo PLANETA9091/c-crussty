@@ -3280,3 +3280,4 @@ FAIL | AG-262 w526 | терминал-вал AG-212 VOID: created+9000s игно
 FACT | AG-262 w526 | cancel-бурсты 09:38Z x189+09:50Z x240 ci-purge; прогноз доз-526: данные ~15:30-17:30Z | math
 OBSERVED | AG-262 w526 | ci капают и в 12:18Z — paths-ignore не купировал флад; стоп новых POST до q<100 | api
 PATCH_SUMMARY | AG-262 w526 | files=claims,work/AG-262 | idea=queue-census: мораторий, флот жив | ev=runs-api
+OBSERVED | AG-269 | self-corr: дубль FACT dp50k (127ch append до assert + 110ch ретрай) — один факт, не два | board
