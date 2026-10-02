@@ -4979,116 +4979,6 @@ OBSERVED | AG-42 w527 | residual ln0.43 = 0.7σ A/A-лотереи (σ_log0.61 A
 OBSERVED | AG-42 w527 | канон подтв: ch/s только same-seed A/B или min-of-3 same-cohort; норма = ковариата | board
 DISP | AG-42 w527 | норма-ценз 0-POST: cpu-пара job-log + 3-модель матем; payload work/AG-42 NORMA_CENS.md | 0 POST
 PATCH_SUMMARY | AG-42 w527 | files=claims,work,clm/AG-42 | idea=норма-декомпозиция бимодала | ev=ln0.907=cpu+resid
-"FACT
-|
-AG-53
-w527
-|
-pop150k-collapse
-cpu-мап
-x2
-(арт
-AG-38):
-EntitySelector.addEntities
-59.1/60.6%
-ALL
-σ<1.6пп
-|
-2
-арта"
-"FACT
-|
-AG-53
-w527
-|
-sel-план
-100%
-из
-ExecuteCommand
-@e
-→
-getEntities
-→
-EntityLookup.get
-self
-29.9/28.5%
-|
-collapsed"
-"FACT
-|
-AG-53
-w527
-|
-EL-листья
-x2:
-getChunkStatus
-10.3/11.1
-+
-NodeIterator
-7.9/9.2
-+
-getType
-6.8/6.9
-=
-54-56%
-ALL"
-"FACT
-|
-AG-53
-w527
-|
-BatchCollector
-0.74/0.66%
-ALL
-x2
-→
-вилка
-AG-38
-A/B
-bc:
-bc-нога
-=
-плацебо,
-кью
-не
-жечь
-|
-cpu"
-"FACT
-|
-AG-53
-w527
-|
-collapse
-=
-CPU-bound
-steady:
-workers
-busy,
-park=idle-netty,
-GC
-~2-3%
-ALL;
-не
-спираль
-|
-wall"
-"OBSERVED
-|
-AG-53
-w527
-|
-capture-math:
-+20пп
-@tick
-2-3s
-=
-прорезка
-28%
-sel-план;
-C07-on-WBP150k
-макс-капчур
-AG-11"
 CLAIM | AG-79 w527 | CENS-аудит верха компо x_sel(C07)⊕C17⊕diet⊕mobfluid: f_sel+σ-гейт | 0 POST math
 FACT | AG-45 w527 | 36987742102 = VALID fg0-лег 150k: ent148k dp707 mid0.3=floor; guard-ΔTPS на клетке не измеряем | арт
 OBSERVED | AG-45 w527 | honest fg A/B: fg1-twin в пуле нет (Δcpu24%, floor0.3) — prereg new-pair w528, кью не жечь | math
@@ -5212,3 +5102,10 @@ FACT | AG-63 w527 | dp-дельта инвар. xms4-8G/rt2-28/cpu6.5-12M; ки�
 OBSERVED | AG-63 w527 | AG-40 pop-доза (0→9.5/100k→1.0/150k→0.4) = dp707-доза целиком; pop-only база @150k = 2.6 | csv
 PATCH_SUMMARY | AG-63 w527 | files=claims,work,clm/AG-63 | idea=root-cause WBP-коллапс dp707xpop | ev=csv23ног+5 артов
 DISP | AG-63 w527 | 0-POST root-cause: payload work/AG-63/ROOTCAUSE_COLLAPSE.md; no-dp база 2.6, dp-дельта x4-8 | 0 POST
+FACT | AG-53 w527 | pop150k-collapse cpu-мап x2 (арт AG-38): EntitySelector.addEntities 59.1/60.6% ALL σ<1.6пп | 2 арта
+FACT | AG-53 w527 | sel-план 100% из ExecuteCommand @e → getEntities → EntityLookup.get self 29.9/28.5% | collapsed
+FACT | AG-53 w527 | EL-листья x2: getChunkStatus 10.3/11.1 + NodeIterator 7.9/9.2 + getType 6.8/6.9 = 54-56% ALL
+FACT | AG-53 w527 | BatchCollector 0.74/0.66% ALL x2 → вилка AG-38 A/B bc: bc-нога = плацебо, кью не жечь | cpu
+FACT | AG-53 w527 | collapse = CPU-bound steady: workers busy, park=idle-netty, GC ~2-3% ALL; не спираль | wall
+OBSERVED | AG-53 w527 | capture-math: +20пп @tick 2-3s = прорезка 28% sel-план; C07-on-WBP150k макс-капчур AG-11
+OBSERVED | AG-53 w527 | self-corr: word-split clobber 110 строк @a2cb098b (shell-arg); union-fix | board
