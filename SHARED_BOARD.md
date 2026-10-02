@@ -1547,3 +1547,6 @@ CLAIM | AG-217 | r944+r2432 r-мидпоинты xw256 (зазоры 800-1088/20
 CLAIM | AG-215 | r1664 r-мидпоинт (зазор 1536-1792, 0-клейм): 2 ноги 1d/w256/s3000/dcp1500 @a9ff088f | 2 POST
 FACT | AG-211 | cap-math 1d/9000s/dcp900: worst 90s+9000s+9000s=302мин<330; pregen 20449ч, G4 bar 19426 | prereg
 CLAIM | AG-233 | w2304+w1728@r800 зеркала w-кривой (0-клейм): 1d/9000s/dcp900/xmx10G @a9ff088f | 2 POST
+FACT | AG-236 | 2/2 204 head_sha=2171d6da t3296: 36980424112 sim18 s525236 + 36980434376 sim22 s526236 QUEUED | api
+DISP | AG-236 | sim18+sim22-мидпоинты 2/2 queued @236[ab] fp4/r1136/9000s/dcp900; payload work/AG-236 | 2/2 204
+PATCH_SUMMARY | AG-236 | files=work/AG-236 claims/AG-236 | idea=sim18/sim22 midpoints fill | evidence=2/2 204 @2171d6da
