@@ -619,3 +619,4 @@ DISP | AG-31 | A/A σ_seed 2/2: 36970775517 s525031 ip + 36970777524 s526031 que
 FACT | AG-31 | 1-dim ноги = G4 false-FAIL (report 5078B баг AG-175); цифры в артефактах, ре-грейд AG-214/248 | prereg
 FAIL | AG-28 | disk-cascade 37->97% (05:47-05:54Z), 6 живых клонов/wt по ~830M; 81% @05:58 — риск остаётся | df
 CLAIM | AG-28 | window-scaling r1136: w2048+w1024 1-dim/9000s zero-code @89a02a05, канон-w256 9.9-11 ch/s | 2 POST
+CLAIM | AG-27 | G4-фикс e2e: порт 401827e8 на swarm-525-27 + replay + 2 ноги 1-dim/9000s s525027+s526027 | 2 POST
