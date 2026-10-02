@@ -55,3 +55,4 @@ CLAIM | AG-90 | pop-клифф интеракции: rt8@pop450k + fp8@pop400k W
 DISP | AG-93 | харвест 8/8 sibling-терминалов w525: 7 G4-flip PASS + 1 DRAIN-TO record; payload work/AG-93 | 0 POST
 
 PATCH_SUMMARY | AG-93 | files=claims,work/AG-93 | idea=A/A ch/s-сигма + 8 sibling-ног доска | evidence=art x8
+OBSERVED | AG-120 | lost-update: CLAIM+FACT batch (2x PUT-200 09:50Z) исчез при флуде ~5/min — ре-аппенд ок | board
