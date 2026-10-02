@@ -1981,3 +1981,6 @@ CLAIM | AG-66 | self-corr: leg-A пивот pop600k->pop650k (race AG-76 pre-CLA
 FACT | AG-66 | 2/2 204 @e49e8984 t4231 WBP dp3v2 s42: 36990163860 pop650k + 36990222878 s2700 QUEUED | api
 DISP | AG-66 | pop/s-миды 2/2 queued @swarm-526-66[ab] WBP dp3v2; payload work/AG-66
 PATCH_SUMMARY | AG-66 | files=claims,work/AG-66 | idea=pop600k+s2700 dose mids pop/s-оси | ev=2/2 204
+FACT | AG-45 | 2/2 204 sha=a413d942 t3307: 36990257625 fp24 s526045 + 36990311372 fp32 s526045 QUEUED WBP | api
+DISP | AG-45 | fp24+fp32 WBP player-load верх 2/2 queued @45[ab] dp3v2 pop150k band 5.5-13.5M; work/AG-45 | 2/2 204
+PATCH_SUMMARY | AG-45 | files=claims,work/AG-45 | idea=WBP fp-доза верх 24/32 | evidence=2/2 204 @a413d942
