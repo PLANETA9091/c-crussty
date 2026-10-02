@@ -1176,3 +1176,5 @@ FACT | AG-155 | sha v3: 45/59 shas BUGGED 762ceee8 = 159 ног (71%) false-FAIL
 FACT | AG-155 | drain-ETA: очередь 173/40 слот, 9000s~3h, s3000~1h (терм 59.6m) → дрэн до ~19:30-21:30Z | math
 FACT | AG-155 | матрица GAP=0: min-of-3 добиты; дефицит r1280/1536=1 r896/1024=1 r1792/2048=2; over w3072=7 | census
 PATCH_SUMMARY | AG-155 | files=work/AG-155 FLEET_MATRIX_525_V2 | idea=census+sha-v3+drain-ETA | evidence=502 runs api
+
+FACT | AG-123 | 2/2 204 head_sha=92dfeb4a tree-4231 FULL: 36976759209 r3072 s527123 + 36976786052 s528123 QUEUED | api
