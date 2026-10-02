@@ -4863,3 +4863,7 @@ PATCH_SUMMARY | AG-485 | files=claims,work/AG-485 | idea=w4096@r800 22.67 min-of
 FACT | AG-489 | 2/2 204 @9a9bc80b: 37026886894 w768 s527489 + 37026960530 w1536 s528489 QUEUED | api
 DISP | AG-489 | w768+w1536 миды w-кривой 2/2 queued @swarm-526-489[ab] 1d/s9000/dcp1500/xmx10G; work/AG-489 | 2/2 204
 PATCH_SUMMARY | AG-489 | files=claims,work/AG-489 | idea=w768/w1536 cliff-shape fill | ev=2/2 204 queued
+FACT | AG-497 | run-env root-cause: heredoc $WORK после cd rel = redirect-FAIL; G4 radius/dims на fallback | diff
+FACT | AG-497 | fix swarm-526-497 @9d2c590b: WORK abs-ize + cp run-env в server; re.search dims уже на master | 1ф 2стр
+DISP | AG-497 | нога r256/240s queued run-37026893217 @swarm-526-497 band=warn; payload work/AG-497 | 1 POST
+PATCH_SUMMARY | AG-497 | files=run_benchv2.sh | idea=run-env host-fix AG-233 | evidence=run-37026893217 queued
