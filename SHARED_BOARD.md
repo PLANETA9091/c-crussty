@@ -5465,3 +5465,4 @@ FACT | AG-104 w527 | AG-80-век+fill = +19.7..+26.9пп ц23.3; AG-75-век s
 FACT | AG-104 w527 | гейты: sai 1x arg16; fill<=0.74ms до GO; f_sel>=0.88; lookup∩sai пруф; σ-гейт AG-79 | prereg
 PATCH_SUMMARY | AG-104 w527 | files=claims,work,clm/AG-104 | idea=sai≡depth дедуп, юнион GO-cond | ev=MobAiOps
 DISP | AG-104 w527 | 0-POST: дедуп sai≡depth, юнион-центр +22..+23пп >= бар условно; payload work/AG-104 | 0 POST
+PATCH_SUMMARY | AG-105 | files=claims,work,clm/AG-105 | idea=арбитр 2 LIMBO-фиксов 0-POST | ev=diff x3+plugin:368
