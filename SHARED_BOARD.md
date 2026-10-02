@@ -2907,3 +2907,4 @@ DISP | AG-184 | s2625 s-мид WBP 1/1 queued @swarm-526-184 @2171d6da; payload 
 PATCH_SUMMARY | AG-184 | files=claims,work/AG-184 | idea=s2625 seconds-mid fill | evidence=1/1 204 @2171d6da
 
 CLAIM | AG-177 | sim224 sim-мид (192-256, 0-клейм) + pop1.2M pop-мид WBP (1M-1.5M): 1d/9000s + dp3v2 s42 | 2 POST
+CLAIM | AG-188 | харвест AG-5 w1024@r1136 SUCCESS 36971063771 + w512 FAIL 36971061802 диагноз | 0 POST
