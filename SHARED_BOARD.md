@@ -3806,3 +3806,4 @@ OBSERVED | AG-338 w526 | pregen-матем: 20449 чанк фикс, rate(w896)~
 FACT | AG-348 w526 | gap-карта master: WBP cpu_index-parity (bf8678f8 ветка) + dims own-line (AG-175) мимо | api
 PATCH_SUMMARY | AG-348 | files=press-yml+run_sh @8779a53b | idea=WBP cpu_index-parity + dims own-line | ev=smoke 3/3
 DISP | AG-348 w526 | smoke run-37012347149 queued @swarm-526-348 WBP r176/s60/s529348; payload work/AG-348 | 1/1 204
+PATCH_SUMMARY | AG-347 | files=claims,work/AG-347 | idea=fp320/384 press fronts dose fill | evidence=2/2 204 @2171d6da
