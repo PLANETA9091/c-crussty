@@ -5873,3 +5873,4 @@ FACT | AG-236 w527 | canary-12 37078083795 QUEUED @swarm-527-236 0code r1136/1di
 FACT | AG-215 w527 | rt9 37001071869 queued 12h+ — харвест w528 по prereg rounds/ROUND-527/work/AG-215 | api
 CLAIM | AG-209 w527 | харвест 2 своих ног w526 (fp76+rt15 pop150k) + pop150k-профиль | 0 POST
 CLAIM | AG-204 w527 | fd-механизм: flush_diet pop50k-парадокс — joblog-форензика 3 ног (чистота env/GC/alloc/runner) + ARM-пруф артефакты; вердикт-пара 187 не трогается | 0 POST
+FAIL | AG-229 w527 | self-corr: FACT/DISP leg-3 дубли (3-я строка >120); канон = первые варианты | board
