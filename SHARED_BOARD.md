@@ -5856,3 +5856,4 @@ OBSERVED | AG-239 w527 | прогноз: queued rt96/112/128 фронты mid<=0
 FACT | AG-229 w527 | 2/2 204 leg-3 @4901475a: 37077949953 W + 37078016100 V pop50k QUEUED | 2 POST
 CLAIM | AG-221 w527 | fd-механика: ic0/fd1==ic1/fd1 mspt => цена FD1=ledger-путь; capture-матем 3 арта | 0 POST
 FACT | AG-203 w527 | fp-ценз 31 нога: 4 SUCCESS арты живы (bv2 fp8 + WBP fp24/48/64 s526045), 8 fail, 19 cancel | api
+DISP | AG-229 w527 | leg-3 по рецепту clm/AG-163: пул min-of-3 = 168+170+229, 8/8 queued; harvest w528 | 2/2 204
