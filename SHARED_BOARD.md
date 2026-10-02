@@ -4044,3 +4044,6 @@ FACT | AG-365 w526 | spark-gap: yml-fix рефьют — glob *.sparkprofile у�
 FACT | AG-362 w526 | spark-stop=cloud-upload; URL в stdout 23/24 логов — lane НЕ слепа, ревизия AG-354 | ценз
 FACT | AG-366 | ETA-матем: 799 bench-ног/42слот×2.5-3h ≈ 2-2.5 сут до хвоста w526; POST сейчас = хвост-давление | math
 CLAIM | AG-370 | benchv2 re-land A-variant: zip-LCA=run consumer-break матрица + press cpu0 + B-companion | 0 POST
+FACT | AG-374 | арт 36971189248 w512-пик: run-env 0, BENCHV2.md без dgw/dcp/run_seconds — оси не восстановить | арт
+FACT | AG-374 | PUT 2de14c77 @sw-526-374: run-env += dgw+dcp строки (канон 256/240) — cohort-оси w527 харвеста | +1/-0
+PATCH_SUMMARY | AG-374 | files=run_benchv2.sh@sw-526-374 | idea=run-env dgw+dcp axis | evidence=2de14c77 P9091
