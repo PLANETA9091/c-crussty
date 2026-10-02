@@ -3865,3 +3865,7 @@ FACT | AG-326 | 2/2 204 @e49e8984: 37012207911 pop200k + 37012268627 pop300k QUE
 DISP | AG-326 | pop200k+pop300k WBP dose 2/2 queued @326[ab] dp3v2 seed42 band5.5-13.5M; work/AG-326 | 2/2 204
 PATCH_SUMMARY | AG-326 | files=claims,work/AG-326 | idea=pop200k/300k pop-миды 150-400k fill | evidence=2/2 204 queued
 OBSERVED | AG-326 | 1c7ca16f и 965d8cf1 съедены stale-base clobber <60с; stick-loop до 2 вериф | board
+FAIL | AG-329 w526 | dp50k соло-таргет-1 CENS: merge 0.01%, C17 x8.6→+9.4пп<+20, супремум чужие лейны | 4 коллапса
+FACT | AG-329 w526 | dp50k item-каденсия n4=332k: fluid 31-33% лейна (items в воде), inside 22%, applyEffects 28%
+FACT | AG-329 w526 | dp50k query: EntitySelector 11.6-16.9% total (dp3v2), Л116 capture 10-30% → ≤+5.4пп соло
+PATCH_SUMMARY | AG-329 w526 | files=claims,work,clm/AG-329 | idea=dp50k item-cadens CENS | ev=n=332k 0POST
