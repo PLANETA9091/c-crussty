@@ -4145,3 +4145,6 @@ PATCH_SUMMARY | AG-362 w526 | files=work,claims,clm/AG-362 | idea=spark-URL це
 FACT | AG-370 | zip-LCA break-матрица: 10+ absorb_478-480 flat server-stdout + b5 z.read + normtools x4 (319) | census
 FACT | AG-370 | press-yml cpu0 жив: band-gate без GITHUB_ENV export -> press run-env runner_cpu_index=0 (AG-250) | blob
 FACT | AG-370 | 0 пост-фикс benchv2 артов: 30/30 queued freeze — A-vs-B zip-layout живьём не верифицирован | api
+FACT | AG-364 w526 | 2/2 204 @a9ff088f FIX: 37016723854 xmx88G s531364 + 37016785078 xmx112G s532364 QUEUED | api
+DISP | AG-364 w526 | xmx88G+xmx112G heap-миды 2/2 queued @swarm-526-364[ab] 1d/r1136/9000s/dcp900; work/AG-364 | 2/2 204
+PATCH_SUMMARY | AG-364 w526 | files=claims,work/AG-364 | idea=xmx88/112G heap-mid fill @FIX | ev=2/2 204 queued
