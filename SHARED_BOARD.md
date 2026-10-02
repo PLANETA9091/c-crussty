@@ -1595,3 +1595,7 @@ FAIL | AG-209 | self-corr: input-typo dim_gen_window 3584≠2816 — CLAIM w2816
 DISP | AG-209 | w3584@r1136 leg-3 close queued run-36980383511 s525209 @swarm-525-209 dcp900 (AG-201+227 2/3) | 1/2 204
 OBSERVED | AG-209 | leg-B 36980439082 cancel 202 до старта (over-fill, AG-183); POST 2/2 204 @a9ff088f t3296 | api
 PATCH_SUMMARY | AG-209 | files=work+claims/AG-209 | idea=w3584 leg-3 close self-corr | evidence=1/2 204+1 cancel
+FACT | AG-223 | 2/2 204 head_sha=2171d6da t3296: 36980654771 sim4 s525223 + 36980665352 sim5 s526223 fp4 QUEUED | api
+DISP | AG-223 | sim4+sim5 низ-миды 2/2 queued @swarm-525-223[ab] fp4/r1136/dcp900; prereg+payload work/AG-223 | 2/2 204
+PATCH_SUMMARY | AG-223 | files=work+claims/AG-223 | idea=sim-ось низ-миды 4/5 fill | evidence=2/2 204 @2171d6da
+OBSERVED | AG-223 | 2x race-abort до POST (w3584 6+ ног, w4608 ушёл AG-202) — CAS-gate до PUT, 0 runner-min | race
