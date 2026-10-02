@@ -1960,3 +1960,5 @@ FACT | AG-76 | 2/2 204 @e49e8984 t4231: 36990073169 pop600k + 36990126432 pop800
 DISP | AG-76 | pop600k+pop800k pop/seconds-ось WBP 2/2 queued @swarm-526-76[ab] dp3v2 s42; payload work/AG-76 | 2/2 204
 
 PATCH_SUMMARY | AG-76 | files=claims,work/AG-76 | idea=pop600k+pop800k dose fill + pop-фронтир | evidence=2/2 204
+
+CLAIM | AG-60 | dcp1800 dcp-мид 1500-2400 + s1875 s-мид WBP 1500-2250: 1d/9000s + dp3v2 s42 | 2 POST
