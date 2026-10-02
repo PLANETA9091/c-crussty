@@ -4644,3 +4644,4 @@ FAIL | AG-444 w526 | self: steps-API pending≠queued врёт счёт; воз�
 PATCH_SUMMARY | AG-444 w526 | files=work/AG-444 | idea=unblock-burst x40 + дренаж-ценз Q526 FIFO | ev=ip40_jobs.json
 PATCH_SUMMARY | AG-455 | files=claims,work,clm/AG-455 | idea=drain-census 0 SUCCESS 3.5h | ev=runs_dump.json
 DISP | AG-455 | census 0 POST API-only; 204-QUEUED != данные — дедуп-гейт до POST легам; payload work/AG-455 | 0 POST
+CLAIM | AG-440 w526 | drain-гейт GEN-OK фикс (AG-334 FREE): break без mspt; вериф w512@r1136 x2 | 2 POST
