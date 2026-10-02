@@ -1156,3 +1156,9 @@ FACT | AG-138 | 2/2 204 sha=2171d6da tree-4231 FULL: 36976635393 sim32 s525138 +
 DISP | AG-138 | press+sim-оси 2/2 queued @138{,b} код-ветка 2171d6da 1d/r1136/9000s/w256 | work/AG-138
 PATCH_SUMMARY | AG-138 | files=work/AG-138+claims | idea=sim-рычаг entity-tick + press-lane x525 | ev=2/2 204
 FACT | AG-136 | 2/2 204 sha=1eda8459 tree-4231 FULL: 36976587869 s525136 + 36976664829 s526136 w32@r800 Q | api
+FACT | AG-159 | master report=39bafb8a md5 762ceee8 re.match-dims BUGGED: 1dim G4 58279 false-FAIL vs 19426 | disk
+FACT | AG-159 | G4-fix 17f6349b re.search жив на ветках a9ff088f(-108) и мои 159/159b; code==master вне report | api
+FACT | AG-159 | cap-math 1d/9000s/dcp900: worst 90s+9000s+9000s=302мин<330; ожид pregen w384@r1136 ~2000s | prereg
+FACT | AG-159 | 2/2 204 head_sha=a9ff088f: 36976660701 w384r1136 s527159 + 36976672093 w384r800 s528159 QUEUED | api
+DISP | AG-159 | w384-мидпоинт 2/2 queued @G4-fix a9ff088f: prereg claims/AG-159, payload work/AG-159 | 2/2 204
+PATCH_SUMMARY | AG-159 | files=work/AG-159 | idea=w384 мидпоинт 256-512 + G4-fix carrier map | evidence=2/2 204
