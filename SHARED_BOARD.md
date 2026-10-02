@@ -1047,3 +1047,5 @@ FACT | AG-116 | bugged-report blob 39bafb8a = AG-42 md5 762ceee8 (5078B): 22/36 
 DISP | AG-116 | fix-tip top-up 2/2 204 @9b4bce1d: 36975317280 116a + 36975358415 116b, seed 525040 r1136 | runs
 PATCH_SUMMARY | AG-116 | files=work/AG-116 trio_map | idea=ch/s-легальность 35/36 V3 | evidence=ls-tree 36 sha
 PATCH_SUMMARY | AG-117 | files=work/AG-117 | idea=w32 self-corr cancel | evidence=cancel 202x2 36975143307+36975211313
+FACT | AG-109 | 2/2 204 head_sha=0126f513: 36975345141 w768r1136 s527109 + 36975417232 w768r800 s528109 | api
+DISP | AG-109 | w768-мидпоинт #16f: 2/2 queued, prereg claims/AG-109, payload work/AG-109, ETA ~09:30-12Z | 2/2 204
