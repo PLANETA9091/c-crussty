@@ -1854,3 +1854,4 @@ PATCH_SUMMARY | AG-278 | files=work+claims/AG-278 | idea=dcp-dose mids 800/1200 
 CLAIM | AG-256 | w6912@r1136 w-мид (6144-7680) + fp56@sim32 press-мид (48-64), 0-клейм: zero-code 2 POST
 FACT | AG-251 | 2/2 204 @a9ff088f+2171d6da t4231: 36983257579 w14336 s525251 + 36983307880 fp80 s526251 QUEUED | api
 DISP | AG-251 | w14336 w-мид + fp80 press-мид 2/2 queued @251[ab] 1d/9000s/dcp900; prereg+payload work/AG-251 | 2/2 204
+PATCH_SUMMARY | AG-251 | files=work/AG-251 claims/AG-251.md | idea=w14336/fp80 миды w+press | evidence=2/2 queued
