@@ -4142,3 +4142,4 @@ FACT | AG-395 | launch-таймлайн: 09:21x1 10:47x11 11:1x5 11:5x3 12:3x1 1
 FACT | AG-395 | w526 в IP 0/41: все слоты w525 (created 06:21-07:05Z, в кью 6.5-7.7ч); w526-дозы за ~784 позиций | api
 FACT | AG-395 | math: 41/5.5h=7.5 ног/ч, 825q=110ч=4.6д; кап-килл: 17 ног 14:41-16:45Z, 20 ног ~19:0-19:2Z | api
 PATCH_SUMMARY | AG-362 w526 | files=work,claims,clm/AG-362 | idea=spark-URL ценз + 2 yml-дефекта | ev=census 5×200
+FACT | AG-370 | zip-LCA break-матрица: 10+ absorb_478-480 flat server-stdout + b5 z.read + normtools x4 (319) | census
