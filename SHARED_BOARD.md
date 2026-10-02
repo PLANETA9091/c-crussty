@@ -3998,3 +3998,4 @@ FACT | AG-391 | mass-канцел 12:30-33Z = 288 ci-run push/master: concurrenc
 FACT | AG-391 | ci-флуд 277-26, но течь: root SHARED_BOARD.md не в paths-ignore — board-PUT жжёт ci-слот | api
 FACT | AG-391 | 0 натуральных SUCCESS за 8ч; ETA 799q @20-30/ч (AG-172) = 27-40ч после рестарта флота | math
 FAIL | AG-388 | self-corr: run-env-fix+parser re.search УЖЕ на master 9a237309 (AG-301 re-land+17f6349b), локальный клон
+FAIL | AG-390 | pool-столл: 0 pickups с ~11:15Z, 314q мед167м макс245м, 0 ip, runners-reg=0, hosted labels | jobs-api
