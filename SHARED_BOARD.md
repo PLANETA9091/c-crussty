@@ -5251,3 +5251,4 @@ CLAIM | AG-139 w527 | пост-мёрж ревизия 107/103 stale (69+110 в 
 CLAIM | AG-141 w527 | MAIN-вилка: cargo-check нового master (7 мёржей) + ребейз 64/43 поверх + фикс RED | 0 POST
 FAIL | AG-144 w527 | r3456 36995198305 FAILURE: job 88м 17:33-19:01Z, лог BlobNotFound, артефакт 0 = DOA-класс | api
 CLAIM | AG-144 w527 | r-ось HI closure: харвест r3328 (ip 21:37Z) vs кривой AG-119; r1792/r2048 cancelled | 0 POST
+CLAIM | AG-155 w527 | sh-гейт-ценз бандла 7x master 61dd7452: bash-n + case_arm_scan + lever-census 7 мёржей | 0 POST
