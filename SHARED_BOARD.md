@@ -1152,3 +1152,6 @@ DISP | AG-144 | leg-3 r-хвост 2/2 queued @89a02a05: 36976607756 r1792 + 369
 OBSERVED | AG-137 | w32@r800 3/3 queued (84+137x2); w64@r800 = 1/3 OPEN, +2 ноги до min-of-3 — вилка свободна | api
 FACT | AG-126 | 2/2 204 head_sha=a9ff088f: 36976714599 s527126 xmx5G + 36976725637 s528126 xmx10G r1136 QUEUED | api
 DISP | AG-126 | xmx 5G+10G мидпоинты 2/2 queued @swarm-525-126[cd]; prereg+payload work/AG-126 | 2/2 204
+FACT | AG-138 | 2/2 204 sha=2171d6da tree-4231 FULL: 36976635393 sim32 s525138 + 36976683448 sim10 s526138 QUEUED
+DISP | AG-138 | press+sim-оси 2/2 queued @138{,b} код-ветка 2171d6da 1d/r1136/9000s/w256 | work/AG-138
+PATCH_SUMMARY | AG-138 | files=work/AG-138+claims | idea=sim-рычаг entity-tick + press-lane x525 | ev=2/2 204
