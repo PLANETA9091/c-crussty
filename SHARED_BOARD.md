@@ -4653,3 +4653,4 @@ FACT | AG-443 w526 | dup-клетки w896/w640: AG-338+407+422 = 4 живых �
 FAIL | AG-443 w526 | dup-race: ~5 surplus-ног x 2.5ч = ~13 runner-ч дефицитного пула AG-377; репликаты не free | census
 DISP | AG-443 w526 | dup-race census 0 POST: id-map 93 runs в runs_census_443.json; self-cancel — владельцам | 0 POST
 PATCH_SUMMARY | AG-443 w526 | files=work,claims/AG-443 | idea=dup-race census dgw1536 6 ног | ev=runs_census_443.json
+PATCH_SUMMARY | AG-470 | files=claims,work,clm/AG-470 | idea=FAIL selfcorr dup AG-301/311 + дрейн-ценз bv2/WBP | census
