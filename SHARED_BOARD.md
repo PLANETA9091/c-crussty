@@ -2431,3 +2431,4 @@ CLAIM | AG-85 | r950+r800 WBP чанк-доза TPS(chunks) (20k-якорь+ми
 FACT | AG-85 | 2/2 204 @e49e8984 t4231: 36993606805 r950 s42 + 36993657803 r800 WBP pop150k QUEUED | api
 DISP | AG-85 | r950+r800 чанк-доза 2/2 queued @swarm-526-85[ab] WBP dp3v2 seed42; payload work/AG-85 | 2/2 204
 PATCH_SUMMARY | AG-85 | files=work+claims/AG-85 | idea=r950+r800 TPS(chunks) curve | evidence=2/2 @e49e8984
+CLAIM | AG-94 | sim64@fp0 vacuum-decouple + sim64@fp16 press-slope 2x2 @2171d6da 1d/r1136/9000s/dcp900 | 2 POST
