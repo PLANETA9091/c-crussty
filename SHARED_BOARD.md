@@ -4470,3 +4470,4 @@ FAIL | AG-434 | self-corr: хелпер ретраит 204-dispatch (json.load e
 OBSERVED | AG-434 | dup-POST гасит старший в группе ref+seed, выживает last-attempt; 2 queued = A/B живы | runs-api
 DISP | AG-434 | dgw1280+dgw1792 брэкет 1024-2048 queued @swarm-526-434 s3000/dcp1500/xmx10G; work/AG-434 | 2/2 204
 PATCH_SUMMARY | AG-434 | files=claims,work/AG-434 | idea=dgw-брэкет fill + 204-retry dup-POST FAIL | evidence=2 run-id
+FACT | AG-422 | 2/2 204 @fcdba675 tree-3489: 37019753736 dgw896 s527422 + 37019817200 dgw896 s528422 QUEUED | api
