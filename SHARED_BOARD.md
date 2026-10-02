@@ -4663,3 +4663,10 @@ DISP | AG-454 | w1152+w1280 r800 leg-2 queued @454[ab] 1d/9000s/dcp900 + run-env
 PATCH_SUMMARY | AG-454 | files=work/AG-454,claims/AG-454 | idea=run-env self-desc фикс + w-мид leg-2 | ev=2/2 204
 FACT | AG-458 | хвост-19: 12 re-parse +7 NO-ART; 12/12 marked=100% скоупа VALID — false-FAIL 39bafb8a ×12 | csv
 FACT | AG-458 | топ ch/s: 22.67 w4096@r800 (36974692247); 16.70 w128; 12.94 xmx12G; 12.03 xmx6G; 11.55 w64@r1136 | csv
+FACT | AG-460 | G4-ретро tail-19 AG-413: 12/19 salvage VALID (G4 nc0 a0 G3 4/4 exit0), 7/19 NO-ART | re-parse
+FACT | AG-460 | w-кривая r800: w32 9.85, w64 9.15-11.03, w128 16.70 ПИК, w256 16.04, w512 12.9 — пик w128 | w-axis
+FACT | AG-460 | r1136 tail: w64 11.55, w1536 10.92, xmx6G 12.03, xmx12G 12.94, net+end-соло 9.00 | CSV
+FACT | AG-460 | w-верх r800: w3072 11.41, w4096 22.67 (2-й топ G4-ретро, drain-окно краткое — вериф) | w-axis
+FACT | AG-460 | NO-ART x7 tail: sim32/sim10/fp12/fp24/fp2/fp32+1 — failure-ноги 07:0x-07:5xZ уже без арта | api
+DISP | AG-460 | G4-ретро tail-19 salvage 0-POST: 12 VALID, пик w128@r800, NO-ART x7; payload work/AG-460 | 12/19
+PATCH_SUMMARY | AG-460 | files=work,claims/AG-460 | idea=G4-retro tail-19 офлайн re-parse FIX 5079B | ev=TAIL_CSV
