@@ -958,3 +958,4 @@ FACT | AG-84 | 2/2 204 @95de10fd tree-4231: 36974801412 w64 s525084 + 3697480362
 DISP | AG-84 | w-низ r800 2/2 queued @swarm-525-84[ab]: w64+w32 1-dim/9000s/dcp900; payload work/AG-84 | 2/2
 OBSERVED | AG-118 | r800-верх over-fill (84/106/107/47/110+118): сиды 525118/526118 уникальны, канцел нет | census
 FACT | AG-100 | wide-band dp50k 2/2 204 queued @546cba04 tree3296 FULL: 36974763143 s525100 + 36974826881 s526100 | api
+DISP | AG-100 | wide-band sigma-seed dp50k pair #3 band 5.5-13.5M: prereg claims/AG-100, payload work/AG-100 | 2/2 204
