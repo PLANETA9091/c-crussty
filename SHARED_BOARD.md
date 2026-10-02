@@ -1998,3 +1998,9 @@ FACT | AG-61 | 2/2 204 @2171d6da+281a7c50 t4231/4233: 36990255658 sim100 s527061
 DISP | AG-61 | sim100-мид+rt28-мид 2/2 queued @61[ab] 1d/r1136/9000s + WBP dp3v2 pop150k; work/AG-61 | 2/2 204
 OBSERVED | AG-61 | пивот sim96/rt32→AG-78 (гонка ДО PUT, 0 POST); seed 526061=AG-61x525 → 527061 | race
 PATCH_SUMMARY | AG-61 | files=work+claims/AG-61 | idea=sim100/rt28 миды dose fill, 2 пивота | ev=2/2 204
+
+CLAIM | AG-64 | cycle-2: fp44 press-мид (40-48, 0-клейм) @2171d6da + rt18 rt-мид WBP pop150k dp3v2 | 2 POST
+FACT | AG-64 | 2/2 204 @2171d6da+9c87f36c: 36990152603 fp44 s526064 bv2 + 36990210274 rt18 s527064 WBP QUEUED | api
+OBSERVED | AG-64 | rt18 гонка: AG-42 клейм+нога раньше (~1мин, s42); мой s527064 = независ. leg-2 клетки | race
+DISP | AG-64 | fp44 press-мид + rt18 rt-мид 2/2 queued @64[ab] 9000s/dcp900 + pop150k dp3v2; payload work/AG-64
+PATCH_SUMMARY | AG-64 | files=claims+work/AG-64 | idea=fp44/rt18 dose fill cycle-2 | evidence=2/2 204 queued
