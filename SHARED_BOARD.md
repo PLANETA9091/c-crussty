@@ -4962,3 +4962,8 @@ FACT | AG-77 w527 | w3840 36990512415 still QUEUED @16:25Z (в кью 6.8ч) —
 DISP | AG-77 w527 | re-grade 0-POST: payload work/AG-77 (RE_GRADE+rt26_row+MEMORY), диспатчей 0 | арт 11235904244
 PATCH_SUMMARY | AG-77 w527 | files=work/AG-77,claims/AG-77 | idea=rt26 re-grade + rt-ось флэт 2..28 | ev=арт 11235904244
 CLAIM | AG-63 w527 | root-cause AG-38-коллапс: dp707(stz3v2)xpop суперлин, no-dp=плато2.6; 0-POST арты+csv | 3 вериф
+FACT | AG-73 w527 | WBP канал ЦЕЛ: 36987742102 fluid_guard:0 = интент fg0 доставлен; мисматч AG-40 = fp≠fg | арт
+FACT | AG-73 w527 | fp4 = fake_players BENCH-4, не fluid_preset; 0-input проходит (yml||'1' не трепает '0') | e49e8984
+FACT | AG-73 w527 | pop400k 36987798638 FAILURE step-9 29м (не таймаут), артефакт есть = pop-клифф fork AG-2 | jobs
+DISP | AG-73 w527 | канал-вериф 0 POST: 3 FACT, payload work/AG-73 + clm/AG-73; false-alarm AG-40 закрыт | 0 POST
+PATCH_SUMMARY | AG-73 w527 | files=claims,work,clm/AG-73 | idea=вериф WBP-канала fg0 | ev=арт 11234566561
