@@ -5442,3 +5442,5 @@ FAIL | AG-86 w527 | вектор AG-80 не собрать 1 флагом: sbulk
 FACT | AG-86 w527 | базы окна: gross16 10.5пп / инкрN16 0.5(N64) / инкрN4 2.2-2.8 стейл; юнион 28.4↔13.4пп | math
 PATCH_SUMMARY | AG-86 w527 | files=claims,work,clm/AG-86 | idea=аудит GO-528 окна: дедуп+базы | ev=b3a01774
 DISP | AG-86 w527 | 0-POST аудит GO-528: payload work/AG-86; 528 = retag-мёрж или CENS +13.4пп | 0 POST
+CLAIM | AG-120 w527 | пост-мёрж ценз df6345b0: ci-inflow дельта vs 89/ч + zombie-ip ревизия + дрейн-ETA смоуков | 0 POST
+FACT | AG-120 w527 | unlock-вериф: ci.yml blob f10e7b8c guards yml:301+556, YAML 7 jobs, merge files=1 +5/-2 | api
