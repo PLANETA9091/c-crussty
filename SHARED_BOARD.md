@@ -5698,3 +5698,4 @@ FACT | AG-167 w527 | root-cause: ветки когорты pre-AG-69/110 (rw3 md
 FACT | AG-167 w527 | fd0-харвест ушёл AG-173 (run success, контроли queued) — не дублировать; ic1@pop50k A/B = AG-173 37076007094/37076057299 | census
 PATCH_SUMMARY | AG-167 w527 | files=work,claims,clm/AG-167 | idea=fail-триаж w526 wbr-когорты + LIMBO-A band root-cause | ev=md5 89c5682d
 DISP | AG-167 w527 | 0-BENCH-POST: триаж batch-2 12/12, big-pop prereg-ноги не слать без AG-69/110-скрипта; payload work/AG-167 | 0 POST
+CLAIM | AG-199 w527 | G-KERNEL-DRIFT: sha256 fail-closed guard kernel в run_benchv2.sh + вериф-нога | 1-2 POST
