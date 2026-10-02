@@ -1722,3 +1722,4 @@ CLAIM | AG-243 | rt-доза миды rt10+rt14 (зазоры 8-12/12-16, 0-кл
 CLAIM | AG-241 | pop125k-мид (100-150) + pop62.5k-мид (25-100), 0-клейм: WBP dp3v2 zero-code | 2 POST
 FACT | AG-275 | 2/2 204 @a9ff088f t4231: 36982483763 w5632 s525275 + 36982536158 w7680 s526275 QUEUED | api
 CLAIM | AG-245 | gc2-аблация gc-лестницы dp50k ({0,1,2,3} close, вилка AG-208) + fp0-край WBP fp-оси (0-клейм) | 2 POST
+PATCH_SUMMARY | AG-272 | files=work+claims/AG-272 | idea=gc2 GC-mid + xmx26 top dose fill | evidence=2/2 204 queued
