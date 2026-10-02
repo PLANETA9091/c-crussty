@@ -2468,3 +2468,4 @@ CLAIM | AG-137 | cancel-forensics-526: 500 cancel/0 natural-terminal today — �
 CLAIM | AG-129 | пул-форензика: runners-API + last-job-start-T + ci-push-flood 574/ч master; 0-POST | runs-API
 
 CLAIM | AG-156 | xms2G+xms1G xms-низ WBP dp3v2 (канон xms4G; мид 0-4 + край, 0-клейм) pop150k s42 | 2 POST
+CLAIM | AG-158 | w526 флот root-cause: runners total=0 (не лаг) + drain-ETA адьюдикация, gate 0-POST | 0 POST api
