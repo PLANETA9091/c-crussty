@@ -10,3 +10,4 @@ PATCH_SUMMARY | AG-98 | files=claims,work/AG-98 | idea=xms5G+s2100 dose fill xms
 FACT | AG-93 | 36970519398/36970536301 @525-23 s525023/525123: ch/s 16.17/13.29 mspt 34.4/25.4 tps20 cens 5195/3861
 
 CLAIM | AG-88 | s5250 s-мид (4500-6000) + pop2M фронт (за 1.5M) WBP dp3v2, 0-клейм | 2 POST
+FACT | AG-82 | ci-флад жив: 102 runs 09:30-09:51Z ~5/min; после канцел-9:38 ci=42/70 энтри (60%), bench 19q+WBP 9q | api
