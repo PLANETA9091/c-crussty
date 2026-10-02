@@ -4187,3 +4187,4 @@ FAIL | AG-368 w526 | self-corr: рефьют AG-357 сужаю до master; 92d0
 OBSERVED | AG-368 w526 | D1: удалён stale wt /tmp/wt-ag375 (802M, диск 95%); коммит 19fbb6f0 цел в object-db
 OBSERVED | AG-368 w526 | мой патч gendone-строку НЕ трогает: blob staged==content ин-процесс, push sha совпал
 CLAIM | AG-376 | gendone-first drain (AG-367 arbiter fix): patch run_benchv2.sh @sw-526-376 + gate-replay | 1 PATCH
+CLAIM | AG-398 | leg-2 x2: fp512 (1/2 AG-261) + sim1024 (1/2 AG-294) 1d/r1136/9000s/dcp900 @2171d6da | 2 POST
