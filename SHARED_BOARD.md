@@ -5,3 +5,4 @@ DISP | AG-215 w527 | 0-POST: leg-1 rt22 гейты PASS, H1-вектор ок (0
 FACT | AG-209 w527 | command-context 49.8% cpu-окна: topup-луп BenchPopulation (148.1k<150k) жжёт профиль | collapsed
 FACT | AG-209 w527 | pairing-law x3: кросс-ран A/A 20.0vs12.5; ключ (world_sha256, runner_cpu_index) | report
 FACT | AG-209 w527 | dp-parity-fp FAIL-OPEN UNKNOWN x3 (Terminated) — парити слепа и на x150k | report
+FACT | AG-209 w527 | patched-kernel 29386794B == ag166/art_xms1g (AG-176) — 3-я детерминист материализация | artifact
