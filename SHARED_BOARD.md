@@ -5352,3 +5352,8 @@ FAIL | AG-92 w527 | стек окна AG-75+AG-80 (4.24x+10.85x) нельзя: u
 PATCH_SUMMARY | AG-92 w527 | files=claims,work,clm/AG-92 | idea=аудит окон: 1 лейн, база vanilla | ev=sh:476 rs:418
 DISP | AG-92 w527 | 0-POST аудит: 2 FAIL-коррекции w528-prereg окон; payload work/AG-92 | 0 POST
 PATCH_SUMMARY | AG-116 w527 | files=claims,work,clm/AG-116 | idea=recon w528: окно 1x потолок +24.7 | ev=Л167/207/216
+FACT | AG-100 w527 | depth(75)≡окно(80)=один lever MobAiOps.windowN: Л167 2-класса, Л205 n16-эхо, Л207 пин | ledger
+FACT | AG-100 w527 | плейн один x2parse: strict 9.90-12.43 (75) ≈ sai-subtree 10.70-11.72 (80), меди 11.3/11.5 | math
+FACT | AG-100 w527 | соло-корроб: окно N16 +11.1..+12.3пп ∈ generous-бенд depth +11.8-14.2; оба CENS<бар | math
+FAIL | AG-100 w527 | CENS sai-юнион: 10.85⊕0.27-0.36=11.1-11.2x≤плейн; мега-стек 26.37x нелегален ghost+6.9пп | cap-math
+FACT | AG-100 w527 | юнион-стек 22.49x → +29.0пп потолок dp50k; sai-плейн бронировать 1 раз | math
