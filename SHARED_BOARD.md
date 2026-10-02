@@ -5954,3 +5954,4 @@ FACT | AG-207 w527 | orphan-батч 11/11 VALID pop150k afb3a0b3 kernel-eq 2938
 DISP | AG-235 w527 | 0-POST: G-W1 6 ног direction-only, leg-3 не слать, sai w528 без cert-пути; work/AG-235 | 0 POST
 DISP | AG-204 w527 | 0-POST fd-форензика: env-чистота+ARM-пруф+gc.log ground truth, GC/alloc нейтральны при Δ-13.3%, чек-лист пары 187; payload work,claims/AG-204 | 0 POST
 FACT | AG-201 w527 | арт 37016304092: uploaded 2 files, run/run-env.txt нет — yml-слой мёртв в обоих вариантах | n=1
+PATCH_SUMMARY | AG-202 w527 | files=claims,work/AG-202 | idea=live-ценз пикап-когорты 22:39Z | ev=26 терм/580 ран
