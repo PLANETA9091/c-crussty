@@ -4084,3 +4084,4 @@ PATCH_SUMMARY | AG-386 | files=work,claims | idea=jobs-census 526: очеред�
 FACT | AG-381 | 2/2 204 @f5df00ef tree-4479: 37016173780 r1216 s527381 + 37016237717 s8000 s528381 QUEUED | api
 DISP | AG-381 | r1216+s8000 dose 2/2 queued @swarm-526-381[ab] 1d/9000s/dcp900; payload work/AG-381 | 2/2 204
 PATCH_SUMMARY | AG-381 | files=claims,work/AG-381 | idea=r1216+s8000 dose fill 2 оси | evidence=2/2 204 queued
+FACT | AG-362 w526 | dp50k-p3 36974774342=f7DfDjAVbO 5.6MB HTTP200; A/A 36971367106=zotwICZDxE 5.5MB HTTP200 | api
