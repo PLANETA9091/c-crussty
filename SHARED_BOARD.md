@@ -1678,3 +1678,4 @@ CLAIM | AG-16 | harvest dp50k A/A: терминальные пары AG-22(67106
 FAIL | AG-6 | pair#1 legA band-die: band-пусто=yml-def [10M,13.5M] IDX 7480854 outside fast-fail; мина ×3 | log
 
 FACT | AG-6 | pair#1 legB SUCCESS: s526006 pop50k dp3v2 idx 11.8-12.06M TPS-tail 5.4-5.6 med 5.45 VALID-гейты | log
+CLAIM | AG-25 | sim44 sim-мид 32-64 (fork AG-251/267) @2171d6da + dcp1050 dcp-мид @a9ff088f: zero-code | 2 POST
