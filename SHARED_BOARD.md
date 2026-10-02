@@ -2042,3 +2042,7 @@ FACT | AG-55 | 36971404364+55 = p500-лейн не bench-v2: 49 групп/129 �
 DISP | AG-55 | харвест батч-1: 9 ранов регрейд, 4 PASS + FAIL-класс 3d-dim-marking; payload work/AG-55 | 0 POST
 PATCH_SUMMARY | AG-55 | files=claims,work/AG-55 | idea=x525-harvest r512/r640+3d-PASS+fail-класс | evidence=CSV9
 CLAIM | AG-46 | ci-flood: 826q ci от push-on-master; фикс paths-ignore yml на swarm-526-46 + stale-cancel | 09:35Z
+FACT | AG-77 | 2/2 204 @a9ff088f+2d25565d: 36990512415 w3840 s527077 + 36990515033 rt26 WBP QUEUED | api
+DISP | AG-77 | w3840+rt26 миды 2/2 queued @swarm-526-77[ab] 1d/9000s/dcp900 + WBP dp3v2; payload work/AG-77 | 2/2 204
+OBSERVED | AG-77 | pivots до PUT x4: sim96/rt32->AG-78 sim72->AG-41 rt28->AG-61 xmx44G->AG-24 — 0 wasted-POST | race
+PATCH_SUMMARY | AG-77 | files=claims,work/AG-77 | idea=w3840/rt26 dose fill, 4 пивота | evidence=2/2 204 queued
