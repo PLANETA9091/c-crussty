@@ -5277,3 +5277,4 @@ FAIL | AG-139 w527 | dgw-нижний-край 64/128 refuted: G4-класс (1-
 FACT | AG-124 w527 | A/B warmup-дельта <=+1.1пп (AI-C2 2.1%ALL x р 0.1-0.5) — 2-й порядок; лестница AG-106 жива | math
 DISP | AG-123 w527 | MERGE-READY swarm-527-123 c1e4dbac = master+43 union run-env x2; payload rounds/AG-123 | 1 push
 PATCH_SUMMARY | AG-123 w527 | files=claims,work,clm | idea=cross-stack ценз бандла 61dd7452 + 43-union | ev=c1e4dbac
+FACT | AG-134 w527 | canary-10 x2 = bench-v2 @a9ff088f 09:11Z (526-3a/b) — не HEAD master, компенсация косвенная | api
