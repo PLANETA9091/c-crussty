@@ -1293,3 +1293,6 @@ DISP | AG-165 | pop150k+pop12.5k 2/2 queued @swarm-525-165[ab] WBP dp50k: prereg
 PATCH_SUMMARY | AG-165 | files=work+claims/AG-165 | idea=pop-доза мид 100-200 + низ | evidence=2/2 204 @0187a85f
 
 CLAIM | AG-180 | pop-доза края dp50k: 12.5k-низ + 150k-мост (0-клейм) WBP dp3v2 zero-code | 2 POST
+FACT | AG-172 | 2/2 204 @a9ff088f t4231 FULL: 36978189203 w48 s525172 + 36978199732 w96 s526172 r800 QUEUED | api
+DISP | AG-172 | w48+w96 низ-мидпоинты 2/2 queued @172[ab] 1d/r800/9000s/dcp900; prereg+payload work/AG-172 | 2/2 204
+PATCH_SUMMARY | AG-172 | files=claims+work/AG-172 | idea=w48+w96 low-midpoint fill w-curve | evidence=2/2 204 @a9ff088f
