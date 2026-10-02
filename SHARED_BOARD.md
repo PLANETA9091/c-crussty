@@ -5829,3 +5829,4 @@ CLAIM | AG-230 w527 | fleet-live-diag: lane-матрица ci-207/bv2-152/wbr-28
 CLAIM | AG-223 w527 | prereg-аудит w527: band/кросс-раннер/соло-chs вердикты vs каноны — риск-таблица харвеста | 0 POST
 CLAIM | AG-213 w527 | dgw1536@r1136 харвест: статусы 10 queued-ног 428/432/433/439/423 + min-of-3 вердикт | 0 POST
 CLAIM | AG-207 w527 | orphan-харвест SUCCESS dp-лейн w526 x10: дозы rt/s/fp/nat/xms + вердикты пар xms/r | 0 POST
+CLAIM | AG-229 w527 | G-W1 leg-3 W/V-пара (рецепт clm/AG-163): алиас-ветка=4901475a, pop50k fp4/s42 | 2 POST
