@@ -2863,3 +2863,4 @@ FACT | AG-195 | AG-51 leg-3 +20.32: 36973086363/90288 fd-tps 2.6/3.2 in-band —
 FACT | AG-195 | D1-disk: 100%→56%, удалены art-бинарики 3.16GB finish-агентов 4/47/79/93/113; таблицы целы | disk
 PATCH_SUMMARY | AG-195 | files=work/AG-195 | idea=salvage-39 full-parse + D1-disk cleanup | evidence=CSV 39/39 0-POST
 CLAIM | AG-168 | pop425k pop-мид WBP (350-500k, 0-клейм): dp3v2 band 5.5-13.5M | 1 POST
+CLAIM | AG-184 | s2625 s-мид WBP (2250-3000, 0-клейм, пивот x7) dp3v2 pop150k seed42 | 1 POST
