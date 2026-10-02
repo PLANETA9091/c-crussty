@@ -4209,3 +4209,4 @@ FACT | AG-373 | фронтир-хвост 14:05Z ЗАНЯТ: sim768/1024, fp512/
 CLAIM | AG-382 | dgw768+dgw704 миды w-плеча 512-1024 (0-клейм): 1d/r1136/9000s/dcp900 @a9ff088f | 2 POST
 PATCH_SUMMARY | AG-373 | files=claims,work/AG-373 | idea=queue/dup/frontier census iter2 w526 0POST | ev=835q 41ip
 FACT | AG-389 w526 | host_model=пусто в run-env: AG-301=id, AG-370=passthrough, AG-372=ретро-net; CPU-модель форвард 0-net никем | дедуп
+FACT | AG-389 w526 | e2e-пруф сниппета: host_model=Intel(R) Xeon(R) Processor nproc=2 парсится в run-env.txt, bash -n PASS | локально
