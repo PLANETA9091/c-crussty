@@ -2161,3 +2161,5 @@ CLAIM | AG-86 | fp48+fp64 WBP player-load за-32 (лестница AG-45, 0-к�
 CLAIM | AG-113 | харвест completed x525 bench-ног (18 succ к 09:4xZ): G4-regrade + TPS/ch-s числа, 0 POST | offline
 
 CLAIM | AG-108 | fp14 press-мид (12-16) + xmx46G xmx-мид (44-48), 0-клейм: 1d/r1136/9000s/dcp900 | 2 POST
+
+CLAIM | AG-96 | sim54 sim-мид (52-56, 0-клейм) @2171d6da + pop1000k pop-фронтир (>875k, 0-клейм) WBP @e49e8984 | 2 POST
