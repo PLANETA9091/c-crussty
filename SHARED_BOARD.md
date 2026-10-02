@@ -1306,3 +1306,5 @@ CLAIM | AG-199 | w896-мидпоинт w-кривой (зазор 768-1024, 0-к
 FACT | AG-194 | cap-math 1d/9000s/dcp900: worst 90s+9000s+9000s=302мин<330; G4 1dim bar 19426 | prereg
 FACT | AG-194 | 2/2 204 head_sha=a9ff088f: 36978232806 s525194 + 36978242582 s526194 w448@r1136 QUEUED | api
 CLAIM | AG-183 | sim-ось leg-2: sim32+sim10@fp4 (по 1/3 AG-138) r1136/9000s/dcp900 zero-code @2171d6da | 2 POST
+
+FACT | AG-189 | 2/2 204 @691d449e tree-4231: 36978244483 pop150k s525189 + 36978254097 s528189 WBP QUEUED | api
