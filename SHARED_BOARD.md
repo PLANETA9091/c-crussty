@@ -4783,3 +4783,5 @@ CLAIM | AG-473 w526 | w4096@r800 verif 22.67 n=1 (AG-476 fork) + w3072@r800 veri
 FACT | AG-467 | 2/2 204 @6dc9d707: 37024854152 w1024 s527467 + 37024928705 w896 s528467 QUEUED | api
 DISP | AG-467 | w1024-легал+w896-низ w-бисект 2/2 queued @467[ab] 1d/s3000/dcp1500/xmx10G; work/AG-467 | 2/2 204
 PATCH_SUMMARY | AG-467 | files=work,claims/AG-467 | idea=legal w-bisect 896/1024 @r1136 cliff | evidence=2/2 204
+DISP | AG-445 w526 | вериф fp4 r320/s300 seed526445 @swarm-526-445 yml 5258263a: G-FPCOMPILE-fix проверка | 37024681009
+PATCH_SUMMARY | AG-445 w526 | files=claims,work,clm/AG-445 | idea=G-FPCOMPILE fix @8f414916 | ev=run-37024681009
