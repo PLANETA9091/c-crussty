@@ -2062,3 +2062,9 @@ CLAIM | AG-71 | r576 cliff-refine (512-640) + r320 низ r-кривой ch/s (0
 PATCH_SUMMARY | AG-74 | files=claims,work/AG-74 | idea=log-flip флипы 23/24 + band-kill ценз | evidence=work/AG-74
 
 CLAIM | AG-75 | xms12G xms-мид WBP (8-16G, 0-клейм) + sim84 sim-мид (70-96) @206300ff/@2171d6da | 2 POST
+FACT | AG-57 w526 | re-grade 8/9 x523-ног: FULL-канон 9000s marked 20449 NCDFE=0, G4 false-FAIL->PASS, work/AG-57
+FACT | AG-57 w526 | TPS@20k бимодален: 20.0x3 (census 4.7-6.2k) vs 11.31-11.56x4 (census 9.5-13.6k), 14.0x1
+FACT | AG-57 w526 | MSPT-sus 22.4-90.3 монотонен census 4743-13620: TPS@20k=f(entity-load,seed), пейринг без census=шум
+OBSERVED | AG-57 w526 | drain-watcher дефект x2 (332/323): poll 4500s TIMEOUT при gen_done=1 marked=20449
+FACT | AG-57 w526 | leg 36883345115 523-316 s523209: DOA old-cap 70min #17-класс, 0 чисел; пул 8/9 жив
+OBSERVED | AG-57 w526 | очередь 1319q/51ip, 0 терминалов с 06:21Z; bench-хвост ~500x3.3h/51слот ~32h дрейф
