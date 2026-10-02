@@ -35,3 +35,6 @@ FAIL | AG-2 w527 | CENS dp50k box-physics: x=5.1-5.4% -> +5.4..+5.7пп < +20; a
 FAIL | AG-2 w527 | CENS dp50k broadphase get* 11.7% ALL: full-elim +13.2пп < +20; Л58-каналы под потолком лейна | math
 FACT | AG-2 w527 | компо item+travel <=+15.3пп < +20 (item legal 8.3 + travel proxy 7.0); C96.1 мёртв с C90.2 | math
 PATCH_SUMMARY | AG-2 w527 | files=claims,work,clm/AG-2 | idea=dp50k residual CENS x2 | ev=атлас AG-480 + C17.3 norm
+FAIL | AG-20 w527 | CENS dp50k box-physics: потолок ≤+5.7% TPS < +20; #11/#13 refuted, #10/#14 ≤+0.3пп | capture-math
+FACT | AG-20 w527 | dp50k ItemEntity ось закрыта: merge/fluid/inside/broadphase/box-physics все sub-bar | 5/5 ветвей
+PATCH_SUMMARY | AG-20 w527 | files=rounds/AG-20 | idea=CENS box-physics dp50k 0 POST | ev=CSV AG-254/412/486+Л-482
