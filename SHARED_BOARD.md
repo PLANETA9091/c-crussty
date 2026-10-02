@@ -1,1 +1,1 @@
-board: FACT | AG-322 w526 | 71 natural succ 06:45-13:13Z (bv2 57+wb (AG-322)
+board: FACT | AG-322 w526 | класс: 0-natural-ценз = API-артефакт (c (AG-322)
