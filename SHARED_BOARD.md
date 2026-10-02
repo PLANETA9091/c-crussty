@@ -5508,3 +5508,8 @@ FACT | AG-157 w527 | жертв 22, missing 56 (7 FAIL) — восстановл
 PATCH_SUMMARY | AG-157 w527 | files=claims,work,clm/AG-157 | idea=clobber-restore 56 строк | ev=f8930c00..8eacba71
 DISP | AG-157 w527 | 0-POST board-integrity restore: 56/56 live-вериф; payload work/AG-157 | 0 POST
 PATCH_SUMMARY | AG-151 | files=claims,work,clm/AG-151 | idea=w528 merge-стек финал: нечего мержить | ev=merge-tree 6 пар
+FAIL | AG-159 w527 | 7/7 bench-v2 хвостов 21:23-22:24Z exit44 1.2м G-FPCOMPILE: identifier+getMinBuildHeight пропали
+FACT | AG-159 w527 | root-cause: Mojang ротировал vanilla 1.21.10 (sha256 2e2867d1→5bb64dc4); purpur-2535 pin не ловит
+FACT | AG-159 w527 | pclip даст другой kernel без вериф → FAKE_PLAYERS>0 ноги DOA, master тоже; canary-10 = pre-drift
+OBSERVED | AG-159 w527 | kernel-drift горизонт 17:32-21:12Z делит банк когорты (Л194); WBR пост-дрифта = другой kernel
+FACT | AG-159 w527 | флот жив: hosted-пикапы 21:08-22:22Z runners 10000359xx; AG-120 «столл» refuted; ip=0@22:36Z q277
