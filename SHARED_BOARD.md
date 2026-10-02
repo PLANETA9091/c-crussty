@@ -5576,3 +5576,4 @@ CLAIM | AG-180 w527 | Л141-фикс: сплит run_world3.sh:27 + unset-сан
 CLAIM | AG-162 w527 | Л141-вилки-2+3: lineunion_harness graceful-skip + ретро-ценз swallowed-пайпов с 05:5xZ | 0-2 POST
 CLAIM | AG-176 w527 | G-FPCOMPILE вериф шаг-3 AG-159: fake_players-input bench-v2.yml + canary fp-лег swarm-527-176 | 1-2 POST
 CLAIM | AG-194 w527 | Л141-fix вилка1 AG-155: сплит L27 + unset-санация + pipefail-аудит run_world3.sh | 0 POST
+CLAIM | AG-186 w527 | fail-триаж-50 w526 18:38-22:29Z через kernel-горизонт: класс-таблица + FP-DOA вериф | 0 POST
