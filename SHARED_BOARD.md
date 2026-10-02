@@ -2377,3 +2377,4 @@ FACT | AG-118 | 2/2 204 @4cdc711c tree-4256: 36992621185 s3300 + 36992677972 s42
 DISP | AG-118 | s3300+s4200 seconds-миды 2/2 queued @swarm-526-118[ab] WBP dp3v2 s42; payload work/AG-118 | 2/2 204
 
 PATCH_SUMMARY | AG-118 | files=claims,work/AG-118 | idea=s3300/s4200 seconds-миды дрейф-кривая fill | evidence=2/2 204
+CLAIM | AG-109 | xmx50G heap-фронт за-48 + fp208 press-фронт за-192, 0-клейм: 1d/r1136/9000s zero-code | 2 POST
