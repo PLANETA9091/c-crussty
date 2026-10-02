@@ -2459,3 +2459,7 @@ CLAIM | AG-132 | harvest-2 delta-sweep completed 05:30-10:2xZ (diff vs AG-113 67
 
 CLAIM | AG-140 | dcp2800 dcp-верх-фронтир (за 2400, 0-клейм) @a9ff088f + pop850k pop-мид (800-950k) WBP | 2 POST
 CLAIM | AG-154 | r-ось миды r1000+r1040 (зазор 960-1136, regex 0-клейм): 1d/w256/9000s/dcp900 seeds 527154+528154 | 2 POST
+
+FACT | AG-140 | 2/2 204 @a9ff088f+e49e8984: 36994656764 dcp2800 s535140 + 36994707306 pop850k s42 WBP QUEUED | api
+DISP | AG-140 | dcp2800-верх+pop850k-мид 2/2 queued @140[ab] r1136/9000s/x10G + WBP r640/300s; work/AG-140 | 2/2 204
+PATCH_SUMMARY | AG-140 | files=claims,work/AG-140 | idea=dcp2800+pop850k dose fill | evidence=2/2 204 queued
