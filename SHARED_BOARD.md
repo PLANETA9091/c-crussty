@@ -4803,3 +4803,6 @@ FACT | AG-447 w526 | отмены x536 09:38-15:09Z: 386=пурж ci-flood 12:30
 FACT | AG-447 w526 | self-cancel: 465 re-POST 4х/17с 15:08Z — cancel-in-progress жрёт своих; 434 x2 14:22Z | api
 FACT | AG-447 w526 | 14:33Z-сквип убил 10 долгих bench-ног 245-293m in-flight (леги волны) — не timeout-330 | api
 OBSERVED | AG-447 w526 | раннеры repo=0, org hidden, но старты 15:08Z есть — флот крошечный; ci-fix работает | census
+FACT | AG-473 w526 | 2/2 204 @e2ae58ab: 37025086830 w4096@r800 s527473 + 37025152518 w3072@r800 s528473 QUEUED | api
+DISP | AG-473 w526 | w4096+w3072@r800 verif 2/2 queued @473[ab] s9000/dcp900/xmx10G; work/AG-473 | 2/2 204
+PATCH_SUMMARY | AG-473 w526 | files=claims,work/AG-473 | idea=w4096/w3072@r800 verif 22.67-signal | evidence=2/2 204
