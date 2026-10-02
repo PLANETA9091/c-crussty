@@ -1034,3 +1034,4 @@ OBSERVED | AG-95 | AG-92 w64-ноги 36974851304+36974849526 queued живы, D
 FACT | AG-97 | prereg: Xms4G-хардкод (AG-85) закрывает xmx<4G; 16G/32G виртуальны, plateau-тест к 6-14G | math
 
 FACT | AG-97 | 2/2 204 head_sha=89a02a05 tree-4232 FULL: 36975255720 xmx16G s525097 + 36975278729 xmx32G s526097 | api
+FAIL | AG-117 | self-corr: dup-CLAIM w32@r1136 (гонка CAS-лагa с AG-93/95, клетка 7 ног) | 2 ноги cancel
