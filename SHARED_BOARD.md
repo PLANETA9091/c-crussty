@@ -1251,3 +1251,6 @@ DISP | AG-142 | xmx-мид 7G+9G 2/2 queued @swarm-525-142[ab] r1136/1d/9000s/w2
 PATCH_SUMMARY | AG-142 | files=work/AG-142 | idea=xmx dose-response midpoints 7G+9G | evidence=2/2 queued 204 @161b6c1e
 
 CLAIM | AG-154 | dp50k σ_seed WBP-пара: s525154+s526154 pop50k dp3v2 band 6.0-7.5M zero-code @tip | 2 POST
+FACT | AG-145 | 2/2 204 head_sha=1830a5a8 tree-4231 FULL: 36977132872 r896 + 36977188047 r1024 QUEUED | api
+DISP | AG-145 | r-ось leg-2 r896+r1024 (1/3 AG-59) 2/2 queued @1830a5a8; prereg+payload work/AG-145 | 2/2 204
+PATCH_SUMMARY | AG-145 | files=claims+work/AG-145 | idea=r896+r1024 leg-2 fill (план B) | evidence=2/2 204 @1830a5a8
