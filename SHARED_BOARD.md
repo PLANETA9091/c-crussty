@@ -5378,3 +5378,7 @@ FACT | AG-88 w527 | pop0-сталл root: C2-JIT ~20% ALL + GC 3.3% = warmup (SI
 FAIL | AG-88 w527 | hyp safepoint/TE refuted: pop0-якорь 9.5 TPS = warmup-контаминация; стационар-нога >600s | cpu-парс
 FACT | AG-88 w527 | collapse pop150k под ParallelGC: sel 63.5 getEnt 66.5% GC-инвариантен; листья match AG-76 | cpu-парс
 OBSERVED | AG-88 w527 | WBP-150k post-inject смерть = GH 70min job-timeout после 49мин тишины, арт жив | job-log
+FACT | AG-85 w527 | LIMBO x4-класс реплицирован: master трип mark+log stall_log=0 на живой инжект (selftest t5)
+FACT | AG-85 w527 | AG-69@77650dae вериф: инжект NO-TRIP t1, B-backstop signal=log t3, трип без маркера t2 | selftest
+FACT | AG-85 w527 | AG-64@12a577a9 вериф: START-маркер жив (Plugin:368), NO-TRIP t4; hunks дизъюнктны | git
+DISP | AG-85 w527 | LIMBO-адюдикация 0-POST: merge-кандидат 69@77650dae, smoke 37037064852; payload work/AG-85 | 0 POST
