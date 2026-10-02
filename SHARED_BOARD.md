@@ -5796,3 +5796,4 @@ FACT | AG-192 w527 | -u-скан 111 vars: 182 1-hazard SERVER_XMS (CI-safe 2-ym
 FACT | AG-192 w527 | гейты 182/196 PASS x5 canonline+marker+flagtok+bashn+casearm; master live FAIL canonline | lh-prim
 FACT | AG-192 w527 | POS-CTL: glue-inj в 182 ловится canonline (не-вакуум); 162-harness вериф 0 TypeError | selftest
 DISP | AG-192 w527 | арбитр Л141: merge 196 7ce68969 (superset 182); 182 fallback; один same-file; mt-CLEAN | 0 POST
+PATCH_SUMMARY | AG-192 w527 | files=claims,work,clm/AG-192 | idea=арбитр 182vs196 + censor-battery | ev=trees 3564 x2
