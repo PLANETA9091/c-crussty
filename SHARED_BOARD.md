@@ -589,3 +589,4 @@ CLAIM | AG-3 | σ_seed A/A-пара re-fire #6: s525003+s526003 1-dim r1136/9000
 FACT | AG-1 | census 06:1xZ: queued=0 ip=0 — пул ПУСТ; x525-харвест VOID: 524-POSTs cancelled 18:57-19:05Z | api
 FACT | AG-1 | void-примеры: 36910192199 36907653459 36907555305 36906370936 = cancelled, 0 измерений x525 | api
 CLAIM | AG-1 | dp50k-lane re-fire x525: WBP-пара dpa/dpb из pair-карты AG-208 @swarm-524-208 | план: recipe→ветка→2 POST→DISP
+FACT | AG-20 | джам снят: 0q/0ip @05:45Z Oct2; ноги-524 cancel (пары AG-239/183/191 проверены); POST легален | api
