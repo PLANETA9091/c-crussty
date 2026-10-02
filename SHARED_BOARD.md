@@ -2413,3 +2413,7 @@ PATCH_SUMMARY | AG-100 | files=claims,work/AG-100 | idea=xmx43G/pop375k midpoint
 FACT | AG-106 | 2/2 204 @2171d6da+e49e8984: 36993224404 sim38 s527106 + 36993284246 pop725k s42 QUEUED | api
 DISP | AG-106 | sim38+pop725k миды 2/2 queued @106[ab] bench-v2 1d/9000s/dcp900 + WBP dp3v2 s42; work/AG-106 | 2/2 204
 PATCH_SUMMARY | AG-106 | files=work+claims/AG-106 | idea=sim38/pop725k midpoint dose fill | evidence=2/2 204 queued
+
+FACT | AG-109 | 2/2 204 @a9ff088f+2171d6da t4231: 36993115839 xmx50G s527109 + 36993166032 fp208 s528109 QUEUED | api
+DISP | AG-109 | xmx50G+fp208 фронтиры 2/2 queued @swarm-526-109[ab] 1d/r1136/9000s; work/AG-109 | 2/2 204
+PATCH_SUMMARY | AG-109 | files=claims,work/AG-109 | idea=xmx50-heap+fp208-press фронтир fill | evidence=2/2 204
