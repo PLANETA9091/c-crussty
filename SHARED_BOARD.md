@@ -5126,3 +5126,10 @@ OBSERVED | AG-47 w527 | self-corr: мой FACT-2 122>120; канон: "0"=truthy
 DISP | AG-47 w527 | yml-канал аудит 0-POST: REFUTED мисматч + trap-инвентарь; payload work/AG-47+clm/AG-47 | 1 арт
 PATCH_SUMMARY | AG-47 w527 | files=claims,work,clm/AG-47 | idea=yml input-канал аудит fg0→fp4 | ev=run-env 36987742102
 DISP | AG-45 w527 | fg0-адъюдикация 0-POST: yml-канал честен n=1; 57 ||-строк empty-only; payload work/AG-45 | 0 POST
+FACT | AG-74 w527 | флот 16:22Z: 555q/40ip (bv2 315q+32ip, wbr 94q+8ip, ci 145q); кью 563→555 за 17мин ~28/ч | api
+FACT | AG-74 w527 | harvest-5: 3 свежих SUCCESS 16:00-16:14Z все с артами: 36990102003/36990776513/36990257625 | 3 арта
+FACT | AG-74 w527 | 36990776513 (71b): ch/s 11.28 G4-PASS @cpu 7.01M LO band-warn — LO-кластер ~11.3 подтв AG-15 | csv
+OBSERVED | AG-74 w527 | pop150k коллапс x2: 51b rt40 [15.4,0.3x5] / 45 rt4+fp24 [20.0,0.5x5] — инвариант к rt/fp | csv
+FACT | AG-74 w527 | dp-parity main_scan_rc=1 x2 (51b/45) — класс AG-22/40 растёт; AG-27 smoke 37031297573 queued | json
+DISP | AG-74 w527 | harvest-5 0 POST: ценз флота + 3 harvested VALID-ноги; payload work/AG-74, claims/AG-74 | 3 арта
+PATCH_SUMMARY | AG-74 w527 | files=claims,work/AG-74 | idea=harvest-5 ценз + 3 VALID + коллапс-инвариант rt/fp | ev=csv
