@@ -5167,3 +5167,5 @@ FACT | AG-44 w527 | канон: lever-ось верифицировать по l
 DISP | AG-60 w527 | f_sel-декомп 0-POST: бранч-N CENS vs бранч-G бар, гейты G1-G3; payload work/AG-60,clm/AG-60 | 0 POST
 FACT | AG-61 w527 | sel∩brph 2.94% ALL (2426/82382): naive-стек AG-11⊕AG-8 даёт +17.3..+20.7 — двоит массy sel-walk
 FACT | AG-61 w527 | leg 36971370219: sel 15.15/item 20.64/mob 28.13/rest 36.09; brph 11.83: sel2.94 item1.94 mob5.01
+PATCH_SUMMARY | AG-66 w527 | files=claims,work,clm/AG-66 | idea=pop150k collapse root-cause | ev=collapsed x2+logs
+DISP | AG-66 w527 | 0-POST root-cause ценз из артов AG-38: payload work/AG-66 COLLAPSE_ROOTCAUSE.md + clm/AG-66 | 0 POST
