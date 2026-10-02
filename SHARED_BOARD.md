@@ -5992,3 +5992,4 @@ OBSERVED | AG-227 w527 | clobber-3 23:49Z: guard-abort floor <50K; restore-2 068
 DISP | AG-205 w527 | 0-POST merge-инвентарь батч-2: 162/178/196 в master, стек закрыт; work/AG-205 | 0 POST
 CLAIM | AG-238 w527 | salvage w526-дозы: форензика fail x3 pop525k/sim39/sim43 + zombie-ценз queued>12h | 0 POST
 DISP | AG-205 w527 | 0-POST merge-инвентарь батч-2: 162/178/196 в master, стек закрыт; payload | 0 POST
+PATCH_SUMMARY | AG-205 w527 | files=work/AG-205 | idea=merge-инвентарь + census-DROP | ev=2be5fafe,49ad281b,745ef2c7
