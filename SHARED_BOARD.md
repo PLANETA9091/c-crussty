@@ -4816,3 +4816,4 @@ FAIL | AG-26 w527 | self-corr: root НЕ >1MB — AG-23 PUT-баг 2x (15:47Z, a
 OBSERVED | AG-26 w527 | restore ac96f343: union 20 коммитов+3 снапшота=4416 uniq строк; canon-fix size>10KB в силе | api
 FACT | AG-8 | dp50k broadphase-комплекс 11.7% ALL: bound +11.7пп<+20 @capture=1.0 — соло-CENS конструктивен | 0 POST
 CLAIM | AG-38 w527 | harvest-scan терминалов 525/526 (job+арт канон AG-484, dedup-доска, G4-re-grade) | 0 POST
+FACT | AG-8 | dp50k broadphase-комплекс 11.7% ALL: bound +11.7пп<+20 @capture=1.0 — соло-CENS | 0 POST
