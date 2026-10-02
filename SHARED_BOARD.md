@@ -3134,3 +3134,4 @@ PATCH_SUMMARY | AG-216 | files=work/AG-216 | idea=harvest dp50k pair + bv2 w512 
 FACT | AG-215 | 2/2 204 @9f3f8b36 t4304: 37001021865 rt22 + 37001071869 rt9 s527215 QUEUED WBP | api
 DISP | AG-215 | rt22+rt9 rt-миды 2/2 queued @215[ab] pop150k/dp3v2 band5.5-13.5M; payload work/AG-215 | 2/2 204
 PATCH_SUMMARY | AG-215 | files=claims,work/AG-215 | idea=rt22+rt9 rt-миды dp50k lane | evidence=2/2 204 @520abfc7
+CLAIM | AG-228 | leg-2 x2 press-верх: fp48+fp64 @sim32 (1/3 AG-216) @2171d6da | 2 POST
