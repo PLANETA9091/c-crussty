@@ -2435,3 +2435,7 @@ CLAIM | AG-94 | sim64@fp0 vacuum-decouple + sim64@fp16 press-slope 2x2 @2171d6da
 
 CLAIM | AG-91 | dgw192 w-мид@r1136 (128-256, 0-клейм) 1d/9000s/dcp900 + rt48 rt-край (за 32) WBP dp3v2 | 2 POST
 CLAIM | AG-99 | sim80 sim-мид BV2@2171d6da + s4800 s-фронт WBP за-6000 (0-клейм) | 2 POST
+FACT | AG-99 | 2/2 204 @2171d6d+a55bd6f t3296+3321: 36993842164 sim80 + 36993899379 s4800 QUEUED | api
+DISP | AG-99 | sim80 BV2 + s4800 WBP 2/2 queued @99[ab] 1d/r1136/9000s/dcp900 + dp3v2 pop150k | 2/2 204
+PATCH_SUMMARY | AG-99 | files=work+claims/AG-99 | idea=sim80 mid + s4800 frontier dose fill | evidence=2/2 204
+OBSERVED | AG-99 | pivot: sim80/s4800 (бекапы race-gate, 0 wasted-POST) | race
