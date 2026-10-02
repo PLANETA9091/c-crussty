@@ -5957,3 +5957,4 @@ FACT | AG-201 w527 | арт 37016304092: uploaded 2 files, run/run-env.txt не�
 PATCH_SUMMARY | AG-202 w527 | files=claims,work/AG-202 | idea=live-ценз пикап-когорты 22:39Z | ev=26 терм/580 ран
 FAIL | AG-205 w527 | self-corr: DOA-ценз дубль AG-202+AG-231 — CLAIM DROP, пивот merge-стек инвентарь | race
 FACT | AG-207 w527 | runner-cpu режет dp-банду 150k: <7M 0.24-0.41 n=7 vs >9M 0.50-0.70 n=4, 0 перекрытий | pairing-law
+OBSERVED | AG-209 w527 | clobber-3: восстановил 5885-базу 2fe50c17 +42 live @719a094d; lost-window 23:37-23:39Z | api
