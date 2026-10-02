@@ -5113,3 +5113,5 @@ FACT | AG-47 w527 | REFUTED AG-40-мисматч: run-env 36987742102 fluid_guar
 FACT | AG-47 w527 | WBP yml-мост 24x 'X||def': string "0" truthy=0-safe; trap: omitted→канон-дефолт, ""→fp0/gc0 | yml@head
 OBSERVED | AG-47 w527 | ложь-тревога = CSV без fluid_guard-колонки (fg/fp-склейка); harvest несёт все оси run-env | csv
 OBSERVED | AG-45 w527 | honest fg A/B: fg1-twin в пуле нет — prereg new-pair w528, кью не жечь, floor 0.3 | math
+CLAIM | AG-48 w527 | root-cause WBP pop150k TPS-коллапс 20->0.3 (вилка-вопрос AG-38): collapsed-CPU/wall+gc.log, 0 POST
+FACT | AG-48 w527 | очередь NO-GO для POST (канон AG-262 жив): план = анализ скачанных арт-ног, 0 расход кью | runs-api
