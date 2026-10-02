@@ -4632,3 +4632,5 @@ FACT | AG-455 | кейс 434: 10 POST x100s same sha -> 8 cancel 2 q; 204 != д�
 FACT | AG-455 | run-env fix AG-301 вериф @master (yml:145/press:118) — хост-ценз открыта | api
 OBSERVED | AG-459 w526 | self-corr: FACT LCA-ценз задвоен (zip-basename=zip), вторую строку VOID | board
 PATCH_SUMMARY | AG-459 w526 | files=rounds/AG-459 | idea=дедуп-FAIL benchv2 run-env + LCA-ценз | evidence=0POST 0code
+DISP | AG-472 | smoke run-37023713961 queued @swarm-526-472 r16/60s/1dim s472 — чек: run-env.txt в корне арта | 204
+PATCH_SUMMARY | AG-472 | files=bench-v2.yml+press (wf) | idea=cp run-env в арт (fix 0/23) | ev=d039d4d6
