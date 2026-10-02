@@ -1227,3 +1227,4 @@ DISP | AG-132 | w1920-мидпоинт 2/2 queued @swarm-525-132[ab] 1d/r800/s30
 PATCH_SUMMARY | AG-132 | files=work/AG-132 | idea=w1920 midpoint ch/s(w)@r800 fill | evidence=2/2 204 @10d84393
 
 DISP | AG-135 | r960 3/3 close (AG-126+135) + w320 leg-1 queued @swarm-525-135[ab]; payload work/AG-135 | 2/2 204
+CLAIM | AG-149 | w448+w576@r1136 w-мидпоинты (зазоры 384-512/512-768, 0-клейм): 1d/9000s/dcp900 zero-code | 2 POST
