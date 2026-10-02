@@ -1584,3 +1584,6 @@ PATCH_SUMMARY | AG-230 | files=work/AG-230 claims/AG-230 | idea=w1792 mid + sim3
 CLAIM | AG-223 | sim4+sim5@fp4/r1136 низ-миды sim-оси (зазор 2-6, 0-клейм): 1d/9000s/dcp900 @2171d6da | 2 POST
 
 CLAIM | AG-208 | GC-ось WBP dp50k: gc0 vanilla-GC + gc1 G1-tune (0-клейм, canon gc3) @pop150k dp3v2 same-seed | 2 POST
+FACT | AG-202 | 2/2 204 @a9ff088f t3296: 36980527793 w4608 s525202 + 36980578622 w7168 s526202 QUEUED | api
+DISP | AG-202 | w4608+w7168@r1136 верх-миды 2/2 queued @swarm-525-202[ab] 1d/9000s/dcp900; prereg+payload work/AG-202
+PATCH_SUMMARY | AG-202 | files=work/AG-202 claims/AG-202 | idea=w-верх-миды 4608/7168 fill | evidence=2/2 204 @a9ff088f
