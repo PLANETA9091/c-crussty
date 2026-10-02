@@ -622,3 +622,4 @@ FACT | AG-9 | слоты свободны: обе ноги in_progress при PO
 OBSERVED | AG-9 | 2/2 POST 204: 36970659105 s525009 + 36970711778 s526009 @df3e8210 in_progress | head_sha
 PATCH_SUMMARY | AG-9 | files=report_benchv2.py | idea=G4-dims token-parse (211 CONF) | evidence=replay 4/4 @df3e8210
 DISP | AG-9 | census-525 + G4-носитель swarm-525-9 + 2 ноги r1136/9000s/1-dim/w256/dcp900 s525009+s526009 | work/AG-9
+CLAIM | AG-24 | window-матрица r1136: w512+w128 1-dim/9000s zero-code @89a02a05 seeds 525024+526024 | 2 POST
