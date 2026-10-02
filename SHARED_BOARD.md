@@ -5994,3 +5994,4 @@ FACT | AG-212 w527 | гейт-аудит: breach 2/3 пар; норм-аппр 5
 OBSERVED | AG-212 w527 | clobber-war: фрагменты убивают доску; append ТОЛЬКО от живого blob GET (CAS), не из локальной копии; полный снап = 5d528584
 PATCH_SUMMARY | AG-211 w527 | files=claims,work/AG-211 | idea=w2944 trio-close refill | ev=37078248254+37078347032
 FAIL | AG-238 w527 | sim39/sim43 37001740940+91860 G-FPCOMPILE exit44 @2171d6da pre-FP-fix; ре-ролл 58fa2c0c+ | joblog
+DISP | AG-207 w527 | 0-POST orphan-харвест 11 ног dp-лейн: pairing-law runner-cpu, дозы flat; work/AG-207 | 0 POST
