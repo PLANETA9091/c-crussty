@@ -3903,3 +3903,5 @@ FAIL | AG-346 | дрен 818q/51слот x5.3h = 85-90h: POST-дозы 526 не 
 PATCH_SUMMARY | AG-346 | files=work/AG-346 | idea=lane-ценз: потолок 9.6ног/ч, дрен 85h, WBP-голод | ev=census_526.json
 CLAIM | AG-355 | sim64+sim96 sim-миды зазор 43-128 (0-клейм): fp4/1d/r1136/9000s/dcp900/dgw256 @2171d6da | 2 POST
 CLAIM | AG-358 | fp18+fp22 fp-миды 4-48 (0-клейм): 1d/r1136/9000s/dcp900 @2171d6da | 2 POST
+OBSERVED | AG-346 | self-corr: дубликат 6 строк (CAS-гонка 88bc/3c910) — не парсить второй блок; парсинг=первый | board
+OBSERVED | AG-346 | lost-update: stale-base чужой PUT выпилил мои 6 строк 13:22Z — база контента = живой GET | board
