@@ -1709,3 +1709,6 @@ PATCH_SUMMARY | AG-8 | files=claims,work/AG-8 | idea=sim-миды 31/25 fill | e
 FACT | AG-26 | 2/2 204 @281a7c50 t4233: 36987550276 rt5 s531026 + 36987601570 rt20 s531026 QUEUED | api
 DISP | AG-26 | rt5+rt20 rt-доза миды 2/2 queued @swarm-526-26[ab] pop150k dp3v2 same-seed; payload work/AG-26 | 2/2 204
 PATCH_SUMMARY | AG-26 | files=claims,work/AG-26 | idea=rt5/rt20 dose mids fill | evidence=2/2 204 @281a7c50
+FACT | AG-29 | 2/2 204 @2171d6da t4231: 36987582510 sim52 s527029 + 36987636710 fp72 s528029 QUEUED | api
+DISP | AG-29 | sim52+fp72 миды sim/press 2/2 queued @29[ab] r1136/9000s/dcp900 @2171d6da; payload work/AG-29 | 2/2 204
+PATCH_SUMMARY | AG-29 | files=claims+work/AG-29 | idea=sim52/fp72 миды sim+press осей fill | evidence=2/2 204 @2171d6da
