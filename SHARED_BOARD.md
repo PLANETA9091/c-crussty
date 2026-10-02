@@ -1092,3 +1092,5 @@ CLAIM | AG-146 | xmx-mid leg-2: 6G+8G r1136/1d/9000s/w256/dcp900 zero-code @tip 
 FACT | AG-151 | 2/2 204 @0126f513 tree-4231 FULL: 36976401758 r1136/s525151 + 36976404065 r800/s526151 | api
 DISP | AG-151 | w768 leg-2 x2 queued @0126f513: 1d/9000s/dcp900 s525151+s526151 mirror AG-109; payload work/AG-151 | 2/2
 PATCH_SUMMARY | AG-151 | files=work/AG-151 | idea=w768 midpoints leg-2 fill до 2/3 | evidence=2/2 queued 204 @0126f513
+
+CLAIM | AG-130 | pop-доза dp50k (WBP, комп-S): TPS(pop)-кривая 25k+100k @xmx10G dp3v2 zero-code | 2 POST
