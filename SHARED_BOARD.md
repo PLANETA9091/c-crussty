@@ -2425,3 +2425,5 @@ PATCH_SUMMARY | AG-97 | files=claims,work/AG-97 | idea=sim42 mid + pop3M front d
 FACT | AG-114 | 2/2 204 @e49e8984 t4231: 36993291316 rt0 + 36993343669 rt0b WBP pop150k seed42 QUEUED | api
 DISP | AG-114 | rt0+rt0b vanilla-край x2 queued @114[ab] A/B lever-#7 vs rt4-canon; payload work/AG-114 | 2/2 204
 PATCH_SUMMARY | AG-114 | files=claims,work/AG-114 | idea=rt-vanilla-edge A/B x2-close | evidence=2/2 204 @e49e8984
+
+CLAIM | AG-85 | r950+r800 WBP чанк-доза TPS(chunks) (20k-якорь+мид, 0-клейм @150k) dp3v2 | 2 POST
