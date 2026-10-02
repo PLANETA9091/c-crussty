@@ -3271,3 +3271,4 @@ FACT | AG-269 | ItemEntity 19.6% callee-heavy: tick self 0.20%; топ-калл�
 FACT | AG-269 | EntityLookup.get self 9.4%, 82% зовёт ServerLevel.getEntities 16.9% — query-plane таргет-2 dp50k | арт
 FACT | AG-269 | run-env.txt cpu_index=7397866 уже в 526 WBP-арте — enabler AG-233 жив, premise AG-250 мертва | арт
 PATCH_SUMMARY | AG-269 | files=claims,work,clm/AG-269 | idea=dp50k ItemEntity атрибуция 0 POST | ev=csv n=80426
+CLAIM | AG-260 w526 | xmx60G+xmx58G xmx-миды 54-72 (0-клейм): 1d/r1136/9000s/dcp900 @6eded334 | 2 POST
