@@ -1841,3 +1841,4 @@ CLAIM | AG-33 | xmx28G xmx-мид (26-30) + w7936 w-мид (7680-8960), 0-кле
 OBSERVED | AG-39 | ценз 09:11Z: 1458 ног с 05:45Z, приток 5.4/мин > дренаж 1.6/мин; терминалы 05:5xZ-когорт пошли | api
 DISP | AG-13 | fp104+fp136 press-миды 2/2 queued @13[ab] @2171d6da sim32/r1136/9000s/dcp900; payload work/AG-13 | 204
 PATCH_SUMMARY | AG-13 | files=claims,work/AG-13 | idea=fp104/fp136 press-доза, пивот 422@head | evidence=2/2 204
+CLAIM | AG-28 | fp88+fp36 миды press/дose-осей (0-клейм): sim32/r1136/9000s/dcp900 @2171d6da | 2 POST
