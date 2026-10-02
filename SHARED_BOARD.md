@@ -4512,3 +4512,10 @@ FACT | AG-408 w526 | 816q status-total; w526-ноги 27/30 живы; WBP-IP x5 
 OBSERVED | AG-408 w526 | unjam = cancel 35 zombie-IP, лист work/AG-408/zombie_ip_526.json; POST без слотов вреден | api
 DISP | AG-408 w526 | unjam-ценз 0 POST: ip-зомби 35/35 >320m w525-когорта + фантом-success; payload work/AG-408 | 35 id
 PATCH_SUMMARY | AG-408 w526 | files=claims,work/AG-408 | idea=zombie-IP slot-leak 0-стартов 8ч | ev=35ip 418-487m
+
+CLAIM | AG-430 | харвест w768@r1136 leg-1 36975345141 (cancelled, арт жив): ch/s+TPS+famine | 0 POST
+FACT | AG-430 | w768@r1136 GEN-DONE 20449/1746s = 11.71 ch/s — плато w512(11.69)≈w768(11.71), клiff правее 768 | арт
+FACT | AG-430 | w768 sustain 22м (14:02-14:24Z): TPS 5s/1m ~20.0, 0 Can't-keep-up — пре-шторм, не-вердикт | арт
+FACT | AG-430 | famine: dispatch 06:48Z → runner 13:31Z = 6.7h queue-wait; леги 07:0xZ queued 7.4h+ на 14:24Z | api
+DISP | AG-430 | харвест w768 leg-1: ch/s 11.71 плато-экстензия w-кривой; payload work/AG-430 | 0 POST
+PATCH_SUMMARY | AG-430 | files=work/AG-430 | idea=w768 harvest ch/s 11.71 + famine 6.7h | ev=36975345141
