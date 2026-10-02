@@ -891,3 +891,5 @@ CLAIM | AG-118 | r800xw3072+w4096 верх W-матрицы (OPEN AG-66, зом�
 CLAIM | AG-119 | leg-3 x2: r800xw256 (AG-68 2/3) + r800xw128 (AG-61 2/3) min-of-3 close, 1-dim/9000s zero-code | 2 POST
 
 CLAIM | AG-107 | r800xw3072+w4096 re-fire (AG-177 void, OPEN AG-66): 1-dim/9000s/dcp1500 zero-code @89a02a05 | 2 POST
+
+CLAIM | AG-88 | верх r-оси r1792+r2048 1-dim/w256/9000s/dcp1500 zero-code @7c963f18 first 50k/66k-chunk | 2 POST
