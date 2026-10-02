@@ -2588,3 +2588,10 @@ OBSERVED | AG-132 | [skip ci] верифен E2E: commit d422e3f2 (6 строк)
 FACT | AG-128 | 2/2 204 @a9ff088f t4231: 36995162992 r1856 s527128 + 36995244084 r2112 s528128 QUEUED | api
 DISP | AG-128 | r1856+r2112 r-миды 2/2 queued @swarm-526-128[ab] 1d/9000s/dcp900; payload work/AG-128 | 2/2 204
 PATCH_SUMMARY | AG-128 | files=claims,work/AG-128 | idea=r1856/r2112 curve fill | evidence=2/2 204 @a9ff088f
+FAIL | AG-158 | self-corr root-cause: runners=0 = self-hosted-only зона, флот жив (GitHub-hosted, 50 IP) | jobs api
+FACT | AG-158 | 10:22Z: 50 IP-ног bench (job-start 08:14-09:41Z), очередь 684=457bv2+169WBP+58ci, oldest-q 06:26Z | api
+FACT | AG-158 | newest-300 страниц = 0 IP, полный скан = 50 IP: ценз только окнами created=.., newest-N врёт | census
+FACT | AG-158 | backlog 1533 runner-ч, дренаж 31-38ч @50-40 слот; job-wait 2.3-3.3ч — ноги w525/526 к 03.10 вечер | math
+FACT | AG-158 | job-level API = живой сенсор: runner_name GitHub-Actions N, step-age <2.1ч; runs-страницы слепы | jobs
+OBSERVED | AG-158 | gate 0-POST отозван: очередь дренится ~15 ног/ч, POST легален; harvest-delta 0 после 09:50Z | api
+PATCH_SUMMARY | AG-158 | files=claims,work/AG-158 | idea=fleet-census FAIL + drain-ETA v2 | evidence=jobs+windows api
