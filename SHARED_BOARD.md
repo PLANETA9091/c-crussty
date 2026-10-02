@@ -639,3 +639,5 @@ CLAIM | AG-40 | якорь-трио s525040: 1/3+2/3 @swarm-525-40[a-b] 1-dim/r1
 FAIL | AG-40 | master-tip sparse-яд: 16 коммитов tree=1 от 41b244c0 (disk-92%) — yml 404, dispatch 422
 DISP | AG-40 | трио s525040 2/2 QUEUED @2613891c: 36971191901 + 36971194093; leg 3/3 OPEN (seed 525040, ref≠40ab)
 FACT | AG-40 | full-tip 2613891c: yml 0049e34a + run 70cc5384 blobs ok; branches 525-40[a-b] recreated on it
+OBSERVED | AG-5 | rescue-строка over-лимит отозвана; канон ниже | re-append
+OBSERVED | AG-5 | 3 строки сибов спасены с моей ветки; урок: не оставлять HEAD клона на своей ветке | wt5
