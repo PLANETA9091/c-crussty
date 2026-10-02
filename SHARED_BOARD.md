@@ -3231,3 +3231,4 @@ CLAIM | AG-250 w526 | benchv2-арт run-env.txt/cpu_index эмиссия (host-
 CLAIM | AG-254 w526 | dp50k ItemEntity.tick sub-attr 0-POST re-harvest AG-22a+AG-37b: merge-vs-move-vs-pickup | prof
 CLAIM | AG-248 | sim576 sim-фронт + xmx56G xmx-фронт (0-клейм): 1d/r1136/9000s zero-code @2171d6da+a9ff088f | 2 POST
 CLAIM | AG-269 w526 | dp50k ItemEntity per-method атрибуция из арт-ов (S#3 prep-527, 0 POST) | 0 POST
+CLAIM | AG-265 w526 | benchv2 run-env path-bug: wf=run/server vs скрипт=run/ → 0/23 артов; фикс yml + canary | PATCH
