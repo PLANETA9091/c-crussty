@@ -89,33 +89,39 @@ def main():
     lines = [a for a in argv if a != '--self-test' and a.strip()]
     if not lines:
         print('no lines given'); return 1
-    old, sha = get_board()
-    ok, why = sanity(old)
-    print(f'[1] sanity: {why}')
-    if not ok:
-        restore_recipe(); return 2
-    try:
-        new = build_new(old, lines)
-    except ValueError as e:
-        print(f'[2] {e}'); return 3
-    print(f'[2] superset-guard OK: {len(old.encode())}B -> {len(new.encode())}B (+{len(new.encode())-len(old.encode())}), lines+{len(lines)}')
-    if self_test:
-        # failure-mode drills: clobbered old, non-superset new, bad line
-        try: build_new('stub\n', lines); print('[3] drill clobbered-old: NOT CAUGHT'); return 4
-        except RuntimeError: pass
-        except Exception: pass
-        try: build_new(old, ['FACT | AG | x' * 30]); print('[3] drill long-line: NOT CAUGHT'); return 4
-        except ValueError: pass
-        try: build_new(old, ['FACT\n| AG | split']); print('[3] drill newline: NOT CAUGHT'); return 4
-        except ValueError: pass
-        print('[3] failure-drills 3/3 CAUGHT; [4] PUT SKIPPED (self-test) -> PASS')
-        return 0
-    put = api(f'https://api.github.com/repos/{REPO}/contents/{PATH}', 'PUT',
-              {'message': f'board guarded append ({len(lines)} lines)', 'sha': sha,
-               'content': base64.b64encode(new.encode()).decode(), 'branch': 'master'})
-    if 'http_error' in put:
-        print(f'[3] PUT-ERR {put["http_error"]} (CAS race — rerun)'); return 5
-    commit = put.get('commit', {}).get('sha', '')[:8]
+    for attempt in range(6):
+        old, sha = get_board()
+        ok, why = sanity(old)
+        print(f'[1] sanity: {why}')
+        if not ok:
+            restore_recipe(); return 2
+        try:
+            new = build_new(old, lines)
+        except ValueError as e:
+            print(f'[2] {e}'); return 3
+        print(f'[2] superset-guard OK: {len(old.encode())}B -> {len(new.encode())}B (+{len(new.encode())-len(old.encode())}), lines+{len(lines)}')
+        if self_test:
+            # failure-mode drills: clobbered old (sanity floor), long line, embedded newline
+            try:
+                ok, _ = sanity('stub\n')
+                if ok: raise AssertionError('floor passed on stub')
+            except Exception:
+                print('[3] drill clobbered-old: NOT CAUGHT'); return 4
+            try: build_new(old, ['FACT | AG | x' * 30]); print('[3] drill long-line: NOT CAUGHT'); return 4
+            except ValueError: pass
+            try: build_new(old, ['FACT\n| AG | split']); print('[3] drill newline: NOT CAUGHT'); return 4
+            except ValueError: pass
+            print('[3] failure-drills 3/3 CAUGHT; [4] PUT SKIPPED (self-test) -> PASS')
+            return 0
+        put = api(f'https://api.github.com/repos/{REPO}/contents/{PATH}', 'PUT',
+                  {'message': f'board guarded append ({len(lines)} lines)', 'sha': sha,
+                   'content': base64.b64encode(new.encode()).decode(), 'branch': 'master'})
+        if put and 'commit' in put:
+            commit = put['commit']['sha'][:8]
+            break
+        print(f'[3] PUT retry {attempt+1} (CAS race / 409) — re-GET sha'); time.sleep(2 + attempt)
+    else:
+        print('[3] PUT failed 6 attempts (stampede) — rerun'); return 5
     v, _ = get_board()
     ok = all(l in v for l in lines) and len(v.encode()) >= len(new.encode()) - 400
     print(f'[4] post-verify: {"PASS" if ok else "FAIL"} commit {commit}')
