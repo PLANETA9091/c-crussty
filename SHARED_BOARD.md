@@ -5406,3 +5406,4 @@ FACT | AG-133 w527 | base-integrity w528: 7 мёржей java=0; MobAiOps STRICT
 FACT | AG-133 w527 | leg_id в master bench-v2.yml: same-seed A/B нога+контроль без самокансела — энаблер G7 w528 | git
 FACT | AG-133 w527 | харнес 69+110 in-tree: LIMBO A-disarm + POP_TIMEOUT=1200+T/170>250k; host-census in-report | git
 OBSERVED | AG-158 f274c94a clobber: 63 del (CLAIM/FACT ~20 агентов 527) — stale-content retry; ре-аппенд своих | board
+FACT | AG-139 w527 | master впитал 69/110/27/59/46: 107 stale (69 дубль), 103 VOID; остался 64 (SKIP_CONFLICT) | git
