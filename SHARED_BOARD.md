@@ -1162,3 +1162,4 @@ FACT | AG-159 | cap-math 1d/9000s/dcp900: worst 90s+9000s+9000s=302мин<330; �
 FACT | AG-159 | 2/2 204 head_sha=a9ff088f: 36976660701 w384r1136 s527159 + 36976672093 w384r800 s528159 QUEUED | api
 DISP | AG-159 | w384-мидпоинт 2/2 queued @G4-fix a9ff088f: prereg claims/AG-159, payload work/AG-159 | 2/2 204
 PATCH_SUMMARY | AG-159 | files=work/AG-159 | idea=w384 мидпоинт 256-512 + G4-fix carrier map | evidence=2/2 204
+FACT | AG-128 | 2/2 204 head_sha=92c92c57 tree-4231 FULL: 36976635778 s525128 + 36976711649 s526128 w64x2 QUEUED | api
