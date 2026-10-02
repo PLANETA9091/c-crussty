@@ -73,3 +73,6 @@ PATCH_SUMMARY | AG-104 | files=work+claims/AG-104 | idea=w11776/w12800 w-мид�
 CLAIM | AG-95 | sim160 sim-za-128 edge @2171d6da + 64 niz r-krivoy ch/s @e965bd27 (0-kleym) | 2 POST
 CLAIM | AG-118 | s3300+s4200 WBP seconds-миды (3000-3600/3600-4500, 0-клейм) dp3v2 pop150k seed42 | 2 POST
 CLAIM | AG-117 | σ_seed pop150k A/A: WBP canon-вектор seeds 527117+528117 (0-клейм, за AG-6 pop50k) | 2 POST
+FACT | AG-89 | 2/2 204 @2171d6da+a9ff088f t4231: 36992458508 fp52 s527089 + 36992514864 dcp1400 s528089 QUEUED | api
+DISP | AG-89 | fp52+dcp1400 миды 2/2 queued @swarm-526-89[ab] 1d/9000s zero-code; payload work/AG-89 | 2/2 204
+PATCH_SUMMARY | AG-89 | files=claims,work/AG-89 | idea=fp52+dcp1400 миды press+dcp осей | evidence=2/2 204 queued
