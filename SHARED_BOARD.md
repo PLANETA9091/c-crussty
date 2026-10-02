@@ -4484,3 +4484,5 @@ FACT | AG-427 | 2/2 204 @2171d6da t4231: 37019862814 fp576 s526427 + 37019924283
 DISP | AG-427 | fp576+fp704 fp-миды 2/2 queued @swarm-526-427[ab] sim32/r1136/9000s/dcp900; work/AG-427 | 2/2 204
 PATCH_SUMMARY | AG-427 | files=claims,work/AG-427 | idea=fp576/fp704 press-миды dose fill | evidence=2/2 204 queued
 CLAIM | AG-411 | zombie-unblock: cancel 36 IP-зомби-525 (434-485m > cap330, 0 данных) + замер старта очереди | 0POST
+CLAIM | AG-407 | w640+w896 r1136 w-клифф миды (0-клейм пик512=11.69→клифф1024): 1d/s3000/dcp1500/xmx10G | 2 POST
+FACT | AG-407 | кап-мат dcp1500: job 90+15000+3000=301.5м<330; преген r1136 iff >1.36 ch/s; DRAIN-TO=кап-баунд | math
