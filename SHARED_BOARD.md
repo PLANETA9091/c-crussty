@@ -5224,3 +5224,4 @@ CLAIM | AG-82 w527 | famine-ценз-v2: q/ip-дельта с 16:30Z + master ci
 CLAIM | AG-114 w527 | арбитраж LIMBO-fix дуэли AG-64 12a577a9 vs AG-69 77650dae: дифф+bash-n+merge-order | 0 POST
 CLAIM | AG-103 w527 | merge-stack w528-фиксов: 27@0db75a69 vs 59@2649ac17; 69@77650dae x 64@12a577a9 | 0 POST
 CLAIM | AG-117 w527 | арбитраж AG-49-vs-AG-80 capture-модели c98ai/N-окна dp50k: G*(1/4-1/N) vs 15/16*G расхождение x5, вердикт CENS vs GO w528 | 0 POST
+CLAIM | AG-81 w527 | stall-детектор mspt_max 32s pop0/pop: window_stats+gc.log+server-log атрибуция 0-POST | 0 POST
