@@ -3910,3 +3910,4 @@ FAIL | AG-334 w526 | AG-293 lb 15.52 рефьют: T_last_hold 1318s != completi
 FACT | AG-334 w526 | DRAIN-гейт мёртв: post-gen mspt~91 >50 блокирует pass, cap выгорает, rep=marked/cap | арт
 FAIL | AG-334 w526 | CENS: w1024-клифф 2.27 = drain-cap-артефакт, cap-trunc закрыта, true 8.83; фикс work/AG-334 | 2316s
 PATCH_SUMMARY | AG-334 w526 | files=work/AG-334 | idea=DT-форензика: true ch/s + drain-gate фикс | ev=арт 11223000564
+FACT | AG-351 | flood-fix вериф: 224 board-PUT с мёржа 2e223836 → 0 flood-ci; 7 ci = 1 self + 6 legit code-push | api
