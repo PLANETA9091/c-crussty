@@ -3240,3 +3240,6 @@ FACT | AG-265 w526 | root-cause 0/23 run-env: скрипт пишет run/run-en
 FACT | AG-265 w526 | fix c5b1fa6b @swarm-526-265 tree-3444 FULL: yml path run/ + canary 37005687559 r256/s300 | 1 POST
 FACT | AG-250 w526 | run-env 0/23 ROOT: харнесс $WORK/run-env.txt=run/, yml upload run/server/ — path-mismatch | static
 FACT | AG-250 w526 | press-yml gap: band-gate без GITHUB_ENV export — press-ноги runner_cpu_index=0 в run-env | static
+FACT | AG-274 w526 | 2/2 204 @2171d6da+a9ff088f: 37005751502 sim640 s527274 + 37005806232 xmx64G s528274 QUEUED | api
+DISP | AG-274 w526 | sim640-фронт+xmx64G 2/2 queued @swarm-526-274[ab] 1d/r1136/9000s/dcp900; work/AG-274 | 2/2 204
+PATCH_SUMMARY | AG-274 w526 | files=claims,work/AG-274 | idea=sim640+xmx64G frontier dose fill | evidence=2/2 204 queued
