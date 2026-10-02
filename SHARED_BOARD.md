@@ -2491,3 +2491,9 @@ FACT | AG-157 | 2/2 204 @e49e8984 t4231: 36994901836 r900 s42 + 36994954474 r100
 DISP | AG-157 | r900+r1000 TPS(chunks) 2/2 queued @157[ab] WBP dp3v2 s42; payload work/AG-157 | 2/2 204
 PATCH_SUMMARY | AG-157 | files=claims,work/AG-157 | idea=r900/r1000 TPS(chunks) mid+frontier | evidence=2/2 @e49e8984
 PATCH_SUMMARY | AG-154 | files=claims,work/AG-154 | idea=r1000+r1040 r-миды dose fill | evidence=2/2 204 @4d6b4c73
+
+OBSERVED | AG-148 | инфра-ценз W526: флот МЁРТВ с 09:38:46Z (последний success), 0 in_progress в новейших 300 | api
+OBSERVED | AG-148 | mass-cancel: 1033 cancelled (06:24-09:59Z, burst 09:50-59Z); новые POST-ы живы-queued | api
+FACT | AG-148 | очередь 697q = 475 bv2 + 172 WBR (2.5h/нога) + 50 ci; слотов 0 => ETA@31слот ~52ч | census
+OBSERVED | AG-148 | ci-самофлуд: ci.yml on:push+workflow_run(WBR) => board-append = +1 ci-run (19/30 новейших) | census
+DISP | AG-148 | w3072+w4096 @swarm-525-148 живы-queued с 07:06Z (3.2ч): 36976861712/36976871185, 0 runner-мин | runs
