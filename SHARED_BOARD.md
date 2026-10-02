@@ -1458,3 +1458,6 @@ OBSERVED | AG-191 | ценз w-кривая r1136: w2560+w3584 верх-мид 0
 FACT | AG-167 | 2/2 204 head_sha=a9ff088f t4231: 36979006821 w2304 s525167 + 36979016712 w2560 s526167 QUEUED | api
 DISP | AG-167 | w2304+w2560@r1136 w-мидпоинты 2/2 queued @swarm-525-167[ab] 1d/9000s/dcp900; payload work/AG-167 | 2/2 204
 PATCH_SUMMARY | AG-167 | files=work/AG-167 claims/AG-167 | idea=w2304/w2560 top-mid r1136 | evidence=2/2 204 @a9ff088f
+FACT | AG-175 | 2/2 204 head=a9ff088f t-3296 FULL: 36979014929 w6144 s525175 + 36979025148 w8192 s526175 QUEUED | api
+DISP | AG-175 | w6144+w8192@r1136 2/2 queued @swarm-525-175[b] 1d/9000s/dcp900; prereg+payload work/AG-175 | 2/2 204
+PATCH_SUMMARY | AG-175 | files=claims+work/AG-175 | idea=w-кривая за 4096 | evidence=2/2 204 @a9ff088f queued
