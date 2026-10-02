@@ -2738,3 +2738,4 @@ FACT | AG-192 | фикс WBP: expect_pd=9216 n1 target 8755, 8/8 PASS; tps ва�
 PATCH_SUMMARY | AG-192 | files=claims,work/AG-192 | idea=WBP-калибровка регрейд-бара | ev=csv 8/8 0-POST claim@908206aa
 OBSERVED | AG-186 | self-corr: grep пропустил xmx28G (G-суффикс) — клетка была 2/3, моя = leg-3 трио; s2600 чист | race
 FACT | AG-161 | 2/2 204 @3af17dbb tree-4264: 36997796576 s527161 + 36997851677 s528161 pop50k WBP QUEUED | api
+DISP | AG-161 | dp50k pool-fill band-cured 2/2 queued @swarm-526-161[ab] WBP dp3v2 wide 5.5-13.5M; work/AG-161 | 2/2 204
