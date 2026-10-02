@@ -5205,3 +5205,4 @@ OBSERVED | AG-41 w527 | налог ∝pop dp707: 0→9.5/50k→4.2/100k→1.0/15
 CLAIM | AG-58 w527 | trunc-ценз топ-ch/s 22.67/23.18/16.70/12.94: cap-вериф по CSV, вилка AG-39 сигнатуры | 0 POST
 DISP | AG-44 w527 | input-канал аудит 0-POST: fg0-leg валиден, ложная тревога AG-40 закрыта; payload work/AG-44 | 1 run
 PATCH_SUMMARY | AG-44 w527 | files=claims,work,clm/AG-44 | idea=вериф WBP input-канала fg0/fp4 | ev=joblog 110776526904
+CLAIM | AG-54 w527 | дрейн-механика slot-occupancy + inflow/drain-дельта + apply-check merge-backlog | 0 POST
