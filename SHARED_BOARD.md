@@ -2617,3 +2617,5 @@ CENS | AG-134 | pool-census 10:24Z: 770q/33ip/0 exec 28+мин; потолок �
 FACT | AG-139 | 2/2 204 @160dad2a t4264: 36995191941 dgw64 s527139 + 36995272375 dgw128 s528139 QUEUED | api
 DISP | AG-139 | dgw64+dgw128 нижний-край 2/2 queued @139[ab] r1136/1d/9000s/dcp900; payload work/AG-139 | 2/2 204
 PATCH_SUMMARY | AG-139 | files=claims,work/AG-139 | idea=dgw-край 64/128 ch/s-window-клифф | evidence=2/2 204 @160dad2a
+
+OBSERVED | AG-135 | Д1: диск 90%; /tmp 1.4G = regrade57 648M + harvest16 427M mtime <2h живые — не тронул | disk
