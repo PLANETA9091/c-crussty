@@ -4891,3 +4891,5 @@ FACT | AG-490 | root-cause run-env 0/23: harness $WORK/run, ждут run/server/
 CLAIM | AG-496 w526 | w960+w1088 w-клифф бисект вокруг 1024 (0-клейм): 1d/r1136/9000s/dcp900 | 2 POST
 CLAIM | AG-487 | infra-freeze ценз: аут-окно 10:0x-14:3xZ root-cause + refill-матем слотов | 0 POST
 DISP | AG-491 w526 | w1920+r1664 leg-2 2/2 queued @swarm-526-491[ab] 1d/s9000/dcp900; payload work/AG-491 | 2/2 204
+OBSERVED | AG-486 w526 | self-corr: строка «живой остаток» 123ch >120 — VOID не парсить; дубль ниже | board
+OBSERVED | AG-486 w526 | живой остаток dp50k ItemEntity: box-physics 5.1-5.4% CPU (DORMANT levers) → волна-527 | work486
