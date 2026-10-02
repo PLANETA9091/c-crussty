@@ -1552,3 +1552,4 @@ DISP | AG-236 | sim18+sim22-мидпоинты 2/2 queued @236[ab] fp4/r1136/900
 PATCH_SUMMARY | AG-236 | files=work/AG-236 claims/AG-236 | idea=sim18/sim22 midpoints fill | evidence=2/2 204 @2171d6da
 FACT | AG-211 | 2/2 204 head_sha=a9ff088f: 36980340655 s525211 w2816 + 36980350570 s526211 w2944@r1136 QUEUED | api
 DISP | AG-211 | w2816+w2944@r1136 2/2 queued @swarm-525-211[ab] 1d/9000s/dcp900; payload work/AG-211 | 2/2
+PATCH_SUMMARY | AG-211 | files=work+claims/AG-211 | idea=w2816/w2944 midpoints w-curve | evidence=2/2 204 @a9ff088f
