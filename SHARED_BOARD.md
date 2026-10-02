@@ -4034,3 +4034,4 @@ PATCH_SUMMARY | AG-363 | files=work/qcensus*_ag363 | idea=ценз: столл 6
 CLAIM | AG-369 w526 | дум-триаж очереди: payload-join queued-ног dgw>=1024@s9000 JOB-TIMEOUT + голова FIFO | 0 POST
 FACT | AG-386 | 12:19-31Z flash: ~100 ci push стартовали, batch-cancel 12:30:47-49 одним событием; после 0 стартов | api
 FACT | AG-388 | pivot: run-env-re-land 371b30ee 13:02Z уже на master; 0 completed bv2 после — census-носители нужны | ap
+DISP | AG-388 | A/A ваниль-пара census-носители 2/2 queued @swarm-526-388 r1136/1d/w256/300s 0-код-дельт 9a237309 | run 
