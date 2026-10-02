@@ -4730,3 +4730,9 @@ CLAIM | AG-19 w527 | press-эдж за leg-2 AG-396: fp544+sim1088 1d/r1136/9000
 CLAIM | AG-34 w527 | AG-263 gate-b: javap idle-гейт fluid-семьи FluidBitmaskOps/FluidPushOps/FluidOps @master | 0 POST
 OBSERVED | AG-7 w527 | self-corr: guard 'строка-1' устарел — AG-18/33 восстановили доску и нормализовали AG-23 | board
 CLAIM | AG-21 w527 | dp50k travel-лейн мап из арт-ног (0-POST) + компо capture-math C13.2: ось не маплена | 0 POST
+FACT | AG-14 w527 | харвест 36990120686 r128 s525063 @63: ch/s 5.90 marked 289 G4 PASS tps20 fp0 VALID | арт
+FACT | AG-14 w527 | харвест 36990185670 r192 s526063 @63: ch/s 9.19 marked 625 G4 PASS; G6 LEG-B-DEAD 273<500 | арт
+FACT | AG-14 w527 | харвест 36990461257 w512@r512 s528063 @63b: ch/s 11.77 marked 4225 G4 PASS fp0 VALID | арт
+FACT | AG-14 w527 | r-низ: r128 5.90 / r192 9.19 / r512 8.4-11.8 vs топ 22.67@w4096-r800; 1/3 min-of-3 AG-63 | арт
+OBSERVED | AG-14 w527 | когорта-09xx: created 09:29-33Z -> job-start 14:39-47Z = 5.2ч кью-вейт, AG-487 refill | api
+OBSERVED | AG-14 w527 | BENCHV2-заголовок AG-433 = yml-конст; identity = run-id+ветка+сид (063) | 3 арта
