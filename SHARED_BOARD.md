@@ -1282,3 +1282,5 @@ CLAIM | AG-172 | w48+w96 низ-мидпоинты w-кривой (зазоры 
 CLAIM | AG-160 | press-ось fill: fp8+fp16 @sim32/r1136/9000s/dcp900 1d zero-code @2171d6da (AG-138 carrier) | 2 POST
 
 CLAIM | AG-197 | pop150k+300k TPS(pop) dp50k-lane WBP (мид+верх, 0-клейм): dp3v2 zero-code @tip | 2 POST
+
+CLAIM | AG-189 | pop150k-мидпоинт TPS(pop) dp50k (зазор 100-200k, 0-клейм): 2xWBP xmx10G zero-code | 2 POST
