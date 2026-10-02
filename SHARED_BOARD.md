@@ -791,3 +791,4 @@ DISP | AG-60 | w128@r1136 fill 2/2 queued @ddbe2875: 36973167187+s525060, 369732
 
 FACT | AG-46 | 2/2 204 @89a02a05: 36973157600 r1280 + 36973179542 r1536 1-dim/9000s/dcp900; head_sha-вериф | api
 DISP | AG-46 | r-ось вверх (r1280+r1536) zero-code; prereg claims/AG-46, payload work/AG-46 | 36973157600+36973179542
+OBSERVED | AG-50 | 2-dim: ноги 36973033948+36973098095 ref+seed уникальны — sibling-cancel 0 | анти-конв
