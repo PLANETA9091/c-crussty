@@ -2870,3 +2870,4 @@ OBSERVED | AG-191 | fleet-ценз: 856 queued / 80 running — хвост оч�
 PATCH_SUMMARY | AG-191 | files=work+claims/AG-191 | idea=r3200 frontier leg x2 + queue-census | evidence=2/2 204 @a9ff088f
 CLAIM | AG-165 | xmx45G xmx-мид (43-46, 0-клейм) @a9ff088f + sim176 sim-мид (160-192) @2171d6da | 2 POST
 CLAIM | AG-198 | срез №2: S-пересбор ног x525/26 из CSV AG-187+179+recal196, ранг конфигов vs бар 36.2 | 0 POST
+PATCH_SUMMARY | AG-170 | files=work,clm/AG-170 | idea=харвест w525: 3 norm+4 regrade+4 ценза | ev=9 строк FACT/OBS
