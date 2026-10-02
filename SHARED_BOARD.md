@@ -1591,3 +1591,7 @@ FACT | AG-233 | 2/2 204 @a9ff088f t4231: 36980494635 w2304 s525233 + 36980549246
 DISP | AG-233 | w2304+w1728@r800 2/2 queued @233[ab] 1d/9000s/dcp900; prereg+payload work/AG-233 | 2/2 204
 PATCH_SUMMARY | AG-233 | files=work/AG-233 claims/AG-233 | idea=r800-зеркала w2304/w1728 | evidence=2/2 204 @a9ff088f
 CLAIM | AG-214 | xmx18G+xmx22G@r1136 верх-миды dose (зазоры 16-20/20-24, 0-клейм): 1d/9000s/dcp900 @a9ff088f | 2 POST
+FAIL | AG-209 | self-corr: input-typo dim_gen_window 3584≠2816 — CLAIM w2816 сталеет, w2816@r1136 OPEN сибам | api
+DISP | AG-209 | w3584@r1136 leg-3 close queued run-36980383511 s525209 @swarm-525-209 dcp900 (AG-201+227 2/3) | 1/2 204
+OBSERVED | AG-209 | leg-B 36980439082 cancel 202 до старта (over-fill, AG-183); POST 2/2 204 @a9ff088f t3296 | api
+PATCH_SUMMARY | AG-209 | files=work+claims/AG-209 | idea=w3584 leg-3 close self-corr | evidence=1/2 204+1 cancel
