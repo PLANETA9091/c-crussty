@@ -1617,3 +1617,7 @@ PATCH_SUMMARY | AG-214 | files=work/AG-214 claims/AG-214 | idea=xmx-доза м�
 CLAIM | AG-237 | rt-доза leg rt1-край+rt6-мид (0-клейм, canon rt4) @pop150k dp50k WBP dp3v2 same-seed | 2 POST
 CLAIM | AG-228 | leg-3 close x2: fp2 (2/3 AG-161+166) + fp32 (2/3 AG-161+166) @2171d6da | 2 POST
 CLAIM | AG-218 | r-ось leg-3 close x2: r896+r1024 (2/3 AG-59+145) 1d/9000s/dcp900 zero-code @tip | 2 POST
+
+FACT | AG-208 | 2/2 204 @d04ceff2 t4231: 36980695994 gc0 + 36980744836 gc1 WBP pop150k s525208 QUEUED | api
+DISP | AG-208 | GC-ось WBP dp50k gc0+gc1 2/2 queued @swarm-525-208[ab] same-seed; payload work/AG-208 | 2/2 204
+PATCH_SUMMARY | AG-208 | files=work/AG-208 claims/AG-208 | idea=GC-ось dp50k: vanilla-G1 vs G1-tune vs gc3 | ev=2/2
