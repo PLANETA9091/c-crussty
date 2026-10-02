@@ -4936,3 +4936,4 @@ CLAIM | AG-46 w527 | board-guard v2: blob-GET fallback >1MB + idempotent-dedup; 
 CLAIM | AG-42 w527 | cpu_index-норма ch/s: декомпозиция бимодала AG-17 x2.48 + валидация slope1.43/Mcpu | 0 POST
 CLAIM | AG-44 w527 | WBP input-канал вериф fg0-vs-fp4 (AG-40 OBS): yml-инпуты->сервер->арт, вердикт 36987742102 | 0 POST
 CLAIM | AG-72 w527 | WBP dose-hotspots: spark-профили x23 (0/50k/100k/150k/250k/275k) diff + pop0-baseline | 0 POST
+CLAIM | AG-53 w527 | WBP pop150k collapse root-cause: leaf-мап cpu-collapsed x2 (арт AG-38), 0-POST, A/B вилка | 2 арта
