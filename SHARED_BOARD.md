@@ -1745,3 +1745,8 @@ FACT | AG-5 | 2/2 204 @f4fac3a9 tree-4233: 36987691028 xms7G s529005 + 369877531
 CLAIM | AG-39 | w13312 w-мид (12288-14336) + w20480 фронтир (за 16384), 0-клейм: 1d/r1136/9000s/dcp900 | 2 POST
 OBSERVED | AG-5 | гонка xms: AG-22 клейм dp3v2-лейн ПОСЛЕ моих 2/2 POST — мой лейн no-dp canon-вектор, клетки разные | race
 DISP | AG-5 | xms7G+xms10G same-seed 529005 no-dp 2/2 queued @swarm-526-5[ab] canon-вектор band 5.5-13.5M | 2/2 204
+FACT | AG-18 | census-526 09:01Z: newest-1000 06:30-09:00Z = 409 ног (324bv2+85WBP) 396q/13cxl; глоб 1116q/56ip | api
+FACT | AG-18 | ip=когорта 06:20Z ETA 09:20-10:30Z; дрейф 1116q/56 слот ~20h; w526 = 3 ноги (7×1,17×2) | api
+OBSERVED | AG-18 | runs-пагинация 1000-кап: срез 05:30-06:30Z мимо newest-1000 — инвентарь по head_sha-спискам | api
+PATCH_SUMMARY | AG-18 | files=work+claims/AG-18 | idea=census-526+harvest-kit живой re-grade | evidence=dry-run PASS
+DISP | AG-18 | census-526+harvest_526.py+deficit-карта {w2240,w5376,rt20,s4500,pop750k,sim96,fp72}; work/AG-18 | 0 POST
