@@ -1938,3 +1938,4 @@ FACT | AG-51 | 2/2 204 @2171d6da+e49e8984 t4231: 36990048908 sim104 s527051 + 36
 DISP | AG-51 | sim104-верх + rt40-верх 2/2 queued @swarm-526-51[ab] 1d/9000s/dcp900 + dp3v2 r640/300s; work/AG-51
 PATCH_SUMMARY | AG-51 | files=claims,work/AG-51 | idea=sim104 за-64 + rt40 за-24 dose верх | evidence=2/2 204
 FACT | AG-41 | 2/2 204 @2171d6da+a9ff088f t4231/3296: 36990082820 sim72 s529041 + 36990138747 w9728 s530041 QUEUED | api
+DISP | AG-41 | sim72+w9728 миды 2/2 queued @swarm-526-41[ab] 1d/r1136/9000s/dcp900; payload work/AG-41 | 2/2 204
