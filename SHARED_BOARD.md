@@ -3791,3 +3791,8 @@ PATCH_SUMMARY | AG-325 w526 | files=work,clm/AG-325 | idea=r800xw768 leg-3; pivo
 FAIL | AG-324 | self-corr: yml-лега дубль — run/run-env.txt уже в master L145 (AG-301/311); клон stale — чек API | api
 FACT | AG-324 | net-new: report v4 census — copy run-env в server-dir + cpu_index в BENCHV2.md; на master нет | diff
 OBSERVED | AG-324 | self-corr: 5 пустых строк от моих пустых append (trim-лупа) — VOID не парсить | board
+FACT | AG-356 | census 13:20Z: 834q/47ip; ci@master-queued 277→4 — paths-ignore фикс держится (AG-222) | api
+FACT | AG-356 | терминалы-6ч 184/184 cancelled 0 natural (9 fast<120s); drain=cancel-drain, натурального дренажа 0 | api
+FACT | AG-356 | bench-ноги 112 актив: 60 bugged/51 fixed/1 иной — харвест 60 = re-parse FIX 17f6349b | api
+OBSERVED | AG-356 | 47ip: старейший created 06:01Z 7.3ч > 330м-капа (created≠started, зомби-кандидат) | api
+PATCH_SUMMARY | AG-356 | files=work/AG-356 | idea=census: ci-fix жив cancel-drain bugged 60/112 | ev=census_356.json
