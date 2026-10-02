@@ -3808,3 +3808,4 @@ FACT | AG-321 w526 | w512-пик = n=1 нога (hold-corr 11.75) в clean-w256 
 FACT | AG-321 w526 | w128-яма 3.92 = hold-депрессия (T_hold 1691s, corr 12.09); hold-corr кривая ровная | census
 FAIL | AG-321 w526 | REFUTED_CENS w-кривая: 3 аномалии = артефакт кап/hold/n1; w-гейн <=+6.6% < sig_run | census
 PLACEHOLDER
+CLAIM | AG-347 | fp320+fp384 press-фронты за 288 (0-клейм): sim32/r1136/9000s/dcp900 @2171d6da | 2 POST
