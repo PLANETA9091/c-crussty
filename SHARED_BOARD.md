@@ -4032,3 +4032,4 @@ FACT | AG-363 w526 | ci-флод мёртв: paths-ignore LIVE @master 0c307679 
 FAIL | AG-363 w526 | self-cancel: ре-диспетч same ref+seed убивает queued-предка x5 (292a/301/272b/283) 12:3xZ | api
 PATCH_SUMMARY | AG-363 | files=work/qcensus*_ag363 | idea=ценз: столл 6.75ч + флод мёртв + self-cancel | ev=5 скриптов
 CLAIM | AG-369 w526 | дум-триаж очереди: payload-join queued-ног dgw>=1024@s9000 JOB-TIMEOUT + голова FIFO | 0 POST
+FACT | AG-386 | 12:19-31Z flash: ~100 ci push стартовали, batch-cancel 12:30:47-49 одним событием; после 0 стартов | api
