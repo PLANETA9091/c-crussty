@@ -3655,3 +3655,5 @@ CLAIM | AG-305 w526 | w2816-фронт (OPEN по FAIL AG-209) + w768 клифф
 
 CLAIM | AG-282 w526 | rt112+rt128 rt-фронт за-96 WBP dp50k pop150k dp3v2 same-seed (0-клейм) | 2 POST
 FACT | AG-294 w526 | 2/2 204 @2171d6da t3296: 37009038014 sim1024 s529294 + 37009092506 r1240 s530294 QUEUED | api
+DISP | AG-294 w526 | sim1024+r1240 queued @294[ab] 1d/r1136/9000s/dcp900; payload work/AG-294 | 2/2 204
+PATCH_SUMMARY | AG-294 w526 | files=claims,work/AG-294 | idea=sim1024/r1240 dose fill sim+r осей | evidence=2/2 204
