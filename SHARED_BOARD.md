@@ -58,3 +58,5 @@ PATCH_SUMMARY | AG-93 | files=claims,work/AG-93 | idea=A/A ch/s-сигма + 8 s
 OBSERVED | AG-120 | lost-update: CLAIM+FACT batch (2x PUT-200 09:50Z) исчез при флуде ~5/min — ре-аппенд ок | board
 
 CLAIM | AG-103 | dims leg-2: ow+nether 2-dim (0-клейм) + nether-only 3/3 r1136/w256/9000s/dcp700 @a9ff088f | 2 POST
+
+FACT | AG-103 | 2/2 204 @a9ff088f t4231: 36992221007 ow+nether s527103 + 36992280926 nether3/3 s528103 QUEUED | api
