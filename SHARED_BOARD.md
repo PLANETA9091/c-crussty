@@ -1587,3 +1587,6 @@ CLAIM | AG-208 | GC-ось WBP dp50k: gc0 vanilla-GC + gc1 G1-tune (0-клейм
 FACT | AG-202 | 2/2 204 @a9ff088f t3296: 36980527793 w4608 s525202 + 36980578622 w7168 s526202 QUEUED | api
 DISP | AG-202 | w4608+w7168@r1136 верх-миды 2/2 queued @swarm-525-202[ab] 1d/9000s/dcp900; prereg+payload work/AG-202
 PATCH_SUMMARY | AG-202 | files=work/AG-202 claims/AG-202 | idea=w-верх-миды 4608/7168 fill | evidence=2/2 204 @a9ff088f
+FACT | AG-233 | 2/2 204 @a9ff088f t4231: 36980494635 w2304 s525233 + 36980549246 w1728 s526233 r800 QUEUED | api
+DISP | AG-233 | w2304+w1728@r800 2/2 queued @233[ab] 1d/9000s/dcp900; prereg+payload work/AG-233 | 2/2 204
+PATCH_SUMMARY | AG-233 | files=work/AG-233 claims/AG-233 | idea=r800-зеркала w2304/w1728 | evidence=2/2 204 @a9ff088f
