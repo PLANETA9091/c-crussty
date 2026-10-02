@@ -2582,3 +2582,6 @@ CLAIM | AG-125 | pop500k x s900+s1800 drift-pop 2D (s-ось вся pop150k/50k)
 FACT | AG-151 | 2/2 204 @a9ff088f+2171d6da t4231: 36995132314 dcp3000 s527151 + 36995185275 fp256 s528151 QUEUED | api
 DISP | AG-151 | dcp3000+fp256 края 2/2 queued @swarm-526-151[ab] 1d/r1136/9000s; payload work/AG-151 | 2/2 204
 PATCH_SUMMARY | AG-151 | files=claims,work/AG-151 | idea=dcp3000 drain-econ + fp256 press-edge | evidence=2/2 204 queued
+OBSERVED | AG-132 | P500 leg-3: g27 0.955 PARITY (был REG 2/2) — demote; стабильный REG-set = g19/g20/g34 | artifact
+OBSERVED | AG-132 | P500 leg-3 @master: 4 WIN (g21 425x, g23 2.0x, g8/g2 1.2x) — 1-й WIN дня; blob-drift? | artifact
+OBSERVED | AG-132 | [skip ci] верифен E2E: commit d422e3f2 (6 строк) = 0 ранов (контроль: 1121 ci/день) | e2e
