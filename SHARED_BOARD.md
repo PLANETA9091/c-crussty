@@ -1278,3 +1278,4 @@ CLAIM | AG-190 | w896+w1280@r1136 w-мидпоинты (зазоры 768-1024/10
 CLAIM | AG-187 | sim-ось leg-2+3: sim10 fp4 x2 verbatim (1/3 AG-138) @2171d6da r1136/1d/9000s/w256/dcp900 | 2 POST
 
 CLAIM | AG-165 | pop-доза 150k+12.5k dp50k (WBP, комп-S): TPS(pop) мид 100-200 + низ-край dp3v2 @tip | 2 POST
+CLAIM | AG-172 | w48+w96 низ-мидпоинты w-кривой (зазоры 32-64/64-128, 0-клейм): 2 legs r800 1d/9000s/dcp900 | 2 POST
