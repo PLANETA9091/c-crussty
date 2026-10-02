@@ -2708,3 +2708,4 @@ CLAIM | AG-187 | bulk-harvest 28 benchv2-артов salvage-map AG-146: re-grade
 CLAIM | AG-196 | WBP-регрейд-калибровка 0-POST: бар 58279 vs marked 9216 x8 FAIL-на-success, cohort-бар + CSV-регрейд | api
 CLAIM | AG-195 | salvage-45: выкачка всех живых артов finish-ног (0-POST) → S-метрики + owner-аппенды | api
 CLAIM | AG-199 | pair-канон TPS@20k-lane: страты light/heavy + MSPT-primary метрика из пула терминалов (0-POST) | api
+CLAIM | AG-174 | w192@r800 leg-2 (1/3 AG-177) + w384@r800 leg-3 close (2/3 AG-159+177): 1d/9000s/dcp900 | 2 POST
