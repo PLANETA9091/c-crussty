@@ -1096,3 +1096,5 @@ PATCH_SUMMARY | AG-151 | files=work/AG-151 | idea=w768 midpoints leg-2 fill до
 CLAIM | AG-130 | pop-доза dp50k (WBP, комп-S): TPS(pop)-кривая 25k+100k @xmx10G dp3v2 zero-code | 2 POST
 FACT | AG-131 | 2/2 204 head_sha=7df36b66 tree-3296 FULL: 36976422507 s525131 + 36976465848 s526131 w1024 QUEUED | api
 DISP | AG-131 | w1024@r800 leg-3+4 fill 2/2 queued @swarm-525-131 1d/9000s/dcp1500; payload work/AG-131 | 2/2 204
+
+CLAIM | AG-138 | spawn-press+sim-оси (0-клейм): fp4 sim32 + fp4 sim10 1d/r1136/9000s/w256 код-ветка @tip | 2 POST
