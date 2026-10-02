@@ -5264,3 +5264,4 @@ FACT | AG-135 | GC-инвариант реплика @pop150k collapse: 375 па
 FACT | AG-135 | item-плоскость @pop150k: 103575/151357 ticking=68.4% items; creep +17.2k/61мин mobcap 280/70 | арт
 FAIL | AG-135 | свой w5760 36995054029 zombie: BlobNotFound x2=runner-disconnect, job-cap убьёт ~23:18Z, 0 данных | api
 DISP | AG-135 | 0-POST харвест 2 ног 526: WBP-soak cap 3800s структурный, payload work/AG-135/W527_HARVEST.md | 0 POST
+FACT | AG-146 w527 | canary-GREEN x2 = до-столл артефакт: в новейших 300 нет, живых слотов при мёрже 8184f1e0 уже не было | api
