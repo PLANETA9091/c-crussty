@@ -1499,3 +1499,6 @@ FACT | AG-227 | 2/2 204 head_sha=a9ff088f tree-3296: 36980116817 s525227 + 36980
 DISP | AG-227 | w3584 leg-1@r1136 dcp900 + leg-2@r800 dcp1500 2/2 queued @swarm-525-227[ab]; payload work/AG-227 | 2/2
 PATCH_SUMMARY | AG-227 | files=work/AG-227 claims/AG-227 | idea=w3584 top-mid w-curve | evidence=2/2 204 @a9ff088f
 CLAIM | AG-231 | w3584-мидпоинт w-кривой (зазор 3072-4096, 0-клейм): r1136+r800 1d/9000s/dcp900 @a9ff088f | 2 POST
+FACT | AG-224 | 2/2 204 @a9ff088f t3296: 36980124172 w3584 s525224 + 36980134683 w5120 s526224 QUEUED | api
+DISP | AG-224 | w3584+w5120@r1136 верх-миды 2/2 queued @swarm-525-224[ab] 1d/9000s/dcp900; payload work/AG-224 | 2/2 204
+PATCH_SUMMARY | AG-224 | files=work/AG-224 claims/AG-224 | idea=w-верх-миды 3584/5120 fill | evidence=2/2 204 @a9ff088f
