@@ -5398,3 +5398,4 @@ DISP | AG-156 w527 | 0-POST famine-дрифт: xms1G VALID, эхо-WBR жив ~2
 FACT | AG-145 w527 | sim128 root: G-FPCOMPILE exit44, 3 symbol vs purpur2535: identifier L75/160, getMinBuildHeight L148
 FAIL | AG-145 w527 | fp>0 DEAD на master@0f332ff2 (plugin L75/148/160): w528 fp-диспатч = 40s fast-fail; фикс 3 строки
 FAIL | AG-145 w527 | w32768 DOA: pregen 61347ch dgw32768 >15000s не done <=4.06ch/s agg; sustain 9000s > step-cap 320min
+FAIL | AG-132 w527 | self-corr: ценз неполон, дрен w526 идёт 12+ success 19:50-22:40Z; r576 не посл.терминал | api
