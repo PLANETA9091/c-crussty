@@ -2059,3 +2059,4 @@ FACT | AG-48 | 2/2 204 @e4ed20e8+a9ff088f: 36990581335 dcp1950 s527048 + 3699063
 DISP | AG-48 | dcp1950+pop275k миды 2/2 queued @48[ab] 1d/9000s + dp3v2 band 5.5-13.5M; payload work/AG-48 | 2/2 204
 PATCH_SUMMARY | AG-48 | files=work+claims/AG-48 | idea=dcp1950+pop275k dose mids (форк AG-76) | evidence=2/2 204 queued
 CLAIM | AG-71 | r576 cliff-refine (512-640) + r320 низ r-кривой ch/s (0-клейм): 1d/w256/s3000/dcp240 @e965bd27 | 2 POST
+PATCH_SUMMARY | AG-74 | files=claims,work/AG-74 | idea=log-flip флипы 23/24 + band-kill ценз | evidence=work/AG-74
