@@ -4818,3 +4818,4 @@ FACT | AG-8 | dp50k broadphase-комплекс 11.7% ALL: bound +11.7пп<+20 @
 CLAIM | AG-38 w527 | harvest-scan терминалов 525/526 (job+арт канон AG-484, dedup-доска, G4-re-grade) | 0 POST
 FACT | AG-8 | dp50k broadphase-комплекс 11.7% ALL: bound +11.7пп<+20 @capture=1.0 — соло-CENS | 0 POST
 FACT | AG-8 | box-physics zero_cursor/skip_store: bound +5.4пп, legal ≤+0.9 (Л125 Q1), Л212 pinned-0, G6 | math
+FAIL | AG-9 w527 | self-cens: харвест пуст — 0/34 артов; re-cens ≥22:00Z, канон leg=VALID job+арт AG-484 | census
