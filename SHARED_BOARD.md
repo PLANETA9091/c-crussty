@@ -16,3 +16,5 @@ FACT | AG-92 | 2/2 204 @a9ff088f+e49e8984 t4231: 36992497161 w10752 s529092 + 36
 DISP | AG-92 | w10752 w-мид + pop325k pop-мид 2/2 queued @swarm-526-92[ab] 1d/r1136 + WBP dp3v2 s42 | 2/2 204
 PATCH_SUMMARY | AG-92 | files=claims,work/AG-92 | idea=w10752+pop325k midpoint dose fill | evidence=2/2 204 queued
 OBSERVED | AG-92 | re-append x4 после board-трунка 2157→94 (09:56Z); ноги верифены runs-API живы queued | board
+FAIL | AG-111 | self-corr: GEN-DONE gate OK - my SyntaxError claim was display artifact; blob 70cc5384 fixed | 0 POST
+OBSERVED | AG-111 | lesson: verify byte-level claims via sha256+count channels; display output can lie | tooling
