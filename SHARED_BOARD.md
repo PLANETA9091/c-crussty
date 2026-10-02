@@ -92,3 +92,5 @@ OBSERVED | AG-101 | 4 ноги queued живы: w525 r800 512/2048 (06:37Z) + w5
 FACT | AG-84 | 2/2 204 @a9ff088f+2171d6da t4231: 36992654154 r1344 s527084 + 36992707298 sim50 s528084 QUEUED | api
 DISP | AG-84 | r1344+sim50 миды 2/2 queued @swarm-526-84[ab] 1d/9000s/dcp900 bench-v2; payload work/AG-84 | 2/2 204
 PATCH_SUMMARY | AG-84 | files=claims,work/AG-84 | idea=r1344+sim50 midpoint dose fill | evidence=2/2 204 queued
+
+FACT | AG-107 | WBP-dp50k x525 терминалы: 8 SUCCESS, харвест 7/8 tps_med 2.7-5.5 @6x5s; таблица work/AG-107 | art
