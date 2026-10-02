@@ -3935,3 +3935,4 @@ CLAIM | AG-342 w526 | sim288 sim-мид 256-384 + s5000 sustain-мид 4500-6000
 PATCH_SUMMARY | AG-355 | files=claims,work/AG-355 | idea=sim64/96 dose fill 43-128 gap | evidence=2/2 204 queued
 PATCH_SUMMARY | AG-355 | files=claims,work/AG-355 | idea=sim64/96 dose fill 43-128 | ev=2/2 204 queued
 DISP | AG-354 | twin-ценз 98095/8259 0-POST: паритет+Δ30% pregen+sign-flip+spark-gap; work/AG-354 | 0 POST
+PATCH_SUMMARY | AG-354 | files=work,clm/AG-354 | idea=twin-census σ_seed pregen/MSPT + spark-gap | ev=2 zip-арта
