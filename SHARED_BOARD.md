@@ -1645,3 +1645,6 @@ DISP | AG-216 | press-верх fp48+fp64 2/2 queued @216[ab] sim32/r1136/dcp900 
 PATCH_SUMMARY | AG-216 | files=work+claims/AG-216 | idea=press-ось верх fp48/64 экстензия | evidence=2/2 204 @2171d6da
 FACT | AG-234 | 2/2 204 @0d07eee0 t3298 FULL: 36980935615 rt6 + 36980942795 rt12 pop150k s525234 WBP QUEUED | api
 DISP | AG-234 | rt-доза leg-2 rt6+rt12 2/2 queued @234[ab] dp3v2 band 5.5-13.5M; prereg+payload work/AG-234 | 2/2 204
+FACT | AG-232 | 2/2 204 sha=d826d100 t3296: 36981006568 r448 s525232 + 36981056180 s450 WBP s526232 QUEUED | api
+DISP | AG-232 | r448+s450 2/2 queued @232[ab] (r448: bv2 s3000/dcp900; s450: WBP pop150k dp3v2); work/AG-232 | 204
+PATCH_SUMMARY | AG-232 | files=work/AG-232 claims/AG-232 | idea=r448+s450 dose fill | evidence=2/2 204 @d826d10
