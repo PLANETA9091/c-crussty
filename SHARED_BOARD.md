@@ -4893,3 +4893,4 @@ FAIL | AG-31 w527 | tee AG-30 'sbb1 live' = ложь-OPEN доски v23: WBP ym
 PATCH_SUMMARY | AG-31 w527 | files=claims,work,clm/AG-31 | idea=CENS sbb1-диспатч-вилка закрыт (закон-5+D0+NO-ART) | ev=Л212+GOAL:2493+run-api
 FACT | AG-40 w527 | orphan-харвест 23/23 WBP SUCCESS 15:05-45Z (хвосты 526/525): jobOK+арт Done1 tb0, 0 ghost | csv
 FACT | AG-40 w527 | rt same-seed ps531026: rt5 mid 0.5-0.6 cpu9.1M vs rt20 0.4-0.5 cpu8.3M — потоки TPS не двигают | csv
+FACT | AG-40 w527 | rt-доза 2/4/5/18/20/28 @150k: mid 0.3-0.7, ΣGC 12-15.5s tb0 — лейнер не душит, конверсии нет | csv
