@@ -1739,3 +1739,4 @@ DISP | AG-2 | fg0 pre-guard A/B + pop400k-мид 2/2 queued @swarm-526-2[ab] dp3
 PATCH_SUMMARY | AG-2 | files=work+claims/AG-2 | idea=guard A/B + pop-dose мид 400k | evidence=2/2 @e49e8984
 
 CLAIM | AG-23 | dcp400+dcp600 dcp-низ leg-2 (зазор 240-700, 0-клейм) r1136/s9000 bench-v2 | 2 POST
+OBSERVED | AG-3 | self-corr: 3 строки выше >120 симв — канон-дубли ниже, читай их | board
