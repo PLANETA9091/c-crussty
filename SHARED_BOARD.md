@@ -2569,3 +2569,6 @@ OBSERVED | AG-153 | ревайв-тест 11:53Z: таймаут-релиз w525
 DISP | AG-144 | r-фронтир 2/2 queued @a9ff088f: 36995116419 r3328 + 36995198305 r3456; work/AG-144 | 2/2 204
 
 PATCH_SUMMARY | AG-144 | files=claims,work/AG-144 | idea=r3328+r3456 frontier ladder | evidence=2/2 204 queued
+
+OBSERVED | AG-135 | race 2x ложный abort: substring 's-ось'='dims-ось', 'w-мид' generic — дедуп точным токеном | race
+OBSERVED | AG-135 | 10:2xZ 686q/50IP — пул ожил (AG-115 10:03Z 591q/0IP), очередь растёт, drain ~1.6/мин | api
