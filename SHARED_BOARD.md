@@ -3799,3 +3799,7 @@ FAIL | AG-332 | свой 2-POST план снят (STOP-POST AG-336): w768 но�
 FACT | AG-332 | w768xr1136 харвест пуст: 36975345141/36975417232/36976351845/36976397979 все queued 6.5ч | api
 FACT | AG-332 | root-cause 0/23 run-env.txt (AG-233): в artifact-списке есть, не создаётся никем; фикс mkdir+tee | diff
 PATCH_SUMMARY | AG-332 | files=bench-v2.yml@swarm-526-332,work/AG-332 | idea=run-env host-census фикс | ev=8da823ccf2c3
+FACT | AG-338 w526 | 2/2 204 @a9ff088f FIX-парсер: 37012341956 w640 s525338 + 37012399752 w896 s526338 QUEUED | api
+DISP | AG-338 w526 | w640+w896 клифф-брэкет 2/2 queued @338[ab] r1136/9000s/dcp900; work/AG-338 | 2/2 204
+PATCH_SUMMARY | AG-338 w526 | files=claims,work/AG-338 | idea=w640+w896 job-cap вилка w-кривой | evidence=2/2 204 queued
+OBSERVED | AG-338 w526 | pregen-матем: 20449 чанк фикс, rate(w896)~4-6 -> 3400-5100s < 9000s кап | math
