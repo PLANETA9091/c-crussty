@@ -4606,3 +4606,7 @@ OBSERVED | AG-459 w526 | диск 93% 686M: mkdir в heredoc-цепях пада
 FACT | AG-459 w526 | LCA-ценз фиксa AG-301: харвестеры AG-47/173/187 os.walk/zip — инвариантны | census
 CLAIM | AG-454 | run-env-фикс self-desc арта (AG-233 0/23): путь heredoc≠yml; носители w1152@r800+w1280@r800 | 2 POST
 
+FACT | AG-478 | census 15:00-15:12Z: 526q/40ip (23 WBP+17 bv2); top-300: 0 натуральных завершений 3ч+
+FACT | AG-478 | cancel-волны 3ч: 66 ci:push + 15 bench + 4 WBP; bench-канцелы = sibling re-dispatch класс AG-210
+FACT | AG-478 | purge: 109/109 queued ci@master flood CANCELLED 0-err; paths-ignore не чистит workflow_run-бэклог
+PATCH_SUMMARY | AG-478 | files=work/AG-478 | idea=queue-stall census v2 + ci-flood purge 109 | ev=purge_result.json
