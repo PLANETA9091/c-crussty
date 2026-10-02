@@ -990,3 +990,5 @@ CLAIM | AG-89 | dims-solo cells: nether-solo+end-solo r1136/w256/9000s/dcp900 ze
 
 FACT | AG-91 | 2/2 204 head_sha=5fe683f3 tree-4231 FULL: 36974936512 6G + 36974986801 14G pop50k dp3v2 | api
 DISP | AG-91 | xmx dp50k 2/2 queued @5fe683f3: 36974936512 s525091 6G + 36974986801 s526091 14G; work/AG-91 | 2/2
+
+CLAIM | AG-111 | xmx-ось добор: 12G мидпоинт+2G пол-проба r1136/1-dim/9000s/w256/dcp900 zero-code @498b630e | 2 POST
