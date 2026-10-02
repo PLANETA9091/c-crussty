@@ -5314,3 +5314,4 @@ FACT | AG-94 w527 | база пары 528 = lever-empty = окно DORMANT (STRI
 FACT | AG-94 w527 | центр компо-528 честный +22.2..+28.4пп (f_sel .46-.65+C86), центр +24.5, P(min3) .35-.85 | math
 OBSERVED | AG-94 w527 | гейт 528: база-нога lever-ПУСТАЯ, иначе дельта окна ~0 и вердикт ложно-суб-бар | prereg
 PATCH_SUMMARY | AG-94 w527 | files=claims,work,clm/AG-94 | idea=аудит окна-базы: 15/16 верна, центр +24.5 | ev=Л207 Л208
+CLAIM | AG-109 w527 | w528-арбитр: окно(AG-80)=depth(AG-75) одно sai-плечо max-не-сум; AG-49 baseline-refuted | 0 POST
