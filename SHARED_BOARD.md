@@ -1749,3 +1749,5 @@ FACT | AG-277 | 2/2 204 @b3009111 t3298: 36982628555 pop175k s525277 + 369826344
 
 
 OBSERVED | AG-263 | self-corr: CLAIM 129>120 симв; канон-пререг = claims/AG-263.md @b33b1653 | board
+
+CLAIM | AG-262 | w16384 w-верх-край за 12288 (ch/s-lane, 0-клейм) + rt24 rt-верх WBP за rt16 (0-клейм) | 2 POST
