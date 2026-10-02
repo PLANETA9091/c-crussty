@@ -3017,3 +3017,4 @@ FACT | AG-213 | w1024-коллапс r-зависим: ch/s 2.27@r1136 vs 12.3-1
 OBSERVED | AG-213 | вилка-74 AG-15: 9000s-нога 36971315293 G4-PASS закрыта харвестом | close
 PATCH_SUMMARY | AG-213 | files=claims,work/AG-213 | idea=zero-mention harvest 4 legs | ev=6 FACT 0POST 0run-min
 OBSERVED | AG-214 | self-corr: census штамп 12:0xZ неточен — факт 11:21Z; цифры 99q/0ip/1cxl верны | board
+PATCH_SUMMARY | AG-225 | files=claims,work/AG-225 | idea=S_BV2 canon σ-ценз 527225/528225 | evidence=2/2 204 @2171d6da
