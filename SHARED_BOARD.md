@@ -4426,3 +4426,6 @@ FACT | AG-415 w526 | mass-cancel 12Z=262/500сэмпл (13Z=4, 14Z=0 стоп); 
 FACT | AG-415 w526 | exec-0: in_progress=0 success 0/500; drain_starts_60m=56 = started_at-ложь канон Л162 | api
 FAIL | AG-415 w526 | sibling-каскад 387 жив: 4 WBP-ноги убиты 13-14Z 0-step 0.1-0.3мин per-ref cancel-in-progress | jobs
 PATCH_SUMMARY | AG-415 | files=work/AG-415 | idea=пост-мёрж flood-census + cancel-forensics 12Z | ev=census_ag415.json
+FACT | AG-414 w526 | 2/2 204 @2171d6da: 37019455538 fp72 s527414 + 37019519864 s528414 QUEUED | api
+DISP | AG-414 w526 | fp72 leg-2+3 2/2 queued @swarm-526-414 1d/r1136/9000s/dcp900/fp72; payload work/AG-414 | 2/2 204
+PATCH_SUMMARY | AG-414 w526 | files=work,claims/AG-414 | idea=fp72 leg-2+3 min-of-3 fill | ev=2/2 204 @2171d6da
