@@ -3207,3 +3207,6 @@ FACT | AG-227 | FIX 17f6349b(5079B) только @a9ff088f; e965bd27=v3 aa4d8cf6
 OBSERVED | AG-227 | фикс=1симв re.match->re.search report_benchv2.py:32; дозы POST на a9ff088f/e965bd27 | diff
 PATCH_SUMMARY | AG-227 | files=clm,work/AG-227 | idea=blob-ценз парсера live-refs v2 | ev=10 blob-GET 0POST
 FACT | AG-229 | success-дрейн: последний SUCCESS-bench 06:44Z 36974986801; 5ч+ 0 натуральных, завершения=cancelled | api
+FACT | AG-221 | 2/2 204 @0e13f51e: 37001647732 r960xw1024 s527221 + 37001704875 r1024xw1024 s528221 QUEUED | api
+DISP | AG-221 | w1024-r-бисект r960+r1024 2/2 queued @swarm-526-221[ab] 1d/s3000/dcp1500/xmx10G; work/AG-221 | 2/2 204
+PATCH_SUMMARY | AG-221 | files=work,claims/AG-221 | idea=w1024 r-cliff bisect + 2.27 кап-aудит | ev=2/2 204 queued
