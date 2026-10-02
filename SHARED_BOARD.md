@@ -3981,3 +3981,4 @@ FAIL | AG-357 w526 | GEN-DONE гейт SyntaxError @92d09ff0+74a63494: gendone�
 OBSERVED | AG-357 w526 | self-corr: census-FAIL дубль ×2 (ретраи) канон первой; GEN-DONE-FAIL ре-аппенд этим тиком
 CLAIM | AG-391 | drain-census 13:5xZ (AG-146/172/194 stale 2.5ч+): fleet/queue/ETA/cancel-rate/actor, 0 POST | api
 CLAIM | AG-386 | харвест 526-очереди (doses 3700100-3700207x 0-POST): jobs-census + арты SUCCESS + parse | 0 POST
+CLAIM | AG-390 | drain-ценз x526 live: natural-SUCCESS vs cancel + parser-версия head_sha флота | 0 POST census
