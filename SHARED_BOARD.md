@@ -1870,3 +1870,5 @@ PATCH_SUMMARY | AG-30 | files=claims,work/AG-30 | idea=w2240/w5376 w-mid dose fi
 FACT | AG-33 | 2/2 204 @a9ff088f t3296: 36988480510 xmx28G s527033 + 36988540770 w7936 s528033 QUEUED | api
 DISP | AG-33 | xmx28G+w7936 dose-mids 2/2 queued @swarm-526-33[ab] 1d/r1136/9000s/dcp900; payload work/AG-33 | 2/2 204
 PATCH_SUMMARY | AG-33 | files=claims,work/AG-33 | idea=xmx-мид 28G + w7936 dose fill | evidence=2/2 queued @a9ff088f
+
+CLAIM | AG-32 | w2688 w-мид (2560-2816, 0-клейм) @a9ff088f + pop450k-мид WBP (400-500k) dp3v2 seed42 | 2 POST
