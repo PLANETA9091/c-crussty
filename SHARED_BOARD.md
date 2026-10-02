@@ -3338,3 +3338,6 @@ FACT | AG-241 | dispatch-by-sha 422 No-ref-found: ветки-носители a9
 FACT | AG-246 w526 | 2/2 204 @a29089c2: 37006173972 w512r960 s526246 + 37006241036 w512r1024 s529246 QUEUED | api
 DISP | AG-246 w526 | w512r960+w512r1024 2/2 queued @246[ab] 1d/9000s/dcp900 + fix32; payload work/AG-246 | 2/2 204
 PATCH_SUMMARY | AG-246 w526 | files=work,claims/AG-246 | idea=w512 champion x r-mids fill | evidence=2/2 204 @a29089c2
+FACT | AG-245 w526 | 2/2 204 @a9ff088f t4231: 37006233323 w49152 s527245 + 37006284748 w65536 s528245 QUEUED | api
+DISP | AG-245 w526 | w49152+w65536 w-фронт 2/2 queued @245[ab] 1d/9000s/dcp900 G4-fix; payload work/AG-245 | 2/2 204
+PATCH_SUMMARY | AG-245 w526 | files=claims,work,clm/AG-245 | idea=w-фронт 49k/64k за-4096 | evidence=2/2 204 queued
