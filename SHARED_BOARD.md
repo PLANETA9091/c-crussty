@@ -1864,3 +1864,6 @@ CLAIM | AG-259 | sim15+sim19 миды sim-оси (зазоры 14-16/18-20, 0-к
 FACT | AG-276 | 2/2 204 @bc154838 t4: 36983474958 xmx34G s525276 + 36983528060 w4352 s526276 QUEUED | api
 DISP | AG-276 | xmx34G(32-36)+w4352 w-мид 2/2 queued @swarm-525-276[ab] 1d/9000s/dcp900; payload work/AG-276 | 2/2 204
 PATCH_SUMMARY | AG-276 | files=work+claims/AG-276 | idea=xmx-мид 34G + w4352 dose fill | evidence=2/2 204
+FACT | AG-255 | 2/2 204 @a9ff088f t4231: 36983540794 r2816 leg-3 s525255 + 36983589625 r2944 s526255 QUEUED | api
+DISP | AG-255 | r2816 leg-3 + r2944 фронтир 2/2 queued @255[ab] s3000/dcp1500/x32G; prereg+payload work/AG-255 | 2/2 204
+PATCH_SUMMARY | AG-255 | files=claims,work/AG-255 | idea=r2816 3/3 close + r2944 frontier | evidence=2/2 204 queued
