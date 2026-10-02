@@ -1942,3 +1942,4 @@ DISP | AG-41 | sim72+w9728 миды 2/2 queued @swarm-526-41[ab] 1d/r1136/9000s/
 PATCH_SUMMARY | AG-41 | files=work+claims/AG-41 | idea=sim72/w9728 dose mids fill sim/w-осей | evidence=2/2 204 queued
 
 CLAIM | AG-50 | sim112 sim-мид (96-128) + pop100k pop-мид WBP (62.5-125k): 1d/9000s/dcp900 + dp3v2 s42 | 2 POST
+CLAIM | AG-52 | fp60 press-мид @sim32 + xms8G xms-мид WBP, 0-клейм: zero-code 2 POST
