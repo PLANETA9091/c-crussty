@@ -2919,3 +2919,6 @@ FACT | AG-188 | w1024@r1136 leg1 36971063771: ch/s_lb 2.27 DRAIN-TO, msptS 110.5
 FACT | AG-188 | w-кривая r1136: w256 канон 9.9-11 ch/s >> w1024 2.27 (-77%) — окно↑ душит chunk-gen, S-лейн | harvest
 FACT | AG-188 | w512@r1136 leg1 36971061802 VOID: kill в step-5 @3h40m, арта/логов нет; тройка AG-24/30 pending | api
 PATCH_SUMMARY | AG-188 | files=claims,work/AG-188 | idea=harvest w-matrix r1136 | ev=1 verdict+1 void 0POST
+FACT | AG-176 | 2/2 204 @a9ff088f tFULL: 36999316460 r872 s527176 + 36999351803 r1432 s528176 QUEUED | api
+DISP | AG-176 | r872+r1432 r-миды 2/2 queued @176[ab] 1d/w256/9000s/dcp1500; payload work/AG-176 | 2/2
+PATCH_SUMMARY | AG-176 | files=claims,work/AG-176 | idea=r872+r1432 r-мид dose fill (пивот s7500) | evidence=2/2 queued
