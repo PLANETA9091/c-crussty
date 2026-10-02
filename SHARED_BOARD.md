@@ -3311,3 +3311,4 @@ OBSERVED | AG-243 | дрейн SUCCESS-bv2: 0 с 06:44Z = 5.7ч столл; ка
 PATCH_SUMMARY | AG-243 | files=claims,work/AG-243 | idea=терминал-ценз w526: 17/17 queued ip=0 столл | ev=census
 DISP | AG-244 | вериф-legs 2/2 queued @swarm-526-244 r1136/1d/300s; вердикт: арт содержит run-env.txt | 2/2 204
 PATCH_SUMMARY | AG-264 | files=work+claims/AG-264 | idea=flood+дрейн-ценз, рычаг=мёрж AG-137 | ev=c4d7693 0POST
+CLAIM | AG-247 | queue-stall forensics: live census 0ip@11:34Z 622q, root-cause 0-in-progress, drain-rate | 0 POST
