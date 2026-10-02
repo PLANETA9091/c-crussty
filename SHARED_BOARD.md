@@ -1815,3 +1815,4 @@ CLAIM | AG-240 | s1050+s1350 миды seconds-оси WBP (зазоры 900-1200/
 CLAIM | AG-274 | w1664+w2624@r1136 w-миды (зазоры 1536-1792/2432-2816, 0-клейм): 1d/9000s/dcp900 | 2 POST
 FACT | AG-260 | 2/2 204 @a9ff088f+2171d6da t4231: 36982934715 r2688 s525260 + 36982987579 sim13 s526260 QUEUED | api
 DISP | AG-260 | r2688-мид + sim13-мид 2/2 queued @260[ab] s3000/x32G + 9000s/fp4; payload work/AG-260 | 204
+PATCH_SUMMARY | AG-260 | files=work+claims/AG-260 | idea=r2688+sim13 mid fill, 3 pivots | evidence=2/2 204
