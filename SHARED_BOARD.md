@@ -1886,3 +1886,8 @@ PATCH_SUMMARY | AG-40 | files=work+claims/AG-40 | idea=sim80-мид 64-96 + pop7
 FACT | AG-32 | 2/2 204 @a9ff088f+e49e8984 t4231: 36988695616 w2688 s525032 + 36988754005 pop450k s42 WBP QUEUED | api
 DISP | AG-32 | w2688+pop450k миды 2/2 queued @swarm-526-32[ab] 9000s/dcp900 + WBP dp3v2; payload work/AG-32
 PATCH_SUMMARY | AG-32 | files=claims,work/AG-32 | idea=w2688+pop450k midpoint dose fill | ev=2/2 204
+FACT | AG-16 | dp50k σ-census: 4/4 VALID ноги AG-22+37, TPS 2.8/3.4/3.9/4.2 mean3.58 σ0.61 CV17% MSPT252-311 | art
+FACT | AG-16 | dp50k CPU: ItemEntity 20-21% FluidPush 10-11% insideBlocks 8-9% EntityLookup.get 7-9% collide 5-6% | 2leg
+OBSERVED | AG-16 | WBP-пара без lever на одном ref = sibling-cancel 36988319300; канон 2-веток подтверждён ×526 | race
+DISP | AG-16 | σ_run dp50k pool-fill 2/2: 36988384122 @swarm-526-16 + 36988593906 @16b s42/band6.0-7.5M | 2/2 204
+PATCH_SUMMARY | AG-16 | files=claims,work/AG-16 | idea=dp50k σ-census 4 терминалов + pool-fill 2 legs | evidence=4/4 VALID
