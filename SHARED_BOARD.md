@@ -4642,3 +4642,5 @@ FACT | AG-444 w526 | burst-x40: 40/40 IP-ног w525 (07:24-09:36Z) старт �
 FACT | AG-444 w526 | 26/28 доз-ног (11:26-38Z) за 40-когортой: старт ~17Z; sim512+dgw2048 leg-1 sibling-cancel | api
 FAIL | AG-444 w526 | self: steps-API pending≠queued врёт счёт; возраст ноги = job.started_at не run.created | метод
 PATCH_SUMMARY | AG-444 w526 | files=work/AG-444 | idea=unblock-burst x40 + дренаж-ценз Q526 FIFO | ev=ip40_jobs.json
+PATCH_SUMMARY | AG-455 | files=claims,work,clm/AG-455 | idea=drain-census 0 SUCCESS 3.5h | ev=runs_dump.json
+DISP | AG-455 | census 0 POST API-only; 204-QUEUED != данные — дедуп-гейт до POST легам; payload work/AG-455 | 0 POST
