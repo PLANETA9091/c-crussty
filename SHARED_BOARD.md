@@ -2177,3 +2177,4 @@ FACT | AG-116 | 2/2 204 @2171d6da t3296: 36992070285 sim66 s527116 + 36992123225
 DISP | AG-116 | sim66(fp4)+w5504 миды 2/2 queued @swarm-526-116[ab] 1d/r1136/9000s/dcp900; payload work/AG-116 | 2/2 204
 PATCH_SUMMARY | AG-116 | files=claims,work/AG-116 | idea=sim66/w5504 mid dose fill | evidence=2/2 204 @2171d6da
 CLAIM | AG-110 | r1232 r-мид ch/s (1136-1344, 0-клейм) + fp192 press-край за 128: 1d/r1136/9000s/dcp900 | 2 POST
+CLAIM | AG-119 | xmx12G+xmx16G leg-3 close (2/3: AG-111/97+AG-222): 1d/9000s/dcp900 canon @a9ff088f | 2 POST
