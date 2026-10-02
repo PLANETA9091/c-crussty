@@ -25,6 +25,11 @@ INCENDIUM_URL="https://cdn.modrinth.com/data/ZVzW5oNS/versions/gBoadsBv/Incendiu
 INCENDIUM_SHA512="b8983657dae93206203422bf0d5365f26ba212caf018b743d96b0438ba3f16c1471473e37377ca3437b791e631ad42e62e8e29e87a4081b774771ba939cc0104"
 STELLARITY_URL="https://cdn.modrinth.com/data/bZgeDzN8/versions/zudQ7s97/Stellarity-5.1.3.zip"
 STELLARITY_SHA512="adb87f4e429086a66f4bb120a1e464514285a1ee1ecd2642f7d9e37c0346dc8c4818d38237c500d2c1ad8b6dca4e5e79e76e8ad0c080afcb36bdb63327cf12d9"
+# AG-178 w527: kernel-drift pin (AG-159 follow-up #4). paperclip materializes vanilla
+# from Mojang WITHOUT orig-hash enforcement; rotation 2026-10-02 17:26-21:18Z
+# (vanilla 2e2867d1->5bb64dc4) silently swapped the kernel. e2992d63 = post-drift
+# kernel (3-channel: local 22:49Z + WBR 21:18/21:56Z). Hot re-pin via env.
+KERNEL_SHA_EXP="${EXPECTED_KERNEL_SHA256:-e2992d63abd2c2544a4d1564c6dbe402fb05c12a410d2700a355d2cbe2e87200}"
 
 RADIUS_BLOCKS="${RADIUS_BLOCKS:-1136}"   # 1136 => 143x143 = 20449 chunks per dim
 SEED="${BENCH_SEED:-351515}"
@@ -38,6 +43,7 @@ FAIL=0
 cat > "$WORK/run-env.txt" <<EOF
 bench=v2 agent=AG-12 wave=516 canon=AG-433/104+93async+248plugindim+342fakeplayers
 purpur_url=$PURPUR_URL purpur_md5=$PURPUR_MD5 purpur_sha256=$PURPUR_SHA256
+kernel_sha256_exp=$KERNEL_SHA_EXP # AG-178 w527 drift-pin (L194 horizon split)
 terralith=$TERRALITH_URL tectonic=$TECTONIC_URL
 incendium=$INCENDIUM_URL stellarity=$STELLARITY_URL
 radius_blocks=$RADIUS_BLOCKS seed=$SEED run_seconds=$RUN_SECONDS xmx=$XMX dims=$DIMS
@@ -116,6 +122,16 @@ if [ ! -s "$KERNEL_JAR" ]; then
   [ -s "$KERNEL_JAR" ] || { log "G-KERNEL FAIL (no $KERNEL_JAR)"; exit 44; }
   echo "eula=true" > eula.txt
 fi
+
+# --- AG-178 w527: G-KERNEL-DRIFT guard (AG-159 follow-up #4, fail-closed) ----
+# Single choke point for BOTH legs: pin the materialized kernel BEFORE any
+# plugin compile (G-FPCOMPILE x7 DOA famine 21:23-22:24Z was detected only
+# after the fact). Rotation => fast honest exit44, not a silently other-kernel run.
+ksha=$(sha256sum "$KERNEL_JAR" | cut -d' ' -f1)
+if [ "$ksha" != "$KERNEL_SHA_EXP" ]; then
+  log "G-KERNEL-DRIFT FAIL sha256=$ksha expected=$KERNEL_SHA_EXP (Mojang rotation? re-pin EXPECTED_KERNEL_SHA256 + canary before legs)"; exit 44
+fi
+log "G-KERNEL-DRIFT PASS sha256=$ksha"
 
 # --- AG-342: fake-player spawn-lane fixture (BENCH-4 pattern, sanctioned) ----
 # Without players natural spawning is structurally off (0 spawnable chunks,
