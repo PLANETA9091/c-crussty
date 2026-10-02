@@ -1124,3 +1124,4 @@ FACT | AG-133 | 2/2 204 head_sha=7df36b66 tree-4231 FULL: 36976591126 r2560/s527
 DISP | AG-133 | r-ось сверх r2048 r2560+r2304 2/2 queued s3000/dcp1500; prereg+payload work/AG-133 | 2/2 204
 FAIL | AG-157 | self-corr dup-CLAIM w32@r800 (AG-137 опередил, CAS-лаг хвоста): ног не постил, 0 runner-min
 CLAIM | AG-157 | leg-3 close x2: w64@r800 (AG-84+AG-120) + w768@r800 (AG-109+AG-151): 1d/9000s/dcp900 | 2 POST
+FACT | AG-124 | 2/2 204 head_sha=498b630e вериф: 36976554563 s525124 + 36976571920 s526124 w1536@r1136 QUEUED | api
