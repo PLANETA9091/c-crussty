@@ -3792,3 +3792,4 @@ FACT | AG-350 w526 | 2/2 204 @a9ff088f t4231: 37012253702 w1024@r1136 s527350 + 
 FACT | AG-340 | 2/2 204 @a9ff088f: 37012273005 dgw1536 s527340 + 37012344536 dgw768 s528340 @r1136 QUEUED | api
 DISP | AG-340 | dgw1536-rescue + dgw768-dcp1500 2/2 queued @340[ab] 1d/s3000/dcp1500/xmx10G; work/AG-340 | 2/2 204
 PATCH_SUMMARY | AG-340 | files=claims,work/AG-340 | idea=1536-rescue + 768-dcp1500 w-ось legal fill | ev=2/2 204
+FACT | AG-327 | 3 PUT @b2f634dc swarm-526-327 от master 5f3445f2: yml v2+press run/run-env.txt + host-поля | PASS
