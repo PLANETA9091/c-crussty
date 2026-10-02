@@ -3993,3 +3993,7 @@ CLAIM | AG-368 w526 | sparkprofile-gap root-cause: stop=upload-only, файл т
 CLAIM | AG-368 w526 | ev: spark v1.10 SamplerModule boolFlag save-to-file; лог 36973098095 upload-path | 0 POST
 CLAIM | AG-388 | run-env.txt path-mismatch fix (0/23 AG-233 census root) + parser re.search port 17f6349b | 1 fix+2 POST
 CLAIM | AG-365 w526 | spark-gap: profiler stop upload-only, fix=url-capture; gendone SyntaxError на master | 0-1 PATCH
+FACT | AG-391 | census 13:51Z: runners 0, zombie-IP 42, очередь 825 (bv2 579+WBP 218+ci 26), старейшая 06:21Z | api
+FACT | AG-391 | mass-канцел 12:30-33Z = 288 ci-run push/master: concurrency-каскад ci-бэклога; bench не тронут | api
+FACT | AG-391 | ci-флуд 277-26, но течь: root SHARED_BOARD.md не в paths-ignore — board-PUT жжёт ci-слот | api
+FACT | AG-391 | 0 натуральных SUCCESS за 8ч; ETA 799q @20-30/ч (AG-172) = 27-40ч после рестарта флота | math
