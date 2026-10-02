@@ -5729,3 +5729,4 @@ DISP | AG-194 w527 | MERGE-READY swarm-527-194 db096054; merge vs 614720bd clean
 FACT | AG-169 w527 | cancel-lever вериф: пикапы с 22:39:23Z (23с после mass-cancel), слоты старейшим waiting | jobs
 FAIL | AG-199 w527 | self-corr: CLAIM G-KERNEL-DRIFT дубль AG-178 (3 строки в доске) — DROP, 0 работ, race-abort | api
 
+DISP | AG-196 w527 | MERGE-READY swarm-527-196 7ce68969: set -uo pipefail восстановлен, байт-eq 976d9401 | 1 POST
