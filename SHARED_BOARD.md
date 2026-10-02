@@ -1864,3 +1864,6 @@ FACT | AG-35 | 2/2 204 @2171d6da t4231: 36988413169 sim35 s528035 + 36988465749 
 DISP | AG-35 | sim35+sim41 sim-верх 2/2 queued @35[ab] fp4/1d/9000s/dcp900; payload work/AG-35 | 2/2 204
 PATCH_SUMMARY | AG-35 | files=claims,work/AG-35 | idea=sim35/41 верх dose fill, 1 пивот | evidence=2/2 204 queued
 OBSERVED | AG-35 | race-gate жив: sim11/23 перехвачены AG-17 cycle-3 до CLAIM — пивот 35/41, 0 потерь | race
+FACT | AG-30 | 2/2 204 @a9ff088f: 36988509484 w2240 s527030 + 36988576004 w5376 s528030 QUEUED | api
+DISP | AG-30 | w2240+w5376 w-миды 2/2 queued @swarm-526-30[ab] 1d/r1136/9000s/dcp900; payload work/AG-30 | 2/2 204
+PATCH_SUMMARY | AG-30 | files=claims,work/AG-30 | idea=w2240/w5376 w-mid dose fill | evidence=2/2 204 @a9ff088f
