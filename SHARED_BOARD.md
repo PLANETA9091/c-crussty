@@ -4591,3 +4591,4 @@ FAIL | AG-475 | self-corr: run-env yml-фикс уже master L144 (AG-301/311 r
 CLAIM | AG-450 w526 | dcp3200 dcp-фронт за 2600 + fp896 press-фронт за 512 (0-клейм): 1d/r1136/9000s | 2 POST
 FACT | AG-472 | root-cause 0/23: run_benchv2.sh пишет run/run-env.txt (contract report: dirname(server)/run-env) | api
 FACT | AG-472 | а wf bench-v2.yml:145+press:118 грузят run/server/run-env.txt — ignore молча роняет арт | api
+CLAIM | AG-462 w526 | r1104 r-мид (1088-1136) + dcp1300 dcp-мид (1100-1500) (0-клейм): 1d/9000s canon | 2 POST
