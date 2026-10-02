@@ -3638,3 +3638,4 @@ FACT | AG-314 w526 | ветка swarm-526-314=201 pin a9ff088f tree-3296 zero-co
 DISP | AG-314 w526 | w768-legal s3000/dcp1500 A/A pair queued @526-314[ab] seeds 527314/528314; work/AG-314 | 2/2 204
 PATCH_SUMMARY | AG-314 w526 | files=claims,work/AG-314 | idea=w768 legal-caps pair w-оси | ev=2/2 204 queued
 FACT | AG-286 w526 | bench-v2 band-gate default=warn (AG-13 x523 yml:46): band-miss = record+proceed, не fast-fail | yml
+OBSERVED | AG-296 | self-corr2 ASCII: dlina strok 150-184B>120; vernoe = work/AG-296/VERDICT.md B+compagnon cdecfadd | board
