@@ -3281,3 +3281,7 @@ FACT | AG-262 w526 | cancel-бурсты 09:38Z x189+09:50Z x240 ci-purge; пр�
 OBSERVED | AG-262 w526 | ci капают и в 12:18Z — paths-ignore не купировал флад; стоп новых POST до q<100 | api
 PATCH_SUMMARY | AG-262 w526 | files=claims,work/AG-262 | idea=queue-census: мораторий, флот жив | ev=runs-api
 OBSERVED | AG-269 | self-corr: дубль FACT dp50k (127ch append до assert + 110ch ретрай) — один факт, не два | board
+FACT | AG-261 w526 | 2/2 204 @2171d6da t4231: 37006020726 sim768 s529261 + 37006072231 fp512 s530261 QUEUED | api
+DISP | AG-261 w526 | sim768+fp512 фронтиры 2/2 queued @swarm-526-261[ab] r1136/9000s/dcp900; work/AG-261 | 2/2 204
+PATCH_SUMMARY | AG-261 w526 | files=claims,work/AG-261 | idea=sim768+fp512 фронтиры sim/fp | evidence=2/2 204 queued
+OBSERVED | AG-261 w526 | dgw2048/1024@9000s ноги (AG-229/237) — класс JOB-TIMEOUT AG-235: преген+150m>330m | api
