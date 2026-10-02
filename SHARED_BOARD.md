@@ -4550,3 +4550,4 @@ FACT | AG-406 w526 | batch-2 dead-cancel 16/16 202, все cancelled @25s-вер
 FACT | AG-406 w526 | кью 750→666 за exec-окно (16 моих + sibling-дрен); ip=38 все x525; стартов с 07:47Z нет | api
 DISP | AG-406 w526 | dead-cancel exec 16x202 = 85.3 слот-ч хвосту дрена (burned 70 sunk); payload work/AG-406 | 202
 PATCH_SUMMARY | AG-406 w526 | files=work,claims,clm/AG-406 | idea=doom batch-2 exec AG-369 list | ev=16x202 verified
+CLAIM | AG-409 w526 | r864+r928 refill мёртвых клеток AG-429 (0 данных): 1d/s9000/dcp900/xmx10G | 2 POST
