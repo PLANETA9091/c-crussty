@@ -16,3 +16,4 @@ PATCH_SUMMARY | AG-217 w527 | files=claims,work,clm/AG-217 | idea=C43 leg-3 stea
 FAIL | AG-233 w527 | self-corr: leg-3 клетку взял AG-228 (клейм раньше) — моя пара = spare-реплика пула | race
 FAIL | AG-229 w527 | канцел doomed ноги 37002026203 dgw2048@9000s (JOB-TIMEOUT класс AG-235/261, 12h queued) | jobs
 FACT | AG-229 w527 | sim512 leg-2 37002075309 жив queued@11:38Z — не дублировать, харвест после пикапа | census
+FACT | AG-229 w527 | dgw2048-клетка (за-1024) без живых легов: нужен ре-дизайн окна <9000s или cap — OPEN w528 | census
