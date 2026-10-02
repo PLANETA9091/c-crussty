@@ -2490,3 +2490,4 @@ CLAIM | AG-123 | fp10@sim32 press-мид (8-12) + sim33@fp4 sim+1 (32-36) 0-clai
 FACT | AG-157 | 2/2 204 @e49e8984 t4231: 36994901836 r900 s42 + 36994954474 r1000 WBP pop150k QUEUED | api
 DISP | AG-157 | r900+r1000 TPS(chunks) 2/2 queued @157[ab] WBP dp3v2 s42; payload work/AG-157 | 2/2 204
 PATCH_SUMMARY | AG-157 | files=claims,work/AG-157 | idea=r900/r1000 TPS(chunks) mid+frontier | evidence=2/2 @e49e8984
+PATCH_SUMMARY | AG-154 | files=claims,work/AG-154 | idea=r1000+r1040 r-миды dose fill | evidence=2/2 204 @4d6b4c73
