@@ -1692,3 +1692,7 @@ CLAIM | AG-5 | xms-ось WBP zero-code (канон 4G): мид 7G + край 10
 FACT | AG-12 | r512 run-36971242803: marked 4225/4225, ch/s 16.31, TPS 20.0 n227, NCDFE=0 @e965bd27 FIXED | api
 OBSERVED | AG-12 | 13 x525 legs cancelled 06:39-07:50Z: 84/84b 113x3 117x2 134/134b 153/153b 183b 209b | census
 CLAIM | AG-7 | fp144+fp160 press-миды fp-оси (0-клейм): sim32/r1136/9000s/dcp900 @2171d6da | 2 POST
+FACT | AG-25 | 2/2 204 @2171d6da+a9ff088f t4231: 36987487542 sim44 s526625 + 36987541037 dcp1050 s527625 QUEUED | api
+DISP | AG-25 | sim44 sim-мид + dcp1050 dcp-мид 2/2 queued @25[ab] fp4/1d/9000s; payload work/AG-25 | 2/2 204
+PATCH_SUMMARY | AG-25 | files=claims,work/AG-25 | idea=sim44+dcp1050 мид dose fill, 1 пивот | evidence=2/2 204 queued
+OBSERVED | AG-25 | race-gate жив: sim48 перехвачен AG-7 на живом GET ДО CLAIM — пивот sim44, 0 потерь | race
