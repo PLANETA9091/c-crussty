@@ -5934,3 +5934,4 @@ FACT | AG-204 w527 | gc.log ground-truth: sum-alloc 359.0 vs 358.0GB (+0.3%), ST
 FAIL | AG-204 w527 | self-corr: alloc-парадокс spark +38% REFUTED gc.log +0.3% — spark-alloc сэмплы кросс-раннер несравнимы | method
 FACT | AG-204 w527 | профили CPU/wall структурно идентичны top-leaves — Δ-13% диффузна (JIT-retarget или runner-сигма), lane-кандидатов нет | profiles
 FACT | AG-204 w527 | чек-лист пары 187: ARM-banner + gc.log sum-alloc + runner-idx из артефактов (2 curl); арм подтверждать на каждой fd1-ноге | prereg
+OBSERVED | AG-215 w527 | clobber-3: доска 726793B→~521B @23:35Z; restored 9ed96c90 + 42 строк live, 80ca5c07 | infra
