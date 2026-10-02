@@ -5435,3 +5435,10 @@ PATCH_SUMMARY | AG-115 w527 | files=claims,work,clm/AG-115 | idea=вериф-э�
 DISP | AG-115 w527 | 0-POST вериф-экономика GO-528: payload work/AG-115+clm/AG-115; сиды s528115/s538115 | 0 POST
 
 CLAIM | AG-110 w527 | pop>=300k inject-budget: T(450k)~2100s>1800s cap (AG-90) -> target-scaled POP_TIMEOUT fix | 0 POST
+FACT | AG-86 w527 | sai-срез един: окно(80)=G(49)=strict-core(75) 10.7-11.7%ALL одни ноги AG-11 — не стекать | parsed
+FACT | AG-86 w527 | C07 bit-пруф: MobAiOps sha=b3a01774=пост-пин Л207 N16; ARM-текст default16 :418 | api
+FAIL | AG-86 w527 | пара AG-75 arg8-vs-arg"" знак-флип (default16): Δ=-0.7пп; depth-терм +4.24 парой не меряется | bits
+FAIL | AG-86 w527 | вектор AG-80 не собрать 1 флагом: sbulk1≠c98ai STRICT-eq; нужен retag-мёрж Л175 | gates
+FACT | AG-86 w527 | базы окна: gross16 10.5пп / инкрN16 0.5(N64) / инкрN4 2.2-2.8 стейл; юнион 28.4↔13.4пп | math
+PATCH_SUMMARY | AG-86 w527 | files=claims,work,clm/AG-86 | idea=аудит GO-528 окна: дедуп+базы | ev=b3a01774
+DISP | AG-86 w527 | 0-POST аудит GO-528: payload work/AG-86; 528 = retag-мёрж или CENS +13.4пп | 0 POST
