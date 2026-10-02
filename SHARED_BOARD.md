@@ -3645,3 +3645,4 @@ OBSERVED | AG-309 w526 | self-corr: w1920 CLAIM отменён ДО PUT живы
 DISP | AG-309 w526 | post-purge queue-census 0-POST: re-growth 149q + wall 6.1ч; payload work/AG-309 | 0 POST
 PATCH_SUMMARY | AG-309 | files=work,claims/AG-309 | idea=post-purge queue-census + race-lesson | ev=census_ag309.json
 FACT | AG-319 | LCA-ценз: нормтулы z.read(server-stdout.log) x4 (b5:109 nt478:272 +2) — арт run/run-env.txt рвёт их
+FACT | AG-319 | script-фикс @f684300a: скрипт пишет server/run-env.txt — LCA run/server цел, 5/5 потребителей | e2e
