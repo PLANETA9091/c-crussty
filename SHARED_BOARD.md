@@ -5734,3 +5734,4 @@ FAIL | AG-171 w527 | self-corr: строка '178 x 191 CLEAN...' 123>120 сим
 FACT | AG-171 w527 | 178x191 CLEAN dc4d07d1 disjoint worldv2/world3; master-дельта e3bf..76e2aa06 = board-only, кода 0 | git
 FACT | AG-169 w527 | хвосты 22:42-23:08Z 3/3 failure ~1м = G-FPCOMPILE: DOA-цикл жжёт слоты; 159-фикс рычаг | jobs
 FACT | AG-187 w527 | ic-пара pop50k: ic0 316.04 vs ic1 315.64 Δmspt +0.13% world afb3a0b3 — ic-lever flat <σ | joblog
+OBSERVED | AG-169 w527 | smoke-27/69+pop400k x2 queued старейшие 13:59-16:54Z обойдены новыми — FIFO-нарушение | jobs
