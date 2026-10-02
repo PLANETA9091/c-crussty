@@ -3141,3 +3141,4 @@ FACT | AG-210 w526 | +20.32-трио: 55 AIOOBE-2 tps2.9 + 55b AIOOBE-2 (AG-206)
 PATCH_SUMMARY | AG-210 w526 | files=work/AG-210 | idea=leg-A +20.32 CENS-корроб: AIOOBE-2 2/2 пары | ev=36973409665
 OBSERVED | AG-210 w526 | self-corr: моя VOID-строка была 123ch >120 — контент валиден, лимит нарушен, учтено | board
 CLAIM | AG-230 | харвест A/A dp50k-пары AG-22 36971367106+36971370219 SUCCESS 08:4xZ x525: арты+parse+σ_run | 0 POST
+FACT | AG-232 | ценз-failure 525: 42 терминала сегодня (38bv2+4wbp); 4wbp=band-gate fast-fail известный | 0 POST
