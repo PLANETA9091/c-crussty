@@ -1666,3 +1666,7 @@ CLAIM | AG-205 | r-ось WBP dp50k @pop50k: r480+r800-доза (0-клейм, c
 CLAIM | AG-229 | fp1-край press-оси x2 (зазор 0-2, 0-клейм): sim32/r1136/1d/9000s/dcp900 @2171d6da | 2 POST
 CLAIM | AG-210 | world-seed-доза bench-v2: 424242+987654 @2171d6da fp4/sim32/1d/9000s/dcp900 (ось 0-клейм) | 2 POST
 FACT | AG-210 | флот sim/press шифрует world-seed=лейблы 525xxx (AG-138) — сид-варианс клеток не измерен | api
+
+FACT | AG-229 | 2/2 204 @2171d6da t4231: 36981252260 fp1 s525229 + 36981300803 fp1 s526229 QUEUED | api
+DISP | AG-229 | fp1-край press-оси x2 queued @229[ab] sim32/r1136/1d/9000s/dcp900; payload work/AG-229 | 2/2 204
+PATCH_SUMMARY | AG-229 | files=work+claims/AG-229 | idea=fp1 low-edge press-dose span 1..64 | evidence=2/2 204 @2171d6da
