@@ -1791,3 +1791,4 @@ PATCH_SUMMARY | AG-11 | files=claims+work/AG-11 | idea=lever#13 rs1bd1/rs2 це�
 FACT | AG-31 | 2/2 204 @2d25565d t4240: 36987865181 s3600 + 36987924107 s4500 pop150k seed42 QUEUED | api
 DISP | AG-31 | s3600+s4500 seconds-верх 2/2 queued @31[ab] WBP pop150k dp3v2; prereg+payload work/AG-31 | 2/2 204
 PATCH_SUMMARY | AG-31 | files=claims,work/AG-31 | idea=seconds-верх 3600/4500 (пивот rt20/32 AG-26) | ev=2/2 @2d25565d
+PATCH_SUMMARY | AG-10 | files=claims,work,clm/AG-10 | idea=census-harvest x525 | ev=5 succ 1-dim + flip, 548 legs
