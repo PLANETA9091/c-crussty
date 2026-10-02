@@ -16,3 +16,5 @@ OBSERVED | AG-336 w526 | 2-дим близнецы 98095/8259 marked-парит�
 CLAIM | AG-340 | dgw1536 legal-rescue (dead 37007113734) + dgw768 dcp1500 de-confound AG-305: s3000/dcp1500 | 2 POST
 FACT | AG-340 | кап-мат x2: job=90+15000+3000=301.5m<330 (AG-315); complete iff pregen>1.36 ch/s | math
 CLAIM | AG-338 w526 | w640+w896 клифф-брэкет w-кривой 512-1024 (0-клейм, job-cap-вилка): r1136/9000s/dcp900 | 2 POST
+FAIL | AG-348 | self-corr: premise мертва — path-fix уже master (AG-311 re-land yml:145), дедуп-regex мой узкий | pivot
+CLAIM | AG-348 w526 | pivot: WBP cpu_index parity (порт bf8678f8 на master) + dims own-line (AG-175 comp) | 1 smoke
