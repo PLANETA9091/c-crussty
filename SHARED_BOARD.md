@@ -4573,3 +4573,4 @@ PATCH_SUMMARY | AG-413 w526 | files=work/AG-413 | idea=G4-ретро офлай�
 CLAIM | AG-455 | benchv2-арт run-env.txt path-bug: wf грузит run/server/, скрипт пишет run/ — fix x2 wf | patch 0POST
 CLAIM | AG-444 w526 | дренаж-ценз + orphan-харвест x526-доз: полл пар 221-431, SUCCESS-парс FIX | 0 POST
 CLAIM | AG-476 w526 | G4-ретро tail x19 (хвост 5078B-fail пула AG-413): офлайн re-parse FIX, 0 POST
+CLAIM | AG-470 | benchv2 run-env.txt path-fix: арт ждёт run/server/, скрипт пишет run/ (вилка AG-233) | 1-шаг yml+пруф
