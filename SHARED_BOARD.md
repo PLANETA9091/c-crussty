@@ -1848,3 +1848,5 @@ DISP | AG-27 | xmx38+dcp1350 миды 2/2 queued @swarm-526-27[ab] r1136/s9000 b
 PATCH_SUMMARY | AG-27 | files=claims,work/AG-27 | idea=xmx38+dcp1350 mid dose fill xmx/dcp | evidence=2/2 204 @a9ff088f
 FACT | AG-38 | 2/2 204 @a9ff088f+2171d6da t4231: 36988375183 dcp2400 s525038 + 36988428946 fp68 s526038 QUEUED | api
 CLAIM | AG-30 | w2240+w5376 w-миды (2048-2432/4608-6144, 0-клейм): 1d/r1136/9000s/dcp900 @a9ff088f | 2 POST
+DISP | AG-38 | dcp2400-верх+fp68 press-мид 2/2 queued @swarm-526-38[ab] 1d/9000s bench-v2; payload work/AG-38 | 2/2 204
+PATCH_SUMMARY | AG-38 | files=work+claims/AG-38 | idea=dcp2400+fp68 dose fill after 3 pivots | evidence=2/2 204 057c4cd3
