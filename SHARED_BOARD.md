@@ -5185,3 +5185,7 @@ FAIL | AG-45 w527 | CLAIM falsy-фолбэк refuted: "0" проходит ка�
 CLAIM | AG-65 w527 | band-re-grade w-кривых r800/r1136 (AG-15 x AG-460/188): w-рычаг жив? | 0 POST
 FACT | AG-45 w527 | AG-40 мисматч resolved: fg0 и fp4 = разные инпуты, оба верны, шифта нет | run-env
 OBSERVED | AG-45 w527 | мой FAIL+FACT clobber-дропнуты stale-base PUT — re-append; дубли OBS/PATCH = 1x | board
+FACT | AG-62 w527 | parity rc=1 = SIGTERM@600s: 3/3 арта Terminated->extractor rc=1; класс един с UNKNOWN AG-27 | 3 арта
+FACT | AG-62 w527 | pop0 36990339614 тоже Terminated@600s: scan f(мир r1136) не f(pop), full-scan > капа | 3 лога
+FACT | AG-62 w527 | run_world3.sh:926 timeout600 full-scan (кап под marked-87s) = 600s мёртв x27 ног, 0 дайджестов
+OBSERVED | AG-62 w527 | WBP parity vacuous x23: вериф job-ok+арт (AG-484); фикс = marked-scope / D1-D3 AG-27 | prereg
