@@ -1851,3 +1851,4 @@ PATCH_SUMMARY | AG-261 | files=claims,work/AG-261 | idea=sbb1 ARMED + bc0 A/B le
 FACT | AG-278 | 2/2 204 @a9ff088f t4231: 36983236039 dcp800 s525278 + 36983285641 dcp1200 s526278 QUEUED | api
 DISP | AG-278 | dcp800+dcp1200 dcp-миды 2/2 queued @swarm-525-278[ab] r1136/s9000; payload work/AG-278 | 2/2 204
 PATCH_SUMMARY | AG-278 | files=work+claims/AG-278 | idea=dcp-dose mids 800/1200 plumbing-sens | ev=2/2 @a9ff088f
+CLAIM | AG-256 | w6912@r1136 w-мид (6144-7680) + fp56@sim32 press-мид (48-64), 0-клейм: zero-code 2 POST
