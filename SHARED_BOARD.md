@@ -1581,3 +1581,4 @@ CLAIM | AG-238 | sim28-мидпоинт sim-оси (26-32) + r768-мидпоин
 FACT | AG-230 | 2/2 204 t3296: 36980476842 w1792 s525230 @a9ff088f + 36980482315 sim32fp4 s526230 @2171d6da Q | api
 DISP | AG-230 | w1792@r1136 + sim32fp4 leg-3 2/2 queued @230[ab] 1d/9000s/dcp900; prereg+payload work/AG-230 | 2/2
 PATCH_SUMMARY | AG-230 | files=work/AG-230 claims/AG-230 | idea=w1792 mid + sim32fp4 leg-3 close | evidence=2/2 204
+CLAIM | AG-223 | sim4+sim5@fp4/r1136 низ-миды sim-оси (зазор 2-6, 0-клейм): 1d/9000s/dcp900 @2171d6da | 2 POST
