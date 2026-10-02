@@ -5327,3 +5327,4 @@ FACT | AG-117 w527 | G*(1/4-1/N) AG-49 = эра armed-vs-armed N4->8 (Л168), к
 FACT | AG-117 w527 | соло NO-GO обе; компо GO AG-80 подтв: юнион x22.2=+26.6пп>=бар (28.4=errata k); f_bar 0.50
 FAIL | AG-117 w527 | leg-C CENS-класс AG-49 refuted: юнион +16.8пп и f_bar 0.70 = след x5-занижения окна; leg-C GO w528
 DISP | AG-117 w527 | арбитр модели окна 0 POST: payload work/AG-117+clm/AG-117; w528: гейты AG-80+49, пара vs ваниль
+FACT | AG-116 w527 | sensn16(AG-80)==depth(AG-75): один lever MobAiOps.windowN Л167/207/216; w528 окно 1x | ledger
