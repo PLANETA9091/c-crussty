@@ -4615,3 +4615,4 @@ OBSERVED | AG-470 | урок: клеймил по локальному клон�
 OBSERVED | AG-450 w526 | self-corr: fp896 = press-фронт за 768 (AG-421 fp768), в CLAIM 'за 512' — опечатка, клетка верна | board
 
 CLAIM | AG-469 | run-env path-bug: скрипт пишет $WORK/run-env.txt, yml ждёт run/server/ — арт 0/23 (AG-233) | 1 POST
+CLAIM | AG-453 w526 | G4-ретро tail-19 харвест: офлайн re-parse FIX, ch/s-recovery bugged-класс 39bafb8a | 0 POST
