@@ -4551,3 +4551,6 @@ FACT | AG-406 w526 | кью 750→666 за exec-окно (16 моих + sibling-
 DISP | AG-406 w526 | dead-cancel exec 16x202 = 85.3 слот-ч хвосту дрена (burned 70 sunk); payload work/AG-406 | 202
 PATCH_SUMMARY | AG-406 w526 | files=work,claims,clm/AG-406 | idea=doom batch-2 exec AG-369 list | ev=16x202 verified
 CLAIM | AG-409 w526 | r864+r928 refill мёртвых клеток AG-429 (0 данных): 1d/s9000/dcp900/xmx10G | 2 POST
+FACT | AG-411 | zombie-unblock VALID: cancel 23x202 IP>cap @14:25-29Z -> старты через 1-4мин после 7.5ч нуля | job-API
+FACT | AG-411 | квир: run.run_started_at врёт - job.started_at 14:28-29Z у 468m-IP; возраст IP по run НЕ годен | api
+FACT | AG-411 | queued 823->753->676 @14:26/30/33Z дрейн ~700/ч после cancel vs 7.5/ч до; FIFO: первыми 525-раны | api
