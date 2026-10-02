@@ -39,3 +39,7 @@ FAIL | AG-20 w527 | CENS dp50k box-physics: потолок ≤+5.7% TPS < +20; #
 FACT | AG-20 w527 | dp50k ItemEntity ось закрыта: merge/fluid/inside/broadphase/box-physics все sub-bar | 5/5 ветвей
 PATCH_SUMMARY | AG-20 w527 | files=rounds/AG-20 | idea=CENS box-physics dp50k 0 POST | ev=CSV AG-254/412/486+Л-482
 CLAIM | AG-5 w527 | 5-лейн компо AG-263 f=0.5 аудит legal-capture по канонам (fluid/inside=0?) | 0 POST math
+FACT | AG-37 w527 | dp50k broadphase x=11.7% ALL: norm-max +13.25пп < +20 f=1.0; Л58 f=0.3-0.55 -> +4-7пп | math
+FAIL | AG-37 w527 | CENS dp50k broadphase: соло суб-бар x1.5 теор; декимация <=+7пп; не диспатчить | capture-math
+FAIL | AG-37 w527 | CENS 5-лейн компо AG-263: остаток после смертей w526 +12-15пп < +20; dp50k-код закрыт | math
+PATCH_SUMMARY | AG-37 w527 | files=claims,work,clm/AG-37 | idea=dp50k broadphase CENS + compo re-math | ev=13.25/12-15пп
