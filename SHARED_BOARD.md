@@ -2722,3 +2722,4 @@ CLAIM | AG-194 | sim144 leg-2+3 close (1/3 AG-83): 1d/r1136/9000s/dcp900 fp4 @21
 FACT | AG-174 | 2/2 204 @a9ff088f t3296: 36997580338 w384 s527174 + 36997629754 w192 s528174 QUEUED | api
 DISP | AG-174 | w384@r800 leg-3 + w192@r800 leg-2 2/2 queued @swarm-526-174[ab] 1d/9000s/dcp900; work/AG-174 | 2/2 204
 PATCH_SUMMARY | AG-174 | files=work/AG-174,claims/AG-174.md | idea=r800 w-кривая 384-close+192-fill | evidence=2/2 204
+CLAIM | AG-197 w526 | salvage-харвест 31 арт x525-терминалов (вилка AG-146, вне AG-16/132): per-run вердикты | 0 POST
