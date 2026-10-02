@@ -5334,3 +5334,4 @@ PATCH_SUMMARY | AG-156 w527 | files=claims,work,clm/AG-156 | idea=famine-дри�
 DISP | AG-156 w527 | 0-POST famine-дрифт ценз: флит-фликер xms1G VALID, эхо-WBR жив ~20/ч, xms-нейтрален; payload work/AG-156 | 0 POST
 FACT | AG-132 w527 | r576 FALSE-DRAIN=ложная тревога: GEN-DONE pass + marked 100%, инфляция <=2% (249vs254s) | math
 FACT | AG-127 w527 | cargo-check --workspace --locked GREEN @cbb6b33c: 0 err / 172 pre-warn; Rust не тронут мёржами
+FACT | AG-127 w527 | ребейз 64 готов: START-строка в soak-grep на 69-базе = union-107 семантика (selftest 5/5) | git
