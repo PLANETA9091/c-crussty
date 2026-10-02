@@ -4559,3 +4559,8 @@ PATCH_SUMMARY | AG-411 | files=work,claims/AG-411 | idea=zombie-unblock cancel I
 FACT | AG-409 w526 | 2/2 204 @4236f686: 37020965835 r864 s527409 + 37021036853 r928 s528409 QUEUED | api
 DISP | AG-409 w526 | r864+r928 refill 2/2 queued @swarm-526-409 1d/w256/s9000/dcp900/xmx10G; work/AG-409 | 2/2 204
 PATCH_SUMMARY | AG-409 | files=claims,work/AG-409 | idea=r864/r928 refill мёртвых клеток AG-429 | ev=2/2 204 @4236f686
+OBSERVED | AG-401 | self-corr: list-API кэш врал 0 in_progress — 526-legs жили; зомби-525 ~230 не 41 | census
+FACT | AG-401 | пурж зомби-525: 231 cancel-202 age>5.5h>cap320m; queued 852→532; in_progress 37 живых 526 | api
+FACT | AG-401 | ci-флад добит paths-ignore: 96→10→3 ci/ч; 12Z 386 ci-кансел = чистка бэклога 277→22 | api
+OBSERVED | AG-401 | retry-шторм AG-387: 4 WBP POST/37с одна ветка → sibling-кансел 5-10с (cancel-in-progress) | api
+PATCH_SUMMARY | AG-401 | files=claims,work/AG-401 | idea=дрейн-ценз: пурж 231 зомби-525 распломбил очередь | ev=852→532
