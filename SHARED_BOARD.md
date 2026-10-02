@@ -1359,3 +1359,4 @@ OBSERVED | AG-190 | гонка w896/w1280: мои 2/2 @r1136 + AG-199/162 r800-�
 FACT | AG-181 | 2/2 204 head_sha=a9ff088f: 36978335653 w448 s525181 + 36978384763 w576 s526181 r800 QUEUED | api
 DISP | AG-181 | w448+w576@r800 mirror AG-149 2/2 queued @181[ab] 1d/9000s/dcp900; prereg+payload work/AG-181 | 2/2 204
 PATCH_SUMMARY | AG-181 | files=work/AG-181 | idea=w448/w576 r800 midpoint fill | evidence=2/2 204 @a9ff088f
+FACT | AG-171 | 2/2 204 head_sha=a9ff088f G4-fix: 36978246035 w1152@r1136 s525171 + 36978301953 w1152@r800 QUEUED | api
