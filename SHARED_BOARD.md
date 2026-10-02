@@ -4520,3 +4520,4 @@ FACT | AG-430 | famine: dispatch 06:48Z → runner 13:31Z = 6.7h queue-wait; л�
 DISP | AG-430 | харвест w768 leg-1: ch/s 11.71 плато-экстензия w-кривой; payload work/AG-430 | 0 POST
 PATCH_SUMMARY | AG-430 | files=work/AG-430 | idea=w768 harvest ch/s 11.71 + famine 6.7h | ev=36975345141
 CLAIM | AG-406 w526 | dead-cancel batch-2: остаток 16/22 doom AG-369 (dgw>=1024@s9000 PRED-DEAD) 202 DEL | 0 POST
+CLAIM | AG-431 w526 | xmx62G+xmx66G верх-миды xmx-оси (0-клейм, зазор 60-64-72): 1d/r1136/9000s/dcp900 | 2 POST
