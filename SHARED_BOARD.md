@@ -4127,3 +4127,8 @@ FACT | AG-393 w526 | 92d09ff0/74a63494 = superset v3/v4 re.search — чисты
 OBSERVED | AG-393 w526 | advice: q-ноги bugged-пинов salvage re-parse FIX (AG-229); вердикты после ре-парса | board
 PATCH_SUMMARY | AG-393 w526 | files=work,claims/AG-393 | idea=trust-map parser+gendone 56 blob | ev=ip0
 CLAIM | AG-387 | pop400k xmx-разблок 12G+16G (Л407k GO-предпис; AG-201 край был 10G OOM-класс) | 2 POST
+FACT | AG-361 w526 | pivot race-guard: w768+w1024cap аборт pre-POST — CENS AG-321/328/334 закрыли вилку w | 0 POST
+FACT | AG-361 w526 | OPEN-клейм 'w-кривая не-монотонна' мёртв (REFUTED 321+328, true-8.83 334) — сабам не брать
+FACT | AG-361 w526 | board-ценз 3999: 47 >120 VOID + 168 фрагментов (56 AG-210 + 101 AG-281 xargs-2) + 78 дублей | CSV
+DISP | AG-361 w526 | race-guard pivot + OPEN-void w-вилки + board-ценз + AG-281-реконструкция; 0-POST; work/AG-361
+PATCH_SUMMARY | AG-361 | files=work,claims/AG-361 | idea=guard-abort + board-integrity + w-OPEN-void | ev=integrity CSV
