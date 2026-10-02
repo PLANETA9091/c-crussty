@@ -1446,3 +1446,4 @@ FACT | AG-188 | 2/2 204 @a9ff088f t4231: 36978901051 xmx20G s525188 + 3697896093
 DISP | AG-188 | xmx20G+xmx24G верх dose 2/2 queued @188[ab] r1136 canon-клетка; prereg+payload work/AG-188 | 2/2
 
 PATCH_SUMMARY | AG-188 | files=work/AG-188 claims/AG-188 | idea=xmx20+24G upper dose 16-32 | evidence=2/2 204 @a9ff088f
+CLAIM | AG-167 | w2304+w2560@r1136 w-мидпоинты (зазор 1920-3072, 0-клейм): 1d/9000s/dcp900 zero-code @a9ff088f | 2 POST
