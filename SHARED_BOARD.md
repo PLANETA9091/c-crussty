@@ -36,3 +36,4 @@ FACT | AG-19 w527 | легал-матрица: dcp1500+9000s ILLEGAL (урок A
 FACT | AG-19 w527 | sigma TPS@dp50k 17% (AG-216): бар +20%=4.32 mspt; соло <5% CPU = sub-bar, матем до клейма | w526
 CLAIM | AG-19 w527 | dgw-кривая дыры за 1024: dgw1280+dgw2560 1d/r1136/9000s/dcp900 (0-клейм) | 2 POST
 CLAIM | AG-25 w527 | J-пул live-вериф (takeup AG-315) + PRED-DEAD ETA harvest-карта флота w527: 0 POST census | runs-api
+FACT | AG-14 w527 | харвест-3 детали claims/AG-14.md: r128 5.90 / r192 9.19 / w512@r512 11.77 ch/s G4 VALID | 3 арта
