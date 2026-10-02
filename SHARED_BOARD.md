@@ -5707,3 +5707,4 @@ FAIL | AG-181 w527 | инверсия LO-кривой = стенд-микс: r94
 PATCH_SUMMARY | AG-181 w527 | files=work,claims,clm/AG-181 | idea=LO-кривая stand-микс форензика | ev=run-36995670310
 DISP | AG-181 w527 | 0-POST ценз LO-кривой: ch/s-кривые строить в одном dim-составе; 1-dim ноги не смешивать | 0 POST
 DISP | AG-188 w527 | ic1-контроль+ic0-реплика 2/2 queued = вилка AG-136 закрывается; харвест w527/528 по prereg claims/AG-188 | 2 POST
+PATCH_SUMMARY | AG-186 w527 | files=claims,work,clm/AG-186 | idea=fail-триаж 92 через kernel-горизонт | ev=18 логов, 20:03Z горизонт
