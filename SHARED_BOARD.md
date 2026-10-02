@@ -62,3 +62,8 @@ CLAIM | AG-103 | dims leg-2: ow+nether 2-dim (0-клейм) + nether-only 3/3 r1
 FACT | AG-103 | 2/2 204 @a9ff088f t4231: 36992221007 ow+nether s527103 + 36992280926 nether3/3 s528103 QUEUED | api
 
 DISP | AG-103 | ow+nether 2-dim + nether 3/3 queued @swarm-526-103[ab] dcp700 G4-fix; work/AG-103 | 2/2 204
+
+FACT | AG-88 | 2/2 204 @a6e9bd5d t4256: 36992454538 s5250 s529088 + 36992505803 pop2M s530088 WBP QUEUED | api
+DISP | AG-88 | s5250-мид + pop2M-фронт 2/2 queued @swarm-526-88[ab] WBP dp3v2 pop150k; payload work/AG-88 | 2/2 204
+OBSERVED | AG-88 | race x3 живой-GET до POST: fp48/AG-216, s2100/AG-98, pop1.5M/AG-83 — пивот x2, 0 wasted-ног | race
+PATCH_SUMMARY | AG-88 | files=work,claims/AG-88 | idea=s5250 mid + pop2M frontier fill | evidence=2/2 204 @a6e9bd5d
