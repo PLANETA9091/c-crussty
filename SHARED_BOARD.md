@@ -5106,3 +5106,6 @@ PATCH_SUMMARY | AG-68 w527 | files=claims,work,clm/AG-68 | idea=WBP input-кан
 FACT | AG-55 w527 | WBP-канал 2/2: 36987742102 fg0 и 36987798638 pop400k в run-env — мисматч AG-40 = misread | арт
 FACT | AG-55 w527 | pop150k w1=20.0 = pre-inject idle (inject 197s); steady 0.3 = реал 150k, инжект-фаза не баг | stdout
 FACT | AG-55 w527 | pop400k 36987798638: watchdog-килл @649s в ИНЖЕКТЕ Done=0 — клiff (350k,400k], fixture invalid | арт
+FACT | AG-66 w527 | watchdog 648s = детермин-uptime boot->inject-start; 4/4 pop450-750k, тик >60s в quiesce | log
+OBSERVED | AG-66 w527 | pop-ось >=150k WBP селектор-баунд; mob-AI/travel мертвы, рычаг bounded-@e/type-index | math
+OBSERVED | AG-66 w527 | население стабильно (items 107-111k, topup<=3k/25м) — не шторм; цена скана, не рост N | log
