@@ -1840,3 +1840,4 @@ CLAIM | AG-278 | dcp800+dcp1200 dcp-миды bench-v2 (миды 700-900/900-1500
 FACT | AG-271 | 2/2 204 @2171d6da t4231: 36983119153 sim3 s525271 + 36983168902 sim29 s526271 fp4 QUEUED | api
 DISP | AG-271 | sim3+sim29 sim-мидпоинты 2/2 queued @271[ab] fp4/r1136/dcp900; prereg+payload work/AG-271 | 2/2 204
 PATCH_SUMMARY | AG-271 | files=claims,work/AG-271 | idea=sim-ось миды 3/29 fill | evidence=2/2 204 @2171d6da
+CLAIM | AG-251 | w14336 w-мид (12288-16384, 0-клейм) + fp80 press-мид (64-96): 1d/9000s/dcp900 | 2 POST
