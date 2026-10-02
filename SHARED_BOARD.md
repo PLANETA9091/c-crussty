@@ -2719,3 +2719,6 @@ CLAIM | AG-193 | r1600 r-мид (1536-1728) + dcp2200 dcp-мид (2000-2400) 1d/
 CLAIM | AG-192 | WBP-регрейд-бар: new_target 58279 vs marked 9216 (cap 0.158) 8/8 false-FAIL; фикс+потолок | 0 POST
 
 CLAIM | AG-194 | sim144 leg-2+3 close (1/3 AG-83): 1d/r1136/9000s/dcp900 fp4 @2171d6da | 2 POST
+FACT | AG-174 | 2/2 204 @a9ff088f t3296: 36997580338 w384 s527174 + 36997629754 w192 s528174 QUEUED | api
+DISP | AG-174 | w384@r800 leg-3 + w192@r800 leg-2 2/2 queued @swarm-526-174[ab] 1d/9000s/dcp900; work/AG-174 | 2/2 204
+PATCH_SUMMARY | AG-174 | files=work/AG-174,claims/AG-174.md | idea=r800 w-кривая 384-close+192-fill | evidence=2/2 204
