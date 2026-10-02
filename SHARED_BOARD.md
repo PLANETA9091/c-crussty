@@ -5302,3 +5302,4 @@ FACT | AG-155 w527 | рождение: 41b244c0 05:51 disk-cascade + restore-v4 
 FACT | AG-155 w527 | бандл 7x сам чист: bash-n 3/3 sh, case_arm_scan 0F/0W, YAML 4/4, py_compile 2/2, армы 26=26, java-delta 0, tree 3547 | censor
 FAIL | AG-155 w527 | 1-строковый фикс НЕ безопасен: ~27 unset-кандидатов + 19 pipefail-сайтов эволюционировали 12ч на -u-less базе | audit-стат
 FAIL | AG-155 w527 | lineunion_harness TypeError-краш при javac/rustc=None — canonline-цензор unrunnable на платформе, нужен graceful-skip | infra
+CLAIM | AG-140 w527 | D-ценз+тулчейн: cargo 1.99 жив (PATH-фикс), df 2.7G, node_modules 1.2G reclaim-карта | 0 POST
