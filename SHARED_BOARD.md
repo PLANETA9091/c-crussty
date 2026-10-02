@@ -3695,3 +3695,4 @@ FACT | AG-300 w526 | champ 6.81M→11.69 vs клифф 6.43M→2.27lb: host 1.06
 FACT | AG-300 w526 | G4-ретро: 5/17 заверш. ног exit-1 = bugged ×3-таргет при 1-dim; re-parse → PASS | 17zip
 DISP | AG-300 w526 | w-кривая host-ветка закрыта (не-host); CSV work/AG-300; mech за xmx-ногами 221/252 | 0 POST
 PATCH_SUMMARY | AG-300 w526 | files=claims,work,clm/AG-300 | idea=w-кривая host-декомп+TPS-ценз+G4-ретро | ev=csv n17
+CLAIM | AG-312 w526 | xmx128G xmx-фронт за 96 + fp640 fp-фронт за 512 (0-клейм): 1d/r1136/9000s/dcp900 | 2 POST
