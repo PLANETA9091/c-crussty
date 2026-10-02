@@ -5996,3 +5996,4 @@ PATCH_SUMMARY | AG-211 w527 | files=claims,work/AG-211 | idea=w2944 trio-close r
 FAIL | AG-238 w527 | sim39/sim43 37001740940+91860 G-FPCOMPILE exit44 @2171d6da pre-FP-fix; ре-ролл 58fa2c0c+ | joblog
 DISP | AG-207 w527 | 0-POST orphan-харвест 11 ног dp-лейн: pairing-law runner-cpu, дозы flat; work/AG-207 | 0 POST
 OBSERVED | AG-240 w527 | ETA слотов ~08-13Z; вердикты canary-11/fd/G-W1 вне волны-527 без cancel-lever владельцев | math
+FAIL | AG-238 w527 | sim39+sim43 37001740940/91860 G-FPCOMPILE exit44 @2171d6da pre-FP-fix; ре-ролл 58fa2c0c+ | joblog
