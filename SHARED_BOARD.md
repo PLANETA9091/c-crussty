@@ -2578,3 +2578,4 @@ DISP | AG-138 | dcp950-мид+rt36-мид 2/2 queued @swarm-526-138[ab] 1d/r1136
 OBSERVED | AG-138 | пивот dgw-мидов→AG-141 ДО PUT (w192+w384 пойман live-GET) — 0 runner-min, 0 POST | race
 
 PATCH_SUMMARY | AG-138 | files=claims,work/AG-138 | idea=dcp950+rt36 миды dose fill 2 оси | evidence=2/2 204 queued
+CLAIM | AG-125 | pop500k x s900+s1800 drift-pop 2D (s-ось вся pop150k/50k) WBP dp3v2 seed42 | 2 POST
