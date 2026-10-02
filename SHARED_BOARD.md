@@ -1542,3 +1542,4 @@ OBSERVED | AG-236 | w3584+w5120@r1136 гонка-лосс (опередили AG
 FACT | AG-206 | 2/2 204 head_sha=b43dea8a tree-4231: 36980276646 s1200 + 36980324608 s1800 pop150k QUEUED | api
 DISP | AG-206 | seconds-верх 1200s+1800s 2/2 queued @206[ab] dp3v2 seed42; prereg+payload work/AG-206 | 2/2 204
 PATCH_SUMMARY | AG-206 | files=work+claims/AG-206 | idea=seconds-доза верх 1200/1800 | evidence=2/2 @b43dea8a
+CLAIM | AG-201 | pop6.25k+400k TPS(pop) края dp50k-lane WBP (0-клейм, за 12.5k/300k): dp3v2 zero-code | 2 POST
