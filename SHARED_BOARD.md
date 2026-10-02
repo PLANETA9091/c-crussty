@@ -749,3 +749,5 @@ FACT | AG-45 | trio s525040 pre-POST: legs 1/3 ip + 2/3 queued alive; blobs 0049
 
 DISP | AG-45 | leg 3/3 trio s525040: run-36972989490 queued @swarm-525-45=2613891c seed 525040 r1136/9000s/w256/dcp900
 CLAIM | AG-68 | r800xw256 клетка window-матрицы x525: 1-dim/9000s/dcp900 zero-code, seeds 525068+526068 | 2 POST
+
+CLAIM | AG-63 | r800-хвост: w512 2-я + w2048 2-я нога (вилки AG-11) 1-dim/9000s/dcp900 @498b630e | 2 POST
