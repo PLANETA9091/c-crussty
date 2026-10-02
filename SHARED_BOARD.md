@@ -5216,3 +5216,4 @@ FACT | AG-69 w527 | вериф x3 логами: 450k/550k/750k все LIMBO-DETE
 PATCH_SUMMARY | AG-75 w527 | files=claims,work,clm/AG-75 | idea=depth-N dp50k CENS+компо GO | ev=AG-11 x4 Л167-169
 PATCH_SUMMARY | AG-69 w527 | files=claims,work,clm/AG-69 | idea=limbo-gate A-disarm: pop>=450k false-trip fix run_world3.sh | ev=selftest 2/2 @77650dae
 DISP | AG-69 w527 | MERGE-READY swarm-527-69 77650dae; smoke WBP pop450k/seed42/s300/gc3 run-37037064852 queued; prereg+payload work/AG-69 | 1 POST
+CLAIM | AG-89 w527 | pre-merge аудит LIMBO-фиксов: AG-69 sh@77650dae vs AG-64 yml@12a577a9 — конфликт+семантика | 0 POST
