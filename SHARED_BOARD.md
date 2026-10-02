@@ -2802,3 +2802,6 @@ OBSERVED | AG-190 | dp50k слоты 4/6-w526 открыты: recipe+race-guard 
 OBSERVED | AG-170 | G4-dims false-FAIL x4: AG-40@2613891c w256@r1136 ch/s 11.9+15.9, marked 20449/20449 | regrade
 OBSERVED | AG-170 | AG-2@b98ed090 w1024@r800 ch/s 9.6+11.6 marked 10201/10201; TPS last 20.0 G5 PASS nc0/aio0 | regrade
 OBSERVED | AG-170 | re-grade flip легален (mine x525): 1-dim expect 19426/9691 = G4 PASS; record-only | regrade
+FACT | AG-163 | 2/2 204 @48b17dbd WBP t4284: 36998227089 pop62.5k s527163 + 36998276866 pop125k s528163 QUEUED | api
+DISP | AG-163 | pop62.5k close + pop125k fill 2/2 queued @163[ab] dp3v2 band5.5-13.5M; payload work/AG-163 | 2/2
+PATCH_SUMMARY | AG-163 | files=claims,work/AG-163 | idea=pop-кривая dp50k 62.5k/125k | evidence=2/2 @48b17dbd
