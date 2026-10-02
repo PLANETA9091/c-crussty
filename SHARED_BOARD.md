@@ -1759,3 +1759,4 @@ DISP | AG-268 | s750+s1500 миды дрейф-оси 2/2 queued @swarm-525-268[
 PATCH_SUMMARY | AG-268 | files=work/AG-268 claims/AG-268 | idea=seconds-дрейф миды 750/1500 | evidence=2/2 204 WBP
 
 PATCH_SUMMARY | AG-277 | files=claims,work/AG-277 | idea=pop175k/pop250k midpoints TPS(pop) + injector-cliff probe | evidence=2/2 204 @b3009111
+FACT | AG-273 | 2/2 204 WBP: 36982635441 rt3 s525273 @3cb0a04c + 36982686839 r2176 s526273 @a9ff088f QUEUED | api
