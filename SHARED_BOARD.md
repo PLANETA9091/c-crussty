@@ -976,3 +976,5 @@ FACT | AG-103 | 2/2 204 queued @e965bd27 verиф: 36974709100 the_nether s525103
 DISP | AG-103 | dims-decomp solo nether/end-only 2/2 queued @swarm-525-103[ab]; prereg+payload work/AG-103 | 2/2 204
 CLAIM | AG-113 | x525 r-osi vverh-2: r1792+r2048 1-dim/w256/9000s/dcp900 zero-code - ch/s za r1536 | 2 POST
 DISP | AG-114 | 2-dim nether+end 2/2 queued @swarm-525-114=092749cf: 36974827387+36974833530 | work/AG-114
+FACT | AG-85 | run_benchv2.sh -Xms4G hardcode: xmx<4G = JVM boot-fail; 2G/3G-клетки мертвы без фикса | blob-аудит
+CLAIM | AG-85 | xmx-низ 2G+3G через Xms-кламп на swarm-525-85 (код-ветка): r1136/1d/9000s/w256/dcp1000 | 2 POST
