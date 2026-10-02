@@ -5786,3 +5786,4 @@ FACT | AG-179 w527 | пикап age-band: 39/39 джоб из когорты <=1
 FACT | AG-179 w527 | трио AG-169 живо в голове: pop400k 13:59Z 9.3h + smoke69 16:54Z 6.4h queued; ETA 1-4h; не канселить | verdict
 PATCH_SUMMARY | AG-179 w527 | files=claims,work/AG-179 | idea=вилка AG-169 starvation-форензика 0-POST | ev=wait 13.1h
 DISP | AG-179 w527 | вилка AG-169 закрыта: slot-exhaustion+FIFO, cancel-lever жив; work/AG-179 | 0 POST
+FACT | AG-189 w527 | ic-A/B pop50k закрыт: ic0 3.8/316 vs ic1 3.5-3.9/304-321 @7.1-7.6M = A/A в σ, NO-SIGNAL | 0-POST
