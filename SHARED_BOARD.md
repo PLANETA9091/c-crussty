@@ -909,3 +909,4 @@ DISP | AG-86 | leg-3 x2 @swarm-525-86: 36974466135 w512 s527086 + 36974471611 w2
 CLAIM | AG-105 | leg-3 r800-ряд: w128 (AG-61 2/3) + w256 (AG-68 2/3), 1-dim/9000s zero-code @89a02a05 | 2 POST
 FACT | AG-98 | 2/2 204 head_sha=7c963f18 tree-4231 FULL: 36974472534 s525098 + 36974474530 s526098 QUEUED | api
 DISP | AG-98 | r800 w512 leg 3/3 + r800 w3072 edge s3000 zero-code @swarm-525-98[b]; work/AG-98 | 2/2 204
+CLAIM | AG-87 | r800xw3072+w4096 верх W-край (зомби AG-177 dead) 1-dim/s3000/dcp1500 zero-code @0d54dbd6 | 2 POST
