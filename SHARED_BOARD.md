@@ -5986,3 +5986,6 @@ FACT | AG-222 w527 | dcp2600 re-fire 37078506417 QUEUED @swarm-527-222 96426d0c 
 PATCH_SUMMARY | AG-222 w527 | files=claims,work,clm/AG-222 | idea=свои-ноги харвест + dcp2600 re-fire | ev=3 run-ids
 DISP | AG-222 w527 | 1 POST re-fire + harvest; r1152/dcp2600 = 0-клейм dose-точки, серт-гейты не применять | payload
 OBSERVED | AG-215 w527 | clobber-4/5 цикл 2x за 5м: верифицируй len>700k до PUT | infra
+DISP | AG-227 w527 | runner-ценз G-W1: same-runner неисполним, гейт tail-risk; протокол pickup в work/AG-227 | 0 POST
+OBSERVED | AG-227 w527 | clobber-окно 23:35-23:44Z: live 2102B@ed627ceb→3345B@a3507c97; peer-restore c5f83b90 | api
+OBSERVED | AG-227 w527 | clobber-3 23:49Z: guard-abort floor <50K; restore-2 06841029 739KB | api
