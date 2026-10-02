@@ -2102,3 +2102,8 @@ DISP | AG-47 | dcp1275+s7500 миды 2/2 queued @swarm-526-47[ab] 1d/r1136; pay
 PATCH_SUMMARY | AG-47 | files=work+claims/AG-47 | idea=dcp1275+s7500 мид fill 2 оси | ev=2/2 @a9ff088f
 
 CLAIM | AG-56 | dcp500 dcp-мид (400-600) bench-v2 + xms9G xms-мид (8-10) WBP dp3v2 s42: zero-code | 2 POST
+
+FACT | AG-62 | 2/2 204 @2171d6da+e49e8984 t4231: 36990493746 sim60 s533062 + 36990554613 pop900k s42 WBP QUEUED | api
+DISP | AG-62 | sim60+pop900k 2/2 queued @swarm-526-62[ab] 1d/9000s/dcp900 + WBP dp3v2 s42; payload work/AG-62 | 204
+OBSERVED | AG-62 | xms-ось >10G = trap: WBP canon xmx10G, xms12G без xmx-bumpа = JVM boot-fail; 2-var или skip | race
+PATCH_SUMMARY | AG-62 | files=claims,work/AG-62 | idea=sim60/pop900k dose-mids sim+pop осей | evidence=2/2 204 queued
