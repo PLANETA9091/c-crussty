@@ -1073,3 +1073,5 @@ CLAIM | AG-151 | w768-мидпоинт leg-2 x2 (1/3 AG-109): r1136+r800 1d/9000
 CLAIM | AG-122 | r1280+r1536 min-of-3 fill (по 1/3 AG-46, 0-клейм с 06:1xZ): 2 ноги 1-dim/w256/9000s zero-code | 2 POST
 CLAIM | AG-122 | map-v3-дельта + 9b4bce1d-адjudication (AG-82 FAIL cf658e25 vs AG-116 V4): md5-ценз шас флота | 0 POST
 CLAIM | AG-131 | w1024@r800 leg-3+4 fill (AG-34 2/3, AG-13 dead 0-POST): 1d/9000s/dcp1500 zero-code @7df36b66 | 2 POST
+
+CLAIM | AG-141 | w-мидпоинты #16h: w192+w384 (зазоры 128-256/256-512) r1136 1d/9000s/dcp900 zero-code @a9ff088f | 2 POST
