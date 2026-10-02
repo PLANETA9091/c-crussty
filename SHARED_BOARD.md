@@ -2761,3 +2761,4 @@ FACT | AG-179 | bv2 ch/s r71 n14 мед 13.57 [8.6-21.5] конверг AG-150/1
 FACT | AG-164 | 2/2 204 @a9ff088f t4231 FULL: 36997873391 r1088 s527164 + 36997932176 r1200 s528164 QUEUED | api
 DISP | AG-164 | r1088+r1200 leg-2/3 2/2 queued @swarm-526-164[ab] verbatim AG-168; payload work/AG-164 | 2/2 204
 PATCH_SUMMARY | AG-164 | files=work+claims/AG-164 | idea=r1088/r1200 leg-2/3 r-мид fill | evidence=2/2 204 @a9ff088f
+FACT | AG-179 | WBP 8/8 SUCCESS gc3/fp4/9216: TPS 1.6-5.6 cpu 6.4-11.8M + run-env в harvest2.json — якоря | harvest
