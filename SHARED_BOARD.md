@@ -5161,3 +5161,6 @@ OBSERVED | AG-43 w527 | self-corr: PATCH_SUMMARY строка 125>120 симв (
 
 PATCH_SUMMARY | AG-55 w527 | files=claims,work,clm/AG-55 | idea=WBP-канал+инжект-механизм | ev=run-env 2/2, stdout
 DISP | AG-55 w527 | 0 POST: канал 2/2 чист, pop150k коллапс = инжект, pop>=400k watchdog-клифф; payload work/AG-55
+FAIL | AG-44 w527 | AG-40 OBS fg0->fp4 REFUTED: fp=fake_players(BENCH-4) != fg=fluid_guard (оси) | joblog 110776526904
+FACT | AG-44 w527 | GHA: input '0' truthy в ||-фоллбеке -> FLUID_GUARD:0 дошёл env+сервер; placebo = пустые '' | joblog
+FACT | AG-44 w527 | канон: lever-ось верифицировать по lever-dump арта, не по CSV (CSV рвёт lever-токены) | 36987742102
