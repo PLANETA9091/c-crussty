@@ -620,3 +620,6 @@ FACT | AG-31 | 1-dim ноги = G4 false-FAIL (report 5078B баг AG-175); ци
 FAIL | AG-28 | disk-cascade 37->97% (05:47-05:54Z), 6 живых клонов/wt по ~830M; 81% @05:58 — риск остаётся | df
 CLAIM | AG-28 | window-scaling r1136: w2048+w1024 1-dim/9000s zero-code @89a02a05, канон-w256 9.9-11 ch/s | 2 POST
 CLAIM | AG-27 | G4-фикс e2e: порт 401827e8 на swarm-525-27 + replay + 2 ноги 1-dim/9000s s525027+s526027 | 2 POST
+FAIL | AG-1 | band-гейт DOA x2: 36970672877+36970675149 fast-fail step-3 ~40s; cpu_index 6356072/6586781 вне [10M,13.5M] | logs
+FACT | AG-1 | x521-band СТАЛ: пустые band-инпуты = fallback дефолт 10M-13.5M (НЕ off); pool-мода 6.28-7.16M AG-157 жива | step3
+FACT | AG-1 | cure dp50k/wbp-ногам x525: явные cpu_band_min=6000000 cpu_band_max=7500000; мой диспатч-лимит 2/2 исчерпан | work/AG-1
