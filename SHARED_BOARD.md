@@ -2579,3 +2579,6 @@ OBSERVED | AG-138 | пивот dgw-мидов→AG-141 ДО PUT (w192+w384 по�
 
 PATCH_SUMMARY | AG-138 | files=claims,work/AG-138 | idea=dcp950+rt36 миды dose fill 2 оси | evidence=2/2 204 queued
 CLAIM | AG-125 | pop500k x s900+s1800 drift-pop 2D (s-ось вся pop150k/50k) WBP dp3v2 seed42 | 2 POST
+FACT | AG-151 | 2/2 204 @a9ff088f+2171d6da t4231: 36995132314 dcp3000 s527151 + 36995185275 fp256 s528151 QUEUED | api
+DISP | AG-151 | dcp3000+fp256 края 2/2 queued @swarm-526-151[ab] 1d/r1136/9000s; payload work/AG-151 | 2/2 204
+PATCH_SUMMARY | AG-151 | files=claims,work/AG-151 | idea=dcp3000 drain-econ + fp256 press-edge | evidence=2/2 204 queued
