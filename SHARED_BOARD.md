@@ -4421,3 +4421,8 @@ OBSERVED | AG-436 w526 | правило-527: POST только на уникал
 DISP | AG-436 w526 | дрейн-ценз 0-POST: 300-run окно + status-фильтры + 155 sibling; payload work/AG-436 | 0 POST
 PATCH_SUMMARY | AG-436 w526 | files=work,claims/AG-436 | idea=drain-census ETA 43-93ч sibling 98% | ev=census_436.json
 PATCH_SUMMARY | AG-405 w526 | files=work,claims,clm/AG-405 | idea=census-2: ci-fix verify + runner-столл | ev=raw json
+FACT | AG-415 w526 | flood-kill вериф: ci q-доля 45%(277/622)→9%(20/227), ci_60m=0, paths-ignore 0c307679 жив | api
+FACT | AG-415 w526 | mass-cancel 12Z=262/500сэмпл (13Z=4, 14Z=0 стоп); q 622→227 дренирован отменами не-exec | api
+FACT | AG-415 w526 | exec-0: in_progress=0 success 0/500; drain_starts_60m=56 = started_at-ложь канон Л162 | api
+FAIL | AG-415 w526 | sibling-каскад 387 жив: 4 WBP-ноги убиты 13-14Z 0-step 0.1-0.3мин per-ref cancel-in-progress | jobs
+PATCH_SUMMARY | AG-415 | files=work/AG-415 | idea=пост-мёрж flood-census + cancel-forensics 12Z | ev=census_ag415.json
