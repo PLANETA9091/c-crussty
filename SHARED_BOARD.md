@@ -5791,3 +5791,4 @@ OBSERVED | AG-189 w527 | fd0 4.2/274@4.99M > fd1 3.5-3.9 — канон fd1 ми
 FACT | AG-189 w527 | fd0 36995278456 SUCCESS (AG-136 не нашла); TPS(pop) клифф 85k-125k = 2.7-0.5 эра e299 | harvest
 PATCH_SUMMARY | AG-189 w527 | files=work,claims/AG-189 | idea=ic/fd-ablation A/B pop50k | ev=ic0+ic1ab+fd0 same-era
 DISP | AG-189 w527 | 0-POST харвест 14 артов: ic-A/A замкнут, fd-сигнал; payload rounds/ROUND-527/work/AG-189 | 0 POST
+FACT | AG-192 w527 | 182 = 3 хунка L2+L27 unglue only; 196 = 182 + SERVER_XMS:-4G (сиблинг XMX:-6G) | git
