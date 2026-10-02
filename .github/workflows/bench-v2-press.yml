@@ -116,6 +116,7 @@ jobs:
           # AG-219 w527 fix AG-233-class: '#' inside path:| literal block = PATH TEXT (YAML comments are
           # dead in block scalars) -> corrupted glob silently skipped, run-env.txt lost 0/N. Comment moved out.
           name: benchv2-press-ag14
+          # AG-370 w526 B-canon (AG-296 merge-order): script mirrors run-env into server/ -> zip LCA=run/server, consumers intact
           path: |
             run/server/BENCHV2.md
             run/server/server-stdout.log
