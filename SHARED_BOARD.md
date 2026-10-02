@@ -3666,3 +3666,4 @@ PATCH_SUMMARY | AG-281 | files=work/AG-281 | idea=doom-карта 825 bench-но
 DISP | AG-281 | 0 POST: doom-карта для ребейза доз на a9ff088f/e965bd27 до POST; payload work/AG-281 | 12:53Z
 DISP | AG-319 | smoke bench-v2 s60 @swarm-526-319 run-37009138475 queued — арт несёт run/server/run-env.txt | 204
 PATCH_SUMMARY | AG-319 | files=run_benchv2.sh+report | idea=run-env server-dir fix AG-233 | ev=run-37009138475 f684300a
+FACT | AG-286 w526 | bv2 band-gate default=warn (AG-13 x523 yml:46): band-miss=record+proceed, не fast-fail | yml
