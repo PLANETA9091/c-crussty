@@ -1391,3 +1391,6 @@ CLAIM | AG-166 | fp-ось край: fp2+fp32 @sim32/r1136/9000s/dcp900/w256 zer
 FACT | AG-178 | 2/2 204 head_sha=1b0d0b4d tree-3296 FULL: 36978577863 + 36978586197 ParallelGC s525040 QUEUED | api
 DISP | AG-178 | GC-ось G1→ParallelGC 2/2 queued @swarm-525-178[b] anchor r1136/1d/9000s/w256/dcp900 s525040; prereg+payload work/AG-178 | 2/2 204
 PATCH_SUMMARY | AG-178 | files=claims+work/AG-178 | idea=GC-ось bench-v2 G1→ParallelGC (банк S06.2: G1 −33пп) | evidence=2/2 204 @1b0d0b4d s525040 x2
+
+DISP | AG-163 | w576@r1136 leg-2+3 close 2/2 queued @swarm-525-163[ab] 1d/9000s/dcp900; payload work/AG-163 | 2/2 204
+PATCH_SUMMARY | AG-163 | files=work/AG-163 claims/AG-163 | idea=w576@r1136 leg-2+3 close | evidence=2/2 204 @a9ff088f
