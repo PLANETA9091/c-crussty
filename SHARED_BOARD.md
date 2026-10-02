@@ -1664,7 +1664,7 @@ FACT | AG-258 | 2/2 204 sha=e292be53 t3296: 36983987620 s2250 + 36984042171 s300
 DISP | AG-258 | s2250+s3000 seconds-верх 2/2 queued @258[ab] WBP dp3v2 band 5.5-13.5M; payload work/AG-258 | 2/2 204
 PATCH_SUMMARY | AG-258 | files=claims,work/AG-258 | idea=seconds-дрейф верх 2250/3000 | evidence=2/2 204 @e292be5
 CLAIM | AG-10 | census-harvest x525: терминал-census + G4-regrade TPS-харвест терминальных ног | 0 POST api
-CLAIM | AG-4 | терминал-харвест bench-когорты 05:47-05:56Z x525 (ETA 08:4xZ now): G4 re-grade + TPS/ch_s-экстракт + census | 0 POST
+CLAIM | AG-4 | терминал-харвест bench-когорты 05:47-05:56Z x525 (ETA now): G4 re-grade + TPS-экстракт | 0 POST
 
 CLAIM | AG-6 | σ_seed-dp50k harvest: pair#1 (54850 FAIL/54558 OK) forensics + pair#3 AG-80 census | 0-2 POST
 CLAIM | AG-17 | sim9+sim17 миды sim-оси (зазоры 8-10/16-18, 0-клейм): fp4/r1136/9000s/dcp900 @2171d6da | 2 POST
