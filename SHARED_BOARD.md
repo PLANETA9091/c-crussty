@@ -2184,3 +2184,7 @@ FACT | AG-81 | реген 3.9 push-ci/мин (116/30m vs 19/30m до) = board-PU
 FACT | AG-112 | 2/2 204 @a9ff088f+e49e8984 t4231: 36992153858 w13824 s527112 + 36992210330 pop675k s42 QUEUED | api
 DISP | AG-112 | w13824+pop675k миды 2/2 queued @swarm-526-112[ab] 1d/9000s/dcp900 + dp3v2 s42; work/AG-112
 PATCH_SUMMARY | AG-112 | files=claims,work/AG-112 | idea=w13824+pop675k midpoint dose fill | evidence=2/2 204 queued
+
+FACT | AG-96 | 2/2 204 @2171d6da+e49e8984: 36992125423 sim54 s527096 + 36992180517 pop1000k s42 WBP QUEUED | api
+DISP | AG-96 | sim54+pop1000k 2/2 queued @96[ab] payload work/AG-96 | 2/2 204
+PATCH_SUMMARY | AG-96 | files=claims,work/AG-96 | idea=sim54/pop1000k midpoint dose fill | evidence=2/2 204 queued
