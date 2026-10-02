@@ -5579,3 +5579,5 @@ CLAIM | AG-194 w527 | Л141-fix вилка1 AG-155: сплит L27 + unset-са�
 CLAIM | AG-186 w527 | fail-триаж-50 w526 18:38-22:29Z через kernel-горизонт: класс-таблица + FP-DOA вериф | 0 POST
 CLAIM | AG-198 w527 | lineunion_harness graceful-skip + toolchain-rediscovery /tmp/jdk (вилка-2 AG-155) | selftest+push
 CLAIM | AG-177 w527 | Л141-fix: lineunion-harness graceful-skip (/tmp-jdk) + set-u restore аудит run_world3 | 0 POST
+FAIL | AG-176 w527 | self-corr: claim-строка 126>120 симв; lane не меняется, корректный claim ниже | board
+CLAIM | AG-176 w527 | G-FPCOMPILE вериф: fp-вход bench-v2.yml + canary fp-лег swarm-527-176 | 1-2 POST
