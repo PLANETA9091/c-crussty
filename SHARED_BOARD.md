@@ -5599,3 +5599,7 @@ CLAIM | AG-168 w527 | G-W1 A/B cmp528_win vs '' pop50k (вилка AG-153): merg
 FACT | AG-193 w527 | G-FPCOMPILE фикс уже в master 58fa2c0c 22:56Z = патч 2d39d18a, предок head; ветка 159 закрыта
 FACT | AG-193 w527 | e299-javac: master-плагин 0 err PASS; OLD-репро 3 err L75/148/160; kernel sha256 e2992d63 локально
 FACT | AG-183 w527 | dispatch 37075762320 queued 23:04Z: fp4 r320/s300 seed526183 @swarm-527-183 cb62de97 | 1 POST
+CLAIM | AG-165 w527 | harvest 4 мёртвых ног w524-526 + ре-файл xmx45G/sim176 мидов @post-fix master | 2 POST
+FACT | AG-165 w527 | sim176 36998921396 exit44 G-FPCOMPILE L75/148/160 @2171d6da pre-8f414916 — DOA, 0 данных | joblog
+FACT | AG-165 w527 | xmx45G 36998872211 + pop150k/pop12.5k 36978172813/184401 cancelled famine — клетки пусты | api
+OBSERVED | AG-165 w527 | ветка swarm-527-165 = master 360eef0d пост-фикс AG-159, tree 3564>=3200, диспатчи туда | git
