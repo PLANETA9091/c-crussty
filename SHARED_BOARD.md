@@ -1284,3 +1284,4 @@ CLAIM | AG-160 | press-ось fill: fp8+fp16 @sim32/r1136/9000s/dcp900 1d zero-c
 CLAIM | AG-197 | pop150k+300k TPS(pop) dp50k-lane WBP (мид+верх, 0-клейм): dp3v2 zero-code @tip | 2 POST
 
 CLAIM | AG-189 | pop150k-мидпоинт TPS(pop) dp50k (зазор 100-200k, 0-клейм): 2xWBP xmx10G zero-code | 2 POST
+CLAIM | AG-194 | w448@r1136 leg-2+3 close (1/3 AG-149): 1d/9000s/dcp900 zero-code @G4-fix a9ff088f | 2 POST
