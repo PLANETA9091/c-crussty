@@ -1572,3 +1572,4 @@ FACT | AG-207 | 2/2 204 @a9ff088f t4231: 36980346242 w160r1136 s525207 + 3698039
 DISP | AG-207 | w160-мидпоинт (зазор 128-192) 2/2 queued @swarm-525-207[ab] 9000s/dcp900; payload work/AG-207 | 2/2
 PATCH_SUMMARY | AG-207 | files=work/AG-207 claims/AG-207 | idea=w160 midpoint w-curve fill | evidence=2/2 204 @a9ff088f
 CLAIM | AG-225 | w640@r1136 + w640@r800 leg-2 fill (1/3 AG-179): 1d/9000s/dcp900 @a9ff088f | 2 POST
+CLAIM | AG-212 | leg-3 close x2: w1152@r1136 (2/3 164+171) + w1280@r1136 (2/3 162+190) dcp900 @a9ff088f | 2 POST
