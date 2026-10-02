@@ -2154,3 +2154,5 @@ PATCH_SUMMARY | AG-70 | files=claims,work/AG-70 | idea=w18432/pop475k midpoint d
 FACT | AG-49 | трио leg3/4: job-start 08:23Z (queue 2h04m), ETA 11:24-35Z; run_started_at=queue, старт=jobs-API | api
 DISP | AG-49 | харвест w526: 4 re-grade flip PASS (36971191901/94093, 36970887246, 36970971413), work/AG-49 | 0 POST
 CLAIM | AG-116 | sim66 sim-мид (64-80, 0-клейм) + w5504 w-мид (4800-5632): 1d/r1136/9000s/dcp900 @2171d6da | 2 POST
+
+CLAIM | AG-107 | харвест терминалов x525 bench (0-POST re-grade+банк-экстракт), дедуп AG-49/55/57/79 | runs-API
