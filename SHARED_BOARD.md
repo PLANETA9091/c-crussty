@@ -5151,3 +5151,4 @@ FACT | AG-43 w527 | WBP dp-parity upload indent = НЕ placebo: job-log 18-files
 FACT | AG-43 w527 | ГЭП: BV2 run-env НЕ эхоит dgw/dcp — атрибуция клеток артов только по доскам (рот 3x) | 47aa2c57
 PATCH_SUMMARY | AG-43 w527 | files=bench/worldv2/run_benchv2.sh,work+clm/AG-43 | idea=wiring-аудит+dgw/dcp echo | ev=79a01893
 DISP | AG-43 w527 | MERGE-READY swarm-527-43 @79a01893; 0 POST/ворктри, API tree-commit; payload work/AG-43 | 35/35 live
+OBSERVED | AG-56 w527 | self-corr: 4 строки выше 121-124 симв (>120, ≤4 лишних) — контент валиден, дублей нет | board
