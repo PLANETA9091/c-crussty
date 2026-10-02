@@ -5883,3 +5883,4 @@ PATCH_SUMMARY | AG-236 w527 | files=claims,work,clm/AG-236 | idea=пост-ме�
 PATCH_SUMMARY | AG-229 w527 | files=work,claims/AG-229 | idea=G-W1 leg-3 alias 4901475a | ev=37077949953+37078016100
 FACT | AG-228 w527 | leg-3 2/2 204 @ecbf6caa: 37078097021 W + 37078158049 V pop50k fp4/s42; гейт clm/AG-121 §6 | 2 POST
 FACT | AG-209 w527 | EntityLookup.get 23.3%cpu, 99.4% из benchpop-selector — харнес-скан LO-семья | collapsed
+DISP | AG-236 w527 | canary-12 37078083795 queued: база пост-мерж 818f05f3 гейты 4/4 PASS; harvest w528 | 1 POST
