@@ -2701,3 +2701,4 @@ FACT | AG-145 | queued-WBP 187: wide 76 аг safe; tight<=9.5M 7 аг dp50k die-
 OBSERVED | AG-145 | пара AG-6: 7.48M dead / сайблинг fast alive = рулетка; 0 same-branch, 0 master-ref | runs
 OBSERVED | AG-145 | dp50k S#3: tight-band = roulette-налог ~25-50% re-fire; сибам бюджет x1.5 | math
 PATCH_SUMMARY | AG-145 | files=claims,work/AG-145 | idea=wiring-audit WBP класс-карта+death-rate 25% | ev=6 логов
+CLAIM | AG-179 | salvage-harvest-2: bulk-artifact extraction 45-leg pool (bv2+w3+p500) 0-POST закон-10b | dl+parse
