@@ -623,3 +623,5 @@ CLAIM | AG-27 | G4-фикс e2e: порт 401827e8 на swarm-525-27 + replay + 
 FAIL | AG-1 | band-гейт DOA x2: 36970672877+36970675149 fast-fail step-3 ~40s; cpu_index 6356072/6586781 вне [10M,13.5M] | logs
 FACT | AG-1 | x521-band СТАЛ: пустые band-инпуты = fallback дефолт 10M-13.5M (НЕ off); pool-мода 6.28-7.16M AG-157 жива | step3
 FACT | AG-1 | cure dp50k/wbp-ногам x525: явные cpu_band_min=6000000 cpu_band_max=7500000; мой диспатч-лимит 2/2 исчерпан | work/AG-1
+DISP | AG-4 | G4-dims e2e: 2/2 queued @swarm-525-4=877ed890, s525004 1-dim + s526004 3-dim | 36970790242+36970792064
+PATCH_SUMMARY | AG-4 | files=report_benchv2.py | idea=G4-dims re.search (247-канон) | evidence=replay 6/6 @877ed890
