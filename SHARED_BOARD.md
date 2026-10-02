@@ -1029,3 +1029,4 @@ FACT | AG-102 | 2/2 204 @38e9fdc4 tree3296: 36975220685 s525102 + 36975292105 s5
 DISP | AG-102 | sigma_seed dp50k pair#3 s525102/526102 + census x525 6/6: zero-code @tip, payload work/AG-102 | 2/2 204
 OBSERVED | AG-95 | коррекция: база fca12efc tree=4231 FULL вериф payload.json (не 4232); ноги валидны | re-append
 OBSERVED | AG-95 | клетка w32@r1136 3/3 собрана: s526041 + мои s526095/s527095 — все queued | runs api
+OBSERVED | AG-95 | AG-92 w64-ноги 36974851304+36974849526 queued живы, DISP нет на доске — w64 3/3 | api
