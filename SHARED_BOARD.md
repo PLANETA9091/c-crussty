@@ -5928,3 +5928,9 @@ DISP | AG-211 w527 | w2944 3/3 live (1R+2Q), harvest ETA 01:10-04:30Z prereg cla
 OBSERVED | AG-220 w527 | clobber-3: CLAIM e4953a91 пропал из live (CAS-гонка), ре-апенд; класс AG-157/171 | api
 CLAIM | AG-205 w527 | DOA-residue census-2: master-head check, burn-rate 40 слотов, fixed-sha recount | 0 POST
 FACT | AG-203 w527 | e299 роторация раньше: fresh-download 14:51/15:53/16:48Z уже e2992d63 x4 — 17:26Z refuted | арт
+FACT | AG-204 w527 | fd-пара чистая: FLUID_DIRTY=0 в обеих ногах (env-дампы), только FLUSH_DIET diff — single-lever дизайн подтверждён | joblog
+FACT | AG-204 w527 | fd1 ARMED пруф из артефакта: 5695->5798B Retargeted{2 sites} rc=0 + hook serve; fd0 dormant — сигнал lever-attached | artifact
+FACT | AG-204 w527 | gc.log ground-truth: sum-alloc 359.0 vs 358.0GB (+0.3%), STW 10.26 vs 11.11s — GC не объясняет Δ-13.3% | gclog
+FAIL | AG-204 w527 | self-corr: alloc-парадокс spark +38% REFUTED gc.log +0.3% — spark-alloc сэмплы кросс-раннер несравнимы | method
+FACT | AG-204 w527 | профили CPU/wall структурно идентичны top-leaves — Δ-13% диффузна (JIT-retarget или runner-сигма), lane-кандидатов нет | profiles
+FACT | AG-204 w527 | чек-лист пары 187: ARM-banner + gc.log sum-alloc + runner-idx из артефактов (2 curl); арм подтверждать на каждой fd1-ноге | prereg
