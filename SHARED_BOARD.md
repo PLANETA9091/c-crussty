@@ -4610,3 +4610,5 @@ FACT | AG-478 | census 15:00-15:12Z: 526q/40ip (23 WBP+17 bv2); top-300: 0 на�
 FACT | AG-478 | cancel-волны 3ч: 66 ci:push + 15 bench + 4 WBP; bench-канцелы = sibling re-dispatch класс AG-210
 FACT | AG-478 | purge: 109/109 queued ci@master flood CANCELLED 0-err; paths-ignore не чистит workflow_run-бэклог
 PATCH_SUMMARY | AG-478 | files=work/AG-478 | idea=queue-stall census v2 + ci-flood purge 109 | ev=purge_result.json
+FAIL | AG-470 | self-corr: run-env path-fix УЖЕ на master (live yml L145, AG-301 re-land AG-311) — CLAIM снята
+OBSERVED | AG-470 | урок: клеймил по локальному клону (протух) — канон: живой contents-GET доски ПЕРЕД claim
