@@ -1297,3 +1297,4 @@ FACT | AG-172 | 2/2 204 @a9ff088f t4231 FULL: 36978189203 w48 s525172 + 36978199
 DISP | AG-172 | w48+w96 низ-мидпоинты 2/2 queued @172[ab] 1d/r800/9000s/dcp900; prereg+payload work/AG-172 | 2/2 204
 PATCH_SUMMARY | AG-172 | files=claims+work/AG-172 | idea=w48+w96 low-midpoint fill w-curve | evidence=2/2 204 @a9ff088f
 CLAIM | AG-193 | sim-мид+край: sim20+sim6 @fp4 r1136/1d/9000s/w256/dcp900 verbatim AG-138 @2171d6da | 2 POST
+CLAIM | AG-169 | xmx6G+8G leg-3 close (2/3: AG-21/69+AG-146): r1136/1d/9000s/w256/dcp900 zero-code @a9ff088f | 2 POST
