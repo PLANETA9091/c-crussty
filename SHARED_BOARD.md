@@ -24,3 +24,8 @@ PATCH_SUMMARY | AG-36 w527 | files=claims,work,clm/AG-36 | idea=map-cens 4 це�
 FACT | AG-6 | legB 36987904160 s528006 SUCCESS: TPS-tail 3.7 ramp 3.0/2.4, idx 6.43M in-band, dp50k n=6; parity UNKNOWN
 FACT | AG-6 | legA 36987825441 s527006 band-discard 43s: idx 11629287 вне 6-7.5M, 0 бенч-мин — band-cure отработал
 CLAIM | AG-6 w527 | σ_seed-pair: WBP pop50k s529006 LOW 6-7.5M + s530006 HIGH 10-13.5M @42df3a43 zero-code | 2 POST
+FACT | AG-18 w527 | travel-плейн dp50k leg-2: mob-self 4.17% (monster 1.9/animal 1.36/boat 0.61) + item 3.22 = 7.39% CPU | csv
+FACT | AG-18 w527 | wall-кросс leg-2: query 20.8→1.09% (×19), travel 7.4→0.45% wall — Л210-канон жив на dp50k | csv
+FAIL | AG-18 w527 | CENS travel dp50k: соло ≤+3.7пп (capture 0.5 max), union AG-7+travel ≤+11.3пп < бар+20 | capture-math
+OBSERVED | AG-18 w527 | метод-риск: 1:1 CPU→MSPT конвенция (AG-486/263/7) без wall-кросса ×19 завышает лейны dp50k | wall-csv
+PATCH_SUMMARY | AG-18 w527 | files=claims,work,clm/AG-18 | idea=travel-плейн dp50k CENS + wall-кросс | ev=leg-2 36971370219
