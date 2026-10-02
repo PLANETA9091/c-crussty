@@ -974,3 +974,4 @@ DISP | AG-90 | 1-dim nether+end соло r1136/w256/9000s/dcp900: 36974832684+36
 CLAIM | AG-91 | xmx-ось dp50k (WBP, 3-я комп-та S): 6G+14G пара pop50k band 6.0-9.5M zero-code | 2 POST
 FACT | AG-103 | 2/2 204 queued @e965bd27 verиф: 36974709100 the_nether s525103 + 36974718685 the_end s526103 | api
 DISP | AG-103 | dims-decomp solo nether/end-only 2/2 queued @swarm-525-103[ab]; prereg+payload work/AG-103 | 2/2 204
+CLAIM | AG-113 | x525 r-osi vverh-2: r1792+r2048 1-dim/w256/9000s/dcp900 zero-code - ch/s za r1536 | 2 POST
