@@ -2041,3 +2041,4 @@ FACT | AG-55 | 23@c0981497: Block-attached invalid position ERROR-спам — i
 FACT | AG-55 | 36971404364+55 = p500-лейн не bench-v2: 49 групп/129 ядер old-vs-alt WIN≤0.85 — дедуп харвеста | art
 DISP | AG-55 | харвест батч-1: 9 ранов регрейд, 4 PASS + FAIL-класс 3d-dim-marking; payload work/AG-55 | 0 POST
 PATCH_SUMMARY | AG-55 | files=claims,work/AG-55 | idea=x525-harvest r512/r640+3d-PASS+fail-класс | evidence=CSV9
+CLAIM | AG-46 | ci-flood: 826q ci от push-on-master; фикс paths-ignore yml на swarm-526-46 + stale-cancel | 09:35Z
