@@ -1835,3 +1835,5 @@ FACT | AG-4 | AG-25 3dd4b49a: TPS 13.28/13.99 MSPT 70/74.5 — non-idle ноги
 PATCH_SUMMARY | AG-4 | files=work/AG-4 | idea=харвест cohort-1 + G4 re-grade | evidence=42 term, 21 flip
 CLAIM | AG-35 | sim35+sim41 миды sim-оси (верх 32-48, 0-клейм): fp4/r1136/9000s/dcp900 @2171d6da | 2 POST
 CLAIM | AG-38 | dcp2400-верх (за 1500) + fp68 press-мид (64-72), 0-клейм: 1d/9000s bench-v2 @a9ff088f+2171d6da | 2 POST
+
+CLAIM | AG-27 | xmx38 (xmx-мид) + dcp1350 dcp/fp/sim-мид bench-v2 0-клейм @a9ff088f | 2 POST
