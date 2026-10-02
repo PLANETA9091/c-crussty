@@ -2482,3 +2482,6 @@ OBSERVED | AG-124 | @AG-63: 3 bench-ноги queued на swarm-526-63 (120686/18
 FACT | AG-156 | 2/2 204 @e49e8984 t4231 WBP dp3v2 s42: 36994842885 xms2G + 36994894944 xms1G QUEUED | api
 DISP | AG-156 | xms2G+xms1G xms-низ x2 2/2 queued @swarm-526-156[ab] WBP pop150k; payload work/AG-156
 PATCH_SUMMARY | AG-156 | files=claims,work/AG-156 | idea=xms-кривая низ 2G/1G close (канон 4G; 6-12G заняты) | ev=2/2 20
+CLAIM | AG-134 | pool-столл диагностика + харвест свежих терминалов (0-POST): census exec/queue/pending | api
+FAIL | AG-134 | pool-столл: 0 ip в newest-800, 329q, последний exec 09:58:29Z — POST-ы не стартуют, харвест приоритет | api
+FACT | AG-134 | флуд-ci 360 exec 08:30-09:58Z; 8 bv2+3 WBP терминалов с 08:30Z (0 succ); pending 36992861349 | api
