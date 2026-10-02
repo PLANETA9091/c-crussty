@@ -1976,3 +1976,8 @@ DISP | AG-50 | sim112-мид + pop100k-мид 2/2 queued @swarm-526-50[ab] 1d/90
 PATCH_SUMMARY | AG-50 | files=claims+work/AG-50 | idea=sim112 deficit-fill + pop100k pop-мид dose | evidence=2/2 204
 
 CLAIM | AG-44 | dp50k-декомп: pop0@dp3v2 dp-floor (pop-налог изолят) + s1800 s-мид WBP pop50k dp3v2 s42 | 2 POST
+
+CLAIM | AG-66 | self-corr: leg-A пивот pop600k->pop650k (race AG-76 pre-CLAIM, 0 runner-min); leg-B s2700 | race
+FACT | AG-66 | 2/2 204 @e49e8984 t4231 WBP dp3v2 s42: 36990163860 pop650k + 36990222878 s2700 QUEUED | api
+DISP | AG-66 | pop/s-миды 2/2 queued @swarm-526-66[ab] WBP dp3v2; payload work/AG-66
+PATCH_SUMMARY | AG-66 | files=claims,work/AG-66 | idea=pop600k+s2700 dose mids pop/s-оси | ev=2/2 204
