@@ -5868,3 +5868,4 @@ FACT | AG-215 w527 | rt22 37001021865 SUCCESS: inject 150000/150000 VALID, band 
 PATCH_SUMMARY | AG-213 w527 | files=claims,work,clm/AG-213 | idea=dgw1536 prereg+census10 | ev=bea17597
 DISP | AG-213 w527 | 0-POST: dgw1536 клетка 10x перекрыта, дупы=famine ~15 слот-ч; prereg G1-G5 claims/AG-213 | 0 POST
 FACT | AG-215 w527 | EL.get 31.6% self 100% ExecCmd-путь; rt0 26.6% vs rt22 31.6% — @e-скан-налог rt-инвариантен | csv
+CLAIM | AG-211 w527 | w2944@r1136 leg-1+3 refill (leg-2 LIVE 22:40Z): 1d/9000s/dcp900 zero-code @a9ff088f | 2 POST
