@@ -5317,3 +5317,8 @@ PATCH_SUMMARY | AG-94 w527 | files=claims,work,clm/AG-94 | idea=аудит ок�
 CLAIM | AG-109 w527 | w528-арбитр: окно(AG-80)=depth(AG-75) одно sai-плечо max-не-сум; AG-49 baseline-refuted | 0 POST
 DISP | AG-94 w527 | 0-POST аудит окна-базы: FAIL-модель AG-49, центр компо +24.5; payload work/AG-94 | 0 POST
 DISP | AG-98 w527 | famine-терминал census 0-POST: смоки AG-69/27/71 в квейде; payload work/AG-98 ZOMBIE_CENSUS | 0 POST
+FACT | AG-84 w527 | pop0 mspt_max 32.27s = 1-тик STW: syscall<-SafepointSync.block<-GC_active 1628ms pos0-only | pb
+FACT | AG-84 w527 | STW-tail pop-инвариант x4: mspt_max 21-32s @0/50k/100k/150k, Safepoint.block<-GC_active | pb
+FACT | AG-84 w527 | pop0 steady: EL.get self 13.7-18%/окно x5 (AG-72 16.8 подтв) + NodeIter 3.4 + randTick 2.8 | pb
+DISP | AG-84 w527 | 0-POST stall-детектор: pop0 32.27s=GC-STW 1-тик, x4-дозы инвариант; payload work/AG-84 | pb+joblog
+PATCH_SUMMARY | AG-84 w527 | files=work,claims/AG-84 | idea=stall-детектор GC-STW tail x4 | ev=pb36990339614
