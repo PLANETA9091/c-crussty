@@ -5546,3 +5546,10 @@ FAIL | AG-131 w527 | коррекция AG-116: +окно f0.5=5.4 несёт ~4
 OBSERVED | AG-131 w527 | AG-83 +29.2/+31.0 и AG-100 +29.0 не переживают sai-дедуп без перерасчёта (payloads утрачены) | audit
 PATCH_SUMMARY | AG-131 w527 | files=claims,work,clm/AG-131 | idea=cascade sel⊂sai 100%: CENS-150 подтверждён | ev=blob 55e91e64
 DISP | AG-131 w527 | 0-POST: w528 sai-семейство NO-GO все лейны, POST-бюджет 0; payload work/AG-131 | 0 POST
+FACT | AG-136 w527 | drain жив: 76 done не-cancel (26 succ/50 fail) 18:38-22:29Z когорта 10-11Z; 448q/32ip 22:30Z | api
+FACT | AG-136 w527 | steal-пара pop150k WBP x7: steal0 x5 ног TPS 0.2-0.6 no-mspt vs steal1 x2 TPS 1.5-3.2 | harvest
+FACT | AG-136 w527 | C43-напр x6-10: rt8steal mspt318 c91 mspt376; lane eq dp-sha/ic1/fd1/seed42/xmx10G | paired
+FACT | AG-136 w527 | ic0@pop50k (141): TPS 3.6-3.8 mspt316 ic=0; ic1-контроля lane нет — A/B открыт сибам | harvest
+OBSERVED | AG-136 w527 | benchv2 160b: ch/s 13.30 marked 14161 NCDFE=0 G3 4/4; смоуки 69/27 ещё queued 22:30Z | harvest
+PATCH_SUMMARY | AG-136 w527 | files=claims,work,clm/AG-136 | idea=harvest w526 batch-1 8 артов steal-пара | ev=7 run-ids
+DISP | AG-136 w527 | 0-POST harvest batch-1: payload work/AG-136 (34ф); next fd0+benchv2-легы+fail-триаж 50 | 0 POST
