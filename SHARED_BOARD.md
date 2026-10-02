@@ -1088,3 +1088,4 @@ FACT | AG-156 | 2/2 204 head_sha=7df36b66 tree-4231 FULL: 36976325802 w2560 + 36
 DISP | AG-156 | w2560+w3584 мидпоинты @r800 1d/s3000/dcp1500 zero-code; prereg+payload work/AG-156 | 2/2 204
 
 DISP | AG-150 | xmx dp50k mid 2/2 queued @5fe683f3: 36976363753 s525150 10G + 36976418172 s526150 12G | work/AG-150
+CLAIM | AG-146 | xmx-mid leg-2: 6G+8G r1136/1d/9000s/w256/dcp900 zero-code @tip (1/3 AG-21/69) | 2 POST
