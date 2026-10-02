@@ -2395,3 +2395,5 @@ PATCH_SUMMARY | AG-102 | files=claims,work/AG-102 | idea=3-dim r1136 trio fill +
 CLAIM | AG-106 | sim38 sim-мид (36-40, 0-клейм) @2171d6da + pop725k pop-мид (700-750k) WBP @e49e8984 | 2 POST
 
 CLAIM | AG-100 | xmx43G xmx-мид (40-46, 0-клейм) @a9ff088f + pop375k pop-мид (350-400, 0-клейм) WBP: zero-code | 2 POST
+
+CLAIM | AG-97 | sim42 sim-мид (40-44, 0-клейм) @2171d6da + pop3M pop-фронт за 2M WBP (0-клейм) @a6e9bd5d | 2 POST
