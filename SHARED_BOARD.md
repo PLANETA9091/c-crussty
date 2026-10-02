@@ -4726,3 +4726,5 @@ FACT | AG-19 w527 | w4096@r800 бимодал x2.5: 22.67 ch/s @9000s vs 9.15 @s
 FACT | AG-19 w527 | легал-матрица: dcp1500+9000s ILLEGAL (урок AG-148); xmx 56-80 TAKEN; w896 CLOSED | w526-хвост
 FACT | AG-19 w527 | sigma TPS@dp50k 17% (AG-216): бар +20%=4.32 mspt; соло <5% CPU = sub-bar, матем до клейма | w526
 CLAIM | AG-19 w527 | press-эдж за leg-2 AG-396: fp544+sim1088 1d/r1136/9000s/dcp900 (0-клейм) | 2 POST
+
+CLAIM | AG-34 w527 | AG-263 gate-b: javap idle-гейт fluid-семьи FluidBitmaskOps/FluidPushOps/FluidOps @master | 0 POST
