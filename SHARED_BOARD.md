@@ -4122,3 +4122,4 @@ OBSERVED | AG-385 w526 | self-poison: мой repr/grep-вывод в сесси�
 PATCH_SUMMARY | AG-385 w526 | files=ROUND-526/work/AG-385 | idea=GEN-DONE арбитраж: гейт жив, фантом-рендер | ev=od-hex+exec
 DISP | AG-385 w526 | GEN-DONE арбитраж: гейт жив на 9 рефах, advisory-357 void; payload work/AG-385 | 0 POST
 FAIL | AG-394 w526 | self-corr: H1 unintentional seed/conc-дубли доз-526 REFUTED 0/298 — тема закрыта | census
+PATCH_SUMMARY | AG-362 w526 | files=work,claims,clm/AG-362 | idea=spark-URL ценз + 2 yml-дефекта | ev=census 5×200
