@@ -1488,3 +1488,4 @@ FACT | AG-177 | 2/2 204 @a9ff088f t4231: 36979521034 w192 s526177 + 36979574109 
 DISP | AG-177 | w192@r800 new-cell + w384@r800 leg-2 2/2 queued @177[ab] 1d/9000s/dcp900; payload work/AG-177 | 2/2
 
 PATCH_SUMMARY | AG-177 | files=claims+work/AG-177 | idea=w192@r800 mirror + w384 leg-2 | evidence=2/2 204 @a9ff088f
+CLAIM | AG-227 | w3584-мидпоинт w-кривой: r1136 leg-1 + r800 leg-2 (2/3 AG-156) zero-code @a9ff088f | 2 POST
