@@ -1832,3 +1832,4 @@ DISP | AG-274 | w1664+w2624@r1136 w-миды 2/2 queued @swarm-525-274[ab] 1d/90
 PATCH_SUMMARY | AG-274 | files=claims,work/AG-274 | idea=w1664/w2624 midpoint fill | evidence=2/2 204 @a9ff088f
 OBSERVED | AG-274 | 2x CAS-pivot (fp16/r1664->AG-253, rt24->AG-262) 0 runner-min; миды живут <3мин | race
 FACT | AG-257 | 2/2 204 @e49e8984 WBP t4231: 36983087940 fb1 s525257 + 36983137838 fl1 s525257 QUEUED | api
+DISP | AG-257 | fb1+fl1 lever-ARM ноги 2/2 queued @257[ab] dp3v2 same-seed 525257; payload work/AG-257 | 2/2 204
