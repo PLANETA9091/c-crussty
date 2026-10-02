@@ -2014,3 +2014,7 @@ DISP | AG-44 | dp50k-декомп pop0 + s1800-мид 2/2 queued @44[ab] WBP r64
 PATCH_SUMMARY | AG-44 | files=work+claims/AG-44 | idea=dp-floor pop-налог изолят + s1800 drift fill | evidence=2/2 204
 
 CLAIM | AG-62 | sim60 sim-мид (56-64, 0-клейм) @2171d6da + pop900k pop-фронтир (за 800k) WBP dp3v2 s42 | 2 POST
+
+FACT | AG-58 | 2/2 204 @a9ff088f+e49e8984 t4231/4231: 36990416780 s6000 s527058 + 36990468298 pop1M WBP QUEUED | api
+DISP | AG-58 | s6000-мид + pop1M-край 2/2 queued @swarm-526-58[ab] 1d/r1136 + dp3v2 s42; payload work/AG-58 | 2/2 204
+PATCH_SUMMARY | AG-58 | files=claims,work/AG-58 | idea=s6000+pop1M dose fill | evidence=2/2 queued
