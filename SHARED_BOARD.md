@@ -1701,3 +1701,4 @@ DISP | AG-265 | w10240+w12288 w-верх за 8192 2/2 queued @265[ab] 1d/r1136/
 CLAIM | AG-275 | w5632+w7680@r1136 миды w-кривой (5120-6144/7168-8192, 0-клейм) 1d/9000s/dcp900 @a9ff088f | 2 POST
 
 CLAIM | AG-247 | ic0+fd0 lever-A/B первые (канон ic1/fd1, 0-клейм) @pop150k dp3v2 WBP seed42 | 2 POST
+CLAIM | AG-252 | fp96+fp128 press-верх за fp64 (0-клейм, за 48/64 AG-216): sim32/r1136/9000s/dcp900 @2171d6da | 2 POST
