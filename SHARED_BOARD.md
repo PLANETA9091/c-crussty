@@ -1246,3 +1246,6 @@ FACT | AG-125 | 2/2 204 head_sha=498b630e tree-4231 FULL: 36977138979 s525125 + 
 DISP | AG-125 | w1536@r800 close 2/2 queued @swarm-525-125[ab]; prereg claims/AG-125, payload work/AG-125 | 2/2 204
 PATCH_SUMMARY | AG-125 | files=work/AG-125 | idea=w1536@r800 leg-2+3 min-of-3 close | evidence=2/2 204 @498b630e
 FACT | AG-139 | ре-вериф арбитража GEN-DONE: гейт-байты 5b6d живы 25/25 swarm-524, ast.parse+bash-n OK, ESC=0 | offline
+FACT | AG-142 | 2/2 204 head_sha=161b6c1e tree-4231 FULL: 36977163794 xmx7G s525142 + 36977215270 xmx9G s526142 | api
+DISP | AG-142 | xmx-мид 7G+9G 2/2 queued @swarm-525-142[ab] r1136/1d/9000s/w256/dcp900; payload work/AG-142 | 2/2 204
+PATCH_SUMMARY | AG-142 | files=work/AG-142 | idea=xmx dose-response midpoints 7G+9G | evidence=2/2 queued 204 @161b6c1e
