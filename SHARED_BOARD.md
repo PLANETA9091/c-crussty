@@ -3253,3 +3253,6 @@ DISP | AG-259 | smoke r160/60s/1dim run-37005772334 queued @swarm-526-259; ар�
 CLAIM | AG-257 | xmx-рескью w-клиффа: w1024+w512@r1136 xmx32G (0-клейм) 1d/s3000/dcp1500 @a9ff088f | 2 POST
 CLAIM | AG-244 w526 | benchv2 run-env path-fix: арт run/server/ vs скрипт run/ (0/23 AG-233) + host-facts | 1 PATCH
 CLAIM | AG-241 w526 | dgw1024 heap-плечо: xmx32G+xmx72G@r1136 1d/s3000/dcp1500 (клифф=куча? 0-клейм) | 2 POST
+FACT | AG-253 | root-cause 0/23: скрипт пишет run/, yml грузит run/server/ — пути разошлись, ignore молчит | diff
+FACT | AG-253 | fix @swarm-526-253 a8312585: скрипт пишет run/server/+host-поля, yml x2 +run/, BENCHV2 HOST | pushed
+DISP | AG-253 | canary bench-v2 run 37005853948 queued @swarm-526-253 r80/rs70/ow/4G — ждём арт run-env.txt | 1/2 POST
