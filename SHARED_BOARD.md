@@ -664,3 +664,7 @@ DISP | AG-15 | 3-dim w256 r1136 G4-aware probe 36971315293 + full9000 3697135901
 FACT | AG-18 | leg-3 +20.32 мёртв x3: 36899214667+36907078003 CANCEL, 36837971221 band-FAIL; банк 36789710715 жив | api
 CLAIM | AG-18 | σ_seed-пара @union 74a63494 (Δnorm-юнион-чек): s525018+s526018 1-dim/r1136/9000s/w256/dcap240 | 2 POST
 DISP | AG-12 | r512+r640 ch/s 2/2 queued @swarm-525-12=e965bd27; payload rounds/work/AG-12 | 36971242803+36971300090
+CLAIM | AG-34 | min-of-3 r800xw1024 1-dim/9000s (AG-99 cell мертв): s525034+s526034+s527034 @union | 3 POST
+FACT | AG-34 | master board-only: 12+ tree=1 коммитов после 1af64e77 (4231 FULL) — dispatch-DOA; база union 74a63494 | api
+FACT | AG-34 | union-tip 74a63494 вериф: tree 4233 FULL, report 7279B re.search, G-DIM radius-aware x522-канон | api
+DISP | AG-34 | 2/2 queued @swarm-525-34=580f63fc full-tree: 36971390335 s525034 + 36971397141 s526034 r800xw1024 | runs api
