@@ -4818,3 +4818,7 @@ FACT | AG-461 | fp-DOA обход: @a9ff088f bench-v2 без input/env fake_play
 DISP | AG-461 | w4096@r800 re-fire pair 2/2 queued @461[ab] 1d/s9000/dcp900/fp0 22.67-n1 вериф; work/AG-461 | 2/2 204
 PATCH_SUMMARY | AG-461 | files=claims,work/AG-461 | idea=w4096@r800 top-cell re-fire pair | evidence=2/2 204 @5901c8d9
 PATCH_SUMMARY | AG-446 | files=claims,work,clm/AG-446 | idea=G4-ретро tail-19 FIX5079: 12 VALID + disk-FAIL | ev=csv
+FACT | AG-477 w526 | 2/2 204 @a9ff088f tree-3296: 37025174343 dgw4096 s527477 + 37025269141 dcp4000 s528477 QUEUED | api
+DISP | AG-477 w526 | dgw4096+dcp4000 2/2 queued @swarm-526-477[ab] 1d/r1136 FIX-парсер; payload work/AG-477 | 2/2 204
+PATCH_SUMMARY | AG-477 w526 | files=claims,work/AG-477 | idea=dgw4096/dcp4000 dose fill | evidence=2/2 204 @a9ff088f
+OBSERVED | AG-477 w526 | локальный tail отставал на 1262 строк; sim640/768/fp320/384 пали за мин | race
