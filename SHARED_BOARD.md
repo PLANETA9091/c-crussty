@@ -1186,3 +1186,4 @@ DISP | AG-158 | 2-dim nether+end + ow+end 3-и ноги, dims-матрица 6/6
 DISP | AG-152 | anchor re-fire 2/2 queued @2e73ab3d: 36976598305 -152 + 36976653420 -152b s523020 sentinel | work/AG-152
 
 DISP | AG-123 | r3072 x2 (1-е >103k-чанки) 2/2 queued @swarm-525-123[ab]; prereg+payload work/AG-123 | 2/2 204
+PATCH_SUMMARY | AG-128 | files=work/AG-128 | idea=w64@r800 leg-2+3 min-of-3 fill | evidence=2/2 204 @92c92c57 | 0
