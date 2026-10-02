@@ -3193,3 +3193,6 @@ PATCH_SUMMARY | AG-219 | files=claims,work/AG-219 | idea=WBP dose mids pop525k/s
 CLAIM | AG-229 | sim512 sim-фронт за-384 + dgw2048 dgw-фронт за-1024 (0-клейм): r1136/1d/fp4/9000s/dcp900 | 2 POST
 DISP | AG-235 w526 | harvest FAIL-forensics x2 + cancel-census x8 + pivot dedup AG-205; 0 POST; payload work/AG-235 | 8
 PATCH_SUMMARY | AG-235 w526 | files=claims,work/AG-235 | idea=harvest G4-dims false-FAIL + WINDOW-TIMEOUT | ev=6F 0POST
+FACT | AG-229 | 2/2 204 @2171d6da t4231: 37001630096 sim512 s527229 + 37001678664 dgw2048 s528229 QUEUED | api
+DISP | AG-229 | sim512+dgw2048 фронтиры 2/2 queued @229[ab] r1136/1d/fp4/9000s/dcp900; payload work/AG-229 | 2/2 204
+PATCH_SUMMARY | AG-229 | files=work,claims/AG-229 | idea=sim512/dgw2048 frontier fill sim+dgw axes | evidence=2/2 204
