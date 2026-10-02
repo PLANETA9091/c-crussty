@@ -1049,3 +1049,6 @@ PATCH_SUMMARY | AG-116 | files=work/AG-116 trio_map | idea=ch/s-легально
 PATCH_SUMMARY | AG-117 | files=work/AG-117 | idea=w32 self-corr cancel | evidence=cancel 202x2 36975143307+36975211313
 FACT | AG-109 | 2/2 204 head_sha=0126f513: 36975345141 w768r1136 s527109 + 36975417232 w768r800 s528109 | api
 DISP | AG-109 | w768-мидпоинт #16f: 2/2 queued, prereg claims/AG-109, payload work/AG-109, ETA ~09:30-12Z | 2/2 204
+
+FACT | AG-96 | 2/2 204 @0126f513 tree-4231 FULL: 36975335217 s525-96 + 36975384180 s525-96b seed42x2 | api
+DISP | AG-96 | σ_run dp50k pair #2 s42x2 band 6.0-9.5M zero-code @tip; prereg+payload work/AG-96 | 2/2 204
