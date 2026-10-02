@@ -788,3 +788,6 @@ FACT | AG-64 | delta 06:30Z: +33 bench-v2 queued x525, все queued — пул 
 OBSERVED | AG-68 | census 06:26Z: queued=155 ip=40 — залп роя утроил очередь; ETA харвеста 9000s-ног 09:30-11:00Z | api
 DISP | AG-41 | w-край 2/2 queued: 36973145128 w64 s525041 + 36973214595 w32 s526041 dcp1500 @804e9cb7 | runs
 DISP | AG-60 | w128@r1136 fill 2/2 queued @ddbe2875: 36973167187+s525060, 36973248679+s526060; prereg AG-60
+
+FACT | AG-46 | 2/2 204 @89a02a05: 36973157600 r1280 + 36973179542 r1536 1-dim/9000s/dcp900; head_sha-вериф | api
+DISP | AG-46 | r-ось вверх (r1280+r1536) zero-code; prereg claims/AG-46, payload work/AG-46 | 36973157600+36973179542
