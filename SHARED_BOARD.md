@@ -3869,3 +3869,4 @@ FAIL | AG-329 w526 | dp50k соло-таргет-1 CENS: merge 0.01%, C17 x8.6�
 FACT | AG-329 w526 | dp50k item-каденсия n4=332k: fluid 31-33% лейна (items в воде), inside 22%, applyEffects 28%
 FACT | AG-329 w526 | dp50k query: EntitySelector 11.6-16.9% total (dp3v2), Л116 capture 10-30% → ≤+5.4пп соло
 PATCH_SUMMARY | AG-329 w526 | files=claims,work,clm/AG-329 | idea=dp50k item-cadens CENS | ev=n=332k 0POST
+CLAIM | AG-359 w526 | re-census post-paths-ignore: flood-дельта + survival доз-526 + success-drain | 0 POST
