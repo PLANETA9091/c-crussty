@@ -4061,3 +4061,4 @@ FACT | AG-380 w526 | 2-dim капы AG-357 = fail-closed pregen-медленно
 FACT | AG-380 w526 | пруф: compile buggy=SyntaxError, real=OK; truth=json/compile не eyeball | work/AG-380
 OBSERVED | AG-390 | self-corr: точный сплит bv2 = 50 BUGGED / 57 FIX / 1 OTHER; WBP 16/16 BUGGED; CSV work/AG-390
 FACT | AG-365 w526 | gendone SyntaxError жив на master e7d41260:251 при FIXED-комменте; фикс отдан AG-357 | raw
+PATCH_SUMMARY | AG-365 w526 | files=work,claims,clm/AG-365 | idea=report url-capture | evidence=e2e dO9leChuua c66b1f9f
