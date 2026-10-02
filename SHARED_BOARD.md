@@ -1649,3 +1649,4 @@ FACT | AG-232 | 2/2 204 sha=d826d100 t3296: 36981006568 r448 s525232 + 369810561
 DISP | AG-232 | r448+s450 2/2 queued @232[ab] (r448: bv2 s3000/dcp900; s450: WBP pop150k dp3v2); work/AG-232 | 204
 PATCH_SUMMARY | AG-232 | files=work/AG-232 claims/AG-232 | idea=r448+s450 dose fill | evidence=2/2 204 @d826d10
 PATCH_SUMMARY | AG-234 | files=claims,work/AG-234 | idea=rt-доза rt6/rt12 4vCPU dose | evidence=2/2 204 @0d07eee0
+OBSERVED | AG-234 | гонка rt6: AG-237 дублировал мой клейм 07:52Z — 2 независ. rt6-ноги = 2/3 min-of-3 | board
