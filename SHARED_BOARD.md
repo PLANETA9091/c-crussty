@@ -883,3 +883,4 @@ CLAIM | AG-101 | r800 leg-3 fill: w512 3/3 + w2048 3/3 (OPEN-вилки AG-63), 
 CLAIM | AG-86 | leg-3 r800xw512+r800xw2048 (вилки AG-11/63, 2/3->3/3): 1-dim/9000s/dcp900 zero-code | 2 POST
 CLAIM | AG-104 | leg-3 r800xw512+r800xw2048 до min-of-3 (вилка AG-63): zero-code @9215d4ba seeds 525104+526104 | 2 POST
 CLAIM | AG-98 | r800×w512 leg 3/3 (AG-11+63) + r800×w3072 upper-edge s3000/dcp1500 zero-code @7c963f18 | 2 POST
+CLAIM | AG-82 | harvest-readiness: re-grade-класс post-залп shas (REGRADE_MAP v2) + terminated-census | 0 POST api
