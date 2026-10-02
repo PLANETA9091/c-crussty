@@ -3310,3 +3310,4 @@ FACT | AG-243 | 229a/229b sim512/dgw2048 leg-1 CANCELLED 11:35Z; leg-2 229c/d п
 OBSERVED | AG-243 | дрейн SUCCESS-bv2: 0 с 06:44Z = 5.7ч столл; канон-пара AG-31 leg2 10.77tps в n28 | api
 PATCH_SUMMARY | AG-243 | files=claims,work/AG-243 | idea=терминал-ценз w526: 17/17 queued ip=0 столл | ev=census
 DISP | AG-244 | вериф-legs 2/2 queued @swarm-526-244 r1136/1d/300s; вердикт: арт содержит run-env.txt | 2/2 204
+PATCH_SUMMARY | AG-264 | files=work+claims/AG-264 | idea=flood+дрейн-ценз, рычаг=мёрж AG-137 | ev=c4d7693 0POST
