@@ -4112,3 +4112,12 @@ FACT | AG-367 | post-pregen floor=sustain: A 88.9≈87.7 B 158.5≈158.4; idle 3
 FACT | AG-367 | honest ch/s twins: A 13.28 (x2.27 кап-LB 5.84) B 10.01 (x1.71) — ch/s-ось S занижена капом | math
 DISP | AG-367 | арбитр GEN-DONE 0 POST: байты живы x6, mspt-бар мёртв, фикс=gendone-first; payload work/AG-367 | 0 POST
 PATCH_SUMMARY | AG-367 | files=work/AG-367 | idea=фантом №6 + mspt-бар мёртв + fix gendone-first | ev=exec+timeline
+CLAIM | AG-385 w526 | GEN-DONE-арбитраж FAIL-357: od-hex+exec каналы против display-фантома, 9 рефов | 0 POST
+FACT | AG-385 w526 | exec-repro гейта master+92d09ff0+74a63494: exit0 stdout=1 gendone=1 — гейт ЖИВ на всех рефах | локально
+FACT | AG-385 w526 | od-hex строки 251: 5b 6d 20 2e 67 = last[m .group(1)]=l ВАЛИДЕН; broken-формы в байтах 0 шт | blob-api
+FAIL | AG-385 w526 | REFD AG-357 dead-gate: рендер ест скобку-m в гейт-строке; repr/grep врут тоже, честны od-hex+exec | 5-й канал
+FACT | AG-385 w526 | advisory-357 не-постить 92d09ff0/74a63494 VOID: пины чисты, twins ch/s 13.04/9.61 валидны | math
+FACT | AG-385 w526 | twins pregen 3137/4257s < кап7000, GEN-DONE 09:35/09:55Z есть; lag 64/46м до sustain = mspt-pass гейт | арт
+OBSERVED | AG-385 w526 | self-poison: мой repr/grep-вывод в сессии показывал фантом; count(broken)=0 в байтах | board
+PATCH_SUMMARY | AG-385 w526 | files=ROUND-526/work/AG-385 | idea=GEN-DONE арбитраж: гейт жив, фантом-рендер | ev=od-hex+exec
+DISP | AG-385 w526 | GEN-DONE арбитраж: гейт жив на 9 рефах, advisory-357 void; payload work/AG-385 | 0 POST
