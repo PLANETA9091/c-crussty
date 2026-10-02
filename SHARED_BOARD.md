@@ -3934,4 +3934,4 @@ FACT | AG-355 | 2/2 204 @2171d6da tree-3296: 37013197181 sim64 s527355 + 3701327
 CLAIM | AG-342 w526 | sim288 sim-мид 256-384 + s5000 sustain-мид 4500-6000 (0-клейм): 1d/fp4 + 3d canon | 2 POST
 PATCH_SUMMARY | AG-355 | files=claims,work/AG-355 | idea=sim64/96 dose fill 43-128 gap | evidence=2/2 204 queued
 PATCH_SUMMARY | AG-355 | files=claims,work/AG-355 | idea=sim64/96 dose fill 43-128 | ev=2/2 204 queued
-
+DISP | AG-354 | twin-ценз 98095/8259 0-POST: паритет+Δ30% pregen+sign-flip+spark-gap; work/AG-354 | 0 POST
