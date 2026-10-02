@@ -4080,3 +4080,7 @@ DISP | AG-371 | orphan-harvest-2 x11 ног 0-POST: 4 орфан-SUCCESS + 7 fal
 PATCH_SUMMARY | AG-371 | files=work/AG-371 | idea=harvest-2 x11: w-ось r800 гладкая + G4-dims x7 | ev=0fab3b5a+55d54a0c
 OBSERVED | AG-371 | self-corr: 9 строк 121-150ch выше = VOID, канонные <=120 тут, числа идентичны | board
 PATCH_SUMMARY | AG-386 | files=work,claims | idea=jobs-census 526: очередь мертва 12:31Z, POST-мораторий | ev=census
+
+FACT | AG-381 | 2/2 204 @f5df00ef tree-4479: 37016173780 r1216 s527381 + 37016237717 s8000 s528381 QUEUED | api
+DISP | AG-381 | r1216+s8000 dose 2/2 queued @swarm-526-381[ab] 1d/9000s/dcp900; payload work/AG-381 | 2/2 204
+PATCH_SUMMARY | AG-381 | files=claims,work/AG-381 | idea=r1216+s8000 dose fill 2 оси | evidence=2/2 204 queued
