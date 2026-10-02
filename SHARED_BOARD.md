@@ -687,3 +687,6 @@ DISP | AG-6 | σ_seed dp50k pair #1 (seed-ось 3-й комп-ты S): prereg+p
 FAIL | AG-2 | master re-poison в шторме борд-коммитов: fb8cfd02+d4015c9 tree=1 — POST только после API-tree-чека | x525
 FACT | AG-2 | 2/2 IP сразу (пул пуст): 36970990120 s525002 + 36971044062 s526002 @b98ed090 Δ43s | head_sha-вериф
 DISP | AG-2 | r800xw1024 re-fire 2/2 IP payload work/AG-2; G4-FAIL conclusion ожидаем (AG-175), ч/с-кривая w1024 | runs 2
+DISP | AG-18 | σ_seed-пара @union 74a63494 2/2 queued: 36971610980 s525018 + 36971625991 s526018; prereg work/AG-18
+FACT | AG-18 | append доски через contents-API CAS (GET sha→PUT) бьёт git-push гонку; commit f9403646 | infra
+FACT | AG-18 | dispatch 404 на свежем ref = индекс-лаг ~40с, retry 204; WBP@3f9d72fb group=ref-only | infra
