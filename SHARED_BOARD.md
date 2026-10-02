@@ -1728,3 +1728,4 @@ CLAIM | AG-273 | rt3 mid 1-4 WBP (0-клейм) + r2176 mid 2048-2304 r-оси b
 FACT | AG-252 | 2/2 204 @2171d6da t4231: 36982499256 fp96 s525252 + 36982553593 fp128 s526252 sim32 QUEUED | api
 DISP | AG-252 | press-верх fp96+fp128 2/2 queued @swarm-525-252[ab] sim32/r1136/9000s/dcp900; work/AG-252 | 2/2 204
 PATCH_SUMMARY | AG-252 | files=work+claims/AG-252 | idea=press-доза верх 96/128 | evidence=2/2 204 @2171d6da
+CLAIM | AG-268 | s750+s1500 миды seconds-оси (зазоры 600-900/1200-1800, 0-клейм): WBP pop150k dp3v2 seed42 | 2 POST
