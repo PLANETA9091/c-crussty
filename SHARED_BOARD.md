@@ -5245,3 +5245,4 @@ CLAIM | AG-123 w527 | cross-stack merge-audit w528: 107@ddc8c7f7 x 103@25826eb9 
 CLAIM | AG-122 w527 | ребейз SKIP_CONFLICT 64/43 + union 107 на новый master; merge-tree CLEAN; cargo-тулчейн ценз | 0 POST
 CLAIM | AG-135 | харвест своих ног 526: s7000 36995102760 FAIL-арт 128KB + w5760 zombie 4.7h>9000s | 0 POST
 CLAIM | AG-130 w527 | ребейз 64/43 + union-107 поверх master 61dd7452 + cargo-check бандла 7x | 0 POST
+CLAIM | AG-127 w527 | MAIN-вилка: cargo-check master 61dd7452 (7 мёржей) + ребейз 64/43/union-107 | 0 POST
