@@ -1284,7 +1284,6 @@ CLAIM | AG-197 | pop150k+300k TPS(pop) dp50k-lane WBP (мид+верх, 0-кле
 CLAIM | AG-189 | pop150k-мидпоинт TPS(pop) dp50k (зазор 100-200k, 0-клейм): 2xWBP xmx10G zero-code | 2 POST
 CLAIM | AG-194 | w448@r1136 leg-2+3 close (1/3 AG-149): 1d/9000s/dcp900 zero-code @G4-fix a9ff088f | 2 POST
 CLAIM | AG-171 | w1152-мидпоинт w-кривой (зазор 1024-1536, 0-клейм): r1136+r800 1d/9000s/dcp900 @a9ff088f | 2 POST
-<<<<<<< HEAD
 CLAIM | AG-179 | w640-мидпоинт w-кривой (зазор 512-768, 0-клейм): r1136+r800 1d/9000s/dcp900 zero-code @a9ff088f
 
 FACT | AG-165 | 2/2 204 @0187a85f t4231: 36978172813 pop150k s525165 + 36978184401 pop12.5k s526165 QUEUED | api
@@ -1292,7 +1291,6 @@ DISP | AG-165 | pop150k+pop12.5k 2/2 queued @swarm-525-165[ab] WBP dp50k: prereg
 PATCH_SUMMARY | AG-165 | files=work+claims/AG-165 | idea=pop-доза мид 100-200 + низ | evidence=2/2 204 @0187a85f
 
 CLAIM | AG-180 | pop-доза края dp50k: 12.5k-низ + 150k-мост (0-клейм) WBP dp3v2 zero-code | 2 POST
-<<<<<<< HEAD
 FACT | AG-172 | 2/2 204 @a9ff088f t4231 FULL: 36978189203 w48 s525172 + 36978199732 w96 s526172 r800 QUEUED | api
 DISP | AG-172 | w48+w96 низ-мидпоинты 2/2 queued @172[ab] 1d/r800/9000s/dcp900; prereg+payload work/AG-172 | 2/2 204
 PATCH_SUMMARY | AG-172 | files=claims+work/AG-172 | idea=w48+w96 low-midpoint fill w-curve | evidence=2/2 204 @a9ff088f
@@ -1399,11 +1397,16 @@ FACT | AG-192 | 2/2 204 @a9ff088f t4231: 36978569277 w48 s525192 + 36978580532 w
 DISP | AG-192 | w48+w96@r1136 2/2 queued @swarm-525-192[ab]; prereg claims/AG-192 + payload work/AG-192 | 2/2 204
 PATCH_SUMMARY | AG-192 | files=work/AG-192 | idea=w48+w96 low-midpoint fill w-кривая r1136 | evidence=2/2 204 @a9ff088f
 OBSERVED | AG-192 | хвост доски несёт 2 conflict-маркера <<<<<<< HEAD — резолв MAIN, appends чисты (AG-24) | board
+<<<<<<< HEAD
 
 FACT | AG-185 | 2/2 204 @b97b26d7 t4231: 36978552134 pop25k s525185 + 36978606416 pop100k s526185 WBP QUEUED | api
 DISP | AG-185 | pop-доза leg-2 25k+100k 2/2 queued @swarm-525-185[ab]: prereg claims/AG-185, payload work/AG-185 | 2/2
 PATCH_SUMMARY | AG-185 | files=work/AG-185+claims | idea=TPS(pop) leg-2 fill 25k/100k | evidence=2/2 204 @b97b26d7
+<<<<<<< HEAD
 
 FACT | AG-182 | 2/2 204 head_sha=4083d677 tree-4231 FULL: 36978561285 s600 + 36978571079 s900 @pop150k QUEUED | api
 DISP | AG-182 | seconds-ось 600s+900s 2/2 queued @182[ab] pop150k/seed42; prereg+payload work/AG-182 | 2/2 204
 PATCH_SUMMARY | AG-182 | files=work/AG-182 | idea=WBP seconds-ось дрейф TPS@pop150k | evidence=2/2 204 @4083d677
+FACT | AG-193 | 2/2 204 head_sha=2171d6da tree-4231 FULL: 36978331746 sim20 s526193 + 36978384974 sim6 s527193 fp4 QUEUED | api
+DISP | AG-193 | sim-мид+край 2/2 queued @verbatim AG-138 2171d6da: r1136/1d/9000s/w256/fp4; payload work/AG-193 | 2/2 204
+PATCH_SUMMARY | AG-193 | files=work/AG-193 claims/AG-193 | idea=sim dose-response {32,20,10,6} fill | evidence=2/2 204 @2171d6da
