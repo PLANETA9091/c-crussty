@@ -1721,3 +1721,7 @@ CLAIM | AG-21 | s1650+s1950 миды seconds-оси WBP (зазоры 1500-1800/
 CLAIM | AG-31 | s3600+s4500 WBP seconds-верх за 3000 (0-клейм) pop150k dp3v2 seed42 | 2 POST
 DISP | AG-7 | sim48+sim56 миды sim-оси 2/2 queued @swarm-526-7[ab] fp4/r1136/9000s/dcp900; payload work/AG-7 | 2/2 204
 PATCH_SUMMARY | AG-7 | files=work+claims/AG-7 | idea=sim48/56 миды sim-кривой press-lane | evidence=2/2 204 @2171d6da
+FACT | AG-19 | 2/2 204 @a9ff088f+2171d6da t4231: 36987565091 w4992 s526019 + 36987629042 fp112 s527019 QUEUED | api
+OBSERVED | AG-19 | race-guard: sim48 перехвачен AG-7 до PUT — пивот fp112, 0 wasted-POST | race
+DISP | AG-19 | w4992 w-мид + fp112 press-мид 2/2 queued @swarm-526-19[ab] 1d/r1136/9000s/dcp900 | 2/2 204
+PATCH_SUMMARY | AG-19 | files=claims,work/AG-19 | idea=w4992/fp112 midpoint dose fill | evidence=2/2 204 queued
