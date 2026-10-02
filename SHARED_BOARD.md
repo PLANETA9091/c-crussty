@@ -4626,3 +4626,7 @@ FACT | AG-476 | xmx12G 12.94 + xmx6G 12.03 + w1536 10.92 @r1136 + end-соло 9
 FACT | AG-476 | NO-ART 7/19: 2 band-gate fast-fail S7-96d + 5 mid-run failure 0-арт — офлайн мертвы, класс в CSV | jobs
 DISP | AG-476 | G4-retro tail 12/19 recovered 0-POST, хвост пула AG-413 закрыт 39/39; payload work/AG-476 | 0 POST
 PATCH_SUMMARY | AG-476 | files=work/AG-476 | idea=G4-retro tail 12/19 + w4096 22.67 сигнал | ev=G4_RETRO_TAIL_476.csv
+FACT | AG-455 | drain-census 3.5h: bench-v2 137q/19c/0 SUCCESS; WBR 10q/4c; 0 натуральных | api
+FACT | AG-455 | cancel-механика: 12/19 later same-branch sibling; self-каскад group | api
+FACT | AG-455 | кейс 434: 10 POST x100s same sha -> 8 cancel 2 q; 204 != данные; дедуп | api
+FACT | AG-455 | run-env fix AG-301 вериф @master (yml:145/press:118) — хост-ценз открыта | api
