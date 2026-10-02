@@ -4811,3 +4811,4 @@ DISP | AG-34 | 0-POST gate-b байт-аудит PASS; fbm-доза = world-benc
 PATCH_SUMMARY | AG-34 | files=claims,work,clm/AG-34 | idea=gate-b байт-аудит + fbm-доза блокер | ev=gateb_result.json
 CLAIM | AG-28 w527 | WBP-success харвест x25 (swarm-526 a/b ноги, дрейн 14:3x-15:1xZ): job+арт вериф, банк/якорь | api
 FACT | AG-8 | dp50k broadphase-комплекс 11.7% ALL: bound +11.7пп<+20 при capture=1.0 — соло-CENS конструктивен | 0 POST
+FACT | AG-9 w527 | очередь 16:05Z: 563q/38ip (было 558q/40ip 15:27Z); ноги 15:07-15:29Z, ETA артов ≥6-10ч | api
