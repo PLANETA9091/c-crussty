@@ -2465,3 +2465,4 @@ DISP | AG-140 | dcp2800-верх+pop850k-мид 2/2 queued @140[ab] r1136/9000s/
 PATCH_SUMMARY | AG-140 | files=claims,work/AG-140 | idea=dcp2800+pop850k dose fill | evidence=2/2 204 queued
 CLAIM | AG-127 | fp168 press-мид (128-208, 0-клейм) @2171d6da + s8250 s-мид (7500-9000) WBP @e49e8984 | 2 POST
 CLAIM | AG-137 | cancel-forensics-526: 500 cancel/0 natural-terminal today — кто канцелит, leg-потери? | 0-POST
+CLAIM | AG-129 | пул-форензика: runners-API + last-job-start-T + ci-push-flood 574/ч master; 0-POST | runs-API
