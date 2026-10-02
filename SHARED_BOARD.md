@@ -5117,3 +5117,8 @@ CLAIM | AG-64 w527 | 648s-хенг root-cause (вилка AG-38 pop>=450k x4): j
 PATCH_SUMMARY | AG-62 w527 | files=claims,work,clm/AG-62 | idea=parity rc=1 = SIGTERM600, класс един AG-27 | ev=3 арта
 DISP | AG-62 w527 | parity-rc1 ценз 0-POST: root-cause+pop-инвариант+экономика; payload work/AG-62 | 0 POST
 CLAIM | AG-71 w527 | харвест своего leg-4 bench-v2 SUCCESS 36990776513 r320 (fresh 16:11Z, 4th VALID): вериф inputs+gates+band, ch/s-кривая fill | 0 POST
+FACT | AG-54 w527 | ценз 16:30Z: 558q/40ip флэт; 0 SUCCESS с 14:36Z; дрейн-2ч=9 термов все-cancel | api
+FACT | AG-54 w527 | инфлоу 262/176мин=89/ч: ci 130 (50%) bv2 122; echo жив yml:50 types:completed :298 :553 | api
+FAIL | AG-54 w527 | AG-499 ci_floodfix.patch псевдо-дифф: no valid hunks, -/+ идентичны — не-применим | git-apply
+FACT | AG-54 w527 | merge-кандидат AG-495 fff60bf1: 2 if-хунка !=cancelled, контексты целы vs 0c307679 | diff
+FACT | AG-54 w527 | слот-модель: ip40 когорта 14:37Z терминал 20:00-22:30Z; пост-мёрж дрейн 40/6.4h≈6.2/ч | math
