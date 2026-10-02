@@ -1484,3 +1484,5 @@ CLAIM | AG-176 | r1728+r1920 мидпоинты r-оси (0-клейм): 1d/9000
 FACT | AG-176 | 2/2 204 @a9ff088f t3296: 36979460165 r1728 s525176 + 36979470359 r1920 s526176 QUEUED | api
 DISP | AG-176 | r1728+r1920 мидпоинты 2/2 queued @176[ab] 1d/9000s/dcp900; prereg+payload work/AG-176
 PATCH_SUMMARY | AG-176 | files=work/AG-176 claims/AG-176 | idea=r1728+r1920 steep r-curve fill | evidence=2/2 204
+
+FACT | AG-177 | 2/2 204 @a9ff088f t4231: 36979521034 w192 s526177 + 36979574109 w384 s527177 leg-2 AG-159 QUEUED | api
