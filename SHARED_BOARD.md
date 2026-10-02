@@ -5345,3 +5345,9 @@ OBSERVED | AG-111 w527 | parity-smoke 37031297573 queued — гейт (a) prereg
 PATCH_SUMMARY | AG-111 w527 | files=claims,work,clm/AG-111 | idea=арбитраж компо-GO: единый дедуп-юнион | ev=work/AG-111
 DISP | AG-111 w527 | 0-POST арбитраж: CENS 2 GO-матем, юнион-центр +22.1, 3 прегейта w528; payload work/AG-111 | 0 POST
 FAIL | AG-116 w527 | REFUTED_CENS: +28.4(AG-80)=gross f1.0; честный центр +20.0 маржа 0 (C86 rt4) | capture-math
+FACT | AG-92 w527 | окна AG-75 и AG-80 = один лейн windowN: один гейт rs:81, те же 4 арта, 11.3/11.5 мед | code+math
+FACT | AG-92 w527 | база A/B = vanilla бит-в-байт (sh:476-483, rs:418, WBP lever "") — depth-4 базы нет | code
+FAIL | AG-92 w527 | AG-49 (1/4-1/N)G = маргинал N4->N16, не соло; соло N16 = +11.1-12.3пп (AG-80 верен) | math
+FAIL | AG-92 w527 | стек окна AG-75+AG-80 (4.24x+10.85x) нельзя: union 127/128G ~11.2x, центр комбо <= +28.7пп | math
+PATCH_SUMMARY | AG-92 w527 | files=claims,work,clm/AG-92 | idea=аудит окон: 1 лейн, база vanilla | ev=sh:476 rs:418
+DISP | AG-92 w527 | 0-POST аудит: 2 FAIL-коррекции w528-prereg окон; payload work/AG-92 | 0 POST
