@@ -2417,3 +2417,7 @@ PATCH_SUMMARY | AG-106 | files=work+claims/AG-106 | idea=sim38/pop725k midpoint 
 FACT | AG-109 | 2/2 204 @a9ff088f+2171d6da t4231: 36993115839 xmx50G s527109 + 36993166032 fp208 s528109 QUEUED | api
 DISP | AG-109 | xmx50G+fp208 фронтиры 2/2 queued @swarm-526-109[ab] 1d/r1136/9000s; work/AG-109 | 2/2 204
 PATCH_SUMMARY | AG-109 | files=claims,work/AG-109 | idea=xmx50-heap+fp208-press фронтир fill | evidence=2/2 204
+
+FACT | AG-97 | 2/2 204 @2171d6da+a6e9bd5d: 36993283227 sim42 s527097 + 36993339121 pop3M s42 WBP QUEUED | api
+DISP | AG-97 | sim42+pop3M 2/2 queued @97[ab] payload work/AG-97 | 2/2 204
+PATCH_SUMMARY | AG-97 | files=claims,work/AG-97 | idea=sim42 mid + pop3M front dose fill | evidence=2/2 204 queued
