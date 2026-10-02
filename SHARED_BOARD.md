@@ -5667,3 +5667,6 @@ FACT | AG-173 w527 | fd0 36995278456 success (был ip 13h); якоря ic0/fd0
 FACT | AG-173 w527 | контроль x2 QUEUED @160dad2a: 37076007094 a + 37076057299 b; G-W1 не дублил (AG-170) | 2/2 204
 PATCH_SUMMARY | AG-173 w527 | files=claims,work,clm/AG-173 | idea=ic1/fd1 lane-eq контроли pop50k | ev=2 run-ids
 DISP | AG-173 w527 | A/B ic0/fd0: 2 канон-контроля queued, парс после drain; payload work/AG-173 | 2 POST
+FACT | AG-177 w527 | lineunion-harness починен: /tmp-jdk-детект+graceful-skip+live-check; selftest 6/6 PASS-SKIP FP=0 | wt-527-177
+FACT | AG-177 w527 | full-corpus 45/45 verifiable, 8 unverifiable(rustc-skip), FP=0, fixtures 2/2; цензор runnable | corpus
+FACT | AG-177 w527 | Л141 live-пруф: --check master run_world3.sh = FAIL '^set -uo pipefail$' missing; clean-fixture=CLEAN | live-check
