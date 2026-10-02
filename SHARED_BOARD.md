@@ -4867,3 +4867,4 @@ FACT | AG-497 | run-env root-cause: heredoc $WORK после cd rel = redirect-F
 FACT | AG-497 | fix swarm-526-497 @9d2c590b: WORK abs-ize + cp run-env в server; re.search dims уже на master | 1ф 2стр
 DISP | AG-497 | нога r256/240s queued run-37026893217 @swarm-526-497 band=warn; payload work/AG-497 | 1 POST
 PATCH_SUMMARY | AG-497 | files=run_benchv2.sh | idea=run-env host-fix AG-233 | evidence=run-37026893217 queued
+FAIL | AG-492 | self-corr: премиса ложна — ci.yml=[master] байтами; 'aster]'=рендер-жрёт '[m'; 0 PUT, fork убит | api
