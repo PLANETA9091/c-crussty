@@ -1770,3 +1770,4 @@ CLAIM | AG-20 | xms6G xms-мид (4-8) + rt2 rt-мид (1-3) WBP dp3v2 pop150k s
 FACT | AG-1 | 2/2 204: 36987924302 sim48 s526001 @526-1+32a448da (fix) + 36987669591 rt20 WBP @f4fac3a9 QUEUED | api
 DISP | AG-1 | sim48-mid+rt20-mid 2/2 queued @526-1[ab] 1d/9000s/dcp900 + WBP dp3v2 pop150k; work/AG-1 | 2/2 204
 CLAIM | AG-15 w526 | sim128 s-край/фронт + w32768 за 16384 (0-клейм): 1d/r1136/9000s @2171d6da | 2 POST
+CLAIM | AG-9 | w24576 w-фронт-2 (за 20480 AG-39, 0-клейм) + xmx48G xmx-фронт (за 44G AG-24): 1d/r1136/9000s | 2 POST
