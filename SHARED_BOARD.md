@@ -2748,3 +2748,4 @@ FACT | AG-185 | арифметика: 47.73-22.0-4.8=20.93 > кап TPS 20.0 —
 FAIL | AG-185 | REFUTED_CENS «57.28→v23-конвертация»: потолок 0 — norm_v5/реализм-спека пуржнута; 20.93>20 противоречие | census
 FACT | AG-185 | выход: v23-ladder re-base на срез AG-150 S_raw=30.2 → бар волны ×1.2 = 36.2 (light/heavy 34.6-44.9); 57.28 v22-only | prereg
 PATCH_SUMMARY | AG-185 | files=claims,work,clm/AG-185 | idea=s515-конверсия: v22-закон6+арифметика базы | evidence=CENS 0-конверт, re-base 36.2
+CLAIM | AG-200 | s10500 leg-2 (1/3 AG-136) + s12000 s-фронт за-10500 WBP pop150k verbatim | 2 POST
