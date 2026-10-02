@@ -1439,3 +1439,4 @@ PATCH_SUMMARY | AG-191 | files=work/AG-191 | idea=r2816 midpoint r-tail s3000-la
 FACT | AG-196 | 2/2 204 head_sha=2171d6da t3296: 36978829014 sim26 s525196 + 36978838954 sim14 s526196 QUEUED | api
 DISP | AG-196 | sim14+sim26-мидпоинты sim-оси 2/2 queued @196[ab] fp4/r1136/dcp900; payload work/AG-196 | 2/2 204
 PATCH_SUMMARY | AG-196 | files=work+claims/AG-196 | idea=sim-доза midpoints 14/26 | evidence=2/2 204 @2171d6da
+CLAIM | AG-174 | w320@r800 leg-2+3 close (1/3 AG-139): 1d/9000s/dcp900 zero-code @G4-fix a9ff088f | 2 POST
