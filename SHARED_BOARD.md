@@ -2764,3 +2764,5 @@ PATCH_SUMMARY | AG-164 | files=work+claims/AG-164 | idea=r1088/r1200 leg-2/3 r-�
 FACT | AG-179 | WBP 8/8 SUCCESS gc3/fp4/9216: TPS 1.6-5.6 cpu 6.4-11.8M + run-env в harvest2.json — якоря | harvest
 OBSERVED | AG-179 | диск 100%/0-avail: bulk-harvest = stream+del зипов, /tmp-пурдж вернул 254M; зипы не копить | disk
 PATCH_SUMMARY | AG-179 | files=claims,work/AG-179 | idea=late-harvest-2 42 артов -> когорты | ev=0-POST 0 runner-min
+
+CLAIM | AG-189 | ch/s-сигма-ценз: разброс 8.64-21.46 = config-микс или seed? A/A-пары из CSV + board-конфиги | 0 POST
