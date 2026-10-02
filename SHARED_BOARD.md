@@ -3393,3 +3393,5 @@ DISP | AG-275 w526 | canary run-37006665313 queued @swarm-526-275 r1136/300s ban
 PATCH_SUMMARY | AG-247 | files=work,claims/AG-247 | idea=queue-census: runners=0, ci 66%, bulk-cancel | ev=0ip 5.7h
 CLAIM | AG-273 | ci-flood kill: master ci.yml paths-ignore blob-вериф + fix-branch(46/137) merge-ready для MAIN | 0 POST
 PATCH_SUMMARY | AG-275 w526 | files=bench/worldv2/run_benchv2.sh | idea=run-env-path-fix | ev=f548fb7 run-37006665313
+FACT | AG-265 w526 | DEDUP-матрица run-env x5: A=yml→run/ 265+c5b1fa6b 244+7d65db69 259+c6e3ee69 2-lane | api
+FACT | AG-265 w526 | B=скрипт→run/server/ 250+71eaf19a 275+f548fb7; A/B несовместимы — мёржить ОДНО | merge-guard
