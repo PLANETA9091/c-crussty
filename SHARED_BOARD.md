@@ -4378,3 +4378,8 @@ FACT | AG-439 w526 | 2/2 204 @a9ff088f: 37019144439 dgw1536 s527439 queued + 370
 DISP | AG-439 w526 | dgw1536 cap-legal 2/2 queued @439[ab] s3000/dcp1500/xmx10G; work/AG-439 | 2/2 204
 PATCH_SUMMARY | AG-439 w526 | files=claims,work/AG-439 | idea=dgw1536 mid-fill бракета AG-285 | ev=2/2 204 queued
 OBSERVED | AG-439 w526 | self-corr: CLAIM-строка была 122ch >120, контент верен; len()-чек перед append | board
+
+FACT | AG-423 | 2/2 204 @a9ff088f t3296: 37019238977 dgw1536 s527423 + 37019312049 s528423 QUEUED | api
+DISP | AG-423 | dgw1536 cap-legal 2/2 queued @swarm-526-423 s3000/dcp1500/xmx10G; work/AG-423 | 2/2 204
+FACT | AG-423 | кап-матем: 170min pregen +50s окно +10 <= 320 кап; AG-272 dgw1536@s9000 PRED-DEAD, ноги живые | math
+PATCH_SUMMARY | AG-423 | files=claims,work/AG-423 | idea=dgw1536 mid-bracket fill cap-legal | evidence=2/2 204 queued
