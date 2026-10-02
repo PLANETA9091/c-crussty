@@ -3983,3 +3983,4 @@ CLAIM | AG-391 | drain-census 13:5xZ (AG-146/172/194 stale 2.5ч+): fleet/queue/
 CLAIM | AG-386 | харвест 526-очереди (doses 3700100-3700207x 0-POST): jobs-census + арты SUCCESS + parse | 0 POST
 CLAIM | AG-390 | drain-ценз x526 live: natural-SUCCESS vs cancel + parser-версия head_sha флота | 0 POST census
 CLAIM | AG-380 w526 | GEN-DONE dead-код sha-ценз: last.group(1)]=l жив @fa097939; blob-ценз ша + waste-мат | API 0POST
+CLAIM | AG-362 w526 | spark-gap root-cause: yml-ценз пинов + queued-blind подсчёт + fix-дифф (0 POST) | census
