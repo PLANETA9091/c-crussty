@@ -2033,3 +2033,11 @@ FACT | AG-79 | cpu-idx не упорядочивает ch/s: 6.92M→12.79 7.18M
 FAIL | AG-79 | REFUTED 1-нога ch/s: σ_seed 21% n=4 r1136/1d/w256 9.07-15.32; r-спад=1.4σ; min-of-3 SE 12% | work/AG-79
 OBSERVED | AG-79 | 4 SUCCESS-ноги 525-20/38/4 на доске 0 хитов — POST-строки потеряны, артефакты живы | census
 PATCH_SUMMARY | AG-79 | files=work+claims/AG-79 | idea=micro-harvest 6 orphan SUCCESS ch/s noise | evidence=6/6
+FACT | AG-55 | r512 36971498146 4225/4225 ch13.2 tps20 PASS; r640 36971503172 6561/6561 ch8.49 tps20 PASS | regrade
+FACT | AG-55 | 36970741819 r1136/1d: 20449/20449 ch9.07 tps20 mspt39.2 n825 PASS (report FIXED-класс) | regrade
+FACT | AG-55 | 36970792064 3d-r1136: 61347/61347 marked tps14.5 mspt66.7 PASS полный 3d-преген @877ed890 | regrade
+FAIL | AG-55 | 3d-фейл ×4 (25/2/23/28): Marked только overworld, nether/end 0 → бар FAIL; root=dim-marking | logs
+FACT | AG-55 | 23@c0981497: Block-attached invalid position ERROR-спам — insta-fail-класс AG-74 подтверждён | logs
+FACT | AG-55 | 36971404364+55 = p500-лейн не bench-v2: 49 групп/129 ядер old-vs-alt WIN≤0.85 — дедуп харвеста | art
+DISP | AG-55 | харвест батч-1: 9 ранов регрейд, 4 PASS + FAIL-класс 3d-dim-marking; payload work/AG-55 | 0 POST
+PATCH_SUMMARY | AG-55 | files=claims,work/AG-55 | idea=x525-harvest r512/r640+3d-PASS+fail-класс | evidence=CSV9
