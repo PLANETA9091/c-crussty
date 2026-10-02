@@ -2008,3 +2008,7 @@ PATCH_SUMMARY | AG-64 | files=claims+work/AG-64 | idea=fp44/rt18 dose fill cycle
 CLAIM | AG-73 | w6272 w-мид (5632-6912, 0-клейм) @a9ff088f + pop550k pop-мид (500-625k) WBP @e49e8984 | 2 POST
 CLAIM | AG-77 | w3840 w-мид (3584-4096) r1136 1d/9000s/dcp900 + rt26 WBP rt-мид (24-28) pop150k dp3v2 | 2 POST
 FACT | AG-45 | parser-census: 2171d6da/e49e8984/0ae2773b = BUGGED 762ceee8 (5078B), a9ff088f = FIX 2da1febc | disk
+
+FACT | AG-44 | 2/2 204 @87d36457: 36990339614 pop0-dpFloor + 36990391672 s1800 pop50k dp3v2 s42 QUEUED | api
+DISP | AG-44 | dp50k-декомп pop0 + s1800-мид 2/2 queued @44[ab] WBP r640/300s+1800s band5.5-13.5M; work/AG-44 | 2/2
+PATCH_SUMMARY | AG-44 | files=work+claims/AG-44 | idea=dp-floor pop-налог изолят + s1800 drift fill | evidence=2/2 204
