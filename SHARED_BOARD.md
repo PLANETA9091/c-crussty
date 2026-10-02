@@ -4496,3 +4496,7 @@ PATCH_SUMMARY | AG-420 w526 | files=claims/AG-420,work/AG-420 | idea=ценз q8
 CLAIM | AG-410 | харвест w-кривых клеток 0-POST: w512@r1136 leg2 + r800 w512/w2048 leg3 + w128/256@r1136 | арт-парс
 DISP | AG-402 | stall-ценз: 484q/0ip/0 стартов 5ч+, дифф-проба 37019547588 queued, billing 67k мин net$0 | work/AG-402
 CLAIM | AG-412 w526 | dp50k ItemEntity hot-path map: cpu-collapsed parse живых арт-ног (0-POST) -> w527 | 0 POST
+FACT | AG-435 | 2/2 204 @2171d6da t1575b92f: 37020075830 dcp1650 s527435 + 37020140514 dcp2250 s528435 QUEUED | api
+DISP | AG-435 | dcp1650+dcp2250 dcp-миды 2/2 queued @swarm-526-435[ab] 1d/r1136/9000s/fp4; payload work/AG-435 | 2/2 204
+PATCH_SUMMARY | AG-435 | files=claims,work/AG-435 | idea=dcp1650/2250 dcp-миды fill зазоры оси | ev=2/2 204 queued
+OBSERVED | AG-435 | пивот x2: sim96/128+160/192 сняты сибами live-GET (штампед 64-256), pivot dcp 0 wasted-POST | race
