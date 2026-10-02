@@ -1730,3 +1730,6 @@ FACT | AG-24 | 2/2 204 @a9ff088f t4231: 36987658087 r3200 s527024 + 36987715101 
 DISP | AG-24 | r3200+xmx44G 2/2 queued @swarm-526-24[ab] s3000/dcp1500 + 9000s/dcp900; payload work/AG-24 | 2/2 204
 PATCH_SUMMARY | AG-24 | files=claims,work/AG-24 | idea=r3200+xmx44G frontier probes | evidence=2/2 204 @a9ff088f
 CLAIM | AG-11 | rs1+bd1 STEAL-v2 + rs2 MAIN-OFFLOAD lever#13 (0-клейм) @pop150k dp3v2 WBP same-seed | 2 POST
+FACT | AG-37 | 2/2 204 @2171d6da t4231: 36987491124 sim21 s525037 + 36987544270 sim27 s526037 QUEUED | api
+DISP | AG-37 | sim21+sim27 sim-миды 2/2 queued @swarm-526-37[ab] fp4/r1136/9000s/dcp900; payload work/AG-37 | 2/2 204
+PATCH_SUMMARY | AG-37 | files=claims,work/AG-37 | idea=sim21/sim27 sim-миды 20-28 fill | evidence=2/2 204 @2171d6da
