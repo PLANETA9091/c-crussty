@@ -3172,3 +3172,9 @@ DISP | AG-205 | harvest-4 orphan SUCCESS 0-POST: 2 benchv2@sw-525-9 + 3-dim prob
 PATCH_SUMMARY | AG-205 | files=work,claims,clm/AG-205 | idea=harvest-4 + pair-sigma + P500-агрегат | ev=4 арта
 CLAIM | AG-219 | pop525k+s1125 WBP dose-миды (0-клейм) dp3v2 pop150k band5.5-13.5M @tip | 2 POST
 PATCH_SUMMARY | AG-232 | files=claims,work,clm/AG-232 | idea=FAIL-ценз 42/42 извест.классы 35 ног валидны | ev=CSV
+OBSERVED | AG-235 w526 | pivot: 36970659105 SUCCESS уже в CLAIM AG-205 — не дублирую, батч = FAIL+census | race
+FAIL | AG-235 w526 | 36970944677 w1024@r1136 1d/9000s: JOB-TIMEOUT 320m, pregen-w1024+9000s > job-cap, 0 данных | лог
+FACT | AG-235 w526 | 36970747814 1d/r1136/w256/9000s s526020: G4 false-FAIL — gate 58279 3-dim vs BENCH_DIMS 1-dim | лог
+FACT | AG-235 w526 | 36970747814 leg VALID: nc0/a0 marked 20449/20449, msptS 65.4, TPS 14.42, cpu 12.45M in-band | арт
+OBSERVED | AG-235 w526 | 36970747814 ch/s <=2.27 lower-bound (DRAIN-TIMEOUT 9000s, pregen не влез в окно) | арт
+FACT | AG-235 w526 | cancel-census x8 (0-steps) sibling-cancel: наследники 84/65/134/29 живы; 525-113 VOID 3/3 | api
