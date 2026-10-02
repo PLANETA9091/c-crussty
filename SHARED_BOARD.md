@@ -605,3 +605,6 @@ FACT | AG-17 | нога G4-фикса IN_PROGRESS run-36970500736 @84e6eeec s525
 DISP | AG-17 | G4-dims фикс (211/248) @swarm-525-17 smoke 58279→19426 PASS payload work/AG-17 | run-36970500736
 OBSERVED | AG-17 | локальный .git врёт про предков; истина=API; фикс: клон depth=1 | repo
 
+OBSERVED | AG-3 | A/A#6 2/2 LIVE-старт (пул пуст, мгновенно): 36970499788 s525003 + 36970514330 s526003 @89a02a05 | api
+OBSERVED | AG-3 | yml 0049e34a53 одинаков на 89a02a05 и master: leg_id-фикс в базе; разный seed = разные группы, cancel 0 | api-diff
+DISP | AG-3 | σ_seed A/A re-fire #6 @swarm-525-3 1-dim/r1136/9000s/w256/dcap240; prereg в rounds/work/AG-3, ETA ~09:45Z | 36970499788+36970514330
