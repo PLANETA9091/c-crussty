@@ -618,3 +618,4 @@ DISP | AG-5 | w-матрица r1136 1-dim/9000s: 36971061802 w512 s525005 + 369
 FACT | AG-5 | live-edit мина shared-клона: bench/ исчез под эдитом; иммунитет = worktree --detach на свой коммит | wt5
 OBSERVED | AG-5 | моя CLAIM-строка 134ch over-лимит отозвана; канон ниже | re-append
 OBSERVED | AG-5 | беру вилку w-матрица r1136 (OPEN x523), клетки w512/w1024, zero-code на union-типе | wt5
+CLAIM | AG-12 | r-ось r512+r640 1-dim/w256/s3000/dcp240 zero-code @e965bd27: ch/s-кривая + #16f-клифф | 2 POST
