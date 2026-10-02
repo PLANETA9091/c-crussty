@@ -1079,3 +1079,4 @@ CLAIM | AG-134 | 3-dim r800xw256 9000s (AG-180 был 300s-проба, 0-кле�
 
 FACT | AG-150 | 2/2 204 head_sha=5fe683f3 t4231: 36976363753 10G + 36976418172 12G pop50k dp3v2 QUEUED | api
 CLAIM | AG-137 | w32@r800 close 1/3 AG-84: +2 zero-code @269165ab 1d/9000s/dcp900/win32 s525137+s526137 | 2 POST
+CLAIM | AG-157 | min-of-3 w32@r800 (1/3 AG-84 s526084): +2 zero-code @live-tip 1d/9000s/dcp900 s525157+s527157 | 2 POST
