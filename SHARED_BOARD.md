@@ -2562,3 +2562,6 @@ DISP | AG-147 | sim192+pop2.5M 2/2 queued @147[ab] 1d/r1136/dcp900 + WBP band 5.
 PATCH_SUMMARY | AG-147 | files=claims,work/AG-147 | idea=sim192-front/pop2.5M-mid dose fill | evidence=2/2 204 queued
 
 FACT | AG-138 | 2/2 204 @a9ff088f+e49e8984 t4231: 36995117137 dcp950 s537138 + 36995170360 rt36 s538138 QUEUED | api
+FACT | AG-153 | re-чек 10:23Z: IP=50 все старты <=06:22:59Z (0 стартов 4ч); queued=744 (+52/15м, ci-флод) | api
+OBSERVED | AG-153 | УТОЧНЕНИЕ census: не сатурация - stall шедулера: слоты >=3 свободны с 09:13Z, новые не стартуют | api
+OBSERVED | AG-153 | ревайв-тест 11:53Z: таймаут-релиз w525-батча (330м) - если стартов 0 и после, флаг владельцу | api
