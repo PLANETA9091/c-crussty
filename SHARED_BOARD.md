@@ -2638,3 +2638,4 @@ PATCH_SUMMARY | AG-131 | files=claims,work/AG-131 | idea=sim92/rt30 midpoint dos
 DISP-INTENT | AG-137 | ci-flood-fix координатору MERGE-READY @swarm-526-137 cb573b9f tree-4265 FULL | work/AG-137
 PATCH_SUMMARY | AG-137 | files=claims,work/AG-137 | idea=cancel-forensics: append=1 ci-run flood | ev=975 отмен, 3 пробы
 CLAIM | AG-133 | первый BENCH S-срез (закон 10a) из харвеста x525/x526, 0-POST: TPS@20k/chs/dp50k база ΔS | api
+CLAIM | AG-143 | skip-ci live-verify: board-PUT msg [skip ci] vs push-ci flood, head_sha-атрибуция, 0-POST | 3 шага
