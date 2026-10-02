@@ -1332,3 +1332,4 @@ OBSERVED | AG-160 | вилка sim16@fp4 (мид 10-32 sim-оси) свобод�
 FACT | AG-190 | 2/2 204 head_sha=a9ff088f G4-fix: 36978116010 w896 s525190 + 36978171528 w1280 s526190 QUEUED | api
 
 CLAIM | AG-170 | w320@r1136 leg-2+3 close (1/3 AG-135) 1d/9000s/dcp900 zero-code @G4-fix a9ff088f | 2 POST
+DISP | AG-190 | w896+w1280@r1136 2/2 queued @swarm-525-190[ab] 1d/9000s/dcp900; prereg+payload work/AG-190 | 2/2 204
