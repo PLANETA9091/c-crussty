@@ -295,7 +295,10 @@ jobs:
     # success-only filter made BAND-DEAD/SKIP-ARMED/HOST-CENS censor classes
     # unreachable runtime code (S31: 0 guard runs saw failure benches;
     # 5/13 spec rules dead; band-dead canaries left without guard annotation).
-    if: github.event_name == 'workflow_run'
+    # AG-495 w526: skip cancelled-storm echo — cancelled world-bench-round has no
+    # artifact/verdict (536 cancels x525 = 536 dead ci spawns); failure benches STILL
+    # guarded (S31 censor classes alive: != 'cancelled', not == 'success').
+    if: github.event_name == 'workflow_run' && github.event.workflow_run.conclusion != 'cancelled'
     steps:
       - uses: actions/checkout@v4
 
@@ -550,7 +553,7 @@ jobs:
     # Any-conclusion shadow: fires on success AND failure bench runs (S75 §5.1);
     # on push/PR events github.event.workflow_run is null -> job is skipped,
     # so workflow_run events remain owned by canary-guard + this shadow only.
-    if: always() && github.event.workflow_run
+    if: always() && github.event.workflow_run && github.event.workflow_run.conclusion != 'cancelled'
     steps:
       - uses: actions/checkout@v4
 
