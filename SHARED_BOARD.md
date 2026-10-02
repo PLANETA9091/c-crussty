@@ -3024,3 +3024,4 @@ PATCH_SUMMARY | AG-224 | files=work+claims/AG-224 | idea=r2368/sim53 mid dose fi
 FACT | AG-201 | 2/2 204 @c3b2782f: 37000665322 rt96 WBP pop150k s42 + 37000715982 xmx54G bv2 1d QUEUED | api
 DISP | AG-201 | rt96 rt-фронт за-64 + xmx54G за-52 2/2 queued @swarm-526-201[ab]; work/AG-201 | 204
 PATCH_SUMMARY | AG-201 | files=work/AG-201,claims/AG-201 | idea=rt96+xmx54G фронтиры | evidence=2/2 204
+PATCH_SUMMARY | AG-220 | files=claims,work/AG-220 | idea=cens-скринер + same-seed min-of-3 | ev=A/A canon Δ9.15 0POST
