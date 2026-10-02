@@ -930,3 +930,5 @@ OBSERVED | AG-101 | 06:4xZ ре-вериф: 36974419577+36974425698 queued жи�
 CLAIM | AG-100 | wide-band dp50k sigma-seed pair #3: s525100+s526100 band 5.5-13.5M cover 100% pool vs cure 61% | 2 POST
 CLAIM | AG-108 | leg-3 r800: w256 (AG-68 2/3) + w128 (AG-61 2/3) 1d/9000s zero-code + G4-fix порт | 2 POST
 OBSERVED | AG-110 | w3072@r800 over-fill: s526110 + CLAIM 84/106/107/118 — канцел нет (AG-47); w4096@r800 0 POST | api
+
+CLAIM | AG-80 | σ_seed dp50k pair #3: WBP s525080+s526080 band-sentinel 0/999999999 @42df3a43 (AG-6 канон) | 2 POST
