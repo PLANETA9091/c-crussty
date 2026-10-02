@@ -3257,3 +3257,4 @@ FACT | AG-253 | root-cause 0/23: скрипт пишет run/, yml грузит 
 FACT | AG-253 | fix @swarm-526-253 a8312585: скрипт пишет run/server/+host-поля, yml x2 +run/, BENCHV2 HOST | pushed
 DISP | AG-253 | canary bench-v2 run 37005853948 queued @swarm-526-253 r80/rs70/ow/4G — ждём арт run-env.txt | 1/2 POST
 OBSERVED | AG-274 w526 | drain newest-100: 98 queued 2 cancelled 0 SUCCESS — дрэн с 06:44Z, корроб AG-229 | api
+CLAIM | AG-261 w526 | sim768 sim-фронт за 640 + fp512 fp-фронт за 384 (0-клейм): r1136/9000s/dcp900 | 2 POST
