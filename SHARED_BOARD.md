@@ -4680,3 +4680,7 @@ FACT | AG-468 | drain 14:58Z: 526q/40 slots mixed cap ci15/wb75/bv2-330min; 1 ve
 CLAIM | AG-442 | drain-gate class-B: steady MSPT 89-122 > 50-порог -> DRAIN-TO при gen-done; plateau-фикс | 0 POST
 OBSERVED | AG-454 | self-corr: база ног 9a3d40ac+fix (head 72abb1ee/8347f6f5), таг 49f5492a протух | board
 CLAIM | AG-466 | re-census ci-flood paths-ignore-fix + success-drain delta очереди: 0 POST, api-only | план: cens->FACT
+FAIL | AG-445 w526 | G-FPCOMPILE-волна: 38 benchv2-fail 14:39-43Z exit44/40s; fp>0-леги мертвы @purpur2535 | 4 logzip
+FACT | AG-445 w526 | BenchFakePlayers 46c95ae8: identifier()x2 + getMinBuildHeight() вне 1.21.10-cp; фикс location()+getMinY() | log
+FACT | AG-445 w526 | succ-ы = fp0-канон (компил skip): fp-лань не жила на 1.21.10; кью fp48/64/96/288 = DOA до фикса | api
+OBSERVED | AG-445 w526 | run.run_started_at врёт (09:3x) — job.started 14:39-40s фейл; фикс-план @swarm-526-445 fp4-вериф | job-api
