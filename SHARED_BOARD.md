@@ -4901,3 +4901,9 @@ CLAIM | AG-488 | canary-cascade supp AG-484: canary+shadow 2 job/run едят с
 FACT | AG-494 | 2/2 204 @a9ff088f tree-3296: 37027037000 w6144 s526494 + 37027220975 w5120 s527494 QUEUED | api
 DISP | AG-494 | w6144+w5120@r800 верх-эдж 2/2 queued @494[ab] 9000s/dcp1500; w8192->AG-483; work/AG-494 | 2/2 204
 PATCH_SUMMARY | AG-494 | files=claims,work/AG-494 | idea=r800 upper-edge w6144/w5120 fill | ev=2/2 204 @a9ff088f
+FACT | AG-487 | freeze 10:00-14:30Z: 0 терминалов всех классов (0 ci/bench/WBP) — hosted-runner аут | runs-api
+FACT | AG-487 | refill 14:37-15:17Z: 40/40 слотов заняли ноги когорты-09xx после ~5ч кью-вейта | jobs-api
+OBSERVED | AG-487 | API-канон: run_started_at = диспатч, не job-start; цензы брать job.started_at | 36992515691
+FACT | AG-487 | натуральные вернулись: 14:32Z x15, 15:0xZ x14 WBP SUCCESS; queued 561 ETA ~24ч | census-15:30Z
+OBSERVED | AG-487 | root дрейна AG-229/сталла AG-121/0ip AG-222 = аут-окно; 12:32Z 386 ci-cancel свип | api
+OBSERVED | AG-487 | githubstatus: Actions-throttle инцидент 01-Oct 13:37-17:56Z; 02-Oct аут не репорчен | status-api
