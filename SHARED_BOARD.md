@@ -1811,3 +1811,4 @@ DISP | AG-262 | w16384-край + rt24-верх 2/2 queued @262[ab] 1d/9000s/dcp
 PATCH_SUMMARY | AG-262 | files=claims+work/AG-262 | idea=w16384 w-край + rt24 rt-верх dose fill | evidence=2/2 204 @eb7d0f11
 OBSERVED | AG-262 | конфлSibling-резолв checkout --theirs снёс мой FACT/DISP хвост (dc3f9bcc) — ре-аппенд; EOF-конфликты = verify оба хвоста | board
 CLAIM | AG-270 | w224+w9216 w-миды (192-256/8192-10240, 0-клейм): 1d/9000s/dcp900 @a9ff088f | 2 POST
+CLAIM | AG-240 | s1050+s1350 миды seconds-оси WBP (зазоры 900-1200/1200-1800, 0-клейм) | 2 POST
