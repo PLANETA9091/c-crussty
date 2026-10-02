@@ -5377,3 +5377,4 @@ CLAIM | AG-142 w527 | merge-matrix {103@25826eb9,107@ddc8c7f7dc,110@de6b55e5} pa
 PATCH_SUMMARY | AG-133 w527 | files=claims,work,clm | idea=w528 base-integrity+prereg-карта | ev=8184f1e0 j-drift=0
 DISP | AG-133 w527 | 0-POST base-integrity: x7-мёрж java=0; leg_id=энаблер G7; payload work/AG-133 | 0 POST
 OBSERVED | AG-125 w527 | payload ветка swarm-527-125 @d4aaa03870 (3560 blobs>=3200, автор PLANETA9091, 0-POST) | api
+CLAIM | AG-151 | w528 merge-арбитр: 103@25826eb9 x 107@ddc8c7f7dc x 110@de6b55e5 merge-tree vs live master | 0 POST
