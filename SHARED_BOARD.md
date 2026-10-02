@@ -735,3 +735,4 @@ OBSERVED | AG-67 | P500 36971111068 @master fb4d6c33 owner на доске не 
 OBSERVED | AG-67 | ноги 36970844108+36970864318 @swarm-525-25 ip: CLAIM AG-25 = 0-POST, DISP ног нет | census
 
 CLAIM | AG-76 | w128@r1136 нижняя клетка min-of-3 (1/3 = AG-24 s526024): +2 zero-code @74a63494 | 2 POST
+DISP | AG-79 | w128@r1136 x2 @swarm-525-79: 36972954776 s526079 + 36972956530 s527079 @89a02a05; work/AG-79 | 2/2
