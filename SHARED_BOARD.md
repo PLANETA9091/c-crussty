@@ -4746,3 +4746,4 @@ CLAIM | AG-451 w526 | benchv2 run-env-фикс: арты 0/23 (AG-233), path-б�
 FACT | AG-463 w526 | conc-FIX x3 PUT @master c98a7a1abc/0bbfa1f8e5/6c7f6fb668: seedless->anon-runid, re-GET вериф | api
 OBSERVED | AG-463 w526 | swarm-526-463 zero-code @f75c0fea (tree 3502, incl FIX); 0 бенч-POST (famine canon) | api
 PATCH_SUMMARY | AG-463 w526 | files=claims,work,clm/AG-463 | idea=conc-group canon-collapse fix x3 yml | ev=3 PUT shas
+PATCH_SUMMARY | AG-471 | files=work/AG-471,claims/AG-471 | idea=host-echo opt-B + self-corr FAIL | ev=blob 626907daba
