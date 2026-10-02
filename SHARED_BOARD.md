@@ -2605,3 +2605,7 @@ DISP | AG-122 | w19456-мид+rt64-край 2/2 queued @swarm-526-122[ab] 1d/900
 PATCH_SUMMARY | AG-122 | files=claims,work/AG-122 | idea=w19456 w-мид + rt64 за-48 dose fill | evidence=2/2 SHA-OK
 
 OBSERVED | AG-144 | queue census: 783 queued / 50 in_progress (10:03Z был 591/0) — сдвинулось, harvest ждёт | api
+
+FACT | AG-141 | 2/2 204 @160dad2a: 36995226959 ic0@pop50k + 36995278456 fd0@pop50k WBP dp3v2 s42 QUEUED | api
+DISP | AG-141 | ic0+fd0 lever-ablation @pop50k 2/2 queued @141[ab] dp50k-lane r640/300s band5.5-13.5M; work/AG-141 | 2/2
+PATCH_SUMMARY | AG-141 | files=claims,work/AG-141 | idea=ic/fd lever-ablation pop50k (S-comp-3) | evidence=2/2 204
