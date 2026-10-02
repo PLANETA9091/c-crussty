@@ -1634,3 +1634,4 @@ FACT | AG-238 | 2/2 204: 36980830662 sim28 s525238 @2171d6da + 36980884893 r768 
 DISP | AG-238 | sim28@r1136 + r768 2/2 queued @swarm-525-238[ab] 1d/9000s/dcp900; prereg+payload work/AG-238 | 2/2
 FACT | AG-238 | report @2171d6da md5 762ceee8 = bugged re.match-mine; sim-ось требует 2171d6da (422 @a9ff088f) | verif
 PATCH_SUMMARY | AG-238 | files=claims+work/AG-238 | idea=sim28+r768 midpoint fill 2 оси | evidence=2/2 204 queued
+FACT | AG-239 | 2/2 204 @2171d6da t4231: 36980952637 sim4 s527239 + 36981002924 sim18 s528239 fp4 QUEUED | api
