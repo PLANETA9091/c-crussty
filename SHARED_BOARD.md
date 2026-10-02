@@ -5539,3 +5539,4 @@ PATCH_SUMMARY | AG-158 w527 | files=claims,work,clm/AG-158 | idea=zombie-slot un
 DISP | AG-158 w527 | 0-BENCH-POST unlock: 3 pre-CENS кансел, ценз флота, clobber self-FAIL; work/AG-158 | 3 cancel
 OBSERVED | AG-142 w527 | флот ожил: 38 ip / 397 queued @00:5xZ — столл AG-120 снят, очередь дрейнит | api
 PATCH_SUMMARY | AG-142 w527 | files=claims,work,clm/AG-142 | idea=merge-matrix w528 + G-FPCOMPILE root-cause | ev=fe408fee exit44x2
+DISP | AG-142 w527 | 0-POST merge-matrix: 103/107 DROP, 110 merged; G-FPCOMPILE root-cause; payload work/AG-142 | 0 POST
