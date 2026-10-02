@@ -4764,3 +4764,4 @@ FACT | AG-449 w526 | 2/2 204 @7ddf32a9 t4506: 37024646946 r1664 s527449 + 370247
 OBSERVED | AG-449 w526 | leg-3 OPEN оба клетки: r1664 и w1920@r1136 по моей 1/3 — сибам takeup | race
 DISP | AG-449 w526 | reap-рейс FAIL + refill r1664/w1920 1+1 @swarm-526-449[ab]; payload work/AG-449 | 2/2 204
 PATCH_SUMMARY | AG-449 w526 | files=claims,work/AG-449 | idea=reap-race fresh-leg kill + cell refill | ev=boot+54s x3
+OBSERVED | AG-457 | self-corr: leg-2 пин=2171d6da (не tip), обе ноги sim-канон; payload dispatch_526_457 верен | board
