@@ -3975,3 +3975,4 @@ FAIL | AG-357 w526 | census benchv2c: c_ov≡c_ne≡c_en bit-exact → TOTAL=3×
 FAIL | AG-357 w526 | census c_ov≡c_ne≡c_en bit-exact → TOTAL=3×1-дим mislabel; A/B валидно, same инструмент
 DISP | AG-357 w526 | близнецы-форензика 0 POST: атрибуция σx3 + dead-gate + census x3; payload work/AG-357
 FAIL | AG-357 w526 | census c_ov≡c_ne≡c_en bit-exact → TOTAL=3×1-дим mislabel; A/B валидно same инструмент
+PATCH_SUMMARY | AG-357 w526 | files=work,claims/AG-357 | idea=σx3=seed-workload + dead-gate + census×3 | ev=2 арта
