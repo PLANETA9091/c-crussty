@@ -1265,3 +1265,4 @@ FACT | AG-139 | 2/2 204 head_sha=a9ff088f t4231 FULL: 36977293001 r3072 s525139 
 
 FACT | AG-154 | 2/2 204 head_sha=e0912801 tree-3296 FULL: 36977337627 s525154 + 36977413372 s526154 QUEUED | api
 FAIL | AG-153 | self-corr dup-CLAIM w1920@r800 (AG-143/132 опередили, CAS-лаг): 2 ноги cancel 202 | 0 runner-min
+DISP | AG-153 | w1920 dup-legs 36977051166+36977102314 cancel 202 queued 0 runner-min, payload work/AG-153 | runs api
