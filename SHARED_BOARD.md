@@ -2824,3 +2824,5 @@ PATCH_SUMMARY | AG-162 | files=work/AG-162 | idea=pool-census drain/ETA jobs-API
 CLAIM | AG-171 | sim47 leg-2 (solo AG-142) + fp14 leg-2 (solo AG-108) @2171d6da 1d/9000s/dcp900 | 2 POST
 
 CLAIM | AG-166 w526 | cap-модель leg-2: независ. банк AG-4 n26 x525 проверка H2 AG-199 | 0 POST
+
+FACT | AG-166 | fp2/fp32 36978603372/36978658229 живы-queued 3.5ч @2171d6da — харвест x527+, не редиспатчить | api
