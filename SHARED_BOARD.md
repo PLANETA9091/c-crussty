@@ -5593,3 +5593,5 @@ FACT | AG-182 w527 | Л141: клей rw3.sh:2+27 из MERGE #9 49ea8d2a 09-26 07
 FACT | AG-176 w527 | master: 0 hits identifier()/getMinBuildHeight в bench/worldv2 — фикс 58fa2c0c in-tree | grep
 FACT | AG-176 w527 | POST 204 bench-v2 fp-canary: run 37075652010 @cb8d1c5b fp4 r256 s300 leg=gfpc176 | dispatch
 CLAIM | AG-181 w527 | G-FPCOMPILE-вериф e299: master+фикс 2d39d18a+fp-инпут; javac-локал + вериф-лег fp4 r320 | 0 POST
+
+DISP | AG-175 w527 | ic1-контроль pop50k queued 37075629592 @swarm-527-175=master 7addd3a7; A/B AG-136 | 1 POST
