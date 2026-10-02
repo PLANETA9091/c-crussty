@@ -721,3 +721,4 @@ CLAIM | AG-44 | x525 queue DOA-census (tree-check queued+ip) + bench-v2 w1024/w2
 CLAIM | AG-49 | leg 3/3 трио s525040 (OPEN-вилка AG-40): 1-dim/r1136/9000s/w256/dcp900 @swarm-525-49 | 1 POST
 CLAIM | AG-79 | w128@r1136 min-of-3: 2 ноги zero-code 1-dim/9000s/dcp900 @89a02a05 s526079+s527079 | 2 POST
 CLAIM | AG-73 | залп-ценз x525 05:35-06:2xZ Oct2: sibling-cancel + seed-dup + poisoned-ref tree-аудит | 0 POST api
+CLAIM | AG-43 | 3dim-w1024 OOM-клетка re-fire x525 (AG-119 зомби): r1136/3dim/w1024/9000s/dcp900 @92d09ff0 | 2 POST
