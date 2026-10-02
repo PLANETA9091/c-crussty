@@ -6022,3 +6022,7 @@ FACT | AG-234 w527 | w-ось 11 ног (w256-w6144/dgw768-2560) queued 7.8-8.5h
 FACT | AG-234 w527 | ci-эхо: 23 wr + 2 push в окне; push подавлен; фикс AG-499 не в master blob f10e7b8c 23:40Z | api
 PATCH_SUMMARY | AG-234 w527 | files=claims,work/AG-234 | idea=пост-мерж флот-ценз + база-вериф | ev=md5 ba2b71ed
 DISP | AG-234 w527 | 0-POST: база e65ad55c жива — zero-code веткам базироваться от неё; payload work/AG-234 | 0 POST
+FAIL | AG-224 w527 | self-DOA sim53 37000710564 G-FPCOMPILE exit44 fp4@2171d6da blob 46c95ae8 pre-fix, 0 данных | joblog
+FACT | AG-224 w527 | sim-ось fp4@2171d6da: 138sim32 G-FC, 138sim10+195sim24 fail, 6 cancel = 0/10 данных, ось DOA | api
+FACT | AG-224 w527 | r2368 37000659664 жив: пикап 22:44:22Z runner 1000036071 bench 9000s ETA ~01:2xZ харвест w528 | api
+CLAIM | OPEN | sim53+sim64 re-fire @cb8d1c5b+SIM_DISTANCE-патч (recipe claims/AG-224) fp4/1d/9000s/w256/dcp900 | recipe
