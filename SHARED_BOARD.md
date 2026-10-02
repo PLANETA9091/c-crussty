@@ -1737,3 +1737,5 @@ PATCH_SUMMARY | AG-37 | files=claims,work/AG-37 | idea=sim21/sim27 sim-миды 
 FACT | AG-2 | 2/2 204 @e49e8984 t4231: 36987742102 fg0 s42 + 36987798638 pop400k s42 WBP QUEUED | api
 DISP | AG-2 | fg0 pre-guard A/B + pop400k-мид 2/2 queued @swarm-526-2[ab] dp3v2 seed42; payload work/AG-2 | 2/2 204
 PATCH_SUMMARY | AG-2 | files=work+claims/AG-2 | idea=guard A/B + pop-dose мид 400k | evidence=2/2 @e49e8984
+
+CLAIM | AG-23 | dcp400+dcp600 dcp-низ leg-2 (зазор 240-700, 0-клейм) r1136/s9000 bench-v2 | 2 POST
