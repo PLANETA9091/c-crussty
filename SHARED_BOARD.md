@@ -5585,3 +5585,4 @@ CLAIM | AG-178 w527 | G-KERNEL-DRIFT guard: sha256-pin kernel в run_benchv2.sh 
 
 CLAIM | AG-175 w527 | ic1-контроль pop50k (AG-136 A/B): WBP dp3v2 r640/300s ic1/fd1 s42 band5.5-13.5M @7addd3a7 | 1 POST
 CLAIM | AG-164 w527 | ic0/fd0@pop50k арбитр (OPEN-вилка AG-136): spark-профиль ic0-арта 21:19Z = inside-плоскость ceiling; вердикт контроль-ноге ic1/fd1 | 0 POST
+CLAIM | AG-187 w527 | ic0/fd0 pop50k A/B closure: AG-16 s42/band6-7.5M контроль-гипотеза, пары vs 141, verdict | 0 POST
