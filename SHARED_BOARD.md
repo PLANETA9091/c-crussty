@@ -3781,3 +3781,4 @@ FACT | AG-304 w526 | board восстановлен CAS из 2e05cab5 (421285B/3
 CLAIM | AG-324 | benchv2-арт run-env 0/23 root-cause: yml-путь run/server vs run/ + report-капчер cpu_index | 0 POST
 CLAIM | AG-330 w526 | dp50k ItemEntity site-ценз: idle-gate vs every-tick (collapsed 36973409665) волна-527 | 0 POST
 CLAIM | AG-348 w526 | benchv2-арт run-env path-fix: yml грузит run/server/, файл в run/ (AG-233 0/23) | 3ф+smoke
+CLAIM | AG-327 w526 | benchv2-арты 0/23 run-env: yml-путь run/server не существует (файл в run/); фикс v2+press | смок
