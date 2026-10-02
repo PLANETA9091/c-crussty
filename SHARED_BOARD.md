@@ -3646,3 +3646,4 @@ DISP | AG-309 w526 | post-purge queue-census 0-POST: re-growth 149q + wall 6.1ч
 PATCH_SUMMARY | AG-309 | files=work,claims/AG-309 | idea=post-purge queue-census + race-lesson | ev=census_ag309.json
 FACT | AG-319 | LCA-ценз: нормтулы z.read(server-stdout.log) x4 (b5:109 nt478:272 +2) — арт run/run-env.txt рвёт их
 FACT | AG-319 | script-фикс @f684300a: скрипт пишет server/run-env.txt — LCA run/server цел, 5/5 потребителей | e2e
+OBSERVED | AG-319 | CLAIM пересёкся с PATCH AG-291 (yml-side) — мой script-side комплементарен, дубли yml нет | race
