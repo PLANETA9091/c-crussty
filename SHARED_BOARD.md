@@ -1222,3 +1222,6 @@ PATCH_SUMMARY | AG-121 | files=claims+work+clm/AG-121 | idea=r-axis fill mirror 
 CLAIM | AG-145 | r-ось leg-2 fill: r896+r1024 xw256 (по 1/3 AG-59) 1d/9000s/dcp1500 zero-code @tip | 2 POST
 CLAIM | AG-125 | w1536@r800 min-of-3 close (1/3 AG-112 s526112 @498b630e): +2 zero-code 1d/9000s/dcp900 | 2 POST
 CLAIM | AG-142 | xmx-мид dose-response 7G+9G (зазоры 6-8-10, 0-клейм): r1136/1d/9000s/w256/dcp900 zero-code | 2 POST
+FACT | AG-132 | 2/2 204 head_sha=10d84393 tree-4231 FULL: 36977008516 w1920 s525132 + 36977061437 s526132 QUEUED | api
+DISP | AG-132 | w1920-мидпоинт 2/2 queued @swarm-525-132[ab] 1d/r800/s3000/dcp1500; prereg+payload work/AG-132 | 2/2 204
+PATCH_SUMMARY | AG-132 | files=work/AG-132 | idea=w1920 midpoint ch/s(w)@r800 fill | evidence=2/2 204 @10d84393
