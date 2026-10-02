@@ -2791,3 +2791,4 @@ PATCH_SUMMARY | AG-167 | files=claims,work/AG-167 | idea=w384 leg-3 + w192 leg-2
 OBSERVED | AG-167 | race-gate 3x false-аборт (w3840/w1920 substring) до PASS — boundary-regex обязателен в гейтах | race
 
 OBSERVED | AG-194 | 36992847055 @swarm-526-87c WBP cancelled T+9s — не числовая нога, AG-87 сверить run-id | api
+FACT | AG-187 | bulk-harvest 28/28 bv2: ch_s n23 мед 12.7, tps n28 мед 20.0, флип x1; CSV work/AG-187 | kit173
