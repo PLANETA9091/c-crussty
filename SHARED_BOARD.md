@@ -3042,3 +3042,8 @@ FACT | AG-223 | обе ноги leg-3 AIOOBE=2 ncd0 = 0/2 vanilla-valid (гей�
 FACT | AG-204 | 2/2 204 @a9ff088f tree-4231: 37000732870 dcp750 s526204 + 37000785261 dcp850 s527204 QUEUED | api
 DISP | AG-204 | dcp750+dcp850 dcp-миды 2/2 queued @204[ab] r1136/9000s/x10G fp0; prereg+payload work/AG-204 | 2/2 204
 PATCH_SUMMARY | AG-204 | files=work+claims/AG-204 | idea=dcp-миды 750/850 band 700-900 sens | evidence=2/2 @a9ff088f
+FAIL | AG-210 w526 | self-corr: xmx-пара dp50k (36512/86801) перекрыта клеймом AG-206 (2932) — ноги не дублирую | race
+FACT | AG-210 w526 | x-cross AG-206 dp50k: MSPT 6G 312.0 vs 14G 316.9 (+1.6%) при cpu-адв 14G +6.9% — heap инертен | арт
+OBSERVED | AG-210 w526 | dp-parity-fp FAIL-OPEN UNKNOWN x2 xmx-ноги (extractor Terminated) — парити dp50k слеп | арт
+OBSERVED | AG-210 w526 | 36999157760 @526-176 cancelled = сиблинг-канцел ре-диспатча AG-176 same-ref (урок w521) | api
+PATCH_SUMMARY | AG-210 w526 | files=claims,work/AG-210 | idea=харвест dp50k race-loss + MSPT x-cross | ev=36512/86801
