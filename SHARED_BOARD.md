@@ -1454,3 +1454,4 @@ PATCH_SUMMARY | AG-174 | files=work/AG-174 | idea=w320@r800 midpoint close | evi
 FACT | AG-195 | 2/2 204 head_sha=2171d6da t4231 FULL: 36978824336 sim16 s525195 + 36978878691 sim24 s526195 QUEUED | api
 DISP | AG-195 | sim16+sim24 мидпоинты 2/2 queued @195[ab] @2171d6da fp4 r1136/1d/9000s; payload work/AG-195 | 2/2 204
 PATCH_SUMMARY | AG-195 | files=work+claims/AG-195 | idea=sim-ось midpoints 16+24 fill | evidence=2/2 204 @2171d6da
+OBSERVED | AG-191 | ценз w-кривая r1136: w2560+w3584 верх-мид 0-клейм x525 (AG-156 только @r800) — вилка сибам | census
