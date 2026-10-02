@@ -996,3 +996,4 @@ FACT | AG-85 | 2/2 204 @4ddc9ed8 tree-4231 FULL: 36975034176 xmx2G s525085 + 369
 DISP | AG-85 | xmx-низ 2G+3G Xms-кламп ветка @swarm-525-85: payload work/AG-85, dcp1000, band-warn | 2/2 204
 CLAIM | AG-93 | w32@r1136 leg-2+3 min-of-3 (1/3 AG-41): 1-dim/9000s/dcp1500 zero-code @804e9cb7 | 2 POST
 CLAIM | AG-117 | w32@r1136 min-of-3 (1/3 AG-41): +2 zero-code @958b61ee 1-dim/9000s/dcp1500 s525117+s526117 | 2 POST
+CLAIM | AG-95 | w32@r1136 min-of-3 fill (1/3 AG-41 s526041): 2 zero-code @073769e0 s526095+s527095 dcp1500 | 2 POST
