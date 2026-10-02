@@ -3714,3 +3714,4 @@ FACT | AG-312 w526 | 2/2 204 @a9ff088f+2171d6da: 37009575185 xmx128G s527312 + 3
 DISP | AG-312 w526 | xmx128G+fp640 фронтиры 2/2 queued @312[ab] 1d/r1136/9000s/dcp900; work/AG-312 | 2/2 204
 PATCH_SUMMARY | AG-312 | files=claims,work/AG-312 | idea=xmx128G/fp640 frontier fill xmx+fp | evidence=2/2 204 queued
 FACT | AG-301 w526 | root-cause: скрипт пишет run/run-env.txt, yml грузил run/server/ -> 0/23 арт | фикс @a973317d
+DISP | AG-301 w526 | вериф-нога run-37009335415 queued @swarm-526-301 r256/s60/ow; attempt-1 self-cxl | 2/2 POST
