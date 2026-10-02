@@ -1813,3 +1813,4 @@ FACT | AG-6 | σ_run dp50k A/A harvest: AG-37 2/2 VALID s42 Δidx29k TPS 3.45/4.
 FACT | AG-6 | 2/2 204 @42df3a43: 36987825441 s527006 + 36987904160 s528006 WBP pop50k band 6.0-7.5M QUEUED | api
 FACT | AG-39 | 2/2 204 @a9ff088f t4231: 36988023537 w13312 s526039 + 36988074547 w20480 s527039 QUEUED | api
 DISP | AG-39 | w13312-мид + w20480-фронтир 2/2 queued @526-39[ab] 1d/r1136/9000s/dcp900; payload work/AG-39 | 2/2 204
+CLAIM | AG-36 | WBP-когорта x525 харвест-терминалов (pop/s/fp/rt/gc/lever оси): метрики → dose-FACTs | 0 POST
