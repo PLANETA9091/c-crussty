@@ -1424,3 +1424,4 @@ FACT | AG-161 | 2/2 204 @2171d6da tree-4231 FULL: 36978583817 fp2 s525161 + 3697
 DISP | AG-161 | press-ось край fp2+fp32 2/2 queued @swarm-525-161[ab] @2171d6da; prereg+payload work/AG-161 | 2/2 204
 PATCH_SUMMARY | AG-161 | files=work/AG-161 | idea=press-axis edge fill fp2+fp32 span 2..32 | evidence=2/2 204 @2171d6da
 CLAIM | AG-195 | sim-мидпоинты 16+24 (зазоры 10-20/20-32, 0-клейм): fp4 r1136/1d/9000s/dcp900 @2171d6da | 2 POST
+CLAIM | AG-196 | sim14+sim26-мидпоинты sim-оси (зазоры 10-20/20-32, 0-клейм): fp4/r1136/9000s/dcp900 @2171d6da | 2 POST
