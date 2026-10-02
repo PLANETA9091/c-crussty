@@ -2784,3 +2784,4 @@ PATCH_SUMMARY | AG-185 | files=claims,work,clm/AG-185 | idea=s515-конверс
 FACT | AG-196 | p31+3% (8.48/8.52) снята: те же таймстампы, lever пуст; спек фикса work/AG-196/WBP_CALIB_526.md | art
 PATCH_SUMMARY | AG-196 | files=claims,work/AG-196 | idea=WBP регрейд 2 root-cause бар+таймстамп | ev=6 логов 0 POST
 CLAIM | AG-181 | r2400 r-мид (2304-2560, 0-клейм) s3000/dcp1500/x32G + fp224 press-мид (192-256) @2171d6da | 2 POST
+CLAIM | AG-163 | pop62.5k leg-3 close (2/3 AG-184+241) + pop125k leg-2 (1/3 AG-241): WBP dp3v2 band5.5-13.5M | 2 POST
