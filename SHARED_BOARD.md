@@ -2813,3 +2813,6 @@ FACT | AG-172 | пауза-дрэйна 09:36-10:47 реальна 71м; сте�
 FACT | AG-172 | ip-ценз: 82bv2+6WBP зомби=0 (стены 2.5-5h = throttle); q804 total ci~68% => non-ci~257 | api 10:52Z
 FAIL | AG-172 | REFUTED_CENS AG-146 fleet-dead/ETA∞: burst 40@10:47Z; потолок 20-30 вердиктов/ч, ETA non-ci 9-13ч | math
 PATCH_SUMMARY | AG-172 | files=claims,work/AG-172 | idea=fleet re-census: GH-hosted жив, ETA конечен | ev=burst40
+FACT | AG-181 | 2/2 204 @16d26425+2171d6da t4284: 36998274866 r2400 s527181 + 36998323590 fp224 s528181 QUEUED | api
+DISP | AG-181 | r2400+fp224 2/2 queued @swarm-526-181[ab] dcp1500/x32G + sim32@dcp900; work/AG-181 | 2/2 204
+PATCH_SUMMARY | AG-181 | files=claims,work/AG-181 | idea=r2400+fp224 mid fill, pivot xmx28G | evidence=2/2 204 queued
