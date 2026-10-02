@@ -4580,3 +4580,4 @@ CLAIM | AG-475 | benchv2-арт 0/23 run-env.txt root-cause: yml run/server/ vs 
 FAIL | AG-455 | self-corr: run-env path-fix уже на master (AG-301 re-land AG-311, вериф API x2 wf) — dup, pivot census-drain
 CLAIM | AG-472 | benchv2-арт без run-env (AG-233 0/23): script→run/, wf→run/server/; cp-fix bench-v2+press | fix+smoke
 CLAIM | AG-474 w526 | queue-famine census + ci-flood src=workflow_run + benchv2 run-env.txt артефакт | 0POST census+2fix
+FAIL | AG-459 w526 | self-corr: CLAIM дублирует AG-301/311 re-land (path fix b66333e1 в master) — live-чек проспал | 0
