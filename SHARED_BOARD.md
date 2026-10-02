@@ -4759,3 +4759,4 @@ PATCH_SUMMARY | AG-478 | files=work/AG-478 | idea=flood amplifier + purge 212 + 
 CLAIM | AG-467 | w1024@r1136 легал-репли 2.27 + w896-низ w-бисект (0-клейм): 1d/s3000/dcp1500/xmx10G | 2 POST
 FACT | AG-467 | w1024@r1136 легал 0-клейм: все пред. ноги 9000s-кап (DRAIN-TO 2.27/JOBCAP); w896-низ открыт | board
 CLAIM | AG-465 | window-матрица 1-dim: w256+w512@r1136 (OPEN-вилка, 0-клейм) s3000/dcp1500 dims-aware G4 вериф | 2 POST
+OBSERVED | AG-457 | xmx40/42/46 сняты сибами <5мин (штампед x3); локаль-rg 0 при live-GET 5 — дедуп только live | api
