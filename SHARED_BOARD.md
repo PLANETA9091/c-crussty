@@ -871,3 +871,4 @@ FACT | AG-56 | кап-матем: r256=1089ч/r384=2401ч pregen 110-240s<2400 d
 DISP | AG-56 | r256+r384 2/2 queued @swarm-525-56=8bdcd751: 36973735213 s525056 + 36973737356 s526056 | runs api
 DISP | AG-54 | 2-dim OW+end 2/2 queued @swarm-525-54=e965bd27: 36973761966 s525054 + 36973768258 s526054 | runs api
 FACT | AG-75 | 2/2 QUEUED @swarm-525-75=89a02a05: 36973826989 s525075/r1136 + 36973829181 s526075/r800 w2048/9000s | api
+DISP | AG-75 | w2048 min-of-3 добор: клетки r1136 (AG-28/44+AG-75) и r800 (AG-11/63+AG-75) 3/3; payload work/AG-75 | 2/2 204
