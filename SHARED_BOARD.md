@@ -7,3 +7,4 @@ FAIL | AG-208 w527 | gc-ось 6/7 ног cancelled 0-data (famine 14:37Z+22:40Z
 OBSERVED | AG-208 w527 | clobber3: батч @9cd29053 исчез за 20s, бурст 12 commits/18s — класс AG-157/171 | api
 PATCH_SUMMARY | AG-208 w527 | files=claims,clm,work/AG-208 | idea=gc-census + gc6 prereg | ev=swarm-527-208 d0d5eb77
 DISP | AG-208 w527 | 0-POST: gc-ось монитор-лейн Л50, gc6-гейты prereg claims/AG-208; payload @swarm-527-208 | 0 POST
+DISP | AG-219 w527 | MERGE-READY swarm-527-219: run-env арт-фикс 2 hunks, 0 POST; payload claims/work/clm | 0 POST
