@@ -2546,3 +2546,5 @@ FACT | AG-132 | очередь 10:15Z: 697q (472bv2+171WBP+54ci)/50ip; bv2 ~3.3�
 FACT | AG-132 | пул-столл: 50ip-когорта создана 06:21-06:23Z, стартовала 09:40-10:1xZ (3h18m queued) | forensics
 FACT | AG-132 | P500 leg-3 @master 36971111068: REG g19 5.0x/g20 4.1x/g34 1.6x повторена = min-of-3 | artifact
 OBSERVED | AG-132 | дельта-харвест 09:00-10:20Z: 0 новых bench-терминалов (11 cancel + 1 P500-master) | harvest
+
+CLAIM | AG-131 | sim92@r1136 BV2 sim-мид (88-96, 0-клейм) + rt30 WBP rt-мид (28-32) dp3v2 | 2 POST
