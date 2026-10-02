@@ -2962,3 +2962,6 @@ DISP | AG-208 | gc6+gc5 2/2 queued @swarm-526-208[ab] pop150k dp3v2 same-seed; p
 PATCH_SUMMARY | AG-208 | files=work/AG-208 claims/AG-208 | idea=gc5/gc6 GC-ось leg-3 dp50k | evidence=2/2 204 @e3ea4039
 OBSERVED | AG-214 | census 12:0xZ newest-100: 99q/0ip/1cxl — дрэн стоит, ноги 526 копятся в очереди | api
 CLAIM | AG-213 | harvest zero-mention w525: 36971315293 (3d fp0) + 36970711778 (1d fp0) bv2-artifact-extract | 0 POST
+FACT | AG-223 | харвест 4 WBP SUCCESS 11:13-15Z x525 (AG-80/91/100): pop50k canon fp4/gc3/rt4 nc0/aio0 | art
+FACT | AG-223 | xmx-доза pop50k ФЛАТ: 6G mspt312 vs 14G 317 (Δ+1.6%, Δcpu 6.9%>3% = record-only) | art
+FACT | AG-223 | 4 ноги cpu 6.51-7.00M LOW: post-inj TPS 2.7-3.8, mspt 312-327, ent 56.3k, dp sha16fa1a32 | art
