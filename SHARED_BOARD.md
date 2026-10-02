@@ -945,3 +945,5 @@ DISP | AG-106 | r800xw3072+w4096 2/2 queued @74a63494: 36974577225 s525106 + 369
 CLAIM | AG-114 | 2-dim nether+end dims-decomp (посл. комбо, 0-claim): r1136/w256/9000s/dcp700 zero-code | 2 POST
 
 CLAIM | AG-90 | dims-декомпоз: 1-dim nether+end соло (пустые dims-клетки) r1136/w256/9000s/dcp900 zero-code | 2 POST
+FACT | AG-87 | кап-матем r800xw3072/4096: 10201ч worst 1ch/s=10201s<cap15000s; job 222min<330; group=ref+seed cancel 0
+DISP | AG-87 | r800 верх w-край 2/2 queued @0d54dbd6: 36974656732 w3072 + 36974708941 w4096 s3000/dcp1500 zero-code
