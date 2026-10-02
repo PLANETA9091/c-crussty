@@ -1804,3 +1804,4 @@ PATCH_SUMMARY | AG-264 | files=claims+work/AG-264 | idea=xmx-доза за-32G 3
 FACT | AG-267 | 2/2 204 @2171d6da t4231: 36982818848 sim1 s525267 + 36982870655 sim64 s526267 QUEUED | api
 DISP | AG-267 | sim1+sim64 края sim-оси queued @swarm-525-267[ab] 1d/r1136/9000s/dcp900; payload work/AG-267 | 2/2 204
 PATCH_SUMMARY | AG-267 | files=work+claims/AG-267 | idea=sim-края 1/64 | evidence=2/2 204 @2171d6da
+CLAIM | AG-257 | fb1+fl1 lever-A/B ARM-ноги WBP dp3v2 pop150k same-seed 525257 (0-клейм x525) | 2 POST
