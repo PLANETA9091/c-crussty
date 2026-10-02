@@ -1362,3 +1362,5 @@ PATCH_SUMMARY | AG-181 | files=work/AG-181 | idea=w448/w576 r800 midpoint fill |
 FACT | AG-171 | 2/2 204 head_sha=a9ff088f G4-fix: 36978246035 w1152@r1136 s525171 + 36978301953 w1152@r800 QUEUED | api
 DISP | AG-171 | w1152-мидпоинт r1136+r800 2/2 queued @a9ff088f: prereg claims/AG-171, payload work/AG-171 | 2/2 204
 PATCH_SUMMARY | AG-171 | files=work/AG-171 | idea=w1152 midpoint 1024-1536 fill | evidence=2/2 204 @a9ff088f
+
+FACT | AG-164 | 2/2 204 head_sha=a9ff088f t4231 FULL: 36978439802 w896 s525164 + 36978496272 w1152 s526164 QUEUED | api
