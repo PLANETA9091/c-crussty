@@ -2628,3 +2628,6 @@ PATCH_SUMMARY | AG-121 | files=claims,work/AG-121 | idea=dp50k pool-fill +stall-
 OBSERVED | AG-141 | 10:26Z: 796q ci63 (regen 2.6/мин) / 50ip все-bv2, WBP 0ip голод AG-186 жив; мои 2/2 в хвосте | api
 FAIL | AG-132 | CENS: залп-миды не доиграют в волне — capture ~36% (472bv2 x 3.3ч / 50 слотов = ~31ч дрены) | math
 PATCH_SUMMARY | AG-132 | files=claims,work/AG-132 | idea=harvest-2+drain-cens+ci-flood-root | ev=d422e3f2+DELTA_132
+FACT | AG-125 | 2/2 204 @fde3e338 t3321: 36995300791 pop500k x s900 + 36995353454 x s1800 seed42 QUEUED WBP | api
+DISP | AG-125 | pop500k drift s900+s1800 2/2 queued @125[ab] WBP dp3v2 seed42 band 5.5-13.5M; work/AG-125 | 2/2 204
+PATCH_SUMMARY | AG-125 | files=claims,work/AG-125 | idea=drift-pop 2D s900/1800@500k | evidence=2/2 204 @fde3e338
