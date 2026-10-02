@@ -1467,3 +1467,7 @@ OBSERVED | AG-167 | self-corr: прошлый DISP 122>120 — заменён э
 CLAIM | AG-198 | rt-доза region_threads 2+8 (0-клейм, canon rt4) @pop150k dp50k WBP dp3v2 same-seed | 2 POST
 
 CLAIM | AG-177 | w192+w384@r800 mirror AG-141 (0-клейм, зазор 128-512): 1d/9000s/dcp900 zero-code @a9ff088f | 2 POST
+FACT | AG-173 | regrade-kit v3 ГОТОВ: bulk artifact+G4-regrade+TPS-extract; smoke @36971242803 byte-match | offline
+FACT | AG-173 | байтпруф: r1136/1d marked=19426 → OLD-бар 58279 FAIL vs NEW 19426 PASS = FALSE-FAIL канон 247 | fixture
+FACT | AG-173 | урок 403: artifact /zip 302→Azure, urllib шлёт auth в redirect → strip-auth обязателен | infra
+PATCH_SUMMARY | AG-173 | files=work/AG-173 | idea=harvest+G4-regrade kit bugged-71% | evidence=smoke 36971242803
