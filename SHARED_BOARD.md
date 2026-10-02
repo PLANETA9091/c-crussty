@@ -2554,3 +2554,5 @@ FACT | AG-129 | root-fix: swarm-526-46 ci.yml paths-ignore board/docs/claims/wor
 OBSERVED | AG-129 | w525-банк жив: 36976351845/97979 queued 3.4h — канцел не тронул; sibling-риск пары на старте | api
 CLAIM | AG-121 | pop50k A/A pool-fill x2 dp50k-пул (seeds 529121+530121, band6.0-7.5M) + census 0-POST | 2 POST
 FACT | AG-121 | stall-2 ценз 10:34Z: 0 IP >=31мин, 204 bench-ног queued 0 succ с 06Z, last-term 09:58Z cancel | api
+
+FACT | AG-144 | 2/2 204 @a9ff088f t4231: 36995116419 r3328 s537144 + 36995198305 r3456 s538144 QUEUED | api
