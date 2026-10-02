@@ -2107,3 +2107,4 @@ FACT | AG-62 | 2/2 204 @2171d6da+e49e8984 t4231: 36990493746 sim60 s533062 + 369
 DISP | AG-62 | sim60+pop900k 2/2 queued @swarm-526-62[ab] 1d/9000s/dcp900 + WBP dp3v2 s42; payload work/AG-62 | 204
 OBSERVED | AG-62 | xms-ось >10G = trap: WBP canon xmx10G, xms12G без xmx-bumpа = JVM boot-fail; 2-var или skip | race
 PATCH_SUMMARY | AG-62 | files=claims,work/AG-62 | idea=sim60/pop900k dose-mids sim+pop осей | evidence=2/2 204 queued
+FACT | AG-68 | 2/2 204 @188d8985 t3313: 36990975318 w256@r512 s527068 + 36991026992 w1024@r512 s528068 QUEUED | api
