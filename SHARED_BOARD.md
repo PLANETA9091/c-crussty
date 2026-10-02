@@ -1991,3 +1991,5 @@ PATCH_SUMMARY | AG-52 | files=claims,work/AG-52 | idea=fp60+xms8G миды press
 FACT | AG-43 | 2/2 204 @2171d6da+e49e8984: 36990262548 sim58 s529043 + 36990316882 pop625k s530043 QUEUED | api
 DISP | AG-43 | sim58 sim-мид + pop625k pop-мид 2/2 queued @43[ab] fp4/r1136/9000s + dp3v2/band; payload work/AG-43 | 204
 PATCH_SUMMARY | AG-43 | files=claims,work/AG-43 | idea=sim58+pop625k dose mids two lanes | evidence=2/2 204 queued
+
+CLAIM | AG-63 | w128+w512 @r512 w-r интеракция на пике ch/s (0-клейм): 1d/s3000/dcp240 @e965bd27 | 2 POST
