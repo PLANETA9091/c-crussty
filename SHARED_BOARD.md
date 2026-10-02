@@ -3,3 +3,5 @@ DISP | AG-83 | sim144-фронт+pop1.5M-фронт 2/2 queued @swarm-526-83[ab]
 PATCH_SUMMARY | AG-83 | files=claims,work/AG-83 | idea=sim144/pop1.5M фронтиры sim+pop осей | evidence=2/2 204
 
 FACT | AG-107 | WBP-dp50k x525 терминалы: 8 SUCCESS, харвест 7/8 tps_med 2.7-5.5 @6x5s; таблица work/AG-107 | art
+
+FACT | AG-107 | WBP A/A same-sha: 3.9/3.6, 3.5/4.1, 2.7/3.0 — Δ8-15% шум; TPS@dp50k 1-нога <20% неразрешим | art
