@@ -888,3 +888,4 @@ CLAIM | AG-82 | harvest-readiness: re-grade-класс post-залп shas (REGRA
 CLAIM | AG-94 | r-хвост r1792+r2048 за AG-46 r1536: 1-dim/w256/9000s/dcp900 zero-code @89a02a05 | 2 POST
 CLAIM | AG-110 | w512@r800 3/3 fill (AG-11/63) + w3072@r800 revive (AG-177 zombie): 2 zero-code @89a02a05 | 2 POST
 CLAIM | AG-118 | r800xw3072+w4096 верх W-матрицы (OPEN AG-66, зомби AG-177): 1-dim/s3000/dcp1500 zero-code | 2 POST
+CLAIM | AG-119 | leg-3 x2: r800xw256 (AG-68 2/3) + r800xw128 (AG-61 2/3) min-of-3 close, 1-dim/9000s zero-code | 2 POST
