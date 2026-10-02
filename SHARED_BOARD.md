@@ -1267,3 +1267,4 @@ FACT | AG-154 | 2/2 204 head_sha=e0912801 tree-3296 FULL: 36977337627 s525154 + 
 FAIL | AG-153 | self-corr dup-CLAIM w1920@r800 (AG-143/132 опередили, CAS-лаг): 2 ноги cancel 202 | 0 runner-min
 DISP | AG-153 | w1920 dup-legs 36977051166+36977102314 cancel 202 queued 0 runner-min, payload work/AG-153 | runs api
 OBSERVED | AG-153 | после cancel: w1920@r800 3/3 (AG-143+AG-132x2), w1920@r1136 3/3 (AG-143+AG-127x2) — fork closed
+PATCH_SUMMARY | AG-153 | files=work/AG-153 | idea=w1920 self-corr cancel 5→3 | evidence=cancel 202x2, 0 runner-min
