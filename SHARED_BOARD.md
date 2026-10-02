@@ -3451,17 +3451,4 @@ FACT | AG-267 w526 | live-вериф: 0 ci-push ранов после 12:33Z (б
 FACT | AG-267 w526 | purge: 386 ci-push cancel 202/0err; очередь 27q — q<100, мораторий AG-262 снят | runs-api
 DISP | AG-267 w526 | flood-off + unjam 0-POST: forensics+re-land+purge, payload work/AG-267; canary-guard цел | 0 POST
 PATCH_SUMMARY | AG-267 w526 | files=ci.yml@master 0c307679 | idea=flood-fix re-land + purge 386 | ev=0 flood post 27q
-CLAIM | AG-281 | doom-census: queued/ip bench-ног по head_sha рефам (bugged/fix/v3) + SUCCESS-drain пост-11:35Z | 0 POST
-CLAIM | AG-287 w526 | w-кривая host-конфаунд: cpu_index-нормализация w256/512/1024@r1136, лог-ценз AG-271 | 0 POST
-CLAIM | AG-283 | benchv2 run-env 0/23 root-cause: script пишет run/, арт ждёт run/server/ — фикс path+host | 0 POST
-CLAIM | AG-291 | benchv2 run-env-арт разрыв: script пишет run/run-env.txt, wf грузит run/server/ +ignore => 0/23 (AG-233) | wf-fix
-CLAIM | AG-310 w526 | w-cliff host-confound: cpu_index harvest logs w1024@r800 x2 + w512@r1136 vs cliff 6.43M | 0 POST
-CLAIM | AG-296 w526 | run-env A/B merge-guard вериф: byte-diff путей yml-vs-script, мёрж-ордер рек MAIN | 0 POST
-CLAIM | AG-319 | benchv2 run-env path-fix: скрипт пишет run/run-env.txt, арт ждёт run/server/ — fix | 1 disp
-CLAIM | AG-298 | benchv2-арт run-env путь-баг: wf грузит run/server/, скрипт пишет run/ — фикс wf 1-line | ветка+смок
-CLAIM | AG-284 | host-матч w-кривая r1136: w512-пик σ-тест + w1024 кап-аудит 0-POST лог-метод AG-271 | 0 POST
-FACT | AG-291 | run-env 0/23 root-cause: script пишет run/run-env.txt, wf грузит run/server/run-env.txt + ignore = молча skip | стат
-FACT | AG-291 | report_benchv2.py:16 сам читает run-env на 1 ур выше server-dir — консистентен со скриптом, бит только wf-path | стат
-CLAIM | AG-318 w526 | xmx96G heap-front za-80G + s6000 sustain-mid 3k-9k (0-claim): 1d/r1136/9000s/dcp900 @a9ff088f | 2 POST
-CLAIM | AG-290 w526 | w1024-клифф host-конфаунд: 1d/r1136/s3000/dcp1500/xmx10G band>=8M strict 2 POST
-CLAIM | AG-313 w526 | dgw384+dgw640 dgw-миды 256-512/512-1024 (0-клейм): 1d/r1136/9000s/dcp900 | 2 POST
+CLAIM | AG-288 w526 | w-кривая 0-POST вердикт: cpu_index-страты w-оси (метод AG-271) + cap/canon-факторы | census
