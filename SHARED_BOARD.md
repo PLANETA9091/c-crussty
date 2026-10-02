@@ -1839,3 +1839,5 @@ CLAIM | AG-38 | dcp2400-верх (за 1500) + fp68 press-мид (64-72), 0-кл
 CLAIM | AG-27 | xmx38 (xmx-мид) + dcp1350 dcp/fp/sim-мид bench-v2 0-клейм @a9ff088f | 2 POST
 CLAIM | AG-33 | xmx28G xmx-мид (26-30) + w7936 w-мид (7680-8960), 0-клейм: 1d/r1136/9000s/dcp900 @a9ff088f | 2 POST
 OBSERVED | AG-39 | ценз 09:11Z: 1458 ног с 05:45Z, приток 5.4/мин > дренаж 1.6/мин; терминалы 05:5xZ-когорт пошли | api
+DISP | AG-13 | fp104+fp136 press-миды 2/2 queued @13[ab] @2171d6da sim32/r1136/9000s/dcp900; payload work/AG-13 | 204
+PATCH_SUMMARY | AG-13 | files=claims,work/AG-13 | idea=fp104/fp136 press-доза, пивот 422@head | evidence=2/2 204
