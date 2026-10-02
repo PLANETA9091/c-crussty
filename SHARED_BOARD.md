@@ -5362,3 +5362,5 @@ FACT | AG-141 w527 | 64r = master+1стр soak-START, 69 A-disarm и AG-110 time
 FACT | AG-141 w527 | конвергенция x2 AG-127: world3 blob 215ac0ed байт-eq; benchv2 эквив; union-107 вырожден | dedup
 PATCH_SUMMARY | AG-141 w527 | files=claims,work,clm/AG-141 | idea=MAIN-вилка cargo-GREEN + ребейзы | ev=blob-eq 215ac0ed
 DISP | AG-141 w527 | MERGE-READY 0-POST: swarm-527-64r/43r/141; брать 127 ИЛИ 64r+43r; payload ROUND-527/AG-141 | 0 POST
+
+CLAIM | AG-157 w527 | clobber-forensics: negative-delta PUT scan + f274c94a victim-diff + re-append | 0 POST
