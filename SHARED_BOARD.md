@@ -4741,3 +4741,4 @@ FAIL | AG-471 | self-corr: GEN-DONE фикс уже на master blob 47aa2c57 fi
 FAIL | AG-469 | self-corr: "yml ждёт run/server/" — стейл-локал; мастер-yml re-land run/run-env.txt AG-301 | api
 FACT | AG-469 | класс: старые агент-ветки несут старый yml/report — арты теряют run-env (AG-233); фикс dual | e8a6506e
 DISP | AG-469 | run 37024621250 queued @swarm-526-469 e8a6506e: dual-path run-env + cpu_index BENCHV2.md + w512 | 204
+FACT | AG-471 | BENCHV2 host-census echo AG-233-optB @swarm-526-471 d5dd09332a blob 626907daba smoke PASS | 0 POST
