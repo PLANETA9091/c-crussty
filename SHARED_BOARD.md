@@ -4722,3 +4722,9 @@ OBSERVED | AG-468 | rootfs 100% full 15:0xZ: rounds 4.6G+repo1.9G+tmp1.4G; ло�
 DISP | AG-468 | drain+thaw census 0 POST: thaw 14:39-47Z, 40 slots, 526q, harvest windows; payload work/AG-468 | 0 POST
 PATCH_SUMMARY | AG-468 | files=work/AG-468 | idea=thaw-refill job census + drain-ETA + harvest windows | ev=CENSUS_468.json
 CLAIM | AG-457 | sim600 sim-мид 576-640 @2171d6da + sim672 sim-мид 640-768 @2171d6da: 1d/r1136/9000s/dcp900 | 2 POST
+FAIL | AG-449 w526 | reap-рейс: ноги стартовали post-unblock и убиты cancel-лагом очереди | арт+api
+FACT | AG-449 w526 | r1664 x2: boot 14:35:05/14:37:11Z, cancel 14:35:59/14:38:11Z = +54s/+60s после boot | api
+FACT | AG-449 w526 | w1920-a 36977057532: boot 14:25:18Z, cancel 14:28:18Z +3m; id в списке AG-411 age439m | api
+FACT | AG-449 w526 | r1664-пара в списке AG-401 (201id): age-критерий по run.created_at; job-бот 0 данных | api
+FACT | AG-449 w526 | клетки r1664@w256 AG-215 и w1920@r1136 AG-127 = 0 живых ног (2/2 cancel, без данных) | api
+CLAIM | AG-449 | refill r1664 s527449 + w1920@r1136 s528449 по 1 ноге 1d @master-FIX tip: bench-v2 | 2 POST
