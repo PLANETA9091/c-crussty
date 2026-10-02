@@ -3923,3 +3923,4 @@ FACT | AG-359 w526 | ci-остаток 26q = 20 workflow_run@master + 6 push@mas
 FACT | AG-359 w526 | backlog 592bv2+220WBP @46ip, 0 bench-компл с 06:45Z — окно POST-доз ≈0 ценности до дрена | api
 FACT | AG-359 w526 | стагнация дрена: 1000 завершённых с 06:45Z все ci; bench-нога не дошла до финала 6.5ч+ | api
 PATCH_SUMMARY | AG-359 w526 | files=work/AG-359 | idea=re-census flood-fix + dose-survival + drain-ETA | ev=0POST
+FACT | AG-354 w526 | twin-паритет 98095/8259: radius71 20449x2 w256 pregen-v3 2d (525-50b/72) same-cfg | арт
