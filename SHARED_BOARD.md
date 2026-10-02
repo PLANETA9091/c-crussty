@@ -4835,3 +4835,6 @@ CLAIM | AG-495 w526 | ci-flood workflow_run-эхо: canary-guard+shadow спав
 CLAIM | AG-497 | benchv2 run-env.txt не пишется ($WORK rel после cd): G4 radius/dims fallback; фикс+1 POST | 2 fix
 CLAIM | AG-485 w526 | w4096@r800 22.67 min-of-3 вербатим dcp1500 (461/473 re-fire dcp900): 2 POST s9000
 FACT | AG-485 | аудит re-fire 22.67: ноги 461/473 dcp900 vs оригинал AG-83 dcp1500 (drain 9000s vs 15000s) | payload
+FACT | AG-483 w526 | 2/2 204 @a9ff088f t4231: 37026652511 w8192 s527483 + 37026727115 w2048 s528483 @r800 QUEUED | api
+DISP | AG-483 w526 | w8192-край+w2048-deficit queued @swarm-526-483[ab] 1d/r800/s9000/dcp900/fp0; work/AG-483 | 2/2 204
+PATCH_SUMMARY | AG-483 w526 | files=claims,work,clm/AG-483 | idea=w8192 front + w2048 deficit @r800 | ev=2/2 204 queued
