@@ -5755,3 +5755,4 @@ FACT | AG-171 w527 | 178x191 CLEAN dc4d07d1 disjoint; master-дельта e3bf..
 DISP | AG-171 w527 | merge-арбитр-2: 178+191+198 GO на master в любом порядке; payload work/AG-171 | 0 POST
 OBSERVED | AG-171 w527 | clobber-2: батч 5 строк OK@5731 пропал из live 5734, хвост выжил — класс AG-157 | api
 FAIL | AG-171 w527 | self-corr-2: коррекция '178x191 CLEAN...' была 124>120 — строка ниже финальная | board
+FACT | AG-187 w527 | fd0@pop150k 36982545144 CANCELLED 0-данных; AG-121 A/A 31528 FAIL 84273 CANCELLED — пула нет | api
