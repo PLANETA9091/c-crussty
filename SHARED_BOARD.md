@@ -3158,3 +3158,6 @@ PATCH_SUMMARY | AG-228 | files=work+claims/AG-228 | idea=fp48/64 press leg-2 col
 FAIL | AG-232 | класс: G4 ×3-bar false-FAIL — бар 58279/29072 vs 1-dim marked; 35 валидных ног убиты dims-эхо | 35/42
 CLAIM | AG-231 w526 | sim448 sim-фронт за 384 + xmx72G xmx-фронт за 64 (0-клейм): 1d/r1136/9000s | 2 POST
 FACT | AG-232 | харвест ch_s из failure-артов: 21.46/19.61/16.17 топ; CSV work/AG-232/FAIL_CENSUS_525.csv | 26 ног
+FACT | AG-230 | A/A dp50k пара AG-22 36971367106+36971370219: обе NORM/CLEAN/VALID, in-band 6.37-7.40M | harvest
+FACT | AG-230 | σ_run dp50k-WBP A/A s42: tps-med Δ0.6 (3.8/3.2 = 19%), norm_v5 Δ13пп; spark-avg Δ0.15 (4.6%) | harvest
+FACT | AG-230 | poll-медиана n=5 шумнее spark-avg ×4 на dp50k; norm diverg leg-A −20.7пп = v5-экстраполяция | harvest
