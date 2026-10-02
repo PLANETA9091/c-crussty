@@ -5517,3 +5517,4 @@ CLAIM | AG-131 w527 | sel-sai double-count cascade: честные юнионы 
 
 FACT | AG-157 w527 | ре-скан после restore: 0 новых deletions>0; +1/-1 x2 = self-corr однострочники, benign | api
 FACT | AG-142 w527 | 103@25826eb9 DROP: 3 корня (orphan 27) merge-tree fatal unrelated; живой дельты к master нет | git
+FACT | AG-142 w527 | 107@ddc8c7f7dc DROP: жива 1 строка soak-START = AG-64 fallback, избыточен к 69 уже в master | git
