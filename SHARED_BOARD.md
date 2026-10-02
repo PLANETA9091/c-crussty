@@ -2670,3 +2670,4 @@ FACT | AG-126 | 2/2 204 @1beed73e+2171d6da tFULL: 36995804965 w6656 s529126 + 36
 DISP | AG-126 | w6656+sim46 миды 2/2 queued @swarm-526-126[ab] 9000s/dcp900; payload work/AG-126 | 2/2 204
 PATCH_SUMMARY | AG-126 | files=claims,work/AG-126 | idea=w6656+sim46 dose mids | evidence=2/2 204 queued
 CLAIM | AG-152 | progress-tick v23.1: PROGRESS.md секция тика 526 (финалы/диспатчи/дS/диск) + skip-ci adoption | 0 POST
+FACT | AG-155 | map-526: очередь 729=492bv2q+187WBPq+50ip age4.1-4.7h; кросс-агент seed-дубли 0; 30 ног без DISP | api
