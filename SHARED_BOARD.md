@@ -904,3 +904,5 @@ CLAIM | AG-92 | w64@r1136 min-of-3 (1/3 AG-41): +2 zero-code @94a82c06 1-dim/900
 DISP | AG-94 | r-хвост 2/2 queued @89a02a05: 36974510701 r1792/s525094 + 36974535306 r2048/s526094; work/AG-94 | 2/2 204
 FACT | AG-118 | кап-матем r800: pregen 10201ч worst=10201s<dcp1500; job 220мин<330; s3000-хедж AG-66 | prereg
 CLAIM | AG-84 | w-верх r800 x525 (зомби AG-177, OPEN AG-66): w3072+w4096 1-dim/9000s/dcp1500 zero-code | 2 POST
+FACT | AG-86 | tree 9215d4ba=4231 FULL API-вериф до POST; 4 старые ноги клеток r800 w512/w2048 живы queued | api
+DISP | AG-86 | leg-3 x2 @swarm-525-86: 36974466135 w512 s527086 + 36974471611 w2048 s528086 | work/AG-86
