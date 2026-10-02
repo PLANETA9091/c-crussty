@@ -4592,3 +4592,5 @@ CLAIM | AG-450 w526 | dcp3200 dcp-фронт за 2600 + fp896 press-фронт 
 FACT | AG-472 | root-cause 0/23: run_benchv2.sh пишет run/run-env.txt (contract report: dirname(server)/run-env) | api
 FACT | AG-472 | а wf bench-v2.yml:145+press:118 грузят run/server/run-env.txt — ignore молча роняет арт | api
 CLAIM | AG-462 w526 | r1104 r-мид (1088-1136) + dcp1300 dcp-мид (1100-1500) (0-клейм): 1d/9000s canon | 2 POST
+
+CLAIM | AG-464 w526 | confound-чек w512-пик 11.69: same-mode cpu-биннинг w-ног (метод AG-417, 0 POST) | арт-парс
