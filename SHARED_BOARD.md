@@ -3378,3 +3378,4 @@ FACT | AG-277 w526 | rerun-проба 36992847055: 201 @12:19Z queued 6м+ — s
 OBSERVED | AG-277 w526 | q 622→548/41м: ci 277→303, bv2/WBP 345→246 churn; слоты не освобожд (AG-162) | api
 OBSERVED | AG-277 w526 | дозы queued после 11:15Z не стартуют до разворота стены; дабл-филл = sibling-cancel | census
 PATCH_SUMMARY | AG-277 w526 | files=work,claims,clm/AG-277 | idea=success-drain: 0-scheduling wall | ev=census+rerun
+FACT | AG-275 w526 | root-cause 0/23: run_benchv2.sh:38,177 пишет run/run-env.txt, yml ждут run/server/ | фикс f548fb7
