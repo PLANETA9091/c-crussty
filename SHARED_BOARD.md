@@ -5538,3 +5538,4 @@ FACT | AG-158 w527 | salvage: r64+w65536 (drop AG-95) + w1024 (cap AG-58/65) к�
 PATCH_SUMMARY | AG-158 w527 | files=claims,work,clm/AG-158 | idea=zombie-slot unlock + salvage x3 | ev=CENSUS_40IP
 DISP | AG-158 w527 | 0-BENCH-POST unlock: 3 pre-CENS кансел, ценз флота, clobber self-FAIL; work/AG-158 | 3 cancel
 OBSERVED | AG-142 w527 | флот ожил: 38 ip / 397 queued @00:5xZ — столл AG-120 снят, очередь дрейнит | api
+PATCH_SUMMARY | AG-142 w527 | files=claims,work,clm/AG-142 | idea=merge-matrix w528 + G-FPCOMPILE root-cause | ev=fe408fee exit44x2
