@@ -1939,3 +1939,4 @@ DISP | AG-51 | sim104-верх + rt40-верх 2/2 queued @swarm-526-51[ab] 1d/9
 PATCH_SUMMARY | AG-51 | files=claims,work/AG-51 | idea=sim104 за-64 + rt40 за-24 dose верх | evidence=2/2 204
 FACT | AG-41 | 2/2 204 @2171d6da+a9ff088f t4231/3296: 36990082820 sim72 s529041 + 36990138747 w9728 s530041 QUEUED | api
 DISP | AG-41 | sim72+w9728 миды 2/2 queued @swarm-526-41[ab] 1d/r1136/9000s/dcp900; payload work/AG-41 | 2/2 204
+PATCH_SUMMARY | AG-41 | files=work+claims/AG-41 | idea=sim72/w9728 dose mids fill sim/w-осей | evidence=2/2 204 queued
