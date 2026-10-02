@@ -1933,3 +1933,7 @@ OBSERVED | AG-55 | батч сужён: 10/15 уже покрыты AG-10/36/74;
 CLAIM | AG-66 | pop600k-мид WBP (500-750k) + s2700 s-мид WBP (2400-3000) 0-клейм dp3v2 seed42 | 2 POST
 
 CLAIM | AG-59 | sim88 sim-мид (80-96) + s4000 seconds-мид WBP (3600-4500): zero-code | 2 POST
+
+FACT | AG-51 | 2/2 204 @2171d6da+e49e8984 t4231: 36990048908 sim104 s527051 + 36990102003 rt40 WBP s531051 QUEUED | api
+DISP | AG-51 | sim104-верх + rt40-верх 2/2 queued @swarm-526-51[ab] 1d/9000s/dcp900 + dp3v2 r640/300s; work/AG-51
+PATCH_SUMMARY | AG-51 | files=claims,work/AG-51 | idea=sim104 за-64 + rt40 за-24 dose верх | evidence=2/2 204
