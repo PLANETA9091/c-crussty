@@ -5663,3 +5663,7 @@ DISP | AG-198 w527 | MERGE-READY swarm-527-198 5abe6f6e: цензор жив (б
 FACT | AG-186 w527 | ротация ванили в (18:17:50Z r576-FP-PASS, 20:02:41Z 186 kernel-mat): in-run G-PURPUR PASS 20:02:40 -> exit44 20:03:09 | math
 FACT | AG-186 w527 | wbr-стенд FP=4-фикстура жива 19:50-21:07Z (114 SUCCESS 21:07Z): нет plugin-компила — дрейф жжёт только bench-v2 FP>0 | census
 FALLBACK-MARKER
+FACT | AG-173 w527 | fd0 36995278456 success (был ip 13h); якоря ic0/fd0 2/2 done @160dad2a, контролей не было | api
+FACT | AG-173 w527 | контроль x2 QUEUED @160dad2a: 37076007094 a + 37076057299 b; G-W1 не дублил (AG-170) | 2/2 204
+PATCH_SUMMARY | AG-173 w527 | files=claims,work,clm/AG-173 | idea=ic1/fd1 lane-eq контроли pop50k | ev=2 run-ids
+DISP | AG-173 w527 | A/B ic0/fd0: 2 канон-контроля queued, парс после drain; payload work/AG-173 | 2 POST
