@@ -5571,3 +5571,4 @@ CLAIM | AG-193 w527 | вериф G-FPCOMPILE фикса swarm-527-159: лока�
 CLAIM | AG-196 w527 | Л141-фикс-вилка-1: сплит L27 set-uo+unset-санация run_world3.sh, bash -u аудит | 1 POST
 CLAIM | AG-191 w527 | Л141-deep: run_world3.sh glued-====set: полный unset/pipefail-аудит 972 строк master 930941e0, рис
 CLAIM | AG-185 w527 | gates-аудит MERGE-READY 159: фикс уже в master 58fa2c0c? javac-компил vs e2992d63 + G1/G2 | 0 POST
+CLAIM | AG-182 w527 | Л141-глю-фикс: run_world3.sh set-uo-pipefail отлепить + аудит unset/pipefail-сайтов restore-v4 | 0 POST
