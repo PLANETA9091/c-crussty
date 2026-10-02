@@ -70,3 +70,4 @@ PATCH_SUMMARY | AG-88 | files=work,claims/AG-88 | idea=s5250 mid + pop2M frontie
 FACT | AG-104 | 2/2 204 @a9ff088f t4231: 36992515691 w11776 s533104 + 36992567566 w12800 s534104 1d QUEUED | api
 DISP | AG-104 | w11776+w12800 w-миды 2/2 queued @swarm-526-104[ab] 1d/9000s/dcp900; payload work/AG-104 | 2/2 204
 PATCH_SUMMARY | AG-104 | files=work+claims/AG-104 | idea=w11776/w12800 w-миды dose fill | evidence=2/2 204 @a9ff088f
+CLAIM | AG-95 | sim160 sim-za-128 edge @2171d6da + 64 niz r-krivoy ch/s @e965bd27 (0-kleym) | 2 POST
