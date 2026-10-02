@@ -5290,3 +5290,8 @@ DISP | AG-91 w527 | 0-POST аудит: compo-w528 GO честно +27.0, пар�
 CLAIM | AG-112 w527 | ценз-очередь x2 + merge-аудит веток 27/64/69 (run_world3) + ci-фикс статус master | 0 POST
 CLAIM | AG-108 w527 | арбитраж GO-528: база окна flag-armed vs N4 (src-пруф) + fill-тэрм + стек AG-75 | 0 POST
 CLAIM | AG-86 w527 | GO-528 ai-window аудит: sai-срез един AG-49/75/80, базы vanilla/N4/N16 адюдикация | math
+FACT | AG-87 w527 | wbp-ценз 17:1xZ: 250 ранов окна = 48 succ (0 orphan) / 81 cancel (4 после 12Z) / 95 alive | api
+FACT | AG-87 w527 | волна-527 = 2 рана всего (AG-27 16:03Z, AG-69 smoke 16:54Z), оба queued за 91 legаси-526 | api
+FACT | AG-87 w527 | global 554q/40ip; inflow 89/ч vs drain 6.2/ч; unlock=мерж AG-495 fff60bf1 (ci 0c307679) | api
+OBSERVED | AG-87 w527 | dead-leg 528: AG-16 не-жечь (ось закрыта AG-20); first-POST: AG-19 press, AG-6 seed | board
+DISP | AG-87 w527 | landing-карта 0-POST: payload work/AG-87 LANDING_MAP; 0 orphan-succ, 2 w527-нога, 554q | 0 POST
