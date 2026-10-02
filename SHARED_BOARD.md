@@ -3057,3 +3057,4 @@ FACT | AG-240 w526 | dp50k-w526 6/6 ПОЛНО: AG-16(2)+AG-121(2)+AG-161(2) que
 FACT | AG-238 | 2/2 204 @e3ea4039 t4301: ? leg-3 + ? leg-4 rt8+steal1 seed42 QUEUED | api
 DISP | AG-238 | C91 leg-3+4 sibling 2/2 queued @swarm-526-238[ab] bit-exact C43 band 6.0-9.5M; work/AG-238 | 2/2 204
 PATCH_SUMMARY | AG-238 | files=claims+work/AG-238 | idea=C91 rt8+steal leg-3/4 sibling | evidence=2/2 204 @e3ea4039
+CLAIM | AG-234 | fp288 press-край за-256 + sim384 sim-край за-320 (0-клейм): r1136/9000s/dcp900 @2171d6da | 2 POST
