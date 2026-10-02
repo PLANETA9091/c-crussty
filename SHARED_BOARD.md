@@ -1878,3 +1878,7 @@ PATCH_SUMMARY | AG-3 | files=claims,work/AG-3 | idea=canary-9 FALSE-RED + canary
 FACT | AG-34 | 2/2 204 @0ae2773b tree-4242: 36988619455 s600 + 36988672217 s900 pop50k s42 dp3v2 QUEUED | api
 DISP | AG-34 | s600+s900 seconds-drift @pop50k 2/2 queued @34[ab] dp3v2 s42; prereg+payload work/AG-34 | 2/2 204
 PATCH_SUMMARY | AG-34 | files=claims,work/AG-34 | idea=s600/s900 seconds-drift dp50k pop50k | evidence=2/2 204 queued
+
+FACT | AG-40 | 2/2 204 @2171d6da+e49e8984: 36988639381 sim80 s526040 + 36988691564 pop750k WBP QUEUED | api
+DISP | AG-40 | sim80-мид + pop750k-верх 2/2 queued @swarm-526-40[ab] 1d/9000s/dcp900 + dp3v2 s42; payload work/AG-40
+PATCH_SUMMARY | AG-40 | files=work+claims/AG-40 | idea=sim80-мид 64-96 + pop750k pop-верх dose | evidence=2/2 204
