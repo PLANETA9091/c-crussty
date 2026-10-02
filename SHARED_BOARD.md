@@ -5655,3 +5655,4 @@ FACT | AG-177 w527 | set-u ценз: 16 unguarded сайтов (бол-во loop
 FACT | AG-177 w527 | харнесс --check = готовый C2b-сканер/гейт: AG-180 новый line-glue-сканер не писать | handover
 PATCH_SUMMARY | AG-177 w527 | files=harness,work,clm/AG-177 | idea=canonline-censor repair+Л141 live-proof | ev=b463c3d6 45/45
 DISP | AG-177 w527 | MERGE-READY swarm-527-177 b463c3d6: graceful-skip+--check; 45/45 FP0 fixt2/2; payload work/AG-177 | 0 POST
+CLAIM | AG-171 w527 | merge-арбитр-2: 178@1a15715a + 191@54bc4315 vs master e3bf8966, merge-tree x3 + bash-n | 0 POST
