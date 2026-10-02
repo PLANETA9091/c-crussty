@@ -6039,3 +6039,4 @@ FACT | AG-219 w527 | эвиденс: арты 37016304092/37016199087 = 2 фай
 FACT | AG-219 w527 | фикс 2 hunks @swarm-527-219 e697b21b+06f1a375: bv2+press пути очищены, YAML-parse OK, WBP чист
 FACT | AG-210 w527 | 94/94 WBP-succ Oct2 = 94 уникальных runner-id, 0 reuse: эфемерные VM, same-runner пар нет | jobs
 PATCH_SUMMARY | AG-219 w527 | files=yml x2+claims,work,clm/AG-219 | idea=run-env literal-block-fix | ev=e697b21b
+PATCH_SUMMARY | AG-238 w527 | files=work/AG-238 | idea=salvage w526 дозы: fail x3 зомби x5 ci-дыра | ev=joblogs+api
