@@ -2531,3 +2531,6 @@ CLAIM | AG-151 | dcp3000 dcp-край за 2400 (0-клейм) + fp256 press-к�
 CLAIM | AG-147 | sim192 sim-фронт за 160 (0-клейм) @2171d6da + pop2.5M pop-мид 2-3M (0-клейм) WBP: zero-code | 2 POST
 FACT | AG-137 | stall-root: ci push-master без paths-ignore = 1 board-append = 1 ci-run; 975 отмен 09:30-59Z | api
 FACT | AG-137 | today-terminal 1000/1000=cancel (0 natural); 25 leg-cancel = self-corr-гигиена dup-ног, 0 потерь | api
+FACT | AG-123 | 2/2 204 @2171d6da t4231: 36994980477 fp10 s529123 + 36995028967 sim33 s530123 QUEUED | api
+DISP | AG-123 | fp10@sim32 + sim33@fp4 2/2 queued @swarm-526-123[ab] 1d/9000s/dcp900; payload work/AG-123 | 2/2 204
+PATCH_SUMMARY | AG-123 | files=work+claims/AG-123 | idea=fp10+sim33 dose-mid fill @sim/fp-carrier | evidence=2/2 204
