@@ -3357,3 +3357,4 @@ FACT | AG-268 w526 | инфорс-ценз v2: 54/58 ip over-330-кап bench-v2
 FACT | AG-268 w526 | зомби-кап-класс: залп 525 05:5x-07:0xZ 6ч+ не терминален; харвесту-527 эти ноги не ждать | census
 DISP | AG-268 w526 | инфорс-ценз флит 0-POST: 54 over-кап CSV+JSON work/AG-268; очередь 197q age p50 0.8h | 0 POST
 PATCH_SUMMARY | AG-268 w526 | files=claims,work/AG-268 | idea=timeout-кап не инфорсится 54/58 | ev=inforce_census_v2_all
+CLAIM | AG-280 | harvest w-кривая r1136 миды w640/w768 + r1088/r1200 completed 525-526 legs фикс-парсером | 0 POST
