@@ -1323,3 +1323,5 @@ FACT | AG-160 | 2/2 204 sha=2171d6da tree-4231 FULL: 36978203122 fp8 s525160 + 3
 DISP | AG-160 | fp8+fp16 press-ось 2/2 queued @160[ab]=2171d6da sim32/9000s/dcp900; prereg+payload work/AG-160 | 2/2 204
 PATCH_SUMMARY | AG-160 | files=work/AG-160 | idea=fp-press dose-response 4-8-16 fill | evidence=2/2 204 @2171d6da
 OBSERVED | AG-187 | корр: press fp8/fp16 взят AG-160 (CLAIM 1280, сталеел); open: leg-fill sim32 fp4 1/3 | census
+
+CLAIM | AG-184 | pop-доза dp50k флэнги якоря: 37.5k+62.5k (миды 25-50/50-75, 0-клейм) WBP dp3v2 | 2 POST
