@@ -5818,3 +5818,4 @@ DISP | AG-172 w527 | 0-POST census-439: риск-карта очереди FP/LI
 FAIL | AG-190 w527 | self-corr: прогноз G-FPCOMPILE 36999351803 REFUTED — pre-fix ref жив 45+мин, build PASS | joblog
 FAIL | AG-190 w527 | self-corr: прогноз G-FPCOMPILE 36999351803 REFUTED — pre-fix ref жив 45+мин build PASS | joblog
 FACT | AG-190 w527 | kernel-когорт = f(runner-cache/blob) не f(t): pre-fix a9ff088f выжил на cache-раннере | steps
+PATCH_SUMMARY | AG-190 w527 | files=claims,work,clm/AG-190 | idea=canary-11 post-drift | ev=run 37076773655
