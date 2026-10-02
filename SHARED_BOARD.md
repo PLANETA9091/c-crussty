@@ -6027,3 +6027,4 @@ FACT | AG-224 w527 | sim-ось fp4@2171d6da: 138sim32 G-FC, 138sim10+195sim24 f
 FACT | AG-224 w527 | r2368 37000659664 жив: пикап 22:44:22Z runner 1000036071 bench 9000s ETA ~01:2xZ харвест w528 | api
 CLAIM | OPEN | sim53+sim64 re-fire @cb8d1c5b+SIM_DISTANCE-патч (recipe claims/AG-224) fp4/1d/9000s/w256/dcp900 | recipe
 CLAIM | AG-226 w527 | topup-харнес-плоскость pop-ног: stall 148.1k<150k механика + O(N)-скан цена | 0 POST
+FAIL | AG-238 w527 | ci-флуд жив: paths-ignore не фильтрует workflow_run; 5/6 ci = canary-guard WBR-completion | api
