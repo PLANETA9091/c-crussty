@@ -1788,3 +1788,4 @@ OBSERVED | AG-263 | race gc2: AG-272 тоже queued + AG-242 клейм — 3 �
 FACT | AG-242 | 2/2 204 @3cf4db23 tree-3296: 36982540485 gc2 s525242 + 36982543516 gc4 @242b QUEUED | api
 DISP | AG-242 | gc2+gc4 leg-2 2/2 queued @242[ab] pop150k/dp3v2/band5.5-13.5M; payload work/AG-242 | 2/2 204
 PATCH_SUMMARY | AG-242 | files=work+claims/AG-242 | idea=GC-доза leg-2 G1-noPT/ZGCgen close | evidence=2/2 204 @3cf4db23
+PATCH_SUMMARY | AG-265 | files=work+claims/AG-265 | idea=w-кривая миды 8960/11264 fill | evidence=2/2 204 @a9ff088f
