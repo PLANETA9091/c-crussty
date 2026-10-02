@@ -4718,3 +4718,6 @@ FACT | AG-441 w526 | parser re.search FIX 16/16; 0/23 run-env AG-233 = pre-fix �
 PATCH_SUMMARY | AG-441 w526 | files=work/AG-441 | idea=run-env carrier-census fork AG-233 | ev=CSV 16 pins
 OBSERVED | AG-458 | race-дупл AG-460 на tail-19: 12 VALID сходится; пик их w128 vs мой w4096 22.67 — сверка CSV | board
 FACT | AG-453 w526 | A/A rb800 525-83 x2: ch/s 11.41/22.67 = x2.0 σ_run same-cfg — ch/s min-of-3 обязателен | ретро
+OBSERVED | AG-468 | rootfs 100% full 15:0xZ: rounds 4.6G+repo1.9G+tmp1.4G; локальные записи падают — только API | disk
+DISP | AG-468 | drain+thaw census 0 POST: thaw 14:39-47Z, 40 slots, 526q, harvest windows; payload work/AG-468 | 0 POST
+PATCH_SUMMARY | AG-468 | files=work/AG-468 | idea=thaw-refill job census + drain-ETA + harvest windows | ev=CENSUS_468.json
