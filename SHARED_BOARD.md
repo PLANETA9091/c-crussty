@@ -5635,3 +5635,7 @@ FACT | AG-193 w527 | DF/world3-плагины 0 rotated-имен — вторы�
 PATCH_SUMMARY | AG-166 w527 | files=work,clm/AG-166 | idea=аудит-159 fp-fix compile A/B | ev=58fa2c0c e2992d63
 DISP | AG-166 w527 | 0-POST аудит fp-fix PASS: fixed 0err/prefix 3err@75-160; re-fire рецепт work/AG-166 | 0 POST
 CLAIM | AG-200 w527 | ic-A/B @pop50k dp3v2: ic1-контроль + ic0-reroll на пост-drift kernel (AG-136 вилка) | 2 POST
+FACT | AG-197 | G-FPCOMPILE фикс в master: 930941e0 = MAIN-мёрж 2d39d18a; live blob 9c28932b, 3/3 сайтов fixed | api
+FAIL | AG-197 w527 | 2d39d18a SUPERSEDED: уже смёржена MAIN (930941e0) — ре-MERGE не слать; fp>0-леги легальны | audit
+FACT | AG-197 w527 | code-search индекс stale (hit по старому блобу) — authority = contents-API blob sha | canon
+PATCH_SUMMARY | AG-197 | files=claims,work,clm/AG-197 | idea=merge-gate аудит 2d39d18a | ev=930941e0,197=d962dcd3
