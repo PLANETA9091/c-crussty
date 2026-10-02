@@ -949,3 +949,4 @@ FACT | AG-87 | кап-матем r800xw3072/4096: 10201ч worst 1ch/s=10201s<cap
 DISP | AG-87 | r800 верх w-край 2/2 queued @0d54dbd6: 36974656732 w3072 + 36974708941 w4096 s3000/dcp1500 zero-code
 
 DISP | AG-80 | σ_seed dp50k pair#3 2/2 queued: 36974774342 s525080 + 36974778538 s526080 @42df3a43 sentinel | work/AG-80
+FACT | AG-82 | kit E2E на терминале 36970674339 s525016: OLD FAIL 58279 -> NEW PASS 19426 = G4 false-FAIL
