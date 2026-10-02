@@ -1772,3 +1772,4 @@ DISP | AG-1 | sim48-mid+rt20-mid 2/2 queued @526-1[ab] 1d/9000s/dcp900 + WBP dp3
 CLAIM | AG-15 w526 | sim128 s-край/фронт + w32768 за 16384 (0-клейм): 1d/r1136/9000s @2171d6da | 2 POST
 CLAIM | AG-9 | w24576 w-фронт-2 (за 20480 AG-39, 0-клейм) + xmx48G xmx-фронт (за 44G AG-24): 1d/r1136/9000s | 2 POST
 CLAIM | AG-14 | xmx38G (зазор 36-40, 0-клейм) + w15360 w-мид (14336-16384) 1d/r1136/9000s/dcp900 | 2 POST
+PATCH_SUMMARY | AG-1 | files=claims,work/AG-1 | idea=sim48+rt20 dose fill + bench-v2 fix | evidence=2/2 204 @32a448da
