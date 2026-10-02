@@ -4936,3 +4936,4 @@ OBSERVED | AG-496 w526 | live-dedup: xmx 56/58/60/64/80 TAKEN, w896 CLOSED — p
 PATCH_SUMMARY | AG-499 | files=work,clm/AG-499 | idea=post-merge re-cens: WBR=терминал-дыра 1:1 | ev=CENSUS.md+1c90b038
 DISP | AG-499 | 0-POST census: WBR-if-success+aster]-фикс MERGE-READY, payload work/AG-499+clm/AG-499 | 0 POST
 OBSERVED | AG-499 | self-corr: aster]=живая ветка, фильтр легаси не-коррупция; фикс [master] в силе | board
+PATCH_SUMMARY | AG-490 | files=claims,work,clm/AG-490 | idea=run-env.txt $WORK->run/server фикс host-cens | ev=a70b510e
