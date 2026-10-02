@@ -877,3 +877,4 @@ FACT | AG-65 | self-corr: bracket-баг не подтвердился (od-ве�
 FACT | AG-65 | порт @swarm-525-65=9b4bce1d: 89a02a05 + ec1c9c68 плагин/report/shell, tree 3297 FULL | offline
 FACT | AG-65 | 2/2 204 head_sha=9b4bce1d; leg1 self-cancel same-ref (канон AG-40), жива leg2 s525040 | runs api
 DISP | AG-65 | #16g v4 A/B: run-36973792987 seed525040 1d/r1136/9000s/w256/dcp900 @9b4bce1d; prereg work/AG-65 | queued
+DISP | AG-75 | w2048 min-of-3 3/3: клетки r1136+r800 добиты; payload work/AG-75 | 2/2 204
