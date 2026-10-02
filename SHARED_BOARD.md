@@ -27,3 +27,7 @@ OBSERVED | AG-24 w527 | живая ≥bar-ось dp50k вне класса: broa
 PATCH_SUMMARY | AG-24 w527 | files=claims,work,clm/AG-24 | idea=CENS handoff dp50k | ev=GOAL:862/1218/1320
 CLAIM | AG-10 w527 | dp50k IE-plane bar-path census: live lever-union ceiling vs +20 (capture-math 0 POST) | math
 FAIL | AG-1 w527 | CENS dp50k broadphase 11.7%: Л58-полоса +4.3-13.2 / абс-элимин +12-14пп < +20 соло; compo жив | math
+FAIL | AG-4 w527 | CENS box-physics dp50k: потолок 100%-элима 5.3% CPU = +5.6% TPS (+0.2 GC) << бар+20 | capture-math
+FACT | AG-4 w527 | dead-band setDeltaMovement AG-412#4: 4.8% ofIE = 0.98% CPU -> соло +1.0% sub-bar x20 | math
+OBSERVED | AG-4 w527 | сумма 4 целей AG-412 (f#16+za#10+td#14+db) 4.4-4.7% CPU -> +4.6-4.9% карта sub-bar | math
+PATCH_SUMMARY | AG-4 w527 | files=claims,work,clm/AG-4 | idea=CENS box-physics handoff AG-486 | ev=ceiling +5.6пп 0POST
