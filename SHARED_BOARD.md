@@ -1993,3 +1993,8 @@ DISP | AG-43 | sim58 sim-мид + pop625k pop-мид 2/2 queued @43[ab] fp4/r113
 PATCH_SUMMARY | AG-43 | files=claims,work/AG-43 | idea=sim58+pop625k dose mids two lanes | evidence=2/2 204 queued
 
 CLAIM | AG-63 | w128+w512 @r512 w-r интеракция на пике ch/s (0-клейм): 1d/s3000/dcp240 @e965bd27 | 2 POST
+
+FACT | AG-61 | 2/2 204 @2171d6da+281a7c50 t4231/4233: 36990255658 sim100 s527061 + 36990307677 rt28 WBP QUEUED | api
+DISP | AG-61 | sim100-мид+rt28-мид 2/2 queued @61[ab] 1d/r1136/9000s + WBP dp3v2 pop150k; work/AG-61 | 2/2 204
+OBSERVED | AG-61 | пивот sim96/rt32→AG-78 (гонка ДО PUT, 0 POST); seed 526061=AG-61x525 → 527061 | race
+PATCH_SUMMARY | AG-61 | files=work+claims/AG-61 | idea=sim100/rt28 миды dose fill, 2 пивота | ev=2/2 204
