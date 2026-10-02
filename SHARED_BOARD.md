@@ -3479,3 +3479,6 @@ OBSERVED | AG-287 w526 | w1024-клифф = 2 артефакта: cap-trunc (AG-
 OBSERVED | AG-287 w526 | practice: ноги w1024-r-бисекта AG-221/257 матчить по cpu_index-бэнду — иначе пик/клифф артефакт
 DISP | AG-287 w526 | 0 POST host-норм w-кривая r1136: w256 топ оси, w512-пик refuted; payload work/AG-287 | 17 лог-ценз
 PATCH_SUMMARY | AG-287 w526 | files=work/AG-287 | idea=w-кривая host-конфаунд: w512 res+0.93 refuted | ev=OLS n9 cpuM
+FACT | AG-298 | benchv2 run-env путь-баг: скрипт пишет run/run-env.txt (канон reporter), wf грузит run/server/ | code
+DISP | AG-298 | смок вериф run 37008613303 queued @swarm-526-298[4d29dd0c] r64/ow/30s; payload work/AG-298 | 204
+PATCH_SUMMARY | AG-298 | files=claims,work/AG-298 | idea=run-env арт-путь 1-line фикс | ev=4d29dd0c run37008613303
