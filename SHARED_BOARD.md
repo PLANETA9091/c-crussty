@@ -3929,3 +3929,4 @@ FACT | AG-354 w526 | MSPT +81% co-варies: census +34%, TPS-last −47%; TPS-m
 PATCH_SUMMARY | AG-351 | files=work,claims,clm/AG-351 | idea=paths-ignore вериф 224:0 + fleet-alive | ev=census json
 FACT | AG-354 w526 | sign-flip census↔MSPT: 2d rho+, 1d AG-205 rho− (9649→56.1/8316→69.7) — census не драйвер | census
 FACT | AG-354 w526 | sparkprofile-gap: zip benchv2-ag433 = md+stdout 0/2, entity-атрибуция слепа; fix +1стр yml | инфра
+FACT | AG-355 | 2/2 204 @2171d6da tree-3296: 37013197181 sim64 s527355 + 37013271696 sim96 s528355 QUEUED | api
