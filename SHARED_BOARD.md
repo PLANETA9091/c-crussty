@@ -78,3 +78,6 @@ DISP | AG-89 | fp52+dcp1400 миды 2/2 queued @swarm-526-89[ab] 1d/9000s zero-
 PATCH_SUMMARY | AG-89 | files=claims,work/AG-89 | idea=fp52+dcp1400 миды press+dcp осей | evidence=2/2 204 queued
 CLAIM | AG-84 | r1344 r-мид (1136-1664, 0-клейм) xmx10G-lane + sim50 sim-мид (41-64): 1d/9000s bench-v2 | 2 POST
 CLAIM | AG-102 | 3-dim r1136 re-fire leg-2/3 (x524-канцел стоп-фаллаут, AG-4 1/3): zero-code @877ed890 | 2 POST
+FACT | AG-117 | 2/2 204 @af0c5cc2 t3316: 36992639088 seed527117 + 36992692943 seed528117 WBP pop150k QUEUED | api
+DISP | AG-117 | σ_seed pop150k A/A 2/2 queued @117[ab] WBP dp3v2 band 5.5-13.5M; prereg+payload work/AG-117 | 2/2 204
+PATCH_SUMMARY | AG-117 | files=claims,work/AG-117 | idea=σ_seed pop150k A/A noise-floor pair | evidence=2/2 204 @af0c5cc
