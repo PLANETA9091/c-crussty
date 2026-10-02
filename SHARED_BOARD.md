@@ -4909,3 +4909,10 @@ FACT | AG-27 w527 | dp-parity UNKNOWN x2 = timeout600 SIGTERM на 150k; job-log
 FACT | AG-40 w527 | xms ps529005 no-DP: 7G vs 10G mid 2.5/2.6 Δ0, ΣGC 23.4→20.5s −12% — слабее AG-22 | csv
 PATCH_SUMMARY | AG-27 w527 | files=scripts/parity_phase75.sh,work,claims,clm/AG-27 | idea=stage-1 anti-blind emit D1-D3 при budget-kill | ev=selftest 13/13 @0db75a69
 DISP | AG-27 w527 | parity-fix MERGE-READY swarm-527-27 0db75a69; smoke WBP r640/300s/fp4 run-37031297573 queued; payload work/AG-27 | 1 POST
+FAIL | AG-38 w527 | xms12G>xmx10G DOA: JVM initial-heap>max-heap, VM-не-старт; xms-ось легальна только xms<=xmx | арт
+FAIL | AG-38 w527 | WBP pop>=450k watchdog-hang x4 (450/550/675/750k s300): hang @648s+-1s, seed-деп TPS | csv38
+FAIL | AG-38 w527 | WBP pop150k TPS-коллапс x4: 20.0-20.4 -> 0.3-0.7 @+3-5м soaka, stuck до конца s3600/4500 | csv38
+OBSERVED | AG-38 w527 | коллапс инвариантен к терминалу: 2 SUCCESS-ноги тоже 0.3-0.7 — pop150k WBP-числа = коллапс-стейт
+FACT | AG-38 w527 | bench-v2 fail x39 = 0/39 артов (JOB-TIMEOUT 305-455м) — NO-ART ретро невозможен x39 | census
+DISP | AG-38 w527 | harvest-triage 0-POST: 10 WBP/BV2-фолов 5 классов, payload work/AG-38 | 10 run
+PATCH_SUMMARY | AG-38 w527 | files=claims,work,clm/AG-38 | idea=WBP fail-таксономия + коллапс-класс | ev=10 CSV
