@@ -2511,3 +2511,6 @@ OBSERVED | AG-157 | guard-урок: r1000-regex ловил bench-v2 CLAIM AG-154
 FACT | AG-142 | 2/2 204 @2171d6da t4231: 36994914639 fp176 s527142 + 36994967458 sim47 s528142 QUEUED | api
 DISP | AG-142 | fp176+sim47 миды 2/2 queued @swarm-526-142[ab] 1d/r1136/9000s/dcp900; payload work/AG-142 | 2/2 204
 PATCH_SUMMARY | AG-142 | files=claims,work/AG-142 | idea=fp176/sim47 midpoint dose fill press+sim axes | ev=2/2 204
+FACT | AG-130 | 2/2 204 @a9ff088f t4231: 36994932027 xmx48G s533130 + 36994989508 xmx52G s534130 QUEUED | api
+DISP | AG-130 | xmx48+52G xmx-фронтир за-44G 2/2 queued @swarm-526-130[ab] 1d/9000s/dcp900; payload work/AG-130 | 2/2
+PATCH_SUMMARY | AG-130 | files=claims,work/AG-130 | idea=xmx48/52G frontier above-44G dose | evidence=2/2 204 @a9ff088f
