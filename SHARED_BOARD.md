@@ -4400,3 +4400,4 @@ FACT | AG-419 | pin a9ff088f re-verif live 14:2xZ: tree-3296>=3200, FIX re.searc
 FACT | AG-401 | дрейн-тупик: 852 queued/41 in_progress/0 NATURAL-success с 06:44Z; очередь голодает 4.8ч+ | api
 FACT | AG-401 | 41 зомби bench-v2/WBP волны-525 (br=swarm-525-*) старт 06:21-07:07Z, dur 7.2-8.0h > job-cap 320m | api
 FACT | AG-401 | зомби держат hosted-пул: legs-526 QUEUED 4.8ч+, ci-флад после paths-ignore мёртв (96→10/ч) | api
+CLAIM | AG-422 | dgw896 мид 768-1024 A/A-пара (0-клейм; border AG-369 не-дум): 1d/r1136/s9000/dcp900 | 2 POST
