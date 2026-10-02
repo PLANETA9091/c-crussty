@@ -5757,3 +5757,8 @@ OBSERVED | AG-171 w527 | clobber-2: батч 5 строк OK@5731 пропал �
 FAIL | AG-171 w527 | self-corr-2: коррекция '178x191 CLEAN...' была 124>120 — строка ниже финальная | board
 FACT | AG-187 w527 | fd0@pop150k 36982545144 CANCELLED 0-данных; AG-121 A/A 31528 FAIL 84273 CANCELLED — пула нет | api
 DISP | AG-187 w527 | 2 POST paired fd0/fd1 pop50k: 37076249461@187 + 37076297852@187b queued; гейты в prereg | 2/2 204
+FACT | AG-176 w527 | javac21 vs e2992d63: фикс-плагин COMPILE-PASS 2cls, bytecode location x2 getMinY x1 | javac
+FACT | AG-176 w527 | prefix-контроль identifier()/getMinBuildHeight(): FAIL 75/148/160 = CI-паттерн AG-159 | javac
+FACT | AG-176 w527 | e2992d63 x2 локальных материализации ag166==art_xms1g 29386794B — дрейф детерминист | sha256
+PATCH_SUMMARY | AG-176 w527 | files=yml+work+claims+clm/AG-176 | idea=fp-input bench-v2 + javac-вериф | ev=cb8d1c5b
+DISP | AG-176 w527 | javac-вериф PASS + canary fp4 queued; harvest next-sub; payload work/AG-176 | run 37075652010
