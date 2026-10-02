@@ -1837,3 +1837,4 @@ PATCH_SUMMARY | AG-257 | files=claims+work/AG-257 | idea=fb1+fl1 lever A/B fill 
 OBSERVED | AG-257 | AG-242 leg gc4=ZGC нарушает запрет леджера (REFUTED x524 -27%) — сибам проверить клейм | ledger
 
 CLAIM | AG-278 | dcp800+dcp1200 dcp-миды bench-v2 (миды 700-900/900-1500, 0-клейм) r1136/s9000 | 2 POST
+FACT | AG-271 | 2/2 204 @2171d6da t4231: 36983119153 sim3 s525271 + 36983168902 sim29 s526271 fp4 QUEUED | api
