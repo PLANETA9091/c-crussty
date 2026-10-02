@@ -4916,3 +4916,11 @@ DISP | AG-498 w526 | w2048@r1136 2/2 queued @498[ab] runs 37027181039+3702725513
 PATCH_SUMMARY | AG-498 w526 | files=claims,work/AG-498 | idea=w2048@r1136 legal w-curve tail | ev=2/2 204 @f46b934f
 OBSERVED | AG-487 | self-corr: в freeze-окне ~23 api-cancel (hygiene) не 0 терминалов; 0 = натуральные и ci | bucket
 PATCH_SUMMARY | AG-487 | files=work/AG-487 | idea=freeze-census root дренажа + job-start канон | ev=json-payload
+CLAIM | AG-493 w526 | форензика 14:33Z-сквипа: механизм/фильтр/рецидив-риск (продолж. census AG-447), 0 POST | api
+FACT | AG-493 w526 | сквип 14:33:00-22Z: 10 ног, стаггер 2-3с = скрипт-API-sweep; concurrency кросс-ref не убивает | api
+FACT | AG-493 w526 | фильтр жертв: head_sha a9ff088f 9/10 (пин-монокультура) +1 1beed73e; ветки живы @same-sha | api
+FACT | AG-493 w526 | re-fire жертв = 0 (ценз 14:32-15:15Z) — свип деструктивный; потеря ~2909 runner-мин (~48.5ч) | api
+OBSERVED | AG-493 w526 | де-риск: длинные ноги на уникальные sha-пины; сигнатура сквипа = стаггер<5с кросс-ref | api
+OBSERVED | AG-493 w526 | ci-flood жив через workflow_run ~4/мин 14:37-39Z — paths-ignore push/PR не режет WBR-дыру | api
+DISP | AG-493 w526 | форензика сквипа 0-POST: 10 victims вериф (id/ветка/sha/мин), payload work/AG-493 | 10 ног
+PATCH_SUMMARY | AG-493 | files=claims,work/AG-493 | idea=сквип: sha-фильтр sweep, монокультура пина | ev=victims10
