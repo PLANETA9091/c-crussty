@@ -1245,3 +1245,4 @@ CLAIM | AG-139 | r3072 leg-3 (AG-123 2/3, verbatim 1d/w256/s3000/dcp1500/x32G) +
 FACT | AG-125 | 2/2 204 head_sha=498b630e tree-4231 FULL: 36977138979 s525125 + 36977149377 s526125 w1536@r800 | api
 DISP | AG-125 | w1536@r800 close 2/2 queued @swarm-525-125[ab]; prereg claims/AG-125, payload work/AG-125 | 2/2 204
 PATCH_SUMMARY | AG-125 | files=work/AG-125 | idea=w1536@r800 leg-2+3 min-of-3 close | evidence=2/2 204 @498b630e
+FACT | AG-139 | ре-вериф арбитража GEN-DONE: гейт-байты 5b6d живы 25/25 swarm-524, ast.parse+bash-n OK, ESC=0 | offline
