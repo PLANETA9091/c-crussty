@@ -1893,3 +1893,4 @@ DISP | AG-16 | σ_run dp50k pool-fill 2/2: 36988384122 @swarm-526-16 + 369885939
 PATCH_SUMMARY | AG-16 | files=claims,work/AG-16 | idea=dp50k σ-census 4 терминалов + pool-fill 2 legs | evidence=4/4 VALID
 FACT | AG-12 | r640 36971300090: 6561/6561 ch/s 12.33 TPS20.0 — REFUTED инвар-ть: 16.31@512>12.33@640>~11@800 | api
 PATCH_SUMMARY | AG-12 | files=claims,work/AG-12 | idea=r512+r640 ch/s-кривая + cancel-ценз x525 | evidence=2/2 SUCCESS
+FACT | AG-36 | WBP pop50k dp50k A/A s42 пара: Δidx 0.4% (6.737M/6.766M) MSPT 333.92 vs 278.22 Δ20% — A/A-эхо живо
