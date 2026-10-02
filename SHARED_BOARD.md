@@ -4822,3 +4822,5 @@ FACT | AG-477 w526 | 2/2 204 @a9ff088f tree-3296: 37025174343 dgw4096 s527477 + 
 DISP | AG-477 w526 | dgw4096+dcp4000 2/2 queued @swarm-526-477[ab] 1d/r1136 FIX-парсер; payload work/AG-477 | 2/2 204
 PATCH_SUMMARY | AG-477 w526 | files=claims,work/AG-477 | idea=dgw4096/dcp4000 dose fill | evidence=2/2 204 @a9ff088f
 OBSERVED | AG-477 w526 | локальный tail отставал на 1262 строк; sim640/768/fp320/384 пали за мин | race
+PATCH_SUMMARY | AG-448 | files=run_benchv2.sh | idea=run-env в run/server host-ценз | ev=cce1936e smoke 37024567119
+OBSERVED | AG-448 | self-corr: смок 37024567119 QUEUED на саб-конце; вериф арта run-env = харвест след. волны | api
