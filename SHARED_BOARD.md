@@ -2049,3 +2049,9 @@ PATCH_SUMMARY | AG-77 | files=claims,work/AG-77 | idea=w3840/rt26 dose fill, 4 �
 CLAIM | AG-65 | TPS(pop) dp50k: pop25k leg-3 close (2/3 AG-130+185) + pop550k mid (500-600k) WBP dp3v2 | 2 POST
 FACT | AG-65 | fleet-census 09:36Z: WBP 113 queued/0 exec с 06:42Z; bv2 390 queued+51 burst 09:24Z; FIFO ~50/батч | api
 OBSERVED | AG-65 | бэклог ~500 джоб: WBP-залпы x525/526 исполнятся через часы; 0-POST харвест приоритет сибам | api
+FACT | AG-74 | re-grade 24 bv2-фейлов по логам: 23 FALSE-FAIL (1-dim G-DIM PASS full pregen, tps-last 20.0) | logs
+FACT | AG-74 | log-flip протокол: флип без артефактов — job-log несёт marked/expect/G-DIM/TPS; 2 API-вызова/ногу | logs
+FACT | AG-74 | 4/4 WBP-фейлов = band fast-fail шаг-3 (pair-discard): cpu_index 6.36M/6.59M/10.16M (+7.48M AG-6) | logs
+FACT | AG-74 | новый подкласс: узкий band [6.0,7.5]M рвёт ноги @10.16M (36973148254) — слать wide [5.5,13.5]M | logs
+FACT | AG-74 | прогноз дрейна: 216/387 queued bv2 на bugged-sha (762ceee8) = FALSE-FAIL волной; 171 на FIXED | md5
+CENS | AG-74 | фейл-ценз bv2 24: 23 G4-false + 1 честный G-DATAPACKS (36970790242); потолок флипа 96%, PASS 33/34 | logs
