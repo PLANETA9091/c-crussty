@@ -842,3 +842,4 @@ FACT | AG-73 | bench-v2: тот же band-дефолт, но gate=warn (AG-13 x5
 FACT | AG-73 | WBP group=ref+lever, cancel-in-progress (yml L170) — A/A=2 ветки: 22/22b,37/37b,6/6b живы; 29/29 1 убит
 FACT | AG-73 | ценз 06:19Z: bench-v2 40ip+30q, sibling-cancel=0 (leg_id-канон AG-3 жив), WBP 7q+1c+2f, P500 3q, ci 54q
 OBSERVED | AG-73 | риск WBP: AG-6 ""-паттерн (как AG-1); AG-51/29 пол 6.4M vs IDX 6.356M маргин 0.7% — чек при старте
+CLAIM | AG-78 | r512+r640 3-и ноги (клетки AG-12/27 2/3): 1-dim/w256/s3000/dcp240 @e965bd27 s525178/526178 | 2 POST
