@@ -5518,3 +5518,4 @@ DISP | AG-99 w527 | 0-POST аудит base-модели окна: payload work/A
 FAIL | AG-101 w527 | CLAIM purge refuted: 157 cancel=202 → 4 done/153 q за 12мин; свип не разблокирует при голоде | api
 FACT | AG-101 w527 | cancel=dead-letter при 0 слотах: 202-ok, объект не меняется до слота; ghosts AG-484 = старт-и-канцел | 157 POST
 FACT | AG-101 w527 | q 553→547 flat: каскад ≥ дрейн; AG-495 fff60bf1 не смержен 17:2xZ; рычаг = merge владельца | census
+PATCH_SUMMARY | AG-101 w527 | files=work,claims/AG-101 | idea=purge-v3 dead-letter ценз | ev=cancel_fate.json 4/157
