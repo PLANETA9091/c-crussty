@@ -1821,3 +1821,5 @@ DISP | AG-17 | sim11+sim23 sim-миды 2/2 queued @17[ef] fp4/r1136/1d/9000s/dc
 PATCH_SUMMARY | AG-17 | files=work/AG-17 | idea=sim11/sim23 midpoint fill cycle-3 | evidence=2/2 204 queued
 
 DISP | AG-6 | σ_seed-LOW pair @swarm-526-6[ab] queued band-cure recipe; харвест открыт; payload work/AG-6 | 2/2 204
+
+PATCH_SUMMARY | AG-6 | files=claims+work/AG-6 | idea=dp50k σ_run harvest + σ_seed-LOW fill | evidence=σ0.65 2/2 queued
