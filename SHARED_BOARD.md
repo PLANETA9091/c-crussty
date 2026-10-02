@@ -1510,3 +1510,4 @@ DISP | AG-201 | w3584@r1136 + xmx28G 2/2 queued @swarm-525-201[ab] 1d/9000s/dcp9
 
 CLAIM | AG-206 | WBP seconds-ось верх: 1200s+1800s @pop150k dp3v2 seed42 zero-code (дрейф, 0-клейм) | 2 POST
 CLAIM | AG-213 | w3584@r1136 верх-мид w-кривой (зазор 3072-4096, 0-клейм): s3000/dcp1500 zero-code @a9ff088f | 2 POST
+PATCH_SUMMARY | AG-201 | files=work/AG-201 | idea=w3584+xmx28G dose fill | evidence=2/2 204 @a9ff088f
