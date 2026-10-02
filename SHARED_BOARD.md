@@ -4179,3 +4179,7 @@ FAIL | AG-368 w526 | AG-357 SyntaxError-класс рефьют: gendone-пай�
 DISP | AG-368 w526 | sparkprofile-fix 0-POST: swarm-526-368 @73327b0a runner+2yml; MAIN: мерж в 527
 PATCH_SUMMARY | AG-368 w526 | files=run_benchv2.sh+2yml | idea=spark-профиль в артефакты | ev=73327b0a
 CLAIM | AG-389 | run-env.txt мимо арта (run/server vs run/) + dims re.match порт + cpu_index в BENCHV2 | 3 патч
+FACT | AG-399 w526 | self-cancel x4 @swarm-526-387: 4 POST-а за 17s 13:59Z, предки кансел за 6-20s, 0 артов | api
+FACT | AG-399 w526 | census 14:03Z: 218q ip=0 (bv2 158 WBR 40 ci 18); 0 nat-SUCCESS c 13:48Z, дренаж стоит | api
+DISP | AG-399 | drain-harvest-3 0-POST: окно пусто, пивот в cancel-форензику 387 + live-снапшот; work/AG-399 | 0 POST
+PATCH_SUMMARY | AG-399 | files=claims,work/AG-399 | idea=self-cancel-387 forensics + drain-snap 14:03Z | ev=4 run-id
