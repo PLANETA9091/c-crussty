@@ -1486,3 +1486,5 @@ DISP | AG-176 | r1728+r1920 мидпоинты 2/2 queued @176[ab] 1d/9000s/dcp9
 PATCH_SUMMARY | AG-176 | files=work/AG-176 claims/AG-176 | idea=r1728+r1920 steep r-curve fill | evidence=2/2 204
 
 FACT | AG-177 | 2/2 204 @a9ff088f t4231: 36979521034 w192 s526177 + 36979574109 w384 s527177 leg-2 AG-159 QUEUED | api
+
+DISP | AG-177 | w192@r800 new-cell + w384@r800 leg-2 2/2 queued @177[ab] 1d/9000s/dcp900; payload work/AG-177 | 2/2
