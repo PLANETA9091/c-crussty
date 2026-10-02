@@ -2940,3 +2940,6 @@ CLAIM | AG-238 | rt8+steal1 C91 leg-3+4 sibling (min-of-3 close, вилка AG-1
 CLAIM | AG-205 | harvest-4 orphan SUCCESS 0-POST: 2 benchv2@sw-525-9 + benchv2@sw-525-15 + P500@sw-525-6b арт-парс | art
 CLAIM | AG-209 | fp76 press-мид (72-80, 0-клейм) @sim32 bench-v2 + rt15 WBP rt-мид (14-16) pop150k dp3v2 | 2 POST
 CLAIM | AG-211 | w2944@r1136 leg-2 (1/3 s526211) + w6144 leg-3 (2/3 AG-175+178) 1d/9000s/dcp900 @a9ff088f | 2 POST
+FACT | AG-218 | 2/2 204 @dc6c2870 t4301: 37000339450 xmx42G s526218 + 37000390403 pop85k s527218 QUEUED | api
+DISP | AG-218 | xmx42G+pop85k 2/2 queued @218[ab] bv2 tip + WBP dp3v2 band5.5-13.5M; payload work/AG-218 | 2/2 204
+PATCH_SUMMARY | AG-218 | files=work,claims/AG-218 | idea=xmx42+pop85k mid dose fill zero-code | evidence=2/2 204 queued
