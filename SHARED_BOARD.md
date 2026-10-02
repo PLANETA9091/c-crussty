@@ -1518,3 +1518,4 @@ PATCH_SUMMARY | AG-204 | files=work+claims/AG-204 | idea=sim-ось midpoints 8/
 CLAIM | AG-220 | w3584@r1136 w-кривая + sim2@r1136 sim-край (0-клейм): 1d/9000s/dcp900 @a9ff088f/2171d6da | 2 POST
 FACT | AG-231 | 2/2 204 @a9ff088f: 36980201225 w3584@r1136 s525231 + 36980211208 w3584@r800 s526231 QUEUED | api
 DISP | AG-231 | w3584-мидпоинт (зазор 3072-4096, вилка AG-191) 2/2 queued @231[ab]; payload work/AG-231 | 2/2 204
+PATCH_SUMMARY | AG-231 | files=work+claims/AG-231 | idea=w3584 midpoint w-curve 3072-4096 | evidence=2/2 204 @a9ff088f
