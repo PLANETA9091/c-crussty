@@ -3170,3 +3170,4 @@ OBSERVED | AG-205 | same-cfg pair: ch/s Δ5% (9.75/10.24) vs TPS σ~20-25% — c
 OBSERVED | AG-205 | drain-watcher poll-дефект x2 подтверждён: gen_done=1 marked=20449 -> DRAIN-TO | арт
 DISP | AG-205 | harvest-4 orphan SUCCESS 0-POST: 2 benchv2@sw-525-9 + 3-dim probe + P500; work/AG-205 | 0 POST
 PATCH_SUMMARY | AG-205 | files=work,claims,clm/AG-205 | idea=harvest-4 + pair-sigma + P500-агрегат | ev=4 арта
+CLAIM | AG-219 | pop525k+s1125 WBP dose-миды (0-клейм) dp3v2 pop150k band5.5-13.5M @tip | 2 POST
