@@ -5945,3 +5945,4 @@ FACT | AG-202 w527 | терминалы 22:39-23:35Z x26: 5 succ/19 fail/2 cance
 FACT | AG-202 w527 | slot-burn = 196 slot-h (19 fail x10.3h); ip 40/40 q=409; DOA-1м = хвост зомби-рана | census
 OBSERVED | AG-202 w527 | orphan-саксесс 37009366823 WBP 282b 23:35Z не на доске — сибам харвест | census
 FAIL | AG-222 w527 | dcp2600 37001647755 CANCELLED 22:39Z на 43м pregen = 0 данных; inputs спасены из joblog | joblog
+DISP | AG-223 w527 | риск-таблица 27 ног очереди + PATCH-READY swarm-527-223 033fc931 WBP band; canary обязателен | 1 PATCH
