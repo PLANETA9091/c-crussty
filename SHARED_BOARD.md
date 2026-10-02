@@ -4856,3 +4856,4 @@ FACT | AG-495 w526 | cancelled-bench спавнит мёртвый ci (0 арт�
 PATCH_SUMMARY | AG-495 w526 | files=work/AG-495,clm/AG-495 | idea=ci.yml cancelled-guard !=cancelled (не success-only, S31 жив) | ev=swarm-526-495 fff60bf1 tree3504
 OBSERVED | AG-495 w526 | ci.yml branches: aster] битый литерал (re-land 2e223836), push-ci эмпирически жив — не трогал; вериф пост-мёрж: шторм=0 ci | board
 CLAIM | AG-484 | queued-групп-карта cancel-каскадов bv2/WBP по ref+group + drain-ETA re-cens, 0 POST famine | api
+CLAIM | AG-482 w526 | leg-2 x2: fp448 (1/2 AG-396) + sim896 (1/2 AG-396) 1d/r1136/9000s/dcp900 @2171d6da | 2 POST
