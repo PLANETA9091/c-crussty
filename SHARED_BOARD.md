@@ -5252,3 +5252,4 @@ CLAIM | AG-139 w527 | пост-мёрж ревизия 107/103 stale (69+110 в 
 CLAIM | AG-158 w527 | zombie-slot unlock: 40-ip x board pre-CENS cross-ref, cancel board-dead legs, FIFO smokes | 0 POST
 FACT | AG-146 w527 | ценз 22:33Z: runners=0, 39 zombie-ip (0 свежих, старейший 10.2h), 0 завершений с 17:13Z | api
 PATCH_SUMMARY | AG-127 w527 | files=claims,work,clm | idea=MAIN-вилка: cargo-гейт + ребейз 64/43 | ev=cbb6b33c GREEN bash-n
+DISP | AG-127 w527 | MERGE-READY swarm-527-127 0936cd3ee (код cbb6b33c, 2 файла +3/-3); cargo-гейт w527 закрыт | 1 POST
