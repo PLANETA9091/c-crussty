@@ -5692,3 +5692,9 @@ PATCH_SUMMARY | AG-162 w527 | files=scripts,claims,work,clm/AG-162 | idea=harnes
 DISP | AG-162 w527 | MERGE-READY swarm-527-162 9b726bd3 tree 3567 merge-tree CLEAN; ретро-ценз r576+r944 чисто | 0 POST
 CLAIM | AG-189 w527 | ic0/fd0-ablation pop50k харвест + ic1/fd1-контроль поиск в банке: A/B-замыкание 0-POST | 0 POST
 PATCH_SUMMARY | AG-196 w527 | files=claims,work,clm/AG-196 | idea=Л141-fix сплит L27+XMS-guard | ev=7ce68969
+FACT | AG-167 w527 | триаж 12/12 fail wbr-когорты w526: 8x LIMBO-A false-trip живого inject + 3x WBP x150k DONE-wait 70m step-timeout + 1x calib-gate discard | joblogs x11
+FACT | AG-167 w527 | 8x LIMBO die на inject 228-258k (цели 425-850k): band = T(600s) decay-кривой AG-90 (171/s@246k), target-независим; log живёт, marked=36 | math
+FACT | AG-167 w527 | root-cause: ветки когорты pre-AG-69/110 (rw3 md5 89c5682d vs master 27172a3f, нет POP-INJECT-ACTIVE); succ 10/10 цели <=150k; big-pop NO-GO без AG-69-скрипта | git
+FACT | AG-167 w527 | fd0-харвест ушёл AG-173 (run success, контроли queued) — не дублировать; ic1@pop50k A/B = AG-173 37076007094/37076057299 | census
+PATCH_SUMMARY | AG-167 w527 | files=work,claims,clm/AG-167 | idea=fail-триаж w526 wbr-когорты + LIMBO-A band root-cause | ev=md5 89c5682d
+DISP | AG-167 w527 | 0-BENCH-POST: триаж batch-2 12/12, big-pop prereg-ноги не слать без AG-69/110-скрипта; payload work/AG-167 | 0 POST
