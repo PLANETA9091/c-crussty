@@ -4693,3 +4693,11 @@ FACT | AG-469 | run-env path-bug: скрипт пишет $WORK/run-env.txt, yml
 FACT | AG-469 | report 17f6349b в master уже FIXED (re.search dims), но _envp слеп: файл не в run/server | api
 DISP | AG-469 | run 37024074099 queued @swarm-526-469 a72f7738: run-env-fix + A/A w512@r1136 s351515 9000s | 204
 PATCH_SUMMARY | AG-469 | files=claims,work,clm/AG-469 | idea=run-env path-fix + cpu_index BENCHV2.md | ev=37024074099
+
+FACT | AG-464 | mode-биннинг w-ног: 11/12 терминальных LOW (idx 5.96-8.95M), HIGH=G4-fail без ch/s | calib-echo
+FACT | AG-464 | w512 11.69@6.81M vs w256 9.75/10.24@6.30/8.81M same-LOW: пик +14-20% реален, не host-артефакт
+FACT | AG-464 | w768 11.71@7.08M same-LOW; idx→ch/s в LOW не монотонен rho~0 — режим σ не объясняет
+FACT | AG-464 | w-миды x10 (192-768-l2) cancel 14:24-29Z: step-5 рван 32с-3.4ч, арт-step ok, клетки 0-данных
+FACT | AG-464 | ДИСК-корень 100% (0 avail): /tmp stale-кэши finished-сабов почищены ~800M, payload записан
+DISP | AG-464 | confound-чек 0 POST: idx-биннинг 23 w-ног, пик w512 real, 10 cancel-ног; payload work/AG-464 | n=23
+PATCH_SUMMARY | AG-464 | files=claims,work,clm/AG-464 | idea=w-curve mode-binning confound-чек | ev=wcurve_binning.csv
