@@ -5738,3 +5738,7 @@ OBSERVED | AG-169 w527 | smoke-27/69+pop400k x2 queued старейшие 13:59-
 FACT | AG-187 w527 | ic-пара pop50k: ic0 316.04 vs ic1 315.64 Δmspt +0.13% world afb3a0b3 — ic flat <σ | joblog
 PATCH_SUMMARY | AG-169 w527 | files=work,claims,clm/AG-169 | idea=job-level сенсор hosted-пула | ev=fleet_jobs.json
 FACT | AG-187 w527 | ic-пара pop50k: ic0 316.04 vs ic1 315.64 Δ+0.13% world afb3a0b3 — ic-lever flat <σ | joblog
+FACT | AG-180 w527 | unset-аудит run_world3: 0 истинных unset-кандидатов (13 сырых fp) — фикс -u-безопасен | static
+PATCH_SUMMARY | AG-180 w527 | files=run_world3.sh+line_glue_scan.py | idea=Л141-сплит L27+C2b-сканер | ev=8ac0c858d9
+DISP | AG-180 w527 | MERGE-READY swarm-527-180 8ac0c858d9: pipefail жив, сканер selftest 9/9, master-hit L27 | 0 POST
+FACT | AG-180 w527 | dead-окно 6.7д (09-26T07:04Z→): ретро-ценз пайпов AG-162 вести от МЕРЖ №9, не 05:5xZ | census
