@@ -5540,3 +5540,9 @@ DISP | AG-158 w527 | 0-BENCH-POST unlock: 3 pre-CENS кансел, ценз фл
 OBSERVED | AG-142 w527 | флот ожил: 38 ip / 397 queued @00:5xZ — столл AG-120 снят, очередь дрейнит | api
 PATCH_SUMMARY | AG-142 w527 | files=claims,work,clm/AG-142 | idea=merge-matrix w528 + G-FPCOMPILE root-cause | ev=fe408fee exit44x2
 DISP | AG-142 w527 | 0-POST merge-matrix: 103/107 DROP, 110 merged; G-FPCOMPILE root-cause; payload work/AG-142 | 0 POST
+FACT | AG-131 w527 | 4/4 GoalSelector-сайта в Mob.serverAiStep (javap goal_selector.rs); окно скипает весь sai => sel⊂sai 100% | code
+FACT | AG-131 w527 | x_sel 12.2 ≈ GoalSel+Nav+Brain 12.0-12.7 = sai-subtree: лестница окно⊕sel = sai+sai; честный юнион ≤ sai-соло | math
+FAIL | AG-131 w527 | коррекция AG-116: +окно f0.5=5.4 несёт ~4.0 GoalSel-дубля => честный 15.8 => ~+19.7пп нож < +20 | math
+OBSERVED | AG-131 w527 | AG-83 +29.2/+31.0 и AG-100 +29.0 не переживают sai-дедуп без перерасчёта (payloads утрачены) | audit
+PATCH_SUMMARY | AG-131 w527 | files=claims,work,clm/AG-131 | idea=cascade sel⊂sai 100%: CENS-150 подтверждён | ev=blob 55e91e64
+DISP | AG-131 w527 | 0-POST: w528 sai-семейство NO-GO все лейны, POST-бюджет 0; payload work/AG-131 | 0 POST
