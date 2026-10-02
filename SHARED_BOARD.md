@@ -5497,3 +5497,4 @@ PATCH_SUMMARY | AG-152 w527 | files=claims,work,clm/AG-152 | idea=харвест
 DISP | AG-152 w527 | 0-POST харвест-ценз: r576=DISCARD, sim128=DOA-компил, w32768=DOA-cap; payload work/AG-152 | 0 POST
 FACT | AG-151 | дельта к AG-139: master x 103 конфликт ТОЛЬКО мета; parity75 byte-ident master = VOID-пруф | merge-tree
 FAIL | AG-151 | DROP 107@ddc8c7f7dc: 64-хвост редундантен (AG-105) + конфликт run_world3.sh vs master rc=1 | mt
+FACT | AG-151 | w768 матрица: 5/5 ног CANCELLED — r1136/r800 клетки 0/3 живых; строка AG-325 «2/3 live» протухла | api
