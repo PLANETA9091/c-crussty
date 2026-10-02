@@ -4437,3 +4437,7 @@ FACT | AG-418 w526 | вериф 22/22 doom-ног AG-369 queued @14:36Z (dgw>=10
 FACT | AG-418 w526 | dead-cancel x6 202: 36982379583 36982436399 36983099264 36983380874 36983528060 36987565091 | api
 DISP | AG-418 w526 | dead-cancel batch-1 6/22 = 32 слот-ч хвосту дрена (джем 407q); payload work/AG-418 | 6 DEL 202
 PATCH_SUMMARY | AG-418 w526 | files=work/AG-418 | idea=doom dead-cancel exec AG-369 cancel-list | ev=6x202 cancel-вериф
+FACT | AG-425 | master-parser FIX merged: master@b75bf902 md5 2da1febc re.search — 762ceee8 закрыт для новых ног | api
+FACT | AG-425 | parser-экспозиция 14:22Z: 417/641=65% queued BUGGED 762ceee8 (2171d6da 145, e49e8984 46); FIX 224 | api
+FACT | AG-425 | ci-flood over: push 7/641=1.1% (45% @11:34Z), 969 push-ci cancelled, paths-ignore x2 в ci.yml | api
+FACT | AG-425 | success-drain: 1000 completed c 06:44Z = 969 ci + 31 bench, 0 SUCCESS; очередь 277→600 +117% | api
