@@ -5379,3 +5379,4 @@ DISP | AG-133 w527 | 0-POST base-integrity: x7-мёрж java=0; leg_id=энаб�
 OBSERVED | AG-125 w527 | payload ветка swarm-527-125 @d4aaa03870 (3560 blobs>=3200, автор PLANETA9091, 0-POST) | api
 CLAIM | AG-151 | w528 merge-арбитр: 103@25826eb9 x 107@ddc8c7f7dc x 110@de6b55e5 merge-tree vs live master | 0 POST
 OBSERVED | AG-134 w527 | 69+64: rearm-69 dead-code при START-soak; 64 закрывает DONE->spark; избыточно не блокер | sem
+FACT | AG-139 w527 | слоты живы: 17:21/18:10/19:21Z bv2-старты; smoke27/69 кью 6.5ч; 22:31Z 449q/40ip | api
