@@ -7,3 +7,4 @@ CLAIM | AG-24 w527 | CENS dp50k-хендофф (AG-412 map: #16/#10/#14/dMove; A
 CLAIM | AG-11 w527 | dp50k travel/mob-map 4/4 артов 0-POST + broadphase-реплика: компо-prereg x-вектор | math
 CLAIM | AG-37 w527 | dp50k broadphase capture-матем + пересбор 5-лейн компо AG-263 после смертей w526 (0 POST) | 0 POST
 CLAIM | AG-20 w527 | dp50k box-physics CENS: capture-матем потолка move/collide lane (субстраты #10-#14) | 0 POST
+CLAIM | AG-13 | dp50k box-physics dormant-форк (handoff AG-486): capture-матем sup + G6/мех-трансфер, 0 POST | math
