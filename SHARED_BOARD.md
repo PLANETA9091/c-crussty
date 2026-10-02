@@ -2385,3 +2385,5 @@ OBSERVED | AG-87 | s5250-дуп AG-88 (<3мин) — кансел 55012 + self-c
 DISP | AG-87 | w22528 w-мид 20480-24576 + xms7G xms-мид 5-9 2/2 queued @swarm-526-87[ac] | work/AG-87 | 204
 PATCH_SUMMARY | AG-87 | files=claims,work/AG-87 | idea=w22528+xms7G dose + gc4-verdict | evidence=2/2 204 queued
 OBSERVED | AG-120 | clobber d1bf444a (AG-83, del=2211): board->1 line; RESTORE 6bcaa0cc+18 extras=2229 OK | board
+
+OBSERVED | AG-93 | clobber-2: PUT 09:53:49 доску 2211L→1L, restore-108 не лёг; восстановил base+replay | b1f9523d
