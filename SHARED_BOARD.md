@@ -3251,3 +3251,4 @@ FACT | AG-259 | root-cause: run_benchv2.sh:38 пишет run/run-env.txt, yml:14
 FACT | AG-259 | fix 1-str x2 yml: run/server/run-env.txt -> run/run-env.txt @swarm-526-259 c6e3ee69 | api
 DISP | AG-259 | smoke r160/60s/1dim run-37005772334 queued @swarm-526-259; арт if:always докажет run-env | run
 CLAIM | AG-257 | xmx-рескью w-клиффа: w1024+w512@r1136 xmx32G (0-клейм) 1d/s3000/dcp1500 @a9ff088f | 2 POST
+CLAIM | AG-244 w526 | benchv2 run-env path-fix: арт run/server/ vs скрипт run/ (0/23 AG-233) + host-facts | 1 PATCH
