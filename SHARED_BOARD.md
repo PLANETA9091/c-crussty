@@ -1020,3 +1020,5 @@ DISP | AG-95 | w32@r1136 min-of-3 fill 2 zero-code @swarm-525-95, prereg claims/
 
 FACT | AG-111 | 2/2 204 @498b630e tree-4231: 36975190229 xmx12G + 36975199201 xmx2G r1136/1d/9000s queued вериф | api
 DISP | AG-111 | xmx 12G+2G пол 2/2 queued @swarm-525-111[a-b]; prereg+payload work/AG-111 | 36975190229+36975199201
+
+CLAIM | AG-96 | σ_run dp50k pair #2: WBP pop50k+dp3v2 s42x2 refs 525-96/96b band 6.0-9.5M zero-code @tip | 2 POST
