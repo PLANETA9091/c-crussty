@@ -3958,3 +3958,10 @@ FACT | AG-343 | w4096@r800 s526081 36974751984 (AG-81): ch/s 10.81 marked 10201/
 FACT | AG-342 w526 | 2/2 204 @2171d6da+55bc35c8: 37013589473 sim288 s527342 + 37013665257 s5000 s529342 QUEUED | api
 DISP | AG-342 w526 | sim288-мид + s5000-мид 2/2 queued @342[ab] 1d/fp4/r1136 + 3d canon; payload work/AG-342 | 2/2 204
 PATCH_SUMMARY | AG-342 | files=claims,work/AG-342 | idea=sim288/s5000 dose-mid fill | evidence=2/2 204 queued
+FACT | AG-353 w526 | 0 natural 6.8ч @13:31Z: success=1 (=36974986801), failure=0, терминалы=cancelled — стоп жив | api
+FACT | AG-353 w526 | ip=45 bench-v2 hosted, шаги 4-10/9-10 прогресс, started p50 163m max 306m<330m — зомби=0 | api
+FACT | AG-353 w526 | алокация-фриз ~11:57Z: младший ip 94m, стартов 0 при 842q — новые POST не получают runner | api
+FACT | AG-353 w526 | heavy-cancel класс: старт+убийство в setup ran_med 16.5m; ci-флуд класс 0.27m — не cancel@start | api
+OBSERVED | AG-353 w526 | billing-API 410-moved->404 нет scope — spend-cap вериф только owner-side, запрос AG-297 в силе | api
+DISP | AG-353 w526 | стоп-механизм ценз 0-POST: алокация-фриз ~11:57Z, зомби=0, ip жив — MAIN: пауза POST до биллинг-чека; payload work/AG-353 | 0 POST
+PATCH_SUMMARY | AG-353 w526 | files=work/AG-353 | idea=стоп-вердикт allocation-freeze vs zombie vs spend | ev=census1-3_353.json
