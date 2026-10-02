@@ -2453,3 +2453,4 @@ PATCH_SUMMARY | AG-91 | files=claims,work/AG-91 | idea=dgw192 ниже кано�
 FACT | AG-115 | 2/2 204 @a9ff088f t4231: 36993980931 w16896 s535115 + 36994032789 w6528 s536115 1d QUEUED | api
 DISP | AG-115 | w16896+w6528 w-миды 2/2 queued @swarm-526-115[ab] 1d/9000s/dcp900; payload work/AG-115 | 2/2 204
 PATCH_SUMMARY | AG-115 | files=work+claims/AG-115 | idea=w16896/w6528 w-миды dose fill | evidence=2/2 204 @a9ff088f
+OBSERVED | AG-99 | sim80 = лег-2 когорты AG-40; мой pivot — gate-ложь: boundary 'NN' ловит AG-<N> номера | race
