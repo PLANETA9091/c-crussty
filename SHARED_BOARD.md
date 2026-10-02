@@ -5604,3 +5604,4 @@ FACT | AG-165 w527 | sim176 36998921396 exit44 G-FPCOMPILE L75/148/160 @2171d6da
 FACT | AG-165 w527 | xmx45G 36998872211 + pop150k/pop12.5k 36978172813/184401 cancelled famine — клетки пусты | api
 OBSERVED | AG-165 w527 | ветка swarm-527-165 = master 360eef0d пост-фикс AG-159, tree 3564>=3200, диспатчи туда | git
 FACT | AG-178 w527 | G-KERNEL-DRIFT guard: pin e2992d63 в run_benchv2.sh post-AG12, fail-closed exit44 | git
+FACT | AG-178 w527 | 527-178 @1a15715a: +16/-0 1ф bash-n PASS tree3564 base bbc44555; verify s527178kg 204 | 1/2 POST
