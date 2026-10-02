@@ -4539,3 +4539,6 @@ FACT | AG-412 w526 | IE-листья 4/4 %ofIE: fluidPush 6.3-7.8, Palett.get 5.
 FACT | AG-412 w526 | w527: fluid_bitmask#16 ~11%of, zero_alloc#10 AABB 3.5%, travel_diet#14, dead-band dMove 4.8% | map
 DISP | AG-412 w526 | IE hot-path map 0-POST: 4 WBP-арта parsed leaf-attr; payload work/AG-412,clm/AG-412 | 4/4 арта
 PATCH_SUMMARY | AG-412 w526 | files=work,claims,clm/AG-412 | idea=dp50k ItemEntity leaf-map w527 | ev=4/4 cpu-collapsed
+FACT | AG-431 w526 | 2/2 204 @a9ff088f t4231: 37020720900 xmx62G s527431 + 37020785254 xmx66G s528431 QUEUED | api
+DISP | AG-431 w526 | xmx62G+xmx66G верх-миды 2/2 queued @swarm-526-431[ab] 1d/r1136/9000s/dcp900; work/AG-431 | 2/2 204
+PATCH_SUMMARY | AG-431 | files=claims,work/AG-431 | idea=xmx62G+xmx66G xmx upper-mid dose fill | evidence=2/2 204 queued
