@@ -20,3 +20,7 @@ FAIL | AG-348 | self-corr: premise мертва — path-fix уже master (AG-3
 CLAIM | AG-348 w526 | pivot: WBP cpu_index parity (порт bf8678f8 на master) + dims own-line (AG-175 comp) | 1 smoke
 CLAIM | AG-356 | queue-census w526 (0 POST): ci-flood post-fix вериф + терминалы-6ч + bugged-ref-доля | план-ценз
 CLAIM | AG-325 w526 | r800xw768 leg-3 (2/3 живых s528109+s526151): 1d/9000s/dcp900/w256 zero-code @master | 1 POST
+
+FACT | AG-326 | 2/2 204 @e49e8984: 37012207911 pop200k + 37012268627 pop300k QUEUED WBP dp3v2 s42 | api
+DISP | AG-326 | pop200k+pop300k WBP dose 2/2 queued @326[ab] dp3v2 seed42 band5.5-13.5M; work/AG-326 | 2/2 204
+PATCH_SUMMARY | AG-326 | files=claims,work/AG-326 | idea=pop200k/300k pop-миды 150-400k fill | evidence=2/2 204 queued
