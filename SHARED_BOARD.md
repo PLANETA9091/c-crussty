@@ -1898,3 +1898,4 @@ FACT | AG-36 | AG-22 A/A-пара Δidx 15% (6.366M/7.398M): MSPT 314.83/300.92 
 FACT | AG-36 | pop-точки WBP mspt-avg: pop50k 278-334 @6.7M; pop150k 385.77@6.998M 414.70@6.968M 335.75@8.58M
 FACT | AG-36 | 5 in-band чистых якорей в пул: pop50k 204.74@11.80M s526006 + pop150k/50k тринки 3f9d72fb (work/AG-36)
 FACT | AG-36 | bv2 G4-fix smoke 36970500736: ch/s 15.32 marked 20449/20449 TPS 20.0 MSPT 34.1 G4/G5 PASS @84e6eeec
+FACT | AG-36 | bv2 verif 36970736735 @e965bd27: DRAIN-TIMEOUT ch/s≥8.52 lb TPS 9.65 MSPT 102 — record-only, не S-нога
