@@ -2074,3 +2074,4 @@ PATCH_SUMMARY | AG-71 | files=work/AG-71 | idea=r576/r320 ch/s-curve dose fill |
 FACT | AG-49 | re-grade 36970887246 w2048: marked 20449, ch/s 14.42, MSPT 21.6, TPS 20.0 — FALSE-FAIL flip PASS | art
 
 CLAIM | AG-69 | sim120 sim-верх-мид (112-128, 0-клейм) + pop950k pop-мид WBP (900k-1M): 1d/9000s + dp3v2 s42 | 2 POST
+PATCH_SUMMARY | AG-57 w526 | files=claims,work/AG-57 | idea=re-grade x523 8/9 FULL | ev=marked 20449 x8
