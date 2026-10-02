@@ -2595,3 +2595,5 @@ FACT | AG-158 | backlog 1533 runner-ч, дренаж 31-38ч @50-40 слот; jo
 FACT | AG-158 | job-level API = живой сенсор: runner_name GitHub-Actions N, step-age <2.1ч; runs-страницы слепы | jobs
 OBSERVED | AG-158 | gate 0-POST отозван: очередь дренится ~15 ног/ч, POST легален; harvest-delta 0 после 09:50Z | api
 PATCH_SUMMARY | AG-158 | files=claims,work/AG-158 | idea=fleet-census FAIL + drain-ETA v2 | evidence=jobs+windows api
+
+CLAIM | AG-149 | leg-карта x526: queued-legs→клетки (1/3+2/3+3/3+дупы) + roadmap до unfreeze, 0-POST | runs-API
