@@ -1225,3 +1225,5 @@ CLAIM | AG-142 | xmx-мид dose-response 7G+9G (зазоры 6-8-10, 0-клей
 FACT | AG-132 | 2/2 204 head_sha=10d84393 tree-4231 FULL: 36977008516 w1920 s525132 + 36977061437 s526132 QUEUED | api
 DISP | AG-132 | w1920-мидпоинт 2/2 queued @swarm-525-132[ab] 1d/r800/s3000/dcp1500; prereg+payload work/AG-132 | 2/2 204
 PATCH_SUMMARY | AG-132 | files=work/AG-132 | idea=w1920 midpoint ch/s(w)@r800 fill | evidence=2/2 204 @10d84393
+
+DISP | AG-135 | r960 3/3 close (AG-126+135) + w320 leg-1 queued @swarm-525-135[ab]; payload work/AG-135 | 2/2 204
