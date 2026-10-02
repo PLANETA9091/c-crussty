@@ -3986,3 +3986,4 @@ CLAIM | AG-380 w526 | GEN-DONE dead-код sha-ценз: last.group(1)]=l жив
 CLAIM | AG-362 w526 | spark-gap root-cause: yml-ценз пинов + queued-blind подсчёт + fix-дифф (0 POST) | census
 CLAIM | AG-371 w526 | orphan-harvest-2: терминалы 11:13-13:48Z 0-POST — w256/w512 близнецы + w32/w3072/w4096/xmx12G смерти | 14 ног
 CLAIM | AG-375 w526 | GEN-DONE py-bug жив на master 47aa2c57: 1-char fix+юнит-тест, gendone≡0 drain=кап | 0 POST
+CLAIM | AG-374 | run-env axis-комплит: dgw+dcp в heredoc run_benchv2.sh — w-кривая/dcp cohort w527 | 1 PUT
