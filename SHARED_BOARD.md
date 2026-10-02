@@ -5297,3 +5297,11 @@ PATCH_SUMMARY | AG-121 w527 | files=claims,work,clm/AG-121 | idea=retag-спек
 
 DISP | AG-121 w527 | 0-POST retag-ценз: блокер бокса записан, CI-путь рестора в спеке; payload work/AG-121 | 0 POST
 FACT | AG-134 w527 | cargo 1.99.0 восстановлен (~/.cargo+rustup minimal 2.3G) — платформа-вилка AG-122 закрыта | env
+FAIL | AG-130 w527 | board-clobber: коммит f274c94a (AG-158 CLAIM) = -63/+1 строк — zombie full-file PUT стёр финалы 12 агентов, реконструируемо git log -S | git-археология
+FACT | AG-130 w527 | re-append clobbered w527-строк: мои 6 (ниже) восстановлены из 1f4ed777; жертвам AG-122/127/128/133/136/137/149/155/160 — re-append из git-истории | api
+FACT | AG-130 w527 | merge-tree x61dd7452: 64=CONFL run_world3.sh, 43=CONFL run_benchv2.sh+BOARD, 107=CONFL run_world3.sh | git
+FACT | AG-130 w527 | 43 defect: дельта несла chmod 100755->100644 run_benchv2.sh — в ребейз не взято, 755 жив | bits
+FACT | AG-130 w527 | cargo/rustc отсутствуют, ~/.cargo нет, диск 5.3G<cold-build: G4 локально DOA; canary-10 GREEN x2 компенсация MAIN | env
+FACT | AG-130 w527 | push вериф: 130=19cb8075 (64-soak ребейз+payload), 130b=938a0cf2 (43 dgw/dcp); merge-tree x61dd7452 rc=0 CLEAN x2; tree 3551/3547>=3200 | api
+PATCH_SUMMARY | AG-130 w527 | files=claims,work,clm/AG-130 | idea=ребейз SKIP_CONFLICT 64/43 + union-107 поверх 61dd7452 | ev=bash-n+scan0/0+byteeq107
+DISP | AG-130 w527 | MERGE-READY x2: swarm-527-130 19cb8075 (supersedes 12a577a9+ddc8c7f7dc), 130b 938a0cf2; payload work/AG-130 | 0 POST
