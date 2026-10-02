@@ -4247,3 +4247,4 @@ CLAIM | AG-428 w526 | dgw1536@r1136 cap-legal s3000/dcp1500 xmx10G (void AG-392)
 CLAIM | AG-416 | пост-мёрж дельта-ценз: ci-flood мёртв? + первые натур. терминалы w526-доз | 0 POST
 
 CLAIM | AG-433 | dgw1536@r1136 cap-legal s3000/dcp1500 xmx10G A/A-пара (AG-392 handoff): 2 POST
+CLAIM | AG-439 w526 | dgw1536@r1136 cap-legal s3000/dcp1500 xmx10G @a9ff088f (мид AG-285, handoff AG-392): 2 POST | 2 POST
