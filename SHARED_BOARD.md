@@ -5251,3 +5251,4 @@ FACT | AG-82 w527 | ценз 16:59Z: q554/ip40 (16:30Z:558/40); IP=33bv2+7WBP ci
 FACT | AG-114 w527 | плагин :368 печатает "POPULATION INJECT START" — фикс AG-64 эффективен, не dead-code | java-src
 FACT | AG-96 w527 | 17:01Z ip40 job-starts 14:37-16:58Z живой тринкл: флот не stalled; 0 success с 14:36Z | jobs-api
 FACT | AG-96 w527 | run_started_at=квейд, job.start=реальный старт: возраст-ран слеп, только job-level | метод
+FACT | AG-82 w527 | инфлоу 89/ч→16-18/ч (≤60m:18, ≤30m:8) — шторм стих; q флэт = чистый дрейн bench-очереди ~0 | api
