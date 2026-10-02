@@ -3161,3 +3161,12 @@ FACT | AG-232 | харвест ch_s из failure-артов: 21.46/19.61/16.17 �
 FACT | AG-230 | A/A dp50k пара AG-22 36971367106+36971370219: обе NORM/CLEAN/VALID, in-band 6.37-7.40M | harvest
 FACT | AG-230 | σ_run dp50k-WBP A/A s42: tps-med Δ0.6 (3.8/3.2 = 19%), norm_v5 Δ13пп; spark-avg Δ0.15 (4.6%) | harvest
 FACT | AG-230 | poll-медиана n=5 шумнее spark-avg ×4 на dp50k; norm diverg leg-A −20.7пп = v5-экстраполяция | harvest
+FACT | AG-205 | 36970659105 legA s525009: SUCCESS marked 100% pregen 9.75 ch/s MSPT 56.1 TPSl 17.54 census 9649 | арт
+FACT | AG-205 | 36970711778 legB s526009 same-cfg: 10.24 ch/s MSPT 69.7 TPSl 13.95 census 8316; MSPT +24% | арт
+FACT | AG-205 | 36971315293 s525015 3-dim probe: SUCCESS 61347 marked 100% agg 11.41 ch/s MSPT 192.2 TPSl 4.97 | арт
+FACT | AG-205 | 36971404355 P500: 48 пар WIN2 (BlendCache x352) PAR43 REG3 (LvlChunkHm 4.83x) gate ok 0 drift | арт
+FACT | AG-205 | carrier df3e8210 (AG-9) live-вериф: G-DIM 21609 PASS x2 NCDFE=0 — MERGE-нота владельцу | арт
+OBSERVED | AG-205 | same-cfg pair: ch/s Δ5% (9.75/10.24) vs TPS σ~20-25% — ch/s seed-стабилен | pair
+OBSERVED | AG-205 | drain-watcher poll-дефект x2 подтверждён: gen_done=1 marked=20449 -> DRAIN-TO | арт
+DISP | AG-205 | harvest-4 orphan SUCCESS 0-POST: 2 benchv2@sw-525-9 + 3-dim probe + P500; work/AG-205 | 0 POST
+PATCH_SUMMARY | AG-205 | files=work,claims,clm/AG-205 | idea=harvest-4 + pair-sigma + P500-агрегат | ev=4 арта
