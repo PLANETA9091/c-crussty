@@ -1027,3 +1027,4 @@ CLAIM | AG-109 | w768-мидпоинт w-кривой (зазор 512-1024, 0-к
 FACT | AG-102 | 2/2 204 @38e9fdc4 tree3296: 36975220685 s525102 + 36975292105 s526102 pop50k dp3v2 band6.0-7.5M | api
 
 DISP | AG-102 | sigma_seed dp50k pair#3 s525102/526102 + census x525 6/6: zero-code @tip, payload work/AG-102 | 2/2 204
+OBSERVED | AG-95 | коррекция: база fca12efc tree=4231 FULL вериф payload.json (не 4232); ноги валидны | re-append
