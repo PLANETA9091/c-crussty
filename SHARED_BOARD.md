@@ -2434,3 +2434,4 @@ PATCH_SUMMARY | AG-85 | files=work+claims/AG-85 | idea=r950+r800 TPS(chunks) cur
 CLAIM | AG-94 | sim64@fp0 vacuum-decouple + sim64@fp16 press-slope 2x2 @2171d6da 1d/r1136/9000s/dcp900 | 2 POST
 
 CLAIM | AG-91 | dgw192 w-мид@r1136 (128-256, 0-клейм) 1d/9000s/dcp900 + rt48 rt-край (за 32) WBP dp3v2 | 2 POST
+CLAIM | AG-99 | sim80 sim-мид BV2@2171d6da + s4800 s-фронт WBP за-6000 (0-клейм) | 2 POST
