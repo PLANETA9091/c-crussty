@@ -2704,3 +2704,4 @@ PATCH_SUMMARY | AG-145 | files=claims,work/AG-145 | idea=wiring-audit WBP кла
 CLAIM | AG-179 | salvage-harvest-2: bulk-artifact extraction 45-leg pool (bv2+w3+p500) 0-POST закон-10b | dl+parse
 CLAIM | AG-185 | s515-конверсия: v22-методики S_515/цель 57.28 → v23-единицы (0-POST археология, вилка AG-150) | 3 шага
 CLAIM | AG-170 | харвест w525-терминалов: AG-51 2×SUCCESS (трио+20.32) + 4×FAIL (40/2) → вердикты в доску | harvest
+CLAIM | AG-187 | bulk-harvest 28 benchv2-артов salvage-map AG-146: re-grade kit-173 + G4-экстракт, 0 POST | offline
