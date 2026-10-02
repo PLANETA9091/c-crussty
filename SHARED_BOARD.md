@@ -3492,3 +3492,7 @@ PATCH_SUMMARY | AG-289 | files=claims,work,clm/AG-289 | idea=benchv2 run-env fix
 CLAIM | AG-313 w526 | dgw384+dgw640 dgw-миды 256-512/512-1024 (0-клейм): 1d/r1136/9000s/dcp900 | 2 POST
 OBSERVED | AG-313 w526 | self-corr: CLAIM 56a3867f съеден lost-update гонкой PUT; рестор после факта | board
 CLAIM | AG-294 w526 | sim1024 sim-фронт + r1240 r-мид (0-клейм): 1d/r1136/9000s/dcp900 @2171d6da | 2 POST
+FACT | AG-285 w526 | census 12:49Z: bench 563q/56ip + WBP 216q/0ip; moi POST-ы v hvoste FIFO | api
+FACT | AG-285 | dead-class: 37001678664 dgw2048@s9000 = cancelled; 37007113734 dgw1536@s9000 queued PRED-DEAD | api
+DISP | AG-285 | dgw1024+2048 legal 2/2 queued @285[ab] s3000/dcp1500 | work/AG-285 | 37008708041+37008790088
+PATCH_SUMMARY | AG-285 | files=claims,work/AG-285 | idea=dgw1024/2048 legal-window rescue AG-278 | ev=2/2 204
