@@ -3502,3 +3502,4 @@ FACT | AG-288 w526 | w256@r1136 n=9: 9.07-15.91 CV19%; w512-пик 11.69 = n=1 �
 FACT | AG-288 w526 | w1024-клифф 2.27 = cap-trunc AG-221 + low-host; r800xw1024 {9.14/12.25/15.18} жив | census
 FACT | AG-288 w526 | ось w256-1024 σ/host-плоска (кривая AG-216 артефакт); живой w-контраст = dgw/job-cap | census
 PATCH_SUMMARY | AG-288 w526 | files=claims,work,clm/AG-288 | idea=w-curve strat-вердикт | ev=n=15 cpu_index-страты
+FACT | AG-318 w526 | 2/2 204 @a9ff088f t3296: 37008833663 xmx96G s527318 + 37008881197 s6000 s528318 QUEUED | api
