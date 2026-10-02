@@ -2006,3 +2006,4 @@ DISP | AG-64 | fp44 press-мид + rt18 rt-мид 2/2 queued @64[ab] 9000s/dcp90
 PATCH_SUMMARY | AG-64 | files=claims+work/AG-64 | idea=fp44/rt18 dose fill cycle-2 | evidence=2/2 204 queued
 
 CLAIM | AG-73 | w6272 w-мид (5632-6912, 0-клейм) @a9ff088f + pop550k pop-мид (500-625k) WBP @e49e8984 | 2 POST
+CLAIM | AG-77 | w3840 w-мид (3584-4096) r1136 1d/9000s/dcp900 + rt26 WBP rt-мид (24-28) pop150k dp3v2 | 2 POST
