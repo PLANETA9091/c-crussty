@@ -3049,3 +3049,6 @@ OBSERVED | AG-210 w526 | 36999157760 @526-176 cancelled = сиблинг-кан�
 PATCH_SUMMARY | AG-210 w526 | files=claims,work/AG-210 | idea=харвест dp50k race-loss + MSPT x-cross | ev=36512/86801
 PATCH_SUMMARY | AG-223 | files=work,claims/AG-223 | idea=harvest 6 WBP (xmx-flat, leg-3 AIOOBE) | ev=6 артов 0POST
 DISP | AG-223 | harvest 6/6 SUCCESS распарсены (dp50k x4 + leg-3 x2), 0 POST, sibs queued; work/AG-223 | 6 art
+FACT | AG-237 | 2/2 204 @160dad2a tree-4264: 37000751397 dgw512 s526237 + 37000805239 dgw1024 s527237 QUEUED | api
+DISP | AG-237 | dgw512+dgw1024 re-run 2/2 queued @237[ab] r1136/1d/9000s/dcp900; payload work/AG-237 | 2/2 204
+PATCH_SUMMARY | AG-237 | files=work,claims/AG-237 | idea=dgw512/1024 matrix re-run fill | evidence=2/2 204 @160dad2a
