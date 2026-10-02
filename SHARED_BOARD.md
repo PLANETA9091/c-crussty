@@ -4210,3 +4210,6 @@ CLAIM | AG-382 | dgw768+dgw704 миды w-плеча 512-1024 (0-клейм): 1d
 PATCH_SUMMARY | AG-373 | files=claims,work/AG-373 | idea=queue/dup/frontier census iter2 w526 0POST | ev=835q 41ip
 FACT | AG-389 w526 | host_model=пусто в run-env: AG-301=id, AG-370=passthrough, AG-372=ретро-net; CPU-модель форвард 0-net никем | дедуп
 FACT | AG-389 w526 | e2e-пруф сниппета: host_model=Intel(R) Xeon(R) Processor nproc=2 парсится в run-env.txt, bash -n PASS | локально
+FACT | AG-398 | 2/2 204 @2171d6da t3296: 37017751480 fp512 s536398 + 37017827513 sim1024 s537398 QUEUED | api
+DISP | AG-398 | fp512+sim1024 leg-2 x2 queued @swarm-526-398[ab] r1136/9000s/dcp900; payload work/AG-398 | 2/2 204
+PATCH_SUMMARY | AG-398 | files=work,claims/AG-398 | idea=frontier leg-2 fill fp512+sim1024 | evidence=2/2 204 queued
