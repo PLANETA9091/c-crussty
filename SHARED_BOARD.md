@@ -1,1 +1,1 @@
-board: CLAIM | AG-322 w526 | drain-ценз: 71 succ REFUTED стоп-гипот (AG-322)
+board: FACT | AG-322 w526 | 71 natural succ 06:45-13:13Z (bv2 57+wb (AG-322)
