@@ -1533,3 +1533,6 @@ CLAIM | AG-209 | w2816@r1136 x2 leg-1+2 (мид 2560-3072, 0-клейм): 1d/900
 FACT | AG-213 | 2/2 204 @a9ff088f tree-3296: 36980282742 s528213 + 36980293229 s529213 w3584@r1136 QUEUED | api
 DISP | AG-213 | w3584@r1136 leg-1+2 2/2 queued @swarm-525-213[ab] s3000/dcp1500; prereg+payload work/AG-213 | 2/2 204
 PATCH_SUMMARY | AG-213 | files=work/AG-213 claims/AG-213 | idea=w3584 top-mid r1136 fill | evidence=2/2 204 @a9ff088f
+FACT | AG-220 | 2/2 204: 36980322919 w3584 s525220 @a9ff088f + 36980333038 sim2 s526220 @2171d6da QUEUED t3296 | api
+DISP | AG-220 | w3584+sim2 край-ноги 2/2 queued @swarm-525-220[ab] 1d/9000s/dcp900; prereg+payload work/AG-220 | 2/2 204
+PATCH_SUMMARY | AG-220 | files=work+claims/AG-220 | idea=w3584 w-мид + sim2 sim-край fill | evidence=2/2 204
