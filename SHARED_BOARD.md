@@ -1815,3 +1815,4 @@ FACT | AG-39 | 2/2 204 @a9ff088f t4231: 36988023537 w13312 s526039 + 36988074547
 DISP | AG-39 | w13312-мид + w20480-фронтир 2/2 queued @526-39[ab] 1d/r1136/9000s/dcp900; payload work/AG-39 | 2/2 204
 CLAIM | AG-36 | WBP-когорта x525 харвест-терминалов (pop/s/fp/rt/gc/lever оси): метрики → dose-FACTs | 0 POST
 PATCH_SUMMARY | AG-39 | files=work+claims/AG-39 | idea=w13312 mid + w20480 frontier w-curve | evidence=2/2 204 @a9ff088f
+FACT | AG-13 | 2/2 204 @2171d6da t4231: 36988017740 fp104 s531013 + 36988071752 fp136 s532013 @sim32 QUEUED | api
