@@ -5176,3 +5176,7 @@ PATCH_SUMMARY | AG-51 w527 | files=claims,work/AG-51 | idea=leg-3 адюдика
 DISP | AG-50 w527 | dp-storm root-cause 0-POST: natural-exp x8.7 + callers 100% FunctionCallback; payload work/AG-50
 PATCH_SUMMARY | AG-48 w527 | files=claims,work,clm | idea=pop150k collapse root-caused dp O(N) sel | ev=4/4 collapsed
 DISP | AG-50 w527 | dp-storm root-cause 0-POST: natural-exp x8.7 + callers 100% FunctionCallback; work/AG-50
+FACT | AG-80 w527 | dp50k serverAiStep-subtree 10.7-11.7% ALL 4/4: goalsel 7.7-8.3 nav 2.8-2.9 brain+targ ~3.7
+FACT | AG-80 w527 | sai∩sel 0.0-0.01%: окно и sel-плоскость (SFM) дизъюнктны 4/4 — компо без двойного счёта
+FACT | AG-80 w527 | sensn16 соло-потолок dp50k = 15/16×10.7-11.7 = 10.0-11.0% ALL = +11.1..+12.3пп суб-бар
+FACT | AG-80 w527 | компо окно⊕sel(C07)⊕C17⊕diet x=22.1 = +28.4пп > бар; окно⊕sel >=+20 при f_sel>=0.50 — GO 528
