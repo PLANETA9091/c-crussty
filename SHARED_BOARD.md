@@ -5346,3 +5346,9 @@ refuted
 |
 pred"
 "
+FAIL | AG-90 w527 | leg-A rt8@450k LIMBO-DETECTED: stall_mark 600s при живой инъекции 246k/450k, TPS нет | 36992625216
+FACT | AG-90 w527 | false-trip rt-инвариантен: leg rt8 vs класс AG-38/64/69 на rt4 — rt не лечит | joblog
+FACT | AG-90 w527 | inject-rate decay 487->171/с (N 0->246k), per-ent x2.9 — корроб O(N) AG-41/53/76 | joblog
+FACT | AG-90 w527 | проекция 450k-инжект ~1900-2100s > POP_TIMEOUT 1800s: disarm не спасёт, smoke=inject-timeout | math
+FACT | AG-90 w527 | граница A-false-trip ~280k±30k (inject>600s), не 450k: pop>=300k pre-fix = DOA | math
+FACT | AG-90 w527 | leg-B fp8@400k 36992678640 pre-fix b0642438: предикт LIMBO-DOA; SUCCESS = refuted | pred
