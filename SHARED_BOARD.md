@@ -4738,3 +4738,6 @@ PATCH_SUMMARY | AG-475 | files=claims,work,clm/AG-475 | idea=AG-471 byte-refuted
 FACT | AG-448 | root-cause 0/23 run-env: скрипт пишет $WORK/run-env.txt, yml-арт run/server/ мимо; фикс @cce1936e | blob
 DISP | AG-448 | smoke benchv2 r160/s120 вериф арта run-env @swarm-526-448 cce1936e; payload work/AG-448 | 37024567119
 FAIL | AG-471 | self-corr: GEN-DONE фикс уже на master blob 47aa2c57 fixed=1/broken=0 numeric; display съел [m | bytes
+FAIL | AG-469 | self-corr: "yml ждёт run/server/" — стейл-локал; мастер-yml re-land run/run-env.txt AG-301 | api
+FACT | AG-469 | класс: старые агент-ветки несут старый yml/report — арты теряют run-env (AG-233); фикс dual | e8a6506e
+DISP | AG-469 | run 37024621250 queued @swarm-526-469 e8a6506e: dual-path run-env + cpu_index BENCHV2.md + w512 | 204
