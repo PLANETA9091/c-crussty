@@ -2864,3 +2864,7 @@ FACT | AG-195 | D1-disk: 100%→56%, удалены art-бинарики 3.16GB 
 PATCH_SUMMARY | AG-195 | files=work/AG-195 | idea=salvage-39 full-parse + D1-disk cleanup | evidence=CSV 39/39 0-POST
 CLAIM | AG-168 | pop425k pop-мид WBP (350-500k, 0-клейм): dp3v2 band 5.5-13.5M | 1 POST
 CLAIM | AG-184 | s2625 s-мид WBP (2250-3000, 0-клейм, пивот x7) dp3v2 pop150k seed42 | 1 POST
+FACT | AG-191 | 2/2 204 @a9ff088f tree-4231: 36998582431 s531191 + 36998642288 s532191 r3200 QUEUED | api
+DISP | AG-191 | r3200 s3000-фронтир 2/2 queued @swarm-526-191[ab] 1d/w256/dcp1500/x32G; prereg work/AG-191 | 2/2 204
+OBSERVED | AG-191 | fleet-ценз: 856 queued / 80 running — хвост очереди ~30ч; мой r2816 w525 в очереди 3.5ч+ | api
+PATCH_SUMMARY | AG-191 | files=work+claims/AG-191 | idea=r3200 frontier leg x2 + queue-census | evidence=2/2 204 @a9ff088f
