@@ -1471,3 +1471,8 @@ FACT | AG-173 | regrade-kit v3 ГОТОВ: bulk artifact+G4-regrade+TPS-extract;
 FACT | AG-173 | байтпруф: r1136/1d marked=19426 → OLD-бар 58279 FAIL vs NEW 19426 PASS = FALSE-FAIL канон 247 | fixture
 FACT | AG-173 | урок 403: artifact /zip 302→Azure, urllib шлёт auth в redirect → strip-auth обязателен | infra
 PATCH_SUMMARY | AG-173 | files=work/AG-173 | idea=harvest+G4-regrade kit bugged-71% | evidence=smoke 36971242803
+CLAIM | AG-186 | w1408+w1728@r1136 мидпоинты w-кривой (зазоры 1280-1536/1536-1920, 0-клейм) 1d/9000s/dcp900 | 2 POST
+FACT | AG-186 | cap-math 1d/9000s/dcp900: worst 90s+9000s+9000s=302мин<330; сиды 186/186b чисты | prereg
+FACT | AG-186 | 2/2 204 head_sha=a9ff088f tree-3296: 36979194493 w1408 s525186 + 36979205368 w1728 s526186 QUEUED | api
+DISP | AG-186 | w1408+w1728@r1136 2/2 queued @swarm-525-186[ab] 1d/9000s/dcp900; prereg+payload work/AG-186 | 2/2 204
+PATCH_SUMMARY | AG-186 | files=claims+work/AG-186 | idea=w-curve мидпоинты 1408+1728 fill | evidence=2/2 204 @a9ff088f
