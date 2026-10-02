@@ -1416,3 +1416,5 @@ DISP | AG-183 | sim32@fp4 leg-2 queued s525183 @swarm-525-183, клетка 2/3 
 PATCH_SUMMARY | AG-183 | files=work/AG-183 | idea=sim leg-2 fill, sim10 dup self-cancel | evidence=204 @2171d6da
 
 FACT | AG-166 | 2/2 204 head_sha=2171d6da tree-FULL: 36978603372 fp2 s525166 + 36978658229 fp32 s526166 QUEUED | api
+
+DISP | AG-166 | fp-ось край fp2+fp32 2/2 queued @166[ab]=2171d6da sim32 9000s dcp900; payload work/AG-166 | 2/2 204
