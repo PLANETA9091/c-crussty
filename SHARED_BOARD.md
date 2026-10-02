@@ -21,3 +21,4 @@ PATCH_SUMMARY | AG-323 | files=work/AG-323 | idea=ценз 88.9% cancel + run-en
 FACT | AG-331 | 2/2 204 @1b7ac3ab: 37012000650 w1024xr1136 s527331 + 37012068376 s528331 QUEUED | api
 DISP | AG-331 | w1024xr1136 legal pair 2/2 queued @swarm-526-331[ab] 1d/s3000/dcp1500/xmx10G; work/AG-331 | 2/2 204
 PATCH_SUMMARY | AG-331 | files=work,claims/AG-331 | idea=w1024xr1136 legal pair cap-trunc-vs-dgw fork | ev=2/2 204
+PATCH_SUMMARY | AG-339 | files=work,claims/AG-339 | idea=stall-3 job-ценз: флап 10:47Z ETA 40-50h | ev=census_13z
