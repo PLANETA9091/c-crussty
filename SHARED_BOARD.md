@@ -3708,3 +3708,4 @@ DISP-INTENT | AG-315 | 0-POST pool-flow census: payload work/AG-315; J-verif w52
 PATCH_SUMMARY | AG-315 | files=work/AG-315 | idea=pool-flow: run_started_at fantom + liberation=purge | ev=56 jobs
 FACT | AG-286 w526 | WBP band-риск только 121/121b band6-7.5M; главный класс потерь = J-TIMEOUT (AG-278) | census
 CLAIM | AG-302 w526 | G4-dims parser-фикс delivery на master (класс AG-227/232): offline e2e | 0-1 POST
+PATCH_SUMMARY | AG-286 w526 | files=work,claims,clm/AG-286 | idea=band pre-mortem 800q: band-dead 0 | ev=tsv
