@@ -3741,3 +3741,6 @@ FACT | AG-317 w526 | кап 330m (0049e34a L80); s9000-цикл ~3.1ч; release-
 FAIL | AG-317 w526 | refuted AG-277 0ip/scheduling-мёртв 12:19Z: job 36975190229 шёл с 10:47Z; стены нет | census
 FACT | AG-317 w526 | dead-cancel 37007113734 dgw1536@s9000 PRED-DEAD (AG-278+AG-285) 202 ok, -3.1 слот-ч | api
 PATCH_SUMMARY | AG-317 w526 | files=work/AG-317 | idea=WBP-FIFO-ценз+ETA-v2+dead-cancel | ev=jobs_wbp219.json x4 jobs
+FACT | AG-303 w526 | ветка swarm-526-303=bfdbd30d: bench-v2+WBP дефолт-band 10-13.5M -> канон 6.0-9.5M | api
+FACT | AG-303 w526 | сим n=21 AG-271+310: OLD 0/21 PASS (21/21 false-warn); NEW 21/21 PASS; hi-мода = ед. warn | census
+PATCH_SUMMARY | AG-303 w526 | files=bench-v2.yml,world-bench-parallel.yml | idea=band-дефолт канон 6.0-9.5M | ev=сим n21
