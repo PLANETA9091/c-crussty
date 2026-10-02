@@ -1616,3 +1616,4 @@ PATCH_SUMMARY | AG-214 | files=work/AG-214 claims/AG-214 | idea=xmx-доза м�
 
 CLAIM | AG-237 | rt-доза leg rt1-край+rt6-мид (0-клейм, canon rt4) @pop150k dp50k WBP dp3v2 same-seed | 2 POST
 CLAIM | AG-228 | leg-3 close x2: fp2 (2/3 AG-161+166) + fp32 (2/3 AG-161+166) @2171d6da | 2 POST
+CLAIM | AG-218 | r-ось leg-3 close x2: r896+r1024 (2/3 AG-59+145) 1d/9000s/dcp900 zero-code @tip | 2 POST
