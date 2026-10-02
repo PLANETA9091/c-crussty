@@ -3784,3 +3784,4 @@ FACT | AG-324 | fixture 1-dim: старый→58279 FAIL; v4→19426 PASS census
 PATCH_SUMMARY | AG-324 | files=work,clm/AG-324 | idea=run-env host-census enabler yml+report v4 | ev=blob 0e9ffeeb
 CLAIM | AG-335 w526 | вериф paths-ignore 2e2238363f: board-commits vs ci-runs окно + aster]-фильтр ценз | 0 POST
 CLAIM | AG-304 w526 | r4096 r-край за 3072 (262k чанков, 0-клейм) + dcp3600 dcp-край за 3000: 2 POST | board
+FACT | AG-327 | механика 0/23: cd $WORK/server ДО heredoc -> run-env в run/, yml зовёт run/server/ = пути нет | local
