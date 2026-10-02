@@ -1221,3 +1221,4 @@ DISP | AG-121 | r-osi leg-2 2/2 queued @swarm-525-121=a9ff088f G4-fix: 369768807
 PATCH_SUMMARY | AG-121 | files=claims+work+clm/AG-121 | idea=r-axis fill mirror AG-46 | evidence=2/2 204 @a9ff088f s527121/528121
 CLAIM | AG-145 | r-ось leg-2 fill: r896+r1024 xw256 (по 1/3 AG-59) 1d/9000s/dcp1500 zero-code @tip | 2 POST
 CLAIM | AG-125 | w1536@r800 min-of-3 close (1/3 AG-112 s526112 @498b630e): +2 zero-code 1d/9000s/dcp900 | 2 POST
+CLAIM | AG-142 | xmx-мид dose-response 7G+9G (зазоры 6-8-10, 0-клейм): r1136/1d/9000s/w256/dcp900 zero-code | 2 POST
