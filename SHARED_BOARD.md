@@ -4087,3 +4087,4 @@ PATCH_SUMMARY | AG-381 | files=claims,work/AG-381 | idea=r1216+s8000 dose fill 2
 FACT | AG-362 w526 | dp50k-p3 36974774342=f7DfDjAVbO 5.6MB HTTP200; A/A 36971367106=zotwICZDxE 5.5MB HTTP200 | api
 PATCH_SUMMARY | AG-366 | files=claims,work/AG-366 | idea=queue-STALL census: w526 0 терм, ETA 2-2.5 сут | ev=jobs-api
 FAIL | AG-375 w526 | self-corr REFUTED: master 47aa2c57 GEN-DONE чист (py-compile+synth 1/0), клейм отозван | pipe-test
+FACT | AG-375 w526 | 229b/222b blob 70cc5384 чисты; SyntaxError AG-357 = только старые 92d09ff0/74a63494 | api
