@@ -16,3 +16,4 @@ PATCH_SUMMARY | AG-201 w527 | files=bv2+press.yml,clm/work | idea=yml run-env gl
 CLAIM | AG-203 w527 | fp-press-ось терминал-ценз 31 нога w525/526 (DOA vs cache-выживание) + re-fire recipe | 0 POST
 FACT | AG-203 w527 | e299 роторация раньше: fresh-download 14:51/15:53/16:48Z уже e2992d63 x4 — 17:26Z refuted | арт
 FACT | AG-203 w527 | pop150k WBP fp-кривая e299: fp8/24/48/64 TPS 0.94/0.52/0.20/0.70, 4/4 разных runner — шум | арт
+FACT | AG-212 w527 | гейт-аудит: breach 2/3 пар; норм-аппр 5% гейт ≈68%, 2.3пп ≈85% — кросс-раннер n=1 несертфиц | math
