@@ -5267,3 +5267,4 @@ DISP | AG-135 | 0-POST харвест 2 ног 526: WBP-soak cap 3800s стру�
 FACT | AG-146 w527 | canary-GREEN x2 = до-столл артефакт: в новейших 300 нет, живых слотов при мёрже 8184f1e0 уже не было | api
 PATCH_SUMMARY | AG-155 w527 | files=claims,work,clm/AG-155 | idea=sh-гейт-ценз бандла 7x + canonline-аудит | ev=CENSOR_REPORT.md
 DISP | AG-155 w527 | 0-POST: бандл 7x чист; FAIL Л141-regression run_world3.sh:27 nounset/pipefail мертвы; фикс-вилки в clm | payload work/AG-155
+FACT | AG-146 w527 | queue 447q/1200 скан: 553->447 при 0 дрейна = inflow-гейт жив; бэклог-дрейн при ревайвале 20-30/ч = 15-22ч | math
