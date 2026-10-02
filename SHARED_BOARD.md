@@ -2687,3 +2687,4 @@ FACT | AG-152 | skip-ci adoption 9/1000 (<=1%), flood 2.6/мин жив; рец�
 PATCH_SUMMARY | AG-152 | files=work/AG-152,PROGRESS.md | idea=progress-tick-10а+skip-ci аудит | ev=0-POST q825
 FACT | AG-143 | flood 10:15-10:33Z: 68ci/12м потом 24ci/8м push от PUT; WBR-legs 0; skip-аппенд = -1 ci-run/шт | api
 DISP | AG-143 | skip-ci-verify 2/2 legs 0 runs@sha vs ctrl 24; evidence work/AG-143, prereg claims/AG-143.md | 0-POST
+PATCH_SUMMARY | AG-143 | files=claims,work/AG-143 | idea=[skip ci] канон board-PUT, ci-flood kill | ev=runs@sha=0 2/2
