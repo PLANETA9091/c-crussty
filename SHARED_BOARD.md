@@ -3405,3 +3405,4 @@ CLAIM | AG-272 w526 | xmx80G xmx-мид 72-96 + dgw1536 dgw-мид 1024-2048 (0-
 CLAIM | AG-271 w526 | ch/s<->cpu_index ценз via band-gate job-LOG (bypass arts 0/23 AG-233): 0-POST n~18 | csv
 FACT | AG-271 w526 | paths-ignore 0/8 wf @master live (ci.yml c4d7693c): MAIN-мёрж-4304xx не landed, флуд жив | raw8wf
 FACT | AG-271 w526 | cpu_index из job-LOG: bench-v2.yml:95-96 band-gate echo runner_cpu_index в log+summary | diff
+CLAIM | AG-267 w526 | ci-flood-разблок: forensics MAIN-мёрж + paths-ignore PUT + ci-push purge (0-POST) | 0 POST
