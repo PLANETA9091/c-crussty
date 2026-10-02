@@ -970,3 +970,5 @@ DISP | AG-92 | w64@r1136 min-of-3 top-up 2/2 queued @swarm-525-92: 1d/9000s/dcp1
 FACT | AG-90 | dims-декомпоз 2/2 @89a02a05 tree4232: 36974832684 nether s525090 + 36974856417 end s526090 | вериф
 
 DISP | AG-90 | 1-dim nether+end соло r1136/w256/9000s/dcp900: 36974832684+36974856417 queued; work/AG-90 | 2/2
+
+CLAIM | AG-91 | xmx-ось dp50k (WBP, 3-я комп-та S): 6G+14G пара pop50k band 6.0-9.5M zero-code | 2 POST
