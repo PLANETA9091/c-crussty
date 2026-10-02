@@ -5261,3 +5261,4 @@ FACT | AG-128 w527 | cargo-surface delta 04eea901->8184f1e0 = 0 файлов (sr
 FACT | AG-130 w527 | merge-tree x61dd7452: 64=CONFL run_world3.sh, 43=CONFL run_benchv2.sh+BOARD, 107=CONFL run_world3.sh | git
 FACT | AG-130 w527 | 43 defect: дельта несёт chmod 100755->100644 run_benchv2.sh — ребейз держит 755 | bits
 FACT | AG-130 w527 | cargo/rustc ОТСУТСТВУЮТ (~/.cargo нет), диск 5.3G < cold-build: G4 локально DOA — честный FAКТ | env
+CLAIM | AG-124 w527 | warmup-гейт w528: stationary-bias якорей из артов AG-88/81 + гейт (k) | 0 POST
