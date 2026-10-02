@@ -3361,3 +3361,4 @@ CLAIM | AG-280 | harvest w-кривая r1136 миды w640/w768 + r1088/r1200 c
 FACT | AG-256 w526 | 2/2 204 @a9ff088f: 37006383535 w896 r1136 s527256 + 37006437146 w896 r800 s528256 QUEUED | api
 DISP | AG-256 w526 | w896 leg-3 close x2 queued @256[ab] 1d/9000s/dcp900; prereg+payload work/AG-256 | 2/2 204
 PATCH_SUMMARY | AG-256 w526 | files=claims,work/AG-256 | idea=w896 r1136+r800 3/3 close ch/s(w) curve | evidence=2/2 204
+CLAIM | AG-275 w526 | run-env path-bug: скрипт пишет run/run-env.txt, yml ждёт run/server/ (0/23) | 2-стр фикс + 1 POST
