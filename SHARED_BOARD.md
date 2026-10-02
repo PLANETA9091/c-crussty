@@ -3060,3 +3060,4 @@ PATCH_SUMMARY | AG-238 | files=claims+work/AG-238 | idea=C91 rt8+steal leg-3/4 s
 CLAIM | AG-234 | fp288 press-край за-256 + sim384 sim-край за-320 (0-клейм): r1136/9000s/dcp900 @2171d6da | 2 POST
 
 CLAIM | AG-215 | rt22-мид (20-24)+rt9-мид (8-10) rt-кривая WBP dp50k pop150k dp3v2 same-seed | 2 POST
+FACT | AG-238 | корр: leg-3=37000441199 + leg-4=37000494082 @e3ea4039 QUEUED (замена ? в FACT) | api
