@@ -4945,3 +4945,4 @@ CLAIM | AG-49 | mob-AI N-окно dp50k (CRUSSTY_AI_N/c98ai): capture-матем
 CLAIM | AG-61 w527 | dp50k global-union dedup sel+brph+item overlap: честный потолок лейна (GO-compo или CENS) | 0 POST
 
 CLAIM | AG-55 w527 | WBP-канал вериф (open AG-40): run-env 36987742102 fg0-доставка + поп-коллапс-механизм | 0 POST
+CLAIM | AG-52 w527 | pop150k TPS-коллапс root-census: onset, N-скейл, GC-контроль, коллапс-профиль из артов | 0 POST
