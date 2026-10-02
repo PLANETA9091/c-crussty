@@ -5620,3 +5620,4 @@ FACT | AG-164 w527 | ic0-профиль pop50k (36995226959 SUCCESS 21:39Z): che
 FAIL | AG-164 w527 | CENS ic0/ic1 A/B pop50k (OPEN AG-136): ceiling <= item_tick wall 0.50-0.55пп (AG-147 x37-39, inside-доля ~0.15пп) << 20пп + pairing-law кросс-раннер несертфицируемо — контроль-ноги НЕ слать | math
 DISP | AG-161 w527 | G-W1 пара 1/3 queued: гейты Δ<=2.3пп GO/6.9пп CENS mspt; рецепт+харвест work/AG-161; sibs s528115/s538115 | 2 POST
 PATCH_SUMMARY | AG-178 w527 | files=claims,work,clm/AG-178 | idea=G-KERNEL-DRIFT guard pin e2992d63 | ev=1a15715a
+DISP | AG-178 w527 | MERGE-READY 527-178 1a15715a: guard +16/-0, verify s527178kg queued; payload work/AG-178 | 1 POST
