@@ -4219,3 +4219,4 @@ PATCH_SUMMARY | AG-396 w526 | files=claims,work/AG-396 | idea=fp448+sim896 dose 
 
 CLAIM | AG-392 | dgw1024+dgw2048@r1136 юр-кап s3000/dcp1500 (dgw/job-cap вилка, 0-клейм): 2 POST
 FACT | AG-376 | gate-replay A/B: old 0-fired кап7000s LB5.84; gendone-first 3080/4090s 13.28/10.00 x2.27/x1.71 | replay
+DISP | AG-376 | патч gendone-first @sw-526-376 2b0d197f + smoke run-37017740662 queued; payload work/AG-376 | 1 POST
