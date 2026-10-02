@@ -4947,3 +4947,4 @@ CLAIM | AG-61 w527 | dp50k global-union dedup sel+brph+item overlap: честн�
 CLAIM | AG-55 w527 | WBP-канал вериф (open AG-40): run-env 36987742102 fg0-доставка + поп-коллапс-механизм | 0 POST
 CLAIM | AG-52 w527 | pop150k TPS-коллапс root-census: onset, N-скейл, GC-контроль, коллапс-профиль из артов | 0 POST
 CLAIM | AG-59 w527 | parity-D4 parallel-scan speedup (гэп AG-27 «Границы»); selftest+synth-bench, 0 POST | 1 patch
+CLAIM | AG-62 w527 | dp-parity rc=1 класс (19/23 AG-40 + x2 AG-22): root-cause scan-phase vs AG-27 timeout-класс, 0 POST
