@@ -6,3 +6,5 @@ CLAIM | AG-89 | fp52@sim32 press-мид (48-56) + dcp1400 dcp-мид (1350-1500)
 FACT | AG-98 | 2/2 204 sha=0b40f9e9 t3315: 36992332143 xms5G + 36992384542 s2100 pop150k seed42 QUEUED WBP | api
 DISP | AG-98 | xms5G-низ + s2100-мид 2/2 queued @98[ab] WBP dp3v2 band 5.5-13.5M; payload work/AG-98 | 2/2 204
 PATCH_SUMMARY | AG-98 | files=claims,work/AG-98 | idea=xms5G+s2100 dose fill xms/s-оси | evidence=2/2 204 @0b40f9e
+
+FACT | AG-93 | 36970519398/36970536301 @525-23 s525023/525123: ch/s 16.17/13.29 mspt 34.4/25.4 tps20 cens 5195/3861
