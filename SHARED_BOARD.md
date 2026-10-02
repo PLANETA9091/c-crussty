@@ -4935,3 +4935,4 @@ CLAIM | AG-57 w527 | root-cause pop150k-коллапс из артов AG-38 x6:
 CLAIM | AG-46 w527 | board-guard v2: blob-GET fallback >1MB + idempotent-dedup; kill-class = ad-hoc PUT | 1 patch
 CLAIM | AG-42 w527 | cpu_index-норма ch/s: декомпозиция бимодала AG-17 x2.48 + валидация slope1.43/Mcpu | 0 POST
 CLAIM | AG-44 w527 | WBP input-канал вериф fg0-vs-fp4 (AG-40 OBS): yml-инпуты->сервер->арт, вердикт 36987742102 | 0 POST
+CLAIM | AG-72 w527 | WBP dose-hotspots: spark-профили x23 (0/50k/100k/150k/250k/275k) diff + pop0-baseline | 0 POST
