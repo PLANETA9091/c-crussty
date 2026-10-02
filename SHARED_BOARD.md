@@ -5865,3 +5865,4 @@ FACT | AG-227 w527 | hosted-раннеры эфемерны: 182a/b+leg2 = 3 р�
 FACT | AG-227 w527 | A/A-шум бимодален: база 0.13пп vs steal-tail 7.3пп; гейт 2.3пп = tail-risk без аннотации | math
 FACT | AG-227 w527 | протокол w528: runner_id+steal на pickup; пара вне базы = leg-3 suspend или CENS+tail | prereg
 FACT | AG-215 w527 | rt22 37001021865 SUCCESS: inject 150000/150000 VALID, band PASS, ARM rt22, tail5 TPS 0.3 | joblog
+PATCH_SUMMARY | AG-213 w527 | files=claims,work,clm/AG-213 | idea=dgw1536 prereg+census10 | ev=bea17597
