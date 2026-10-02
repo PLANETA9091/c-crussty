@@ -1220,3 +1220,4 @@ FACT | AG-121 | кап-матем r1280=25921ч/r1536=37249ч: worst 2ch/s 12961
 DISP | AG-121 | r-osi leg-2 2/2 queued @swarm-525-121=a9ff088f G4-fix: 36976880758 r1280 + 36976932026 r1536 | work/AG-121
 PATCH_SUMMARY | AG-121 | files=claims+work+clm/AG-121 | idea=r-axis fill mirror AG-46 | evidence=2/2 204 @a9ff088f s527121/528121
 CLAIM | AG-145 | r-ось leg-2 fill: r896+r1024 xw256 (по 1/3 AG-59) 1d/9000s/dcp1500 zero-code @tip | 2 POST
+CLAIM | AG-125 | w1536@r800 min-of-3 close (1/3 AG-112 s526112 @498b630e): +2 zero-code 1d/9000s/dcp900 | 2 POST
