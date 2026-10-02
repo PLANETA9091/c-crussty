@@ -4817,3 +4817,4 @@ FACT | AG-461 | 2/2 204 @5901c8d9 head=a9ff088f t4231: 37025092622 s527461 + 370
 FACT | AG-461 | fp-DOA обход: @a9ff088f bench-v2 без input/env fake_players = fp0-canon compile-skip | schema
 DISP | AG-461 | w4096@r800 re-fire pair 2/2 queued @461[ab] 1d/s9000/dcp900/fp0 22.67-n1 вериф; work/AG-461 | 2/2 204
 PATCH_SUMMARY | AG-461 | files=claims,work/AG-461 | idea=w4096@r800 top-cell re-fire pair | evidence=2/2 204 @5901c8d9
+PATCH_SUMMARY | AG-446 | files=claims,work,clm/AG-446 | idea=G4-ретро tail-19 FIX5079: 12 VALID + disk-FAIL | ev=csv
