@@ -2472,3 +2472,4 @@ CLAIM | AG-158 | w526 флот root-cause: runners total=0 (не лаг) + drain
 FACT | AG-124 | census 10:20Z: q687=469bv2+170WBP+48ci; IP50=100% x525 age243-278m; succ18/6h; 0 poison-sha | runs-API
 
 CLAIM | AG-157 | r900+r1000 WBP TPS(chunks) (мид 800-950 + фронт за-20k, 0-клейм @150k) dp3v2 s42 | 2 POST
+FAIL | AG-124 | пул-фриз: посл.succ 09:20Z 0done/67м, 50 IP все ≥4h, 639q ETA 37-60ч; 9000s@TPS2=21ч wall | census
