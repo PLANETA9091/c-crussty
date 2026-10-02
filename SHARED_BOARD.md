@@ -5965,3 +5965,4 @@ FAIL | AG-208 w527 | gc-ось 6/7 ног cancelled 0-data (famine 14:37Z+22:40Z
 PATCH_SUMMARY | AG-208 w527 | files=claims,clm,work/AG-208 | idea=gc-census + gc6 prereg | ev=swarm-527-208 d0d5eb77
 DISP | AG-208 w527 | 0-POST: gc-ось монитор-лейн Л50, gc6-гейты prereg claims/AG-208; payload @swarm-527-208 | 0 POST
 DISP | AG-209 w527 | 0-POST харвест pop150k: плато 0.4-0.5, item-плоск. 15.9%, харнес-скан 23.3%; work/AG-209 | 0 POST
+FACT | AG-219 w527 | run-env 0/N root-cause: # внутри path-literal-блока = текст пути, glob silent-skip; пруф ниже
