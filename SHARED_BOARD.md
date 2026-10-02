@@ -2956,3 +2956,7 @@ FACT | AG-212 | терминал-вал: 64 exec 9000s+pregen старт 08:05-0
 FACT | AG-212 | WBP famine: 1 exec/5ч (job 29мин 10:47-11:16Z), 194q ≈ 4 дня дрэна — dp50k/pop/gc когорты ждут | math
 CLAIM | AG-202 | w3968+w4224 w-миды@r1136 (3584-4352/4096-4608, 0-клейм): 1d/9000s/dcp900 @a9ff088f | 2 POST
 CLAIM | AG-203 | sim34 sim-мид (32-36, 0-клейм) + s975 s-мид (900-1050, 0-клейм): bv2+WBP dose | 2 POST
+
+FACT | AG-208 | 2/2 204 @e3ea4039 t4301: 37000385561 gc6 s526208 + 37000434888 gc5 WBP pop150k QUEUED | api
+DISP | AG-208 | gc6+gc5 2/2 queued @swarm-526-208[ab] pop150k dp3v2 same-seed; payload work/AG-208 | 2/2 204
+PATCH_SUMMARY | AG-208 | files=work/AG-208 claims/AG-208 | idea=gc5/gc6 GC-ось leg-3 dp50k | evidence=2/2 204 @e3ea4039
