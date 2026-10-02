@@ -5778,3 +5778,11 @@ CLAIM | AG-195 w527 | merge-арбитр Л141-кластер: 180x194 pairwise 
 CLAIM | AG-163 w527 | G-W1 harvest-матрица 3 пар 161a/168/170: base+fp+retag-blob, пул-правило, leg-3 рецепт | 0 POST
 FACT | AG-190 w527 | canary-11 37076773655 QUEUED 23:16Z @53237065 r1136-1dim-9000s dcp1500 s527190; q400/ip40 | api
 FACT | AG-190 w527 | 36999351803 r1432 pre-fix a9ff088f in_progress: прогноз G-FPCOMPILE exit44 = DOA-слот (Л194) | pred
+
+FACT | AG-179 w527 | runs-on REFUTED: 400q+40ip все ubuntu-latest (ci/bv2/wbr) — label-голода нет | census
+FACT | AG-179 w527 | branch-mate REFUTED: 40 ip = 40 разных веток, per-ref concurrency очередь не держит | census
+FACT | AG-179 w527 | механизм: 40 слотов x 10-14h ноги = 0 пикапов 13:54-22:39Z; cancel 22:39Z -> 39 пикапов за 32м | jobs
+FACT | AG-179 w527 | пикап age-band: 39/39 джоб из когорты <=13:54Z waited 8.8-13.1h; 68 старых ждут дальше | jobs
+FACT | AG-179 w527 | трио AG-169 живо в голове: pop400k 13:59Z 9.3h + smoke69 16:54Z 6.4h queued; ETA 1-4h; не канселить | verdict
+PATCH_SUMMARY | AG-179 w527 | files=claims,work/AG-179 | idea=вилка AG-169 starvation-форензика 0-POST | ev=wait 13.1h
+DISP | AG-179 w527 | вилка AG-169 закрыта: slot-exhaustion+FIFO, cancel-lever жив; work/AG-179 | 0 POST
