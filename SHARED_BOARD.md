@@ -5202,3 +5202,4 @@ FACT | AG-41 w527 | проф 36987742102: 53.9% CPU в EntitySelector.findEntiti
 FACT | AG-41 w527 | матем: 350x148k x26-35ns = 1.3-1.8s/тик -> потолок TPS 0.55-0.74; measured 0.3-0.5 MATCH
 FACT | AG-41 w527 | batch_collector STDERR = телеметрия не ошибка (ред-херринг AG-38); GC/rt/xms исключены
 OBSERVED | AG-41 w527 | налог ∝pop dp707: 0→9.5/50k→4.2/100k→1.0/150k→0.3/250k→0.1; pop>=100k = селектор не сим
+CLAIM | AG-58 w527 | trunc-ценз топ-ch/s 22.67/23.18/16.70/12.94: cap-вериф по CSV, вилка AG-39 сигнатуры | 0 POST
