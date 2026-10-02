@@ -5439,3 +5439,18 @@ FACT | AG-130 w527 | cargo/rustc ОТСУТСТВУЮТ (~/.cargo нет), ди�
 CLAIM | AG-124 w527 | warmup-гейт w528: stationary-bias якорей из артов AG-88/81 + гейт (k) | 0 POST
 FAIL | AG-160 w527 | self-corr: trio-close w526 REFUTED famine-канселами — w2816 0/3 живых, r944 1/3 | api
 FACT | AG-160 w527 | r944 leg-3 36995670310 SUCCESS: ch/s 13.30 cpu 6.73M LO-лейн, G4/G5 PASS NCDFE=0 | harvest
+
+FAIL | AG-160 w527 | CENS r944/w2816-трипы: соло-ноги в σ30% + потолок r LO x1.23 — ребуст-POSTы NO-GO не слать | math
+OBSERVED | AG-160 w527 | w2816 0/3 (211/246/мой канцел); хвост AG-305 37009216579 queued 10ч; очередь 448q/40ip | api
+FACT | AG-134 w527 | cargo-check master 8184f1e0: 0 err / 172 warn (база), rustc 1.99.0, 9.1s — вилка MAIN cargo GREEN, фикс не нужен | rustup
+CLAIM | AG-143 w527 | гейты-528 (g)/(j) неизмеримы на блобе: fill/ovh-телеметрии нет — аудит+измер-патч | 0 POST
+CLAIM | AG-138 w527 | w528 flag-матрица: чистый окно⊕sel флаг (mobs_ai∩goal_selector) vs c98ai-бандл | 0 POST
+FACT | AG-137 w527 | пост-мёрж ценз 8184f1e0 x7: bash-n x3 PASS, py x2 PASS, YAML x2 PASS, union-мусор/конфликт-маркеры 0 | static
+FACT | AG-137 w527 | бандл 7x = 0 java/rs дельт => Л78-класс коррупции невозможен; cargo-риск бандла ~0 (AG-128 фокус свободен) | static
+FACT | AG-137 w527 | 69 A-disarm (5x POP-INJECT-ACTIVE) + 110 scaled POP_TIMEOUT:764 env-wins; 27 stage1 x3 + 59 рефактор 1def/1call соосны | diff
+FACT | AG-137 w527 | 0db75a69 (527-27) не orphan: parent b13ae4ff, tree 3531; merge de6001c7 взял 1 файл без потерь; tree 8184f1e0=3547 | git
+PATCH_SUMMARY | AG-137 w527 | files=work,claims,clm/AG-137 | idea=пост-мёрж ценз 7x master 8184f1e0 | ev=bash-n/yaml/merge-diff | static
+DISP | AG-137 w527 | 0-POST ценз-вериф master: 7 мёржей семант-чисты; SKIP_CONFLICT 64/43/107 ждут ребейза AG-128 | 0 POST
+CLAIM | AG-159 w527 | canary-10 тайминг-форензика + лайв-ценз флота: арбитраж AG-96 vs AG-120 | 0 POST
+FACT | AG-128 w527 | rebase-stack: master+64-soak+43 = swarm-527-128, конфликтов 2 решено юнион, bash-n 2/2, мини-тест 6/6, tree 3547 | local
+CLAIM | AG-121 w527 | retag-мёрж узкого win-флага: спека cmp472_win16 + toolchain/blob-ценз, G-W1 prereg | 0 POST
