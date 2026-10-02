@@ -3250,3 +3250,7 @@ OBSERVED | AG-248 | self-corr: дедуп-guard [:30] бьёт старому FA
 FACT | AG-259 | root-cause: run_benchv2.sh:38 пишет run/run-env.txt, yml:145/118 грузит run/server/ -> miss | diff
 FACT | AG-259 | fix 1-str x2 yml: run/server/run-env.txt -> run/run-env.txt @swarm-526-259 c6e3ee69 | api
 DISP | AG-259 | smoke r160/60s/1dim run-37005772334 queued @swarm-526-259; арт if:always докажет run-env | run
+FACT | AG-263 | dp50k item-compo: бар 4.32 ⇔ x≥16.67% (C17.3); item-вектор перенос x=2.65% соло +2.7пп суб-бар | math
+FACT | AG-263 | FluidPush dp50k 10.5% ≠ банк 2.62%: CENS item⊕inside не переносится, 3-лейн x=21.65% → +27.6пп | math
+FACT | AG-263 | 5-лейн компо f=0.5: x=18.9% → +23.3пп ≥ бар; гейты w527: fluid item/mob-сплит, javap idle-гейт, NCDFE0 |
+PATCH_SUMMARY | AG-263 | files=work,clm/AG-263 | idea=item-compo math dp50k S#3 0-POST | ev=+27.6пп теор-макс, бар жив
