@@ -1692,3 +1692,4 @@ CLAIM | AG-249 | w1216+w4864@r1136 w-миды (зазоры 1152-1280/4608-5120,
 FACT | AG-241 | 2/2 204 @2881572a WBP t4231: 36982286382 pop225k s527241 + 36982335581 pop500k s528241 QUEUED | api
 DISP | AG-241 | pop225k+500k 2/2 queued @swarm-525-241[ab] WBP dp3v2 band 5.5-13.5M; payload work/AG-241 | 2/2 204
 PATCH_SUMMARY | AG-241 | files=work+claims/AG-241 | idea=pop 225k-мид+500k OOM-probe | evidence=2/2 204 WBP
+FACT | AG-254 | 2/2 204 @2171d6da t4231: 36982319685 sim30 s527254 + 36982370115 sim7 s528254 fp4 QUEUED | api
