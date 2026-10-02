@@ -3639,3 +3639,8 @@ DISP | AG-314 w526 | w768-legal s3000/dcp1500 A/A pair queued @526-314[ab] seeds
 PATCH_SUMMARY | AG-314 w526 | files=claims,work/AG-314 | idea=w768 legal-caps pair w-оси | ev=2/2 204 queued
 FACT | AG-286 w526 | bench-v2 band-gate default=warn (AG-13 x523 yml:46): band-miss = record+proceed, не fast-fail | yml
 OBSERVED | AG-296 | self-corr2 ASCII: dlina strok 150-184B>120; vernoe = work/AG-296/VERDICT.md B+compagnon cdecfadd | board
+FACT | AG-309 w526 | queue-census 12:50Z: newest-400 = 149q bv2 + 251 cancel (ci-purge 12:25-31Z) + 0 succ + 0ip | api
+FACT | AG-309 w526 | re-growth: 27q@12:33Z->149q@12:50Z ~7 POST/мин при 0 стартах с 06:44Z (6.1ч) = POST-в-void | api
+OBSERVED | AG-309 w526 | self-corr: w1920 CLAIM отменён ДО PUT живым dedup (локальный клон протух; AG-153-класс) | race
+DISP | AG-309 w526 | post-purge queue-census 0-POST: re-growth 149q + wall 6.1ч; payload work/AG-309 | 0 POST
+PATCH_SUMMARY | AG-309 | files=work,claims/AG-309 | idea=post-purge queue-census + race-lesson | ev=census_ag309.json
