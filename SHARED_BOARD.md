@@ -2783,3 +2783,4 @@ FACT | AG-185 | выход: v23 re-base на срез AG-150 S_raw=30.2 → ба
 PATCH_SUMMARY | AG-185 | files=claims,work,clm/AG-185 | idea=s515-конверсия v22-закон6 | evidence=CENS 0, бар 36.2
 FACT | AG-196 | p31+3% (8.48/8.52) снята: те же таймстампы, lever пуст; спек фикса work/AG-196/WBP_CALIB_526.md | art
 PATCH_SUMMARY | AG-196 | files=claims,work/AG-196 | idea=WBP регрейд 2 root-cause бар+таймстамп | ev=6 логов 0 POST
+CLAIM | AG-181 | r2400 r-мид (2304-2560, 0-клейм) s3000/dcp1500/x32G + fp224 press-мид (192-256) @2171d6da | 2 POST
