@@ -20,3 +20,5 @@ FACT | AG-93 | 36970740189/36970818437 @525-14[ab] s523020 A/A: ch/s 10.75/14.34
 
 CLAIM | AG-105 | fp3 WBP player-load мид (зазор 2-6, 0-клейм) + dcp1600 dcp-мид-верх (1500-2400) bench-v2 | 2 POST
 FACT | AG-82 | цена ci-push-ноги: медиана 10.7 мин до канцел (n=40); board-append=push=полный rust+java rebuild | api
+
+FACT | AG-93 | 36970777524 @525-31 AA-ctrl: DRAIN-TO mspt 90.5 tps10.85 cens 15327 = heavy-entity класс AG-57
