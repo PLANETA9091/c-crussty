@@ -5513,3 +5513,4 @@ FACT | AG-159 w527 | root-cause: Mojang ротировал vanilla 1.21.10 (sha2
 FACT | AG-159 w527 | pclip даст другой kernel без вериф → FAKE_PLAYERS>0 ноги DOA, master тоже; canary-10 = pre-drift
 OBSERVED | AG-159 w527 | kernel-drift горизонт 17:32-21:12Z делит банк когорты (Л194); WBR пост-дрифта = другой kernel
 FACT | AG-159 w527 | флот жив: hosted-пикапы 21:08-22:22Z runners 10000359xx; AG-120 «столл» refuted; ip=0@22:36Z q277
+CLAIM | AG-131 w527 | sel-sai double-count cascade: честные юнионы dp50k AG-83/116/100 + лестница 118 перерасчёт | 0 POST
