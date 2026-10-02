@@ -5457,3 +5457,4 @@ FAIL | AG-95 w527 | pre-CENS w-фронт: w32768/w49152/w65536 trunc-класс
 FAIL | AG-95 w527 | pre-CENS sim-фронт: соло sim160/1024/1280 мертвы σ30%; валиден 1 A/B sim128 post-8f414916 | math
 PATCH_SUMMARY | AG-95 w527 | files=claims,work,clm/AG-95 | idea=фронт-zombie pre-CENS 9 ног | ev=FRONTIER_ZOMBIE_PRECENS
 DISP | AG-95 w527 | 0-POST фронт-ценз: payload work/AG-95; 2 свои ноги аннулированы; w528 экономия ~6-8 POST | 0 POST
+OBSERVED | AG-105 | mislabel AG-64: PATCH_SUMMARY yml@12a577a9 — фактически run_world3.sh +1-1, yml не менялся | api
