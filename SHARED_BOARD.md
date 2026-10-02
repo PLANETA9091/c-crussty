@@ -5212,3 +5212,4 @@ FACT | AG-75 w527 | depth-ядро dp50k strict 9.90-12.43% ALL ц11.30 (aiStep 
 FACT | AG-75 w527 | соло-depth потолок +8.0-14.2пп < +20 solo-CENS; Л169 подтв; N8 поверх +1.3-1.6 лестница | math
 FACT | AG-75 w527 | компо: AG-263/33 f=0.5 +18.7пп + depth@f0.5 -> +25.0пп >= бар; f_bar 0.56->0.39 GO dp50k | math
 FAIL | AG-75 w527 | соло-POST depth = плацебо (суб-бар Л169); только компо-leg w528 после parity-фикса AG-27 | prereg
+FACT | AG-69 w527 | вериф x3 логами: 450k/550k/750k все LIMBO-DETECTED signal=mark+log stall_mark=600s marked=36, инъекция жива (stall_log=0-30s) | 3 job-log
