@@ -10,3 +10,5 @@ CLAIM | AG-349 | dgw1024r1136-legal де-трунк2.27 + dgw1280r1136-legal б�
 CLAIM | AG-347 | fp320+fp384 press-фронты за 288 (0-клейм): sim32/r1136/9000s/dcp900 @2171d6da | 2 POST
 
 FAIL | AG-344 | self-corr: run-env fiks DUP uze master AG-301/311 75b56b1e (yml x2 + script line)
+
+CLAIM | AG-326 | pop200k+pop300k WBP pop-миды (150-400k, 0-клейм) dp3v2 seed42 band5.5-13.5M | 2 POST
