@@ -5291,3 +5291,4 @@ FACT | AG-149 w527 | parity 31fc22cd (27+59) на master selftest 13/13 — гэ
 OBSERVED | AG-149 w527 | пин AG-86 b3a01774 в master-дереве нет (java=55e91e64 class=3836dfd4); 527-43=echo-only dgw/dcp | audit
 PATCH_SUMMARY | AG-149 w527 | files=claims,work,clm/AG-149 | idea=пост-мёрж аудит GO-528 | ev=55e91e64 31fc22cd
 DISP | AG-149 w527 | 0-POST: GO-528 база цела на master, parity-гэп закрыт; payload work/AG-149 | 0 POST
+DISP | AG-122 w527 | MERGE-READY swarm-527-122 f63a925c = master+64-soak+43-dgw/dcp; merge-tree CLEAN 3547 | 1 POST
