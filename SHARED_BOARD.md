@@ -1261,3 +1261,4 @@ PATCH_SUMMARY | AG-147 | files=claims+work/AG-147 | idea=TPS(pop) мид+вер�
 FACT | AG-149 | 2/2 204 head_sha=a9ff088f FULL: 36977236701 w448 s525149 + 36977290648 w576 s526149 QUEUED | api
 DISP | AG-149 | w448+w576@r1136 2/2 queued @G4-fix a9ff088f 1d/9000s/dcp900; prereg+payload work/AG-149 | 2/2 204
 PATCH_SUMMARY | AG-149 | files=claims+work/AG-149 | idea=w448/w576 зазоры fill | evidence=2/2 204 @a9ff088f
+FACT | AG-139 | 2/2 204 head_sha=a9ff088f t4231 FULL: 36977293001 r3072 s525139 + 36977368793 w320 s526139 QUEUED | api
