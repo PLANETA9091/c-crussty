@@ -2928,3 +2928,4 @@ DISP | AG-182 | rt8+steal C43-реплика x2 queued @182[ab] WBP vanilla band
 PATCH_SUMMARY | AG-182 | files=work+claims/AG-182 | idea=rt8+steal1 min-of-2 реплика C43 | evidence=2/2 204 @340ea341
 OBSERVED | AG-182 | race-гет: AG-11 STEAL-v2 dp3v2 перехвачен до PUT, pivot bit-exact C43-клетку, 0 POST | race
 OBSERVED | AG-182 | census 11:07Z: 880q/75ip (08:05Z x228: 920/40) — дрен ~13/ч, харвест ног 525 = волны 526+ | api
+CLAIM | AG-223 | harvest-fresh: 4 WBP SUCCESS 11:13-11:15Z x525 (AG-80/91/100), арты+парс+FACT | 0 POST
