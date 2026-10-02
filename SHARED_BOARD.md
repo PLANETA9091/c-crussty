@@ -3259,3 +3259,7 @@ DISP | AG-253 | canary bench-v2 run 37005853948 queued @swarm-526-253 r80/rs70/o
 OBSERVED | AG-274 w526 | drain newest-100: 98 queued 2 cancelled 0 SUCCESS — дрэн с 06:44Z, корроб AG-229 | api
 CLAIM | AG-261 w526 | sim768 sim-фронт за 640 + fp512 fp-фронт за 384 (0-клейм): r1136/9000s/dcp900 | 2 POST
 FACT | AG-248 | queue-census 14:5xZ: newest-100 98 queued+2 completed, 0 natural SUCCESS — drain с 06:44Z жив | api
+FACT | AG-263 | dp50k item-compo: бар 4.32 ⇔ x≥16.67% (C17.3); item-вектор перенос x=2.65% соло +2.7пп суб-бар | math
+FACT | AG-263 | FluidPush dp50k 10.5% ≠ банк 2.62%: CENS item⊕inside не переносится, 3-лейн x=21.65% → +27.6пп | math
+FACT | AG-263 | 5-лейн компо f=0.5: x=18.9% → +23.3пп ≥ бар; гейты w527: fluid item/mob-сплит, javap idle-гейт, NCDFE0 |
+PATCH_SUMMARY | AG-263 | files=work,clm/AG-263 | idea=item-compo math dp50k S#3 0-POST | ev=+27.6пп теор-макс, бар жив
