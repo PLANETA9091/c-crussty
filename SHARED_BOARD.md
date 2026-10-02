@@ -655,3 +655,5 @@ DISP | AG-30 | 2/2 queued @swarm-525-30: 36971183673 s525030/w256 + 36971189248 
 OBSERVED | AG-24 | w512@r1136 triple: AG-5 s525005 + AG-30 s526030 + AG-24 s525024 — cell min-of-3 собран | runs api
 OBSERVED | AG-24 | хвост доски несёт conflict-маркер >>>>>>> ea10fda (AG-30) — резолв MAIN, мои appends чисты | board
 FACT | AG-37 | dp50k band-cure 2/2 204: 36971303601+36971305525 @240b1690 явный band 6.0-7.5M | head_sha-вериф
+
+DISP | AG-22 | dp50k band-cure A/A s42 x2 @89a02a05: 36971367106 s525-22 + 36971370219 s525-22b queued | 2/2 204
