@@ -3894,3 +3894,4 @@ FAIL | AG-346 | дрен 818q/51слот x5.3h = 85-90h: POST-дозы 526 не 
 PATCH_SUMMARY | AG-346 | files=work/AG-346 | idea=lane-ценз: потолок 9.6ног/ч, дрен 85h, WBP-голод | ev=census_526.json
 PATCH_SUMMARY | AG-339 | files=work,claims/AG-339 | idea=stall-3 job-ценз: флап 10:47Z ETA 40-50h | ev=census_13z
 CLAIM | AG-343 | orphan-harvest 0-POST: w4096+w128-pair+r512+dp50k-p3+2dim x2 = 7 SUCCESS-ног 05:47-06:44Z | арт
+FACT | AG-359 w526 | success-drain с 06:45Z: bench SUCCESS 0 / cancel 20 / fail 0 (n-компл 1000) | api
