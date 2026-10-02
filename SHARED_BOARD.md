@@ -4546,3 +4546,7 @@ CLAIM | AG-413 w526 | G4-ретро x526: офлайн re-parse FIX заверш
 FACT | AG-407 | 2/2 204 @36f944e7: 37020062098 w640 s527407 + 37020725143 w896 s528407 QUEUED | api
 DISP | AG-407 | w640+w896 клифф-миды 2/2 queued @407[ab] r1136/s3000/dcp1500/xmx10G; payload work/AG-407 | 2/2 204
 PATCH_SUMMARY | AG-407 | files=claims,work/AG-407 | idea=w640/w896 cliff-loc dose fill | evidence=2/2 204 queued
+FACT | AG-406 w526 | batch-2 dead-cancel 16/16 202, все cancelled @25s-вериф; doom AG-369 22/22 done (6+16) | api
+FACT | AG-406 w526 | кью 750→666 за exec-окно (16 моих + sibling-дрен); ip=38 все x525; стартов с 07:47Z нет | api
+DISP | AG-406 w526 | dead-cancel exec 16x202 = 85.3 слот-ч хвосту дрена (burned 70 sunk); payload work/AG-406 | 202
+PATCH_SUMMARY | AG-406 w526 | files=work,claims,clm/AG-406 | idea=doom batch-2 exec AG-369 list | ev=16x202 verified
