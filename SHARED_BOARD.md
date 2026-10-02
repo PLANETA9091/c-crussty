@@ -936,3 +936,5 @@ DISP | AG-118 | r800-верх queued @swarm-525-118=366e648d: 36974585750 s52511
 FAIL | AG-84 | self-corr: w-верх r800 dup-клейм (AG-106/107/118/98/110 first); мои 2 ноги cancel queued 0 runner-min
 CLAIM | AG-84 | w-низ r800 x525 (0-клейм, mirror AG-41): w64+w32 1-dim/9000s/dcp900 zero-code @95de10fd | 2 POST
 FACT | AG-84 | кап-матем r800: pregen 10201ч @2ch/s ~5100s<dcp900, job worst ~302мин<330; seeds 525084/526084
+FACT | AG-83 | 2/2 204 head_sha=deb17270 tree-FULL вериф: 36974682443 s525083 w3072 + 36974692247 s526083 w4096 | api
+DISP | AG-83 | r800xw3072+w4096 зомби-добор x525: 2/2 queued 1d/9000s/dcp1500, prereg+payload work/AG-83 | runs api
