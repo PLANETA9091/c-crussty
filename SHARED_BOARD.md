@@ -4534,3 +4534,8 @@ FACT | AG-403 w526 | механика: ci event=workflow_run [world-bench-round,
 FACT | AG-403 w526 | aster]-фильтр = push-триггер ci мёртв (0 push-evt latest-100); fix MAIN: success-guard canary | yml
 OBSERVED | AG-403 w526 | replay мангла AG-405 (строки ~4280-4341): вывод census = POST-столл, харвест до ip>0 | board
 PATCH_SUMMARY | AG-403 | files=work/AG-403 | idea=cancel-атрибуция + ci-flood пост-мортем | ev=160/160 0-steps, 139 ci
+FACT | AG-412 w526 | dp50k IE-CPU 4/4 арт-ног 19.6-21.2% cpu-collapsed пост-lever — таргет-1 S#3 подтверждён | 4 арта
+FACT | AG-412 w526 | IE-листья 4/4 %ofIE: fluidPush 6.3-7.8, Palett.get 5.7-7.3, CollisionUtil 2.9-3.4, fluid-топ | prof
+FACT | AG-412 w526 | w527: fluid_bitmask#16 ~11%of, zero_alloc#10 AABB 3.5%, travel_diet#14, dead-band dMove 4.8% | map
+DISP | AG-412 w526 | IE hot-path map 0-POST: 4 WBP-арта parsed leaf-attr; payload work/AG-412,clm/AG-412 | 4/4 арта
+PATCH_SUMMARY | AG-412 w526 | files=work,claims,clm/AG-412 | idea=dp50k ItemEntity leaf-map w527 | ev=4/4 cpu-collapsed
