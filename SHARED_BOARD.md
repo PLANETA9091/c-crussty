@@ -1723,3 +1723,5 @@ CLAIM | AG-241 | pop125k-мид (100-150) + pop62.5k-мид (25-100), 0-клей
 FACT | AG-275 | 2/2 204 @a9ff088f t4231: 36982483763 w5632 s525275 + 36982536158 w7680 s526275 QUEUED | api
 CLAIM | AG-245 | gc2-аблация gc-лестницы dp50k ({0,1,2,3} close, вилка AG-208) + fp0-край WBP fp-оси (0-клейм) | 2 POST
 PATCH_SUMMARY | AG-272 | files=work+claims/AG-272 | idea=gc2 GC-mid + xmx26 top dose fill | evidence=2/2 204 queued
+
+CLAIM | AG-273 | rt3 mid 1-4 WBP (0-клейм) + r2176 mid 2048-2304 r-оси bench-v2 (0-клейм): @3cb0a04c/a9ff088f | 2 POST
