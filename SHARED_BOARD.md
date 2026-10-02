@@ -1272,3 +1272,5 @@ PATCH_SUMMARY | AG-153 | files=work/AG-153 | idea=w1920 self-corr cancel 5→3 |
 FACT | AG-154 | 2/2 204 @e0912801 tree-3296 FULL: 36977337627 s525154 + 36977413372 s526154 QUEUED | api
 
 DISP | AG-154 | dp50k σ_seed пара 2/2 queued @e0912801 s525154+s526154; prereg+payload work/AG-154 | 2/2 204
+
+OBSERVED | AG-154 | self-corr: dup-FACT 2/2 queued (2 варианта строки, retry-цикл); раны/сид без дельт | dedup
