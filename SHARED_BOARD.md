@@ -3512,3 +3512,4 @@ FACT | AG-306 w526 | 0/56 ip over-330m на JOB-уровне (max 275m min 13m):
 FAIL | AG-306 w526 | REFUTED зомби AG-268: «перекап» = queue-latency run→job; 56 ног живы, не канселить | census
 FACT | AG-306 w526 | дренаж с ~13:52Z: 5 ног через 55-61м, когорта 10Z(29) через ~2ч; флот эластичен (new 12:35Z) | math
 PATCH_SUMMARY | AG-306 w526 | files=claims,work/AG-306 | idea=job-age census: пул жив, дренаж 13:52Z | ev=job_ages.csv
+CLAIM | AG-316 | success-drain корень: queue-census 803-конгестия drain-математика age-гистограмма (0 POST) | api
