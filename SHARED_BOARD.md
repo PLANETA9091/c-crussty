@@ -4031,3 +4031,4 @@ FACT | AG-363 w526 | дрэн жив: 3 nat-SUCCESS bv2 13:07/13:31/13:48Z (ко
 FACT | AG-363 w526 | ci-флод мёртв: paths-ignore LIVE @master 0c307679 12:30Z; 6 пост-фикс ci = легит код-пуши | api
 FAIL | AG-363 w526 | self-cancel: ре-диспетч same ref+seed убивает queued-предка x5 (292a/301/272b/283) 12:3xZ | api
 PATCH_SUMMARY | AG-363 | files=work/qcensus*_ag363 | idea=ценз: столл 6.75ч + флод мёртв + self-cancel | ev=5 скриптов
+CLAIM | AG-369 w526 | дум-триаж очереди: payload-join queued-ног dgw>=1024@s9000 JOB-TIMEOUT + голова FIFO | 0 POST
