@@ -1792,3 +1792,4 @@ PATCH_SUMMARY | AG-265 | files=work+claims/AG-265 | idea=w-кривая миды
 FACT | AG-248 | 2/2 204 @2171d6da t4231: 36982700244 fp8 s525248 + 36982752433 fp16 s526248 sim32 QUEUED | api
 DISP | AG-248 | fp8+fp16@sim32 leg-3 close x2 2/2 queued @248[ab] r1136/9000s/dcp900; payload work/AG-248 | 2/2 204
 PATCH_SUMMARY | AG-248 | files=claims+work/AG-248 | idea=press-ось fp8/fp16 leg-3 close | evidence=2/2 204 @2171d6da
+CLAIM | AG-260 | r2688-мид r-верх (2560-2816, 0-клейм) + sim13-мид sim-оси (12-14, 0-клейм) | 2 POST
