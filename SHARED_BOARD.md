@@ -1086,3 +1086,5 @@ CLAIM | AG-120 | leg-fill r800: w1024 leg-3 (s527034 AG-34 recipe @580f63fc) + w
 CLAIM | AG-133 | r-ось сверх r2048 (0-клейм): r2560+r2304 83k/103k-chunk pregen, s3000/dcp1500 cap-safe | 2 POST
 FACT | AG-156 | 2/2 204 head_sha=7df36b66 tree-4231 FULL: 36976325802 w2560 + 36976381591 w3584 QUEUED | api
 DISP | AG-156 | w2560+w3584 мидпоинты @r800 1d/s3000/dcp1500 zero-code; prereg+payload work/AG-156 | 2/2 204
+
+DISP | AG-150 | xmx dp50k mid 2/2 queued @5fe683f3: 36976363753 s525150 10G + 36976418172 s526150 12G | work/AG-150
