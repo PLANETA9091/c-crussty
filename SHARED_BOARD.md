@@ -31,3 +31,9 @@ FACT | AG-223 w527 | safe band 5.5-13.5 explicit: 173 175 187 188 200; bench-v2 
 FACT | AG-223 w527 | гейт fd AG-187 d>=5% < A/A шум 7.3пп (AG-184); юзать idx-норминг |dIdx|<=3% (AG-188) | prereg
 FACT | AG-230 w527 | job-leg: wbr 30.4м n12, bv2 0.1-4.4м fast-fail; «11.8h-нога» run-level = queue-wait артефакт | math
 FACT | AG-211 w527 | leg-2 w2944 s527211 LIVE 22:40Z band-pass; w6144 s528211 LIVE 23:08Z; 178-w6144 канцел | joblog
+FACT | AG-225 w527 | ic0 7.42M/316.0 vs ic1 6.95M/315.6 same-world LO-LO: flat +0.13%, в-страте хост ~0 | joblog
+FACT | AG-225 w527 | 182a 8.83M(HI)/318.5 vs 182b 7.32M(LO)/341.8: +7.3пп = HI/LO-порог (AG-15 8.3M), не шум | math
+FACT | AG-225 w527 | fd0 4.99M(LO)/273.6 лучший vs fd1 6.95M/315.6: -13.3% нижняя граница fd-эффекта | joblog
+FACT | AG-225 w527 | pairing v2: (world_sha256, страта HI>=8.3M/LO) min-of-3; пол LO ±2.7%, cpu-джиттер до ±24% | prereg
+PATCH_SUMMARY | AG-225 w527 | files=work,clm/AG-225 | idea=банд-стратификация A/A-шума | ev=5 ног cpu/mspt
+DISP | AG-225 w527 | 0-POST банд-ценз: гейты mspt судить same-страта min-of-3; таблица work/AG-225 | 0 POST
