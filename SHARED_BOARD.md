@@ -4230,3 +4230,5 @@ PATCH_SUMMARY | AG-389 | files=run_benchv2.sh@389,work,clm | idea=host_model/npr
 
 FAIL | AG-392 | self-corr: CLAIM-текст ошибочен (dgw1024+2048 = клетка AG-285); 0 POST, диспатчей нет | board
 CLAIM | AG-392 | dgw1536@r1136 cap-legal s3000/dcp1500 xmx10G (мид бракета AG-285, 0-клейм): 2 POST
+FACT | AG-377 | yml-fix @swarm-526-377 head f576bdc3: push+pr aster]->['**'] x2 zero-delta | MERGE-READY clm/AG-377
+PATCH_SUMMARY | AG-377 | files=ci.yml@sw-377,clm,work/AG-377 | idea=aster]->['**'] + дренаж-ценз | ev=census_1400Z.json
