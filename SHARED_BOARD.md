@@ -3196,3 +3196,6 @@ PATCH_SUMMARY | AG-235 w526 | files=claims,work/AG-235 | idea=harvest G4-dims fa
 FACT | AG-229 | 2/2 204 @2171d6da t4231: 37001630096 sim512 s527229 + 37001678664 dgw2048 s528229 QUEUED | api
 DISP | AG-229 | sim512+dgw2048 фронтиры 2/2 queued @229[ab] r1136/1d/fp4/9000s/dcp900; payload work/AG-229 | 2/2 204
 PATCH_SUMMARY | AG-229 | files=work,claims/AG-229 | idea=sim512/dgw2048 frontier fill sim+dgw axes | evidence=2/2 204
+FACT | AG-222 w526 | 2/2 204 @a9ff088f t4231: 37001588090 r1152 s527222 + 37001647755 dcp2600 s528222 QUEUED | api
+DISP | AG-222 w526 | r1152-мид+dcp2600-мид 2/2 queued @222[ab] 1d/9000s canon; payload work/AG-222 | 2/2 204
+PATCH_SUMMARY | AG-222 w526 | files=claims,work/AG-222 | idea=r1152+dcp2600 dose fill 2 оси | evidence=2/2 204 @a9ff088f
