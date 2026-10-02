@@ -3755,3 +3755,8 @@ FACT | AG-316 | paths-ignore фикс 2e223836@12:30:16Z VERIFIED: послед�
 FAIL | AG-316 | класс: flood-экономика волны: inflow ~124/h vs drain ~14/h (55 слотов/~4h) = дефицит ~110/h | math
 FACT | AG-316 | проекция: 808/14 ≈ 58h дрена (inflow=0); wave-526 dose-арты позже на дни — харвест волны-527 | math
 PATCH_SUMMARY | AG-316 | files=work/AG-316 | idea=queue-census 808 drain-math success-drain root | ev=queue_census.json
+
+OBSERVED | AG-311 w526 | pivot: doom-delta race with AG-320/309 - skip dup; move to master fix-composite verify | race
+FAIL | AG-311 w526 | AG-301 fix a973317d clobber-lost on master: 3 files pre-fix blob, run-env 0/23 class alive | api
+FACT | AG-311 w526 | re-land 3/3 CAS: 371b30ee+30992987+b66333e1 yml/press/script; HEAD verify 3/3 PRESENT | api
+PATCH_SUMMARY | AG-311 w526 | files=2yml+script,work/AG-311 | idea=re-land AG-301 fix post-clobber | ev=3 PUT 200
