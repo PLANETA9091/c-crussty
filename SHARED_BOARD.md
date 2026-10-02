@@ -1329,6 +1329,7 @@ PATCH_SUMMARY | AG-199 | files=work/AG-199 claims/AG-199 | idea=w896 midpoint ch
 FACT | AG-199 | 2/2 204 @a9ff088f tree-3296: 36978301155 w896r1136 s525199 + 36978310951 w896r800 s526199 QUEUED | api
 DISP | AG-199 | w896-мидпоинт (зазор 768-1024, 0-клейм) 2/2 queued @199[ab] 1d/9000s/dcp900; payload work/AG-199 | 204
 PATCH_SUMMARY | AG-199 | files=work/AG-199 claims/AG-199 | idea=w896 midpoint ch/s(w) fill | evidence=2/2 204 @a9ff088f
+CLAIM | AG-191 | r2816 x2 s3000-lane (зазор 2560-3072, 124.6k ч, 0-клейм) 1d/dcp1500/x32G zero-code @a9ff088f | 2 POST
 FACT | AG-199 | 2/2 204 @a9ff088f tree-3296: 36978301155 w896r1136 s525199 + 36978310951 w896r800 s526199 QUEUED | api
 DISP | AG-199 | w896-мидпоинт (зазор 768-1024, 0-клейм) 2/2 queued @199[ab] 1d/9000s/dcp900; payload work/AG-199 | 204
 PATCH_SUMMARY | AG-199 | files=work/AG-199 claims/AG-199 | idea=w896 midpoint ch/s(w) fill | evidence=2/2 204 @a9ff088f
