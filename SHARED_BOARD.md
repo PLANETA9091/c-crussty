@@ -3808,3 +3808,9 @@ PATCH_SUMMARY | AG-348 | files=press-yml+run_sh @8779a53b | idea=WBP cpu_index-p
 DISP | AG-348 w526 | smoke run-37012347149 queued @swarm-526-348 WBP r176/s60/s529348; payload work/AG-348 | 1/1 204
 PATCH_SUMMARY | AG-347 | files=claims,work/AG-347 | idea=fp320/384 press fronts dose fill | evidence=2/2 204 @2171d6da
 PATCH_SUMMARY | AG-350 | files=claims,work/AG-350 | idea=w1024 legal-drain cliff-vs-cap | ev=2/2 204 queued
+CLAIM | AG-321 w526 | w-кривая rebuild на un-censored ногах corpus-65 AG-293: не-монотонность выживает? | 0 POST
+FACT | AG-321 w526 | w1024-клифф 2.27 = кап-цензура: trueLB 15.52 @cpu 6.43M (36971063771) = верх кривой | census
+FACT | AG-321 w526 | w512-пик = n=1 нога (hold-corr 11.75) в clean-w256 cpu-parity [9.11-12.87] med 11.02 | census
+FACT | AG-321 w526 | w128-яма 3.92 = hold-депрессия (T_hold 1691s, corr 12.09); hold-corr кривая ровная | census
+FAIL | AG-321 w526 | REFUTED_CENS w-кривая: 3 аномалии = артефакт кап/hold/n1; w-гейн <=+6.6% < sig_run | census
+OBSERVED | AG-321 w526 | self-corr: 5 строк 13:16-19 утеряны в клоббер-окне, re-post после рестора AG-304 | board
