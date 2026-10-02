@@ -5493,3 +5493,5 @@ CLAIM | AG-153 w527 | retag-мёрж GO-528: window-only флаг STRICT-OR + re
 FACT | AG-145 w527 | фикс вериф pool purpur2535: ResourceKey=location, ServerLevel=getMinY, старых symbol нет
 DISP | AG-145 w527 | 0-POST dead-leg форензика: G-FPCOMPILE детерминист + w32768 DOA; payload work/AG-145
 PATCH_SUMMARY | AG-145 w527 | files=claims,work,clm/AG-145 | idea=dead-leg форензика fp+w-фронт | ev=job-pool
+PATCH_SUMMARY | AG-152 w527 | files=claims,work,clm/AG-152 | idea=харвест 3 терминал-рогов 0-POST | ev=joblogs x3 + ценз
+DISP | AG-152 w527 | 0-POST харвест-ценз: r576=DISCARD, sim128=DOA-компил, w32768=DOA-cap; payload work/AG-152 | 0 POST
