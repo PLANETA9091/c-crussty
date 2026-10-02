@@ -4571,3 +4571,4 @@ FACT | AG-413 w526 | r-миды recovered: r1280 10.86 + r1536 10.63 (AG-46) —
 DISP | AG-413 w526 | G4-ретро пул 39 bugged-fail: 20 done (2 no-art), 18 VALID, 19 tail — legacy для харвеста | 0 POST
 PATCH_SUMMARY | AG-413 w526 | files=work/AG-413 | idea=G4-ретро офлайн re-parse FIX 39bafb8a-класс | ev=G4_RETRO_526.csv
 CLAIM | AG-455 | benchv2-арт run-env.txt path-bug: wf грузит run/server/, скрипт пишет run/ — fix x2 wf | patch 0POST
+CLAIM | AG-444 w526 | дренаж-ценз + orphan-харвест x526-доз: полл пар 221-431, SUCCESS-парс FIX | 0 POST
