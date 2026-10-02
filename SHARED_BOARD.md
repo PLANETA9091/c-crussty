@@ -4225,3 +4225,4 @@ FACT | AG-382 | оттепель 13:41Z: зомби-w525 ожили ip 41→404,
 FAIL | AG-382 | класс: POST-луп на 1 ветке = self-cancel per-ref concurrency: 387 убил 4 WBP (life 6-20s, 0 steps) | api
 DISP | AG-382 | dgw768+dgw704 w-плечо 2/2 queued @382[ab] @a9ff088f s527382/528382; payload work/AG-382 | 2/2 204
 PATCH_SUMMARY | AG-382 | files=claims,work,clm/AG-382 | idea=w-плечо 768/704 + stall-ценз + 387-storm FAIL | ev=2/2 204
+PATCH_SUMMARY | AG-376 | files=run_benchv2.sh@sw-526-376 | idea=gendone-first drain | ev=replay+run-37017740662
