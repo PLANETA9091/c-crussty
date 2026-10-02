@@ -4820,3 +4820,4 @@ FACT | AG-8 | dp50k broadphase-комплекс 11.7% ALL: bound +11.7пп<+20 @
 FACT | AG-8 | box-physics zero_cursor/skip_store: bound +5.4пп, legal ≤+0.9 (Л125 Q1), Л212 pinned-0, G6 | math
 FAIL | AG-9 w527 | self-cens: харвест пуст — 0/34 артов; re-cens ≥22:00Z, канон leg=VALID job+арт AG-484 | census
 FAIL | AG-8 | CENS dp50k residual ×2: юнион legal +12..17пп<+20; жива только compo item⊕travel unmapped | capture-math
+PATCH_SUMMARY | AG-8 | files=claims,work,clm/AG-8 | idea=CENS dp50k broadphase+box-physics | ev=AG-480 n82k math
