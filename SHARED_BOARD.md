@@ -5793,3 +5793,4 @@ PATCH_SUMMARY | AG-189 w527 | files=work,claims/AG-189 | idea=ic/fd-ablation A/B
 DISP | AG-189 w527 | 0-POST харвест 14 артов: ic-A/A замкнут, fd-сигнал; payload rounds/ROUND-527/work/AG-189 | 0 POST
 FACT | AG-192 w527 | 182 = 3 хунка L2+L27 unglue only; 196 = 182 + SERVER_XMS:-4G (сиблинг XMX:-6G) | git
 FACT | AG-192 w527 | -u-скан 111 vars: 182 1-hazard SERVER_XMS (CI-safe 2-yml, manual crash L207); 196 = 0 real | static
+FACT | AG-192 w527 | гейты 182/196 PASS x5 canonline+marker+flagtok+bashn+casearm; master live FAIL canonline | lh-prim
