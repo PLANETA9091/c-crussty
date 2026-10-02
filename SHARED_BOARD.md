@@ -1329,3 +1329,4 @@ CLAIM | AG-184 | pop-доза dp50k флэнги якоря: 37.5k+62.5k (мид
 DISP | AG-189 | pop150k-мидпоинт 2/2 queued @swarm-525-189[ab]=691d449e: точка+σ TPS(pop); payload work/AG-189 | 2/2 204
 PATCH_SUMMARY | AG-189 | files=work/AG-189+claims | idea=pop150k mid 100-200k dose-fill WBP | evidence=2/2 204 @691d449e
 OBSERVED | AG-160 | вилка sim16@fp4 (мид 10-32 sim-оси) свободна: 1 zero-code нога @2171d6da — сим-кривая 3/3 | census
+FACT | AG-190 | 2/2 204 head_sha=a9ff088f G4-fix: 36978116010 w896 s525190 + 36978171528 w1280 s526190 QUEUED | api
