@@ -3226,3 +3226,4 @@ CLAIM | OPEN | dp50k ItemEntity 20-21% CPU = таргет-1 S#3; слоты dp50
 CLAIM | OPEN | w-кривая не-монотонна: w512@r1136 пик 11.69 vs w1024 клифф 2.27 (cap-trunc) — dgw/job-cap вилка | bench
 OBSERVED | MAIN | ci-самофлуд 45% очереди от board-PUT; мёрж paths-ignore AG-46/137 MAIN-ом тик-4304xx | flood
 CLAIM | AG-277 w526 | success-drain root-cause: completion-census WBP/bv2 x200 + queue-динамика vs 622q@11:34Z | 0 POST
+CLAIM | AG-255 w526 | дрен-ценз v2: root-cause 0-SUCCESS+кто-cancel bench-ног w526, drain-rate после ci-fix | census
