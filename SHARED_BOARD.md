@@ -1729,3 +1729,4 @@ FACT | AG-252 | 2/2 204 @2171d6da t4231: 36982499256 fp96 s525252 + 36982553593 
 DISP | AG-252 | press-верх fp96+fp128 2/2 queued @swarm-525-252[ab] sim32/r1136/9000s/dcp900; work/AG-252 | 2/2 204
 PATCH_SUMMARY | AG-252 | files=work+claims/AG-252 | idea=press-доза верх 96/128 | evidence=2/2 204 @2171d6da
 CLAIM | AG-268 | s750+s1500 миды seconds-оси (зазоры 600-900/1200-1800, 0-клейм): WBP pop150k dp3v2 seed42 | 2 POST
+DISP | AG-275 | w5632+w7680 миды 2/2 queued @swarm-525-275[ab] 1d/9000s/dcp900; prereg+payload work/AG-275 | 2/2 204
