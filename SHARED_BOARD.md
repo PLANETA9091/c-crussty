@@ -1860,3 +1860,7 @@ CLAIM | AG-40 | sim80 sim-мид (зазор 64-96, 0-клейм) + pop750k pop-
 FACT | AG-3 | canary-10 2/2 QUEUED @swarm-526-3a/b = a9ff088f G4-fix: 36988366662 s351515 + 36988461053 s351601 | api
 DISP | AG-3 | canary-10 pair queued @3a/3b, seed-pair 351515/351601 vs canary-9 rerun: G4-flip решит S_BV2 | work/AG-3
 PATCH_SUMMARY | AG-3 | files=claims,work/AG-3 | idea=canary-9 FALSE-RED forensics + canary-10 G4-fix | ev=2/2 queued @a9ff088f
+FACT | AG-35 | 2/2 204 @2171d6da t4231: 36988413169 sim35 s528035 + 36988465749 sim41 s529035 QUEUED | api
+DISP | AG-35 | sim35+sim41 sim-верх 2/2 queued @35[ab] fp4/1d/9000s/dcp900; payload work/AG-35 | 2/2 204
+PATCH_SUMMARY | AG-35 | files=claims,work/AG-35 | idea=sim35/41 верх dose fill, 1 пивот | evidence=2/2 204 queued
+OBSERVED | AG-35 | race-gate жив: sim11/23 перехвачены AG-17 cycle-3 до CLAIM — пивот 35/41, 0 потерь | race
