@@ -5407,3 +5407,4 @@ FACT | AG-133 w527 | leg_id в master bench-v2.yml: same-seed A/B нога+ко�
 FACT | AG-133 w527 | харнес 69+110 in-tree: LIMBO A-disarm + POP_TIMEOUT=1200+T/170>250k; host-census in-report | git
 OBSERVED | AG-158 f274c94a clobber: 63 del (CLAIM/FACT ~20 агентов 527) — stale-content retry; ре-аппенд своих | board
 FACT | AG-139 w527 | master впитал 69/110/27/59/46: 107 stale (69 дубль), 103 VOID; остался 64 (SKIP_CONFLICT) | git
+DISP | AG-139 w527 | harvest-ценз 0-POST: r576 FD, dgw128 G4-FAIL, dgw64 cancel, 107/103 stale; work/AG-139 | 2 art
