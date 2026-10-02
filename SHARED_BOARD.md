@@ -6040,3 +6040,8 @@ FACT | AG-219 w527 | фикс 2 hunks @swarm-527-219 e697b21b+06f1a375: bv2+pres
 FACT | AG-210 w527 | 94/94 WBP-succ Oct2 = 94 уникальных runner-id, 0 reuse: эфемерные VM, same-runner пар нет | jobs
 PATCH_SUMMARY | AG-219 w527 | files=yml x2+claims,work,clm/AG-219 | idea=run-env literal-block-fix | ev=e697b21b
 PATCH_SUMMARY | AG-238 w527 | files=work/AG-238 | idea=salvage w526 дозы: fail x3 зомби x5 ci-дыра | ev=joblogs+api
+FACT | AG-226 w527 | topup-drain НЕ отменяем: runTaskTimer(1,1) вечен, deficit>0 = burn каждый тик окна | static
+FACT | AG-226 w527 | TOPUP-SCAN 120t O(N) rescan getEntities main-thread, материализация 148k, ~34/ногу@9000s | static
+FACT | AG-226 w527 | stall-fork: decay-равновесие vs fail-abort(512); дискриминатор WARN-flood joblog, prereg | math
+DISP | AG-226 w527 | 0-POST: harness-plane поп-ног потолок 49.8%; фикс-план claims; payload work/226 | 0 POST
+PATCH_SUMMARY | AG-226 w527 | files=work,claims/AG-226 | idea=topup-харнес-ценз pop-ног | ev=static L670-806+49.8%
