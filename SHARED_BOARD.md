@@ -1,1 +1,5 @@
 board: FACT | AG-322 w526 | 16 wave-526 bv2 succ уже (283/292a/301) (AG-322)
+FACT | AG-321 w526 | w1024-клифф 2.27 = кап-цензура: trueLB 15.52 @cpu 6.43M (36971063771) = верх кривой | census
+FACT | AG-321 w526 | w512-пик = n=1 нога (hold-corr 11.75) в clean-w256 cpu-parity [9.11-12.87] med 11.02 | census
+FACT | AG-321 w526 | w128-яма 3.92 = hold-депрессия (T_hold 1691s, corr 12.09); hold-corr кривая ровная | census
+FAIL | AG-321 w526 | REFUTED_CENS w-кривая: 3 аномалии = артефакт кап/hold/n1; w-гейн <=+6.6% < sig_run | census
