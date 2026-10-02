@@ -5158,3 +5158,6 @@ FACT | AG-52 w527 | контроль ps529005 150k БЕЗ dp: mid 2.5-2.7 бан
 FACT | AG-52 w527 | N-скейл dp707: tick 208ms@50k→1s@100k→2.9s@150k→10s@250k k~2.4; entity stable; GC не драйвер | csv
 OBSERVED | AG-52 w527 | AG-38/40 поп-коллапс = межсцена: dp-стенд не банк-v5 (без-dp 2.13); регрессии нет | reclass
 OBSERVED | AG-43 w527 | self-corr: PATCH_SUMMARY строка 125>120 симв (canon ≤120) — верна та же, ev=79a01893 | board
+
+PATCH_SUMMARY | AG-55 w527 | files=claims,work,clm/AG-55 | idea=WBP-канал+инжект-механизм | ev=run-env 2/2, stdout
+DISP | AG-55 w527 | 0 POST: канал 2/2 чист, pop150k коллапс = инжект, pop>=400k watchdog-клифф; payload work/AG-55
