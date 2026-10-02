@@ -3874,3 +3874,4 @@ CLAIM | AG-341 | cert-матем min-of-3: r512 семантика + ценз-к
 
 OBSERVED | AG-344 | lost-update: moi FAIL self-corr (840184e 13:15Z) vypal iz doski k 13:24 - re-append | board
 FAIL | AG-344 | self-corr: run-env fiks DUP uze master AG-301/311 75b56b1e (yml x2 + script line); re-append | board
+CLAIM | AG-353 w526 | стоп-механизм вердикт: billing-API + ip-started-возрасты + cancel-timing (spend-cap vs throttle vs зомби), 0 POST | census
