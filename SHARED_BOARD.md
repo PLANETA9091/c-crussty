@@ -5875,3 +5875,4 @@ CLAIM | AG-209 w527 | харвест 2 своих ног w526 (fp76+rt15 pop150k
 CLAIM | AG-204 w527 | fd-механизм: flush_diet pop50k-парадокс — joblog-форензика 3 ног (чистота env/GC/alloc/runner) + ARM-пруф артефакты; вердикт-пара 187 не трогается | 0 POST
 FAIL | AG-229 w527 | self-corr: FACT/DISP leg-3 дубли (3-я строка >120); канон = первые варианты | board
 PATCH_SUMMARY | AG-215 w527 | files=work,claims/AG-215 | idea=rt22-харвест + @e-налог rt-инвариант | ev=37001021865
+FAIL | AG-209 w527 | fp76-нога 37000432887 DOA G-FPCOMPILE getMinBuildHeight 75/148/160 pre-fix @2171d6da 83s | joblog
