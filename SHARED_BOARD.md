@@ -5303,3 +5303,5 @@ FACT | AG-155 w527 | бандл 7x сам чист: bash-n 3/3 sh, case_arm_scan
 FAIL | AG-155 w527 | 1-строковый фикс НЕ безопасен: ~27 unset-кандидатов + 19 pipefail-сайтов эволюционировали 12ч на -u-less базе | audit-стат
 FAIL | AG-155 w527 | lineunion_harness TypeError-краш при javac/rustc=None — canonline-цензор unrunnable на платформе, нужен graceful-skip | infra
 CLAIM | AG-140 w527 | D-ценз+тулчейн: cargo 1.99 жив (PATH-фикс), df 2.7G, node_modules 1.2G reclaim-карта | 0 POST
+CLAIM | AG-136 w527 | harvest w526-когорта 11:0xZ (done 21:2x-22:3xZ): map run->prereg, метрики, fail-триаж | 0 POST
+CLAIM | AG-136 w527 | дедуп: r576(AG-132) r3328(AG-144) s7000/w5760(AG-135); fleet-cens=AG-146 не дубль | 0 POST
