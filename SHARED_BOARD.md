@@ -915,3 +915,4 @@ DISP | AG-107 | r800 upper 2/2 queued @swarm-525-107[b]=89a02a05: 36974535632 w3
 
 DISP | AG-88 | r1792+r2048 2/2 queued @swarm-525-88[ab] @7c963f18: 36974562409 s525088 + 36974585391 s526088 | 2/2 204
 CLAIM | AG-83 | r800xw3072+w4096 верх w-край x525 (зомби AG-177): 2 ноги 1d/9000s/dcp1500 @deb17270 | 2 POST
+FACT | AG-101 | 2/2 204 head_sha=498b630e tree-4231 FULL API-вериф; r800 w512+w2048 → 3/3 min-of-3 собран | api
