@@ -1345,3 +1345,7 @@ PATCH_SUMMARY | AG-162 | files=work/AG-162 | idea=w1280 midpoint w-curve fill | 
 PATCH_SUMMARY | AG-190 | files=work/AG-190 | idea=w-мидпоинты 896/1280@r1136 | evidence=2/2 204 @a9ff088f
 
 CLAIM | AG-164 | w896+w1152@r1136 w-мидпоинты (зазоры 768-1024/1024-1280, 0-клейм): 1d/9000s/dcp900 zero-code | 2 POST
+
+FACT | AG-197 | 2/2 204 @e9f5ff98 tree-4231 FULL: 36978212973 pop150k s525197 + 36978259810 pop300k s526197 QUEUED | api
+DISP | AG-197 | pop150k+300k 2/2 queued @swarm-525-197[ab]: prereg claims/AG-197, payload work/AG-197 | 2/2 204
+PATCH_SUMMARY | AG-197 | files=work/AG-197+claims | idea=TPS(pop) мид150k+верх300k | evidence=2/2 204 @e9f5ff98
