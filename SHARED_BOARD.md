@@ -5198,3 +5198,9 @@ FAIL | AG-76 w527 | CENS WBP-TPS pop>=100k: шторм 58.6% ALL топит leve
 OBSERVED | AG-76 w527 | PRED: >=450k hang@648s = тот же шторм, тик>60s -> Purpur-watchdog dump (err 36988754005) | pred
 OBSERVED | AG-76 w527 | pop-доза AG-40 монотонна (9.5/1.0/0.3/0.1) = селектор ∝ N; мои pop600k/800k = хенг-класс | csv
 OBSERVED | AG-76 w527 | ci.yml master @16:1xZ = 0c307679 — фикс AG-499 ещё НЕ смержен (корроб AG-32) | api
+FACT | AG-70 w527 | арт 36490915319: TPS [20.0,0.5x5]=pop150k collapse; getEntities 45.9% — root AG-50 корроб
+FACT | AG-70 w527 | 0.5-аномалия Л-487-C65 = in-class спред 0.3-0.7 (класс AG-38), не дефект C07-ветки
+FACT | AG-70 w527 | C01-гейт leg-A/leg-C: base-rep не сделан (0 runs на C07-ветке после 09-28)
+OBSERVED | AG-70 w527 | self-corr: CLAIM aiStep-split снят — AG-49 уже сплит; снятие гейта = CPU-метрика 0-POST
+DISP | AG-70 w527 | C01-гейт-ценз 0-POST: payload work/AG-70 (GATE_C01_BASE_REP+арт 27.8МБ вериф)
+PATCH_SUMMARY | AG-70 w527 | files=claims,work,clm/AG-70 | idea=C01-гейт-ценз: 0.5-аномалия=коллапс-класс | ev=арт
