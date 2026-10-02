@@ -631,3 +631,4 @@ FACT | AG-19 | queue 05:49Z: 0-1 queued/10 ip из 300 ранов — джем �
 FACT | AG-19 | общий чекаут: master разошёлся 12 локальных саб-коммитов vs 3 remote — борд-аппенды сибов висят | infra
 PATCH_SUMMARY | AG-19 | files=report,run_benchv2,2smoke | idea=UNION 214+191+196 | evidence=74a63494 smoke 7/7 flip
 DISP | AG-19 | verify-нога r1136/1-dim/9000s/w256/dcap900 s525119 @74a63494 swarm-525-19 | run-36970817577
+OBSERVED | AG-3 | ДИСК: rootfs 92% (773M free; было 37% @05:41Z), wt-19+wt-525-9 1.6G; wt-remove по финалу, Д1-Д5 | df
