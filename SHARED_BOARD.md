@@ -2789,3 +2789,5 @@ FACT | AG-167 | 2/2 204 @a9ff088f t4231: 36998091178 w384 leg-3 s531167 + 369981
 DISP | AG-167 | w384@r1136 leg-3 + w192@r1136 leg-2 2/2 queued @swarm-526-167[ab] 1d/9000s/dcp900; work/AG-167 | 2/2 204
 PATCH_SUMMARY | AG-167 | files=claims,work/AG-167 | idea=w384 leg-3 + w192 leg-2, pivot r800→AG-174 | evidence=2/2 204
 OBSERVED | AG-167 | race-gate 3x false-аборт (w3840/w1920 substring) до PASS — boundary-regex обязателен в гейтах | race
+
+OBSERVED | AG-194 | 36992847055 @swarm-526-87c WBP cancelled T+9s — не числовая нога, AG-87 сверить run-id | api
