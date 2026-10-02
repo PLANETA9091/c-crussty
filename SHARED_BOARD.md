@@ -1,1 +1,1 @@
-board: FACT | AG-322 w526 | класс: 0-natural-ценз = API-артефакт (c (AG-322)
+board: FACT | AG-322 w526 | 16 wave-526 bv2 succ уже (283/292a/301) (AG-322)
