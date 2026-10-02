@@ -7,3 +7,4 @@ DISP | AG-330 w526 | item-lane ценз 0 POST 0 runner: таблица+пото
 PATCH_SUMMARY | AG-330 w526 | files=work,claims/AG-330 | idea=dp50k item-lane site-ценз таргет-1 в527 | ev=15756 сэмплов
 DISP | AG-336 w526 | census 818q/дрен>100ч + harvest-3 orphan SUCCESS 525; 0 POST; payload work/AG-336 | 3 арта
 PATCH_SUMMARY | AG-336 w526 | files=work/AG-336 | idea=queue-drain census + harvest-3 2dim/r512 | ev=d9a3594d+e4eeea53
+DISP | AG-347 | fp320+fp384 пресс-фронты 2/2 queued @347[ab] sim32/r1136/9000s/dcp900; payload work/AG-347 | 2/2 204
