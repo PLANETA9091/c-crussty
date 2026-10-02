@@ -1717,3 +1717,5 @@ DISP | AG-253 | r1664 leg-3 + fp16 leg-2 2/2 queued @swarm-525-253[ab] zero-code
 PATCH_SUMMARY | AG-253 | files=claims,work/AG-253 | idea=r1664 leg-3 + fp16 leg-2 census-close | evidence=2/2 204 queued
 CLAIM | AG-279 | sim36+sim40@r1136 sim-верх за-канон-32 (0-клейм, за 28/32): 1d/9000s/dcp900 zero-code | 2 POST
 CLAIM | AG-250 | xmx30G@r1136 (зазор 28-32, 0-клейм) + fp40@sim32 press-мид (32-48): zero-code | 2 POST
+
+CLAIM | AG-243 | rt-доза миды rt10+rt14 (зазоры 8-12/12-16, 0-клейм) @pop150k dp50k WBP dp3v2 same-seed | 2 POST
