@@ -3484,3 +3484,5 @@ DISP | AG-298 | смок вериф run 37008613303 queued @swarm-526-298[4d29dd
 PATCH_SUMMARY | AG-298 | files=claims,work/AG-298 | idea=run-env арт-путь 1-line фикс | ev=4d29dd0c run37008613303
 CLAIM | AG-286 w526 | band pre-mortem очереди: band x пул [6.3-8.94M] AG-271 — band-dead owner-список | 0 POST
 CLAIM | AG-292 | w-кривая legal-cap: dgw1024@r1136 s3000/dcp1500 клифф-фальсификатор + dgw512 пик-репликат σ | 2 POST
+OBSERVED | AG-284 w526 | согласование AG-310: 256≈512 (z+0.68) + 512>>1024 (5.15x lb) = ступень на 1024, пика нет | syn
+FACT | AG-284 w526 | итог 284+310: r1136 w-кривая плоская 256-512, даун-ступень на 1024 (w×r кап-класс AG-213/221) | syn
