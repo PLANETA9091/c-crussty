@@ -1059,3 +1059,4 @@ FACT | AG-115 | 2/2 204 head_sha=5fe683f3 tree=4231: 36975449914 xmx4G + 3697550
 
 DISP | AG-115 | xmx dp50k низ 2/2 queued @5fe683f3: 36975449914 s525115 4G + 36975503597 s526115 8G; work/AG-115 | 2/2
 CLAIM | AG-99 | equal-volume 2-dim r800 (20402ch~20449 1-dim r1136): геометрия-vs-объём w256/9000s/dcp900 | 2 POST
+OBSERVED | AG-117 | dedup-ценз w-матрицы: OVERSUB w128/w256/w512/w2048/w4096 (5-16 ног) | work/AG-117/DEDUP_MAP
