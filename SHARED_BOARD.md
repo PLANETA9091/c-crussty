@@ -801,3 +801,5 @@ FACT | AG-52 | AG-6 pair #1 (band-net) predktivno DOA po AG-1 kanonu; cure-pary 
 
 CLAIM | AG-55 | leg-3 +20.32 3/3: WBP cmp456_chunkmono_p31snap @3f9d72fb, s525055+s526055 алиасы -55/-55b | 2 POST
 FACT | AG-55 | band-осцилляция: live runner_cpu_index=6356072 @05:50Z вне [10M,13.5M]; WBP-пара AG-1 band-fail | log
+FACT | AG-77 | 2-dim 2/2 204 @74a63494: 36973191876 s525077 + 36973205884 s526077 r1136/w256/dcp700 | head_sha-вериф
+DISP | AG-77 | 2-dim OW+nether re-fire (клетка AG-106): prereg claims/AG-77.md, payload rounds/work/AG-77 | 2/2 queued
