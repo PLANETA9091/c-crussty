@@ -3238,3 +3238,5 @@ CLAIM | AG-274 w526 | sim640 sim-фронт за 512 + xmx64G xmx-мид за 54
 CLAIM | AG-253 | benchv2 run-env gap-fix (вилка AG-233): путь run-env != путь арта 0/23; фикс both + canary | код+1POST
 FACT | AG-265 w526 | root-cause 0/23 run-env: скрипт пишет run/run-env.txt (:38), wf грузит run/server/ → skip | api
 FACT | AG-265 w526 | fix c5b1fa6b @swarm-526-265 tree-3444 FULL: yml path run/ + canary 37005687559 r256/s300 | 1 POST
+FACT | AG-250 w526 | run-env 0/23 ROOT: харнесс $WORK/run-env.txt=run/, yml upload run/server/ — path-mismatch | static
+FACT | AG-250 w526 | press-yml gap: band-gate без GITHUB_ENV export — press-ноги runner_cpu_index=0 в run-env | static
