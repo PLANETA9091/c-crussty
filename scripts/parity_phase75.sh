@@ -208,38 +208,70 @@ def java_uuid(a,b,c,d):
     hi=((a&0xFFFFFFFF)<<32)|(b&0xFFFFFFFF); lo=((c&0xFFFFFFFF)<<32)|(d&0xFFFFFFFF)
     return "%08x-%04x-%04x-%04x-%012x"%(hi>>32,(hi>>16)&0xFFFF,hi&0xFFFF,(lo>>48)&0xFFFF,lo&0xFFFFFFFFFFFF)
 
-def scan_entities_mca(path, out, st):
-    with open(path,"rb") as f: data=f.read()
-    if len(data)<8192: st["corrupt_chunks"]+=1; return
-    for idx in range(1024):
-        b=data[idx*4:idx*4+3]
-        off=(b[0]<<16)|(b[1]<<8)|b[2]
-        if off==0: continue
+def scan_entities_mca(path):
+    # AG-59 w527: рефактор в pure-function (returns lines,counters,cnt) — байт-в-байт
+    # семантика прежнего serial-скана (частичные записи сохраняются, per-chunk try).
+    lines=[]; d={"entities":0,"entity_chunks":0,"corrupt_chunks":0,"no_uuid":0,"no_pos":0}; c={}
+    try:
+        with open(path,"rb") as f: data=f.read()
+        if len(data)<8192:
+            d["corrupt_chunks"]+=1; return lines,d,c
+        for idx in range(1024):
+            b=data[idx*4:idx*4+3]
+            off=(b[0]<<16)|(b[1]<<8)|b[2]
+            if off==0: continue
+            try:
+                p=off*4096; ln=struct.unpack_from(">I",data,p)[0]
+                ct=data[p+4]; blob=data[p+5:p+4+ln]
+                raw=zlib.decompress(blob) if ct==2 else gzip.decompress(blob) if ct==1 else None
+                if raw is None: raise ValueError("ctype %d"%ct)
+                root=nbt_root(raw)
+                ents=root.get("Entities")
+                if not isinstance(ents,list): continue
+                d["entity_chunks"]+=1
+                for e in ents:
+                    if not isinstance(e,dict): continue
+                    et=e.get("id","minecraft:unknown")
+                    u=e.get("UUID")
+                    if isinstance(u,list) and len(u)==4:
+                        us=java_uuid(*u)
+                    elif "UUIDMost" in e and "UUIDLeast" in e:
+                        us=java_uuid(0,0,e["UUIDMost"],e["UUIDLeast"])
+                    else:
+                        d["no_uuid"]+=1; continue
+                    p3=e.get("Pos")
+                    if not (isinstance(p3,list) and len(p3)==3): d["no_pos"]+=1; continue
+                    lines.append("%s\t%s\t%r\t%r\t%r\n"%(us,et,p3[0],p3[1],p3[2]))
+                    d["entities"]+=1; c[et]=c.get(et,0)+1
+            except Exception:
+                d["corrupt_chunks"]+=1
+    except Exception:
+        d["corrupt_chunks"]+=1
+    return lines,d,c
+
+def _p75_workers():
+    # AG-59 w527: P75_JOBS=1 => serial; 0/absent => auto min(cpu,8); fail-open => 1
+    try:
+        import multiprocessing as _mp
+        n=int(os.environ.get("P75_JOBS","0"))
+        if n<=0: n=min(_mp.cpu_count() or 1,8)
+        return max(1,n)
+    except Exception:
+        return 1
+
+def _p75_map(fn, items):
+    # fork-пул по файлам; порядок результатов == порядок items (byte-aligned merge).
+    if len(items)>1 and _p75_workers()>1:
         try:
-            p=off*4096; ln=struct.unpack_from(">I",data,p)[0]
-            ct=data[p+4]; blob=data[p+5:p+4+ln]
-            raw=zlib.decompress(blob) if ct==2 else gzip.decompress(blob) if ct==1 else None
-            if raw is None: raise ValueError("ctype %d"%ct)
-            root=nbt_root(raw)
-            ents=root.get("Entities")
-            if not isinstance(ents,list): continue
-            st["entity_chunks"]+=1
-            for e in ents:
-                if not isinstance(e,dict): continue
-                et=e.get("id","minecraft:unknown")
-                u=e.get("UUID")
-                if isinstance(u,list) and len(u)==4:
-                    us=java_uuid(*u)
-                elif "UUIDMost" in e and "UUIDLeast" in e:
-                    us=java_uuid(0,0,e["UUIDMost"],e["UUIDLeast"])
-                else:
-                    st["no_uuid"]+=1; continue
-                p3=e.get("Pos")
-                if not (isinstance(p3,list) and len(p3)==3): st["no_pos"]+=1; continue
-                out.write("%s\t%s\t%r\t%r\t%r\n"%(us,et,p3[0],p3[1],p3[2]))
-                st["entities"]+=1; cnt[et]=cnt.get(et,0)+1
+            from multiprocessing import get_context
+            with get_context("fork").Pool(_p75_workers()) as pool:
+                return pool.map(fn, items, chunksize=1)
         except Exception:
-            st["corrupt_chunks"]+=1
+            pass
+    return [fn(x) for x in items]
+
+def _ent_worker(path):
+    return scan_entities_mca(path)
 
 tsv=open(os.path.join(tmpd,"entities.tsv"),"w")
 cntf=open(os.path.join(tmpd,"counts.tsv"),"w")
@@ -247,9 +279,10 @@ cnt={}; st={"entities":0,"entity_chunks":0,"corrupt_chunks":0,"no_uuid":0,"no_po
 ent_dir=os.path.join(world,"entities"); ent_files=[]
 if os.path.isdir(ent_dir):
     ent_files=sorted(fn for fn in os.listdir(ent_dir) if fn.endswith(".mca"))
-    for fn in ent_files:
-        try: scan_entities_mca(os.path.join(ent_dir,fn),tsv,st)
-        except Exception: st["corrupt_chunks"]+=1
+    for lines,d,c in _p75_map(_ent_worker,[os.path.join(ent_dir,fn) for fn in ent_files]):
+        for ln in lines: tsv.write(ln)
+        for k2,v2 in d.items(): st[k2]=st.get(k2,0)+v2
+        for k2,v2 in c.items(): cnt[k2]=cnt.get(k2,0)+v2
 for k in sorted(cnt): cntf.write("%s\t%d\n"%(k,cnt[k]))
 tsv.close(); cntf.close()
 
@@ -331,26 +364,42 @@ def region_iter(path, rx, rz):
 
 AIR = "minecraft:air"
 world_map = {}  # (cx,cz) -> (status, blob "y:dig;"); LAST-WINS == арбитр dict
+def scan_region_file(path, rx, rz):
+    # AG-59 w527: per-file pure-function; partial-чанки до исключения СОХРАНЯЮТСЯ
+    # (== serial try-вокруг-цикла), err=1 == serial reg_errors+=1
+    out=[]; err=0
+    try:
+        for cx, cz, root in region_iter(path, rx, rz):
+            status = str(root.get("Status", root.get("status", "?")))
+            secs = {}
+            for sec in (root.get("sections") or []):
+                if isinstance(sec, dict):
+                    y, pal, data = section_blocks(sec)
+                    secs[y] = (pal, data)
+            blob = "".join("%s:%s;" % (y, canon_digest(*secs[y])) for y in sorted(secs))
+            out.append((cx, cz, status, blob))
+    except Exception:
+        err = 1
+    return out, err
+
+def _reg_worker(arg):
+    fn, rx, rz = arg
+    return scan_region_file(fn, rx, rz)
+
 reg_dir = os.path.join(world, "region")
 reg_files = len([f for f in os.listdir(reg_dir) if f.endswith(".mca")]) if os.path.isdir(reg_dir) else 0
 reg_errors = 0
 if reg_files:
+    _reg_args=[]
     for fn in sorted(f for f in os.listdir(reg_dir) if f.endswith(".mca")):
         parts = fn.split(".")
         try: rx, rz = int(parts[1]), int(parts[2])
         except (IndexError, ValueError): rx = rz = 0
-        try:
-            for cx, cz, root in region_iter(os.path.join(reg_dir, fn), rx, rz):
-                status = str(root.get("Status", root.get("status", "?")))
-                secs = {}
-                for sec in (root.get("sections") or []):
-                    if isinstance(sec, dict):
-                        y, pal, data = section_blocks(sec)
-                        secs[y] = (pal, data)
-                blob = "".join("%s:%s;" % (y, canon_digest(*secs[y])) for y in sorted(secs))
-                world_map[(cx, cz)] = (status, blob)
-        except Exception:
-            reg_errors += 1
+        _reg_args.append((os.path.join(reg_dir, fn), rx, rz))
+    for _out, _err in _p75_map(_reg_worker, _reg_args):
+        for cx, cz, status, blob in _out:
+            world_map[(cx, cz)] = (status, blob)
+        reg_errors += _err
 reg_chunks = len(world_map)
 with open(os.path.join(tmpd,"chunk_set.tsv"),"w") as fset, \
      open(os.path.join(tmpd,"chunk_sums.tsv"),"w") as fsum, \
