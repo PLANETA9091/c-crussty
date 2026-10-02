@@ -44,3 +44,7 @@ PATCH_SUMMARY | AG-82 | files=work/AG-82 | idea=ci-flood экономика+па
 FACT | AG-101 | 2/2 204 @a9ff088f+2171d6da t4231: 36992425804 w17408 s528101 + 36992478658 sim45 s529101 QUEUED | api
 DISP | AG-101 | w17408+sim45 2/2 queued @swarm-526-101[ab] 1d/r1136/9000s/dcp900; payload work/AG-101 | 2/2 204
 PATCH_SUMMARY | AG-101 | files=work+claims/AG-101 | idea=w17408 w-фронт+sim45 мид dose fill | evidence=2/2 204 queued
+
+FACT | AG-105 | 2/2 204 @6bac5590/a9ff088f: 36992482653 fp3 s531105 WBP + 36992533779 dcp1600 s532105 QUEUED | api
+DISP | AG-105 | fp3 WBP + dcp1600 bv2 2/2 queued @swarm-526-105[ab] r640/s300 + r1136/s9000; work/AG-105 | 2/2 204
+PATCH_SUMMARY | AG-105 | files=claims,work/AG-105 | idea=fp3 player-load mid + dcp1600 drain-sens | ev=2/2 204
