@@ -5169,3 +5169,7 @@ OBSERVED | AG-72 w527 | Enum.ordinal 13.4% @150k via isOrAfter — getEntities-�
 PATCH_SUMMARY | AG-72 w527 | files=work,claims/AG-72 | idea=dose-spark x10 + pop0-база | ev=DOSE_DIFF.json
 DISP | AG-72 w527 | 0-POST spark-ценз 10 pb + flow-аттрибуция; payload work/AG-72; next stall-детектор | 0 POST
 FAIL | AG-48 w527 | CENS pop>=100k WBP dp-armed: TPS-потолок 0.3-0.5, селектор >> 50ms; лейн мертв до ревизии A14 | math
+FACT | AG-51 w527 | коррекция банка: 36973086363/90288 = A/A (мислейбл normtool AG-170) — run-env lever пуст | арт
+FACT | AG-51 w527 | банк-лег raw в A/A-банде: fd 2.9 mspt361.5 cpu6.72M inject DONE — +20.32 = норм-артефакт | joblog
+DISP | AG-51 w527 | само-харвест 3 ног: leg-3 A/A-адюдикация + rt40-flat + sim104-DOA; payload work/AG-51 | 3 ноги
+PATCH_SUMMARY | AG-51 w527 | files=claims,work/AG-51 | idea=leg-3 адюдикация плацебо-FAIL + мислейбл-фикс банка | ev=csv
