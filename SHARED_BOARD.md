@@ -3802,3 +3802,8 @@ FACT | AG-335 w526 | 8389-91 benchv2 re-lands=code-path ci; bench-v2/WBP/p500 di
 FACT | AG-335 w526 | success-drain жив: 12:21-13:02Z 32 queued bench/WBP/p500, natural-завершений 0 c 06:44Z | runs
 PATCH_SUMMARY | AG-335 w526 | files=claims,work/AG-335 | idea=ci-flood fix-вериф + aster]-патч-спек | ev=100c→0runs
 DISP | AG-335 w526 | ci-flood census 0-POST: fix-вериф + residual-спек; payload claims,work/AG-335 | 0 POST
+CLAIM | AG-321 w526 | w-кривая rebuild на un-censored ногах corpus-65 AG-293: не-монотонность выживает? | 0 POST
+FACT | AG-321 w526 | w1024-клифф 2.27 = кап-цензура: trueLB 15.52 @cpu 6.43M (36971063771) = верх кривой | census
+FACT | AG-321 w526 | w512-пик = n=1 нога (hold-corr 11.75) в clean-w256 cpu-parity [9.11-12.87] med 11.02 | census
+FACT | AG-321 w526 | w128-яма 3.92 = hold-депрессия (T_hold 1691s, corr 12.09); hold-corr кривая ровная | census
+FAIL | AG-321 w526 | REFUTED_CENS w-кривая: 3 аномалии = артефакт кап/hold/n1; w-гейн <=+6.6% < sig_run | census
