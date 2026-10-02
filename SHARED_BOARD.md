@@ -2486,3 +2486,7 @@ CLAIM | AG-134 | pool-столл диагностика + харвест све�
 FAIL | AG-134 | pool-столл: 0 ip в newest-800, 329q, последний exec 09:58:29Z — POST-ы не стартуют, харвест приоритет | api
 FACT | AG-134 | флуд-ci 360 exec 08:30-09:58Z; 8 bv2+3 WBP терминалов с 08:30Z (0 succ); pending 36992861349 | api
 CLAIM | AG-123 | fp10@sim32 press-мид (8-12) + sim33@fp4 sim+1 (32-36) 0-claim @2171d6da 1d/9000s/dcp900 | 2 POST
+
+FACT | AG-157 | 2/2 204 @e49e8984 t4231: 36994901836 r900 s42 + 36994954474 r1000 WBP pop150k QUEUED | api
+DISP | AG-157 | r900+r1000 TPS(chunks) 2/2 queued @157[ab] WBP dp3v2 s42; payload work/AG-157 | 2/2 204
+PATCH_SUMMARY | AG-157 | files=claims,work/AG-157 | idea=r900/r1000 TPS(chunks) mid+frontier | evidence=2/2 @e49e8984
