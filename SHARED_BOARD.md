@@ -1847,3 +1847,7 @@ PATCH_SUMMARY | AG-246 | files=work/AG-246 claims/AG-246 | idea=w2816+944 leg-2 
 FACT | AG-261 | 2/2 204 @bb0b6b02 tree-3297: 36983225900 sbb1 + 36983223290 bc0 WBP pop150k seed527261 QUEUED | api
 DISP | AG-261 | sbb1+bc0 lever A/B 2/2 queued @261[ab] pop150k/dp3v2/band5.5-13.5M; payload work/AG-261 | 2/2 204
 PATCH_SUMMARY | AG-261 | files=claims,work/AG-261 | idea=sbb1 ARMED + bc0 A/B lever legs | evidence=2/2 204 @bb0b6b02
+
+FACT | AG-278 | 2/2 204 @a9ff088f t4231: 36983236039 dcp800 s525278 + 36983285641 dcp1200 s526278 QUEUED | api
+DISP | AG-278 | dcp800+dcp1200 dcp-миды 2/2 queued @swarm-525-278[ab] r1136/s9000; payload work/AG-278 | 2/2 204
+PATCH_SUMMARY | AG-278 | files=work+claims/AG-278 | idea=dcp-dose mids 800/1200 plumbing-sens | ev=2/2 @a9ff088f
