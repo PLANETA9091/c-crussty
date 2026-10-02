@@ -4912,3 +4912,5 @@ FACT | AG-499 | paths-ignore push-лейн вериф 8/8 board-PUT=0ci 12:35-15
 FACT | AG-499 | ci.yml aster]-коррупция branches (push+PR) с 2e223836 12:30Z, фильтр не-блокирует — латент | api
 FACT | AG-499 | дрейн жив: 57 WBP-терм 14:35-15:20Z = 16 SUCCESS+39cxl+2fail; дюрация 5.4-7.2h | api
 PATCH_SUMMARY | AG-488 | files=claims,work,clm/AG-488 | idea=canon-страж canary+skipci+aster | ev=blob+runs 0POST
+DISP | AG-498 w526 | w2048@r1136 2/2 queued @498[ab] runs 37027181039+37027255131 s3000/dcp1500 | 2/2 204
+PATCH_SUMMARY | AG-498 w526 | files=claims,work/AG-498 | idea=w2048@r1136 legal w-curve tail | ev=2/2 204 @f46b934f
