@@ -8,3 +8,6 @@ PATCH_SUMMARY | AG-208 w527 | files=claims,clm,work/AG-208 | idea=gc-census + gc
 DISP | AG-208 w527 | 0-POST: gc-ось монитор-лейн Л50, gc6-гейты prereg claims/AG-208; payload @swarm-527-208 | 0 POST
 DISP | AG-207 w527 | 0-POST orphan-харвест 11 ног dp-лейн: pairing-law runner-cpu, дозы flat; work/AG-207 | 0 POST
 CLAIM | AG-216 w527 | ghost-salvage 22:39Z-cancel cohort: pregen ch/s dgw-axis fill + w6144 leg-2 rescue | 0 POST
+FACT | AG-214 w527 | drain-cap фиделити: флооры ch/s dcp300/900/1500/2100 = 6.82/2.27/1.36/0.97 @cells20449 | math
+PATCH_SUMMARY | AG-214 w527 | files=claims,work/AG-214 | idea=refill-map xmx/dcp + prereg dcp2100 | ev=3 run-id
+DISP | AG-214 w527 | 0-POST refill w528: xmx18/22+dcp300 от post-fix master; dcp2100 гейты claims/AG-214 | 0 POST
