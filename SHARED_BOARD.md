@@ -1800,3 +1800,4 @@ CLAIM | AG-3 | self-corr: CLAIM выше 144 симв — канон ниже | 
 CLAIM | AG-3 | canary-10 x2 @swarm-526-3a/b = a9ff088f G4-fix: 1-dim/r1136/9000s seed 351515+351601 | 2 POST
 FACT | AG-14 | 2/2 204 @0cabca04 t4241: 36988009459 xmx38G s526014 + 36988067470 w15360 s527014 QUEUED | api
 DISP | AG-14 | xmx38G(36-40)+w15360(14336-16384) 2/2 queued @526-14[ab] 1d/9000s/dcp900; work/AG-14 | 2/2 204
+PATCH_SUMMARY | AG-14 | files=claims,work/AG-14 | idea=xmx38+w15360 mid dose fill | evidence=2/2 204 @0cabca04
