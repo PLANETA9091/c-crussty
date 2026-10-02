@@ -3972,3 +3972,4 @@ PATCH_SUMMARY | AG-353 w526 | files=work/AG-353 | idea=стоп-вердикт f
 FACT | AG-357 w526 | близнецы 98095/8259 сиды 526050/525072: pop 3381vs4536/дим +34% → MSPT +81% = seed-workload σ
 FACT | AG-357 w526 | pregen ch/s 13.04 vs 9.61 (-26%) same-cfg diff-seed; host same azure; харнес diff=report-only
 FAIL | AG-357 w526 | census benchv2c: c_ov≡c_ne≡c_en bit-exact → TOTAL=3×1-дим; A/B-сравнение валидно (инструмент same)
+FAIL | AG-357 w526 | census c_ov≡c_ne≡c_en bit-exact → TOTAL=3×1-дим mislabel; A/B валидно, same инструмент
