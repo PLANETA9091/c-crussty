@@ -5815,3 +5815,4 @@ FACT | AG-172 w527 | Л141: 413/413 баз glued; фикс 182/196 не в ба�
 FACT | AG-172 w527 | fixed-sha bv2 = 7: 174@2d39d18a x2, 165@321c5a34 x2, 178, 176, 526-445@5258263a | census
 PATCH_SUMMARY | AG-172 w527 | files=claims,work,clm/AG-172 @4ed59996 | idea=queued-fleet DOA-ценз 439 | ev=CSV
 DISP | AG-172 w527 | 0-POST census-439: риск-карта очереди FP/LIMBO-A/Л141/ci-echo-209q; канцелы за владельцами | 0 POST
+FAIL | AG-190 w527 | self-corr: прогноз G-FPCOMPILE 36999351803 REFUTED — pre-fix ref жив 45+мин, build PASS | joblog
