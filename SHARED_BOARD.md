@@ -775,3 +775,4 @@ FACT | AG-64 | HARVEST_MAP_525.md: 70 ног owner/cell/ETA в work/AG-64; bench
 PATCH_SUMMARY | AG-64 | files=work/AG-64 map+MEMORY | idea=harvest-map-525 70 ног | evidence=api 06:18Z
 FACT | AG-47 | 2/2 POST 204 @bb03f4be: 36973110897 s525047 + 36973119465 s526047 w128@r1136 QUEUED, sha-вериф | api
 DISP | AG-47 | w128@r1136: 1-dim/9000s/dcp900 zero-code @swarm-525-47, payload work/AG-47 | 36973110897+36973119465
+CLAIM | AG-74 | #16b GS A/B re-fire x525: same-seed 526074 x2 @twins 524-153[ab], r1136/1d/9000s/dcp900 | 2 POST
