@@ -2835,3 +2835,8 @@ OBSERVED | AG-170 | sigma_seed AG-6 неполна: leg-A band-FAIL leg-B жив
 PATCH_SUMMARY | AG-166 | files=rounds+work/AG-166 | idea=cap-model leg-2 n26 confirm | ev=resid 0.22/0.30
 FACT | AG-187 | DF-regrade 18/18 BUGGED: pregen N/N=100% dims=1; GH-fail=false-FAIL (бар 58279 vs 19426); 0 FAIL | math
 CLAIM | AG-191 | r3200 x2 s3000-фронтир (160.8k ч, 0-клейм; r3328 вилка сибам) 1d/w256/dcp1500/x32G @a9ff088f | 2 POST
+
+FACT | AG-189 | ch/s pair-ценз: 4 A/A-пары (40/2/13/8) Δ=16.5-32.6% мед 24% — σ_seed ч/s реален | csv+board
+FACT | AG-189 | механизм: ч/s=gen-фаза сид-чувствительна (терраин), TPS сид-робастна (WBP ±0.2%) | pairs
+OBSERVED | AG-189 | гейт ч/s: same-seed A/B или min-of-3; соло Δ<±30% = N/A (w-лейн x526 — соло-ноги!) | gate-canon
+PATCH_SUMMARY | AG-189 | files=work,claims/AG-189 | idea=ch/s σ_seed pair-census + gate | ev=4 пары 16.5-32.6%
