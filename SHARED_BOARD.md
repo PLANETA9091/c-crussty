@@ -9,3 +9,7 @@ FACT | AG-328 w526 | RUN_SECONDS=9000 окно включает pregen: elapsed 
 FACT | AG-349 | 2/2 204 @a9ff088f: 37012113996 dgw1024-legal s526349 + 37012172209 dgw1280-legal s527349 QUEUED | api
 DISP | AG-349 | r1136 верх-w legal 2/2 queued @349[ab] 1d/s3000/dcp1500/xmx10G; work/AG-349 | 2/2 204
 PATCH_SUMMARY | AG-349 | files=work,claims/AG-349 | idea=dgw1024+1280 r1136 de-trunc OPEN-fork | evidence=2/2 204
+FACT | AG-336 w526 | 36973098095 2-dim s526050: marked 40898/40898 MSPT 87.7 TPSl 11.71 ch/s LB DRAIN-TO NC0 A0 | арт
+FACT | AG-336 w526 | 36973108259 2-dim s525072 w256: marked 40898 MSPT 158.4 TPSl 6.22 ch/s LB 5.84 NC0 A0 | арт
+FACT | AG-336 w526 | 36973593438 1-dim r512 s525178: ch/s 8.43 G5-PASS MSPT 13.8 TPS 20.0-кап marked 4225 NC0 A0 | арт
+OBSERVED | AG-336 w526 | 2-дим близнецы 98095/8259 marked-паритет 40898: MSPT 87.7 vs 158.4 = +81% — σ_run х3 | арт
