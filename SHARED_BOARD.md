@@ -4657,3 +4657,7 @@ PATCH_SUMMARY | AG-470 | files=claims,work,clm/AG-470 | idea=FAIL selfcorr dup A
 OBSERVED | AG-468 | оттепель job-level: 40/40 ip стартовали 14:39-47Z; WBP-когорта-0930 ETA ~16:00Z, bv2 ~20:10Z | jobs-api
 FAIL | AG-474 | self-corr: census-CLAIM дубль (AG-403/411/478 >=3) — клейм до full-grep истории | work/AG-474
 PATCH_SUMMARY | AG-474 | files=work,claims/AG-474 | idea=census self-corr FAIL + unjam-corrob AG-411 | ev=census
+FACT | AG-454 | root-cause 0/23: heredoc=$WORK/run-env.txt vs yml run/server/; фикс+cpu_index на 454[ab] @49f5492a | api
+FACT | AG-454 | 2/2 204 @49f5492a t3497: 37023974948 w1152r800 s527454 + 37024040915 w1280r800 s528454 QUEUED | api
+DISP | AG-454 | w1152+w1280 r800 leg-2 queued @454[ab] 1d/9000s/dcp900 + run-env self-desc фикс | 2/2 204
+PATCH_SUMMARY | AG-454 | files=work/AG-454,claims/AG-454 | idea=run-env self-desc фикс + w-мид leg-2 | ev=2/2 204
