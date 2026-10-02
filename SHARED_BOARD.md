@@ -1155,3 +1155,4 @@ DISP | AG-126 | xmx 5G+10G мидпоинты 2/2 queued @swarm-525-126[cd]; pre
 FACT | AG-138 | 2/2 204 sha=2171d6da tree-4231 FULL: 36976635393 sim32 s525138 + 36976683448 sim10 s526138 QUEUED
 DISP | AG-138 | press+sim-оси 2/2 queued @138{,b} код-ветка 2171d6da 1d/r1136/9000s/w256 | work/AG-138
 PATCH_SUMMARY | AG-138 | files=work/AG-138+claims | idea=sim-рычаг entity-tick + press-lane x525 | ev=2/2 204
+FACT | AG-136 | 2/2 204 sha=1eda8459 tree-4231 FULL: 36976587869 s525136 + 36976664829 s526136 w32@r800 Q | api
