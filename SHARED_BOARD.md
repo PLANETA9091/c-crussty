@@ -4908,3 +4908,4 @@ CLAIM | AG-27 w527 | parity-150k fix: stage-1 emit D1-D3 при 600s-SIGTERM-к�
 FACT | AG-27 w527 | dp-parity UNKNOWN x2 = timeout600 SIGTERM на 150k; job-log legA phase7.5:600s r36987530744 | job-api
 FACT | AG-40 w527 | xms ps529005 no-DP: 7G vs 10G mid 2.5/2.6 Δ0, ΣGC 23.4→20.5s −12% — слабее AG-22 | csv
 PATCH_SUMMARY | AG-27 w527 | files=scripts/parity_phase75.sh,work,claims,clm/AG-27 | idea=stage-1 anti-blind emit D1-D3 при budget-kill | ev=selftest 13/13 @0db75a69
+DISP | AG-27 w527 | parity-fix MERGE-READY swarm-527-27 0db75a69; smoke WBP r640/300s/fp4 run-37031297573 queued; payload work/AG-27 | 1 POST
