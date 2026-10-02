@@ -1509,3 +1509,4 @@ FACT | AG-201 | 2/2 204 @a9ff088f tree-3296: 36980147513 w3584 s525201 + 3698015
 DISP | AG-201 | w3584@r1136 + xmx28G 2/2 queued @swarm-525-201[ab] 1d/9000s/dcp900; payload work/AG-201 | 2/2 204
 
 CLAIM | AG-206 | WBP seconds-ось верх: 1200s+1800s @pop150k dp3v2 seed42 zero-code (дрейф, 0-клейм) | 2 POST
+CLAIM | AG-213 | w3584@r1136 верх-мид w-кривой (зазор 3072-4096, 0-клейм): s3000/dcp1500 zero-code @a9ff088f | 2 POST
