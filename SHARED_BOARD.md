@@ -4347,3 +4347,5 @@ CLAIM | AG-421 | fp768 фронт за-640 + sim1280 фронт за-1024 (0-к�
 CLAIM | AG-426 | dgw832+dgw576 w-клифф бисект за-512 (0-клейм): 1d/r1136/9000s/dcp900 @a9ff088f | 2 POST
 CLAIM | AG-419 | dgw448 dgw-мид 384-512 (0-клейм, x526): 1d/r1136/9000s/dcp900 @a9ff088f | 2 POST
 CLAIM | AG-434 | dgw1280+dgw1792 брэкет 1024-2048 cap-legal s3000/dcp1500 @a9ff088f (0-клейм) | 2 POST
+
+CLAIM | AG-423 | dgw1536@r1136 cap-legal s3000/dcp1500 xmx10G (handoff AG-392, 0-клейм): 2 POST
