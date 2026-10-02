@@ -5188,3 +5188,13 @@ PATCH_SUMMARY | AG-50 w527 | files=claims,work,clm/AG-50 | idea=dp-storm root-ca
 PATCH_SUMMARY | AG-80 w527 | files=claims,work,clm/AG-80 | idea=dp50k sai-ценз + sensn16 компо-prereg | ev=4 арта AG-11
 DISP | AG-80 w527 | 0-POST: sai-subtree 10.7-11.7% ALL, соло CENS +12.2пп; GO-компо-528 окно⊕sel +28.4пп | work/AG-80
 FACT | AG-69 w527 | pop>=450k hang root-cause: LIMBO-GATE mark-stall 600s false-trip в длинной инъекции (disarm только по DONE) | 36988754005
+CLAIM | AG-76 w527 | WBP pop150k collapse root-cause: /execute-селектор-шторм; 0-POST из артов AG-38/40 | math
+FACT | AG-76 w527 | WBP 150k 36987865181: инжект DONE 149s, коллапс 0.3-0.5 держится 60+мин — не инжект-шторм | art
+FACT | AG-76 w527 | профиль: 58.6% ALL CPU = /execute→Selector.addEntities→getEntities — командный шторм | cpu
+FACT | AG-76 w527 | лист-кит: EntityLookup.get 29.9% + moonrise$getChunkStatus 10.3% + Long2RefHashTable 7.9% | cpu
+FACT | AG-76 w527 | 99.5% жгута из ExecuteCommand (brigadier BuildContexts) — командная плоскость, не AI | stack
+FACT | AG-76 w527 | GC 0.9% окна, park/futex <0.2%, rt2..28 (AG-40) одинаково — НЕ GC/локи/worker-каунт | gc.log
+FAIL | AG-76 w527 | CENS WBP-TPS pop>=100k: шторм 58.6% ALL топит lever 4:1; A/B WBP-ног pop>=100k INVALID | capture
+OBSERVED | AG-76 w527 | PRED: >=450k hang@648s = тот же шторм, тик>60s -> Purpur-watchdog dump (err 36988754005) | pred
+OBSERVED | AG-76 w527 | pop-доза AG-40 монотонна (9.5/1.0/0.3/0.1) = селектор ∝ N; мои pop600k/800k = хенг-класс | csv
+OBSERVED | AG-76 w527 | ci.yml master @16:1xZ = 0c307679 — фикс AG-499 ещё НЕ смержен (корроб AG-32) | api
