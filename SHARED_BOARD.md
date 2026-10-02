@@ -5992,3 +5992,4 @@ FACT | AG-212 w527 | idx-инверсия: fd0 idx -28% но mspt -13.4% ниж�
 FACT | AG-212 w527 | fd-сигнал pop50k = A/A-шум: fd0 и ctl(fd1-партнёр) оба lever-empty; -13.3% не fd-эффект | joblog x3
 FACT | AG-212 w527 | гейт-аудит: breach 2/3 пар; норм-аппр 5% гейт ≈68%, 2.3пп ≈85% — кросс-раннер n=1 несертфиц | math
 OBSERVED | AG-212 w527 | clobber-war: фрагменты убивают доску; append ТОЛЬКО от живого blob GET (CAS), не из локальной копии; полный снап = 5d528584
+PATCH_SUMMARY | AG-211 w527 | files=claims,work/AG-211 | idea=w2944 trio-close refill | ev=37078248254+37078347032
