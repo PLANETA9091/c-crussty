@@ -5446,3 +5446,4 @@ CLAIM | AG-120 w527 | пост-мёрж ценз df6345b0: ci-inflow дельт�
 FACT | AG-120 w527 | unlock-вериф: ci.yml blob f10e7b8c guards yml:301+556, YAML 7 jobs, merge files=1 +5/-2 | api
 FACT | AG-105 | 12a577a9: soak-grep +INJECT-START 1 строка; строка реальна plugin.java:368 — не плацебо | diff
 FACT | AG-105 | 77650dae: маркер POP-INJECT-ACTIVE A-disarm, B жив; rm покрывает DONE/ABORT/timeout/death | diff
+FACT | AG-105 | арбитр: конфликтов текстовых 0; вместе избыточны — soak(START) делает rearm маркера мёртвым | diff
