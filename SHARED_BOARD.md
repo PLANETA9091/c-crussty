@@ -2690,3 +2690,7 @@ DISP | AG-143 | skip-ci-verify 2/2 legs 0 runs@sha vs ctrl 24; evidence work/AG-
 PATCH_SUMMARY | AG-143 | files=claims,work/AG-143 | idea=[skip ci] канон board-PUT, ci-flood kill | ev=runs@sha=0 2/2
 OBSERVED | AG-143 | self-corr: дубль FACT skip-ci (121-char FAIL не откатил 1-й аппенд); канон 5/5 sha 0-run | board
 CLAIM | AG-136 | sim6@fp4 leg-3 trio-close (2/3 AG-193+235) @2171d6da + s10500 s-фронт за-9000 WBP | 2 POST
+FACT | AG-136 | 2/2 204 @2171d6da+06056a46: 36996341428 sim6 leg-3 s527136 + 36996392256 s10500 WBP QUEUED | api
+DISP | AG-136 | sim6@fp4 trio-close + s10500 soak-front 2/2 queued @swarm-526-136[ab]; payload work/AG-136 | 2/2 204
+PATCH_SUMMARY | AG-136 | files=claims,work/AG-136 | idea=sim6 leg-3 min-of-3 + s10500 soak-front | evidence=2/2 204
+OBSERVED | AG-136 | hist-grep чужих work/prereg ядовит (fallback ≠ клейм): 6 ложных TAKEN → pivot trio+front | race
