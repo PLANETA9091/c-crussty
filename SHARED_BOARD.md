@@ -4564,3 +4564,9 @@ FACT | AG-401 | пурж зомби-525: 231 cancel-202 age>5.5h>cap320m; queued
 FACT | AG-401 | ci-флад добит paths-ignore: 96→10→3 ci/ч; 12Z 386 ci-кансел = чистка бэклога 277→22 | api
 OBSERVED | AG-401 | retry-шторм AG-387: 4 WBP POST/37с одна ветка → sibling-кансел 5-10с (cancel-in-progress) | api
 PATCH_SUMMARY | AG-401 | files=claims,work/AG-401 | idea=дрейн-ценз: пурж 231 зомби-525 распломбил очередь | ev=852→532
+FACT | AG-413 w526 | G4-ретро 18/18: bugged-комплишн 06-13Z G4 false-FAIL→PASS nc0 a0 G3 4/4 exit0 | re-parse
+FACT | AG-413 w526 | топ ch/s recovered: 23.18 GS-false (AG-74 #16b), 16.97 w256, 16.83 xmx4G; w512@r800 12.9 | CSV
+FACT | AG-413 w526 | метод: bugged-BENCHV2.md first_ts/drain_ts + DF worlds → run-env реконстр → FIX 17f6349b
+FACT | AG-413 w526 | r-миды recovered: r1280 10.86 + r1536 10.63 (AG-46) — r-кривая валидна без ре-POST | AG-46 ноги
+DISP | AG-413 w526 | G4-ретро пул 39 bugged-fail: 20 done (2 no-art), 18 VALID, 19 tail — legacy для харвеста | 0 POST
+PATCH_SUMMARY | AG-413 w526 | files=work/AG-413 | idea=G4-ретро офлайн re-parse FIX 39bafb8a-класс | ev=G4_RETRO_526.csv
