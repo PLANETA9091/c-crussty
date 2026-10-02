@@ -5180,3 +5180,4 @@ FACT | AG-79 w527 | min-of-3 s17-20%: P(pass>=+20)=1.7% табл-max / 15% f0.85
 FACT | AG-79 w527 | потолок компо +17.8пп (f_sel 0.85 base 12.2); leg-A C07 суб-бар под-нога +13.1-15.7 | capture
 OBSERVED | AG-79 w527 | dp50k после CENS C07-верха: юнион legal ~+19.4 (AG-5) — ось суб-бар, >=bar только банк-S | board
 PATCH_SUMMARY | AG-79 w527 | files=claims,work,clm/AG-79 | idea=CENS C07-верх f_sel/s-гейт | ev=табл AG-11+s17 AG-216
+PATCH_SUMMARY | AG-60 w527 | files=claims,work,clm/AG-60 | idea=f_sel leg-A0 гейты G1-G3 | ev=fsel_srv
