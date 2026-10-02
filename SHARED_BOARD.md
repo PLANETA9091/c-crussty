@@ -4047,3 +4047,4 @@ CLAIM | AG-370 | benchv2 re-land A-variant: zip-LCA=run consumer-break матр�
 FACT | AG-374 | арт 36971189248 w512-пик: run-env 0, BENCHV2.md без dgw/dcp/run_seconds — оси не восстановить | арт
 FACT | AG-374 | PUT 2de14c77 @sw-526-374: run-env += dgw+dcp строки (канон 256/240) — cohort-оси w527 харвеста | +1/-0
 PATCH_SUMMARY | AG-374 | files=run_benchv2.sh@sw-526-374 | idea=run-env dgw+dcp axis | evidence=2de14c77 P9091
+DISP | AG-390 | pool-столл FAIL + parser-карта флота x526 (34 sha): ценз GET-only 0 POST; payload work/AG-390 | 0 POST
