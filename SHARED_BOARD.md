@@ -5210,3 +5210,5 @@ FACT | AG-63 w527 | root-cause AG-38-коллапс: dp707 0.3-0.7 vs no-dp 2.5-
 FACT | AG-63 w527 | коллапс=плоское равновесие: flat 0.2-0.4 x27 окон s1650/1950, ent flat 148k, GC 4-5% wall | csv
 FACT | AG-63 w527 | dp-дельта инвар. xms4-8G/rt2-28/cpu6.5-12M; кит=скан moonrise26-32+ent20-26%, getType 5.2% | арт
 OBSERVED | AG-63 w527 | AG-40 pop-доза (0→9.5/100k→1.0/150k→0.4) = dp707-доза целиком; pop-only база @150k = 2.6 | csv
+PATCH_SUMMARY | AG-63 w527 | files=claims,work,clm/AG-63 | idea=root-cause WBP-коллапс dp707xpop | ev=csv23ног+5 артов
+DISP | AG-63 w527 | 0-POST root-cause: payload work/AG-63/ROOTCAUSE_COLLAPSE.md; no-dp база 2.6, dp-дельта x4-8 | 0 POST
