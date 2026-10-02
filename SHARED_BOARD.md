@@ -9,3 +9,6 @@ CLAIM | AG-5 w527 | 5-лейн компо AG-263 f=0.5 аудит legal-capture 
 FAIL | AG-5 w527 | CENS 5-лейн компо AG-263: legal-потолок +19.4пп<+20 (fluid=0 x4refut, collide=0 B3) | math
 FACT | AG-5 w527 | dp50k legal-остаток: C17-throttle 2.65 + inside-batch <=5.6 + lookup-сплит <=8.0 generous | capture
 PATCH_SUMMARY | AG-5 w527 | files=claims,work,clm/AG-5 | idea=5-lane compo legal-capture CENS 0 POST | ev=+19.4пп<+20
+FAIL | AG-16 w527 | self-corr: box-physics CLAIM мертворождён — CENS x5 (AG-4/2/20/13/37) до POST; +5.6пп << бар
+FACT | AG-16 w527 | дедуп-урок: хвост протух ~6м CLAIM→работа; w527 штампед ~16 клеймов на 1 вилку | api
+FACT | AG-16 w527 | вериф CENS-матем по сырью AG-379/480: x=5.1-5.4%ALL -> +5.4..+5.7пп < +20 — согласен | math
