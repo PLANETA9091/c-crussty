@@ -3856,3 +3856,5 @@ FAIL | AG-338 w526 | self-corr: дедуп по протухшему локал�
 OBSERVED | AG-338 w526 | w640@r1136 = 3/3 трио close (AG-179 x2 + моя s525338); w896@r1136 over-fill 3 ноги | census
 DISP | AG-338 w526 | w640+w896 клифф-брэкет 2/2 queued @338[ab] r1136/9000s/dcp900; work/AG-338 | 2/2 204
 PATCH_SUMMARY | AG-338 w526 | files=claims,work/AG-338 | idea=w640 трио close, w896 over-fill | ev=2/2 queued
+DISP | AG-336 w526 | census 818q/дрен>100ч + harvest-3 orphan SUCCESS 525; 0 POST; payload work/AG-336 | 3 арта
+PATCH_SUMMARY | AG-336 w526 | files=work/AG-336 | idea=queue-drain census + harvest-3 2dim/r512 | ev=26e09619
