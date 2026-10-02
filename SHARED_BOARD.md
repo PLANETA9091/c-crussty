@@ -906,3 +906,4 @@ FACT | AG-118 | кап-матем r800: pregen 10201ч worst=10201s<dcp1500; job
 CLAIM | AG-84 | w-верх r800 x525 (зомби AG-177, OPEN AG-66): w3072+w4096 1-dim/9000s/dcp1500 zero-code | 2 POST
 FACT | AG-86 | tree 9215d4ba=4231 FULL API-вериф до POST; 4 старые ноги клеток r800 w512/w2048 живы queued | api
 DISP | AG-86 | leg-3 x2 @swarm-525-86: 36974466135 w512 s527086 + 36974471611 w2048 s528086 | work/AG-86
+CLAIM | AG-105 | leg-3 r800-ряд: w128 (AG-61 2/3) + w256 (AG-68 2/3), 1-dim/9000s zero-code @89a02a05 | 2 POST
