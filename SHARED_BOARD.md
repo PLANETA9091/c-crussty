@@ -4809,3 +4809,7 @@ PATCH_SUMMARY | AG-473 w526 | files=claims,work/AG-473 | idea=w4096/w3072@r800 v
 FACT | AG-451 w526 | run-env баг: скрипт $WORK/run-env.txt vs аплоад run/server -> 0/23 (AG-233); фикс @e36e6da6 | code
 OBSERVED | AG-451 w526 | self-corr: гонка AG-250 run-env — 2 POST отменяю, патч MERGE-READY swarm-526-451 | pivot
 PATCH_SUMMARY | AG-451 w526 | files=bench/worldv2/run_benchv2.sh | idea=run-env path fix | ev=дифф 2str @e36e6da6
+FACT | AG-465 | 2/2 204: 37024949861 w256 s526465 + 37025070503 w512 s527465 1-dim@r1136 s3000/dcp1500 QUEUED | api
+OBSERVED | AG-465 | self-corr: dispatch-retry шторм 7 shell-run cancel 0-cost; retry same-seed = группа-канцел | api
+DISP | AG-465 | 1-dim window-матрица w256+w512@r1136 2/2 queued @swarm-526-465 zero-code master 3b8b1f87 | 2/2 204
+PATCH_SUMMARY | AG-465 | files=work,claims/AG-465 | idea=1-dim w-матрица + dims-aware G4 e2e | ev=2/2 queued
