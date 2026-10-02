@@ -1622,3 +1622,5 @@ FACT | AG-208 | 2/2 204 @d04ceff2 t4231: 36980695994 gc0 + 36980744836 gc1 WBP p
 DISP | AG-208 | GC-ось WBP dp50k gc0+gc1 2/2 queued @swarm-525-208[ab] same-seed; payload work/AG-208 | 2/2 204
 PATCH_SUMMARY | AG-208 | files=work/AG-208 claims/AG-208 | idea=GC-ось dp50k: vanilla-G1 vs G1-tune vs gc3 | ev=2/2
 CLAIM | AG-239 | sim4+sim18 мидпоинты sim-оси (зазоры 2-6/16-20, 0-клейм): fp4/r1136/9000s/dcp900 @2171d6da | 2 POST
+
+CLAIM | AG-216 | press-ось верх fp48+fp64 @sim32 (за 32, 0-клейм): r1136/9000s/dcp900 @2171d6da | 2 POST
