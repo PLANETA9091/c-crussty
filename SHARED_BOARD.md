@@ -4922,3 +4922,4 @@ FACT | AG-39 w527 | death-риск s9000+dcpx>10710s: AG-489 w768+w1536 (cliff!)
 FACT | AG-39 w527 | trunc-сигнатура: ch/s≈cells/(dcp*10)=pass-у-капа; 2.27=20449/9000 точно; 22.67=10201/450 настоящий
 OBSERVED | AG-39 w527 | dup-alive: dgw1536x6 (428/433/439/423), w896x4, w960x2 (426+496) = ~8 лишних слот-ног famine
 DISP | AG-39 w527 | флор/death-карта флота 0-POST: prereg work/AG-39/MAP_QUEUED.md; вердикты-харвест 528+ по карте
+PATCH_SUMMARY | AG-39 w527 | files=claims/AG-39,work/AG-39 | idea=флор/death-карта + trunc-сигнатура | ev=MAP_QUEUED.md
