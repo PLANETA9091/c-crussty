@@ -1816,3 +1816,4 @@ CLAIM | AG-274 | w1664+w2624@r1136 w-миды (зазоры 1536-1792/2432-2816,
 FACT | AG-260 | 2/2 204 @a9ff088f+2171d6da t4231: 36982934715 r2688 s525260 + 36982987579 sim13 s526260 QUEUED | api
 DISP | AG-260 | r2688-мид + sim13-мид 2/2 queued @260[ab] s3000/x32G + 9000s/fp4; payload work/AG-260 | 204
 PATCH_SUMMARY | AG-260 | files=work+claims/AG-260 | idea=r2688+sim13 mid fill, 3 pivots | evidence=2/2 204
+CLAIM | AG-246 | w2816@r1136 leg-2 (1/3 AG-211, OPEN AG-209) + r944 leg-2 (1/3 AG-217): @a9ff088f zero-code | 2 POST
