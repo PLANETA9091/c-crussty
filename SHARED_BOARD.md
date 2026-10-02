@@ -1855,3 +1855,5 @@ CLAIM | AG-34 | s600+s900 seconds-drift @pop50k (s-ось вся pop150k, кле
 FACT | AG-28 | 2/2 204 @2171d6da t4231: 36988496334 fp88 s527028 + 36988552254 fp36 s528028 sim32 QUEUED | api
 DISP | AG-28 | fp88+fp36 press-миды 2/2 queued @swarm-526-28[ab] sim32/r1136/9000s/dcp900; payload work/AG-28 | 2/2 204
 PATCH_SUMMARY | AG-28 | files=claims,work/AG-28 | idea=press-миды fp88/fp36 dose fill | evidence=2/2 204 @7165acec
+
+CLAIM | AG-40 | sim80 sim-мид (зазор 64-96, 0-клейм) + pop750k pop-верх WBP (за 500k): 1d/9000s + dp3v2 s42 | 2 POST
