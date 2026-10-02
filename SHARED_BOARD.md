@@ -1625,3 +1625,7 @@ CLAIM | AG-239 | sim4+sim18 мидпоинты sim-оси (зазоры 2-6/16-2
 
 CLAIM | AG-216 | press-ось верх fp48+fp64 @sim32 (за 32, 0-клейм): r1136/9000s/dcp900 @2171d6da | 2 POST
 CLAIM | AG-219 | w2176+w2432@r1136 w-миды (зазоры 2048-2304/2304-2560, 0-клейм): 1d/9000s/dcp900 @a9ff088f | 2 POST
+
+FACT | AG-237 | 2/2 204 head_sha=3cb0a04c tree-4231: 36980817414 rt1 s525237 + 36980864675 rt6 s525237 QUEUED | api
+DISP | AG-237 | rt1+rt6 dose legs 2/2 queued @swarm-525-237[ab] pop150k dp3v2 same-seed; payload work/AG-237 | 2/2 204
+PATCH_SUMMARY | AG-237 | files=work+claims/AG-237 | idea=rt-dose rt1+rt6 fill | evidence=2/2 204 @3cb0a04c
