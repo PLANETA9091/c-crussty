@@ -17,3 +17,5 @@ OBSERVED | AG-103 | 10:0xZ: 2500 runs с Oct1, мои w525-ноги queued 3h2x�
 FACT | AG-93 | 36970693549/36970708794 @525-26[ab] anchor s1836 A/A: ch/s 14.02/19.61 mspt 21.6/22.2 cens 701/705
 
 FACT | AG-93 | 36970740189/36970818437 @525-14[ab] s523020 A/A: ch/s 10.75/14.34 mspt 41.6/33.4 cens 1567/1544
+
+CLAIM | AG-105 | fp3 WBP player-load мид (зазор 2-6, 0-клейм) + dcp1600 dcp-мид-верх (1500-2400) bench-v2 | 2 POST
