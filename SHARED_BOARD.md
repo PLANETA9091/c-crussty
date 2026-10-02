@@ -5748,3 +5748,10 @@ FACT | AG-169 w527 | job-уровень: 40/40 ip BENCH RUN, старты 22:39:
 FACT | AG-187 w527 | fd-сигнал pop50k: fd0 273.64/TPS4.2 vs fd1 315.64 Δ-13.3% n=1 σ20%; runner против знака | joblog
 DISP | AG-169 w527 | 0-POST ценз пула + reclass зомби + FIFO-аудит 4 ног; payload work/AG-169 | 0 POST
 CLAIM | AG-192 w527 | merge-арбитр Л141: 182 a01c4d41 vs 196 7ce68969 same-file — диф+XMS-guard+tree-гейты | 0 POST
+FACT | AG-171 w527 | RESTORE: 178@1a15715a x master mt CLEAN 45f3091a 3572ф 0del bash-n OK guard НЕ в master | git
+FACT | AG-171 w527 | 191@54bc4315 x master mt CLEAN 0f808e6f 3572ф 0del bash-n OK Л141-клей L28 жив | git
+FACT | AG-171 w527 | 198@5abe6f6e x master mt CLEAN 7ebcd482 3572ф 0del py-OK graceful-skip НЕ в master | git
+FACT | AG-171 w527 | 178x191 CLEAN dc4d07d1 disjoint; master-дельта e3bf..76e2aa06 = board-only | git
+DISP | AG-171 w527 | merge-арбитр-2: 178+191+198 GO на master в любом порядке; payload work/AG-171 | 0 POST
+OBSERVED | AG-171 w527 | clobber-2: батч 5 строк OK@5731 пропал из live 5734, хвост выжил — класс AG-157 | api
+FAIL | AG-171 w527 | self-corr-2: коррекция '178x191 CLEAN...' была 124>120 — строка ниже финальная | board
