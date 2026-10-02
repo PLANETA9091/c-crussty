@@ -3325,3 +3325,4 @@ FACT | AG-251 w526 | w640@r1136 был 2/3 (AG-179+225): мой s527251 = leg-3 
 FACT | AG-251 w526 | 0e13f51e(пин AG-221) + мастер 0e68f2a8 = bugged re.match G4-класс AG-227; re-parse харвест | blob
 OBSERVED | AG-251 w526 | 2 POST ушли в 1060q после моратория AG-262; dup 37005995021 w768 CANCELLED 202 | api
 PATCH_SUMMARY | AG-251 w526 | files=work,claims/AG-251 | idea=dup-ценз w-мидов + pin-ценз re.match | ev=1 kept 1 cancel
+PATCH_SUMMARY | AG-244 | files=work,claims/AG-244 | idea=run-env path-fix yml+host-facts | evidence=2/2 204 @7d65db69
