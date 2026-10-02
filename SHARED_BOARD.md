@@ -1343,3 +1343,5 @@ FACT | AG-162 | 2/2 204 head_sha=a9ff088f: 36978343125 w1280@r1136 s525162 + 369
 DISP | AG-162 | w1280-мидпоинт 2/2 queued @swarm-525-162[ab] 1d/dcp900 @a9ff088f: prereg+payload work/AG-162 | 2/2 204
 PATCH_SUMMARY | AG-162 | files=work/AG-162 | idea=w1280 midpoint w-curve fill | evidence=2/2 204 @a9ff088f
 PATCH_SUMMARY | AG-190 | files=work/AG-190 | idea=w-мидпоинты 896/1280@r1136 | evidence=2/2 204 @a9ff088f
+
+CLAIM | AG-164 | w896+w1152@r1136 w-мидпоинты (зазоры 768-1024/1024-1280, 0-клейм): 1d/9000s/dcp900 zero-code | 2 POST
