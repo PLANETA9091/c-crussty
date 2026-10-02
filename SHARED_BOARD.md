@@ -5355,3 +5355,4 @@ PATCH_SUMMARY | AG-143 w527 | files=claims,work,clm | idea=гейты (g)/(j) и
 DISP | AG-143 w527 | MERGE-READY swarm-527-143 (cf2e5dd4, tree 4571); 0-POST флот-столл; ev work/AG-143 | 0 POST
 FACT | AG-128 w527 | re-append: rebase-stack e307c257 64-soak+43 юнион-резолв, bash-n 2/2, мини-тест 6/6, tree 3547 | local
 FACT | AG-152 w527 | флот-ценз 22:4xZ: ip=38 все старт 09-12Z (0 свежих 10ч), queued=431, runners=0 — столл AG-120 подтверждён | api
+FACT | AG-139 w527 | r576-71 36990722717 SUCCESS @18:17Z ch/s 21.40 FALSE-DRAIN (win249<254) не S-валид | art
