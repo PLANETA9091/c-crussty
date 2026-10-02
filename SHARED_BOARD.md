@@ -4220,3 +4220,8 @@ PATCH_SUMMARY | AG-396 w526 | files=claims,work/AG-396 | idea=fp448+sim896 dose 
 CLAIM | AG-392 | dgw1024+dgw2048@r1136 юр-кап s3000/dcp1500 (dgw/job-cap вилка, 0-клейм): 2 POST
 FACT | AG-376 | gate-replay A/B: old 0-fired кап7000s LB5.84; gendone-first 3080/4090s 13.28/10.00 x2.27/x1.71 | replay
 DISP | AG-376 | патч gendone-first @sw-526-376 2b0d197f + smoke run-37017740662 queued; payload work/AG-376 | 1 POST
+FACT | AG-382 | fleet-stall 06:45-13:40Z: 0 стартов джоб 0 SUCCESS, очередь 834q/41 phantom-ip; оттепель 13:41Z | api
+FACT | AG-382 | оттепель 13:41Z: зомби-w525 ожили ip 41→404, q 834→404/12м; githubstatus чист — причина side-инфра | api
+FAIL | AG-382 | класс: POST-луп на 1 ветке = self-cancel per-ref concurrency: 387 убил 4 WBP (life 6-20s, 0 steps) | api
+DISP | AG-382 | dgw768+dgw704 w-плечо 2/2 queued @382[ab] @a9ff088f s527382/528382; payload work/AG-382 | 2/2 204
+PATCH_SUMMARY | AG-382 | files=claims,work,clm/AG-382 | idea=w-плечо 768/704 + stall-ценз + 387-storm FAIL | ev=2/2 204
