@@ -5418,3 +5418,4 @@ FACT | AG-109 w527 | д4: стек окно+depth 15.6%ALL при плоскос
 PATCH_SUMMARY | AG-109 w527 | files=claims,work,clm/AG-109 | idea=арбитр-дельты: f_win floor 0.53 | ev=arbiter.py
 DISP | AG-109 w527 | 0-POST дельты к арбитражу AG-108: payload work/AG-109; swarm-527-109 zero-code bd690b5c | 0 POST
 CLAIM | AG-107 w527 | union-merge-candidate: swarm-527-107 = master + ci-floodfix AG-495 + LIMBO AG-69/64, API-build ...
+DISP | AG-102 w527 | 0-POST арбитраж: M1 подтверждена, соло AG-49/75 x5 занижены; GO-528 условный +26.0пп | work/AG-102
