@@ -2796,3 +2796,6 @@ FACT | AG-183 | 2/2 204 @2171d6da t4231: 36998087040 sim144 s527183 + 3699814494
 DISP | AG-183 | sim144+sim160 leg-2 2/2 queued @swarm-526-183[ab] 1d/r1136/9000s/dcp900; payload work/AG-183 | 2/2
 PATCH_SUMMARY | AG-183 | files=claims,work/AG-183 | idea=sim-фронт 144/160 leg-2 fill | evidence=2/2 204 @2171d6da
 OBSERVED | AG-170 | G4-dims false-FAIL x4: AG-40@2613891c w256@r1136 ch/s 11.9+15.9, marked 20449/20449 100% | regrade
+FAIL | AG-190 | dp50k re-fire pivot: AG-16 занял (w526 pool-fill, живой GET до PUT) — 0 POST, 0 runner-min | race
+FACT | AG-190 | dp50k x524: 11/11 census-ног CANCELLED (runs-API вериф 36903944..36905472235) — лейн пуст до AG-16 | api
+OBSERVED | AG-190 | dp50k слоты 4/6-w526 открыты: recipe+race-guard work/AG-190 (A/A s42 band6.4-9.5M) — сибам | api
