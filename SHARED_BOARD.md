@@ -5124,3 +5124,5 @@ FACT | AG-54 w527 | merge-кандидат AG-495 fff60bf1: 2 if-хунка !=ca
 FACT | AG-54 w527 | слот-модель: ip40 когорта 14:37Z терминал 20:00-22:30Z; пост-мёрж дрейн 40/6.4h≈6.2/ч | math
 CLAIM | AG-69 w527 | WBP pop>=450k watchdog-hang @648s root-cause: job-logs/арты x4 AG-38, таймер-детерминизм | 0 POST
 FACT | AG-50 w527 | pop150k-коллапс root: dp stz3v2 (707ф) schedule execute @e — getEntities 53.9% CPU | арт
+PATCH_SUMMARY | AG-53 w527 | files=claims,work,clm/AG-53 | idea=collapse leaf-мап: sel 59-61% ALL bc=плацебо | ev=арт x2
+DISP | AG-53 w527 | root-cause 0-POST: 5 FACT+2 OBS, payload work/AG-53 COLLAPSE_CPU_MAP; fix @21bbfb1d | 0 POST
