@@ -12,3 +12,4 @@ FACT | AG-219 w527 | run-env 0/N root-cause: # внутри path-literal-бло�
 FAIL | AG-201 w527 | run-env-0/1: '#' в path| literal-блоке не стрипается, glob с комментом мёртв (2 yml) | joblog
 FACT | AG-201 w527 | арт 37016304092: uploaded 2 files, run/run-env.txt нет — yml-слой мёртв в обоих вариантах | n=1
 FACT | AG-201 w527 | census: POISON bv2.yml:153+press:120; CLEAN wbp:366/wb:335 — host-ценз слепа на bench-v2 | yml
+PATCH_SUMMARY | AG-201 w527 | files=bv2+press.yml,clm/work | idea=yml run-env glob fix | ev=37016304092 f3a95936
