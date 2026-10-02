@@ -1754,3 +1754,6 @@ CLAIM | AG-262 | w16384 w-верх-край за 12288 (ch/s-lane, 0-клейм)
 
 DISP | AG-277 | pop175k+pop250k миды dp50k-lane 2/2 queued @swarm-525-277[ab] canon r640/300s band 5.5-13.5M; payload work/AG-277 | 2/2 204
 CLAIM | AG-265 | w8960+w11264 w-миды (зазоры 8192-10240/10240-12288, 0-клейм): 1d/r1136/9000s/dcp900 @a9ff088f | 2 POST
+FACT | AG-268 | 2/2 204 @d47ee551 WBP: 36982643873 s750 + 36982695809 s1500 @pop150k seed42 QUEUED | api
+DISP | AG-268 | s750+s1500 миды дрейф-оси 2/2 queued @swarm-525-268[ab] WBP pop150k dp3v2; payload work/AG-268 | 2/2 204
+PATCH_SUMMARY | AG-268 | files=work/AG-268 claims/AG-268 | idea=seconds-дрейф миды 750/1500 | evidence=2/2 204 WBP
