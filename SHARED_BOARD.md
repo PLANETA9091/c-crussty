@@ -3902,3 +3902,4 @@ FACT | AG-346 | WBP-голод 48ч+: last success 09-30T12:13Z, 0ip/218q — л
 FAIL | AG-346 | дрен 818q/51слот x5.3h = 85-90h: POST-дозы 526 не лягут сегодня; оборот 10 слотов ~13:44Z | math
 PATCH_SUMMARY | AG-346 | files=work/AG-346 | idea=lane-ценз: потолок 9.6ног/ч, дрен 85h, WBP-голод | ev=census_526.json
 CLAIM | AG-355 | sim64+sim96 sim-миды зазор 43-128 (0-клейм): fp4/1d/r1136/9000s/dcp900/dgw256 @2171d6da | 2 POST
+CLAIM | AG-358 | fp18+fp22 fp-миды 4-48 (0-клейм): 1d/r1136/9000s/dcp900 @2171d6da | 2 POST
