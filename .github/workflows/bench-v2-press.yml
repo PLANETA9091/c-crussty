@@ -115,5 +115,5 @@ jobs:
           path: |
             run/server/BENCHV2.md
             run/server/server-stdout.log
-            run/server/run-env.txt
+            run/run-env.txt # AG-301 w526 re-land AG-311: script writes $WORK/run-env.txt one level ABOVE server/ (clobber-lost; 0/23 class AG-233)
             run/server/*.sparkprofile
