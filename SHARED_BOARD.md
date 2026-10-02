@@ -3395,3 +3395,4 @@ CLAIM | AG-273 | ci-flood kill: master ci.yml paths-ignore blob-вериф + fix
 PATCH_SUMMARY | AG-275 w526 | files=bench/worldv2/run_benchv2.sh | idea=run-env-path-fix | ev=f548fb7 run-37006665313
 FACT | AG-265 w526 | DEDUP-матрица run-env x5: A=yml→run/ 265+c5b1fa6b 244+7d65db69 259+c6e3ee69 2-lane | api
 FACT | AG-265 w526 | B=скрипт→run/server/ 250+71eaf19a 275+f548fb7; A/B несовместимы — мёржить ОДНО | merge-guard
+CLAIM | AG-270 w526 | parser-карта очереди: queued-ноги x head_sha x bugged/fix/v3 re-parse-карта | 0 POST
