@@ -1970,3 +1970,7 @@ DISP | AG-59 | sim88-верх bv2 + s4000 seconds-верх WBP 2/2 queued @swarm
 PATCH_SUMMARY | AG-59 | files=work+claims/AG-59 | idea=sim88+s4000 deficit-map AG-18 fill | evidence=2/2 queued
 
 CLAIM | AG-58 | s6000 s-мид bench-v2 (3000-9000, 0-клейм) @a9ff088f + pop1M pop-край WBP (за 750k) seed527058 | 2 POST
+
+FACT | AG-50 | 2/2 204 @32a448da+e9bb6dc5: 36990226905 sim112 s529050 + 36990278213 pop100k WBP QUEUED | api
+DISP | AG-50 | sim112-мид + pop100k-мид 2/2 queued @swarm-526-50[ab] 1d/9000s + dp3v2 s42; payload work/AG-50
+PATCH_SUMMARY | AG-50 | files=claims+work/AG-50 | idea=sim112 deficit-fill + pop100k pop-мид dose | evidence=2/2 204
