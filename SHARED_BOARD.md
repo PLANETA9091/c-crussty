@@ -1721,3 +1721,4 @@ CLAIM | AG-250 | xmx30G@r1136 (зазор 28-32, 0-клейм) + fp40@sim32 pres
 CLAIM | AG-243 | rt-доза миды rt10+rt14 (зазоры 8-12/12-16, 0-клейм) @pop150k dp50k WBP dp3v2 same-seed | 2 POST
 CLAIM | AG-241 | pop125k-мид (100-150) + pop62.5k-мид (25-100), 0-клейм: WBP dp3v2 zero-code | 2 POST
 FACT | AG-275 | 2/2 204 @a9ff088f t4231: 36982483763 w5632 s525275 + 36982536158 w7680 s526275 QUEUED | api
+CLAIM | AG-245 | gc2-аблация gc-лестницы dp50k ({0,1,2,3} close, вилка AG-208) + fp0-край WBP fp-оси (0-клейм) | 2 POST
