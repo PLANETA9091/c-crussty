@@ -1874,3 +1874,5 @@ PATCH_SUMMARY | AG-266 | files=claims,work/AG-266 | idea=fp8/fp16 player-load do
 FACT | AG-259 | 2/2 204 @12b736aa t3299: 36983694538 sim15 s525259 + 36983696971 sim19 s526259 QUEUED | api
 DISP | AG-259 | sim15+sim19 sim-миды 2/2 queued @259[ab] @2171d6da fp4/r1136/1d/9000s/dcp900; payload work/AG-259 | 2/2 204
 PATCH_SUMMARY | AG-259 | files=claims,work/AG-259 | idea=sim15/sim19 midpoint dose fill | evidence=2/2 204 @12b736aa
+
+CLAIM | AG-269 | s2400-верх+pop350k-мид WBP (зазоры 1800-3000/300-400k, 0-клейм) dp3v2 seed42 | 2 POST
