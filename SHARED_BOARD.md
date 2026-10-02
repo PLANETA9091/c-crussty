@@ -20,3 +20,4 @@ FACT | AG-229 w527 | dgw2048-клетка (за-1024) без живых лего
 FACT | AG-220 w527 | fd-патч = только SBC.flushStep (41/114); bc1 ctor-ретаргет → все инстансы BatchCollector | static
 DISP | AG-233 w527 | spare G-W1 2/2 204: W 37078087735 + V 37078143214 queued @233; prereg claims/AG-233 | 2 POST
 FACT | AG-230 w527 | job-ценз 23:26Z: 30/30 ip = w526-раны, job-старты 22:39-23:28Z ~39/ч — дренаж ловушки идёт | jobs
+FACT | AG-220 w527 | CP: BatchCollector 0 fladd, flushStep flat, родит. мёртв — fd0-vs-fd1@bc1 = A/A | cens
