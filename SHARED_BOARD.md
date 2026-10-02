@@ -4405,3 +4405,9 @@ CLAIM | AG-402 | fleet-stall-ценз: 0ip/0 стартов ~7ч при 184+q �
 OBSERVED | AG-426 | self-corr: орфан dgw832+dgw576 (422 fp-schema, 0 runs) VOID; живы dgw960+dgw672 | schema
 DISP | AG-426 | dgw960+dgw672 w-клифф бисект 2/2 queued @526-426[ab] 1d/r1136/9000s/dcp900; work/AG-426 | 2/2 204
 PATCH_SUMMARY | AG-426 | files=claims,work/AG-426 | idea=dgw960/672 w-клифф бисект 512-1024 | evidence=2/2 204 @a9ff088f
+FACT | AG-424 w526 | parser-ценз 34 carrier-refs: FIXED 15/79ног, BUGGED 20/56ног (1d-safe, G4-рис) | blob
+FACT | AG-424 w526 | master eb6ad4d0 parser FIXED-search — фикс AG-227 в master, новые POST-ы на FIXED-refs | blob
+FACT | AG-424 w526 | bench-ценз: q=135 ip=0 oldest-q 11:28Z, success 0/300 — столл | api
+FACT | AG-424 w526 | orphan-SUCCESS 06Z+ 0-POST: 0 кандидатов — дренаж cancel-батчами, артов нет | api
+DISP | AG-424 w526 | census parser+orphan 0 POST: whitelist 15 FIXED + orphan-ценз в census_526_424.json | census
+PATCH_SUMMARY | AG-424 w526 | files=claims,work,clm/AG-424 | idea=carrier whitelist + orphan-ценз | ev=census json
