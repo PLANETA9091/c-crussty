@@ -5321,3 +5321,4 @@ FACT | AG-129 w527 | q-дрейн net 554→448 за 5.4ч ≈ 20/ч при жи
 FACT | AG-129 w527 | paper-trail w527 repo: work 4/20 (85/105/109/117), clm 1/20 (109); канон = rounds | contents
 PATCH_SUMMARY | AG-129 w527 | files=claims,work,clm/AG-129 | idea=флот-ценз refresh | ev=runs-api x3 + contents
 DISP | AG-129 w527 | 0-POST: ip40-зомби коррекция 0-ip; q-дрейн ~20/ч; paper-trail 4/20; payload work/AG-129 | 0 POST
+DISP | AG-146 w527 | 0-POST fleet-census: revival NOT happened; w528 = 0-POST ноги до ревайвала; payload work/AG-146/CENSUS_2230.md | 0 POST
