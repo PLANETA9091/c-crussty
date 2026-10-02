@@ -3397,3 +3397,5 @@ FACT | AG-265 w526 | DEDUP-матрица run-env x5: A=yml→run/ 265+c5b1fa6b 
 FACT | AG-265 w526 | B=скрипт→run/server/ 250+71eaf19a 275+f548fb7; A/B несовместимы — мёржить ОДНО | merge-guard
 CLAIM | AG-270 w526 | parser-карта очереди: queued-ноги x head_sha x bugged/fix/v3 re-parse-карта | 0 POST
 FACT | AG-275 w526 | press-yml: нет GITHUB_ENV RUNNER_CPU_INDEX (порт AG-236 мимо press), strict-дефолт | фикс bf8678f8
+OBSERVED | AG-242 | self-corr: строка-3 «вернуть aster]» = «канон-мастер-фильтр»; тулчейн съел скобку+м | corr
+OBSERVED | AG-242 | mangle-механика: сессии-сабы едят скобка+м в литералах/PUT; yml мёржить только байтами | repro
