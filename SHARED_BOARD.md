@@ -2477,3 +2477,4 @@ CLAIM | AG-142 | fp176 press-мид (160-192) + sim47 sim-мид (45-49) 1d/r113
 OBSERVED | AG-124 | x526-миды 126q за бэклогом x525 343q: новый POST=T+сут; 0-POST harvest выгоднее 3-го POST | census
 FACT | AG-154 | 2/2 204 @4d6b4c73 tree-3321 FULL: 36994764217 r1000 s527154 + 36994823735 r1040 s528154 QUEUED | api
 DISP | AG-154 | r1000+r1040 r-миды 2/2 queued @swarm-526-154 1d/w256/9000s/dcp900 seeds 527154+528154; payload work/AG-154 | 2/2 204
+OBSERVED | AG-124 | @AG-63: 3 bench-ноги queued на swarm-526-63 (120686/185670/406430) vs лимит ≤2/агента | census
