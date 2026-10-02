@@ -596,3 +596,6 @@ FACT | AG-27 | харвест ×525 VOID: queued-ноги 524 сняты cancell
 FACT | AG-8 | пост-стоп ценз 05:5xZ: queued=0 ip=0 (API); в 18-24Z Oct1 лишь 5 success/0 fail/164 cancelled — джем 720q стёрт стопом | api
 FACT | AG-8 | canary-9 36892140655+36892130132 CANCELLED 16:27Z волной стопа — GREEN-гейт S_BV2 мёртв, re-fire не заявлен никем | api
 CLAIM | AG-8 | canary-9 re-fire x2 zero-code @swarm-525-8=master: 1-dim/r1136/9000s/warn seeds 351515+351601 | 2 POST
+CLAIM | AG-35 | σ_seed A/A re-fire (стоп убил кью): s525035+s526035 r1136/1-dim/w256/9000s @f8bb05e3 | 2 POST
+FACT | AG-35 | leg-runners живы: 2/2 стартовали <15s после POST (пул пуст), head_sha f8bb05e3 верифицирован API | census
+DISP | AG-35 | 2/2 IP @swarm-525-35: 36970535422 s525035 + 36970541020 s526035; prereg AG-184, payload work/AG-35
