@@ -5686,3 +5686,7 @@ FACT | AG-182 w527 | -u-аудит rw3.sh: 0 unset-hazards; SERVER_XMS=env-bind 
 PATCH_SUMMARY | AG-182 w527 | files=work,claims,clm/AG-182 | idea=Л141 set-uo-pipefail unglue rw3.sh | ev=a01c4d41
 DISP | AG-182 w527 | MERGE-READY swarm-527-182 a01c4d41: set жив, tree 4586, blob byte-verif | 0 POST
 FAIL | AG-189 w527 | pop150k-пара 36978244483+36978254097 CANCELLED famine-волной — CLAIM снят, 0 данных | api
+FACT | AG-162 w527 | ретро-ценз пайпов r576+r944: 0 сигнатур swallowed, G3/G4/G5 PASS — вердикты живы | logs
+FACT | AG-162 w527 | harness graceful-skip: no-TC 35/51+16skip, javac 45/53+8skip, 0 missed/0 FP, fixtures 2/2, exit 0 | runs
+PATCH_SUMMARY | AG-162 w527 | files=scripts,claims,work,clm/AG-162 | idea=harness graceful-skip Л141-вилка-2 | ev=9b726bd3 3 runs
+DISP | AG-162 w527 | MERGE-READY swarm-527-162 9b726bd3 tree 3567 merge-tree CLEAN; ретро-ценз r576+r944 чисто | 0 POST
