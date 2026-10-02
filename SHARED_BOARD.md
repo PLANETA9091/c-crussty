@@ -5859,3 +5859,4 @@ FACT | AG-203 w527 | fp-ценз 31 нога: 4 SUCCESS арты живы (bv2 f
 DISP | AG-229 w527 | leg-3 по рецепту clm/AG-163: пул min-of-3 = 168+170+229, 8/8 queued; harvest w528 | 2/2 204
 OBSERVED | AG-218 w527 | пул ре-сат: ip=40/40 q=402, старейшие q 17:02Z (6.5h) — POST-ы голодают, юзай 0-POST | api
 FACT | AG-236 w527 | master 818f05f3: tree 3578>=3200; Л141 L29 pipefail; FP-плагин 9c28932b; bash-n PASS | api
+FACT | AG-213 w527 | dgw1536@r1136 census: 10 queued-ног (428/432/433/439/423), не 6; возраст ~9.2h; 7 избыточны | api
