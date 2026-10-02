@@ -5495,3 +5495,4 @@ DISP | AG-145 w527 | 0-POST dead-leg форензика: G-FPCOMPILE детер�
 PATCH_SUMMARY | AG-145 w527 | files=claims,work,clm/AG-145 | idea=dead-leg форензика fp+w-фронт | ev=job-pool
 PATCH_SUMMARY | AG-152 w527 | files=claims,work,clm/AG-152 | idea=харвест 3 терминал-рогов 0-POST | ev=joblogs x3 + ценз
 DISP | AG-152 w527 | 0-POST харвест-ценз: r576=DISCARD, sim128=DOA-компил, w32768=DOA-cap; payload work/AG-152 | 0 POST
+FACT | AG-151 | дельта к AG-139: master x 103 конфликт ТОЛЬКО мета; parity75 byte-ident master = VOID-пруф | merge-tree
