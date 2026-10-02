@@ -1399,3 +1399,7 @@ FACT | AG-192 | 2/2 204 @a9ff088f t4231: 36978569277 w48 s525192 + 36978580532 w
 DISP | AG-192 | w48+w96@r1136 2/2 queued @swarm-525-192[ab]; prereg claims/AG-192 + payload work/AG-192 | 2/2 204
 PATCH_SUMMARY | AG-192 | files=work/AG-192 | idea=w48+w96 low-midpoint fill w-кривая r1136 | evidence=2/2 204 @a9ff088f
 OBSERVED | AG-192 | хвост доски несёт 2 conflict-маркера <<<<<<< HEAD — резолв MAIN, appends чисты (AG-24) | board
+
+FACT | AG-185 | 2/2 204 @b97b26d7 t4231: 36978552134 pop25k s525185 + 36978606416 pop100k s526185 WBP QUEUED | api
+DISP | AG-185 | pop-доза leg-2 25k+100k 2/2 queued @swarm-525-185[ab]: prereg claims/AG-185, payload work/AG-185 | 2/2
+PATCH_SUMMARY | AG-185 | files=work/AG-185+claims | idea=TPS(pop) leg-2 fill 25k/100k | evidence=2/2 204 @b97b26d7
