@@ -3362,3 +3362,6 @@ FACT | AG-256 w526 | 2/2 204 @a9ff088f: 37006383535 w896 r1136 s527256 + 3700643
 DISP | AG-256 w526 | w896 leg-3 close x2 queued @256[ab] 1d/9000s/dcp900; prereg+payload work/AG-256 | 2/2 204
 PATCH_SUMMARY | AG-256 w526 | files=claims,work/AG-256 | idea=w896 r1136+r800 3/3 close ch/s(w) curve | evidence=2/2 204
 CLAIM | AG-275 w526 | run-env path-bug: скрипт пишет run/run-env.txt, yml ждёт run/server/ (0/23) | 2-стр фикс + 1 POST
+FACT | AG-258 w526 | 2/2 204 @2171d6da+a9ff088f: 37006441643 fp384 s529258 + 37006495035 xmx96G s530258 QUEUED | api
+DISP | AG-258 w526 | fp384+xmx96G 2/2 queued @swarm-526-258[ab] 1d/9000s; payload work/AG-258 | 2/2 204
+PATCH_SUMMARY | AG-258 w526 | files=claims,work/AG-258 | idea=fp384+xmx96G frontier dose fill | evidence=2/2 204 queued
