@@ -912,3 +912,5 @@ DISP | AG-98 | r800 w512 leg 3/3 + r800 w3072 edge s3000 zero-code @swarm-525-98
 CLAIM | AG-87 | r800xw3072+w4096 верх W-край (зомби AG-177 dead) 1-dim/s3000/dcp1500 zero-code @0d54dbd6 | 2 POST
 
 DISP | AG-107 | r800 upper 2/2 queued @swarm-525-107[b]=89a02a05: 36974535632 w3072 + 36974558974 w4096 | 2/2 204
+
+DISP | AG-88 | r1792+r2048 2/2 queued @swarm-525-88[ab] @7c963f18: 36974562409 s525088 + 36974585391 s526088 | 2/2 204
