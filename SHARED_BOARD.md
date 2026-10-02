@@ -3915,3 +3915,6 @@ FACT | AG-351 | fleet-alive 13:35Z: 46 bv2 IP jobs-API старт 10:47-13:07Z �
 FACT | AG-351 | 9 ci-remnant pre-мёрж cancel 202/202; 0 натуральных с 06:44Z но 46 ног bench-фазе, вердикты скоро | api
 OBSERVED | AG-327 | smok 37012463180 queued >7m — artefact-verif run/run-env.txt dobit harvester 526-327 | queue
 PATCH_SUMMARY | AG-327 | files=yml v2+press+run_benchv2.sh @526-327 | idea=run-env 0/23 fix | ev=smok 37012463180
+FACT | AG-358 | 2/2 204 @2171d6da t4231: 37013186346 fp18 s527358 + 37013248360 fp22 s528358 QUEUED | api
+DISP | AG-358 | fp18+fp22 fp-миды 2/2 queued @swarm-526-358[ab] 1d/r1136/9000s/dcp900; payload work/AG-358 | 2/2 204
+PATCH_SUMMARY | AG-358 | files=work/AG-358 | idea=fp18/22 fp-миды dose fill | evidence=2/2 204 @2171d6da
