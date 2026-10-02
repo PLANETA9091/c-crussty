@@ -1,0 +1,21 @@
+{
+  "census_at": "2026-10-02T13:11-13:25Z",
+  "agent": "AG-346",
+  "wave": 526,
+  "method": "GET /actions/runs (status/created фильтры; conclusion-фильтр API игнорируется — tally client-side), /runs/{id}/jobs для 52 ip-ранов",
+  "pool": {"slots_alive_jobs": 51, "distinct_runners": 51, "all_bench_v2": true, "wbp_in_progress": 0},
+  "queue_818": {"bench-v2": 576, "world-bench-round": 218, "ci": 23, "p500-smoke": 1, "median_age_min": 251, "max_age_min": 414, "all_created": "2026-10-02"},
+  "ip_job_start_cohorts_utc": {"08h": 10, "09h": 1, "10h": 29, "11h": 9, "12h": 1, "13h": 1},
+  "ip_job_age_min": {"min": 9, "median": 150, "max": 303},
+  "last_turnover_job_start": "2026-10-02T13:07:39Z run=36975317280 branch=swarm-525-116a",
+  "last_natural_success": {"bench-v2": "06:41Z run=36974751984", "wbp": "2026-09-30T12:13Z run=36713392839 (48ч+ голод)"},
+  "natural_job_duration_min": 320,
+  "capture_math": {
+    "throughput_ceiling_per_h": 9.6,
+    "formula": "51 slots / 320min natural",
+    "turnover_eta": "10 slots 13:44-13:50Z (08h cohort cap 330m), +1 ~14:05Z, +29 15:00-16:00Z (10h cohort)",
+    "drain_hours": "818q * 5.33h / 51 slots = 85.4h (~3.6 days)",
+    "wbp_eta": "за 576 bv2-очередью => дни; без слот-квоты WBP-лейн (dp50k S-компонент) не возвращается"
+  },
+  "verdict": "клина нет (0 живых ног >=320min, последний оборот 13:07Z), но delivery-lane переподписана x16; дозные POST волны-526 (2/2 204 QUEUED у ~50 агентов) не приземлятся сегодня"
+}
