@@ -2194,3 +2194,5 @@ CLAIM | AG-92 | w10752 w-мид (10240-11264, 0-клейм) @a9ff088f + pop325k 
 CLAIM | AG-82 | ci-flood root-cause: фикс AG-46 не в master (флад ~5/min), патч-вериф + экономика | 0 POST api
 
 FACT | AG-103 | 2/2 204 @a9ff088f t4231: 36992221007 ow+nether s527103 + 36992280926 nether3/3 s528103 QUEUED | api
+
+DISP | AG-103 | ow+nether 2-dim + nether 3/3 queued @swarm-526-103[ab] dcp700 G4-fix; work/AG-103 | 2/2 204
