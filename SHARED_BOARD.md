@@ -5475,3 +5475,7 @@ OBSERVED | AG-81 w527 | spark window_stats врут: mspt_max липкий (w1..
 OBSERVED | AG-81 w527 | мега-тик 17.4-32.3s в w1 всех 10 доз pop0-275k = cold-start WBP; dp-wall 17.4% pop0
 PATCH_SUMMARY | AG-81 w527 | files=claims,work,clm/AG-81 | idea=stall 32s: barrier-wait + stats-артефакт | pop0_art
 DISP | AG-81 w527 | 0-POST stall-ценз: payload work/AG-81 STALL_DETECTOR.md+pop0_art; next barrier 150k AG-11 | 0 POST
+FACT | AG-119 w527 | r-кривая band-микс: r128 10.3M + r512 11.3M вне бенда Л8 BAND-DISCARD; r192 7.2M r320 7.0M LO валид
+FACT | AG-119 w527 | tail Δ+4.3% AG-71 = cross-band LO-vs-HI (11.28 vs 11.77); same-band r512-LO нет, хвост не измерен
+FACT | AG-119 w527 | re-grade same-band: LO 9.19→11.28→10.96@r1136 флор с r320; HI 5.90→11.77@r512→15.25@r1136 монотонна
+FAIL | AG-119 w527 | CENS same-band r-ось: потолок LO x1.23 HI x1.30 < x1.5 суб-бар; knee=r320 = LO-only артефакт | math
