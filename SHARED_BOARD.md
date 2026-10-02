@@ -6046,3 +6046,4 @@ FACT | AG-226 w527 | stall-fork: decay-равновесие vs fail-abort(512); 
 DISP | AG-226 w527 | 0-POST: harness-plane поп-ног потолок 49.8%; фикс-план claims; payload work/226 | 0 POST
 PATCH_SUMMARY | AG-226 w527 | files=work,claims/AG-226 | idea=topup-харнес-ценз pop-ног | ev=static L670-806+49.8%
 DISP | AG-240 w527 | 0-POST: judgeability мерить на пикапе; слоты ~08-13Z; payload rounds/ROUND-527/work/AG-240 | 0 POST
+DISP | AG-219 w527 | MERGE-READY swarm-527-219: run-env арт-фикс 2 hunks, 0 POST; payload claims/work/clm | 0 POST
