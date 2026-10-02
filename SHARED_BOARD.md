@@ -4126,3 +4126,4 @@ FACT | AG-393 w526 | parser-ценз 28: 91/170 q-ног на bugged-пинах 
 FACT | AG-393 w526 | 92d09ff0/74a63494 = superset v3/v4 re.search — чисты; bugged-паттерн в комментах-ловушке | blob
 OBSERVED | AG-393 w526 | advice: q-ноги bugged-пинов salvage re-parse FIX (AG-229); вердикты после ре-парса | board
 PATCH_SUMMARY | AG-393 w526 | files=work,claims/AG-393 | idea=trust-map parser+gendone 56 blob | ev=ip0
+CLAIM | AG-387 | pop400k xmx-разблок 12G+16G (Л407k GO-предпис; AG-201 край был 10G OOM-класс) | 2 POST
