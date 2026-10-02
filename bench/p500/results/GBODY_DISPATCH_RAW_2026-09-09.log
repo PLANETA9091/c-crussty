@@ -1,0 +1,99 @@
+RUN5(npe): Note: src/net/minecraft/world/level/levelgen/synth/Step0BodyBench.java uses or overrides a deprecated API.
+RUN5(npe): Note: Recompile with -Xlint:deprecation for details.
+RUN5(npe): === ARM J (pristine JVM, no agent) ===
+RUN5(npe): lib loaded: /home/z/c-crussty/native/libpaper_native_jni.so mode=java
+RUN5(npe):   J_pristine_getValue6     rep0: 246259 ops in 120.1 ms -> 487.6 ns/op
+RUN5(npe):   J_pristine_getValue6     rep1: 226056 ops in 120.0 ms -> 530.8 ns/op
+RUN5(npe):   J_pristine_getValue6     rep2: 277360 ops in 140.7 ms -> 507.2 ns/op
+RUN5(npe):   J_pristine_getValue6     rep3: 283052 ops in 120.0 ms -> 424.0 ns/op
+RUN5(npe):   J_pristine_getValue6     rep4: 282391 ops in 120.0 ms -> 424.9 ns/op
+RUN5(npe):   [rev]J_pristine_getValue6 rep0: 300240 ops in 120.0 ms -> 399.7 ns/op
+RUN5(npe):   [rev]J_pristine_getValue6 rep1: 254775 ops in 134.0 ms -> 525.9 ns/op
+RUN5(npe):   [rev]J_pristine_getValue6 rep2: 282689 ops in 120.0 ms -> 424.5 ns/op
+RUN5(npe):   [rev]J_pristine_getValue6 rep3: 298092 ops in 120.0 ms -> 402.6 ns/op
+RUN5(npe):   [rev]J_pristine_getValue6 rep4: 281475 ops in 120.0 ms -> 426.3 ns/op
+RUN5(npe): == G-BODY timing (ns/call, min-of-medians) ==
+RUN5(npe): J_pristine_getValue6          424.5 ns/call
+RUN5(npe): --BEGIN_CSV--
+RUN5(npe): mode,key,value
+RUN5(npe): java,mode,1
+RUN5(npe): java,J_pristine_getValue6,424.5
+RUN5(npe): --END_CSV--
+RUN5(npe): sink=4084.75365410332
+RUN5(npe): === ARM P (agent attached, mid-JVM whole-body swap) ===
+RUN5(npe): [bodyagent] armed: capture-on-load, patch-on-retransform (G-BODY rig)
+RUN5(npe): lib loaded: /home/z/c-crussty/native/libpaper_native_jni.so mode=patched
+RUN5(npe): [bodyagent] patch FAILED: java.lang.NullPointerException: Cannot invoke "org.objectweb.asm.MethodVisitor.visitCode()" because "this.mv" is null
+RUN5(npe): VERDICT: G-BODY FAIL (retransform did not apply)
+RUN6(final): Note: src/net/minecraft/world/level/levelgen/synth/Step0BodyBench.java uses or overrides a deprecated API.
+RUN6(final): Note: Recompile with -Xlint:deprecation for details.
+RUN6(final): === ARM J (pristine JVM, no agent) ===
+RUN6(final): lib loaded: /home/z/c-crussty/native/libpaper_native_jni.so mode=java
+RUN6(final):   J_pristine_getValue6     rep0: 293347 ops in 120.1 ms -> 409.3 ns/op
+RUN6(final):   J_pristine_getValue6     rep1: 293227 ops in 120.0 ms -> 409.2 ns/op
+RUN6(final):   J_pristine_getValue6     rep2: 259116 ops in 132.4 ms -> 510.9 ns/op
+RUN6(final):   J_pristine_getValue6     rep3: 312144 ops in 120.0 ms -> 384.4 ns/op
+RUN6(final):   J_pristine_getValue6     rep4: 289040 ops in 120.0 ms -> 415.2 ns/op
+RUN6(final):   [rev]J_pristine_getValue6 rep0: 315902 ops in 120.0 ms -> 379.9 ns/op
+RUN6(final):   [rev]J_pristine_getValue6 rep1: 283513 ops in 137.8 ms -> 486.0 ns/op
+RUN6(final):   [rev]J_pristine_getValue6 rep2: 280599 ops in 120.0 ms -> 427.7 ns/op
+RUN6(final):   [rev]J_pristine_getValue6 rep3: 310553 ops in 120.0 ms -> 386.4 ns/op
+RUN6(final):   [rev]J_pristine_getValue6 rep4: 313590 ops in 120.0 ms -> 382.7 ns/op
+RUN6(final): == G-BODY timing (ns/call, min-of-medians) ==
+RUN6(final): J_pristine_getValue6          386.4 ns/call
+RUN6(final): --BEGIN_CSV--
+RUN6(final): mode,key,value
+RUN6(final): java,mode,1
+RUN6(final): java,J_pristine_getValue6,386.4
+RUN6(final): --END_CSV--
+RUN6(final): sink=4293.060326683893
+RUN6(final): === ARM P (agent attached, mid-JVM whole-body swap) ===
+RUN6(final): [bodyagent] armed: capture-on-load, patch-on-retransform (G-BODY rig)
+RUN6(final): lib loaded: /home/z/c-crussty/native/libpaper_native_jni.so mode=patched
+RUN6(final): [body] retransform applied; pristine=11030 bytes captured
+RUN6(final): [dispatch] built handle for 1920907467 mapSize=1 buildNs=33402566
+RUN6(final): PARITY pre-vs-post retransform: 0/20000 mismatches
+RUN6(final): [canary] patched body really executed (cont handle built during parity): true
+RUN6(final): [dispatch] built handle for 1052212904 mapSize=2 buildNs=60032
+RUN6(final): handle build (1 instance, lazy first call): 60032 ns
+RUN6(final): [dispatch] built handle for 2072724423 mapSize=3 buildNs=58932
+RUN6(final):   build rep0: 58932 ns
+RUN6(final): [dispatch] built handle for 2058135834 mapSize=4 buildNs=40341
+RUN6(final):   build rep1: 40341 ns
+RUN6(final): [dispatch] built handle for 1153907750 mapSize=5 buildNs=21884
+RUN6(final):   build rep2: 21884 ns
+RUN6(final):   P_patched_getValue6      rep0: 294776 ops in 120.1 ms -> 407.3 ns/op
+RUN6(final):   P_patched_getValue6      rep1: 244601 ops in 136.7 ms -> 558.7 ns/op
+RUN6(final):   P_patched_getValue6      rep2: 325142 ops in 120.0 ms -> 369.1 ns/op
+RUN6(final):   P_patched_getValue6      rep3: 346700 ops in 120.0 ms -> 346.1 ns/op
+RUN6(final):   P_patched_getValue6      rep4: 342031 ops in 120.0 ms -> 350.8 ns/op
+RUN6(final):   N_direct_native          rep0: 323328 ops in 120.0 ms -> 371.1 ns/op
+RUN6(final):   N_direct_native          rep1: 340450 ops in 120.0 ms -> 352.5 ns/op
+RUN6(final):   N_direct_native          rep2: 358299 ops in 120.0 ms -> 334.9 ns/op
+RUN6(final):   N_direct_native          rep3: 299503 ops in 135.1 ms -> 451.0 ns/op
+RUN6(final):   N_direct_native          rep4: 348541 ops in 120.0 ms -> 344.3 ns/op
+RUN6(final):   [rev]N_direct_native     rep0: 355119 ops in 120.0 ms -> 337.9 ns/op
+RUN6(final):   [rev]N_direct_native     rep1: 338684 ops in 120.0 ms -> 354.3 ns/op
+RUN6(final):   [rev]N_direct_native     rep2: 333117 ops in 135.9 ms -> 408.0 ns/op
+RUN6(final):   [rev]N_direct_native     rep3: 336666 ops in 120.0 ms -> 356.4 ns/op
+RUN6(final):   [rev]N_direct_native     rep4: 334691 ops in 120.0 ms -> 358.5 ns/op
+RUN6(final):   [rev]P_patched_getValue6 rep0: 346912 ops in 120.0 ms -> 345.9 ns/op
+RUN6(final):   [rev]P_patched_getValue6 rep1: 330964 ops in 137.0 ms -> 413.9 ns/op
+RUN6(final):   [rev]P_patched_getValue6 rep2: 350026 ops in 120.0 ms -> 342.8 ns/op
+RUN6(final):   [rev]P_patched_getValue6 rep3: 347512 ops in 120.0 ms -> 345.3 ns/op
+RUN6(final):   [rev]P_patched_getValue6 rep4: 338473 ops in 120.0 ms -> 354.5 ns/op
+RUN6(final): == G-BODY timing (ns/call, min-of-medians) ==
+RUN6(final): P_patched_getValue6           345.9 ns/call
+RUN6(final): N_direct_native               352.5 ns/call
+RUN6(final): --BEGIN_CSV--
+RUN6(final): mode,key,value
+RUN6(final): patched,mode,1
+RUN6(final): patched,parity,0
+RUN6(final): patched,handle_build_ns,60032
+RUN6(final): patched,handle_build_ns0,58932
+RUN6(final): patched,handle_build_ns1,40341
+RUN6(final): patched,handle_build_ns2,21884
+RUN6(final): patched,P_patched_getValue6,345.9
+RUN6(final): patched,N_direct_native,352.5
+RUN6(final): --END_CSV--
+RUN6(final): sink=14205.673137791839

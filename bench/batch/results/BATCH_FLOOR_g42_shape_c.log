@@ -1,0 +1,47 @@
+# abiVersion=131087 (table=2 kernels=15) lib=/home/z/ccrussty/c-crussty/target/release/libcrussty.so jdk=21.0.12.1
+# parity OK kernel=2 directCount=4 (stub=oldBatchSummary: batch == direct, 4 lanes)
+RESULT	kernel=2	K=1	batches=60000	rounds=11	batch_ns_median=1059.3	batch_ns_min=1004.5	batch_ns_max=1108.5	op_ns_median=1059.3
+RESULT_DIRECT	kernel=2	calls=60000	rounds=11	direct_ns_median=779.9	direct_ns_min=757.2	direct_ns_max=821.9
+# parity OK kernel=2 directCount=4 (stub=oldBatchSummary: batch == direct, 4 lanes)
+RESULT	kernel=2	K=8	batches=7500	rounds=11	batch_ns_median=6605.3	batch_ns_min=6560.0	batch_ns_max=6661.9	op_ns_median=825.7
+RESULT_DIRECT	kernel=2	calls=60000	rounds=11	direct_ns_median=756.2	direct_ns_min=755.7	direct_ns_max=758.6
+# parity OK kernel=2 directCount=4 (stub=oldBatchSummary: batch == direct, 4 lanes)
+RESULT	kernel=2	K=16	batches=3750	rounds=11	batch_ns_median=12936.5	batch_ns_min=12917.9	batch_ns_max=12970.7	op_ns_median=808.5
+RESULT_DIRECT	kernel=2	calls=60000	rounds=11	direct_ns_median=753.0	direct_ns_min=752.5	direct_ns_max=753.8
+# parity OK kernel=2 directCount=4 (stub=oldBatchSummary: batch == direct, 4 lanes)
+RESULT	kernel=2	K=64	batches=937	rounds=11	batch_ns_median=51159.2	batch_ns_min=50927.0	batch_ns_max=52336.9	op_ns_median=799.4
+RESULT_DIRECT	kernel=2	calls=60000	rounds=11	direct_ns_median=752.9	direct_ns_min=752.0	direct_ns_max=754.4
+# parity OK kernel=2 directCount=4 (stub=oldBatchSummary: batch == direct, 4 lanes)
+RESULT	kernel=2	K=256	batches=500	rounds=11	batch_ns_median=203390.2	batch_ns_min=203195.2	batch_ns_max=203617.3	op_ns_median=794.5
+RESULT_DIRECT	kernel=2	calls=60000	rounds=11	direct_ns_median=752.9	direct_ns_min=752.0	direct_ns_max=754.1
+# parity OK kernel=3 directCount=4 (stub=newBatchSummary: batch == direct, 4 lanes)
+RESULT	kernel=3	K=1	batches=60000	rounds=11	batch_ns_median=957.4	batch_ns_min=956.4	batch_ns_max=996.5	op_ns_median=957.4
+RESULT_DIRECT	kernel=3	calls=60000	rounds=11	direct_ns_median=710.0	direct_ns_min=708.7	direct_ns_max=1017.7
+# parity OK kernel=3 directCount=4 (stub=newBatchSummary: batch == direct, 4 lanes)
+RESULT	kernel=3	K=8	batches=7500	rounds=11	batch_ns_median=6241.7	batch_ns_min=6233.2	batch_ns_max=6279.5	op_ns_median=780.2
+RESULT_DIRECT	kernel=3	calls=60000	rounds=11	direct_ns_median=709.3	direct_ns_min=708.8	direct_ns_max=713.3
+# parity OK kernel=3 directCount=4 (stub=newBatchSummary: batch == direct, 4 lanes)
+RESULT	kernel=3	K=16	batches=3750	rounds=11	batch_ns_median=12231.2	batch_ns_min=12217.3	batch_ns_max=12393.5	op_ns_median=764.5
+RESULT_DIRECT	kernel=3	calls=60000	rounds=11	direct_ns_median=709.1	direct_ns_min=708.6	direct_ns_max=710.9
+# parity OK kernel=3 directCount=4 (stub=newBatchSummary: batch == direct, 4 lanes)
+RESULT	kernel=3	K=64	batches=937	rounds=11	batch_ns_median=48212.2	batch_ns_min=48108.3	batch_ns_max=48299.0	op_ns_median=753.3
+RESULT_DIRECT	kernel=3	calls=60000	rounds=11	direct_ns_median=710.1	direct_ns_min=708.8	direct_ns_max=759.6
+# parity OK kernel=3 directCount=4 (stub=newBatchSummary: batch == direct, 4 lanes)
+RESULT	kernel=3	K=256	batches=500	rounds=11	batch_ns_median=192619.4	batch_ns_min=192158.3	batch_ns_max=197119.7	op_ns_median=752.4
+RESULT_DIRECT	kernel=3	calls=60000	rounds=11	direct_ns_median=709.3	direct_ns_min=708.5	direct_ns_max=722.9
+# parity OK kernel=14 shape=C ret=-5 (stub=newBatchSummary: batch == direct, return-carried)
+RESULT	kernel=14	K=1	batches=60000	rounds=11	batch_ns_median=294.8	batch_ns_min=294.2	batch_ns_max=300.0	op_ns_median=294.8
+RESULT_DIRECT	kernel=14	calls=60000	rounds=11	direct_ns_median=46.4	direct_ns_min=30.3	direct_ns_max=132.5
+# parity OK kernel=14 shape=C ret=-5 (stub=newBatchSummary: batch == direct, return-carried)
+RESULT	kernel=14	K=8	batches=7500	rounds=11	batch_ns_median=843.7	batch_ns_min=835.8	batch_ns_max=3674.7	op_ns_median=105.5
+RESULT_DIRECT	kernel=14	calls=60000	rounds=11	direct_ns_median=59.1	direct_ns_min=51.2	direct_ns_max=60.4
+# parity OK kernel=14 shape=C ret=-5 (stub=newBatchSummary: batch == direct, return-carried)
+RESULT	kernel=14	K=16	batches=3750	rounds=11	batch_ns_median=1463.1	batch_ns_min=1456.3	batch_ns_max=1571.3	op_ns_median=91.4
+RESULT_DIRECT	kernel=14	calls=60000	rounds=11	direct_ns_median=58.0	direct_ns_min=56.7	direct_ns_max=59.6
+# parity OK kernel=14 shape=C ret=-5 (stub=newBatchSummary: batch == direct, return-carried)
+RESULT	kernel=14	K=64	batches=937	rounds=11	batch_ns_median=5163.4	batch_ns_min=5149.5	batch_ns_max=5895.8	op_ns_median=80.7
+RESULT_DIRECT	kernel=14	calls=60000	rounds=11	direct_ns_median=56.9	direct_ns_min=28.7	direct_ns_max=61.1
+# parity OK kernel=14 shape=C ret=-5 (stub=newBatchSummary: batch == direct, return-carried)
+RESULT	kernel=14	K=256	batches=500	rounds=11	batch_ns_median=20522.7	batch_ns_min=20433.1	batch_ns_max=20603.4	op_ns_median=80.2
+RESULT_DIRECT	kernel=14	calls=60000	rounds=11	direct_ns_median=28.8	direct_ns_min=28.6	direct_ns_max=32.7
+# done

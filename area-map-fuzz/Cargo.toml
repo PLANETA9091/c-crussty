@@ -1,0 +1,11 @@
+[package]
+name = "area-map-fuzz"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "TASK-15: differential fuzz parity for the area-map bridge (same-state fast path vs apply-loop reference), headless cargo test"
+
+# Standalone on purpose: zero dependencies, zero build coupling with the
+# plugin crate (which stays a cdylib with JNI runtime deps). This package is
+# never part of the shipped .so.
+[workspace]

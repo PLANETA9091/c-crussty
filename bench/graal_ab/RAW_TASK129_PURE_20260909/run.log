@@ -1,0 +1,21 @@
+[07:09:07] R1 boot done: Done (16.270s) (pure-inject stock Temurin 21.0.12.1)
+[crussty-runtime] v2.0.0 loaded (options: modules=/home/z/server/modules;versions=/home/z/server/versions;kernel=purpur-1.21.10.jar)
+[07:09:14] R1 baseline: R0=889MB used=386048K committed=557056K, smapRss=892MB Pss=890MB
+[07:09:41] R1 post-add: R1=945MB used=463083K committed=560128K,
+[07:11:53] run R1 done: PASS (R0=889 R1=945 R2=957 R3=NA)
+[07:11:53] hs_err delta: 0 (must be 0)
+[07:11:53] === SUMMARY ===
+R1	R0=889MB	R1=945MB	R2=957MB	R3=NA	verdict=PASS	heap@base=used=386048K committed=557056K,	heap@add=used=463083K committed=560128K,	heap@remove_end=used=361514K committed=565248K,	heap@final=NA
+[07:11:53] TASK-129 pure-inject canonical validation complete (owner law 14:45+08)
+[07:12:34] skip R1 (already done — reentrant)
+[07:12:52] R2 boot done: Done (15.961s) (pure-inject stock Temurin 21.0.12.1)
+[crussty-runtime] v2.0.0 loaded (options: modules=/home/z/server/modules;versions=/home/z/server/versions;kernel=purpur-1.21.10.jar)
+[07:12:58] R2 baseline: R0=877MB used=451072K committed=542720K, smapRss=880MB Pss=878MB
+[07:13:24] R2 post-add: R1=930MB used=424153K committed=547840K,
+[07:15:35] R2 R2=969MB > R0*1.10 -> diagnostic jcmd GC.run
+[07:15:51] run R2 done: FAIL-leak-signature (R0=877 R1=930 R2=969 R3=974)
+[07:15:51] hs_err delta: 0 (must be 0)
+[07:15:51] === SUMMARY ===
+R1	R0=889MB	R1=945MB	R2=957MB	R3=NA	verdict=PASS	heap@base=used=386048K committed=557056K,	heap@add=used=463083K committed=560128K,	heap@remove_end=used=361514K committed=565248K,	heap@final=NA
+R2	R0=877MB	R1=930MB	R2=969MB	R3=974	verdict=FAIL-leak-signature	heap@base=used=451072K committed=542720K,	heap@add=used=424153K committed=547840K,	heap@remove_end=used=341028K committed=577536K,	heap@final=used=250010K committed=577536K,
+[07:15:51] TASK-129 pure-inject canonical validation complete (owner law 14:45+08)

@@ -1,0 +1,221 @@
+Starting org.bukkit.craftbukkit.Main
+[18:30:35 INFO]: [bootstrap] Running Java 21 (OpenJDK 64-Bit Server VM 21.0.12.1+1-LTS; Eclipse Adoptium Temurin-21.0.12.1+1) on Linux 5.10.134-013.8.3.kangaroo.al8.x86_64 (amd64)
+[18:30:35 INFO]: [bootstrap] Loading Purpur 1.21.10-2535-HEAD@0a2dc04 (1970-01-01T00:00:00Z) for Minecraft 1.21.10
+[18:30:36 INFO]: [PluginInitializerManager] Initializing plugins...
+[18:30:36 INFO]: [PluginInitializerManager] Initialized 0 plugins
+[18:30:42 INFO]: Environment: Environment[sessionHost=https://sessionserver.mojang.com, servicesHost=https://api.minecraftservices.com, profilesHost=https://api.mojang.com, name=PROD]
+[18:30:45 INFO]: Loaded 1461 recipes
+[18:30:45 INFO]: Loaded 1574 advancements
+[18:30:45 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Initialising converters for DataConverter...
+[18:30:45 INFO]: [ca.spottedleaf.dataconverter.minecraft.datatypes.MCTypeRegistry] Finished initialising converters for DataConverter in 496.6ms
+[18:30:45 INFO]: Starting minecraft server version 1.21.10
+[18:30:45 INFO]: Loading properties
+[18:30:46 INFO]: This server is running Purpur version 1.21.10-2535-HEAD@0a2dc04 (1970-01-01T00:00:00Z) (Implementing API version 1.21.10-R0.1-SNAPSHOT)
+[18:30:46 INFO]: [spark] This server bundles the spark profiler. For more information please visit https://docs.papermc.io/paper/profiling
+[18:30:46 INFO]: Server Ping Player Sample Count: 12
+[18:30:46 INFO]: Using 4 threads for Netty based IO
+[18:30:47 INFO]: [MoonriseCommon] Paper is using 1 worker threads, 1 I/O threads
+>   [18:30:48 INFO]: Default game type: SURVIVAL
+>   [18:30:48 INFO]: Generating keypair
+>   [18:30:48 INFO]: Starting Minecraft server on *:25565
+>   [18:30:48 INFO]: Using epoll channel type
+>   [18:30:48 INFO]: Paper: Using libdeflate (Linux x86_64) compression from Velocity.
+>   [18:30:48 INFO]: Paper: Using OpenSSL 3.x.x (Linux x86_64) cipher from Velocity.
+>   [18:30:48 INFO]: Server permissions file permissions.yml is empty, ignoring it
+>   [18:30:48 INFO]: Preparing level "world"
+>   [18:30:49 INFO]: Loading 0 persistent chunks for world 'minecraft:overworld'...
+>   [18:30:49 INFO]: Preparing spawn area: 100%
+>   [18:30:49 INFO]: Prepared spawn area in 1 ms
+>   [18:30:49 INFO]: Loading 0 persistent chunks for world 'minecraft:the_nether'...
+>   [18:30:49 INFO]: Prepared spawn area in 0 ms
+>   [18:30:49 INFO]: Loading 0 persistent chunks for world 'minecraft:the_end'...
+>   [18:30:49 INFO]: Prepared spawn area in 7 ms
+>   [18:30:49 INFO]: Done preparing level "world" (0.999s)
+>   [18:30:49 INFO]: [spark] Starting background profiler...
+>   [18:30:50 INFO]: Running delayed init tasks
+>   [18:30:50 INFO]: Done (15.210s)! For help, type "help"
+> >   [31;1m[18:31:38 ERROR]: --- DO NOT REPORT THIS TO PURPUR - THIS IS NOT A BUG OR A CRASH  - 1.21.10-2535-0a2dc04 (MC: 1.21.10) ---
+[m>   [31;1m[18:31:38 ERROR]: The server has not responded for 10 seconds! Creating thread dump
+[m>   [31;1m[18:31:38 ERROR]: ------------------------------
+[m>   [31;1m[18:31:38 ERROR]: Server thread dump (Look for plugins here before reporting to Purpur!):
+[m>   [31;1m[18:31:38 ERROR]: [ChunkTaskScheduler] Chunk wait task info below: 
+[m>   [31;1m[18:31:38 ERROR]: [ChunkTaskScheduler] Chunk wait: [( 201,201) in 'world']
+[m>   [31;1m[18:31:39 ERROR]: [ChunkTaskScheduler] Chunk holder: NewChunkHolder{world=world, chunkX=201, chunkZ=201, entityChunkFromDisk=false, lastChunkCompletion={chunk_class=net.minecraft.world.level.chunk.ProtoChunk,status=minecraft:spawn}, currentGenStatus=minecraft:spawn, requestedGenStatus=minecraft:full, generationTask=ChunkProgressionTask{class: ca.spottedleaf.moonrise.patches.chunk_system.scheduling.task.ChunkFullTask, for world: world, chunk: (201,201), hashcode: 1593667902, priority: COMPLETING, status: minecraft:full, scheduled: true}, generationTaskStatus=minecraft:full, priority=BLOCKING, priorityLocked=false, neighbourRequestedPriority=null, effective_priority=BLOCKING, oldTicketLevel=31, currentTicketLevel=31, totalNeighboursUsingThisChunk=18, fullNeighbourChunksLoadedBitset=2164928, currentChunkStatus=INACCESSIBLE, pendingChunkStatus=INACCESSIBLE, is_unload_safe=ticket_level, killed=false}
+[m>   [31;1m[18:31:39 ERROR]: ------------------------------
+[m>   [31;1m[18:31:39 ERROR]: Current Thread: Server thread
+[m>   [31;1m[18:31:39 ERROR]: 	PID: 37 | Suspended: false | Native: false | State: RUNNABLE
+[m>   [31;1m[18:31:39 ERROR]: 	Stack:
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.lang.ClassLoader.defineClass1(Native Method)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.lang.ClassLoader.defineClass(ClassLoader.java:1027)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.security.SecureClassLoader.defineClass(SecureClassLoader.java:150)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.net.URLClassLoader.defineClass(URLClassLoader.java:524)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.net.URLClassLoader$1.run(URLClassLoader.java:427)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.net.URLClassLoader$1.run(URLClassLoader.java:421)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.security.AccessController.executePrivileged(AccessController.java:809)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.security.AccessController.doPrivileged(AccessController.java:714)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.net.URLClassLoader.findClass(URLClassLoader.java:420)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.lang.ClassLoader.loadClass(ClassLoader.java:593)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.lang.ClassLoader.loadClass(ClassLoader.java:526)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.lang.ClassLoader.defineClass1(Native Method)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.lang.ClassLoader.defineClass(ClassLoader.java:1027)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.security.SecureClassLoader.defineClass(SecureClassLoader.java:150)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.net.URLClassLoader.defineClass(URLClassLoader.java:524)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.net.URLClassLoader$1.run(URLClassLoader.java:427)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.net.URLClassLoader$1.run(URLClassLoader.java:421)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.security.AccessController.executePrivileged(AccessController.java:809)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.security.AccessController.doPrivileged(AccessController.java:714)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.net.URLClassLoader.findClass(URLClassLoader.java:420)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.lang.ClassLoader.loadClass(ClassLoader.java:593)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.lang.ClassLoader.loadClass(ClassLoader.java:526)
+[m>   [31;1m[18:31:39 ERROR]: 		org.bukkit.craftbukkit.entity.CraftEntityTypes.<clinit>(CraftEntityTypes.java:279)
+[m>   [31;1m[18:31:39 ERROR]: 		org.bukkit.craftbukkit.entity.CraftEntity.getEntity(CraftEntity.java:152)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.world.entity.Entity.getBukkitEntity(Entity.java:197)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.world.entity.Entity.setAirSupply(Entity.java:3735)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.world.entity.Entity.load(Entity.java:2699)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.world.entity.EntityType.lambda$create$25(EntityType.java:1524)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.world.entity.EntityType$$Lambda/0x00007f239d338920.accept(Unknown Source)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.Util.ifElse(Util.java:668)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.world.entity.EntityType.create(EntityType.java:1519)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.world.entity.EntityType.create(EntityType.java:1514)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.world.entity.EntityType.loadStaticEntity(EntityType.java:1641)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.world.entity.EntityType.loadEntityRecursive(EntityType.java:1594)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.world.entity.EntityType.lambda$loadEntitiesRecursive$31(EntityType.java:1623)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.world.entity.EntityType$$Lambda/0x00007f239d338000.accept(Unknown Source)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.util.stream.ReferencePipeline$11$1.accept(ReferencePipeline.java:450)
+[m>   [31;1m[18:31:39 ERROR]: 		com.google.common.collect.Streams$1Splitr.tryAdvance(Streams.java:500)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.util.Spliterator.forEachRemaining(Spliterator.java:332)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.util.stream.AbstractPipeline.copyInto(AbstractPipeline.java:509)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.util.stream.AbstractPipeline.wrapAndCopyInto(AbstractPipeline.java:499)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.util.stream.AbstractPipeline.evaluate(AbstractPipeline.java:575)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.util.stream.AbstractPipeline.evaluateToArrayNode(AbstractPipeline.java:260)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.util.stream.ReferencePipeline.toArray(ReferencePipeline.java:616)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.util.stream.ReferencePipeline.toArray(ReferencePipeline.java:622)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.util.stream.ReferencePipeline.toList(ReferencePipeline.java:627)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.server.level.ServerLevel.addWorldGenChunkEntities(ServerLevel.java:2623)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.world.level.chunk.status.ChunkStatusTasks.postLoadProtoChunk(ChunkStatusTasks.java:215)
+[m>   [31;1m[18:31:39 ERROR]: 		ca.spottedleaf.moonrise.paper.PaperHooks.postLoadProtoChunk(PaperHooks.java:288)
+[m>   [31;1m[18:31:39 ERROR]: 		ca.spottedleaf.moonrise.patches.chunk_system.scheduling.task.ChunkFullTask.lambda$run$0(ChunkFullTask.java:68)
+[m>   [31;1m[18:31:39 ERROR]: 		ca.spottedleaf.moonrise.patches.chunk_system.scheduling.task.ChunkFullTask$$Lambda/0x00007f239d32eca0.run(Unknown Source)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.world.level.chunk.LevelChunk.runPostLoad(LevelChunk.java:637)
+[m>   [31;1m[18:31:39 ERROR]: 		ca.spottedleaf.moonrise.patches.chunk_system.scheduling.task.ChunkFullTask.run(ChunkFullTask.java:80)
+[m>   [31;1m[18:31:39 ERROR]: 		ca.spottedleaf.concurrentutil.executor.queue.PrioritisedTaskQueue$PrioritisedQueuedTask.execute(PrioritisedTaskQueue.java:345)
+[m>   [31;1m[18:31:39 ERROR]: 		ca.spottedleaf.concurrentutil.executor.queue.PrioritisedTaskQueue.executeTask(PrioritisedTaskQueue.java:126)
+[m>   [31;1m[18:31:39 ERROR]: 		ca.spottedleaf.moonrise.patches.chunk_system.scheduling.ChunkTaskScheduler.executeMainThreadTask(ChunkTaskScheduler.java:338)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.server.level.ServerChunkCache$MainThreadExecutor.pollTask(ServerChunkCache.java:838)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.managedBlock(BlockableEventLoop.java:160)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.server.level.ServerChunkCache$MainThreadExecutor.managedBlock(ServerChunkCache.java:802)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.server.level.ServerChunkCache.syncLoad(ServerChunkCache.java:122)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.server.level.ServerChunkCache.getChunkFallback(ServerChunkCache.java:156)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.server.level.ServerChunkCache.getChunk(ServerChunkCache.java:321)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.world.level.Level.getChunk(Level.java:1006)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.server.level.ServerLevel.setChunkForced(ServerLevel.java:2367)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand.changeForceLoad(ForceLoadCommand.java:171)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand.lambda$register$3(ForceLoadCommand.java:53)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand$$Lambda/0x00007f239ce18440.run(Unknown Source)
+[m>   [31;1m[18:31:39 ERROR]: 		com.mojang.brigadier.context.ContextChain.runExecutable(ContextChain.java:73)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.commands.execution.tasks.ExecuteCommand.execute(ExecuteCommand.java:30)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.commands.execution.tasks.ExecuteCommand.execute(ExecuteCommand.java:13)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.commands.execution.UnboundEntryAction.lambda$bind$0(UnboundEntryAction.java:8)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.commands.execution.UnboundEntryAction$$Lambda/0x00007f239d280230.execute(Unknown Source)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.commands.execution.CommandQueueEntry.execute(CommandQueueEntry.java:5)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.commands.execution.ExecutionContext.runCommandQueue(ExecutionContext.java:105)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.commands.Commands.executeCommandInContext(Commands.java:466)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.commands.Commands.performCommand(Commands.java:372)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.commands.Commands.performCommand(Commands.java:360)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.commands.Commands.performPrefixedCommand(Commands.java:351)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer.handleConsoleInputs(DedicatedServer.java:634)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer.tickConnection(DedicatedServer.java:590)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.server.MinecraftServer.tickChildren(MinecraftServer.java:1849)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.server.MinecraftServer.tickServer(MinecraftServer.java:1645)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer.tickServer(DedicatedServer.java:467)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.server.MinecraftServer.runServer(MinecraftServer.java:1365)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.server.MinecraftServer.lambda$spin$2(MinecraftServer.java:388)
+[m>   [31;1m[18:31:39 ERROR]: 		net.minecraft.server.MinecraftServer$$Lambda/0x00007f239cf3add0.run(Unknown Source)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.runWith(Thread.java:1596)
+[m>   [31;1m[18:31:39 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.run(Thread.java:1583)
+[m>   [31;1m[18:31:39 ERROR]: ------------------------------
+[m>   [31;1m[18:31:39 ERROR]: --- DO NOT REPORT THIS TO PURPUR - THIS IS NOT A BUG OR A CRASH ---
+[m>   [31;1m[18:31:39 ERROR]: ------------------------------
+[m>   [31;1m[18:31:43 ERROR]: --- DO NOT REPORT THIS TO PURPUR - THIS IS NOT A BUG OR A CRASH  - 1.21.10-2535-0a2dc04 (MC: 1.21.10) ---
+[m>   [31;1m[18:31:43 ERROR]: The server has not responded for 15 seconds! Creating thread dump
+[m>   [31;1m[18:31:43 ERROR]: ------------------------------
+[m>   [31;1m[18:31:43 ERROR]: Server thread dump (Look for plugins here before reporting to Purpur!):
+[m>   [31;1m[18:31:43 ERROR]: [ChunkTaskScheduler] Chunk wait task info below: 
+[m>   [31;1m[18:31:43 ERROR]: [ChunkTaskScheduler] Chunk wait: [( 205,200) in 'world']
+[m>   [31;1m[18:31:43 ERROR]: [ChunkTaskScheduler] Chunk holder: NewChunkHolder{world=world, chunkX=205, chunkZ=200, entityChunkFromDisk=false, lastChunkCompletion={chunk_class=net.minecraft.world.level.chunk.ProtoChunk,status=minecraft:initialize_light}, currentGenStatus=minecraft:initialize_light, requestedGenStatus=minecraft:full, generationTask=null, generationTaskStatus=null, priority=BLOCKING, priorityLocked=false, neighbourRequestedPriority=null, effective_priority=BLOCKING, oldTicketLevel=31, currentTicketLevel=31, totalNeighboursUsingThisChunk=21, fullNeighbourChunksLoadedBitset=3247104, currentChunkStatus=INACCESSIBLE, pendingChunkStatus=INACCESSIBLE, is_unload_safe=ticket_level, killed=false}
+[m>   [31;1m[18:31:43 ERROR]: ------------------------------
+[m>   [31;1m[18:31:43 ERROR]: Current Thread: Server thread
+[m>   [31;1m[18:31:43 ERROR]: 	PID: 37 | Suspended: false | Native: false | State: TIMED_WAITING
+[m>   [31;1m[18:31:43 ERROR]: 	Stack:
+[m>   [31;1m[18:31:43 ERROR]: 		java.base@21.0.12.1/jdk.internal.misc.Unsafe.park(Native Method)
+[m>   [31;1m[18:31:43 ERROR]: 		java.base@21.0.12.1/java.util.concurrent.locks.LockSupport.parkNanos(LockSupport.java:269)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.waitForTasks(BlockableEventLoop.java:171)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.util.thread.BlockableEventLoop.managedBlock(BlockableEventLoop.java:161)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.server.level.ServerChunkCache$MainThreadExecutor.managedBlock(ServerChunkCache.java:802)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.server.level.ServerChunkCache.syncLoad(ServerChunkCache.java:122)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.server.level.ServerChunkCache.getChunkFallback(ServerChunkCache.java:156)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.server.level.ServerChunkCache.getChunk(ServerChunkCache.java:321)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.world.level.Level.getChunk(Level.java:1006)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.server.level.ServerLevel.setChunkForced(ServerLevel.java:2367)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand.changeForceLoad(ForceLoadCommand.java:171)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand.lambda$register$3(ForceLoadCommand.java:53)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.server.commands.ForceLoadCommand$$Lambda/0x00007f239ce18440.run(Unknown Source)
+[m>   [31;1m[18:31:43 ERROR]: 		com.mojang.brigadier.context.ContextChain.runExecutable(ContextChain.java:73)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.commands.execution.tasks.ExecuteCommand.execute(ExecuteCommand.java:30)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.commands.execution.tasks.ExecuteCommand.execute(ExecuteCommand.java:13)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.commands.execution.UnboundEntryAction.lambda$bind$0(UnboundEntryAction.java:8)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.commands.execution.UnboundEntryAction$$Lambda/0x00007f239d280230.execute(Unknown Source)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.commands.execution.CommandQueueEntry.execute(CommandQueueEntry.java:5)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.commands.execution.ExecutionContext.runCommandQueue(ExecutionContext.java:105)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.commands.Commands.executeCommandInContext(Commands.java:466)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.commands.Commands.performCommand(Commands.java:372)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.commands.Commands.performCommand(Commands.java:360)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.commands.Commands.performPrefixedCommand(Commands.java:351)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer.handleConsoleInputs(DedicatedServer.java:634)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer.tickConnection(DedicatedServer.java:590)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.server.MinecraftServer.tickChildren(MinecraftServer.java:1849)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.server.MinecraftServer.tickServer(MinecraftServer.java:1645)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.server.dedicated.DedicatedServer.tickServer(DedicatedServer.java:467)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.server.MinecraftServer.runServer(MinecraftServer.java:1365)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.server.MinecraftServer.lambda$spin$2(MinecraftServer.java:388)
+[m>   [31;1m[18:31:43 ERROR]: 		net.minecraft.server.MinecraftServer$$Lambda/0x00007f239cf3add0.run(Unknown Source)
+[m>   [31;1m[18:31:43 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.runWith(Thread.java:1596)
+[m>   [31;1m[18:31:43 ERROR]: 		java.base@21.0.12.1/java.lang.Thread.run(Thread.java:1583)
+[m>   [31;1m[18:31:43 ERROR]: ------------------------------
+[m>   [31;1m[18:31:43 ERROR]: --- DO NOT REPORT THIS TO PURPUR - THIS IS NOT A BUG OR A CRASH ---
+[m>   [31;1m[18:31:43 ERROR]: ------------------------------
+[m>   [18:31:47 INFO]: Marked 64 chunks in minecraft:overworld from [200, 200] to [207, 207] to be force loaded
+> >   [18:31:59 INFO]: Stopping the server
+>   [18:31:59 INFO]: Stopping server
+>   [18:31:59 INFO]: Saving players
+>   [18:31:59 INFO]: Saving worlds
+>   [18:31:59 INFO]: Saving chunks for level 'ServerLevel[world]'/minecraft:overworld
+>   [18:31:59 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world'
+>   [18:31:59 INFO]: [ChunkHolderManager] Halted chunk system for world 'world'
+>   [18:31:59 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world'
+>   [18:32:01 INFO]: [ChunkHolderManager] Saved 1156 block chunks, 144 entity chunks, 0 poi chunks in world 'world' in 1.65s
+>   [18:32:01 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'world'
+>   [18:32:01 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'world'
+>   [18:32:01 INFO]: Saving chunks for level 'ServerLevel[world_nether]'/minecraft:the_nether
+>   [18:32:01 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_nether'
+>   [18:32:01 INFO]: [ChunkHolderManager] Halted chunk system for world 'world_nether'
+>   [18:32:01 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world_nether'
+>   [18:32:01 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'world_nether' in 0.00s
+>   [18:32:01 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'world_nether'
+>   [18:32:01 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'world_nether'
+>   [18:32:01 INFO]: Saving chunks for level 'ServerLevel[world_the_end]'/minecraft:the_end
+>   [18:32:01 INFO]: [ChunkHolderManager] Waiting 60s for chunk system to halt for world 'world_the_end'
+>   [18:32:01 INFO]: [ChunkHolderManager] Halted chunk system for world 'world_the_end'
+>   [18:32:01 INFO]: [ChunkHolderManager] Saving all chunkholders for world 'world_the_end'
+>   [18:32:01 INFO]: [ChunkHolderManager] Saved 0 block chunks, 0 entity chunks, 0 poi chunks in world 'world_the_end' in 0.00s
+>   [18:32:01 INFO]: [ChunkHolderManager] Waiting 60s for chunk I/O to halt for world 'world_the_end'
+>   [18:32:01 INFO]: [ChunkHolderManager] Halted I/O scheduler for world 'world_the_end'
+>   [18:32:01 INFO]: ThreadedAnvilChunkStorage (world): All chunks are saved
+>   [18:32:01 INFO]: ThreadedAnvilChunkStorage (DIM-1): All chunks are saved
+>   [18:32:01 INFO]: ThreadedAnvilChunkStorage (DIM1): All chunks are saved
+>   [18:32:01 INFO]: ThreadedAnvilChunkStorage: All dimensions are saved
+>   [18:32:01 INFO]: Waiting for all RegionFile I/O tasks to complete...
+>   [18:32:01 INFO]: All RegionFile I/O tasks to complete
+>   [18:32:01 INFO]: [MoonriseCommon] Awaiting termination of worker pool for up to 60s...
+>   [18:32:01 INFO]: [MoonriseCommon] Awaiting termination of I/O pool for up to 60s...
+> 

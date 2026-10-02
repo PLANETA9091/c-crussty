@@ -1,0 +1,15 @@
+NO-LINES	rc=0
+SOURCE	probe2_standalone (light-first, len15, hdr0f, null variants)
+[14:23:14 INFO]: [STDOUT]: PROBE	light_first	rc=38
+[14:23:14 INFO]: [STDOUT]: PROBE	len15_all	rc=-3
+[14:23:14 INFO]: [STDOUT]: PROBE	hdr0f_all	rc=-3	dst0=0
+[14:23:14 INFO]: [STDOUT]: PROBE	null_all	rc=-1
+[14:23:14 INFO]: [STDOUT]: PROBE	null_counts	rc=-1
+[14:23:14 INFO]: [STDOUT]: SINK	0
+SOURCE	probe4_runtime_agent_modules=full (same variants + null_counts)
+[14:25:03 INFO]: [STDOUT]: PROBE	light_first	rc=38
+[14:25:03 INFO]: [STDOUT]: PROBE	len15_all	rc=-3
+[14:25:03 INFO]: [STDOUT]: PROBE	hdr0f_all	rc=-3	dst0=0
+[14:25:03 INFO]: [STDOUT]: PROBE	null_all	rc=-1
+[14:25:03 INFO]: [STDOUT]: PROBE	null_counts	rc=-1
+[14:25:03 INFO]: [STDOUT]: SINK	0

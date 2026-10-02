@@ -1,0 +1,39 @@
+[launcher] kernel:  /home/z/server/versions/purpur-1.21.10.jar
+[launcher] agent:   /home/z/server/libcrussty_runtime.so
+[launcher] exec: /home/z/jdk21/bin/java -agentpath:/home/z/server/libcrussty_runtime.so=modules=/home/z/server/modules;versions=/home/z/server/versions;kernel=purpur-1.21.10.jar -Xms512M -Xmx2G -XX:+UseG1GC -Dfile.encoding=UTF-8 -Ddist.root=/home/z/server -jar /home/z/server/versions/purpur-1.21.10.jar --nogui
+[crussty-runtime] v2.0.0 loaded (options: modules=/home/z/server/modules;versions=/home/z/server/versions;kernel=purpur-1.21.10.jar)
+[crussty-plugin] cplugin_init: injecting Crussty CE native surface in background
+[crussty-plugin] blend_cache: dormant (prototype; set CRUSSTY_NATIVE_BLEND_CACHE=1 to run the read-only parity harness — no patch ships)
+[crussty-runtime] module crussty -> init rc=0
+[crussty-runtime] pipeline ready: 1 module hook(s)
+[crussty-runtime] transform engine: 23 rule(s) registered
+[crussty:hot-reload] SIGUSR1 reload trigger armed (1 module(s) reloadable)
+[crussty-runtime] hook class in visible table: JNIStr { internal: "dev/crussty/hooks/SchedulerHooks" }
+[crussty-runtime] hook class in visible table: JNIStr { internal: "dev/crussty/hooks/StorageHooks" }
+[crussty-runtime] hook class in visible table: JNIStr { internal: "dev/crussty/hooks/NetHooks" }
+[crussty-runtime] hook class in visible table: JNIStr { internal: "dev/crussty/hooks/TickHook" }
+[crussty-runtime] transform hook classes installed (4); transform engine armed
+[crussty-plugin] native libs: "/home/z/server/modules/crussty/native/libpaper_native_jni.so" (+ "/home/z/server/modules/crussty/native/libpaper_native_chunk_encode_jni.so")
+[crussty-plugin] attached: injecting bridge classes
+[crussty-plugin] injection loop done
+[crussty-plugin] batch: rollout gate CRUSSTY_BATCH=unset -> mode=off (site arming disabled (default; bridge exists, zero consumers))
+[crussty-plugin] batch: 21 kernels resolved, run() + abiVersion() registered on crussty/batch/PaperNativeBatchDispatch
+[crussty-plugin] native surface live: 98 bridge classes, 283 natives registered (0 symbols unresolved)
+[crussty-plugin] live proof: normalNoise.nativeCheck() = 1
+[crussty-plugin] live proof: ticketset binarySummary(1000) wrote 1 long(s)
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 1)
+[crussty-plugin] improved_noise: forcing kernel load of net/minecraft/world/level/levelgen/synth/ImprovedNoise (attempt 1)
+[crussty-plugin] improved_noise: force load: Bukkit not found
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+> [crussty-plugin] improved_noise: forcing kernel load of net/minecraft/world/level/levelgen/synth/ImprovedNoise (attempt 2)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/synth/ImprovedNoise) succeeded
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 2)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] improved_noise: forcing kernel load of net/minecraft/world/level/levelgen/synth/ImprovedNoise (attempt 3)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/synth/ImprovedNoise) succeeded
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 3)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded
+[crussty-plugin] improved_noise: forcing kernel load of net/minecraft/world/level/levelgen/synth/ImprovedNoise (attempt 4)
+[crussty-plugin] improved_noise: Class.forName(net/minecraft/world/level/levelgen/synth/ImprovedNoise) succeeded
+[crussty-plugin] area_map: forcing kernel load of ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap (attempt 4)
+[crussty-plugin] area_map: Class.forName(ca/spottedleaf/moonrise/common/misc/SingleUserAreaMap) succeeded

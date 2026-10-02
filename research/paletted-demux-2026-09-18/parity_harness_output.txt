@@ -1,0 +1,33 @@
+== 1. ASM patcher ==
+----------
+1. WARNING in /home/z/c-crussty/paletted/tools/PalettedPatchTool.java (at line 4)
+	import org.objectweb.asm.FieldVisitor;
+	       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+The import org.objectweb.asm.FieldVisitor is never used
+----------
+1 problem (1 warning)
+PalettedPatchTool: 30967 -> 31340 bytes
+== 2. stub jar (kernel with PalettedContainer replaced by the patched image) ==
+stub jar rewritten
+stub jar: 28M
+== 3. ECJ build PalettedContainerOps ==
+built: /home/z/c-crussty/paletted/build/net/minecraft/world/level/chunk/PalettedContainerOps.class (3916 B)
+== 4. JVM parity harness ==
+----------
+1. WARNING in /home/z/c-crussty/paletted/harness/ParityHarness.java (at line 70)
+	Path libs = kernelJar.getParent() == null ? null : kernelJar.getParent().getParent() == null ? null : kernelJar.getParent().getParent().resolve("libraries");
+	     ^^^^
+The value of the local variable libs is not used
+----------
+1 problem (1 warning)
+harness: L1 vanilla = file:/tmp/pdec/matsrv/versions/1.21.10/purpur-1.21.10.jar
+harness: L2 patched = file:/tmp/paletted.kAcmYW/stub.jar
+harness: containers constructed (default=air)
+harness: 20000 random ops PASS (getAndSet old-values matched 4883/4883)
+harness: snap before force = [Ljava.lang.Object;@117632cf (null until heat-driven or forced)
+harness: snapshot PUBLISHED and fresh (snapGen=30009)
+harness: 1000 fast-path reads in parity with vanilla
+harness: write unmarked snapshot + released refcount (1 -> 0)
+harness: re-materialization + parity PASS
+harness: concurrency smoke PASS (3 readers + 1 writer, 500ms)
+harness: ALL PASS

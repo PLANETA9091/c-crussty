@@ -1,0 +1,13 @@
+# config abi=65548 (table=1 kernels=12) lib=/home/z/wT47/target/release/libcrussty.so jdk=21.0.12.1 route=DIRECT controls=false
+# refused_probe id=9999 ret=-3 (negative=true)
+# shape-B mechanical OK id=10 K=8 ret=8 outs0=0 (dispatch path executes; value = kernel rejection for synthesized input)
+# shape-B mechanical OK id=11 K=8 ret=8 outs0=0 (dispatch path executes; value = kernel rejection for synthesized input)
+# probe id=0 ns_per_op=506281 (>10us body) -> scaled budget x50
+# parity OK id=0 lanes=1 (batch == direct, bit-exact)
+RESULT_DIRECT	id=0	group=ticketsetsearch-ids01	K=1	route=direct	ns_per_op_median=509360.4	ns_min=506074.8	ns_max=514795.4
+RESULT_BATCH	id=0	group=ticketsetsearch-ids01	K=1	route=direct	ns_per_op_median=512505.2	ns_min=508326.1	ns_max=532740.7
+ROUTE_COST	id=0	K=1	routed_ns_per_op=509360.4
+# parity OK id=0 lanes=1 (batch == direct, bit-exact)
+RESULT_DIRECT	id=0	group=ticketsetsearch-ids01	K=8	route=direct	ns_per_op_median=513859.4	ns_min=511244.7	ns_max=524861.9
+RESULT_BATCH	id=0	group=ticketsetsearch-ids01	K=8	route=direct	ns_per_op_median=508672.4	ns_min=507426.6	ns_max=534205.9
+ROUTE_COST	id=0	K=8	routed_ns_per_op=513859.4

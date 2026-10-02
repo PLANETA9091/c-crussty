@@ -1,0 +1,12 @@
+Exception in thread "main" java.lang.ExceptionInInitializerError
+	at net.minecraft.world.level.levelgen.DensityFunctions.<clinit>(DensityFunctions.java:32)
+	at net.minecraft.world.level.levelgen.DensityFunction.<clinit>(DensityFunction.java:13)
+	at net.minecraft.world.level.levelgen.V3ArrayProbe.buildTree(V3ArrayProbe.java:68)
+	at net.minecraft.world.level.levelgen.V3ArrayProbe.main(V3ArrayProbe.java:105)
+Caused by: java.lang.IllegalArgumentException: Not bootstrapped (called from registry minecraft:game_event)
+	at net.minecraft.server.Bootstrap.createBootstrapException(Bootstrap.java:185)
+	at net.minecraft.server.Bootstrap.checkBootstrapCalled(Bootstrap.java:178)
+	at net.minecraft.core.registries.BuiltInRegistries.internalRegister(BuiltInRegistries.java:370)
+	at net.minecraft.core.registries.BuiltInRegistries.registerDefaulted(BuiltInRegistries.java:358)
+	at net.minecraft.core.registries.BuiltInRegistries.<clinit>(BuiltInRegistries.java:160)
+	... 4 more

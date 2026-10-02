@@ -1,0 +1,21 @@
+# P500 expected summary — written by aggregate_p500.py --write-expected
+# Regenerate after an intentional re-run: aggregate_p500.py <tsv> --write-expected <path>
+# --check re-derives from the raw TSV and diffs against this file; any drift exits 1.
+COUNTS	groups=4	rows_raw=10	kernels=8	variants=2	pairs=4	unpaired=1	multi=1	notes=1
+KERNEL	1	PaperNativeFixturePair	(I)I	newFixtureSummary	alt	100.0000	99.0000	101.0000	OK s0
+KERNEL	1	PaperNativeFixturePair	(I)I	oldFixtureSummary	old	100.0000	98.0000	102.0000	OK s0
+KERNEL	2	PaperNativeFixtureDup	(III[J)I	newSummary	alt	120.2000	120.2000	120.2000	OK s0
+KERNEL	2	PaperNativeFixtureDup	(III[J)I	oldSummary	old	119.8000	119.8000	119.8000	OK s0
+KERNEL	3	PaperNativeFixtureMulti	(I)I	newBetaSummary	alt	90.0000	90.0000	90.0000	OK s0
+KERNEL	3	PaperNativeFixtureMulti	(I)I	newGammaSummary	alt	110.0000	110.0000	110.0000	OK s0
+KERNEL	3	PaperNativeFixtureMulti	(I)I	oldAlphaSummary	old	100.0000	100.0000	100.0000	OK s0
+KERNEL	4	PaperNativeFixtureLonely	(I)I	lonelyAltSummary	alt	42.0000	42.0000	42.0000	OK s0
+VARIANT	2	PaperNativeFixtureDup	newSummary#variant2	151.4000	120.2000
+VARIANT	2	PaperNativeFixtureDup	oldSummary#variant2	155.4000	119.8000
+PAIR	1	PaperNativeFixturePair	oldFixtureSummary	newFixtureSummary	1.000000
+PAIR	2	PaperNativeFixtureDup	oldSummary	newSummary	1.003339
+PAIR	3	PaperNativeFixtureMulti	oldAlphaSummary	newBetaSummary	0.900000
+PAIR	3	PaperNativeFixtureMulti	oldAlphaSummary	newGammaSummary	1.100000
+UNPAIRED	4	PaperNativeFixtureLonely	lonelyAltSummary	no OK old kernel in group
+MULTI	3	MULTI-PAIR g3 PaperNativeFixtureMulti type=many-to-one old=oldAlphaSummary alts=2 newBetaSummary,newGammaSummary
+NOTE	CRASH	5	exit=1

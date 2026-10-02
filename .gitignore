@@ -1,0 +1,56 @@
+target/
+*.so
+*.dylib
+*.dll
+!native/*.so
+crussty-v*-linux-x64.tar.gz*
+build.log
+bench/p500/classes/
+bench/p500/logs/
+__pycache__/
+*.pyc
+bench/step0_noise/classes/
+bench/step0_noise/classes_recon/
+bench/step0_noise/classes_gabi/
+bench/step0_noise/logs/
+bench/step0_noise/bodyagent/classes_body/
+bench/step0_noise/bodyagent/bodyagent.jar
+bench/step0_noise/bodyagent/gbody_run*.log
+bench/step0_noise/bodyagent/logs/
+bench/step0_noise/classes_normal/
+scripts/dirtyrate/agent/build/
+bench/betick/*.class
+bench/dirtyrate/RAW_*/
+bench/dirtyrate/SMOKE_*/
+bench/p501_sidesurface/classes/
+bench/p501_sidesurface/logs/
+
+# S7-128: raw async-profiler collapsed stacks / flamegraphs are 100-152MB —
+# GitHub hard-limit; they live on local disk only, distilled evidence goes to
+# BOTTLENECKS_3.md / ledger.
+research/**/run-*/**-collapsed.txt
+research/**/run-*/**flamegraph*.html
+# S7-151: bench run artifacts never enter git (100MB GitHub limit; run dirs
+# are regenerable from CI artifacts via fetch_artifact.py)
+research/inside-cache-2026-09-18/run-*/
+research/region-threads-2026-09-18/run-*/
+logs/
+entityinside/build-harness-*/
+allocdiet/harness/build/
+entityinside/harness/build/
+logs/
+
+# S7-155: структурные javap-дампы (воспроизводимы s7155_kernel_census.py)
+research/fluid-dirty-2026-09-18/s7155_kernel_census.json.struct.*.txt
+entityinside/build-harness/
+entityinside/build/Entity_patched.class
+research/gc-recon-2026-09-19/run-s7176-crash/*.jar
+research/gc-recon-2026-09-19/run-s7176-crash/*.zip
+research/gc-recon-2026-09-19/run-s7176-crash/spark-report/
+cargo-target/
+
+# R468-S21 (Л180h quiet-drift root-cause fix): unanchored `target/` swallowed
+# the stagger goal-target SOURCE tree — GoalStaggerOps.java never reached master
+# while its .class rode include_bytes since 48475af3 (force-add era). Negation
+# restores visibility: plain git add works, no force needed.
+!**/ai/goal/target/

@@ -1,0 +1,147 @@
+#!/usr/bin/env python3
+"""dispatch_452.py — TASK-452 (tick-452, 08:0x +08 2026-09-25) — ЛЕСЕНКА НА НОВОМ НОСИТЕЛЕ.
+Якорная решётка ×12 (ваниль-верификация master 3b6d13ac, пустой lever) + senseins-ноги ×3.
+УРОК ×447: argv-guard ПЕРЕД любым действием. --dry-run = только префлайт, без диспатчей. --no-batch = только ноги."""
+import json, re, subprocess, sys, time, urllib.request, urllib.error
+
+REPO = "PLANETA9091/c-crussty"
+API = "https://api.github.com"
+WF = "world-bench-parallel.yml"
+
+BATCH = [
+    ("anchor-1",  "round-452-anchor-1",  "master", ""),
+    ("anchor-2",  "round-452-anchor-2",  "master", ""),
+    ("anchor-3",  "round-452-anchor-3",  "master", ""),
+    ("anchor-4",  "round-452-anchor-4",  "master", ""),
+    ("anchor-5",  "round-452-anchor-5",  "master", ""),
+    ("anchor-6",  "round-452-anchor-6",  "master", ""),
+    ("anchor-7",  "round-452-anchor-7",  "master", ""),
+    ("anchor-8",  "round-452-anchor-8",  "master", ""),
+    ("anchor-9",  "round-452-anchor-9",  "master", ""),
+    ("anchor-10", "round-452-anchor-10", "master", ""),
+    ("anchor-11", "round-452-anchor-11", "master", ""),
+    ("anchor-12", "round-452-anchor-12", "master", ""),
+    ("senseins-1", "round-452-senseins-1", "round-451d-senseins", "cmp451_senseins"),
+    ("senseins-2", "round-452-senseins-2", "round-451d-senseins", "cmp451_senseins"),
+    ("senseins-3", "round-452-senseins-3", "round-451d-senseins", "cmp451_senseins"),
+]
+
+EXPECTED_SHA = {
+    "master": "3b6d13ac",             # ins4-серт мердж (ancestry-семантика; docs поверх кода)
+    "round-451d-senseins": "ff1c0b95", # план-B агент-D (cmp451_senseins, cargo 314/0, javap ×13)
+    "round-452a-sense": "fa9054d9",    # TASK-452-A NCDFE-fix (6 production gates retagged, cargo 314/0)
+}
+
+ANCESTRY_BASES = {"master"}
+
+INPUTS = {
+    "radius": "640", "seconds": "300", "fake_players": "4",
+    "fluid_guard": "1", "gc_tune": "3", "inside_cache": "1", "flush_diet": "1",
+    "fluid_dirty": "0", "fluid_bitmask": "0", "region_threads": "4",
+    "batch_collector": "1", "inside_bitmask": "0", "skip_store_bb": "0",
+    "region_steal": "0", "bu_defer": "0",
+    "population_target": "150000", "population_seed": "42",
+    "server_xmx": "10G", "server_xms": "4G",
+    "cpu_band_min": "6000000", "cpu_band_max": "9500000",
+}
+
+
+def token_from_remote():
+    url = subprocess.run(["git", "-C", "/home/z/c-crussty", "remote", "get-url", "origin"],
+                         capture_output=True, text=True).stdout.strip()
+    return re.match(r"^https://[^:]+:([^@]+)@github.com/", url).group(1)
+
+
+def api(tok, url, method="GET", data=None):
+    req = urllib.request.Request(API + url, method=method, headers={
+        "Authorization": f"Bearer {tok}", "Accept": "application/vnd.github+json"})
+    payload = json.dumps(data).encode() if data else None
+    if payload:
+        req.add_header("Content-Type", "application/json")
+    try:
+        with urllib.request.urlopen(req, payload, timeout=60) as r:
+            body = r.read()
+    except urllib.error.HTTPError as e:
+        if e.code != 404:
+            print(f"HTTP {e.code}: {e.read()[:200]}")
+        raise
+    return json.loads(body) if body else {}
+
+
+def sha_of(tok, ref):
+    return api(tok, f"/repos/{REPO}/git/ref/heads/{ref}")["object"]["sha"]
+
+
+def ancestry_ok(tok, pin, ref):
+    try:
+        cmp = api(tok, f"/repos/{REPO}/compare/{pin}...{ref}")
+        return cmp.get("status") in ("ahead", "identical")
+    except Exception:
+        return False
+
+
+def ensure_branch(tok, branch, base):
+    try:
+        return sha_of(tok, branch)
+    except urllib.error.HTTPError:
+        base_sha = sha_of(tok, base)
+        api(tok, f"/repos/{REPO}/git/refs", method="POST",
+            data={"ref": f"refs/heads/{branch}", "sha": base_sha})
+        return base_sha
+
+
+def main():
+    args = sys.argv[1:]
+    if "--help" in args or "-h" in args:
+        print("usage: dispatch_452.py [--dry-run] [--no-batch] [--leg name:branch:base:lever ...]")
+        print("  --dry-run  preflight only, NO dispatch (always safe)")
+        print("  --no-batch skip default batch, dispatch only --leg entries")
+        raise SystemExit(0)
+    dry = "--dry-run" in args
+    no_batch = "--no-batch" in args
+    extra = []
+    args_l = list(args)
+    i = 0
+    while i < len(args_l):
+        if args_l[i] == "--leg" and i + 1 < len(args_l):
+            extra.append(args_l[i + 1]); i += 2
+        else:
+            i += 1
+    batch = [] if no_batch else list(BATCH)
+    for spec in extra:
+        leg, branch, base, lever = spec.split(":")
+        batch.append((leg, branch, base, lever))
+
+    tok = token_from_remote()
+    print("=== TICK-452 NEW-CARRIER LATTICE ===", flush=True)
+    bases = {b for _, _, b, _ in batch}
+    for base in sorted(bases):
+        exp = EXPECTED_SHA.get(base)
+        live = sha_of(tok, base)[:8]
+        if exp is None:
+            raise SystemExit(f"NO PIN for base {base} — add EXPECTED_SHA entry (argv-guard canon)")
+        if base in ANCESTRY_BASES:
+            if not ancestry_ok(tok, exp, base):
+                raise SystemExit(f"ANCESTRY MISMATCH: {base} live={live} pin={exp}")
+            print(f"preflight OK (ancestry): {base} @ {live}", flush=True)
+        elif not live.startswith(exp):
+            raise SystemExit(f"SHA MISMATCH: {base} live={live} expected={exp}")
+        else:
+            print(f"preflight OK: {base} @ {live}", flush=True)
+    if dry:
+        print("DRY-RUN OK — no dispatches", flush=True)
+        return
+    for leg, branch, base, lever in batch:
+        sha = ensure_branch(tok, branch, base)
+        inputs = dict(INPUTS)
+        inputs["lever_flag"] = lever
+        inputs["lever_arg"] = "1"
+        api(tok, f"/repos/{REPO}/actions/workflows/{WF}/dispatches", method="POST",
+            data={"ref": branch, "inputs": inputs})
+        print(f"dispatched {leg}: {branch} <- {base} lever='{lever}' sha={sha[:8]}", flush=True)
+        time.sleep(4)
+    print(f"=== TICK-452 BATCH COMPLETE: {len(batch)} диспатчей ===", flush=True)
+
+
+if __name__ == "__main__":
+    main()

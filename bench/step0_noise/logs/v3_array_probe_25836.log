@@ -1,0 +1,40 @@
+Exception in thread "main" java.lang.ExceptionInInitializerError
+	at io.papermc.paper.ServerBuildInfo.buildInfo(ServerBuildInfo.java:39)
+	at org.purpurmc.purpur.PurpurConfig.<clinit>(PurpurConfig.java:233)
+	at net.minecraft.world.item.enchantment.ItemEnchantments.<clinit>(ItemEnchantments.java:35)
+	at net.minecraft.core.component.DataComponents.lambda$static$10(DataComponents.java:126)
+	at net.minecraft.core.component.DataComponents.register(DataComponents.java:400)
+	at net.minecraft.core.component.DataComponents.<clinit>(DataComponents.java:125)
+	at net.minecraft.world.item.Item$Properties.<init>(Item.java:358)
+	at net.minecraft.world.item.Items.registerBlock(Items.java:2442)
+	at net.minecraft.world.item.Items.<clinit>(Items.java:63)
+	at net.minecraft.world.level.block.LightBlock.getShape(LightBlock.java:72)
+	at net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase.getShape(BlockBehaviour.java:789)
+	at net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase.getShape(BlockBehaviour.java:785)
+	at net.minecraft.world.level.block.state.BlockBehaviour.getCollisionShape(BlockBehaviour.java:332)
+	at net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase$Cache.<init>(BlockBehaviour.java:1063)
+	at net.minecraft.world.level.block.state.BlockBehaviour$BlockStateBase.initCache(BlockBehaviour.java:585)
+	at net.minecraft.world.level.block.Blocks.<clinit>(Blocks.java:7237)
+	at net.minecraft.world.level.block.FireBlock.bootStrap(FireBlock.java:364)
+	at net.minecraft.server.Bootstrap.bootStrap(Bootstrap.java:50)
+	at net.minecraft.world.level.levelgen.V3ArrayProbe.main(V3ArrayProbe.java:101)
+Caused by: java.lang.IllegalStateException: Encountered an exception loading service interface io.papermc.paper.ServerBuildInfo
+	at net.kyori.adventure.util.Services.service(Services.java:64)
+	at io.papermc.paper.ServerBuildInfo$1Holder.<clinit>(ServerBuildInfo.java:36)
+	... 19 more
+Caused by: java.util.ServiceConfigurationError: io.papermc.paper.ServerBuildInfo: Provider io.papermc.paper.ServerBuildInfoImpl could not be instantiated
+	at java.base/java.util.ServiceLoader.fail(ServiceLoader.java:586)
+	at java.base/java.util.ServiceLoader$ProviderImpl.newInstance(ServiceLoader.java:813)
+	at java.base/java.util.ServiceLoader$ProviderImpl.get(ServiceLoader.java:729)
+	at java.base/java.util.ServiceLoader$3.next(ServiceLoader.java:1403)
+	at net.kyori.adventure.util.Services.service(Services.java:61)
+	... 20 more
+Caused by: java.lang.IllegalStateException: Game version not set
+	at net.minecraft.SharedConstants.getCurrentVersion(SharedConstants.java:206)
+	at io.papermc.paper.ServerBuildInfoImpl.<init>(ServerBuildInfoImpl.java:49)
+	at io.papermc.paper.ServerBuildInfoImpl.<init>(ServerBuildInfoImpl.java:39)
+	at java.base/jdk.internal.reflect.DirectConstructorHandleAccessor.newInstance(DirectConstructorHandleAccessor.java:62)
+	at java.base/java.lang.reflect.Constructor.newInstanceWithCaller(Constructor.java:502)
+	at java.base/java.lang.reflect.Constructor.newInstance(Constructor.java:486)
+	at java.base/java.util.ServiceLoader$ProviderImpl.newInstance(ServiceLoader.java:789)
+	... 23 more

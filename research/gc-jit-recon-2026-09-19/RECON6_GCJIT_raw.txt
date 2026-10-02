@@ -1,0 +1,162 @@
+# RECON-6: GC/JIT-native phase decomposition (v3 bank leg 35399980345)
+
+## (a) CPU axis — cpu-collapsed total 128124 samples
+
+GC/JIT-native phase (classifier as absorb_s7162.py): 45470 samples = 35.49% CPU
+
+| sub-lane | samples | % CPU total | % phase |
+|---|---|---|---|
+| GC-concurrent REFINEMENT (G1ConcurrentRefineThread) | 22917 | 17.89% | 50.40% |
+| GC-concurrent MARKING (G1CMTask) | 6857 | 5.35% | 15.08% |
+| JIT-compile (C1/C2/broker) | 2611 | 2.04% | 5.74% |
+| GC STW-worker EVACUATION (scan_roots/trim) | 6186 | 4.83% | 13.60% |
+| GC STW-worker REBUILD-RS/scrub | 5377 | 4.20% | 11.83% |
+| GC other STW (other GCTask/work) | 688 | 0.54% | 1.51% |
+| GC remset/card other (CardSet/refine misc) | 25 | 0.02% | 0.05% |
+| GC service/other (G1Service/oldgen) | 39 | 0.03% | 0.09% |
+| VM-thread/safepoint (stw infra) | 2 | 0.00% | 0.00% |
+| unclassified-in-phase | 768 | 0.60% | 1.69% |
+
+### top-40 frames inside GC/JIT phase
+
+| frame | occurrences (weighted) | % phase |
+|---|---|---|
+| `/usr/lib/x86_64-linux-gnu/libc.so.6` | 89193 | 196.16% |
+| `thread_native_entry` | 44452 | 97.76% |
+| `Thread::call_run` | 44452 | 97.76% |
+| `G1DirtyCardQueueSet::refine_buffer` | 23098 | 50.80% |
+| `ConcurrentGCThread::run` | 22954 | 50.48% |
+| `G1ConcurrentRefineThread::run_service` | 22917 | 50.40% |
+| `G1DirtyCardQueueSet::refine_completed_buffer_concurrently` | 22904 | 50.37% |
+| `G1PrimaryConcurrentRefineThread::do_refinement_step` | 21789 | 47.92% |
+| `G1RemSet::refine_card_concurrently` | 21375 | 47.01% |
+| `WorkerThread::run` | 18891 | 41.55% |
+| `void OopOopIterateDispatch<G1ConcurrentRefineOopClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>` | 10219 | 22.47% |
+| `G1CardSet::add_card` | 9807 | 21.57% |
+| `G1CMConcurrentMarkingTask::work` | 6857 | 15.08% |
+| `G1CMTask::do_marking_step` | 6857 | 15.08% |
+| `G1EvacuateRegionsBaseTask::work` | 6186 | 13.60% |
+| `G1EvacuateRegionsTask::scan_roots` | 6158 | 13.54% |
+| `G1RemSet::scan_heap_roots` | 6158 | 13.54% |
+| `G1ScanHRForRegionClosure::scan_heap_roots` | 6156 | 13.54% |
+| `void G1CMTask::process_grey_task_entry<true>` | 5574 | 12.26% |
+| `HeapRegionManager::par_iterate` | 5377 | 11.83% |
+| `G1RebuildRSAndScrubTask::work` | 5349 | 11.76% |
+| `G1RebuildRSAndScrubTask::G1RebuildRSAndScrubRegionClosure::do_heap_region` | 5349 | 11.76% |
+| `oopDesc::size` | 5143 | 11.31% |
+| `G1CardSet::add_to_howl` | 3994 | 8.78% |
+| `void OopOopIterateDispatch<G1RebuildRemSetClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>` | 3698 | 8.13% |
+| `void OopOopIterateDispatch<G1CMOopClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>` | 3255 | 7.16% |
+| `void OopOopIterateDispatch<G1ConcurrentRefineOopClosure>::Table::oop_oop_iterate<ObjArrayKlass, narrowOop>` | 2665 | 5.86% |
+| `G1ParScanThreadState::trim_queue_to_threshold` | 2610 | 5.74% |
+| `JavaThread::thread_main_inner` | 2603 | 5.72% |
+| `CompileBroker::compiler_thread_loop` | 2603 | 5.72% |
+| `CompileBroker::invoke_compiler_on_method` | 2597 | 5.71% |
+| `C2Compiler::compile_method` | 2372 | 5.22% |
+| `Compile::Compile` | 2370 | 5.21% |
+| `G1CMTask::drain_local_queue` | 1792 | 3.94% |
+| `G1CardSet::add_to_container` | 1675 | 3.68% |
+| `void G1ScanCardClosure::do_oop_work<narrowOop>` | 1613 | 3.55% |
+| `void OopOopIterateDispatch<G1ScanCardClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>` | 1512 | 3.33% |
+| `void G1CardSet::iterate_cards_during_transfer<G1TransferCard>` | 1348 | 2.96% |
+| `void OopOopIterateBoundedDispatch<G1ConcurrentRefineOopClosure>::Table::oop_oop_iterate_bounded<ObjArrayKlass, narrowOop>` | 1340 | 2.95% |
+| `ParseGenerator::generate` | 1327 | 2.92% |
+
+### top-15 collapsed stacks inside phase
+
+- 5174 (11.38% phase): `Thread::call_run;ConcurrentGCThread::run;G1ConcurrentRefineThread::run_service;G1PrimaryConcurrentRefineThread::do_refinement_step;G1DirtyCardQueueSet::refine_completed_buffer_concurrently;G1DirtyCardQueueSet::refine_buffer;G1RemSet::refine_card_concurrently;void OopOopIterateDispatch<G1ConcurrentRefineOopClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>`
+- 4790 (10.53% phase): `Thread::call_run;ConcurrentGCThread::run;G1ConcurrentRefineThread::run_service;G1PrimaryConcurrentRefineThread::do_refinement_step;G1DirtyCardQueueSet::refine_completed_buffer_concurrently;G1DirtyCardQueueSet::refine_buffer;G1RemSet::refine_card_concurrently;oopDesc::size`
+- 2397 (5.27% phase): `/usr/lib/x86_64-linux-gnu/libc.so.6;thread_native_entry;Thread::call_run;WorkerThread::run;G1CMConcurrentMarkingTask::work;G1CMTask::do_marking_step;void G1CMTask::process_grey_task_entry<true>;void OopOopIterateDispatch<G1CMOopClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>`
+- 2156 (4.74% phase): `thread_native_entry;Thread::call_run;WorkerThread::run;G1EvacuateRegionsBaseTask::work;G1EvacuateRegionsTask::scan_roots;G1RemSet::scan_heap_roots;G1ScanHRForRegionClosure::scan_heap_roots;G1ParScanThreadState::trim_queue_to_threshold`
+- 1880 (4.13% phase): `thread_native_entry;Thread::call_run;ConcurrentGCThread::run;G1ConcurrentRefineThread::run_service;G1PrimaryConcurrentRefineThread::do_refinement_step;G1DirtyCardQueueSet::refine_completed_buffer_concurrently;G1DirtyCardQueueSet::refine_buffer;G1RemSet::refine_card_concurrently`
+- 1818 (4.00% phase): `ConcurrentGCThread::run;G1ConcurrentRefineThread::run_service;G1PrimaryConcurrentRefineThread::do_refinement_step;G1DirtyCardQueueSet::refine_completed_buffer_concurrently;G1DirtyCardQueueSet::refine_buffer;G1RemSet::refine_card_concurrently;void OopOopIterateDispatch<G1ConcurrentRefineOopClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>;G1CardSet::add_card`
+- 1732 (3.81% phase): `/usr/lib/x86_64-linux-gnu/libc.so.6;thread_native_entry;Thread::call_run;WorkerThread::run;G1RebuildRSAndScrubTask::work;HeapRegionManager::par_iterate;G1RebuildRSAndScrubTask::G1RebuildRSAndScrubRegionClosure::do_heap_region;void OopOopIterateDispatch<G1RebuildRemSetClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>`
+- 1296 (2.85% phase): `Thread::call_run;ConcurrentGCThread::run;G1ConcurrentRefineThread::run_service;G1PrimaryConcurrentRefineThread::do_refinement_step;G1DirtyCardQueueSet::refine_completed_buffer_concurrently;G1DirtyCardQueueSet::refine_buffer;G1RemSet::refine_card_concurrently;void OopOopIterateDispatch<G1ConcurrentRefineOopClosure>::Table::oop_oop_iterate<ObjArrayKlass, narrowOop>`
+- 1200 (2.64% phase): `/usr/lib/x86_64-linux-gnu/libc.so.6;thread_native_entry;Thread::call_run;WorkerThread::run;G1EvacuateRegionsBaseTask::work;G1EvacuateRegionsTask::scan_roots;G1RemSet::scan_heap_roots;G1ScanHRForRegionClosure::scan_heap_roots`
+- 1076 (2.37% phase): `Thread::call_run;WorkerThread::run;G1EvacuateRegionsBaseTask::work;G1EvacuateRegionsTask::scan_roots;G1RemSet::scan_heap_roots;G1ScanHRForRegionClosure::scan_heap_roots;void OopOopIterateDispatch<G1ScanCardClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>;void G1ScanCardClosure::do_oop_work<narrowOop>`
+- 1029 (2.26% phase): `Thread::call_run;ConcurrentGCThread::run;G1ConcurrentRefineThread::run_service;G1PrimaryConcurrentRefineThread::do_refinement_step;G1DirtyCardQueueSet::refine_completed_buffer_concurrently;G1DirtyCardQueueSet::refine_buffer;G1RemSet::refine_card_concurrently;void OopOopIterateBoundedDispatch<G1ConcurrentRefineOopClosure>::Table::oop_oop_iterate_bounded<ObjArrayKlass, narrowOop>`
+- 1010 (2.22% phase): `/usr/lib/x86_64-linux-gnu/libc.so.6;thread_native_entry;Thread::call_run;WorkerThread::run;G1CMConcurrentMarkingTask::work;G1CMTask::do_marking_step;void G1CMTask::process_grey_task_entry<true>;void OopOopIterateDispatch<G1CMOopClosure>::Table::oop_oop_iterate<ObjArrayKlass, narrowOop>`
+- 923 (2.03% phase): `thread_native_entry;Thread::call_run;ConcurrentGCThread::run;G1ConcurrentRefineThread::run_service;G1PrimaryConcurrentRefineThread::do_refinement_step;G1DirtyCardQueueSet::refine_completed_buffer_concurrently;G1DirtyCardQueueSet::refine_buffer;void QuickSort::inner_sort<false, unsigned char*, long (*)(unsigned char const*, unsigned char const*)>`
+- 921 (2.03% phase): `G1ConcurrentRefineThread::run_service;G1PrimaryConcurrentRefineThread::do_refinement_step;G1DirtyCardQueueSet::refine_completed_buffer_concurrently;G1DirtyCardQueueSet::refine_buffer;G1RemSet::refine_card_concurrently;void OopOopIterateDispatch<G1ConcurrentRefineOopClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>;G1CardSet::add_card;G1CardSet::add_to_howl`
+- 903 (1.99% phase): `thread_native_entry;Thread::call_run;WorkerThread::run;G1RebuildRSAndScrubTask::work;HeapRegionManager::par_iterate;G1RebuildRSAndScrubTask::G1RebuildRSAndScrubRegionClosure::do_heap_region;void OopOopIterateDispatch<G1RebuildRemSetClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>;G1CardSet::add_card`
+
+## (b) gc.log axis — pauses and allocation rate
+
+young events (whole run): 154  concurrent-mark pauses: 60  full: 0
+pause ms: total=21127 mean=137.19 median=156.02 p90=175.76 max=190.4
+  cause 'Normal) (G1 Evacuation Pause': 50
+  cause 'Mixed) (G1 Evacuation Pause': 41
+  cause 'Prepare Mixed) (G1 Evacuation Pause': 30
+  cause 'Concurrent Start) (G1 Evacuation Pause': 24
+  cause 'Concurrent Start) (Metadata GC Threshold': 4
+  cause 'Mixed) (Metadata GC Threshold': 2
+  cause 'Concurrent Start) (CodeCache GC Threshold': 2
+  cause 'Mixed) (GCLocker Initiated GC': 1
+
+live-scene segment (t >= 22:15:47 UTC, soak+post-soak): 77 events
+live pauses ms: total=12684 mean=164.73 median=161.37 max=190.4
+alloc rate (MB/s between consecutive young GCs): mean=1634.1 median=1639.9 max=2037.5 (n=76)
+span 296s: STW wall-share 4.29% (42.9 ms pause per second wall)
+
+inter-GC gap s: min=2.82 p25=3.39 median=3.85 p75=4.35 max=5.21
+
+## (c) alloc axis — top allocation sites (bytes, whole profile window)
+
+total bytes weight: 10,263 (units = bytes of collapsed counts)
+
+| # | allocation leaf | weight | % total |
+|---|---|---|---|
+| 1 | `net.minecraft.world.phys.AABB_[i]` | 2,072 | 20.19% |
+| 2 | `net.minecraft.world.phys.Vec3_[i]` | 2,041 | 19.89% |
+| 3 | `net.minecraft.core.BlockPos_[i]` | 619 | 6.03% |
+| 4 | `net.minecraft.core.BlockPos$MutableBlockPos_[i]` | 561 | 5.47% |
+| 5 | `long[]_[i]` | 490 | 4.77% |
+| 6 | `char[]_[k]` | 460 | 4.48% |
+| 7 | `net.minecraft.core.BlockPos$6_[i]` | 372 | 3.62% |
+| 8 | `byte[]_[k]` | 319 | 3.11% |
+| 9 | `java.util.ArrayList_[i]` | 289 | 2.82% |
+| 10 | `java.lang.Object[]_[i]` | 286 | 2.79% |
+| 11 | `net.minecraft.world.level.chunk.LevelChunkSection[][]_[i]` | 152 | 1.48% |
+| 12 | `ca.spottedleaf.moonrise.patches.collisions.CollisionUtil$LazyEntityCollisionContext_[i]` | 144 | 1.40% |
+| 13 | `com.google.common.collect.Iterators$ArrayItr_[i]` | 139 | 1.35% |
+| 14 | `net.minecraft.world.entity.Entity$$Lambda+0x00007fc4e19e3360_[i]` | 122 | 1.19% |
+| 15 | `byte[]_[i]` | 103 | 1.00% |
+| 16 | `net.minecraft.server.level.ServerLevel$$Lambda+0x00007fc4e19e4920_[i]` | 75 | 0.73% |
+| 17 | `int[]_[i]` | 74 | 0.72% |
+| 18 | `java.util.EnumMap$EntryIterator_[i]` | 66 | 0.64% |
+| 19 | `it.unimi.dsi.fastutil.longs.LongOpenHashSet_[i]` | 64 | 0.62% |
+| 20 | `java.util.ArrayList$Itr_[i]` | 63 | 0.61% |
+| 21 | `net.minecraft.world.phys.shapes.EntityCollisionContext_[i]` | 59 | 0.57% |
+| 22 | `net.minecraft.core.BlockPos$4_[i]` | 58 | 0.57% |
+| 23 | `net.minecraft.world.phys.shapes.ArrayVoxelShape_[i]` | 58 | 0.57% |
+| 24 | `net.minecraft.core.BlockPos$$Lambda+0x00007fc4e051fdb8_[i]` | 56 | 0.55% |
+| 25 | `it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet$SetIterator_[i]` | 55 | 0.54% |
+| 26 | `it.unimi.dsi.fastutil.objects.ObjectArrayList$1_[i]` | 54 | 0.53% |
+| 27 | `java.util.stream.ReferencePipeline$Head_[i]` | 54 | 0.53% |
+| 28 | `java.util.concurrent.atomic.AtomicInteger_[i]` | 49 | 0.48% |
+| 29 | `java.util.HashMap$KeyIterator_[i]` | 48 | 0.47% |
+| 30 | `net.minecraft.world.entity.Entity$Movement_[i]` | 44 | 0.43% |
+| 31 | `org.bukkit.event.vehicle.VehicleEntityCollisionEvent_[i]` | 44 | 0.43% |
+| 32 | `it.unimi.dsi.fastutil.doubles.DoubleArrayList_[i]` | 43 | 0.42% |
+| 33 | `net.minecraft.core.Vec3i_[i]` | 40 | 0.39% |
+| 34 | `org.bukkit.craftbukkit.block.CraftBlock_[i]` | 37 | 0.36% |
+| 35 | `java.util.Optional_[i]` | 34 | 0.33% |
+| 36 | `java.util.HashMap$Node_[i]` | 34 | 0.33% |
+| 37 | `it.unimi.dsi.fastutil.objects.ReferenceOpenHashSet$SetSpliterator_[i]` | 31 | 0.30% |
+| 38 | `net.minecraft.world.entity.EntitySelector$$Lambda+0x00007fc4e19e3108_[i]` | 30 | 0.29% |
+| 39 | `net.minecraft.world.level.pathfinder.Node_[i]` | 30 | 0.29% |
+| 40 | `java.util.concurrent.ConcurrentLinkedQueue$Node_[i]` | 28 | 0.27% |
+
+### top-60 alloc leaves mapped to lanes
+
+| lane | leaves | weight | % top60 |
+|---|---|---|---|
+| inside-pipeline | 478 | 3,262 | 33.4% |
+| tickBucket-orch | 1013 | 2,766 | 28.3% |
+| broadphase/collision/push | 414 | 1,728 | 17.7% |
+| other-lanes | 200 | 1,050 | 10.7% |
+| chunk/lightsky | 200 | 514 | 5.3% |
+| fluid-scan | 69 | 428 | 4.4% |
+| collector/batch | 10 | 27 | 0.3% |
+| AI/brain/sensing | 1 | 1 | 0.0% |
+

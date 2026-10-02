@@ -1,0 +1,146 @@
+# BENCH-V2 — heavy multi-dimension stand (AG-433, wave-515, owner directive 2026-10-01).
+#
+# 20,449 force-loaded chunks SIMULTANEOUSLY in EACH of overworld + nether + end
+# (61,347 total), fresh fixed-seed world, datapacks Terralith 2.5.13 + Tectonic
+# 3.0.29 (overworld), Incendium 5.4.9 (nether), Stellarity 5.1.3 (end) — all
+# pinned by sha512 from the Modrinth API (2026-10-01) and verified in-CI
+# (anti-alias canon dp13-16). Purpur 1.21.10 b2535 pinned md5+sha256.
+# view-distance 32 / simulation-distance 32; bukkit spawn-limits at ceiling
+# (monsters 2000) + per-player-mob-spawns OFF. Metrics (BENCHV2.md): ch/s
+# (drain-definition), TPS/MSPT samples (spark), entity-tick share (spark
+# profiler artifact), NCDFE canon gate. Stand lives on THIS branch — dispatch
+# only with ref=swarm-515-433 (ref=master is forbidden by wave law).
+name: bench-v2
+
+on:
+  workflow_dispatch:
+    inputs:
+      radius_blocks:
+        description: 'Forceload radius in blocks per dim (1136 = 143x143 = 20449 chunks)'
+        required: false
+        default: '1136'
+      run_seconds:
+        description: 'Sustain window seconds (spawn-storm + TPS sampling)'
+        required: false
+        default: '300'
+      seed:
+        description: 'Fixed world seed'
+        required: false
+        default: '351515'
+      server_xmx:
+        description: 'Server JVM max heap'
+        required: false
+        default: '10G'
+      bench_dims:
+        description: 'Comma-separated dims to forceload (canon = all three)'
+        required: false
+        default: 'minecraft:overworld,minecraft:the_nether,minecraft:the_end'
+      cpu_band_min:
+        description: 'Pair-hunter fast-fail: min runner_cpu_index (band recal 2026-10-01 pool 10.2-12.5M)'
+        required: false
+        default: '10000000' # AG-318 x521: pool drift evidence run-36815094025 fast-fail @12439811
+      cpu_band_max:
+        description: 'Pair-hunter fast-fail: max runner_cpu_index (band recal 2026-10-01 pool 10.2-12.5M)'
+        required: false
+        default: '13500000' # override per-dispatch for tighter pairing (e.g. anchor windows)
+      band_gate_action:
+        description: 'On runner_cpu_index outside band: warn (AG-13 x523 NEW default: record+proceed — pool is BIMODAL ~6.4-7.2M 75% / 11.4-12.5M 25% (#16d), strict default killed canary-6 REDx2 at step-3 36859428036/36859424331 before boot; comparability via RUNNER_CPU_INDEX ledger + cohort-pairing |dIdx|<=3%) | fail (pair-hunter STRICT pairing discard — pass EXPLICITLY on pair-verbs)'
+        required: false
+        default: 'warn'
+      dim_gen_window:
+        # AG-400 x523 (#16f window-matrix, port AG-369): DIM_GEN_WINDOW env of pregen-v3.1
+        # champion (bounded in-flight getChunkAtAsync, 7b7eeba0) — matrix 256/512/1024
+        # x r1136 WITHOUT recommit. 256 = champion canon (9.9-11 ch/s).
+        required: false
+        default: '256'
+      drain_cap_polls:
+        # AG-400 x523 (#16f кап-ап, port AG-369/333): drain poll cap (x10s). Master
+        # hardcode 120=1200s < pregen 20449ch @9-21ch/s (974-2272s) -> false DRAIN-TIMEOUT
+        # + ch/s lower-bound on canon r1136 legs. 240=2400s covers full pregen window.
+        required: false
+        default: '240'
+
+permissions:
+  contents: read
+
+concurrency:
+  # AG-217/22 x515 lesson ported to bench-v2: per-ref group without lever params
+  # lets a leg-B dispatch CANCEL a running leg-A sibling on the same ref.
+  # seed+radius make groups per-leg; canon fallbacks reproduce old per-ref flow.
+  group: bench-v2-${{ github.ref }}-${{ inputs.seed || 'canon' }}-${{ inputs.radius_blocks || 'x' }}
+  cancel-in-progress: true
+
+jobs:
+  bench-v2:
+    runs-on: ubuntu-latest
+    # AG-400 x523 #16f: 75min < canon S_BV2 leg (boot ~90s + pregen 20449ch @11.2ch/s ~1830s
+    # + run_seconds=9000 ~183min). AG-339/279/253/256/330: all 9000s legs on master = DOA
+    # mid-sustain kill. 330min also covers worst-case 512-window STALL-side pregen (~2ch/s)
+    # under GH-hosted 6h hard cap.
+    timeout-minutes: 330
+    steps:
+      - name: Checkout (this branch)
+        uses: actions/checkout@v4
+
+      - name: Runner calibration band gate (pair-hunter fast-fail, S7-96d)
+        if: inputs.cpu_band_min != '' && inputs.cpu_band_max != ''
+        run: |
+          set -euo pipefail
+          IDX=$(python3 -c '
+          import time
+          t=time.time(); x=1
+          for _ in range(6000000):
+              x=(x*1103515245+12345)&0x7fffffff
+          print(f"{6000000/(time.time()-t):.0f}")')
+          echo "runner_cpu_index=$IDX band=[${{ inputs.cpu_band_min }},${{ inputs.cpu_band_max }}] action=${{ inputs.band_gate_action }}"
+          echo "runner_cpu_index=$IDX" >> "$GITHUB_STEP_SUMMARY" # AG-318 x521: auto-calibration ledger
+          echo "RUNNER_CPU_INDEX=$IDX" >> "$GITHUB_ENV" # AG-236 x522: feed norm_v5 comparability into downstream steps/artifacts
+          if [ "$IDX" -lt "${{ inputs.cpu_band_min }}" ] || [ "$IDX" -gt "${{ inputs.cpu_band_max }}" ]; then
+            if [ "${{ inputs.band_gate_action }}" = "warn" ]; then
+              echo "::warning::runner_cpu_index=$IDX OUTSIDE band — WARN mode (AG-236 x522): record + proceed, do NOT use for same-band pairing"
+            else
+              echo "::notice::runner_cpu_index=$IDX OUTSIDE band — fast-fail (pairing discard)"
+              exit 1
+            fi
+          fi
+
+      - name: Setup JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: BENCH-V2 run (fixture + gen + sustain + report)
+        timeout-minutes: 320 # AG-400 x523 #16f: raised with job cap (330) for run_seconds=9000 canon
+        env:
+          RADIUS_BLOCKS: ${{ inputs.radius_blocks || '1136' }}
+          RUN_SECONDS: ${{ inputs.run_seconds || '300' }}
+          BENCH_SEED: ${{ inputs.seed || '351515' }}
+          SERVER_XMX: ${{ inputs.server_xmx || '10G' }}
+          BENCH_DIMS: ${{ inputs.bench_dims || 'minecraft:overworld,minecraft:the_nether,minecraft:the_end' }}
+          DIM_GEN_WINDOW: ${{ inputs.dim_gen_window || '256' }}
+          DRAIN_CAP_POLLS: ${{ inputs.drain_cap_polls || '240' }}
+        run: |
+          set -euo pipefail
+          bash bench/worldv2/run_benchv2.sh
+
+      - name: Report gate (BENCHV2.md must exist and pass G3/G4 + NCDFE)
+        run: |
+          set -euo pipefail
+          test -s run/server/BENCHV2.md || { echo "::error::BENCHV2.md missing"; exit 1; }
+          # x519 dud gate (AG-15 lesson, x2 re-rolls 234/211 = green duds on old-branch harnesses):
+          # a report that says INVALID/FAIL must never be a green job.
+          if grep -q "INVALID/FAIL" run/server/BENCHV2.md; then echo "::error::BENCH-V2 INVALID/FAIL verdict in report"; exit 1; fi
+          cat run/server/BENCHV2.md
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          if-no-files-found: ignore
+          name: benchv2-ag433
+          path: |
+            run/server/BENCHV2.md
+            run/server/server-stdout.log
+            run/server/run-env.txt
+            run/server/*.sparkprofile

@@ -1,0 +1,137 @@
+  private void optimiseRandomTick(net.minecraft.world.level.chunk.LevelChunk, int);
+    Code:
+       0: aload_1
+       1: invokevirtual #1721               // Method net/minecraft/world/level/chunk/LevelChunk.getSections:()[Lnet/minecraft/world/level/chunk/LevelChunkSection;
+       4: astore_3
+       5: aload_0
+       6: checkcast     #2                  // class net/minecraft/server/level/ServerLevel
+       9: invokestatic  #1727               // Method ca/spottedleaf/moonrise/common/util/WorldUtil.getMinSection:(Lnet/minecraft/world/level/Level;)I
+      12: istore        4
+      14: aload_0
+      15: getfield      #869                // Field simpleRandom:Lca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom;
+      18: astore        5
+      20: invokestatic  #619                // InterfaceMethod ca/spottedleaf/moonrise/common/PlatformHooks.get:()Lca/spottedleaf/moonrise/common/PlatformHooks;
+      23: invokeinterface #1730,  1         // InterfaceMethod ca/spottedleaf/moonrise/common/PlatformHooks.configFixMC224294:()Z
+      28: ifne          35
+      31: iconst_1
+      32: goto          36
+      35: iconst_0
+      36: istore        6
+      38: aload_1
+      39: invokevirtual #687                // Method net/minecraft/world/level/chunk/LevelChunk.getPos:()Lnet/minecraft/world/level/ChunkPos;
+      42: astore        7
+      44: aload         7
+      46: getfield      #1734               // Field net/minecraft/world/level/ChunkPos.x:I
+      49: iconst_4
+      50: ishl
+      51: istore        8
+      53: aload         7
+      55: getfield      #1736               // Field net/minecraft/world/level/ChunkPos.z:I
+      58: iconst_4
+      59: ishl
+      60: istore        9
+      62: iconst_0
+      63: istore        10
+      65: aload_3
+      66: arraylength
+      67: istore        11
+      69: iload         10
+      71: iload         11
+      73: if_icmpge     276
+      76: iload         10
+      78: iload         4
+      80: iadd
+      81: iconst_4
+      82: ishl
+      83: istore        12
+      85: aload_3
+      86: iload         10
+      88: aaload
+      89: astore        13
+      91: aload         13
+      93: getfield      #1742               // Field net/minecraft/world/level/chunk/LevelChunkSection.states:Lnet/minecraft/world/level/chunk/PalettedContainer;
+      96: astore        14
+      98: aload         13
+     100: invokevirtual #1745               // Method net/minecraft/world/level/chunk/LevelChunkSection.isRandomlyTickingBlocks:()Z
+     103: ifne          109
+     106: goto          270
+     109: aload         13
+     111: invokeinterface #1753,  1         // InterfaceMethod ca/spottedleaf/moonrise/patches/block_counting/BlockCountingChunkSection.moonrise$getTickingBlockList:()Lca/spottedleaf/moonrise/common/list/ShortList;
+     116: astore        15
+     118: iconst_0
+     119: istore        16
+     121: iload         16
+     123: iload_2
+     124: if_icmpge     270
+     127: aload         15
+     129: invokevirtual #1758               // Method ca/spottedleaf/moonrise/common/list/ShortList.size:()I
+     132: istore        17
+     134: aload         5
+     136: invokevirtual #1761               // Method ca/spottedleaf/moonrise/common/util/SimpleThreadUnsafeRandom.nextInt:()I
+     139: sipush        4095
+     142: iand
+     143: istore        18
+     145: iload         18
+     147: iload         17
+     149: if_icmplt     155
+     152: goto          264
+     155: aload         15
+     157: iload         18
+     159: invokevirtual #1765               // Method ca/spottedleaf/moonrise/common/list/ShortList.getRaw:(I)S
+     162: ldc_w         #1766               // int 65535
+     165: iand
+     166: istore        19
+     168: aload         14
+     170: iload         19
+     172: invokevirtual #1769               // Method net/minecraft/world/level/chunk/PalettedContainer.get:(I)Ljava/lang/Object;
+     175: checkcast     #1771               // class net/minecraft/world/level/block/state/BlockState
+     178: astore        20
+     180: new           #543                // class net/minecraft/core/BlockPos
+     183: dup
+     184: iload         19
+     186: bipush        15
+     188: iand
+     189: iload         8
+     191: ior
+     192: iload         19
+     194: bipush        8
+     196: iushr
+     197: bipush        15
+     199: iand
+     200: iload         12
+     202: ior
+     203: iload         19
+     205: iconst_4
+     206: iushr
+     207: bipush        15
+     209: iand
+     210: iload         9
+     212: ior
+     213: invokespecial #1774               // Method net/minecraft/core/BlockPos."<init>":(III)V
+     216: astore        21
+     218: aload         20
+     220: aload_0
+     221: checkcast     #2                  // class net/minecraft/server/level/ServerLevel
+     224: aload         21
+     226: aload         5
+     228: invokevirtual #1778               // Method net/minecraft/world/level/block/state/BlockState.randomTick:(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/util/RandomSource;)V
+     231: iload         6
+     233: ifeq          264
+     236: aload         20
+     238: invokevirtual #1782               // Method net/minecraft/world/level/block/state/BlockState.getFluidState:()Lnet/minecraft/world/level/material/FluidState;
+     241: astore        22
+     243: aload         22
+     245: invokevirtual #1787               // Method net/minecraft/world/level/material/FluidState.isRandomlyTicking:()Z
+     248: ifeq          264
+     251: aload         22
+     253: aload_0
+     254: checkcast     #2                  // class net/minecraft/server/level/ServerLevel
+     257: aload         21
+     259: aload         5
+     261: invokevirtual #1788               // Method net/minecraft/world/level/material/FluidState.randomTick:(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/core/BlockPos;Lnet/minecraft/util/RandomSource;)V
+     264: iinc          16, 1
+     267: goto          121
+     270: iinc          10, 1
+     273: goto          69
+     276: return
+

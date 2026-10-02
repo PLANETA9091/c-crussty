@@ -1,0 +1,136 @@
+### base: /home/z/c-crussty/research/inside-cache-2026-09-18/run-s7149b-cumulative
+  total=52341
+  -- CPU lanes (mutually exclusive, first-match = true TOP):
+     entity-tick (tickBucket lane incl. workers)               30419   58.12%
+     GC/JIT-native (G1/JIT symbols)                            16912   32.31%
+     main-server-tick-other                                     1744    3.33%
+     tracker (ChunkMap/ServerEntity)                            1373    2.62%
+     chunk-system workers                                        760    1.45%
+     other/uncategorized                                         709    1.35%
+     navigation/pathfinding                                      302    0.58%
+     broadphase/collision/push                                   103    0.20%
+     AI/goal-selector/brain/sensing                               18    0.03%
+     fluid-scan                                                    1    0.00%
+  -- entity-phase breakdown (30625 samples = 58.51% CPU; first-match):
+     entity-residual (tick/baseTick/data/sync)                 11403  21.79% CPU ( 37.2% phase)
+     broadphase/collision/push                                  7145  13.65% CPU ( 23.3% phase)
+     fluid-scan                                                 5184   9.90% CPU ( 16.9% phase)
+     movement-integration                                       2552   4.88% CPU (  8.3% phase)
+     AI/goal-selector/brain/sensing                             2515   4.81% CPU (  8.2% phase)
+     navigation/pathfinding                                     1401   2.68% CPU (  4.6% phase)
+     inside-blocks                                               425   0.81% CPU (  1.4% phase)
+  -- top-15 leaf frames (self-time proxy, 100.0% of total):
+        1827   3.49%  void OopOopIterateDispatch<G1CMOopClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>
+        1688   3.23%  net/minecraft/world/level/chunk/PalettedContainer.get
+        1368   2.61%  net/minecraft/world/entity/Entity.updateFluidHeightAndDoFluidPushing
+        1137   2.17%  void OopOopIterateDispatch<G1ConcurrentRefineOopClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>
+        1088   2.08%  oopDesc::size
+        1048   2.00%  void G1ScanCardClosure::do_oop_work<narrowOop>
+        1038   1.98%  void OopOopIterateDispatch<G1RebuildRemSetClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>
+        1008   1.93%  G1ParScanThreadState::trim_queue_to_threshold
+         981   1.87%  net/minecraft/world/phys/AABB.intersects
+         932   1.78%  G1CardSet::add_card
+         840   1.60%  ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices$EntityCollectionBySection.getEntit
+         712   1.36%  net/minecraft/network/syncher/SynchedEntityData$DataItem.getValue
+         698   1.33%  G1ScanHRForRegionClosure::scan_heap_roots
+         676   1.29%  vtable stub
+         653   1.25%  void OopOopIterateDispatch<G1CMOopClosure>::Table::oop_oop_iterate<ObjArrayKlass, narrowOop>
+  fluid_family=5185 (9.91%)
+  inside_block_ops=425 (0.81%)
+  tracker_ops=0 (0.00%)
+  rng_ops=0 (0.00%)
+  ItemEntity.tick=12261 (23.43%)  Zombie.tick=6875 (13.14%)
+  RegionTickOps lane all=0 (0.00%), worker=0 (offload=0.0%)
+  young_gc=118  young_pause_total=13460ms  worst=179.2ms  full=0
+  TPS crawl (6): ['18.5, 18.5, 18.5, 18.5', '0.7, 0.7, 0.8, 0.8', '0.7, 0.7, 0.8, 0.8', '0.8, 0.8, 0.8, 0.8', '0.9, 0.8, 0.8, 0.8', '0.9, 0.9, 0.8, 0.8']
+  NCDFE=0  tracker-NPE=0  uuid-dup=0  navmob-watch=0  pop=150000 VALID=True
+    ARMED? [crussty-plugin] area_map: hook armed, retransform rc=0
+    ARMED? [crussty-runtime] retransform net/minecraft/world/entity/ai/Brain: is_modifiable_class=true
+    ARMED? [crussty-runtime] retransform net/minecraft/world/entity/ai/Brain: class_status=0x7
+    ARMED? [crussty-plugin] brainhook: hook armed, retransform rc=0
+    ARMED? [crussty-runtime] retransform net/minecraft/world/level/levelgen/synth/PerlinNoise: is_modifiable_class=true
+    ARMED? [crussty-runtime] retransform net/minecraft/world/level/levelgen/synth/PerlinNoise: class_status=0x7
+    ARMED? [crussty-plugin] perlin_noise: hook armed, retransform rc=0
+    ARMED? [crussty-runtime] retransform net/minecraft/world/entity/Entity: is_modifiable_class=true
+    ARMED? [crussty-runtime] retransform net/minecraft/world/entity/Entity: class_status=0x7
+    ARMED? [crussty-plugin] fluid_guard: hook armed, retransform rc=0
+    ARMED? [crussty-plugin] inside_cache: computed patch for net/minecraft/world/entity/Entity (205458 -> 205522 bytes, Retargeted { sites: 1 })
+    ARMED? [crussty-runtime] retransform net/minecraft/world/entity/Entity: is_modifiable_class=true
+    ARMED? [crussty-runtime] retransform net/minecraft/world/entity/Entity: class_status=0x7
+    ARMED? [crussty-plugin] inside_cache: net/minecraft/world/entity/Entity armed, retransform rc=0
+    ARMED? [crussty-plugin] flush_diet: computed patch for net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector (5695 -> 5798 bytes, Retargeted { sites: 2 })
+    ARMED? [crussty-runtime] retransform net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector: is_modifiable_class=true
+    ARMED? [crussty-runtime] retransform net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector: class_status=0x7
+    ARMED? [crussty-plugin] flush_diet: net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector armed, retransform rc=0
+### leg: run-s7159-leg5-artifact
+  total=129734
+  -- CPU lanes (mutually exclusive, first-match = true TOP):
+     entity-tick (tickBucket lane incl. workers)               68750   52.99%
+     GC/JIT-native (G1/JIT symbols)                            53036   40.88%
+     tracker (ChunkMap/ServerEntity)                            2885    2.22%
+     other/uncategorized                                        1610    1.24%
+     main-server-tick-other                                     1005    0.77%
+     chunk-system workers                                        983    0.76%
+     region-threads-infra (fill/barriers, no tickBucket)         911    0.70%
+     navigation/pathfinding                                      357    0.28%
+     broadphase/collision/push                                   105    0.08%
+     AI/goal-selector/brain/sensing                               92    0.07%
+  -- entity-phase breakdown (69917 samples = 53.89% CPU; first-match):
+     entity-residual (tick/baseTick/data/sync)                 27319  21.06% CPU ( 39.1% phase)
+     broadphase/collision/push                                 13937  10.74% CPU ( 19.9% phase)
+     fluid-scan                                                11895   9.17% CPU ( 17.0% phase)
+     AI/goal-selector/brain/sensing                             7659   5.90% CPU ( 11.0% phase)
+     movement-integration                                       5680   4.38% CPU (  8.1% phase)
+     navigation/pathfinding                                     3427   2.64% CPU (  4.9% phase)
+  -- top-15 leaf frames (self-time proxy, 100.0% of total):
+        6519   5.02%  void OopOopIterateDispatch<G1ConcurrentRefineOopClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>
+        6399   4.93%  oopDesc::size
+        4989   3.85%  G1CardSet::add_card
+        4274   3.29%  void OopOopIterateDispatch<G1CMOopClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>
+        3810   2.94%  net/minecraft/world/level/chunk/PalettedContainer.get
+        2429   1.87%  void OopOopIterateDispatch<G1RebuildRemSetClosure>::Table::oop_oop_iterate<InstanceKlass, narrowOop>
+        2369   1.83%  G1CardSet::add_to_howl
+        2297   1.77%  G1ParScanThreadState::trim_queue_to_threshold
+        2135   1.65%  net/minecraft/world/entity/Entity.updateFluidHeightAndDoFluidPushing
+        2067   1.59%  G1RemSet::refine_card_concurrently
+        2060   1.59%  void G1ScanCardClosure::do_oop_work<narrowOop>
+        1682   1.30%  void OopOopIterateDispatch<G1CMOopClosure>::Table::oop_oop_iterate<ObjArrayKlass, narrowOop>
+        1598   1.23%  vtable stub
+        1492   1.15%  G1CardSet::add_to_container
+        1490   1.15%  ca/spottedleaf/moonrise/patches/chunk_system/level/entity/ChunkEntitySlices$EntityCollectionBySection.getEntit
+  fluid_family=11895 (9.17%)
+  inside_block_ops=0 (0.00%)
+  tracker_ops=3115 (2.40%)
+  rng_ops=0 (0.00%)
+  ItemEntity.tick=26542 (20.46%)  Zombie.tick=15771 (12.16%)
+  RegionTickOps lane all=70949 (54.69%), worker=53074 (offload=74.8%)
+  young_gc=180  young_pause_total=21457ms  worst=170.1ms  full=0
+  TPS crawl (6): ['20.4, 20.4, 20.4, 20.4', '1.3, 1.3, 1.4, 1.4', '1.6, 1.4, 1.4, 1.4', '1.7, 1.7, 1.5, 1.5', '2.4, 2.0, 1.6, 1.6', '2.5, 2.3, 1.7, 1.7']
+  NCDFE=0  tracker-NPE=0  uuid-dup=0  navmob-watch=0  pop=150000 VALID=True
+    ARMED? [crussty-plugin] region_threads: defined net/minecraft/util/RngOps in kernel loader
+    ARMED? [crussty-plugin] region_threads: computed patches (ServerLevel 142812 -> 142952 bytes Retargeted { sites: 1 }; EntityCallbacks 12348 -> 12504 bytes add=Retargeted { sites: 1 } remove=Retarge
+    ARMED? [crussty-plugin] region_threads: computed patches (ServerLevel 142812 -> 142952 bytes Retargeted { sites: 1 }; EntityCallbacks 12348 -> 12504 bytes add=Retargeted { sites: 1 } remove=Retarge
+    ARMED? [crussty-runtime] retransform net/minecraft/server/level/ServerLevel: is_modifiable_class=true
+    ARMED? [crussty-runtime] retransform net/minecraft/server/level/ServerLevel: class_status=0x7
+    ARMED? [crussty-runtime] retransform net/minecraft/server/level/ServerLevel$EntityCallbacks: is_modifiable_class=true
+    ARMED? [crussty-runtime] retransform net/minecraft/server/level/ServerLevel$EntityCallbacks: class_status=0x7
+    ARMED? [crussty-runtime] retransform net/minecraft/world/level/Level: is_modifiable_class=true
+    ARMED? [crussty-runtime] retransform net/minecraft/world/level/Level: class_status=0x7
+    ARMED? [crussty-runtime] retransform net/minecraft/server/level/ChunkMap: is_modifiable_class=true
+    ARMED? [crussty-runtime] retransform net/minecraft/server/level/ChunkMap: class_status=0x7
+    ARMED? [crussty-runtime] retransform net/minecraft/world/entity/Entity: is_modifiable_class=true
+    ARMED? [crussty-runtime] retransform net/minecraft/world/entity/Entity: class_status=0x7
+    ARMED? [crussty-plugin] region_threads: ARMED, retransform rc ServerLevel=0 EntityCallbacks=0 Level=0 ChunkMap=0 Entity=0
+    ARMED? [crussty-plugin] flush_diet: computed patch for net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector (5695 -> 5798 bytes, Retargeted { sites: 2 })
+    ARMED? [crussty-runtime] retransform net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector: is_modifiable_class=true
+    ARMED? [crussty-runtime] retransform net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector: class_status=0x7
+    ARMED? [crussty-plugin] flush_diet: net/minecraft/world/entity/InsideBlockEffectApplier$StepBasedCollector armed, retransform rc=0
+
+=== GATES (preregistered §S7-158) ===
+PG2 NCDFE/POPULATION: PASS (NCDFE=0, pop=150000/150000, VALID=True; ARMED: see lines above; live TrackerTickOps samples=3115, RngOps samples=0)
+PG3 TPS: base median 0.90 -> leg median 2.40 = +166.7% (gate >= +25%) => PASS
+PG4 young GC: 118 -> 180 (cap <= 136) => FAIL (+52.5%)
+CRASH-FREE (0 tracker-NPE, 0 uuid-dup): PASS (tracker_npe=0, uuid_dup=0; watchlist navigatingMobs=0; worker offload=74.8%)
+
+=== VERDICT S7-158 leg #3 ===
+GATES NOT CLEAN -> root-cause before leg #4

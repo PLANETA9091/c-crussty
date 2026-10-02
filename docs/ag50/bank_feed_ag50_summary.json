@@ -1,0 +1,73 @@
+{
+ "feed": "ag50",
+ "wave": 518,
+ "tool": "normtool_478",
+ "selftest": "3/3 bit-exact + 9/9 fixtures PASS",
+ "n_legs": 5,
+ "all_m1_known": true,
+ "legs": [
+  {
+   "run_id": 36757163912,
+   "verdict": "NORM-COMPUTED",
+   "norm_v5": 19.11,
+   "m1_state": "CLEAN",
+   "cpu_index": 6863090,
+   "tps_med": 2.6,
+   "divergence_pp": 10.94,
+   "biomes_exempt_applied": true,
+   "label": "s1804/x517-MATCH"
+  },
+  {
+   "run_id": 36755725909,
+   "verdict": "HOST-CENSORED",
+   "norm_v5": 21.66,
+   "m1_state": "CENS",
+   "cpu_index": 7395190,
+   "tps_med": 2.8,
+   "divergence_pp": 11.59,
+   "biomes_exempt_applied": true,
+   "label": "s1800/x517-MATCH-HOSTCENS"
+  },
+  {
+   "run_id": 36755741812,
+   "verdict": "NORM-COMPUTED",
+   "norm_v5": 19.5,
+   "m1_state": "CLEAN",
+   "cpu_index": 6817717,
+   "tps_med": 2.6,
+   "divergence_pp": 11.74,
+   "biomes_exempt_applied": true,
+   "label": "s1801/x517-MATCH"
+  },
+  {
+   "run_id": 36767133498,
+   "verdict": "NORM-COMPUTED",
+   "norm_v5": -7.03,
+   "m1_state": "CLEAN",
+   "cpu_index": 7220589,
+   "tps_med": 2.1,
+   "divergence_pp": 11.28,
+   "biomes_exempt_applied": false,
+   "label": "fensrv3/NEW"
+  },
+  {
+   "run_id": 36752032802,
+   "verdict": "NORM-COMPUTED",
+   "norm_v5": 8.39,
+   "m1_state": "CLEAN",
+   "cpu_index": 7039023,
+   "tps_med": 2.4,
+   "divergence_pp": 19.59,
+   "biomes_exempt_applied": true,
+   "label": "s16b/x517-MATCH"
+  }
+ ],
+ "key_findings": [
+  "4/5 runs already in x517 bank (AG-34 aggregate) \u2014 reproduced BIT-EXACT by independent run: bank pipeline reproducibility confirmed",
+  "NEW leg fensrv3 run-36767133498 norm_v5=-7.03 CLEAN @7,220,589 (fen class stays below curve; G3 gate needs probe metrics, bench-norm != G3)",
+  "0 new legs >=22.74 -> GATE-3 #24 NOT closed by this batch (honest)",
+  "no CLEAN anchor within D<=50k of 7,220,589 in visible 13-leg pool (closest 7,152,052 D=68.5k) -> full-pool pair = next step x519",
+  "re-rolls run-36767485017 (swarm-515-234) / run-36768662155 (swarm-515-211) still in_progress -> artifact-less, harvest x519, NOT re-dispatched",
+  "canary run-36773277359/36773269609 still QUEUED at x518 start -> pair-math bench-v2 closed, bases x515 stand"
+ ]
+}

@@ -1,0 +1,215 @@
+{
+  "verdict": "WORLD-PARITY-FAIL",
+  "reasons": [
+    "PER-TYPE-POPULATION: 3 нарушений из 12 общих типов: minecraft:husk: 5188 vs 5703 (Δ9.03%); minecraft:item: 103231 vs 110621 (Δ6.68%); minecraft:spider: 4813 vs 4200 (Δ12.74%); zone-B dilate husk=9%/spider=8% (Δcpu=2258985, P6-спека v2)"
+  ],
+  "gates": [
+    {
+      "gate": "FIXTURE-VALIDITY",
+      "status": "OK",
+      "detail": "VALID==VALID; 1a:PASS==PASS 1b:PASS==PASS 1c:PASS==PASS"
+    },
+    {
+      "gate": "WORLD",
+      "status": "OK",
+      "detail": "sha256=afb3a0b3ba78…"
+    },
+    {
+      "gate": "SEED",
+      "status": "OK",
+      "detail": "seed=42"
+    },
+    {
+      "gate": "CHUNK-CHECKSUMS",
+      "status": "OK",
+      "detail": "spawnable polls 289×5 == 289×5; forceload chunks=9216 (seed-идентичный ландшафт)"
+    },
+    {
+      "gate": "POP-TOTALS",
+      "status": "OK",
+      "detail": "target=150000 injected=150000 items=105000 hostiles=30000 passives=15000"
+    },
+    {
+      "gate": "PER-TYPE-POPULATION",
+      "status": "FAIL",
+      "detail": "3 нарушений из 12 общих типов: minecraft:husk: 5188 vs 5703 (Δ9.03%); minecraft:item: 103231 vs 110621 (Δ6.68%); minecraft:spider: 4813 vs 4200 (Δ12.74%); zone-B dilate husk=9%/spider=8% (Δcpu=2258985, P6-спека v2)"
+    },
+    {
+      "gate": "TICK-BEHIND",
+      "status": "OK",
+      "detail": "0 == 0"
+    },
+    {
+      "gate": "FAKE-PLAYERS",
+      "status": "OK",
+      "detail": "4 == 4"
+    },
+    {
+      "gate": "CPU-BAND",
+      "status": "WARN",
+      "detail": "van=6687375 leg=8946360 Δcpu=2258985 ZONE-B-EXPOSED (dilate husk=9%/spider=8%; plain-OK запрещён)"
+    }
+  ],
+  "per_type": {
+    "shared": 12,
+    "one_side": [],
+    "rows": [
+      {
+        "type": "minecraft:spider",
+        "a": 4813,
+        "b": 4200,
+        "drift_pct": 12.7363,
+        "tol_pct": 5.0,
+        "in_band": false
+      },
+      {
+        "type": "minecraft:husk",
+        "a": 5188,
+        "b": 5703,
+        "drift_pct": 9.0303,
+        "tol_pct": 5.0,
+        "in_band": false
+      },
+      {
+        "type": "minecraft:item",
+        "a": 103231,
+        "b": 110621,
+        "drift_pct": 6.6805,
+        "tol_pct": 5.0,
+        "in_band": false
+      },
+      {
+        "type": "minecraft:creeper",
+        "a": 5147,
+        "b": 4900,
+        "drift_pct": 4.7989,
+        "tol_pct": 5.0,
+        "in_band": true
+      },
+      {
+        "type": "minecraft:pig",
+        "a": 3248,
+        "b": 3166,
+        "drift_pct": 2.5246,
+        "tol_pct": 5.0,
+        "in_band": true
+      },
+      {
+        "type": "minecraft:cow",
+        "a": 3389,
+        "b": 3317,
+        "drift_pct": 2.1245,
+        "tol_pct": 5.0,
+        "in_band": true
+      },
+      {
+        "type": "minecraft:zombie",
+        "a": 4643,
+        "b": 4552,
+        "drift_pct": 1.9599,
+        "tol_pct": 5.0,
+        "in_band": true
+      },
+      {
+        "type": "minecraft:skeleton",
+        "a": 4870,
+        "b": 4819,
+        "drift_pct": 1.0472,
+        "tol_pct": 5.0,
+        "in_band": true
+      },
+      {
+        "type": "minecraft:drowned",
+        "a": 4555,
+        "b": 4538,
+        "drift_pct": 0.3732,
+        "tol_pct": 5.0,
+        "in_band": true
+      },
+      {
+        "type": "minecraft:sheep",
+        "a": 3528,
+        "b": 3536,
+        "drift_pct": 0.2262,
+        "tol_pct": 5.0,
+        "in_band": true
+      },
+      {
+        "type": "minecraft:chicken",
+        "a": 3420,
+        "b": 3426,
+        "drift_pct": 0.1751,
+        "tol_pct": 5.0,
+        "in_band": true
+      },
+      {
+        "type": "minecraft:item_frame",
+        "a": 2714,
+        "b": 2713,
+        "drift_pct": 0.0368,
+        "tol_pct": 5.0,
+        "in_band": true
+      }
+    ],
+    "violations": [
+      "minecraft:husk: 5188 vs 5703 (Δ9.03%)",
+      "minecraft:item: 103231 vs 110621 (Δ6.68%)",
+      "minecraft:spider: 4813 vs 4200 (Δ12.74%)"
+    ],
+    "worst_drift_pct": 12.7363,
+    "worst_type": "minecraft:spider",
+    "tol": 0.05,
+    "floor": 64,
+    "strict": false
+  },
+  "vanilla": {
+    "runner_cpu_index": "6687375",
+    "world_sha256": "afb3a0b3ba78397b833032574ed2a1af8c4279dc7cfa31d9cffa0f217a6112d5",
+    "pop_seed": 42,
+    "tick_behind": 0,
+    "tps_median": 2.1,
+    "stw_total": 21761.0,
+    "types": {
+      "minecraft:item": 103231,
+      "minecraft:husk": 5188,
+      "minecraft:creeper": 5147,
+      "minecraft:skeleton": 4870,
+      "minecraft:spider": 4813,
+      "minecraft:zombie": 4643,
+      "minecraft:drowned": 4555,
+      "minecraft:sheep": 3528,
+      "minecraft:chicken": 3420,
+      "minecraft:cow": 3389,
+      "minecraft:pig": 3248,
+      "minecraft:item_frame": 2714
+    }
+  },
+  "leg": {
+    "runner_cpu_index": "8946360",
+    "world_sha256": "afb3a0b3ba78397b833032574ed2a1af8c4279dc7cfa31d9cffa0f217a6112d5",
+    "pop_seed": 42,
+    "tick_behind": 0,
+    "tps_median": 3.2,
+    "stw_total": 19475.0,
+    "types": {
+      "minecraft:item": 110621,
+      "minecraft:husk": 5703,
+      "minecraft:creeper": 4900,
+      "minecraft:skeleton": 4819,
+      "minecraft:zombie": 4552,
+      "minecraft:drowned": 4538,
+      "minecraft:spider": 4200,
+      "minecraft:sheep": 3536,
+      "minecraft:chicken": 3426,
+      "minecraft:cow": 3317,
+      "minecraft:pig": 3166,
+      "minecraft:item_frame": 2713
+    }
+  },
+  "params": {
+    "entity_tolerance": 0.05,
+    "entity_abs_floor": 64,
+    "strict_entities": false,
+    "ignore_world": false
+  }
+}

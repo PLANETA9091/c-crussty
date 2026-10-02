@@ -1,0 +1,314 @@
+Compiled from "LevelChunkTicks.java"
+public class net.minecraft.world.ticks.LevelChunkTicks<T> implements net.minecraft.world.ticks.SerializableTickContainer<T>, net.minecraft.world.ticks.TickContainerAccess<T>, ca.spottedleaf.moonrise.patches.chunk_system.ticks.ChunkSystemLevelChunkTicks {
+  private final java.util.Queue<net.minecraft.world.ticks.ScheduledTick<T>> tickQueue;
+
+  private java.util.List<net.minecraft.world.ticks.SavedTick<T>> pendingTicks;
+
+  private final java.util.Set<net.minecraft.world.ticks.ScheduledTick<?>> ticksPerPosition;
+
+  private java.util.function.BiConsumer<net.minecraft.world.ticks.LevelChunkTicks<T>, net.minecraft.world.ticks.ScheduledTick<T>> onTickAdded;
+
+  private boolean dirty;
+
+  private long lastSaved;
+
+  public final boolean moonrise$isDirty(long);
+    Code:
+       0: aload_0
+       1: getfield      #38                 // Field dirty:Z
+       4: ifne          28
+       7: aload_0
+       8: getfield      #40                 // Field tickQueue:Ljava/util/Queue;
+      11: invokeinterface #46,  1           // InterfaceMethod java/util/Queue.isEmpty:()Z
+      16: ifne          32
+      19: lload_1
+      20: aload_0
+      21: getfield      #48                 // Field lastSaved:J
+      24: lcmp
+      25: ifeq          32
+      28: iconst_1
+      29: goto          33
+      32: iconst_0
+      33: ireturn
+
+  public final void moonrise$clearDirty();
+    Code:
+       0: aload_0
+       1: iconst_0
+       2: putfield      #38                 // Field dirty:Z
+       5: return
+
+  public net.minecraft.world.ticks.LevelChunkTicks();
+    Code:
+       0: aload_0
+       1: invokespecial #57                 // Method java/lang/Object."<init>":()V
+       4: aload_0
+       5: new           #59                 // class java/util/PriorityQueue
+       8: dup
+       9: getstatic     #65                 // Field net/minecraft/world/ticks/ScheduledTick.DRAIN_ORDER:Ljava/util/Comparator;
+      12: invokespecial #68                 // Method java/util/PriorityQueue."<init>":(Ljava/util/Comparator;)V
+      15: putfield      #40                 // Field tickQueue:Ljava/util/Queue;
+      18: aload_0
+      19: new           #70                 // class it/unimi/dsi/fastutil/objects/ObjectOpenCustomHashSet
+      22: dup
+      23: getstatic     #74                 // Field net/minecraft/world/ticks/ScheduledTick.UNIQUE_TICK_HASH:Lit/unimi/dsi/fastutil/Hash$Strategy;
+      26: invokespecial #77                 // Method it/unimi/dsi/fastutil/objects/ObjectOpenCustomHashSet."<init>":(Lit/unimi/dsi/fastutil/Hash$Strategy;)V
+      29: putfield      #79                 // Field ticksPerPosition:Ljava/util/Set;
+      32: aload_0
+      33: ldc2_w        #80                 // long -9223372036854775808l
+      36: putfield      #48                 // Field lastSaved:J
+      39: return
+
+  public net.minecraft.world.ticks.LevelChunkTicks(java.util.List<net.minecraft.world.ticks.SavedTick<T>>);
+    Code:
+       0: aload_0
+       1: invokespecial #57                 // Method java/lang/Object."<init>":()V
+       4: aload_0
+       5: new           #59                 // class java/util/PriorityQueue
+       8: dup
+       9: getstatic     #65                 // Field net/minecraft/world/ticks/ScheduledTick.DRAIN_ORDER:Ljava/util/Comparator;
+      12: invokespecial #68                 // Method java/util/PriorityQueue."<init>":(Ljava/util/Comparator;)V
+      15: putfield      #40                 // Field tickQueue:Ljava/util/Queue;
+      18: aload_0
+      19: new           #70                 // class it/unimi/dsi/fastutil/objects/ObjectOpenCustomHashSet
+      22: dup
+      23: getstatic     #74                 // Field net/minecraft/world/ticks/ScheduledTick.UNIQUE_TICK_HASH:Lit/unimi/dsi/fastutil/Hash$Strategy;
+      26: invokespecial #77                 // Method it/unimi/dsi/fastutil/objects/ObjectOpenCustomHashSet."<init>":(Lit/unimi/dsi/fastutil/Hash$Strategy;)V
+      29: putfield      #79                 // Field ticksPerPosition:Ljava/util/Set;
+      32: aload_0
+      33: ldc2_w        #80                 // long -9223372036854775808l
+      36: putfield      #48                 // Field lastSaved:J
+      39: aload_0
+      40: aload_1
+      41: putfield      #85                 // Field pendingTicks:Ljava/util/List;
+      44: aload_1
+      45: invokeinterface #91,  1           // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+      50: astore_2
+      51: aload_2
+      52: invokeinterface #96,  1           // InterfaceMethod java/util/Iterator.hasNext:()Z
+      57: ifeq          94
+      60: aload_2
+      61: invokeinterface #100,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      66: checkcast     #102                // class net/minecraft/world/ticks/SavedTick
+      69: astore_3
+      70: aload_0
+      71: getfield      #79                 // Field ticksPerPosition:Ljava/util/Set;
+      74: aload_3
+      75: invokevirtual #105                // Method net/minecraft/world/ticks/SavedTick.type:()Ljava/lang/Object;
+      78: aload_3
+      79: invokevirtual #109                // Method net/minecraft/world/ticks/SavedTick.pos:()Lnet/minecraft/core/BlockPos;
+      82: invokestatic  #113                // Method net/minecraft/world/ticks/ScheduledTick.probe:(Ljava/lang/Object;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/ticks/ScheduledTick;
+      85: invokeinterface #119,  2          // InterfaceMethod java/util/Set.add:(Ljava/lang/Object;)Z
+      90: pop
+      91: goto          51
+      94: return
+
+  public void setOnTickAdded(java.util.function.BiConsumer<net.minecraft.world.ticks.LevelChunkTicks<T>, net.minecraft.world.ticks.ScheduledTick<T>>);
+    Code:
+       0: aload_0
+       1: aload_1
+       2: putfield      #127                // Field onTickAdded:Ljava/util/function/BiConsumer;
+       5: return
+
+  public net.minecraft.world.ticks.ScheduledTick<T> peek();
+    Code:
+       0: aload_0
+       1: getfield      #40                 // Field tickQueue:Ljava/util/Queue;
+       4: invokeinterface #132,  1          // InterfaceMethod java/util/Queue.peek:()Ljava/lang/Object;
+       9: checkcast     #61                 // class net/minecraft/world/ticks/ScheduledTick
+      12: areturn
+
+  public net.minecraft.world.ticks.ScheduledTick<T> poll();
+    Code:
+       0: aload_0
+       1: getfield      #40                 // Field tickQueue:Ljava/util/Queue;
+       4: invokeinterface #135,  1          // InterfaceMethod java/util/Queue.poll:()Ljava/lang/Object;
+       9: checkcast     #61                 // class net/minecraft/world/ticks/ScheduledTick
+      12: astore_1
+      13: aload_1
+      14: ifnull        33
+      17: aload_0
+      18: getfield      #79                 // Field ticksPerPosition:Ljava/util/Set;
+      21: aload_1
+      22: invokeinterface #138,  2          // InterfaceMethod java/util/Set.remove:(Ljava/lang/Object;)Z
+      27: pop
+      28: aload_0
+      29: iconst_1
+      30: putfield      #38                 // Field dirty:Z
+      33: aload_1
+      34: areturn
+
+  public void schedule(net.minecraft.world.ticks.ScheduledTick<T>);
+    Code:
+       0: aload_0
+       1: getfield      #79                 // Field ticksPerPosition:Ljava/util/Set;
+       4: aload_1
+       5: invokeinterface #119,  2          // InterfaceMethod java/util/Set.add:(Ljava/lang/Object;)Z
+      10: ifeq          23
+      13: aload_0
+      14: aload_1
+      15: invokevirtual #147                // Method scheduleUnchecked:(Lnet/minecraft/world/ticks/ScheduledTick;)V
+      18: aload_0
+      19: iconst_1
+      20: putfield      #38                 // Field dirty:Z
+      23: return
+
+  private void scheduleUnchecked(net.minecraft.world.ticks.ScheduledTick<T>);
+    Code:
+       0: aload_0
+       1: getfield      #40                 // Field tickQueue:Ljava/util/Queue;
+       4: aload_1
+       5: invokeinterface #148,  2          // InterfaceMethod java/util/Queue.add:(Ljava/lang/Object;)Z
+      10: pop
+      11: aload_0
+      12: getfield      #127                // Field onTickAdded:Ljava/util/function/BiConsumer;
+      15: ifnull        29
+      18: aload_0
+      19: getfield      #127                // Field onTickAdded:Ljava/util/function/BiConsumer;
+      22: aload_0
+      23: aload_1
+      24: invokeinterface #154,  3          // InterfaceMethod java/util/function/BiConsumer.accept:(Ljava/lang/Object;Ljava/lang/Object;)V
+      29: return
+
+  public boolean hasScheduledTick(net.minecraft.core.BlockPos, T);
+    Code:
+       0: aload_0
+       1: getfield      #79                 // Field ticksPerPosition:Ljava/util/Set;
+       4: aload_2
+       5: aload_1
+       6: invokestatic  #113                // Method net/minecraft/world/ticks/ScheduledTick.probe:(Ljava/lang/Object;Lnet/minecraft/core/BlockPos;)Lnet/minecraft/world/ticks/ScheduledTick;
+       9: invokeinterface #160,  2          // InterfaceMethod java/util/Set.contains:(Ljava/lang/Object;)Z
+      14: ireturn
+
+  public void removeIf(java.util.function.Predicate<net.minecraft.world.ticks.ScheduledTick<T>>);
+    Code:
+       0: aload_0
+       1: getfield      #40                 // Field tickQueue:Ljava/util/Queue;
+       4: invokeinterface #167,  1          // InterfaceMethod java/util/Queue.iterator:()Ljava/util/Iterator;
+       9: astore_2
+      10: aload_2
+      11: invokeinterface #96,  1           // InterfaceMethod java/util/Iterator.hasNext:()Z
+      16: ifeq          64
+      19: aload_2
+      20: invokeinterface #100,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      25: checkcast     #61                 // class net/minecraft/world/ticks/ScheduledTick
+      28: astore_3
+      29: aload_1
+      30: aload_3
+      31: invokeinterface #172,  2          // InterfaceMethod java/util/function/Predicate.test:(Ljava/lang/Object;)Z
+      36: ifeq          61
+      39: aload_2
+      40: invokeinterface #174,  1          // InterfaceMethod java/util/Iterator.remove:()V
+      45: aload_0
+      46: iconst_1
+      47: putfield      #38                 // Field dirty:Z
+      50: aload_0
+      51: getfield      #79                 // Field ticksPerPosition:Ljava/util/Set;
+      54: aload_3
+      55: invokeinterface #138,  2          // InterfaceMethod java/util/Set.remove:(Ljava/lang/Object;)Z
+      60: pop
+      61: goto          10
+      64: return
+
+  public java.util.stream.Stream<net.minecraft.world.ticks.ScheduledTick<T>> getAll();
+    Code:
+       0: aload_0
+       1: getfield      #40                 // Field tickQueue:Ljava/util/Queue;
+       4: invokeinterface #185,  1          // InterfaceMethod java/util/Queue.stream:()Ljava/util/stream/Stream;
+       9: areturn
+
+  public int count();
+    Code:
+       0: aload_0
+       1: getfield      #40                 // Field tickQueue:Ljava/util/Queue;
+       4: invokeinterface #190,  1          // InterfaceMethod java/util/Queue.size:()I
+       9: aload_0
+      10: getfield      #85                 // Field pendingTicks:Ljava/util/List;
+      13: ifnull        28
+      16: aload_0
+      17: getfield      #85                 // Field pendingTicks:Ljava/util/List;
+      20: invokeinterface #191,  1          // InterfaceMethod java/util/List.size:()I
+      25: goto          29
+      28: iconst_0
+      29: iadd
+      30: ireturn
+
+  public java.util.List<net.minecraft.world.ticks.SavedTick<T>> pack(long);
+    Code:
+       0: aload_0
+       1: lload_1
+       2: putfield      #48                 // Field lastSaved:J
+       5: new           #196                // class java/util/ArrayList
+       8: dup
+       9: aload_0
+      10: getfield      #40                 // Field tickQueue:Ljava/util/Queue;
+      13: invokeinterface #190,  1          // InterfaceMethod java/util/Queue.size:()I
+      18: invokespecial #199                // Method java/util/ArrayList."<init>":(I)V
+      21: astore_3
+      22: aload_0
+      23: getfield      #85                 // Field pendingTicks:Ljava/util/List;
+      26: ifnull        40
+      29: aload_3
+      30: aload_0
+      31: getfield      #85                 // Field pendingTicks:Ljava/util/List;
+      34: invokeinterface #203,  2          // InterfaceMethod java/util/List.addAll:(Ljava/util/Collection;)Z
+      39: pop
+      40: aload_0
+      41: getfield      #40                 // Field tickQueue:Ljava/util/Queue;
+      44: invokeinterface #167,  1          // InterfaceMethod java/util/Queue.iterator:()Ljava/util/Iterator;
+      49: astore        4
+      51: aload         4
+      53: invokeinterface #96,  1           // InterfaceMethod java/util/Iterator.hasNext:()Z
+      58: ifeq          89
+      61: aload         4
+      63: invokeinterface #100,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      68: checkcast     #61                 // class net/minecraft/world/ticks/ScheduledTick
+      71: astore        5
+      73: aload_3
+      74: aload         5
+      76: lload_1
+      77: invokevirtual #207                // Method net/minecraft/world/ticks/ScheduledTick.toSavedTick:(J)Lnet/minecraft/world/ticks/SavedTick;
+      80: invokeinterface #208,  2          // InterfaceMethod java/util/List.add:(Ljava/lang/Object;)Z
+      85: pop
+      86: goto          51
+      89: aload_3
+      90: areturn
+
+  public void unpack(long);
+    Code:
+       0: aload_0
+       1: getfield      #85                 // Field pendingTicks:Ljava/util/List;
+       4: ifnull        74
+       7: aload_0
+       8: lload_1
+       9: putfield      #48                 // Field lastSaved:J
+      12: aload_0
+      13: getfield      #85                 // Field pendingTicks:Ljava/util/List;
+      16: invokeinterface #191,  1          // InterfaceMethod java/util/List.size:()I
+      21: ineg
+      22: istore_3
+      23: aload_0
+      24: getfield      #85                 // Field pendingTicks:Ljava/util/List;
+      27: invokeinterface #91,  1           // InterfaceMethod java/util/List.iterator:()Ljava/util/Iterator;
+      32: astore        4
+      34: aload         4
+      36: invokeinterface #96,  1           // InterfaceMethod java/util/Iterator.hasNext:()Z
+      41: ifeq          74
+      44: aload         4
+      46: invokeinterface #100,  1          // InterfaceMethod java/util/Iterator.next:()Ljava/lang/Object;
+      51: checkcast     #102                // class net/minecraft/world/ticks/SavedTick
+      54: astore        5
+      56: aload_0
+      57: aload         5
+      59: lload_1
+      60: iload_3
+      61: iinc          3, 1
+      64: i2l
+      65: invokevirtual #215                // Method net/minecraft/world/ticks/SavedTick.unpack:(JJ)Lnet/minecraft/world/ticks/ScheduledTick;
+      68: invokevirtual #147                // Method scheduleUnchecked:(Lnet/minecraft/world/ticks/ScheduledTick;)V
+      71: goto          34
+      74: aload_0
+      75: aconst_null
+      76: putfield      #85                 // Field pendingTicks:Ljava/util/List;
+      79: return
+}

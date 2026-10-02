@@ -1,0 +1,1093 @@
+class net/minecraft/world/entity/ai/Brain extends java/lang/Object  flags=0x0021  major=65
+--- fields (13) ---
+  0x0018 LOGGER : Lorg/slf4j/Logger;
+  0x0012 codec : Ljava/util/function/Supplier;
+  0x001a SCHEDULE_UPDATE_DELAY : I
+      ConstantValue = int 20
+  0x0012 memories : Ljava/util/Map;
+  0x0012 sensors : Ljava/util/Map;
+  0x0012 availableBehaviorsByPriority : Ljava/util/Map;
+  0x0002 schedule : Lnet/minecraft/world/entity/schedule/Schedule;
+  0x0012 activityRequirements : Ljava/util/Map;
+  0x0012 activityMemoriesToEraseWhenStopped : Ljava/util/Map;
+  0x0002 coreActivities : Ljava/util/Set;
+  0x0012 activeActivities : Ljava/util/Set;
+  0x0002 defaultActivity : Lnet/minecraft/world/entity/schedule/Activity;
+  0x0002 lastScheduleUpdate : J
+--- methods (56) ---
+  0x0009 provider(Ljava/util/Collection;Ljava/util/Collection;)Lnet/minecraft/world/entity/ai/Brain$Provider;
+      Code: stack=4 locals=2 len=10
+          0: new net/minecraft/world/entity/ai/Brain$Provider
+          3: dup
+          4: aload_0
+          5: aload_1
+          6: invokespecial net/minecraft/world/entity/ai/Brain$Provider.<init>:(Ljava/util/Collection;Ljava/util/Collection;)V
+          9: areturn
+  0x0009 codec(Ljava/util/Collection;Ljava/util/Collection;)Lcom/mojang/serialization/Codec;
+      Code: stack=6 locals=3 len=38
+          0: new org/apache/commons/lang3/mutable/MutableObject
+          3: dup
+          4: invokespecial org/apache/commons/lang3/mutable/MutableObject.<init>:()V
+          7: astore_2
+          8: aload_2
+          9: new net/minecraft/world/entity/ai/Brain$1
+         12: dup
+         13: aload_0
+         14: aload_1
+         15: aload_2
+         16: invokespecial net/minecraft/world/entity/ai/Brain$1.<init>:(Ljava/util/Collection;Ljava/util/Collection;Lorg/apache/commons/lang3/mutable/MutableObject;)V
+         19: ldc str "memories"
+         21: invokevirtual net/minecraft/world/entity/ai/Brain$1.fieldOf:(Ljava/lang/String;)Lcom/mojang/serialization/MapCodec;
+         24: invokevirtual com/mojang/serialization/MapCodec.codec:()Lcom/mojang/serialization/Codec;
+         27: invokevirtual org/apache/commons/lang3/mutable/MutableObject.setValue:(Ljava/lang/Object;)V
+         30: aload_2
+         31: invokevirtual org/apache/commons/lang3/mutable/MutableObject.getValue:()Ljava/lang/Object;
+         34: checkcast com/mojang/serialization/Codec
+         37: areturn
+  0x0001 <init>(Ljava/util/Collection;Ljava/util/Collection;Lcom/google/common/collect/ImmutableList;Ljava/util/function/Supplier;)V
+      Code: stack=3 locals=9 len=309
+          0: aload_0
+          1: invokespecial java/lang/Object.<init>:()V
+          4: aload_0
+          5: invokestatic com/google/common/collect/Maps.newHashMap:()Ljava/util/HashMap;
+          8: putfield net/minecraft/world/entity/ai/Brain.memories:Ljava/util/Map;
+         11: aload_0
+         12: invokestatic com/google/common/collect/Maps.newLinkedHashMap:()Ljava/util/LinkedHashMap;
+         15: putfield net/minecraft/world/entity/ai/Brain.sensors:Ljava/util/Map;
+         18: aload_0
+         19: invokestatic com/google/common/collect/Maps.newTreeMap:()Ljava/util/TreeMap;
+         22: putfield net/minecraft/world/entity/ai/Brain.availableBehaviorsByPriority:Ljava/util/Map;
+         25: aload_0
+         26: getstatic net/minecraft/world/entity/schedule/Schedule.EMPTY:Lnet/minecraft/world/entity/schedule/Schedule;
+         29: putfield net/minecraft/world/entity/ai/Brain.schedule:Lnet/minecraft/world/entity/schedule/Schedule;
+         32: aload_0
+         33: invokestatic com/google/common/collect/Maps.newHashMap:()Ljava/util/HashMap;
+         36: putfield net/minecraft/world/entity/ai/Brain.activityRequirements:Ljava/util/Map;
+         39: aload_0
+         40: invokestatic com/google/common/collect/Maps.newHashMap:()Ljava/util/HashMap;
+         43: putfield net/minecraft/world/entity/ai/Brain.activityMemoriesToEraseWhenStopped:Ljava/util/Map;
+         46: aload_0
+         47: invokestatic com/google/common/collect/Sets.newHashSet:()Ljava/util/HashSet;
+         50: putfield net/minecraft/world/entity/ai/Brain.coreActivities:Ljava/util/Set;
+         53: aload_0
+         54: invokestatic com/google/common/collect/Sets.newHashSet:()Ljava/util/HashSet;
+         57: putfield net/minecraft/world/entity/ai/Brain.activeActivities:Ljava/util/Set;
+         60: aload_0
+         61: getstatic net/minecraft/world/entity/schedule/Activity.IDLE:Lnet/minecraft/world/entity/schedule/Activity;
+         64: putfield net/minecraft/world/entity/ai/Brain.defaultActivity:Lnet/minecraft/world/entity/schedule/Activity;
+         67: aload_0
+         68: ldc2_w long -9999
+         71: putfield net/minecraft/world/entity/ai/Brain.lastScheduleUpdate:J
+         74: aload_0
+         75: aload
+         77: putfield net/minecraft/world/entity/ai/Brain.codec:Ljava/util/function/Supplier;
+         80: aload_1
+         81: invokeinterface java/util/Collection.iterator:()Ljava/util/Iterator;
+         86: astore
+         88: aload
+         90: invokeinterface java/util/Iterator.hasNext:()Z
+         95: ifeq -> 128
+         98: aload
+        100: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+        105: checkcast net/minecraft/world/entity/ai/memory/MemoryModuleType
+        108: astore
+        110: aload_0
+        111: getfield net/minecraft/world/entity/ai/Brain.memories:Ljava/util/Map;
+        114: aload
+        116: invokestatic java/util/Optional.empty:()Ljava/util/Optional;
+        119: invokeinterface java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+        124: pop
+        125: goto -> 88
+        128: aload_2
+        129: invokeinterface java/util/Collection.iterator:()Ljava/util/Iterator;
+        134: astore
+        136: aload
+        138: invokeinterface java/util/Iterator.hasNext:()Z
+        143: ifeq -> 178
+        146: aload
+        148: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+        153: checkcast net/minecraft/world/entity/ai/sensing/SensorType
+        156: astore
+        158: aload_0
+        159: getfield net/minecraft/world/entity/ai/Brain.sensors:Ljava/util/Map;
+        162: aload
+        164: aload
+        166: invokevirtual net/minecraft/world/entity/ai/sensing/SensorType.create:()Lnet/minecraft/world/entity/ai/sensing/Sensor;
+        169: invokeinterface java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+        174: pop
+        175: goto -> 136
+        178: aload_0
+        179: getfield net/minecraft/world/entity/ai/Brain.sensors:Ljava/util/Map;
+        182: invokeinterface java/util/Map.values:()Ljava/util/Collection;
+        187: invokeinterface java/util/Collection.iterator:()Ljava/util/Iterator;
+        192: astore
+        194: aload
+        196: invokeinterface java/util/Iterator.hasNext:()Z
+        201: ifeq -> 271
+        204: aload
+        206: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+        211: checkcast net/minecraft/world/entity/ai/sensing/Sensor
+        214: astore
+        216: aload
+        218: invokevirtual net/minecraft/world/entity/ai/sensing/Sensor.requires:()Ljava/util/Set;
+        221: invokeinterface java/util/Set.iterator:()Ljava/util/Iterator;
+        226: astore
+        228: aload
+        230: invokeinterface java/util/Iterator.hasNext:()Z
+        235: ifeq -> 268
+        238: aload
+        240: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+        245: checkcast net/minecraft/world/entity/ai/memory/MemoryModuleType
+        248: astore
+        250: aload_0
+        251: getfield net/minecraft/world/entity/ai/Brain.memories:Ljava/util/Map;
+        254: aload
+        256: invokestatic java/util/Optional.empty:()Ljava/util/Optional;
+        259: invokeinterface java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+        264: pop
+        265: goto -> 228
+        268: goto -> 194
+        271: aload_3
+        272: invokevirtual com/google/common/collect/ImmutableList.iterator:()Lcom/google/common/collect/UnmodifiableIterator;
+        275: astore
+        277: aload
+        279: invokeinterface java/util/Iterator.hasNext:()Z
+        284: ifeq -> 308
+        287: aload
+        289: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+        294: checkcast net/minecraft/world/entity/ai/Brain$MemoryValue
+        297: astore
+        299: aload
+        301: aload_0
+        302: invokevirtual net/minecraft/world/entity/ai/Brain$MemoryValue.setMemoryInternal:(Lnet/minecraft/world/entity/ai/Brain;)V
+        305: goto -> 277
+        308: return
+  0x0001 serializeStart(Lcom/mojang/serialization/DynamicOps;)Lcom/mojang/serialization/DataResult;
+      Code: stack=3 locals=2 len=20
+          0: aload_0
+          1: getfield net/minecraft/world/entity/ai/Brain.codec:Ljava/util/function/Supplier;
+          4: invokeinterface java/util/function/Supplier.get:()Ljava/lang/Object;
+          9: checkcast com/mojang/serialization/Codec
+         12: aload_1
+         13: aload_0
+         14: invokeinterface com/mojang/serialization/Codec.encodeStart:(Lcom/mojang/serialization/DynamicOps;Ljava/lang/Object;)Lcom/mojang/serialization/DataResult;
+         19: areturn
+  0x0000 memories()Ljava/util/stream/Stream;
+      Code: stack=2 locals=1 len=25
+          0: aload_0
+          1: getfield net/minecraft/world/entity/ai/Brain.memories:Ljava/util/Map;
+          4: invokeinterface java/util/Map.entrySet:()Ljava/util/Set;
+          9: invokeinterface java/util/Set.stream:()Ljava/util/stream/Stream;
+         14: invokedynamic dyn#280
+         19: invokeinterface java/util/stream/Stream.map:(Ljava/util/function/Function;)Ljava/util/stream/Stream;
+         24: areturn
+  0x0001 hasMemoryValue(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;)Z
+      Code: stack=3 locals=2 len=9
+          0: aload_0
+          1: aload_1
+          2: getstatic net/minecraft/world/entity/ai/memory/MemoryStatus.VALUE_PRESENT:Lnet/minecraft/world/entity/ai/memory/MemoryStatus;
+          5: invokevirtual net/minecraft/world/entity/ai/Brain.checkMemory:(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;Lnet/minecraft/world/entity/ai/memory/MemoryStatus;)Z
+          8: ireturn
+  0x0001 clearMemories()V
+      Code: stack=2 locals=1 len=21
+          0: aload_0
+          1: getfield net/minecraft/world/entity/ai/Brain.memories:Ljava/util/Map;
+          4: invokeinterface java/util/Map.keySet:()Ljava/util/Set;
+          9: aload_0
+         10: invokedynamic dyn#315
+         15: invokeinterface java/util/Set.forEach:(Ljava/util/function/Consumer;)V
+         20: return
+  0x0001 eraseMemory(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;)V
+      Code: stack=3 locals=2 len=9
+          0: aload_0
+          1: aload_1
+          2: invokestatic java/util/Optional.empty:()Ljava/util/Optional;
+          5: invokevirtual net/minecraft/world/entity/ai/Brain.setMemory:(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;Ljava/util/Optional;)V
+          8: return
+  0x0001 setMemory(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;Ljava/lang/Object;)V
+      Code: stack=3 locals=3 len=10
+          0: aload_0
+          1: aload_1
+          2: aload_2
+          3: invokestatic java/util/Optional.ofNullable:(Ljava/lang/Object;)Ljava/util/Optional;
+          6: invokevirtual net/minecraft/world/entity/ai/Brain.setMemory:(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;Ljava/util/Optional;)V
+          9: return
+  0x0001 setMemoryWithExpiry(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;Ljava/lang/Object;J)V
+      Code: stack=5 locals=5 len=14
+          0: aload_0
+          1: aload_1
+          2: aload_2
+          3: lload_3
+          4: invokestatic net/minecraft/world/entity/ai/memory/ExpirableValue.of:(Ljava/lang/Object;J)Lnet/minecraft/world/entity/ai/memory/ExpirableValue;
+          7: invokestatic java/util/Optional.of:(Ljava/lang/Object;)Ljava/util/Optional;
+         10: invokevirtual net/minecraft/world/entity/ai/Brain.setMemoryInternal:(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;Ljava/util/Optional;)V
+         13: return
+  0x0001 setMemory(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;Ljava/util/Optional;)V
+      Code: stack=4 locals=3 len=15
+          0: aload_0
+          1: aload_1
+          2: aload_2
+          3: invokedynamic dyn#358
+          8: invokevirtual java/util/Optional.map:(Ljava/util/function/Function;)Ljava/util/Optional;
+         11: invokevirtual net/minecraft/world/entity/ai/Brain.setMemoryInternal:(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;Ljava/util/Optional;)V
+         14: return
+  0x0000 setMemoryInternal(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;Ljava/util/Optional;)V
+      Code: stack=3 locals=3 len=58
+          0: aload_0
+          1: getfield net/minecraft/world/entity/ai/Brain.memories:Ljava/util/Map;
+          4: aload_1
+          5: invokeinterface java/util/Map.containsKey:(Ljava/lang/Object;)Z
+         10: ifeq -> 57
+         13: aload_2
+         14: invokevirtual java/util/Optional.isPresent:()Z
+         17: ifeq -> 45
+         20: aload_0
+         21: aload_2
+         22: invokevirtual java/util/Optional.get:()Ljava/lang/Object;
+         25: checkcast net/minecraft/world/entity/ai/memory/ExpirableValue
+         28: invokevirtual net/minecraft/world/entity/ai/memory/ExpirableValue.getValue:()Ljava/lang/Object;
+         31: invokevirtual net/minecraft/world/entity/ai/Brain.isEmptyCollection:(Ljava/lang/Object;)Z
+         34: ifeq -> 45
+         37: aload_0
+         38: aload_1
+         39: invokevirtual net/minecraft/world/entity/ai/Brain.eraseMemory:(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;)V
+         42: goto -> 57
+         45: aload_0
+         46: getfield net/minecraft/world/entity/ai/Brain.memories:Ljava/util/Map;
+         49: aload_1
+         50: aload_2
+         51: invokeinterface java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+         56: pop
+         57: return
+  0x0001 getMemory(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;)Ljava/util/Optional;
+      Code: stack=3 locals=3 len=45
+          0: aload_0
+          1: getfield net/minecraft/world/entity/ai/Brain.memories:Ljava/util/Map;
+          4: aload_1
+          5: invokeinterface java/util/Map.get:(Ljava/lang/Object;)Ljava/lang/Object;
+         10: checkcast java/util/Optional
+         13: astore_2
+         14: aload_2
+         15: ifnonnull -> 35
+         18: new java/lang/IllegalStateException
+         21: dup
+         22: aload_1
+         23: invokestatic java/lang/String.valueOf:(Ljava/lang/Object;)Ljava/lang/String;
+         26: invokedynamic dyn#404
+         31: invokespecial java/lang/IllegalStateException.<init>:(Ljava/lang/String;)V
+         34: athrow
+         35: aload_2
+         36: invokedynamic dyn#411
+         41: invokevirtual java/util/Optional.map:(Ljava/util/function/Function;)Ljava/util/Optional;
+         44: areturn
+  0x0001 getMemoryInternal(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;)Ljava/util/Optional;
+      Code: stack=2 locals=3 len=32
+          0: aload_0
+          1: getfield net/minecraft/world/entity/ai/Brain.memories:Ljava/util/Map;
+          4: aload_1
+          5: invokeinterface java/util/Map.get:(Ljava/lang/Object;)Ljava/lang/Object;
+         10: checkcast java/util/Optional
+         13: astore_2
+         14: aload_2
+         15: ifnonnull -> 22
+         18: aconst_null
+         19: goto -> 31
+         22: aload_2
+         23: invokedynamic dyn#411
+         28: invokevirtual java/util/Optional.map:(Ljava/util/function/Function;)Ljava/util/Optional;
+         31: areturn
+  0x0001 getTimeUntilExpiry(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;)J
+      Code: stack=3 locals=3 len=37
+          0: aload_0
+          1: getfield net/minecraft/world/entity/ai/Brain.memories:Ljava/util/Map;
+          4: aload_1
+          5: invokeinterface java/util/Map.get:(Ljava/lang/Object;)Ljava/lang/Object;
+         10: checkcast java/util/Optional
+         13: astore_2
+         14: aload_2
+         15: invokedynamic dyn#424
+         20: invokevirtual java/util/Optional.map:(Ljava/util/function/Function;)Ljava/util/Optional;
+         23: lconst_0
+         24: invokestatic java/lang/Long.valueOf:(J)Ljava/lang/Long;
+         27: invokevirtual java/util/Optional.orElse:(Ljava/lang/Object;)Ljava/lang/Object;
+         30: checkcast java/lang/Long
+         33: invokevirtual java/lang/Long.longValue:()J
+         36: lreturn
+  0x0001 getMemories()Ljava/util/Map;
+      Code: stack=1 locals=1 len=5
+          0: aload_0
+          1: getfield net/minecraft/world/entity/ai/Brain.memories:Ljava/util/Map;
+          4: areturn
+  0x0001 isMemoryValue(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;Ljava/lang/Object;)Z
+      Code: stack=2 locals=3 len=34
+          0: aload_0
+          1: aload_1
+          2: invokevirtual net/minecraft/world/entity/ai/Brain.hasMemoryValue:(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;)Z
+          5: ifeq -> 32
+          8: aload_0
+          9: aload_1
+         10: invokevirtual net/minecraft/world/entity/ai/Brain.getMemory:(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;)Ljava/util/Optional;
+         13: aload_2
+         14: invokedynamic dyn#457
+         19: invokevirtual java/util/Optional.filter:(Ljava/util/function/Predicate;)Ljava/util/Optional;
+         22: invokevirtual java/util/Optional.isPresent:()Z
+         25: ifeq -> 32
+         28: iconst_1
+         29: goto -> 33
+         32: iconst_0
+         33: ireturn
+  0x0001 checkMemory(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;Lnet/minecraft/world/entity/ai/memory/MemoryStatus;)Z
+      Code: stack=2 locals=4 len=59
+          0: aload_0
+          1: getfield net/minecraft/world/entity/ai/Brain.memories:Ljava/util/Map;
+          4: aload_1
+          5: invokeinterface java/util/Map.get:(Ljava/lang/Object;)Ljava/lang/Object;
+         10: checkcast java/util/Optional
+         13: astore_3
+         14: aload_3
+         15: ifnull -> 57
+         18: aload_2
+         19: getstatic net/minecraft/world/entity/ai/memory/MemoryStatus.REGISTERED:Lnet/minecraft/world/entity/ai/memory/MemoryStatus;
+         22: if_acmpeq -> 53
+         25: aload_2
+         26: getstatic net/minecraft/world/entity/ai/memory/MemoryStatus.VALUE_PRESENT:Lnet/minecraft/world/entity/ai/memory/MemoryStatus;
+         29: if_acmpne -> 39
+         32: aload_3
+         33: invokevirtual java/util/Optional.isPresent:()Z
+         36: ifne -> 53
+         39: aload_2
+         40: getstatic net/minecraft/world/entity/ai/memory/MemoryStatus.VALUE_ABSENT:Lnet/minecraft/world/entity/ai/memory/MemoryStatus;
+         43: if_acmpne -> 57
+         46: aload_3
+         47: invokevirtual java/util/Optional.isEmpty:()Z
+         50: ifeq -> 57
+         53: iconst_1
+         54: goto -> 58
+         57: iconst_0
+         58: ireturn
+  0x0001 getSchedule()Lnet/minecraft/world/entity/schedule/Schedule;
+      Code: stack=1 locals=1 len=5
+          0: aload_0
+          1: getfield net/minecraft/world/entity/ai/Brain.schedule:Lnet/minecraft/world/entity/schedule/Schedule;
+          4: areturn
+  0x0001 setSchedule(Lnet/minecraft/world/entity/schedule/Schedule;)V
+      Code: stack=2 locals=2 len=6
+          0: aload_0
+          1: aload_1
+          2: putfield net/minecraft/world/entity/ai/Brain.schedule:Lnet/minecraft/world/entity/schedule/Schedule;
+          5: return
+  0x0001 setCoreActivities(Ljava/util/Set;)V
+      Code: stack=2 locals=2 len=6
+          0: aload_0
+          1: aload_1
+          2: putfield net/minecraft/world/entity/ai/Brain.coreActivities:Ljava/util/Set;
+          5: return
+  0x0001 getActiveActivities()Ljava/util/Set;
+      Code: stack=1 locals=1 len=5
+          0: aload_0
+          1: getfield net/minecraft/world/entity/ai/Brain.activeActivities:Ljava/util/Set;
+          4: areturn
+  0x0001 getRunningBehaviors()Ljava/util/List;
+      Code: stack=2 locals=8 len=141
+          0: new it/unimi/dsi/fastutil/objects/ObjectArrayList
+          3: dup
+          4: invokespecial it/unimi/dsi/fastutil/objects/ObjectArrayList.<init>:()V
+          7: astore_1
+          8: aload_0
+          9: getfield net/minecraft/world/entity/ai/Brain.availableBehaviorsByPriority:Ljava/util/Map;
+         12: invokeinterface java/util/Map.values:()Ljava/util/Collection;
+         17: invokeinterface java/util/Collection.iterator:()Ljava/util/Iterator;
+         22: astore_2
+         23: aload_2
+         24: invokeinterface java/util/Iterator.hasNext:()Z
+         29: ifeq -> 139
+         32: aload_2
+         33: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+         38: checkcast java/util/Map
+         41: astore_3
+         42: aload_3
+         43: invokeinterface java/util/Map.values:()Ljava/util/Collection;
+         48: invokeinterface java/util/Collection.iterator:()Ljava/util/Iterator;
+         53: astore
+         55: aload
+         57: invokeinterface java/util/Iterator.hasNext:()Z
+         62: ifeq -> 136
+         65: aload
+         67: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+         72: checkcast java/util/Set
+         75: astore
+         77: aload
+         79: invokeinterface java/util/Set.iterator:()Ljava/util/Iterator;
+         84: astore
+         86: aload
+         88: invokeinterface java/util/Iterator.hasNext:()Z
+         93: ifeq -> 133
+         96: aload
+         98: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+        103: checkcast net/minecraft/world/entity/ai/behavior/BehaviorControl
+        106: astore
+        108: aload
+        110: invokeinterface net/minecraft/world/entity/ai/behavior/BehaviorControl.getStatus:()Lnet/minecraft/world/entity/ai/behavior/Behavior$Status;
+        115: getstatic net/minecraft/world/entity/ai/behavior/Behavior$Status.RUNNING:Lnet/minecraft/world/entity/ai/behavior/Behavior$Status;
+        118: if_acmpne -> 130
+        121: aload_1
+        122: aload
+        124: invokeinterface java/util/List.add:(Ljava/lang/Object;)Z
+        129: pop
+        130: goto -> 86
+        133: goto -> 55
+        136: goto -> 23
+        139: aload_1
+        140: areturn
+  0x0001 useDefaultActivity()V
+      Code: stack=2 locals=1 len=9
+          0: aload_0
+          1: aload_0
+          2: getfield net/minecraft/world/entity/ai/Brain.defaultActivity:Lnet/minecraft/world/entity/schedule/Activity;
+          5: invokevirtual net/minecraft/world/entity/ai/Brain.setActiveActivity:(Lnet/minecraft/world/entity/schedule/Activity;)V
+          8: return
+  0x0001 getActiveNonCoreActivity()Ljava/util/Optional;
+      Code: stack=2 locals=3 len=54
+          0: aload_0
+          1: getfield net/minecraft/world/entity/ai/Brain.activeActivities:Ljava/util/Set;
+          4: invokeinterface java/util/Set.iterator:()Ljava/util/Iterator;
+          9: astore_1
+         10: aload_1
+         11: invokeinterface java/util/Iterator.hasNext:()Z
+         16: ifeq -> 50
+         19: aload_1
+         20: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+         25: checkcast net/minecraft/world/entity/schedule/Activity
+         28: astore_2
+         29: aload_0
+         30: getfield net/minecraft/world/entity/ai/Brain.coreActivities:Ljava/util/Set;
+         33: aload_2
+         34: invokeinterface java/util/Set.contains:(Ljava/lang/Object;)Z
+         39: ifne -> 47
+         42: aload_2
+         43: invokestatic java/util/Optional.of:(Ljava/lang/Object;)Ljava/util/Optional;
+         46: areturn
+         47: goto -> 10
+         50: invokestatic java/util/Optional.empty:()Ljava/util/Optional;
+         53: areturn
+  0x0001 setActiveActivityIfPossible(Lnet/minecraft/world/entity/schedule/Activity;)V
+      Code: stack=2 locals=2 len=21
+          0: aload_0
+          1: aload_1
+          2: invokevirtual net/minecraft/world/entity/ai/Brain.activityRequirementsAreMet:(Lnet/minecraft/world/entity/schedule/Activity;)Z
+          5: ifeq -> 16
+          8: aload_0
+          9: aload_1
+         10: invokevirtual net/minecraft/world/entity/ai/Brain.setActiveActivity:(Lnet/minecraft/world/entity/schedule/Activity;)V
+         13: goto -> 20
+         16: aload_0
+         17: invokevirtual net/minecraft/world/entity/ai/Brain.useDefaultActivity:()V
+         20: return
+  0x0002 setActiveActivity(Lnet/minecraft/world/entity/schedule/Activity;)V
+      Code: stack=2 locals=2 len=48
+          0: aload_0
+          1: aload_1
+          2: invokevirtual net/minecraft/world/entity/ai/Brain.isActive:(Lnet/minecraft/world/entity/schedule/Activity;)Z
+          5: ifne -> 47
+          8: aload_0
+          9: aload_1
+         10: invokevirtual net/minecraft/world/entity/ai/Brain.eraseMemoriesForOtherActivitesThan:(Lnet/minecraft/world/entity/schedule/Activity;)V
+         13: aload_0
+         14: getfield net/minecraft/world/entity/ai/Brain.activeActivities:Ljava/util/Set;
+         17: invokeinterface java/util/Set.clear:()V
+         22: aload_0
+         23: getfield net/minecraft/world/entity/ai/Brain.activeActivities:Ljava/util/Set;
+         26: aload_0
+         27: getfield net/minecraft/world/entity/ai/Brain.coreActivities:Ljava/util/Set;
+         30: invokeinterface java/util/Set.addAll:(Ljava/util/Collection;)Z
+         35: pop
+         36: aload_0
+         37: getfield net/minecraft/world/entity/ai/Brain.activeActivities:Ljava/util/Set;
+         40: aload_1
+         41: invokeinterface java/util/Set.add:(Ljava/lang/Object;)Z
+         46: pop
+         47: return
+  0x0002 eraseMemoriesForOtherActivitesThan(Lnet/minecraft/world/entity/schedule/Activity;)V
+      Code: stack=2 locals=7 len=98
+          0: aload_0
+          1: getfield net/minecraft/world/entity/ai/Brain.activeActivities:Ljava/util/Set;
+          4: invokeinterface java/util/Set.iterator:()Ljava/util/Iterator;
+          9: astore_2
+         10: aload_2
+         11: invokeinterface java/util/Iterator.hasNext:()Z
+         16: ifeq -> 97
+         19: aload_2
+         20: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+         25: checkcast net/minecraft/world/entity/schedule/Activity
+         28: astore_3
+         29: aload_3
+         30: aload_1
+         31: if_acmpeq -> 94
+         34: aload_0
+         35: getfield net/minecraft/world/entity/ai/Brain.activityMemoriesToEraseWhenStopped:Ljava/util/Map;
+         38: aload_3
+         39: invokeinterface java/util/Map.get:(Ljava/lang/Object;)Ljava/lang/Object;
+         44: checkcast java/util/Set
+         47: astore
+         49: aload
+         51: ifnull -> 94
+         54: aload
+         56: invokeinterface java/util/Set.iterator:()Ljava/util/Iterator;
+         61: astore
+         63: aload
+         65: invokeinterface java/util/Iterator.hasNext:()Z
+         70: ifeq -> 94
+         73: aload
+         75: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+         80: checkcast net/minecraft/world/entity/ai/memory/MemoryModuleType
+         83: astore
+         85: aload_0
+         86: aload
+         88: invokevirtual net/minecraft/world/entity/ai/Brain.eraseMemory:(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;)V
+         91: goto -> 63
+         94: goto -> 10
+         97: return
+  0x0001 updateActivityFromSchedule(JJ)V
+      Code: stack=5 locals=6 len=54
+          0: lload_3
+          1: aload_0
+          2: getfield net/minecraft/world/entity/ai/Brain.lastScheduleUpdate:J
+          5: lsub
+          6: ldc2_w long 20
+          9: lcmp
+         10: ifle -> 53
+         13: aload_0
+         14: lload_3
+         15: putfield net/minecraft/world/entity/ai/Brain.lastScheduleUpdate:J
+         18: aload_0
+         19: invokevirtual net/minecraft/world/entity/ai/Brain.getSchedule:()Lnet/minecraft/world/entity/schedule/Schedule;
+         22: lload_1
+         23: ldc2_w long 24000
+         26: lrem
+         27: l2i
+         28: invokevirtual net/minecraft/world/entity/schedule/Schedule.getActivityAt:(I)Lnet/minecraft/world/entity/schedule/Activity;
+         31: astore
+         33: aload_0
+         34: getfield net/minecraft/world/entity/ai/Brain.activeActivities:Ljava/util/Set;
+         37: aload
+         39: invokeinterface java/util/Set.contains:(Ljava/lang/Object;)Z
+         44: ifne -> 53
+         47: aload_0
+         48: aload
+         50: invokevirtual net/minecraft/world/entity/ai/Brain.setActiveActivityIfPossible:(Lnet/minecraft/world/entity/schedule/Activity;)V
+         53: return
+  0x0001 setActiveActivityToFirstValid(Ljava/util/List;)V
+      Code: stack=2 locals=4 len=46
+          0: aload_1
+          1: invokeinterface java/util/List.iterator:()Ljava/util/Iterator;
+          6: astore_2
+          7: aload_2
+          8: invokeinterface java/util/Iterator.hasNext:()Z
+         13: ifeq -> 45
+         16: aload_2
+         17: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+         22: checkcast net/minecraft/world/entity/schedule/Activity
+         25: astore_3
+         26: aload_0
+         27: aload_3
+         28: invokevirtual net/minecraft/world/entity/ai/Brain.activityRequirementsAreMet:(Lnet/minecraft/world/entity/schedule/Activity;)Z
+         31: ifeq -> 42
+         34: aload_0
+         35: aload_3
+         36: invokevirtual net/minecraft/world/entity/ai/Brain.setActiveActivity:(Lnet/minecraft/world/entity/schedule/Activity;)V
+         39: goto -> 45
+         42: goto -> 7
+         45: return
+  0x0001 setDefaultActivity(Lnet/minecraft/world/entity/schedule/Activity;)V
+      Code: stack=2 locals=2 len=6
+          0: aload_0
+          1: aload_1
+          2: putfield net/minecraft/world/entity/ai/Brain.defaultActivity:Lnet/minecraft/world/entity/schedule/Activity;
+          5: return
+  0x0001 addActivity(Lnet/minecraft/world/entity/schedule/Activity;ILcom/google/common/collect/ImmutableList;)V
+      Code: stack=5 locals=4 len=12
+          0: aload_0
+          1: aload_1
+          2: aload_0
+          3: iload_2
+          4: aload_3
+          5: invokevirtual net/minecraft/world/entity/ai/Brain.createPriorityPairs:(ILcom/google/common/collect/ImmutableList;)Lcom/google/common/collect/ImmutableList;
+          8: invokevirtual net/minecraft/world/entity/ai/Brain.addActivity:(Lnet/minecraft/world/entity/schedule/Activity;Lcom/google/common/collect/ImmutableList;)V
+         11: return
+  0x0001 addActivityAndRemoveMemoryWhenStopped(Lnet/minecraft/world/entity/schedule/Activity;ILcom/google/common/collect/ImmutableList;Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;)V
+      Code: stack=5 locals=7 len=36
+          0: aload
+          2: getstatic net/minecraft/world/entity/ai/memory/MemoryStatus.VALUE_PRESENT:Lnet/minecraft/world/entity/ai/memory/MemoryStatus;
+          5: invokestatic com/mojang/datafixers/util/Pair.of:(Ljava/lang/Object;Ljava/lang/Object;)Lcom/mojang/datafixers/util/Pair;
+          8: invokestatic com/google/common/collect/ImmutableSet.of:(Ljava/lang/Object;)Lcom/google/common/collect/ImmutableSet;
+         11: astore
+         13: aload
+         15: invokestatic com/google/common/collect/ImmutableSet.of:(Ljava/lang/Object;)Lcom/google/common/collect/ImmutableSet;
+         18: astore
+         20: aload_0
+         21: aload_1
+         22: aload_0
+         23: iload_2
+         24: aload_3
+         25: invokevirtual net/minecraft/world/entity/ai/Brain.createPriorityPairs:(ILcom/google/common/collect/ImmutableList;)Lcom/google/common/collect/ImmutableList;
+         28: aload
+         30: aload
+         32: invokevirtual net/minecraft/world/entity/ai/Brain.addActivityAndRemoveMemoriesWhenStopped:(Lnet/minecraft/world/entity/schedule/Activity;Lcom/google/common/collect/ImmutableList;Ljava/util/Set;Ljava/util/Set;)V
+         35: return
+  0x0001 addActivity(Lnet/minecraft/world/entity/schedule/Activity;Lcom/google/common/collect/ImmutableList;)V
+      Code: stack=5 locals=3 len=13
+          0: aload_0
+          1: aload_1
+          2: aload_2
+          3: invokestatic com/google/common/collect/ImmutableSet.of:()Lcom/google/common/collect/ImmutableSet;
+          6: invokestatic com/google/common/collect/Sets.newHashSet:()Ljava/util/HashSet;
+          9: invokevirtual net/minecraft/world/entity/ai/Brain.addActivityAndRemoveMemoriesWhenStopped:(Lnet/minecraft/world/entity/schedule/Activity;Lcom/google/common/collect/ImmutableList;Ljava/util/Set;Ljava/util/Set;)V
+         12: return
+  0x0001 addActivityWithConditions(Lnet/minecraft/world/entity/schedule/Activity;ILcom/google/common/collect/ImmutableList;Ljava/util/Set;)V
+      Code: stack=5 locals=5 len=14
+          0: aload_0
+          1: aload_1
+          2: aload_0
+          3: iload_2
+          4: aload_3
+          5: invokevirtual net/minecraft/world/entity/ai/Brain.createPriorityPairs:(ILcom/google/common/collect/ImmutableList;)Lcom/google/common/collect/ImmutableList;
+          8: aload
+         10: invokevirtual net/minecraft/world/entity/ai/Brain.addActivityWithConditions:(Lnet/minecraft/world/entity/schedule/Activity;Lcom/google/common/collect/ImmutableList;Ljava/util/Set;)V
+         13: return
+  0x0001 addActivityWithConditions(Lnet/minecraft/world/entity/schedule/Activity;Lcom/google/common/collect/ImmutableList;Ljava/util/Set;)V
+      Code: stack=5 locals=4 len=11
+          0: aload_0
+          1: aload_1
+          2: aload_2
+          3: aload_3
+          4: invokestatic com/google/common/collect/Sets.newHashSet:()Ljava/util/HashSet;
+          7: invokevirtual net/minecraft/world/entity/ai/Brain.addActivityAndRemoveMemoriesWhenStopped:(Lnet/minecraft/world/entity/schedule/Activity;Lcom/google/common/collect/ImmutableList;Ljava/util/Set;Ljava/util/Set;)V
+         10: return
+  0x0001 addActivityAndRemoveMemoriesWhenStopped(Lnet/minecraft/world/entity/schedule/Activity;Lcom/google/common/collect/ImmutableList;Ljava/util/Set;Ljava/util/Set;)V
+      Code: stack=3 locals=7 len=120
+          0: aload_0
+          1: getfield net/minecraft/world/entity/ai/Brain.activityRequirements:Ljava/util/Map;
+          4: aload_1
+          5: aload_3
+          6: invokeinterface java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+         11: pop
+         12: aload
+         14: invokeinterface java/util/Set.isEmpty:()Z
+         19: ifne -> 35
+         22: aload_0
+         23: getfield net/minecraft/world/entity/ai/Brain.activityMemoriesToEraseWhenStopped:Ljava/util/Map;
+         26: aload_1
+         27: aload
+         29: invokeinterface java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+         34: pop
+         35: aload_2
+         36: invokevirtual com/google/common/collect/ImmutableList.iterator:()Lcom/google/common/collect/UnmodifiableIterator;
+         39: astore
+         41: aload
+         43: invokeinterface java/util/Iterator.hasNext:()Z
+         48: ifeq -> 119
+         51: aload
+         53: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+         58: checkcast com/mojang/datafixers/util/Pair
+         61: astore
+         63: aload_0
+         64: getfield net/minecraft/world/entity/ai/Brain.availableBehaviorsByPriority:Ljava/util/Map;
+         67: aload
+         69: invokevirtual com/mojang/datafixers/util/Pair.getFirst:()Ljava/lang/Object;
+         72: checkcast java/lang/Integer
+         75: invokedynamic dyn#631
+         80: invokeinterface java/util/Map.computeIfAbsent:(Ljava/lang/Object;Ljava/util/function/Function;)Ljava/lang/Object;
+         85: checkcast java/util/Map
+         88: aload_1
+         89: invokedynamic dyn#642
+         94: invokeinterface java/util/Map.computeIfAbsent:(Ljava/lang/Object;Ljava/util/function/Function;)Ljava/lang/Object;
+         99: checkcast java/util/Set
+        102: aload
+        104: invokevirtual com/mojang/datafixers/util/Pair.getSecond:()Ljava/lang/Object;
+        107: checkcast net/minecraft/world/entity/ai/behavior/BehaviorControl
+        110: invokeinterface java/util/Set.add:(Ljava/lang/Object;)Z
+        115: pop
+        116: goto -> 41
+        119: return
+  0x0001 removeAllBehaviors()V
+      Code: stack=1 locals=1 len=10
+          0: aload_0
+          1: getfield net/minecraft/world/entity/ai/Brain.availableBehaviorsByPriority:Ljava/util/Map;
+          4: invokeinterface java/util/Map.clear:()V
+          9: return
+  0x0001 isActive(Lnet/minecraft/world/entity/schedule/Activity;)Z
+      Code: stack=2 locals=2 len=11
+          0: aload_0
+          1: getfield net/minecraft/world/entity/ai/Brain.activeActivities:Ljava/util/Set;
+          4: aload_1
+          5: invokeinterface java/util/Set.contains:(Ljava/lang/Object;)Z
+         10: ireturn
+  0x0001 copyWithoutBehaviors()Lnet/minecraft/world/entity/ai/Brain;
+      Code: stack=6 locals=5 len=119
+          0: new net/minecraft/world/entity/ai/Brain
+          3: dup
+          4: aload_0
+          5: getfield net/minecraft/world/entity/ai/Brain.memories:Ljava/util/Map;
+          8: invokeinterface java/util/Map.keySet:()Ljava/util/Set;
+         13: aload_0
+         14: getfield net/minecraft/world/entity/ai/Brain.sensors:Ljava/util/Map;
+         17: invokeinterface java/util/Map.keySet:()Ljava/util/Set;
+         22: invokestatic com/google/common/collect/ImmutableList.of:()Lcom/google/common/collect/ImmutableList;
+         25: aload_0
+         26: getfield net/minecraft/world/entity/ai/Brain.codec:Ljava/util/function/Supplier;
+         29: invokespecial net/minecraft/world/entity/ai/Brain.<init>:(Ljava/util/Collection;Ljava/util/Collection;Lcom/google/common/collect/ImmutableList;Ljava/util/function/Supplier;)V
+         32: astore_1
+         33: aload_0
+         34: getfield net/minecraft/world/entity/ai/Brain.memories:Ljava/util/Map;
+         37: invokeinterface java/util/Map.entrySet:()Ljava/util/Set;
+         42: invokeinterface java/util/Set.iterator:()Ljava/util/Iterator;
+         47: astore_2
+         48: aload_2
+         49: invokeinterface java/util/Iterator.hasNext:()Z
+         54: ifeq -> 117
+         57: aload_2
+         58: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+         63: checkcast java/util/Map$Entry
+         66: astore_3
+         67: aload_3
+         68: invokeinterface java/util/Map$Entry.getKey:()Ljava/lang/Object;
+         73: checkcast net/minecraft/world/entity/ai/memory/MemoryModuleType
+         76: astore
+         78: aload_3
+         79: invokeinterface java/util/Map$Entry.getValue:()Ljava/lang/Object;
+         84: checkcast java/util/Optional
+         87: invokevirtual java/util/Optional.isPresent:()Z
+         90: ifeq -> 114
+         93: aload_1
+         94: getfield net/minecraft/world/entity/ai/Brain.memories:Ljava/util/Map;
+         97: aload
+         99: aload_3
+        100: invokeinterface java/util/Map$Entry.getValue:()Ljava/lang/Object;
+        105: checkcast java/util/Optional
+        108: invokeinterface java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+        113: pop
+        114: goto -> 48
+        117: aload_1
+        118: areturn
+  0x0001 tick(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)V
+      Code: stack=3 locals=3 len=23
+          0: aload_0
+          1: invokevirtual net/minecraft/world/entity/ai/Brain.forgetOutdatedMemories:()V
+          4: aload_0
+          5: aload_1
+          6: aload_2
+          7: invokevirtual net/minecraft/world/entity/ai/Brain.tickSensors:(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)V
+         10: aload_0
+         11: aload_1
+         12: aload_2
+         13: invokevirtual net/minecraft/world/entity/ai/Brain.startEachNonRunningBehavior:(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)V
+         16: aload_0
+         17: aload_1
+         18: aload_2
+         19: invokevirtual net/minecraft/world/entity/ai/Brain.tickEachRunningBehavior:(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)V
+         22: return
+  0x0002 tickSensors(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)V
+      Code: stack=3 locals=5 len=46
+          0: aload_0
+          1: getfield net/minecraft/world/entity/ai/Brain.sensors:Ljava/util/Map;
+          4: invokeinterface java/util/Map.values:()Ljava/util/Collection;
+          9: invokeinterface java/util/Collection.iterator:()Ljava/util/Iterator;
+         14: astore_3
+         15: aload_3
+         16: invokeinterface java/util/Iterator.hasNext:()Z
+         21: ifeq -> 45
+         24: aload_3
+         25: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+         30: checkcast net/minecraft/world/entity/ai/sensing/Sensor
+         33: astore
+         35: aload
+         37: aload_1
+         38: aload_2
+         39: invokevirtual net/minecraft/world/entity/ai/sensing/Sensor.tick:(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)V
+         42: goto -> 15
+         45: return
+  0x0002 forgetOutdatedMemories()V
+      Code: stack=2 locals=4 len=93
+          0: aload_0
+          1: getfield net/minecraft/world/entity/ai/Brain.memories:Ljava/util/Map;
+          4: invokeinterface java/util/Map.entrySet:()Ljava/util/Set;
+          9: invokeinterface java/util/Set.iterator:()Ljava/util/Iterator;
+         14: astore_1
+         15: aload_1
+         16: invokeinterface java/util/Iterator.hasNext:()Z
+         21: ifeq -> 92
+         24: aload_1
+         25: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+         30: checkcast java/util/Map$Entry
+         33: astore_2
+         34: aload_2
+         35: invokeinterface java/util/Map$Entry.getValue:()Ljava/lang/Object;
+         40: checkcast java/util/Optional
+         43: invokevirtual java/util/Optional.isPresent:()Z
+         46: ifeq -> 89
+         49: aload_2
+         50: invokeinterface java/util/Map$Entry.getValue:()Ljava/lang/Object;
+         55: checkcast java/util/Optional
+         58: invokevirtual java/util/Optional.get:()Ljava/lang/Object;
+         61: checkcast net/minecraft/world/entity/ai/memory/ExpirableValue
+         64: astore_3
+         65: aload_3
+         66: invokevirtual net/minecraft/world/entity/ai/memory/ExpirableValue.hasExpired:()Z
+         69: ifeq -> 85
+         72: aload_0
+         73: aload_2
+         74: invokeinterface java/util/Map$Entry.getKey:()Ljava/lang/Object;
+         79: checkcast net/minecraft/world/entity/ai/memory/MemoryModuleType
+         82: invokevirtual net/minecraft/world/entity/ai/Brain.eraseMemory:(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;)V
+         85: aload_3
+         86: invokevirtual net/minecraft/world/entity/ai/memory/ExpirableValue.tick:()V
+         89: goto -> 15
+         92: return
+  0x0001 stopAll(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)V
+      Code: stack=5 locals=7 len=55
+          0: aload_2
+          1: invokevirtual net/minecraft/world/entity/LivingEntity.level:()Lnet/minecraft/world/level/Level;
+          4: invokevirtual net/minecraft/world/level/Level.getGameTime:()J
+          7: lstore_3
+          8: aload_0
+          9: invokevirtual net/minecraft/world/entity/ai/Brain.getRunningBehaviors:()Ljava/util/List;
+         12: invokeinterface java/util/List.iterator:()Ljava/util/Iterator;
+         17: astore
+         19: aload
+         21: invokeinterface java/util/Iterator.hasNext:()Z
+         26: ifeq -> 54
+         29: aload
+         31: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+         36: checkcast net/minecraft/world/entity/ai/behavior/BehaviorControl
+         39: astore
+         41: aload
+         43: aload_1
+         44: aload_2
+         45: lload_3
+         46: invokeinterface net/minecraft/world/entity/ai/behavior/BehaviorControl.doStop:(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;J)V
+         51: goto -> 19
+         54: return
+  0x0002 startEachNonRunningBehavior(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)V
+      Code: stack=5 locals=12 len=178
+          0: aload_1
+          1: invokevirtual net/minecraft/server/level/ServerLevel.getGameTime:()J
+          4: lstore_3
+          5: aload_0
+          6: getfield net/minecraft/world/entity/ai/Brain.availableBehaviorsByPriority:Ljava/util/Map;
+          9: invokeinterface java/util/Map.values:()Ljava/util/Collection;
+         14: invokeinterface java/util/Collection.iterator:()Ljava/util/Iterator;
+         19: astore
+         21: aload
+         23: invokeinterface java/util/Iterator.hasNext:()Z
+         28: ifeq -> 177
+         31: aload
+         33: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+         38: checkcast java/util/Map
+         41: astore
+         43: aload
+         45: invokeinterface java/util/Map.entrySet:()Ljava/util/Set;
+         50: invokeinterface java/util/Set.iterator:()Ljava/util/Iterator;
+         55: astore
+         57: aload
+         59: invokeinterface java/util/Iterator.hasNext:()Z
+         64: ifeq -> 174
+         67: aload
+         69: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+         74: checkcast java/util/Map$Entry
+         77: astore
+         79: aload
+         81: invokeinterface java/util/Map$Entry.getKey:()Ljava/lang/Object;
+         86: checkcast net/minecraft/world/entity/schedule/Activity
+         89: astore
+         91: aload_0
+         92: getfield net/minecraft/world/entity/ai/Brain.activeActivities:Ljava/util/Set;
+         95: aload
+         97: invokeinterface java/util/Set.contains:(Ljava/lang/Object;)Z
+        102: ifeq -> 171
+        105: aload
+        107: invokeinterface java/util/Map$Entry.getValue:()Ljava/lang/Object;
+        112: checkcast java/util/Set
+        115: invokeinterface java/util/Set.iterator:()Ljava/util/Iterator;
+        120: astore
+        122: aload
+        124: invokeinterface java/util/Iterator.hasNext:()Z
+        129: ifeq -> 171
+        132: aload
+        134: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+        139: checkcast net/minecraft/world/entity/ai/behavior/BehaviorControl
+        142: astore
+        144: aload
+        146: invokeinterface net/minecraft/world/entity/ai/behavior/BehaviorControl.getStatus:()Lnet/minecraft/world/entity/ai/behavior/Behavior$Status;
+        151: getstatic net/minecraft/world/entity/ai/behavior/Behavior$Status.STOPPED:Lnet/minecraft/world/entity/ai/behavior/Behavior$Status;
+        154: if_acmpne -> 168
+        157: aload
+        159: aload_1
+        160: aload_2
+        161: lload_3
+        162: invokeinterface net/minecraft/world/entity/ai/behavior/BehaviorControl.tryStart:(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;J)Z
+        167: pop
+        168: goto -> 122
+        171: goto -> 57
+        174: goto -> 21
+        177: return
+  0x0002 tickEachRunningBehavior(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;)V
+      Code: stack=5 locals=7 len=52
+          0: aload_1
+          1: invokevirtual net/minecraft/server/level/ServerLevel.getGameTime:()J
+          4: lstore_3
+          5: aload_0
+          6: invokevirtual net/minecraft/world/entity/ai/Brain.getRunningBehaviors:()Ljava/util/List;
+          9: invokeinterface java/util/List.iterator:()Ljava/util/Iterator;
+         14: astore
+         16: aload
+         18: invokeinterface java/util/Iterator.hasNext:()Z
+         23: ifeq -> 51
+         26: aload
+         28: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+         33: checkcast net/minecraft/world/entity/ai/behavior/BehaviorControl
+         36: astore
+         38: aload
+         40: aload_1
+         41: aload_2
+         42: lload_3
+         43: invokeinterface net/minecraft/world/entity/ai/behavior/BehaviorControl.tickOrStop:(Lnet/minecraft/server/level/ServerLevel;Lnet/minecraft/world/entity/LivingEntity;J)V
+         48: goto -> 16
+         51: return
+  0x0002 activityRequirementsAreMet(Lnet/minecraft/world/entity/schedule/Activity;)Z
+      Code: stack=3 locals=6 len=89
+          0: aload_0
+          1: getfield net/minecraft/world/entity/ai/Brain.activityRequirements:Ljava/util/Map;
+          4: aload_1
+          5: invokeinterface java/util/Map.containsKey:(Ljava/lang/Object;)Z
+         10: ifne -> 15
+         13: iconst_0
+         14: ireturn
+         15: aload_0
+         16: getfield net/minecraft/world/entity/ai/Brain.activityRequirements:Ljava/util/Map;
+         19: aload_1
+         20: invokeinterface java/util/Map.get:(Ljava/lang/Object;)Ljava/lang/Object;
+         25: checkcast java/util/Set
+         28: invokeinterface java/util/Set.iterator:()Ljava/util/Iterator;
+         33: astore_2
+         34: aload_2
+         35: invokeinterface java/util/Iterator.hasNext:()Z
+         40: ifeq -> 87
+         43: aload_2
+         44: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+         49: checkcast com/mojang/datafixers/util/Pair
+         52: astore_3
+         53: aload_3
+         54: invokevirtual com/mojang/datafixers/util/Pair.getFirst:()Ljava/lang/Object;
+         57: checkcast net/minecraft/world/entity/ai/memory/MemoryModuleType
+         60: astore
+         62: aload_3
+         63: invokevirtual com/mojang/datafixers/util/Pair.getSecond:()Ljava/lang/Object;
+         66: checkcast net/minecraft/world/entity/ai/memory/MemoryStatus
+         69: astore
+         71: aload_0
+         72: aload
+         74: aload
+         76: invokevirtual net/minecraft/world/entity/ai/Brain.checkMemory:(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;Lnet/minecraft/world/entity/ai/memory/MemoryStatus;)Z
+         79: ifne -> 84
+         82: iconst_0
+         83: ireturn
+         84: goto -> 34
+         87: iconst_1
+         88: ireturn
+  0x0002 isEmptyCollection(Ljava/lang/Object;)Z
+      Code: stack=1 locals=2 len=25
+          0: aload_1
+          1: instanceof java/util/Collection
+          4: ifeq -> 23
+          7: aload_1
+          8: checkcast java/util/Collection
+         11: invokeinterface java/util/Collection.isEmpty:()Z
+         16: ifeq -> 23
+         19: iconst_1
+         20: goto -> 24
+         23: iconst_0
+         24: ireturn
+  0x0000 createPriorityPairs(ILcom/google/common/collect/ImmutableList;)Lcom/google/common/collect/ImmutableList;
+      Code: stack=3 locals=7 len=62
+          0: iload_1
+          1: istore_3
+          2: invokestatic com/google/common/collect/ImmutableList.builder:()Lcom/google/common/collect/ImmutableList$Builder;
+          5: astore
+          7: aload_2
+          8: invokevirtual com/google/common/collect/ImmutableList.iterator:()Lcom/google/common/collect/UnmodifiableIterator;
+         11: astore
+         13: aload
+         15: invokeinterface java/util/Iterator.hasNext:()Z
+         20: ifeq -> 56
+         23: aload
+         25: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+         30: checkcast net/minecraft/world/entity/ai/behavior/BehaviorControl
+         33: astore
+         35: aload
+         37: iload_3
+         38: iinc 3 1
+         41: invokestatic java/lang/Integer.valueOf:(I)Ljava/lang/Integer;
+         44: aload
+         46: invokestatic com/mojang/datafixers/util/Pair.of:(Ljava/lang/Object;Ljava/lang/Object;)Lcom/mojang/datafixers/util/Pair;
+         49: invokevirtual com/google/common/collect/ImmutableList$Builder.add:(Ljava/lang/Object;)Lcom/google/common/collect/ImmutableList$Builder;
+         52: pop
+         53: goto -> 13
+         56: aload
+         58: invokevirtual com/google/common/collect/ImmutableList$Builder.build:()Lcom/google/common/collect/ImmutableList;
+         61: areturn
+  0x0001 isBrainDead()Z
+      Code: stack=1 locals=1 len=42
+          0: aload_0
+          1: getfield net/minecraft/world/entity/ai/Brain.memories:Ljava/util/Map;
+          4: invokeinterface java/util/Map.isEmpty:()Z
+          9: ifeq -> 40
+         12: aload_0
+         13: getfield net/minecraft/world/entity/ai/Brain.sensors:Ljava/util/Map;
+         16: invokeinterface java/util/Map.isEmpty:()Z
+         21: ifeq -> 40
+         24: aload_0
+         25: getfield net/minecraft/world/entity/ai/Brain.availableBehaviorsByPriority:Ljava/util/Map;
+         28: invokeinterface java/util/Map.isEmpty:()Z
+         33: ifeq -> 40
+         36: iconst_1
+         37: goto -> 41
+         40: iconst_0
+         41: ireturn
+  0x100a lambda$addActivityAndRemoveMemoriesWhenStopped$4(Lnet/minecraft/world/entity/schedule/Activity;)Ljava/util/Set;
+      Code: stack=1 locals=1 len=4
+          0: invokestatic com/google/common/collect/Sets.newLinkedHashSet:()Ljava/util/LinkedHashSet;
+          3: areturn
+  0x100a lambda$addActivityAndRemoveMemoriesWhenStopped$3(Ljava/lang/Integer;)Ljava/util/Map;
+      Code: stack=1 locals=1 len=4
+          0: invokestatic com/google/common/collect/Maps.newHashMap:()Ljava/util/HashMap;
+          3: areturn
+  0x100a lambda$isMemoryValue$2(Ljava/lang/Object;Ljava/lang/Object;)Z
+      Code: stack=2 locals=2 len=6
+          0: aload_1
+          1: aload_0
+          2: invokevirtual java/lang/Object.equals:(Ljava/lang/Object;)Z
+          5: ireturn
+  0x1002 lambda$clearMemories$1(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;)V
+      Code: stack=3 locals=2 len=15
+          0: aload_0
+          1: getfield net/minecraft/world/entity/ai/Brain.memories:Ljava/util/Map;
+          4: aload_1
+          5: invokestatic java/util/Optional.empty:()Ljava/util/Optional;
+          8: invokeinterface java/util/Map.put:(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+         13: pop
+         14: return
+  0x100a lambda$memories$0(Ljava/util/Map$Entry;)Lnet/minecraft/world/entity/ai/Brain$MemoryValue;
+      Code: stack=2 locals=1 len=22
+          0: aload_0
+          1: invokeinterface java/util/Map$Entry.getKey:()Ljava/lang/Object;
+          6: checkcast net/minecraft/world/entity/ai/memory/MemoryModuleType
+          9: aload_0
+         10: invokeinterface java/util/Map$Entry.getValue:()Ljava/lang/Object;
+         15: checkcast java/util/Optional
+         18: invokestatic net/minecraft/world/entity/ai/Brain$MemoryValue.createUnchecked:(Lnet/minecraft/world/entity/ai/memory/MemoryModuleType;Ljava/util/Optional;)Lnet/minecraft/world/entity/ai/Brain$MemoryValue;
+         21: areturn
+  0x0008 <clinit>()V
+      Code: stack=1 locals=0 len=7
+          0: invokestatic com/mojang/logging/LogUtils.getLogger:()Lorg/slf4j/Logger;
+          3: putstatic net/minecraft/world/entity/ai/Brain.LOGGER:Lorg/slf4j/Logger;
+          6: return

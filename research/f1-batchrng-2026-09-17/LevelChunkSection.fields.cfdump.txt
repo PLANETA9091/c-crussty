@@ -1,0 +1,759 @@
+class net/minecraft/world/level/chunk/LevelChunkSection extends java/lang/Object  flags=0x0021  major=65
+--- fields (14) ---
+  0x0019 SECTION_WIDTH : I
+      ConstantValue = int 16
+  0x0019 SECTION_HEIGHT : I
+      ConstantValue = int 16
+  0x0019 SECTION_SIZE : I
+      ConstantValue = int 4096
+  0x0019 BIOME_CONTAINER_BITS : I
+      ConstantValue = int 2
+  0x0000 nonEmptyBlockCount : S
+  0x0002 tickingBlockCount : S
+  0x0002 tickingFluidCount : S
+  0x0011 states : Lnet/minecraft/world/level/chunk/PalettedContainer;
+  0x0002 biomes : Lnet/minecraft/world/level/chunk/PalettedContainer;
+  0x001a FULL_LIST : Lit/unimi/dsi/fastutil/shorts/ShortArrayList;
+  0x0002 isClient : Z
+  0x001a CLIENT_FORCED_SPECIAL_COLLIDING_BLOCKS : S
+      ConstantValue = int 9999
+  0x0002 specialCollidingBlocks : S
+  0x0012 tickingBlocks : Lca/spottedleaf/moonrise/common/list/ShortList;
+--- methods (32) ---
+  0x0011 moonrise$hasSpecialCollidingBlocks()Z
+      Code: stack=1 locals=1 len=13
+          0: aload_0
+          1: getfield net/minecraft/world/level/chunk/LevelChunkSection.specialCollidingBlocks:S
+          4: ifeq -> 11
+          7: iconst_1
+          8: goto -> 12
+         11: iconst_0
+         12: ireturn
+  0x0011 moonrise$getTickingBlockList()Lca/spottedleaf/moonrise/common/list/ShortList;
+      Code: stack=1 locals=1 len=5
+          0: aload_0
+          1: getfield net/minecraft/world/level/chunk/LevelChunkSection.tickingBlocks:Lca/spottedleaf/moonrise/common/list/ShortList;
+          4: areturn
+  0x0002 <init>(Lnet/minecraft/world/level/chunk/LevelChunkSection;)V
+      Code: stack=3 locals=2 len=62
+          0: aload_0
+          1: invokespecial java/lang/Object.<init>:()V
+          4: aload_0
+          5: new ca/spottedleaf/moonrise/common/list/ShortList
+          8: dup
+          9: invokespecial ca/spottedleaf/moonrise/common/list/ShortList.<init>:()V
+         12: putfield net/minecraft/world/level/chunk/LevelChunkSection.tickingBlocks:Lca/spottedleaf/moonrise/common/list/ShortList;
+         15: aload_0
+         16: aload_1
+         17: getfield net/minecraft/world/level/chunk/LevelChunkSection.nonEmptyBlockCount:S
+         20: putfield net/minecraft/world/level/chunk/LevelChunkSection.nonEmptyBlockCount:S
+         23: aload_0
+         24: aload_1
+         25: getfield net/minecraft/world/level/chunk/LevelChunkSection.tickingBlockCount:S
+         28: putfield net/minecraft/world/level/chunk/LevelChunkSection.tickingBlockCount:S
+         31: aload_0
+         32: aload_1
+         33: getfield net/minecraft/world/level/chunk/LevelChunkSection.tickingFluidCount:S
+         36: putfield net/minecraft/world/level/chunk/LevelChunkSection.tickingFluidCount:S
+         39: aload_0
+         40: aload_1
+         41: getfield net/minecraft/world/level/chunk/LevelChunkSection.states:Lnet/minecraft/world/level/chunk/PalettedContainer;
+         44: invokevirtual net/minecraft/world/level/chunk/PalettedContainer.copy:()Lnet/minecraft/world/level/chunk/PalettedContainer;
+         47: putfield net/minecraft/world/level/chunk/LevelChunkSection.states:Lnet/minecraft/world/level/chunk/PalettedContainer;
+         50: aload_0
+         51: aload_1
+         52: getfield net/minecraft/world/level/chunk/LevelChunkSection.biomes:Lnet/minecraft/world/level/chunk/PalettedContainer;
+         55: invokevirtual net/minecraft/world/level/chunk/PalettedContainer.copy:()Lnet/minecraft/world/level/chunk/PalettedContainer;
+         58: putfield net/minecraft/world/level/chunk/LevelChunkSection.biomes:Lnet/minecraft/world/level/chunk/PalettedContainer;
+         61: return
+  0x0001 <init>(Lnet/minecraft/world/level/chunk/PalettedContainer;Lnet/minecraft/world/level/chunk/PalettedContainer;)V
+      Code: stack=3 locals=3 len=30
+          0: aload_0
+          1: invokespecial java/lang/Object.<init>:()V
+          4: aload_0
+          5: new ca/spottedleaf/moonrise/common/list/ShortList
+          8: dup
+          9: invokespecial ca/spottedleaf/moonrise/common/list/ShortList.<init>:()V
+         12: putfield net/minecraft/world/level/chunk/LevelChunkSection.tickingBlocks:Lca/spottedleaf/moonrise/common/list/ShortList;
+         15: aload_0
+         16: aload_1
+         17: putfield net/minecraft/world/level/chunk/LevelChunkSection.states:Lnet/minecraft/world/level/chunk/PalettedContainer;
+         20: aload_0
+         21: aload_2
+         22: putfield net/minecraft/world/level/chunk/LevelChunkSection.biomes:Lnet/minecraft/world/level/chunk/PalettedContainer;
+         25: aload_0
+         26: invokevirtual net/minecraft/world/level/chunk/LevelChunkSection.recalcBlockCounts:()V
+         29: return
+  0x0001 <init>(Lnet/minecraft/world/level/chunk/PalettedContainerFactory;)V
+      Code: stack=5 locals=2 len=9
+          0: aload_0
+          1: aload_1
+          2: aconst_null
+          3: aconst_null
+          4: iconst_0
+          5: invokespecial net/minecraft/world/level/chunk/LevelChunkSection.<init>:(Lnet/minecraft/world/level/chunk/PalettedContainerFactory;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/level/ChunkPos;I)V
+          8: return
+  0x0001 <init>(Lnet/minecraft/world/level/chunk/PalettedContainerFactory;Lnet/minecraft/world/level/Level;Lnet/minecraft/world/level/ChunkPos;I)V
+      Code: stack=5 locals=5 len=36
+          0: aload_0
+          1: invokespecial java/lang/Object.<init>:()V
+          4: aload_0
+          5: new ca/spottedleaf/moonrise/common/list/ShortList
+          8: dup
+          9: invokespecial ca/spottedleaf/moonrise/common/list/ShortList.<init>:()V
+         12: putfield net/minecraft/world/level/chunk/LevelChunkSection.tickingBlocks:Lca/spottedleaf/moonrise/common/list/ShortList;
+         15: aload_0
+         16: aload_1
+         17: aload_2
+         18: aload_3
+         19: iload
+         21: invokevirtual net/minecraft/world/level/chunk/PalettedContainerFactory.createForBlockStates:(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/level/ChunkPos;I)Lnet/minecraft/world/level/chunk/PalettedContainer;
+         24: putfield net/minecraft/world/level/chunk/LevelChunkSection.states:Lnet/minecraft/world/level/chunk/PalettedContainer;
+         27: aload_0
+         28: aload_1
+         29: invokevirtual net/minecraft/world/level/chunk/PalettedContainerFactory.createForBiomes:()Lnet/minecraft/world/level/chunk/PalettedContainer;
+         32: putfield net/minecraft/world/level/chunk/LevelChunkSection.biomes:Lnet/minecraft/world/level/chunk/PalettedContainer;
+         35: return
+  0x0001 getBlockState(III)Lnet/minecraft/world/level/block/state/BlockState;
+      Code: stack=4 locals=4 len=14
+          0: aload_0
+          1: getfield net/minecraft/world/level/chunk/LevelChunkSection.states:Lnet/minecraft/world/level/chunk/PalettedContainer;
+          4: iload_1
+          5: iload_2
+          6: iload_3
+          7: invokevirtual net/minecraft/world/level/chunk/PalettedContainer.get:(III)Ljava/lang/Object;
+         10: checkcast net/minecraft/world/level/block/state/BlockState
+         13: areturn
+  0x0001 getFluidState(III)Lnet/minecraft/world/level/material/FluidState;
+      Code: stack=4 locals=4 len=17
+          0: aload_0
+          1: getfield net/minecraft/world/level/chunk/LevelChunkSection.states:Lnet/minecraft/world/level/chunk/PalettedContainer;
+          4: iload_1
+          5: iload_2
+          6: iload_3
+          7: invokevirtual net/minecraft/world/level/chunk/PalettedContainer.get:(III)Ljava/lang/Object;
+         10: checkcast net/minecraft/world/level/block/state/BlockState
+         13: invokevirtual net/minecraft/world/level/block/state/BlockState.getFluidState:()Lnet/minecraft/world/level/material/FluidState;
+         16: areturn
+  0x0001 acquire()V
+      Code: stack=1 locals=1 len=8
+          0: aload_0
+          1: getfield net/minecraft/world/level/chunk/LevelChunkSection.states:Lnet/minecraft/world/level/chunk/PalettedContainer;
+          4: invokevirtual net/minecraft/world/level/chunk/PalettedContainer.acquire:()V
+          7: return
+  0x0001 release()V
+      Code: stack=1 locals=1 len=8
+          0: aload_0
+          1: getfield net/minecraft/world/level/chunk/LevelChunkSection.states:Lnet/minecraft/world/level/chunk/PalettedContainer;
+          4: invokevirtual net/minecraft/world/level/chunk/PalettedContainer.release:()V
+          7: return
+  0x0001 setBlockState(IIILnet/minecraft/world/level/block/state/BlockState;)Lnet/minecraft/world/level/block/state/BlockState;
+      Code: stack=6 locals=5 len=11
+          0: aload_0
+          1: iload_1
+          2: iload_2
+          3: iload_3
+          4: aload
+          6: iconst_1
+          7: invokevirtual net/minecraft/world/level/chunk/LevelChunkSection.setBlockState:(IIILnet/minecraft/world/level/block/state/BlockState;Z)Lnet/minecraft/world/level/block/state/BlockState;
+         10: areturn
+  0x0002 updateBlockCallback(IIILnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;)V
+      Code: stack=3 locals=12 len=147
+          0: aload
+          2: aload
+          4: if_acmpne -> 8
+          7: return
+          8: aload_0
+          9: getfield net/minecraft/world/level/chunk/LevelChunkSection.isClient:Z
+         12: ifeq -> 31
+         15: aload
+         17: invokestatic ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.isSpecialCollidingBlock:(Lnet/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase;)Z
+         20: ifeq -> 30
+         23: aload_0
+         24: sipush 9999
+         27: putfield net/minecraft/world/level/chunk/LevelChunkSection.specialCollidingBlocks:S
+         30: return
+         31: aload
+         33: invokestatic ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.isSpecialCollidingBlock:(Lnet/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase;)Z
+         36: istore
+         38: aload
+         40: invokestatic ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.isSpecialCollidingBlock:(Lnet/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase;)Z
+         43: istore
+         45: iload
+         47: iload
+         49: if_icmpeq -> 82
+         52: iload
+         54: ifeq -> 71
+         57: aload_0
+         58: dup
+         59: getfield net/minecraft/world/level/chunk/LevelChunkSection.specialCollidingBlocks:S
+         62: iconst_1
+         63: isub
+         64: i2s
+         65: putfield net/minecraft/world/level/chunk/LevelChunkSection.specialCollidingBlocks:S
+         68: goto -> 82
+         71: aload_0
+         72: dup
+         73: getfield net/minecraft/world/level/chunk/LevelChunkSection.specialCollidingBlocks:S
+         76: iconst_1
+         77: iadd
+         78: i2s
+         79: putfield net/minecraft/world/level/chunk/LevelChunkSection.specialCollidingBlocks:S
+         82: aload
+         84: invokevirtual net/minecraft/world/level/block/state/BlockState.isRandomlyTicking:()Z
+         87: istore
+         89: aload
+         91: invokevirtual net/minecraft/world/level/block/state/BlockState.isRandomlyTicking:()Z
+         94: istore
+         96: iload
+         98: iload
+        100: if_icmpeq -> 146
+        103: aload_0
+        104: getfield net/minecraft/world/level/chunk/LevelChunkSection.tickingBlocks:Lca/spottedleaf/moonrise/common/list/ShortList;
+        107: astore
+        109: iload_1
+        110: iload_3
+        111: iconst_4
+        112: ishl
+        113: ior
+        114: iload_2
+        115: bipush 8
+        117: ishl
+        118: ior
+        119: i2s
+        120: istore
+        122: iload
+        124: ifeq -> 138
+        127: aload
+        129: iload
+        131: invokevirtual ca/spottedleaf/moonrise/common/list/ShortList.remove:(S)Z
+        134: pop
+        135: goto -> 146
+        138: aload
+        140: iload
+        142: invokevirtual ca/spottedleaf/moonrise/common/list/ShortList.add:(S)Z
+        145: pop
+        146: return
+  0x0001 setBlockState(IIILnet/minecraft/world/level/block/state/BlockState;Z)Lnet/minecraft/world/level/block/state/BlockState;
+      Code: stack=6 locals=9 len=184
+          0: iload
+          2: ifeq -> 25
+          5: aload_0
+          6: getfield net/minecraft/world/level/chunk/LevelChunkSection.states:Lnet/minecraft/world/level/chunk/PalettedContainer;
+          9: iload_1
+         10: iload_2
+         11: iload_3
+         12: aload
+         14: invokevirtual net/minecraft/world/level/chunk/PalettedContainer.getAndSet:(IIILjava/lang/Object;)Ljava/lang/Object;
+         17: checkcast net/minecraft/world/level/block/state/BlockState
+         20: astore
+         22: goto -> 42
+         25: aload_0
+         26: getfield net/minecraft/world/level/chunk/LevelChunkSection.states:Lnet/minecraft/world/level/chunk/PalettedContainer;
+         29: iload_1
+         30: iload_2
+         31: iload_3
+         32: aload
+         34: invokevirtual net/minecraft/world/level/chunk/PalettedContainer.getAndSetUnchecked:(IIILjava/lang/Object;)Ljava/lang/Object;
+         37: checkcast net/minecraft/world/level/block/state/BlockState
+         40: astore
+         42: aload
+         44: invokevirtual net/minecraft/world/level/block/state/BlockState.getFluidState:()Lnet/minecraft/world/level/material/FluidState;
+         47: astore
+         49: aload
+         51: invokevirtual net/minecraft/world/level/block/state/BlockState.getFluidState:()Lnet/minecraft/world/level/material/FluidState;
+         54: astore
+         56: aload
+         58: invokevirtual net/minecraft/world/level/block/state/BlockState.isAir:()Z
+         61: ifne -> 94
+         64: aload_0
+         65: dup
+         66: getfield net/minecraft/world/level/chunk/LevelChunkSection.nonEmptyBlockCount:S
+         69: iconst_1
+         70: isub
+         71: i2s
+         72: putfield net/minecraft/world/level/chunk/LevelChunkSection.nonEmptyBlockCount:S
+         75: aload
+         77: invokevirtual net/minecraft/world/level/block/state/BlockState.isRandomlyTicking:()Z
+         80: ifeq -> 94
+         83: aload_0
+         84: dup
+         85: getfield net/minecraft/world/level/chunk/LevelChunkSection.tickingBlockCount:S
+         88: iconst_1
+         89: isub
+         90: i2s
+         91: putfield net/minecraft/world/level/chunk/LevelChunkSection.tickingBlockCount:S
+         94: aload
+         96: invokevirtual net/minecraft/world/level/material/FluidState.isRandomlyTicking:()Z
+         99: ifeq -> 113
+        102: aload_0
+        103: dup
+        104: getfield net/minecraft/world/level/chunk/LevelChunkSection.tickingFluidCount:S
+        107: iconst_1
+        108: isub
+        109: i2s
+        110: putfield net/minecraft/world/level/chunk/LevelChunkSection.tickingFluidCount:S
+        113: aload
+        115: invokevirtual net/minecraft/world/level/block/state/BlockState.isAir:()Z
+        118: ifne -> 151
+        121: aload_0
+        122: dup
+        123: getfield net/minecraft/world/level/chunk/LevelChunkSection.nonEmptyBlockCount:S
+        126: iconst_1
+        127: iadd
+        128: i2s
+        129: putfield net/minecraft/world/level/chunk/LevelChunkSection.nonEmptyBlockCount:S
+        132: aload
+        134: invokevirtual net/minecraft/world/level/block/state/BlockState.isRandomlyTicking:()Z
+        137: ifeq -> 151
+        140: aload_0
+        141: dup
+        142: getfield net/minecraft/world/level/chunk/LevelChunkSection.tickingBlockCount:S
+        145: iconst_1
+        146: iadd
+        147: i2s
+        148: putfield net/minecraft/world/level/chunk/LevelChunkSection.tickingBlockCount:S
+        151: aload
+        153: invokevirtual net/minecraft/world/level/material/FluidState.isRandomlyTicking:()Z
+        156: ifeq -> 170
+        159: aload_0
+        160: dup
+        161: getfield net/minecraft/world/level/chunk/LevelChunkSection.tickingFluidCount:S
+        164: iconst_1
+        165: iadd
+        166: i2s
+        167: putfield net/minecraft/world/level/chunk/LevelChunkSection.tickingFluidCount:S
+        170: aload_0
+        171: iload_1
+        172: iload_2
+        173: iload_3
+        174: aload
+        176: aload
+        178: invokevirtual net/minecraft/world/level/chunk/LevelChunkSection.updateBlockCallback:(IIILnet/minecraft/world/level/block/state/BlockState;Lnet/minecraft/world/level/block/state/BlockState;)V
+        181: aload
+        183: areturn
+  0x0001 hasOnlyAir()Z
+      Code: stack=1 locals=1 len=13
+          0: aload_0
+          1: getfield net/minecraft/world/level/chunk/LevelChunkSection.nonEmptyBlockCount:S
+          4: ifne -> 11
+          7: iconst_1
+          8: goto -> 12
+         11: iconst_0
+         12: ireturn
+  0x0001 isRandomlyTicking()Z
+      Code: stack=1 locals=1 len=20
+          0: aload_0
+          1: invokevirtual net/minecraft/world/level/chunk/LevelChunkSection.isRandomlyTickingBlocks:()Z
+          4: ifne -> 14
+          7: aload_0
+          8: invokevirtual net/minecraft/world/level/chunk/LevelChunkSection.isRandomlyTickingFluids:()Z
+         11: ifeq -> 18
+         14: iconst_1
+         15: goto -> 19
+         18: iconst_0
+         19: ireturn
+  0x0001 isRandomlyTickingBlocks()Z
+      Code: stack=1 locals=1 len=13
+          0: aload_0
+          1: getfield net/minecraft/world/level/chunk/LevelChunkSection.tickingBlockCount:S
+          4: ifle -> 11
+          7: iconst_1
+          8: goto -> 12
+         11: iconst_0
+         12: ireturn
+  0x0001 isRandomlyTickingFluids()Z
+      Code: stack=1 locals=1 len=13
+          0: aload_0
+          1: getfield net/minecraft/world/level/chunk/LevelChunkSection.tickingFluidCount:S
+          4: ifle -> 11
+          7: iconst_1
+          8: goto -> 12
+         11: iconst_0
+         12: ireturn
+  0x0001 recalcBlockCounts()V
+      Code: stack=3 locals=16 len=361
+          0: aload_0
+          1: iconst_0
+          2: putfield net/minecraft/world/level/chunk/LevelChunkSection.nonEmptyBlockCount:S
+          5: aload_0
+          6: iconst_0
+          7: putfield net/minecraft/world/level/chunk/LevelChunkSection.tickingBlockCount:S
+         10: aload_0
+         11: iconst_0
+         12: putfield net/minecraft/world/level/chunk/LevelChunkSection.tickingFluidCount:S
+         15: aload_0
+         16: iconst_0
+         17: putfield net/minecraft/world/level/chunk/LevelChunkSection.specialCollidingBlocks:S
+         20: aload_0
+         21: getfield net/minecraft/world/level/chunk/LevelChunkSection.tickingBlocks:Lca/spottedleaf/moonrise/common/list/ShortList;
+         24: invokevirtual ca/spottedleaf/moonrise/common/list/ShortList.clear:()V
+         27: aload_0
+         28: invokedynamic dyn#226
+         33: invokevirtual net/minecraft/world/level/chunk/LevelChunkSection.maybeHas:(Ljava/util/function/Predicate;)Z
+         36: ifeq -> 360
+         39: aload_0
+         40: getfield net/minecraft/world/level/chunk/LevelChunkSection.states:Lnet/minecraft/world/level/chunk/PalettedContainer;
+         43: getfield net/minecraft/world/level/chunk/PalettedContainer.data:Lnet/minecraft/world/level/chunk/PalettedContainer$Data;
+         46: astore_1
+         47: aload_1
+         48: invokevirtual net/minecraft/world/level/chunk/PalettedContainer$Data.palette:()Lnet/minecraft/world/level/chunk/Palette;
+         51: astore_2
+         52: aload_2
+         53: invokeinterface net/minecraft/world/level/chunk/Palette.getSize:()I
+         58: istore_3
+         59: aload_1
+         60: invokevirtual net/minecraft/world/level/chunk/PalettedContainer$Data.storage:()Lnet/minecraft/util/BitStorage;
+         63: astore
+         65: iload_3
+         66: iconst_1
+         67: if_icmpne -> 93
+         70: new it/unimi/dsi/fastutil/ints/Int2ObjectOpenHashMap
+         73: dup
+         74: iconst_1
+         75: invokespecial it/unimi/dsi/fastutil/ints/Int2ObjectOpenHashMap.<init>:(I)V
+         78: astore
+         80: aload
+         82: iconst_0
+         83: getstatic net/minecraft/world/level/chunk/LevelChunkSection.FULL_LIST:Lit/unimi/dsi/fastutil/shorts/ShortArrayList;
+         86: invokevirtual it/unimi/dsi/fastutil/ints/Int2ObjectOpenHashMap.put:(ILjava/lang/Object;)Ljava/lang/Object;
+         89: pop
+         90: goto -> 102
+         93: aload
+         95: invokeinterface ca/spottedleaf/moonrise/patches/block_counting/BlockCountingBitStorage.moonrise$countEntries:()Lit/unimi/dsi/fastutil/ints/Int2ObjectOpenHashMap;
+        100: astore
+        102: aload
+        104: invokevirtual it/unimi/dsi/fastutil/ints/Int2ObjectOpenHashMap.int2ObjectEntrySet:()Lit/unimi/dsi/fastutil/ints/Int2ObjectMap$FastEntrySet;
+        107: invokeinterface it/unimi/dsi/fastutil/ints/Int2ObjectMap$FastEntrySet.fastIterator:()Lit/unimi/dsi/fastutil/objects/ObjectIterator;
+        112: astore
+        114: aload
+        116: invokeinterface java/util/Iterator.hasNext:()Z
+        121: ifeq -> 360
+        124: aload
+        126: invokeinterface java/util/Iterator.next:()Ljava/lang/Object;
+        131: checkcast it/unimi/dsi/fastutil/ints/Int2ObjectMap$Entry
+        134: astore
+        136: aload
+        138: invokeinterface it/unimi/dsi/fastutil/ints/Int2ObjectMap$Entry.getIntKey:()I
+        143: istore
+        145: aload
+        147: invokeinterface it/unimi/dsi/fastutil/ints/Int2ObjectMap$Entry.getValue:()Ljava/lang/Object;
+        152: checkcast it/unimi/dsi/fastutil/shorts/ShortArrayList
+        155: astore
+        157: aload
+        159: invokevirtual it/unimi/dsi/fastutil/shorts/ShortArrayList.size:()I
+        162: istore
+        164: aload_2
+        165: iload
+        167: invokeinterface net/minecraft/world/level/chunk/Palette.valueFor:(I)Ljava/lang/Object;
+        172: checkcast net/minecraft/world/level/block/state/BlockState
+        175: astore
+        177: aload
+        179: invokevirtual net/minecraft/world/level/block/state/BlockState.isAir:()Z
+        182: ifeq -> 188
+        185: goto -> 114
+        188: aload
+        190: invokestatic ca/spottedleaf/moonrise/patches/collisions/CollisionUtil.isSpecialCollidingBlock:(Lnet/minecraft/world/level/block/state/BlockBehaviour$BlockStateBase;)Z
+        193: ifeq -> 209
+        196: aload_0
+        197: dup
+        198: getfield net/minecraft/world/level/chunk/LevelChunkSection.specialCollidingBlocks:S
+        201: iload
+        203: i2s
+        204: iadd
+        205: i2s
+        206: putfield net/minecraft/world/level/chunk/LevelChunkSection.specialCollidingBlocks:S
+        209: aload_0
+        210: dup
+        211: getfield net/minecraft/world/level/chunk/LevelChunkSection.nonEmptyBlockCount:S
+        214: iload
+        216: i2s
+        217: iadd
+        218: i2s
+        219: putfield net/minecraft/world/level/chunk/LevelChunkSection.nonEmptyBlockCount:S
+        222: aload
+        224: invokevirtual net/minecraft/world/level/block/state/BlockState.isRandomlyTicking:()Z
+        227: ifeq -> 321
+        230: aload_0
+        231: dup
+        232: getfield net/minecraft/world/level/chunk/LevelChunkSection.tickingBlockCount:S
+        235: iload
+        237: i2s
+        238: iadd
+        239: i2s
+        240: putfield net/minecraft/world/level/chunk/LevelChunkSection.tickingBlockCount:S
+        243: aload
+        245: invokevirtual it/unimi/dsi/fastutil/shorts/ShortArrayList.elements:()[S
+        248: astore
+        250: aload
+        252: arraylength
+        253: istore
+        255: aload_0
+        256: getfield net/minecraft/world/level/chunk/LevelChunkSection.tickingBlocks:Lca/spottedleaf/moonrise/common/list/ShortList;
+        259: astore
+        261: aload
+        263: iload
+        265: aload
+        267: invokevirtual ca/spottedleaf/moonrise/common/list/ShortList.size:()I
+        270: iadd
+        271: iconst_3
+        272: imul
+        273: iconst_2
+        274: idiv
+        275: sipush 4096
+        278: invokestatic java/lang/Math.min:(II)I
+        281: invokevirtual ca/spottedleaf/moonrise/common/list/ShortList.setMinCapacity:(I)V
+        284: iconst_0
+        285: iload
+        287: aload
+        289: arraylength
+        290: invokestatic java/util/Objects.checkFromToIndex:(III)I
+        293: pop
+        294: iconst_0
+        295: istore
+        297: iload
+        299: iload
+        301: if_icmpge -> 321
+        304: aload
+        306: aload
+        308: iload
+        310: saload
+        311: invokevirtual ca/spottedleaf/moonrise/common/list/ShortList.add:(S)Z
+        314: pop
+        315: iinc 15 1
+        318: goto -> 297
+        321: aload
+        323: invokevirtual net/minecraft/world/level/block/state/BlockState.getFluidState:()Lnet/minecraft/world/level/material/FluidState;
+        326: astore
+        328: aload
+        330: invokevirtual net/minecraft/world/level/material/FluidState.isEmpty:()Z
+        333: ifne -> 357
+        336: aload
+        338: invokevirtual net/minecraft/world/level/material/FluidState.isRandomlyTicking:()Z
+        341: ifeq -> 357
+        344: aload_0
+        345: dup
+        346: getfield net/minecraft/world/level/chunk/LevelChunkSection.tickingFluidCount:S
+        349: iload
+        351: i2s
+        352: iadd
+        353: i2s
+        354: putfield net/minecraft/world/level/chunk/LevelChunkSection.tickingFluidCount:S
+        357: goto -> 114
+        360: return
+  0x0001 getStates()Lnet/minecraft/world/level/chunk/PalettedContainer;
+      Code: stack=1 locals=1 len=5
+          0: aload_0
+          1: getfield net/minecraft/world/level/chunk/LevelChunkSection.states:Lnet/minecraft/world/level/chunk/PalettedContainer;
+          4: areturn
+  0x0001 getBiomes()Lnet/minecraft/world/level/chunk/PalettedContainerRO;
+      Code: stack=1 locals=1 len=5
+          0: aload_0
+          1: getfield net/minecraft/world/level/chunk/LevelChunkSection.biomes:Lnet/minecraft/world/level/chunk/PalettedContainer;
+          4: areturn
+  0x0001 read(Lnet/minecraft/network/FriendlyByteBuf;)V
+      Code: stack=3 locals=3 len=70
+          0: aload_0
+          1: aload_1
+          2: invokevirtual net/minecraft/network/FriendlyByteBuf.readShort:()S
+          5: putfield net/minecraft/world/level/chunk/LevelChunkSection.nonEmptyBlockCount:S
+          8: aload_0
+          9: getfield net/minecraft/world/level/chunk/LevelChunkSection.states:Lnet/minecraft/world/level/chunk/PalettedContainer;
+         12: aload_1
+         13: invokevirtual net/minecraft/world/level/chunk/PalettedContainer.read:(Lnet/minecraft/network/FriendlyByteBuf;)V
+         16: aload_0
+         17: getfield net/minecraft/world/level/chunk/LevelChunkSection.biomes:Lnet/minecraft/world/level/chunk/PalettedContainer;
+         20: invokevirtual net/minecraft/world/level/chunk/PalettedContainer.recreate:()Lnet/minecraft/world/level/chunk/PalettedContainer;
+         23: astore_2
+         24: aload_2
+         25: aload_1
+         26: invokevirtual net/minecraft/world/level/chunk/PalettedContainer.read:(Lnet/minecraft/network/FriendlyByteBuf;)V
+         29: aload_0
+         30: aload_2
+         31: putfield net/minecraft/world/level/chunk/LevelChunkSection.biomes:Lnet/minecraft/world/level/chunk/PalettedContainer;
+         34: aload_0
+         35: iconst_1
+         36: putfield net/minecraft/world/level/chunk/LevelChunkSection.isClient:Z
+         39: aload_0
+         40: aload_0
+         41: getfield net/minecraft/world/level/chunk/LevelChunkSection.nonEmptyBlockCount:S
+         44: ifeq -> 65
+         47: aload_0
+         48: invokedynamic dyn#365
+         53: invokevirtual net/minecraft/world/level/chunk/LevelChunkSection.maybeHas:(Ljava/util/function/Predicate;)Z
+         56: ifeq -> 65
+         59: sipush 9999
+         62: goto -> 66
+         65: iconst_0
+         66: putfield net/minecraft/world/level/chunk/LevelChunkSection.specialCollidingBlocks:S
+         69: return
+  0x0001 readBiomes(Lnet/minecraft/network/FriendlyByteBuf;)V
+      Code: stack=2 locals=3 len=19
+          0: aload_0
+          1: getfield net/minecraft/world/level/chunk/LevelChunkSection.biomes:Lnet/minecraft/world/level/chunk/PalettedContainer;
+          4: invokevirtual net/minecraft/world/level/chunk/PalettedContainer.recreate:()Lnet/minecraft/world/level/chunk/PalettedContainer;
+          7: astore_2
+          8: aload_2
+          9: aload_1
+         10: invokevirtual net/minecraft/world/level/chunk/PalettedContainer.read:(Lnet/minecraft/network/FriendlyByteBuf;)V
+         13: aload_0
+         14: aload_2
+         15: putfield net/minecraft/world/level/chunk/LevelChunkSection.biomes:Lnet/minecraft/world/level/chunk/PalettedContainer;
+         18: return
+  0x0001 write(Lnet/minecraft/network/FriendlyByteBuf;)V
+      Code: stack=4 locals=2 len=8
+          0: aload_0
+          1: aload_1
+          2: aconst_null
+          3: iconst_0
+          4: invokevirtual net/minecraft/world/level/chunk/LevelChunkSection.write:(Lnet/minecraft/network/FriendlyByteBuf;Lio/papermc/paper/antixray/ChunkPacketInfo;I)V
+          7: return
+  0x0001 write(Lnet/minecraft/network/FriendlyByteBuf;Lio/papermc/paper/antixray/ChunkPacketInfo;I)V
+      Code: stack=4 locals=4 len=30
+          0: aload_1
+          1: aload_0
+          2: getfield net/minecraft/world/level/chunk/LevelChunkSection.nonEmptyBlockCount:S
+          5: invokevirtual net/minecraft/network/FriendlyByteBuf.writeShort:(I)Lnet/minecraft/network/FriendlyByteBuf;
+          8: pop
+          9: aload_0
+         10: getfield net/minecraft/world/level/chunk/LevelChunkSection.states:Lnet/minecraft/world/level/chunk/PalettedContainer;
+         13: aload_1
+         14: aload_2
+         15: iload_3
+         16: invokevirtual net/minecraft/world/level/chunk/PalettedContainer.write:(Lnet/minecraft/network/FriendlyByteBuf;Lio/papermc/paper/antixray/ChunkPacketInfo;I)V
+         19: aload_0
+         20: getfield net/minecraft/world/level/chunk/LevelChunkSection.biomes:Lnet/minecraft/world/level/chunk/PalettedContainer;
+         23: aload_1
+         24: aconst_null
+         25: iload_3
+         26: invokevirtual net/minecraft/world/level/chunk/PalettedContainer.write:(Lnet/minecraft/network/FriendlyByteBuf;Lio/papermc/paper/antixray/ChunkPacketInfo;I)V
+         29: return
+  0x0001 getSerializedSize()I
+      Code: stack=2 locals=1 len=18
+          0: iconst_2
+          1: aload_0
+          2: getfield net/minecraft/world/level/chunk/LevelChunkSection.states:Lnet/minecraft/world/level/chunk/PalettedContainer;
+          5: invokevirtual net/minecraft/world/level/chunk/PalettedContainer.getSerializedSize:()I
+          8: iadd
+          9: aload_0
+         10: getfield net/minecraft/world/level/chunk/LevelChunkSection.biomes:Lnet/minecraft/world/level/chunk/PalettedContainer;
+         13: invokevirtual net/minecraft/world/level/chunk/PalettedContainer.getSerializedSize:()I
+         16: iadd
+         17: ireturn
+  0x0001 maybeHas(Ljava/util/function/Predicate;)Z
+      Code: stack=2 locals=2 len=9
+          0: aload_0
+          1: getfield net/minecraft/world/level/chunk/LevelChunkSection.states:Lnet/minecraft/world/level/chunk/PalettedContainer;
+          4: aload_1
+          5: invokevirtual net/minecraft/world/level/chunk/PalettedContainer.maybeHas:(Ljava/util/function/Predicate;)Z
+          8: ireturn
+  0x0001 getNoiseBiome(III)Lnet/minecraft/core/Holder;
+      Code: stack=4 locals=4 len=14
+          0: aload_0
+          1: getfield net/minecraft/world/level/chunk/LevelChunkSection.biomes:Lnet/minecraft/world/level/chunk/PalettedContainer;
+          4: iload_1
+          5: iload_2
+          6: iload_3
+          7: invokevirtual net/minecraft/world/level/chunk/PalettedContainer.get:(III)Ljava/lang/Object;
+         10: checkcast net/minecraft/core/Holder
+         13: areturn
+  0x0001 setBiome(IIILnet/minecraft/core/Holder;)V
+      Code: stack=5 locals=5 len=13
+          0: aload_0
+          1: getfield net/minecraft/world/level/chunk/LevelChunkSection.biomes:Lnet/minecraft/world/level/chunk/PalettedContainer;
+          4: iload_1
+          5: iload_2
+          6: iload_3
+          7: aload
+          9: invokevirtual net/minecraft/world/level/chunk/PalettedContainer.set:(IIILjava/lang/Object;)V
+         12: return
+  0x0001 fillBiomesFromNoise(Lnet/minecraft/world/level/biome/BiomeResolver;Lnet/minecraft/world/level/biome/Climate$Sampler;III)V
+      Code: stack=9 locals=11 len=97
+          0: aload_0
+          1: getfield net/minecraft/world/level/chunk/LevelChunkSection.biomes:Lnet/minecraft/world/level/chunk/PalettedContainer;
+          4: invokevirtual net/minecraft/world/level/chunk/PalettedContainer.recreate:()Lnet/minecraft/world/level/chunk/PalettedContainer;
+          7: astore
+          9: iconst_4
+         10: istore
+         12: iconst_0
+         13: istore
+         15: iload
+         17: iconst_4
+         18: if_icmpge -> 90
+         21: iconst_0
+         22: istore
+         24: iload
+         26: iconst_4
+         27: if_icmpge -> 84
+         30: iconst_0
+         31: istore
+         33: iload
+         35: iconst_4
+         36: if_icmpge -> 78
+         39: aload
+         41: iload
+         43: iload
+         45: iload
+         47: aload_1
+         48: iload_3
+         49: iload
+         51: iadd
+         52: iload
+         54: iload
+         56: iadd
+         57: iload
+         59: iload
+         61: iadd
+         62: aload_2
+         63: invokeinterface net/minecraft/world/level/biome/BiomeResolver.getNoiseBiome:(IIILnet/minecraft/world/level/biome/Climate$Sampler;)Lnet/minecraft/core/Holder;
+         68: invokevirtual net/minecraft/world/level/chunk/PalettedContainer.getAndSetUnchecked:(IIILjava/lang/Object;)Ljava/lang/Object;
+         71: pop
+         72: iinc 10 1
+         75: goto -> 33
+         78: iinc 9 1
+         81: goto -> 24
+         84: iinc 8 1
+         87: goto -> 15
+         90: aload_0
+         91: aload
+         93: putfield net/minecraft/world/level/chunk/LevelChunkSection.biomes:Lnet/minecraft/world/level/chunk/PalettedContainer;
+         96: return
+  0x0001 copy()Lnet/minecraft/world/level/chunk/LevelChunkSection;
+      Code: stack=3 locals=1 len=9
+          0: new net/minecraft/world/level/chunk/LevelChunkSection
+          3: dup
+          4: aload_0
+          5: invokespecial net/minecraft/world/level/chunk/LevelChunkSection.<init>:(Lnet/minecraft/world/level/chunk/LevelChunkSection;)V
+          8: areturn
+  0x100a lambda$recalcBlockCounts$0(Lnet/minecraft/world/level/block/state/BlockState;)Z
+      Code: stack=1 locals=1 len=13
+          0: aload_0
+          1: invokevirtual net/minecraft/world/level/block/state/BlockState.isAir:()Z
+          4: ifne -> 11
+          7: iconst_1
+          8: goto -> 12
+         11: iconst_0
+         12: ireturn
+  0x0008 <clinit>()V
+      Code: stack=3 locals=1 len=39
+          0: new it/unimi/dsi/fastutil/shorts/ShortArrayList
+          3: dup
+          4: sipush 4096
+          7: invokespecial it/unimi/dsi/fastutil/shorts/ShortArrayList.<init>:(I)V
+         10: putstatic net/minecraft/world/level/chunk/LevelChunkSection.FULL_LIST:Lit/unimi/dsi/fastutil/shorts/ShortArrayList;
+         13: iconst_0
+         14: istore_0
+         15: iload_0
+         16: sipush 4096
+         19: if_icmpge -> 38
+         22: getstatic net/minecraft/world/level/chunk/LevelChunkSection.FULL_LIST:Lit/unimi/dsi/fastutil/shorts/ShortArrayList;
+         25: iload_0
+         26: invokevirtual it/unimi/dsi/fastutil/shorts/ShortArrayList.add:(S)Z
+         29: pop
+         30: iload_0
+         31: iconst_1
+         32: iadd
+         33: i2s
+         34: istore_0
+         35: goto -> 15
+         38: return

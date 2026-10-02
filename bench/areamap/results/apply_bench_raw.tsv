@@ -1,0 +1,32 @@
+== FAKE mode (fast-path observable, counting stub) ==
+mode	FAKE native (fast-path observable)
+phase	d	side	nsPerCall	nsPerOp	nsPerPx	opsPerCall	verif
+CHANGED	63	127	18289	29.50	0.57	620	native=1/changed-call OK (24600)
+SAME	63	127	49.48	-	-	0	native=0 OK
+NAIVE	63	127	16688	22.49	0.52	742	naiveN=742
+RATIO	63	127	1.10x	patched/naive	-	-	-
+CHANGED	255	511	200398	79.97	0.38	2506	native=1/changed-call OK (8100)
+SAME	255	511	0.42	-	-	0	native=0 OK
+NAIVE	255	511	195434	93.15	0.37	2098	naiveN=2098
+RATIO	255	511	1.03x	patched/naive	-	-	-
+CHANGED	511	1023	907602	179.5	0.43	5056	native=1/changed-call OK (1920)
+SAME	511	1023	2.72	-	-	0	native=0 OK
+NAIVE	511	1023	883420	144.0	0.42	6134	naiveN=6134
+RATIO	511	1023	1.03x	patched/naive	-	-	-
+AREAMAP BENCH: VERIFICATIONS PASS
+== REAL mode (native .so) ==
+mode	REAL native (.so)
+phase	d	side	nsPerCall	nsPerOp	nsPerPx	opsPerCall	verif
+CHANGED	63	127	41010	66.14	1.27	620	opsAccum=15253862
+SAME	63	127	16.36	-	-	0	opsAccum=0
+NAIVE	63	127	17544	23.64	0.54	742	naiveN=742
+RATIO	63	127	2.34x	patched/naive	-	-	-
+CHANGED	255	511	1011121	403.5	1.94	2506	opsAccum=20299678
+SAME	255	511	15.48	-	-	0	opsAccum=0
+NAIVE	255	511	193803	92.38	0.37	2098	naiveN=2098
+RATIO	255	511	5.22x	patched/naive	-	-	-
+CHANGED	511	1023	4319096	854.3	2.06	5056	opsAccum=9707010
+SAME	511	1023	4.07	-	-	0	opsAccum=0
+NAIVE	511	1023	714402	116.5	0.34	6134	naiveN=6134
+RATIO	511	1023	6.05x	patched/naive	-	-	-
+AREAMAP BENCH: VERIFICATIONS PASS
