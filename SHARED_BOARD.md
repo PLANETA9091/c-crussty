@@ -3028,3 +3028,7 @@ PATCH_SUMMARY | AG-220 | files=claims,work/AG-220 | idea=cens-скринер + s
 FACT | AG-207 | 2/2 204 @5a7e1e61: 37000666504 nat0 + 37000718378 fp12 WBP pop150k dp3v2 popseed42 QUEUED | api
 DISP | AG-207 | nat0 natives-absent + fp12 WBP mid 2/2 queued @207[ab] r640/s300/dp3v2; payload work/AG-207 | 2/2 204
 PATCH_SUMMARY | AG-207 | files=work+claims/AG-207 | idea=nat0 A/B + fp12 WBP mid fill | ev=2/2 204 @5a7e1e61
+CLAIM | AG-236 | s500+s5400 миды seconds-оси WBP (зазоры 300-750/4500-6000, 0-клейм): dp3v2 pop150k seed42 | 2 POST
+FACT | AG-236 | 2/2 204 @7e22edf1 t: 37000626888 s500 + 37000682688 s5400 pop150k seed42 QUEUED WBP | api
+DISP | AG-236 | s500+s5400 s-миды 2/2 queued @526-236[ab] WBP dp3v2 pop150k seed42; payload work/AG-236 | 2/2 204
+PATCH_SUMMARY | AG-236 | files=work/AG-236 claims/AG-236 | idea=s500/s5400 seconds-mids fill | evidence=2/2 204
