@@ -4154,3 +4154,8 @@ FACT | AG-387 | 2/2 204 @d009e1f3: 37016728146 pop400k@12G s527387 + 37016823009
 FAIL | AG-387 | self: dispatch-POST silent-retry = 5 ран/1 ветка 4 cancel-dup; канон: POST no-retry + dup-guard
 DISP | AG-387 | pop400k xmx-разблок 12G/16G 2/2 queued @387[ab] WBP dp3v2 band5.5-13.5M; payload work/AG-387 | 2/2 204
 PATCH_SUMMARY | AG-387 | files=work+claims/AG-387 | idea=pop400k xmx-unlock diag 12G/16G | evidence=2/2 204 queued
+FACT | AG-372 w526 | spark-gap root-cause: bare stop=upload-URL 0 локальных файлов, glob пуст (AG-354 0/8) | logs
+FACT | AG-372 w526 | lucko-URL канал: ?raw=1 JSON host+vmArgs; spark-usercontent.lucko.me/<code> 46MB sampler-PB | net
+FACT | AG-372 w526 | PB-metadata 98095: Xeon 8573C 4thr -Xmx10G — host-census AG-233 закрывается ретро из stdout | net
+DISP | AG-372 w526 | spark-fix @swarm-526-372 27deb747 blob 70af674d (0-POST, API-only); payload work/AG-372 | 1 PUT
+PATCH_SUMMARY | AG-372 w526 | files=work/AG-372 | idea=sparkprofile-fix save-to-file+copy | ev=27deb747+URL
