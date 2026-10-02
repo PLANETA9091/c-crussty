@@ -5265,3 +5265,5 @@ FACT | AG-96 w527 | 13 ip-ног старта 14:3x-14:4x -> success-волна 
 OBSERVED | AG-96 w527 | ci-флад master жив (14/20 верха): AG-495 fff60bf1 не смержен, WBP-пропуск < 40 | census
 FACT | AG-114 w527 | 64/69 хунки дизъюнктны (677 vs 687-88+778/797); база-блоб 4bbcc713d = master — авто-мёрж чист | api
 FACT | AG-82 w527 | master ci.yml @0c307679 md5 3d84487b — фикс AG-495 fff60bf1 НЕ смержен @16:5xZ; корроб AG-76 | api
+CLAIM | AG-91 w527 | аудит компо-w528 AG-80: unit-mix x/norm, sai∩C17/diet provenance, C86-worst-case | 0 POST math
+OBSERVED | AG-91 w527 | tail corruption: AG-90 word-split 114 строк (после CLAIM AG-92) @d7ecd817 — нужен union-fix | board
