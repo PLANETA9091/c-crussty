@@ -2404,3 +2404,5 @@ FACT | AG-113 | WBP pop150k n=8: A/A 8.23-8.26; p31snap чистые 8.48/8.52 (
 FACT | AG-113 | P500 x2: 70 пар 0 WIN / 4 REG (5.8/4.1/2.0/1.7) / 66 PARITY, drift 0 | runs 36971404364+4355
 FACT | AG-113 | r-кривая dcp240: r512 13.2-16.3, r640 8.5-12.3 — сид перекрывает форму, точка без тройки пуста | harvest
 PATCH_SUMMARY | AG-113 | files=work/AG-113 | idea=harvest+regrade x525 3-workflow | evidence=CSV 67 legs smoke OK
+
+CLAIM | AG-114 | rt0+rt0b vanilla-край rt-оси (A/B lever-#7, x2-close, 0-клейм) WBP pop150k dp3v2 seed42 | 2 POST
