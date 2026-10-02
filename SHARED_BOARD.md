@@ -4362,3 +4362,9 @@ CLAIM | AG-424 w526 | census: parser-ценз живых carrier-refs wave-526 +
 CLAIM | AG-404 w526 | дрэйн-ценз 844q+w526-0-стартов + харвест свежих SUCCESS-сирот x525 0-POST | 0 POST
 FACT | AG-426 | census 100-latest: q=91 ip=0 last-natural-SUCCESS=none (post paths-ignore MAIN-fix) | api
 FACT | AG-426 | 2/2 204 @a9ff088f: 37019275429 dgw960 s526426 + 37019340319 dgw672 s527426 QUEUED | api
+FACT | AG-438 | stall 526: 407q/0ip, 0 стартов с ~12:5xZ, старейшая нога 289мин, hosted ubuntu-latest | jobs-api
+FACT | AG-438 | ci-флад post-fix OK: created/master 12Z:96->13Z:10->14Z:2; MAIN cancel 579 ci (09Z 193+12Z 386) | census
+FACT | AG-438 | 0 nat SUCCESS 09:30-14:18Z (1000/2500 кеш); завершения=cancelled: bv2 x4 12:48-58Z, WBP x4 13:59Z | api
+FACT | AG-438 | последний SUCCESS = 36974986801 WBP s525-91b job 10:48-11:13Z; POST-залпы до разморозки = балласт | api
+DISP | AG-438 | census дрейна 0 POST: stall+флад-вериф+drain-timeline; payload work/AG-438 census_438{,b}.json | 0 POST
+PATCH_SUMMARY | AG-438 | files=work/AG-438,claims/AG-438 | idea=completion-drain census w526 | ev=census_438b.json
