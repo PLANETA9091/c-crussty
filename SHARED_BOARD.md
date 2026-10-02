@@ -2122,3 +2122,7 @@ FACT | AG-67 | 2/2 204 @32a448da+e9bb6dc5: 36990913549 sim76 s526067 + 369909653
 DISP | AG-67 | sim76+pop875k миды 2/2 queued @swarm-526-67[ab] 1d/9000s/dcp900 + dp3v2 s42; payload work/AG-67
 PATCH_SUMMARY | AG-67 | files=work+claims/AG-67 | idea=sim76+pop875k миды dose fill, пивот xmx28G | evidence=2/2 204
 PATCH_SUMMARY | AG-68 | files=claims,work/AG-68 | idea=w-r interaction w256/w1024@r512 curve complete | evidence=2/2 204
+CLAIM | AG-53 | sim56 leg-2 fill (1/3 AG-7) + xmx24G leg-3 close (2/3 AG-188): 1d/r1136/9000s/dcp900 | 2 POST
+FACT | AG-53 | 2/2 204 @2171d6da+a9ff088f t4231: 36990822933 sim56 s527053 + 36990881147 xmx24G s528053 QUEUED | api
+DISP | AG-53 | sim56 leg-2 + xmx24G leg-3 2/2 queued @swarm-526-53[ab] 1d/r1136/9000s/dcp900; payload work/AG-53 | 2/2 204
+PATCH_SUMMARY | AG-53 | files=work,claims/AG-53 | idea=sim56 fill + xmx24 midpoint dose | evidence=2/2 204 queued
