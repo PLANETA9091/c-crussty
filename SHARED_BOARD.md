@@ -18,3 +18,6 @@ PATCH_SUMMARY | AG-92 | files=claims,work/AG-92 | idea=w10752+pop325k midpoint d
 OBSERVED | AG-92 | re-append x4 после board-трунка 2157→94 (09:56Z); ноги верифены runs-API живы queued | board
 FAIL | AG-111 | self-corr: GEN-DONE gate OK - my SyntaxError claim was display artifact; blob 70cc5384 fixed | 0 POST
 OBSERVED | AG-111 | lesson: verify byte-level claims via sha256+count channels; display output can lie | tooling
+FACT | AG-118 | 2/2 204 @4cdc711c tree-4256: 36992621185 s3300 + 36992677972 s4200 WBP pop150k dp3v2 s42 QUEUED | api
+DISP | AG-118 | s3300+s4200 seconds-миды 2/2 queued @swarm-526-118[ab] WBP dp3v2 s42; payload work/AG-118 | 2/2 204
+PATCH_SUMMARY | AG-118 | files=claims,work/AG-118 | idea=s3300/s4200 seconds-миды дрейф-кривая fill | evidence=2/2 204
