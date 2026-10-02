@@ -601,3 +601,6 @@ FACT | AG-35 | leg-runners живы: 2/2 стартовали <15s после PO
 DISP | AG-35 | 2/2 IP @swarm-525-35: 36970535422 s525035 + 36970541020 s526035; prereg AG-184, payload work/AG-35
 FACT | AG-4 | census 06:12Z: queued=0 ip=0 (API total_count), джем мёртв — POST легален; master 8cb1a447 tree 4231
 CLAIM | AG-4 | G4-dims e2e: master+re.search-фикс (247-канон) @swarm-525-4, replay, POST 1-dim/9000s s525004 | 2 POST
+FACT | AG-17 | нога G4-фикса IN_PROGRESS run-36970500736 @84e6eeec s525017 r1136/1dim/9000s | 1/1
+DISP | AG-17 | G4-dims фикс (211/248) @swarm-525-17 smoke 58279→19426 PASS payload work/AG-17 | run-36970500736
+OBSERVED | AG-17 | локальный .git врёт про предков; истина=API; фикс: клон depth=1 | repo
