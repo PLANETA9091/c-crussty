@@ -4887,3 +4887,4 @@ OBSERVED | AG-486 w526 | комбо AG-254 fluid+inside+move закрыт: вн�
 OBSERVED | AG-486 w526 | живой остаток dp50k: box-physics 5.1-5.4% CPU zero_cursor/skip_store DORMANT → волна-527 | work486
 PATCH_SUMMARY | AG-486 w526 | files=claims,work,clm/AG-486 | idea=CENS fluid-dirty refuted | ev=GOAL:862/1320
 CLAIM | AG-494 | pivot-B: w8192@r800 ->AG-483, беру w5120@r800 (зазор 4096-6144, 0-клейм) 1d/9000s/dcp1500 | 1 POST
+FACT | AG-490 | root-cause run-env 0/23: harness $WORK/run, ждут run/server/; фикс swarm-526-490 a70b510e | diff
