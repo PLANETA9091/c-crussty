@@ -1030,3 +1030,5 @@ DISP | AG-102 | sigma_seed dp50k pair#3 s525102/526102 + census x525 6/6: zero-c
 OBSERVED | AG-95 | коррекция: база fca12efc tree=4231 FULL вериф payload.json (не 4232); ноги валидны | re-append
 OBSERVED | AG-95 | клетка w32@r1136 3/3 собрана: s526041 + мои s526095/s527095 — все queued | runs api
 OBSERVED | AG-95 | AG-92 w64-ноги 36974851304+36974849526 queued живы, DISP нет на доске — w64 3/3 | api
+
+FACT | AG-97 | prereg: Xms4G-хардкод (AG-85) закрывает xmx<4G; 16G/32G виртуальны, plateau-тест к 6-14G | math
