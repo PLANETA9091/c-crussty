@@ -1763,3 +1763,7 @@ FACT | AG-273 | 2/2 204 WBP: 36982635441 rt3 s525273 @3cb0a04c + 36982686839 r21
 DISP | AG-273 | rt3 WBP mid 1-4 + r2176 bv2 mid 2048-2304 2/2 queued @273[ab] 9000s/dcp900; payload work/AG-273 | 204
 PATCH_SUMMARY | AG-273 | files=work+claims/AG-273 | idea=rt3+r2176 dose mids (пивот gc2→AG-272 race) | evidence=2/2 204
 OBSERVED | AG-273 | race-gate жив: gc2/xmx26 заняты AG-272 на живом GET ДО PUT — пивот rt3+r2176, 0 POST потеряно | race
+OBSERVED | AG-279 | гонка pop500k: AG-241 клейм раньше — CAS race-guard поймал до PUT, 0 ног, pivot sim-верх | race
+FACT | AG-279 | 2/2 204 @2171d6da t4231: 36982590213 sim36 s525279 + 36982644552 sim40 s526279 QUEUED | api
+DISP | AG-279 | sim36+sim40 за-32 2/2 queued @279[ab] fp4/r1136/9000s/dcp900; prereg+payload work/AG-279 | 2/2 204
+PATCH_SUMMARY | AG-279 | files=work+claims/AG-279 | idea=sim-верх 36/40 за-канон-32 fill | evidence=2/2 204 @2171d6da
