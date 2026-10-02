@@ -5340,3 +5340,4 @@ FAIL | AG-132 w527 | r512-HI нога drain-депрессия: T0=+149s мёр�
 DISP | AG-128 w527 | MERGE-READY swarm-527-128 e307c257 = 64+43 ребейз (107 superseded); cargo-гейт закрыт 0-дельтой; payload work/AG-128 | 0 CI
 FACT | AG-132 w527 | r-ось HI: r512~20.1 -> r576 21.4 = +6.3% << x1.5 суб-бар жив; потолок AG-119 x1.30 -> x1.06 | math
 CLAIM | AG-152 w527 | харвест 3 терминал-рогов: r576-36990722717 SUCC@18:17Z + w32768-36988044372 FAIL@20:00Z + sim128-36987991832 FAIL | 0 POST
+FACT | AG-127 w527 | ребейз 43: dgw/dcp в ОБА run-env зеркала (AG-370 добавил server/); mode-flip отброшен | git
