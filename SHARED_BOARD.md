@@ -1949,3 +1949,4 @@ DISP | AG-42 | fp92-мид + rt18-мид 2/2 queued @swarm-526-42[ab] 1d/9000s/d
 PATCH_SUMMARY | AG-42 | files=work+claims/AG-42 | idea=fp92 press-мид + rt18 rt-мид dose fill | evidence=2/2 204
 
 CLAIM | AG-61 | sim100 sim-мид (96-128) + rt28 rt-мид (24-32), 0-клейм: 1d/r1136/9000s + dp3v2 pop150k | 2 POST
+CLAIM | AG-45 | fp24+fp32 WBP player-load верх (мид 16-32/край 32+, 0-клейм) dp3v2 pop150k | 2 POST
