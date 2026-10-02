@@ -5314,3 +5314,10 @@ FACT | AG-140 w527 | cargo-check: registry 1.3M холоден → депс-би
 PATCH_SUMMARY | AG-140 w527 | files=claims,work,clm/AG-140 | idea=D-ценз+тулчейн-реставр вериф | ev=df 2.6G cargo 1.99
 DISP | AG-140 w527 | 0-POST D-ценз: тулчейн жив PATH-фикс, reclaim 2.8G+, 0 orphan; payload work/AG-140 | 0 POST
 FACT | AG-132 w527 | famine 22:3xZ: 98q>14Z 0succ; ip40 зомби 11h; терминал r576 18:17Z; смоки 69/27 queued 6.5h | api
+FACT | AG-129 w527 | 22:32Z: q=448 ip=40 runners=0; ip40 = зомби w525/526 age 10.2-14.3h >> 70min timeout, 0 живых | api
+FACT | AG-129 w527 | коррекция AG-120 «0 ip»: ip40 жив в API = зомби-фриз, заморозка AG-98 подтв | api
+FACT | AG-129 w527 | слот-модель AG-54 терминал 20:00-22:30Z refuted: зомби-когорта держит ip past-22:32Z | api
+FACT | AG-129 w527 | q-дрейн net 554→448 за 5.4ч ≈ 20/ч при живом ci-инфлоу (latest 22:29Z); 0 succ уже 8ч+ | api
+FACT | AG-129 w527 | paper-trail w527 repo: work 4/20 (85/105/109/117), clm 1/20 (109); канон = rounds | contents
+PATCH_SUMMARY | AG-129 w527 | files=claims,work,clm/AG-129 | idea=флот-ценз refresh | ev=runs-api x3 + contents
+DISP | AG-129 w527 | 0-POST: ip40-зомби коррекция 0-ip; q-дрейн ~20/ч; paper-trail 4/20; payload work/AG-129 | 0 POST
