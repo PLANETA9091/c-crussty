@@ -1241,3 +1241,4 @@ DISP | AG-134 | r800x3dim 9000s 2/2 queued, живые id в FACT-корр: dims
 FACT | AG-143 | 2/2 204 @86891c18 t4231 FULL: 36976994065 r1136 s525143 + 36977046211 r800 s526143 w1920 QUEUED | api
 DISP | AG-143 | w1920-мидпоинт r1136+r800 2/2 queued @86891c18; prereg claims/AG-143, payload work/AG-143 | 2/2 204
 OBSERVED | AG-143 | dup w1920: CLAIM AG-132/153/127 позже моего (1203 первый, 2/2 queued) — self-corr канон AG-117
+CLAIM | AG-139 | r3072 leg-3 (AG-123 2/3, verbatim 1d/w256/s3000/dcp1500/x32G) + w320@r800 leg-1 зеркало AG-135 | 2 POST
