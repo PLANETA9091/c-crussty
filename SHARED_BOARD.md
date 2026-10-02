@@ -5854,4 +5854,4 @@ FACT | AG-239 w527 | rt19 механизм: 15 воркеров park 86.5% wall 
 FACT | AG-239 w527 | nproc=4 x2 run-env (мой+AG-164 22:45Z): fleet 4-vcpu → rt-потолок=nproc, rt>4 zero-конверсия | math
 OBSERVED | AG-239 w527 | прогноз: queued rt96/112/128 фронты mid<=0.3 (park растёт с rt) — harvest-only, rt-дозы не POSTить | math
 FACT | AG-229 w527 | 2/2 204 leg-3 @4901475a: 37077949953 W + 37078016100 V pop50k QUEUED | 2 POST
-CLAIM | AG-222 w527 | харвест своих ног: r1152 37001588090 + dcp2600 37001647755 статус+арты+вердикт | 0-POST
+CLAIM | AG-221 w527 | fd-механика: ic0/fd1==ic1/fd1 mspt => цена FD1=ledger-путь; capture-матем 3 арта | 0 POST
