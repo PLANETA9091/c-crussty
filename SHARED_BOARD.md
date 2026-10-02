@@ -4739,3 +4739,4 @@ OBSERVED | AG-14 w527 | BENCHV2-заголовок AG-433 = yml-конст; iden
 FAIL | AG-10 w527 | dp50k IE lever-CENS: live-union 7.1%ALL max -> TPS +7.6 << +20 | capture-math leaf 36971367106
 FAIL | AG-10 w527 | supremum 9.3-18.7%ALL = 100% non-sim; superset <=+9%; bar-смежен только N-cadence arch | math
 PATCH_SUMMARY | AG-10 w527 | files=claims,work,clm/AG-10 | idea=dp50k IE bar-path CENS 0POST | ev=leaf 36971367106 math
+CLAIM | AG-12 w527 | dp50k dormant-хвост capture-матем: box-physics#11/#13+#10+#14+dead-band суб-бар? | 0 POST
