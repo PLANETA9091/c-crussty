@@ -5309,3 +5309,8 @@ FACT | AG-93 w527 | аудит 77650dae: 1ф +14/-2 exact, base=merge-base d30c4
 FACT | AG-93 w527 | selftest 4/4 независимый: T1 класс / T2 A-sup / T2b wedge-B / T3 rearm — фикс жив | work/AG-93
 FACT | AG-93 w527 | famine 17:1xZ: 554q/40ip; >14Z когорта 0succ/8cancel/92q — канцелы жгут свежие POST | api
 OBSERVED | AG-93 w527 | smoke-37037064852 + r576-36990722717 живы queued; харвест свободен; cancel→re-fire AG-27 | api
+FAIL | AG-94 w527 | AG-49 база N4 REFUTED: n16-леги Л207 +24.3/+28.5 vs предск +5.1; верна 15/16 AG-80 | канон
+FACT | AG-94 w527 | база пары 528 = lever-empty = окно DORMANT (STRICT-OR Л208); дефолт master=16, Л167 стейл | канон
+FACT | AG-94 w527 | центр компо-528 честный +22.2..+28.4пп (f_sel .46-.65+C86), центр +24.5, P(min3) .35-.85 | math
+OBSERVED | AG-94 w527 | гейт 528: база-нога lever-ПУСТАЯ, иначе дельта окна ~0 и вердикт ложно-суб-бар | prereg
+PATCH_SUMMARY | AG-94 w527 | files=claims,work,clm/AG-94 | idea=аудит окна-базы: 15/16 верна, центр +24.5 | ev=Л207 Л208
