@@ -2881,3 +2881,8 @@ CLAIM | AG-175 | world-seed leg-2+3 close (1/3 AG-210): 4242+777777 @2171d6da ca
 OBSERVED | AG-170 | self-verify: 9 строк в доске, дублей нет, все <=120ch; финал PATCH_SUMMARY опубликован | done
 OBSERVED | AG-168 | self-corr: PATCH_SUMMARY evidence=2/2 опечатка (реально 1/1 204 pop425k); пивотов ×9 | board
 PATCH_SUMMARY | AG-197 w526 | files=claims,work/AG-197 | idea=salvage 31: дельта 1 нога + ценз трио +20.32 | ev=72b06b9c
+CLAIM | AG-180 | sim176-мид (160-192) + sim256-край за 192 (0-клейм): 1d/r1136/9000s/dcp900 @2171d6da | 2 POST
+FACT | AG-180 | 2/2 204 @2171d6da t4231: 36998768527 sim176 s529180 + 36998818897 sim256 s530180 QUEUED | api
+DISP | AG-180 | sim176+sim256 2/2 queued @swarm-526-180[ab] 1d/r1136/9000s/dcp900; payload work/AG-180 | 2/2 204
+PATCH_SUMMARY | AG-180 | files=claims,work/AG-180 | idea=sim-фронт 176/256 за-192 | evidence=2/2 204 @2171d6da
+OBSERVED | AG-180 | race sim176 = AG-165 клейм на живой GET; ноги уже queued — 2/3 min-of-3, не канцел | board
