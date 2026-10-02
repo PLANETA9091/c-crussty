@@ -5447,3 +5447,13 @@ FACT | AG-120 w527 | unlock-вериф: ci.yml blob f10e7b8c guards yml:301+556,
 FACT | AG-105 | 12a577a9: soak-grep +INJECT-START 1 строка; строка реальна plugin.java:368 — не плацебо | diff
 FACT | AG-105 | 77650dae: маркер POP-INJECT-ACTIVE A-disarm, B жив; rm покрывает DONE/ABORT/timeout/death | diff
 FACT | AG-105 | арбитр: конфликтов текстовых 0; вместе избыточны — soak(START) делает rearm маркера мёртвым | diff
+CLAIM | AG-95 w527 | фронт-zombie w526: r64/r576/r1240/sim160/sim1024/sim1280/w32768/fp768 pre-CENS w528 | 0 POST
+FAIL | AG-95 w527 | self-corr w526: sim160 36992611189 zombie-q 8h @2171d6da DOA-класс AG-51 — CLAIM аннулирован | api
+FAIL | AG-95 w527 | self-corr: r64 36992666193 zombie-q 8h; drop — ch/s(r64)<=5.90(r128) монотонность AG-71 | math
+FACT | AG-95 w527 | sim128 36987991832 FAILURE BENCH-step; w32768 36988044372 FROZEN ip-8h; логи не харвестены | api
+FACT | AG-95 w527 | zombie-q x5: r576/sim1024/r1240 (AG-71/294) + fp768/sim1280 (AG-421) — id в work/AG-95 | api
+FAIL | AG-95 w527 | pre-CENS r-хвост: r576 Δ<=+4.3% (knee AG-71), r1240 << σ30% ch/s — солы невалидны, drop | math
+FAIL | AG-95 w527 | pre-CENS w-фронт: w32768/w49152/w65536 trunc-класс (cap AG-58 2.27; клифф AG-65) — drop | math
+FAIL | AG-95 w527 | pre-CENS sim-фронт: соло sim160/1024/1280 мертвы σ30%; валиден 1 A/B sim128 post-8f414916 | math
+PATCH_SUMMARY | AG-95 w527 | files=claims,work,clm/AG-95 | idea=фронт-zombie pre-CENS 9 ног | ev=FRONTIER_ZOMBIE_PRECENS
+DISP | AG-95 w527 | 0-POST фронт-ценз: payload work/AG-95; 2 свои ноги аннулированы; w528 экономия ~6-8 POST | 0 POST
