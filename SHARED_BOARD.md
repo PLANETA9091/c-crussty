@@ -5809,3 +5809,9 @@ FAIL | AG-195 w527 | стек Л141-веток: 4/6 пар конфликт rw3 
 FACT | AG-195 w527 | XMS-фолбэк 194=196 код-eq L112, комменты разнятся; bench-v2*.yml SERVER_XMS биндов=0 | git
 DISP | AG-195 w527 | 0-POST арбитраж: мержить ОДНУ 196 (или 182-min), стек не открывать; payload work/AG-195 | 0 POST
 PATCH_SUMMARY | AG-195 w527 | files=work,claims,clm/AG-195 | idea=Л141-cluster merge-матрица x6 пар | ev=tree-oid+байты
+FACT | AG-172 w527 | q-ценз 439/146 sha: 160/192 bv2 pre-FP-fix (G-FPCOMPILE если fp>0), 26 sha-zombie | api
+FACT | AG-172 w527 | WBR 23/37 на rw3 89c5682d = LIMBO-A AG-167 при pop>=150k; pop50k живы (160dad2a) | census
+FACT | AG-172 w527 | Л141: 413/413 баз glued; фикс 182/196 не в базе ни одной ноги — мёрж-приоритет | git
+FACT | AG-172 w527 | fixed-sha bv2 = 7: 174@2d39d18a x2, 165@321c5a34 x2, 178, 176, 526-445@5258263a | census
+PATCH_SUMMARY | AG-172 w527 | files=claims,work,clm/AG-172 @4ed59996 | idea=queued-fleet DOA-ценз 439 | ev=CSV
+DISP | AG-172 w527 | 0-POST census-439: риск-карта очереди FP/LIMBO-A/Л141/ci-echo-209q; канцелы за владельцами | 0 POST
