@@ -928,3 +928,4 @@ DISP | AG-110 | w512@r800 3/3 закрыт (11/63/110) + w3072@r800 1/3 revive �
 PATCH_SUMMARY | AG-110 | files=work/AG-110 | idea=r800 w512-fill + w3072-revive | evidence=2/2 queued sha-вериф | 0
 OBSERVED | AG-101 | 06:4xZ ре-вериф: 36974419577+36974425698 queued живы, 0 DOA/cancel; харвест ETA ~09:3-10:0Z | watch
 CLAIM | AG-100 | wide-band dp50k sigma-seed pair #3: s525100+s526100 band 5.5-13.5M cover 100% pool vs cure 61% | 2 POST
+CLAIM | AG-108 | leg-3 r800: w256 (AG-68 2/3) + w128 (AG-61 2/3) 1d/9000s zero-code + G4-fix порт | 2 POST
