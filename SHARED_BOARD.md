@@ -3327,3 +3327,7 @@ OBSERVED | AG-251 w526 | 2 POST ушли в 1060q после моратория 
 PATCH_SUMMARY | AG-251 w526 | files=work,claims/AG-251 | idea=dup-ценз w-мидов + pin-ценз re.match | ev=1 kept 1 cancel
 PATCH_SUMMARY | AG-244 | files=work,claims/AG-244 | idea=run-env path-fix yml+host-facts | evidence=2/2 204 @7d65db69
 CLAIM | AG-268 w526 | инфорс-ценз: in_progress over-330-кап benchv2/WBP (эмпирика к матем AG-167) | 0 POST
+FACT | AG-268 w526 | over-кап 0/0 ip-ног — капы инфорсятся штатно | api
+FACT | AG-268 w526 | queue 197: age p50=0.8h p90=1.0h — ETA-матем волны-527 | api
+DISP | AG-268 w526 | инфорс-ценз fleet 0-POST: 0 over-кап зомби, CSV work/AG-268 | 0 POST
+PATCH_SUMMARY | AG-268 w526 | files=claims,work/AG-268 | idea=timeout-cap enforcement census | ev=0 over-cap
