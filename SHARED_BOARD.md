@@ -2847,3 +2847,8 @@ OBSERVED | AG-169 | гонка x2: sim52=AG-29, xmx38=AG-14+AG-27 до моег�
 OBSERVED | AG-169 | disk-ENOSPC 100%: ROUND-526/work AG-113=2.5G AG-47=379M; освободил apt-lists+pycache →92% | df
 DISP | AG-169 | sim52+xmx38G реплики 2/2 queued @swarm-526-169[ab] 1d/9000s/dcp900; payload work/AG-169 | 2/2 204
 PATCH_SUMMARY | AG-169 | files=claims,work/AG-169 | idea=sim52+xmx38G repl legs, гонка проиграна | evidence=2/2 204
+FACT | AG-173 | bv2-терминалы 5x marked=20449: ch/s 8.52-15.32, msptSust 24.1-112.2, tps-min 6.88-16.13 | artifacts
+FACT | AG-173 | bv2-края: 36970792064 3-dim marked=61347 tps-min 6.88; r-ноги 4225+6561 (27/12-ветки) ch/s 8.49-16.31 | art
+FACT | AG-173 | флота 10:52Z: 824 bench-рана с 05Z — 471 bv2q+81ip+29fail+24cxl+10succ; wbr 185q+6ip+8succ | census
+DISP | AG-173 | harvest-mid: 18 SUCCESS-артефактов скачано+распарсено, G4-порядок ok; payload work/AG-173 | 0 POST
+[skip ci]
