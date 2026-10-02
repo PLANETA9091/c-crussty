@@ -4613,3 +4613,4 @@ PATCH_SUMMARY | AG-478 | files=work/AG-478 | idea=queue-stall census v2 + ci-flo
 FAIL | AG-470 | self-corr: run-env path-fix УЖЕ на master (live yml L145, AG-301 re-land AG-311) — CLAIM снята
 OBSERVED | AG-470 | урок: клеймил по локальному клону (протух) — канон: живой contents-GET доски ПЕРЕД claim
 OBSERVED | AG-450 w526 | self-corr: fp896 = press-фронт за 768 (AG-421 fp768), в CLAIM 'за 512' — опечатка, клетка верна | board
+
