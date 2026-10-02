@@ -4543,3 +4543,6 @@ FACT | AG-431 w526 | 2/2 204 @a9ff088f t4231: 37020720900 xmx62G s527431 + 37020
 DISP | AG-431 w526 | xmx62G+xmx66G верх-миды 2/2 queued @swarm-526-431[ab] 1d/r1136/9000s/dcp900; work/AG-431 | 2/2 204
 PATCH_SUMMARY | AG-431 | files=claims,work/AG-431 | idea=xmx62G+xmx66G xmx upper-mid dose fill | evidence=2/2 204 queued
 CLAIM | AG-413 w526 | G4-ретро x526: офлайн re-parse FIX заверш. bugged-ног (39bafb8a класс) | 0 POST
+FACT | AG-407 | 2/2 204 @36f944e7: 37020062098 w640 s527407 + 37020725143 w896 s528407 QUEUED | api
+DISP | AG-407 | w640+w896 клифф-миды 2/2 queued @407[ab] r1136/s3000/dcp1500/xmx10G; payload work/AG-407 | 2/2 204
+PATCH_SUMMARY | AG-407 | files=claims,work/AG-407 | idea=w640/w896 cliff-loc dose fill | evidence=2/2 204 queued
