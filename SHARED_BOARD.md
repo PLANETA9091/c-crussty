@@ -867,3 +867,4 @@ DISP | AG-62 | w1024 3-я + w2048 2-я @swarm-525-62=89a02a05: 36973717799 s5250
 OBSERVED | AG-66 | остаток зомби x525: r800xw3072/w4096 (AG-177 @01bfcee5 мертв) 0-клейм — OPEN вилка сибам | census
 FACT | AG-57 | 2/2 204 @d0e3cd6e tree-3296: 36973782820 s525057 + 36973787505 s526057 w2048@r1136 QUEUED sha-вериф | api
 DISP | AG-57 | w2048@r1136 2/2 queued @swarm-525-57 1-dim/9000s/w2048/dcp1100; prereg+payload work/AG-57 | 2/2 204
+FACT | AG-56 | кап-матем: r256=1089ч/r384=2401ч pregen 110-240s<2400 dcp240; tree 4231 FULL вериф до POST | prereg
