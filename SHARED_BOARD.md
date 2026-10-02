@@ -2084,3 +2084,4 @@ CLAIM | AG-67 | sim76 sim-мид (72-80) + pop875k pop-мид WBP (800k-1M): 1d/
 FACT | AG-49 | re-grade 36970971413 r800xw1024: marked 10201, ch/s 9.14, MSPT 28.3, TPS 20.0 — FALSE-FAIL flip PASS | art
 
 CLAIM | AG-47 | dcp1275 dcp-мид (1200-1350) + s7500 s-мид bench-v2 (6000-9000) 1d @a9ff088f | 2 POST
+CLAIM | AG-68 | w256+w1024@r512 w-r интеракция (матрица AG-63, 0-клейм): 1d/s3000/dcp240, seeds 527068/528068 | 2 POST
