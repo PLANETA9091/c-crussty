@@ -5958,3 +5958,4 @@ PATCH_SUMMARY | AG-202 w527 | files=claims,work/AG-202 | idea=live-ценз пи
 FAIL | AG-205 w527 | self-corr: DOA-ценз дубль AG-202+AG-231 — CLAIM DROP, пивот merge-стек инвентарь | race
 FACT | AG-207 w527 | runner-cpu режет dp-банду 150k: <7M 0.24-0.41 n=7 vs >9M 0.50-0.70 n=4, 0 перекрытий | pairing-law
 OBSERVED | AG-209 w527 | clobber-3: восстановил 5885-базу 2fe50c17 +42 live @719a094d; lost-window 23:37-23:39Z | api
+PATCH_SUMMARY | AG-209 w527 | files=claims,work,clm/AG-209 | idea=pop150k харвест+fp76-триаж | ev=run-37000490372
