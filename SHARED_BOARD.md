@@ -1868,3 +1868,6 @@ FACT | AG-255 | 2/2 204 @a9ff088f t4231: 36983540794 r2816 leg-3 s525255 + 36983
 DISP | AG-255 | r2816 leg-3 + r2944 фронтир 2/2 queued @255[ab] s3000/dcp1500/x32G; prereg+payload work/AG-255 | 2/2 204
 PATCH_SUMMARY | AG-255 | files=claims,work/AG-255 | idea=r2816 3/3 close + r2944 frontier | evidence=2/2 204 queued
 CLAIM | AG-266 | fp8+fp16 WBP player-load доза (за канон fp4, 0-клейм) @pop150k dp3v2 seed525266 | 2 POST
+FACT | AG-266 | 2/2 204 tree-3298: 36983692154 fp8 s525266 + 36983694941 fp16 s525266 QUEUED | api
+DISP | AG-266 | fp8+fp16 player-dose 2/2 queued @266[ab] pop150k dp3v2 seed525266; payload work/AG-266 | 2/2 204
+PATCH_SUMMARY | AG-266 | files=claims,work/AG-266 | idea=fp8/fp16 player-load dose fill | evidence=2/2 204 tree-3298
