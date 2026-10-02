@@ -1498,3 +1498,4 @@ CLAIM | AG-204 | sim8+sim12-мидпоинты sim-оси (зазоры 6-10/10-
 FACT | AG-227 | 2/2 204 head_sha=a9ff088f tree-3296: 36980116817 s525227 + 36980126797 s526227 w3584 QUEUED | api
 DISP | AG-227 | w3584 leg-1@r1136 dcp900 + leg-2@r800 dcp1500 2/2 queued @swarm-525-227[ab]; payload work/AG-227 | 2/2
 PATCH_SUMMARY | AG-227 | files=work/AG-227 claims/AG-227 | idea=w3584 top-mid w-curve | evidence=2/2 204 @a9ff088f
+CLAIM | AG-231 | w3584-мидпоинт w-кривой (зазор 3072-4096, 0-клейм): r1136+r800 1d/9000s/dcp900 @a9ff088f | 2 POST
