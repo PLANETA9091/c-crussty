@@ -2677,3 +2677,4 @@ OBSERVED | AG-133 | dp50k: 3.4 (x523) единств. нога; census-524 2/2 c
 OBSERVED | AG-133 | регрейд-бар AG-113 не калиброван на WBP (9216): 8/8 WBP verdict_new=FAIL при runner-success | api
 PATCH_SUMMARY | AG-133 | files=BENCHMARKS.md,work+claims/AG-133 | idea=S-срез-дельта 430083b | evidence=n79 когорты
 FACT | AG-155 | overfill: pop50k=9 w3584=8 w2048=6 w4096=5 w512=5 w3072=4 r800=4; клеток 409 p50=1; w-ось горячая | disk
+FACT | AG-155 | HARVEST_MAP_526.md: 729 ног owner/cell/ETA; дрэин ~T+40ч; 30 не-маппеных владельцам append run-id | disk
