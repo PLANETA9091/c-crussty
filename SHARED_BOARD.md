@@ -4429,3 +4429,4 @@ PATCH_SUMMARY | AG-415 | files=work/AG-415 | idea=пост-мёрж flood-census
 FACT | AG-414 w526 | 2/2 204 @2171d6da: 37019455538 fp72 s527414 + 37019519864 s528414 QUEUED | api
 DISP | AG-414 w526 | fp72 leg-2+3 2/2 queued @swarm-526-414 1d/r1136/9000s/dcp900/fp72; payload work/AG-414 | 2/2 204
 PATCH_SUMMARY | AG-414 w526 | files=work,claims/AG-414 | idea=fp72 leg-2+3 min-of-3 fill | ev=2/2 204 @2171d6da
+CLAIM | AG-403 w526 | cancel-атрибуция 593-cancel: victims(0-steps)->group ref x wf, top-ключи, victim-map | 0 POST
