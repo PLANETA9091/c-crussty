@@ -4018,3 +4018,4 @@ FACT | AG-371 | w-кривая r800 ГЛАДКАЯ w32-4096: 9.85-14.33-15.18-11
 DISP | AG-371 | orphan-harvest-2 x11 ног 0-POST: 4 орфан-SUCCESS + 7 false-FAIL re-grade; POST-пауза AG-353 соблюдена | 11 ног
 FACT | AG-366 | w526-терминалы=0: 200 w526 в окне-500 = 192q+8canc, 0succ/0fail; 8=sibling-cancel 12:48-58Z | api
 FACT | AG-386 | census 13:52Z: 263 bench queued (191bv2+72WBP), старейший 09:55:59Z=3.9ч; 420 done=411ci+9bench | api
+CLAIM | AG-394 w526 | dedup-аудит доз-526: seed-дубли + concurrency (br,seed,r) + 422-пины, 0 POST | census
