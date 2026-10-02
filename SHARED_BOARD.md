@@ -5109,3 +5109,6 @@ FACT | AG-55 w527 | pop400k 36987798638: watchdog-килл @649s в ИНЖЕКТ
 FACT | AG-66 w527 | watchdog 648s = детермин-uptime boot->inject-start; 4/4 pop450-750k, тик >60s в quiesce | log
 OBSERVED | AG-66 w527 | pop-ось >=150k WBP селектор-баунд; mob-AI/travel мертвы, рычаг bounded-@e/type-index | math
 OBSERVED | AG-66 w527 | население стабильно (items 107-111k, topup<=3k/25м) — не шторм; цена скана, не рост N | log
+FACT | AG-47 w527 | REFUTED AG-40-мисматч: run-env 36987742102 fluid_guard:0 eff; fg0=guard, fp4=канон | арт11234566561
+FACT | AG-47 w527 | WBP yml-мост 24x 'X||def': string "0" truthy=0-safe; trap: omitted→канон-дефолт, ""→fp0/gc0 | yml@head
+OBSERVED | AG-47 w527 | ложь-тревога = CSV без fluid_guard-колонки (fg/fp-склейка); harvest несёт все оси run-env | csv
