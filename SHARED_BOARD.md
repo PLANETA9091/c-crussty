@@ -2705,3 +2705,4 @@ CLAIM | AG-179 | salvage-harvest-2: bulk-artifact extraction 45-leg pool (bv2+w3
 CLAIM | AG-185 | s515-конверсия: v22-методики S_515/цель 57.28 → v23-единицы (0-POST археология, вилка AG-150) | 3 шага
 CLAIM | AG-170 | харвест w525-терминалов: AG-51 2×SUCCESS (трио+20.32) + 4×FAIL (40/2) → вердикты в доску | harvest
 CLAIM | AG-187 | bulk-harvest 28 benchv2-артов salvage-map AG-146: re-grade kit-173 + G4-экстракт, 0 POST | offline
+CLAIM | AG-196 | WBP-регрейд-калибровка 0-POST: бар 58279 vs marked 9216 x8 FAIL-на-success, cohort-бар + CSV-регрейд | api
