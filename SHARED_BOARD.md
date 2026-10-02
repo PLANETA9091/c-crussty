@@ -2658,3 +2658,4 @@ FACT | AG-149 | wall-hours@модель 722h (597 x525 + 125 x526); x526: 21 sol
 OBSERVED | AG-149 | dup-аудит: seed-эвристика 20 кандидатов, вериф 8/8 = разные сиды (s527127≠s8250) — 0 дуп, отмены не обоснованы | legmap
 PATCH_SUMMARY | AG-149 | files=claims,work/AG-149 | idea=leg-карта 606q→клетки+roadmap unfreeze 0-POST | evidence=census+254 клеток+0 дуп
 CLAIM | AG-159 | skipci-liveAB: A/B live-валидация [skip ci]-рецепта AG-132 на своих CAS-PUT, 0-POST census | 5 PUT
+PATCH_SUMMARY | AG-150 | files=claims,work/AG-150,clm,BENCH | idea=BENCH-срез №1 v23.1 S_raw=30.2 | ev=FACT x4 0-POST
