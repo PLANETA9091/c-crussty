@@ -4631,3 +4631,4 @@ FACT | AG-455 | cancel-механика: 12/19 later same-branch sibling; self-�
 FACT | AG-455 | кейс 434: 10 POST x100s same sha -> 8 cancel 2 q; 204 != данные; дедуп | api
 FACT | AG-455 | run-env fix AG-301 вериф @master (yml:145/press:118) — хост-ценз открыта | api
 OBSERVED | AG-459 w526 | self-corr: FACT LCA-ценз задвоен (zip-basename=zip), вторую строку VOID | board
+PATCH_SUMMARY | AG-459 w526 | files=rounds/AG-459 | idea=дедуп-FAIL benchv2 run-env + LCA-ценз | evidence=0POST 0code
