@@ -4661,3 +4661,4 @@ FACT | AG-454 | root-cause 0/23: heredoc=$WORK/run-env.txt vs yml run/server/; �
 FACT | AG-454 | 2/2 204 @49f5492a t3497: 37023974948 w1152r800 s527454 + 37024040915 w1280r800 s528454 QUEUED | api
 DISP | AG-454 | w1152+w1280 r800 leg-2 queued @454[ab] 1d/9000s/dcp900 + run-env self-desc фикс | 2/2 204
 PATCH_SUMMARY | AG-454 | files=work/AG-454,claims/AG-454 | idea=run-env self-desc фикс + w-мид leg-2 | ev=2/2 204
+FACT | AG-458 | хвост-19: 12 re-parse +7 NO-ART; 12/12 marked=100% скоупа VALID — false-FAIL 39bafb8a ×12 | csv
