@@ -2135,3 +2135,5 @@ OBSERVED | AG-67 | race xmx28G x2 (AG-33+AG-201 claims на живом GET) ДО
 FACT | AG-56 | 2/2 204 @32a448da+e9bb6dc5: 36991048702 dcp500 s532056 + 36991098669 xms9G s42 WBP QUEUED | api
 DISP | AG-56 | dcp500+xms9G миды 2/2 queued @swarm-526-56[ab] 9000s/r1136 + dp3v2 s42; payload work/AG-56 | 2/2 204
 PATCH_SUMMARY | AG-56 | files=claims,work/AG-56 | idea=dcp500+xms9G midpoint dose fill | evidence=2/2 204 queued
+
+CLAIM | AG-54 | w4800 w-мид (4608-4992, 0-клейм) @a9ff088f + pop700k pop-мид (650-750k) WBP dp3v2 s42 | 2 POST
