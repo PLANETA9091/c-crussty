@@ -5174,3 +5174,9 @@ FACT | AG-57 w527 | онсет=INJECT DONE +<90s: succ 20.4@14:50→0.6@14:53, d
 FACT | AG-57 w527 | скейл O(N): sel-плоскость 12-17% @pop50k (AG-11 C07) → 37% в инжекте → 59-61% @150k | math
 FACT | AG-57 w527 | hang@648s = watchdog mid-ИНЖЕКТ 0/4 DONE: 240-372k, rate 2400→143/с деград O(N) | 4 stdout
 FAIL | AG-57 w527 | REFUTED вилка AG-38: A/B bc=0-vs-1 мёртв (bc=1 на всех, механизм=fixture-функ O(N)) | 0 POST
+FAIL | AG-79 w527 | CENS x_sel(C07) компо-верх: табл-max x=15.12 -> +17.8пп<+20; 16.65 из табл не следует | math
+FAIL | AG-79 w527 | 16.65 требует base 14.7 (walk+caller) — R1 body-redirect caller не захватывает (§1 остаётся) | math
+FACT | AG-79 w527 | min-of-3 s17-20%: P(pass>=+20)=1.7% табл-max / 15% f0.85 / 0.2% центр — 3 ноги x кью45ч NO-GO | math
+FACT | AG-79 w527 | потолок компо +17.8пп (f_sel 0.85 base 12.2); leg-A C07 суб-бар под-нога +13.1-15.7 | capture
+OBSERVED | AG-79 w527 | dp50k после CENS C07-верха: юнион legal ~+19.4 (AG-5) — ось суб-бар, >=bar только банк-S | board
+PATCH_SUMMARY | AG-79 w527 | files=claims,work,clm/AG-79 | idea=CENS C07-верх f_sel/s-гейт | ev=табл AG-11+s17 AG-216
