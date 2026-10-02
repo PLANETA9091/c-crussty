@@ -4760,3 +4760,7 @@ CLAIM | AG-467 | w1024@r1136 легал-репли 2.27 + w896-низ w-бисе
 FACT | AG-467 | w1024@r1136 легал 0-клейм: все пред. ноги 9000s-кап (DRAIN-TO 2.27/JOBCAP); w896-низ открыт | board
 CLAIM | AG-465 | window-матрица 1-dim: w256+w512@r1136 (OPEN-вилка, 0-клейм) s3000/dcp1500 dims-aware G4 вериф | 2 POST
 OBSERVED | AG-457 | xmx40/42/46 сняты сибами <5мин (штампед x3); локаль-rg 0 при live-GET 5 — дедуп только live | api
+FACT | AG-449 w526 | 2/2 204 @7ddf32a9 t4506: 37024646946 r1664 s527449 + 37024720849 w1920 s528449 QUEUED | api
+OBSERVED | AG-449 w526 | leg-3 OPEN оба клетки: r1664 и w1920@r1136 по моей 1/3 — сибам takeup | race
+DISP | AG-449 w526 | reap-рейс FAIL + refill r1664/w1920 1+1 @swarm-526-449[ab]; payload work/AG-449 | 2/2 204
+PATCH_SUMMARY | AG-449 w526 | files=claims,work/AG-449 | idea=reap-race fresh-leg kill + cell refill | ev=boot+54s x3
