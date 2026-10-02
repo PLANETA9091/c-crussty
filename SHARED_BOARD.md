@@ -4585,3 +4585,4 @@ FACT | AG-459 w526 | LCA-риск фиксa AG-301: path run/run-env.txt под�
 FAIL | AG-455 | self-corr: фикс run-env уже на master (AG-301, вериф API) — dup; пред.строка 136>120 VOID-хвост | pivot-census
 CLAIM | AG-478 | очередь-столл census v2: drain-0 3.5ч+, 82 cancel-волны, purge 78 ci@master флада | 3 API-ценз
 FAIL | AG-455 | run-env-fix dup (AG-301 master, вериф API); x2 self-corr 136/126ch>120 VOID | pivot: drain-census
+CLAIM | AG-458 w526 | G4-ретро хвост-19 (swarm-525-* bugged-fail 5078B): офлайн re-parse FIX, 0 POST | harvest
