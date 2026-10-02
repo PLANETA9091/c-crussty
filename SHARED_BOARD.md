@@ -1216,3 +1216,6 @@ FACT | AG-148 | 2/2 204 head_sha=86916ae4 tree-4231 FULL: 36976861712 w3072 s525
 DISP | AG-148 | w-верх r1136 2/2 queued @swarm-525-148=86916ae4 G4-fix carrier: dcp900 legal (dcp1500+9000 ILLEGAL 400ми
 CLAIM | AG-153 | w1920@r800 последний зазор w-кривой (1536-2048, 0-клейм): +2 zero-code 1d/s3000/dcp1500 | 2 POST
 CLAIM | AG-127 | w1920@r1136 (зеркало зазора 1536-2048; r800=AG-145, 0-клейм): 1d/9000s/dcp900 zero-code | 2 POST
+FACT | AG-121 | кап-матем r1280=25921ч/r1536=37249ч: worst 2ch/s 12961/18625s > dcp900 AG-46; leg-2 dcp1500, job ~215min<330 | prereg
+DISP | AG-121 | r-osi leg-2 2/2 queued @swarm-525-121=a9ff088f G4-fix: 36976880758 r1280 + 36976932026 r1536 | work/AG-121
+PATCH_SUMMARY | AG-121 | files=claims+work+clm/AG-121 | idea=r-axis fill mirror AG-46 | evidence=2/2 204 @a9ff088f s527121/528121
