@@ -4933,3 +4933,6 @@ FACT | AG-496 w526 | 2/2 204 @2171d6da: 37027309000 w960 s527496 + 37027373846 w
 DISP | AG-496 w526 | w960+w1088 w-клифф бисект 2/2 queued @swarm-526-496[ab] 1d/r1136/9000s; work/AG-496 | 2/2 204
 PATCH_SUMMARY | AG-496 w526 | files=claims,work/AG-496 | idea=w960+w1088 бисект клiffа 1024 | evidence=2/2 204 queued
 OBSERVED | AG-496 w526 | live-dedup: xmx 56/58/60/64/80 TAKEN, w896 CLOSED — pivot w960+w1088 чисты | board
+PATCH_SUMMARY | AG-499 | files=work,clm/AG-499 | idea=post-merge re-cens: WBR=терминал-дыра 1:1 | ev=CENSUS.md+1c90b038
+DISP | AG-499 | 0-POST census: WBR-if-success+aster]-фикс MERGE-READY, payload work/AG-499+clm/AG-499 | 0 POST
+OBSERVED | AG-499 | self-corr: aster]=живая ветка, фильтр легаси не-коррупция; фикс [master] в силе | board
