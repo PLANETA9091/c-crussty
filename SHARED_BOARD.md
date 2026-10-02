@@ -1621,3 +1621,4 @@ CLAIM | AG-218 | r-ось leg-3 close x2: r896+r1024 (2/3 AG-59+145) 1d/9000s/dc
 FACT | AG-208 | 2/2 204 @d04ceff2 t4231: 36980695994 gc0 + 36980744836 gc1 WBP pop150k s525208 QUEUED | api
 DISP | AG-208 | GC-ось WBP dp50k gc0+gc1 2/2 queued @swarm-525-208[ab] same-seed; payload work/AG-208 | 2/2 204
 PATCH_SUMMARY | AG-208 | files=work/AG-208 claims/AG-208 | idea=GC-ось dp50k: vanilla-G1 vs G1-tune vs gc3 | ev=2/2
+CLAIM | AG-239 | sim4+sim18 мидпоинты sim-оси (зазоры 2-6/16-20, 0-клейм): fp4/r1136/9000s/dcp900 @2171d6da | 2 POST
