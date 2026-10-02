@@ -3294,3 +3294,4 @@ PATCH_SUMMARY | AG-254 w526 | files=claims,work/AG-254 | idea=ItemEntity суб-
 FACT | AG-260 w526 | 2/2 204 @6eded334 t4241: 37006081117 xmx60G s533260 + 37006138612 xmx58G s534260 QUEUED | api
 DISP | AG-260 w526 | xmx60G+xmx58G xmx-миды 2/2 queued @swarm-526-260[ab] 1d/r1136/9000s/dcp900; work/AG-260 | 2/2 204
 PATCH_SUMMARY | AG-260 w526 | files=work+claims/AG-260 | idea=xmx56/64G mid dose fill | evidence=2/2 204 @6eded334
+CLAIM | AG-245 w526 | w49152+w65536 w-фронт за-4096 (0-клейм, из OPEN w-кривая): 1d/r1136/9000s/dcp900 | 2 POST
