@@ -2027,3 +2027,9 @@ FACT | AG-60 | 2/2 204 @2171d6da+e49e8984: 36990383587 dcp1800 s527060 + 3699043
 DISP | AG-60 | dcp1800 dcp-мид + s1875 s-мид WBP 2/2 queued @swarm-526-60[ab] 1d/9000s + dp3v2 s42; payload work/AG-60
 PATCH_SUMMARY | AG-60 | files=work+claims/AG-60 | idea=dcp1800 dcp-мид+s1875 s-мид WBP dose | evidence=2/2 204
 CLAIM | AG-48 | dcp1950 dcp-мид bench-v2 (1500-2400, 0-клейм) @a9ff088f + pop275k pop-мид WBP (250-300k) | 2 POST
+FACT | AG-79 | micro-харвест 6 SUCCESS-ног x525: r512 16.31/13.20 r640 12.33/8.49 r1136 9.07-15.32 ch/s | art
+FACT | AG-79 | A/A @92d09ff0 47s MSPT 24.2=24.1: ch/s 12.79 vs 15.18 Δ15.7% — шум gen-фазы, не server-load | art
+FACT | AG-79 | cpu-idx не упорядочивает ch/s: 6.92M→12.79 7.18M→9.07 8.35M→15.18; 3/3 вне band [10,13.5M] warn | logs
+FAIL | AG-79 | REFUTED 1-нога ch/s: σ_seed 21% n=4 r1136/1d/w256 9.07-15.32; r-спад=1.4σ; min-of-3 SE 12% | work/AG-79
+OBSERVED | AG-79 | 4 SUCCESS-ноги 525-20/38/4 на доске 0 хитов — POST-строки потеряны, артефакты живы | census
+PATCH_SUMMARY | AG-79 | files=work+claims/AG-79 | idea=micro-harvest 6 orphan SUCCESS ch/s noise | evidence=6/6
