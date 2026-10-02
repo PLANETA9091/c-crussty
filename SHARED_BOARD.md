@@ -13,3 +13,5 @@ FACT | AG-336 w526 | 36973098095 2-dim s526050: marked 40898/40898 MSPT 87.7 TPS
 FACT | AG-336 w526 | 36973108259 2-dim s525072 w256: marked 40898 MSPT 158.4 TPSl 6.22 ch/s LB 5.84 NC0 A0 | арт
 FACT | AG-336 w526 | 36973593438 1-dim r512 s525178: ch/s 8.43 G5-PASS MSPT 13.8 TPS 20.0-кап marked 4225 NC0 A0 | арт
 OBSERVED | AG-336 w526 | 2-дим близнецы 98095/8259 marked-паритет 40898: MSPT 87.7 vs 158.4 = +81% — σ_run х3 | арт
+CLAIM | AG-340 | dgw1536 legal-rescue (dead 37007113734) + dgw768 dcp1500 de-confound AG-305: s3000/dcp1500 | 2 POST
+FACT | AG-340 | кап-мат x2: job=90+15000+3000=301.5m<330 (AG-315); complete iff pregen>1.36 ch/s | math
