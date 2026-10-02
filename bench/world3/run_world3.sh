@@ -660,6 +660,16 @@ server_died() { ! kill -0 "$SERVER_PID" 2>/dev/null; }
 #   A mark — (loop alive) ∧ Δ«Marked N chunks»=0 ≥600s, armed from first
 #     "Marked" line until soak start ("spark profiler start" in log); during
 #     soak the counter is legitimately static (forceload done) so disarmed.
+#     AG-69 w527: ALSO disarmed while a population injection is in flight
+#     ($WORK/POP-INJECT-ACTIVE marker): marks are legitimately static there
+#     (36/36 done before inject) and long injects (>600s — pop>=450k at
+#     1500/tick on a degrading-TPS trajectory) false-tripped signal A and
+#     SIGQUIT'd a LIVE injection (x4 class: 36988754005 pop450k /
+#     36988691564 pop750k / 36990796267 pop550k + AG-38 675k — all
+#     'signal=mark+log stall_mark=600s marked=36', server alive, log growing
+#     stall_log=0-30s). Signal B (log silence) stays ARMED — the plugin logs
+#     per injection tick, so a real mid-inject wedge still freezes the log
+#     and trips B.
 #   B log — Δ(server-stdout.log size)=0 ≥600s, any phase: full console
 #     silence; normal soak grows every 60s (tps/mobcaps/tickmonitor polls).
 # Trip → log evidence + SIGQUIT (thread dump lands in server-stdout.log
@@ -675,8 +685,8 @@ limbo_monitor() {
     if [ "$now_m" -eq "$base_m" ]; then stall_m=$((stall_m + LIMBO_POLL_S)); else stall_m=0; base_m="$now_m"; fi
     if [ "$now_s" -eq "$base_s" ]; then stall_s=$((stall_s + LIMBO_POLL_S)); else stall_s=0; base_s="$now_s"; fi
     soak=0; grep -qE "spark profiler start|Profiler is now running|POPULATION INJECT DONE" "$WORK/server-stdout.log" 2>/dev/null && soak=1
-    if { [ "$stall_m" -ge "$LIMBO_STALL_S" ] && [ "$soak" -eq 0 ] && [ "$base_m" -gt 0 ]; } || [ "$stall_s" -ge "$LIMBO_STALL_S" ]; then
-      sig="log"; [ "$stall_m" -ge "$LIMBO_STALL_S" ] && [ "$soak" -eq 0 ] && [ "$base_m" -gt 0 ] && sig="mark+log"
+    if { [ "$stall_m" -ge "$LIMBO_STALL_S" ] && [ "$soak" -eq 0 ] && [ "$base_m" -gt 0 ] && [ ! -f "$WORK/POP-INJECT-ACTIVE" ]; } || [ "$stall_s" -ge "$LIMBO_STALL_S" ]; then
+      sig="log"; [ "$stall_m" -ge "$LIMBO_STALL_S" ] && [ "$soak" -eq 0 ] && [ "$base_m" -gt 0 ] && [ ! -f "$WORK/POP-INJECT-ACTIVE" ] && sig="mark+log"
       log "LIMBO-DETECTED signal=$sig stall_mark=${stall_m}s stall_log=${stall_s}s marked=$base_m log_size=$base_s — SIGQUIT (thread dump) + fail-fast"
       grep "Marked [0-9]* chunks" "$WORK/server-stdout.log" 2>/dev/null | tail -1 | sed 's/^/[limbo] last-marked: /'
       tail -5 "$WORK/server-stdout.log" 2>/dev/null | sed 's/^/[limbo] tail: /'
@@ -765,6 +775,7 @@ if [ "$SEEN_DONE" = "1" ]; then
     [ "$GATE_OK" = "1" ] && log "x150k: start-gate passed (${GATE_WAITED}s, marked=$EXPECT_CMDS/$EXPECT_CMDS)"
     log "x150k: benchpop inject target=$POPULATION_TARGET seed=$POPULATION_SEED (waiting <= ${POP_TIMEOUT}s for DONE marker)"
     cmd "benchpop inject $POPULATION_TARGET $POPULATION_SEED"
+    touch "$WORK/POP-INJECT-ACTIVE"  # AG-69: A-signal (mark-stall) disarmed while injection in flight (B stays armed)
     POP_WAITED=0
     while ! grep -q "POPULATION INJECT DONE" "$WORK/server-stdout.log" 2>/dev/null; do
       if grep -q "POPULATION INJECT ABORTED" "$WORK/server-stdout.log" 2>/dev/null; then
@@ -783,6 +794,7 @@ if [ "$SEEN_DONE" = "1" ]; then
         log "x150k: still injecting... waited=${POP_WAITED}s"
       fi
     done
+    rm -f "$WORK/POP-INJECT-ACTIVE"  # injection window over (DONE/ABORTED/timeout/death) — A-signal rearmed
     grep "POPULATION INJECT DONE" "$WORK/server-stdout.log" | tail -1 || true
     grep "POPULATION INJECT ABORTED\|POPULATION INJECT RE-ARM" "$WORK/server-stdout.log" | tail -2 || true
     grep "POPULATION FIXTURE-VALIDITY" "$WORK/server-stdout.log" | tail -1 || true
