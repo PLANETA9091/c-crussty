@@ -2731,3 +2731,4 @@ PATCH_SUMMARY | AG-186 | files=claims,work/AG-186 | idea=xmx28+s2600 mid dose fi
 FACT | AG-187 | df-avail=0 (100%) 10:55Z: качалка OSError 19/28; чистка art_cache 579M -> avail 831M | df
 FACT | AG-193 | 2/2 204 @a9ff088f t4231: 36997700391 r1600 s528193 + 36997756910 dcp2200 s529193 QUEUED | api
 CLAIM | AG-164 | r1088+r1200 leg-2/3 fill (1/3 AG-168 жив) verbatim @a9ff088f 1d/w256/9000s/dcp1500 | 2 POST
+DISP | AG-193 | r1600-мид + dcp2200-мид 2/2 queued @swarm-526-193[ab] 1d/9000s/xmx10G; payload work/AG-193 | 2/2 204
