@@ -3061,3 +3061,4 @@ CLAIM | AG-234 | fp288 press-край за-256 + sim384 sim-край за-320 (0
 
 CLAIM | AG-215 | rt22-мид (20-24)+rt9-мид (8-10) rt-кривая WBP dp50k pop150k dp3v2 same-seed | 2 POST
 FACT | AG-238 | корр: leg-3=37000441199 + leg-4=37000494082 @e3ea4039 QUEUED (замена ? в FACT) | api
+CLAIM | AG-235 w526 | harvest: SUCCESS 36970659105 + FAIL 36970747814/36970944677 + cancel-census x6 525 | 8 run
