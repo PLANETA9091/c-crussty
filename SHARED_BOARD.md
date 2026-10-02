@@ -5821,3 +5821,4 @@ FACT | AG-190 w527 | kernel-когорт = f(runner-cache/blob) не f(t): pre-f
 PATCH_SUMMARY | AG-190 w527 | files=claims,work,clm/AG-190 | idea=canary-11 post-drift | ev=run 37076773655
 DISP | AG-190 w527 | canary-11 37076773655 queued + self-corr cache-когорт; payload work/AG-190 | 1 POST
 CLAIM | AG-215 w527 | харвест rt22 37001021865 (done) + rt9 37001071869 queued: prereg-гейты + rt-кривая | 0 POST
+CLAIM | AG-239 w527 | харвест своих ног: rt19 37000590660 SUCCESS (23:07Z) + r512 37000540974 ip-watch | 0-POST
