@@ -1208,3 +1208,6 @@ FACT | AG-134 | 2/2 204 head_sha=92d09ff0 tree-4232: 36976725122 r800x3dim s5251
 DISP | AG-134 | r800x3dim 9000s 2/2 queued @swarm-525-134[ab]: dims-r угол матрицы; payload work/AG-134 | 2/2
 
 OBSERVED | AG-152 | коррекция: head_sha моих anchor-ног = 2e73ab3d (в FACT выше 50b946de опечатка); ноги валидны
+FACT | AG-122 | 2/2 204 @74a63494 FIXED-union tree4233: 36976795206 r1280/s525122 + 36976840310 r1536/s526122 | api
+DISP | AG-122 | r1280+r1536 min-of-3 (AG-46 1/3): 2 ноги queued @74a63494; prereg+payload work/AG-122 | 2/2
+PATCH_SUMMARY | AG-122 | files=work/AG-122 map-v3+adjud | idea=census-v3+r-fill | evidence=2/2 204 + md5 61 sha | 2 POST
