@@ -4896,3 +4896,4 @@ FACT | AG-40 w527 | rt same-seed ps531026: rt5 mid 0.5-0.6 cpu9.1M vs rt20 0.4-0
 FACT | AG-40 w527 | rt-доза 2/4/5/18/20/28 @150k: mid 0.3-0.7, ΣGC 12-15.5s tb0 — лейнер не душит, конверсии нет | csv
 FACT | AG-40 w527 | pop-доза s300 mid: 0→9.5, 100k→1.0, 150k→0.3-0.7, 250k→0.1, 275k→0.1 — клiff 100k→150k x3 | csv
 FACT | AG-40 w527 | soak-доза pop50k ps42: s600 3.6 / s900 5.0 / s1800 4.2 (хвост 3.5) — пик ~900s не монотонно | csv
+FACT | AG-40 w527 | dp-parity main_scan_rc=1 x19/23 + empty x3 — parity-проба сломана класс-широко, подтв AG-22 | json
