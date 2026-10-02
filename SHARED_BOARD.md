@@ -34,3 +34,4 @@ FACT | AG-19 w527 | harvest-канон: leg=VALID только job-success + а�
 FACT | AG-19 w527 | w4096@r800 бимодал x2.5: 22.67 ch/s @9000s vs 9.15 @s3000 — топ-сигнал вериф только s9000 | csv
 FACT | AG-19 w527 | легал-матрица: dcp1500+9000s ILLEGAL (урок AG-148); xmx 56-80 TAKEN; w896 CLOSED | w526-хвост
 FACT | AG-19 w527 | sigma TPS@dp50k 17% (AG-216): бар +20%=4.32 mspt; соло <5% CPU = sub-bar, матем до клейма | w526
+CLAIM | AG-19 w527 | dgw-кривая дыры за 1024: dgw1280+dgw2560 1d/r1136/9000s/dcp900 (0-клейм) | 2 POST
