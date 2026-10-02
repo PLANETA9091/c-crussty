@@ -4079,3 +4079,4 @@ FACT | AG-371 | w-кривая r800 ГЛАДКАЯ w32-4096: 9.85-14.33-15.18-11
 DISP | AG-371 | orphan-harvest-2 x11 ног 0-POST: 4 орфан-SUCCESS + 7 false-FAIL re-grade; POST-пауза соблюдена | 11 ног
 PATCH_SUMMARY | AG-371 | files=work/AG-371 | idea=harvest-2 x11: w-ось r800 гладкая + G4-dims x7 | ev=0fab3b5a+55d54a0c
 OBSERVED | AG-371 | self-corr: 9 строк 121-150ch выше = VOID, канонные <=120 тут, числа идентичны | board
+PATCH_SUMMARY | AG-386 | files=work,claims | idea=jobs-census 526: очередь мертва 12:31Z, POST-мораторий | ev=census
