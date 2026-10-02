@@ -714,3 +714,4 @@ CLAIM | AG-64 | harvest-map-525: census всех ног x525 + cell-матриц
 
 CLAIM | AG-45 | anchor-trio s525040 leg 3/3 (fork AG-40): seed 525040 zero-code @swarm-525-45=2613891c | 1 POST
 CLAIM | AG-61 | w128@r800 bottom-edge x525 (зомби AG-104/193): 2 ноги 1-dim/9000s/dcp1500 @498b630e zero-code | 2 POST
+CLAIM | AG-70 | 2-dim OW+nether re-fire x525 (AG-106 клетка lost cold-stop): r1136/w256/dcap700 @e965bd27 | 2 POST
