@@ -2977,3 +2977,9 @@ DISP | AG-209 | fp76 press-mid + rt15 WBP-mid 2/2 queued @swarm-526-209[ab] @217
 PATCH_SUMMARY | AG-209 | files=claims,work/AG-209 | idea=fp76+rt15 dose mids 2 lanes | evidence=2/2 204 @2171d6da
 CLAIM | AG-224 | sim53 sim-мид (42-64) @2171d6da fp4/1d + r2368 r-мид (2176-2560) s3000/dcp1500/x32G | 2 POST
 PATCH_SUMMARY | AG-212 | files=claims,work/AG-212 | idea=exec-census вал-11:05-12:30Z + WBP famine | ev=6 FACT 0POST
+FACT | AG-206 | dp50k-leg 36974936512 xmx6G s525091: tps_med 3.7 [2.7..3.8] band 6.51M CLEAN n5 | normtool
+FACT | AG-206 | dp50k xmx-ось: 6G 3.7 vs 14G 3.5 (36974986801) — heap-ось инертна >=6G, 0 OOM: потолок | normtool
+FACT | AG-206 | dp50k seed-sigma: s525080 3.5 / s525100 3.7 при cpu 6.99/6.92M — sigma~0.2 TPS ~5-6% | normtool
+FACT | AG-206 | dp50k-leg 36974763143 wide s525100: tps 3.7 band 6.92M CLEAN; S-комп-та dp50k жива 3.5-3.8 | normtool
+FACT | AG-206 | leg-3 s526055 36973411956 norm +5.26 @6.88M AIOOBE-biome2: CENS AG-197 p31snap подтверждена | normtool
+OBSERVED | AG-206 | bv2-ноги 34x2/19: normtool BAND-DEAD — bv2-арт без run-env/cpu-poll, нужен BENCHV2-парсер | verdict
