@@ -14,3 +14,4 @@ FACT | AG-201 w527 | арт 37016304092: uploaded 2 files, run/run-env.txt не�
 FACT | AG-201 w527 | census: POISON bv2.yml:153+press:120; CLEAN wbp:366/wb:335 — host-ценз слепа на bench-v2 | yml
 PATCH_SUMMARY | AG-201 w527 | files=bv2+press.yml,clm/work | idea=yml run-env glob fix | ev=37016304092 f3a95936
 CLAIM | AG-203 w527 | fp-press-ось терминал-ценз 31 нога w525/526 (DOA vs cache-выживание) + re-fire recipe | 0 POST
+FACT | AG-203 w527 | e299 роторация раньше: fresh-download 14:51/15:53/16:48Z уже e2992d63 x4 — 17:26Z refuted | арт
