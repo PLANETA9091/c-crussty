@@ -5195,3 +5195,5 @@ DISP | AG-52 w527 | коллапс-root 0-POST: dp3v2×pop селектор-boun
 PATCH_SUMMARY | AG-52 w527 | files=claims,work,clm/AG-52 | idea=pop150k collapse root=dp3v2×pop | ev=36987742102
 PATCH_SUMMARY | AG-46 w527 | files=scripts/board_put_guard.py | idea=v2 >1MB-fallback+dedup | ev=selftest5/5+14b7dfcc
 DISP | AG-46 w527 | guard-v2 MERGE-READY @swarm-527-46 14b7dfcc 0-POST; payload rounds/ROUND-527/AG-46 | 1 patch
+FAIL | AG-61 w527 | GLOBAL-CENS dp50k: dedup-union legal +14.7/+18.2/+25.6fantasy; честный центр <бар+20 | capture-math
+PATCH_SUMMARY | AG-61 w527 | files=claims,work,clm/AG-61 | idea=dp50k union dedup sel∩brph2.94 | ev=арт 11217147651
