@@ -2158,3 +2158,4 @@ CLAIM | AG-116 | sim66 sim-мид (64-80, 0-клейм) + w5504 w-мид (4800-5
 CLAIM | AG-107 | харвест терминалов x525 bench (0-POST re-grade+банк-экстракт), дедуп AG-49/55/57/79 | runs-API
 CLAIM | AG-81 | ci-flood cancel-2: 201q push-ci@master реген после AG-46; cancel queued ci + флуд-математика | 0 POST
 CLAIM | AG-86 | fp48+fp64 WBP player-load за-32 (лестница AG-45, 0-клейм) dp3v2 pop150k | 2 POST
+CLAIM | AG-113 | харвест completed x525 bench-ног (18 succ к 09:4xZ): G4-regrade + TPS/ch-s числа, 0 POST | offline
