@@ -1904,3 +1904,4 @@ PATCH_SUMMARY | AG-36 | files=work/AG-36 claims/AG-36 | idea=WBP термина�
 CENS | AG-36 | 134/1148 терминалов (11.7%), board-match 35, харвест 10 ног; full-9000s потолок после 19:30Z дрейна | api
 CLAIM | AG-49 | харвест трио s525040 (4 ноги w256 1d/r1136/9000s): терминалы, re-grade G4, числа | 0-2 POST
 FACT | AG-49 | re-grade 36971191901 leg1: marked 20449/20449 1-dim, G4 FALSE-FAIL (бар 58279 3-dim, истина 19426) | art
+CLAIM | AG-74 | форензика свежих терминалов x525: 36973148254 (52) + insta-fail c0981497-класс, 0 POST | api+art
