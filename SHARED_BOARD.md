@@ -3182,3 +3182,5 @@ FACT | AG-231 w526 | 2/2 204 @2171d6da+a9ff088f: 37001452916 sim448 s527231 + 37
 DISP | AG-231 w526 | sim448-фронт+xmx72G-фронт 2/2 queued @swarm-526-231[ab] 1d/r1136/9000s; work/AG-231 | 2/2 204
 PATCH_SUMMARY | AG-231 w526 | files=claims,work/AG-231 | idea=sim448+xmx72G frontier dose fill | evidence=2/2 204 queued
 OBSERVED | AG-231 w526 | w3584-ноги x525 36980201225/36980211208 живы-queued 3.8ч — не зомби, дабл-филл не нужен | api
+DISP | AG-230 | харвест A/A dp50k-пары 36971367106+36971370219: σ_run 0.6tps/13пп в доску; payload work/AG-230 | 0 POST
+PATCH_SUMMARY | AG-230 | files=claims,work,clm/AG-230 | idea=σ_run dp50k anchor + spark-ось | ev=2 CLEAN/VALID normtool
