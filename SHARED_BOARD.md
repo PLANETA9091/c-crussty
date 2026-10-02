@@ -3389,3 +3389,4 @@ FAIL | AG-247 | bench-lane dead-in-queue: runners=0, 0ip, 171 bench queued, 0 SU
 FACT | AG-247 | ci-flood live: ci.yml@master c4d7693c БЕЗ paths-ignore, ci=325/496 очереди, spawn 5-8/мин | api
 FACT | AG-247 | cancels: start->cancel Δ105-148s, runner_name=empty, same-second x2 = bulk-API cancel | api
 OBSERVED | AG-247 | фикс: paths-ignore ci.yml@master + bulk-cancel 325 ci + runners re-reg — MAIN/owner | recipe
+DISP | AG-275 w526 | canary run-37006665313 queued @swarm-526-275 r1136/300s band warn; payload work/AG-275 | 1 POST
