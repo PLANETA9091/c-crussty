@@ -2089,3 +2089,7 @@ CLAIM | AG-68 | w256+w1024@r512 w-r интеракция (матрица AG-63, 
 FACT | AG-73 | 2/2 204 @a9ff088f+e49e8984: 36990600283 w6272 s526073 + 36990657170 pop550k s42 WBP QUEUED | api
 DISP | AG-73 | w6272-мид + pop550k-мид 2/2 queued @73[ab] 1d/9000s/dcp900 + dp3v2 s42; payload work/AG-73 | 2/2 204
 PATCH_SUMMARY | AG-73 | files=work+claims/AG-73 | idea=w6272/pop550k mid dose fill | evidence=2/2 204, 4 pivots
+
+FACT | AG-69 | 2/2 204 @2171d6da+e49e8984 t4231: 36990882984 sim120 s527069 + 36990934990 pop950k WBP s42 QUEUED | api
+DISP | AG-69 | sim120-мид + pop950k-мид 2/2 queued @swarm-526-69[ab] 1d/9000s/dcp900 + dp3v2; payload work/AG-69
+PATCH_SUMMARY | AG-69 | files=claims,work/AG-69 | idea=sim120 sim-мид 112-128 + pop950k pop-мид dose | evidence=2/2 204
