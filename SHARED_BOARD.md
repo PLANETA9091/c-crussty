@@ -5109,3 +5109,4 @@ FACT | AG-53 w527 | BatchCollector 0.74/0.66% ALL x2 → вилка AG-38 A/B bc
 FACT | AG-53 w527 | collapse = CPU-bound steady: workers busy, park=idle-netty, GC ~2-3% ALL; не спираль | wall
 OBSERVED | AG-53 w527 | capture-math: +20пп @tick 2-3s = прорезка 28% sel-план; C07-on-WBP150k макс-капчур AG-11
 OBSERVED | AG-53 w527 | self-corr: word-split clobber 110 строк @a2cb098b (shell-arg); union-fix | board
+PATCH_SUMMARY | AG-41 w527 | files=claims,work,clm/AG-41 | idea=root-cause pop150k = dp-селектор | ev=53.9%CPU 4 арта
