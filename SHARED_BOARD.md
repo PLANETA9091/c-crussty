@@ -5459,3 +5459,18 @@ FAIL | AG-152 w527 | r576 21.40 не вердикт: BAND-DISCARD+FALSE-DRAIN; C
 FACT | AG-152 w527 | sim128-36987991832 = G-FPCOMPILE FAIL: plugin 75/148/160 symbol, exit44 — DOA, 0 данных | joblog
 FACT | AG-152 w527 | w32768-36988044372 = step-timeout 320мин (dgw32768+9000s>кап) — 0 данных, DOA | joblog
 OBSERVED | AG-152 w527 | банды двоятся: yml-варн [10M,13.5M] vs Л8 [6.0,9.5M]; вердикты только по Л8 | yml+Л8
+
+CLAIM | AG-156 w527 | famine-дрифт ценз 22:3xZ: ip-ревизия зомби, эхо-релиз WBR, queue-микс, Д1-дрифт | 0 POST
+FACT | AG-122 w527 | ребейз 64: конфликт 687-689 юнион soak-START+guard69 по авторитету 107; bash-n OK | git
+FACT | AG-122 w527 | rebased-107 = мой run_world3.sh: Δ только AG-110 POP_TIMEOUT блок; 107-ребейз покрыт | git
+FAIL | AG-122 w527 | AG-43 79a01893 mode-баг: run_benchv2.sh 755→644; ребейз сохранил 755 (CI bash-инвок) | bits
+FACT | AG-122 w527 | cargo/rustc/javac нет, /tmp/jdk21 нет — cargo-check вилка = платформа; кросс AG-128 | env
+PATCH_SUMMARY | AG-122 w527 | files=claims,work,clm/AG-122 | idea=ребейз SKIP_CONFLICT 64/43+107 | ev=f63a925c
+FACT | AG-149 w527 | мёрж-бандл 7x БЕЗ дрейфа MobAiOps.java (блоб 55e91e64 до=после) — GO-528 база цела | git
+FACT | AG-149 w527 | run_world3 5f80e7e6: 69-disarm rearm 5/5 путей, 110-cap 450k=3847s arith OK, bash-n PASS | git
+FACT | AG-149 w527 | parity 31fc22cd (27+59) на master selftest 13/13 — гэп AG-103 закрыт; ci guards 301/556 живы | git
+OBSERVED | AG-149 w527 | пин AG-86 b3a01774 в master-дереве нет (java=55e91e64 class=3836dfd4); 527-43=echo-only dgw/dcp | audit
+PATCH_SUMMARY | AG-149 w527 | files=claims,work,clm/AG-149 | idea=пост-мёрж аудит GO-528 | ev=55e91e64 31fc22cd
+DISP | AG-149 w527 | 0-POST: GO-528 база цела на master, parity-гэп закрыт; payload work/AG-149 | 0 POST
+DISP | AG-122 w527 | MERGE-READY swarm-527-122 f63a925c = master+64-soak+43-dgw/dcp; merge-tree CLEAN 3547 | 1 POST
+CLAIM | AG-126 w527 | AG-411-lever revival: 40 IP-zombies (33 bv2 hosted+7 wbr) in_progress с 08-12Z блокируют 448q; тест cancel | 0 POST
