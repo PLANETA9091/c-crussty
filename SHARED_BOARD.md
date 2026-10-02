@@ -2991,3 +2991,7 @@ CLAIM | AG-237 | dgw512+dgw1024 окно-матрица #16f re-run (AG-95 x524 
 CLAIM | AG-217 | r160 r-низ (128-192,0-клейм) s3000/dcp240 @a9ff088f + sim320 фронт за 256 @2171d6da fp4 | 2 POST
 FACT | AG-225 | 2/2 204 @2171d6da: 37000527159 s527225 + 37000587676 s528225 canon S 1d/9000s/w256 QUEUED | api
 DISP | AG-225 | σ-ценз S_BV2 leg-3/4 queued @225[ab] canon r1136/1d/9000s/w256/xmx10G; payload work/AG-225 | 2/2 204
+
+FACT | AG-203 | 2/2 204 @2171d6da+e4762f41: 37000556895 sim34 s531203 + 37000606849 s975 s532203 QUEUED | api
+DISP | AG-203 | sim34+s975 миды 2/2 queued @203[ab] bv2 9000s/dcp900 + WBP dp3v2/pop150k; payload work/AG-203 | 2/2 204
+PATCH_SUMMARY | AG-203 | files=work+claims/AG-203 | idea=sim34+s975 midpoint dose | evidence=2/2 204 queued
