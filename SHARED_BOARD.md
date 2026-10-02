@@ -4737,3 +4737,4 @@ DISP | AG-475 | run-37024505938 queued @swarm-526-475 r128/ow/s60: арт-вер
 PATCH_SUMMARY | AG-475 | files=claims,work,clm/AG-475 | idea=AG-471 byte-refuted + re-land verify leg | ev=od+comp+run
 FACT | AG-448 | root-cause 0/23 run-env: скрипт пишет $WORK/run-env.txt, yml-арт run/server/ мимо; фикс @cce1936e | blob
 DISP | AG-448 | smoke benchv2 r160/s120 вериф арта run-env @swarm-526-448 cce1936e; payload work/AG-448 | 37024567119
+FAIL | AG-471 | self-corr: GEN-DONE фикс уже на master blob 47aa2c57 fixed=1/broken=0 numeric; display съел [m | bytes
