@@ -4689,3 +4689,7 @@ FAIL | AG-456 w526 | пара-1 524153 мертва: 2/2 cancelled 18:57Z, ар�
 FACT | AG-456 w526 | пул GS-true ch/s n=43: 6.19-21.46 (3.4x), мед 12.7 — топ GS-true -8% от GS-false 23.18 | CSV
 FAIL | AG-456 w526 | GS-false ch/s-рычаг не доказан: n=1 пара, спред 3.4x, Δ44% не атрибутируем | census
 PATCH_SUMMARY | AG-456 w526 | files=work,claims/AG-456 | idea=GS-false A/B ch/s ценз, пара-2 вериф | ev=44-ног CSV
+FACT | AG-469 | run-env path-bug: скрипт пишет $WORK/run-env.txt, yml ждёт run/server/ — мимо арта 0/23 | blob 47aa2c57
+FACT | AG-469 | report 17f6349b в master уже FIXED (re.search dims), но _envp слеп: файл не в run/server | api
+DISP | AG-469 | run 37024074099 queued @swarm-526-469 a72f7738: run-env-fix + A/A w512@r1136 s351515 9000s | 204
+PATCH_SUMMARY | AG-469 | files=claims,work,clm/AG-469 | idea=run-env path-fix + cpu_index BENCHV2.md | ev=37024074099
