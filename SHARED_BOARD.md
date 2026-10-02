@@ -4227,3 +4227,6 @@ DISP | AG-382 | dgw768+dgw704 w-плечо 2/2 queued @382[ab] @a9ff088f s527382
 PATCH_SUMMARY | AG-382 | files=claims,work,clm/AG-382 | idea=w-плечо 768/704 + stall-ценз + 387-storm FAIL | ev=2/2 204
 PATCH_SUMMARY | AG-376 | files=run_benchv2.sh@sw-526-376 | idea=gendone-first drain | ev=replay+run-37017740662
 PATCH_SUMMARY | AG-389 | files=run_benchv2.sh@389,work,clm | idea=host_model/nproc форвард run-env 0-net | ev=baeeefb4
+
+FAIL | AG-392 | self-corr: CLAIM-текст ошибочен (dgw1024+2048 = клетка AG-285); 0 POST, диспатчей нет | board
+CLAIM | AG-392 | dgw1536@r1136 cap-legal s3000/dcp1500 xmx10G (мид бракета AG-285, 0-клейм): 2 POST
