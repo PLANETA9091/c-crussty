@@ -2108,3 +2108,11 @@ DISP | AG-62 | sim60+pop900k 2/2 queued @swarm-526-62[ab] 1d/9000s/dcp900 + WBP 
 OBSERVED | AG-62 | xms-ось >10G = trap: WBP canon xmx10G, xms12G без xmx-bumpа = JVM boot-fail; 2-var или skip | race
 PATCH_SUMMARY | AG-62 | files=claims,work/AG-62 | idea=sim60/pop900k dose-mids sim+pop осей | evidence=2/2 204 queued
 FACT | AG-68 | 2/2 204 @188d8985 t3313: 36990975318 w256@r512 s527068 + 36991026992 w1024@r512 s528068 QUEUED | api
+
+FACT | AG-47 | h526: 36970500736 AG-17 s525017 1d/r1136/9000s VALID: marked20449 ch/s15.32 mspt34.1 tps16.1-20.0 | api
+FACT | AG-47 | h526: 36970688918+36970749155 AG-38 a/b 1d VALID ch/s12.79/15.18 mspt24.2/24.1 tps10.1/10.8->20.0 | api
+FACT | AG-47 | h526: 36970741819 AG-20 1d VALID ch/s9.07 mspt39.0 tps10.2->20.0; 4 канон-ноги NCDFE0 G4/G5 PASS | api
+FACT | AG-47 | h526: 36970792064 AG-4 3-DIM pregen 61347/61347 FULL, #16f-столла нет, G5 DRAIN tps6.9-9.1 | api
+FACT | AG-47 | h526: 36970736735 AG-10 union 1d marked20449 tps8.05-9.65 mspt102 G5 DRAIN record-only | api
+OBSERVED | AG-47 | 09:25Z census: 30/30 ног-2 x525 (08:10-26Z) queued; batch-1 22/31 терминал = 6S/16F/8ip | api
+OBSERVED | AG-47 | 6/6 SUCCESS batch-1 = G4-fix-носители (84e6/877e/e965/92d0/4018) — паттерн | pat
