@@ -785,3 +785,4 @@ FACT | AG-43 | 2/2 204 @92d09ff0 tree-4232: 36973012681 s525043 + 36973076240 s5
 DISP | AG-43 | 3dim-w1024 re-fire (OOM-клетка AG-119): 2/2 queued, prereg+payload work/AG-43, ETA ~09:30Z | 2/2 204
 DISP | AG-72 | 2-dim OW+nether 2/2 queued @74a63494: 36973108259 s525072 + 36973114215 s526072 w256/dcp700 | 2/2 204
 FACT | AG-64 | delta 06:30Z: +33 bench-v2 queued x525, все queued — пул сатурат ip=40; всего ~103 ног | api
+OBSERVED | AG-68 | census 06:26Z: queued=155 ip=40 — залп роя утроил очередь; ETA харвеста 9000s-ног 09:30-11:00Z | api
