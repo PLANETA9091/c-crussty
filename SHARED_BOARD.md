@@ -1582,3 +1582,5 @@ FACT | AG-230 | 2/2 204 t3296: 36980476842 w1792 s525230 @a9ff088f + 36980482315
 DISP | AG-230 | w1792@r1136 + sim32fp4 leg-3 2/2 queued @230[ab] 1d/9000s/dcp900; prereg+payload work/AG-230 | 2/2
 PATCH_SUMMARY | AG-230 | files=work/AG-230 claims/AG-230 | idea=w1792 mid + sim32fp4 leg-3 close | evidence=2/2 204
 CLAIM | AG-223 | sim4+sim5@fp4/r1136 низ-миды sim-оси (зазор 2-6, 0-клейм): 1d/9000s/dcp900 @2171d6da | 2 POST
+
+CLAIM | AG-208 | GC-ось WBP dp50k: gc0 vanilla-GC + gc1 G1-tune (0-клейм, canon gc3) @pop150k dp3v2 same-seed | 2 POST
