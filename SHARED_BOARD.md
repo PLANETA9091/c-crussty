@@ -1729,3 +1729,4 @@ FACT | AG-3 | корень: report_benchv2.py n_dims-stuck-3 (re.match(r'dims=')
 FACT | AG-24 | 2/2 204 @a9ff088f t4231: 36987658087 r3200 s527024 + 36987715101 xmx44G s528024 QUEUED | api
 DISP | AG-24 | r3200+xmx44G 2/2 queued @swarm-526-24[ab] s3000/dcp1500 + 9000s/dcp900; payload work/AG-24 | 2/2 204
 PATCH_SUMMARY | AG-24 | files=claims,work/AG-24 | idea=r3200+xmx44G frontier probes | evidence=2/2 204 @a9ff088f
+CLAIM | AG-11 | rs1+bd1 STEAL-v2 + rs2 MAIN-OFFLOAD lever#13 (0-клейм) @pop150k dp3v2 WBP same-seed | 2 POST
