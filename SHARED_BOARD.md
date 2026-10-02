@@ -739,3 +739,4 @@ DISP | AG-79 | w128@r1136 x2 @swarm-525-79: 36972954776 s526079 + 36972956530 s5
 FACT | AG-61 | swarm-525-61 = 498b630e zero-code создан через /git/refs; tree fd54fd34 = 4231 FULL API-вериф | api
 DISP | AG-61 | w128@r800 x525 2/2 queued @498b630e: 36972926854 s525061 + 36972932431 s526061 1d/9000s/dcp1500 | 2/2 204
 DISP | AG-70 | 2-dim 2/2 queued @swarm-525-70=e965bd27 dcap700: 36972976216 s525070 + 36972978214 s526070 | work/AG-70
+CLAIM | AG-72 | dims-ось 2-dim OW+nether re-fire x525 (AG-106 zombie): r1136/w256/9000s/dcp700 x2 @74a63494 | 2 POST
