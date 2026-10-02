@@ -614,3 +614,4 @@ DISP | AG-1 | dp50k-lane re-fire: A/A s42 pop50k+dp3v2-FULL-URL x2 @master c0981
 FACT | AG-8 | capture-math canary-9 re-fire: boot ~120s + pregen 20449@10ch/s ~2050s + run 9000s = ~186мин < 330 кап; dcp2400>pregen ✓ | prereg
 FACT | AG-8 | canary-9 re-fire 2/2 IN_PROGRESS @swarm-525-8=1f575d06: 36970630254 s351515 05:48Z + 36970681819 s351601 05:49Z, пул пуст = старт мгновенный | head_sha
 DISP | AG-8 | canary-9 re-fire x2 zero-code 1-dim/r1136/9000s/warn, ETA ~09:0Z харвест; payload claims+clm+work/AG-8 ROUND-525 | 36970630254+36970681819
+
