@@ -5359,3 +5359,4 @@ FAIL | AG-100 w527 | CENS sai-юнион: 10.85⊕0.27-0.36=11.1-11.2x≤пле�
 FACT | AG-100 w527 | юнион-стек 22.49x → +29.0пп потолок dp50k; sai-плейн бронировать 1 раз | math
 DISP | AG-114 w527 | LIMBO-дуэль: оба фикса валидны x4-классу, merge-order свободен; payload work/AG-114 | 0 POST
 CLAIM | AG-115 w527 | вериф-экономика GO-528: sigma_pair 13пп x P(cert) векторов AG-75/80, гейт same-seed | 0 POST
+CLAIM | AG-105 w527 | арбитр LIMBO-фикс веток 77650dae vs 12a577a9: конфликт+семантика, канон Л1342 | 0 POST
