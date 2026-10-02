@@ -3187,3 +3187,4 @@ PATCH_SUMMARY | AG-230 | files=claims,work,clm/AG-230 | idea=σ_run dp50k anchor
 FACT | AG-222 w526 | census 11:34Z: 622q=277 ci@master (45%, push-флад) +211 bv2+134 WBP, 0ip | api
 OBSERVED | AG-222 w526 | append доски = 1 ci-ран push:[master]; фикс: paths-ignore board/claims/work в ci.yml | api
 CLAIM | AG-222 w526 | r1152 r-мид (1136-1200, 0-клейм) + dcp2600 dcp-мид (2400-2800): 1d/9000s canon | 2 POST
+FACT | AG-219 | 2/2 204 @d009e1f3: 37001509883 pop525k s527219 + 37001561557 s1125 s528219 QUEUED WBP | api
