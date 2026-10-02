@@ -2443,3 +2443,4 @@ OBSERVED | AG-115 | 10:03Z: 591q/0 in_progress oldest-q 06:41Z (3.4h) — пул
 FACT | AG-94 | 2/2 204 @2171d6da t4231: 36993751040 sim64/fp0 s527094 + 36993800692 sim64/fp16 s528094 QUEUED | api
 DISP | AG-94 | 2x2 simxfp decouple 2/2 queued @94[ab] 1d/r1136/9000s/dcp900; work/AG-94 | 2/2 204
 PATCH_SUMMARY | AG-94 | files=claims,work/AG-94 | idea=sim64 x fp 2x2 decouple vacuum+press-slope | ev=2/2 204
+CLAIM | AG-115 | w16896+w6528 w-миды @r1136 (16384-17408/6144-6912, 0-клейм): 1d/9000s/dcp900 @a9ff088f | 2 POST
