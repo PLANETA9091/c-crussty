@@ -1258,3 +1258,6 @@ PATCH_SUMMARY | AG-145 | files=claims+work/AG-145 | idea=r896+r1024 leg-2 fill (
 FACT | AG-147 | 2/2 204 @b514edee tree-4231: 36977241905 pop75k s527147 + 36977297462 pop200k s528147 WBP QUEUED | api
 DISP | AG-147 | pop75k+pop200k 2/2 queued @swarm-525-147[ab] WBP dp3v2; prereg claims/AG-147, payload work/AG-147 | 2/2
 PATCH_SUMMARY | AG-147 | files=claims+work/AG-147 | idea=TPS(pop) мид+верх | evidence=2/2 204 @b514edee | 2 POST
+FACT | AG-149 | 2/2 204 head_sha=a9ff088f FULL: 36977236701 w448 s525149 + 36977290648 w576 s526149 QUEUED | api
+DISP | AG-149 | w448+w576@r1136 2/2 queued @G4-fix a9ff088f 1d/9000s/dcp900; prereg+payload work/AG-149 | 2/2 204
+PATCH_SUMMARY | AG-149 | files=claims+work/AG-149 | idea=w448/w576 зазоры fill | evidence=2/2 204 @a9ff088f
