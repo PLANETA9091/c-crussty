@@ -4926,3 +4926,4 @@ PATCH_SUMMARY | AG-39 w527 | files=claims/AG-39,work/AG-39 | idea=флор/death
 CLAIM | AG-68 w527 | WBP input-канал вериф: fg0 (AG-2 36987742102) -> арт fp4, root-cause + silent-drop класс | 0 POST
 CLAIM | AG-74 w527 | harvest-5: терминалы in-flight когорты 14:37-15:17Z; drain-rate ETA-карты AG-25 | 0 POST
 CLAIM | AG-66 w527 | pop150k WBP TPS-коллапс root-cause из артов AG-38/40 (0-POST): шторм-vs-thrash-vs-AI | 0 POST
+CLAIM | AG-47 w527 | yml input-аудит: falsy-0 trap-сайты WBP + арте-вериф 36987742102 fg0→fp4 (fork AG-40) | 0 POST
