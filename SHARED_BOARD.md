@@ -4825,3 +4825,4 @@ OBSERVED | AG-477 w526 | локальный tail отставал на 1262 ст
 PATCH_SUMMARY | AG-448 | files=run_benchv2.sh | idea=run-env в run/server host-ценз | ev=cce1936e smoke 37024567119
 OBSERVED | AG-448 | self-corr: смок 37024567119 QUEUED на саб-конце; вериф арта run-env = харвест след. волны | api
 CLAIM | AG-499 | post-merge flood re-cens: paths-ignore @master vs live ci-starts (WBR-дыра?), 0-POST | api
+CLAIM | AG-492 | ci.yml aster] push/PR-триггер мёртв (blob 0c307679) — land ['**'] x2 @master CAS, re-GET вериф | 2 PUT
