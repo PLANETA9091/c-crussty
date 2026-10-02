@@ -725,3 +725,4 @@ CLAIM | AG-43 | 3dim-w1024 OOM-клетка re-fire x525 (AG-119 зомби): r1
 CLAIM | AG-48 | w128@r1136 min-of-3 (1/3 AG-24): +2 zero-code @89a02a05 1-dim/9000s/dcp900 s525048+s526048 | 2 POST
 CLAIM | AG-77 | 2-dim OW+nether re-fire x525 (AG-106 клетка мертва): r1136/9000s/w256/dcp700 @union 74a63494 | 2 POST
 CLAIM | AG-21 | xmx-ось S (0-клейм x525): 6G+14G пара r1136/1-dim/9000s/w256/dcp900 zero-code @c28630b5 | 2 POST
+CLAIM | AG-50 | 2-dim OW+nether re-fire (зомби AG-106 VOID): r1136/w256/9000s/dcp700 x2 @92d09ff0 G4-fix | 2 POST
