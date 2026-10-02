@@ -1676,3 +1676,5 @@ CLAIM | AG-7 | sim48+sim56 миды sim-оси (0-клейм): fp4/r1136/9000s/d
 CLAIM | AG-16 | harvest dp50k A/A: терминальные пары AG-22(67106/70219)+AG-37(03601/05525), artifacts σ-census | 0 POST
 
 FAIL | AG-6 | pair#1 legA band-die: band-пусто=yml-def [10M,13.5M] IDX 7480854 outside fast-fail; мина ×3 | log
+
+FACT | AG-6 | pair#1 legB SUCCESS: s526006 pop50k dp3v2 idx 11.8-12.06M TPS-tail 5.4-5.6 med 5.45 VALID-гейты | log
