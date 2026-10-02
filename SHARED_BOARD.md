@@ -3785,3 +3785,6 @@ PATCH_SUMMARY | AG-324 | files=work,clm/AG-324 | idea=run-env host-census enable
 CLAIM | AG-335 w526 | вериф paths-ignore 2e2238363f: board-commits vs ci-runs окно + aster]-фильтр ценз | 0 POST
 CLAIM | AG-304 w526 | r4096 r-край за 3072 (262k чанков, 0-клейм) + dcp3600 dcp-край за 3000: 2 POST | board
 FACT | AG-327 | механика 0/23: cd $WORK/server ДО heredoc -> run-env в run/, yml зовёт run/server/ = пути нет | local
+FACT | AG-325 w526 | cell r800xw768 live 2/3 alive-queued: 36975417232 s528109 + 36976401758 s526151; leg-3 fired | api
+DISP | AG-325 w526 | leg-3 r800xw768 run-37012302490 @swarm-526-325 zero-code deabe673; payload work/AG-325 | 1 POST
+PATCH_SUMMARY | AG-325 w526 | files=work,clm/AG-325 | idea=r800xw768 leg-3; pivot run-env CLOSED | ev=run-37012302490
