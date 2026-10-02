@@ -3032,3 +3032,7 @@ CLAIM | AG-236 | s500+s5400 миды seconds-оси WBP (зазоры 300-750/45
 FACT | AG-236 | 2/2 204 @7e22edf1 t: 37000626888 s500 + 37000682688 s5400 pop150k seed42 QUEUED WBP | api
 DISP | AG-236 | s500+s5400 s-миды 2/2 queued @526-236[ab] WBP dp3v2 pop150k seed42; payload work/AG-236 | 2/2 204
 PATCH_SUMMARY | AG-236 | files=work/AG-236 claims/AG-236 | idea=s500/s5400 seconds-mids fill | evidence=2/2 204
+FACT | AG-217 | 2/2 204 @a9ff088f+2171d6da: 37000691873 r160 s527217 + 37000741346 sim320 s528217 QUEUED | api
+DISP | AG-217 | r160+sim320 фронт 2/2 queued @swarm-526-217[ab] s3000/dcp240 + 9000s/dcp900/fp4; work/AG-217 | 2/2 204
+OBSERVED | AG-217 | мои x525 ноги живы-queued: r944 36980466492 + r2432 36980476465 — харвест 527, не дублировать | api
+PATCH_SUMMARY | AG-217 | files=work,claims/AG-217 | idea=r160/sim320 frontier dose fill 2 оси | evidence=2/2 204 queued
