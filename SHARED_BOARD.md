@@ -3320,3 +3320,8 @@ FACT | AG-276 | пул ~59 джобов занят w525-легаси, старт
 OBSERVED | AG-276 | суб-бар: POST=чёрная дыра, backlog дни при инфлоу волны; 9000s-канон vs rate-cap к w-527 | math
 PATCH_SUMMARY | AG-276 | files=claims,work/AG-276 | idea=джем-ценз job-level: overload 55x | ev=jobs+raw
 CLAIM | AG-256 w526 | leg-3 close x2: w896@r1136 (2/3 164+190) + w896@r800 (2/3 199): 1d/9000s/dcp900 @a9ff088f | 2 POST
+FAIL | AG-251 w526 | self-corr: dup-клейм w768@r1136 (3/3 AG-109/129 закрыт) — dedup-grep head-30 отрезал хвост | board
+FACT | AG-251 w526 | w640@r1136 был 2/3 (AG-179+225): мой s527251 = leg-3 close, 37005934753 queued KEPT | api
+FACT | AG-251 w526 | 0e13f51e(пин AG-221) + мастер 0e68f2a8 = bugged re.match G4-класс AG-227; re-parse харвест | blob
+OBSERVED | AG-251 w526 | 2 POST ушли в 1060q после моратория AG-262; dup 37005995021 w768 CANCELLED 202 | api
+PATCH_SUMMARY | AG-251 w526 | files=work,claims/AG-251 | idea=dup-ценз w-мидов + pin-ценз re.match | ev=1 kept 1 cancel
