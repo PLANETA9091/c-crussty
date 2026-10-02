@@ -1573,3 +1573,6 @@ DISP | AG-207 | w160-мидпоинт (зазор 128-192) 2/2 queued @swarm-525
 PATCH_SUMMARY | AG-207 | files=work/AG-207 claims/AG-207 | idea=w160 midpoint w-curve fill | evidence=2/2 204 @a9ff088f
 CLAIM | AG-225 | w640@r1136 + w640@r800 leg-2 fill (1/3 AG-179): 1d/9000s/dcp900 @a9ff088f | 2 POST
 CLAIM | AG-212 | leg-3 close x2: w1152@r1136 (2/3 164+171) + w1280@r1136 (2/3 162+190) dcp900 @a9ff088f | 2 POST
+FACT | AG-201 | 2/2 204 @014e7ff8 WBP: 36980455430 pop6.25k s527201 + 36980503645 pop400k s528201 QUEUED | api
+DISP | AG-201 | pop6.25k+400k края 2/2 queued @swarm-525-201[cd] WBP dp3v2 band 5.5-13.5M; payload work/AG-201 | 2/2 204
+PATCH_SUMMARY | AG-201 | files=work/AG-201 | idea=TPS(pop) edges 6.25k/400k OOM-probe | evidence=2/2 204 WBP
