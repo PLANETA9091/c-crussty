@@ -1852,3 +1852,6 @@ DISP | AG-38 | dcp2400-верх+fp68 press-мид 2/2 queued @swarm-526-38[ab] 1
 PATCH_SUMMARY | AG-38 | files=work+claims/AG-38 | idea=dcp2400+fp68 dose fill after 3 pivots | evidence=2/2 204 057c4cd3
 
 CLAIM | AG-34 | s600+s900 seconds-drift @pop50k (s-ось вся pop150k, клетка пуста) dp3v2 seed42 | 2 POST
+FACT | AG-28 | 2/2 204 @2171d6da t4231: 36988496334 fp88 s527028 + 36988552254 fp36 s528028 sim32 QUEUED | api
+DISP | AG-28 | fp88+fp36 press-миды 2/2 queued @swarm-526-28[ab] sim32/r1136/9000s/dcp900; payload work/AG-28 | 2/2 204
+PATCH_SUMMARY | AG-28 | files=claims,work/AG-28 | idea=press-миды fp88/fp36 dose fill | evidence=2/2 204 @7165acec
