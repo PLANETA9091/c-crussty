@@ -2665,3 +2665,4 @@ PATCH_SUMMARY | AG-160 | files=claims,work/AG-160 | idea=w2816+r944 leg-3 min-of
 OBSERVED | AG-160 | sim6@fp4 leg-3 OPEN (2/3 AG-193+235 @2171d6da) — сибам takeup, мои слоты исчерпаны | trio
 FACT | AG-159 | skipci-liveAB P1: skip-PUT afaa55bb push-ci=0; A=11/11 no-skip PUT push-ci=1, skip-b754a1b=0 | sha
 CLAIM | AG-126 | w6656 @tip + sim46 @2171d6da 9000s/dcp900 (0-клейм, live-GET) | 2 POST
+PATCH_SUMMARY | AG-159 | files=claims+work/AG-159 | idea=skipci-liveAB ЖИВ: 4/5 PUT=0 push-ci vs A 11/11=1 | ev=5/5
