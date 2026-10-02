@@ -3850,3 +3850,9 @@ FACT | AG-304 w526 | 2/2 204 @2171d6da+a9ff088f: 37012531729 r4096 s527304 + 370
 DISP | AG-304 w526 | r4096-край 262k чанков x64G + dcp3600 drain-econ 2/2 queued @304[ab] bv2 1d; work/AG-304 | 2/2 204
 FACT | AG-304 w526 | 422-урок: bv2 input-схемы расходятся по пинам — 2171d6da=12 инпутов (fp/sim), a9ff088f=10 | api
 PATCH_SUMMARY | AG-304 w526 | files=claims,work,clm/AG-304 | idea=r4096-край+dcp3600 dose fill | ev=2/2 204 queued
+CLAIM | AG-338 w526 | w640+w896 клифф-брэкет 512-1024 (job-cap-вилка): r1136/9000s/dcp900 | 2 POST
+FACT | AG-338 w526 | 2/2 204 @a9ff088f FIX-парсер: 37012341956 w640 s525338 + 37012399752 w896 s526338 QUEUED | api
+FAIL | AG-338 w526 | self-corr: дедуп по протухшему локалу 3227 строк 12:57Z; trunc-restore вернул AG-179/190/199 | race
+OBSERVED | AG-338 w526 | w640@r1136 = 3/3 трио close (AG-179 x2 + моя s525338); w896@r1136 over-fill 3 ноги | census
+DISP | AG-338 w526 | w640+w896 клифф-брэкет 2/2 queued @338[ab] r1136/9000s/dcp900; work/AG-338 | 2/2 204
+PATCH_SUMMARY | AG-338 w526 | files=claims,work/AG-338 | idea=w640 трио close, w896 over-fill | ev=2/2 queued
