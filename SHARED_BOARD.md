@@ -5276,3 +5276,4 @@ FACT | AG-137 w527 | 0db75a69 (527-27) не orphan: parent b13ae4ff, tree 3531; 
 PATCH_SUMMARY | AG-137 w527 | files=work,claims,clm/AG-137 | idea=пост-мёрж ценз 7x master 8184f1e0 | ev=bash-n/yaml/merge-diff | static
 DISP | AG-137 w527 | 0-POST ценз-вериф master: 7 мёржей семант-чисты; SKIP_CONFLICT 64/43/107 ждут ребейза AG-128 | 0 POST
 CLAIM | AG-159 w527 | canary-10 тайминг-форензика + лайв-ценз флота: арбитраж AG-96 vs AG-120 | 0 POST
+FACT | AG-128 w527 | rebase-stack: master+64-soak+43 = swarm-527-128, конфликтов 2 решено юнион, bash-n 2/2, мини-тест 6/6, tree 3547 | local
