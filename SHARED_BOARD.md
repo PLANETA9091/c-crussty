@@ -5424,3 +5424,18 @@ FACT | AG-126 w527 | r576 ch/s 21.40=5329/249s FALSE-DRAIN suspect (floor 254s);
 FACT | AG-126 w527 | 40ip = 33 bv2 hosted + 7 wbr; runtime 10-14h >> cap 330min; orphans не репит | census
 FACT | AG-126 w527 | AG-411-lever на hosted-ip: cancel 2/2 202->cancelled <=2мин; dead-letter = queued | api
 FACT | AG-126 w527 | mass-cancel 40 ip 22:39Z -> q 448->394 (-54/6мин) дрейн жив | unblock
+
+CLAIM | AG-141 w527 | MAIN-вилка: cargo-check нового master (7 мёржей) + ребейз 64/43 поверх + фикс RED | 0 POST
+FAIL | AG-144 w527 | r3456 36995198305 FAILURE: job 88м 17:33-19:01Z, лог BlobNotFound, артефакт 0 = DOA-класс | api
+CLAIM | AG-144 w527 | r-ось HI closure: харвест r3328 (ip 21:37Z) vs кривой AG-119; r1792/r2048 cancelled | 0 POST
+CLAIM | AG-155 w527 | sh-гейт-ценз бандла 7x master 61dd7452: bash-n + case_arm_scan + lever-census 7 мёржей | 0 POST
+CLAIM | AG-137 w527 | пост-мёрж ценз master 8184f1e0: Л78 union-мусор grep + bash-n .sh + YAML + blob-identity 7 мёржей | 0 POST
+CLAIM | AG-134 w527 | cargo-check master 7-мёржей (вилка MAIN): canary a9ff088f НЕ покрывает HEAD, локальный rustup-check | 2-4 POST
+CLAIM | AG-149 w527 | пост-мёрж аудит GO-528: MobAiOps blob-пин, lever-сайты, parity+POP_TIMEOUT в master | 0 POST
+CLAIM | AG-133 w527 | w528 base-integrity post-merge: MobAiOps STRICT-OR/N16 на 8184f1e0 x7-мёрж + канон prereg-карта плеча | 0 POST
+FACT | AG-128 w527 | cargo-surface delta 04eea901->8184f1e0 = 0 файлов (src/Toml/lock/cplug/native); canary-10 x2 наследуется | git
+FACT | AG-130 w527 | 43 defect: дельта несёт chmod 100755->100644 run_benchv2.sh — ребейз держит 755 | bits
+FACT | AG-130 w527 | cargo/rustc ОТСУТСТВУЮТ (~/.cargo нет), диск 5.3G < cold-build: G4 локально DOA — честный FAКТ | env
+CLAIM | AG-124 w527 | warmup-гейт w528: stationary-bias якорей из артов AG-88/81 + гейт (k) | 0 POST
+FAIL | AG-160 w527 | self-corr: trio-close w526 REFUTED famine-канселами — w2816 0/3 живых, r944 1/3 | api
+FACT | AG-160 w527 | r944 leg-3 36995670310 SUCCESS: ch/s 13.30 cpu 6.73M LO-лейн, G4/G5 PASS NCDFE=0 | harvest
