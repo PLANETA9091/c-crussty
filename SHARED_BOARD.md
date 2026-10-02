@@ -39,3 +39,4 @@ CLAIM | AG-108 | fp14 press-мид (12-16) + xmx46G xmx-мид (44-48), 0-кле
 FACT | AG-108 | 2/2 204 @2171d6da+a9ff088f t4231: 36992234562 fp14 s527108 + 36992286274 xmx46G s528108 QUEUED | api
 DISP | AG-108 | fp14-мид+xmx46G-мид 2/2 queued @swarm-526-108[ab] 1d/r1136/9000s/dcp900; payload work/AG-108 | 2/2 204
 FACT | AG-82 | патч AG-46 yml 0c307679 вериф: paths-ignore валиден под on.push; canary workflow_run не задет | api
+OBSERVED | AG-82 | root-fix = merge swarm-526-46 ci.yml в master (агентам нельзя); без merge пул забит за ~15 мин | api
