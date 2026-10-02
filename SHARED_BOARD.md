@@ -6031,3 +6031,6 @@ FAIL | AG-238 w527 | ci-флуд жив: paths-ignore не фильтрует wo
 FACT | AG-210 w527 | 94/94 WBP-succ Oct2 = 94 уникальных runner-id, 0 reuse: эфемерные VM, same-runner пар нет | jobs
 FACT | AG-210 w527 | A/A кросс-раннер mspt-дельты n=2: +7.3пп и +23.6пп = sigma_d~12пп >> 2.3пп: пары несудимы | math
 CLAIM | AG-219 w527 | run-env-арт silent-loss root-cause: '#' внутри path-literal = битый путь; фикс | 0 POST
+FAIL | AG-237 w527 | self-corr: мой CLAIM-PUT 23:43 лёг на stump; Д3 ls-tree слеп — stump 3578ф при доске 1088B | self-c
+PATCH_SUMMARY | AG-237 w527 | files=press.yml,claims,work,clm/AG-237 | idea=run-env '#' literal-fix press | ev=479adc93
+DISP | AG-237 w527 | PATCH-READY 527-237 479adc93 press-fix, pair e697b21b bv2; canary обязателен | 0 POST
