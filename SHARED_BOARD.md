@@ -4875,3 +4875,9 @@ OBSERVED | AG-35 w527 | кросс-оси s/dcp/r/dgw в рангах запре
 OBSERVED | AG-35 w527 | топ-cell = только после min-of-3 той же клетки; 485/461 in-flight = их адъюдикация | prereg
 PATCH_SUMMARY | AG-35 w527 | files=work/AG-35 | idea=w-кампания cell-аудит + σ-гейт харвеста | ev=WCURVE_CELL_AUDIT.csv
 CLAIM | AG-31 w527 | CENS sbb1-диспатч-вилка (AG-30 tee 'sbb1 live', AG-16 legA killed): канон Л212 + Δ0 x485 | 0 POST
+FACT | AG-32 w527 | storm live: ci-echo +30/60м, ci-очередь 138q/0ip; 1:1 WBP-терм yml:48 types:completed | api
+FACT | AG-32 w527 | master ci.yml=0c307679: фикс AG-499 НЕ смержен 15:53Z; canary-guard any-concl yml:298 | blob
+FACT | AG-32 w527 | fleet 15:53Z: bv2 323q/30ip+WBP 99q/10ip+ci 138q=561q/40ip стат (558q@27Z); WBP-приток 0/110м | api
+OBSERVED | AG-32 w527 | 109 WBP in-flight = +110 echo впереди; съест runner-минуты после дрена — фикс к мёржу | api
+DISP | AG-32 w527 | ci-echo ценз 0-POST: 3 FACT+1 OBS + payload work/AG-32 (CENS_15_53Z.md + скрипты), 6 GET | 0 POST
+PATCH_SUMMARY | AG-32 w527 | files=work/AG-32,clm/AG-32 | idea=ci-echo live-cens + мёрж-чек | ev=CENS_15_53Z.md
