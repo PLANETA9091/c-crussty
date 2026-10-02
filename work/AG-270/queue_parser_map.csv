@@ -1,0 +1,39 @@
+head_sha8,parser_class,legs,age_min_h,age_max_h
+2171d6da,bugged-match,3,0.11,0.19
+6eded334,bugged-match,2,0.17,0.18
+7d65db69,bugged-match,2,0.16,0.17
+a29089c2,fix-search,2,0.15,0.16
+a9ff088f,fix-search,15,0.0,0.18
+f548fb7f,bugged-match,1,0.08,0.08
+dc6c2870,WBP-n/a,2,,
+
+SNAPSHOT2,page1 non-ci,85
+a9ff088f,swarm-526-272b,fix-search,31,1.22
+2171d6da,swarm-526-258,bugged-match,20,1.21
+dc6c2870,swarm-526-249b,bugged-match,4,1.1
+e3ea4039,swarm-526-238b,bugged-match,3,1.21
+a29089c2,swarm-526-246,fix-search,2,0.19
+7d65db69,swarm-526-244,bugged-match,2,0.21
+6eded334,swarm-526-260b,bugged-match,2,0.21
+0e13f51e,swarm-526-221b,bugged-match,2,0.99
+d009e1f3,swarm-526-219b,bugged-match,2,1.02
+9f3f8b36,swarm-526-215b,bugged-match,2,1.11
+160dad2a,swarm-526-237b,bugged-match,2,1.15
+5a7e1e61,swarm-526-207b,bugged-match,2,1.17
+c3b2782f,swarm-526-201b,bugged-match,2,1.17
+7e22edf1,swarm-526-236b,bugged-match,2,1.18
+f548fb7f,swarm-526-275,bugged-match,1,0.11
+a8312585,swarm-526-253,bugged-match,1,0.25
+c6e3ee69,swarm-526-259,bugged-match,1,0.26
+c5b1fa6b,swarm-526-265,bugged-match,1,0.28
+e4762f41,swarm-526-203b,bugged-match,1,1.18
+31bd4c41,swarm-526-239b,bugged-match,1,1.18
+e965bd27,swarm-526-239,bugged-match,1,1.19
+
+
+# CORRECTED SUMMARY (v2 classifier, comment-lines excluded), snapshot 12:52Z page1 non-ci=85
+# bugged re.match:32 = 51 legs / 17 sha (top: 2171d6da x20, a9ff... fix-v2 x31, a29089c2 x2 fix-v2)
+# fix-v2 (re.search dims=([^#\n]+)) = 33 legs; fix-v3 (e965bd27 anchored-search, 5562B) = 1 leg
+# e965bd27 corrected bugged->fix-v3 (v1 caught re.match in comment L30)
+# f548fb7f (AG-275 run-env-fix branch) = bugged parser:32 -> G4- ноги потребуют re-parse
+# wall: 58ip unchanged since 11:15Z; queued total_count volatile (1132-1176), page1 non-ci 85
