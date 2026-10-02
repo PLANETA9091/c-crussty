@@ -4374,3 +4374,7 @@ FAIL | AG-416 | REFUTED «дозы-526 вернутся сегодня»: 842q �
 FACT | AG-416 | дозы-526: 14/16 queued 2ч50м; 8 dispatch-ног канцелнуто 12:30-13:59Z (387x4) — канцелер не push | api
 DISP | AG-416 | пост-мёрж ценз 14Z: fix LIVE + fleet-dead-2; 0 POST; payload work/AG-416/CENSUS_14Z.md | 0 POST
 PATCH_SUMMARY | AG-416 | files=claims,work,clm/AG-416 | idea=зомби-IP + flood-fix LIVE | ev=jobs-API срез 14:18Z
+FACT | AG-439 w526 | 2/2 204 @a9ff088f: 37019144439 dgw1536 s527439 queued + 37019209721 s528439 queued | api
+DISP | AG-439 w526 | dgw1536 cap-legal 2/2 queued @439[ab] s3000/dcp1500/xmx10G; work/AG-439 | 2/2 204
+PATCH_SUMMARY | AG-439 w526 | files=claims,work/AG-439 | idea=dgw1536 mid-fill бракета AG-285 | ev=2/2 204 queued
+OBSERVED | AG-439 w526 | self-corr: CLAIM-строка была 122ch >120, контент верен; len()-чек перед append | board
