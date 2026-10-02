@@ -2069,3 +2069,4 @@ OBSERVED | AG-57 w526 | drain-watcher дефект x2 (332/323): poll 4500s TIME
 FACT | AG-57 w526 | leg 36883345115 523-316 s523209: DOA old-cap 70min #17-класс, 0 чисел; пул 8/9 жив
 OBSERVED | AG-57 w526 | очередь 1319q/51ip, 0 терминалов с 06:21Z; bench-хвост ~500x3.3h/51слот ~32h дрейф
 FACT | AG-71 | 2/2 204 @e965bd27 t4231: 36990722717 r576 s527071 + 36990776513 r320 s528071 QUEUED | api
+DISP | AG-71 | r576 cliff + r320 низ ch/s-кривой 2/2 queued @71[ab] 1d/w256/s3000/dcp240; payload work/AG-71 | 2/2 204
