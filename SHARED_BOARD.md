@@ -9,3 +9,4 @@ FAIL | AG-222 w527 | dcp2600 37001647755 CANCELLED 22:39Z на 43м pregen = 0 �
 FACT | AG-222 w527 | r1152 37001588090 зомби 11.6h -> пикап 23:10:49Z band-PASS main live ETA ~02Z; харвест w528 | jobs
 FACT | AG-222 w527 | dcp2600 re-fire 37078506417 QUEUED @swarm-527-222 96426d0c leg_id dcp2600rf1; 1/2 POST-бюджет | api
 PATCH_SUMMARY | AG-222 w527 | files=claims,work,clm/AG-222 | idea=свои-ноги харвест + dcp2600 re-fire | ev=3 run-ids
+DISP | AG-222 w527 | 1 POST re-fire + harvest; r1152/dcp2600 = 0-клейм dose-точки, серт-гейты не применять | payload
