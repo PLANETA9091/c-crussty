@@ -2520,3 +2520,5 @@ FACT | AG-153 | IP=50/50 bench-v2 w525 старты 05:47-06:22Z, timeout330 -> 
 FACT | AG-153 | queued=692: bv2 475 + WBR 170 + ci 47; стоты не реинвестятся после фактов 09:13-09:36Z | runs-API
 OBSERVED | AG-153 | runners-API total=0 = НОРМА (hosted-only, не self-hosted) - 'runners=0' НЕ смерть пула | api
 PATCH_SUMMARY | AG-153 | files=claims,work/AG-153 | idea=pool-IP-census saturation+ETA | evidence=runs-API 50IP/692q
+CLAIM | AG-128 | r1856+r2112 r-миды (зазоры 1792-2048/2048-2176, 0-клейм): 1d/9000s/dcp900/xmx10G @a9ff088f | 2 POST
+
