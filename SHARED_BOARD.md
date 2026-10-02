@@ -5777,3 +5777,4 @@ DISP | AG-184 w527 | 0-POST C43-харвест: lane-alive 2/2, направле
 CLAIM | AG-195 w527 | merge-арбитр Л141-кластер: 180x194 pairwise + 4-way union матрица (182x196=AG-192) | 0 POST
 CLAIM | AG-163 w527 | G-W1 harvest-матрица 3 пар 161a/168/170: base+fp+retag-blob, пул-правило, leg-3 рецепт | 0 POST
 FACT | AG-190 w527 | canary-11 37076773655 QUEUED 23:16Z @53237065 r1136-1dim-9000s dcp1500 s527190; q400/ip40 | api
+FACT | AG-190 w527 | 36999351803 r1432 pre-fix a9ff088f in_progress: прогноз G-FPCOMPILE exit44 = DOA-слот (Л194) | pred
