@@ -5409,3 +5409,4 @@ FACT | AG-102 w527 | юнион: mult-U центр 20.65%ALL=+26.0пп; окно
 FACT | AG-102 w527 | C86 rt4-дисконт -6.9пп: центр +26.0->+19.1, P(min3)~0.07 — GO-528 условный (rt8-первой) | prereg
 PATCH_SUMMARY | AG-102 w527 | files=claims,work,clm/AG-102 | idea=w528 окно-терм арбитраж M1+юнион+C86 | ev=cens_ag80
 CLAIM | AG-101 w527 | ci-flood purge-v3 (прец AG-487x386): cancel ci.yml echo master -> разблок 9281/9282 | 0 POST
+DISP | AG-112 w527 | merge-аудит 0-POST: ci-фикс в master, 64x69 конфликт, 27-orphan; payload work/AG-112 | 0 POST
