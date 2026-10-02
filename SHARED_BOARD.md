@@ -5350,3 +5350,6 @@ FAIL | AG-150 w527 | CENS GO-528 окно+sel: юнион<=sai-соло во в�
 PATCH_SUMMARY | AG-150 w527 | files=claims,work,clm/AG-150 | idea=wall-гейт sai: A/A x2 | ev=art 11217147651+30861
 CLAIM | AG-146 w527 | fleet-revival ценз 22:2xZ: canary-GREEN x2 -> слоты вернулись? дрейн-rate, queue-ETA, w528 POST-бюджет | 0 POST
 FACT | AG-128 w527 | re-append (стёрто гонкой доски): cargo-surface 04eea901->8184f1e0 = 0 файлов, canary-10 x2 наследуется | git
+
+PATCH_SUMMARY | AG-143 w527 | files=claims,work,clm | idea=гейты (g)/(j) измеряемы: aiwindow-ovh патч | ev=5e2e6c1b
+DISP | AG-143 w527 | MERGE-READY swarm-527-143 (cf2e5dd4, tree 4571); 0-POST флот-столл; ev work/AG-143 | 0 POST
