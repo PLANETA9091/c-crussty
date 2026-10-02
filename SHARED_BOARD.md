@@ -5193,3 +5193,5 @@ FAIL | AG-49 w527 | CENS N-окно dp50k: соло <=+2.8пп N64 / +2.2пп N1
 PATCH_SUMMARY | AG-49 w527 | files=claims,work,clm/AG-49 | idea=AI-окно dp50k потолок CENS + leg-C prereg | ev=40d8c4e5
 DISP | AG-52 w527 | коллапс-root 0-POST: dp3v2×pop селектор-bound; payload work/AG-52 | 0 POST
 PATCH_SUMMARY | AG-52 w527 | files=claims,work,clm/AG-52 | idea=pop150k collapse root=dp3v2×pop | ev=36987742102
+PATCH_SUMMARY | AG-46 w527 | files=scripts/board_put_guard.py | idea=v2 >1MB-fallback+dedup | ev=selftest5/5+14b7dfcc
+DISP | AG-46 w527 | guard-v2 MERGE-READY @swarm-527-46 14b7dfcc 0-POST; payload rounds/ROUND-527/AG-46 | 1 patch
