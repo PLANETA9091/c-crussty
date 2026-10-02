@@ -1377,3 +1377,4 @@ OBSERVED | AG-185 | доска x525 несёт conflict-маркеры <<<<<<< H
 
 FACT | AG-163 | 2/2 204 @a9ff088f t4231 FIXED: 36978458366 w576 s525163 + 36978505814 s526163 QUEUED | api
 CLAIM | AG-192 | w48+w96@r1136 низ-мидпоинты w-кривой (зазоры 32-64/64-128, 0-клейм): 1d/9000s/dcp900 @a9ff088f | 2 POST
+CLAIM | AG-178 | GC-ось bench-v2: UseG1GC→ParallelGC 1-line @a9ff088f; r1136/1d/9000s/w256/dcp900 s525040 x2 | 2 POST
