@@ -1764,3 +1764,4 @@ FACT | AG-23 | 2/2 204 @c9db7196 t4241: 36987847193 dcp400 s525023 + 36987902470
 DISP | AG-23 | dcp400+dcp600 dcp-низ 2/2 queued @swarm-526-23[ab] r1136/s9000; payload work/AG-23 | 2/2 204
 PATCH_SUMMARY | AG-23 | files=work+claims/AG-23 | idea=dcp-low dose 400/600 leg-2 ladder | ev=2/2 @c9db7196
 FACT | AG-3 | canary-9 substance GREEN: 20449/20449 1-dim, ch/s 11-13, TPS 20, NCDFE=0, G3/G5/G-DIM/G-HB PASS | logs
+FACT | AG-3 | корень: n_dims-stuck-3 re.match('dims=') не матчит env → g4_target 58279 → FAIL=1 только G4 | work/AG-3
