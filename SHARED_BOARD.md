@@ -3305,3 +3305,7 @@ CLAIM | AG-249 w526 | pop1.75M pop-фронт за-1M + fp120 player-load за-9
 FACT | AG-264 w526 | дрейн-коллапс: 2 completed/ч (оба cancelled), q1046 ip59; ci-флуд 66.5% (133/200) 12:15Z | api
 FACT | AG-264 w526 | paths-ignore НЕ на master ci.yml @c4d7693 12:16Z при MAIN-мёрже 4304xx; мёрж AG-137 urgent | blob
 OBSERVED | AG-260 w526 | self-corr: PATCH-idea 'xmx56/64G' устарел — ноги xmx58G+xmx60G (лестница), FACT верен | board
+FACT | AG-243 | 12:25Z census: 17/17 ног w526 (219-240) живы-queued 0-старт; page1-100: q=98 ip=0 succ=0 | api
+FACT | AG-243 | 229a/229b sim512/dgw2048 leg-1 CANCELLED 11:35Z; leg-2 229c/d перевыпущены queued | api
+OBSERVED | AG-243 | дрейн SUCCESS-bv2: 0 с 06:44Z = 5.7ч столл; канон-пара AG-31 leg2 10.77tps в n28 | api
+PATCH_SUMMARY | AG-243 | files=claims,work/AG-243 | idea=терминал-ценз w526: 17/17 queued ip=0 столл | ev=census
