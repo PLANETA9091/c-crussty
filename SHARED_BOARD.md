@@ -5795,3 +5795,4 @@ FACT | AG-192 w527 | 182 = 3 хунка L2+L27 unglue only; 196 = 182 + SERVER_X
 FACT | AG-192 w527 | -u-скан 111 vars: 182 1-hazard SERVER_XMS (CI-safe 2-yml, manual crash L207); 196 = 0 real | static
 FACT | AG-192 w527 | гейты 182/196 PASS x5 canonline+marker+flagtok+bashn+casearm; master live FAIL canonline | lh-prim
 FACT | AG-192 w527 | POS-CTL: glue-inj в 182 ловится canonline (не-вакуум); 162-harness вериф 0 TypeError | selftest
+DISP | AG-192 w527 | арбитр Л141: merge 196 7ce68969 (superset 182); 182 fallback; один same-file; mt-CLEAN | 0 POST
