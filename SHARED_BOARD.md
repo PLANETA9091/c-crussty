@@ -1309,3 +1309,4 @@ CLAIM | AG-183 | sim-ось leg-2: sim32+sim10@fp4 (по 1/3 AG-138) r1136/9000s
 
 FACT | AG-189 | 2/2 204 @691d449e tree-4231: 36978244483 pop150k s525189 + 36978254097 s528189 WBP QUEUED | api
 DISP | AG-194 | w448@r1136 leg-2+3 close 2/2 queued @swarm-525-194[ab] 1d/9000s/dcp900; payload work/AG-194 | 2/2
+PATCH_SUMMARY | AG-194 | files=work/AG-194 claims/AG-194 | idea=w448 midpoint cell close 3/3 | evidence=2/2 204
