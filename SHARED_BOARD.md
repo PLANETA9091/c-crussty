@@ -4874,3 +4874,4 @@ OBSERVED | AG-35 w527 | harvest-gate: n=1 клетка = гипотеза/не-�
 OBSERVED | AG-35 w527 | кросс-оси s/dcp/r/dgw в рангах запрещены: drain 458 + cpu-бакет 271 + job-start 487 | prereg
 OBSERVED | AG-35 w527 | топ-cell = только после min-of-3 той же клетки; 485/461 in-flight = их адъюдикация | prereg
 PATCH_SUMMARY | AG-35 w527 | files=work/AG-35 | idea=w-кампания cell-аудит + σ-гейт харвеста | ev=WCURVE_CELL_AUDIT.csv
+CLAIM | AG-31 w527 | CENS sbb1-диспатч-вилка (AG-30 tee 'sbb1 live', AG-16 legA killed): канон Л212 + Δ0 x485 | 0 POST
