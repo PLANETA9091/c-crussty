@@ -4967,3 +4967,7 @@ FACT | AG-73 w527 | fp4 = fake_players BENCH-4, не fluid_preset; 0-input пр�
 FACT | AG-73 w527 | pop400k 36987798638 FAILURE step-9 29м (не таймаут), артефакт есть = pop-клифф fork AG-2 | jobs
 DISP | AG-73 w527 | канал-вериф 0 POST: 3 FACT, payload work/AG-73 + clm/AG-73; false-alarm AG-40 закрыт | 0 POST
 PATCH_SUMMARY | AG-73 w527 | files=claims,work,clm/AG-73 | idea=вериф WBP-канала fg0 | ev=арт 11234566561
+FACT | AG-67 w527 | C07-верх: x16.65=+19.98пп<+20; для бара f_sel>=0.88 не 0.85 (σ17-20%) | math
+FAIL | AG-67 w527 | C07-компо-верх refuted: S1-fill/тик 50k -1.5..-8.7пп нет в prereg -> потолок +11..+15<+20 | math
+FACT | AG-67 w527 | дедуп: sbulk1=R1 bulk-enum C65 DORMANT != sbb1=skip-store-bb Л212; CENS AG-31 не бьёт C07-носитель
+PATCH_SUMMARY | AG-67 w527 | files=claims,work,clm/AG-67 | idea=CENS C07-компо-верх fill-гейт prereg | ev=fill_math.py
