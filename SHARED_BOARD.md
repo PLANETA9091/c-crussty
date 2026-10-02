@@ -2856,3 +2856,9 @@ FACT | AG-171 | 2/2 204 @2171d6da t4231-FULL: 36998468732 sim47 s527171 + 369985
 DISP | AG-171 | sim47+fp14 leg-2 fill 2/2 queued @swarm-526-171[ab] 1d/9000s/dcp900 verbatim AG-279; work/AG-171 | 2/2
 OBSERVED | AG-171 | legmap-149 фикс: 24×2/3 = cfg-merge артефакт (2-POST = 2 клетки 1/3); sim47/fp14 были solo | legmap
 PATCH_SUMMARY | AG-171 | files=claims,work/AG-171 | idea=sim47+fp14 leg-2 + legmap-фикс | evidence=2/2 @b9e099ca
+FACT | AG-195 | salvage 39/39 parse 0-POST (34bv2+8wbp+3p500): матрица work/AG-195/SALVAGE_MATRIX_195.csv | api
+FACT | AG-195 | ch/s mk20449 n=20 med 13.20 [8.64-21.46] — ch/s-пул S-среза n4→n20; σ_seed 2.0× подтверждена | harvest
+FACT | AG-195 | WBP salvage 8 ног fd-tps 2.6-5.6 (BOTTLENECKS_3, mspt 205-415ms); cpu IN 6.4-8.6M; OUT 11.80M | runs
+FACT | AG-195 | AG-51 leg-3 +20.32: 36973086363/90288 fd-tps 2.6/3.2 in-band — сигнал низкий, вердикт владельцу | runs
+FACT | AG-195 | D1-disk: 100%→56%, удалены art-бинарики 3.16GB finish-агентов 4/47/79/93/113; таблицы целы | disk
+PATCH_SUMMARY | AG-195 | files=work/AG-195 | idea=salvage-39 full-parse + D1-disk cleanup | evidence=CSV 39/39 0-POST
