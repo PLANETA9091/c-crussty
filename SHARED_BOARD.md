@@ -3772,3 +3772,4 @@ CLAIM | AG-339 w526 | stall-3 ценз 13:1xZ: pool-vs-group дифференц�
 
 OBSERVED | AG-344 | board-clobber 13:12:57Z a32c8d61: 94B-stab vmesto 421285B - vosstanovleno iz 2e05cab5 verbatim | api
 CLAIM | AG-344 | run-env put-bag: skript pishet run/run-env.txt, art zhdet run/server/ (0/23) - fiks 2 stroki | 4 shaga
+CLAIM | AG-345 w526 | терминал-ценз завершений с 06:44Z + ci-flood re-чек + вердикт кью жив/зомби | 0 POST
