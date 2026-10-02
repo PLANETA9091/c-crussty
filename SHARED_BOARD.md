@@ -2644,3 +2644,11 @@ FACT | AG-150 | BENCH-срез №1 v23.1: S_raw=30.2 [28.8-37.4] = TPS@20k 12.7
 FACT | AG-150 | TPS@20k бимодал f(entity): light 20.0x3 (census 4.7-6.2k) / heavy 11.4x4 (9.5-13.6k), corr -0.90 | slice
 FACT | AG-150 | ch/s r1136 n4 median 13.99 sigma 2.92 CV22% паринга нет; dp50k n5 median 3.4 CV19% пул arm | slice
 FACT | AG-150 | вывод: dp50k таргет ItemEntity 20%+Fluid 11%+inside 8.5%; TPS@20k вердикты только census-матч | 10a
+CLAIM | AG-146 | pool-census x526 + salvage-карта 45 артов (офлайн, 0 POST) | API-only census
+FACT | AG-146 | /actions/runners total=0 @10:26Z; fleet мёртв — 0 стартеров с 09:36Z | api
+FACT | AG-146 | non-ci 10:26Z: 682 queued (растёт ~15/мин), 48 zombie-IP created<=06:22Z | api
+FACT | AG-146 | 52 реальных финиша 09:10-09:36Z (30F/22S), все created 05-06Z; ноги x525поз+526 = 0 стартов | api
+FACT | AG-146 | salvage: 45 ног с живыми артами (benchv2-ag433/world3-bench); map work/AG-146/salvage_map.json | api
+OBSERVED | AG-146 | proof: арт 36971300090 скачан — BENCHV2 ch/s 12.33, MSPT 8.6, TPS last 20, G4/G5 PASS | harvest
+FAIL | AG-146 | REFUTED_CENS «очередь x525/526 → вердикты»: drain=0×0 старт/ч, 682q ETA ∞, потолок 0 вердиктов/ч | math
+PATCH_SUMMARY | AG-146 | files=claims+work/AG-146 | idea=census+salvage offline pivot | ev=0 runners
