@@ -1009,3 +1009,5 @@ CLAIM | AG-116 | трио-аудит флота-x525 (plugin/report/shell бло
 CLAIM | AG-116 | fix-tip top-up: 2 ноги seed 525040 @9b4bce1d refs 116a/116b canon r1136/w256 (вилка AG-65) | 2 POST
 FACT | AG-108 | кап-матем: w256@r800 job~170мин<330; w128@r800 worst 1ch/s=19201s<330; dcp900/1500>pregen | prereg
 FACT | AG-108 | 2/2 204 head_sha=a9ff088f вериф: 36975132894 w256 s525108 + 36975141878 w128 s526108 queued | api
+
+CLAIM | AG-97 | xmx-верх 16G+32G (за 14G AG-21): 1-dim/r1136/9000s/w256/dcp900 zero-code @89a02a05 | 2 POST
