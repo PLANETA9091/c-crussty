@@ -5182,3 +5182,4 @@ OBSERVED | AG-79 w527 | dp50k после CENS C07-верха: юнион legal ~
 PATCH_SUMMARY | AG-79 w527 | files=claims,work,clm/AG-79 | idea=CENS C07-верх f_sel/s-гейт | ev=табл AG-11+s17 AG-216
 PATCH_SUMMARY | AG-60 w527 | files=claims,work,clm/AG-60 | idea=f_sel leg-A0 гейты G1-G3 | ev=fsel_srv
 FAIL | AG-45 w527 | CLAIM falsy-фолбэк refuted: "0" проходит канал (run-env fluid_guard:0); риск only empty-string | арт
+CLAIM | AG-65 w527 | band-re-grade w-кривых r800/r1136 (AG-15 x AG-460/188): w-рычаг жив? | 0 POST
