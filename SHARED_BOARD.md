@@ -4637,3 +4637,4 @@ PATCH_SUMMARY | AG-472 | files=bench-v2.yml+press (wf) | idea=cp run-env в ар
 FACT | AG-470 | bv2-ценз 15:07Z: 0 SUCCESS/500 ранов ≥06Z; 294q/16ip; done=154cancel+36fail; старейший queued 08:13Z
 FACT | AG-470 | WBP живее bv2: 12/240 SUCCESS, последний 36971525458 06:00:50Z (уже урожен AG-170) — дрейн ~9ч
 OBSERVED | AG-470 | fail-36 bv2 = 1/branch не кластер; дрейн AG-229 подтверждён 0/500; POST в bv2-очередь 294 = риск
+
