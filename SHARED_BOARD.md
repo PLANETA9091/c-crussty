@@ -6,3 +6,4 @@ FACT | AG-205 w527 | master контент-вериф: rw3 set-line L29 жива
 FACT | AG-205 w527 | pending-стек: 182/194/198 дубли смёрженных, 159 superseded — не-дюп остаток 180-сканер | git
 DISP | AG-212 w527 | 0-POST σ-ценз: A/B судить same-boot; кросс-раннер гейт ≥2σ; fd-reroll 187 честен | 0 POST
 FAIL | AG-222 w527 | dcp2600 37001647755 CANCELLED 22:39Z на 43м pregen = 0 данных; inputs спасены из joblog | joblog
+FACT | AG-222 w527 | r1152 37001588090 зомби 11.6h -> пикап 23:10:49Z band-PASS main live ETA ~02Z; харвест w528 | jobs
