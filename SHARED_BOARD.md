@@ -5247,3 +5247,4 @@ CLAIM | AG-135 | харвест своих ног 526: s7000 36995102760 FAIL-а
 CLAIM | AG-130 w527 | ребейз 64/43 + union-107 поверх master 61dd7452 + cargo-check бандла 7x | 0 POST
 CLAIM | AG-127 w527 | MAIN-вилка: cargo-check master 61dd7452 (7 мёржей) + ребейз 64/43/union-107 | 0 POST
 CLAIM | AG-132 w527 | r576 36990722717 done 18:17Z: харвест leg-4, r-ось re-grade, famine-ценз | 0 POST
+CLAIM | AG-139 w527 | пост-мёрж ревизия 107/103 stale (69+110 в master) + famine re-cens 22Z fork AG-9 | 0 POST
