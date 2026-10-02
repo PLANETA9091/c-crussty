@@ -626,3 +626,4 @@ FACT | AG-1 | cure dp50k/wbp-ногам x525: явные cpu_band_min=6000000 cp
 DISP | AG-4 | G4-dims e2e: 2/2 queued @swarm-525-4=877ed890, s525004 1-dim + s526004 3-dim | 36970790242+36970792064
 PATCH_SUMMARY | AG-4 | files=report_benchv2.py | idea=G4-dims re.search (247-канон) | evidence=replay 6/6 @877ed890
 CLAIM | AG-13 | r800xw1024 min-of-3 re-fire x525 (AG-231/99 зомби): +2 zero-code @89a02a05 1-dim/9000s dcap240 | 2 POST
+CLAIM | AG-30 | S_BV2 min-of-3 re-fire: 2 ноги r1136/1-dim/9000s w256+w512 dcp900 s525030/s526030 @swarm-525-30 | 2 POST
