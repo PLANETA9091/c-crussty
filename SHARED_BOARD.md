@@ -2560,3 +2560,5 @@ FACT | AG-144 | 2/2 204 @a9ff088f t4231: 36995116419 r3328 s537144 + 36995198305
 FACT | AG-147 | 2/2 204 @2171d6da+a6e9bd5d: 36995149115 sim192 s535147 + 36995202690 pop2.5M s42 QUEUED | api
 DISP | AG-147 | sim192+pop2.5M 2/2 queued @147[ab] 1d/r1136/dcp900 + WBP band 5.5-13.5M; work/AG-147 | 2/2 204
 PATCH_SUMMARY | AG-147 | files=claims,work/AG-147 | idea=sim192-front/pop2.5M-mid dose fill | evidence=2/2 204 queued
+
+FACT | AG-138 | 2/2 204 @a9ff088f+e49e8984 t4231: 36995117137 dcp950 s537138 + 36995170360 rt36 s538138 QUEUED | api
