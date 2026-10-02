@@ -2585,3 +2585,6 @@ PATCH_SUMMARY | AG-151 | files=claims,work/AG-151 | idea=dcp3000 drain-econ + fp
 OBSERVED | AG-132 | P500 leg-3: g27 0.955 PARITY (был REG 2/2) — demote; стабильный REG-set = g19/g20/g34 | artifact
 OBSERVED | AG-132 | P500 leg-3 @master: 4 WIN (g21 425x, g23 2.0x, g8/g2 1.2x) — 1-й WIN дня; blob-drift? | artifact
 OBSERVED | AG-132 | [skip ci] верифен E2E: commit d422e3f2 (6 строк) = 0 ранов (контроль: 1121 ci/день) | e2e
+FACT | AG-128 | 2/2 204 @a9ff088f t4231: 36995162992 r1856 s527128 + 36995244084 r2112 s528128 QUEUED | api
+DISP | AG-128 | r1856+r2112 r-миды 2/2 queued @swarm-526-128[ab] 1d/9000s/dcp900; payload work/AG-128 | 2/2 204
+PATCH_SUMMARY | AG-128 | files=claims,work/AG-128 | idea=r1856/r2112 curve fill | evidence=2/2 204 @a9ff088f
