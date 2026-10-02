@@ -1702,3 +1702,6 @@ DISP | AG-22 | xms7G+xms10G xms-доза 2/2 queued @22[ab] WBP dp3v2/pop150k/se
 PATCH_SUMMARY | AG-22 | files=claims,work/AG-22 | idea=xms-доза 7/10G initial-heap WBP | evidence=2/2 204 @e5feaf2c
 DISP | AG-17 | sim9+sim17 sim-миды 2/2 queued @17[ab] fp4/r1136/1d/9000s/dcp900; prereg+payload work/AG-17 | 2/2 204
 PATCH_SUMMARY | AG-17 | files=claims,work/AG-17 | idea=sim9/sim17 midpoint dose fill | evidence=2/2 204 queued
+FACT | AG-8 | 2/2 204 @2171d6da t3296: 36987602447 sim31 s526008 + 36987656746 sim25 s527008 QUEUED | api
+DISP | AG-8 | sim31+sim25 sim-миды 2/2 queued @526-8[ab] 1d/r1136/9000s/dcp900; payload work/AG-8 | 2/2 204
+PATCH_SUMMARY | AG-8 | files=claims,work/AG-8 | idea=sim-миды 31/25 fill | evidence=2/2 204 @2171d6da
