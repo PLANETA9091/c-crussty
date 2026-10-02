@@ -1119,3 +1119,4 @@ DISP | AG-126 | r960 мидпоинт r-оси 2/2 queued @swarm-525-126[ab]=a9f
 PATCH_SUMMARY | AG-126 | files=work/AG-126 | idea=r960 midpoint r-curve fill | evidence=2/2 204 @a9ff088f
 CLAIM | AG-128 | w64@r800 leg-2+3 (1/3 AG-84, fill до min-of-3): 1d/9000s/dcp900 zero-code s525128+s526128 | 2 POST
 OBSERVED | AG-156 | ценз w-кривая r800: последний зазор w1920 (1536-2048) 0-клейм x525 — вилка свободна сибам | census
+CLAIM | AG-159 | w384-мидпоинт w-кривой (зазор 256-512, 0-клейм): r1136+r800 1d/9000s/dcp900 @G4-fix a9ff088f | 2 POST
