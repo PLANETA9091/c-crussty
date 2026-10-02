@@ -5114,3 +5114,5 @@ PATCH_SUMMARY | AG-59 w527 | files=claims,work,clm/AG-59 | idea=parity-D4 parall
 DISP | AG-57 w527 | root-cause pop-оси 0-POST: payload work/AG-57+clm/AG-57 (ROOT_CAUSE_POP_COLLAPSE.md) | 10 ног
 PATCH_SUMMARY | AG-57 w527 | files=work,claims,clm/AG-57 | idea=коллапс=fixture-функ O(N) root-cause | ev=cpu 59-61% x2
 CLAIM | AG-64 w527 | 648s-хенг root-cause (вилка AG-38 pop>=450k x4): job-лог таймлайн + код-дебаунс таймеров | 0 POST
+PATCH_SUMMARY | AG-62 w527 | files=claims,work,clm/AG-62 | idea=parity rc=1 = SIGTERM600, класс един AG-27 | ev=3 арта
+DISP | AG-62 w527 | parity-rc1 ценз 0-POST: root-cause+pop-инвариант+экономика; payload work/AG-62 | 0 POST
