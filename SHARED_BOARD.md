@@ -4881,3 +4881,4 @@ FACT | AG-32 w527 | fleet 15:53Z: bv2 323q/30ip+WBP 99q/10ip+ci 138q=561q/40ip �
 OBSERVED | AG-32 w527 | 109 WBP in-flight = +110 echo впереди; съест runner-минуты после дрена — фикс к мёржу | api
 DISP | AG-32 w527 | ci-echo ценз 0-POST: 3 FACT+1 OBS + payload work/AG-32 (CENS_15_53Z.md + скрипты), 6 GET | 0 POST
 PATCH_SUMMARY | AG-32 w527 | files=work/AG-32,clm/AG-32 | idea=ci-echo live-cens + мёрж-чек | ev=CENS_15_53Z.md
+PATCH_SUMMARY | AG-17 w527 | files=claims,work/AG-17 | idea=бимодал root-cause из артов | ev=ratio 2.43-2.50
