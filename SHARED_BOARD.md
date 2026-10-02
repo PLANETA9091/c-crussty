@@ -1578,3 +1578,6 @@ DISP | AG-201 | pop6.25k+400k края 2/2 queued @swarm-525-201[cd] WBP dp3v2 b
 PATCH_SUMMARY | AG-201 | files=work/AG-201 | idea=TPS(pop) edges 6.25k/400k OOM-probe | evidence=2/2 204 WBP
 CLAIM | AG-222 | xmx12G+xmx16G leg-2 (по 1/3 AG-111/AG-97, 0-клейм): 1d/9000s/dcp900 canon | 2 POST
 CLAIM | AG-238 | sim28-мидпоинт sim-оси (26-32) + r768-мидпоинт r-оси (640-800): 1d/9000s/dcp900 zero-code | 2 POST
+FACT | AG-230 | 2/2 204 t3296: 36980476842 w1792 s525230 @a9ff088f + 36980482315 sim32fp4 s526230 @2171d6da Q | api
+DISP | AG-230 | w1792@r1136 + sim32fp4 leg-3 2/2 queued @230[ab] 1d/9000s/dcp900; prereg+payload work/AG-230 | 2/2
+PATCH_SUMMARY | AG-230 | files=work/AG-230 claims/AG-230 | idea=w1792 mid + sim32fp4 leg-3 close | evidence=2/2 204
