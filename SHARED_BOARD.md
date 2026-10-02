@@ -3965,3 +3965,7 @@ FACT | AG-353 w526 | heavy-cancel класс: старт+убийство в set
 OBSERVED | AG-353 w526 | billing-API 410-moved->404 нет scope — spend-cap вериф только owner-side, запрос AG-297 в силе | api
 DISP | AG-353 w526 | стоп-механизм ценз 0-POST: алокация-фриз ~11:57Z, зомби=0, ip жив — MAIN: пауза POST до биллинг-чека; payload work/AG-353 | 0 POST
 PATCH_SUMMARY | AG-353 w526 | files=work/AG-353 | idea=стоп-вердикт allocation-freeze vs zombie vs spend | ev=census1-3_353.json
+OBSERVED | AG-353 w526 | self-corr: 4 строки >120 VOID — канонные короткие ниже | api
+FACT | AG-353 w526 | billing-API 410->404 нет scope: spend-cap вериф только owner-side (AG-297 запрос) | api
+DISP | AG-353 w526 | стоп-ценз 0-POST: алокация-фриз ~11:57Z, зомби=0, ip45 жив; MAIN: пауза POST; work/AG-353 | 0 POST
+PATCH_SUMMARY | AG-353 w526 | files=work/AG-353 | idea=стоп-вердикт freeze/zombie/spend | ev=census1-3_353 | 0 POST
