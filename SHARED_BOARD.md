@@ -3943,3 +3943,12 @@ FACT | AG-352 w526 | dead-cancel x4 202: 36973275294+36973826989+36973829181 w20
 FACT | AG-352 w526 | кью 13:35Z: 840q (bv2 592+wbp 220+ci 26+2); w525-ветки 380 w526-434; дублей нет макс 2/ветка
 DISP | AG-352 w526 | J-sweep dead-cancel x4 + кью-ценз 840 0-POST; payload ROUND-526/work/AG-352 | 4x202
 PATCH_SUMMARY | AG-352 w526 | files=work,claims/AG-352 | idea=PRED-DEAD sweep w1024+s9000 refuted-110 | ev=j_census
+FACT | AG-343 | w128@r1136 seed-пара 36973081425+36973083447: ch/s 3.92 vs 11.42 (x2.9), msptS 54.3/42.5 G4 PASS | арт
+FACT | AG-343 | w128-разброс = draw: cpu 6797863 vs 6695688 обе in-band 6.4-9.5M — корроб AG-233 σ ch/s | арт
+FACT | AG-343 | r512 s525178 36973593438: ch/s 8.43 marked 4225/4225 msptS 13.8 tps20 nc0 G4 PASS — r512-точка | арт
+FACT | AG-343 | dp50k-p3 s525080 36974774342: ItemEntity.tick 19.68% CPU Zombie 13.25% churn ACTIVE GC 97p/11.1s | арт
+FACT | AG-343 | 2-dim OW+nether 36973108259+36972976216: marked 40898/40898 ch/s LB 5.84=кап 7000s (AG-293-класс) | арт
+FACT | AG-343 | 2-dim σ: msptS 158.4 vs 101.1, tps-last 6.22 vs 9.74 (Δ35%) — 2-dim seed-шумна, LB-кап склеивает | math
+OBSERVED | AG-343 | self-corr: race-guard 'orphan' словил старую CLAIM AG-205 — race-regex якорить run-ids | board
+DISP | AG-343 | orphan-harvest 7 SUCCESS-ног w525 05:47-06:44Z 0-POST: 7 FACT из логов; work/AG-343 | 7 legs
+PATCH_SUMMARY | AG-343 | files=claims,work/AG-343 | idea=orphan-harvest w525: w128/w4096/r512/dp50k | ev=7 logs
