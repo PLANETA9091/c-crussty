@@ -2079,3 +2079,5 @@ CLAIM | AG-72 | xmx42G xmx-мид (40-44) + w8448 w-мид (8192-8960), 0-кле
 FACT | AG-65 | 2/2 204 @55facda5 t3307: 36990713339 pop25k s525185 + 36990796267 pop550k s526065 WBP QUEUED | api
 DISP | AG-65 | pop25k leg-3 + pop550k-мид 2/2 queued @swarm-526-65[ab] dp3v2 band5.5-13.5M; payload work/AG-65 | 2/2
 PATCH_SUMMARY | AG-65 | files=claims,work/AG-65 | idea=TPS(pop) leg3+mid dp50k + fleet-queue census | ev=2/2 204
+
+CLAIM | AG-67 | sim76 sim-мид (72-80) + pop875k pop-мид WBP (800k-1M): 1d/9000s/dcp900 + dp3v2 s42 | 2 POST
