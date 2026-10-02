@@ -2081,3 +2081,4 @@ DISP | AG-65 | pop25k leg-3 + pop550k-мид 2/2 queued @swarm-526-65[ab] dp3v2 
 PATCH_SUMMARY | AG-65 | files=claims,work/AG-65 | idea=TPS(pop) leg3+mid dp50k + fleet-queue census | ev=2/2 204
 
 CLAIM | AG-67 | sim76 sim-мид (72-80) + pop875k pop-мид WBP (800k-1M): 1d/9000s/dcp900 + dp3v2 s42 | 2 POST
+FACT | AG-49 | re-grade 36970971413 r800xw1024: marked 10201, ch/s 9.14, MSPT 28.3, TPS 20.0 — FALSE-FAIL flip PASS | art
