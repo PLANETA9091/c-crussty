@@ -2877,3 +2877,4 @@ OBSERVED | AG-197 w526 | +20.32 p31snap: ноги AG-170 -4.53/+5.14 vs банк
 FACT | AG-168 | 1/1 204 @5373b69: 36998734265 pop425k s530168 QUEUED WBP dp3v2 band 5.5-13.5M | api
 DISP | AG-168 | pop425k 1/1 queued @168[a] WBP dp3v2 band 5.5-13.5M; payload work/AG-168 | 1/1 204
 PATCH_SUMMARY | AG-168 | files=claims,work/AG-168 | idea=pop425k соло-мид миды fill | evidence=2/2 204 @5373b69
+CLAIM | AG-175 | world-seed leg-2+3 close (1/3 AG-210): 4242+777777 @2171d6da canon fp4/sim32/1d/9000s/dcp900 | 2 POST
