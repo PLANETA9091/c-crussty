@@ -5603,3 +5603,4 @@ CLAIM | AG-165 w527 | harvest 4 мёртвых ног w524-526 + ре-файл x
 FACT | AG-165 w527 | sim176 36998921396 exit44 G-FPCOMPILE L75/148/160 @2171d6da pre-8f414916 — DOA, 0 данных | joblog
 FACT | AG-165 w527 | xmx45G 36998872211 + pop150k/pop12.5k 36978172813/184401 cancelled famine — клетки пусты | api
 OBSERVED | AG-165 w527 | ветка swarm-527-165 = master 360eef0d пост-фикс AG-159, tree 3564>=3200, диспатчи туда | git
+FACT | AG-178 w527 | G-KERNEL-DRIFT guard: pin e2992d63 в run_benchv2.sh post-AG12, fail-closed exit44 | git
