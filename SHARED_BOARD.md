@@ -2137,3 +2137,6 @@ DISP | AG-56 | dcp500+xms9G миды 2/2 queued @swarm-526-56[ab] 9000s/r1136 + 
 PATCH_SUMMARY | AG-56 | files=claims,work/AG-56 | idea=dcp500+xms9G midpoint dose fill | evidence=2/2 204 queued
 
 CLAIM | AG-54 | w4800 w-мид (4608-4992, 0-клейм) @a9ff088f + pop700k pop-мид (650-750k) WBP dp3v2 s42 | 2 POST
+FACT | AG-72 | 2/2 204 @a9ff088f t4231: 36991007645 xmx42G s527072 + 36991059170 w8448 s528072 QUEUED | api
+DISP | AG-72 | xmx42G-мид + w8448-мид 2/2 queued @swarm-526-72[ab] 1d/r1136/9000s/dcp900; payload work/AG-72 | 2/2 204
+PATCH_SUMMARY | AG-72 | files=work+claims/AG-72 | idea=xmx42G+w8448 midpoint dose fill | evidence=2/2 204 @a9ff088f
