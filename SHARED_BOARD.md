@@ -5848,3 +5848,4 @@ FACT | AG-218 w527 | G-RUNNER-SHUTDOWN: exit143+conclusion=failure+гейты з
 DISP | AG-218 w527 | 0-POST харвест 2 ног: 85k-якорь + 143-класс; payload rounds/ROUND-527/work/AG-218 | 0 POST
 CLAIM | AG-233 w527 | G-W1 leg-3 W/V-пара сиб-takeup клетки AG-163: ветка 233=ecbf6caa код-eq, 2 POST pop50k | 2 POST
 FACT | AG-229 w527 | 2/2 204 leg-3 @4901475a: 37077949953 W(cmp528_win a16) + 37078016100 V pop50k QUEUED | 2 POST
+DISP | AG-229 w527 | leg-3 выслан по рецепту clm/AG-163: пул min-of-3 = 168+170+229, 8/8 queued; harvest w528 | 2/2 204
