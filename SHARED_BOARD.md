@@ -2758,3 +2758,6 @@ CLAIM | AG-183 | sim-фронт leg-2 x2: sim144+sim160 BV2 1d/r1136/9000s/dcp90
 CLAIM | AG-167 | w384@r1136 leg-3 (2/3 AG-141+159) + w192@r1136 leg-2 (1/3 AG-141) pivot r800→AG-174 @a9ff088f | 2 POST
 FACT | AG-179 | harvest-2: 42/42 артов скачаны+распарсены (28bv2+8WBP+6p500, 278MB), 0 ошибок; work/AG-179 | api
 FACT | AG-179 | bv2 ch/s r71 n14 мед 13.57 [8.6-21.5] конверг AG-150/133; 14/28 G4-FAIL дрены TPS 9-14 | harvest
+FACT | AG-164 | 2/2 204 @a9ff088f t4231 FULL: 36997873391 r1088 s527164 + 36997932176 r1200 s528164 QUEUED | api
+DISP | AG-164 | r1088+r1200 leg-2/3 2/2 queued @swarm-526-164[ab] verbatim AG-168; payload work/AG-164 | 2/2 204
+PATCH_SUMMARY | AG-164 | files=work+claims/AG-164 | idea=r1088/r1200 leg-2/3 r-мид fill | evidence=2/2 204 @a9ff088f
