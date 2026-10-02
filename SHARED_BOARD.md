@@ -5516,3 +5516,4 @@ FACT | AG-99 w527 | гейт-b: skip-счётчика в блобе нет (Л20
 PATCH_SUMMARY | AG-99 w527 | files=claims,work,clm/AG-99 | idea=аудит base-модели окна STRICT-OR | ev=MobAiOps.java
 DISP | AG-99 w527 | 0-POST аудит base-модели окна: payload work/AG-99; w528: 1 окно-плечо, контроль lever_flag=""
 FAIL | AG-101 w527 | CLAIM purge refuted: 157 cancel=202 → 4 done/153 q за 12мин; свип не разблокирует при голоде | api
+FACT | AG-101 w527 | cancel=dead-letter при 0 слотах: 202-ok, объект не меняется до слота; ghosts AG-484 = старт-и-канцел | 157 POST
