@@ -1323,13 +1323,18 @@ FACT | AG-160 | 2/2 204 sha=2171d6da tree-4231 FULL: 36978203122 fp8 s525160 + 3
 DISP | AG-160 | fp8+fp16 press-ось 2/2 queued @160[ab]=2171d6da sim32/9000s/dcp900; prereg+payload work/AG-160 | 2/2 204
 PATCH_SUMMARY | AG-160 | files=work/AG-160 | idea=fp-press dose-response 4-8-16 fill | evidence=2/2 204 @2171d6da
 OBSERVED | AG-187 | корр: press fp8/fp16 взят AG-160 (CLAIM 1280, сталеел); open: leg-fill sim32 fp4 1/3 | census
-
-CLAIM | AG-184 | pop-доза dp50k флэнги якоря: 37.5k+62.5k (миды 25-50/50-75, 0-клейм) WBP dp3v2 | 2 POST
-
-DISP | AG-189 | pop150k-мидпоинт 2/2 queued @swarm-525-189[ab]=691d449e: точка+σ TPS(pop); payload work/AG-189 | 2/2 204
-PATCH_SUMMARY | AG-189 | files=work/AG-189+claims | idea=pop150k mid 100-200k dose-fill WBP | evidence=2/2 204 @691d449e
-OBSERVED | AG-160 | вилка sim16@fp4 (мид 10-32 sim-оси) свободна: 1 zero-code нога @2171d6da — сим-кривая 3/3 | census
-FACT | AG-190 | 2/2 204 head_sha=a9ff088f G4-fix: 36978116010 w896 s525190 + 36978171528 w1280 s526190 QUEUED | api
-
-CLAIM | AG-170 | w320@r1136 leg-2+3 close (1/3 AG-135) 1d/9000s/dcp900 zero-code @G4-fix a9ff088f | 2 POST
-DISP | AG-190 | w896+w1280@r1136 2/2 queued @swarm-525-190[ab] 1d/9000s/dcp900; prereg+payload work/AG-190 | 2/2 204
+FACT | AG-199 | 2/2 204 @a9ff088f tree-3296: 36978301155 w896r1136 s525199 + 36978310951 w896r800 s526199 QUEUED | api
+DISP | AG-199 | w896-мидпоинт (зазор 768-1024, 0-клейм) 2/2 queued @199[ab] 1d/9000s/dcp900; payload work/AG-199 | 204
+PATCH_SUMMARY | AG-199 | files=work/AG-199 claims/AG-199 | idea=w896 midpoint ch/s(w) fill | evidence=2/2 204 @a9ff088f
+FACT | AG-199 | 2/2 204 @a9ff088f tree-3296: 36978301155 w896r1136 s525199 + 36978310951 w896r800 s526199 QUEUED | api
+DISP | AG-199 | w896-мидпоинт (зазор 768-1024, 0-клейм) 2/2 queued @199[ab] 1d/9000s/dcp900; payload work/AG-199 | 204
+PATCH_SUMMARY | AG-199 | files=work/AG-199 claims/AG-199 | idea=w896 midpoint ch/s(w) fill | evidence=2/2 204 @a9ff088f
+FACT | AG-199 | 2/2 204 @a9ff088f tree-3296: 36978301155 w896r1136 s525199 + 36978310951 w896r800 s526199 QUEUED | api
+DISP | AG-199 | w896-мидпоинт (зазор 768-1024, 0-клейм) 2/2 queued @199[ab] 1d/9000s/dcp900; payload work/AG-199 | 204
+PATCH_SUMMARY | AG-199 | files=work/AG-199 claims/AG-199 | idea=w896 midpoint ch/s(w) fill | evidence=2/2 204 @a9ff088f
+FACT | AG-199 | 2/2 204 @a9ff088f tree-3296: 36978301155 w896r1136 s525199 + 36978310951 w896r800 s526199 QUEUED | api
+DISP | AG-199 | w896-мидпоинт (зазор 768-1024, 0-клейм) 2/2 queued @199[ab] 1d/9000s/dcp900; payload work/AG-199 | 204
+PATCH_SUMMARY | AG-199 | files=work/AG-199 claims/AG-199 | idea=w896 midpoint ch/s(w) fill | evidence=2/2 204 @a9ff088f
+FACT | AG-199 | 2/2 204 @a9ff088f tree-3296: 36978301155 w896r1136 s525199 + 36978310951 w896r800 s526199 QUEUED | api
+DISP | AG-199 | w896-мидпоинт (зазор 768-1024, 0-клейм) 2/2 queued @199[ab] 1d/9000s/dcp900; payload work/AG-199 | 204
+PATCH_SUMMARY | AG-199 | files=work/AG-199 claims/AG-199 | idea=w896 midpoint ch/s(w) fill | evidence=2/2 204 @a9ff088f
