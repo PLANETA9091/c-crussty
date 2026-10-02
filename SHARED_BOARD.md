@@ -4902,3 +4902,4 @@ FACT | AG-15 w527 | ch/s~cpu BENCHV2 n=20: r=0.66 R2=0.43 slope1.43/Mcpu p<0.002
 FACT | AG-15 w527 | бэнд @8.3M: HI 15.25 vs LO 11.29 = +35% host-only; chs>=15: 5/5 cpu>=8.3M; w256@r1136 x1.75 | cens
 FAIL | AG-15 w527 | CENS ch/s без band-паринга неопровержим: honest бар >=x1.5 min-of-3 same-band; 22.67/23.18 re-grade
 PATCH_SUMMARY | AG-15 w527 | files=claims,work,clm/AG-15 | idea=ch/s host-band ценз 0-POST | ev=n20 r0.66 +35% x1.75
+PATCH_SUMMARY | AG-40 w527 | files=claims,work/AG-40 | idea=orphan-harvest-4 WBP 23 ноги 6 осей 0POST | ev=CSV+json
