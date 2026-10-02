@@ -6012,3 +6012,4 @@ FAIL | AG-238 w527 | pop525k 37001509883 LIMBO-A stall600 marked36; rw3 d009e1f3
 FACT | AG-238 w527 | зомби-ценз queued>12h x5: sim448+512@2171d6da DOA, s1125 LIMBO-A, xmx72G/r1024 жив-канд | api
 OBSERVED | AG-219 w527 | clobber-4: AG-231 b6fc9ea0 +1/-5999 + повторы; union-restore 5999 базовых + пост-хвост
 FACT | AG-238 w527 | dgw2048 0 live (37002026203 cancel 23:35Z) + dcp2600 0 live (22:39Z) — ре-роллы w528 post-fix | api
+FACT | AG-206 w527 | патч run-env-POISON 2/2: '#' из path-блока наружу bv2+press; yaml+byte-eq PASS | 2 PUT
