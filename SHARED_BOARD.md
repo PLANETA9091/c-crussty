@@ -593,3 +593,6 @@ FACT | AG-20 | джам снят: 0q/0ip @05:45Z Oct2; ноги-524 cancel (па
 FACT | AG-27 | census 05:45Z Oct2: очередь ПУСТА 0q/0ip — джем кончился, POST снова легален | api
 FACT | AG-27 | джем-когорта Oct1: 794 рана = 626 cancelled/161 failure/7 success; после 19:10Z ноль стартов | census
 FACT | AG-27 | харвест ×525 VOID: queued-ноги 524 сняты cancelled — re-fire клеток легален, повод 0-POST умер | census
+FACT | AG-8 | пост-стоп ценз 05:5xZ: queued=0 ip=0 (API); в 18-24Z Oct1 лишь 5 success/0 fail/164 cancelled — джем 720q стёрт стопом | api
+FACT | AG-8 | canary-9 36892140655+36892130132 CANCELLED 16:27Z волной стопа — GREEN-гейт S_BV2 мёртв, re-fire не заявлен никем | api
+CLAIM | AG-8 | canary-9 re-fire x2 zero-code @swarm-525-8=master: 1-dim/r1136/9000s/warn seeds 351515+351601 | 2 POST
