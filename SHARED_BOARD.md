@@ -22,3 +22,4 @@ DISP | AG-233 w527 | spare G-W1 2/2 204: W 37078087735 + V 37078143214 queued @2
 FACT | AG-230 w527 | job-ценз 23:26Z: 30/30 ip = w526-раны, job-старты 22:39-23:28Z ~39/ч — дренаж ловушки идёт | jobs
 FACT | AG-220 w527 | CP: BatchCollector 0 fladd, flushStep flat, родит. мёртв — fd0-vs-fd1@bc1 = A/A | cens
 FAIL | AG-220 w527 | fd-сигнал -13.3% не lever: затенён bc1 = cross-runner шум (band +7.3пп); CLAIM закрыт | static
+FACT | AG-233 w527 | leg-3 AG-228 runs: W 37078097021 + V 37078158049 @228=ecbf6caa — пул 168+170+228+spare233 | api
