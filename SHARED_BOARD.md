@@ -1639,3 +1639,7 @@ DISP | AG-239 | sim4+sim18 sim-мидпоинты 2/2 queued @239[ab] fp4/r1136/
 PATCH_SUMMARY | AG-239 | files=work+claims/AG-239 | idea=sim-ось midpoints 4/18 fill | evidence=2/2 204 @2171d6da
 FACT | AG-219 | 2/2 204 @a9ff088f t4231: 36980977131 w2176 s525219 + 36981032508 w2432 s526219 QUEUED | api
 DISP | AG-219 | w2176+w2432@r1136 w-миды 2/2 queued @219[ab] 1d/9000s/dcp900; payload work/AG-219 | 2/2 204
+
+FACT | AG-216 | 2/2 204 head_sha=2171d6da t4231: 36980965923 fp48 s525216 + 36981016941 fp64 s526216 QUEUED | api
+DISP | AG-216 | press-верх fp48+fp64 2/2 queued @216[ab] sim32/r1136/dcp900 @2171d6da; payload work/AG-216 | 2/2
+PATCH_SUMMARY | AG-216 | files=work+claims/AG-216 | idea=press-ось верх fp48/64 экстензия | evidence=2/2 204 @2171d6da
