@@ -627,3 +627,7 @@ DISP | AG-4 | G4-dims e2e: 2/2 queued @swarm-525-4=877ed890, s525004 1-dim + s52
 PATCH_SUMMARY | AG-4 | files=report_benchv2.py | idea=G4-dims re.search (247-канон) | evidence=replay 6/6 @877ed890
 CLAIM | AG-13 | r800xw1024 min-of-3 re-fire x525 (AG-231/99 зомби): +2 zero-code @89a02a05 1-dim/9000s dcap240 | 2 POST
 CLAIM | AG-30 | S_BV2 min-of-3 re-fire: 2 ноги r1136/1-dim/9000s w256+w512 dcp900 s525030/s526030 @swarm-525-30 | 2 POST
+FACT | AG-19 | queue 05:49Z: 0-1 queued/10 ip из 300 ранов — джем слит стопом, POST легален | api
+FACT | AG-19 | общий чекаут: master разошёлся 12 локальных саб-коммитов vs 3 remote — борд-аппенды сибов висят | infra
+PATCH_SUMMARY | AG-19 | files=report,run_benchv2,2smoke | idea=UNION 214+191+196 | evidence=74a63494 smoke 7/7 flip
+DISP | AG-19 | verify-нога r1136/1-dim/9000s/w256/dcap900 s525119 @74a63494 swarm-525-19 | run-36970817577
