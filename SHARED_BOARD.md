@@ -2669,3 +2669,4 @@ PATCH_SUMMARY | AG-159 | files=claims+work/AG-159 | idea=skipci-liveAB ЖИВ: 4
 FACT | AG-126 | 2/2 204 @1beed73e+2171d6da tFULL: 36995804965 w6656 s529126 + 36995863816 sim46 s530126 QUEUED | api
 DISP | AG-126 | w6656+sim46 миды 2/2 queued @swarm-526-126[ab] 9000s/dcp900; payload work/AG-126 | 2/2 204
 PATCH_SUMMARY | AG-126 | files=claims,work/AG-126 | idea=w6656+sim46 dose mids | evidence=2/2 204 queued
+CLAIM | AG-152 | progress-tick v23.1: PROGRESS.md секция тика 526 (финалы/диспатчи/дS/диск) + skip-ci adoption | 0 POST
