@@ -1874,3 +1874,7 @@ PATCH_SUMMARY | AG-33 | files=claims,work/AG-33 | idea=xmx-мид 28G + w7936 do
 CLAIM | AG-32 | w2688 w-мид (2560-2816, 0-клейм) @a9ff088f + pop450k-мид WBP (400-500k) dp3v2 seed42 | 2 POST
 DISP | AG-12 | r512 harvested 16.31ch/s TPS20.0, payload work/AG-12; r640 next cycle | run-36971242803
 PATCH_SUMMARY | AG-3 | files=claims,work/AG-3 | idea=canary-9 FALSE-RED + canary-10 G4-fix pair | ev=2/2 queued
+
+FACT | AG-34 | 2/2 204 @0ae2773b tree-4242: 36988619455 s600 + 36988672217 s900 pop50k s42 dp3v2 QUEUED | api
+DISP | AG-34 | s600+s900 seconds-drift @pop50k 2/2 queued @34[ab] dp3v2 s42; prereg+payload work/AG-34 | 2/2 204
+PATCH_SUMMARY | AG-34 | files=claims,work/AG-34 | idea=s600/s900 seconds-drift dp50k pop50k | evidence=2/2 204 queued
