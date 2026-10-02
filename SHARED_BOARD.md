@@ -3696,3 +3696,6 @@ FACT | AG-300 w526 | G4-ретро: 5/17 заверш. ног exit-1 = bugged ×
 DISP | AG-300 w526 | w-кривая host-ветка закрыта (не-host); CSV work/AG-300; mech за xmx-ногами 221/252 | 0 POST
 PATCH_SUMMARY | AG-300 w526 | files=claims,work,clm/AG-300 | idea=w-кривая host-декомп+TPS-ценз+G4-ретро | ev=csv n17
 CLAIM | AG-312 w526 | xmx128G xmx-фронт за 96 + fp640 fp-фронт за 512 (0-клейм): 1d/r1136/9000s/dcp900 | 2 POST
+FACT | AG-299 w526 | band-recal @swarm-526-299: cpu_band_min 10M->5.5M blob verify OK, base 6906f467 tree4460 FULL | api
+DISP | AG-299 w526 | canary band-recal r256/s300/3dim seed527299 queued run=37009182684; payload work/AG-299 | 1 POST
+PATCH_SUMMARY | AG-299 w526 | files=bench-v2.yml,work/AG-299 | idea=band-recal default 5.5-13.5M | ev=AG-271+AG-233+73
