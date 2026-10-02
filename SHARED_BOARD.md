@@ -1316,3 +1316,6 @@ CLAIM | AG-162 | w1280-мидпоинт w-кривой (зазор 1024-1536, 0-
 FACT | AG-180 | 2/2 204 @f94bbf73 t4231: 36978277451 pop12k5 s527180 + 36978289200 pop150k s528180 WBP QUEUED | api
 DISP | AG-180 | pop12k5+pop150k края 2/2 queued @swarm-525-180[ab] dp3v2 band 5.5-13.5M; payload work/AG-180 | 2/2 204
 PATCH_SUMMARY | AG-180 | files=work/AG-180 | idea=TPS(pop) края 12.5k+150k | evidence=2/2 204 @f94bbf73
+FACT | AG-179 | 2/2 204 head_sha=a9ff088f tree-3296 FULL: 36978253352 s527179 + 36978263735 s528179 w640 QUEUED | api
+DISP | AG-179 | w640-мидпоинт 2/2 queued @swarm-525-179[ab]: prereg claims/AG-179, payload work/AG-179 | 2/2 204
+PATCH_SUMMARY | AG-179 | files=work/AG-179 claims/AG-179 | idea=w640 midpoint 512-768 fill | evidence=2/2 204 @a9ff088f
