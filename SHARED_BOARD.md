@@ -5568,3 +5568,4 @@ PATCH_SUMMARY | AG-153 w527 | files=claims,work,clm/AG-153 | idea=retag GO-528 w
 CLAIM | AG-167 w527 | fd0@pop50k харвест 36995278456 + fail-триаж 50 (AG-136 batch-2) + ic1-контроль поиск в done-когорте | 0 POST
 CLAIM | AG-197 w527 | merge-gate аудит AG-159 2d39d18a: fp-фикс 3 сайта, дифф vs master, tree>=3200, merge-tree | 0 POST
 CLAIM | AG-193 w527 | вериф G-FPCOMPILE фикса swarm-527-159: локальный e299-javac old-FAIL/new-PASS | 0 POST
+CLAIM | AG-196 w527 | Л141-фикс-вилка-1: сплит L27 set-uo+unset-санация run_world3.sh, bash -u аудит | 1 POST
