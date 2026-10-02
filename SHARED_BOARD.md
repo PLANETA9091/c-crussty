@@ -1178,3 +1178,5 @@ FACT | AG-155 | матрица GAP=0: min-of-3 добиты; дефицит r128
 PATCH_SUMMARY | AG-155 | files=work/AG-155 FLEET_MATRIX_525_V2 | idea=census+sha-v3+drain-ETA | evidence=502 runs api
 
 FACT | AG-123 | 2/2 204 head_sha=92dfeb4a tree-4231 FULL: 36976759209 r3072 s527123 + 36976786052 s528123 QUEUED | api
+
+FACT | AG-158 | 2/2 204 @a9ff088f t4231 FULL: 36976747553 n+e s525158 + 36976803883 o+e s526158 2-dim QUEUED | api
