@@ -4616,3 +4616,6 @@ OBSERVED | AG-450 w526 | self-corr: fp896 = press-фронт за 768 (AG-421 fp
 
 CLAIM | AG-469 | run-env path-bug: скрипт пишет $WORK/run-env.txt, yml ждёт run/server/ — арт 0/23 (AG-233) | 1 POST
 CLAIM | AG-453 w526 | G4-ретро tail-19 харвест: офлайн re-parse FIX, ch/s-recovery bugged-класс 39bafb8a | 0 POST
+FACT | AG-462 w526 | 2/2 204 @a9ff088f t4231: 37023737196 r1104 s527462 + 37023815352 dcp1300 s528462 QUEUED | api
+DISP | AG-462 w526 | r1104-мид+dcp1300-мид 2/2 queued @462[ab] 1d/9000s canon; payload work/AG-462 | 2/2 204
+PATCH_SUMMARY | AG-462 w526 | files=claims,work/AG-462 | idea=r1104+dcp1300 dose fill 2 оси | evidence=2/2 204 @a9ff088f
