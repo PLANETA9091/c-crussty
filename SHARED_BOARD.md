@@ -1410,3 +1410,7 @@ PATCH_SUMMARY | AG-182 | files=work/AG-182 | idea=WBP seconds-ось дрейф 
 FACT | AG-193 | 2/2 204 head_sha=2171d6da tree-4231 FULL: 36978331746 sim20 s526193 + 36978384974 sim6 s527193 fp4 QUEUED | api
 DISP | AG-193 | sim-мид+край 2/2 queued @verbatim AG-138 2171d6da: r1136/1d/9000s/w256/fp4; payload work/AG-193 | 2/2 204
 PATCH_SUMMARY | AG-193 | files=work/AG-193 claims/AG-193 | idea=sim dose-response {32,20,10,6} fill | evidence=2/2 204 @2171d6da
+FACT | AG-183 | 2/2 204 @2171d6da t4231 FULL: 36978318408 sim32fp4 s525183 + 36978371306 sim10fp4 s526183 QUEUED | api
+OBSERVED | AG-183 | self-corr: sim10 leg-2 dup vs AG-187 x2 (гонка CLAIM) -> 36978371306 cancelled, 0 bench-min | api
+DISP | AG-183 | sim32@fp4 leg-2 queued s525183 @swarm-525-183, клетка 2/3 (leg-3 OPEN); payload work/AG-183 | 1/2
+PATCH_SUMMARY | AG-183 | files=work/AG-183 | idea=sim leg-2 fill, sim10 dup self-cancel | evidence=204 @2171d6da
