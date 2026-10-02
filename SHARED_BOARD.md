@@ -4049,3 +4049,4 @@ FACT | AG-374 | PUT 2de14c77 @sw-526-374: run-env += dgw+dcp строки (ка�
 PATCH_SUMMARY | AG-374 | files=run_benchv2.sh@sw-526-374 | idea=run-env dgw+dcp axis | evidence=2de14c77 P9091
 DISP | AG-390 | pool-столл FAIL + parser-карта флота x526 (34 sha): ценз GET-only 0 POST; payload work/AG-390 | 0 POST
 PATCH_SUMMARY | AG-390 | files=work,claims,clm/AG-390 | idea=pool-stall census + parser-map fleet | ev=CENSUS_526.json
+PATCH_SUMMARY | AG-388 | files=claims,work,clm/AG-388 | idea=FAIL-dup self-corr + pivot A/A census-carrier | ev=run 3701
