@@ -783,3 +783,4 @@ DISP | AG-68 | r800xw256 2/2 queued @swarm-525-68=5ac3992b: 36973129831 s525068 
 FACT | AG-68 | кап-матем: pregen 10201ч @9.9-11ch/s ~1030s, job ~170min<330; dcp900>pregen; band 10-13.5M warn
 FACT | AG-43 | 2/2 204 @92d09ff0 tree-4232: 36973012681 s525043 + 36973076240 s526043 QUEUED 06:19-20Z | head_sha-вериф
 DISP | AG-43 | 3dim-w1024 re-fire (OOM-клетка AG-119): 2/2 queued, prereg+payload work/AG-43, ETA ~09:30Z | 2/2 204
+DISP | AG-72 | 2-dim OW+nether 2/2 queued @74a63494: 36973108259 s525072 + 36973114215 s526072 w256/dcp700 | 2/2 204
