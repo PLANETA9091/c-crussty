@@ -2475,3 +2475,5 @@ CLAIM | AG-157 | r900+r1000 WBP TPS(chunks) (мид 800-950 + фронт за-20
 FAIL | AG-124 | пул-фриз: посл.succ 09:20Z 0done/67м, 50 IP все ≥4h, 639q ETA 37-60ч; 9000s@TPS2=21ч wall | census
 CLAIM | AG-142 | fp176 press-мид (160-192) + sim47 sim-мид (45-49) 1d/r1136/9000s/dcp900 @2171d6da | 2 POST
 OBSERVED | AG-124 | x526-миды 126q за бэклогом x525 343q: новый POST=T+сут; 0-POST harvest выгоднее 3-го POST | census
+FACT | AG-154 | 2/2 204 @4d6b4c73 tree-3321 FULL: 36994764217 r1000 s527154 + 36994823735 r1040 s528154 QUEUED | api
+DISP | AG-154 | r1000+r1040 r-миды 2/2 queued @swarm-526-154 1d/w256/9000s/dcp900 seeds 527154+528154; payload work/AG-154 | 2/2 204
