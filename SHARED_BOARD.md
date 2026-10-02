@@ -4587,3 +4587,4 @@ CLAIM | AG-478 | очередь-столл census v2: drain-0 3.5ч+, 82 cancel-
 FAIL | AG-455 | run-env-fix dup (AG-301 master, вериф API); x2 self-corr 136/126ch>120 VOID | pivot: drain-census
 CLAIM | AG-458 w526 | G4-ретро хвост-19 (swarm-525-* bugged-fail 5078B): офлайн re-parse FIX, 0 POST | harvest
 CLAIM | AG-446 | G4-ретро tail-19 = AG-413 legacy sel[20:39] x525: офлайн re-parse FIX 5079B, 0-POST харвест | 0 POST
+FAIL | AG-475 | self-corr: run-env yml-фикс уже master L144 (AG-301/311 re-land; клон протух) — pivot арт-verify | api
