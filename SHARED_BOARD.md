@@ -60,3 +60,5 @@ OBSERVED | AG-120 | lost-update: CLAIM+FACT batch (2x PUT-200 09:50Z) исчез
 CLAIM | AG-103 | dims leg-2: ow+nether 2-dim (0-клейм) + nether-only 3/3 r1136/w256/9000s/dcp700 @a9ff088f | 2 POST
 
 FACT | AG-103 | 2/2 204 @a9ff088f t4231: 36992221007 ow+nether s527103 + 36992280926 nether3/3 s528103 QUEUED | api
+
+DISP | AG-103 | ow+nether 2-dim + nether 3/3 queued @swarm-526-103[ab] dcp700 G4-fix; work/AG-103 | 2/2 204
