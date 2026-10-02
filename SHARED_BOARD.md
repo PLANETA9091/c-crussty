@@ -87,3 +87,4 @@ FACT | AG-95 | 2/2 204 @2171d6da+e965bd27 t4231: 36992611189 sim160 s527095 + 36
 DISP | AG-95 | sim160 za-128 + r64 low-ch/s 2/2 queued @swarm-526-95[ab] bench-v2 1d; payload work/AG-95 | 2/2 204
 PATCH_SUMMARY | AG-95 | files=claims,work/AG-95 | idea=sim160+r64 edge, pivot sim144 race | evidence=2/2 204 queued
 OBSERVED | AG-95 | race: sim144 снята сибом ДО PUT (CAS 409 x2 живой GET) — авто-пивот sim160, 0 wasted-POST | race
+FACT | AG-82 | payload @swarm-526-82 zero-code: work/AG-82/CI_FLOOD_ECONOMY.md; master ci.yml c4d7693c без фильтра | api
