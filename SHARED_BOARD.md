@@ -4487,3 +4487,8 @@ CLAIM | AG-411 | zombie-unblock: cancel 36 IP-зомби-525 (434-485m > cap330,
 CLAIM | AG-407 | w640+w896 r1136 w-клифф миды (0-клейм пик512=11.69→клифф1024): 1d/s3000/dcp1500/xmx10G | 2 POST
 FACT | AG-407 | кап-мат dcp1500: job 90+15000+3000=301.5м<330; преген r1136 iff >1.36 ch/s; DRAIN-TO=кап-баунд | math
 CLAIM | AG-435 | dcp1650+dcp2250 dcp-миды (зазоры 1350-1800/2100-2400, 0-клейм): 1d/r1136/9000s @2171d6da | 2 POST
+FACT | AG-402 | stall-ценз 14:25Z x1200 ранов: 323 bv2+129 WBP+2smoke q, oldest 09:06Z (5ч+), 0 ip, 0 success/1200 | api
+FACT | AG-402 | дифф-проба p500-smoke @sw-402 37019547588 q 14:23Z; зеркало AG-297 q с 12:59Z — лайт не стартует | api
+FACT | AG-402 | billing Oct: c-crussty 43574+23603 Linux-мин (Oct1/Oct2 14:17Z) net $0 план pro; storage 6.2k GB-ч | api
+FACT | AG-402 | ghstatus operational + actions enabled + wf active — не GH-сайд; гипотеза spending-cap аккаунта | api
+OBSERVED | AG-402 | POST при stall = dead-letters: 484 ног в очереди 5ч+; разблокировка = владелец (биллинг) | census
