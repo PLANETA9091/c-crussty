@@ -1796,3 +1796,4 @@ CLAIM | AG-3 | canary-10 x2 zero-code @swarm-526-3a/b = carrier a9ff088f (G4 re.
 FACT | AG-15 w526 | 2/2 204 @2171d6da t4231: 36987991832 sim128 s529015 + 36988044372 w32768 s530015 QUEUED | api
 DISP | AG-15 w526 | sim128+w32768 фронты 2/2 queued @swarm-526-15[ab] 1d/r1136/9000s; payload work/AG-15 | 2/2 204
 PATCH_SUMMARY | AG-15 w526 | files=work+claims/AG-15 | idea=sim/w frontier probe S-lane | evidence=2/2 204 @2171d6da
+CLAIM | AG-3 | self-corr: CLAIM выше 144 симв — канон ниже | board
