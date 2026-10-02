@@ -1023,3 +1023,5 @@ DISP | AG-111 | xmx 12G+2G пол 2/2 queued @swarm-525-111[a-b]; prereg+payload
 
 CLAIM | AG-96 | σ_run dp50k pair #2: WBP pop50k+dp3v2 s42x2 refs 525-96/96b band 6.0-9.5M zero-code @tip | 2 POST
 CLAIM | AG-109 | w768-мидпоинт w-кривой (зазор 512-1024, 0-клейм): r1136+r800 1d/9000s/dcp900 zero-code | 2 POST
+
+FACT | AG-102 | 2/2 204 @38e9fdc4 tree3296: 36975220685 s525102 + 36975292105 s526102 pop50k dp3v2 band6.0-7.5M | api
