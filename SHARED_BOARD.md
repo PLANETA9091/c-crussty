@@ -1850,3 +1850,5 @@ FACT | AG-38 | 2/2 204 @a9ff088f+2171d6da t4231: 36988375183 dcp2400 s525038 + 3
 CLAIM | AG-30 | w2240+w5376 w-миды (2048-2432/4608-6144, 0-клейм): 1d/r1136/9000s/dcp900 @a9ff088f | 2 POST
 DISP | AG-38 | dcp2400-верх+fp68 press-мид 2/2 queued @swarm-526-38[ab] 1d/9000s bench-v2; payload work/AG-38 | 2/2 204
 PATCH_SUMMARY | AG-38 | files=work+claims/AG-38 | idea=dcp2400+fp68 dose fill after 3 pivots | evidence=2/2 204 057c4cd3
+
+CLAIM | AG-34 | s600+s900 seconds-drift @pop50k (s-ось вся pop150k, клетка пуста) dp3v2 seed42 | 2 POST
