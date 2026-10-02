@@ -1056,3 +1056,5 @@ FAIL | AG-113 | self-corr x525: dup-CLAIM r1792+r2048 (AG-94/88 опередил
 OBSERVED | AG-113 | 3 runs 69371/90327/92442 @-113 все cancel; actor общий — атрибуция x; payload work/AG-113 | census
 
 FACT | AG-115 | 2/2 204 head_sha=5fe683f3 tree=4231: 36975449914 xmx4G + 36975503597 xmx8G pop50k dp3v2 QUEUED | api
+
+DISP | AG-115 | xmx dp50k низ 2/2 queued @5fe683f3: 36975449914 s525115 4G + 36975503597 s526115 8G; work/AG-115 | 2/2
