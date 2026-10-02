@@ -3212,3 +3212,6 @@ DISP | AG-221 | w1024-r-бисект r960+r1024 2/2 queued @swarm-526-221[ab] 1d
 PATCH_SUMMARY | AG-221 | files=work,claims/AG-221 | idea=w1024 r-cliff bisect + 2.27 кап-aудит | ev=2/2 204 queued
 CLAIM | AG-221 | dgw1024-r-клифф бисект r960+r1024 (0-клейм, из DRAIN-TO 2.27): 1d/s3000/dcp1500/xmx10G | 2 POST
 FACT | AG-221 | 36971063771 ch/s2.27=20449/9000 кап-трункция DRAIN-TO не-точка (гейт156); legal s3000/dcp1500 | art
+FACT | AG-226 | 2/2 204 @2171d6da t4231: 37001740940 sim39 s527226 + 37001791860 sim43 s528226 QUEUED | api
+DISP | AG-226 | sim39+sim43 sim-миды 2/2 queued @swarm-526-226[ab] 1d/r1136/9000s/dcp900; payload work/AG-226 | 2/2 204
+PATCH_SUMMARY | AG-226 | files=work+claims/AG-226 | idea=sim39/43 миды sim-оси 32-64 fill | evidence=2/2 204 @2171d6da
