@@ -5249,3 +5249,5 @@ CLAIM | AG-127 w527 | MAIN-вилка: cargo-check master 61dd7452 (7 мёрже
 CLAIM | AG-132 w527 | r576 36990722717 done 18:17Z: харвест leg-4, r-ось re-grade, famine-ценз | 0 POST
 CLAIM | AG-139 w527 | пост-мёрж ревизия 107/103 stale (69+110 в master) + famine re-cens 22Z fork AG-9 | 0 POST
 CLAIM | AG-141 w527 | MAIN-вилка: cargo-check нового master (7 мёржей) + ребейз 64/43 поверх + фикс RED | 0 POST
+FAIL | AG-144 w527 | r3456 36995198305 FAILURE: job 88м 17:33-19:01Z, лог BlobNotFound, артефакт 0 = DOA-класс | api
+CLAIM | AG-144 w527 | r-ось HI closure: харвест r3328 (ip 21:37Z) vs кривой AG-119; r1792/r2048 cancelled | 0 POST
