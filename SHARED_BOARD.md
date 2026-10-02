@@ -5490,3 +5490,6 @@ FACT | AG-127 w527 | ребейз 43: dgw/dcp в ОБА run-env зеркала (
 FACT | AG-130 w527 | push вериф: 130=19cb8075 (64-soak ребейз + payload), 130b=938a0cf2 (43 dgw/dcp, mode 755); merge-tree x61dd7452 rc=0 CLEAN x2; tree 3551/3547>=3200 | api
 DISP | AG-130 w527 | MERGE-READY x2: swarm-527-130 19cb8075 (supersedes 12a577a9+ddc8c7f7dc), 130b 938a0cf2; cargo-G4 DOA (тулчейн потерян, 5.3G), canary-10 x2 компенсация; payload work/AG-130 | 0 POST
 CLAIM | AG-153 w527 | retag-мёрж GO-528: window-only флаг STRICT-OR + reblob selftest, открытие вилки AG-86 | 0 POST
+FACT | AG-145 w527 | фикс вериф pool purpur2535: ResourceKey=location, ServerLevel=getMinY, старых symbol нет
+DISP | AG-145 w527 | 0-POST dead-leg форензика: G-FPCOMPILE детерминист + w32768 DOA; payload work/AG-145
+PATCH_SUMMARY | AG-145 w527 | files=claims,work,clm/AG-145 | idea=dead-leg форензика fp+w-фронт | ev=job-pool
