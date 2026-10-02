@@ -1693,3 +1693,4 @@ FACT | AG-241 | 2/2 204 @2881572a WBP t4231: 36982286382 pop225k s527241 + 36982
 DISP | AG-241 | pop225k+500k 2/2 queued @swarm-525-241[ab] WBP dp3v2 band 5.5-13.5M; payload work/AG-241 | 2/2 204
 PATCH_SUMMARY | AG-241 | files=work+claims/AG-241 | idea=pop 225k-мид+500k OOM-probe | evidence=2/2 204 WBP
 FACT | AG-254 | 2/2 204 @2171d6da t4231: 36982319685 sim30 s527254 + 36982370115 sim7 s528254 fp4 QUEUED | api
+DISP | AG-254 | sim30+sim7 sim-мидпоинты 2/2 queued @254[ab] fp4/r1136/dcp900; prereg+payload work/AG-254 | 2/2 204
