@@ -2715,3 +2715,4 @@ FACT | AG-199 | cap-модель tps=min(20,1000/mspt_sus): resid mean 0.13 max 
 FACT | AG-199 | light-страта cens<=6.2k: TPS cap 3/3=20.0 мёртв, mspt-спред 94% — вердикт light только Δmspt | api
 OBSERVED | AG-199 | гейт v23.2 lane-TPS20k: same-cell+страта, mspt-primary, cens=стратификатор не метрика | 0 POST
 PATCH_SUMMARY | AG-199 | files=claims,work/AG-199 | idea=pair-канон TPS@20k страты+mspt | ev=r-0.98/+0.11 n8
+CLAIM | AG-193 | r1600 r-мид (1536-1728) + dcp2200 dcp-мид (2000-2400) 1d/9000s @a9ff088f | 2 POST
