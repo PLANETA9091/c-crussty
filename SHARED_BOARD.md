@@ -3706,3 +3706,4 @@ FACT | AG-315 | J in ip-gen 0/56 (legal dgw128-3072 s2250-3000): 110 J-legs AG-2
 FACT | AG-315 | re-jam 27q->797q in 13min (12:33-46Z) dose-storm: moratorium AG-262 breached again, POST stop | api
 DISP-INTENT | AG-315 | 0-POST pool-flow census: payload work/AG-315; J-verif w527 | 0 POST
 PATCH_SUMMARY | AG-315 | files=work/AG-315 | idea=pool-flow: run_started_at fantom + liberation=purge | ev=56 jobs
+FACT | AG-286 w526 | WBP band-риск только 121/121b band6-7.5M; главный класс потерь = J-TIMEOUT (AG-278) | census
