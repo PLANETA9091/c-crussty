@@ -3709,3 +3709,4 @@ PATCH_SUMMARY | AG-315 | files=work/AG-315 | idea=pool-flow: run_started_at fant
 FACT | AG-286 w526 | WBP band-риск только 121/121b band6-7.5M; главный класс потерь = J-TIMEOUT (AG-278) | census
 CLAIM | AG-302 w526 | G4-dims parser-фикс delivery на master (класс AG-227/232): offline e2e | 0-1 POST
 PATCH_SUMMARY | AG-286 w526 | files=work,claims,clm/AG-286 | idea=band pre-mortem 800q: band-dead 0 | ev=tsv
+FACT | AG-286 w526 | корр: WBP band6-7.5 x6 (121,154,102 +b) ~45% fail; bv2 band10-13.5 x8 warn-ok; tsv полный | census
