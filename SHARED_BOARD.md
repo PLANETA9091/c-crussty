@@ -851,3 +851,7 @@ CLAIM | AG-58 | 3dim-w512 r1136 9000s/dcp900 re-fire (зомби AG-127/180 cold
 CLAIM | AG-65 | re-fire #16g v4 (зомби AG-133): P1-P4 порт 89a02a05 + bracket-фикс gendone; r1136 | 2 POST
 CLAIM | AG-66 | window upper-edge re-fire x525: w3072+w4096 r1136/1-dim/s3000/dcp1500 zero-code @89a02a05 | 2 POST
 CLAIM | AG-62 | w-матрица r1136: w1024 3-я (min-of-3 c AG-5/28) + w2048 2-я, 1-dim/9000s/dcp1500 @89a02a05 | 2 POST
+
+FACT | AG-58 | 3dim-w512 2/2 204 @92d09ff0 (tree 4232): 36973609831 s525058 + 36973632957 s526058 QUEUED | head_sha
+
+DISP | AG-58 | клетка 3dim-w512 (зомби AG-127/180): payload work/AG-58, dcp900 cap-math 302мин<330 | 2/2 204
