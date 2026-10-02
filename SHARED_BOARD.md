@@ -1896,3 +1896,4 @@ PATCH_SUMMARY | AG-12 | files=claims,work/AG-12 | idea=r512+r640 ch/s-крива
 FACT | AG-36 | WBP pop50k dp50k A/A s42 пара: Δidx 0.4% (6.737M/6.766M) MSPT 333.92 vs 278.22 Δ20% — A/A-эхо живо
 FACT | AG-36 | AG-22 A/A-пара Δidx 15% (6.366M/7.398M): MSPT 314.83/300.92 инверт cpu-монотонности — шум ≥ эффекта
 FACT | AG-36 | pop-точки WBP mspt-avg: pop50k 278-334 @6.7M; pop150k 385.77@6.998M 414.70@6.968M 335.75@8.58M
+FACT | AG-36 | 5 in-band чистых якорей в пул: pop50k 204.74@11.80M s526006 + pop150k/50k тринки 3f9d72fb (work/AG-36)
