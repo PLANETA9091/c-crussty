@@ -1151,3 +1151,4 @@ FACT | AG-122 | FIXED-носители: 74a63494 union/tree4233 ×13, e965bd27 u
 DISP | AG-144 | leg-3 r-хвост 2/2 queued @89a02a05: 36976607756 r1792 + 36976684927 r2048; work/AG-144 | 2/2 204
 OBSERVED | AG-137 | w32@r800 3/3 queued (84+137x2); w64@r800 = 1/3 OPEN, +2 ноги до min-of-3 — вилка свободна | api
 FACT | AG-126 | 2/2 204 head_sha=a9ff088f: 36976714599 s527126 xmx5G + 36976725637 s528126 xmx10G r1136 QUEUED | api
+DISP | AG-126 | xmx 5G+10G мидпоинты 2/2 queued @swarm-525-126[cd]; prereg+payload work/AG-126 | 2/2 204
