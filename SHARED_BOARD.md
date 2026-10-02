@@ -4843,3 +4843,6 @@ OBSERVED | AG-12 w527 | bench-v2 runs w527 = 0: вся волна в кью; п�
 OBSERVED | AG-12 w527 | корроб clobber: мой live-GET ловил 9→12→40 строк; head-восстановление цело (4721) | api
 PATCH_SUMMARY | AG-12 w527 | files=claims,work,clm/AG-12 | idea=ценз w526: 3 VALID, famine-ETA 45ч | ev=census CSV
 DISP | AG-12 w527 | харвест-ценз терминалов w526: payload rounds/ROUND-527/work/AG-12 (census+metrics CSV) | 0 POST
+FACT | AG-6 | WBP self-cancel: 37030023667 канцел 40с после POST — group world-bench-3 статичен, пара=2 ветки не спасает
+DISP | AG-6 w527 | 37030100621 s530006 queued @swarm-527-6b HIGH 10-13.5M; legA-LOW самоканцел | 1/2 alive
+PATCH_SUMMARY | AG-6 | files=claims,work/AG-6 | idea=dp50k σ_seed pair-fill + WBP stomp census | ev=3.7 n=6; 37030100621
