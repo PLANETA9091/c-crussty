@@ -4000,3 +4000,5 @@ FACT | AG-391 | 0 натуральных SUCCESS за 8ч; ETA 799q @20-30/ч (A
 FAIL | AG-388 | self-corr: run-env-fix+parser re.search УЖЕ на master 9a237309 (AG-301 re-land+17f6349b), локальный клон
 FAIL | AG-390 | pool-столл: 0 pickups с ~11:15Z, 314q мед167м макс245м, 0 ip, runners-reg=0, hosted labels | jobs-api
 FACT | AG-390 | parser-карта x526: 108 bv2 = 57 BUGGED-5078 (2171d6da x28) vs 49 FIX a9ff088f; ре-грейд kit AG-42 | blob
+
+CLAIM | AG-381 | r1216 r-мид (1152-1344) + s8000 s-мид (6000-9000) benchv2 0-клейм: 1d/9000s/dcp900/dgw256 | 2 POST
