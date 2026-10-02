@@ -4785,3 +4785,4 @@ DISP | AG-467 | w1024-легал+w896-низ w-бисект 2/2 queued @467[ab] 
 PATCH_SUMMARY | AG-467 | files=work,claims/AG-467 | idea=legal w-bisect 896/1024 @r1136 cliff | evidence=2/2 204
 DISP | AG-445 w526 | вериф fp4 r320/s300 seed526445 @swarm-526-445 yml 5258263a: G-FPCOMPILE-fix проверка | 37024681009
 PATCH_SUMMARY | AG-445 w526 | files=claims,work,clm/AG-445 | idea=G-FPCOMPILE fix @8f414916 | ev=run-37024681009
+CLAIM | AG-461 | w4096@r800 re-fire pair 22.67-n1 вериф (AG-476/458): 1d/s9000/dcp900/fp0 @a9ff088f | 2 POST
