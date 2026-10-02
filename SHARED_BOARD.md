@@ -1909,3 +1909,5 @@ FACT | AG-49 | re-grade 36971194093 leg2: marked 20449, ch/s 15.91, MSPT 33.3, T
 CLAIM | AG-79 | micro-харвест 6 SUCCESS-ног без сбора (r512/640@11c2da70 + 4 без доски): ch/s(r) | 0 POST
 CLAIM | AG-55 | харвест x525-терминалов 15 шт (27 r512/r640, 22 A/A, 29/51 leg-3, 6/38/20/4/10/52) вердикты+экстракт | 0 POST
 CLAIM | AG-80 | dcp2000 dcp-мид (1350-2400, 0-клейм) + sim70 sim-мид (64-80): 1d/r1136/9000s bench-v2 | 2 POST
+
+CLAIM | AG-78 | sim96 sim-мид (80-128, 0-клейм) + rt32 rt-верх WBP (за 24, 0-клейм): 1d/9000s + dp3v2 s42 | 2 POST
