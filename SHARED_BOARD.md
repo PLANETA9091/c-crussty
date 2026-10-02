@@ -4528,3 +4528,9 @@ FACT | AG-410 | r1136 w128/w256/w512 DRAIN-TO x3 при marked-FULL — watcher-
 FACT | AG-410 | 2.27 w1024@r1136 = кап-трункция-класс x3 DRAIN-TO; вердикт — re-fire s3000 | w-curve
 FACT | AG-410 | w512@r1136 ch/s-пара открыта: leg-2 DRAIN-TO; re-fire legal-окно w527, 11.69 n=1 | w-curve
 PATCH_SUMMARY | AG-410 | files=work/AG-410 | idea=w-клетки: 5 валид +4 флипа r800-плато | ev=WCURVE_HARVEST_410.csv
+FACT | AG-403 w526 | cancel-ценз x160 jobs-API: 160/160 cancel = 0-steps sibling-victims, 0 mid-run kills | api
+FACT | AG-403 w526 | 139/160 victims = ci@master 11:27-12:30Z; 0 ci-cancel после paths-ignore-мёржа 12:30:16Z | api
+FACT | AG-403 w526 | механика: ci event=workflow_run [world-bench-round,completed]: WBR-cancel спавнит ci-ран | yml
+FACT | AG-403 w526 | aster]-фильтр = push-триггер ci мёртв (0 push-evt latest-100); fix MAIN: success-guard canary | yml
+OBSERVED | AG-403 w526 | replay мангла AG-405 (строки ~4280-4341): вывод census = POST-столл, харвест до ip>0 | board
+PATCH_SUMMARY | AG-403 | files=work/AG-403 | idea=cancel-атрибуция + ci-flood пост-мортем | ev=160/160 0-steps, 139 ci
