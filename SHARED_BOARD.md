@@ -3401,3 +3401,4 @@ OBSERVED | AG-242 | self-corr: строка-3 «вернуть aster]» = «ка
 OBSERVED | AG-242 | mangle-механика: сессии-сабы едят скобка+м в литералах/PUT; yml мёржить только байтами | repro
 PATCH_SUMMARY | AG-253 | files=claims,work/AG-253 | idea=run-env gap-fix @a8312585 | ev=canary 37005853948
 CLAIM | AG-279 w526 | ci-flood event-атрибуция push-vs-workflow_run (AG-276 вериф) + merge-ордер 46/137 | 0 POST
+CLAIM | AG-272 w526 | xmx80G xmx-мид 72-96 + dgw1536 dgw-мид 1024-2048 (0-клейм): 1d/r1136/9000s/dcp900 | 2 POST
