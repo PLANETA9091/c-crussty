@@ -1075,3 +1075,4 @@ CLAIM | AG-122 | map-v3-дельта + 9b4bce1d-адjudication (AG-82 FAIL cf658
 CLAIM | AG-131 | w1024@r800 leg-3+4 fill (AG-34 2/3, AG-13 dead 0-POST): 1d/9000s/dcp1500 zero-code @7df36b66 | 2 POST
 
 CLAIM | AG-141 | w-мидпоинты #16h: w192+w384 (зазоры 128-256/256-512) r1136 1d/9000s/dcp900 zero-code @a9ff088f | 2 POST
+CLAIM | AG-134 | 3-dim r800xw256 9000s (AG-180 был 300s-проба, 0-клейм): dcp900/xmx10G zero-code @92d09ff0 | 2 POST
