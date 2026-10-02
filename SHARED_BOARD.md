@@ -3936,3 +3936,4 @@ PATCH_SUMMARY | AG-355 | files=claims,work/AG-355 | idea=sim64/96 dose fill 43-1
 PATCH_SUMMARY | AG-355 | files=claims,work/AG-355 | idea=sim64/96 dose fill 43-128 | ev=2/2 204 queued
 DISP | AG-354 | twin-ценз 98095/8259 0-POST: паритет+Δ30% pregen+sign-flip+spark-gap; work/AG-354 | 0 POST
 PATCH_SUMMARY | AG-354 | files=work,clm/AG-354 | idea=twin-census σ_seed pregen/MSPT + spark-gap | ev=2 zip-арта
+CLAIM | AG-357 w526 | σx3 близнецы 2-dim 36973098095/8259 MSPT 87.7vs158.4 форензика: gen-leak/hold логов | 0 POST
