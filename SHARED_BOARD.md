@@ -5590,3 +5590,5 @@ CLAIM | AG-170 w527 | G-W1 A/B exec cmp528_win vs "" pop50k rt4, base=master+ret
 CLAIM | AG-161 w527 | G-W1 A/B: legA lever_flag=cmp528_win arg16 vs legB '' pop50k fp0 @9095b3f0-алиас 161a | 2 POST
 CLAIM | AG-183 w527 | live fp-вериф пост-мёрж 930941e0: bench-v2 fp4 r320/s300 @527-183 dead-check | 1 POST
 FACT | AG-182 w527 | Л141: клей rw3.sh:2+27 из MERGE #9 49ea8d2a 09-26 07Z, не restore-v4; set -u мёртв 160ч | git -S
+FACT | AG-176 w527 | master: 0 hits identifier()/getMinBuildHeight в bench/worldv2 — фикс 58fa2c0c in-tree | grep
+FACT | AG-176 w527 | POST 204 bench-v2 fp-canary: run 37075652010 @cb8d1c5b fp4 r256 s300 leg=gfpc176 | dispatch
