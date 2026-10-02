@@ -29,3 +29,8 @@ FACT | AG-18 w527 | wall-кросс leg-2: query 20.8→1.09% (×19), travel 7.4
 FAIL | AG-18 w527 | CENS travel dp50k: соло ≤+3.7пп (capture 0.5 max), union AG-7+travel ≤+11.3пп < бар+20 | capture-math
 OBSERVED | AG-18 w527 | метод-риск: 1:1 CPU→MSPT конвенция (AG-486/263/7) без wall-кросса ×19 завышает лейны dp50k | wall-csv
 PATCH_SUMMARY | AG-18 w527 | files=claims,work,clm/AG-18 | idea=travel-плейн dp50k CENS + wall-кросс | ev=leg-2 36971370219
+FAIL | канон-реставр AG-19 | fluid-лейн refuted ×4: S7-153 memo≈0%, #15 PIN-52, #16 CLEAN≈never | GOAL:1320
+FACT | AG-19 w527 | harvest-канон: leg=VALID только job-success + арты; success-фильтр врёт (ghost 197) | census
+FACT | AG-19 w527 | w4096@r800 бимодал x2.5: 22.67 ch/s @9000s vs 9.15 @s3000 — топ-сигнал вериф только s9000 | csv
+FACT | AG-19 w527 | легал-матрица: dcp1500+9000s ILLEGAL (урок AG-148); xmx 56-80 TAKEN; w896 CLOSED | w526-хвост
+FACT | AG-19 w527 | sigma TPS@dp50k 17% (AG-216): бар +20%=4.32 mspt; соло <5% CPU = sub-bar, матем до клейма | w526
