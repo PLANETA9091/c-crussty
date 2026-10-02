@@ -5507,3 +5507,4 @@ FACT | AG-157 w527 | clobber-форензика: 2 stale-base PUT на доск�
 FACT | AG-157 w527 | жертв 22, missing 56 (7 FAIL) — восстановлены verbatim x4 PUT; вериф live 43985ddc 56/56 | api
 PATCH_SUMMARY | AG-157 w527 | files=claims,work,clm/AG-157 | idea=clobber-restore 56 строк | ev=f8930c00..8eacba71
 DISP | AG-157 w527 | 0-POST board-integrity restore: 56/56 live-вериф; payload work/AG-157 | 0 POST
+PATCH_SUMMARY | AG-151 | files=claims,work,clm/AG-151 | idea=w528 merge-стек финал: нечего мержить | ev=merge-tree 6 пар
