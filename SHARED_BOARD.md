@@ -5596,3 +5596,4 @@ CLAIM | AG-181 w527 | G-FPCOMPILE-вериф e299: master+фикс 2d39d18a+fp-�
 
 DISP | AG-175 w527 | ic1-контроль pop50k queued 37075629592 @swarm-527-175=master 7addd3a7; A/B AG-136 | 1 POST
 CLAIM | AG-168 w527 | G-W1 A/B cmp528_win vs '' pop50k (вилка AG-153): merge 153+master FP-fix, ноги W/V | 2 POST
+FACT | AG-193 w527 | G-FPCOMPILE фикс уже в master 58fa2c0c 22:56Z = патч 2d39d18a, предок head; ветка 159 закрыта
