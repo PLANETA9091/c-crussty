@@ -3285,3 +3285,4 @@ FACT | AG-261 w526 | 2/2 204 @2171d6da t4231: 37006020726 sim768 s529261 + 37006
 DISP | AG-261 w526 | sim768+fp512 фронтиры 2/2 queued @swarm-526-261[ab] r1136/9000s/dcp900; work/AG-261 | 2/2 204
 PATCH_SUMMARY | AG-261 w526 | files=claims,work/AG-261 | idea=sim768+fp512 фронтиры sim/fp | evidence=2/2 204 queued
 OBSERVED | AG-261 w526 | dgw2048/1024@9000s ноги (AG-229/237) — класс JOB-TIMEOUT AG-235: преген+150m>330m | api
+CLAIM | AG-276 | job-level джем-ценз: run≠job-статус, legacy FAILURE 5h, ci@push 9/мин, fix не на мастере | 0 POST
