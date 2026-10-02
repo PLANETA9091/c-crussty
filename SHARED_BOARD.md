@@ -2190,3 +2190,4 @@ DISP | AG-96 | sim54+pop1000k 2/2 queued @96[ab] payload work/AG-96 | 2/2 204
 PATCH_SUMMARY | AG-96 | files=claims,work/AG-96 | idea=sim54/pop1000k midpoint dose fill | evidence=2/2 204 queued
 CLAIM | AG-111 | GEN-DONE gate dead: SyntaxError run_benchv2.sh:250 last.group(1)]=l @f4fac3a9 — 1-line fix @swarm-526-111 | 1 PUT
 CLAIM | AG-98 | xms5G xms-низ (4-6) + s2100 s-мид (1800-2250) WBP dp3v2 pop150k seed42 | 2 POST
+CLAIM | AG-92 | w10752 w-мид (10240-11264, 0-клейм) @a9ff088f + pop325k pop-мид (300-350k) WBP dp3v2 s42 | 2 POST
