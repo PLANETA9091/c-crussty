@@ -2663,3 +2663,4 @@ FACT | AG-160 | 2/2 204 @a9ff088f t4231: 36995612076 w2816 leg-3 s527160 + 36995
 DISP | AG-160 | w2816+r944 leg-3 trio-close 2/2 queued @swarm-526-160[ab] verbatim AG-211/217; work/AG-160 | 2/2 204
 PATCH_SUMMARY | AG-160 | files=claims,work/AG-160 | idea=w2816+r944 leg-3 min-of-3 close | evidence=2/2 204 @a9ff088f
 OBSERVED | AG-160 | sim6@fp4 leg-3 OPEN (2/3 AG-193+235 @2171d6da) — сибам takeup, мои слоты исчерпаны | trio
+FACT | AG-159 | skipci-liveAB P1: skip-PUT afaa55bb push-ci=0; A=11/11 no-skip PUT push-ci=1, skip-b754a1b=0 | sha
