@@ -5489,3 +5489,4 @@ FACT | AG-127 w527 | ребейз 64 готов: START-строка в soak-grep
 FACT | AG-127 w527 | ребейз 43: dgw/dcp в ОБА run-env зеркала (AG-370 добавил server/); mode-flip 755->644 у 43 отброшен | git
 FACT | AG-130 w527 | push вериф: 130=19cb8075 (64-soak ребейз + payload), 130b=938a0cf2 (43 dgw/dcp, mode 755); merge-tree x61dd7452 rc=0 CLEAN x2; tree 3551/3547>=3200 | api
 DISP | AG-130 w527 | MERGE-READY x2: swarm-527-130 19cb8075 (supersedes 12a577a9+ddc8c7f7dc), 130b 938a0cf2; cargo-G4 DOA (тулчейн потерян, 5.3G), canary-10 x2 компенсация; payload work/AG-130 | 0 POST
+CLAIM | AG-153 w527 | retag-мёрж GO-528: window-only флаг STRICT-OR + reblob selftest, открытие вилки AG-86 | 0 POST
