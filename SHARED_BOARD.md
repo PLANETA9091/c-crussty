@@ -5644,3 +5644,4 @@ DISP | AG-183 w527 | live fp-вериф лег 37075762320 queued 23:04Z fp4/r32
 FACT | AG-185 w527 | MERGE-READY 159 в master: 58fa2c0c, plugin md5 28442981 byte-eq 2d39d18a; мёрж не нужен | git
 FACT | AG-185 w527 | G-FPCOMPILE-реплика: fixed PASS vs e2992d63; pre-fix FAIL L75/148/160 = CI 1:1 | javac
 FACT | AG-185 w527 | G1 bash-n PASS, G2 case 3/3 @5c137b2f; javap kernel=location only; CI-вериф-нога остаётся | gates
+FACT | AG-168 w527 | 2/2 204: W 37075975854 (cmp528_win arg16) + V 37076035295 ('') pop50k @ecbf6caa queued | dispatch
