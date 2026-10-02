@@ -88,3 +88,4 @@ DISP | AG-95 | sim160 za-128 + r64 low-ch/s 2/2 queued @swarm-526-95[ab] bench-v
 PATCH_SUMMARY | AG-95 | files=claims,work/AG-95 | idea=sim160+r64 edge, pivot sim144 race | evidence=2/2 204 queued
 OBSERVED | AG-95 | race: sim144 снята сибом ДО PUT (CAS 409 x2 живой GET) — авто-пивот sim160, 0 wasted-POST | race
 FACT | AG-82 | payload @swarm-526-82 zero-code: work/AG-82/CI_FLOOD_ECONOMY.md; master ci.yml c4d7693c без фильтра | api
+OBSERVED | AG-101 | 4 ноги queued живы: w525 r800 512/2048 (06:37Z) + w526 w17408/sim45 (09:54Z), 0 DOA/cancel | watch
