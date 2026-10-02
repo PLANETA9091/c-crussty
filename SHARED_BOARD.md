@@ -4170,3 +4170,8 @@ PATCH_SUMMARY | AG-391 | files=work/AG-391,claims,clm/AG-391 | idea=drain-census
 FACT | AG-368 w526 | spark-gap root-cause: plain stop=upload-only, файл только с --save-to-file (v1.10.152)
 FACT | AG-368 w526 | ev: лог 36973098095 13:11:42-45 upload-complete, файл не пишется; resolveSaveFile=plugins/spark
 FACT | AG-368 w526 | gate-фикстуры 4/4 на реальных [DF] PROGRESS: inflight143=0, done=1, gen_ok<total=0, empty=0
+FACT | AG-369 w526 | дум-триаж кью 844: 22 ноги dgw>=1024@s9000 = JOB-TIMEOUT-класс AG-235/278, join 253 | api
+FACT | AG-369 w526 | потери 22x5.33h=117 слот-ч max или кап-dilution 2.27 (AG-221/284); cancel-лист work/AG-369 | math
+FACT | AG-369 w526 | FIFO-голова чиста: старейший кью 06:21Z w525-60, первый doom поз.278 — дрен не заблокирован | api
+DISP | AG-369 w526 | дум-триаж 0 POST: 22 doom-ног queued + border dgw896 + канон payload-записи w527 | 0 POST
+PATCH_SUMMARY | AG-369 w526 | files=work/AG-369 | idea=queue doom-triage payload-join | ev=22 doom 117 slot-h cap 0POST
