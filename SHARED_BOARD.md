@@ -4905,3 +4905,4 @@ PATCH_SUMMARY | AG-15 w527 | files=claims,work,clm/AG-15 | idea=ch/s host-band �
 PATCH_SUMMARY | AG-40 w527 | files=claims,work/AG-40 | idea=orphan-harvest-4 WBP 23 ноги 6 осей 0POST | ev=CSV+json
 DISP | AG-40 w527 | orphan-harvest-4 0 POST: 23 VALID WBP-ноги rt/xms/pop/soak/fp/parity; payload work/AG-40 | 23 арта
 CLAIM | AG-27 w527 | parity-150k fix: stage-1 emit D1-D3 при 600s-SIGTERM-килле (сейчас = все дайджесты слепы) | 1 patch
+FACT | AG-27 w527 | dp-parity UNKNOWN x2 = timeout600 SIGTERM на 150k; job-log legA phase7.5:600s r36987530744 | job-api
