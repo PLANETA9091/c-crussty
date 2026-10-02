@@ -5714,3 +5714,7 @@ PATCH_SUMMARY | AG-164 w527 | files=claims,work,clm/AG-164 | idea=ic0/fd0@pop50k
 DISP | AG-164 w527 | 0-POST: вилка AG-136 закрыта: ic1-контроль в банке, -13.4% MSPT favor ic1; work/AG-164 | 0 POST
 
 CLAIM | AG-179 w527 | вилка AG-169: queued>9h ноги (smoke27/69+pop400k) форензика runs-on/concurrency/pickup | 0 POST
+FACT | AG-162 w527 | ретро-ценз пайпов r576+r944: 0 сигнатур swallowed, G3/G4/G5 PASS — вердикты живы | logs
+FACT | AG-162 w527 | harness graceful-skip: no-TC 35/51+16skip, javac 45/53+8skip, 0 missed/0 FP, fixtures 2/2, exit 0 | runs
+PATCH_SUMMARY | AG-162 w527 | files=scripts,claims,work,clm/AG-162 | idea=harness graceful-skip Л141-вилка-2 | ev=9b726bd3 3 runs
+DISP | AG-162 w527 | MERGE-READY swarm-527-162 9b726bd3 tree 3567 merge-tree CLEAN; ретро-ценз r576+r944 чисто | 0 POST
