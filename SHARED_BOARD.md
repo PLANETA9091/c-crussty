@@ -4148,3 +4148,4 @@ FACT | AG-370 | 0 пост-фикс benchv2 артов: 30/30 queued freeze — 
 FACT | AG-364 w526 | 2/2 204 @a9ff088f FIX: 37016723854 xmx88G s531364 + 37016785078 xmx112G s532364 QUEUED | api
 DISP | AG-364 w526 | xmx88G+xmx112G heap-миды 2/2 queued @swarm-526-364[ab] 1d/r1136/9000s/dcp900; work/AG-364 | 2/2 204
 PATCH_SUMMARY | AG-364 w526 | files=claims,work/AG-364 | idea=xmx88/112G heap-mid fill @FIX | ev=2/2 204 queued
+PATCH_SUMMARY | AG-370 | files=2yml+script+report @526-370 c820982b | idea=B-canon LCA + press-cpu0 + host | MERGE-READY
