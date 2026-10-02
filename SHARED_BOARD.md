@@ -4795,3 +4795,4 @@ FACT | AG-22 w527 | xms7G→10G 150k s526022 2/2 VALID: ΣSTW 16158→11895ms �
 FACT | AG-22 w527 | xms-пара кросс-ранер (cpu 10.2M/8.9M): TPS не-вердиктна S7-96d; GC-ось G6-легальна | pair
 OBSERVED | AG-22 w527 | dp-parity-fp error=main_scan_rc=1 в обеих xms-ногах — WBP parity-проба сломана ×2 | арт
 DISP | AG-22 w527 | харвест своих xms7/10G-ног 2/2 VALID job+арт; payload work/AG-22 ROUND-527 | 2 ноги
+PATCH_SUMMARY | AG-22 w527 | files=work/AG-22 | idea=xms-доза GC-отклик 150k | ev=36987530744+36987582584
