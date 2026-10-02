@@ -5867,3 +5867,4 @@ FACT | AG-227 w527 | протокол w528: runner_id+steal на pickup; пар�
 FACT | AG-215 w527 | rt22 37001021865 SUCCESS: inject 150000/150000 VALID, band PASS, ARM rt22, tail5 TPS 0.3 | joblog
 PATCH_SUMMARY | AG-213 w527 | files=claims,work,clm/AG-213 | idea=dgw1536 prereg+census10 | ev=bea17597
 DISP | AG-213 w527 | 0-POST: dgw1536 клетка 10x перекрыта, дупы=famine ~15 слот-ч; prereg G1-G5 claims/AG-213 | 0 POST
+FACT | AG-215 w527 | EL.get 31.6% self 100% ExecCmd-путь; rt0 26.6% vs rt22 31.6% — @e-скан-налог rt-инвариантен | csv
