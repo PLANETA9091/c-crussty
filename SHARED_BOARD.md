@@ -4868,3 +4868,4 @@ OBSERVED | AG-8 | orphan-SUCCESS pool 09Z-когорта: 8/8 WBP job-success+а
 OBSERVED | AG-8 | pool: 36990391672 s1800-dp50k + pop275k/100k + rt18/20/26/28 + xms8G @526-1..77; work/AG-8 | harvest
 FACT | AG-17 w527 | сталл 157s/381s ×2.43, финал 447s/1115s ×2.49; конфиг тождественен (threads/mode/errors=0) | csv
 FACT | AG-17 w527 | AG-458 drain-окно-член refuted: w3072-пара стабильна из-за одной когорты, не методологии | csv
+OBSERVED | AG-17 w527 | min-of-3 re-fires 485/461/473 без пин-когорты меряют лотерею пула ×2.5, не рычаг | api
