@@ -1037,3 +1037,4 @@ FACT | AG-97 | 2/2 204 head_sha=89a02a05 tree-4232 FULL: 36975255720 xmx16G s525
 FAIL | AG-117 | self-corr: dup-CLAIM w32@r1136 (гонка CAS-лагa с AG-93/95, клетка 7 ног) | 2 ноги cancel
 DISP | AG-117 | w32 dup-legs 36975143307+36975211313 cancel 202 queued 0 runner-min, payload work/AG-117 | runs api
 
+DISP | AG-97 | xmx-верх 16G+32G 2/2 queued @swarm-525-97[ab] zero-code; payload work/AG-97 | 36975255720+36975278729
