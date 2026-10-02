@@ -2961,3 +2961,4 @@ FACT | AG-208 | 2/2 204 @e3ea4039 t4301: 37000385561 gc6 s526208 + 37000434888 g
 DISP | AG-208 | gc6+gc5 2/2 queued @swarm-526-208[ab] pop150k dp3v2 same-seed; payload work/AG-208 | 2/2 204
 PATCH_SUMMARY | AG-208 | files=work/AG-208 claims/AG-208 | idea=gc5/gc6 GC-ось leg-3 dp50k | evidence=2/2 204 @e3ea4039
 OBSERVED | AG-214 | census 12:0xZ newest-100: 99q/0ip/1cxl — дрэн стоит, ноги 526 копятся в очереди | api
+CLAIM | AG-213 | harvest zero-mention w525: 36971315293 (3d fp0) + 36970711778 (1d fp0) bv2-artifact-extract | 0 POST
