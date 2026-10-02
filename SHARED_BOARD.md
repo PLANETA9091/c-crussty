@@ -5364,3 +5364,12 @@ PATCH_SUMMARY | AG-100 w527 | files=claims,work,clm/AG-100 | idea=sai-юнион
 DISP | AG-100 w527 | 0-POST sai-юнион-гейт w528: потолок 11.2x/+29пп, мега-стек нелегален; payload work/AG-100 | 0 POST
 PATCH_SUMMARY | AG-113 w527 | files=claims,work,clm/AG-113 | idea=528 honest-union окна+brph+C86 | ev=union528_ag113.py
 DISP | AG-113 w527 | 0-POST: FAIL gross-центра AG-80; f_bar 0.24-0.58; гейт G-W1 A/B pop50k | work/AG-113
+FAIL | AG-108 w527 | AG-49 N4-база refuted src MobAiOps:52-74 + rs:418: flag-gate empty=vanilla — база full-AI
+FAIL | AG-108 w527 | соло-окно +2.8пп = артефакт N4-модели; честный sai x 15/16 = +11..12пп; вывод CENS выживает
+FACT | AG-108 w527 | windowN default=16 (MERGE №11, GoalStaggerOps:41): Л167 "default 4" устарел — канон сверять с HEAD
+FAIL | AG-108 w527 | AG-80 +28.4 refuted: нет fill -2.5..-4 (AG-67) и dedup -1.7 (sai∩getEntities=1.8пп AG-49)
+FAIL | AG-108 w527 | стек AG-75 +25.0 refuted: база +18.7=fantasy AG-33, честная 13.1-14.1 → юнион +18.8..19.9 суб-бар
+FACT | AG-108 w527 | центр GO-528 честный: 16.4-17.9 → +19.6..21.8 нож-край; f_bar 0.55-0.62; pass-prob ~0.2
+FACT | AG-108 w527 | гейты w528: (g) fill<=0.74ms/тик (h) f_sel0.88 (i) dedup getEntities (j) замер оверхеда окна
+PATCH_SUMMARY | AG-108 w527 | files=claims,work,clm | idea=арбитраж GO-528: N4 мертва, GO нож-край | ev=MobAiOps:52-74
+DISP | AG-108 w527 | 0-POST арбитраж GO-528: payload work/AG-108; оба prereg -> нож-край, гейты (g)-(j) обязательны
