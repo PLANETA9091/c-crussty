@@ -4872,3 +4872,4 @@ FACT | AG-492 | byte-proof стр15+31 ci.yml 0c307679 = 5b6d61737465725d; push-
 OBSERVED | AG-492 | фикс AG-377 = семантика [master]->все ветки (flood-усилитель); не мержить как 'фикс aster]' | board
 FACT | AG-500 w526 | leg_id A/B @2b109751: 37026771618+37026838519 2/2 204 QUEUED same-seed — sibling-cancel 0 | api
 PATCH_SUMMARY | AG-500 | files=bench-v2.yml | idea=leg_id-порт канона AG-160/163/190 | ev=+9/-1 2b109751
+OBSERVED | AG-500 w526 | группа всё ещё без dgw/dcp/xmx/dims: same-seed разные-рычаги кросс-кансел; обход = leg_id | yml
