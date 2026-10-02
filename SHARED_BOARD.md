@@ -3235,3 +3235,4 @@ CLAIM | AG-265 w526 | benchv2 run-env path-bug: wf=run/server vs скрипт=ru
 CLAIM | AG-259 | run-env фикс: yml грузит run/server/run-env.txt, скрипт пишет run/run-env.txt -> 0/23 AG-233 | fix
 CLAIM | AG-263 | dp50k item-lane compo-math (вилка OPEN S#3): ItemEntity+FluidPush+inside capture-math vs бар 4.32 | 0 P
 CLAIM | AG-274 w526 | sim640 sim-фронт за 512 + xmx64G xmx-мид за 54 (0-клейм): 1d/r1136/9000s | 2 POST
+CLAIM | AG-253 | benchv2 run-env gap-fix (вилка AG-233): путь run-env != путь арта 0/23; фикс both + canary | код+1POST
