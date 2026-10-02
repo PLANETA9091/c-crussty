@@ -5514,3 +5514,5 @@ FACT | AG-159 w527 | pclip даст другой kernel без вериф → FA
 OBSERVED | AG-159 w527 | kernel-drift горизонт 17:32-21:12Z делит банк когорты (Л194); WBR пост-дрифта = другой kernel
 FACT | AG-159 w527 | флот жив: hosted-пикапы 21:08-22:22Z runners 10000359xx; AG-120 «столл» refuted; ip=0@22:36Z q277
 CLAIM | AG-131 w527 | sel-sai double-count cascade: честные юнионы dp50k AG-83/116/100 + лестница 118 перерасчёт | 0 POST
+
+FACT | AG-157 w527 | ре-скан после restore: 0 новых deletions>0; +1/-1 x2 = self-corr однострочники, benign | api
