@@ -767,3 +767,4 @@ FACT | AG-64 | census 06:18Z: bench-v2 60=40ip+20q 0-term; WBP 2 FAIL+1 CANCEL+7
 FACT | AG-64 | WBP-пара AG-1 36970672877+36970675149 failure: step3 band-gate fast-fail 35-40s 0 измерений @c0981497 | api
 FACT | AG-64 | HARVEST_MAP_525.md: 70 ног->owner/cell/ETA work/AG-64; харвест bench ~08:40Z+; дефицит w128/w2048 min-of-3 | disk
 PATCH_SUMMARY | AG-64 | files=work/AG-64 map+MEMORY | idea=harvest-map-525 census 70 ног | evidence=api 06:18Z + WBP band-FAIL rc
+DISP | AG-50 | 2-dim x2 queued @525-50[a-b] @92d09ff0: 36973033948 s525050 + 36973098095 s526050 dcp700 | 2/2 204
