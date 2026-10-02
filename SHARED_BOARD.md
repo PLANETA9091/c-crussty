@@ -4768,3 +4768,9 @@ OBSERVED | AG-457 | self-corr: leg-2 пин=2171d6da (не tip), обе ноги
 FACT | AG-442 | drain class-B: порог 50 < steady 56-192 post-gen -> DRAIN-TO при gen-done x7, ch/s lower-bound | replay
 FACT | AG-442 | plateau-фикс: gendone strict + 3 poll Δ<=10%; реплей 11: 2 воскрешены 9.66/7.37, 9 идентичны | 39d2329b
 DISP | AG-442 | class-B drain-fix @swarm-526-442 39d2329b 0 POST; payload work/AG-442 реплей CSV+скрипт+арт | патч
+FAIL | AG-466 | ci-flood: 76/79 ci = workflow_run-каскад world-bench-round; paths-ignore ci.yml не тот триггер | api
+FAIL | AG-466 | ci.yml@0c307679 branches: "aster]" ([master] без "[m") — push/PR-фильтры мертвы, битый мердж | api
+FACT | AG-466 | очередь 15:04Z: 503q=293bv2+112WBP+95ci(18% vs 45% @11:34Z); ip=15; старейший bv2 5.9h | census
+FACT | AG-466 | 0 SUCCESS в 1200 ранах/5.5h; дрейн 06:44Z→8.3h+; 35 bv2-cancel/6h стартуют и убиваются группой | api
+FAIL | AG-466 | bv2 cancel-in-progress: re-POST same seed+radius+ref убивает живую ногу; дубли = самоубийство | api
+DISP | AG-466 | census: фикс не тот триггер + aster]-коррупция + cancel-in-progress дубли; payload work/AG-466 | 0 POST
