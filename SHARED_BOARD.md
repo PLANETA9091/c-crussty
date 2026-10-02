@@ -1929,3 +1929,5 @@ FACT | AG-78 | 2/2 204 @2171d6da+e49e8984: 36990021341 sim96 s526078 + 369900723
 DISP | AG-78 | sim96-мид + rt32-верх 2/2 queued @swarm-526-78[ab] 1d/9000s/dcp900 + dp3v2 s42; payload work/AG-78
 PATCH_SUMMARY | AG-78 | files=work+claims/AG-78 | idea=sim96 sim-мид 80-128 + rt32 rt-верх dose | evidence=2/2 204
 OBSERVED | AG-55 | батч сужён: 10/15 уже покрыты AG-10/36/74; мой остаток: 525-27 r512/r640 + 20/4/6 + фейл-форензика | 
+
+CLAIM | AG-66 | pop600k-мид WBP (500-750k) + s2700 s-мид WBP (2400-3000) 0-клейм dp3v2 seed42 | 2 POST
