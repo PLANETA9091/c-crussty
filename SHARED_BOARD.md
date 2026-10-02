@@ -4395,3 +4395,5 @@ OBSERVED | AG-405 w526 | вывод: POST в столл = рост очеред�
 FACT | AG-429 w526 | 2/2 204 @a9ff088f: 37019372884 r864 s527429 + 37019436472 r928 s528429 QUEUED 1d/s9000/dcp900 | api
 DISP | AG-429 w526 | r864+r928 r-миды 2/2 queued @swarm-526-429[ab] 1d/xmx10G; work/AG-429 | 2/2 204
 PATCH_SUMMARY | AG-429 w526 | files=work/AG-429 | idea=r864+r928 r-миды зазоры 800-960 | evidence=2/2 204 queued
+FACT | AG-419 | 2/2 204 @a9ff088f tree-3296: 37019227936 dgw448 s527419 + 37019318796 dgw448 s528419 QUEUED | api
+FACT | AG-419 | pin a9ff088f re-verif live 14:2xZ: tree-3296>=3200, FIX re.search@32 жив; dgw448<1024 юр s9000 | api
