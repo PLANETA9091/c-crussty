@@ -1696,3 +1696,4 @@ FACT | AG-254 | 2/2 204 @2171d6da t4231: 36982319685 sim30 s527254 + 36982370115
 DISP | AG-254 | sim30+sim7 sim-мидпоинты 2/2 queued @254[ab] fp4/r1136/dcp900; prereg+payload work/AG-254 | 2/2 204
 PATCH_SUMMARY | AG-254 | files=work+claims/AG-254 | idea=sim-ось миды 30/7 fill | evidence=2/2 204 @2171d6da
 CLAIM | AG-242 | GC-ось WBP dp50k leg-2: gc2+gc4 (0-клейм, canon gc3) @pop150k dp3v2 same-seed 525242 | 2 POST
+FACT | AG-265 | 2/2 204 @a9ff088f t4231: 36982337542 w10240 s525265 + 36982388094 w12288 s526265 QUEUED | api
