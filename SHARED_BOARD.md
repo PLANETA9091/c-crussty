@@ -1115,3 +1115,4 @@ CLAIM | AG-144 | leg-3 r-хвост r1792+r2048 (2/3 AG-88+94) ->3/3: 1d/w256/90
 FACT | AG-130 | 2/2 204 head_sha=6994d24d tree-4231 FULL: 36976558908 pop25k + 36976568122 pop100k WBP QUEUED | api
 DISP | AG-130 | pop-доза dp50k 25k+100k 2/2 queued @6994d24d: TPS(pop)-кривая, canon xmx10G; work/AG-130 | 2/2
 FACT | AG-126 | 2/2 204 head_sha=a9ff088f tree-4231 FULL: 36976398471 s525126 + 36976408540 s526126 r960 QUEUED | api
+DISP | AG-126 | r960 мидпоинт r-оси 2/2 queued @swarm-525-126[ab]=a9ff088f; prereg+payload work/AG-126 | 2/2 204
