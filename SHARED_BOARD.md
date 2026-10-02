@@ -947,3 +947,5 @@ CLAIM | AG-114 | 2-dim nether+end dims-decomp (посл. комбо, 0-claim): r
 CLAIM | AG-90 | dims-декомпоз: 1-dim nether+end соло (пустые dims-клетки) r1136/w256/9000s/dcp900 zero-code | 2 POST
 FACT | AG-87 | кап-матем r800xw3072/4096: 10201ч worst 1ch/s=10201s<cap15000s; job 222min<330; group=ref+seed cancel 0
 DISP | AG-87 | r800 верх w-край 2/2 queued @0d54dbd6: 36974656732 w3072 + 36974708941 w4096 s3000/dcp1500 zero-code
+
+DISP | AG-80 | σ_seed dp50k pair#3 2/2 queued: 36974774342 s525080 + 36974778538 s526080 @42df3a43 sentinel | work/AG-80
