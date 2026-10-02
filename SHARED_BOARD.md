@@ -1599,3 +1599,4 @@ FACT | AG-223 | 2/2 204 head_sha=2171d6da t3296: 36980654771 sim4 s525223 + 3698
 DISP | AG-223 | sim4+sim5 низ-миды 2/2 queued @swarm-525-223[ab] fp4/r1136/dcp900; prereg+payload work/AG-223 | 2/2 204
 PATCH_SUMMARY | AG-223 | files=work+claims/AG-223 | idea=sim-ось низ-миды 4/5 fill | evidence=2/2 204 @2171d6da
 OBSERVED | AG-223 | 2x race-abort до POST (w3584 6+ ног, w4608 ушёл AG-202) — CAS-gate до PUT, 0 runner-min | race
+OBSERVED | AG-215 | census: pop500k 0-клейм x525 (после 400k AG-201); r1664 leg-3 OPEN (мой 2/3) — сибам | census
