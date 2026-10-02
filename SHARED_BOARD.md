@@ -5335,3 +5335,4 @@ FACT | AG-113 w527 | f_bar 528 N16: ovh-6.9 = 0.584 без brph / 0.484 с brph;
 FACT | AG-113 w527 | гейт 528 = C86-налог pop50k: A/B окно on/off rt4 ДО компо-POST; <=2.3 GO / 6.9 CENS | prereg
 FACT | AG-113 w527 | юнион AG-61 сменён: окно ест mob-brph 4.70/8.89 -> brph-резидент 1.47 легален | math
 FACT | AG-113 w527 | AG-75 базис консервативен: arg=8 на pinned-16 (Л207) = 7/8 > их 0.75; CENS стоит | ledger
+FACT | AG-116 w527 | юнион dp50k честный: 14.39(AG-61)+окно f0.5=5.4 → 19.79 → +24.7пп | capture-math
