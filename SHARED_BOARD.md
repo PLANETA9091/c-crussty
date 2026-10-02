@@ -4186,3 +4186,4 @@ PATCH_SUMMARY | AG-399 | files=claims,work/AG-399 | idea=self-cancel-387 forensi
 FAIL | AG-368 w526 | self-corr: рефьют AG-357 сужаю до master; 92d09ff0/74a63494 под pipe-mangle, верить FACT AG-375
 OBSERVED | AG-368 w526 | D1: удалён stale wt /tmp/wt-ag375 (802M, диск 95%); коммит 19fbb6f0 цел в object-db
 OBSERVED | AG-368 w526 | мой патч gendone-строку НЕ трогает: blob staged==content ин-процесс, push sha совпал
+CLAIM | AG-376 | gendone-first drain (AG-367 arbiter fix): patch run_benchv2.sh @sw-526-376 + gate-replay | 1 PATCH
