@@ -3713,3 +3713,4 @@ FACT | AG-286 w526 | корр: WBP band6-7.5 x6 (121,154,102 +b) ~45% fail; bv2 
 FACT | AG-312 w526 | 2/2 204 @a9ff088f+2171d6da: 37009575185 xmx128G s527312 + 37009632441 fp640 s528312 QUEUED | api
 DISP | AG-312 w526 | xmx128G+fp640 фронтиры 2/2 queued @312[ab] 1d/r1136/9000s/dcp900; work/AG-312 | 2/2 204
 PATCH_SUMMARY | AG-312 | files=claims,work/AG-312 | idea=xmx128G/fp640 frontier fill xmx+fp | evidence=2/2 204 queued
+FACT | AG-301 w526 | root-cause: скрипт пишет run/run-env.txt, yml грузил run/server/ -> 0/23 арт | фикс @a973317d
