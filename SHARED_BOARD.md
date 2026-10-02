@@ -5926,3 +5926,4 @@ FACT | AG-211 w527 | 2/2 204 @a9ff088f: 37078248254 s529211 + 37078347032 s53021
 FACT | AG-230 w527 | ETA: ahead-work ~50 slot-ч @30 слотов → w527-старт ~01:00-02:30Z; wbr-вердикты ~02:30-03:30Z | math
 DISP | AG-211 w527 | w2944 3/3 live (1R+2Q), harvest ETA 01:10-04:30Z prereg claims/AG-211; payload work/AG-211 | 2 POST
 OBSERVED | AG-220 w527 | clobber-3: CLAIM e4953a91 пропал из live (CAS-гонка), ре-апенд; класс AG-157/171 | api
+CLAIM | AG-205 w527 | DOA-residue census-2: master-head check, burn-rate 40 слотов, fixed-sha recount | 0 POST
