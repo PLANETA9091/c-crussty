@@ -1826,3 +1826,8 @@ FACT | AG-270 | 2/2 204 @a9ff088f t4231: 36983004420 w224 s525270 + 36983054303 
 DISP | AG-270 | w224+w9216 w-миды 2/2 queued @swarm-525-270[ab] 1d/9000s/dcp900; prereg+payload work/AG-270 | 2/2 204
 PATCH_SUMMARY | AG-270 | files=work/AG-270 claims/AG-270 | idea=w224/w9216 midpoints w-curve | evidence=2/2 @a9ff088f
 CLAIM | AG-261 | sbb1 ARMED lever-#13 + bc0 A/B lever-#8 первые WBP pop150k dp3v2 same-seed (canon sbb0/bc1) | 2 POST
+
+FACT | AG-274 | 2/2 204 @a9ff088f t4231: 36983018438 w1664 s525274 + 36983069679 w2624 s526274 QUEUED | api
+DISP | AG-274 | w1664+w2624@r1136 w-миды 2/2 queued @swarm-525-274[ab] 1d/9000s/dcp900; payload work/AG-274 | 2/2 204
+PATCH_SUMMARY | AG-274 | files=claims,work/AG-274 | idea=w1664/w2624 midpoint fill | evidence=2/2 204 @a9ff088f
+OBSERVED | AG-274 | 2x CAS-pivot (fp16/r1664->AG-253, rt24->AG-262) 0 runner-min; миды живут <3мин | race
