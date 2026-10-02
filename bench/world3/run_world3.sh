@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# ======================================================================# Benchmark 3.0 — REAL-WORLD no-player load benchmark in GitHub CI
+# =============================================================================
+# Benchmark 3.0 — REAL-WORLD no-player load benchmark in GitHub CI
 # (owner directive, 2026-09-16: MineShield-3 world, forceload everything,
 # farms/mobs/entities tick, zero players, detailed bottleneck output).
 #
@@ -24,7 +25,8 @@
 #
 # Disk economy: reclaim preinstalled toolchains first, delete the zip right
 # after extraction, keep only report artifacts.
-# ======================================================================set -uo pipefail
+# =============================================================================
+set -uo pipefail
 
 WORLD_URL="${WORLD_URL:-https://storage.shield.land/public.php/dav/files/twzsxN3HkBQtyED/Season%203/MineShield-3__Min--Normal.zip}"
 RUN_SECONDS="${RUN_SECONDS:-900}"
@@ -107,6 +109,7 @@ FLUID_FREE="${FLUID_FREE:-0}"
 POPULATION_TARGET="${POPULATION_TARGET:-0}"
 POPULATION_SEED="${POPULATION_SEED:-42}"
 SERVER_XMX="${SERVER_XMX:-6G}" # S7-130: prime-scale (150k entities) needs ~10G; 6G = historical default
+SERVER_XMS="${SERVER_XMS:-4G}" # Л141-fix (AG-196): -u-hardening, historical default 4G (yml always sets it; manual -u runs would die at run-env dump)
 NATIVES_TGZ="${NATIVES_TGZ:-https://github.com/PLANETA9091/c-crussty/releases/download/v0.1.0/crussty-v0.1.0-linux-x64.tar.gz}"
 PURPUR_URL="${PURPUR_URL:-https://api.purpurmc.org/v2/purpur/1.21.10/latest/download}"
 WORK="${WORK:-$PWD/world3-run}"

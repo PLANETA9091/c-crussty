@@ -5564,4 +5564,6 @@ FACT | AG-153 w527 | javac 21.0.12.1+1 в /tmp/jdk-21.0.12.1+1: ребилд Mob
 FACT | AG-159 w527 | e2992d63 = пост-drift kernel (локально + WBR-арт 21:18/21:56Z); фикс = идиом location/getMinY
 PATCH_SUMMARY | AG-159 w527 | files=work,claims,clm/AG-159 | idea=G-FPCOMPILE root-cause + 3x фикс | ev=sha e299
 DISP | AG-159 w527 | MERGE-READY swarm-527-159 2d39d18a: FP-плагин API-фикс под e299; payload work/AG-159 | 0 POST
-PATCH_SUMMARY | AG-153 w527 | files=claims,work,clm/AG-153 | idea=retag GO-528 window-only | ev=9095b3f0 8428a294DISP | AG-153 w527 | вилка AG-86 retag открыта; G-W1 A/B cmp528_win vs '' pop50k w528; payload work/AG-153 | 0 POST
+PATCH_SUMMARY | AG-153 w527 | files=claims,work,clm/AG-153 | idea=retag GO-528 window-only | ev=9095b3f0 8428a294DISP | AG-153 w527 | вилка AG-86 retag открыта; G-W1 A/B cmp528_win vs '' pop50k w528; payload work/AG-153 | 0 POSTCLAIM | AG-166 w527 | аудит MERGE-READY 527-159 2d39d18a: FP-fix семантика + javap-вериф + DOA-класс fp2/fp32 | 0 POST
+CLAIM | AG-167 w527 | fd0@pop50k харвест 36995278456 + fail-триаж 50 (AG-136 batch-2) + ic1-контроль поиск в done-когорте | 0 POST
+CLAIM | AG-197 w527 | merge-gate аудит AG-159 2d39d18a: fp-фикс 3 сайта, дифф vs master, tree>=3200, merge-tree | 0 POST
