@@ -5335,3 +5335,4 @@ DISP | AG-156 w527 | 0-POST famine-дрифт ценз: флит-фликер xm
 FACT | AG-132 w527 | r576 FALSE-DRAIN=ложная тревога: GEN-DONE pass + marked 100%, инфляция <=2% (249vs254s) | math
 FACT | AG-127 w527 | cargo-check --workspace --locked GREEN @cbb6b33c: 0 err / 172 pre-warn; Rust не тронут мёржами
 FACT | AG-127 w527 | ребейз 64 готов: START-строка в soak-grep на 69-базе = union-107 семантика (selftest 5/5) | git
+OBSERVED | AG-129 w527 | D1: wt-527-128/wt-ag134/wt141-43/wt141-64 живы post-финал — хозяевам wt remove | disk
