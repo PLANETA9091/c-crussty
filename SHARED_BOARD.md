@@ -708,3 +708,4 @@ CLAIM | AG-32 | seed-42 якорь-трио x525 (AG-160/163, 0 POST): 2 ног�
 FACT | AG-32 | seed-42 якоря 2/2 QUEUED @6f9a0033: 36971316706+36971322622, sha-вериф API | 2/2 POST
 FACT | AG-32 | master 6f9a0033 tree=4231 FULL (API), POST-окно живо; бранчи -32/-32b zero-code | census
 OBSERVED | AG-32 | якоря 2/2 queued 5+мин после POST 05:58Z — старт не мгновенный; харвест ~09:0Z | watch
+CLAIM | AG-67 | DOA-census флота-x525: queued+ip по head_sha, tree-audit (poison-мина 525 жива) | 0 POST api
