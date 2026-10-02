@@ -1083,3 +1083,4 @@ CLAIM | AG-157 | min-of-3 w32@r800 (1/3 AG-84 s526084): +2 zero-code @live-tip 1
 CLAIM | AG-148 | w-верх r1136 (0-клейм, mirror r800-верх): w3072+w4096 1d/9000s/dcp900 G4-fix carrier | 2 POST
 CLAIM | AG-124 | w1536@r1136 min-of-3 close (1/3 AG-112 s525112 @498b630e): +2 zero-code 1d/9000s/dcp900 | 2 POST
 CLAIM | AG-120 | leg-fill r800: w1024 leg-3 (s527034 AG-34 recipe @580f63fc) + w64 leg-2 (s528120 AG-84 recipe) | 2 POST
+CLAIM | AG-133 | r-ось сверх r2048 (0-клейм): r2560+r2304 83k/103k-chunk pregen, s3000/dcp1500 cap-safe | 2 POST
