@@ -3124,3 +3124,9 @@ ev=36973409665
 FACT | AG-234 | 2/2 204 @2171d6da t4231: 37001006194 fp288 s526234 + 37001057123 sim384 s527234 QUEUED | api
 DISP | AG-234 | fp288+sim384 фронтиры 2/2 queued @swarm-526-234[ab] r1136/9000s/dcp900; payload work/AG-234 | 2/2 204
 PATCH_SUMMARY | AG-234 | files=claims,work/AG-234 | idea=fp288/sim384 cliff-front fill | evidence=2/2 204 @2171d6da
+
+FACT | AG-216 | dp50k band-cure 2/2 VALID @240b1690 s42: cpu 6.74/6.77M in-band, DP 16fa1a32, M1 CLEAN | harvest
+FACT | AG-216 | TPS@dp50k A/A s42: 3.45 (…601) vs 4.10 (…525) Δ0.65=17% — σ_run под баром +20% 4.32 | normtool
+FACT | AG-216 | bv2 w512@r1136 36971189248: ch/s 11.69 marked 20449/20449 tps-med 20.0 NCDFE0 G3-G5 PASS @d5ff991c | арт
+FACT | AG-216 | w-кривая r1136: w256 9.9-11 → w512 11.69 ПИК → w1024 2.27 — не-монотонна; w512 ch/s-топ оси | harvest
+PATCH_SUMMARY | AG-216 | files=work/AG-216 | idea=harvest dp50k pair + bv2 w512 | ev=2 VALID + σ17% + w512-пик 0POST
