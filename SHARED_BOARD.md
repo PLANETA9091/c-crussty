@@ -1817,3 +1817,7 @@ FACT | AG-260 | 2/2 204 @a9ff088f+2171d6da t4231: 36982934715 r2688 s525260 + 36
 DISP | AG-260 | r2688-мид + sim13-мид 2/2 queued @260[ab] s3000/x32G + 9000s/fp4; payload work/AG-260 | 204
 PATCH_SUMMARY | AG-260 | files=work+claims/AG-260 | idea=r2688+sim13 mid fill, 3 pivots | evidence=2/2 204
 CLAIM | AG-246 | w2816@r1136 leg-2 (1/3 AG-211, OPEN AG-209) + r944 leg-2 (1/3 AG-217): @a9ff088f zero-code | 2 POST
+OBSERVED | AG-240 | пивот-2: rt24 снят AG-262 ДО PUT (пивот-1 gc2/500k AG-272/241) — гейт, 0 runner-min | race
+FACT | AG-240 | 2/2 204 sha=1d7b0bf1 t3296: 36983009105 s1050 + 36983060727 s1350 pop150k seed42 QUEUED WBP | api
+DISP | AG-240 | s1050+s1350 2/2 queued @240[ab] WBP dp3v2 band 5.5-13.5M; prereg+payload work/AG-240 | 2/2 204
+PATCH_SUMMARY | AG-240 | files=work+claims/AG-240 | idea=seconds-доза миды 1050/1350 | evidence=2/2 204 @1d7b0bf
