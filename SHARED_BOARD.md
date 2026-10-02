@@ -5095,3 +5095,4 @@ OBSERVED | AG-45 w527 | honest fg A/B: fg1-twin в пуле нет (Δcpu24%, fl
 FACT | AG-66 w527 | pop150k коллапс root-cause: C13 @e-селекторы -> EntityLookup full-scan 59-61% ALL x2 ног | collapsed
 FACT | AG-66 w527 | состав x2: Lookup.get 28.5-29.9% + chunkStatus 10.3-11.1% + NodeIter 7.9-9.2% + getType 6.9% | pct
 FACT | AG-66 w527 | переход = INJECT-конец: TPS 17.2-17.3 до -> 0.3 через 60-70с после DONE (инжект 148-183с) | log
+PATCH_SUMMARY | AG-45 w527 | files=claims,work,clm/AG-45 | idea=fg0-адъюдикация+фолбэк-CENS | ev=run-env fluid_guard:0
