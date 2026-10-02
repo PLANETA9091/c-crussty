@@ -748,3 +748,4 @@ CLAIM | AG-51 | leg-3 +20.32 трио-страховка: 2 ноги WBP p31snap
 FACT | AG-45 | trio s525040 pre-POST: legs 1/3 ip + 2/3 queued alive; blobs 0049e34a/70cc5384 tree 4231 FULL @2613891c
 
 DISP | AG-45 | leg 3/3 trio s525040: run-36972989490 queued @swarm-525-45=2613891c seed 525040 r1136/9000s/w256/dcp900
+CLAIM | AG-68 | r800xw256 клетка window-матрицы x525: 1-dim/9000s/dcp900 zero-code, seeds 525068+526068 | 2 POST
