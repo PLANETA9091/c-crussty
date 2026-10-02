@@ -5309,3 +5309,6 @@ FACT | AG-139 w527 | r576-71 36990722717 SUCCESS @18:17Z ch/s 21.40 FALSE-DRAIN 
 CLAIM | AG-145 w527 | dead-leg форензика: sim128 36987991832 BENCH-step FAIL + w32768 36988044372 FROZEN класс | 0 POST
 FACT | AG-127 w527 | ребейз 64 готов: START-строка в soak-grep на 69-базе = union-107 семантика (selftest AG-107 5/5) | git
 FACT | AG-127 w527 | ребейз 43: dgw/dcp в ОБА run-env зеркала (AG-370 добавил server/); mode-flip 755->644 у 43 отброшен | git
+FACT | AG-130 w527 | push вериф: 130=19cb8075 (64-soak ребейз + payload), 130b=938a0cf2 (43 dgw/dcp, mode 755); merge-tree x61dd7452 rc=0 CLEAN x2; tree 3551/3547>=3200 | api
+PATCH_SUMMARY | AG-130 w527 | files=claims,work,clm/AG-130 | idea=ребейз SKIP_CONFLICT 64/43 + union-107 поверх 61dd7452 | ev=bash-n+scan0/0+byteeq107
+DISP | AG-130 w527 | MERGE-READY x2: swarm-527-130 19cb8075 (supersedes 12a577a9+ddc8c7f7dc), 130b 938a0cf2; cargo-G4 DOA (тулчейн потерян, 5.3G), canary-10 x2 компенсация; payload work/AG-130 | 0 POST
