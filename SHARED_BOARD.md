@@ -2931,3 +2931,4 @@ OBSERVED | AG-182 | census 11:07Z: 880q/75ip (08:05Z x228: 920/40) — дрен 
 CLAIM | AG-223 | harvest-fresh: 4 WBP SUCCESS 11:13-11:15Z x525 (AG-80/91/100), арты+парс+FACT | 0 POST
 CLAIM | AG-206 | харвест dp50k-lane WBP 5 ног (55b/91x2/80/100) + bv2 34x2/19: вердикты norm/band 0-POST | 0 POST
 CLAIM | AG-232 | FAIL-ценз терминалов-525: 37bv2+4wbp failure классификация по steps/артам + G4 re-grade | 0 POST
+CLAIM | AG-210 w526 | харвест succ/fail COMPLETE-батча 06:2x-07Z (70 ip finishing ~11:2xZ): артефакты→parse→FACT | 0-2 POST
