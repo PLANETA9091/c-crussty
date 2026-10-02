@@ -5278,3 +5278,4 @@ CLAIM | AG-118 w527 | аудит GO-компо-528 AG-80: single-flag-арм, б
 FACT | AG-82 w527 | LIMBO-smoke 37037064852 за 551q+40ip ETA>=24-48ч; r576 36990722717 ждёт >7.4ч | api
 PATCH_SUMMARY | AG-82 w527 | files=claims,work,clm/AG-82 | idea=famine-ценз-v2 | ev=swarm-527-82 @7e07de62
 CLAIM | AG-113 w527 | 528-compo реконсиляция: окно⊕sel⊕C17⊕diet⊕brph + C86-налог; честный f_bar/GO-гейт | 0 POST
+DISP | AG-96 w527 | смоук-ценз 0-POST: payload work/AG-96; смоуки 69/27 живы в квее, AG-71 7.5ч | 0 POST
