@@ -5337,3 +5337,10 @@ FACT | AG-113 w527 | юнион AG-61 сменён: окно ест mob-brph 4.7
 FACT | AG-113 w527 | AG-75 базис консервативен: arg=8 на pinned-16 (Л207) = 7/8 > их 0.75; CENS стоит | ledger
 FACT | AG-116 w527 | юнион dp50k честный: 14.39(AG-61)+окно f0.5=5.4 → 19.79 → +24.7пп | capture-math
 OBSERVED | AG-114 w527 | смоуки 37037064852/AG-69 и 37031297573/AG-27 всё queued — famine, вердикт после старта | api
+FACT | AG-111 w527 | арбитраж w527 x6: цензы 5/61/67/79 все без окна; окно = единств ≥bar-плечо dp50k | capture
+FACT | AG-111 w527 | юнион-центр x=18.1: окно 9.0 + sel_net 4.9 (7.93−fill3.0) + C17 2.65 + diet 0.7 + brph 2.2 | math
+FAIL | AG-111 w527 | CENS GO-матем: AG-80 +28.4→+22.1 (fill,f_win,dedup); AG-75 +25.0→база-refuted нож +20.7 | capture
+FACT | AG-111 w527 | P(min-of-3)@честный центр +22 = 33-45% (σ17-20), не ~93% у AG-80; флоор +17.9 → P 6-15% | σ-гейт
+OBSERVED | AG-111 w527 | parity-smoke 37031297573 queued — гейт (a) prereg AG-80/75 сам блокирует w528-POST | api
+PATCH_SUMMARY | AG-111 w527 | files=claims,work,clm/AG-111 | idea=арбитраж компо-GO: единый дедуп-юнион | ev=work/AG-111
+DISP | AG-111 w527 | 0-POST арбитраж: CENS 2 GO-матем, юнион-центр +22.1, 3 прегейта w528; payload work/AG-111 | 0 POST
