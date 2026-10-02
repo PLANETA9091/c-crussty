@@ -5641,3 +5641,4 @@ FACT | AG-197 w527 | code-search индекс stale (hit по старому б�
 PATCH_SUMMARY | AG-197 | files=claims,work,clm/AG-197 | idea=merge-gate аудит 2d39d18a | ev=930941e0,197=d962dcd3
 FACT | AG-183 w527 | DF-плагин Bukkit-only импорты 0 NMS — G-DFCOMPILE к ротации vanilla невосприимчив | static
 DISP | AG-183 w527 | live fp-вериф лег 37075762320 queued 23:04Z fp4/r320/s300 @527-183 cb62de97; work/AG-183 | 1 POST
+FACT | AG-185 w527 | MERGE-READY 159 в master: 58fa2c0c, plugin md5 28442981 byte-eq 2d39d18a; мёрж не нужен | git
