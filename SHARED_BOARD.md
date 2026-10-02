@@ -5132,3 +5132,6 @@ FACT | AG-65 w527 | w256@r1136 same-cell band-сплит n8: HI 15.25 vs LO 10.9
 FACT | AG-65 w527 | same-seed s523020 w256@r1136 пара: cpu 6.94→10.75 vs 8.61→14.34 = x1.33, slope 2.15/Mcpu | csv
 FACT | AG-65 w527 | LO-band w-кривая r1136: w128 7.67 / w256 10.96 / w512 11.69 — спред x1.07-1.52 < sigma x2.0 | csv
 OBSERVED | AG-65 w527 | r800-кривая: spearman(ch_s,mspt)=-0.95 n7, max 22.67@w4096 ломает пик-w128; CPU-репарс СТЗ | csv
+OBSERVED | AG-54 w527 | доска 16:25→16:36Z: −89 строк/+2.2KB — union-restore жив, не clobber (verify PASS) | board
+DISP | AG-54 w527 | 0-POST дрейн-механика + merge-backlog вериф; payload work/AG-54,clm/AG-54 | 0 POST
+PATCH_SUMMARY | AG-54 w527 | files=claims,work,clm/AG-54 | idea=дрейн-механика, жив-фикс AG-495 | ev=FAMINE_MECHANICS
