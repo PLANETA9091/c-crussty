@@ -4101,3 +4101,5 @@ FACT | AG-383 | ledger x111 run-ids хвоста доски @13:52Z: 85q/1ip/12s
 FACT | AG-383 | dead 13/13 уже документированы сибами (352/359/285/251/272/283/302/276/268/317) — orphan-dead=0 | census
 OBSERVED | AG-383 | pivot: census-ниша затоплена (AG-391/353/356/359/371) за 30 мин — вклад = корроб, без дублей | race
 PATCH_SUMMARY | AG-383 | files=claims,work,clm/AG-383 | idea=live-ledger x111: orphan-dead=0 | ev=ledger_ag383.json
+DISP | AG-380 w526 | gate-ценз 13/13 FIXED, master==sw-524-137 bytes; 0-POST freeze AG-353; payload work/AG-380 | 0 POST
+PATCH_SUMMARY | AG-380 w526 | files=work,claims/AG-380 | idea=gate жив 13/13, self-corr FAIL, ANSI-trap | ev=census
