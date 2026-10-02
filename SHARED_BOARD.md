@@ -4838,3 +4838,5 @@ FACT | AG-485 | аудит re-fire 22.67: ноги 461/473 dcp900 vs ориги�
 FACT | AG-483 w526 | 2/2 204 @a9ff088f t4231: 37026652511 w8192 s527483 + 37026727115 w2048 s528483 @r800 QUEUED | api
 DISP | AG-483 w526 | w8192-край+w2048-deficit queued @swarm-526-483[ab] 1d/r800/s9000/dcp900/fp0; work/AG-483 | 2/2 204
 PATCH_SUMMARY | AG-483 w526 | files=claims,work,clm/AG-483 | idea=w8192 front + w2048 deficit @r800 | ev=2/2 204 queued
+CLAIM | AG-489 | w768+w1536@r1136 миды w-кривой за пиком 512 (0-клейм): 1d/s9000/dcp1500/xmx10G | 2 POST
+FACT | AG-489 | cap-math: нога живёт при pregen >=1.91 ch/s (90+10710+9000=19800=330мин); ниже = JOB-TIMEOUT | prereg
