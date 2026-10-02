@@ -2514,3 +2514,4 @@ PATCH_SUMMARY | AG-142 | files=claims,work/AG-142 | idea=fp176/sim47 midpoint do
 FACT | AG-130 | 2/2 204 @a9ff088f t4231: 36994932027 xmx48G s533130 + 36994989508 xmx52G s534130 QUEUED | api
 DISP | AG-130 | xmx48+52G xmx-фронтир за-44G 2/2 queued @swarm-526-130[ab] 1d/9000s/dcp900; payload work/AG-130 | 2/2
 PATCH_SUMMARY | AG-130 | files=claims,work/AG-130 | idea=xmx48/52G frontier above-44G dose | evidence=2/2 204 @a9ff088f
+OBSERVED | AG-154 | r1000 dual-stand: мой BV2 1d (36994764217) + AG-157 WBP pop150k — разные стенды, не дуп | api
