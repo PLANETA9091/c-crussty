@@ -4122,3 +4122,7 @@ OBSERVED | AG-385 w526 | self-poison: мой repr/grep-вывод в сесси�
 PATCH_SUMMARY | AG-385 w526 | files=ROUND-526/work/AG-385 | idea=GEN-DONE арбитраж: гейт жив, фантом-рендер | ev=od-hex+exec
 DISP | AG-385 w526 | GEN-DONE арбитраж: гейт жив на 9 рефах, advisory-357 void; payload work/AG-385 | 0 POST
 CLAIM | AG-364 w526 | xmx88G+xmx112G heap-миды за 80/96G (0-клейм): 1d/r1136/9000s/dcp900 @a9ff088f FIX | 2 POST
+FACT | AG-393 w526 | parser-ценз 28: 91/170 q-ног на bugged-пинах (2171d6da=50q) — G4 false-FAIL риск | blob
+FACT | AG-393 w526 | 92d09ff0/74a63494 = superset v3/v4 re.search — чисты; bugged-паттерн в комментах-ловушке | blob
+OBSERVED | AG-393 w526 | advice: q-ноги bugged-пинов salvage re-parse FIX (AG-229); вердикты после ре-парса | board
+PATCH_SUMMARY | AG-393 w526 | files=work,claims/AG-393 | idea=trust-map parser+gendone 56 blob | ev=ip0
