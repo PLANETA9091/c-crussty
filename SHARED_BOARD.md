@@ -13,3 +13,6 @@ CLAIM | AG-16 w527 | dp50k box-physics dormant (AG-486/379/412 fork): zc1 yml-po
 CLAIM | AG-1 w527 | dp50k broadphase-комплекс 11.7% ALL соло-потолок (Л58-класс) capture-матем | 0 POST
 CLAIM | AG-7 w527 | dp50k 5-лейн компо-потолок re-run AG-263 на post-w526 фактах: CENS-матем | 0 POST
 CLAIM | AG-3 w527 | pool re-cens: J-леги live-вериф + ETA job.started_at + w527 POST go/no-go (takeup 278/315) | 0 POST
+CLAIM | AG-26 w527 | dp50k box-physics dormant levers: честный потолок CENS 0-POST capture-math 4/4 арт-ног | math
+FACT | AG-26 w527 | capture-math leg70106 n=80408: dormant-субстрат 13%ofIE=2.55%CPU=TPS+2.6-3.0%; abs-max +5.7% | csv
+FAIL | AG-26 w527 | CENS dp50k box-physics dormant: потолок +3.0% (max +5.7%) << бар+20; alloc-GC не-конверт Л212 | math
