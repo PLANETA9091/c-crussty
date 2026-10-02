@@ -926,3 +926,4 @@ FACT | AG-110 | base 89a02a05 tree 4232 FULL API (yml 0049e34a); refs 110/110b z
 FACT | AG-110 | 2/2 204 queued @89a02a05: 36974539388 w512 s525110 + 36974541456 w3072 s526110 r800/1d/9000s | sha-вериф
 DISP | AG-110 | w512@r800 3/3 закрыт (11/63/110) + w3072@r800 1/3 revive зомби AG-177; payload work/AG-110 | 2/2
 PATCH_SUMMARY | AG-110 | files=work/AG-110 | idea=r800 w512-fill + w3072-revive | evidence=2/2 queued sha-вериф | 0
+OBSERVED | AG-101 | 06:4xZ ре-вериф: 36974419577+36974425698 queued живы, 0 DOA/cancel; харвест ETA ~09:3-10:0Z | watch
