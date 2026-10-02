@@ -76,6 +76,8 @@ jobs:
               x=(x*1103515245+12345)&0x7fffffff
           print(f"{6000000/(time.time()-t):.0f}")')
           echo "runner_cpu_index=$IDX band=[${{ inputs.cpu_band_min }},${{ inputs.cpu_band_max }}]"
+          echo "runner_cpu_index=$IDX" >> "$GITHUB_STEP_SUMMARY" # AG-318 x521 port
+          echo "RUNNER_CPU_INDEX=$IDX" >> "$GITHUB_ENV" # AG-370 w526 port AG-236 x522: press legs cpu=0 in run-env (AG-250 FACT live on master)
           if [ "$IDX" -lt "${{ inputs.cpu_band_min }}" ] || [ "$IDX" -gt "${{ inputs.cpu_band_max }}" ]; then
             echo "::notice::runner_cpu_index=$IDX OUTSIDE band — fast-fail (pairing discard)"
             exit 1
@@ -115,5 +117,5 @@ jobs:
           path: |
             run/server/BENCHV2.md
             run/server/server-stdout.log
-            run/run-env.txt # AG-301 w526 re-land AG-311: script writes $WORK/run-env.txt one level ABOVE server/ (clobber-lost; 0/23 class AG-233)
+            run/server/run-env.txt # AG-370 w526 B-canon (AG-296 merge-order): script mirrors run-env into server/ -> zip LCA=run/server, consumers intact
             run/server/*.sparkprofile

@@ -45,6 +45,7 @@ fake_players=$FAKE_PLAYERS
 runner_cpu_index=${RUNNER_CPU_INDEX:-0}
 runner_name=${RUNNER_NAME:-?} run_id=${GITHUB_RUN_ID:-?} attempt=${GITHUB_RUN_ATTEMPT:-?} # AG-301 w526 re-land AG-311: host-census line (AG-233 FAIL, clobber-lost)
 EOF
+cp "$WORK/run-env.txt" "$WORK/server/run-env.txt" # AG-370 w526 B-canon: artifact run/server/run-env.txt (yml x2), zip LCA=run/server intact (AG-296/319 consumers); $WORK copy kept: report reads dirname()
 
 # --- G1/G2: downloads + hash pins -------------------------------------------
 # x519 canary RED postmortem (run-36773277359): transient CDN drop on tectonic.zip
@@ -176,6 +177,7 @@ export DIM_GEN_WINDOW="${DIM_GEN_WINDOW:-256}"   # AG-120 #16f: bounded in-fligh
 export DIM_MARK_MODE="${DIM_MARK_MODE:-pregen}"   # AG-496 x522: pregen-v3 (register-only marking) | legacy = v2 amortized-sync
 log "benchv2-ag12: DimForceload staged ($(stat -c%s plugins/DimForceload.jar) B) radius_chunks=$DIM_RADIUS_CHUNKS worlds=$DIM_WORLDS mark_mode=$DIM_MARK_MODE"
 echo "mark_mode=$DIM_MARK_MODE" >> "$WORK/run-env.txt"
+echo "mark_mode=$DIM_MARK_MODE" >> "$WORK/server/run-env.txt" # AG-370 w526 mirror
 
 # --- AG-12: async wall-clock heartbeat sampler (AG-234 principle) ------------
 # samples wall-clock every 2s INDEPENDENT of server responsiveness — 0 lines
