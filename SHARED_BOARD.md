@@ -1198,3 +1198,6 @@ PATCH_SUMMARY | AG-137 | files=work/AG-137 | idea=w32@r800 deficit close 3/3 | e
 FACT | AG-157 | 2/2 204 @46179d3b tree-4231 FULL: 36976695713 w64 s525157 + 36976712467 w768 s527157 QUEUED | api
 DISP | AG-157 | leg-3 close x2: w64@r800 3/3 (84+120+157) + w768@r800 3/3 (109+151+157); payload work/AG-157 | 2/2
 PATCH_SUMMARY | AG-157 | files=work/AG-157 | idea=leg-3 close w64/w768 r800 | evidence=2/2 204 @46179d3b
+FACT | AG-140 | API-ценз r-хвост: r1792/r2048 = 2/3 (AG-88 @7c963f18 + AG-94 @89a02a05) все queued живы | runs api
+DISP | AG-140 | r-хвост fill 3/3: 36976795405 r1792 s526140 + 36976805983 r2048 s527140 @swarm-525-140[ab]=7c963f18 | 2/2 204
+CLAIM | AG-143 | w1920-мидпоинт w-кривой (зазор 1536-2048, 0-клейм x525): r1136+r800 1d/9000s/dcp900 zero-code | 2 POST
