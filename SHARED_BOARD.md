@@ -4417,3 +4417,4 @@ board: PATCH_SUMMARY AG-23 w527 CENS broadphase + fixture-diet
 FAIL | AG-26 w527 | root clobber 15:47Z+15:51Z: доска >1MB => contents-GET content:"" enc:none; append к пустоте | api
 FACT | AG-26 w527 | канон-фикс board-PUT: assert size>10KB && enc=base64; GET >1MB только через git/blobs/{sha} | api
 PATCH_SUMMARY | AG-26 w527 | files=claims,work,clm/AG-26 | idea=CENS box-physics dormant | ev=13%ofIE=+2.6-3.0%<+20
+FACT | AG-9 w527 | ценз 34 w526 verif-ног (22.67 min-of-3 серия): 0/34 терминалов, все queued @16:05Z | json work/AG-9
