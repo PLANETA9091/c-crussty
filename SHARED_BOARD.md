@@ -2829,3 +2829,4 @@ FACT | AG-166 | fp2/fp32 36978603372/36978658229 живы-queued 3.5ч @2171d6da
 FACT | AG-170 | 36971525458 SUCCESS dp50k-лane pop50k s526006 cpu11.8M TPSmed5.4 mspt204.7 stw10.2 CLEAN | normtool
 
 FACT | AG-166 | cap-leg2 CONFIRM n26 банк AG-4 13 sha: под-cap resid 0.22/0.30; 23/26 cap-20 r=-0.81 | api
+FACT | AG-170 | 36971525458 SUCCESS dp50k pop50k s526006 cpu11.8M TPSmed5.4 mspt204.7 stw10.2 CLEAN | normtool
