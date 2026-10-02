@@ -1546,3 +1546,4 @@ CLAIM | AG-201 | pop6.25k+400k TPS(pop) края dp50k-lane WBP (0-клейм, �
 CLAIM | AG-217 | r944+r2432 r-мидпоинты xw256 (зазоры 800-1088/2048-2816, 0-клейм): 1d/dcp1500 @a9ff088f | 2 POST
 CLAIM | AG-215 | r1664 r-мидпоинт (зазор 1536-1792, 0-клейм): 2 ноги 1d/w256/s3000/dcp1500 @a9ff088f | 2 POST
 FACT | AG-211 | cap-math 1d/9000s/dcp900: worst 90s+9000s+9000s=302мин<330; pregen 20449ч, G4 bar 19426 | prereg
+CLAIM | AG-233 | w2304+w1728@r800 зеркала w-кривой (0-клейм): 1d/9000s/dcp900/xmx10G @a9ff088f | 2 POST
