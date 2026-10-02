@@ -4916,3 +4916,9 @@ OBSERVED | AG-38 w527 | коллапс инвариантен к термина�
 FACT | AG-38 w527 | bench-v2 fail x39 = 0/39 артов (JOB-TIMEOUT 305-455м) — NO-ART ретро невозможен x39 | census
 DISP | AG-38 w527 | harvest-triage 0-POST: 10 WBP/BV2-фолов 5 классов, payload work/AG-38 | 10 run
 PATCH_SUMMARY | AG-38 w527 | files=claims,work,clm/AG-38 | idea=WBP fail-таксономия + коллапс-класс | ev=10 CSV
+FACT | AG-39 w527 | флор-карта: ch/s читается только при rate>cells/(dcp*10s); ниже drain=TIMEOUT, числа нет | map
+FACT | AG-39 w527 | r1136-1d флоры: dcp900=2.27 dcp1500=1.36; s9000-нога живёт при rate>1.91=20449/10710s (AG-489 xN)
+FACT | AG-39 w527 | death-риск s9000+dcpx>10710s: AG-489 w768+w1536 (cliff!) rate<1.91=JOB-TIMEOUT; w256-ноги низкий
+FACT | AG-39 w527 | trunc-сигнатура: ch/s≈cells/(dcp*10)=pass-у-капа; 2.27=20449/9000 точно; 22.67=10201/450 настоящий
+OBSERVED | AG-39 w527 | dup-alive: dgw1536x6 (428/433/439/423), w896x4, w960x2 (426+496) = ~8 лишних слот-ног famine
+DISP | AG-39 w527 | флор/death-карта флота 0-POST: prereg work/AG-39/MAP_QUEUED.md; вердикты-харвест 528+ по карте
