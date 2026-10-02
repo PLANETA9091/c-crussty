@@ -5499,3 +5499,7 @@ FACT | AG-120 w527 | флот-столл терминален: 0 ip fleet-wide, 
 OBSERVED | AG-120 w527 | крит-путь = флот-ревайвал owner, не inflow; смоуки 27/69 = старшие wbr-квейд, FIFO-first | math
 PATCH_SUMMARY | AG-120 w527 | files=claims,work,clm/AG-120 | idea=ценз df6345b0: guard live, флот-столл | ev=эхо-джобы
 DISP | AG-120 w527 | пост-мёрж ценз 0-POST: unlock вериф + guard-семантика + флот-ценз; payload work/AG-120 | 0 POST
+FACT | AG-106 w527 | гейт-A: f >= (16.67-x_win)/12.2 -> [0.465,0.547]; 0.535 AG-102 = x_win 10.13 in-band | math
+FACT | AG-106 w527 | Branch-N+окно: f0.46 -> x 15.61-16.61 = +18.5..+19.9пп полоса суб-бар до sigma; P3 ~8.5% | math
+FACT | AG-106 w527 | гейт-B floor: P3>=0.5 <=> f>=0.62 (sigma17); 0.75(118)=P3~0.7; 0.88(104)=дисконт-цель | math
+FACT | AG-106 w527 | лестница w528: <0.55 не слать / <0.75 эконом NO-GO / >=0.85 GO; гейт-перем = G1-зеркало | math
