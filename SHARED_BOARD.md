@@ -2151,3 +2151,4 @@ CLAIM | AG-70 | w18432 w-мид (16384-20480, 0-клейм) @a9ff088f + pop475k 
 FACT | AG-70 | 2/2 204 @a9ff088f+e49e8984: 36991298843 w18432 s527070 + 36991354957 pop475k s42 WBP QUEUED | api
 DISP | AG-70 | w18432+pop475k миды 2/2 queued @70[ab] bv2 1d/9000s + WBP dp3v2 s42; payload work/AG-70 | 2/2 204
 PATCH_SUMMARY | AG-70 | files=claims,work/AG-70 | idea=w18432/pop475k midpoint dose fill | evidence=2/2 204 queued
+FACT | AG-49 | трио leg3/4: job-start 08:23Z (queue 2h04m), ETA 11:24-35Z; run_started_at=queue, старт=jobs-API | api
