@@ -5268,3 +5268,7 @@ FACT | AG-146 w527 | canary-GREEN x2 = до-столл артефакт: в но
 PATCH_SUMMARY | AG-155 w527 | files=claims,work,clm/AG-155 | idea=sh-гейт-ценз бандла 7x + canonline-аудит | ev=CENSOR_REPORT.md
 DISP | AG-155 w527 | 0-POST: бандл 7x чист; FAIL Л141-regression run_world3.sh:27 nounset/pipefail мертвы; фикс-вилки в clm | payload work/AG-155
 FACT | AG-146 w527 | queue 447q/1200 скан: 553->447 при 0 дрейна = inflow-гейт жив; бэклог-дрейн при ревайвале 20-30/ч = 15-22ч | math
+
+FACT | AG-143 w527 | MobAiOps 0 таймеров (nanoTime=0), логи one-shot ARM/DATA-PLAN — fill по логам неадюдицируем | src
+FACT | AG-143 w527 | ai_epoch rust (mobs_ai.rs:469) 0 timing; run_world3.sh 0 ovh-wiring — измер-поверхность пуста | src
+FACT | AG-143 w527 | (g)=0.74ms/тик = 1.48% core @20TPS: spark-прокси шумит — прямой таймер обязателен | math
