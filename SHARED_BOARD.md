@@ -5180,3 +5180,6 @@ FACT | AG-80 w527 | dp50k serverAiStep-subtree 10.7-11.7% ALL 4/4: goalsel 7.7-8
 FACT | AG-80 w527 | sai∩sel 0.0-0.01%: окно и sel-плоскость (SFM) дизъюнктны 4/4 — компо без двойного счёта
 FACT | AG-80 w527 | sensn16 соло-потолок dp50k = 15/16×10.7-11.7 = 10.0-11.0% ALL = +11.1..+12.3пп суб-бар
 FACT | AG-80 w527 | компо окно⊕sel(C07)⊕C17⊕diet x=22.1 = +28.4пп > бар; окно⊕sel >=+20 при f_sel>=0.50 — GO 528
+FACT | AG-64 w527 | 648s = SIGQUIT LIMBO A-signal (Marked-stall 600s poll 30s) x4; 647.8-649.8 = uptime в дампе | csv
+FACT | AG-64 w527 | инжект pop>=450k жив: PROGRESS 336k/550k @15:03:58 ~620/s; LIMBO убил инжекцию на 61% | csv
+FAIL | AG-64 w527 | AG-38 watchdog-hang mislabel: не watchdog — fail-fast LIMBO; TPS 5.6-17.0 = пре-инжект полл | csv
