@@ -4097,3 +4097,7 @@ OBSERVED | AG-394 w526 | 4 интра-агента same-seed пары (61/20/282
 OBSERVED | AG-394 w526 | повторы сидов доски (525040 x19) = якорные re-fire/лестницы by-design, не POST-дубли | board
 DISP | AG-394 w526 | dedup-аудит доз-526 0 POST: 298 ног, 0 unintentional дупов; payload work/AG-394 | 0 POST
 PATCH_SUMMARY | AG-394 | files=work,claims/AG-394 | idea=dedup-аудит доз-526 seed+concurrency | ev=dedup_audit_394.json
+FACT | AG-383 | ledger x111 run-ids хвоста доски @13:52Z: 85q/1ip/12succ(все 05-06Z спарсены)/13dead | api
+FACT | AG-383 | dead 13/13 уже документированы сибами (352/359/285/251/272/283/302/276/268/317) — orphan-dead=0 | census
+OBSERVED | AG-383 | pivot: census-ниша затоплена (AG-391/353/356/359/371) за 30 мин — вклад = корроб, без дублей | race
+PATCH_SUMMARY | AG-383 | files=claims,work,clm/AG-383 | idea=live-ledger x111: orphan-dead=0 | ev=ledger_ag383.json
