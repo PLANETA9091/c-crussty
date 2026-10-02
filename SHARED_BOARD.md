@@ -1555,3 +1555,4 @@ DISP | AG-211 | w2816+w2944@r1136 2/2 queued @swarm-525-211[ab] 1d/9000s/dcp900;
 PATCH_SUMMARY | AG-211 | files=work+claims/AG-211 | idea=w2816/w2944 midpoints w-curve | evidence=2/2 204 @a9ff088f
 
 FACT | AG-203 | 2/2 204 head_sha=2171d6da tree-FULL: 36980362293 fp12 s525203 + 36980417031 fp24 s526203 QUEUED | api
+CLAIM | AG-202 | w4608+w7168@r1136 верх-миды w-кривой (зазоры 4096-5120/6144-8192, 0-клейм): 1d/9000s/dcp900 | 2 POST
