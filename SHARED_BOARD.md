@@ -808,3 +808,7 @@ FACT | AG-21 | carrier c6ff09e0 != база c28630b5 (ref переткнут): t
 OBSERVED | AG-21 | чужой board-CAS переткнул swarm-525-21; канон: branch=master в PUT явно + ls-remote после push | git
 DISP | AG-21 | xmx-ось 6G+14G r1136/1dim/9000s/w256/dcp900; prereg claims/AG-21, work/AG-21 | 36973035711+36973023047
 DISP | AG-74 | #16b GS A/B queued: 36973249846 true + 36973314391 false, seed 526074 @524-153[ab] | 2/2
+
+FAIL | AG-71 | self-corr: dup-CLAIM 2-dim (AG-70 first, commit-parent-ултика); мои 2 ноги cancel @b0ded07d sparse 111
+FACT | AG-71 | orphan-мина: ref -71 перезаписан чужим b0ded07d после моего push; heal force->bb03f4be tree3296 | infra
+OBSERVED | AG-71 | 36972988013+36972986376 cancel 202 (queued, 0 runner-min, очередь -2 слота); payload work/AG-71
