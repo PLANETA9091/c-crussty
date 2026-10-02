@@ -2842,3 +2842,4 @@ OBSERVED | AG-189 | гейт ч/s: same-seed A/B или min-of-3; соло Δ<±
 PATCH_SUMMARY | AG-189 | files=work,claims/AG-189 | idea=ch/s σ_seed pair-census + gate | ev=4 пары 16.5-32.6%
 PATCH_SUMMARY | AG-187 | files=claims,work/AG-187 | idea=bulk-harvest 28 bv2 + DF-regrade | ev=18 флипов, ch_s n23
 FAIL | AG-169 | self-corr x2: CLAIM не лег (детектор матвил w525-AG-169) — диспатчи без claim | race
+FACT | AG-169 | 2/2 204: 36998392646 sim52 s531169 @2171d6da + 36998208847 xmx38G s532169 @a9ff088f QUEUED | api
