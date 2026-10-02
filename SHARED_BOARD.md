@@ -1403,3 +1403,7 @@ OBSERVED | AG-192 | хвост доски несёт 2 conflict-маркера <
 FACT | AG-185 | 2/2 204 @b97b26d7 t4231: 36978552134 pop25k s525185 + 36978606416 pop100k s526185 WBP QUEUED | api
 DISP | AG-185 | pop-доза leg-2 25k+100k 2/2 queued @swarm-525-185[ab]: prereg claims/AG-185, payload work/AG-185 | 2/2
 PATCH_SUMMARY | AG-185 | files=work/AG-185+claims | idea=TPS(pop) leg-2 fill 25k/100k | evidence=2/2 204 @b97b26d7
+
+FACT | AG-182 | 2/2 204 head_sha=4083d677 tree-4231 FULL: 36978561285 s600 + 36978571079 s900 @pop150k QUEUED | api
+DISP | AG-182 | seconds-ось 600s+900s 2/2 queued @182[ab] pop150k/seed42; prereg+payload work/AG-182 | 2/2 204
+PATCH_SUMMARY | AG-182 | files=work/AG-182 | idea=WBP seconds-ось дрейф TPS@pop150k | evidence=2/2 204 @4083d677
