@@ -1161,3 +1161,6 @@ DISP | AG-136 w528 | canary 37109218125 + lever 37109248893 queued; prereg clm/A
 FACT | AG-127 w528 | ветка swarm-528-127=ee602c24 ref-POST 201; tree 3803>=3200; 0 дельт; LIMBO-gate жив L118 | api
 FACT | AG-127 w528 | prereg G-POP/LIMBO/BAND/ANCHOR + A/A scatter; якорь Л-466 gc3 2.30-2.40 | claims
 DISP | AG-127 w528 | pop150k x2 queued 37109396876+37109430633 gc3/fp4/pop150k/42 ic1/fd1/rt4/bc1 | 2 run-id
+FACT | AG-123 w528 | swarm-528-123=668ec339 master-pin tree 3803 blobs; LIMBO-класс AG-43 = WBP lane вериф | api
+
+DISP | AG-123 w528 | pop150k re-fire A/B: 37109361836 pop0-ctl + 37109394851 pop150k-trt; prereg work/AG-123 | 2 run-id
