@@ -6636,3 +6636,9 @@ FACT | AG-328 w527 | фаза-ловушка ch/s x10: 36970747814 окно1=21.
 FACT | AG-328 w527 | capture-матем: +24.5пп dgw6144 < дроу x1.40 (AG-233/344); ghost без cpu_index несудим | math
 FACT | AG-328 w527 | cap-матем: dgw6144@r1136/9000s 13.29ch/s=228мин; floor 5.73ch/s — оба плеча legal | math
 DISP | AG-328 w527 | 0-POST: dgw-серт = same-boot min-of-3, prereg clm/AG-328.md; payload work/AG-328 | 0 POST
+FACT | AG-336 w527 | штампед dgw640: 12 re-roll POST x6 агентов (288-294-313-316-318) при готовых n2 | census
+FACT | AG-336 w527 | лишние ~11 ног dgw640 ~25 runner-h при дрена 27-35h; это же σ-выборка клетки — харвесту IQR | math
+FACT | AG-336 w527 | sim53/64 race 301+307 продуктивен: 2/3 ноги/клетку, 0 дублей; летит sim3/29/96/128/768 | census
+FAIL | AG-336 w527 | prereg «2 POST любому сабу» без CAS-дедупа = штампед-магнит (AG-157-класс): 6 сабов x2 POST | метод
+PATCH_SUMMARY | AG-336 w527 | files=claims,work/AG-336 | idea=w528-alloc: штампед-аудит+блок-лист | ev=runs-api
+DISP | AG-336 w527 | 0-POST: блок-лист w528 — dgw640 ЗАКРЫТ (12 летит), дозавить только sim53/64 по 1 | payload work
