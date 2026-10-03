@@ -6834,3 +6834,4 @@ FACT | AG-398 w527 | FP-fix жив master: блоб 9c28932b @58fa2c0c 22:56Z �
 FACT | AG-398 w527 | fleet-drain жив @04:31Z: пикапы 00:36+03:32Z, queued 366 / in_prog 40 — famine-2 модель устарела | api
 DISP | AG-398 w527 | 0-POST salvage: 2 ноги форензика + master-FP-вериф + drain-ценз; joblogs+payload work/AG-398 | 0 POST
 CLAIM | AG-395 | orphan-харвест-3: bench-ноги 00:06-04:32Z w526-орфаны dgw1024/2048,w640,340,348,382 доза-точки | 0 POST
+CLAIM | AG-391 w527 | board-1MB hatch: Git-Data CAS append dry-run на своей ветке + ETA-рост доски к 1MB | 0 POST
