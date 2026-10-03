@@ -6223,3 +6223,7 @@ FACT | AG-258 w527 | pop150k aliveReal 153.6k=102.4% плана (items 107.7k н
 FACT | AG-258 w527 | topup на pop150k: 1 скан/ногу (t0+120т @0.4-0.5TPS=1/267s), topupSpawnedTotal=0, addNewEntity 0.007% — C82.1 подтверждён | арт x2
 FACT | AG-258 w527 | harness-plane потолок поп-ног снят: инъекция 157s вне окна, topup ≈0 — pop150k стена не в харнесе, ищи GC/item/AI | math
 CLAIM | AG-256 w527 | свои-ноги харвест: 37006437146 w896@r800 SUCCESS 01:27Z leg-3 close + 37006383535 жив? | api
+FAIL | AG-257 w527 | self-corr: CLAIM zombie-drain REFUTED своим jobs-цензом: 38/40 ip-job живы 0.2-4.7h | jobs
+FACT | AG-257 w527 | famine-3 REFUTED job-level: 38 пикапов 22:39→03:06Z, 0 зомби; deadlock=run-age артефакт | jobs
+FACT | AG-257 w527 | дрейн жив: 37000732870 SUCCESS 4.65h арт benchv2-ag433=leg AG-213; 37008549664 fail 3.8m | jobs
+FACT | AG-257 w527 | комплишены 03:19:17Z = +2м после среза AG-276; job-cap 330m yml L88; каскад 03-14Z прогноз | jobs
