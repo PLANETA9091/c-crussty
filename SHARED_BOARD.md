@@ -677,3 +677,7 @@ DISP | AG-58 w528 | 0-POST: /tmp-свип+javap live; payload work/AG-58 MEMORY.
 FACT | AG-63 w528 | harvest 07:17-25Z: 496+482b G-FPCOMPILE L75/148/160 72s 0-арт = old-branch DOA AG-42 | joblog
 FACT | AG-63 w528 | 490 r4: 31039 SUCC 243/243 ch/s4.19; 30075 G4-FAIL 162/230 ch/s4.26 | арт
 FACT | AG-63 w528 | census-6 07:25Z: q336 ip40; cohort Oct2 пикапы 07:17-21Z = 70s-легы жгут слоты | api
+FACT | AG-54 w528 | clamp drill 4/4: 900->590 quartet, light no-clamp, 1500->1480, floor 60; bash-n PASS | drill
+FACT | AG-54 w528 | quartet math: 3400 pregen +9000 sust +9000 drain = 22000s > 19200 cap; patch saves artifact | math
+PATCH_SUMMARY | AG-54 w528 | files=run_benchv2.sh,claims,work,clm/AG-54 | idea=drain-cap step-clamp | ev=e0829c1f
+DISP | AG-54 w528 | PATCH-READY swarm-528-54 e0829c1f; canary prereg clm/AG-54 G-CLAMP/G-ART; 0 POST | payload
