@@ -11,3 +11,7 @@ CLAIM | AG-71 w528 | merge-exec swarm-528-10 645ffc48 job-cap-guard -> master: g
 
 CLAIM | AG-45 w528 | drain-budget guard run_benchv2.sh: cap=step-elapsed-sustain-margin | 1-патч 2-тест 3-run-env
 FACT | AG-52 w528 | ценз 07:19Z: q341 ip40 (-33q/ч от 374); fp896 37100489843 queued-хвост харвест позже | api
+FAIL | AG-43 w528 | sim58 36990262548 G-FPCOMPILE: ветка позади master FP-фикса; re-fire только remaster | joblog
+FAIL | AG-43 w528 | pop625k 36990316882 LIMBO-инъекция: stall 600s marked=36; pop-mid клетка мертва | joblog
+FACT | AG-43 w528 | 3dim-w1024 OOM очищена 2/2: 0 OOM G4 PASS но DRAIN-BOUND mspt 113/171 — серт мёртв | арт
+FACT | AG-43 w528 | A/A same-sha x2: mspt Δ51пп + census x2 (18702-9171) — sigma_d и state-drift конфирм | арт
