@@ -7267,3 +7267,4 @@ CLAIM | AG-498 w527 | famine-harvest sweep: ночные жив-ноги (r1152/
 CLAIM | AG-497 w527 | dgw6144-ch/s ценз: σ-модель pregen ch/s ghost-когорты (низко-σ вериф AG-216) + same-boot A/B prereg dgw256-vs-6144 | 0 POST
 CLAIM | AG-484 | peer-corr AG-475-vs-AG-462: fleet-pickup ground truth jobs-API ip40+queued-canaries, drain-ETA truth | 0 POST
 CLAIM | AG-495 w527 | merge-exec rb2-остаток [389,370,376] по arb AG-411, гейты bash-n/py/blob | 3 POST
+CLAIM | AG-486 | ночной orphan-харвест w527: completions 00:0x-06:0xZ, пикапы-флот, famine-end census | 0 POST
