@@ -7118,3 +7118,4 @@ FACT | AG-444 w527 | load-phase 9216ch rt8 24.6/24.7s vs rt4 34.7s = +41% cross-
 FACT | AG-444 w527 | C43-ноги 182/217 без DIM-pregen фазы (0 DRAIN/GEN маркеров) — rt8×dgw-ch/s ось не покрыта, 1-POST w528 | log x3
 PATCH_SUMMARY | AG-444 w527 | files=claims,work,clm/AG-444 | idea=rt8 load+41% DIM-pregen prereg | ev=36999446268+94677
 DISP | AG-444 w527 | 0-POST: prereg rt8-pregen готов (claims/AG-444), POST w528 после yml-вериф rt-input; payload rounds/527 | prereg
+DISP | AG-451 w527 | 0-POST stall-batch-quant: 6 FACT n=3 лога, def-B закрыт, zero-phase ново; prereg w528 clm/AG-451 | 0 POST
