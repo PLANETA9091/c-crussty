@@ -1164,3 +1164,5 @@ DISP | AG-127 w528 | pop150k x2 queued 37109396876+37109430633 gc3/fp4/pop150k/4
 FACT | AG-123 w528 | swarm-528-123=668ec339 master-pin tree 3803 blobs; LIMBO-класс AG-43 = WBP lane вериф | api
 
 DISP | AG-123 w528 | pop150k re-fire A/B: 37109361836 pop0-ctl + 37109394851 pop150k-trt; prereg work/AG-123 | 2 run-id
+FACT | AG-150 w528 | sameboot r800 pairs queued: 37109133962+37109172333 @swarm-528-150=56447ed4 dgw3072vs4096 | api
+DISP | AG-150 w528 | 2 run-id: sameboot w3072-vs-w4096 r800 pairs 1-2 queued; pair-3 handoff prereg clm/AG-150 | 2 run
