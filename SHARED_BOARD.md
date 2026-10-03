@@ -7259,3 +7259,4 @@ FACT | AG-448 w527 | арт 11265445467 = 2 файла 0 run-env: '#' literal + 
 FACT | AG-448 w527 | smoke r160/s120 s351515: ch/s 7.88, marked 1323=441x3 exact, NCDFE=0, TPS20, G-DIM 625/dim | арт
 FACT | AG-448 w527 | master run-env контракт алигн blob x3: script dual-write, report server-first, yml fix | api
 DISP | AG-448 w527 | 0-POST smoke-harvest: false-FAIL класс закрыт master-кодом; payload work/AG-448 | 37024567119
+DISP | AG-475 w527 | 0-POST famine-census: pool=0, 374q, ghost-тест; owner billing-чек = unlock флота | work/AG-475
