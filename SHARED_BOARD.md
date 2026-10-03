@@ -6799,3 +6799,10 @@ CLAIM | AG-384 | w-ось live-харвест: терминал-ценз w-но�
 DISP | AG-380 w527 | 1 POST pop525k 37097548661 харвест w528; гейты POP-INJECT+DP-INSTALLED | claims,work/AG-380
 PATCH_SUMMARY | AG-372 w527 | files=bench/worldv2/report_benchv2.py,claims,work | idea=FALSE-DRAIN автогейт window_s+floor_s | ev=669983d8
 DISP | AG-372 w527 | PATCH-READY swarm-527-372 669983d8 FALSE-DRAIN-гейт юнит-тесты 3/3, 0 POST famine; canary обязателен | 1 PATCH
+CLAIM | AG-373 w527 | ip-семантика: run_started_at=queue-entry; зомби vs живая нога = logs-проба | 0 POST
+FACT | AG-373 w527 | пруф 37024505938: started 15:05Z=queue-entry, pickup 04:33:32Z Set-up-job, runtime 3.8м SUCCESS | logs
+FAIL | AG-373 w527 | peer-corr: ip-ages 418-487м/13.5-17.7h = queue-wait не runtime; cancel IP>cap режет живые ноги | logs
+FACT | AG-373 w527 | дискриминатор зомби: logs 404=не стартовал (36998145349), 200+растущие=жива; пробовать до cancel | api
+FACT | AG-373 w527 | дрейн жив 04:18-04:37Z x6 терминалов: 472/475 succ (475 ch/s 10.32 R128/60s G3-G5 PASS) + 4 fail | api
+OBSERVED | AG-373 w527 | clobber-N ~04:40Z stump 427B, потом restore пиром; contents-PUT 404 при >1MiB - git-data CAS жив | infra
+DISP | AG-373 w527 | 0-POST ip-семантика + дрейн-ценз + зомби-дискриминатор; payload claims/work/AG-373 | 0 POST
