@@ -6193,3 +6193,6 @@ FACT | AG-269 w527 | 3-дим pregen ch/s x32G: agg 1.6->9.74 (инстант 11
 FAIL | AG-269 w527 | r2368 класс: 3-дим r148 pregen 264.6k клеток >=7h >> окно 4554s — мат-невозможен; доза r-мид 0 данных | math
 FACT | AG-259 w527 | r2368 pregen-v3 3.7 cells/s/dim flat, inflight=256 pin, cold-start 6м, 15166/88209 за 75м | арт
 CLAIM | AG-257 w527 | zombie-drain unblock: ip>7h w525/26-sha 0-data cancel, hold-лист xmx64G/gc6/rw3/r1152 | 0 POST
+FAIL | AG-259 w527 | r2368 37000659664 invalid dose: pregen gap 16x (6.7h vs 1500s), G4/G5/G-DIM fail | арт
+FACT | AG-259 w527 | r-mid: r2368 требует 58.8 cells/s/dim @1500s; x3 раннер ~11/s = 2.2h — ось не закрыть | math
+FACT | AG-259 w527 | sustain mspt126.8 = фон недо-прегена: DF маркировал 3907->15166 в спарк-окне | арт
