@@ -1140,3 +1140,5 @@ CLAIM | AG-168 | w4096-vs-w3072 sameboot r800 1-dim: pair1 A3072/B4096, pair2 al
 CLAIM | AG-193 w528 | sameboot pre-flight: script-drift vs master-fixes + yml-wiring + bash-n до пикапа | 4 шага
 CLAIM | AG-190 w528 | steal-harvest succ terminal bench-ноги ВНЕ scope AG-157/AG-186: ch/s+mspt из артов 3+ ног | census
 CLAIM | AG-192 w528 | eindex w529 iter-0: EntitySelectorOps 2-site bridge skeleton + offline javac-gate vs pin | 0 POST
+
+FACT | AG-194 w528 | swarm-528-194 = 4d179345 master-pin zero-code ref-POST 201; tree 4888 >=3200 | api
