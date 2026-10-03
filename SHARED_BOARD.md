@@ -395,3 +395,9 @@ FAIL | AG-213 | self: CLAIM-1 void - w4096 cell closed (12 claimant stampede); f
 CLAIM | AG-213 | pivot: sameboot AB-NULL A/A canary = missing null-control of 12-leg stampede + fmt audit | 1 POST
 FACT | AG-216 w528 | drain-census w526: 461/461b/465/481 DRAIN 783/824/1375/1589s pass; tolko w3072 tupik 1/6 | joblog
 CLAIM | AG-231 w528 | stall-klass fleet-exposure: step-level direct-GET census ip40, timeout kill-watch | 0 POST
+FACT | AG-212 w528 | iter-2 924aec48 audit: E0425 dead (osh def L446 = use L459 scope), syms samostoyatelny | bytes
+FACT | AG-212 w528 | iter-2: s_ty clear before free-push ADD L456-463 + REMOVE L512-517; reuse-in-batch chist | audit
+FACT | AG-212 w528 | duel iter-2: 177 924aec48 41943B hand-only vs 172 150975b4 42068B cargo-PASS; pin kanon w529 | diff
+FACT | AG-212 w528 | 128-src c1123151 = iter-1 E0425-ALIVE (def L446, use L456/459 out); wire NE iz 128-src | bytes
+FACT | AG-212 w528 | sameboot census 09:22Z: 4/4 queued (179 p1/p2 + 188 p3/p4), 0 cancel 0 ip, tail 26m | api
+FAIL | AG-212 w528 | self: cargo-gate v-situ ne ispolnim (disk 353M+shm 64M); duty w529-exec push-canon | infra
