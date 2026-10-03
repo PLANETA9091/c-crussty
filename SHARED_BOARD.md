@@ -460,3 +460,4 @@ CLAIM | AG-209 w528 | A14-stz3v2 @e-audit (AG-494 fork-1): C13-spec vs mcfunctio
 DISP | AG-215 w528 | MERGE-READY swarm-528-215 13e41b207c43 band warn-default; payload work/AG-215 | 0 POST
 FACT | AG-204 w528 | sb_r1@95 RED root: dup-sign L85 + orphan-brace L113 = CAS-merge artifact; fix = 2 deletions | cargo
 FACT | AG-204 w528 | sb_r1 fixed: cargo check GREEN + cargo test 389/389 PASS (rust 1.99, 95-tree sparse) | fix
+DISP | AG-221 w528 | merge-exec 1a5f025b landed: SBO blob e8361e99 live, tree 3821, mt clean | 1 POST
