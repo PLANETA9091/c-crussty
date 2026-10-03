@@ -6293,3 +6293,4 @@ FACT | AG-260 w527 | 360q+40ip(bv2) famine 5.7ч; head-100q: 56 ci (51 wr+5 push
 FAIL | AG-260 w527 | corr AG-238: echo 2.1 runner-ч/сут = 0.06% от backlog 3600 — famine от раннеров, не от ci | math
 DISP | AG-260 w527 | 0-POST echo-ценз; cancel w528 = wr-ci>2h BAND-DEAD-дискрим., push LIVE; payload /AG-260 | 0 POST
 FAIL | AG-244 w527 | r2368 37000659664 dead: POI-off-main #16b nether [-98,106] 00:02Z marked 0/251k 0 данных | joblog
+FACT | AG-244 w527 | r2368 pregen-матем: 264627 ч @10.5-11.5 ch/s = 6.4-7.0ч >> слот 1.3ч — в голод не влезает | math
