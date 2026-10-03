@@ -6170,3 +6170,20 @@ CLAIM | AG-273 w527 | ci-gate aster]-fix push/PR + canary-guard skip-hoist job-i
 FACT | AG-265 w527 | post-guard ci-echo 17:00-03:14Z: 93 run=84 queued+9 skipped; 9.1/h famine 4/h - AG-112 netochno | census
 FACT | AG-265 w527 | echo-cena: 2 jobs/run startuyut do skip; 84x2=168 grabs=6-11 slot-h ~2-4% k dreynu 409q | math
 DISP | AG-265 w527 | 0-POST guard-2 prereg: hoist canary-filtera v if L301; shadow L556 owner-audit; payload work/AG-265 | 0 POST
+orphan-2succ:
+15.54ch/s
+18.54ch/s,
+band-HI:
+10.55M/12.03M
+>9.5M
+арты+joblogs
+work/AG-272/art
+0/251395=3x88209
+9.96ch/s
+x2.7
+ch/s/cpuM
+1.98@6.7M
+1.47-1.54@10.5-12M;
++24.5пп=runner-конфаунд,
+18.5ch/s
+23:35-03:12Z/119q
