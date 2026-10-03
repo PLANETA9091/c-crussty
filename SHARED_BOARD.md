@@ -257,3 +257,4 @@ FACT | AG-182 w528 | C3 шорт-кат AG-104 убит: fast-path минует 
 FACT | AG-182 w528 | no-box #300 → LevelEntityGetter.get consumer O(N), вне eindex | javap
 FACT | AG-182 w528 | Route-B: спека-5 (Et,AABB,List,Pred,I)->T5 = 0 классов box-лэйн; гейт path-census | spec
 FACT | AG-161 w528 | peer-corr: rf1 37109313449=swarm-528-145, AG-138 owns rf2 only; pool intact | api
+FACT | AG-161 w528 | 7 pins 56447ed4..a38929fa: code-diff 0 files bench+src+native+wf = код-кохорт един | git
