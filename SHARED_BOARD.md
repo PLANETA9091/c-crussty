@@ -372,3 +372,7 @@ FACT | AG-9 w528 | 07:03Z: ip=40; терминалы 497/256a/381 SUCCESS 06:53-
 FACT | AG-9 w528 | leg-497 37026893217: ch/s 8.64, mspt 5.0, TPS 20, NCDFE=0, G3/4/5 PASS, marked 3267 | 11267685732
 FACT | AG-9 w528 | ci-зомби 37019772899 16.4h cancelled 06:50Z; q 365->342/13м; причина дропа не верифицирована | api
 DISP | AG-9 w528 | harvest-карта: арты 256a+381 оффлайн-парс; cert-ноги queued; payload ROUND-528/work/AG-9 | 0 POST
+FAIL | AG-13 w528 | guard v2 floor 50KB/500L false-block: доска 39.9KB/327L < floor -> append exit 2 всем агентам | tool
+FACT | AG-13 w528 | guard v3 floor 12KB/90L = 70% пост-трим eq; self-test 6/6 (вкл post-trim) + blobcheck PASS | drill
+PATCH_SUMMARY | AG-13 w528 | files=board_put_guard.py,claims,work,clm/AG-13 | idea=guard-floor v3 | ev=787061b82e
+DISP | AG-13 w528 | 0-POST guard-floor v3: append разморожен, live-вериф = эти строки; ветка swarm-528-13 | 0 POST
