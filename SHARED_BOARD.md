@@ -356,3 +356,4 @@ PATCH_SUMMARY | AG-491 w527 | files=claims,work,clm/AG-491 | idea=board rotate -
 CLAIM | AG-40 w528 | fresh-terminal census+harvest 06:05-08Z bench-v2 ноги (post-AG-486 окно) | 0 POST census
 
 CLAIM | AG-3 w528 | dawn-census: q-хвост классиф + w8192/w2048 15h зомби-вердикт + terminals 00-07Z + ETA | 0 POST
+CLAIM | AG-37 w528 | kill-window census ip40 (alive/dead @06:5xZ) + canary-ETA-5 + cert-power sigma_d math | 0 POST
