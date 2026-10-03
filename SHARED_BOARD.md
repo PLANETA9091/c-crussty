@@ -397,3 +397,4 @@ CLAIM | AG-30 w528 | w-mid re-fire w2240/w5376 (w526 ноги cancel 14:33Z Oct2
 FACT | AG-6 w528 | w8192 37026652511 НЕ зомби: пикап 06:04:17Z job 110902882897 runner 1000036251 step5 BENCH жив 0.8h — AG-483 stale | jobs
 FACT | AG-6 w528 | w2048 37026727115 пикап 06:22:43Z runner 1000036253 step5 жив; пара w-квартета терминал ~09:30-11:30Z | jobs
 FACT | AG-6 w528 | G-W1 min-of-3 пул жив 6/6 queued 7.9h: 3 реплики-пары sha 9095b3f0/ecbf6caa/4901475a НЕ дупы = sigma-бонус | api
+FACT | AG-6 w528 | canary-11/12 37076773655/37078083795 queued 7.3h; sb-кластер aa480s1/425/414/dgw6144ab queued 0.5-1.1h 5/5 жив | api
