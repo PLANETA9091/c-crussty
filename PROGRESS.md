@@ -69,3 +69,10 @@
 - Гейты: cargo check 0 err (172w baseline) после каждого мёржа; cargo test lib 417/0/1; check_blobs_sync ALL IN SYNC; java-харнесс ESEL 4/4 GREEN; блобы только пинненными скриптами.
 - MAIN-фиксы блокеров: javap-shim (/home/z/tools/jdk-21.0.12.1+1 через jdk.jdeps/jdk.compiler — JRE-only бокс); rebuild MobAiOps (cmp528_compo/win pre-existing drift) + SelectorBulkOps (cmp486_sbulk1 zero-blob drift); check_blobs_sync +2 gate (MobSwaOps/FlatView).
 - ΔM1/ΔM2/ΔM3: baseline-pending (калибровка инструмента 1/3 пары); диск 61% (пик 70%, /tmp/t247-249 очищены); дерево 3887 ≥3200; 0 prune/gc.
+
+## v24-3 (2026-10-03) — native sources recovery (owner mandate: sources instead of .so, continue p500 era)
+- CRUSSTY-ветки аудит: 12 codex/p500 — 10 пустых стабов (указатели в master), 2 с несмерженным кодом (bb8cf74 chunk-encode proto +1294, 83f29e5 hoist +95/−23). master CRUSSTY натив УДАЛИЛ к 2026-09 → единственные полные исходники = CE-снапшот a4f53bf1 (2026-06-06).
+- RECOVERY dd823586 (9131a575): native/ = полная вендора CE (paper-native-core 95 модулей, paper-native-jni 13061L/280 экспортов, chunk-encode пара), standalone workspace (root Cargo.toml exclude += native), RECOVERY.md provenance. cargo check 0 err; selftests 317/317.
+- INJECT cc1c951e: libpaper_native_jni.so (1.64MB) + libpaper_native_chunk_encode_jni.so (465KB) пересобраны из recovered-исходников; nm-D parity 283/283 (0 missing / 0 extra) vs JNI_EXPORTS.manifest; MANIFEST.md SHA + provenance обновлены; пребилды 2025-09 восстановимы из истории.
+- LEVER 83f29e5 (hoist normal-noise batch scaling): noise_ab same-process paired A/B, 6 кейсов (3 fill-фн × N=4096/32768), output-equality sanity, warmup 20, 15 чередующихся раундов: d = +0.10%..−0.04% → FAIL (<+2%), A/A ≤0.6%. Причина: CE уже содержит эквивалентную кодогенерацию. Патч из src откат, стенд сохранён (native/paper-native-core/src/bin/noise_ab.rs + bench_ab/).
+- Следующее: lever-кандидаты теперь строятся на live-исходниках (больше не упор в закрытый бинарь): RECOVERY-2 (недостающие ~100 items core закрытого крейта 2025 — только по потребности), noise/chunk levers под M1/M2/M3 через game-dispatch.

@@ -12770,3 +12770,23 @@ Stage Summary:
 - ШАГ 3: 3 саба (личные брифы) → SWAR java-мост / snapreg pregate / ESEL publisher, все DORMANT за STRICT-леверами.
 - ШАГ 4: 3 --no-ff мёржа + MAIN blocker-fix f3bcccdc (blob-sync: gates MobSwaOps/FlatView, rebuild MobAiOps cmp528-drift + SelectorBulkOps cmp486-drift, javap-shim через jdk.jdeps/jdk.compiler); гейты: cargo 0 err, lib 417/0/1, blobs ALL IN SYNC.
 - ФИНАЛ: доска ROTATE w530 (архив +150L), PROGRESS/BENCHMARKS append, push master; dev-logs worklog mirror; отчёт 6 строк + вопрос владельцу.
+
+---
+Task ID: v24-3
+Agent: MAIN (cron session, owner IM mandate «внедрить исходники а не .so, продолжить как p500 эра»)
+Task: Ревизия codex/p500-веток PLANETA9091/CRUSSTY и рекавери P500-натива в c-crussty
+
+Work Log:
+- Локализованы ветки: не c-crussty (только round-395..399/canary-476), а PLANETA9091/CRUSSTY; 12 codex/* разобраны: 10 = пустые стабы (0 уникальных коммитов, указатели в master-историю: 1cede7cd «batch shifted normal noise», c18bda92 «optimize batching»), 2 = несмерженный код (bb8cf74 chunk-encode prototype +1294; 83f29e5 hoist +95/−23).
+- Обнаружено: master CRUSSTY удалил native/ к 2026-09; частичные дропы июня неполны (core = 1 файл); ПОЛНЫЙ исходник = CE-снапшот a4f53bf1 (2026-06-06): core 95 модулей + jni 13061L + chunk-encode пара; истории c-crussty и CRUSSTY не связаны.
+- Вендор в ветку v24/p500-native-src-recovery: native/ = CE-снапшот (chunk-пара сначала пробовали из bb8cf74 — вернули CE-версию: она соответствует манифесту 3/3), скаффолд не потребовался; root Cargo.toml exclude += native; RECOVERY.md.
+- Гейты: cargo check workspace 0 err; cargo test 317/317 (308 core + 9 chunk); tar-mtime ловушка (stale rlib) решена touch+cargo clean; нативные java-блобы не тронуты.
+- Паритет: nm-D built vs JNI_EXPORTS.manifest = 283/283, 0 missing / 0 extra; gen_crussty_table.py в c-crussty отсутствует (упомянут в MANIFEST) — сверка выполнена напрямую.
+- Рычаг 83f29e5 (hoist): патч применился с адаптацией (CE переименовал хелпер; 1 stale call-site поправлен), noise_ab same-process A/B 6 кейсов: d=+0.10..−0.04%, A/A≤0.6% → FAIL/REJECT, src откат в CE, стенд сохранён как измеритель.
+- INJECT: оба .so пересобраны из исходников (main 1,644,320B, chunk 465,280B), MANIFEST.md SHA be0e397b/3a85b4e6 + provenance «Rebuilt 2026-10-03 (v24 recovery)».
+- Мёрж --no-ff dd823586 в master; дерево 3997 файлов (≥3200); доска+PROGRESS+BENCHMARKS append.
+
+Stage Summary:
+- c-crussty впервые имеет ПОЛНУЮ кодовую базу нативного слоя P500: исходники вместо закрытых бинарей, .so пересобраны, поверхность 283/283.
+- Эра p500 продолжается на live-исходниках: следующие рычаги = noise/chunk/path levers с A/B через noise_ab (стенд готов) и game-dispatch M1/M2/M3.
+- Lever 83f29e5 честно закрыт в FAIL-зону; brеф ветки CRUSSTY чистить нечего (10/12 пустых).

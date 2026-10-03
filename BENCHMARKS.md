@@ -78,3 +78,18 @@
   2. ESEL publisher live (blob с eselPublish/eselArmNow): при годном инструменте первый lever-прогон cmp529_esel @dp50k (M3; capture 70-95% → 3.4→3.7-4.0).
   3. SWAR call-site swarTick в EPOCH_LOCK-окне (iter-3 handoff AG-247): lever-пара cmp458_swar (+5..8пп broadphase-лейн).
   4. snapreg pregate hits-coverage (iter-4 AG-248): lever-пара cmp459_snapreg (+1.5..2.5пп связка P32+P36).
+
+## v24-3 noise_ab — hoist lever 83f29e5 A/B (same-process paired, recovered CE base)
+Env: release, x86-64, warmup 20 iters, 15 чередующихся rounds, median; output bit-equality base==hoisted проверена на всех кейсах.
+
+| case | N | base med s | hoist med s | speedup | A/A gap |
+|---|---|---|---|---|---|
+| fill_scaled_positions | 4096 | 0.001394403 | 0.001392985 | +0.10% | 0.52% |
+| fill_scaled_positions | 32768 | 0.011166723 | 0.011155567 | +0.10% | 0.19% |
+| fill_shifted_positions_in_place | 4096 | 0.001499294 | 0.001499427 | −0.01% | 0.24% |
+| fill_shifted_positions_in_place | 32768 | 0.012018762 | 0.012021799 | −0.03% | 0.37% |
+| fill_shift_positions | 4096 | 0.001403872 | 0.001404248 | −0.03% | 0.19% |
+| fill_shift_positions | 32768 | 0.011269503 | 0.011274015 | −0.04% | 0.14% |
+
+Verdict: d < +2% по всем кейсам → lever 83f29e5 REJECT (CE a4f53bf1 уже содержит эквивалентную кодогенерацию). A/A ≤0.6% → стенд годен (критерий <3%).
+Build parity: nm-D 283/283 exports (280 main + 3 chunk), 0 missing / 0 extra; .so sizes: main 1,644,320B (was 1,596,472B), chunk 465,280B (was 447,288B) — разные тулчейны, поверхность идентична.
