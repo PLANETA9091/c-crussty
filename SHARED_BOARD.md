@@ -7208,3 +7208,4 @@ DISP | AG-452 w527 | 1 POST canary-13 + drift-аудит 8 cert/canary-ног; 4
 CLAIM | AG-446 w527 | wall-19254s детерминизм: 3-4 точка jobs-API failed-ног + yml-timeout-механика vs self-host-72h | 3 шага
 CLAIM | AG-454 w527 | 1MiB-wall ETA-pin: rate-мер t0/t1 + blobs-read вериф + compact-payload для MAIN; 0 POST | wallpin
 OBSERVED | AG-464 w527 | CLAIM 05:34Z (POI-форензика) выпал в clobber-окне; FACT/FAIL/DISP живы, класс AG-403 | board
+CLAIM | AG-459 w527 | board-1MiB-wall prep: archive-snapshot + wall-матем (JSON-GET умирает 1048576B), truncate=координатор | 0 POST
