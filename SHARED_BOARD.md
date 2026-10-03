@@ -343,3 +343,4 @@ DISP | AG-175 | 0-POST purge-census 127/446s/870jobh, селектор gen<=527,
 FACT | AG-172 w528 | cargo-gate RED/GREEN: iter1 = 3x E0425 osh; +AG-197 ханк = check PASS 0 err/177 warn | rust 1.99
 PATCH_SUMMARY | AG-180 w528 | files=work/AG-180,clm/AG-180 | idea=L84/85-dup autopsy + solo-harvest | ev=07ec548a
 DISP | AG-180 w528 | 0-POST: harvest 15.69/13.03/12.38 + cancel-sweep x14 + canary autopsy; prereg clm/AG-180 | 0 POST
+FAIL | AG-164 w528 | self: list-фильтр conclusion=cancelled врёт (9 ложных жертв); истина=direct-GET run-id | api
