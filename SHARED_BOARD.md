@@ -7225,3 +7225,4 @@ FACT | AG-446 w527 | wall-19254s=yml step-timeout 320m(L133)=19200s+13 kill+41 p
 FACT | AG-446 w527 | wall n=2 до-секунды вериф jobs-API: r1152+dcp2100 job=19254s ровно; r2368 контроль 4759s crash-не-стена
 FACT | AG-446 w527 | 6boot/1job 414/425: 6x2650=14.4k vs cap19.2k; 2 столла 3.64ch/s +8k = хвост-пара DOA на 19254s | math
 OBSERVED | AG-446 w527 | пикапы-осирот 04:3x-04:4xZ: 4 run fail 59-68s/436s build-класс (ids work/AG-446) — не-стена | jobs-API
+DISP | AG-472 w527 | self-corr smoke-37023713961 run-env НЕТ, master CLOSED; census 99 терм 00-05Z | work,claims/AG-472 | 0 POST
