@@ -62,6 +62,8 @@ package bench.population;
 // NOT FOR PRODUCTION. Bench harness only (world-bench-3 CI, sanctioned boots).
 // ============================================================================
 
+import com.destroystokyo.paper.event.entity.EntityAddToWorldEvent;
+import com.destroystokyo.paper.event.entity.EntityRemoveFromWorldEvent;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -75,6 +77,8 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -94,6 +98,7 @@ public final class BenchPopulationPlugin extends JavaPlugin {
     private static final int TOPUP_PER_TICK = 20;        // S7-147: min per-tick refill budget (~14ms/tick, profile-invisible)
     private static final int TOPUP_PER_TICK_MAX = 100;   // S7-148: cap дефицит-драйвена (~70ms/тик worst-case при TPS 3+)
     private static final int TOPUP_DRAIN_HORIZON = 50;   // S7-148: тиков на добор дефицита (deficit/HORIZON база бюджета)
+    private static final int TOPUP_RESYNC_TICKS = 2400;  // AG-368: период полного скана-ресинка (2 мин @20TPS); между ресинками счёт — O(1) event-плоскость
     private static final int ITEM_LIFETIME_TICKS = 6000; // vanilla ItemEntity age
     private static final int TICK_BUDGET = 1500;         // entities injected per tick
     // --- C61 harness hardening (POP-gate ×3-world re-dispatch) ----------------
@@ -165,6 +170,18 @@ public final class BenchPopulationPlugin extends JavaPlugin {
     private long topupSpawnedTotal = 0;
     private boolean topupDrainTaskRunning = false;
 
+    // AG-368 w527: O(1) event-driven counters for the S7-147 real-count topup
+    // plane. The legacy full-scan (w.getEntities() materializes ~148k entities
+    // every 120t on the main thread, ~15-25% profile share on pop legs —
+    // AG-209/AG-226 collapsed-profile evidence) is demoted to a periodic
+    // RESYNC (TOPUP_RESYNC_TICKS) that heals counter drift and re-anchors the
+    // real-count semantics. Fallback: a kernel without the Paper world events
+    // keeps the EXACT legacy plane (full scan every topup scan, same markers).
+    private World benchWorld0 = null;          // cached world-0 for the counter handlers
+    private boolean topupCountersLive = false; // event plane armed (listener registered OK)
+    private long topupCtrItems = 0, topupCtrHostiles = 0, topupCtrPassives = 0;
+    private long topupLastResyncFt = -(long) TOPUP_RESYNC_TICKS - 1; // forces resync on the first topup tick
+
     @Override
     public void onEnable() {
         String tEnv = System.getenv("BENCH_POPULATION_TARGET");
@@ -185,6 +202,8 @@ public final class BenchPopulationPlugin extends JavaPlugin {
         } catch (NumberFormatException e) {
             minLoadedChunks = 0;
         }
+        benchWorld0 = Bukkit.getWorlds().get(0);
+        registerTopupCountListener(); // AG-368: fail-closed, see TOPUP-COUNTERS markers
         if (target <= 0) {
             getLogger().info(MARK + " BENCH_POPULATION_TARGET<=0 -> fixture idle (no injection)");
             return;
@@ -663,6 +682,49 @@ public final class BenchPopulationPlugin extends JavaPlugin {
                 + " (injected=" + injectedTotal + " target=" + target + ")");
     }
 
+    // --- AG-368 w527: event-driven counting plane for the topup real counts ---
+    // Nested + fail-closed registration: if the running kernel lacks the Paper
+    // world events (NoClassDefFoundError class ×S7-148), the class-load or the
+    // registerEvents scan throws and we latch the legacy full-scan plane —
+    // identical markers and identical every-scan O(N) semantics as master.
+    private void registerTopupCountListener() {
+        try {
+            getServer().getPluginManager().registerEvents(new TopupCountListener(), this);
+            topupCountersLive = true;
+            getLogger().info(MARK + " TOPUP-COUNTERS ARMED (event plane live, resync every "
+                    + TOPUP_RESYNC_TICKS + "t)");
+        } catch (Throwable t) {
+            topupCountersLive = false;
+            getLogger().warning(MARK + " TOPUP-COUNTERS UNAVAILABLE (" + t.getClass().getSimpleName()
+                    + ") — legacy full-scan plane stays active");
+        }
+    }
+
+    private void topupBump(Entity e, int delta) {
+        if (benchWorld0 == null || e.getWorld() != benchWorld0) {
+            return;
+        }
+        if (e instanceof Item) {
+            topupCtrItems += delta;
+        } else if (e instanceof Monster) {
+            topupCtrHostiles += delta;
+        } else if (e instanceof Animals) {
+            topupCtrPassives += delta;
+        }
+    }
+
+    private final class TopupCountListener implements Listener {
+        @EventHandler(ignoreCancelled = true)
+        public void onAdd(EntityAddToWorldEvent e) {
+            topupBump(e.getEntity(), +1);
+        }
+
+        @EventHandler(ignoreCancelled = true)
+        public void onRemove(EntityRemoveFromWorldEvent e) {
+            topupBump(e.getEntity(), -1);
+        }
+    }
+
     // --- topup: keep the POPULATION at plan while vanilla decay lanes run ---
     // S7-147: real-count driven (items + hostiles + passives). Scan every
     // TOPUP_PERIOD_TICKS, drain deficits continuously at TOPUP_PER_TICK/tick
@@ -673,15 +735,42 @@ public final class BenchPopulationPlugin extends JavaPlugin {
             long ft = w.getFullTime();
 
             // real alive counts over all loaded chunks (the 9216 forceloaded
-            // chunks hold the whole scene)
-            int aliveItems = 0, aliveHostiles = 0, alivePassives = 0;
-            for (Entity e : w.getEntities()) {
-                if (e instanceof Item) {
-                    aliveItems++;
-                } else if (e instanceof Monster) {
-                    aliveHostiles++;
-                } else if (e instanceof Animals) {
-                    alivePassives++;
+            // chunks hold the whole scene).
+            // AG-368 w527: the O(N) materializing scan runs as a periodic
+            // RESYNC only (heals counter drift, re-anchors S7-147 real-count
+            // semantics); between resyncs counts come from the O(1) event
+            // plane. With the event plane unavailable this block is the
+            // legacy master plane: full scan on EVERY topup scan.
+            boolean resync = topupCountersLive
+                    && (ft - topupLastResyncFt) >= TOPUP_RESYNC_TICKS;
+            int aliveItems, aliveHostiles, alivePassives;
+            if (topupCountersLive && !resync) {
+                aliveItems = (int) Math.min(Integer.MAX_VALUE, topupCtrItems);
+                aliveHostiles = (int) Math.min(Integer.MAX_VALUE, topupCtrHostiles);
+                alivePassives = (int) Math.min(Integer.MAX_VALUE, topupCtrPassives);
+            } else {
+                aliveItems = 0;
+                aliveHostiles = 0;
+                alivePassives = 0;
+                for (Entity e : w.getEntities()) {
+                    if (e instanceof Item) {
+                        aliveItems++;
+                    } else if (e instanceof Monster) {
+                        aliveHostiles++;
+                    } else if (e instanceof Animals) {
+                        alivePassives++;
+                    }
+                }
+                if (topupCountersLive) {
+                    getLogger().info(MARK + " POPULATION TOPUP-RESYNC tick=" + ft
+                            + " drift(items=" + (aliveItems - (int) Math.min(Integer.MAX_VALUE, topupCtrItems))
+                            + ",hostiles=" + (aliveHostiles - (int) Math.min(Integer.MAX_VALUE, topupCtrHostiles))
+                            + ",passives=" + (alivePassives - (int) Math.min(Integer.MAX_VALUE, topupCtrPassives))
+                            + ") — counters re-anchored (S7-147 real-count plane)");
+                    topupCtrItems = aliveItems;
+                    topupCtrHostiles = aliveHostiles;
+                    topupCtrPassives = alivePassives;
+                    topupLastResyncFt = ft;
                 }
             }
 
@@ -708,7 +797,8 @@ public final class BenchPopulationPlugin extends JavaPlugin {
                     + " deficit(items=" + deficitItems + ",hostiles=" + deficitHostiles
                     + ",passives=" + deficitPassives + ")"
                     + " aliveEst(items-model)=" + aliveEst
-                    + " topupSpawnedTotal=" + topupSpawnedTotal);
+                    + " topupSpawnedTotal=" + topupSpawnedTotal
+                    + " src=" + (!topupCountersLive ? "scan" : (resync ? "scan" : "ctr")));
 
             startTopupDrainTask();
         }, TOPUP_PERIOD_TICKS, TOPUP_PERIOD_TICKS);
