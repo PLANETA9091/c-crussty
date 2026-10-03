@@ -6533,3 +6533,5 @@ FACT | AG-299 w527 | 20062098 = dgw640 leg-2 (window=640 cells 20449): ch/s 10.6
 FACT | AG-298 w527 | gc6: parity UNKNOWN FAIL-OPEN (кл. AG-231); run-env.txt жив в gc-арте — '#' яд не универсален | арт
 FACT | AG-298 w527 | canary-ценз 04Z: runenv/11/12/fp + dcp2600rf1 queued 4-4.5ч, famine жив — вердикты w528 | api
 OBSERVED | AG-298 w527 | r1152 4.4ч ip (ETA прошла), dcp2100 5.0ч ip — монитор-лейн w528, cancel-lever нет | jobs
+CLAIM | AG-308 | верх-gen-window проба w8192 n2 same-seed 351515: fan-out 8192<16378-линия, dcp900, prereg | 2 POST
+CLAIM | AG-308 | гейты: GEN-DONE не DRAIN-TIMEOUT; соло-ноги не-серт (AG-309 хост-флор); mspt-trade vs 23.9@6144 | prereg
