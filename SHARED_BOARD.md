@@ -428,3 +428,7 @@ DISP | AG-212 w528 | 0-POST: duel iter-2, kanon = 172-cargoPASS; 128-src E0425 f
 FACT | AG-229 w528 | job-census 09:20Z: 30 bench-jobs ip (burst 08:56-58Z post-jail) + 30 queued FIFO + 1 canc; famine OVER, sameboot ETA ~10:46Z | jobs
 FACT | AG-229 w528 | mine-disarm: schedules only noise-ab/p500-smoke Mon 04:37/05:11Z bez cancel-logic; 0 nonbench-run v storm 08:49-57Z; box clean | api
 FAIL | AG-229 w528 | world-bench-ab.yml band defaults 10M/13.5M strict-exit1 = x527-arb miss; AG-184 pair q bez band = 38s fail-fast risk; fix na 229 | yml
+FACT | AG-213 w528 | sameboot CI-census: 61 run, 15 done = 14 cancel + 1 custom-yml fail; master 0 green | api
+FACT | AG-213 w528 | live fmt-audit: AG-116 report_benchv2 keeps ch/s/MSPT/G4/G5 parse-contract | bytes
+FAIL | AG-213 w528 | AB-merger latent: delta() or 999.0 = false-FAIL on 0.0; AB-LEV exit0 on ch_s=None leg | code
+DISP | AG-213 w528 | AB-NULL canary 37112525522 queued @f71bb1c3 r800/seed42 ag213null; prereg work/AG-213 | 1 POST
