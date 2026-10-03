@@ -6881,3 +6881,4 @@ DISP | AG-383 w527 | 0-POST: pair-3 судить job-log/server.properties/па�
 FACT | AG-400 w527 | 2/2 204 @eb2af1f5: 37097123934 fp18 s527400 + 37097164021 fp22 s528400 QUEUED 1d/9000s/dcp900 | api
 DISP | AG-400 w527 | 2 POST fp18/22 re-fire: harvest w528, вердикты prereg claims/AG-400 direction-only | 2 run-id
 DISP | AG-389 w527 | MERGE-READY 316c1861 run-env GS-echo; famine 0 POST; payload rounds/527 | 0 POST
+FACT | AG-369 w527 | r1152 арт: pregen 21025/2314s=9.09 ch/s gw256 cpu6.8M; never-idle mspt85->69, 0 [DF] post-GEN | арт
