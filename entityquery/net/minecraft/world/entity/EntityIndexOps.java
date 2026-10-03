@@ -4,15 +4,18 @@ import ca.spottedleaf.moonrise.common.util.WorldUtil;
 import ca.spottedleaf.moonrise.patches.chunk_system.level.ChunkSystemLevel;
 import ca.spottedleaf.moonrise.patches.chunk_system.level.entity.ChunkEntitySlices;
 import ca.spottedleaf.moonrise.patches.chunk_system.level.entity.EntityLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.FullChunkStatus;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.IntFunction;
 import java.util.function.Predicate;
 
 /**
@@ -370,6 +373,163 @@ public final class EntityIndexOps {
     // iter-1 DORMANT: nothing flips ESEL_ARMED (rust per-type chains bind in
     // iter-2) — behavior-identical to pre-ESEL by construction.
     // ------------------------------------------------------------------
+
+    // ------------------------------------------------------------------
+    // iter-3 java publisher (AG-249 w530; site-spec work/AG-245/result.md).
+    // The rust ladder (src/esel_bind.rs, lever cmp529_esel) probes these two
+    // statics READ-ONLY (GetStaticMethodID) and, once the per-type chains are
+    // live, pushes: arrays → eselPublish → eselArmNow (ARM strictly AFTER
+    // publish — publishing without arming is fail-closed-safe, arming without
+    // publishing would NPE eselFast → eselBroken sticky → plane burned).
+    //
+    // VIEW MODEL: the nested sibling FlatView over frozen flat arrays is the
+    // published view (the outer class must not implement its own member type
+    // — ECJ cycle rule). The rust manager defines $TypeIndexView + $FlatView
+    // (+ $Buf) BEFORE the outer class (cleg1 inner-class NCDFE precedent).
+    // type_key = the BuiltInRegistries.ENTITY_TYPE registry id (int ≥ 0); an
+    // unknown id answers count 0 → eselFast takes the unchanged walk.
+    // `single` is the live entity id under the count==1 contract — resolved
+    // to Entity via eselSingleResolver, which the runtime lane MUST install
+    // BEFORE eselArmNow (arming without a resolver would turn every count==1
+    // query into a null-single defect → eselBroken sticky → plane burned).
+    // ------------------------------------------------------------------
+
+    /** Slot cap (MUST match esel_bind::MAX_SLOTS, rust side). */
+    public static final int ESEL_MAX_SLOTS = 4096;
+
+    /** id → Entity resolver for the count==1 single; installed by the
+     * runtime lane strictly BEFORE eselArmNow (fail-closed arm guard). */
+    public static volatile IntFunction<Entity> eselSingleResolver = null;
+
+    /** java-конструктор TypeIndexView над флет-массивами (rust push path:
+     * ([I[I[J)I). Validates count==1 ⇔ single!=0, key uniqueness, bounds —
+     * ANY violation → rc=0 and ESEL_VIEW untouched (fail-closed). rc=1 →
+     * ESEL_VIEW now answers the frozen snapshot (volatile publish). */
+    public static int eselPublish(int[] slotType, int[] counts, long[] singles) {
+        try {
+            if (slotType == null || counts == null || singles == null) {
+                return 0;
+            }
+            final int n = slotType.length;
+            if (n == 0 || counts.length != n || singles.length != n
+                    || n > ESEL_MAX_SLOTS) {
+                return 0;
+            }
+            for (int i = 0; i < n; i++) {
+                if (slotType[i] < 0 || counts[i] < 0) {
+                    return 0;
+                }
+                boolean one = counts[i] == 1;
+                long s = singles[i];
+                if (one != (s != 0L)) {
+                    return 0; // count==1 ⇔ single!=0 (both sides)
+                }
+                if (one && (s < 0L || s > Integer.MAX_VALUE)) {
+                    return 0; // single must be an int-representable entity id
+                }
+                for (int j = i + 1; j < n; j++) {
+                    if (slotType[j] == slotType[i]) {
+                        return 0; // duplicate type key would alias two chains
+                    }
+                }
+            }
+            ESEL_VIEW = new FlatView(slotType.clone(), counts.clone(), singles.clone());
+            return 1;
+        } catch (Throwable t) {
+            return 0; // fail-closed: ESEL_VIEW untouched
+        }
+    }
+
+    /** ARM strictly after a successful publish (publish-защелка =
+     * ESEL_VIEW != null) AND with the single-resolver live; otherwise a
+     * no-op (fail-closed). Flips ESEL_ARMED then fires the G2 marker. */
+    public static void eselArmNow() {
+        if (ESEL_VIEW == null || eselSingleResolver == null) {
+            return; // no publish latch / no id→Entity resolver → never arm
+        }
+        ESEL_ARMED = true;
+        eselArmMarker(); // G2 marker strictly after the flip
+    }
+
+    // ---- the flat frozen snapshot view (iter-3) ----
+    // Sibling member type: the outer class must not implement its own member
+    // type (ECJ cycle rule). The rust manager defines $TypeIndexView +
+    // $FlatView (+ $Buf) BEFORE the outer class (cleg1 NCDFE precedent).
+    private static final class FlatView implements TypeIndexView {
+        private final int[] keys;     // probe-map key slots (-1 = empty)
+        private final int[] rowOf;    // key slot → row index
+        private final int[] counts;   // frozen per-row counts
+        private final long[] singles; // frozen per-row singles
+        private final int mask;
+
+        /** Takes ownership of the (already cloned) publish arrays; builds a
+         * zero-alloc probe map (load ≤ 0.5 → probe terminates; duplicate
+         * keys are rejected by eselPublish before this ctor runs). */
+        FlatView(int[] types, int[] counts, long[] singles) {
+            final int n = types.length;
+            int cap = 4;
+            while (cap < n * 2) {
+                cap <<= 1;
+            }
+            int[] k = new int[cap];
+            Arrays.fill(k, -1);
+            int[] r = new int[cap];
+            int m = cap - 1;
+            for (int row = 0; row < n; row++) {
+                int h = types[row] ^ (types[row] >>> 16);
+                int i = h & m;
+                while (k[i] != -1) {
+                    i = (i + 1) & m;
+                }
+                k[i] = types[row];
+                r[i] = row;
+            }
+            this.keys = k;
+            this.rowOf = r;
+            this.counts = counts;
+            this.singles = singles;
+            this.mask = m;
+        }
+
+        private int row(EntityType<?> type) {
+            int key = BuiltInRegistries.ENTITY_TYPE.getId(type); // -1 = unreg.
+            if (key < 0) {
+                return -1;
+            }
+            int h = key ^ (key >>> 16);
+            int i = h & mask;
+            while (true) {
+                int slot = keys[i];
+                if (slot == key) {
+                    return rowOf[i];
+                }
+                if (slot == -1) {
+                    return -1; // unknown type → count 0 → walk (eselFast-safe)
+                }
+                i = (i + 1) & mask;
+            }
+        }
+
+        @Override
+        public int typeCount(EntityType<?> type) {
+            int row = row(type);
+            return row < 0 ? 0 : counts[row];
+        }
+
+        @Override
+        public Entity typeSingle(EntityType<?> type) {
+            int row = row(type);
+            if (row < 0 || counts[row] != 1) {
+                return null; // count!=1: eselFast never reaches here for the row
+            }
+            long s = singles[row];
+            IntFunction<Entity> resolver = eselSingleResolver;
+            if (resolver == null || s <= 0L || s > Integer.MAX_VALUE) {
+                return null; // armed runs never hit this (arm guard); burn = G6
+            }
+            return resolver.apply((int) s);
+        }
+    }
 
     /** Exact per-type view over ONE EntityLookup (rust manager binds iter-2).
      * Implementations MUST count only entities in slices with

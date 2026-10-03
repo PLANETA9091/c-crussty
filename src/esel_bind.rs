@@ -24,19 +24,16 @@
 //! fail-dominant — a mis-built chain would produce silent wrong query
 //! results, so the lane must not recover in-process).
 //!
-//! JAVA-PUBLISHER REALITY (iter-2): the iter-1 blob has NO static publisher
-//! (no `eselPublish`, no `eselArmNow` — `ESEL_VIEW` is a public static
-//! volatile TypeIndexView FIELD; filling it needs a java-side constructor).
-//! Java blobs are FROZEN this tick (owner mandate: zero java deltas) → the
-//! runtime ladder PROBES the two method ids read-only (GetStaticMethodID,
-//! exception-cleared) and honest-stops on absence with a sticky
-//! `publisher_missing` latch + the iter-3 site-spec (work/AG-245/result.md).
-//! ZERO java mutation on this path: an ARMED flip without a live view would
-//! NPE in eselFast → eselBroken sticky → the whole ESEL plane burned for
-//! iter-3 (rust must not break the java contract). The full
-//! publish_and_arm_java push path (arrays → eselPublish → eselArmNow) is
-//! implemented and becomes reachable the moment the iter-3 blob lands AND
-//! per-type chains go live (es_pt wiring).
+//! JAVA-PUBLISHER (iter-3, AG-249 w530): the blob NOW carries the two
+//! statics (`eselPublish([I[I[J)I` builds the TypeIndexView sibling
+//! $FlatView over the flat arrays → ESEL_VIEW; `eselArmNow()V` flips
+//! ESEL_ARMED strictly after the publish latch + single-resolver live and
+//! fires the G2 marker). Both validated java-side fail-closed (rc=0 /
+//! no-op on any violation). The ladder probes the two method ids
+//! READ-ONLY (GetStaticMethodID, exception-cleared); with the rebuilt blob
+//! the probe RESOLVES and the push path (publish_and_arm_java) becomes
+//! reachable — still gated on the es_pt chain source (capture >= AG-19
+//! arm-min); without it the ladder honest-stops (zero java touch).
 //!
 //! LEVER: STRICT-eq `cmp529_esel` (round-400 protocol; один id, никаких
 //! союзов по env — swarx-4 урок). DORMANT by default: flag unset/foreign →
@@ -348,9 +345,10 @@ fn lever_flag() -> String {
     std::env::var("CRUSSTY_LEVER_FLAG").unwrap_or_default()
 }
 
-/// Epoch-event hook (iter-3 wiring target): bulk-bind the per-type chains
-/// on the entity-composition epoch event. iter-2: exported + selftested,
-/// no runtime caller (chains go live with the es_pt wiring tick).
+/// Epoch-event hook (iter-3 wiring): bulk-bind the per-type chains on the
+/// entity-composition epoch event. The runtime caller is the activate ladder
+/// step 5 (es_pt chain source → bind → publish → arm); the hook stays
+/// exported for direct epoch wiring (fail-closed: lever-gated + validated).
 pub fn on_epoch_event(epoch: u64, chains: &[PerTypeChain]) -> BindOutcome {
     if !lever_matches(&lever_flag()) {
         return BindOutcome::Refused("lever dormant");
@@ -492,8 +490,8 @@ pub fn register() {
 ///  4. READ-ONLY probe of the iter-3 java site (eselPublish + eselArmNow)
 ///     — absent (iter-1 blob) → sticky publisher-missing + site-spec
 ///     notice, ESEL_ARMED untouched (this IS the expected iter-2 path);
-///  5. site present (future) → per-type chains must be live too; without a
-///     chain source (es_pt wiring iter-3) honest-stop — never publish an
+///  5. site present (iter-3 blob, AG-249) → per-type chains must be live too;
+///     without a chain source (es_pt wiring) honest-stop — never publish an
 ///     empty/derivative view.
 pub fn activate() {
     if !lever_matches(&lever_flag()) {
@@ -547,15 +545,46 @@ pub fn activate() {
             Some(ProbeOutcome::SitePresent) => {}
         }
 
-        // 5. Java site exists (future iter-3 blob): chains must be live.
-        //    publish_and_arm_java(state()) is the wiring-tick entry (bind
-        //    from live chains first, then push). Until chains go live the
-        //    singleton has NO bound view → the push path is a no-op by
-        //    construction (published()==None → return false, zero java
-        //    touch); we do NOT call it here — honest-stop instead.
-        eprintln!(
-            "[crussty-plugin] esel_bind: java site present but per-type chains NOT live (es_pt wiring = iter-3) — publish deferred, ESEL_ARMED stays false (fail-closed: no chain source, no view data)"
-        );
+        // 5. Java site present (iter-3 blob, AG-249): consult the es_pt
+        //    chain-source registry (the bind-path feed). No source / source
+        //    refused / capture below the AG-19 arm-min → honest-stop — never
+        //    publish an empty/derivative view.
+        let Some(snap) = crate::es_pt::chains_snapshot() else {
+            eprintln!(
+                "[crussty-plugin] esel_bind: per-type chain source NOT live (es_pt wiring: install_chain_source + capture >= {}ppct AG-19) — publish deferred, ESEL_ARMED stays false (fail-closed: no chain source, no view data)",
+                crate::es_pt::CAPTURE_ARM_MIN_PPCT
+            );
+            return;
+        };
+        match on_epoch_event(snap.epoch, &snap.chains) {
+            BindOutcome::Bound | BindOutcome::Idempotent => {}
+            other => {
+                eprintln!(
+                    "[crussty-plugin] esel_bind: chain bind refused ({other:?}) — publish deferred (fail-closed)"
+                );
+                return;
+            }
+        }
+        // Bind invariants hold (rust side): push the flat arrays into java —
+        // eselPublish → ESEL_VIEW, THEN eselArmNow (ARM-after-publish canon).
+        if !publish_and_arm_java(state()) {
+            eprintln!(
+                "[crussty-plugin] esel_bind: java publish failed — ESEL_ARMED NOT flipped (fail-closed)"
+            );
+            return;
+        }
+        // bridge_alive=true (step 1 found the class), selftest_ok=true (step 3).
+        match state().arm(true, true) {
+            ArmDecision::Armed => eprintln!(
+                "[crussty-plugin] esel_bind: ESEL-FAST ARMED cmp529_esel epoch={} slots={} capture={}ppct (publish→arm; G2 marker on java stdout)",
+                snap.epoch,
+                snap.chains.len(),
+                snap.capture_ppct
+            ),
+            other => eprintln!(
+                "[crussty-plugin] esel_bind: arm refused ({other:?}) — ESEL stays dormant (fail-closed)"
+            ),
+        }
     });
 }
 

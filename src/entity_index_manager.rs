@@ -71,6 +71,20 @@ const OPS_BYTES: &[u8] =
 const OPS_BUF_CLASS: &str = "net/minecraft/world/entity/EntityIndexOps$Buf";
 const OPS_BUF_BYTES: &[u8] =
     include_bytes!("../entityquery/build/net/minecraft/world/entity/EntityIndexOps$Buf.class");
+/// ESEL iter-3 (AG-249): the published per-type view — nested interface + the
+/// FlatView implementation over the flat publish arrays. BOTH must be defined
+/// into the kernel loader BEFORE the outer class links (cleg1 evidence: the
+/// outer class links when its first method is probed; linking resolves
+/// inner-class field types / superinterfaces → NCDFE if absent). The OUTER
+/// class must never implement its own member type (ECJ cycle rule) — hence
+/// the sibling FlatView instead of an implements on EntityIndexOps itself.
+const OPS_VIEW_CLASS: &str = "net/minecraft/world/entity/EntityIndexOps$TypeIndexView";
+const OPS_VIEW_BYTES: &[u8] = include_bytes!(
+    "../entityquery/build/net/minecraft/world/entity/EntityIndexOps$TypeIndexView.class"
+);
+const OPS_FLATVIEW_CLASS: &str = "net/minecraft/world/entity/EntityIndexOps$FlatView";
+const OPS_FLATVIEW_BYTES: &[u8] =
+    include_bytes!("../entityquery/build/net/minecraft/world/entity/EntityIndexOps$FlatView.class");
 
 const GATE_LEVER: &str = "cmp405_eindex";
 
@@ -302,7 +316,13 @@ pub fn activate() {
             crate::improved_noise::class_version(OPS_BYTES).map(|(m, _)| m).unwrap_or(0);
         let buf_major =
             crate::improved_noise::class_version(OPS_BUF_BYTES).map(|(m, _)| m).unwrap_or(0);
-        if ops_major.max(buf_major) > jvm_major {
+        let view_major = crate::improved_noise::class_version(OPS_VIEW_BYTES)
+            .map(|(m, _)| m)
+            .unwrap_or(0);
+        let flat_major = crate::improved_noise::class_version(OPS_FLATVIEW_BYTES)
+            .map(|(m, _)| m)
+            .unwrap_or(0);
+        if ops_major.max(buf_major).max(view_major).max(flat_major) > jvm_major {
             eprintln!(
                 "[crussty-plugin] eindex: {OPS_CLASS} is class major {ops_major} but JVM supports up to {jvm_major} — rebuild entityquery/ via scripts/build_entity_index_ops.sh; hook stays dormant"
             );
@@ -361,11 +381,30 @@ pub fn activate() {
                 env.delete_local_ref(class_cls);
                 return None;
             }
-            // Inner Buf first: the outer class must not link (probe resolve)
-            // before the loader can resolve its inner-class references.
+            // Inner types first: the outer class must not link (probe resolve)
+            // before the loader can resolve its inner-class references —
+            // ESEL iter-3 adds the view interface + FlatView impl to that set
+            // (ESEL_VIEW field type / FlatView superinterface / Buf field type).
+            let Some(view_c) = env.define_class(OPS_VIEW_CLASS, gref, OPS_VIEW_BYTES) else {
+                crate::describe_exception(env);
+                eprintln!("[crussty-plugin] eindex: define_class({OPS_VIEW_CLASS}) failed");
+                env.delete_local_ref(loader);
+                env.delete_local_ref(class_cls);
+                return None;
+            };
+            let Some(flat_c) = env.define_class(OPS_FLATVIEW_CLASS, gref, OPS_FLATVIEW_BYTES) else {
+                crate::describe_exception(env);
+                eprintln!("[crussty-plugin] eindex: define_class({OPS_FLATVIEW_CLASS}) failed");
+                env.delete_local_ref(view_c);
+                env.delete_local_ref(loader);
+                env.delete_local_ref(class_cls);
+                return None;
+            };
             let Some(buf_c) = env.define_class(OPS_BUF_CLASS, gref, OPS_BUF_BYTES) else {
                 crate::describe_exception(env);
                 eprintln!("[crussty-plugin] eindex: define_class({OPS_BUF_CLASS}) failed");
+                env.delete_local_ref(flat_c);
+                env.delete_local_ref(view_c);
                 env.delete_local_ref(loader);
                 env.delete_local_ref(class_cls);
                 return None;
@@ -374,11 +413,15 @@ pub fn activate() {
                 crate::describe_exception(env);
                 eprintln!("[crussty-plugin] eindex: define_class({OPS_CLASS}) failed");
                 env.delete_local_ref(buf_c);
+                env.delete_local_ref(flat_c);
+                env.delete_local_ref(view_c);
                 env.delete_local_ref(loader);
                 env.delete_local_ref(class_cls);
                 return None;
             };
             env.delete_local_ref(buf_c);
+            env.delete_local_ref(flat_c);
+            env.delete_local_ref(view_c);
             let gcls = env.new_global_ref(c);
             if gcls.is_null() {
                 crate::describe_exception(env);
