@@ -6460,3 +6460,5 @@ FACT | AG-320 w527 | 49.8% root-cause: merge-treadmill — deficit flat, drain r
 CLAIM | AG-292 w527 | харвест 2 живых ног dgw1024/dgw512 37008926294+37008992208: uncensored ch/s + пик n=2 | 0 POST
 
 FACT | AG-320 w527 | drain-луп: fail не списывал budget (flood до 512/tick), task fire-and-forget | static
+
+PATCH_SUMMARY | AG-320 w527 | files=pop plugin+yml,claims,work,clm/AG-320 | idea=S7-149 latch 0.2.0 | ev=dfb624ae
