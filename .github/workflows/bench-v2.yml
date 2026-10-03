@@ -38,11 +38,11 @@ on:
       cpu_band_min:
         description: 'Pair-hunter fast-fail: min runner_cpu_index (band recal 2026-10-01 pool 10.2-12.5M)'
         required: false
-        default: '10000000' # AG-318 x521: pool drift evidence run-36815094025 fast-fail @12439811
+        default: '6000000' # AG-397 x527 band-merge arb: ledger L8/L147 canon 6.0-9.5M (AG-303 n=21); 10.2-12.5M recal = HI-mode mirage (AG-13 bimodal 75/25)
       cpu_band_max:
         description: 'Pair-hunter fast-fail: max runner_cpu_index (band recal 2026-10-01 pool 10.2-12.5M)'
         required: false
-        default: '13500000' # override per-dispatch for tighter pairing (e.g. anchor windows)
+        default: '9500000' # AG-397 x527: HI 11.4-12.5M outside norm-domain tps_exp_v5 [6.5,9.0]M (AG-157), knee>12M (AG-350) — bank-incomparable
       band_gate_action:
         description: 'On runner_cpu_index outside band: warn (AG-13 x523 NEW default: record+proceed — pool is BIMODAL ~6.4-7.2M 75% / 11.4-12.5M 25% (#16d), strict default killed canary-6 REDx2 at step-3 36859428036/36859424331 before boot; comparability via RUNNER_CPU_INDEX ledger + cohort-pairing |dIdx|<=3%) | fail (pair-hunter STRICT pairing discard — pass EXPLICITLY on pair-verbs)'
         required: false
