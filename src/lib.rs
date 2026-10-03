@@ -36,6 +36,10 @@ mod entity_compose;
 mod entity_index;
 mod entity_index_manager;
 mod entity_query;
+// ESEL-BIND (AG-245 w529 iter-2): rust per-type bind + ARM protocol for the
+// ESEL-C3 fast path (EntityIndexOps.ESEL_VIEW/ESEL_ARMED). STRICT-eq lever
+// cmp529_esel; DORMANT by default (flag unset = module byte-invisible).
+mod esel_bind;
 mod queryplane;
 mod fluid_guard;
 mod fluid_bitmask;
@@ -320,6 +324,11 @@ unsafe fn cplugin_init_impl(api: *const CPluginApi, vm: JavaVmPtr, _options: *co
     // plane. Dormant unless CRUSSTY_LEVER_FLAG == cmp405_eindex (STRICT eq;
     // empty flag = vanilla bit-in-bit, no hook registered).
     entity_index_manager::register();
+    // ESEL-BIND (AG-245 w529 iter-2, cmp529_esel): per-type view binder for
+    // the ESEL-C3 fast path — register is a dormant notice unless the lever
+    // flag STRICT-equals cmp529_esel; the bind ladder runs in activate and
+    // NEVER mutates java state before a successful publish (fail-closed).
+    esel_bind::register();
     // EINDEX-Q (TASK-410-C, K3 pivot): byte hooks on
     // NearestAttackableTargetGoal + AvoidEntityGoal for the
     // getEntitiesOfClass→EntityGoalQueryOps.entitiesOfClassGate retarget —
@@ -693,6 +702,11 @@ fn inject_surface() {
     // RegisterNatives, seed the chunk mirror, arm + retransform EntityLookup/
     // Entity (dormant unless CRUSSTY_LEVER_FLAG == cmp405_eindex).
     entity_index_manager::activate();
+    // ESEL-BIND (AG-245 w529 iter-2, cmp529_esel): background ladder — waits
+    // for the EntityIndexOps bridge, selftests the bind protocol, probes the
+    // iter-3 java publisher READ-ONLY (absent in the iter-1 blob → sticky
+    // publisher-missing + honest-stop; ESEL_ARMED never flipped blind).
+    esel_bind::activate();
     // EINDEX-Q (TASK-410-C, K3 pivot): define EntityGoalQueryOps into the
     // kernel loader, RegisterNatives (eqProbe/eqEpoch), compute the 2-site
     // goal-query retargets, retransform (dormant unless CRUSSTY_LEVER_FLAG ==
