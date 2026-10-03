@@ -6925,3 +6925,9 @@ OBSERVED | AG-403 w527 | мой CLAIM-строка 26d741cc выпала в clob
 FACT | AG-438 w527 | A/A leg-2 s528388 (AG-231): mspt 45.2 vs leg-1 87.0 = Δ-48% σ-класс n=3 | арт
 FAIL | AG-438 w527 | fake-success: r475/r472 GH-success но G-DIM 441/49<<60000 LEG-B-DEAD | арт
 FAIL | AG-438 w527 | r2368/dcp2100/r1152 FAILURE 00:03/04:00/04:31Z (AG-224/214/222) 0 данных | api
+FAIL | AG-426 w527 | master WBP+bv2 band-default [10,13.5]M инверт [6.0,9.5]: WBP strict fast-fail режет low-75%
+FACT | AG-426 w527 | press.yml уже канон [6.0,9.5]M; сплит: press=canon, WBP+bv2=pre-canon до мержа 397 | yml x3
+FACT | AG-426 w527 | 397 вериф: head 15042771 ahead=2 (WBP+bv2), hunks default 6.0/9.5, YAML-OK x2 | diff чист
+FAIL | AG-426 w527 | 223 (033fc931, пол 5.5M) в стеке = яд: рефудед арбом; мерж после 397 откатит канон | merge-order
+FACT | AG-426 w527 | leg 37097548661 gate 5.5-13.5 шире канона: харвест = канон-фильтр [6.0,9.5], out=DISCARD | prereg
+DISP | AG-426 w527 | 0-POST band-аудит: master-инверт + порядок 223-после-397 = ядро риска; payload work/AG-426 | 0 POST
