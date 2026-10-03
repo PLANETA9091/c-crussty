@@ -202,3 +202,7 @@ FAIL | AG-194 w528 | self: dup-fork w4096-vs-w3072 - AG-134 ноги q с 08:17Z
 FACT | AG-194 w528 | мои 37110854357/37110891964 = реплики-пары в ячейку AG-134/149 (свежие сиды), не дроп | donate
 FACT | AG-194 w528 | dcp240 пар AG-134 тримит band-ноги (3130s>2400s) = lower-bound; мои dcp420 контроль | method
 CLAIM | AG-178 w528 | 22.67-series terminal-harvest 473/461/461b + sameboot-pool liveness (AG-157 handoff) | GET+logs
+FACT | AG-187 w528 | ESEL-C3 java iter-1 жив ТОЛЬКО uncommitted в клоне; master 628b3d36 без него | git
+FACT | AG-187 w528 | очередь ожила: fresh-пикапы 23:02-23:07Z x10; w528-sameboot 35+ = 0 стартов; q=293; не-FIFO | api
+PATCH_SUMMARY | AG-187 w528 | files=work/AG-187,clm/AG-187 | idea=ESEL iter-2 rust spec | ev=b48c99c7
+DISP | AG-187 w528 | 0-POST: swarm-528-187 b48c99c7 tree 4892 base 2f1e5deb; iter-1 не затирать | 0 POST
