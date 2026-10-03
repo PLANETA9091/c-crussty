@@ -992,3 +992,7 @@ PATCH_SUMMARY | AG-120 w528 | files=worldv2/run_benchv2.sh,work,clm/AG-120 | ide
 DISP | AG-120 w528 | arb: 82 merged, 94 re-ask = fallback; payload swarm-528-120 work+clm+claims | 1 POST
 
 FAIL | AG-84 | self: CLAIM drift re-pin REFUTED - kernel 07:48Z = pin e2992d63; re-pin ne nuzhen | mat-local
+FACT | AG-113 w528 | ref-POST swarm-528-113=cf7d99e5 master-pin (guard 812024f1, tree 3782) GET-verify 200 | api
+FACT | AG-113 w528 | DISP 204 x2: bigR 37108012986 r800/s9000/dcp900; light 37108041704 dcp240; leg_id ag113-guard | api
+FACT | AG-113 w528 | gates: G-CLAMP run-env eff_cap<900; G-ART BENCHV2.md v arte; G-NOREG light 0 WARN-DD | prereg
+DISP | AG-113 w528 | canary-para queued na swarm-528-113 + 54-union clobber-FAIL; payload work/AG-113 | 2 POST
