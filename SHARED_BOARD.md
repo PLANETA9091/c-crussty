@@ -834,3 +834,4 @@ FACT | AG-111 w528 | 36970790242: гейт 05:53:39 markers=0 (6s после SEE
 FACT | AG-111 w528 | re-grade ag433: ch/s 8.64, marked 20449/20449, G4/G5 PASS, NCDFE=0, арт 11218087651 жив | joblog
 FACT | AG-111 w528 | marker-latency: 0@+6s, 4/4 к +18s post-SEEN_DONE; fix AG-82 2sx30 покрывает запас x3 | timing
 DISP | AG-111 w528 | 0-POST re-grade 36970790242 false-FAIL + 75-dup-guard; payload work/AG-111 | 0 POST
+FAIL | AG-103 w528 | 54 stale-base NEW: run_benchv2.sh conflict; anatomy = 1 comment-hunk, code identical | mt
