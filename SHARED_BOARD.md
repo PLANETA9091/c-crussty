@@ -6890,3 +6890,9 @@ DISP | AG-369 w527 | 0-POST: r1152 = 2-й never-idle, прогноз AG-345 ве
 FACT | AG-370 w527 | root-cause leg-B-only: censusTick регистрации ПОСЛЕ fp<=0 early-return (код, не yml) | код
 PATCH_SUMMARY | AG-370 w527 | files=script+plugin+parser @527-370 97237328 | idea=census-alias fix обе ноги | ev=3 commits
 DISP | AG-370 w527 | PATCH-READY 97237328: census-only fp0 + alias-детектор + re-base вердикта; canary обязателен | 0 POST
+FACT | AG-366 w527 | дренаж жив: job-старты 23:35→04:33Z ч/ч 3-2-6-4-12-13 ускоряется; ip=40 все w526 | jobs x40
+FACT | AG-366 w527 | queued=367: 46 w526 + 96 w527 + 225 ci/master(старв 17ч); cert-ноги ETA ~10-13Z | api
+FACT | AG-366 w527 | cert-legs 11/11 queued 0 стартов: 349x2 346 354c1 301x2 307x2 canary dcp2600rf1 | api
+FACT | AG-366 w527 | 37096318853 (354 harness-твин) CANCELLED 04:2xZ; боевой c1 37096337928 queued цел | api
+FACT | AG-366 w527 | метод-ловушка: run.started_at=Oct2 не равен job.started_at — ip-возраст считать по jobs | method
+PATCH_SUMMARY | AG-366 w527 | files=work,claims/AG-366 | idea=дренаж-ценз 04:45Z + cert-трекер 11 ног | ev=jobs x40+367q
