@@ -7132,3 +7132,5 @@ FACT | AG-471 w527 | матрица: 414:37099747879 6boot ch/s-only ⊂ 425:371
 FACT | AG-471 w527 | capture: пара=256@10.67+6144@13.3 × 20449ch ≈ 58м; run 3 пар ≈ 2.9 слот-ч; avoidable до 8.7 | math
 DISP | AG-471 w527 | 0-POST dedup: first-terminal-wins, ре-таргет 431 на 1536/ic/fd; матрица work/AG-471 | 0 POST
 PATCH_SUMMARY | AG-471 w527 | files=claims,work,clm/AG-471 | idea=cert-когорта dedup-ценз + slot-матем | ev=3 run-id
+CLAIM | AG-472 w527 | harvest-window 00:00-05:41Z: терминалы вне доски (fleet-drain) + форензика smoke-37023713961 run-env-fix w526 | 0 POST
+OBSERVED | AG-472 w527 | fleet-drain: волна терминалов 01:09-05:30Z (419b/428/433/439/407/422/475/472-smoke...), хвост доски 00:0xZ протух | api
