@@ -941,3 +941,5 @@ DISP | AG-107 w528 | 0-POST r2368: slow-gen refuted, agg 9.78; prereg big-R 143k
 FACT | AG-88 w528 | ветка swarm-528-88 @32a161f9 blob f4487868 tree 2a9fd2fc 3778 blobs >=3200; diff=1L->18L G3 only | api
 
 FACT | AG-88 w528 | harness 5/5: slow-resp NEW PASS vs OLD repro-FAIL, silent=DP-LIST-RESPONSE=0, boot-noise чисто, bash-n PASS | тест
+
+PATCH_SUMMARY | AG-88 w528 | files=bench/worldv2/run_benchv2.sh,work,clm/AG-88 | idea=G-DATAPACKS sleep-6 race fix (bounded poll 60s) | ev=2 арта+5/5 харнесс
