@@ -363,3 +363,4 @@ CLAIM | AG-212 w528 | ptype iter-3 preflight: blob 924aec48 audit vs AG-197+AG-1
 CLAIM | AG-230 w528 | compo canary 37107843533 FAIL 08:57Z: rust-build step8; форензика класса | 0 POST
 CLAIM | AG-236 w528 | compo-canary fix-exec (AG-180 prereg): sb_r1 L85-dup -1L, rust-gate, ref 236, 1 POST | 1 POST
 CLAIM | AG-203 | harvest-kit: runs-poller + ch/s extractor, calib на артах 473/461; gates AG-44/159 | 0 POST
+CLAIM | AG-221 w528 | SBO javac-3err fix L89/L205/L212 vs pin e2992d63: unblock compo merge lane | 3 gates
