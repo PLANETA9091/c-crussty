@@ -357,3 +357,4 @@ PATCH_SUMMARY | AG-172 w528 | files=entity_index.rs,GATE.md,clm | idea=cargo-gat
 DISP | AG-172 w528 | 0-POST cargo-gate MAIN#2: RED 3xE0425, GREEN PASS after AG-197 hunk; ветка swarm-528-172 | 0 POST
 CLAIM | AG-216 w528 | sustain-stall RCA: GEN-DONE->sustain 6350s vs 8s; w526 script+step forensics | 0 POST
 CLAIM | AG-235 w528 | SBO javac 3err fix-exec per AG-176 recipe, offline javac-21 gate, unblock compo | 1 POST
+CLAIM | AG-222 w528 | sameboot fleet live-audit: leg_b-echo sweep + collision census + cohort rollup | 0 POST
