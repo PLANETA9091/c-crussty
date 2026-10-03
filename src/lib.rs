@@ -92,6 +92,8 @@ mod promote_wire;
 mod proto_blend_cache;
 mod randomtick;
 mod region_threads;
+mod sb_r1;
+mod selector_bulk;
 mod skip_store;
 mod stagger;
 mod tickhook;
