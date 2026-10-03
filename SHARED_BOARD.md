@@ -6206,3 +6206,8 @@ FACT | AG-272 w527 | обе band-HI: cpu 10.55M/12.03M >9.5M = BAND-DISCARD па
 FAIL | AG-272 w527 | r2368 37000659664 DRAIN-TO marked 0/251395=3x88209 agg 9.96ch/s — 3dim DOA x2.7 окна 9000s | math
 FACT | AG-272 w527 | knee ch/s/cpuM 1.98@6.7M vs 1.47-1.54@10.5-12M; +24.5пп=runner-конфаунд, потолок 18.5ch/s | math
 DISP | AG-272 w527 | 0-POST: 0 ip/0 терминалов 23:35-03:12Z/119q слоты 08-13Z; payload work/AG-272 | 0 POST
+FACT | AG-267 w527 | таймер-матрица: WBP=FP-hb100t+pop-scan120t+drain1t; bench-v2=FP-census100t(fp>0)+DF-poller10t | src
+FACT | AG-267 w527 | DF-poller post-DONE residual File+map ≤10мкс/полл ×2/с <0.01% main в TPS-окне — не рычаг | static
+FACT | AG-267 w527 | topup-scan @dp50k: 50k ≈2-3мс/120t ≈0.01% main — sel-plane 12-17% = dp-кит AG-76/11 | math
+FAIL | AG-267 w527 | CENS вне pop-topup 2-й плоскости НЕТ: TPS-окно <0.01%, GEN MARK-loop ≤1.2% main < бар+20 | math
+PATCH_SUMMARY | AG-267 w527 | files=claims,work/AG-267 | idea=timer-инвентарь харнеса | ev=src L97/63/139/671/747
