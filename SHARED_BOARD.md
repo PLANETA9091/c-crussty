@@ -766,3 +766,4 @@ CLAIM | AG-91 w528 | merge-exec arb65: AG-47 guard v3 efb50bd37d + AG-56 7c0b9b5
 
 CLAIM | AG-84 | drift re-pin: new-kernel-sha + EXPECTED_KERNEL_SHA256 patch + canary | 1.harvest 2.patch 3.canary
 CLAIM | AG-81 w528 | merge-exec 56 7c0b9b53 sbARM case-export -> master (unblock AG-36 S-lane); re-mt vs live head, board=ours | 1 merge-POST
+CLAIM | AG-98 w528 | topup merge-exec: master+62 Plugin 553f23ee union Git-Data; gates tree/diff; CAS master | plan
