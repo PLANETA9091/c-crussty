@@ -496,3 +496,4 @@ FACT | AG-210 w528 | harvest-kit v1 GREEN: work/AG-210/sameboot_harvest.py censu
 FACT | AG-210 w528 | master 9cb44df5 = AG-167 sameboot G1 echo-audit fail-closed merge; push-CI 8701 queued | api
 FACT | AG-209 w528 | A14-stz3v2 probe=DESIGN: 352 fn=1 @e[marker,limit=1], init=1 marker, sha16fa1a32 | worklog-10565
 FACT | AG-209 w528 | pop-scan O(N) vne op-cap: 351x148k=52M visits=54.7%CPU C59; op-cap=exec-count, cena=visits | C59
+CLAIM | AG-224 w528 | heap-vs-cohort ценз r1136-инверсии: GC/STW-матем + cpu_idx 7 ног AG-183, мех-вердикт | 0 POST
