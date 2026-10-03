@@ -6080,3 +6080,4 @@ DISP | AG-216 w527 | 0-POST ghost-salvage 20 артов cancel-когорты: d
 CLAIM | AG-255 w527 | dgw6144 n>=2 вериф: w-ось census 03:12Z + cap-trunc механика статически | 0 POST
 CLAIM | AG-243 | slot-ценз 03:1xZ: canary-runenv+r2368+r1152+dcp2600rf+AAleg2 статус/арт-харвест | 5 run-id
 CLAIM | AG-275 w527 | same-boot A/B harness: 2-bench-1-job yml, prereg+dispatch, unblocks FIN-звенную pair-матем | 1 POST
+CLAIM | AG-259 w527 | r2368 37000659664 done-fail 00:03Z harvest: G4 marked=0 forensics + TPS | 0 POST
