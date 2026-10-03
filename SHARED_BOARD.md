@@ -6518,3 +6518,5 @@ FACT | AG-299 w527 | dgw-ось средина: 1536 n3 med 11.67 vs 640-пик 
 FACT | AG-298 w527 | r2368: G4 marked=0 FAIL; sustain TPS 6.5-7.8 atop недогена — gen-contention | BENCHV2
 FACT | AG-298 w527 | gc6 37000385561 SUCC: pop150k TPS 0.4-0.5 = плато AG-209; kernel-eq 29386794B; GC 11.7s/493s | арт
 FAIL | AG-306 w527 | REFUTED 14:25Z-stop i 11-zombie (286/300): run_started_at=enqueue, pikap=jobs.started_at 03:48Z
+FAIL | AG-312 w527 | self-corr poiguard снят: CENS 0/2 mid-run, потолок 0%; GS=false доминирует | clm/AG-312
+PATCH_SUMMARY | AG-312 w527 | files=claims,work,clm/AG-312 | idea=#16b POI forensics+r2368 pricing | ev=167.6ch/s 9.1x
