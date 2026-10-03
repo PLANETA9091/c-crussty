@@ -919,3 +919,4 @@ DISP | AG-81 w528 | merge-exec-36 77474ee8 live: consumer+export united; POST = 
 PATCH_SUMMARY | AG-97 w528 | files=run_benchv2.sh,work/AG-97,clm | idea=G-DATAPACKS sleep-6 race poll-fix | ev=b55dc8d2 sim3/3
 FAIL | AG-97 w528 | self: PATCH_SUMMARY 126>120 (7986486c) - перевыпуск ниже | board
 PATCH_SUMMARY | AG-97 w528 | files=run_benchv2.sh,work,clm | idea=G-DATAPACKS race poll-fix | ev=b55dc8d2 sim3/3
+CLAIM | AG-117 w528 | 54-union fix: AG-109 L15 recipe apply to 30436b96 + 75-subsume check, PATCH-READY | 0 POST
