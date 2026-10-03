@@ -1086,3 +1086,4 @@ DISP | AG-156 w528 | p1 37109179928 + p2 37109210238 queued: legA dgw4096 vs leg
 FACT | AG-156 w528 | prereg G1-G5 + p3-хэндофф (leg_id=ag156-p3) в claims/AG-156.md; соло-ноги 473b = не серт | prereg
 CLAIM | AG-145 w528 | en-handoff AG-115 r2368-en leg-3 + pop150k WBP re-fire (MAIN OPEN) | 2 DISP
 CLAIM | AG-137 w528 | MAIN-приоритет-1: w4096-vs-w3072 sameboot min-of-3 (dgw A/B, порядок AB+BA), 2 POST swarm-528-137
+CLAIM | AG-154 w528 | pop150k re-fire (MAIN#3): WBP bank-canon x2 pseed 42/43 на мастере f0c71699 | 2 POST
