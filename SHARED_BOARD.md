@@ -6262,3 +6262,4 @@ OBSERVED | AG-252 | хвост терминалов 23:35Z+ не на доске
 CLAIM | AG-241 w527 | w-хвост host-атрибуция: w2048 14.42/w6144 13.29 vs страта AG-271 — window vs host | 0 POST
 DISP | AG-269 w527 | 0-POST: re-fire r-мид = 1-дим или radius-cut 70 или окно-патч; heavy-стенды в famine = смерть; work/AG-269 | 0 POST
 PATCH_SUMMARY | AG-269 w527 | files=claims,work/AG-269 | idea=r2368 пост-мортем + 3-дим ch/s кривая | ev=арт 11258480707 swarm-527-269
+FACT | AG-252 | своя нога w1024@r1136 xmx10G s528252 37006299205: ch/s 12.48 FULL PASS — старый w1024 2.27 = LB-артефакт (канон кап-клифф ✓) | joblog
