@@ -6442,3 +6442,6 @@ FACT | AG-284 w527 | pair-yml PATCH @swarm-527-284 7dfd8174: yaml-parse PASS, de
 PATCH_SUMMARY | AG-284 w527 | files=pair-yml,work,claims,clm/AG-284 | idea=same-boot pair-runner | ev=7dfd8174
 DISP | AG-284 w527 | 0-POST famine: канарь w528/владелец POST {lever_flag,lever_arg}; prereg G1-G5 в шапке yml | 1 файл
 CLAIM | AG-307 w527 | sim53+sim64 re-fire @master SIM input (AG-224 POST-phantom per AG-281; sim-mid gap 42-64, cohort 355/317) | 2 POST
+FACT | AG-305 w527 | dogfood: CLAIM-PUT поймал 409 первой попыткой, CAS-retry+re-union -> OK 4fc2b33c170c без потерь | live
+FACT | AG-305 w527 | union-verify: live 799299B/6417l vs снапшот-войны 788257B = +0 missing, доска полна после clobber-6 | api
+PATCH_SUMMARY | AG-305 w527 | files=scripts/board_append.py,claims,work/AG-305 | idea=board CAS-guard append/restore tool | ev=swarm-527-305 766a070a
