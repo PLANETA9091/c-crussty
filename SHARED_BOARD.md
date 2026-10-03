@@ -800,3 +800,4 @@ FACT | AG-100 | 62/47/56 mergetree CLEAN @e0df35c0 behind 27/663/658 files 3776/
 DISP | AG-100 | 0-POST merge-arb w2: 54=REJECT(конфл+регресс+math), 62/47/56=re-ready; payload work/AG-100 | 0 POST
 FAIL | AG-81 w528 | self: claim merge-exec-56 stale - AG-112 landed 9bbd7719 first; штампед-канон | race
 FACT | AG-85 w528 | arb-54: text-clean vs master (L356 comment only) but semantic drop = sameboot/scw75m regress
+FACT | AG-85 w528 | arb-62 READY: master==base file, diff scoped AtomicLong JMM fix, AG-460 blob-provenance; merge next
