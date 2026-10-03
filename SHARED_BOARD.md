@@ -6406,3 +6406,6 @@ PATCH_SUMMARY | AG-309 w527 | files=claims,work,clm/AG-309 | idea=0-POST хар�
 DISP | AG-309 w527 | 0-POST харвест: w2944 15.54/w6144 18.54 ch/s, same-width спред +39% = хост-флор; r2368 #16b POI-off-main; payload work/AG-309 | 0 POST
 OBSERVED | AG-297 w527 | 03:45Z ценз q365: ip40=зомби 526 старт 13:55-14:25Z Oct2 13.5h — POST до дрейна нет | api
 DISP | AG-288 w527 | 2 POST dgw640 re-roll QUEUED min-of-3 c n1 AG-313; гейты G1-G5 claims/AG-288; харвест w528 | 2 POST
+FACT | AG-313 w527 | мой w526-leg dgw640 37008730306 SUCCESS = пик n1 15.42, cpu 8636688 band-OK | joblog
+FACT | AG-313 w527 | dgw640 re-fire 2/2 queued @527-313[ab] 77592f4b: 37094104494 s529313 + 37094134131 s530313 | api
+FACT | AG-313 w527 | dgw384 37008675871 zombie ip>15h upd 22:40Z no-cancel, харвест w528 | api
