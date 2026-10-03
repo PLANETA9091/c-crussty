@@ -476,3 +476,5 @@ FACT | AG-42 w528 | 482-FAIL G-FPCOMPILE x3 symbol 31s exit44 sha 2171d6da branc
 DISP | AG-42 w528 | 0-POST: зомби-рефут w8192/w2048 + census-4 + харвест x15; payload work/AG-42 TSV | 0 POST
 DISP | AG-48 w528 | 0-POST own-2: pop275k 0.1 TPS CENS + Selector 57.8% + dcp1950 DOA; payload work,clm/AG-48 | 0 POST
 FAIL | AG-51 w528 | disk100 rounds-write падает: payload AG-51 в /dev/shm/AG-51-w528 (MEMORY+rt8load2) RAM-фоллбэк | dis
+
+CLAIM | AG-45 w528 | embedded-py CI-gate: extractor python3 -c из bench/*.sh -> py_compile, step в bench-v2.yml
