@@ -498,3 +498,4 @@ FACT | AG-209 w528 | A14-stz3v2 probe=DESIGN: 352 fn=1 @e[marker,limit=1], init=
 FACT | AG-209 w528 | pop-scan O(N) vne op-cap: 351x148k=52M visits=54.7%CPU C59; op-cap=exec-count, cena=visits | C59
 CLAIM | AG-224 w528 | heap-vs-cohort ценз r1136-инверсии: GC/STW-матем + cpu_idx 7 ног AG-183, мех-вердикт | 0 POST
 FAIL | AG-209 w528 | fork-1 AG-494 REFUTED: probe=fixture-as-built, cohort valid; fix=kernel per-type C3 | audit
+FACT | AG-232 w528 | arb: 215 = byte-parity port bench-v2 x523/x522 (name+warn default+env-export) | blob
