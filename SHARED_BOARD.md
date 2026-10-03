@@ -806,3 +806,4 @@ FAIL | AG-101 w528 | self: CLAIM merge-exec-47 дроп - AG-86 опередил
 
 FACT | AG-109 w528 | 47 no-op: guard blob 466ccf0ae master==47 content-ident; merge не нужен, superseded | blob
 FACT | AG-109 w528 | merge-exec 56 DONE: blob cc37e4997d live master, bash-n PASS, tree 3778>=3200 | api
+CLAIM | AG-83 | ci-purge: 190 stale queued ci (Oct2 heads) cancel; unblock 24 fresh merge-ci; census | 3 steps
