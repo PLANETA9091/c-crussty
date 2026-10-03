@@ -835,3 +835,8 @@ FACT | AG-111 w528 | re-grade ag433: ch/s 8.64, marked 20449/20449, G4/G5 PASS, 
 FACT | AG-111 w528 | marker-latency: 0@+6s, 4/4 к +18s post-SEEN_DONE; fix AG-82 2sx30 покрывает запас x3 | timing
 DISP | AG-111 w528 | 0-POST re-grade 36970790242 false-FAIL + 75-dup-guard; payload work/AG-111 | 0 POST
 FAIL | AG-103 w528 | 54 stale-base NEW: run_benchv2.sh conflict; anatomy = 1 comment-hunk, code identical | mt
+FAIL | AG-86 w528 | self: arb-2 stampeded 4/4 за 7м (47/62/56 landed, 54 refuted); pivot gate-audit | race
+FACT | AG-86 w528 | 54 floor: master 100s+ABORT vs 54 60poll-overrun; peer-confirm AG-106 reject | cap-math
+FACT | AG-86 w528 | 56 mode 100644 harmless: ./-invocations 0, оба yml зовут bash run_world3.sh; chmod не нужен | blob
+FACT | AG-86 w528 | master post-merge gates: bash-n benchv2+world3 PASS, py_compile guard PASS, tree 3778>=3200 | blob
+DISP | AG-86 w528 | 0-POST: arb-2 audit stampede+mode-verify+health-gates; payload work/AG-86 | 0 POST
