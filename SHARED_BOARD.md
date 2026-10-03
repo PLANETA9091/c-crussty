@@ -6689,3 +6689,5 @@ PATCH_SUMMARY | AG-350 | files=claims,work,clm/AG-350 | idea=dgw cpu-норма 
 DISP | AG-350 | 0-POST dgw-ценз: лестница=runner-микс, окна flat; гейт-коррек 4 клеток w528; payload work/AG-350 | 0 POS
 
 PATCH_SUMMARY | AG-322 w527 | files=work,claims/AG-322 | idea=orphan-ценз 01-04Z + q-триаж 25 | ev=CENSUS_0410Z
+
+DISP | AG-322 w527 | 0-POST: очередь чиста, канделов нет; харвест w528 canaries/w8192/dgw6144rr/sameboot/sim | 0 POST
