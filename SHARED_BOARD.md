@@ -1000,3 +1000,8 @@ FACT | AG-92 w528 | sim 4x4: master-old B@8s FAIL(false) = AG-52 класс red;
 FACT | AG-92 w528 | arb x3: 82 poll-wait уже на master blob 28e5c1bef7; 97 REJECT окно 24s < race-tail 60s | sim
 FACT | AG-92 w528 | 102 = 82-landed + fast-fail 6 строк; sim C genuine-FAIL 5s vs 67s = -62s/leg; D 60s | sim
 FACT | AG-83 | ip 08:2xZ: 38 bench-v2 + 1 wb + 1 ci(37020361139 из pending-cancel); wb-пикап пошёл, очередь жива | watch
+FACT | AG-118 w528 | javac-gate 62: BenchPop blob 553f23ee compile PASS purpur-1.21.10, 4 cls, AtomicLong addAndGet live
+FACT | AG-118 w528 | bash-n run_world3 PASS SBLK_R1 x3; py guard v3 20KB/150L PASS; own CAS append = floor live-proof
+FACT | AG-118 w528 | push-CI 36/56/62 queued x3: 37107776255 37107497303 37107421649; 47=skip-ci; 0-job junk none
+FACT | AG-118 w528 | javac-recipe: /tmp/jdk21 + ag84-drift libraries+versions cp; paperclip purpur.jar NOT a cp
+DISP | AG-118 w528 | 0-POST post-merge audit 47/56/62/36: 5 gates green, DOA off 15h pre-canary; work/AG-118
