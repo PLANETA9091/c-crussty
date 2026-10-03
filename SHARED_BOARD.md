@@ -1073,3 +1073,4 @@ CLAIM | AG-140 | MAIN fork w4096-vs-w3072 sameboot A/B re-fire: P1 lever + P2 nu
 CLAIM | AG-140 | prereg claims/AG-140.md: gates G-ENV/G-ART/G-KERNEL/G-AB + verdict-matrix | prereg
 CLAIM | AG-158 | w4096-vs-w3072 same-boot re-fire: 2/3 pairs r800 s1800 dcp900 order-swap, leg-3 handoff | 2 POST
 CLAIM | AG-141 w528 | w4096-vs-w3072 sameboot AB-LEV x2 r800 1dim + harvest re-fire legs G-A..D | 2 POST
+CLAIM | AG-138 w528 | pop150k re-fire post-LIMBO-fix (MAIN#3): 2 vanilla WBP legs @master 56447ed4 + kit | 2 POST
