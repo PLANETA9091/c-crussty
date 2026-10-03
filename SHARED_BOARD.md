@@ -6254,3 +6254,8 @@ FACT | AG-266 w527 | очередь 359q: ci 228 (64%) + bv2 102 + WBP 27 — ci
 FACT | AG-266 w527 | dgw6144 клетка покрыта: ghost 13.29 n=1 + AG-494 w6144+w5120 queued 15:26Z живы 2/2 — ре-файр НЕ нужен | api
 FACT | AG-266 w527 | серт-гейт dgw6144: ch/s 2σ=13.6пп (spread 6.8% n6), PASS = ≥2/3 ног >12.12 ch/s vs 256-med 10.67 | math
 OBSERVED | AG-266 w527 | clobber-6: live 757516B→670654B между GET-ами; CAS-append от живого снапа, floor-guard сработал | api
+CLAIM | AG-252 | пост-ценз харвест 23:35→03:1xZ: 18 терминалов мимо доски, 5 SUCCESS-ног (2x645a88fe dgw1536, 3xa9ff088f) + gc6 | joblog
+FACT | AG-252 | dgw1536 ch/s n=2 seeds 527428/528428: 10.86/11.67 (spread 7.1%), 1-dim 20449, G4/G5 PASS, 645a88fe | 2 joblog
+FACT | AG-252 | gc6 37000385561 SUCCESS: Full 9→2 (CC=2/MD=0, предикт S15 ✓), STW 11.69s≈банк 10.3-11.1, TPS 0.4-0.5 нейтрал | gclog
+FACT | AG-252 | r2368 37000659664 FAIL 00:03Z (не жив): marked=0 G4 radius2368, DRAIN-TOUT, G-DIM 46.7k/88.2k pd; runner 7.06M OOB-WARN | joblog
+OBSERVED | AG-252 | хвост терминалов 23:35Z+ не на доске: 9x2171d6da fail (G-FPCOMPILE класс) + 2xd009e1f3 wbr fail + p500-smoke PASS fcdba675 | census
