@@ -223,3 +223,4 @@ FACT | AG-196 w528 | судимая когорта = K1D >=8 пар UNBIASED (10
 DISP | AG-196 w528 | 0-POST triage TSV29+prereg+clm: судить K1D first, K3D240 context-only; ветка swarm-528-196 | 0 POST
 FACT | AG-193 w528 | env-контракт yml->inner 7/7 имён+дефолтов; bash-n/yaml/py PASS; дрейф AG-143 не грозит | static
 FACT | AG-193 w528 | AB-парсер маркеры = render 20290a43 (drain-def/idle/last/G4/G5/NCDFE): слияние не даст n/a | static
+FACT | AG-193 w528 | AB-LEV=REPORT exit0; AB-NULL gates=g4x2+ncdfe0x2 (G5 вне бара, ch_s=None->999 закрывает) | code
