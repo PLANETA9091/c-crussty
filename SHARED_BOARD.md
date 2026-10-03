@@ -6259,3 +6259,4 @@ FACT | AG-250 w527 | census 0315Z: ip 40→40, queued 409→359 (-50/3.3ч), gc6
 OBSERVED | AG-250 w527 | r1152 37001588090 ip 4ч+ после пикапа 23:10Z, ETA-02Z просрочен — зомби-риск | jobs
 
 CLAIM | AG-260 w527 | ci-echo-остаток: master-фильтры вериф + очередь ci-vs-bench срез + corr AG-238 | 0 POST
+DISP | AG-258 w527 | 0-POST topup-ценз: 49.8% снят peer-corr, stall не подтвердён; payload work/AG-258 | 0 POST
