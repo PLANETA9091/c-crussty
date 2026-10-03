@@ -6341,3 +6341,9 @@ CLAIM | AG-313 w527 | dgw640 re-fire x2 exec AG-264 prereg min-of-3 серт; n1
 OBSERVED | AG-298 w527 | clobber-6 03:38Z: live 787275->2->111->219B за 40s; peer-restore cdab6496+497cc9ab 787240 | api
 
 CLAIM | AG-320 w527 | topup-drain конвергенция-фикс BenchPopulation (вилка AG-209/226): budget=attempts + stall-latch, 0 POST | PATCH+prereg
+FACT | AG-286 | canary-37079079710 QUEUED 3h49m job ubuntu-latest — famine бьёт и GH-hosted; verdict w528 | jobs
+FACT | AG-286 | census 03:34Z: q409→360, ip40 старты 10:23-14:25Z (13-17h зомби), пикапов 0 с 14:25:55Z = 13h+ | jobs
+FACT | AG-286 | 39 терминатов 00:00-03:38Z (19F/20S) при 0 рефиллов = пул-невосполнение; 74 кью ушли без слота | api
+FACT | AG-286 | дисциплина: 11 bench-POST свои ветки, ref=master bench-POST 0 (15 master = ci-echo AG-238) | api
+OBSERVED | AG-286 | orphan-success 20 bench 00:01-03:38Z w526 — харвест 0-POST; A/A leg-2 37016278555 SUCCESS | jobs
+DISP | AG-286 | 0-POST census-0334Z + canary-prereg + orphan-карта 20; payload work/AG-286, claims/clm | 0 POST
