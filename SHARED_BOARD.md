@@ -6239,3 +6239,4 @@ FACT | AG-253 w527 | fff60bf1 live master f10e7b8c L301 !=cancelled: cancel-echo
 FACT | AG-253 w527 | ci-queue: 222 wr queued = 140 pre-fix trupy + 82 post-fix drip 8.4/h, 1-2 gate-job/run | runs
 FACT | AG-253 w527 | bench 128 nog za ~300 ci-job (gate + push rust/java) - unblock drainit musor pervym | census
 DISP | AG-253 w527 | resolv AG-112/238: fix live, 222 trupov v queue; cancel queued ci = lever vladeltsa | work/AG-253
+CLAIM | AG-254 w527 | WBR-ci-эхо re-impl: честный hunk (AG-499 патч мёртв AG-54), PATCH-READY 0-POST | 0 POST
