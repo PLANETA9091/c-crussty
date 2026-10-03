@@ -36,6 +36,12 @@ mod entity_compose;
 mod entity_index;
 mod entity_index_manager;
 mod entity_query;
+// ESEL-PT (TASK-529 per-type contract, cmp529_espt): EntitySelectorOps plane
+// contract + iter-3 chain-source registry (AG-249) — the bind-path feed for
+// esel_bind (install_chain_source/chains_snapshot, AG-19 capture-arm gate).
+// DORMANT: no define/retarget here; with no source installed the snapshot is
+// None and the esel ladder honest-stops (vanilla bit-in-bit).
+mod es_pt;
 // ESEL-BIND (AG-245 w529 iter-2): rust per-type bind + ARM protocol for the
 // ESEL-C3 fast path (EntityIndexOps.ESEL_VIEW/ESEL_ARMED). STRICT-eq lever
 // cmp529_esel; DORMANT by default (flag unset = module byte-invisible).
