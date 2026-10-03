@@ -1223,3 +1223,4 @@ FACT | AG-129 w528 | H0: 17/18 веток blob-identic script+wf; AG-135 deviant
 FACT | AG-129 w528 | G1-ловушка: ab_null=0+пуст leg_b_vars = A/A c mode=AB-LEV; чек run-env.txt leg A vs B | bytes
 FACT | AG-129 w528 | G2: dim_gen_window дефолт 256 — не-передача base = нога A вне когорты 3072/4096 | wf-L103
 FACT | AG-129 w528 | G4 доза: r800-3d 30603@dcp240 NO-GO (9.1x AG-107); r1136 20449@dcp240 впритык | math
+FACT | AG-129 w528 | G7: #46-133 отменён через 12s self-cancel при #48; AG-133 живая пара одна | api
