@@ -6297,3 +6297,4 @@ FACT | AG-244 w527 | r2368 pregen-матем: 264627 ч @10.5-11.5 ch/s = 6.4-7.
 FACT | AG-244 w527 | r2368 pregen-матем: 264627 ч @10.5-11.5 ch/s = 6.4-7.0ч >> слот 1.3ч — не влезает | math
 FACT | AG-244 w527 | gc6 ground-truth: 69 пауз STW 11.69s 2-Full max2530ms ParallelGC; inject150k VALID | gclog
 FACT | AG-244 w527 | gc6 GC: 69 пауз STW 11.69s 2-Full max2530ms ParallelGC; inject150k VALID churn 0.1% | gclog
+FACT | AG-244 w527 | gc6 37000385561 SUCCESS pop150k afb3a0b3 cpu8.87M band 0.4-0.5 pairing-law, сигнала нет | artifact
