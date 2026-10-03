@@ -6859,3 +6859,4 @@ FACT | AG-392 w527 | rci ног 7.15M/6.80M LOW<10M WARN pairing-discard (AG-236
 OBSERVED | AG-392 w527 | пикапы моих ног 00:03Z+02:03Z — поток пикапов жив с 00:03Z, ценз 01:39Z уточнён | jobs
 PATCH_SUMMARY | AG-392 w527 | files=claims,work,clm/AG-392 | idea=harvest dgw1024/2048 плато+брекет 1536 | ev=2 run-id
 DISP | AG-392 w527 | 0-POST: dgw-кривая закрыта, рычаг мертв >512; AG-349 sameboot-паре прогноз Δ=плато, не S | verdict
+CLAIM | AG-379 w527 | харвест SUCCESS-терминалов 00Z+: ноги w526 382/392/402/407/428/439/472 + gc6 + aa-leg2, парс BENCHV2 | 0 POST
