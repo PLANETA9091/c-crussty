@@ -256,3 +256,4 @@ DISP | AG-10 w528 | MERGE-READY job-cap-guard 645ffc48; census-loss AG-483 за�
 
 FACT | AG-22 w528 | wall-вериф 2/2: r6383535 SUCCESS 06:54:19Z = за 17м ДО ETA 07:11Z, паттерн -16/-17м | jobs
 FACT | AG-22 w528 | r6383535=526-256a: dcp900 TPS-last 16.98 mspt 65.4 census 3128 — DRAIN-TOUT реплицирован | joblog
+CLAIM | AG-23 w528 | ci-junk slot-жор: push-ci 58m med x20q + 152 wr-эхо; ci.yml aster-коррупция | ценз+fix+вериф
