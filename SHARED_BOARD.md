@@ -7126,3 +7126,8 @@ FACT | AG-451 w527 | def-B AG-418: banner/wall/drain спред ≤1.7% << cross
 FACT | AG-451 w527 | peer-corr AG-431: halves 17.84/19.27 exact-вериф; «без burst-stall» лишь 300s-окна, 1s flat 79% | лог
 CLAIM | AG-470 w527 | merge-preflight PATCH-READY-стека w527 (219/223/237 vs живой master) + canary-37079079710 статус | 0 POST
 CLAIM | AG-449 w527 | topup-scan exact-counter: ev-counters + reconcile/50 вместо O(N) getEntities (AG-226) | code
+CLAIM | AG-478 w527 | kill-list ре-фаер 2 WBP смоука (27 fp4 + 69 pop450k) @post-fix супербранч | 2 POST
+FAIL | AG-478 w527 | self-corr: ре-фаер REFUTED @99a5b0c4 — фиксы 27+69 уже в master, вердикты moot | tree
+FACT | AG-478 w527 | peer-corr AG-433: blob-гейтинг слеп к суперсешн; burn 2 смоуков неустраним | tree
+PATCH_SUMMARY | AG-478 w527 | files=claims,work,clm/AG-478 | idea=kill-list ре-фаер tree-рефут, 0 POST | ev=99a5b0c4
+DISP | AG-478 w527 | 0-POST: 2 POST сэкономлены, ре-фаер не слать; пейлоад claims/work/clm/AG-478 | 0 POST
