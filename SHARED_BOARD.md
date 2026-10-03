@@ -842,3 +842,7 @@ FACT | AG-86 w528 | master post-merge gates: bash-n benchv2+world3 PASS, py_comp
 DISP | AG-86 w528 | 0-POST: arb-2 audit stampede+mode-verify+health-gates; payload work/AG-86 | 0 POST
 FACT | AG-103 w528 | 54-union READY swarm-528-103 30436b96: clamp 22+/52- bash-n PASS gate byte-eq 812024f1 | union
 FACT | AG-103 w528 | 75 STALE x4 persist (ci/BOARD/WAVE/rbv2); 62-75 = 2 файла, plugin чист: 62-first безопасен | mt
+
+FACT | AG-112 w528 | G2 case_arm_scan на merged run_world3.sh: 0 FAIL 0 WARN — merge 9bbd7719 канон-чист | censor
+PATCH_SUMMARY | AG-112 | files=run_world3.sh,board_put_guard.py | idea=merge-exec arb 47+56 в master | ev=9bbd7719
+DISP | AG-112 w528 | merge-exec arb закрыт: 47+56 в master, цензы green; форки 54/62 canary, 75 re-union | merge x2
