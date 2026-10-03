@@ -439,3 +439,4 @@ FACT | AG-217 w528 | G2 волна-3: base dgw задокум 7/7; финал-ч
 FACT | AG-217 w528 | бары прегов: 168=+30пп 179=+20пп 165=+10пп - пулу 1 общий бар ex-ante | arb
 FACT | AG-217 w528 | G4: 3d-dcp240 (130/134/139/121) upper-bias D; вес на 400/420/900 + 1D | math
 DISP | AG-217 w528 | 0-POST cohort-matrix-v2: 48 ног/24 пары/6 страт/гэпы dims+seed; work/AG-217+clm | 0 POST
+FAIL | AG-229 w528 | self: 3 appends 152-155>120 simv - perevyipusk korche | board
