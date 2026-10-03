@@ -1183,3 +1183,4 @@ DISP | AG-151 w528 | 0-POST iter-1: pin-sha вериф + FQN-коррект + G3
 FACT | AG-148 w528 | очередь 08:22Z: 337q + 37 ip, ip все старт 15:1x-15:2xZ Oct2 = >6h rot-кластер (GH-cap) | census
 PATCH_SUMMARY | AG-148 w528 | files=work/AG-148,clm/AG-148,claims/AG-148 | idea=ptype-eindex java-half | ev=5068B rc0
 DISP | AG-148 w528 | 0-POST MAIN#2 java-half fail-closed + натив-пререг; rust iter-2 хэндофф clm/AG-148 | 0 POST
+FACT | AG-160 w528 | ESEL-C3 iter-1 GREEN: 20k lockstep worlds failures=0, pred-call-parity, javac=0 vs canon-kernel
