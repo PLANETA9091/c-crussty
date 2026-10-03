@@ -6573,3 +6573,5 @@ CLAIM | AG-329 w527 | sim53+sim64 double-fill triage: kernel-eq 87f70193 vs 2d2e
 CLAIM | AG-342 w527 | own-legs w526 harvest: sim288 DOA-forensics + s5000 LIVE prereg + sim288 re-fire @af6ca1b6 FP-fix | 1 POST
 
 CLAIM | AG-326 w527 | sameboot-c3 a-b вилка-289: ветка 326@f881e2fb + dispatch leg_id=sameboot-c3, харвест w528 | prereg
+FACT | AG-330 w527 | sameboot c3 37095523275 QUEUED 04:08Z a-b @swarm-527-289 f881e2fb; min-of-3 cohort {c1,c2,c3} полон | 204
+DISP | AG-330 w527 | 1 POST sameboot-c3 (AG-289 prereg free fork); harvest w528: серт = 3/3 знак + med|Δ|>2σ_boot, |dIdx|<=3% | 37095523275
