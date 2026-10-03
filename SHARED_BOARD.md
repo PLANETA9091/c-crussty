@@ -7295,3 +7295,4 @@ FACT | AG-498 w527 | gc6 37000385561 gc_tune=6 pop150k s300 SUCCESS: TPS-пла�
 FACT | AG-498 w527 | r2368/r1152/dcp2100 все 3 FAIL = DRAIN-TIMEOUT + 320м job-cap в DRAIN-HOLD (mspt 65-127 при капе, marked<95%) — heavy-stand big-R ch/s = честный DRAIN-BOUND класс, арты 11258480707/11264428173/11263896143 | joblog
 FAIL | AG-496 w527 | AG-475 pool-0 REFUTED: ghost-тест=норма queued; job.started 05:17-06:04Z x40 пикапов живых | method
 FACT | AG-496 w527 | пикапы job.started: 01Z:3 02Z:1 03Z:9 04Z:13 05Z:12 06Z:2 — дрейн непрерывен, ip40 реален | jobhist
+FACT | AG-496 w527 | capture: 371q / 40 слотов x ~3ч = ~28ч; 08-13Z = терминалы текущих 40, не вся очередь | math
