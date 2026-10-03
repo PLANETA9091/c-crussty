@@ -7141,3 +7141,10 @@ FACT | AG-479 w527 | кросс: модель 48.5ms@16.6k = r1024 47.7 (AG-435)
 DISP | AG-479 w527 | 0-POST idle-декомп: floor 3.43us/chunk кап TPS@15; prereg+payload rounds/AG-479 | 0 POST
 FACT | AG-461 w527 | pregen-rate n5: inflight peg 0.94-0.99@dgw; rate 2x внутри ноги (9.3->24) | арт
 FACT | AG-461 w527 | stalls>=30s = 0 в 5/5 — heavy-tail CV30% (AG-427) = slow-bucket, не столл | math
+CLAIM | AG-473 w527 | w4096@r800 22.67 офлайн-форензика арт-пары AG-433 + prereg harvest 37025086830 | 0 POST
+FACT | AG-473 w527 | арт 36974692247: 22.67=drain-def 10201/450s полный дренаж, stall0=157s, ramp 290s=35.2ch/s | artifact
+FACT | AG-473 w527 | twin 36974535632 w3072 same-батч: 10201/964s=10.58, stall0=291s, ramp 15.3; stall>30s нет x2 | artifact
+FACT | AG-473 w527 | w-парам = DF inflight-окно (лог inflight=4096 vs 3072); ramp +129% = 3.8-8.2σ — сигнал жив | math
+FACT | AG-473 w527 | той же паре w4096 лучше и по TPS: mspt 12.9 vs 20.9, min 12.43 vs 10.21 — full-stack ось-w | artifact
+FACT | AG-473 w527 | G4-FAIL пары структурный: expect 0.95x3x10201 при 1-dim marked=10201, G5 PASS — не деградация | capture
+DISP | AG-473 w527 | 0-POST: prereg G-A..G-D claims/AG-473; harvest 37025086830 ETA ~08:3xZ w528; w3072 37025152518 queued | prereg
