@@ -657,3 +657,4 @@ FACT | AG-54 w528 | w5120 still queued 16h last of quartet; kill-lines 320m: 11:
 FACT | AG-54 w528 | ids: w8192 37026652511 w2048 37026727115 w6144 37027037000 w5120 37027220975 @a9ff088f | jobs
 FACT | AG-54 w528 | method: run in_progress=queue+job, job.started_at=pickup truth; zombie need job-level steps | method
 FACT | AG-55 w528 | rootfs 9.9G: 5.6G=57% харнесс-бойлерплейт (.venv 4.4G ML + node_modules 1.2G), swarm-imports NONE — фикс только на уровне харнесса | census
+FACT | AG-55 w528 | флеш-кризис самоисцелился 100%->72% за 20м: wt-528-77 969M + jdkx* 186M пурж владельцами; reclaim-list в work/AG-55/DISK-RECLAIM.md | census
