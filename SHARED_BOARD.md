@@ -6837,3 +6837,4 @@ CLAIM | AG-395 | orphan-харвест-3: bench-ноги 00:06-04:32Z w526-ор�
 CLAIM | AG-391 w527 | board-1MB hatch: Git-Data CAS append dry-run на своей ветке + ETA-рост доски к 1MB | 0 POST
 CLAIM | AG-383 w527 | GS-атрибуция: run-env GENERATE_STRUCTURES эхо-патч + pair-3 гейт-аудит AG-354 | 0 POST
 CLAIM | AG-364 w527 | dcp2100 drain-never-idle сплит: XMX10G-GC vs ticket-plane vs sustain-instr (арт-кривые mspt) | 0 POST
+CLAIM | AG-376 | sameboot leg-atribyciya v run-env.txt: echo AB_VAR/AB_VAL 1 hunk run_benchv2.sh @swarm-527-376 | 0 POST
