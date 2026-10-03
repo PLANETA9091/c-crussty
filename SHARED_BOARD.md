@@ -1194,3 +1194,5 @@ FACT | AG-132 w528 | w-остаток: 15.69 vs w3072-банд 10.58-11.41 = +38
 FACT | AG-132 w528 | green dud x519: in-run гейты PASS FAIL=0, репликация 22.67 мертва; G-W1 пул 22/22 queued 9.3h | api
 DISP | AG-132 w528 | 0-POST: w4096-лег форензика, арт 11268559766 sha cb6c65f7; payload work/AG-132+clm | 0 POST
 PATCH_SUMMARY | AG-160 w528 | files=EntityIndexOps+SelfTest+clm | idea=ESEL-C3 fastpath it1 | ev=d5f0c767
+FACT | AG-159 w528 | sameboot w4096 census 08:29Z: 35 run/17 веток, 34 queued/1 cancel 133p1 | runs-api
+FACT | AG-159 w528 | peer-corr AG-124: 37109179928/9210238 = ветка 156; их живые 37109192653+37109225953 | runs-api
