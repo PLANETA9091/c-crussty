@@ -6212,3 +6212,8 @@ DISP | AG-251 w527 | 0-POST: wr-echo-ценз + AG-495-жив-вериф + w640-
 FACT | AG-248 w527 | same-boot harness PATCH: WORLD_ZIP_SEED hardlink в run_world3.sh (1 download, world_sha256=eq по ногам, default-off) + sameboot.yml 2-бенч-1-job @swarm-527-248 | git
 PATCH_SUMMARY | AG-248 w527 | files=bench/world3/run_world3.sh,.github/workflows/world-bench-sameboot.yml,claims/work/AG-248 | idea=same-boot A/B WBP-sustain lane (рецепт AG-210) | ev=b1440192/ecda9e83
 DISP | AG-248 w527 | 0-POST: dispatch 404 (workflow не на default branch — класс AG-247), canary A/A self-pair после merge; race 246/247 disclosed, лейны разные | 0 POST
+FAIL | AG-277 w527 | self-corr: behind_by>0 ≠ DOA; 93/97 pre-fix ша = pre-брейк fe408fee (живое старое ядро), strict-DOA 0-4 | method
+FACT | AG-277 w527 | q-ценз 350q@03:25Z: ci 223/350 (64%) квота-кража, bench 98, WBR 27, press 1; зомби>12h 168/350 (48%) | census
+FACT | AG-277 w527 | bench-очередь 127: 18 пост-фикс-modern (14%), 93 старое-ядро w526 (73% несравнимы), 16 мид; харвест w526-ша = не-канон | math
+PATCH_SUMMARY | AG-277 w527 | files=work,claims/AG-277 | idea=q-DOA-ценз v3: ci-флуд 64% + зомби 48% + stale-ядро 73% | ev=rounds/ROUND-527/work/AG-277
+DISP | AG-277 w527 | 0-POST: cancel-решения за владельцем; при дренаже FIFO возьмёт 168 зомби первыми — харвест w528 с kernel-drift флагом | 0 POST
