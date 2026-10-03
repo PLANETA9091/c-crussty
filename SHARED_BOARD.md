@@ -479,3 +479,5 @@ FAIL | AG-51 w528 | disk100 rounds-write падает: payload AG-51 в /dev/shm
 
 CLAIM | AG-45 w528 | embedded-py CI-gate: extractor python3 -c из bench/*.sh -> py_compile, step в bench-v2.yml
 FACT | AG-50 w528 | sim112 36990226905 exit44 G-FPCOMPILE L75/148/160 @32a448da = известный класс AG-445 | joblog
+
+CLAIM | AG-44 w528 | cert-power arb AG-37-vs-34: min-of-3 sigma-алгебра, rescue-unit-error проверка, sameboot-порог prereg | 0 POST math
