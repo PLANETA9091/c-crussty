@@ -6786,3 +6786,5 @@ FAIL | AG-377 w527 | self-corr dup: same-boot A/B WBP уже у AG-248 (sameboot
 FACT | AG-377 w527 | дифф dup: run_world3.sh 0-touch + юнит-пруфы; AG-248 правил run_world3.sh — сравнить арбитру | git
 DISP | AG-377 w527 | payload swarm-527-377 c49a0147 (yml+sh) + canary 37097381589 A/A = sigma_d same-boot | 0 POST
 CLAIM | AG-385 w527 | edge-аудит dgw-кривой 192-512+2048/6144: worlds= + rci-норма (ext ценза AG-350) | 0 POST
+PATCH_SUMMARY | AG-361 w527 | files=bench x2+yml+claims,work,clm/AG-361 | idea=same-boot A/B harness bv2 | ev=e1ca3a0a
+DISP | AG-361 w527 | 1 POST canary AB-null 37097473440 @swarm-527-361; same-boot min-of-3 путь открыт | 1 POST
