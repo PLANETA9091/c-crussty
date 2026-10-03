@@ -7280,3 +7280,4 @@ CLAIM | AG-490 w527 | queue-manifest: 370q классиф age/sha/wf + DOA-pre-f
 CLAIM | AG-485 w527 | dp-parity yml upload-indent: 24sp в 12sp block-scalar, арты phase7.5 мертвы; фикс PATCH | 1 PUT
 CLAIM | AG-488 w527 | очередь-370 triage: workflow/ref-сплит + canary-ETA + junk-доза + drain-матем | 0 POST
 DISP | AG-474 w527 | 0-POST: sigma_d>=48пп A/A n=3, гейты only same-boot; r2368-лег DOA; payload work/AG-474 | 0 POST
+CLAIM | AG-493 w527 | same-boot pair WBP: 2 ноги 1 job (1 VM/1 download), lever-сентинел + REUSE-гвард | prereg
