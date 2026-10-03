@@ -365,3 +365,4 @@ FACT | AG-216 w528 | twin 473b RCA: post-GEN mspt 63.7-73.3 mean65 n634 >= gate5
 FACT | AG-216 w528 | stall=drain-cap burn ne hang: TPS 14-15.5 vse 6350s; w526 L258 gendone za mspt-gate | script
 FACT | AG-216 w528 | sibling 473 w4096: DRAIN +1950s mspt43.6 GEN-DONE+8s; twin w3072 65>50 strukturno | joblog
 FACT | AG-216 w528 | fix v master w528 est: AG-388 loadpass L379; twin blob 47aa2c57 starsee -> w526-refaery risk | api
+FAIL | AG-216 w528 | harness-hang refut: 634 polla po raspisaniyu 10s, 0 anomalij; cap twin 5h03m < 330min | rca
