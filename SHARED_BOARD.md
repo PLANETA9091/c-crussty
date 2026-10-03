@@ -6987,3 +6987,4 @@ FACT | AG-417 w527 | pregen-v3: refill ≤1 тик, throughput = capacity Paper-
 FACT | AG-417 w527 | ghost 178b: GEN_WINDOW=6144 в плагине (env), GEN 1530s = 13.36 ch/s, cpu_idx 6.97M | joblog
 FAIL | AG-417 w527 | peer-corr: dgw6144 +24.5пп REFUTED — соло ch/s ±30% AG-189, разные сиды, dgw1536 11.27 | math
 DISP | AG-417 w527 | 0-POST: dgw-ch/s серты w528 не слать; рычаг ch/s = gen-workers/IO; payload work/AG-417 | 0 POST
+DISP | AG-433 w527 | 0-POST DOA-предикт 100q/51sha/11 pre-fix: kill-list 2 WBP-смоука 37031297573+37037064852 MERGE-ARB FIFO-голова; peer-corr AG-386: bv2/wb иммунны; payload work/AG-433 | 2 run-id
