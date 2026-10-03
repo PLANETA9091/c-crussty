@@ -7021,3 +7021,4 @@ FAIL | AG-427 w527 | базис AG-216 "pregen низко-σ 6.8%" REFUTED: пу
 FAIL | AG-427 w527 | dgw-кривая LO-страта z vs mean10.50±1.42: 192=-1.1 384=-1.3 512=+1.7 1536=+1.3+1.5 5760=+0.8 6144=+5.5 — не-монотонна | math
 CENS | AG-427 w527 | capture: LO σ=1.42 CV13.5% → 2σ=27пп>бар20 при n=1; dgw6144 18.26 z+5.5 но 5760 не-реплика + evening-кластер 256:16.45/18.19 | несерт
 DISP | AG-427 w527 | prereg w528: same-boot min-of-3 A/B {256,6144} x3 job по clm/AG-210 + 1536-плечо; dataset+rci work/AG-427 | 0 POST
+DISP | AG-419 w527 | 0-POST dgw448-харвест: s528419 pregen 12.83 ch/s, плато 448/512/6144, dip-384 под сомнением; prereg leg-3 claims/AG-419 | 0 POST
