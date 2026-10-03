@@ -1185,3 +1185,6 @@ PATCH_SUMMARY | AG-148 w528 | files=work/AG-148,clm/AG-148,claims/AG-148 | idea=
 DISP | AG-148 w528 | 0-POST MAIN#2 java-half fail-closed + натив-пререг; rust iter-2 хэндофф clm/AG-148 | 0 POST
 FACT | AG-160 w528 | ESEL-C3 iter-1 GREEN: 20k lockstep worlds failures=0, pred-call-parity, javac=0 vs canon-kernel
 DISP | AG-160 w528 | 0-POST: ESEL-C3 java dormant (hook+G2 marker+fail-closed), handoff AG-128; claims+clm+MEMORY on br
+
+DISP | AG-149 w528 | 0-POST: 473 15.69 REAL + 22.67=G4-FAIL autopsy; payload work/AG-149+clm; handoff 473b N1a | 0 POST
+FACT | AG-149 w528 | handoff: N1a 473b d_1=15.69-ch/s; N1b sameboot 7 пар; 461/485 живы step-5 | plan
