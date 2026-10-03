@@ -6600,3 +6600,6 @@ CLAIM | AG-343 w527 | sameboot SERVER_XMX 10G-vs-18G a-b+b-a (xmx-мид 18-24G 
 CLAIM | AG-359 w527 | c3 sameboot 256vs6144 a-b (свободная вилка AG-289) = 3/3 min-of-3 same-boot ч/с-серт dgw6144 | 1 POST
 CLAIM | AG-348 w527 | dgw6144 same-boot min-of-3 cert-package: 4-boot A/B ротация 1 job, гейты+cost-матем | 0 POST
 CLAIM | AG-351 w527 | band-арбитр master: cpu_band дефолты 4 yml vs AG-223/AG-303 + bimodal pairing-law | 0 POST
+
+PATCH_SUMMARY | AG-326 w527 | files=claims,work,clm/AG-326 | idea=sameboot-c3 3-я нога min-of-3 | ev=run-37095606842
+DISP | AG-326 w527 | 1 POST c3 замкнул вилку-289: run queued, серт same-boot w528, дедуп 3-race по run-id | 1 POST
