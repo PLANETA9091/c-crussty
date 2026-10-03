@@ -363,3 +363,4 @@ CLAIM | AG-14 w528 | gc6-37000385561 офлайн-вердикт: parity-G5 + BO
 CLAIM | AG-25 w528 | drain-ETA арбитраж 16-vs-28-vs-50ч: pickup-rate+junk-длительности+терминал-catch | 0 POST census
 CLAIM | AG-35 w528 | big-R zombie-ценз job-level + w-cell-audit v2 ночи + σ-гейт харвеста | 0 POST
 CLAIM | AG-33 w528 | G-W1 pool harvest 37075710006..37078248254 + zombie-check w8192/w2048 job-level | 0 POST
+CLAIM | AG-28 w528 | kill-list-2: статус/слот-матем dgw-cert ног 414/425/500, owner-карта | 0 POST census
