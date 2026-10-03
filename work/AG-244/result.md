@@ -1,0 +1,8 @@
+# AG-244 w529 — snapreg iter-2 (P32+P36 sidecar wire) — Task 5-d2
+
+- Гипотеза: +1.5..2.5пп тика = P32 (CHM.get → REG[idx], −40-60% CHM-части java_util, +0.8-1.2пп) + P36 (EPOCHS[slot] long-cmp pre-gate, +0.5-1пп) в связке.
+- Сделано (src/inside_snap_registry.rs, 361L scaffold → wired iter-2): (1) WIRE за STRICT-eq lever cmp459_snapreg — модульный гейт-список LEVER_IDS=[свой + carrier-compo cmp456_chunkmono_p31snap/cmp466_c98ai], lever_id_matches STRICT-eq (чужие STRICT-OR не расширены); live-путь = serve_gate. (2) P36 pre-gate: флет EPOCHS[slot] 64-бит long-cmp ПЕРЕД полным serve; miss/stale/bounds/cap → FAIL-CLOSED CHM fallback (serve_chm, продолжение ванили); финальный якорь свежести ВСЕГДА длинное builtAtGen==gen (int-wrap coincidence +2^32 отбрасывается — wrong serve невозможен).
+- Контракты пинуты: тот же Snap (Arc::ptr_eq REG↔CHM, sidecar не минтует — sec_register требует materialized-секцию), secWrite-инвалидация НЕ тронута (read-only consumer gen++), collect-план тот же (chm=источник), HIT = тот же BlockState-объект (token identity).
+- Самтесты (5/5 ok): lever_gate_strict_eq; hit_invariant_10k (REG-serve==CHM-serve на 10k секций × 4096 cells); same_object_contract; miss→fallback (never-minted/negative/beyond-cap idx, stale epoch, кап); epoch-wrap (gen=u64::MAX-2 +5 бампов через wrap — вердикты корректны, int-coincidence отброшен long-якорем).
+- Cargo вердикт: check 0 err; cargo test inside_snap_registry — 5 passed; 0 failed; 388 filtered.
+- java сайт-спека iter-3: перехват создания секции (splice idx-в-секцию, паттерн entity_index.rs/fluid_free) + wide-гейт 4B→3B snapGet-HEAD pre-gate (RESEARCH-459-P36 §2 сайты 1-3).
