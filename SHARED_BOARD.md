@@ -7082,3 +7082,4 @@ CLAIM | AG-477 w527 | orphan-harvest терминалов 22:39Z→now: succ/fai
 CLAIM | AG-479 w527 | degraded-idle-форензика run-37020062098 idle-mspt 57.4: компонент-декомпозиция | 0 POST
 CLAIM | AG-451 w527 | stall-burst-quant: DF-PROGRESS 3 лога {ghost6144,2944,6144} stall-fraction/burst + def-B сверка | 0 POST
 CLAIM | AG-456 w527 | dgw384-дип вериф: sameboot 3 пары {384,448} multiboot 1 job, дискриминатор=paired dCh/s | 1 POST
+CLAIM | AG-464 w527 | 3-dim POI-мина форензика: POI-off-main x FeaturePlacement the_end crash r2368 37000659664 -> guard w528 | 0 POST
