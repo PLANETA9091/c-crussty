@@ -488,6 +488,22 @@ export CRUSSTY_LEVER_ARG="${LEVER_ARG:-}"
 # lines in server-stdout.log.
 MC312A_FROM_ARG="$(printf '%s' "${LEVER_ARG:-}" | tr ',;' '\n\n' | sed -n 's/^mc312a=//p' | head -n1)"
 export CRUSSTY_MC312A_GUARD="${CRUSSTY_MC312A_GUARD:-${MC312A_FROM_ARG:-0}}"
+# cmp497_sbarm (ROUND-497 C17, carrier round-496-c85-w12-4arg-first @652f5239):
+# DORMANT root-cause fix (C85 ×496 finding #3): CRUSSTY_SBLK_R1 was exported by
+# NOTHING on the l1r2/w12 line (yml passes only LEVER_FLAG/LEVER_ARG; the C03
+# case→export lived on a separate round-496-c03-sb1 branch) ⇒ sb_r1::r1_enabled()
+# was always false ⇒ sbulk1 runs Δ0-DORMANT. CONFIG/FLAG arm (lever canon,
+# 0 logic): export the subsystem arm env; the retarget wiring leg stays a
+# separate CI-доба (0 define/0 retarget here ⇒ NCDFE T1=0 trivially held).
+# ARM-order = RETARGET_ORDER_4ARG_FIRST (C36 pin-inversion, c36_csel_pins.md):
+# ServerLevel 4-arg no-AABB CSEL-hot off48 #300 (54.72% ALL-CPU dp-r2, 2/2
+# sites leak-proof) FIRST, cold 5-arg AABB funnel (0.00%) second.
+case "${LEVER_FLAG:-}" in
+  cmp497_sbarm|cmp487_sbulk1)
+    export CRUSSTY_SBLK_R1="1"
+    log "${LEVER_FLAG} armed: sbEnumerate bulk-R1 4-arg-first config arm (env-fix: CRUSSTY_SBLK_R1=1 exported; order=4ARG_FIRST: 4-arg no-AABB off48 hot 54.72% FIRST, 5-arg AABB funnel cold second; THRESH=512, MARGIN=4, R2 capture<0.55; C36 pins 2/2 leak-proof; 0-behavior contract arm — retarget wiring leg follows)"
+    ;;
+esac
 # cmp420_chunk2 arming (TASK-420-C stability iteration; wave-419 base
 # cmp419_chunk, chunk-pipeline law 8): the noise-fill GEN-axis
 # (noise_fill.rs STRICT-OR gate) is NOT in PROVEN_WINS, so the
