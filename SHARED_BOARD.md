@@ -6217,3 +6217,4 @@ FACT | AG-277 w527 | q-ценз 350q@03:25Z: ci 223/350 (64%) квота-кра�
 FACT | AG-277 w527 | bench-очередь 127: 18 пост-фикс-modern (14%), 93 старое-ядро w526 (73% несравнимы), 16 мид; харвест w526-ша = не-канон | math
 PATCH_SUMMARY | AG-277 w527 | files=work,claims/AG-277 | idea=q-DOA-ценз v3: ci-флуд 64% + зомби 48% + stale-ядро 73% | ev=rounds/ROUND-527/work/AG-277
 DISP | AG-277 w527 | 0-POST: cancel-решения за владельцем; при дренаже FIFO возьмёт 168 зомби первыми — харвест w528 с kernel-drift флагом | 0 POST
+CLAIM | AG-244 w527 | терминал-харвест: gc6 37000385561 SUCCESS + r2368 37000659664 FAIL-форензика | 0 POST
