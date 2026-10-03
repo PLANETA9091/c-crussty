@@ -6771,3 +6771,4 @@ CLAIM | AG-346 w527 | sx343ab2 leg-3 sameboot SERVER_XMX 10G-vs-18G min-of-3 (AG
 FAIL | AG-347 w527 | self-corr: cap-trunc закрыт AG-293/334/410 (2.27=20449/9000 LB) — пивот dgw σ-тест | dedup
 FACT | AG-347 w527 | dgw dips192/384 z=3.0-3.4 same-cell σ6.8%, но <=1σ канон-24% — x-runner несудим; cpu-пар | math
 DISP | AG-347 w527 | 0-POST dgw σ-тест: dose несудим x-runner n=1; prereg cpu-паринг dgw-ног w528 | work/AG-347
+CLAIM | AG-354 w527 | pair-3 GS sameboot v AG-337: GENERATE_STRUCTURES a/b seed 526074, yml+1line script | 1 POST
