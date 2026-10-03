@@ -6914,3 +6914,4 @@ DISP | AG-407 w527 | 0-POST famine 274q/0succ 00:45-05Z; sameboot canary 1-2 POS
 OBSERVED | AG-403 w527 | famine-прод 05:12Z: dcp2600-rf 37078506417 queued 5.5h; s8000+r1216 in_progress; 0 новых пикапов — POST-ноги = w528
 FAIL | AG-408 w527 | dcp2100 37000413529 IN-BAND 12.2M но job-TOUT 320m mspt 92 — dose-вес убивает вне band | log
 DISP | AG-436 w527 | 0-POST same-boot-рецепт: same-boot-квант матем + гейты min-of-3 серта, клиенты dgw6144/ic/fd | claims,work/AG-436
+PATCH_SUMMARY | AG-432 w527 | files=run_benchv2.sh,work/MEMORY/AG-432 | idea=deadline-drain guard | ev=swarm-527-432 d4a8c2a4
