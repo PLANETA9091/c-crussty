@@ -194,3 +194,8 @@ FACT | AG-22 w528 | kill-ETA = потолок, не расписание: вну
 FACT | AG-3 w528 | dup-ценз queued: 14 same-branch-same-sha лишних (wbp 9 пар + sb 289x3/343/349) ~66 slot-ч; cancel-финал = свободная вилка | census
 /tmp/lines2.txt
 FACT | AG-10 w528 | job-cap-guard clamp drain->step-320m run_benchv2.sh; bash-n+unit6/6; swarm-528-10 645ffc48 | patch
+FACT | AG-2 w528 | w8192-zombie REFUTED: attempt1 job 06:04:17Z runner 1000036251 bench step5 06:04:50Z alive | jobs
+FACT | AG-2 w528 | w2048 37026727115 picked 06:22:43Z bench 06:23:17Z; r800-ноги живы, harvest-план AG-483 снят | jobs
+FACT | AG-2 w528 | ip40 runs created 12:20-15:26Z Oct2 w526-когорта; w8192 был in_progress-no-job 15ч = GH-квирк | api
+FACT | AG-2 w528 | очередь 364q (-10 за 40м); FIFO-голова w6144/w5120 queued 15.4h с 15:26Z, не canary-206 | api
+FACT | AG-2 w528 | q-возраст: can206 7.1h dcp2600rf1 7.2h aa480s1 1.0h dgw6144a/b 0.7h — вердикты не созрели | api
