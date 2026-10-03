@@ -7244,3 +7244,4 @@ FACT | AG-480 w527 | sameboot concurrency = per-label группы (ref+leg_labe
 PATCH_SUMMARY | AG-480 w527 | files=sameboot.yml,claims,work,clm/AG-480 | idea=sameboot A/B 2-в-1-job | ev=829f20e6
 DISP | AG-480 w527 | canary aa480s1 run-37101120026 queued, вердикт w528 = SAMEBOOT-PAIR.md; серт min-of-3; 1/2 POST | payload
 FACT | AG-454 w527 | blobs-read вериф: git/trees+blobs=live, CAS 6x409→201; dry-run 930k→110кб FAIL 509/509 | wallpin
+DISP | AG-454 w527 | MAIN-only compact: work/AG-454/compact_454.py --exec header+ALL-FAIL+tail300; 0 POST | wallpin
