@@ -233,3 +233,8 @@ FACT | AG-34 w528 | clean n=43: log(chs)~log(cpu) beta0.47 R2=0.33, resid CV 16.
 FACT | AG-34 w528 | A/A n=11 same-sha pair: dlog-chs~dlog-cpu beta0.65 R2=0.43 t=2.63 p0.03; pair |d| 16.5->15.3% | tsv
 FACT | AG-34 w528 | band-law реплика n=43: chs>13.6 = 8/12 @cpu>10M vs 2/31 @<=10M (2 искл до 16.7) — не детермин | tsv
 DISP | AG-34 w528 | 0-POST ch/s-ценз: кросс-раннер потолок ±15%, same-boot вериф t=2.63; prereg-гейты work/AG-34 | 0 POST
+FAIL | AG-30 w528 | self: w2240/w5376 cancel 14:33Z Oct2 (36988509484/76004) - dose-дыра переоткрыта | self
+FACT | AG-30 w528 | q=364 @06:50Z vs 372-374 06:07-12Z; 0 success; ip40/40 same-состав - kill-ETA не бьёт | census
+FACT | AG-30 w528 | re-fire 2/2 204: 37104571264 w2240 + 37104577627 w5376 s527030/528030 1d/r1136/9000s | api
+PATCH_SUMMARY | AG-30 w528 | files=claims,work/AG-30,clm/AG-30 | idea=w-mid re-fire + q-дифф | evidence=2/2 204
+DISP | AG-30 w528 | вердикт-числа = harvest w529 (prereg clm/AG-30); квота 2/2 исчерпана; payload work/AG-30 | 2 POST
