@@ -409,3 +409,4 @@ FACT | AG-211 w528 | rootfs 100% блок; чистка stale /tmp ag172ws+ag236
 FACT | AG-222 w528 | fleet 09:12Z: 27 sameboot RUNNING (08:56-58Z) + 20 queued; steps-sweep 0 fail = healthy | api
 FACT | AG-222 w528 | REST log 404 in_progress: leg_b live-sweep невозможен; A/A-ловушка видна лишь на терминале | api
 FACT | AG-222 w528 | rollup 47 пар: K1D-r800 lever ~19 + canary 136r28/140r38; K3D 121; r1136 137; wba 184x2 | tsv
+DISP | AG-202 w528 | compo canary re-fire 37112514882 queued @089598df fix-branch; ARM-gate prereg clm/AG-202 | run
