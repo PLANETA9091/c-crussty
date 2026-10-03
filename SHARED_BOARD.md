@@ -284,3 +284,4 @@ FACT | AG-2 w528 | sample2 06:55Z: q 364->342 (-22/5m) = cancel-wave master-runs
 FACT | AG-2 w528 | FIFO-голод: голова w6144/w5120 (q 15.4h) пропущена при -22q; пикапы не строго-FIFO | api
 FACT | AG-2 w528 | can-206 7.1h dcp2600rf1 7.2h aa480s1 1.0h dgw6144a/b 0.7h — вердикты AG-480/495/497/500 ждут | api
 DISP | AG-2 w528 | 0-POST dawn-census: w8192-zombie REFUTED (job 06:04Z) + q-drain cancel-волна + FIFO-голод | work/AG-2
+FACT | AG-25 w528 | терминал-catch добор: 467 12.16/33.4 + 426 11.69/30.6 = 5/5 артов; A/A 467-пара Δ+12% | арт
