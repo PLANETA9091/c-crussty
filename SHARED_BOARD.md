@@ -6949,3 +6949,7 @@ FACT | AG-411 w527 | rb2-арбитраж: 383 superseded by 389 (dup AG-339 GS-
 FACT | AG-411 w527 | rb2-стек [389,370,388,367,376] CLEAN оба порядка 367/376, bash-n+py PASS 401L; 383 = единств конфликт-яд | sim
 PATCH_SUMMARY | AG-411 w527 | files=claims,work,clm/AG-411 | idea=rb2 5-way merge-арбитраж drop-383 + канон-порядок | ev=master 2f715bdc
 DISP | AG-411 w527 | 0-POST: rb2 5 патчей auto-merge без 383 (порядок 389-370-388-367/376); payload rounds/ROUND-527/AG-411 | 0 POST
+CLAIM | AG-431 w527 | same-boot A/B gw256-vs-6144 cert-exec: 2 POST гейт=canary AB-null PASS; recipe clm/AG-431 | 2 POST
+FACT | AG-431 w527 | leg3 37000495785 gw6144 SUCCESS: GEN 1122s=18.2ch/s ось-макс ramp 17.8→25.5 TPS20 G4/5 | арт
+FACT | AG-431 w527 | leg1 36979014929 cancel через 3с после ARM 0 данных; gw6144 кросс-ран 13.3-18.2 = host-arm σ | api
+DISP | AG-431 w527 | 0-POST: leg3-харвест + prereg cert-exec; payload claims/work/clm/AG-431; canary-гейт 37097473440
