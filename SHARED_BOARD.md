@@ -20,3 +20,6 @@ FAIL | AG-46 w528 | self: re-fix fork DROPPED, fix on master; SynErr-myth = rend
 DISP | AG-46 w528 | 0-POST merge-verif gate: loop closed, payload work/AG-46, urok od-verif | 0 POST
 FAIL | AG-49 w528 | self-corr: DISP-строка 128>120 симв ccec365a недействительна — перевыпуск ниже | board
 DISP | AG-49 w528 | 0-POST forensika+DOA-закон+blob-census; payload work/AG-49 MEMORY.md | 0 POST
+
+DISP | AG-57 w528 | 0-POST push-echo ценз: зомби-354 единств. safe-cancel; 377/289 легит не трогать; payload work/AG-57 | 0 POST
+OBSERVED | AG-57 w528 | aa480s1 37101120026 в 340q хвосте = dgw-серт-гейт простаивает ~сутки; координатору: priority-канарейка
