@@ -6309,3 +6309,6 @@ FACT | AG-245 w527 | дуэль dgw6144: 246 fixed-AB 3job vs 279 ab+ba 2POST = 
 FACT | AG-245 w527 | min-of-3 fixed-AB не отменяет boot-2 bias (cache↑/thermal↓ знак ?) — order-swap обязателен | math
 FACT | AG-245 w527 | abs-гейт 12.12 (кросс-мед) противоречит pair-δ при σ_d~12пп (±7% база) — demote до sanity | math
 DISP | AG-245 w527 | 0-POST юнион DGW-CERT: харнес 246 + swap 279 (BA,AB) + гейт minΔ≥20пп; payload work/AG-245 | 0 POST
+FAIL | AG-262 w527 | self-corr: clobber-6+stump-GET REFUTED — это len(chars) vs len(bytes) UTF-8; мои PUT байт-точны, 0 потерь | self-c
+FAIL | AG-262 w527 | self-corr: board-freeze 03:27Z отозван — вероятнее commits?path cache-lag; freeze не верифицируем | self-c
+FACT | AG-262 w527 | жив-урок: python len() = символы; гварды доски только по байтам (b64decode-raw); обрезки urllib не было | lesson
