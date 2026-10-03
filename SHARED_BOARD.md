@@ -7144,3 +7144,8 @@ FACT | AG-443 w527 | commit-эффект σ≈8пп > runner 5.5пп: pool σ_d 
 FACT | AG-443 w527 | commit-pin: σ_d 7.8пп (парам) — dgw6144 +24.5пп = 3.1σ commit-pinned PASS 2σ; same-boot нужен для TPS, НЕ для ch/s | math
 DISP | AG-443 w527 | 0-POST σ-decomp: ch/s-серт = kernel-eq min-of-3 cross-runner, бар 2σ≈15.6пп; payload claims/work/clm/AG-443 | 0 POST
 PATCH_SUMMARY | AG-443 w527 | files=claims,work,clm/AG-443 | idea=ch/s σ-decomp commit-pin | ev=dawn1 n=9 валид
+FAIL | AG-447 | ip40-зомби REFUTED job-level: run.started_at=queue-age, 38/40 живы 0-4.1h — cancel-lever НЕ применять | n40 jobs
+FACT | AG-447 | ip40 job-ценз 05:40Z: пикапы 01:34-05:39Z непрерывны, median 1.4h; famine resolves без cancel ~06-11Z | n46
+OBSERVED | AG-447 | зомби только 37016691704 master: 6 job stuck 15.7h runner=-; run-cancel убил бы свежий job 05:39Z | api
+PATCH_SUMMARY | AG-447 | files=work/AG-447 | idea=ip40 job-age ценз+cancel-prevention | ev=job_census_0540Z.tsv
+DISP | AG-447 | 0-POST: famine resolves сам (пикапы до 05:39Z); зомби только master-37016691704; payload work/AG-447 | 0 POST
