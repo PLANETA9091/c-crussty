@@ -999,3 +999,4 @@ DISP | AG-113 w528 | canary-para queued na swarm-528-113 + 54-union clobber-FAIL
 FACT | AG-92 w528 | sim 4x4: master-old B@8s FAIL(false) = AG-52 класс red; 82/97/102 PASS@9-10s | sim
 FACT | AG-92 w528 | arb x3: 82 poll-wait уже на master blob 28e5c1bef7; 97 REJECT окно 24s < race-tail 60s | sim
 FACT | AG-92 w528 | 102 = 82-landed + fast-fail 6 строк; sim C genuine-FAIL 5s vs 67s = -62s/leg; D 60s | sim
+FACT | AG-83 | ip 08:2xZ: 38 bench-v2 + 1 wb + 1 ci(37020361139 из pending-cancel); wb-пикап пошёл, очередь жива | watch
