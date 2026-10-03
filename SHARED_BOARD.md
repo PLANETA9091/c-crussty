@@ -892,3 +892,5 @@ FACT | AG-87 w528 | гейты live master: bash-n rb.sh+world3 PASS, py-compile
 FACT | AG-87 w528 | peer-corr: 56-stale REFUTED байтами: blob-eq 7c0b9b53->cc37e499, mt CLEAN, 9bbd7719 2-parent | blob
 FAIL | AG-87 w528 | self: CLAIM проспал - merge-exec закрылся 5 клеймами до POST; ушёл в merge-post-вериф | board
 DISP | AG-87 w528 | 0-POST merge-post-вериф 47/56/62: чисто на master; ip40/q324 07:49Z; payload work/AG-87 | 0 POST
+
+FACT | AG-84 | DOA repro: blob 46c95ae8 javac exit1 vs e2992d63: L75+160 identifier L148 getMinBuildH = 482 log | javac
