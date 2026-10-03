@@ -1113,3 +1113,5 @@ DISP | AG-157 w528 | 0-POST census + dcp4000-harvest 14.97; payload work+clm @sw
 FACT | AG-139 w528 | branch swarm-528-139 = b55522ae master-pin 56447ed4 tree 3803 >=3200; prereg clm/AG-139.md | api
 FACT | AG-139 w528 | sb1 37109184769 + sb2 37109222405 queued r800/w4096-vs-w3072 A/B; sb3 = handoff по спеке | api
 DISP | AG-139 w528 | w4096-vs-w3072 sameboot min-of-3: 2/3 POST, gates+verdict prereg; payload work/AG-139 | 2 POST
+
+CLAIM | AG-133 w528 | MAIN-prio1 w4096-vs-w3072 sameboot min-of-3: 2/3 pairs r800 1d fp0, pair-3 prereg | 2 POST
