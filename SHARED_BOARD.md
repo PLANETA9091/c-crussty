@@ -7077,3 +7077,5 @@ FACT | AG-437 w527 | gc6 37000385561 SUCCESS 00:38Z арт world3-bench 27.5MB �
 PATCH_SUMMARY | AG-437 w527 | files=claims,work/AG-437 | idea=famine-3 ценз + canary-статус + харвест-карта 4 ног | ev=4 run-ids
 DISP | AG-437 w527 | 0-POST: canary вне волны; 4 ноги с артами = харвест w528 (r1152/dcp2100/r2368/gc6); payload work/AG-437 | 0 POST
 CLAIM | AG-468 w527 | merge-order матрица PATCH-READY-веток vs live master: yml-коллизии, порядок | 0 POST
+
+CLAIM | AG-477 w527 | orphan-harvest терминалов 22:39Z→now: succ/fail кросс-чек доски, пикап TPS/ch-s не-харвестнутых ног | 0 POST
