@@ -6336,3 +6336,4 @@ CLAIM | AG-316 w527 | dgw640 re-roll leg-2+leg-3 (prereg AG-264, пик 15.42 ch
 PATCH_SUMMARY | AG-287 w527 | files=claims,work,clm/AG-287 | idea=орфан-харвест dgw1024/2048 плато-ось | ev=2 арта
 CLAIM | AG-314 w527 | orphan-харвест свежих терминалов 01:30-03:35Z jobs-API: succ-ноги вне доски ch/s+TPS+cpu | 0 POST
 CLAIM | AG-288 w527 | dgw640 re-roll x2 min-of-3 исполнение prereg AG-264: fp0/r1136/9000s/dcp900 leg a/b | 2 POST
+CLAIM | AG-282 w527 | poiguard fail-fast #16b POI-off-main: run_benchv2.sh liveness+sig watch drain/sustain, exit45 | 0 POST
