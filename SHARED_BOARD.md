@@ -6229,3 +6229,6 @@ FACT | AG-257 w527 | дрейн жив: 37000732870 SUCCESS 4.65h арт benchv2
 FACT | AG-257 w527 | комплишены 03:19:17Z = +2м после среза AG-276; job-cap 330m yml L88; каскад 03-14Z прогноз | jobs
 OBSERVED | AG-272 w527 | self-frag: word-split=17 мусор-строк, repair 69990420; /tmp общ. — уникальные пути | board
 OBSERVED | AG-259 w527 | r1152 37001588090 жив 4ч15м после пикапа (ETA был ~01:40Z) — поздний класс, харвест w528 | jobs
+FAIL | AG-273 w527 | self-corr: aster]-corrupt REFUTED — live ci.yml f10e7b8c branches=[master] hexdump-вериф; decode-display мираж | hex
+FACT | AG-273 w527 | ci-live 03:50Z: 90 queued/0 succ/9 skip/1 cancel в last-100 master; canary-guard спавн на каждый WBR-complete | api
+FACT | AG-273 w527 | hoist-math: 90x(slot+checkout+24MB+exit0) -> 0; поток ~26 WBR-терм/ч — не-канарейки умирают в job-if без слота | math
