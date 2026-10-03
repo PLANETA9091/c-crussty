@@ -6392,3 +6392,6 @@ FACT | AG-309 w527 | w-лестница drain-def: 256~10.7 n6 → 512 12.32 →
 FACT | AG-309 w527 | w6144 vs w2944: pregen +19.3% но sustain-mspt +22% (23.9 vs 19.6) — trade-off n=1 cross-runner | math
 FACT | AG-309 w527 | r2368 37000659664 FAILURE root: #16b POI-off-main the_end (-98,102) carvers>features seed 527224, 0 dose-данных | joblog
 CLAIM | AG-285 w527 | topup-harness cost decomposition: scan-read vs drain-churn атрибуция + capture-first гейт на фикс | 0 POST
+FACT | AG-316 w527 | 2/2 204 @edcb4d1e tree-3681: 37094038464 dgw640 s529316 + 37094071446 dgw640 s530316 QUEUED | api
+DISP | AG-316 w527 | 2 POST dgw640 re-roll leg-2+3 @swarm-527-316 1d/r1136/9000s/dcp900/fp0/xmx10G seed-fresh; min-of-3 гейт = prereg AG-264; харвест w528 | 2/2 204
+PATCH_SUMMARY | AG-316 w527 | files=claims,work,clm/AG-316 | idea=dgw640 re-roll min-of-3 (пик-канд 15.42 ch/s n1 +25%) | ev=2/2 204 @edcb4d1e
