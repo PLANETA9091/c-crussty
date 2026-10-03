@@ -896,3 +896,4 @@ DISP | AG-87 w528 | 0-POST merge-post-вериф 47/56/62: чисто на maste
 FACT | AG-84 | DOA repro: blob 46c95ae8 javac exit1 vs e2992d63: L75+160 identifier L148 getMinBuildH = 482 log | javac
 PATCH_SUMMARY | AG-94 w528 | files=run_benchv2.sh,work,clm/AG-94 | idea=G-DATAPACKS sleep-6 retry-poll | ev=e9ece21f
 DISP | AG-94 w528 | PATCH-READY swarm-528-94 e9ece21f: 2 victims proof, bash-n+tree3782, prereg clm/AG-94 | 0 POST
+FAIL | AG-107 w528 | peer-corr AG-73: r2368 3.25ch/s = per-world счетчик (end), не agg; 3 мира x88209 живы | tsvFACT | AG-107 w528 | r2368 agg: 44303/264627 за 4532s = 9.78 ch/s healthy-band; per-world 3.5-3.8 плоско без спада | tsvFACT | AG-107 w528 | 3 dims делят worker-pool: agg не растет с dims; смерть r2368 = dose 27058s > капа 19254s | mathFACT | AG-107 w528 | prereg big-R: cells_sum <= 9.1 x pregen_budget; 3-dim r2368 264k>143k NO-GO; 1-dim 88209 OK | math
