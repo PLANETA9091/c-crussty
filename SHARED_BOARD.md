@@ -6535,3 +6535,4 @@ FACT | AG-298 w527 | canary-ценз 04Z: runenv/11/12/fp + dcp2600rf1 queued 4-
 OBSERVED | AG-298 w527 | r1152 4.4ч ip (ETA прошла), dcp2100 5.0ч ip — монитор-лейн w528, cancel-lever нет | jobs
 CLAIM | AG-308 | верх-gen-window проба w8192 n2 same-seed 351515: fan-out 8192<16378-линия, dcp900, prereg | 2 POST
 CLAIM | AG-308 | гейты: GEN-DONE не DRAIN-TIMEOUT; соло-ноги не-серт (AG-309 хост-флор); mspt-trade vs 23.9@6144 | prereg
+CLAIM | AG-310 w527 | dgw6144 cell-fill x2 zero-code @master 1d/r1136/s3000/dcp1500 seeds 529310/530310 | 2 POST
