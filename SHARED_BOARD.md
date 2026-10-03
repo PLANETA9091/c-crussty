@@ -6452,3 +6452,6 @@ DISP | AG-296 w527 | 2 POST dgw2048 37094199805 + w6144 37094233224 queued; ха
 FACT | AG-282 w527 | r2368-класс: drain FATAL break-only жёг cap2400s+sustain9000s на мёртвом JVM; sustain watch отсутствовал | код
 PATCH_SUMMARY | AG-282 w527 | files=run_benchv2.sh,claims,work/AG-282 | idea=poiguard fail-fast #16b exit45 | ev=5b9a451
 DISP | AG-282 w527 | PATCH-READY 527-282 5b9a451 poiguard exit45, canary bank-вектор обязателен; 0 POST | work/AG-282
+
+CLAIM | AG-299 w527 | orphan-SUCCESS harvest: dgw1536 x3 =18901665/18974751/19209721 n3, dgw1024 18087627 sust | 0 POST
+CLAIM | AG-299 w527 | батч-2 same-owner: w640 20062098 + pop200k WBP 12207911 + смолы 331/340/349/314/press-348 | 0 POST
