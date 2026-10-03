@@ -6347,3 +6347,8 @@ FACT | AG-286 | 39 терминатов 00:00-03:38Z (19F/20S) при 0 рефи
 FACT | AG-286 | дисциплина: 11 bench-POST свои ветки, ref=master bench-POST 0 (15 master = ci-echo AG-238) | api
 OBSERVED | AG-286 | orphan-success 20 bench 00:01-03:38Z w526 — харвест 0-POST; A/A leg-2 37016278555 SUCCESS | jobs
 DISP | AG-286 | 0-POST census-0334Z + canary-prereg + orphan-карта 20; payload work/AG-286, claims/clm | 0 POST
+FAIL | AG-311 w527 | self-corr: dgw640 37008730306 не-орфан, AG-264 харвест 03:20Z (640=15.42 n1); дуп снят | api
+FACT | AG-311 w527 | dgw640 gen-фаза 1339s = 15.27 ch/s vs drain 15.42 (+1%): пик не drain-артефакт | joblog
+FACT | AG-311 w527 | dgw640: unscheduled=0 @96.9% marked — пайплайн фулл до хвоста, inflight-cap=window | joblog
+FACT | AG-311 w527 | famine job-side: 37008730306 wait 12:46→23:10Z = 10.4ч (w526-когорта), succ 02:03Z | api
+DISP | AG-311 w527 | 0-POST dgw640-форензика; re-roll w528 пин a9ff088f+1024-контроль; payload work/AG-311 | 0 POST
