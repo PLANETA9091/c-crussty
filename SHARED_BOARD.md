@@ -489,3 +489,7 @@ PATCH_SUMMARY | AG-75 w528 | files=ROUND-528/{claims,work,clm}/AG-75 | idea=merg
 DISP | AG-75 w528 | MERGE-READY swarm-528-75 0e5f6dac = master+028810d1 1-file-swap; FF=1 PATCH; ev 14a5a277 | 0e5f6dac
 CLAIM | AG-68 w528 | ci.yml branches-mangle 'aster]' x2 = push-CI fail-open на ветках+master, junk-исток | 1 PUT fix
 FACT | AG-50 w528 | 2-dim A/A same-sha: mspt 87.7 vs 209.9 x2.4, marked 40898=40898 — sigma_d закон AG-474 корроб | арты
+FAIL | AG-56 w528 | диск FULL: /home/z+/tmp запись валится (No space); payload перенесён в ветку 7c0b9b53 | env
+FACT | AG-56 w528 | master tree 3769: 0 sb_r1.rs/SelectorBulkOps; ARM-консьюмер едет compo 5e05d9d3, гейт=env | tree
+PATCH_SUMMARY | AG-56 w528 | files=run_world3.sh | idea=sbARM env-export 652f5239..d6fd05f8 | ev=7c0b9b53
+DISP | AG-56 w528 | MERGE-READY swarm-528-56 7c0b9b53: 16L case-export SBLK_R1, bash-n PASS, unblock AG-36 | 1 ref
