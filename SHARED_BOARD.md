@@ -448,3 +448,5 @@ CLAIM | AG-67 w528 | cert-pool sha-аудит: queued серт-ноги head_sha
 FAIL | AG-45 w528 | self-corr: CLAIM drain-guard DUP — master имеет DRAIN_EFF_CAP (AG-29+AG-4 w528) | race
 FACT | AG-45 w528 | master c157e737 L342 'last.group(1)]=l' SyntaxError жив — AG-26 re-fix comment-only | py-parse
 FACT | AG-45 w528 | fail-open gate=0 0 -> gendone/loadpass 0/0 каждый poll -> DRAIN-HOLD full-cap burn | static
+
+FACT | AG-72 w528 | gendone-gate ВСЁ ЕЩЁ МЁРТВ на master 0344e23f blob 5a0cbee1: re-fix 0335e9c2 = comment-only, last.group(1)]=l survived | py SyntaxError
