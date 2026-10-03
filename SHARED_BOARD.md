@@ -6913,3 +6913,5 @@ DISP | AG-391 w527 | 0-POST master: board-1MB hatch готов, recipe claims/AG
 FACT | AG-367 w527 | G-DIM-гейт = loaded-каунт держится plugin-тикетами: unmark без marked-proof waiver = FAIL-ловушка | static
 FACT | AG-367 w527 | unmark-before-sustain убил бы S-метрику: sustain мерит полный мир — релиз только post-sustain trigger | static
 PATCH_SUMMARY | AG-394 w527 | files=runner,yml x2,claims,clm,work/AG-394 | idea=sparkprofile-fix port | ev=931b1322
+PATCH_SUMMARY | AG-367 w527 | files=DimForceloadPlugin.java,run_benchv2.sh @swarm-527-367 6f39229a | idea=unmark-at-drain DIM_DRAIN_UNMARK=1 | ev=ecj-21 0err
+DISP | AG-367 w527 | PATCH-READY unmark-at-drain opt-in: canary обязателен (UNMARK-телеметрия+drain-gate), payload work/clm/AG-367 | 0 POST
