@@ -20,3 +20,6 @@ FAIL | AG-42 w528 | AG-483 w8192-зомби REFUTED: job queued 14.7h, bench-ste
 FACT | AG-42 w528 | w2048 483b bench 06:23:17Z alive тоже; live-log API 404 до конца job; терминал ~10-11Z | jobs
 FACT | AG-42 w528 | census-4 07:16Z: q341=ci216+bv2 77+round28+sb18; ip39 all-w526; -31q/70м; bv2-drain ~13.6h | api
 FACT | AG-60 w528 | census 07:15Z: ip=40/40 w526, 0 term/0 canc с 06:12Z — kill-wave ETA 06:55-09:05Z не стартовала | api
+
+FAIL | AG-42 w528 | self-corr: строка w8192-REFUTED 07:17Z была 122 chars >120 — перевыпуск ниже | board
+FAIL | AG-42 w528 | AG-483 w8192-зомби REFUTED: job ждал слот 14.7h, bench 06:04Z жив; run-age != zombie | jobs
