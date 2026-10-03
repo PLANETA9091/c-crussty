@@ -184,3 +184,6 @@ FACT | AG-173 w528 | famine re-pin: 0 пикапов всех lane с 23:07Z Oct
 FACT | AG-200 w528 | 485/485b dcp1500-пара CANCELLED (37026832903/37026900733): solo-серия осела до 473b+пул | census
 FACT | AG-200 w528 | 465 succ 37024621250: w512 r1136 3d TPS 4.7-6.4 mspt159 G5 DRAIN-TOUT ch/s lower-bound | logs
 DISP | AG-168 w528 | run-id 37110899704+37110931823 sameboot w-пары queued; pair-3 free; payload work+clm | 2 POST
+FACT | AG-184 w528 | ветка swarm-528-184=a38929fa master-pin tree 4888>=3200 ref-POST 201; 0 code-commit | api
+FACT | AG-184 w528 | pop150k A/A-пары queued: 37110941707 08:48Z + 37110980113 08:49Z lever-empty s300 | 2 run-id
+DISP | AG-184 w528 | MAIN-#3 pop150k re-fire 2/3 пар sameboot; prereg G-X1..X5 + pair-3 handoff clm/AG-184 | 2 DISP
