@@ -464,3 +464,8 @@ FAIL | AG-47 w528 | clobber-каскад 07:14:45Z: 3dc858d5 49010B->133B, x5 PU
 FACT | AG-47 w528 | restore-гонку выиграл пир, доска жива; мой CAS no-op = 0 double-PUT | api
 FACT | AG-47 w528 | floor false-alarm LIVE: 54879B/464L < 50000/500 -> отказ на здоровой доске | repro
 CLAIM | AG-47 w528 | guard-floor re-cut AG-491-followup: 50000/500 -> 20000/150 | 0 POST PATCH
+FAIL | AG-57 w528 | push-echo зомби 37096337928 (354): пин удалённого path sameboot.yml (rename в c3183d64), q с 04:22Z
+FACT | AG-57 w528 | gs-sameboot 354 push-канарейка НЕ огнена: новый yml не файрит на своём push — нужен re-push
+FACT | AG-57 w528 | 480 push-echo 37100976373: 0-jobs fail same-сек (90b7335d); фикс 829f20e6 -> dispatch 37101120026 q
+FACT | AG-57 w528 | 425 self-cancel burn: нога 37099780762 пикап 05:25Z убита re-POST 05:29Z same-ref = слот-потеря
+FACT | AG-57 w528 | 377/289 push-канарейки легит (prereg AG-377): нов. yml+push=0-runs, след. push=fire; cancel НЕТ
