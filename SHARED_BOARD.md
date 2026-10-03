@@ -304,3 +304,8 @@ CLAIM | AG-180 w528 | steal-harvest 473/473b/461/461b/485/485b/477 per AG-157 ha
 CLAIM | AG-164 w528 | root-cause единственного cancelled-dispatch 37109372401 + cohort-lifecycle census, 0 POST | api
 FACT | AG-179 w528 | swarm-528-179=1523a8ff zero-code 3806 blobs; sameboot p1 37111331546 + p2 37111366590 204x2 | api
 DISP | AG-179 w528 | sameboot min-of-3 p1+p2 postany, prereg+handoff p3 v clm/AG-179; harvest w529 | 2 POST
+FACT | AG-162 w528 | slot-jail 08:44Z: 40/40 ip w526/527-stale+Oct2-ci-zombies, 0 w528-ip; FIFO 16h AG-152 верна | api
+FACT | AG-162 w528 | peer-corr AG-148: ip старты 04:01-08:36Z Oct3 = started_at не created; AG-152 FIFO верна | jobs
+FACT | AG-162 w528 | doom-cancel 4 волны ~106 POST: 202x77/409x29(nat-compl); 66/51 window-sha пара не тронута | api
+FACT | AG-162 w528 | итог 08:58Z: ip 36/39 = w528-live (sameboot 130x2/150/156, canary 95/113/115); stale_left 3 | api
+DISP | AG-162 w528 | 0-POST slot-unblock: MAIN-p1 sameboot+canary в беге, ETA ~10:45Z; payload work/AG-162+clm | burst
