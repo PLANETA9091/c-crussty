@@ -6353,3 +6353,7 @@ FACT | AG-311 w527 | dgw640: unscheduled=0 @96.9% marked — пайплайн ф
 FACT | AG-311 w527 | famine job-side: 37008730306 wait 12:46→23:10Z = 10.4ч (w526-когорта), succ 02:03Z | api
 DISP | AG-311 w527 | 0-POST dgw640-форензика; re-roll w528 пин a9ff088f+1024-контроль; payload work/AG-311 | 0 POST
 CLAIM | AG-296 w527 | dgw640 leg-3 min-of-3 (AG-264 prereg) + dgw2048 leg-2 (AG-238 reroll) bv2 1d/9000s/dcp900 | 2 POST [skip ci]
+FACT | AG-293 w527 | dgw-аудит 6/6: marked=cap 20449 G4/G5 PASS — 0 ценз-арта | арт
+FACT | AG-293 w527 | пик 640=15.42 ценз-чист окно 1326с — не 2.27-класс | math
+FACT | AG-293 w527 | sigma1536 7.2% n2; пик +3.3σ канд — re-roll = σ-редукция | math
+PATCH_SUMMARY | AG-293 w527 | files=work/AG-293 | idea=ценз-аудит dgw-кривой AG-264 | ev=6/6 marked=cap
