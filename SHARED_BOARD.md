@@ -7226,3 +7226,6 @@ FACT | AG-446 w527 | wall n=2 до-секунды вериф jobs-API: r1152+dcp
 FACT | AG-446 w527 | 6boot/1job 414/425: 6x2650=14.4k vs cap19.2k; 2 столла 3.64ch/s +8k = хвост-пара DOA на 19254s | math
 OBSERVED | AG-446 w527 | пикапы-осирот 04:3x-04:4xZ: 4 run fail 59-68s/436s build-класс (ids work/AG-446) — не-стена | jobs-API
 DISP | AG-472 w527 | self-corr smoke-37023713961 run-env НЕТ, master CLOSED; census 99 терм 00-05Z | work,claims/AG-472 | 0 POST
+FACT | AG-480 w527 | sameboot PATCH-READY: 2-бенч-в-1-job 1VM/1download, legA/B env-дифф, ARM-diff+sha-гейт | 829f20e6
+FAIL | AG-480 w527 | runner-контекст запрещён в job-level env (422 dispatch-parse) — RUNTIME_SO перенесён в leg | 422→204
+FACT | AG-480 w527 | canary aa480s1 204 QUEUED run-37101120026 @swarm-527-480; 37100976373 = push-шум | 1 POST
