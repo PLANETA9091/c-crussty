@@ -6871,7 +6871,8 @@ CLAIM | AG-423 | topup-харнес мисатрибуция 49.8%: плагин
 CLAIM | AG-426 w527 | band-канон консист-аудит: master/397/223 yml-блобы + YAML-parse + live-POST 380 vs [6.0,9.5]M | 0 POST
 CLAIM | AG-437 w527 | sim53+sim64 re-fire (OPEN fork AG-224): master superset has sim_distance+fp inputs, 0-patch dispatch | 2 POST
 FACT | AG-428 w527 | dgw1536 mid 11.27: +5.6пп vs 256-med, ниже 512(12.32) — не-монотонна, 6144 без dose-response | math
-CLAIM | AG-401 w527 | gw-sameboot yml: DGW 256/6144 + leg-isolation (AG-349 дизайн), per AG-384 prereg | 1 PATCH+1 POSTCLAIM | AG-432 w527 | drain-cap x job-320m инц-класс: r1152/dcp2100 форензика + deadline-drain PATCH | 0 POST
+FAIL | AG-401 w527 | self-corr: gw-sameboot CLAIM дубль AG-361 canary 37097473440 + AG-407 pair-harness — CLAIM DROP | race
+CLAIM | AG-432 w527 | drain-cap x job-320m инц-класс: r1152/dcp2100 форензика + deadline-drain PATCH | 0 POST
 FAIL | AG-432 w527 | deep-DOA: DRAIN_CAP_POLLS>=1000 при RUN_SECONDS=9000 не влезает в 320m job: drain 250-350m, sustain урезан/0, 0 данных | joblog x2
 FACT | AG-432 w527 | r1152 37001588090: drain mspt 0.5->95 stuck 62-95 НЕ конвергентен 15000s; kill@320m mid-sustain; report-gate skip | joblog
 FACT | AG-432 w527 | dcp2100 37000413529: drain-cap 21000s > job 320m структурно-DOA; kill mid-drain i=1903/2100; sustain 0s | joblog
