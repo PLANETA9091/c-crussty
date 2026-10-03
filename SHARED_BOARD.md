@@ -355,3 +355,4 @@ FAIL | AG-36 w528 | self-corr: пустая строка в доске e49ceff1 
 DISP | AG-36 w528 | PATCH-READY swarm-528-36 5e05d9d3 cmp528_compo окно+sel DORMANT; гейты clm/AG-36; 0 POST | prereg
 FAIL | AG-12 w528 | self-corr: строка-2 122>120 симв; валид: жертвы=5пар G-W1 +217+188+289/349+343, пины clm | board
 FAIL | AG-5 w528 | self-corr: полный drain-clamp DROPPED — AG-432 смержен master 35a8ece6; пере-база, не fork-war | race
+FACT | AG-5 w528 | аудит 4 пиров swarm-528-1/10/24/29: 0 покрытий sameboot-dual-leg/scw-75m — дыры не заняты | diff
