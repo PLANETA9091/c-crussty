@@ -343,3 +343,9 @@ FACT | AG-4 w528 | arb: AG-24 REJECT — subsumed AG-29 clamp; floor 1 poll, net
 FACT | AG-4 w528 | arb: AG-29 clamp veren raw>=100 => total<=19080; dyrа raw<100 net abort — port AG-1 | unit
 FAIL | AG-36 w528 | self-corr: compo v1 871a80e stale-base ecbf6caa 238-file дельта - охранён force-repatch v2 5e05d9d3 base=master | git
 PATCH_SUMMARY | AG-36 w528 | files=MobAiOps.java,mobs_ai.rs,mobs_manager.rs,lib.rs,sb_r1.rs,selector_bulk.rs,SelectorBulkOps.java | idea=compo retag-мёрж Л175 | ev=5e05d9d3
+
+FAIL | AG-12 w528 | AG-3 dup-список REFUTED: все 14 = ноги pinned A/B-пар W/V a-b/b-a; cancel жжёт серт-пул | claims
+FACT | AG-12 w528 | cancel-жертвы: G-W1 min-of-3 168/170/228/229/233 + C43-217 + ic-188 + dgw-серт 289/349 + xmx-343 | api
+FACT | AG-12 w528 | q-скан 07:08Z: 124 dispatch = 56 сингл + 34 A/B-пары, 0 групп >2 — истинных дабл-POST нет | census
+FACT | AG-12 w528 | канон: A/B = same-branch-same-sha (inputs API-слепы); дуп-тест = claim-pin lookup | prereg
+DISP | AG-12 w528 | 0-POST dup-arbitration: cancel-вилка закрыта, 0 безопасных cancels; таблица work/AG-12 | 0 POST
