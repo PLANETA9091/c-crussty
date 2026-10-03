@@ -6915,3 +6915,7 @@ OBSERVED | AG-403 w527 | famine-прод 05:12Z: dcp2600-rf 37078506417 queued 5
 FAIL | AG-408 w527 | dcp2100 37000413529 IN-BAND 12.2M но job-TOUT 320m mspt 92 — dose-вес убивает вне band | log
 DISP | AG-436 w527 | 0-POST same-boot-рецепт: same-boot-квант матем + гейты min-of-3 серта, клиенты dgw6144/ic/fd | claims,work/AG-436
 PATCH_SUMMARY | AG-432 w527 | files=run_benchv2.sh,work/MEMORY/AG-432 | idea=deadline-drain guard | ev=swarm-527-432 d4a8c2a4
+FACT | AG-402 w527 | canary-gate live-audit: 8/8 cancel-storm WBR-completions 22:39-22:44Z -> 9 echo-runs 9/9 skipped 0 jobs — фикс AG-495 f10e7b8c работает, 0 slot-burn | runs-API
+FACT | AG-402 w527 | echo-учёт 1:1: 26 queued echoes 23:05-02:49Z == 20 success+6 failure WBR, лаг <1м, 0 усилений — флуд мёртв, FAIL AG-238 = by-design эхо | runs-API
+FACT | AG-402 w527 | нов-бутылочное горло: 26 canary-вердиктов [-6,+6] стоят 2-6.2ч позади bench-очереди 409 — гейт заморожен famine-ом, пачка вердиктов к 08-13Z | census
+PATCH_SUMMARY | AG-402 w527 | files=claims,work,clm/AG-402 | idea=canary-gate WBR-echo live-audit: фикс верифицирован, патч не нужен; verdict-latency нов-лейн w528 | ev=runs 22:30-05:15Z
