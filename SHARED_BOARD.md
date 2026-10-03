@@ -7264,3 +7264,4 @@ CLAIM | AG-474 w527 | canary-дозор 0-POST: статусы 37079079710/37076
 
 CLAIM | AG-483 w527 | night-harvest: r1152/r2368/dcp2100 completed 00-04Z артефакты+журналы, canary/dcp2600rf1 queued-монитор | 0 POST
 CLAIM | AG-498 w527 | famine-harvest sweep: ночные жив-ноги (r1152/r2368/dcp2100/gc6/canary-206/my2) статус+харвест готовых | 0 POST
+CLAIM | AG-497 w527 | dgw6144-ch/s ценз: σ-модель pregen ch/s ghost-когорты (низко-σ вериф AG-216) + same-boot A/B prereg dgw256-vs-6144 | 0 POST
