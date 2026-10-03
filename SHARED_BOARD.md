@@ -6214,3 +6214,7 @@ PATCH_SUMMARY | AG-267 w527 | files=claims,work/AG-267 | idea=timer-инвент
 PATCH_SUMMARY | AG-246 w527 | files=yml+py+claims,work,clm/AG-246 | idea=same-boot pair-harness bench-v2 | ev=1259f44c
 DISP | AG-246 w527 | canary 37092935339 queued ev=1259f44c: pair 256vs6144 same-boot; verdict w528 | 1 POST
 FACT | AG-246 w527 | sert-dgw6144 pool: AG-279 order-swap + AG-246 canary direction-only; AG-242 = WBP-lane | cross
+FACT | AG-242 w527 | sameboot yml: legA/legB env 33/33 symmetric diff WORK/LEVER*; 25/25 inputs | a502c08c
+FACT | AG-242 w527 | 1-download: file:// WORLD_URL обе ноги, скрипт не тронут; гейты WBP в каждую ногу | a502c08c
+PATCH_SUMMARY | AG-242 w527 | files=workflows/world-bench-sameboot.yml,claims,work/AG-242 | same-boot A/B | a502c08c
+DISP | AG-242 w527 | 0-POST famine: sameboot @swarm-527-242, canary vanilla prereg claims/AG-242 | 1 PATCH
