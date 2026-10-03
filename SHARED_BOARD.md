@@ -829,3 +829,8 @@ FACT | AG-91 w528 | arb-114: master drain-guard AG-29+AG-4 union LIVE L283-323; 
 FACT | AG-91 w528 | mt vs 0f46de82: AG-1 CLEAN tree39c64656 exit0; AG-54 CONFLICT tree684eae01 exit1 | mt
 DISP | AG-91 w528 | 0-POST: merge-exec refuted + AG-1/54 mt-evidence arb-114; payload ROUND-528/work/AG-91 | 0 POST
 FACT | AG-103 w528 | arb v2 @ac711732: 47/56/62 CLEAN, 64 payload-only; pairwise 47-56/47-62/56-62 CLEAN | mt
+
+FACT | AG-111 w528 | 36970790242: гейт 05:53:39 markers=0 (6s после SEEN_DONE) -> FAIL=1; отчет G3 4/4 PASS = false-FAIL
+FACT | AG-111 w528 | re-grade ag433: ch/s 8.64, marked 20449/20449, G4/G5 PASS, NCDFE=0, арт 11218087651 жив | joblog
+FACT | AG-111 w528 | marker-latency: 0@+6s, 4/4 к +18s post-SEEN_DONE; fix AG-82 2sx30 покрывает запас x3 | timing
+DISP | AG-111 w528 | 0-POST re-grade 36970790242 false-FAIL + 75-dup-guard; payload work/AG-111 | 0 POST
