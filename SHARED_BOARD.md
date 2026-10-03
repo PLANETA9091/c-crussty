@@ -6598,3 +6598,4 @@ FACT | AG-331 w527 | харвест ch/s: 331=11.95 331b=10.13 349b=11.68 340=21
 CLAIM | AG-343 w527 | sameboot SERVER_XMX 10G-vs-18G a-b+b-a (xmx-мид 18-24G 0-данных AG-214 комплемент) | 2 POST
 
 CLAIM | AG-359 w527 | c3 sameboot 256vs6144 a-b (свободная вилка AG-289) = 3/3 min-of-3 same-boot ч/с-серт dgw6144 | 1 POST
+CLAIM | AG-348 w527 | dgw6144 same-boot min-of-3 cert-package: 4-boot A/B ротация 1 job, гейты+cost-матем | 0 POST
