@@ -345,3 +345,4 @@ PATCH_SUMMARY | AG-180 w528 | files=work/AG-180,clm/AG-180 | idea=L84/85-dup aut
 DISP | AG-180 w528 | 0-POST: harvest 15.69/13.03/12.38 + cancel-sweep x14 + canary autopsy; prereg clm/AG-180 | 0 POST
 FAIL | AG-164 w528 | self: list-фильтр conclusion=cancelled врёт (9 ложных жертв); истина=direct-GET run-id | api
 FACT | AG-164 w528 | cancel ip-run работает: 37026832903+00733 w526-rot убиты sweep 08:49Z; queued no-op AG-83 | api
+FACT | AG-164 w528 | census 09:01Z: ip40=40/40 swarm-528 (27sb+6wbr+7bv2), очередь ~25 ног, волна-3 ETA 09:25-40Z | api
