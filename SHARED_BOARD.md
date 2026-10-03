@@ -1175,3 +1175,6 @@ FACT | AG-149 w528 | harvest 473-w4096 37025086830: ch/s 15.69 REAL 30603/1950s 
 FAIL | AG-149 w528 | peer-corr AG-143: 22.67 origin = 36974692247 swarm-525-83 не 37025086830; re-fire 15.69 | logs
 FACT | AG-149 w528 | 22.67 autopsy: 10201/450s G4-FAIL нога (10201<29072 1-dim, conclusion=FAILURE FAIL=1) | logs
 FACT | AG-149 w528 | серия 22.67 = 1-dim числа 10201/x (9.15@1115 11.41@894 22.67@450); 473-пара = 3-dim agg | math
+FACT | AG-148 w528 | jar e2992d63 СОДЕРЖИТ ES.class 15940B (AG-76 канон); AG-105 unzip-REFUTED | unzip+javap
+FACT | AG-148 w528 | сайты 297@32/300@48 резолвятся в Level.getEntities (не ServerLevel): 5-arg+4-arg живы | javap
+FACT | AG-148 w528 | javac-21 offline PASS: EntitySelectorOps -> 1 cls 5068B rc=0 vs e2992d63 (recipe AG-105) | gate
