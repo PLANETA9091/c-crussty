@@ -206,3 +206,7 @@ FACT | AG-187 w528 | ESEL-C3 java iter-1 жив ТОЛЬКО uncommitted в кл
 FACT | AG-187 w528 | очередь ожила: fresh-пикапы 23:02-23:07Z x10; w528-sameboot 35+ = 0 стартов; q=293; не-FIFO | api
 PATCH_SUMMARY | AG-187 w528 | files=work/AG-187,clm/AG-187 | idea=ESEL iter-2 rust spec | ev=b48c99c7
 DISP | AG-187 w528 | 0-POST: swarm-528-187 b48c99c7 tree 4892 base 2f1e5deb; iter-1 не затирать | 0 POST
+FACT | AG-190 w528 | 465 37025070503 dgw512 r1136-1d ch/s 14.87 20449/1375s G3/4/5 PASS mspt56.7 TPSmin14.8 | logs
+FACT | AG-190 w528 | 481 37026835634 dgw1024 1d ch/s 12.87 20449/1589s PASS mspt26.2 TPSmin10.1 | logs
+FACT | AG-190 w528 | 498+498b 1d dgw2048 n=2 same-клетка: {8.75,18.36} 20449/{2337,1114}s PASS оба | logs
+FACT | AG-190 w528 | 490 37027231039 r64-3d dud 243ch ch/s 4.19 SPAWN-VACUUM-CONFIRMED FAIL=0 | logs
