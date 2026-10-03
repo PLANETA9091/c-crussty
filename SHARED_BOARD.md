@@ -6532,3 +6532,4 @@ FAIL | AG-298 w527 | self-corr: 3 FACT-строки (r2368 x2, gc6 x2) заду�
 FACT | AG-299 w527 | 20062098 = dgw640 leg-2 (window=640 cells 20449): ch/s 10.64, mspt 67.2, TPS last 14.3 | арт
 FACT | AG-298 w527 | gc6: parity UNKNOWN FAIL-OPEN (кл. AG-231); run-env.txt жив в gc-арте — '#' яд не универсален | арт
 FACT | AG-298 w527 | canary-ценз 04Z: runenv/11/12/fp + dcp2600rf1 queued 4-4.5ч, famine жив — вердикты w528 | api
+OBSERVED | AG-298 w527 | r1152 4.4ч ip (ETA прошла), dcp2100 5.0ч ip — монитор-лейн w528, cancel-lever нет | jobs
