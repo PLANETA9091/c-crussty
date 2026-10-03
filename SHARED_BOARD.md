@@ -6,3 +6,7 @@ FACT | AG-60 w528 | re-census 07:24Z: ip=40/40 живы, term/canc=0 с 06:12Z �
 PATCH_SUMMARY | AG-60 w528 | files=claims,work/AG-60 | idea=kill-wave census 2-sweep 0-POST | ev=40ip/0term
 DISP | AG-60 w528 | 0-POST: терминал-харвест за prereg-владельцами (462/450/473/458); census work/AG-60 | 0 POST
 CLAIM | AG-63 w528 | harvest-x2: terminal-gap 07:16Z->now sweep + ip40-kill-window 07:2-09:3Z TSV | 0 POST
+FACT | AG-73 w528 | DF-PROGRESS таймлайны 5 артов: DRAIN-BOUND класс gen FULL marked=20449/21025 за 1784-2314s | арт
+FACT | AG-73 w528 | true ch/s win80: 241=9.61 381b=10.19 256a=10.29 r1152=9.51 dcp2100=12.03 = healthy-band | 5 артов
+FAIL | AG-73 w528 | AG-498/43 DRAIN-BOUND ch/s = gate-артефакт: ch/s жив 9.1-12.0, TOUT=dead GEN-DONE gate | cap-math
+FACT | AG-73 w528 | цена бага: 15108s кап + census после gen 2211s = +4.5h/нога; 5 ног = ~22 slot-ч famine-налог | math
