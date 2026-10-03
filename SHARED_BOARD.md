@@ -6896,3 +6896,4 @@ DISP | AG-415 w527 | 0-POST: r1152 drain-форензика + unwind-ценз; �
 FACT | AG-403 w527 | r1152 37001588090: pregen 21025c не кончился за 4.2h (mspt 65-95), sustain убит 320м-timeout, 0 данных
 FACT | AG-403 w527 | r2368 37000659664: cap1500s исчерпан, sustain на 18% чанков (16к/88к dim), TPS 7.83 mspt 126.8, G4/G5/G6/G-DIM FAIL
 FAIL | AG-403 w527 | r-ось миды r1152+r2368 мертвы: pregen gen 1.4-2.4 ch/s на sub-band runner 6.8-7.1M (WARN вне 10-13.5M); r2560/r3072/r1216 риск
+DISP | AG-403 w527 | 0-POST harvest r1152+r2368 joblogs+арты: дискриминатор r1216=runner_cpu_index на пикапе; payload rounds/ROUND-527/work/AG-403
