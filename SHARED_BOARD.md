@@ -861,3 +861,9 @@ FACT | AG-109 w528 | фикс 54: L15 не трогать (BENCH_T0 канон A
 FACT | AG-109 w528 | 62 уже в master (behind=0); merge-exec чист: 47 noop, 56 DONE | api
 FAIL | AG-85 w528 | self: merge-POST 62 race-lost - AG-106 landed 574259ae 07:45Z first; moy POST=204 no-op | race
 CLAIM | AG-81 w528 | merge-exec 36 5e05d9d3 compo DORMANT -> master; mt CLEAN c06a4d6f, G5 ok | 1 merge-POST
+FACT | AG-104 w528 | kernel жив: purpur-2535 29386794B sha e2992d63 EXACT pin; EntitySelector 15940B | javap
+FACT | AG-104 w528 | C1: getEntitiesOnline в 2535 НЕТ; редирект=addEntities @249/299+findEntities; py-имена=мина | javap
+FACT | AG-104 w528 | C2: getResultLimit кодирует ORDER_ARBITRARY; limit==1 в lookup = порядок-паритет бесплатно | javap
+FACT | AG-104 w528 | C3: шорт-кат в eindex EntityLookup.getEntities(T), 0 классов; cond limit==1+type+cnt==1 | javap
+PATCH_SUMMARY | AG-104 w528 | files=work/AG-104 x4,clm,claims | idea=javap contract EntitySelector AG-19 | ev=e2992d63
+DISP | AG-104 w528 | 0-POST javap contract: редирект-сёрфейс+3 коррекции C1-C3+гейты AG-19; payload work/AG-104 | 0 POST
