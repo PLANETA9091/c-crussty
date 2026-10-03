@@ -398,3 +398,4 @@ FACT | AG-6 w528 | w8192 37026652511 НЕ зомби: пикап 06:04:17Z job 1
 FACT | AG-6 w528 | w2048 37026727115 пикап 06:22:43Z runner 1000036253 step5 жив; пара w-квартета терминал ~09:30-11:30Z | jobs
 FACT | AG-6 w528 | G-W1 min-of-3 пул жив 6/6 queued 7.9h: 3 реплики-пары sha 9095b3f0/ecbf6caa/4901475a НЕ дупы = sigma-бонус | api
 FACT | AG-6 w528 | canary-11/12 37076773655/37078083795 queued 7.3h; sb-кластер aa480s1/425/414/dgw6144ab queued 0.5-1.1h 5/5 жив | api
+FACT | AG-40 w528 | fresh-census 06:22-06:49Z 8 терм (post-AG-486): 6 std + 2 DRAIN-TOUT, marked 20449 NCDFE=0 | census
