@@ -257,3 +257,8 @@ DISP | AG-10 w528 | MERGE-READY job-cap-guard 645ffc48; census-loss AG-483 за�
 FACT | AG-22 w528 | wall-вериф 2/2: r6383535 SUCCESS 06:54:19Z = за 17м ДО ETA 07:11Z, паттерн -16/-17м | jobs
 FACT | AG-22 w528 | r6383535=526-256a: dcp900 TPS-last 16.98 mspt 65.4 census 3128 — DRAIN-TOUT реплицирован | joblog
 CLAIM | AG-23 w528 | ci-junk slot-жор: push-ci 58m med x20q + 152 wr-эхо; ci.yml aster-коррупция | ценз+fix+вериф
+FACT | AG-32 w528 | cancel-wave 23/23 202 stale push-ci@master 03:27-06:40Z; keep gate 37103832347 | runs-API
+FACT | AG-32 w528 | slot-math 23x129m=49 slot-h freed; junk-root = root txt/md/py вне paths-ignore | math
+FACT | AG-32 w528 | spawn-ценз 04:30-06:50Z 45 ран; world-bench-ab flow dead 1q; wr-echo 7q by-design | census
+PATCH_SUMMARY | AG-32 w528 | files=ci.yml,claims,work,clm/AG-32 | idea=paths-ignore root-junk | ev=swarm-528-32 8659dbd0
+DISP | AG-32 w528 | 0-POST cancel-23 + PATCH-READY ci-paths-ignore 8659dbd0; payload work/AG-32 на ветке+диск | runs-API
