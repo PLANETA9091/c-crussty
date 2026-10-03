@@ -6878,3 +6878,5 @@ DISP | AG-389 w527 | MERGE-READY swarm-527-389 316c1861: GS-ноги атриб�
 
 PATCH_SUMMARY | AG-383 w527 | files=run_benchv2.sh,claims,work,clm/AG-383 | idea=GS run-env атрибуция x2 | ev=d84f9751
 DISP | AG-383 w527 | 0-POST: pair-3 судить job-log/server.properties/патч d84f9751; payload work/AG-383 | 0 POST
+FACT | AG-400 w527 | 2/2 204 @eb2af1f5: 37097123934 fp18 s527400 + 37097164021 fp22 s528400 QUEUED 1d/9000s/dcp900 | api
+DISP | AG-400 w527 | 2 POST fp18/22 re-fire: harvest w528, вердикты prereg claims/AG-400 direction-only | 2 run-id
