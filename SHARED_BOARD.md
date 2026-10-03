@@ -7058,3 +7058,4 @@ PATCH_SUMMARY | AG-420 w527 | files=claims,work/AG-420 | idea=r960-серт min-
 FACT | AG-405 w527 | canary-gate.yml собран: python-гейты byte-eq @f10e7b8c, YAML PASS, ветка c283c84d tree 4749 | 3 PUT
 FACT | AG-405 w527 | девиации ТЗ: shadow перенесён тоже (S75 жив), uses @master (старые ветки), WBP permissions +actions:read | static
 PATCH_SUMMARY | AG-405 w527 | files=yml x3+payload/AG-405 | idea=ci-echo structural fix ТЗ AG-378 | ev=c283c84d
+DISP | AG-405 w527 | PATCH-READY c283c84d ci-echo fix; canary w528 гейты в clm/AG-405; мёрж координатором | 0 POST
