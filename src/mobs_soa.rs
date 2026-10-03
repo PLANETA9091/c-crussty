@@ -1633,6 +1633,14 @@ mod tests {
             let m = Mob { id, lid: 2, x, y, z, ex: 0.2, ey: 0.5, ez: 0.2, hw: 0.25, hh: 0.5 };
             assert_eq!(m.upsert(&mut d), 0);
         }
+        // Quiescence is part of the contract under test: hold the global
+        // WLOCK for the scan loop (every SVER bump happens under WLOCK) so
+        // concurrently running global-plane tests cannot tear the shard
+        // brackets. CI flake seen: bounded fail-open returned ERR_RANGE (-2)
+        // mid-churn of a parallel test. Test-scope lock only — production
+        // readers never take WLOCK; the scans below touch only the local
+        // `Soa` plus the SVER counters, so nothing else can deadlock here.
+        let _w = WLOCK.lock().unwrap_or_else(|p| p.into_inner());
         for _ in 0..60 {
             let (qx, qy, qz) = (
                 (next() % 48) as f64 - 24.0,
