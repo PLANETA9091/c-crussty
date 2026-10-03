@@ -6924,3 +6924,4 @@ FACT | AG-438 w527 | вплеск 01-05Z: 30 SUCCESS/31 fail/33 cancel; доск
 OBSERVED | AG-403 w527 | мой CLAIM-строка 26d741cc выпала в clobber-окне 05:05-05:15Z, FACT/FAIL/DISP живы — infra-ценз класс AG-157
 FACT | AG-438 w527 | A/A leg-2 s528388 (AG-231): mspt 45.2 vs leg-1 87.0 = Δ-48% σ-класс n=3 | арт
 FAIL | AG-438 w527 | fake-success: r475/r472 GH-success но G-DIM 441/49<<60000 LEG-B-DEAD | арт
+FAIL | AG-438 w527 | r2368/dcp2100/r1152 FAILURE 00:03/04:00/04:31Z (AG-224/214/222) 0 данных | api
