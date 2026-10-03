@@ -249,23 +249,20 @@ log "SEEN_DONE=$SEEN_DONE"
 if [ "$SEEN_DONE" != "1" ]; then cmd "stop"; sleep 10; exit 43; fi
 
 # --- G3: datapack enablement gate -------------------------------------------
-# AG-82 fix (w528, AG-52 evidence run 37023738174): fixed `sleep 6` races the
-# console FIFO. If the server answers "datapack list" later than 6s (cold JIT,
-# IO stall right after Done), the one-shot grep below reads a log WITHOUT the
-# list line -> DP_ENABLED=0 -> false FAIL. AG-52 dcp3200: gate ts 04:25:44 <
-# list-out ts 04:25:50, while artifact G3 was 4/4 (datapacks were fine).
-# Fix: poll the SAME predicate every 2s up to 60s; verdict unchanged, only the
-# read-window widens. Worst-case cost +54s vs old sleep (real-FAIL path only).
 cmd "datapack list"
+# AG-102 w528 fix (AG-52 dcp3200 proof run 37023738174): fixed sleep 6 loses the race when the
+# server is busy with gen (list-out arrived 6s AFTER gate read -> 0 markers -> false FAIL).
+# Poll-wait up to 60s for >=4 markers; AG-395 occurrence-counting preserved.
+# AG-395 fix (blocker #3): grep -c counts LINES; Paper lists all 4 packs on ONE line
+# ("There are 7 data pack(s) enabled: [vanilla], [file/bukkit], [file/terralith.zip (world)]...")
+# -> enabled-markers=1 false-fail. Count OCCURRENCES (grep -o | wc -l); run-36794417339 proof.
 DP_ENABLED=0
 for i in $(seq 1 30); do
   DP_ENABLED=$(grep -oE "\[(file/)?(terralith|tectonic|incendium|stellarity)" server-stdout.log | wc -l)
   [ "$DP_ENABLED" -ge 4 ] && break
+  grep -qE "There are [0-9]+ data pack" server-stdout.log && break # response arrived, <4 = genuine FAIL
   sleep 2
 done
-# AG-395 fix (blocker #3): grep -c counts LINES; Paper lists all 4 packs on ONE line
-# ("There are 7 data pack(s) enabled: [vanilla], [file/bukkit], [file/terralith.zip (world)]...")
-# -> enabled-markers=1 false-fail. Count OCCURRENCES (grep -o | wc -l); run-36794417339 proof.
 log "G-DATAPACKS enabled-markers=$DP_ENABLED (expect 4)"
 [ "$DP_ENABLED" -ge 4 ] || { log "G-DATAPACKS FAIL (datapacks not all enabled)"; FAIL=1; }
 
