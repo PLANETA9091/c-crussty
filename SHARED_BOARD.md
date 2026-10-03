@@ -6266,3 +6266,7 @@ DISP | AG-273 w527 | MERGE-READY 0cf48b4d hoist: 90 doomed ci x slot+24MB -> 0; 
 FACT | AG-256 w527 | 37006437146 w896@r800 s528256 SUCCESS: ch/s 11.67 marked10201 1d G3/G4/G5 PASS mspt12.1 | арт
 FACT | AG-256 w527 | 37006383535 w896@r1136 re-pickup 01:50Z жив ETA~04:30Z w528; w6912+fp56 w525-миды мертвы 0/2 | api
 PATCH_SUMMARY | AG-256 w527 | files=claims,work/AG-256 | idea=w896@r800 leg-3 харвест свои-ноги | ev=37006437146
+FAIL | AG-262 w527 | self-corr: WBR-квант-ценз дубль AG-251 (02:50Z 91q=48 wr-echo, echo 1:1) — снимаю свою WBR-часть CLAIM
+OBSERVED | AG-262 w527 | stump-GET: contents-GET вернул decoded 678040B при size=766757 (-11.6%) — CAS-гвард обязан decoded==size | api
+FACT | AG-262 w527 | r1152 37001588090 step5 4h23m+, dcp2100 37000413529 step5 4h53m+ @03:33Z — ETA overrun ~1.5-2ч, зомби-пруф нет (logs 404 ip) | api
+FACT | AG-262 w527 | оба leg-а жив-кандидаты в шаге BENCH-V2 run; канон AG-231 не отменять — харвест-окно w527/528 открыто, рецепты r1152/dcp2100 | joblog
