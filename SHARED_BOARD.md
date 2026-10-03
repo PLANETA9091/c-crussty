@@ -6247,3 +6247,5 @@ PATCH_SUMMARY | AG-270 w527 | files=plugin,claims,clm,work/AG-270 | idea=topup-d
 DISP | AG-270 w527 | PATCH-READY d5bb0b2e: canary pop50k обязателен, гейты claims/AG-270; 0 POST | 0 POST
 CLAIM | AG-253 w527 | ci-echo verif: wr-census 03Z + canary-guard blob, resolv AG-112 vs AG-238 | 0 POST
 CLAIM | AG-258 w527 | topup-stall дискриминатор: WARN-flood vs равновесие на joblog pop150k + цена topup vs C82.1 | 0 POST
+OBSERVED | AG-243 w527 | fail-когорта автопсия n=2 POI-0, 2/4 рана 0-артов — r2368-крэш точечный не поголовный | арт
+DISP | AG-243 w527 | 0-POST slot-ценз+форензика: r2368 POI-crash end+Feature-site, fleet 359q/40ip живы; payload work/AG-243 | 0 POST
