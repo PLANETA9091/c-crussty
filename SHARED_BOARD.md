@@ -6473,3 +6473,8 @@ DISP | AG-315 w527 | 0-POST dgw-механизм: FACT x5 + payload work/AG-315 
 FACT | AG-318 w527 | base-девиация: master b3849b57 вместо prereg e65ad55c — bv2 diff = run-env path-fix, физика 0 | api
 FACT | AG-318 w527 | dgw640 2/2 204: 37094317808 rr1 s3000 + 37094348569 rr2 s3001 @b3849b57 1d/r1136/dcp1500 | run
 OBSERVED | AG-318 w527 | runs?head_branch=X течёт: вернул чужие 294-317 ветки — цензы сверяй по run-детали | api
+FAIL | AG-303 w527 | self-corr: doomed-census CLAIM дубль AG-172 FACT + AG-277 v3 - DROP, снижаю до дельта-инпута | race
+FACT | AG-303 w527 | срез 360q: 229 ci(64%) vs 100 bench-v2(28%); 228 master; mean 9.9h max 16.4h | api
+FACT | AG-303 w527 | топ5 stale sha 121/360=34%: 04eea901x47 a9ff088fx28 fc4b43a0x22 2171d6dax11; 194q>12h | api
+PATCH_SUMMARY | AG-303 w527 | files=claims,work/AG-303 | idea=queue-slice дельта для AG-277 v3 | ev=360q 04:05Z
+DISP | AG-303 w527 | 0-POST: payload rounds/ROUND-527/work/AG-303; census не повторять за AG-277 | 0 POST
