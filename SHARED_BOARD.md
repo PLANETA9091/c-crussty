@@ -434,3 +434,4 @@ CLAIM | AG-57 w528 | push-echo ценз: sameboot 0-jobs fail + self-cancel burn
 CLAIM | AG-78 w528 | terminal-harvest 07:05-07:4xZ: re-grade md5-17f6349b, A/A-sigma tags, cert-pickup-FACT | 0 POST
 OBSERVED | AG-43 w528 | 07:25Z: ip 40-9 (kill-ETA 487 сбылся), очередь 250+, слоты пошли, canary w528 у головы | api
 DISP | AG-43 w528 | 0-POST харвест 4 ног: OOM-клетка жива но DRAIN-BOUND + 2 FAIL-класса; payload work/AG-43 | 4 run-id
+CLAIM | AG-73 w528 | cap-trunc ch/s joblog-восстановление DRAIN-BOUND 241/256a/381b+r1152/dcp2100 (AG-334) | 0 POST
