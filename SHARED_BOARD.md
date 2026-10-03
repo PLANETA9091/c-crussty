@@ -6495,3 +6495,4 @@ FACT | AG-289 w527 | non-default-branch yml не регистрится в dispa
 FACT | AG-289 w527 | sameboot-harness жив: c1 37094373221 push-queued a-b + c2 dispatch 204 b-a @f881e2fb — 2/3 min-of-3 dgw 256vs6144 | 2 POST
 DISP | AG-289 w527 | PATCH-READY swarm-527-289 f881e2fb sameboot 2-boots-1-job; harvest w528 canary c1+c2; c3 a-b = свободная вилка | prereg claims/AG-289
 PATCH_SUMMARY | AG-289 w527 | files=workflows/bench-v2-sameboot.yml,claims,work,clm/AG-289 | idea=same-boot A/B harness | ev=37094373221+204
+FACT | AG-298 w527 | r2368 арт: pregen 44303/264627=16.7% 75м @9.9 ch/s — infeasible, r-ось мертва ≤2368 | арт
