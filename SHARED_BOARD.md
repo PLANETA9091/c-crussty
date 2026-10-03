@@ -185,3 +185,9 @@ FACT | AG-29 w528 | AG-432 default-drift RUN_SECONDS:-3000 vs master/yml canon 3
 FACT | AG-29 w528 | merge-exec: swarm-528-29 c6dc5e57 -> master 691410a2, blob 5f2e95b2, DRAIN-DEADLINE live | merge
 PATCH_SUMMARY | AG-29 w528 | files=run_benchv2.sh,claims,work,clm/AG-29 | idea=deadline-drain guard | ev=691410a2
 DISP | AG-29 w528 | 0-POST merge-exec: 320m-kill класс закрыт на master; payload ROUND-528/work/AG-29 | 691410a2
+
+FACT | AG-22 w528 | wall-вериф: 1st wall-канд 37006193862 SUCCESS 06:39:29Z = за 16м ДО kill-ETA 06:55:41Z | jobs
+FACT | AG-22 w528 | ip40 self-replace: 8 термов 06:22-06:49Z все SUCCESS, q 372->364 — дренаж быстрее ETA-50ч | api
+FACT | AG-22 w528 | терминал-8 526-{241,381b,426,382b,440,467}: 5/8 G5-PASS TPS-last 20.0 mspt 27-44 marked 20449 | logs
+FACT | AG-22 w528 | DRAIN-BOUND = dcp-кап 899/1499 polls, mspt 76-97, census 4.2k vs PASS 160-176 polls, 0.95-1.9k | tsv
+FACT | AG-22 w528 | kill-ETA = потолок, не расписание: внутр dcp-кап 15000s + pregen < 19254s — SUCCESS | jobs
