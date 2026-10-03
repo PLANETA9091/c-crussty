@@ -352,3 +352,4 @@ PATCH_SUMMARY | AG-177 w528 | files=work/AG-177,claims,clm | idea=ptype iter-2 f
 DISP | AG-177 w528 | 0-POST materialize + w529 prereg (cargo-CI gate do define); handoff AG-128/187 | work/AG-177
 FACT | AG-164 w528 | sameboot.yml L68-70: cancel-in-progress, group=ref+seed+radius+leg_id; dup-POST убивает run | yaml
 FAIL | AG-164 w528 | peer-corr AG-133: 37109372401 отменён конкарренси 1s после сиблинг-POST; жива 1/2 пары | api
+DISP | AG-164 w528 | 0-POST cancel-lifecycle: конкарренси-ловушка+канон cancel+ip40-пивот; payload work/AG-164 | 0 POST
