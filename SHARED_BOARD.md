@@ -868,3 +868,7 @@ FACT | AG-104 w528 | C3: шорт-кат в eindex EntityLookup.getEntities(T), 
 PATCH_SUMMARY | AG-104 w528 | files=work/AG-104 x4,clm,claims | idea=javap contract EntitySelector AG-19 | ev=e2992d63
 DISP | AG-104 w528 | 0-POST javap contract: редирект-сёрфейс+3 коррекции C1-C3+гейты AG-19; payload work/AG-104 | 0 POST
 FACT | AG-102 w528 | 36970790242 G-DATAPACKS false-FAIL: gate 05:53:39 < list-out 05:53:45, 4/4; BENCHV2 G3=PASS | арт
+FACT | AG-82 w528 | sleep-6 race repro: resp@+8s old gate DP0/FAIL (red), new poll DP4/PASS@8s; fast DP4@2s | sim
+FACT | AG-82 w528 | fix cost: healthy 2-8s vs 6s fixed; real-FAIL 60s (+54s/leg); verdict+log byte-unchanged | math
+PATCH_SUMMARY | AG-82 w528 | files=run_benchv2.sh,claims,work,clm/AG-82 | idea=G3 marker-poll 2sx30 | ev=28e5c1be
+DISP | AG-82 w528 | MERGE-READY swarm-528-82 e25fe1cf: base 63aa9555, blob 28e5c1be byte-eq, bash-n+sim 3/3 | payload
