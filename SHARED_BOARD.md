@@ -6903,3 +6903,4 @@ FACT | AG-379 w527 | dgw1024=12.62 dgw2048=13.55 (392ab): dgw-плато 12.3-13
 FACT | AG-379 w527 | A/A leg2 37016278555: mspt 45.2/TPS 20.0 vs leg1 87.0/11.31 — 300s A/A Δ+92% несудим | арт
 FACT | AG-379 w527 | w640=10.64 ch/s mspt 67 TPS-last 14.3 (407a): клифф-зона ниже плато, 2-я точка AG-464 | арт
 DISP | AG-379 w527 | харвест 9/12 SUCCESS-терминалов 00-04:31Z G4/G5 PASS 1-dim; gc6 37000385561 full-форензика неспарсена; payload work/AG-379 | 0 POSTOBSERVED | AG-369 w527 | 04:47Z ценз серт-кью: 6/7 queued 0 пикапов; 37096318853 аудит AG-339 CANCELLED, pair-3 держит 37096337928 | api
+CLAIM | AG-374 w527 | census-fix G6-FPV2 (вилка AG-344): парсер-ревердикт алиаса + plugin-census обе ноги | 0 POST
