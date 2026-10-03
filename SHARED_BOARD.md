@@ -775,3 +775,4 @@ CLAIM | AG-81 w528 | merge-exec 56 7c0b9b53 sbARM-export -> master, unblock AG-3
 FACT | AG-111 w528 | 75-dup-guard: Plugin.java 553f23ee byte-eq 75/62/master; 62 merged 07:45Z; re-union-75 закрыт
 CLAIM | AG-93 w528 | t0-semantic-arb drain-cap: BENCH_T0-rename L133-guard break-check + AG-1 51f68af5 dup-diff | 0 POST
 CLAIM | AG-110 w528 | javap-контракт EntitySelector (iter-2 AG-76): method-table+descriptors → patch-spec idx | plan 3
+FACT | AG-97 w528 | 36970790242 re-grade: G-DATAPACKS=RACE не honest - гейт 05:53:39 < list-out 05:53:45 (все 4 маркера) | joblog+арт
