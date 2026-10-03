@@ -19,6 +19,15 @@ REPO_ROOT="$PWD"
 AB_NULL="${AB_NULL:-0}"
 RUN_A="$REPO_ROOT/runA"; RUN_B="$REPO_ROOT/runB"
 
+# --- G1 echo-guard (AG-167 w528, trap found by AG-129 w528) ------------------
+# AB_NULL=0 with an empty AB_LEG_B_VARS => leg B runs byte-identical to leg A
+# but the verdict is labeled AB-LEV: A/A boot noise reads as "lever effect ~0"
+# = false REFUTED of the lever. Fail-closed BEFORE any bench spend.
+if [ "$AB_NULL" != "1" ] && [ -z "${AB_LEG_B_VARS//[[:space:]]/}" ]; then
+  log "G1-TRAP GUARD AG-167: AB_NULL=0 with empty AB_LEG_B_VARS => A/A-as-LEV; exit 1 (set leg_b_vars or ab_null=1)"
+  exit 1
+fi
+
 # --- AG-5 w528: shared step-budget for both legs (drain deadline hook) ------
 # Both legs live in ONE GH step (bench-v2-sameboot.yml timeout-minutes 320).
 # run_benchv2.sh AG-432 guard is PER-LEG with own BENCH_T0: leg B restarts the
@@ -43,22 +52,25 @@ log "LEG-A rc=$A_RC"
 
 # --- leg B (lever delta) -----------------------------------------------------
 if [ "$AB_NULL" = "1" ]; then
+  SB_B_ECHO="none"   # AG-167: echo the EFFECTIVE state, not the unused input
   log "AB_NULL=1: leg-B env byte-identical leg-A (A/A null canary)"
 else
   for kv in $AB_LEG_B_VARS; do
     export "${kv%%=*}=${kv#*=}"
     log "LEG-B lever export: ${kv%%=*}=${kv#*=}"
   done
+  SB_B_ECHO="$AB_LEG_B_VARS"
 fi
 log "LEG-B start (BENCH_WORK=$RUN_B)"
 JOB_DEADLINE_TS=$(( SB_T0_TS + SB_STEP_CAP_S - SB_MERGE_RESERVE_S )) BENCH_WORK="$RUN_B" bash "$REPO_ROOT/bench/worldv2/run_benchv2.sh"; B_RC=$?
-echo "ab_leg=B ab_null=$AB_NULL ab_vars=${AB_LEG_B_VARS:-none}" >> "$RUN_B/run-env.txt" 2>/dev/null || true
+echo "ab_leg=B ab_null=$AB_NULL ab_vars=$SB_B_ECHO" >> "$RUN_B/run-env.txt" 2>/dev/null || true
 cp "$RUN_B/server/BENCHV2.md" "$REPO_ROOT/BENCHV2_LEG_B.md" 2>/dev/null || true
 log "LEG-B rc=$B_RC"
 
 # --- merge verdict -----------------------------------------------------------
 python3 "$REPO_ROOT/bench/worldv2/report_sameboot_ab.py" \
-  "$RUN_A/server" "$RUN_B/server" "$REPO_ROOT" "$A_RC" "$B_RC" "$AB_NULL" || true
+  "$RUN_A/server" "$RUN_B/server" "$REPO_ROOT" "$A_RC" "$B_RC" "$AB_NULL" \
+  "$RUN_A/run-env.txt" "$RUN_B/run-env.txt" || true
 [ -s "$REPO_ROOT/BENCHV2_AB.md" ]; AB_RC=$?
 log "sameboot done: A_RC=$A_RC B_RC=$B_RC AB_RC=$AB_RC"
 # fail-closed (dud-gate canon x519): leg gate-fail or missing AB verdict = red job

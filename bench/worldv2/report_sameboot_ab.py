@@ -18,9 +18,28 @@ Prereg (SHARED_BOARD 2026-10-03, AG-361 w527, claims/AG-361.md):
     D(tps_last) as a same-boot pair delta with |dIdx|=0. Cert = min-of-3
     same-boot pairs, FIN bar +20пп (pair math canon LAB_LEDGER).
 
-Exit 0 iff both leg reports parsed and (AB-NULL not FAIL).
+Exit 0 iff both leg reports parsed and (AB-NULL not FAIL) and (G1 echo-audit
+not MISMATCH).
+
+G1 echo-audit (AG-167 w528; trap found by AG-129 w528): argv-trusting mode
+labels let A/A pairs masquerade as AB-LEV (empty leg_b_vars) or AB-NULL legs
+carry lever echoes. The run-env.txt `ab_vars=` echoes (written by the wrapper)
+are the byte truth; on mismatch the verdict is FAIL (fail-closed, dud-gate
+canon x519). Missing env files => audit skipped (pre-AG-167 artifacts).
 """
 import os, re, sys
+
+
+def read_echo(p):
+    """Return (ab_null_str, ab_vars) from a run-env.txt echo line, else None."""
+    if not p or not os.path.exists(p):
+        return None
+    for ln in open(p, encoding="utf-8", errors="replace"):
+        if "ab_leg=" in ln and "ab_vars=" in ln:
+            m_n = re.search(r"ab_null=([0-9]+)", ln)
+            m_v = re.search(r"ab_vars=(.*)", ln)
+            return (m_n.group(1) if m_n else "?", (m_v.group(1) if m_v else "").strip())
+    return None
 
 
 def parse_leg(d):
@@ -59,6 +78,8 @@ b = parse_leg(sys.argv[2])
 outdir = sys.argv[3]
 a_rc, b_rc = sys.argv[4], sys.argv[5]
 ab_null = sys.argv[6] == "1"
+env_a = sys.argv[7] if len(sys.argv) > 7 else None   # AG-167: leg A run-env echo
+env_b = sys.argv[8] if len(sys.argv) > 8 else None   # AG-167: leg B run-env echo
 
 rep = ["# BENCHV2-AB — same-boot A/B verdict (AG-361 w527)", ""]
 rep.append(f"- mode: {'AB-NULL (A/A harness sanity)' if ab_null else 'AB-LEV (lever delta)'}; leg_rc: A={a_rc} B={b_rc}")
@@ -89,6 +110,25 @@ elif ok:
     d_ms = delta(a["mspt_med"], b["mspt_med"])
     verdict = "REPORT"  # lever mode: no prereg pass/fail, cert = min-of-3
     rep.append(f"- AB-LEV pair delta: D(ch/s)={fmt(d_ch)} D(mspt_med)={fmt(d_ms)} — same-boot |dIdx|=0 pair; cert = min-of-3, bar +20пп")
+
+# --- G1 echo-audit (AG-167 w528): byte-truth of the A/B split, AFTER mode
+# verdicts so a mismatch cannot be clobbered back to PASS/REPORT -------------
+g1 = "skipped (no run-env echo files)"
+ea, eb = read_echo(env_a), read_echo(env_b)
+if ea is not None and eb is not None:
+    g1_ok = True
+    if ea[1] != "base":
+        g1_ok, g1 = False, f"MISMATCH: leg A ab_vars={ea[1]!r} expected 'base'"
+    elif ab_null and eb[1] != "none":
+        g1_ok, g1 = False, f"MISMATCH: AB_NULL=1 but leg B ab_vars={eb[1]!r} (vars never applied)"
+    elif (not ab_null) and (eb[1] in ("", "none", "base") or eb[1] == ea[1]):
+        g1_ok, g1 = False, f"MISMATCH: leg B ab_vars={eb[1]!r} => A/A pair mislabeled AB-LEV"
+    else:
+        g1 = f"OK: legA ab_vars={ea[1]!r} legB ab_vars={eb[1]!r}"
+    if not g1_ok:
+        verdict = "FAIL"
+rep.append(f"- G1 echo-audit (AG-167): {g1}")
+rep.append("")
 rep.append(f"- VERDICT: {verdict}")
 rep.append("- usage: cert path for pending pairs (dgw-axis ch/s ghost +24.5пп n=1 AG-216; fd/ic lever pairs w527) — 3 same-boot jobs = min-of-3")
 
