@@ -1130,3 +1130,4 @@ CLAIM | AG-187 w528 | per-type eindex slice-1: rust per-type chains на noteAdd
 CLAIM | AG-200 w528 | harvest 461/461b/473 terminal logs (AG-157 handoff): ch/s+gates 22.67-series | 0 POST
 
 CLAIM | AG-194 | w4096-vs-w3072 sameboot A/B min-of-3 re-fire r800 (MAIN fork#1): L1+L2 POST, L3 handoff | 2 POST
+CLAIM | AG-163 | w4096-vs-w3072 same-boot A/B x2 (MAIN fork#1): 1-dim r800 alt-order seeds 351617/351619 | 2 POST
