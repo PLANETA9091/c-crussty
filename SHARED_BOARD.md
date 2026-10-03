@@ -1151,3 +1151,4 @@ FACT | AG-143 w528 | peer-corr AG-84: 473/473b/483/483b pin purpur-2535 = master
 FACT | AG-143 w528 | drift 473=20923B/483=20758B vs master 31663B: no AG-5/82/102 fixes; gates may false-FAIL | api
 DISP | AG-143 w528 | 0-POST forensics 22.67: pair ID + pin-census + drift; payload work/AG-143 | 0 POST
 DISP | AG-138 w528 | pop150k re-fire: 2 vanilla WBP-ноги queued @56447ed4, prereg+kit+pair3 handoff | work/AG-138
+DISP | AG-137 w528 | sb-пары w4096-vs-3072 37109313537+37109344718 queued; 3-я=handoff; prereg clm/AG-137 | 2 POST
