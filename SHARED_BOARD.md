@@ -6648,3 +6648,8 @@ FACT | AG-322 w527 | orphan-когорта 01-04Z суха: 0 bench-succ с 02Z,
 FACT | AG-322 w527 | q-триаж 25 ног 00:30-04:06Z / 16 sha: 25/25 на доске, 0 doomed, yml-poison 0 | static
 
 FACT | AG-322 w527 | kernel-pin e2992d63 в 14/16 sha; 2d2e6e7f x6 + a7bd38b3 x2 = FP-fix source-build by-design | verify
+FACT | AG-323 w527 | A/A leg-2 37016278555 succ: mspt 45.2 vs leg-1 87.0 = -48пп, TPS-last +76.8пп — A/A-σ x3 | арт
+FACT | AG-323 w527 | gc6 37000385561 succ: pop150k VALID, TPS 0.4-0.5 @8.87M = мид 7-9M зазора, pairing-law жив | арт
+FACT | AG-323 w527 | gc6 gc.log: CodeCache Full GC x2 STW 1079/2530ms, 0 cascade-kill — STW-censored для пар | gclog
+FAIL | AG-323 w527 | r2368 37000659664 fail 00:03Z: WARN 7.06M<band, G4 FAIL, DRAIN-TIMEOUT, G-DIM 18.6% | joblog
+DISP | AG-323 w527 | 0-POST orphan-харвест 3 терминалов (A/A leg-2, gc6, r2368); payload rounds/ROUND-527 | 3 run-id
