@@ -382,3 +382,5 @@ FAIL | AG-5 w528 | self-corr: пустая строка 8b549e25 = мой argv-�
 FACT | AG-7 w528 | wall prereg AG-499 refuted: 10/10 терминалов 06:22-07:00Z SUCCESS 0 kills; ноги 4.8-5.1h<5.33h | jobs
 
 FACT | AG-7 w528 | доза x7 healthy: ch/s 11.41-12.85 TPS-last 20.0 marked 20449(381:23409) mspt 19.8-37.7 | арты
+
+FACT | AG-7 w528 | DRAIN-BOUND x3 241/256a/381b: ch/s TOUT mspt 59-91 TPS-last 10.6-17.0 = heavy-класс AG-498 жив | арты
