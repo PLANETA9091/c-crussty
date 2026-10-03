@@ -71,7 +71,11 @@ public final class MobAiOps {
                 // TASK-424-A: GC-ревизия brain3 (STRICT OR).
                 || f.trim().equals("cmp423_brain3")
                 // TASK-426-A: SoA-feed carrier (STRICT OR).
-                || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside") || f.trim().equals("cmp432_inside2") || f.trim().equals("cmp436_ins4") || f.trim().equals("cmp451_senseins") || f.trim().equals("cmp458_swar") || f.trim().equals("cmp457_paldelta") || f.trim().equals("cmp457_eqsnap2") || f.trim().equals("cmp452_mega") || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside") || f.trim().equals("cmp434_chunkpl") || f.trim().equals("cmp435_chunk3") || f.trim().equals("cmp437_chunk4") || f.trim().equals("cmp444_chunk5") || f.trim().equals("cmp450_chunk") || f.trim().equals("cmp456_chunkmono") || f.trim().equals("cmp456_chunkmono_p31snap") || f.trim().equals("cmp466_c98ai") || f.trim().equals("cmp452_mega") || f.trim().equals("cmp453_diet") || f.trim().equals("cmp456_poi"));
+                || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside") || f.trim().equals("cmp432_inside2") || f.trim().equals("cmp436_ins4") || f.trim().equals("cmp451_senseins") || f.trim().equals("cmp458_swar") || f.trim().equals("cmp457_paldelta") || f.trim().equals("cmp457_eqsnap2") || f.trim().equals("cmp452_mega") || f.trim().equals("cmp424_mobfeed") || f.trim().equals("cmp430_inside") || f.trim().equals("cmp434_chunkpl") || f.trim().equals("cmp435_chunk3") || f.trim().equals("cmp437_chunk4") || f.trim().equals("cmp444_chunk5") || f.trim().equals("cmp450_chunk") || f.trim().equals("cmp456_chunkmono") || f.trim().equals("cmp456_chunkmono_p31snap") || f.trim().equals("cmp466_c98ai") || f.trim().equals("cmp452_mega") || f.trim().equals("cmp453_diet") || f.trim().equals("cmp456_poi")
+                // TASK-528-W (retag-мёрж AG-86 fork): window-only flag — изолированное окно-плечо (G-W1 A/B, AG-113)
+                || f.trim().equals("cmp528_win")
+                // TASK-528-COMPO (retag-мёрж Л175): компо окно⊕sel единый флаг (AG-36 w528)
+                || f.trim().equals("cmp528_compo"));
     }
 
     private static final boolean ENABLED = leverEnabled();

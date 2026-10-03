@@ -91,7 +91,8 @@ fn java_gate_matches(f: &str) -> bool {
         // TASK-419-A (colpush): колпаш-носитель — SoA-плоскость + eqsnap
         // (столбцы кормит colpush_plane_refresh, per-entity upsert спит).
         || f == "cmp420_colpush"
-        || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside" || f == "cmp432_inside2" || f == "cmp436_ins4" || f == "cmp458_swar" || f == "cmp457_paldelta" || f == "cmp457_eqsnap2" || f == "cmp456_chunkmono" || f == "cmp456_chunkmono" || f == "cmp456_chunkmono_p31snap" || f == "cmp456_chunkmono_p31snap" || f == "cmp466_c98ai"
+        || f == "cmp421_brain" || f == "cmp422_brain2" || f == "cmp423_brain3" || f == "cmp424_mobfeed" || f == "cmp430_inside" || f == "cmp432_inside2" || f == "cmp436_ins4" || f == "cmp458_swar" || f == "cmp457_paldelta" || f == "cmp457_eqsnap2" || f == "cmp456_chunkmono" || f == "cmp456_chunkmono" || f == "cmp456_chunkmono_p31snap" || f == "cmp456_chunkmono_p31snap" || f == "cmp466_c98ai" || f == "cmp528_win" // TASK-528-W: window-only isolate, mirror-drift sync (x451/452)
+        || f == "cmp528_compo" // TASK-528-COMPO: компо окно⊕sel retag-мёрж Л175 (AG-36 w528)
         || f == "cmp451_senseins" || f == "cmp458_swar" || f == "cmp457_paldelta" || f == "cmp457_eqsnap2" || f == "cmp453_diet" || f == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)
         || f == "cmp438_sense" // TASK-444-C: sense family union
         || f == "cmp451_senseins" || f == "cmp458_swar" || f == "cmp457_paldelta" || f == "cmp457_eqsnap2" || f == "cmp453_diet" || f == "cmp434_chunkpl" || f == "cmp435_chunk3" || f == "cmp437_chunk4" || f == "cmp444_chunk5" || f == "cmp450_chunk" // TASK-451-D: senseins composite (carrier ins4 + sense/brain family, STRICT OR)

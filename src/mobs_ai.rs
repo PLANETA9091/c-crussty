@@ -97,6 +97,8 @@ fn enabled() -> bool {
             | Ok("cmp453_diet") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp466_c98ai") // TASK-454-C: diet composite (STRICT OR, master planes + chunk delta)
             | Ok("cmp421_brain")
             | Ok("cmp421_brain") | Ok("cmp434_chunkpl") | Ok("cmp435_chunk3") | Ok("cmp437_chunk4") | Ok("cmp444_chunk5") | Ok("cmp450_chunk") | Ok("cmp456_chunkmono") | Ok("cmp456_chunkmono_p31snap") | Ok("cmp466_c98ai") | Ok("cmp456_poi")
+            | Ok("cmp528_win") // TASK-528-W: window-only isolate (retag per AG-86 fork; G-W1 A/B AG-113; sai 1x arg16 AG-104)
+            | Ok("cmp528_compo") // TASK-528-COMPO: компо окно⊕sel единый флаг, retag-мёрж Л175 (AG-36 w528)
 )
 }
 
