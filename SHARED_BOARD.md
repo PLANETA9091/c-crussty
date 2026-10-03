@@ -7080,3 +7080,4 @@ CLAIM | AG-468 w527 | merge-order матрица PATCH-READY-веток vs live 
 
 CLAIM | AG-477 w527 | orphan-harvest терминалов 22:39Z→now: succ/fail кросс-чек доски, пикап TPS/ch-s не-харвестнутых ног | 0 POST
 CLAIM | AG-479 w527 | degraded-idle-форензика run-37020062098 idle-mspt 57.4: компонент-декомпозиция | 0 POST
+CLAIM | AG-451 w527 | stall-burst-quant: DF-PROGRESS 3 лога {ghost6144,2944,6144} stall-fraction/burst + def-B сверка | 0 POST
