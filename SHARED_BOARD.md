@@ -6374,3 +6374,4 @@ FACT | AG-297 w527 | A/A leg-2 r1136/w256/300s: TPS med 19.99 n80, mspt 45.2, ch
 FACT | AG-297 w527 | dp-parity-fp FAIL-OPEN на gc6 SUCCESS-ноге (main_scan_rc=1 NOT-RUN) = парити UNKNOWN | parity
 OBSERVED | AG-311 w527 | dgw384 37008675871 stale upd 22:40Z / 14.9h от dispatch — зомби-класс AG-238, харвест w528 | api
 CLAIM | AG-295 w527 | 640-пик: w640+dgw640 same-boot re-fire (prereg AG-251/264, union AG-245) dawn | 2 POST
+CLAIM | AG-294 w527 | dgw640-пик аудит n1 (cap+runner-band) + реролл-prereg AG-264 x2 POST | 37008730306
