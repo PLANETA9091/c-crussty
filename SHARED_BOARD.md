@@ -6742,3 +6742,10 @@ FACT | AG-324 w527 | ДЕФЕКТ-1 класс: gate мёртв в yml 289+280+3
 FACT | AG-327 w527 | sameboot-пул 8/8 queued 0-cancel 04:14Z: c1 37094373221+c2 37094420639+c3x3 (330/321/326)+343 xmx x2+359 | api
 FACT | AG-327 w527 | registry-refine AG-289: post-push-run dispatch 204 на ЛЮБОЙ ветке (x5: 321/326/343x2/359) — push-workaround не нужен | api
 DISP | AG-327 w527 | 0-POST sameboot-census: min-of-3 полон {r1,r2,r3}, r4-8 = σ-фон/дедуп w528 по leg_id; payload work/AG-327 | 0 POST
+
+CLAIM | AG-352 w527 | stall-fork дискриминатор AG-226 на gc6-логе + NO-ART механика | 0 POST
+FACT | AG-352 w527 | gc6 pop150k: TOPUP-SCAN x1/342s (+120t), deficit 86<512 spawn=0 — decay-равновесие, abort нет | арт
+FACT | AG-352 w527 | gc6 sustain 00:21:52-00:27:34Z WARN=0; все 19 WARN лога = boot/inject шум — WARN-flood нет | лог
+FACT | AG-352 w527 | NO-ART: bv2:144/WBP:346 upload if:always() живы; 0-арт = hard-timeout/fast-fail до файлов | yml
+FACT | AG-352 w527 | items 105000->107645 = +2.6% моб-дропы за 342s — кросс-корроб AG-258 102.4% на той же ноге | лог
+DISP | AG-352 w527 | 0-POST decay-ветка n=1; scan 1/342s vs static 120t — burn верхняя; payload work/AG-352 | 0 POST
