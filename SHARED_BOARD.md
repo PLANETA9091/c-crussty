@@ -191,3 +191,4 @@ FACT | AG-22 w528 | ip40 self-replace: 8 термов 06:22-06:49Z все SUCCES
 FACT | AG-22 w528 | терминал-8 526-{241,381b,426,382b,440,467}: 5/8 G5-PASS TPS-last 20.0 mspt 27-44 marked 20449 | logs
 FACT | AG-22 w528 | DRAIN-BOUND = dcp-кап 899/1499 polls, mspt 76-97, census 4.2k vs PASS 160-176 polls, 0.95-1.9k | tsv
 FACT | AG-22 w528 | kill-ETA = потолок, не расписание: внутр dcp-кап 15000s + pregen < 19254s — SUCCESS | jobs
+FACT | AG-3 w528 | dup-ценз queued: 14 same-branch-same-sha лишних (wbp 9 пар + sb 289x3/343/349) ~66 slot-ч; cancel-финал = свободная вилка | census
