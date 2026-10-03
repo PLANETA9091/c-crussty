@@ -68,3 +68,13 @@
   3. Стратум w4096: F1 sameboot 3-dim leg-swap (единственный пустой страт; 15.69-vs-11.21 пока cross-boot) — закрывает противоречие 22.67-канона.
   4. ESEL iter-2/3 (AG-245): java-сайт-спека паблишера готова в result.md — iter-3 = java-мост (blobs) + ARM-лестница; profile-pending A/A pair-3 37112385378.
   5. snapreg P32+P36 (AG-244) готов к парной сертификации малым A/B (same-boot, порог +1.5..2.5пп в интервале M2/M3).
+
+## СРЕЗ v24-2 (тик cron 432938, 2026-10-03)
+- Первая same-boot A/A-пара world-bench-ab (pop150k, 300s, банк-канон, sha-eq YES): legA 3.100 / legB 3.300 TPS-med-tail20 → pair Δ=+6.45%, ВЫШЕ гейта <3% → инструмент НЕ годен, re-roll по prereg (AG-242); pair-1 в зачёт σ-истории.
+- runner_idx внутри пары гуляет 11514994↔12315053 (±3.4% на 6M-итер CPU-пробе) — сопоставимо с pair-Δ: шум раннера на коротком окне остаётся главным лимитером разрешения малых рычагов.
+- Канон стратума w4096@r800 без изменений {12.38,13.03,15.69} (22.67 = G4-FAIL outlier, AG-246); M1/M2/M3 baseline pending до A/A-годности (prereg: все 3 пары |Δ|<3%).
+- ЧТО ОПТИМИЗИРОВАТЬ (v24-2):
+  1. A/A <3% не достигнут даже same-boot при 300s/150k: гипотезы следующего тика — окно 600s, min-of-5 с медианой пар, либо честный пересмотр порога гейта с владельцем (порог = prereg, не мнение).
+  2. ESEL publisher live (blob с eselPublish/eselArmNow): при годном инструменте первый lever-прогон cmp529_esel @dp50k (M3; capture 70-95% → 3.4→3.7-4.0).
+  3. SWAR call-site swarTick в EPOCH_LOCK-окне (iter-3 handoff AG-247): lever-пара cmp458_swar (+5..8пп broadphase-лейн).
+  4. snapreg pregate hits-coverage (iter-4 AG-248): lever-пара cmp459_snapreg (+1.5..2.5пп связка P32+P36).

@@ -60,3 +60,12 @@
 - **Харвест AG-246**: 60 ранов инвентаризовано; стратум w4096@r800 = {12.38, 13.03, 15.69} REAL — 22.67 = G4-FAIL 1-dim партиал n=1 (outlier!); never-run причина = famine (ip-cap ~30, не cancel); финалисты ≤3: F1 sameboot 3-dim leg-swap, F2 A/A pair-3, F3 AB-null canary.
 - **ΔS по трём метрикам**: не считывается в этом тике (инструмент AG-242 готов, A/A-валидация — первые ноги следующего тика; baseline M1/M2/M3 = канон LAB_LEDGER).
 - **Диск**: пик 97% (ENOSPC на ag245 worktree) → 55% (sparse-ворктри, чистка rounds/tmp); дерево 3873 ≥3200; 0 prune/gc.
+
+## ТИК v24-2 (cron 432938, 2026-10-03 ~14:5x+02 Europe/Warsaw; ЭРА v24, метрика = смерженные src-правки с замером)
+- Сабов: 3 (AG-247/248/249, личные брифы MAIN без SWARM_PROMPT, sparse-ворктри 4.3MB, ретраи после 3x context-deadline платформы) · мёржей в src: 3 --no-ff DORMANT за STRICT-леверами (247 d13852a6, 248 371c9368, 249 eca72738) + 1 MAIN blocker-fix f3bcccdc.
+- ШАГ 1 ДОСТАВКА: PR #8 c98ai открыт (swarm-529-241 dead0b63, +184/−2, 25 src-файлов, TASK-148 pattern) — INJECTS-ONLY, мёрж только после ответа владельца; вопрос в отчёте тика.
+- ШАГ 2 ИЗМЕРИТЕЛЬ: A/A pair-1 37118087818 SUCCESS (TPS-tail20 3.100/3.300, same-boot sha-eq) Δ=+6.45% ≥3% → re-roll по prereg AG-242; AA2/3 band-gate fast-fail (пустые инпуты API → дефолты [10M,13.5M]); замены 37123894500+37123863574 in_progress. Инструмент: 1/3 пары, НЕ годен пока.
+- ШАГ 3 СТЕК: SWAR java-мост swarEpoch (swar_bridge.rs ~1130L + MobSwaOps.java, третий bulk-JNI, NCDFE arm-after-define, cmp458_swar; stray JNI-сигнатура поймана до коммита); snapreg P36 pregate (InsideSnapOps.snapGet HEAD, sites 2/3 нетронуты, cmp459_snapreg); ESEL java-publisher (eselPublish/eselArmNow + $TypeIndexView/$FlatView + es_pt chain-source wiring, cmp529_esel — зонд publisher_missing снят).
+- Гейты: cargo check 0 err (172w baseline) после каждого мёржа; cargo test lib 417/0/1; check_blobs_sync ALL IN SYNC; java-харнесс ESEL 4/4 GREEN; блобы только пинненными скриптами.
+- MAIN-фиксы блокеров: javap-shim (/home/z/tools/jdk-21.0.12.1+1 через jdk.jdeps/jdk.compiler — JRE-only бокс); rebuild MobAiOps (cmp528_compo/win pre-existing drift) + SelectorBulkOps (cmp486_sbulk1 zero-blob drift); check_blobs_sync +2 gate (MobSwaOps/FlatView).
+- ΔM1/ΔM2/ΔM3: baseline-pending (калибровка инструмента 1/3 пары); диск 61% (пик 70%, /tmp/t247-249 очищены); дерево 3887 ≥3200; 0 prune/gc.
