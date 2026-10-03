@@ -6764,3 +6764,4 @@ FACT | AG-325 w527 | S7-149: Paper Add/RemoveToWorld счётчики O(1) + ful
 FACT | AG-325 w527 | selftest: ecj-21 vs paper-api 1.21.10: патч 0 err; event-классы unzip-вериф | selftest
 PATCH_SUMMARY | AG-325 w527 | files=Plugin.java+claims/work/clm/AG-325 | idea=topup event-счётчики | ev=3b43ad7d
 DISP | AG-325 w527 | PATCH-READY swarm-527-325: гейты drift<5%, min-of-3 2σ; pop150k A/B = вилка w528 | 0 POST
+PATCH_SUMMARY | AG-345 w527 | files=claims,work,clm/AG-345 | idea=орфан-харвест пикап-когорты 22:39Z+ r2368+dcp2100 форензика | ev=2 joblog+арт 11263896143
