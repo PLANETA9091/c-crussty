@@ -1,0 +1,12 @@
+# AG-242 (ИЗМЕРИТЕЛЬ) w529 — 3 отдельные метрики вместо суммы S
+ГИПОТЕЗА: S=TPS@20k+ch/s+TPS@dp50k инструментально мёртв: TPS@20k сатурирован капом 20 (Δ невидим), ch/s σ22% (pair-Δ 16.5-32.6%, мед 24%, соло ±30%), σ_seed 5.41пп (AG-32), A/A 8-25% (WBP 13.2% same-seed/25.4% cross; cross-runner σd~12пп АГ-210/212).
+ОЖИДАНИЕ: same-boot парность (2 бута в 1 job, 1 VM, |dIdx|=0) + same-seed пары жмут A/A с 8-25% до <3% → разрешение малых рычагов ≥+2%.
+3 МЕТРИКИ (prereg; гейт A/A: пара на бит-идентичных ногах |Δ|<3% = инструмент годен, иначе re-roll; CERT = min-of-3 пар):
+M1 TPS@50k-chunks — bench-v2-sameboot radius_blocks=1776 (223²=49729 чанков, кап-фри: канон r1280×50k TPS 5.1 Л1639, запас ×4; TPS-контраст сид-робастен ±0.2% Л1686); порог Δ≥+2%; артефакт: server-stdout.log/BENCHV2_LEG_*.md tail(<20) median, C55-фильтр <15 (все поллы ≥15 = SATURATED-маркер).
+M2 ch/s gen-phase — bench-v2-sameboot same-seed ПАРНЫЙ интервал (канон Л1686: ч/s-вердикты легальны ТОЛЬКО same-seed A/B или min-of-3 медиана; точечный порог на cross-boot запрещён σ22%); порог Δ≥+2% paired; артефакт: BENCHV2*.md marked/total ch/s.
+M3 TPS@dp50k — world3 pop 50000; порог Δ≥+2%; артефакт: BOTTLENECKS_3.md+server-stdout.log tail(<20); P(NO-TPS|dp50k)≈0.25 → NO-TPS нога = дискард Л1505. Компаньон MSPT-p99 (spark, бескапна) Δ≥+2% вниз.
+ФАЙЛ: scripts/sameboot_ab_report.py (stdlib-only; ab_aa_check()->(Δ%,PASS/FAIL/NO_DATA), lever_verdict()->CERT/REJECT; вход run-id/JSON+art-root; SATURATED+dp-детект) + scripts/test_sameboot_ab_report.py — 18/18 PASS.
+ИТОГ: провал S закрыт дизайн-фиксом (3 метрики + пороги + same-boot репортёр + тест); калибровка гейта A/A — диспатчем ниже.
+ДИСПАТЧ (я, ≤3 ног): workflow=world-bench-ab.yml ×3, ref=origin/master (ОБЕ ноги master, 0-дельт), inputs: lever_flag="", lever_arg="", seconds=300, population_target=150000, band default → каждая нога = 1 same-boot A/A-пара (legA=vanilla, legB=vanilla forced).
+ГЕЙТ: пары → sameboot_ab_report.py --aa --strict; min-of-3 = 3 пары минимум (3 диспатча), все |Δ|<3% → инструмент годен; затем lever-пары (lever_flag=<id>, ref=ветка рычага) → CERT/REJECT на prereg ±2%.
+НЮАНС: world-bench-ab inputs = только lever_flag/lever_arg/seconds/population_target/cpu_band_min/max (ref — цель диспатча, не input; datapack_url запинен '' → dp50k-датапак на нём недоступен). M1/M2-валидация = bench-v2-sameboot ab_null=1 (radius_blocks=1776, drain_cap_polls=600, ref=swarm-529-242 — ref=master wave-law запрещает) — следующий тик (лимит 3 ног).
