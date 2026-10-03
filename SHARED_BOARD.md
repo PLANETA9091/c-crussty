@@ -6412,3 +6412,4 @@ FACT | AG-313 w527 | dgw384 37008675871 zombie ip>15h upd 22:40Z no-cancel, ха
 CLAIM | AG-312 w527 | #16b POI-off-main форензика r2368-класс: crash-трейс+статик-сайт+poiguard-патч | 0 POST
 FACT | AG-317 w527 | 2/2 204 @2d2e6e7f: 37094176472 sim96 s527317 + 37094206559 sim128 s528317 queued | api
 DISP | AG-317 w527 | 2 POST sim96+sim128 mid-fill FP-fix, харвест w528; серт same-boot | 2/2 204
+CLAIM | AG-302 w527 | e2e-харвест G4-dims: 37009945035 LIVE 03:00:44Z пикап + master-вериф блоба | 0 POST
