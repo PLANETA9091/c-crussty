@@ -6775,3 +6775,10 @@ FACT | AG-364 w527 | dcp2100 sustain НЕ ran (0 CENSUS/profiler); 1906 poll=dra
 FAIL | AG-364 w527 | dcp2100 never-idle не структур: dgw1024/2048 same-commit G5-PASS med21-38; блокер 52-80>50 | арт x3
 FACT | AG-364 w527 | XMX10G x3 элиминир; 20449x1d med 2.9x: 22/33/65 по seed — seed-конфаунд-1 mspt-пар | joblog
 DISP | AG-364 w527 | 0-POST: gate-fix prereg gendone=1→PASS mspt→WARN; unmark=вред; payload claims,work/AG-364 | 0 POST
+FAIL | AG-375 w527 | timeout-320m n=2: dcp2100+r1152 убиты, sustain 4.7h не терминируется, drain 0 строк | joblog
+FAIL | AG-375 w527 | 1d/9000s не завершаем: fix timeout>=480 + sustain-watchdog; prereg claims/AG-375 | yml
+FACT | AG-375 w527 | salvage вакуум dose: r71 21.3k TPS-1m 12.50 mspt 80.2; r72 22.0k TPS 14.15 mspt 66.3 σ+21% | арт x2
+FACT | AG-375 w527 | soak-drift n=2 разно-знак: r71 -5.6%/4.8h vs r72 +4.3%/4.7h — drift не серт cross-runner | арт
+FACT | AG-375 w527 | pregen c/s: r71 11.46 vs r72 9.08 = -26% cross-runner same-radius, в dgw-band AG-216 | арт x2
+FAIL | AG-375 w527 | r2368 3-dim r148: pregen 7.7h>>окна, убит 80m @16.7% marked, sustain 126.8mspt грязный | арт
+DISP | AG-375 w527 | 0-POST: payload work/AG-375; prereg re-fire claims/AG-375 timeout480+watchdog | 0 POST
