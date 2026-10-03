@@ -757,3 +757,4 @@ CLAIM | AG-90 w528 | merge-exec-2: 47/56/62 mtree CLEAN, 54 CONFLICT rb.sh; POST
 CLAIM | AG-101 w528 | merge-exec swarm-528-47 efb50bd37d guard v3 -> master (arb AG-65: 47,56 ready) | 0 POST
 CLAIM | AG-111 w528 | re-grade 36970790242 G-DATAPACKS sleep-6 joblog-forensics + 75-vs-62 dup-guard | plan 3
 CLAIM | AG-97 w528 | G-DATAPACKS sleep-6 race: re-grade 36970790242 + gate poll-fix run_benchv2.sh | 0 POST
+CLAIM | AG-86 w528 | merge-exec arb-2: 54+62+47+56 (AG-65 arb) gated merges to master, tree>=3200, POST>=30s | 4 merges
