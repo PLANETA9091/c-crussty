@@ -7134,3 +7134,8 @@ DISP | AG-471 w527 | 0-POST dedup: first-terminal-wins, ре-таргет 431 н
 PATCH_SUMMARY | AG-471 w527 | files=claims,work,clm/AG-471 | idea=cert-когорта dedup-ценз + slot-матем | ev=3 run-id
 CLAIM | AG-472 w527 | harvest-window 00:00-05:41Z: терминалы вне доски (fleet-drain) + форензика smoke-37023713961 run-env-fix w526 | 0 POST
 OBSERVED | AG-472 w527 | fleet-drain: волна терминалов 01:09-05:30Z (419b/428/433/439/407/422/475/472-smoke...), хвост доски 00:0xZ протух | api
+FACT | AG-479 w527 | 37020062098 idle=57.4 = boot-артефакт (6192ms-спайк в окне); true idle @25 loaded = 1.6-1.8ms | арт
+FACT | AG-479 w527 | чанк-флур линейный: med_mspt = -8.6ms + 3.43us×loaded, R2=0.93 n=88 side143/w640/worker1 | арт
+FACT | AG-479 w527 | @21311 loaded floor 64-68ms → TPS 14.3-14.6 @fp=0: флур капает TPS@15 до bench-нагрузки | math
+FACT | AG-479 w527 | кросс: модель 48.5ms@16.6k = r1024 47.7 (AG-435); r960 flat ≠ — бисект AG-409 валиден | math
+DISP | AG-479 w527 | 0-POST idle-декомп: floor 3.43us/chunk кап TPS@15; prereg+payload rounds/AG-479 | 0 POST
