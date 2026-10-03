@@ -281,12 +281,33 @@ DRAIN_TS=""; DRAIN_TIMEOUT=1
 # > job budget). eff_cap keeps sustain RUN_SECONDS + 600s report/upload reserve inside 318m.
 # Fail-open floor 100s; drain is a lower-bound phase (AG-400), so trimming is measurement-neutral.
 DRAIN_EFF_CAP="${DRAIN_CAP_POLLS:-240}"
-DEADLINE_REMAIN=$(( 318*60 - ( $(date +%s) - BENCH_T0 ) - ${RUN_SECONDS:-300} - 600 ))
+DEADLINE_RAW=$(( 318*60 - ( $(date +%s) - BENCH_T0 ) - ${RUN_SECONDS:-300} - 600 ))
+DEADLINE_REMAIN="$DEADLINE_RAW"
 [ "$DEADLINE_REMAIN" -lt 100 ] && DEADLINE_REMAIN=100
 DEADLINE_CAP=$(( DEADLINE_REMAIN / 10 ))
 if [ "$DEADLINE_CAP" -lt "$DRAIN_EFF_CAP" ]; then
   log "WARN DRAIN-DEADLINE cap=$DEADLINE_CAP (dispatch asked $DRAIN_EFF_CAP) — job 318m margin: sustain ${RUN_SECONDS:-300}s + 600s report protected (AG-432 w527)"
   DRAIN_EFF_CAP="$DEADLINE_CAP"
+fi
+echo "deadline_guard: eff_cap=$DRAIN_EFF_CAP asked=${DRAIN_CAP_POLLS:-240} raw_remain=${DEADLINE_RAW}s run_s=${RUN_SECONDS:-300}s (AG-29 w528 clamp + AG-4 w528 arb-union)" >> "$WORK/run-env.txt"
+echo "deadline_guard: eff_cap=$DRAIN_EFF_CAP asked=${DRAIN_CAP_POLLS:-240} raw_remain=${DEADLINE_RAW}s run_s=${RUN_SECONDS:-300}s (AG-29 w528 clamp + AG-4 w528 arb-union)" >> "$WORK/server/run-env.txt" # AG-370 w526 mirror canon
+# AG-4 w528 arb-union (drain-clamp arbitration): port the UNIQUE value of AG-1 w528 —
+# BUDGET-EXHAUST fail-fast. If raw deadline remainder < 100s floor, even the minimum
+# 10-poll drain leaves less than RUN_SECONDS+600s tail inside the 318m step -> GH 320m
+# kill mid-sustain, census/report lost (AG-483 class r1152/dcp2100/r2368). Abort BEFORE
+# sustain: graceful stop, report still runs, honest RED verdict, slot freed early.
+# Arb verdicts: AG-10 w528 REJECTED (no RUN_SECONDS subtraction -> dose-leg run>=1200s
+# dies mid-sustain: 19200-1200 reserve < run+tail); AG-24 w528 REJECTED (subsumed by
+# AG-29 clamp; 1-poll floor keeps the mid-sustain kill path open, no abort).
+if [ "$DEADLINE_RAW" -lt 100 ]; then
+  log "BUDGET-EXHAUST ABORT: raw_deadline_remain=${DEADLINE_RAW}s < 100s floor — sustain ${RUN_SECONDS:-300}s+tail cannot fit 318m step even at 10-poll drain (AG-1 w528 semantics via AG-4 arb)"
+  cmd "forceload remove all"; sleep 3
+  cmd "stop"
+  for i in $(seq 1 30); do kill -0 $SERVER_PID 2>/dev/null || break; sleep 2; done
+  rm -f .hb.keep; kill $HB_PID 2>/dev/null || true
+  python3 "$GITHUB_WORKSPACE/bench/worldv2/report_benchv2.py" "$WORK/server" "$FIRST_TS" "$DRAIN_TS" || true
+  { echo ""; echo "## INVALID/FAIL verdict: BUDGET-EXHAUST ABORT (AG-4 w528 arb-union): raw_deadline_remain=${DEADLINE_RAW}s — no sustain data, drain ch/s lower-bound only; reduce DRAIN_CAP_POLLS or RUN_SECONDS"; } >> BENCHV2.md 2>/dev/null || true
+  exit 1
 fi
 for i in $(seq 1 "$DRAIN_EFF_CAP"); do  # AG-400 x523 #16f: cap env-tunable; AG-432: deadline-clamped (see above)
   sleep 10
