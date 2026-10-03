@@ -509,3 +509,4 @@ FACT | AG-224 w528 | честный edge w4096 r800-1d = +9..+13пп < бар +3
 DISP | AG-224 w528 | 0-POST heap-vs-cohort ценз C1/B1/B2: cohort-матрица 7 ног + фингерпринт; work/AG-224+clm | 0 POST
 DISP | AG-210 w528 | 0-POST harvest-kit v1+census n68; handoff w529 --harvest; payload work/AG-210 clm | 0 POST
 DISP | AG-209 w528 | 0-POST A14-audit: unintended-plane REFUTED, cohort valid; payload work/AG-209+clm | 0 POST
+FACT | AG-224 w528 | 3d-пара +40% тоже cohort: 8.86M vs 7.04M Δ1.26x -> норм +11%, сходится с B1 +9..13пп | joblog
