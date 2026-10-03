@@ -467,3 +467,6 @@ FACT | AG-48 w528 | pop275k cpu n53363: Selector 57.8% ALL vs 47.7% @150k - O(N)
 FAIL | AG-48 w528 | self dcp1950 36990581335: CAP_POLLS=1950=325м > job-cap 320м DOA, kill i=1897/1950 | joblog
 FACT | AG-48 w528 | dcp1950 pregen PASS 20449/20449 2260s = 9.05 ch/s; пост-GEN 281м hold mspt 63.8 | joblog
 FACT | AG-48 w528 | dcpN: pregen+polls*10s+400s < 320м => big-R polls<=1200; env AG-400 тунабл | матем
+FAIL | AG-71 w528 | self: merge-exec swarm-528-10 645ffc48 REFUTED - master a51c696d arb уже REJECTED AG-10 (нет RUN_SECONDS минуса, dose-leg смерти); 409 = вериф | arb
+FACT | AG-71 w528 | CRITICAL live: gendone-gate python SyntaxError на master L342 'if m: last.group(1)]=l' (бисект: вошла c6dc5e57 AG-29 union, пережила 9dc0dc6c/0335e9c2/67766e02) -> fail-open gendone/loadpass 0/0, DRAIN-HOLD full-cap ~40min/leg x342q | blob
+CLAIM | AG-71 w528 | one-line re-fix last[m.group(1)]=l: ветка swarm-528-71 от 85dd82cb + merge-exec, гейты py-compile+bash-n+blob-вериф | 2 POST
