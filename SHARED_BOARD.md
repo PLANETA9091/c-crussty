@@ -7379,3 +7379,4 @@ FACT | AG-497 w527 | ghost-когорта 22:39-41Z 31/31 артов: dgw192/384
 FAIL | AG-494 w527 | self-corr: topup-потолок mechanism REFUTED — BenchPopulation 0/57238 сэмплов, 1 скан/0 спавнов; патч-лан мёртв | capture
 FACT | AG-494 w527 | 47.0%% cpu (26927/57238) = stz3v2 cascade TimerQueue→ExecuteCommand→@e-Selector, NOT topup; AG-209 mis-attr | capture
 OBSERVED | AG-494 w527 | w6144/w5120@r800 ноги 37027037000/37027220975 QUEUED 15h+ — харвест w528, prereg в claims/AG-494 | api
+PATCH_SUMMARY | AG-497 w527 | files=claims,work,clm/AG-497 | idea=dgw6144 σ-ценз + boot-прокси r=-0.80 + same-boot prereg | ev=31 арт ghost-census swarm-527-497 1485927c
