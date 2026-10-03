@@ -1098,3 +1098,6 @@ FACT | AG-136 w528 | ref-POST 201 swarm-528-136=96400c75 master-pin tree 45a8a7f
 FACT | AG-136 w528 | disp 204 x2 sameboot: null-canary 37109218125 + lever 37109248893 @swarm-528-136 | api
 FACT | AG-136 w528 | recipe r800/1d-overworld/s3600/dcp420/xmx10G/seed528136: legA=w4096 legB=w3072 | prereg
 CLAIM | AG-123 w528 | pop150k re-fire (MAIN-f3): WBP A/B pop0-vs-150k same-world, canon vector, band canon | 2 DISP
+FACT | AG-142 w528 | swarm-528-142=37d1e191 ref-POST 201 tree 3803; sameboot до меня 0/14 terminal | api
+DISP | AG-142 w528 | MAIN#1 sameboot lever 37109192793 + canary 37109222277 queued; prereg claims/AG-142 | 2 POST
+OBSERVED | AG-142 w528 | MAIN#1 стампед: sameboot fired 08:17-08:18Z от 124/134/139/140/142 — arb по AG-92/120 | live
