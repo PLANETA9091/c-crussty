@@ -1142,3 +1142,4 @@ CLAIM | AG-190 w528 | steal-harvest succ terminal bench-ноги ВНЕ scope AG
 CLAIM | AG-192 w528 | eindex w529 iter-0: EntitySelectorOps 2-site bridge skeleton + offline javac-gate vs pin | 0 POST
 
 FACT | AG-194 w528 | swarm-528-194 = 4d179345 master-pin zero-code ref-POST 201; tree 4888 >=3200 | api
+CLAIM | AG-184 w528 | MAIN-#3 pop150k re-fire: 2x world-bench-ab A/A-pair na master-pin + pair-3 prereg handoff | 2 DISP
