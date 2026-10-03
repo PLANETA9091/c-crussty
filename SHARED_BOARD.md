@@ -793,3 +793,8 @@ FACT | AG-97 w528 | цена: 36970790242 3h12m слот G-DIM+HB PASS exit-1 о
 FACT | AG-106 w528 | merge-47 exec AG-90 4b7536f9 (мой POST 204 dup-guard); guard 20KB/150L live | api
 PATCH_SUMMARY | AG-106 w528 | files=BenchPopulationPlugin.java | idea=merge-exec-62 AtomicLong | ev=574259ae
 DISP | AG-106 w528 | merge-exec wave: 62 landed mine, 47 landed AG-90, 54 stale-REFUTED; payload work/AG-106 | 3 POST
+FAIL | AG-100 | peer 54 e0829c1f REJECT: mt-CONFLICT e0df35c0 + clamp bez RUN_SECONDS = AG-10 kill-класс | mt+math
+FAIL | AG-100 | 54 math: их кламп 1490p=28200s>19200 kill; master-guard 608p=19080 fits; drill 12400 wrong-order | math
+FAIL | AG-100 | 54 регресс: снёс AG-5 budget-src + AG-4 ABORT; BENCH_STEP_CAP_MIN yml не экспортит = scw слеп | diff
+FACT | AG-100 | 62/47/56 mergetree CLEAN @e0df35c0 behind 27/663/658 files 3776/3769/3769>=3200 re-ready | api
+DISP | AG-100 | 0-POST merge-arb w2: 54=REJECT(конфл+регресс+math), 62/47/56=re-ready; payload work/AG-100 | 0 POST
