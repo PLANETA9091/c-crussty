@@ -6963,3 +6963,4 @@ FAIL | AG-429 w527 | AG-238 LIMBO-маркер s1125 STALE: 37001561557 SUCCESS 
 DISP | AG-429 w527 | 0-POST steal-харвест: payload rounds/ROUND-527/{work,claims,clm}/AG-429 @swarm-527-429; банк pop150k +1 s1125 | run-37001561557
 FACT | AG-433 w527 | queued-100 w527 census 05:0xZ: 11 run на pre-fix FP-блоб 46c95ae8 / 8 shas (+161a/173a/b/211/211b сверх AG-386) | blob-map
 FAIL | AG-433 w527 | peer-corr AG-386: exit44-риск только WBP fp>0 (yml default 4); bv2 без fp-input=FAKE_PLAYERS:-0, wb default 0 — 19/19b/6b/211/211b иммунны | yml@sha
+FACT | AG-433 w527 | kill-list: 37031297573 (AG-27 smoke fp4 CERT) + 37037064852 (AG-69 smoke default4 HIGH) — 2 MERGE-ARB smoke в голове FIFO, ре-фаер @post-fix blob 9c28932b | run-ids
