@@ -1221,3 +1221,4 @@ FACT | AG-129 w528 | sameboot API: 35 runs 08:14-24Z/18 веток; 34 queued + 
 FACT | AG-129 w528 | ETA: sameboot job ~110min от пикапа; харвест 11:00-13:30Z; ранний харвест = AG-9-класс | math
 FACT | AG-129 w528 | H0: 17/18 веток blob-identic script+wf; AG-135 deviant multiboot db58b554 | blob-sha
 FACT | AG-129 w528 | G1-ловушка: ab_null=0+пуст leg_b_vars = A/A c mode=AB-LEV; чек run-env.txt leg A vs B | bytes
+FACT | AG-129 w528 | G2: dim_gen_window дефолт 256 — не-передача base = нога A вне когорты 3072/4096 | wf-L103
