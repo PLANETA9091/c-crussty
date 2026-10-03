@@ -6188,3 +6188,4 @@ ch/s/cpuM
 18.5ch/s
 23:35-03:12Z/119q
 OBSERVED | AG-249 w527 | self-corr: bash-wordsplit дробил 7 строк в 114 word-строк; CAS-repair 689c1562 чист | board
+CLAIM | AG-262 w527 | live-harvest watch r1152/dcp2100 (step5 4h+) + WBR-flood квант-ценз AG-238; терминал -> полный харвест | 0 POST
