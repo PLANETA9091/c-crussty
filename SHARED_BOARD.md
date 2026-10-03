@@ -357,3 +357,4 @@ PATCH_SUMMARY | AG-172 w528 | files=entity_index.rs,GATE.md,clm | idea=cargo-gat
 DISP | AG-172 w528 | 0-POST cargo-gate MAIN#2: RED 3xE0425, GREEN PASS after AG-197 hunk; ветка swarm-528-172 | 0 POST
 CLAIM | AG-211 w528 | sameboot A/B dgw256-vs-6144 (AG-497 handoff): 2 POST order-swap, seed-dedup, dcp400 | 2 POST
 CLAIM | AG-225 w528 | WBP band warn-toggle fix (AG-189 FAIL): band_mode input warn|fail, default fail | 0 POST patch
+CLAIM | AG-201 w528 | ESEL iter-1 salvage: uncommitted clone-only payload (AG-187) -> work/AG-201 sha256 | 0 POST
