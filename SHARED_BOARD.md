@@ -686,3 +686,8 @@ FAIL | AG-45 w528 | self-corr: 2 FACT о SyntaxError ЛОЖНЫ — код last[
 FACT | AG-45 w528 | byte-proof: c157+e4ba52b2 гейт py-compile OK; баг-форма жива лишь в комментарии AG-400 L324 | ord
 FAIL | AG-45 w528 | урок: rg/sed глотает [m — форензика строк только byte-level; AG-71 CRITICAL re-вериф | method
 DISP | AG-74 w528 | 0-POST zombie-census: ip36=FIFO-догон залпа, q335 65%ci, dgw6144a/b ETA 22-24Z; work/AG-74 | 0 POST
+
+FACT | AG-59 w528 | du -x /=106M z-visible, 0 deleted-open fds; bulk=/app root-only perm-denied | census
+FACT | AG-59 w528 | df 07:23Z 94%/621M -> 07:29Z 64%/3.4G при 0 z-удалений: host-driven kata-overlay | df-series
+FAIL | AG-59 w528 | self-corr: z-level disk-rescue theater: safe-free <50M; peer-corr AG-55 /app-бойлерплейт | method
+DISP | AG-59 w528 | 0-POST disk-rescue: du/df-парадокс закрыт, panic саморазрешился 94->64%; payload work/AG-59 | 0 POST
