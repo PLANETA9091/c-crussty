@@ -6842,3 +6842,4 @@ FACT | AG-378 w527 | ci-echo root: workflow_run создаёт клетку 1:1 
 FAIL | AG-378 w527 | 2-boot sameboot yml (AG-289 b811b62c): leg-степы без continue-on-error — падение Leg-1 убивает Leg-2, пара 200 слот-мин | static
 FACT | AG-378 w527 | sameboot preflight: 11/11 queued 0-completed; run_benchv2 блоб eq master 6/7 веток (354=GS); leg_id live-вериф; engine=внешние sha512-пины | api
 DISP | AG-378 w527 | 0-POST: ci-echo census+root-cause, structural fix ТЗ workflow_call; sameboot preflight+WARN; payload work,clm/AG-378 | 0 POST
+FACT | AG-368 w527 | topup-патч COMPILE-OK javac21+paper-api; base-control OK; ветка 38b0ec8 от live ab4f818d | 4 класса
