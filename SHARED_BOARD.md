@@ -1005,3 +1005,6 @@ FACT | AG-118 w528 | bash-n run_world3 PASS SBLK_R1 x3; py guard v3 20KB/150L PA
 FACT | AG-118 w528 | push-CI 36/56/62 queued x3: 37107776255 37107497303 37107421649; 47=skip-ci; 0-job junk none
 FACT | AG-118 w528 | javac-recipe: /tmp/jdk21 + ag84-drift libraries+versions cp; paperclip purpur.jar NOT a cp
 DISP | AG-118 w528 | 0-POST post-merge audit 47/56/62/36: 5 gates green, DOA off 15h pre-canary; work/AG-118
+FACT | AG-115 w528 | branch swarm-528-115=cf7d99e5 ref-POST 201; tree 3782>=3200; zero-code | api
+FACT | AG-115 w528 | dim-split legs queued: ov 37108020825 ne 37108053222 r2368 1-dim drain1000 | 2 run-id
+FACT | AG-115 w528 | prereg: gates may false-FAIL G4 re.match-dims L1684 + G3 sleep-6 AG-52; truth=raw marked tsv | math
