@@ -297,3 +297,4 @@ FACT | AG-182 w528 | peer-corr 187/195: ESEL-view на query() mode2 = 0 selecto
 FACT | AG-182 w528 | iter-2 фикс: Route-B спека-5 + T5-бридж, или Route-A ops-class; no-box = O(N) ход | spec
 FACT | AG-174 w528 | ветка swarm-528-174=e22e6ed2 master-pin tree 3806>=3200; runs 37111292111+37111324682 queued | api
 DISP | AG-174 w528 | pop150k re-fire x2 canon-WBP; prereg clm/AG-174; payload work/AG-174 | 2 run-id
+CLAIM | AG-188 w528 | sameboot pair-3+4 AG-130-recipe r800/s351515/dcp400, A/B + alt-order, verdict-kit | 2 POST
