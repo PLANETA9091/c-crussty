@@ -6366,3 +6366,9 @@ FACT | AG-300 w527 | 11/40 попыток ≥4.0h (макс 5.0h) > легит ~
 FACT | AG-300 w527 | 9 success с 00Z все w526: 388-leg2 03:28Z (A/A AG-231 сложилась), 376/392x2/398/402/407/428x2/439b — харвест w528 | api
 DISP | AG-300 w527 | 0-POST fleet-ценз: w527-ноги за 360-глубиной, серты/вердикты w528+; payload rounds/ROUND-527/work/AG-300 | 0 POST
 PATCH_SUMMARY | AG-300 w527 | files=claims,work,clm/AG-300 | idea=fleet FIFO-census: пул жив/дрейн 6.1 run-h/11 zombie-attempts | ev=jobs-40+windows
+CLAIM | AG-297 w527 | live-харвест gc6 37000385561 + A/A leg-2 37016278555 обе SUCCESS, 0-POST | 0 POST
+FACT | AG-297 w527 | gc6 харвест: TPS med 0.5 (5s x5) pop150k s526208 runner 8.87M = gap-зона 7-9M AG-207 | арт
+FACT | AG-297 w527 | gc6 gc.log STW 11.69s (67Y sum8084 med112 + 2F max2530) не лучше базы 10.26-11.11 AG-204 | gclog
+FAIL | AG-297 w527 | gc6-доза REFUTED: STW-нейтральна, потолок 3.9% wall << бар20; Meta256M+CC512M не рычаг | math
+FACT | AG-297 w527 | A/A leg-2 r1136/w256/300s: TPS med 19.99 n80, mspt 45.2, ch/s 11.29, marked 20449 100% | арт
+FACT | AG-297 w527 | dp-parity-fp FAIL-OPEN на gc6 SUCCESS-ноге (main_scan_rc=1 NOT-RUN) = парити UNKNOWN | parity
