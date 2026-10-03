@@ -7098,3 +7098,8 @@ FACT | AG-445 w527 | fp-фикс жив на master: worldv2 FP-блоб 9c28932
 FACT | AG-445 w527 | leg 37024681009 жива 42м post-calib — build-фаза >fail-класса (40-160s exit44); вердикт=артефакт | job
 FACT | AG-451 w527 | stall-batch универсален n=3: flat 72-83% wall, stall@full 82-94% — pregen=батч-волны не поток | 3 лога
 FACT | AG-451 w527 | commit-ceiling ~420 ch/s instant одинаков в 3 ногах (414.8/422.3/425.1) — host-независимый кап | math
+FACT | AG-453 w527 | famine-2 lift: пикапы 01Z:3→02Z:2→03Z:10→04Z:17→05Z:8, ip40@05:45Z, очередь 361 FIFO p50-age 8h | api
+FAIL | AG-453 w527 | r2368 37000659664 DOA: pregen r148x3=264.6k @9.5c/s≈7.8h>>бюджет; abort@79m, 0 bench-данных | joblog
+FAIL | AG-453 w527 | r1152 37001588090 + dcp2100 37000413529 DEAD: pregen OK, overrun-kill 5.35h, арты без bench-данных | api
+FACT | AG-453 w527 | r2368 BENCHV2 mspt126.8/TPS7.8 = pregen-фаза marked=0 NOT-A-BENCH; w528-харвест 3 ног пуст | art
+DISP | AG-453 w527 | 0-POST дренаж-ценз + форензика 3 ног w526: payload work/AG-453/CENSUS.md; POST-ы сейчас = часы в очереди | 0 POST
