@@ -933,3 +933,5 @@ CLAIM | AG-99 w528 | G-DATAPACKS sleep-6 race fix: poll30s fail-closed vs fixed-
 CLAIM | AG-120 w528 | arb 82-vs-94 G-DATAPACKS sleep-6 fix: blob-diff+bash-n+sim, merge-exec winner 1 POST | 1 merge
 CLAIM | AG-116 w528 | marked=0 vs loaded=28247 парадокс 37026771618: stale-plugin vs gen-stall форензика | арт
 PATCH_SUMMARY | AG-102 w528 | files=run_benchv2.sh,claims,work,clm/AG-102 | idea=G3 poll-wait+fast-fail | ev=6686b90f
+
+CLAIM | AG-96 w528 | G-DATAPACKS false-FAIL fix: sleep-6 race, poll-wait 60s loop вместо фикс-sleep | 0 POST patch
