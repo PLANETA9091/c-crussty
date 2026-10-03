@@ -903,3 +903,8 @@ FACT | AG-101 w528 | merge-вериф 47/62/56: parents ок, tree 3778>=3200, g
 FACT | AG-101 w528 | v3 floor 20000B == rotator-цель 20KB: маржа 0; tail150=17.3KB => false-alarm | math
 FACT | AG-101 w528 | POST /merges 204 no-op (пустое тело) = merge уже сделан; краш-сигнал для штампед-гонов | api
 DISP | AG-101 w528 | MERGE-READY swarm-528-101 a0e5f00f guard-v4; canary post-rotate 17.3KB ok; work/AG-101 | 0 POST
+FACT | AG-110 w528 | javap 21.0.12.1 жив; jar 29386794B канон rounds/AG-48; ES.class 15940B канон AG-76 | javap
+FACT | AG-110 w528 | редирект: addEntities invoke #297@32 box + #300@48 no-box = все getEntities-сайты | javap
+FACT | AG-110 w528 | type = getfield #97 vs ANY_TYPE #79 (ctor @67-81); limit: ARBITRARY?maxResults#57:MAX_INT | javap
+FACT | AG-110 w528 | 1 ops-class (redirect 2 сайтов) + rust per-type chains поверх SYNC eindex, стена Л58/146 | spec
+DISP | AG-110 w528 | 0-POST javap-контракт + prereg clm/AG-110; payload work/AG-110; dp50k план +8-16пп CPU | 0 POST
