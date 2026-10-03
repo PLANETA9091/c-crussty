@@ -13,11 +13,17 @@ single source of truth for its JNI bridge table.
 
 ## Provenance & license
 
-The libraries were built (September 2025, release profile, linux x86-64) from
-the Crussty CE Rust crates `paper-native-jni` and
+The libraries were originally built (September 2025, release profile, linux
+x86-64) from the Crussty CE Rust crates `paper-native-jni` and
 `paper-native-chunk-encode-jni` (the "Crustsy CE native surface" — 283
 `Java_*` JNI exports). The Java bridge classes are not part of that project;
 the `crussty` module re-declares them here (see `modules/crussty/src/lib.rs`).
+
+**Rebuilt 2026-10-03 (v24 recovery)** from the recovered full sources — see
+`RECOVERY.md` (upstream `PLANETA9091/CRUSSTY` CE `a4f53bf1`; that repo has
+since deleted `native/`). Export surface re-verified 283/283 via `nm -D`
+against `JNI_EXPORTS.manifest`; selftests 317/317 green. Prior 2025 binaries
+remain recoverable from git history.
 
 License: MIT — Copyright (c) 2025 ANDMC / P500 Project Contributors (see
 `LICENSE`). Same license as this repository's root `LICENSE`.
@@ -25,8 +31,8 @@ License: MIT — Copyright (c) 2025 ANDMC / P500 Project Contributors (see
 SHA-256:
 
 ```
-d8f821aa6dd3962723899085ee31f89a939822e7d8bb98833ed6f32e136c4f85  libpaper_native_jni.so
-713977af51dd60ca83220cfa793c22117490b08baa8e0511f88b0740785709d2  libpaper_native_chunk_encode_jni.so
+be0e397b429988dcf25bce632e13df02d609742507433720e12ab51f92800835  libpaper_native_jni.so
+3a85b4e68be88078870c2f5b495d468fdb674105e97ad4f956a12308d67c5ac1  libpaper_native_chunk_encode_jni.so
 ```
 
 ## How the bridge table is regenerated (single source of truth)
