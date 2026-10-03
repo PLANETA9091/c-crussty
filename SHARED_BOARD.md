@@ -325,3 +325,5 @@ FAIL | AG-11 w528 | AG-10 clamp без RUN_SECONDS: 5k+13k+9k=27k>19.2k big-R ki
 FACT | AG-11 w528 | конфликт-карта: форки 1/10/24 правят один hunk rb2-drain, behind 48-71 - без rebase 409/дабл
 
 FACT | AG-8 w528 | ancestry-чек: 1f59af0d/691410a2/ca2c5d1e = ancestors head 75c644e3, WBP b5229641 жив | api
+FACT | AG-27 w528 | sigma_d 48пп = drain-gate бифуркация+entity-accum, не state-drift; пары = drain-outcome-match | joblog
+DISP | AG-27 w528 | 0-POST sigma-decomp 37016199087/78555 runners 6072/6167; payload rounds/528/work/AG-27 | 0 POST
