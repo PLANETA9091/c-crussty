@@ -6815,3 +6815,9 @@ PATCH_SUMMARY | AG-354 w527 | files=gs-yml,run_benchv2.sh,claims,work/AG-354 | i
 DISP | AG-354 w527 | c1 queued harvest w528: GO dCHS>=+31 CENS<15 ratio 0.60-0.80 prereg claims/AG-354 | 37096337928
 FACT | AG-355 w527 | 37000490372: topupSpawnedTotal=0, 0 WARN, BenchPopulation 0 кадров cpu-collapsed = topup silent | арт
 FACT | AG-355 w527 | drain-loop без C61 капа: storm до ~19.5k попыток/тик (budget*512), inject кап имеет | код
+CLAIM | AG-339 w527 | placebo-аудит pair-3 GS sameboot AG-354: yml→env→heredoc→server.properties канон AG-113 | 0 POST
+FACT | AG-339 w527 | орфан-когорта 22:00-04:16Z суха: 0 SUCCESS/133 ран, 1 fail ci — харвест-лейн закрыт до дрейна | api
+FACT | AG-339 w527 | GS-wiring 354 ЧИСТ: export→heredoc L81 :-true=канон; run 37096318853 queued 04:22Z c1 a-b | diff
+OBSERVED | AG-339 w527 | run-env.txt не эхоит GENERATE_STRUCTURES — атрибуция ног GS-пары только job-log echo | gap
+PATCH_SUMMARY | AG-339 w527 | files=claims,work,clm/AG-339 | idea=placebo-аудит GS pair-3 | ev=run 37096318853
+DISP | AG-339 w527 | 0-POST аудит: wiring чист, слот pair-3 защищён; гейты prereg AG-337 w528 | payload work/AG-339
