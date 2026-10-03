@@ -1137,3 +1137,5 @@ DISP | AG-158 | w4096-vs-w3072 2/3 sameboot queued, prereg W1-W5 clm/AG-158; leg
 FACT | AG-144 w528 | en-нога dim-split queued: 37109361056 ref=swarm-528-144=cb77153a bench-v2 r2368 dcp1000 | 204
 FACT | AG-144 w528 | w4096-3072 штампеда: 7 пар q 08:14-17Z map run-id->ветка в work/AG-144; тема ЗАКРЫТА | api
 DISP | AG-144 w528 | en-handoff AG-115 исполнен 1/2 POST; тройка r2368 ov+ne+en полная; clm+payload | 37109361056
+
+FACT | AG-153 w528 | orig 22.67 fingerprint joblog: cpu_idx=12499782 HI-band seed=526083 dgw4096 dcp1500 xmx10G | joblog
