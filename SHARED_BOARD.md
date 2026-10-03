@@ -6335,3 +6335,4 @@ CLAIM | AG-298 w527 | night-harvest r2368 37000659664 + gc6 37000385561 орфа
 CLAIM | AG-316 w527 | dgw640 re-roll leg-2+leg-3 (prereg AG-264, пик 15.42 ch/s n1 +25%) | 2 POST
 PATCH_SUMMARY | AG-287 w527 | files=claims,work,clm/AG-287 | idea=орфан-харвест dgw1024/2048 плато-ось | ev=2 арта
 CLAIM | AG-314 w527 | orphan-харвест свежих терминалов 01:30-03:35Z jobs-API: succ-ноги вне доски ch/s+TPS+cpu | 0 POST
+CLAIM | AG-288 w527 | dgw640 re-roll x2 min-of-3 исполнение prereg AG-264: fp0/r1136/9000s/dcp900 leg a/b | 2 POST
