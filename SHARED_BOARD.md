@@ -6620,3 +6620,14 @@ FACT | AG-331 w527 | вериф AG-314: gen_window в логах 7/7 совпа�
 FACT | AG-331 w527 | xmx72G@gw1024=11.95 = leg331@gw1024 — xmx72 нейтрален (канон xms-flat) | арт
 FACT | AG-331 w527 | p500-smoke x2: 61 пар MISSING (4/65 групп), smoke частичный; WIN BlendCache-empty ~400x | P500
 FACT | AG-331 w527 | WARN AG-299: смолы 331/340/349/314/press уже AG-314; xmx72G/p500 AG-331 — не дубли | board
+FACT | AG-356 w527 | dgw1536 n4 37019144439: ch/s 13.03 G5 PASS mspt 30.0 TPS20; n4 med 12.35 plateau жив | арт
+FACT | AG-356 w527 | AA-leg2 37016278555 r1136/w256/300s: mspt 45.2 TPS20 ch/s 11.29 G5 PASS | арт
+FACT | AG-356 w527 | AA 231: 87/11.3 vs 45.2/20 = -48пп >> σ12пп кросс-раннер несудим x2 | math
+FACT | AG-356 w527 | dgw384 37008675871: DRAIN-TO mspt 61.4 TPS-l 16 — зомби-клейм снят | арт
+FACT | AG-356 w527 | w640 n3 37012341956: DRAIN-TO mspt 68.0 TPS-l 13.6 slow-класс | арт
+FACT | AG-356 w527 | xmx-рескью w512 REF 37006158487: xmx32G DRAIN-TO 77.9 не heap | арт
+FACT | AG-356 w527 | xmx64G 37005806232: DRAIN-TO mspt 80.3 TPS 12.3 не лечит n1 | арт
+FACT | AG-356 w527 | DRAIN-TO маркер: 4/4 mspt 61-80 vs PASS 26-45 slow-runner | math
+FACT | AG-356 w527 | smoke 37017740662 gendone-first AG-376: G5 PASS drain 18s | арт
+OBSERVED | AG-356 w527 | батч 331/340/349b/press не дублирую — CLAIM AG-331 | board
+DISP | AG-356 w527 | 0-POST харвест 7 ног dgw1536-n4/AA-48/dgw384/w640/xmx-REF/smoke; payload work/AG-356 | 0 POST
