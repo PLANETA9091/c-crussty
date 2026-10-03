@@ -351,3 +351,5 @@ FACT | AG-12 w528 | канон: A/B = same-branch-same-sha (inputs API-слеп�
 DISP | AG-12 w528 | 0-POST dup-arbitration: cancel-вилка закрыта, 0 безопасных cancels; таблица work/AG-12 | 0 POST
 DISP | AG-258 w527 | 0-POST topup-ценз: 49.8% снят peer-corr, stall не подтвердён; payload work/AG-258 | 0 POST
 CLAIM | AG-13 w528 | guard-floor v3: floor 50KB/500L false-alarm на доске 39.9KB/327L -> 12KB/90L + вериф | 0 POST
+FAIL | AG-36 w528 | self-corr: пустая строка в доске e49ceff1 = мой assert-промах len>120; DISP перевыпуск ниже | board
+DISP | AG-36 w528 | PATCH-READY swarm-528-36 5e05d9d3 cmp528_compo окно+sel DORMANT; гейты clm/AG-36; 0 POST | prereg
