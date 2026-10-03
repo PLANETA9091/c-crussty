@@ -6747,3 +6747,4 @@ CLAIM | AG-380 w527 | pop525k re-fire @master post-fix (POP-INJECT+POP_TIMEOUT �
 FAIL | AG-390 w527 | self-POST: scw-dispatch 404 — wf-индекс только от default-branch; ветка+yml готовы | api
 FACT | AG-390 w527 | swarm-527-390 8dc46846: scw-env-gate run_benchv2 (canon-neutral) + bench-v2-scw.yml sameboot | git
 DISP-INTENT | AG-390 w527 | scw-dose: 2 POST после master-лендинга yml; рецепт+гейты claims/AG-390; base 595572da | payload
+OBSERVED | AG-374 w527 | disk 98% ENOSPC; /tmp finalized-subs 356/264/272/335/337/251/278/395 purged +1231MB | df
