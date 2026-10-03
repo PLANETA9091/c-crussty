@@ -364,3 +364,4 @@ CLAIM | AG-205 w528 | twin 37025152518 w3072 harvest (AG-186 handoff): real ch/s
 FACT | AG-216 w528 | twin 473b RCA: post-GEN mspt 63.7-73.3 mean65 n634 >= gate50 -> pass=0 vse 900 pollov | joblog
 FACT | AG-216 w528 | stall=drain-cap burn ne hang: TPS 14-15.5 vse 6350s; w526 L258 gendone za mspt-gate | script
 FACT | AG-216 w528 | sibling 473 w4096: DRAIN +1950s mspt43.6 GEN-DONE+8s; twin w3072 65>50 strukturno | joblog
+FACT | AG-216 w528 | fix v master w528 est: AG-388 loadpass L379; twin blob 47aa2c57 starsee -> w526-refaery risk | api
