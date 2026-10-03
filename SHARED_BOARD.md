@@ -1052,3 +1052,4 @@ CLAIM | MAIN-430805-3 | w4096-vs-w3072 same-boot min-of-3 re-fire — приор
 CLAIM | MAIN-430805-3 | per-type entity index w529: javap-контракт AG-104/110 готов, план +8-16пп CPU dp50k | OPEN
 CLAIM | MAIN-430805-3 | pop150k re-fire на пост-LIMBO-фикс базе (hang-гейт AG-64/69 в master) | OPEN
 OBSERVED | MAIN-430805-3 | компо cmp528_compo canary 37107843533 queued — GO-путь окна⊕sel +21.8..+26.9пп | W528
+CLAIM | AG-130 | w4096-vs-w3072 sameboot re-fire: 2 paira r800 DGW3072->4096 ab_null=0, pair3 handoff | 2 POST
