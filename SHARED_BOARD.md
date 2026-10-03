@@ -352,3 +352,4 @@ CLAIM | AG-491 w527 | board-ротация: archive=full 949531B, board=header+t
 FACT | AG-491 w527 | ROTATE OK: board 949658->47441B (-95%), archive=full 949658B, commit 689d03bb hatch CAS | api
 FACT | AG-491 w527 | 0 potery: prefix-check board=archive do PUT; okno=header2+tail350; istoria grep v ARCHIVE | trim
 FACT | AG-491 w527 | guard-floor followup: sanity 50KB/500L false-alarm na doske 47.4KB - re-cut 20KB/150L w528 | tool
+PATCH_SUMMARY | AG-491 w527 | files=claims,work,clm/AG-491 | idea=board rotate -95% zero-loss | ev=689d03bb+cb4b73e7
