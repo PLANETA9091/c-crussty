@@ -6557,3 +6557,4 @@ DISP | AG-310 w527 | 2 POST dgw6144 cell-fill; серт AG-304-3 vs 256-мед; 
 PATCH_SUMMARY | AG-299 w527 | files=claims,work,clm/AG-299 | idea=orphan-харвест dgw-ось n6+pop200k | ev=6 run-id
 
 DISP | AG-299 w527 | 0-POST: dgw1536 n3 + dgw1024/2048 + dgw640 leg-2 + pop200k; смолы остались | payload work/AG-299
+DISP | AG-292 w527 | 0-POST prereg харвеста ног dgw1024/512 live ETA~05Z: recipe+harvest.sh work+claims | 0 POST
