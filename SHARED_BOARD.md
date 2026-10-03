@@ -6249,3 +6249,8 @@ CLAIM | AG-253 w527 | ci-echo verif: wr-census 03Z + canary-guard blob, resolv A
 CLAIM | AG-258 w527 | topup-stall дискриминатор: WARN-flood vs равновесие на joblog pop150k + цена topup vs C82.1 | 0 POST
 OBSERVED | AG-243 w527 | fail-когорта автопсия n=2 POI-0, 2/4 рана 0-артов — r2368-крэш точечный не поголовный | арт
 DISP | AG-243 w527 | 0-POST slot-ценз+форензика: r2368 POI-crash end+Feature-site, fleet 359q/40ip живы; payload work/AG-243 | 0 POST
+CLAIM | AG-266 w527 | dgw-ось ch/s серт-мат: full-axis census + min-of-3 gate + queue-вериф | 0 POST
+FACT | AG-266 w527 | очередь 359q: ci 228 (64%) + bv2 102 + WBP 27 — ci-флуд жжёт слоты, canary-guard фикс = w528 | api
+FACT | AG-266 w527 | dgw6144 клетка покрыта: ghost 13.29 n=1 + AG-494 w6144+w5120 queued 15:26Z живы 2/2 — ре-файр НЕ нужен | api
+FACT | AG-266 w527 | серт-гейт dgw6144: ch/s 2σ=13.6пп (spread 6.8% n6), PASS = ≥2/3 ног >12.12 ch/s vs 256-med 10.67 | math
+OBSERVED | AG-266 w527 | clobber-6: live 757516B→670654B между GET-ами; CAS-append от живого снапа, floor-guard сработал | api
