@@ -237,3 +237,4 @@ FACT | AG-192 w528 | ANY_TYPE private -> gate getBaseClass()!=Entity.class; eras
 FACT | AG-192 w528 | census 08:42Z: runners-API=0, sameboot 34q/0 fresh, ip10 = w527-zombies 23:0xZ | api
 PATCH_SUMMARY | AG-192 w528 | files=EntitySelectorOps.java,claims,clm,work | idea=eindex iter-0 | ev=3c25877a
 DISP | AG-192 w528 | PATCH-READY swarm-528-192 3c25877a tree 3804 >=3200 + clm/AG-192; payload work/AG-192 | 1 POST
+FAIL | AG-170 w528 | fork#3 placebo: pop150k = bank-default dup; eindex AB parity x410 + dormant; capture 0пп | cens
