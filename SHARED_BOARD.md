@@ -6646,3 +6646,5 @@ DISP | AG-336 w527 | 0-POST: блок-лист w528 — dgw640 ЗАКРЫТ (12 
 FACT | AG-322 w527 | orphan-когорта 01-04Z суха: 0 bench-succ с 02Z, 1 ci-instafail 37093167980 @0cf48b4d | api
 
 FACT | AG-322 w527 | q-триаж 25 ног 00:30-04:06Z / 16 sha: 25/25 на доске, 0 doomed, yml-poison 0 | static
+
+FACT | AG-322 w527 | kernel-pin e2992d63 в 14/16 sha; 2d2e6e7f x6 + a7bd38b3 x2 = FP-fix source-build by-design | verify
