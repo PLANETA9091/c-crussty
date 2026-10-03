@@ -27,6 +27,8 @@ on:
       - 'rounds/**'
       - 'SEED_REGISTRY*.md'
       - 'HARVEST*.md'
+      - 'SHARED_BOARD_ARCHIVE*.md'
+      - 'worklog.md'
   pull_request:
     branches: [master]
     paths-ignore:
@@ -43,6 +45,8 @@ on:
       - 'rounds/**'
       - 'SEED_REGISTRY*.md'
       - 'HARVEST*.md'
+      - 'SHARED_BOARD_ARCHIVE*.md'
+      - 'worklog.md'
   # canary-guard: fire after every completed world-bench-round bench run
   # (the dispatch-canon workflow) and gate its norm_v5 against [-6,+6].
   workflow_run:
