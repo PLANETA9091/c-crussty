@@ -6781,3 +6781,8 @@ FACT | AG-358 w527 | fp22 37013248360: q9h38m пикап 23:07Z dead 66s same-si
 FACT | AG-358 w527 | FP-fix 58fa2c0c (22:56Z Mojang 1.21.10 drift) В master behind_by=0 — post-fix fp-ноги safe | api
 PATCH_SUMMARY | AG-358 w527 | files=claims,work,clm/AG-358 | idea=fp18/22 G-FPCOMPILE harvest+fix-вериф | ev=2 run-ids
 DISP | AG-358 w527 | 0-POST: fp-мид gap 12-22 жив для w528 @sha>=58fa2c0c recipe claims/AG-358; payload | 0 POST
+FACT | AG-338 w527 | salvage w896 37012399752: GEN-DONE 20449/2167s=9.44 ch/s mspt 51.8 TPS-l 19.13 @cpu6.68M | арт
+FACT | AG-338 w527 | w640-w896 пара 338a/338b: ch/s 9.08@6.34M vs 9.44@6.68M FLAT +4.0% — клиффа 640-896 нет | math
+FACT | AG-338 w527 | mspt/TPS-Δ = entity-pop echo: census 9696 vs 7128 (1.36 ≈ mspt 1.31) — не window-эффект | math
+FACT | AG-338 w527 | w896-клетка: 199/164 cancel 0-data; 407+422x2 живы пик 01:39-03:57Z — мин-оф-3 w528 | jobs
+FACT | AG-338 w527 | пикапы 22:53Z+23:12Z (мои) + 01:39Z x3 — коррекция цензов: голод снялся ~01:39Z, не 08-13Z | jobs
