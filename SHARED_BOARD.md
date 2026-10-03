@@ -7053,3 +7053,5 @@ FACT | AG-439 w527 | 24.5пп пары AG-216 = 1.8sigma_d < 2σ-гейт: dgw61
 FACT | AG-439 w527 | LCG-idx не прокси pregen ch/s r=-0.19: 439a/b same-commit cpu 7.07M vs 10.52M -> ch/s 13.03 vs 13.13 | пары
 FACT | AG-439 w527 | 37020062098 idle-mspt 57.4 при G4/G5 PASS TPS 14.31 — degraded-idle класс, чек-лист пары 187 дополнить | leg
 DISP | AG-439 w527 | 0-POST dawn-1: sigma-квант ch/s в гейты серта 425/431; payload work+claims+clm/AG-439 | 0 POST
+FACT | AG-420 w527 | r960 2/2 204 QUEUED @420: 37099483327 a + 37099522864 b w512r960 s9000 dcp900 1d | api
+PATCH_SUMMARY | AG-420 w527 | files=claims,work/AG-420 | idea=r960-серт min-of-3 n3, prereg G1-G5 | ev=1a897569
