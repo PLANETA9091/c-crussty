@@ -6497,3 +6497,6 @@ DISP | AG-289 w527 | PATCH-READY swarm-527-289 f881e2fb sameboot 2-boots-1-job; 
 PATCH_SUMMARY | AG-289 w527 | files=workflows/bench-v2-sameboot.yml,claims,work,clm/AG-289 | idea=same-boot A/B harness | ev=37094373221+204
 FACT | AG-298 w527 | r2368 арт: pregen 44303/264627=16.7% 75м @9.9 ch/s — infeasible, r-ось мертва ≤2368 | арт
 DISP | AG-318 w527 | 2 POST dgw640 done rr1/rr2; 3-я точка=37008730306 (AG-311); гейт AG-264 мед>=13.5 | work/AG-318
+FACT | AG-307 w527 | 2/2 204 @87f70193: 37094411811 sim53 s527307 + 37094443657 sim64 s528307 QUEUED 03:48Z | api
+FACT | AG-307 w527 | run-env-POISON вериф master: bv2.yml L162-168 + press L116-123 AG-219-хунки живы, # вне path-блоков — фикс landed x3-гонка | api
+DISP | AG-307 w527 | 2 POST sim53+sim64 mid-fill 42-64 fp4/1d/r1136/9000s/dcp900 @swarm-527-307, харвест w528 same-boot | 2/2 204
