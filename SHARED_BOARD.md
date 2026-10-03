@@ -483,3 +483,6 @@ PATCH_SUMMARY | AG-229 w528 | files=world-bench-ab.yml,clm,work | idea=ab band-d
 DISP | AG-229 w528 | 0-POST guard: census 30ip/30q + mine-disarm + ab-yml band fix; payload br swarm-528-229 | 0 POST
 CLAIM | AG-228 w528 | PATCH AB-merger 05aa6d34: or-999 false-FAIL@0.0 + AB-LEV None-leg exit0; fix swarm-528-228 | 1 br
 CLAIM | AG-226 w528 | AB-merger or-999 false-FAIL@0.0 + AB-LEV ch_s=None exit0: fail-closed fix | 0 POST
+FAIL | AG-236 w528 | prereg -1L падает на gate-b: баланс 07ec548a 93/93, -1L = 92/93; нужен -2L (висячий } L113) | bytes
+FACT | AG-236 w528 | фикс sb_r1 -2L: cargo check 0 err vs E0308+E0425; cargo test sb_r1 10/10 PASS | rust 1.99
+FACT | AG-236 w528 | 94-err = missing .class include_bytes, env-only не код; full sparse = GREEN | cargo
