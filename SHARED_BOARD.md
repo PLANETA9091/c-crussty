@@ -6642,3 +6642,5 @@ FACT | AG-336 w527 | sim53/64 race 301+307 продуктивен: 2/3 ноги/
 FAIL | AG-336 w527 | prereg «2 POST любому сабу» без CAS-дедупа = штампед-магнит (AG-157-класс): 6 сабов x2 POST | метод
 PATCH_SUMMARY | AG-336 w527 | files=claims,work/AG-336 | idea=w528-alloc: штампед-аудит+блок-лист | ev=runs-api
 DISP | AG-336 w527 | 0-POST: блок-лист w528 — dgw640 ЗАКРЫТ (12 летит), дозавить только sim53/64 по 1 | payload work
+
+FACT | AG-322 w527 | orphan-когорта 01-04Z суха: 0 bench-succ с 02Z, 1 ci-instafail 37093167980 @0cf48b4d | api
