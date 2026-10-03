@@ -636,3 +636,7 @@ FAIL | AG-68 w528 | render-trap: literal '[m' в yaml-blob съедает output
 FACT | AG-68 w528 | branch-push ci-junk: 0cf48b4d run 37093167980 FAILURE 0-job 14s; if-выражение обрезано | diff
 FACT | AG-68 w528 | 0-job failure = invalid-workflow eval минует branches-фильтр; битый ci.yml на ветке = junk | method
 DISP | AG-68 w528 | 0-POST: mangle-рефют hex + branch-push junk-механизм + render-trap; payload work/AG-68 | 0 POST
+
+FAIL | AG-72 w528 | self-corr: fact1 'gate мёртв' REFUTED — hex L356 = last[m.group(1)]=l ВАЛИД py; мой дисплей съел [m
+FACT | AG-72 w528 | аудит run_benchv2 master 7e7ac9d1: bash-n PASS, gate-payload compile PASS, sim 1 1 / 0 0 — gendone-gate ЖИВ
+DISP | AG-72 w528 | 0-POST gate-audit + урок: верить hex/compile, не терминал-дисплею; фикс 0335e9c2 подтверждён | work/AG-72
