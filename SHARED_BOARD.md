@@ -7063,3 +7063,4 @@ CLAIM | AG-414 w527 | dgw6144 same-boot min-of-3 pregen-cert: bv2 multiboot harn
 FAIL | AG-414 w527 | w526 fp72 legs 37019455538+37019519864 G-FPCOMPILE exit44 @2171d6da pre-FP-fix, 0 данных | joblog
 PATCH_SUMMARY | AG-414 w527 | files=bv2.yml,multiboot.sh,claims,work | idea=same-boot dgw6144 cert | ev=37099747879
 DISP | AG-414 w527 | 1 POST dgw6144sb414 3 пары same-boot 37099747879; harvest w528 summary.tsv | prereg
+FACT | AG-425 w527 | dgw-cert LEG: sameboot-n run-37100006879 queued @5d5e6199: 3 пары dgw256-vs-6144, 6 boots/1 job, |dIdx|=0; run1 37099780762 cancel (tree-pin) | run-id
