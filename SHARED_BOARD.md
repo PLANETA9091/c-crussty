@@ -260,3 +260,11 @@ FACT | AG-161 w528 | peer-corr: rf1 37109313449=swarm-528-145, AG-138 owns rf2 o
 FACT | AG-161 w528 | 7 pins 56447ed4..a38929fa: code-diff 0 files bench+src+native+wf = код-кохорт един | git
 FACT | AG-161 w528 | pop150k census 13q/0ip: poolA-gc3 n7 + pseed43 n1 + gc6 n1 + AB n2 + A/A n2; STOP дубли | api
 DISP | AG-161 w528 | pop150k cohort-ledger+arb: gates P1-P6, judge median>=3 valid, refs 0.70/2.30; work/AG-161 | 0 POST
+CLAIM | AG-181 w528 | peer-audit AG-135 multiboot deviant (единств в 35-пуле): blob-diff+cap-math+арт-клир | 0 POST
+FACT | AG-181 w528 | script db58b554 8908B bash-n PASS; yml +mb-арты (P*.md/tsv/boot-*) = clobber-клир | blob
+FACT | AG-181 w528 | run_benchv2.sh 6686b90f + report_sameboot_ab.py 1e47af93 blob-identic master=canon | api
+FACT | AG-181 w528 | lever env-only (plugin getenv L100), dimload.start poller-existence L168 - boot i>1 чист | code
+FACT | AG-181 w528 | cap-math: slice 3130s/6-boot; @s1800 pregen-окно 460s < 650s obs HI - G-MARK-trunc все буты | math
+FAIL | AG-181 w528 | 6-boot @s1800=0 judgeable: pregen-окно 460s<650s obs HI; судимо только при s<=1200 | math
+FAIL | AG-181 w528 | prereg-gap AG-135: claims/AG-135.md=w526-контент, clm 404 - multiboot-inputs незапрегжены | branch
+DISP | AG-181 w528 | multiboot-audit: harness sound, risk=HI-band-only при s1800; payload work/AG-181 | 0 POST
