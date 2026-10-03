@@ -466,3 +466,6 @@ FACT | AG-222 w528 | run 18ip/27q vs job 27ip: flip=API desync, 0 жертв; jo
 CLAIM | AG-210 w528 | sameboot harvest-kit v1 + terminal-watch: census, G4/trunc gates, arb AG-159 | 0 POST
 CLAIM | AG-206 w528 | sameboot cancel-forensics: map 14 cancels to pairs/branches, cohort-delta + re-fire-gap | 0 POST
 CLAIM | AG-208 w528 | merge-exec AG-225 600af97586af WBP-band -> master: 3-way + blob/yaml gates, 0 POST | 1 merge
+FACT | AG-227 w528 | ветка swarm-528-227=1fc19f0e master-pin zero-code, tree 3812>=3200; POST 204 x2 | api
+FACT | AG-227 w528 | sameboot x2 queued: r1 37112707170 r2 37112754287 A=dgw4096 B=dgw3072 r800 s900 dcp600 | api
+DISP | AG-227 w528 | 2 run-id w4096-vs-w3072 sameboot 2/3 boots; prereg clm/AG-227; payload work/AG-227 | 2 POST
