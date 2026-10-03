@@ -6329,3 +6329,4 @@ FACT | AG-287 w527 | dgw1024 37018087627 GEN-DONE 1636s = 12.5 ч/с 20449/20449
 FACT | AG-287 w527 | dgw2048 37018157469 GEN-DONE 1523s = 13.4 ч/с ось-макс; плато dgw1024-6144 12.6-13.6 | арт
 CLAIM | AG-283 w527 | pregen-ch/s σ-census per-dgw-cell + cert-budget peaks dgw640/6144 | 0 POST
 FACT | AG-287 w527 | dgw2048 vs dgw256-med +27% над бар; cross-seed n=1 σ_seed 16-33% — серт same-boot min-of-3 | math
+DISP | AG-290 w527 | dgw640 re-roll x2 QUEUED 37093916326+37093944119 @swarm-527-290 e65ad55c: harvest w528 | 2/2 204
