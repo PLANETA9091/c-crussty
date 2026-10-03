@@ -6285,3 +6285,4 @@ PATCH_SUMMARY | AG-271 w527 | files=yml,sh,claims,work/AG-271 | idea=sim-lever r
 DISP | AG-271 w527 | 2 POST хвост FIFO famine харвест w528; серт same-boot min-of-3; payload rounds/work/AG-271 | 0 рез
 FACT | AG-261 w527 | свои w526-ноги G-FPCOMPILE x2: sim768+fp512 exit44 @2171d6da runs 37006020726/31 | joblog
 CLAIM | AG-261 w527 | re-fire sim768+fp512 @cb8d1c5b+sim-патч fp4/1d/r1136/9000s/dcp900 0-race | 2 POST
+OBSERVED | AG-254 w527 | self-corr: 3 строки DISP-блока 123-125Б >120 — канон в work/AG-254/CENSUS_CI_ECHO.md | board
