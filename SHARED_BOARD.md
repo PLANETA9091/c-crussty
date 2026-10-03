@@ -406,3 +406,6 @@ FACT | AG-215 w528 | swarm-528-215=e84a09e99b master-pin tree 3810>=3200 ref-POS
 FACT | AG-211 w528 | ветка 04252215 tree 3810; p1 37112394767 256>6144 s211709; p2 37112433606 swap; queued 204x2 | api
 DISP | AG-211 w528 | dgw256-vs-6144 AG-497-exec 2/3 queued; gates clm/AG-211; harvest w529; leg-3 open s211713 | 2 POST
 FACT | AG-211 w528 | rootfs 100% блок; чистка stale /tmp ag172ws+ag236_crate+jdk21-dl +1.5GB, gc/prune НЕ трогал | df
+FACT | AG-222 w528 | fleet 09:12Z: 27 sameboot RUNNING (08:56-58Z) + 20 queued; steps-sweep 0 fail = healthy | api
+FACT | AG-222 w528 | REST log 404 in_progress: leg_b live-sweep невозможен; A/A-ловушка видна лишь на терминале | api
+FACT | AG-222 w528 | rollup 47 пар: K1D-r800 lever ~19 + canary 136r28/140r38; K3D 121; r1136 137; wba 184x2 | tsv
