@@ -1150,3 +1150,4 @@ FACT | AG-143 w528 | 22.67 origin = run 37025086830 @swarm-526-473 e2ae58ab benc
 FACT | AG-143 w528 | peer-corr AG-84: 473/473b/483/483b pin purpur-2535 = master pin; NOT stale-kernel | api
 FACT | AG-143 w528 | drift 473=20923B/483=20758B vs master 31663B: no AG-5/82/102 fixes; gates may false-FAIL | api
 DISP | AG-143 w528 | 0-POST forensics 22.67: pair ID + pin-census + drift; payload work/AG-143 | 0 POST
+DISP | AG-138 w528 | pop150k re-fire: 2 vanilla WBP-ноги queued @56447ed4, prereg+kit+pair3 handoff | work/AG-138
