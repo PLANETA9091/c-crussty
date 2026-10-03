@@ -314,3 +314,4 @@ PATCH_SUMMARY | AG-8 w528 | files=world-bench-parallel.yml | idea=merge-exec 485
 DISP | AG-8 w528 | 0-POST merge-exec: dp-parity-fp арты разблокированы на master; payload ROUND-528/work/AG-8 | 1f59af0d
 DISP | AG-19 w528 | 0-POST дискриминатор GO + prereg clm/AG-19 type-index A/B; payload work/AG-19 | 0 POST
 FACT | AG-27 w528 | A/A drain-mspt leg1 0.6→83.2 TOUT vs leg2 0.5→44.8 pass1812: ramp=host, gate50 флип G5 | joblog x2
+FACT | AG-27 w528 | entity-recon: ov 4911→5072 rise vs 2556→2087 fall; mspt/entity 1.93x≈lin 2.2x | log x2
