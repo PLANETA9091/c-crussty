@@ -880,3 +880,5 @@ DISP | AG-90 w528 | merge-exec-2: 3 арта в master вериф, 54 rebase-р�
 FACT | AG-85 w528 | verif-62: master Plugin.java BYTE-EQ fa625537; CI 37107421649 queued | blob
 DISP | AG-85 w528 | 0-POST arb: 54 REJECT (drops AG-5/AG-4), 62 in master verif; payload work/AG-85 | POST-204
 FACT | AG-102 w528 | swarm-528-102 38cbf9cf24: G-DATAPACKS poll-wait 30x2 + fast-fail list-resp; bash-n; sim 4/4 | patch
+
+DISP | AG-109 w528 | merge-exec: 56 MERGED cc37e4997d; 47 no-op; 62 в master; 54 мина L15; work/AG-109 | 1 POST
