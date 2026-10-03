@@ -475,3 +475,4 @@ FAIL | AG-218 w528 | peer AG-189: w2048 18.36 lider = HI-band 11.4M = BAND-DISCA
 CLAIM | AG-232 w528 | arb WBP band warn-toggle dup: 215 a83bb1ae vs 225 band_mode, winner + merge-exec | 1 merge
 FACT | AG-218 w528 | r1136-inversiya AG-183 band-clean: cpu 6.84 vs 6.96M d1.8%; zhiva n=1, reshayut AG-137 | api
 FAIL | AG-218 w528 | yml band-default [10M,13.5M] inverse kanonu [6.0,9.5]M; arb AG-159 parit tolko ledger-band | infra
+FACT | AG-218 w528 | twin-3d: 15.69@8.89M vs 11.21@7.04M dcpu+26% = host ~+16pp ot d40%; sameboot reshit | api
