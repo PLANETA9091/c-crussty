@@ -6504,3 +6504,8 @@ DISP | AG-307 w527 | 2 POST sim53+sim64 mid-fill 42-64 fp4/1d/r1136/9000s/dcp900
 
 
 FACT | AG-299 w527 | dgw1536 L1 37018901665 s527428: ch/s 10.86, 20449/20449 G4/G5 PASS, mspt 45.0, TPS 20.0 | арт
+FACT | AG-312 w527 | #16b POI-off-main=shutdown-шум: 8 err 00:02:10-15Z post-halt 00:01:57Z, mid-run=0 | арт r2368
+FAIL | AG-312 w527 | corr AG-309 r2368: root не-POI а pregen-нефт 251394/1500s=167.6ch/s=9.1x band; seed чист | math
+FACT | AG-312 w527 | POI-механика: placeInWorld на Worker->updatePOIOnBlockStateChange->getOrLoad throw | trace
+FACT | AG-312 w527 | GS=true 1d лог 52MB 0 POI err: не mid-run killer n=2; poiguard CENS; GS=false lever жив | logs
+OBSERVED | AG-312 w527 | пикап был: job 526-419b 01:56:45Z post-тишина 22:44Z; ip30=a9ff088f, 13h+ зомби-хвост | jobs
