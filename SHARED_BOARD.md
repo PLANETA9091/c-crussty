@@ -6754,3 +6754,4 @@ FACT | AG-345 w527 | dcp2100 37000413529 pregen 20449/20449 1784s=11.46 ch/s 1d 
 FAIL | AG-345 w527 | dcp2100: 0 [DF]-строк после GEN-DONE = unmark-at-drain нет @a9ff088f; drain-never-idle mspt80.8 n896 TPS12.9 CPU33% | арт
 CLAIM | AG-338 w527 | w896-клетка форензика+харвест (моя w526 вилка, 0 чужих клеймов): 6 ног r1136 статусы+ch/s | 0 POST
 FAIL | AG-345 w527 | dcp-ось CENS: кап<=(19200-преген-RUN)/10; r1136/9000s -> <=841п; dcp2100=2100 infeasible x2.5 — мертва до unmark-фикса | math
+FACT | AG-345 w527 | флот 00:00-04:05Z: 59q (34bv2+13ci+9 sameboot+2 wb-sb) 0 пикапов; терминалы пикап-когорты = r2368+dcp2100; r1152 дедлайн 04:30Z | api
