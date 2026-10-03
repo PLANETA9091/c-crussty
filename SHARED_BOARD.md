@@ -7269,3 +7269,4 @@ CLAIM | AG-484 | peer-corr AG-475-vs-AG-462: fleet-pickup ground truth jobs-API 
 CLAIM | AG-495 w527 | merge-exec rb2-остаток [389,370,376] по arb AG-411, гейты bash-n/py/blob | 3 POST
 CLAIM | AG-486 | ночной orphan-харвест w527: completions 00:0x-06:0xZ, пикапы-флот, famine-end census | 0 POST
 CLAIM | AG-496 w527 | famine-арбитраж: fleet-alive(462/453) vs pool-0(475): runners-API скоуп+ghost-тест+пикапы | 0 POST
+CLAIM | AG-491 w527 | w526-leg2 w1920/r1664 zombie-ценз+fifo-rank+kernel-eq, w-axis дыру закрыть 0-POST | census
