@@ -35,6 +35,7 @@ RADIUS_BLOCKS="${RADIUS_BLOCKS:-1136}"   # 1136 => 143x143 = 20449 chunks per di
 SEED="${BENCH_SEED:-351515}"
 RUN_SECONDS="${RUN_SECONDS:-300}"
 FAKE_PLAYERS="${FAKE_PLAYERS:-0}"        # AG-342 spawn-lane leg: 0 = canon (vacuum), N>0 = N real ServerPlayers
+SIM_DISTANCE="${SIM_DISTANCE:-32}"        # AG-138 x525 sim-оси: 32 = canon (byte-identical), 10 = vanilla default
 XMX="${SERVER_XMX:-10G}"
 DIMS="${BENCH_DIMS:-minecraft:overworld,minecraft:the_nether,minecraft:the_end}"
 STEP=256                                  # vanilla forceload cap: 16x16 chunks/cmd
@@ -48,6 +49,7 @@ terralith=$TERRALITH_URL tectonic=$TECTONIC_URL
 incendium=$INCENDIUM_URL stellarity=$STELLARITY_URL
 radius_blocks=$RADIUS_BLOCKS seed=$SEED run_seconds=$RUN_SECONDS xmx=$XMX dims=$DIMS
 fake_players=$FAKE_PLAYERS
+sim_distance=$SIM_DISTANCE
 runner_cpu_index=${RUNNER_CPU_INDEX:-0}
 runner_name=${RUNNER_NAME:-?} run_id=${GITHUB_RUN_ID:-?} attempt=${GITHUB_RUN_ATTEMPT:-?} # AG-301 w526 re-land AG-311: host-census line (AG-233 FAIL, clobber-lost)
 EOF
@@ -76,7 +78,7 @@ MAX_PLAYERS=$(( FAKE_PLAYERS > 0 ? FAKE_PLAYERS + 8 : 10000000 ))
 cat > server.properties <<EOF
 level-seed=$SEED
 view-distance=32
-simulation-distance=32
+simulation-distance=$SIM_DISTANCE
 online-mode=false
 spawn-protection=0
 initial-enabled-packs=vanilla,file/terralith.zip,file/tectonic.zip,file/incendium.zip,file/stellarity.zip
