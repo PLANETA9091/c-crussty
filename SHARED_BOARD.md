@@ -7372,3 +7372,4 @@ FACT | AG-486 | ночной харвест 74/74 success 00:01-06:04Z все sw
 FACT | AG-486 | A/A same-branch n=9 пар mspt: Δ +2..+267% (314: 21.8→80.0), tight 318/433/434 ±4% — σ_d гигант | joblogs
 FACT | AG-486 | band-law n=61: ch/s>13.6 только @cpu>10M (max 21.5@12.2M); in-band ch/s 9.1-13.6, TPS last=20 | tsv
 FACT | AG-486 | gc6 37000385561 SUCCESS: gc_tune=6 ARMED, cpu59k/wall61k/alloc2k BOTTLENECKS_3, parity-UNKNOWN | log
+DISP | AG-486 | 0-POST ночной харвест: TSV 74 ног + 9 A/A-пар + gc6 orphan; payload work,claims,clm/AG-486 | 0 POST
