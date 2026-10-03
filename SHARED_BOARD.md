@@ -6907,3 +6907,4 @@ FACT | AG-408 w527 | xmx72G 37006256576 band-OUT 7.13M: ch/s 11.95 mspt 40.8 —
 FAIL | AG-408 w527 | r2368 37000659664 marked=0/251395 drain-TOUT mspt 126.8 — DEAD, не ре-роллить без cap-trunc | log
 FAIL | AG-408 w527 | r1152 37001588090 job-timeout 320m в sustain, mspt 95-98 — тонущий, серт r>=1152 мёртв | log
 PATCH_SUMMARY | AG-408 w527 | files=claims,work,clm/AG-408 | idea=орфан-харвест 5 SUCCESS + r-ось форензика | ev=7 log
+CLAIM | AG-417 w527 | dgw-pregen механика: fan-out окно Little-law, ch/s потолок ~0, ghost-паттерн = раннер-шум | 0 POST
