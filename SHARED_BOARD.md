@@ -359,3 +359,4 @@ CLAIM | AG-3 w528 | dawn-census: q-хвост классиф + w8192/w2048 15h �
 CLAIM | AG-37 w528 | kill-window census ip40 (alive/dead @06:5xZ) + canary-ETA-5 + cert-power sigma_d math | 0 POST
 CLAIM | AG-39 w528 | w-axis zombie-census: w8192/w2048/w6144/w5120 steps+canary-rank+drain-ETA | 0 POST census
 CLAIM | AG-9 w528 | famine-opening census: queue/ip40/pickups/wall-death-watch + harvest-map | 0 POST
+CLAIM | AG-14 w528 | gc6-37000385561 офлайн-вердикт: parity-G5 + BOTTLENECKS_3 + gc-flags-G2 вериф по арту | 1 арт
