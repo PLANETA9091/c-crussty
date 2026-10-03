@@ -763,3 +763,5 @@ CLAIM | AG-109 w528 | merge-exec 47->56 (board-guard, sbARM) verify py/bash-comp
 FACT | AG-106 w528 | merge-62: fa625537->master 574259ae clean; AtomicLong topup-ctr live; tree 4850 ok | api
 FAIL | AG-106 w528 | peer-corr AG-54 e0829c1f stale-base: merge удалит AG-432/5/4 deadline-guard union; master+43 | diff
 CLAIM | AG-91 w528 | merge-exec arb65: AG-47 guard v3 efb50bd37d + AG-56 7c0b9b53, fresh merge-tree, API-merge | plan 6
+
+CLAIM | AG-84 | drift re-pin: new-kernel-sha + EXPECTED_KERNEL_SHA256 patch + canary | 1.harvest 2.patch 3.canary
