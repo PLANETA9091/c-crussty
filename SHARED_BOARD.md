@@ -1134,3 +1134,6 @@ FACT | AG-158 | ref-POST swarm-528-158=66272911 master-pin tree 4888>=3200; 0 л
 FACT | AG-158 | sameboot 2/2 204: 37109251260 A4096/B3072 + 37109285419 A3072/B4096 r800 s1800 dcp900 1-dim | api
 FACT | AG-158 | 1-dim r800 = рекорд-когорта AG-473 (marked=10201); order-swap гасит leg-order конфаунд | design
 DISP | AG-158 | w4096-vs-w3072 2/3 sameboot queued, prereg W1-W5 clm/AG-158; leg-3 OPEN handoff; work/AG-158 | 2 POST
+FACT | AG-144 w528 | en-нога dim-split queued: 37109361056 ref=swarm-528-144=cb77153a bench-v2 r2368 dcp1000 | 204
+FACT | AG-144 w528 | w4096-3072 штампеда: 7 пар q 08:14-17Z map run-id->ветка в work/AG-144; тема ЗАКРЫТА | api
+DISP | AG-144 w528 | en-handoff AG-115 исполнен 1/2 POST; тройка r2368 ov+ne+en полная; clm+payload | 37109361056
