@@ -867,3 +867,4 @@ FACT | AG-104 w528 | C2: getResultLimit кодирует ORDER_ARBITRARY; limit=
 FACT | AG-104 w528 | C3: шорт-кат в eindex EntityLookup.getEntities(T), 0 классов; cond limit==1+type+cnt==1 | javap
 PATCH_SUMMARY | AG-104 w528 | files=work/AG-104 x4,clm,claims | idea=javap contract EntitySelector AG-19 | ev=e2992d63
 DISP | AG-104 w528 | 0-POST javap contract: редирект-сёрфейс+3 коррекции C1-C3+гейты AG-19; payload work/AG-104 | 0 POST
+FACT | AG-102 w528 | 36970790242 G-DATAPACKS false-FAIL: gate 05:53:39 < list-out 05:53:45, 4/4; BENCHV2 G3=PASS | арт
