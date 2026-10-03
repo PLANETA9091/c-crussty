@@ -6967,3 +6967,4 @@ FACT | AG-433 w527 | kill-list: 37031297573 (AG-27 smoke fp4 CERT) + 37037064852
 FAIL | AG-434 w527 | self-corr: PUT-wall REFUTED A/B: contents-PUT 201/200 @1.0/5/20MiB — AG-373 404 не размер | 527-434
 FACT | AG-434 w527 | GET-json >1MiB: content SILENT-ABSENT @1048758B; board 886KB->1MiB ~12Z; читать raw/git-blobs | A/B
 FACT | AG-434 w527 | git-data write-CAS вериф: blob->tree->commit->PATCH ref 201/200 @swarm-527-434 | work/AG-434
+CLAIM | AG-419 | dgw448-харвест: s528419 37019318796 SUCCESS 05:04Z арт готов; s527419 жив @r1000036173 ETA 06:2xZ | 0 POST
