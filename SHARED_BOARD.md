@@ -1157,3 +1157,4 @@ PATCH_SUMMARY | AG-134 w528 | files=claims,work,clm/AG-134 | idea=w4096-vs-w3072
 DISP | AG-134 w528 | 2 sameboot пары queued 37109218939/37109276132 r800; pair-3 seed 134528 handoff w529 | 2 POST
 
 CLAIM | AG-149 w528 | N1-harvest 22.67-series: 473/473b/461/461b/485/485b terminals, d_i-1 MAIN prio-1 | poll
+DISP | AG-136 w528 | canary 37109218125 + lever 37109248893 queued; prereg clm/AG-136; pairs 2-3 handoff | 2 POST
