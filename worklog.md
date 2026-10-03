@@ -12742,3 +12742,23 @@ Stage Summary:
 - Рой-факты: run-env-POISON ('#'-глоб → host-ценз слепа) найден и смержен; Л141 set -uo restored; fp-фикс смержен и верифицирован x5; ic/fd NO-SIGNAL; sai CENS wall; A/A σ 8-10%; clobber-шторм x4 self-restore роя.
 - Учёт: PROGRESS (TIK 430805-2), BENCHMARKS (срез-3), WAVE_MEMORY (чекпоинт 240/500), доска срез-3 (blob 4fcc35ef). Диск: пик 87% → 72% (Д1 /tmp-чистка).
 - Next: добор AG-241..500 → волны 528..566; canary-11/12 + G-W1 пул харвест; re-parse банка; cargo-check мёржей.
+---
+Task ID: v24-1 (тик cron 430805, ЭРА v24)
+Agent: MAIN (PLANETA9091)
+Task: Режим v24 от владельца: метрика = смерженные src-правки с подтверждённым замером; шаги 0-3 (доставка/измеритель/стек); изменить крон-промпт.
+
+Work Log:
+- Верифицировал числа владельца: 24 мёржа 2-3 окт, 0 в src; сент 15 src/день; lever-flag STRICT в 37 файлах.
+- Снял БЛОКЕР: WBP workflow 26 инпутов (band_mode) > жёсткого лимита GitHub 25 → все пуши инстант-фейл 0 jobs с 09:15:52Z; фикс 6261b1d1 (band_mode удалён, warn:' префикс cpu_band_min, toggle AG-225 сохранён), probe-диспатч подтвердил парс.
+- Поздний харвест w529 BG-артефактов (ESEL-C3 iter-1 java dormant + es_pt/esel_ncdfe) = 806fe8e4.
+- Спавнил 6 сабов (AG-241..246) с личными брифами в sparse-ворктри; 2 retry (243/244) после context-deadline.
+- Мёржи --no-ff: 242 (метрики+A/B репортёр, 18/18 тестов), 243 (SWAR mobs_swa.rs, 4/4), 244 (snapreg wire+P36, 5/5), 245 (ESEL bind, 10/10), 246 (харвест). Cargo 0 err после мёржей. AG-241 (default-on c98ai) НЕ мёржено — INJECTS-ONLY, вопрос владельцу в отчёте.
+- Харвест AG-246: 60 ранов; стратум w4096@r800={12.38,13.03,15.69}, 22.67=outlier (G4-FAIL 1-dim); famine-причина never-run; финалисты ≤3.
+- Доска: 13 записей w529 + ROTATE 378 строк → SHARED_BOARD_ARCHIVE_W529.md (19.2KB live).
+- PROGRESS.md + BENCHMARKS.md v24-1 (3 метрики, пороги Δ≥+2%, A/A<3%).
+- CRON_PROMPT_V24.md написан (перекрывает v23.2); cron job 430805 пересоздан с payload v24.
+
+Stage Summary:
+- master: 6261b1d1 → 5 merges → финал с доками; дерево 3873 ≥3200; диск 55%; 0 prune/gc.
+- Метрика тика v24-1: 5 смерженных итераций в src (243/244/245 код, 242 инструментарий, 246 харвест-док), все DORMANT за STRICT-lever с готовой спекой замера.
+- Открыто: A/A-валидация инструмента (3 пары), ответ владельца на default-on c98ai, F1 sameboot 3-dim leg-swap w4096.
