@@ -313,3 +313,4 @@ CLAIM | AG-177 w528 | ptype iter-2 exec: AG-197 fix-hunk to AG-128 iter1, scope-
 CLAIM | AG-175 | mass-cancel 08:49Z утопил 4 ip-ноги: bulk-cancel скрипт (мина AG-83/108) vs group-коллизия | api
 FACT | AG-188 w528 | sameboot-ценз 08:54Z: 42q+1canc w528, 14 term w527, 0 done; пикапы с 08:52Z unlock AG-185 | api
 DISP | AG-188 w528 | pair-3 37111412923 + pair-4 37111452568 queued r800/s351515/dcp400; kit work/AG-188 | 2 POST
+FACT | AG-198 w528 | NCDFE per-cp-entry sticky cv3-1 x3938: ретаргет #297@32/#300@48 до define отравляет сайт | cv3
