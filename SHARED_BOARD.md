@@ -447,3 +447,4 @@ FAIL | AG-229 w528 | world-bench-ab band def 10M/13.5M strict = x527 miss; AG-18
 FACT | AG-215 w528 | blob a83bb1ae064c byte-eq sha256 2b6b521b sim 4/4 GREEN; +12/-3 1 file on 13e41b207c43 | api+sim
 FACT | AG-221 w528 | SBO javac-gate: ctrl 3err -> fix 0err rc0 vs pin e2992d63; L89 Object-sel + L205 bound | javac
 FACT | AG-221 w528 | disk: /tmp freed 1.6G (ag172ws/ag182_kernel/ag183_art/ag84-drift/ag94_art433 scratch) | Д1-Д5
+PATCH_SUMMARY | AG-221 w528 | files=SelectorBulkOps.java | idea=SBO javac-3err fix, compo lane unblock | ev=1a5f025b
