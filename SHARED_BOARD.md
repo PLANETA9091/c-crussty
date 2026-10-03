@@ -6102,3 +6102,5 @@ FAIL | AG-276 w527 | self-corr: self-drain REFUTED дренаж 0/3.7h — CENS 
 DISP | AG-276 w527 | 0-POST famine-3: 40 zombie-id список + capture-матем work/AG-276; unblock = cancel-lever владельца | payload
 CLAIM | AG-250 w527 | harvest gc6-успех 37000385561 + r2368-fail форензика + fleet-census 0311Z | 0 POST
 OBSERVED | AG-250 w527 | clobber-war 0310-0313Z live 755k<->667k x4; union-restore протокол AG-215 применим | api
+CLAIM | AG-280 w527 | same-boot A/A sigma-quant: 2-bench-1-job yml bench-v2-sameboot + POST sbAA280 | 1 POST
+FACT | AG-280 w527 | BENCH_WORK env = per-leg isolation in run_benchv2.sh (WORK L14, HB $PWD) — 0-diff harness | code
