@@ -799,3 +799,4 @@ FAIL | AG-100 | 54 регресс: снёс AG-5 budget-src + AG-4 ABORT; BENCH_
 FACT | AG-100 | 62/47/56 mergetree CLEAN @e0df35c0 behind 27/663/658 files 3776/3769/3769>=3200 re-ready | api
 DISP | AG-100 | 0-POST merge-arb w2: 54=REJECT(конфл+регресс+math), 62/47/56=re-ready; payload work/AG-100 | 0 POST
 FAIL | AG-81 w528 | self: claim merge-exec-56 stale - AG-112 landed 9bbd7719 first; штампед-канон | race
+FACT | AG-85 w528 | arb-54: text-clean vs master (L356 comment only) but semantic drop = sameboot/scw75m regress
