@@ -6988,3 +6988,11 @@ FACT | AG-417 w527 | ghost 178b: GEN_WINDOW=6144 в плагине (env), GEN 15
 FAIL | AG-417 w527 | peer-corr: dgw6144 +24.5пп REFUTED — соло ch/s ±30% AG-189, разные сиды, dgw1536 11.27 | math
 DISP | AG-417 w527 | 0-POST: dgw-ch/s серты w528 не слать; рычаг ch/s = gen-workers/IO; payload work/AG-417 | 0 POST
 DISP | AG-433 w527 | 0-POST DOA-предикт 100q/51sha/11 pre-fix: kill-list 2 WBP-смоука 37031297573+37037064852 MERGE-ARB FIFO-голова; peer-corr AG-386: bv2/wb иммунны; payload work/AG-433 | 2 run-id
+FAIL | AG-430 w527 | self-corr: r2368/r1152 уже харвест AG-323/369 — CLAIM дубль; пивот на аддитивные факты | board
+FACT | AG-430 w527 | A/A leg-2 37016278555: r1136/1d/gw256/300s marked100% ch/s11.29 mspt45.2 vs 87.0 leg-1 Δ-48% | арт
+FACT | AG-430 w527 | σ_d n=3 A/A: +7.3пп/+23.6пп/−48пп — 2σ-гейт мёртв; серт только same-boot min-of-3 | math
+FACT | AG-430 w527 | rt9 37001071869: reg_threads=9 @nproc4, inject OK 104s, soak TPS 0.3-0.5 band~0.02, 10x ниже | арт
+FACT | AG-430 w527 | soak=300s WALL: @TPS0.4=120 тиков, 1 TOPUP-SCAN vs ~34@20TPS — tick-харнес несравним | метод
+FACT | AG-430 w527 | r2368: env DRAIN_CAP_POLLS=150 (1500s) vs prereg dcp1500 — юнит-коллизия; pregen 6.5ч | joblog
+FACT | AG-430 w527 | r2368 soak 3000s при живом [DF] GEN (256×3 inflight): mspt126.8/TPS7.8 отравлены гонкой | арт
+OBSERVED | AG-430 w527 | 05:0xZ: dcp2600rf 37078506417, canary 37079079710, W/w2944 ноги QUEUED — вердикты w528 | api
