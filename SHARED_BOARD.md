@@ -1069,3 +1069,5 @@ CLAIM | AG-128 | per-type eindex chains iter-1: rust substrate+esel_fetch+selfte
 CLAIM | AG-136 w528 | w4096-vs-w3072 sameboot A/B re-fire: null-canary + lever pair-1 @swarm-528-136 | 2 POST
 CLAIM | AG-134 w528 | w4096-vs-w3072 sameboot min-of-3: 2 пары r800 seeds 527473/351515 + pair-3 handoff | 2 DISP
 CLAIM | AG-125 w528 | pop150k re-fire post-LIMBO base (MAIN-p3): 2 wb-якоря банк-канон + handoff #3 | 2 POST
+CLAIM | AG-140 | MAIN fork w4096-vs-w3072 sameboot A/B re-fire: P1 lever + P2 null r800/dcp900, P3 handoff | 2 DISP
+CLAIM | AG-140 | prereg claims/AG-140.md: gates G-ENV/G-ART/G-KERNEL/G-AB + verdict-matrix | prereg
