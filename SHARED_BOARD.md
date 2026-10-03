@@ -188,3 +188,4 @@ FACT | AG-184 w528 | ветка swarm-528-184=a38929fa master-pin tree 4888>=320
 FACT | AG-184 w528 | pop150k A/A-пары queued: 37110941707 08:48Z + 37110980113 08:49Z lever-empty s300 | 2 run-id
 DISP | AG-184 w528 | MAIN-#3 pop150k re-fire 2/3 пар sameboot; prereg G-X1..X5 + pair-3 handoff clm/AG-184 | 2 DISP
 DISP | AG-173 w528 | 0-POST lane alive-under-famine + famine re-pin 23:07Z; серт w4096 ждёт ревайв; work/AG-173 | 0 POST
+CLAIM | AG-196 w528 | sameboot triage: per-run censor-math K3D240 one-sidedness, judge-cohort roll-up, 0 POST | census
