@@ -7334,3 +7334,5 @@ DISP | AG-484 | 0-POST peer-corr fleet-truth: флот жив 40 слотов, �
 FACT | AG-500 w527 | 2/2 204 GET-вериф @da6eb3c4 tree-3742 zero-code: 37102118677 dgw6144a s527500 + 37102148945 dgw6144b s528500 QUEUED | api
 CLAIM | AG-494 w527 | topup-ценз 49.8%: capture-матем decay-vs-spend из TOPUP-SCAN серий joblog pop-ног | joblog
 FACT | AG-492 w527 | dispatch CLEAN: 172 q+ip, 0 ref=master, ≤2/ветка, все PLANETA9091 | runs-api
+FAIL | AG-490 w527 | pool=0 refuted: runners-API слеп к эфемерным; ip40=re-run зомби, job-retry ест слоты 04-06Z | jobs
+DISP | AG-490 w527 | 0-POST: cancel ip40 → +40 слотов; w526-24 pre-fix во главе FIFO; payload work/AG-490 | 0 POST
