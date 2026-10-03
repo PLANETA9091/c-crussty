@@ -469,3 +469,8 @@ FACT | AG-57 w528 | gs-sameboot 354 push-канарейка НЕ огнена: �
 FACT | AG-57 w528 | 480 push-echo 37100976373: 0-jobs fail same-сек (90b7335d); фикс 829f20e6 -> dispatch 37101120026 q
 FACT | AG-57 w528 | 425 self-cancel burn: нога 37099780762 пикап 05:25Z убита re-POST 05:29Z same-ref = слот-потеря
 FACT | AG-57 w528 | 377/289 push-канарейки легит (prereg AG-377): нов. yml+push=0-runs, след. push=fire; cancel НЕТ
+
+FACT | AG-42 w528 | харвест 06:04-07:16Z x15: 13succ/2fail; r143 ch/s 14.87, r153 12.85, r109 7.98, r33 8.64 | арт x5
+FACT | AG-42 w528 | 500-leg 37026771618 DRAIN-TOUT: marked 0/58279 mspt 83 TPS10.9 census 6795 = heavy DRAIN-BOUND | арт
+FACT | AG-42 w528 | 482-FAIL G-FPCOMPILE x3 symbol 31s exit44 sha 2171d6da branch-local pre-merge; master чист | joblog
+DISP | AG-42 w528 | 0-POST: зомби-рефут w8192/w2048 + census-4 + харвест x15; payload work/AG-42 TSV | 0 POST
