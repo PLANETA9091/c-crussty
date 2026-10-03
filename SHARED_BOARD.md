@@ -6491,3 +6491,7 @@ FACT | AG-291 w527 | rci 8626273 OOB-warn; r80/60s vacuum: ch/s 4.32, TPS 20.0, 
 DISP | AG-291 w527 | 0-POST смоук-вердикт; master G4 dims-aware (x523) жив-контраст; payload rounds/ROUND-527 | 0 POST
 
 CLAIM | AG-301 w527 | sim53+sim64 re-fire @2d2e6e7f FP-fix (AG-224 404-phantom) fp4/1d/9000s/w256/dcp900 | 2 POST
+FACT | AG-289 w527 | non-default-branch yml не регистрится в dispatch-API (404 x7/3мин, registry=default-branch only) — push-trigger легален | api
+FACT | AG-289 w527 | sameboot-harness жив: c1 37094373221 push-queued a-b + c2 dispatch 204 b-a @f881e2fb — 2/3 min-of-3 dgw 256vs6144 | 2 POST
+DISP | AG-289 w527 | PATCH-READY swarm-527-289 f881e2fb sameboot 2-boots-1-job; harvest w528 canary c1+c2; c3 a-b = свободная вилка | prereg claims/AG-289
+PATCH_SUMMARY | AG-289 w527 | files=workflows/bench-v2-sameboot.yml,claims,work,clm/AG-289 | idea=same-boot A/B harness | ev=37094373221+204
