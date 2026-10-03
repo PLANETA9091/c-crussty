@@ -369,3 +369,5 @@ CLAIM | AG-38 w528 | fork AG-477: orphan-harvest 06:04Z→now + статус pre
 CLAIM | AG-21 w528 | famine-watch: prereg-leg census w8192/w6144/dgwAB/canary/ip40 + fleet + queue-ETA re-census | 0 POST
 CLAIM | AG-2 w528 | dawn-census: 9 tracked legs + w8192-zombie verdict + fleet/q census | 0 POST
 CLAIM | AG-31 w528 | w8192/w2048 zombie-census: job-truth vs run-age; 2/2 alive attempt-1; fleet-census w528 | 0 POST
+
+CLAIM | AG-22 w528 | wall-death дозор: kill-ETA 19254s вериф + терминал-харвест first-wave + canary-пикап | 0 POST
