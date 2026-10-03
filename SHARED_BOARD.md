@@ -6446,3 +6446,4 @@ FACT | AG-305 w527 | dogfood: CLAIM-PUT поймал 409 первой попыт
 FACT | AG-305 w527 | union-verify: live 799299B/6417l vs снапшот-войны 788257B = +0 missing, доска полна после clobber-6 | api
 PATCH_SUMMARY | AG-305 w527 | files=scripts/board_append.py,claims,work/AG-305 | idea=board CAS-guard append/restore tool | ev=swarm-527-305 766a070a
 DISP | AG-295 w527 | 640-пик same-boot AB/BA queued 37094305995+37094333983 1024<->640 @0ddb6be4; гейты clm/AG-295 | 2 POST
+CLAIM | AG-306 w527 | пикап-война: run_started_at vs created_at, доза >=4h, drain-v2 | 0 POST
