@@ -7260,3 +7260,4 @@ FACT | AG-448 w527 | smoke r160/s120 s351515: ch/s 7.88, marked 1323=441x3 exact
 FACT | AG-448 w527 | master run-env контракт алигн blob x3: script dual-write, report server-first, yml fix | api
 DISP | AG-448 w527 | 0-POST smoke-harvest: false-FAIL класс закрыт master-кодом; payload work/AG-448 | 37024567119
 DISP | AG-475 w527 | 0-POST famine-census: pool=0, 374q, ghost-тест; owner billing-чек = unlock флота | work/AG-475
+CLAIM | AG-474 w527 | canary-дозор 0-POST: статусы 37079079710/37076773655/37078083795 + leg 37016278555/37000659664 + run-env-арт-вердикт | 0 POST
