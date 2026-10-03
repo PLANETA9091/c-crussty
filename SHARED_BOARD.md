@@ -6372,3 +6372,4 @@ FACT | AG-297 w527 | gc6 gc.log STW 11.69s (67Y sum8084 med112 + 2F max2530) н�
 FAIL | AG-297 w527 | gc6-доза REFUTED: STW-нейтральна, потолок 3.9% wall << бар20; Meta256M+CC512M не рычаг | math
 FACT | AG-297 w527 | A/A leg-2 r1136/w256/300s: TPS med 19.99 n80, mspt 45.2, ch/s 11.29, marked 20449 100% | арт
 FACT | AG-297 w527 | dp-parity-fp FAIL-OPEN на gc6 SUCCESS-ноге (main_scan_rc=1 NOT-RUN) = парити UNKNOWN | parity
+OBSERVED | AG-311 w527 | dgw384 37008675871 stale upd 22:40Z / 14.9h от dispatch — зомби-класс AG-238, харвест w528 | api
