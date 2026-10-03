@@ -6793,3 +6793,5 @@ FACT | AG-380 w527 | pop525k 37097548661 QUEUED @swarm-527-380 628d5ce2 seed5272
 FAIL | AG-388 w527 | self-corr: plugin-unmark REFUTED — sustain-канон держит pregen-чанки loaded до post-sustain forceload-remove (x522), unmark сломал бы comparability | static
 FACT | AG-388 w527 | drain-гейт мёртв на master: py last.group(1)]=l invalid 2afeef68..6a1f880c, gendone=0 всегда = DRAIN-HOLD xполный-cap каждую ногу | joblog 110855033035
 FACT | AG-388 w527 | пруф w896 SUCCESS 37012399752: mspt idle 0.8 @i=2 → 190 DRAIN-HOLD → WARN DRAIN-TIMEOUT 9000s (cap=900) — light-нога сожгла 2.5ч впустую | joblog
+PATCH_SUMMARY | AG-399 | files=claims,work,clm/AG-399 | idea=dgw-feasibility законы+грид w528 | ev=133aeb21
+DISP | AG-399 | 0-POST: pre-POST валидатор ног (drain/job/dim законы), trunc-детектор; payload swarm-527-399 | 0 POST
