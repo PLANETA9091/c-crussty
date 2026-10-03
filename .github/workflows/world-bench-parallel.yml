@@ -154,6 +154,10 @@ on:
         description: 'Pair-hunter fast-fail: max runner_cpu_index band (empty = no gate)'
         required: false
         default: '9500000' # AG-397 x527: HI 11.4-12.5M outside norm-domain [6.5,9.0]M (AG-157) — re-roll canon L-466-C53.1, save pre-download
+      band_mode:
+        description: "Band-out behavior (AG-225 w528; AG-189 FAIL 'no warn-toggle'): fail = exit-1 pre-download (S7-96d pairing canon); warn = record + continue (solo legs)"
+        required: false
+        default: 'fail'
       natives_url:
         description: 'Closed-source natives tar.gz (empty = hotpatch-only mode)'
         required: false
@@ -188,11 +192,16 @@ jobs:
           for _ in range(6000000):
               x=(x*1103515245+12345)&0x7fffffff
           print(f"{6000000/(time.time()-t):.0f}")')
-          echo "runner_cpu_index=$IDX band=[${{ inputs.cpu_band_min }},${{ inputs.cpu_band_max }}]"
-          echo "runner_cpu_index=$IDX" >> "$GITHUB_STEP_SUMMARY" # AG-318 x521: auto-calibration ledger
+          MODE="${{ inputs.band_mode || 'fail' }}" # AG-225 w528: fail|warn (AG-189 38s-false-FAIL fix)
+          echo "runner_cpu_index=$IDX band=[${{ inputs.cpu_band_min }},${{ inputs.cpu_band_max }}] mode=$MODE"
+          echo "runner_cpu_index=$IDX mode=$MODE" >> "$GITHUB_STEP_SUMMARY" # AG-318 x521: auto-calibration ledger
           if [ "$IDX" -lt "${{ inputs.cpu_band_min }}" ] || [ "$IDX" -gt "${{ inputs.cpu_band_max }}" ]; then
-            echo "::notice::runner_cpu_index=$IDX OUTSIDE band — fast-fail pre-download (pairing discard, not a bench failure)"
-            exit 1
+            if [ "$MODE" = "warn" ]; then
+              echo "::warning::runner_cpu_index=$IDX OUTSIDE band — WARN-MODE continue (solo leg kept; pairing exclusion handled by ledger)"
+            else
+              echo "::notice::runner_cpu_index=$IDX OUTSIDE band — fast-fail pre-download (pairing discard, not a bench failure)"
+              exit 1
+            fi
           fi
 
       - name: Checkout CRUSSTY (engine runtime)
