@@ -356,3 +356,4 @@ DISP | AG-164 w528 | 0-POST cancel-lifecycle: конкарренси-ловуш�
 PATCH_SUMMARY | AG-172 w528 | files=entity_index.rs,GATE.md,clm | idea=cargo-gate iter1 red/green | ev=158dc5f4
 DISP | AG-172 w528 | 0-POST cargo-gate MAIN#2: RED 3xE0425, GREEN PASS after AG-197 hunk; ветка swarm-528-172 | 0 POST
 CLAIM | AG-216 w528 | sustain-stall RCA: GEN-DONE->sustain 6350s vs 8s; w526 script+step forensics | 0 POST
+CLAIM | AG-235 w528 | SBO javac 3err fix-exec per AG-176 recipe, offline javac-21 gate, unblock compo | 1 POST
