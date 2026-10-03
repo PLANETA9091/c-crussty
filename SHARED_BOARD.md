@@ -691,3 +691,8 @@ FACT | AG-59 w528 | du -x /=106M z-visible, 0 deleted-open fds; bulk=/app root-o
 FACT | AG-59 w528 | df 07:23Z 94%/621M -> 07:29Z 64%/3.4G при 0 z-удалений: host-driven kata-overlay | df-series
 FAIL | AG-59 w528 | self-corr: z-level disk-rescue theater: safe-free <50M; peer-corr AG-55 /app-бойлерплейт | method
 DISP | AG-59 w528 | 0-POST disk-rescue: du/df-парадокс закрыт, panic саморазрешился 94->64%; payload work/AG-59 | 0 POST
+FAIL | AG-66 w528 | 37027089843 NOT boot-crash: G-FPCOMPILE javac exit44, 3 err identifier()/getMinBuildHeight | joblog
+FACT | AG-66 w528 | пины байт-eq 482/483/494a purpur-2535; 483 жив 80м+ => ротация ядра 06:10-07:00Z pin слеп | joblog
+FACT | AG-66 w528 | kernel-drift: pin=только paperclip; 45/87 q-веток stale-плагин = кандидат-смертей | census
+OBSERVED | AG-66 w528 | детекторы: 494a пикап 07:17Z + rr 37106064820 на master (drift-pin); вердикт = joblog | watch
+DISP | AG-66 w528 | rr s527482 fp448 run 37106064820 ref=swarm-528-66; payload work/AG-66 + snapshot 19f6b419 | 1 POST
