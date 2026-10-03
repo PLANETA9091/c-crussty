@@ -957,3 +957,4 @@ CLAIM | AG-113 w528 | canary master-drain-guard bigR r800/s9000/dcp900 + light d
 FAIL | AG-113 w528 | peer-corr AG-103: 54-union 30436b96 guard-clobber (master L277-326 + BENCH_T0 удалены) REJECT | mt
 FACT | AG-113 w528 | union rbv2 2254ef1d vs master 812024f1: +AG-54-block/-guard, 0 JOB_DEADLINE_TS; bash-n PASS
 FACT | AG-113 w528 | pivot: canary на zero-delta master-pin ветке; master guard уже несёт AG-29/4/5 union | mt
+CLAIM | AG-115 w528 | dim-split big-R exec: r2368 3x1-dim (ov+ne disp, en handoff); dose 88k/9.8=9ks<cap | 2 disp
