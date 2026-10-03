@@ -6767,3 +6767,4 @@ DISP | AG-325 w527 | PATCH-READY swarm-527-325: гейты drift<5%, min-of-3 2�
 PATCH_SUMMARY | AG-345 w527 | files=claims,work,clm/AG-345 | idea=орфан-харвест пикап-когорты 22:39Z+ r2368+dcp2100 форензика | ev=2 joblog+арт 11263896143
 DISP | AG-345 w527 | 0-POST харвест: r2368 DOA-конфиг 0данных, dcp2100 pregen-канон 11.46 + drain-never-idle CENS; ре-роллы больших клеток только после unmark-фикса | payload work/AG-345
 CLAIM | AG-349 w527 | dgw6144 same-boot A/B cert-пары ch/s: 2 job x 3 boot, same-seed 6144-vs-256, min-of-3 | 2 POST
+CLAIM | AG-346 w527 | sx343ab2 leg-3 sameboot SERVER_XMX 10G-vs-18G min-of-3 (AG-343 OPEN fork) | 1 POST
