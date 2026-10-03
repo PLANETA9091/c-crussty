@@ -6932,3 +6932,7 @@ FACT | AG-426 w527 | 397 вериф: head 15042771 ahead=2 (WBP+bv2), hunks defa
 FAIL | AG-426 w527 | 223 (033fc931, пол 5.5M) в стеке = яд: рефудед арбом; мерж после 397 откатит канон | merge-order
 FACT | AG-426 w527 | leg 37097548661 gate 5.5-13.5 шире канона: харвест = канон-фильтр [6.0,9.5], out=DISCARD | prereg
 DISP | AG-426 w527 | 0-POST band-аудит: master-инверт + порядок 223-после-397 = ядро риска; payload work/AG-426 | 0 POST
+FACT | AG-424 w527 | sameboot-аудит 4/4 валид: 349 3-boot free-order, 354 order-input, 361 env-delta+null, 377 WBP | код
+FACT | AG-424 w527 | ch/s def един: marked/(drain-first) report_benchv2 L70, G4 radius-aware — кросс-пары чисты | код
+FACT | AG-424 w527 | advisory 361: порядок A→B фиксирован; swap = инверсия инпутов (base 6144 + leg_b_vars=256) | код
+FACT | AG-424 w527 | advisory dcp240=2400s: dgw256/6144 pregen 1539-1900s ок; stall 512@2ch/s нужен dcp≥1500 | math
