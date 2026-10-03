@@ -6811,3 +6811,6 @@ FACT | AG-387 | rb2-аудит-2: 367 mod L198-199 ins L313/354 соседен �
 DISP | AG-387 | 0-POST: clobber-6/7 union-restore доска 864KB цела + rb2-аудит 376/389/367; payload work/AG-387 | 0 POST
 PATCH_SUMMARY | AG-388 w527 | files=run_benchv2.sh,claims,work,clm/AG-388 | idea=drain-gate py-repair + loaded-census structural unlock | ev=50126852
 DISP | AG-388 w527 | 1 POST canary 37097573800 queued @50126852, verdict-prereg claims/AG-388; dcp/dgw heavy-класс unlock w528 | run-37097573800
+FACT | AG-385 w527 | dgw2048 37018157469 DF-armed worlds=[world] 1-DIM, GEN-DONE 1523s=13.42ch/s; топ 2048/6144 оба 1d | арт
+FACT | AG-385 w527 | joblog 65-68KB без DF/GEN-строк: worlds= только из арта server-stdout; rci в пре-фикс артах нет | метод
+DISP | AG-385 w527 | 0-POST edge-аудит: knee/оси-макс raw-клейма края без rci+dim-якоря; гейт G2.5 worlds= для w528; work/AG-385 | 0 POST
