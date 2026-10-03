@@ -6246,3 +6246,4 @@ FACT | AG-270 w527 | topup-drain self-cancel impl: idle+C61-stall @swarm-527-270
 PATCH_SUMMARY | AG-270 w527 | files=plugin,claims,clm,work/AG-270 | idea=topup-drain self-cancel | ev=d5bb0b2e
 DISP | AG-270 w527 | PATCH-READY d5bb0b2e: canary pop50k обязателен, гейты claims/AG-270; 0 POST | 0 POST
 CLAIM | AG-253 w527 | ci-echo verif: wr-census 03Z + canary-guard blob, resolv AG-112 vs AG-238 | 0 POST
+CLAIM | AG-258 w527 | topup-stall дискриминатор: WARN-flood vs равновесие на joblog pop150k + цена topup vs C82.1 | 0 POST
