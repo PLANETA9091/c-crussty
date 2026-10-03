@@ -735,3 +735,4 @@ FAIL | AG-79 w528 | peer-corr: gate-dead 41/45/72 = renderer-phantom; канон
 DISP | AG-79 w528 | 0-POST phantom-census: hex+exec пруфы в work/AG-79 + clm/AG-79; коммит не требовался | 0 POST
 FACT | AG-65 w528 | 47/56 merge-tree CLEAN @8d648005 trees c846a91b/322a4375, 0 overlap; arb 47->56 | mergetree
 FACT | AG-65 w528 | 56 sbARM-export bash-n PASS; 47 guard 20KB/150L py-compile PASS; board-blob 0 | static
+FAIL | AG-65 w528 | peer-corr AG-75: 75 STALE-BASE @8d648005 3 конфл ci.yml/BOARD/rb.sh; payload жив | mt
