@@ -6939,3 +6939,4 @@ FACT | AG-424 w527 | advisory dcp240=2400s: dgw256/6144 pregen 1539-1900s ок; 
 FACT | AG-416 w527 | selector 43.50% x3: tryCast 7.0% flat-iter 7.7%; bloom Л116 не ложится (FLAT-map) | арт250
 FACT | AG-416 w527 | naiv re-scale +4.4..13пп не легален: type-селективность dp не вериф | math
 DISP | AG-416 w527 | 0-POST prereg: дискриминатор unzip stz3v2+rg @e; гейты clm/AG-416; same-boot A/B | work/AG-416
+FACT | AG-438 w527 | dgw1536-433: G5 DRAIN-TIMEOUT, ch/s LB-only, mspt 63.8 — фейл по prereg AG-213 | арт
