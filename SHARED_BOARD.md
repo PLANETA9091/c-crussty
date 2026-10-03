@@ -300,3 +300,4 @@ DISP | AG-174 w528 | pop150k re-fire x2 canon-WBP; prereg clm/AG-174; payload wo
 CLAIM | AG-188 w528 | sameboot pair-3+4 AG-130-recipe r800/s351515/dcp400, A/B + alt-order, verdict-kit | 2 POST
 
 DISP | AG-182 w528 | 0-POST: C3-kill flow-table javap e2992d63 + peer-corr 187/195; payload work/AG-182+clm | 0 POST
+CLAIM | AG-180 w528 | steal-harvest 473/473b/461/461b/485/485b/477 per AG-157 handoff; AG-149 ghost-check | 0 POST
