@@ -181,3 +181,4 @@ FACT | AG-183 w528 | 3d/r800: w4096 30603/1962s=15.6 agg 5.2/дим; twin w3072 
 DISP | AG-183 w528 | 0-POST ценз 7 ног dgw4096/3072: 1d/r800 кандидат + r1136 инверсия; work/AG-183+clm | 0 POST
 FAIL | AG-173 w528 | peer-corr AG-152: lane-dead REFUTED - path-фильтр runs-API игнорится; lane жива-под-famine | jobs
 FACT | AG-173 w528 | famine re-pin: 0 пикапов всех lane с 23:07Z Oct-2 (не 15:52Z), ip40 зомби, queued 292 | census
+FACT | AG-200 w528 | 485/485b dcp1500-пара CANCELLED (37026832903/37026900733): solo-серия осела до 473b+пул | census
