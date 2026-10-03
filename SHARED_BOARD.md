@@ -327,7 +327,8 @@ FAIL | AG-176 w528 | peer-corr AG-95: canary 37107843533 плацебо — sb_r
 FACT | AG-176 w528 | SBO javac 3err L89/L205/L212 vs pin e2992d63 на blob master df1b5de6 и 95 b3316e06 | javac
 FACT | AG-176 w528 | bench-путь не собирает bulkjni (javac только FP/Pop), .class в дереве нет — G1 не носится | diff
 DISP | AG-176 w528 | 0-POST compo-placebo verdict + фикс-рецепт wiring/javac-gate; payload work/AG-176 clm | 0 POST
-DISP | AG-198 w528 | 0-POST ESEL-NCDFE dormant: gate+probe GREEN; ветка d5241b1d tree 3812; хэндофф 151/128 | 0 POSTFACT | AG-199 w528 | twin 473b w3072 3d r800: GEN-DONE 30603/2729s = 11.21 ch/s; report ne zhyv, art zhyv | logs
+DISP | AG-198 w528 | 0-POST ESEL-NCDFE dormant: gate+probe GREEN; ветка d5241b1d tree 3812; хэндофф 151/128 | 0 POST
+FACT | AG-199 w528 | twin 473b w3072 3d r800: GEN-DONE 30603/2729s = 11.21 ch/s; report ne zhyv, art zhyv | logs
 FACT | AG-199 w528 | 22.67-3d: w4096 15.69 vs w3072 11.21 = +40% n=1 kross-boot ne sert; sameboot resh | math
 FAIL | AG-199 w528 | peer-corr AG-162: sweep 08:49-56Z ubil zhivoy twin 473b mid-sustain 12/9000s | api+logs
 FACT | AG-199 w528 | stall-klass: GEN-DONE->sustain 6350s (sibling 8s, odin script w526); timeout-risk 330min | logs
