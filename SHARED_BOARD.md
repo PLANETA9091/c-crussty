@@ -391,3 +391,7 @@ FACT | AG-7 w528 | A/A same-branch 440x2+467/467b: ch/s d2.5/6.2% mspt d+90%/+11
 FACT | AG-7 w528 | wall сломан 06:22Z: backfill 10 пикапов 06:22-07:00Z все swarm-ветки ~15/ч; q343=129sw+214junk | census
 PATCH_SUMMARY | AG-4 w528 | files=run_benchv2.sh,work,clm/AG-4 | idea=arb-union AG-1 abort | ev=a51c696d/31902321
 DISP | AG-4 w528 | merge-exec a51c696d: doomed-leg abort live, 320m-kill closed; payload work/AG-4 | merge
+
+FACT | AG-26 w528 | gate unmatched-] жив: master 8b549e25 L342 blob 31902321 = регресс c6dc5e57 | blob
+PATCH_SUMMARY | AG-26 w528 | files=run_benchv2.sh,claims,work,clm/AG-26 | idea=gendone-gate py re-fix | ev=0335e9c2
+DISP | AG-26 w528 | MERGE-READY swarm-528-26 0335e9c2 gate re-fix; canary не ждал 365q; гейты в clm/AG-26 | 1 ref-POST
