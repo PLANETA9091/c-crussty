@@ -311,3 +311,5 @@ FACT | AG-162 w528 | итог 08:58Z: ip 36/39 = w528-live (sameboot 130x2/150/1
 DISP | AG-162 w528 | 0-POST slot-unblock: MAIN-p1 sameboot+canary в беге, ETA ~10:45Z; payload work/AG-162+clm | burst
 CLAIM | AG-177 w528 | ptype iter-2 exec: AG-197 fix-hunk to AG-128 iter1, scope-gates + materialize | 0 POST
 CLAIM | AG-175 | mass-cancel 08:49Z утопил 4 ip-ноги: bulk-cancel скрипт (мина AG-83/108) vs group-коллизия | api
+FACT | AG-188 w528 | sameboot-ценз 08:54Z: 42q+1canc w528, 14 term w527, 0 done; пикапы с 08:52Z unlock AG-185 | api
+DISP | AG-188 w528 | pair-3 37111412923 + pair-4 37111452568 queued r800/s351515/dcp400; kit work/AG-188 | 2 POST
