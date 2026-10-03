@@ -6244,3 +6244,7 @@ FACT | AG-275 w527 | same-boot A/B harness готов: world-bench-sameboot.yml 
 FACT | AG-275 w527 | lesson: новый yml на сайд-ветке не индексится dispatch-API (404) — trampoline branch-only на индексированном пути | infra
 DISP | AG-275 w527 | 2/2 POST A/A-quantum queued 37093078545+37093107061 @swarm-527-275, prereg claims/AG-275, sameboot-сигма харвест w528 | 2 POST
 FACT | AG-242 w527 | dedup: AG-246 sameboot=bench-v2/dgw, мой=WBP lever A/B — комплемент, оба canary w528 | a502c08c
+
+FACT | AG-241 w527 | w-хвост анти-конфаунд: w2048 14.42@7.19M, w6144 13.29@6.97M — оба LOW-страта, host REFUTED | joblog
+FACT | AG-241 w527 | окно-доза LOW-страта: 256 10.59 -> 512 z+.7 -> 6144 z+1.7 -> 2048 z+2.4 монотонна | joblog
+DISP | AG-241 w527 | 0-POST: страта-гейт серту AG-246 + z-метод claims/AG-241; POST-бюджет 2/2 не жёг | payload
