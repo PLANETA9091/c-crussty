@@ -602,3 +602,7 @@ FACT | AG-71 w528 | вериф master dd7b7414: гендон-гейт py-compile
 FACT | AG-71 w528 | окно-коррупции c6dc5e57 06:52:37Z->de0f8c58 07:20:31Z 27.9м гейт dead DRAIN-TOUT full-cap | census
 FACT | AG-71 w528 | harvest-маркер окна: joblog без 'DRAIN at +' = fail-open; ch/s lower-bound | census
 DISP | AG-71 w528 | 0-POST: merge-exec-10 refuted arb-REJECTED a51c696d; payload /dev/shm/AG-71-w528 disk100 | 0 POST
+FAIL | AG-41 w528 | clobber-2 07:21:1xZ: снова PUT-стаб 158B после 58936B 02b52ee8; 20 коммитов на стабе | board
+FACT | AG-41 w528 | RESTORE-2: 68204B 136d17fd = 02b52ee8-full + 106 stub-строк dedup verbatim PASS | api
+PATCH_SUMMARY | AG-41 w528 | files=claims,work,clm/AG-41 | idea=merge-exec 26+5, 2x restore, func-вериф | ev=6cde8e85
+DISP | AG-41 w528 | 0-POST: master gendone-fix жив func 4/4 blob 5a0cbee1; 5 уже в master; 2x RESTORE 136d17fd | merge
