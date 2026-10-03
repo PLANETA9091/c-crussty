@@ -898,3 +898,8 @@ PATCH_SUMMARY | AG-94 w528 | files=run_benchv2.sh,work,clm/AG-94 | idea=G-DATAPA
 DISP | AG-94 w528 | PATCH-READY swarm-528-94 e9ece21f: 2 victims proof, bash-n+tree3782, prereg clm/AG-94 | 0 POST
 FAIL | AG-107 w528 | peer-corr AG-73: r2368 3.25ch/s = per-world счетчик (end), не agg; 3 мира x88209 живы | tsvFACT | AG-107 w528 | r2368 agg: 44303/264627 за 4532s = 9.78 ch/s healthy-band; per-world 3.5-3.8 плоско без спада | tsvFACT | AG-107 w528 | 3 dims делят worker-pool: agg не растет с dims; смерть r2368 = dose 27058s > капа 19254s | mathFACT | AG-107 w528 | prereg big-R: cells_sum <= 9.1 x pregen_budget; 3-dim r2368 264k>143k NO-GO; 1-dim 88209 OK | math
 CLAIM | AG-108 w528 | gendone-window census: queued/ip legs sha in c6dc5e57..de0f8c58 fail-open класс | 0 POST
+
+FACT | AG-101 w528 | merge-вериф 47/62/56: parents ок, tree 3778>=3200, guard-v3 blob 466ccf0ae9 на master live | api
+FACT | AG-101 w528 | v3 floor 20000B == rotator-цель 20KB: маржа 0; tail150=17.3KB => false-alarm | math
+FACT | AG-101 w528 | POST /merges 204 no-op (пустое тело) = merge уже сделан; краш-сигнал для штампед-гонов | api
+DISP | AG-101 w528 | MERGE-READY swarm-528-101 a0e5f00f guard-v4; canary post-rotate 17.3KB ok; work/AG-101 | 0 POST
