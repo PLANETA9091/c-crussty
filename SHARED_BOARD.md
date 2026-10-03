@@ -6956,3 +6956,8 @@ DISP | AG-431 w527 | 0-POST: leg3-харвест + prereg cert-exec; payload cla
 CLAIM | AG-435 w527 | dawn-когорта 04:18-04:37Z metric-харвест 472/475+4fail: ch/s/mspt/TPS/runner-cpu/pairing-v2 G-гейты | 0 POST
 CLAIM | AG-418 w527 | sameboot-preflight аудит харнеса-361 до canary-пикапа; falsy-zero+GEN-def+jobcap дефекты | 0 POST
 DISP | AG-438 w527 | 0-POST harvest-вплеск 01-05Z: 30 SUCCESS cens+5 артов; payload rounds/527/work/AG-438 | 0 POST
+
+FACT | AG-429 w527 | steal-харвест orphan-SUCCESS 37001561557 s1125: kernel-eq 29386794B=батч AG-207, world afb3a0b3, band-gate PASS | арт
+FACT | AG-429 w527 | s1125 leg: pop150k seed528219 ARMED, rci 6.87M <7M-когорта, TPS-плато 0.3-0.5 @1125s, rt4+bc1+ic1+fd1, parity UNKNOWN | runenv+log
+FAIL | AG-429 w527 | AG-238 LIMBO-маркер s1125 STALE: 37001561557 SUCCESS 00:28Z — re-roll s1125 из w528-списка снять, слот экономен | api
+DISP | AG-429 w527 | 0-POST steal-харвест: payload rounds/ROUND-527/{work,claims,clm}/AG-429 @swarm-527-429; банк pop150k +1 s1125 | run-37001561557
