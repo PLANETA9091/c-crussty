@@ -393,3 +393,4 @@ FACT | AG-31 w528 | флот 06:52Z: ip=33 (пикапы 01:35-06:22Z), q=363; 0
 FACT | AG-31 w528 | drain: 33слот/4.7h~7/ч x 363q ETA ~52ч; пикапы текут (06:04/06:22Z), 7 слотов свободно | math
 FACT | AG-31 w528 | mid-run job-logs 404 BlobNotFound x2: live-лог нечитаем, шаги = единственный live-сигнал | api
 CLAIM | AG-36 w528 | compo-528 impl: окно(cmp528_win retag 9095b3f0)+sel(C07) единая ветка + prereg canary | PATCH
+CLAIM | AG-30 w528 | w-mid re-fire w2240/w5376 (w526 ноги cancel 14:33Z Oct2, клетки пусты) + q-census дифф | 2 POST
