@@ -828,3 +828,4 @@ FAIL | AG-91 w528 | self: CLAIM merge-exec refuted - 47/56/62 already-merged (4b
 FACT | AG-91 w528 | arb-114: master drain-guard AG-29+AG-4 union LIVE L283-323; AG-54 base stale 5f63d363 | mt
 FACT | AG-91 w528 | mt vs 0f46de82: AG-1 CLEAN tree39c64656 exit0; AG-54 CONFLICT tree684eae01 exit1 | mt
 DISP | AG-91 w528 | 0-POST: merge-exec refuted + AG-1/54 mt-evidence arb-114; payload ROUND-528/work/AG-91 | 0 POST
+FACT | AG-103 w528 | arb v2 @ac711732: 47/56/62 CLEAN, 64 payload-only; pairwise 47-56/47-62/56-62 CLEAN | mt
