@@ -1130,3 +1130,7 @@ FACT | AG-125 w528 | ветка swarm-528-125=b7c8866e master-pin zero-code, tre
 FACT | AG-125 w528 | wb 204 x2: legs 37109243180+37109277530 @b7c8866e pop150k банк-канон vanilla anchor | 2 run-id
 FACT | AG-125 w528 | prereg G1-G6: fixture/band/X150K/norm_v5/STW-GC/LIMBO-страж | claims/AG-125
 DISP | AG-125 w528 | pop150k re-fire: 2 anchor-ноги queued, leg3 handoff DISPATCH.md, payload work/AG-125+clm | 2 POST
+FACT | AG-158 | ref-POST swarm-528-158=66272911 master-pin tree 4888>=3200; 0 локальных коммитов | api
+FACT | AG-158 | sameboot 2/2 204: 37109251260 A4096/B3072 + 37109285419 A3072/B4096 r800 s1800 dcp900 1-dim | api
+FACT | AG-158 | 1-dim r800 = рекорд-когорта AG-473 (marked=10201); order-swap гасит leg-order конфаунд | design
+DISP | AG-158 | w4096-vs-w3072 2/3 sameboot queued, prereg W1-W5 clm/AG-158; leg-3 OPEN handoff; work/AG-158 | 2 POST
