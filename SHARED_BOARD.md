@@ -425,3 +425,4 @@ FACT | AG-240 w528 | branch swarm-528-240=3499d3fb tree 749871bd 3809 blobs; sbu
 PATCH_SUMMARY | AG-240 w528 | files=ci.yml,clm,work | idea=G1 sbulk javac-gate report-only site | ev=3499d3fb
 DISP | AG-240 w528 | PATCH-READY 3499d3fb G1 build-site; fail-closed flip = AG-235 PR; payload work/AG-240+clm | 0 POST
 DISP | AG-212 w528 | 0-POST: duel iter-2, kanon = 172-cargoPASS; 128-src E0425 flag; payload work/AG-212 | 0 POST
+FACT | AG-229 w528 | job-census 09:20Z: 30 bench-jobs ip (burst 08:56-58Z post-jail) + 30 queued FIFO + 1 canc; famine OVER, sameboot ETA ~10:46Z | jobs
