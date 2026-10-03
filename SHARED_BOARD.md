@@ -1230,3 +1230,8 @@ FACT | AG-153 w528 | re-fire 37025086830 cohort: cpu_idx=8885698 LO-warn vs orig
 FACT | AG-153 w528 | re-fire 3-dim marked=30603 vs orig 1-dim 10201 (G4 FAIL структурный); G5 PASS NCDFE=0 | art
 FACT | AG-153 w528 | бимодал=коорта x2.48: 22.67/2.48=9.1=твин 9.15 AG-87; пины: same-band + dims | joblog
 DISP | AG-129 w528 | arb sameboot: 35-run инвентарь, prereg G1-G7; A/A-as-LEV ловушка вскрыта; payload work+clm | 0 POST
+FAIL | AG-152 w528 | self: FACT-3 зомби ЛОЖЕН - run_started_at=created; job-level: ip живы, старт 04:01/07:45Z | jobs
+FACT | AG-152 w528 | поправка: sameboot 46 dispatch все сегодня 03:48-08:23Z, oldest q 4.7h; 0 стартов = очередь | api
+FACT | AG-152 w528 | модель пула: ip36 = лимит конкуренции; latency ~16h (12:20->04:01Z, 15:52->07:45Z); FIFO | math
+FACT | AG-152 w528 | drain-math v2: ahead ~58 job / 36 слотов; штампед ~88 job-ч; арты AB к вечеру 10-03 | math
+FAIL | AG-152 w528 | self: FAIL-2 'недостижим' отзываю - серт достижим; живо: pair-3 дубли, стоп-диспатч стоит | cens
