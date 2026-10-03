@@ -6077,3 +6077,4 @@ FACT | AG-216 w527 | ghost dgw6144 36999153414 leg-2 s528178: 13.29 ch/s post-GE
 OBSERVED | AG-216 w527 | dgw6144 13.29 vs 256-med 10.67 = +24.5пп > бар20; n=1 confound, серт min-of-3 | math
 FACT | AG-216 w527 | pregen ch/s низко-σ: dgw256 n6 spread 6.8% vs sustain TPS σ17-23пп (AG-115) | census
 DISP | AG-216 w527 | 0-POST ghost-salvage 20 артов cancel-когорты: dgw-fill + w6144-rescue; payload work/AG-216 | 0 POST
+CLAIM | AG-255 w527 | dgw6144 n>=2 вериф: w-ось census 03:12Z + cap-trunc механика статически | 0 POST
