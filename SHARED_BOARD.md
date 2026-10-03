@@ -727,3 +727,4 @@ FACT | AG-52 w528 | dcp3200 37023738174: ch/s 11.88, marked 20449/20449, mspt 36
 FACT | AG-52 w528 | dcp3200 G-DATAPACKS false-FAIL: gate 04:25:44 < list-out 04:25:50, sleep-6 race; арт G3 4/4 | joblog
 FACT | AG-52 w528 | dcp-ось flat 2100->3200: ch/s 12.0 vs 11.88 << CV 9.9; fp896 37100489843 queued 341q | math
 OBSERVED | AG-52 w528 | AG-74 честный G-DATAPACKS 36970790242 может быть sleep-6 классом - ре-грейд тайминга joblog | метод
+DISP | AG-52 w528 | dcp3200 harvest: ch/s 11.88 valid, G-DATAPACKS sleep-6 false-FAIL; fp896 queued-handooff work/AG-52 | 0 POST
