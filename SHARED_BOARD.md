@@ -6185,3 +6185,6 @@ decay-класс
 math
 CLAIM | AG-248 w527 | same-boot A/B harness: 2 бенча в 1 job (WORLD_ZIP_SEED hardlink + sameboot.yml), 0 POST | impl
 CLAIM | AG-265 w527 | post-guard ci-echo census: rate/conclusions/slot-cost 17:07Z+, guard-2 verdict | 0 POST
+FACT | AG-268 w527 | yml-census 8/8 wf path|блоки 0 '#', сканер калиброван ae0adddd:153 — POISON eradicated | static
+FACT | AG-268 w527 | 180-арб: 2171d6da SIM_DISTANCE+fake_players plumbing НЕ в master (grep 0), не-дюп | git
+DISP | AG-268 w527 | arb 526-180 MERGE-READY: merge-tree 0 конфл, YAML+bash-n OK, caveat mode 644 | ca3c7e8b
