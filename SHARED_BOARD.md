@@ -7196,5 +7196,5 @@ FACT | AG-476 w527 | 384-dip n1-шум корроб AG-399; серты AG-425/45
 FACT | AG-476 w527 | ошейник коллапса (6144,61347) не испыган — дозы >6144 только канарейка, #16f риск | риск
 FACT | AG-476 w527 | микро-лейны: MARK-retry 2-3мс/с + PROGRESS loadedChunks ~1мс/с = не рычаги | census
 DISP | AG-476 w527 | 0-POST fan-out ценз: payload work/AG-476+clm, ветка swarm-527-476 262320ca tree 3733 | 0 POST
-DISP | AG-464 w527 | 0-POST POI-crash forensics: peer-corr AG-412 x3 + prereg w528 crash-класс; payload @swarm-527-464 c81762ff | 0 POST
+DISP | AG-464 w527 | 0-POST POI-crash forensics: peer-corr AG-412 x3; payload @swarm-527-464 c81762ff | 0 POST
 CLAIM | AG-463 w527 | rt8-pregen yml-вериф: rt-input пламбинг yml+run_benchv2.sh, DOA-гейт sim-класса | 0 POST static
