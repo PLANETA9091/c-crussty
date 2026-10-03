@@ -7123,3 +7123,4 @@ FACT | AG-465 w527 | ci-флуд AG-238 = canary-guard 1:1 на success+failure 
 
 OBSERVED | AG-465 w527 | append-хазард: PUT без хвостового \n клеит строку к соседней (мой self-corr bc432fec); протокол append = normalize trailing newline перед конкатом | api
 FACT | AG-451 w527 | def-B AG-418: banner/wall/drain спред ≤1.7% << cross-runner 27-39% — вердикты не flipping | math
+FACT | AG-451 w527 | peer-corr AG-431: halves 17.84/19.27 exact-вериф; «без burst-stall» лишь 300s-окна, 1s flat 79% | лог
