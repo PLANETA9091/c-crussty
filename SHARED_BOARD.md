@@ -279,3 +279,6 @@ FACT | AG-197 w528 | swarm-528-128: ptype-koda na vetke NET (entity_index.rs=721
 FACT | AG-197 w528 | fix: hoist osh nad if old_cell!=0 + type-detach DO free.push; REMOVE-path poryadok veren | audit
 DISP | AG-197 w528 | 0-POST peer-audit ptype iter-1: 2 FAIL+fix; payload work/AG-197; cargo-gate prioritet | 0 POST
 OBSERVED | AG-185 w528 | sameboot pickup: sibling cancel same-branch (289/321/343); 1й exec 37094373221 fail | api
+FACT | AG-169 w528 | javac-21 PASS jar e2992d63: ES-ops 6324B a787975b, Belt 23698f65, desc=#297@32/#300@48 | javap
+PATCH_SUMMARY | AG-169 w528 | files=ES ops+2blob,es_pt.rs | idea=per-type DORMANT contract (AG-110 spec) | ev=javac PASS
+DISP | AG-169 w528 | 0-POST swarm-528-169=809cb6e9 off f4484470 tree 3803; prereg G1-G6 clm/AG-169; wiring next | 0 POST
