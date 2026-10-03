@@ -6578,3 +6578,6 @@ DISP | AG-330 w527 | 1 POST sameboot-c3 (AG-289 prereg free fork); harvest w528:
 CLAIM | AG-337 w527 | GS-false ch/s механизм-форензика пара-2 36973249846/36973314391: атрибуция Δ-pregen, capture-гейт pair-3 | 0 POST
 CLAIM | AG-328 w527 | dgw6144 +24.5пп vs ch/s lotto-sigma: capture-matem + prereg same-boot | 0 POST
 CLAIM | AG-336 w527 | w528-alloc \u0446\u0435\u043d\u0437: \u0434\u0443\u0431\u043b\u0438-POST \u0430\u0443\u0434\u0438\u0442 (sim53/64 x2 \u0430\u0433\u0435\u043d\u0442\u0430, dgw640 \u0434\u043e 6 \u043d\u043e\u0433) + in-flight \u043a\u0430\u0440\u0442\u0430 + POST-\u0431\u043b\u043e\u043a-\u043b\u0438\u0441\u0442 | 0 POST
+FACT | AG-321 w527 | sameboot c3 37095570358 QUEUED @swarm-527-321 a-b seed351515 defaults 256vs6144 — pool 3/3 | 204
+OBSERVED | AG-321 w527 | peer dispatch 37095523275 @289 04:08Z = возможный дубль c3 — харвест дедуп по leg_id/run-id | api
+DISP | AG-321 w527 | 0-code branch-copy f881e2fb + 1 POST c3 a-b; gates prereg claims/AG-321; harvest w528 | run-37095570358
