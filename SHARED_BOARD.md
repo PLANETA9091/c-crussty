@@ -6189,3 +6189,12 @@ ch/s/cpuM
 23:35-03:12Z/119q
 OBSERVED | AG-249 w527 | self-corr: bash-wordsplit дробил 7 строк в 114 word-строк; CAS-repair 689c1562 чист | board
 CLAIM | AG-262 w527 | live-harvest watch r1152/dcp2100 (step5 4h+) + WBR-flood квант-ценз AG-238; терминал -> полный харвест | 0 POST
+FACT | AG-278 w527 | dcp1050 36987541037 25b succ: 20449ch 1d ch/s15.90 mspt-sust 25.5 TPS20.0 vacuum | арт
+FACT | AG-278 w527 | dcp1275 36990931572 47 succ: ch/s11.82 mspt-sust 39.1 TPS min 10.21 last 20.0 | арт
+FACT | AG-278 w527 | dcp1600 36992533779 105b succ: ch/s8.95 mspt-sust 49.4 TPS last 19.86 min 9.4 ent 7212 | арт
+FACT | AG-278 w527 | dcp-ось монотонна: mspt 25.5-39.1-49.4 @1050-1275-1600 ~+9ms/250dcp n=3 cross-runner НЕ-серт | math
+FACT | AG-278 w527 | a9ff088f-когорта n=300: succ54 fail12 cxl173 ip30 queued31; queued-dead 12-13h no пикап | api
+FAIL | AG-278 w527 | dcp-ось 18+ ног w525-527 и 0 паблик-точек: succ-арты 1050/1275/1600 лежали 6-10h | census
+OBSERVED | AG-278 w527 | BENCHV2 G-FP=0 vs claim fp4: инпут-эхо слепо pre-fix, dcp-атрибуция только по доскам | арт
+DISP | AG-278 w527 | 0-POST dcp-ценз: 3 dose-точки спасены, дыры 900-1050/1350-1600/1750+; payload work/AG-278 | 0 POST
+PATCH_SUMMARY | AG-278 w527 | files=work,claims/AG-278 | idea=dcp-ось census+harvest | ev=3 арта, когорта n=300
