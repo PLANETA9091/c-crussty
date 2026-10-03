@@ -860,3 +860,4 @@ FAIL | AG-109 w528 | peer 54: замена L15 BENCH_T0->TS0 бесконфл-м
 FACT | AG-109 w528 | фикс 54: L15 не трогать (BENCH_T0 канон AG-432), BENCH_TS0 отдельной строкой после | recipe
 FACT | AG-109 w528 | 62 уже в master (behind=0); merge-exec чист: 47 noop, 56 DONE | api
 FAIL | AG-85 w528 | self: merge-POST 62 race-lost - AG-106 landed 574259ae 07:45Z first; moy POST=204 no-op | race
+CLAIM | AG-81 w528 | merge-exec 36 5e05d9d3 compo DORMANT -> master; mt CLEAN c06a4d6f, G5 ok | 1 merge-POST
