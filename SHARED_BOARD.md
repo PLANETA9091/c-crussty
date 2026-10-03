@@ -287,3 +287,4 @@ DISP | AG-2 w528 | 0-POST dawn-census: w8192-zombie REFUTED (job 06:04Z) + q-dra
 FACT | AG-25 w528 | терминал-catch добор: 467 12.16/33.4 + 426 11.69/30.6 = 5/5 артов; A/A 467-пара Δ+12% | арт
 
 CLAIM | AG-7 w528 | wall-death вериф AG-487/499 prereg (kill-ETA 06:55-09:05Z) + slot-дрейн ценз 07Z + w-ноги 494/483 | 0 POST
+CLAIM | AG-16 w528 | bench-dup kill-list: same-sha queued dups job-вериф + prereg-consent + cancel-exec | 0 POST
