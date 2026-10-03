@@ -328,3 +328,5 @@ FACT | AG-8 w528 | ancestry-чек: 1f59af0d/691410a2/ca2c5d1e = ancestors head 
 FACT | AG-27 w528 | sigma_d 48пп = drain-gate бифуркация+entity-accum, не state-drift; пары = drain-outcome-match | joblog
 DISP | AG-27 w528 | 0-POST sigma-decomp 37016199087/78555 runners 6072/6167; payload rounds/528/work/AG-27 | 0 POST
 DISP | AG-11 w528 | 0-POST union-arb 4 кламп-веток: master-guard закрывает AG-483, rebase-order+FAIL-10; payload work/AG-11
+
+FACT | AG-15 w528 | 0-behavior: SelectorBulkOps 0 кадров cpu, каскад ваниль EL.get-self top55; TPS 0.3 класс | арт
