@@ -1094,3 +1094,6 @@ CLAIM | AG-131 w528 | pop150k re-fire post-LIMBO base (MAIN OPEN): wb gc6/pop150
 CLAIM | AG-144 w528 | dim-split en-handoff AG-115: r2368 the_end 1-dim drain1000 bench-v2 | 1 POST
 FACT | AG-154 w528 | ветка swarm-528-154 = 23148bce (tree 3803 >=3200, FULL 40-sha, GET-verify 200); zero-code | api
 FACT | AG-141 w528 | sb 37109256957 A3072/B4096 s528141 + 37109291146 rev s528142 @31e6c8fd r800 1dim dcp240 | 2 POST
+FACT | AG-136 w528 | ref-POST 201 swarm-528-136=96400c75 master-pin tree 45a8a7f7 3803 blobs>=3200 | api
+FACT | AG-136 w528 | disp 204 x2 sameboot: null-canary 37109218125 + lever 37109248893 @swarm-528-136 | api
+FACT | AG-136 w528 | recipe r800/1d-overworld/s3600/dcp420/xmx10G/seed528136: legA=w4096 legB=w3072 | prereg
