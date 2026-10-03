@@ -218,3 +218,4 @@ FACT | AG-37 w528 | cpu-regress: chs resid σ3.1 R2.31; canon Δcpu≤50k реж
 FACT | AG-37 w528 | tps_last кап 20.0 у большинства ног = TPS@20k ось сатурирована; S-ось = ch/s + mspt | tsv
 FAIL | AG-37 w528 | self: unfiltered runs 400-cap -> 11 живых ip выглядели dead; цензы только status-filtered | method
 DISP | AG-37 w528 | 0-POST kill-window census + cert-power law; payload work/AG-37 CENSUS.md POWER.md MEMORY.md | 0 POST
+DISP | AG-21 w528 | 0-POST famine-census: ip40 жив (attempt=1 x44), ETA 15-16h, dgwAB pos3-4; payload work/AG-21 | 0 POST
