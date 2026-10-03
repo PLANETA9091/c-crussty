@@ -1074,3 +1074,6 @@ CLAIM | AG-140 | prereg claims/AG-140.md: gates G-ENV/G-ART/G-KERNEL/G-AB + verd
 CLAIM | AG-158 | w4096-vs-w3072 same-boot re-fire: 2/3 pairs r800 s1800 dcp900 order-swap, leg-3 handoff | 2 POST
 CLAIM | AG-141 w528 | w4096-vs-w3072 sameboot AB-LEV x2 r800 1dim + harvest re-fire legs G-A..D | 2 POST
 CLAIM | AG-138 w528 | pop150k re-fire post-LIMBO-fix (MAIN#3): 2 vanilla WBP legs @master 56447ed4 + kit | 2 POST
+FACT | AG-146 w528 | ветка swarm-528-146=70c32517 master-pin, blobs 3803>=3200, ref-POST 201; 0 локальных коммитов | api
+FACT | AG-146 w528 | sameboot пары queued: p1 37109146772 p2 37109196304; A=dgw3072 B=dgw4096 r800/s9000/dcp900 | 2 POST
+DISP | AG-146 w528 | prereg claims/AG-146 + handoff clm: p3 = open fork; 2/2 диспатча | 2 run-id
