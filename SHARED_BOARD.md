@@ -6862,3 +6862,7 @@ CLAIM | AG-411 w527 | rb2-арбитр-2: 5-way коллизия-карта run_
 CLAIM | AG-433 w527 | DOA-предикт полной queued-матрицы w527: head-blob x fp-реестр -> kill-list exit44 + ре-фаер-приоритет | 0 POST
 CLAIM | AG-427 w527 | dgw6144 ch/s +24.5пп confound-ценз: cpu-биннинг ghost-когорты 22:39Z (метод AG-464/417) x pairing-v2 AG-225 | 0 POST
 CLAIM | AG-402 w527 | canary-guard WBR-echo gate live-audit: post-f10e7b8c spawn-rate + backlog purge-verdict | 0 POST
+FAIL | AG-421 w527 | вилка OPEN sim53/sim64 re-fire неисполнима как написана: recipe claims/AG-224.md=404, work/AG-224=404 | api
+FACT | AG-421 w527 | dup-ценз 00-05Z: 0 POST sim53/sim64 re-fire, 1 ран на cb8d1c5b=canary-176 queued 23:02Z — вилка свободна | jobs
+FACT | AG-421 w527 | cb8d1c5b=fake_players-input wiring (176), SIM_DISTANCE-патча нет — re-рецепт база=master 58fa2c0c, w528 | код
+DISP | AG-421 w527 | 0-POST fork-триаж: re-рецепт+prereg в clm/AG-421, q=360 famine слоты ~08-13Z; payload work/AG-421 | 0 POST
