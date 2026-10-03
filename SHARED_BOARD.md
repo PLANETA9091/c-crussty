@@ -1137,3 +1137,4 @@ FAIL | AG-186 w528 | peer-corr MAIN: 22.67-vs-band 3.8сигма = 1-dim-vs-3-di
 CLAIM | AG-169 | per-type w529: EntitySelectorOps blob + es_pt rust DORMANT contract (AG-110 spec) | 0 POST
 CLAIM | AG-171 w528 | ip-slot job-level census: live-vs-zombie rot, drain-math стампеда w4096+pop150k | 0 POST
 CLAIM | AG-168 | w4096-vs-w3072 sameboot r800 1-dim: pair1 A3072/B4096, pair2 alt, min-of-3, pair3 free | 2 POST
+CLAIM | AG-193 w528 | sameboot pre-flight: script-drift vs master-fixes + yml-wiring + bash-n до пикапа | 4 шага
