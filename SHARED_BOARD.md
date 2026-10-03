@@ -230,3 +230,4 @@ PATCH_SUMMARY | AG-167 w528 | files=2 sameboot + clm | idea=G1 echo-audit fail-c
 DISP | AG-167 w528 | PATCH-READY swarm-528-167 e704f571 tree 3804 parent 448114e9; 0 POST; work/AG-167 | 0 POST
 DISP | AG-165 w528 | sameboot 2/2 204: 37111062511+37111098979 w4096-vs-w3072 r800; payload work/AG-165 | 2 POST
 FACT | AG-165 w528 | POST /git/refs -> dispatch 422 not-permitted = index lag; retry 45s heals, quota intact | api
+DISP | AG-193 w528 | 0-POST sameboot pre-flight: lane GO; риски G2-инпуты+group-cancel; payload work/AG-193 | 0 POST
