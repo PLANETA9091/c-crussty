@@ -258,27 +258,41 @@ for i in $(seq 1 "${DRAIN_CAP_POLLS:-240}"); do  # AG-400 x523 #16f: cap env-tun
     idle=$(grep -A2 "Tick durations" server-stdout.log | grep -oE "[0-9]+\.[0-9]+/[0-9]+\.[0-9]+/[0-9]+\.[0-9]+/[0-9]+\.[0-9]+" | head -1 | cut -d/ -f2)
     idle="${idle:-5.0}"
     pass=$(python3 -c "print(1 if float('$med') < max(1.5*float('$idle'), 50.0) else 0)")
-    # AG-400 x523 #16f-доработка (port AG-339 GEN-DONE gate, python-bug FIXED: "last.group(1)]"
-    # was invalid python -> gendone always 0 -> gate dead code, every leg burned full cap).
-    # MSPT-idle alone is false-PASS (GEN-FANOUT-STALL: mspt idle 0.3-1.3 with gen frozen).
-    # Drain PASS also requires LATEST [DF] PROGRESS of EVERY bench dim: inflight=0 AND
+    # AG-400 x523 #16f GEN-DONE gate (port AG-339). AG-388 w527 REPAIR: the comment
+    # claimed the python-bug FIXED, but "last.group(1)]=l" (invalid python) survived
+    # on master 2afeef68..6a1f880c -> gendone ALWAYS 0 -> DRAIN-HOLD every poll ->
+    # every leg burned its full drain cap (joblog 110855033035 w896: mspt idle 0.8 at
+    # i=2, 190 DRAIN-HOLD, WARN DRAIN-TIMEOUT at 9000s; light AND heavy legs alike).
+    # MSPT-idle alone is false-PASS (GEN-FANOUT-STALL: mspt idle 0.3-1.3, gen frozen):
+    # drain PASS requires LATEST [DF] PROGRESS of EVERY bench dim: inflight=0 AND
     # gen_ok==marked-total (gen_ok, not marked — #16g: marked lost at gate 625-3444->0).
-    # Fail-open: plugin-silent -> gendone=0 -> old DRAIN-TIMEOUT WARN path.
-    gendone=$(grep "\[DF\] PROGRESS" server-stdout.log 2>/dev/null | python3 -c "
+    # AG-388 w527 +loadpass (AG-345 drain-stall fork): heavy legs hold mspt>50 with
+    # tickets held (sustain canon: pregen chunks stay loaded, `forceload remove all`
+    # fires only post-sustain) -> mspt-idle unreachable -> structural acceptance when
+    # every bench dim ALSO reports loaded>=EXP_PD (gen physically complete, tickets
+    # still held — zero world-state change, sustain comparability preserved).
+    # Fail-open: plugin-silent -> gendone=loadpass=0 -> old DRAIN-TIMEOUT WARN path.
+    gate=$(grep "\[DF\] PROGRESS" server-stdout.log 2>/dev/null | python3 -c "
 import sys,re
 last={}
 for l in sys.stdin:
     m=re.search(r'world=(\S+)',l)
     if m: last[m.group(1)]=l
-ok=bool(last)
+exp=int(sys.argv[1]) if len(sys.argv)>1 else 0
+g=lp=bool(last)
 for d,l in last.items():
     mt=re.search(r'marked=(\d+)/(\d+)',l); gi=re.search(r'gen_ok=(\d+)',l); ifl=re.search(r'inflight=(\d+)',l)
-    if not (mt and gi and ifl and int(gi.group(1))==int(mt.group(2)) and int(ifl.group(1))==0):
-        ok=False
-print(1 if ok else 0)" 2>/dev/null) || gendone=0
+    ok=bool(mt and gi and ifl and int(gi.group(1))==int(mt.group(2)) and int(ifl.group(1))==0)
+    ld=re.search(r'loaded=(\d+)',l)
+    if not ok: g=False
+    if not (ok and ld and int(ld.group(1))>=exp): lp=False
+print(('1 ' if g else '0 ')+('1' if lp else '0'))" "$EXP_PD" 2>/dev/null) || gate="0 0"
+    gendone=$(echo $gate | cut -d' ' -f1); loadpass=$(echo $gate | cut -d' ' -f2)
     if [ "$pass" = "1" ]; then
       if [ "$gendone" = "1" ]; then DRAIN_TS=$ts; DRAIN_TIMEOUT=0; log "DRAIN at +$((ts - FIRST_TS))s (GEN-DONE gate pass)"; break; fi
       log "DRAIN-HOLD i=$i mspt_idle_but_gen_not_done (AG-400 GEN-DONE gate: false-PASS blocked)"
+    elif [ "$loadpass" = "1" ]; then
+      DRAIN_TS=$ts; DRAIN_TIMEOUT=0; log "DRAIN at +$((ts - FIRST_TS))s (GEN-DONE+loaded-census gate: mspt-stall structural, AG-388 w527)"; break
     fi
   fi
   grep -qi "Exception in thread" server-stdout.log && { log "FATAL: main-thread exception during drain"; break; }
