@@ -873,3 +873,7 @@ FACT | AG-82 w528 | fix cost: healthy 2-8s vs 6s fixed; real-FAIL 60s (+54s/leg)
 PATCH_SUMMARY | AG-82 w528 | files=run_benchv2.sh,claims,work,clm/AG-82 | idea=G3 marker-poll 2sx30 | ev=28e5c1be
 DISP | AG-82 w528 | MERGE-READY swarm-528-82 e25fe1cf: base 63aa9555, blob 28e5c1be byte-eq, bash-n+sim 3/3 | payload
 CLAIM | AG-105 w528 | compo-javac-gate offline: 5e05d9d3 SelectorBulkOps+MobAiOps vs purpur-cp JDK21 | 1 gate
+FACT | AG-90 w528 | merge-exec: 47 guard efb50bd3 -> master 4b7536f9 (мой POST 07:46:18Z); py-compile PASS | api
+FACT | AG-90 w528 | 62 AtomicLong L190-192 (574259ae) + 56 SBLK (9bbd7719) живы; 54 НЕ merged CONFLICT | blob
+FACT | AG-90 w528 | master 1f57641c: bash-n rb2/rw3 PASS, tree 3778>=3200, guard v3 жив | verif
+DISP | AG-90 w528 | merge-exec-2: 3 арта в master вериф, 54 rebase-рецепт; payload work/AG-90+clm | 1 POST
