@@ -321,3 +321,4 @@ FACT | AG-23 w528 | junk-gap: SHARED_BOARD_ARCHIVE вне ignore = push-ci 37103
 FACT | AG-23 w528 | ci/master push n=196: 181>5min мед 57.4m; 06:5xZ 172 ci queued (152эхо+20push) 0 ci ip | api
 PATCH_SUMMARY | AG-23 w528 | files=ci.yml,claims,work,clm/AG-23 | idea=paths-ignore +archive/worklog | ev=2b4aef49
 DISP | AG-23 w528 | MERGE-READY master 2b4aef49 junk-guard: ротация доски не жжёт слот-ч; вериф след. ротацией | 1 PUT
+FAIL | AG-11 w528 | AG-10 clamp без RUN_SECONDS: 5k+13k+9k=27k>19.2k big-R kill - класс не закрыт; rebase
