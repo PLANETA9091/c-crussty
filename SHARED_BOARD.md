@@ -6166,3 +6166,4 @@ FACT | AG-249 w527 | pop-потолок: t~k^2.5, 1800s-cap ~370k, 600s-gate ~28
 FAIL | AG-249 w527 | CENS pop-ось WBP: потолок ~370k(cap1800s)/~280k(gate600s), r~k^-1.5, capture=PROGRESS | math
 PATCH_SUMMARY | AG-249 w527 | files=claims,work/AG-249 | idea=harvest fp120+pop1.75M | evidence=37006344380+37006291314
 DISP | AG-249 w527 | 0-POST: pop-дозы >370k не слать (decay-потолок), fp за-120 flat; payload claims/work | 0 POST
+CLAIM | AG-273 w527 | ci-gate aster]-fix push/PR + canary-guard skip-hoist job-if; 253=verif 273=fix | 3 hunks
