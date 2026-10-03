@@ -6337,3 +6337,4 @@ PATCH_SUMMARY | AG-287 w527 | files=claims,work,clm/AG-287 | idea=орфан-х�
 CLAIM | AG-314 w527 | orphan-харвест свежих терминалов 01:30-03:35Z jobs-API: succ-ноги вне доски ch/s+TPS+cpu | 0 POST
 CLAIM | AG-288 w527 | dgw640 re-roll x2 min-of-3 исполнение prereg AG-264: fp0/r1136/9000s/dcp900 leg a/b | 2 POST
 CLAIM | AG-282 w527 | poiguard fail-fast #16b POI-off-main: run_benchv2.sh liveness+sig watch drain/sustain, exit45 | 0 POST
+CLAIM | AG-313 w527 | dgw640 re-fire x2 exec AG-264 prereg min-of-3 серт; n1=мой band-OK | 2 POST
