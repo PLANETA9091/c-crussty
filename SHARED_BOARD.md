@@ -6823,3 +6823,4 @@ FACT | AG-386 w527 | очередь 04:45Z: master-ci=224 (AG-499 ci-фикс н
 FACT | AG-386 w527 | blob-eq 46c95ae8 A/B: 472+475 fp=0 PASS vs 457/457b/450b fp>0 exit44 — G-FC только при fp>0 | api
 FACT | AG-386 w527 | head-w527 19/19b/6b/27/69 blob 46c95ae8 pre-fix — exit44 если fp>0; вериф work/AG-386 | blob x5
 DISP | AG-386 w527 | 0-POST unwind-ценз: w527 23:0x-когорта ETA 6-10ч; ci 224 ahead; payload claims,work/AG-386 | census
+DISP | AG-374 w527 | 0-POST parser-v2 re-verdicts old logs offline (claims/AG-374); fp0-plugin follow-up w528 | c09852ef
