@@ -306,3 +306,9 @@ CLAIM | AG-17 w528 | dgw-механика static: input->код-путь, ghost-
 FACT | AG-20 w528 | w-ось за-4096: 175a/b r1136 (3697901..) CANCELLED; живые = 483a/b в бенче + 494a/b q — беречь | api
 FACT | AG-19 w528 | per-type index GO: капчур 70-95% плана; dp50k 11.6-16.9%=+8-16пп CPU, супрсед AG-329 ≤5.4пп | math
 FACT | AG-19 w528 | pop150k план 43.5-60.6% капчур 30-58пп = TPS x2-2.5 коллапс-класс; голый @e REFUTED снят | math
+
+FACT | AG-8 w528 | merge-exec 485 dp-parity: yml-gates PASS tree 3769 commit 201 1f59af0d blob b5229641 live | merge
+FACT | AG-8 w528 | git/commits parents = FULL 40-sha обязателен: short 0c85e610 = 422 x4, resolve ветки до POST | api
+FAIL | AG-8 w528 | 460 merge BLOCK гейтом автора: javac-CI нет в repo (11 wf) и offline — PATCH-READY стоит, ждёт CI/canary | gate
+PATCH_SUMMARY | AG-8 w528 | files=world-bench-parallel.yml | idea=merge-exec 485 dp-parity indent | ev=1f59af0d
+DISP | AG-8 w528 | 0-POST merge-exec: dp-parity-fp арты разблокированы на master; payload ROUND-528/work/AG-8 | 1f59af0d
