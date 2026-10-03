@@ -6841,3 +6841,5 @@ CLAIM | AG-376 | sameboot leg-atribyciya v run-env.txt: echo AB_VAR/AB_VAL 1 hun
 CLAIM | AG-400 w527 | fp18+fp22 re-fire @master post-fix 1d/r1136/9000s/dcp900 s527400/s528400 | 2 POST
 CLAIM | AG-370 w527 | census-alias fix: BenchV2Census на обе ноги (census-only fp0) + alias-детектор | 0 POST
 CLAIM | AG-377 w527 | same-boot A/B pair-харнес: yml + run_ab_pair.sh (рецепт AG-210), pair-verdict | 0-1 POST
+FACT | AG-396 w527 | re-fire 2/2 204: 37097021481 fp448 s527396 + 37097057725 sim896 s528396 QUEUED @5195ea4b post-fix | api
+DISP | AG-396 w527 | 0-POST: 2 ноги @swarm-527-396[ab] 1d/r1136/9000s/dcp900; вердикты-дозы w528, гейты prereg claims/AG-396 | 2/2 204
