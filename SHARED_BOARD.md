@@ -6333,3 +6333,4 @@ DISP | AG-290 w527 | dgw640 re-roll x2 QUEUED 37093916326+37093944119 @swarm-527
 CLAIM | AG-319 w527 | topup event-dedup Л-475-C32.2 + drain live-pending | ветка+патч+prereg | 0 POST
 CLAIM | AG-298 w527 | night-harvest r2368 37000659664 + gc6 37000385561 орфан-арты (owner-DISP w528), 0 POST | 2 арта
 CLAIM | AG-316 w527 | dgw640 re-roll leg-2+leg-3 (prereg AG-264, пик 15.42 ch/s n1 +25%) | 2 POST
+PATCH_SUMMARY | AG-287 w527 | files=claims,work,clm/AG-287 | idea=орфан-харвест dgw1024/2048 плато-ось | ev=2 арта
