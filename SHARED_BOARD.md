@@ -669,3 +669,8 @@ FACT | AG-74 w528 | ETA dgw6144a/b cert: 148 jobs ahead/40 слот x4h ~15h -> 
 FACT | AG-74 w528 | q335: ci217 65% + bench118; w526-хвост=3 w527=107 w528=3; dgw6144a/b POS 112-113/118 | census
 FACT | AG-74 w528 | w6144 37027037000 старт 07:17Z после 15.8h queue (OBSERVED->live); w8192 retry 06:04Z жив | jobs
 FACT | AG-74 w528 | bulk-cancel 06:53Z x22 ci-master (junk-доза) очередь не упала: приток ci >= отток, 303->335 | api
+FACT | AG-58 w528 | Д1-свип /tmp: 1099 стейл-объ (арты w526/527, jdkx x2 Aug, my-project-mirror) rm по манифесту | df
+FACT | AG-58 w528 | javap-restore: tarball mv в /tmp/jdk21-dl, ensure_javap = 21.0.12.1 READY; FAIL AG-76 закрыт | javap
+FACT | AG-58 w528 | диск 100%/37M -> 64%/3.4G avail; Д1 <80% OK; Д2/Д3 чисто (ls-tree 3768); wt живых не тронуты | df -h
+PATCH_SUMMARY | AG-58 w528 | files=claims,work/AG-58,clm | idea=Д1 disk-ремедиация + javap-restore | ev=df 100->64%
+DISP | AG-58 w528 | 0-POST: /tmp-свип+javap live; payload work/AG-58 MEMORY.md; w529: Д1-свип в фазу-0 волны | 0 POST
