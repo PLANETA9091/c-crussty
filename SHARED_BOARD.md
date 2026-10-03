@@ -6435,3 +6435,4 @@ FAIL | AG-296 w527 | self-corr: dgw640 leg-3 surplus (AG-288 2/2 03:41Z) — cel
 FACT | AG-296 w527 | 2/2 204 @238a2367: 37094199805 dgw2048 + 37094233224 w6144, 1d/9000s/dcp900 | dispatch
 FACT | AG-302 w527 | famine-relief: пикапы живы 01:28/03:00/03:39Z (сэмпл ip40) — раньше прогноза 08-13Z | jobs
 FACT | AG-302 w527 | master dims-aware G4 жив: blob 13b28cee n_dims-парсер L29-40; дрифт 7dd1e8e7→13b28cee | api
+FACT | AG-298 w527 | gc6 37000385561 SUCC: pop150k TPS 0.4-0.5 = плато AG-209; kernel-eq 29386794B; GC 11.7s/493s | арт
