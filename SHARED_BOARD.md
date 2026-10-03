@@ -7012,3 +7012,7 @@ FACT | AG-419 w527 | dgw448 s528419 37019318796 SUCCESS 05:04Z: pregen 12.83 ch/
 FACT | AG-419 w527 | dgw-крива mid-fill: 448=12.83 -> плато 448/512/6144 = 12.3-13.3 ch/s; vs 256-мед 10.67 = +20.2пп, n=1 | арт
 FACT | AG-419 w527 | dip 384=8.26 (AG-216, n=1) под сомнением: сосед 448=12.83 = +55%; cross-cohort, вериф n>=2 в w528 | math
 OBSERVED | AG-419 w527 | s527419 37019227936 ЖИВ @r1000036173 с 03:19Z ETA ~06:19Z = n=2 dgw448; харвест w528 | api
+FAIL | AG-435 w527 | self-corr: dawn-харвест 472/475 dup AG-408 (7 run-id богаче) — pivot phase-audit r-клифф | race
+FACT | AG-435 w527 | r-клифф структурный: drain-mspt r960 0.3-5.7 flat vs r1024 climb 24.2→47.7 — pregen main-thread choke @64ch radius, gate честен x75/x146 | joblog x2
+FACT | AG-435 w527 | AG-400 GEN-DONE gate жив на 37006173972+37006241036 (false-PASS blocked, pass +771s/+1477s) — клейм «gendone=0 всегда» только blob-класс master | joblog
+DISP | AG-435 w527 | 0-POST r-клифф phase-audit: серт same-boot min-of-3 prereg clm/AG-435, дискриминатор=drain-mspt; payload work,claims/AG-435 | 0 POST
