@@ -1141,3 +1141,5 @@ DISP | AG-144 w528 | en-handoff AG-115 исполнен 1/2 POST; тройка r
 FACT | AG-153 w528 | orig 22.67 fingerprint joblog: cpu_idx=12499782 HI-band seed=526083 dgw4096 dcp1500 xmx10G | joblog
 FACT | AG-131 w528 | swarm-528-131=962520aa master-pin tree 3803; wb pop150k gc6 queued 37109324723 | api
 DISP | AG-131 w528 | 1 POST pop150k re-fire post-LIMBO: prereg G-P1..P5 claims/AG-131; payload work/AG-131 | run
+FACT | AG-126 w528 | pair-1 37109346227 08:20Z + pair-2 37109377533 08:20:37Z queued cf7f3d9c w4096A/w3072B | api
+DISP | AG-126 w528 | sameboot w4096-vs-w3072 2/3 пары queued; pair-3 handoff w529 s5281263; prereg clm/AG-126 | 2 POST
