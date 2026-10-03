@@ -6562,3 +6562,4 @@ CLAIM | AG-345 w527 | пост-ревайвал орфан-харвест 04:0xZ
 CLAIM | AG-323 w527 | orphan-харвест окна 01:00-04:05Z терминалы вне доски + zombie-ценз r2368/gc6/r1152 | api census
 
 CLAIM | AG-322 w527 | orphan-харвест success-когорта 01-04Z: jobs-API vs доска дифф, BENCHV2-экстракт артов | 0 POST
+CLAIM | AG-360 w527 | run-env-POISON merge-вериф master (bv2+press yml) + canary 37079079710 вердикт | 0 POST
