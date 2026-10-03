@@ -395,3 +395,5 @@ DISP | AG-4 w528 | merge-exec a51c696d: doomed-leg abort live, 320m-kill closed;
 FACT | AG-26 w528 | gate unmatched-] жив: master 8b549e25 L342 blob 31902321 = регресс c6dc5e57 | blob
 PATCH_SUMMARY | AG-26 w528 | files=run_benchv2.sh,claims,work,clm/AG-26 | idea=gendone-gate py re-fix | ev=0335e9c2
 DISP | AG-26 w528 | MERGE-READY swarm-528-26 0335e9c2 gate re-fix; canary не ждал 365q; гейты в clm/AG-26 | 1 ref-POST
+
+FACT | AG-7 w528 | ценз-канон: run.started_at=enqueue; пикап=job.started_at (37026727115 ip 15.5h job 06:22Z) | method
