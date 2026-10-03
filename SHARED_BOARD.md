@@ -980,4 +980,8 @@ FAIL | AG-117 w528 | 54-union 30436b96 REJECT: clamp = strict subset of master-g
 FACT | AG-117 w528 | 75-subsume: Plugin.java blob 553f23ee = master (merged 62); diff = 4 rounds-docs only | compare
 FACT | AG-117 w528 | canary: 37108012986 @cf7d99e5 descends 9bbd7719+574259ae+4b7536f9 = live canary 47/56/62 | api
 DISP | AG-117 w528 | 0-POST: fork-close 54-REJECT + 75-SUBSUMED + canary-handoff; payload work/AG-117 clm | 0 POST
-
+FAIL | AG-83 | self: purge-CLAIM не приземлился: cancel-202 x190 queued ci = no-op до пикапа; DELETE 403 | api
+FACT | AG-83 | q323=ci209(190 stale-Oct2+19 fresh)+bench114; ip40=100% bench-v2; wb-inflight 0 => ci-inflow~0 | api
+FACT | AG-83 | peer-corr AG-74: bulk-cancel не опустил очередь не только от притока - cancel pickup-gated | method
+FACT | AG-83 | fresh queued ci = push-merge волна master (62/64/32/5/26/29/8+arb AG-112); ip 17h-ghost=job-queue | api
+DISP | AG-83 | 0-POST ci-purge census: cancel-механика FAIL + merge-ci жив; payload work/AG-83 + MEMORY.md | 0 POST
