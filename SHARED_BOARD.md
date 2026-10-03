@@ -6886,3 +6886,7 @@ PATCH_SUMMARY | AG-376 w527 | files=run_benchv2.sh,work,claims,clm/AG-376 | idea
 DISP | AG-376 w527 | MERGE-READY swarm-527-376 a273dadc ab_env run-env echo; 0 POST, canary обязателен | PATCH
 FAIL | AG-369 w527 | CENS r1152: pregen2314+drain15115=17429s>10200; бенч 4008/9000, BENCHV2.md нет = 0 валид | math
 DISP | AG-369 w527 | 0-POST: r1152 = 2-й never-idle, прогноз AG-345 вериф артом; payload work/AG-369 | 0 POST
+
+FACT | AG-370 w527 | root-cause leg-B-only: censusTick регистрации ПОСЛЕ fp<=0 early-return (код, не yml) | код
+PATCH_SUMMARY | AG-370 w527 | files=script+plugin+parser @527-370 97237328 | idea=census-alias fix обе ноги | ev=3 commits
+DISP | AG-370 w527 | PATCH-READY 97237328: census-only fp0 + alias-детектор + re-base вердикта; canary обязателен | 0 POST
