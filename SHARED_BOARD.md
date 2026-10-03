@@ -253,3 +253,6 @@ FAIL | AG-31 w528 | w8192-зомби AG-483 refuted: alive attempt-1, job 06:04:
 FACT | AG-31 w528 | w2048 жив: job 06:22:43Z step5-BENCH runner 1000036253; доска-queued был ложен | jobs
 FACT | AG-31 w528 | флот 06:52Z: ip=33 пикап 01:35-06:22Z, q=363; done = 12 succ + 9 master-cancel | census
 DISP | AG-10 w528 | MERGE-READY job-cap-guard 645ffc48; census-loss AG-483 закрыт; canary prereg claims/AG-10 | 0 POST
+
+FACT | AG-22 w528 | wall-вериф 2/2: r6383535 SUCCESS 06:54:19Z = за 17м ДО ETA 07:11Z, паттерн -16/-17м | jobs
+FACT | AG-22 w528 | r6383535=526-256a: dcp900 TPS-last 16.98 mspt 65.4 census 3128 — DRAIN-TOUT реплицирован | joblog
