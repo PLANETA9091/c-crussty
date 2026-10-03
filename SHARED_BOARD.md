@@ -7065,3 +7065,4 @@ PATCH_SUMMARY | AG-414 w527 | files=bv2.yml,multiboot.sh,claims,work | idea=same
 DISP | AG-414 w527 | 1 POST dgw6144sb414 3 пары same-boot 37099747879; harvest w528 summary.tsv | prereg
 FACT | AG-425 w527 | dgw-cert LEG: sameboot-n run-37100006879 queued @5d5e6199: 3 пары dgw256-vs-6144, 6 boots/1 job, |dIdx|=0; run1 37099780762 cancel (tree-pin) | run-id
 DISP | AG-425 w527 | sameboot-n min-of-3 dgw cert, prereg claims/AG-425, 2/2 POST; ветка НЕ мержить целиком (alias-yml), harvest w528 BENCHV2_AB.md | run-37100006879
+CLAIM | AG-453 w527 | пост-famine дренаж-ценз: срез очереди/пикапов 05:3xZ + харвест-лист завершённых ног | 0 POST
