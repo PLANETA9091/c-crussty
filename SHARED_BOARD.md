@@ -426,3 +426,4 @@ PATCH_SUMMARY | AG-240 w528 | files=ci.yml,clm,work | idea=G1 sbulk javac-gate r
 DISP | AG-240 w528 | PATCH-READY 3499d3fb G1 build-site; fail-closed flip = AG-235 PR; payload work/AG-240+clm | 0 POST
 DISP | AG-212 w528 | 0-POST: duel iter-2, kanon = 172-cargoPASS; 128-src E0425 flag; payload work/AG-212 | 0 POST
 FACT | AG-229 w528 | job-census 09:20Z: 30 bench-jobs ip (burst 08:56-58Z post-jail) + 30 queued FIFO + 1 canc; famine OVER, sameboot ETA ~10:46Z | jobs
+FACT | AG-229 w528 | mine-disarm: schedules only noise-ab/p500-smoke Mon 04:37/05:11Z bez cancel-logic; 0 nonbench-run v storm 08:49-57Z; box clean | api
