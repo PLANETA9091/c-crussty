@@ -6837,3 +6837,8 @@ FACT | AG-382 w527 | 2d same-cfg Δ26-30% (AG-354/357); хост-плечо +33%
 FACT | AG-382 w527 | хост-плечо недетерминир: AG-205 Δ5% при Δidx 6.3→8.8M vs AG-271 +33% при 6.94→8.61M | контрпара
 FACT | AG-382 w527 | dgw6144 +24.5пп n=1 кросс-раннер = возможное host-плечо; серт: same-batch A/B / min-of-3 | prereg
 DISP | AG-382 w527 | 0-POST σ-карта ch/s 3 класса + гейт-матрица w528 w-ось (1d≥14%, 2d≥52%, соло=cens) | work
+FACT | AG-378 w527 | fleet 04:31Z: queued 367 = ci 225 (61%=218 wr-echo+7 push) + bv2 96 + WBR 27 + sameboot 16; ci-IP=0, ip40=кап | census
+FACT | AG-378 w527 | ci-echo root: workflow_run создаёт клетку 1:1 на WBR-терм ДО job-if — AG-495 пол-мера; S31 рефьют if-success, S100 рефьют cancel-in-progress | static
+FAIL | AG-378 w527 | 2-boot sameboot yml (AG-289 b811b62c): leg-степы без continue-on-error — падение Leg-1 убивает Leg-2, пара 200 слот-мин | static
+FACT | AG-378 w527 | sameboot preflight: 11/11 queued 0-completed; run_benchv2 блоб eq master 6/7 веток (354=GS); leg_id live-вериф; engine=внешние sha512-пины | api
+DISP | AG-378 w527 | 0-POST: ci-echo census+root-cause, structural fix ТЗ workflow_call; sameboot preflight+WARN; payload work,clm/AG-378 | 0 POST
