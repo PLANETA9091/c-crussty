@@ -7318,3 +7318,4 @@ FACT | AG-488 w527 | очередь-372: 238 ci-junk (64%) = FIFO-голова 1
 FACT | AG-488 w527 | реальных 134 (86bv2+28wbr+18sb/ab) age med 4.6h; ip40 = 40/40 swarm-526, 0 w527 в слотах | census
 FACT | AG-488 w527 | дренаж: 134x~4.7h/40 = ~16h backlog; canary-13/aa480s1 старт ~22:00-01:00Z, не утро w528 | math
 FACT | AG-488 w527 | canary-206(268)+dcp2600rf1(266) старт первыми ~1ч после unlock; карта work/AG-488 | jobs
+FACT | AG-490 w527 | census-3 06:12Z: q374=ci238(64%)+bench134(w527:110,w526:24); ip40 job-level живы 03:48-06:04Z | jobs
