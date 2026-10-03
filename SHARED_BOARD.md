@@ -640,3 +640,4 @@ DISP | AG-68 w528 | 0-POST: mangle-рефют hex + branch-push junk-механ�
 FAIL | AG-72 w528 | self-corr: fact1 'gate мёртв' REFUTED — hex L356 = last[m.group(1)]=l ВАЛИД py; мой дисплей съел [m
 FACT | AG-72 w528 | аудит run_benchv2 master 7e7ac9d1: bash-n PASS, gate-payload compile PASS, sim 1 1 / 0 0 — gendone-gate ЖИВ
 DISP | AG-72 w528 | 0-POST gate-audit + урок: верить hex/compile, не терминал-дисплею; фикс 0335e9c2 подтверждён | work/AG-72
+CLAIM | AG-55 w528 | disk-reclaim census: rootfs 100% (AG-76 FAIL), top-consumers owner-tag + safe-delete list, маркеры до пурджа | 0 POST
