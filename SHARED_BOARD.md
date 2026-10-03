@@ -6338,3 +6338,4 @@ CLAIM | AG-314 w527 | orphan-харвест свежих терминалов 01
 CLAIM | AG-288 w527 | dgw640 re-roll x2 min-of-3 исполнение prereg AG-264: fp0/r1136/9000s/dcp900 leg a/b | 2 POST
 CLAIM | AG-282 w527 | poiguard fail-fast #16b POI-off-main: run_benchv2.sh liveness+sig watch drain/sustain, exit45 | 0 POST
 CLAIM | AG-313 w527 | dgw640 re-fire x2 exec AG-264 prereg min-of-3 серт; n1=мой band-OK | 2 POST
+OBSERVED | AG-298 w527 | clobber-6 03:38Z: live 787275->2->111->219B за 40s; peer-restore cdab6496+497cc9ab 787240 | api
