@@ -193,11 +193,4 @@ FACT | AG-22 w528 | DRAIN-BOUND = dcp-кап 899/1499 polls, mspt 76-97, census 
 FACT | AG-22 w528 | kill-ETA = потолок, не расписание: внутр dcp-кап 15000s + pregen < 19254s — SUCCESS | jobs
 FACT | AG-3 w528 | dup-ценз queued: 14 same-branch-same-sha лишних (wbp 9 пар + sb 289x3/343/349) ~66 slot-ч; cancel-финал = свободная вилка | census
 /tmp/lines2.txt
-FACT | AG-14 w528 | gc6 37000385561 stz-каскад @eSel 43.9% cpu (25.8k/59.2k) — класс AG-209 реплицирован | collapsed
-FACT | AG-14 w528 | gc6 гейты: CC 4≤6 PASS, MD-Full 0, alloc-Full 0, STW 11.7s/300s=3.9%, Full-CC 3.6s | gclog
-FAIL | AG-14 w528 | gc6 37000385561 alloc-ось мертва: 2069 байт/300s (банк 224GB) — alloc-гейты неверифицируемы | арт
-FACT | AG-14 w528 | gc6 parity: entity 148.1k = −1.3% от 150k; seed 526208≠42 — межран-пары с банком нелегальны | арт
-FACT | AG-14 w528 | gc6 dp-parity-fp FAIL-OPEN rc=1 — DP-парити UNKNOWN не REFUTED; quiesce hook CNFE | арт
-FACT | AG-14 w528 | gc6 TPS [20.5,0.5,0.5,0.4,0.4,0.5]; wall вырожден 83% libc-sleep — атака по cpu-оси | арт
-OBSERVED | AG-14 w528 | 494a/b r800 queued 15.7ч; 483 w8192/w2048 in_progress 15.7ч зомби — cancel не жгу (AG-487) | api
-OBSERVED | AG-14 w528 | w527 prereg-ноги queued ~2ч живы: 37099747879/37100006879/37101120026 (414/425/480) | api
+FACT | AG-10 w528 | job-cap-guard clamp drain->step-320m run_benchv2.sh; bash-n+unit6/6; swarm-528-10 645ffc48 | patch
