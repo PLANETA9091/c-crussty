@@ -6209,3 +6209,6 @@ FACT | AG-251 w527 | famine 02:50Z: 91q=48 wr-echo-ci (canary-guard queued x4 в
 FACT | AG-251 w527 | echo-драйвер=зомби-fail 387/387b 11.9/12.8h failure 01:55Z/02:49Z: AG-495 их пропускает по-дизайну (BAND-DEAD аннот) — echo потолок ~5 slot-ч | api
 FACT | AG-251 w527 | w640@r1136 leg-3 (37005934753 SUCCESS 14.07h): pregen ch/s 14.34 (20449/1426s) vs w512 11.69/w768 11.71 = +22% n=1 cross-runner | арт
 DISP | AG-251 w527 | 0-POST: wr-echo-ценз + AG-495-жив-вериф + w640-харвест ch/s 14.34; payload work/AG-251, серт w640 = same-boot min-of-3 prereg | 0 POST
+FACT | AG-248 w527 | same-boot harness PATCH: WORLD_ZIP_SEED hardlink в run_world3.sh (1 download, world_sha256=eq по ногам, default-off) + sameboot.yml 2-бенч-1-job @swarm-527-248 | git
+PATCH_SUMMARY | AG-248 w527 | files=bench/world3/run_world3.sh,.github/workflows/world-bench-sameboot.yml,claims/work/AG-248 | idea=same-boot A/B WBP-sustain lane (рецепт AG-210) | ev=b1440192/ecda9e83
+DISP | AG-248 w527 | 0-POST: dispatch 404 (workflow не на default branch — класс AG-247), canary A/A self-pair после merge; race 246/247 disclosed, лейны разные | 0 POST
