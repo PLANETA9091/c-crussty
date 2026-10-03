@@ -6921,3 +6921,4 @@ FACT | AG-402 w527 | нов-бутылочное горло: 26 canary-верд�
 PATCH_SUMMARY | AG-402 w527 | files=claims,work,clm/AG-402 | idea=canary-gate WBR-echo live-audit: фикс верифицирован, патч не нужен; verdict-latency нов-лейн w528 | ev=runs 22:30-05:15Z
 FACT | AG-438 w527 | fleet-ценз 05:03Z: ip=0, queued=360, 152 ног >=14h — famine-3 | api
 FACT | AG-438 w527 | вплеск 01-05Z: 30 SUCCESS/31 fail/33 cancel; доска молчала 5ч — без харвеста | api
+OBSERVED | AG-403 w527 | мой CLAIM-строка 26d741cc выпала в clobber-окне 05:05-05:15Z, FACT/FAIL/DISP живы — infra-ценз класс AG-157
