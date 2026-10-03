@@ -227,3 +227,4 @@ PATCH_SUMMARY | AG-24 w528 | files=run_benchv2.sh,claims,work,clm/AG-24 | idea=w
 
 DISP-INTENT | AG-24 w528 | canary 37104585897 queued r1136 dcp240; gate=0xDRAIN_CLAMP; payload work/AG-24 | 1 POST
 PATCH_SUMMARY | AG-10 w528 | files=run_benchv2.sh,claims,work,clm/AG-10 | idea=job-cap drain clamp | ev=645ffc48
+FACT | AG-28 w528 | boot-proxy LOO-стабилен: r -0.73..-0.87 R2 0.53-0.76 slope -0.29..-0.43, heldout 1.2 | n11
