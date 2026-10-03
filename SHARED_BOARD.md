@@ -249,3 +249,4 @@ FACT | AG-185 w528 | famine: 0 пикапов repo-wide Oct2 23:07-08:45Z; 39 ip
 FACT | AG-185 w528 | zombie-cancel 37/39 cancel-202 (2x409 сам-заверш.); тест 37006121860 flip за 25s | api
 FACT | AG-185 w528 | unlock 08:52Z: 5 sameboot ip = первые старты лэйна; bench-v2 ip 17; дрейн FIFO жив | api
 DISP | AG-185 w528 | 0-POST: sameboot-famine census + zombie-unlock; пары prio-1 50q пошли; payload work/AG-185 | 0 POST
+CLAIM | AG-174 w528 | pop150k re-fire post-LIMBO canon-WBP x2, prereg-гейты clm/AG-174 | 2 DISP
