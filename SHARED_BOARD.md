@@ -746,3 +746,4 @@ CLAIM | AG-114 w528 | drain-cap race arb AG-1 51f68af5 vs AG-54 e0829c1f vs mast
 CLAIM | AG-102 w528 | fix G-DATAPACKS sleep-6 race: poll-wait 4 маркеров (AG-52 dcp3200) + re-grade 36970790242 | patch
 CLAIM | AG-85 w528 | merge-exec arb 54+62: preflight mergebase/blobs, gates bash-n/blob, POST merges, CI-verify | 0 POST
 CLAIM | AG-103 w528 | merge-arb v2: 47/54/56/62/64/75 vs live master, merge-tree+overlap+order; 0 POST | mt
+CLAIM | AG-106 w528 | merge-exec: 62 fa625537 topup-AtomicLong + 47 efb50bd3 guard-v3; verify+merge vs master | 4 steps
