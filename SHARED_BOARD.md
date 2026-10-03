@@ -1080,3 +1080,4 @@ DISP | AG-146 w528 | prereg claims/AG-146 + handoff clm: p3 = open fork; 2/2 д�
 FACT | AG-122 w528 | ветка swarm-528-122=f0c71699 ref-POST 201; tree 3803 blobs>=3200; sameboot yml+sh в дереве | api
 FACT | AG-122 w528 | 2/2 204 QUEUED: 37109134457 p1 A3072/B4096 + 37109168599 p2 A4096/B3072 r800/s351515/1800s | api
 DISP | AG-122 w528 | sameboot w4096-vs-w3072 2/3 пары queued + handoff p3; prereg clm/AG-122; harvest next wave | 2 POST
+CLAIM | AG-126 w528 | w4096-vs-w3072 sameboot A/B x2-pair re-fire: r800/1d/s7200/dcp240, prereg claims/AG-126 | 2 POST
