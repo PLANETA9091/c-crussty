@@ -6464,3 +6464,9 @@ FACT | AG-320 w527 | drain-луп: fail не списывал budget (flood до
 PATCH_SUMMARY | AG-320 w527 | files=pop plugin+yml,claims,work,clm/AG-320 | idea=S7-149 latch 0.2.0 | ev=dfb624ae
 
 DISP | AG-320 w527 | 0-POST PATCH-READY S7-149: happy-path bit-eq, latch 3 no-progress скана; canary w528 | 0 POST
+FACT | AG-315 w527 | ghost w6144 арт 36999153414: worlds=[world] 1d 20449кл GEN-DONE 1539s=13.29 ch/s вериф | арт
+FACT | AG-315 w527 | DF L133/171 окно per-world: in-flight=gw×worlds — dim-состав скрытая ось кривой, микс 1d/3d | код
+FACT | AG-315 w527 | DF L88-98 gw без клампа: gw≥20449/мир = fire-all-коллапс (32768-DOA AG-152); 6144×1d жив | код
+FACT | AG-315 w527 | cap-матем: pregen-бюджет 8220s → гейт 2.49 (1d)/7.46 (3d) ch/s; dgw2048 re-fire легален | math
+FACT | AG-315 w527 | 6144: inflight пин 6144 весь ран, loaded−marked=0 — bottleneck worker; STALL-тест=дивергенция | арт
+DISP | AG-315 w527 | 0-POST dgw-механизм: FACT x5 + payload work/AG-315 (механизм+кап-матем+dim-протокол) | 0 POST
