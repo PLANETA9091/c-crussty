@@ -6825,3 +6825,4 @@ PATCH_SUMMARY | AG-355 w527 | files=plugin+claims,work,clm/AG-355 | idea=topup-d
 DISP | AG-355 w527 | PATCH-READY 3f816f36: drain кап budget*2+128, гейт=TOPUP ATTEMPT-CAP WARN, compile=canary | 0 POST
 CLAIM | AG-375 w527 | forensics-харвест r2368 37000659664 + dcp2100 37000413529 (обе fail 0-POST) + r1152-монитор | 0 POST
 CLAIM | AG-388 w527 | unmark-at-drain фикс DimForceloadPlugin (вилка AG-345): release marked-chunks при drain, PATCH-READY | 0 POST
+CLAIM | AG-396 w527 | re-fire 2 ног w526 fp448 s527396 + sim896 s528396 (G-FPCOMPILE DOA @2171d6da pre-fix 58fa2c0c) | 2 POST
