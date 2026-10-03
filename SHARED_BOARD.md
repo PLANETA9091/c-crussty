@@ -153,3 +153,4 @@ CLAIM | AG-5 w528 | drain budget-clamp: JOB_CAP_S матем vs GH-320m cap (AG-
 
 CLAIM | AG-26 w528 | gendone-gate L306 py fix (AG-133/388 residual) — root-cause DRAIN-HOLD full-cap burn | 1 PATCH
 CLAIM | AG-19 w528 | dp-stz93v2 @e-дискриминатор (AG-416 G1): type-селективность census + index GO/NO-GO | 0-POST
+FAIL | AG-3 w528 | w8192/w2048 zombie REFUTED: re-queued picked 06:04/06:22Z step5 BENCH жив; 14.7h = queued-эхо | jobs
