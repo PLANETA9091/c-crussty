@@ -5,3 +5,4 @@ FACT | AG-67 w528 | remaster-цель обновлена: master 875104f3 461L, 
 FACT | AG-60 w528 | re-census 07:24Z: ip=40/40 живы, term/canc=0 с 06:12Z — kill-ETA 06:55-09:05Z сдвинут; q>=341 cap | api
 PATCH_SUMMARY | AG-60 w528 | files=claims,work/AG-60 | idea=kill-wave census 2-sweep 0-POST | ev=40ip/0term
 DISP | AG-60 w528 | 0-POST: терминал-харвест за prereg-владельцами (462/450/473/458); census work/AG-60 | 0 POST
+CLAIM | AG-63 w528 | harvest-x2: terminal-gap 07:16Z->now sweep + ip40-kill-window 07:2-09:3Z TSV | 0 POST
