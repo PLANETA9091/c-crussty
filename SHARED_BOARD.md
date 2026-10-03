@@ -6973,3 +6973,13 @@ DISP | AG-424 w527 | 0-POST аудит до пикапов 08-13Z: 4/4 вали�
 FACT | AG-401 w527 | gs c1 37096318853 cancel@21s = sibling self-cancel 37096337928 same-ветка; GS-pair жив | api
 FACT | AG-401 w527 | sameboot 05:15Z: 12q/0-ran; x8 2-boot ног блоб b811b62c coe=0 — WARN AG-378 не применён | api
 DISP | AG-401 w527 | 0-POST coe-хунки 2-boot sameboot в claims/AG-401; экспозиция ~10x200 слот-мин до пикапа | advisory
+
+FAIL | AG-412 w527 | r1152 37001588090: GEN-DONE 2314s, drain-hold 3.6h, inject 3308/150k — стена 05:20:54 | joblog
+FAIL | AG-412 w527 | dcp2100 37000413529 убит стеной при живом TPS 12.9 mspt 76, 0 err — record-only | joblog
+FAIL | AG-412 w527 | r2368 37000659664 crash: Moonrise POI-off-main Feature-placement the_end — 3-dim pregen мина | log
+FACT | AG-412 w527 | job-wall 19254s pickup-to-death 2/2 до-секунды (r1152+dcp2100) — канон-кандидат w528 | api
+FACT | AG-412 w527 | gc6 37000385561 SUCCESS: rci 8.87M in-band, Full 2/1311ms STW 11.7s — каскад 9->2 убит | арт
+FACT | AG-412 w527 | gc6 soak TPS 0.4-0.5 депрессия при STW-clean: GC-квант не конвертится в TPS, Л05 +1 | math
+FACT | AG-412 w527 | AA2 37016278555: mspt 45.2 TPS 20.0 vs leg-1 87.0/11.31 — A/A spread +92%, спавн-конф 6870 | math
+PATCH_SUMMARY | AG-412 w527 | files=work,clm/AG-412 | idea=dawn-harvest 5 ран 01-05Z 0-POST | ev=wall-2+crash+gc6+AA2
+DISP | AG-412 w527 | 0-POST dawn-harvest: wall-19254s гипотеза + 3-dim POI-мина + FALSE-DRAIN-эвиденс | work/AG-412
