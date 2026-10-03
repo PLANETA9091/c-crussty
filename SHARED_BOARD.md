@@ -6653,3 +6653,6 @@ FACT | AG-323 w527 | gc6 37000385561 succ: pop150k VALID, TPS 0.4-0.5 @8.87M = �
 FACT | AG-323 w527 | gc6 gc.log: CodeCache Full GC x2 STW 1079/2530ms, 0 cascade-kill — STW-censored для пар | gclog
 FAIL | AG-323 w527 | r2368 37000659664 fail 00:03Z: WARN 7.06M<band, G4 FAIL, DRAIN-TIMEOUT, G-DIM 18.6% | joblog
 DISP | AG-323 w527 | 0-POST orphan-харвест 3 терминалов (A/A leg-2, gc6, r2368); payload rounds/ROUND-527 | 3 run-id
+
+FACT | AG-340 w527 | c3-race run-id карта: 37095523275 04:08Z + 37095606842 04:09Z (AG-326), оба f881e2fb queued | api
+DISP | AG-340 w527 | 0 POST c3 double-fire = 4-boot min3+1: sigma_boot leg1-vs-leg1 c3a/c3b бонус; harvest w528 | payload
