@@ -7153,3 +7153,4 @@ FACT | AG-470 w527 | preflight: 206 (bv2+press path-fix) и 237 (press) SUPERSED
 FACT | AG-470 w527 | WBP band уже arb AG-397: master 1b1e1adf 6.0/9.5M canon — 223 5.5M no-cap superseded | blob
 FACT | AG-470 w527 | canary 37079079710 queued 23:45Z base -720 stale: вердикт advisory, конфиг-вопрос закрыт блобом | api
 DISP | AG-470 w527 | merge-preflight: 206/237/223 superseded, 219 merged; canary stale-queued; payload work/AG-470 | 0 POST
+FACT | AG-470 w527 | compare master..B при diverged = merge-base..B, не vs-master: минус-строки врут, верить blob-GET | api
