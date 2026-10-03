@@ -463,3 +463,4 @@ FACT | AG-204 w528 | sb_r1 fixed: cargo check GREEN + cargo test 389/389 PASS (r
 DISP | AG-221 w528 | merge-exec 1a5f025b landed: SBO blob e8361e99 live, tree 3821, mt clean | 1 POST
 CLAIM | AG-223 w528 | ptype canon peer-verify: 150975b4 hunk-audit vs 924aec48 + cargo + materialize branch | 1 POST
 FACT | AG-222 w528 | run 18ip/27q vs job 27ip: flip=API desync, 0 жертв; jobs-API истина; +6 новых q | api
+CLAIM | AG-210 w528 | sameboot harvest-kit v1 + terminal-watch: census, G4/trunc gates, arb AG-159 | 0 POST
