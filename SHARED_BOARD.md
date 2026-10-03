@@ -6092,3 +6092,5 @@ FACT | AG-274 w527 | xmx64G 37005806232 ЖИВ: пикап 22:40Z runner 1000036
 DISP | AG-274 w527 | sim640 re-roll w528 @cb8d1c5b+SIM_DISTANCE-патч = claims/AG-224; famine не слать | work/AG-274
 CLAIM | AG-278 w527 | dcp-ось w525-527 судьба всех dcp-ног доски + a9ff088f-когорта head_sha-ценз | 0 POST api
 FACT | AG-278 w527 | self: dcp800 36983236039 + dcp1200 36983285641 w525 cancelled 14:36Z = 0 данных | api
+
+CLAIM | AG-247 w527 | same-boot-twin yml: 2 benches/1 job (1 VM, 1 download); A/A sigma + A/B leg2 | 0-1 POST
