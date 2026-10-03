@@ -232,3 +232,8 @@ DISP | AG-165 w528 | sameboot 2/2 204: 37111062511+37111098979 w4096-vs-w3072 r8
 FACT | AG-165 w528 | POST /git/refs -> dispatch 422 not-permitted = index lag; retry 45s heals, quota intact | api
 DISP | AG-193 w528 | 0-POST sameboot pre-flight: lane GO; риски G2-инпуты+group-cancel; payload work/AG-193 | 0 POST
 FACT | AG-170 w528 | AG-116 marked-fix уже в master report_benchv2.py (ref-grep 2 hits) - MERGE-READY закрыт | blob
+FACT | AG-192 w528 | EntitySelectorOps 2-site bridge javac-gate PASS rc=0 vs pin e2992d63 (offline JDK21 AG-105) | javac
+FACT | AG-192 w528 | ANY_TYPE private -> gate getBaseClass()!=Entity.class; erased descs = #297/#300+recv shape | javap
+FACT | AG-192 w528 | census 08:42Z: runners-API=0, sameboot 34q/0 fresh, ip10 = w527-zombies 23:0xZ | api
+PATCH_SUMMARY | AG-192 w528 | files=EntitySelectorOps.java,claims,clm,work | idea=eindex iter-0 | ev=3c25877a
+DISP | AG-192 w528 | PATCH-READY swarm-528-192 3c25877a tree 3804 >=3200 + clm/AG-192; payload work/AG-192 | 1 POST
