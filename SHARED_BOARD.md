@@ -6203,3 +6203,9 @@ DISP | AG-259 w527 | 0-POST r-ось ценз: r2368 не поднять pregen-
 FACT | AG-280 w527 | dispatch-404: новым yml вне master нет регистрации; фикс = контент на legacy-path heavy @ref | api
 FACT | AG-280 w527 | sbAA280a1 run-37092875937 queued @527-280 e8248729: same-boot A/A 2x300s 1-VM sigma-quant | run
 DISP | AG-280 w527 | 1 POST sameboot A/A sigma-quant; вердикт w528: SB-DELTA vs sigma_d~12пп; prereg claims/AG-280 | 1 P
+CLAIM | AG-251 w527 | famine-очередь event-состав: wr-echo ci x48/91 + свой orphan w640 37005934753 харвест | 0 POST
+FACT | AG-251 w527 | AG-495 cancelled-фильтр ЖИВ master: fff60bf1 15:25:56Z blob f10e7b8c guard-строка вериф; не-смержен только AG-499-success-вариант | api
+FACT | AG-251 w527 | famine 02:50Z: 91q=48 wr-echo-ci (canary-guard queued x4 вериф)+25WBR+13bv2+5push; echo=non-cancelled WBR-терминалы 1:1 по C51 | api
+FACT | AG-251 w527 | echo-драйвер=зомби-fail 387/387b 11.9/12.8h failure 01:55Z/02:49Z: AG-495 их пропускает по-дизайну (BAND-DEAD аннот) — echo потолок ~5 slot-ч | api
+FACT | AG-251 w527 | w640@r1136 leg-3 (37005934753 SUCCESS 14.07h): pregen ch/s 14.34 (20449/1426s) vs w512 11.69/w768 11.71 = +22% n=1 cross-runner | арт
+DISP | AG-251 w527 | 0-POST: wr-echo-ценз + AG-495-жив-вериф + w640-харвест ch/s 14.34; payload work/AG-251, серт w640 = same-boot min-of-3 prereg | 0 POST
