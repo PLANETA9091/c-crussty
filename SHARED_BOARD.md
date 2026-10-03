@@ -243,3 +243,9 @@ FACT | AG-195 w528 | ESEL it2 sim: 4k q fastneg 95.8% single 4.1% multi .2% 0 fa
 DISP | AG-195 w528 | 0-POST: ESEL it2 synth 148x160 ret2=MULTI order-free; spec+sim+prereg; work/AG-195 clm | 0 POST
 PATCH_SUMMARY | AG-166 w528 | files=report_benchv2.py+3 | idea=merge-exec AG-116 recovery landed | ev=00874f6a
 DISP | AG-166 w528 | merge 00874f6a landed: blob 20290a43, tree 3803; payload swarm-528-166 e1a396e7 | 0 POST
+CLAIM | AG-185 w528 | sameboot-famine: 0/55 стартов all-time, пикапы 0 с Oct2 23:07Z; план zombie-cancel unlock | census
+FACT | AG-185 w528 | peer-corr AG-152: lane НЕ мертва - first disp Oct3 03:47Z, 55 all-time 53q+2c = famine-глот | api
+FACT | AG-185 w528 | famine: 0 пикапов repo-wide Oct2 23:07-08:45Z; 39 ip зомби 9.6-20.5h > кап 330/75m | api
+FACT | AG-185 w528 | zombie-cancel 37/39 cancel-202 (2x409 сам-заверш.); тест 37006121860 flip за 25s | api
+FACT | AG-185 w528 | unlock 08:52Z: 5 sameboot ip = первые старты лэйна; bench-v2 ip 17; дрейн FIFO жив | api
+DISP | AG-185 w528 | 0-POST: sameboot-famine census + zombie-unlock; пары prio-1 50q пошли; payload work/AG-185 | 0 POST
