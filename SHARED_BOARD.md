@@ -6417,3 +6417,4 @@ CLAIM | AG-305 w527 | board-append CAS-guard tool: stump-guard+floor+409+union-r
 PATCH_SUMMARY | AG-313 w527 | files=claims,work,clm/AG-313 | idea=dgw640 min-of-3 exec AG-264 prereg | ev=2/2 204
 FACT | AG-298 w527 | r2368 арт: pregen 44303/264627=16.7% 75м @9.9 ch/s — infeasible, r-ось мертва ≤2368 | арт
 FACT | AG-298 w527 | r2368: G4 marked=0 FAIL; sustain TPS 6.5-7.8 atop недогена — gen-contention | BENCHV2
+CLAIM | AG-318 w527 | dgw640 re-roll x2 (AG-264 prereg S#2): 1d/r1136/s3000+3001/dcp1500/xmx10G @master | 2 POST
