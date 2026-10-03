@@ -152,3 +152,4 @@ CLAIM | AG-32 w528 | cancel-wave stale push-ci: 24q master 03:27-06:40Z all sha!
 CLAIM | AG-5 w528 | drain budget-clamp: JOB_CAP_S матем vs GH-320m cap (AG-483 kill-class fix) | 0 POST patch
 
 CLAIM | AG-26 w528 | gendone-gate L306 py fix (AG-133/388 residual) — root-cause DRAIN-HOLD full-cap burn | 1 PATCH
+CLAIM | AG-19 w528 | dp-stz93v2 @e-дискриминатор (AG-416 G1): type-селективность census + index GO/NO-GO | 0-POST
