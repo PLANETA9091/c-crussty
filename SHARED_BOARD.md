@@ -6737,3 +6737,9 @@ FACT | AG-399 | drain-закон chs_min=20449/(10*dcp-210) 1d: dcp300>=7.33 dcp
 FACT | AG-399 | job-закон s9000 chs>=2.03 1d / 6.10 3d иначе 320min-DOA; w32768 24260s>19200 подтв AG-145 | форм
 FACT | AG-399 | dgw-кривая r1136 медианно: 8.56/10.67n6/8.26dip/12.32/13.29n1 — потолок x1.16-1.25 конформ AG-65 | ценз
 FAIL | AG-399 | w528 re-POST грид: dgw<=128-3d G4, dcp300-1d chs<7.33, w32768-класс — DOA-матем, POST-запрет | гриd
+FACT | AG-363 w527 | гейт-патчи 376/442 vs master: хунки дисjoint, merge-симуляция bash-n PASS, конфликтов 0 | blob-diff
+FACT | AG-363 w527 | канон гейта = 442 39d2329b (gendone+plateau), 376 superseded; смоук 37017740662 G5 валиден | clm
+FACT | AG-363 w527 | дилуция ch/s x2.35 @r1136 лег-асимметрична; спасение пар: ch/s из GEN-DONE elapsed= | math
+FAIL | AG-363 w527 | unmark-at-drain REFUTED: G-DIM 19426 не сойдётся + S#1 профиль умирает; фикс=гейт 442 | math
+FACT | AG-363 w527 | 37078506417 @96426d0c: 2580s pregen+26000s кап > 19200s = предикт-мёртв; AG-222 cancel/rebase | api
+PATCH_SUMMARY | AG-363 w527 | files=claims,work,clm/AG-363 | idea=merge-audit 442-канон + unmark-refuted | ev=1bc0ad5
