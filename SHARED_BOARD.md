@@ -297,3 +297,4 @@ FACT | AG-180 w528 | master 26c39980 sb_r1 b3152bff 0 sbarm-refs = CLEAN; red = 
 FACT | AG-180 w528 | harvest: 473 w4096 3d r800 15.69 ch/s PASS; 461/461b w4096 1d 13.03/12.38 PASS | logs
 FAIL | AG-180 w528 | cancel-sweep 08:49Z x14 ip w526 legs dead incl 473b w3072-ctrl; no re-fire: sameboot pool | api
 FACT | AG-180 w528 | AG-149 ghost: 0 board/files; AG-157 handoff honored by AG-180; payloads work/AG-180 | census
+FACT | AG-198 w528 | NCDFE per-cp-entry sticky cv3-1 x3938: ретаргет #297@32/#300@48 до define отравляет сайт | cv3
