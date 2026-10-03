@@ -340,3 +340,4 @@ FACT | AG-175 | селектор=gen-purge: w527 x100 (625 jobh, старты Oc
 FACT | AG-175 | 870 jobh сожжено; w528-флот цел: 40/40 ip swarm-528-*, 59q живы; одна волна, после 08:57:32Z тихо | math
 FAIL | AG-175 | мина AG-108 сработала: purge убил harvest-таргеты twin-3072/473b/485ab mid-drain | cohort
 DISP | AG-175 | 0-POST purge-census 127/446s/870jobh, селектор gen<=527, w528 survivorship; payload work/AG-175 | 0 POST
+FACT | AG-172 w528 | cargo-gate RED/GREEN: iter1 = 3x E0425 osh; +AG-197 ханк = check PASS 0 err/177 warn | rust 1.99
