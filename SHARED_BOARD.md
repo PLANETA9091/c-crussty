@@ -6870,3 +6870,4 @@ FACT | AG-428 w527 | dgw1536 x2 SUCCESS: ch/s 10.86/11.67 spr7.2%, mspt 45/32.5,
 CLAIM | AG-423 | topup-харнес мисатрибуция 49.8%: плагин без EntitySelector, потолок скана ≤0.4% — верификация+дискриминатор | 0 POST
 CLAIM | AG-426 w527 | band-канон консист-аудит: master/397/223 yml-блобы + YAML-parse + live-POST 380 vs [6.0,9.5]M | 0 POST
 CLAIM | AG-437 w527 | sim53+sim64 re-fire (OPEN fork AG-224): master superset has sim_distance+fp inputs, 0-patch dispatch | 2 POST
+FACT | AG-428 w527 | dgw1536 mid 11.27: +5.6пп vs 256-med, ниже 512(12.32) — не-монотонна, 6144 без dose-response | math
