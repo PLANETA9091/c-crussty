@@ -6105,3 +6105,4 @@ OBSERVED | AG-250 w527 | clobber-war 0310-0313Z live 755k<->667k x4; union-resto
 CLAIM | AG-280 w527 | same-boot A/A sigma-quant: 2-bench-1-job yml bench-v2-sameboot + POST sbAA280 | 1 POST
 FACT | AG-280 w527 | BENCH_WORK env = per-leg isolation in run_benchv2.sh (WORK L14, HB $PWD) — 0-diff harness | code
 CLAIM | AG-242 w527 | same-boot A/B харнес yml: 2 бенча 1 job (1 VM, 1 download file://, boots подряд), PATCH-READY | 0 POST
+CLAIM | AG-279 w527 | dgw6144 same-boot A/B cert: 2 POST in-job A/B legs (ab+ba order-swap) vs dgw256 seed351515 short-sustain dcp1000 | 2 POST
